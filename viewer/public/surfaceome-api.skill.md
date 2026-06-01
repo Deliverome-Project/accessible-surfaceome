@@ -25,22 +25,7 @@ Do **not** invoke this skill for non-human genes, for general protein-biology qu
 
 ## Endpoints
 
-### Discovery
-
-| Method | Path | Returns | TTL |
-|---|---|---|---|
-| `GET` | `/v1/health` | `{ ok, n_annotations }` | 60s |
-| `GET` | `/v1/genes` | List of genes with a deep-dive record (summary fields) | 60s |
-| `GET` | `/v1/genes/{SYMBOL}` | Full SurfaceomeRecord JSON (see schema below) | 1d |
-| `GET` | `/v1/orthologs/{SYMBOL}` | Mouse + cyno orthologs from latest Ensembl Compara release | 1d |
-
-### Genome-wide (~19k human protein-coding genes)
-
-| Method | Path | Returns | TTL |
-|---|---|---|---|
-| `GET` | `/v1/catalog` | Per-gene-per-source DB-vote matrix (5 DBs) + latest triage verdict + deep-dive flag | 60s |
-| `GET` | `/v1/triage/{SYMBOL}` | Every triage run for one gene — model × variant × replicate, with cost + token counts | 60s |
-| `GET` | `/v1/triage/export.tsv` | Long-format TSV of every triage run for one `run_id`, with per-source DB votes + `uniprot_acc` joined in server-side (21 cols). Default `mainbench_canonical_v1` (~1.5k bench rows × Haiku/Sonnet/Opus × 4 variants); pass `run_id=genome_full_sonnet_ncbi_v1` for the full ~19k-gene Sonnet sweep. | 1d |
+Grouped by scope, in the order you'll usually reach for them: the labeled **benchmark** first, then the **genome-wide** sweep, then the per-gene **deep dive**.
 
 ### SurfaceBench (147-gene labeled eval)
 
@@ -50,6 +35,25 @@ Do **not** invoke this skill for non-human genes, for general protein-biology qu
 | `GET` | `/v1/benchmark/export.tsv` | Long-format TSV of the bench-restricted multi-model sweep: one row per (bench gene × model × variant) with truth labels + DB votes joined in (24 cols). Flat version of `/v1/benchmark/matrix`. | 1d |
 | `GET` | `/v1/benchmark/{SYMBOL}` | Single gene's truth label | 1d |
 | `GET` | `/v1/benchmark/matrix` | One row per gene: truth + 7 per-DB flags + per-model LLM verdicts (headline + 3 alts) | 1d |
+
+### Genome-wide (~19k human protein-coding genes)
+
+| Method | Path | Returns | TTL |
+|---|---|---|---|
+| `GET` | `/v1/catalog` | Per-gene-per-source DB-vote matrix (5 DBs) + latest triage verdict + deep-dive flag | 60s |
+| `GET` | `/v1/triage/{SYMBOL}` | Every triage run for one gene — model × variant × replicate, with cost + token counts | 60s |
+| `GET` | `/v1/triage/export.tsv` | Long-format TSV of every triage run for one `run_id`, with per-source DB votes + `uniprot_acc` joined in server-side (21 cols). Default `mainbench_canonical_v1` (~1.5k bench rows × Haiku/Sonnet/Opus × 4 variants); pass `run_id=genome_full_sonnet_ncbi_v1` for the full ~19k-gene Sonnet sweep. | 1d |
+
+### Deep dive (per-gene)
+
+| Method | Path | Returns | TTL |
+|---|---|---|---|
+| `GET` | `/v1/genes/{SYMBOL}` | Full SurfaceomeRecord JSON (see schema below) | 1d |
+| `GET` | `/v1/orthologs/{SYMBOL}` | Mouse + cyno orthologs for any gene from the latest Ensembl Compara release (genome-wide raw Compara — see note) | 1d |
+| `GET` | `/v1/genes` | List of genes with a deep-dive record (summary fields) | 60s |
+| `GET` | `/v1/health` | `{ ok, n_annotations }` — liveness | 60s |
+
+`/v1/orthologs/{SYMBOL}` is the **broad** ortholog view — latest Ensembl Compara for any of ~5k genes with a mouse/cyno ortholog (~90% of the surfaceome), carrying full-length % identity + orthology type + high-confidence flag. The deep-dive record's `deterministic_features.orthologs` is the **deep** view — mouse/cyno canonical only, ECD % identity + projected topology + sequence, but only for genes that have been deep-dived. Use the endpoint for breadth, the record for depth.
 
 Gene symbols are case-insensitive on the wire (the Worker uppercases them) but the canonical HGNC form is upper-case.
 

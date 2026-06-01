@@ -30,74 +30,6 @@ interface EndpointGroup {
 
 const ENDPOINT_GROUPS: EndpointGroup[] = [
   {
-    label: "Discovery",
-    blurb: "Liveness check and per-gene record lookups.",
-    endpoints: [
-      {
-        method: "GET",
-        path: "/v1/health",
-        summary:
-          "Liveness check. Returns the count of deep-dive SurfaceomeRecords on file.",
-        curl: "curl -s https://api.deliverome.org/surfaceome/v1/health",
-      },
-      {
-        method: "GET",
-        path: "/v1/genes",
-        summary:
-          "Index of genes with a deep-dive SurfaceomeRecord on file. Summary fields only: gene_symbol, uniprot_acc, schema_version, triage_signal, surface_status, annotated_at.",
-        curl: "curl -s https://api.deliverome.org/surfaceome/v1/genes | jq '.count'",
-      },
-      {
-        method: "GET",
-        path: "/v1/genes/{SYMBOL}",
-        summary:
-          "Full SurfaceomeRecord JSON for one gene. Contains the executive summary, evidence-grade rationale, per-method observations, deterministic features, accessibility risks, and the full evidence ledger with citations.",
-        curl:
-          "curl -s https://api.deliverome.org/surfaceome/v1/genes/ERBB2 | jq '.executive_summary.surface_accessibility, .confidence'",
-      },
-      {
-        method: "GET",
-        path: "/v1/orthologs/{SYMBOL}",
-        summary:
-          "Mouse and cynomolgus orthologs for a human gene from the latest Ensembl Compara release.",
-        curl:
-          "curl -s https://api.deliverome.org/surfaceome/v1/orthologs/ERBB2 | jq '.release_version, (.orthologs | length)'",
-      },
-    ],
-  },
-  {
-    label: "Genome-wide",
-    blurb:
-      "All ~19,300 protein-coding human genes with their 5-DB surface-vote vector and the latest Sonnet/NCBI triage verdict.",
-    endpoints: [
-      {
-        method: "GET",
-        path: "/v1/catalog",
-        summary:
-          "Per-gene-per-source surface-vote matrix (5 gating DBs: UniProt / GO / SURFY / CSPA / HPA) plus the latest triage verdict, short reason code, and deep-dive flag. One row per protein-coding gene (~19k). Free-text reasoning is omitted at this scale — fetch it per-gene from /v1/triage/{SYMBOL}.",
-        curl:
-          "curl -s https://api.deliverome.org/surfaceome/v1/catalog | jq '.universe_version, .n_rows, .n_with_triage'",
-      },
-      {
-        method: "GET",
-        path: "/v1/triage/{SYMBOL}",
-        anchor: "triage",
-        summary:
-          "Every triage run on file for one gene — model × prompt-variant × replicate — with verdict, reason code, confidence, latency, per-call token counts, and the agent's free-text verdict_reasoning paragraph.",
-        curl:
-          "curl -s https://api.deliverome.org/surfaceome/v1/triage/ERBB2 | jq '.count, .runs[0]'",
-      },
-      {
-        method: "GET",
-        path: "/v1/triage/export.tsv",
-        summary:
-          "Long-format TSV of every triage run for one run_id. Each row is (gene × model × variant × replicate) with the 5-DB votes and uniprot_acc joined in server-side. Default run_id is mainbench_canonical_v1 (147 bench rows × 3 models × 4 variants); pass run_id=genome_full_sonnet_ncbi_v1 for the full ~19k-gene Sonnet sweep.",
-        curl:
-          "curl -s 'https://api.deliverome.org/surfaceome/v1/triage/export.tsv?run_id=genome_full_sonnet_ncbi_v1&replicate=1' | head -3",
-      },
-    ],
-  },
-  {
     label: "SurfaceBench",
     blurb:
       "147 curated proteins with ground-truth surface verdicts — the eval set behind the cost / accuracy figures.",
@@ -134,6 +66,75 @@ const ENDPOINT_GROUPS: EndpointGroup[] = [
           "Full SurfaceBench matrix in one round-trip: per-gene truth label, 5-DB vote vector, and per-(model, variant) verdicts with the agent's free-text reasoning on each cell. ~2 MB JSON. Drives the SurfaceBench page's side-drawer.",
         curl:
           "curl -s https://api.deliverome.org/surfaceome/v1/benchmark/matrix | jq '.n_genes, .models, .headline_variant, .alt_variants'",
+      },
+    ],
+  },
+  {
+    label: "Genome-wide",
+    blurb:
+      "All ~19,300 protein-coding human genes with their 5-DB surface-vote vector and the latest Sonnet/NCBI triage verdict.",
+    endpoints: [
+      {
+        method: "GET",
+        path: "/v1/catalog",
+        summary:
+          "Per-gene-per-source surface-vote matrix (5 gating DBs: UniProt / GO / SURFY / CSPA / HPA) plus the latest triage verdict, short reason code, and deep-dive flag. One row per protein-coding gene (~19k). Free-text reasoning is omitted at this scale — fetch it per-gene from /v1/triage/{SYMBOL}.",
+        curl:
+          "curl -s https://api.deliverome.org/surfaceome/v1/catalog | jq '.universe_version, .n_rows, .n_with_triage'",
+      },
+      {
+        method: "GET",
+        path: "/v1/triage/{SYMBOL}",
+        anchor: "triage",
+        summary:
+          "Every triage run on file for one gene — model × prompt-variant × replicate — with verdict, reason code, confidence, latency, per-call token counts, and the agent's free-text verdict_reasoning paragraph.",
+        curl:
+          "curl -s https://api.deliverome.org/surfaceome/v1/triage/ERBB2 | jq '.count, .runs[0]'",
+      },
+      {
+        method: "GET",
+        path: "/v1/triage/export.tsv",
+        summary:
+          "Long-format TSV of every triage run for one run_id. Each row is (gene × model × variant × replicate) with the 5-DB votes and uniprot_acc joined in server-side. Default run_id is mainbench_canonical_v1 (147 bench rows × 3 models × 4 variants); pass run_id=genome_full_sonnet_ncbi_v1 for the full ~19k-gene Sonnet sweep.",
+        curl:
+          "curl -s 'https://api.deliverome.org/surfaceome/v1/triage/export.tsv?run_id=genome_full_sonnet_ncbi_v1&replicate=1' | head -3",
+      },
+    ],
+  },
+  {
+    label: "Deep dive",
+    blurb:
+      "Per-gene deep-dive SurfaceomeRecords, plus the broad genome-wide ortholog lookup and a liveness check.",
+    endpoints: [
+      {
+        method: "GET",
+        path: "/v1/genes/{SYMBOL}",
+        summary:
+          "Full SurfaceomeRecord JSON for one gene. Contains the executive summary, evidence-grade rationale, per-method observations, deterministic features, accessibility risks, and the full evidence ledger with citations.",
+        curl:
+          "curl -s https://api.deliverome.org/surfaceome/v1/genes/ERBB2 | jq '.executive_summary.surface_accessibility, .confidence'",
+      },
+      {
+        method: "GET",
+        path: "/v1/orthologs/{SYMBOL}",
+        summary:
+          "Mouse and cynomolgus orthologs for any human gene from the latest Ensembl Compara release (broad genome-wide raw Compara — full-length % identity + orthology type, ~5k genes). The per-gene record's deterministic_features.orthologs is the deeper view: mouse/cyno canonical, ECD % identity + projected topology + sequence, for deep-dived genes only.",
+        curl:
+          "curl -s https://api.deliverome.org/surfaceome/v1/orthologs/ERBB2 | jq '.release_version, (.orthologs | length)'",
+      },
+      {
+        method: "GET",
+        path: "/v1/genes",
+        summary:
+          "Index of genes with a deep-dive SurfaceomeRecord on file. Summary fields only: gene_symbol, uniprot_acc, schema_version, triage_signal, surface_status, annotated_at.",
+        curl: "curl -s https://api.deliverome.org/surfaceome/v1/genes | jq '.count'",
+      },
+      {
+        method: "GET",
+        path: "/v1/health",
+        summary:
+          "Liveness check. Returns the count of deep-dive SurfaceomeRecords on file.",
+        curl: "curl -s https://api.deliverome.org/surfaceome/v1/health",
       },
     ],
   },
