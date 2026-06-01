@@ -24,6 +24,8 @@ import pytest
 
 from accessible_surfaceome.cloud.surface_annotation import (
     PublishResult,
+    _maybe_purge,
+    _purge_urls_for,
     publish_record_dict,
 )
 
@@ -117,3 +119,81 @@ def test_publish_record_dict_accepts_drifted_schema(
     )
     assert result.gene_symbol == "OLDREC"
     assert result.snapshot_path is not None
+
+
+# --- edge-cache purge-on-publish -------------------------------------------
+
+
+def test_purge_urls_for_targets_record_catalog_and_list() -> None:
+    # A surface_annotation write invalidates exactly three cached surfaces:
+    # the per-gene record, the genome-wide catalog (carries the gene's ddf
+    # projection), and the gene-list index. Nothing else (orthologs /
+    # triage / benchmark) — a tighter set avoids disturbing the rest of the
+    # shared deliverome.org zone cache.
+    urls = _purge_urls_for("EGFR")
+    assert urls == [
+        "https://api.deliverome.org/surfaceome/v1/genes/EGFR",
+        "https://api.deliverome.org/surfaceome/v1/catalog",
+        "https://api.deliverome.org/surfaceome/v1/genes",
+    ]
+
+
+def test_purge_urls_are_query_string_free() -> None:
+    # The cache rule makes the cache key query-string-insensitive, so the
+    # bare URL is the canonical key — there must be no "?x=" variants to
+    # chase, or the purge would miss the cached object.
+    assert all("?" not in u for u in _purge_urls_for("CD19"))
+
+
+def test_maybe_purge_soft_skips_without_zone_id(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    # Missing CLOUDFLARE_ZONE_ID is a soft skip (returns None, no raise),
+    # mirroring how a missing D1 config skips the push — CI / offline dev
+    # must never crash on the purge step.
+    monkeypatch.delenv("CLOUDFLARE_ZONE_ID", raising=False)
+    out = _maybe_purge("EGFR", token="unused", client=None)  # type: ignore[arg-type]
+    assert out is None
+
+
+def test_maybe_purge_returns_false_on_http_error(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    # A purge failure (network / auth / 5xx) must never break a publish —
+    # it returns False and the record just goes live on TTL instead.
+    monkeypatch.setenv("CLOUDFLARE_ZONE_ID", "zone123")
+
+    class _BoomClient:
+        def post(self, *_args, **_kwargs):
+            raise RuntimeError("network down")
+
+    out = _maybe_purge("EGFR", token="tok", client=_BoomClient())  # type: ignore[arg-type]
+    assert out is False
+
+
+def test_maybe_purge_returns_true_on_success(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    monkeypatch.setenv("CLOUDFLARE_ZONE_ID", "zone123")
+    captured: dict = {}
+
+    class _Resp:
+        def raise_for_status(self) -> None:
+            return None
+
+        def json(self) -> dict:
+            return {"success": True}
+
+    class _OKClient:
+        def post(self, url, *, headers, json):  # noqa: A002 — match httpx kw
+            captured["url"] = url
+            captured["files"] = json["files"]
+            captured["auth"] = headers["Authorization"]
+            return _Resp()
+
+    out = _maybe_purge("EGFR", token="tok", client=_OKClient())  # type: ignore[arg-type]
+    assert out is True
+    assert captured["url"].endswith("/zones/zone123/purge_cache")
+    assert captured["auth"] == "Bearer tok"
+    # Targeted file purge — never purge_everything (shared zone).
+    assert captured["files"] == _purge_urls_for("EGFR")

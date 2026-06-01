@@ -33,6 +33,22 @@
 
 const CACHE_TTL_SHORT = 60;        // 1 min for list endpoints
 const CACHE_TTL_LONG  = 86400;     // 1 day for per-gene records
+const CACHE_SWR       = 86400;     // serve-stale window (revalidate / on-error)
+
+// Build the Cache-Control header. On cacheable responses (ttl > 0) we add
+// `stale-while-revalidate` so the edge serves the stale copy instantly on a
+// miss while refreshing in the background, and `stale-if-error` so it keeps
+// serving the stale copy when the Worker/origin errors — that's what absorbs
+// the catalog handler's historical CPU-budget 503s (cf-error 1102) instead
+// of surfacing them to readers. Freshness after a republish is handled by
+// purge-on-publish (cloud/surface_annotation.publish_record), so the long
+// TTL + serve-stale window costs nothing in staleness. ttl === 0 (e.g. a 400
+// on bad input) opts out — a non-cacheable error must not be served stale.
+function cacheControl(ttl) {
+  const base = `public, max-age=${ttl}, s-maxage=${ttl}`;
+  if (ttl <= 0) return base;
+  return `${base}, stale-while-revalidate=${CACHE_SWR}, stale-if-error=${CACHE_SWR}`;
+}
 
 const CORS_HEADERS = {
   "Access-Control-Allow-Origin":  "*",
@@ -45,7 +61,7 @@ function json(data, { status = 200, ttl = CACHE_TTL_SHORT } = {}) {
     status,
     headers: {
       "Content-Type": "application/json; charset=utf-8",
-      "Cache-Control": `public, max-age=${ttl}, s-maxage=${ttl}`,
+      "Cache-Control": cacheControl(ttl),
       ...CORS_HEADERS,
     },
   });
@@ -67,7 +83,7 @@ function tsv(content, { status = 200, ttl = CACHE_TTL_SHORT } = {}) {
     status,
     headers: {
       "Content-Type": "text/tab-separated-values; charset=utf-8",
-      "Cache-Control": `public, max-age=${ttl}, s-maxage=${ttl}`,
+      "Cache-Control": cacheControl(ttl),
       ...CORS_HEADERS,
     },
   });

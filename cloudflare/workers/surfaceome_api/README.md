@@ -32,7 +32,32 @@ Grouped by scope: **SurfaceBench** (labeled eval) → **genome-wide** sweep → 
 | `GET` | `/v1/genes` | List of annotated genes (summary fields) |
 | `GET` | `/v1/health` | `{ ok, n_annotations }` — confirms DB binding |
 
-All responses are JSON (or TSV where noted). CORS open (`*`). Cache-Control: `public, max-age=60` on list endpoints, `public, max-age=86400` on per-gene records and exports.
+All responses are JSON (or TSV where noted). CORS open (`*`). Cache-Control: `public, max-age=60` on list endpoints, `public, max-age=86400` on per-gene records and exports, each with `stale-while-revalidate` + `stale-if-error` so the edge serves a stale copy instantly on a miss/revalidate and keeps serving it if the Worker errors (this is what absorbs the catalog's historical CPU-budget 503s).
+
+## Caching & abuse protection
+
+The API is intentionally public + unauthenticated — the data is
+publish-intended. The risk it guards against is **cost / availability**
+(D1 bills per row read; the catalog handler is CPU-heavy), not access.
+Three layers:
+
+1. **Aggressive edge caching** carries the load (the TTLs above). Don't
+   shorten them to chase freshness — see purge below.
+2. **Edge rules** (apply once / after a threshold change with
+   [`scripts/apply_cf_edge_rules.py`](../../../scripts/apply_cf_edge_rules.py)
+   — dry-run by default, `--execute` to apply):
+   - a **cache rule** that makes the cache key ignore the query string, so
+     `?_=<random>` can't bust the cache and amplify D1 load;
+   - **rate-limit rules** — a generous per-IP ceiling on the route, plus a
+     tighter one on `/v1/catalog` + the `*.tsv` exports. Generous on
+     purpose: clip hammering, don't gate reanalysts.
+3. **Purge-on-publish.** `cloud/surface_annotation.publish_record` purges
+   the per-gene + `/v1/catalog` + `/v1/genes` cache entries (targeted
+   by-URL, never `purge_everything` — this Worker shares the
+   `deliverome.org` zone) right after the D1 write. That's what lets the
+   TTLs stay long *and* a republished record go live immediately, instead
+   of being stale for up to a day. Needs `CLOUDFLARE_ZONE_ID` + a Cache
+   Purge scope on the token; missing either soft-skips with a warning.
 
 ## Deploy
 

@@ -45,6 +45,13 @@ logger = logging.getLogger(__name__)
 API_ROOT = "https://api.cloudflare.com/client/v4"
 DEFAULT_SNAPSHOT_DIR = REPO_ROOT / "viewer" / "public" / "data" / "surfaceome"
 
+# Public base the Worker route serves under. Used only to build the exact
+# URLs to purge from Cloudflare's edge cache after a D1 write — see
+# ``_purge_urls_for``. Matches the ``[[routes]]`` pattern in
+# ``cloudflare/workers/surfaceome_api/wrangler.toml``
+# (``api.deliverome.org/surfaceome/*``).
+PUBLIC_API_BASE = "https://api.deliverome.org/surfaceome"
+
 # Mirrors ``cloudflare/d1_public_schema.sql::surface_annotation``. Keep in
 # sync with ``scripts/sync_public_d1.py::sync_surface_annotations``.
 _COLS = [
@@ -72,6 +79,11 @@ class PublishResult:
     d1_database_id: str | None
     stale_versions_dropped: list[str]
     skipped_reason: str | None = None
+    # Edge-cache purge outcome after the D1 write:
+    #   None  — not attempted (no D1 write, or CLOUDFLARE_ZONE_ID unset)
+    #   True  — purge_cache POST succeeded; new record is live immediately
+    #   False — purge attempted but failed; record goes live on TTL instead
+    cache_purged: bool | None = None
 
 
 def _public_config_from_env() -> D1Config | None:
@@ -106,6 +118,95 @@ def _post(
     if not body.get("success"):
         raise RuntimeError(f"D1 query failed: {body}")
     return body
+
+
+def _purge_urls_for(sym: str) -> list[str]:
+    """The exact public Worker URLs a republish of ``sym`` invalidates.
+
+    A ``surface_annotation`` write changes three cached surfaces:
+
+    * the per-gene record (``/v1/genes/{SYMBOL}``),
+    * the genome-wide catalog (``/v1/catalog`` — carries a slimmed
+      ``ddf`` projection of every deep-dived gene's filters), and
+    * the gene-list index (``/v1/genes``).
+
+    Orthologs, triage, and benchmark endpoints are NOT touched by a
+    record publish, so they're deliberately excluded — a tighter purge
+    set means we never disturb the rest of the shared ``deliverome.org``
+    zone cache.
+
+    The catalog cache key is query-string-insensitive (the Cloudflare
+    cache rule applied by ``scripts/apply_cf_edge_rules.py``), so purging
+    the bare URL is sufficient — there are no ``?x=`` variants to chase.
+    """
+    base = PUBLIC_API_BASE
+    return [
+        f"{base}/v1/genes/{sym}",
+        f"{base}/v1/catalog",
+        f"{base}/v1/genes",
+    ]
+
+
+def _purge_cf_cache(
+    urls: list[str], *, zone_id: str, token: str, client: httpx.Client
+) -> bool:
+    """Targeted Cloudflare ``purge_cache`` by URL. Returns success bool.
+
+    Deliberately a *file* purge, never ``purge_everything`` — the Worker
+    shares the ``deliverome.org`` zone with the main site, so a blanket
+    purge would evict unrelated production assets. Cloudflare's by-URL
+    purge is available on every plan.
+    """
+    resp = client.post(
+        f"{API_ROOT}/zones/{zone_id}/purge_cache",
+        headers={
+            "Authorization": f"Bearer {token}",
+            "Content-Type": "application/json",
+        },
+        json={"files": list(urls)},
+    )
+    resp.raise_for_status()
+    body = resp.json()
+    return bool(body.get("success"))
+
+
+def _maybe_purge(sym: str, *, token: str, client: httpx.Client) -> bool | None:
+    """Best-effort edge-cache purge after a D1 write.
+
+    Soft-skips (returns ``None``, warns) when ``CLOUDFLARE_ZONE_ID`` is
+    unset — same posture as the D1 push itself, so CI / offline dev never
+    breaks. Never raises: a purge failure just means the record goes live
+    on the Worker's Cache-Control TTL (up to a day for per-gene records)
+    instead of immediately.
+    """
+    zone = os.environ.get("CLOUDFLARE_ZONE_ID", "").strip()
+    if not zone:
+        logger.warning(
+            "CLOUDFLARE_ZONE_ID not set — skipping edge-cache purge for %s. "
+            "The new record goes live on the Worker's Cache-Control TTL "
+            "(up to 1 day for per-gene records) rather than immediately.",
+            sym,
+        )
+        return None
+    try:
+        ok = _purge_cf_cache(
+            _purge_urls_for(sym), zone_id=zone, token=token, client=client
+        )
+        if ok:
+            logger.info("edge-cache purged for %s (per-gene + catalog + list)", sym)
+        else:
+            logger.warning(
+                "edge-cache purge for %s returned success=false — stale until TTL",
+                sym,
+            )
+        return ok
+    except Exception as exc:  # noqa: BLE001 — purge is best-effort, never fatal
+        logger.warning(
+            "edge-cache purge failed for %s (%s) — record stale until TTL",
+            sym,
+            exc,
+        )
+        return False
 
 
 def _existing_versions_for(
@@ -466,6 +567,16 @@ def _publish_dict(
         _post(cfg, sql, row, client=client)
         logger.info("D1 upserted: %s@%s -> %s", sym, new_version, cfg.database_id)
 
+        # Purge the edge cache so the freshly-written record is live
+        # immediately. Without this, the Worker keeps serving the old
+        # cached response until its Cache-Control TTL expires (up to 1 day
+        # for per-gene records) — the same staleness that previously let a
+        # schema-incomplete D1 row keep rendering after a republish. The
+        # purge reuses the D1 token (same Cloudflare account), so the only
+        # extra requirement is CLOUDFLARE_ZONE_ID + a Cache Purge scope on
+        # the token; missing either soft-skips with a warning.
+        cache_purged = _maybe_purge(sym, token=cfg.api_token, client=client)
+
     return PublishResult(
         gene_symbol=sym,
         snapshot_path=snap_path,
@@ -473,6 +584,7 @@ def _publish_dict(
         d1_database_id=cfg.database_id,
         stale_versions_dropped=stale,
         skipped_reason=None,
+        cache_purged=cache_purged,
     )
 
 
