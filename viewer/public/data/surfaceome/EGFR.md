@@ -93,13 +93,13 @@ EGFR surface accessibility is supported by an exceptionally strong and diverse b
 
 ### Flow cytometry (6 methods)
 
-#### Live Cell Flow — Direct Surface Accessibility
+#### Live Cell Flow — Direct Surface Accessibility · Surface Accessible
 
 *Permeabilization: Live Cell · expression: Mixed*
 
 **Antibodies**
 
-- anti-EGFR-Alexa Fluor647 (BioLegend · 352918) — Extracellular epitope; None validation
+- anti-EGFR-Alexa Fluor647 (BioLegend · 352918) — Extracellular epitope; Unknown; None validation (None)
 
 **Observations**
 
@@ -111,13 +111,13 @@ EGFR surface accessibility is supported by an exceptionally strong and diverse b
 
 *Overexpression construct* — SP source: Unspecified · cell line: U373vIII. *(cites: a1_evi_01, a1_evi_02)*
 
-#### Live Cell Flow — Direct Surface Accessibility
+#### Live Cell Flow — Direct Surface Accessibility · Surface Accessible
 
 *Permeabilization: Live Cell · expression: Endogenous*
 
 **Antibodies**
 
-- anti-EGFR — Extracellular epitope; None validation
+- anti-EGFR — Extracellular epitope; Unknown; None validation (None)
 
 **Observations**
 
@@ -126,13 +126,13 @@ EGFR surface accessibility is supported by an exceptionally strong and diverse b
 | Pancreatic cancer cell lines including BxPC-3 — variable surface EGFR expression | Established Cell Line | Moderate | 1 |
 | BxPC-3 pancreatic cancer cells — EGFR surface binding by bispecific antibody targeting EGFR/NKG2D | Established Cell Line | Moderate | 1 |
 
-#### Live Cell Flow — Direct Surface Accessibility
+#### Live Cell Flow — Direct Surface Accessibility · Surface Accessible
 
 *Permeabilization: Live Cell · expression: Endogenous*
 
 **Antibodies**
 
-- anti-EGFR — Extracellular epitope; None validation; HCT 116 used as EGFR-negative control (CCLE log2[TPM+1]=0.0); specificity anchored by negative control cell line.
+- anti-EGFR — Extracellular epitope; Unknown; None validation (None); HCT 116 used as EGFR-negative control (CCLE log2[TPM+1]=0.0); specificity anchored by negative control cell line.
 
 **Observations**
 
@@ -141,13 +141,13 @@ EGFR surface accessibility is supported by an exceptionally strong and diverse b
 | NCI-H1930 lung cancer cells — clear surface EGFR by flow despite granular/diffuse IHC pattern | Established Cell Line | Moderate | 1 |
 | HCT 116 colorectal cancer cells — EGFR-negative control, minimal surface staining | Established Cell Line | Absent | 1 |
 
-#### Live Cell Flow — Direct Surface Accessibility
+#### Live Cell Flow — Direct Surface Accessibility · Surface Accessible
 
 *Permeabilization: Live Cell · expression: Endogenous*
 
 **Antibodies**
 
-- anti-EGFR — Extracellular epitope; None validation; Biotinylated anti-EGFR antibody conjugated to DNA-antibody constructs; EGFR surface accessibility demonstrated by macromolecular cargo binding on live MCF-7 cells.
+- anti-EGFR — Extracellular epitope; Unknown; None validation (None); Biotinylated anti-EGFR antibody conjugated to DNA-antibody constructs; EGFR surface accessibility demonstrated by macromolecular cargo binding on live MCF-7 cells.
 
 **Observations**
 
@@ -155,13 +155,13 @@ EGFR surface accessibility is supported by an exceptionally strong and diverse b
 |---|---|---|---|
 | MCF-7 breast cancer cells (live) — EGFR accessible on cell surface for large DNA origami nanoframe cargo via biotinylated anti-EGFR antibody | Established Cell Line | Moderate | 1 |
 
-#### Live Cell Flow — Direct Surface Accessibility
+#### Live Cell Flow — Direct Surface Accessibility · Surface Accessible
 
 *Permeabilization: Live Cell · expression: Endogenous*
 
 **Antibodies**
 
-- anti-EGFR 528mAb (528 · CSIRO Recombinant Protein Production and Purification Facility) — Extracellular epitope; None validation; Well-characterized anti-EGFR ECD monoclonal antibody (clone 528); used for surface binding and therapeutic engagement studies.
+- anti-EGFR 528mAb (528 · CSIRO Recombinant Protein Production and Purification Facility) — Extracellular epitope; Monoclonal; None validation (None); Well-characterized anti-EGFR ECD monoclonal antibody (clone 528); used for surface binding and therapeutic engagement studies.
 
 **Observations**
 
@@ -169,14 +169,14 @@ EGFR surface accessibility is supported by an exceptionally strong and diverse b
 |---|---|---|---|
 | A431 epidermoid carcinoma cells (live) — high EGFR surface binding by MNT1 targeting moiety | Established Cell Line | High | 1 |
 
-#### Live Cell Flow — Direct Surface Accessibility
+#### Live Cell Flow — Direct Surface Accessibility · Surface Accessible
 
 *Permeabilization: Live Cell · expression: Endogenous*
 
 **Antibodies**
 
-- anti-EGFR Affibody-FITC — Extracellular epitope; None validation
-- anti-EGFR antibody-Alexa Fluor 488 — Extracellular epitope; None validation
+- anti-EGFR Affibody-FITC — Extracellular epitope; Recombinant; None validation (None)
+- anti-EGFR antibody-Alexa Fluor 488 — Extracellular epitope; Unknown; None validation (None)
 
 **Observations**
 
@@ -186,14 +186,14 @@ EGFR surface accessibility is supported by an exceptionally strong and diverse b
 
 ### Immunofluorescence (2 methods)
 
-#### Nonpermeabilized IF — Supports Surface Localization
+#### Nonpermeabilized IF — Supports Surface Localization · Plasma Membrane Localized
 
 *Permeabilization: Nonpermeabilized · expression: Endogenous*
 
 **Antibodies**
 
-- anti-EGFR-Alexa Fluor647 (BioLegend · 352918) — Extracellular epitope; Moderate validation; Same clone used in paired flow cytometry and confocal IF; permeabilized vs. non-permeabilized design separates surface from intracellular pool.
-- anti-CD9-FITC (BioLegend · 312104) — Extracellular epitope; None validation
+- anti-EGFR-Alexa Fluor647 (BioLegend · 352918) — Extracellular epitope; Unknown; Moderate validation (Orthogonal Method); Same clone used in paired flow cytometry and confocal IF; permeabilized vs. non-permeabilized design separates surface from intracellular pool.
+- anti-CD9-FITC (BioLegend · 312104) — Extracellular epitope; Unknown; None validation (None)
 
 **Observations**
 
@@ -201,13 +201,13 @@ EGFR surface accessibility is supported by an exceptionally strong and diverse b
 |---|---|---|---|
 | GSC83 glioma cells (adherent), non-permeabilized — surface EGFR pool visualized | Established Cell Line | High | 2 |
 
-#### Permeabilized IF — Expression Only
+#### Permeabilized IF — Expression Only · Intracellular Pool
 
 *Permeabilization: Permeabilized · expression: Endogenous*
 
 **Antibodies**
 
-- anti-EGFR-Alexa Fluor647 (BioLegend · 352918) — Unknown epitope; Moderate validation; Paired permeabilized vs. non-permeabilized design; intracellular pool detected in permeabilized arm.
+- anti-EGFR-Alexa Fluor647 (BioLegend · 352918) — Unknown epitope; Unknown; Moderate validation (Orthogonal Method); Paired permeabilized vs. non-permeabilized design; intracellular pool detected in permeabilized arm.
 
 **Observations**
 
@@ -217,14 +217,14 @@ EGFR surface accessibility is supported by an exceptionally strong and diverse b
 
 ### Immunohistochemistry (3 methods)
 
-#### IHC Membranous — Supports Surface Localization
+#### IHC Membranous — Supports Surface Localization · Plasma Membrane Localized
 
 *Permeabilization: Fixed Unknown · expression: Endogenous*
 
 **Antibodies**
 
-- anti-EGFR — Unknown epitope; None validation
-- anti-phospho-EGFR — Intracellular epitope; None validation
+- anti-EGFR — Unknown epitope; Unknown; None validation (None)
+- anti-phospho-EGFR — Intracellular epitope; Unknown; None validation (None)
 
 **Observations**
 
@@ -233,13 +233,13 @@ EGFR surface accessibility is supported by an exceptionally strong and diverse b
 | Sinonasal inverted papilloma (SIP) primary tumor sections — EGFR positive plasma membrane staining in 31/32 cases (97%) | Primary Human Tissue | High | 1 |
 | Sinonasal inverted papilloma (SIP) primary tumor sections — phospho-EGFR positive plasma membrane staining in 22/32 cases (69%) | Primary Human Tissue | Moderate | 1 |
 
-#### IHC Membranous — Supports Surface Localization
+#### IHC Membranous — Supports Surface Localization · Plasma Membrane Localized
 
 *Permeabilization: Fixed Unknown · expression: Endogenous*
 
 **Antibodies**
 
-- anti-EGFR (Abcam · ab52894) — Unknown epitope; None validation
+- anti-EGFR (Abcam · ab52894) — Unknown epitope; Unknown; None validation (None)
 
 **Observations**
 
@@ -247,13 +247,13 @@ EGFR surface accessibility is supported by an exceptionally strong and diverse b
 |---|---|---|---|
 | EGFR-mutant NSCLC primary lung tissue — membranous staining scored on 1-3 scale | Primary Human Tissue | Moderate | 1 |
 
-#### IHC Membranous — Supports Surface Localization
+#### IHC Membranous — Supports Surface Localization · Plasma Membrane Localized
 
 *Permeabilization: Fixed Unknown · expression: Endogenous*
 
 **Antibodies**
 
-- anti-EGFR (Abcam · ab52894) — Unknown epitope; None validation; Used at IHC 1:100 in pancreatic cancer mouse model tissue sections.
+- anti-EGFR (Abcam · ab52894) — Unknown epitope; Unknown; None validation (None); Used at IHC 1:100 in pancreatic cancer mouse model tissue sections.
 
 **Observations**
 
@@ -263,7 +263,7 @@ EGFR surface accessibility is supported by an exceptionally strong and diverse b
 
 ### Surface mass spec (2 methods)
 
-#### Cell Surface Capture — Direct Surface Accessibility
+#### Cell Surface Capture — Direct Surface Accessibility · Plasma Membrane Localized
 
 *Permeabilization: Live Cell · expression: Endogenous*
 
@@ -273,7 +273,7 @@ EGFR surface accessibility is supported by an exceptionally strong and diverse b
 |---|---|---|---|
 | Polarized MDCK epithelial cells — EGFR distributed apical:basolateral 40:60 across both membrane faces | Established Cell Line | Moderate | 1 |
 
-#### Cell Surface Capture — Direct Surface Accessibility
+#### Cell Surface Capture — Direct Surface Accessibility · Plasma Membrane Localized
 
 *Permeabilization: Live Cell · expression: Endogenous*
 
@@ -285,13 +285,13 @@ EGFR surface accessibility is supported by an exceptionally strong and diverse b
 
 ### Surface biotinylation (6 methods)
 
-#### Surface Biotinylation — Direct Surface Accessibility
+#### Surface Biotinylation — Direct Surface Accessibility · Plasma Membrane Localized
 
 *Permeabilization: Live Cell · expression: Endogenous*
 
 **Antibodies**
 
-- anti-phosphotyrosine 4G10 (4G10) — Intracellular epitope; None validation; Pan-phosphotyrosine readout for ErbB kinases including EGFR in streptavidin-bead-captured biotinylated fraction.
+- anti-phosphotyrosine 4G10 (4G10) — Intracellular epitope; Monoclonal; None validation (None); Pan-phosphotyrosine readout for ErbB kinases including EGFR in streptavidin-bead-captured biotinylated fraction.
 
 **Observations**
 
@@ -299,13 +299,13 @@ EGFR surface accessibility is supported by an exceptionally strong and diverse b
 |---|---|---|---|
 | DCDMLs (ductal carcinoma-derived mammary lines) — EGFR detected in surface-biotinylated plasma membrane fraction via pan-phosphotyrosine WB | Established Cell Line | Moderate | 1 |
 
-#### Surface Biotinylation — Direct Surface Accessibility
+#### Surface Biotinylation — Direct Surface Accessibility · Plasma Membrane Localized
 
 *Permeabilization: Live Cell · expression: Endogenous*
 
 **Antibodies**
 
-- anti-EGFR — Unknown epitope; None validation
+- anti-EGFR — Unknown epitope; Unknown; None validation (None)
 
 **Observations**
 
@@ -314,7 +314,7 @@ EGFR surface accessibility is supported by an exceptionally strong and diverse b
 | NIKS (normal immortalized keratinocytes) expressing HPV16 E7 — EGFR modestly upregulated on cell surface vs. controls | Established Cell Line | Moderate | 2 |
 | SiHa (HPV-16+) and HeLa (HPV-18+) cells after E6/E7 knockdown — surface EGFR assessed by biotinylation + WB | Established Cell Line | Moderate | 2 |
 
-#### Surface Biotinylation — Direct Surface Accessibility
+#### Surface Biotinylation — Direct Surface Accessibility · Plasma Membrane Localized
 
 *Permeabilization: Live Cell · expression: Endogenous*
 
@@ -324,7 +324,7 @@ EGFR surface accessibility is supported by an exceptionally strong and diverse b
 |---|---|---|---|
 | Prostate cancer bone-metastatic cells — EGFR detected with 19 biotinylation sites by sBioSITe (biotinylation-site IP + MS) | Established Cell Line | High | 1 |
 
-#### Surface Biotinylation — Direct Surface Accessibility
+#### Surface Biotinylation — Direct Surface Accessibility · Plasma Membrane Localized
 
 *Permeabilization: Live Cell · expression: Endogenous*
 
@@ -334,13 +334,13 @@ EGFR surface accessibility is supported by an exceptionally strong and diverse b
 |---|---|---|---|
 | iPSC-derived sensory-like neurons from Familial Dysautonomia patients — EGFR significantly deregulated (p<0.01) in surface proteome vs. controls; identified among 1,508 surface proteins | IPSC Derived | Moderate | 2 |
 
-#### Surface Biotinylation — Direct Surface Accessibility
+#### Surface Biotinylation — Direct Surface Accessibility · Plasma Membrane Localized
 
 *Permeabilization: Live Cell · expression: Endogenous*
 
 **Antibodies**
 
-- anti-EGFR-HRP (Abcam) — Extracellular epitope; None validation; Used at 1:5000 for WB confirmation of EGFR in streptavidin pulldown; affibody-BirA* proximity labeling approach targeting EGFR ECD (Z_EGFR:1907.BirA*).
+- anti-EGFR-HRP (Abcam) — Extracellular epitope; Unknown; None validation (None); Used at 1:5000 for WB confirmation of EGFR in streptavidin pulldown; affibody-BirA* proximity labeling approach targeting EGFR ECD (Z_EGFR:1907.BirA*).
 
 **Observations**
 
@@ -348,13 +348,13 @@ EGFR surface accessibility is supported by an exceptionally strong and diverse b
 |---|---|---|---|
 | EGFR.Fc recombinant protein — EGFR ECD biotinylated by affibody-BirA* construct, confirmed by streptavidin-HRP WB and anti-EGFR-HRP WB | Unknown | Moderate | 2 |
 
-#### Surface Biotinylation — Direct Surface Accessibility
+#### Surface Biotinylation — Direct Surface Accessibility · Plasma Membrane Localized
 
 *Permeabilization: Live Cell · expression: Endogenous*
 
 **Antibodies**
 
-- anti-EGFR — Unknown epitope; None validation
+- anti-EGFR — Unknown epitope; Unknown; None validation (None)
 
 **Observations**
 
@@ -365,13 +365,13 @@ EGFR surface accessibility is supported by an exceptionally strong and diverse b
 
 ### Functional surface assay (1 method)
 
-#### Unknown — Direct Surface Accessibility
+#### Unknown — Direct Surface Accessibility · Surface Accessible
 
 *Permeabilization: Live Cell · expression: Endogenous*
 
 **Antibodies**
 
-- Panitumumab (Amgen) — Extracellular epitope; None validation; FDA-approved fully human anti-EGFR IgG2 (Vectibix); KD = 5x10^-11 M for EGFR ECD; prevents EGF binding.
+- Panitumumab (Amgen) — Extracellular epitope; Monoclonal; None validation (None); FDA-approved fully human anti-EGFR IgG2 (Vectibix); KD = 5x10^-11 M for EGFR ECD; prevents EGF binding.
 
 **Observations**
 
@@ -381,14 +381,14 @@ EGFR surface accessibility is supported by an exceptionally strong and diverse b
 
 ### Other (2 methods)
 
-#### Unknown — Weak Or Ambiguous
+#### Unknown — Weak Or Ambiguous · Surface Accessible
 
 *Permeabilization: Unknown · expression: Endogenous*
 
 **Antibodies**
 
-- Cetuximab Fab — Extracellular epitope; None validation; Crystal structure PDB:1YY9; Fab-EGFR ECD complex used for structural modeling of IgM bispecific antibodies.
-- Matuzumab Fab — Extracellular epitope; None validation; Crystal structure PDB:3C09; Fab-EGFR ECD complex used for structural modeling of IgM bispecific antibodies.
+- Cetuximab Fab — Extracellular epitope; Monoclonal; None validation (None); Crystal structure PDB:1YY9; Fab-EGFR ECD complex used for structural modeling of IgM bispecific antibodies.
+- Matuzumab Fab — Extracellular epitope; Monoclonal; None validation (None); Crystal structure PDB:3C09; Fab-EGFR ECD complex used for structural modeling of IgM bispecific antibodies.
 
 **Observations**
 
@@ -396,7 +396,7 @@ EGFR surface accessibility is supported by an exceptionally strong and diverse b
 |---|---|---|---|
 | EGFR extracellular domain — structural evidence for ECD surface accessibility from X-ray crystal structures of therapeutic antibody Fab-EGFR ECD complexes | Unknown | High | 1 |
 
-#### Whole Cell Proteomics — Weak Or Ambiguous
+#### Whole Cell Proteomics — Weak Or Ambiguous · Unclear
 
 *Permeabilization: Unknown · expression: Endogenous*
 
@@ -649,162 +649,243 @@ Anchor = patch-center residue; BSA = buried surface area (the contact footprint 
 
 - `a1_evi_01` · *Primary* · Supports · Surface Expression — Live-cell flow cytometry on intact (non-permeabilized) glioma cells demonstrates endogenous EGFR/EGFRvIII antigen expression on the cell surface. Three cell lines tested: U373 (wild-type EGFR, weakly positive), U373vIII (EGFRvIII overexpressing), and GSC83 (endogenously expressing EGFR/EGFRvIII). Surface signal detected using anti-EGFR-Alexa Fluor647 antibody (Biolegend 352918) on live cells before permeabilization, confirming plasma membrane localization. ([PMC13054837](https://www.ncbi.nlm.nih.gov/pmc/articles/PMC13054837/))
   - *assay*: Human · U373, U373vIII, GSC83 glioma cells · live · non-permeabilized
+  > "In order to glean some related insights, we used conventional flow cytometry to test EGFR antigen expression on the surfaces of individual glioma cells that were either weakly positive for the wild type EGFR (U373), or were engineered to overexpress oncogenic EGFRvIII (U373vIII) (Micallef et al. 2009 )."
 - `a1_evi_02` · *Primary* · Supports · Surface Expression — Quantitative surface flow cytometry result: 12% of U373 cells (low endogenous EGFR), 98% of U373vIII cells (EGFRvIII OE), and 99% of GSC83 cells (endogenous EGFR/EGFRvIII) are positive for EGFR/EGFRvIII on their surfaces. Confirms robust, uniform surface presentation of both wild-type EGFR and the constitutively active EGFRvIII mutant on intact live glioma cells. ([PMC13054837](https://www.ncbi.nlm.nih.gov/pmc/articles/PMC13054837/))
   - *assay*: Human · U373, U373vIII, GSC83 · live · non-permeabilized
+  > "The representative dot plots and histograms depicted in Figure 1A illustrate the expected (Spinelli et al. 2024 ; Magnus et al. 2014 ; Al‐Nedawi et al. 2010 ) levels of EGFR/EGFRvIII expression by these respective cell lines and suggest that while few (12%) U373 cells harbour low levels of this receptor on their surfaces, both U373vIII and GSC83 cells are highly and uniformly positive for EGFR/EGFRvIII (98% and 99%, respectively)."
 - `a1_evi_03` · *Primary* · Supports · Surface Expression — Flow cytometry analysis on intact (non-permeabilized) glioma cells confirms uniform EGFR antigen presence on cell surface in GSC83 and U373vIII (high expression) versus U373 (low expression). Paired confocal IF on permeabilized vs. intact cells distinguishes surface EGFR pool from intracellular pool; antibody Biolegend 352918 used for both modalities. ([PMC13054837](https://www.ncbi.nlm.nih.gov/pmc/articles/PMC13054837/))
   - *assay*: Human · GSC83, U373, U373vIII · live · non-permeabilized
+  > "(A) Flow cytometry analysis illustrating the uniform presence of EGFR antigen on the surface of glioma cells with high (GSC83 and U373VIII) and low (U373) levels of EGFR/EGFRvIII expression (right panel—dot plot; left panel—histogram); (B) Confocal imaging of immunofluorescent staining for EGFR antigen (red) and CD9 (green) in adherent GSC83 cells either intact or permeabilized before antibody exposure."
 - `a1_evi_04` · *Primary* · Supports · Surface Expression — Authors conclude that endogenously expressed EGFR/EGFRvIII in GSC83 glioma cells is detectable principally on the cell surface, evenly decorating the surface as shown by both flow cytometry and confocal imaging. Confirms PM as dominant surface compartment for endogenous EGFR in these cells. ([PMC13054837](https://www.ncbi.nlm.nih.gov/pmc/articles/PMC13054837/))
   - *assay*: Human · GSC83 · live · non-permeabilized
+  > "In isolated GSC83 cells the endogenously expressed EGFR/EGFRvIII (Spinelli et al. 2024 ) appears to be detectable principally on the cell surface, which is evenly decorated with the EGFR antigen, as revealed by flow cytometry and confocal imaging."
 - `a1_evi_05` · *Primary* · Supports · Methodological — Methodological detail for live-cell surface flow cytometry: anti-EGFR-Alexa Fluor647 antibody (Biolegend catalog 352918) used on trypsinized live cells in 12-well plates; BD FACS Canto analyzer with FlowJo v10.7.1. No permeabilization step; confirms surface-only detection. Antibody RRID/catalog: Biolegend 352918. ([PMC13054837](https://www.ncbi.nlm.nih.gov/pmc/articles/PMC13054837/))
   - *assay*: Human · glioma cell lines · live · non-permeabilized
+  > "Indicated cells were seeded in 12‐well plates for 24 h, then trypsinized and stained with anti‐EGFR‐Alexa Fluor647‐conjugated antibodies (Biolegend, 352918) and analysed using a BD FACS Canto with FlowJo software version 10.7.1."
 - `a1_evi_06` · *Primary* · Supports · Methodological — Confocal microscopy protocol details permeabilized vs. non-permeabilized cell comparison: cells fixed with 4% PFA, then either permeabilized (0.1% Triton X-100) or left intact. This paired design explicitly distinguishes surface EGFR from intracellular pool. ([PMC13054837](https://www.ncbi.nlm.nih.gov/pmc/articles/PMC13054837/))
   - *assay*: Human · glioma cell lines · fixed
+  > "For confocal microscopy, the adherent cells were fixed with 4% paraformaldehyde in phosphate buffered saline (PBS) for 10 min and, when indicated, permeabilized with 0.1% Triton X‐100 in PBS for 5 min."
 - `a1_evi_07` · *Primary* · Supports · Methodological — Antibody identifiers for confocal IF surface vs. intracellular comparison: anti-EGFR-Alexa Fluor647 (Biolegend 352918) and anti-CD9-FITC (Biolegend 312104) used on both permeabilized and non-permeabilized fixed cells. The EGFR antibody is the same clone used in flow cytometry experiments. ([PMC13054837](https://www.ncbi.nlm.nih.gov/pmc/articles/PMC13054837/))
   - *assay*: Human · glioma cell lines · fixed
+  > "Both permeabilized and non‐permeabilized cells were then incubated with primary antibodies: anti‐EGFR‐Alexa Fluor647 (Biolegend 352918) and anti‐CD9‐FITC (Biolegend 312104)."
 - `a1_evi_08` · *Primary* · Supports · Surface Expression — Immunofluorescence microscopy comparing non-permeabilized vs. permeabilized cells explicitly separates cell-surface EGFR pool from intracellular EGFR pool. Quantified from n=2 independent experiments with statistical comparison (p<0.01). This paired permeabilization design directly validates surface EGFR localization. ([PMC9038772](https://www.ncbi.nlm.nih.gov/pmc/articles/PMC9038772/))
   - *assay*: Human · unspecified · fixed · non-permeabilized
+  > "Representative immunofluorescence micrographs (A) show either cell surface EGFR in nonpermeabilized cells or intracellular EGFR in permeabilized cells as indicated and (B) quantified data from n = 2 independent experiments (mean ± SD; ∗∗, p < 0.01 using multiple t tests; Prism)."
 - `a1_evi_09` · *Primary* · Supports · Surface Expression — Representative flow cytometry histograms of surface EGFR on pancreatic cancer cell lines (BxPC-3 and others indicated), demonstrating variable surface EGFR expression levels across cell lines. Method is surface-binding flow cytometry. ([PMC13088391](https://www.ncbi.nlm.nih.gov/pmc/articles/PMC13088391/))
   - *assay*: Human · pancreatic cancer cell lines including BxPC-3 · live · non-permeabilized
+  > "( A ) Representative flow cytometry histograms of surface EGFR on the indicated pancreatic cancer cell lines."
 - `a1_evi_10` · *Primary* · Supports · Surface Expression — Cell-surface binding assessed by flow cytometry: bispecific antibody (targeting EGFR and NKG2D) binding to EGFR on BxPC-3 pancreatic cancer cells and to NKG2D on primary human NK cells. Demonstrates antibody-mediated engagement of EGFR at the cell surface on intact live cells. ([PMC13088391](https://www.ncbi.nlm.nih.gov/pmc/articles/PMC13088391/))
   - *assay*: Human · BxPC-3 · live · non-permeabilized
+  > "( D ) Cell-surface binding assessed by flow cytometry: binding to EGFR on BxPC-3 cells and to NKG2D on primary human NK cells."
 - `a1_evi_11` · *Primary* · Supports · Methodological — Surface staining by flow cytometry on non-permeabilized cells, with HCT 116 used as a negative control (CCLE log2[TPM+1]=0.0, minimal surface staining). Validates antibody specificity by negative-control cell line lacking EGFR transcript; demonstrates surface detection is EGFR-specific. ([PMC13096901](https://www.ncbi.nlm.nih.gov/pmc/articles/PMC13096901/))
   - *assay*: Human · HCT 116 (negative control) · live · non-permeabilized
+  > "HCT 116 served as a negative control and showed minimal surface staining, consistent with a CCLE value of log2[TPM+1] = 0.0."
 - `a1_evi_12` · *Primary* · Ambiguous · Contradictory — Methodological note: clinical IHC specimens often showed granular/diffuse staining pattern rather than sharp membranous staining, yet NCI-H1930 cells with similar IHC pattern still showed clear cell surface EGFR expression by flow cytometry. Highlights discordance between IHC membrane-pattern scoring and actual surface accessibility, and confirms flow cytometry as the more direct surface-accessibility assay. ([PMC13096901](https://www.ncbi.nlm.nih.gov/pmc/articles/PMC13096901/))
   - *assay*: Human · NCI-H1930 · unspecified · non-permeabilized
+  > "In addition, while clinical specimens often exhibited a granular and/or diffuse IHC pattern, rather than a sharp membranous staining, NCI–H1930 cells showed a similar pattern yet demonstrated cell surface expression by flow cytometry."
 - `a1_evi_13` · *Primary* · Supports · Surface Expression — Surface biotinylation on DCDMLs (ductal carcinoma-derived mammary lines): sulfo-NHS biotin applied to intact cells, plasma membrane proteins captured with streptavidin beads, Western blotted with 4G10 anti-phosphotyrosine antibody. This workflow assesses all ErbB kinases (including EGFR) simultaneously at the plasma membrane; demonstrates EGFR biotinylation-capture method on intact cell surfaces. ([PMC10337807](https://www.ncbi.nlm.nih.gov/pmc/articles/PMC10337807/))
   - *assay*: Human · DCDMLs (ductal carcinoma-derived mammary lines) · live · non-permeabilized
+  > "In order to simultaneously assess all possible ErbB kinases, we subjected DCDMLs to cell surface biotinylation, collected labeled plasma membrane proteins with streptavidin beads, and probed Western blots with the 4G10 antiphosphotyrosine antibody."
 - `a1_evi_14` · *Primary* · Supports · Surface Expression — Surface biotinylation + streptavidin pulldown + Western blot in HPV16 E7-expressing NIKS cells: biotinylated proteins recovered with streptavidin beads and assessed by WB show higher total levels of EGFR (and other targets) on the cell surface in Wt 16 E7-expressing NIKS versus controls. Direct protein-level evidence for EGFR at the plasma membrane of an endogenously expressing keratinocyte-derived cell line. ([PMC10958106](https://www.ncbi.nlm.nih.gov/pmc/articles/PMC10958106/))
   - *assay*: Human · NIKS (normal immortalized keratinocytes) expressing HPV16 E7 · live · non-permeabilized
+  > "Biotinylated proteins were recovered with streptavidin beads and analysed by Western blot; we observed higher total levels of the selected targets on the cell surface in Wt 16 E7-expressing NIKS cells ( Fig. 2 C)."
 - `a1_evi_15` · *Primary* · Supports · Surface Expression — Surface EGFR (measured by surface biotinylation panel) is modestly upregulated in HPV16 E7-expressing cells via an AP2-tyrosine binding motif-dependent mechanism. Confirms surface-accessible EGFR pool modulation in keratinocytes; corroborates prior biotinylation results from the same paper. ([PMC10958106](https://www.ncbi.nlm.nih.gov/pmc/articles/PMC10958106/))
   - *assay*: Human · NIKS · live · non-permeabilized
+  > "Remarkably, we observed several potential membrane proteins up- and down-regulated by the AP2-tyrosine binding motif in E7, including a modest upregulation of the surface EGFR ( Fig. 2 B), which is in agreement with our previous results [ 13 ]."
 - `a1_evi_16` · *Primary* · Supports · Methodological — Surface biotinylation methods detail: in HPV16 E7-expressing SiHa and HPV18 E7-expressing HeLa cells, plasma membrane proteins biotinylated after siRNA knockdown of E6/E7 oncoproteins; biotinylated proteins assessed by Western blot. Demonstrates surface biotinylation + WB method for EGFR in multiple HPV-positive human cancer cell lines. ([PMC10958106](https://www.ncbi.nlm.nih.gov/pmc/articles/PMC10958106/))
   - *assay*: Human · SiHa (HPV16+), HeLa (HPV18+) · live · non-permeabilized
+  > "To investigate this, we knocked down the expression of E6 and E7 oncoproteins from HPV16 E7-expressing SiHa and HPV18 E7-expressing HeLa cells; then plasma membrane proteins were biotinylated and labelled proteins were assessed by Western blotting."
 - `a1_evi_17` · *Primary* · Supports · Methodological — Surface biotinylation + WB methodology: cell surface proteins from SiHa (HPV-16-positive) and HeLa (HPV-18-positive) cells biotinylated and purified with streptavidin; cells then lysed and membrane protein expression quantified by Western blotting. Paired biotinylation + WB satisfies the _check_wb_pairing requirement. ([PMC10958106](https://www.ncbi.nlm.nih.gov/pmc/articles/PMC10958106/))
   - *assay*: Human · SiHa, HeLa · live · non-permeabilized
+  > "(B) Cell surface proteins from SiHa (HPV-16-positive) and HeLa (HPV-18-positive) cells were biotinylated and purified; then cells were lysed and membrane protein expression was assessed by Western blotting."
 - `a1_evi_18` · *Primary* · Supports · Surface Expression — Surface biotinylation (sBioSITe method) detects EGFR at the cell surface of prostate cancer bone-metastatic cells with 19 distinct biotinylation sites, confirming robust plasma membrane localization of EGFR. EGFR described as a known marker of prostate cancer bone dissemination; detection by biotinylation-site immunoprecipitation + MS. ([PMC10696767](https://www.ncbi.nlm.nih.gov/pmc/articles/PMC10696767/))
   - *assay*: Human · prostate cancer bone metastasis cells · live · non-permeabilized
+  > "Epidermal growth factor receptor (EGFR), a known marker of dissemination of prostate cancer to bones, was detected with 19 biotinylation sites [ 29 ] (Fig. 3 C)."
 - `a1_evi_19` · *Primary* · Supports · Methodological — sBioSITe (surface Biotinylation Site Identification Technology) developed as a sensitive, reliable method for enrichment of cell surface proteins by immunoprecipitation of biotinylated peptides. Method family: surface biotinylation + mass spectrometry; adapted from BioSITe approach. Used to detect and quantify EGFR and other cell surface proteins. ([PMC10696767](https://www.ncbi.nlm.nih.gov/pmc/articles/PMC10696767/))
   - *assay*: Human · prostate cancer cells · live · non-permeabilized
+  > "We report the development of surface Biotinylation Site Identification Technology (sBioSITe), a sensitive and reliable method for the enrichment of cell surface proteins by adapting the Biotinylation Site Identification Technology (BioSITe) for immunoprecipitation of biotinylated peptides [ 17 ]."
 - `a1_evi_20` · *Primary* · Supports · Surface Expression — Surface biotinylation (sulfo-NHS-SS-biotin) followed by mass spectrometry identifies 1,508 distinct surface proteins in sensory-like neuron cultures; EGFR is among the most deregulated hits (p<0.01) in FD patient vs. control neuronal plasma membrane proteomes. This is primary MS surfaceome evidence for EGFR at the neuronal cell surface. ([PMC11964241](https://www.ncbi.nlm.nih.gov/pmc/articles/PMC11964241/))
   - *assay*: Human · iPSC-derived sensory-like neurons (Familial Dysautonomia patients and controls) · live · non-permeabilized
+  > "Via biotinylation followed by mass spectrometry ( Fig 1A , 1B ), we identified 1,508 distinct proteins in sensory-like neuron cultures derived from FD patients and controls, consistently observed across three independent experiments (S2 Table)."
 - `a1_evi_21` · *Primary* · Supports · Surface Expression — EGFR identified as a significantly deregulated surface protein (p<0.01) in the plasma membrane proteome of Familial Dysautonomia patient-derived sensory-like neurons versus controls, detected by sulfo-NHS-SS-biotin surface labeling + mass spectrometry surfaceome assay. ([PMC11964241](https://www.ncbi.nlm.nih.gov/pmc/articles/PMC11964241/))
   - *assay*: Human · iPSC-derived sensory-like neurons · live · non-permeabilized
+  > "Among the most deregulated proteins (p < 0.01), we identified several neuronal candidates with a potential link to nerve pathology such as: calcium voltage-gated channel auxiliary subunit alpha2delta 3 (CACNA2D3, p < 0.01) [ 52 ], neuronal membrane glycoprotein M6-A (GPM6A, p < 0.001) [ 53 , 54 ], ATP-binding cassette subfamily A member 7 (ABCA7) [ 55 ], and epidermal growth factor receptor (EGFR, p < 0.01) [ 56 , 57 ]."
 - `a1_evi_22` · *Primary* · Supports · Methodological — Surface biotinylation protocol: cells washed with PBS and covered with sulfo-NHS-SS-biotin solution for 10 minutes at room temperature. This is a cleavable sulfo-NHS-SS chemistry ensuring selective labeling of extracellular-exposed lysines on intact cells. Paired with MS readout for surfaceome identification. ([PMC11964241](https://www.ncbi.nlm.nih.gov/pmc/articles/PMC11964241/))
   - *assay*: Human · sensory-like neurons · live · non-permeabilized
+  > "In brief, cells were washed with PBS and covered with sulfo-NHS-SS-biotin solution for ten minutes at room temperature."
 - `a1_evi_23` · *Primary* · Supports · Surface Expression — Quantitative surfaceome (SILAC + chemoproteomic surface capture on polarized MDCK epithelial cells) shows EGFR is relatively evenly distributed between apical and basolateral membrane faces with an apicobasal ratio of 40:60. EGFR is detected at both poles of the polarized epithelial plasma membrane, confirming surface localization in a relevant epithelial model. ([PMC9788433](https://www.ncbi.nlm.nih.gov/pmc/articles/PMC9788433/))
   - *assay*: Dog · MDCK (Madin-Darby Canine Kidney) · live · non-permeabilized
+  > "However, we show here that both the EGF precursor and its receptor EGFR are relatively evenly distributed across the polarized membrane (with an apicobasal ratio of 50:50 and 40:60, respectively)."
 - `a1_evi_24` · *Primary* · Supports · Methodological — Quantitative apicobasal surfaceome method: SILAC labeling + chemoproteomics (cell-surface capture chemistry) on filter-grown polarized MDCK cells. Two-domain biotinylation approach used to separately label apical and basolateral surfaces. Enables quantitative measurement of EGFR apicobasal surface distribution. ([PMC9788433](https://www.ncbi.nlm.nih.gov/pmc/articles/PMC9788433/))
   - *assay*: Dog · MDCK · live · non-permeabilized
+  > "In order to map the apicobasal surfaceome quantitatively, we used filter-grown Madin–Darby canine kidney (MDCK) cells as the best-established in vitro system for epithelial polarity [ 16 ] in combination with chemoproteomics and stable isotope labeling of amino acids in cell culture (SILAC) ( Figure 1 A) [ 17 , 18 ]."
 - `a1_evi_25` · *Primary* · Supports · Methodological — Surfaceome validation step: proteins identified by chemoproteomic capture filtered for plasma membrane evidence using UniProtKB and the Surfy surfaceome predictor. This validation/filtering strategy confirms that EGFR detections in the surfaceome dataset are restricted to genuine plasma membrane proteins. ([PMC9788433](https://www.ncbi.nlm.nih.gov/pmc/articles/PMC9788433/))
   - *assay*: Dog · MDCK · live · non-permeabilized
+  > "Finally, identified proteins were filtered for evidence for localization at the plasma membrane using UniprotKB and the Surfy surfaceome predictor [ 19 ] ( Figure S1A )."
 - `a1_evi_26` · *Secondary* · Supports · Methodological — Cell surface capture (CSC) method description: periodate oxidizes glycan termini on intact cells to generate aldehydes that react with hydrazide-coated beads via stable hydrazone linkages; captured glycoproteins released by PNGase F amidase. This is the foundational Wollscheid/Aebersold CSC chemistry used for surfaceome MS; EGFR is captured as an N-glycosylated surface protein. ([PMC12022999](https://www.ncbi.nlm.nih.gov/pmc/articles/PMC12022999/))
   - *assay*: Unspecified · live · non-permeabilized
+  > "The aldehydes readily react with hydrazide, to form stable hydrazone linkages. 75 The enrichment technique called cell surface capture (CSC) developed by Wollscheid, Aebersold, and co-workers, utilized this chemistry to capture cell surface proteins onto hydrazide beads. 76 The captured glycoproteins were washed extensively and released using PNGase F, an amidase that cleaves between the innermost GlcNAc and the N -glycan-modified asparagine."
 - `a1_evi_27` · *Primary* · Supports · Surface Expression — EGFR was identified in the surfaceome dataset for penile tissue and ranked in the top 84% of surface-protein expression across the tissue surfaceome panel. Evidence type: surfaceome MS (CSC or equivalent) with bioinformatic surfaceome annotation. ([PMC10377392](https://www.ncbi.nlm.nih.gov/pmc/articles/PMC10377392/))
   - *assay*: Human · unspecified · non-permeabilized
+  > "Of interest, the previously described epidermal growth factor receptor (EGFR) was in the top 84% of expression."
 - `a1_evi_28` · *Primary* · Supports · Surface Expression — IHC on sinonasal inverted papilloma (SIP) tumor sections shows positive EGFR plasma membrane staining in 31/32 cases (97%). Staining scored as moderate-to-strong membranous in >10% of tumor cells per validated scoring criterion (Menendez et al.). Confirms EGFR surface localization at the protein level in primary human tumor tissue. ([PMC12674851](https://www.ncbi.nlm.nih.gov/pmc/articles/PMC12674851/))
   - *assay*: Human · fixed · non-permeabilized
+  > "EGFR showed positive plasma membrane staining in 31 of 32 SIP cases (97%)."
 - `a1_evi_29` · *Primary* · Supports · Surface Expression — IHC on SIP tumor sections shows phospho-EGFR positive plasma membrane staining in 22/32 cases (69%), demonstrating that the activated (phosphorylated) form of EGFR is also present at the cell surface in the majority of cases. ([PMC12674851](https://www.ncbi.nlm.nih.gov/pmc/articles/PMC12674851/))
   - *assay*: Human · fixed · non-permeabilized
+  > "For p-EGFR, 22 of 32 SIP cases (69%) showed positive plasma membrane staining."
 - `a1_evi_30` · *Secondary* · Supports · Methodological — IHC scoring rubric for EGFR/p-EGFR membrane staining: positive requires moderate-to-strong membranous staining in >10% of tumor cells (Menendez et al. criterion). Rubric anchors the surface-detection methodology and defines the threshold for surface positivity in the SIP dataset. ([PMC12674851](https://www.ncbi.nlm.nih.gov/pmc/articles/PMC12674851/))
   - *assay*: Human · fixed · non-permeabilized
+  > "IHC for EGFR and p-EGFR was considered positive when moderate to strong membranous staining was observed in more than 10% of tumor cells; cases that did not meet this criterion were regarded as negative, based on Menendez M et al. [ 23 ]."
 - `a1_evi_31` · *Secondary* · Supports · Methodological — IHC membrane-staining scoring system for EGFR: weak membranous = 1, complete moderate membranous = 2, complete strong membranous = 3. Defines the surface-detection criterion used in EGFR/HER3 expression analysis of NSCLC tissue sections. ([PMC13028177](https://www.ncbi.nlm.nih.gov/pmc/articles/PMC13028177/))
   - *assay*: Human · fixed · non-permeabilized
+  > "Weak membranous staining was scored as 1, complete but moderate membrane staining was scored as 2, and complete and strong staining was scored as 3 ( Figure 1 and Figure 2 )."
 - `a1_evi_32` · *Primary* · Supports · Topology — Cryo-EM reconstruction of full-length EGFR receptor complex shows strongest density in the ectodomain region, consistent with a large, well-ordered extracellular domain. Weaker density in TM and intracellular domains. Confirms N-terminal ECD is extracellular and structurally accessible. ([PMC10948148](https://www.ncbi.nlm.nih.gov/pmc/articles/PMC10948148/))
   - *assay*: Human
+  > "As reported in all previously published cryo-EM reconstructions of other RTKs ( Diwanji et al., 2021 ; Huang et al., 2021 ; Nielsen et al., 2022 ; Li et al., 2019 ; Uchikawa et al., 2019 ; Krimmer et al., 2023 ), the cryo-EM density was the strongest in the ectodomain region of the receptor complex and the weakest within the transmembrane and intracellular domains ( Figure 1b–c , Figure 1—figure supplement 2a, f , Figure 1—figure supplement 3a, f )."
 - `a1_evi_33` · *Primary* · Supports · Topology — Cryo-EM and X-ray structures of liganded EGFR show ECD adopts characteristic 'heart-shaped' dimer arrangement (consistent across multiple solved structures). Establishes that domain I-IV ECD architecture is extracellular, forming dimerization interfaces accessible from outside the cell. ([PMC10948148](https://www.ncbi.nlm.nih.gov/pmc/articles/PMC10948148/))
   - *assay*: Human
+  > "In both structures, the ectodomains adopt a characteristic ‘heart-shaped’ arrangement observed in previously solved X-ray and cryo-EM structures of liganded HER receptor dimers ( Garrett et al., 2002 ; Liu et al., 2012 ; Ogiso et al., 2002 ; Diwanji et al., 2021 ; Bai et al., 2023 ; Freed et al., 2017 ; Huang et al., 2021 ; Lu et al., 2010 )."
 - `a1_evi_34` · *Primary* · Supports · Topology — Crystal structure of EGFR/EREG ectodomain complex reveals dimerization arm engaging HER2 via domain III interactions. Confirms that the ECD of EGFR presents accessible binding surfaces (including domain III) on the extracellular face, relevant for antibody/ligand engagement. ([PMC10948148](https://www.ncbi.nlm.nih.gov/pmc/articles/PMC10948148/))
   - *assay*: Human
+  > "The EGFR dimerization arm engages HER2 via non-canonical interactions with domain III that resemble those only observed in the crystal structure of the EGFR/EREG ectodomain complex ( Bai et al., 2023 ; Freed et al., 2017 )."
 - `a1_evi_35` · *Primary* · Supports · Topology — Crystal structure of full ectodomain EGFR in ternary complex with nanobody EgB4 and EGF ligand determined to 6.0 Å (PDB: 7OM4). Defines the spatial arrangement of all four ECD domains (I-IV) and confirms extracellular accessibility of the ligand-binding and antibody-binding surfaces on intact EGFR. ([PMC8887186](https://www.ncbi.nlm.nih.gov/pmc/articles/PMC8887186/))
   - *assay*: Human
+  > "S 2
+To study the mechanism by which the EgB4 nanobody interacts with EGFR, we then determined the structure of the full ectodomain EGFR-EgB4-EGF ternary complex from a crystal that diffracted to a maximum resolution of 6.0 Å (PDB: 7OM4; Table 1 and Fig."
 - `a1_evi_36` · *Primary* · Supports · Topology — EGFR ectodomain crystal structure (PDB: 3NJP) used as starting point for molecular dynamics simulations. Confirms existence of a well-resolved, free-standing ectodomain structure (untethered) that establishes the extracellular domain topology and boundary at residues corresponding to the signal-peptide-cleavage site through the TM helix. ([PMC11965450](https://www.ncbi.nlm.nih.gov/pmc/articles/PMC11965450/))
   - *assay*: Human
+  > "For the starting structures of our EGFR simulations (simulations 1, 2, 5, and 6), four frames were selected randomly from an equilibration simulation of an untethered EGFR ectodomain crystal structure (PDB ID: 3NJP); the double mutation C271A/C283A was introduced for simulations 5 and 6."
 - `a1_evi_37` · *Primary* · Supports · Topology — EGFR ECD crystal structure PDB:4UV7 superimposed on EGFR-Matuzumab complex (PDB: 3C09) for antibody binding calculations. Confirms availability of high-resolution ECD structural data and provides the geometric basis for ECD surface accessibility and antibody epitope calculations. ([PMC12827627](https://www.ncbi.nlm.nih.gov/pmc/articles/PMC12827627/))
   - *assay*: Human
+  > "The crystal structure of the extracellular domain of EGFR from PDB:4UV7 was superimposed on to the EGFR-Matuzumab complex (PDB: 3C09) to facilitate these calculations."
 - `a1_evi_38` · *Primary* · Supports · Surface Expression — Therapeutic engagement: X-ray crystal structures of Cetuximab Fab-EGFR ECD complex (PDB: 1YY9) and Matuzumab Fab-EGFR ECD complex (PDB: 3C09) used to model full IgM bispecific antibodies targeting EGFR. Confirms structural basis for cetuximab and matuzumab ECD engagement; supports surface accessibility of EGFR epitopes for therapeutic antibody binding. ([PMC12827627](https://www.ncbi.nlm.nih.gov/pmc/articles/PMC12827627/))
   - *assay*: Human
+  > "The full-length IgM models for Cetuximab and Matuzumab were built using structural data available in the PDB: i) the X-ray crystal structures of Cetuximab and Matuzumab Fab bound to the human EGFR extracellular domains (ECDs) (PDB: 1YY9 ( 56 ) and 3C09 ( 22 ), respectively), ii) the cryogenic electron microscopy (cryo-EM) structure of the human IgM Fc pentamer (PDB: 6KXS) ( 25 ), and iii) the crystal structure of mouse Cµ2 domain (PDB: 4JVU) ( 57 )."
 - `a1_evi_39` · *Primary* · Supports · Topology — EGFR full ECD structure obtained from cryo-EM structure PDB:7SYD used for modeling IgM and IgG antibody complexes with EGFR. Confirms cryo-EM structural basis for ECD-antibody engagement; ECD accessibility from extracellular face confirmed in therapeutic modeling context. ([PMC12827627](https://www.ncbi.nlm.nih.gov/pmc/articles/PMC12827627/))
   - *assay*: Human
+  > "To model the bound systems of IgM and IgG antibodies in complex with the EGFR, we obtained the complete EGFR ECD structure from a cryo-EM structure (PDB:7SYD) ( 62 )."
 - `a1_evi_40` · *Primary* · Supports · Surface Expression — EGFR surface engagement by DNA-antibody conjugates on live MCF-7 cells: streptavidin-decorated DNA origami nanoframes bind biotinylated anti-EGFR antibody conjugates, which then bind EGFR in the membrane of live MCF-7 cells. Demonstrates that EGFR is accessible at the surface of intact live breast cancer cells for large macromolecular cargo engagement. ([PMC11472258](https://www.ncbi.nlm.nih.gov/pmc/articles/PMC11472258/))
   - *assay*: Human · MCF-7 · live · non-permeabilized
+  > "To do so, the STV-decorated DON F were used to bind biotinylated DNA-antibody conjugates, which can bind to the EGF receptor (EGFR) in the membrane of live MCF-7 cells ( Figure 4 a)."
 - `a1_evi_41` · *Primary* · Supports · Surface Expression — Therapeutic engagement: Panitumumab (fully human anti-EGFR IgG2, FDA-approved) binds EGFR ECD with KD = 5×10^-11 M, 4 orders of magnitude higher affinity than EGF. Panitumumab prevents EGF binding and may induce EGFR clustering/activation at the cell surface when multivalently engaged. Confirms cell-surface ECD accessibility for approved therapeutic antibody. Program: Amgen/Vectibix, approved for metastatic colorectal cancer (KRAS wild-type). ([PMC11472258](https://www.ncbi.nlm.nih.gov/pmc/articles/PMC11472258/))
   - *assay*: Human · MCF-7 · live · non-permeabilized
+  > "Panitumumab ( K D = 5 × 10 –11 M) 39 binds EGFR with an affinity 4 orders of magnitude higher than EGF ( K D = 1.77 × 10 –7 M), thus preventing EGF binding. 40 Previous studies have shown that antibodies that bind EGFR laterally (not on the EGF binding site) can induce EGFR activation through clustering when attached to a surface. 41 We speculated that Panitumumab might also induce EGFR activation by receptor recruitment, even though it blocks the EGF binding site."
 - `a1_evi_42` · *Primary* · Supports · Surface Expression — Flow cytometry on live A431 cells to study binding of MNT1 (a targeting moiety) to EGFR receptors on the surface. A431 is a canonical EGFR-overexpressing epidermoid carcinoma cell line. Confirms surface EGFR accessibility in the well-established high-EGFR model cell line. ([PMC10818351](https://www.ncbi.nlm.nih.gov/pmc/articles/PMC10818351/))
   - *assay*: Human · A431 · live · non-permeabilized
+  > "Flow cytometry was used to study the ability of MNT 1 to bind to EGFR receptors on the surface of A431 cells."
 - `a1_evi_43` · *Primary* · Supports · Methodological — Antibody identifier for surface EGFR detection: mouse 528mAb (anti-EGFR) provided by Recombinant Protein Production and Purification Facility, CSIRO. This antibody (clone 528) is a well-characterized anti-EGFR ECD antibody used in surface-binding and therapeutic engagement studies. ([PMC10245379](https://www.ncbi.nlm.nih.gov/pmc/articles/PMC10245379/))
   - *assay*: Human
+  > "Anti-EGFR mouse 528mAb was provided by the fermentation team at the Recombinant Protein Production and Purification Facility, CSIRO.
+400 MHz NMR spectra were recorded on a Bruker Avance III Nanobay spectrometer."
 - `a1_evi_44` · *Primary* · Supports · Methodological — Antibody table: EGFR detected with Abcam ab52894, used at WB 1:5000 and IHC 1:100. Antibody vendor and catalog number provided; supports antibody specificity annotation for paired WB and IHC experiments in pancreatic cancer mouse models. ([PMC12892050](https://www.ncbi.nlm.nih.gov/pmc/articles/PMC12892050/))
   - *assay*: Mouse · fixed
+  > "Application/dilution ADAM17 Millipore Sigma AB19027 IF: 1:400 Amylase Millipore Sigma A8273 IHC 1:500 Amylase Santa Cruz SC-12821 ADM 1:2500 AKT Cell Signaling 4691 WB: 1:4000 CD45 Abcam Ab10558 IF: 1:400 CK19 Developmental Studies Hybridoma Bank Troma III IF 1:100 CK19 Abcam Ab133496 IHC 1:4000 ADM 1:5000 Cleaved caspase 3 Cell Signaling 9664 IHC 1:100 c-Jun Cell Signaling 9165 IHC: 1:100 E-cadherin Cell Signaling 3195 IHC: 1:100 IF 1:50 EGFR Abcam ab52894 WB 1:5000 IHC 1:100 ERK1/2 Cell Signaling 9102 WB: 15000 IHC"
 - `a1_evi_45` · *Primary* · Ambiguous · Surface Expression — EGFR-ligand shedding by pancreatic acinar cells via ADAM17 activates EGFR in a cell-autonomous manner. Genetic ablation of either EGFR or ADAM17 in pancreatic parenchymal cells protects mice from KRAS-driven acinar transdifferentiation. This shed-form/ectodomain shedding evidence implies active EGFR surface presence (ADAM17 substrate) and raises the risk of shed ECD confounding surface accessibility measurements. ([PMC12892050](https://www.ncbi.nlm.nih.gov/pmc/articles/PMC12892050/))
   - *assay*: Mouse
+  > "In our previous study, genetic ablation of either Egfr or Adam17 in pancreatic parenchymal cells protects mice from KRAS-driven acinar cell transdifferentiation and subsequent tumorigenesis, 11 supporting a cell autonomous mechanism where EGFR-ligand shedding from acinar cells activates EGFR in those same cells."
 - `a1_evi_46` · *Secondary* · Supports · Topology — Full-length EGFR (residues 1-1210, canonical isoform 1) and ECD (residues 25-645) cloned into CMV-FLAG expression vector. Establishes the precise ECD boundaries (25-645) used for phage display and biotinylation assays; confirms signal peptide is residues 1-24. ([PMC13010625](https://www.ncbi.nlm.nih.gov/pmc/articles/PMC13010625/))
   - *assay*: Human
+  > "The full-length EGFR (residues 1–1210) and its extracellular domain (residues 25–645) were cloned into a CMV-FLAG expression vector."
 - `a1_evi_47` · *Secondary* · Supports · Topology — EGFR ECD construct (residues 25-645) with C-terminal Avi tag generated for phage display and biotinylation. Confirms ECD boundaries (25-645) and that residue 24 is the signal peptide cleavage site. Avi-tagged ECD biotinylated by BirA enzyme for surface-capture experiments. ([PMC13010625](https://www.ncbi.nlm.nih.gov/pmc/articles/PMC13010625/))
   - *assay*: Human
+  > "To facilitate immobilization during phage display screening, an Avi tag (GLNDIFEAQKIEWHE) was fused to the C-terminus of the EGFR extracellular domain, generating the hEGFR(25–645)-Avi-CMV-FLAG construct."
 - `a1_evi_48` · *Primary* · Supports · Methodological — SPR (Biacore T200) confirms binding of Z_EGFR:1907.BirA* affibody construct to the EGFR extracellular domain, validating ECD accessibility and affibody specificity for surface proximity-labeling experiments. Confirms ECD-targeted engagement for biotinylation-based surface proteomics. ([PMC9890520](https://www.ncbi.nlm.nih.gov/pmc/articles/PMC9890520/))
   - *assay*: Human
+  > "The ability of Z EGFR:1907 .BirA* and Z HER2:243 .BirA* to bind to their targets (the extracellular domains of EGFR and HER2, respectively) was determined by SPR (Biacore T200; GE Healthcare Mississauga, ON, Canada)."
 - `a1_evi_49` · *Primary* · Supports · Methodological — BirA* proximity-labeling method: EGFR.Fc biotinylated by Affibody.BirA* construct (Z_EGFR:1907.BirA*) binding EGFR ECD; biotinylated proteins detected by streptavidin-HRP Western blot. Confirms ECD-targeted surface biotinylation approach with WB readout; satisfies _check_wb_pairing requirement. ([PMC9890520](https://www.ncbi.nlm.nih.gov/pmc/articles/PMC9890520/))
   - *assay*: Human
+  > "The level of the biotinylation of EGFR.Fc and HER2.Fc arising from exposing them to Affibody.BirA* constructs was monitored by eluting the biotinylated proteins bound to the protein G beads by boiling the beads in lithium dodecyl sulfate (LDS) sample buffer and performing Western blot on the recovered samples under nonreducing conditions using 1:2500 streptavidin-HRP."
 - `a1_evi_50` · *Primary* · Supports · Methodological — Anti-EGFR-HRP antibody (Abcam, 1:5000 dilution) used to confirm EGFR identity in streptavidin-bead pulldown Western blot. Antibody vendor and dilution specified. Paired WB validation confirms EGFR presence in biotinylated protein pool. ([PMC9890520](https://www.ncbi.nlm.nih.gov/pmc/articles/PMC9890520/))
   - *assay*: Human
+  > "The presence of EGFR and HER2 among the biotinylated proteins pulled down was confirmed by Western blot using 1:5000 anti-EGFR.HRP (Abcam) and anti-HER2.HRP (Novus Biologicals) conjugates."
 - `a1_evi_51` · *Primary* · Supports · Methodological — Flow cytometry optimization for EGFR-positive exosome detection: anti-EGFR Affibody-FITC and anti-EGFR antibody-Alexa Fluor 488 evaluated for optimal concentration and signal-to-noise for EGFR surface detection via flow cytometry. Parameters optimized: microbead count, antibody/affibody saturation concentration, fluorescent detector concentration. Documents surface EGFR flow cytometry methodology detail. ([PMC8584739](https://www.ncbi.nlm.nih.gov/pmc/articles/PMC8584739/))
   - *assay*: Human · EGFR-positive exosomes (microbead-captured) · unspecified · non-permeabilized
+  > "To maximize the immune-capture efficiency and detection sensitivity of EGFR-positive exosomes with flow cytometry, three parameters were evaluated: (A) the optimal number of microbeads required for flow cytometry testing, (B) the concentration of anti-EGFR Affibody and antibody needed to saturate the surface of microbeads, respectively, and (C) the optimal concentration of Affibody-FITC and antibody-Alexa Fluor 488 fluorescent detector required for a high signal-to-noise ratio when tested using a flow cytometer."
 - `a1_evi_52` · *Primary* · Supports · Surface Expression — EGFR detected in a cell-surface labeling study of GCPII interactome at LNCaP/PC3-PSMA cell membranes; EGFR forms a macromolecular complex with GCPII, ITGB1, filamin A, p130CAS, c-Src at the cell membrane. Confirms EGFR plasma membrane localization in prostate cancer cell lines via cell-surface labeling approach. ([PMC12749419](https://www.ncbi.nlm.nih.gov/pmc/articles/PMC12749419/))
   - *assay*: Human · LNCaP, PC3-PSMA · live · non-permeabilized
+  > "EGFR (epidermal growth factor receptor), the other constituent of the complex, and ITGA3 (integrin α3) were both detected in this study."
 - `a1_evi_53` · *Primary* · Supports · Surface Expression — A549 cell-surface labeling of EGFR interactome (biotinylation-based surfaceome detection) identifies EGFR as a key surface-resident signaling hub. Confirms EGFR plasma membrane localization in lung adenocarcinoma A549 cells via surface-labeling method. ([PMC12749419](https://www.ncbi.nlm.nih.gov/pmc/articles/PMC12749419/))
   - *assay*: Human · A549 · live · non-permeabilized
+  > "V. et al. as a key EGFR interactor, based on A549 cell–surface labeling of the EGFR interactome 20 ."
 - `a1_evi_54` · *Primary* · Supports · Methodological — Surface biotinylation + streptavidin-bead enrichment + Western blot methodology: after cell lysis, biotinylated proteins enriched on streptavidin beads and analyzed by WB. Paired WB step satisfies _check_wb_pairing requirement for surface_biotinylation assay. ([PMC12749419](https://www.ncbi.nlm.nih.gov/pmc/articles/PMC12749419/))
   - *assay*: Human · unspecified · live · non-permeabilized
+  > "Following cell lysis and protein enrichment on streptavidin beads, we performed Western blot analysis of the resulting enriched proteins."
 - `a1_evi_55` · *Primary* · Supports · Methodological — Surface biotinylation + streptavidin-bead enrichment + dual readout (Western blot and mass spectrometry): protein eluants analyzed by both WB and MS for quantitative surface proteomics. This paired WB + MS approach provides orthogonal validation of biotinylated surface protein identification. ([PMC12749419](https://www.ncbi.nlm.nih.gov/pmc/articles/PMC12749419/))
   - *assay*: Human · unspecified · live · non-permeabilized
+  > "Protein eluants after streptavidin-bead enrichment were analyzed by Western blotting and mass spectrometry."
 - `a2_evi_01` · *Primary* · Supports · Tissue Expression — EGFR protein shows positive plasma membrane staining in 97% (31/32) of sinonasal inverted papilloma (SIP) tumor cases, indicating high-frequency surface expression in this tumor type as detected by IHC. ([PMC12674851](https://www.ncbi.nlm.nih.gov/pmc/articles/PMC12674851/))
   - *assay*: Human · sinonasal inverted papilloma (SIP) tumor tissue · fixed · permeabilized
+  > "EGFR showed positive plasma membrane staining in 31 of 32 SIP cases (97%)."
 - `a2_evi_02` · *Primary* · Supports · Tissue Expression — Phosphorylated EGFR (p-EGFR) shows positive plasma membrane staining in 69% (22/32) of sinonasal inverted papilloma cases, indicating that activated/phosphorylated EGFR is present at the cell surface in the majority of SIP tumors. ([PMC12674851](https://www.ncbi.nlm.nih.gov/pmc/articles/PMC12674851/))
   - *assay*: Human · sinonasal inverted papilloma (SIP) tumor tissue · fixed · permeabilized
+  > "For p-EGFR, 22 of 32 SIP cases (69%) showed positive plasma membrane staining."
 - `a2_evi_03` · *Primary* · Supports · Tissue Expression — EGFR is identified as a known marker of prostate cancer dissemination to bone, detected with 19 biotinylation sites in a surface biotinylation-MS study, consistent with abundant cell-surface expression in bone-metastatic prostate cancer. ([PMC10696767](https://www.ncbi.nlm.nih.gov/pmc/articles/PMC10696767/))
   - *assay*: Human · prostate cancer bone metastasis model · live · non-permeabilized
+  > "Epidermal growth factor receptor (EGFR), a known marker of dissemination of prostate cancer to bones, was detected with 19 biotinylation sites [ 29 ] (Fig. 3 C)."
 - `a2_evi_04` · *Primary* · Supports · Tissue Expression — EGFR is expressed in pancreatic acinar cells and participates in a cell-autonomous signaling loop where EGFR-ligand shedding from acinar cells activates EGFR on those same cells, driving KRAS-induced acinar-to-ductal transdifferentiation and tumorigenesis. Genetic ablation of Egfr in pancreatic parenchymal cells protects from this process. ([PMC12892050](https://www.ncbi.nlm.nih.gov/pmc/articles/PMC12892050/))
   - *assay*: Mouse · pancreatic acinar cells
+  > "In our previous study, genetic ablation of either Egfr or Adam17 in pancreatic parenchymal cells protects mice from KRAS-driven acinar cell transdifferentiation and subsequent tumorigenesis, 11 supporting a cell autonomous mechanism where EGFR-ligand shedding from acinar cells activates EGFR in those same cells."
 - `a2_evi_05` · *Primary* · Supports · Tissue Expression — Human pancreas scRNA-seq data shows EGFR ligand expression across various pancreatic cell clusters, providing single-cell-level context for EGFR signaling in the human pancreatic microenvironment including acinar, ductal, and immune cell populations. ([PMC12892050](https://www.ncbi.nlm.nih.gov/pmc/articles/PMC12892050/))
   - *assay*: Human · human pancreas (multiple cell clusters)
+  > "( E ) Dot plot derived from human pancreas scRNA-seq data published by Loveless, et al 38 shows selected genes, ADAM17 , EGFR ligands, IL6R , and TNF , in various cell clusters."
 - `a2_evi_06` · *Secondary* · Supports · Tissue Expression — In KRAS-driven pancreatic tumorigenesis, EGFR ligand shedding from infiltrating macrophages (Csf1r+ cells) is proposed as a paracrine mechanism driving acinar cell transdifferentiation, indicating EGFR surface expression in pancreatic acinar cells is functionally engaged by macrophage-derived signals in the tumor microenvironment. ([PMC12892050](https://www.ncbi.nlm.nih.gov/pmc/articles/PMC12892050/))
   - *assay*: Mouse · pancreatic acinar cells / infiltrating macrophages
+  > "Subsequently, other studies have suggested that acinar cell transdifferentiation is dependent on signals from infiltrating macrophages. 29 , 32 , 33 Although it was suggested that EGFR ligand shedding from macrophages is a possible mechanism of this dependency, this was not demonstrated experimentally."
 - `a2_evi_07` · *Primary* · Supports · Tissue Expression — EGFR surface expression profiled across 85 PDX models spanning seven tumor types (GBM, HNSC, LUSC, LUAD, PAAD, COAD, OV) via N-glycoproteomic enrichment, providing a pan-cancer surface expression landscape in patient-derived xenografts. ([PMC12923961](https://www.ncbi.nlm.nih.gov/pmc/articles/PMC12923961/))
   - *assay*: Human · PDX models from GBM, HNSC, LUSC, LUAD, PAAD, COAD, OV · live · non-permeabilized
+  > "Here, we applied a hydrazide-based N -glycoproteomic enrichment method, N -glycocapture, 14 , 15 , 16 to profile 85 unique PDX models spanning seven tumor types (glioblastoma [GBM], HNSC, lung squamous carcinoma [LUSC], lung adenocarcinoma [LUAD], pancreatic adenocarcinoma [PAAD], colorectal adenocarcinoma [COAD], and high-grade serous ovarian carcinoma [OV] 14 ) and three distinct PDX engraftment sites (intracranial, subcutaneous, and intraperitoneal) ( Figure 1 A and Data S1 )."
 - `a2_evi_08` · *Primary* · Supports · Surface Expression — Flow cytometry confirms uniform EGFR/EGFRvIII antigen presence on the surface of glioma cells with high expression (GSC83 glioblastoma stem cells, U373VIII) and low expression (U373) levels. Confocal imaging of intact (non-permeabilized) GSC83 cells confirms EGFR surface localization co-localizing with CD9. ([PMC13054837](https://www.ncbi.nlm.nih.gov/pmc/articles/PMC13054837/))
   - *assay*: Human · GSC83 (glioblastoma stem cells), U373VIII, U373 · live · non-permeabilized
+  > "(A) Flow cytometry analysis illustrating the uniform presence of EGFR antigen on the surface of glioma cells with high (GSC83 and U373VIII) and low (U373) levels of EGFR/EGFRvIII expression (right panel—dot plot; left panel—histogram); (B) Confocal imaging of immunofluorescent staining for EGFR antigen (red) and CD9 (green) in adherent GSC83 cells either intact or permeabilized before antibody exposure."
 - `a2_evi_09` · *Primary* · Supports · Surface Expression — In glioblastoma stem cells (GSC83), endogenously expressed EGFR/EGFRvIII is detectable principally on the cell surface, with even decoration of the plasma membrane confirmed by both flow cytometry and confocal imaging of intact (non-permeabilized) cells. ([PMC13054837](https://www.ncbi.nlm.nih.gov/pmc/articles/PMC13054837/))
   - *assay*: Human · GSC83 glioblastoma stem cells · unspecified · non-permeabilized
+  > "In isolated GSC83 cells the endogenously expressed EGFR/EGFRvIII (Spinelli et al. 2024 ) appears to be detectable principally on the cell surface, which is evenly decorated with the EGFR antigen, as revealed by flow cytometry and confocal imaging."
 - `a2_evi_10` · *Primary* · Supports · Surface Expression — Flow cytometry demonstrates EGFR surface expression on pancreatic cancer cell lines (including BxPC-3 and others), establishing cell-surface presence of EGFR in pancreatic ductal adenocarcinoma-derived cell lines. ([PMC13088391](https://www.ncbi.nlm.nih.gov/pmc/articles/PMC13088391/))
   - *assay*: Human · BxPC-3 and other pancreatic cancer cell lines · live · non-permeabilized
+  > "( A ) Representative flow cytometry histograms of surface EGFR on the indicated pancreatic cancer cell lines."
 - `a2_evi_11` · *Primary* · Refutes · Surface Expression — HCT 116 colorectal cancer cells show minimal EGFR surface staining by flow cytometry, consistent with very low EGFR mRNA expression (CCLE log2[TPM+1] = 0.0), establishing HCT 116 as a negative-expression control for EGFR surface detection. ([PMC13096901](https://www.ncbi.nlm.nih.gov/pmc/articles/PMC13096901/))
   - *assay*: Human · HCT 116 colorectal cancer cells · live · non-permeabilized
+  > "HCT 116 served as a negative control and showed minimal surface staining, consistent with a CCLE value of log2[TPM+1] = 0.0."
 - `a2_evi_12` · *Primary* · Supports · Surface Expression — NCI-H1930 small cell lung cancer cells exhibit granular/diffuse IHC staining pattern in clinical specimens but demonstrate clear cell-surface EGFR expression by flow cytometry, indicating that IHC morphology does not always predict flow cytometry surface detectability for EGFR. ([PMC13096901](https://www.ncbi.nlm.nih.gov/pmc/articles/PMC13096901/))
   - *assay*: Human · NCI-H1930 small cell lung cancer cells · live · non-permeabilized
+  > "In addition, while clinical specimens often exhibited a granular and/or diffuse IHC pattern, rather than a sharp membranous staining, NCI–H1930 cells showed a similar pattern yet demonstrated cell surface expression by flow cytometry."
 - `a2_evi_13` · *Primary* · Supports · Surface Expression — In polarized MDCK epithelial cells, EGFR is relatively evenly distributed across the apical and basolateral plasma membrane faces, with an apicobasal ratio of approximately 40:60 (apical:basolateral). This near-uniform distribution across both membrane domains indicates that EGFR is accessible from both luminal and basolateral surfaces in polarized epithelium. ([PMC9788433](https://www.ncbi.nlm.nih.gov/pmc/articles/PMC9788433/))
   - *assay*: Dog · MDCK (Madin-Darby canine kidney) polarized epithelial cells · live · non-permeabilized
+  > "However, we show here that both the EGF precursor and its receptor EGFR are relatively evenly distributed across the polarized membrane (with an apicobasal ratio of 50:50 and 40:60, respectively)."
 - `a2_evi_14` · *Primary* · Supports · Surface Expression — In polarized epithelial cells, EGFR and MET show similar apical and basolateral abundances among receptor tyrosine kinases, in contrast to their modulatory interaction partners which show strong apicobasal polarization. This indicates EGFR is accessible from both faces of polarized epithelium without strong subdomain restriction. ([PMC9788433](https://www.ncbi.nlm.nih.gov/pmc/articles/PMC9788433/))
   - *assay*: Dog · MDCK polarized epithelial cells · live · non-permeabilized
+  > "Whereas various receptor tyrosine kinases (RTKs) that mediate major cellular functions such as growth signaling (e.g., EGFR and MET) showed rather similar apical and basolateral abundances ( Figure 2 C), many of their modulatory interaction partners were found to be strongly polarized."
 - `a2_evi_15` · *Primary* · Supports · Tissue Expression — EGFR inhibitor (gefitinib) treatment remodels the surfaceome of EGFR-mutant lung adenocarcinoma (LUAD) cell lines, demonstrating that EGFR signaling status modulates the overall surface protein landscape in LUAD, with potential consequences for combination targeting strategies. ([PMC12765945](https://www.ncbi.nlm.nih.gov/pmc/articles/PMC12765945/))
   - *assay*: Human · EGFR-mutant LUAD cell lines · live · non-permeabilized
+  > "We aimed to assess the extent to which EGFR inhibitors remodel the surfaceome in LUADs and whether such remodeling provides an opportunity for combination therapy."
 - `a2_evi_16` · *Primary* · Ambiguous · Tissue Expression — EGFR-mutant LUAD cell lines (HCC827, PC9, H1650) in a drug-tolerant persister state following 3-week gefitinib or osimertinib treatment represent a distinct cell state with potentially altered EGFR surface dynamics compared to drug-naive LUAD cells. ([PMC12765945](https://www.ncbi.nlm.nih.gov/pmc/articles/PMC12765945/))
   - *assay*: Human · HCC827, PC9, H1650 EGFR-mutant LUAD cell lines (drug-tolerant persister state) · live · non-permeabilized
+  > "To generate drug-tolerant persister cells, EGFR mutant LUAD cell lines HCC827, PC9, and H1650 were treated with 100 nM of gefitinib or osimertinib for 3 weeks."
 - `a2_evi_17` · *Primary* · Supports · Surface Expression — Surface biotinylation followed by mass spectrometry identifies 1,508 distinct surface proteins in sensory-like neurons (including EGFR) across FD patients and healthy controls, revealing disease-state-associated changes in the neuronal surface proteome including EGFR. ([PMC11964241](https://www.ncbi.nlm.nih.gov/pmc/articles/PMC11964241/))
   - *assay*: Human · iPSC-derived sensory-like neurons from Familial Dysautonomia (FD) patients and healthy controls · live · non-permeabilized
+  > "Via biotinylation followed by mass spectrometry ( Fig 1A , 1B ), we identified 1,508 distinct proteins in sensory-like neuron cultures derived from FD patients and controls, consistently observed across three independent experiments (S2 Table)."
 - `a2_evi_18` · *Primary* · Supports · Tissue Expression — EGFR is among the most significantly deregulated surface proteins (p < 0.01) in iPSC-derived sensory-like neurons from Familial Dysautonomia (FD) patients compared to healthy controls, as identified by surface biotinylation-MS, suggesting disease-state-dependent changes in neuronal surface EGFR levels. ([PMC11964241](https://www.ncbi.nlm.nih.gov/pmc/articles/PMC11964241/))
   - *assay*: Human · iPSC-derived sensory-like neurons (FD patients) · live · non-permeabilized
+  > "Among the most deregulated proteins (p < 0.01), we identified several neuronal candidates with a potential link to nerve pathology such as: calcium voltage-gated channel auxiliary subunit alpha2delta 3 (CACNA2D3, p < 0.01) [ 52 ], neuronal membrane glycoprotein M6-A (GPM6A, p < 0.001) [ 53 , 54 ], ATP-binding cassette subfamily A member 7 (ABCA7) [ 55 ], and epidermal growth factor receptor (EGFR, p < 0.01) [ 56 , 57 ]."
 - `a2_evi_19` · *Primary* · Ambiguous · Tissue Expression — EGFR mRNA expression was assessed by qPCR in iPSC-derived sensory-like neurons from FD patients versus healthy controls (n=4 differentiations each), to determine whether surface protein deregulation detected by biotinylation-MS is mirrored at the transcriptional level. ([PMC11964241](https://www.ncbi.nlm.nih.gov/pmc/articles/PMC11964241/))
   - *assay*: Human · iPSC-derived sensory-like neurons (FD patients vs. healthy controls)
+  > "To assess whether the observed differences in the neuronal plasma membrane were mirrored at the gene expression level, we conducted qPCR analysis for CACNA2D3, GPM6A, EGFR, and ABCA7, using samples from four separately prepared differentiations for FD and healthy control sensory-like neurons, respectively."
 - `a2_evi_20` · *Secondary* · Supports · Tissue Expression — EGFR mRNA expression ranks in the top 84% among genes expressed in glandular tissue (normal pooled context), indicating moderate-to-high baseline EGFR expression in normal glandular epithelium. ([PMC10377392](https://www.ncbi.nlm.nih.gov/pmc/articles/PMC10377392/))
   - *assay*: Human · normal glandular tissue
+  > "Of interest, the previously described epidermal growth factor receptor (EGFR) was in the top 84% of expression."
 - `a2_evi_21` · *Secondary* · Supports · Tissue Expression — In HPV-altered cellular states (HPV-associated lesions), EGFR and downstream signaling pathways (PI3K/Akt, mTOR, JAK/STAT) may be aberrantly activated, suggesting disease-state-induced upregulation or hyperactivation of surface EGFR in HPV-associated epithelial pathology. ([PMC10377392](https://www.ncbi.nlm.nih.gov/pmc/articles/PMC10377392/))
   - *assay*: Human · HPV-altered epithelial cells
+  > "Among this HPV-altered cellular state, various receptors and their downstream effectors may also be aberrantly activated, such as the EGFR and PI3K/Akt, mTOR, or JAK/STAT signaling pathways [ 50 ]."
 - `a2_evi_22` · *Secondary* · Supports · Tissue Expression — Skin rash is a well-known on-target, off-tumor adverse event of EGFR inhibition, implying constitutive EGFR surface expression in normal keratinocytes/skin epithelium that is pharmacologically accessible in patients receiving EGFR inhibitors. ([PMC13196744](https://www.ncbi.nlm.nih.gov/pmc/articles/PMC13196744/))
   - *assay*: Human · skin keratinocytes (normal)
+  > "Inhibitors of receptor tyrosine kinases also show on-target, off-tumor adverse events such as skin rash upon inhibition of epidermal growth factor receptor (EGFR), hypertension upon inhibition of vascular endothelial growth factor receptor, and hyperphosphatemia upon inhibition of fibroblast growth factor receptor (FGFR) ( 3 )."
 - `a2_evi_23` · *Secondary* · Supports · Tissue Expression — EGFR is proposed as a surface marker for subpopulation stratification in small cell lung cancer (SCLC), used alongside PTGS2/NRG1 in a planned flow cytometry-based approach to filter SCLC subpopulations, indicating heterogeneous EGFR surface expression within SCLC tumors. ([PMC8171402](https://www.ncbi.nlm.nih.gov/pmc/articles/PMC8171402/))
   - *assay*: Human · small cell lung cancer (SCLC) cells · live · non-permeabilized
+  > "In our future work, we are planning to filter out the subpopulation of SCLCs by flow cytometry with surface markers PTGS2/NRG1/EGFR."
 - `a2_evi_24` · *Secondary* · Supports · Surface Expression — EGF-induced EGFR internalization and lysosomal degradation is a well-characterized ligand-dependent mechanism that reduces cell-surface EGFR levels. Baseline: surface EGFR on unstimulated cells. Modulating state: EGF ligand binding. Change: internalization and lysosomal degradation. Accessibility implication: surface EGFR is reduced following EGF stimulation unless lysosomal function is blocked (e.g., by chloroquine). ([PMC12702325](https://www.ncbi.nlm.nih.gov/pmc/articles/PMC12702325/))
   - *assay*: Unspecified · unspecified (schematic context) · non-permeabilized
+  > "A , Schematic of epidermal growth factor (EGF)-induced epidermal growth factor receptor (EGFR) internalization and lysosomal degradation, with or without inhibition of lysosomal function by chloroquine."
 
 ## Appendix · Downloads & reproduction
 

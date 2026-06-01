@@ -473,7 +473,7 @@ function md(rec, structureData, sequences, afdbEntry) {
     lines.push("");
     for (const m of fmethods) {
       lines.push(
-        `#### ${prettyEnum(m.method_subclass)} — ${prettyEnum(m.accessibility_relevance)}`,
+        `#### ${prettyEnum(m.method_subclass)} — ${prettyEnum(m.accessibility_relevance)}${m.surface_claim_type ? ` · ${prettyEnum(m.surface_claim_type)}` : ""}`,
       );
       lines.push("");
       lines.push(
@@ -488,7 +488,7 @@ function md(rec, structureData, sequences, afdbEntry) {
             .filter(Boolean)
             .join(" · ");
           lines.push(
-            `- ${ab.name}${meta ? ` (${meta})` : ""} — ${prettyEnum(ab.antibody_epitope_region)} epitope; ${prettyEnum(ab.validation_strength)} validation${ab.cross_reactivity_notes ? `; ${ab.cross_reactivity_notes}` : ""}`,
+            `- ${ab.name}${meta ? ` (${meta})` : ""} — ${prettyEnum(ab.antibody_epitope_region)} epitope; ${prettyEnum(ab.monoclonal_or_polyclonal)}; ${prettyEnum(ab.validation_strength)} validation${ab.validation_strategy ? ` (${prettyEnum(ab.validation_strategy)})` : ""}${ab.cross_reactivity_notes ? `; ${ab.cross_reactivity_notes}` : ""}`,
           );
         }
         lines.push("");
@@ -946,8 +946,10 @@ function md(rec, structureData, sequences, afdbEntry) {
         .join(" · ");
       if (acBits) lines.push(`  - *assay*: ${acBits}`);
     }
-    if (ev.spans?.[0]?.text) {
-      lines.push(`  > "${ev.spans[0].text}"`);
+    // The schema field is `quote` (legacy records used `text`).
+    const evQuote = ev.spans?.[0]?.quote ?? ev.spans?.[0]?.text;
+    if (evQuote) {
+      lines.push(`  > "${evQuote}"`);
     }
   }
   lines.push("");
@@ -969,21 +971,23 @@ function md(rec, structureData, sequences, afdbEntry) {
   lines.push(`- UniProt: [https://www.uniprot.org/uniprotkb/${g.uniprot_acc}](https://www.uniprot.org/uniprotkb/${g.uniprot_acc})`);
   lines.push("");
 
-  // AlphaFold model downloads — pulled from the same prediction-API
-  // response the canonical sequence came from. Absent for no-model
-  // proteins (e.g. megalin/LRP2), in which case this block is skipped.
-  if (afdbEntry && (afdbEntry.cifUrl || afdbEntry.pdbUrl)) {
+  // AlphaFold model downloads — prefer the URLs embedded in the record
+  // (structure.model_{cif,pdb,pae}_url), falling back to the live
+  // prediction-API response. Absent for no-model proteins (e.g.
+  // megalin/LRP2), in which case this block is skipped.
+  const cifUrl = s.model_cif_url ?? afdbEntry?.cifUrl;
+  const pdbUrl = s.model_pdb_url ?? afdbEntry?.pdbUrl;
+  const paeUrl = s.model_pae_url ?? afdbEntry?.paeDocUrl;
+  if (cifUrl || pdbUrl) {
     lines.push("**AlphaFold model downloads**");
     lines.push("");
-    if (afdbEntry.cifUrl)
-      lines.push(`- mmCIF model: [${afdbEntry.cifUrl}](${afdbEntry.cifUrl})`);
-    if (afdbEntry.pdbUrl)
-      lines.push(`- PDB model: [${afdbEntry.pdbUrl}](${afdbEntry.pdbUrl})`);
-    if (afdbEntry.paeDocUrl)
+    if (cifUrl) lines.push(`- mmCIF model: [${cifUrl}](${cifUrl})`);
+    if (pdbUrl) lines.push(`- PDB model: [${pdbUrl}](${pdbUrl})`);
+    if (paeUrl)
       lines.push(
-        `- PAE (predicted aligned error) JSON: [${afdbEntry.paeDocUrl}](${afdbEntry.paeDocUrl})`,
+        `- PAE (predicted aligned error) JSON: [${paeUrl}](${paeUrl})`,
       );
-    const ver = afdbEntry.latestVersion ?? afdbEntry.modelCreatedDate;
+    const ver = afdbEntry?.latestVersion ?? afdbEntry?.modelCreatedDate;
     if (ver != null) lines.push(`- AFDB model version: ${ver}`);
     lines.push("");
   }
