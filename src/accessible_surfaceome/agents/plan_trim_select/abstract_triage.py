@@ -604,7 +604,7 @@ def apply_triage_outcomes(
             )
         elif decision == "worth_fetching":
             result = fetched.get(o.paper_id)
-            if isinstance(result, list):
+            if isinstance(result, list) and result:
                 for d in result:
                     add_to_pool_fn(d, pool, by_source)
                 actions.append(
@@ -616,7 +616,15 @@ def apply_triage_outcomes(
                     )
                 )
             else:
-                # Fetch failed — fall back to abstract preview clip(s).
+                # Fetch failed OR produced zero body clips (e.g. every
+                # sentence failed the substring check) — fall back to the
+                # abstract preview so the paper isn't silently dropped.
+                if isinstance(result, Exception):
+                    fetch_error = f"{type(result).__name__}: {result}"
+                elif isinstance(result, list):
+                    fetch_error = "fetched body yielded zero clips"
+                else:
+                    fetch_error = "unknown fetch result"
                 clips = _abstract_clips(paper)
                 for clip in clips:
                     add_to_pool_fn(clip, pool, by_source)
@@ -626,11 +634,7 @@ def apply_triage_outcomes(
                         decision="worth_fetching",
                         drafts_added=len(clips),
                         fetched_body=False,
-                        fetch_error=(
-                            f"{type(result).__name__}: {result}"
-                            if isinstance(result, Exception)
-                            else "unknown fetch result"
-                        ),
+                        fetch_error=fetch_error,
                         fell_back_to_abstract=len(clips) > 0,
                     )
                 )
