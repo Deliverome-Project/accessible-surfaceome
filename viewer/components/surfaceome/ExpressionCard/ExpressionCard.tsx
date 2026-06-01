@@ -28,8 +28,28 @@ function tissueLevelTone(v: TissueLevel) {
  * Expression tab map cleanly to its chip category, while the Biology
  * tab keeps localization / anatomical-accessibility / modulation.
  */
+// Disease-context display order: normal first (the on-target / off-tumor
+// toxicity baseline), then the disease reads. Lets the reader see each
+// organ's normal-tissue level above its tumor level.
+const DISEASE_CONTEXT_RANK: Record<string, number> = {
+  normal: 0,
+  tumor_adjacent: 1,
+  tumor: 2,
+  other_disease: 3,
+  mixed: 4,
+  unknown: 5,
+};
+
 export function ExpressionCard({ rec, n }: Props) {
   const bc = rec.biological_context;
+  // Normal-first: the `normal`-tissue rows (the on-target / off-tumor
+  // toxicity baseline) sort to the top, then tumor / disease reads. A
+  // stable sort keeps each context block in its original tissue order.
+  const tissuesOrdered = [...bc.tissues].sort(
+    (a, b) =>
+      (DISEASE_CONTEXT_RANK[a.disease_context] ?? 9) -
+      (DISEASE_CONTEXT_RANK[b.disease_context] ?? 9),
+  );
   return (
     <SectionCard
       n={n}
@@ -56,7 +76,7 @@ export function ExpressionCard({ rec, n }: Props) {
               </tr>
             </thead>
             <tbody>
-              {bc.tissues.map((t, i) => (
+              {tissuesOrdered.map((t, i) => (
                 <tr key={i}>
                   <td>{t.tissue}</td>
                   <td>

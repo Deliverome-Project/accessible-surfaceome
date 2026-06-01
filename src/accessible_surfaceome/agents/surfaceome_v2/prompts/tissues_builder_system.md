@@ -69,32 +69,34 @@ ONE fenced ```json block containing a JSON ARRAY. Empty `[]` is fine.
 If three claims from three different papers all report `cerebellum` as
 `high` in normal tissue, emit ONE row with three `cited_evidence_ids`.
 
-The same tissue can appear twice with different `disease_context` (e.g.
-one row for kidney/normal, another for kidney/tumor) — but ONLY when the
-two reads differ in level; see "Disease-context rows" below.
+The same tissue can appear multiple times with different `disease_context`
+(e.g. one row for kidney/normal, another for kidney/tumor) — emit every
+read the ledger supports; see "Disease-context rows" below.
 
 When sources disagree about presence level for the same
 (tissue, disease_context), use `present="mixed"` and note both reads in
 `cited_evidence_ids`. Don't pick a winner.
 
-## Disease-context rows — emit only when they DIFFER from normal
+## Disease-context rows — emit the normal AND the disease read
 
-A `disease_context ∈ {tumor, tumor_adjacent, other_disease}` row is
-informative only when its surface level DIFFERS from the SAME tissue's
-`normal` read — that up/down differential is the whole point (it's what
-separates an on-tumor target from a normal-tissue liability). A disease
-row that merely restates the normal level is noise. Gate the disease
-rows on it:
+For each tissue, emit a separate row for every `disease_context` the
+ledger supports — keep the `normal` row (the on-target / off-tumor
+toxicity baseline) AND any `tumor` / `tumor_adjacent` / `other_disease`
+row, **even when their surface levels are identical**. Seeing the normal
+level and the tumor level side by side is the point: a reader judging a
+normal-tissue toxicity liability against an on-tumor target wants both
+explicitly. Do NOT drop a disease row just because it restates the
+normal level.
 
-- Disease level **equals** the paired normal level for that tissue (e.g.
-  kidney/normal `high` AND kidney/tumor `high`) → emit ONLY the `normal`
-  row; DROP the redundant disease row.
-- Disease level **differs** from the paired normal (up, down, or
-  normal `absent` ⇄ disease present) → emit BOTH rows; the difference is
-  the signal worth surfacing.
-- No `normal` read exists for that tissue to compare against → keep the
-  disease row (it cannot be a normal-duplicate; it's the only read for
-  that tissue).
+- `normal` read present → always emit it (positive OR negative).
+- `tumor` / `tumor_adjacent` / `other_disease` read present → emit it
+  too, whether or not it differs from the normal level. When it DOES
+  differ (up, down, or normal `absent` ⇄ disease present), that
+  differential is the headline signal — but the matching case is still
+  worth showing.
+
+(The downstream viewer orders `normal` before the disease rows for each
+tissue, so you don't need to order them here.)
 
 This gate is ONLY on disease-context rows. Keep every
 `disease_context=normal` row per the tox-risk-organ rule above — those
