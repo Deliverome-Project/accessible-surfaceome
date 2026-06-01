@@ -218,8 +218,28 @@ const DDF_KEYS = [
   "has_shed_form",
   "has_secreted_form",
   "has_epitope_masking",
+  "has_restricted_subdomain",
   "n_term_extracellular",
   "c_term_extracellular",
+  "tumor_associated",
+  "induction_trigger",
+  "has_live_cell_surface_evidence",
+];
+
+// Bin an ECD %-identity into a coarse band. Keep in sync with
+// viewer/lib/deep-dive-fields.ts:ecdBand. `null` (no ortholog/paralog in
+// Compara) → "none".
+function ecdBand(pct, hi, mid) {
+  if (pct == null) return "none";
+  if (pct >= hi) return "high";
+  if (pct >= mid) return "moderate";
+  return "low";
+}
+
+const ECD_BAND_SOURCES = [
+  ["cyno_ortholog_ecd", "cyno_ortholog_ecd_pct_identity", 90, 70],
+  ["mouse_ortholog_ecd", "mouse_ortholog_ecd_pct_identity", 90, 70],
+  ["max_paralog_ecd", "max_paralog_ecd_pct_identity", 70, 40],
 ];
 
 function projectDeepDiveFilters(annotationJson) {
@@ -237,6 +257,14 @@ function projectDeepDiveFilters(annotationJson) {
   for (const k of DDF_KEYS) {
     if (f[k] !== undefined && f[k] !== null) {
       out[k] = f[k];
+      any = true;
+    }
+  }
+  // Derived ECD bands — the numeric source is present (number or null) when
+  // the record carries it; "none" is a real facet (no ortholog/paralog).
+  for (const [key, src, hi, mid] of ECD_BAND_SOURCES) {
+    if (src in f) {
+      out[key] = ecdBand(f[src], hi, mid);
       any = true;
     }
   }
@@ -321,14 +349,26 @@ async function handleCatalog(env, request) {
   // `/v1/genes/{symbol}` lookup logic. surface_annotation grows
   // slowly (~6k rows today, all deep-dived genes), so the subquery
   // is cheap.
+  // uniprot_acc is COALESCEd onto the gene_identifier_public stable-ID
+  // cache (resolver canonical) first, then candidate_universe_public's own
+  // value. This (a) corrects the handful of candidates where
+  // candidate_universe picked a non-canonical Swiss-Prot entry
+  // (multi_xref_canonical_pick_disagrees — GNAS, MYO18A, NRXN2, TRA, TRB),
+  // and (b) fills uniprot for non-candidate rows (n_sources_surface = 0),
+  // which candidate_universe leaves NULL by design. The SURFACE-Bind join
+  // below deliberately stays on u.uniprot_acc — that's the key SURFACE-Bind
+  // was scored against.
   const enrichedRows = await env.DB.prepare(
-    `SELECT u.gene_symbol, u.uniprot_acc, u.n_sources_surface,
+    `SELECT u.gene_symbol,
+            COALESCE(gi.uniprot_acc, u.uniprot_acc) AS uniprot_acc,
+            u.n_sources_surface,
             u.uniprot_surface_flag, u.go_surface_flag, u.surfy_surface_flag,
             u.cspa_surface_flag, u.hpa_surface_flag,
             sb.n_sites AS sb_n_sites,
             sa.annotation_json AS sa_annotation_json,
             CASE WHEN sa.gene_symbol IS NOT NULL THEN 1 ELSE 0 END AS has_deep_dive
        FROM candidate_universe_public u
+       LEFT JOIN gene_identifier_public gi ON gi.hgnc_symbol = u.gene_symbol
        LEFT JOIN surface_bind_protein sb ON sb.uniprot_acc = u.uniprot_acc
        LEFT JOIN (
          SELECT gene_symbol, annotation_json
@@ -446,8 +486,10 @@ async function handleCatalog(env, request) {
   // small surface_annotation table. Pulls the latest-schema annotation_json
   // for each so the deep_dive_filters projection below applies uniformly.
   const orphanDeep = await env.DB.prepare(
-    `SELECT sa1.gene_symbol, sa1.annotation_json
+    `SELECT sa1.gene_symbol, sa1.annotation_json,
+            gi.uniprot_acc AS uniprot_acc
        FROM surface_annotation sa1
+       LEFT JOIN gene_identifier_public gi ON gi.hgnc_symbol = sa1.gene_symbol
       WHERE sa1.schema_version = (
         SELECT MAX(schema_version) FROM surface_annotation sa2
          WHERE sa2.gene_symbol = sa1.gene_symbol
@@ -458,6 +500,7 @@ async function handleCatalog(env, request) {
     if (covered.has(sym)) continue;
     deepSet.add(sym);
     const row = { symbol: sym, n_sources: 0, db: 0, deep_dive: true };
+    if (r.uniprot_acc) row.uniprot = r.uniprot_acc;
     const t = packTriage(sym);
     if (t) row.tr = t;
     const dd = projectDeepDiveFilters(r.annotation_json);
@@ -775,7 +818,18 @@ async function handleTriageExport(env, url) {
   const universeVersion = releaseRow?.universe_version ?? "";
 
   const sqlParts = [
-    `SELECT t.gene_symbol, c.uniprot_acc,`,
+    // uniprot_acc comes from the triage row's own resolution-stable value
+    // (backfilled from gene_identifier via the HGNC-ID resolver), falling
+    // back to the gene_identifier_public stable-ID cache by canonical
+    // symbol. It is NO LONGER taken from candidate_universe_public by
+    // gene_symbol — that symbol join misrouted the COX1/WAS-class genes
+    // (e.g. COX1 must be MT-CO1/P00395, not PTGS1). The
+    // candidate_universe_public join below stays, but only for the per-DB
+    // surface-vote flags.
+    `SELECT t.gene_symbol,`,
+    `       COALESCE(t.uniprot_acc, gi.uniprot_acc) AS uniprot_acc,`,
+    `       COALESCE(t.hgnc_id, gi.hgnc_id) AS hgnc_id,`,
+    `       COALESCE(t.ensembl_gene, gi.ensembl_gene) AS ensembl_gene,`,
     `       COALESCE(c.uniprot_surface_flag, 0) AS db_uniprot,`,
     `       COALESCE(c.go_surface_flag, 0)      AS db_go,`,
     `       COALESCE(c.surfy_surface_flag, 0)   AS db_surfy,`,
@@ -784,6 +838,8 @@ async function handleTriageExport(env, url) {
     `       COALESCE(c.n_sources_surface, 0)    AS n_db_surface,`,
     `       ${EXPORT_COLUMNS.slice(1).map((c) => `t.${c}`).join(", ")}`,
     `  FROM triage_run_public t`,
+    `  LEFT JOIN gene_identifier_public gi`,
+    `         ON gi.hgnc_symbol = t.gene_symbol`,
     `  LEFT JOIN candidate_universe_public c`,
     `         ON c.gene_symbol = t.gene_symbol`,
     `        AND c.universe_version = ?`,
@@ -800,7 +856,7 @@ async function handleTriageExport(env, url) {
   const rs = await env.DB.prepare(sqlParts.join("")).bind(...params).all();
 
   const cols = [
-    "gene_symbol", "uniprot_acc",
+    "gene_symbol", "uniprot_acc", "hgnc_id", "ensembl_gene",
     "db_uniprot", "db_go", "db_surfy", "db_cspa", "db_hpa", "n_db_surface",
     ...EXPORT_COLUMNS.slice(1),
   ];

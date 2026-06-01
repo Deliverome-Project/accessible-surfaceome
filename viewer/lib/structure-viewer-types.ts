@@ -47,15 +47,15 @@ export interface StructureViewerData {
  */
 export const TOPOLOGY_COLORS: Record<string, string> = {
   M: "#FFD579", // TM helix
-  O: "#DD5955", // extracellular — Deliverome primary red
+  O: "#8878C8", // extracellular — brand lavender-bright (purple)
   I: "#A9CFA8", // intracellular (inside)
-  S: "#7A4BD8", // signal peptide — purple (was slate gray, hard to spot)
+  S: "#DD5955", // signal peptide — red
   B: "#C7CED6", // beta-strand (rare in this dataset)
 };
 
 /**
  * Neutral slate-gray for the translucent bilayer slab. Reads as
- * "membrane the TM helix is embedded in" while leaving the red
+ * "membrane the TM helix is embedded in" while leaving the purple
  * extracellular cartoon as the page's high-saturation accent.
  * Shared with the legend so the swatch matches the rendered slab.
  */

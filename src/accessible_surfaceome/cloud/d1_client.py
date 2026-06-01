@@ -47,14 +47,31 @@ class D1Config:
 
     @classmethod
     def from_env(cls) -> D1Config:
+        """Config for the PRIVATE ``surfaceome_agents`` DB — the write target
+        (run recording, gene_identifier, etc.). Default for back-compat."""
+        return cls._from_env_db("CLOUDFLARE_D1_SURFACEOME_AGENTS_ID")
+
+    @classmethod
+    def from_env_public(cls) -> D1Config:
+        """Config for the read-only ``surfaceome_public`` mirror — the
+        column-whitelisted subset the Worker + viewer serve. Use for
+        analysis / read queries so they can't touch the private DB.
+
+        Note: the public mirror does NOT carry private-only columns
+        (e.g. ``triage_run.error`` / ``raw_text`` / ``verdict_reasoning``);
+        reach for the private DB only when you genuinely need those."""
+        return cls._from_env_db("CLOUDFLARE_D1_SURFACEOME_PUBLIC_ID")
+
+    @classmethod
+    def _from_env_db(cls, db_var: str) -> D1Config:
         missing: list[str] = []
         account = os.environ.get("CLOUDFLARE_ACCOUNT_ID", "").strip()
-        db = os.environ.get("CLOUDFLARE_D1_SURFACEOME_AGENTS_ID", "").strip()
+        db = os.environ.get(db_var, "").strip()
         token = os.environ.get("CLOUDFLARE_API_TOKEN", "").strip()
         if not account:
             missing.append("CLOUDFLARE_ACCOUNT_ID")
         if not db:
-            missing.append("CLOUDFLARE_D1_SURFACEOME_AGENTS_ID")
+            missing.append(db_var)
         if not token:
             missing.append("CLOUDFLARE_API_TOKEN")
         if missing:
@@ -83,6 +100,17 @@ class D1Client:
             "Content-Type": "application/json",
         }
         self._client = httpx.Client(timeout=timeout_s, headers=self._headers)
+
+    @classmethod
+    def public(cls, *, timeout_s: float = DEFAULT_TIMEOUT_S) -> D1Client:
+        """Read-only client targeting the PUBLIC ``surfaceome_public`` mirror.
+
+        Prefer this for analysis / read queries — it can't reach the private
+        ``surfaceome_agents`` DB. Writers (run recording, gene_identifier,
+        publish) must keep using the default ``D1Client()`` (private) or an
+        explicit private config; this helper is reads only by convention
+        (the public DB is a read-only mirror)."""
+        return cls(D1Config.from_env_public(), timeout_s=timeout_s)
 
     def close(self) -> None:
         self._client.close()

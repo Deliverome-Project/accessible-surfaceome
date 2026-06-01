@@ -1,0 +1,91 @@
+/*
+ * GeneJump — deep-dive-page toolbar typeahead. Input styling mirrors
+ * the catalog's search box (CatalogTable.module.css .searchInput); the
+ * dropdown reuses the opaque-popover pattern from InfoTip (var(--bg-soft)
+ * fill + var(--shadow-md)) so prose behind it never bleeds through.
+ */
+
+.wrap {
+  position: relative;
+  flex: 0 1 16rem;
+  min-width: 8.5rem;
+}
+
+.input {
+  width: 100%;
+  padding: 0.3rem 0.6rem;
+  font-family: var(--font-sans);
+  font-size: 0.82rem;
+  color: var(--ink);
+  background: var(--bg-soft);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+  transition:
+    border-color var(--dur-fast) var(--ease-out),
+    box-shadow var(--dur-fast) var(--ease-out);
+}
+
+.input::placeholder {
+  color: var(--muted);
+}
+
+.input:focus-visible {
+  outline: none;
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px var(--accent-soft);
+}
+
+/* Hide the WebKit clear-X (bright circle clashes with the muted theme). */
+.input::-webkit-search-cancel-button,
+.input::-webkit-search-decoration {
+  -webkit-appearance: none;
+  appearance: none;
+  display: none;
+}
+
+.list {
+  position: absolute;
+  z-index: 60;
+  top: calc(100% + 4px);
+  left: 0;
+  right: 0;
+  margin: 0;
+  padding: 0.25rem;
+  list-style: none;
+  background: var(--bg-soft);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-md);
+  max-height: 15rem;
+  overflow-y: auto;
+}
+
+.option {
+  display: block;
+  width: 100%;
+  padding: 0.3rem 0.5rem;
+  text-align: left;
+  font-family: var(--font-mono);
+  font-size: 0.82rem;
+  letter-spacing: 0.01em;
+  color: var(--ink);
+  background: transparent;
+  border: 0;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  transition:
+    background var(--dur-fast) var(--ease-out),
+    color var(--dur-fast) var(--ease-out);
+}
+
+.optionActive {
+  background: var(--accent-soft);
+  color: var(--accent);
+}
+
+.empty {
+  padding: 0.4rem 0.5rem;
+  font-size: 0.8rem;
+  font-style: italic;
+  color: var(--muted);
+}

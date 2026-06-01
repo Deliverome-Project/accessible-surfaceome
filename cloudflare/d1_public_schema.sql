@@ -103,6 +103,8 @@ CREATE TABLE IF NOT EXISTS triage_run_public (
 
     gene_symbol         TEXT NOT NULL,
     uniprot_acc         TEXT,
+    hgnc_id             TEXT,
+    ensembl_gene        TEXT,
     bench_version       TEXT NOT NULL,
 
     model               TEXT NOT NULL,
@@ -381,7 +383,8 @@ CREATE TABLE IF NOT EXISTS compara_paralog (
     paralog_gene_symbol      TEXT,
     family_id                TEXT,                    -- ENSFM... Compara family / clade subtype
     biomart_percent_identity REAL,                    -- from BioMart, full-length
-    ecd_pct_identity         REAL,                    -- per-loop BLOSUM62 length-weighted; NULL when no ECD
+    ecd_pct_identity         REAL,                    -- per-loop BLOSUM62 length-weighted identity; NULL when no ECD
+    ecd_pct_similarity       REAL,                    -- per-loop BLOSUM62 identity + positive substitutions; NULL when no ECD (populated for close pairs >=80% full-length)
     n_ecd_loops_compared     INTEGER,                 -- # loop pairs aligned
     rank_by_ecd_identity     INTEGER,                 -- 1=closest paralog; NULLs sort last
     paralogy_type            TEXT,                    -- within_species_paralog | other_paralog | gene_split
@@ -470,7 +473,7 @@ CREATE TABLE IF NOT EXISTS compara_ortholog_ecd_release (
 
 
 -- ---------------------------------------------------------------------------
--- SURFACE-Bind (Marchand et al. 2026 PNAS, doi:10.1073/pnas.2506269123)
+-- SURFACE-Bind (Balbi et al. 2026 PNAS, doi:10.1073/pnas.2506269123)
 --
 -- Per-UniProt patch-targetability summary + per-site detail from the
 -- Correia lab's MaSIF / surface-fingerprinting mapping of the human

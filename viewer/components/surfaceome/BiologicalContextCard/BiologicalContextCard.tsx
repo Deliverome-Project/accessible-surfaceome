@@ -1,10 +1,12 @@
 import type {
   AccessibilityImplication,
+  ModulationDirection,
   SurfaceomeRecord,
 } from "../../../lib/surfaceome-types";
 import { prettyEnum } from "../../../lib/surfaceome";
+import { ChipLabelValue } from "../ChipLabelValue/ChipLabelValue";
 import { EvidenceChipList } from "../EvidenceChip/EvidenceChip";
-import { FeatureChips } from "../FeatureChips/FeatureChips";
+import { FeatureRationales } from "../FeatureChips/FeatureChips";
 import { SectionCard } from "../SectionCard/SectionCard";
 import { StatusPill } from "../StatusPill/StatusPill";
 import styles from "./BiologicalContextCard.module.css";
@@ -21,26 +23,154 @@ function implicationTone(v: AccessibilityImplication) {
   return "neutral" as const;
 }
 
+/** Small directional glyph for a modulation row's `direction` enum:
+ *  ↑ increases surface (green), ↓ decreases (red), ↕ bidirectional (amber),
+ *  = no change (muted). Returns null for "unclear" or an absent field (older
+ *  records), so those rows show no glyph rather than a misleading one. */
+function directionGlyph(
+  direction: ModulationDirection | undefined,
+): React.ReactNode {
+  const map: Record<
+    string,
+    { glyph: string; color: string; title: string } | undefined
+  > = {
+    increases_surface: {
+      glyph: "↑",
+      color: "var(--success, #1b5e3f)",
+      title: "Increases surface-accessible pool",
+    },
+    decreases_surface: {
+      glyph: "↓",
+      color: "var(--maroon-dark, #922038)",
+      title: "Decreases surface-accessible pool",
+    },
+    bidirectional: {
+      glyph: "↕",
+      color: "var(--amber-dark, #8a5a16)",
+      title: "Both directions documented",
+    },
+    no_change: {
+      glyph: "=",
+      color: "var(--ink-faint, #999)",
+      title: "No net change in surface accessibility",
+    },
+  };
+  const d = direction ? map[direction] : undefined;
+  if (!d) return null;
+  return (
+    <span
+      aria-label={d.title}
+      title={d.title}
+      style={{ color: d.color, fontWeight: 700, marginLeft: "0.3em" }}
+    >
+      {d.glyph}
+    </span>
+  );
+}
+
 export function BiologicalContextCard({ rec, n }: Props) {
   const bc = rec.biological_context;
   const loc = bc.subcellular_localization;
+  const es = rec.executive_summary;
+  // Co-receptor requirements — surface-expression biology (does the
+  // protein need a partner to reach the surface). Lives in
+  // ``accessibility_risks`` in the schema but renders here, next to its
+  // §01 Biology chip. Moved from the §Risks card.
+  const cr = rec.accessibility_risks.co_receptor_requirements;
 
   return (
     <SectionCard
       n={n}
       eyebrow="Biological context"
       title="Localization & accessibility context"
-      meta="Subcellular localization · anatomical accessibility · accessibility modulation"
+      meta="Accessibility modulation · subcellular localization · anatomical accessibility"
     >
-      <FeatureChips category="biology" rec={rec} />
+      {/* Overarching accessibility-context summary — one-sentence
+          rationale for WHEN/WHERE the protein is reachable. The headline
+          chips (reason / primary compartment / induced-state triggers)
+          were removed per UX: each duplicated content already shown below
+          — the subcellular-localization "primary" chip and the modulation
+          table's trigger column. */}
+      {es.accessibility_context_summary ? (
+        <div className={styles.contextSummary}>
+          <p className={styles.contextRationale}>
+            {es.accessibility_context_summary}
+          </p>
+        </div>
+      ) : null}
+
+      <FeatureRationales category="biology" rec={rec} />
+
+      {/* Accessibility modulation — moved to the top (most decision-
+          relevant) and rendered as a table: one row per state/lineage
+          shift, far easier to scan than the old stacked prose blocks. */}
+      <div className={styles.subsection}>
+        <p className={`label-mono ${styles.subhead}`}>Accessibility modulation</p>
+        {bc.accessibility_modulation.length === 0 ? (
+          <p className={styles.empty}>No modulation rows recorded.</p>
+        ) : (
+          <table className={`${styles.table} ${styles.modTable}`}>
+            <thead>
+              <tr>
+                <th scope="col">Context</th>
+                <th scope="col">Reference</th>
+                <th scope="col">Modulating state</th>
+                <th scope="col">Implication</th>
+                <th scope="col">References</th>
+              </tr>
+            </thead>
+            <tbody>
+              {bc.accessibility_modulation.map((m, i) => (
+                <tr key={i}>
+                  <td>
+                    <StatusPill tone="lavender" size="sm">
+                      {prettyEnum(m.category)}
+                    </StatusPill>
+                    {/* ↑/↓/↕ direction of the surface-accessibility change
+                        from the structured `direction` enum. Null for
+                        unclear / older records without the field. */}
+                    {directionGlyph(m.direction)}
+                  </td>
+                  <td>{m.baseline_context}</td>
+                  <td>{m.modulating_state}</td>
+                  <td>{m.accessibility_implication}</td>
+                  <td>
+                    {/* The change/effect narrative (the "evidence string")
+                     *  lives in the Cites column with its citations rather
+                     *  than widening the Shift column. */}
+                    {m.change ? (
+                      <p className={styles.modChangeCite}>{m.change}</p>
+                    ) : null}
+                    <EvidenceChipList ids={m.cited_evidence_ids} label="References" />
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        )}
+      </div>
 
       <div className={styles.subsection}>
         <p className={`label-mono ${styles.subhead}`}>Subcellular localization</p>
+        {/* Primary compartment + two labeled secondary axes in one
+            consistent stack (was: subdomains as badges but dual_localization
+            as a separate full table — same "where else is it" idea, two
+            unrelated treatments):
+              • surface subdomain — outer-leaflet PM microdomains an antibody
+                meets (apical / basolateral / raft / junction).
+              • also found in — whole non-primary compartments (endosome,
+                lysosome, …); each badge carries its condition + fraction on
+                hover and its citation chips inline, so no table data is lost. */}
         <div className={styles.locHead}>
-          <StatusPill tone="teal">
-            primary · {prettyEnum(loc.primary_compartment)}
+          <StatusPill tone="teal" size="sm">
+            <ChipLabelValue label="primary" value={prettyEnum(loc.primary_compartment)} />
           </StatusPill>
-          {loc.membrane_subdomains.length > 0 ? (
+        </div>
+        {loc.membrane_subdomains.length > 0 ? (
+          <div className={styles.locRow}>
+            <span className={`label-mono ${styles.locRowLabel}`}>
+              surface subdomain
+            </span>
             <span className={styles.subdomains}>
               {loc.membrane_subdomains.map((s, i) => (
                 <StatusPill key={i} tone="lavender" size="sm">
@@ -48,35 +178,36 @@ export function BiologicalContextCard({ rec, n }: Props) {
                 </StatusPill>
               ))}
             </span>
-          ) : null}
-        </div>
+          </div>
+        ) : null}
         {loc.dual_localization.length > 0 ? (
-          <table className={styles.table}>
-            <thead>
-              <tr>
-                <th scope="col">Compartment</th>
-                <th scope="col">Fraction</th>
-                <th scope="col">Condition</th>
-                <th scope="col">Cites</th>
-              </tr>
-            </thead>
-            <tbody>
-              {loc.dual_localization.map((d, i) => (
-                <tr key={i}>
-                  <td>{prettyEnum(d.compartment)}</td>
-                  <td>
-                    {d.fraction_estimate != null
-                      ? `${(d.fraction_estimate * 100).toFixed(0)}%`
-                      : "—"}
-                  </td>
-                  <td>{d.condition ?? "—"}</td>
-                  <td>
-                    <EvidenceChipList ids={d.cited_evidence_ids} label="Cites" />
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+          <div className={styles.locRow}>
+            <span className={`label-mono ${styles.locRowLabel}`}>
+              also found in
+            </span>
+            <span className={styles.subdomains}>
+              {loc.dual_localization.map((d, i) => {
+                const pct =
+                  d.fraction_estimate != null
+                    ? `${(d.fraction_estimate * 100).toFixed(0)}%`
+                    : null;
+                const hover = [d.condition, pct ? `~${pct} of pool` : null]
+                  .filter(Boolean)
+                  .join(" · ");
+                return (
+                  <span key={i} className={styles.locCompartment}>
+                    <StatusPill tone="teal" size="sm" title={hover || undefined}>
+                      {prettyEnum(d.compartment)}
+                      {pct ? ` · ${pct}` : ""}
+                    </StatusPill>
+                    {d.cited_evidence_ids.length > 0 ? (
+                      <EvidenceChipList ids={d.cited_evidence_ids} />
+                    ) : null}
+                  </span>
+                );
+              })}
+            </span>
+          </div>
         ) : null}
         {/* exocytosis_evidence was dropped in PR23 round 5 — same
             biology now lives in `accessibility_modulation` rows
@@ -103,7 +234,10 @@ export function BiologicalContextCard({ rec, n }: Props) {
                   tone={rs.present ? "warn" : "success"}
                   size="sm"
                 >
-                  {rs.present ? "Restricted" : "Broad / no restriction observed"}
+                  <ChipLabelValue
+                    label="restricted subdomain"
+                    value={rs.present ? "present" : "none"}
+                  />
                 </StatusPill>
                 {rs.present ? (
                   <StatusPill tone="lavender" size="sm">
@@ -112,7 +246,7 @@ export function BiologicalContextCard({ rec, n }: Props) {
                 ) : null}
                 <EvidenceChipList
                   ids={rs.cited_evidence_ids}
-                  label="Cites"
+                  label="References"
                 />
               </div>
               {rs.rationale ? (
@@ -135,7 +269,7 @@ export function BiologicalContextCard({ rec, n }: Props) {
                 <th scope="col">Orientation</th>
                 <th scope="col">Implication</th>
                 <th scope="col">Rationale</th>
-                <th scope="col">Cites</th>
+                <th scope="col">References</th>
               </tr>
             </thead>
             <tbody>
@@ -153,7 +287,7 @@ export function BiologicalContextCard({ rec, n }: Props) {
                   </td>
                   <td>{a.rationale}</td>
                   <td>
-                    <EvidenceChipList ids={a.cited_evidence_ids} label="Cites" />
+                    <EvidenceChipList ids={a.cited_evidence_ids} label="References" />
                   </td>
                 </tr>
               ))}
@@ -163,44 +297,40 @@ export function BiologicalContextCard({ rec, n }: Props) {
       </div>
 
       <div className={styles.subsection}>
-        <p className={`label-mono ${styles.subhead}`}>Accessibility modulation</p>
-        {bc.accessibility_modulation.length === 0 ? (
-          <p className={styles.empty}>No modulation rows recorded.</p>
-        ) : (
-          <ul className={styles.modList}>
-            {bc.accessibility_modulation.map((m, i) => (
-              <li key={i} className={styles.modItem}>
-                <div className={styles.modHead}>
-                  <StatusPill tone="lavender" size="sm">
-                    {prettyEnum(m.category)}
-                  </StatusPill>
-                  {m.cell_state_trigger ? (
-                    <StatusPill tone="amber" size="sm">
-                      trigger · {prettyEnum(m.cell_state_trigger)}
-                    </StatusPill>
-                  ) : null}
-                  {m.restricted_lineage ? (
-                    <StatusPill tone="teal" size="sm">
-                      lineage · {prettyEnum(m.restricted_lineage)}
-                    </StatusPill>
-                  ) : null}
-                  <EvidenceChipList ids={m.cited_evidence_ids} label="Cites" />
-                </div>
-                <p className={styles.modBaseline}>
-                  <span className={styles.muted}>baseline</span> {m.baseline_context}{" "}
-                  <span aria-hidden="true">→</span>{" "}
-                  <span className={styles.muted}>modulating</span> {m.modulating_state}
-                </p>
-                <p className={styles.modChange}>{m.change}</p>
-                <p className={styles.modImpl}>
-                  <span className={`label-mono ${styles.muted}`}>Implication</span>{" "}
-                  {m.accessibility_implication}
-                </p>
-              </li>
-            ))}
-          </ul>
-        )}
+        <p className={`label-mono ${styles.subhead}`}>Co-receptor requirements</p>
+        <div className={styles.locHead}>
+          <StatusPill
+            tone={
+              cr.surface_expression_dependency === "required"
+                ? "danger"
+                : cr.surface_expression_dependency === "modulatory"
+                ? "amber"
+                : "neutral"
+            }
+            size="sm"
+          >
+            <ChipLabelValue
+              label="dependency"
+              value={prettyEnum(cr.surface_expression_dependency)}
+            />
+          </StatusPill>
+          <StatusPill tone="lavender" size="sm">
+            <ChipLabelValue
+              label="evidence basis"
+              value={prettyEnum(cr.evidence_basis)}
+            />
+          </StatusPill>
+          <EvidenceChipList ids={cr.cited_evidence_ids} label="References" />
+        </div>
+        {cr.partners.length > 0 ? (
+          <p className={styles.locProse}>
+            <span className={`label-mono ${styles.muted}`}>Partners</span>{" "}
+            {cr.partners.join(", ")}
+          </p>
+        ) : null}
+        {cr.rationale ? <p className={styles.locProse}>{cr.rationale}</p> : null}
       </div>
+
     </SectionCard>
   );
 }

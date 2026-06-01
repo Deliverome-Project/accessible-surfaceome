@@ -28,21 +28,14 @@ Concise contributor guide for `accessible-surfaceome`.
 - Build viewer for Pages: `cd viewer && npm run build` → `viewer/out/` (static export)
 - Deploy viewer: `cd viewer && npm run deploy` (or via Cloudflare Pages CI on push)
 
-## Managed Agents — auto-sync on drift
-The `surface_triage` and `surface_annotator` agents are **Anthropic Managed Agents** — Anthropic stores its own snapshot of each agent's system prompt + tool list + model. The remote snapshot is the source of truth at run time.
+## Deep-dive agents run in-process with local prompts (no managed-agent sync)
+`surface_triage` and the deep-dive agents (v1 `surface_evidence_compiler` / `biology_compiler` / `surfaceome_synthesizer`; v2 `plan_trim_select` + 10 block builders + the synthesizer) are all invoked **in-process**: each runner reads its local `prompts/system.md` at call time and loops `client.messages.create(...)` — a plain Anthropic Messages API call (compilers add tools; synthesizer + triage run tool-less). There is **no Managed-Agents registration, no remote prompt snapshot, and no auto-sync** in the shipped code.
 
-**Auto-sync is wired into the annotator orchestrator.** On every `annotate` run it sha-checks the local `system.md` against `.runs/agents-registry.json`; on drift it calls `sync_agent_and_environment(client)` inline before the first model call. The sync is a single idempotent metadata round-trip (no model call, no extra spend). Editing any of these no longer requires a manual sync:
-- `src/accessible_surfaceome/agents/surface_annotator/prompts/*.md`
-- the agent payload in `src/accessible_surfaceome/agents/surface_annotator/agent.py`
-- the `SurfaceomeRecord` / `SurfaceomeRecordDraft` schema in `src/accessible_surfaceome/tools/_shared/models.py` when the prompt references the new shape
+**Editing a prompt takes effect on the very next local invocation — nothing to push.** Edit the `prompts/*.md` (or the `SurfaceomeRecord` / `SynthesizerLLMFilters` schema in `src/accessible_surfaceome/tools/_shared/models.py`, read locally to build the structured-output tool) and re-run. No `.runs/agents-registry.json` is read at run time; there is no `sync_agent_and_environment` and no `accessible-surfaceome agents sync` command (`agents` just runs the v1 deep-dive).
 
-`uv run accessible-surfaceome agents sync` still works as a manual command (useful for CI, schema-only edits, dry-run verification).
+> **Historical note.** An earlier design proposed registering these as Anthropic Managed Agents with sha-checked auto-sync (`.runs/agents-registry.json`, `sync_agent_and_environment`, `ANNOTATE_NO_AUTO_SYNC`). **That machinery was never wired into the shipped code.** Any reference to managed-agent sync / auto-sync / `ANNOTATE_NO_AUTO_SYNC` is stale.
 
-**Escape hatch.** Set `ANNOTATE_NO_AUTO_SYNC=1` in the environment to disable auto-sync — the orchestrator falls back to the historical loud `PROMPT DRIFT` warning and runs against the stale remote prompt. Use on experimental branches that shouldn't push their prompt to the production-registered managed agent.
-
-The registry is local (per-worktree, gitignored under `.runs/`). surface_triage runs through a different code path and doesn't use the Managed Agent registry, so it's not part of auto-sync.
-
-**Why auto-sync matters:** the surface_annotator run is ~$0.30–0.50 on Sonnet 4.6 per gene. Burning a sweep on a stale prompt produces records that quietly look like the previous schema version — expensive to discover late.
+**Cost note:** a full v2 deep-dive is ~$2–3 on Sonnet 4.6 per gene (synthesizer step ~$0.10–0.20). There is no stale-remote-prompt risk — local edits are always what runs — but a re-run costs real money, so validate a prompt change on one gene before sweeping.
 
 ## Agent Command Allowlist
 - Codex and Claude agents may run `uv run python <module-or-script> [args...]` for repo analyses and processing.

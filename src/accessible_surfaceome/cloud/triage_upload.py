@@ -188,6 +188,8 @@ def _insert_run(
     prompt_sha: str,
     bench_version: str,
     uniprot_acc: str | None,
+    hgnc_id: str | None = None,
+    ensembl_gene: str | None = None,
     truth_class: str,
 ) -> None:
     # Resolver context — content-address whatever the agent saw as its
@@ -209,7 +211,8 @@ def _insert_run(
     # row's id to write child rows in triage_search_log.
     rows = d1.query(
         "INSERT INTO triage_run ("
-        " run_id, gene_symbol, uniprot_acc, bench_version, model, prompt_variant,"
+        " run_id, gene_symbol, uniprot_acc, hgnc_id, ensembl_gene,"
+        " bench_version, model, prompt_variant,"
         " prompt_sha, schema_version, replicate, predicted_verdict, predicted_reason,"
         " verdict_reasoning, predicted_confidence, predicted_key_uncertainty,"
         " truth_verdict, truth_class, correct, prompt_tokens,"
@@ -217,12 +220,14 @@ def _insert_run(
         " n_web_searches, cost_usd, latency_s, error, raw_text,"
         " resolver_context_sha, temperature, top_p, max_tokens,"
         " api_response_id, api_stop_reason, api_model"
-        ") VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)"
+        ") VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)"
         " RETURNING id;",
         [
             run_id,
             record["gene_symbol"],
             uniprot_acc,
+            hgnc_id,
+            ensembl_gene,
             bench_version,
             record["model"],
             record["variant"],
@@ -316,6 +321,41 @@ def _existing_keys(d1: D1Client, run_id: str) -> set[tuple[str, str, str, int, s
     }
 
 
+def _load_gene_identifier_map(
+    d1: D1Client,
+) -> dict[str, tuple[str | None, str | None, str | None]]:
+    """Map gene_symbol → (uniprot_acc, hgnc_id, ensembl_gene) from the
+    resolver's stable-ID cache (``gene_identifier``).
+
+    Keyed by BOTH ``cohort_symbol`` and ``hgnc_symbol`` so a triage row's
+    ``gene_symbol`` resolves the same way the HGNC-ID resolver + the D1
+    backfill do (cohort_symbol wins on conflict — it's the symbol the
+    genome/bench sweeps key on; hgnc_symbol covers the few rows stored
+    canonically, e.g. ``MT-CO3``). One bulk read at sink construction; the
+    ``insert`` hot path then does in-memory lookups and never re-resolves
+    per cell. This is the sanctioned downstream path for stable IDs
+    (CLAUDE.md "Gene identifier resolution": read ``gene_identifier``,
+    never re-resolve from a bare symbol).
+    """
+    rows = d1.query(
+        "SELECT hgnc_symbol, cohort_symbol, uniprot_acc, hgnc_id, ensembl_gene "
+        "FROM gene_identifier;",
+        [],
+    )
+    out: dict[str, tuple[str | None, str | None, str | None]] = {}
+    for r in rows:  # hgnc_symbol first …
+        if r.get("hgnc_symbol"):
+            out[r["hgnc_symbol"]] = (
+                r.get("uniprot_acc"), r.get("hgnc_id"), r.get("ensembl_gene"),
+            )
+    for r in rows:  # … cohort_symbol overrides (the sweep's key)
+        if r.get("cohort_symbol"):
+            out[r["cohort_symbol"]] = (
+                r.get("uniprot_acc"), r.get("hgnc_id"), r.get("ensembl_gene"),
+            )
+    return out
+
+
 class D1RunSink:
     """Streaming sink that writes triage runs to D1 as they complete.
 
@@ -365,6 +405,11 @@ class D1RunSink:
             )
 
         self._client = D1Client()
+        # Resolver stable-ID cache (uniprot/hgnc_id/ensembl_gene) loaded once,
+        # so insert() persists the SAME identifiers the HGNC-ID resolver
+        # produces — not the bench-pinned uniprot, and with hgnc_id +
+        # ensembl_gene that the runner previously discarded.
+        self._ids_by_symbol = _load_gene_identifier_map(self._client)
         # Intern prompts + benchmark snapshot once.
         for prompt in self._prompts_by_variant.values():
             _intern_prompt(self._client, prompt)
@@ -409,7 +454,18 @@ class D1RunSink:
         prompt = self._prompts_by_variant[variant]
         gene = record["gene_symbol"]
         bench_row = self._bench_by_gene.get(gene)
-        uniprot_acc: str | None = bench_row.get("uniprot_acc") if bench_row else None
+        # Stable IDs from the resolver cache (preferred). Fall back to the
+        # bench-pinned uniprot only for genes absent from gene_identifier
+        # (readthrough/fusion symbols etc.); hgnc_id / ensembl_gene have no
+        # bench fallback and stay NULL there.
+        res_uniprot, res_hgnc, res_ensembl = self._ids_by_symbol.get(
+            gene, (None, None, None)
+        )
+        uniprot_acc: str | None = res_uniprot or (
+            bench_row.get("uniprot_acc") if bench_row else None
+        )
+        hgnc_id: str | None = res_hgnc
+        ensembl_gene: str | None = res_ensembl
         truth_class: str = (
             bench_row.get("class", "") if bench_row else record.get("truth_class", "") or ""
         )
@@ -429,6 +485,8 @@ class D1RunSink:
                 prompt_sha=prompt.sha,
                 bench_version=self.bench_version,
                 uniprot_acc=uniprot_acc,
+                hgnc_id=hgnc_id,
+                ensembl_gene=ensembl_gene,
                 truth_class=truth_class,
             )
             return True

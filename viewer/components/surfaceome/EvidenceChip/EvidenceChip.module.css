@@ -55,12 +55,34 @@
   gap: 0.25rem;
 }
 
+/* "+N more" disclosure — a <details> in the chip flow. Closed, only the
+   <summary> shows; open, the remaining chips wrap in beside it. */
+.chipOverflowDetails {
+  display: inline-flex;
+  flex-wrap: wrap;
+  gap: 0.25rem;
+  align-items: baseline;
+}
+
+/* The <summary> ("+N more") — a small clickable affordance. Drop the
+   native disclosure triangle; the underline carries the affordance. */
 .chipOverflow {
   font: var(--fw-medium) 0.68rem/1 var(--font-sans);
   letter-spacing: 0.06em;
   text-transform: uppercase;
-  color: var(--muted);
+  color: var(--accent);
   padding: 0.18rem 0.35rem;
+  cursor: pointer;
+  list-style: none;
+  text-decoration: underline dotted;
+}
+
+.chipOverflow::-webkit-details-marker {
+  display: none;
+}
+
+.chipOverflow:hover {
+  color: var(--ink);
 }
 
 /* Inline weight badge — pill labeling a structured stance weight

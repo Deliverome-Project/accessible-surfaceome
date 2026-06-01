@@ -53,10 +53,11 @@ from accessible_surfaceome.agents.surfaceome_synthesizer.runner import (
     run_synthesizer_with_drafts,
 )
 from accessible_surfaceome.agents.surfaceome_v1.orchestrator import (
+    _attach_deterministic_families,
     _derive_filters,
     scrub_headline_risks,
     _load_triage_record,
-    _triage_signal_and_reasoning_from_record,
+    _TRIAGE_VERDICT_TO_SIGNAL,
     _stub_deterministic_features,
 )
 from accessible_surfaceome.agents.surfaceome_v2.builders import (
@@ -69,7 +70,6 @@ from accessible_surfaceome.agents.surfaceome_v2.builders import (
     build_evidence_grade,
     build_methods,
     build_subcellular_localization,
-    build_therapeutic_engagement,
     build_tissues,
 )
 from accessible_surfaceome.paths import DATA_DIR
@@ -80,6 +80,7 @@ from accessible_surfaceome.tools._shared.models import (
     Evidence,
     EvidenceClaim,
     GeneIdentifier,
+    IsoformTopology,
     SearchEntry,
     SourceType,
     SurfaceEvidence,
@@ -95,9 +96,24 @@ AGENT_MODEL = "claude-sonnet-4-6"
 SCHEMA_VERSION_LITERAL = "1.1.0"
 RUNS_DIR = Path(".runs")
 
-# Maximum block-builders to dispatch concurrently. There are 9 builders
-# total (4 A1 + 5 A2); they consume independent claim slices and each
-# makes a single Sonnet call, so a worker pool sized to ``9`` lets every
+
+def _triage_signal_and_reasoning_from_record(rec):
+    """Map a loaded ``TriageRecord`` onto the deep-dive record's
+    ``(triage_signal, triage_reasoning)`` pair.
+
+    Local helper (previously imported from the v1 orchestrator, which no
+    longer exports it). Reuses v1's ``_TRIAGE_VERDICT_TO_SIGNAL`` map so the
+    verdict→signal mapping stays single-sourced; the reasoning prose is the
+    triage's own ``verdict_reasoning``. ``rec`` may be ``None`` when no triage
+    exists for the gene → default to the unknown signal + empty prose.
+    """
+    if rec is None:
+        return "unknown", ""
+    return _TRIAGE_VERDICT_TO_SIGNAL.get(rec.verdict, "unknown"), rec.verdict_reasoning
+
+# Maximum block-builders to dispatch concurrently. There are 8 builders
+# total (3 A1 + 5 A2); they consume independent claim slices and each
+# makes a single Sonnet call, so a worker pool sized to ``8`` lets every
 # builder kick off immediately. The Anthropic client is thread-safe
 # (httpx underneath) and each builder writes to its own ``usage_sink``
 # list so there's no shared mutable state across workers. The shared
@@ -105,7 +121,26 @@ RUNS_DIR = Path(".runs")
 # ``list.append`` is atomic under the GIL, so the list stays
 # well-formed; the resulting timing-row order is non-deterministic but
 # the viewer sorts by ``elapsed_s`` anyway.
-BUILDER_CONCURRENCY = 9
+BUILDER_CONCURRENCY = 8
+
+
+def _secreted_isoform_ids(isoform_topologies: list[IsoformTopology]) -> list[str]:
+    """IDs of isoforms that are soluble forms by topology alone.
+
+    A TM-less alternative isoform that still carries a real ECD (≥30 aa) is a
+    soluble/secreted species: the membrane anchor is gone but the ectodomain
+    is retained (e.g. EGFR's sEGFR isoforms). ``isoform_topologies`` holds
+    ONLY the alternative isoforms (the canonical lives in
+    ``canonical_topology``), so every entry is non-canonical by construction
+    — there is NO ``is_canonical`` field on ``IsoformTopology`` (referencing
+    one raised AttributeError and crashed every v2 run; see the regression
+    test). Extracted so the secreted-form upgrade is unit-testable without a
+    full annotate run."""
+    return [
+        iso.isoform_id
+        for iso in isoform_topologies
+        if iso.tm_helix_count == 0 and iso.ecd_length_residues >= 30
+    ]
 
 
 def _wall_clock_for_timing(timing: list[StepTiming]) -> float:
@@ -331,7 +366,7 @@ def _annotate(
     )
 
     # ---- steps 2+3: A1+A2 block builders (parallel dispatch) ---------------
-    # All 9 builders consume independent claim slices and emit independent
+    # All 8 builders consume independent claim slices and emit independent
     # blocks, so we fan them out concurrently. The Anthropic SDK client
     # is thread-safe; each builder writes only into its own ``usage_sink``;
     # the shared TimingRecorder uses CPython's atomic ``list.append``.
@@ -339,13 +374,6 @@ def _annotate(
     a2_ctx = {"gene": gene_id.hgnc_symbol}
     specs: list[_BuilderSpec] = [
         _BuilderSpec("methods", "builders_a1", build_methods, a1_claims, a1_ctx),
-        _BuilderSpec(
-            "therapeutic_engagement",
-            "builders_a1",
-            build_therapeutic_engagement,
-            a1_claims,
-            a1_ctx,
-        ),
         _BuilderSpec(
             "contradictions",
             "builders_a1",
@@ -404,7 +432,6 @@ def _annotate(
         claim_stances=grade_block.claim_stances,
         methods=outputs["methods"],
         non_surface_expression=grade_block.non_surface_expression,
-        therapeutic_engagement=outputs["therapeutic_engagement"],
         contradicting_evidence=outputs["contradictions"],
     )
 
@@ -517,8 +544,19 @@ def _annotate(
     assert synth_draft is not None  # for ty — narrowed by the guard above
     synth_draft = synth_draft.model_copy(
         update={
-            "executive_summary": scrub_headline_risks(
-                synth_draft.executive_summary, synth_draft.accessibility_risks
+            # Inject curator-assigned deterministic family tags (HGNC gene
+            # groups + UniProt SIMILARITY family) from the resolved bundle.
+            # These are ground truth, NOT model output (the synthesizer
+            # leaves them at their defaults). v1 does this via
+            # _attach_deterministic_families; v2 previously skipped it, so
+            # every v2 record shipped with empty family fields. Runs on
+            # every LLM pass, so deterministic family lands automatically.
+            "executive_summary": _attach_deterministic_families(
+                scrub_headline_risks(
+                    synth_draft.executive_summary,
+                    synth_draft.accessibility_risks,
+                ),
+                dual.bundle,
             )
         }
     )
@@ -630,6 +668,48 @@ def _annotate(
                 exc,
             )
             det_features = _stub_deterministic_features(gene_id.uniprot_acc)
+
+    # ---- step 7b: deterministic secreted-form upgrade ---------------------
+    # The synthesizer derives ``secreted_form`` from the literature ledger
+    # only and (in v2) never receives the isoform topology — it runs at step
+    # 5, before ``det_features`` is fetched above. So a protein with a
+    # UniProt-annotated soluble splice isoform — a NON-canonical isoform that
+    # drops the TM anchor but keeps a real ECD (e.g. EGFR's sEGFR forms
+    # P00533-2/-3/-4: tm_helix_count=0, ECD 381-681 aa) — comes back
+    # ``secreted_form.present=False`` even though that isoform IS a
+    # soluble/secreted form by construction. Upgrade the call here, where the
+    # isoform topology is in hand. UPGRADE-ONLY: a literature-confirmed
+    # ``present=True`` (with its severity / cites) is left untouched; we only
+    # rescue the False-negatives. Topology alone → tier it ``low`` / ``weak``
+    # ("annotated soluble isoform exists", not "confirmed abundant circulating
+    # decoy"); a later literature pass that finds serum/plasma levels can
+    # raise it on re-run. This flows into ``_derive_filters`` below, so the
+    # ``has_secreted_form`` catalog filter flips consistently with the block.
+    _secreted_ids = _secreted_isoform_ids(det_features.isoform_topologies)
+    if _secreted_ids and not synth_draft.accessibility_risks.secreted_form.present:
+        _ar = synth_draft.accessibility_risks
+        synth_draft = synth_draft.model_copy(
+            update={
+                "accessibility_risks": _ar.model_copy(
+                    update={
+                        "secreted_form": _ar.secreted_form.model_copy(
+                            update={
+                                "present": True,
+                                "source": "alternative_splicing",
+                                "severity": "low",
+                                "evidence_strength": "weak",
+                            }
+                        )
+                    }
+                )
+            }
+        )
+        logger.info(
+            "secreted_form upgraded present=True for %s from TM=0 soluble "
+            "isoform(s) %s (topology-derived, low/weak)",
+            gene_id.hgnc_symbol,
+            _secreted_ids,
+        )
 
     # ---- step 8: derive filters (reused from v1) --------------------------
     with timing.step(
@@ -766,7 +846,6 @@ def _count_blocks(
         "methods": len(se.methods),
         "non_surface_expression": len(se.non_surface_expression),
         "contradicting_evidence": len(se.contradicting_evidence),
-        "therapeutic_engagement": 0 if se.therapeutic_engagement is None else 1,
         "tissues": len(bc.tissues),
         "cell_types": len(bc.cell_types),
         "dual_localization": len(bc.subcellular_localization.dual_localization),

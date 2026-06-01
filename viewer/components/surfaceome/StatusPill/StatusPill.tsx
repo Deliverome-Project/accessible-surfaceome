@@ -25,10 +25,13 @@ interface StatusPillProps {
   children: ReactNode;
   /** Tooltip body. When set, the pill renders the shared styled
    *  popover (matching `<InfoTip>`) on hover/focus rather than the
-   *  fleeting native `title=` browser tooltip. `\n` line breaks in the
-   *  string are preserved as `<br />`; a blank line (`\n\n`) collapses
-   *  to a single break via the popover's `br + br` rule. */
-  title?: string;
+   *  fleeting native `title=` browser tooltip. A `string` keeps its
+   *  `\n` line breaks (rendered as `<br />`; a blank line `\n\n`
+   *  collapses via the popover's `br + br` rule). A `ReactNode` (e.g. a
+   *  shared entry from `lib/tooltips`) is rendered as-is, so a chip can
+   *  reuse the exact same tooltip body as the rest of the page instead
+   *  of a drift-prone string copy. */
+  title?: ReactNode;
   /** Opt back into the OS-native `title=` tooltip instead of the
    *  styled popover. Use ONLY for pills nested inside an
    *  `overflow: auto/hidden` ancestor (e.g. a horizontally-scrollable
@@ -63,8 +66,14 @@ export function StatusPill({
   // cut off, so fall back to the OS-native tooltip (which escapes the
   // clip) when the caller opts in.
   if (nativeTooltip) {
+    // The OS-native `title=` attribute only accepts a string; a
+    // ReactNode body can't render in it, so drop it in that (rare) case.
     return (
-      <span className={pillClass} title={title} style={style}>
+      <span
+        className={pillClass}
+        title={typeof title === "string" ? title : undefined}
+        style={style}
+      >
         {children}
       </span>
     );
@@ -78,23 +87,29 @@ export function StatusPill({
 
   if (!title) return pill;
 
-  // Render the title string with `\n` → `<br />` so multi-line tooltip
-  // bodies keep their line breaks inside the (white-space: normal)
-  // popover. The <br/> are direct children of `.popover`, so the
-  // InfoTip `br + br { display: none }` rule collapses `\n\n` pairs.
-  const lines = title.split("\n");
+  // A string title is rendered with `\n` → `<br />` so multi-line bodies
+  // keep their breaks inside the (white-space: normal) popover; the <br/>
+  // are direct children of `.popover`, so the InfoTip `br + br
+  // { display: none }` rule collapses `\n\n` pairs. A ReactNode title
+  // (e.g. a shared `lib/tooltips` entry) is rendered as-is.
+  const body =
+    typeof title === "string" ? (
+      title.split("\n").map((line, i, arr) => (
+        <Fragment key={i}>
+          {line}
+          {i < arr.length - 1 ? <br /> : null}
+        </Fragment>
+      ))
+    ) : (
+      title
+    );
   return (
     <span className={tip.wrap} data-infotip="">
       <span className={`${pillClass} ${styles.hasTooltip}`} style={style}>
         {children}
       </span>
       <span role="tooltip" className={tip.popover}>
-        {lines.map((line, i) => (
-          <Fragment key={i}>
-            {line}
-            {i < lines.length - 1 ? <br /> : null}
-          </Fragment>
-        ))}
+        {body}
       </span>
     </span>
   );

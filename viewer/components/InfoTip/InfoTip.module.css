@@ -113,6 +113,19 @@
     visibility 0s var(--dur-fast);
 }
 
+/* Authoritative white-space reset. The popover renders INSIDE chip rows
+ * that set `white-space: nowrap` (e.g. FiltersCard `.pills li`, the
+ * structure-caption stats strip). That container rule — `.pills li`,
+ * specificity (0,1,1) — outranks the plain `.popover` (0,1,0) above, so
+ * the tooltip prose inherited `nowrap` and laid out as ONE long line
+ * clamped to max-width (the reported "all tooltips one line" bug).
+ * Qualifying the reset with the popover's own `[role="tooltip"]` attribute
+ * raises specificity to (0,2,0), which beats any single-class+element
+ * container, so the prose wraps regardless of where the popover lives. */
+.popover[role="tooltip"] {
+  white-space: normal;
+}
+
 /* Reveal — the wrapper :hover OR :focus-within (keyboard tab to the
  * trigger button) makes the sibling popover visible. CSS-only: no
  * React state, no event listeners, no per-popover hydration boundary. */

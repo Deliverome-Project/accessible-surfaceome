@@ -6,6 +6,13 @@ interface Props {
   topology: string;
   /** A11y label — e.g. "GPR75 canonical isoform topology". */
   ariaLabel?: string;
+  /** Length of the longest topology in the table (typically the canonical).
+   *  When set, this bar's WIDTH is scaled to ``topology.length /
+   *  maxResidues`` and left-aligned, so a shorter variant (truncated isoform,
+   *  fragment ortholog) renders as a proportionally shorter bar that lines up
+   *  with the canonical's N-terminus — rather than every bar stretching to the
+   *  full column width. Omit for a standalone full-width bar (legacy callers). */
+  maxResidues?: number;
 }
 
 interface Run {
@@ -52,14 +59,23 @@ const STATE_LABELS: Record<string, string> = {
  * shared `TOPOLOGY_COLORS` palette so the strip and the 3D card
  * agree on what M / O / I / S look like.
  */
-export function TopologyBar({ topology, ariaLabel }: Props) {
+export function TopologyBar({ topology, ariaLabel, maxResidues }: Props) {
   const segments = runs(topology);
   if (segments.length === 0) return null;
+  // Scale this bar's width to its length relative to the longest topology in
+  // the table so variant bars are length-proportional + left-aligned to the
+  // canonical frame. Clamped to 100% defensively (a variant longer than the
+  // supplied max gets full width rather than overflowing the cell).
+  const widthPct =
+    maxResidues && maxResidues > 0
+      ? `${Math.min(100, (topology.length / maxResidues) * 100)}%`
+      : "100%";
   return (
     <div
       className={styles.bar}
       role="img"
       aria-label={ariaLabel ?? "Per-residue topology bar"}
+      style={{ width: widthPct }}
     >
       {segments.map((seg, i) => (
         <div

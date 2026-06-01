@@ -36,6 +36,29 @@ Same method in two different papers → two rows.
 `cited_evidence_ids` on each row lists every `evidence_id` that
 contributed to that row.
 
+### No redundant rows — distinguishable assay or merge
+
+Two `MethodObservation` rows are REDUNDANT when they cite the same
+`evidence_id`(s) AND share the same `method_subclass` AND the same
+`expression_system`. Never emit redundant rows — collapse them into one
+(union the `antibodies[]` and `expression_observations[]`).
+
+The legitimate exception is a TRUE multi-condition experiment described in
+one claim — most often a paper that ran BOTH a permeabilized IF (total
+protein) AND a non-permeabilized IF (surface only) on the same cells.
+Those are two genuinely different assays and SHOULD be two rows with
+DIFFERENT `method_subclass` (`permeabilized_IF` vs `nonpermeabilized_IF`)
+and the correspondingly different `accessibility_relevance`
+(`expression_only` vs `supports_surface_localization`) — even though they
+cite the same `evidence_id`. The discriminator is the **assay condition**,
+NOT the citation: if the two rows would carry the SAME `method_subclass`,
+they're redundant and must merge; if the `method_subclass` genuinely
+differs, keep them separate.
+
+Before finalizing, scan your output: for any two rows sharing a
+`cited_evidence_ids` value, confirm their `method_subclass` differs. If it
+doesn't, merge them.
+
 ## Field-by-field rules
 
 - `method_family` — closed enum: `flow_cytometry`, `immunofluorescence`,
@@ -109,8 +132,13 @@ contributed to that row.
   "anti-X clone 528, BD Biosciences, RRID:AB_123456, KO-validated".
   The catalog reader filters and the synthesizer's confidence call
   both read these fields. Extract verbatim from the claim quote when
-  present; use `unknown` (or `null` for the optional fields) only when
-  the source genuinely doesn't supply — never invent, never bury.
+  present. When the paper is SILENT on `monoclonal_or_polyclonal`,
+  `antibody_epitope_region`, or `validation_strength` BUT the antibody is
+  precisely identified (an `rrid`, a `catalog` number, or a `clone` +
+  `vendor` pair), resolve the missing value with `web_search` before
+  defaulting — see **Tools** below. Use `unknown` / `null` only when the
+  paper is silent AND no precise identifier exists to search on — never
+  invent, never bury.
 
 ### Antibody-identifier extraction discipline
 
@@ -141,8 +169,27 @@ not collapse it into `name`:
 **Good**: `name="anti-CD81"`, `clone="5A6"`, `vendor="BD Biosciences"`,
 `validation_strategy="genetic_KO"`, `validation_strength="strong"`
 
-If the quote is generic ("a commercial anti-X antibody", "anti-X
-antibody from a vendor"), set `clone=null` AND
+**Antibody identifiers often live in a SEPARATE reagent-list claim —
+pull them across claims before defaulting to null.** Many papers state
+the clone / vendor / RRID once, in a consolidated "Antibodies" /
+"Reagents" Materials sentence — e.g. *"Primary antibodies including
+purified anti-human CD81 (Clone 5A6), purified anti-human EGFR (Clone
+AY13), anti-human EGFR-Alexa Fluor 488 (Clone AY13) … were purchased
+from …"* — while the assay sentence that describes the actual flow / IF
+experiment only says "anti-EGFR antibody". When ANY claim in the ledger
+is such a reagent list naming `anti-[TARGET] (Clone X[, Vendor / RRID])`,
+APPLY that clone / vendor / RRID to the `AntibodyRef` of the method
+observation that used that antibody — matched by target (EGFR ↔
+anti-EGFR) and, when present, conjugate ("-Alexa Fluor 488" ↔ the
+fluor-tagged variant). Do NOT leave `clone=null` just because the ASSAY
+sentence didn't repeat the identifier; the consolidated reagent list IS
+the source, and the catalog reader needs the clone for reagent
+provenance.
+
+Only when NO claim anywhere in the ledger names that target's clone is
+the generic fallback correct: if the quote is generic ("a commercial
+anti-X antibody", "anti-X antibody from a vendor") AND no reagent-list
+claim supplies the identifier, set `clone=null` AND
 `validation_strategy="vendor_claim_only"` AND
 `validation_strength="weak"`. The null clone is honest; the weak
 validation flags it for catalog readers.
@@ -182,10 +229,33 @@ overexpression_reference, vendor_claim_only, none, unknown}`;
   glycoproteomics. `expression_only` for permeabilized methods that
   measure total protein. `weak_or_ambiguous` when the panel doesn't
   cleanly fit.
+    - **Keep `expression_only` even when a permeabilized assay describes
+      localization.** A permeabilized assay broke the membrane to read the
+      protein, so it CANNOT prove surface *accessibility* — that's why its
+      relevance stays `expression_only` regardless of what it saw. Do NOT
+      promote it to `supports_surface_localization` (that's reserved for
+      NON-permeabilized IF / IHC). Capture the localization the paper
+      reported in `surface_claim_type` instead (next field), not by
+      inflating `accessibility_relevance`.
 - `surface_claim_type` — closed enum: `surface_accessible`,
   `plasma_membrane_localized`, `membrane_fraction_enriched`,
   `cell_junction_localized`, `apical_or_luminal`, `secreted_or_shed`,
   `intracellular_pool`, `unclear`.
+    - **Set this from WHERE the protein was seen, independently of the
+      assay's accessibility relevance.** A permeabilized IF / confocal
+      assay (so `accessibility_relevance=expression_only`) that nonetheless
+      describes **plasma-membrane-rim staining** or **colocalization with a
+      membrane marker** (e.g. Na⁺/K⁺-ATPase, E-cadherin, WGA, a cell-surface
+      partner) carries real localization signal — set
+      `surface_claim_type=plasma_membrane_localized` (or
+      `cell_junction_localized` / `apical_or_luminal` when the paper
+      specifies a junctional / apical pattern). Reserve `intracellular_pool`
+      for assays that saw the protein in the cytoplasm / ER / endosomes, and
+      `unclear` only when the paper doesn't describe a localization pattern
+      at all. This split is load-bearing downstream: a permeabilized assay
+      that localized the protein to the PM is kept on the surface card,
+      while a permeabilized total-protein read with no localization claim is
+      filtered out.
 - `expression_observations[]` — extract numeric / qualitative
   expression-level reads tied to this method panel (e.g. "X cells
   positive at 4-5 logs higher MFI"). Each carries `context` (free text
@@ -211,7 +281,48 @@ WB-only claim has no fractionation pairing in the ledger, set
 If no claims qualify, emit an empty array `[]`. Still ONE fenced ```json
 block.
 
-## You have no tools
+## Tools — web search for antibody metadata ONLY
 
-Cite-only over the ledger you're handed. Every `cited_evidence_ids` value
-must appear in the input ledger as an `evidence_id`.
+You have ONE tool: **`web_search`**. Use it SOLELY to resolve **antibody
+reagent metadata** — `monoclonal_or_polyclonal`, `antibody_epitope_region`,
+and `validation_strength` — that the source paper leaves unstated, by
+looking up the antibody's **vendor datasheet** or its **Antibody Registry**
+record. It is NOT for the surface evidence itself.
+
+**Hard boundaries (do not cross):**
+- The surface-evidence content — every `MethodObservation`'s assay,
+  observations, `surface_claim_type`, and especially `cited_evidence_ids`
+  — stays **cite-only over the input ledger**. NEVER add a method,
+  observation, expression read, or citation sourced from the web. Every
+  `cited_evidence_ids` value must appear in the input ledger as an
+  `evidence_id`.
+- Web search fills ONLY the three scalar `AntibodyRef` fields above, and
+  ONLY for an antibody you have identified precisely enough to be certain
+  you have the right product.
+
+**When to search (be economical — budget ≈ 8 searches per gene):**
+- Search ONLY when (a) the paper did not state the field AND (b) you have
+  a precise anchor: an `rrid` (best — resolve on the Antibody Registry),
+  a `catalog` number, or a `clone` + `vendor` pair. A bare target name
+  ("anti-EGFR antibody") is NOT searchable — leave the field
+  `unknown` / `none`.
+- Prioritize the antibodies backing the strongest / most-cited evidence;
+  don't burn the budget on every reagent.
+- A named monoclonal **clone** ID is monoclonal by definition: if `clone`
+  is a specific clone ID, set `monoclonal_or_polyclonal="monoclonal"`
+  WITHOUT spending a search.
+
+**Matching discipline:**
+- Fill a field only when the hit is unambiguously the SAME product (the
+  RRID matches, or vendor + catalog match, or vendor + clone match). On
+  ANY ambiguity or no confident hit, KEEP the paper-derived value
+  (`unknown` / `none`) — never guess.
+- Datasheet / registry "monoclonal" / "polyclonal" / "recombinant" sets
+  `monoclonal_or_polyclonal`. The immunogen / epitope description sets
+  `antibody_epitope_region` (immunogen in the extracellular domain / ECD
+  residues → `extracellular`; cytoplasmic / C-terminal intracellular
+  region → `intracellular`; isoform-specific immunogen → `isoform_specific`).
+  A vendor "KO-validated" / "validated for live-cell flow" claim may lift
+  `validation_strength` per the table above — but a paper-stated genetic
+  KO always outranks a vendor claim, and a vendor claim alone is at most
+  `validation_strategy="vendor_claim_only"` / `validation_strength="weak"`.

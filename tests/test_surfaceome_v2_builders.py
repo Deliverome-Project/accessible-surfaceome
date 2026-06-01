@@ -36,7 +36,6 @@ from accessible_surfaceome.agents.surfaceome_v2.builders import (
     build_evidence_grade,
     build_methods,
     build_subcellular_localization,
-    build_therapeutic_engagement,
     build_tissues,
 )
 from accessible_surfaceome.agents.surfaceome_v2.orchestrator import (
@@ -57,7 +56,6 @@ from accessible_surfaceome.tools._shared.models import (
     SubcellularLocalization,
     SurfaceEvidence,
     SurfaceEvidenceDraft,
-    TherapeuticEngagementContext,
     TissueContext,
 )
 
@@ -174,17 +172,11 @@ def _patch_text_block(monkeypatch: pytest.MonkeyPatch) -> None:
     from accessible_surfaceome.agents.surfaceome_v2.builders import (
         _common as common_mod,
     )
-    from accessible_surfaceome.agents.surfaceome_v2.builders import (
-        therapeutic_engagement as te_mod,
-    )
 
     # Replace TextBlock with a tuple of (real TextBlock, MagicMock) so
     # both real responses and mocked ones pass the isinstance check.
     monkeypatch.setattr(
         common_mod, "TextBlock", (common_mod.TextBlock, MagicMock), raising=True
-    )
-    monkeypatch.setattr(
-        te_mod, "TextBlock", (te_mod.TextBlock, MagicMock), raising=True
     )
 
 
@@ -490,49 +482,6 @@ def test_methods_builder_prompt_mentions_validation_strategy_table() -> None:
     assert "validation-strategy assignment" in body
     assert "siRNA knockdown abolishes".lower() in body
     assert "ip_ms_pulldown" in body
-
-
-# ---------------------------------------------------------------------------
-# therapeutic_engagement_builder
-# ---------------------------------------------------------------------------
-
-
-def test_build_therapeutic_engagement_happy() -> None:
-    claims = [_claim("05", quote="Phase 2 trial of zalu-mAb in MM.")]
-    output = {
-        "highest_stage": "in_clinical_trials",
-        "description": "zalu-mAb (anti-X) is in Phase 2 for multiple myeloma.",
-        "surface_form_rationale": "Drug binds the membrane-bound form on plasma cells.",
-        "cited_evidence_ids": ["a1_evi_05"],
-    }
-    client = _mock_client([_fenced(json.dumps(output))])
-    sink: list[UsageRecord] = []
-    block = build_therapeutic_engagement(
-        claims, client=client, usage_sink=sink, context={"gene": "X"}
-    )
-    assert isinstance(block, TherapeuticEngagementContext)
-    assert block.highest_stage == "in_clinical_trials"
-    assert block.cited_evidence_ids == ["a1_evi_05"]
-
-
-def test_build_therapeutic_engagement_null() -> None:
-    claims = [_claim("01")]
-    client = _mock_client([_fenced("null")])
-    sink: list[UsageRecord] = []
-    block = build_therapeutic_engagement(
-        claims, client=client, usage_sink=sink, context={"gene": "X"}
-    )
-    assert block is None
-
-
-def test_build_therapeutic_engagement_empty_input_returns_none() -> None:
-    client = _mock_client([])
-    sink: list[UsageRecord] = []
-    block = build_therapeutic_engagement(
-        [], client=client, usage_sink=sink, context={"gene": "X"}
-    )
-    assert block is None
-    client.messages.create.assert_not_called()
 
 
 # ---------------------------------------------------------------------------
@@ -975,7 +924,6 @@ def test_surface_evidence_draft_validates_with_block_builder_outputs() -> None:
             )
         ],
         non_surface_expression=[],
-        therapeutic_engagement=None,
         contradicting_evidence=[],
     )
     draft = SurfaceEvidenceDraft(surface_evidence=se, evidence_claims=a1_claims)
@@ -1029,7 +977,6 @@ def test_block_counts_helper() -> None:
         grade_rationale="rationale",
         methods=[],
         non_surface_expression=[],
-        therapeutic_engagement=None,
         contradicting_evidence=[],
     )
     bc = BiologicalContext(
@@ -1047,7 +994,6 @@ def test_block_counts_helper() -> None:
     counts = _count_blocks(se, bc)
     assert counts["methods"] == 0
     assert counts["tissues"] == 0
-    assert counts["therapeutic_engagement"] == 0
 
 
 # ---------------------------------------------------------------------------

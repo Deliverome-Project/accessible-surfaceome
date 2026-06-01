@@ -218,6 +218,12 @@ export interface ExecutiveSummary {
    *  synth re-derives from A1+A2 evidence; sometimes overrides the
    *  triage's own reason. */
   surface_call_reason: TriageReason;
+  /** One-sentence rationale for WHEN/WHERE the protein is surface-
+   *  accessible — the headline behind the §03 "Localization &
+   *  accessibility context" summary and the §01 echo. Synthesized over
+   *  the biological_context block. `null` on records generated before
+   *  this field landed (render nothing until re-annotated). */
+  accessibility_context_summary: string | null;
   headline_risks: HeadlineRisk[];
   cited_evidence_ids: string[];
 }
@@ -286,6 +292,20 @@ export interface Filters {
    *  to surface-localize in an OE context" — useful for filtering
    *  targets amenable to OE-based validation experiments. */
   overexpression_surface_localization_observed: boolean;
+  /** Per-chip rationales — every catalog chip carries its "why".
+   *  Four mirror the synthesizer's LLM-emitted rollups; two are
+   *  orchestrator-composed for the derived booleans. Optional: records
+   *  emitted before this field existed (genes not yet re-annotated)
+   *  omit them, and the viewer renders the chip without an expansion.
+   *  The other five chips (co-receptor, restricted-subdomain, shed,
+   *  secreted, epitope-masking) carry their rationale in the deep
+   *  ``accessibility_risks`` blocks, not here. */
+  expression_level_rationale?: string;
+  expression_breadth_rationale?: string;
+  surface_specificity_rationale?: string;
+  has_known_ligand_rationale?: string;
+  low_endogenous_expression_rationale?: string;
+  overexpression_surface_localization_observed_rationale?: string;
 }
 
 // ============================================================
@@ -324,6 +344,14 @@ export interface IsoformTopology {
   per_residue_topology: string;
   tool_version: string;
   retrieved_at: string;
+  // Sequence identity of an alternative isoform against this protein's own
+  // canonical sequence (BLOSUM62 global alignment over the shorter length).
+  // Null on the canonical row itself and on records predating the identity
+  // sweep; ecd_pct_identity_to_canonical is also null when the protein has no
+  // extracellular residues (e.g. SRC — a GLOB intracellular kinase).
+  full_length_pct_identity_to_canonical?: number | null;
+  ecd_pct_identity_to_canonical?: number | null;
+  ecd_pct_similarity_to_canonical?: number | null;
 }
 
 export interface OrthologEntry {
@@ -391,11 +419,19 @@ export interface ParalogEntry {
   full_length_pct_identity: number | null;
   family_id: string;
   compara_version: string;
-  // (Per-residue DeepTMHMM topology was briefly added to this entry
-  // in 6a220a90 and reverted: SRC's 32 paralogs are all GLOB
-  // intracellular kinases, so the bars rendered as solid blue with
-  // no signal. Isoform + ortholog topology stay in §04 because they
-  // CAN show real TM patterns.)
+  // ECD percent similarity (identity + BLOSUM62-positive substitutions),
+  // and the paralog's real DeepTMHMM topology — populated ONLY for close
+  // paralogs (>=80% full-length), which the card promotes to full topology
+  // rows. All null for below-threshold / ECD-less / no-topology paralogs.
+  ecd_pct_similarity?: number | null;
+  per_residue_topology?: string | null;
+  deeptmhmm_label?: string | null;
+  tm_helix_count?: number | null;
+  ecd_length_residues?: number | null;
+  icd_length_residues?: number | null;
+  n_terminal_orientation?: Orientation | null;
+  c_terminal_orientation?: Orientation | null;
+  signal_peptide_length?: number | null;
 }
 
 /**
@@ -596,13 +632,6 @@ export type MeasurementType =
   | "single_cell_RNA"
   | "unknown";
 
-export type TherapeuticStage =
-  | "approved_drug"
-  | "in_clinical_trials"
-  | "preclinical_in_vivo"
-  | "none_documented"
-  | "unknown";
-
 export type ContradictionType =
   | "intracellular_pool"
   | "alternative_localization"
@@ -701,13 +730,6 @@ export interface NonSurfaceExpression {
   cited_evidence_ids: string[];
 }
 
-export interface TherapeuticEngagement {
-  highest_stage: TherapeuticStage;
-  description: string;
-  surface_form_rationale: string;
-  cited_evidence_ids: string[];
-}
-
 export interface Contradiction {
   claim: string;
   contradiction_type: ContradictionType;
@@ -744,7 +766,6 @@ export interface SurfaceEvidence {
   claim_stances: ClaimStanceRow[];
   methods: MethodObservation[];
   non_surface_expression: NonSurfaceExpression[];
-  therapeutic_engagement: TherapeuticEngagement | null;
   contradicting_evidence: Contradiction[];
 }
 
@@ -797,6 +818,15 @@ export type ModulationCategory =
   | "none"
   | "other"
   | "unknown";
+
+// Up/down axis of the surface-accessible pool for a modulation row. Mirrors
+// the Pydantic `ModulationDirection` enum.
+export type ModulationDirection =
+  | "increases_surface"
+  | "decreases_surface"
+  | "bidirectional"
+  | "no_change"
+  | "unclear";
 
 export type CellStateTrigger =
   | "ER_stress"
@@ -912,6 +942,11 @@ export interface AccessibilityModulationObservation {
   modulating_state: string;
   change: string;
   accessibility_implication: string;
+  // Structured up/down direction of the change. Records predating the field
+  // omit it at runtime (Python default "unclear"); the viewer guards for
+  // undefined before rendering the glyph. Non-optional to match the
+  // name-level Python↔TS sync check.
+  direction: ModulationDirection;
   species?: Species;
   species_inferred?: boolean;
   cited_evidence_ids: string[];

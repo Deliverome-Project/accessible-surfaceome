@@ -1036,7 +1036,7 @@ Confidence = Literal["high", "moderate", "low"]
 StateDependence = Literal["low", "moderate", "high", "unclear"]
 # Subcategory = ARCHITECTURE only — how the protein sits in the
 # membrane. Function lives on the separate ``ProteinFamily`` axis.
-# Slimmed in the SURFACE-Bind alignment (Marchand et al. 2026 PNAS,
+# Slimmed in the SURFACE-Bind alignment (Balbi et al. 2026 PNAS,
 # doi:10.1073/pnas.2506269123): the SURFACE-Bind taxonomy splits
 # function (Receptor / Enzyme / Transporter / Miscellaneous) from
 # architectural detail (which SURFACE-Bind doesn't enumerate to
@@ -1058,7 +1058,7 @@ Subcategory = Literal[
 ]
 
 # ProteinFamily = FUNCTIONAL family. Mirrors SURFACE-Bind's four main
-# classes verbatim (Marchand et al. 2026 PNAS), dropping the
+# classes verbatim (Balbi et al. 2026 PNAS), dropping the
 # bookkeeping ``unclassified`` / ``unmatched`` since those reflect
 # their mapping-pipeline state rather than biology.
 ProteinFamily = Literal[
@@ -1206,13 +1206,6 @@ MeasurementType = Literal[
     "single_cell_RNA",
     "unknown",
 ]
-TherapeuticStage = Literal[
-    "approved_drug",
-    "in_clinical_trials",
-    "preclinical_in_vivo",
-    "none_documented",
-    "unknown",
-]
 ContradictionType = Literal[
     "intracellular_pool",
     "alternative_localization",
@@ -1303,6 +1296,19 @@ CellStateTrigger = Literal[
     "mechanical_stress",
     "other",
     "unknown",
+]
+# Coarse induction-context bucket for the catalog `induction_trigger`
+# filter — the dominant CellStateTrigger across a record's
+# accessibility_modulation rows, grouped so the catalog can ask "show me
+# stimulus-induced surface candidates" at one level instead of 18.
+InductionTrigger = Literal[
+    "none",
+    "oncogenic",
+    "immune",
+    "stress_hypoxia",
+    "cell_death",
+    "infection",
+    "other",
 ]
 RestrictedLineage = Literal[
     "germline_reproductive",
@@ -1404,7 +1410,7 @@ class ExecutiveSummary(BaseModel):
     # ``Subcategory`` Literal for the closed enum + the SURFACE-Bind
     # alignment that splits architecture from function.
     subcategory: Subcategory
-    # NEW: functional family per SURFACE-Bind (Marchand 2026 PNAS).
+    # NEW: functional family per SURFACE-Bind (Balbi et al. 2026 PNAS).
     # ``receptor`` = signaling receptors (GPCRs, RTKs, cytokine
     # receptors, integrins, immunoreceptors). ``enzyme`` = surface-
     # exposed catalytic activity (CD13/ANPEP, CD26/DPP4, CD73/NT5E,
@@ -1444,6 +1450,22 @@ class ExecutiveSummary(BaseModel):
     # a contextual reason like ``lysosomal_exocytosis`` after finding
     # the cancer-state surface evidence).
     surface_call_reason: TriageReason
+    # One-sentence, reader-facing rationale for WHEN / WHERE the protein
+    # is surface-accessible — the headline behind the §03 "Localization &
+    # accessibility context" summary (and echoed in the §01 signal
+    # panel). Synthesized over the ``biological_context`` block
+    # (``accessibility_modulation`` + ``subcellular_localization`` +
+    # ``anatomical_accessibility``), NOT a copy of ``one_paragraph``.
+    # Optional / defaults ``None`` for back-compat: records generated
+    # before this field landed validate fine and render no summary line
+    # until re-annotated.
+    accessibility_context_summary: str | None = Field(
+        default=None,
+        description=(
+            "One sentence (≤240 chars) on when/where this protein is "
+            "surface-accessible — the accessibility-context headline."
+        ),
+    )
     headline_risks: list[HeadlineRisk] = Field(default_factory=list, max_length=3)
     cited_evidence_ids: list[str] = Field(default_factory=list)
 
@@ -1632,6 +1654,52 @@ class Filters(BaseModel):
     # methods (weak grade, errored runs) read as False.
     overexpression_surface_localization_observed: bool = False
 
+    # ---- deep-block rollups --------------------------------------------
+    # Promoted to top-level catalog facets from blocks that previously
+    # lived only nested (biological_context.tissues / .accessibility_
+    # modulation, surface_evidence.methods). All deterministic — the
+    # orchestrator derives them in ``_derive_filters``; default values keep
+    # records emitted before these fields existed valid.
+    #
+    # Expressed in a tumor / tumor-adjacent tissue context (any
+    # ``tissues[]`` row with disease_context ∈ {tumor, tumor_adjacent} at a
+    # non-absent level). Oncology-target triage.
+    tumor_associated: bool = False
+    # Dominant induction trigger across ``accessibility_modulation`` rows —
+    # *what stimulus* surfaces the protein, bucketed from CellStateTrigger.
+    # ``surface_call_reason`` gives the *mechanism*; this gives the
+    # *trigger*; ``"none"`` when no modulation row carries one.
+    induction_trigger: InductionTrigger = "none"
+    # ≥1 ``surface_evidence.methods`` row showing DIRECT surface
+    # accessibility on live/intact cells in an endogenous context (flow
+    # cytometry, surface biotinylation, or proximity labeling; expression
+    # system endogenous/mixed). Filter by evidence MODALITY, not just grade.
+    has_live_cell_surface_evidence: bool = False
+
+    # ---- per-chip rationales -------------------------------------------
+    # Every catalog chip carries a one-line "why". Four mirror B's
+    # ``SynthesizerLLMFilters`` rationales (LLM-emitted rollups with no
+    # deep block); two are composed deterministically by the orchestrator
+    # for the derived booleans, referencing the source they were derived
+    # from. The five remaining chips (co-receptor, restricted-subdomain,
+    # shed, secreted, epitope-masking) carry their rationale in the deep
+    # ``accessibility_risks`` blocks and are not duplicated here.
+    #
+    # Default ``""`` for backward compatibility: records emitted before
+    # this field existed (or genes not yet re-annotated) read as empty,
+    # and the viewer renders the chip without an expansion in that case.
+    expression_level_rationale: str = ""
+    expression_breadth_rationale: str = ""
+    surface_specificity_rationale: str = ""
+    has_known_ligand_rationale: str = ""
+    # Orchestrator-composed (deterministic): references ``expression_level``
+    # and its rationale — ``low_endogenous_expression`` fires iff
+    # ``expression_level ∈ {low, absent}``.
+    low_endogenous_expression_rationale: str = ""
+    # Orchestrator-composed (deterministic): names the overexpression +
+    # surface-localization method observation(s) that set the flag True.
+    overexpression_surface_localization_observed_rationale: str = ""
+
 
 # ---- surface evidence (section 1) -----------------------------------------
 
@@ -1755,39 +1823,6 @@ class NonSurfaceExpression(BaseModel):
     cited_evidence_ids: list[str] = Field(default_factory=list)
 
 
-class TherapeuticEngagementContext(BaseModel):
-    """Lightweight signal that a therapeutic has reached this protein at the
-    cell surface — NOT a comprehensive therapeutic-landscape assessment.
-
-    ``surface_form_rationale`` is required and load-bearing for proteins with
-    both surface and secreted forms (GRP78, EGFR, etc.) — it clarifies which
-    form the drug actually engages.
-    """
-
-    model_config = ConfigDict(extra="forbid")
-
-    highest_stage: TherapeuticStage
-    description: str = Field(
-        ...,
-        description="Therapeutic engagement description. Soft target ≤600 chars (overshoots warned but accepted).",
-    )
-    surface_form_rationale: str = Field(
-        ...,
-        description="Which form the drug engages (surface vs. secreted). Soft target ≤400 chars (overshoots warned but accepted).",
-    )
-    cited_evidence_ids: list[str] = Field(default_factory=list)
-
-    _PROSE_TARGETS: ClassVar[dict[str, int]] = {
-        "description": 600,
-        "surface_form_rationale": 400,
-    }
-
-    @model_validator(mode="after")
-    def _warn_soft_target_overshoot(self) -> "TherapeuticEngagementContext":
-        _warn_prose_overshoot(self, type(self)._PROSE_TARGETS)
-        return self
-
-
 class Contradiction(BaseModel):
     """One piece of contradicting evidence + the LLM's read on whether it
     matters for surface accessibility."""
@@ -1868,7 +1903,6 @@ class SurfaceEvidence(BaseModel):
     claim_stances: list[ClaimStanceRow] = Field(default_factory=list)
     methods: list[MethodObservation] = Field(default_factory=list)
     non_surface_expression: list[NonSurfaceExpression] = Field(default_factory=list)
-    therapeutic_engagement: TherapeuticEngagementContext | None = None
     contradicting_evidence: list[Contradiction] = Field(default_factory=list)
 
     _PROSE_TARGETS: ClassVar[dict[str, int]] = {"grade_rationale": 800}
@@ -1985,6 +2019,18 @@ class AnatomicalAccessibilityObservation(BaseModel):
         return self
 
 
+# Structured direction of the surface-accessibility change a modulation row
+# describes. Distinct from ``AccessibilityImplication`` (favorable / restricted
+# / …) — this is purely the up/down axis of the surface-accessible pool.
+ModulationDirection = Literal[
+    "increases_surface",
+    "decreases_surface",
+    "bidirectional",
+    "no_change",
+    "unclear",
+]
+
+
 class AccessibilityModulationObservation(BaseModel):
     """How surface presence/exposure shifts with cell state, tissue, or disease.
 
@@ -2014,6 +2060,10 @@ class AccessibilityModulationObservation(BaseModel):
         ...,
         description="What the change means for accessibility. Soft target ≤300 chars (overshoots warned but accepted).",
     )
+    # Structured up/down direction of the change described in ``change`` /
+    # ``accessibility_implication``. Defaults to ``"unclear"`` so records
+    # predating this field stay valid and the viewer shows no glyph for them.
+    direction: ModulationDirection = "unclear"
     species: Species = "unspecified"
     species_inferred: bool = False
     cited_evidence_ids: list[str] = Field(default_factory=list)
@@ -2104,6 +2154,15 @@ class IsoformTopology(BaseModel):
     per_residue_topology: str
     tool_version: str
     retrieved_at: datetime
+    # Sequence identity of an alternative isoform against this protein's own
+    # canonical sequence (BLOSUM62 global alignment over the shared length;
+    # see ``merge/isoform_identity.py``). Both fields are None on the
+    # canonical row itself (it's the reference) and on isoforms predating the
+    # identity sweep. ``ecd_pct_identity_to_canonical`` is additionally None
+    # when either the canonical or the isoform has no extracellular residues.
+    full_length_pct_identity_to_canonical: float | None = Field(default=None, ge=0.0, le=100.0)
+    ecd_pct_identity_to_canonical: float | None = Field(default=None, ge=0.0, le=100.0)
+    ecd_pct_similarity_to_canonical: float | None = Field(default=None, ge=0.0, le=100.0)
 
 
 class OrthologEntry(BaseModel):
@@ -2192,13 +2251,25 @@ class ParalogEntry(BaseModel):
     full_length_pct_identity: float | None = Field(default=None, ge=0.0, le=100.0)
     family_id: str
     compara_version: str
-    # (Per-residue DeepTMHMM topology was briefly added to this entry
-    # in 6a220a90 and reverted shortly after: SRC's 32 paralogs are all
-    # GLOB intracellular kinases, so the bars rendered as solid blue
-    # with no signal. Isoform + ortholog topology are still surfaced
-    # in §04 because those CAN show real TM patterns. If a real use
-    # case for paralog topology surfaces later, re-add via the same
-    # topology_public LEFT JOIN pattern that the orthologs loader uses.)
+    # ECD percent SIMILARITY (identity + BLOSUM62-positive substitutions),
+    # the companion to ``ecd_pct_identity``. Populated only for CLOSE paralog
+    # pairs (>=80% full-length identity) — the ones the viewer promotes to
+    # full topology rows. None for ECD-less proteins and below-threshold pairs.
+    # Sourced from ``compara_paralog.ecd_pct_similarity``.
+    ecd_pct_similarity: float | None = Field(default=None, ge=0.0, le=100.0)
+    # Real DeepTMHMM topology for the paralog, joined from ``topology_public``
+    # (cohort=human_canonical) — NOT inferred from any string. Populated for
+    # close paralogs (>=80%) so the viewer can render a full topology row
+    # (ECD / ICD / TM / orientations) like the ortholog rows. All None when
+    # the paralog has no topology row or the pair is below threshold.
+    per_residue_topology: str | None = Field(default=None)
+    deeptmhmm_label: str | None = Field(default=None)  # 'TM'|'SP+TM'|'SP'|'BETA'|'GLOB'
+    tm_helix_count: int | None = Field(default=None)
+    ecd_length_residues: int | None = Field(default=None)
+    icd_length_residues: int | None = Field(default=None)
+    n_terminal_orientation: TerminalOrientation | None = Field(default=None)
+    c_terminal_orientation: TerminalOrientation | None = Field(default=None)
+    signal_peptide_length: int | None = Field(default=None)
 
 
 class StructureFeatures(BaseModel):
@@ -2225,7 +2296,7 @@ class SurfaceBindSite(BaseModel):
     """One MaSIF-scored targetable patch on a SURFACE-Bind protein.
 
     Sourced from SURFACE-Bind's ``results_no_TM.csv`` per-site arrays
-    (Marchand et al. 2026 PNAS). Each site is a surface patch the
+    (Balbi et al. 2026 PNAS). Each site is a surface patch the
     MaSIF scoring identified as designable for a de novo binder.
 
     Notes on the fields:
@@ -2255,7 +2326,7 @@ class SurfaceBindSite(BaseModel):
 
 
 class SurfaceBindFeatures(BaseModel):
-    """SURFACE-Bind per-UniProt summary (Marchand et al. 2026 PNAS).
+    """SURFACE-Bind per-UniProt summary (Balbi et al. 2026 PNAS).
 
     ``has_data=False`` is the explicit "not in SURFACE-Bind" signal —
     SURFACE-Bind's authoritative ``results_no_TM.csv`` table covers
@@ -2299,9 +2370,14 @@ class SurfaceBindFeatures(BaseModel):
     # Often >100 entries for well-studied targets (EGFR has 250+);
     # truncated in the viewer to the first few.
     pdbs: list[str] = Field(default_factory=list)
-    source: str = "SURFACE-Bind v1 (Marchand 2026 PNAS)"
+    # First author is Balbi PEM (verified: PMID 41604262 == DOI
+    # 10.1073/pnas.2506269123, "Mapping targetable sites on the human
+    # surfaceome…", PNAS 2026). An earlier draft mislabeled the lead
+    # author as "Marchand" (the 3rd author); kept here as the canonical
+    # record-facing attribution, so don't reintroduce that name first.
+    source: str = "SURFACE-Bind v1 (Balbi et al. 2026 PNAS)"
     attribution: str = (
-        "© Marchand, Khakzad, Correia et al. — EPFL / Inria / Novo Nordisk"
+        "© Balbi et al., Correia lab — EPFL / Inria / Novo Nordisk"
     )
     citation: str = "10.1073/pnas.2506269123"
 
@@ -2320,7 +2396,7 @@ class DeterministicFeatures(BaseModel):
     orthologs: Orthologs = Field(default_factory=Orthologs)
     paralogs: list[ParalogEntry] = Field(default_factory=list)
     structure: StructureFeatures
-    # SURFACE-Bind summary (Marchand 2026 PNAS); always present, with
+    # SURFACE-Bind summary (Balbi et al. 2026 PNAS); always present, with
     # ``has_data=False`` as the explicit "not scored" signal for the
     # ~12% of surfaceome proteins SURFACE-Bind omitted.
     surface_bind: SurfaceBindFeatures = Field(default_factory=SurfaceBindFeatures)
@@ -2721,8 +2797,6 @@ class SurfaceEvidenceDraft(BaseModel):
                 cited.update(obs.cited_evidence_ids)
         for nse in se.non_surface_expression:
             cited.update(nse.cited_evidence_ids)
-        if se.therapeutic_engagement is not None:
-            cited.update(se.therapeutic_engagement.cited_evidence_ids)
         for contradiction in se.contradicting_evidence:
             cited.update(contradiction.cited_evidence_ids)
         # claim_stances rows each name one claim_id directly (not in
@@ -2794,21 +2868,36 @@ class BiologicalContextDraft(BaseModel):
 
 
 class SynthesizerLLMFilters(BaseModel):
-    """The three ``filters`` rollups B is responsible for.
+    """The four ``filters`` rollups B is responsible for, each with its
+    one-line rationale.
 
-    The full :class:`Filters` block has 17 fields; 14 of those are
+    The full :class:`Filters` block has 17 value fields; 14 of those are
     orchestrator-derived from A1/A2 deep blocks and ``deterministic_features``.
-    B emits only the three rollups that don't have a deterministic source —
-    surface vs. intracellular split, expression breadth across tissues, and
-    expression level for the protein's primary contexts. The orchestrator
-    composes the full :class:`Filters` after the fact.
+    B emits the rollups that don't have a deterministic source — surface vs.
+    intracellular split, expression breadth across tissues, expression level
+    for the protein's primary contexts, and orphan-ligand status — plus a
+    short ``*_rationale`` for each so every catalog chip carries its "why".
+    The orchestrator composes the full :class:`Filters` after the fact,
+    mirroring these rationales onto the top-level block.
     """
 
     model_config = ConfigDict(extra="forbid")
 
     expression_level: ExpressionLevel
+    expression_level_rationale: str = Field(
+        ...,
+        description="Why this expression_level. Cite the dominant tissue/context the call anchors to. Soft target ≤300 chars.",
+    )
     expression_breadth: ExpressionBreadth
+    expression_breadth_rationale: str = Field(
+        ...,
+        description="Why this expression_breadth — how many / which tissue families carry the protein. Soft target ≤300 chars.",
+    )
     surface_specificity: SurfaceSpecificity
+    surface_specificity_rationale: str = Field(
+        ...,
+        description="Why this surface-vs-intracellular split (e.g. dual-localization fractions, dominant compartment). Soft target ≤300 chars.",
+    )
     # Orphan-receptor flag. Replaces the dropped
     # ``HeadlineRisk.ligand_unknown`` value — moved here so the
     # catalog can filter on ligand-known-or-not as a tractability
@@ -2817,6 +2906,22 @@ class SynthesizerLLMFilters(BaseModel):
     # ``False`` for orphan GPCRs / nuclear receptors / kinases where
     # the deorphanization status is genuinely unknown.
     has_known_ligand: bool = True
+    has_known_ligand_rationale: str = Field(
+        ...,
+        description="Name the documented ligand/partner (true) or state why the protein is orphan-class (false). Soft target ≤300 chars.",
+    )
+
+    _PROSE_TARGETS: ClassVar[dict[str, int]] = {
+        "expression_level_rationale": 300,
+        "expression_breadth_rationale": 300,
+        "surface_specificity_rationale": 300,
+        "has_known_ligand_rationale": 300,
+    }
+
+    @model_validator(mode="after")
+    def _warn_soft_target_overshoot(self) -> "SynthesizerLLMFilters":
+        _warn_prose_overshoot(self, type(self)._PROSE_TARGETS)
+        return self
 
 
 class SynthesizerDraft(BaseModel):
@@ -3286,7 +3391,6 @@ __all__ = [
     "ValidationStrength",
     "SampleType",
     "MeasurementType",
-    "TherapeuticStage",
     "ContradictionType",
     "ContradictionSeverity",
     "TissuePresence",
@@ -3318,7 +3422,6 @@ __all__ = [
     "OverexpressionContext",
     "MethodObservation",
     "NonSurfaceExpression",
-    "TherapeuticEngagementContext",
     "Contradiction",
     "SurfaceEvidence",
     # v1.0.0 — biological context (section 2)

@@ -2,10 +2,7 @@ import type { ReactNode } from "react";
 import type { CatalogRow } from "../../../lib/surfaceome";
 import type {
   AccessibilityModulationObservation,
-  CanonicalTopology,
-  OrthologSet,
-  StructureFeatures,
-  SurfaceBindFeatures,
+  BenchmarkRow,
   SurfaceomeRecord,
 } from "../../../lib/surfaceome-types";
 import type { StructureViewerData } from "../../../lib/structure-viewer-types";
@@ -13,8 +10,10 @@ import { prettyEnum } from "../../../lib/surfaceome";
 import { tooltips } from "../../../lib/tooltips";
 import { ReasoningDrawer } from "../ReasoningDrawer/ReasoningDrawer";
 import { DatabasePresenceStrip } from "../DatabasePresenceCard/DatabasePresenceStrip";
+import { linkifyEvidenceRefs } from "../EvidenceChip/EvidenceChip";
 import { FeedbackButton } from "../../FeedbackButton/FeedbackButton";
 import { InfoTip } from "../../InfoTip/InfoTip";
+import { ChipLabelValue } from "../ChipLabelValue/ChipLabelValue";
 import { StatusPill } from "../StatusPill/StatusPill";
 import { StructureViewer } from "../StructureViewerCard/StructureViewer";
 import styles from "./GeneHeader.module.css";
@@ -46,6 +45,21 @@ function _inferDeepTMHMMType(
   return "GLOB";
 }
 
+/** Coerce an OrthologEntry's stored ``deeptmhmm_label`` into the viewer's
+ *  DeepTMHMMType. Orthologs DO carry the rolled-up label from D1 (unlike
+ *  isoforms), so prefer it; fall back to inferring from the per-residue
+ *  string if the label is missing or unrecognized. */
+function _coerceDeepTMHMMType(
+  label: string | null | undefined,
+  topology: string,
+): import("../../../lib/structure-viewer-types").DeepTMHMMType {
+  const known = ["TM", "SP+TM", "SP", "BETA", "GLOB"] as const;
+  if (label && (known as readonly string[]).includes(label)) {
+    return label as (typeof known)[number];
+  }
+  return _inferDeepTMHMMType(topology);
+}
+
 interface GeneHeaderProps {
   rec: SurfaceomeRecord;
   /** Descriptive gene name + synonyms from NCBI gene_info. The record
@@ -70,6 +84,12 @@ interface GeneHeaderProps {
    *  strip is omitted in that case (same fall-back as the old
    *  section-card placement). */
   catalogRow?: CatalogRow | null;
+  /** Curated SurfaceBench ground-truth row — present only for the ~147
+   *  benchmark genes. When set, a "Benchmark" row renders ABOVE the
+   *  triage row showing the hand-curated truth verdict (the strongest
+   *  reference point on the page). ``null`` for the ~19k non-benchmark
+   *  genes, where the row is omitted. */
+  benchmarkRow?: BenchmarkRow | null;
 }
 
 function tierCounts(rec: SurfaceomeRecord) {
@@ -121,6 +141,28 @@ function triageVerdictLabel(signal: string): string {
   if (signal === "possibly_accessible") return "Contextual";
   if (signal === "unlikely") return "No";
   return "Unknown";
+}
+
+/** Display label for a SurfaceBench ground-truth verdict. The matrix
+ *  stores the raw curated verdict ("yes" | "contextual" | "no"); render
+ *  it title-cased to match the triage row's verdict labels. */
+function benchmarkVerdictLabel(verdict: string): string {
+  if (verdict === "yes") return "Yes";
+  if (verdict === "contextual") return "Contextual";
+  if (verdict === "no") return "No";
+  return prettyEnum(verdict);
+}
+
+/** Tone for the benchmark verdict value — green = surface (yes), amber =
+ *  contextual / state-dependent, red = not surface (no), gray otherwise.
+ *  Same traffic-light scale as the rest of the header. */
+function benchmarkVerdictTone(
+  verdict: string,
+): "success" | "amber" | "danger" | "neutral" {
+  if (verdict === "yes") return "success";
+  if (verdict === "contextual") return "amber";
+  if (verdict === "no") return "danger";
+  return "neutral";
 }
 
 /** Compare the Sonnet triage prior to the deep-dive surface verdict.
@@ -232,85 +274,6 @@ function vitalToneClass(
 }
 
 /**
- * Cell-content helpers for the deterministic-tools strip below the
- * LLM vitals 2×2. Each returns a `{ headline, sub }` pair the
- * `.detTile` template renders. Pulled out as named helpers (vs.
- * inline IIFEs) so the JSX stays readable — four cells per record
- * with conditional fall-backs would otherwise nest deeply.
- *
- * Each helper handles the orchestrator-prefetch's "no data" cases
- * explicitly so the cell renders an em-dash + a one-line "why" sub
- * instead of crashing on a null / placeholder value.
- */
-function topologyCellSummary(
-  topo: CanonicalTopology,
-): { headline: string; sub: string } {
-  const tm = topo.tm_helix_count;
-  const n = topo.n_terminal_orientation === "extracellular" ? "EC" : "IC";
-  const c = topo.c_terminal_orientation === "extracellular" ? "EC" : "IC";
-  if (tm === 0) {
-    return { headline: "0 TM", sub: "Globular / soluble" };
-  }
-  const sp = topo.signal_peptide_length > 0 ? " · SP" : "";
-  return {
-    headline: `${tm} TM`,
-    sub: `N-${n} · C-${c}${sp}`,
-  };
-}
-
-function plddtCellSummary(
-  struct: StructureFeatures,
-): { headline: string; sub: string } {
-  const src = struct.source.toLowerCase();
-  const placeholder = src.includes("placeholder");
-  const whole = !placeholder && src.includes("whole-protein");
-  if (placeholder) {
-    return { headline: "—", sub: "Not available" };
-  }
-  const v = struct.ecd_mean_plddt.toFixed(0);
-  const label = whole ? "Whole" : "ECD";
-  const disordered = (struct.ecd_disordered_fraction * 100).toFixed(0);
-  return {
-    headline: v,
-    sub: `${label} pLDDT · ${disordered}% disordered`,
-  };
-}
-
-function surfaceBindCellSummary(
-  sb: SurfaceBindFeatures,
-): { headline: string; sub: string } {
-  if (!sb.has_data) {
-    return { headline: "—", sub: "Not in SURFACE-Bind" };
-  }
-  if (sb.n_sites === 0) {
-    return { headline: "0 sites", sub: "No patches cleared scoring" };
-  }
-  return {
-    headline: `${sb.n_sites} site${sb.n_sites === 1 ? "" : "s"}`,
-    sub: `${sb.n_seeds_total} MaSIF seed${sb.n_seeds_total === 1 ? "" : "s"}`,
-  };
-}
-
-function conservationCellSummary(
-  orth: OrthologSet,
-): { headline: string; sub: string } {
-  const mouseCanon = orth.mouse.find((o) => o.is_canonical) ?? orth.mouse[0];
-  const cynoCanon =
-    orth.cynomolgus.find((o) => o.is_canonical) ?? orth.cynomolgus[0];
-  const mouse = mouseCanon?.full_length_pct_identity_to_human_canonical;
-  const cyno = cynoCanon?.full_length_pct_identity_to_human_canonical;
-  if (mouse == null && cyno == null) {
-    return { headline: "—", sub: "No ortholog data" };
-  }
-  const mouseStr = mouse != null ? `${mouse.toFixed(0)}` : "—";
-  const cynoStr = cyno != null ? `${cyno.toFixed(0)}` : "—";
-  return {
-    headline: `${mouseStr} / ${cynoStr}`,
-    sub: "Mouse / Cyno · % identity",
-  };
-}
-
-/**
  * GeneHeader — display-scale gene symbol, executive lede, identifier
  * links, and four vitals. Driven entirely by `executive_summary` +
  * derived counts from the evidence ledger; no v0.x targetability /
@@ -321,6 +284,7 @@ export function GeneHeader({
   geneName,
   structureData,
   catalogRow,
+  benchmarkRow,
 }: GeneHeaderProps) {
   const g = rec.gene;
   const exec = rec.executive_summary;
@@ -426,6 +390,56 @@ export function GeneHeader({
               outliers, where we just omit the strip. */}
           {catalogRow ? <DatabasePresenceStrip row={catalogRow} /> : null}
 
+          {/* Benchmark row — only for the ~147 SurfaceBench genes. The
+              hand-curated ground-truth verdict is the strongest reference
+              point on the page, so it sits ABOVE the model's first-pass
+              triage. Reuses the triage-row layout for visual consistency;
+              the value is toned on the same traffic-light scale. */}
+          {benchmarkRow
+            ? (() => {
+                // Same agree/conflict comparison the triage row makes, but
+                // against the curated ground-truth verdict instead of the
+                // model's triage prior. Map the benchmark verdict onto the
+                // triage-signal scheme so triageVsDeepDive can be reused
+                // (yes→likely, contextual→possibly, no→unlikely).
+                const benchSignal =
+                  benchmarkRow.truth_verdict === "yes"
+                    ? "likely_accessible"
+                    : benchmarkRow.truth_verdict === "contextual"
+                      ? "possibly_accessible"
+                      : benchmarkRow.truth_verdict === "no"
+                        ? "unlikely"
+                        : "unknown";
+                const benchVerdict = triageVsDeepDive(
+                  benchSignal,
+                  exec.surface_accessibility,
+                );
+                return (
+                  <p className={styles.triageRow}>
+                    <span className={`label-mono ${styles.triageLabel}`}>
+                      Benchmark
+                      <InfoTip>{tooltips.benchmark_truth}</InfoTip>
+                    </span>
+                    <StatusPill
+                      tone={benchmarkVerdictTone(benchmarkRow.truth_verdict)}
+                      size="sm"
+                    >
+                      {benchmarkVerdictLabel(benchmarkRow.truth_verdict)}
+                    </StatusPill>
+                    {benchVerdict === "conflict" ? (
+                      <span className={styles.triageConflict}>
+                        conflicts with deep dive
+                      </span>
+                    ) : benchVerdict === "agree" ? (
+                      <span className={styles.triageAgree}>
+                        agrees with deep dive
+                      </span>
+                    ) : null}
+                  </p>
+                );
+              })()
+            : null}
+
           {/* Triage row — Sonnet first-pass surface verdict, sitting
               under the DB-presence strip for transparency. Tagged with
               "initial pass · no web search" so the reader knows this
@@ -449,7 +463,7 @@ export function GeneHeader({
                   {triageVerdictLabel(rec.triage_signal)}
                 </span>
                 <span className={styles.triageQualifier}>
-                  initial pass · no web search
+                  <ChipLabelValue label="initial pass" value="no web search" />
                 </span>
                 {verdict === "conflict" ? (
                   <span className={styles.triageConflict}>
@@ -485,7 +499,9 @@ export function GeneHeader({
                   that vital)
                 * cited_evidence_ids → the §Evidence ledger + each
                   per-row EvidenceChipList */}
-          <p className={styles.execLede}>{exec.one_paragraph}</p>
+          <p className={styles.execLede}>
+            {linkifyEvidenceRefs(exec.one_paragraph)}
+          </p>
 
           {/* At-a-glance 2×2 vitals grid. Each value is the deep-dive
               agent's synthesis (Accessibility / Experimental surface
@@ -747,33 +763,71 @@ export function GeneHeader({
               // sequence/topology, so the URL path strips the
               // suffix back to the bare canonical.
               //
-              // Orthologs: rendered ONLY when the ortholog has a
-              // matching topology cohort row in D1; we currently
-              // ship topology for mouse + cyno orthologs in
-              // `topology_public` but the per-residue strings live
-              // there, not on `OrthologEntry`. For MVP we render
-              // just the canonical + isoform variants and leave
-              // orthologs for a follow-up commit that backfills the
-              // ortholog topology strings onto the SurfaceomeRecord.
-              variants={rec.deterministic_features.isoform_topologies.map(
-                (iso) => ({
-                  source: "afdb" as const,
-                  id: `iso-${iso.isoform_id}`,
-                  label: _isoformLabel(iso.isoform_id),
-                  sublabel: iso.isoform_id,
-                  uniprot_acc: iso.uniprot_acc,
-                  uniprot_acc_full: iso.isoform_id,
-                  topology: iso.per_residue_topology,
-                  // IsoformTopology doesn't carry `deeptmhmm_type`
-                  // (TM / SP+TM / etc.) — synthesize a best-effort
-                  // value from the topology string so the GLOB
-                  // caption etc. still render sensibly on variant
-                  // switch.
-                  deeptmhmm_type: _inferDeepTMHMMType(
-                    iso.per_residue_topology,
-                  ),
-                }),
-              )}
+              // Orthologs: the per-residue topology + DeepTMHMM label
+              // are now backfilled onto each `OrthologEntry` (sourced
+              // from `topology_public` cohorts mouse_ortholog /
+              // cyno_ortholog), so the canonical mouse + cyno orthologs
+              // get their own AFDB tab — fetched by the ortholog's own
+              // UniProt acc, colored by the ortholog's own topology.
+              // Only the canonical ortholog per species is shown (alt
+              // ortholog isoforms aren't structurally interesting here),
+              // and only when it actually carries a topology string.
+              variants={[
+                // Cap the 3D tab strip at the first 3 isoforms.
+                // isoform_topologies is in UniProt isoform-number order
+                // (Isoform 2, 3, 4, …) — major isoforms first — so the
+                // slice keeps the MAJOR ones rather than picking by
+                // topology divergence. A gene with many isoforms would
+                // otherwise overflow the tab strip (and add dead 404 tabs
+                // for isoforms AFDB doesn't model). The §Isoforms table
+                // below still lists EVERY isoform; this cap is 3D-only.
+                ...rec.deterministic_features.isoform_topologies
+                  .slice(0, 3)
+                  .map((iso) => ({
+                    source: "afdb" as const,
+                    id: `iso-${iso.isoform_id}`,
+                    label: _isoformLabel(iso.isoform_id),
+                    sublabel: iso.isoform_id,
+                    uniprot_acc: iso.uniprot_acc,
+                    uniprot_acc_full: iso.isoform_id,
+                    topology: iso.per_residue_topology,
+                    // IsoformTopology doesn't carry `deeptmhmm_type`
+                    // (TM / SP+TM / etc.) — synthesize a best-effort
+                    // value from the topology string so the GLOB
+                    // caption etc. still render sensibly on variant
+                    // switch.
+                    deeptmhmm_type: _inferDeepTMHMMType(
+                      iso.per_residue_topology,
+                    ),
+                  })),
+                ...(
+                  [
+                    ["mouse", "Mouse ortholog"],
+                    ["cynomolgus", "Cyno ortholog"],
+                  ] as const
+                ).flatMap(([species, label]) =>
+                  rec.deterministic_features.orthologs[species]
+                    .filter(
+                      (o) => o.is_canonical && !!o.per_residue_topology,
+                    )
+                    .map((o) => {
+                      const topo = o.per_residue_topology as string;
+                      return {
+                        source: "afdb" as const,
+                        id: `ortholog-${species}-${o.ortholog_uniprot_acc}`,
+                        label,
+                        sublabel: o.ortholog_uniprot_acc,
+                        uniprot_acc: o.ortholog_uniprot_acc,
+                        uniprot_acc_full: o.ortholog_uniprot_acc,
+                        topology: topo,
+                        deeptmhmm_type: _coerceDeepTMHMMType(
+                          o.deeptmhmm_label,
+                          topo,
+                        ),
+                      };
+                    }),
+                ),
+              ]}
             />
             {/* Legend moved INSIDE <StructureViewer> so it can
                 switch between the M/O/I/S/B topology key and the

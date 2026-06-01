@@ -3,6 +3,7 @@
 Decide whether a single human protein is **surface accessible** — whether a binder of any modality (small molecule, antibody, ADC, bispecific, CAR-T, radioligand, peptide-drug conjugate, etc.) could in principle reach the protein body from the **extracellular face** of the plasma membrane (PM).
 
 No tools available. The task message gives you HGNC + UniProt + NCBI + gene-group + CD designation context, **plus** a short bag of surface-context literature evidence — PubMed-esearch ranked for "this gene + surface terms", abstracts efetched and sentence-filtered. Each record is a sentence tagged with PMID and paper title; cite the PMID inline in `verdict_reasoning` when you rely on a specific record. Reach the verdict from these plus your trained knowledge of human protein localization, topology, and surface biology.
+
 ---
 
 ## Verdict — pick one

@@ -138,8 +138,12 @@ def _det() -> DeterministicFeatures:
 def _llm_filters() -> SynthesizerLLMFilters:
     return SynthesizerLLMFilters(
         expression_level="moderate",
+        expression_level_rationale="moderate in epithelial tissues",
         expression_breadth="broad",
+        expression_breadth_rationale="detected across several tissue families",
         surface_specificity="surface_dominant",
+        surface_specificity_rationale="predominantly plasma-membrane localized",
+        has_known_ligand_rationale="binds a documented endogenous ligand",
     )
 
 
@@ -150,7 +154,6 @@ def _surface_evidence() -> SurfaceEvidence:
         methods=[],
         non_surface_expression=[],
         contradicting_evidence=[],
-        therapeutic_engagement=None,
     )
 
 
@@ -211,6 +214,48 @@ def test_derive_filters_propagates_state_dependence():
         n_evidence=1,
     )
     assert filters.state_dependence == "high"
+
+
+def test_derive_filters_restricted_subdomain_mirrors_block_not_anatomical():
+    """``has_restricted_subdomain`` mirrors ``restricted_subdomain.present``
+    ONLY. An anatomical_accessibility row tagged ``restricted`` must NOT
+    promote the flag — the old OR-rollup made the §01 chip read
+    "restricted membrane subdomain · present" while the §03 block said
+    NONE for the same gene (SRC)."""
+    bio = BiologicalContext.model_validate(
+        {
+            "tissues": [],
+            "cell_types": [],
+            "cell_states": [],
+            "subcellular_localization": {
+                "primary_compartment": "plasma_membrane",
+                "dual_localization": [],
+                "membrane_subdomains": [],
+            },
+            "anatomical_accessibility": [
+                {
+                    "context": "polarized epithelium",
+                    "orientation": "apical",
+                    "accessibility_implication": "restricted",
+                    "rationale": "apical pool is tight-junction restricted",
+                    "cited_evidence_ids": [],
+                }
+            ],
+            "accessibility_modulation": [],
+        }
+    )
+    filters = _derive_filters(
+        executive_summary=_exec(),
+        surface_evidence=_surface_evidence(),
+        biological_context=bio,
+        accessibility_risks=_risks(),  # restricted_subdomain.present = False
+        filters_llm=_llm_filters(),
+        deterministic_features=_det(),
+        n_evidence=1,
+    )
+    # restricted_subdomain block says present=False, so the §01 chip must
+    # too — regardless of the "restricted" anatomical row.
+    assert filters.has_restricted_subdomain is False
 
 
 def test_derive_filters_propagates_co_receptor_dependency_full_enum():

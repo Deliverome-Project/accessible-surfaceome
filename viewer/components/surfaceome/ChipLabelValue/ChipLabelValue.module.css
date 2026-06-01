@@ -1,0 +1,42 @@
+/* "label · VALUE" chip body. Label dim + normal weight; value bold +
+   UPPERCASE at the SAME font size (no size bump) so the verdict reads
+   first by weight/case, not size. */
+
+/* Single inline wrapper so the parent pill's flex `gap` can't add space
+   between the three pieces — spacing is owned here by the separator
+   margins. `inline` (not inline-flex) keeps the value's letter-spacing
+   from creating a phantom trailing gap inside the pill. */
+.wrap {
+  display: inline;
+}
+
+.label {
+  font-weight: 400;
+  opacity: 0.72;
+}
+
+/* Tight, symmetric spacing around the dot — replaces the old
+   " · "-with-literal-spaces + flex-gap doubling. */
+.sep {
+  opacity: 0.72;
+  margin: 0 0.28em;
+}
+
+.value {
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  /* letter-spacing also applies AFTER the last glyph, leaving a phantom
+     gap before the pill's right padding — the "extra space" on every
+     label·value chip. Cancel exactly that one trailing unit so the value
+     still tracks but the pill hugs it. */
+  margin-right: -0.03em;
+}
+
+/* "No data" value — same dim, normal-weight, non-uppercase treatment as
+   the label, so a value like "none" / "unknown" reads as absence rather
+   than a bold verdict. */
+.valueMuted {
+  font-weight: 400;
+  opacity: 0.72;
+}

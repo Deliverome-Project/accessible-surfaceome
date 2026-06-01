@@ -247,16 +247,67 @@ land in `flow_cytometry` / `if` / `ihc` / `surface_biotinylation`
 retrieval naturally — those category specs don't filter for
 endogenous-vs-transfected.
 
-### Explicit OE-cell-line `topic_search` queries (required)
+### Explicit OE `topic_search` queries (required)
 
-The category retrievers cover OE work generically, but for the four
-workhorse OE hosts the literature is dense enough that named-host
-queries surface papers the method-anchored queries miss (e.g. a
-flow-cytometry paper indexed primarily as "HEK293 transient
-transfection" without a method keyword in the title). Always add four
-`topic_search` requests pairing the gene symbol with the host name —
-one per workhorse line:
+The category retrievers cover OE work generically, but the literature
+is dense enough that named-host queries surface papers the
+method-anchored queries miss (e.g. a flow-cytometry paper indexed
+primarily as "HEK293 transient transfection" without a method keyword
+in the title).
 
+**Overexpression in ANY heterologous host counts** — not just HEK293.
+The named lines below are the densest in the literature, NOT an
+exhaustive whitelist: CHO, COS-7, 293T, Expi293, NIH-3T3, Sf9 /
+insect, Jurkat, or a tissue-matched primary / immortalized line are
+all valid OE hosts. So add a **host-agnostic OE query** first, then
+one query per high-yield host:
+
+**What qualifies as OE-CELL-surface evidence** (this is the readout the
+`overexpression_surface_localization_observed` flag is derived from, so
+retrieve it on purpose): surface localization detected on INTACT
+transfected / OE cells — live-cell or non-permeabilized **flow
+cytometry**, non-perm **IF**, or **antibody / ligand binding to
+transfected cells** (e.g. cetuximab or EGF binding to EGFR-transfected
+CHO / HEK by flow). For well-studied receptors this is abundant and is
+the canonical OE-surface demonstration — DON'T conclude it's absent just
+because endogenous evidence dominates. It does **NOT** include in-vitro
+assays on recombinant protein — SPR / BLI / surface-plasmon-resonance,
+ECD immobilization on a chip, or a bare plasmid / construct description:
+those match the word "surface" but are biochemistry, not cell-surface
+localization, and must not be retrieved or kept as OE-surface evidence.
+So always add a dedicated `topic_search`: gene symbol AND (`transfected
+cells` OR `stable cell line` OR `ectopic expression`) AND (`flow
+cytometry` OR `cell surface staining` OR `antibody binding` OR `ligand
+binding`).
+
+**Cast the WT search wide — do NOT gate on the literal word "wild-type."**
+The flag is about whether the catalog's wild-type target reaches the
+surface when overexpressed, so the cleanest precedent is the WT /
+full-length protein in a heterologous host (NOT a disease variant —
+EGFRvIII, constitutively-active mutants, fusions, truncations). BUT real
+WT-transfectant papers almost never contain the phrase "wild-type" — they
+say "[GENE]-transfected NIH3T3", "CHO cells stably expressing [GENE]",
+"BaF3 / 32D [GENE] transfectants", "[GENE]-overexpressing HEK293".
+Requiring a `wild-type` / `WT` keyword therefore MISSES them (the lesson
+from EGFR: WT-EGFR-overexpressing NIH3T3 / CHO surface-flow papers exist —
+e.g. PMC4372364, PMC3163362 — but a wild-type-keyword query returned only
+the EGFRvIII-glioma literature). So the WT preference is enforced at the
+**SELECTION** layer (A1 select prefers a WT clip over a variant), NOT by a
+search keyword. For RETRIEVAL, cast wide on the canonical
+transfectant-construct phrasings: gene symbol AND (`transfected` OR
+`overexpressing` OR `stably expressing` OR `ectopic expression`) AND (a
+classic OE host — `NIH3T3` / `CHO` / `BaF3` / `32D` / `COS` / `HEK293` —
+OR `cell surface` / `flow cytometry`). This surfaces the WT-transfectant
+flow papers the variant-dominated search otherwise buries; selection then
+prefers the WT clip and keeps a variant clip only as a flagged fallback.
+Then the host-specific queries:
+
+* **Host-agnostic OE** — gene symbol AND a generic OE term
+  (`overexpression`, `ectopic expression`, `transient transfection`,
+  `stable cell line`, `transfected`) AND a surface keyword (`cell
+  surface`, `surface expression`, `flow cytometry`). Intent: "catch
+  OE surface papers whose host isn't one of the named lines below
+  (CHO / COS-7 / 293T / primary cells / …)."
 * **HEK293** (and aliases `HEK293T`, `293T`, `HEK 293`) — by far the
   most-used heterologous expression host for receptors / surface
   proteins. Search `topic_search` with anchors that combine the gene
@@ -276,11 +327,13 @@ one per workhorse line:
   Search the gene symbol AND `U2OS` AND a surface keyword. Intent:
   "find U2OS OE surface papers."
 
-These four queries are CHEAP (~$0.01 each at EuropePMC counts) and
-the marginal recall on under-studied genes is high. Don't skip them
+These queries are CHEAP (~$0.01 each at EuropePMC counts) and the
+marginal recall on under-studied genes is high. Don't skip them
 because the method retrievers "already cover OE" — they cover OE
 generically, not host-specifically, and host-specific titles fall
-through the cracks.
+through the cracks. The host-agnostic query is what catches OE
+precedent in the long tail of hosts (CHO, COS-7, primary lines) that
+don't get their own named query.
 
 When the gene has an obvious tissue-of-origin host that ISN'T one of
 the four (e.g. neuronal receptors → SH-SY5Y; pancreatic β-cell

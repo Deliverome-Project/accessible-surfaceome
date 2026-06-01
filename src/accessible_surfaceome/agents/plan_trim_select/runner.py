@@ -25,6 +25,7 @@ from __future__ import annotations
 
 import json
 import logging
+import os
 import re
 import time
 from collections import defaultdict
@@ -1508,6 +1509,20 @@ def run_plan_trim_select(
             # but haven't had their bodies fetched yet. The selector can
             # use this to plan additional_searches.
             menu = _format_menu_for_selector(pool, trim_results)
+            # Debug instrumentation (gated by PTS_DEBUG_POOL): dump the
+            # post-trim menu the selector sees, so we can inspect whether a
+            # given signal (e.g. an overexpression-surface clip) survived
+            # trim into the selector's candidate pool vs. was dropped
+            # earlier. No-op unless the env var is set.
+            if os.environ.get("PTS_DEBUG_POOL"):
+                import pathlib as _pl
+
+                _dbg = _pl.Path(".runs")
+                _dbg.mkdir(exist_ok=True)
+                _safe = gene.replace(":", "_")
+                (_dbg / f"pts_menu_{_safe}_{agent_focus}_iter{iteration}.md").write_text(
+                    menu
+                )
             fetched_pmids = _pmids_already_fetched(pool)
             unfetched_inventory = _format_unfetched_inventory(
                 cumulative_discovered, fetched_pmids

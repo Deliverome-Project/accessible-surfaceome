@@ -175,6 +175,12 @@
 .triageQualifier {
   color: var(--muted);
   font-style: italic;
+  /* Keep "initial pass · no web search" on one line — the · separator
+     was a wrap opportunity, so a tight row broke the phrase between
+     "pass" and "no". The qualifier is short; if the whole triage row
+     needs to wrap, it wraps as a unit (the row is flex-wrap), not
+     mid-phrase. */
+  white-space: nowrap;
 }
 
 .triageAgree {

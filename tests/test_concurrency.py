@@ -200,7 +200,6 @@ def test_builders_run_concurrently_and_collect_outputs() -> None:
         for i, name in enumerate(
             [
                 "methods",
-                "therapeutic_engagement",
                 "contradictions",
                 "evidence_grade",
                 "tissues",
@@ -238,7 +237,7 @@ def test_builders_run_concurrently_and_collect_outputs() -> None:
 
     # Timing recorder got exactly one row per builder; order is
     # non-deterministic so check by name set.
-    assert len(timing.entries) == 9
+    assert len(timing.entries) == 8
     assert {e.step_name for e in timing.entries} == {
         f"builder:{s.name}" for s in specs
     }
@@ -247,7 +246,7 @@ def test_builders_run_concurrently_and_collect_outputs() -> None:
 def test_builder_specs_match_pool_concurrency_assumption() -> None:
     """If someone changes the builder list to exceed BUILDER_CONCURRENCY
     the test above degenerates. Pin the relationship explicitly."""
-    assert BUILDER_CONCURRENCY >= 9
+    assert BUILDER_CONCURRENCY >= 8
 
 
 def test_builder_concurrency_propagates_worker_exception() -> None:

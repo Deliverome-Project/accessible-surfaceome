@@ -77,24 +77,13 @@ export default async function BenchmarkPage() {
             <code>{matrix.headline_variant}</code> prompt variant
             (Haiku / Sonnet / Opus). Each is a verdict pill coloured
             by call; pills outlined in maroon disagree with truth
-            (collapsing <em>yes</em> ≡ <em>contextual</em>, matching
-            the D1 <code>correct</code> semantics). Hover for the full
+            (collapsing <em>yes</em> ≡ <em>contextual</em> when scoring
+            correctness). Hover for the full
             (model → verdict + reason) tooltip. Click <em>+</em> on
             the row to expand the full <strong>3 model × 4 variant</strong>{" "}
             grid (Opus has runs on 2 of 4 variants only); each cell in
             that grid carries its own <em>+</em> to reveal the
             agent&apos;s free-text reasoning for that specific call.
-          </p>
-          <p>
-            <span className="label-mono">API ·</span>{" "}
-            <code>
-              GET api.deliverome.org/surfaceome/v1/benchmark/matrix
-            </code>{" "}
-            ships the same table as JSON.
-          </p>
-          <p className={styles.sourceLine}>
-            <span className="label-mono">Source ·</span> live D1{" "}
-            <code>{matrix.universe_version ?? "—"}</code>
           </p>
         </footer>
       </section>

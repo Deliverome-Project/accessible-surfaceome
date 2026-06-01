@@ -235,6 +235,21 @@ shed / stress-induced surface queries based on the specific reason:
   source, MHC class I expression, immune cell context).
 * `other` — read prose.
 
+**Soluble / shed form → check whether it's a circulating DECOY.** When the
+gene has a documented shed ectodomain, a secreted/soluble form, OR a
+TM-less splice isoform (the deterministic isoform topology shows a
+non-canonical isoform with `tm_helix_count=0` — e.g. EGFR's sEGFR), the
+synthesizer's `secreted_form` severity hinges on whether that soluble form
+actually CIRCULATES and competes for a binder — not just on its existence.
+Add a `topic_search` for the soluble-form / decoy literature: gene symbol
+AND (`soluble` OR `serum` OR `plasma` OR `circulating` OR `shed
+ectodomain`) AND (`decoy` OR `competes` OR `neutralizing` OR a known
+therapeutic-antibody name). Intent: surface whether the soluble form is
+measured in serum / plasma at physiological levels, or shown to blunt
+antibody / ligand engagement (the canonical case: serum sEGFR vs
+cetuximab) — the evidence that separates a real antibody-decoy risk from a
+predicted isoform nobody has observed as circulating protein.
+
 * **`verdict_reasoning`**: read the triage agent's prose for context
   cues (cell-type-specific notes, paralog warnings). Quotable
   excerpts can land in your `SearchPlan.rationale`.
@@ -260,6 +275,28 @@ plan toward sources rich in WHERE/WHEN, not HOW:
    `membrane_subdomains` calls (apical vs basolateral IF, ciliary
    gating, sorted-population flow). NOT for methodology — for the
    localization output they encode.
+3. **Subcellular-localization depth (don't leave the block thin).** The
+   `subcellular_localization` block — primary compartment +
+   `dual_localization` + `membrane_subdomains` — is routinely
+   under-populated because the joint planner stops once it's confirmed
+   "this is a surface protein" and never chases WHERE ELSE the protein
+   sits. Always add explicit `topic_search` calls that pair the gene with
+   localization-evidence anchors so the builder has material:
+     - subcellular / organelle localization (`subcellular localization`,
+       `localizes to`, `intracellular pool`, `plasma membrane vs`);
+     - immunofluorescence / confocal **colocalization with organelle
+       markers** (ER / Golgi / endosome / lysosome / mitochondria / nuclear
+       envelope markers) — this is the evidence basis for a
+       `dual_localization` row and its `fraction_estimate`;
+     - the **HPA Cell Atlas / subcellular** annotation literature, and any
+       **fractionation** (surface-biotinylation vs whole-cell, sucrose-
+       gradient / organelle fractionation) that *quantifies* the surface
+       vs intracellular split (so `fraction_estimate` can be filled rather
+       than left unknown).
+   When the primary-compartment call rests on a single paper, spend one
+   `fetch_fulltext` on the best localization paper — the fraction +
+   condition fields need the methods detail to be more than a bare
+   compartment name.
 4. **`mass_spec_surfaceome`** — useful for sorted-population /
    cell-type-specific surface proteome papers. Include.
 5. **`surface_biotinylation`** — borderline; include if UniProt
@@ -287,6 +324,66 @@ plan toward sources rich in WHERE/WHEN, not HOW:
     backed by a specific paper, request `fetch_fulltext(pmcid)`
     sparingly to pull that paper's body. Each costs ~3-8k Haiku trim
     tokens downstream, so be selective.
+
+## Normal-tissue tox panel (ALWAYS — surface expression only)
+
+Beyond disease / tumor context, A2 must build an **on-target /
+off-tumor toxicity** read: where does this protein sit **on the cell
+surface of normal tissues**? For every gene — even a canonical surface
+receptor — plan coverage probing **cell-surface** expression in the six
+high-consequence tox-risk organs:
+
+* **liver**, **lung**, **kidney**, **GI tract** (stomach / small
+  intestine / colon), **heart**, **brain** (incl. blood-brain-barrier
+  accessibility).
+
+Concretely:
+
+* Add `topic_search` calls pairing the gene with `surface_expression` +
+  `ihc` anchors and normal-tissue organ terms covering these six organs
+  (batch into one or two intents, e.g. "normal liver / lung / kidney
+  surface expression", "normal heart / brain / GI surface expression").
+  Set each `intent` to flag the tox-panel purpose.
+* Lean on `ihc` (membranous staining in **normal** tissue), `if`, and
+  `flow_cytometry` / `surface_biotinylation` / `mass_spec_surfaceome`
+  on normal primary tissue or normal-derived lines — the categories
+  that report a *surface* read.
+* **Do NOT plan RNA-expression-atlas searches for the tox panel.** GTEx
+  / HPA-RNA / scRNA-seq report transcript abundance, not surface
+  exposure; transcript-only organ data is not a tox signal here. (HPA's
+  per-tissue *protein* reliability call still arrives via the DB panel —
+  that's allowed.)
+* **Negatives count.** A credible *negative* surface read in a tox organ
+  ("no membranous staining in normal hepatocytes") is as valuable as a
+  positive; note in `rationale` that the `tissues` builder should keep
+  explicit negatives.
+
+## Anatomical accessibility (don't leave it a single row)
+
+The `AnatomicalAccessibilityObservation[]` block — can a systemically
+dosed binder physically REACH the protein where it sits — is routinely
+under-built. It is DISTINCT from "is it on the surface" (the
+surface-evidence + tox panels answer that): it's about the anatomical
+barrier between the bloodstream and the protein's surface pool. Plan
+explicit coverage for the access angles that apply to this gene; aim for
+more than one row when the biology spans several compartments — a single
+anatomical row for a broadly-expressed receptor usually means the access
+angles weren't searched.
+
+* **Tumor vasculature / penetration** — for a solid-tumor target, search
+  tumor-penetration / antibody-biodistribution / "perivascular rim vs
+  tumor core" literature: does a systemic binder reach the tumor-cell
+  surface or only the well-perfused rim? (`topic_search` gene +
+  `surface_expression` + penetration / biodistribution terms.)
+* **Blood-brain barrier** — for any CNS-expressed target (brain-tissue
+  signal, glioma relevance), search whether the surface pool sits behind
+  an intact BBB (inaccessible to systemic IgG) vs an opened BBB
+  (glioblastoma, brain metastasis).
+* **Luminal vs abluminal / mucosal / apical** — does the surface pool
+  face the bloodstream (luminal/abluminal vascular = reachable) or a
+  sequestered compartment (apical epithelial, gut lumen, ductal, CSF,
+  bile) a systemic binder can't reach? Pairs with the polarized-epithelium
+  subcellular call.
 
 ## What you should AVOID (A1 handles these)
 

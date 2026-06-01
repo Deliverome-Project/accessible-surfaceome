@@ -67,6 +67,7 @@ from accessible_surfaceome.tools._shared.models import (
     Filters,
     GeneIdentifier,
     IdentifierBundle,
+    InductionTrigger,
     IsoformTopology,
     Orthologs,
     StructureFeatures,
@@ -886,15 +887,15 @@ def _derive_filters(
     surface_specificity)."""
     canon = deterministic_features.canonical_topology
 
-    # restricted_subdomain rollup: either the explicit risk flag fires, OR any
-    # anatomical_accessibility entry tags the orientation as restricted.
-    has_restricted = (
-        accessibility_risks.restricted_subdomain.present
-        or any(
-            obs.accessibility_implication == "restricted"
-            for obs in biological_context.anatomical_accessibility
-        )
-    )
+    # restricted_subdomain rollup: mirror the §Risks restricted-subdomain
+    # block EXACTLY. (Previously this also OR'd in any anatomical-
+    # accessibility row tagged "restricted", which made the §01
+    # ``has_restricted_subdomain`` chip read "restricted membrane subdomain
+    # · present" even when the dedicated subdomain block was absent —
+    # contradicting the §03 card for genes like SRC. The anatomical-
+    # restriction signal is already surfaced in the §03 anatomical-
+    # accessibility table, so the chip mirrors only the subdomain block.)
+    has_restricted = accessibility_risks.restricted_subdomain.present
 
     # max-paralog identity is None when there are no paralogs (the stub case
     # while fetchers are deferred) OR when every paralog has NULL identity
@@ -932,10 +933,63 @@ def _derive_filters(
         "supports_surface_localization",
     }
     _OE_SYSTEMS = {"overexpression", "mixed"}
-    oe_surface_observed = any(
-        m.expression_system in _OE_SYSTEMS
-        and m.accessibility_relevance in _SURFACE_TIERS
+    _oe_methods = [
+        m
         for m in surface_evidence.methods
+        if m.expression_system in _OE_SYSTEMS
+        and m.accessibility_relevance in _SURFACE_TIERS
+    ]
+    oe_surface_observed = len(_oe_methods) > 0
+    # Composed rationale for the OE-surface derived boolean — names the
+    # triggering method observation(s) so the chip's "why" is auditable.
+    if oe_surface_observed:
+        # Prefer the OE-specific cites the methods builder isolated into the
+        # method's ``overexpression`` block (e.g. the transfected-line flow
+        # data) over the method's FULL cite list. A "mixed" method's full
+        # cites also carry its endogenous + methodology cites, which don't
+        # speak to the overexpression-surface point — citing all of them
+        # makes the OE rationale look mis-cited (the reader can't tell which
+        # id is the OE one). Fall back to the full list only when the
+        # overexpression block carried no cites of its own.
+        _oe_cites = sorted(
+            {
+                cid
+                for m in _oe_methods
+                for cid in (
+                    m.overexpression.cited_evidence_ids
+                    if (m.overexpression and m.overexpression.cited_evidence_ids)
+                    else m.cited_evidence_ids
+                )
+            }
+        )
+        oe_rationale = (
+            f"{len(_oe_methods)} method observation(s) pair an "
+            "overexpression/mixed expression system with a "
+            "surface-localization readout"
+            + (f" (cites {', '.join(_oe_cites)})" if _oe_cites else "")
+            + "."
+        )
+    else:
+        oe_rationale = (
+            "No method observation pairs an overexpression/mixed expression "
+            "system with a direct or supportive surface-accessibility readout."
+        )
+
+    # Composed rationale for the low-endogenous derived boolean — references
+    # the expression_level it was derived from + the synthesizer's reason.
+    _low_endog = filters_llm.expression_level in ("low", "absent")
+    low_endog_rationale = (
+        f"Derived from expression_level={filters_llm.expression_level!r}"
+        + (
+            " (∈ {low, absent} → flagged)."
+            if _low_endog
+            else " (not low/absent → not flagged)."
+        )
+        + (
+            f" {filters_llm.expression_level_rationale}"
+            if filters_llm.expression_level_rationale
+            else ""
+        )
     )
 
     def _canonical_species_identity(entries: list) -> float | None:
@@ -943,6 +997,71 @@ def _derive_filters(
             if e.is_canonical:
                 return e.ecd_pct_identity_to_human_canonical
         return None
+
+    # ---- deep-block rollups -------------------------------------------
+    # tumor_associated — any tissue row in a tumor / tumor-adjacent disease
+    # context at a non-absent protein level. Oncology-target triage facet.
+    _TUMOR_CTX = {"tumor", "tumor_adjacent"}
+    _PRESENT_LEVELS = {"high", "moderate", "low", "mixed"}
+    tumor_associated = any(
+        t.disease_context in _TUMOR_CTX and t.present in _PRESENT_LEVELS
+        for t in biological_context.tissues
+    )
+
+    # induction_trigger — dominant stimulus bucket across the modulation
+    # rows' cell_state_trigger. surface_call_reason carries the *mechanism*;
+    # this is the *trigger*. Buckets, picked most-targeting-relevant first.
+    _TRIGGER_BUCKET = {
+        "oncogenic_transformation": "oncogenic",
+        "immune_activation": "immune",
+        "antigen_stimulation": "immune",
+        "cytokine_stimulation": "immune",
+        "ER_stress": "stress_hypoxia",
+        "heat_shock": "stress_hypoxia",
+        "oxidative_stress": "stress_hypoxia",
+        "DNA_damage_response": "stress_hypoxia",
+        "hypoxia": "stress_hypoxia",
+        "nutrient_deprivation": "stress_hypoxia",
+        "hyperthermia": "stress_hypoxia",
+        "mechanical_stress": "stress_hypoxia",
+        "apoptosis": "cell_death",
+        "necroptosis": "cell_death",
+        "infection_viral": "infection",
+        "infection_bacterial": "infection",
+        "other": "other",
+        "unknown": "other",
+    }
+    _buckets = {
+        _TRIGGER_BUCKET.get(m.cell_state_trigger, "other")
+        for m in biological_context.accessibility_modulation
+        if m.cell_state_trigger is not None
+    }
+    if "oncogenic" in _buckets:
+        induction_trigger: InductionTrigger = "oncogenic"
+    elif "immune" in _buckets:
+        induction_trigger = "immune"
+    elif "stress_hypoxia" in _buckets:
+        induction_trigger = "stress_hypoxia"
+    elif "cell_death" in _buckets:
+        induction_trigger = "cell_death"
+    elif "infection" in _buckets:
+        induction_trigger = "infection"
+    elif "other" in _buckets:
+        induction_trigger = "other"
+    else:
+        induction_trigger = "none"
+
+    # has_live_cell_surface_evidence — a DIRECT surface readout on
+    # live/intact cells in an endogenous context (flow cytometry, surface
+    # biotinylation, or proximity labeling; NOT permeabilizable IF/IHC).
+    _LIVE_CELL_FAMILIES = {"flow_cytometry", "biotinylation", "proximity_labeling"}
+    _ENDOG_SYSTEMS = {"endogenous", "mixed"}
+    has_live_cell_surface_evidence = any(
+        m.method_family in _LIVE_CELL_FAMILIES
+        and m.accessibility_relevance == "direct_surface_accessibility"
+        and m.expression_system in _ENDOG_SYSTEMS
+        for m in surface_evidence.methods
+    )
 
     return Filters(
         # D — from executive_summary (B)
@@ -992,7 +1111,7 @@ def _derive_filters(
         # D — derived from filters_llm.expression_level so the headline
         # signal can't drift from this catalog filter. Replaces the
         # now-dropped HeadlineRisk.low_endogenous_expression value.
-        low_endogenous_expression=filters_llm.expression_level in ("low", "absent"),
+        low_endogenous_expression=_low_endog,
         # L — orphan-receptor flag from SynthesizerLLMFilters. Replaces
         # the now-dropped HeadlineRisk.ligand_unknown value.
         has_known_ligand=filters_llm.has_known_ligand,
@@ -1001,6 +1120,19 @@ def _derive_filters(
         n_contradicting_claims_high_weight=n_contradicting_hi,
         # D — OE+surface-localization derived above
         overexpression_surface_localization_observed=oe_surface_observed,
+        # D — deep-block rollups derived above
+        tumor_associated=tumor_associated,
+        induction_trigger=induction_trigger,
+        has_live_cell_surface_evidence=has_live_cell_surface_evidence,
+        # ---- per-chip rationales ----------------------------------------
+        # L — the four LLM-emitted rollup rationales, passed through verbatim.
+        expression_level_rationale=filters_llm.expression_level_rationale,
+        expression_breadth_rationale=filters_llm.expression_breadth_rationale,
+        surface_specificity_rationale=filters_llm.surface_specificity_rationale,
+        has_known_ligand_rationale=filters_llm.has_known_ligand_rationale,
+        # D — the two composed rationales for the derived booleans.
+        low_endogenous_expression_rationale=low_endog_rationale,
+        overexpression_surface_localization_observed_rationale=oe_rationale,
     )
 
 
