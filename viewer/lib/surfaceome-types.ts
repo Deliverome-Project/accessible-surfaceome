@@ -431,6 +431,10 @@ export interface OrthologEntry {
 export interface OrthologSet {
   mouse: OrthologEntry[];
   cynomolgus: OrthologEntry[];
+  /** "Checked, none found" sentinel (mirrors SurfaceBindFeatures.has_data).
+   *  `true` with empty mouse+cynomolgus = checked against Compara, no one2one
+   *  ortholog exists. Absent/false on stub or pre-sentinel snapshots. */
+  checked?: boolean;
 }
 
 /**
@@ -588,6 +592,12 @@ export interface DeterministicFeatures {
   isoform_topologies: IsoformTopology[];
   orthologs: OrthologSet;
   paralogs: ParalogEntry[];
+  /** "Checked, none found" sentinels for the bare lists above (same rationale
+   *  as OrthologSet.checked). `true` once the loader queried D1 even when the
+   *  list is empty (genuine singleton / single-isoform gene). Optional for
+   *  back-compat with pre-sentinel snapshots. */
+  paralogs_checked?: boolean;
+  isoform_topologies_checked?: boolean;
   structure: StructureFeatures;
   surface_bind: SurfaceBindFeatures;
 }
