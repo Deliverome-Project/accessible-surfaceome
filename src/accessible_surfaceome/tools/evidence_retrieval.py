@@ -409,6 +409,7 @@ def evidence_retrieval(
     max_snippets_per_paper: int = 3,
     http: CachedHTTP | None = None,
     retraction_index: RetractionIndex | None = None,
+    discover_only: bool = False,
 ) -> EvidenceRetrievalPack:
     """Run a category-tuned retrieval pass for one gene.
 
@@ -423,6 +424,12 @@ def evidence_retrieval(
     surface vote + main_location ride on the deterministic ``db_panel``
     input instead, and broader IHC literature (including papers that
     cite or extend HPA) is covered by ``category="ihc"``.
+
+    ``discover_only=True`` runs only the discovery half (PubTator +
+    EuropePMC category search) and skips the body-fetch + hallmark-
+    filtered snippet extraction. Returns papers populated, snippets
+    empty. Use this when the body-fetch decision is being deferred to
+    a downstream agent (e.g. abstract-triage).
     """
     if category not in get_args(EvidenceCategory):
         raise ValueError(
@@ -441,6 +448,7 @@ def evidence_retrieval(
             max_snippets_per_paper=max_snippets_per_paper,
             http=client,
             retraction_index=index,
+            discover_only=discover_only,
         )
     finally:
         if own_client:
@@ -474,6 +482,7 @@ def _pmc_retrieval(
     max_snippets_per_paper: int,
     http: CachedHTTP,
     retraction_index: RetractionIndex,
+    discover_only: bool = False,
 ) -> EvidenceRetrievalPack:
     bundle = _resolve(uniprot_acc, http=http)
     spec = _CATEGORY_SPECS[category]
@@ -529,6 +538,20 @@ def _pmc_retrieval(
                 "no PMC-OA full-text hits for this category — try "
                 "gene_literature topic_search for abstract-only signal"
             ),
+        )
+
+    if discover_only:
+        # Body-fetch + hallmark-filtered extraction is deferred to the
+        # downstream triage path. Return the discovered candidate pool
+        # so the orchestrator can merge it into the unified inventory.
+        return EvidenceRetrievalPack(
+            uniprot_acc=uniprot_acc,
+            category=category,
+            n_papers_searched=len(papers),
+            n_papers_with_snippets=0,
+            papers=candidate_pool,
+            snippets=[],
+            empty_reason=None,
         )
 
     # Backfill loop: keep fetching + extracting until ``max_papers``

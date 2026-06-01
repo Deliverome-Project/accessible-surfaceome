@@ -236,14 +236,34 @@ When a draft's quote matches one of these patterns, set
 Prefer a results-section draft from the same paper when one is
 available.
 
+## Deduplicate the ledger — one DISTINCT finding per row
+
+The ledger carries each distinct finding **once**. The most common
+failure is restating the same observation across many sources, which
+adds no information, bloats the record, and (when the output runs
+long) gets truncated and rejected by the response-size limit.
+
+* **One row per distinct (tissue / cell-type / cell-state /
+  compartment).** "Expressed in B cells" stated by six atlases is one
+  row, recorded via its strongest source — not six rows. Add a second
+  row for a tissue only when it carries a genuinely new fact (a
+  different level call, a disease-context shift, a subcellular
+  caveat).
+* **Across sources, collapse duplicates.** When two clips report the
+  same distribution or localization, keep the stronger one (primary >
+  secondary; larger / better-annotated atlas > smaller). Consensus is
+  recorded once, via its best representative.
+* **Budget.** A well-curated A2 ledger is typically **~20–30 claims**.
+  Past ~35 you are almost certainly restating the same tissue / cell
+  type from multiple atlases — cut the weakest restatements. Staying
+  within budget also keeps your response under the size limit so it
+  isn't truncated and rejected.
+
 ## Selection discipline
 
-* **Be thorough on coverage, selective on redundancy.** One strong
-  clip per (source, tissue / cell-type / cell-state / compartment) is
-  better than three redundant ones. But every distinct tissue / cell
-  type / cell state / compartment deserves its own row.
 * **Prefer multi-source consensus.** Three independent atlases on
-  tissue distribution outweigh ten claims from one cohort.
+  tissue distribution outweigh ten claims from one cohort — but record
+  the consensus once, citing the strongest source.
 * **Actively seek contradicting evidence.** Where the literature is
   contested (ligand identity, surface vs intracellular reports,
   cross-paper IHC discrepancies), pick the contradicting clip and
@@ -262,68 +282,14 @@ your selections in the natural ledger order (tissues first, then
 cell-state context, then subcellular localization, then any
 contradictions) so the resulting IDs read sensibly in the audit log.
 
-## Iterating
+## Coverage
 
-The orchestrator runs you in a loop, capped at a small number of
-plan iterations (the user prompt tells you how many follow-ups are
-available this turn).
-
-* **Iteration 1** is the initial menu from the joint planner's first
-  search plan. Common gaps: `gene2pubmed` and `topic_search` return
-  paper lists but NOT clips; follow up with `fetch_abstract` /
-  `fetch_fulltext` for specific PMIDs/PMCIDs that look load-bearing
-  for A2's biological-context buckets.
-* **Later iterations** show you the augmented menu, including any
-  new clips A1 fetched on its own iteration.
-
-A2-specific reasons to iterate:
-* Tissue coverage is thin — only HPA's tissue panel and no
-  single-cell or primary-cohort confirmation. Request `topic_search`
-  with anchors covering the gene's known tissue niches.
-* The literature has known controversies (e.g. contested ligand
-  identity, conflicting tissue-localization reports) but the menu
-  has only consensus clips — request `fetch_abstract` /
-  `fetch_fulltext` for the dissenting paper.
-* A high-impact genetics paper (Akbari-class large-cohort exome /
-  GWAS) is referenced in a review clip but not deep-fetched —
-  request `fetch_abstract` for the primary paper.
-* Subcellular localization is ambiguous (HPA says PM + cilium but
-  no validating reference) — request `fetch_fulltext` on a paper
-  with confocal / live-cell imaging of the localization.
-
-Set `needs_more_searches: true` and populate `additional_searches`
-with up to 3 new `SearchRequest`s when iterating. On the last
-allowed iteration the orchestrator ignores `additional_searches` —
-finalize your selections then.
-
-### Valid `additional_searches` shapes
-
-The schema enforces these — anything else is rejected at parse time
-and sent back to you to fix.
-
-```json
-{"tool": "gene_literature", "mode": "fetch_abstract", "pmid": 34210852,
- "intent": "Akbari et al. 645k-exome GPR75 lower-BMI association"}
-```
-
-```json
-{"tool": "gene_literature", "mode": "fetch_fulltext", "pmcid": "PMC11444156",
- "intent": "Jiang ciliary trafficking paper — subcellular evidence"}
-```
-
-```json
-{"tool": "gene_literature", "mode": "topic_search",
- "anchors": ["surface_expression", "ihc"],
- "intent": "additional tissue-expression papers"}
-```
-
-```json
-{"tool": "evidence_retrieval", "category": "ihc",
- "intent": "re-run ihc category for tissue-panel recall"}
-```
-
-If the menu already covers A2's load-bearing biological context
-cleanly, set `needs_more_searches: false` and commit your selections
-immediately; the orchestrator promotes them and the loop ends.
+This is a single pass over the full A2 evidence pool — body-fetching
+was front-loaded by the triage step, so commit your selections from
+the menu in front of you. Some papers may appear only as
+abstract-preview clips (tagged `abstract_preview`) because their full
+text wasn't retrievable; treat those as `secondary` tier unless the
+abstract states a primary biological-context finding with enough
+specificity to stand on its own.
 
 Stop after emitting the JSON block — no prose around it.

@@ -15,6 +15,8 @@ is structurally impossible (see
 
 from __future__ import annotations
 
+from typing import Literal
+
 from pydantic import BaseModel, ConfigDict, Field, model_validator
 
 from accessible_surfaceome.tools._shared.models import (
@@ -183,17 +185,53 @@ class Selection(BaseModel):
 
 
 class SelectionResponse(BaseModel):
-    """Sonnet's selector output. Either commits selections or requests more
-    searches via ``additional_searches`` (iterate path)."""
+    """Sonnet's selector output — the final committed evidence selections.
+
+    Single-pass: the selector picks its rows from the menu in front of it.
+    Body-fetching is handled upstream by abstract-triage, so the selector
+    no longer requests follow-up searches (the ``needs_more_searches`` /
+    ``additional_searches`` iterate path was retired)."""
 
     model_config = ConfigDict(extra="forbid")
 
     selections: list[Selection] = Field(default_factory=list)
-    needs_more_searches: bool = False
-    additional_searches: list[SearchRequest] = Field(default_factory=list)
     notes: str = Field(
         default="",
         description="Optional one-paragraph rationale for the audit log.",
+    )
+
+
+# ---------------------------------------------------------------------------
+# Abstract triage — Haiku's 3-way paper-level routing decision
+# ---------------------------------------------------------------------------
+
+
+class AbstractTriageResponse(BaseModel):
+    """Haiku's per-paper triage decision based on the abstract alone.
+
+    Three-way scientific routing call. Whether the orchestrator can
+    actually retrieve the body (PMC OA, Unpaywall, paywalled) is a
+    separate engineering question handled downstream — the agent's
+    decision is forward-compatible with whatever fetch mechanisms the
+    orchestrator wires up.
+
+    * ``discard`` — gene mentioned incidentally (selection marker, peptide
+      source, member of a long list); no primary surface-evidence content.
+    * ``keep_abstract`` — abstract has a load-bearing surface-evidence
+      claim that stands on its own (single-finding report, citable review
+      claim, abstract states the methodology + result completely).
+    * ``worth_fetching`` — primary surface-evidence work where the
+      abstract teases substantive methods + results the body would
+      expose. Orchestrator handles whether/how to obtain the body.
+    """
+
+    model_config = ConfigDict(extra="forbid")
+
+    paper_id: str
+    decision: Literal["discard", "keep_abstract", "worth_fetching"]
+    reason: str = Field(
+        default="",
+        description="One-line rationale, ≤140 chars; flows into the audit log.",
     )
 
 
@@ -204,4 +242,5 @@ __all__ = [
     "TrimResponse",
     "Selection",
     "SelectionResponse",
+    "AbstractTriageResponse",
 ]

@@ -1,4 +1,4 @@
-"""Tests for the full-TriageRecord piping into v2's planner + synthesizer.
+"""Tests for the full-TriageRecord piping into v2's selector + synthesizer.
 
 PR #23 design doc §1110-1116 calls for a "common preamble" that delivers
 the full TriageRecord (verdict + verdict_reasoning + reason taxonomy +
@@ -6,16 +6,19 @@ key_uncertainty + confidence) to every downstream agent. v2 previously
 only loaded the rolled-up `triage_signal` enum; these tests verify the
 full-record path:
 
-1. ``_summarize_triage_for_planner`` produces a JSON the planner can
+1. ``_summarize_triage_for_planner`` produces a JSON the selector can
    scan inline.
 2. ``GeneContext`` carries ``triage_summary_json`` and ``_build_gene_context``
    tolerates the no-triage case (sets it to ``None``).
-3. ``_run_planner`` and ``_run_selector`` user prompts include the
-   ``"Triage prior"`` section when present and omit it when absent.
-4. The A1 + A2 plan system prompts each contain a "Triage prior"
-   section + the synthesizer prompt does too.
+3. The ``_run_selector`` user prompt includes the ``"Triage prior"``
+   section when present and omits it when absent.
+4. The synthesizer prompt contains a "Triage prior" section.
 5. The synthesizer's ``_build_task`` includes the Triage-prior section
    when ``triage_summary_json`` is set.
+
+(The LLM planner that previously also consumed the triage prior was
+retired in favor of a deterministic kickoff template; the selector +
+synthesizer remain the consumers.)
 """
 
 from __future__ import annotations
@@ -26,8 +29,6 @@ from unittest.mock import MagicMock, patch
 import pytest
 
 from accessible_surfaceome.agents.plan_trim_select.runner import (
-    A1_PLAN_PROMPT_PATH,
-    A2_PLAN_PROMPT_PATH,
     GeneContext,
     _summarize_triage_for_planner,
 )
@@ -297,8 +298,17 @@ def test_gene_context_triage_field_defaults_to_none():
 # ---------------------------------------------------------------------------
 
 
-def test_planner_prompt_includes_triage_block_when_present():
-    """``_run_planner`` must include the Triage-prior section when
+def _selector_kwargs(ctx: "GeneContext") -> dict:
+    return {
+        "context": ctx,
+        "menu_markdown": "(menu)",
+        "n_kept": 0,
+        "usage_sink": [],
+    }
+
+
+def test_selector_prompt_includes_triage_block_when_present():
+    """``_run_selector`` must include the Triage-prior section when
     ``GeneContext.triage_summary_json`` is set."""
     from accessible_surfaceome.agents.plan_trim_select import runner
 
@@ -320,19 +330,14 @@ def test_planner_prompt_includes_triage_block_when_present():
         return None, "", ""
 
     with patch.object(runner, "_call_with_repair", _fake_repair):
-        runner._run_planner(
-            client=MagicMock(),
-            context=ctx,
-            usage_sink=[],
-            plan_prompt_path=runner.A1_PLAN_PROMPT_PATH,
-        )
+        runner._run_selector(client=MagicMock(), **_selector_kwargs(ctx))
 
     assert "Triage prior" in captured["user_prompt"]
     assert "contextual" in captured["user_prompt"]
     assert "cell_state_induced" in captured["user_prompt"]
 
 
-def test_planner_prompt_omits_triage_block_when_absent():
+def test_selector_prompt_omits_triage_block_when_absent():
     from accessible_surfaceome.agents.plan_trim_select import runner
 
     ctx = GeneContext(
@@ -350,12 +355,7 @@ def test_planner_prompt_omits_triage_block_when_absent():
         return None, "", ""
 
     with patch.object(runner, "_call_with_repair", _fake_repair):
-        runner._run_planner(
-            client=MagicMock(),
-            context=ctx,
-            usage_sink=[],
-            plan_prompt_path=runner.A2_PLAN_PROMPT_PATH,
-        )
+        runner._run_selector(client=MagicMock(), **_selector_kwargs(ctx))
 
     assert "Triage prior" not in captured["user_prompt"]
 
@@ -363,20 +363,6 @@ def test_planner_prompt_omits_triage_block_when_absent():
 # ---------------------------------------------------------------------------
 # Prompt-content tripwires
 # ---------------------------------------------------------------------------
-
-
-def test_a1_plan_prompt_mentions_triage_prior():
-    body = A1_PLAN_PROMPT_PATH.read_text().lower()
-    assert "triage prior" in body
-    assert "verdict_reasoning" in body
-    assert "key_uncertainty" in body
-
-
-def test_a2_plan_prompt_mentions_triage_prior():
-    body = A2_PLAN_PROMPT_PATH.read_text().lower()
-    assert "triage prior" in body
-    assert "verdict_reasoning" in body
-    assert "cell_state_induced" in body
 
 
 def test_synthesizer_prompt_mentions_triage_prior():
@@ -402,7 +388,7 @@ def _triage_reasons() -> frozenset[str]:
 
 @pytest.mark.parametrize(
     "prompt_path_name",
-    ["A1_PLAN_PROMPT_PATH", "A2_PLAN_PROMPT_PATH", "SYNTH_SYSTEM_PROMPT_PATH"],
+    ["SYNTH_SYSTEM_PROMPT_PATH"],
 )
 def test_prompts_document_every_triage_reason(
     prompt_path_name: str, _triage_reasons: frozenset[str]
@@ -410,13 +396,16 @@ def test_prompts_document_every_triage_reason(
     """Tripwire: every value in TriageReason must appear in each prompt
     that consumes the triage prior. Catches schema-prompt drift the way
     the 8-vs-19 reason gap silently lived for months. If you add a new
-    TriageReason value, you have to also tell the planner / synthesizer
-    what to do with it, or this test breaks CI."""
+    TriageReason value, you have to also tell the synthesizer what to do
+    with it, or this test breaks CI.
+
+    (The plan prompts were retired with the LLM planner; the synthesizer
+    is now the prompt carrying per-reason guidance. The selector consumes
+    the triage prior as a dynamically-injected JSON block, not per-reason
+    prose, so it isn't part of this tripwire.)"""
     import pytest as _p
 
     paths = {
-        "A1_PLAN_PROMPT_PATH": A1_PLAN_PROMPT_PATH,
-        "A2_PLAN_PROMPT_PATH": A2_PLAN_PROMPT_PATH,
         "SYNTH_SYSTEM_PROMPT_PATH": SYNTH_SYSTEM_PROMPT_PATH,
     }
     body = paths[prompt_path_name].read_text()
