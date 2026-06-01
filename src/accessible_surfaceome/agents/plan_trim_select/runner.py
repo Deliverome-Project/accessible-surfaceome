@@ -1127,6 +1127,25 @@ def _run_selector(
 # ---------------------------------------------------------------------------
 
 
+def _normalize_clip_id(clip_id: str) -> str:
+    """Normalize a clip_id for tolerant matching.
+
+    Lowercases, drops non-alphanumerics, and strips ``pmid`` / ``pmc``
+    type tokens. This collapses the one mangling the selector reliably
+    introduces: the menu renders a source header ``PMID:21444918`` above
+    a clip ``draft_21444918_abstract_02`` (bare digits, no type token,
+    because the pool keys PMID sources by number), and the model
+    "regularizes" the clip by re-inserting the prefix it saw in the
+    header → ``draft_PMID21444918_abstract_02``. Both normalize to
+    ``draft21444918abstract02``. PMC clips already carry ``PMC`` in the
+    bare id so they round-trip without this, but stripping the token is
+    harmless there too.
+    """
+
+    s = re.sub(r"[^a-z0-9]", "", clip_id.lower())
+    return re.sub(r"pmid|pmc", "", s)
+
+
 def _promote_selections(
     selection_response: SelectionResponse,
     *,
@@ -1140,7 +1159,17 @@ def _promote_selections(
     (``{prefix}NN``). The default ``pts_evi_`` preserves the single-agent
     MVP path; per-agent paths use ``a1_evi_`` / ``a2_evi_`` so downstream
     block builders' ``_check_claim_id_prefix`` validators pass.
+
+    On an exact clip_id miss, falls back to a normalized lookup that
+    tolerates the selector's PMID/PMC prefix-regularization, accepting
+    the recovery only when it resolves to a *single* pool clip (an
+    ambiguous normalized key keeps the drop + warning).
     """
+
+    # Build the normalized index lazily; only consulted on exact miss.
+    norm_index: dict[str, list[str]] = defaultdict(list)
+    for cid in pool:
+        norm_index[_normalize_clip_id(cid)].append(cid)
 
     claims: list[EvidenceClaim] = []
     warnings: list[str] = []
@@ -1148,10 +1177,20 @@ def _promote_selections(
     for sel in selection_response.selections:
         draft = pool.get(sel.clip_id)
         if draft is None:
-            warnings.append(
-                f"selector picked unknown clip_id={sel.clip_id!r}; skipping"
-            )
-            continue
+            candidates = norm_index.get(_normalize_clip_id(sel.clip_id), [])
+            if len(candidates) == 1:
+                draft = pool[candidates[0]]
+            else:
+                detail = (
+                    f"{len(candidates)} normalized matches"
+                    if candidates
+                    else "no match"
+                )
+                warnings.append(
+                    f"selector picked unknown clip_id={sel.clip_id!r} "
+                    f"({detail}); skipping"
+                )
+                continue
         claim = EvidenceClaim(
             evidence_id=f"{evidence_id_prefix}{seq:02d}",
             claim=sel.claim,
