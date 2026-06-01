@@ -4,6 +4,7 @@ import type { Metadata } from "next";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import { Shell } from "../../components/Shell/Shell";
+import { SectionAutoOpen } from "./SectionAutoOpen";
 import styles from "./page.module.css";
 
 export const metadata: Metadata = {
@@ -307,35 +308,86 @@ function extractToc(body: string): TocItem[] {
   return out;
 }
 
-/** A top-level outline entry plus its deeper sub-headings. */
-interface TocNode {
-  item: TocItem;
-  children: TocItem[];
+/** The shallowest heading level in a prompt body, EXCLUDING the H1 title
+ *  (which duplicates the card heading). Prompts vary — some open H1 + H2,
+ *  some are already H2-rooted — so the "top" tier is computed per prompt. */
+function topHeadingLevel(items: TocItem[]): number | null {
+  const body = items.filter((i) => i.level > 1);
+  if (body.length === 0) return null;
+  return Math.min(...body.map((i) => i.level));
 }
 
-/** Group the flat heading list into a one-level-deep tree for the side
- *  outline: the shallowest heading level becomes the always-visible
- *  "top" entries, and every deeper heading nests under the most recent
- *  top entry (rendered in a collapsed <details> the reader can expand).
- *
- *  The markdown H1 (the prompt's own title) is dropped first — it
- *  duplicates the card heading above the body, so showing it in the
- *  outline is noise. After that the shallowest REMAINING level is the
- *  top tier, which adapts to prompts that start at H1+H2 (methods
- *  builder) vs ones whose title is already H2 (accessibility modulation). */
-function groupToc(items: TocItem[]): TocNode[] {
-  const body = items.filter((i) => i.level > 1);
-  if (body.length === 0) return [];
-  const top = Math.min(...body.map((i) => i.level));
-  const nodes: TocNode[] = [];
-  for (const i of body) {
-    if (i.level === top || nodes.length === 0) {
-      nodes.push({ item: i, children: [] });
+/** Flat top-level outline: one entry per top-tier heading, no nesting,
+ *  no expand control. Deeper sub-headings are intentionally omitted — the
+ *  reader pops into a section from here and the section's own content
+ *  carries the detail. */
+function flatToc(items: TocItem[]): TocItem[] {
+  const top = topHeadingLevel(items);
+  if (top == null) return [];
+  return items.filter((i) => i.level === top);
+}
+
+/** One collapsible top-level section of a prompt body. `heading` is the
+ *  raw markdown heading line (e.g. "## Schema fields"); `markdown` is that
+ *  heading PLUS everything under it up to the next top-level heading. */
+interface PromptSection {
+  slug: string;
+  title: string;
+  markdown: string;
+}
+
+/** Split a prompt's markdown into top-level sections so each can render as a
+ *  collapsed <details>. Lines before the first top-level heading (the H1
+ *  title + any intro) are returned as a `preamble` rendered open, above the
+ *  collapsible sections. Fenced code blocks are respected so a `##` inside a
+ *  ``` block never starts a false section. */
+function splitIntoSections(
+  body: string,
+  toc: TocItem[],
+): { preamble: string; sections: PromptSection[] } {
+  const top = topHeadingLevel(toc);
+  const lines = body.split("\n");
+  if (top == null) return { preamble: body, sections: [] };
+
+  const headingRe = new RegExp(`^#{${top}}\\s+(.+?)\\s*$`);
+  const preamble: string[] = [];
+  const sections: PromptSection[] = [];
+  let cur: { title: string; buf: string[] } | null = null;
+  let inCode = false;
+  const seen = new Map<string, number>();
+
+  for (const line of lines) {
+    if (line.startsWith("```")) inCode = !inCode;
+    const m = !inCode ? headingRe.exec(line) : null;
+    if (m) {
+      if (cur) {
+        const base = slugify(cur.title.replace(/`/g, ""));
+        const n = (seen.get(base) || 0) + 1;
+        seen.set(base, n);
+        sections.push({
+          slug: n === 1 ? base : `${base}-${n - 1}`,
+          title: cur.title.replace(/`/g, ""),
+          markdown: cur.buf.join("\n"),
+        });
+      }
+      cur = { title: m[1], buf: [line] };
+    } else if (cur) {
+      cur.buf.push(line);
     } else {
-      nodes[nodes.length - 1].children.push(i);
+      preamble.push(line);
     }
   }
-  return nodes;
+  if (cur) {
+    const base = slugify(cur.title.replace(/`/g, ""));
+    const n = (seen.get(base) || 0) + 1;
+    seen.set(base, n);
+    sections.push({
+      slug: n === 1 ? base : `${base}-${n - 1}`,
+      title: cur.title.replace(/`/g, ""),
+      markdown: cur.buf.join("\n"),
+    });
+  }
+  return { preamble: preamble.join("\n"), sections };
 }
 
 function loadPrompt(def: PromptDef): LoadedPrompt | null {
@@ -429,6 +481,7 @@ export default function PromptsPage() {
 
   return (
     <Shell>
+      <SectionAutoOpen />
       <section className={`${styles.page} page-width`}>
         <header className={styles.hero}>
           <h1 className={`h-display ${styles.heroH1}`}>Agent prompts</h1>
@@ -521,17 +574,69 @@ export default function PromptsPage() {
 
                 <div className={styles.promptLayout}>
                   <div className={styles.promptBody}>
-                    <ReactMarkdown
-                      remarkPlugins={[remarkGfm]}
-                      components={makeMarkdownComponents(p.id)}
-                    >
-                      {p.body}
-                    </ReactMarkdown>
+                    {(() => {
+                      const { preamble, sections } = splitIntoSections(
+                        p.body,
+                        p.toc,
+                      );
+                      // No top-level headings → render the body flat (rare;
+                      // e.g. a prompt that's all prose).
+                      if (sections.length === 0) {
+                        return (
+                          <ReactMarkdown
+                            remarkPlugins={[remarkGfm]}
+                            components={makeMarkdownComponents(p.id)}
+                          >
+                            {p.body}
+                          </ReactMarkdown>
+                        );
+                      }
+                      return (
+                        <>
+                          {preamble.trim() ? (
+                            <ReactMarkdown
+                              remarkPlugins={[remarkGfm]}
+                              components={makeMarkdownComponents(p.id)}
+                            >
+                              {preamble}
+                            </ReactMarkdown>
+                          ) : null}
+                          {sections.map((s) => (
+                            // Collapsed by default so the prompt opens as a
+                            // compact list of section headings; the flat TOC
+                            // link + SectionAutoOpen expand the one you jump to.
+                            // The anchor id lives on the <summary> so TOC links
+                            // resolve and SectionAutoOpen can open the parent.
+                            <details
+                              key={s.slug}
+                              className={styles.promptSection}
+                            >
+                              <summary
+                                id={`${p.id}--${s.slug}`}
+                                className={styles.promptSectionSummary}
+                              >
+                                {s.title}
+                              </summary>
+                              <div className={styles.promptSectionBody}>
+                                <ReactMarkdown
+                                  remarkPlugins={[remarkGfm]}
+                                  components={makeMarkdownComponents(p.id)}
+                                >
+                                  {/* Drop the heading line itself — the
+                                      <summary> already shows the title. */}
+                                  {s.markdown.replace(/^[^\n]*\n?/, "")}
+                                </ReactMarkdown>
+                              </div>
+                            </details>
+                          ))}
+                        </>
+                      );
+                    })()}
                   </div>
 
                   {(() => {
-                    const nodes = groupToc(p.toc);
-                    if (nodes.length < 2) return null;
+                    const top = flatToc(p.toc);
+                    if (top.length < 2) return null;
                     return (
                       <aside
                         className={styles.toc}
@@ -539,58 +644,20 @@ export default function PromptsPage() {
                       >
                         <p className={styles.tocLabel}>On this page</p>
                         <ol className={styles.tocList}>
-                          {nodes.map((node) =>
-                            node.children.length > 0 ? (
-                              // Collapsed by default — only the top heading
-                              // shows until the reader expands it to reveal
-                              // the deeper sub-headings.
-                              <li
-                                key={node.item.slug}
-                                className={styles.tocItem}
-                                data-level={node.item.level}
+                          {top.map((item) => (
+                            <li
+                              key={item.slug}
+                              className={styles.tocItem}
+                              data-level={item.level}
+                            >
+                              <a
+                                href={`#${p.id}--${item.slug}`}
+                                className={styles.tocLink}
                               >
-                                <details className={styles.tocDetails}>
-                                  <summary className={styles.tocSummary}>
-                                    <a
-                                      href={`#${p.id}--${node.item.slug}`}
-                                      className={styles.tocLink}
-                                    >
-                                      {node.item.text}
-                                    </a>
-                                  </summary>
-                                  <ol className={styles.tocList}>
-                                    {node.children.map((c) => (
-                                      <li
-                                        key={c.slug}
-                                        className={styles.tocItem}
-                                        data-level={c.level}
-                                      >
-                                        <a
-                                          href={`#${p.id}--${c.slug}`}
-                                          className={styles.tocLink}
-                                        >
-                                          {c.text}
-                                        </a>
-                                      </li>
-                                    ))}
-                                  </ol>
-                                </details>
-                              </li>
-                            ) : (
-                              <li
-                                key={node.item.slug}
-                                className={styles.tocItem}
-                                data-level={node.item.level}
-                              >
-                                <a
-                                  href={`#${p.id}--${node.item.slug}`}
-                                  className={styles.tocLink}
-                                >
-                                  {node.item.text}
-                                </a>
-                              </li>
-                            ),
-                          )}
+                                {item.text}
+                              </a>
+                            </li>
+                          ))}
                         </ol>
                       </aside>
                     );
