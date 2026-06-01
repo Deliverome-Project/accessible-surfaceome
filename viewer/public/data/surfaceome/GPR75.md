@@ -75,13 +75,13 @@ The strongest surface-localization evidence for GPR75 comes from a BRET-based pl
 
 ### Immunohistochemistry (1 method)
 
-#### IHC Membranous — Supports Surface Localization
+#### IHC Membranous — Supports Surface Localization · Plasma Membrane Localized
 
 *Permeabilization: Fixed Unknown · expression: Endogenous*
 
 **Antibodies**
 
-- anti-GPR75 — Unknown epitope; None validation
+- anti-GPR75 — Unknown epitope; Unknown; None validation (None)
 
 **Observations**
 
@@ -91,7 +91,7 @@ The strongest surface-localization evidence for GPR75 comes from a BRET-based pl
 
 ### Proximity labeling (1 method)
 
-#### Unknown — Direct Surface Accessibility
+#### Unknown — Direct Surface Accessibility · Plasma Membrane Localized
 
 *Permeabilization: Live Cell · expression: Overexpression*
 
@@ -106,13 +106,13 @@ The strongest surface-localization evidence for GPR75 comes from a BRET-based pl
 
 ### Other (1 method)
 
-#### Whole Cell Proteomics — Weak Or Ambiguous
+#### Whole Cell Proteomics — Weak Or Ambiguous · Unclear
 
 *Permeabilization: Unknown · expression: Endogenous*
 
 **Antibodies**
 
-- anti-GPR75 — Unknown epitope; None validation
+- anti-GPR75 — Unknown epitope; Unknown; None validation (None)
 
 **Observations**
 
@@ -301,78 +301,115 @@ Scored, but no surface patch cleared the antibody-sized targetability threshold 
 
 - `a1_evi_01` · *Primary* · Supports · Topology — The original 1999 cloning paper (Tarttelin et al.) used protein sequence analysis to predict seven transmembrane domains for GPR75, establishing it as a GPCR with canonical 7TM topology. This is the primary source topology prediction from the discovery paper. (https://pubmed.ncbi.nlm.nih.gov/10381362/)
   - *assay*: Human
+  > "Protein sequence analysis predicts the presence of seven transmembrane domains, a characteristic feature of GPRs."
 - `a1_evi_02` · *Secondary* · Supports · Topology — GPR75 contains the characteristic seven transmembrane spanning domains with N-glycosylation sites in the N-terminus (extracellular) and serine/threonine phosphorylation sites in the C-terminus (cytoplasmic). This supports the canonical class A GPCR topology: extracellular N-terminus, cytoplasmic C-terminus, 7TM architecture. Three N-glycosylation sites at N2, N12, and N25 (per UniProt) on the extracellular N-terminal domain are consistent with surface accessibility. ([PMC12920073](https://www.ncbi.nlm.nih.gov/pmc/articles/PMC12920073/))
   - *assay*: Human
+  > "GPR75 contains the characteristic seven transmembrane spanning domains, N‐glycosylation sites in the N‐terminus and several serine and threonine phosphorylation sites in the C‐terminus (Tarttelin et al. 1999 )."
 - `a1_evi_03` · *Secondary* · Supports · Topology — GPR75 is a 540-amino-acid protein encoded by 2 exons on chromosome 2p16. This structural annotation anchors the full-length protein used in surface-expression studies and confirms the protein size expected in WB experiments. ([PMC10495892](https://www.ncbi.nlm.nih.gov/pmc/articles/PMC10495892/))
   - *assay*: Human
+  > "GPR75, first identified by Tarttelin et al. in 1999, is a 540-amino-acid protein with only two exons located on human chromosome 2p16."
 - `a1_evi_04` · *Secondary* · Supports · Topology — GPR75 is described as a 540 amino acid member of the Gαq class of GPCRs with no homology to other classic GPCRs. As a Gαq-coupled receptor, it is expected to reside at the plasma membrane. This secondary review assertion supports the surface-expression classification for GPR75 but does not provide direct experimental surface evidence. ([PMC12920073](https://www.ncbi.nlm.nih.gov/pmc/articles/PMC12920073/))
   - *assay*: Human
+  > "G-protein coupled receptor (GPCR) 75 (GPR75) is a 540 amino acid member of the G<sub>αq</sub> class of GPCRs, with no homology with other classic GPCRs."
 - `a1_evi_05` · *Primary* · Supports · Surface Expression — In a BRET-based trafficking assay, GPR75 (along with most tested receptors) showed substantial BRET to a plasma membrane (PM) marker and less BRET to an ER marker, indicating efficient trafficking to the cell surface in HEK 293 cells. This is a direct functional surface-localization readout using a proximity-based PM marker assay without permeabilization. ([PMC8062009](https://www.ncbi.nlm.nih.gov/pmc/articles/PMC8062009/))
   - *assay*: Human · HEK 293 · live · non-permeabilized
+  > "Most receptors showed substantial BRET to the PM marker, and less BRET to the ER marker, indicating efficient trafficking to the cell surface."
 - `a1_evi_06` · *Secondary* · Ambiguous · Methodological — In the BRET surface-trafficking study, each receptor coding sequence was amplified with a common forward primer corresponding to a cleavable signal sequence and ligated into a pRluc8-N1 vector. The construct uses an exogenous cleavable signal sequence (not the native GPR75 signal), meaning the trafficking data represents OE with a foreign/chimeric signal peptide. This caps surface evidence confidence as supportive_indirect (evidence_tier=secondary per overexpression SP rules). The Rluc8 fusion is at the receptor C-terminus, which is cytoplasmic — consistent with intact-cell PM-marker BRET being a genuine surface readout. ([PMC8062009](https://www.ncbi.nlm.nih.gov/pmc/articles/PMC8062009/))
   - *assay*: Human · HEK 293 · live · non-permeabilized
+  > "For each receptor the coding sequence was amplified with a common forward primer (corresponding to a cleavable signal sequence) and custom reverse primer (corresponding to the receptor C terminus) and ligated into a pRluc8-N1 cloning vector."
 - `a1_evi_07` · *Secondary* · Supports · Surface Expression — GPR75 was coexpressed together with Gα subunit and Venus-Gβγ in genome-edited HEK 293 cells lacking endogenous Gs/olf, Gq/11, and G12/13 proteins. This overexpression system with G-protein-null HEK 293 cells provides a clean background for measuring receptor surface trafficking and G-protein coupling via BRET. OE construct used an exogenous cleavable signal sequence (per methods clip); evidence tier capped at secondary. ([PMC8062009](https://www.ncbi.nlm.nih.gov/pmc/articles/PMC8062009/))
   - *assay*: Human · HEK 293 (genome-edited, G-protein null) · live · non-permeabilized
+  > "Receptors were coexpressed together with a Gα subunit and Venus-Gβγ in genome-edited HEK 293 cells lacking endogenous G s/olf , G q/11 and G 12/13 proteins [ 19 ]."
 - `a1_evi_08` · *Secondary* · Ambiguous · Tissue Expression — GPR75 expression in pancreatic islets was measured by quantitative RT-PCR (mRNA) and GPR75 was detected by western blotting and immunohistochemistry — neither fractionation nor surface-specific biotinylation was performed. The western blot is whole-cell and the IHC is on fixed tissue, so these do not directly confirm cell-surface localization. These constitute non-surface expression observations qualifying the surface claim: GPR75 protein is present in islets but surface accessibility is not directly demonstrated by these methods. Antibody identity and validation controls are not described in this abstract clip. (https://pubmed.ncbi.nlm.nih.gov/23979485/)
   - *assay*: Human · pancreatic islets · fixed
+  > "GPR75 is coupled to Gq to elevate intracellular calcium, so we investigated whether islets express this receptor and whether its activation by CCL5 increases beta cell calcium levels and insulin secretion.<h4>Methods</h4>Islet CCL5 receptor mRNA expression was measured by quantitative RT-PCR and GPR75 was detected in islets by western blotting and immunohistochemistry."
 - `a1_evi_09` · *Primary* · Supports · Methodological — RT-PCR validation in GPR75 knockout (KO) mice confirmed specificity of the GPR75 amplicon: the expected 234-bp band was present in wild-type tissue and absent in GPR75 KO samples. This KO-validated RT-PCR specificity control supports the reliability of GPR75 expression measurements in the CNS study and provides a genetic loss-of-function validation anchor. ([PMC12920073](https://www.ncbi.nlm.nih.gov/pmc/articles/PMC12920073/))
   - *assay*: Mouse · CNS tissue (wild-type vs GPR75 KO)
+  > "We observed the expected 234‐bp size of the GPR75 amplicon in WT tissue samples, and no band was detected in the GPR75 KO sample (Figure 1A )."
 - `a1_evi_10` · *Secondary* · Ambiguous · Tissue Expression — GPR75 mRNA is reported as abundant in neurons of the mouse hippocampus (prior publication referenced in this 2026 paper). This is an RNA-level observation in CNS neurons without surface-method validation; it qualifies as a non-surface expression observation feeding the non_surface_expression list. ([PMC12920073](https://www.ncbi.nlm.nih.gov/pmc/articles/PMC12920073/))
   - *assay*: Mouse · hippocampal neurons
+  > "We have previously established that GPR75 mRNA is abundant in neurons of the mouse hippocampus (Speidell et al. 2023 )."
 - `a1_evi_11` · *Secondary* · Ambiguous · Tissue Expression — GPR75 mRNA is expressed in all analysed mouse CNS areas with regional variation — higher in brain regions than spinal cord. This RT-PCR mRNA-level observation lacks surface-method validation and feeds the non_surface_expression list as a qualifier indicating widespread CNS RNA presence without direct surface accessibility evidence. ([PMC12920073](https://www.ncbi.nlm.nih.gov/pmc/articles/PMC12920073/))
   - *assay*: Mouse · CNS tissue (multiple regions)
+  > "All analysed CNS areas express GPR75 mRNA; however, there are clear fluctuations in the amount of expression, especially when comparing between brain areas and spinal cord (Figure 1B )."
 - `a1_evi_12` · *Secondary* · Ambiguous · Tissue Expression — GPR75 mRNA expression is significantly higher in CNS tissues compared to peripheral tissues (spleen, kidney, heart), following patterns similar to the Human Protein Atlas. This is a comparative RNA-level tissue expression observation without surface-method validation, feeding the non_surface_expression list. The reference to Human Protein Atlas convergence provides secondary database corroboration. ([PMC12920073](https://www.ncbi.nlm.nih.gov/pmc/articles/PMC12920073/))
   - *assay*: Mouse · CNS vs peripheral tissues
+  > "Further, GPR75 mRNA expression is significantly higher in the CNS when compared to peripheral tissues, such as spleen, kidney and heart (Figure 1C ), and follows a pattern similar to that previously described in the Human Protein Atlas."
 - `a2_evi_01` · *Primary* · Supports · Tissue Expression — GPR75 transcript was localized by in situ hybridization to the retinal pigment epithelium (RPE) and to perivascular cells surrounding retinal arterioles in human retina sections; Northern blot of human RPE confirmed transcript presence. This establishes GPR75 expression in human retinal tissue, specifically in RPE cells and perivascular/arteriolar cells in the ganglion cell/nerve fiber layer. (https://pubmed.ncbi.nlm.nih.gov/10381362/)
   - *assay*: Human · retinal pigment epithelium (RPE); perivascular cells surrounding retinal arterioles · fixed
+  > "In situ hybridisation to human retina and Northern blot analysis of human retinal pigment epithelium (RPE) showed localisation of this transcript to the RPE and cells surrounding retinal arterioles."
 - `a2_evi_02` · *Primary* · Supports · Tissue Expression — In mouse retina, GPR75 transcript was localized by in situ hybridization to photoreceptor inner segments and the outer plexiform layer — a distinct localization pattern from human retina where expression is in the RPE and perivascular cells. This constitutes a species difference in retinal cell-type distribution. (https://pubmed.ncbi.nlm.nih.gov/10381362/)
   - *assay*: Mouse · photoreceptor inner segments; outer plexiform layer cells · fixed
+  > "In contrast, the transcript was localised to the photoreceptor inner segments and the outer plexiform layer in mouse sections."
 - `a2_evi_03` · *Primary* · Supports · Tissue Expression — Northern blot analysis of human tissues detected a 7 kb GPR75 transcript highly expressed in brain, establishing brain as the primary tissue of GPR75 expression at the RNA level. (https://pubmed.ncbi.nlm.nih.gov/10381362/)
   - *assay*: Human · brain tissue panel
+  > "Northern blot analysis demonstrated a 7 kb transcript highly expressed in the brain."
 - `a2_evi_04` · *Primary* · Supports · Tissue Expression — Both mouse and human pancreatic islets express GPR75 protein (detected by Western blot and IHC) and its ligand CCL5, confirming GPR75 protein-level presence in islet cells of both species. This places GPR75 in the context of pancreatic endocrine tissue. (https://pubmed.ncbi.nlm.nih.gov/23979485/)
   - *assay*: Human · pancreatic islets (mouse and human)
+  > "Glucose homeostasis in lean and obese mice was determined by measuring glucose and insulin tolerance, and insulin secretion in vivo.<h4>Results</h4>Mouse and human islets express GPR75 and its ligand CCL5."
 - `a2_evi_05` · *Primary* · Supports · Tissue Expression — GPR75 protein was detected in pancreatic islets by Western blotting and immunohistochemistry (IHC). Beta cells were confirmed as the relevant islet cell type through functional studies with CCL5-stimulated calcium elevation. This is primary protein-level evidence for GPR75 expression in pancreatic beta cells. (https://pubmed.ncbi.nlm.nih.gov/23979485/)
   - *assay*: Mouse · pancreatic islets; beta cells · fixed · permeabilized
+  > "GPR75 is coupled to Gq to elevate intracellular calcium, so we investigated whether islets express this receptor and whether its activation by CCL5 increases beta cell calcium levels and insulin secretion.<h4>Methods</h4>Islet CCL5 receptor mRNA expression was measured by quantitative RT-PCR and GPR75 was detected in islets by western blotting and immunohistochemistry."
 - `a2_evi_06` · *Primary* · Supports · Surface Expression — Exogenous CCL5 reversibly increased intracellular calcium in pancreatic beta cells via GPR75 activation (dependent on phospholipase C and calcium influx), demonstrating functional surface-accessible GPR75 in the beta cell plasma membrane. This constitutes a functional assay confirming surface availability of GPR75 in the pancreatic beta cell context. (https://pubmed.ncbi.nlm.nih.gov/23979485/)
   - *assay*: Mouse · pancreatic beta cells · live · non-permeabilized
+  > "Exogenous CCL5 reversibly increased intracellular calcium in beta cells via GPR75, this phenomenon being dependent on phospholipase C activation and calcium influx."
 - `a2_evi_07` · *Primary* · Supports · Surface Expression — CCL5 stimulated insulin secretion from mouse and human pancreatic islets in vitro and improved glucose tolerance in lean mice and in ob/ob (hyperglycaemia/insulin-resistance) mice via GPR75, indicating that GPR75 is functionally surface-accessible in pancreatic islets under both normal and obese/hyperglycaemic disease conditions. This supports accessibility in a metabolic disease context. (https://pubmed.ncbi.nlm.nih.gov/23979485/)
   - *assay*: Mouse · pancreatic islets (mouse and human) · live · non-permeabilized
+  > "CCL5 also stimulated insulin secretion from mouse and human islets in vitro, and improved glucose tolerance in lean mice and in a mouse model of hyperglycaemia and insulin resistance (ob/ob)."
 - `a2_evi_08` · *Primary* · Supports · Tissue Expression — GPR75 mRNA expression is abundant in the central nervous system (CNS) and significantly higher than in peripheral tissues (spleen, kidney, heart), consistent with the Human Protein Atlas distribution pattern. This establishes the CNS as the primary tissue compartment for GPR75 expression. ([PMC12920073](https://www.ncbi.nlm.nih.gov/pmc/articles/PMC12920073/))
   - *assay*: Mouse · CNS vs. spleen, kidney, heart
+  > "GPR75 expression is abundant in the central nervous system (CNS) more so than in the peripheral tissues; however, much remains unknown about the distribution and role of this receptor throughout the CNS."
 - `a2_evi_09` · *Primary* · Supports · Tissue Expression — GPR75 mRNA is expressed across all analyzed CNS regions with clear fluctuations, with higher expression in brain areas compared to spinal cord. This heterogeneous distribution across CNS subregions establishes differential CNS regional expression. ([PMC12920073](https://www.ncbi.nlm.nih.gov/pmc/articles/PMC12920073/))
   - *assay*: Mouse · CNS regions including brain and spinal cord
+  > "All analysed CNS areas express GPR75 mRNA; however, there are clear fluctuations in the amount of expression, especially when comparing between brain areas and spinal cord (Figure 1B )."
 - `a2_evi_10` · *Primary* · Supports · Tissue Expression — GPR75 mRNA expression is significantly higher in the CNS (brain and spinal cord) compared to peripheral tissues (spleen, kidney, heart), confirming CNS-enriched expression and aligning with Human Protein Atlas data. ([PMC12920073](https://www.ncbi.nlm.nih.gov/pmc/articles/PMC12920073/))
   - *assay*: Mouse · CNS vs. peripheral tissue panel
+  > "Further, GPR75 mRNA expression is significantly higher in the CNS when compared to peripheral tissues, such as spleen, kidney and heart (Figure 1C ), and follows a pattern similar to that previously described in the Human Protein Atlas."
 - `a2_evi_11` · *Secondary* · Supports · Tissue Expression — GPR75 mRNA is abundant in neurons of the mouse hippocampus, as previously established by Speidell et al. 2023. This provides cell-type-level resolution of CNS expression, placing GPR75 in hippocampal neurons specifically. ([PMC12920073](https://www.ncbi.nlm.nih.gov/pmc/articles/PMC12920073/))
   - *assay*: Mouse · hippocampal neurons
+  > "We have previously established that GPR75 mRNA is abundant in neurons of the mouse hippocampus (Speidell et al. 2023 )."
 - `a2_evi_12` · *Primary* · Supports · Tissue Expression — Single-cell or neuronal subtype analysis reveals GPR75 mRNA expression in multiple neuronal populations including GABAergic and glutamatergic neurons across the CNS. This establishes that GPR75 is not restricted to a single neurotransmitter-defined neuronal subtype. ([PMC12920073](https://www.ncbi.nlm.nih.gov/pmc/articles/PMC12920073/))
   - *assay*: Mouse · GABAergic neurons; glutamatergic neurons · fixed
+  > "Our results show that GPR75 mRNA expression occurs in several neuronal populations including GABAergic and glutamatergic neurons."
 - `a2_evi_13` · *Primary* · Supports · Tissue Expression — GPR75 mRNA is highly expressed in monoaminergic neurons in select brain areas: substantia nigra/ventral tegmental area (dopaminergic neurons), locus coeruleus (noradrenergic neurons), and raphe nucleus (serotonergic neurons). This places GPR75 in discrete monoaminergic neuron populations with functional implications for reward, stress, and arousal circuits. ([PMC12920073](https://www.ncbi.nlm.nih.gov/pmc/articles/PMC12920073/))
   - *assay*: Mouse · monoaminergic neurons (dopaminergic, noradrenergic, serotonergic) · fixed
+  > "In select areas, such as the substantia nigra/ventral tegmental area, locus coeruleus and raphe nucleus, GPR75 mRNA is also highly expressed in monoaminergic neurons."
 - `a2_evi_14` · *Primary* · Supports · Tissue Expression — GPR75 mRNA is highly expressed in both GABAergic and glutamatergic neurons of the cerebellum, suggesting a potential role in motor and equilibrium circuitry. This extends the CNS cell-type distribution to cerebellar neurons. ([PMC12920073](https://www.ncbi.nlm.nih.gov/pmc/articles/PMC12920073/))
   - *assay*: Mouse · cerebellar GABAergic and glutamatergic neurons · fixed
+  > "Moreover, we found high expression of GPR75 mRNA in the cerebellum, in both GABAergic and glutamatergic neurons, suggesting a potential role for this receptor in motor/equilibrium activity."
 - `a2_evi_15` · *Secondary* · Supports · Tissue Expression — GPR75 was originally characterized for its expression in the human retina (Tarttelin et al. 1999; Sauer et al. 2001), establishing retinal expression as one of the earliest documented tissue contexts for this receptor. ([PMC12920073](https://www.ncbi.nlm.nih.gov/pmc/articles/PMC12920073/))
   - *assay*: Human · retina
+  > "One GPCR that is considered an orphan receptor is GPCR 75 (GPR75), a 540 amino acid member of the G αq class of GPCRs, originally characterized for its expression in the human retina (Tarttelin et al. 1999 ; Sauer et al. 2001 )."
 - `a2_evi_16` · *Primary* · Supports · Tissue Expression — Gpr75 mRNA is highly expressed in rat brain, including several hypothalamic nuclei, in both sexes. This constitutes primary evidence for GPR75 enrichment in hypothalamic neurons, relevant to energy balance regulation. ([PMC12702673](https://www.ncbi.nlm.nih.gov/pmc/articles/PMC12702673/))
   - *assay*: Rat · hypothalamic nuclei neurons · fixed
+  > "Gpr75 was highly expressed in the brain, including several hypothalamic nuclei, in rats of both sexes."
 - `a2_evi_17` · *Primary* · Supports · Tissue Expression — Hypothalamic Ccl5 expression is significantly upregulated in Gpr75 KO male rats on high-fat diet (HFD) compared to wild-type, suggesting that in the normal (WT) state GPR75 is functionally active at the surface of hypothalamic neurons and modulates CCL5 signaling during HFD-induced hyperphagia. Baseline: WT hypothalamic neurons under HFD. Modulating state: Gpr75 knockout. Change: increased Ccl5 expression. Implication: GPR75 surface activity in hypothalamus is engaged under diet-induced obese state. ([PMC12702673](https://www.ncbi.nlm.nih.gov/pmc/articles/PMC12702673/))
   - *assay*: Rat · hypothalamic tissue
+  > "Notably, hypothalamic Ccl5 (encoding C-C motif chemokine ligand 5 [CCL5]) expression was significantly higher in Gpr75 KO male rats than in wild-type rats, suggesting that Gpr75 KO may prevent HFD-induced hyperphagia via central CCL5 signaling in rats."
 - `a2_evi_18` · *Primary* · Supports · Tissue Expression — Loss-of-function GPR75 variants in humans are associated with leanness (genetic association), and Gpr75 null mice are protected from diet-induced obesity, establishing GPR75 as a functionally relevant receptor in adipose/metabolic tissue contexts and validating mouse KO as a model. ([PMC12916076](https://www.ncbi.nlm.nih.gov/pmc/articles/PMC12916076/))
   - *assay*: Human · human population cohort; adipose tissue (mouse KO model)
+  > "Loss of function G-protein coupled receptor 75 (GPR75) variants in humans are associated with leanness, and Gpr75 null mice are protected from diet-induced obesity (DIO)."
 - `a2_evi_19` · *Primary* · Supports · Tissue Expression — Adipocyte-specific Gpr75 deletion in mice was investigated for its contribution to diet-induced obesity, directly implicating adipocyte-expressed GPR75 as a tissue-relevant isoform in fat tissue. This establishes adipocytes as a cell type expressing functional GPR75. ([PMC12916076](https://www.ncbi.nlm.nih.gov/pmc/articles/PMC12916076/))
   - *assay*: Mouse · adipocytes (adipo-Gpr75-/- model)
+  > "Here, we investigated the contribution of adipocyte-derived Gpr75 to DIO."
 - `a2_evi_20` · *Primary* · Supports · Tissue Expression — Female adipo-Gpr75-/- mice showed 50% reduction in weight gain and adiposity on HFD vs WT, while male knockouts gained weight similarly to WT. This sex-dependent modulation indicates that GPR75 in adipocytes is functionally engaged in a sex-dependent and diet-state-dependent manner, with greater surface/functional relevance in female adipocytes under HFD conditions. ([PMC12916076](https://www.ncbi.nlm.nih.gov/pmc/articles/PMC12916076/))
   - *assay*: Mouse · adipocytes (female vs male adipo-Gpr75-/- mice)
+  > "Female adipo-Gpr75<sup>-/-</sup> mice displayed a 50% (p < 0.001) decrease in weight gain and adiposity compared to WT, whereas male adipo-Gpr75<sup>-/-</sup> gained weight like WT mice."
 - `a2_evi_21` · *Secondary* · Supports · Tissue Expression — Review-level assertion that GPR75 has been identified across various tissues and organs, where it contributes to biological regulation and disease progression. This is a general statement from a review without primary data but corroborates broad multi-tissue distribution. ([PMC12071931](https://www.ncbi.nlm.nih.gov/pmc/articles/PMC12071931/))
   - *assay*: Human · multiple tissues and organs
+  > "G protein-coupled receptor 75 (GPR75), a novel member of the rhodopsin-like G protein-coupled receptor (GPCR) family, has been identified across various tissues and organs, where it contributes to biological regulation and disease progression."
 - `a2_evi_22` · *Secondary* · Supports · Tissue Expression — GPR75 is expressed and functionally active in pulmonary artery smooth muscle cells (PASMCs), where CCL5 binding activates Gαi signaling to decrease cAMP and induce contraction. This establishes GPR75 cell-surface expression and functionality in vascular smooth muscle of the pulmonary circulation. ([PMC12071931](https://www.ncbi.nlm.nih.gov/pmc/articles/PMC12071931/))
   - *assay*: Unspecified · pulmonary artery smooth muscle cells (PASMCs) · live · non-permeabilized
+  > "Additionally, in pulmonary artery smooth muscle cells (PASMCs), CCL5 decreases cAMP levels via Gα i signaling, thereby inducing contraction."
 - `a2_evi_23` · *Secondary* · Supports · Surface Expression — GPR75 is expressed and functionally active in vascular smooth muscle cells (VSMCs), where 20-HETE binding activates Gαq/PLC signaling to increase IP3 and Ca2+ and induce contraction. This places GPR75 at the surface of systemic VSMCs and implicates it in vascular tone regulation. ([PMC12071931](https://www.ncbi.nlm.nih.gov/pmc/articles/PMC12071931/))
   - *assay*: Unspecified · vascular smooth muscle cells (VSMCs) · live · non-permeabilized
+  > "In contrast, 20-HETE, a high-affinity ligand for GPR75, induces contraction in vascular smooth muscle cells (VSMCs) by activating the Gα q /PLC pathway, leading to increased IP 3 and Ca 2+ levels."
 - `a2_evi_24` · *Primary* · Supports · Tissue Expression — In NIT-1 mouse pancreatic beta cells, GPR75 mRNA levels were significantly increased at 60 min with 10 nM liraglutide treatment (GLP-1 receptor agonist), while no time- or dose-dependent pattern was observed at other concentrations/timepoints. Baseline: untreated NIT-1 beta cells. Modulating state: 60 min 10 nM liraglutide. Change: statistically significant GPR75 mRNA upregulation. Implication: GLP-1R agonist signaling upregulates GPR75 transcript in beta cells, potentially increasing surface receptor availability. ([PMC12058015](https://www.ncbi.nlm.nih.gov/pmc/articles/PMC12058015/))
   - *assay*: Mouse · NIT-1 pancreatic beta cells
+  > "We did not detect any time- and dose-dependent changes in all investigated genes, instead we found a statistically significant increase in mRNA levels of GPR75, GPR56, M3R and CB1R genes at 60 min with 10nM liraglutide and a slight and statistically significant decrease in GLP1R mRNA levels in response to 1000nM liraglutide treatment compared to 10nM and 100nM concentrations at all tested time points, as shown in the figure ."
 - `a2_evi_25` · *Secondary* · Supports · Tissue Expression — GPR75 is expressed in neuronal cells where the CCL5/GPR75 axis activates DAG/PKC → AKT/MAPK signaling to inhibit Aβ-induced neuronal apoptosis and confer neuroprotection. This functional context implies surface-accessible GPR75 on neurons relevant to Alzheimer's disease. ([PMC12071931](https://www.ncbi.nlm.nih.gov/pmc/articles/PMC12071931/))
   - *assay*: Unspecified · neurons · live · non-permeabilized
+  > "The CCL5/GPR75 axis also stimulates the DAG/PKC pathway, leading to the activation of AKT and MAPK signaling, which inhibits Aβ-induced neuronal apoptosis and confers neuroprotection."
 
 ## Appendix · Downloads & reproduction
 

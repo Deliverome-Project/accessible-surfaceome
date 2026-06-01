@@ -76,7 +76,7 @@ The primary surface evidence comes from two papers (PMID:41818370 and PMID:41818
 
 ### Surface mass spec (1 method)
 
-#### Cell Surface Capture — Supports Membrane Association
+#### Cell Surface Capture — Supports Membrane Association · Surface Accessible
 
 *Permeabilization: Live Cell · expression: Endogenous*
 
@@ -88,18 +88,18 @@ The primary surface evidence comes from two papers (PMID:41818370 and PMID:41818
 
 ### Surface biotinylation (1 method)
 
-#### Surface Biotinylation — Direct Surface Accessibility
+#### Surface Biotinylation — Direct Surface Accessibility · Plasma Membrane Localized
 
 *Permeabilization: Live Cell · expression: Endogenous*
 
 **Antibodies**
 
-- anti-SRC (60315-1-Ig · Proteintech · 60315-1-Ig) — Intracellular epitope; Weak validation; Clone 5E10C4; immunogen is full-length SRC (1-536 aa); used for WB detection after surface biotinylation pulldown, not direct surface staining.
-- anti-phospho-Y416-SRC (D49G4 · Cell Signaling Technology · #6943) — Intracellular epitope; Weak validation; Rabbit recombinant monoclonal; targets pTyr416 activation loop (intracellular kinase domain); cross-reacts with Src family members (Fyn, Hck, Lck, Lyn, Yes) at the equivalent pTyr site.
+- anti-SRC (60315-1-Ig · Proteintech · 60315-1-Ig) — Intracellular epitope; Monoclonal; Weak validation (Vendor Claim Only); Clone 5E10C4; immunogen is full-length SRC (1-536 aa); used for WB detection after surface biotinylation pulldown, not direct surface staining.
+- anti-phospho-Y416-SRC (D49G4 · Cell Signaling Technology · #6943) — Intracellular epitope; Monoclonal; Weak validation (Vendor Claim Only); Rabbit recombinant monoclonal; targets pTyr416 activation loop (intracellular kinase domain); cross-reacts with Src family members (Fyn, Hck, Lck, Lyn, Yes) at the equivalent pTyr site.
 
 ### Membrane fractionation (1 method)
 
-#### Whole Cell Proteomics — Weak Or Ambiguous
+#### Whole Cell Proteomics — Weak Or Ambiguous · Secreted Or Shed
 
 *Permeabilization: Unknown · expression: Endogenous*
 
@@ -111,13 +111,13 @@ The primary surface evidence comes from two papers (PMID:41818370 and PMID:41818
 
 ### Functional surface assay (2 methods)
 
-#### Unknown — Direct Surface Accessibility
+#### Unknown — Direct Surface Accessibility · Surface Accessible
 
 *Permeabilization: Live Cell · expression: Endogenous*
 
 **Antibodies**
 
-- anti-Src (therapeutic) — Extracellular epitope; None validation; Antibody targets extracellular face of topologically inverted eSrc; specific clone and vendor not reported in the abstract-level claims.
+- anti-Src (therapeutic) — Extracellular epitope; Unknown; None validation (None); Antibody targets extracellular face of topologically inverted eSrc; specific clone and vendor not reported in the abstract-level claims.
 
 **Observations**
 
@@ -126,13 +126,13 @@ The primary surface evidence comes from two papers (PMID:41818370 and PMID:41818
 | Cancer cell lines (in vitro): anti-Src antibody-based therapy mediates tumor cell killing; eSrc detected via autophagolysosomal exocytosis (ALE)-dependent surface inversion | Established Cell Line | Moderate | 3 |
 | Mouse xenograft tumor models: anti-Src antibody-based therapies mediate tumor cell killing in vivo; eSrc found in primary tumors | Xenograft | Moderate | 1 |
 
-#### Unknown — Direct Surface Accessibility
+#### Unknown — Direct Surface Accessibility · Surface Accessible
 
 *Permeabilization: Live Cell · expression: Endogenous*
 
 **Antibodies**
 
-- anti-Src (therapeutic) — Extracellular epitope; None validation; Antibody engages extracellular eSrc exposed by exocytosis; specific clone and vendor not reported in the abstract-level claim.
+- anti-Src (therapeutic) — Extracellular epitope; Unknown; None validation (None); Antibody engages extracellular eSrc exposed by exocytosis; specific clone and vendor not reported in the abstract-level claim.
 
 **Observations**
 
@@ -142,13 +142,13 @@ The primary surface evidence comes from two papers (PMID:41818370 and PMID:41818
 
 ### Other (1 method)
 
-#### Whole Cell Proteomics — Weak Or Ambiguous
+#### Whole Cell Proteomics — Weak Or Ambiguous · Plasma Membrane Localized
 
 *Permeabilization: Unknown · expression: Endogenous*
 
 **Antibodies**
 
-- anti-THY1 — Unknown epitope; None validation
+- anti-THY1 — Unknown epitope; Unknown; None validation (None)
 
 **Observations**
 
@@ -336,56 +336,82 @@ No SURFACE-Bind data — typically because the protein has no AlphaFold model (v
 
 - `a1_evi_01` · *Secondary* · Supports · Topology — A 2025 study (PMID:41818370) reports that intracellular N-myristoylated Src undergoes topological inversion onto the cell surface in cancer cells via autophagolysosomal exocytosis (ALE), resulting in extracellular membrane-associated Src (eSrc). This constitutes a non-canonical surface topology where the canonical inner-leaflet-anchored kinase is inverted, placing previously cytoplasmic domains accessible from the extracellular space. The topology claim is that N-myristoylated Src can be topologically inverted — contradicting the canonical expectation that N-myristoylated proteins are exclusively inner-leaflet anchored. (https://pubmed.ncbi.nlm.nih.gov/41818370/)
   - *assay*: Human · cancer cell lines (in vitro and in vivo xenografts) · live · non-permeabilized
+  > "Thus, intracellular <i>N</i>-myristoylated proteins, prototypically Src, can be topologically inverted onto the cell surface in cancer and targeted with antibody therapeutics."
 - `a1_evi_02` · *Secondary* · Supports · Surface Expression — Src is noncanonically translocated and inverted onto the cell surface in cancer, both in vitro and in vivo. This is the core surface-expression finding of PMID:41818370 — a direct experimental observation establishing that Src (canonical inner-leaflet kinase) can achieve extracellular surface presence (eSrc) in cancer cells. Evidence derived from multiple experimental approaches in cancer cell lines and in vivo tumor models. (https://pubmed.ncbi.nlm.nih.gov/41818370/)
   - *assay*: Human · cancer cell lines and xenograft tumors · unspecified · non-permeabilized
+  > "In this work, we found that Src is noncanonically translocated and inverted onto the cell surface in cancer, both in vitro and in vivo."
 - `a1_evi_03` · *Secondary* · Supports · Surface Expression — Extracellular membrane-associated Src (eSrc) was found in primary tumors. Anti-Src antibody-based therapies mediated tumor cell killing in cell culture systems and in mouse xenograft models. This constitutes therapeutic engagement evidence: antibody programs targeting the extracellular face of surface-inverted Src (eSrc) in cancer, demonstrating preclinical proof-of-concept for Src as an antibody-accessible surface target in oncology. The target form is the topologically inverted, membrane-associated eSrc. (https://pubmed.ncbi.nlm.nih.gov/41818370/)
   - *assay*: Human · primary tumors and xenograft models · unspecified · non-permeabilized
+  > "Furthermore, this extracellular membrane-associated Src (eSrc) was found in primary tumors, and anti-Src antibody-based therapies mediated tumor cell killing in cell culture systems and in mouse xenograft models."
 - `a1_evi_04` · *Secondary* · Ambiguous · Surface Expression — Autophagolysosomal exocytosis (ALE) is identified as the secretory mechanism by which Src is delivered to the outer cell surface in cancer cell lines. This is the mechanistic basis for eSrc surface presentation — not canonical secretory pathway trafficking. The ALE mechanism is prominent in cancer cell lines, suggesting cancer-specific or cancer-enriched surface exposure. Relevant to shed/secreted form risk: ALE-delivered Src may also be released as a soluble extracellular form. (https://pubmed.ncbi.nlm.nih.gov/41818370/)
   - *assay*: Human · cancer cell lines · unspecified · non-permeabilized
+  > "We identified autophagolysosomal exocytosis (ALE) as a secretory mechanism prominent in cancer cell lines."
 - `a1_evi_05` · *Secondary* · Supports · Surface Expression — A companion publication (PMID:41818382) independently corroborates that exocytosis exposes Src at the outer surface of cancer cells, positioning eSrc for therapeutic targeting. This is a second-source confirmation of the surface-inverted Src concept and the antibody-therapeutic engagement angle, reinforcing the PMID:41818370 findings. (https://pubmed.ncbi.nlm.nih.gov/41818382/)
   - *assay*: Human · cancer cells · unspecified · non-permeabilized
+  > "Exocytosis exposes Src at the outer surface of cancer cells, poised for therapeutic targeting."
 - `a1_evi_06` · *Secondary* · Supports · Topology — Src represents the prototypical example of a family of membrane-anchored (N-myristoylated) intracellular proteins that can be transported to the outer cell surface by ALE. This framing establishes that Src's N-myristoylation, normally responsible for inner-leaflet anchoring, does not preclude surface inversion in the cancer context — the protein reaches the outer leaflet via a non-canonical route. (https://pubmed.ncbi.nlm.nih.gov/41818370/)
   - *assay*: Unspecified
+  > "Src represents the prototypical example of a family of membrane-anchored proteins that are transported by this process."
 - `a1_evi_07` · *Primary* · Ambiguous · Surface Expression — SRC kinase was identified in surfaceome cluster 2 in a mass spectrometry-based cell-surface capture (CSC) profiling study of chondrocytes, using sialoglycoprotein enrichment via aminooxy-biotin conjugation with LC-MS/MS. This constitutes a direct surfaceome MS detection of SRC in a primary chondrocyte context. The enrichment is glycoprotein-selective (N-glycan-dependent CSC), and SRC is not canonically glycosylated, raising the question of whether this detection reflects direct SRC surface presence or co-purification with a binding partner; nonetheless it is a reported surfaceome hit. ([PMC12777226](https://www.ncbi.nlm.nih.gov/pmc/articles/PMC12777226/))
   - *assay*: Human · chondrocytes (micromass culture) · live · non-permeabilized
+  > "Surfaceome cluster 2 harbors several cell-surface regulators of chondrocyte biology, including RECK (a membrane-anchored matrix metalloprotease inhibitor [ 45 ]), FGFR2 (fibroblast growth factor receptor 2; regulates chondrocyte proliferation/differentiation signaling [ 46 ]), multiple ephrin receptors (EPHA7, EPHB2, EPHB1, EPHB3 with potential roles in cartilage morphogenesis [ 47 ]), SRC kinase (chondrocyte phenotype control [ 48 ]), and GPC1 (glypical-1"
 - `a1_evi_08` · *Primary* · Supports · Methodological — Surface-capture methodology for the chondrocyte surfaceome study (PMC12777226): sialoglycoprotein enrichment via aminooxy-biotin conjugation (cell-surface-capture chemistry targeting periodate-oxidized sialic acids on intact live cells) followed by high-resolution LC-MS/MS. This is a non-permeabilizing surface capture approach; only extracellular N-glycosylated/sialylated epitopes are accessible. Three biological replicates at multiple time points. This methodology detail is required to pair with the SRC surfaceome hit. ([PMC12777226](https://www.ncbi.nlm.nih.gov/pmc/articles/PMC12777226/))
   - *assay*: Human · chondrocytes (micromass culture, days 1-15) · live · non-permeabilized
+  > "Temporal proteomic profiling was conducted at days 1, 3, 6, 10, and 15 of micromass culture corresponding to key histodifferentiation stages [ 17 , 18 ], combining sialoglycoprotein enrichment via aminooxy-biotin conjugation with high-resolution LC-MS/MS on 3 biological replicates ( n = 3)."
 - `a1_evi_09` · *Primary* · Ambiguous · Surface Expression — SRC was detected in secreted extracellular vesicles (sEVs) released by high-invadopodia-activity cancer cell lines, based on proteomic profiling of sEV fractions. SRC appears in a cluster of invadopodia-regulatory proteins (with CTTN, CFL1, ITGA3, ITGB3). This constitutes a shed/secreted-form observation: SRC can be released in sEVs from cancer cells, representing a pool outside the canonical inner-leaflet PM location. The soluble/vesicular form may confound surface-targeting strategies. ([PMC10356899](https://www.ncbi.nlm.nih.gov/pmc/articles/PMC10356899/))
   - *assay*: Human · high-invadopodia cancer cell lines · unspecified · non-permeabilized
+  > "Furthermore, these high invadopodia activity cell lines secreted sEVs with a greater abundance of proteins involved in the regulation of invadopodia formation (CTTN, CFL1, SRC, ITGA3, ITGB3 – Cluster 2) and proteolytic activity (MMP2, MMP14, BSG/CD147 – Cluster 2) (Fig. 3 D)."
 - `a1_evi_10` · *Secondary* · Ambiguous · Tissue Expression — A surfaceome proteomics study (PMC9237123) identified SRC in a functional cluster of non-receptor and receptor signaling kinases (alongside ERBB2, CSF1R, PRKCD) within a larger chemokine-signaling/immune-response cluster. While SRC is cited here in a discussion-level functional annotation context, its inclusion in a surfaceome-derived functional cluster implies co-detection in a surface-proteomics dataset — though this is secondary to the primary surfaceome result. Provides cross-study corroboration of SRC presence in surfaceome-associated datasets. ([PMC9237123](https://www.ncbi.nlm.nih.gov/pmc/articles/PMC9237123/))
   - *assay*: Unspecified
+  > "The ephrin/plexin group was part of a larger functional cluster with roles in chemokine signaling and increased chemotaxis 34 , 35 that included not just well-known receptor/non-receptor signaling kinases (e.g., ERBB2, CSF1R, SRC, PRKCD), but also proteins with functionally diverse activities (i.e., proteins with roles in immune response, cell adhesion cell-ECM binding molecules, and transport)."
 - `a1_evi_11` · *Secondary* · Supports · Methodological — Antibody reagent detail from PMC9659096: mouse monoclonal anti-SRC antibody clone 60315-1-lg (Proteintech, Rosemont, IL) and rabbit anti-phospho-Y416-SRC antibody clone D49G4 (#6943, Cell Signaling Technology). These antibodies are used in the surface biotinylation + Western blot workflow in this study. Clone and vendor identifiers are provided for downstream MethodObservation.antibodies[] population. ([PMC9659096](https://www.ncbi.nlm.nih.gov/pmc/articles/PMC9659096/))
   - *assay*: Human · unspecified (from antibody list)
+  > "mouse monoclonal anti-PCNA (NA03, Merck, Darmstadt, Germany); rabbit anti-GLUT1 (ab652; Abcam, Cambridge, UK); goat anti-GLUT1 (sc-1603; Santa Cruz Biotechnology, Santa Cruz, CA, USA); mouse monoclonal anti-RAC1 (05-389, Millipore, Burlington, MA, USA); mouse monoclonal anti-SRC antibody (60315-1-lg, Proteintech, Rosemont, IL, USA); rabbit anti-phospho Y416-SRC antibody D49G4 (#6943, Cell Signaling, Danvers, MA, USA); mouse monoclonal anti-VAV2 antibody (sc-271442, Santa Cruz Biotechnology, Santa Cruz, CA, USA)"
 - `a1_evi_12` · *Secondary* · Refutes · Topology — Fluid shear stress increased c-Src activation (Tyr416 phosphorylation) and promoted redistribution of RANKL toward the cell periphery, accompanied by an increase of RANKL in the membrane fraction in osteoblast-like MC3T3-E1 cells. This is not a direct surface-localization assay for Src itself, but documents Src activation correlating with plasma-membrane redistribution of a surface protein (RANKL), assessed by subcellular fractionation. Src activity is measured here as a functional/kinase-activation readout, not a surface localization readout; Src remains intracellular as the activating kinase. ([PMC13054614](https://www.ncbi.nlm.nih.gov/pmc/articles/PMC13054614/))
   - *assay*: Mouse · MC3T3-E1 osteoblast-like cells
+  > "Fluid shear stress increased c-Src activation (Tyr416 phosphorylation) and promoted redistribution of RANKL toward the cell periphery, accompanied by an increase of RANKL in the membrane fraction."
 - `a1_evi_13` · *Secondary* · Refutes · Topology — Co-immunoprecipitation analysis showed interaction between SRC and THY1 (a GPI-anchored plasma membrane surface protein) in HONE1-VA, HONE1-THY1, and NP460 cells using anti-THY1 pulldown. SRC co-precipitates with a bona fide cell-surface protein (THY1/CD90), consistent with SRC associating with the inner leaflet of the PM beneath a surface-exposed GPI-anchored protein. This is indirect evidence of SRC's plasma membrane inner-leaflet localization (not extracellular surface), reflecting canonical SRC-surface-protein signaling interactions. ([PMC10093038](https://www.ncbi.nlm.nih.gov/pmc/articles/PMC10093038/))
   - *assay*: Human · HONE1-VA, HONE1-THY1, NP460
+  > "Co-IP analysis of SRC and THY1 using anti-THY1 was performed in ( C ) HONE1-VA, HONE1-THY1, and ( D ) NP460 cells."
 - `a2_evi_01` · *Primary* · Supports · Surface Expression — Src is noncanonically translocated and inverted onto the outer cell surface in cancer cells, both in vitro and in vivo, constituting a disease-state-induced surface exposure of a normally cytoplasmic inner-leaflet-anchored kinase. This represents a fundamentally contradictory localization relative to the canonical inner-leaflet anchor model. (https://pubmed.ncbi.nlm.nih.gov/41818370/)
   - *assay*: Human · cancer cell lines and primary tumors · unspecified · non-permeabilized
+  > "In this work, we found that Src is noncanonically translocated and inverted onto the cell surface in cancer, both in vitro and in vivo."
 - `a2_evi_02` · *Primary* · Supports · Surface Expression — Autophagolysosomal exocytosis (ALE) is identified as the secretory mechanism driving extracellular surface exposure of Src in cancer cell lines, representing a lysosomal-exocytosis-based accessibility modulation pathway that inverts Src from the inner leaflet to the outer plasma membrane face. (https://pubmed.ncbi.nlm.nih.gov/41818370/)
   - *assay*: Human · cancer cell lines · unspecified · non-permeabilized
+  > "We identified autophagolysosomal exocytosis (ALE) as a secretory mechanism prominent in cancer cell lines."
 - `a2_evi_03` · *Primary* · Supports · Tissue Expression — Extracellular membrane-associated Src (eSrc) is detected in primary tumors in vivo; anti-Src antibody-based therapies mediate tumor cell killing in culture and mouse xenograft models, confirming that cancer-state-induced surface Src is present on the outer face of primary tumor cells and is accessible to antibody-based targeting. (https://pubmed.ncbi.nlm.nih.gov/41818370/)
   - *assay*: Human · primary tumors and xenograft models · unspecified · non-permeabilized
+  > "Furthermore, this extracellular membrane-associated Src (eSrc) was found in primary tumors, and anti-Src antibody-based therapies mediated tumor cell killing in cell culture systems and in mouse xenograft models."
 - `a2_evi_04` · *Primary* · Supports · Surface Expression — Exocytosis exposes Src at the outer surface of cancer cells, confirming that cancer cells undergo an exocytosis-driven accessibility modulation that places normally cytoplasmic Src on the extracellular face of the plasma membrane, where it is poised for therapeutic targeting. (https://pubmed.ncbi.nlm.nih.gov/41818382/)
   - *assay*: Human · cancer cell lines · live · non-permeabilized
+  > "Exocytosis exposes Src at the outer surface of cancer cells, poised for therapeutic targeting."
 - `a2_evi_05` · *Secondary* · Refutes · Surface Expression — SRC-family kinases, including SRC, are tethered via acyl groups (N-myristoylation and palmitoylation) to the inner leaflet of the plasma membrane; all kinase, SH2, and SH3 domains face the cytoplasm with no extracellular exposure under canonical non-cancer conditions. ([PMC11399299](https://www.ncbi.nlm.nih.gov/pmc/articles/PMC11399299/))
   - *assay*: Unspecified
+  > "These motifs are phosphorylated by SRC-family tyrosine kinases, which are tethered via acyl groups to the inner leaflet of the plasma membrane."
 - `a2_evi_06` · *Primary* · Supports · Surface Expression — In osteoblast-like MC3T3-E1 cells, fluid shear stress increases c-Src activation (Tyr416 phosphorylation) and promotes redistribution of RANKL toward the cell periphery with increased RANKL in the membrane fraction. This demonstrates that mechanical-stress-induced c-Src activation modulates surface availability of RANKL in osteoblast-lineage cells; c-Src itself localizes to the cell periphery under mechanical stimulation. ([PMC13054614](https://www.ncbi.nlm.nih.gov/pmc/articles/PMC13054614/))
   - *assay*: Mouse · MC3T3-E1 · fixed · permeabilized
+  > "Fluid shear stress increased c-Src activation (Tyr416 phosphorylation) and promoted redistribution of RANKL toward the cell periphery, accompanied by an increase of RANKL in the membrane fraction."
 - `a2_evi_07` · *Primary* · Supports · Surface Expression — Constitutively active c-Src (Y527F mutant) enhances peripheral/membrane localization of RANKL even in the absence of mechanical shear stress in osteoblast-like cells, demonstrating that sustained c-Src activation is sufficient to drive membrane redistribution independent of the triggering stimulus. ([PMC13054614](https://www.ncbi.nlm.nih.gov/pmc/articles/PMC13054614/))
   - *assay*: Mouse · MC3T3-E1 · unspecified
+  > "Moreover, constitutively active c-Src (Y527F) enhanced peripheral localization of RANKL even in the absence of shear stress."
 - `a2_evi_08` · *Primary* · Refutes · Surface Expression — SRC functions as a key regulator in the SRC/RAC1/PAK1/PIP5K/EZRIN pathway that governs NIS actin-cytoskeleton anchoring and retention at the plasma membrane in thyroid cells, indicating a functional role for inner-leaflet-anchored SRC in determining PM abundance of other surface proteins; SRC itself remains cytoplasmic-face-anchored in this context. ([PMC9659096](https://www.ncbi.nlm.nih.gov/pmc/articles/PMC9659096/))
   - *assay*: Human · thyroid cell lines · unspecified
+  > "Biochemical and functional analysis allowed us to establish the SRC/RAC1/PAK1/PIP5K/EZRIN pathway as a key regulator of NIS actin-cytoskeleton anchoring and retention at the PM [ 10 ]."
 - `a2_evi_09` · *Primary* · Supports · Tissue Expression — SRC protein expression and phosphorylation (pSRC Y419) are detectable by Western blot in NPC (nasopharyngeal carcinoma) cell lines including THY1-expressing cells and THY1-knockdown HK11.19 cells, confirming SRC protein presence in NPC cancer cell lines with differential cell states determined by THY1 status. ([PMC10093038](https://www.ncbi.nlm.nih.gov/pmc/articles/PMC10093038/))
   - *assay*: Human · NPC cell lines (HK11.19) · fixed · permeabilized
+  > "Western blot analysis of pSRC (Y419), total SRC, and THY1 in ( A ) THY1-expressing NPC cells and ( B ) THY1-knockdown HK11.19 cells were shown."
 - `a2_evi_10` · *Primary* · Supports · Tissue Expression — SRC protein is enriched in small extracellular vesicles (sEVs) secreted by high-invadopodia-activity glioblastoma (GBM) cell lines, indicating that GBM cells in an invasive/high-invadopodia state mobilize SRC into the extracellular vesicle compartment; SRC appears in the sEV surfaceome of these cancer cells. ([PMC10356899](https://www.ncbi.nlm.nih.gov/pmc/articles/PMC10356899/))
   - *assay*: Human · glioblastoma cell lines · live · non-permeabilized
+  > "Furthermore, these high invadopodia activity cell lines secreted sEVs with a greater abundance of proteins involved in the regulation of invadopodia formation (CTTN, CFL1, SRC, ITGA3, ITGB3 – Cluster 2) and proteolytic activity (MMP2, MMP14, BSG/CD147 – Cluster 2) (Fig. 3 D)."
 - `a2_evi_11` · *Primary* · Refutes · Surface Expression — SRC (proto-oncogene tyrosine-protein kinase Src) is identified as one of four key regulatory proteins in the NIS plasma membrane interaction subnetwork (together with RAC1, ARPC4, and EZRIN), anchoring its functional role at the inner face of the plasma membrane in thyroid biology; this positions SRC as a cytoplasmic-face PM-associated kinase in normal thyroid cells. ([PMC8582450](https://www.ncbi.nlm.nih.gov/pmc/articles/PMC8582450/))
   - *assay*: Human · thyroid cells · unspecified
+  > "Further analysis with STRING software revealed that the 29 top-scoring NIS-PM candidates formed a tight interaction subnetwork around cytoplasmic actin (ACTB) and four of the regulatory proteins on the hsa04810 pathway ( Figure 3 A): the small GTPase RAC1 (RAS-related C3 botulinum toxin substrate 1), the proto-oncogene tyrosine-protein kinase Src (SRC), the actin-nucleating ARP 2/3 complex subunit 4 (ARPC4), and the actin-binding adaptor protein ezrin (EZRIN)."
 - `a2_evi_12` · *Secondary* · Supports · Tissue Expression — SRC is identified alongside ERBB2, CSF1R, and PRKCD in a functional cluster associated with chemokine signaling, chemotaxis, receptor/non-receptor kinase signaling, immune response, and cell adhesion in a cancer context (disease-associated tissue expression); this review-level claim places SRC in a surface-signaling-adjacent functional network across cancer tissue types. ([PMC9237123](https://www.ncbi.nlm.nih.gov/pmc/articles/PMC9237123/))
   - *assay*: Human · cancer tissue
+  > "The ephrin/plexin group was part of a larger functional cluster with roles in chemokine signaling and increased chemotaxis 34 , 35 that included not just well-known receptor/non-receptor signaling kinases (e.g., ERBB2, CSF1R, SRC, PRKCD), but also proteins with functionally diverse activities (i.e., proteins with roles in immune response, cell adhesion cell-ECM binding molecules, and transport)."
 - `a2_evi_13` · *Secondary* · Ambiguous · Tissue Expression — In resting T cells, constitutive tyrosine phosphatase activity (CD45, CD148) suppresses TCR triggering; SRC-family kinases (including LCK/FYN, closely related to SRC) are retained in TCR-contact microdomains while large phosphatases are excluded. This describes SRC-family-kinase accessibility at the inner leaflet of T-cell plasma membranes in resting vs TCR-engaged states — SRC-kinases remain cytoplasmic-face-anchored throughout. ([PMC11399299](https://www.ncbi.nlm.nih.gov/pmc/articles/PMC11399299/))
   - *assay*: Human · T cells
+  > "This observation, together with evidence that constitutive tyrosine phosphatase activity suppresses TCR triggering in resting cells 7 , 8 , led to the proposal that TCR binding to pMHC induced tyrosine phosphorylation of the TCR by trapping it in small regions of close contact which exclude large receptor tyrosine phosphatases CD45 and CD148 but not the SRC-kinases 9 ."
 
 ## Appendix · Downloads & reproduction
 
