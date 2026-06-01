@@ -26,9 +26,11 @@ GPR75 is a Class A orphan GPCR (Gαq-coupled, 7TM) with canonical plasma-membran
 
 | Group | Facets |
 |---|---|
-| Accessibility | overall=Moderate · conf=Moderate · subcategory=GPCR · grade=Supportive but indirect · ecd=Moderate · density=High |
-| Expression | level=High · breadth=Restricted · specificity=Surface Dominant |
-| Risks | shed=false · secreted=false · coreceptor=false · masking=true · subdomain=true |
+| Accessibility | overall=Moderate · conf=Moderate · subcategory=GPCR · ecd=Moderate |
+| Classification | reason=Classical Surface Receptor · family=Receptor · state-dependence=Low · induction-trigger=— |
+| Expression | level=High · breadth=Restricted · specificity=Surface Dominant · low-endogenous=false · tumor-associated=— · orphan-receptor=true · OE-precedent=true |
+| Risks | shed=false · secreted=false · co-receptor=None · masking=true · restricted-subdomain=true |
+| Evidence | grade=Supportive but indirect · density=High · live-cell-surface=— · supporting(hi)=0 · contradicting(hi)=0 |
 | Cross-species | mouse=74.2% · cyno=98.9% |
 | Paralogs | max %ECD identity = 35.7% |
 | Topology | TM=7 · N-term-ECF=true · C-term-ECF=false |
@@ -39,35 +41,9 @@ GPR75 is a Class A orphan GPCR (Gαq-coupled, 7TM) with canonical plasma-membran
 
 No direct surface assay (live-cell flow, non-permeabilized IF, surface biotinylation, or IHC with nonperm specification) is present. The strongest positive evidence is: (1) immunofluorescence showing GPR75 in primary cilia of hypothalamic cells (a plasma-membrane subdomain; moderate weight, but permeabilization status unspecified); (2) IP-MS from endogenous-knockin brain lysate with KO controls (moderate weight, fractionation not surface-specific); and (3) a BRET PM-trafficking assay in HEK293 OE cells (low weight, exogenous signal peptide). These collectively imply surface localization consistent with canonical Class A GPCR topology (supported by computational predictions and GPCRdb annotation), but none constitute a direct extracellular-face surface assay. Grade: supportive_but_indirect.
 
-### Whole Cell Proteomics — Weak Or Ambiguous
+### Immunofluorescence (1 method)
 
-*Permeabilization: Unknown · expression: Knock In Tag*
-
-**Antibodies**
-
-- anti-Flag — Unknown epitope; Strong validation; Validated by parallel Gpr75-/- knockout mice generated in same study; Flag tag inserted at endogenous Gpr75 locus.
-
-**Observations**
-
-| Context | Sample | Level | Cites |
-|---|---|---|---|
-| Brain lysate from 3xFlag-Gpr75 knockin mice; endogenous-level expression across multiple brain regions | Ex Vivo | Moderate | 1 |
-
-### Whole Cell Proteomics — Supports Membrane Association
-
-*Permeabilization: Unknown · expression: Knock In Tag*
-
-**Antibodies**
-
-- anti-Flag — Unknown epitope; Strong validation; Gpr75-/- knockout mice used as negative control for immunoprecipitation specificity.
-
-**Observations**
-
-| Context | Sample | Level | Cites |
-|---|---|---|---|
-| Flag immunoprecipitates from 3xFlag-Gpr75 knockin mouse brain lysates; GPR75-interacting proteins identified by mass spectrometry | Ex Vivo | Moderate | 1 |
-
-### Permeabilized IF — Supports Surface Localization
+#### Permeabilized IF — Supports Surface Localization
 
 *Permeabilization: Fixed Unknown · expression: Knock In Tag*
 
@@ -81,7 +57,9 @@ No direct surface assay (live-cell flow, non-permeabilized IF, surface biotinyla
 |---|---|---|---|
 | Primary hypothalamic cells from 3xFlag-Gpr75 knockin mice; GPR75 localizes to primary cilia; Thinner mutation L144P and some human GPR75 variants fail to localize to cilia | Ex Vivo | Moderate | 1 |
 
-### IHC Membranous — Expression Only
+### Immunohistochemistry (1 method)
+
+#### IHC Membranous — Expression Only
 
 *Permeabilization: Permeabilized · expression: Endogenous*
 
@@ -95,7 +73,25 @@ No direct surface assay (live-cell flow, non-permeabilized IF, surface biotinyla
 |---|---|---|---|
 | Pancreatic islets; GPR75 detected by western blot and immunohistochemistry; mRNA expression confirmed by qRT-PCR | Primary Human Tissue | Moderate | 1 |
 
-### Unknown — Supports Surface Localization
+### Surface mass spec (1 method)
+
+#### Whole Cell Proteomics — Supports Membrane Association
+
+*Permeabilization: Unknown · expression: Knock In Tag*
+
+**Antibodies**
+
+- anti-Flag — Unknown epitope; Strong validation; Gpr75-/- knockout mice used as negative control for immunoprecipitation specificity.
+
+**Observations**
+
+| Context | Sample | Level | Cites |
+|---|---|---|---|
+| Flag immunoprecipitates from 3xFlag-Gpr75 knockin mouse brain lysates; GPR75-interacting proteins identified by mass spectrometry | Ex Vivo | Moderate | 1 |
+
+### Functional surface assay (1 method)
+
+#### Unknown — Supports Surface Localization
 
 *Permeabilization: Live Cell · expression: Overexpression*
 
@@ -104,6 +100,22 @@ No direct surface assay (live-cell flow, non-permeabilized IF, surface biotinyla
 | Context | Sample | Level | Cites |
 |---|---|---|---|
 | HEK293 cells overexpressing GPR75 with exogenous cleavable signal sequence fused to Rluc8; BRET to plasma membrane marker indicates efficient trafficking to cell surface | Established Cell Line | Moderate | 1 |
+
+### Other (1 method)
+
+#### Whole Cell Proteomics — Weak Or Ambiguous
+
+*Permeabilization: Unknown · expression: Knock In Tag*
+
+**Antibodies**
+
+- anti-Flag — Unknown epitope; Strong validation; Validated by parallel Gpr75-/- knockout mice generated in same study; Flag tag inserted at endogenous Gpr75 locus.
+
+**Observations**
+
+| Context | Sample | Level | Cites |
+|---|---|---|---|
+| Brain lysate from 3xFlag-Gpr75 knockin mice; endogenous-level expression across multiple brain regions | Ex Vivo | Moderate | 1 |
 
 **Non-surface expression**
 
@@ -155,84 +167,7 @@ No direct surface assay (live-cell flow, non-permeabilized IF, surface biotinyla
 - *Tissue Restricted Surface* · lineage: Endocrine: Non-islet pancreatic tissue or general non-endocrine tissues → Pancreatic islets (beta cells) in mouse and human — GPR75 is expressed at mRNA and protein level specifically in pancreatic islets, with functional surface expression confirmed by CCL5-evoked calcium signaling in live primary beta cells.
 - *Cell State Induced* · trigger: Other: Unstimulated NIT-1 pancreatic beta cells → NIT-1 pancreatic beta cells treated with 10 nM liraglutide (GLP-1 receptor agonist) for 60 min — GPR75 mRNA levels are significantly upregulated at 60 min following liraglutide treatment, suggesting transcriptional induction of GPR75 in beta cells under GLP-1 agonist stimulation.
 
-## 5. Isoforms
-
-*Deterministic · UniProt + DeepTMHMM deeptmhmm-1.0.24*
-
-| Isoform | UniProt | TM | N-term | Signal pep | ECD len | ICD len |
-|---|---|---|---|---|---|---|
-| **canonical** | O95800 | 7 | Extracellular | 0 aa | 89 aa | 296 aa |
-
-## 6. Paralogs
-
-*Compara Compara r112*
-
-| Paralog | UniProt | ECD %id | Family |
-|---|---|---|---|
-| OR9G1 | [Q8NH87](https://www.uniprot.org/uniprotkb/Q8NH87) | 35.7% | Bilateria |
-| OR51F1 | [A6NGY5](https://www.uniprot.org/uniprotkb/A6NGY5) | 30.7% | Bilateria |
-| GPR19 | [Q15760](https://www.uniprot.org/uniprotkb/Q15760) | 28.7% | Bilateria |
-| OR11A1 | [Q9GZK7](https://www.uniprot.org/uniprotkb/Q9GZK7) | 26.5% | Bilateria |
-| OR11G2 | [Q8NGC1](https://www.uniprot.org/uniprotkb/Q8NGC1) | 26.4% | Bilateria |
-| NPY1R | [P25929](https://www.uniprot.org/uniprotkb/P25929) | 25.8% | Bilateria |
-| TACR2 | [P21452](https://www.uniprot.org/uniprotkb/P21452) | 25.0% | Bilateria |
-| NPY4R | [P50391](https://www.uniprot.org/uniprotkb/P50391) | 25.0% | Bilateria |
-| NPY4R2 | [P0DQD5](https://www.uniprot.org/uniprotkb/P0DQD5) | 25.0% | Bilateria |
-| PRLHR | [P49683](https://www.uniprot.org/uniprotkb/P49683) | 24.7% | Bilateria |
-| OR11H2 | [Q8NH07](https://www.uniprot.org/uniprotkb/Q8NH07) | 24.7% | Bilateria |
-| OR11H1 | [Q8NG94](https://www.uniprot.org/uniprotkb/Q8NG94) | 24.7% | Bilateria |
-| PROKR1 | [Q8TCW9](https://www.uniprot.org/uniprotkb/Q8TCW9) | 23.6% | Bilateria |
-| OR11H12 | [B2RN74](https://www.uniprot.org/uniprotkb/B2RN74) | 23.5% | Bilateria |
-| GPR83 | [Q9NYM4](https://www.uniprot.org/uniprotkb/Q9NYM4) | 23.0% | Bilateria |
-| TACR3 | [P29371](https://www.uniprot.org/uniprotkb/P29371) | 22.7% | Bilateria |
-| NPY2R | [P49146](https://www.uniprot.org/uniprotkb/P49146) | 22.5% | Bilateria |
-| OR9A4 | [Q8NGU2](https://www.uniprot.org/uniprotkb/Q8NGU2) | 22.4% | Bilateria |
-| OR9A2 | [Q8NGT5](https://www.uniprot.org/uniprotkb/Q8NGT5) | 21.2% | Bilateria |
-| MCHR1 | [Q99705](https://www.uniprot.org/uniprotkb/Q99705) | 20.7% | Bilateria |
-| OR11H7 | [Q8NGC8](https://www.uniprot.org/uniprotkb/Q8NGC8) | 20.6% | Bilateria |
-| PROKR2 | [Q8NFJ6](https://www.uniprot.org/uniprotkb/Q8NFJ6) | 20.2% | Bilateria |
-| NPY5R | [Q15761](https://www.uniprot.org/uniprotkb/Q15761) | 20.2% | Bilateria |
-| OR11H6 | [Q8NGC7](https://www.uniprot.org/uniprotkb/Q8NGC7) | 19.7% | Bilateria |
-| OR10X1 | [Q8NGY0](https://www.uniprot.org/uniprotkb/Q8NGY0) | 19.0% | Bilateria |
-| GPR88 | [Q9GZN0](https://www.uniprot.org/uniprotkb/Q9GZN0) | 18.6% | Bilateria |
-| OR11H4 | [Q8NGC9](https://www.uniprot.org/uniprotkb/Q8NGC9) | 18.4% | Bilateria |
-| MCHR2 | [Q969V1](https://www.uniprot.org/uniprotkb/Q969V1) | 17.5% | Bilateria |
-| GPR50 | [Q13585](https://www.uniprot.org/uniprotkb/Q13585) | 15.6% | Bilateria |
-| TACR1 | [P25103](https://www.uniprot.org/uniprotkb/P25103) | 15.2% | Bilateria |
-| MTNR1A | [P48039](https://www.uniprot.org/uniprotkb/P48039) | 14.5% | Bilateria |
-| MTNR1B | [P49286](https://www.uniprot.org/uniprotkb/P49286) | 12.5% | Bilateria |
-
-*Per-antibody cross-reactivity behavior is captured per-clone under §3 (Surface evidence → antibodies). The LLM cross-reactivity verdict is deferred to v1.x.*
-
-## 7. Orthologs
-
-**Mouse**
-
-| Canonical | Isoform | Symbol | UniProt | Type | Full-length %id | ECD %id | ECD %sim | ECD len | TM |
-|---|---|---|---|---|---|---|---|---|---|
-| ✓ | Q6X632 | Gpr75 | [Q6X632](https://www.uniprot.org/uniprotkb/Q6X632) | One2one | 88.0% | 74.2% | 74.2% | 89 aa | 7 |
-
-**Cynomolgus**
-
-| Canonical | Isoform | Symbol | UniProt | Type | Full-length %id | ECD %id | ECD %sim | ECD len | TM |
-|---|---|---|---|---|---|---|---|---|---|
-| ✓ | A0A7N9DAV0 | GPR75 | [A0A7N9DAV0](https://www.uniprot.org/uniprotkb/A0A7N9DAV0) | One2one | 99.1% | 98.9% | 98.9% | 89 aa | 7 |
-
-## 8. Accessibility risks
-
-**Shed form**
-
-- present: false
-- severity: Low
-- evidence: Weak
-
-**Secreted form**
-
-- present: false
-- severity: Low
-- evidence: Weak
-
-**Restricted subdomain**
+**Restricted-subdomain distribution**
 
 - present: true
 - severity: Moderate
@@ -246,6 +181,64 @@ No direct surface assay (live-cell flow, non-permeabilized IF, surface biotinyla
 - evidence basis: Trafficking
 - rationale: GPR75 is a canonical Class A GPCR; surface trafficking follows the constitutive secretory pathway. The BRET trafficking assay and ciliary IF data show surface delivery without any obligate co-receptor. No evidence in the ledger implicates a chaperone or partner required for membrane insertion.
 
+## 5. Isoforms, orthologs & paralogs
+
+*Deterministic · UniProt + DeepTMHMM deeptmhmm-1.0.24 · Ensembl ensembl_compara_2026_05_12. %identity / ECD %id are vs the human canonical (orthologs + paralogs only; isoforms are alternative human forms). Per-residue topology + full sequences are in the appendix.*
+
+| Kind | Variant | UniProt | %identity | ECD %id | TM | ECD len | ICD len | Signal pep | N-term | Tier |
+|---|---|---|---|---|---|---|---|---|---|---|
+| Isoform | **canonical** | O95800 | ref | ref | 7 | 89 aa | 296 aa | 0 aa | Extracellular | — |
+| Mouse ortholog | Gpr75 | [Q6X632](https://www.uniprot.org/uniprotkb/Q6X632) | 88.0% | 74.2% | 7 | 89 aa | — | — | — | moderate |
+| Cynomolgus ortholog | GPR75 | [A0A7N9DAV0](https://www.uniprot.org/uniprotkb/A0A7N9DAV0) | 99.1% | 98.9% | 7 | 89 aa | — | — | — | high (≥85%) |
+| Paralog | OR9G1 | [Q8NH87](https://www.uniprot.org/uniprotkb/Q8NH87) | 12.0% | 35.7% | — | — | — | — | — | low-risk |
+| Paralog | OR51F1 | [A6NGY5](https://www.uniprot.org/uniprotkb/A6NGY5) | 8.3% | 30.7% | — | — | — | — | — | low-risk |
+| Paralog | GPR19 | [Q15760](https://www.uniprot.org/uniprotkb/Q15760) | 9.4% | 28.7% | — | — | — | — | — | low-risk |
+| Paralog | OR11A1 | [Q9GZK7](https://www.uniprot.org/uniprotkb/Q9GZK7) | 10.7% | 26.5% | — | — | — | — | — | low-risk |
+| Paralog | OR11G2 | [Q8NGC1](https://www.uniprot.org/uniprotkb/Q8NGC1) | 12.6% | 26.4% | — | — | — | — | — | low-risk |
+| Paralog | NPY1R | [P25929](https://www.uniprot.org/uniprotkb/P25929) | 12.8% | 25.8% | — | — | — | — | — | low-risk |
+| Paralog | TACR2 | [P21452](https://www.uniprot.org/uniprotkb/P21452) | 13.1% | 25.0% | — | — | — | — | — | low-risk |
+| Paralog | NPY4R | [P50391](https://www.uniprot.org/uniprotkb/P50391) | 10.6% | 25.0% | — | — | — | — | — | low-risk |
+| Paralog | NPY4R2 | [P0DQD5](https://www.uniprot.org/uniprotkb/P0DQD5) | 10.6% | 25.0% | — | — | — | — | — | low-risk |
+| Paralog | PRLHR | [P49683](https://www.uniprot.org/uniprotkb/P49683) | 12.8% | 24.7% | — | — | — | — | — | low-risk |
+| Paralog | OR11H2 | [Q8NH07](https://www.uniprot.org/uniprotkb/Q8NH07) | 12.0% | 24.7% | — | — | — | — | — | low-risk |
+| Paralog | OR11H1 | [Q8NG94](https://www.uniprot.org/uniprotkb/Q8NG94) | 11.9% | 24.7% | — | — | — | — | — | low-risk |
+| Paralog | PROKR1 | [Q8TCW9](https://www.uniprot.org/uniprotkb/Q8TCW9) | 11.5% | 23.6% | — | — | — | — | — | low-risk |
+| Paralog | OR11H12 | [B2RN74](https://www.uniprot.org/uniprotkb/B2RN74) | 11.7% | 23.5% | — | — | — | — | — | low-risk |
+| Paralog | GPR83 | [Q9NYM4](https://www.uniprot.org/uniprotkb/Q9NYM4) | 14.4% | 23.0% | — | — | — | — | — | low-risk |
+| Paralog | TACR3 | [P29371](https://www.uniprot.org/uniprotkb/P29371) | 15.7% | 22.7% | — | — | — | — | — | low-risk |
+| Paralog | NPY2R | [P49146](https://www.uniprot.org/uniprotkb/P49146) | 14.3% | 22.5% | — | — | — | — | — | low-risk |
+| Paralog | OR9A4 | [Q8NGU2](https://www.uniprot.org/uniprotkb/Q8NGU2) | 11.1% | 22.4% | — | — | — | — | — | low-risk |
+| Paralog | OR9A2 | [Q8NGT5](https://www.uniprot.org/uniprotkb/Q8NGT5) | 10.7% | 21.2% | — | — | — | — | — | low-risk |
+| Paralog | MCHR1 | [Q99705](https://www.uniprot.org/uniprotkb/Q99705) | 11.1% | 20.7% | — | — | — | — | — | low-risk |
+| Paralog | OR11H7 | [Q8NGC8](https://www.uniprot.org/uniprotkb/Q8NGC8) | 11.5% | 20.6% | — | — | — | — | — | low-risk |
+| Paralog | PROKR2 | [Q8NFJ6](https://www.uniprot.org/uniprotkb/Q8NFJ6) | 11.7% | 20.2% | — | — | — | — | — | low-risk |
+| Paralog | NPY5R | [Q15761](https://www.uniprot.org/uniprotkb/Q15761) | 11.3% | 20.2% | — | — | — | — | — | low-risk |
+| Paralog | OR11H6 | [Q8NGC7](https://www.uniprot.org/uniprotkb/Q8NGC7) | 10.7% | 19.7% | — | — | — | — | — | low-risk |
+| Paralog | OR10X1 | [Q8NGY0](https://www.uniprot.org/uniprotkb/Q8NGY0) | 10.7% | 19.0% | — | — | — | — | — | low-risk |
+| Paralog | GPR88 | [Q9GZN0](https://www.uniprot.org/uniprotkb/Q9GZN0) | 10.4% | 18.6% | — | — | — | — | — | low-risk |
+| Paralog | OR11H4 | [Q8NGC9](https://www.uniprot.org/uniprotkb/Q8NGC9) | 12.2% | 18.4% | — | — | — | — | — | low-risk |
+| Paralog | MCHR2 | [Q969V1](https://www.uniprot.org/uniprotkb/Q969V1) | 10.2% | 17.5% | — | — | — | — | — | low-risk |
+| Paralog | GPR50 | [Q13585](https://www.uniprot.org/uniprotkb/Q13585) | 11.5% | 15.6% | — | — | — | — | — | low-risk |
+| Paralog | TACR1 | [P25103](https://www.uniprot.org/uniprotkb/P25103) | 14.6% | 15.2% | — | — | — | — | — | low-risk |
+| Paralog | MTNR1A | [P48039](https://www.uniprot.org/uniprotkb/P48039) | 13.1% | 14.5% | — | — | — | — | — | low-risk |
+| Paralog | MTNR1B | [P49286](https://www.uniprot.org/uniprotkb/P49286) | 12.4% | 12.5% | — | — | — | — | — | low-risk |
+
+**Tier cutoffs.** *Ortholog conservation* (higher = better — cross-species evidence can stand in for human): ≥85% high · 60–85% moderate · <60% low. *Paralog cross-reactivity* (higher = worse — a binder may also engage the paralog): >80% high-risk · 60–80% caution · <60% low-risk ([PMID 33170010](https://pubmed.ncbi.nlm.nih.gov/33170010/)).
+
+## 6. Accessibility risks
+
+**Shed form**
+
+- present: false
+- severity: Low
+- evidence: Weak
+
+**Secreted form**
+
+- present: false
+- severity: Low
+- evidence: Weak
+
 **ECD size assessment**
 
 - ECD class: Moderate
@@ -258,7 +251,7 @@ No direct surface assay (live-cell flow, non-permeabilized IF, surface biotinyla
 - mechanism: Conformational
 - rationale: Class A GPCRs characteristically bury ECL2 deep in the orthosteric pocket and present conformationally flexible loops. No direct glycan-shielding or partner-masking data exist for GPR75 in the ledger, but conformational restriction of ECLs is an intrinsic feature of the 7TM fold relevant to antibody epitope accessibility.
 
-## 9. Structure summary
+## 7. Structure summary
 
 | Field | Value |
 |---|---|
@@ -269,7 +262,22 @@ No direct surface assay (live-cell flow, non-permeabilized IF, surface biotinyla
 
 Structure data from [AlphaFold DB](https://alphafold.ebi.ac.uk/entry/O95800) · © DeepMind / EMBL-EBI · licensed [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/) · cite `10.1038/s41586-021-03819-2`; `10.1093/nar/gkad1011`.
 
-## 10. Evidence ledger
+**Model variants & experimental structures**
+
+| Structure | UniProt / PDB | Source |
+|---|---|---|
+| Canonical | [O95800](https://alphafold.ebi.ac.uk/entry/O95800) | AlphaFold DB (AF-O95800-F1, v6) |
+| Mouse ortholog (Gpr75) | [Q6X632](https://alphafold.ebi.ac.uk/entry/Q6X632) | AlphaFold DB |
+| Cynomolgus ortholog (GPR75) | [A0A7N9DAV0](https://alphafold.ebi.ac.uk/entry/A0A7N9DAV0) | AlphaFold DB |
+| Experimental (best) | [9XQN](https://www.rcsb.org/structure/9xqn) chain A | RCSB PDB · Electron Microscopy 3.91 Å · UniProt 21–392 |
+
+## 8. SURFACE-Bind candidate sites
+
+*Deterministic · MaSIF-based surface patch scoring on the AlphaFold model (Balbi et al. 2026, [PMID 41604262](https://pubmed.ncbi.nlm.nih.gov/41604262/), PNAS) · SURFACE-Bind v1, Correia lab (EPFL / Inria / Novo Nordisk)*
+
+Scored, but no surface patch cleared the antibody-sized targetability threshold (`n_sites = 0`).
+
+## 9. Evidence ledger
 
 30 entries · 19 primary · 11 secondary · 0 tertiary · 22 PMC OA.
 
@@ -370,6 +378,20 @@ This Markdown is generated from the canonical JSON record at `/data/surfaceome/G
  481  PYYSIYNSSPSQEESSPCNLQPVNSFGFANSYIAMHYHTTNDLMQEYDSTSAKQIPVPSV
 ```
 
+### Experimental-structure sequence
+
+**9XQN** chain A · Electron Microscopy, 3.91 Å · covers UniProt residues 21–392 (372 aa) · representative of 4 experimental structures. Residues sliced from the canonical sequence over the structure's SIFTS-mapped span; unresolved loops in the deposited coordinates are not removed here.
+
+```
+   1  SQEGNSTSLQEGLQDLIHTATLVTCTFLLAVIFCLGSYGNFIVFLSFFDPAFRKFRTNFD
+  61  FMILNLSFCDLFICGVTAPMFTFVLFFSSASSIPDAFCFTFHLTSSGFIIMSLKTVAVIA
+ 121  LHRLRMVLGKQPNRTASFPCTVLLTLLLWATSFTLATLATLKTSKSHLCLPMSSLIAGKG
+ 181  KAILSLYVVDFTFCVAVVSVSYIMIAQTLRKNAQVRKCPPVITVDASRPQPFMGVPVQGG
+ 241  GDPIQCAMPALYRNQNYNKLQHVQTRGYTKSPNQLVTPAASRLQLVSAINLSTAKDSKAV
+ 301  VTCVIIVLSVLVCCLPLGISLVQVVLSSNGSFILYQFELFGFTLIFFKSGLNPFIYSRNS
+ 361  AGLRRKVLWCLQ
+```
+
 ### Per-residue DeepTMHMM topology
 
 *Five-letter alphabet: `M` = TM helix, `O` = extracellular, `I` = intracellular, `S` = signal peptide, `B` = β-strand. Aligned to the UniProt sequence above (residue indices in the left column).*
@@ -386,6 +408,46 @@ This Markdown is generated from the canonical JSON record at `/data/surfaceome/G
  361  MMMMMMMMMMMMMMMMMIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIII
  421  IIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIII
  481  IIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIII
+```
+
+**Mouse ortholog — Gpr75** (`Q6X632`, projected onto human canonical)
+
+```
+   1  OOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOMMMMMMMMMMMMMMMMMMM
+  61  MMMMMIIIIIIIIIIIIIIIMMMMMMMMMMMMMMMMMMMMMMMMMMOOOOOOOOOOOOOO
+ 121  MMMMMMMMMMMMMMMMMMMMMIIIIIIIIIIIIIIIIIIIIMMMMMMMMMMMMMMMMMMM
+ 181  MOOOOOOOOOOOOOOOOOOOOMMMMMMMMMMMMMMMMMMMMMMMIIIIIIIIIIIIIIII
+ 241  IIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIII
+ 301  IIIIIIIIIIIIIIIIIIIIIIMMMMMMMMMMMMMMMMMMMMOOOOOOOOOOOOOOMMMM
+ 361  MMMMMMMMMMMMMMMMMIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIII
+ 421  IIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIII
+ 481  IIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIII
+```
+
+**Cynomolgus ortholog — GPR75** (`A0A7N9DAV0`, projected onto human canonical)
+
+```
+   1  OOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOMMMMMMMMMMMMMMMMMMM
+  61  MMMMMIIIIIIIIIIIIIIIMMMMMMMMMMMMMMMMMMMMMMMMMMOOOOOOOOOOOOOO
+ 121  MMMMMMMMMMMMMMMMMMMMMIIIIIIIIIIIIIIIIIIIIMMMMMMMMMMMMMMMMMMM
+ 181  MOOOOOOOOOOOOOOOOOOOOMMMMMMMMMMMMMMMMMMMMMMMIIIIIIIIIIIIIIII
+ 241  IIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIII
+ 301  IIIIIIIIIIIIIIIIIIIIIIMMMMMMMMMMMMMMMMMMMMOOOOOOOOOOOOOOMMMM
+ 361  MMMMMMMMMMMMMMMMMIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIII
+ 421  IIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIII
+ 481  IIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIII
+```
+
+**Experimental — 9XQN chain A** (UniProt residues 21–392, projected from canonical)
+
+```
+   1  OOOOOOOOOOOOOOOOOOOOOMMMMMMMMMMMMMMMMMMMMMMMMIIIIIIIIIIIIIII
+  61  MMMMMMMMMMMMMMMMMMMMMMMMMMOOOOOOOOOOOOOOMMMMMMMMMMMMMMMMMMMM
+ 121  MIIIIIIIIIIIIIIIIIIIIMMMMMMMMMMMMMMMMMMMMOOOOOOOOOOOOOOOOOOO
+ 181  OMMMMMMMMMMMMMMMMMMMMMMMIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIII
+ 241  IIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIII
+ 301  IIMMMMMMMMMMMMMMMMMMMMOOOOOOOOOOOOOOMMMMMMMMMMMMMMMMMMMMMIII
+ 361  IIIIIIIIIIII
 ```
 
 ### Data sources
