@@ -163,13 +163,19 @@ def _intern_benchmark(d1: D1Client, bench_version: str, rows: list[dict[str, str
     content SHA → new bench_version → fresh insertion path. Old rows
     coexist forever.
     """
-    for r in rows:
-        d1.query(
-            "INSERT OR IGNORE INTO benchmark_version "
-            "(bench_version, gene_symbol, uniprot_acc, class, "
-            " truth_verdict, truth_signal, truth_reason, rationale) "
-            "VALUES (?, ?, ?, ?, ?, ?, ?, ?);",
-            [
+    # Batched multi-row INSERT. A genome-wide gene-list is ~19k rows; one
+    # INSERT per row over the D1 HTTP API is ~16 min of serial round-trips
+    # BEFORE the first triage cell. 8 cols → 12 rows/batch keeps params
+    # (96) under D1's ~100-bind limit, dropping the preamble to ~30s.
+    cols = ("bench_version", "gene_symbol", "uniprot_acc", "class",
+            "truth_verdict", "truth_signal", "truth_reason", "rationale")
+    one = "(" + ",".join("?" * len(cols)) + ")"
+    batch = 12
+    for start in range(0, len(rows), batch):
+        chunk = rows[start:start + batch]
+        params: list[Any] = []
+        for r in chunk:
+            params += [
                 bench_version,
                 r["gene_symbol"],
                 r.get("uniprot_acc", ""),
@@ -178,7 +184,11 @@ def _intern_benchmark(d1: D1Client, bench_version: str, rows: list[dict[str, str
                 r.get("ground_truth_signal", ""),
                 r.get("ground_truth_reason", ""),
                 r.get("rationale", ""),
-            ],
+            ]
+        d1.query(
+            f"INSERT OR IGNORE INTO benchmark_version ({', '.join(cols)}) "
+            f"VALUES {', '.join([one] * len(chunk))};",
+            params,
         )
 
 
@@ -557,7 +567,25 @@ class D1RunSink:
         # Intern prompts + benchmark snapshot once.
         for prompt in self._prompts_by_variant.values():
             _intern_prompt(self._client, prompt)
-        _intern_benchmark(self._client, self.bench_version, bench_rows)
+        # Only intern into benchmark_version for a LABELED curated benchmark
+        # (rows carry ground_truth_verdict). An unlabeled genome-wide
+        # gene-list (~19k rows, no truth columns) should NOT be written to
+        # benchmark_version — that table is the curated-truth store, the rows
+        # would be empty-truth noise, and the serial intern was a ~16-min
+        # preamble before the first triage cell. The triage_run rows still
+        # carry the gene-list's bench_version for provenance; nothing
+        # downstream joins the genome sweep on benchmark_version.
+        is_labeled = any(
+            (r.get("ground_truth_verdict") or "").strip() for r in bench_rows
+        )
+        if is_labeled:
+            _intern_benchmark(self._client, self.bench_version, bench_rows)
+        else:
+            logger.info(
+                "D1RunSink: input is an unlabeled gene-list (%d rows, no "
+                "ground_truth_verdict) — skipping benchmark_version intern.",
+                len(bench_rows),
+            )
         # Reload the (run_id, …) key set so re-runs of the same sweep
         # don't double-insert.
         self._existing = _existing_keys(self._client, self.run_id)
