@@ -884,6 +884,9 @@ export interface TissueContext {
    *  (normal vs tumor) with different `present` levels. Obesity
    *  / inflammation / etc. fall under `other_disease`. */
   disease_context: DiseaseContext;
+  /** Specific disease name when `disease_context` can't name it on its own
+   *  (e.g. "Fabry disease"). Optional — older records omit it. */
+  disease_label?: string | null;
   cell_types: string[];
   cell_states: string[];
   species?: Species;
@@ -895,6 +898,12 @@ export interface CellTypeContext {
   cell_type: string;
   ontology_id: string;
   present_in_tissues: string[];
+  /** Per-cell disease context / level / specific-disease label, so a
+   *  cell-of-origin row is self-describing instead of inheriting from a
+   *  paired tissue row. Optional — older records omit them. */
+  disease_context?: DiseaseContext;
+  present?: TissueLevel;
+  disease_label?: string | null;
   species?: Species;
   species_inferred?: boolean;
   cited_evidence_ids: string[];

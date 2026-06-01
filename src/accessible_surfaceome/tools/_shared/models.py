@@ -1932,6 +1932,12 @@ class TissueContext(BaseModel):
     tissue: str
     present: TissuePresence
     disease_context: DiseaseContext
+    # Specific disease name when ``disease_context`` is a non-``normal`` /
+    # non-``tumor`` read that the enum can't name on its own (e.g. "Fabry
+    # disease", "diabetic nephropathy"). Free text; null when the enum value
+    # is self-describing (normal / tumor). Rendered as the disease label,
+    # falling back to ``disease_context`` when absent.
+    disease_label: str | None = Field(default=None, max_length=120)
     cell_types: list[str] = Field(default_factory=list)
     cell_states: list[str] = Field(default_factory=list)
     species: Species = "unspecified"
@@ -1942,6 +1948,11 @@ class TissueContext(BaseModel):
 class CellTypeContextV1(BaseModel):
     """Orthogonal cell-type pivot for biological context (v1.0.0).
 
+    Carries its OWN ``disease_context`` / ``present`` / ``disease_label`` so a
+    cell-of-origin row is self-describing in the viewer (it no longer has to
+    inherit the level/context from a paired ``TissueContext`` row). All three
+    default to the unknown read so older records validate unchanged.
+
     See ``ExpressionObservation`` for the ``species`` / ``species_inferred``
     contract.
     """
@@ -1951,6 +1962,9 @@ class CellTypeContextV1(BaseModel):
     cell_type: str
     ontology_id: str | None = None
     present_in_tissues: list[str] = Field(default_factory=list)
+    disease_context: DiseaseContext = "unknown"
+    present: TissuePresence = "unknown"
+    disease_label: str | None = Field(default=None, max_length=120)
     species: Species = "unspecified"
     species_inferred: bool = False
     cited_evidence_ids: list[str] = Field(default_factory=list)

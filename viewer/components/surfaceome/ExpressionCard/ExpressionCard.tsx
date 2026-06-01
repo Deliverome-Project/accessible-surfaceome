@@ -57,6 +57,7 @@ export function ExpressionCard({ rec, n }: Props) {
     name: string;
     dx: string | null;
     level: TissueLevel | null;
+    label: string | null; // specific disease name (e.g. "Fabry disease")
     cites: Set<string>;
   };
   const norm = (s: string) => s.trim().toLowerCase();
@@ -79,13 +80,14 @@ export function ExpressionCard({ rec, n }: Props) {
     const k = norm(name);
     let c = g.cells.get(k);
     if (!c) {
-      c = { name, dx: null, level: null, cites: new Set() };
+      c = { name, dx: null, level: null, label: null, cites: new Set() };
       g.cells.set(k, c);
     }
     return c;
   };
 
-  // Tissue reads push their dx + level + cites down onto the cell they name.
+  // Tissue reads push their dx + level + disease label + cites down onto the
+  // cell they name.
   bc.tissues.forEach((t) => {
     const g = ensure(t.tissue);
     g.reads.push(t);
@@ -93,15 +95,21 @@ export function ExpressionCard({ rec, n }: Props) {
       const c = cellIn(g, cn);
       c.dx = t.disease_context;
       c.level = t.present;
+      if (t.disease_label) c.label = t.disease_label;
       t.cited_evidence_ids.forEach((id) => c.cites.add(id));
     });
   });
-  // Cell-type records add their citations (and surface tissues with no
-  // tissue-level read). They carry no dx / level of their own.
+  // Cell-type records add their citations and — for newer records that carry
+  // them — their OWN disease context / level / disease label, which override
+  // the value inherited from a paired tissue read (the cell is more specific).
   bc.cell_types.forEach((ct) => {
     const where = ct.present_in_tissues.length ? ct.present_in_tissues : [UNSPEC];
     where.forEach((tn) => {
       const c = cellIn(ensure(tn), ct.cell_type);
+      if (ct.disease_context && ct.disease_context !== "unknown")
+        c.dx = ct.disease_context;
+      if (ct.present && ct.present !== "unknown") c.level = ct.present;
+      if (ct.disease_label) c.label = ct.disease_label;
       ct.cited_evidence_ids.forEach((id) => c.cites.add(id));
     });
   });
@@ -165,7 +173,7 @@ export function ExpressionCard({ rec, n }: Props) {
                       <>
                         <td>
                           <span className={styles.mono}>
-                            {prettyEnum(head.disease_context)}
+                            {head.disease_label ?? prettyEnum(head.disease_context)}
                           </span>
                         </td>
                         <td>
@@ -195,7 +203,7 @@ export function ExpressionCard({ rec, n }: Props) {
                     <td className={styles.cellRow}>tissue-level</td>
                     <td>
                       <span className={styles.mono}>
-                        {prettyEnum(r.disease_context)}
+                        {r.disease_label ?? prettyEnum(r.disease_context)}
                       </span>
                     </td>
                     <td>
@@ -212,7 +220,9 @@ export function ExpressionCard({ rec, n }: Props) {
                   <tr key={`${g.name}-c${ci}`}>
                     <td className={styles.cellRow}>↳ {c.name}</td>
                     <td>
-                      {c.dx ? (
+                      {c.label ? (
+                        <span className={styles.mono}>{c.label}</span>
+                      ) : c.dx ? (
                         <span className={styles.mono}>{prettyEnum(c.dx)}</span>
                       ) : (
                         "—"

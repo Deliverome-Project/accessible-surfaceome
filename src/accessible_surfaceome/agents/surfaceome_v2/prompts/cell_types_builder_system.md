@@ -23,6 +23,16 @@ ONE fenced ```json block containing a JSON ARRAY. Empty `[]` is fine.
   scope for v2; the field exists for forward compatibility.
 - `present_in_tissues` — free-text list of tissues where this cell type
   was observed expressing the protein (e.g. `["cerebellum"]`).
+- `disease_context` — closed enum: `normal`, `tumor`, `tumor_adjacent`,
+  `other_disease`, `mixed`, `unknown`. The disease context of THIS cell-type
+  read (default `unknown` when the ledger doesn't say). This makes the cell
+  row self-describing so the viewer doesn't have to inherit context from a
+  tissue row.
+- `present` — closed enum: `high`, `moderate`, `low`, `absent`, `mixed`,
+  `unknown`. The surface-expression level for this cell type (default
+  `unknown`).
+- `disease_label` — OPTIONAL free text naming the SPECIFIC disease when
+  `disease_context` can't (e.g. "Fabry disease"); null otherwise.
 - `cited_evidence_ids` — every `evidence_id` whose claim contributed.
 
 ## Grouping
