@@ -5,7 +5,7 @@ Three flat catalog facets were promoted from the deep blocks:
 ``tumor_associated``, ``induction_trigger``, ``has_live_cell_surface_evidence``.
 New annotations get them from ``_derive_filters``; this script computes them
 for records that predate the fields. They are DETERMINISTIC functions of the
-deep blocks (``biological_context.tissues`` / ``.accessibility_modulation``,
+deep blocks (``biological_context.expression`` / ``.accessibility_modulation``,
 ``surface_evidence.methods``) — all of which are already in every record — so
 no LLM re-run is needed.
 
@@ -72,7 +72,7 @@ def derive_rollups(rec: dict[str, Any]) -> dict[str, Any]:
     se = rec.get("surface_evidence") or {}
     tumor = any(
         t.get("disease_context") in _TUMOR_CTX and t.get("present") in _PRESENT_LEVELS
-        for t in bc.get("tissues", [])
+        for t in bc.get("expression", [])
     )
     buckets = {
         _TRIGGER_BUCKET.get(m.get("cell_state_trigger"), "other")
