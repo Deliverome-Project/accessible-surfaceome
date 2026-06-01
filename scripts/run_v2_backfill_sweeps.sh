@@ -17,7 +17,9 @@ cd "$(git rev-parse --show-toplevel)"
 
 export DEEPTMHMM_ROOT="${DEEPTMHMM_ROOT:-/Users/rebeccacarlson/Git/deliverome-internal/analyses/surface-proteome}"
 W="${WORKERS:-2}"
-RUNDIR="data/processed/topology_run_topo_2026_05_16"
+# Absolute path: run_topology_sweep does candidate_set_path.relative_to(REPO_ROOT),
+# which raises on a relative path. pwd is the repo root (we cd'd above).
+RUNDIR="$(pwd)/data/processed/topology_run_topo_2026_05_16"
 log() { printf '\n========== %s ==========\n' "$*"; }
 
 sweep() {
