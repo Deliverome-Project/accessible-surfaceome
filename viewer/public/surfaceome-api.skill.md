@@ -55,22 +55,37 @@ Gene symbols are case-insensitive on the wire (the Worker uppercases them) but t
 
 ## SurfaceomeRecord shape (per-gene deep-dive)
 
-Top-level fields most agents care about:
+`schema_version` is `1.1.x` (the record was fully restructured from the
+legacy `v0.5` `targetability`/`surface_biology`/`risk_flags` shape — those
+keys no longer exist). Top-level structure:
 
-- `gene.hgnc_symbol`, `gene.uniprot_acc`, `gene.ensembl_gene` — identity
-- `targetability.tier` — `validated` | `preclinical` | `discovery` | `edge_case` | `not_recommended`
-- `targetability.tldr` — one-paragraph human summary
-- `surface_biology.surface_status`, `.topology`, `.anchor_type`
-- `surface_biology.db_comparison` — seven booleans: `surfy`, `cspa`, `uniprot_query`, `go`, `hpa`, `deeptmhmm`, `compartments`, plus `n_sources_voting_surface`
-- `surface_engagement_validation.preclinical_evidence[]` — drug/Ab programs with citations
-- `risk_flags[]` — secretion, shedding, contradictions, etc., each with `severity`
-- `evidence[]` — full primary/secondary evidence chain (verbatim spans + source URLs)
-- `rationale` — ≤1800-char synthesis
-- `confidence` — `high` | `medium` | `low`
-- `triage_signal` — `likely_accessible` | `possibly_accessible` | `unlikely` | `unknown`
-- `model_path` — `sonnet_only` | `opus_light` | `opus_heavy` (which agent path produced this record)
+- `gene` — `hgnc_symbol`, `hgnc_id`, `uniprot_acc`, `ncbi_gene_id`, `ensembl_gene`. Key every downstream lookup on these stable IDs, not the symbol.
+- `triage_signal` / `triage_reasoning` — the first-pass Sonnet triage verdict (`likely_accessible` | `possibly_accessible` | `unlikely` | `unknown`) + its prose.
+- `executive_summary` — `one_paragraph` (human TL;DR), `surface_accessibility` (`high`|`moderate`|`low`|`no`|`uncertain`), `confidence`, `evidence_grade_summary`, `state_dependence`, `subcategory`, `surface_call_reason`, `headline_risks[]`, `accessibility_context_summary`, plus family tags `uniprot_family` / `hgnc_gene_groups[]` / `llm_family`.
+- `filters` — ~35 flat catalog facets for filtering, several paired with a `*_rationale` (e.g. `expression_level`+`expression_level_rationale`, `surface_specificity`+`_rationale`, `has_known_ligand`+`_rationale`): `co_receptor_dependency`, `has_{shed,secreted,epitope_masking,restricted_subdomain}*`, `ecd_accessibility_class`, `evidence_grade`, `evidence_density`, `{mouse,cyno}_ortholog_ecd_pct_identity`, `max_paralog_ecd_pct_identity`, `tumor_associated`, `induction_trigger`, `has_live_cell_surface_evidence`, …
+- `surface_evidence` — `evidence_grade` + `grade_rationale`, `claim_stances[]` (per-claim supports/contradicts + weight), `methods[]` (per-assay: `method_family`, `antibodies[]` with clonality + validation strategy/strength, `expression_observations[]`, `overexpression` construct, `surface_claim_type`, `accessibility_relevance`), `non_surface_expression[]`, `contradicting_evidence[]`.
+- `biological_context` — `tissues[]` (tissue × `disease_context` × level × cell types/states), `cell_types[]`, `cell_states[]`, `subcellular_localization` (`primary_compartment`, `dual_localization[]`, `membrane_subdomains[]`), `anatomical_accessibility[]`, `accessibility_modulation[]`.
+- `accessibility_risks` — `shed_form`, `secreted_form`, `epitope_masking`, `ecd_size_assessment`, `restricted_subdomain`, `co_receptor_requirements`; each with `severity` / `evidence_strength` / `rationale` / `cited_evidence_ids`.
+- `deterministic_features` — tool output, never LLM-written (see below).
+- `evidence[]` — the primary/secondary chain: `evidence_id`, `claim`, `claim_type`, `direction`, `evidence_tier`, `assay_context` (species / cell / permeabilization), and `spans[]` with verbatim `quote` + `source` (`pmid` / `pmc_id` / `doi` / `url`).
+- `confidence` / `confidence_reasoning`, `model_path`, `record_generated_at`.
 
-Schema version is in `schema_version` (currently `v0.5.x`). Fields not present in older records are absent (use optional-chaining when reading).
+### `deterministic_features` — sequences, topology, structure, homology
+
+Populated deterministically (UniProt + DeepTMHMM + Ensembl Compara +
+AlphaFold DB + PDBe SIFTS + SURFACE-Bind), never by the model. Every
+topology entity carries its full amino-acid `sequence` aligned 1:1 with its
+`per_residue_topology` string — so a consumer can index the topology without
+a second fetch:
+
+- `canonical_topology` — `uniprot_acc`, `per_residue_topology` (`M`/`O`/`I`/`S`/`B` per residue), **`sequence`**, `tm_helix_count`, `signal_peptide_length`, `ecd_length_residues`, `icd_length_residues`, `n_/c_terminal_orientation`.
+- `isoform_topologies[]` — same shape per alternative isoform + `{full_length,ecd}_pct_identity_to_canonical` + **`sequence`**.
+- `orthologs.{mouse,cynomolgus}[]` — `ortholog_uniprot_acc`, `ortholog_symbol`, `{full_length,ecd}_pct_identity_to_human_canonical`, projected `per_residue_topology` + **`sequence`**.
+- `paralogs[]` — `paralog_symbol`, `paralog_uniprot_acc`, `{full_length,ecd}_pct_identity`; close paralogs (>80%) additionally carry topology + **`sequence`**.
+- `structure` — `afdb_id`, `afdb_version`, `ecd_mean_plddt`, `ecd_disordered_fraction`, AlphaFold download links **`model_cif_url`** / **`model_pdb_url`** / **`model_pae_url`**, and **`representative_experimental_structure`** (PDBe SIFTS best: `pdb_id`, `chain_id`, `unp_start`/`unp_end`, `resolution_a`, `experimental_method`, `n_experimental_structures`; `null` when no deposited structure).
+- `surface_bind` — SURFACE-Bind MaSIF scoring (Balbi et al. 2026, PMID 41604262): `has_data`, `n_sites`, per-site `sites[]` (`anchor_residue`, `area_a2` BSA, α/β seed counts, `hydrophobicity`), `pdbs[]`.
+
+Older records may lack newer fields — use optional-chaining / `?? null` when reading. A markdown mirror of the full record (with the sequences + per-residue topology embedded) is at `https://surfaceome.deliverome.org/data/surfaceome/{SYMBOL}.md`.
 
 ## SurfaceBench matrix shape
 
@@ -114,7 +129,7 @@ Schema version is in `schema_version` (currently `v0.5.x`). Fields not present i
 
 ```bash
 curl -s https://api.deliverome.org/surfaceome/v1/genes/ERBB2 \
-  | jq '.gene.hgnc_symbol, .targetability.tier, .confidence, .rationale'
+  | jq '.gene.hgnc_symbol, .executive_summary.surface_accessibility, .confidence, .executive_summary.one_paragraph'
 ```
 
 ```javascript
@@ -123,14 +138,17 @@ const res = await fetch(
   { cache: "force-cache" },
 );
 const record = await res.json();
-console.log(record.targetability.tldr);
+console.log(record.executive_summary.one_paragraph);
+// canonical sequence + its per-residue topology travel together:
+const ct = record.deterministic_features.canonical_topology;
+console.log(ct.sequence?.length, ct.per_residue_topology?.length); // equal
 ```
 
 ```python
 import httpx
 r = httpx.get("https://api.deliverome.org/surfaceome/v1/genes/ERBB2", timeout=15)
 record = r.json()
-print(record["targetability"]["tier"])
+print(record["executive_summary"]["surface_accessibility"])
 ```
 
 ## Example: rebuild the canonical predictions table
