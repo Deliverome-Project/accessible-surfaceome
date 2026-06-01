@@ -1,94 +1,135 @@
 {
   "_generated_by": "scripts/build_search_catalog.py",
-  "_source": "evidence_retrieval._CATEGORY_SPECS + gene_literature modes",
-  "evidence_retrieval_categories": [
-    {
+  "_source": "evidence_retrieval._CATEGORY_SPECS + plan_trim_select/prompts/{a1,a2}_plan_system.md",
+  "categories": {
+    "ihc": {
       "id": "ihc",
       "label": "Immunohistochemistry",
       "finds": "Membranous IHC staining in primary tissue sections.",
-      "deterministic": true,
       "query_preview": "(\"immunohistochemistry\" OR \"IHC\")"
     },
-    {
+    "if": {
       "id": "if",
       "label": "Immunofluorescence",
       "finds": "Non-permeabilized surface IF, plus permeabilized confocal IF that colocalizes with a plasma-membrane marker.",
-      "deterministic": true,
       "query_preview": "(\"immunofluorescence\" OR \"confocal\" OR \"live-cell imaging\" OR \"IF microscopy\")"
     },
-    {
+    "flow_cytometry": {
       "id": "flow_cytometry",
       "label": "Flow cytometry / FACS",
       "finds": "Surface staining of intact, non-permeabilized cells \u2014 the strongest direct surface-accessibility signal.",
-      "deterministic": true,
       "query_preview": "(\"flow cytometry\" OR \"FACS\")"
     },
-    {
+    "surface_biotinylation": {
       "id": "surface_biotinylation",
       "label": "Surface biotinylation",
       "finds": "Sulfo-NHS-biotin labeling of the cell surface + streptavidin pull-down \u2014 biochemical surface capture.",
-      "deterministic": true,
       "query_preview": "(\"surface biotinylation\" OR \"cell surface biotinylation\" OR \"biotin labeling\" OR \"biotinyl\" OR \"sulfo-NHS-biotin\")"
     },
-    {
+    "mass_spec_surfaceome": {
       "id": "mass_spec_surfaceome",
       "label": "Surfaceome mass spec",
       "finds": "Cell-surface-capture / surfaceome LC-MS/MS proteomics (the high-throughput membership datasets).",
-      "deterministic": true,
       "query_preview": "(\"surfaceome\" OR \"surface proteome\" OR \"cell surface proteomics\" OR \"cell-surface capture\")"
     },
-    {
+    "western_blot_paired": {
       "id": "western_blot_paired",
       "label": "Western blot (surface-paired)",
       "finds": "Immunoblot paired with a surface-biotinylation or membrane-fraction step (so the band is the surface pool).",
-      "deterministic": true,
       "query_preview": "(\"western blot\" OR \"immunoblot\")"
     },
-    {
+    "structure_with_ecd": {
       "id": "structure_with_ecd",
       "label": "Structure with ECD",
       "finds": "Crystal / cryo-EM structures resolving an extracellular domain \u2014 confirms an exposed, foldable ectodomain.",
-      "deterministic": true,
       "query_preview": "(\"crystal structure\" OR \"cryo-EM\" OR \"cryo electron microscopy\" OR \"X-ray structure\")"
     },
-    {
+    "other": {
       "id": "other",
       "label": "Other surface assays",
       "finds": "Catch-all: radioligand / GPCR pharmacology, ectodomain shedding, proximity labeling (APEX2/TurboID/BioID), internalization kinetics.",
-      "deterministic": true,
       "query_preview": "(\"cell surface\" OR \"plasma membrane\" OR \"surface expression\" OR \"cell-surface\" OR \"membrane localization\")"
     }
-  ],
-  "literature_modes": [
+  },
+  "shared_baselines": [
     {
       "id": "gene2pubmed",
       "label": "NCBI gene2pubmed",
-      "deterministic": true,
       "finds": "NCBI's curated gene\u2192PMID list \u2014 the high-precision baseline every gene starts from."
     },
     {
       "id": "recent_corpus",
       "label": "Recent corpus (PubTator)",
-      "deterministic": true,
-      "finds": "Date-sorted PubTator entity sweep, pre-filtered on surface/membrane keywords \u2014 catches recent verdict-shifting papers the planner couldn't keyword-anchor."
+      "finds": "Date-sorted PubTator entity sweep, pre-filtered on surface/membrane keywords \u2014 catches recent verdict-shifting papers no keyword-anchored query would surface."
+    }
+  ],
+  "agents": [
+    {
+      "id": "a1",
+      "label": "A1 \u00b7 Surface evidence",
+      "tagline": "How the surface call was made \u2014 the methodology ledger.",
+      "always_category_ids": [
+        "flow_cytometry",
+        "surface_biotinylation",
+        "mass_spec_surfaceome",
+        "ihc",
+        "if"
+      ],
+      "skip_category_ids": [],
+      "conditional_note": "Adds western blot (surface-paired) when cheap, structure-with-ECD when UniProt lists experimental structures or signal peptides, and 'other' for the gene class it fits (e.g. radioligand pharmacology for 7-TM GPCRs).",
+      "always_topic": [
+        {
+          "label": "Method-anchored topic search",
+          "finds": "Europe PMC queries anchored on flow cytometry / surface biotinylation / mass-spec / IHC \u2014 the methods that produce a defensible surface call."
+        }
+      ]
     },
     {
-      "id": "topic_search",
-      "label": "Topic search",
-      "deterministic": false,
-      "finds": "Europe PMC topic-anchored queries the planner composes to fill method-specific gaps."
+      "id": "a2",
+      "label": "A2 \u00b7 Biological context",
+      "tagline": "Where & when the protein reaches the surface \u2014 tissue, cell type, localization, and what gates it.",
+      "always_category_ids": [
+        "ihc",
+        "if",
+        "flow_cytometry",
+        "mass_spec_surfaceome"
+      ],
+      "skip_category_ids": [
+        "western_blot_paired",
+        "structure_with_ecd"
+      ],
+      "conditional_note": "Adds surface biotinylation when UniProt lists multiple compartments (a dual-localization or stress-induced surface-fraction tell).",
+      "always_topic": [
+        {
+          "label": "Normal-tissue tox panel",
+          "finds": "Surface expression in the six high-consequence tox organs \u2014 liver, lung, kidney, GI tract, heart, brain (incl. BBB). Runs for every gene, even canonical receptors; negatives count."
+        },
+        {
+          "label": "Subcellular-localization depth",
+          "finds": "Organelle colocalization (ER / Golgi / endosome / lysosome markers) + fractionation that quantifies the surface-vs-intracellular split \u2014 fills dual_localization and its fraction estimate."
+        },
+        {
+          "label": "Biology-leaning topic search",
+          "finds": "Anchored on surface_expression / shedding / PTM / IHC \u2014 pulls the tissue-distribution and disease-state biology reviews A1 deliberately avoids."
+        }
+      ]
+    }
+  ],
+  "planned_fill": [
+    {
+      "id": "topic_search_extra",
+      "label": "Topic search (extra)",
+      "finds": "Additional Europe PMC topic-anchored queries the planner composes beyond the mandated panels, to fill gene-specific gaps."
     },
     {
       "id": "fetch_abstract",
       "label": "Fetch abstract",
-      "deterministic": false,
       "finds": "Pull a single PMID's abstract (planner-chosen follow-up)."
     },
     {
       "id": "fetch_fulltext",
       "label": "Fetch full text",
-      "deterministic": false,
-      "finds": "Pull a PMC open-access full text (planner-chosen deep read)."
+      "finds": "Pull a PMC open-access full text \u2014 planner-chosen deep read of a known method (A1) or biology / atlas (A2) source."
     }
   ]
 }
