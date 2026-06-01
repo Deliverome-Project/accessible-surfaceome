@@ -1096,6 +1096,37 @@
   color: var(--muted);
 }
 
+/* Per-replicate reasons — collapsible block below the majority reason.
+   The reader sees the majority call first; scrolling into this reveals
+   each replicate's own verdict + reasoning. */
+.drawerReps {
+  margin: var(--space-3) 0 0;
+  border-top: 1px solid var(--border, #E6DAD4);
+  padding-top: var(--space-2);
+}
+.drawerReps > summary {
+  cursor: pointer;
+  font-size: 0.82rem;
+  color: var(--muted);
+  user-select: none;
+}
+.drawerRep {
+  margin: var(--space-2) 0 0;
+  padding-left: var(--space-2);
+  border-left: 2px solid var(--border, #E6DAD4);
+}
+.drawerRepHead {
+  margin: 0;
+  font-size: 0.82rem;
+  color: var(--ink);
+}
+.drawerRepReasoning {
+  margin: 2px 0 0;
+  font-size: 0.9rem;
+  line-height: 1.5;
+  color: var(--ink);
+}
+
 .drawerMeta {
   margin: var(--space-3) 0 0;
   display: flex;

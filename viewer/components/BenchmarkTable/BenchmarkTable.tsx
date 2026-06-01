@@ -63,15 +63,15 @@ const DB_KEYS: { key: BenchmarkSource; short: string; long: string }[] = [
 const MODEL_LABELS: { id: string; short: string; long: string }[] = [
   { id: "claude-haiku-4-5",  short: "H", long: "Haiku 4.5" },
   { id: "claude-sonnet-4-6", short: "S", long: "Sonnet 4.6" },
-  { id: "claude-opus-4-7",   short: "O", long: "Opus 4.7" },
+  { id: "claude-opus-4-8",   short: "O", long: "Opus 4.8" },
 ];
 
 // Display order for the expanded model × variant grid.
 const VARIANT_LABELS: { id: string; short: string; long: string }[] = [
   { id: "naive",       short: "naive",       long: "no context"                  },
-  { id: "ncbi",        short: "ncbi",        long: "HGNC + UniProt + NCBI summary" },
-  { id: "web_ncbi",    short: "web_ncbi",    long: "ncbi + web search"           },
-  { id: "pubmed_ncbi", short: "pubmed_ncbi", long: "ncbi + PubMed evidence"      },
+  { id: "ncbi",        short: "NCBI",        long: "HGNC + UniProt + NCBI summary" },
+  { id: "web_ncbi",    short: "web + NCBI",  long: "NCBI + web search"           },
+  { id: "pubmed_ncbi", short: "PubMed + NCBI", long: "NCBI + PubMed evidence"    },
 ];
 
 type TruthFilter = "all" | "yes" | "contextual" | "no" | "disagreements";
@@ -390,7 +390,7 @@ export function BenchmarkTable({
             dir={sortDir}
             onClick={toggleSort}
             extraClass={styles.headerModelCell}
-            title={`${MODEL_LABELS[0].long} · ncbi variant`}
+            title={`${MODEL_LABELS[0].long} · NCBI variant`}
           />
           <SortHeader
             label={MODEL_LABELS[1].long}
@@ -399,7 +399,7 @@ export function BenchmarkTable({
             dir={sortDir}
             onClick={toggleSort}
             extraClass={styles.headerModelCell}
-            title={`${MODEL_LABELS[1].long} · ncbi variant`}
+            title={`${MODEL_LABELS[1].long} · NCBI variant`}
           />
           <SortHeader
             label={MODEL_LABELS[2].long}
@@ -408,7 +408,7 @@ export function BenchmarkTable({
             dir={sortDir}
             onClick={toggleSort}
             extraClass={styles.headerModelCell}
-            title={`${MODEL_LABELS[2].long} · ncbi variant`}
+            title={`${MODEL_LABELS[2].long} · NCBI variant`}
           />
         </div>
 
@@ -548,7 +548,7 @@ function sortValue(r: BenchmarkRow, key: SortKey): string | number {
     case "sonnet_ncbi":
       return verdictRank(r.verdicts?.["claude-sonnet-4-6"]?.ncbi?.verdict);
     case "opus_ncbi":
-      return verdictRank(r.verdicts?.["claude-opus-4-7"]?.ncbi?.verdict);
+      return verdictRank(r.verdicts?.["claude-opus-4-8"]?.ncbi?.verdict);
   }
 }
 
@@ -714,8 +714,8 @@ function BenchRowView({
                 }`}
                 title={
                   cell.reason
-                    ? `${m.long} · ncbi → ${cell.verdict} (${cell.reason.replace(/_/g, " ")}) — click for full reasoning`
-                    : `${m.long} · ncbi → ${cell.verdict} — click for full reasoning`
+                    ? `${m.long} · NCBI → ${cell.verdict} (${cell.reason.replace(/_/g, " ")}) — click for full reasoning`
+                    : `${m.long} · NCBI → ${cell.verdict} — click for full reasoning`
                 }
               >
                 <span
@@ -729,7 +729,7 @@ function BenchRowView({
                 </span>
               </button>
             ) : (
-              <span className={styles.dim} title={`${m.long} · ncbi: no run on file`}>
+              <span className={styles.dim} title={`${m.long} · NCBI: no run on file`}>
                 —
               </span>
             )}

@@ -20,8 +20,11 @@
 //                                  load truth labels from here.
 //   GET /v1/benchmark/:symbol   — single gene's truth label
 //   GET /v1/triage/:symbol      — model verdicts across runs (with costs)
+//   GET /v1/triage/:symbol/:model/:variant — per-cell replicate detail:
+//                                  every replicate + computed majority
+//                                  (backs the benchmark RationaleDrawer)
 //   GET /v1/triage/export.tsv   — long-format TSV of all triage runs for a
-//                                  given run_id (default mainbench_canonical_v1).
+//                                  given run_id (default mainbench_canonical_v2).
 //                                  Single source of truth for final-figure
 //                                  predictions data; carries cost_usd + token
 //                                  counts.
@@ -390,10 +393,10 @@ async function handleCatalog(env, request) {
   //
   // Coverage today:
   //   - Sonnet/ncbi: full ~19k genome (genome_full_sonnet_ncbi_v1)
-  //   - Haiku/ncbi: 147 SurfaceBench genes only (mainbench_canonical_v1)
-  //   - Opus/ncbi: 147 SurfaceBench genes only (mainbench_canonical_v1)
+  //   - Haiku/ncbi: 147 SurfaceBench genes only (mainbench_canonical_v2)
+  //   - Opus/ncbi: 147 SurfaceBench genes only (mainbench_canonical_v2)
   // So most rows will show only the Sonnet column populated.
-  const CATALOG_MODELS = ["claude-haiku-4-5", "claude-sonnet-4-6", "claude-opus-4-7"];
+  const CATALOG_MODELS = ["claude-haiku-4-5", "claude-sonnet-4-6", "claude-opus-4-8"];
   const triageByGene = new Map();
   const triageRows = await env.DB.prepare(
     `WITH ranked AS (
@@ -405,7 +408,7 @@ async function handleCatalog(env, request) {
               ) AS rn
          FROM triage_run_public
         WHERE prompt_variant = 'ncbi'
-          AND model IN ('claude-haiku-4-5','claude-sonnet-4-6','claude-opus-4-7')
+          AND model IN ('claude-haiku-4-5','claude-sonnet-4-6','claude-opus-4-8')
      )
      SELECT gene_symbol, model, predicted_verdict, predicted_reason, created_at
        FROM ranked WHERE rn = 1`
@@ -562,7 +565,7 @@ async function handleCatalog(env, request) {
 // grid per the user request 2026-05-15). `headline_variant` is still
 // returned for consumers that want to highlight one column.
 const BENCH_MATRIX_MODELS = [
-  "claude-opus-4-7",
+  "claude-opus-4-8",
   "claude-sonnet-4-6",
   "claude-haiku-4-5",
 ];
@@ -803,7 +806,7 @@ const EXPORT_COLUMNS = [
   "cost_usd",
   "latency_s",
 ];
-const DEFAULT_EXPORT_RUN_ID = "mainbench_canonical_v1";
+const DEFAULT_EXPORT_RUN_ID = "mainbench_canonical_v2";
 
 async function handleTriageExport(env, url) {
   const runId = url.searchParams.get("run_id") || DEFAULT_EXPORT_RUN_ID;
@@ -983,6 +986,88 @@ async function handleTriage(env, symbol) {
     gene_symbol: sym,
     count: rows.results.length,
     runs: rows.results,
+  }, { ttl: CACHE_TTL_SHORT });
+}
+
+// Per-(gene, model, variant) replicate detail — backs the benchmark
+// RationaleDrawer's "majority reason first, then all reps on scroll" view.
+// Returns every replicate for the cell (so the drawer can show the
+// per-rep spread), plus a computed `majority` block (the binary
+// surface-vote majority + the winning-side representative replicate's
+// verdict/reason/reasoning). Lazy-loaded by the drawer on open, so the
+// /benchmark/matrix payload stays single-rep + small.
+async function handleTriageCell(env, symbol, model, variant) {
+  const sym = checkSymbol(symbol);
+  if (!sym) return badRequest("invalid_symbol");
+  // model/variant are closed enums — validate against the known sets to
+  // avoid an unbounded WHERE and keep the query plan tight.
+  if (!BENCH_MATRIX_MODELS.includes(model)) return badRequest("invalid_model");
+  if (!BENCH_MATRIX_VARIANTS.includes(variant)) return badRequest("invalid_variant");
+  // Scope to the canonical bench run — without this, a gene that also
+  // appears in the whole-genome sweep (genome_full_sonnet_ncbi_v1, same
+  // sonnet/ncbi cell) would have its rows collide with the bench reps.
+  // One row per replicate number (latest by created_at) so a stray
+  // duplicate-replicate row from a bad sync can't surface as two "Rep N".
+  const rows = await env.DB.prepare(
+    `WITH ranked AS (
+       SELECT created_at, replicate, predicted_verdict, predicted_reason,
+              predicted_confidence, predicted_key_uncertainty,
+              verdict_reasoning, correct, latency_s, n_web_searches, error,
+              cost_usd, prompt_tokens, completion_tokens,
+              cache_creation_tokens, cache_read_tokens,
+              ROW_NUMBER() OVER (
+                PARTITION BY replicate ORDER BY created_at DESC
+              ) AS rn
+         FROM triage_run_public
+        WHERE run_id = ? AND gene_symbol = ? AND model = ? AND prompt_variant = ?
+     )
+     SELECT created_at, replicate, predicted_verdict, predicted_reason,
+            predicted_confidence, predicted_key_uncertainty,
+            verdict_reasoning, correct, latency_s, n_web_searches, error,
+            cost_usd, prompt_tokens, completion_tokens,
+            cache_creation_tokens, cache_read_tokens
+       FROM ranked WHERE rn = 1
+      ORDER BY replicate`
+  ).bind(DEFAULT_EXPORT_RUN_ID, sym, model, variant).all();
+  const reps = rows.results;
+  // Binary surface-vote majority over valid-verdict reps (yes/contextual =
+  // surface; no = not-surface). Representative = the most common raw
+  // verdict on the winning side, with its reason + free-text reasoning.
+  const surfaceVote = (v) =>
+    (v === "yes" || v === "contextual") ? true : (v === "no" ? false : null);
+  const valid = reps.filter((r) => surfaceVote(r.predicted_verdict) !== null);
+  let majority = null;
+  if (valid.length) {
+    const tally = new Map();
+    for (const r of valid) {
+      const s = surfaceVote(r.predicted_verdict);
+      tally.set(s, (tally.get(s) || 0) + 1);
+    }
+    const ranked = [...tally.entries()].sort((a, b) => b[1] - a[1]);
+    const winSide = ranked[0][0];
+    const winReps = valid.filter((r) => surfaceVote(r.predicted_verdict) === winSide);
+    // Representative raw verdict = most common on the winning side.
+    const vTally = new Map();
+    for (const r of winReps) {
+      vTally.set(r.predicted_verdict, (vTally.get(r.predicted_verdict) || 0) + 1);
+    }
+    const repVerdict = [...vTally.entries()].sort((a, b) => b[1] - a[1])[0][0];
+    const rep = winReps.find((r) => r.predicted_verdict === repVerdict);
+    majority = {
+      verdict: repVerdict,
+      reason: rep?.predicted_reason ?? null,
+      reasoning: rep?.verdict_reasoning ?? null,
+      confidence: rep?.predicted_confidence ?? null,
+      n_reps: valid.length,
+      agreement: Math.round((winReps.length / valid.length) * 1000) / 1000,
+    };
+  }
+  return json({
+    gene_symbol: sym,
+    model,
+    prompt_variant: variant,
+    majority,
+    replicates: reps,
   }, { ttl: CACHE_TTL_SHORT });
 }
 
@@ -1433,6 +1518,12 @@ export default {
     if ((m = path.match(/^\/v1\/genes\/([^/]+)$/))) return handleGene(env, m[1]);
     if ((m = path.match(/^\/v1\/orthologs\/([^/]+)$/))) return handleOrthologs(env, m[1]);
     if ((m = path.match(/^\/v1\/benchmark\/([^/]+)$/))) return handleBenchmarkOne(env, m[1]);
+    // Per-cell replicate detail (more specific — match before the bare
+    // /v1/triage/:symbol route). model = claude-<name>-<n>-<n>; variant
+    // = naive|ncbi|web_ncbi|pubmed_ncbi.
+    if ((m = path.match(/^\/v1\/triage\/([^/]+)\/([A-Za-z0-9._-]+)\/([a-z_]+)$/))) {
+      return handleTriageCell(env, m[1], m[2], m[3]);
+    }
     if ((m = path.match(/^\/v1\/triage\/([^/]+)$/))) return handleTriage(env, m[1]);
 
     return notFound("route_not_found");

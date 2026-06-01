@@ -59,6 +59,8 @@ data/processed/candidate_universe/candidate_universe_v2.tsv -filter -diff -merge
 # pointers don't resolve over the raw URL). The Worker also serves
 # the same shape at `/v1/triage/export.tsv` for live consumers.
 data/processed/triage_bench/mainbench_canonical_v1.tsv -filter -diff -merge text
+data/processed/triage_bench/mainbench_canonical_v2.tsv -filter -diff -merge text
+data/processed/triage_bench/mainbench_replicates_v2.tsv -filter -diff -merge text
 
 # 147-gene triage benchmark with ground-truth verdicts. Stays non-LFS
 # because (a) `scripts/upload_benchmark_to_d1.py` reads it as the

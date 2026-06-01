@@ -178,7 +178,7 @@ export interface CatalogRow {
     hpa: number;
   };
   /** Per-model NCBI-variant verdict in the order matrix.models
-   *  exposes. Today: [Haiku 4.5, Sonnet 4.6, Opus 4.7]. Each slot is
+   *  exposes. Today: [Haiku 4.5, Sonnet 4.6, Opus 4.8]. Each slot is
    *  null when no run exists for that model on that gene (most non-
    *  bench genes have only the Sonnet slot populated). */
   triage_by_model: (TriageCell | null)[];
@@ -476,7 +476,7 @@ async function _loadCatalogImpl(): Promise<Catalog> {
       generated_at: undefined,
       universe_version: "local-stub",
       bench_version: null,
-      models: ["claude-haiku-4-5", "claude-sonnet-4-6", "claude-opus-4-7"],
+      models: ["claude-haiku-4-5", "claude-sonnet-4-6", "claude-opus-4-8"],
       n_rows: 0,
       n_with_triage: 0,
       n_with_deep_dive: 0,
@@ -596,7 +596,7 @@ export async function loadBenchmarkMatrix(): Promise<BenchmarkMatrix> {
       universe_version: null,
       sources: ["uniprot", "go", "surfy", "cspa", "hpa"],
       models: [
-        "claude-opus-4-7", "claude-sonnet-4-6", "claude-haiku-4-5",
+        "claude-opus-4-8", "claude-sonnet-4-6", "claude-haiku-4-5",
       ],
       variants: ["naive", "ncbi", "web_ncbi", "pubmed_ncbi"],
       headline_variant: "ncbi",

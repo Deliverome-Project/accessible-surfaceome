@@ -70,7 +70,7 @@ export default async function HomePage() {
             plasma-membrane presence). Deep-dive records linked from
             the <em>yes</em> column in the &ldquo;Deep dive&rdquo;
             slot override the triage call when present. The alternative
-            models (Haiku 4.5, Opus 4.7) used in the manuscript
+            models (Haiku 4.5, Opus 4.8) used in the manuscript
             comparison live on{" "}
             <a href="/benchmark/" className={styles.surfaceBenchLink}>
               SurfaceBench

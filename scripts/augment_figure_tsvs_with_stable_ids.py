@@ -3,7 +3,7 @@ four figure TSVs.
 
 The figure scripts under ``data/analysis/figures/`` read four TSVs over
 ``raw.githubusercontent.com``: ``candidate_universe.tsv``,
-``mainbench_canonical_v1.tsv``, ``triage_benchmark_v1.tsv``, and
+``mainbench_canonical_v2.tsv``, ``triage_benchmark_v1.tsv``, and
 ``db_optimized_cutoffs.tsv``. Originally only ``uniprot_accession`` (or
 ``gene_symbol``) was carried; this script joins each TSV against:
 
@@ -161,21 +161,61 @@ def _load_deep_dive_index() -> set[str]:
 # ------------------------------ Bench index --------------------------------
 
 def _load_bench_index() -> dict[str, dict[str, str]]:
-    """Return ``{gene_symbol: {class, ground_truth_verdict, n_db_votes_at_curation}}``
-    from the local triage_benchmark_v1.tsv. n_db_votes is computed later from
-    the candidate-universe row; this lookup only needs class + verdict.
+    """Return ``{gene_symbol: {class, ground_truth_verdict}}`` for the
+    canonical benchmark.
+
+    Truth labels are sourced from public D1's ``benchmark_version`` — the
+    SAME version-pinned origin the live Worker serves (latest bench_version
+    wins, matching the Worker's ``ORDER BY bench_version DESC LIMIT 1``).
+    The working-tree ``triage_benchmark_v1.tsv`` is NOT the source of truth:
+    it is an uncommitted file that can silently revert (and did), which
+    would stamp stale labels into the figure TSVs. Reading D1 ties the
+    figure labels to the published benchmark instead.
+
+    Falls back to the local TSV only if D1 is unreachable (offline / no
+    credentials), with a loud warning — so an offline run still produces a
+    file, but the operator knows the labels weren't origin-verified.
     """
-    _, rows = _read_tsv(BENCH_TSV)
-    out: dict[str, dict[str, str]] = {}
-    for r in rows:
-        sym = (r.get("gene_symbol") or "").strip()
-        if not sym:
-            continue
-        out[sym] = {
-            "class": r.get("class") or "",
-            "ground_truth_verdict": r.get("ground_truth_verdict") or "",
-        }
-    return out
+    try:
+        ver_rows = _query_public(
+            "SELECT bench_version FROM benchmark_version "
+            "ORDER BY bench_version DESC LIMIT 1"
+        )
+        if not ver_rows:
+            raise RuntimeError("benchmark_version is empty in public D1")
+        bench_version = ver_rows[0]["bench_version"]
+        rows = _query_public(
+            "SELECT gene_symbol, class, truth_verdict FROM benchmark_version "
+            "WHERE bench_version = ?",
+            [bench_version],
+        )
+        out: dict[str, dict[str, str]] = {}
+        for r in rows:
+            sym = str(r.get("gene_symbol") or "").strip()
+            if not sym:
+                continue
+            out[sym] = {
+                "class": str(r.get("class") or ""),
+                "ground_truth_verdict": str(r.get("truth_verdict") or ""),
+            }
+        print(f"  bench truth from public D1 benchmark_version="
+              f"{bench_version} ({len(out)} genes)")
+        return out
+    except Exception as exc:  # noqa: BLE001
+        print(f"  WARNING: could not load bench truth from public D1 ({exc}); "
+              f"falling back to working-tree {BENCH_TSV.name} — labels are "
+              f"NOT origin-verified for this run.")
+        _, rows = _read_tsv(BENCH_TSV)
+        out = {}
+        for r in rows:
+            sym = (r.get("gene_symbol") or "").strip()
+            if not sym:
+                continue
+            out[sym] = {
+                "class": r.get("class") or "",
+                "ground_truth_verdict": r.get("ground_truth_verdict") or "",
+            }
+        return out
 
 
 def _is_soft_match(predicted: str, truth: str) -> int:
@@ -228,7 +268,11 @@ def _drop_stale(fields: list[str], rows: list[dict[str, str]], drop: list[str]) 
 
 CAND_TSV = REPO_ROOT / "data/processed/candidate_universe/candidate_universe.tsv"
 BENCH_TSV = REPO_ROOT / "data/eval/triage_benchmark_v1.tsv"
-MAINBENCH_TSV = REPO_ROOT / "data/processed/triage_bench/mainbench_canonical_v1.tsv"
+MAINBENCH_TSV = REPO_ROOT / "data/processed/triage_bench/mainbench_canonical_v2.tsv"
+# Per-replicate companion to MAINBENCH_TSV (one row per gene×model×variant×rep).
+# Drives the SEM + individual-replicate-point overlays on the bar figures.
+# Augmented with the same truth + is_match join as the majority TSV.
+REPLICATES_TSV = REPO_ROOT / "data/processed/triage_bench/mainbench_replicates_v2.tsv"
 CUTOFFS_TSV = REPO_ROOT / "data/processed/triage_bench/db_optimized_cutoffs.tsv"
 
 
@@ -294,6 +338,7 @@ def augment_triage_benchmark(
     by_symbol: dict[str, StableID],
     n_db_votes_by_acc: dict[str, int],
     sonnet: dict[str, tuple[str, str]],
+    bench: dict[str, dict[str, str]],
 ) -> tuple[int, int]:
     """Add stable IDs + ``n_db_votes`` + genome-sweep Sonnet verdict to the
     bench TSV. Uses uniprot_acc as primary join (curated in the bench),
@@ -304,6 +349,13 @@ def augment_triage_benchmark(
     ``genome_full_sonnet_ncbi_v1`` run (the same source the catalog
     serves) — direct comparison against the curated truth without
     joining mainbench.
+
+    Also RECONCILES the TSV's own ``ground_truth_verdict`` / ``class``
+    columns against the D1-sourced ``bench`` index (public
+    benchmark_version, the published origin). The working-tree TSV is not
+    the authority for labels — it can silently revert — so any drift is
+    corrected from D1 here and reported loudly, keeping the on-repo figure
+    inputs tied to the published benchmark.
     """
     fields, rows = _read_tsv(BENCH_TSV)
     add = ["hgnc_id", "hgnc_symbol", "ncbi_gene_id", "ensembl_gene",
@@ -337,6 +389,26 @@ def augment_triage_benchmark(
         v, why = sonnet.get(sym, ("", ""))
         r["sonnet_verdict"] = v
         r["sonnet_reason"] = why
+    # Reconcile the TSV's own truth columns against the D1 origin. Corrects
+    # any working-tree drift (e.g. a revert that dropped a relabel) so the
+    # on-repo bench TSV matches the published benchmark_version.
+    corrected: list[str] = []
+    for r in rows:
+        sym = (r.get("gene_symbol") or "").strip()
+        b = bench.get(sym)
+        if not b:
+            continue
+        d1_verdict = b["ground_truth_verdict"]
+        d1_class = b["class"]
+        if d1_verdict and r.get("ground_truth_verdict") != d1_verdict:
+            corrected.append(f"{sym}: {r.get('ground_truth_verdict')!r}→{d1_verdict!r}")
+            r["ground_truth_verdict"] = d1_verdict
+        if d1_class and r.get("class") and r.get("class") != d1_class:
+            # class rarely drifts; reconcile but don't spam the verdict list
+            r["class"] = d1_class
+    if corrected:
+        print(f"  RECONCILED {len(corrected)} bench truth label(s) from D1 origin: "
+              + ", ".join(corrected))
     _write_tsv(BENCH_TSV, fields, rows)
     return len(rows), matched
 
@@ -347,6 +419,7 @@ def augment_mainbench(
     db_flags_by_acc: dict[str, dict[str, int]],
     n_db_votes_by_acc: dict[str, int],
     deep_dive: set[str],
+    tsv_path: Path = MAINBENCH_TSV,
 ) -> tuple[int, int]:
     """Add stable IDs + ground-truth + per-cell soft-match flag + per-DB
     membership flags to the predictions TSV.
@@ -370,7 +443,7 @@ def augment_mainbench(
     the authoritative join field — it survives symbol drift for the
     resolver-v3-fixed genes.
     """
-    fields, rows = _read_tsv(MAINBENCH_TSV)
+    fields, rows = _read_tsv(tsv_path)
     add = [
         "uniprot_acc", "hgnc_id", "ncbi_gene_id", "ensembl_gene",
         "ground_truth_verdict", "ground_truth_class", "is_match",
@@ -408,7 +481,7 @@ def augment_mainbench(
             r[k] = str(flags.get(k, 0))
         r["n_db_votes"] = str(n_db_votes_by_acc.get(acc, 0))
         r["has_deep_dive"] = "1" if sym in deep_dive else "0"
-    _write_tsv(MAINBENCH_TSV, fields, rows)
+    _write_tsv(tsv_path, fields, rows)
     return len(rows), matched
 
 
@@ -497,7 +570,7 @@ def main() -> int:
     deep_dive = _load_deep_dive_index()
     print(f"  {len(deep_dive):,} genes with a published SurfaceomeRecord")
 
-    print("Loading bench truth from local triage_benchmark_v1.tsv ...")
+    print("Loading bench truth from public D1 benchmark_version (origin) ...")
     bench = _load_bench_index()
     print(f"  {len(bench):,} curated bench rows")
 
@@ -532,7 +605,7 @@ def main() -> int:
         for label, path, key in [
             ("candidate_universe", CAND_TSV, "uniprot_accession"),
             ("triage_benchmark_v1", BENCH_TSV, "uniprot_acc"),
-            ("mainbench_canonical_v1", MAINBENCH_TSV, "gene_symbol"),
+            ("mainbench_canonical_v2", MAINBENCH_TSV, "gene_symbol"),
             ("db_optimized_cutoffs", CUTOFFS_TSV, "accession"),
         ]:
             _, rows = _read_tsv(path)
@@ -547,13 +620,22 @@ def main() -> int:
     n, m = augment_candidate_universe(by_uniprot, sonnet, deep_dive, bench)
     summaries.append(("candidate_universe", n, m))
     n, m = augment_triage_benchmark(
-        by_uniprot, by_symbol, n_db_votes_by_acc, sonnet,
+        by_uniprot, by_symbol, n_db_votes_by_acc, sonnet, bench,
     )
     summaries.append(("triage_benchmark_v1", n, m))
     n, m = augment_mainbench(
         by_symbol, bench, db_flags_by_acc, n_db_votes_by_acc, deep_dive,
     )
-    summaries.append(("mainbench_canonical_v1", n, m))
+    summaries.append(("mainbench_canonical_v2", n, m))
+    # Per-replicate companion — same join, so the bar figures can compute
+    # per-rep accuracy (points) + SEM. Only when the file exists (it's
+    # produced by `export_mainbench_to_tsv.py --per-rep`).
+    if REPLICATES_TSV.exists():
+        n, m = augment_mainbench(
+            by_symbol, bench, db_flags_by_acc, n_db_votes_by_acc, deep_dive,
+            tsv_path=REPLICATES_TSV,
+        )
+        summaries.append(("mainbench_replicates_v2", n, m))
     n, m = augment_db_optimized_cutoffs(
         by_uniprot, db_flags_by_acc, n_db_votes_by_acc,
     )

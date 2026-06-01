@@ -67,7 +67,13 @@ from accessible_surfaceome.tools._shared.http import open_default_client
 from accessible_surfaceome.tools.gene_lookup import resolve, resolve_by_hgnc_id
 
 logger = logging.getLogger(__name__)
-ROOT = Path("/Users/rebeccacarlson/Git/accessible-surfaceome/.claude/worktrees/optimistic-goldwasser-ea19aa")
+# Worktree-relative: repo root = parent of scripts/. Using the script's own
+# location keeps the runner reading the bench TSV + prompts from whatever
+# worktree it's invoked in. Was previously a hardcoded absolute path to a
+# specific worktree — which silently read the wrong worktree's (stale,
+# un-relabeled) bench TSV + prompts, mislabeling bench_version and breaking
+# reproducibility across worktrees. Do NOT revert to an absolute path.
+ROOT = Path(__file__).resolve().parents[1]
 BENCH_TSV_BY_NAME = {
     "benchmark": (ROOT / "data/eval/triage_benchmark_v1.tsv", ROOT / "data/eval/triage_bench_v1"),
 }
@@ -84,6 +90,9 @@ MODEL_PRICING: dict[str, tuple[float, float]] = {
     "claude-haiku-4-5":  (1.0, 5.0),
     "claude-sonnet-4-6": (3.0, 15.0),
     "claude-opus-4-7":   (15.0, 75.0),
+    # opus-4-8 priced same as 4-7 pending confirmed list price; only affects
+    # the cost_usd column (recomputable), not verdicts.
+    "claude-opus-4-8":   (15.0, 75.0),
 }
 WEB_SEARCH_USD_PER_QUERY = 0.01  # $10 / 1000 searches
 
@@ -818,6 +827,12 @@ def main() -> None:
                          "data/eval/triage_*_v1/ remains the canonical record; "
                          "the D1 mirror is for live dashboards + dropping the "
                          "batch-upload step.")
+    ap.add_argument("--publish-public", action="store_true",
+                    help="With --d1, ALSO write each cell to the public mirror "
+                         "(triage_run_public) live, whitelisted (no raw_text / "
+                         "private-only columns). Lands results in public as the "
+                         "sweep runs — no separate sync_public_d1.py step. Private "
+                         "D1 stays the full-fidelity source of truth.")
     ap.add_argument("--run-id", default=None,
                     help="Tag for this sweep in D1's triage_run.run_id column. "
                          "Default: a fresh uuid. Only meaningful with --d1.")
@@ -919,8 +934,10 @@ def main() -> None:
         import uuid as _uuid
         from accessible_surfaceome.cloud.triage_upload import D1RunSink
         run_id = args.run_id or f"{datetime.now(UTC).strftime('%Y-%m-%dT%H%M%SZ')}_{_uuid.uuid4().hex[:8]}"
-        d1_sink = D1RunSink(run_id=run_id, bench_tsv=BENCH_TSV)
-        print(f"D1 streaming enabled: run_id={d1_sink.run_id}  bench_version={d1_sink.bench_version}")
+        d1_sink = D1RunSink(run_id=run_id, bench_tsv=BENCH_TSV,
+                            publish_public=args.publish_public)
+        print(f"D1 streaming enabled: run_id={d1_sink.run_id}  bench_version={d1_sink.bench_version}"
+              + ("  +PUBLIC-DIRECT" if args.publish_public else ""))
         print()
 
     # Resume semantics: when an explicit --run-id is reused and the sink

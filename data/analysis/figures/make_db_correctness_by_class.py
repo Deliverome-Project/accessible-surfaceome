@@ -59,7 +59,10 @@ GIST_URL = "https://gist.github.com/beccajcarlson/2bb4f7aac629535982c142bc2032e0
 
 BENCH_TSV   = f"{BASE}/data/eval/triage_benchmark_v1.tsv"
 CAND_TSV    = f"{BASE}/data/processed/candidate_universe/candidate_universe.tsv"
-PREDS_TSV   = f"{BASE}/data/processed/triage_bench/mainbench_canonical_v1.tsv"
+PREDS_TSV   = f"{BASE}/data/processed/triage_bench/mainbench_canonical_v2.tsv"
+# Per-replicate predictions — overlays the Sonnet bars' individual-rep
+# accuracy + SEM, per verdict bucket. DB bars are deterministic, no overlay.
+REPS_TSV    = f"{BASE}/data/processed/triage_bench/mainbench_replicates_v2.tsv"
 # Optimized DB-cutoff accession TSV (one row per accession admitted
 # by EITHER optimized rule; columns mark which). Dumped by the
 # canonical generator's _dump_db_optimized_cutoffs when the by_class
@@ -237,6 +240,27 @@ def main() -> None:
     db_labels_sorted = sorted(DB_LABELS, key=lambda lbl: -_overall_acc(lbl))
     callers_in_plot = [sonnet_label, *db_labels_sorted]
 
+    # Sonnet per-bucket MEAN-of-replicate fraction — the Sonnet bar height in
+    # each bucket is the mean across the 3 replicates (not the majority-vote
+    # fraction), so the bar lines up with the overlaid points + SEM. DB callers
+    # are deterministic and keep their exact majority fraction.
+    sonnet_rep_frac: dict[str, float] = {}
+    try:
+        _reps = _fetch_tsv(REPS_TSV)
+        _s = _reps[(_reps["model"] == "claude-sonnet-4-6")
+                   & (_reps["prompt_variant"] == "ncbi")].copy()
+        _s["is_match"] = _s["is_match"].astype(int)
+        _s["truth"] = _s["gene_symbol"].map(truth_by_gene)
+        _rep_ids = sorted(_s["replicate"].unique())
+        for bucket in COLUMNS:
+            sub = _s if bucket == "overall" else _s[_s["truth"] == bucket]
+            per_rep = [sub[sub["replicate"] == rid]["is_match"].mean()
+                       for rid in _rep_ids if len(sub[sub["replicate"] == rid])]
+            if per_rep:
+                sonnet_rep_frac[bucket] = sum(per_rep) / len(per_rep)
+    except Exception:  # noqa: BLE001
+        sonnet_rep_frac = {}
+
     rows = []
     for caller_label in callers_in_plot:
         if caller_label == sonnet_label:
@@ -252,13 +276,17 @@ def main() -> None:
             if not genes:
                 continue
             n_correct = sum(_vote_correct(vote_fn(g), truth_by_gene[g]) for g in genes)
+            frac = n_correct / len(genes)
+            # Sonnet bar = mean-of-reps fraction (when available).
+            if caller_label == sonnet_label and bucket in sonnet_rep_frac:
+                frac = sonnet_rep_frac[bucket]
             rows.append({
                 "caller": caller_label,
                 "bucket": bucket,
                 "bucket_label": COLUMN_LABEL[bucket],
                 "n_correct": n_correct,
                 "n_total": len(genes),
-                "fraction": n_correct / len(genes),
+                "fraction": frac,
             })
     df = pd.DataFrame(rows)
 
@@ -305,6 +333,38 @@ def main() -> None:
                 ha="center", va="bottom",
                 fontsize=11, color=BRAND_INK,
             )
+
+    # Overlay individual-replicate accuracy + SEM on the Sonnet bars (caller
+    # index 0, one patch per bucket). DB callers are deterministic — no
+    # overlay. Per-bucket per-rep accuracy from the replicates TSV.
+    try:
+        reps = _fetch_tsv(REPS_TSV)
+        srep = reps[(reps["model"] == "claude-sonnet-4-6")
+                    & (reps["prompt_variant"] == "ncbi")].copy()
+        srep["is_match"] = srep["is_match"].astype(int)
+        srep["truth"] = srep["gene_symbol"].map(truth_by_gene)
+        rep_ids = sorted(srep["replicate"].unique())
+        for j, bucket in enumerate(COLUMNS):
+            patch = ax.patches[0 * n_col + j]  # Sonnet caller, this bucket
+            xc = patch.get_x() + patch.get_width() / 2
+            sub = srep if bucket == "overall" else srep[srep["truth"] == bucket]
+            accs = []
+            for rid in rep_ids:
+                cell = sub[sub["replicate"] == rid]
+                if len(cell):
+                    accs.append(cell["is_match"].mean())
+            if len(accs) >= 2:
+                m = sum(accs) / len(accs)
+                sd = (sum((v - m) ** 2 for v in accs) / (len(accs) - 1)) ** 0.5
+                sem = sd / (len(accs) ** 0.5)
+                ax.errorbar(xc, m, yerr=sem, fmt="none", ecolor=BRAND_INK,
+                            elinewidth=1.0, capsize=2.5, capthick=1.0, zorder=5)
+                for k, av in enumerate(accs):
+                    jitter = (k - (len(accs) - 1) / 2) * (patch.get_width() * 0.22)
+                    ax.scatter(xc + jitter, av, s=14, color=BRAND_INK,
+                               edgecolor="white", linewidth=0.4, zorder=6, alpha=0.9)
+    except Exception:  # noqa: BLE001
+        pass  # best-effort overlay
 
     ax.set_xlabel("")
     ax.set_ylabel("Fraction correctly classified")

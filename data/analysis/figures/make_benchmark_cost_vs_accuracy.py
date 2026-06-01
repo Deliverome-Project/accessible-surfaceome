@@ -41,7 +41,12 @@ REPO = "Deliverome-Project/accessible-surfaceome"
 BRANCH = "main"  # pin to a commit SHA at publication for immutable citation
 BASE = f"https://raw.githubusercontent.com/{REPO}/{BRANCH}"
 BENCH_TSV = f"{BASE}/data/eval/triage_benchmark_v1.tsv"
-PREDS_TSV = f"{BASE}/data/processed/triage_bench/mainbench_canonical_v1.tsv"
+PREDS_TSV = f"{BASE}/data/processed/triage_bench/mainbench_canonical_v2.tsv"
+# Per-replicate predictions — the accuracy axis uses the MEAN of per-rep
+# accuracies (matching the 3 bar figures), not the majority-vote accuracy,
+# so all four figures report the same numbers. Cost is still computed from
+# the majority TSV's summed-then-normalized token counts.
+REPS_TSV = f"{BASE}/data/processed/triage_bench/mainbench_replicates_v2.tsv"
 
 # Published reproduction gist (embedded into output PNG Source / PDF
 # Subject metadata — mirrors save_figure in _plotting_config.py).
@@ -128,7 +133,7 @@ def _apply_brand_style() -> None:
 _PRICE = {
     "claude-haiku-4-5":  {"in": 1.00, "out": 5.00,  "cr": 0.10, "cw": 1.25},
     "claude-sonnet-4-6": {"in": 3.00, "out": 15.00, "cr": 0.30, "cw": 3.75},
-    "claude-opus-4-7":   {"in": 15.0, "out": 75.0,  "cr": 1.50, "cw": 18.75},
+    "claude-opus-4-8":   {"in": 15.0, "out": 75.0,  "cr": 1.50, "cw": 18.75},
 }
 WEB_SEARCH_USD_PER_QUERY = 0.01
 WHOLE_GENOME_N = 19_324  # protein-coding human genes with a valid HGNC + UniProt mapping
@@ -143,8 +148,8 @@ CELL_LABEL = {
     ("claude-sonnet-4-6", "ncbi"):        "Sonnet (+ IDs)",
     ("claude-sonnet-4-6", "pubmed_ncbi"): "Sonnet (+ IDs + PubMed)",
     ("claude-sonnet-4-6", "web_ncbi"):    "Sonnet (+ IDs + web)",
-    ("claude-opus-4-7",   "naive"):       "Opus (naive)",
-    ("claude-opus-4-7",   "ncbi"):        "Opus (+ IDs)",
+    ("claude-opus-4-8",   "naive"):       "Opus (naive)",
+    ("claude-opus-4-8",   "ncbi"):        "Opus (+ IDs)",
 }
 CELL_COLOR = {
     ("claude-haiku-4-5",  "naive"):       "#f7d8c4",
@@ -155,8 +160,8 @@ CELL_COLOR = {
     ("claude-sonnet-4-6", "ncbi"):        BRAND_CLAUDE_ORANGE,
     ("claude-sonnet-4-6", "pubmed_ncbi"): "#cb6f4a",
     ("claude-sonnet-4-6", "web_ncbi"):    "#c46139",
-    ("claude-opus-4-7",   "naive"):       "#b66547",
-    ("claude-opus-4-7",   "ncbi"):        "#a85b3f",
+    ("claude-opus-4-8",   "naive"):       "#b66547",
+    ("claude-opus-4-8",   "ncbi"):        "#a85b3f",
 }
 
 # Per-cell label offsets (pixels) to deconflict dense clusters — mirrors
@@ -173,8 +178,8 @@ CELL_LABEL_OFFSET = {
     ("claude-sonnet-4-6", "ncbi"):        (7,  10),
     ("claude-sonnet-4-6", "pubmed_ncbi"): (7, -20),
     ("claude-sonnet-4-6", "web_ncbi"):    (7,   6),
-    ("claude-opus-4-7",   "naive"):       (7, -18),
-    ("claude-opus-4-7",   "ncbi"):        (7,  10),
+    ("claude-opus-4-8",   "naive"):       (7, -18),
+    ("claude-opus-4-8",   "ncbi"):        (7,  10),
 }
 
 
@@ -201,11 +206,15 @@ def _whole_genome_cost(group: pd.DataFrame) -> float:
     model = group["model"].iloc[0]
     pricing = _PRICE[model]
     n = len(group)
-    pt = group["prompt_tokens"].mean()
-    cr = group["cache_read_tokens"].mean()
-    cw = group["cache_creation_tokens"].mean()
-    ot = group["completion_tokens"].mean()
-    ws = group["n_web_searches"].mean()
+    # The v2 majority-collapsed TSV SUMS token/web columns across each cell's
+    # 2-3 replicates. Cost is per single triage pass (one replicate), so
+    # normalize each cell's totals by its own n_reps before averaging.
+    nreps = group["n_reps"].clip(lower=1)
+    pt = (group["prompt_tokens"] / nreps).mean()
+    cr = (group["cache_read_tokens"] / nreps).mean()
+    cw = (group["cache_creation_tokens"] / nreps).mean()
+    ot = (group["completion_tokens"] / nreps).mean()
+    ws = (group["n_web_searches"] / nreps).mean()
 
     if cr > 0 or cw > 0:
         sys_size = max(cr, cw)
@@ -234,6 +243,16 @@ def main() -> None:
         for p, t in zip(preds["predicted_verdict"], preds["truth_verdict"], strict=True)
     ]
 
+    # Mean-of-replicate accuracy per (model, variant) for the y-axis —
+    # matches the 3 bar figures. is_match is the per-rep soft-credit flag.
+    reps_df = _fetch_tsv(REPS_TSV)
+    reps_df["is_match"] = reps_df["is_match"].astype(int)
+    rep_mean_acc = (
+        reps_df.groupby(["model", "prompt_variant", "replicate"])["is_match"]
+        .mean().reset_index()
+        .groupby(["model", "prompt_variant"])["is_match"].mean().to_dict()
+    )
+
     cells = []
     for (model, variant), grp in preds.groupby(["model", "prompt_variant"], sort=False):
         if (model, variant) not in CELL_LABEL:
@@ -243,7 +262,9 @@ def main() -> None:
             "variant": variant,
             "label": CELL_LABEL[(model, variant)],
             "color": CELL_COLOR[(model, variant)],
-            "accuracy": grp["correct"].mean(),
+            # Mean-of-reps accuracy (fall back to majority if a cell is
+            # somehow absent from the per-rep TSV).
+            "accuracy": rep_mean_acc.get((model, variant), grp["correct"].mean()),
             "cost_whole_genome_usd": _whole_genome_cost(grp),
         })
     df = pd.DataFrame(cells).sort_values("cost_whole_genome_usd").reset_index(drop=True)

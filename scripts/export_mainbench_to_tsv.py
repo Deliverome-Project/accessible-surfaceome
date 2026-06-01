@@ -7,7 +7,7 @@ Lineage (per CLAUDE.md "Final-figure data flow"):
                               │
                               └─export_mainbench_to_tsv.py─▶
                                   data/processed/triage_bench/
-                                    mainbench_canonical_v1.tsv
+                                    mainbench_canonical_v2.tsv
                                   │
                                   └─raw.githubusercontent.com─▶
                                       figure scripts + published gists
@@ -18,7 +18,7 @@ committed TSV is what figures + gists pull, pinned to a commit SHA at
 publication for stable citation (pre-publication today; Zenodo DOIs
 will replace the raw-GitHub URLs at submission time).
 
-Output: ``data/processed/triage_bench/mainbench_canonical_v1.tsv``
+Output: ``data/processed/triage_bench/mainbench_canonical_v2.tsv``
 (LFS-exempted via ``.gitattributes`` so the raw URL serves text, not a
 pointer).
 
@@ -45,19 +45,23 @@ from accessible_surfaceome.paths import REPO_ROOT
 
 load_env()
 
-DEFAULT_RUN_ID = "mainbench_canonical_v1"
-DEFAULT_OUT = REPO_ROOT / "data/processed/triage_bench/mainbench_canonical_v1.tsv"
+DEFAULT_RUN_ID = "mainbench_canonical_v2"
+DEFAULT_OUT = REPO_ROOT / "data/processed/triage_bench/mainbench_canonical_v2.tsv"
 
-# Same 14 columns as `/v1/triage/export.tsv` so the on-repo TSV and the
-# Worker endpoint are byte-identical. Figure scripts pin to this shape.
+# v2 figure TSV is MAJORITY-COLLAPSED: one row per (gene, model,
+# prompt_variant) with the majority verdict over the cell's 2-3 valid
+# replicates, n_reps + agreement, and SUMMED token/cost/latency (a real
+# aggregate of work done — never zeroed). Representative reason/confidence
+# from a winning-side replicate.
 COLUMNS = [
     "gene_symbol",
     "model",
     "prompt_variant",
-    "replicate",
     "predicted_verdict",
     "predicted_reason",
     "predicted_confidence",
+    "n_reps",
+    "majority_agreement",
     "prompt_tokens",
     "completion_tokens",
     "cache_creation_tokens",
@@ -66,6 +70,71 @@ COLUMNS = [
     "cost_usd",
     "latency_s",
 ]
+
+# Raw per-replicate columns pulled from D1 before collapsing.
+_RAW_COLUMNS = [
+    "gene_symbol", "model", "prompt_variant", "replicate",
+    "predicted_verdict", "predicted_reason", "predicted_confidence",
+    "prompt_tokens", "completion_tokens", "cache_creation_tokens",
+    "cache_read_tokens", "n_web_searches", "cost_usd", "latency_s",
+]
+
+
+def _surface_vote(verdict):
+    if verdict in ("yes", "contextual"):
+        return True
+    if verdict == "no":
+        return False
+    return None
+
+
+def _collapse_to_majority(raw_rows):
+    """One row per (gene, model, prompt_variant); majority verdict over the
+    cell's valid-verdict reps; numeric columns summed across reps."""
+    from collections import Counter, defaultdict
+    cells = defaultdict(list)
+    for r in raw_rows:
+        cells[(r["gene_symbol"], r["model"], r["prompt_variant"])].append(r)
+    out, dropped, ties = [], [], []
+    for (gene, model, variant), reps in cells.items():
+        valid = [r for r in reps if _surface_vote(r["predicted_verdict"]) is not None]
+        if not valid:
+            dropped.append((gene, model, variant))
+            continue
+        votes = Counter(_surface_vote(r["predicted_verdict"]) for r in valid)
+        ranked = votes.most_common()
+        if len(ranked) > 1 and ranked[0][1] == ranked[1][1]:
+            ties.append((gene, model, variant))
+        win_side = ranked[0][0]
+        win_reps = [r for r in valid if _surface_vote(r["predicted_verdict"]) == win_side]
+        rep_verdict = Counter(r["predicted_verdict"] for r in win_reps).most_common(1)[0][0]
+        representative = next(r for r in win_reps if r["predicted_verdict"] == rep_verdict)
+
+        def _sum(col, _reps=reps):
+            total = sum(float(r.get(col) or 0) for r in _reps)
+            return total if col in ("cost_usd", "latency_s") else int(total)
+
+        out.append({
+            "gene_symbol": gene, "model": model, "prompt_variant": variant,
+            "predicted_verdict": rep_verdict,
+            "predicted_reason": representative.get("predicted_reason"),
+            "predicted_confidence": representative.get("predicted_confidence"),
+            "n_reps": len(valid),
+            "majority_agreement": round(len(win_reps) / len(valid), 3),
+            "prompt_tokens": _sum("prompt_tokens"),
+            "completion_tokens": _sum("completion_tokens"),
+            "cache_creation_tokens": _sum("cache_creation_tokens"),
+            "cache_read_tokens": _sum("cache_read_tokens"),
+            "n_web_searches": _sum("n_web_searches"),
+            "cost_usd": round(_sum("cost_usd"), 6),
+            "latency_s": round(_sum("latency_s"), 3),
+        })
+    if dropped:
+        print(f"WARNING: {len(dropped)} cell(s) dropped — no valid verdict (e.g. {dropped[0]}).")
+    if ties:
+        print(f"WARNING: {len(ties)} TIED cell(s); arbitrary side chosen (e.g. {ties[0]}).")
+    out.sort(key=lambda r: (r["model"], r["prompt_variant"], r["gene_symbol"]))
+    return out
 
 
 def _query_public(sql: str, params: list[Any]) -> list[dict[str, Any]]:
@@ -109,9 +178,17 @@ def main() -> int:
     ap = argparse.ArgumentParser(description=__doc__)
     ap.add_argument("--run-id", default=DEFAULT_RUN_ID,
                     help=f"triage_run_public.run_id to export (default: {DEFAULT_RUN_ID})")
-    ap.add_argument("--replicate", type=int, default=1,
-                    help="filter to a single replicate (default: 1 — matches the historical TSV shape)")
+    ap.add_argument("--replicate", type=int, default=None,
+                    help="Filter to a single replicate. Default None = ALL replicates, "
+                         "majority-collapsed per cell (the v2 canonical shape). Pass an int "
+                         "for the historical single-replicate shape.")
     ap.add_argument("--out", default=str(DEFAULT_OUT), help="output TSV path")
+    ap.add_argument("--per-rep", action="store_true",
+                    help="Emit one row per (gene, model, variant, replicate) — the "
+                         "un-collapsed per-replicate shape — to mainbench_replicates_v2.tsv "
+                         "(default --out when --per-rep is set). Drives the SEM + "
+                         "individual-replicate-point overlays on the bar figures. Skips "
+                         "majority collapse; the augment script adds truth + is_match.")
     ap.add_argument("--prefer-fix-run", default=None,
                     help="Optional run_id whose rows should override --run-id for matching "
                          "(gene_symbol, model, prompt_variant, replicate) tuples. Use this "
@@ -120,12 +197,20 @@ def main() -> int:
                          "'run_id conventions' table in CLAUDE.md.")
     args = ap.parse_args()
 
-    sql_base = (
-        f"SELECT {', '.join(COLUMNS)} FROM triage_run_public "
-        "WHERE run_id = ? AND replicate = ? "
-        "ORDER BY model, prompt_variant, gene_symbol;"
-    )
-    base_rows = _query_public(sql_base, [args.run_id, args.replicate])
+    if args.replicate is not None:
+        sql_base = (
+            f"SELECT {', '.join(_RAW_COLUMNS)} FROM triage_run_public "
+            "WHERE run_id = ? AND replicate = ? "
+            "ORDER BY model, prompt_variant, gene_symbol;"
+        )
+        base_rows = _query_public(sql_base, [args.run_id, args.replicate])
+    else:
+        sql_base = (
+            f"SELECT {', '.join(_RAW_COLUMNS)} FROM triage_run_public "
+            "WHERE run_id = ? "
+            "ORDER BY model, prompt_variant, gene_symbol, replicate;"
+        )
+        base_rows = _query_public(sql_base, [args.run_id])
 
     if args.prefer_fix_run:
         # Fold the fix-run's rows in, preferring them over the
@@ -133,10 +218,15 @@ def main() -> int:
         # D1 doesn't make a cross-run UPSERT one-shot easy, so we
         # COALESCE in Python: pull the fix rows, key on the tuple,
         # replace originals.
-        fix_rows = _query_public(sql_base, [args.prefer_fix_run, args.replicate])
+        fix_params = (
+            [args.prefer_fix_run, args.replicate]
+            if args.replicate is not None else [args.prefer_fix_run]
+        )
+        fix_rows = _query_public(sql_base, fix_params)
 
-        def key_of(r: dict) -> tuple[str, str, str]:
-            return (r["model"], r["prompt_variant"], r["gene_symbol"])
+        def key_of(r: dict) -> tuple[str, str, str, int]:
+            return (r["model"], r["prompt_variant"], r["gene_symbol"],
+                    int(r.get("replicate") or 0))
 
         fix_by_key = {key_of(r): r for r in fix_rows}
         merged: list[dict] = []
@@ -170,7 +260,24 @@ def main() -> int:
         rows = base_rows
 
     from pathlib import Path
-    out_path = Path(args.out) if args.out.startswith("/") else REPO_ROOT / args.out
+    if args.per_rep:
+        # Per-replicate shape: one row per (gene, model, variant, replicate),
+        # no collapse. Fieldnames = the raw per-rep columns. Default output
+        # is the replicates TSV unless --out was overridden.
+        out_cols = _RAW_COLUMNS
+        if args.out == str(DEFAULT_OUT):
+            out_path = REPO_ROOT / "data/processed/triage_bench/mainbench_replicates_v2.tsv"
+        else:
+            out_path = Path(args.out) if args.out.startswith("/") else REPO_ROOT / args.out
+        rows.sort(key=lambda r: (r["model"], r["prompt_variant"],
+                                 r["gene_symbol"], int(r.get("replicate") or 0)))
+    else:
+        # Majority-collapse unless a single replicate was explicitly requested.
+        if args.replicate is None:
+            rows = _collapse_to_majority(rows)
+        out_cols = COLUMNS
+        out_path = Path(args.out) if args.out.startswith("/") else REPO_ROOT / args.out
+
     out_path.parent.mkdir(parents=True, exist_ok=True)
     # ``lineterminator="\n"`` (not csv's RFC-4180 default of "\r\n") matches
     # the on-repo TSV's line endings, so a re-export is byte-identical when
@@ -178,7 +285,8 @@ def main() -> int:
     # don't care, but byte-equality keeps `git diff` quiet on cosmetic-only
     # re-runs.
     with open(out_path, "w", newline="") as fh:
-        w = csv.DictWriter(fh, fieldnames=COLUMNS, delimiter="\t", lineterminator="\n")
+        w = csv.DictWriter(fh, fieldnames=out_cols, delimiter="\t",
+                           lineterminator="\n", extrasaction="ignore")
         w.writeheader()
         w.writerows(rows)
     rel = out_path.relative_to(REPO_ROOT) if str(out_path).startswith(str(REPO_ROOT)) else out_path

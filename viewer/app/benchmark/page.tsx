@@ -48,7 +48,7 @@ export default async function BenchmarkPage() {
             assembled from cases where the five public surface-membership
             databases disagree on surface status. Each protein was
             manually reviewed and classified as surface, contextually
-            surface, or non-surface. Sonnet 4.6 and Opus 4.7 — with no
+            surface, or non-surface. Sonnet 4.6 and Opus 4.8 — with no
             external tools, working from training-time knowledge plus
             a short NCBI context block — outperform every gold-standard
             database on this set. The table below shows every model ×
@@ -74,7 +74,7 @@ export default async function BenchmarkPage() {
           <p>
             <span className="label-mono">LLM columns ·</span> Three
             cells per row — one per model on the headline{" "}
-            <code>{matrix.headline_variant}</code> prompt variant
+            <code>{matrix.headline_variant.toUpperCase()}</code> prompt variant
             (Haiku / Sonnet / Opus). Each is a verdict pill coloured
             by call; pills outlined in maroon disagree with truth
             (collapsing <em>yes</em> ≡ <em>contextual</em> when scoring
