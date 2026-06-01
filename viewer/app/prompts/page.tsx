@@ -575,33 +575,26 @@ export default function PromptsPage() {
         ) : null}
 
         {loaded.map((group) => (
-          <div key={group.id} id={`group-${group.id}`}>
+          <div
+            key={group.id}
+            id={`group-${group.id}`}
+            className={styles.groupAnchor}
+          >
             <header className={styles.groupHeader}>
               <h2 className={`h-section ${styles.groupH2}`}>{group.label}</h2>
               <p className={styles.groupDescription}>{group.description}</p>
             </header>
 
-            {group.prompts.map((p) => (
-              <article key={p.id} id={p.id} className={styles.promptBlock}>
-                <header className={styles.promptHeader}>
-                  {/* Don't repeat the group title as the card title for a
-                      single-prompt group whose prompt shares the group name
-                      (e.g. "Surface accessibility triage"). */}
-                  {group.prompts.length === 1 && p.label === group.label ? null : (
-                    <h3 className={`${styles.promptH2}`}>{p.label}</h3>
-                  )}
-                  {p.blurb ? (
-                    <p className={styles.promptBlurb}>{p.blurb}</p>
-                  ) : null}
-                  <p className={styles.promptMeta}>
-                    <code className={styles.inlineCode}>{p.source_path}</code>
-                    <span className={styles.metaSep}> · </span>
-                    {p.size_bytes.toLocaleString()} bytes
-                    <span className={styles.metaSep}> · </span>
-                    {p.body.split("\n").length.toLocaleString()} lines
-                  </p>
-                </header>
-
+            {group.prompts.map((p) => {
+              // For a multi-prompt deep-dive group (plan_trim_select's 9
+              // A1/A2/Joint prompts, the 10 block builders), collapse each
+              // prompt CARD so the group reads as a scannable stack of
+              // sub-prompt titles you pop open — matches the section-level
+              // collapse below. Single-prompt groups (triage, synthesizer)
+              // render open. `data-collapsible` switches the wrapper.
+              const collapsible = group.prompts.length > 1;
+              const cardInner = (
+                <>
                 <div className={styles.promptLayout}>
                   <div className={styles.promptBody}>
                     {(() => {
@@ -693,8 +686,58 @@ export default function PromptsPage() {
                     );
                   })()}
                 </div>
-              </article>
-            ))}
+                </>
+              );
+
+              const cardMeta = (
+                <p className={styles.promptMeta}>
+                  <code className={styles.inlineCode}>{p.source_path}</code>
+                  <span className={styles.metaSep}> · </span>
+                  {p.size_bytes.toLocaleString()} bytes
+                  <span className={styles.metaSep}> · </span>
+                  {p.body.split("\n").length.toLocaleString()} lines
+                </p>
+              );
+
+              if (collapsible) {
+                return (
+                  <details
+                    key={p.id}
+                    id={p.id}
+                    className={styles.promptBlock}
+                  >
+                    <summary className={styles.promptCardSummary}>
+                      <span className={styles.promptCardTitle}>{p.label}</span>
+                    </summary>
+                    <div className={styles.promptCardBody}>
+                      {p.blurb ? (
+                        <p className={styles.promptBlurb}>{p.blurb}</p>
+                      ) : null}
+                      {cardMeta}
+                      {cardInner}
+                    </div>
+                  </details>
+                );
+              }
+
+              return (
+                <article key={p.id} id={p.id} className={styles.promptBlock}>
+                  <header className={styles.promptHeader}>
+                    {/* Don't repeat the group title as the card title for a
+                        single-prompt group whose prompt shares the group
+                        name (e.g. "Surface accessibility triage"). */}
+                    {p.label === group.label ? null : (
+                      <h3 className={`${styles.promptH2}`}>{p.label}</h3>
+                    )}
+                    {p.blurb ? (
+                      <p className={styles.promptBlurb}>{p.blurb}</p>
+                    ) : null}
+                    {cardMeta}
+                  </header>
+                  {cardInner}
+                </article>
+              );
+            })}
           </div>
         ))}
       </section>

@@ -91,6 +91,13 @@
   font-size: 0.88rem;
 }
 
+/* The group wrapper is the scroll target for the top-index links
+   (#group-…). Offset so the phase heading clears the viewport top
+   instead of landing tucked just under it. */
+.groupAnchor {
+  scroll-margin-top: var(--space-8);
+}
+
 /* Phase-level group header (e.g. "Deep dive · Phase 2"). Sits above
  * the cluster of prompt cards that belong to that phase. */
 .groupHeader {
@@ -128,6 +135,61 @@
   gap: var(--space-5);
   padding-top: var(--space-8);
   border-top: 1px solid var(--line-soft);
+  /* Clear the heading from the top of the viewport when a TOC/index link
+     scrolls to this card (otherwise it lands tucked under the top edge). */
+  scroll-margin-top: var(--space-8);
+}
+
+/* A `details.promptBlock` (collapsible card in a multi-prompt deep-dive
+   group) must stay block-level — a flex <details> breaks the native
+   open/close — so override the flex above for the details variant. */
+details.promptBlock {
+  display: block;
+}
+
+/* Collapsed prompt-card header: the sub-prompt title (e.g.
+   "A1 (surface evidence) — planner") with a disclosure ▸ that rotates
+   open. Clicking it expands the full prompt body below. */
+.promptCardSummary {
+  list-style: none;
+  cursor: pointer;
+  display: flex;
+  align-items: baseline;
+  gap: 0.5rem;
+  padding: var(--space-3) 0;
+  scroll-margin-top: var(--space-8);
+}
+
+.promptCardSummary::-webkit-details-marker {
+  display: none;
+}
+
+.promptCardSummary::before {
+  content: "▸";
+  color: var(--muted);
+  transition: transform var(--dur-fast) var(--ease-out);
+}
+
+details.promptBlock[open] > .promptCardSummary::before {
+  transform: rotate(90deg);
+}
+
+.promptCardTitle {
+  font-family: var(--font-display);
+  font-style: italic;
+  font-size: 1.25rem;
+  color: var(--ink);
+}
+
+.promptCardSummary:hover .promptCardTitle {
+  color: var(--accent);
+}
+
+.promptCardBody {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-5);
+  padding-top: var(--space-3);
 }
 
 .promptHeader {
