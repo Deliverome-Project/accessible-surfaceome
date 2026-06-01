@@ -141,6 +141,16 @@
   align-items: center;
 }
 
+/* Localization at-a-glance badge row in the accessibility-context header
+   (primary compartment + the "also in" endosome / lysosome / … badges). */
+.contextBadges {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  align-items: center;
+  margin-bottom: var(--space-4);
+}
+
 .contextRationale {
   margin: 0;
   color: var(--ink);

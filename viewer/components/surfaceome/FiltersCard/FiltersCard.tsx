@@ -398,12 +398,9 @@ export function FiltersCard({ rec, n }: Props) {
       label: FEATURE_TAB_LABEL.biology,
       provenance: "llm" as const,
       linkTo: "#section-biology",
-      pills: buildFeatureChips("biology", rec).map((m) => m.pill),
-    },
-    {
-      label: "Accessibility context",
-      provenance: "llm" as const,
-      linkTo: "#section-biology",
+      // The surface-call reason leads the Biology group (moved here from
+      // "Accessibility context" — it's the headline biology signal for the
+      // gene, e.g. classical_surface_receptor / lysosomal_exocytosis).
       pills: [
         <StatusPill key="reason" tone="lavender" size="sm">
           <ChipLabelValue
@@ -411,6 +408,14 @@ export function FiltersCard({ rec, n }: Props) {
             value={prettyEnum(es.surface_call_reason)}
           />
         </StatusPill>,
+        ...buildFeatureChips("biology", rec).map((m) => m.pill),
+      ],
+    },
+    {
+      label: "Accessibility context",
+      provenance: "llm" as const,
+      linkTo: "#section-biology",
+      pills: [
         // state_dependence omitted — already a GeneHeader vital up top.
         <StatusPill key="primary" tone="teal" size="sm">
           <ChipLabelValue

@@ -103,6 +103,24 @@ export function BiologicalContextCard({ rec, n }: Props) {
       title="Localization & accessibility context"
       meta="Accessibility modulation · subcellular localization · anatomical accessibility"
     >
+      {/* Localization at-a-glance — primary compartment + the non-primary
+          compartments the protein is ALSO found in (endosome / lysosome / …).
+          Surfaced in the accessibility-context header, not only in the
+          Subcellular localization subsection lower down. */}
+      <div className={styles.contextBadges}>
+        <StatusPill tone="teal" size="sm">
+          <ChipLabelValue
+            label="primary"
+            value={prettyEnum(loc.primary_compartment)}
+          />
+        </StatusPill>
+        {loc.dual_localization.map((d, i) => (
+          <StatusPill key={`dl-${i}`} tone="lavender" size="sm">
+            <ChipLabelValue label="also in" value={prettyEnum(d.compartment)} />
+          </StatusPill>
+        ))}
+      </div>
+
       {/* Overarching accessibility-context summary — one-sentence
           rationale for WHEN/WHERE the protein is reachable. The headline
           chips (reason / primary compartment / induced-state triggers)
