@@ -2163,6 +2163,14 @@ class IsoformTopology(BaseModel):
     full_length_pct_identity_to_canonical: float | None = Field(default=None, ge=0.0, le=100.0)
     ecd_pct_identity_to_canonical: float | None = Field(default=None, ge=0.0, le=100.0)
     ecd_pct_similarity_to_canonical: float | None = Field(default=None, ge=0.0, le=100.0)
+    # Full amino-acid sequence the ``per_residue_topology`` string above
+    # aligns to (1:1, same length) — so a consumer can read which residue
+    # each topology character refers to without a second UniProt fetch. The
+    # record already ships the topology; the sequence it indexes was the
+    # missing half. Sourced from ``topology_public.sequence`` (the exact
+    # DeepTMHMM input). ``None`` on records built before this field existed,
+    # or when the sweep didn't retain the input FASTA.
+    sequence: str | None = Field(default=None)
 
 
 class OrthologEntry(BaseModel):
@@ -2210,6 +2218,12 @@ class OrthologEntry(BaseModel):
     # is how many human helices fell in ortholog gaps.
     tm_absent_from_model: bool = False
     n_tm_regions_absent: int = 0
+    # The ortholog's own full amino-acid sequence — aligns 1:1 with the
+    # (projected) ``per_residue_topology`` above. Same source + rationale as
+    # ``IsoformTopology.sequence``: ``topology_public.sequence`` for the
+    # ortholog accession. ``None`` for rows whose topology row predates the
+    # field or lacked a stored sequence.
+    sequence: str | None = Field(default=None)
 
 
 class Orthologs(BaseModel):
@@ -2270,6 +2284,47 @@ class ParalogEntry(BaseModel):
     n_terminal_orientation: TerminalOrientation | None = Field(default=None)
     c_terminal_orientation: TerminalOrientation | None = Field(default=None)
     signal_peptide_length: int | None = Field(default=None)
+    # Close-paralog full amino-acid sequence — populated only for the close
+    # paralogs (>=80% full-length identity) that also carry topology, so the
+    # sequence pairs with the ``per_residue_topology`` above. Distant
+    # paralogs keep the lean chip-only shape (no topology, no sequence) to
+    # avoid bloating records with up to 50 sequences per gene. Source:
+    # ``topology_public.sequence`` for the paralog accession.
+    sequence: str | None = Field(default=None)
+
+
+class RepresentativeStructure(BaseModel):
+    """The single best experimental (PDB) structure for the canonical UniProt.
+
+    Selected from PDBe's SIFTS ``best_structures`` ranking (pre-sorted by
+    coverage desc, then resolution asc), so ``[0]`` is the most complete,
+    best-resolved deposited structure. A reproducible pointer to "the
+    experimental structure": the record otherwise carries only a flat list
+    of PDB IDs (``surface_bind.pdbs``) with no coverage metadata, so a
+    consumer couldn't tell which entry is the canonical full-length one.
+
+    The construct's sequence + per-residue topology over
+    ``unp_start``–``unp_end`` are derivable by slicing the canonical
+    sequence / topology — we store the pointer, not the duplicated residues.
+    """
+
+    model_config = ConfigDict(extra="forbid")
+
+    pdb_id: str
+    chain_id: str
+    # SIFTS-mapped UniProt residue span this structure covers (1-based,
+    # inclusive). A fragment structure (e.g. a kinase domain) has a sub-span;
+    # a full-length cryo-EM model spans 1..len(canonical).
+    unp_start: int = Field(..., ge=1)
+    unp_end: int = Field(..., ge=1)
+    coverage: float | None = Field(default=None, ge=0.0, le=1.0)
+    resolution_a: float | None = Field(default=None, ge=0.0)
+    experimental_method: str | None = None
+    # How many experimental structures PDBe lists for this UniProt (this one
+    # is the representative of that set).
+    n_experimental_structures: int | None = Field(default=None, ge=0)
+    source: str = "PDBe SIFTS best_structures"
+    retrieved_at: datetime | None = None
 
 
 class StructureFeatures(BaseModel):
@@ -2290,6 +2345,18 @@ class StructureFeatures(BaseModel):
     license: str
     attribution: str
     citations: list[str] = Field(default_factory=list)
+    # AlphaFold model download links from the AFDB prediction API. These are
+    # the non-derivable bits: the working URL needs the current model
+    # version, which only the API returns (``afdb_version`` above tracks it,
+    # but the full cif/pdb/PAE URLs save the consumer reconstructing them).
+    # ``None`` on the placeholder path (AFDB unreachable) and on records
+    # built before the fields existed.
+    model_cif_url: str | None = None
+    model_pdb_url: str | None = None
+    model_pae_url: str | None = None
+    # Representative experimental (PDB) structure — PDBe SIFTS best_structures.
+    # ``None`` when the protein has no deposited experimental structure.
+    representative_experimental_structure: RepresentativeStructure | None = None
 
 
 class SurfaceBindSite(BaseModel):
