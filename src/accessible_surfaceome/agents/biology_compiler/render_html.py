@@ -352,8 +352,25 @@ table tr:last-child td { border-bottom: none; }
 def render_html(draft: dict[str, Any], gene: str) -> str:
     bc = draft["biological_context"]
     claims = draft.get("evidence_claims", [])
-    tissues = bc.get("tissues", [])
-    cell_types = bc.get("cell_types", [])
+    # Adapt the unified `expression` field (current schema) back to this
+    # legacy two-table renderer's tissues + cell_types split; fall back to the
+    # pre-unify keys for historical records.
+    expression = bc.get("expression")
+    if expression:
+        tissues = [r for r in expression if not r.get("cell_type")]
+        cell_types = [
+            {
+                "cell_type": r.get("cell_type"),
+                "present_in_tissues": [r["tissue"]] if r.get("tissue") else [],
+                "ontology_id": None,
+                "cited_evidence_ids": r.get("cited_evidence_ids", []),
+            }
+            for r in expression
+            if r.get("cell_type")
+        ]
+    else:
+        tissues = bc.get("tissues", [])
+        cell_types = bc.get("cell_types", [])
     cell_states = bc.get("cell_states", [])
     sub_loc = bc.get("subcellular_localization", {})
     anat = bc.get("anatomical_accessibility", [])

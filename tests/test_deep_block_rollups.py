@@ -21,10 +21,10 @@ _spec.loader.exec_module(_mod)
 derive_rollups = _mod.derive_rollups
 
 
-def _rec(*, tissues=(), modulation=(), methods=()) -> dict:
+def _rec(*, expression=(), modulation=(), methods=()) -> dict:
     return {
         "biological_context": {
-            "tissues": list(tissues),
+            "expression": list(expression),
             "accessibility_modulation": list(modulation),
         },
         "surface_evidence": {"methods": list(methods)},
@@ -33,15 +33,15 @@ def _rec(*, tissues=(), modulation=(), methods=()) -> dict:
 
 def test_tumor_associated() -> None:
     assert derive_rollups(
-        _rec(tissues=[{"disease_context": "tumor", "present": "moderate"}])
+        _rec(expression=[{"disease_context": "tumor", "present": "moderate"}])
     )["tumor_associated"]
     # tumor context but absent level → not associated
     assert not derive_rollups(
-        _rec(tissues=[{"disease_context": "tumor", "present": "absent"}])
+        _rec(expression=[{"disease_context": "tumor", "present": "absent"}])
     )["tumor_associated"]
     # expressed but normal context → not tumor-associated
     assert not derive_rollups(
-        _rec(tissues=[{"disease_context": "normal", "present": "high"}])
+        _rec(expression=[{"disease_context": "normal", "present": "high"}])
     )["tumor_associated"]
 
 
