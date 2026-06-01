@@ -104,6 +104,39 @@ function checkSymbol(sym) {
   return sym.toUpperCase();
 }
 
+// Per-IP rate limiting via the native Workers Rate Limiting binding
+// (configured in wrangler.toml). In-colo + in-memory — NOT KV, so there's
+// no per-request storage read/write and no storage cost. The data is
+// publish-intended, so the point is to bound cost/CPU under abuse, not to
+// gate access — the limits are generous.
+//
+// Returns a 429 Response when the caller is over its limit, or null to
+// proceed. The binding is OPTIONAL: an older wrangler or a local
+// `wrangler dev` without it simply skips the check (never crashes). The
+// CPU-heavy endpoints (/v1/catalog + the *.tsv exports) use the tighter
+// RATE_LIMITER_HEAVY; everything else uses RATE_LIMITER. /v1/health is
+// never limited so uptime probes always succeed. Counting is per-colo, so
+// a distributed attacker gets N×limit total — fine here; Cloudflare's
+// always-on L7 DDoS protection covers the volumetric case underneath.
+async function checkRate(env, request, path) {
+  if (path === "/v1/health") return null;
+  const heavy = path === "/v1/catalog" || path.endsWith(".tsv");
+  const limiter = heavy ? env.RATE_LIMITER_HEAVY : env.RATE_LIMITER;
+  if (!limiter) return null;
+  const ip = request.headers.get("CF-Connecting-IP") || "anon";
+  const { success } = await limiter.limit({ key: ip });
+  if (success) return null;
+  return new Response(JSON.stringify({ error: "rate_limited" }), {
+    status: 429,
+    headers: {
+      "Content-Type": "application/json; charset=utf-8",
+      "Retry-After": "60",
+      "Cache-Control": "no-store",
+      ...CORS_HEADERS,
+    },
+  });
+}
+
 
 // --- handlers --------------------------------------------------------------
 
@@ -1507,6 +1540,14 @@ export default {
       path = path.slice("/surfaceome".length);
     } else if (path === "/surfaceome") {
       path = "";
+    }
+
+    // Per-IP rate limiting on reads (GET), before any handler / D1 work so
+    // an over-limit caller is rejected cheaply. POST (feedback submit) has
+    // its own Turnstile + KV limiter downstream, so it's excluded here.
+    if (request.method === "GET") {
+      const limited = await checkRate(env, request, path);
+      if (limited) return limited;
     }
 
     // POST is allowed ONLY on the feedback submit endpoint.

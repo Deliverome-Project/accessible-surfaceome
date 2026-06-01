@@ -1,46 +1,41 @@
-"""Apply the Surfaceome API's edge protection rules to the Cloudflare zone.
+"""Apply the Surfaceome API's edge **cache rule** to the Cloudflare zone.
 
-Two zone-level rulesets shield the public read-only Worker
-(``api.deliverome.org/surfaceome/*``) from cost / availability abuse —
-**not** from access (the data is publish-intended). Both are applied via
-Cloudflare's Rulesets API, so they live in code review, not only in the
-dashboard:
+The public read-only Worker (``api.deliverome.org/surfaceome/*``) is
+shielded from cost / availability abuse — **not** access (the data is
+publish-intended) — by two layers, split by where they're cheapest to run:
 
-1. **Cache rule** (phase ``http_request_cache_settings``) — makes the
-   cache key **ignore the query string** for the route. This kills the
-   cache-busting amplification vector: without it, ``?_=<random>`` makes
-   every request a cache miss → a D1 query + Worker CPU per hit. TTLs stay
-   governed by the Worker's own ``Cache-Control`` (``respect_origin``).
+* **The cache rule** (this script) — phase ``http_request_cache_settings``,
+  makes the cache key **ignore the query string** for the route. This kills
+  the cache-busting amplification vector: without it, ``?_=<random>`` makes
+  every request a cache miss → a D1 query + Worker CPU per hit. TTLs stay
+  governed by the Worker's own ``Cache-Control`` (``respect_origin``).
+  Cache Rules are available on **every plan**, so this is the default.
 
-2. **Rate-limit rules** (phase ``http_ratelimit``) — generous per-IP
-   ceilings whose job is to clip pathological hammering, not to gate
-   legitimate reanalysts:
-     * a tighter limit on the CPU-heavy endpoints (``/v1/catalog`` and the
-       ``*.tsv`` exports — the ones that scan ~19k rows and have blown the
-       Worker CPU budget historically), evaluated first;
-     * a broad limit on everything else under the route.
+* **Per-IP rate limiting** — handled IN THE WORKER via the native Workers
+  Rate Limiting binding (``env.RATE_LIMITER.limit()``; see
+  ``src/index.js`` + ``wrangler.toml``). That path is free on every plan
+  and needs no zone ruleset. Cloudflare's zone-level **WAF Rate Limiting
+  Rules** (the ``http_ratelimit`` phase below) are a **Pro/Business+**
+  feature — so this script only touches them when you explicitly pass
+  ``--only ratelimit`` on a zone that has the feature. On Free, skip it;
+  the Worker limiter covers you.
 
-Both rulesets are **idempotent and non-destructive**: the script reads the
-existing entrypoint ruleset for each phase, drops only the rules it
-previously created (tagged with ``MANAGED_PREFIX`` in their description),
-re-adds the current managed rules, and preserves every other rule in that
-phase untouched. Re-running never duplicates.
+The applier is **idempotent and non-destructive**: it reads the existing
+entrypoint ruleset for the phase, drops only the rules it previously
+created (tagged with ``MANAGED_PREFIX`` in their description), re-adds the
+current managed rules, and preserves every other rule untouched.
+Re-running never duplicates.
 
-Auth: ``CLOUDFLARE_API_TOKEN`` (needs **Zone → Cache Rules → Edit** and
-**Zone → Rate Limiting Rules → Edit** on the deliverome.org zone — the
-account-scoped D1 token used elsewhere does NOT carry these) +
-``CLOUDFLARE_ZONE_ID`` (the deliverome.org zone UUID).
-
-Plan note: the broad + heavy two-rule rate-limit setup with custom
-characteristics needs a Pro/Business plan. On Free (one simple rule), drop
-to ``--only cache`` plus a single dashboard rate-limit rule; the cache rule
-alone removes the worst amplification.
+Auth: ``CLOUDFLARE_API_TOKEN`` (needs **Zone → Cache Rules → Edit** on the
+deliverome.org zone — and **Zone → Rate Limiting Rules → Edit** only if you
+use ``--only ratelimit`` on Pro+) + ``CLOUDFLARE_ZONE_ID`` (the
+deliverome.org zone UUID).
 
 Run::
 
-    uv run python scripts/apply_cf_edge_rules.py            # dry-run: print payloads
-    uv run python scripts/apply_cf_edge_rules.py --execute  # apply to the zone
-    uv run python scripts/apply_cf_edge_rules.py --only cache --execute
+    uv run python scripts/apply_cf_edge_rules.py            # dry-run the cache rule
+    uv run python scripts/apply_cf_edge_rules.py --execute  # apply the cache rule
+    uv run python scripts/apply_cf_edge_rules.py --only ratelimit --execute  # Pro+ only
 """
 
 from __future__ import annotations
@@ -110,7 +105,12 @@ def _cache_rules() -> list[dict]:
 
 
 def _ratelimit_rules() -> list[dict]:
-    """Rate-limit rules: tighter on heavy endpoints (first), broad after."""
+    """WAF rate-limit rules (Pro+ only): tighter on heavy endpoints first.
+
+    NOTE: on Free/Pro-without-WAF-rate-limiting, this phase is unavailable
+    and per-IP limiting is done in the Worker instead (the native Rate
+    Limiting binding). Only applied via an explicit ``--only ratelimit``.
+    """
     base_rl = {
         "characteristics": ["ip.src", "cf.colo.id"],
         "period": RATELIMIT_PERIOD,
@@ -231,7 +231,9 @@ def main() -> int:
         "--only",
         choices=["cache", "ratelimit"],
         default=None,
-        help="apply only one phase (default: both)",
+        help="apply only one phase. Default applies just the cache rule "
+        "(rate limiting lives in the Worker); pass --only ratelimit to "
+        "apply the Pro+ WAF rate-limit rules instead.",
     )
     args = ap.parse_args()
 
@@ -250,7 +252,11 @@ def main() -> int:
         )
         return 1
 
-    which = [args.only] if args.only else ["cache", "ratelimit"]
+    # Default to the cache rule only — it's available on every plan and is
+    # the high-leverage anti-amplification measure. Per-IP rate limiting is
+    # in the Worker (native binding); the WAF rate-limit phase is Pro+ and
+    # only applied on explicit --only ratelimit.
+    which = [args.only] if args.only else ["cache"]
     mode = "EXECUTE" if args.execute else "DRY RUN"
     print(f"{mode} — zone {zone[:8]}… · phases: {', '.join(which)}")
 

@@ -126,10 +126,12 @@ After the D1 write, `publish_record` purges the Worker's edge cache for
 `purge_everything` — shared `deliverome.org` zone) so the record goes live
 immediately instead of on the `Cache-Control` TTL (up to 1 day per gene).
 Needs `CLOUDFLARE_ZONE_ID` + a Zone → Cache Purge token scope; missing
-either soft-skips with a warning. Zone cache + rate-limit rules (ignore
-query strings; generous per-IP limits, tighter on `/v1/catalog` + `*.tsv`)
-are applied by `scripts/apply_cf_edge_rules.py` (dry-run by default,
-`--execute` to apply).
+either soft-skips with a warning. The zone **cache rule** (ignore query
+strings) is applied by `scripts/apply_cf_edge_rules.py` (dry-run by
+default, `--execute`; Cache Rules are on every plan). **Per-IP rate
+limiting is in the Worker** (native Rate Limiting binding `env.RATE_LIMITER`
+/ `RATE_LIMITER_HEAVY` in `wrangler.toml` — in-colo, free, not KV), since
+zone WAF Rate Limiting Rules need Pro+.
 
 ### Query from Python
 

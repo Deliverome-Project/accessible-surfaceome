@@ -39,19 +39,26 @@ All responses are JSON (or TSV where noted). CORS open (`*`). Cache-Control: `pu
 The API is intentionally public + unauthenticated — the data is
 publish-intended. The risk it guards against is **cost / availability**
 (D1 bills per row read; the catalog handler is CPU-heavy), not access.
-Three layers:
+Four layers:
 
 1. **Aggressive edge caching** carries the load (the TTLs above). Don't
    shorten them to chase freshness — see purge below.
-2. **Edge rules** (apply once / after a threshold change with
+2. **Cache rule** (apply once / after a TTL change with
    [`scripts/apply_cf_edge_rules.py`](../../../scripts/apply_cf_edge_rules.py)
-   — dry-run by default, `--execute` to apply):
-   - a **cache rule** that makes the cache key ignore the query string, so
-     `?_=<random>` can't bust the cache and amplify D1 load;
-   - **rate-limit rules** — a generous per-IP ceiling on the route, plus a
-     tighter one on `/v1/catalog` + the `*.tsv` exports. Generous on
-     purpose: clip hammering, don't gate reanalysts.
-3. **Purge-on-publish.** `cloud/surface_annotation.publish_record` purges
+   — dry-run by default, `--execute` to apply) that makes the cache key
+   **ignore the query string**, so `?_=<random>` can't bust the cache and
+   amplify D1 load. Cache Rules are available on every plan.
+3. **Per-IP rate limiting in the Worker** via the native Workers Rate
+   Limiting binding (`env.RATE_LIMITER` / `RATE_LIMITER_HEAVY`, configured
+   in `wrangler.toml`). In-colo, free on every plan, **not KV** (no
+   per-request storage cost). A generous ceiling on the route + a tighter
+   one on `/v1/catalog` + the `*.tsv` exports; over-limit → `429`. We use
+   the Worker binding because Cloudflare's zone-level **WAF Rate Limiting
+   Rules** are a Pro/Business+ feature — `apply_cf_edge_rules.py --only
+   ratelimit` applies those instead, for zones that have them.
+   Cloudflare's always-on L7 DDoS protection (free) handles volumetric
+   attacks underneath either one.
+4. **Purge-on-publish.** `cloud/surface_annotation.publish_record` purges
    the per-gene + `/v1/catalog` + `/v1/genes` cache entries (targeted
    by-URL, never `purge_everything` — this Worker shares the
    `deliverome.org` zone) right after the D1 write. That's what lets the
