@@ -62,6 +62,12 @@
 }
 
 .pageIndexGroupLink {
+  /* inline-block (not the default block from the flex column) so the box —
+     and thus the hover underline (border-bottom below) — hugs the link
+     TEXT instead of spanning the full index width. `align-self: flex-start`
+     keeps it left-anchored in the column. */
+  display: inline-block;
+  align-self: flex-start;
   font-family: var(--font-display);
   font-size: 1rem;
   font-style: italic;
