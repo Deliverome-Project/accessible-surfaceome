@@ -301,6 +301,7 @@ def _fetch_isoform_topologies(
                 full_length_pct_identity_to_canonical=full_pct,
                 ecd_pct_identity_to_canonical=ecd_pct,
                 ecd_pct_similarity_to_canonical=ecd_sim,
+                sequence=iso_seq or None,
             )
         )
     return out
@@ -341,7 +342,8 @@ def _fetch_paralogs(
         "cp.compara_version, cp.rank_by_ecd_identity, "
         "tp.per_residue_topology, tp.deeptmhmm_label, tp.tm_helix_count, "
         "tp.ecd_length_residues, tp.icd_length_residues, "
-        "tp.n_terminal_orientation, tp.c_terminal_orientation, tp.signal_peptide_length "
+        "tp.n_terminal_orientation, tp.c_terminal_orientation, "
+        "tp.signal_peptide_length, tp.sequence "
         "FROM compara_paralog cp "
         "LEFT JOIN topology_public tp "
         "  ON tp.uniprot_acc = cp.paralog_uniprot_acc "
@@ -360,13 +362,15 @@ def _fetch_paralogs(
             full_raw = r.get("biomart_percent_identity")
             full_id = float(full_raw) if full_raw is not None else None
             is_close = full_id is not None and full_id >= CLOSE_PARALOG_THRESHOLD
-            # Topology + similarity are surfaced only for close paralogs.
-            sim = topo = lbl = tmc = ecdl = icdl = nori = cori = spl = None
+            # Topology + similarity + sequence are surfaced only for close
+            # paralogs (the ones that get a full topology row).
+            sim = topo = lbl = tmc = ecdl = icdl = nori = cori = spl = seq = None
             if is_close:
                 sim_raw = r.get("ecd_pct_similarity")
                 sim = float(sim_raw) if sim_raw is not None else None
                 topo = r.get("per_residue_topology") or None
                 if topo:
+                    seq = r.get("sequence") or None
                     lbl = r.get("deeptmhmm_label") or None
                     tmc = int(r["tm_helix_count"]) if r.get("tm_helix_count") is not None else None
                     ecdl = int(r["ecd_length_residues"]) if r.get("ecd_length_residues") is not None else None
@@ -391,6 +395,7 @@ def _fetch_paralogs(
                     n_terminal_orientation=nori,
                     c_terminal_orientation=cori,
                     signal_peptide_length=spl,
+                    sequence=seq,
                 )
             )
         except (TypeError, ValueError) as exc:
@@ -506,6 +511,7 @@ def _fetch_orthologs(uniprot_acc: str, *, topology_version: str,
                 topology_projection_source=proj_source,
                 tm_absent_from_model=tm_absent,
                 n_tm_regions_absent=n_absent,
+                sequence=str(ortholog_seq) if ortholog_seq else None,
             )
         except (TypeError, ValueError) as exc:
             logger.warning(
@@ -650,6 +656,10 @@ def fetch_deterministic_features(uniprot_acc: str) -> DeterministicFeatures:
         _fetch_canonical_sequence(uniprot_acc, canonical_topo_version)
         if canonical_topo_version else ""
     )
+    # Pair the canonical sequence onto the topology it indexes (1:1 length).
+    # The placeholder-canonical path (no D1 row) leaves it None.
+    if canonical_sequence and not canonical.sequence:
+        canonical.sequence = canonical_sequence
     isoforms = (
         _fetch_isoform_topologies(
             uniprot_acc,
@@ -682,12 +692,29 @@ def fetch_deterministic_features(uniprot_acc: str) -> DeterministicFeatures:
     # downstream readers don't conflate it with the ECD-restricted
     # measurement. ``fetch_afdb_plddt`` never raises — on network /
     # parse failure it returns its own labeled placeholder.
-    from accessible_surfaceome.tools.afdb_plddt import fetch_afdb_plddt
+    from accessible_surfaceome.tools.afdb_plddt import (
+        fetch_afdb_plddt,
+        read_afdb_model_links,
+    )
+    from accessible_surfaceome.tools.pdbe_structures import (
+        fetch_representative_structure,
+    )
     from accessible_surfaceome.tools.surface_bind import lookup as lookup_surface_bind
 
     structure = fetch_afdb_plddt(
         uniprot_acc,
         per_residue_topology=canonical.per_residue_topology or None,
+    )
+    # Enrich with the AFDB model download links (cache warm from the fetch
+    # above) + the representative experimental (PDB) structure from PDBe
+    # SIFTS. Both are best-effort — None/empty on failure, leaving the
+    # corresponding fields unset rather than failing the record.
+    _links = read_afdb_model_links(uniprot_acc)
+    structure.model_cif_url = _links["model_cif_url"]
+    structure.model_pdb_url = _links["model_pdb_url"]
+    structure.model_pae_url = _links["model_pae_url"]
+    structure.representative_experimental_structure = (
+        fetch_representative_structure(uniprot_acc)
     )
 
     # SURFACE-Bind summary — in-memory lookup against the checked-in

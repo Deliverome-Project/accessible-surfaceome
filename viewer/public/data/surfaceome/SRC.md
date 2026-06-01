@@ -26,9 +26,11 @@ SRC is canonically an inner-leaflet myristoylated/palmitoylated non-receptor tyr
 
 | Group | Facets |
 |---|---|
-| Accessibility | overall=High · conf=Moderate · subcategory=Other · grade=Direct, single method · ecd=None · density=Moderate |
-| Expression | level=Moderate · breadth=Broad · specificity=Mostly Intracellular |
-| Risks | shed=false · secreted=false · coreceptor=false · masking=true · subdomain=true |
+| Accessibility | overall=High · conf=Moderate · subcategory=Other · ecd=None |
+| Classification | reason=Lysosomal Exocytosis · family=Enzyme · state-dependence=High · induction-trigger=— |
+| Expression | level=Moderate · breadth=Broad · specificity=Mostly Intracellular · low-endogenous=false · tumor-associated=— · orphan-receptor=false · OE-precedent=false |
+| Risks | shed=false · secreted=false · co-receptor=None · masking=true · restricted-subdomain=true |
+| Evidence | grade=Direct, single method · density=Moderate · live-cell-surface=— · supporting(hi)=0 · contradicting(hi)=0 |
 | Cross-species | mouse=— · cyno=— |
 | Paralogs | max %ECD identity = no Compara paralogs |
 | Topology | TM=0 · N-term-ECF=false · C-term-ECF=false |
@@ -39,52 +41,9 @@ SRC is canonically an inner-leaflet myristoylated/palmitoylated non-receptor tyr
 
 The strongest evidence comes from PMID:41818370, a 2025 primary study reporting that Src undergoes ALE-mediated topological inversion onto the outer cell surface specifically in cancer cells (eSrc), with functional antibody-based tumor killing validated in xenograft models (a1_evi_01–04). These all derive from a single source, yielding direct_single_method. A companion paper (a1_evi_05) weakly corroborates at review level. Surfaceome MS detections (a1_evi_07, a1_evi_09) are low-weight ancillary signals. The canonical inner-leaflet topology (a1_evi_06) describes the baseline non-cancer state and is tangential — not contradictory — under the ALE state-dependent inversion mechanism. No second independent direct surface methodology (e.g. nonperm IF or surface biotinylation from a distinct group) is present, so the grade is direct_single_method rather than direct_multi_method.
 
-### Cell Surface Capture — Weak Or Ambiguous
+### Immunofluorescence (1 method)
 
-*Permeabilization: Live Cell · expression: Endogenous*
-
-**Observations**
-
-| Context | Sample | Level | Cites |
-|---|---|---|---|
-| Embryonic chicken limb bud-derived chondrogenic cells; sialoglycoprotein enrichment via aminooxy-biotin conjugation + LC-MS/MS; 3 biological replicates across 5 time points of micromass culture (days 1, 3, 6, 10, 15); SRC detected in surfaceome cluster 2 but lacks canonical signal peptide or glycosylation site — detection may reflect co-purification | Primary Human Cell | Low | 2 |
-
-### Cell Surface Capture — Weak Or Ambiguous
-
-*Permeabilization: Unknown · expression: Endogenous*
-
-**Observations**
-
-| Context | Sample | Level | Cites |
-|---|---|---|---|
-| Unspecified cell type from surfaceome proteomics study; SRC detected in a functional surfaceome cluster alongside ERBB2, CSF1R, PRKCD — noted as non-receptor kinase, presence may reflect co-enrichment | Unknown | Low | 1 |
-
-### Whole Cell Proteomics — Weak Or Ambiguous
-
-*Permeabilization: Unknown · expression: Endogenous*
-
-**Observations**
-
-| Context | Sample | Level | Cites |
-|---|---|---|---|
-| High-invadopodia-activity cancer cell lines; SRC detected among proteins enriched in secreted extracellular vesicles (sEVs) alongside CTTN, CFL1, ITGA3, ITGB3 and MMP2, MMP14, BSG/CD147 — represents non-canonical extracellular/shed form in exosomes | Established Cell Line | Moderate | 1 |
-
-### Whole Cell Proteomics — Weak Or Ambiguous
-
-*Permeabilization: Permeabilized · expression: Endogenous*
-
-**Antibodies**
-
-- anti-SRC (60315-1-lg · Proteintech · 60315-1-lg) — Unknown epitope; None validation
-- anti-phospho-SRC (Y416) (D49G4 · Cell Signaling Technology · #6943) — Intracellular epitope; None validation
-
-**Observations**
-
-| Context | Sample | Level | Cites |
-|---|---|---|---|
-| HaCaT keratinocytes; whole-cell lysate western blot for total SRC and phospho-Y416 SRC; no membrane fractionation — expression evidence only, no surface-accessibility information | Established Cell Line | Moderate | 1 |
-
-### Unknown — Weak Or Ambiguous
+#### Unknown — Weak Or Ambiguous
 
 *Permeabilization: Unknown · expression: Endogenous*
 
@@ -98,7 +57,41 @@ The strongest evidence comes from PMID:41818370, a 2025 primary study reporting 
 |---|---|---|---|
 | MC3T3-E1 osteoblast-like cells after shear stimulation; c-Src co-localizes with RANKL at cell periphery — consistent with inner-leaflet plasma membrane association but does not establish extracellular accessibility | Established Cell Line | Moderate | 1 |
 
-### Unknown — Direct Surface Accessibility
+### Surface mass spec (3 methods)
+
+#### Cell Surface Capture — Weak Or Ambiguous
+
+*Permeabilization: Live Cell · expression: Endogenous*
+
+**Observations**
+
+| Context | Sample | Level | Cites |
+|---|---|---|---|
+| Embryonic chicken limb bud-derived chondrogenic cells; sialoglycoprotein enrichment via aminooxy-biotin conjugation + LC-MS/MS; 3 biological replicates across 5 time points of micromass culture (days 1, 3, 6, 10, 15); SRC detected in surfaceome cluster 2 but lacks canonical signal peptide or glycosylation site — detection may reflect co-purification | Primary Human Cell | Low | 2 |
+
+#### Cell Surface Capture — Weak Or Ambiguous
+
+*Permeabilization: Unknown · expression: Endogenous*
+
+**Observations**
+
+| Context | Sample | Level | Cites |
+|---|---|---|---|
+| Unspecified cell type from surfaceome proteomics study; SRC detected in a functional surfaceome cluster alongside ERBB2, CSF1R, PRKCD — noted as non-receptor kinase, presence may reflect co-enrichment | Unknown | Low | 1 |
+
+#### Whole Cell Proteomics — Weak Or Ambiguous
+
+*Permeabilization: Unknown · expression: Endogenous*
+
+**Observations**
+
+| Context | Sample | Level | Cites |
+|---|---|---|---|
+| High-invadopodia-activity cancer cell lines; SRC detected among proteins enriched in secreted extracellular vesicles (sEVs) alongside CTTN, CFL1, ITGA3, ITGB3 and MMP2, MMP14, BSG/CD147 — represents non-canonical extracellular/shed form in exosomes | Established Cell Line | Moderate | 1 |
+
+### Functional surface assay (2 methods)
+
+#### Unknown — Direct Surface Accessibility
 
 *Permeabilization: Live Cell · expression: Endogenous*
 
@@ -114,7 +107,7 @@ The strongest evidence comes from PMID:41818370, a 2025 primary study reporting 
 | Primary human tumors: extracellular membrane-associated Src (eSrc) detected in primary tumor specimens | Patient Sample | Moderate | 1 |
 | Mouse xenograft models: anti-Src antibody-based therapies mediate tumor cell killing in vivo | Xenograft | Moderate | 1 |
 
-### Unknown — Direct Surface Accessibility
+#### Unknown — Direct Surface Accessibility
 
 *Permeabilization: Live Cell · expression: Endogenous*
 
@@ -127,6 +120,23 @@ The strongest evidence comes from PMID:41818370, a 2025 primary study reporting 
 | Context | Sample | Level | Cites |
 |---|---|---|---|
 | Cancer cells (companion paper PMID:41818382): exocytosis exposes Src at the outer surface of cancer cells, cited as poised for therapeutic targeting | Established Cell Line | Moderate | 1 |
+
+### Other (1 method)
+
+#### Whole Cell Proteomics — Weak Or Ambiguous
+
+*Permeabilization: Permeabilized · expression: Endogenous*
+
+**Antibodies**
+
+- anti-SRC (60315-1-lg · Proteintech · 60315-1-lg) — Unknown epitope; None validation
+- anti-phospho-SRC (Y416) (D49G4 · Cell Signaling Technology · #6943) — Intracellular epitope; None validation
+
+**Observations**
+
+| Context | Sample | Level | Cites |
+|---|---|---|---|
+| HaCaT keratinocytes; whole-cell lysate western blot for total SRC and phospho-Y416 SRC; no membrane fractionation — expression evidence only, no surface-accessibility information | Established Cell Line | Moderate | 1 |
 
 **Non-surface expression**
 
@@ -168,86 +178,7 @@ The strongest evidence comes from PMID:41818370, a 2025 primary study reporting 
 - *Disease State Induced* · trigger: Oncogenic Transformation: Non-malignant cells where Src is not detected in small extracellular vesicles (sEVs) → Glioblastoma (GBM) cell lines with high invadopodia activity secreting sEVs — In aggressive GBM cells with high invadopodia activity, SRC is enriched in the proteome of secreted small extracellular vesicles (sEV Cluster 2), placing Src in the extracellular/secreted compartment alongside invadopodia regulators.
 - *Dual Localization*: Normal cells of any type where Src is canonical: myristoylated/palmitoylated, anchored to the inner leaflet of the plasma membrane with all domains facing the cytoplasm — no outer-surface exposure → Cancer cells where Src is present both as the canonical inner-leaflet cytoplasmic pool and as the eSrc outer-surface pool following ALE-mediated topological inversion — Cancer cells harbor two Src pools: the canonical cytoplasmic inner-leaflet form and the topologically inverted outer-surface eSrc form. The relative abundance of each pool depends on disease state and ALE activity.
 
-## 5. Isoforms
-
-*Deterministic · UniProt + DeepTMHMM deeptmhmm-1.0.24*
-
-| Isoform | UniProt | TM | N-term | Signal pep | ECD len | ICD len |
-|---|---|---|---|---|---|---|
-| **canonical** | P12931 | 0 | Cytoplasmic | 0 aa | 0 aa | 536 aa |
-| P12931-2 | P12931-2 | 0 | Cytoplasmic | 0 aa | 0 aa | 542 aa |
-| P12931-3 | P12931-3 | 0 | Cytoplasmic | 0 aa | 0 aa | 553 aa |
-
-## 6. Paralogs
-
-*Compara Compara r112*
-
-| Paralog | UniProt | ECD %id | Family |
-|---|---|---|---|
-| YES1 | [P07947](https://www.uniprot.org/uniprotkb/P07947) | — | Bilateria |
-| FYN | [P06241](https://www.uniprot.org/uniprotkb/P06241) | — | Bilateria |
-| FGR | [P09769](https://www.uniprot.org/uniprotkb/P09769) | — | Bilateria |
-| HCK | [P08631](https://www.uniprot.org/uniprotkb/P08631) | — | Bilateria |
-| BLK | [P51451](https://www.uniprot.org/uniprotkb/P51451) | — | Bilateria |
-| LYN | [P07948](https://www.uniprot.org/uniprotkb/P07948) | — | Bilateria |
-| LCK | [P06239](https://www.uniprot.org/uniprotkb/P06239) | — | Bilateria |
-| FRK | [P42685](https://www.uniprot.org/uniprotkb/P42685) | — | Bilateria |
-| ABL2 | [P42684](https://www.uniprot.org/uniprotkb/P42684) | — | Bilateria |
-| ABL1 | [P00519](https://www.uniprot.org/uniprotkb/P00519) | — | Bilateria |
-| PTK6 | [Q13882](https://www.uniprot.org/uniprotkb/Q13882) | — | Bilateria |
-| SRMS | [Q9H3Y6](https://www.uniprot.org/uniprotkb/Q9H3Y6) | — | Bilateria |
-| TEC | [P42680](https://www.uniprot.org/uniprotkb/P42680) | — | Bilateria |
-| FER | [P16591](https://www.uniprot.org/uniprotkb/P16591) | — | Bilateria |
-| BTK | [Q06187](https://www.uniprot.org/uniprotkb/Q06187) | — | Bilateria |
-| TXK | [P42681](https://www.uniprot.org/uniprotkb/P42681) | — | Bilateria |
-| CSK | [P41240](https://www.uniprot.org/uniprotkb/P41240) | — | Bilateria |
-| FES | [P07332](https://www.uniprot.org/uniprotkb/P07332) | — | Bilateria |
-| SYK | [P43405](https://www.uniprot.org/uniprotkb/P43405) | — | Bilateria |
-| ITK | [Q08881](https://www.uniprot.org/uniprotkb/Q08881) | — | Bilateria |
-| MATK | [P42679](https://www.uniprot.org/uniprotkb/P42679) | — | Bilateria |
-| ZAP70 | [P43403](https://www.uniprot.org/uniprotkb/P43403) | — | Bilateria |
-| PTK2 | [Q05397](https://www.uniprot.org/uniprotkb/Q05397) | — | Bilateria |
-| PTK2B | [Q14289](https://www.uniprot.org/uniprotkb/Q14289) | — | Bilateria |
-| BMX | [P51813](https://www.uniprot.org/uniprotkb/P51813) | — | Bilateria |
-| JAK3 | [P52333](https://www.uniprot.org/uniprotkb/P52333) | — | Bilateria |
-| JAK1 | [P23458](https://www.uniprot.org/uniprotkb/P23458) | — | Bilateria |
-| TYK2 | [P29597](https://www.uniprot.org/uniprotkb/P29597) | — | Bilateria |
-| JAK2 | [O60674](https://www.uniprot.org/uniprotkb/O60674) | — | Bilateria |
-| TNK2 | [Q07912](https://www.uniprot.org/uniprotkb/Q07912) | — | Bilateria |
-| TNK1 | [Q13470](https://www.uniprot.org/uniprotkb/Q13470) | — | Bilateria |
-| STYK1 | [Q6J9G0](https://www.uniprot.org/uniprotkb/Q6J9G0) | — | Bilateria |
-
-*Per-antibody cross-reactivity behavior is captured per-clone under §3 (Surface evidence → antibodies). The LLM cross-reactivity verdict is deferred to v1.x.*
-
-## 7. Orthologs
-
-**Mouse**
-
-| Canonical | Isoform | Symbol | UniProt | Type | Full-length %id | ECD %id | ECD %sim | ECD len | TM |
-|---|---|---|---|---|---|---|---|---|---|
-| ✓ | P05480 | Src | [P05480](https://www.uniprot.org/uniprotkb/P05480) | One2one | 98.9% | — | — | 0 aa | 0 |
-
-**Cynomolgus**
-
-| Canonical | Isoform | Symbol | UniProt | Type | Full-length %id | ECD %id | ECD %sim | ECD len | TM |
-|---|---|---|---|---|---|---|---|---|---|
-| ✓ | A0A7N9CC30 | SRC | [A0A7N9CC30](https://www.uniprot.org/uniprotkb/A0A7N9CC30) | One2one | 92.5% | — | — | 0 aa | 0 |
-
-## 8. Accessibility risks
-
-**Shed form**
-
-- present: false
-- severity: Low
-- evidence: Weak
-
-**Secreted form**
-
-- present: false
-- severity: Low
-- evidence: Weak
-
-**Restricted subdomain**
+**Restricted-subdomain distribution**
 
 - present: false
 - severity: Low
@@ -261,6 +192,66 @@ The strongest evidence comes from PMID:41818370, a 2025 primary study reporting 
 - evidence basis: Trafficking
 - rationale: SRC membrane anchoring in the canonical state is entirely myristoylation/palmitoylation-driven; no obligate co-receptor is required for membrane association. The cancer-state eSrc surface exposure is driven by the ALE autophagolysosomal exocytosis pathway intrinsic to cancer cells, not by a partner protein requirement.
 
+## 5. Isoforms, orthologs & paralogs
+
+*Deterministic · UniProt + DeepTMHMM deeptmhmm-1.0.24 · Ensembl ensembl_compara_2026_05_12. %identity / ECD %id are vs the human canonical (orthologs + paralogs only; isoforms are alternative human forms). Per-residue topology + full sequences are in the appendix.*
+
+| Kind | Variant | UniProt | %identity | ECD %id | TM | ECD len | ICD len | Signal pep | N-term | Tier |
+|---|---|---|---|---|---|---|---|---|---|---|
+| Isoform | **canonical** | P12931 | ref | ref | 0 | 0 aa | 536 aa | 0 aa | Cytoplasmic | — |
+| Isoform | P12931-2 | P12931-2 | 100.0% | — | 0 | 0 aa | 542 aa | 0 aa | Cytoplasmic | — |
+| Isoform | P12931-3 | P12931-3 | 100.0% | — | 0 | 0 aa | 553 aa | 0 aa | Cytoplasmic | — |
+| Mouse ortholog | Src | [P05480](https://www.uniprot.org/uniprotkb/P05480) | 98.9% | — | 0 | 0 aa | — | — | — | high (≥85%) |
+| Cynomolgus ortholog | SRC | [A0A7N9CC30](https://www.uniprot.org/uniprotkb/A0A7N9CC30) | 92.5% | — | 0 | 0 aa | — | — | — | high (≥85%) |
+| Paralog | YES1 | [P07947](https://www.uniprot.org/uniprotkb/P07947) | 75.6% | — | — | — | — | — | — | caution |
+| Paralog | FYN | [P06241](https://www.uniprot.org/uniprotkb/P06241) | 69.0% | — | — | — | — | — | — | caution |
+| Paralog | FGR | [P09769](https://www.uniprot.org/uniprotkb/P09769) | 65.9% | — | — | — | — | — | — | caution |
+| Paralog | HCK | [P08631](https://www.uniprot.org/uniprotkb/P08631) | 53.7% | — | — | — | — | — | — | low-risk |
+| Paralog | BLK | [P51451](https://www.uniprot.org/uniprotkb/P51451) | 52.1% | — | — | — | — | — | — | low-risk |
+| Paralog | LYN | [P07948](https://www.uniprot.org/uniprotkb/P07948) | 52.1% | — | — | — | — | — | — | low-risk |
+| Paralog | LCK | [P06239](https://www.uniprot.org/uniprotkb/P06239) | 50.9% | — | — | — | — | — | — | low-risk |
+| Paralog | FRK | [P42685](https://www.uniprot.org/uniprotkb/P42685) | 44.8% | — | — | — | — | — | — | low-risk |
+| Paralog | ABL2 | [P42684](https://www.uniprot.org/uniprotkb/P42684) | 39.7% | — | — | — | — | — | — | low-risk |
+| Paralog | ABL1 | [P00519](https://www.uniprot.org/uniprotkb/P00519) | 38.6% | — | — | — | — | — | — | low-risk |
+| Paralog | PTK6 | [Q13882](https://www.uniprot.org/uniprotkb/Q13882) | 38.2% | — | — | — | — | — | — | low-risk |
+| Paralog | SRMS | [Q9H3Y6](https://www.uniprot.org/uniprotkb/Q9H3Y6) | 37.1% | — | — | — | — | — | — | low-risk |
+| Paralog | TEC | [P42680](https://www.uniprot.org/uniprotkb/P42680) | 34.7% | — | — | — | — | — | — | low-risk |
+| Paralog | FER | [P16591](https://www.uniprot.org/uniprotkb/P16591) | 33.8% | — | — | — | — | — | — | low-risk |
+| Paralog | BTK | [Q06187](https://www.uniprot.org/uniprotkb/Q06187) | 33.2% | — | — | — | — | — | — | low-risk |
+| Paralog | TXK | [P42681](https://www.uniprot.org/uniprotkb/P42681) | 33.2% | — | — | — | — | — | — | low-risk |
+| Paralog | CSK | [P41240](https://www.uniprot.org/uniprotkb/P41240) | 33.2% | — | — | — | — | — | — | low-risk |
+| Paralog | FES | [P07332](https://www.uniprot.org/uniprotkb/P07332) | 32.3% | — | — | — | — | — | — | low-risk |
+| Paralog | SYK | [P43405](https://www.uniprot.org/uniprotkb/P43405) | 32.1% | — | — | — | — | — | — | low-risk |
+| Paralog | ITK | [Q08881](https://www.uniprot.org/uniprotkb/Q08881) | 31.5% | — | — | — | — | — | — | low-risk |
+| Paralog | MATK | [P42679](https://www.uniprot.org/uniprotkb/P42679) | 31.2% | — | — | — | — | — | — | low-risk |
+| Paralog | ZAP70 | [P43403](https://www.uniprot.org/uniprotkb/P43403) | 31.2% | — | — | — | — | — | — | low-risk |
+| Paralog | PTK2 | [Q05397](https://www.uniprot.org/uniprotkb/Q05397) | 31.2% | — | — | — | — | — | — | low-risk |
+| Paralog | PTK2B | [Q14289](https://www.uniprot.org/uniprotkb/Q14289) | 30.0% | — | — | — | — | — | — | low-risk |
+| Paralog | BMX | [P51813](https://www.uniprot.org/uniprotkb/P51813) | 29.9% | — | — | — | — | — | — | low-risk |
+| Paralog | JAK3 | [P52333](https://www.uniprot.org/uniprotkb/P52333) | 29.5% | — | — | — | — | — | — | low-risk |
+| Paralog | JAK1 | [P23458](https://www.uniprot.org/uniprotkb/P23458) | 29.1% | — | — | — | — | — | — | low-risk |
+| Paralog | TYK2 | [P29597](https://www.uniprot.org/uniprotkb/P29597) | 28.7% | — | — | — | — | — | — | low-risk |
+| Paralog | JAK2 | [O60674](https://www.uniprot.org/uniprotkb/O60674) | 28.4% | — | — | — | — | — | — | low-risk |
+| Paralog | TNK2 | [Q07912](https://www.uniprot.org/uniprotkb/Q07912) | 25.2% | — | — | — | — | — | — | low-risk |
+| Paralog | TNK1 | [Q13470](https://www.uniprot.org/uniprotkb/Q13470) | 21.6% | — | — | — | — | — | — | low-risk |
+| Paralog | STYK1 | [Q6J9G0](https://www.uniprot.org/uniprotkb/Q6J9G0) | 19.0% | — | — | — | — | — | — | low-risk |
+
+**Tier cutoffs.** *Ortholog conservation* (higher = better — cross-species evidence can stand in for human): ≥85% high · 60–85% moderate · <60% low. *Paralog cross-reactivity* (higher = worse — a binder may also engage the paralog): >80% high-risk · 60–80% caution · <60% low-risk ([PMID 33170010](https://pubmed.ncbi.nlm.nih.gov/33170010/)).
+
+## 6. Accessibility risks
+
+**Shed form**
+
+- present: false
+- severity: Low
+- evidence: Weak
+
+**Secreted form**
+
+- present: false
+- severity: Low
+- evidence: Weak
+
 **ECD size assessment**
 
 - ECD class: None
@@ -273,7 +264,7 @@ The strongest evidence comes from PMID:41818370, a 2025 primary study reporting 
 - mechanism: Conformational
 - rationale: The eSrc surface form presents what is normally a cytoplasmic kinase domain, SH2, and SH3 on the extracellular face following topological inversion. The accessible epitopes are therefore non-glycosylated intracellular domains now extracellularly exposed. Conformational constraints from the inverted topology and possible membrane proximity effects are anticipated but not directly characterised in the ledger.
 
-## 9. Structure summary
+## 7. Structure summary
 
 | Field | Value |
 |---|---|
@@ -284,7 +275,24 @@ The strongest evidence comes from PMID:41818370, a 2025 primary study reporting 
 
 Structure data from [AlphaFold DB](https://alphafold.ebi.ac.uk/entry/P12931) · © DeepMind / EMBL-EBI · licensed [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/) · cite `10.1038/s41586-021-03819-2`; `10.1093/nar/gkad1011`.
 
-## 10. Evidence ledger
+**Model variants & experimental structures**
+
+| Structure | UniProt / PDB | Source |
+|---|---|---|
+| Canonical | [P12931](https://alphafold.ebi.ac.uk/entry/P12931) | AlphaFold DB (AF-P12931-F1, v6) |
+| Isoform P12931-2 | [P12931-2](https://alphafold.ebi.ac.uk/entry/P12931-2) | AlphaFold DB |
+| Isoform P12931-3 | [P12931-3](https://alphafold.ebi.ac.uk/entry/P12931-3) | AlphaFold DB |
+| Mouse ortholog (Src) | [P05480](https://alphafold.ebi.ac.uk/entry/P05480) | AlphaFold DB |
+| Cynomolgus ortholog (SRC) | [A0A7N9CC30](https://alphafold.ebi.ac.uk/entry/A0A7N9CC30) | AlphaFold DB |
+| Experimental (best) | [8JN8](https://www.rcsb.org/structure/8jn8) chain A | RCSB PDB · X-ray diffraction 1.902 Å · UniProt 1–536 |
+
+## 8. SURFACE-Bind candidate sites
+
+*Deterministic · MaSIF-based surface patch scoring on the AlphaFold model (Balbi et al. 2026, [PMID 41604262](https://pubmed.ncbi.nlm.nih.gov/41604262/), PNAS) · SURFACE-Bind v1, Correia lab (EPFL / Inria / Novo Nordisk)*
+
+No SURFACE-Bind data — typically because the protein has no AlphaFold model (very large proteins).
+
+## 9. Evidence ledger
 
 27 entries · 17 primary · 10 secondary · 0 tertiary · 17 PMC OA.
 
@@ -416,6 +424,22 @@ This Markdown is generated from the canonical JSON record at `/data/surfaceome/S
  601  RKEPEERPTFEYLQAFLEDYFTSTEPQYQPGENL
 ```
 
+### Experimental-structure sequence
+
+**8JN8** chain A · X-ray diffraction, 1.902 Å · covers UniProt residues 1–536 (536 aa) · representative of 112 experimental structures. Residues sliced from the canonical sequence over the structure's SIFTS-mapped span; unresolved loops in the deposited coordinates are not removed here.
+
+```
+   1  MGSNKSKPKDASQRRRSLEPAENVHGAGGGAFPASQTPSKPASADGHRGPSAAFAPAAAE
+  61  PKLFGGFNSSDTVTSPQRAGPLAGGVTTFVALYDYESRTETDLSFKKGERLQIVNNTEGD
+ 121  WWLAHSLSTGQTGYIPSNYVAPSDSIQAEEWYFGKITRRESERLLLNAENPRGTFLVRES
+ 181  ETTKGAYCLSVSDFDNAKGLNVKHYKIRKLDSGGFYITSRTQFNSLQQLVAYYSKHADGL
+ 241  CHRLTTVCPTSKPQTQGLAKDAWEIPRESLRLEVKLGQGCFGEVWMGTWNGTTRVAIKTL
+ 301  KPGTMSPEAFLQEAQVMKKLRHEKLVQLYAVVSEEPIYIVTEYMSKGSLLDFLKGETGKY
+ 361  LRLPQLVDMAAQIASGMAYVERMNYVHRDLRAANILVGENLVCKVADFGLARLIEDNEYT
+ 421  ARQGAKFPIKWTAPEAALYGRFTIKSDVWSFGILLTELTTKGRVPYPGMVNREVLDQVER
+ 481  GYRMPCPPECPESLHDLMCQCWRKEPEERPTFEYLQAFLEDYFTSTEPQYQPGENL
+```
+
 ### Per-residue DeepTMHMM topology
 
 *Five-letter alphabet: `M` = TM helix, `O` = extracellular, `I` = intracellular, `S` = signal peptide, `B` = β-strand. Aligned to the UniProt sequence above (residue indices in the left column).*
@@ -462,6 +486,50 @@ This Markdown is generated from the canonical JSON record at `/data/surfaceome/S
  421  IIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIII
  481  IIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIII
  541  IIIIIIIIIIIII
+```
+
+**Mouse ortholog — Src** (`P05480`, projected onto human canonical)
+
+```
+   1  IIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIII
+  61  IIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIII
+ 121  IIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIII
+ 181  IIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIII
+ 241  IIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIII
+ 301  IIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIII
+ 361  IIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIII
+ 421  IIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIII
+ 481  IIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIII
+```
+
+**Cynomolgus ortholog — SRC** (`A0A7N9CC30`, projected onto human canonical)
+
+```
+   1  IIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIII
+  61  IIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIII
+ 121  IIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIII
+ 181  IIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIII
+ 241  IIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIII
+ 301  IIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIII
+ 361  IIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIII
+ 421  IIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIII
+ 481  IIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIII
+ 541  IIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIII
+ 601  IIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIII
+```
+
+**Experimental — 8JN8 chain A** (UniProt residues 1–536, projected from canonical)
+
+```
+   1  IIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIII
+  61  IIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIII
+ 121  IIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIII
+ 181  IIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIII
+ 241  IIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIII
+ 301  IIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIII
+ 361  IIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIII
+ 421  IIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIII
+ 481  IIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIII
 ```
 
 ### Data sources

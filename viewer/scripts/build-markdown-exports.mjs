@@ -252,6 +252,47 @@ function pushRiskBlock(lines, title, block) {
   lines.push("");
 }
 
+// "N aa" or em-dash for the combined homolog table cells.
+function aaOrDash(v) {
+  return v == null ? "—" : `${v} aa`;
+}
+
+// ECD-identity tiers — same cutoffs the viewer's IsoformsCard uses.
+// Ortholog conservation (higher = better, cross-species evidence transfers).
+function orthologTier(pct) {
+  if (pct == null) return "—";
+  if (pct >= 85) return "high (≥85%)";
+  if (pct >= 60) return "moderate";
+  return "low";
+}
+// Paralog cross-reactivity (higher = worse — a binder may also bind it).
+function paralogTier(pct) {
+  if (pct == null) return "—";
+  if (pct > 80) return "high-risk (>80%)";
+  if (pct >= 60) return "caution";
+  return "low-risk";
+}
+
+// Map UniProt acc → sequence embedded in the record's deterministic_features
+// (the builder / backfill now store the sequence each per-residue topology
+// indexes). Lets the appendix prefer record-embedded sequences over a live
+// AFDB/UniProt fetch — same residues, no network round-trip, fully offline.
+function collectRecordSequences(df) {
+  const out = {};
+  const add = (acc, seq) => {
+    if (acc && seq) out[acc] = seq;
+  };
+  if (df.canonical_topology)
+    add(df.canonical_topology.uniprot_acc, df.canonical_topology.sequence);
+  for (const iso of df.isoform_topologies ?? []) add(iso.uniprot_acc, iso.sequence);
+  for (const sp of ["mouse", "cynomolgus"]) {
+    for (const o of df.orthologs?.[sp] ?? [])
+      add(o.ortholog_uniprot_acc, o.sequence);
+  }
+  for (const p of df.paralogs ?? []) add(p.paralog_uniprot_acc, p.sequence);
+  return out;
+}
+
 // --------------------------------------------------------------
 // Markdown rendering
 // --------------------------------------------------------------
@@ -483,73 +524,63 @@ function md(rec, structureData, sequences, afdbEntry) {
     rec.accessibility_risks.co_receptor_requirements,
   );
 
-  // --- Isoforms (deterministic) ---
-  lines.push("## 5. Isoforms");
+  // --- Isoforms, orthologs & paralogs (deterministic) ---
+  // One combined table mirroring the viewer's IsoformsCard, instead of three
+  // separate sections. Rows: canonical → isoforms → mouse/cyno orthologs →
+  // paralogs (sorted by ECD %id desc). %identity / ECD %id are vs the human
+  // canonical for orthologs + paralogs (isoforms are alternative human forms).
+  lines.push("## 5. Isoforms, orthologs & paralogs");
   lines.push("");
+  const comparaVer =
+    df.orthologs.mouse?.[0]?.compara_version ??
+    df.paralogs?.[0]?.compara_version ??
+    "—";
   lines.push(
-    `*Deterministic · UniProt + DeepTMHMM ${ct.tool_version}*`,
+    `*Deterministic · UniProt + DeepTMHMM ${ct.tool_version} · Ensembl ${comparaVer}. %identity / ECD %id are vs the human canonical (orthologs + paralogs only; isoforms are alternative human forms). Per-residue topology + full sequences are in the appendix.*`,
   );
   lines.push("");
-  lines.push("| Isoform | UniProt | TM | N-term | Signal pep | ECD len | ICD len |");
-  lines.push("|---|---|---|---|---|---|---|");
   lines.push(
-    `| **canonical** | ${g.uniprot_acc} | ${ct.tm_helix_count} | ${prettyEnum(ct.n_terminal_orientation)} | ${ct.signal_peptide_length} aa | ${ct.ecd_length_residues} aa | ${ct.icd_length_residues} aa |`,
+    "| Kind | Variant | UniProt | %identity | ECD %id | TM | ECD len | ICD len | Signal pep | N-term | Tier |",
+  );
+  lines.push("|---|---|---|---|---|---|---|---|---|---|---|");
+  lines.push(
+    `| Isoform | **canonical** | ${g.uniprot_acc} | ref | ref | ${ct.tm_helix_count} | ${aaOrDash(ct.ecd_length_residues)} | ${aaOrDash(ct.icd_length_residues)} | ${aaOrDash(ct.signal_peptide_length)} | ${prettyEnum(ct.n_terminal_orientation)} | — |`,
   );
   for (const iso of df.isoform_topologies) {
     lines.push(
-      `| ${iso.isoform_id} | ${iso.uniprot_acc} | ${iso.tm_helix_count} | ${prettyEnum(iso.n_terminal_orientation)} | ${iso.signal_peptide_length} aa | ${iso.ecd_length_residues} aa | ${iso.icd_length_residues} aa |`,
+      `| Isoform | ${iso.isoform_id} | ${iso.uniprot_acc} | ${fmtPct(iso.full_length_pct_identity_to_canonical)} | ${fmtPct(iso.ecd_pct_identity_to_canonical)} | ${iso.tm_helix_count} | ${aaOrDash(iso.ecd_length_residues)} | ${aaOrDash(iso.icd_length_residues)} | ${aaOrDash(iso.signal_peptide_length)} | ${prettyEnum(iso.n_terminal_orientation)} | — |`,
+    );
+  }
+  for (const species of ["mouse", "cynomolgus"]) {
+    const label = species === "mouse" ? "Mouse ortholog" : "Cynomolgus ortholog";
+    for (const o of df.orthologs[species] ?? []) {
+      lines.push(
+        `| ${label} | ${o.ortholog_symbol} | [${o.ortholog_uniprot_acc}](https://www.uniprot.org/uniprotkb/${o.ortholog_uniprot_acc}) | ${fmtPct(o.full_length_pct_identity_to_human_canonical)} | ${fmtPct(o.ecd_pct_identity_to_human_canonical)} | ${o.tm_helix_count ?? "—"} | ${aaOrDash(o.ecd_length_residues)} | — | — | — | ${orthologTier(o.ecd_pct_identity_to_human_canonical ?? o.full_length_pct_identity_to_human_canonical)} |`,
+      );
+    }
+  }
+  const sortedParalogs = [...df.paralogs].sort(
+    (a, b) =>
+      (b.ecd_pct_identity ?? b.full_length_pct_identity ?? 0) -
+      (a.ecd_pct_identity ?? a.full_length_pct_identity ?? 0),
+  );
+  for (const p of sortedParalogs) {
+    lines.push(
+      `| Paralog | ${p.paralog_symbol} | [${p.paralog_uniprot_acc}](https://www.uniprot.org/uniprotkb/${p.paralog_uniprot_acc}) | ${fmtPct(p.full_length_pct_identity)} | ${fmtPct(p.ecd_pct_identity)} | ${p.tm_helix_count ?? "—"} | ${aaOrDash(p.ecd_length_residues)} | ${aaOrDash(p.icd_length_residues)} | ${aaOrDash(p.signal_peptide_length)} | ${p.n_terminal_orientation ? prettyEnum(p.n_terminal_orientation) : "—"} | ${paralogTier(p.ecd_pct_identity ?? p.full_length_pct_identity)} |`,
     );
   }
   lines.push("");
-
-  // --- Paralogs ---
-  lines.push("## 6. Paralogs");
-  lines.push("");
-  if (df.paralogs.length) {
-    lines.push(`*Ensembl ${df.paralogs[0].compara_version}*`);
-    lines.push("");
-    lines.push("| Paralog | UniProt | ECD %id | Family |");
-    lines.push("|---|---|---|---|");
-    for (const p of df.paralogs) {
-      lines.push(
-        `| ${p.paralog_symbol} | [${p.paralog_uniprot_acc}](https://www.uniprot.org/uniprotkb/${p.paralog_uniprot_acc}) | ${fmtPct(p.ecd_pct_identity)} | ${p.family_id} |`,
-      );
-    }
-    lines.push("");
-  }
-  // PR23 round 10 dropped the LLM paralog cross-reactivity verdict.
-  // Per-antibody cross-reactivity behavior is captured in §3
-  // `AntibodyRef.cross_reactivity_notes`; the gene-family prior is
-  // captured by `filters.max_paralog_ecd_pct_identity`.
   lines.push(
-    `*Per-antibody cross-reactivity behavior is captured per-clone under §3 (Surface evidence → antibodies). The LLM cross-reactivity verdict is deferred to v1.x.*`,
+    "**Tier cutoffs.** *Ortholog conservation* (higher = better — cross-species evidence can stand in for human): ≥85% high · 60–85% moderate · <60% low. *Paralog cross-reactivity* (higher = worse — a binder may also engage the paralog): >80% high-risk · 60–80% caution · <60% low-risk ([PMID 33170010](https://pubmed.ncbi.nlm.nih.gov/33170010/)).",
   );
   lines.push("");
-
-  // --- Orthologs ---
-  lines.push("## 7. Orthologs");
-  lines.push("");
-  for (const species of ["mouse", "cynomolgus"]) {
-    const entries = df.orthologs[species];
-    if (!entries.length) continue;
-    lines.push(`**${species.charAt(0).toUpperCase() + species.slice(1)}**`);
-    lines.push("");
-    lines.push("| Canonical | Isoform | Symbol | UniProt | Type | Full-length %id | ECD %id | ECD %sim | ECD len | TM |");
-    lines.push("|---|---|---|---|---|---|---|---|---|---|");
-    for (const o of entries) {
-      lines.push(
-        `| ${o.is_canonical ? "✓" : "alt"} | ${o.isoform_id} | ${o.ortholog_symbol} | [${o.ortholog_uniprot_acc}](https://www.uniprot.org/uniprotkb/${o.ortholog_uniprot_acc}) | ${prettyEnum(o.type)} | ${fmtPct(o.full_length_pct_identity_to_human_canonical)} | ${fmtPct(o.ecd_pct_identity_to_human_canonical)} | ${fmtPct(o.ecd_pct_similarity_to_human_canonical)} | ${o.ecd_length_residues} aa | ${o.tm_helix_count} |`,
-      );
-    }
-    lines.push("");
-  }
 
   // --- Accessibility risks ---
   const r = rec.accessibility_risks;
   // Order mirrors the viewer's AccessibilityRisksCard. Restricted-subdomain
   // and co-receptor are NOT here — they render under §4 Biological context,
   // exactly as the viewer puts them in the Biology card.
-  lines.push("## 8. Accessibility risks");
+  lines.push("## 6. Accessibility risks");
   lines.push("");
   pushRiskBlock(lines, "Shed form", r.shed_form);
   pushRiskBlock(lines, "Secreted form", r.secreted_form);
@@ -558,7 +589,7 @@ function md(rec, structureData, sequences, afdbEntry) {
 
   // --- Structure summary ---
   const s = df.structure;
-  lines.push("## 9. Structure summary");
+  lines.push("## 7. Structure summary");
   lines.push("");
   lines.push(
     `| Field | Value |`,
@@ -605,14 +636,34 @@ function md(rec, structureData, sequences, afdbEntry) {
       );
     }
   }
+  // Representative experimental structure — read from the record's
+  // deterministic_features.structure.representative_experimental_structure
+  // (PDBe SIFTS best_structures, highest coverage / best resolution). Its
+  // construct sequence + projected topology are embedded in the appendix.
+  const repStruct = s.representative_experimental_structure;
+  if (repStruct?.pdb_id) {
+    const meth = [
+      repStruct.experimental_method,
+      repStruct.resolution_a != null ? `${repStruct.resolution_a} Å` : null,
+    ]
+      .filter(Boolean)
+      .join(" ");
+    const cov =
+      repStruct.unp_start != null && repStruct.unp_end != null
+        ? ` · UniProt ${repStruct.unp_start}–${repStruct.unp_end}`
+        : "";
+    lines.push(
+      `| Experimental (best) | [${String(repStruct.pdb_id).toUpperCase()}](https://www.rcsb.org/structure/${repStruct.pdb_id}) chain ${repStruct.chain_id} | RCSB PDB${meth ? ` · ${meth}` : ""}${cov} |`,
+    );
+  }
   const sbStruct = df.surface_bind;
   if (sbStruct && Array.isArray(sbStruct.pdbs) && sbStruct.pdbs.length) {
     const shown = sbStruct.pdbs
-      .slice(0, 8)
+      .slice(0, 5)
       .map((p) => `[${p}](https://www.rcsb.org/structure/${p})`)
       .join(", ");
     lines.push(
-      `| Experimental (${sbStruct.pdbs.length}) | ${shown}${sbStruct.pdbs.length > 8 ? " · full list in §10" : ""} | RCSB PDB |`,
+      `| Experimental (${sbStruct.pdbs.length} total) | ${shown}${sbStruct.pdbs.length > 5 ? `, … [all ${sbStruct.pdbs.length} →](https://www.rcsb.org/uniprot/${g.uniprot_acc})` : ""} | RCSB PDB |`,
     );
   }
   lines.push("");
@@ -623,7 +674,7 @@ function md(rec, structureData, sequences, afdbEntry) {
   // verified same paper) — NOT the record's surface_bind.source string,
   // which mislabels the first author as "Marchand".
   const sb = df.surface_bind;
-  lines.push("## 10. SURFACE-Bind candidate sites");
+  lines.push("## 8. SURFACE-Bind candidate sites");
   lines.push("");
   lines.push(
     `*Deterministic · MaSIF-based surface patch scoring on the AlphaFold model (Balbi et al. 2026, [PMID 41604262](https://pubmed.ncbi.nlm.nih.gov/41604262/), PNAS) · SURFACE-Bind v1, Correia lab (EPFL / Inria / Novo Nordisk)*`,
@@ -653,7 +704,7 @@ function md(rec, structureData, sequences, afdbEntry) {
     lines.push("");
     if (Array.isArray(sb.pdbs) && sb.pdbs.length) {
       lines.push(
-        `**Experimental structures** — ${sb.pdbs.length} PDB entr${sb.pdbs.length === 1 ? "y" : "ies"} for this protein: ${sb.pdbs.join(", ")}.`,
+        `**Experimental structures** — ${sb.pdbs.length} PDB entr${sb.pdbs.length === 1 ? "y" : "ies"} for this protein (browse at [RCSB](https://www.rcsb.org/uniprot/${g.uniprot_acc})).`,
       );
       lines.push("");
     }
@@ -699,7 +750,7 @@ function md(rec, structureData, sequences, afdbEntry) {
     else if (ev.evidence_tier === "tertiary") tertiary += 1;
     if (evidenceSources(ev).some((s) => pmcIdOf(s))) pmcOa += 1;
   }
-  lines.push("## 11. Evidence ledger");
+  lines.push("## 9. Evidence ledger");
   lines.push("");
   lines.push(
     `${rec.evidence.length} entries · ${primary} primary · ${secondary} secondary · ${tertiary} tertiary · ${pmcOa} PMC OA.`,
@@ -874,6 +925,40 @@ function md(rec, structureData, sequences, afdbEntry) {
     }
   }
 
+  // Representative experimental-structure sequence — the canonical residues
+  // spanned by the best PDB construct (from the record's PDBe SIFTS pointer).
+  // Sliced from the canonical sequence over the structure's mapped UniProt
+  // range so it aligns 1:1 with the projected topology below.
+  const canonSeqForStruct = sequences[g.uniprot_acc] ?? null;
+  if (
+    repStruct?.pdb_id &&
+    canonSeqForStruct &&
+    repStruct.unp_start != null &&
+    repStruct.unp_end != null
+  ) {
+    const start = Number(repStruct.unp_start);
+    const end = Number(repStruct.unp_end);
+    const span = canonSeqForStruct.slice(start - 1, end);
+    if (span) {
+      const meth = [
+        repStruct.experimental_method,
+        repStruct.resolution_a != null ? `${repStruct.resolution_a} Å` : null,
+      ]
+        .filter(Boolean)
+        .join(", ");
+      lines.push("### Experimental-structure sequence");
+      lines.push("");
+      lines.push(
+        `**${String(repStruct.pdb_id).toUpperCase()}** chain ${repStruct.chain_id}${meth ? ` · ${meth}` : ""} · covers UniProt residues ${start}–${end} (${span.length} aa)${repStruct.n_experimental_structures ? ` · representative of ${repStruct.n_experimental_structures} experimental structures` : ""}. Residues sliced from the canonical sequence over the structure's SIFTS-mapped span; unresolved loops in the deposited coordinates are not removed here.`,
+      );
+      lines.push("");
+      lines.push("```");
+      lines.push(wrapSequence(span, 60));
+      lines.push("```");
+      lines.push("");
+    }
+  }
+
   // Per-residue topology, canonical + each isoform
   lines.push("### Per-residue DeepTMHMM topology");
   lines.push("");
@@ -923,6 +1008,29 @@ function md(rec, structureData, sequences, afdbEntry) {
       lines.push("");
       lines.push("```");
       lines.push(wrapTopology(p.per_residue_topology, 60));
+      lines.push("```");
+      lines.push("");
+    }
+  }
+  // Representative experimental-structure topology — canonical DeepTMHMM
+  // projected onto the best PDB's SIFTS-mapped UniProt span (same residues as
+  // the experimental sequence above).
+  if (
+    repStruct?.pdb_id &&
+    ct.per_residue_topology &&
+    repStruct.unp_start != null &&
+    repStruct.unp_end != null
+  ) {
+    const start = Number(repStruct.unp_start);
+    const end = Number(repStruct.unp_end);
+    const topoSpan = ct.per_residue_topology.slice(start - 1, end);
+    if (topoSpan) {
+      lines.push(
+        `**Experimental — ${String(repStruct.pdb_id).toUpperCase()} chain ${repStruct.chain_id}** (UniProt residues ${start}–${end}, projected from canonical)`,
+      );
+      lines.push("");
+      lines.push("```");
+      lines.push(wrapTopology(topoSpan, 60));
       lines.push("```");
       lines.push("");
     }
@@ -1027,9 +1135,18 @@ async function main() {
       }
     }
     const uniqAccs = [...new Set(seqAccs)];
-    process.stdout.write(`→ ${name}: fetching ${uniqAccs.length} sequence(s)… `);
+    // Prefer sequences embedded in the record (deterministic_features now
+    // carries them); only fetch the accessions the record doesn't cover.
     const sequences = {};
-    for (const acc of uniqAccs) sequences[acc] = await fetchSequence(acc);
+    const recSeqs = collectRecordSequences(dfx);
+    for (const acc of uniqAccs) {
+      if (recSeqs[acc]) sequences[acc] = recSeqs[acc];
+    }
+    const toFetch = uniqAccs.filter((acc) => !sequences[acc]);
+    process.stdout.write(
+      `→ ${name}: ${uniqAccs.length - toFetch.length}/${uniqAccs.length} seq from record, fetching ${toFetch.length}… `,
+    );
+    for (const acc of toFetch) sequences[acc] = await fetchSequence(acc);
     const canonSeq = uniprot ? sequences[uniprot] : null;
     process.stdout.write(
       canonSeq ? `canonical ${canonSeq.length} aa\n` : "(no canonical seq)\n",
