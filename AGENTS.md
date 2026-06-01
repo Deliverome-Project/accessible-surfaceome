@@ -121,6 +121,16 @@ the **same** change as the JSON edit. Don't paper over JSON ↔ D1 schema
 drift with defensive shims in `viewer/lib/surfaceome.ts` — fix the
 records and re-sync D1.
 
+After the D1 write, `publish_record` purges the Worker's edge cache for
+`/v1/genes/{SYMBOL}` + `/v1/catalog` + `/v1/genes` (targeted by-URL, never
+`purge_everything` — shared `deliverome.org` zone) so the record goes live
+immediately instead of on the `Cache-Control` TTL (up to 1 day per gene).
+Needs `CLOUDFLARE_ZONE_ID` + a Zone → Cache Purge token scope; missing
+either soft-skips with a warning. Zone cache + rate-limit rules (ignore
+query strings; generous per-IP limits, tighter on `/v1/catalog` + `*.tsv`)
+are applied by `scripts/apply_cf_edge_rules.py` (dry-run by default,
+`--execute` to apply).
+
 ### Query from Python
 
 `accessible_surfaceome.cloud.d1_client.D1Client` speaks Cloudflare's
