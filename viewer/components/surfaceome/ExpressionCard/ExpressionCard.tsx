@@ -43,39 +43,75 @@ const DISEASE_CONTEXT_RANK: Record<string, number> = {
 export function ExpressionCard({ rec, n }: Props) {
   const bc = rec.biological_context;
 
-  // Combine tissues + cell types into ONE view organized by tissue of origin.
-  // Each tissue group carries its disease-context reads (normal first — the
-  // off-tumor toxicity baseline) plus the cell types whose `present_in_tissues`
-  // names that tissue. Cell types also name tissues the tissue table missed
-  // (e.g. brain / colon / pancreas tox organs), so those surface as their own
-  // groups; cell types with no tissue fall under "(tissue unspecified)".
+  // ONE view organized by tissue of origin. The CELL-of-origin row is the
+  // unit of evidence — it carries the disease context + level (inherited from
+  // the tissue read that names it) and the citations. The tissue (header) row
+  // is a bare grouping label; it only shows dx / level / cites when the tissue
+  // has INDEPENDENT evidence (a read with no cell-type breakdown), so we never
+  // replicate the same observation on both the tissue row and its cell row.
+  // Cell types also name tissues that carry no tissue-level read (e.g. brain /
+  // colon / pancreas tox organs) — those surface as their own groups; cell
+  // types with no tissue fall under "(tissue unspecified)".
   type Tissue = (typeof bc.tissues)[number];
-  type Cell = (typeof bc.cell_types)[number];
+  type CellRow = {
+    name: string;
+    dx: string | null;
+    level: TissueLevel | null;
+    cites: Set<string>;
+  };
   const norm = (s: string) => s.trim().toLowerCase();
   const UNSPEC = "(tissue unspecified)";
 
   const groups = new Map<
     string,
-    { name: string; order: number; reads: Tissue[]; cells: Cell[] }
+    { name: string; order: number; reads: Tissue[]; cells: Map<string, CellRow> }
   >();
   const ensure = (name: string) => {
     const k = norm(name);
     let g = groups.get(k);
     if (!g) {
-      g = { name, order: groups.size, reads: [], cells: [] };
+      g = { name, order: groups.size, reads: [], cells: new Map() };
       groups.set(k, g);
     }
     return g;
   };
-  bc.tissues.forEach((t) => ensure(t.tissue).reads.push(t));
-  bc.cell_types.forEach((c) => {
-    const where = c.present_in_tissues.length ? c.present_in_tissues : [UNSPEC];
-    where.forEach((tn) => ensure(tn).cells.push(c));
+  const cellIn = (g: { cells: Map<string, CellRow> }, name: string) => {
+    const k = norm(name);
+    let c = g.cells.get(k);
+    if (!c) {
+      c = { name, dx: null, level: null, cites: new Set() };
+      g.cells.set(k, c);
+    }
+    return c;
+  };
+
+  // Tissue reads push their dx + level + cites down onto the cell they name.
+  bc.tissues.forEach((t) => {
+    const g = ensure(t.tissue);
+    g.reads.push(t);
+    t.cell_types.forEach((cn) => {
+      const c = cellIn(g, cn);
+      c.dx = t.disease_context;
+      c.level = t.present;
+      t.cited_evidence_ids.forEach((id) => c.cites.add(id));
+    });
+  });
+  // Cell-type records add their citations (and surface tissues with no
+  // tissue-level read). They carry no dx / level of their own.
+  bc.cell_types.forEach((ct) => {
+    const where = ct.present_in_tissues.length ? ct.present_in_tissues : [UNSPEC];
+    where.forEach((tn) => {
+      const c = cellIn(ensure(tn), ct.cell_type);
+      ct.cited_evidence_ids.forEach((id) => c.cites.add(id));
+    });
   });
 
+  // A read with NO cell breakdown is the tissue's own independent evidence.
+  const independentReads = (g: { reads: Tissue[] }) =>
+    g.reads.filter((r) => r.cell_types.length === 0);
+
   // Group order: tissues with a `normal` read first, then tissues with any
-  // read, then cell-type-only tissues; "(tissue unspecified)" last. Stable on
-  // first-appearance order within a rank.
+  // read, then cell-type-only tissues; "(tissue unspecified)" last.
   const groupRank = (g: { name: string; reads: Tissue[] }) => {
     if (norm(g.name) === norm(UNSPEC)) return 4;
     if (g.reads.length === 0) return 3;
@@ -90,7 +126,7 @@ export function ExpressionCard({ rec, n }: Props) {
       n={n}
       eyebrow="Expression"
       title="Expression level & tissue distribution"
-      meta="Baseline level · breadth · overexpression precedent · by tissue of origin (normal first), cell types nested"
+      meta="Baseline level · breadth · overexpression precedent · by tissue of origin; disease context + level + evidence sit on each cell of origin"
     >
       <FeatureRationales category="expression" rec={rec} />
 
@@ -102,7 +138,7 @@ export function ExpressionCard({ rec, n }: Props) {
           <table className={styles.table}>
             <thead>
               <tr>
-                <th scope="col">Tissue / cell type</th>
+                <th scope="col">Tissue / cell of origin</th>
                 <th scope="col">Disease context</th>
                 <th scope="col">Level (protein)</th>
                 <th scope="col">Cites</th>
@@ -110,76 +146,93 @@ export function ExpressionCard({ rec, n }: Props) {
             </thead>
             <tbody>
               {ordered.flatMap((g) => {
-                const reads = [...g.reads].sort(
+                const indep = independentReads(g);
+                const head = indep[0];
+                const cells = [...g.cells.values()].sort(
                   (a, b) =>
-                    (DISEASE_CONTEXT_RANK[a.disease_context] ?? 9) -
-                    (DISEASE_CONTEXT_RANK[b.disease_context] ?? 9),
+                    (DISEASE_CONTEXT_RANK[a.dx ?? ""] ?? 9) -
+                    (DISEASE_CONTEXT_RANK[b.dx ?? ""] ?? 9),
                 );
-                // free-text cell types named on the tissue reads that aren't
-                // already covered by a structured cell-type row in this group
-                const covered = new Set(g.cells.map((c) => norm(c.cell_type)));
-                const freeText = [
-                  ...new Set(reads.flatMap((t) => t.cell_types)),
-                ].filter((nm) => !covered.has(norm(nm)));
 
-                const headRows =
-                  reads.length === 0
-                    ? [
-                        <tr key={`${g.name}-h`} className={styles.tissueHead}>
-                          <td>
-                            <strong>{g.name}</strong>
-                          </td>
-                          <td className={styles.mono}>—</td>
-                          <td>—</td>
-                          <td>—</td>
-                        </tr>,
-                      ]
-                    : reads.map((t, ri) => (
-                        <tr
-                          key={`${g.name}-r${ri}`}
-                          className={ri === 0 ? styles.tissueHead : undefined}
-                        >
-                          <td>{ri === 0 ? <strong>{g.name}</strong> : ""}</td>
-                          <td>
-                            <span className={styles.mono}>
-                              {prettyEnum(t.disease_context)}
-                            </span>
-                          </td>
-                          <td>
-                            <StatusPill tone={tissueLevelTone(t.present)} size="sm">
-                              {prettyEnum(t.present)}
-                            </StatusPill>
-                          </td>
-                          <td>
-                            <EvidenceChipList
-                              ids={t.cited_evidence_ids}
-                              label="Cites"
-                            />
-                          </td>
-                        </tr>
-                      ));
-
-                const cellRows = g.cells.map((c, ci) => (
-                  <tr key={`${g.name}-c${ci}`}>
-                    <td className={styles.cellRow}>↳ {c.cell_type}</td>
-                    <td className={styles.mono}>cell type</td>
-                    <td>—</td>
+                // Tissue header: bare unless the tissue has independent
+                // (no-cell-breakdown) evidence — then it carries that read.
+                const headerRow = (
+                  <tr key={`${g.name}-head`} className={styles.tissueHead}>
                     <td>
-                      <EvidenceChipList ids={c.cited_evidence_ids} label="Cites" />
+                      <strong>{g.name}</strong>
+                    </td>
+                    {head ? (
+                      <>
+                        <td>
+                          <span className={styles.mono}>
+                            {prettyEnum(head.disease_context)}
+                          </span>
+                        </td>
+                        <td>
+                          <StatusPill tone={tissueLevelTone(head.present)} size="sm">
+                            {prettyEnum(head.present)}
+                          </StatusPill>
+                        </td>
+                        <td>
+                          <EvidenceChipList
+                            ids={head.cited_evidence_ids}
+                            label="Cites"
+                          />
+                        </td>
+                      </>
+                    ) : (
+                      <>
+                        <td />
+                        <td />
+                        <td />
+                      </>
+                    )}
+                  </tr>
+                );
+                // Any further independent reads as their own tissue-level rows.
+                const extraIndep = indep.slice(1).map((r, ri) => (
+                  <tr key={`${g.name}-i${ri}`}>
+                    <td className={styles.cellRow}>tissue-level</td>
+                    <td>
+                      <span className={styles.mono}>
+                        {prettyEnum(r.disease_context)}
+                      </span>
+                    </td>
+                    <td>
+                      <StatusPill tone={tissueLevelTone(r.present)} size="sm">
+                        {prettyEnum(r.present)}
+                      </StatusPill>
+                    </td>
+                    <td>
+                      <EvidenceChipList ids={r.cited_evidence_ids} label="Cites" />
                     </td>
                   </tr>
                 ));
-
-                const freeRows = freeText.map((nm, fi) => (
-                  <tr key={`${g.name}-f${fi}`}>
-                    <td className={styles.cellRow}>↳ {nm}</td>
-                    <td className={styles.mono}>cell type</td>
-                    <td>—</td>
-                    <td>—</td>
+                const cellRows = cells.map((c, ci) => (
+                  <tr key={`${g.name}-c${ci}`}>
+                    <td className={styles.cellRow}>↳ {c.name}</td>
+                    <td>
+                      {c.dx ? (
+                        <span className={styles.mono}>{prettyEnum(c.dx)}</span>
+                      ) : (
+                        "—"
+                      )}
+                    </td>
+                    <td>
+                      {c.level ? (
+                        <StatusPill tone={tissueLevelTone(c.level)} size="sm">
+                          {prettyEnum(c.level)}
+                        </StatusPill>
+                      ) : (
+                        "—"
+                      )}
+                    </td>
+                    <td>
+                      <EvidenceChipList ids={[...c.cites]} label="Cites" />
+                    </td>
                   </tr>
                 ));
-
-                return [...headRows, ...cellRows, ...freeRows];
+                return [headerRow, ...extraIndep, ...cellRows];
               })}
             </tbody>
           </table>
