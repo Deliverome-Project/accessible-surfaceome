@@ -867,7 +867,7 @@ const DEFAULT_EXPORT_RUN_ID = "mainbench_canonical_v2";
 // The genome-wide Sonnet/NCBI triage sweep over the full protein-coding
 // cohort (~19k genes). Used as the run_id for the genome-wide export and
 // referenced by the /v1/meta/sizes estimator.
-const GENOME_RUN_ID = "genome_full_sonnet_ncbi_v1";
+const GENOME_RUN_ID = "genome_full_sonnet_ncbi_v2";
 // Reasoning columns appended to the triage export when `with_reasoning=1`.
 // Default-off keeps the figure-input exports prose-free (see CLAUDE.md
 // "Figure-input TSV conventions" — never ship full reasoning in those);
