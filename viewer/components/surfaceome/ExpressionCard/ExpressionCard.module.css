@@ -58,3 +58,22 @@
 .stateName {
   font-weight: var(--fw-medium);
 }
+
+/* Combined "by tissue of origin" table. The first row of each tissue group
+   carries a heavier top border so the groups read as distinct blocks. */
+.tissueHead td {
+  border-top: 2px solid var(--line);
+}
+
+/* Cell-type sub-rows nested under their tissue of origin — indented + dimmed
+   so they read as children of the tissue header above them. */
+.cellRow {
+  padding-left: var(--space-5);
+  color: var(--ink-soft);
+}
+
+/* Inline cell-states note next to a tissue's level chip. */
+.states {
+  color: var(--ink-soft);
+  font-size: 0.85em;
+}
