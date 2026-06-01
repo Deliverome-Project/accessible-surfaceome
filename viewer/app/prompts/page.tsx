@@ -281,18 +281,48 @@ function slugify(text: string): string {
     .replace(/^-+|-+$/g, "");
 }
 
+/** A line that looks like a fenced-code DELIMITER: starts with ``` and
+ *  carries only an optional info string (no further backticks). */
+function looksLikeFence(line: string): boolean {
+  return /^\s*```+[^`]*$/.test(line.trimEnd());
+}
+
+/** Per-line "is inside a real code block" flags. A fence is only honored
+ *  when it actually CLOSES — an opener with no matching closer is treated
+ *  as ordinary text. This is what stops a prose line that merely *starts*
+ *  with a wrapped "```json block. No prose…" (the methods-builder prompt)
+ *  from opening a code block that swallows every heading after it: that
+ *  "fence" never closes, so we don't enter code state at all. */
+function codeLineMask(lines: string[]): boolean[] {
+  const mask = new Array<boolean>(lines.length).fill(false);
+  let i = 0;
+  while (i < lines.length) {
+    if (looksLikeFence(lines[i])) {
+      // Look for a closing fence.
+      let j = i + 1;
+      while (j < lines.length && !looksLikeFence(lines[j])) j++;
+      if (j < lines.length) {
+        // Balanced block [i..j] — mark the fence lines + their interior.
+        for (let k = i; k <= j; k++) mask[k] = true;
+        i = j + 1;
+        continue;
+      }
+      // No closer — this opener is just text; fall through.
+    }
+    i++;
+  }
+  return mask;
+}
+
 function extractToc(body: string): TocItem[] {
   // Match `#` … `######` headings, but skip lines inside fenced code blocks.
   const lines = body.split("\n");
+  const inCode = codeLineMask(lines);
   const out: TocItem[] = [];
-  let inCodeBlock = false;
   const seenSlugs = new Map<string, number>();
-  for (const line of lines) {
-    if (line.startsWith("```")) {
-      inCodeBlock = !inCodeBlock;
-      continue;
-    }
-    if (inCodeBlock) continue;
+  for (let li = 0; li < lines.length; li++) {
+    const line = lines[li];
+    if (inCode[li]) continue;
     const m = /^(#{1,6})\s+(.+?)\s*$/.exec(line);
     if (!m) continue;
     const level = m[1].length;
@@ -350,15 +380,15 @@ function splitIntoSections(
   if (top == null) return { preamble: body, sections: [] };
 
   const headingRe = new RegExp(`^#{${top}}\\s+(.+?)\\s*$`);
+  const inCode = codeLineMask(lines);
   const preamble: string[] = [];
   const sections: PromptSection[] = [];
   let cur: { title: string; buf: string[] } | null = null;
-  let inCode = false;
   const seen = new Map<string, number>();
 
-  for (const line of lines) {
-    if (line.startsWith("```")) inCode = !inCode;
-    const m = !inCode ? headingRe.exec(line) : null;
+  for (let li = 0; li < lines.length; li++) {
+    const line = lines[li];
+    const m = !inCode[li] ? headingRe.exec(line) : null;
     if (m) {
       if (cur) {
         const base = slugify(cur.title.replace(/`/g, ""));
