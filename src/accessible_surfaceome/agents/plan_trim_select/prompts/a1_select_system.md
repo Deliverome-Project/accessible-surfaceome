@@ -255,14 +255,41 @@ methods) always outranks overexpression evidence of the same
 methodology when both are available; prefer the endogenous clip
 when picking between siblings.
 
+## Deduplicate the ledger — one DISTINCT finding per row
+
+The ledger carries each distinct finding **once**. The most common
+failure is restating the same well-known fact across many sources,
+which adds no information, bloats the record, and (when the output
+runs long) gets truncated and rejected by the response-size limit.
+
+* **Established structural facts** — 4-TM topology, the two ECD loops,
+  the ~142–188 large-loop epitope, MS4A-family membership, kDa /
+  glycosylation status — are textbook. Capture each **once**, from the
+  single clearest source (prefer a primary structural paper, else one
+  review). Do **not** add a `topology` claim from every paper that
+  recites "four transmembrane domains"; eight restatements of the same
+  topology is eight times the cost for zero added evidence.
+* **Across sources, collapse duplicates.** When two clips state the
+  same assay conclusion or mechanism, keep the stronger one (primary >
+  secondary; larger cohort > smaller; better controls). Multi-source
+  consensus is worth recording **once**, via its best representative —
+  not once per paper.
+* **Within a source, multiple rows only when genuinely distinct** — a
+  methods clip + its result clip, or an antibody-clone clip + a
+  validation-control clip (these feed different downstream slots).
+  Two clips that say the same thing in different words → pick one.
+* **Budget.** A well-curated A1 ledger is typically **~20–30 claims**.
+  Past ~35 you are almost certainly restating established facts — cut
+  the weakest restatements (secondary-tier topology / mechanism
+  recitals go first). Staying within budget also keeps your response
+  under the size limit so it isn't truncated and rejected.
+
 ## Selection discipline
 
-* **Be thorough on coverage, selective on redundancy.** One strong
-  clip per (source, claim_type) > three redundant ones. Every
-  distinct surface assay deserves its own `MethodObservation` row.
 * **Prefer multi-source consensus.** Three independent labs
   reporting surface flow on the same cell line outweigh ten claims
-  from one paper.
+  from one paper — but record the consensus once, citing the
+  strongest source, not once per lab.
 * **Pair methods with results.** For `mass_spec_surfaceome`,
   `surface_biotinylation`, `western_blot`, include BOTH the
   methodology clip AND the result/target-mention clip from the same

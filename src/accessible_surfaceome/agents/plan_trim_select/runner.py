@@ -129,7 +129,14 @@ HAIKU_MODEL = "claude-haiku-4-5-20251001"
 HAIKU_PRICING_KEY = "claude-haiku-4-5"
 
 MAX_TOKENS_TRIM = 4_000
-MAX_TOKENS_SELECT = 16_000
+# Headroom against the repair-loop cliff: a selector output that overruns
+# this ceiling truncates mid-JSON, fails schema validation, and re-runs
+# (up to MAX_REPAIRS), multiplying cost ~3x. The dedup discipline in the
+# select prompts keeps a typical ledger to ~20-30 claims (~9k tokens), but
+# 20k lets a legitimately evidence-rich gene's ~40-claim output land in one
+# call instead of a repair cascade. Lower only if you confirm outputs stay
+# small; raising further just delays the same cliff.
+MAX_TOKENS_SELECT = 20_000
 MAX_REPAIRS = 2
 TRIM_PREVIEW_CHARS = 700
 

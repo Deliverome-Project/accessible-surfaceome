@@ -51,11 +51,17 @@ One fenced ```json block matching the `SelectionResponse` schema:
 - **Pick clips that directly evidence one of the v1.0.0 surface-evidence
   buckets**: surface_expression, tissue_expression, topology,
   methodological, contradicting_evidence, therapeutic_engagement.
-- **Be selective**: one strong clip per (source, claim_type) is better
-  than three redundant ones. Skip clips that say the same thing as
-  another you've already picked.
-- **Cover source diversity**: prefer multi-source consensus over
-  multi-clip from one paper.
+- **Deduplicate — one distinct finding per row.** Capture each
+  established fact (e.g. TM topology, a known tissue distribution)
+  **once**, from its strongest source. Do not restate the same fact
+  from every paper that mentions it; cross-source restatements add no
+  information, bloat the record, and can push the output past the
+  response-size limit (truncated → rejected).
+- **Cover source diversity**: record multi-source consensus once, via
+  its strongest representative — not once per paper.
+- **Budget**: a well-curated ledger is typically ~20–30 claims; past
+  ~35 you're almost certainly restating established facts — cut the
+  weakest restatements.
 
 ## Classifying
 

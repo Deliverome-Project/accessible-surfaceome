@@ -236,14 +236,34 @@ When a draft's quote matches one of these patterns, set
 Prefer a results-section draft from the same paper when one is
 available.
 
+## Deduplicate the ledger — one DISTINCT finding per row
+
+The ledger carries each distinct finding **once**. The most common
+failure is restating the same observation across many sources, which
+adds no information, bloats the record, and (when the output runs
+long) gets truncated and rejected by the response-size limit.
+
+* **One row per distinct (tissue / cell-type / cell-state /
+  compartment).** "Expressed in B cells" stated by six atlases is one
+  row, recorded via its strongest source — not six rows. Add a second
+  row for a tissue only when it carries a genuinely new fact (a
+  different level call, a disease-context shift, a subcellular
+  caveat).
+* **Across sources, collapse duplicates.** When two clips report the
+  same distribution or localization, keep the stronger one (primary >
+  secondary; larger / better-annotated atlas > smaller). Consensus is
+  recorded once, via its best representative.
+* **Budget.** A well-curated A2 ledger is typically **~20–30 claims**.
+  Past ~35 you are almost certainly restating the same tissue / cell
+  type from multiple atlases — cut the weakest restatements. Staying
+  within budget also keeps your response under the size limit so it
+  isn't truncated and rejected.
+
 ## Selection discipline
 
-* **Be thorough on coverage, selective on redundancy.** One strong
-  clip per (source, tissue / cell-type / cell-state / compartment) is
-  better than three redundant ones. But every distinct tissue / cell
-  type / cell state / compartment deserves its own row.
 * **Prefer multi-source consensus.** Three independent atlases on
-  tissue distribution outweigh ten claims from one cohort.
+  tissue distribution outweigh ten claims from one cohort — but record
+  the consensus once, citing the strongest source.
 * **Actively seek contradicting evidence.** Where the literature is
   contested (ligand identity, surface vs intracellular reports,
   cross-paper IHC discrepancies), pick the contradicting clip and
