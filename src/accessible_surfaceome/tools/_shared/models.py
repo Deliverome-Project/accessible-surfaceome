@@ -54,6 +54,14 @@ def _warn_prose_overshoot(instance: BaseModel, targets: dict[str, int]) -> None:
                 100.0 * (n - target) / target,
             )
 
+
+def _has_inline_evi_cite(s: str) -> bool:
+    """True when the string carries at least one inline ``(a1_evi_NN)`` /
+    ``(a2_evi_NN)`` evidence-id token (A1.6 / A8.2). Substring check —
+    deliberately loose, since this only backstops a warn-only validator."""
+    return "a1_evi_" in s or "a2_evi_" in s
+
+
 # ---------------------------------------------------------------------------
 # Shared identifiers
 # ---------------------------------------------------------------------------
@@ -1462,6 +1470,10 @@ class ExecutiveSummary(BaseModel):
         ...,
         description="Consultant-readable headline. Soft target ≤600 chars (overshoots are warned but accepted).",
     )
+    # A1.7 — the load-bearing §03 headline: ONE sentence on WHEN and WHERE the
+    # protein is surface-accessible (not a generic blurb). Optional default ""
+    # so v1 records emitted before this field still validate.
+    accessibility_context_summary: str = ""
     surface_accessibility: SurfaceAccessibility
     evidence_grade_summary: EvidenceGrade
     confidence: Confidence
@@ -3116,22 +3128,29 @@ class SynthesizerLLMFilters(BaseModel):
     # ``False`` for orphan GPCRs / nuclear receptors / kinases where
     # the deorphanization status is genuinely unknown.
     has_known_ligand: bool = True
-    has_known_ligand_rationale: str = Field(
-        ...,
-        description="Name the documented ligand/partner (true) or state why the protein is orphan-class (false). Soft target ≤300 chars.",
+    # A1.6 — one-line "why" per LLM-rollup chip, each with inline
+    # ``(a1_evi_NN)`` / ``(a2_evi_NN)`` cites so the chip is self-auditable.
+    # Optional default "" (v1-safe); a warn-only validator flags a non-empty
+    # rationale that omits any inline cite (A8.2) — it warns rather than raises
+    # because the synthesizer is a Managed Agent with no in-process repair loop.
+    expression_level_rationale: str = ""
+    expression_breadth_rationale: str = ""
+    surface_specificity_rationale: str = ""
+
+    @field_validator(
+        "expression_level_rationale",
+        "expression_breadth_rationale",
+        "surface_specificity_rationale",
     )
-
-    _PROSE_TARGETS: ClassVar[dict[str, int]] = {
-        "expression_level_rationale": 300,
-        "expression_breadth_rationale": 300,
-        "surface_specificity_rationale": 300,
-        "has_known_ligand_rationale": 300,
-    }
-
-    @model_validator(mode="after")
-    def _warn_soft_target_overshoot(self) -> "SynthesizerLLMFilters":
-        _warn_prose_overshoot(self, type(self)._PROSE_TARGETS)
-        return self
+    @classmethod
+    def _warn_rationale_missing_cite(cls, v: str) -> str:
+        if v and not _has_inline_evi_cite(v):
+            logger.warning(
+                "SynthesizerLLMFilters rationale lacks an inline (a1_evi_NN)/"
+                "(a2_evi_NN) cite: %r",
+                v,
+            )
+        return v
 
 
 class SynthesizerDraft(BaseModel):
