@@ -11,12 +11,14 @@ agents; you own this synthesis only.
 A single fenced JSON block: a `SynthesizerDraft`. The exact JSON schema is in
 your task message; follow it. Four blocks:
 
-- `executive_summary` — `one_paragraph` (≤600 char, consultant-readable), the
-  closed-enum verdicts (`surface_accessibility`, `evidence_grade_summary`,
-  `confidence`, `state_dependence`, `subcategory`, `surface_call_reason`),
-  the one-sentence `accessibility_context_summary` (when/where it's
-  surface-accessible), ≤3 `headline_risks`, and `cited_evidence_ids` from
-  the merged ledger.
+- `executive_summary` — `one_paragraph` (≤600 char, consultant-readable),
+  `accessibility_context_summary` (ONE sentence naming WHEN and WHERE the
+  protein is surface-accessible — the load-bearing §03 headline, not a generic
+  blurb; e.g. "Surface-accessible on activated T cells and in tumor tissue, but
+  intracellular in resting cells"), the closed-enum verdicts
+  (`surface_accessibility`, `evidence_grade_summary`, `confidence`,
+  `state_dependence`, `subcategory`, `surface_call_reason`), ≤3 `headline_risks`,
+  and `cited_evidence_ids` from the merged ledger.
 - `accessibility_risks` — six sub-blocks (`co_receptor_requirements`,
   `shed_form`, `secreted_form`, `restricted_subdomain`, `ecd_size_assessment`,
   `epitope_masking`). Each carries severity + evidence_strength. When the
@@ -47,7 +49,12 @@ your task message; follow it. Four blocks:
   `biological_context.subcellular_localization.dual_localization`
   or `accessibility_modulation`, NOT in `secreted_form`. If the
   ledger has ONLY EV-association evidence and no free-soluble
-  evidence, set `secreted_form.present=false`.
+  evidence, set `secreted_form.present=false`. Grade `severity` by
+  DOCUMENTED decoy behavior — measured circulation in serum/plasma, or
+  competition with a therapeutic binder — NOT by the mere existence of an
+  annotated or predicted soluble isoform (that is weak/low at most). And
+  `secreted_form` is about the TARGET being soluble, never about its ligand
+  being shed.
 
   **Grade severity by DOCUMENTED decoy behavior, not just by the
   existence of a soluble form.** A protein can have a soluble form for
@@ -98,38 +105,11 @@ your task message; follow it. Four blocks:
   set `surface_expression_dependency="none"`, not `"unknown"`. Reserve
   `"unknown"` for cases where the ledger has no co-receptor information
   at all — not for cases where it has *negative* information.
-- `filters_llm` — four rollups, **each paired with a one-line
-  `*_rationale`**: `expression_level` + `expression_level_rationale`,
-  `expression_breadth` + `expression_breadth_rationale`,
-  `surface_specificity` + `surface_specificity_rationale`, and
-  `has_known_ligand` + `has_known_ligand_rationale`. The other 13 filter
-  fields are orchestrator-derived; do not emit them here. Every rationale
-  is **required, non-empty, ≤300 chars**, written for the catalog reader,
-  and must justify the rollup value from the ledger. **Embed the specific
-  supporting evidence id(s) inline** — `(a1_evi_NN)` / `(a2_evi_NN)`, the
-  same way `grade_rationale` cites — for every part of the claim the ledger
-  actually backs; the viewer renders these inline ids as clickable evidence
-  tags. Cite ONLY ids that specifically support the statement; when a call
-  is a topology / general-knowledge inference the ledger doesn't directly
-  evidence, state it uncited rather than attaching a loosely-related id.
-    - `expression_level_rationale` — the dominant tissue/context the level
-      anchors to, with its cite (e.g. "high in epithelial tissues; HPA +
-      flow agree (a2_evi_03)").
-    - `expression_breadth_rationale` — how many / which tissue families
-      carry it (e.g. "broad: epithelial, neural, immune (a2_evi_03,
-      a2_evi_11)").
-    - `surface_specificity_rationale` — the surface-vs-intracellular split
-      basis, citing the localization evidence that shows it (e.g. "mixed:
-      ~40% PM, ~60% endosomal in dual-localization rows (a1_evi_12,
-      a2_evi_07)"). Surface-vs-IC is an evidence-anchored call — it should
-      almost always carry a localization cite.
-    - `has_known_ligand_rationale` — name the documented ligand/partner when
-      `True`, citing the binding / structure / blocking-antibody evidence if
-      it is in the ledger (e.g. "binds EGF/TGF-α (a1_evi_05)"). If the ligand
-      is textbook but the ledger carries no binding paper, name the ligand
-      uncited rather than attaching an unrelated id. When `False`, say why
-      orphan-class (e.g. "orphan GPCR; no deorphanized endogenous ligand
-      reported").
+- `filters_llm` — three rollups only: `expression_level`,
+  `expression_breadth`, `surface_specificity`, each paired with a one-line
+  `*_rationale` (`expression_level_rationale`, etc.) carrying inline
+  `(a1_evi_NN)` / `(a2_evi_NN)` cites so each chip is self-auditable. The other
+  14 filter fields are orchestrator-derived; do not emit them here.
 - `confidence` + `confidence_reasoning` (≤600 char; required non-empty when
   `confidence ∈ {moderate, low}`). **Write this for the catalog reader**
   (target-discovery analyst, biologist, BD reader), not for the pipeline.

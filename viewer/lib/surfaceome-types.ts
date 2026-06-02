@@ -191,6 +191,9 @@ export type DiseaseContext =
 
 export interface ExecutiveSummary {
   one_paragraph: string;
+  /** ONE sentence on WHEN and WHERE the protein is surface-accessible — the
+   *  load-bearing §03 headline (A1.7). Optional for pre-A1.7 records. */
+  accessibility_context_summary?: string;
   surface_accessibility: SurfaceAccessibility;
   evidence_grade_summary: EvidenceGrade;
   confidence: Confidence;
