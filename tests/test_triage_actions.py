@@ -96,9 +96,14 @@ def test_worth_fetching_success_adds_body_clips(monkeypatch) -> None:
             score=1.8,
         )
     ]
-    monkeypatch.setattr(abstract_triage, "_fetch_body_drafts", lambda *a, **k: body)
+    monkeypatch.setattr(
+        abstract_triage,
+        "_fetch_body_drafts",
+        lambda *a, **k: abstract_triage._BodyFetch(drafts=body, source="pmc_xml"),
+    )
     actions, pool = _apply(_outcome(paper, "worth_fetching"), paper)
     assert actions[0].fetched_body is True
+    assert actions[0].fetch_source == "pmc_xml"
     assert actions[0].drafts_added == 1
     assert "draft_PMC9398497_results_01" in pool
 
@@ -122,7 +127,11 @@ def test_worth_fetching_empty_body_falls_back_to_abstract(monkeypatch) -> None:
     # The defensive case: fetch succeeds structurally but yields zero
     # clips. Must fall back to the abstract, not silently drop the paper.
     paper = _paper()
-    monkeypatch.setattr(abstract_triage, "_fetch_body_drafts", lambda *a, **k: [])
+    monkeypatch.setattr(
+        abstract_triage,
+        "_fetch_body_drafts",
+        lambda *a, **k: abstract_triage._BodyFetch(drafts=[], source="pmc_xml"),
+    )
     actions, pool = _apply(_outcome(paper, "worth_fetching"), paper)
     assert actions[0].fetched_body is False
     assert actions[0].fell_back_to_abstract is True

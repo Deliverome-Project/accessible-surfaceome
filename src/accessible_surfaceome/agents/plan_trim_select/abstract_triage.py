@@ -38,6 +38,9 @@ from accessible_surfaceome.agents._support.pricing import (
     UsageRecord,
     record_from_response,
 )
+from accessible_surfaceome.agents.plan_trim_select.pdf_parse import (
+    parse_pdf_to_sections,
+)
 from accessible_surfaceome.agents.plan_trim_select.schemas import (
     AbstractTriageResponse,
 )
@@ -270,6 +273,10 @@ class TriageAction:
     decision: str  # discard | keep_abstract | worth_fetching | error
     drafts_added: int = 0
     fetched_body: bool = False
+    # Which retrieval path produced the body, set only when fetched_body is
+    # True: "pmc_xml" (PMC JATS) or "unpaywall_pdf" (OA publisher PDF). PDF
+    # text is noisier than JATS, so downstream debugging can filter on it.
+    fetch_source: str | None = None
     fetch_error: str | None = None
     fell_back_to_abstract: bool = False
     elapsed_s: float = 0.0
@@ -364,6 +371,13 @@ def _abstract_clips(paper: Paper) -> list[EvidenceClaimDraft]:
 
 _NCBI_ELINK = "https://eutils.ncbi.nlm.nih.gov/entrez/eutils/elink.fcgi"
 _UNPAYWALL_API = "https://api.unpaywall.org/v2"
+# Unpaywall requires an email as a polite-pool identifier (free, no signup).
+# Overridable via UNPAYWALL_EMAIL; defaults to the project contact so the
+# fallback works out of the box without per-worktree .env edits.
+_DEFAULT_UNPAYWALL_EMAIL = "michael.smallegan@gmail.com"
+# Skip absurdly large downloads before parsing — DoS guard for untrusted
+# publisher PDFs. A paper + supplement is well under this.
+_MAX_PDF_BYTES = 40 * 1024 * 1024
 
 
 @dataclass
@@ -425,6 +439,28 @@ def _lookup_oa_via_unpaywall(
     return locations
 
 
+def _pick_best_pdf_url(locations: list[UnpaywallLocation]) -> str | None:
+    """Choose the best direct PDF URL among Unpaywall OA locations.
+
+    Preference order: ``publishedVersion`` ranks above accepted/submitted
+    versions; within the same version, a publisher host ranks above a
+    repository. Returns ``None`` when no location exposes a direct
+    ``url_for_pdf`` (e.g. HTML-only OA).
+    """
+
+    pdfs = [loc for loc in locations if loc.url_for_pdf]
+    if not pdfs:
+        return None
+
+    def rank(loc: UnpaywallLocation) -> tuple[int, int]:
+        published = 1 if loc.version == "publishedVersion" else 0
+        publisher = 1 if loc.host_type == "publisher" else 0
+        return (published, publisher)
+
+    pdfs.sort(key=rank, reverse=True)
+    return pdfs[0].url_for_pdf
+
+
 def _lookup_pmcid_for_pmid(pmid: int, *, http: CachedHTTP) -> str | None:
     """Resolve PMID → PMCID via NCBI eLink ``pubmed_pmc`` linkname.
 
@@ -468,50 +504,124 @@ def _lookup_pmcid_for_pmid(pmid: int, *, http: CachedHTTP) -> str | None:
     return None
 
 
+@dataclass
+class _BodyFetch:
+    """A successfully fetched body: its drafts + which path produced it.
+
+    ``source`` is ``"pmc_xml"`` or ``"unpaywall_pdf"`` and flows onto the
+    ``TriageAction.fetch_source`` audit field.
+    """
+
+    drafts: list[EvidenceClaimDraft]
+    source: str
+
+
 def _fetch_body_drafts(
     paper: Paper,
     *,
     http: CachedHTTP,
     retraction_index: RetractionIndex,
-) -> list[EvidenceClaimDraft]:
+) -> _BodyFetch:
     """Pull the full body for ``paper`` and convert to drafts.
 
-    Resolution chain:
+    Resolution chain — each step falls through to the next on miss/empty:
 
-    1. If ``paper.pmc_id`` is set, fetch directly.
-    2. Otherwise, look up PMID → PMCID via NCBI eLink — many older
-       papers are in PMC but the gene2pubmed metadata pipeline didn't
-       carry the link.
-    3. If no PMCID resolves, raise (caller falls back to keep_abstract).
+    1. **PMC JATS** via ``paper.pmc_id``, or PMID → PMCID via NCBI eLink
+       (many older papers are in PMC but the gene2pubmed metadata pipeline
+       didn't carry the link).
+    2. **Unpaywall OA PDF**: DOI → best OA PDF → pdfplumber section parse.
+       Recovers landmark publisher-PDF papers (and the PMC-PDF-only case
+       where JATS XML comes back empty).
 
-    Uses the same no-filter extractor as ``gene_literature(mode=fetch_fulltext)``
-    so body clips from triage-driven fetches are indistinguishable from
-    body clips from selector-driven fetches downstream.
+    Raises if every step fails (caller falls back to keep_abstract). Uses the
+    same no-filter ``extract_paper_drafts`` as ``gene_literature(mode=
+    fetch_fulltext)`` so triage-driven body clips are indistinguishable from
+    selector-driven ones downstream.
     """
 
+    # Step 1: PMC JATS.
     pmcid = paper.pmc_id
     if not pmcid and paper.pmid:
         pmcid = _lookup_pmcid_for_pmid(paper.pmid, http=http)
-    if not pmcid:
-        raise ValueError(
-            f"no PMCID for PMID:{paper.pmid} "
-            f"(NCBI eLink reports paper not in PMC)"
-        )
+    if pmcid:
+        try:
+            body_paper = fetch_fulltext(
+                http=http, pmcid=pmcid, retraction_index=retraction_index
+            )
+            if body_paper.sections:
+                drafts = extract_paper_drafts(
+                    source_id=f"PMC:{pmcid}",
+                    abstract=body_paper.abstract,
+                    sections=body_paper.sections,
+                )
+                if drafts:
+                    return _BodyFetch(drafts=drafts, source="pmc_xml")
+        except Exception as exc:  # noqa: BLE001 — any PMC error falls through to Unpaywall
+            logger.info("PMC JATS fetch failed for PMC:%s (%s); trying Unpaywall", pmcid, exc)
+        # PMC resolved but JATS was empty/errored (PMC-PDF-only) — fall through.
 
-    body_paper = fetch_fulltext(
-        http=http,
-        pmcid=pmcid,
-        retraction_index=retraction_index,
+    # Step 2: Unpaywall OA PDF.
+    pdf_drafts = _fetch_body_via_unpaywall_pdf(paper, http=http)
+    if pdf_drafts:
+        return _BodyFetch(drafts=pdf_drafts, source="unpaywall_pdf")
+
+    raise ValueError(
+        f"no body for {_paper_source_id(paper)}: no PMC JATS and no "
+        f"Unpaywall OA PDF (DOI:{paper.doi or '—'})"
     )
-    if not body_paper.sections:
-        raise RuntimeError(
-            f"PMC:{pmcid} body not available (NCBI + EuropePMC both empty)"
+
+
+def _fetch_body_via_unpaywall_pdf(
+    paper: Paper, *, http: CachedHTTP
+) -> list[EvidenceClaimDraft]:
+    """Fetch the paper's OA PDF via Unpaywall and parse it into body drafts.
+
+    Returns ``[]`` (never raises) when there's no DOI, no stable source key,
+    no OA PDF, the download isn't a PDF (publisher HTML/paywall interstitial),
+    or parsing yields no sections — all of which mean "fall through to the
+    abstract". Body drafts are keyed on the paper's canonical ``PMID:``/
+    ``PMC:`` source id (not ``DOI:``), so clip ids stay clean and consistent
+    with the rest of the pool; the Unpaywall provenance lives on
+    ``TriageAction.fetch_source``.
+    """
+
+    if not paper.doi:
+        return []
+    source_id = _paper_source_id(paper)
+    if source_id == "UNKNOWN":
+        return []  # no stable PMID/PMCID to key clips on
+
+    email = os.environ.get("UNPAYWALL_EMAIL") or _DEFAULT_UNPAYWALL_EMAIL
+    pdf_url = _pick_best_pdf_url(
+        _lookup_oa_via_unpaywall(paper.doi, http=http, email=email)
+    )
+    if not pdf_url:
+        return []
+
+    try:
+        pdf_bytes = http.get_bytes(
+            pdf_url,
+            source="unpaywall_pdf",
+            ttl_days=180,
+            headers={"Accept": "application/pdf"},
+            max_bytes=_MAX_PDF_BYTES,  # streamed cap: aborts oversized downloads
         )
-    source_id = f"PMC:{pmcid}"
+    except Exception as exc:  # noqa: BLE001 — publisher 403 / paywall / timeout / too large
+        logger.info("Unpaywall PDF fetch failed for %s: %s", source_id, exc)
+        return []
+
+    if b"%PDF" not in pdf_bytes[:1024]:
+        # 200 OK but an HTML interstitial / paywall page, not a PDF.
+        logger.info("Unpaywall URL for %s did not return a PDF", source_id)
+        return []
+
+    sections = parse_pdf_to_sections(pdf_bytes)
+    if not sections:
+        return []
     return extract_paper_drafts(
         source_id=source_id,
-        abstract=body_paper.abstract,
-        sections=body_paper.sections,
+        abstract=paper.abstract,
+        sections=sections,
     )
 
 
@@ -546,7 +656,7 @@ def apply_triage_outcomes(
             continue
         to_fetch.append((o, paper))
 
-    fetched: dict[str, list[EvidenceClaimDraft] | Exception] = {}
+    fetched: dict[str, _BodyFetch | Exception] = {}
     if to_fetch:
         with ThreadPoolExecutor(max_workers=fetch_concurrency) as ex:
             futures = {
@@ -604,15 +714,16 @@ def apply_triage_outcomes(
             )
         elif decision == "worth_fetching":
             result = fetched.get(o.paper_id)
-            if isinstance(result, list) and result:
-                for d in result:
+            if isinstance(result, _BodyFetch) and result.drafts:
+                for d in result.drafts:
                     add_to_pool_fn(d, pool, by_source)
                 actions.append(
                     TriageAction(
                         paper_id=o.paper_id,
                         decision="worth_fetching",
-                        drafts_added=len(result),
+                        drafts_added=len(result.drafts),
                         fetched_body=True,
+                        fetch_source=result.source,
                     )
                 )
             else:
@@ -621,7 +732,7 @@ def apply_triage_outcomes(
                 # abstract preview so the paper isn't silently dropped.
                 if isinstance(result, Exception):
                     fetch_error = f"{type(result).__name__}: {result}"
-                elif isinstance(result, list):
+                elif isinstance(result, _BodyFetch):
                     fetch_error = "fetched body yielded zero clips"
                 else:
                     fetch_error = "unknown fetch result"

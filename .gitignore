@@ -36,6 +36,9 @@ cloudflare/workers/surfaceome_api/wrangler.toml
 # session IDs, and possibly upstream API responses)
 .runs/
 data/external/tool_cache.sqlite*
+# Binary HTTP cache (CachedHTTP.get_bytes) — downloaded OA publisher PDFs for the
+# triage Unpaywall fallback. Local cache only; never commit (copyright + bloat).
+data/external/blob_cache/
 
 # Per-gene annotations are agent-generated; commit a curated snapshot once
 # we have a stable set, not every smoke-test output.
