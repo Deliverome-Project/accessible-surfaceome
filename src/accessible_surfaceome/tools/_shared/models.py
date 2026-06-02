@@ -1284,6 +1284,16 @@ ModulationCategory = Literal[
     "other",
     "unknown",
 ]
+# Direction of the surface-pool change — orthogonal to the favorable/restricted
+# accessibility verdict, so the viewer can show the up/down arrow independently
+# of the risk grade.
+ModulationDirection = Literal[
+    "increases",
+    "decreases",
+    "bidirectional",
+    "no_change",
+    "unclear",
+]
 CellStateTrigger = Literal[
     "ER_stress",
     "heat_shock",
@@ -1353,6 +1363,49 @@ _STATE_INDUCED_CATEGORIES: frozenset[str] = frozenset(
         "lysosomal_exocytosis",
     }
 )
+
+# Cancer-context vocabulary — gates the oncogenic_transformation trigger so a
+# non-cancer disease state can't be mapped into it (A7.2). Substring match,
+# case-insensitive.
+_CANCER_VOCAB: tuple[str, ...] = (
+    "tumor", "tumour", "cancer", "carcinoma", "malignan", "oncogen",
+    "metasta", "neoplas", "sarcoma", "leukemia", "leukaemia", "lymphoma",
+    "glioma", "glioblastoma", "melanoma", "adenocarcinoma",
+)
+
+# Clause markers that signal a value is a sentence, not a canonical name —
+# rejected in compartment / subdomain fields (A5.1).
+_CLAUSE_MARKERS: tuple[str, ...] = (
+    " upon ", " under ", " when ", " during ", " after ", " following ",
+    " if ", " in response to ", " stimulat",
+)
+
+
+def _assert_short_canonical(value: str, field: str) -> str:
+    """Reject sentence-like compartment / subdomain values (A5.1).
+
+    Canonical organelle / microdomain names are short and condition-free; a
+    clause-packed value ("endosome upon ligand stimulation") belongs in a
+    ``condition`` field, not the name.
+    """
+    if len(value) > 40:
+        raise ValueError(
+            f"{field} must be a short canonical name (≤40 chars), not a "
+            f"sentence; got {value!r}. Move conditions out of the name."
+        )
+    if "(" in value or ")" in value:
+        raise ValueError(
+            f"{field} must not contain parentheticals; got {value!r}."
+        )
+    padded = f" {value.lower()} "
+    for marker in _CLAUSE_MARKERS:
+        if marker in padded:
+            raise ValueError(
+                f"{field} must be a canonical name, not a conditional clause; "
+                f"got {value!r} (contains '{marker.strip()}')."
+            )
+    return value
+
 
 TerminalOrientation = Literal["extracellular", "cytoplasmic"]
 OrthologyType = Literal["one2one", "one2many", "many2many"]
@@ -2014,6 +2067,11 @@ class DualLocalization(BaseModel):
     condition: str | None = None
     cited_evidence_ids: list[str] = Field(default_factory=list)
 
+    @field_validator("compartment")
+    @classmethod
+    def _short_compartment(cls, v: str) -> str:
+        return _assert_short_canonical(v, "DualLocalization.compartment")
+
 
 class MembraneSubdomain(BaseModel):
     """One membrane subdomain assignment (lipid raft, tight junction, cilium...)."""
@@ -2022,6 +2080,21 @@ class MembraneSubdomain(BaseModel):
 
     subdomain: str
     cited_evidence_ids: list[str] = Field(default_factory=list)
+
+    @field_validator("subdomain")
+    @classmethod
+    def _check_subdomain(cls, v: str) -> str:
+        low = v.lower()
+        # A5.2 — a cytoplasmic-face / inner-leaflet anchor is NOT
+        # surface-accessible; it belongs in dual_localization, not here.
+        if "inner leaflet" in low or "cytoplasmic face" in low or "cytosolic face" in low:
+            raise ValueError(
+                "MembraneSubdomain.subdomain rejects inner-leaflet / "
+                "cytoplasmic-face values — a cytoplasmic-face lipid anchor is "
+                "not surface-accessible; record it in "
+                "subcellular_localization.dual_localization instead."
+            )
+        return _assert_short_canonical(v, "MembraneSubdomain.subdomain")
 
 
 class SubcellularLocalization(BaseModel):
@@ -2090,6 +2163,10 @@ class AccessibilityModulationObservation(BaseModel):
     dual_loc_partner_compartment: DualLocPartnerCompartment | None = None
     baseline_context: str
     modulating_state: str
+    # Up/down direction of the surface-pool change — orthogonal to the
+    # favorable/restricted verdict in ``accessibility_implication``. Optional
+    # (defaults ``unclear``) so v1 records emitted before this field validate.
+    direction: ModulationDirection = "unclear"
     change: str = Field(
         ...,
         description="What changes between baseline_context and modulating_state. Soft target ≤300 chars (overshoots warned but accepted).",
@@ -2152,6 +2229,33 @@ class AccessibilityModulationObservation(BaseModel):
                 "AccessibilityModulationObservation.dual_loc_partner_compartment may be "
                 f"set only when category=='dual_localization'; got category={self.category!r}"
             )
+        return self
+
+    @model_validator(mode="after")
+    def _check_contrast_and_trigger_vocab(self) -> AccessibilityModulationObservation:
+        # A7.1 — a modulation row is a CONTRAST, not a CONTEXT: baseline_context
+        # and modulating_state must name two different states (a documented
+        # change), not the same one ("cells express X" is not a modulation).
+        if (
+            self.baseline_context.strip().lower()
+            == self.modulating_state.strip().lower()
+        ):
+            raise ValueError(
+                "AccessibilityModulationObservation is a contrast, not a context: "
+                "baseline_context and modulating_state must name two DIFFERENT "
+                "states. Drop rows that merely restate expression context."
+            )
+        # A7.2 — the oncogenic_transformation trigger is cancer-specific; a
+        # non-cancer disease state must not be coerced into it.
+        if self.cell_state_trigger == "oncogenic_transformation":
+            text = f"{self.baseline_context} {self.modulating_state}".lower()
+            if not any(v in text for v in _CANCER_VOCAB):
+                raise ValueError(
+                    "cell_state_trigger='oncogenic_transformation' requires a "
+                    "cancer / tumor context in baseline_context or "
+                    "modulating_state; use a different trigger for non-cancer "
+                    "disease states."
+                )
         return self
 
 
@@ -3522,6 +3626,7 @@ __all__ = [
     "Orientation",
     "AccessibilityImplication",
     "ModulationCategory",
+    "ModulationDirection",
     "CellStateTrigger",
     "RestrictedLineage",
     "DualLocPartnerCompartment",

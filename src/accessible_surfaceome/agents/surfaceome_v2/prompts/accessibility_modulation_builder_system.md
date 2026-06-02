@@ -108,7 +108,11 @@ cell type has EGFR" is worse than no row.
   `unstressed HeLa`, `normal kidney epithelium`).
 - `modulating_state` — free text describing the alternate state (e.g.
   `TCR-stimulated CD4 T cell`, `thapsigargin-treated HeLa`, `tumor
-  kidney epithelium`).
+  kidney epithelium`). MUST differ from `baseline_context`.
+- `direction` — closed enum (`increases`, `decreases`, `bidirectional`,
+  `no_change`, `unclear`): the up/down direction of the surface pool from
+  baseline to modulating state — independent of whether that is favorable
+  or restricting for a binder.
 - `change` — prose ≤300 chars describing what actually shifts.
 - `accessibility_implication` — prose ≤300 chars describing what the
   shift means for binder access.
@@ -142,6 +146,12 @@ to fail. Re-read this list before emitting EACH row:
    `category == "tissue_restricted_surface"`.
 4. `dual_loc_partner_compartment` may be non-null ONLY when
    `category == "dual_localization"`.
+5. `baseline_context` and `modulating_state` must name two DIFFERENT
+   states — a modulation row is a CONTRAST, not a context. Don't emit a
+   row that merely restates where the protein is expressed.
+6. `cell_state_trigger="oncogenic_transformation"` requires a cancer /
+   tumor context in `baseline_context` or `modulating_state` — use a
+   different trigger for a non-cancer disease state.
 
 When in doubt, set the optional sub-field to `null` rather than risk a
 mispairing — empty rows still validate; mispaired rows fail.
