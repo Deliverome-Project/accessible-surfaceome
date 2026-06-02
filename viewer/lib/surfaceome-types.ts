@@ -345,6 +345,8 @@ export interface CanonicalTopology {
   ecd_length_residues: number;
   icd_length_residues: number;
   per_residue_topology: string;
+  /** AA sequence the per_residue_topology indexes 1:1 (A1.8). */
+  sequence?: string | null;
   tool_version: string;
   retrieved_at: string;
 }
@@ -367,6 +369,8 @@ export interface IsoformTopology {
   ecd_length_residues: number;
   icd_length_residues: number;
   per_residue_topology: string;
+  /** AA sequence the per_residue_topology indexes 1:1 (A1.8). */
+  sequence?: string | null;
   tool_version: string;
   retrieved_at: string;
   // Sequence identity of an alternative isoform against this protein's own
@@ -422,9 +426,7 @@ export interface OrthologEntry {
    *  topology dot. ``n_tm_regions_absent`` is how many fell in gaps. */
   tm_absent_from_model?: boolean;
   n_tm_regions_absent?: number;
-  // The ortholog's own full amino-acid sequence — aligns 1:1 with the
-  // (projected) per_residue_topology above. Source: topology_public.sequence
-  // for the ortholog accession. Null for rows predating the field.
+  /** AA sequence the per_residue_topology indexes 1:1 (A1.8). */
   sequence?: string | null;
 }
 
@@ -456,47 +458,13 @@ export interface ParalogEntry {
   full_length_pct_identity: number | null;
   family_id: string;
   compara_version: string;
-  // ECD percent similarity (identity + BLOSUM62-positive substitutions),
-  // and the paralog's real DeepTMHMM topology — populated ONLY for close
-  // paralogs (>=80% full-length), which the card promotes to full topology
-  // rows. All null for below-threshold / ECD-less / no-topology paralogs.
-  ecd_pct_similarity?: number | null;
+  // A1.9: topology + sequence populated only for CLOSE paralogs (>=80% ECD
+  // identity) — null for far/ECD-less paralogs and pre-population records,
+  // which avoids the all-GLOB noise that motivated the earlier revert.
   per_residue_topology?: string | null;
-  deeptmhmm_label?: string | null;
   tm_helix_count?: number | null;
   ecd_length_residues?: number | null;
-  icd_length_residues?: number | null;
-  n_terminal_orientation?: Orientation | null;
-  c_terminal_orientation?: Orientation | null;
-  signal_peptide_length?: number | null;
-  // Close-paralog full amino-acid sequence — populated only for close
-  // paralogs (>=80% full-length identity) that also carry topology, so it
-  // pairs with per_residue_topology above. Source: topology_public.sequence.
   sequence?: string | null;
-}
-
-/**
- * The single best experimental (PDB) structure for the canonical UniProt,
- * picked from PDBe's SIFTS ``best_structures`` ranking. Mirrors the Pydantic
- * ``RepresentativeStructure``. ``null`` on ``StructureFeatures`` when the
- * protein has no deposited experimental structure.
- */
-export interface RepresentativeStructure {
-  pdb_id: string;
-  chain_id: string;
-  /** SIFTS-mapped UniProt residue span this structure covers (1-based,
-   *  inclusive). A fragment structure has a sub-span; a full-length cryo-EM
-   *  model spans 1..len(canonical). */
-  unp_start: number;
-  unp_end: number;
-  coverage: number | null;
-  resolution_a: number | null;
-  experimental_method: string | null;
-  /** How many experimental structures PDBe lists for this UniProt (this one
-   *  is the representative of that set). */
-  n_experimental_structures: number | null;
-  source: string;
-  retrieved_at: string | null;
 }
 
 /**
@@ -562,6 +530,19 @@ export interface SurfaceBindSite {
  * a reader pick the format that matches their downstream design
  * pipeline.
  */
+/** The single best experimental structure (highest coverage × resolution),
+ *  ranked from `pdbs` via PDBe SIFTS (A1.10). */
+export interface RepresentativeStructure {
+  pdb_id: string;
+  chain: string | null;
+  method: string | null;
+  resolution_angstrom: number | null;
+  coverage_fraction: number | null;
+  residue_start: number | null;
+  residue_end: number | null;
+  source: string;
+}
+
 export interface SurfaceBindFeatures {
   has_data: boolean;
   n_sites: number;
@@ -582,6 +563,8 @@ export interface SurfaceBindFeatures {
   protein_name: string | null;
   /** PDB entries cross-referenced. Truncated in viewer (often 100+). */
   pdbs: string[];
+  /** The one best experimental structure ranked from `pdbs` (A1.10). */
+  representative_structure?: RepresentativeStructure | null;
   source: string;
   attribution: string;
   citation: string;
