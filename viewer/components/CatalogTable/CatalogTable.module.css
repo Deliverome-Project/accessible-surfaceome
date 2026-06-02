@@ -1131,7 +1131,7 @@
        flag | Access | Conf | Evidence | State (Conf widened to match). */
     grid-template-columns:
       1.75rem 13rem 3rem 1.6rem 1.6rem 1.6rem 1.6rem 1.6rem minmax(9rem, 1fr)
-      4.5rem 4.5rem 5.5rem 5rem 5.5rem;
+      5.5rem 5.5rem 5rem 5.5rem;
   }
   .uniprotCell,
   .headerRow .headerCell:nth-child(3) {

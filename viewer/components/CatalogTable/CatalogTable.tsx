@@ -38,19 +38,18 @@ const ROW_ESTIMATE_PX = 56;
 const ROW_OVERSCAN = 12;
 
 // CSS Grid template — gene | DB-votes count | 5 DB dots | Triage
-// verdict | Reason (flex) | Deep-dive flag | [Deep-dive agent group:
-// Access · Conf · Evidence · State]. The "reason" column takes the
-// remaining horizontal space via `minmax(.., 1fr)`, so widening a
-// deep-dive column (Conf here) pulls the whole group leftward toward
-// the reason by shrinking that slack. Haiku and Opus calls live on
-// /benchmark, not here.
-// 14 columns: Symbol | DB votes | U G S C H | Triage verdict | Reason |
-// Deep-dive flag | [Deep-dive agent group: Access · Conf · Evidence · State].
-// The deep-dive flag sits between Reason and the group; the 4 vital
-// columns (11–14) sit under a spanning "Deep dive agent" header, reuse
-// the gene-page traffic-light tones, and each links to the deep-dive page.
+// verdict | Reason (flex) | Deep dive | Conf | Evidence | State dep.
+// "Deep dive" is the deep-dive agent's headline surface-accessibility
+// call, mirroring the "Triage" verdict column; Conf / Evidence /
+// State dep. are its supporting vitals. The "reason" column takes the
+// remaining horizontal space via `minmax(.., 1fr)`. Haiku and Opus calls
+// live on /benchmark, not here.
+// 13 columns: Symbol | DB votes | U G S C H | Triage verdict | Reason |
+// Deep dive | Conf | Evidence | State dep. The 4 deep-dive columns reuse
+// the gene-page traffic-light tones, are sortable, and each links to the
+// gene's deep-dive page.
 const GRID_TEMPLATE =
-  "10rem 3.8rem 5rem 3.5rem 5rem 4.4rem 3.5rem 8rem minmax(8rem, 1fr) 5rem 4.8rem 6.5rem 5.6rem 6rem";
+  "10rem 3.8rem 5rem 3.5rem 5rem 4.4rem 3.5rem 8rem minmax(8rem, 1fr) 6rem 6.5rem 5.6rem 6rem";
 
 // Worker base for the on-demand /v1/triage/{symbol} fetch the row
 // expander triggers. Falls back to the production deployment when
@@ -114,7 +113,6 @@ type SortKey =
   | "db_cspa"
   | "db_hpa"
   | "triage"
-  | "deep_dive"
   | "dd_access"
   | "dd_conf"
   | "dd_evidence"
@@ -280,7 +278,7 @@ export function CatalogTable({
 }: CatalogTableProps) {
   const [query, setQuery] = useState("");
   const [quick, setQuick] = useState<QuickFilter>("all");
-  const [sortKey, setSortKey] = useState<SortKey>("deep_dive");
+  const [sortKey, setSortKey] = useState<SortKey>("dd_access");
   const [sortDir, setSortDir] = useState<SortDir>("desc");
   // Advanced filters. `dbFilter` is AND-semantics: a row passes only
   // if every DB in the set voted yes (intersection of `DB ∈ filter`
@@ -1358,19 +1356,10 @@ export function CatalogTable({
         role="table"
         aria-rowcount={sorted.length + 1}
       >
-        {/* Group-label strip — a spanning "Deep dive agent" label sits over
-            the 4 deep-dive-vital columns (Access · Conf · Evidence · State),
-            now the trailing group (columns 11–14). A leading spacer covers
-            cols 1–10 (through the deep-dive flag); the label spans the rest. */}
-        <div
-          className={`${styles.groupHeaderRow} ${styles.row}`}
-          role="row"
-          aria-hidden="true"
-        >
-          <div className={styles.groupHeaderSpacer} />
-          <div className={styles.groupHeaderDeepDive}>Deep dive agent</div>
-        </div>
-        {/* Header row — sticky, identical grid template as every body row */}
+        {/* Header row — sticky, identical grid template as every body row.
+            "Deep dive" is the deep-dive agent's headline call, mirroring the
+            "Triage agent" column; Conf / Evidence / State dep. are its
+            supporting vitals (each with an InfoTip). */}
         <div className={`${styles.headerRow} ${styles.row}`} role="row">
           <SortableHeader
             label="Symbol"
@@ -1419,14 +1408,6 @@ export function CatalogTable({
           </div>
           <SortableHeader
             label="Deep dive"
-            k="deep_dive"
-            sortKey={sortKey}
-            sortDir={sortDir}
-            onClick={setSort}
-            align="center"
-          />
-          <SortableHeader
-            label="Access"
             k="dd_access"
             sortKey={sortKey}
             sortDir={sortDir}
@@ -1434,7 +1415,7 @@ export function CatalogTable({
             align="center"
             title="Deep-dive agent surface-accessibility call (sort)"
             extraClass={styles.ddHeaderCell}
-            info="The deep-dive's overall call on how reachable the protein is from outside the cell — high, moderate, low, or no."
+            info="The deep-dive agent's headline call — how reachable the protein is from outside the cell (high, moderate, low, or no). Present only for genes with a deep dive; click to open it."
           />
           <SortableHeader
             label="Conf"
@@ -1626,7 +1607,6 @@ function sortValue(r: CatalogRow, k: SortKey): string | number {
     if (v === "no") return 1;
     return 0;
   }
-  if (k === "deep_dive") return r.deep_dive ? 1 : 0;
   // Deep-dive vitals — ordinal scales so DESC puts the strongest call on
   // top (mirrors the gene-page traffic-light ordering). Null / no-deep-dive
   // sorts to 0 (the bottom on DESC).
@@ -1866,26 +1846,11 @@ function CatalogRowView({
           );
         })()}
       </div>
-      {/* Deep-dive present? — moved to sit directly after Reason, before
-          the deep-dive vital group. Links to the gene's deep-dive page. */}
-      <div className={`${styles.cell} ${styles.deepCell}`} role="cell">
-        {row.deep_dive ? (
-          <Link
-            href={`/${row.symbol}/`}
-            className={`${styles.verdictLabel} ${styles.verdictMini} ${styles.verdictYes} ${styles.deepLink}`}
-            aria-label={`Open the deep-dive record for ${row.symbol}`}
-            title={`Open the deep-dive record for ${row.symbol}`}
-          >
-            yes
-          </Link>
-        ) : (
-          <span className={styles.dim}>—</span>
-        )}
-      </div>
       {(() => {
-        // 4 deep-dive vitals (Access · Conf · Evidence · State), toned with
-        // the gene-page traffic-light scale. Empty dash when no deep dive.
-        // Each populated vital links to the gene's deep-dive page.
+        // 4 deep-dive vitals — "Deep dive" (the headline accessibility call,
+        // mirroring Triage) · Conf · Evidence · State dep., toned with the
+        // gene-page traffic-light scale. Empty dash when no deep dive; each
+        // populated vital links to the gene's deep-dive page.
         const ddf = row.deep_dive_filters;
         const vital = (
           val: string | null | undefined,
