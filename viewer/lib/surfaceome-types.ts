@@ -228,6 +228,20 @@ export interface ExecutiveSummary {
   cited_evidence_ids: string[];
 }
 
+/** Coarse induction-context bucket for the catalog ``induction_trigger``
+ *  filter — the dominant CellStateTrigger across a record's
+ *  accessibility_modulation rows, grouped so the catalog can ask "show me
+ *  stimulus-induced surface candidates" at one level instead of 18. Mirrors
+ *  the Pydantic ``InductionTrigger`` Literal. */
+export type InductionTrigger =
+  | "none"
+  | "oncogenic"
+  | "immune"
+  | "stress_hypoxia"
+  | "cell_death"
+  | "infection"
+  | "other";
+
 export interface Filters {
   surface_accessibility: SurfaceAccessibility;
   confidence: Confidence;
@@ -292,6 +306,17 @@ export interface Filters {
    *  to surface-localize in an OE context" — useful for filtering
    *  targets amenable to OE-based validation experiments. */
   overexpression_surface_localization_observed: boolean;
+  /** Deep-block rollups promoted to top-level catalog facets — all
+   *  deterministic, derived by the orchestrator in ``_derive_filters``.
+   *  ``tumor_associated``: ≥1 ``biological_context.expression`` row in a
+   *  tumor / tumor-adjacent context. ``induction_trigger``: dominant
+   *  CellStateTrigger across ``accessibility_modulation`` rows, bucketed
+   *  (``"none"`` when no modulation row carries one). ``has_live_cell_
+   *  surface_evidence``: ≥1 ``surface_evidence.methods`` row showing direct
+   *  surface accessibility on live/intact cells in an endogenous context. */
+  tumor_associated: boolean;
+  induction_trigger: InductionTrigger;
+  has_live_cell_surface_evidence: boolean;
   /** Per-chip rationales — every catalog chip carries its "why".
    *  Four mirror the synthesizer's LLM-emitted rollups; two are
    *  orchestrator-composed for the derived booleans. Optional: records
@@ -352,6 +377,10 @@ export interface IsoformTopology {
   full_length_pct_identity_to_canonical?: number | null;
   ecd_pct_identity_to_canonical?: number | null;
   ecd_pct_similarity_to_canonical?: number | null;
+  // Full amino-acid sequence the per_residue_topology string aligns to (1:1,
+  // same length) — sourced from topology_public.sequence. Null on records
+  // built before this field existed, or when the input FASTA wasn't retained.
+  sequence?: string | null;
 }
 
 export interface OrthologEntry {
@@ -393,6 +422,10 @@ export interface OrthologEntry {
    *  topology dot. ``n_tm_regions_absent`` is how many fell in gaps. */
   tm_absent_from_model?: boolean;
   n_tm_regions_absent?: number;
+  // The ortholog's own full amino-acid sequence — aligns 1:1 with the
+  // (projected) per_residue_topology above. Source: topology_public.sequence
+  // for the ortholog accession. Null for rows predating the field.
+  sequence?: string | null;
 }
 
 export interface OrthologSet {
@@ -432,6 +465,34 @@ export interface ParalogEntry {
   n_terminal_orientation?: Orientation | null;
   c_terminal_orientation?: Orientation | null;
   signal_peptide_length?: number | null;
+  // Close-paralog full amino-acid sequence — populated only for close
+  // paralogs (>=80% full-length identity) that also carry topology, so it
+  // pairs with per_residue_topology above. Source: topology_public.sequence.
+  sequence?: string | null;
+}
+
+/**
+ * The single best experimental (PDB) structure for the canonical UniProt,
+ * picked from PDBe's SIFTS ``best_structures`` ranking. Mirrors the Pydantic
+ * ``RepresentativeStructure``. ``null`` on ``StructureFeatures`` when the
+ * protein has no deposited experimental structure.
+ */
+export interface RepresentativeStructure {
+  pdb_id: string;
+  chain_id: string;
+  /** SIFTS-mapped UniProt residue span this structure covers (1-based,
+   *  inclusive). A fragment structure has a sub-span; a full-length cryo-EM
+   *  model spans 1..len(canonical). */
+  unp_start: number;
+  unp_end: number;
+  coverage: number | null;
+  resolution_a: number | null;
+  experimental_method: string | null;
+  /** How many experimental structures PDBe lists for this UniProt (this one
+   *  is the representative of that set). */
+  n_experimental_structures: number | null;
+  source: string;
+  retrieved_at: string | null;
 }
 
 /**
@@ -452,6 +513,15 @@ export interface StructureFeatures {
   license: string;
   attribution: string;
   citations: string[];
+  // AlphaFold model download links from the AFDB prediction API — the
+  // non-derivable bits (the working URL needs the current model version).
+  // Null on the placeholder path (AFDB unreachable) and on older records.
+  model_cif_url?: string | null;
+  model_pdb_url?: string | null;
+  model_pae_url?: string | null;
+  // Representative experimental (PDB) structure — PDBe SIFTS best_structures.
+  // Null when the protein has no deposited experimental structure.
+  representative_experimental_structure?: RepresentativeStructure | null;
 }
 
 /**

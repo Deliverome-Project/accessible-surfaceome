@@ -101,15 +101,20 @@ interface LegendProps {
    *  ``false`` when reusing this legend for a topology bar that has
    *  no rendered slab (e.g. the isoform strip). */
   showMembrane?: boolean;
+  /** True when the protein is globular / soluble (DeepTMHMM label
+   *  ``GLOB``): there is no membrane slab to annotate, so the
+   *  "Membrane" swatch is suppressed even if a stray ``M`` state
+   *  slips into ``presentStates``. */
+  globular?: boolean;
 }
 
-export function TopologyLegend({ presentStates, showMembrane = true }: LegendProps) {
+export function TopologyLegend({ presentStates, showMembrane = true, globular = false }: LegendProps) {
   const states = presentStates ?? ["M", "O", "I", "S", "B"];
-  // Only show "Membrane" when the M state is actually present —
-  // matches the StructureViewer's "no slab on soluble proteins" rule
-  // exactly, so the legend can never advertise a slab the viewer
-  // didn't draw.
-  const includeMembrane = showMembrane && states.includes("M");
+  // Only show "Membrane" when the M state is actually present and the
+  // protein isn't globular — matches the StructureViewer's "no slab on
+  // soluble proteins" rule exactly, so the legend can never advertise a
+  // slab the viewer didn't draw.
+  const includeMembrane = showMembrane && states.includes("M") && !globular;
   return (
     <ul className={styles.legend} aria-label="Topology color legend">
       {states.map((s) => (
