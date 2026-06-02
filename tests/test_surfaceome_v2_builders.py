@@ -36,6 +36,7 @@ from accessible_surfaceome.agents.surfaceome_v2.builders import (
     build_expression,
     build_methods,
     build_subcellular_localization,
+    build_tissues,
 )
 from accessible_surfaceome.agents.surfaceome_v2.orchestrator import (
     _synthetic_source_store,
@@ -55,6 +56,7 @@ from accessible_surfaceome.tools._shared.models import (
     SubcellularLocalization,
     SurfaceEvidence,
     SurfaceEvidenceDraft,
+    TissueContext,
 )
 
 
@@ -981,7 +983,7 @@ def test_block_counts_helper() -> None:
     )
     counts = _count_blocks(se, bc)
     assert counts["methods"] == 0
-    assert counts["expression"] == 0
+    assert counts["tissues"] == 0
 
 
 # ---------------------------------------------------------------------------

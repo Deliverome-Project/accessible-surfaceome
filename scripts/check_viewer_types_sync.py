@@ -50,8 +50,6 @@ _NAME_ALIASES: dict[str, str] = {
     "ECDSizeAssessment": "EcdSizeAssessment",
     # Python ``Orthologs`` → TS ``OrthologSet``.
     "Orthologs": "OrthologSet",
-    # Python ``TherapeuticEngagementContext`` → TS ``TherapeuticEngagement``.
-    "TherapeuticEngagementContext": "TherapeuticEngagement",
     # The simpler ``CellTypeContextV1`` (used in
     # ``BiologicalContext.cell_types``) gets the unqualified TS
     # interface name because that's what the viewer card consumes.
