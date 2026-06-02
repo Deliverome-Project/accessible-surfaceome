@@ -238,9 +238,8 @@ same paper for the leader-sequence detail.
   regardless of native trafficking. Cap at
   `evidence_tier="supportive_indirect"` (do not promote to
   `primary` even with multi-method confirmation) — a cytosolic
-  protein can be artifactually surface-localized this way (csGRP78
-  / cell-surface-vimentin failure mode). Note the SP source in
-  the claim's prose context so the synthesizer can hedge.
+  protein can be artifactually surface-localized this way. Note the SP
+  source in the claim's prose context so the synthesizer can hedge.
 * **Unspecified SP** (the methods don't mention the leader source):
   treat as supportive but cap below endogenous-SP evidence. Cap at
   `evidence_tier="secondary"`. Note "OE construct SP source not
@@ -251,6 +250,27 @@ methods) always outranks overexpression evidence of the same
 methodology when both are available; prefer the endogenous clip
 when picking between siblings.
 
+**Keep a floor of ≥1 OE-surface clip even when endogenous siblings
+outrank it.** Overexpression precedent answers a distinct question —
+"can this protein traffic to the surface when forced?" — that
+endogenous evidence does not subsume, and a deterministic downstream
+filter (`overexpression_surface_localization_observed`) silently turns
+off if every OE clip is pruned. The preference orders siblings; it must
+not delete the category.
+
+**An OE-surface clip is a cell-surface readout on INTACT transfected
+cells** — live-cell / non-permeabilized flow, non-perm IF, or
+antibody/ligand binding to live transfectants. In-vitro biochemistry on
+isolated protein (SPR / BLI / ECD-on-chip) matches "surface" only
+semantically — it is not a localization readout, so don't select it as
+OE precedent.
+
+**Prefer a wild-type / canonical-isoform OE clip over a disease-variant
+one.** A constitutively-active mutant, oncogenic deletion, or gene
+fusion only proves the *variant* traffics; the wild-type transfer is the
+precedent a reader needs to design a validation experiment. Keep a
+variant clip only when no wild-type OE-surface readout exists.
+
 ## Deduplicate the ledger — one DISTINCT finding per row
 
 The ledger carries each distinct finding **once**. The most common
@@ -258,18 +278,24 @@ failure is restating the same well-known fact across many sources,
 which adds no information, bloats the record, and (when the output
 runs long) gets truncated and rejected by the response-size limit.
 
-* **Established structural facts** — 4-TM topology, the two ECD loops,
-  the ~142–188 large-loop epitope, MS4A-family membership, kDa /
-  glycosylation status — are textbook. Capture each **once**, from the
-  single clearest source (prefer a primary structural paper, else one
-  review). Do **not** add a `topology` claim from every paper that
-  recites "four transmembrane domains"; eight restatements of the same
-  topology is eight times the cost for zero added evidence.
-* **Across sources, collapse duplicates.** When two clips state the
-  same assay conclusion or mechanism, keep the stronger one (primary >
-  secondary; larger cohort > smaller; better controls). Multi-source
-  consensus is worth recording **once**, via its best representative —
-  not once per paper.
+* **Established structural facts** — TM topology, domain architecture,
+  family membership, molecular weight / glycosylation status — are
+  textbook. Capture each **once**, from the single clearest source
+  (prefer a primary structural paper, else one review). Do **not** add a
+  `topology` claim from every paper that recites the same TM count;
+  eight restatements of one topology is eight times the cost for zero
+  added evidence.
+* **Across sources, collapse duplicates — but "duplicate" is keyed on
+  methodology, not citation.** Two clips are duplicates only when they
+  share the same methodology axes: assay class, host system, AND
+  construct configuration. Different assays, hosts, or constructs (an
+  overexpression readout vs an endogenous one, flow vs biotinylation,
+  one cell line vs another) are DISTINCT findings — every distinct
+  surface assay earns its own row. Cell-line label or paper identity
+  alone is never the dedup key. When two clips ARE genuine
+  methodological duplicates, keep the stronger one (primary > secondary;
+  larger cohort > smaller; better controls) and record the consensus
+  once via its best representative.
 * **Within a source, multiple rows only when genuinely distinct** — a
   methods clip + its result clip, or an antibody-clone clip + a
   validation-control clip (these feed different downstream slots).
