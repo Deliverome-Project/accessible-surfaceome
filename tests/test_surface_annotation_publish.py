@@ -152,7 +152,7 @@ def test_maybe_purge_soft_skips_without_zone_id(
     # mirroring how a missing D1 config skips the push — CI / offline dev
     # must never crash on the purge step.
     monkeypatch.delenv("CLOUDFLARE_ZONE_ID", raising=False)
-    out = _maybe_purge("EGFR", token="unused", client=None)  # type: ignore[arg-type]
+    out = _maybe_purge("EGFR", token="unused", client=None)  # type: ignore[arg-type]  # ty: ignore[invalid-argument-type]
     assert out is None
 
 
@@ -167,7 +167,7 @@ def test_maybe_purge_returns_false_on_http_error(
         def post(self, *_args, **_kwargs):
             raise RuntimeError("network down")
 
-    out = _maybe_purge("EGFR", token="tok", client=_BoomClient())  # type: ignore[arg-type]
+    out = _maybe_purge("EGFR", token="tok", client=_BoomClient())  # type: ignore[arg-type]  # ty: ignore[invalid-argument-type]
     assert out is False
 
 
@@ -191,7 +191,7 @@ def test_maybe_purge_returns_true_on_success(
             captured["auth"] = headers["Authorization"]
             return _Resp()
 
-    out = _maybe_purge("EGFR", token="tok", client=_OKClient())  # type: ignore[arg-type]
+    out = _maybe_purge("EGFR", token="tok", client=_OKClient())  # type: ignore[arg-type]  # ty: ignore[invalid-argument-type]
     assert out is True
     assert captured["url"].endswith("/zones/zone123/purge_cache")
     assert captured["auth"] == "Bearer tok"
