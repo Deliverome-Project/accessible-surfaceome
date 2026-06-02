@@ -68,6 +68,7 @@ uv run python scripts/upload_topology_to_d1.py --topology-version $ISO_V \
 
 echo "== upload ortholog ECD @ $OECD_V =="
 uv run python scripts/upload_ortholog_ecd_to_d1.py --ortholog-ecd-version $OECD_V \
+  --compara-release "Compara r112" \
   --jsonl $O/ortholog_ecd_records.jsonl.norm $DRY $PUB
 
 echo "== upload paralogs @ $PARA_V =="
