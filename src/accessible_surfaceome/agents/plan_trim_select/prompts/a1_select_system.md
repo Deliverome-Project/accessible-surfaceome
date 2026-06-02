@@ -26,9 +26,9 @@ One fenced ```json block matching the `SelectionResponse` schema.
 
 The `EvidenceClaim.claim_type` enum is narrow on purpose. It's a
 **rollup vocabulary**; the rich structure (methods, antibody refs,
-therapeutic engagement, contradictions) lives downstream in
-`SurfaceEvidence` block-builder fields (Phase 2). Block builders
-read your `claim` prose to populate those richer slots.
+contradictions) lives downstream in `SurfaceEvidence` block-builder
+fields (Phase 2). Block builders read your `claim` prose to populate
+those richer slots.
 
 Allowed `claim_type` values, **nothing else**:
 
@@ -60,15 +60,14 @@ Allowed `claim_type` values, **nothing else**:
   result). Block builder routes these to
   `surface_evidence.contradicting_evidence[]`.
 
-**There is NO `therapeutic_engagement`, `epitope_masking`, or
-`shed_form` value in `claim_type`.** Those concepts are in the
-v1.0.0 schema (e.g. `TherapeuticEngagementContext`,
-`risks.shed_form`), but they live in the block-builder output.
-For drug-engagement clips (clinical antibodies / ADCs / antagonists)
-use `claim_type=surface_expression, direction=supports` and name
-the engagement program + stage explicitly in the `claim` prose;
-the `therapeutic_engagement_builder` will read the prose and
-populate `TherapeuticEngagementContext`. For shed-form clips use
+**There is NO `epitope_masking` or `shed_form` value in
+`claim_type`.** Those concepts live in the block-builder output
+(e.g. `risks.shed_form`), not the rollup vocabulary.
+For drug-engagement clips (clinical antibodies / ADCs / antagonists
+that bind the ECD on intact cells) use
+`claim_type=surface_expression, direction=supports` — a therapeutic
+reaching the surface form IS surface-accessibility evidence; name the
+binder in the `claim` prose. For shed-form clips use
 `claim_type=surface_expression, direction=refutes` or `ambiguous`
 and describe the soluble form in prose; the risk-side block
 builder will route to `risks.shed_form` / `risks.secreted_form`.
@@ -137,14 +136,11 @@ block builders route correctly.
    `claim_type=surface_expression` with `direction=refutes` or
    `ambiguous`. Block builder may route to a masking-risk row.
 5. **Therapeutic engagement of the ECD** → `claim_type=surface_expression,
-   direction=supports`. In `claim` prose, name the drug program /
-   sponsor / clinical stage / target form (membrane vs secreted)
-   explicitly. Example: "AstraZeneca preclinical small-molecule
-   antagonist program targeting GPR75 for obesity, engaging the
-   extracellular face of the receptor at the cell surface."
-   `therapeutic_engagement_builder` reads this prose to populate
-   `TherapeuticEngagementContext.highest_stage` /
-   `description` / `surface_form_rationale`.
+   direction=supports`. A clinical or preclinical binder (antibody, ADC,
+   antagonist) that reaches the ECD on intact cells is direct
+   surface-accessibility evidence. In `claim` prose, name the binder and
+   the form it engages (membrane vs secreted) so the methods builder can
+   attribute it; there is no separate therapeutic block.
 6. **Methodological rigor / antibody specificity** →
    `claim_type=methodological`. Antibody clones, RRIDs,
    KO-validation, paralog cross-reactivity tests, isotype controls,

@@ -131,7 +131,6 @@ _A1_CLAIM_TYPES = {
     "topology",
     "methodological",
     "contradictory",
-    "therapeutic_engagement",
     "epitope_masking",
 }
 _A2_CLAIM_TYPES = {

@@ -428,62 +428,142 @@ export function SurfaceEvidenceCard({ rec, n }: Props) {
             : "Only expression-level (non-surface) findings recorded — no surface-accessibility assays to show."}
         </p>
       ) : (
-        <>
-          {/* Top-line assay-type composition — one count chip per method
-              family so the reader sees the evidence mix at a glance before
-              scrolling the grouped blocks below. */}
-          <div className={styles.summary}>
-            {familyGroups.map(({ family, methods }) => (
-              <StatusPill key={family} tone="teal" size="sm">
-                {FAMILY_SHORT[family]} · {methods.length}
-              </StatusPill>
-            ))}
-          </div>
+        <div className={styles.methods}>
+          {se.methods.map((m, i) => (
+            <div key={i} className={styles.method}>
+              <div className={styles.methodHead}>
+                <StatusPill tone="teal" size="sm">
+                  {prettyEnum(m.method_subclass)}
+                </StatusPill>
+                <StatusPill tone="neutral" size="sm">
+                  {prettyEnum(m.permeabilization)}
+                </StatusPill>
+                <StatusPill tone="lavender" size="sm">
+                  {prettyEnum(m.expression_system)}
+                </StatusPill>
+                <StatusPill tone={relevanceTone(m.accessibility_relevance)} size="sm">
+                  {prettyEnum(m.accessibility_relevance)}
+                </StatusPill>
+                <EvidenceChipList ids={m.cited_evidence_ids} label="Cites" />
+              </div>
 
-          {/* Method blocks grouped by assay type (flow / IF-IHC / surface
-              mass spec / biochemical / functional / …), each under a
-              labeled header carrying its finding count. */}
-          <div className={styles.familyGroups}>
-            {familyGroups.map(({ family, methods }) => {
-              const c = groupCounts(methods);
-              return (
-                <div key={family} className={styles.familyGroup}>
-                  <div className={styles.familyHead}>
-                    <span className={styles.familyName}>
-                      {FAMILY_LABEL[family]}
-                    </span>
-                    <span className={styles.familyMeta}>
-                      {c.blocks} finding{c.blocks === 1 ? "" : "s"}
-                      {c.antibodies > 0
-                        ? ` · ${c.antibodies} antibod${
-                            c.antibodies === 1 ? "y" : "ies"
-                          } with details`
-                        : ""}
-                      {c.citations > 0
-                        ? ` · ${c.citations} citation${
-                            c.citations === 1 ? "" : "s"
-                          }`
-                        : ""}
-                    </span>
-                  </div>
-                  <div className={styles.methods}>
-                    {methods.map((m, i) => (
-                      <MethodBlock key={i} m={m} geneSymbol={geneSymbol} />
+              {m.antibodies.length > 0 ? (
+                <div className={styles.antibodies}>
+                  <p className={`label-mono ${styles.subLabel}`}>Antibodies</p>
+                  <ul className={styles.abList}>
+                    {m.antibodies.map((ab, j) => (
+                      <li key={j} className={styles.abItem}>
+                        <span className={styles.abName}>{ab.name}</span>
+                        <span className={styles.abMeta}>
+                          {[ab.clone, ab.vendor, ab.catalog, ab.rrid]
+                            .filter((x): x is string => Boolean(x))
+                            .join(" · ") || "(reagent details not in source)"}
+                        </span>
+                        <span className={styles.abPills}>
+                          <StatusPill tone="neutral" size="sm">
+                            {prettyEnum(ab.monoclonal_or_polyclonal)}
+                          </StatusPill>
+                          <StatusPill tone="teal" size="sm">
+                            {prettyEnum(ab.antibody_epitope_region)}
+                          </StatusPill>
+                          <StatusPill
+                            tone={
+                              ab.validation_strength === "strong"
+                                ? "success"
+                                : ab.validation_strength === "moderate"
+                                ? "amber"
+                                : "neutral"
+                            }
+                            size="sm"
+                          >
+                            {prettyEnum(ab.validation_strength)} validation
+                          </StatusPill>
+                          <InfoTip label="About validation strength">
+                            {tooltips.antibody_validation_strength}
+                          </InfoTip>
+                        </span>
+                      </li>
                     ))}
-                  </div>
+                  </ul>
                 </div>
-              );
-            })}
-          </div>
-          {nHidden > 0 ? (
-            <p className={styles.hiddenNote}>
-              {nHidden === 1 ? "1 finding" : `${nHidden} findings`} hidden —
-              graded <em>expression only</em>: shows the protein is present
-              but not that it reaches the cell surface or membrane.
-            </p>
-          ) : null}
-        </>
+              ) : null}
+
+              {m.expression_observations.length > 0 ? (
+                <div className={styles.obsBlock}>
+                  <p className={`label-mono ${styles.subLabel}`}>Observations</p>
+                  <table className={styles.obsTable}>
+                    <thead>
+                      <tr>
+                        <th scope="col">Context</th>
+                        <th scope="col">Sample</th>
+                        <th scope="col">
+                          Level
+                          <InfoTip label="About expression level">
+                            {tooltips.expression_observation_level}
+                          </InfoTip>
+                        </th>
+                        <th scope="col">Cites</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {m.expression_observations.map((o, k) => (
+                        <tr key={k}>
+                          <td>{o.context}</td>
+                          <td>{prettyEnum(o.sample_type)}</td>
+                          <td>
+                            <StatusPill tone={levelTone(o.level)} size="sm">
+                              {prettyEnum(o.level)}
+                            </StatusPill>
+                          </td>
+                          <td>
+                            <EvidenceChipList ids={o.cited_evidence_ids} />
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              ) : null}
+            </div>
+          ))}
+        </div>
       )}
+
+      {se.non_surface_expression.length > 0 ? (
+        <div className={styles.subsection}>
+          <p className={`label-mono ${styles.subhead}`}>
+            Non-surface expression (RNA / bulk protein)
+          </p>
+          <table className={styles.obsTable}>
+            <thead>
+              <tr>
+                <th scope="col">Context</th>
+                <th scope="col">Sample</th>
+                <th scope="col">Measurement</th>
+                <th scope="col">Level</th>
+                <th scope="col">Cites</th>
+              </tr>
+            </thead>
+            <tbody>
+              {se.non_surface_expression.map((o, i) => (
+                <tr key={i}>
+                  <td>{o.context}</td>
+                  <td>{prettyEnum(o.sample_type)}</td>
+                  <td>{prettyEnum(o.measurement_type)}</td>
+                  <td>
+                    <StatusPill tone={levelTone(o.level)} size="sm">
+                      {prettyEnum(o.level)}
+                    </StatusPill>
+                  </td>
+                  <td>
+                    <EvidenceChipList ids={o.cited_evidence_ids} />
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      ) : null}
 
       {se.contradicting_evidence.length > 0 ? (
         <div className={styles.subsection}>

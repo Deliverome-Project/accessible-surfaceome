@@ -41,6 +41,7 @@ from accessible_surfaceome.agents.surfaceome_v2.builders.methods import build_me
 from accessible_surfaceome.agents.surfaceome_v2.builders.subcellular_localization import (
     build_subcellular_localization,
 )
+from accessible_surfaceome.agents.surfaceome_v2.builders.tissues import build_tissues
 
 __all__ = [
     "EvidenceGradeBlock",
@@ -52,4 +53,5 @@ __all__ = [
     "build_expression",
     "build_methods",
     "build_subcellular_localization",
+    "build_tissues",
 ]

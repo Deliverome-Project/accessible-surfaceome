@@ -217,7 +217,7 @@ def test_builders_run_concurrently_and_collect_outputs() -> None:
     )
     elapsed = time.perf_counter() - t0
 
-    # All 9 outputs land in the dict, each with its own builder's label.
+    # All 8 outputs land in the dict, each with its own builder's label.
     assert set(outputs.keys()) == {s.name for s in specs}
     for name, payload in outputs.items():
         assert payload["label"] == name
@@ -229,7 +229,7 @@ def test_builders_run_concurrently_and_collect_outputs() -> None:
         assert bu.n_calls == 1
         assert bu.cost_usd == pytest.approx(0.001, abs=1e-6)
 
-    # Concurrent: 9 × 0.1s = 0.9s sequential. Pool of 9 should finish
+    # Concurrent: 8 × 0.1s = 0.8s sequential. Pool of 8 should finish
     # in well under half that.
     assert elapsed < 0.45, (
         f"expected concurrent dispatch to finish in <0.45s, took {elapsed:.3f}s"

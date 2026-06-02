@@ -50,7 +50,7 @@ One fenced ```json block matching the `SelectionResponse` schema:
 
 - **Pick clips that directly evidence one of the v1.0.0 surface-evidence
   buckets**: surface_expression, tissue_expression, topology,
-  methodological, contradicting_evidence, therapeutic_engagement.
+  methodological, contradicting_evidence.
 - **Deduplicate — one distinct finding per row.** Capture each
   established fact (e.g. TM topology, a known tissue distribution)
   **once**, from its strongest source. Do not restate the same fact
