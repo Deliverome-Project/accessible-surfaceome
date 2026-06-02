@@ -13,9 +13,11 @@ set -uo pipefail
 cd "$(git rev-parse --show-toplevel)"
 DRYRUN="${DRYRUN:-1}"
 DRY=""; [ "$DRYRUN" = "1" ] && DRY="--dry-run"
-PUBONLY="${PUBLIC_ONLY:-0}"
-PUB=""; [ "$PUBONLY" = "1" ] && PUB="--public-only"
-echo "=== DRYRUN=$DRYRUN  PUBLIC_ONLY=$PUBONLY  (DRYRUN 1=no writes; PUBLIC_ONLY 1=skip private) ==="
+# Target scope: default both; PUBLIC_ONLY=1 → public mirror only; PRIVATE_ONLY=1 → private only.
+PUB=""
+[ "${PUBLIC_ONLY:-0}" = "1" ] && PUB="--public-only"
+[ "${PRIVATE_ONLY:-0}" = "1" ] && PUB="--private-only"
+echo "=== DRYRUN=$DRYRUN  PUBLIC_ONLY=${PUBLIC_ONLY:-0}  PRIVATE_ONLY=${PRIVATE_ONLY:-0} ==="
 
 # Existing production versions (the rows extend these in place):
 TOPO_V=topo_2026_05_16                          # canonical + mouse/cyno orthologs
@@ -77,8 +79,10 @@ uv run python scripts/upload_paralogs_to_d1.py --paralog-version $PARA_V \
   --jsonl $P/paralog_records.jsonl.norm $DRY $PUB
 
 if [ "$DRYRUN" = "0" ]; then
-  echo "== recompute paralog ECD similarity for the new close pairs =="
-  uv run python scripts/compute_paralog_ecd_similarity.py --execute
+  if [ "${PRIVATE_ONLY:-0}" != "1" ]; then
+    echo "== recompute paralog ECD similarity for the new close pairs (public) =="
+    uv run python scripts/compute_paralog_ecd_similarity.py --execute
+  fi
   echo "== orphan check: latest versions must be UNCHANGED =="
   uv run python - <<'PY'
 from accessible_surfaceome.env import load_env; load_env()
