@@ -21,33 +21,25 @@ listing subcellular locations are also primary input.
   `secreted`, `other`. Default to `plasma_membrane` for surfaceome
   candidates UNLESS the ledger strongly indicates the dominant pool is
   elsewhere.
-- `dual_localization` — JSON ARRAY of `DualLocalization` rows, ONE per
-  non-primary **whole compartment** the protein is reported in. Each row:
-    - `compartment` — a SHORT canonical compartment NAME, not a sentence.
-      Use the plain organelle / compartment term: `endosome`, `lysosome`,
-      `Golgi`, `ER`, `mitochondrion`, `nucleus`, `cytosol`, `secreted`,
-      `extracellular matrix`, `extracellular vesicle`. Do NOT pack the
-      condition, the membrane leaflet, or a clause into this field — e.g.
-      write `compartment="endosome"` with `condition="EGF-induced
-      internalization"`, NOT `compartment="endosome (upon EGF ligand
-      stimulation)"`. Do NOT use this field for plasma-membrane *subdomains*
-      or *leaflets* (apical, basolateral, inner leaflet, lipid raft) — those
-      go in `membrane_subdomains` below.
+- `dual_localization` — JSON ARRAY of `DualLocalization` rows. Each row:
+    - `compartment` — SHORT canonical organelle name (e.g. `endosome`,
+      `cilium`, `Golgi`). Validator-enforced: no parentheticals, no
+      conditional clauses ("upon X", "under Y"), ≤40 chars.
     - `fraction_estimate` — float between 0 and 1, OR null when no
       quantitative estimate exists.
-    - `condition` — the qualifier that the localization in this compartment
-      depends on (e.g. `EGF-induced internalization`, `in polarized cells`,
-      `cancer cells`) or null. This is where the "when / where" clause goes.
+    - `condition` — free-text qualifier (e.g. `under stress`,
+      `in polarized cells`) or null. **Put every condition HERE, never in
+      `compartment`.**
     - `cited_evidence_ids` — list.
-- `membrane_subdomains` — JSON ARRAY of `MembraneSubdomain` rows for
-  **plasma-membrane surface microdomains** the protein localizes to — the
-  region of the OUTER, extracellular-facing membrane an antibody would
-  encounter. Each row:
-    - `subdomain` — a SHORT canonical subdomain NAME: `apical membrane`,
-      `basolateral membrane`, `lateral membrane`, `tight junction`,
-      `lipid raft`, `primary cilium`, `microvilli`, `synapse`,
-      `leading edge`, `filopodia`. Keep it terse — no parenthetical
-      mechanism.
+  Use this for non-primary compartments the protein is reported in.
+- `membrane_subdomains` — JSON ARRAY of `MembraneSubdomain` rows. Each
+  row:
+    - `subdomain` — SHORT canonical microdomain name of the OUTER-leaflet
+      plasma membrane (e.g. `lipid raft`, `tight junction`, `primary
+      cilium`, `apical membrane`, `synapse`). Same name discipline as
+      `compartment`. An inner-leaflet / cytoplasmic-face anchor is NOT
+      surface-accessible — route it to `dual_localization`, not here
+      (validator-enforced).
     - `cited_evidence_ids` — list.
   ONLY for outer-leaflet / surface microdomains. Do NOT put whole
   compartments (endosome, lysosome, Golgi) here — those are

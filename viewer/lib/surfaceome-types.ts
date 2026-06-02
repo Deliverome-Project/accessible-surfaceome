@@ -1059,6 +1059,9 @@ export interface AccessibilityModulationObservation {
   dual_loc_partner_compartment: DualLocPartnerCompartment | null;
   baseline_context: string;
   modulating_state: string;
+  /** Up/down direction of the surface-pool change — orthogonal to the
+   *  favorable/restricted verdict in `accessibility_implication`. */
+  direction?: ModulationDirection;
   change: string;
   accessibility_implication: string;
   // Structured up/down direction of the change. Records predating the field
@@ -1070,6 +1073,13 @@ export interface AccessibilityModulationObservation {
   species_inferred?: boolean;
   cited_evidence_ids: string[];
 }
+
+export type ModulationDirection =
+  | "increases"
+  | "decreases"
+  | "bidirectional"
+  | "no_change"
+  | "unclear";
 
 export interface BiologicalContext {
   /** v2: one self-describing row per (tissue × cell_type × disease). */
