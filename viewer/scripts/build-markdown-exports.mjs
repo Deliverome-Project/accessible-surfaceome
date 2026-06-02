@@ -554,52 +554,18 @@ function md(rec, structureData, sequences, afdbEntry) {
   const bc = rec.biological_context;
   lines.push("## 4. Biological context");
   lines.push("");
-  // One-sentence WHEN/WHERE-reachable summary (executive_summary field;
-  // surfaced at the top of the viewer's Biological context card).
-  if (e.accessibility_context_summary) {
-    lines.push(`*Accessibility context* — ${e.accessibility_context_summary}`);
+  const expressionRows = bc.expression ?? []; // transitional: pre-migration records lack `expression`
+  if (expressionRows.length) {
+    lines.push("**Expression × cell type × disease context**");
     lines.push("");
-  }
-  // Unified expression rows (current schema). Fall back to the pre-unify
-  // split tissues + cell_types for older records.
-  const exprRows =
-    bc.expression && bc.expression.length
-      ? bc.expression.map((r) => ({
-          tissue: r.tissue ?? "—",
-          cell_type: r.cell_type ?? "—",
-          present: r.present,
-          disease_context: r.disease_context,
-          disease_label: r.disease_label,
-        }))
-      : [
-          ...(bc.tissues ?? []).map((t) => ({
-            tissue: t.tissue,
-            cell_type: "—",
-            present: t.present,
-            disease_context: t.disease_context,
-            disease_label: t.disease_label,
-          })),
-          ...(bc.cell_types ?? []).flatMap((c) =>
-            (c.present_in_tissues.length ? c.present_in_tissues : ["—"]).map(
-              (tn) => ({
-                tissue: tn,
-                cell_type: c.cell_type,
-                present: c.present ?? "unknown",
-                disease_context: c.disease_context ?? "unknown",
-                disease_label: c.disease_label,
-              }),
-            ),
-          ),
-        ];
-  if (exprRows.length) {
-    lines.push("**Expression by tissue of origin**");
-    lines.push("");
-    lines.push("| Tissue | Cell of origin | Disease context | Level (protein) |");
-    lines.push("|---|---|---|---|");
-    for (const r of exprRows) {
-      const dx = r.disease_label || prettyEnum(r.disease_context);
+    lines.push("| Tissue | Cell type | Disease context | Level (protein) | Cell states |");
+    lines.push("|---|---|---|---|---|");
+    for (const row of expressionRows) {
+      const disease = row.disease_label
+        ? `${prettyEnum(row.disease_context)} (${row.disease_label})`
+        : prettyEnum(row.disease_context);
       lines.push(
-        `| ${r.tissue} | ${r.cell_type} | ${dx} | ${prettyEnum(r.present)} |`,
+        `| ${row.tissue || "—"} | ${row.cell_type || "—"} | ${disease} | ${prettyEnum(row.present)} | ${row.cell_states.join(", ") || "—"} |`,
       );
     }
     lines.push("");

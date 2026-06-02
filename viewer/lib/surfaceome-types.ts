@@ -953,16 +953,28 @@ export type DualLocPartnerCompartment =
   | "other"
   | "unknown";
 
+/** One (tissue × cell_type × disease_context) expression observation —
+ *  the v2 unification of TissueContext + CellTypeContext. Self-describing:
+ *  each row carries its own disease context + present level. */
+export interface ExpressionRow {
+  tissue: string;
+  /** The specific cell type when named; null for a tissue-level row. */
+  cell_type: string | null;
+  present: TissueLevel;
+  disease_context: DiseaseContext;
+  /** Free-text specific disease (e.g. "clear-cell renal carcinoma"). */
+  disease_label: string | null;
+  cell_states: string[];
+  species?: Species;
+  species_inferred?: boolean;
+  cited_evidence_ids: string[];
+}
+
+/** DEPRECATED (v1 only). Superseded by ExpressionRow; retained so v1
+ *  records still type-check. */
 export interface TissueContext {
   tissue: string;
-  /** Six-level expression-level enum (upgraded from boolean in
-   *  PR23 round 5 — `mixed` covers tissues with heterogeneous
-   *  per-cell-type levels, `unknown` is the default when no
-   *  evidence speaks to it). */
   present: TissueLevel;
-  /** New disease-context axis — same tissue can appear twice
-   *  (normal vs tumor) with different `present` levels. Obesity
-   *  / inflammation / etc. fall under `other_disease`. */
   disease_context: DiseaseContext;
   /** Specific disease name when `disease_context` can't name it on its own
    *  (e.g. "Fabry disease"). Optional — older records omit it. */
@@ -974,6 +986,7 @@ export interface TissueContext {
   cited_evidence_ids: string[];
 }
 
+/** DEPRECATED (v1 only). Superseded by ExpressionRow. */
 export interface CellTypeContext {
   cell_type: string;
   ontology_id: string;
@@ -1059,13 +1072,11 @@ export interface AccessibilityModulationObservation {
 }
 
 export interface BiologicalContext {
-  /** Unified expression rows (current schema). Optional so the viewer can
-   *  still read pre-unify records that carry `tissues` + `cell_types`. */
-  expression?: ExpressionRow[];
-  /** Legacy split pivots — present only on records generated before the
-   *  unify; the viewer falls back to these when `expression` is absent. */
-  tissues?: TissueContext[];
-  cell_types?: CellTypeContext[];
+  /** v2: one self-describing row per (tissue × cell_type × disease). */
+  expression: ExpressionRow[];
+  /** DEPRECATED (v1 only) — v2 leaves these empty. */
+  tissues: TissueContext[];
+  cell_types: CellTypeContext[];
   cell_states: StateContext[];
   subcellular_localization: SubcellularLocalization;
   anatomical_accessibility: AnatomicalAccessibilityObservation[];

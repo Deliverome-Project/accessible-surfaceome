@@ -124,6 +124,7 @@ def test_post_pass_does_not_overwrite_agent_set_species() -> None:
     bio = _bio(
         expression=[
             ExpressionRow(
+                tissue="bone",
                 cell_type="primary osteoblast (compared to NIH-3T3 mouse fibroblast)",
                 present="moderate",
                 disease_context="normal",
@@ -158,6 +159,7 @@ def test_post_pass_skips_ambiguous_multi_species_row() -> None:
     bio = _bio(
         expression=[
             ExpressionRow(
+                tissue="bone",
                 cell_type="osteoblast (HeLa control vs MC3T3-E1)",
                 present="moderate",
                 disease_context="normal",

@@ -1924,25 +1924,43 @@ class SurfaceEvidence(BaseModel):
 
 
 class ExpressionRow(BaseModel):
-    """Unified expression observation — one (tissue × cell-of-origin ×
-    disease_context) surface-expression read.
+    """One ``(tissue × cell_type × disease_context)`` expression observation.
 
-    Replaces the split ``TissueContext`` / ``CellTypeContextV1`` pivots with a
-    single row that may name a ``tissue``, a ``cell_type`` of origin, or both:
+    Tissue and cell-type are the same pivot — where the protein was seen — so
+    they live on one self-describing row rather than two cross-referenced
+    arrays. Each row carries its OWN disease context (``disease_context`` enum
+    + free-text ``disease_label``) and ``present`` level, so a reader never
+    walks from a cell row to a paired tissue row to learn its disease state.
 
-    * tissue-level read (no cell breakdown) → ``tissue`` set, ``cell_type``
-      ``None``.
-    * cell-of-origin read → ``cell_type`` set, ``tissue`` set to the tissue it
-      was observed in (``None`` if the source doesn't name one).
+    The same tissue/cell_type can appear twice (a normal baseline row + a
+    disease row) with different ``present`` levels — both are kept, because the
+    off-tumor baseline is load-bearing for toxicity even when the level matches
+    the disease read. ``cell_type`` is ``None`` for a tissue-level observation
+    with no resolved cell type. Names are free text — no ontology IDs for
+    v1.0.0. See ``ExpressionObservation`` for the ``species`` /
+    ``species_inferred`` contract.
+    """
 
-    ``present`` is the surface-expression level; ``disease_label`` names the
-    SPECIFIC disease when ``disease_context`` can't on its own (e.g. "Fabry
-    disease"). The same tissue can appear in several rows (normal + tumor, or
-    one row per cell type). Tissue / cell-type / cell-state names are free text
-    — no ontology IDs.
+    model_config = ConfigDict(extra="forbid")
 
-    See ``ExpressionObservation`` (the method-anchored level read) for the
-    ``species`` / ``species_inferred`` contract.
+    tissue: str
+    cell_type: str | None = None
+    present: TissuePresence
+    disease_context: DiseaseContext
+    disease_label: str | None = None
+    cell_states: list[str] = Field(default_factory=list)
+    species: Species = "unspecified"
+    species_inferred: bool = False
+    cited_evidence_ids: list[str] = Field(default_factory=list)
+
+
+class TissueContext(BaseModel):
+    """DEPRECATED (v1 only). Superseded by :class:`ExpressionRow`.
+
+    Retained so the v1 ``biology_compiler`` Managed Agent — which emits
+    ``tissues`` / ``cell_types`` and validates against the shared
+    ``BiologicalContext`` — still reproduces. The v2 path leaves this empty and
+    populates ``expression`` instead. Delete when v1 reproducibility is retired.
     """
 
     model_config = ConfigDict(extra="forbid")
@@ -1957,6 +1975,20 @@ class ExpressionRow(BaseModel):
     # viewer shows this in place of the bare enum.
     disease_label: str | None = Field(default=None, max_length=120)
     cell_states: list[str] = Field(default_factory=list)
+    species: Species = "unspecified"
+    species_inferred: bool = False
+    cited_evidence_ids: list[str] = Field(default_factory=list)
+
+
+class CellTypeContextV1(BaseModel):
+    """DEPRECATED (v1 only). Superseded by :class:`ExpressionRow`. See
+    :class:`TissueContext` for why it's retained."""
+
+    model_config = ConfigDict(extra="forbid")
+
+    cell_type: str
+    ontology_id: str | None = None
+    present_in_tissues: list[str] = Field(default_factory=list)
     species: Species = "unspecified"
     species_inferred: bool = False
     cited_evidence_ids: list[str] = Field(default_factory=list)
@@ -2129,9 +2161,12 @@ class BiologicalContext(BaseModel):
 
     model_config = ConfigDict(extra="forbid")
 
-    # Unified tissue × cell-of-origin × disease-context expression rows
-    # (replaces the old split ``tissues`` + ``cell_types`` pivots).
+    # v2: one self-describing (tissue × cell_type × disease_context) row each.
     expression: list[ExpressionRow] = Field(default_factory=list)
+    # DEPRECATED (v1 only) — the v1 biology_compiler emits these; v2 leaves
+    # them empty and populates ``expression``. Retained for v1 reproducibility.
+    tissues: list[TissueContext] = Field(default_factory=list)
+    cell_types: list[CellTypeContextV1] = Field(default_factory=list)
     cell_states: list[StateContext] = Field(default_factory=list)
     subcellular_localization: SubcellularLocalization
     anatomical_accessibility: list[AnatomicalAccessibilityObservation] = Field(
@@ -2932,6 +2967,10 @@ class BiologicalContextDraft(BaseModel):
         bc = self.biological_context
         for row in bc.expression:
             cited.update(row.cited_evidence_ids)
+        for tissue in bc.tissues:  # deprecated v1 path
+            cited.update(tissue.cited_evidence_ids)
+        for cell_type in bc.cell_types:  # deprecated v1 path
+            cited.update(cell_type.cited_evidence_ids)
         for state in bc.cell_states:
             cited.update(state.cited_evidence_ids)
         for dual in bc.subcellular_localization.dual_localization:
@@ -3510,6 +3549,8 @@ __all__ = [
     "SurfaceEvidence",
     # v1.0.0 — biological context (section 2)
     "ExpressionRow",
+    "TissueContext",
+    "CellTypeContextV1",
     "StateContext",
     "DualLocalization",
     "MembraneSubdomain",

@@ -36,7 +36,6 @@ from accessible_surfaceome.agents.surfaceome_v2.builders import (
     build_expression,
     build_methods,
     build_subcellular_localization,
-    build_tissues,
 )
 from accessible_surfaceome.agents.surfaceome_v2.orchestrator import (
     _synthetic_source_store,
@@ -56,7 +55,6 @@ from accessible_surfaceome.tools._shared.models import (
     SubcellularLocalization,
     SurfaceEvidence,
     SurfaceEvidenceDraft,
-    TissueContext,
 )
 
 
@@ -573,7 +571,7 @@ def test_build_evidence_grade_empty_input_returns_default() -> None:
 
 
 # ---------------------------------------------------------------------------
-# expression_builder (unified tissue × cell-of-origin pivot)
+# expression_builder
 # ---------------------------------------------------------------------------
 
 
@@ -600,6 +598,7 @@ def test_build_expression_happy() -> None:
             "cell_type": "Purkinje neurons",
             "present": "high",
             "disease_context": "normal",
+            "disease_label": None,
             "cell_states": [],
             "cited_evidence_ids": ["a2_evi_01", "a2_evi_02"],
         }
@@ -616,33 +615,15 @@ def test_build_expression_happy() -> None:
 
 
 def test_build_expression_empty_input() -> None:
+    # No tissue_expression claims → builder short-circuits without a call.
+    claims = [_claim("01", prefix="a2", claim_type="surface_expression")]
     client = _mock_client([])
-    sink: list[UsageRecord] = []
-    rows = build_expression([], client=client, usage_sink=sink, context={"gene": "X"})
-    assert rows == []
-    client.messages.create.assert_not_called()
-
-
-def test_build_expression_scrubs_unknown_citations() -> None:
-    claims = [_claim("01", prefix="a2", claim_type="tissue_expression")]
-    output = [
-        {
-            "tissue": "cerebellum",
-            "cell_type": None,
-            "present": "high",
-            "disease_context": "normal",
-            "cell_states": [],
-            # 99 isn't in input; should be scrubbed
-            "cited_evidence_ids": ["a2_evi_01", "a2_evi_99"],
-        }
-    ]
-    client = _mock_client([_fenced(json.dumps(output))])
     sink: list[UsageRecord] = []
     rows = build_expression(
         claims, client=client, usage_sink=sink, context={"gene": "X"}
     )
-    assert len(rows) == 1
-    assert rows[0].cited_evidence_ids == ["a2_evi_01"]
+    assert rows == []
+    client.messages.create.assert_not_called()
 
 
 # ---------------------------------------------------------------------------
@@ -930,20 +911,12 @@ def test_biological_context_draft_validates_with_block_builder_outputs() -> None
         expression=[
             ExpressionRow(
                 tissue="cerebellum",
-                cell_type=None,
-                present="high",
-                disease_context="normal",
-                cell_states=[],
-                cited_evidence_ids=["a2_evi_01"],
-            ),
-            ExpressionRow(
-                tissue="cerebellum",
                 cell_type="Purkinje neurons",
                 present="high",
                 disease_context="normal",
                 cell_states=[],
                 cited_evidence_ids=["a2_evi_01"],
-            ),
+            )
         ],
         cell_states=[],
         subcellular_localization=SubcellularLocalization(
@@ -957,7 +930,7 @@ def test_biological_context_draft_validates_with_block_builder_outputs() -> None
     draft = BiologicalContextDraft(
         biological_context=bc, evidence_claims=a2_claims
     )
-    assert len(draft.biological_context.expression) == 2
+    assert len(draft.biological_context.expression) == 1
 
 
 def test_block_counts_helper() -> None:
@@ -983,7 +956,7 @@ def test_block_counts_helper() -> None:
     )
     counts = _count_blocks(se, bc)
     assert counts["methods"] == 0
-    assert counts["tissues"] == 0
+    assert counts["expression"] == 0
 
 
 # ---------------------------------------------------------------------------
