@@ -234,7 +234,13 @@ _CATEGORY_SPECS: dict[EvidenceCategory, _CategorySpec] = {
     "flow_cytometry": _CategorySpec(
         query_clauses=(
             '("flow cytometry" OR "FACS")',
-            '("surface" OR "non-permeabilized" OR "live cells" OR "intact cells")',
+            # Includes host-agnostic heterologous-expression terms so the
+            # overexpression-precedent readout (surface trafficking when
+            # over-expressed) is retrieved in ANY host, not just HEK293. No
+            # "wild-type" gate — real WT-transfectant papers rarely use it.
+            '("surface" OR "non-permeabilized" OR "live cells" OR "intact cells" '
+            'OR "transfected" OR "ectopic expression" OR "heterologous expression" '
+            'OR "overexpressing" OR "stably expressing")',
         ),
         pubtator_terms="flow cytometry",
         hallmark_patterns=(

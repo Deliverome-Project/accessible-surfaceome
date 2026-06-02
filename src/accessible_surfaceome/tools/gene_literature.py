@@ -155,6 +155,36 @@ _TOPIC_TERMS: dict[TopicAnchor, list[str]] = {
         "shedding",
         "ectodomain",
         "soluble form",
+        # Soluble/shed TARGET measured in circulation — the signal that
+        # distinguishes a real decoy from a merely-annotated soluble isoform.
+        "soluble ectodomain",
+        "circulating",
+        "serum level",
+        "plasma level",
+    ],
+    "tox_normal_tissue": [
+        # Six high-consequence tox organs + normal-tissue qualifiers. Surface
+        # proof comes from the always-on protein method categories; this anchor
+        # supplies the organ-coverage literature (never an RNA atlas).
+        "normal tissue",
+        "tissue distribution",
+        "tissue microarray",
+        "liver",
+        "lung",
+        "kidney",
+        "intestine",
+        "heart",
+        "brain",
+    ],
+    "surface_reachability": [
+        # Physical access barriers — a protein can be surface-present yet
+        # unreachable by a systemically dosed binder.
+        "blood-brain barrier",
+        "tumor penetration",
+        "tumor vasculature",
+        "luminal",
+        "abluminal",
+        "vascular permeability",
     ],
 }
 

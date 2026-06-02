@@ -311,6 +311,13 @@ TopicAnchor = Literal[
     "structure",
     "ptm",
     "shedding",
+    # On-target/off-tumor normal-tissue coverage across the six
+    # high-consequence organs; retrieved as MED literature, never an
+    # RNA atlas (the protein-level method categories carry surface proof).
+    "tox_normal_tissue",
+    # Surface-reachability barriers (BBB, tumor penetration,
+    # luminal/abluminal vasculature) — distinct axis from surface-presence.
+    "surface_reachability",
 ]
 
 PublicationType = Literal[
