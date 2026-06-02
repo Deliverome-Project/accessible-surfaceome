@@ -1067,6 +1067,20 @@
   filter: brightness(0.92);
 }
 
+/* Deep-dive vital chips are links to the gene's deep-dive page — same
+ * toned pill, with a subtle hover-darken + pointer to signal the
+ * affordance (mirrors .deepLink on the deep-dive flag). */
+.ddVitalLink {
+  text-decoration: none;
+  cursor: pointer;
+  transition: filter var(--dur-fast) var(--ease-out);
+}
+
+.ddVitalLink:hover,
+.ddVitalLink:focus-visible {
+  filter: brightness(0.92);
+}
+
 .reasonCell {
   padding-right: 0.6rem;
 }
@@ -1113,9 +1127,11 @@
 
 @media (max-width: 720px) {
   .row {
+    /* Same 14-column order as the desktop template: …Reason | Deep-dive
+       flag | Access | Conf | Evidence | State (Conf widened to match). */
     grid-template-columns:
       1.75rem 13rem 3rem 1.6rem 1.6rem 1.6rem 1.6rem 1.6rem minmax(9rem, 1fr)
-      3.6rem 3.6rem 4rem 3.6rem 4.5rem;
+      4.5rem 3.6rem 5rem 4rem 3.6rem;
   }
   .uniprotCell,
   .headerRow .headerCell:nth-child(3) {
@@ -1124,13 +1140,14 @@
 }
 
 /* ── Deep-dive agent column group ───────────────────────────────────
-   A spanning "Deep dive agent" label over columns 10–13 (Access · Conf ·
+   A spanning "Deep dive agent" label over columns 11–14 (Access · Conf ·
    Evidence · State) + the per-vital cells, toned with the SAME palette as
-   the gene-page vitals and the verdict pills. */
+   the gene-page vitals and the verdict pills. The deep-dive flag (col 10)
+   sits just before the group, between it and Reason. */
 
-/* Group-label strip: a 3-cell grid row (left spacer over cols 1–9, the
-   label over cols 10–13, right spacer over col 14). Uses the same
-   --catalog-cols template; column-span via grid-column. */
+/* Group-label strip: a 2-cell grid row (a leading spacer over cols 1–10,
+   through the deep-dive flag, then the label over the trailing cols 11–14).
+   Uses the same --catalog-cols template; column-span via grid-column. */
 .groupHeaderRow {
   border: none;
   background: none;
@@ -1139,10 +1156,7 @@
   padding-bottom: 2px;
 }
 .groupHeaderSpacer {
-  grid-column: span 9;
-}
-.groupHeaderRow .groupHeaderSpacer:last-child {
-  grid-column: span 1;
+  grid-column: span 10;
 }
 .groupHeaderDeepDive {
   grid-column: span 4;
