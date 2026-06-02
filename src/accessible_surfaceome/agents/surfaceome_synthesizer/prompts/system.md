@@ -457,7 +457,7 @@ membrane. Closed enum:
   tetraspanin). SLC family, claudins, ABC transporters, AQPs.
 * `GPCR` — seven-pass heptahelical receptor architecture. Kept as
   a common-name shortcut because 7TM is essentially synonymous
-  with GPCR in practice. GPR75, ADGRE5, CXCR4.
+  with GPCR in practice. GENEX, ADGRE5, CXCR4.
 * `GPI_anchored` — post-translational GPI lipid anchor; no TM
   span. CD55, CD59, prion protein, glypicans.
 * `tetraspanin` — four-pass with large EC2 loop (~80-100 residues).
@@ -472,7 +472,7 @@ separately attaches deterministic, curator-assigned family tags —
 `hgnc_gene_groups` and `uniprot_family` — alongside this; you do not emit
 those.) Closed enum:
 * `receptor` — signaling receptors (GPCRs / RTKs / cytokine
-  receptors / integrins / immunoreceptors / NHRs). EGFR, GPR75,
+  receptors / integrins / immunoreceptors / NHRs). EGFR, GENEX,
   IFNAR2, CD3 family, FGFR2.
 * `enzyme` — surface-exposed catalytic activity. CD13/ANPEP
   (aminopeptidase), CD26/DPP4 (dipeptidyl peptidase), CD73/NT5E
@@ -491,7 +491,7 @@ those.) Closed enum:
   above fit cleanly.
 
 A given gene carries one value from EACH axis. **EGFR**:
-`subcategory=single_pass_T1, llm_family=receptor`. **GPR75**:
+`subcategory=single_pass_T1, llm_family=receptor`. **GENEX**:
 `subcategory=GPCR, llm_family=receptor`. **CD26/DPP4**:
 `subcategory=single_pass_T2, llm_family=enzyme`. **CD81**:
 `subcategory=tetraspanin, llm_family=miscellaneous`. **SLC2A1**:
@@ -507,8 +507,8 @@ surface proteins have a validated endogenous ligand. Set `False`
 ONLY for orphan-class genes where ligand identity is genuinely
 unknown:
 
-* Orphan GPCRs (no validated endogenous agonist) — GPR75 is the
-  canonical example today.
+* Orphan GPCRs (no validated endogenous agonist) — e.g. GENEX, a
+  hypothetical orphan receptor with no deorphanized ligand.
 * Orphan nuclear receptors.
 * Orphan receptor tyrosine kinases.
 
