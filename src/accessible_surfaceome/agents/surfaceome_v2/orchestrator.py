@@ -55,6 +55,7 @@ from accessible_surfaceome.agents.surfaceome_synthesizer.runner import (
 from accessible_surfaceome.agents.surfaceome_v1.orchestrator import (
     _attach_deterministic_families,
     _derive_filters,
+    _attach_deterministic_families,
     scrub_headline_risks,
     _load_triage_record,
     _TRIAGE_VERDICT_TO_SIGNAL,
@@ -559,6 +560,19 @@ def _annotate(
         }
     )
 
+    # ---- step 5.6: attach deterministic family tags ----------------------
+    # hgnc_gene_groups + uniprot_family are curator-assigned ground truth, not
+    # model output. v1 overwrites them from the resolved bundle; v2 must too,
+    # or it ships records with empty family fields (which blanks the viewer's
+    # Family chip). Free — reuses the already-resolved ``dual.bundle``.
+    synth_draft = synth_draft.model_copy(
+        update={
+            "executive_summary": _attach_deterministic_families(
+                synth_draft.executive_summary, dual.bundle
+            )
+        }
+    )
+
     # ---- step 6: promote claims → Evidence (synthetic source store) -------
     merged_claims = a1_claims + a2_claims
     with timing.step(
@@ -667,46 +681,20 @@ def _annotate(
             )
             det_features = _stub_deterministic_features(gene_id.uniprot_acc)
 
-    # ---- step 7b: deterministic secreted-form upgrade ---------------------
-    # The synthesizer derives ``secreted_form`` from the literature ledger
-    # only and (in v2) never receives the isoform topology — it runs at step
-    # 5, before ``det_features`` is fetched above. So a protein with a
-    # UniProt-annotated soluble splice isoform — a NON-canonical isoform that
-    # drops the TM anchor but keeps a real ECD (e.g. EGFR's sEGFR forms
-    # P00533-2/-3/-4: tm_helix_count=0, ECD 381-681 aa) — comes back
-    # ``secreted_form.present=False`` even though that isoform IS a
-    # soluble/secreted form by construction. Upgrade the call here, where the
-    # isoform topology is in hand. UPGRADE-ONLY: a literature-confirmed
-    # ``present=True`` (with its severity / cites) is left untouched; we only
-    # rescue the False-negatives. Topology alone → tier it ``low`` / ``weak``
-    # ("annotated soluble isoform exists", not "confirmed abundant circulating
-    # decoy"); a later literature pass that finds serum/plasma levels can
-    # raise it on re-run. This flows into ``_derive_filters`` below, so the
-    # ``has_secreted_form`` catalog filter flips consistently with the block.
-    _secreted_ids = _secreted_isoform_ids(det_features.isoform_topologies)
-    if _secreted_ids and not synth_draft.accessibility_risks.secreted_form.present:
-        _ar = synth_draft.accessibility_risks
-        synth_draft = synth_draft.model_copy(
-            update={
-                "accessibility_risks": _ar.model_copy(
-                    update={
-                        "secreted_form": _ar.secreted_form.model_copy(
-                            update={
-                                "present": True,
-                                "source": "alternative_splicing",
-                                "severity": "low",
-                                "evidence_strength": "weak",
-                            }
-                        )
-                    }
-                )
-            }
+    # ---- step 7.5: deterministic secreted_form upgrade -------------------
+    # The synthesizer ran before isoform topology was fetched (step 7), so it
+    # could not see a TM-less splice isoform implying a soluble species. Apply
+    # the topology-derived upgrade now — after the fetch, before _derive_filters
+    # (step 8) reads accessibility_risks. Only ever upgrades; never downgrades a
+    # literature-backed call. Module-level + importable for backfill parity.
+    with timing.step("secreted_form_post_pass", phase="post"):
+        from accessible_surfaceome.agents.surfaceome_v2.secreted_form_postpass import (
+            apply_secreted_form_post_pass,
         )
-        logger.info(
-            "secreted_form upgraded present=True for %s from TM=0 soluble "
-            "isoform(s) %s (topology-derived, low/weak)",
-            gene_id.hgnc_symbol,
-            _secreted_ids,
+
+        apply_secreted_form_post_pass(
+            accessibility_risks=synth_draft.accessibility_risks,
+            deterministic_features=det_features,
         )
 
     # ---- step 8: derive filters (reused from v1) --------------------------

@@ -408,6 +408,68 @@ def _row_from_dict(
     ]
 
 
+def _heal_family_in_place(rec_dict: dict[str, Any]) -> bool:
+    """Re-assert the deterministic, ``hgnc_id``-keyed family tags at publish time.
+
+    ``hgnc_gene_groups`` / ``uniprot_family`` are curator-assigned ground truth
+    resolved from the gene's stable identifier — not model output. A record
+    generated under a degraded resolver, or an older snapshot pushed through the
+    bulk-sync path, can carry empty family fields, which blanks the viewer's
+    Family chip. Healing them on every publish surface (this runs inside the
+    shared ``_publish_dict``, so both the agent path and the bulk-sync path hit
+    it) closes the gap that lets a fix land in the JSON without reaching D1.
+
+    Cheap by default: a record whose family fields are already populated is left
+    untouched — no network. Only an empty field triggers a stable-ID re-resolve.
+    The fill is guarded so a resolver miss never overwrites a populated value
+    with an empty one, and any resolver failure is swallowed so publish never
+    breaks. Returns ``True`` if a field was healed.
+    """
+    summary = rec_dict.get("executive_summary")
+    if not isinstance(summary, dict):
+        return False
+    existing_groups = summary.get("hgnc_gene_groups") or []
+    existing_family = summary.get("uniprot_family")
+    if existing_groups and existing_family:
+        return False  # healthy — skip the network re-resolve
+
+    hgnc_id = (rec_dict.get("gene") or {}).get("hgnc_id")
+    if not hgnc_id:
+        return False
+
+    try:
+        from accessible_surfaceome.tools._shared.http import open_default_client
+        from accessible_surfaceome.tools.gene_lookup import resolve_by_hgnc_id
+
+        bundle = resolve_by_hgnc_id(hgnc_id, http=open_default_client())
+    except Exception as exc:  # noqa: BLE001 — never break publish on a resolver miss
+        logger.warning(
+            "family self-heal: stable-ID resolve failed for %s (%s); "
+            "leaving family fields as-is",
+            hgnc_id,
+            exc,
+        )
+        return False
+
+    healed = False
+    resolved_groups = list(bundle.hgnc_gene_groups)
+    # Populated-to-empty guard: only fill an empty field with a non-empty
+    # resolved value; never the reverse.
+    if not existing_groups and resolved_groups:
+        summary["hgnc_gene_groups"] = resolved_groups
+        healed = True
+    if existing_family is None and bundle.uniprot_family is not None:
+        summary["uniprot_family"] = bundle.uniprot_family
+        healed = True
+    if healed:
+        logger.info(
+            "family self-heal: filled family tags for %s from %s",
+            (rec_dict.get("gene") or {}).get("hgnc_symbol"),
+            hgnc_id,
+        )
+    return healed
+
+
 def _publish_dict(
     rec_dict: dict[str, Any],
     *,
@@ -423,15 +485,9 @@ def _publish_dict(
     if not sym:
         raise ValueError("record dict missing required gene.hgnc_symbol")
 
-    # Self-heal the deterministic family BEFORE writing anywhere (snapshot or
-    # D1). An old pre-injection record — or one from a worktree whose resolver
-    # was degraded at generation time — arrives with empty family tags;
-    # resolving them from the record's own hgnc_id here means no publish path
-    # (annotate / bulk sync / re-publish) can ship an empty Family bucket, and
-    # already-empty rows repair on their next publish without a bespoke
-    # backfill. Only runs when the record is missing them.
-    if not _family_populated(rec_dict):
-        _heal_family_in_place(rec_dict, gene.get("hgnc_id"), sym=sym)
+    # Self-heal deterministic, stable-ID-keyed tags before BOTH surfaces get
+    # written, so the snapshot and D1 can never carry divergent family fields.
+    _heal_family_in_place(rec_dict)
 
     snap_dir = snapshot_dir or DEFAULT_SNAPSHOT_DIR
     snap_path: Path | None = None
