@@ -301,6 +301,12 @@ class GeneContext:
     db_panel_json: str
     deterministic_summary_json: str | None = None
     triage_summary_json: str | None = None
+    # Canonical topology counts threaded into the deterministic kickoff to
+    # gate the membrane-specific standing axes. ``None`` means "topology
+    # unknown" (D1 miss / placeholder) — the kickoff fires those axes
+    # recall-biased rather than suppressing them on a coverage gap.
+    n_tmh: int | None = None
+    ecd_aa: int | None = None
 
 
 def _summarize_deterministic_for_planner(features: DeterministicFeatures) -> str:
@@ -439,6 +445,8 @@ def _build_gene_context(
     # available"). Local import keeps the D1 dependency out of import
     # time for code paths that don't run the planner.
     deterministic_summary: str | None
+    n_tmh: int | None = None
+    ecd_aa: int | None = None
     try:
         from accessible_surfaceome.agents.surfaceome_v1.d1_deterministic import (
             fetch_deterministic_features,
@@ -446,6 +454,15 @@ def _build_gene_context(
 
         features = fetch_deterministic_features(bundle.uniprot_acc)
         deterministic_summary = _summarize_deterministic_for_planner(features)
+        # Real topology only — the D1-miss placeholder (tool_version
+        # "placeholder-no-d1-row", which carries a synthetic tm_helix_count=0)
+        # must read as "topology unknown" so the kickoff fires its
+        # membrane-gated axes recall-biased instead of treating the
+        # placeholder as a real TM=0 (non-membrane) negative.
+        canon = features.canonical_topology
+        if canon.tool_version != "placeholder-no-d1-row":
+            n_tmh = canon.tm_helix_count
+            ecd_aa = canon.ecd_length_residues
     except Exception as exc:  # noqa: BLE001 — keep planning even if D1 is down
         logger.warning(
             "deterministic-features D1 fetch failed for %s (%s); "
@@ -488,6 +505,8 @@ def _build_gene_context(
         db_panel_json=db.model_dump_json(indent=2),
         deterministic_summary_json=deterministic_summary,
         triage_summary_json=triage_summary,
+        n_tmh=n_tmh,
+        ecd_aa=ecd_aa,
     )
 
 
@@ -1332,8 +1351,10 @@ def run_plan_trim_select(
 
         # Step 1 — deterministic kickoff plan (no LLM planner). The fixed
         # per-focus search set reproduces the retired planner's average
-        # coverage.
-        initial_plan = build_kickoff(agent_focus)
+        # coverage; canonical topology counts gate the membrane-specific
+        # standing axes (tox panel always; surface-reachability when
+        # membrane+ECD or topology unknown).
+        initial_plan = build_kickoff(agent_focus, context.n_tmh, context.ecd_aa)
         result.plan = initial_plan
         logger.info("kickoff emitted %d searches", len(initial_plan.searches))
 
