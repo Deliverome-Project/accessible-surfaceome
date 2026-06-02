@@ -39,7 +39,16 @@ def test_compartment_rejects_conditional_clause():
 
 def test_compartment_rejects_overlong_value():
     with pytest.raises(ValidationError, match="short canonical name"):
-        DualLocalization(compartment="the perinuclear recycling endosomal compartment near the Golgi")
+        DualLocalization(
+            compartment="the perinuclear recycling endosomal compartment located adjacent to the Golgi apparatus"
+        )
+
+
+def test_compartment_accepts_long_canonical_organelle_name():
+    # The full ERGIC name (52 chars) is a real canonical name, not a sentence —
+    # the generous length cap + structural guards must let it through.
+    name = "endoplasmic reticulum-Golgi intermediate compartment"
+    assert DualLocalization(compartment=name).compartment == name
 
 
 def test_subdomain_accepts_short_canonical_name():

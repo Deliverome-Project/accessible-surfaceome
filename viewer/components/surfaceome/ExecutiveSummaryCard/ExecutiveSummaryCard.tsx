@@ -71,9 +71,11 @@ export function ExecutiveSummaryCard({ rec, n }: Props) {
       title="Overview and headline call"
       meta="LLM synthesis · top-line accessibility judgment + headline risks"
     >
-      <p className={styles.paragraph}>
-        {linkifyEvidenceRefs(e.one_paragraph)}
-      </p>
+      {e.accessibility_context_summary ? (
+        <p className="lede">{e.accessibility_context_summary}</p>
+      ) : null}
+
+      <p className={styles.paragraph}>{e.one_paragraph}</p>
 
       <ul className={styles.pillStrip} aria-label="Executive summary pills">
         <li>

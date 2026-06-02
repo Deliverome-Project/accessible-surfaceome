@@ -1396,9 +1396,13 @@ def _assert_short_canonical(value: str, field: str) -> str:
     clause-packed value ("endosome upon ligand stimulation") belongs in a
     ``condition`` field, not the name.
     """
-    if len(value) > 40:
+    # Generous length backstop — the parenthetical + clause-marker guards below
+    # catch the real "packed a sentence into the field" failure mode; the cap
+    # only stops a genuine run-on. 60 admits the longest real organelle names
+    # (e.g. "endoplasmic reticulum-Golgi intermediate compartment", 52 chars).
+    if len(value) > 60:
         raise ValueError(
-            f"{field} must be a short canonical name (≤40 chars), not a "
+            f"{field} must be a short canonical name (≤60 chars), not a "
             f"sentence; got {value!r}. Move conditions out of the name."
         )
     if "(" in value or ")" in value:

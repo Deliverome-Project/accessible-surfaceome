@@ -346,6 +346,10 @@ function md(rec, structureData, sequences, afdbEntry) {
 
   lines.push("## 1. Executive summary");
   lines.push("");
+  if (e.accessibility_context_summary) {
+    lines.push(`**${e.accessibility_context_summary}**`);
+    lines.push("");
+  }
   lines.push(e.one_paragraph);
   lines.push("");
   // Family / classification — curated UniProt family + HGNC gene group(s) +
