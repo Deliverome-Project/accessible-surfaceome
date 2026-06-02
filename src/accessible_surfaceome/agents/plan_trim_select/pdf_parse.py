@@ -203,8 +203,9 @@ def _page_to_text(page: Any) -> str:
     the columns row by row, mixing two stories together.
     """
 
+    attrs = ["fontname", "size"]
     try:
-        words = page.extract_words(keep_blank_chars=False)
+        words = page.extract_words(keep_blank_chars=False, extra_attrs=attrs)
     except Exception:  # noqa: BLE001 — fall back to the simple extractor
         return page.extract_text() or ""
     if not words:
@@ -215,14 +216,15 @@ def _page_to_text(page: Any) -> str:
     # the mean token looks too long, re-extract with a tighter tolerance that
     # splits on the smaller real inter-word gaps.
     if _avg_token_len(words) > 11.0:
-        retry = page.extract_words(keep_blank_chars=False, x_tolerance=1.0)
+        retry = page.extract_words(keep_blank_chars=False, x_tolerance=1.0, extra_attrs=attrs)
         if retry and _avg_token_len(retry) < _avg_token_len(words):
             words = retry
 
+    body_size = _body_font_size(words)
     width = float(getattr(page, "width", 0) or 0)
     split = _column_split(words, width)
     if split is None:
-        return "\n".join(_words_to_lines(words))
+        return "\n".join(_words_to_lines(words, body_size))
 
     left = [w for w in words if w["x1"] <= split]
     right = [w for w in words if w["x0"] >= split]
@@ -231,7 +233,7 @@ def _page_to_text(page: Any) -> str:
     for w in words:
         if w["x0"] < split < w["x1"]:
             (left if (w["x0"] + w["x1"]) / 2 < split else right).append(w)
-    return "\n".join(_words_to_lines(left) + _words_to_lines(right))
+    return "\n".join(_words_to_lines(left, body_size) + _words_to_lines(right, body_size))
 
 
 def _column_split(words: list[dict[str, Any]], width: float) -> float | None:
@@ -265,8 +267,21 @@ def _column_split(words: list[dict[str, Any]], width: float) -> float | None:
     return None
 
 
-def _words_to_lines(words: list[dict[str, Any]], y_tol: float = 3.0) -> list[str]:
-    """Group word boxes into text lines by vertical position, left-to-right."""
+def _words_to_lines(
+    words: list[dict[str, Any]], body_size: float = 0.0, y_tol: float = 3.0
+) -> list[str]:
+    """Group word boxes into text lines by vertical position, left-to-right.
+
+    Also splits a **run-in heading** off its line: when a line's leading words
+    are heading-styled (bold, or notably larger than ``body_size``) AND spell a
+    known section heading, the heading is emitted as its own line so the strict
+    line matcher in ``_segment_pages_into_sections`` can detect it. Real
+    publisher PDFs (JCI, PNAS, …) frequently set "Introduction" / "Results" in a
+    larger or bold font run into the first sentence ("Introduction (CTL019)
+    achieved…"); the font requirement is also the precision guard — a body
+    sentence that merely *starts* with "Results" is neither bold nor large, so
+    it is never split.
+    """
 
     if not words:
         return []
@@ -279,10 +294,57 @@ def _words_to_lines(words: list[dict[str, Any]], y_tol: float = 3.0) -> list[str
         else:
             lines.append([w])
             ref_top = w["top"]
-    return [
-        " ".join(x["text"] for x in sorted(line, key=lambda w: w["x0"]))
-        for line in lines
-    ]
+
+    out: list[str] = []
+    for line in lines:
+        line = sorted(line, key=lambda w: w["x0"])
+        k = _leading_heading_run(line, body_size)
+        if k:
+            out.append(" ".join(w["text"] for w in line[:k]))
+            rest = " ".join(w["text"] for w in line[k:]).strip()
+            if rest:
+                out.append(rest)
+        else:
+            out.append(" ".join(w["text"] for w in line))
+    return out
+
+
+_HEADING_SIZE_RATIO = 1.15  # a heading word is >=15% larger than body text
+
+
+def _body_font_size(words: list[dict[str, Any]]) -> float:
+    """Median word font size on the page — the body-text baseline."""
+
+    sizes = sorted(float(w["size"]) for w in words if w.get("size"))
+    return sizes[len(sizes) // 2] if sizes else 0.0
+
+
+def _is_heading_styled(w: dict[str, Any], body_size: float) -> bool:
+    """True if a word looks like heading type: bold, or larger than body."""
+
+    font = (w.get("fontname") or "").lower()
+    if "bold" in font or font.endswith((".b", ".bi", "-b")):
+        return True
+    size = float(w.get("size") or 0.0)
+    return body_size > 0 and size >= body_size * _HEADING_SIZE_RATIO
+
+
+def _leading_heading_run(line: list[dict[str, Any]], body_size: float) -> int:
+    """Length of the leading heading-styled run that spells a known heading.
+
+    Returns 0 when the line doesn't start with a heading-styled run matching a
+    known section/drop heading (so the line is left intact).
+    """
+
+    best = 0
+    for n in range(1, min(len(line), 4) + 1):
+        run = line[:n]
+        if not all(_is_heading_styled(w, body_size) for w in run):
+            break
+        norm = _normalize_heading(" ".join(w["text"] for w in run))
+        if norm in _HEADING_TO_SECTION or norm in _DROP_HEADINGS:
+            best = n
+    return best
 
 
 def _segment_pages_into_sections(pages: list[str]) -> list[PaperSection]:
@@ -292,13 +354,20 @@ def _segment_pages_into_sections(pages: list[str]) -> list[PaperSection]:
         return []
 
     lines = _clean_lines(pages)
+    kinds = [_heading_kind(ln) for ln in lines]
+    # Clinical journals with a structured abstract (Background/Methods/Results/
+    # Conclusions labels) always carry a real Introduction heading after it;
+    # PNAS/Nature "Results-first" papers have no Introduction heading at all
+    # (Methods comes last). So an Introduction anywhere is the tell that a
+    # pre-body Results/Discussion is just an abstract label.
+    has_intro = any(k is not None and k[1] == "intro" for k in kinds)
 
     buffers: dict[SectionName, list[str]] = {}
     order: list[SectionName] = []
     current: SectionName | None = None
-    body_started = False  # have we reached the body proper (intro/methods)?
-    for line in lines:
-        kind = _heading_kind(line)
+    body_started = False  # have we reached the body proper?
+    for i, line in enumerate(lines):
+        kind = kinds[i]
         if kind is not None:
             tag, name = kind
             if tag == "drop":
@@ -306,20 +375,20 @@ def _segment_pages_into_sections(pages: list[str]) -> list[PaperSection]:
             elif name is not None:  # body heading
                 # intro/methods start the body proper. A combined "Results and
                 # Discussion" also starts it — Brief Reports / short comms use
-                # that single heading with no separate intro (and structured
-                # abstracts never label a section "Results and Discussion").
+                # that single heading with no separate intro.
                 if name in ("intro", "methods") or (
                     name == "results" and _normalize_heading(line) == "results and discussion"
                 ):
                     body_started = True
                 elif not body_started:
-                    # A bare results/discussion/figure_legends heading before
-                    # the body proper is a structured-abstract label (the common
-                    # "Background / Methods / Results / Conclusions" abstract in
-                    # clinical journals). Ignore it so abstract + title-block
-                    # text isn't captured as a spurious early section.
-                    current = None
-                    continue
+                    # Bare results/discussion before the body: a structured-
+                    # abstract label iff the doc has an Introduction later
+                    # (clinical-journal pattern); otherwise it's the real first
+                    # section (PNAS/Nature pattern) and starts the body.
+                    if has_intro:
+                        current = None
+                        continue
+                    body_started = True
                 current = name
                 if name not in buffers:
                     buffers[name] = []

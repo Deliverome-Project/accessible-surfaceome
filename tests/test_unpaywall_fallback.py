@@ -111,6 +111,48 @@ def test_pick_best_pdf_url_none_when_no_pdf() -> None:
     assert _pick_best_pdf_url([]) is None
 
 
+def test_rank_pdf_urls_orders_and_dedups() -> None:
+    locs = [
+        _loc(url_for_pdf="repo.pdf", host_type="repository", version="acceptedVersion"),
+        _loc(url_for_pdf="pub.pdf", host_type="publisher", version="publishedVersion"),
+        _loc(url_for_pdf="repo.pdf", host_type="repository", version="acceptedVersion"),
+    ]
+    assert abstract_triage._rank_pdf_urls(locs) == ["pub.pdf", "repo.pdf"]
+
+
+def test_fetch_falls_through_to_repository_after_publisher_403(monkeypatch) -> None:
+    # Publisher copy 403s (bot-blocked); the repository copy works. We should
+    # try the next location, not give up after the first failure.
+    monkeypatch.setattr(abstract_triage, "parse_pdf_to_sections", lambda _b: [_BODY_SECTION])
+    oa = {
+        "is_oa": True,
+        "oa_locations": [
+            {"url": "a", "url_for_pdf": "https://pub.example/x.pdf",
+             "host_type": "publisher", "version": "publishedVersion"},
+            {"url": "b", "url_for_pdf": "https://repo.example/y.pdf",
+             "host_type": "repository", "version": "acceptedVersion"},
+        ],
+    }
+
+    class _MultiHTTP:
+        def __init__(self) -> None:
+            self.fetched: list[str] = []
+
+        def get_json(self, url: str, **_: Any) -> Any:
+            return oa
+
+        def get_bytes(self, url: str, **_: Any) -> bytes:
+            self.fetched.append(url)
+            if "pub.example" in url:
+                raise RuntimeError("Client error '403 Forbidden'")
+            return b"%PDF-1.4 repository copy"
+
+    http = _MultiHTTP()
+    drafts = _fetch_body_via_unpaywall_pdf(_paper(), http=cast(Any, http))
+    assert drafts  # recovered from the repository copy
+    assert http.fetched == ["https://pub.example/x.pdf", "https://repo.example/y.pdf"]
+
+
 # ---------------------------------------------------------------------------
 # _fetch_body_via_unpaywall_pdf
 # ---------------------------------------------------------------------------

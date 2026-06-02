@@ -439,26 +439,39 @@ def _lookup_oa_via_unpaywall(
     return locations
 
 
-def _pick_best_pdf_url(locations: list[UnpaywallLocation]) -> str | None:
-    """Choose the best direct PDF URL among Unpaywall OA locations.
+def _rank_pdf_urls(locations: list[UnpaywallLocation]) -> list[str]:
+    """All distinct OA PDF URLs, best-quality first.
 
-    Preference order: ``publishedVersion`` ranks above accepted/submitted
-    versions; within the same version, a publisher host ranks above a
-    repository. Returns ``None`` when no location exposes a direct
-    ``url_for_pdf`` (e.g. HTML-only OA).
+    ``publishedVersion`` ranks above accepted/submitted; within a version, a
+    publisher host ranks above a repository. The caller tries them **in order**,
+    falling through on 403 / non-PDF — so a paper whose publisher copy is
+    bot-blocked (PNAS, Wiley, ASH all 403 our polite UA) can still be recovered
+    from a green-OA repository copy (institutional repo, OSTI, …). Returns an
+    empty list when no location exposes a direct ``url_for_pdf`` (HTML-only OA).
     """
-
-    pdfs = [loc for loc in locations if loc.url_for_pdf]
-    if not pdfs:
-        return None
 
     def rank(loc: UnpaywallLocation) -> tuple[int, int]:
         published = 1 if loc.version == "publishedVersion" else 0
         publisher = 1 if loc.host_type == "publisher" else 0
         return (published, publisher)
 
-    pdfs.sort(key=rank, reverse=True)
-    return pdfs[0].url_for_pdf
+    out: list[str] = []
+    seen: set[str] = set()
+    for loc in sorted(
+        [loc for loc in locations if loc.url_for_pdf], key=rank, reverse=True
+    ):
+        url = loc.url_for_pdf
+        if url and url not in seen:
+            seen.add(url)
+            out.append(url)
+    return out
+
+
+def _pick_best_pdf_url(locations: list[UnpaywallLocation]) -> str | None:
+    """The single best OA PDF URL (top of :func:`_rank_pdf_urls`), or ``None``."""
+
+    urls = _rank_pdf_urls(locations)
+    return urls[0] if urls else None
 
 
 def _lookup_pmcid_for_pmid(pmid: int, *, http: CachedHTTP) -> str | None:
@@ -592,37 +605,38 @@ def _fetch_body_via_unpaywall_pdf(
         return []  # no stable PMID/PMCID to key clips on
 
     email = os.environ.get("UNPAYWALL_EMAIL") or _DEFAULT_UNPAYWALL_EMAIL
-    pdf_url = _pick_best_pdf_url(
+    pdf_urls = _rank_pdf_urls(
         _lookup_oa_via_unpaywall(paper.doi, http=http, email=email)
     )
-    if not pdf_url:
-        return []
 
-    try:
-        pdf_bytes = http.get_bytes(
-            pdf_url,
-            source="unpaywall_pdf",
-            ttl_days=180,
-            headers={"Accept": "application/pdf"},
-            max_bytes=_MAX_PDF_BYTES,  # streamed cap: aborts oversized downloads
+    # Try every OA PDF location in quality order, falling through on a blocked /
+    # non-PDF / unparseable copy, so a bot-blocked publisher copy doesn't sink a
+    # paper that also has a working repository copy.
+    for pdf_url in pdf_urls:
+        try:
+            pdf_bytes = http.get_bytes(
+                pdf_url,
+                source="unpaywall_pdf",
+                ttl_days=180,
+                headers={"Accept": "application/pdf"},
+                max_bytes=_MAX_PDF_BYTES,  # streamed cap: aborts oversized downloads
+            )
+        except Exception as exc:  # noqa: BLE001 — 403 / paywall / timeout / too large
+            logger.info("Unpaywall PDF fetch failed for %s at %s: %s", source_id, pdf_url, exc)
+            continue
+        if b"%PDF" not in pdf_bytes[:1024]:
+            # 200 OK but an HTML interstitial / paywall page, not a PDF.
+            logger.info("Unpaywall URL for %s was not a PDF: %s", source_id, pdf_url)
+            continue
+        sections = parse_pdf_to_sections(pdf_bytes)
+        if not sections:
+            continue
+        return extract_paper_drafts(
+            source_id=source_id,
+            abstract=paper.abstract,
+            sections=sections,
         )
-    except Exception as exc:  # noqa: BLE001 — publisher 403 / paywall / timeout / too large
-        logger.info("Unpaywall PDF fetch failed for %s: %s", source_id, exc)
-        return []
-
-    if b"%PDF" not in pdf_bytes[:1024]:
-        # 200 OK but an HTML interstitial / paywall page, not a PDF.
-        logger.info("Unpaywall URL for %s did not return a PDF", source_id)
-        return []
-
-    sections = parse_pdf_to_sections(pdf_bytes)
-    if not sections:
-        return []
-    return extract_paper_drafts(
-        source_id=source_id,
-        abstract=paper.abstract,
-        sections=sections,
-    )
+    return []
 
 
 def apply_triage_outcomes(

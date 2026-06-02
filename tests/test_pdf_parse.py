@@ -157,6 +157,42 @@ def test_column_split_single_column_returns_none() -> None:
     assert pdf_parse._column_split(words, width) is None
 
 
+def test_is_heading_styled_bold_or_large() -> None:
+    assert pdf_parse._is_heading_styled({"fontname": "ABC+Arial-BoldMT", "size": 9}, 9.0)
+    assert pdf_parse._is_heading_styled({"fontname": "LOO+AdvOT85.B", "size": 9}, 9.0)  # .B = bold
+    assert pdf_parse._is_heading_styled({"fontname": "X+Klavika-Regular", "size": 12}, 9.0)  # large
+    assert not pdf_parse._is_heading_styled({"fontname": "X+Klavika-Regular", "size": 9}, 9.0)
+
+
+def test_run_in_heading_split_off_its_line() -> None:
+    # JCI/PNAS style: a bold/large heading run into the first sentence.
+    line = [
+        {"text": "Results", "x0": 40, "top": 100, "fontname": "X.B", "size": 9},
+        {"text": "CD19", "x0": 80, "top": 100, "fontname": "X-Reg", "size": 9},
+        {"text": "was", "x0": 112, "top": 100, "fontname": "X-Reg", "size": 9},
+    ]
+    out = pdf_parse._words_to_lines(line, body_size=9.0)
+    assert out[0] == "Results"
+    assert out[1] == "CD19 was"
+
+
+def test_run_in_split_skipped_for_body_sentence() -> None:
+    # Precision guard: a body sentence merely starting with "Results" (body
+    # font, body size) must NOT be split — only bold/large prefixes are.
+    line = [
+        {"text": "Results", "x0": 40, "top": 100, "fontname": "X-Reg", "size": 9},
+        {"text": "showed", "x0": 80, "top": 100, "fontname": "X-Reg", "size": 9},
+    ]
+    assert pdf_parse._words_to_lines(line, body_size=9.0) == ["Results showed"]
+
+
+def test_results_first_kept_when_no_introduction() -> None:
+    # PNAS/Nature pattern: no Introduction heading; Results first, Methods last.
+    page = _page("Results", _body(), "Discussion", _body(), "Materials and Methods", _body())
+    names = [s.name for s in _segment_pages_into_sections([page])]
+    assert names == ["results", "discussion", "methods"]
+
+
 def test_page_to_text_reads_left_column_before_right() -> None:
     class _FakePage:
         width = 600.0
