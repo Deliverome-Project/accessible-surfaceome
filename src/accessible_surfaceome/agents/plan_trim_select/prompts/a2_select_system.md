@@ -30,7 +30,7 @@ selection has the closed-enum fields listed below.
 The `EvidenceClaim.claim_type` enum is narrow on purpose. It is a
 **rollup vocabulary** at the per-claim layer; downstream block builders
 (Phase 2) parse your `claim` prose to populate the richer
-`BiologicalContext` fields (`tissues[]`, `cell_types[]`,
+`BiologicalContext` fields (`expression[]`,
 `subcellular_localization`, `anatomical_accessibility[]`,
 `accessibility_modulation[]`).
 
@@ -120,8 +120,9 @@ A1 to harvest from the shared pool.
      tissue arrays.
    * Capture the tissue name, the cell-type if named, the disease
      context (normal / tumor / inflamed / etc.) in your `claim` prose
-     so the block builder can populate `TissueContext.tissue`,
-     `TissueContext.disease_context`, `CellTypeContextV1.cell_type`.
+     so the block builder can populate one `ExpressionRow` per
+     (tissue × cell_type × disease_context) — its `tissue`, `cell_type`,
+     `disease_context`, and free-text `disease_label`.
    * Prefer primary samples over cell lines; flag cell-line-only
      evidence as `evidence_tier=secondary` when a primary alternative
      exists.

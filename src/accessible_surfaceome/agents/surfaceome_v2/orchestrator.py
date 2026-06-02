@@ -71,7 +71,6 @@ from accessible_surfaceome.agents.surfaceome_v2.builders import (
     build_expression,
     build_methods,
     build_subcellular_localization,
-    build_tissues,
 )
 from accessible_surfaceome.paths import DATA_DIR
 from accessible_surfaceome.tools._shared.http import CachedHTTP, open_default_client
@@ -833,8 +832,7 @@ def _count_blocks(
         "methods": len(se.methods),
         "non_surface_expression": len(se.non_surface_expression),
         "contradicting_evidence": len(se.contradicting_evidence),
-        "tissues": len(bc.tissues),
-        "cell_types": len(bc.cell_types),
+        "expression": len(bc.expression),
         "dual_localization": len(bc.subcellular_localization.dual_localization),
         "membrane_subdomains": len(bc.subcellular_localization.membrane_subdomains),
         "anatomical_accessibility": len(bc.anatomical_accessibility),

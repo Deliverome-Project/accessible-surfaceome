@@ -78,8 +78,13 @@ class SpeciesPostPassStats:
 
 
 def _expression_haystack(row: ExpressionRow) -> str:
-    parts = [p for p in (row.tissue, row.cell_type) if p]
-    return " ".join([*parts, *row.cell_states])
+    return " ".join(
+        [
+            row.tissue,
+            *( [row.cell_type] if row.cell_type else [] ),
+            *row.cell_states,
+        ]
+    )
 
 
 def _modulation_haystack(row: AccessibilityModulationObservation) -> str:

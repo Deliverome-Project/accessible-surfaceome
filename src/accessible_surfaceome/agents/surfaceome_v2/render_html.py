@@ -17,7 +17,7 @@ The viewer is organized as a full QC pass over a v1.0.0 SurfaceomeRecord:
   non_surface_expression[] (the RNA / bulk-protein bucket that prevents
   expression from being misread as accessibility),
   contradicting_evidence[].
-* Section 2 — Biological Context: tissues[], cell_types[], cell_states[],
+* Section 2 — Biological Context: expression[], cell_states[],
   subcellular_localization (primary_compartment + dual_localization[]
   + membrane_subdomains[]), anatomical_accessibility[],
   accessibility_modulation[] (the heaviest — colored by ModulationCategory).
@@ -715,45 +715,22 @@ def _render_surface_evidence(record: dict[str, Any]) -> str:
 # ---------------------------------------------------------------------------
 
 
-def _render_expression_row(r: dict[str, Any]) -> str:
-    cell_states = ", ".join(r.get("cell_states") or [])
-    dx = r.get("disease_label") or r.get("disease_context", "—")
+def _render_expression(row: dict[str, Any]) -> str:
+    cell_states = ", ".join(row.get("cell_states") or [])
+    disease = row.get("disease_context", "—")
+    label = row.get("disease_label")
+    disease_disp = f"{disease} ({label})" if label else disease
     return (
         f"<tr>"
-        f"<td><strong>{html.escape(r.get('tissue') or '—')}</strong></td>"
-        f"<td>{html.escape(r.get('cell_type') or '—')}</td>"
-        f"<td>{_species_badge(r)}</td>"
-        f"<td>{_badge(r.get('present', '—'), _PRESENCE_KIND.get(r.get('present') or '', 'gray'))}</td>"
-        f"<td>{_badge(dx, 'gray')}</td>"
+        f"<td><strong>{html.escape(row.get('tissue') or '—')}</strong></td>"
+        f"<td class='small'>{html.escape(row.get('cell_type') or '—')}</td>"
+        f"<td>{_species_badge(row)}</td>"
+        f"<td>{_badge(row.get('present', '—'), _PRESENCE_KIND.get(row.get('present') or '', 'gray'))}</td>"
+        f"<td>{_badge(disease_disp, 'gray')}</td>"
         f"<td class='small'>{html.escape(cell_states)}</td>"
-        f"<td>{_evi_chip_row(r.get('cited_evidence_ids') or [])}</td>"
+        f"<td>{_evi_chip_row(row.get('cited_evidence_ids') or [])}</td>"
         f"</tr>"
     )
-
-
-def _expression_rows(bc: dict[str, Any]) -> list[dict[str, Any]]:
-    """Unified expression rows. Reads the current ``expression`` field;
-    falls back to deriving rows from the pre-unify ``tissues`` +
-    ``cell_types`` split so older records still render."""
-    expr = bc.get("expression")
-    if expr:
-        return expr
-    rows: list[dict[str, Any]] = []
-    for t in bc.get("tissues") or []:
-        rows.append({**t, "cell_type": None})
-    for c in bc.get("cell_types") or []:
-        for tn in c.get("present_in_tissues") or [None]:
-            rows.append(
-                {
-                    "tissue": tn,
-                    "cell_type": c.get("cell_type"),
-                    "present": c.get("present", "unknown"),
-                    "disease_context": c.get("disease_context", "unknown"),
-                    "disease_label": c.get("disease_label"),
-                    "cited_evidence_ids": c.get("cited_evidence_ids") or [],
-                }
-            )
-    return rows
 
 
 def _render_subcellular(s: dict[str, Any]) -> str:
@@ -845,18 +822,18 @@ def _render_modulation(m: dict[str, Any]) -> str:
 
 def _render_biological_context(record: dict[str, Any]) -> str:
     bc = record.get("biological_context") or {}
-    expression = _expression_rows(bc)
+    expression = bc.get("expression") or []
     cell_states = bc.get("cell_states") or []
     sub = bc.get("subcellular_localization") or {}
     anat = bc.get("anatomical_accessibility") or []
     mods = bc.get("accessibility_modulation") or []
 
     expression_html = (
-        "<table class='compact'><thead><tr><th>tissue</th><th>cell of origin</th>"
-        "<th>species</th><th>presence</th><th>disease</th><th>cell states</th>"
-        "<th>cites</th></tr></thead><tbody>"
-        + "".join(_render_expression_row(r) for r in expression)
-        + "</tbody></table>"
+        "<table class='compact'><thead><tr><th>tissue</th><th>cell type</th>"
+        "<th>species</th><th>presence</th><th>disease</th>"
+        "<th>cell states</th><th>cites</th>"
+        "</tr></thead><tbody>"
+        + "".join(_render_expression(r) for r in expression) + "</tbody></table>"
         if expression
         else "<em class='muted'>no expression rows</em>"
     )
