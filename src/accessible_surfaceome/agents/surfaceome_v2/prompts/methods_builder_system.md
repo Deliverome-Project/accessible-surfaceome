@@ -74,9 +74,9 @@ doesn't, merge them.
       surface, APEX-surface), FRET-on-surface, radioligand binding,
       surface-restricted small-molecule probes. These claims don't
       stain or isolate the protein directly, but the functional
-      readout is impossible without surface access. The SRC eSrc
-      anti-Src antibody-killing paper (PMID:41818370 / 41818382) is
-      the canonical case.
+      readout is impossible without surface access (e.g. an antibody
+      that depletes target-expressing cells only if the target is
+      reachable from outside).
     - `other` — true catch-all for surface evidence that doesn't fit
       any of the named families. Reach for `functional_surface_assay`
       first; only fall to `other` when the evidence genuinely doesn't
@@ -266,6 +266,22 @@ overexpression_reference, vendor_claim_only, none, unknown}`;
       `established_cell_line`, `xenograft`, `ex_vivo`, `unknown`.
 - `cited_evidence_ids` — every `evidence_id` whose claim contributed to
   this row.
+
+## Permeabilization & row granularity
+
+- **Permeabilized assays prove localization, not surface accessibility.**
+  A permeabilized IF/IHC can show plasma-membrane localization, but it
+  cannot show the epitope is reachable from outside an intact cell. Keep
+  `accessibility_relevance=expression_only` for permeabilized methods and
+  record the localization in `surface_claim_type` (e.g.
+  `plasma_membrane_localized`) — never upgrade a permeabilized read to
+  `direct_surface_accessibility` / `surface_accessible`.
+- **One row per distinct assay; collapse only true duplicates.** Two
+  method rows are redundant ONLY when they share the same source citation
+  AND the same `method_subclass` AND the same `expression_system`.
+  Distinct assay conditions — permeabilized vs non-permeabilized, OE vs
+  endogenous, flow vs biotinylation — are SEPARATE rows even from the
+  same paper; collapsing them erases the surface-vs-total readout.
 
 ## Western-blot caveat
 

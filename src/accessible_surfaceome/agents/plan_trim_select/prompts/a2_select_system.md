@@ -250,10 +250,14 @@ long) gets truncated and rejected by the response-size limit.
   row for a tissue only when it carries a genuinely new fact (a
   different level call, a disease-context shift, a subcellular
   caveat).
-* **Across sources, collapse duplicates.** When two clips report the
-  same distribution or localization, keep the stronger one (primary >
-  secondary; larger / better-annotated atlas > smaller). Consensus is
-  recorded once, via its best representative.
+* **Across sources, collapse duplicates — keyed on methodology, not
+  citation.** Two clips are duplicates only when they share the same
+  methodology axes (assay class, sample type, construct) AND report the
+  same observation. Different assays or sample types are DISTINCT
+  findings — cell-line label or paper identity alone is never the dedup
+  key. When two clips ARE genuine duplicates, keep the stronger one
+  (primary > secondary; larger / better-annotated atlas > smaller) and
+  record the consensus once via its best representative.
 * **Budget.** A well-curated A2 ledger is typically **~20–30 claims**.
   Past ~35 you are almost certainly restating the same tissue / cell
   type from multiple atlases — cut the weakest restatements. Staying
