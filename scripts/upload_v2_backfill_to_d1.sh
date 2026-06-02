@@ -13,7 +13,9 @@ set -uo pipefail
 cd "$(git rev-parse --show-toplevel)"
 DRYRUN="${DRYRUN:-1}"
 DRY=""; [ "$DRYRUN" = "1" ] && DRY="--dry-run"
-echo "=== DRYRUN=$DRYRUN  (1=no D1 writes, 0=execute) ==="
+PUBONLY="${PUBLIC_ONLY:-0}"
+PUB=""; [ "$PUBONLY" = "1" ] && PUB="--public-only"
+echo "=== DRYRUN=$DRYRUN  PUBLIC_ONLY=$PUBONLY  (DRYRUN 1=no writes; PUBLIC_ONLY 1=skip private) ==="
 
 # Existing production versions (the rows extend these in place):
 TOPO_V=topo_2026_05_16                          # canonical + mouse/cyno orthologs
@@ -57,21 +59,21 @@ uv run python scripts/upload_topology_to_d1.py --topology-version $TOPO_V \
   --jsonl $O/human_canonical/topology_records.jsonl.norm \
   --jsonl $O/mouse_ortholog/topology_records.jsonl.norm \
   --jsonl $O/cyno_ortholog/topology_records.jsonl.norm \
-  --jsonl $P/human_canonical/topology_records.jsonl.norm $DRY
+  --jsonl $P/human_canonical/topology_records.jsonl.norm $DRY $PUB
 
 echo "== upload topology @ $ISO_V (isoforms) =="
 uv run python scripts/upload_topology_to_d1.py --topology-version $ISO_V \
   --cohorts-present human_isoforms \
-  --jsonl $I/human_isoforms/topology_records.jsonl.norm $DRY
+  --jsonl $I/human_isoforms/topology_records.jsonl.norm $DRY $PUB
 
 echo "== upload ortholog ECD @ $OECD_V =="
 uv run python scripts/upload_ortholog_ecd_to_d1.py --ortholog-ecd-version $OECD_V \
-  --jsonl $O/ortholog_ecd_records.jsonl.norm $DRY
+  --jsonl $O/ortholog_ecd_records.jsonl.norm $DRY $PUB
 
 echo "== upload paralogs @ $PARA_V =="
 uv run python scripts/upload_paralogs_to_d1.py --paralog-version $PARA_V \
   --compara-release "Compara r112" \
-  --jsonl $P/paralog_records.jsonl.norm $DRY
+  --jsonl $P/paralog_records.jsonl.norm $DRY $PUB
 
 if [ "$DRYRUN" = "0" ]; then
   echo "== recompute paralog ECD similarity for the new close pairs =="
