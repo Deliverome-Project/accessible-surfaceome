@@ -30,7 +30,7 @@ A clip is load-bearing if it directly evidences one of these surface-evidence ca
 
 These are A2's territory (the BiologicalContext block); keeping them in A1's menu wastes the selector's attention and biases the ledger toward biology that the A2 selector will pick up independently.
 
-* **Tissue / cell-type expression panels.** "GPR75 is expressed in pancreas, kidney, and adipose..." → A2.
+* **Tissue / cell-type expression panels.** "GENEX is expressed in pancreas, kidney, and adipose..." → A2.
 * **Cell-state / disease-context modulation.** "Surface levels increase under hypoxia / activation / EMT / chemotherapy..." → A2's `accessibility_modulation`. EXCEPTION: keep clips where the state-shift is being used as a method to *measure* surface presence (e.g., "biotinylation of activated vs resting T cells confirmed surface translocation") — these are methodological for A1.
 * **Anatomical orientation** (apical vs basolateral, junctional, ciliary localization as a tissue-anatomy point) → A2's `anatomical_accessibility`. EXCEPTION: keep clips where the orientation is being framed as an *accessibility* claim about a systemic binder (e.g., "the apical-only localization explains why the antibody had no efficacy from the basolateral side").
 * **Pure intracellular signaling cascades** unrelated to surface presentation (downstream second-messenger work, transcriptional targets, kinase activity assays).

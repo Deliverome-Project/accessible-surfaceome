@@ -55,9 +55,9 @@ Allowed `claim_type` values, **nothing else**:
 * **`contradictory`** — explicit conflict between two sources, or
   between a study finding and the dominant literature consensus.
   Use this when the clip refutes another claim in the ledger or in
-  the broader literature (e.g. "GPR75 was NOT detected in tissue X
-  despite prior reports"; "the CCL5–GPR75 pairing failed to
-  reproduce in our hands").
+  the broader literature (e.g. "GENEX was NOT detected in tissue X
+  despite prior reports"; "a contested ligand–receptor pairing failed
+  to reproduce in our hands").
 
 **There is NO `accessibility_modulation`, `subcellular_localization`,
 `anatomical_accessibility`, or `cell_state` value in `claim_type`.**
@@ -101,7 +101,7 @@ scRNA-seq atlas is NOT immunofluorescence.
 | `review_assertion` | secondary citation in a review or textbook with no primary readout in the clip |
 | `db_annotation` | curated database entry (HPA, UniProt subcellular, GeneCards) |
 
-If the quote describes "GPR75 mRNA…" or "the transcript…" or
+If the quote describes "GENEX mRNA…" or "the transcript…" or
 "by Northern blot" or "by RT-PCR" or "by in situ hybridization" or
 "scRNA-seq revealed…" — pick the RNA-level evidence type, not
 `immunohistochemistry` or `western_blot`. Tissue context (e.g. "in
@@ -147,7 +147,7 @@ A1 to harvest from the shared pool.
    * Still `claim_type=surface_expression` (the rollup
      `surface_expression` covers both PM-supporting AND
      PM-refuting observations); use `direction=refutes` or
-     `ambiguous` to mark it as PM-non-supporting. Examples: "GPR75
+     `ambiguous` to mark it as PM-non-supporting. Examples: "GENEX
      was found primarily in vesicular compartments / endosomes /
      ER" → `claim_type=surface_expression, direction=refutes`,
      name the compartment in prose.
@@ -164,10 +164,10 @@ A1 to harvest from the shared pool.
      `accessibility_modulation` with the right `ModulationCategory`.
 6. **Contradictions**
    * `claim_type=contradictory` for explicit refutation of another
-     ledger row or of dominant-literature consensus. The CCL5–GPR75
-     ligand controversy is a textbook example — if you see a clip
-     reporting failure to reproduce CCL5 activation of GPR75, that's
-     `claim_type=contradictory, direction=refutes`.
+     ledger row or of dominant-literature consensus. A contested
+     ligand–receptor pairing is a textbook example — if you see a clip
+     reporting failure to reproduce the proposed ligand's activation of
+     GENEX, that's `claim_type=contradictory, direction=refutes`.
 
 ## Out of scope for A2 — DO NOT select
 
@@ -191,7 +191,7 @@ A1 to harvest from the shared pool.
   context the clip evidences, with the level call or modulation
   direction. The block builder uses this prose to route the row to
   the right `BiologicalContext` field. **Specificity matters** —
-  "GPR75 is expressed in hippocampal neurons" is better than "GPR75
+  "GENEX is expressed in hippocampal neurons" is better than "GENEX
   is expressed in the brain".
 * `claim_type`: one of the 5 allowed values above. Default to
   `tissue_expression` for almost everything; reach for
