@@ -1,31 +1,36 @@
-"""Runner for the plan → trim → select loop.
+"""Runner for the kickoff → discover → triage → trim → select loop.
 
 End-to-end driver:
 
-1. Resolve the gene (gene_lookup) so we have a UniProt acc + HPA snapshot
-   to hand to the planner as context.
-2. Call Sonnet planner with the context → ``SearchPlan``.
+1. Resolve the gene (gene_lookup) so we have a UniProt acc + DB-vote
+   panel for the selector's context.
+2. Build a deterministic ``SearchPlan`` from a fixed per-focus kickoff
+   template (``kickoff_templates.build_kickoff``) — no LLM planner.
 3. Dispatch each ``SearchRequest`` via the existing tool entry points
-   (``evidence_retrieval``, ``gene_literature``); collect every emitted
-   ``EvidenceClaimDraft`` into a pool keyed by global clip_id.
-4. Group clips by source paper; per-paper, ask Haiku to ``keep`` the
-   load-bearing ones (one call per paper).
-5. Build the trimmed menu, ask Sonnet selector to pick clip_ids with
+   (``evidence_retrieval`` in discover-only mode, ``gene_literature``).
+   These are discovery calls — they return paper metadata, not bodies.
+4. Triage each newly-discovered paper's abstract with a Haiku call
+   (``abstract_triage``): discard / keep_abstract / worth_fetching.
+   keep_abstract adds abstract preview clip(s); worth_fetching fetches
+   the body and extracts body clips. Both land in the pool.
+5. Group pool clips by source paper; per-paper, ask Haiku to ``keep``
+   the load-bearing ones (one call per paper).
+6. Build the trimmed menu, ask Sonnet selector to pick clip_ids with
    classifications (no ``quote`` field).
-6. Look up each picked clip in the pool, construct ``EvidenceClaim``
+7. Look up each picked clip in the pool, construct ``EvidenceClaim``
    records with ``quote`` = ``Clip.quote`` (verbatim by construction).
-7. Return the claim list + audit traces + usage summary.
+8. Return the claim list + audit traces + usage summary.
 
-Single-shot for the MVP — no ``needs_more_searches`` iteration yet; the
-selector's ``additional_searches`` field is captured for inspection but
-not re-dispatched. Add iteration once the single-shot quality holds.
+Single-pass: body-fetching is front-loaded into the triage step, so the
+selector picks its rows from the menu in front of it and does not request
+follow-up searches. (The legacy selector-driven iterate path was retired
+once triage took over body acquisition.)
 """
 
 from __future__ import annotations
 
 import json
 import logging
-import os
 import re
 import time
 from collections import defaultdict
@@ -47,6 +52,13 @@ from accessible_surfaceome.agents._support.pricing import (
     summarize_usage,
 )
 from accessible_surfaceome.agents._support.timing import StepTiming, TimingRecorder
+from accessible_surfaceome.agents.plan_trim_select.abstract_triage import (
+    TriageAction,
+    apply_triage_outcomes,
+    paper_source_id,
+    triage_abstracts,
+)
+from accessible_surfaceome.agents.plan_trim_select.kickoff_templates import build_kickoff
 from accessible_surfaceome.agents.plan_trim_select.schemas import (
     SearchPlan,
     SelectionResponse,
@@ -86,27 +98,19 @@ logger = logging.getLogger(__name__)
 
 
 PROMPTS_DIR = Path(__file__).parent / "prompts"
-PLAN_PROMPT_PATH = PROMPTS_DIR / "plan_system.md"
 SELECT_PROMPT_PATH = PROMPTS_DIR / "select_system.md"
 
-# Per-agent prompt variants (Phase 1). When ``agent_focus`` is None on the
-# entry point we use today's generic trim_system.md / select_system.md
-# (unified ledger, ``pts_evi_`` prefix). When ``agent_focus="a1"`` we swap
-# to the surface-evidence-focused trim + select prompts and use the
-# ``a1_evi_`` prefix that A1 block-builders downstream expect. The A2 pair
-# will be added in the next slice.
+# Per-agent prompt variants. When ``agent_focus`` is None on the entry
+# point we use the generic trim_system.md / select_system.md (unified
+# ledger, ``pts_evi_`` prefix). When ``agent_focus="a1"`` we swap to the
+# surface-evidence-focused trim + select prompts and use the ``a1_evi_``
+# prefix that A1 block-builders downstream expect; ``"a2"`` likewise for
+# the biological-context ledger.
 TRIM_PROMPT_PATH = PROMPTS_DIR / "trim_system.md"
 A1_TRIM_PROMPT_PATH = PROMPTS_DIR / "a1_trim_system.md"
 A1_SELECT_PROMPT_PATH = PROMPTS_DIR / "a1_select_system.md"
 A2_TRIM_PROMPT_PATH = PROMPTS_DIR / "a2_trim_system.md"
 A2_SELECT_PROMPT_PATH = PROMPTS_DIR / "a2_select_system.md"
-# Per-focus planner variants (added 2026-05-16). When ``agent_focus`` is
-# set, the planner sees a prompt that explicitly biases its search-mix
-# toward A1's methodology-dense corpus or A2's tissue/biology corpus
-# instead of producing one joint plan. The two passes still share an
-# HTTP cache, so overlapping searches cost-hit once.
-A1_PLAN_PROMPT_PATH = PROMPTS_DIR / "a1_plan_system.md"
-A2_PLAN_PROMPT_PATH = PROMPTS_DIR / "a2_plan_system.md"
 
 AgentFocus = Literal["a1", "a2"]
 
@@ -124,9 +128,15 @@ SONNET_MODEL = "claude-sonnet-4-6"
 HAIKU_MODEL = "claude-haiku-4-5-20251001"
 HAIKU_PRICING_KEY = "claude-haiku-4-5"
 
-MAX_TOKENS_PLAN = 4_000
 MAX_TOKENS_TRIM = 4_000
-MAX_TOKENS_SELECT = 16_000
+# Headroom against the repair-loop cliff: a selector output that overruns
+# this ceiling truncates mid-JSON, fails schema validation, and re-runs
+# (up to MAX_REPAIRS), multiplying cost ~3x. The dedup discipline in the
+# select prompts keeps a typical ledger to ~20-30 claims (~9k tokens), but
+# 20k lets a legitimately evidence-rich gene's ~40-claim output land in one
+# call instead of a repair cascade. Lower only if you confirm outputs stay
+# small; raising further just delays the same cliff.
+MAX_TOKENS_SELECT = 20_000
 MAX_REPAIRS = 2
 TRIM_PREVIEW_CHARS = 700
 
@@ -144,10 +154,14 @@ MAX_CLIPS_PER_TRIM_CALL = 60
 # observe 429s.
 TRIM_CONCURRENCY = 10
 
-# How many plan iterations the loop runs in total: 1 initial plan + up to
-# (MAX_PLAN_ITERATIONS - 1) follow-ups requested via needs_more_searches.
-# Capped so the loop terminates even if the selector keeps asking.
-MAX_PLAN_ITERATIONS = 3
+# Single-pass: the deterministic kickoff runs once, triage front-loads all
+# body-fetching, and the selector commits its picks without iterating. The
+# selector-driven follow-up-search path was retired (it spent a full extra
+# Sonnet call retrying fetches triage had already attempted). Kept as a
+# named constant of 1 so the surrounding loop structure (cumulative pool,
+# per-iteration audit) stays intact and iteration could be reintroduced if
+# a future need is demonstrated.
+MAX_PLAN_ITERATIONS = 1
 
 _FENCED_JSON_RE = re.compile(r"```(?:json)?\s*(\{.*\})\s*```", re.DOTALL)
 
@@ -172,9 +186,10 @@ class SearchLogEntry:
 
 @dataclass
 class IterationLogEntry:
-    """One plan→execute→trim→select cycle's headline stats. ``new_searches``
-    counts only the searches executed in this iteration (so iteration 0 has
-    the initial plan, iteration N has the selector's additional_searches)."""
+    """One kickoff→execute→triage→trim→select cycle's headline stats.
+
+    Retained as a list-of-one for audit-shape stability (the flow is now
+    single-pass)."""
 
     iteration: int
     new_searches: int
@@ -183,7 +198,6 @@ class IterationLogEntry:
     n_drafts_after: int
     n_kept_after_trim: int
     n_selections: int
-    needs_more_searches: bool
 
 
 @dataclass
@@ -201,13 +215,22 @@ class PlanTrimSelectResult:
     claims: list[EvidenceClaim] = field(default_factory=list)
     search_log: list[SearchLogEntry] = field(default_factory=list)
     iteration_log: list[IterationLogEntry] = field(default_factory=list)
+    # Per-paper abstract-triage decisions (discard / keep_abstract /
+    # worth_fetching) + body-fetch outcomes. Audit trail for what entered
+    # the pool and why.
+    triage_actions: list[TriageAction] = field(default_factory=list)
     # Anchored-rate audit. Should be 100% by construction since we never
     # paraphrase, but verify so any regressions surface.
     n_claims: int = 0
     n_anchored: int = 0
-    # Cost + token accounting per stage.
+    # Cost + token accounting per stage. ``plan_usage`` is retained for
+    # backward-compatible audit shape but is always zero now that the LLM
+    # planner is replaced by a deterministic kickoff template.
     plan_usage: UsageSummary = field(
         default_factory=lambda: UsageSummary(model=SONNET_MODEL)
+    )
+    triage_usage: UsageSummary = field(
+        default_factory=lambda: UsageSummary(model=HAIKU_PRICING_KEY)
     )
     trim_usage: UsageSummary = field(
         default_factory=lambda: UsageSummary(model=HAIKU_PRICING_KEY)
@@ -231,6 +254,7 @@ class PlanTrimSelectResult:
     def total_cost_usd(self) -> float:
         return (
             self.plan_usage.cost_usd
+            + self.triage_usage.cost_usd
             + self.trim_usage.cost_usd
             + self.select_usage.cost_usd
         )
@@ -574,68 +598,6 @@ def _call_with_repair(
     return None, raw_json, final_text
 
 
-def _run_planner(
-    client: Anthropic,
-    *,
-    context: GeneContext,
-    usage_sink: list[UsageRecord],
-    plan_prompt_path: Path = PLAN_PROMPT_PATH,
-    timing: TimingRecorder | None = None,
-    timing_phase: str = "plan_trim_select",
-) -> SearchPlan | None:
-    system_prompt = plan_prompt_path.read_text()
-    plan_schema = json.dumps(SearchPlan.model_json_schema(), indent=2)
-    user_prompt = (
-        f"# Gene: {context.gene}\n\n"
-        f"UniProt summary:\n```json\n{context.uniprot_summary_json}\n```\n\n"
-        f"DB vote panel (includes HPA main_location + reliability):\n"
-        f"```json\n{context.db_panel_json}\n```\n\n"
-    )
-    if context.deterministic_summary_json:
-        user_prompt += (
-            "Deterministic inputs (DeepTMHMM topology + Compara paralogs + "
-            "cross-species ortholog ECD identity, from public D1):\n"
-            f"```json\n{context.deterministic_summary_json}\n```\n\n"
-        )
-    if context.triage_summary_json:
-        user_prompt += (
-            "Triage prior (from the genome-wide Haiku surface_triage agent, "
-            "treat as a prior to confirm or refute):\n"
-            f"```json\n{context.triage_summary_json}\n```\n\n"
-        )
-    user_prompt += (
-        "Emit one fenced ```json block matching this SearchPlan schema:\n\n"
-        f"```json\n{plan_schema}\n```\n"
-    )
-    call_sink: list[UsageRecord] = []
-    if timing is None:
-        parsed, _, _ = _call_with_repair(
-            client,
-            model=SONNET_MODEL,
-            system_prompt=system_prompt,
-            user_prompt=user_prompt,
-            schema=SearchPlan,
-            max_tokens=MAX_TOKENS_PLAN,
-            usage_sink=usage_sink,
-            label="planner",
-        )
-    else:
-        with timing.step("planner", phase=timing_phase, model=SONNET_MODEL) as h:
-            parsed, _, _ = _call_with_repair(
-                client,
-                model=SONNET_MODEL,
-                system_prompt=system_prompt,
-                user_prompt=user_prompt,
-                schema=SearchPlan,
-                max_tokens=MAX_TOKENS_PLAN,
-                usage_sink=call_sink,
-                label="planner",
-            )
-            h.set_usage(call_sink, model=SONNET_MODEL)
-        usage_sink.extend(call_sink)
-    return parsed if isinstance(parsed, SearchPlan) else None
-
-
 # ---------------------------------------------------------------------------
 # Step 2 — execute the search plan
 # ---------------------------------------------------------------------------
@@ -694,10 +656,21 @@ def _execute_plan(
                     category=req.category,
                     http=http,
                     retraction_index=retraction_index,
+                    discover_only=True,
                 )
+                # discover_only=True: bodies aren't fetched here. Any
+                # drafts the pack carries are from the hpa_ihc path
+                # (synthetic curated data, not paper bodies) and still
+                # belong in the pool.
                 for draft in pack.evidence_claim_drafts:
                     _add_to_pool(draft, pool, clips_by_source)
                     n_drafts += 1
+                # Merge category-discovery papers into the candidate
+                # inventory so triage sees them alongside gene_literature
+                # discovery results.
+                for paper in pack.papers:
+                    if paper.pmid:
+                        discovered_papers.setdefault(paper.pmid, paper)
                 n_papers = len(pack.papers)
             elif req.tool == "gene_literature":
                 params = {"mode": req.mode}
@@ -821,23 +794,27 @@ def _add_to_pool(
 ) -> None:
     """Insert draft into the pool with a globally-unique clip_id.
 
-    Draft.suggested_evidence_id already encodes (source_id, section, seq) and
-    is unique within one tool call; conflicts across calls (same paper hit by
-    multiple categories) get a `_k` suffix.
+    Content-dedup within source: when the same paper is extracted by
+    multiple evidence_retrieval categories (e.g., surface_biotinylation +
+    mass_spec_surfaceome both pull a LUX-MS paper), each call's ``seq``
+    counter restarts, so identical sentences get different clip_ids on
+    the second call. Without a content check, those duplicates inflate
+    the Haiku trim prompt with redundant text. Compare against existing
+    quotes for the same source_id before assigning a clip_id.
     """
+
+    normalized = normalize_for_quote_matching(draft.quote)
+    for existing in by_source.get(draft.source_id, []):
+        if normalize_for_quote_matching(existing.quote) == normalized:
+            return
 
     clip_id = draft.suggested_evidence_id
     if clip_id in pool:
-        # Already have this exact (source, section, seq) — likely same snippet
-        # re-emitted by another category. Skip duplicate quote.
-        if pool[clip_id].quote == draft.quote:
-            return
         # Same id but different content — suffix and keep both.
         k = 2
         while f"{clip_id}_{k}" in pool:
             k += 1
         clip_id = f"{clip_id}_{k}"
-    # Re-stamp the draft with its global clip_id.
     redrafted = draft.model_copy(update={"suggested_evidence_id": clip_id})
     pool[clip_id] = redrafted
     by_source[redrafted.source_id].append(redrafted)
@@ -1070,88 +1047,12 @@ def _format_menu_for_selector(
     return "\n".join(blocks)
 
 
-def _pmids_already_fetched(pool: dict[str, EvidenceClaimDraft]) -> set[int]:
-    """Return PMIDs for papers that ALREADY have drafts in the pool.
-
-    Used to mark gene2pubmed / topic_search results as fetched vs not,
-    so the selector knows which still need a fetch_abstract / fetch_fulltext
-    follow-up to contribute clips.
-
-    Pool source_ids look like ``PMC:PMC12345`` or ``PMID:67890`` or
-    ``HPA:GENE``. We extract numeric PMIDs from any PMID-prefixed source;
-    PMC-only sources don't tell us the PMID directly, but the selector
-    can match by PMCID via the discovered_papers list.
-    """
-
-    pmids: set[int] = set()
-    for draft in pool.values():
-        sid = draft.source_id
-        if sid.startswith("PMID:"):
-            try:
-                pmids.add(int(sid.split(":", 1)[1]))
-            except ValueError:
-                pass
-    return pmids
-
-
-def _format_unfetched_inventory(
-    discovered: dict[int, Paper], fetched_pmids: set[int], cap: int = 30
-) -> str:
-    """Render a markdown list of papers discovered via gene2pubmed / topic_search
-    that haven't been deep-dived yet. Each entry has title + a short abstract
-    preview + the PMID so the selector can request fetch_abstract."""
-
-    rows: list[str] = []
-    # Prioritize: non-retracted, non-review, has abstract, recent year.
-    candidates = [
-        p for p in discovered.values() if p.pmid not in fetched_pmids
-    ]
-    candidates.sort(
-        key=lambda p: (
-            p.is_retracted,  # False first
-            p.year is None,  # known year first
-            -(p.year or 0),  # newest first
-            p.is_review,     # primary first
-        )
-    )
-    for paper in candidates[:cap]:
-        flags = []
-        if paper.is_review:
-            flags.append("review")
-        if paper.is_retracted:
-            flags.append("RETRACTED")
-        if paper.is_pmc_oa and paper.pmc_id:
-            flags.append(f"PMC OA: {paper.pmc_id}")
-        flag_str = f" [{', '.join(flags)}]" if flags else ""
-        abstract_preview = (
-            (paper.abstract or "(no abstract)")[:300]
-            + ("…" if paper.abstract and len(paper.abstract) > 300 else "")
-        )
-        rows.append(
-            f"- **PMID:{paper.pmid}** ({paper.year or '?'}){flag_str} — _{paper.title}_\n"
-            f"  > {abstract_preview}"
-        )
-    if not rows:
-        return "_(no unfetched discovered papers — gene2pubmed/topic_search returned only papers already in the pool, or were not in the plan)_"
-    n_total = len(candidates)
-    overflow = (
-        f"\n\n_…showing {cap} of {n_total} unfetched papers; iterate to surface more._"
-        if n_total > cap
-        else ""
-    )
-    return "\n\n".join(rows) + overflow
-
-
 def _run_selector(
     client: Anthropic,
     *,
     context: GeneContext,
     menu_markdown: str,
-    unfetched_inventory: str,
     n_kept: int,
-    n_unfetched: int,
-    iteration: int,
-    max_iterations: int,
     usage_sink: list[UsageRecord],
     select_prompt_path: Path = SELECT_PROMPT_PATH,
     timing: TimingRecorder | None = None,
@@ -1159,22 +1060,6 @@ def _run_selector(
 ) -> SelectionResponse | None:
     system_prompt = select_prompt_path.read_text()
     schema_str = json.dumps(SelectionResponse.model_json_schema(), indent=2)
-    iters_left = max_iterations - iteration - 1
-    iteration_banner = (
-        f"## Iteration {iteration + 1} of up to {max_iterations} "
-        f"({iters_left} follow-up{'s' if iters_left != 1 else ''} available)\n\n"
-        "If you finalize selections this turn (`needs_more_searches: false`), "
-        "the orchestrator promotes them and the loop ends.\n"
-        "If you set `needs_more_searches: true` with up to 3 "
-        "`additional_searches`, those run, the menu is augmented, and you "
-        "see the menu again next turn. "
-        + (
-            "This is the last iteration — `additional_searches` will be ignored."
-            if iters_left == 0
-            else f"You can iterate at most {iters_left} more time(s)."
-        )
-        + "\n\n"
-    )
     deterministic_block = ""
     if context.deterministic_summary_json:
         deterministic_block = (
@@ -1191,7 +1076,6 @@ def _run_selector(
         )
     user_prompt = (
         f"# Gene: {context.gene}\n\n"
-        f"{iteration_banner}"
         f"UniProt summary (for context):\n```json\n{context.uniprot_summary_json}\n```\n\n"
         f"DB vote panel (HPA + SURFY/CSPA, for context):\n"
         f"```json\n{context.db_panel_json}\n```\n\n"
@@ -1199,13 +1083,6 @@ def _run_selector(
         f"{triage_block}"
         f"## Trimmed clip menu ({n_kept} clips across multiple sources)\n\n"
         f"{menu_markdown}\n\n"
-        f"## Discovered papers not yet deep-dived ({n_unfetched} papers)\n\n"
-        "These came from gene2pubmed / topic_search calls but their bodies "
-        "haven't been fetched, so they contributed zero clips to the menu "
-        "above. If any look load-bearing, set `needs_more_searches: true` "
-        "and request `fetch_abstract` (cheap) or `fetch_fulltext` (more "
-        "clips, OA papers only) in `additional_searches`.\n\n"
-        f"{unfetched_inventory}\n\n"
         "Pick the clips that should become evidence rows. Use the clip_id as it "
         "appears above. Emit one fenced ```json block matching this "
         "SelectionResponse schema:\n\n"
@@ -1225,7 +1102,7 @@ def _run_selector(
     else:
         call_sink: list[UsageRecord] = []
         with timing.step(
-            f"selector:iter{iteration}",
+            "selector",
             phase=timing_phase,
             n_items=n_kept,
             model=SONNET_MODEL,
@@ -1250,6 +1127,25 @@ def _run_selector(
 # ---------------------------------------------------------------------------
 
 
+def _normalize_clip_id(clip_id: str) -> str:
+    """Normalize a clip_id for tolerant matching.
+
+    Lowercases, drops non-alphanumerics, and strips ``pmid`` / ``pmc``
+    type tokens. This collapses the one mangling the selector reliably
+    introduces: the menu renders a source header ``PMID:21444918`` above
+    a clip ``draft_21444918_abstract_02`` (bare digits, no type token,
+    because the pool keys PMID sources by number), and the model
+    "regularizes" the clip by re-inserting the prefix it saw in the
+    header → ``draft_PMID21444918_abstract_02``. Both normalize to
+    ``draft21444918abstract02``. PMC clips already carry ``PMC`` in the
+    bare id so they round-trip without this, but stripping the token is
+    harmless there too.
+    """
+
+    s = re.sub(r"[^a-z0-9]", "", clip_id.lower())
+    return re.sub(r"pmid|pmc", "", s)
+
+
 def _promote_selections(
     selection_response: SelectionResponse,
     *,
@@ -1263,7 +1159,17 @@ def _promote_selections(
     (``{prefix}NN``). The default ``pts_evi_`` preserves the single-agent
     MVP path; per-agent paths use ``a1_evi_`` / ``a2_evi_`` so downstream
     block builders' ``_check_claim_id_prefix`` validators pass.
+
+    On an exact clip_id miss, falls back to a normalized lookup that
+    tolerates the selector's PMID/PMC prefix-regularization, accepting
+    the recovery only when it resolves to a *single* pool clip (an
+    ambiguous normalized key keeps the drop + warning).
     """
+
+    # Build the normalized index lazily; only consulted on exact miss.
+    norm_index: dict[str, list[str]] = defaultdict(list)
+    for cid in pool:
+        norm_index[_normalize_clip_id(cid)].append(cid)
 
     claims: list[EvidenceClaim] = []
     warnings: list[str] = []
@@ -1271,10 +1177,20 @@ def _promote_selections(
     for sel in selection_response.selections:
         draft = pool.get(sel.clip_id)
         if draft is None:
-            warnings.append(
-                f"selector picked unknown clip_id={sel.clip_id!r}; skipping"
-            )
-            continue
+            candidates = norm_index.get(_normalize_clip_id(sel.clip_id), [])
+            if len(candidates) == 1:
+                draft = pool[candidates[0]]
+            else:
+                detail = (
+                    f"{len(candidates)} normalized matches"
+                    if candidates
+                    else "no match"
+                )
+                warnings.append(
+                    f"selector picked unknown clip_id={sel.clip_id!r} "
+                    f"({detail}); skipping"
+                )
+                continue
         claim = EvidenceClaim(
             evidence_id=f"{evidence_id_prefix}{seq:02d}",
             claim=sel.claim,
@@ -1301,17 +1217,12 @@ def _promote_selections(
 
 def _resolve_focus_prompts(
     agent_focus: AgentFocus | None,
-) -> tuple[Path, Path, str, Path]:
-    """Map agent_focus → (trim_prompt_path, select_prompt_path, evi_prefix,
-    plan_prompt_path).
+) -> tuple[Path, Path, str]:
+    """Map agent_focus → (trim_prompt_path, select_prompt_path, evi_prefix).
 
     Centralized so an unknown / not-yet-wired focus fails fast with a
-    clear error before any model call.
-
-    The fourth element (plan prompt path) was added 2026-05-16 so the
-    dual driver can run a per-focus planner instead of the joint
-    planner. ``agent_focus=None`` keeps the legacy joint
-    ``plan_system.md`` for the single-agent MVP path.
+    clear error before any model call. ``agent_focus=None`` keeps the
+    generic trim/select prompts for the single-agent unified-ledger path.
     """
 
     if agent_focus is None:
@@ -1319,21 +1230,18 @@ def _resolve_focus_prompts(
             TRIM_PROMPT_PATH,
             SELECT_PROMPT_PATH,
             _EVIDENCE_ID_PREFIX[None],
-            PLAN_PROMPT_PATH,
         )
     if agent_focus == "a1":
         return (
             A1_TRIM_PROMPT_PATH,
             A1_SELECT_PROMPT_PATH,
             _EVIDENCE_ID_PREFIX["a1"],
-            A1_PLAN_PROMPT_PATH,
         )
     if agent_focus == "a2":
         return (
             A2_TRIM_PROMPT_PATH,
             A2_SELECT_PROMPT_PATH,
             _EVIDENCE_ID_PREFIX["a2"],
-            A2_PLAN_PROMPT_PATH,
         )
     raise ValueError(
         f"unknown agent_focus={agent_focus!r}; expected 'a1', 'a2', or None"
@@ -1363,12 +1271,14 @@ def run_plan_trim_select(
       ``a2_select_system.md``, ``a2_evi_`` prefix). Selects clips that
       feed `biological_context` block builders downstream.
 
-    The planner stage is *not* per-focus — joint planning gives both A1
-    and A2 the same shared clip pool to harvest from. Phase 1's
-    sequential-dual driver (``run_plan_trim_select_dual``) calls this
-    entry point twice (once with ``agent_focus="a1"``, once with
-    ``"a2"``) over the same warmed http cache so the planner + executor
-    cache hit on the second pass and the trim+select diverges per agent.
+    The kickoff stage is *not* per-focus in its *search set* — both A1
+    and A2 discover into the same shared candidate inventory. The
+    per-focus split happens at trim + select (and at the ``evidence_id``
+    prefix). Phase 1's sequential-dual driver
+    (``run_plan_trim_select_dual``) calls this entry point twice (once
+    with ``agent_focus="a1"``, once with ``"a2"``) over the same warmed
+    http cache so the discovery + triage fetches cache-hit on the second
+    pass and only the trim+select diverges per agent.
     """
 
     t0 = time.time()
@@ -1377,13 +1287,12 @@ def run_plan_trim_select(
     http = http or open_default_client()
     retraction = retraction_index or _empty_retraction_index()
 
-    # Resolve the per-focus prompt quadruple up front so a typo or
-    # missing-prompt-file failure aborts before any model call.
+    # Resolve the per-focus prompt pair + evidence-id prefix up front so a
+    # typo or missing-prompt-file failure aborts before any model call.
     (
         trim_prompt_path,
         select_prompt_path,
         evidence_id_prefix,
-        plan_prompt_path,
     ) = _resolve_focus_prompts(agent_focus)
     timing_phase = (
         f"plan_trim_select_{agent_focus}" if agent_focus else "plan_trim_select"
@@ -1393,7 +1302,7 @@ def run_plan_trim_select(
     # the sibling A1/A2 run when called via the dual driver).
     timing_start_index = len(timing.entries) if timing is not None else 0
 
-    plan_usage: list[UsageRecord] = []
+    triage_usage: list[UsageRecord] = []
     trim_usage: list[UsageRecord] = []
     select_usage: list[UsageRecord] = []
 
@@ -1411,6 +1320,9 @@ def run_plan_trim_select(
     cumulative_search_log: list[SearchLogEntry] = []
     cumulative_discovered: dict[int, Paper] = {}
     sel_resp: SelectionResponse | None = None
+    # Paper source_ids already routed through triage, so later iterations
+    # triage only newly-discovered papers (each paper triaged exactly once).
+    triaged_ids: set[str] = set()
 
     try:
         # Step 0 — gene context (once per run)
@@ -1418,33 +1330,24 @@ def run_plan_trim_select(
         result.bundle = context.bundle
         logger.info("gene context built: %s → %s", gene, context.bundle.uniprot_acc)
 
-        # Step 1 — initial planner call (per-focus prompt when
-        # ``agent_focus`` is set; joint prompt otherwise)
-        initial_plan = _run_planner(
-            client,
-            context=context,
-            usage_sink=plan_usage,
-            plan_prompt_path=plan_prompt_path,
-            timing=timing,
-            timing_phase=timing_phase,
-        )
-        if initial_plan is None:
-            result.warnings.append("planner returned no valid SearchPlan; aborting")
-            return result
+        # Step 1 — deterministic kickoff plan (no LLM planner). The fixed
+        # per-focus search set reproduces the retired planner's average
+        # coverage.
+        initial_plan = build_kickoff(agent_focus)
         result.plan = initial_plan
-        logger.info("planner emitted %d searches", len(initial_plan.searches))
+        logger.info("kickoff emitted %d searches", len(initial_plan.searches))
 
-        # Plan→execute→trim→select loop. Iteration 0 uses initial_plan;
-        # subsequent iterations use the selector's additional_searches.
+        # Single-pass execute→triage→trim→select. The loop runs once
+        # (MAX_PLAN_ITERATIONS=1); the structure is retained so iteration
+        # could be reintroduced behind the constant without a rewrite.
         current_plan: SearchPlan | None = initial_plan
         for iteration in range(MAX_PLAN_ITERATIONS):
             if current_plan is None or not current_plan.searches:
                 break
 
-            # Step 2 — execute this iteration's searches, merge into the
-            # cumulative pool. _execute_plan returns its own fresh pool; we
-            # merge the new drafts via _add_to_pool so dedup works across
-            # iterations.
+            # Step 2 — execute the kickoff searches, merge into the pool.
+            # _execute_plan returns its own fresh pool; we merge new drafts
+            # via _add_to_pool for content-dedup.
             iter_pool, iter_log, iter_by_source, iter_discovered = _execute_plan(
                 current_plan,
                 context=context,
@@ -1471,6 +1374,65 @@ def run_plan_trim_select(
                 len(pool),
                 len(clips_by_source),
             )
+
+            # Step 2b — triage newly-discovered papers (incremental). Each
+            # discovered paper is routed through one Haiku abstract-triage
+            # call exactly once across all iterations. keep_abstract adds
+            # abstract preview clip(s); worth_fetching fetches the body and
+            # adds body clips; discard drops it. Papers already in the body
+            # pool (evidence_retrieval / a prior fetch) or lacking an
+            # abstract are marked seen and skipped.
+            new_papers: list[Paper] = []
+            papers_by_id: dict[str, Paper] = {}
+            for paper in cumulative_discovered.values():
+                sid = paper_source_id(paper)
+                if sid in triaged_ids:
+                    continue
+                if sid in clips_by_source:
+                    triaged_ids.add(sid)  # body already in pool
+                    continue
+                if not (paper.abstract or "").strip():
+                    triaged_ids.add(sid)  # nothing to triage
+                    continue
+                new_papers.append(paper)
+                papers_by_id[sid] = paper
+
+            if new_papers:
+                logger.info(
+                    "iteration %d: triaging %d newly-discovered papers",
+                    iteration, len(new_papers),
+                )
+                triage_outcomes = triage_abstracts(
+                    client,
+                    papers=new_papers,
+                    gene=gene,
+                    bundle=context.bundle,
+                )
+                for o in triage_outcomes:
+                    if o.usage is not None:
+                        triage_usage.append(o.usage)
+                    triaged_ids.add(o.paper_id)
+                actions = apply_triage_outcomes(
+                    triage_outcomes,
+                    papers_by_id,
+                    pool=pool,
+                    by_source=clips_by_source,
+                    http=http,
+                    retraction_index=retraction,
+                    add_to_pool_fn=_add_to_pool,
+                )
+                result.triage_actions.extend(actions)
+                n_kept_abstract = sum(
+                    1 for a in actions if a.decision == "keep_abstract"
+                )
+                n_fetched = sum(1 for a in actions if a.fetched_body)
+                n_discard = sum(1 for a in actions if a.decision == "discard")
+                logger.info(
+                    "iteration %d: triage → %d discard / %d keep_abstract / "
+                    "%d fetched-body (pool now %d across %d papers)",
+                    iteration, n_discard, n_kept_abstract, n_fetched,
+                    len(pool), len(clips_by_source),
+                )
 
             if not pool:
                 result.warnings.append(
@@ -1504,41 +1466,16 @@ def run_plan_trim_select(
                 )
                 break
 
-            # Step 4 — selector sees the full cumulative menu + a list of
-            # papers that were discovered (via gene2pubmed / topic_search)
-            # but haven't had their bodies fetched yet. The selector can
-            # use this to plan additional_searches.
+            # Step 4 — selector picks the final evidence rows from the
+            # trimmed menu. Single-pass: triage already fetched every
+            # worth-fetching body upstream, so there is no unfetched
+            # inventory to act on and no follow-up-search path.
             menu = _format_menu_for_selector(pool, trim_results)
-            # Debug instrumentation (gated by PTS_DEBUG_POOL): dump the
-            # post-trim menu the selector sees, so we can inspect whether a
-            # given signal (e.g. an overexpression-surface clip) survived
-            # trim into the selector's candidate pool vs. was dropped
-            # earlier. No-op unless the env var is set.
-            if os.environ.get("PTS_DEBUG_POOL"):
-                import pathlib as _pl
-
-                _dbg = _pl.Path(".runs")
-                _dbg.mkdir(exist_ok=True)
-                _safe = gene.replace(":", "_")
-                (_dbg / f"pts_menu_{_safe}_{agent_focus}_iter{iteration}.md").write_text(
-                    menu
-                )
-            fetched_pmids = _pmids_already_fetched(pool)
-            unfetched_inventory = _format_unfetched_inventory(
-                cumulative_discovered, fetched_pmids
-            )
             sel_resp = _run_selector(
                 client,
                 context=context,
                 menu_markdown=menu,
-                unfetched_inventory=unfetched_inventory,
                 n_kept=n_kept,
-                n_unfetched=sum(
-                    1 for p in cumulative_discovered.values()
-                    if p.pmid not in fetched_pmids
-                ),
-                iteration=iteration,
-                max_iterations=MAX_PLAN_ITERATIONS,
                 usage_sink=select_usage,
                 select_prompt_path=select_prompt_path,
                 timing=timing,
@@ -1559,36 +1496,15 @@ def run_plan_trim_select(
                     n_drafts_after=len(pool),
                     n_kept_after_trim=n_kept,
                     n_selections=len(sel_resp.selections),
-                    needs_more_searches=sel_resp.needs_more_searches,
                 )
             )
-
-            # Decide whether to iterate.
-            if not sel_resp.needs_more_searches or not sel_resp.additional_searches:
-                logger.info(
-                    "iteration %d: selector finalized %d selections (no more searches)",
-                    iteration, len(sel_resp.selections),
-                )
-                break
-            if iteration + 1 >= MAX_PLAN_ITERATIONS:
-                result.warnings.append(
-                    f"reached MAX_PLAN_ITERATIONS={MAX_PLAN_ITERATIONS}; "
-                    f"selector requested more searches but the loop is capped"
-                )
-                logger.info(
-                    "iteration %d: selector requested more searches but cap reached",
-                    iteration,
-                )
-                break
-
             logger.info(
-                "iteration %d: selector requested %d more searches; iterating",
-                iteration, len(sel_resp.additional_searches),
+                "iteration %d: selector finalized %d selections",
+                iteration, len(sel_resp.selections),
             )
-            current_plan = SearchPlan(
-                searches=sel_resp.additional_searches,
-                rationale=f"(iteration {iteration + 1} follow-up requested by selector)",
-            )
+            # Single-pass: the loop is capped at MAX_PLAN_ITERATIONS=1, so
+            # there is no follow-up round. (Loop kept for audit-shape and
+            # to leave iteration reintroducible behind the constant.)
 
         # End of plan iteration loop. Wrap up.
         result.search_log = cumulative_search_log
@@ -1620,7 +1536,7 @@ def run_plan_trim_select(
         )
 
     finally:
-        result.plan_usage = summarize_usage(plan_usage, SONNET_MODEL)
+        result.triage_usage = summarize_usage(triage_usage, HAIKU_PRICING_KEY)
         result.trim_usage = summarize_usage(trim_usage, HAIKU_PRICING_KEY)
         result.select_usage = summarize_usage(select_usage, SONNET_MODEL)
         result.elapsed_s = round(time.time() - t0, 1)

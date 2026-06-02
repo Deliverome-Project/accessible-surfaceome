@@ -3,17 +3,17 @@
 Verifies:
 
 1. ``_summarize_deterministic_for_planner`` produces a compact JSON the
-   planner can read, with the four signals A1/A2 prompts reference
+   selector can read, with the four signals it references
    (tm_helix_count, paralog top-N, mouse/cyno ortholog ECD identity).
 2. ``GeneContext`` carries ``deterministic_summary_json`` and the
    ``_build_gene_context`` builder tolerates D1 unreachable (sets it
-   to ``None`` so the planner prompts skip the block).
-3. ``_run_planner`` and ``_run_selector`` user prompts include the
-   ``"Deterministic inputs"`` header when the summary is present and
-   omit it when absent.
-4. The A1 and A2 plan system prompts each contain a "Deterministic
-   inputs" section so the planner knows the JSON block exists and how
-   to weight it.
+   to ``None`` so the selector prompt skips the block).
+3. The ``_run_selector`` user prompt includes the ``"Deterministic
+   inputs"`` header when the summary is present and omits it when absent.
+
+(The LLM planner that previously also consumed this summary was retired
+in favor of a deterministic kickoff template; the selector remains the
+consumer of the deterministic block.)
 """
 
 from __future__ import annotations
@@ -23,8 +23,6 @@ from datetime import UTC, datetime
 from unittest.mock import MagicMock, patch
 
 from accessible_surfaceome.agents.plan_trim_select.runner import (
-    A1_PLAN_PROMPT_PATH,
-    A2_PLAN_PROMPT_PATH,
     GeneContext,
     _summarize_deterministic_for_planner,
 )
@@ -352,8 +350,18 @@ def test_gene_context_deterministic_field_can_be_none():
     assert ctx.deterministic_summary_json is None
 
 
-def test_planner_user_prompt_includes_deterministic_block_when_present():
-    """``_run_planner`` must include the Deterministic-inputs JSON in the
+def _selector_kwargs(ctx: "GeneContext") -> dict:
+    """Minimal kwargs to drive ``_run_selector`` for prompt-shape tests."""
+    return {
+        "context": ctx,
+        "menu_markdown": "(menu)",
+        "n_kept": 0,
+        "usage_sink": [],
+    }
+
+
+def test_selector_user_prompt_includes_deterministic_block_when_present():
+    """``_run_selector`` must include the Deterministic-inputs JSON in the
     user prompt when ``GeneContext.deterministic_summary_json`` is set."""
     from accessible_surfaceome.agents.plan_trim_select import runner
 
@@ -379,22 +387,17 @@ def test_planner_user_prompt_includes_deterministic_block_when_present():
         return None, "", ""
 
     with patch.object(runner, "_call_with_repair", _fake_repair):
-        runner._run_planner(
-            client=MagicMock(),
-            context=ctx,
-            usage_sink=[],
-            plan_prompt_path=runner.A1_PLAN_PROMPT_PATH,
-        )
+        runner._run_selector(client=MagicMock(), **_selector_kwargs(ctx))
 
     assert "Deterministic inputs" in captured["user_prompt"]
     assert '"tm_helix_count": 7' in captured["user_prompt"]
     assert '"paralog_count": 32' in captured["user_prompt"]
 
 
-def test_planner_user_prompt_omits_deterministic_block_when_absent():
+def test_selector_user_prompt_omits_deterministic_block_when_absent():
     """When ``deterministic_summary_json`` is None (D1 unreachable), the
-    block must not appear — planners should fall back to UniProt-only
-    planning, not see a confusing empty section."""
+    block must not appear — the selector should fall back to UniProt-only
+    context, not see a confusing empty section."""
     from accessible_surfaceome.agents.plan_trim_select import runner
 
     ctx = GeneContext(
@@ -418,28 +421,6 @@ def test_planner_user_prompt_omits_deterministic_block_when_absent():
         return None, "", ""
 
     with patch.object(runner, "_call_with_repair", _fake_repair):
-        runner._run_planner(
-            client=MagicMock(),
-            context=ctx,
-            usage_sink=[],
-            plan_prompt_path=runner.A2_PLAN_PROMPT_PATH,
-        )
+        runner._run_selector(client=MagicMock(), **_selector_kwargs(ctx))
 
     assert "Deterministic inputs" not in captured["user_prompt"]
-
-
-def test_a1_plan_prompt_mentions_deterministic_inputs():
-    body = A1_PLAN_PROMPT_PATH.read_text().lower()
-    assert "deterministic inputs" in body
-    # Should reference the four signals the planner can act on.
-    assert "tm_helix_count" in body
-    assert "paralog" in body
-    assert "ortholog" in body
-
-
-def test_a2_plan_prompt_mentions_deterministic_inputs():
-    body = A2_PLAN_PROMPT_PATH.read_text().lower()
-    assert "deterministic inputs" in body
-    assert "tm_helix_count" in body
-    assert "paralog" in body
-    assert "ortholog" in body

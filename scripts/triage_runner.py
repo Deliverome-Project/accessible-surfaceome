@@ -41,6 +41,23 @@ For a smoke test of one variant on one gene:
     uv run python scripts/triage_runner.py \\
         --model claude-haiku-4-5 --replicates 1 \\
         --variants naive --genes HSPA1A
+
+CANONICAL BENCH SCOPE (run_id=mainbench_canonical_v1, bench_version
+fc7ddee89155, replicate 1). The model × variant matrix is intentionally
+ragged — not every model runs every variant:
+
+  * claude-sonnet-4-6 — naive, ncbi, web_ncbi, pubmed_ncbi (the
+    headline model; full variant spread).
+  * claude-haiku-4-5  — naive, ncbi, web_ncbi, pubmed_ncbi (the
+    cheap-model comparison).
+  * claude-opus-4-7 / claude-opus-4-8 — naive + ncbi ONLY, by design.
+    Opus is the accuracy ceiling probe; the web/pubmed-augmented
+    variants exist to lift *weaker* models toward Opus-without-tools,
+    so running them on Opus would be redundant and (at $15/$75 per MTok)
+    not worth the spend. Extend deliberately if that changes.
+
+To extend or gap-fill an existing run without drifting its
+bench_version, pin the bench content with --bench-tsv (see below).
 """
 
 from __future__ import annotations
@@ -67,12 +84,10 @@ from accessible_surfaceome.tools._shared.http import open_default_client
 from accessible_surfaceome.tools.gene_lookup import resolve, resolve_by_hgnc_id
 
 logger = logging.getLogger(__name__)
-# Worktree-relative: repo root = parent of scripts/. Using the script's own
-# location keeps the runner reading the bench TSV + prompts from whatever
-# worktree it's invoked in. Was previously a hardcoded absolute path to a
-# specific worktree — which silently read the wrong worktree's (stale,
-# un-relabeled) bench TSV + prompts, mislabeling bench_version and breaking
-# reproducibility across worktrees. Do NOT revert to an absolute path.
+# Repo root, derived from this file's location (scripts/triage_runner.py →
+# parents[1]). Must NOT be a hardcoded absolute path: the runner is invoked
+# from agent-created worktrees, and a pinned path silently read the bench
+# TSV + prompts + wrote outputs into a *different* worktree.
 ROOT = Path(__file__).resolve().parents[1]
 BENCH_TSV_BY_NAME = {
     "benchmark": (ROOT / "data/eval/triage_benchmark_v1.tsv", ROOT / "data/eval/triage_bench_v1"),
@@ -90,9 +105,7 @@ MODEL_PRICING: dict[str, tuple[float, float]] = {
     "claude-haiku-4-5":  (1.0, 5.0),
     "claude-sonnet-4-6": (3.0, 15.0),
     "claude-opus-4-7":   (15.0, 75.0),
-    # opus-4-8 priced same as 4-7 pending confirmed list price; only affects
-    # the cost_usd column (recomputable), not verdicts.
-    "claude-opus-4-8":   (15.0, 75.0),
+    "claude-opus-4-8":   (15.0, 75.0),  # same list price as 4-7
 }
 WEB_SEARCH_USD_PER_QUERY = 0.01  # $10 / 1000 searches
 
@@ -817,6 +830,14 @@ def main() -> None:
                          "data/processed/whole_genome_minus_m1.tsv). Overrides --bench. "
                          "When set, --out-root defaults to "
                          "data/eval/triage_<basename>_v1/ unless explicitly overridden.")
+    ap.add_argument("--bench-tsv", default=None,
+                    help="Read the labeled benchmark from an explicit TSV path instead "
+                         "of the --bench default. Unlike --gene-list, ground-truth "
+                         "columns are preserved (so `correct` is scored). Use this to "
+                         "pin a sweep to a specific bench content SHA — e.g. extending "
+                         "or gap-filling an existing run_id whose bench_version "
+                         "(=sha256(tsv)[:12]) must stay stable. Mutually exclusive with "
+                         "--gene-list.")
     ap.add_argument("--out-root", default=None,
                     help="Directory for per-cell JSON records. Default: derived from "
                          "--bench or --gene-list.")
@@ -865,6 +886,8 @@ def main() -> None:
         print()
 
     global BENCH_TSV, OUT_ROOT
+    if args.gene_list and args.bench_tsv:
+        raise SystemExit("--gene-list and --bench-tsv are mutually exclusive.")
     if args.gene_list:
         # Unlabeled sweep — the "input TSV" is the gene-list itself.
         BENCH_TSV = Path(args.gene_list)
@@ -873,6 +896,15 @@ def main() -> None:
         # Derive out-root from the gene-list filename (drop .tsv suffix).
         default_out = ROOT / "data" / "eval" / f"triage_{BENCH_TSV.stem}_v1"
         OUT_ROOT = Path(args.out_root) if args.out_root else default_out
+    elif args.bench_tsv:
+        # Labeled bench from an explicit TSV path — ground-truth columns
+        # preserved (csv.DictReader keeps them; the setdefault below only
+        # fills genuinely-absent truth fields). Lets a gap-fill / extend
+        # run pin bench_version=sha256(tsv)[:12] to an existing run's SHA.
+        BENCH_TSV = Path(args.bench_tsv)
+        if not BENCH_TSV.exists():
+            raise SystemExit(f"--bench-tsv path does not exist: {BENCH_TSV}")
+        OUT_ROOT = Path(args.out_root) if args.out_root else BENCH_TSV_BY_NAME["benchmark"][1]
     else:
         BENCH_TSV, OUT_ROOT = BENCH_TSV_BY_NAME[args.bench]
         if args.out_root:
@@ -1026,6 +1058,35 @@ def main() -> None:
 
     print()
     print(f"GRAND TOTAL COST: ${sum(r.cost_usd for r in results):.3f}")
+
+    # ── Post-sweep completeness assertion ──────────────────────────────
+    # The original 2026-05-12 mainbench sweep silently shipped a holey
+    # matrix: 16 (gene × model × variant) cells never produced a valid
+    # verdict (15 dropped without a row, 1 unparsed-JSON error), and it
+    # went unnoticed because the headline sonnet/ncbi cell was complete
+    # (issue #48). This check makes a holey sweep fail LOUDLY — every cell
+    # this invocation executed must carry a non-null predicted_verdict, or
+    # we exit non-zero with the offenders listed.
+    #
+    # Scope note: only cells run *this* invocation are checked. Resume-
+    # skipped cells (already in D1 under --run-id) were validated by the
+    # run that inserted them — re-validating them would require a network
+    # read we deliberately avoid here.
+    holes = [
+        (r.model, r.variant, r.gene_symbol, r.replicate, r.error or "null verdict")
+        for r in results
+        if r.predicted_verdict is None
+    ]
+    if holes:
+        print()
+        print(f"❌ COMPLETENESS FAILURE: {len(holes)}/{len(results)} executed cells "
+              "produced no valid verdict:")
+        for model, variant, gene, rep, why in sorted(holes):
+            print(f"   {_model_slug(model):14s} {variant:12s} {gene:10s} r{rep}  — {why}")
+        print("Re-run with the same --run-id to gap-fill (idempotent on the "
+              "natural key); a persisted error row must be deleted first.")
+        raise SystemExit(1)
+    print(f"✓ Completeness: all {len(results)} executed cells carry a valid verdict.")
 
 
 if __name__ == "__main__":

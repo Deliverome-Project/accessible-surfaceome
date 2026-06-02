@@ -3,13 +3,16 @@
 You are assembling the evidence packet for a deep-dive surface-accessibility
 annotation of a single human gene. The orchestrator has already:
 
-1. Run the searches you planned.
-2. Pulled paper bodies and split them into verbatim **clips**, each with a
-   stable `clip_id`.
-3. Pre-trimmed each paper's clips via Haiku to a load-bearing subset.
+1. Run a fixed kickoff set of searches.
+2. Triaged every discovered paper and fetched the bodies worth fetching.
+3. Pulled those bodies + the kept abstracts and split them into verbatim
+   **clips**, each with a stable `clip_id`.
+4. Pre-trimmed each paper's clips via Haiku to a load-bearing subset.
 
 You see the trimmed clip menu below. Your job is to **pick the clips** you
-want as evidence rows, and **classify** each pick.
+want as evidence rows, and **classify** each pick. This is a single pass —
+the menu in front of you is the full evidence pool; there is no follow-up
+round.
 
 You do **not** write verbatim quotes. You reference clips by `clip_id` —
 the orchestrator copies the verbatim text from the clip pool into
@@ -39,8 +42,6 @@ One fenced ```json block matching the `SelectionResponse` schema:
     },
     ...
   ],
-  "needs_more_searches": false,
-  "additional_searches": [],
   "notes": "<optional one-paragraph audit note>"
 }
 ```
@@ -50,11 +51,17 @@ One fenced ```json block matching the `SelectionResponse` schema:
 - **Pick clips that directly evidence one of the v1.0.0 surface-evidence
   buckets**: surface_expression, tissue_expression, topology,
   methodological, contradicting_evidence, therapeutic_engagement.
-- **Be selective**: one strong clip per (source, claim_type) is better
-  than three redundant ones. Skip clips that say the same thing as
-  another you've already picked.
-- **Cover source diversity**: prefer multi-source consensus over
-  multi-clip from one paper.
+- **Deduplicate — one distinct finding per row.** Capture each
+  established fact (e.g. TM topology, a known tissue distribution)
+  **once**, from its strongest source. Do not restate the same fact
+  from every paper that mentions it; cross-source restatements add no
+  information, bloat the record, and can push the output past the
+  response-size limit (truncated → rejected).
+- **Cover source diversity**: record multi-source consensus once, via
+  its strongest representative — not once per paper.
+- **Budget**: a well-curated ledger is typically ~20–30 claims; past
+  ~35 you're almost certainly restating established facts — cut the
+  weakest restatements.
 
 ## Classifying
 
@@ -74,72 +81,13 @@ One fenced ```json block matching the `SelectionResponse` schema:
 - `assay_context`: fill what the clip + your domain knowledge supports;
   use `"unknown"` for fields the clip doesn't specify.
 
-## Iterating
+## Coverage
 
-The orchestrator runs you in a loop, capped at a small number of plan
-iterations (the user prompt tells you how many follow-ups are available
-this turn).
-
-* **Iteration 1** is the initial menu from the planner's first search
-  plan. Common gaps at this stage: gene2pubmed and topic_search return
-  paper lists but NOT clips (those modes don't fetch bodies); follow up
-  with `fetch_abstract`/`fetch_fulltext` for specific PMIDs/PMCIDs that
-  look load-bearing.
-* **Later iterations** show you the augmented menu. Each new
-  `additional_searches` round costs ~$0.05 in Sonnet time + a Haiku
-  trim pass per new paper. Iterate only when the existing menu has a
-  real coverage gap — not just because there's a "more searches"
-  button.
-
-Common reasons to iterate:
-* A topic_search round surfaced PMIDs you can see in the search log
-  but the menu has no clips from them — request `fetch_abstract`
-  (cheap) or `fetch_fulltext` (more clips, more tokens) for the most
-  important ones.
-* The menu has only review-tier clips for a key category and you
-  want primary data — request additional evidence_retrieval calls
-  with different category bias, or fetch a specific PMID known to
-  carry primary data.
-* A paralog disambiguation issue is visible in the menu and a tighter
-  topic_search would fix it.
-
-Set `needs_more_searches: true` and populate `additional_searches` with
-up to 3 new `SearchRequest`s when iterating. On the last allowed
-iteration the orchestrator ignores `additional_searches` — finalize
-your selections then.
-
-### Valid `additional_searches` shapes
-
-The schema enforces these — anything else is rejected at parse time and
-sent back to you to fix.
-
-```json
-{"tool": "gene_literature", "mode": "fetch_abstract", "pmid": 34210852,
- "intent": "Akbari et al. 645k-exome BMI association"}
-```
-
-```json
-{"tool": "gene_literature", "mode": "fetch_fulltext", "pmcid": "PMC11444156",
- "intent": "Jiang ciliary trafficking paper, OA full text"}
-```
-
-```json
-{"tool": "gene_literature", "mode": "topic_search",
- "anchors": ["surface_expression", "topology"],
- "intent": "additional CCL5 surface signaling literature"}
-```
-
-```json
-{"tool": "evidence_retrieval", "category": "flow_cytometry",
- "intent": "re-run flow_cytometry category (previously errored)"}
-```
-
-For the GPR75 / orphan-gene case, the typical iteration is one or two
-`fetch_abstract` calls on the most-promising PMIDs from the discovered-
-papers inventory below. That's the cheapest, highest-leverage move.
-
-If the menu already covers the load-bearing evidence cleanly, set
-`needs_more_searches: false` and commit your selections immediately;
-the orchestrator promotes them and the loop ends.
+This is a single pass over the full evidence pool — commit your
+selections from the menu in front of you. Some papers in the menu may be
+represented only by abstract-preview clips (tagged `abstract_preview`)
+because their full text wasn't retrievable; treat those as `secondary`
+tier unless the abstract itself states a primary finding with enough
+specificity.
 
 Stop after emitting the JSON block — no prose around it.

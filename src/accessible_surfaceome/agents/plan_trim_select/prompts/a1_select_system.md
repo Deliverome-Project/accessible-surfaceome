@@ -255,60 +255,41 @@ methods) always outranks overexpression evidence of the same
 methodology when both are available; prefer the endogenous clip
 when picking between siblings.
 
-**But always keep one overexpression-precedent clip.** When an
-endogenous sibling outranks an OE clip, still RETAIN at least one OE
-clip that shows surface localization in a transfected / OE host (a
-`direct_surface_accessibility` or `supports_surface_localization`
-readout in an overexpression or mixed expression system). It carries
-a signal the endogenous clip does NOT: that the protein *can* reach
-the surface when overexpressed — the precedent a reader needs when
-planning an OE-based validation experiment.
+## Deduplicate the ledger — one DISTINCT finding per row
 
-The qualifying clip must be a **cell-surface** readout on INTACT
-transfected / OE cells — live-cell or non-perm flow cytometry, non-perm
-IF, or antibody / ligand binding to transfected cells (e.g. cetuximab or
-EGF binding to EGFR-transfected CHO/HEK by flow). A bare plasmid /
-construct description, or an in-vitro assay on recombinant protein
-(SPR / BLI / surface-plasmon-resonance / ECD immobilization on a chip),
-does **NOT** qualify — it matches "surface" but is biochemistry, not
-cell-surface localization, so don't retain it as THE OE-surface clip. For
-an abundantly-studied receptor (EGFR, etc.) the cell-surface OE clip
-almost always exists in the pool (transfected-cell flow with a blocking
-antibody is the canonical assay); keep it.
+The ledger carries each distinct finding **once**. The most common
+failure is restating the same well-known fact across many sources,
+which adds no information, bloats the record, and (when the output
+runs long) gets truncated and rejected by the response-size limit.
 
-**Prefer the wild-type / canonical protein over a disease-mutant
-variant.** An OE-surface clip on an oncogenic or engineered VARIANT —
-EGFRvIII (exon 2-7 deletion), constitutively-active point mutants, gene
-fusions, truncations, or chimeras — only shows that *the variant* reaches
-the surface, which is a weaker precedent for the wild-type protein the
-catalog target is about (the variant can traffic differently). When the
-pool contains a wild-type / full-length OE-surface clip (e.g. cetuximab
-or EGF binding to WT-EGFR-transfected CHO/HEK by flow), retain THAT as the
-OE-precedent clip in preference to a variant clip. Keep a variant-only
-clip ONLY when no wild-type OE-surface clip is available, and name the
-variant in the clip `reason` (e.g. "OE precedent is EGFRvIII, not
-wild-type") so the methods builder and the catalog reader know the
-precedent is variant-based rather than silently treating it as wild-type.
-
-Downstream this is the
-only input to the catalog's `overexpression_surface_localization_observed`
-filter, which is derived purely from whether any RETAINED method pairs
-an OE / mixed expression system with a surface readout; if you prune
-every OE clip in favour of endogenous siblings (the common case for
-abundantly-endogenous proteins like EGFR), that signal is silently
-lost. Tier the retained OE clip by its signal peptide as above
-(usually `secondary` / `supportive_indirect`), but do NOT drop it as
-a redundant sibling of endogenous evidence. Prune an OE clip only
-when it is redundant with ANOTHER OE clip of the same methodology.
+* **Established structural facts** — 4-TM topology, the two ECD loops,
+  the ~142–188 large-loop epitope, MS4A-family membership, kDa /
+  glycosylation status — are textbook. Capture each **once**, from the
+  single clearest source (prefer a primary structural paper, else one
+  review). Do **not** add a `topology` claim from every paper that
+  recites "four transmembrane domains"; eight restatements of the same
+  topology is eight times the cost for zero added evidence.
+* **Across sources, collapse duplicates.** When two clips state the
+  same assay conclusion or mechanism, keep the stronger one (primary >
+  secondary; larger cohort > smaller; better controls). Multi-source
+  consensus is worth recording **once**, via its best representative —
+  not once per paper.
+* **Within a source, multiple rows only when genuinely distinct** — a
+  methods clip + its result clip, or an antibody-clone clip + a
+  validation-control clip (these feed different downstream slots).
+  Two clips that say the same thing in different words → pick one.
+* **Budget.** A well-curated A1 ledger is typically **~20–30 claims**.
+  Past ~35 you are almost certainly restating established facts — cut
+  the weakest restatements (secondary-tier topology / mechanism
+  recitals go first). Staying within budget also keeps your response
+  under the size limit so it isn't truncated and rejected.
 
 ## Selection discipline
 
-* **Be thorough on coverage, selective on redundancy.** One strong
-  clip per (source, claim_type) > three redundant ones. Every
-  distinct surface assay deserves its own `MethodObservation` row.
 * **Prefer multi-source consensus.** Three independent labs
   reporting surface flow on the same cell line outweigh ten claims
-  from one paper.
+  from one paper — but record the consensus once, citing the
+  strongest source, not once per lab.
 * **Pair methods with results.** For `mass_spec_surfaceome`,
   `surface_biotinylation`, `western_blot`, include BOTH the
   methodology clip AND the result/target-mention clip from the same
@@ -345,74 +326,14 @@ natural ledger order (methods + results paired, then non-surface
 expression, then drug-engagement, then contradictions) so the
 resulting IDs read sensibly in the audit log.
 
-## Iterating
+## Coverage
 
-The orchestrator runs you in a loop, capped at a small number of
-plan iterations (the user prompt tells you how many follow-ups are
-available this turn).
-
-* **Iteration 1** is the initial menu from the joint planner's first
-  search plan. Common gaps: `gene2pubmed` and `topic_search` return
-  paper lists but NOT clips; follow up with `fetch_abstract` /
-  `fetch_fulltext` for specific PMIDs/PMCIDs that look load-bearing
-  for A1's surface buckets.
-* **Later iterations** show you the augmented menu, including any
-  new clips A2 fetched on its own iteration.
-
-A1-specific reasons to iterate:
-* The menu has surface-method results but no antibody-validation
-  detail — request `fetch_fulltext` on the methods paper to
-  recover the antibody table.
-* Therapeutic-engagement evidence is thin (only secondary review
-  mentions); request `topic_search` with anchors covering the
-  gene's clinical / preclinical antibody program, or
-  `fetch_abstract` on specific trial-reporting PMIDs.
-* A surface-biotinylation or MS surfaceome result is in the menu
-  but the paired-WB step is missing — request the methods or
-  supplementary PMC fulltext to anchor `_check_wb_pairing`.
-* A high-impact genetics paper (Akbari-class large-cohort exome /
-  GWAS) is referenced but not deep-fetched — request
-  `fetch_abstract` for the primary paper. These rows go in as
-  `evidence_type=genetic_association, claim_type=surface_expression`
-  (the genetic evidence corroborates target relevance even though
-  it's not a direct surface measurement).
-* Ligand-identity controversy is mentioned but no dissenting paper
-  is in the menu — request `topic_search` or `fetch_abstract` for
-  the failure-to-reproduce paper. Tag the result
-  `claim_type=contradictory`.
-
-Set `needs_more_searches: true` and populate `additional_searches`
-with up to 3 new `SearchRequest`s when iterating. On the last
-allowed iteration the orchestrator ignores `additional_searches` —
-finalize your selections then.
-
-### Valid `additional_searches` shapes
-
-The schema enforces these — anything else is rejected at parse time.
-
-```json
-{"tool": "gene_literature", "mode": "fetch_abstract", "pmid": 34210852,
- "intent": "Akbari et al. 645k-exome GPR75 lower-BMI association"}
-```
-
-```json
-{"tool": "gene_literature", "mode": "fetch_fulltext", "pmcid": "PMC11444156",
- "intent": "ciliary trafficking paper antibody-validation detail"}
-```
-
-```json
-{"tool": "gene_literature", "mode": "topic_search",
- "anchors": ["surface_expression", "topology"],
- "intent": "additional surface flow papers"}
-```
-
-```json
-{"tool": "evidence_retrieval", "category": "flow_cytometry",
- "intent": "re-run flow_cytometry (initial call returned zero drafts)"}
-```
-
-If the menu already covers A1's load-bearing surface evidence
-cleanly, set `needs_more_searches: false` and commit your
-selections immediately.
+This is a single pass over the full A1 evidence pool — body-fetching
+was front-loaded by the triage step, so commit your selections from
+the menu in front of you. Some papers may appear only as
+abstract-preview clips (tagged `abstract_preview`) because their full
+text wasn't retrievable; treat those as `secondary` tier unless the
+abstract states a primary surface finding with enough specificity to
+stand on its own.
 
 Stop after emitting the JSON block — no prose around it.

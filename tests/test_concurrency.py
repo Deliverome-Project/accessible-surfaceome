@@ -456,72 +456,57 @@ _ = MethodObservation
 
 
 # ---------------------------------------------------------------------------
-# Per-focus planner routing
+# Per-focus prompt routing + deterministic kickoff
 # ---------------------------------------------------------------------------
 
 
-def test_resolve_focus_prompts_returns_quadruple_with_plan_path() -> None:
-    """``_resolve_focus_prompts`` must surface a per-focus planner prompt
-    path so the dual driver runs A1- and A2-specific planners instead
-    of one joint plan."""
+def test_resolve_focus_prompts_returns_triple() -> None:
+    """``_resolve_focus_prompts`` returns (trim, select, evi_prefix) per
+    focus. The LLM planner was retired in favor of a deterministic
+    kickoff, so there is no longer a planner-prompt path in the tuple."""
     from accessible_surfaceome.agents.plan_trim_select.runner import (
-        A1_PLAN_PROMPT_PATH,
-        A2_PLAN_PROMPT_PATH,
-        PLAN_PROMPT_PATH,
         _resolve_focus_prompts,
     )
 
-    # Single-agent path falls back to the joint planner.
-    _, _, _, plan_none = _resolve_focus_prompts(None)
-    assert plan_none == PLAN_PROMPT_PATH
+    trim_none, select_none, prefix_none = _resolve_focus_prompts(None)
+    assert prefix_none == "pts_evi_"
+    assert trim_none.exists() and select_none.exists()
 
-    # A1 path uses the surface-evidence-focused planner.
-    _, _, prefix_a1, plan_a1 = _resolve_focus_prompts("a1")
-    assert plan_a1 == A1_PLAN_PROMPT_PATH
-    assert plan_a1.exists(), "a1_plan_system.md must ship with the package"
+    trim_a1, select_a1, prefix_a1 = _resolve_focus_prompts("a1")
     assert prefix_a1 == "a1_evi_"
+    assert trim_a1.exists() and select_a1.exists()
 
-    # A2 path uses the biological-context-focused planner.
-    _, _, prefix_a2, plan_a2 = _resolve_focus_prompts("a2")
-    assert plan_a2 == A2_PLAN_PROMPT_PATH
-    assert plan_a2.exists(), "a2_plan_system.md must ship with the package"
+    trim_a2, select_a2, prefix_a2 = _resolve_focus_prompts("a2")
     assert prefix_a2 == "a2_evi_"
+    assert trim_a2.exists() and select_a2.exists()
 
-    # The three planner prompts are distinct files (different focus
-    # guidance — A2 leans on biology / tissue / cell-type anchors,
-    # A1 leans on method categories).
-    assert len({plan_none, plan_a1, plan_a2}) == 3
+    # The per-focus trim + select prompts are distinct files.
+    assert len({trim_none, trim_a1, trim_a2}) == 3
+    assert len({select_none, select_a1, select_a2}) == 3
 
 
-def test_a1_plan_prompt_emphasizes_methodology() -> None:
-    """Tripwire: prompt content should mention the methodology
-    categories A1's block builders need. Catches accidental file
-    truncation / swap on copy-paste."""
-    from accessible_surfaceome.agents.plan_trim_select.runner import (
-        A1_PLAN_PROMPT_PATH,
+def test_a1_kickoff_emphasizes_methodology() -> None:
+    """Tripwire: the deterministic A1 kickoff must request the method-
+    centric evidence_retrieval categories A1's block builders need."""
+    from accessible_surfaceome.agents.plan_trim_select.kickoff_templates import (
+        build_a1_kickoff,
     )
 
-    body = A1_PLAN_PROMPT_PATH.read_text().lower()
-    assert "surface-evidence" in body or "surface evidence" in body
-    # A1 explicitly recommends the 5 method-centric categories.
-    for category in (
-        "flow_cytometry",
-        "surface_biotinylation",
-        "mass_spec_surfaceome",
-    ):
-        assert category in body, f"A1 planner should mention {category!r}"
+    plan = build_a1_kickoff()
+    categories = {s.category for s in plan.searches if s.tool == "evidence_retrieval"}
+    for category in ("flow_cytometry", "surface_biotinylation", "mass_spec_surfaceome"):
+        assert category in categories, f"A1 kickoff should request {category!r}"
 
 
-def test_a2_plan_prompt_emphasizes_biology() -> None:
-    """Tripwire mirror of the A1 test."""
-    from accessible_surfaceome.agents.plan_trim_select.runner import (
-        A2_PLAN_PROMPT_PATH,
+def test_a2_kickoff_emphasizes_biology() -> None:
+    """Tripwire mirror: the A2 kickoff leans on tissue / IHC categories."""
+    from accessible_surfaceome.agents.plan_trim_select.kickoff_templates import (
+        build_a2_kickoff,
     )
 
-    body = A2_PLAN_PROMPT_PATH.read_text().lower()
-    assert "biological-context" in body or "biological context" in body
-    # A2 should mention the biology-leaning blocks it produces. The
-    # `ihc` category serves the HPA antibody panels post-PR #38 (no
-    # separate hpa_ihc category any more).
-    for token in ("ihc", "expressionrow", "anatomicalaccessibility"):
-        assert token.lower() in body, f"A2 planner should mention {token!r}"
+    plan = build_a2_kickoff()
+    categories = {s.category for s in plan.searches if s.tool == "evidence_retrieval"}
+    assert "ihc" in categories, "A2 kickoff should request the ihc category"
+    # A2 skips A1-only method categories.
+    assert "western_blot_paired" not in categories
+    assert "structure_with_ecd" not in categories
