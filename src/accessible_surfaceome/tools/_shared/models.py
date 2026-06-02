@@ -2298,6 +2298,11 @@ class IsoformTopology(BaseModel):
     ecd_length_residues: int
     icd_length_residues: int
     per_residue_topology: str
+    # Amino-acid sequence this isoform's per_residue_topology indexes 1:1, so a
+    # downstream consumer can do residue-level alignment without re-fetching
+    # UniProt (A1.8). Nullable for records emitted before sequences were
+    # populated.
+    sequence: str | None = None
     tool_version: str
     retrieved_at: datetime
     # Sequence identity of an alternative isoform against this protein's own
@@ -2364,12 +2369,9 @@ class OrthologEntry(BaseModel):
     # is how many human helices fell in ortholog gaps.
     tm_absent_from_model: bool = False
     n_tm_regions_absent: int = 0
-    # The ortholog's own full amino-acid sequence — aligns 1:1 with the
-    # (projected) ``per_residue_topology`` above. Same source + rationale as
-    # ``IsoformTopology.sequence``: ``topology_public.sequence`` for the
-    # ortholog accession. ``None`` for rows whose topology row predates the
-    # field or lacked a stored sequence.
-    sequence: str | None = Field(default=None)
+    # Amino-acid sequence the per_residue_topology indexes 1:1 (A1.8). Nullable
+    # for records emitted before sequences were populated.
+    sequence: str | None = None
 
 
 class Orthologs(BaseModel):
@@ -2417,66 +2419,21 @@ class ParalogEntry(BaseModel):
     full_length_pct_identity: float | None = Field(default=None, ge=0.0, le=100.0)
     family_id: str
     compara_version: str
-    # ECD percent SIMILARITY (identity + BLOSUM62-positive substitutions),
-    # the companion to ``ecd_pct_identity``. Populated only for CLOSE paralog
-    # pairs (>=80% full-length identity) — the ones the viewer promotes to
-    # full topology rows. None for ECD-less proteins and below-threshold pairs.
-    # Sourced from ``compara_paralog.ecd_pct_similarity``.
-    ecd_pct_similarity: float | None = Field(default=None, ge=0.0, le=100.0)
-    # Real DeepTMHMM topology for the paralog, joined from ``topology_public``
-    # (cohort=human_canonical) — NOT inferred from any string. Populated for
-    # close paralogs (>=80%) so the viewer can render a full topology row
-    # (ECD / ICD / TM / orientations) like the ortholog rows. All None when
-    # the paralog has no topology row or the pair is below threshold.
-    per_residue_topology: str | None = Field(default=None)
-    deeptmhmm_label: str | None = Field(default=None)  # 'TM'|'SP+TM'|'SP'|'BETA'|'GLOB'
-    tm_helix_count: int | None = Field(default=None)
-    ecd_length_residues: int | None = Field(default=None)
-    icd_length_residues: int | None = Field(default=None)
-    n_terminal_orientation: TerminalOrientation | None = Field(default=None)
-    c_terminal_orientation: TerminalOrientation | None = Field(default=None)
-    signal_peptide_length: int | None = Field(default=None)
-    # Close-paralog full amino-acid sequence — populated only for the close
-    # paralogs (>=80% full-length identity) that also carry topology, so the
-    # sequence pairs with the ``per_residue_topology`` above. Distant
-    # paralogs keep the lean chip-only shape (no topology, no sequence) to
-    # avoid bloating records with up to 50 sequences per gene. Source:
-    # ``topology_public.sequence`` for the paralog accession.
-    sequence: str | None = Field(default=None)
-
-
-class RepresentativeStructure(BaseModel):
-    """The single best experimental (PDB) structure for the canonical UniProt.
-
-    Selected from PDBe's SIFTS ``best_structures`` ranking (pre-sorted by
-    coverage desc, then resolution asc), so ``[0]`` is the most complete,
-    best-resolved deposited structure. A reproducible pointer to "the
-    experimental structure": the record otherwise carries only a flat list
-    of PDB IDs (``surface_bind.pdbs``) with no coverage metadata, so a
-    consumer couldn't tell which entry is the canonical full-length one.
-
-    The construct's sequence + per-residue topology over
-    ``unp_start``–``unp_end`` are derivable by slicing the canonical
-    sequence / topology — we store the pointer, not the duplicated residues.
-    """
-
-    model_config = ConfigDict(extra="forbid")
-
-    pdb_id: str
-    chain_id: str
-    # SIFTS-mapped UniProt residue span this structure covers (1-based,
-    # inclusive). A fragment structure (e.g. a kinase domain) has a sub-span;
-    # a full-length cryo-EM model spans 1..len(canonical).
-    unp_start: int = Field(..., ge=1)
-    unp_end: int = Field(..., ge=1)
-    coverage: float | None = Field(default=None, ge=0.0, le=1.0)
-    resolution_a: float | None = Field(default=None, ge=0.0)
-    experimental_method: str | None = None
-    # How many experimental structures PDBe lists for this UniProt (this one
-    # is the representative of that set).
-    n_experimental_structures: int | None = Field(default=None, ge=0)
-    source: str = "PDBe SIFTS best_structures"
-    retrieved_at: datetime | None = None
+    # (Per-residue DeepTMHMM topology was briefly added to this entry
+    # in 6a220a90 and reverted shortly after: SRC's 32 paralogs are all
+    # GLOB intracellular kinases, so the bars rendered as solid blue
+    # with no signal. Isoform + ortholog topology are still surfaced
+    # in §04 because those CAN show real TM patterns.)
+    #
+    # A1.9 re-adds topology + sequence, but GATED on close homology: only
+    # paralogs at or above ``CLOSE_PARALOG_THRESHOLD`` ECD identity get these
+    # populated — those are the ones a reader can actually reason about, and
+    # the gate avoids the all-GLOB noise that motivated the earlier revert.
+    # Nullable so far/ECD-less paralogs (and pre-population records) carry None.
+    per_residue_topology: str | None = None
+    tm_helix_count: int | None = None
+    ecd_length_residues: int | None = None
+    sequence: str | None = None
 
 
 class StructureFeatures(BaseModel):
@@ -2544,6 +2501,32 @@ class SurfaceBindSite(BaseModel):
     hydrophobicity: float
 
 
+# A1.9 — only paralogs at/above this ECD %identity get full topology +
+# sequence populated; below it they carry identity only (a far paralog's
+# topology is noise a reader can't act on).
+CLOSE_PARALOG_THRESHOLD: float = 80.0
+
+
+class RepresentativeStructure(BaseModel):
+    """The single best experimental structure for a protein.
+
+    Chosen from the PDBe SIFTS UniProt→PDB mapping by (coverage × resolution)
+    so the reader gets "the experimental structure" with the metadata to judge
+    it, instead of a flat list of PDB IDs with no ranking (A1.10).
+    """
+
+    model_config = ConfigDict(extra="forbid")
+
+    pdb_id: str
+    chain: str | None = None
+    method: str | None = None  # e.g. "X-ray diffraction", "Electron Microscopy"
+    resolution_angstrom: float | None = Field(default=None, ge=0.0)
+    coverage_fraction: float | None = Field(default=None, ge=0.0, le=1.0)
+    residue_start: int | None = None
+    residue_end: int | None = None
+    source: str = "PDBe SIFTS"
+
+
 class SurfaceBindFeatures(BaseModel):
     """SURFACE-Bind per-UniProt summary (Balbi et al. 2026 PNAS).
 
@@ -2587,14 +2570,14 @@ class SurfaceBindFeatures(BaseModel):
     protein_name: str | None = None
     # PDB entries cross-referenced by SURFACE-Bind for this protein.
     # Often >100 entries for well-studied targets (EGFR has 250+);
-    # truncated in the viewer to the first few.
+    # truncated in the viewer to the first few. Kept as the raw list; the
+    # ranked single pointer is ``representative_structure`` below (A1.10).
     pdbs: list[str] = Field(default_factory=list)
-    # First author is Balbi PEM (verified: PMID 41604262 == DOI
-    # 10.1073/pnas.2506269123, "Mapping targetable sites on the human
-    # surfaceome…", PNAS 2026). An earlier draft mislabeled the lead
-    # author as "Marchand" (the 3rd author); kept here as the canonical
-    # record-facing attribution, so don't reintroduce that name first.
-    source: str = "SURFACE-Bind v1 (Balbi et al. 2026 PNAS)"
+    # The one best experimental structure (highest coverage × resolution),
+    # ranked from ``pdbs`` via PDBe SIFTS. Nullable: no PDB entries, or a
+    # record emitted before the structure ranker was wired.
+    representative_structure: RepresentativeStructure | None = None
+    source: str = "SURFACE-Bind v1 (Marchand 2026 PNAS)"
     attribution: str = (
         "© Balbi et al., Correia lab — EPFL / Inria / Novo Nordisk"
     )
@@ -3669,6 +3652,7 @@ __all__ = [
     "Orthologs",
     "ParalogEntry",
     "StructureFeatures",
+    "RepresentativeStructure",
     "SurfaceBindSite",
     "SurfaceBindFeatures",
     "DeterministicFeatures",

@@ -1,100 +1,86 @@
-"""Representative experimental (PDB) structure via PDBe SIFTS.
+"""Pick the single representative experimental structure for a protein.
 
-PDBe's ``best_structures`` endpoint ranks the deposited structures for a
-UniProt accession by coverage (descending) then resolution (ascending), so
-``[0]`` is the most complete, best-resolved experimental structure. This is
-the reproducible way to pick "the experimental structure" for a protein —
-the deep-dive record otherwise carries only a flat list of PDB IDs
-(``surface_bind.pdbs``) with no coverage metadata.
+Queries the PDBe SIFTS ``best_structures`` endpoint (UniProt → PDB mapping
+with per-chain coverage + resolution) and returns ONE
+:class:`RepresentativeStructure` — the highest-coverage, best-resolution
+entry — instead of a flat list of PDB IDs (A1.10).
 
-Shared by the deterministic-features builder
-(:mod:`accessible_surfaceome.agents.surfaceome_v1.d1_deterministic`) and the
-backfill script, so the agent-time and backfill paths can't drift. Mirrors
-the same selection the markdown exporter does in JS.
-
-Never raises — on outage / 404 / malformed payload it returns ``None`` and
-the caller leaves ``representative_experimental_structure`` unset.
+The ranking core (:func:`_pick_best`) is pure and unit-tested without
+network; :func:`fetch_representative_structure` wraps it with the HTTP fetch
+and degrades to ``None`` on any error so callers never break on a PDBe miss.
 """
 
 from __future__ import annotations
 
 import logging
-from datetime import UTC, datetime
+from typing import Any
 
-import httpx
-
+from accessible_surfaceome.tools._shared.http import CachedHTTP
 from accessible_surfaceome.tools._shared.models import RepresentativeStructure
 
 logger = logging.getLogger(__name__)
 
-PDBE_BEST_STRUCTURES = "https://www.ebi.ac.uk/pdbe/api/mappings/best_structures"
-
-# Match the markdown exporter's named UA so server logs attribute both paths
-# to the same client.
-_UA = "accessible-surfaceome/1.0 (pdbe_structures.py)"
+_BEST_STRUCTURES_URL = "https://www.ebi.ac.uk/pdbe/api/mappings/best_structures/{acc}"
+_TTL_DAYS = 30
 
 
-def _coerce_float(value: object) -> float | None:
-    if isinstance(value, (int, float)):
-        return float(value)
-    if isinstance(value, str):
-        try:
-            return float(value)
-        except ValueError:
-            return None
-    return None
+def _rank_key(entry: dict[str, Any]) -> tuple[float, float, str]:
+    """Sort key: highest coverage, then best (lowest) resolution.
+
+    Missing coverage sorts last (treated as 0); missing resolution sorts last
+    (treated as +inf, e.g. NMR/EM entries with no resolution). PDB id is the
+    final deterministic tiebreak.
+    """
+    coverage = entry.get("coverage")
+    resolution = entry.get("resolution")
+    cov = float(coverage) if isinstance(coverage, (int, float)) else 0.0
+    res = float(resolution) if isinstance(resolution, (int, float)) else float("inf")
+    return (-cov, res, str(entry.get("pdb_id", "")))
+
+
+def _pick_best(entries: list[dict[str, Any]]) -> dict[str, Any] | None:
+    """Return the single best mapping entry, or ``None`` for an empty list."""
+    ranked = sorted((e for e in entries if e.get("pdb_id")), key=_rank_key)
+    return ranked[0] if ranked else None
+
+
+def _to_representative(entry: dict[str, Any]) -> RepresentativeStructure:
+    def _num(v: Any) -> float | None:
+        return float(v) if isinstance(v, (int, float)) else None
+
+    def _int(v: Any) -> int | None:
+        return int(v) if isinstance(v, (int, float)) else None
+
+    return RepresentativeStructure(
+        pdb_id=str(entry["pdb_id"]),
+        chain=entry.get("chain_id"),
+        method=entry.get("experimental_method"),
+        resolution_angstrom=_num(entry.get("resolution")),
+        coverage_fraction=_num(entry.get("coverage")),
+        residue_start=_int(entry.get("unp_start")),
+        residue_end=_int(entry.get("unp_end")),
+    )
 
 
 def fetch_representative_structure(
-    uniprot_acc: str,
+    uniprot_acc: str, *, http: CachedHTTP
 ) -> RepresentativeStructure | None:
-    """Return the highest-coverage / best-resolution PDB for ``uniprot_acc``.
+    """Fetch + rank the best PDBe structure for ``uniprot_acc``.
 
-    ``None`` when the protein has no deposited experimental structure (404 /
-    empty list) or PDBe is unreachable.
+    Returns ``None`` when the protein has no experimental structure or the
+    PDBe lookup fails — never raises, so an annotate run continues.
     """
-    if not uniprot_acc:
-        return None
+    url = _BEST_STRUCTURES_URL.format(acc=uniprot_acc)
     try:
-        with httpx.Client(timeout=30.0) as client:
-            resp = client.get(
-                f"{PDBE_BEST_STRUCTURES}/{uniprot_acc}",
-                headers={"Accept": "application/json", "User-Agent": _UA},
-            )
-        if resp.status_code == 404:
-            return None
-        resp.raise_for_status()
-        rows = (resp.json() or {}).get(uniprot_acc) or []
-    except Exception as exc:  # noqa: BLE001 — keep the orchestrator running
-        logger.warning(
-            "PDBe best_structures fetch failed for %s (%s)", uniprot_acc, exc
-        )
+        payload = http.get_json(url, source="pdbe_best_structures", ttl_days=_TTL_DAYS)
+    except Exception as exc:  # noqa: BLE001 — best-structures is best-effort
+        logger.warning("PDBe best_structures fetch failed for %s (%s)", uniprot_acc, exc)
         return None
-    if not rows:
+    entries = (payload or {}).get(uniprot_acc) or []
+    best = _pick_best(entries)
+    if best is None:
         return None
-    # PDBe returns rows pre-sorted by coverage desc, then resolution asc.
-    top = rows[0]
-    try:
-        return RepresentativeStructure(
-            pdb_id=str(top["pdb_id"]),
-            chain_id=str(top.get("chain_id") or ""),
-            unp_start=int(top["unp_start"]),
-            unp_end=int(top["unp_end"]),
-            coverage=_coerce_float(top.get("coverage")),
-            resolution_a=_coerce_float(top.get("resolution")),
-            experimental_method=(
-                str(top["experimental_method"])
-                if top.get("experimental_method")
-                else None
-            ),
-            n_experimental_structures=len(rows),
-            retrieved_at=datetime.now(UTC),
-        )
-    except (KeyError, TypeError, ValueError) as exc:
-        logger.warning(
-            "malformed PDBe best_structures row for %s: %s (%s)",
-            uniprot_acc,
-            top,
-            exc,
-        )
-        return None
+    return _to_representative(best)
+
+
+__all__ = ["fetch_representative_structure"]
