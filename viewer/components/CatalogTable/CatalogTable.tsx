@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useEffect, useMemo, useRef, useState } from "react";
+import type { ReactNode } from "react";
 import { useVirtualizer } from "@tanstack/react-virtual";
 import type {
   CatalogRow,
@@ -49,7 +50,7 @@ const ROW_OVERSCAN = 12;
 // columns (11–14) sit under a spanning "Deep dive agent" header, reuse
 // the gene-page traffic-light tones, and each links to the deep-dive page.
 const GRID_TEMPLATE =
-  "10rem 3.8rem 5rem 3.5rem 5rem 4.4rem 3.5rem 8rem minmax(8rem, 1fr) 5rem 4.2rem 6.5rem 4.6rem 4.2rem";
+  "10rem 3.8rem 5rem 3.5rem 5rem 4.4rem 3.5rem 8rem minmax(8rem, 1fr) 5rem 4.8rem 6.5rem 5.6rem 6rem";
 
 // Worker base for the on-demand /v1/triage/{symbol} fetch the row
 // expander triggers. Falls back to the production deployment when
@@ -1433,6 +1434,7 @@ export function CatalogTable({
             align="center"
             title="Deep-dive agent surface-accessibility call (sort)"
             extraClass={styles.ddHeaderCell}
+            info="The deep-dive's overall call on how reachable the protein is from outside the cell — high, moderate, low, or no."
           />
           <SortableHeader
             label="Conf"
@@ -1443,6 +1445,7 @@ export function CatalogTable({
             align="center"
             title="Deep-dive agent confidence in the call (sort)"
             extraClass={styles.ddHeaderCell}
+            info="How confident the deep-dive agent is in its surface-accessibility call — high, moderate, or low."
           />
           <SortableHeader
             label="Evidence"
@@ -1453,9 +1456,10 @@ export function CatalogTable({
             align="center"
             title="Deep-dive experimental surface-evidence grade (sort)"
             extraClass={styles.ddHeaderCell}
+            info="Strength of the experimental surface evidence behind the call — from direct multi-method down to weak or conflicting."
           />
           <SortableHeader
-            label="State"
+            label="State dep."
             k="dd_state"
             sortKey={sortKey}
             sortDir={sortDir}
@@ -1463,6 +1467,7 @@ export function CatalogTable({
             align="center"
             title="Deep-dive state-dependence of the surface call (sort)"
             extraClass={styles.ddHeaderCell}
+            info="How much surface accessibility depends on cell state or context (e.g. activation, stress) — low, moderate, or high."
           />
         </div>
 
@@ -1664,6 +1669,7 @@ function SortableHeader({
   mono,
   title,
   extraClass,
+  info,
 }: {
   label: string;
   k: SortKey;
@@ -1676,6 +1682,10 @@ function SortableHeader({
   /** Extra class concatenated onto the header div — used to slot
    *  the DB-cell tight padding ({.headerDbCell}) on the DB columns. */
   extraClass?: string;
+  /** Optional InfoTip body rendered as a sibling ⓘ after the sort
+   *  button (e.g. a one-line explanation of a deep-dive vital). Its
+   *  trigger is a separate <button>, so clicking ⓘ never triggers sort. */
+  info?: ReactNode;
 }) {
   const active = sortKey === k;
   return (
@@ -1695,6 +1705,11 @@ function SortableHeader({
           {active ? (sortDir === "asc" ? "▲" : "▼") : ""}
         </span>
       </button>
+      {info ? (
+        <InfoTip align="end" label={`About the ${label} column`}>
+          {info}
+        </InfoTip>
+      ) : null}
     </div>
   );
 }

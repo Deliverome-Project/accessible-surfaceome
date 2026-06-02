@@ -1131,7 +1131,7 @@
        flag | Access | Conf | Evidence | State (Conf widened to match). */
     grid-template-columns:
       1.75rem 13rem 3rem 1.6rem 1.6rem 1.6rem 1.6rem 1.6rem minmax(9rem, 1fr)
-      4.5rem 3.6rem 5rem 4rem 3.6rem;
+      4.5rem 4.5rem 5.5rem 5rem 5.5rem;
   }
   .uniprotCell,
   .headerRow .headerCell:nth-child(3) {
@@ -1174,6 +1174,12 @@
   justify-content: center;
   text-align: center;
   font-size: 0.66rem;
+  /* Tighter horizontal padding + a small gap so the sort label and the
+   * sibling InfoTip ⓘ sit together in the narrow deep-dive columns
+   * without overflowing into the neighbour. */
+  padding: 0.5rem 0.25rem;
+  gap: 0.1rem;
+  flex-wrap: nowrap;
 }
 
 .ddCell {
