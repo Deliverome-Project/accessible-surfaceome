@@ -64,6 +64,14 @@ export default async function BenchmarkPage() {
 
         <footer className={styles.footnotes}>
           <p>
+            <span className="label-mono">Reason ·</span> the curator&apos;s
+            single ground-truth reason behind each verdict, drawn from the
+            same closed <code>TriageReason</code> vocabulary the triage
+            agent must pick from — so each model&apos;s reason is directly
+            comparable to the truth reason. Hover a truncated label for the
+            full text.
+          </p>
+          <p>
             <span className="label-mono">DB columns ·</span> UniProt · GO ·
             SURFY · CSPA · HPA — the five gating databases that
             drive M1 universe membership (same set the homepage catalog

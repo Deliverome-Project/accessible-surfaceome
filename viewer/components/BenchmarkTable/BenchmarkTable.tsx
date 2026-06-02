@@ -10,6 +10,7 @@ import type {
   BenchmarkVariantResult,
 } from "../../lib/surfaceome-types";
 import { buildTsv, downloadTextFile, type TsvCell } from "../../lib/tsv";
+import { prettyEnum } from "../../lib/enums";
 import { isQueuedDeepDive } from "../../lib/queued-deep-dives";
 import { RationaleDrawer, type SelectedCell } from "./RationaleDrawer";
 import styles from "./BenchmarkTable.module.css";
@@ -20,6 +21,7 @@ import styles from "./BenchmarkTable.module.css";
 type SortKey =
   | "gene_symbol"
   | "truth"
+  | "reason"
   | "n_db_surface"
   | "haiku_ncbi"
   | "sonnet_ncbi"
@@ -48,6 +50,7 @@ const ROW_OVERSCAN = 12;
 // styling as the homepage. .wrap max-width = grid sum + scrollbar.
 const GRID_TEMPLATE =
   "12rem 8rem " +
+  "12rem " +                          // ground-truth reason (prettyEnum label)
   "3.6rem " +                         // n_db_surface count bubble
   "4.2rem 3rem 4rem 3.6rem 3rem " +   // 5 DB dot columns
   "7.8rem 8.5rem 7.2rem";              // 3 model NCBI pills
@@ -365,6 +368,14 @@ export function BenchmarkTable({
             extraClass={styles.headerModelCell}
           />
           <SortHeader
+            label="Reason"
+            sortKey="reason"
+            activeKey={sortKey}
+            dir={sortDir}
+            onClick={toggleSort}
+            title="Curated ground-truth reason — the single TriageReason code (same closed vocabulary the triage agent must choose from) behind the truth verdict."
+          />
+          <SortHeader
             label="DB votes"
             sortKey="n_db_surface"
             activeKey={sortKey}
@@ -541,6 +552,8 @@ function sortValue(r: BenchmarkRow, key: SortKey): string | number {
       return r.gene_symbol.toUpperCase();
     case "truth":
       return verdictRank(r.truth_verdict);
+    case "reason":
+      return prettyEnum(r.truth_reason).toUpperCase();
     case "n_db_surface":
       return r.n_db_surface ?? 0;
     case "haiku_ncbi":
@@ -660,9 +673,18 @@ function BenchRowView({
       <div className={`${styles.cell} ${styles.truthCell}`} role="cell">
         <span
           className={`${styles.verdictLabel} ${verdictTone(row.truth_verdict)}`}
-          title={row.truth_reason.replace(/_/g, " ")}
+          title={prettyEnum(row.truth_reason)}
         >
           {row.truth_verdict}
+        </span>
+      </div>
+      {/* Ground-truth reason — the curator's single TriageReason code
+       *  (closed vocabulary, same one the triage agent must pick from)
+       *  behind the truth verdict. Truncates with an ellipsis; full
+       *  label on hover. */}
+      <div className={`${styles.cell} ${styles.reasonCell}`} role="cell">
+        <span className={styles.reasonText} title={prettyEnum(row.truth_reason)}>
+          {prettyEnum(row.truth_reason)}
         </span>
       </div>
       {/* DB consensus count — same nBubble pattern as CatalogTable;

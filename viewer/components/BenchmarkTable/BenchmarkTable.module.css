@@ -18,10 +18,10 @@
   flex-direction: column;
   gap: var(--space-4);
   /* Width matches the grid template's intrinsic sum exactly
-   * (12 + 8 + 3.6 + 4.2 + 3 + 4 + 3.6 + 3 + 7.8 + 8.5 + 7.2 ≈ 65.9rem)
+   * (12 + 8 + 12 + 3.6 + 4.2 + 3 + 4 + 3.6 + 3 + 7.8 + 8.5 + 7.2 ≈ 76.9rem)
    * so rows end flush with the Opus column instead of trailing
    * whitespace. Left-aligned (no margin-inline: auto). */
-  max-width: 67rem;
+  max-width: 78rem;
   width: 100%;
 }
 
@@ -676,6 +676,25 @@
   white-space: nowrap;
   text-overflow: ellipsis;
   overflow: hidden;
+}
+
+/* Ground-truth reason column — the curated TriageReason label
+ * (prettyEnum-formatted). Single-line, truncates with an ellipsis;
+ * the full label is on the cell's title tooltip. Reads as sans data
+ * text (not a mono code) so it sits comfortably next to the verdict
+ * pill it explains. */
+.reasonCell {
+  overflow: hidden;
+}
+
+.reasonText {
+  font-family: var(--font-sans);
+  font-size: 0.78rem;
+  color: var(--ink-soft);
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  overflow: hidden;
+  max-width: 100%;
 }
 
 .dim {
