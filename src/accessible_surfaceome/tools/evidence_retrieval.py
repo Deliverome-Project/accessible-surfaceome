@@ -199,7 +199,12 @@ _CATEGORY_SPECS: dict[EvidenceCategory, _CategorySpec] = {
             'OR "Na/K-ATPase" OR "Na+/K+-ATPase" OR "Na,K-ATPase" '
             'OR "E-cadherin" OR "β1-integrin" OR "beta-1 integrin" '
             'OR "pan-cadherin" OR "ZO-1" OR "GM1" '
-            'OR "membrane colocalization" OR "plasma membrane marker")',
+            'OR "membrane colocalization" OR "plasma membrane marker" '
+            # Host-agnostic heterologous-expression terms so OE-precedent IF
+            # (membrane localization of an over-expressed construct, permeabilized
+            # or not) is retrieved — mirrors the flow_cytometry OE additions.
+            'OR "transfected" OR "ectopic expression" OR "heterologous expression" '
+            'OR "overexpressing" OR "stably expressing")',
         ),
         pubtator_terms="immunofluorescence",
         hallmark_patterns=(

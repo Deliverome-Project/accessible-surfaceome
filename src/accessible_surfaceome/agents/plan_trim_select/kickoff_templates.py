@@ -68,9 +68,12 @@ def _standing_axes(n_tmh: int | None, ecd_aa: int | None) -> list[SearchRequest]
     The tox panel is **always** emitted — normal-tissue coverage across the
     six high-consequence organs (liver/lung/kidney/intestine/heart/brain) is
     mandatory for every gene because on-target/off-tumor toxicity is set by
-    surface expression there. Surface-reachability (BBB / tumor penetration /
-    luminal-vs-abluminal) is **gated** on the membrane+ECD predicate — a
-    barrier axis only matters for a surface-accessible target.
+    surface expression there. Three barrier/distribution axes are **gated** on
+    the membrane+ECD predicate (they only matter for a surface-accessible
+    target): surface-reachability (BBB / tumor penetration / luminal-vs-
+    abluminal), partner-dependency (obligate co-receptor / escort — feeds
+    co_receptor_requirements), and membrane-subdomain (lipid raft / apical /
+    ciliary — feeds restricted_subdomain).
 
     The soluble/shed-in-circulation axis (A2.4) is not a separate request
     here: it rides the always-on ``shedding`` topic_search, whose terms now
@@ -87,14 +90,26 @@ def _standing_axes(n_tmh: int | None, ecd_aa: int | None) -> list[SearchRequest]
         )
     ]
     if _fires_membrane_ecd_gate(n_tmh, ecd_aa):
-        axes.append(
+        axes += [
             SearchRequest(
                 tool="gene_literature",
                 mode="topic_search",
                 anchors=["surface_reachability"],
                 intent="standing (gated): surface-reachability barriers (BBB / tumor penetration / luminal)",
-            )
-        )
+            ),
+            SearchRequest(
+                tool="gene_literature",
+                mode="topic_search",
+                anchors=["partner_dependency"],
+                intent="standing (gated): co-receptor / partner-dependency for surface trafficking",
+            ),
+            SearchRequest(
+                tool="gene_literature",
+                mode="topic_search",
+                anchors=["membrane_subdomain"],
+                intent="standing (gated): plasma-membrane subdomain / polarity distribution",
+            ),
+        ]
     return axes
 
 

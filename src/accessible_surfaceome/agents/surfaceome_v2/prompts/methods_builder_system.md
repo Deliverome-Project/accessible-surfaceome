@@ -148,8 +148,8 @@ not collapse it into `name`:
 
 * **`clone`** — alphanumeric clone ID (examples: `528`, `4D6`,
   `D38B1`, `43-14A`, `AB-101`, `H300`, `9G4`, `5A6`, `B-A18`). When
-  the quote says "clone 528", "528 antibody", "anti-EGFR clone 528",
-  "anti-CD81 (5A6)", set `clone="528"` / `clone="5A6"`.
+  the quote says "clone 528", "528 antibody", "anti-TARGET clone 528",
+  "anti-TARGET (5A6)", set `clone="528"` / `clone="5A6"`.
 * **`vendor`** — company name when stated (examples: `BD Pharmingen`,
   `BD Biosciences`, `Cell Signaling Technology`, `Abcam`,
   `R&D Systems`, `Thermo Fisher`, `Santa Cruz`, `Sigma`, `BioLegend`,
@@ -159,14 +159,14 @@ not collapse it into `name`:
 * **`rrid`** — Research Resource Identifier when stated (examples:
   `AB_2138158`, `RRID:AB_396171`). Strip the `RRID:` prefix when
   present so the field is just the `AB_...` identifier.
-* **`name`** — short canonical label, NOT the clone or vendor.
-  Examples: `"anti-EGFR"`, `"anti-CD81"`, `"anti-GRP78"`. The name
+* **`name`** — short canonical label, NOT the clone or vendor. Use
+  `anti-TARGET` (the gene/protein the antibody recognizes). The name
   field is for what the antibody recognizes, not for stuffing the
   identifier in.
 
-**Bad**: `name="anti-CD81 antibody clone 5A6 (BD Biosciences)"`,
+**Bad**: `name="anti-TARGET antibody clone 5A6 (BD Biosciences)"`,
 `clone=null`, `vendor=null`
-**Good**: `name="anti-CD81"`, `clone="5A6"`, `vendor="BD Biosciences"`,
+**Good**: `name="anti-TARGET"`, `clone="5A6"`, `vendor="BD Biosciences"`,
 `validation_strategy="genetic_KO"`, `validation_strength="strong"`
 
 **Antibody identifiers often live in a SEPARATE reagent-list claim —
@@ -269,13 +269,18 @@ overexpression_reference, vendor_claim_only, none, unknown}`;
 
 ## Permeabilization & row granularity
 
-- **Permeabilized assays prove localization, not surface accessibility.**
-  A permeabilized IF/IHC can show plasma-membrane localization, but it
-  cannot show the epitope is reachable from outside an intact cell. Keep
-  `accessibility_relevance=expression_only` for permeabilized methods and
-  record the localization in `surface_claim_type` (e.g.
-  `plasma_membrane_localized`) — never upgrade a permeabilized read to
-  `direct_surface_accessibility` / `surface_accessible`.
+- **Permeabilized assays prove localization, not surface accessibility —
+  but a permeabilized IF that describes a membrane-staining pattern or
+  colocalization with a known plasma-membrane protein IS valid
+  localization evidence.** In that case set
+  `accessibility_relevance=supports_surface_localization` and
+  `surface_claim_type=plasma_membrane_localized` (it shows WHERE the
+  protein is, just not that the epitope is reachable from outside). Only a
+  permeabilized assay that measures *total* protein with no membrane
+  pattern stays `accessibility_relevance=expression_only`. Either way,
+  never upgrade a permeabilized read to `direct_surface_accessibility` /
+  `surface_accessible` — that tier is for non-permeabilized / live-cell
+  readouts only.
 - **One row per distinct assay; collapse only true duplicates.** Two
   method rows are redundant ONLY when they share the same source citation
   AND the same `method_subclass` AND the same `expression_system`.

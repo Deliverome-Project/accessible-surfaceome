@@ -132,6 +132,36 @@ def test_kickoff_backwards_compatible_no_topology_args():
 
 
 # --------------------------------------------------------------------------
+# partner-dependency + membrane-subdomain axes (feed co_receptor /
+# restricted_subdomain) — gated like surface-reachability
+# --------------------------------------------------------------------------
+
+
+def test_partner_and_subdomain_axes_fire_for_membrane_with_ecd():
+    p = build_a1_kickoff(7, 89)
+    assert _has_anchor(p, "partner_dependency")
+    assert _has_anchor(p, "membrane_subdomain")
+
+
+def test_partner_and_subdomain_axes_suppressed_for_known_non_membrane():
+    p = build_a1_kickoff(0, 0)
+    assert not _has_anchor(p, "partner_dependency")
+    assert not _has_anchor(p, "membrane_subdomain")
+
+
+def test_subdomain_anchor_includes_lipid_rafts():
+    terms = " ".join(_TOPIC_TERMS["membrane_subdomain"]).lower()
+    assert "lipid raft" in terms
+    assert "ciliary" in terms or "cilium" in terms
+
+
+def test_partner_dependency_anchor_targets_coreceptor_evidence():
+    terms = " ".join(_TOPIC_TERMS["partner_dependency"]).lower()
+    assert "co-receptor" in terms or "coreceptor" in terms
+    assert "heterodimer" in terms
+
+
+# --------------------------------------------------------------------------
 # never RNA-atlas (A6.3) — by construction
 # --------------------------------------------------------------------------
 

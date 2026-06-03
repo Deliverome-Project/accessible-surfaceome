@@ -26,6 +26,17 @@ your task message; follow it. Four blocks:
   (or `"unknown"` if ambiguous) and `evidence_strength="weak"` — never omit
   the sub-block.
 
+  **Every chip's `rationale` must be self-supporting (applies to ALL six,
+  not just `restricted_subdomain`).** Carry an inline `(a1_evi_NN)` /
+  `(a2_evi_NN)` cite next to the specific claim the rationale makes — and
+  cite the evidence FOR THAT claim (partner-dependency evidence for
+  `co_receptor_requirements`; subdomain / polarity evidence for
+  `restricted_subdomain`; serum/plasma soluble-form evidence for
+  `secreted_form`), not a generic surface-expression paper. If the call is
+  `present=false` with genuinely no evidence, write the rationale as "no
+  relevant data in the ledger" — never leave a rationale that alludes to
+  evidence ("studies show broad distribution") without the inline cite.
+
   **`secreted_form` — soluble decoys only; exclude EV-enclosed
   protein.** This sub-block is for SOLUBLE protein free in
   supernatant / serum / plasma that can compete with the surface
