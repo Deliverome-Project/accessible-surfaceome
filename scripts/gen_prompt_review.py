@@ -77,9 +77,15 @@ def git(*a: str) -> str:
     return subprocess.run(["git", *a], cwd=REPO, capture_output=True, text=True).stdout
 
 
+# Wholesale-removed deprecated v1 Managed-Agent prompts — excluded so the
+# review stays focused on the live v2 deep-dive prompts the colleague works on.
+EXCLUDE = ("biology_compiler/", "surface_evidence_compiler/")
+
+
 def changed():
     out = git("diff", "--name-status", f"{BASE}...{HEAD}", "--", GLOB).strip()
-    return [(ln.split("\t")[0], ln.split("\t")[-1]) for ln in out.splitlines()]
+    rows = [(ln.split("\t")[0], ln.split("\t")[-1]) for ln in out.splitlines()]
+    return [(st, p) for st, p in rows if not any(x in p for x in EXCLUDE)]
 
 
 def full_diff(path: str) -> str:
