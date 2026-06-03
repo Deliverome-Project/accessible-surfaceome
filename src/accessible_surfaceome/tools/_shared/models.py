@@ -326,6 +326,13 @@ TopicAnchor = Literal[
     # Surface-reachability barriers (BBB, tumor penetration,
     # luminal/abluminal vasculature) — distinct axis from surface-presence.
     "surface_reachability",
+    # Partner / co-receptor dependency for surface trafficking — feeds the
+    # co_receptor_requirements risk chip (obligate heterodimer, escort,
+    # chaperone-assisted surface delivery, accessory subunit).
+    "partner_dependency",
+    # Plasma-membrane subdomain / polarity distribution — feeds
+    # restricted_subdomain (lipid raft, apical/basolateral, ciliary, synaptic).
+    "membrane_subdomain",
 ]
 
 PublicationType = Literal[

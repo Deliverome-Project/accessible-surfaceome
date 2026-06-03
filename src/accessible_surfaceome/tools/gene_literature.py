@@ -186,6 +186,33 @@ _TOPIC_TERMS: dict[TopicAnchor, list[str]] = {
         "abluminal",
         "vascular permeability",
     ],
+    "partner_dependency": [
+        # Does a partner have to be present for the target to reach the
+        # surface? Feeds co_receptor_requirements.
+        "obligate heterodimer",
+        "co-receptor",
+        "coreceptor",
+        "escort protein",
+        "chaperone-assisted",
+        "trafficking partner",
+        "accessory subunit",
+        "auxiliary subunit",
+        "required for surface expression",
+    ],
+    "membrane_subdomain": [
+        # Where in the plasma membrane — a binder may not reach a restricted
+        # subdomain. Feeds restricted_subdomain + anatomical accessibility.
+        "lipid raft",
+        "membrane microdomain",
+        "tight junction",
+        "apical membrane",
+        "basolateral",
+        "lateral membrane",
+        "primary cilium",
+        "ciliary membrane",
+        "polarized epithelial",
+        "immunological synapse",
+    ],
 }
 
 

@@ -148,11 +148,16 @@ block builders route correctly.
    row, you must include the paired fractionation / biotinylation
    step from the same source (the `_check_wb_pairing` validator
    on `SurfaceomeRecord` requires it).
-7. **Non-surface expression observations** →
+7. **Non-surface evidence that QUALIFIES a surface claim** →
    `claim_type=tissue_expression` with `evidence_tier=secondary`
-   and `direction=ambiguous`. RNA-high but no surface validation,
-   whole-cell WB without fractionation, permeabilized IF. These
-   feed `surface_evidence.non_surface_expression[]`.
+   and `direction=ambiguous`. This is the hedge bucket: RNA-high with
+   no surface validation, whole-cell WB without a fractionation step,
+   total-cell IHC without membrane scoring, or permeabilized IF with no
+   membrane pattern. It feeds `surface_evidence.non_surface_expression[]`,
+   which exists so the reader can see "expressed, but surface presence
+   unconfirmed" — keeping expression from being misread as accessibility.
+   (Plain tissue *distribution* with no bearing on the surface call is
+   A2's job, not this bucket.)
 8. **Contradictions** → `claim_type=contradictory`. Failed-to-replicate
    surface signal, intracellular-only finding contradicting a PM
    report, ligand-pairing controversy (e.g. a contested ligand–receptor
@@ -218,9 +223,9 @@ and the assay is direct.
 
 ## Overexpression evidence — tier by signal peptide
 
-Overexpression evidence (HEK293, CHO, 293T, HeLa-OE, COS-7) is in
-scope and frequently the strongest available evidence for orphan /
-under-studied surface proteins. Tier it by the construct's signal
+Overexpression evidence (a construct expressed in any heterologous
+host) is in scope and frequently the strongest available evidence for
+orphan / under-studied surface proteins. Tier it by the construct's signal
 peptide source — the trim phase will have tagged this in the clip's
 `reason` field; you can also re-read the methods sentence on the
 same paper for the leader-sequence detail.
@@ -258,12 +263,14 @@ filter (`overexpression_surface_localization_observed`) silently turns
 off if every OE clip is pruned. The preference orders siblings; it must
 not delete the category.
 
-**An OE-surface clip is a cell-surface readout on INTACT transfected
-cells** — live-cell / non-permeabilized flow, non-perm IF, or
-antibody/ligand binding to live transfectants. In-vitro biochemistry on
-isolated protein (SPR / BLI / ECD-on-chip) matches "surface" only
-semantically — it is not a localization readout, so don't select it as
-OE precedent.
+**An OE-surface clip is a CELL-BASED surface or localization readout on
+an over-expressed / exogenously-expressed construct** — flow cytometry or
+immunofluorescence (permeabilized OR non-permeabilized), or antibody /
+ligand binding on transfected cells. The assay type doesn't matter; the
+construct living in cells does. What disqualifies a clip is the absence
+of cells: in-vitro biochemistry on isolated protein (SPR / BLI /
+ECD-on-chip) matches "surface" only semantically — it is not a
+localization readout, so don't select it as OE precedent.
 
 **Prefer a wild-type / canonical-isoform OE clip over a disease-variant
 one.** A constitutively-active mutant, oncogenic deletion, or gene
