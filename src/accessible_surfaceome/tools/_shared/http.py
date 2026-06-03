@@ -114,6 +114,7 @@ class CachedHTTP:
         headers: dict[str, str] | None = None,
         timeout: httpx.Timeout | float | None = None,
         max_bytes: int | None = None,
+        min_interval_ms: float = 0.0,
     ) -> bytes:
         """Fetch a binary body (e.g. a publisher PDF) with on-disk caching.
 
@@ -144,6 +145,7 @@ class CachedHTTP:
             headers=headers,
             timeout=timeout or PDF_TIMEOUT,
             max_bytes=max_bytes,
+            min_interval_ms=min_interval_ms,
         )
         blob_path.parent.mkdir(parents=True, exist_ok=True)
         # Write to a unique temp sibling then atomically replace: a crashed
@@ -165,17 +167,19 @@ class CachedHTTP:
         headers: dict[str, str] | None,
         timeout: httpx.Timeout | float | None,
         max_bytes: int | None,
+        min_interval_ms: float = 0.0,
     ) -> bytes:
         """Stream a GET with the same limiter/retry policy, capped at max_bytes.
 
         Separate from ``_send_with_retries`` (which buffers + returns the
         response for the text path) because the binary path must stream to
         enforce the size cap without first loading the whole body into memory.
+        ``min_interval_ms`` is a per-host courtesy floor for the limiter.
         """
 
         last_exc: Exception | None = None
         for attempt in range(self._max_retries + 1):
-            self._limiter.wait(url)
+            self._limiter.wait(url, min_interval_ms)
             try:
                 with self._client.stream(
                     "GET", url, params=params, headers=headers, timeout=timeout

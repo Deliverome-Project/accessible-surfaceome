@@ -36,6 +36,18 @@ _OA_PUBLISHER_PDF = {
         }
     ],
 }
+_OA_WITH_LICENSE = {
+    "is_oa": True,
+    "oa_locations": [
+        {
+            "url": "https://pub.example/x",
+            "url_for_pdf": "https://pub.example/x.pdf",
+            "host_type": "publisher",
+            "version": "publishedVersion",
+            "license": "cc-by",
+        }
+    ],
+}
 _BODY_SECTION = PaperSection(
     name="results",
     text="CD20 was biotinylated at the cell surface and quantified by flow "
@@ -148,7 +160,7 @@ def test_fetch_falls_through_to_repository_after_publisher_403(monkeypatch) -> N
             return b"%PDF-1.4 repository copy"
 
     http = _MultiHTTP()
-    drafts = _fetch_body_via_unpaywall_pdf(_paper(), http=cast(Any, http))
+    drafts, _lic = _fetch_body_via_unpaywall_pdf(_paper(), http=cast(Any, http))
     assert drafts  # recovered from the repository copy
     assert http.fetched == ["https://pub.example/x.pdf", "https://repo.example/y.pdf"]
 
@@ -161,7 +173,7 @@ def test_fetch_falls_through_to_repository_after_publisher_403(monkeypatch) -> N
 def test_unpaywall_pdf_success_keys_on_paper_source_id(monkeypatch) -> None:
     monkeypatch.setattr(abstract_triage, "parse_pdf_to_sections", lambda _b: [_BODY_SECTION])
     http = _FakeHTTP(oa_json=_OA_PUBLISHER_PDF, pdf_bytes=b"%PDF-1.4 fake body")
-    drafts = _fetch_body_via_unpaywall_pdf(_paper(), http=cast(Any, http))
+    drafts, _lic = _fetch_body_via_unpaywall_pdf(_paper(), http=cast(Any, http))
     assert drafts
     # Keyed on PMID:123 (clean id), NOT DOI:..., per the design.
     assert all(d.source_id == "PMID:123" for d in drafts)
@@ -169,13 +181,13 @@ def test_unpaywall_pdf_success_keys_on_paper_source_id(monkeypatch) -> None:
 
 def test_unpaywall_no_doi_returns_empty() -> None:
     http = _FakeHTTP(oa_json=_OA_PUBLISHER_PDF, pdf_bytes=b"%PDF")
-    assert _fetch_body_via_unpaywall_pdf(_paper(doi=None), http=cast(Any, http)) == []
+    assert _fetch_body_via_unpaywall_pdf(_paper(doi=None), http=cast(Any, http))[0] == []
     assert http.bytes_calls == 0
 
 
 def test_unpaywall_not_oa_returns_empty() -> None:
     http = _FakeHTTP(oa_json={"is_oa": False}, pdf_bytes=b"%PDF")
-    assert _fetch_body_via_unpaywall_pdf(_paper(), http=cast(Any, http)) == []
+    assert _fetch_body_via_unpaywall_pdf(_paper(), http=cast(Any, http))[0] == []
     assert http.bytes_calls == 0
 
 
@@ -188,13 +200,66 @@ def test_unpaywall_html_interstitial_returns_empty(monkeypatch) -> None:
         lambda _b: called.__setitem__("parsed", True) or [_BODY_SECTION],
     )
     http = _FakeHTTP(oa_json=_OA_PUBLISHER_PDF, pdf_bytes=b"<html>paywall</html>")
-    assert _fetch_body_via_unpaywall_pdf(_paper(), http=cast(Any, http)) == []
+    assert _fetch_body_via_unpaywall_pdf(_paper(), http=cast(Any, http))[0] == []
     assert called["parsed"] is False  # never attempted to parse the HTML
 
 
 def test_unpaywall_fetch_exception_returns_empty() -> None:
     http = _FakeHTTP(oa_json=_OA_PUBLISHER_PDF, pdf_bytes=None)  # get_bytes raises
-    assert _fetch_body_via_unpaywall_pdf(_paper(), http=cast(Any, http)) == []
+    assert _fetch_body_via_unpaywall_pdf(_paper(), http=cast(Any, http))[0] == []
+
+
+def test_unpaywall_captures_oa_license(monkeypatch) -> None:
+    monkeypatch.setattr(abstract_triage, "parse_pdf_to_sections", lambda _b: [_BODY_SECTION])
+    http = _FakeHTTP(oa_json=_OA_WITH_LICENSE, pdf_bytes=b"%PDF-1.4 body")
+    drafts, lic = _fetch_body_via_unpaywall_pdf(_paper(), http=cast(Any, http))
+    assert drafts and lic == "cc-by"
+
+
+def test_body_fetch_carries_license_through(monkeypatch) -> None:
+    # PMC empty → Unpaywall PDF → license is surfaced on the _BodyFetch.
+    monkeypatch.setattr(
+        abstract_triage,
+        "fetch_fulltext",
+        lambda **_k: Paper(
+            pmid=123, title="t", sections=[], retraction_checked_at=datetime.now(UTC)
+        ),
+    )
+    monkeypatch.setattr(abstract_triage, "parse_pdf_to_sections", lambda _b: [_BODY_SECTION])
+    http = _FakeHTTP(oa_json=_OA_WITH_LICENSE, pdf_bytes=b"%PDF-1.4 body")
+    result = _fetch_body_drafts(
+        _paper(pmc_id="PMC9"), http=cast(Any, http), retraction_index=cast(Any, None)
+    )
+    assert result.source == "unpaywall_pdf"
+    assert result.oa_license == "cc-by"
+
+
+def test_location_attempts_are_capped() -> None:
+    # 6 OA locations, all 403 → only _MAX_PDF_LOCATIONS are attempted.
+    oa = {
+        "is_oa": True,
+        "oa_locations": [
+            {"url": f"u{i}", "url_for_pdf": f"https://h{i}.example/x.pdf",
+             "host_type": "repository", "version": "acceptedVersion"}
+            for i in range(6)
+        ],
+    }
+
+    class _CountHTTP:
+        def __init__(self) -> None:
+            self.n = 0
+
+        def get_json(self, url: str, **_: Any) -> Any:
+            return oa
+
+        def get_bytes(self, url: str, **_: Any) -> bytes:
+            self.n += 1
+            raise RuntimeError("403 Forbidden")
+
+    http = _CountHTTP()
+    drafts, _lic = _fetch_body_via_unpaywall_pdf(_paper(), http=cast(Any, http))
+    assert drafts == []
+    assert http.n == abstract_triage._MAX_PDF_LOCATIONS
 
 
 # ---------------------------------------------------------------------------

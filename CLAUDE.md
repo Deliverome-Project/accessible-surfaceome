@@ -85,6 +85,20 @@ Items (2) and (3) happen via [`accessible_surfaceome.cloud.surface_annotation.pu
 
 The same `publish_record` helper backs `scripts/upload_viewer_snapshots_to_d1.py` (the bulk-sync maintenance utility) via its `publish_record_dict` variant, so the agent-time and bulk-sync paths can't drift. When in doubt about whether D1 is in sync with the in-tree snapshots, run the maintenance script (dry-run) — it'll report any gaps.
 
+## Triage body-fetch: Unpaywall + PDF fallback
+
+The abstract-triage stage of `plan_trim_select` ([abstract_triage.py](src/accessible_surfaceome/agents/plan_trim_select/abstract_triage.py)) fetches a `worth_fetching` paper's body through a 3-step chain, each falling through on miss/empty:
+
+1. **PMC JATS** via `paper.pmc_id`, or PMID→PMCID via NCBI eLink.
+2. **Unpaywall OA PDF** — DOI → OA locations → **all** PDF URLs tried best-quality-first (publisher publishedVersion > repository), so a bot-blocked publisher copy can still be recovered from a repository copy (OSTI, institutional repos). Each PDF is parsed by [`pdf_parse.py`](src/accessible_surfaceome/agents/plan_trim_select/pdf_parse.py) (pdfplumber: `extract_words` spacing, gutter-based 2-column split, font-aware run-in/bold heading detection → the JATS `SectionName` enum). Failure → abstract fallback (never crashes the batch).
+
+Operational notes:
+- **Dep**: `pdfplumber` (MIT). `pypdfium2` is pinned `<5.9.0` via `[tool.uv] constraint-dependencies` — a supply-chain cooldown (5.9.0 was <7 days old when added); safe to relax after it ages out.
+- **Binary cache**: `CachedHTTP.get_bytes` caches downloaded PDFs to `data/external/blob_cache/` (gitignored — copyrighted PDFs; never commit). Streamed with a size cap (`_MAX_PDF_BYTES`) + page cap; per-host courtesy interval so we don't hammer publishers at cohort scale.
+- **Config**: `UNPAYWALL_EMAIL` (optional; falls back to the project contact). Keep the **polite, identifiable User-Agent** — do not impersonate a browser. Several publishers (ASH/*Blood*, Wiley) 403 our UA regardless; those fall back to abstract by design.
+- **Provenance / licensing**: `TriageAction.fetch_source` records `pmc_xml` vs `unpaywall_pdf`; `TriageAction.fetch_license` records the raw Unpaywall OA license of the recovered copy ("must track per-item license"). Redistribution is **not gated** — we ship only short substring-anchored snippets (fair use), but the license is captured so a gate can be added later. PDF clips key on the clean `PMID:`/`PMC:` source id (not `DOI:`).
+- **Validate** with `scripts/probe_triage_fetch.py` / `scripts/probe_pdf_fallback.py` ($0, no model calls).
+
 ## Agent Command Allowlist
 
 - Agents may run `uv run python ...` commands for repository modules/scripts.

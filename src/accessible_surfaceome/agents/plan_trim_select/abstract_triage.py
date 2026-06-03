@@ -25,6 +25,7 @@ import logging
 import os
 import re
 import time
+from collections import Counter
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from dataclasses import dataclass
 from pathlib import Path
@@ -277,6 +278,11 @@ class TriageAction:
     # True: "pmc_xml" (PMC JATS) or "unpaywall_pdf" (OA publisher PDF). PDF
     # text is noisier than JATS, so downstream debugging can filter on it.
     fetch_source: str | None = None
+    # Raw Unpaywall OA license of the recovered copy (e.g. "cc-by",
+    # "cc-by-nc-nd", or None for bronze/unknown). Set only on the unpaywall_pdf
+    # path; recorded for redistribution provenance ("must track per-item
+    # license"). Not gated — snippet redistribution rests on fair use.
+    fetch_license: str | None = None
     fetch_error: str | None = None
     fell_back_to_abstract: bool = False
     elapsed_s: float = 0.0
@@ -378,6 +384,12 @@ _DEFAULT_UNPAYWALL_EMAIL = "michael.smallegan@gmail.com"
 # Skip absurdly large downloads before parsing — DoS guard for untrusted
 # publisher PDFs. A paper + supplement is well under this.
 _MAX_PDF_BYTES = 40 * 1024 * 1024
+# At most this many OA locations are attempted per paper, bounding download
+# load/latency when Unpaywall lists many copies (most list 1–3).
+_MAX_PDF_LOCATIONS = 4
+# Courtesy floor between PDF requests to the same publisher host — politeness at
+# cohort scale, since publisher hosts aren't in the rate-limiter's per-host table.
+_PDF_COURTESY_INTERVAL_MS = 500.0
 
 
 @dataclass
@@ -522,11 +534,15 @@ class _BodyFetch:
     """A successfully fetched body: its drafts + which path produced it.
 
     ``source`` is ``"pmc_xml"`` or ``"unpaywall_pdf"`` and flows onto the
-    ``TriageAction.fetch_source`` audit field.
+    ``TriageAction.fetch_source`` audit field. ``oa_license`` is the raw
+    Unpaywall license string of the recovered copy (e.g. ``"cc-by"``,
+    ``"cc-by-nc-nd"``, or ``None`` for bronze OA / unknown) — captured for
+    redistribution provenance, not gated here.
     """
 
     drafts: list[EvidenceClaimDraft]
     source: str
+    oa_license: str | None = None
 
 
 def _fetch_body_drafts(
@@ -574,9 +590,11 @@ def _fetch_body_drafts(
         # PMC resolved but JATS was empty/errored (PMC-PDF-only) — fall through.
 
     # Step 2: Unpaywall OA PDF.
-    pdf_drafts = _fetch_body_via_unpaywall_pdf(paper, http=http)
+    pdf_drafts, oa_license = _fetch_body_via_unpaywall_pdf(paper, http=http)
     if pdf_drafts:
-        return _BodyFetch(drafts=pdf_drafts, source="unpaywall_pdf")
+        return _BodyFetch(
+            drafts=pdf_drafts, source="unpaywall_pdf", oa_license=oa_license
+        )
 
     raise ValueError(
         f"no body for {_paper_source_id(paper)}: no PMC JATS and no "
@@ -586,30 +604,34 @@ def _fetch_body_drafts(
 
 def _fetch_body_via_unpaywall_pdf(
     paper: Paper, *, http: CachedHTTP
-) -> list[EvidenceClaimDraft]:
+) -> tuple[list[EvidenceClaimDraft], str | None]:
     """Fetch the paper's OA PDF via Unpaywall and parse it into body drafts.
 
-    Returns ``[]`` (never raises) when there's no DOI, no stable source key,
-    no OA PDF, the download isn't a PDF (publisher HTML/paywall interstitial),
-    or parsing yields no sections — all of which mean "fall through to the
-    abstract". Body drafts are keyed on the paper's canonical ``PMID:``/
-    ``PMC:`` source id (not ``DOI:``), so clip ids stay clean and consistent
-    with the rest of the pool; the Unpaywall provenance lives on
-    ``TriageAction.fetch_source``.
+    Returns ``(drafts, oa_license)``. ``drafts`` is ``[]`` (never raises) when
+    there's no DOI, no stable source key, no OA PDF, every copy is blocked /
+    non-PDF / unparseable — all of which mean "fall through to the abstract".
+    ``oa_license`` is the raw Unpaywall license of the copy we actually used
+    (e.g. ``"cc-by"``, ``"cc-by-nc-nd"``, or ``None`` for bronze/unknown),
+    captured for redistribution provenance (not gated).
+
+    Body drafts are keyed on the paper's canonical ``PMID:``/``PMC:`` source id
+    (not ``DOI:``) so clip ids stay clean; provenance lives on the
+    ``TriageAction``. At most ``_MAX_PDF_LOCATIONS`` copies are tried, with a
+    per-host courtesy interval so we don't hammer publisher servers at scale.
     """
 
     if not paper.doi:
-        return []
+        return [], None
     source_id = _paper_source_id(paper)
     if source_id == "UNKNOWN":
-        return []  # no stable PMID/PMCID to key clips on
+        return [], None  # no stable PMID/PMCID to key clips on
 
     email = os.environ.get("UNPAYWALL_EMAIL") or _DEFAULT_UNPAYWALL_EMAIL
-    pdf_urls = _rank_pdf_urls(
-        _lookup_oa_via_unpaywall(paper.doi, http=http, email=email)
-    )
+    locations = _lookup_oa_via_unpaywall(paper.doi, http=http, email=email)
+    license_by_url = {loc.url_for_pdf: loc.license for loc in locations if loc.url_for_pdf}
+    pdf_urls = _rank_pdf_urls(locations)[:_MAX_PDF_LOCATIONS]
 
-    # Try every OA PDF location in quality order, falling through on a blocked /
+    # Try each OA PDF location in quality order, falling through on a blocked /
     # non-PDF / unparseable copy, so a bot-blocked publisher copy doesn't sink a
     # paper that also has a working repository copy.
     for pdf_url in pdf_urls:
@@ -620,6 +642,7 @@ def _fetch_body_via_unpaywall_pdf(
                 ttl_days=180,
                 headers={"Accept": "application/pdf"},
                 max_bytes=_MAX_PDF_BYTES,  # streamed cap: aborts oversized downloads
+                min_interval_ms=_PDF_COURTESY_INTERVAL_MS,
             )
         except Exception as exc:  # noqa: BLE001 — 403 / paywall / timeout / too large
             logger.info("Unpaywall PDF fetch failed for %s at %s: %s", source_id, pdf_url, exc)
@@ -631,12 +654,21 @@ def _fetch_body_via_unpaywall_pdf(
         sections = parse_pdf_to_sections(pdf_bytes)
         if not sections:
             continue
-        return extract_paper_drafts(
-            source_id=source_id,
-            abstract=paper.abstract,
-            sections=sections,
+        oa_license = license_by_url.get(pdf_url)
+        if not oa_license or "nc" in oa_license or "nd" in oa_license:
+            # Bronze OA (no license) or NC/ND — redistribution of our short
+            # snippets rests on fair use; flag for provenance visibility.
+            logger.info(
+                "Unpaywall PDF for %s used a restricted/unknown OA license: %r (%s)",
+                source_id, oa_license, pdf_url,
+            )
+        return (
+            extract_paper_drafts(
+                source_id=source_id, abstract=paper.abstract, sections=sections
+            ),
+            oa_license,
         )
-    return []
+    return [], None
 
 
 def apply_triage_outcomes(
@@ -738,6 +770,7 @@ def apply_triage_outcomes(
                         drafts_added=len(result.drafts),
                         fetched_body=True,
                         fetch_source=result.source,
+                        fetch_license=result.oa_license,
                     )
                 )
             else:
@@ -763,6 +796,16 @@ def apply_triage_outcomes(
                         fell_back_to_abstract=len(clips) > 0,
                     )
                 )
+
+    # Observability: per-run body-fetch breakdown for production monitoring.
+    wf = [a for a in actions if a.decision == "worth_fetching"]
+    if wf:
+        by_src = Counter(a.fetch_source for a in wf if a.fetched_body)
+        fell_back = sum(1 for a in wf if not a.fetched_body)
+        logger.info(
+            "triage body fetch: %d worth_fetching → pmc_xml=%d unpaywall_pdf=%d fell_back=%d",
+            len(wf), by_src.get("pmc_xml", 0), by_src.get("unpaywall_pdf", 0), fell_back,
+        )
 
     return actions
 

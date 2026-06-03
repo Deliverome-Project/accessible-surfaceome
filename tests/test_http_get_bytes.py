@@ -16,6 +16,7 @@ import httpx
 import pytest
 
 from accessible_surfaceome.tools._shared import http as http_mod
+from accessible_surfaceome.tools._shared import ratelimit as ratelimit_mod
 from accessible_surfaceome.tools._shared.cache import Cache
 from accessible_surfaceome.tools._shared.http import CachedHTTP
 from accessible_surfaceome.tools._shared.ratelimit import RateLimiter
@@ -109,6 +110,17 @@ def test_get_bytes_under_cap_succeeds(tmp_path: Path) -> None:
     http = _make_http(tmp_path, handler)
     got = http.get_bytes("https://ex.org/a.pdf", source="s", ttl_days=1, max_bytes=10_000)
     assert got == _PDF_BYTES
+
+
+def test_ratelimiter_min_interval_floor(monkeypatch) -> None:
+    # The PDF path imposes a per-host courtesy floor on hosts not in the table.
+    rl = RateLimiter({})  # no per-host caps configured
+    slept: list[float] = []
+    monkeypatch.setattr(ratelimit_mod.time, "monotonic", lambda: 1000.0)
+    monkeypatch.setattr(ratelimit_mod.time, "sleep", lambda s: slept.append(s))
+    rl.wait("https://pub.example/a.pdf", min_interval_ms=500)  # first → no wait
+    rl.wait("https://pub.example/a.pdf", min_interval_ms=500)  # same host → waits
+    assert slept and abs(slept[0] - 0.5) < 0.01
 
 
 def test_get_bytes_retries_on_transient_status(tmp_path: Path, monkeypatch) -> None:
