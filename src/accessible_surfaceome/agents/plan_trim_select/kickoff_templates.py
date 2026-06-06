@@ -22,7 +22,7 @@ from accessible_surfaceome.agents.plan_trim_select.schemas import (
     SearchPlan,
     SearchRequest,
 )
-from accessible_surfaceome.tools._shared.models import EvidenceCategory
+from accessible_surfaceome.tools._shared.models import EvidenceCategory, TopicAnchor
 
 # evidence_retrieval categories per focus. western_blot_paired +
 # structure_with_ecd are A1's domain and skipped by A2. hpa_ihc was retired
@@ -45,6 +45,19 @@ _A2_CATEGORIES: tuple[EvidenceCategory, ...] = (
     "if",
     "flow_cytometry",
     "mass_spec_surfaceome",
+)
+
+# Surface-method topic anchors shared by A1's method search and A2's
+# surface-expression search, so both agents pull the same surface-method
+# literature (flow cytometry / surface biotinylation / surfaceome MS / IHC).
+# A2's tissue/distribution search adds "surface_expression" on top. Defined
+# once so the A1↔A2 mirror is a single source of truth (asserted by
+# test_a2_surface_search_mirrors_a1_method_anchors).
+_METHOD_ANCHORS: tuple[TopicAnchor, ...] = (
+    "flow_cytometry",
+    "surface_biotinylation",
+    "mass_spec_surfaceome",
+    "ihc",
 )
 
 
@@ -148,12 +161,7 @@ def build_a1_kickoff(
         SearchRequest(
             tool="gene_literature",
             mode="topic_search",
-            anchors=[
-                "flow_cytometry",
-                "surface_biotinylation",
-                "mass_spec_surfaceome",
-                "ihc",
-            ],
+            anchors=list(_METHOD_ANCHORS),
             intent="A1 default: method-anchored topic_search",
         ),
         SearchRequest(
@@ -210,8 +218,8 @@ def build_a2_kickoff(
         SearchRequest(
             tool="gene_literature",
             mode="topic_search",
-            anchors=["surface_expression", "ihc"],
-            intent="A2 default: tissue / distribution topic_search",
+            anchors=["surface_expression", *_METHOD_ANCHORS],
+            intent="A2 default: surface-expression + surface-method topic_search (mirrors A1 methods)",
         ),
         SearchRequest(
             tool="gene_literature",
@@ -227,7 +235,7 @@ def build_a2_kickoff(
             "A2 deterministic kickoff: four biology-leaning evidence_retrieval "
             "categories (ihc, if, flow_cytometry, mass_spec_surfaceome); "
             "gene2pubmed + recent_corpus; two topic_search variants "
-            "(tissue/distribution + state/modulation); standing axes "
+            "(surface-expression+methods (mirrors A1) + state/modulation); standing axes "
             "(normal-tissue surface-expression always; surface-reachability / "
             "partner / subdomain / epitope-masking when membrane+ECD). "
             "Selector iterates from observed paper inventory."

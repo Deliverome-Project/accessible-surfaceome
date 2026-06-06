@@ -282,6 +282,31 @@ def _standing_anchors(plan) -> list[tuple]:
     )
 
 
+def test_a2_surface_search_mirrors_a1_method_anchors():
+    # A2's surface-expression search was broadened beyond `ihc` to carry the
+    # same surface-method anchors A1 uses (flow / biotinylation / MS / IHC),
+    # so A2's biology extraction sees the same surface-method literature.
+    from accessible_surfaceome.agents.plan_trim_select.kickoff_templates import (
+        _METHOD_ANCHORS,
+    )
+
+    methods = set(_METHOD_ANCHORS)
+    # A1 still emits the method anchors as its own search.
+    a1_sets = [set(a) for a in _topic_anchor_sets(build_a1_kickoff(7, 89))]
+    assert any(methods <= s for s in a1_sets), "A1 lost its method anchors"
+    # A2's surface_expression search now also carries all of them.
+    a2_surface = [
+        set(a)
+        for a in _topic_anchor_sets(build_a2_kickoff(7, 89))
+        if "surface_expression" in a
+    ]
+    assert a2_surface, "A2 has no surface_expression search"
+    assert any(methods <= s for s in a2_surface), (
+        "A2 surface_expression search must include A1's method anchors "
+        "(flow_cytometry / surface_biotinylation / mass_spec_surfaceome / ihc)"
+    )
+
+
 def test_standing_axes_mirrored_across_a1_and_a2():
     # The standing axes (normal_tissue_expression + the gated barrier / masking
     # axes) come from the shared ``_standing_axes`` helper, so A1 and A2 must
