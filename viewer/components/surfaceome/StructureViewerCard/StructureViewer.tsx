@@ -983,18 +983,19 @@ const SCHWEKE_CHAIN_A_COLOR = "#922038";
  *  primary chain color.) */
 const SCHWEKE_CHAIN_B_COLOR = "#3d6b60";
 
-/** Maximum darkening fraction applied to chains > 0 of a Schweke
- *  homo-oligomer. Chain 0 (typically "A") renders at the canonical
- *  DeepTMHMM topology palette (TOPOLOGY_COLORS), and each subsequent
- *  chain shades darker toward black so the N chains of a c2–c13
- *  complex stay visually distinct. The darkest chain in a homomer of
- *  cyclic order N gets `(N-1)/(N-1) × DARKEST = DARKEST` applied — so
- *  this is the literal darkness of chain N-1 in any size complex. 1.0
- *  is pure black; we leave a small headroom so the cartoon outline is
- *  still distinguishable from the canvas background, but the user
- *  authorized going "all the way to black if you need to" for the
- *  c13 BSCL2 / c12 CALHM5 cases, so this is set high. */
-const SCHWEKE_DARKEST_CHAIN_FRACTION = 0.95;
+/** Darken fraction for odd-indexed chains in a Schweke homo-oligomer.
+ *  We use an alternating light / dark scheme rather than a linear
+ *  gradient because in a ring assembly the spatially-adjacent chains
+ *  are the ones the eye needs to disambiguate — a smooth gradient
+ *  makes chains 6 and 7 look nearly identical in a c13 ring, but
+ *  alternation forces every neighbor to read at maximum contrast.
+ *  Even-indexed chains (A, C, E, …) render at the full DeepTMHMM
+ *  topology palette (TOPOLOGY_COLORS), odd-indexed chains (B, D,
+ *  F, …) at this fraction darker. 0.7 gives a strong but not
+ *  black-on-black contrast, so the dark chain's topology palette
+ *  (e.g. dark yellow TM helices, dark lavender ECD) is still
+ *  discriminable from the light chain's. */
+const SCHWEKE_ODD_CHAIN_DARKEN_FRACTION = 0.7;
 
 /** Mix ``hex`` toward black by ``fraction`` ∈ [0,1].
  *  ``fraction=0`` returns ``hex`` unchanged; ``fraction=1`` returns
@@ -1754,9 +1755,12 @@ export function StructureViewer({
         // so the canonical `data.topology_ranges` projects directly.
         const schwekeRanges = data.topology_ranges;
         chainIds.forEach((chainId, ci) => {
+          // Alternating scheme — see SCHWEKE_ODD_CHAIN_DARKEN_FRACTION.
+          // Even ci → 0 darken (full palette). Odd ci → strong darken.
+          // Neighbor chains in a ring always read at maximum contrast.
           const darkenFraction =
-            nChains > 1
-              ? (ci / (nChains - 1)) * SCHWEKE_DARKEST_CHAIN_FRACTION
+            nChains > 1 && ci % 2 === 1
+              ? SCHWEKE_ODD_CHAIN_DARKEN_FRACTION
               : 0;
           // Base color for residues outside every topology range
           // (shouldn't normally happen — DeepTMHMM covers the whole

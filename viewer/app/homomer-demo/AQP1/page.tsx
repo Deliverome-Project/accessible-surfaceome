@@ -23,12 +23,11 @@ export default function AQP1DemoPage() {
             Water-channel subunit, 6 TM helices per chain in an
             hourglass fold. Schweke et al. 2024 predict a{" "}
             <strong>Homo-Dimer</strong> — the AQP1 tetramer's
-            assembly-unit dimer. With only 2 chains the darken contrast
-            is maximal: chain A renders at the full DeepTMHMM palette,
-            chain B at ~95% black (near-monochrome). The membrane band
-            of yellow TM helices in chain A is visible at the
-            chain-chain interface, with the chain-B equivalents echoing
-            them as dark silhouettes.
+            assembly-unit dimer. With only 2 chains the alternation
+            scheme reads at its strongest: chain A renders at the full
+            DeepTMHMM palette, chain B at a 70% darken. The yellow TM
+            helices on chain A and their dark counterparts on chain B
+            form the membrane band at the chain-chain interface.
           </p>
         </header>
 

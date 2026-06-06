@@ -23,11 +23,12 @@ export default function BSCL2DemoPage() {
             ER membrane protein, regulator of lipid-droplet biogenesis.
             Schweke et al. 2024 predict a <strong>13-mer ring</strong> —
             the largest cyclic complex in the 1,205-gene surfaceome ∩
-            Schweke intersection. Chain A renders at the canonical
-            DeepTMHMM topology palette (TM yellow / extracellular
-            lavender / intracellular green); each successive subunit
-            darkens linearly toward black so all 13 chains are visually
-            distinct.
+            Schweke intersection. Even-indexed chains (A, C, E, G, I,
+            K, M) render at the canonical DeepTMHMM topology palette
+            (TM yellow / extracellular lavender / intracellular green);
+            odd-indexed chains (B, D, F, H, J, L) render at a strong
+            70% darken so every spatial neighbor stays maximally
+            distinct in the ring.
           </p>
         </header>
 
