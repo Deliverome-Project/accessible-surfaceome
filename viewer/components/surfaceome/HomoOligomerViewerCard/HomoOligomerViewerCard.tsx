@@ -34,11 +34,14 @@ const TOPOLOGY_COLORS: Record<string, string> = {
   B: "#C7CED6", // β-strand gray
 };
 
-/** See production card's ``SCHWEKE_DARKEST_CHAIN_FRACTION`` — keep in
- *  sync if either is changed. 0.95 leaves a hairline gap between the
- *  darkest chain and pure black so the cartoon's silhouette is still
- *  legible against the canvas. */
-const DARKEST_FRACTION = 0.95;
+/** Alternating dark/light scheme: even chain index (A, C, E, …) gets
+ *  full palette, odd chain index (B, D, F, …) gets darkened by this
+ *  fraction. Mirrors ``SCHWEKE_ODD_CHAIN_DARKEN_FRACTION`` in the
+ *  production card — keep in sync if either is changed. 0.7 gives
+ *  strong contrast without crushing the dark chain's topology palette
+ *  to black-on-black, so the dark chain's TM yellow, ECD lavender, etc.
+ *  are still individually discriminable. */
+const ODD_CHAIN_DARKEN_FRACTION = 0.7;
 
 interface HomoOligomerViewerCardProps {
   /** Reader-facing title above the canvas. */
@@ -189,7 +192,11 @@ export function HomoOligomerViewerCard({
         // darkest. Each chain gets its own topology projection.
         const swatches: { id: string; color: string }[] = [];
         chainIds.forEach((chainId, ci) => {
-          const darkenFraction = n > 1 ? (ci / (n - 1)) * DARKEST_FRACTION : 0;
+          // Alternating darken: even ci → full color, odd ci → strong
+          // darken. Maximum neighbor contrast in a ring assembly where
+          // chain ci is spatially adjacent to chain ci+1 and ci-1.
+          const darkenFraction =
+            n > 1 && ci % 2 === 1 ? ODD_CHAIN_DARKEN_FRACTION : 0;
           const baseHex =
             ranges && deeptmhmmType !== "GLOB"
               ? TOPOLOGY_COLORS.B

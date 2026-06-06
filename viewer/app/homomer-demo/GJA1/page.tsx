@@ -27,9 +27,11 @@ export default function GJA1DemoPage() {
             where the <code>nodiso3</code> filter clips the TM as a
             disconnected cluster), so the cartoon shows the membrane-
             embedded TM bundle directly. TM helices render as yellow on
-            chain A, gradually darkening through chain G — the 7
-            chains' yellow TM helices form a clear membrane band in the
-            center of the ring.
+            even-indexed chains (A, C, E, G) and at 70% darken on
+            odd-indexed chains (B, D, F) — the alternation forces each
+            chain's TMs to read at maximum contrast against its
+            neighbors, so the 7-fold ring symmetry of the connexon is
+            visually obvious.
           </p>
         </header>
 
