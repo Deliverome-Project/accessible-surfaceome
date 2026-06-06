@@ -183,7 +183,10 @@ def _topic_panels(plan) -> list[dict[str, str]]:
     return panels
 
 
-def main() -> int:
+def build_catalog() -> dict:
+    """Assemble the search-catalog dict (pure — no file write). The drift-guard
+    test (tests/test_search_catalog_current.py) imports this and asserts the
+    committed JSON matches, so a kickoff/category change can't leave it stale."""
     missing = [k for k in _CATEGORY_SPECS if k not in CATEGORY_DOCS]
     if missing:
         raise SystemExit(
@@ -228,7 +231,7 @@ def main() -> int:
         },
     ]
 
-    catalog = {
+    return {
         "_generated_by": "scripts/build_search_catalog.py",
         "_source": "evidence_retrieval._CATEGORY_SPECS + the live deterministic "
         "kickoff (plan_trim_select/kickoff_templates.build_a1/a2_kickoff)",
@@ -237,15 +240,22 @@ def main() -> int:
         "agents": agents,
         "planned_fill": SELECTOR_FOLLOWUPS,
     }
-    OUT_PATH.write_text(json.dumps(catalog, indent=2) + "\n")
 
+
+def main() -> int:
+    catalog = build_catalog()
+    OUT_PATH.write_text(json.dumps(catalog, indent=2) + "\n")
+    agents = catalog["agents"]
     print(
         f"wrote {OUT_PATH.relative_to(REPO_ROOT)} — "
-        f"{len(categories)} assay categories, {len(SHARED_BASELINES)} shared "
-        f"baselines, {len(agents)} agents "
-        f"(A1 {len(a1_cats)} assays + {len(agents[0]['always_topic'])} topic "
-        f"searches, A2 {len(a2_cats)} assays + {len(agents[1]['always_topic'])} "
-        f"topic searches), {len(SELECTOR_FOLLOWUPS)} selector follow-ups"
+        f"{len(catalog['categories'])} assay categories, "
+        f"{len(catalog['shared_baselines'])} shared baselines, "
+        f"{len(agents)} agents "
+        f"(A1 {len(agents[0]['always_category_ids'])} assays + "
+        f"{len(agents[0]['always_topic'])} topic searches, "
+        f"A2 {len(agents[1]['always_category_ids'])} assays + "
+        f"{len(agents[1]['always_topic'])} topic searches), "
+        f"{len(catalog['planned_fill'])} selector follow-ups"
     )
     return 0
 

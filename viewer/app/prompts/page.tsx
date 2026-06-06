@@ -64,7 +64,7 @@ const PROMPT_GROUPS: PromptGroup[] = [
   },
   {
     id: "deep-dive-phase-1",
-    label: "Deep dive · Phase 1 — plan_trim_select (literature agent)",
+    label: "Deep dive · Phase 1 — literature agent",
     description:
       "A deterministic kickoff template emits the searches (no LLM planner), " +
       "then two Sonnet 4.6 passes per agent focus: trim each paper's candidate " +
@@ -123,7 +123,7 @@ const PROMPT_GROUPS: PromptGroup[] = [
   },
   {
     id: "deep-dive-phase-2",
-    label: "Deep dive · Phase 2 — block builders (8 Sonnet calls in parallel)",
+    label: "Deep dive · Phase 2 — evidence block builders",
     description:
       "Each builder consumes a slice of the surface-evidence (A1) or biology " +
       "(A2) EvidenceClaim ledger and emits a structured sub-block of the " +
