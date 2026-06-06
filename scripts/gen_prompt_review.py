@@ -19,45 +19,88 @@ GATED = {"surface_reachability", "partner_dependency", "membrane_subdomain",
          "epitope_masking"}
 
 
-def render_kickoff(label, sub, plan):
-    cats = [s.category for s in plan.searches if s.tool == "evidence_retrieval"]
-    modes = [s.mode for s in plan.searches
-             if s.tool == "gene_literature" and s.mode in ("gene2pubmed", "recent_corpus")]
-    topics = [s for s in plan.searches
-              if s.tool == "gene_literature" and s.mode == "topic_search"]
-    catrow = "".join(f'<span class="catchip">{html.escape(c)}</span>' for c in cats)
-    moderow = "".join(f'<span class="catchip mode">{html.escape(m)}</span>' for m in modes)
-    rows = []
-    for s in topics:
-        anc = s.anchors or []
-        badge = ""
-        for a in anc:
-            if a in NEW_ANCHORS:
-                badge += f'<span class="b new">new{"·gated" if a in GATED else ""}</span>'
-        terms = sorted({t for a in anc for t in _TOPIC_TERMS.get(a, [])})
-        rows.append(
-            f'<div class="trow"><div class="tanc"><code>{" + ".join(anc)}</code>{badge}</div>'
-            f'<div class="tterms">{", ".join(html.escape(t) for t in terms)}</div></div>'
-        )
-    return f"""<div class="kcol">
-      <h3>{label} <span class="kn">{len(plan.searches)} searches · {sub}</span></h3>
-      <div class="ksub">evidence_retrieval — methodology categories</div>
-      <div class="catrow">{catrow}{moderow}</div>
-      <div class="ksub">gene_literature — topic_search keyword groups</div>
-      {''.join(rows)}
-    </div>"""
+def _search_sig(s):
+    """Hashable identity for a search, so A1 and A2 sets can be compared."""
+    if s.tool == "evidence_retrieval":
+        return ("category", s.category)
+    if s.mode == "topic_search":
+        return ("topic", tuple(s.anchors or []))
+    return ("mode", s.mode)
+
+
+def _render_search_row(sig, badge_cls, badge_text):
+    kind, val = sig
+    tags = ""
+    terms = ""
+    if kind == "category":
+        label = f"evidence_retrieval · {html.escape(val)}"
+    elif kind == "mode":
+        label = f"gene_literature · {html.escape(val)}"
+    else:  # topic_search
+        anc = list(val)
+        if any(a in GATED for a in anc):
+            tags += '<span class="b gated">gated</span>'
+        if any(a in NEW_ANCHORS for a in anc):
+            tags += '<span class="b new">new</span>'
+        label = " + ".join(html.escape(a) for a in anc)
+        tt = sorted({t for a in anc for t in _TOPIC_TERMS.get(a, [])})
+        if tt:
+            terms = f'<div class="tterms">{", ".join(html.escape(t) for t in tt)}</div>'
+    return (
+        f'<div class="srow"><span class="b {badge_cls}">{badge_text}</span>'
+        f'<div class="sbody"><div class="tanc"><code>{label}</code>{tags}</div>'
+        f"{terms}</div></div>"
+    )
 
 
 def kickoff_section():
-    a1 = render_kickoff("A1", "surface evidence", build_a1_kickoff(1, 600))
-    a2 = render_kickoff("A2", "biological context", build_a2_kickoff(1, 600))
+    # Align A1 and A2: every search either runs in BOTH (shared, single-source
+    # helpers) or is an A1-only surface-evidence extra (topology/structure +
+    # the heavier evidence_retrieval categories). A2 is a strict subset, so the
+    # A1-only block is what "sticks out".
+    a1 = build_a1_kickoff(1, 600)
+    a2 = build_a2_kickoff(1, 600)
+    a1_set = {_search_sig(s) for s in a1.searches}
+    a2_set = {_search_sig(s) for s in a2.searches}
+    shared = a1_set & a2_set
+    a1_only = a1_set - a2_set
+    a2_only = a2_set - a1_set
+
+    def _order(sig):
+        kind, val = sig
+        return ({"mode": 0, "topic": 1, "category": 2}[kind], str(val))
+
+    shared_rows = "".join(
+        _render_search_row(sig, "shared", "A1 + A2") for sig in sorted(shared, key=_order)
+    )
+    a1_rows = "".join(
+        _render_search_row(sig, "a1only", "A1 only") for sig in sorted(a1_only, key=_order)
+    )
+    a2_block = ""
+    if a2_only:
+        a2_rows = "".join(
+            _render_search_row(sig, "a2only", "A2 only")
+            for sig in sorted(a2_only, key=_order)
+        )
+        a2_block = (
+            '<h3 class="kgrouphead"><span class="b a2only">A2 only</span> '
+            f"biological-context extras ({len(a2_only)})</h3>"
+            f'<div class="srows">{a2_rows}</div>'
+        )
     return f"""<section class="kick">
-      <h2>Retrieval — search terms feeding each agent</h2>
-      <p class="sub2">Deterministic kickoff (no LLM planner). <span class="b new">new</span> = added in this PR;
-      <code>·gated</code> = emitted only for membrane+ECD (or unknown) topology. The <code>flow_cytometry</code>
-      category query also gained host-agnostic OE terms (<i>transfected / ectopic / heterologous / overexpressing /
-      stably&nbsp;expressing</i>, no "wild-type"), and <code>shedding</code> gained serum/plasma/circulating terms.</p>
-      <div class="kgrid">{a1}{a2}</div>
+      <h2>Retrieval — A1 and A2 share most searches</h2>
+      <p class="sub2">Deterministic kickoff (no LLM planner). The two foci run the SAME searches except for
+      A1's surface-evidence extras. <span class="b shared">A1 + A2</span> = emitted identically by both via
+      single-source helpers (<code>_surface_method_search</code> / <code>_shedding_ptm_search</code> /
+      <code>_standing_axes</code>) so they can't drift; <span class="b a1only">A1 only</span> = surface-evidence
+      searches A2 doesn't need (topology/structure + the heavier evidence_retrieval categories).
+      <span class="b gated">gated</span> = topic axis emitted only for membrane+ECD (or unknown) topology;
+      <span class="b new">new</span> = added in this PR.</p>
+      <h3 class="kgrouphead"><span class="b shared">A1 + A2</span> shared searches ({len(shared)})</h3>
+      <div class="srows">{shared_rows}</div>
+      <h3 class="kgrouphead"><span class="b a1only">A1 only</span> extra searches — surface-evidence side ({len(a1_only)})</h3>
+      <div class="srows a1">{a1_rows}</div>
+      {a2_block}
     </section>"""
 
 
@@ -704,6 +747,15 @@ color:var(--ink);background:var(--panel);border:1px solid var(--line);border-rad
 .trow{{padding:6px 0;border-top:1px solid var(--line)}}
 .tanc{{font-size:11.5px;margin-bottom:2px}}.tanc code{{color:#8fb4ff}}
 .tterms{{color:var(--ink);font-size:11.5px;line-height:1.45}}
+.kgrouphead{{font-size:13px;font-weight:600;margin:18px 0 6px;display:flex;align-items:center;gap:8px}}
+.b.shared{{background:#15303a;color:#5ad6e0}}
+.b.a1only{{background:#3a2a14;color:#f0b85a}}
+.b.a2only{{background:#2a1440;color:#c89bf0}}
+.b.gated{{background:#20262f;color:#9aa3b2}}
+.srows{{border-top:1px solid var(--line)}}
+.srows.a1{{border-left:3px solid #b5762a;padding-left:10px}}
+.srow{{display:grid;grid-template-columns:62px 1fr;gap:10px;align-items:start;padding:7px 2px;border-bottom:1px solid var(--line)}}
+.srow .sbody{{min-width:0}}
 footer{{color:var(--mut);font-size:12px;margin:28px 0 0;border-top:1px solid var(--line);padding-top:14px}}a{{color:var(--acc)}}
 .enums{{margin:0 0 30px}}.enums h2{{font-size:17px;margin:0 0 4px}}
 .evgroup{{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:12px 14px;margin:0 0 12px}}
