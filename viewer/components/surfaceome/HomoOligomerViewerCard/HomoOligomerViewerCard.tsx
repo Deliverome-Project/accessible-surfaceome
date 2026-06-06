@@ -272,20 +272,20 @@ export function HomoOligomerViewerCard({
 
   const stoichLabel =
     stoichiometry === 2
-      ? "homo-dimer (c2)"
+      ? "Homo-Dimer (c2)"
       : stoichiometry === 3
-        ? "homo-trimer (c3)"
+        ? "Homo-Trimer (c3)"
         : stoichiometry === 4
-          ? "homo-tetramer (c4)"
+          ? "Homo-Tetramer (c4)"
           : stoichiometry === 5
-            ? "homo-pentamer (c5)"
+            ? "Homo-Pentamer (c5)"
             : stoichiometry === 6
-              ? "homo-hexamer (c6)"
+              ? "Homo-Hexamer (c6)"
               : stoichiometry === 7
-                ? "homo-heptamer (c7)"
+                ? "Homo-Heptamer (c7)"
                 : stoichiometry === 8
-                  ? "homo-octamer (c8)"
-                  : `homo-${stoichiometry}-mer (c${stoichiometry})`;
+                  ? "Homo-Octamer (c8)"
+                  : `Homo-${stoichiometry}-Mer (c${stoichiometry})`;
 
   return (
     <div className={styles.card}>

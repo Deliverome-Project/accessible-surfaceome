@@ -721,16 +721,16 @@ export function GeneHeader({
                 schwekeHomomer
                   ? (() => {
                       // Label/sublabel depend on the assembly:
-                      //   c2 dimer ECD-only  → "ECD dimer · Schweke 2024"
-                      //   c2 dimer (full)    → "dimer · Schweke 2024"
-                      //   c3..c13            → "{N}-mer (c{N}) · Schweke 2024"
+                      //   c2 dimer ECD-only  → "ECD Dimer · Schweke 2024"
+                      //   c2 dimer (full)    → "Dimer · Schweke 2024"
+                      //   c3..c13            → "{N}-Mer (c{N}) · Schweke 2024"
                       const n = schwekeHomomer.stoichiometry;
                       const sub =
                         n === 2
                           ? schwekeHomomer.ecd_only
-                            ? "ECD dimer · Schweke 2024"
-                            : "dimer · Schweke 2024"
-                          : `${n}-mer (c${n}) · Schweke 2024`;
+                            ? "ECD Dimer · Schweke 2024"
+                            : "Dimer · Schweke 2024"
+                          : `${n}-Mer (c${n}) · Schweke 2024`;
                       return {
                         source: "schweke-homomer" as const,
                         id: `schweke-${schwekeHomomer.uniprot_acc}-V1-${schwekeHomomer.af_model_num}-c${n}`,

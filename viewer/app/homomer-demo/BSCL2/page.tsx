@@ -4,7 +4,7 @@ import { DEMO_TOPOLOGIES } from "../_demo-topologies";
 import styles from "../homomer-demo.module.css";
 
 export const metadata = {
-  title: "BSCL2 — predicted homo-13-mer (c13) · surfaceome",
+  title: "BSCL2 — predicted Homo-13-Mer (c13) · surfaceome",
   description:
     "Demo of the Schweke 2024 AF2 homo-oligomer prediction for BSCL2 (Q96G97, seipin) — the largest cyclic complex in the surfaceome × Schweke intersection (c13, 13 subunits).",
 };
