@@ -844,32 +844,6 @@ interface ViewerInstance {
  *  it's wrapped around. */
 const MEMBRANE_OPACITY = 0.34;
 
-/** Explicitly release the WebGL context on every leftover ``<canvas>``
- *  inside ``container`` and remove the element. Worked around 3Dmol.js's
- *  missing destroy API: ``viewer.clear()`` clears models but leaves the
- *  canvas + GL context alive, so one accumulates per variant / viewMode /
- *  data change. Browsers cap GL contexts per page (Chromium: 16); past
- *  the cap, ``canvas.getContext('webgl')`` returns null and 3Dmol's
- *  first ``getParameter`` / ``clearDepth`` call throws "Cannot read
- *  properties of null". Run this in the effect cleanup AND immediately
- *  before each ``createViewer`` as a belt-and-braces safety net.
- *  Idempotent — empty container is a no-op. */
-function _disposeCanvases(container: HTMLElement): void {
-  container.querySelectorAll("canvas").forEach((c) => {
-    const canvas = c as HTMLCanvasElement;
-    try {
-      const gl =
-        canvas.getContext("webgl") ??
-        (canvas.getContext("experimental-webgl") as WebGLRenderingContext | null);
-      gl?.getExtension("WEBGL_lose_context")?.loseContext();
-    } catch {
-      // ignore — the GL extension is best-effort; removing the canvas
-      // still drops references so GC can reclaim the context eventually.
-    }
-    canvas.remove();
-  });
-}
-
 /**
  * StructureViewer — the 3Dmol.js-backed canvas. Client-only because
  * 3Dmol expects a DOM + WebGL. The 3Dmol module is dynamically
@@ -1428,75 +1402,6 @@ export function StructureViewer({
           })
         : orientPdbForTopology(rawPdb, activeTopology);
 
-      // Final pre-createViewer guards. Three things have to be true to
-      // safely call createViewer:
-      //
-      // 1. ``renderSeq``: no newer render has been queued. A late create-
-      //    on a stale render token would orphan its canvas + GL context.
-      // 2. ``containerRef.current?.isConnected``: the div is still IN the
-      //    document. createViewer on a detached div attaches a canvas
-      //    that can't get a real WebGL context — getContext returns
-      //    null and 3Dmol's first ``getParameter`` / ``clearDepth`` call
-      //    throws "Cannot read properties of null".
-      // 3. Container has no leftover ``<canvas>``. 3Dmol's
-      //    ``viewer.clear()`` (called in this effect's cleanup) clears
-      //    models but does NOT release the WebGL context or remove the
-      //    canvas element. Without explicit teardown the container
-      //    accumulates one canvas (one live GL context) per variant /
-      //    viewMode / data change — Chromium caps ~16 GL contexts per
-      //    page, after which getContext returns null and createViewer
-      //    throws as above. ``_disposeCanvases`` calls
-      //    WEBGL_lose_context.loseContext() on each leftover canvas and
-      //    removes it, freeing the slot.
-      if (renderSeq !== renderSeqRef.current) return;
-      if (!containerRef.current?.isConnected) return;
-      _disposeCanvases(containerRef.current);
-      // WEBGL_lose_context.loseContext() is asynchronous — the GL slot
-      // isn't actually freed until the "webglcontextlost" event handler
-      // runs on the NEXT task / animation frame. Without this wait,
-      // createViewer immediately tries to acquire a GL context while
-      // the just-disposed slot is still occupied, defeating the
-      // dispose. One rAF gives the browser the tick it needs.
-      await new Promise<void>((res) => requestAnimationFrame(() => res()));
-      if (renderSeq !== renderSeqRef.current) return;
-      if (!containerRef.current?.isConnected) return;
-
-      // Wait until the container has a non-zero size before calling
-      // createViewer. The .viewerCanvas CSS uses ``width: 100% +
-      // aspect-ratio: 1 / 1``, which collapses to 0×0 if the parent's
-      // intrinsic width isn't computed yet (the catalog → gene-page
-      // route transition in Next 16 hits this on first render of the
-      // structure card). Chromium refuses to provide a WebGL context
-      // for a 0-sized canvas; getContext returns null and 3Dmol's
-      // first ``getParameter`` / ``clearDepth`` call throws "Cannot
-      // read properties of null". Defer up to 30 frames (~500ms at
-      // 60 Hz) to let layout settle; bail with a clear error if it
-      // never does.
-      {
-        let attempts = 0;
-        while (
-          containerRef.current &&
-          (containerRef.current.clientWidth === 0 ||
-            containerRef.current.clientHeight === 0) &&
-          attempts < 30
-        ) {
-          attempts++;
-          await new Promise<void>((res) => requestAnimationFrame(() => res()));
-          if (renderSeq !== renderSeqRef.current) return;
-          if (!containerRef.current?.isConnected) return;
-        }
-        if (
-          !containerRef.current ||
-          containerRef.current.clientWidth === 0 ||
-          containerRef.current.clientHeight === 0
-        ) {
-          throw new Error(
-            "viewer container has zero size after waiting for layout " +
-              "(structure card hidden? parent missing width?)",
-          );
-        }
-      }
-
       const viewer = $3Dmol.createViewer(containerRef.current, {
         backgroundColor: "white",
         antialias: true,
@@ -1816,12 +1721,6 @@ export function StructureViewer({
         // 3Dmol throws on double-clear; ignore.
       }
       viewerRef.current = null;
-      // Explicitly free the WebGL context + remove the canvas. See the
-      // pre-createViewer comment block for why ``viewer.clear()`` alone
-      // is not enough.
-      if (containerRef.current) {
-        _disposeCanvases(containerRef.current);
-      }
     };
   }, [renderViewer]);
 
