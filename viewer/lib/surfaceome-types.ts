@@ -1117,6 +1117,7 @@ export interface EcdSizeAssessment {
 export type EpitopeMaskingMechanism =
   | "glycan"
   | "partner"
+  | "oligomerization"
   | "conformational"
   | "cleaved"
   | "none";
@@ -1126,9 +1127,12 @@ export type EpitopeMaskingSeverity = "high" | "moderate" | "low" | "none";
 export interface EpitopeMasking {
   /** PR23 round 6: upgraded from a single value to a list so
    *  multi-mechanism cases (GRP78: glycan + partner; GPR75:
-   *  glycan + conformational) don't collapse to one value. Empty
-   *  list means no mechanism documented; `["none"]` is the
-   *  explicit "no masking" call. */
+   *  glycan + conformational; CD81: partner + oligomerization)
+   *  don't collapse to one value. `oligomerization` is the HOMO
+   *  self-association axis (homodimer / homo-oligomer interface),
+   *  distinct from `partner` (a second protein) and `conformational`
+   *  (a monomer state). Empty list means no mechanism documented;
+   *  `["none"]` is the explicit "no masking" call. */
   mechanism: EpitopeMaskingMechanism[];
   severity: EpitopeMaskingSeverity;
   evidence_strength: EvidenceStrength;

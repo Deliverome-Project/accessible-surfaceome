@@ -1460,9 +1460,20 @@ CoreceptorEvidenceBasis = Literal[
 ]
 SecretedFormSource = Literal["alternative_splicing", "proteolytic", "both", "unknown"]
 EpitopeMaskingMechanism = Literal[
+    # OTHER — glycocalyx / N-/O-glycan shielding of the epitope.
     "glycan",
+    # HETERO — a *different* protein in a hetero-complex covers the epitope
+    # (e.g. CD19 over the CD81 large extracellular loop). Self-association
+    # does NOT go here — use ``oligomerization``.
     "partner",
+    # HOMO — the target's *own* homodimer / homo-oligomer interface buries
+    # epitope surface (tetraspanin / claudin cis-clustering, GPCR or
+    # receptor homodimers). Distinct from ``partner`` (a second protein) and
+    # from ``conformational`` (a monomer closed/open state).
+    "oligomerization",
+    # OTHER — closed/open conformer occlusion intrinsic to the monomer.
     "conformational",
+    # OTHER — epitope removed by proteolytic cleavage.
     "cleaved",
     "none",
 ]
@@ -2712,7 +2723,10 @@ class EpitopeMasking(BaseModel):
     """Whether the extracellular epitope is masked from binders.
 
     ``mechanism`` is a list so multi-mechanism cases don't collapse to a
-    single value.
+    single value. It spans three masking axes: HOMO self-association
+    (``oligomerization``), HETERO partner/complex coverage (``partner``),
+    and other monomer-level causes (``glycan`` / ``conformational`` /
+    ``cleaved``).
     """
 
     model_config = ConfigDict(extra="forbid")

@@ -116,6 +116,37 @@ your task message; follow it. Four blocks:
   set `surface_expression_dependency="none"`, not `"unknown"`. Reserve
   `"unknown"` for cases where the ledger has no co-receptor information
   at all — not for cases where it has *negative* information.
+
+  **`epitope_masking` — separate the three masking axes; never fold
+  self-association into `conformational`.** The `mechanism` list spans
+  three physically distinct ways the extracellular epitope gets hidden,
+  and the catalog filters on them, so pick the value that names the
+  actual cause:
+    - **HOMO → `oligomerization`.** The target's OWN homodimer /
+      homo-oligomer interface buries epitope surface — tetraspanin and
+      claudin cis-clustering, GPCR or receptor homodimers,
+      self-associating ECDs. The protein masks itself; no second protein
+      is involved. Use `oligomerization`, NOT `conformational` (a monomer
+      closed/open state is a different mechanism) and NOT `partner` (that
+      is a *different* protein).
+    - **HETERO → `partner`.** A *different* protein in a hetero-complex
+      covers the epitope — e.g. CD19 sitting over the CD81 large
+      extracellular loop in the constitutive CD19/CD81 co-receptor
+      complex. When you set `partner`, the masking protein is almost
+      always one already named in `co_receptor_requirements.partners`;
+      keep the two blocks consistent and cite the structural / complex
+      evidence (cryo-EM, co-crystal, pulldown), never a generic
+      surface-expression paper.
+    - **OTHER → `glycan` / `conformational` / `cleaved`.** Glycocalyx or
+      N-/O-glycan shielding, intrinsic monomer closed/open occlusion, or
+      proteolytic removal of the epitope.
+  Multi-mechanism is allowed and common: CD81 is `["partner",
+  "oligomerization"]` when the ledger documents BOTH CD19 coverage of the
+  LEL AND CD81's own tetraspanin-microdomain clustering. Grade `severity`
+  by how constitutively the masking holds in the *targetable* state — a
+  complex constitutive on the relevant cell (CD19/CD81 on B cells) is
+  more consequential than an occasional or inducible one — and set
+  `evidence_strength` to match the cited structural/complex evidence.
 - `filters_llm` — three rollups only: `expression_level`,
   `expression_breadth`, `surface_specificity`, each paired with a one-line
   `*_rationale` (`expression_level_rationale`, etc.) carrying inline

@@ -108,7 +108,8 @@ export const tooltips: Record<string, ReactNode> = {
         <li>
           <em>epitope masked</em> — the agent found evidence that the
           targetable surface is shielded (partner heterodimerization,
-          glycan shield, conformational hiding). Severity + evidence
+          the protein&apos;s own homo-oligomerization, glycan shield, or
+          conformational hiding). Severity + evidence
           strength stored in the §Risks card&apos;s{" "}
           <code>epitope_masking</code> sub-block.
         </li>
@@ -627,8 +628,9 @@ export const tooltips: Record<string, ReactNode> = {
   catalog_epitope_masking: (
     <>
       The targetable surface is shielded — partner heterodimerization,
-      glycan shield, or conformational hiding obscures the epitopes a
-      binder would otherwise engage.
+      the protein&apos;s own homo-oligomerization, glycan shield, or
+      conformational hiding obscures the epitopes a binder would
+      otherwise engage.
     </>
   ),
 

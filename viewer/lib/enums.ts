@@ -281,6 +281,7 @@ const ENUM_MAP: Record<string, string> = {
   // Epitope masking mechanism
   glycan: "Glycan",
   partner: "Partner",
+  oligomerization: "Homo-oligomerization",
   cleaved: "Cleaved",
 };
 
