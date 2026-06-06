@@ -229,8 +229,7 @@ A1 to harvest from the shared pool.
 A `quote` is a *meta-level breadcrumb* — not a finding — when it is:
 * A schematic / workflow caption.
 * A paper-aim or motivation statement.
-* An IHC / flow scoring rubric on its own without the per-sample
-  score.
+* An IHC / flow scoring rubric on its own with no result attached for {gene} — aggregate results (fractions, H-scores, summary stats) count as a result; per-sample is not required.
 
 When a draft's quote matches one of these patterns, set
 `evidence_tier="secondary"` even when the source is PMC full-text.

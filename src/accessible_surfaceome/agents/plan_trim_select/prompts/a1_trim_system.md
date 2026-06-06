@@ -43,7 +43,7 @@ These are A2's territory (the BiologicalContext block); keeping them in A1's men
 * Pure methods recipes with no result tied to {gene} (a buffer composition or a flow-cytometer model isn't load-bearing).
 * Figure schematics ("Schematic of the assay...", "Workflow for surfaceome profiling...") without an associated result.
 * Paper-aim / motivation statements ("We aimed to assess...", "Here we report...", "The goal of this study was...") — these say what the paper *set out* to do, not what it *showed*.
-* IHC / flow scoring rubrics on their own without the readout ("1+ for weak membrane staining in ≥10% of cells, 2+ for moderate..." but no per-sample score).
+* IHC / flow scoring rubrics on their own with no result attached — pure scale definition only ("1+ for weak membrane staining in ≥10% of cells, 2+ for moderate..."). Keep the clip when *any* result for {gene} is reported (aggregate fractions like "65% of tumors scored ≥2+", an "H-score = 180 in N tumors" summary, or per-sample scores — any of these count). A per-sample readout is **not** required.
 
 ## Preserve antibody-identifier sentences
 
