@@ -4,11 +4,13 @@ from __future__ import annotations
 import html
 import re
 import subprocess
+import typing
 from pathlib import Path
 
 from accessible_surfaceome.agents.plan_trim_select.kickoff_templates import (
     build_a1_kickoff, build_a2_kickoff,
 )
+from accessible_surfaceome.tools._shared import models as _models
 from accessible_surfaceome.tools.gene_literature import _TOPIC_TERMS
 
 NEW_ANCHORS = {"tox_normal_tissue", "surface_reachability",
@@ -56,6 +58,74 @@ def kickoff_section():
       stably&nbsp;expressing</i>, no "wild-type"), and <code>shedding</code> gained serum/plasma/circulating terms.</p>
       <div class="kgrid">{a1}{a2}</div>
     </section>"""
+
+
+# ---- Closed-enum reference -------------------------------------------------
+# The structured-output options the model must choose from, introspected live
+# from models.py so the review never drifts from the shipped schema. Each
+# (EnumName, json-path) is rendered as a chip row; the masking mechanism gets
+# the homo / hetero / other axis annotated.
+ENUM_GROUPS = [
+    ("Accessibility risks", [
+        ("EpitopeMaskingMechanism", "epitope_masking.mechanism[]"),
+        ("EpitopeMaskingSeverity", "epitope_masking.severity"),
+        ("CoreceptorDependency", "co_receptor_requirements.surface_expression_dependency"),
+        ("CoreceptorEvidenceBasis", "co_receptor_requirements.evidence_basis"),
+        ("SecretedFormSource", "secreted_form.source"),
+        ("ECDAccessibilityClass", "ecd_size_assessment.ecd_accessibility_class"),
+        ("RestrictedSubdomainName", "restricted_subdomain.domain"),
+        ("RiskSeverity", "shed/secreted/restricted severity"),
+        ("EvidenceStrength", "every risk · evidence_strength"),
+    ]),
+    ("Executive summary", [
+        ("HeadlineRisk", "executive_summary.headline_risks[]"),
+    ]),
+]
+
+# homo / hetero / other axis for the masking mechanism options.
+MASK_AXIS = {
+    "oligomerization": ("homo", "the protein's OWN homodimer / homo-oligomer interface buries the epitope"),
+    "partner": ("hetero", "a DIFFERENT protein in a complex covers the epitope"),
+    "glycan": ("other", "glycocalyx / glycan shielding"),
+    "conformational": ("other", "monomer closed/open occlusion"),
+    "cleaved": ("other", "proteolytic removal of the epitope"),
+    "none": ("", "no masking documented"),
+}
+
+
+def enum_chip(enum_name: str, val: str) -> str:
+    if enum_name == "EpitopeMaskingMechanism":
+        axis, desc = MASK_AXIS.get(val, ("", ""))
+        if axis:
+            return (f'<span class="evchip ev-{axis}" title="{html.escape(axis.upper())} — {html.escape(desc)}">'
+                    f'{html.escape(val)}<span class="evaxis">{html.escape(axis)}</span></span>')
+    return f'<span class="evchip">{html.escape(val)}</span>'
+
+
+def enum_section() -> str:
+    groups = []
+    for title, entries in ENUM_GROUPS:
+        rows = []
+        for enum_name, field in entries:
+            obj = getattr(_models, enum_name, None)
+            if obj is None:
+                continue
+            chips = "".join(enum_chip(enum_name, v) for v in typing.get_args(obj))
+            rows.append(
+                f'<div class="evrow"><div class="evmeta"><code>{html.escape(field)}</code>'
+                f'<span class="evname">{html.escape(enum_name)}</span></div>'
+                f'<div class="evchips">{chips}</div></div>'
+            )
+        groups.append(f'<div class="evgroup"><h3>{html.escape(title)}</h3>{"".join(rows)}</div>')
+    return f"""<section class="enums">
+      <h2>Closed enums — the options the model must choose from</h2>
+      <p class="sub2">Introspected live from <code>models.py</code> (the structured-output schema), so this
+      never drifts from what ships. For <code>epitope_masking.mechanism</code> the
+      <span class="evaxis ax-homo">homo</span> / <span class="evaxis ax-hetero">hetero</span> axis is annotated
+      (everything else is monomer-level / other).</p>
+      {''.join(groups)}
+    </section>"""
+
 
 REPO = Path(
     subprocess.run(["git", "rev-parse", "--show-toplevel"],
@@ -203,11 +273,26 @@ color:var(--ink);background:var(--panel);border:1px solid var(--line);border-rad
 .tanc{{font-size:11.5px;margin-bottom:2px}}.tanc code{{color:#8fb4ff}}
 .tterms{{color:var(--ink);font-size:11.5px;line-height:1.45}}
 footer{{color:var(--mut);font-size:12px;margin:28px 0 0;border-top:1px solid var(--line);padding-top:14px}}a{{color:var(--acc)}}
+.enums{{margin:0 0 30px}}.enums h2{{font-size:17px;margin:0 0 4px}}
+.evgroup{{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:12px 14px;margin:0 0 12px}}
+.evgroup h3{{margin:0 0 8px;font-size:13px;color:var(--mut);text-transform:uppercase;letter-spacing:.05em}}
+.evrow{{display:grid;grid-template-columns:280px 1fr;gap:12px;align-items:start;padding:7px 0;border-top:1px solid var(--line)}}
+.evrow:first-of-type{{border-top:none}}
+@media(max-width:680px){{.evrow{{grid-template-columns:1fr}}}}
+.evmeta code{{font-family:ui-monospace,monospace;font-size:11.5px;color:#8fb4ff;display:block}}
+.evmeta .evname{{color:var(--mut);font-size:10.5px}}
+.evchips{{display:flex;flex-wrap:wrap;gap:5px}}
+.evchip{{background:#1b2230;border:1px solid var(--line);border-radius:5px;padding:2px 8px;font-family:ui-monospace,monospace;font-size:11px;color:#cfd8ea;display:inline-flex;align-items:center;gap:6px}}
+.evchip.ev-homo{{border-color:#2ea043;color:#7ee2a8}}.evchip.ev-hetero{{border-color:#6aa3ff;color:#a9c8ff}}
+.evaxis{{font-size:9px;text-transform:uppercase;letter-spacing:.04em;border-radius:3px;padding:1px 4px;background:#0d1014;color:var(--mut)}}
+.ev-homo .evaxis{{background:#143226;color:#56d364}}.ev-hetero .evaxis{{background:#142544;color:#8fb4ff}}
+.evaxis.ax-homo{{background:#143226;color:#56d364}}.evaxis.ax-hetero{{background:#142544;color:#8fb4ff}}
 </style></head><body><div class="wrap">
 <h1>Deep-dive prompt review</h1>
 <p class="sub">PR&nbsp;#54 — full prompt text with the diff vs <b>main</b> (<code>{BASE[:7]}</code>) highlighted inline · {len(files)} files</p>
 <div class="chips"><span class="chip"><b>{nm}</b> modified</span><span class="chip"><b>{nn}</b> new</span><span class="chip"><b>{nd}</b> deleted</span></div>
 {kickoff_section()}
+{enum_section()}
 <h2 style="font-size:17px;margin:0 0 12px">Prompts</h2>
 <nav class="nav">{''.join(nav)}</nav>
 {''.join(secs)}

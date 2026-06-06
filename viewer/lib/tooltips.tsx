@@ -419,10 +419,11 @@ export const tooltips: Record<string, ReactNode> = {
     <>
       Things that can make this protein hard to target even when it
       IS at the surface: a shed or secreted form that competes for
-      your binder in circulation, partner proteins or surface glycans
-      masking the epitope, or a co-receptor the protein needs to
-      reach the surface in the first place. Filtering here narrows
-      to genes that carry (or are free of) each risk.
+      your binder in circulation, partner proteins, the protein&apos;s
+      own homo-oligomerization, or surface glycans masking the epitope,
+      or a co-receptor the protein needs to reach the surface in the
+      first place. Filtering here narrows to genes that carry (or are
+      free of) each risk.
     </>
   ),
 
