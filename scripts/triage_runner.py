@@ -27,19 +27,33 @@ output tree (``data/eval/triage_subbench_v1*``) were dropped from
 the repo. The 4-variant × 3-model matrix that made the sub-bench
 useful is now exercised against the 147-row mainbench instead.
 
+CANONICAL PRODUCTION SWEEP: ``run_id=genome_full_sonnet_ncbi_v2``,
+``model=claude-sonnet-4-6``, ``variant=ncbi``. This is the sweep that
+backs the catalog's triage column and feeds the v2 deep-dive's
+``_load_triage_record`` input — i.e., what "the triage" means when
+the production pipeline refers to it. The constants
+:data:`CANONICAL_TRIAGE_MODEL` and :data:`CANONICAL_TRIAGE_RUN_ID`
+below are the single grep target for that attribution. The triage
+agent is NOT a Managed Agent: this runner invokes the model directly
+via :class:`anthropic.Anthropic`'s ``messages.create`` with prompts
+loaded from :data:`PROMPTS_DIR`.
+
 USAGE — note this script does NOT auto-execute. Invoke directly:
 
-    # Single model:
+    # Production-shape run (single model, canonical variant):
+    uv run python scripts/triage_runner.py --model claude-sonnet-4-6 --variants ncbi --replicates 1
+
+    # Single model, cheap-tier sanity check:
     uv run python scripts/triage_runner.py --model claude-haiku-4-5 --replicates 2
 
-    # All three models in one shot (shared thread pool, single cost report):
+    # All three model tiers in one shot (shared thread pool, single cost report):
     uv run python scripts/triage_runner.py \\
-        --model claude-haiku-4-5 claude-sonnet-4-6 claude-opus-4-7 --replicates 2
+        --model claude-sonnet-4-6 claude-haiku-4-5 claude-opus-4-7 --replicates 2
 
 For a smoke test of one variant on one gene:
 
     uv run python scripts/triage_runner.py \\
-        --model claude-haiku-4-5 --replicates 1 \\
+        --model claude-sonnet-4-6 --replicates 1 \\
         --variants naive --genes HSPA1A
 
 CANONICAL BENCH SCOPE (run_id=mainbench_canonical_v1, bench_version
@@ -47,7 +61,7 @@ fc7ddee89155, replicate 1). The model × variant matrix is intentionally
 ragged — not every model runs every variant:
 
   * claude-sonnet-4-6 — naive, ncbi, web_ncbi, pubmed_ncbi (the
-    headline model; full variant spread).
+    headline model; full variant spread; matches production triage).
   * claude-haiku-4-5  — naive, ncbi, web_ncbi, pubmed_ncbi (the
     cheap-model comparison).
   * claude-opus-4-7 / claude-opus-4-8 — naive + ncbi ONLY, by design.
@@ -98,12 +112,21 @@ BENCH_TSV = BENCH_TSV_BY_NAME["benchmark"][0]
 OUT_ROOT = BENCH_TSV_BY_NAME["benchmark"][1]
 PROMPTS_DIR = ROOT / "src/accessible_surfaceome/agents/surface_triage/prompts"
 
+# Canonical production triage attribution. Single grep target — used by
+# downstream scripts (audit_v2_deterministic_coverage.py, build_universe_v2,
+# zero_db_rescues_by_triage, etc.) and referenced from CLAUDE.md. Bump when
+# the production sweep moves; the surface_triage docstring + the prompt-
+# review HTML's "Prereq" card both rely on this being correct.
+CANONICAL_TRIAGE_MODEL = "claude-sonnet-4-6"
+CANONICAL_TRIAGE_RUN_ID = "genome_full_sonnet_ncbi_v2"
+
 # Per-million-token list pricing for input + output. Update as Anthropic
 # adjusts. Web search is billed separately at $10 / 1000 searches across
-# all Claude models.
+# all Claude models. Ordered with the canonical production model first so
+# a reader scanning the dict sees the right answer up top.
 MODEL_PRICING: dict[str, tuple[float, float]] = {
+    "claude-sonnet-4-6": (3.0, 15.0),   # canonical production triage model
     "claude-haiku-4-5":  (1.0, 5.0),
-    "claude-sonnet-4-6": (3.0, 15.0),
     "claude-opus-4-7":   (15.0, 75.0),
     "claude-opus-4-8":   (15.0, 75.0),  # same list price as 4-7
 }

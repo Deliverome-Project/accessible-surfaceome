@@ -441,8 +441,11 @@ EXAMPLE_FLOW_STAGES = [
         "stage": "Prereq — surface_triage  (upstream batch, run separately)",
         "actor": (
             "Sonnet · system.md + task_template.md  "
-            "(canonical sweep <code>genome_full_sonnet_ncbi_v1</code>; "
-            "Haiku / Opus also supported by <code>scripts/triage_runner.py</code>)"
+            "(direct <code>messages.create</code> via "
+            "<code>scripts/triage_runner.py</code> &mdash; <em>not</em> a "
+            "Managed Agent; canonical sweep "
+            "<code>genome_full_sonnet_ncbi_v2</code>; Haiku / Opus also "
+            "supported by the runner for bench comparisons)"
         ),
         "inputs": [
             "hgnc_symbol, uniprot_acc, ncbi_gene_id",
