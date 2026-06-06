@@ -844,6 +844,32 @@ interface ViewerInstance {
  *  it's wrapped around. */
 const MEMBRANE_OPACITY = 0.34;
 
+/** Explicitly release the WebGL context on every leftover ``<canvas>``
+ *  inside ``container`` and remove the element. Worked around 3Dmol.js's
+ *  missing destroy API: ``viewer.clear()`` clears models but leaves the
+ *  canvas + GL context alive, so one accumulates per variant / viewMode /
+ *  data change. Browsers cap GL contexts per page (Chromium: 16); past
+ *  the cap, ``canvas.getContext('webgl')`` returns null and 3Dmol's
+ *  first ``getParameter`` / ``clearDepth`` call throws "Cannot read
+ *  properties of null". Run this in the effect cleanup AND immediately
+ *  before each ``createViewer`` as a belt-and-braces safety net.
+ *  Idempotent — empty container is a no-op. */
+function _disposeCanvases(container: HTMLElement): void {
+  container.querySelectorAll("canvas").forEach((c) => {
+    const canvas = c as HTMLCanvasElement;
+    try {
+      const gl =
+        canvas.getContext("webgl") ??
+        (canvas.getContext("experimental-webgl") as WebGLRenderingContext | null);
+      gl?.getExtension("WEBGL_lose_context")?.loseContext();
+    } catch {
+      // ignore — the GL extension is best-effort; removing the canvas
+      // still drops references so GC can reclaim the context eventually.
+    }
+    canvas.remove();
+  });
+}
+
 /**
  * StructureViewer — the 3Dmol.js-backed canvas. Client-only because
  * 3Dmol expects a DOM + WebGL. The 3Dmol module is dynamically
@@ -1402,18 +1428,29 @@ export function StructureViewer({
           })
         : orientPdbForTopology(rawPdb, activeTopology);
 
-      // Final pre-createViewer guard. The renderSeq + isConnected check
-      // bails when React StrictMode (dev) double-mounts the component
-      // OR the user changed variant tab while a prior fetch was still
-      // in flight: by the time we reach this line, ``containerRef.current``
-      // can be a div that's been detached from the document, in which
-      // case ``createViewer`` attaches a canvas to a node out of the DOM,
-      // ``getContext('webgl')`` returns null, and 3Dmol's first
-      // ``clearDepth`` call throws "Cannot read properties of null".
-      // The token-based bail at the bottom of this function only guards
-      // the terminal ``setStatus``, not ``createViewer`` itself.
+      // Final pre-createViewer guards. Three things have to be true to
+      // safely call createViewer:
+      //
+      // 1. ``renderSeq``: no newer render has been queued. A late create-
+      //    on a stale render token would orphan its canvas + GL context.
+      // 2. ``containerRef.current?.isConnected``: the div is still IN the
+      //    document. createViewer on a detached div attaches a canvas
+      //    that can't get a real WebGL context — getContext returns
+      //    null and 3Dmol's first ``getParameter`` / ``clearDepth`` call
+      //    throws "Cannot read properties of null".
+      // 3. Container has no leftover ``<canvas>``. 3Dmol's
+      //    ``viewer.clear()`` (called in this effect's cleanup) clears
+      //    models but does NOT release the WebGL context or remove the
+      //    canvas element. Without explicit teardown the container
+      //    accumulates one canvas (one live GL context) per variant /
+      //    viewMode / data change — Chromium caps ~16 GL contexts per
+      //    page, after which getContext returns null and createViewer
+      //    throws as above. ``_disposeCanvases`` calls
+      //    WEBGL_lose_context.loseContext() on each leftover canvas and
+      //    removes it, freeing the slot.
       if (renderSeq !== renderSeqRef.current) return;
       if (!containerRef.current?.isConnected) return;
+      _disposeCanvases(containerRef.current);
 
       const viewer = $3Dmol.createViewer(containerRef.current, {
         backgroundColor: "white",
@@ -1734,6 +1771,12 @@ export function StructureViewer({
         // 3Dmol throws on double-clear; ignore.
       }
       viewerRef.current = null;
+      // Explicitly free the WebGL context + remove the canvas. See the
+      // pre-createViewer comment block for why ``viewer.clear()`` alone
+      // is not enough.
+      if (containerRef.current) {
+        _disposeCanvases(containerRef.current);
+      }
     };
   }, [renderViewer]);
 
