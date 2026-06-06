@@ -9,7 +9,13 @@ repos:
     rev: v6.0.0
     hooks:
       - id: trailing-whitespace
+        # PDB files (Protein Data Bank format) have strict column-positioned
+        # fields and an 80-char line specification — stripping trailing
+        # whitespace from a partially-filled column could corrupt downstream
+        # parsers (3Dmol, biopython, etc.). Exempt them anywhere in the tree.
+        exclude: '\.pdb$'
       - id: end-of-file-fixer
+        exclude: '\.pdb$'
       - id: check-merge-conflict
       - id: check-yaml
       - id: check-toml

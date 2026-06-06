@@ -250,7 +250,7 @@ def _write_tsv(rows: list[dict[str, object]]) -> None:
         for r in sorted(rows, key=lambda x: str(x["hgnc_symbol"])):
             w.writerow([r[c] for c in COLS])
     size = OUT_PATH.stat().st_size
-    print(f"--- wrote TSV ---")
+    print("--- wrote TSV ---")
     print(f"  path             : {OUT_PATH.relative_to(REPO_ROOT)}")
     print(f"  size             : {size / 1024:.1f} KB ({size / (1024*1024):.2f} MB)")
     if size > 5 * 1024 * 1024:

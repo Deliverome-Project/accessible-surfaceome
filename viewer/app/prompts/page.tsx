@@ -41,7 +41,7 @@ interface PromptGroup {
  *  - Deep dive Phase 1 — ``plan_trim_select`` literature agent
  *    (per-focus A1/A2 plan-trim-select, plus joint single-agent
  *    plan-trim-select).
- *  - Deep dive Phase 2 — 10 block builders that turn the A1/A2 ledger
+ *  - Deep dive Phase 2 — 8 block builders that turn the A1/A2 ledger
  *    into the SurfaceomeRecord sub-blocks.
  *  - Deep dive Phase 3 — synthesizer that assembles the executive
  *    summary, filters, and confidence.
@@ -66,25 +66,16 @@ const PROMPT_GROUPS: PromptGroup[] = [
     id: "deep-dive-phase-1",
     label: "Deep dive · Phase 1 — plan_trim_select (literature agent)",
     description:
-      "Three Sonnet 4.6 passes per agent focus: plan the searches, " +
-      "trim each paper's candidate clips down to load-bearing ones, then " +
-      "select the final EvidenceClaim ledger. The per-focus A1 + A2 " +
-      "prompts split into a surface-evidence-methodology run and a " +
-      "biology-context run; the joint plan-trim-select prompts run the " +
-      "same loop on a unified ledger.",
+      "A deterministic kickoff template emits the searches (no LLM planner), " +
+      "then two Sonnet 4.6 passes per agent focus: trim each paper's candidate " +
+      "clips down to the load-bearing ones, then select the final " +
+      "EvidenceClaim ledger. The Surface-evidence agent (A1) and Biology " +
+      "agent (A2) split into a methodology run and a biology-context run; the " +
+      "joint prompts run the same loop on a unified ledger.",
     prompts: [
       {
-        id: "pts-a1-plan",
-        label: "A1 (surface evidence) — planner",
-        rel: "src/accessible_surfaceome/agents/plan_trim_select/prompts/a1_plan_system.md",
-        blurb:
-          "Reads the gene context + Deterministic inputs block; emits a " +
-          "SearchPlan biased toward methodology-dense query categories " +
-          "(flow cytometry, surface biotinylation, mass-spec surfaceome, IHC).",
-      },
-      {
         id: "pts-a1-trim",
-        label: "A1 — per-paper trim",
+        label: "Surface-evidence agent (A1) —per-paper trim",
         rel: "src/accessible_surfaceome/agents/plan_trim_select/prompts/a1_trim_system.md",
         blurb:
           "One Sonnet 4.6 call per paper — keeps the clips that name a surface-" +
@@ -93,7 +84,7 @@ const PROMPT_GROUPS: PromptGroup[] = [
       },
       {
         id: "pts-a1-select",
-        label: "A1 — final selector",
+        label: "Surface-evidence agent (A1) —final selector",
         rel: "src/accessible_surfaceome/agents/plan_trim_select/prompts/a1_select_system.md",
         blurb:
           "Sonnet picks the final A1 clip_ids → EvidenceClaim records with " +
@@ -101,18 +92,8 @@ const PROMPT_GROUPS: PromptGroup[] = [
           "follow-up searches when the menu has obvious gaps.",
       },
       {
-        id: "pts-a2-plan",
-        label: "A2 (biological context) — planner",
-        rel: "src/accessible_surfaceome/agents/plan_trim_select/prompts/a2_plan_system.md",
-        blurb:
-          "Mirrors A1 but biases toward tissue / cell-type / " +
-          "subcellular-localization / accessibility-modulation queries — " +
-          "HPA, Tabula Sapiens, mouse atlases when ortholog ECD identity " +
-          "supports the cross-species transfer.",
-      },
-      {
         id: "pts-a2-trim",
-        label: "A2 — per-paper trim",
+        label: "Biology agent (A2) —per-paper trim",
         rel: "src/accessible_surfaceome/agents/plan_trim_select/prompts/a2_trim_system.md",
         blurb:
           "Keeps clips that name a tissue, cell type, cell state, " +
@@ -121,20 +102,12 @@ const PROMPT_GROUPS: PromptGroup[] = [
       },
       {
         id: "pts-a2-select",
-        label: "A2 — final selector",
+        label: "Biology agent (A2) —final selector",
         rel: "src/accessible_surfaceome/agents/plan_trim_select/prompts/a2_select_system.md",
         blurb:
           "Picks the final A2 clip_ids → EvidenceClaim records that feed " +
           "tissues, cell_types, cell_states, subcellular_localization, " +
           "anatomical_accessibility, and accessibility_modulation builders.",
-      },
-      {
-        id: "pts-joint-plan",
-        label: "Joint — planner",
-        rel: "src/accessible_surfaceome/agents/plan_trim_select/prompts/plan_system.md",
-        blurb:
-          "Single-agent variant of the planner — emits one SearchPlan over " +
-          "a unified ledger instead of splitting into A1 + A2 passes.",
       },
       {
         id: "pts-joint-trim",
@@ -150,16 +123,16 @@ const PROMPT_GROUPS: PromptGroup[] = [
   },
   {
     id: "deep-dive-phase-2",
-    label: "Deep dive · Phase 2 — block builders (10 Sonnet calls in parallel)",
+    label: "Deep dive · Phase 2 — block builders (8 Sonnet calls in parallel)",
     description:
-      "Each builder consumes a slice of the A1 or A2 EvidenceClaim ledger " +
-      "and emits a structured sub-block of the SurfaceomeRecord. All 10 " +
-      "run concurrently; their outputs assemble into surface_evidence + " +
-      "biological_context.",
+      "Each builder consumes a slice of the surface-evidence (A1) or biology " +
+      "(A2) EvidenceClaim ledger and emits a structured sub-block of the " +
+      "SurfaceomeRecord. All 8 run concurrently; their outputs assemble into " +
+      "surface_evidence + biological_context.",
     prompts: [
       {
         id: "builder-methods",
-        label: "A1 — methods builder",
+        label: "Surface-evidence agent (A1) —methods builder",
         rel: "src/accessible_surfaceome/agents/surfaceome_v2/prompts/methods_builder_system.md",
         blurb:
           "EvidenceClaim ledger → list[MethodObservation]. Captures " +
@@ -168,7 +141,7 @@ const PROMPT_GROUPS: PromptGroup[] = [
       },
       {
         id: "builder-contradictions",
-        label: "A1 — contradictions builder",
+        label: "Surface-evidence agent (A1) —contradictions builder",
         rel: "src/accessible_surfaceome/agents/surfaceome_v2/prompts/contradiction_builder_system.md",
         blurb:
           "Papers actively refuting surface localization (intracellular-only " +
@@ -176,7 +149,7 @@ const PROMPT_GROUPS: PromptGroup[] = [
       },
       {
         id: "builder-evidence-grade",
-        label: "A1 — evidence_grade builder",
+        label: "Surface-evidence agent (A1) —evidence_grade builder",
         rel: "src/accessible_surfaceome/agents/surfaceome_v2/prompts/evidence_grade_builder_system.md",
         blurb:
           "Rolls up across methods + contradictions into the gene-level " +
@@ -185,7 +158,7 @@ const PROMPT_GROUPS: PromptGroup[] = [
       },
       {
         id: "builder-expression",
-        label: "A2 — expression builder",
+        label: "Biology agent (A2) —expression builder",
         rel: "src/accessible_surfaceome/agents/surfaceome_v2/prompts/expression_builder_system.md",
         blurb:
           "Unified tissue × cell-of-origin × disease-context expression rows " +
@@ -195,7 +168,7 @@ const PROMPT_GROUPS: PromptGroup[] = [
       },
       {
         id: "builder-cell-states",
-        label: "A2 — cell_states builder",
+        label: "Biology agent (A2) —cell_states builder",
         rel: "src/accessible_surfaceome/agents/surfaceome_v2/prompts/cell_states_builder_system.md",
         blurb:
           "Cell-state modulation: activation, exhaustion, EMT, ER stress, " +
@@ -203,7 +176,7 @@ const PROMPT_GROUPS: PromptGroup[] = [
       },
       {
         id: "builder-subcellular-localization",
-        label: "A2 — subcellular_localization builder",
+        label: "Biology agent (A2) —subcellular_localization builder",
         rel: "src/accessible_surfaceome/agents/surfaceome_v2/prompts/subcellular_localization_builder_system.md",
         blurb:
           "Primary compartment + dual_localization + membrane_subdomains " +
@@ -211,7 +184,7 @@ const PROMPT_GROUPS: PromptGroup[] = [
       },
       {
         id: "builder-anatomical-accessibility",
-        label: "A2 — anatomical_accessibility builder",
+        label: "Biology agent (A2) —anatomical_accessibility builder",
         rel: "src/accessible_surfaceome/agents/surfaceome_v2/prompts/anatomical_accessibility_builder_system.md",
         blurb:
           "Vascular accessibility, blood-brain barrier, tissue-restricted " +
@@ -219,7 +192,7 @@ const PROMPT_GROUPS: PromptGroup[] = [
       },
       {
         id: "builder-accessibility-modulation",
-        label: "A2 — accessibility_modulation builder",
+        label: "Biology agent (A2) —accessibility_modulation builder",
         rel: "src/accessible_surfaceome/agents/surfaceome_v2/prompts/accessibility_modulation_builder_system.md",
         blurb:
           "Stress-induced surface fraction, activation-induced upregulation, " +
