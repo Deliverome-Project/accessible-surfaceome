@@ -102,8 +102,15 @@ def _lookup_d1(uniprot_acc: str) -> HomoOligomerizationFeatures | None:
         from accessible_surfaceome.cloud.d1_client import D1Client
     except ImportError:  # pragma: no cover — D1 client always available in CI
         return None
+    # ``schweke_homomer_public`` only exists on the PUBLIC mirror DB (per
+    # ``cloudflare/d1_public_schema.sql``). The default ``D1Client()``
+    # constructor binds to the PRIVATE agents DB and would silently fail
+    # this lookup with a "no such table" error — caught by the broad except
+    # below and indistinguishable from a real D1 outage. Use ``.public()``
+    # to target the right DB explicitly; the same pattern the SURFACE-Bind
+    # loader uses (see ``tools/surface_bind.py``).
     try:
-        with D1Client() as d1:
+        with D1Client.public() as d1:
             rows = d1.query(
                 "SELECT stoichiometry, af_model_num, is_ecd_only, "
                 "has_higher_order_complex, dimer_pdb_filename, "

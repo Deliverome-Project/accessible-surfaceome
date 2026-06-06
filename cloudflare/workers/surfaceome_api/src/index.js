@@ -223,6 +223,40 @@ async function handleGene(env, symbol) {
           source: "Schweke 2024 (PMID 38325366)",
           citation: "10.1016/j.cell.2024.01.022",
         };
+        // Cat 3 mitigation — also derive
+        // ``accessibility_risks.homo_oligomerization_prediction`` from the
+        // injected block. This field is normally populated at annotation
+        // time by the orchestrator's ``_attach_homo_oligomerization_prediction``
+        // post-pass (see ``agents/surfaceome_v2/orchestrator.py``); the
+        // Worker mirrors the same derivation so old records served before
+        // re-annotation also carry the structured risk chip the viewer
+        // renders next to ``epitope_masking``. Severity bands MUST match
+        // the Python implementation's ``_homo_oligomerization_severity``
+        // helper — keep them in sync (≤2 → low, 3..7 → moderate, 8..24 →
+        // high, None → unknown). Annotator-populated risk chips win: only
+        // inject when the served record doesn't already carry one (mirrors
+        // the same "annotator-bake wins" convention as every other
+        // serve-time enrichment in handleGene).
+        const existingRisk =
+          record?.accessibility_risks?.homo_oligomerization_prediction;
+        if (!existingRisk) {
+          const n = schwekeRow.stoichiometry;
+          let severity = "unknown";
+          if (typeof n === "number") {
+            if (n <= 2) severity = "low";
+            else if (n <= 7) severity = "moderate";
+            else if (n <= 24) severity = "high";
+          }
+          if (!record.accessibility_risks) record.accessibility_risks = {};
+          record.accessibility_risks.homo_oligomerization_prediction = {
+            present: true,
+            stoichiometry: n ?? null,
+            severity,
+            is_ecd_only: !!schwekeRow.is_ecd_only,
+            source: "Schweke 2024 (PMID 38325366)",
+            cited_evidence_ids: [],
+          };
+        }
       }
     }
   }
