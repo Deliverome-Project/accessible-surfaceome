@@ -442,16 +442,20 @@ def _topic_search(
         if previous_symbols is None:
             previous_symbols = list(bundle.previous_symbols)
 
-    # Cap before quoting to bound the Europe PMC query length on outliers.
-    # A 200-gene candidate-universe audit (2026-06-06) found previous_symbols
-    # rarely exceeds 3 (SLC67A1 with 5 is the lone outlier in the sample),
-    # but aliases regularly spills past 5 — 14% of genes have >5, CD44 has
-    # 15 ('IN' / 'MC56' / 'ECM-III' / 'Hermes-1' / ...). HGNC orders aliases
-    # roughly by primacy / clinical recognition, so the first N are the
-    # high-recall ones; the long tail is mostly obscure variants that bloat
-    # the query without paper-side payback. Truncate silently — predictable
-    # query length matters more than recovering the 5+th synonym.
-    aliases = (aliases or [])[:5]
+    # Cap previous_symbols at 3 to bound query length on outliers — a
+    # 200-gene candidate-universe audit (2026-06-06) showed the field rarely
+    # exceeds 3 (SLC67A1 with 5 is the lone outlier), so this is essentially
+    # a no-op for predictability rather than a recall trade-off.
+    #
+    # No cap on aliases. Earlier audit showed HGNC's ``alias_symbol`` is NOT
+    # ordered by importance — CD44's first 5 are obscure (``IN`` / ``MC56`` /
+    # ``Pgp1`` / ``PGP-1`` / ``CD44R``) while paper-canonical ``HCELL`` is at
+    # position 6, ``Hermes-1`` at 8, ``H-CAM`` at 13. Truncating ANY low
+    # number drops famous-name aliases at random; the case-insensitive dedupe
+    # loop below already collapses near-duplicates, so the realistic upper
+    # bound is the genuine alias count per gene (mean 3.25, max 15 in our
+    # sample). Europe PMC handles multi-KB queries without breaking.
+    aliases = aliases or []
     previous_symbols = (previous_symbols or [])[:3]
     # Dedup while preserving order. ``aliases`` + ``previous_symbols`` often
     # overlap (HGNC moves rejected aliases into previous_symbols), so a
