@@ -2812,7 +2812,7 @@ class SurfaceomeRecord(BaseModel):
 
     model_config = ConfigDict(extra="forbid")
 
-    schema_version: Literal["1.0.0", "1.1.0"] = "1.1.0"
+    schema_version: Literal["1.0.0", "1.1.0", "2.0.0"] = "2.0.0"
     gene: GeneIdentifier
 
     # Cross-agent coherence — populated by the orchestrator from the most
@@ -2909,7 +2909,7 @@ class SurfaceomeRecordDraft(BaseModel):
 
     model_config = ConfigDict(extra="forbid")
 
-    schema_version: Literal["1.0.0", "1.1.0"] = "1.1.0"
+    schema_version: Literal["1.0.0", "1.1.0", "2.0.0"] = "2.0.0"
     gene: GeneIdentifier
 
     # Orchestrator-injected before the agent call; the agent reads it but does
