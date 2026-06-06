@@ -26,10 +26,12 @@
  * Pages-side build runs against the real Worker and emits the full set.
  */
 
-import { readFileSync } from "node:fs";
+import { readFileSync, readdirSync } from "node:fs";
 import path from "node:path";
+import { pickDeepDiveFilters } from "./deep-dive-fields";
 import type {
   BenchmarkMatrix,
+  BenchmarkRow,
   Confidence,
   CoreceptorDependency,
   EcdAccessibilityClass,
@@ -79,6 +81,16 @@ const HGNC_TSV = path.join(
   "hgnc_complete_set.tsv",
 );
 
+// In-tree per-gene record snapshots (`publish_record` writes these on
+// every annotate run). Used to backfill the `generateStaticParams` route
+// list when the Worker's edge-cached `/v1/genes` lags a fresh publish.
+const SURFACEOME_SNAPSHOT_DIR = path.join(
+  process.cwd(),
+  "public",
+  "data",
+  "surfaceome",
+);
+
 /**
  * One row of the genome-wide catalog the index table renders. Sourced
  * from the public Worker's `/v1/catalog` endpoint (which joins
@@ -106,6 +118,20 @@ export interface TriageCell {
  * mirrors `DDF_KEYS` in cloudflare/workers/surfaceome_api/src/index.js
  * — extend both when adding a field.
  */
+/** Coarse band an ECD %-identity is binned into for catalog/compare
+ *  filtering (see deep-dive-fields.ts:ecdBand). */
+export type EcdBand = "high" | "moderate" | "low" | "none";
+
+/** Dominant induction-trigger bucket (mirrors models.py InductionTrigger). */
+export type InductionTrigger =
+  | "none"
+  | "oncogenic"
+  | "immune"
+  | "stress_hypoxia"
+  | "cell_death"
+  | "infection"
+  | "other";
+
 export interface DeepDiveFilters {
   surface_accessibility: SurfaceAccessibility;
   confidence: Confidence;
@@ -128,6 +154,14 @@ export interface DeepDiveFilters {
   has_epitope_masking: boolean;
   n_term_extracellular: boolean;
   c_term_extracellular: boolean;
+  // Newer fields — optional so older records (which omit them) still type.
+  has_restricted_subdomain?: boolean;
+  cyno_ortholog_ecd?: EcdBand;
+  mouse_ortholog_ecd?: EcdBand;
+  max_paralog_ecd?: EcdBand;
+  tumor_associated?: boolean;
+  induction_trigger?: InductionTrigger;
+  has_live_cell_surface_evidence?: boolean;
 }
 
 export interface CatalogRow {
@@ -144,7 +178,7 @@ export interface CatalogRow {
     hpa: number;
   };
   /** Per-model NCBI-variant verdict in the order matrix.models
-   *  exposes. Today: [Haiku 4.5, Sonnet 4.6, Opus 4.7]. Each slot is
+   *  exposes. Today: [Haiku 4.5, Sonnet 4.6, Opus 4.8]. Each slot is
    *  null when no run exists for that model on that gene (most non-
    *  bench genes have only the Sonnet slot populated). */
   triage_by_model: (TriageCell | null)[];
@@ -442,7 +476,7 @@ async function _loadCatalogImpl(): Promise<Catalog> {
       generated_at: undefined,
       universe_version: "local-stub",
       bench_version: null,
-      models: ["claude-haiku-4-5", "claude-sonnet-4-6", "claude-opus-4-7"],
+      models: ["claude-haiku-4-5", "claude-sonnet-4-6", "claude-opus-4-8"],
       n_rows: 0,
       n_with_triage: 0,
       n_with_deep_dive: 0,
@@ -562,7 +596,7 @@ export async function loadBenchmarkMatrix(): Promise<BenchmarkMatrix> {
       universe_version: null,
       sources: ["uniprot", "go", "surfy", "cspa", "hpa"],
       models: [
-        "claude-opus-4-7", "claude-sonnet-4-6", "claude-haiku-4-5",
+        "claude-opus-4-8", "claude-sonnet-4-6", "claude-haiku-4-5",
       ],
       variants: ["naive", "ncbi", "web_ncbi", "pubmed_ncbi"],
       headline_variant: "ncbi",
@@ -581,6 +615,32 @@ export async function loadBenchmarkMatrix(): Promise<BenchmarkMatrix> {
   }
   const payload = (await res.json()) as BenchmarkMatrix;
   return payload;
+}
+
+// Module-level memo for per-gene benchmark-row lookups. The benchmark
+// matrix is ~147 rows; index it once so every gene page that asks "is
+// this gene in SurfaceBench?" is an O(1) Map hit rather than a re-fetch.
+let _benchmarkRowIndex: Map<string, BenchmarkRow> | null = null;
+
+/**
+ * Server-side lookup for a single gene's benchmark row — gives the per-
+ * gene page the curated ground-truth verdict (`truth_verdict`) when the
+ * gene is one of the ~147 SurfaceBench members. Returns `null` for the
+ * ~19k genes NOT in the benchmark (the common case), so the caller can
+ * conditionally render the benchmark call only for bench members.
+ *
+ * Builds the index off `loadBenchmarkMatrix()` on first call; under
+ * `SURFACEOME_API_BASE=local` that matrix is the empty stub, so every
+ * lookup returns `null` and the benchmark row simply doesn't render.
+ */
+export async function loadBenchmarkRow(
+  symbol: string,
+): Promise<BenchmarkRow | null> {
+  if (!_benchmarkRowIndex) {
+    const matrix = await loadBenchmarkMatrix();
+    _benchmarkRowIndex = new Map(matrix.rows.map((r) => [r.gene_symbol, r]));
+  }
+  return _benchmarkRowIndex.get(symbol) ?? null;
 }
 
 /**
@@ -651,18 +711,54 @@ async function _listSurfaceomeGenesImpl(): Promise<string[]> {
   const data = (await res.json()) as {
     genes?: Array<{ gene_symbol?: string }>;
   };
-  return (data.genes ?? [])
+  const fromWorker = (data.genes ?? [])
     .map((g) => g.gene_symbol)
-    .filter((s): s is string => Boolean(s))
-    .sort();
+    .filter((s): s is string => Boolean(s));
+  // Union with locally-published snapshots. `publish_record` writes
+  // `public/data/surfaceome/{SYMBOL}.json` on every annotate run, but the
+  // Worker's `/v1/genes` list is fronted by Cloudflare's edge cache and
+  // can lag a freshly-published gene by minutes — long enough that under
+  // `output: export` the just-generated route 500s ("missing param in
+  // generateStaticParams") even though the record is already live in D1.
+  // The snapshots are the in-tree source of truth, so any gene with one
+  // gets a route regardless of edge-cache state; its record data still
+  // comes from the Worker at render time. Best-effort — a missing dir
+  // (clean checkout / CI smoke build) just leaves the Worker list as-is.
+  const merged = new Set(fromWorker);
+  for (const sym of _localSnapshotGenes()) merged.add(sym);
+  return Array.from(merged).sort();
+}
+
+/** Gene symbols with a committed `public/data/surfaceome/{SYMBOL}.json`
+ *  snapshot. Best-effort: returns `[]` if the directory is absent. */
+function _localSnapshotGenes(): string[] {
+  try {
+    return readdirSync(SURFACEOME_SNAPSHOT_DIR)
+      .filter((f) => f.endsWith(".json"))
+      .map((f) => f.slice(0, -".json".length));
+  } catch {
+    return [];
+  }
 }
 
 /**
+ * Cache mode for the live per-gene Worker fetches (record + triage
+ * reasoning). Production keeps `force-cache` so each gene's record is
+ * fetched once per build and baked into the static export (SSG,
+ * citation-stable). In dev / any non-production build we use `no-store`
+ * so the page always reflects the LATEST published D1 record immediately
+ * — no stale build-cache to fight while iterating on annotations. Flip is
+ * driven by NODE_ENV (Next sets it: `development` under `next dev`,
+ * `production` under `next build`).
+ */
+const RECORD_FETCH_CACHE: RequestCache =
+  process.env.NODE_ENV === "production" ? "force-cache" : "no-store";
+
+/**
  * Worker fetch for one gene's full SurfaceomeRecord. Returns `null` on
- * any Worker error (network, 404, non-2xx, malformed JSON). Uses
- * `cache: "force-cache"` so each gene's record is fetched once per
- * build and baked into the static export. D1 is the only source — there
- * is no on-disk fallback.
+ * any Worker error (network, 404, non-2xx, malformed JSON). Cache mode is
+ * `RECORD_FETCH_CACHE` (force-cache in prod for SSG, no-store in dev for
+ * always-fresh). D1 is the only source — there is no on-disk fallback.
  */
 async function _fetchRecordFromWorker(
   symbol: string,
@@ -672,7 +768,7 @@ async function _fetchRecordFromWorker(
   const timer = setTimeout(() => controller.abort(), FETCH_TIMEOUT_MS);
   try {
     const res = await fetch(`${base}/v1/genes/${symbol}`, {
-      cache: "force-cache",
+      cache: RECORD_FETCH_CACHE,
       signal: controller.signal,
     });
     if (!res.ok) return null;
@@ -704,7 +800,7 @@ async function _fetchTriageReasoningFromWorker(
   const timer = setTimeout(() => controller.abort(), FETCH_TIMEOUT_MS);
   try {
     const res = await fetch(`${base}/v1/triage/${symbol}`, {
-      cache: "force-cache",
+      cache: RECORD_FETCH_CACHE,
       signal: controller.signal,
     });
     if (!res.ok) return null;
@@ -764,6 +860,41 @@ export async function loadSurfaceomeRecord(
     if (reasoning) return { ...record, triage_reasoning: reasoning };
   }
   return record;
+}
+
+/**
+ * Rebuild each deep-dived row's `deep_dive_filters` from its per-gene
+ * record, replacing whatever the Worker's `/v1/catalog` shipped. The Worker
+ * projection lags the in-tree filter taxonomy until it's redeployed, so
+ * deriving ddf from records here means a NEW filter field works the moment
+ * it lands — no Worker deploy, no "inert until deploy" window. Both the
+ * catalog index and `/compare` call this. Build-time only;
+ * `loadSurfaceomeRecord` is memoized, so the per-gene reads dedup across the
+ * build.
+ */
+export async function withDeepDiveFilters(
+  rows: CatalogRow[],
+): Promise<CatalogRow[]> {
+  const ddSymbols = rows.filter((r) => r.deep_dive).map((r) => r.symbol);
+  if (ddSymbols.length === 0) return rows;
+  const records = await Promise.all(
+    ddSymbols.map((s) => loadSurfaceomeRecord(s)),
+  );
+  const ddfBySymbol = new Map<string, DeepDiveFilters>();
+  ddSymbols.forEach((sym, i) => {
+    const ddf = pickDeepDiveFilters(
+      records[i]?.filters as Record<string, unknown> | undefined,
+    );
+    // Partial DeepDiveFilters (older records omit newer fields); every
+    // reader accesses fields optionally, so route the cast through unknown.
+    if (ddf) ddfBySymbol.set(sym, ddf as unknown as DeepDiveFilters);
+  });
+  if (ddfBySymbol.size === 0) return rows;
+  return rows.map((r) =>
+    r.deep_dive && ddfBySymbol.has(r.symbol)
+      ? { ...r, deep_dive_filters: ddfBySymbol.get(r.symbol) }
+      : r,
+  );
 }
 
 export async function loadAllSurfaceomeRecords(): Promise<SurfaceomeRecord[]> {

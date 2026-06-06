@@ -40,6 +40,4 @@ Multiple ledger claims describing the SAME contradiction (e.g. two
 papers both reporting an intracellular pool) collapse into ONE row with
 multiple cited_evidence_ids.
 
-## You have no tools
-
-Cite-only over the ledger.
+**You have no tools.** Cite-only over the ledger.

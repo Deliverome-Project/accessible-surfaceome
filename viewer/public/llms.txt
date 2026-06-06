@@ -1,0 +1,41 @@
+# Surfaceome
+
+> An annotated catalogue of human cell-surface proteins: per-gene deep-dive
+> records (where a protein is surface-accessible, the evidence, and the
+> targetability risks), genome-wide database-vote + LLM triage verdicts over
+> all ~19,300 protein-coding genes, and SurfaceBench — a 147-gene labeled eval
+> comparing LLM triage against curated ground truth.
+
+This site is backed by a public, read-only HTTP API (no authentication, CORS
+open to all origins) and a downloadable agent skill. Per-gene records validate
+against the `SurfaceomeRecord` Pydantic schema. Key downstream lookups should
+be keyed on stable identifiers (`hgnc_id` / `uniprot_acc` / `ensembl_gene`),
+not the bare gene symbol — symbol-only joins silently misroute ~0.2% of human
+genes (the COX1 / WAS class).
+
+## Start here
+
+- [API index (JSON)](https://api.deliverome.org/surfaceome/v1): self-describing endpoint catalogue + docs/skill/schema links + live dataset versions. Hit this first to discover the whole API surface.
+- [Agent skill (Markdown, downloadable)](https://surfaceome.deliverome.org/surfaceome-api.skill.md): drop into `~/.claude/skills/` and an agent can call the API without further prompting. Documents every endpoint, the record shape, and the controlled vocabularies.
+- [API documentation (human)](https://surfaceome.deliverome.org/api): endpoint reference with curl examples and approximate response sizes.
+
+## API endpoints
+
+- [Per-gene record](https://api.deliverome.org/surfaceome/v1/genes/ERBB2): full `SurfaceomeRecord` JSON for one gene (executive summary, evidence ledger, deterministic features, accessibility risks). Replace `ERBB2` with any HGNC symbol (case-insensitive).
+- [Per-gene Markdown mirror](https://surfaceome.deliverome.org/data/surfaceome/ERBB2.md): the same record as human-readable Markdown with sequences + per-residue topology embedded — the most agent-friendly single-gene artifact.
+- [Genome-wide catalog](https://api.deliverome.org/surfaceome/v1/catalog): per-gene 5-DB surface-vote matrix (UniProt / GO / SURFY / CSPA / HPA) + latest triage verdict + deep-dive flag for all ~19k genes.
+- [Per-gene triage](https://api.deliverome.org/surfaceome/v1/triage/ERBB2): every triage run on file — model × prompt-variant × replicate — with the agent's free-text `verdict_reasoning`.
+- [Genome-wide triage export, with reasoning (TSV)](https://api.deliverome.org/surfaceome/v1/triage/export.tsv?run_id=genome_full_sonnet_ncbi_v1&replicate=1&with_reasoning=1): the full ~19k-gene Sonnet/NCBI sweep with the agent's reasoning appended. Drop `with_reasoning=1` for the prose-free figure-input export.
+- [SurfaceBench matrix](https://api.deliverome.org/surfaceome/v1/benchmark/matrix): the 147-gene eval — ground truth + 5 per-DB flags + per-(model × variant) LLM verdicts with reasoning. Models: Opus, Sonnet, Haiku.
+
+## Reference
+
+- [SurfaceomeRecord schema](https://github.com/Deliverome-Project/accessible-surfaceome/blob/main/src/accessible_surfaceome/tools/_shared/models.py): the Pydantic source of truth every per-gene record validates against.
+- [Endpoint response sizes (JSON)](https://api.deliverome.org/surfaceome/v1/meta/sizes): approximate per-endpoint payload sizes, computed live from D1, so you can budget a fetch before making it.
+- [Source repository](https://github.com/Deliverome-Project/accessible-surfaceome): builders, the Worker (`cloudflare/workers/surfaceome_api/src/index.js`), and the public D1 schema (`cloudflare/d1_public_schema.sql`).
+
+## Conventions
+
+- Verdict values are lowercase strings: `yes`, `contextual`, `no`. String-compare exactly.
+- Absent fields are omitted on the wire (older records lack newer fields) — read with optional-chaining / `?? null`.
+- Caching: list endpoints `max-age=60`; per-gene records, benchmark, and ortholog endpoints `max-age=86400`. Build-time consumers should use `cache: "force-cache"`.

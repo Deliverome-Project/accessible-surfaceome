@@ -1,13 +1,7 @@
 import type { Metadata } from "next";
 import { Shell } from "../../components/Shell/Shell";
 import { CompareTool } from "../../components/CompareTool/CompareTool";
-import {
-  loadCatalog,
-  loadSurfaceomeRecord,
-  type CatalogRow,
-  type DeepDiveFilters,
-} from "../../lib/surfaceome";
-import { pickDeepDiveFilters } from "../../lib/deep-dive-fields";
+import { loadCatalog, withDeepDiveFilters } from "../../lib/surfaceome";
 import styles from "./page.module.css";
 
 export const metadata: Metadata = {
@@ -27,37 +21,10 @@ export const metadata: Metadata = {
  */
 export default async function ComparePage() {
   const catalog = await loadCatalog();
-
-  // The deployed public Worker doesn't ship the catalog `ddf` field, so
-  // catalog rows arrive without deep_dive_filters and the deep-dive
-  // enrichment would never render. Rebuild it here at build time: every
-  // deep-dived gene has a D1 record whose `filters` block carries the
-  // same field names. (n_with_deep_dive is small — 6 today — so these
-  // reads are cheap; loadSurfaceomeRecord fetches each from the Worker,
-  // deduped within the build via `cache: "force-cache"`.)
-  const ddSymbols = catalog.rows
-    .filter((r) => r.deep_dive)
-    .map((r) => r.symbol);
-  const ddRecords = await Promise.all(
-    ddSymbols.map((s) => loadSurfaceomeRecord(s)),
-  );
-  const ddfBySymbol = new Map<string, DeepDiveFilters>();
-  ddSymbols.forEach((sym, i) => {
-    const ddf = pickDeepDiveFilters(
-      ddRecords[i]?.filters as Record<string, unknown> | undefined,
-    );
-    // The projection is a partial DeepDiveFilters (older records omit some
-    // fields); the enrichment reads every field via optional access, so a
-    // partial is safe. Route the cast through `unknown`.
-    if (ddf) ddfBySymbol.set(sym, ddf as unknown as DeepDiveFilters);
-  });
-  const rows: CatalogRow[] = ddfBySymbol.size
-    ? catalog.rows.map((r) =>
-        r.deep_dive && ddfBySymbol.has(r.symbol)
-          ? { ...r, deep_dive_filters: ddfBySymbol.get(r.symbol) }
-          : r,
-      )
-    : catalog.rows;
+  // Rebuild deep-dive filters from records (shared with the catalog index
+  // via withDeepDiveFilters) so the enrichment reflects the in-tree filter
+  // taxonomy without waiting on a Worker redeploy.
+  const rows = await withDeepDiveFilters(catalog.rows);
 
   return (
     <Shell>

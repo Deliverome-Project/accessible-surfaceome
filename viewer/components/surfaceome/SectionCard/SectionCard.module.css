@@ -61,3 +61,13 @@
   flex-direction: column;
   gap: var(--space-4);
 }
+
+/* 0.85rem ceiling on running body text in every tab section (per user:
+ * the max paragraph text size, chips excluded). Targets prose /
+ * table-cell / list / definition text inside .body; chips & pills
+ * (spans/buttons carry their own size) and `.label-mono` labels keep
+ * their sizes, and the section heading + eyebrow + meta live in .head
+ * (outside .body), so they're untouched. */
+.body :is(p, li, td, th, dd, dt, blockquote):not(.label-mono) {
+  font-size: 0.85rem;
+}

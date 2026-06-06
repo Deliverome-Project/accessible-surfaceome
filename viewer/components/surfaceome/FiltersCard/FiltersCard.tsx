@@ -1,7 +1,18 @@
+import {
+  CITATIONS,
+  pubmedUrl,
+  TYPICAL_ANTIBODY_INTERFACE_A2,
+} from "../../../lib/citations";
+import { ecSites } from "../../../lib/surface-bind";
+import { ChipLabelValue } from "../ChipLabelValue/ChipLabelValue";
 import type { OrthologEntry, SurfaceomeRecord } from "../../../lib/surfaceome-types";
 import { prettyEnum } from "../../../lib/surfaceome";
 import { tooltips } from "../../../lib/tooltips";
 import { InfoTip } from "../../InfoTip/InfoTip";
+import {
+  buildFeatureChips,
+  FEATURE_TAB_LABEL,
+} from "../FeatureChips/FeatureChips";
 import { SectionCard } from "../SectionCard/SectionCard";
 import { StatusPill } from "../StatusPill/StatusPill";
 import styles from "./FiltersCard.module.css";
@@ -22,11 +33,13 @@ interface Props {
 
 type Tone = "success" | "warn" | "danger" | "neutral" | "teal" | "lavender" | "amber";
 
-/** Positive boolean — ``true`` = good = green. */
+/** Positive boolean — ``true`` = good = green. Rendered as a
+ *  `label · YES/NO` chip (shared label·value style) instead of a ✓/✗
+ *  glyph. */
 function positiveBoolPill(label: string, value: boolean) {
   return (
     <StatusPill tone={value ? "success" : "neutral"} size="sm">
-      <span aria-hidden="true">{value ? "✓" : "✗"}</span> {label}
+      <ChipLabelValue label={label} value={value ? "yes" : "no"} />
     </StatusPill>
   );
 }
@@ -107,6 +120,15 @@ function stateDependenceTone(v: string): Tone {
   return "neutral";
 }
 
+/** Contradicting-evidence severity tone — higher severity is WORSE.
+ *  `none` (no contradictions) reads as clean/green alongside `low`. */
+function contradictionTone(v: string): Tone {
+  if (v === "high") return "danger";
+  if (v === "moderate") return "warn";
+  if (v === "low" || v === "none") return "success";
+  return "neutral"; // unclear
+}
+
 /**
  * Ortholog ECD identity tone — higher conservation is BETTER (mouse /
  * cyno literature can stand in for human evidence). Thresholds from PR
@@ -122,16 +144,15 @@ function orthologIdentityTone(pct: number | null): Tone {
 /**
  * Paralog max-ECD-identity tone — higher identity is WORSE (more
  * potential antibody cross-reactivity). Inverse polarity from the
- * ortholog scale. The bands are our heuristic; the principle that
- * cross-reactivity tracks sequence identity follows antibody-validation
- * practice (Bordeaux et al. 2010, PMID:20359301; Edfors et al. 2018,
- * PMID:30297845).
+ * ortholog scale. Bands mirror the §07 "Paralog (specificity)" tier
+ * (HPA antigen-design practice, PMID 33170010): >80% multitarget likely
+ * (red), 60-80% caution (amber), <60% lower risk (green).
  */
 function paralogIdentityTone(pct: number | null): Tone {
   if (pct == null) return "success"; // no paralogs in the family = no cross-reactivity risk
-  if (pct < 50) return "success";
-  if (pct < 70) return "warn";
-  return "danger";
+  if (pct > 80) return "danger";
+  if (pct >= 60) return "warn";
+  return "success";
 }
 
 /**
@@ -174,34 +195,13 @@ function orthologPillLabel(
 // upstream source so the chip's tooltip stays honest.
 // ---------------------------------------------------------------------------
 
-const TT_ECD_CLASS =
-  "One antibody footprint ≈ 12 ± 3 residues / 1103 ± 244 Å² buried " +
-  "(Ramaraj et al. 2012, PMID:22246133). Bands below are our heuristic " +
-  "for how many non-overlapping footprints an ECD could host " +
-  "(≈ residues ÷ 12, a loose upper bound): " +
-  "large ≥ 200 residues (≥10 non-overlapping epitopes possible); " +
-  "moderate = 60-199 (multiple epitopes, e.g. tetraspanin EC2 loops); " +
-  "small = 30-59 (2-5 candidate epitopes, harder discovery); " +
-  "minimal < 30 (1-2 epitopes max, specialized formats needed); " +
-  "none = no surface-exposed ECD (GPI / inner-leaflet).";
-
-const TT_ORTHOLOG_ID =
-  "ECD % identity to the human canonical, restricted to extracellular " +
-  "residues. Sequence homology is one criterion for a species being a " +
-  "valid pharmacological stand-in (ICH S6(R1); Chapman et al. 2007, " +
-  "PMID:17268483; Prior et al. 2020, PMID:33442468). The cutoffs below " +
-  "are our heuristic, not from the guideline: ≥85% = strong translation " +
-  "(mouse / cyno can stand in for human evidence); 60-85% = use with " +
-  "caution; < 60% = species substitution unreliable.";
-
-const TT_PARALOG_ID =
-  "Highest ECD % identity across the gene's Compara paralogs — " +
-  "antibody cross-reactivity risk. That cross-reactivity tracks " +
-  "sequence identity follows antibody-validation practice (Bordeaux " +
-  "et al. 2010, PMID:20359301; Edfors et al. 2018, PMID:30297845); " +
-  "the % bands are our heuristic: < 50% = cross-reactivity unlikely; " +
-  "50-70% = plausible (validate against paralog-KO); ≥ 70% = likely " +
-  "(paralog-discrimination required).";
+// ECD-size class tooltip now lives in `lib/tooltips` as
+// `catalog_ecd_class` — shared with the catalog so the Ramaraj footprint
+// citation + the large/moderate/small/minimal bands stay identical.
+// Ortholog + paralog tooltip bodies now live in `lib/tooltips`
+// (`ortholog_species_relevance` / `paralog_specificity`) — the SAME
+// nodes the §07 Isoforms card renders, so the cutoff bands + citations
+// can't drift between the two surfaces. Reference `tooltips.*` below.
 
 const TT_ACCESSIBILITY =
   "Synthesizer's headline call: high (clear surface presence across " +
@@ -283,6 +283,53 @@ export function FiltersCard({ rec, n }: Props) {
   // truth. Empty list / null is common — the bucket is simply omitted when
   // both lists are empty rather than shown blank.
   const es = rec.executive_summary;
+  // Distinct accessibility-modulation CATEGORIES present — the purple
+  // "Context" pills on the §03 modulation table (cell_state_induced,
+  // dual_localization, …), echoed into the panel so the reader sees WHAT
+  // KINDS of surface-accessibility modulation there's evidence for, rather
+  // than only the cell-state triggers. Drop "none" (no modulation) and
+  // "unknown" — they aren't informative chips.
+  // Drop "none" / "unknown" (not informative) AND any category that equals
+  // the headline surface_call_reason — that value is already shown as the
+  // "reason" chip at the top of this group, so repeating it as a modulation
+  // category below is redundant (e.g. reason=lysosomal_exocytosis +
+  // a lysosomal_exocytosis category chip). The reason chip wins; only
+  // ADDITIONAL distinct categories surface here.
+  const modCategories = Array.from(
+    new Set(
+      rec.biological_context.accessibility_modulation
+        .map((m) => m.category)
+        .filter(
+          (c) =>
+            c &&
+            c !== "none" &&
+            c !== "unknown" &&
+            c !== es.surface_call_reason,
+        ),
+    ),
+  );
+  // Highest-severity contradicting-evidence signal, echoed from §02 into
+  // the Accessibility-context panel group. "none" when the ledger logs no
+  // contradictions; otherwise the strongest contradiction's impact on the
+  // surface call (high > moderate > low > unclear).
+  const _contradictions = rec.surface_evidence.contradicting_evidence;
+  const _CONTRA_RANK: Record<string, number> = {
+    unclear: 0,
+    low: 1,
+    moderate: 2,
+    high: 3,
+  };
+  const maxContradictionSeverity =
+    _contradictions.length === 0
+      ? "none"
+      : _contradictions.reduce(
+          (best, c) =>
+            (_CONTRA_RANK[c.severity_for_surface_accessibility] ?? 0) >
+            (_CONTRA_RANK[best] ?? 0)
+              ? c.severity_for_surface_accessibility
+              : best,
+          _contradictions[0].severity_for_surface_accessibility as string,
+        );
   const uniprotFamilyPills: React.ReactNode[] = es.uniprot_family
     ? parseUniprotFamily(es.uniprot_family).map((seg, i) => (
         <StatusPill
@@ -321,7 +368,7 @@ export function FiltersCard({ rec, n }: Props) {
   // (now removed, since surfacing it twice was redundant). The
   // ordering inside each provenance section follows the original
   // group order so readers' eye doesn't have to re-learn the layout.
-  const groups: { label: string; provenance: "llm" | "deterministic"; pills: React.ReactNode[] }[] = [
+  const groups: { label: string; provenance: "llm" | "deterministic"; pills: React.ReactNode[]; linkTo?: string }[] = [
     // The "Accessibility" umbrella group was retired — the headline
     // accessibility / confidence / state_dependence chips already
     // render in the executive-summary chip strip up top, so showing
@@ -331,14 +378,93 @@ export function FiltersCard({ rec, n }: Props) {
     // evidence" vital up top carries `evidence_grade`, and
     // `surface_call_reason` / `evidence_density` live in the catalog
     // filters — duplicating them per-gene here was noise.
-    // The LLM "Attributes" (now "Biology"), "Expression", and "Risks"
-    // chip groups were promoted OUT of this card into three standalone
-    // top-level tabs. Each tab renders <FeatureChips category=…/> above
-    // its expanded prose/evidence card (BiologicalContextCard /
-    // ExpressionCard / AccessibilityRisksCard); the chip builders live in
-    // components/surfaceome/FeatureChips/FeatureChips.tsx. This card keeps
-    // only the deterministic registry / topology / homology readouts, so
-    // there are no more "llm"-provenance groups here.
+    //
+    // The LLM "Biology" / "Expression" / "Risks" chip groups live here
+    // (PR #47) as the single at-a-glance home for the model's rollup
+    // chips. PR #38 had promoted them out to three standalone tabs; per
+    // user feedback the chips belong in the §01 signal panel, and each
+    // tab now renders the per-chip RATIONALE (<FeatureRationales>)
+    // instead. The chip builders are the shared source of truth in
+    // components/surfaceome/FeatureChips/FeatureChips.tsx, so a panel
+    // chip and its tab rationale can't drift.
+    // Accessibility context — the §03 summary echoed into the
+    // at-a-glance panel: the deep-dive's surface-call reason, state-
+    // gating, primary compartment, and deduped modulation triggers. The
+    // one-sentence rationale rides the group InfoTip (GROUP_META below).
+    // Biology chips lead, then Accessibility context — both link to the
+    // §03 "Biology & accessibility" tab (the group headings are
+    // section-jump links). Expression + Risks follow, unlinked.
+    {
+      label: FEATURE_TAB_LABEL.biology,
+      provenance: "llm" as const,
+      linkTo: "#section-biology",
+      // The surface-call reason leads the Biology group (moved here from
+      // "Accessibility context" — it's the headline biology signal for the
+      // gene, e.g. classical_surface_receptor / lysosomal_exocytosis).
+      pills: [
+        <StatusPill key="reason" tone="lavender" size="sm">
+          <ChipLabelValue
+            label="reason"
+            value={prettyEnum(es.surface_call_reason)}
+          />
+        </StatusPill>,
+        ...buildFeatureChips("biology", rec).map((m) => m.pill),
+      ],
+    },
+    {
+      label: "Accessibility context",
+      provenance: "llm" as const,
+      linkTo: "#section-biology",
+      pills: [
+        // state_dependence omitted — already a GeneHeader vital up top.
+        <StatusPill key="primary" tone="teal" size="sm">
+          <ChipLabelValue
+            label="primary"
+            value={prettyEnum(
+              rec.biological_context.subcellular_localization
+                .primary_compartment,
+            )}
+          />
+        </StatusPill>,
+        // Highest-severity contradicting evidence against the surface call
+        // (echoed from §02). "none" = no contradictions logged.
+        <StatusPill
+          key="contradiction"
+          tone={contradictionTone(maxContradictionSeverity)}
+          size="sm"
+          title={
+            "Highest severity of contradicting evidence against the surface " +
+            "call (from §02 Surface evidence → Contradicting evidence). " +
+            "none = no contradictions in the ledger; low / moderate / high = " +
+            "the strongest contradiction's impact on the surface-accessibility " +
+            "call; unclear = logged but impact not gradable."
+          }
+        >
+          <ChipLabelValue
+            label="contradiction"
+            value={
+              maxContradictionSeverity === "none"
+                ? "none"
+                : prettyEnum(maxContradictionSeverity)
+            }
+          />
+        </StatusPill>,
+        // Distinct modulation categories (the §03 purple "Context" pills),
+        // lavender like the biology tab so the reader knows which kinds of
+        // surface modulation are evidenced.
+        ...modCategories.map((c) => (
+          <StatusPill key={`mod-${c}`} tone="lavender" size="sm">
+            {prettyEnum(c)}
+          </StatusPill>
+        )),
+      ],
+    },
+    ...(["expression", "risks"] as const).map((cat) => ({
+      label: FEATURE_TAB_LABEL[cat],
+      provenance: "llm" as const,
+      linkTo: `#section-${cat}`,
+      pills: buildFeatureChips(cat, rec).map((m) => m.pill),
+    })),
     //
     // Registry families lead the deterministic block — protein
     // classification is identity-level context that frames the
@@ -407,7 +533,7 @@ export function FiltersCard({ rec, n }: Props) {
           key="ecd"
           tone={ecdAccessibilityTone(f.ecd_accessibility_class)}
           size="sm"
-          title={TT_ECD_CLASS}
+          title={tooltips.catalog_ecd_class}
         >
           ECD · {prettyEnum(f.ecd_accessibility_class)}
         </StatusPill>,
@@ -424,23 +550,32 @@ export function FiltersCard({ rec, n }: Props) {
               key="p-none"
               tone="success"
               size="sm"
-              title={`${TT_PARALOG_ID}\n\nNo paralogs in Compara — no within-family cross-reactivity risk.`}
+              title={
+                <>
+                  {tooltips.paralog_specificity}
+                  <br />
+                  <br />
+                  No paralogs in Compara — no within-family cross-reactivity
+                  risk.
+                </>
+              }
             >
               no Compara paralogs
             </StatusPill>,
           ];
         }
-        // Per-paralog cross-reactivity tier on ECD %identity (or
-        // full-length when the protein has no ECD — ECD-less kinases /
-        // soluble proteins still get a homology-based tier). Same
-        // ≥70 (likely) / 50-70 (plausible) cutoffs as the §Paralogs card.
-        const nLikely = paralogs.filter((p) => {
+        // Per-paralog specificity tier on ECD %identity (or full-length
+        // when the protein has no ECD — ECD-less kinases / soluble
+        // proteins still get a homology-based tier). Same §07 "Paralog
+        // (specificity)" bands (HPA antigen-design practice, PMID
+        // 33170010): >80% multitarget likely, 60-80% caution.
+        const nMultitarget = paralogs.filter((p) => {
           const v = p.ecd_pct_identity ?? p.full_length_pct_identity;
-          return v != null && v >= 70;
+          return v != null && v > 80;
         }).length;
-        const nPlausible = paralogs.filter((p) => {
+        const nCaution = paralogs.filter((p) => {
           const v = p.ecd_pct_identity ?? p.full_length_pct_identity;
-          return v != null && v >= 50 && v < 70;
+          return v != null && v >= 60 && v <= 80;
         }).length;
         const out: React.ReactNode[] = [];
         if (f.max_paralog_ecd_pct_identity != null) {
@@ -449,30 +584,40 @@ export function FiltersCard({ rec, n }: Props) {
               key="p-max"
               tone={paralogIdentityTone(f.max_paralog_ecd_pct_identity)}
               size="sm"
-              title={TT_PARALOG_ID}
+              title={tooltips.paralog_specificity}
             >
-              max %ECD identity · {f.max_paralog_ecd_pct_identity.toFixed(1)}%
+              <ChipLabelValue
+                label="max %ECD identity"
+                value={`${f.max_paralog_ecd_pct_identity.toFixed(1)}%`}
+              />
             </StatusPill>,
           );
         }
         out.push(
           <StatusPill
-            key="p-likely"
-            tone={nLikely > 0 ? "danger" : "success"}
+            key="p-multitarget"
+            tone={nMultitarget > 0 ? "danger" : "success"}
             size="sm"
-            title={TT_PARALOG_ID}
+            title={tooltips.paralog_specificity}
           >
-            {nLikely} likely cross-reactive
-          </StatusPill>,
-          <StatusPill
-            key="p-plausible"
-            tone={nPlausible > 0 ? "amber" : "success"}
-            size="sm"
-            title={TT_PARALOG_ID}
-          >
-            {nPlausible} plausible
+            {nMultitarget} multitarget likely
           </StatusPill>,
         );
+        // Only surface the "caution" tier when it's non-empty — a
+        // "0 caution" chip is noise next to the max-%ECD + multitarget
+        // pills.
+        if (nCaution > 0) {
+          out.push(
+            <StatusPill
+              key="p-caution"
+              tone="amber"
+              size="sm"
+              title={tooltips.paralog_specificity}
+            >
+              {nCaution} caution
+            </StatusPill>,
+          );
+        }
         return out;
       })(),
     },
@@ -486,19 +631,41 @@ export function FiltersCard({ rec, n }: Props) {
           size="sm"
           // `mousePill.title` is the per-row note ("no Compara
           // ortholog", "fell back to full-length identity, etc.").
-          // Stack the general-rationale tooltip behind it via a
-          // newline so both are visible on hover.
-          title={mousePill.title ? `${TT_ORTHOLOG_ID}\n\n${mousePill.title}` : TT_ORTHOLOG_ID}
+          // Stack the shared general-rationale tooltip in front of it so
+          // both are visible on hover.
+          title={
+            mousePill.title ? (
+              <>
+                {tooltips.ortholog_species_relevance}
+                <br />
+                <br />
+                {mousePill.title}
+              </>
+            ) : (
+              tooltips.ortholog_species_relevance
+            )
+          }
         >
-          mouse · {mousePill.text}
+          <ChipLabelValue label="mouse" value={mousePill.text} />
         </StatusPill>,
         <StatusPill
           key="c"
           tone={cynoPill.tone}
           size="sm"
-          title={cynoPill.title ? `${TT_ORTHOLOG_ID}\n\n${cynoPill.title}` : TT_ORTHOLOG_ID}
+          title={
+            cynoPill.title ? (
+              <>
+                {tooltips.ortholog_species_relevance}
+                <br />
+                <br />
+                {cynoPill.title}
+              </>
+            ) : (
+              tooltips.ortholog_species_relevance
+            )
+          }
         >
-          cyno · {cynoPill.text}
+          <ChipLabelValue label="cyno" value={cynoPill.text} />
         </StatusPill>,
       ],
     },
@@ -518,12 +685,23 @@ export function FiltersCard({ rec, n }: Props) {
       //   3. scored_with_sites: real targetability data
       pills: (() => {
         const sb = rec.deterministic_features.surface_bind;
-        // Ramaraj 2012 typical antibody-antigen interface = 1,103 ± 244
-        // Å² (see SurfaceBindSite.area_a2). Count EC sites whose buried
-        // area reaches that footprint — patches genuinely antibody-sized.
-        const TYPICAL_INTERFACE_A2 = 1103;
-        const nAtTypical = sb.sites.filter(
-          (s) => s.area_a2 >= TYPICAL_INTERFACE_A2,
+        // SURFACE-Bind scores patches on the whole-protein AF2 model and
+        // only strips the TM region, so cytoplasmic patches survive (e.g.
+        // EGFR's kinase domain). Restrict the count to extracellular-
+        // anchored sites — the antibody-accessible ones — so the "EC
+        // sites" label is honest. The shared helper keeps this in lockstep
+        // with the §SURFACE-Bind table's per-site "Side" column.
+        const ec = ecSites(
+          sb.sites,
+          rec.deterministic_features.canonical_topology.per_residue_topology,
+        );
+        const ecCount = ec.length;
+        // Count EC sites whose buried area reaches the typical
+        // antibody-antigen footprint — patches genuinely antibody-sized.
+        // The threshold is the shared Ramaraj 2012 constant so code +
+        // tooltip prose can't disagree on the number.
+        const nAtTypical = ec.filter(
+          (s) => s.area_a2 >= TYPICAL_ANTIBODY_INTERFACE_A2,
         ).length;
         if (!sb.has_data) {
           return [
@@ -545,7 +723,21 @@ export function FiltersCard({ rec, n }: Props) {
               size="sm"
               title="Scored by SURFACE-Bind, but no surface patches cleared the MaSIF targetability threshold."
             >
-              scored · no patches
+              <ChipLabelValue label="scored" value="no patches" />
+            </StatusPill>,
+          ];
+        }
+        if (ecCount === 0) {
+          return [
+            <StatusPill
+              key="sb-no-ec"
+              tone="danger"
+              size="sm"
+              title={`Scored ${sb.n_sites} surface patch${
+                sb.n_sites === 1 ? "" : "es"
+              }, but every anchor sits on an intracellular / membrane face — none are extracellular, so none are reachable by a systemic antibody.`}
+            >
+              0 EC sites
             </StatusPill>,
           ];
         }
@@ -554,9 +746,15 @@ export function FiltersCard({ rec, n }: Props) {
             key="sb-sites"
             tone="success"
             size="sm"
-            title="Extracellular surface patches SURFACE-Bind's MaSIF model scored as designable binder sites."
+            title={`Extracellular surface patches SURFACE-Bind's MaSIF model scored as designable binder sites${
+              ecCount < sb.n_sites
+                ? ` (${sb.n_sites} scored in total; ${
+                    sb.n_sites - ecCount
+                  } anchor on intracellular / membrane faces and are excluded)`
+                : ""
+            }.`}
           >
-            {sb.n_sites} EC site{sb.n_sites === 1 ? "" : "s"}
+            {ecCount} EC site{ecCount === 1 ? "" : "s"}
           </StatusPill>,
           <StatusPill
             key="sb-typical"
@@ -586,8 +784,18 @@ export function FiltersCard({ rec, n }: Props) {
   // ------------------------------------------------------------
   const GROUP_META: Record<
     string,
-    { title: string; links?: { href: string; label: string }[] }
+    { title: React.ReactNode; links?: { href: string; label: string }[] }
   > = {
+    // One-sentence accessibility-context rationale on the group InfoTip —
+    // only when the synthesizer authored it (older records render the
+    // chips with no tooltip until re-annotated).
+    ...(es.accessibility_context_summary
+      ? {
+          "Accessibility context": {
+            title: es.accessibility_context_summary,
+          },
+        }
+      : {}),
     "Family & gene group": {
       title:
         "Registry classification from two deterministic sources: " +
@@ -636,27 +844,20 @@ export function FiltersCard({ rec, n }: Props) {
     // No "Risks" entry — the overarching group InfoTip was dropped per
     // user feedback; each risk chip carries its own tooltip and the
     // §Risks card below covers the supporting evidence.
+    // Shared with the §07 "Ortholog (species relevance)" InfoTip via
+    // `lib/tooltips` so the bands + framing can't drift. Compara is the
+    // data source.
     "Cross-species": {
-      title:
-        "Mouse + cynomolgus ortholog %ECD identity to the human " +
-        "canonical (or full-length fallback when the human protein " +
-        "has no ECD). Cutoffs from ICH S6(R1) biologics-preclinical " +
-        "practice: ≥85% = strong pharmacological translation; " +
-        "60-85% = use with caution; <60% = species substitution " +
-        "unreliable. Source: Ensembl Compara.",
+      title: tooltips.ortholog_species_relevance,
       links: [
         { href: "https://www.ensembl.org/info/genome/compara/index.html", label: "Ensembl Compara" },
       ],
     },
+    // Shared with the §07 "Paralog (specificity)" InfoTip via
+    // `lib/tooltips` (HPA PMID 33170010 link is inline in that node);
+    // Compara is the data source.
     Paralogs: {
-      title:
-        "Highest ECD %identity across the gene's Compara paralogs — " +
-        "the antibody cross-reactivity risk. That cross-reactivity " +
-        "tracks sequence identity follows antibody-validation practice " +
-        "(Bordeaux 2010, PMID:20359301; Edfors 2018, PMID:30297845); " +
-        "the % bands are our heuristic: <50% = cross-reactivity " +
-        "unlikely; 50-70% = plausible (validate against paralog-KO); " +
-        "≥70% = likely (paralog-discrimination required).",
+      title: tooltips.paralog_specificity,
       links: [
         { href: "https://www.ensembl.org/info/genome/compara/index.html", label: "Ensembl Compara" },
       ],
@@ -675,22 +876,25 @@ export function FiltersCard({ rec, n }: Props) {
       ],
     },
     "Candidate sites": {
+      // PMIDs + the typical-interface number come from `lib/citations`
+      // so they can't drift from the SURFACE-Bind chip, the 3D viewer
+      // caption, or the site-size logic above.
       title:
-        "SURFACE-Bind (Correia lab, Balbi et al. 2026, PMID 41604262, " +
-        "PNAS) scores extracellular surface patches for designability " +
-        "by de novo protein binders. Each EC site is a patch where its " +
-        "MaSIF model found geometry / chemistry compatible with a " +
-        "designable binder; '≥ typical interface' counts the patches " +
-        "whose buried area reaches the ~1,103 Å² typical antibody-" +
-        "antigen footprint (Ramaraj et al. 2012, PMID 22246133).",
+        `SURFACE-Bind (Correia lab, ${CITATIONS.surfaceBind.authorYear}, ` +
+        `PMID ${CITATIONS.surfaceBind.pmid}, PNAS) scores extracellular ` +
+        "surface patches for designability by de novo protein binders. " +
+        "Each EC site is a patch where its MaSIF model found geometry / " +
+        "chemistry compatible with a designable binder; '≥ typical " +
+        "interface' counts the patches whose buried area reaches the " +
+        `~${TYPICAL_ANTIBODY_INTERFACE_A2.toLocaleString()} Å² typical ` +
+        `antibody-antigen footprint (${CITATIONS.antibodyInterface.authorYear}, ` +
+        `PMID ${CITATIONS.antibodyInterface.pmid}).`,
       links: [
         { href: "https://surface-bind.inria.fr/", label: "SURFACE-Bind" },
         {
-          // PubMed PMID 41604262 — same source the 3D viewer's
-          // sites-mode caption cites. Author + year format
-          // mirrored across both surfaces.
-          href: "https://pubmed.ncbi.nlm.nih.gov/41604262/",
-          label: "Balbi et al · 2026",
+          // Same source the 3D viewer's sites-mode caption cites.
+          href: pubmedUrl(CITATIONS.surfaceBind.pmid),
+          label: `${CITATIONS.surfaceBind.authorYear}`,
         },
       ],
     },
@@ -707,7 +911,17 @@ export function FiltersCard({ rec, n }: Props) {
     return (
       <div key={g.label} className={styles.group}>
         <p className={`label-mono ${styles.groupLabel}`}>
-          <span>{g.label}</span>
+          {/* When the group maps to a tab (Biology / Accessibility
+              context → §03), render the heading as a section-jump link.
+              The `#section-<id>` hash is what <SectionTabs> listens for to
+              switch the active tab. */}
+          {g.linkTo ? (
+            <a href={g.linkTo} className={styles.groupLabelLink}>
+              {g.label}
+            </a>
+          ) : (
+            <span>{g.label}</span>
+          )}
           {/* InfoTip with the same prose the native title carried
               before — but readable on click instead of fleeting on
               hover. Spells out the cutoffs + rationale (Cross-species
@@ -719,19 +933,27 @@ export function FiltersCard({ rec, n }: Props) {
               {meta.title}
             </InfoTip>
           ) : null}
-          {meta?.links?.map((l) => (
-            <a
-              key={l.href}
-              href={l.href}
-              target="_blank"
-              rel="noopener noreferrer"
-              className={styles.groupLink}
-              title={`Open ${l.label} in a new tab`}
-            >
-              {l.label} ↗
-            </a>
-          ))}
         </p>
+        {/* Source links on their own compact sub-row directly under the
+            header label — keeps the header line short (label + ⓘ only)
+            instead of letting "UniProt ↗ HGNC gene groups ↗ …" sprawl it
+            into a tall wrapping block. */}
+        {meta?.links && meta.links.length > 0 ? (
+          <p className={styles.groupLinks}>
+            {meta.links.map((l) => (
+              <a
+                key={l.href}
+                href={l.href}
+                target="_blank"
+                rel="noopener noreferrer"
+                className={styles.groupLink}
+                title={`Open ${l.label} in a new tab`}
+              >
+                {l.label} ↗
+              </a>
+            ))}
+          </p>
+        ) : null}
         <ul className={styles.pills}>
           {g.pills
             // Drop any nulls before rendering — some groups
@@ -765,7 +987,13 @@ export function FiltersCard({ rec, n }: Props) {
       {llmGroups.length > 0 ? (
         <>
           <p className={`label-mono ${styles.provenanceHeading}`}>LLM-driven</p>
-          <div className={styles.groups}>{llmGroups.map(renderGroup)}</div>
+          {/* groupsStacked → one chip per row, same as the Deterministic
+              section, so the Expression chips (level / breadth / OE /
+              low-endogenous) each read on their own line instead of
+              wrapping into a ragged grid. */}
+          <div className={`${styles.groups} ${styles.groupsStacked}`}>
+            {llmGroups.map(renderGroup)}
+          </div>
         </>
       ) : null}
 
@@ -774,7 +1002,9 @@ export function FiltersCard({ rec, n }: Props) {
        *  block + isoform cards), Ensembl Compara orthologs +
        *  paralogs, MaSIF / SURFACE-Bind targetability. */}
       <p className={`label-mono ${styles.provenanceHeading}`}>Deterministic</p>
-      <div className={styles.groups}>{detGroups.map(renderGroup)}</div>
+      <div className={`${styles.groups} ${styles.groupsStacked}`}>
+        {detGroups.map(renderGroup)}
+      </div>
     </SectionCard>
   );
 }

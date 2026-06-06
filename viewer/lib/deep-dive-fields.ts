@@ -32,7 +32,13 @@ export type DdEnumKey =
   | "expression_level"
   | "expression_breadth"
   | "surface_specificity"
-  | "co_receptor_dependency";
+  | "co_receptor_dependency"
+  // Derived ECD-identity bands (binned from the numeric *_ecd_pct_identity
+  // record fields in pickDeepDiveFilters / the Worker).
+  | "cyno_ortholog_ecd"
+  | "mouse_ortholog_ecd"
+  | "max_paralog_ecd"
+  | "induction_trigger";
 
 export type DdBoolKey =
   | "has_known_ligand"
@@ -41,8 +47,11 @@ export type DdBoolKey =
   | "has_shed_form"
   | "has_secreted_form"
   | "has_epitope_masking"
+  | "has_restricted_subdomain"
   | "n_term_extracellular"
-  | "c_term_extracellular";
+  | "c_term_extracellular"
+  | "tumor_associated"
+  | "has_live_cell_surface_evidence";
 
 /**
  * Provenance bucket used by the catalog filter panel to partition
@@ -260,6 +269,75 @@ export const DD_ENUM_FIELDS: readonly DdEnumSpec[] = [
     provenance: "llm",
     isRisk: true,
   },
+  // Cross-species + paralog ECD %-identity bands. The numeric source fields
+  // aren't catalog facets; the binned band is (derived in
+  // `pickDeepDiveFilters` / the Worker via `ecdBand`).
+  {
+    key: "cyno_ortholog_ecd",
+    label: "Cyno ECD identity",
+    values: ["high", "moderate", "low", "none"],
+    valueLabels: {
+      high: "≥90% (cross-reactive)",
+      moderate: "70–90%",
+      low: "<70%",
+      none: "No cyno ortholog",
+    },
+    tooltipKey: "catalog_cyno_ecd",
+    provenance: "deterministic",
+  },
+  {
+    key: "mouse_ortholog_ecd",
+    label: "Mouse ECD identity",
+    values: ["high", "moderate", "low", "none"],
+    valueLabels: {
+      high: "≥90% (cross-reactive)",
+      moderate: "70–90%",
+      low: "<70%",
+      none: "No mouse ortholog",
+    },
+    tooltipKey: "catalog_mouse_ecd",
+    provenance: "deterministic",
+  },
+  {
+    key: "max_paralog_ecd",
+    label: "Paralog ECD identity",
+    values: ["high", "moderate", "low", "none"],
+    valueLabels: {
+      high: "≥70% (cross-reactivity risk)",
+      moderate: "40–70%",
+      low: "<40%",
+      none: "No paralog",
+    },
+    tooltipKey: "catalog_paralog_ecd",
+    provenance: "deterministic",
+  },
+  // Dominant induction trigger (deep-block rollup from
+  // accessibility_modulation.cell_state_trigger). surface_call_reason is
+  // the mechanism; this is the stimulus that surfaces it.
+  {
+    key: "induction_trigger",
+    label: "Induction trigger",
+    values: [
+      "none",
+      "oncogenic",
+      "immune",
+      "stress_hypoxia",
+      "cell_death",
+      "infection",
+      "other",
+    ],
+    valueLabels: {
+      none: "Not induced",
+      oncogenic: "Oncogenic transformation",
+      immune: "Immune activation",
+      stress_hypoxia: "Stress / hypoxia",
+      cell_death: "Cell death (apoptosis/necroptosis)",
+      infection: "Infection",
+      other: "Other",
+    },
+    tooltipKey: "catalog_induction_trigger",
+    provenance: "llm",
+  },
 ];
 
 export const DD_BOOL_FIELDS: readonly DdBoolSpec[] = [
@@ -304,6 +382,13 @@ export const DD_BOOL_FIELDS: readonly DdBoolSpec[] = [
     isRisk: true,
   },
   {
+    key: "has_restricted_subdomain",
+    label: "Restricted subdomain",
+    tooltipKey: "catalog_restricted_subdomain",
+    provenance: "llm",
+    isRisk: true,
+  },
+  {
     key: "n_term_extracellular",
     label: "N-term extracellular",
     tooltipKey: "catalog_n_term_extracellular",
@@ -314,6 +399,20 @@ export const DD_BOOL_FIELDS: readonly DdBoolSpec[] = [
     label: "C-term extracellular",
     tooltipKey: "catalog_c_term_extracellular",
     provenance: "deterministic",
+  },
+  // Deep-block rollups (from biological_context.tissues /
+  // surface_evidence.methods).
+  {
+    key: "tumor_associated",
+    label: "Tumor-associated",
+    tooltipKey: "catalog_tumor_associated",
+    provenance: "llm",
+  },
+  {
+    key: "has_live_cell_surface_evidence",
+    label: "Live-cell surface evidence",
+    tooltipKey: "catalog_live_cell_evidence",
+    provenance: "llm",
   },
 ];
 
@@ -327,6 +426,34 @@ export const DD_BOOL_FIELDS: readonly DdBoolSpec[] = [
  * enrichment (so their groups simply don't render). Returns `undefined`
  * when nothing maps, so the caller can skip attaching an empty object.
  */
+/** Bin an ECD %-identity into a coarse band. `null` (no ortholog / paralog
+ *  in Compara) → "none". MUST stay in sync with the Worker's
+ *  `projectDeepDiveFilters` (cloudflare/workers/surfaceome_api/src/index.js). */
+export function ecdBand(
+  pct: number | null | undefined,
+  hi: number,
+  mid: number,
+): "high" | "moderate" | "low" | "none" {
+  if (pct == null) return "none";
+  if (pct >= hi) return "high";
+  if (pct >= mid) return "moderate";
+  return "low";
+}
+
+/** Derived ECD-band fields and the numeric record field each bins from.
+ *  Cross-species use 90/70 (preclinical-model cross-reactivity); paralog
+ *  uses 70/40 (off-target cross-reactivity risk). */
+const ECD_BAND_SOURCES: readonly {
+  key: DdEnumKey;
+  source: string;
+  hi: number;
+  mid: number;
+}[] = [
+  { key: "cyno_ortholog_ecd", source: "cyno_ortholog_ecd_pct_identity", hi: 90, mid: 70 },
+  { key: "mouse_ortholog_ecd", source: "mouse_ortholog_ecd_pct_identity", hi: 90, mid: 70 },
+  { key: "max_paralog_ecd", source: "max_paralog_ecd_pct_identity", hi: 70, mid: 40 },
+];
+
 export function pickDeepDiveFilters(
   filters: Record<string, unknown> | null | undefined,
 ): Record<string, unknown> | undefined {
@@ -337,6 +464,13 @@ export function pickDeepDiveFilters(
   }
   for (const f of DD_BOOL_FIELDS) {
     if (typeof filters[f.key] === "boolean") out[f.key] = filters[f.key];
+  }
+  // Derived ECD bands — the numeric source lives in the record's filters
+  // block; the band (not the float) is the catalog/compare facet.
+  for (const b of ECD_BAND_SOURCES) {
+    if (b.source in filters) {
+      out[b.key] = ecdBand(filters[b.source] as number | null, b.hi, b.mid);
+    }
   }
   return Object.keys(out).length > 0 ? out : undefined;
 }

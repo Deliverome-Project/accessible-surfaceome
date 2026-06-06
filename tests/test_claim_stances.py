@@ -107,7 +107,6 @@ def test_surface_evidence_has_claim_stances_default_empty():
         methods=[],
         non_surface_expression=[],
         contradicting_evidence=[],
-        therapeutic_engagement=None,
     )
     assert se.claim_stances == []
 
@@ -121,7 +120,6 @@ def test_surface_evidence_accepts_claim_stances():
         methods=[],
         non_surface_expression=[],
         contradicting_evidence=[],
-        therapeutic_engagement=None,
         claim_stances=[
             ClaimStanceRow(
                 claim_id="a1_evi_01", stance="supports_surface", weight="high"
@@ -285,7 +283,7 @@ def _risks() -> AccessibilityRisks:
 
 def _bio_ctx() -> BiologicalContext:
     return BiologicalContext(
-        tissues=[], cell_types=[], cell_states=[],
+        expression=[], cell_states=[],
         subcellular_localization=SubcellularLocalization(
             primary_compartment="plasma_membrane",
             dual_localization=[], membrane_subdomains=[],
@@ -298,8 +296,12 @@ def _bio_ctx() -> BiologicalContext:
 def _llm_filters() -> SynthesizerLLMFilters:
     return SynthesizerLLMFilters(
         expression_level="moderate",
+        expression_level_rationale="moderate in epithelial tissues",
         expression_breadth="broad",
+        expression_breadth_rationale="detected across several tissue families",
         surface_specificity="surface_dominant",
+        surface_specificity_rationale="predominantly plasma-membrane localized",
+        has_known_ligand_rationale="binds a documented endogenous ligand",
     )
 
 
@@ -433,7 +435,6 @@ def test_overexpression_filter_true_when_oe_plus_direct_surface():
         )],
         "non_surface_expression": [],
         "contradicting_evidence": [],
-        "therapeutic_engagement": None,
         "claim_stances": [],
     })
     filters = _derive_filters(
@@ -461,7 +462,6 @@ def test_overexpression_filter_true_for_mixed_expression_system():
         )],
         "non_surface_expression": [],
         "contradicting_evidence": [],
-        "therapeutic_engagement": None,
         "claim_stances": [],
     })
     filters = _derive_filters(
@@ -489,7 +489,6 @@ def test_overexpression_filter_false_when_endogenous_only():
         )],
         "non_surface_expression": [],
         "contradicting_evidence": [],
-        "therapeutic_engagement": None,
         "claim_stances": [],
     })
     filters = _derive_filters(
@@ -516,7 +515,6 @@ def test_overexpression_filter_false_when_oe_without_surface_localization():
         )],
         "non_surface_expression": [],
         "contradicting_evidence": [],
-        "therapeutic_engagement": None,
         "claim_stances": [],
     })
     filters = _derive_filters(
@@ -540,7 +538,6 @@ def test_overexpression_filter_false_when_no_methods():
         "methods": [],
         "non_surface_expression": [],
         "contradicting_evidence": [],
-        "therapeutic_engagement": None,
         "claim_stances": [],
     })
     filters = _derive_filters(

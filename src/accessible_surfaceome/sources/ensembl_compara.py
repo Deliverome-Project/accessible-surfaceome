@@ -161,7 +161,20 @@ def _detect_delimiter(path: Path) -> str:
     return ","
 
 
-_GENE_SYMBOL_COLS = ("gene_symbol", "gene_symbol_resolved", "gene_symbol_input", "symbol")
+# Also accept the columns the topology-sweep candidate set
+# (build_topology_candidate_set.py) emits — so the ortholog + paralog
+# producers can be pointed at the union cohort
+# (data/processed/topology_run_<v>/candidate_accessions.tsv) directly via
+# --input-csv, not just the DB-surface candidate_universe.tsv. Appended last
+# so existing inputs keep picking their canonical gene_symbol column.
+_GENE_SYMBOL_COLS = (
+    "gene_symbol",
+    "gene_symbol_resolved",
+    "gene_symbol_input",
+    "symbol",
+    "cohort_symbol",
+    "hgnc_symbol",
+)
 _UNIPROT_COLS = ("uniprot_accession", "uniprot_acc", "uniprot_id")
 _ENSEMBL_COLS = ("ensembl_gene_id", "ensembl_gene", "ensembl_gene_ids")
 

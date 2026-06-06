@@ -18,10 +18,10 @@
   flex-direction: column;
   gap: var(--space-4);
   /* Width matches the grid template's intrinsic sum exactly
-   * (12 + 8 + 3.6 + 4.2 + 3 + 4 + 3.6 + 3 + 7.8 + 8.5 + 7.2 ≈ 65.9rem)
+   * (12 + 8 + 12 + 3.6 + 4.2 + 3 + 4 + 3.6 + 3 + 7.8 + 8.5 + 7.2 ≈ 76.9rem)
    * so rows end flush with the Opus column instead of trailing
    * whitespace. Left-aligned (no margin-inline: auto). */
-  max-width: 67rem;
+  max-width: 78rem;
   width: 100%;
 }
 
@@ -678,6 +678,25 @@
   overflow: hidden;
 }
 
+/* Ground-truth reason column — the curated TriageReason label
+ * (prettyEnum-formatted). Single-line, truncates with an ellipsis;
+ * the full label is on the cell's title tooltip. Reads as sans data
+ * text (not a mono code) so it sits comfortably next to the verdict
+ * pill it explains. */
+.reasonCell {
+  overflow: hidden;
+}
+
+.reasonText {
+  font-family: var(--font-sans);
+  font-size: 0.78rem;
+  color: var(--ink-soft);
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  overflow: hidden;
+  max-width: 100%;
+}
+
 .dim {
   color: var(--line);
   font-family: var(--font-mono);
@@ -1094,6 +1113,37 @@
   font-size: 0.88rem;
   font-style: italic;
   color: var(--muted);
+}
+
+/* Per-replicate reasons — collapsible block below the majority reason.
+   The reader sees the majority call first; scrolling into this reveals
+   each replicate's own verdict + reasoning. */
+.drawerReps {
+  margin: var(--space-3) 0 0;
+  border-top: 1px solid var(--border, #E6DAD4);
+  padding-top: var(--space-2);
+}
+.drawerReps > summary {
+  cursor: pointer;
+  font-size: 0.82rem;
+  color: var(--muted);
+  user-select: none;
+}
+.drawerRep {
+  margin: var(--space-2) 0 0;
+  padding-left: var(--space-2);
+  border-left: 2px solid var(--border, #E6DAD4);
+}
+.drawerRepHead {
+  margin: 0;
+  font-size: 0.82rem;
+  color: var(--ink);
+}
+.drawerRepReasoning {
+  margin: 2px 0 0;
+  font-size: 0.9rem;
+  line-height: 1.5;
+  color: var(--ink);
 }
 
 .drawerMeta {

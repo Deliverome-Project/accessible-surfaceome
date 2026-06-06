@@ -16,6 +16,7 @@ import { ExpressionCard } from "../../components/surfaceome/ExpressionCard/Expre
 import { FEATURE_TAB_LABEL } from "../../components/surfaceome/FeatureChips/FeatureChips";
 import { FiltersCard } from "../../components/surfaceome/FiltersCard/FiltersCard";
 import { GeneHeader } from "../../components/surfaceome/GeneHeader/GeneHeader";
+import { GeneJump } from "../../components/surfaceome/GeneJump/GeneJump";
 // IsoformsCard now subsumes the old standalone OrthologsCard +
 // ParalogsCard — three section tabs collapsed to one ("Isoforms ·
 // orthologs · paralogs").
@@ -24,6 +25,7 @@ import { SurfaceBindCard } from "../../components/surfaceome/SurfaceBindCard/Sur
 import { SurfaceEvidenceCard } from "../../components/surfaceome/SurfaceEvidenceCard/SurfaceEvidenceCard";
 import {
   listSurfaceomeGenes,
+  loadBenchmarkRow,
   loadCatalogRow,
   loadGeneName,
   loadSurfaceomeRecord,
@@ -102,6 +104,21 @@ export default async function GenePage({ params }: PageProps) {
   // card is omitted in that case rather than rendered with a stub.
   const catalogRow = await loadCatalogRow(rec.gene.hgnc_symbol);
 
+  // Benchmark membership — when this gene is one of the ~147 SurfaceBench
+  // members, its curated ground-truth verdict renders ABOVE the triage row
+  // in the header (the benchmark's hand-curated call is the strongest
+  // reference point, so it sits above the model's first-pass triage).
+  // `null` for the ~19k non-benchmark genes (the common case), and under
+  // SURFACEOME_API_BASE=local (empty matrix) — the row simply doesn't show.
+  const benchmarkRow = await loadBenchmarkRow(rec.gene.hgnc_symbol);
+
+  // Deep-dive gene symbols for the toolbar's <GeneJump> typeahead — the
+  // SAME set generateStaticParams emits, so every suggestion resolves to a
+  // real statically-generated page (a non-deep-dive symbol would 404 under
+  // output: export). Memoized in listSurfaceomeGenes, so this is one Worker
+  // call per build, not per page.
+  const deepDiveGenes = await listSurfaceomeGenes();
+
   // v1.0.0 section order mirrors the EGFR mockup in
   // docs/plans/2026-05-13-deep-dive-redesign-surface-accessibility.md.
   // The 3D structure viewer + AFDB pLDDT / disordered-fraction stats
@@ -141,8 +158,16 @@ export default async function GenePage({ params }: PageProps) {
     // is asserted by viewer/tests/verify_feature_tabs.py via the
     // data-section-id / data-feature-chips attributes).
     {
+      // Tab label intentionally diverges from `FEATURE_TAB_LABEL.biology`
+      // ("Biology") — this §03 tab covers the biology chips AND the
+      // accessibility-context block, so the tab reads "Biology &
+      // accessibility". The §01 panel still labels its chip group
+      // "Biology" (FEATURE_TAB_LABEL.biology), and both that group and the
+      // "Accessibility context" group link here via `#section-biology`.
+      // The `kind`/`data-section-id` stays "biology" so the anchor +
+      // verify_feature_tabs.py runtime check are unaffected.
       kind: "biology",
-      label: FEATURE_TAB_LABEL.biology,
+      label: "Biology & accessibility",
       render: (n) => <BiologicalContextCard rec={rec} n={n} />,
     },
     {
@@ -185,12 +210,12 @@ export default async function GenePage({ params }: PageProps) {
     // under its own subhead) but the tab strip is three slots shorter.
     {
       kind: "isoforms",
-      label: "Isoforms · orthologs · paralogs",
+      label: "Isoforms & homologs",
       render: (n) => <IsoformsCard rec={rec} n={n} />,
     },
     {
       kind: "ledger",
-      label: "Evidence ledger",
+      label: "Evidence",
       render: (n) => <EvidenceLedgerCard rec={rec} n={n} />,
     },
     {
@@ -234,10 +259,13 @@ export default async function GenePage({ params }: PageProps) {
           >
             ←
           </Link>
+          {/* Jump to another gene's deep dive without going back to the
+              catalog table. Suggestions are the deep-dive set only. */}
+          <GeneJump genes={deepDiveGenes} current={rec.gene.hgnc_symbol} />
           <span className={styles.crumbActions}>
             <a
               className={styles.crumbAction}
-              data-hint="Canonical record, served live from the public Worker (D1). Everything on this page is rendered from it."
+              data-hint="The complete machine-readable record for this gene (JSON) — the live, canonical data everything on this page is rendered from."
               href={`https://api.deliverome.org/surfaceome/v1/genes/${rec.gene.hgnc_symbol}`}
               target="_blank"
               rel="noopener noreferrer"
@@ -246,7 +274,7 @@ export default async function GenePage({ params }: PageProps) {
             </a>
             <a
               className={styles.crumbAction}
-              data-hint="Markdown export of the same record + the full UniProt canonical sequence + per-residue DeepTMHMM topology for canonical and every alternative isoform + a link to the live AlphaFold DB entry."
+              data-hint="Full Markdown export — the complete record plus reanalysis extras not in the JSON: canonical, isoform & cross-species ortholog sequences, per-residue membrane topology (DeepTMHMM), and AlphaFold model download links."
               href={`/data/surfaceome/${rec.gene.hgnc_symbol}.md`}
               target="_blank"
               rel="noopener noreferrer"
@@ -262,6 +290,7 @@ export default async function GenePage({ params }: PageProps) {
             geneName={geneName}
             structureData={structureData}
             catalogRow={catalogRow}
+            benchmarkRow={benchmarkRow}
           />
         </Reveal>
 
@@ -282,7 +311,19 @@ export default async function GenePage({ params }: PageProps) {
               id={`section-${s.kind}`}
               data-section-id={s.kind}
             >
-              <Reveal>{s.render(i + 1)}</Reveal>
+              {/* No <Reveal> wrapper here. Inactive tab panels are
+               *  `display:none` (see SectionTabs), and an
+               *  IntersectionObserver never fires for a display:none
+               *  element — so a Reveal-wrapped panel stayed stranded at
+               *  `opacity:0` when its tab was selected (the content was
+               *  in the DOM but invisible: "evidence/ledger not
+               *  rendering / impossibly slow to view"). Tab panels are
+               *  swapped, not scrolled into view, so the scroll-fade was
+               *  the wrong primitive — render the section directly at
+               *  full opacity. The GeneHeader above keeps its <Reveal>:
+               *  it's always in-flow + above the fold, so its observer
+               *  fires on mount. */}
+              {s.render(i + 1)}
             </section>
           ))}
         </SectionTabs>

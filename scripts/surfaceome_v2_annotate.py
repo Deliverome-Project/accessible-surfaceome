@@ -24,6 +24,7 @@ from pathlib import Path
 
 from accessible_surfaceome.agents.surfaceome_v2 import annotate
 from accessible_surfaceome.agents.surfaceome_v2.orchestrator import write_summary_meta
+from accessible_surfaceome.cloud.surface_annotation import publish_record
 from accessible_surfaceome.env import load_env
 
 
@@ -37,8 +38,20 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("gene", help="Gene symbol / HGNC ID / UniProt acc")
     parser.add_argument(
         "--persist",
-        action="store_true",
-        help="Write the assembled record to data/annotations/{symbol}.json",
+        action=argparse.BooleanOptionalAction,
+        default=True,
+        help="Write the assembled record to data/annotations/{symbol}.json "
+        "(default on; --no-persist to skip).",
+    )
+    parser.add_argument(
+        "--publish",
+        action=argparse.BooleanOptionalAction,
+        default=True,
+        help="After a valid record, publish it to the viewer snapshot "
+        "(viewer/public/data/surfaceome/{symbol}.json) and public D1 so the "
+        "Worker + viewer serve it immediately (default on; --no-publish to "
+        "skip). The D1 push auto-skips with a warning when CLOUDFLARE_* env "
+        "vars are absent.",
     )
     args = parser.parse_args(argv)
 
@@ -96,6 +109,15 @@ def main(argv: list[str] | None = None) -> int:
 
     meta_out = write_summary_meta(result)
 
+    # Publish-by-default: a valid record goes to the viewer snapshot +
+    # public D1 so the Worker and viewer serve the fresh record
+    # immediately (no manual sync step). The D1 push auto-skips with a
+    # warning when CLOUDFLARE_* env vars are absent, so CI / offline runs
+    # still succeed. Opt out with --no-publish.
+    publish_result = None
+    if args.publish and result.record is not None:
+        publish_result = publish_record(result.record, push_to_d1=True)
+
     print()
     print(f"gene:        {result.gene}")
     print(f"record:      {'VALID' if result.record is not None else 'INVALID'}")
@@ -137,6 +159,19 @@ def main(argv: list[str] | None = None) -> int:
     print(f"meta_out:    {meta_out}")
     if result.annotation_path is not None:
         print(f"persisted:   {result.annotation_path}")
+    if publish_result is not None:
+        print(f"published:   snapshot={publish_result.snapshot_path}")
+        if publish_result.skipped_reason:
+            print(f"             D1 push SKIPPED — {publish_result.skipped_reason}")
+        else:
+            print(
+                f"             D1 push={'OK' if publish_result.d1_written else 'FAILED'}"
+                + (
+                    f" (dropped stale {publish_result.stale_versions_dropped})"
+                    if publish_result.stale_versions_dropped
+                    else ""
+                )
+            )
     return 0 if result.record is not None else 1
 
 

@@ -102,7 +102,7 @@ def _apply_schema(d1: D1Client) -> None:
     text = SCHEMA_PATH.read_text()
     # Pull only the SURFACE-Bind block — the rest of the schema may
     # have been applied separately.
-    marker = "-- SURFACE-Bind (Marchand et al. 2026 PNAS"
+    marker = "-- SURFACE-Bind (Balbi et al. 2026 PNAS"
     idx = text.find(marker)
     if idx < 0:
         raise SystemExit("could not find SURFACE-Bind section in d1_public_schema.sql")

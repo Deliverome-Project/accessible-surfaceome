@@ -15,7 +15,7 @@ When a UniProt accession isn't in the summary, returns a default
 "not in SURFACE-Bind" signal that the catalog can filter on.
 
 References:
-    Marchand A, Khakzad H, et al. Mapping targetable sites on the
+    Balbi PEM, Sadek A, Marchand A, et al. Mapping targetable sites on the
     human surfaceome for the design of novel binders. PNAS 2026.
     https://doi.org/10.1073/pnas.2506269123
 """

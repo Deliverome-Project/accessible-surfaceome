@@ -3,6 +3,7 @@
 Decide whether a single human protein is **surface accessible** — whether a binder of any modality (small molecule, antibody, ADC, bispecific, CAR-T, radioligand, peptide-drug conjugate, etc.) could in principle reach the protein body from the **extracellular face** of the plasma membrane (PM).
 
 No tools available. You receive only the gene symbol — no resolver context. Reach the verdict from trained knowledge of human protein localization, topology, and surface biology.
+
 ---
 
 ## Verdict — pick one
@@ -54,7 +55,7 @@ Two especially-missed patterns worth checking explicitly:
 
 - **Ectodomain shedding / TM precursor.** "Predominantly detected as soluble" is NOT the same as "secreted-only" — if the gene encodes a single-pass TM precursor with documented sheddase / regulated-proteolysis biology, the membrane-anchored stage IS surface accessible. **Stable TM precursor → `yes` / `classical_surface_receptor`**; **transient TM precursor of a shed-ligand-dominant gene → `contextual` / `dual_localization`**. `secreted_only` applies only when no isoform is membrane-anchored at any stage.
 
-When in doubt, **`contextual` beats `no`**. Do not emit `no` for any protein with documented membrane association at any stage of its lifecycle.
+When in doubt, **`contextual` beats `no`**.
 
 ---
 

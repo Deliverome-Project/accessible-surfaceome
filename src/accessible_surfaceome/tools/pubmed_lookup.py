@@ -22,6 +22,7 @@ from __future__ import annotations
 import json
 import logging
 import re
+import urllib.error
 import urllib.parse
 import urllib.request
 import xml.etree.ElementTree as ET

@@ -164,6 +164,12 @@
   color: white;
 }
 
+/* AFDB has no model for this variant's protein — dim the tab (still
+ * clickable, so the canvas can show the "No AlphaFold model" note). */
+.variantTabUnavailable {
+  opacity: 0.5;
+}
+
 .variantTabLabel {
   font-family: var(--font-sans);
   font-size: 0.75rem;
@@ -366,6 +372,12 @@
 .loadingNote {
   position: absolute;
   inset: 0;
+  /* Opaque bg + z-index so the overlay covers any leftover 3dmol <canvas>
+   * from a previous render (3dmol's clear() empties the scene but leaves
+   * the canvas element). Without this, switching variants flashes a blank
+   * canvas over the status text. */
+  z-index: 2;
+  background: var(--bg-soft, #ffffff);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -377,6 +389,8 @@
 .errorBox {
   position: absolute;
   inset: 0;
+  z-index: 2;
+  background: var(--bg-soft, #ffffff);
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -384,6 +398,41 @@
   gap: var(--space-2, 0.5rem);
   padding: var(--space-4, 1rem);
   text-align: center;
+}
+
+/* "No AlphaFold model" — a soft, informational empty state (NOT the red
+ * error box). Shown when AFDB returns 404 for a protein it doesn't model
+ * (e.g. megalin/LRP2, too large for AFDB). */
+.nomodelBox {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  background: var(--bg-soft, #ffffff);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.4rem;
+  padding: 1rem;
+  text-align: center;
+}
+
+.nomodelMsg {
+  margin: 0;
+  font-weight: 600;
+  font-size: 0.95rem;
+  color: var(--ink, #1f1718);
+}
+
+.nomodelLink {
+  font-size: 0.82rem;
+  color: var(--accent, #922038);
+  text-decoration: none;
+  border-bottom: 1px dotted currentColor;
+}
+
+.nomodelLink:hover {
+  color: var(--ink, #222);
 }
 
 .errorMsg {

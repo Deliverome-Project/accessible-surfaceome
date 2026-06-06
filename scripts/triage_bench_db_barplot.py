@@ -145,9 +145,9 @@ CAND_TSV = ROOT / "data/processed/candidate_universe/candidate_universe.tsv"
 # Per-cell LLM predictions used to come from the JSON tree at
 # data/eval/triage_bench_v1/<model>/<variant>/<gene>_run1.json. Those
 # files are now sourced from D1 — populated by running the triage
-# runner with `--d1 --run-id mainbench_canonical_v1`. Update this
+# runner with `--d1 --run-id mainbench_canonical_v2`. Update this
 # constant if the bench is re-run under a different run_id.
-MAINBENCH_D1_RUN_ID = "mainbench_canonical_v1"
+MAINBENCH_D1_RUN_ID = "mainbench_canonical_v2"
 
 # When True, ``load_benchmark_with_votes`` rewrites the per-benchmark
 # UniProt and CSPA flags using the optimized cutoffs surfaced by the
@@ -784,6 +784,7 @@ _PRICE: dict[str, dict[str, float]] = {
     "claude-haiku-4-5":  {"in":  1.0, "cw":  1.25, "cr": 0.10, "out":  5.0},
     "claude-sonnet-4-6": {"in":  3.0, "cw":  3.75, "cr": 0.30, "out": 15.0},
     "claude-opus-4-7":   {"in": 15.0, "cw": 18.75, "cr": 1.50, "out": 75.0},
+    "claude-opus-4-8":   {"in": 15.0, "cw": 18.75, "cr": 1.50, "out": 75.0},
 }
 _WEB_SEARCH_USD_PER_QUERY = 0.01
 

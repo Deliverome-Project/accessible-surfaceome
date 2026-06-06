@@ -162,10 +162,11 @@ SHARED_FINGERPRINTS: dict[str, str] = {
         "**transient TM precursor of a shed-ligand-dominant gene → "
         "`contextual` / `dual_localization`**"
     ),
-    "before_no_closing_membrane_association": (
-        "Do not emit `no` for any protein with documented membrane "
-        "association at any stage of its lifecycle."
-    ),
+    # NB: the "Do not emit `no` for any protein with documented membrane
+    # association at any stage of its lifecycle" block was intentionally
+    # removed from all 5 variants in SurfaceBench v2 (commit 45fbaffdb) —
+    # it was over-broad and forbade `no` for endomembrane / inner-leaflet
+    # proteins. No fingerprint pins it any more.
     # --- Output contract
     "output_contract_json_shape": '"verdict": "yes" | "contextual" | "no"',
     "output_contract_reasoning": (

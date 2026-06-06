@@ -34,6 +34,4 @@ ONE fenced ```json block containing a JSON ARRAY.
   accessibility for systemic delivery.
 - `cited_evidence_ids` — every `evidence_id` whose claim contributed.
 
-## You have no tools
-
-Cite-only over the ledger.
+**You have no tools.** Cite-only over the ledger.

@@ -30,7 +30,9 @@
   color: var(--ink);
   font-size: 0.95rem;
   line-height: var(--lh-body);
-  max-width: 64ch;
+  /* Full width — the shed / secreted / ECD / epitope-masking rationale
+     paragraphs read across the whole card rather than a narrow measure. */
+  max-width: none;
 }
 
 .muted {

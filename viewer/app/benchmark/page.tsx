@@ -48,7 +48,7 @@ export default async function BenchmarkPage() {
             assembled from cases where the five public surface-membership
             databases disagree on surface status. Each protein was
             manually reviewed and classified as surface, contextually
-            surface, or non-surface. Sonnet 4.6 and Opus 4.7 — with no
+            surface, or non-surface. Sonnet 4.6 and Opus 4.8 — with no
             external tools, working from training-time knowledge plus
             a short NCBI context block — outperform every gold-standard
             database on this set. The table below shows every model ×
@@ -64,6 +64,14 @@ export default async function BenchmarkPage() {
 
         <footer className={styles.footnotes}>
           <p>
+            <span className="label-mono">Reason ·</span> the curator&apos;s
+            single ground-truth reason behind each verdict, drawn from the
+            same closed <code>TriageReason</code> vocabulary the triage
+            agent must pick from — so each model&apos;s reason is directly
+            comparable to the truth reason. Hover a truncated label for the
+            full text.
+          </p>
+          <p>
             <span className="label-mono">DB columns ·</span> UniProt · GO ·
             SURFY · CSPA · HPA — the five gating databases that
             drive M1 universe membership (same set the homepage catalog
@@ -74,27 +82,16 @@ export default async function BenchmarkPage() {
           <p>
             <span className="label-mono">LLM columns ·</span> Three
             cells per row — one per model on the headline{" "}
-            <code>{matrix.headline_variant}</code> prompt variant
+            <code>{matrix.headline_variant.toUpperCase()}</code> prompt variant
             (Haiku / Sonnet / Opus). Each is a verdict pill coloured
             by call; pills outlined in maroon disagree with truth
-            (collapsing <em>yes</em> ≡ <em>contextual</em>, matching
-            the D1 <code>correct</code> semantics). Hover for the full
+            (collapsing <em>yes</em> ≡ <em>contextual</em> when scoring
+            correctness). Hover for the full
             (model → verdict + reason) tooltip. Click <em>+</em> on
             the row to expand the full <strong>3 model × 4 variant</strong>{" "}
             grid (Opus has runs on 2 of 4 variants only); each cell in
             that grid carries its own <em>+</em> to reveal the
             agent&apos;s free-text reasoning for that specific call.
-          </p>
-          <p>
-            <span className="label-mono">API ·</span>{" "}
-            <code>
-              GET api.deliverome.org/surfaceome/v1/benchmark/matrix
-            </code>{" "}
-            ships the same table as JSON.
-          </p>
-          <p className={styles.sourceLine}>
-            <span className="label-mono">Source ·</span> live D1{" "}
-            <code>{matrix.universe_version ?? "—"}</code>
           </p>
         </footer>
       </section>

@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useEffect, useMemo, useRef, useState } from "react";
+import type { ReactNode } from "react";
 import { useVirtualizer } from "@tanstack/react-virtual";
 import type {
   CatalogRow,
@@ -37,13 +38,18 @@ const ROW_ESTIMATE_PX = 56;
 const ROW_OVERSCAN = 12;
 
 // CSS Grid template — gene | DB-votes count | 5 DB dots | Triage
-// verdict | Reason (flex) | Deep-dive flag. The UniProt-accession
-// column was dropped (it duplicated info that's on the deep-dive
-// page); the per-row "reason" column is new and takes the remaining
-// horizontal space via `minmax(.., 1fr)`. Haiku and Opus calls live
-// on /benchmark, not here.
+// verdict | Reason (flex) | Deep dive | Conf | Evidence | State dep.
+// "Deep dive" is the deep-dive agent's headline surface-accessibility
+// call, mirroring the "Triage" verdict column; Conf / Evidence /
+// State dep. are its supporting vitals. The "reason" column takes the
+// remaining horizontal space via `minmax(.., 1fr)`. Haiku and Opus calls
+// live on /benchmark, not here.
+// 13 columns: Symbol | DB votes | U G S C H | Triage verdict | Reason |
+// Deep dive | Conf | Evidence | State dep. The 4 deep-dive columns reuse
+// the gene-page traffic-light tones, are sortable, and each links to the
+// gene's deep-dive page.
 const GRID_TEMPLATE =
-  "10rem 3.8rem 5rem 3.5rem 5rem 4.4rem 3.5rem 8rem minmax(8rem, 1fr) 5rem";
+  "10rem 3.8rem 5rem 3.5rem 5rem 4.4rem 3.5rem 8rem minmax(8rem, 1fr) 6rem 6.5rem 5.6rem 6rem";
 
 // Worker base for the on-demand /v1/triage/{symbol} fetch the row
 // expander triggers. Falls back to the production deployment when
@@ -107,7 +113,10 @@ type SortKey =
   | "db_cspa"
   | "db_hpa"
   | "triage"
-  | "deep_dive";
+  | "dd_access"
+  | "dd_conf"
+  | "dd_evidence"
+  | "dd_state";
 type SortDir = "asc" | "desc";
 // The "All" Quick chip was kept after the others were dropped because
 // it's the explicit "clear filters" affordance — clicking it restores
@@ -195,6 +204,56 @@ function verdictTone(v: string | null | undefined): string {
   return styles.verdictUnknown;
 }
 
+// Deep-dive-vital tones — mirror the gene-page GeneHeader logic so the
+// catalog's 4 deep-dive columns read with the SAME traffic-light scale:
+// success(green) → amber(yellow) → danger(red) → neutral(gray). Returns a
+// `.ddTone*` CSS modifier class.
+type VitalTone = "success" | "amber" | "danger" | "neutral";
+const DD_TONE_CLASS: Record<VitalTone, string> = {
+  success: styles.ddToneSuccess,
+  amber: styles.ddToneAmber,
+  danger: styles.ddToneDanger,
+  neutral: styles.ddToneNeutral,
+};
+function accessibilityTone(v: string | null | undefined): VitalTone {
+  if (v === "high") return "success";
+  if (v === "moderate") return "amber";
+  if (v === "low" || v === "no") return "danger";
+  return "neutral";
+}
+function confidenceTone(v: string | null | undefined): VitalTone {
+  if (v === "high") return "success";
+  if (v === "moderate") return "amber";
+  if (v === "low") return "danger";
+  return "neutral";
+}
+function gradeTone(v: string | null | undefined): VitalTone {
+  if (v === "direct_multi_method" || v === "direct_single_method") return "success";
+  if (v === "supportive_but_indirect" || v === "conflicting") return "amber";
+  return "neutral";
+}
+function stateDependenceTone(v: string | null | undefined): VitalTone {
+  // Same value→color mapping as the gene page (low=red, moderate=amber,
+  // high=green) so the whole grid reads as one heatmap.
+  if (v === "low") return "danger";
+  if (v === "moderate") return "amber";
+  if (v === "high") return "success";
+  return "neutral";
+}
+/** Compact label for a deep-dive enum value in a narrow cell. */
+function ddShort(v: string | null | undefined): string {
+  if (!v) return "—";
+  // evidence_grade values are long — abbreviate to a glanceable token.
+  const map: Record<string, string> = {
+    direct_multi_method: "multi",
+    direct_single_method: "single",
+    supportive_but_indirect: "indirect",
+    conflicting: "mixed",
+    weak: "weak",
+  };
+  return map[v] ?? v.replace(/_/g, " ");
+}
+
 interface CatalogTableProps {
   rows: CatalogRow[];
   /** When sourcing from the snapshot, the timestamp at which it was
@@ -219,7 +278,7 @@ export function CatalogTable({
 }: CatalogTableProps) {
   const [query, setQuery] = useState("");
   const [quick, setQuick] = useState<QuickFilter>("all");
-  const [sortKey, setSortKey] = useState<SortKey>("deep_dive");
+  const [sortKey, setSortKey] = useState<SortKey>("dd_access");
   const [sortDir, setSortDir] = useState<SortDir>("desc");
   // Advanced filters. `dbFilter` is AND-semantics: a row passes only
   // if every DB in the set voted yes (intersection of `DB ∈ filter`
@@ -1297,7 +1356,10 @@ export function CatalogTable({
         role="table"
         aria-rowcount={sorted.length + 1}
       >
-        {/* Header row — sticky, identical grid template as every body row */}
+        {/* Header row — sticky, identical grid template as every body row.
+            "Deep dive" is the deep-dive agent's headline call, mirroring the
+            "Triage agent" column; Conf / Evidence / State dep. are its
+            supporting vitals (each with an InfoTip). */}
         <div className={`${styles.headerRow} ${styles.row}`} role="row">
           <SortableHeader
             label="Symbol"
@@ -1346,11 +1408,47 @@ export function CatalogTable({
           </div>
           <SortableHeader
             label="Deep dive"
-            k="deep_dive"
+            k="dd_access"
             sortKey={sortKey}
             sortDir={sortDir}
             onClick={setSort}
             align="center"
+            title="Deep-dive agent surface-accessibility call (sort)"
+            extraClass={styles.ddHeaderCell}
+            info="The deep-dive agent's headline call — how reachable the protein is from outside the cell (high, moderate, low, or no). Present only for genes with a deep dive; click to open it."
+          />
+          <SortableHeader
+            label="Conf"
+            k="dd_conf"
+            sortKey={sortKey}
+            sortDir={sortDir}
+            onClick={setSort}
+            align="center"
+            title="Deep-dive agent confidence in the call (sort)"
+            extraClass={styles.ddHeaderCell}
+            info="How confident the deep-dive agent is in its surface-accessibility call — high, moderate, or low."
+          />
+          <SortableHeader
+            label="Evidence"
+            k="dd_evidence"
+            sortKey={sortKey}
+            sortDir={sortDir}
+            onClick={setSort}
+            align="center"
+            title="Deep-dive experimental surface-evidence grade (sort)"
+            extraClass={styles.ddHeaderCell}
+            info="Strength of the experimental surface evidence behind the call — from direct multi-method down to weak or conflicting."
+          />
+          <SortableHeader
+            label="State dep."
+            k="dd_state"
+            sortKey={sortKey}
+            sortDir={sortDir}
+            onClick={setSort}
+            align="center"
+            title="Deep-dive state-dependence of the surface call (sort)"
+            extraClass={styles.ddHeaderCell}
+            info="How much surface accessibility depends on cell state or context (e.g. activation, stress) — low, moderate, or high."
           />
         </div>
 
@@ -1509,7 +1607,35 @@ function sortValue(r: CatalogRow, k: SortKey): string | number {
     if (v === "no") return 1;
     return 0;
   }
-  if (k === "deep_dive") return r.deep_dive ? 1 : 0;
+  // Deep-dive vitals — ordinal scales so DESC puts the strongest call on
+  // top (mirrors the gene-page traffic-light ordering). Null / no-deep-dive
+  // sorts to 0 (the bottom on DESC).
+  if (k === "dd_access") {
+    const v = r.deep_dive_filters?.surface_accessibility;
+    return v === "high" ? 4 : v === "moderate" ? 3 : v === "low" ? 2 : v === "no" ? 1 : 0;
+  }
+  if (k === "dd_conf") {
+    const v = r.deep_dive_filters?.confidence;
+    return v === "high" ? 3 : v === "moderate" ? 2 : v === "low" ? 1 : 0;
+  }
+  if (k === "dd_evidence") {
+    const v = r.deep_dive_filters?.evidence_grade;
+    return v === "direct_multi_method"
+      ? 5
+      : v === "direct_single_method"
+        ? 4
+        : v === "supportive_but_indirect"
+          ? 3
+          : v === "conflicting"
+            ? 2
+            : v === "weak"
+              ? 1
+              : 0;
+  }
+  if (k === "dd_state") {
+    const v = r.deep_dive_filters?.state_dependence;
+    return v === "high" ? 3 : v === "moderate" ? 2 : v === "low" ? 1 : 0;
+  }
   return 0;
 }
 
@@ -1523,6 +1649,7 @@ function SortableHeader({
   mono,
   title,
   extraClass,
+  info,
 }: {
   label: string;
   k: SortKey;
@@ -1535,6 +1662,10 @@ function SortableHeader({
   /** Extra class concatenated onto the header div — used to slot
    *  the DB-cell tight padding ({.headerDbCell}) on the DB columns. */
   extraClass?: string;
+  /** Optional InfoTip body rendered as a sibling ⓘ after the sort
+   *  button (e.g. a one-line explanation of a deep-dive vital). Its
+   *  trigger is a separate <button>, so clicking ⓘ never triggers sort. */
+  info?: ReactNode;
 }) {
   const active = sortKey === k;
   return (
@@ -1554,6 +1685,11 @@ function SortableHeader({
           {active ? (sortDir === "asc" ? "▲" : "▼") : ""}
         </span>
       </button>
+      {info ? (
+        <InfoTip align="end" label={`About the ${label} column`}>
+          {info}
+        </InfoTip>
+      ) : null}
     </div>
   );
 }
@@ -1694,30 +1830,78 @@ function CatalogRowView({
       })}
       <div className={`${styles.cell} ${styles.reasonCell}`} role="cell">
         {(() => {
-          const reason = row.triage_by_model[1]?.reason;
+          // Prefer the DEEP-DIVE reason (surface_call_reason — re-derived
+          // from the full evidence ledger) when a deep dive exists; fall
+          // back to the first-pass triage reason otherwise.
+          const ddReason = row.deep_dive_filters?.surface_call_reason;
+          const triageReason = row.triage_by_model[1]?.reason;
+          const reason = ddReason ?? triageReason;
           if (!reason) return <span className={styles.dim}>—</span>;
           const pretty = reason.replace(/_/g, " ");
+          const src = ddReason ? "deep dive" : "triage";
           return (
-            <span className={styles.reasonText} title={pretty}>
+            <span className={styles.reasonText} title={`${pretty} (${src})`}>
               {pretty}
             </span>
           );
         })()}
       </div>
-      <div className={`${styles.cell} ${styles.deepCell}`} role="cell">
-        {row.deep_dive ? (
-          <Link
-            href={`/${row.symbol}/`}
-            className={`${styles.verdictLabel} ${styles.verdictMini} ${styles.verdictYes} ${styles.deepLink}`}
-            aria-label={`Open the deep-dive record for ${row.symbol}`}
-            title={`Open the deep-dive record for ${row.symbol}`}
-          >
-            yes
-          </Link>
-        ) : (
-          <span className={styles.dim}>—</span>
-        )}
-      </div>
+      {(() => {
+        // 4 deep-dive vitals — "Deep dive" (the headline accessibility call,
+        // mirroring Triage) · Conf · Evidence · State dep., toned with the
+        // gene-page traffic-light scale. Empty dash when no deep dive; each
+        // populated vital links to the gene's deep-dive page.
+        const ddf = row.deep_dive_filters;
+        const vital = (
+          val: string | null | undefined,
+          tone: VitalTone,
+          label: string,
+          title: string,
+        ) => (
+          <div className={`${styles.cell} ${styles.ddCell}`} role="cell">
+            {val ? (
+              <Link
+                href={`/${row.symbol}/`}
+                className={`${styles.ddVital} ${DD_TONE_CLASS[tone]} ${styles.ddVitalLink}`}
+                title={`${title} — open the ${row.symbol} deep-dive`}
+                aria-label={`${title} — open the ${row.symbol} deep-dive page`}
+              >
+                {label}
+              </Link>
+            ) : (
+              <span className={styles.dim}>—</span>
+            )}
+          </div>
+        );
+        return (
+          <>
+            {vital(
+              ddf?.surface_accessibility,
+              accessibilityTone(ddf?.surface_accessibility),
+              ddf?.surface_accessibility ?? "—",
+              `Deep-dive surface accessibility: ${ddf?.surface_accessibility ?? "n/a"}`,
+            )}
+            {vital(
+              ddf?.confidence,
+              confidenceTone(ddf?.confidence),
+              ddf?.confidence ?? "—",
+              `Deep-dive confidence: ${ddf?.confidence ?? "n/a"}`,
+            )}
+            {vital(
+              ddf?.evidence_grade,
+              gradeTone(ddf?.evidence_grade),
+              ddShort(ddf?.evidence_grade),
+              `Deep-dive evidence grade: ${(ddf?.evidence_grade ?? "n/a").replace(/_/g, " ")}`,
+            )}
+            {vital(
+              ddf?.state_dependence,
+              stateDependenceTone(ddf?.state_dependence),
+              ddf?.state_dependence ?? "—",
+              `Deep-dive state dependence: ${ddf?.state_dependence ?? "n/a"}`,
+            )}
+          </>
+        );
+      })()}
     </div>
   );
 }

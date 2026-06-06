@@ -10,7 +10,7 @@
 """Reproduce ``db_correctness_overall.{pdf,png}`` from the public repo.
 
 LLM-only overall accuracy on the 147-gene bench, grouped by model
-(Haiku 4.5 / Sonnet 4.6 / Opus 4.7) with hatched bars for the
+(Haiku 4.5 / Sonnet 4.6 / Opus 4.8) with hatched bars for the
 within-model prompt variants (naive / + IDs / + IDs + web /
 + IDs + PubMed). Color encodes the model (Claude-orange walk);
 hatch encodes the prompt variant.
@@ -36,7 +36,10 @@ REPO = "Deliverome-Project/accessible-surfaceome"
 BRANCH = "main"
 BASE = f"https://raw.githubusercontent.com/{REPO}/{BRANCH}"
 BENCH_TSV = f"{BASE}/data/eval/triage_benchmark_v1.tsv"
-PREDS_TSV = f"{BASE}/data/processed/triage_bench/mainbench_canonical_v1.tsv"
+PREDS_TSV = f"{BASE}/data/processed/triage_bench/mainbench_canonical_v2.tsv"
+# Per-replicate predictions (3 reps/cell) — drives the individual-replicate
+# accuracy points + SEM error bars overlaid on each bar.
+REPS_TSV = f"{BASE}/data/processed/triage_bench/mainbench_replicates_v2.tsv"
 
 # Published reproduction gist (embedded into output PNG Source / PDF
 # Subject metadata — mirrors save_figure in _plotting_config.py).
@@ -123,7 +126,7 @@ def _apply_brand_style() -> None:
 MODEL_ORDER = [
     ("claude-haiku-4-5",  "Haiku 4.5",  "#f1c4ab"),
     ("claude-sonnet-4-6", "Sonnet 4.6", BRAND_CLAUDE_ORANGE),
-    ("claude-opus-4-7",   "Opus 4.7",   "#a85b3f"),
+    ("claude-opus-4-8",   "Opus 4.8",   "#a85b3f"),
 ]
 
 # Variant display order + matplotlib hatch pattern.
@@ -152,6 +155,24 @@ def _verdict_match(pred: str | None, truth: str | None) -> bool:
     return pred in ("yes", "contextual") and truth in ("yes", "contextual")
 
 
+def _per_rep_accuracy(reps_df):
+    """Return {(model, variant): [acc_rep1, acc_rep2, ...]} — one overall
+    bench-accuracy value per replicate. The per-rep TSV already carries
+    `is_match` (soft-credit), so accuracy is just its mean within each
+    (model, variant, replicate) group."""
+    out: dict[tuple[str, str], list[float]] = {}
+    reps_df = reps_df.copy()
+    reps_df["is_match"] = reps_df["is_match"].astype(int)
+    grouped = (
+        reps_df.groupby(["model", "prompt_variant", "replicate"])["is_match"]
+        .mean()
+        .reset_index()
+    )
+    for (model, variant), g in grouped.groupby(["model", "prompt_variant"]):
+        out[(model, variant)] = [v * 100 for v in g["is_match"].tolist()]
+    return out
+
+
 def main() -> None:
     _apply_brand_style()
     preds = _fetch_tsv(PREDS_TSV)
@@ -163,6 +184,9 @@ def main() -> None:
         for p, t in zip(preds["predicted_verdict"], preds["truth_verdict"], strict=True)
     ]
 
+    # Per-replicate accuracies for the points + SEM overlay (3 reps/cell).
+    rep_acc = _per_rep_accuracy(_fetch_tsv(REPS_TSV))
+
     fig, ax = plt.subplots(figsize=(12, 5.5))
     n_models = len(MODEL_ORDER)
     n_variants = len(VARIANT_ORDER)
@@ -170,17 +194,37 @@ def main() -> None:
 
     for mi, (model, _, color) in enumerate(MODEL_ORDER):
         for vi, (variant, _, hatch) in enumerate(VARIANT_ORDER):
-            cell = preds[(preds["model"] == model) & (preds["prompt_variant"] == variant)]
-            if cell.empty:
-                continue  # e.g. opus-4-7 was only run on naive + ncbi
-            acc = cell["correct"].mean()
+            reps = rep_acc.get((model, variant), [])
+            if not reps:
+                continue  # e.g. opus-4-8 was only run on naive + ncbi
+            # Bar height = MEAN of per-replicate accuracies (not the majority-
+            # vote accuracy) so the bar, the overlaid points, and the SEM error
+            # bar all share one center. This is the average single-run accuracy
+            # ± run-to-run SEM, with each replicate's accuracy shown as a point.
+            mean_rep = sum(reps) / len(reps)
             x = mi + (vi - (n_variants - 1) / 2) * bar_w
             ax.bar(
-                x, acc * 100, width=bar_w, color=color, hatch=hatch,
+                x, mean_rep, width=bar_w, color=color, hatch=hatch,
                 edgecolor=BRAND_INK, linewidth=0.8, zorder=3,
             )
+            if len(reps) >= 2:
+                sd = (sum((v - mean_rep) ** 2 for v in reps) / (len(reps) - 1)) ** 0.5
+                sem = sd / (len(reps) ** 0.5)
+                ax.errorbar(
+                    x, mean_rep, yerr=sem, fmt="none",
+                    ecolor=BRAND_INK, elinewidth=1.1, capsize=3, capthick=1.1,
+                    zorder=4,
+                )
+            # Jitter the points slightly within the bar so coincident values
+            # don't fully overlap.
+            for j, rv in enumerate(reps):
+                jitter = (j - (len(reps) - 1) / 2) * (bar_w * 0.18)
+                ax.scatter(
+                    x + jitter, rv, s=20, color=BRAND_INK,
+                    edgecolor="white", linewidth=0.5, zorder=5, alpha=0.85,
+                )
             ax.text(
-                x, acc * 100 + 1.2, f"{acc*100:.1f}%",
+                x, mean_rep + 2.6, f"{mean_rep:.1f}%",
                 ha="center", va="bottom", fontsize=11, color=BRAND_INK,
             )
 

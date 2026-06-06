@@ -218,9 +218,29 @@ export interface ExecutiveSummary {
    *  synth re-derives from A1+A2 evidence; sometimes overrides the
    *  triage's own reason. */
   surface_call_reason: TriageReason;
+  /** One-sentence rationale for WHEN/WHERE the protein is surface-
+   *  accessible — the headline behind the §03 "Localization &
+   *  accessibility context" summary and the §01 echo. Synthesized over
+   *  the biological_context block. `null` on records generated before
+   *  this field landed (render nothing until re-annotated). */
+  accessibility_context_summary: string | null;
   headline_risks: HeadlineRisk[];
   cited_evidence_ids: string[];
 }
+
+/** Coarse induction-context bucket for the catalog ``induction_trigger``
+ *  filter — the dominant CellStateTrigger across a record's
+ *  accessibility_modulation rows, grouped so the catalog can ask "show me
+ *  stimulus-induced surface candidates" at one level instead of 18. Mirrors
+ *  the Pydantic ``InductionTrigger`` Literal. */
+export type InductionTrigger =
+  | "none"
+  | "oncogenic"
+  | "immune"
+  | "stress_hypoxia"
+  | "cell_death"
+  | "infection"
+  | "other";
 
 export interface Filters {
   surface_accessibility: SurfaceAccessibility;
@@ -286,6 +306,31 @@ export interface Filters {
    *  to surface-localize in an OE context" — useful for filtering
    *  targets amenable to OE-based validation experiments. */
   overexpression_surface_localization_observed: boolean;
+  /** Deep-block rollups promoted to top-level catalog facets — all
+   *  deterministic, derived by the orchestrator in ``_derive_filters``.
+   *  ``tumor_associated``: ≥1 ``biological_context.expression`` row in a
+   *  tumor / tumor-adjacent context. ``induction_trigger``: dominant
+   *  CellStateTrigger across ``accessibility_modulation`` rows, bucketed
+   *  (``"none"`` when no modulation row carries one). ``has_live_cell_
+   *  surface_evidence``: ≥1 ``surface_evidence.methods`` row showing direct
+   *  surface accessibility on live/intact cells in an endogenous context. */
+  tumor_associated: boolean;
+  induction_trigger: InductionTrigger;
+  has_live_cell_surface_evidence: boolean;
+  /** Per-chip rationales — every catalog chip carries its "why".
+   *  Four mirror the synthesizer's LLM-emitted rollups; two are
+   *  orchestrator-composed for the derived booleans. Optional: records
+   *  emitted before this field existed (genes not yet re-annotated)
+   *  omit them, and the viewer renders the chip without an expansion.
+   *  The other five chips (co-receptor, restricted-subdomain, shed,
+   *  secreted, epitope-masking) carry their rationale in the deep
+   *  ``accessibility_risks`` blocks, not here. */
+  expression_level_rationale?: string;
+  expression_breadth_rationale?: string;
+  surface_specificity_rationale?: string;
+  has_known_ligand_rationale?: string;
+  low_endogenous_expression_rationale?: string;
+  overexpression_surface_localization_observed_rationale?: string;
 }
 
 // ============================================================
@@ -324,6 +369,18 @@ export interface IsoformTopology {
   per_residue_topology: string;
   tool_version: string;
   retrieved_at: string;
+  // Sequence identity of an alternative isoform against this protein's own
+  // canonical sequence (BLOSUM62 global alignment over the shorter length).
+  // Null on the canonical row itself and on records predating the identity
+  // sweep; ecd_pct_identity_to_canonical is also null when the protein has no
+  // extracellular residues (e.g. SRC — a GLOB intracellular kinase).
+  full_length_pct_identity_to_canonical?: number | null;
+  ecd_pct_identity_to_canonical?: number | null;
+  ecd_pct_similarity_to_canonical?: number | null;
+  // Full amino-acid sequence the per_residue_topology string aligns to (1:1,
+  // same length) — sourced from topology_public.sequence. Null on records
+  // built before this field existed, or when the input FASTA wasn't retained.
+  sequence?: string | null;
 }
 
 export interface OrthologEntry {
@@ -365,11 +422,19 @@ export interface OrthologEntry {
    *  topology dot. ``n_tm_regions_absent`` is how many fell in gaps. */
   tm_absent_from_model?: boolean;
   n_tm_regions_absent?: number;
+  // The ortholog's own full amino-acid sequence — aligns 1:1 with the
+  // (projected) per_residue_topology above. Source: topology_public.sequence
+  // for the ortholog accession. Null for rows predating the field.
+  sequence?: string | null;
 }
 
 export interface OrthologSet {
   mouse: OrthologEntry[];
   cynomolgus: OrthologEntry[];
+  /** "Checked, none found" sentinel (mirrors SurfaceBindFeatures.has_data).
+   *  `true` with empty mouse+cynomolgus = checked against Compara, no one2one
+   *  ortholog exists. Absent/false on stub or pre-sentinel snapshots. */
+  checked?: boolean;
 }
 
 /**
@@ -391,11 +456,47 @@ export interface ParalogEntry {
   full_length_pct_identity: number | null;
   family_id: string;
   compara_version: string;
-  // (Per-residue DeepTMHMM topology was briefly added to this entry
-  // in 6a220a90 and reverted: SRC's 32 paralogs are all GLOB
-  // intracellular kinases, so the bars rendered as solid blue with
-  // no signal. Isoform + ortholog topology stay in §04 because they
-  // CAN show real TM patterns.)
+  // ECD percent similarity (identity + BLOSUM62-positive substitutions),
+  // and the paralog's real DeepTMHMM topology — populated ONLY for close
+  // paralogs (>=80% full-length), which the card promotes to full topology
+  // rows. All null for below-threshold / ECD-less / no-topology paralogs.
+  ecd_pct_similarity?: number | null;
+  per_residue_topology?: string | null;
+  deeptmhmm_label?: string | null;
+  tm_helix_count?: number | null;
+  ecd_length_residues?: number | null;
+  icd_length_residues?: number | null;
+  n_terminal_orientation?: Orientation | null;
+  c_terminal_orientation?: Orientation | null;
+  signal_peptide_length?: number | null;
+  // Close-paralog full amino-acid sequence — populated only for close
+  // paralogs (>=80% full-length identity) that also carry topology, so it
+  // pairs with per_residue_topology above. Source: topology_public.sequence.
+  sequence?: string | null;
+}
+
+/**
+ * The single best experimental (PDB) structure for the canonical UniProt,
+ * picked from PDBe's SIFTS ``best_structures`` ranking. Mirrors the Pydantic
+ * ``RepresentativeStructure``. ``null`` on ``StructureFeatures`` when the
+ * protein has no deposited experimental structure.
+ */
+export interface RepresentativeStructure {
+  pdb_id: string;
+  chain_id: string;
+  /** SIFTS-mapped UniProt residue span this structure covers (1-based,
+   *  inclusive). A fragment structure has a sub-span; a full-length cryo-EM
+   *  model spans 1..len(canonical). */
+  unp_start: number;
+  unp_end: number;
+  coverage: number | null;
+  resolution_a: number | null;
+  experimental_method: string | null;
+  /** How many experimental structures PDBe lists for this UniProt (this one
+   *  is the representative of that set). */
+  n_experimental_structures: number | null;
+  source: string;
+  retrieved_at: string | null;
 }
 
 /**
@@ -416,6 +517,15 @@ export interface StructureFeatures {
   license: string;
   attribution: string;
   citations: string[];
+  // AlphaFold model download links from the AFDB prediction API — the
+  // non-derivable bits (the working URL needs the current model version).
+  // Null on the placeholder path (AFDB unreachable) and on older records.
+  model_cif_url?: string | null;
+  model_pdb_url?: string | null;
+  model_pae_url?: string | null;
+  // Representative experimental (PDB) structure — PDBe SIFTS best_structures.
+  // Null when the protein has no deposited experimental structure.
+  representative_experimental_structure?: RepresentativeStructure | null;
 }
 
 /**
@@ -482,6 +592,12 @@ export interface DeterministicFeatures {
   isoform_topologies: IsoformTopology[];
   orthologs: OrthologSet;
   paralogs: ParalogEntry[];
+  /** "Checked, none found" sentinels for the bare lists above (same rationale
+   *  as OrthologSet.checked). `true` once the loader queried D1 even when the
+   *  list is empty (genuine singleton / single-isoform gene). Optional for
+   *  back-compat with pre-sentinel snapshots. */
+  paralogs_checked?: boolean;
+  isoform_topologies_checked?: boolean;
   structure: StructureFeatures;
   surface_bind: SurfaceBindFeatures;
 }
@@ -596,13 +712,6 @@ export type MeasurementType =
   | "single_cell_RNA"
   | "unknown";
 
-export type TherapeuticStage =
-  | "approved_drug"
-  | "in_clinical_trials"
-  | "preclinical_in_vivo"
-  | "none_documented"
-  | "unknown";
-
 export type ContradictionType =
   | "intracellular_pool"
   | "alternative_localization"
@@ -701,13 +810,6 @@ export interface NonSurfaceExpression {
   cited_evidence_ids: string[];
 }
 
-export interface TherapeuticEngagement {
-  highest_stage: TherapeuticStage;
-  description: string;
-  surface_form_rationale: string;
-  cited_evidence_ids: string[];
-}
-
 export interface Contradiction {
   claim: string;
   contradiction_type: ContradictionType;
@@ -744,7 +846,6 @@ export interface SurfaceEvidence {
   claim_stances: ClaimStanceRow[];
   methods: MethodObservation[];
   non_surface_expression: NonSurfaceExpression[];
-  therapeutic_engagement: TherapeuticEngagement | null;
   contradicting_evidence: Contradiction[];
 }
 
@@ -797,6 +898,15 @@ export type ModulationCategory =
   | "none"
   | "other"
   | "unknown";
+
+// Up/down axis of the surface-accessible pool for a modulation row. Mirrors
+// the Pydantic `ModulationDirection` enum.
+export type ModulationDirection =
+  | "increases_surface"
+  | "decreases_surface"
+  | "bidirectional"
+  | "no_change"
+  | "unclear";
 
 export type CellStateTrigger =
   | "ER_stress"
@@ -854,6 +964,9 @@ export interface TissueContext {
    *  (normal vs tumor) with different `present` levels. Obesity
    *  / inflammation / etc. fall under `other_disease`. */
   disease_context: DiseaseContext;
+  /** Specific disease name when `disease_context` can't name it on its own
+   *  (e.g. "Fabry disease"). Optional — older records omit it. */
+  disease_label?: string | null;
   cell_types: string[];
   cell_states: string[];
   species?: Species;
@@ -865,6 +978,29 @@ export interface CellTypeContext {
   cell_type: string;
   ontology_id: string;
   present_in_tissues: string[];
+  /** Per-cell disease context / level / specific-disease label, so a
+   *  cell-of-origin row is self-describing instead of inheriting from a
+   *  paired tissue row. Optional — older records omit them. */
+  disease_context?: DiseaseContext;
+  present?: TissueLevel;
+  disease_label?: string | null;
+  species?: Species;
+  species_inferred?: boolean;
+  cited_evidence_ids: string[];
+}
+
+/** Unified tissue × cell-of-origin × disease-context expression row
+ *  (v1.2 schema — replaces the split TissueContext + CellTypeContext). A row
+ *  may name a `tissue`, a `cell_type` of origin, or both. `disease_label`
+ *  names the specific disease when `disease_context` can't (e.g. "Fabry
+ *  disease"). */
+export interface ExpressionRow {
+  tissue: string | null;
+  cell_type: string | null;
+  present: TissueLevel;
+  disease_context: DiseaseContext;
+  disease_label?: string | null;
+  cell_states: string[];
   species?: Species;
   species_inferred?: boolean;
   cited_evidence_ids: string[];
@@ -912,14 +1048,24 @@ export interface AccessibilityModulationObservation {
   modulating_state: string;
   change: string;
   accessibility_implication: string;
+  // Structured up/down direction of the change. Records predating the field
+  // omit it at runtime (Python default "unclear"); the viewer guards for
+  // undefined before rendering the glyph. Non-optional to match the
+  // name-level Python↔TS sync check.
+  direction: ModulationDirection;
   species?: Species;
   species_inferred?: boolean;
   cited_evidence_ids: string[];
 }
 
 export interface BiologicalContext {
-  tissues: TissueContext[];
-  cell_types: CellTypeContext[];
+  /** Unified expression rows (current schema). Optional so the viewer can
+   *  still read pre-unify records that carry `tissues` + `cell_types`. */
+  expression?: ExpressionRow[];
+  /** Legacy split pivots — present only on records generated before the
+   *  unify; the viewer falls back to these when `expression` is absent. */
+  tissues?: TissueContext[];
+  cell_types?: CellTypeContext[];
   cell_states: StateContext[];
   subcellular_localization: SubcellularLocalization;
   anatomical_accessibility: AnatomicalAccessibilityObservation[];

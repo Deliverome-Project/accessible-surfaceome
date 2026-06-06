@@ -50,7 +50,11 @@ BRANCH = "main"
 BASE = f"https://raw.githubusercontent.com/{REPO}/{BRANCH}"
 BENCH_TSV = f"{BASE}/data/eval/triage_benchmark_v1.tsv"
 CAND_TSV = f"{BASE}/data/processed/candidate_universe/candidate_universe.tsv"
-PREDS_TSV = f"{BASE}/data/processed/triage_bench/mainbench_canonical_v1.tsv"
+PREDS_TSV = f"{BASE}/data/processed/triage_bench/mainbench_canonical_v2.tsv"
+# Per-replicate predictions — used to overlay the Sonnet bar's individual
+# replicate accuracies + SEM (the DB / ensemble bars are deterministic and
+# stay plain — no run-to-run variance to show).
+REPS_TSV = f"{BASE}/data/processed/triage_bench/mainbench_replicates_v2.tsv"
 OPT_CUTOFFS_TSV = f"{BASE}/data/processed/triage_bench/db_optimized_cutoffs.tsv"
 
 # Published reproduction gist (embedded into output PNG Source / PDF
@@ -202,12 +206,33 @@ def main() -> None:
             ENSEMBLE_PALETTE[k],
         ))
 
+    # Per-replicate Sonnet accuracies (for the bar height = mean-of-reps,
+    # the points, and the SEM). The DB / ensemble callers are deterministic
+    # — single value, no replicates.
+    sonnet_rep_accs: list[float] = []
+    try:
+        _reps = _fetch_tsv(REPS_TSV)
+        _s = _reps[(_reps["model"] == "claude-sonnet-4-6")
+                   & (_reps["prompt_variant"] == "ncbi")].copy()
+        _s["is_match"] = _s["is_match"].astype(int)
+        sonnet_rep_accs = _s.groupby("replicate")["is_match"].mean().tolist()
+    except Exception:  # noqa: BLE001
+        sonnet_rep_accs = []
+
     genes = list(truth_by_gene)
     rows = []
     for label, vote_fn, color in callers:
         n_correct = sum(_vote_correct(vote_fn(g), truth_by_gene[g]) for g in genes)
+        acc = n_correct / len(genes)
+        # Sonnet bar = MEAN of per-replicate accuracies (so bar, points, and
+        # SEM share one center). DB / ensemble bars keep their deterministic
+        # majority count. The inner count label for Sonnet becomes the rounded
+        # mean count (≈ avg correct per single run), the others stay exact.
+        if label.startswith("Sonnet") and sonnet_rep_accs:
+            acc = sum(sonnet_rep_accs) / len(sonnet_rep_accs)
+            n_correct = round(acc * len(genes))
         rows.append({
-            "caller": label, "accuracy": n_correct / len(genes),
+            "caller": label, "accuracy": acc,
             "n_correct": n_correct, "n_total": len(genes), "color": color,
         })
     df = pd.DataFrame(rows)
@@ -236,6 +261,25 @@ def main() -> None:
             ha="center", va="center",
             fontsize=12, color="white", fontweight="bold",
         )
+
+    # Overlay individual-replicate accuracies + SEM on the Sonnet bar only.
+    # The Sonnet bar height is the MEAN of these per-rep accuracies (set
+    # above), so the error bar (centered on that same mean) and the points
+    # all line up with the bar top. DB / ensemble bars are deterministic and
+    # stay plain.
+    if len(sonnet_rep_accs) >= 2:
+        rep_accs = [v * 100 for v in sonnet_rep_accs]
+        sonnet_bar = bars[0]
+        xc = sonnet_bar.get_x() + sonnet_bar.get_width() / 2
+        m = sum(rep_accs) / len(rep_accs)
+        sd = (sum((v - m) ** 2 for v in rep_accs) / (len(rep_accs) - 1)) ** 0.5
+        sem = sd / (len(rep_accs) ** 0.5)
+        ax.errorbar(xc, m, yerr=sem, fmt="none", ecolor=BRAND_INK,
+                    elinewidth=1.2, capsize=4, capthick=1.2, zorder=4)
+        for j, rv in enumerate(rep_accs):
+            jitter = (j - (len(rep_accs) - 1) / 2) * (sonnet_bar.get_width() * 0.16)
+            ax.scatter(xc + jitter, rv, s=24, color=BRAND_INK,
+                       edgecolor="white", linewidth=0.5, zorder=5, alpha=0.9)
 
     ax.set_ylabel("Overall accuracy on 147-gene bench (%)", fontsize=14)
     ax.set_ylim(0, 105)

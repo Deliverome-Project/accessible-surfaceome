@@ -242,6 +242,30 @@ function EvidenceCard({ ev, onClose }: { ev: Evidence; onClose: () => void }) {
          *  PMC ID recovery from validation_warnings (above) still
          *  fires so entailment-failed claims still get a source link. */}
       </div>
+      {/* Source first — the reader wants "which paper is this from?"
+          before the agent's interpretation of it. */}
+      {sources.length ? (
+        <>
+          <h3 className={styles.subhead}>
+            Source{sources.length > 1 ? "s" : ""}
+          </h3>
+          <ul className={styles.sources}>
+            {sources.map((s) => (
+              <li key={s.href}>
+                <a
+                  href={s.href}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className={styles.sourceLink}
+                  title={s.title}
+                >
+                  {s.label} ↗
+                </a>
+              </li>
+            ))}
+          </ul>
+        </>
+      ) : null}
       <h2 className={styles.title}>Agent&apos;s claim</h2>
       <p className={styles.claim}>{ev.claim}</p>
       {headSpan?.quote ? (
@@ -279,26 +303,6 @@ function EvidenceCard({ ev, onClose }: { ev: Evidence; onClose: () => void }) {
               </div>
             ) : null}
           </dl>
-        </>
-      ) : null}
-      {sources.length ? (
-        <>
-          <h3 className={styles.subhead}>Source{sources.length > 1 ? "s" : ""}</h3>
-          <ul className={styles.sources}>
-            {sources.map((s) => (
-              <li key={s.href}>
-                <a
-                  href={s.href}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className={styles.sourceLink}
-                  title={s.title}
-                >
-                  {s.label} ↗
-                </a>
-              </li>
-            ))}
-          </ul>
         </>
       ) : null}
     </div>

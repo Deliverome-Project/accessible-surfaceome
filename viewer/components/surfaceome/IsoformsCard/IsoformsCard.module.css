@@ -165,21 +165,20 @@
   align-items: baseline;
   gap: 0.4rem;
   padding: 0.18rem 0.6rem;
-  border: 1px solid var(--line-soft);
   border-radius: 999px;
-  background: var(--surface-soft);
+  /* No border — the tier shows as a very-light fill (neutral chips fall
+     back to the soft surface). */
+  background: color-mix(in srgb, var(--tier-fill, var(--surface-soft)) 60%, transparent);
   color: var(--ink);
   font-size: 0.82rem;
   text-decoration: none;
   white-space: nowrap;
-  transition: background var(--dur-fast) var(--ease-out),
-              border-color var(--dur-fast) var(--ease-out);
+  transition: background var(--dur-fast) var(--ease-out);
 }
 
 .paralogChipLink:hover,
 .paralogChipLink:focus-visible {
-  background: var(--surface);
-  border-color: var(--line);
+  background: color-mix(in srgb, var(--tier-fill, var(--surface-soft)) 85%, transparent);
 }
 
 .paralogChipSym {
@@ -198,61 +197,34 @@
    bars rendered as solid blue with no signal. The chip is back to
    single-row pill layout.) */
 
-/* Cross-reactivity risk tiers — shared by the paralog chip and the
-   legend dot. Cutoffs (≥70% likely, 50-70% plausible) come from
-   antibody-validation practice; see the subhead InfoTip. Tints use the
-   brand maroon / amber / teal scales so the chip strip reads as a
-   heatmap of antibody-cross-reactivity risk. These set only background +
-   border-color so they compose cleanly onto both surfaces. Placed after
-   `.paralogChipLink:hover` above so the risk hover rules win on equal
-   specificity. */
+/* Cross-reactivity / species-relevance tiers — shared by the paralog
+   chip, the ortholog ECD value pill, and the legend dot. Each tier just
+   exposes its brand color as CSS vars; consumers pick the intensity — a
+   very-light fill for the in-table pills, the full tint for the legend
+   swatch. */
 .riskHigh {
-  background: var(--maroon-blush);
-  border-color: var(--maroon-pale);
+  --tier-fill: var(--maroon-blush);
+  --tier-edge: var(--maroon-pale);
 }
 
 .riskMed {
-  background: var(--amber-tint);
-  border-color: var(--amber-light);
+  --tier-fill: var(--amber-tint);
+  --tier-edge: var(--amber-light);
 }
 
 .riskLow {
-  background: var(--teal-tint);
-  border-color: var(--teal-lt);
+  --tier-fill: var(--teal-tint);
+  --tier-edge: var(--teal-lt);
 }
 
-/* Tint the %id readout to match its tier so the number itself signals
-   risk even at a glance / for color-adjacent readers scanning values. */
-.riskHigh .paralogChipPct {
-  color: var(--maroon-dark);
-}
-
-.riskMed .paralogChipPct {
-  color: var(--amber-dark);
-}
-
-.riskLow .paralogChipPct {
-  color: var(--teal-dark);
-}
-
-/* Keep the tint on hover (the generic chip hover swaps to a neutral
-   surface) so a risk color never disappears mid-interaction. */
-.riskHigh:hover,
-.riskHigh:focus-visible {
-  background: var(--maroon-blush);
-  border-color: var(--maroon-light);
-}
-
-.riskMed:hover,
-.riskMed:focus-visible {
-  background: var(--amber-tint);
-  border-color: var(--amber-mid);
-}
-
-.riskLow:hover,
-.riskLow:focus-visible {
-  background: var(--teal-tint);
-  border-color: var(--teal-mid);
+/* Very-light, borderless, pill-shaped tier shading behind a similarity
+   number. The ortholog ECD cell wraps its value in this; the paralog
+   chip below applies the same fill to the whole pill. */
+.valuePill {
+  display: inline-block;
+  padding: 0.05rem 0.5rem;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--tier-fill, transparent) 60%, transparent);
 }
 
 /* Risk-tier legend below the chip strip — rendered only when at least
@@ -278,5 +250,11 @@
   height: 0.7rem;
   border-radius: 3px;
   border: 1px solid;
+  /* Full tint fill + tier border (set via --tier-fill / --tier-edge by
+     the .riskHigh / .riskMed / .riskLow class on the same element) so the
+     swatch stays legible at legend size even though the in-table pills
+     use a much lighter fill of the same color. */
+  background: var(--tier-fill);
+  border-color: var(--tier-edge);
   display: inline-block;
 }

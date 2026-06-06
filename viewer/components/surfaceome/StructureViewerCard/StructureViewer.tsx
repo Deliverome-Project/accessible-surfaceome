@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import type { ReactNode } from "react";
+import { CITATIONS, pubmedUrl } from "../../../lib/citations";
 import { orientPdbForTopology } from "../../../lib/structure-orientation";
 import {
   MEMBRANE_COLOR,
@@ -806,21 +807,20 @@ const COMPARTMENT_GLYPH: Record<AnchorCompartment, string> = {
  *  yellow / gray) and the brand maroon used elsewhere on the page. */
 const ANCHOR_COLOR = "#7A4BD8";
 
-/** Per-compartment sphere color for "sites" mode. Per user
- *  preference: EC = red (the "look here / focus" attention color),
- *  IC = green (safely tucked away inside the cell). TM = gray
- *  (inside the membrane); signal / unknown = mute. The SurfaceBindCard
- *  "Side" column uses the same red/green mapping for visual
- *  consistency between the 3D view and the table. */
+/** Per-compartment sphere color for "sites" mode. EC = purple (brand
+ *  lavender, the "look here / focus" color); IC = green (safely tucked
+ *  away inside the cell); signal peptide = red; TM = gray (inside the
+ *  membrane); unknown = mute. The SurfaceBindCard "Side" column uses the
+ *  same mapping for visual consistency between the 3D view and the table. */
 const COMPARTMENT_COLOR: Record<AnchorCompartment, string> = {
-  extracellular: "#DC2626", // red-600
+  extracellular: "#8878C8", // lavender-bright (brand purple)
   intracellular: "#16A34A", // green-600
   membrane: "#94A3B8", // slate-400
-  signal: "#94A3B8",
+  signal: "#DD5955", // red (matches topology cartoon)
   unknown: "#6B7280", // gray-500
 };
 
-type LoadStatus = "loading" | "ready" | "error";
+type LoadStatus = "loading" | "ready" | "error" | "nomodel";
 
 interface ViewerInstance {
   clear: () => void;
@@ -882,6 +882,21 @@ export function StructureViewer({
   // sequences once alternative splicing or species differences
   // shift positions.
   const [variantIdx, setVariantIdx] = useState<number>(0);
+  // Per-AFDB-accession availability (canonical + isoform/ortholog
+  // variants), probed on mount. `false` ⟹ AFDB has no model for that
+  // protein (e.g. megalin/LRP2, beyond AFDB's per-entry size limit) — its
+  // tab is grayed and, for the canonical, the viewer defaults to an
+  // experimental structure instead. `"loading"` while the probe is in
+  // flight; absent key ⟹ not probed (treated as available).
+  const [afdbAvail, setAfdbAvail] = useState<
+    Record<string, boolean | "loading">
+  >({});
+  // Set once the reader manually picks a tab (or the auto-default fires)
+  // so the auto-default-to-experimental doesn't fight a manual selection.
+  const userPickedRef = useRef(false);
+  // Stale-render guard counter (see renderViewer): bumped each invocation
+  // so a superseded async render can't clobber the current one's status.
+  const renderSeqRef = useRef(0);
   // PDBe `best_structures` lookup — fires on mount per gene. When a
   // top experimental candidate is available, an extra "Experimental"
   // variant is appended to the tabs at render time. Three states:
@@ -980,6 +995,46 @@ export function StructureViewer({
     return () => { cancelled = true; };
   }, [data.uniprot_acc]);
 
+  // Probe AFDB availability for the canonical + every AFDB variant
+  // (isoforms / orthologs) on mount, so tabs whose protein AFDB doesn't
+  // model can be grayed up front and the viewer can default to an
+  // experimental structure rather than opening on a blank "no model" tab.
+  // Prediction-API responses are cached aggressively by AFDB (force-cache).
+  useEffect(() => {
+    let cancelled = false;
+    const accs = Array.from(
+      new Set([
+        data.uniprot_acc,
+        ...variants
+          .filter((v): v is StructureVariantAfdb => v.source === "afdb")
+          .map((v) => v.uniprot_acc),
+      ]),
+    );
+    setAfdbAvail(Object.fromEntries(accs.map((a) => [a, "loading" as const])));
+    (async () => {
+      const entries = await Promise.all(
+        accs.map(async (acc): Promise<[string, boolean]> => {
+          try {
+            const r = await fetch(alphafoldPredictionApiUrl(acc), {
+              cache: "force-cache",
+            });
+            return [acc, r.ok];
+          } catch {
+            // Network hiccup — don't gray it out; the per-tab render
+            // will still surface a genuine failure if one occurs.
+            return [acc, true];
+          }
+        }),
+      );
+      if (!cancelled) setAfdbAvail(Object.fromEntries(entries));
+    })();
+    return () => {
+      cancelled = true;
+    };
+    // Variant identity is captured by the joined-id key.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [data.uniprot_acc, variants.map((v) => v.id).join(",")]);
+
   // Effective variants = caller-provided (isoforms / orthologs) +
   // experimental tab when PDBe has a hit. Experimental always lands
   // after isoforms / orthologs in the tab strip.
@@ -1040,6 +1095,25 @@ export function StructureViewer({
   // the chain is restricted + residues may be missing from the
   // crystal, so anchor spheres would mis-render.
   const hasAnchors = surfaceBindAnchors.length > 0 && isCanonicalActive;
+
+  // Canonical-AFDB availability — drives graying its tab.
+  const canonAfdbUnavail = afdbAvail[data.uniprot_acc] === false;
+
+  // Default to the Experimental tab when AFDB has no model for the
+  // canonical protein but an experimental structure exists, so the viewer
+  // opens on a real structure (e.g. megalin's cryo-EM 9CWM) instead of a
+  // blank "no model" canonical view. Fires once; a manual tab pick opts out.
+  useEffect(() => {
+    if (userPickedRef.current) return;
+    if (afdbAvail[data.uniprot_acc] !== false) return;
+    const expIdx = effectiveVariants.findIndex(
+      (v) => v.source === "experimental",
+    );
+    if (expIdx >= 0) {
+      userPickedRef.current = true;
+      setVariantIdx(expIdx + 1);
+    }
+  }, [afdbAvail, effectiveVariants, data.uniprot_acc]);
 
   // Lazy-fetch AFDB metadata when the user clicks a non-canonical
   // AFDB variant (isoform / ortholog). One fetch per isoform-suffixed
@@ -1130,6 +1204,13 @@ export function StructureViewer({
 
   const renderViewer = useCallback(async () => {
     if (!containerRef.current) return;
+    // Bump + capture a render token. A renderViewer for one variant can
+    // still be mid-fetch when the active variant changes — notably the
+    // auto-default canonical → Experimental, which fires AFTER canonical's
+    // AFDB 404 is already in flight. Each terminal setStatus below bails if
+    // a newer render has started, so the late canonical run can't overwrite
+    // the Experimental render's "ready" with "nomodel".
+    const renderSeq = ++renderSeqRef.current;
     setStatus("loading");
     setErrorMsg("");
     try {
@@ -1233,6 +1314,17 @@ export function StructureViewer({
           }
         }
         if (!pdbResp.ok) {
+          // A 404 = AlphaFold DB simply has no model for this protein
+          // (e.g. megalin/LRP2 and other very large proteins beyond
+          // AFDB's per-entry limit). That's not a load FAILURE — surface
+          // a soft "no model available" state, not a red error. Non-404s
+          // are genuine failures and still throw → the error UI + Retry.
+          if (pdbResp.status === 404) {
+            if (renderSeq !== renderSeqRef.current) return;
+            setErrorMsg("");
+            setStatus("nomodel");
+            return;
+          }
           throw new Error(
             `AlphaFold DB returned ${pdbResp.status} for ${activeUniprot}`,
           );
@@ -1350,7 +1442,18 @@ export function StructureViewer({
         const baseSel = expVariant && effectiveChainId
           ? { chain: effectiveChainId }
           : {};
-        viewer.setStyle(baseSel, { cartoon: { color: TOPOLOGY_COLORS.B } });
+        // Base color for residues without an explicit topology range. A
+        // GLOB protein whose topology came back empty (e.g. IZUMO4 —
+        // outside the topology-sweep cohort, so NO ranges to overlay at
+        // all) would otherwise show bare beta-gray; paint the base
+        // GLOB-yellow so it matches every other globular protein. Genes
+        // WITH topology overpaint this base via their ranges below, so
+        // they're unaffected.
+        const baseColor =
+          activeDeepTMHMMType === "GLOB"
+            ? TOPOLOGY_COLORS.M
+            : TOPOLOGY_COLORS.B;
+        viewer.setStyle(baseSel, { cartoon: { color: baseColor } });
         // For canonical, use the pre-computed `topology_ranges` from
         // the build-time JSON. For an AFDB variant, compute ranges
         // on the fly. For experimental, project the canonical ranges
@@ -1359,7 +1462,15 @@ export function StructureViewer({
           ? data.topology_ranges
           : _computeTopologyRanges(activeTopology);
         (["M", "O", "I", "S", "B"] as const).forEach((state) => {
-          const color = TOPOLOGY_COLORS[state];
+          // GLOB (soluble / no membrane topology): DeepTMHMM tags the
+          // whole chain "I", so the only non-empty range is I spanning
+          // 1..N. Paint it the TM-helix color rather than intracellular-
+          // green so the fold doesn't visually assert a compartment it
+          // doesn't have; the legend says "Globular" to match.
+          const color =
+            activeDeepTMHMMType === "GLOB"
+              ? TOPOLOGY_COLORS.M
+              : TOPOLOGY_COLORS[state];
           (ranges[state] ?? []).forEach(([start, end]) => {
             if (expVariant) {
               // Project each topology range through every projection
@@ -1575,8 +1686,10 @@ export function StructureViewer({
         ro.observe(node);
         resizeObserverRef.current = ro;
       }
+      if (renderSeq !== renderSeqRef.current) return;
       setStatus("ready");
     } catch (err) {
+      if (renderSeq !== renderSeqRef.current) return;
       const msg = err instanceof Error ? err.message : String(err);
       setErrorMsg(msg);
       setStatus("error");
@@ -1619,8 +1732,11 @@ export function StructureViewer({
           prop in their original order. Clicking switches which AFDB
           model + per-residue topology is rendered; SURFACE-Bind
           overlay hides on non-canonical tabs (anchor residue numbers
-          are canonical-keyed and don't translate cleanly). */}
-      {effectiveVariants.length > 0 ? (
+          are canonical-keyed and don't translate cleanly). The strip is
+          ALWAYS rendered — a lone "Canonical" tab (when the gene has no
+          isoforms / orthologs / experimental, e.g. IZUMO4) keeps the
+          affordance consistent across genes. */}
+      {(
         <div
           className={styles.variantTabs}
           role="tablist"
@@ -1629,10 +1745,17 @@ export function StructureViewer({
           <button
             type="button"
             role="tab"
-            className={styles.variantTab}
+            className={`${styles.variantTab} ${canonAfdbUnavail ? styles.variantTabUnavailable : ""}`.trim()}
             data-active={isCanonicalActive}
-            onClick={() => setVariantIdx(0)}
-            title={`AlphaFold model for the canonical ${geneSymbol} (UniProt ${data.uniprot_acc}).`}
+            onClick={() => {
+              userPickedRef.current = true;
+              setVariantIdx(0);
+            }}
+            title={
+              canonAfdbUnavail
+                ? `No AlphaFold model for canonical ${geneSymbol} (${data.uniprot_acc}) — AlphaFold DB doesn't model this protein.`
+                : `AlphaFold model for the canonical ${geneSymbol} (UniProt ${data.uniprot_acc}).`
+            }
             aria-selected={isCanonicalActive}
           >
             <span className={styles.variantTabLabel}>Canonical</span>
@@ -1640,15 +1763,25 @@ export function StructureViewer({
           </button>
           {effectiveVariants.map((v, i) => {
             const isActive = variantIdx === i + 1;
+            const vUnavail =
+              v.source === "afdb" &&
+              afdbAvail[(v as StructureVariantAfdb).uniprot_acc] === false;
             return (
               <button
                 key={v.id}
                 type="button"
                 role="tab"
-                className={styles.variantTab}
+                className={`${styles.variantTab} ${vUnavail ? styles.variantTabUnavailable : ""}`.trim()}
                 data-active={isActive}
-                onClick={() => setVariantIdx(i + 1)}
-                title={`AlphaFold model for ${v.label}${v.sublabel ? ` (${v.sublabel})` : ""}.`}
+                onClick={() => {
+                  userPickedRef.current = true;
+                  setVariantIdx(i + 1);
+                }}
+                title={
+                  vUnavail
+                    ? `No AlphaFold model for ${v.label}${v.sublabel ? ` (${v.sublabel})` : ""} — AlphaFold DB doesn't model this protein.`
+                    : `AlphaFold model for ${v.label}${v.sublabel ? ` (${v.sublabel})` : ""}.`
+                }
                 aria-selected={isActive}
               >
                 <span className={styles.variantTabLabel}>{v.label}</span>
@@ -1659,7 +1792,7 @@ export function StructureViewer({
             );
           })}
         </div>
-      ) : null}
+      )}
       <div
         ref={containerRef}
         className={styles.viewerCanvas}
@@ -1681,6 +1814,19 @@ export function StructureViewer({
             >
               Retry
             </button>
+          </div>
+        ) : null}
+        {status === "nomodel" ? (
+          <div className={styles.nomodelBox}>
+            <p className={styles.nomodelMsg}>No AlphaFold model available</p>
+            <a
+              className={styles.nomodelLink}
+              href="https://alphafold.ebi.ac.uk/faq"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              Why some proteins have no model — AlphaFold DB FAQ&nbsp;↗
+            </a>
           </div>
         ) : null}
         {/* Inlaid reset symbol — small icon button in the canvas's
@@ -1744,7 +1890,7 @@ export function StructureViewer({
               className={styles.modeButton}
               data-active={viewMode === "sites"}
               onClick={() => setViewMode("sites")}
-              title="Overlay SURFACE-Bind anchor spheres on the topology-colored cartoon: red = extracellular (antibody-accessible), green = intracellular (NOT accessible from outside the cell), gray = TM / unknown. Cartoon + membrane render identically to Topology mode; this view just adds the sphere overlay."
+              title="Overlay SURFACE-Bind anchor spheres on the topology-colored cartoon: purple = extracellular (antibody-accessible), green = intracellular (NOT accessible from outside the cell), red = signal peptide, gray = TM / unknown. Cartoon + membrane render identically to Topology mode; this view just adds the sphere overlay."
             >
               SURFACE-Bind sites
             </button>
@@ -1796,26 +1942,25 @@ export function StructureViewer({
               </li>
             ))}
           </ul>
-          {/* SURFACE-Bind citation — Balbi et al 2026, PMID 41604262.
-              Same link the Summary metrics SURFACE-Bind chip cites;
-              surfaces the source paper right next to the spheres so
-              a reader who wants to read the method has a one-click
-              path. */}
+          {/* SURFACE-Bind citation — PMID + URL from the shared
+              `lib/citations` constant, so this caption can't drift from
+              the Summary-metrics chip or the §SURFACE-Bind card. */}
           <p className={styles.sitesCitation}>
-            Balbi et al ·{" "}
+            {CITATIONS.surfaceBind.authorYear}{" "}
             <a
-              href="https://pubmed.ncbi.nlm.nih.gov/41604262/"
+              href={pubmedUrl(CITATIONS.surfaceBind.pmid)}
               target="_blank"
               rel="noopener noreferrer"
               className={styles.captionLink}
             >
-              2026 ↗
+              ↗
             </a>
           </p>
         </>
       ) : (
         <TopologyLegend
           presentStates={_presentTopologyStates(activeTopology)}
+          globular={activeDeepTMHMMType === "GLOB"}
         />
       )}
     </div>

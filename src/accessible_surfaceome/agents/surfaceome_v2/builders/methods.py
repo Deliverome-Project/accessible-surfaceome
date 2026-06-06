@@ -37,6 +37,17 @@ _SURFACE_METHOD_EVIDENCE_TYPES: set[str] = {
 }
 _METHOD_CLAIM_TYPES: set[str] = {"surface_expression", "methodological"}
 
+# Anthropic server-side web search — enabled ONLY for the methods builder
+# so it can resolve antibody REAGENT METADATA the source paper leaves
+# unstated (clonality / epitope region / validation) from the vendor
+# datasheet or Antibody Registry record. The prompt scopes its use tightly
+# (identifier-anchored, metadata-only; surface claims stay cite-only).
+# ``max_uses`` caps the search spend per gene. Web search must be enabled
+# on the Anthropic account for this to run.
+_WEB_SEARCH_TOOL: list[dict[str, Any]] = [
+    {"type": "web_search_20250305", "name": "web_search", "max_uses": 8}
+]
+
 
 def _select_input_claims(claims: list[EvidenceClaim]) -> list[EvidenceClaim]:
     by_evi = filter_by_evidence_type(claims, _SURFACE_METHOD_EVIDENCE_TYPES)
@@ -92,6 +103,8 @@ def build_methods(
         # totalling ~12k output tokens. Use the higher cap so a single
         # round-trip suffices instead of paying for a repair retry.
         max_tokens=MAX_TOKENS_HEAVY,
+        # Web search for antibody-metadata enrichment (see prompt §Tools).
+        tools=_WEB_SEARCH_TOOL,
     )
     if parsed is None:
         logger.warning("methods_builder: validation failed; returning empty list")
