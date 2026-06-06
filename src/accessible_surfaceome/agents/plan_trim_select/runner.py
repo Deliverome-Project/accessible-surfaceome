@@ -45,6 +45,7 @@ from anthropic.types import TextBlock
 from pydantic import BaseModel, ValidationError
 
 from accessible_surfaceome.agents._support.client import get_client
+from accessible_surfaceome.agents._support.payload import cached_system
 from accessible_surfaceome.agents._support.pricing import (
     UsageRecord,
     UsageSummary,
@@ -578,12 +579,17 @@ def _call_with_repair(
     parsed: BaseModel | None = None
     raw_json: dict[str, Any] | None = None
     final_text = ""
+    # Cache the (static, focus-specific) selector system prompt — mirrors the
+    # synthesizer's cached_system pattern. Cuts cost on repair-loop retries and
+    # across genes in a sweep; byte-identical output (cache_control is a
+    # transport/billing directive, not a generation change).
+    cached_sys = cached_system(system_prompt)
 
     for attempt in range(MAX_REPAIRS + 1):
         resp = client.messages.create(
             model=model,
             max_tokens=max_tokens,
-            system=system_prompt,
+            system=cast("Any", cached_sys),
             messages=cast("Any", messages),
         )
         usage_sink.append(record_from_response(resp.usage, model))
