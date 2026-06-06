@@ -30,6 +30,87 @@ import {
 } from "./structure-viewer-types";
 
 const DATA_DIR = path.join(process.cwd(), "public", "structure-viewer");
+const SCHWEKE_DIR = path.join(
+  process.cwd(),
+  "public",
+  "data",
+  "structures",
+  "schweke",
+);
+
+/** A subset of {@link StructureVariantSchwekeHomomer} (defined in the
+ *  client component) — repeated here so this server-side loader doesn't
+ *  import the heavy 3Dmol-dependent client file. The caller assembles
+ *  the full variant by adding ``source``, ``id``, ``label``,
+ *  ``topology``, and ``deeptmhmm_type`` at the call site (where the
+ *  canonical topology / type is already in hand). */
+export interface SchwekeHomomerLoaderRow {
+  uniprot_acc: string;
+  pdb_url: string;
+  af_model_num: number;
+  ecd_only: boolean;
+}
+
+type SchwekeManifest = Record<
+  string,
+  { af_model_num: number; ecd_only: boolean }
+>;
+
+let _schwekeManifestCache: SchwekeManifest | null | undefined;
+
+function _readSchwekeManifest(): SchwekeManifest | null {
+  if (_schwekeManifestCache !== undefined) return _schwekeManifestCache;
+  try {
+    const raw = readFileSync(
+      path.join(SCHWEKE_DIR, "manifest.json"),
+      "utf-8",
+    );
+    const parsed = JSON.parse(raw) as SchwekeManifest;
+    // Strip JSON-comment keys (we use a leading-underscore convention
+    // because the manifest is hand-written, not generated).
+    const cleaned: SchwekeManifest = {};
+    for (const [k, v] of Object.entries(parsed)) {
+      if (k.startsWith("_")) continue;
+      cleaned[k] = v;
+    }
+    _schwekeManifestCache = cleaned;
+    return cleaned;
+  } catch {
+    _schwekeManifestCache = null;
+    return null;
+  }
+}
+
+/** Load the Schweke et al. 2024 (PMID 38325366) AF2 homo-oligomer entry
+ *  for ``uniprotAcc`` — when one exists in the manifest at
+ *  ``viewer/public/data/structures/schweke/manifest.json``. Returns
+ *  ``null`` for genes that aren't in Schweke's 8,195-homomer reference
+ *  set or whose PDB asset hasn't been ingested yet (a separate bulk-
+ *  extract pass against the figshare deposit DOI
+ *  10.6084/m9.figshare.22309177 — see
+ *  ``data/external/schweke_homomer_atlas/PROVENANCE.md``).
+ *
+ *  The PDB file is served as a static asset under
+ *  ``/data/structures/schweke/{ACC}_V1_{N}.pdb``; the loader trusts the
+ *  manifest and doesn't existence-check the asset — the client tab
+ *  surfaces a fetch error if it's missing. */
+export function loadSchwekeHomomer(
+  uniprotAcc: string | null | undefined,
+): SchwekeHomomerLoaderRow | null {
+  if (!uniprotAcc) return null;
+  if (!/^[A-Z0-9-]+$/i.test(uniprotAcc)) return null;
+  const manifest = _readSchwekeManifest();
+  if (!manifest) return null;
+  const acc = uniprotAcc.toUpperCase();
+  const entry = manifest[acc];
+  if (!entry) return null;
+  return {
+    uniprot_acc: acc,
+    pdb_url: `/data/structures/schweke/${acc}_V1_${entry.af_model_num}.pdb`,
+    af_model_num: entry.af_model_num,
+    ecd_only: entry.ecd_only,
+  };
+}
 
 export function loadStructureViewerData(
   uniprotAcc: string | null | undefined,

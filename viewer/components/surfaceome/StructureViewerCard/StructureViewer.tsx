@@ -38,9 +38,13 @@ export interface SurfaceBindAnchor {
 }
 
 /** A variant the user can switch to via the tab strip above the
- *  canvas. Either AFDB-fetchable (isoforms, orthologs) or an
- *  experimental PDB resolved at runtime via PDBe + RCSB. */
-export type StructureVariant = StructureVariantAfdb | StructureVariantExperimental;
+ *  canvas. AFDB (isoforms, orthologs), an experimental PDB resolved
+ *  at runtime via PDBe + RCSB, or a Schweke et al. 2024 homo-oligomer
+ *  AF2 prediction served from a checked-in / Worker-served PDB. */
+export type StructureVariant =
+  | StructureVariantAfdb
+  | StructureVariantExperimental
+  | StructureVariantSchwekeHomomer;
 
 interface StructureVariantBase {
   /** Stable key for the React tab list. */
@@ -63,6 +67,41 @@ export interface StructureVariantAfdb extends StructureVariantBase {
   uniprot_acc: string;
   /** Full UniProt acc including isoform suffix (e.g. "P00533-2"). */
   uniprot_acc_full?: string;
+}
+
+/** Schweke et al. 2024 AF2 homo-dimer prediction (Cell 187:999, PMID
+ *  38325366). The protein-level call is binary — a protein is a
+ *  "candidate complex" when its AF2 dimer interface clears the
+ *  logistic-regression dimer_proba threshold — and the structure file
+ *  is one of the 8,195 entries in the figshare deposit
+ *  ``AF_dimer_models_core.zip`` (DOI 10.6084/m9.figshare.22309177,
+ *  share-link only as of 2026-06).
+ *
+ *  Renderer differs from AFDB / experimental tabs: two chains, distinct
+ *  colors (maroon-mid + teal-mid, mirrors the Deliverome palette), no
+ *  topology coloring (the homomer view is about the dimer interface,
+ *  not which residue is in which compartment). Membrane orientation
+ *  via {@link orientPdbForTopology} runs when the model includes TM
+ *  residues (multi-pass cases: AQP1, MS4A1/CD20, KCN*, SLC*, GPCRs);
+ *  for single-pass ECDs that Schweke's ``nodiso3`` filter clipped to
+ *  the soluble domain (CD69, CD28, TFRC, CD3*), orientation is
+ *  skipped and the caption flags it as ECD-only. */
+export interface StructureVariantSchwekeHomomer extends StructureVariantBase {
+  source: "schweke-homomer";
+  /** UniProt accession of the homomer subunit. */
+  uniprot_acc: string;
+  /** Schweke model file URL — typically a static asset path like
+   *  ``/data/structures/schweke/{ACC}_V1_{N}.pdb`` checked in under
+   *  ``viewer/public/`` (or a future Worker endpoint). */
+  pdb_url: string;
+  /** AF model number 1-5 — the ``_V1_N`` suffix on the figshare
+   *  filename. Display-only. */
+  af_model_num: number;
+  /** True when Schweke's pipeline trimmed the TM helix as a
+   *  disconnected contact cluster (the single-pass ECD-only case).
+   *  Drives the "ECD only" caption + skips membrane orientation
+   *  because no TM residues are present to align. */
+  ecd_only: boolean;
 }
 
 export interface StructureVariantExperimental extends StructureVariantBase {
@@ -345,6 +384,13 @@ interface StructureViewerProps {
    *  variant's AFDB model + topology. Canonical is implied as the
    *  first tab — don't include it in this list. */
   variants?: StructureVariant[];
+  /** Optional Schweke et al. 2024 (PMID 38325366) AF2 homo-oligomer
+   *  prediction. When non-null, a "Homo-oligomer" tab is rendered
+   *  IMMEDIATELY after Canonical and before isoforms / orthologs /
+   *  experimental — that ordering matches the biological reading
+   *  flow: the canonical fold first, then how two copies of it
+   *  assemble, then alternate-isoform / cross-species comparisons. */
+  schwekeHomomer?: StructureVariantSchwekeHomomer | null;
 }
 
 /** Renderer mode toggle. ``topology`` is the default — full topology
@@ -547,6 +593,59 @@ function _renderCaption(args: {
     activeVariant, canonicalStruct, proteinName, canonicalUniprot,
     afdbMetaByAcc, pdbTitles,
   } = args;
+
+  // ---- Schweke homo-oligomer branch ----
+  if (activeVariant?.source === "schweke-homomer") {
+    const v = activeVariant;
+    const figshareUrl = "https://figshare.com/s/af3c1d5969f7468f2caa";
+    return (
+      <div className={styles.caption} aria-label="Structure caption">
+        <p className={styles.captionTitle}>
+          Predicted homo-dimer · two copies of {proteinName ?? canonicalUniprot}
+        </p>
+        <p className={styles.captionStats}>
+          <span className={styles.captionStat}>
+            {CITATIONS.schwekeHomomer.authorYear} (PMID{" "}
+            <a
+              href={pubmedUrl(CITATIONS.schwekeHomomer.pmid)}
+              target="_blank"
+              rel="noopener noreferrer"
+              className={styles.captionLink}
+            >
+              {CITATIONS.schwekeHomomer.pmid}
+            </a>
+            )
+          </span>
+          <span className={styles.captionSep} aria-hidden="true">·</span>
+          <span className={styles.captionStat}>
+            AF2 dimer · model{" "}
+            <strong>{v.uniprot_acc}_V1_{v.af_model_num}</strong>
+          </span>
+          <span className={styles.captionSep} aria-hidden="true">·</span>
+          <span className={styles.captionStat}>candidate complex</span>
+          <span className={styles.captionSep} aria-hidden="true">·</span>
+          <a
+            href={figshareUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            className={styles.captionLink}
+          >
+            figshare deposit ↗
+          </a>
+        </p>
+        {v.ecd_only ? (
+          <p className={styles.captionCaveat}>
+            ECD only — Schweke's <code>nodiso3</code> contact-clustering
+            filter dropped the single-pass TM helix as a disconnected
+            cluster, so the model shows the soluble extracellular dimer
+            interface only (no membrane orientation). For multi-pass
+            membrane proteins, all TMs are retained and the homomer
+            renders embedded in the bilayer.
+          </p>
+        ) : null}
+      </div>
+    );
+  }
 
   // ---- Experimental branch ----
   if (activeVariant?.source === "experimental") {
@@ -844,6 +943,13 @@ interface ViewerInstance {
  *  it's wrapped around. */
 const MEMBRANE_OPACITY = 0.34;
 
+/** Chain-A color on the Schweke homo-oligomer tab. Maroon-mid from
+ *  the Deliverome design tokens — pairs with the page accent. */
+const SCHWEKE_CHAIN_A_COLOR = "#922038";
+/** Chain-B color on the Schweke homo-oligomer tab. Teal-mid — the
+ *  high-contrast complement to maroon in the brand palette. */
+const SCHWEKE_CHAIN_B_COLOR = "#3d6b60";
+
 /**
  * StructureViewer — the 3Dmol.js-backed canvas. Client-only because
  * 3Dmol expects a DOM + WebGL. The 3Dmol module is dynamically
@@ -859,6 +965,7 @@ export function StructureViewer({
   proteinName,
   surfaceBindAnchors = [],
   variants = [],
+  schwekeHomomer = null,
 }: StructureViewerProps) {
   const containerRef = useRef<HTMLDivElement | null>(null);
   const viewerRef = useRef<ViewerInstance | null>(null);
@@ -1035,11 +1142,18 @@ export function StructureViewer({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [data.uniprot_acc, variants.map((v) => v.id).join(",")]);
 
-  // Effective variants = caller-provided (isoforms / orthologs) +
-  // experimental tab when PDBe has a hit. Experimental always lands
-  // after isoforms / orthologs in the tab strip.
+  // Effective variants =
+  //   Schweke homo-oligomer (if any) +
+  //   caller-provided (isoforms / orthologs) +
+  //   experimental (when PDBe has a hit).
+  // Ordering: Schweke right after Canonical → isoforms / orthologs →
+  // experimental last. Mirrors the biological reading flow: how the
+  // canonical fold assembles into a complex, then alternate-isoform /
+  // cross-species comparisons, then the experimental ground truth.
   const effectiveVariants: StructureVariant[] = useMemo(() => {
-    const v: StructureVariant[] = [...variants];
+    const v: StructureVariant[] = [];
+    if (schwekeHomomer) v.push(schwekeHomomer);
+    v.push(...variants);
     if (pdbeCandidate && pdbeCandidate !== "loading") {
       v.push({
         source: "experimental",
@@ -1072,13 +1186,20 @@ export function StructureViewer({
       });
     }
     return v;
-  }, [variants, pdbeCandidate, data.topology, data.deeptmhmm_type]);
+  }, [
+    variants,
+    schwekeHomomer,
+    pdbeCandidate,
+    data.topology,
+    data.deeptmhmm_type,
+  ]);
 
   const isCanonicalActive = variantIdx === 0;
   const activeVariant: StructureVariant | null = isCanonicalActive
     ? null
     : effectiveVariants[variantIdx - 1] ?? null;
   const isExperimentalActive = activeVariant?.source === "experimental";
+  const isSchwekeActive = activeVariant?.source === "schweke-homomer";
   // The uniprot_acc / topology / type used by the render pipeline.
   // For experimental view, ``activeUniprot`` is unused (we fetch
   // RCSB by pdb_id instead) — keep canonical for the aria-label.
@@ -1220,16 +1341,36 @@ export function StructureViewer({
       type Mod3D = typeof import("3dmol");
       const Mod = (await import("3dmol")) as Mod3D & { default?: Mod3D };
       const $3Dmol: Mod3D = Mod.default ?? Mod;
-      // Branch on AFDB vs experimental. AFDB fetches by UniProt acc
-      // through AFDB DB; experimental fetches by PDB id through RCSB
-      // and uses PDBe's chain + offset mapping to project canonical
-      // DeepTMHMM topology onto the (potentially partial, chain-
-      // restricted) PDB residue numbering.
+      // Branch on which variant flavor is active:
+      //   - schweke-homomer  → fetch the AF2 dimer PDB from a static
+      //     asset URL (committed under viewer/public/data/structures/
+      //     schweke/, or a future Worker endpoint) and short-circuit
+      //     the topology-projection / SURFACE-Bind paths below — the
+      //     homomer view is its own visualization (chain A / chain B
+      //     duotone, optional membrane slab when TMs are in the model).
+      //   - experimental    → fetch by PDB id through RCSB; PDBe gives
+      //     us the chain + UniProt→author offset to project canonical
+      //     DeepTMHMM topology onto the (potentially partial, chain-
+      //     restricted) PDB residue numbering.
+      //   - AFDB (default)  → fetch by UniProt acc through AFDB DB.
       let rawPdb: string;
+      const schwekeVariant = isSchwekeActive
+        ? (activeVariant as StructureVariantSchwekeHomomer)
+        : null;
       const expVariant = isExperimentalActive
         ? (activeVariant as StructureVariantExperimental)
         : null;
-      if (expVariant) {
+      if (schwekeVariant) {
+        const resp = await fetch(schwekeVariant.pdb_url, {
+          cache: "force-cache",
+        });
+        if (!resp.ok) {
+          throw new Error(
+            `Schweke homomer PDB returned ${resp.status} for ${schwekeVariant.pdb_url}`,
+          );
+        }
+        rawPdb = await resp.text();
+      } else if (expVariant) {
         // RCSB returns the PDB file directly. Aggressive caching is
         // fine — PDB entries are immutable per release.
         const rcsbUrl = `https://files.rcsb.org/download/${expVariant.pdb_id}.pdb`;
@@ -1395,12 +1536,21 @@ export function StructureViewer({
       // covers no TM residues (ECD-only crystals, soluble fragments),
       // in which case the structure renders unoriented + slab-less —
       // 3Dmol auto-frames the native coords cleanly.
-      const { pdbText, membrane } = expVariant
-        ? orientPdbForTopology(rawPdb, activeTopology, {
-            chainId: effectiveChainId ?? expVariant.chain_id,
-            resiToTopo: _makeResiToTopo(projSegments),
-          })
-        : orientPdbForTopology(rawPdb, activeTopology);
+      // Schweke ECD-only: nodiso3 stripped the TM helix as a
+      // disconnected contact cluster, so the model carries no M
+      // residues to align — orient against an all-M topology would
+      // produce a degenerate axis. Pass through unoriented; 3Dmol
+      // auto-frames the dimer cleanly and the caption flags it.
+      const schwekeSkipOrient = schwekeVariant?.ecd_only === true;
+      const { pdbText, membrane } =
+        schwekeSkipOrient
+          ? { pdbText: rawPdb, membrane: null }
+          : expVariant
+            ? orientPdbForTopology(rawPdb, activeTopology, {
+                chainId: effectiveChainId ?? expVariant.chain_id,
+                resiToTopo: _makeResiToTopo(projSegments),
+              })
+            : orientPdbForTopology(rawPdb, activeTopology);
 
       const viewer = $3Dmol.createViewer(containerRef.current, {
         backgroundColor: "white",
@@ -1424,7 +1574,28 @@ export function StructureViewer({
       // the membrane slab (MEMBRANE_OPACITY 0.34) renders identically
       // in both modes, matching the user's "make the membrane look
       // the same" requirement.
-      if (viewMode === "sites") {
+      if (schwekeVariant) {
+        // Homo-oligomer view: drop the topology / sites coloring and
+        // paint the two chains in distinct colors so the dimer
+        // interface reads at a glance. Maroon-mid (CHAIN_A) + teal-mid
+        // (CHAIN_B) — both come from the Deliverome design tokens; the
+        // saved screenshots in data/external/schweke_homomer_atlas/ use
+        // these exact hex values. SURFACE-Bind anchors / topology /
+        // membrane slab are intentionally NOT drawn on this tab: the
+        // SB anchor residue numbers are canonical-keyed (don't translate
+        // cleanly to the homomer's residue range), topology coloring
+        // would compete with chain-distinguishing, and membrane slab is
+        // only meaningful when TMs are in the model (multi-pass cases —
+        // ``ecd_only=false`` — handled by the orientation block above).
+        viewer.setStyle(
+          { chain: "A" },
+          { cartoon: { color: SCHWEKE_CHAIN_A_COLOR, opacity: 1.0 } },
+        );
+        viewer.setStyle(
+          { chain: "B" },
+          { cartoon: { color: SCHWEKE_CHAIN_B_COLOR, opacity: 1.0 } },
+        );
+      } else if (viewMode === "sites") {
         const baseSel = expVariant && effectiveChainId
           ? { chain: effectiveChainId }
           : {};
@@ -1517,7 +1688,12 @@ export function StructureViewer({
       // contacts (separate task). The sphere is the honest
       // approximation: "the patch is centered here."
       const viewerExt = viewer as ViewerInstance;
-      const shouldRenderAnchors = viewMode === "sites" && hasAnchors;
+      // Suppress SURFACE-Bind anchors on the homo-oligomer tab: the
+      // SB anchor residue numbers are canonical-keyed and don't
+      // translate cleanly onto a homomer whose residue range may be
+      // ECD-only (nodiso3) or a different model than canonical AFDB.
+      const shouldRenderAnchors =
+        viewMode === "sites" && hasAnchors && !schwekeVariant;
       for (let i = 0; shouldRenderAnchors && i < surfaceBindAnchors.length; i += 1) {
         const { siteId, residue, compartment } = surfaceBindAnchors[i];
         const color = COMPARTMENT_COLOR[compartment];
@@ -1780,7 +1956,9 @@ export function StructureViewer({
                 title={
                   vUnavail
                     ? `No AlphaFold model for ${v.label}${v.sublabel ? ` (${v.sublabel})` : ""} — AlphaFold DB doesn't model this protein.`
-                    : `AlphaFold model for ${v.label}${v.sublabel ? ` (${v.sublabel})` : ""}.`
+                    : v.source === "schweke-homomer"
+                      ? `Schweke 2024 AF2 homo-oligomer prediction for ${geneSymbol} — predicted dimer of UniProt ${data.uniprot_acc}.`
+                      : `AlphaFold model for ${v.label}${v.sublabel ? ` (${v.sublabel})` : ""}.`
                 }
                 aria-selected={isActive}
               >

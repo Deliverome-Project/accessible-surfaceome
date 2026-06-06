@@ -5,6 +5,7 @@ import type {
   BenchmarkRow,
   SurfaceomeRecord,
 } from "../../../lib/surfaceome-types";
+import type { SchwekeHomomerLoaderRow } from "../../../lib/structure-viewer";
 import type { StructureViewerData } from "../../../lib/structure-viewer-types";
 import { prettyEnum } from "../../../lib/surfaceome";
 import { tooltips } from "../../../lib/tooltips";
@@ -77,6 +78,13 @@ interface GeneHeaderProps {
    *  intracellular and the caption is adjusted to describe the
    *  membrane-anchoring rather than a transmembrane orientation. */
   structureData?: StructureViewerData | null;
+  /** Schweke et al. 2024 (PMID 38325366) AF2 homo-oligomer entry, when
+   *  this gene is in the manifest. Forwarded as the ``schwekeHomomer``
+   *  prop on <StructureViewer>, where it surfaces as a "Homo-oligomer"
+   *  tab IMMEDIATELY after Canonical. Null for genes outside the
+   *  8,195-homomer reference set or whose PDB asset hasn't been
+   *  ingested yet. */
+  schwekeHomomer?: SchwekeHomomerLoaderRow | null;
   /** 5-DB surface-vote vector from the candidate-universe build.
    *  When present, a slim ``<DatabasePresenceStrip>`` renders inline
    *  above the executive summary so the reader sees DB consensus
@@ -283,6 +291,7 @@ export function GeneHeader({
   rec,
   geneName,
   structureData,
+  schwekeHomomer,
   catalogRow,
   benchmarkRow,
 }: GeneHeaderProps) {
@@ -701,6 +710,31 @@ export function GeneHeader({
             <StructureViewer
               data={structureData}
               geneSymbol={g.hgnc_symbol}
+              // Schweke et al. 2024 (PMID 38325366) AF2 homo-oligomer
+              // model when this gene is in the manifest. Renders as a
+              // "Homo-oligomer" tab right after Canonical and before
+              // isoforms / orthologs. Assemble the full variant here
+              // (rather than in the loader) so the canonical topology
+              // and DeepTMHMM type — already in hand via structureData
+              // — don't have to be re-derived.
+              schwekeHomomer={
+                schwekeHomomer
+                  ? {
+                      source: "schweke-homomer" as const,
+                      id: `schweke-${schwekeHomomer.uniprot_acc}-V1-${schwekeHomomer.af_model_num}`,
+                      label: "Homo-oligomer",
+                      sublabel: schwekeHomomer.ecd_only
+                        ? "ECD dimer · Schweke 2024"
+                        : "dimer · Schweke 2024",
+                      uniprot_acc: schwekeHomomer.uniprot_acc,
+                      pdb_url: schwekeHomomer.pdb_url,
+                      af_model_num: schwekeHomomer.af_model_num,
+                      ecd_only: schwekeHomomer.ecd_only,
+                      topology: structureData.topology,
+                      deeptmhmm_type: structureData.deeptmhmm_type,
+                    }
+                  : null
+              }
               // Canonical AFDB stats — the new caption inside the
               // viewer renders these for the canonical tab (and
               // lazy-fetches metadata for other AFDB variants when
