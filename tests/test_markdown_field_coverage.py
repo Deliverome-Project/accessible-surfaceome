@@ -104,6 +104,10 @@ OMITTED: dict[str, str] = {
     "tm_absent_from_model": "truncated-model flag; internal",
     "n_tm_regions_absent": "truncated-model count; internal",
     "species_inferred": "inference flag accompanying species; internal",
+    # --- "checked, none found" sentinels (presence flags; absence implicit in md) ---
+    "checked": "orthologs checked-but-empty sentinel; absence implicit in md",
+    "paralogs_checked": "paralogs checked-but-empty sentinel; absence implicit in md",
+    "isoform_topologies_checked": "isoform-topology checked-but-empty sentinel; absence implicit in md",
     # --- re-fetch identifiers (programmatic, not human-facing) ---
     "ensembl_id": "ortholog Ensembl id; re-fetch only",
     "family_id": "Compara family id; re-fetch only",
