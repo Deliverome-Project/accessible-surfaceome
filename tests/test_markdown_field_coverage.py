@@ -106,6 +106,17 @@ OMITTED: dict[str, str] = {
     "has_higher_order_complex": "Schweke 2024 complex flag — viewer-side caption, not surfaced in markdown",
     "dimer_pdb_filename": "Schweke 2024 dimer PDB filename — viewer-side asset URL, not surfaced in markdown",
     "complex_pdb_filename": "Schweke 2024 complex PDB filename — viewer-side asset URL, not surfaced in markdown",
+    # --- Schweke 2024 homo-oligomer prediction RISK chip (viewer-side only) ---
+    # Orchestrator-populated mirror of the deterministic block onto the
+    # AccessibilityRisks region so the viewer renders it next to the
+    # epitope_masking chip. The deterministic block is already
+    # markdown-omitted above; the risk-side mirror is likewise viewer-only.
+    # The sub-fields (present, severity, stoichiometry, is_ecd_only, source,
+    # cited_evidence_ids) are name-shared with other AccessibilityRisks
+    # blocks (ShedForm, SecretedForm, etc.) so the name-level coverage
+    # check passes via those siblings — only the new container field needs
+    # an OMITTED entry.
+    "homo_oligomerization_prediction": "Schweke 2024 risk chip — viewer-side mirror of deterministic block, not rendered standalone in markdown",
     # --- topology projection / model internals (shown qualitatively) ---
     "deeptmhmm_label": "categorical label; the per-residue string is shown",
     "topology_projection_source": "projection provenance; internal",

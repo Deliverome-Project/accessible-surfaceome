@@ -2840,6 +2840,58 @@ class EpitopeMasking(BaseModel):
         return self
 
 
+class HomoOligomerizationPredictionRisk(BaseModel):
+    """Risk-side view of the Schweke 2024 AF2 homo-oligomer prediction.
+
+    Mirrors ``deterministic_features.homo_oligomerization`` (Schweke 2024,
+    PMID 38325366) as a structured *risk* chip so the viewer can render it
+    alongside ``epitope_masking`` without conflating the two. The synthesizer
+    already consults the deterministic block when choosing the
+    ``homo-oligomerization`` mechanism for ``epitope_masking``; this field
+    is the **deterministic, orchestrator-populated** counterpart — a separate
+    AF2-derived signal a reader can scan independently from the LLM call.
+
+    Severity is derived from cyclic-symmetry order N:
+
+    * ``stoichiometry <= 2`` → ``low`` (a dimer hides relatively little
+      surface),
+    * ``3..7`` → ``moderate``,
+    * ``8..24`` → ``high`` (large complexes bury substantial surface),
+    * ``None`` (Schweke didn't reconstruct higher-order or
+      ``present=False``) → ``unknown``.
+
+    Populated by the v2 orchestrator post-pass (`_attach_homo_oligomerization_prediction`)
+    from ``deterministic_features.homo_oligomerization``. The synthesizer
+    never emits this — keeping it orchestrator-only mirrors the
+    ``_attach_deterministic_families`` pattern and prevents the agent from
+    smuggling a competing AF2 call into the draft.
+    """
+
+    model_config = ConfigDict(extra="forbid")
+
+    # ``True`` iff Schweke flagged the protein in the positive refset.
+    # Mirrors ``HomoOligomerizationFeatures.is_homo_oligomer``.
+    present: bool = False
+    # Cyclic-symmetry order N from Schweke's atlas. ``None`` when
+    # ``present=False`` or Schweke flagged the protein as a dimer but
+    # didn't reconstruct higher-order.
+    stoichiometry: int | None = Field(default=None, ge=2, le=24)
+    # Severity derived from N — the viewer reads it directly for the
+    # chip color. See class docstring for the mapping.
+    severity: RiskSeverity = "unknown"
+    # Schweke ``nodiso3`` flag: the predicted homomer is ECD-only (the
+    # TM helix was stripped as a disconnected cluster). Important
+    # context — an ECD-only dimer means the soluble ECD is the
+    # dimerizing surface, which IS the epitope-accessible region.
+    is_ecd_only: bool = False
+    source: str = "Schweke 2024 (PMID 38325366)"
+    # Empty by default — this is a deterministic AF2 prediction, not a
+    # literature-anchored claim. Kept for shape consistency with the
+    # other accessibility-risk blocks so the viewer / markdown
+    # renderers can iterate uniformly.
+    cited_evidence_ids: list[str] = Field(default_factory=list)
+
+
 class AccessibilityRisks(BaseModel):
     """Section 6 — risks to a binder physically engaging the surface form.
 
@@ -2855,6 +2907,13 @@ class AccessibilityRisks(BaseModel):
     restricted_subdomain: RestrictedSubdomain
     ecd_size_assessment: ECDSizeAssessment
     epitope_masking: EpitopeMasking
+    # Deterministic AF2 homo-oligomer prediction (Schweke 2024) rendered
+    # as a sibling chip to ``epitope_masking``. ``None`` (the default) on
+    # records emitted before this field existed — back-compat.
+    # **Orchestrator-populated only.** The synthesizer never emits this;
+    # the v2 orchestrator post-pass copies it from
+    # ``deterministic_features.homo_oligomerization``.
+    homo_oligomerization_prediction: HomoOligomerizationPredictionRisk | None = None
 
 
 # ---- triage_signal ↔ surface_accessibility consistency --------------------
@@ -2904,7 +2963,9 @@ class SurfaceomeRecord(BaseModel):
 
     model_config = ConfigDict(extra="forbid")
 
-    schema_version: Literal["1.0.0", "1.1.0", "2.0.0", "2.1.0", "2.2.0"] = "2.2.0"
+    schema_version: Literal[
+        "1.0.0", "1.1.0", "2.0.0", "2.1.0", "2.2.0", "2.3.0"
+    ] = "2.3.0"
     gene: GeneIdentifier
 
     # Cross-agent coherence — populated by the orchestrator from the most
@@ -3001,7 +3062,9 @@ class SurfaceomeRecordDraft(BaseModel):
 
     model_config = ConfigDict(extra="forbid")
 
-    schema_version: Literal["1.0.0", "1.1.0", "2.0.0", "2.1.0", "2.2.0"] = "2.2.0"
+    schema_version: Literal[
+        "1.0.0", "1.1.0", "2.0.0", "2.1.0", "2.2.0", "2.3.0"
+    ] = "2.3.0"
     gene: GeneIdentifier
 
     # Orchestrator-injected before the agent call; the agent reads it but does
@@ -3770,6 +3833,7 @@ __all__ = [
     "RestrictedSubdomain",
     "ECDSizeAssessment",
     "EpitopeMasking",
+    "HomoOligomerizationPredictionRisk",
     "AccessibilityRisks",
     # TriageRecord
     "TRIAGE_SCHEMA_VERSION",

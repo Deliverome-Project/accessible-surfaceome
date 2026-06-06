@@ -1182,6 +1182,39 @@ export interface EpitopeMasking {
   cited_evidence_ids: string[];
 }
 
+/**
+ * Risk-side view of the Schweke 2024 AF2 homo-oligomer prediction
+ * (PMID 38325366), populated by the v2 orchestrator from
+ * `deterministic_features.homo_oligomerization`. Rendered as a sibling
+ * chip to `epitope_masking` so the reader can scan the deterministic
+ * AF2 signal independently from the LLM-emitted masking mechanism.
+ *
+ * Severity is derived from cyclic-symmetry order N: `<=2` → `low`,
+ * `3..7` → `moderate`, `8..24` → `high`, `null` → `unknown`. Optional
+ * field — older records emitted before this chip existed validate
+ * with `homo_oligomerization_prediction` absent.
+ */
+export interface HomoOligomerizationPredictionRisk {
+  /** `true` iff Schweke flagged the protein in the positive refset.
+   *  Mirrors `HomoOligomerizationFeatures.is_homo_oligomer`. */
+  present: boolean;
+  /** Cyclic-symmetry order N. Null when `present=false` or Schweke
+   *  flagged a dimer but didn't reconstruct higher-order. */
+  stoichiometry?: number | null;
+  /** Derived from `stoichiometry` deterministically — the viewer
+   *  reads this directly for the chip color. */
+  severity: Severity;
+  /** Schweke `nodiso3` flag: the predicted homomer is ECD-only.
+   *  Important context — the soluble ECD IS the dimerizing surface. */
+  is_ecd_only: boolean;
+  /** Default `"Schweke 2024 (PMID 38325366)"`. */
+  source: string;
+  /** Empty by default — this is a deterministic AF2 prediction, not
+   *  a literature-anchored claim. Kept for shape consistency with
+   *  the other accessibility-risk blocks. */
+  cited_evidence_ids: string[];
+}
+
 export interface AccessibilityRisks {
   shed_form: ShedForm;
   secreted_form: SecretedForm;
@@ -1189,6 +1222,10 @@ export interface AccessibilityRisks {
   co_receptor_requirements: CoReceptorRequirements;
   ecd_size_assessment: EcdSizeAssessment;
   epitope_masking: EpitopeMasking;
+  /** Deterministic AF2 homo-oligomer prediction (Schweke 2024)
+   *  rendered as a sibling chip to `epitope_masking`. Optional —
+   *  null/absent on records emitted before this chip existed. */
+  homo_oligomerization_prediction?: HomoOligomerizationPredictionRisk | null;
 }
 
 // ============================================================

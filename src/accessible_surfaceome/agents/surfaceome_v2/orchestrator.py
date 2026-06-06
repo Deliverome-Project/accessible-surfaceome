@@ -74,12 +74,16 @@ from accessible_surfaceome.agents.surfaceome_v2.builders import (
 from accessible_surfaceome.paths import DATA_DIR
 from accessible_surfaceome.tools._shared.http import CachedHTTP, open_default_client
 from accessible_surfaceome.tools._shared.models import (
+    AccessibilityRisks,
     BiologicalContext,
     BiologicalContextDraft,
+    DeterministicFeatures,
     Evidence,
     EvidenceClaim,
     GeneIdentifier,
+    HomoOligomerizationPredictionRisk,
     IsoformTopology,
+    RiskSeverity,
     SearchEntry,
     SourceType,
     SurfaceEvidence,
@@ -141,6 +145,59 @@ def _secreted_isoform_ids(isoform_topologies: list[IsoformTopology]) -> list[str
         for iso in isoform_topologies
         if iso.tm_helix_count == 0 and iso.ecd_length_residues >= 30
     ]
+
+
+def _homo_oligomerization_severity(stoichiometry: int | None) -> RiskSeverity:
+    """Map Schweke cyclic-symmetry order N onto a ``RiskSeverity`` band.
+
+    The synthesizer already weights epitope-masking severity by N (a
+    13-mer hides far more surface than a 2-mer); the risk-side chip
+    needs the same monotone mapping so the viewer's chip color tracks
+    the underlying signal. ``None`` (Schweke didn't reconstruct higher-
+    order, or the protein isn't in the positive refset) → ``unknown``.
+
+    Bands (per CLAUDE.md task spec):
+
+    * ``<= 2``  → ``low``      (dimer: relatively little surface hidden)
+    * ``3..7``  → ``moderate``
+    * ``8..24`` → ``high``     (large complex: substantial surface buried)
+    """
+    if stoichiometry is None:
+        return "unknown"
+    if stoichiometry <= 2:
+        return "low"
+    if stoichiometry <= 7:
+        return "moderate"
+    return "high"
+
+
+def _attach_homo_oligomerization_prediction(
+    accessibility_risks: AccessibilityRisks,
+    deterministic_features: DeterministicFeatures,
+) -> AccessibilityRisks:
+    """Copy the deterministic Schweke homo-oligomer prediction onto the
+    risks block as a structured chip.
+
+    Mirrors :func:`_attach_deterministic_families`: a small,
+    orchestrator-only post-pass that lifts a deterministic signal into a
+    region the LLM authored, so the viewer can render it next to the
+    LLM-emitted ``epitope_masking`` chip without conflating the two.
+
+    Returns a *new* ``AccessibilityRisks`` (via ``model_copy``); the
+    input is left untouched. Severity is derived deterministically from
+    ``stoichiometry`` (see :func:`_homo_oligomerization_severity`).
+    """
+    schweke = deterministic_features.homo_oligomerization
+    prediction = HomoOligomerizationPredictionRisk(
+        present=schweke.is_homo_oligomer,
+        stoichiometry=schweke.stoichiometry,
+        severity=_homo_oligomerization_severity(schweke.stoichiometry),
+        is_ecd_only=schweke.is_ecd_only,
+        source=schweke.source,
+    )
+    return accessibility_risks.model_copy(
+        update={"homo_oligomerization_prediction": prediction}
+    )
 
 
 def _wall_clock_for_timing(timing: list[StepTiming]) -> float:
@@ -733,6 +790,25 @@ def _annotate(
         apply_secreted_form_post_pass(
             accessibility_risks=synth_draft.accessibility_risks,
             deterministic_features=det_features,
+        )
+
+    # ---- step 7.6: deterministic homo-oligomerization prediction chip ----
+    # Mirror Schweke 2024's AF2 homo-oligomer prediction from
+    # ``deterministic_features.homo_oligomerization`` into a structured
+    # risk chip on ``accessibility_risks.homo_oligomerization_prediction``
+    # so the viewer renders it next to ``epitope_masking`` without
+    # conflating the deterministic AF2 call with the LLM-emitted masking
+    # mechanism. The synthesizer DOES NOT emit this — keeping it
+    # orchestrator-only mirrors ``_attach_deterministic_families`` and
+    # prevents stale-prompt drift. Free — reuses the already-populated
+    # deterministic block, no new fetch.
+    with timing.step("homo_oligomerization_prediction_post_pass", phase="post"):
+        synth_draft = synth_draft.model_copy(
+            update={
+                "accessibility_risks": _attach_homo_oligomerization_prediction(
+                    synth_draft.accessibility_risks, det_features
+                )
+            }
         )
 
     # ---- step 8: derive filters (reused from v1) --------------------------

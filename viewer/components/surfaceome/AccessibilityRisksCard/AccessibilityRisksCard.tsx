@@ -181,6 +181,79 @@ export function AccessibilityRisksCard({ rec, n }: Props) {
           <p className={styles.prose}>{r.epitope_masking.rationale}</p>
         ) : null}
       </div>
+
+      {/* Deterministic Schweke 2024 (PMID 38325366) AF2 homo-oligomer
+       *  prediction — rendered as a sibling chip to epitope_masking so
+       *  the reader can see the deterministic AF2 call independently
+       *  from the LLM-emitted masking mechanism. Compact by design:
+       *  this is a deterministic chip, not a full prose section. The
+       *  block is post-pass populated by the v2 orchestrator from
+       *  deterministic_features.homo_oligomerization; older records
+       *  validate with the field absent. */}
+      {r.homo_oligomerization_prediction ? (
+        <div className={styles.subsection}>
+          <div className={styles.subHead}>
+            <p className={styles.subTitle}>
+              Homo-oligomerization (Schweke 2024)
+            </p>
+            <StatusPill
+              tone={severityTone(r.homo_oligomerization_prediction.severity)}
+              size="sm"
+            >
+              <ChipLabelValue
+                label="severity"
+                value={prettyEnum(
+                  r.homo_oligomerization_prediction.severity,
+                )}
+              />
+            </StatusPill>
+            <StatusPill
+              tone={
+                r.homo_oligomerization_prediction.present
+                  ? "danger"
+                  : "success"
+              }
+              size="sm"
+            >
+              {presenceLabel(r.homo_oligomerization_prediction.present)}
+            </StatusPill>
+            {r.homo_oligomerization_prediction.present &&
+            r.homo_oligomerization_prediction.stoichiometry != null ? (
+              <StatusPill tone="lavender" size="sm">
+                <ChipLabelValue
+                  label="N"
+                  value={String(
+                    r.homo_oligomerization_prediction.stoichiometry,
+                  )}
+                />
+              </StatusPill>
+            ) : null}
+            {r.homo_oligomerization_prediction.is_ecd_only ? (
+              <StatusPill tone="teal" size="sm">
+                ECD-only model
+              </StatusPill>
+            ) : null}
+          </div>
+          <p className={styles.prose}>
+            {r.homo_oligomerization_prediction.present
+              ? r.homo_oligomerization_prediction.stoichiometry != null
+                ? `Predicted ${r.homo_oligomerization_prediction.stoichiometry}-mer (stoichiometry).`
+                : "Predicted homo-oligomer (stoichiometry not reconstructed)."
+              : "Not in Schweke's positive refset (treat as a lower bound; known under-call on big multi-pass channels and ligand/covalent dimers)."}{" "}
+            {r.homo_oligomerization_prediction.is_ecd_only
+              ? "ECD-only model — the soluble ECD is the dimerizing surface, which IS the epitope-accessible region. "
+              : ""}
+            <span className={`label-mono ${styles.muted}`}>Source</span>{" "}
+            <a
+              href="https://pubmed.ncbi.nlm.nih.gov/38325366/"
+              target="_blank"
+              rel="noreferrer"
+            >
+              Schweke et al. 2024, PMID 38325366
+            </a>
+          </p>
+        </div>
+      ) : null}
     </SectionCard>
   );
 }
