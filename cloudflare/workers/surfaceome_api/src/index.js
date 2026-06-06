@@ -226,6 +226,306 @@ async function handleGene(env, symbol) {
       }
     }
   }
+  // Enrich with canonical + isoform topology, paralogs, and orthologs at
+  // serve time. Same back-compat rationale as the Schweke block above: the
+  // annotator already bakes these into newly-annotated records (see
+  // src/accessible_surfaceome/agents/surfaceome_v1/d1_deterministic.py
+  // _fetch_canonical_topology / _fetch_isoform_topologies / _fetch_paralogs
+  // / _fetch_orthologs). These LEFT JOINs are the back-compat hatch for
+  // records annotated BEFORE each feature's wiring landed. Annotator-baked
+  // positives ALWAYS win — the "needsEnrichment" gate only fires when the
+  // record's field is missing, carries the explicit placeholder, OR is
+  // empty without a "checked, none found" sentinel (see
+  // DeterministicFeatures.{paralogs,isoform_topologies}_checked and
+  // OrthologSet.checked — those are the annotator's "we looked and there's
+  // genuinely nothing" signal, and we leave that alone).
+  if (uniprot) {
+    // Resolve the active per-table versions in parallel. Each defaults to
+    // null on a missing release row or D1 hiccup; the per-feature blocks
+    // below skip enrichment when their version is absent.
+    const [topoCanonRow, topoIsoRow, paralogRelRow, orthoEcdRelRow] = await Promise.all([
+      env.DB.prepare(
+        `SELECT topology_version FROM topology_release
+            WHERE topology_version IN (
+              SELECT DISTINCT topology_version FROM topology_public WHERE cohort = 'human_canonical'
+            )
+            ORDER BY loaded_at DESC LIMIT 1`
+      ).first().catch(() => null),
+      env.DB.prepare(
+        `SELECT topology_version FROM topology_release
+            WHERE topology_version IN (
+              SELECT DISTINCT topology_version FROM topology_public WHERE cohort = 'human_isoforms'
+            )
+            ORDER BY loaded_at DESC LIMIT 1`
+      ).first().catch(() => null),
+      env.DB.prepare(
+        `SELECT paralog_version FROM compara_paralog_release
+            ORDER BY fetched_at DESC LIMIT 1`
+      ).first().catch(() => null),
+      env.DB.prepare(
+        `SELECT ortholog_ecd_version FROM compara_ortholog_ecd_release
+            ORDER BY computed_at DESC LIMIT 1`
+      ).first().catch(() => null),
+    ]);
+    const canonicalTopoVersion = topoCanonRow?.topology_version ?? null;
+    const isoformTopoVersion = topoIsoRow?.topology_version ?? null;
+    const paralogVersion = paralogRelRow?.paralog_version ?? null;
+    const orthologEcdVersion = orthoEcdRelRow?.ortholog_ecd_version ?? null;
+
+    // ----- canonical_topology -----
+    // Mirror _fetch_canonical_topology. Enrich when the record's
+    // canonical_topology is missing OR carries the
+    // ``tool_version='placeholder-no-d1-row'`` stub the Python annotator
+    // emits when no D1 row was available at annotation time. Annotator
+    // records with a real DeepTMHMM row are left alone.
+    const existingCanonTopo = record?.deterministic_features?.canonical_topology;
+    const canonTopoIsPlaceholder = existingCanonTopo?.tool_version === "placeholder-no-d1-row";
+    const canonTopoNeedsEnrich = !existingCanonTopo || canonTopoIsPlaceholder;
+    if (canonTopoNeedsEnrich && canonicalTopoVersion) {
+      const tr = await env.DB.prepare(
+        `SELECT uniprot_acc_full, isoform_id, tm_helix_count,
+                n_terminal_orientation, c_terminal_orientation,
+                signal_peptide_length, ecd_length_residues, icd_length_residues,
+                per_residue_topology, sequence, tool_version, retrieved_at
+           FROM topology_public
+          WHERE uniprot_acc = ? AND cohort = 'human_canonical'
+            AND topology_version = ?
+          LIMIT 1`
+      ).bind(uniprot, canonicalTopoVersion).first().catch(() => null);
+      if (tr) {
+        if (!record.deterministic_features) record.deterministic_features = {};
+        record.deterministic_features.canonical_topology = {
+          isoform_id: tr.isoform_id || `${uniprot}-1`,
+          uniprot_acc: tr.uniprot_acc_full || uniprot,
+          tm_helix_count: Number(tr.tm_helix_count || 0),
+          n_terminal_orientation: tr.n_terminal_orientation === "extracellular" ? "extracellular" : "cytoplasmic",
+          c_terminal_orientation: tr.c_terminal_orientation === "extracellular" ? "extracellular" : "cytoplasmic",
+          signal_peptide_length: Number(tr.signal_peptide_length || 0),
+          ecd_length_residues: Number(tr.ecd_length_residues || 0),
+          icd_length_residues: Number(tr.icd_length_residues || 0),
+          per_residue_topology: tr.per_residue_topology || "",
+          sequence: tr.sequence ?? null,
+          tool_version: tr.tool_version || "deeptmhmm-1.0.24",
+          retrieved_at: tr.retrieved_at || new Date().toISOString(),
+        };
+      }
+    }
+
+    // ----- isoform_topologies -----
+    // Mirror _fetch_isoform_topologies. Enrich when the field is missing
+    // OR (the array is empty AND ``isoform_topologies_checked`` is not
+    // True). The latter sentinel is the annotator's "we ran the isoforms
+    // cohort and this gene genuinely has no alternative isoforms" signal;
+    // we honor it. The Worker does NOT compute %identity to canonical
+    // (BLOSUM62 alignment is too heavy for the request hot path); identity
+    // fields are emitted as null. Records that need real %identity values
+    // get them via re-annotation, not at serve time.
+    const existingIsoTopo = record?.deterministic_features?.isoform_topologies;
+    const isoTopoChecked = record?.deterministic_features?.isoform_topologies_checked === true;
+    const isoTopoNeedsEnrich = !Array.isArray(existingIsoTopo)
+      || (existingIsoTopo.length === 0 && !isoTopoChecked);
+    if (isoTopoNeedsEnrich && isoformTopoVersion) {
+      const isoRows = await env.DB.prepare(
+        `SELECT uniprot_acc_full, isoform_id, tm_helix_count,
+                n_terminal_orientation, c_terminal_orientation,
+                signal_peptide_length, ecd_length_residues, icd_length_residues,
+                per_residue_topology, sequence, tool_version, retrieved_at
+           FROM topology_public
+          WHERE uniprot_acc = ? AND cohort = 'human_isoforms'
+            AND topology_version = ?
+          ORDER BY uniprot_acc_full ASC`
+      ).bind(uniprot, isoformTopoVersion).all().catch(() => null);
+      const results = isoRows?.results ?? [];
+      if (results.length > 0) {
+        if (!record.deterministic_features) record.deterministic_features = {};
+        record.deterministic_features.isoform_topologies = results.map((r) => ({
+          isoform_id: r.isoform_id || r.uniprot_acc_full,
+          uniprot_acc: r.uniprot_acc_full || uniprot,
+          tm_helix_count: Number(r.tm_helix_count || 0),
+          n_terminal_orientation: r.n_terminal_orientation === "extracellular" ? "extracellular" : "cytoplasmic",
+          c_terminal_orientation: r.c_terminal_orientation === "extracellular" ? "extracellular" : "cytoplasmic",
+          signal_peptide_length: Number(r.signal_peptide_length || 0),
+          ecd_length_residues: Number(r.ecd_length_residues || 0),
+          icd_length_residues: Number(r.icd_length_residues || 0),
+          per_residue_topology: r.per_residue_topology || "",
+          sequence: r.sequence ?? null,
+          tool_version: r.tool_version || "deeptmhmm-1.0.24",
+          retrieved_at: r.retrieved_at || new Date().toISOString(),
+          // %identity to canonical not computed at serve time (BLOSUM62
+          // alignment is too heavy here). Re-annotation fills these in.
+          full_length_pct_identity_to_canonical: null,
+          ecd_pct_identity_to_canonical: null,
+          ecd_pct_similarity_to_canonical: null,
+        }));
+      }
+    }
+
+    // ----- paralogs -----
+    // Mirror _fetch_paralogs. Enrich when the field is missing OR (the
+    // array is empty AND ``paralogs_checked`` is not True). Close paralogs
+    // (>=80% full-length identity, the CLOSE_PARALOG_THRESHOLD constant in
+    // d1_deterministic.py) get their DeepTMHMM topology + sequence threaded
+    // on via LEFT JOIN against topology_public; far/ECD-less paralogs stay
+    // chip-only. PARALOG_TOP_N is 50 in the Python annotator — same cap here.
+    const existingParalogs = record?.deterministic_features?.paralogs;
+    const paralogsChecked = record?.deterministic_features?.paralogs_checked === true;
+    const paralogsNeedEnrich = !Array.isArray(existingParalogs)
+      || (existingParalogs.length === 0 && !paralogsChecked);
+    if (paralogsNeedEnrich && paralogVersion) {
+      const paralogRows = await env.DB.prepare(
+        `SELECT cp.paralog_gene_symbol, cp.paralog_uniprot_acc, cp.ecd_pct_identity,
+                cp.ecd_pct_similarity, cp.biomart_percent_identity, cp.family_id,
+                cp.compara_version, cp.rank_by_ecd_identity,
+                tp.per_residue_topology, tp.deeptmhmm_label, tp.tm_helix_count,
+                tp.ecd_length_residues, tp.icd_length_residues,
+                tp.n_terminal_orientation, tp.c_terminal_orientation,
+                tp.signal_peptide_length, tp.sequence
+           FROM compara_paralog cp
+           LEFT JOIN topology_public tp
+             ON tp.uniprot_acc = cp.paralog_uniprot_acc
+            AND tp.cohort = 'human_canonical' AND tp.topology_version = ?
+          WHERE cp.human_uniprot_acc = ? AND cp.paralog_version = ?
+            AND cp.paralog_gene_symbol IS NOT NULL
+            AND cp.paralog_uniprot_acc IS NOT NULL
+          ORDER BY cp.rank_by_ecd_identity ASC NULLS LAST LIMIT 50`
+      ).bind(canonicalTopoVersion ?? "", uniprot, paralogVersion).all().catch(() => null);
+      const presults = paralogRows?.results ?? [];
+      if (presults.length > 0) {
+        if (!record.deterministic_features) record.deterministic_features = {};
+        const CLOSE_PARALOG_THRESHOLD = 80.0;
+        record.deterministic_features.paralogs = presults.map((r) => {
+          const fullId = r.biomart_percent_identity != null ? Number(r.biomart_percent_identity) : null;
+          const ecdId = r.ecd_pct_identity != null ? Number(r.ecd_pct_identity) : null;
+          const isClose = fullId !== null && fullId >= CLOSE_PARALOG_THRESHOLD;
+          // Topology + sequence surfaced only for close paralogs (same gate
+          // as the Python annotator). Far/ECD-less paralogs stay chip-only.
+          let topo = null, tmc = null, ecdl = null, seq = null;
+          if (isClose && r.per_residue_topology) {
+            topo = r.per_residue_topology;
+            seq = r.sequence ?? null;
+            tmc = r.tm_helix_count != null ? Number(r.tm_helix_count) : null;
+            ecdl = r.ecd_length_residues != null ? Number(r.ecd_length_residues) : null;
+          }
+          return {
+            paralog_symbol: r.paralog_gene_symbol,
+            paralog_uniprot_acc: r.paralog_uniprot_acc,
+            ecd_pct_identity: ecdId,
+            full_length_pct_identity: fullId,
+            family_id: r.family_id || "",
+            compara_version: r.compara_version || "",
+            per_residue_topology: topo,
+            tm_helix_count: tmc,
+            ecd_length_residues: ecdl,
+            sequence: seq,
+          };
+        });
+      }
+    }
+
+    // ----- orthologs (mouse + cynomolgus) -----
+    // Mirror _fetch_orthologs. Enrich when the field is missing OR (both
+    // species lists are empty AND ``checked`` is not True). The Python
+    // annotator projects the human canonical topology onto each ortholog
+    // (via merge.ortholog_topology_projection) — that's a global alignment
+    // not feasible in a Worker, so we ship the RAW DeepTMHMM-on-ortholog
+    // topology (cohort='mouse_ortholog' / 'cyno_ortholog') with
+    // topology_projection_source=null. Records that need the projected
+    // topology get it via re-annotation, not at serve time. Higher-order
+    // (one-to-many) ortholog rows are emitted as-is, same as the Python
+    // path — there's no is_canonical filter on compara_ortholog_ecd.
+    const existingOrthologs = record?.deterministic_features?.orthologs;
+    const orthologsChecked = existingOrthologs?.checked === true;
+    const orthologsEmpty = !existingOrthologs
+      || ((existingOrthologs.mouse?.length ?? 0) === 0
+          && (existingOrthologs.cynomolgus?.length ?? 0) === 0);
+    const orthologsNeedEnrich = orthologsEmpty && !orthologsChecked;
+    if (orthologsNeedEnrich && orthologEcdVersion) {
+      // Pick the topology_version that has ortholog cohorts. The Python
+      // annotator resolves mouse_topo_version specifically; in practice
+      // mouse_ortholog + cyno_ortholog share a version. Default to the
+      // canonical topology_version if no mouse-cohort row exists.
+      const mouseTopoRow = await env.DB.prepare(
+        `SELECT topology_version FROM topology_release
+            WHERE topology_version IN (
+              SELECT DISTINCT topology_version FROM topology_public WHERE cohort = 'mouse_ortholog'
+            )
+            ORDER BY loaded_at DESC LIMIT 1`
+      ).first().catch(() => null);
+      const orthoTopoVersion = mouseTopoRow?.topology_version ?? canonicalTopoVersion ?? "";
+      const orthologRows = await env.DB.prepare(
+        `SELECT eo.species, eo.ortholog_uniprot_acc, eo.ortholog_ensembl_gene,
+                eo.ortholog_gene_symbol, eo.ecd_pct_identity,
+                co.percent_identity AS full_length_pct_identity,
+                tp.tm_helix_count, tp.ecd_length_residues,
+                tp.per_residue_topology, tp.deeptmhmm_label,
+                tp.sequence AS ortholog_sequence,
+                eo.compara_release
+           FROM compara_ortholog_ecd eo
+           LEFT JOIN topology_public tp
+             ON tp.uniprot_acc = eo.ortholog_uniprot_acc
+            AND tp.topology_version = ?
+            AND (
+              (eo.species = 'mouse' AND tp.cohort = 'mouse_ortholog') OR
+              (eo.species IN ('cynomolgus','cyno') AND tp.cohort = 'cyno_ortholog')
+            )
+           LEFT JOIN compara_ortholog co
+             ON co.release_version = eo.compara_release
+            AND co.human_ensembl_gene = eo.human_ensembl_gene
+            AND co.species = eo.species
+            AND co.ortholog_ensembl_gene = eo.ortholog_ensembl_gene
+          WHERE eo.human_uniprot_acc = ?
+            AND eo.ortholog_ecd_version = ?
+          ORDER BY eo.species ASC`
+      ).bind(orthoTopoVersion, uniprot, orthologEcdVersion).all().catch(() => null);
+      const oresults = orthologRows?.results ?? [];
+      const mouse = [];
+      const cyno = [];
+      const nowIso = new Date().toISOString();
+      for (const r of oresults) {
+        const species = String(r.species || "").toLowerCase();
+        const ecdPct = r.ecd_pct_identity != null ? Number(r.ecd_pct_identity) : null;
+        const fullPct = r.full_length_pct_identity != null ? Number(r.full_length_pct_identity) : null;
+        const entry = {
+          is_canonical: true,
+          isoform_id: r.ortholog_uniprot_acc || "",
+          ensembl_id: r.ortholog_ensembl_gene || "",
+          ortholog_uniprot_acc: r.ortholog_uniprot_acc || "",
+          ortholog_symbol: r.ortholog_gene_symbol || "",
+          type: "one2one",
+          ecd_pct_identity_to_human_canonical: ecdPct,
+          // Similarity not yet wired in the underlying table; mirror identity.
+          ecd_pct_similarity_to_human_canonical: ecdPct,
+          full_length_pct_identity_to_human_canonical: fullPct,
+          ecd_length_residues: Number(r.ecd_length_residues || 0),
+          tm_helix_count: Number(r.tm_helix_count || 0),
+          compara_version: r.compara_release || "",
+          retrieved_at: nowIso,
+          // Raw DeepTMHMM-on-ortholog values; the Python annotator's
+          // projection is skipped at serve time (no alignment library in
+          // the Worker). projection_source=null signals "raw values".
+          per_residue_topology: r.per_residue_topology ?? null,
+          deeptmhmm_label: r.deeptmhmm_label != null ? String(r.deeptmhmm_label) : null,
+          topology_projection_source: null,
+          tm_absent_from_model: false,
+          n_tm_regions_absent: 0,
+          sequence: r.ortholog_sequence ?? null,
+        };
+        if (species === "mouse") {
+          mouse.push(entry);
+        } else if (species === "cynomolgus" || species === "cyno") {
+          cyno.push(entry);
+        }
+      }
+      if (mouse.length > 0 || cyno.length > 0) {
+        if (!record.deterministic_features) record.deterministic_features = {};
+        record.deterministic_features.orthologs = {
+          mouse,
+          cynomolgus: cyno,
+          checked: true,
+        };
+      }
+    }
+  }
   return json(record, { ttl: CACHE_TTL_LONG });
 }
 
