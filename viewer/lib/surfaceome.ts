@@ -84,12 +84,13 @@ const HGNC_TSV = path.join(
 // In-tree per-gene record snapshots (`publish_record` writes these on
 // every annotate run). Used to backfill the `generateStaticParams` route
 // list when the Worker's edge-cached `/v1/genes` lags a fresh publish.
-const SURFACEOME_SNAPSHOT_DIR = path.join(
-  process.cwd(),
-  "public",
-  "data",
-  "surfaceome",
-);
+// `SURFACEOME_SNAPSHOT_DIR` env var overrides the default location — used
+// by tests/list_surfaceome_genes.test.ts to point at an empty dir so the
+// snapshot union doesn't pollute the worker-fetch assertions. Unset in
+// every real build → the committed snapshot dir.
+const SURFACEOME_SNAPSHOT_DIR =
+  process.env.SURFACEOME_SNAPSHOT_DIR ??
+  path.join(process.cwd(), "public", "data", "surfaceome");
 
 /**
  * One row of the genome-wide catalog the index table renders. Sourced
@@ -661,15 +662,38 @@ export async function loadBenchmarkRow(
  * with no gene pages and no error. The build must fail loudly instead,
  * exactly like the catalog fetch.
  */
-let _geneListPromise: Promise<string[]> | null = null;
-
-export async function listSurfaceomeGenes(): Promise<string[]> {
-  if (_geneListPromise) return _geneListPromise;
-  _geneListPromise = _listSurfaceomeGenesImpl();
-  return _geneListPromise;
+/** One deep-dive gene in the index: its symbol plus whether its published
+ *  record is `stale` — i.e. fails validation against the current
+ *  SurfaceomeRecord schema and needs re-running. `stale` comes from the
+ *  committed `schema_status.json` manifest (scripts/check_schema_freshness.py),
+ *  NOT from the record's `schema_version` string (which wasn't maintained
+ *  across schema reworks). The GeneJump dropdown colors each entry's
+ *  freshness dot from it (amber = stale, green = current). Genes absent from
+ *  the manifest default to non-stale. */
+export interface GeneEntry {
+  symbol: string;
+  stale: boolean;
 }
 
-async function _listSurfaceomeGenesImpl(): Promise<string[]> {
+let _geneEntriesPromise: Promise<GeneEntry[]> | null = null;
+
+/**
+ * Deep-dive genes WITH each gene's declared `schema_version`. This is the
+ * single primitive behind the gene list: `listSurfaceomeGenes()` projects
+ * it to symbols, so the Worker's `/v1/genes` index is fetched at most once
+ * per build (the result is memoized).
+ */
+export async function listSurfaceomeGeneEntries(): Promise<GeneEntry[]> {
+  if (_geneEntriesPromise) return _geneEntriesPromise;
+  _geneEntriesPromise = _listSurfaceomeGeneEntriesImpl();
+  return _geneEntriesPromise;
+}
+
+export async function listSurfaceomeGenes(): Promise<string[]> {
+  return (await listSurfaceomeGeneEntries()).map((e) => e.symbol);
+}
+
+async function _listSurfaceomeGeneEntriesImpl(): Promise<GeneEntry[]> {
   const base = (process.env.SURFACEOME_API_BASE ?? DEFAULT_API_BASE).trim();
   // Offline-build stub stays a benign empty list: the GitHub-Actions
   // viewer-build smoke sets SURFACEOME_API_BASE=local and expects zero
@@ -711,9 +735,10 @@ async function _listSurfaceomeGenesImpl(): Promise<string[]> {
   const data = (await res.json()) as {
     genes?: Array<{ gene_symbol?: string }>;
   };
-  const fromWorker = (data.genes ?? [])
-    .map((g) => g.gene_symbol)
-    .filter((s): s is string => Boolean(s));
+  const symbols = new Set<string>();
+  for (const g of data.genes ?? []) {
+    if (g.gene_symbol) symbols.add(g.gene_symbol);
+  }
   // Union with locally-published snapshots. `publish_record` writes
   // `public/data/surfaceome/{SYMBOL}.json` on every annotate run, but the
   // Worker's `/v1/genes` list is fronted by Cloudflare's edge cache and
@@ -724,9 +749,17 @@ async function _listSurfaceomeGenesImpl(): Promise<string[]> {
   // gets a route regardless of edge-cache state; its record data still
   // comes from the Worker at render time. Best-effort — a missing dir
   // (clean checkout / CI smoke build) just leaves the Worker list as-is.
-  const merged = new Set(fromWorker);
-  for (const sym of _localSnapshotGenes()) merged.add(sym);
-  return Array.from(merged).sort();
+  for (const sym of _localSnapshotGenes()) symbols.add(sym);
+  // Overlay schema-freshness: a gene listed in the manifest's `stale` set
+  // gets the amber dot. Absent manifest → nothing stale (all green).
+  const status = loadSchemaStatus();
+  const staleSet = status ? new Set(status.stale) : null;
+  return Array.from(symbols)
+    .sort((a, b) => a.localeCompare(b))
+    .map((symbol) => ({
+      symbol,
+      stale: staleSet ? staleSet.has(symbol) : false,
+    }));
 }
 
 /** Gene symbols with a committed `public/data/surfaceome/{SYMBOL}.json`
@@ -738,6 +771,53 @@ function _localSnapshotGenes(): string[] {
       .map((f) => f.slice(0, -".json".length));
   } catch {
     return [];
+  }
+}
+
+/**
+ * Temporary migration aid: show schema-freshness dots in the GeneJump
+ * dropdown. The dots flag deep-dive records that fail the current schema
+ * (per `schema_status.json`). Flip to `false` (or delete the manifest) to
+ * retire the dots once the cohort is regenerated against the current schema.
+ */
+export const SCHEMA_FRESHNESS_DOTS_ENABLED = true;
+
+// `SCHEMA_STATUS_PATH` env var overrides the manifest location — used by
+// tests to point at a fixture (or a non-existent path → no stale flags).
+const SCHEMA_STATUS_PATH =
+  process.env.SCHEMA_STATUS_PATH ??
+  path.join(process.cwd(), "public", "data", "schema_status.json");
+
+export interface SchemaStatus {
+  generatedAt: string | null;
+  schemaVersion: string | null;
+  /** Genes whose published record fails the current schema. */
+  stale: string[];
+  /** Genes whose record validates against the current schema. */
+  current: string[];
+}
+
+/**
+ * The committed schema-freshness manifest written by
+ * `scripts/check_schema_freshness.py`, or `null` when it's absent (the dots
+ * then don't render). Best-effort: malformed JSON also yields `null`.
+ */
+export function loadSchemaStatus(): SchemaStatus | null {
+  try {
+    const j = JSON.parse(readFileSync(SCHEMA_STATUS_PATH, "utf8")) as {
+      generated_at?: string;
+      schema_version?: string;
+      stale?: string[];
+      current?: string[];
+    };
+    return {
+      generatedAt: j.generated_at ?? null,
+      schemaVersion: j.schema_version ?? null,
+      stale: Array.isArray(j.stale) ? j.stale : [],
+      current: Array.isArray(j.current) ? j.current : [],
+    };
+  } catch {
+    return null;
   }
 }
 
