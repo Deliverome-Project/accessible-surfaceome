@@ -56,8 +56,7 @@ REPO = "Deliverome-Project/accessible-surfaceome"
 BRANCH = "main"
 BASE = f"https://raw.githubusercontent.com/{REPO}/{BRANCH}"
 
-CATALOG_URL = "https://api.deliverome.org/surfaceome/v1/catalog"
-CAND_TSV = f"{BASE}/data/processed/candidate_universe/candidate_universe.tsv"
+CATALOG_TSV = f"{BASE}/data/processed/catalog/whole_proteome_catalog.tsv"
 OPT_CUTOFFS_TSV = f"{BASE}/data/processed/triage_bench/db_optimized_cutoffs.tsv"
 
 # Published reproduction gist (embedded into output PNG Source / PDF
@@ -181,50 +180,36 @@ def _vote_match(db_vote: str, sonnet: str) -> bool:
 def main() -> None:
     _apply_brand_style()
 
-    print(f"Fetching {CATALOG_URL} ...")
-    r = httpx.get(CATALOG_URL, timeout=60)
-    r.raise_for_status()
-    body = r.json()
-    catalog_rows = body["rows"]
-    models = body.get("models") or []
-    # Catalog ``row_schema=3`` emits ``tr: [variant_0, ..., variant_N]`` per
-    # row. Canonical figure uses claude-sonnet-4-6 — resolve its index from
-    # the models array, fallback to 1.
-    sonnet_idx = next(
-        (i for i, m in enumerate(models) if "sonnet" in (m or "").lower()),
-        1,
-    )
-    print(f"  fetched {len(catalog_rows):,} catalog rows; sonnet = "
-          f"{models[sonnet_idx] if sonnet_idx < len(models) else '?'}")
+    # Catalog now comes from a static TSV (sourced from D1 by
+    # scripts/export_whole_proteome_catalog_to_tsv.py) instead of the
+    # live Worker — keeps the gist self-contained and snapshot-pinned
+    # to whatever branch/SHA this script is fetched from. Each row
+    # carries the v1-style ``*_surface_flag`` columns AND the
+    # canonical Sonnet+NCBI verdict, so this single TSV replaces the
+    # CATALOG_URL + CAND_TSV pair the figure used previously.
+    catalog = _fetch_tsv(CATALOG_TSV)
+    print(f"  loaded {len(catalog):,} catalog rows; sonnet = claude-sonnet-4-6")
 
-    cand = _fetch_tsv(CAND_TSV).set_index("uniprot_accession")
     opt = _fetch_tsv(OPT_CUTOFFS_TSV)
     uniprot_opt = set(opt.loc[opt["uniprot_optimized"] == 1, "accession"].astype(str))
     cspa_opt = set(opt.loc[opt["cspa_optimized"] == 1, "accession"].astype(str))
 
-    def db_votes(acc: str) -> dict[str, bool]:
-        out = {label: False for label in DB_LABELS}
-        if not acc:
-            return out
-        out["UniProt"] = acc in uniprot_opt
-        out["CSPA"] = acc in cspa_opt
-        if acc in cand.index:
-            row = cand.loc[acc]
-            out["GO CC"] = row["go_surface_flag"] == 1
-            out["HPA"] = row["hpa_surface_flag"] == 1
-            out["SURFY"] = row["surfy_surface_flag"] == 1
-        return out
-
     records = []
-    for row in catalog_rows:
-        tr = row.get("tr") or []
-        entry = tr[sonnet_idx] if 0 <= sonnet_idx < len(tr) else None
-        v = entry[0] if entry and isinstance(entry, list) and entry else None
+    for row in catalog.itertuples(index=False):
+        v = (str(getattr(row, "sonnet_verdict", "") or "")).strip()
         if v not in ("yes", "contextual", "no"):
             continue
-        acc = row.get("uniprot") or ""
-        rec = {"symbol": row.get("symbol", ""), "acc": acc, "sonnet": v}
-        rec.update(db_votes(acc))
+        acc = str(getattr(row, "uniprot_acc", "") or "")
+        rec = {
+            "symbol": str(getattr(row, "hgnc_symbol", "") or ""),
+            "acc": acc,
+            "sonnet": v,
+            "UniProt": acc in uniprot_opt,
+            "CSPA": acc in cspa_opt,
+            "GO CC": int(getattr(row, "go_surface_flag", 0) or 0) == 1,
+            "HPA": int(getattr(row, "hpa_surface_flag", 0) or 0) == 1,
+            "SURFY": int(getattr(row, "surfy_surface_flag", 0) or 0) == 1,
+        }
         records.append(rec)
 
     df = pd.DataFrame(records)
