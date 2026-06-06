@@ -208,6 +208,18 @@ def _summarize_deterministic_for_synthesizer(
                 else None
             ),
         },
+        # Schweke 2024 AF2 homo-oligomer prediction. Positives-only refset,
+        # so ``is_homo_oligomer=False`` means "not in Schweke's positives"
+        # (NOT "AF2 explicitly says monomer"). Treat as a lower bound: a
+        # True here is a strong structural prior on
+        # ``epitope_masking.mechanism = "homo-oligomerization"``; weight
+        # severity by stoichiometry (a 13-mer hides far more surface than
+        # a 2-mer). A False here is soft — let literature override if it
+        # shows convincing homomer evidence.
+        "homo_oligomerization": {
+            "is_homo_oligomer": features.homo_oligomerization.is_homo_oligomer,
+            "stoichiometry": features.homo_oligomerization.stoichiometry,
+        },
         # Curator-assigned ground truth from the resolved IdentifierBundle.
         # NOT model output — shown to B so it can cross-check its own
         # ``llm_family`` call against curator labels rather than learning of

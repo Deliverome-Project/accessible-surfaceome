@@ -271,6 +271,7 @@ DETERMINISTIC_GROUPS = [
             "orthologs.cynomolgus  (count + canonical symbol + ECD identity)",
             "structure  (AFDB id, ecd_mean_plddt, ecd_disordered_fraction, model URL flag)",
             "surface_bind  (has_data, n_sites, n_seeds_total/alpha/beta, representative_pdb_id)",
+            "homo_oligomerization  (is_homo_oligomer + stoichiometry &mdash; Schweke 2024 AF2 prior on epitope_masking.mechanism)",
             "curator_family_tags.hgnc_gene_groups  (from IdentifierBundle)",
             "curator_family_tags.uniprot_family  (from IdentifierBundle)",
         ],
@@ -446,6 +447,7 @@ EXAMPLE_FLOW_STAGES = [
             "orthologs  (mouse Egfr 88% ECD identity; cyno EGFR 99%)",
             "structure  (AFDB AF-P00533-F1 pLDDT 92.4; experimental PDB 5SX4)",
             "surface_bind  (n_sites=4, n_seeds_total=1287, alpha=812, beta=475)",
+            "homo_oligomerization  (Schweke 2024 AF2 prior; is_homo_oligomer + cyclic stoichiometry N when present)",
         ],
     },
     {

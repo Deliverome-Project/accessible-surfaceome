@@ -97,6 +97,10 @@ OMITTED: dict[str, str] = {
     # --- ECD % similarity (secondary to the % identity that IS shown) ---
     "ecd_pct_similarity_to_canonical": "secondary to ECD %identity (shown)",
     "ecd_pct_similarity_to_human_canonical": "secondary to ECD %identity (shown)",
+    # --- Schweke 2024 homo-oligomer prior (piped into synthesizer; no viewer card yet) ---
+    "homo_oligomerization": "Schweke 2024 prior — fed to synthesizer for epitope-masking prior, not rendered standalone",
+    "is_homo_oligomer": "Schweke 2024 prior — boolean fed to synthesizer",
+    "stoichiometry": "Schweke 2024 prior — cyclic-symmetry order, fed to synthesizer",
     # --- topology projection / model internals (shown qualitatively) ---
     "deeptmhmm_label": "categorical label; the per-residue string is shown",
     "topology_projection_source": "projection provenance; internal",

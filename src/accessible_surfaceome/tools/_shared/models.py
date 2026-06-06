@@ -2595,6 +2595,52 @@ class SurfaceBindFeatures(BaseModel):
     citation: str = "10.1073/pnas.2506269123"
 
 
+class HomoOligomerizationFeatures(BaseModel):
+    """Schweke et al. 2024 AF2 homo-oligomer prediction (PMID 38325366).
+
+    Schweke's atlas covers four proteomes; the human refset is ~3,946
+    predicted homo-oligomers — a protein is a "candidate complex" when
+    its AF2 homodimer interface clears a logistic-regression
+    ``dimer_proba`` threshold. ~1,049 of the v2 candidate-universe
+    surfaceome proteins are flagged as Schweke homomers (memory entry
+    ``schweke-homomer-atlas``).
+
+    The lookup is positives-only — Schweke's refset doesn't carry
+    explicit negatives, so ``is_homo_oligomer=False`` means "not in the
+    positive set" rather than "AF2 explicitly disagrees". This is a
+    well-documented under-call: big multi-pass channels (KCNQ1, KCNMA1)
+    and ligand/covalent dimers (EGFR, INSR) are missing despite being
+    known dimers. Treat as a lower bound when piped into the synthesizer
+    as a prior on ``epitope_masking.mechanism = "homo-oligomerization"``.
+
+    The synthesizer should consult this block when deciding whether to
+    emit a ``homo-oligomerization`` epitope-masking mechanism: a True
+    here is a strong AF2-derived structural prior; a False is a soft
+    "no positive prediction" — still allow the literature to override.
+
+    Loaded by :func:`accessible_surfaceome.tools.schweke_homomer.lookup`.
+    """
+
+    model_config = ConfigDict(extra="forbid")
+
+    # ``False`` is the explicit "not in Schweke's positive refset"
+    # signal — analogous to :attr:`SurfaceBindFeatures.has_data`. The
+    # block is always present so the catalog can distinguish "absent
+    # from Schweke" from "in Schweke but no usable model" rather than
+    # collapsing both to null.
+    is_homo_oligomer: bool = False
+    # Cyclic-symmetry order N of the predicted complex (2 for an
+    # AF_dimer_models_core dimer; 3..13 for an AnAnaS-reconstructed
+    # full complex from full_complexes_bigbang). ``None`` when
+    # ``is_homo_oligomer=False`` OR when Schweke flagged the protein
+    # as a dimer but didn't reconstruct higher-order. The synthesizer
+    # weights epitope-masking severity by N (a 13-mer hides far more
+    # surface than a 2-mer).
+    stoichiometry: int | None = Field(default=None, ge=2, le=24)
+    source: str = "Schweke 2024 (PMID 38325366)"
+    citation: str = "10.1016/j.cell.2024.01.022"
+
+
 class DeterministicFeatures(BaseModel):
     """Verbatim tool output — populated by the orchestrator, never by the agent.
 
@@ -2619,6 +2665,14 @@ class DeterministicFeatures(BaseModel):
     # ``has_data=False`` as the explicit "not scored" signal for the
     # ~12% of surfaceome proteins SURFACE-Bind omitted.
     surface_bind: SurfaceBindFeatures = Field(default_factory=SurfaceBindFeatures)
+    # Schweke 2024 AF2 homo-oligomer prediction (PMID 38325366); always
+    # present, with ``is_homo_oligomer=False`` as the explicit "not in the
+    # positive set" signal. Strong AF2-derived structural prior on the
+    # synthesizer's ``epitope_masking.mechanism = "homo-oligomerization"``
+    # call (memory: schweke-homomer-atlas).
+    homo_oligomerization: HomoOligomerizationFeatures = Field(
+        default_factory=HomoOligomerizationFeatures
+    )
 
 
 # ---- accessibility risks (section 6) --------------------------------------
@@ -2818,7 +2872,7 @@ class SurfaceomeRecord(BaseModel):
 
     model_config = ConfigDict(extra="forbid")
 
-    schema_version: Literal["1.0.0", "1.1.0", "2.0.0"] = "2.0.0"
+    schema_version: Literal["1.0.0", "1.1.0", "2.0.0", "2.1.0"] = "2.1.0"
     gene: GeneIdentifier
 
     # Cross-agent coherence — populated by the orchestrator from the most
@@ -2915,7 +2969,7 @@ class SurfaceomeRecordDraft(BaseModel):
 
     model_config = ConfigDict(extra="forbid")
 
-    schema_version: Literal["1.0.0", "1.1.0", "2.0.0"] = "2.0.0"
+    schema_version: Literal["1.0.0", "1.1.0", "2.0.0", "2.1.0"] = "2.1.0"
     gene: GeneIdentifier
 
     # Orchestrator-injected before the agent call; the agent reads it but does

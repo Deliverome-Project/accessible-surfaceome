@@ -710,6 +710,15 @@ def fetch_deterministic_features(uniprot_acc: str) -> DeterministicFeatures:
     # ~12% of surfaceome proteins SURFACE-Bind omitted.
     surface_bind = lookup_surface_bind(uniprot_acc)
 
+    # Schweke 2024 homo-oligomer prediction (PMID 38325366). Tries the
+    # public D1 ``schweke_homomer`` table first; falls back to the small
+    # viewer manifest (8 sample entries) while D1 is being populated;
+    # default is ``is_homo_oligomer=False`` for everything else. Positives-
+    # only refset, so False is "not in Schweke's positives" not "AF2
+    # disagrees" — the synthesizer treats this as a lower-bound prior.
+    from accessible_surfaceome.tools.schweke_homomer import lookup as lookup_schweke
+    homo_oligomerization = lookup_schweke(uniprot_acc)
+
     return DeterministicFeatures(
         canonical_topology=canonical,
         isoform_topologies=isoforms,
@@ -722,4 +731,5 @@ def fetch_deterministic_features(uniprot_acc: str) -> DeterministicFeatures:
         isoform_topologies_checked=bool(isoform_topo_version),
         structure=structure,
         surface_bind=surface_bind,
+        homo_oligomerization=homo_oligomerization,
     )

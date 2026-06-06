@@ -560,6 +560,26 @@ export interface SurfaceBindFeatures {
   citation: string;
 }
 
+/**
+ * Schweke et al. 2024 AF2 homo-oligomer prediction (PMID 38325366).
+ * Positives-only refset (~1,049 of the v2 candidate-universe), so
+ * `is_homo_oligomer=false` means "not in Schweke's positives" rather than
+ * "AF2 explicitly says monomer" — known under-call on big multi-pass
+ * channels (KCNQ1, KCNMA1) and ligand/covalent dimers (EGFR, INSR).
+ */
+export interface HomoOligomerizationFeatures {
+  /** `false` is the explicit "not in Schweke's positive refset" signal —
+   *  block is always present so the catalog distinguishes "absent from
+   *  Schweke" from "in Schweke but no usable model". */
+  is_homo_oligomer: boolean;
+  /** Cyclic-symmetry order N (2 for dimer, 3–13 for AnAnaS-reconstructed
+   *  full complex). Null when `is_homo_oligomer=false` or Schweke
+   *  flagged a dimer but didn't reconstruct higher-order. */
+  stoichiometry?: number | null;
+  source: string;
+  citation: string;
+}
+
 export interface DeterministicFeatures {
   canonical_topology: CanonicalTopology;
   isoform_topologies: IsoformTopology[];
@@ -573,6 +593,11 @@ export interface DeterministicFeatures {
   isoform_topologies_checked?: boolean;
   structure: StructureFeatures;
   surface_bind: SurfaceBindFeatures;
+  /** Schweke 2024 AF2 homo-oligomer prediction. Always present, with
+   *  `is_homo_oligomer=false` as the explicit "not in the positive set"
+   *  signal. Strong AF2-derived structural prior on the synthesizer's
+   *  `epitope_masking.mechanism = "homo-oligomerization"` call. */
+  homo_oligomerization: HomoOligomerizationFeatures;
 }
 
 // ============================================================
