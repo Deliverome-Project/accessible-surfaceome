@@ -29,8 +29,6 @@ interface GeneJumpProps {
   showSchemaDots?: boolean;
 }
 
-const MAX_SHOWN = 8;
-
 /**
  * GeneJump — typeahead "jump to another gene's deep dive" box for the
  * deep-dive page toolbar, so the reader can hop between gene records
@@ -63,10 +61,9 @@ export function GeneJump({ genes, current, showSchemaDots = false }: GeneJumpPro
 
   const matches = useMemo(() => {
     const q = query.trim().toUpperCase();
-    const pool = q
+    return q
       ? universe.filter((g) => g.symbol.toUpperCase().includes(q))
       : universe;
-    return pool.slice(0, MAX_SHOWN);
   }, [universe, query]);
 
   useEffect(
