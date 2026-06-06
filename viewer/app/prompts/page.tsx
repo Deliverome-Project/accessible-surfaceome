@@ -11,7 +11,7 @@ import styles from "./page.module.css";
 export const metadata: Metadata = {
   title: "Agent prompts — Surfaceome",
   description:
-    "The exact system prompts the Sonnet 4.6 triage and deep-dive agents " +
+    "The exact system prompts the triage and deep-dive agents " +
     "run with — read straight from the agent source tree at build time.",
 };
 
@@ -37,7 +37,7 @@ interface PromptGroup {
  * always the file the agents actually run with.
  *
  * Coverage:
- *  - Surface triage — Sonnet 4.6 genome-wide first pass.
+ *  - Surface triage — genome-wide first pass.
  *  - Deep dive Phase 1 — ``plan_trim_select`` literature agent
  *    (per-focus A1/A2 plan-trim-select, plus joint single-agent
  *    plan-trim-select).
@@ -51,7 +51,7 @@ const PROMPT_GROUPS: PromptGroup[] = [
     id: "triage",
     label: "Surface accessibility triage",
     description:
-      "Sonnet 4.6 first-pass over the protein-coding genome — produces the " +
+      "First-pass over the protein-coding genome — produces the " +
       "yes / no / contextual triage verdict that gates which genes get a " +
       "full deep dive.",
     prompts: [
@@ -67,7 +67,7 @@ const PROMPT_GROUPS: PromptGroup[] = [
     label: "Deep dive · Phase 1 — literature agent",
     description:
       "A deterministic kickoff template emits the searches (no LLM planner), " +
-      "then two Sonnet 4.6 passes per agent focus: trim each paper's candidate " +
+      "then two passes per agent focus: trim each paper's candidate " +
       "clips down to the load-bearing ones, then select the final " +
       "EvidenceClaim ledger. The Surface-evidence agent (A1) and Biology " +
       "agent (A2) split into a methodology run and a biology-context run; the " +
@@ -78,7 +78,7 @@ const PROMPT_GROUPS: PromptGroup[] = [
         label: "Surface-evidence agent (A1) —per-paper trim",
         rel: "src/accessible_surfaceome/agents/plan_trim_select/prompts/a1_trim_system.md",
         blurb:
-          "One Sonnet 4.6 call per paper — keeps the clips that name a surface-" +
+          "One call per paper — keeps the clips that name a surface-" +
           "detection method, antibody, or non-permeabilized assay; drops " +
           "tissue/biology-only clips that the A2 trim handles.",
       },
@@ -87,7 +87,7 @@ const PROMPT_GROUPS: PromptGroup[] = [
         label: "Surface-evidence agent (A1) —final selector",
         rel: "src/accessible_surfaceome/agents/plan_trim_select/prompts/a1_select_system.md",
         blurb:
-          "Sonnet picks the final A1 clip_ids → EvidenceClaim records with " +
+          "Picks the final A1 clip_ids → EvidenceClaim records with " +
           "verbatim quotes auto-filled from the trimmed pool. Can request " +
           "follow-up searches when the menu has obvious gaps.",
       },
@@ -205,7 +205,7 @@ const PROMPT_GROUPS: PromptGroup[] = [
     id: "deep-dive-phase-3",
     label: "Deep dive · Phase 3 — synthesizer",
     description:
-      "Reads the 10 builder outputs + the merged A1+A2 EvidenceClaim ledger " +
+      "Reads the 8 builder outputs + the merged A1+A2 EvidenceClaim ledger " +
       "and emits the executive summary, LLM filters, accessibility risks, " +
       "and confidence with reasoning. The synthesizer doesn't fetch new " +
       "evidence — it only synthesizes from frozen Phase-2 blocks.",
@@ -391,8 +391,13 @@ function splitIntoSections(
 function loadPrompt(def: PromptDef): LoadedPrompt | null {
   const abs = path.join(process.cwd(), "..", def.rel);
   try {
-    const body = readFileSync(abs, "utf-8");
+    const raw = readFileSync(abs, "utf-8");
     const stat = statSync(abs);
+    // Strip dev-facing changelog notes from headings (e.g. "(post-2026-05-16
+    // expansion)") — they document the source's edit history for maintainers,
+    // not readers of this user-facing page. The source .md files keep them, so
+    // the reproducibility-governed prompt corpus is untouched.
+    const body = raw.replace(/[ \t]*\(post-\d{4}-\d{2}-\d{2}[^)]*\)/g, "");
     return {
       ...def,
       body,
