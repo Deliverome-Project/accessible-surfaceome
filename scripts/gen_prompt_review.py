@@ -11,6 +11,7 @@ from accessible_surfaceome.agents.plan_trim_select.kickoff_templates import (
     build_a1_kickoff, build_a2_kickoff,
 )
 from accessible_surfaceome.tools._shared import models as _models
+from accessible_surfaceome.tools.evidence_retrieval import _CATEGORY_SPECS
 from accessible_surfaceome.tools.gene_literature import _TOPIC_TERMS
 
 NEW_ANCHORS = {"normal_tissue_expression", "surface_reachability",
@@ -34,6 +35,21 @@ def _render_search_row(sig, badge_cls, badge_text):
     terms = ""
     if kind == "category":
         label = f"evidence_retrieval · {html.escape(val)}"
+        spec = _CATEGORY_SPECS.get(val)
+        if spec is not None:
+            q = " <span class=\"qand\">AND</span> ".join(
+                html.escape(c) for c in spec.query_clauses
+            )
+            terms = f'<div class="tterms"><span class="qlabel">EuropePMC query</span> {q}</div>'
+            if spec.hallmark_patterns:
+                hp = "".join(
+                    f'<div class="hpat">{html.escape(p.pattern)}</div>'
+                    for p in spec.hallmark_patterns
+                )
+                terms += (
+                    '<div class="tterms hpwrap"><span class="qlabel">full-text '
+                    f"hallmark regexes</span>{hp}</div>"
+                )
     elif kind == "mode":
         label = f"gene_literature · {html.escape(val)}"
     else:  # topic_search
@@ -769,6 +785,10 @@ color:var(--ink);background:var(--panel);border:1px solid var(--line);border-rad
 .srows.a1{{border-left:3px solid #b5762a;padding-left:10px}}
 .srow{{display:grid;grid-template-columns:62px 1fr;gap:10px;align-items:start;padding:7px 2px;border-bottom:1px solid var(--line)}}
 .srow .sbody{{min-width:0}}
+.qlabel{{display:inline-block;font-size:9.5px;text-transform:uppercase;letter-spacing:.05em;color:var(--mut);background:#181c24;border:1px solid var(--line);border-radius:4px;padding:1px 6px;margin-right:6px}}
+.qand{{color:#f0b85a;font-weight:600}}
+.hpwrap{{margin-top:4px}}
+.hpat{{font-family:ui-monospace,Menlo,monospace;font-size:10.5px;color:#9aa3b2;background:var(--gut);border-radius:4px;padding:2px 7px;margin:3px 0 0;word-break:break-all}}
 footer{{color:var(--mut);font-size:12px;margin:28px 0 0;border-top:1px solid var(--line);padding-top:14px}}a{{color:var(--acc)}}
 .enums{{margin:0 0 30px}}.enums h2{{font-size:17px;margin:0 0 4px}}
 .evgroup{{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:12px 14px;margin:0 0 12px}}
