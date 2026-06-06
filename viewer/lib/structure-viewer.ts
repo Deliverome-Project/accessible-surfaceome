@@ -71,10 +71,13 @@ type SchwekeManifestEntry = {
 
 type SchwekeManifest = Record<string, SchwekeManifestEntry>;
 
-let _schwekeManifestCache: SchwekeManifest | null | undefined;
-
 function _readSchwekeManifest(): SchwekeManifest | null {
-  if (_schwekeManifestCache !== undefined) return _schwekeManifestCache;
+  // Deliberately uncached: a module-level cache footgunned dev workflows
+  // (manifest updates after the dev server started returned stale data
+  // forever, since Next.js HMR doesn't re-evaluate this module when only
+  // the static-asset manifest.json changes). The file is small and read at
+  // build time for SSG'd records, so the cost of re-reading is negligible
+  // and predictability beats microsecond savings.
   try {
     const raw = readFileSync(
       path.join(SCHWEKE_DIR, "manifest.json"),
@@ -88,10 +91,8 @@ function _readSchwekeManifest(): SchwekeManifest | null {
       if (k.startsWith("_")) continue;
       cleaned[k] = v;
     }
-    _schwekeManifestCache = cleaned;
     return cleaned;
   } catch {
-    _schwekeManifestCache = null;
     return null;
   }
 }
