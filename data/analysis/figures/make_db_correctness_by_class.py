@@ -230,9 +230,11 @@ def main() -> None:
 
     def _overall_acc(caller_label: str) -> float:
         if caller_label == sonnet_label:
-            vote_fn = lambda g: sonnet_ncbi.get(g) or "no"
+            def vote_fn(g):
+                return sonnet_ncbi.get(g) or "no"
         else:
-            vote_fn = lambda g, lbl=caller_label: _vote(g, lbl)
+            def vote_fn(g, lbl=caller_label):
+                return _vote(g, lbl)
         genes = list(truth_by_gene)
         n_correct = sum(_vote_correct(vote_fn(g), truth_by_gene[g]) for g in genes)
         return n_correct / len(genes)
@@ -264,9 +266,11 @@ def main() -> None:
     rows = []
     for caller_label in callers_in_plot:
         if caller_label == sonnet_label:
-            vote_fn = lambda g: sonnet_ncbi.get(g) or "no"
+            def vote_fn(g):
+                return sonnet_ncbi.get(g) or "no"
         else:
-            vote_fn = lambda g, lbl=caller_label: _vote(g, lbl)
+            def vote_fn(g, lbl=caller_label):
+                return _vote(g, lbl)
         for bucket in COLUMNS:
             genes = (
                 list(truth_by_gene)

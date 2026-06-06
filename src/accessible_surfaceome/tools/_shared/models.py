@@ -2233,6 +2233,12 @@ class Orthologs(BaseModel):
 
     mouse: list[OrthologEntry] = Field(default_factory=list)
     cynomolgus: list[OrthologEntry] = Field(default_factory=list)
+    # Explicit "checked, none found" sentinel (mirrors
+    # ``SurfaceBindFeatures.has_data``). ``False`` = this gene's orthologs were
+    # never resolved (stub / D1 unreachable); ``True`` with empty mouse +
+    # cynomolgus = checked against Ensembl Compara and no one2one ortholog
+    # exists. Lets the viewer render "none found" instead of a placeholder.
+    checked: bool = False
 
 
 class ParalogEntry(BaseModel):
@@ -2462,6 +2468,12 @@ class DeterministicFeatures(BaseModel):
     isoform_topologies: list[IsoformTopology] = Field(default_factory=list)
     orthologs: Orthologs = Field(default_factory=Orthologs)
     paralogs: list[ParalogEntry] = Field(default_factory=list)
+    # "Checked, none found" sentinels for the bare lists above (same rationale
+    # as ``Orthologs.checked``). ``True`` once the loader has queried D1 for
+    # this gene even when the list came back empty (genuine singleton /
+    # single-isoform gene); ``False`` on stub / never-checked records.
+    paralogs_checked: bool = False
+    isoform_topologies_checked: bool = False
     structure: StructureFeatures
     # SURFACE-Bind summary (Balbi et al. 2026 PNAS); always present, with
     # ``has_data=False`` as the explicit "not scored" signal for the
