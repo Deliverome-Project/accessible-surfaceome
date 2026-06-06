@@ -1451,6 +1451,51 @@ export function StructureViewer({
       if (renderSeq !== renderSeqRef.current) return;
       if (!containerRef.current?.isConnected) return;
       _disposeCanvases(containerRef.current);
+      // WEBGL_lose_context.loseContext() is asynchronous — the GL slot
+      // isn't actually freed until the "webglcontextlost" event handler
+      // runs on the NEXT task / animation frame. Without this wait,
+      // createViewer immediately tries to acquire a GL context while
+      // the just-disposed slot is still occupied, defeating the
+      // dispose. One rAF gives the browser the tick it needs.
+      await new Promise<void>((res) => requestAnimationFrame(() => res()));
+      if (renderSeq !== renderSeqRef.current) return;
+      if (!containerRef.current?.isConnected) return;
+
+      // Wait until the container has a non-zero size before calling
+      // createViewer. The .viewerCanvas CSS uses ``width: 100% +
+      // aspect-ratio: 1 / 1``, which collapses to 0×0 if the parent's
+      // intrinsic width isn't computed yet (the catalog → gene-page
+      // route transition in Next 16 hits this on first render of the
+      // structure card). Chromium refuses to provide a WebGL context
+      // for a 0-sized canvas; getContext returns null and 3Dmol's
+      // first ``getParameter`` / ``clearDepth`` call throws "Cannot
+      // read properties of null". Defer up to 30 frames (~500ms at
+      // 60 Hz) to let layout settle; bail with a clear error if it
+      // never does.
+      {
+        let attempts = 0;
+        while (
+          containerRef.current &&
+          (containerRef.current.clientWidth === 0 ||
+            containerRef.current.clientHeight === 0) &&
+          attempts < 30
+        ) {
+          attempts++;
+          await new Promise<void>((res) => requestAnimationFrame(() => res()));
+          if (renderSeq !== renderSeqRef.current) return;
+          if (!containerRef.current?.isConnected) return;
+        }
+        if (
+          !containerRef.current ||
+          containerRef.current.clientWidth === 0 ||
+          containerRef.current.clientHeight === 0
+        ) {
+          throw new Error(
+            "viewer container has zero size after waiting for layout " +
+              "(structure card hidden? parent missing width?)",
+          );
+        }
+      }
 
       const viewer = $3Dmol.createViewer(containerRef.current, {
         backgroundColor: "white",
