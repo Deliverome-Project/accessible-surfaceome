@@ -54,6 +54,14 @@ PRICING: dict[str, ModelPricing] = {
         cache_creation_input_tokens=6.25,
         cache_read_input_tokens=0.50,
     ),
+    # opus-4-8 priced same as 4-7 pending confirmed list price; only affects
+    # cost reporting (recomputable), not verdicts.
+    "claude-opus-4-8": ModelPricing(
+        input_tokens=5.0,
+        output_tokens=25.0,
+        cache_creation_input_tokens=6.25,
+        cache_read_input_tokens=0.50,
+    ),
     "claude-haiku-4-5": ModelPricing(
         input_tokens=1.0,
         output_tokens=5.0,

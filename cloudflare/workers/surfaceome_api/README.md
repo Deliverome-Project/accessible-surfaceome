@@ -4,21 +4,67 @@ Read-only public API serving the `surfaceome_public` D1 mirror.
 
 ## Endpoints
 
+Grouped by scope: **SurfaceBench** (labeled eval) → **genome-wide** sweep → per-gene **deep dive**.
+
+### SurfaceBench (147-gene labeled eval)
+
 | Method | Path | Returns |
 |---|---|---|
-| `GET` | `/v1/health` | `{ ok, n_annotations }` — confirms DB binding |
-| `GET` | `/v1/genes` | List of annotated genes (summary fields) |
-| `GET` | `/v1/genes/:symbol` | Full `SurfaceomeRecord` JSON (latest schema_version) |
-| `GET` | `/v1/orthologs/:symbol` | Mouse + cyno ortholog identity from latest Compara release |
 | `GET` | `/v1/benchmark` | Full benchmark truth labels (latest bench_version) |
 | `GET` | `/v1/benchmark/:symbol` | Single gene's truth label |
 | `GET` | `/v1/benchmark/export.tsv` | Long-format TSV: bench-restricted multi-model sweep (gene × model × variant), 24 cols including truth labels + per-source DB votes joined in. Flat shape of `/v1/benchmark/matrix`. |
 | `GET` | `/v1/benchmark/matrix` | Wide nested JSON: per-gene truth + DB votes + per-model verdicts across all prompt variants. Drives the benchmark figures. |
+
+### Genome-wide (~19k human protein-coding genes)
+
+| Method | Path | Returns |
+|---|---|---|
 | `GET` | `/v1/catalog` | Genome-wide table — candidate-universe rows × DB flags × latest triage × deep-dive flag (drives the viewer's index) |
 | `GET` | `/v1/triage/:symbol` | Triage agent verdicts across (model × variant × replicate) — no costs |
 | `GET` | `/v1/triage/export.tsv` | Long-format TSV of every triage run for one `run_id`, 21 cols including DB votes + `uniprot_acc` joined server-side. Default `run_id=mainbench_canonical_v1`; pass `run_id=genome_full_sonnet_ncbi_v1` for the full ~19k-gene sweep. |
 
-All responses are JSON (or TSV where noted). CORS open (`*`). Cache-Control: `public, max-age=60` on list endpoints, `public, max-age=86400` on per-gene records and exports.
+### Deep dive (per-gene)
+
+| Method | Path | Returns |
+|---|---|---|
+| `GET` | `/v1/genes/:symbol` | Full `SurfaceomeRecord` JSON (latest schema_version) |
+| `GET` | `/v1/orthologs/:symbol` | Mouse + cyno orthologs for any gene from latest Compara release (broad genome-wide raw Compara — full-length identity; distinct from the deep ECD/topology orthologs inside the per-gene record) |
+| `GET` | `/v1/genes` | List of annotated genes (summary fields) |
+| `GET` | `/v1/health` | `{ ok, n_annotations }` — confirms DB binding |
+
+All responses are JSON (or TSV where noted). CORS open (`*`). Cache-Control: `public, max-age=60` on list endpoints, `public, max-age=86400` on per-gene records and exports, each with `stale-while-revalidate` + `stale-if-error` so the edge serves a stale copy instantly on a miss/revalidate and keeps serving it if the Worker errors (this is what absorbs the catalog's historical CPU-budget 503s).
+
+## Caching & abuse protection
+
+The API is intentionally public + unauthenticated — the data is
+publish-intended. The risk it guards against is **cost / availability**
+(D1 bills per row read; the catalog handler is CPU-heavy), not access.
+Four layers:
+
+1. **Aggressive edge caching** carries the load (the TTLs above). Don't
+   shorten them to chase freshness — see purge below.
+2. **Cache rule** (apply once / after a TTL change with
+   [`scripts/apply_cf_edge_rules.py`](../../../scripts/apply_cf_edge_rules.py)
+   — dry-run by default, `--execute` to apply) that makes the cache key
+   **ignore the query string**, so `?_=<random>` can't bust the cache and
+   amplify D1 load. Cache Rules are available on every plan.
+3. **Per-IP rate limiting in the Worker** via the native Workers Rate
+   Limiting binding (`env.RATE_LIMITER` / `RATE_LIMITER_HEAVY`, configured
+   in `wrangler.toml`). In-colo, free on every plan, **not KV** (no
+   per-request storage cost). A generous ceiling on the route + a tighter
+   one on `/v1/catalog` + the `*.tsv` exports; over-limit → `429`. We use
+   the Worker binding because Cloudflare's zone-level **WAF Rate Limiting
+   Rules** are a Pro/Business+ feature — `apply_cf_edge_rules.py --only
+   ratelimit` applies those instead, for zones that have them.
+   Cloudflare's always-on L7 DDoS protection (free) handles volumetric
+   attacks underneath either one.
+4. **Purge-on-publish.** `cloud/surface_annotation.publish_record` purges
+   the per-gene + `/v1/catalog` + `/v1/genes` cache entries (targeted
+   by-URL, never `purge_everything` — this Worker shares the
+   `deliverome.org` zone) right after the D1 write. That's what lets the
+   TTLs stay long *and* a republished record go live immediately, instead
+   of being stale for up to a day. Needs `CLOUDFLARE_ZONE_ID` + a Cache
+   Purge scope on the token; missing either soft-skips with a warning.
 
 ## Deploy
 

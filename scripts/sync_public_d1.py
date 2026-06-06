@@ -72,7 +72,7 @@ BATCH_BY_TABLE: dict[str, int] = {
     "compara_release":         18,   # 5 cols → 90 params
     "compara_ortholog":        8,    # 11 cols → 88 params
     "benchmark_version":       9,    # 9 cols → 81 params (D1 rejected 12×9=108)
-    "triage_run_public":       3,    # 25 cols → 75 params (was 4×20=80; +5 cost cols)
+    "triage_run_public":       3,    # 27 cols → 81 params (+hgnc_id, ensembl_gene); ≤100 limit
     "gene_identifier_public":  7,    # 12 cols → 84 params
 }
 
@@ -243,6 +243,7 @@ def sync_triage_runs(*, priv: D1, pub: D1, dry_run: bool, since: str | None, cli
     # Join prompt_filename in from prompt_version (text stays private).
     sql = (
         "SELECT tr.run_id, tr.created_at, tr.gene_symbol, tr.uniprot_acc, "
+        "       tr.hgnc_id, tr.ensembl_gene, "
         "       tr.bench_version, tr.model, tr.prompt_variant, tr.prompt_sha, "
         "       pv.prompt_filename, tr.schema_version, tr.replicate, "
         "       tr.predicted_verdict, tr.predicted_reason, "
@@ -260,7 +261,8 @@ def sync_triage_runs(*, priv: D1, pub: D1, dry_run: bool, since: str | None, cli
         params.append(since)
     rows = _query(priv, sql, params or None, client=client)
     cols = [
-        "run_id", "created_at", "gene_symbol", "uniprot_acc", "bench_version",
+        "run_id", "created_at", "gene_symbol", "uniprot_acc",
+        "hgnc_id", "ensembl_gene", "bench_version",
         "model", "prompt_variant", "prompt_sha", "prompt_filename", "schema_version",
         "replicate", "predicted_verdict", "predicted_reason",
         "predicted_confidence", "predicted_key_uncertainty",

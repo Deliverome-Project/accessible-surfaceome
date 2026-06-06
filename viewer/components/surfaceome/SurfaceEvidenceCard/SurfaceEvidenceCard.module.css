@@ -7,7 +7,7 @@
 .bannerProse {
   margin: 0;
   color: var(--ink);
-  font-size: 0.98rem;
+  font-size: 0.85rem;
   line-height: var(--lh-body);
   /* Was ``max-width: 64ch`` — capped at ~64 characters which left a big
    * empty column to the right of the prose and made the banner look
@@ -22,16 +22,90 @@
   font-style: italic;
 }
 
+/* Footnote: count of expression-only blocks filtered out of the surface
+   card. Muted + small so it reads as a provenance note, not content. */
+.hiddenNote {
+  margin: var(--space-3) 0 0;
+  color: var(--muted);
+  font-size: 0.78rem;
+  font-style: italic;
+}
+
 .methods {
   display: flex;
   flex-direction: column;
   gap: var(--space-5);
 }
 
-.method {
+/* Top-line per-assay-type summary: one count chip per method family
+   (Flow · 3 · IF · 2 · Surface MS · 1 …) so the reader sees the evidence
+   composition before scrolling the grouped blocks. */
+.summary {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  margin-bottom: var(--space-4);
+}
+
+/* Assay-type groups: method blocks grouped by method_family, each under
+   its own labeled header with a per-type finding count. */
+.familyGroups {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-5);
+}
+
+.familyGroup {
   display: flex;
   flex-direction: column;
   gap: var(--space-3);
+}
+
+.familyHead {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: var(--space-2);
+  padding-bottom: var(--space-1);
+  border-bottom: 2px solid var(--line);
+}
+
+.familyName {
+  font-weight: var(--fw-semibold);
+  font-size: 0.95rem;
+  color: var(--ink);
+}
+
+.familyMeta {
+  font-size: 0.8rem;
+  color: var(--muted);
+}
+
+/* Antibody link-out (RRID resolver or keyword search). Inline with the
+   reagent name so it reads as "open this antibody". */
+.abNameRow {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: var(--space-2);
+}
+
+.abLink {
+  font-size: 0.78rem;
+  color: var(--link);
+  text-decoration: none;
+  white-space: nowrap;
+  /* Gap so the link doesn't butt up against the catalog / part number it
+     follows in the reagent meta line. */
+  margin-left: var(--space-2);
+}
+
+.abLink:hover {
+  text-decoration: underline;
+}
+
+/* .method is a <details> — collapsed by default, headline in <summary>. */
+.method {
   padding-top: var(--space-4);
   border-top: 1px solid var(--line-soft);
 }
@@ -41,11 +115,46 @@
   border-top: 0;
 }
 
+/* <summary> headline row. Drop the native disclosure marker and supply
+   our own chevron so the flex layout lays out cleanly. */
 .methodHead {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
   gap: var(--space-2);
+  cursor: pointer;
+  list-style: none;
+}
+
+.methodHead::-webkit-details-marker {
+  display: none;
+}
+
+.methodHead::before {
+  content: "▸";
+  color: var(--muted);
+  font-size: 0.7rem;
+  transition: transform 0.12s ease;
+}
+
+.method[open] > .methodHead::before {
+  transform: rotate(90deg);
+}
+
+/* Count of what's hidden in the collapsed body (N antibodies · M
+   observations), pushed to the right of the headline pills. */
+.methodSummaryMeta {
+  margin-left: auto;
+  color: var(--muted);
+  font-size: 0.8rem;
+}
+
+/* The collapsed body: cites + antibodies + observations. */
+.methodBody {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  padding-top: var(--space-3);
 }
 
 .subLabel {
@@ -129,7 +238,10 @@
   text-align: left;
   padding: var(--space-2) var(--space-3) var(--space-2) 0;
   border-bottom: 1px solid var(--line-soft);
-  vertical-align: top;
+  /* Center vertically so the short cells (Sample, the Level pill, the
+     Cites chip) and the header ⓘ align to the middle of a tall,
+     wrapped Context cell instead of clinging to the top. */
+  vertical-align: middle;
 }
 
 .obsTable th {

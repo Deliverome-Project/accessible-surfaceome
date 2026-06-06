@@ -106,11 +106,25 @@ export function structureViewerDataFromRecord(
     | null
     | undefined,
 ): StructureViewerData | null {
-  const topology = canonicalTopology?.per_residue_topology;
-  if (!uniprotAcc || !topology) return null;
+  if (!uniprotAcc) return null;
   if (!/^[A-Z0-9-]+$/i.test(uniprotAcc)) return null;
+  // An empty per_residue_topology (DeepTMHMM produced no string for this
+  // protein — e.g. IZUMO4 / Q1ZYL8) must NOT hide the structure: the AFDB
+  // model still exists and is worth rendering. Fall through with an empty
+  // topology → GLOB / no coloring / whole-protein gray (the same look GLOB
+  // proteins already get) instead of returning null, which showed no
+  // viewer at all even though the model loads fine.
+  const topology = canonicalTopology?.per_residue_topology ?? "";
   const type = deepTMHMMType(topology);
-  if (type === "GLOB") return null;
+  // GLOB (globular / no membrane topology — e.g. BAX, LYN, HMGB1, the
+  // cytoplasmic kinases) is NOT excluded: a globular protein still has an
+  // AlphaFold model worth showing, and the viewer renders it in
+  // whole-protein gray (no topology coloring) — exactly how the pre-baked
+  // static-cohort path already renders GLOB entries like SRC (P12931).
+  // Returning null here was the sole reason those genes showed no 3D
+  // structure even though their AFDB model exists; the deep-dive record
+  // carries `canonical_topology` for every gene, so the fallback can
+  // serve GLOB just like the membrane types.
   return {
     uniprot_acc: uniprotAcc,
     deeptmhmm_type: type,

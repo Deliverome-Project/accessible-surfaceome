@@ -92,8 +92,11 @@ CREATE INDEX IF NOT EXISTS idx_benchmark_version_uniprot
 -- but external reproducibility of figures like benchmark_cost_vs_accuracy
 -- requires those exact fields — and there's no security reason to gate
 -- aggregate per-model cost data for an LLM eval that is itself public.
--- (Raw prompt text + verdict_reasoning + raw_text stay private; only
--- per-call cost telemetry leaves.)
+-- (Raw prompt text + raw_text stay private. verdict_reasoning IS
+-- mirrored here — it's served per-gene at /v1/triage/:symbol and in
+-- the bulk triage export when with_reasoning=1, so the genome-wide
+-- agent reasoning is public; only the raw prompt/response text
+-- distinguishes private from public.)
 -- ---------------------------------------------------------------------------
 
 CREATE TABLE IF NOT EXISTS triage_run_public (
@@ -103,6 +106,8 @@ CREATE TABLE IF NOT EXISTS triage_run_public (
 
     gene_symbol         TEXT NOT NULL,
     uniprot_acc         TEXT,
+    hgnc_id             TEXT,
+    ensembl_gene        TEXT,
     bench_version       TEXT NOT NULL,
 
     model               TEXT NOT NULL,
@@ -381,7 +386,8 @@ CREATE TABLE IF NOT EXISTS compara_paralog (
     paralog_gene_symbol      TEXT,
     family_id                TEXT,                    -- ENSFM... Compara family / clade subtype
     biomart_percent_identity REAL,                    -- from BioMart, full-length
-    ecd_pct_identity         REAL,                    -- per-loop BLOSUM62 length-weighted; NULL when no ECD
+    ecd_pct_identity         REAL,                    -- per-loop BLOSUM62 length-weighted identity; NULL when no ECD
+    ecd_pct_similarity       REAL,                    -- per-loop BLOSUM62 identity + positive substitutions; NULL when no ECD (populated for close pairs >=80% full-length)
     n_ecd_loops_compared     INTEGER,                 -- # loop pairs aligned
     rank_by_ecd_identity     INTEGER,                 -- 1=closest paralog; NULLs sort last
     paralogy_type            TEXT,                    -- within_species_paralog | other_paralog | gene_split
@@ -470,7 +476,7 @@ CREATE TABLE IF NOT EXISTS compara_ortholog_ecd_release (
 
 
 -- ---------------------------------------------------------------------------
--- SURFACE-Bind (Marchand et al. 2026 PNAS, doi:10.1073/pnas.2506269123)
+-- SURFACE-Bind (Balbi et al. 2026 PNAS, doi:10.1073/pnas.2506269123)
 --
 -- Per-UniProt patch-targetability summary + per-site detail from the
 -- Correia lab's MaSIF / surface-fingerprinting mapping of the human

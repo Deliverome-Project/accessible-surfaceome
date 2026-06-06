@@ -60,6 +60,32 @@
   display: inline-flex;
   flex-wrap: wrap;
   gap: var(--space-1);
+  align-items: center;
+}
+
+/* One labeled secondary-localization row ("surface subdomain" /
+   "also found in") under the primary compartment chip. Mono label left,
+   badges right, so the two rows read as an aligned column. */
+.locRow {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: var(--space-2);
+  margin-top: var(--space-2);
+}
+
+.locRowLabel {
+  color: var(--muted);
+  flex: 0 0 auto;
+}
+
+/* A single "also found in" compartment: badge + its inline citation chips
+   kept together so they wrap as one unit. */
+.locCompartment {
+  display: inline-flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-1);
 }
 
 .mono {
@@ -97,9 +123,129 @@
   font-size: 0.95rem;
 }
 
-.modBaseline {
-  font-family: var(--font-mono);
-  font-size: 0.88rem;
+/* Overarching accessibility-context summary at the top of the card —
+   deduped context chips + a one-sentence rationale. */
+.contextSummary {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  margin-bottom: var(--space-4);
+  padding-bottom: var(--space-3);
+  border-bottom: 1px solid var(--line-soft);
+}
+
+.contextChips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  align-items: center;
+}
+
+/* Localization at-a-glance badge row in the accessibility-context header
+   (primary compartment + the "also in" endosome / lysosome / … badges). */
+.contextBadges {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  align-items: center;
+  margin-bottom: var(--space-4);
+}
+
+.contextRationale {
+  margin: 0;
+  color: var(--ink);
+  font-size: 0.95rem;
+  line-height: 1.5;
+}
+
+/* Modulation-table "Shift" cell — baseline → modulating on the first
+   line, the mechanism `change` as a quieter second line. */
+.modShift {
+  display: block;
+}
+
+.modChangeInline {
+  display: block;
+  margin-top: 0.25rem;
+  color: var(--muted);
+  font-size: 0.85rem;
+  line-height: 1.4;
+}
+
+/* Accessibility-modulation table — fixed layout so the Context (col 1) pill
+   column can be pinned compact while the four prose/citation columns
+   (Reference / Modulating state / Implication / References) share the
+   remaining width evenly. */
+.modTable {
+  table-layout: fixed;
+}
+
+.modTable th:nth-child(1),
+.modTable td:nth-child(1) {
+  /* Deliberately compact: wide enough for the longest category's first line
+     ("Post-translational" ≈ 150px + cell padding) with "dependent" wrapping
+     centered underneath, but no wider. The pill itself is shrink-wrapped +
+     centered (see the nth-child(1) span rule below), so it stays ONE pill
+     that hugs its content instead of a cell-wide slab of background.
+     Fixed-layout at 100%, so the prose Implication / References columns
+     absorb the freed width. */
+  width: 11.5rem;
+}
+
+/* Column 2 — Change (structured direction): short single-word labels
+   (Increase / Decrease / Equal / Bidirectional / ?), so pin it narrow and
+   leave the prose columns the rest. */
+.modTable th:nth-child(2),
+.modTable td:nth-child(2) {
+  width: 7rem;
+}
+
+/* Columns 3–6 — Reference (baseline_context), Modulating state, Implication,
+   and References (change narrative + citations) — are ALL prose/citation
+   content. With `table-layout: fixed` and no explicit width they divide the
+   space left by the fixed Context + Change columns EQUALLY. */
+
+.modTable td:nth-child(1),
+.modTable td:nth-child(2),
+.modTable td:nth-child(3),
+.modTable td:nth-child(4) {
+  /* Break only at spaces / existing hyphens (e.g. "disease-state"),
+     never mid-word — `anywhere` was splitting the Category label
+     ("Polariza-tion") mid-character. The prose columns share width evenly
+     (see above) and wrap fine at word boundaries. */
+  overflow-wrap: normal;
+  word-break: keep-all;
+}
+
+/* Column 1 (Category) pill is pinned narrow, so its text wraps at word
+   boundaries rather than overflow the fixed column. Target ALL descendants
+   (not just the direct pill) so the text span INSIDE the pill wraps too. */
+.modTable td:nth-child(1) * {
+  white-space: normal;
+  overflow-wrap: normal;
+  word-break: keep-all;
+}
+
+/* The Category pill wraps to two lines in its compact column
+   ("Post-translational" over "dependent"), but stays ONE pill (single
+   rounded background). `inline-block` + `max-width` shrink-wraps it to its
+   own content (so short categories don't get a cell-wide background), and
+   `text-align: center` sits the wrapped short line centered under the long
+   one — the only purple past a word is the small balanced margin around the
+   centered short line, not a slab trailing off the right edge. */
+.modTable td:nth-child(1) span {
+  display: inline-block;
+  max-width: 10rem;
+  text-align: center;
+}
+
+/* The change/effect narrative ("evidence string") now lives in the Cites
+   column, above the evidence chips, rather than widening the Shift cell. */
+.modChangeCite {
+  margin: 0 0 0.35rem;
+  color: var(--muted);
+  font-size: 0.85rem;
+  line-height: 1.4;
 }
 
 /* Restricted-subdomain block moved into the subcellular-localization

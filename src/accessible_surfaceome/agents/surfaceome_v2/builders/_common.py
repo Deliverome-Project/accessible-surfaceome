@@ -131,6 +131,7 @@ def call_builder(
     expect_array: bool = False,
     array_item_model: type[BaseModel] | None = None,
     max_tokens: int = MAX_TOKENS_BLOCK,
+    tools: list[dict[str, Any]] | None = None,
 ) -> T | list[BaseModel] | None:
     """Call Sonnet with a repair loop until the emitted JSON validates.
 
@@ -151,13 +152,44 @@ def call_builder(
     parsed: Any = None
     raw_json: Any = None
 
+    # When ``tools`` is supplied (today: Anthropic's server-side
+    # ``web_search`` for the methods builder's antibody-metadata
+    # enrichment), pass it through. The server tool resolves within a
+    # single ``create`` call — its extra ``server_tool_use`` /
+    # ``web_search_tool_result`` content blocks are non-``TextBlock`` and
+    # are ignored by the JSON extraction below, so no tool-loop is needed.
+    extra_kwargs: dict[str, Any] = {}
+    if tools:
+        extra_kwargs["tools"] = tools
+
     for attempt in range(MAX_REPAIRS + 1):
-        resp = client.messages.create(
-            model=SONNET_MODEL,
-            max_tokens=max_tokens,
-            system=system_prompt,
-            messages=cast("Any", messages),
-        )
+        try:
+            resp = client.messages.create(
+                model=SONNET_MODEL,
+                max_tokens=max_tokens,
+                system=system_prompt,
+                messages=cast("Any", messages),
+                **cast("Any", extra_kwargs),
+            )
+        except Exception as exc:  # noqa: BLE001 - degrade, never crash the run
+            if not extra_kwargs:
+                raise
+            # The server tool (web_search) errored or isn't enabled on the
+            # account. The antibody-metadata enrichment is best-effort, so
+            # degrade to the cite-only call rather than hard-failing every
+            # deep-dive run.
+            logger.warning(
+                "%s: web-search-enabled call failed (%s); retrying cite-only",
+                label,
+                exc,
+            )
+            extra_kwargs = {}
+            resp = client.messages.create(
+                model=SONNET_MODEL,
+                max_tokens=max_tokens,
+                system=system_prompt,
+                messages=cast("Any", messages),
+            )
         usage_sink.append(record_from_response(resp.usage, SONNET_MODEL))
         final_text = "\n".join(
             b.text for b in resp.content if isinstance(b, TextBlock)

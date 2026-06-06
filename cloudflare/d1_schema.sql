@@ -67,9 +67,12 @@ CREATE TABLE IF NOT EXISTS triage_run (
     run_id              TEXT NOT NULL,             -- groups one sweep (uuid)
     created_at          TEXT NOT NULL DEFAULT (datetime('now')),
 
-    -- which protein
+    -- which protein (resolver stable IDs — written from gene_identifier via
+    -- the HGNC-ID resolver, NOT the bench-pinned uniprot; see triage_upload.py)
     gene_symbol         TEXT NOT NULL,
     uniprot_acc         TEXT,
+    hgnc_id             TEXT,
+    ensembl_gene        TEXT,
     bench_version       TEXT NOT NULL,             -- joins to benchmark_version
 
     -- which agent setup
@@ -511,6 +514,7 @@ CREATE TABLE IF NOT EXISTS compara_paralog (
     family_id                TEXT,
     biomart_percent_identity REAL,
     ecd_pct_identity         REAL,
+    ecd_pct_similarity       REAL,    -- BLOSUM62 identity + positive substitutions; NULL when no ECD (close pairs >=80%)
     n_ecd_loops_compared     INTEGER,
     rank_by_ecd_identity     INTEGER,
     paralogy_type            TEXT,

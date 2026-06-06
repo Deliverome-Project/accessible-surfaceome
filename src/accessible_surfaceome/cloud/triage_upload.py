@@ -94,13 +94,41 @@ def _load_benchmark_rows(bench_tsv: Path) -> list[dict[str, str]]:
         return list(csv.DictReader(f, delimiter="\t"))
 
 
-def _bench_version(bench_tsv: Path) -> str:
-    """Content-address the benchmark TSV with a short SHA prefix.
+# Columns that DEFINE the curated benchmark — the ground truth a run is
+# scored against. ``bench_version`` is the content hash of ONLY these
+# columns, so it's stable across re-runs of
+# ``scripts/augment_figure_tsvs_with_stable_ids.py`` (which rewrites the
+# DERIVED columns — ``sonnet_verdict``, ``n_db_votes``, stable-IDs — in the
+# same file from the genome sweep / candidate universe). Hashing the whole
+# file would drift the version every time those derived columns refresh,
+# even though the truth never changed. Order-independent + value-normalized
+# so cosmetic column reordering or whitespace doesn't bump the version.
+_BENCH_TRUTH_COLUMNS = (
+    "gene_symbol",
+    "uniprot_acc",
+    "class",
+    "ground_truth_verdict",
+    "ground_truth_signal",
+    "ground_truth_reason",
+    "rationale",
+)
 
-    A bench_version that changes whenever the TSV changes lets us
-    point old runs at the labels that were live then.
+
+def _bench_version(bench_tsv: Path) -> str:
+    """Content-address the CURATED-TRUTH subset of the benchmark TSV.
+
+    A bench_version that changes whenever the curated labels change (but
+    NOT when derived/augmented columns refresh) lets us point old runs at
+    the truth that was live then, and stays reproducible from the committed
+    file regardless of augment state.
     """
-    return _sha256(bench_tsv.read_text())[:12]
+    rows = _load_benchmark_rows(bench_tsv)
+    # Canonical serialization: sort rows by gene_symbol, emit only the truth
+    # columns in fixed order, tab-joined, newline-terminated.
+    lines = []
+    for r in sorted(rows, key=lambda x: x.get("gene_symbol", "")):
+        lines.append("\t".join((r.get(c) or "") for c in _BENCH_TRUTH_COLUMNS))
+    return _sha256("\n".join(lines))[:12]
 
 
 def _intern_prompt(d1: D1Client, prompt: PromptInfo) -> None:
@@ -135,13 +163,19 @@ def _intern_benchmark(d1: D1Client, bench_version: str, rows: list[dict[str, str
     content SHA → new bench_version → fresh insertion path. Old rows
     coexist forever.
     """
-    for r in rows:
-        d1.query(
-            "INSERT OR IGNORE INTO benchmark_version "
-            "(bench_version, gene_symbol, uniprot_acc, class, "
-            " truth_verdict, truth_signal, truth_reason, rationale) "
-            "VALUES (?, ?, ?, ?, ?, ?, ?, ?);",
-            [
+    # Batched multi-row INSERT. A genome-wide gene-list is ~19k rows; one
+    # INSERT per row over the D1 HTTP API is ~16 min of serial round-trips
+    # BEFORE the first triage cell. 8 cols → 12 rows/batch keeps params
+    # (96) under D1's ~100-bind limit, dropping the preamble to ~30s.
+    cols = ("bench_version", "gene_symbol", "uniprot_acc", "class",
+            "truth_verdict", "truth_signal", "truth_reason", "rationale")
+    one = "(" + ",".join("?" * len(cols)) + ")"
+    batch = 12
+    for start in range(0, len(rows), batch):
+        chunk = rows[start:start + batch]
+        params: list[Any] = []
+        for r in chunk:
+            params += [
                 bench_version,
                 r["gene_symbol"],
                 r.get("uniprot_acc", ""),
@@ -150,7 +184,11 @@ def _intern_benchmark(d1: D1Client, bench_version: str, rows: list[dict[str, str
                 r.get("ground_truth_signal", ""),
                 r.get("ground_truth_reason", ""),
                 r.get("rationale", ""),
-            ],
+            ]
+        d1.query(
+            f"INSERT OR IGNORE INTO benchmark_version ({', '.join(cols)}) "
+            f"VALUES {', '.join([one] * len(chunk))};",
+            params,
         )
 
 
@@ -188,6 +226,8 @@ def _insert_run(
     prompt_sha: str,
     bench_version: str,
     uniprot_acc: str | None,
+    hgnc_id: str | None = None,
+    ensembl_gene: str | None = None,
     truth_class: str,
 ) -> None:
     # Resolver context — content-address whatever the agent saw as its
@@ -205,11 +245,26 @@ def _insert_run(
             ncbi_summary=record.get("resolver_ncbi_summary"),
         )
 
+    # Delete any prior row for this logical cell before inserting. triage_run
+    # has no UNIQUE constraint on the natural key (only an autoincrement id),
+    # so a resume that re-attempts a previously-ERRORED cell (now that
+    # _existing_keys excludes null-verdict cells) would otherwise leave BOTH
+    # the old null row and the new valid row. Deleting first makes the retry a
+    # true replace — one row per (run_id, gene, model, variant, replicate,
+    # prompt_sha). First-time inserts match nothing, so this is a no-op there.
+    d1.query(
+        "DELETE FROM triage_run WHERE run_id = ? AND gene_symbol = ? AND model = ? "
+        "AND prompt_variant = ? AND replicate = ? AND prompt_sha = ?;",
+        [run_id, record["gene_symbol"], record["model"], record["variant"],
+         int(record.get("replicate", 0)), prompt_sha],
+    )
+
     # SQLite RETURNING is supported on D1 (SQLite 3.35+). We need the new
     # row's id to write child rows in triage_search_log.
     rows = d1.query(
         "INSERT INTO triage_run ("
-        " run_id, gene_symbol, uniprot_acc, bench_version, model, prompt_variant,"
+        " run_id, gene_symbol, uniprot_acc, hgnc_id, ensembl_gene,"
+        " bench_version, model, prompt_variant,"
         " prompt_sha, schema_version, replicate, predicted_verdict, predicted_reason,"
         " verdict_reasoning, predicted_confidence, predicted_key_uncertainty,"
         " truth_verdict, truth_class, correct, prompt_tokens,"
@@ -217,12 +272,14 @@ def _insert_run(
         " n_web_searches, cost_usd, latency_s, error, raw_text,"
         " resolver_context_sha, temperature, top_p, max_tokens,"
         " api_response_id, api_stop_reason, api_model"
-        ") VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)"
+        ") VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)"
         " RETURNING id;",
         [
             run_id,
             record["gene_symbol"],
             uniprot_acc,
+            hgnc_id,
+            ensembl_gene,
             bench_version,
             record["model"],
             record["variant"],
@@ -266,6 +323,82 @@ def _insert_run(
             _insert_search_log_rows(d1, triage_run_id, search_log)
 
 
+# Columns the PUBLIC mirror (triage_run_public) carries. This is the
+# whitelist — private-only columns (raw_text, resolver_context_sha,
+# truth_verdict/class, api_*, temperature/top_p/max_tokens) are deliberately
+# EXCLUDED so a direct public write can't leak them. `prompt_filename` is
+# joined in from the prompt; `synced_at`/`id` are public-side defaults.
+_PUBLIC_TRIAGE_COLUMNS = (
+    "run_id", "gene_symbol", "uniprot_acc", "hgnc_id", "ensembl_gene",
+    "bench_version", "model", "prompt_variant", "prompt_sha", "prompt_filename",
+    "schema_version", "replicate", "predicted_verdict", "predicted_reason",
+    "predicted_confidence", "predicted_key_uncertainty", "verdict_reasoning",
+    "correct", "latency_s", "n_web_searches", "error",
+    "cost_usd", "prompt_tokens", "completion_tokens",
+    "cache_creation_tokens", "cache_read_tokens",
+)
+
+
+def _insert_run_public(
+    pub: D1Client,
+    *,
+    run_id: str,
+    record: dict[str, Any],
+    prompt_sha: str,
+    prompt_filename: str,
+    bench_version: str,
+    uniprot_acc: str | None,
+    hgnc_id: str | None,
+    ensembl_gene: str | None,
+) -> None:
+    """Insert ONE record directly into the public mirror, whitelisted.
+
+    Mirrors what ``scripts/sync_public_d1.py`` would push, but live as the
+    sweep runs — for sweeps that want public-direct writes (e.g. the
+    genome rerun). Only ``_PUBLIC_TRIAGE_COLUMNS`` cross over; raw_text and
+    other private-only fields are never sent. Idempotent via OR REPLACE on
+    the natural-key unique index, matching the sync script.
+    """
+    # created_at is NOT NULL in triage_run_public with no enforced default on
+    # this binding, so set it explicitly to now() via a SQL literal (the
+    # remaining columns are bound params).
+    cols_sql = "created_at, " + ", ".join(_PUBLIC_TRIAGE_COLUMNS)
+    placeholders = "datetime('now'), " + ",".join("?" * len(_PUBLIC_TRIAGE_COLUMNS))
+    vals = [
+        run_id,
+        record["gene_symbol"],
+        uniprot_acc,
+        hgnc_id,
+        ensembl_gene,
+        bench_version,
+        record["model"],
+        record["variant"],
+        prompt_sha,
+        prompt_filename,
+        TRIAGE_SCHEMA_VERSION,
+        int(record.get("replicate", 0)),
+        record.get("predicted_verdict"),
+        record.get("predicted_reason"),
+        record.get("predicted_confidence"),
+        record.get("predicted_key_uncertainty"),
+        record.get("verdict_reasoning") or "",
+        1 if record.get("correct") else 0,
+        float(record.get("latency_s") or 0.0),
+        int(record.get("n_web_searches") or 0),
+        record.get("error"),
+        float(record.get("cost_usd") or 0.0),
+        int(record.get("prompt_tokens") or 0),
+        int(record.get("completion_tokens") or 0),
+        int(record.get("cache_creation_tokens") or 0),
+        int(record.get("cache_read_tokens") or 0),
+    ]
+    pub.query(
+        f"INSERT OR REPLACE INTO triage_run_public "
+        f"({cols_sql}) VALUES ({placeholders});",
+        vals,
+    )
+
+
 def _insert_search_log_rows(
     d1: D1Client,
     triage_run_id: int,
@@ -305,15 +438,64 @@ def _maybe_int(v: Any) -> int | None:
 
 
 def _existing_keys(d1: D1Client, run_id: str) -> set[tuple[str, str, str, int, str]]:
+    """Cells already DONE under this run_id — used by the runner's resume to
+    skip them without re-paying for the API call.
+
+    ONLY cells with a non-null ``predicted_verdict`` count as done. An errored
+    cell (null verdict — transient API failure, parse failure, or a
+    schema-mismatch that nulled out) is deliberately EXCLUDED so a resume
+    re-attempts it. Counting errored cells as done was the issue-#48
+    coverage-gap bug: a mid-run crash left those cells permanently errored,
+    because the restart skipped them. For a genome-scale ~$200 sweep, a
+    resume must converge to full coverage, so transient errors have to be
+    retryable across restarts. (Structural resolver-fails — symbols with no
+    reviewed human UniProt entry — will simply re-error each pass; that's
+    correct and harmless, just a few wasted calls.)
+    """
     rows = d1.query(
         "SELECT gene_symbol, model, prompt_variant, replicate, prompt_sha "
-        "FROM triage_run WHERE run_id = ?;",
+        "FROM triage_run WHERE run_id = ? AND predicted_verdict IS NOT NULL;",
         [run_id],
     )
     return {
         (r["gene_symbol"], r["model"], r["prompt_variant"], r["replicate"], r["prompt_sha"])
         for r in rows
     }
+
+
+def _load_gene_identifier_map(
+    d1: D1Client,
+) -> dict[str, tuple[str | None, str | None, str | None]]:
+    """Map gene_symbol → (uniprot_acc, hgnc_id, ensembl_gene) from the
+    resolver's stable-ID cache (``gene_identifier``).
+
+    Keyed by BOTH ``cohort_symbol`` and ``hgnc_symbol`` so a triage row's
+    ``gene_symbol`` resolves the same way the HGNC-ID resolver + the D1
+    backfill do (cohort_symbol wins on conflict — it's the symbol the
+    genome/bench sweeps key on; hgnc_symbol covers the few rows stored
+    canonically, e.g. ``MT-CO3``). One bulk read at sink construction; the
+    ``insert`` hot path then does in-memory lookups and never re-resolves
+    per cell. This is the sanctioned downstream path for stable IDs
+    (CLAUDE.md "Gene identifier resolution": read ``gene_identifier``,
+    never re-resolve from a bare symbol).
+    """
+    rows = d1.query(
+        "SELECT hgnc_symbol, cohort_symbol, uniprot_acc, hgnc_id, ensembl_gene "
+        "FROM gene_identifier;",
+        [],
+    )
+    out: dict[str, tuple[str | None, str | None, str | None]] = {}
+    for r in rows:  # hgnc_symbol first …
+        if r.get("hgnc_symbol"):
+            out[r["hgnc_symbol"]] = (
+                r.get("uniprot_acc"), r.get("hgnc_id"), r.get("ensembl_gene"),
+            )
+    for r in rows:  # … cohort_symbol overrides (the sweep's key)
+        if r.get("cohort_symbol"):
+            out[r["cohort_symbol"]] = (
+                r.get("uniprot_acc"), r.get("hgnc_id"), r.get("ensembl_gene"),
+            )
+    return out
 
 
 class D1RunSink:
@@ -341,8 +523,16 @@ class D1RunSink:
         bench_tsv: Path,
         prompt_filenames_by_variant: dict[str, str] | None = None,
         prompts_dir: Path | None = None,
+        publish_public: bool = False,
     ):
         self.run_id = run_id
+        # When True, each successful private insert is ALSO written to the
+        # public mirror (triage_run_public) live, whitelisted — for sweeps
+        # that want results in public as they land (e.g. the genome rerun)
+        # without a separate sync step. Private D1 stays the full-fidelity
+        # source of truth; only _PUBLIC_TRIAGE_COLUMNS cross over.
+        self.publish_public = publish_public
+        self._pub_client: D1Client | None = None
         self._lock = threading.Lock()
         bench_rows = _load_benchmark_rows(bench_tsv)
         self.bench_version = _bench_version(bench_tsv)
@@ -365,10 +555,37 @@ class D1RunSink:
             )
 
         self._client = D1Client()
+        if self.publish_public:
+            # Read-only-by-convention helper points at the public mirror UUID;
+            # we use it to write the whitelisted public row live.
+            self._pub_client = D1Client.public()
+        # Resolver stable-ID cache (uniprot/hgnc_id/ensembl_gene) loaded once,
+        # so insert() persists the SAME identifiers the HGNC-ID resolver
+        # produces — not the bench-pinned uniprot, and with hgnc_id +
+        # ensembl_gene that the runner previously discarded.
+        self._ids_by_symbol = _load_gene_identifier_map(self._client)
         # Intern prompts + benchmark snapshot once.
         for prompt in self._prompts_by_variant.values():
             _intern_prompt(self._client, prompt)
-        _intern_benchmark(self._client, self.bench_version, bench_rows)
+        # Only intern into benchmark_version for a LABELED curated benchmark
+        # (rows carry ground_truth_verdict). An unlabeled genome-wide
+        # gene-list (~19k rows, no truth columns) should NOT be written to
+        # benchmark_version — that table is the curated-truth store, the rows
+        # would be empty-truth noise, and the serial intern was a ~16-min
+        # preamble before the first triage cell. The triage_run rows still
+        # carry the gene-list's bench_version for provenance; nothing
+        # downstream joins the genome sweep on benchmark_version.
+        is_labeled = any(
+            (r.get("ground_truth_verdict") or "").strip() for r in bench_rows
+        )
+        if is_labeled:
+            _intern_benchmark(self._client, self.bench_version, bench_rows)
+        else:
+            logger.info(
+                "D1RunSink: input is an unlabeled gene-list (%d rows, no "
+                "ground_truth_verdict) — skipping benchmark_version intern.",
+                len(bench_rows),
+            )
         # Reload the (run_id, …) key set so re-runs of the same sweep
         # don't double-insert.
         self._existing = _existing_keys(self._client, self.run_id)
@@ -409,7 +626,18 @@ class D1RunSink:
         prompt = self._prompts_by_variant[variant]
         gene = record["gene_symbol"]
         bench_row = self._bench_by_gene.get(gene)
-        uniprot_acc: str | None = bench_row.get("uniprot_acc") if bench_row else None
+        # Stable IDs from the resolver cache (preferred). Fall back to the
+        # bench-pinned uniprot only for genes absent from gene_identifier
+        # (readthrough/fusion symbols etc.); hgnc_id / ensembl_gene have no
+        # bench fallback and stay NULL there.
+        res_uniprot, res_hgnc, res_ensembl = self._ids_by_symbol.get(
+            gene, (None, None, None)
+        )
+        uniprot_acc: str | None = res_uniprot or (
+            bench_row.get("uniprot_acc") if bench_row else None
+        )
+        hgnc_id: str | None = res_hgnc
+        ensembl_gene: str | None = res_ensembl
         truth_class: str = (
             bench_row.get("class", "") if bench_row else record.get("truth_class", "") or ""
         )
@@ -429,9 +657,10 @@ class D1RunSink:
                 prompt_sha=prompt.sha,
                 bench_version=self.bench_version,
                 uniprot_acc=uniprot_acc,
+                hgnc_id=hgnc_id,
+                ensembl_gene=ensembl_gene,
                 truth_class=truth_class,
             )
-            return True
         except Exception as exc:  # noqa: BLE001
             # Roll the dedup-key back so a retry can re-attempt.
             with self._lock:
@@ -439,6 +668,27 @@ class D1RunSink:
             logger.warning("D1RunSink: insert failed for %s/%s/%s: %s",
                            gene, record["model"], variant, exc)
             return False
+        # Live public-mirror write (whitelisted). Best-effort: a public
+        # failure does NOT fail the cell — private already has the
+        # full-fidelity row, and sync_public_d1.py can backfill later.
+        if self.publish_public and self._pub_client is not None:
+            try:
+                _insert_run_public(
+                    self._pub_client,
+                    run_id=self.run_id,
+                    record=record,
+                    prompt_sha=prompt.sha,
+                    prompt_filename=prompt.filename,
+                    bench_version=self.bench_version,
+                    uniprot_acc=uniprot_acc,
+                    hgnc_id=hgnc_id,
+                    ensembl_gene=ensembl_gene,
+                )
+            except Exception as exc:  # noqa: BLE001
+                logger.warning("D1RunSink: PUBLIC insert failed for %s/%s/%s: %s "
+                               "(private row OK; sync_public_d1 can backfill)",
+                               gene, record["model"], variant, exc)
+        return True
 
     def already_done(
         self,
@@ -466,6 +716,8 @@ class D1RunSink:
 
     def close(self) -> None:
         self._client.close()
+        if self._pub_client is not None:
+            self._pub_client.close()
 
     def __enter__(self) -> D1RunSink:
         return self

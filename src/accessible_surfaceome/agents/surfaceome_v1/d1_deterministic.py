@@ -216,17 +216,48 @@ def _fetch_canonical_topology(uniprot_acc: str, topology_version: str) -> Isofor
     )
 
 
-def _fetch_isoform_topologies(uniprot_acc: str, topology_version: str) -> list[IsoformTopology]:
+def _fetch_canonical_sequence(uniprot_acc: str, topology_version: str) -> str:
+    """The human canonical row's input FASTA sequence.
+
+    Serves two callers: isoform %identity (``_fetch_isoform_topologies``)
+    and projecting the human topology onto orthologs (``_fetch_orthologs``
+    via ``merge.ortholog_topology_projection``). Returns ``""`` when absent
+    — both callers then degrade gracefully (isoform identity → None,
+    ortholog projection skipped) rather than raising.
+    """
+    rows = _query_public(
+        "SELECT sequence FROM topology_public "
+        "WHERE uniprot_acc = ? AND cohort = 'human_canonical' "
+        "  AND topology_version = ? LIMIT 1",
+        [uniprot_acc, topology_version],
+    )
+    return (rows[0].get("sequence") or "") if rows else ""
+
+
+def _fetch_isoform_topologies(
+    uniprot_acc: str,
+    topology_version: str,
+    *,
+    canonical_topology: str = "",
+    canonical_sequence: str = "",
+) -> list[IsoformTopology]:
     """Non-canonical isoform topology rows (cohort = ``human_isoforms``).
 
     Returns [] if no isoforms predicted — that's the common case today
     since the v1 sweep didn't run the isoforms cohort.
+
+    When the canonical topology + sequence are supplied, each isoform's
+    full-length and ECD %identity to the canonical are computed inline
+    (BLOSUM62 global alignment; see ``merge/isoform_identity.py``).
+    Isoforms aren't in Ensembl Compara (same gene, splice variants), so —
+    unlike orthologs/paralogs — the identity has to be computed here from
+    the sequences the topology sweep already landed in ``topology_public``.
     """
     rows = _query_public(
         "SELECT uniprot_acc_full, isoform_id, tm_helix_count, "
         "n_terminal_orientation, c_terminal_orientation, "
         "signal_peptide_length, ecd_length_residues, icd_length_residues, "
-        "per_residue_topology, tool_version, retrieved_at "
+        "per_residue_topology, sequence, tool_version, retrieved_at "
         "FROM topology_public "
         "WHERE uniprot_acc = ? AND cohort = 'human_isoforms' "
         "  AND topology_version = ? "
@@ -235,6 +266,25 @@ def _fetch_isoform_topologies(uniprot_acc: str, topology_version: str) -> list[I
     )
     out: list[IsoformTopology] = []
     for r in rows:
+        iso_topo = r["per_residue_topology"] or ""
+        iso_seq = r.get("sequence") or ""
+        full_pct: float | None = None
+        ecd_pct: float | None = None
+        ecd_sim: float | None = None
+        if canonical_sequence and iso_seq:
+            from accessible_surfaceome.merge.isoform_identity import (
+                compute_isoform_identity,
+            )
+
+            ident = compute_isoform_identity(
+                canonical_topology=canonical_topology,
+                canonical_sequence=canonical_sequence,
+                isoform_topology=iso_topo,
+                isoform_sequence=iso_seq,
+            )
+            full_pct = ident.full_length_pct_identity
+            ecd_pct = ident.ecd_pct_identity
+            ecd_sim = ident.ecd_pct_similarity
         out.append(
             IsoformTopology(
                 isoform_id=r.get("isoform_id") or r["uniprot_acc_full"],
@@ -245,17 +295,30 @@ def _fetch_isoform_topologies(uniprot_acc: str, topology_version: str) -> list[I
                 signal_peptide_length=int(r["signal_peptide_length"] or 0),
                 ecd_length_residues=int(r["ecd_length_residues"] or 0),
                 icd_length_residues=int(r["icd_length_residues"] or 0),
-                per_residue_topology=r["per_residue_topology"] or "",
+                per_residue_topology=iso_topo,
                 tool_version=r["tool_version"] or "deeptmhmm-1.0.24",
                 retrieved_at=_parse_iso(r["retrieved_at"]),
+                full_length_pct_identity_to_canonical=full_pct,
+                ecd_pct_identity_to_canonical=ecd_pct,
+                ecd_pct_similarity_to_canonical=ecd_sim,
+                sequence=iso_seq or None,
             )
         )
     return out
 
 
+# Full-length identity floor above which a paralog is "close" — it gets its
+# ECD similarity (computed by scripts/compute_paralog_ecd_similarity.py) and
+# its real DeepTMHMM topology threaded on so the viewer can render a full
+# topology row, like the ortholog rows.
+CLOSE_PARALOG_THRESHOLD = 80.0
+
+
 def _fetch_paralogs(
     uniprot_acc: str,
     paralog_version: str,
+    *,
+    topology_version: str = "",
 ) -> list[ParalogEntry]:
     """Top-N paralogs by ECD identity. NULLs sort last via
     ``rank_by_ecd_identity`` so the head is the most-similar pairs.
@@ -264,36 +327,57 @@ def _fetch_paralogs(
     inner-leaflet SRC-family kinases) are INCLUDED in the result —
     family membership is still cross-reactivity signal for
     antibody-derived evidence even when an identity number isn't
-    computable. The planner's 50/70% cutoff ladder simply doesn't
-    fire for those rows.
+    computable.
 
-    No topology JOIN: paralog per-residue topology was briefly added
-    in 6a220a90 and reverted. SRC's 32 paralogs are all GLOB
-    intracellular kinases so the bars rendered as solid blue with no
-    signal. If a use case for paralog topology comes back, mirror the
-    LEFT JOIN pattern used by `_fetch_orthologs`.
+    Close paralogs (>=80% full-length identity) additionally carry
+    ``ecd_pct_similarity`` and their real DeepTMHMM topology (LEFT JOIN
+    against ``topology_public`` on the paralog's UniProt acc — same
+    pattern the orthologs loader uses). Below-threshold paralogs keep the
+    lean chip-only shape (no topology) to avoid bloating records with up
+    to 50 per-residue strings per gene.
     """
     rows = _query_public(
-        "SELECT paralog_gene_symbol, paralog_uniprot_acc, ecd_pct_identity, "
-        "biomart_percent_identity, family_id, compara_version, rank_by_ecd_identity "
-        "FROM compara_paralog "
-        "WHERE human_uniprot_acc = ? AND paralog_version = ? "
-        "  AND paralog_gene_symbol IS NOT NULL "
-        "  AND paralog_uniprot_acc IS NOT NULL "
-        "ORDER BY rank_by_ecd_identity ASC NULLS LAST LIMIT ?",
-        [uniprot_acc, paralog_version, PARALOG_TOP_N],
+        "SELECT cp.paralog_gene_symbol, cp.paralog_uniprot_acc, cp.ecd_pct_identity, "
+        "cp.ecd_pct_similarity, cp.biomart_percent_identity, cp.family_id, "
+        "cp.compara_version, cp.rank_by_ecd_identity, "
+        "tp.per_residue_topology, tp.deeptmhmm_label, tp.tm_helix_count, "
+        "tp.ecd_length_residues, tp.icd_length_residues, "
+        "tp.n_terminal_orientation, tp.c_terminal_orientation, "
+        "tp.signal_peptide_length, tp.sequence "
+        "FROM compara_paralog cp "
+        "LEFT JOIN topology_public tp "
+        "  ON tp.uniprot_acc = cp.paralog_uniprot_acc "
+        "  AND tp.cohort = 'human_canonical' AND tp.topology_version = ? "
+        "WHERE cp.human_uniprot_acc = ? AND cp.paralog_version = ? "
+        "  AND cp.paralog_gene_symbol IS NOT NULL "
+        "  AND cp.paralog_uniprot_acc IS NOT NULL "
+        "ORDER BY cp.rank_by_ecd_identity ASC NULLS LAST LIMIT ?",
+        [topology_version, uniprot_acc, paralog_version, PARALOG_TOP_N],
     )
     out: list[ParalogEntry] = []
     for r in rows:
         try:
             ecd_raw = r.get("ecd_pct_identity")
             ecd_id = float(ecd_raw) if ecd_raw is not None else None
-            # Full-length identity from Compara/BioMart — populated even for
-            # ECD-less proteins (ecd_id is None), which is what lets the
-            # viewer color their cross-reactivity tier. Same source as the
-            # ortholog full-length identity, so the numbers are comparable.
             full_raw = r.get("biomart_percent_identity")
             full_id = float(full_raw) if full_raw is not None else None
+            is_close = full_id is not None and full_id >= CLOSE_PARALOG_THRESHOLD
+            # Topology + similarity + sequence are surfaced only for close
+            # paralogs (the ones that get a full topology row).
+            sim = topo = lbl = tmc = ecdl = icdl = nori = cori = spl = seq = None
+            if is_close:
+                sim_raw = r.get("ecd_pct_similarity")
+                sim = float(sim_raw) if sim_raw is not None else None
+                topo = r.get("per_residue_topology") or None
+                if topo:
+                    seq = r.get("sequence") or None
+                    lbl = r.get("deeptmhmm_label") or None
+                    tmc = int(r["tm_helix_count"]) if r.get("tm_helix_count") is not None else None
+                    ecdl = int(r["ecd_length_residues"]) if r.get("ecd_length_residues") is not None else None
+                    icdl = int(r["icd_length_residues"]) if r.get("icd_length_residues") is not None else None
+                    spl = int(r["signal_peptide_length"]) if r.get("signal_peptide_length") is not None else None
+                    nori = _coerce_orientation(r.get("n_terminal_orientation"))
+                    cori = _coerce_orientation(r.get("c_terminal_orientation"))
             out.append(
                 ParalogEntry(
                     paralog_symbol=r["paralog_gene_symbol"],
@@ -302,6 +386,16 @@ def _fetch_paralogs(
                     full_length_pct_identity=full_id,
                     family_id=r.get("family_id") or "",
                     compara_version=r.get("compara_version") or "",
+                    ecd_pct_similarity=sim,
+                    per_residue_topology=topo,
+                    deeptmhmm_label=lbl,
+                    tm_helix_count=tmc,
+                    ecd_length_residues=ecdl,
+                    icd_length_residues=icdl,
+                    n_terminal_orientation=nori,
+                    c_terminal_orientation=cori,
+                    signal_peptide_length=spl,
+                    sequence=seq,
                 )
             )
         except (TypeError, ValueError) as exc:
@@ -310,22 +404,6 @@ def _fetch_paralogs(
                 uniprot_acc, r, exc,
             )
     return out
-
-
-def _fetch_canonical_sequence(uniprot_acc: str, topology_version: str) -> str:
-    """The human canonical input sequence DeepTMHMM ran on.
-
-    Used to project the human topology onto orthologs (see
-    ``merge.ortholog_topology_projection``). Returns ``""`` when absent,
-    so the caller simply skips projection and keeps raw ortholog values.
-    """
-    rows = _query_public(
-        "SELECT sequence FROM topology_public "
-        "WHERE uniprot_acc = ? AND cohort = 'human_canonical' "
-        "  AND topology_version = ? LIMIT 1",
-        [uniprot_acc, topology_version],
-    )
-    return (rows[0].get("sequence") or "") if rows else ""
 
 
 def _fetch_orthologs(uniprot_acc: str, *, topology_version: str,
@@ -433,6 +511,7 @@ def _fetch_orthologs(uniprot_acc: str, *, topology_version: str,
                 topology_projection_source=proj_source,
                 tm_absent_from_model=tm_absent,
                 n_tm_regions_absent=n_absent,
+                sequence=str(ortholog_seq) if ortholog_seq else None,
             )
         except (TypeError, ValueError) as exc:
             logger.warning(
@@ -567,17 +646,28 @@ def fetch_deterministic_features(uniprot_acc: str) -> DeterministicFeatures:
     # human_canonical (which the paralog uniprots live under), orthologs
     # JOIN against mouse_ortholog / cyno_ortholog (which share a version
     # in practice — mouse_topo_version covers both).
-    isoforms = (
-        _fetch_isoform_topologies(uniprot_acc, isoform_topo_version)
-        if isoform_topo_version else []
-    )
-    # Human canonical sequence — needed to project the canonical topology
-    # onto each ortholog (see merge.ortholog_topology_projection). Fetched
-    # under the canonical cohort's version, which may differ from the
-    # ortholog cohort's mouse_topo_version.
+    # Canonical sequence, fetched once and reused by two callers:
+    #   * isoform %identity (_fetch_isoform_topologies), and
+    #   * projecting the canonical topology onto each ortholog
+    #     (_fetch_orthologs via merge.ortholog_topology_projection).
+    # It lives under the canonical cohort's version, which can differ from
+    # the isoforms / ortholog cohort versions after a partial sweep.
     canonical_sequence = (
         _fetch_canonical_sequence(uniprot_acc, canonical_topo_version)
         if canonical_topo_version else ""
+    )
+    # Pair the canonical sequence onto the topology it indexes (1:1 length).
+    # The placeholder-canonical path (no D1 row) leaves it None.
+    if canonical_sequence and not canonical.sequence:
+        canonical.sequence = canonical_sequence
+    isoforms = (
+        _fetch_isoform_topologies(
+            uniprot_acc,
+            isoform_topo_version,
+            canonical_topology=canonical.per_residue_topology,
+            canonical_sequence=canonical_sequence,
+        )
+        if isoform_topo_version else []
     )
     orthologs = (
         _fetch_orthologs(
@@ -591,7 +681,9 @@ def fetch_deterministic_features(uniprot_acc: str) -> DeterministicFeatures:
         else Orthologs()
     )
     paralogs = (
-        _fetch_paralogs(uniprot_acc, paralog_version)
+        _fetch_paralogs(
+            uniprot_acc, paralog_version, topology_version=canonical_topo_version
+        )
         if paralog_version else []
     )
     # Pull real AFDB pLDDT — ECD-restricted when the canonical isoform
@@ -600,12 +692,29 @@ def fetch_deterministic_features(uniprot_acc: str) -> DeterministicFeatures:
     # downstream readers don't conflate it with the ECD-restricted
     # measurement. ``fetch_afdb_plddt`` never raises — on network /
     # parse failure it returns its own labeled placeholder.
-    from accessible_surfaceome.tools.afdb_plddt import fetch_afdb_plddt
+    from accessible_surfaceome.tools.afdb_plddt import (
+        fetch_afdb_plddt,
+        read_afdb_model_links,
+    )
+    from accessible_surfaceome.tools.pdbe_structures import (
+        fetch_representative_structure,
+    )
     from accessible_surfaceome.tools.surface_bind import lookup as lookup_surface_bind
 
     structure = fetch_afdb_plddt(
         uniprot_acc,
         per_residue_topology=canonical.per_residue_topology or None,
+    )
+    # Enrich with the AFDB model download links (cache warm from the fetch
+    # above) + the representative experimental (PDB) structure from PDBe
+    # SIFTS. Both are best-effort — None/empty on failure, leaving the
+    # corresponding fields unset rather than failing the record.
+    _links = read_afdb_model_links(uniprot_acc)
+    structure.model_cif_url = _links["model_cif_url"]
+    structure.model_pdb_url = _links["model_pdb_url"]
+    structure.model_pae_url = _links["model_pae_url"]
+    structure.representative_experimental_structure = (
+        fetch_representative_structure(uniprot_acc)
     )
 
     # SURFACE-Bind summary — in-memory lookup against the checked-in

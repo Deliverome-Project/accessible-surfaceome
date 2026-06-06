@@ -65,6 +65,34 @@ enabled = true
 pattern = "api.deliverome.org/surfaceome/*"
 zone_name = "deliverome.org"
 
+# --- Per-IP rate limiting (Workers native Rate Limiting binding) ---
+#
+# In-colo, in-memory limiter — NOT KV: no per-request storage read/write
+# and no storage cost, and it's free on every plan (this is the path when
+# the zone doesn't have WAF Rate Limiting Rules, which need Pro+). The
+# Worker calls `env.RATE_LIMITER.limit({ key })` and 429s on overflow; an
+# absent binding (older wrangler / local dev) just skips the check.
+#
+# `namespace_id` is an arbitrary integer you pick (unique per account, no
+# dashboard provisioning needed). `period` accepts only 10 or 60 seconds.
+# Counting is per-datacenter, so a distributed attacker gets N×limit total
+# — fine for bounding cost; Cloudflare's always-on L7 DDoS protection
+# (free, automatic) covers the volumetric case underneath.
+#
+# Two limiters: a generous one for the whole route, and a tighter one for
+# the CPU-heavy endpoints (/v1/catalog + the *.tsv exports).
+[[unsafe.bindings]]
+name = "RATE_LIMITER"
+type = "ratelimit"
+namespace_id = "1001"
+simple = { limit = 600, period = 60 }   # 600 req / 60s / IP on the route
+
+[[unsafe.bindings]]
+name = "RATE_LIMITER_HEAVY"
+type = "ratelimit"
+namespace_id = "1002"
+simple = { limit = 60, period = 60 }    # 60 req / 60s / IP on catalog + *.tsv
+
 # --- Feedback flow bindings (per docs/superpowers/specs/2026-05-25-feedback-button-design.md) ---
 
 # Write binding for unmoderated submissions (PII + audit). Same database

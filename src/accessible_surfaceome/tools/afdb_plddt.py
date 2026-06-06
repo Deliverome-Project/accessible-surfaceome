@@ -275,6 +275,45 @@ def fetch_afdb_plddt(
     )
 
 
+def read_afdb_model_links(uniprot_acc: str) -> dict[str, str | None]:
+    """Return the AFDB model download URLs for ``uniprot_acc``.
+
+    Reads the cached prediction metadata
+    (``data/cache/afdb_prediction/{acc}.json``) if present, otherwise fetches
+    it. The cif/pdb/PAE URLs embed the current model version, which only the
+    API knows — storing them on ``StructureFeatures`` saves the consumer
+    reconstructing the URL. Returns all-``None`` on any failure so the caller
+    can set the fields unconditionally.
+
+    Used by the deterministic-features builder (right after
+    :func:`fetch_afdb_plddt`, so the cache is warm) and by the
+    sequences/links backfill — one extraction path, no drift.
+    """
+    out: dict[str, str | None] = {
+        "model_cif_url": None,
+        "model_pdb_url": None,
+        "model_pae_url": None,
+    }
+    AFDB_CACHE_DIR.mkdir(parents=True, exist_ok=True)
+    meta_path = AFDB_CACHE_DIR / f"{uniprot_acc}.json"
+    try:
+        metadata = _load_or_fetch_metadata(uniprot_acc, meta_path)
+    except Exception as exc:  # noqa: BLE001 — links are best-effort
+        logger.warning(
+            "AFDB model-link read failed for %s (%s)", uniprot_acc, exc
+        )
+        return out
+    for key, field in (
+        ("cifUrl", "model_cif_url"),
+        ("pdbUrl", "model_pdb_url"),
+        ("paeDocUrl", "model_pae_url"),
+    ):
+        val = metadata.get(key)
+        if isinstance(val, str) and val:
+            out[field] = val
+    return out
+
+
 def _load_or_fetch_metadata(
     uniprot_acc: str, meta_path: Path
 ) -> dict[str, object]:

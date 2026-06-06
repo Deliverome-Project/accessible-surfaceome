@@ -1,6 +1,6 @@
 import { Shell } from "../components/Shell/Shell";
 import { CatalogTable } from "../components/CatalogTable/CatalogTable";
-import { loadCatalog } from "../lib/surfaceome";
+import { loadCatalog, withDeepDiveFilters } from "../lib/surfaceome";
 import styles from "./page.module.css";
 
 /**
@@ -13,6 +13,10 @@ import styles from "./page.module.css";
  */
 export default async function HomePage() {
   const catalog = await loadCatalog();
+  // Rebuild deep-dive filters from records so a new filter field works
+  // without redeploying the Worker (the /v1/catalog `ddf` lags the in-tree
+  // taxonomy). Same helper /compare uses.
+  const rows = await withDeepDiveFilters(catalog.rows);
 
   return (
     <Shell>
@@ -48,7 +52,7 @@ export default async function HomePage() {
         </header>
 
         <CatalogTable
-          rows={catalog.rows}
+          rows={rows}
           generated_at={catalog.generated_at}
           n_rows={catalog.n_rows}
           n_with_triage={catalog.n_with_triage}
@@ -58,14 +62,6 @@ export default async function HomePage() {
 
         <footer className={styles.footnotes}>
           <p>
-            <span className="label-mono">DB columns ·</span> UniProt · GO ·
-            SURFY · CSPA · HPA. Each cell is one source&apos;s vote on
-            whether the protein reaches the cell surface; the{" "}
-            <code>Sources</code> column is the count of those five (the M1
-            universe gate). DeepTMHMM + COMPARTMENTS are tracked upstream as
-            auxiliary signals but don&apos;t appear here.
-          </p>
-          <p>
             <span className="label-mono">Triage agent ·</span> a single
             Claude call with an NCBI context block, run on every
             protein-coding gene. Verdicts read as <em>yes</em>{" "}
@@ -74,24 +70,12 @@ export default async function HomePage() {
             plasma-membrane presence). Deep-dive records linked from
             the <em>yes</em> column in the &ldquo;Deep dive&rdquo;
             slot override the triage call when present. The alternative
-            models (Haiku 4.5, Opus 4.7) used in the manuscript
+            models (Haiku 4.5, Opus 4.8) used in the manuscript
             comparison live on{" "}
             <a href="/benchmark/" className={styles.surfaceBenchLink}>
               SurfaceBench
             </a>
             .
-          </p>
-          <p>
-            <span className="label-mono">API ·</span>{" "}
-            <code>GET api.deliverome.org/surfaceome/v1/catalog</code> ships the
-            same table as JSON;{" "}
-            <code>/v1/genes/&#123;SYMBOL&#125;</code> ships a single
-            deep-dive record.
-          </p>
-          <p className={styles.sourceLine}>
-            <span className="label-mono">Source ·</span>{" "}
-            live D1{" "}
-            <code>{catalog.universe_version ?? "—"}</code>
           </p>
         </footer>
       </section>

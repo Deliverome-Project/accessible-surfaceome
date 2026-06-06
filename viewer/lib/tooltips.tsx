@@ -1,4 +1,5 @@
 import type { ReactNode } from "react";
+import { CITATIONS, pubmedUrl } from "./citations";
 
 /**
  * Field-provenance tooltip text — one place to edit, shared across
@@ -67,14 +68,19 @@ export const tooltips: Record<string, ReactNode> = {
 
   triage_signal: (
     <>
-      <strong>From the triage agent</strong> (Sonnet) — a first-pass
-      surface call made BEFORE any deep literature dive. No web search,
-      no tool calls, no per-method evidence; the model votes from
-      trained knowledge given just the protein&apos;s standard
-      identifier context: HGNC name / symbol / aliases / previous
-      symbols, UniProt accession (the ID, not the sequence), HGNC
-      gene-group memberships, CD nomenclature, and the NCBI gene
-      summary.
+      <strong>Triage call.</strong> A fast first-pass surface verdict
+      (yes / contextual / no) from a Sonnet agent, made before any
+      deep-dive literature search. Click a row for per-model detail.
+    </>
+  ),
+
+  benchmark_truth: (
+    <>
+      <strong>Benchmark truth.</strong> This gene is in{" "}
+      <a href="/benchmark">SurfaceBench</a>, the 147-protein hand-curated
+      triage benchmark — so it carries a curated ground-truth surface verdict
+      (yes / contextual / no). It&apos;s the reference the model calls are
+      scored against, which is why it sits above the triage row.
     </>
   ),
 
@@ -137,7 +143,7 @@ export const tooltips: Record<string, ReactNode> = {
       Aligned with SURFACE-Bind&apos;s four categories (Balbi et al.
       2026, PMID:{" "}
       <a
-        href="https://pubmed.ncbi.nlm.nih.gov/41604262/"
+        href={pubmedUrl(CITATIONS.surfaceBind.pmid)}
         target="_blank"
         rel="noopener noreferrer"
       >
@@ -249,12 +255,26 @@ export const tooltips: Record<string, ReactNode> = {
     </>
   ),
 
+  expression_system: (
+    <>
+      <strong>LLM-driven.</strong> Whether this assay measured the protein
+      at its native level (<em>endogenous</em>) or after forcing extra
+      copies (<em>overexpression</em>). Endogenous detection is the
+      stronger surface-accessibility signal; overexpression can push a
+      protein to the surface where it wouldn&apos;t normally go.{" "}
+      <strong>Mixed</strong> = this block pools both endogenous and
+      overexpression findings, so read it as partly caveated.{" "}
+      <strong>Knock-in tag</strong> = an endogenous-level tagged copy
+      (strong, like endogenous).
+    </>
+  ),
+
   surface_bind: (
     <>
       MaSIF patch-based targetability scoring from the Correia lab
       (Balbi et al. 2026, PMID:{" "}
       <a
-        href="https://pubmed.ncbi.nlm.nih.gov/41604262/"
+        href={pubmedUrl(CITATIONS.surfaceBind.pmid)}
         target="_blank"
         rel="noopener noreferrer"
       >
@@ -270,6 +290,42 @@ export const tooltips: Record<string, ReactNode> = {
       Sequence identity (full-length canonical) to mouse, rat, and cyno
       orthologs. The §Orthologs card shows the per-species rows plus an
       ECD-restricted variant when topology is known.
+    </>
+  ),
+
+  // Canonical ortholog / paralog tooltip bodies. Single source of truth:
+  // rendered both in the §07 Isoforms·orthologs·paralogs card (subhead
+  // InfoTips) AND the deterministic-summary FiltersCard (StatusPill
+  // tooltips + group tips), so the cutoff bands + citations can't drift
+  // between the two surfaces. Edit here only.
+  ortholog_species_relevance: (
+    <>
+      Mouse / cyno identity to the human canonical, over the ECD. Triage
+      signal, not a verdict — relevance also needs binding, expression, and
+      function (ICH S6(R1)).
+      <br />
+      ≥85% high · 60–85% intermediate · &lt;60% higher-risk.
+      <br />
+      High identity ≠ conserved epitope.
+    </>
+  ),
+
+  paralog_specificity: (
+    <>
+      Identity to the nearest human paralog, over the ECD — local epitope
+      similarity matters more than global identity. Per HPA antigen-design
+      practice (PMID{" "}
+      <a
+        href={pubmedUrl(CITATIONS.hpaAntigenDesign.pmid)}
+        target="_blank"
+        rel="noopener noreferrer"
+      >
+        {CITATIONS.hpaAntigenDesign.pmid}
+      </a>
+      ): ≤60% (usually &lt;40%) single-target achievable; &gt;80% defines a
+      multitargeting antibody expected to bind the family.
+      <br />
+      &lt;60% lower risk · 60–80% caution · &gt;80% multitarget likely.
     </>
   ),
 
@@ -400,7 +456,7 @@ export const tooltips: Record<string, ReactNode> = {
       <strong>SURFACE-Bind targetability</strong> — MaSIF patch-based
       scoring for de novo binder design seeds. Source:{" "}
       <a
-        href="https://pubmed.ncbi.nlm.nih.gov/41604262/"
+        href={pubmedUrl(CITATIONS.surfaceBind.pmid)}
         target="_blank"
         rel="noopener noreferrer"
       >
@@ -508,7 +564,7 @@ export const tooltips: Record<string, ReactNode> = {
       Functional family — the model&apos;s high-level call, aligned with
       SURFACE-Bind&apos;s four classes (Balbi et al. 2026,{" "}
       <a
-        href="https://pubmed.ncbi.nlm.nih.gov/41604262/"
+        href={pubmedUrl(CITATIONS.surfaceBind.pmid)}
         target="_blank"
         rel="noopener noreferrer"
       >
@@ -534,17 +590,20 @@ export const tooltips: Record<string, ReactNode> = {
       One antibody footprint ≈ 12 ± 3 residues / 1103 ± 244 Å² buried
       (Ramaraj et al.&nbsp;2012, PMID&nbsp;
       <a
-        href="https://pubmed.ncbi.nlm.nih.gov/22246133/"
+        href={pubmedUrl(CITATIONS.antibodyInterface.pmid)}
         target="_blank"
         rel="noopener noreferrer"
       >
-        22246133
+        {CITATIONS.antibodyInterface.pmid}
       </a>
       ). Bands below are our heuristic for how many non-overlapping
       footprints an ECD could host (≈ residues ÷ 12, a loose upper
-      bound): <em>large</em> ≥ 200 residues; <em>moderate</em> 60–199;{" "}
-      <em>small</em> 30–59; <em>minimal</em> &lt; 30; <em>none</em> = no
-      surface-exposed ECD (GPI / inner-leaflet).
+      bound): <em>large</em> ≥ 200 residues (≥10 non-overlapping epitopes
+      possible); <em>moderate</em> 60–199 (multiple epitopes, e.g.
+      tetraspanin EC2 loops); <em>small</em> 30–59 (2–5 candidate
+      epitopes, harder discovery); <em>minimal</em> &lt; 30 (1–2 epitopes
+      max, specialized formats needed); <em>none</em> = no surface-exposed
+      ECD (GPI / inner-leaflet).
     </>
   ),
 
@@ -570,6 +629,70 @@ export const tooltips: Record<string, ReactNode> = {
       The targetable surface is shielded — partner heterodimerization,
       glycan shield, or conformational hiding obscures the epitopes a
       binder would otherwise engage.
+    </>
+  ),
+
+  catalog_restricted_subdomain: (
+    <>
+      The surface pool is confined to a restricted membrane subdomain
+      (e.g. apical vs basolateral, or a tight-junction&ndash;bounded face),
+      so part of it sits in a compartment a systemically delivered binder
+      can&apos;t reach.
+    </>
+  ),
+
+  catalog_cyno_ecd: (
+    <>
+      Cynomolgus ortholog extracellular-domain %identity to the human
+      canonical, banded from the Ensembl Compara ECD alignment. High
+      (&ge;90%) means a human-targeting binder likely cross-reacts with the
+      cyno ortholog &mdash; enabling the same molecule for preclinical
+      toxicology without a surrogate.
+    </>
+  ),
+
+  catalog_mouse_ecd: (
+    <>
+      Mouse ortholog extracellular-domain %identity to the human canonical,
+      banded from the Ensembl Compara ECD alignment. High (&ge;90%) supports
+      a single surrogate-free binder for mouse efficacy models.
+    </>
+  ),
+
+  catalog_paralog_ecd: (
+    <>
+      Highest extracellular-domain %identity to any human paralog, banded
+      from the Ensembl Compara ECD alignment. High (&ge;70%) flags off-target
+      cross-reactivity risk &mdash; a binder raised against this protein may
+      also engage the paralog.
+    </>
+  ),
+
+  catalog_tumor_associated: (
+    <>
+      Detected in a tumor / tumor-adjacent tissue context at a non-absent
+      protein level (from the biology block&apos;s tissue rows). A quick
+      oncology-target triage filter &mdash; orthogonal to expression
+      breadth, which doesn&apos;t distinguish tumor from normal context.
+    </>
+  ),
+
+  catalog_induction_trigger: (
+    <>
+      The dominant stimulus that surfaces the protein, bucketed across the
+      documented accessibility-modulation rows (oncogenic transformation,
+      immune activation, stress/hypoxia, cell death, infection).
+      Complements the surface-call reason, which names the trafficking
+      mechanism rather than the trigger.
+    </>
+  ),
+
+  catalog_live_cell_evidence: (
+    <>
+      At least one method shows DIRECT surface accessibility on live/intact
+      cells in an endogenous context &mdash; live-cell flow cytometry,
+      surface biotinylation, or proximity labeling (not permeabilizable
+      IF/IHC). Filters by evidence modality, not just the rolled-up grade.
     </>
   ),
 

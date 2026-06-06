@@ -1,42 +1,29 @@
 "use client";
 
 import { type ReactNode, useMemo, useState } from "react";
+import { CITATIONS, pubmedUrl } from "../../../lib/citations";
+import { type Compartment, compartmentAt } from "../../../lib/surface-bind";
 import type { SurfaceBindSite } from "../../../lib/surfaceome-types";
 import { InfoTip } from "../../InfoTip/InfoTip";
 import { StatusPill } from "../StatusPill/StatusPill";
 import styles from "./SurfaceBindCard.module.css";
 
-type Compartment =
-  | "extracellular"
-  | "intracellular"
-  | "membrane"
-  | "signal"
-  | "unknown";
-
-/** Per-residue compartment from the DeepTMHMM topology string.
- *  Returns ``unknown`` when topology data isn't available or the
- *  residue index is out of range. Mirrors the inference rule in
- *  ``GeneHeader.tsx``'s ``surfaceBindAnchors`` mapping — same source
- *  of truth as the 3D label. */
-function compartmentAt(topology: string, residue: number): Compartment {
-  const idx = residue - 1;
-  if (idx < 0 || idx >= topology.length) return "unknown";
-  const ch = topology.charAt(idx);
-  if (ch === "O") return "extracellular";
-  if (ch === "I") return "intracellular";
-  if (ch === "M") return "membrane";
-  if (ch === "S") return "signal";
-  return "unknown";
-}
+// `compartmentAt` + the `Compartment` type are imported from
+// ``lib/surface-bind`` — the same helper the FiltersCard "EC sites"
+// count uses, so the table's per-site "Side" column and the headline
+// count can never disagree.
 
 /** Pill tone per compartment — mirrors ``COMPARTMENT_COLOR`` in
  *  ``viewer/components/surfaceome/StructureViewerCard/StructureViewer.tsx``
  *  so the 3D sphere color and the table pill match per site.
- *  Per user preference: EC = red ("look here / focus"), IC = green
- *  (safely tucked away inside the cell); membrane / signal /
- *  unknown = neutral. */
-function compartmentTone(c: Compartment): "danger" | "success" | "neutral" {
-  if (c === "extracellular") return "danger";
+ *  Per user preference: EC = purple / lavender ("look here / focus"),
+ *  signal peptide = red, IC = green (safely tucked away inside the
+ *  cell); membrane / unknown = neutral. */
+function compartmentTone(
+  c: Compartment,
+): "lavender" | "danger" | "success" | "neutral" {
+  if (c === "extracellular") return "lavender";
+  if (c === "signal") return "danger";
   if (c === "intracellular") return "success";
   return "neutral";
 }
@@ -216,7 +203,7 @@ export function SurfaceBindTable({ sites, topology }: Props) {
                 binding-affinity prediction. Tone compares it to the typical
                 antibody–antigen interface (1,103 ± 244 Å²,{" "}
                 <a
-                  href="https://pubmed.ncbi.nlm.nih.gov/22246133/"
+                  href={pubmedUrl(CITATIONS.antibodyInterface.pmid)}
                   target="_blank"
                   rel="noopener noreferrer"
                 >

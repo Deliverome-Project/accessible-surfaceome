@@ -1,3 +1,4 @@
+import { CITATIONS } from "../../../lib/citations";
 import type { SurfaceomeRecord } from "../../../lib/surfaceome-types";
 import { SectionCard } from "../SectionCard/SectionCard";
 import { SurfaceBindTable } from "./SurfaceBindTable";
@@ -34,7 +35,7 @@ export function SurfaceBindCard({ rec, n }: Props) {
         n={n}
         eyebrow="SURFACE-Bind"
         title="Patch-based targetability"
-        meta="Balbi 2026 (PMID 41604262) · MaSIF surface scoring · deterministic"
+        meta={`Balbi 2026 (PMID ${CITATIONS.surfaceBind.pmid}) · MaSIF surface scoring · deterministic`}
       >
         <p className={styles.emptyNote}>
           <strong>Scored by SURFACE-Bind</strong> — present in the
@@ -65,7 +66,7 @@ export function SurfaceBindCard({ rec, n }: Props) {
       n={n}
       eyebrow="SURFACE-Bind"
       title="Patch-based targetability"
-      meta={`Balbi 2026 (PMID 41604262) · ${sb.n_sites} site${
+      meta={`Balbi 2026 (PMID ${CITATIONS.surfaceBind.pmid}) · ${sb.n_sites} site${
         sb.n_sites === 1 ? "" : "s"
       } · ${sb.n_seeds_total.toLocaleString()} total binder seeds`}
     >

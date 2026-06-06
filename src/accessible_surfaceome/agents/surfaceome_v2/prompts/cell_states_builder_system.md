@@ -90,9 +90,7 @@ condition (e.g. several papers all reporting csGRP78 under various
 ER stressors) collapse into one row with multiple `cited_evidence_ids`
 and a descriptor that summarizes across them.
 
-## You have no tools
-
-Cite-only over the ledger.
+**You have no tools.** Cite-only over the ledger.
 
 ## Output
 

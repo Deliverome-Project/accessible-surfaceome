@@ -1,6 +1,6 @@
 import type { SurfaceomeRecord } from "../../../lib/surfaceome-types";
 import { prettyEnum } from "../../../lib/surfaceome";
-import { EvidenceChipList } from "../EvidenceChip/EvidenceChip";
+import { EvidenceChipList, linkifyEvidenceRefs } from "../EvidenceChip/EvidenceChip";
 import { SectionCard } from "../SectionCard/SectionCard";
 import { StatusPill } from "../StatusPill/StatusPill";
 import styles from "./ExecutiveSummaryCard.module.css";
@@ -71,7 +71,9 @@ export function ExecutiveSummaryCard({ rec, n }: Props) {
       title="Overview and headline call"
       meta="LLM synthesis · top-line accessibility judgment + headline risks"
     >
-      <p className={styles.paragraph}>{e.one_paragraph}</p>
+      <p className={styles.paragraph}>
+        {linkifyEvidenceRefs(e.one_paragraph)}
+      </p>
 
       <ul className={styles.pillStrip} aria-label="Executive summary pills">
         <li>

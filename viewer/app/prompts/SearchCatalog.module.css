@@ -1,0 +1,192 @@
+/* "Searches the agents run" catalog — a collapsible block under the
+   plan_trim_select group header documenting the deterministic + planned
+   search surface the agents' prompts operate over. */
+.wrap {
+  margin-top: var(--space-4);
+  border: 1px solid var(--line-soft);
+  border-radius: var(--radius-sm);
+  background: var(--bg-soft);
+}
+
+.summary {
+  list-style: none;
+  cursor: pointer;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: var(--space-2) var(--space-3);
+  padding: var(--space-4) var(--space-5);
+}
+
+.summary::-webkit-details-marker {
+  display: none;
+}
+
+.summary::before {
+  content: "▸";
+  color: var(--muted);
+  transition: transform var(--dur-fast) var(--ease-out);
+}
+
+.wrap[open] > .summary::before {
+  transform: rotate(90deg);
+}
+
+.summaryTitle {
+  font-family: var(--font-sans);
+  font-weight: var(--fw-semibold);
+  font-size: 1rem;
+  color: var(--ink);
+}
+
+.summaryHint {
+  font-size: 0.8rem;
+  color: var(--ink-faint);
+}
+
+.body {
+  padding: 0 var(--space-5) var(--space-5);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+.lede {
+  margin: 0;
+  font-size: 0.92rem;
+  line-height: 1.6;
+  color: var(--ink-soft);
+  max-width: 80ch;
+}
+
+.group {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.groupTitle {
+  margin: 0;
+  font-family: var(--font-sans);
+  font-size: 0.82rem;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.groupSub {
+  margin: 0;
+  font-size: 0.85rem;
+  color: var(--ink-faint);
+}
+
+/* Two agent columns (A1 surface · A2 biology), stacking on narrow screens. */
+.agents {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--space-4) var(--space-5);
+}
+
+.agent {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  padding: var(--space-4);
+  border: 1px solid var(--line-soft);
+  border-radius: var(--radius-sm);
+  background: var(--bg-base, #fff);
+}
+
+.agentHead {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+}
+
+.agentTitle {
+  margin: 0;
+  font-family: var(--font-sans);
+  font-weight: var(--fw-semibold);
+  font-size: 0.95rem;
+  color: var(--ink);
+}
+
+.agentTagline {
+  margin: 0;
+  font-size: 0.82rem;
+  line-height: 1.45;
+  color: var(--ink-faint);
+}
+
+.subhead {
+  margin: var(--space-2) 0 0;
+  font-family: var(--font-sans);
+  font-size: 0.72rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.note {
+  margin: var(--space-2) 0 0;
+  font-size: 0.82rem;
+  line-height: 1.5;
+  color: var(--ink-soft);
+}
+
+@media (max-width: 720px) {
+  .agents {
+    grid-template-columns: 1fr;
+  }
+}
+
+.list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.row {
+  display: grid;
+  grid-template-columns: minmax(11rem, 14rem) 1fr;
+  gap: 0.2rem var(--space-3);
+  align-items: baseline;
+  padding: var(--space-2) 0;
+  border-top: 1px solid var(--line-soft);
+}
+
+.row:first-child {
+  border-top: 0;
+}
+
+.rowLabel {
+  font-weight: var(--fw-medium);
+  color: var(--ink);
+  font-size: 0.92rem;
+}
+
+.rowFinds {
+  color: var(--ink-soft);
+  font-size: 0.9rem;
+  line-height: 1.5;
+}
+
+.rowQuery {
+  grid-column: 2;
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  color: var(--ink-faint);
+  word-break: break-word;
+}
+
+@media (max-width: 640px) {
+  .row {
+    grid-template-columns: 1fr;
+  }
+  .rowQuery {
+    grid-column: 1;
+  }
+}

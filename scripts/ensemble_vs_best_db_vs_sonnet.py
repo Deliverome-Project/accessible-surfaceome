@@ -37,7 +37,7 @@ from accessible_surfaceome.audit._plotting_config import (
 ROOT = Path(__file__).resolve().parents[1]
 BENCH_TSV = ROOT / "data/eval/triage_benchmark_v1.tsv"
 CAND_TSV = ROOT / "data/processed/candidate_universe/candidate_universe.tsv"
-PREDS_TSV = ROOT / "data/processed/triage_bench/mainbench_canonical_v1.tsv"
+PREDS_TSV = ROOT / "data/processed/triage_bench/mainbench_canonical_v2.tsv"
 OPT_CUTOFFS_TSV = ROOT / "data/processed/triage_bench/db_optimized_cutoffs.tsv"
 OUT_DIR = ROOT / "data/analysis/figures"  # promoted to canonical figures dir
 

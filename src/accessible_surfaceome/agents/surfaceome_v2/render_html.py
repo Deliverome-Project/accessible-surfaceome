@@ -14,9 +14,7 @@ The viewer is organized as a full QC pass over a v1.0.0 SurfaceomeRecord:
 * Section 0 — Executive summary (B synthesizer prose).
 * Section 1 — Surface Evidence: evidence_grade + grade_rationale,
   methods[] cards (with antibody table + expression_observations),
-  non_surface_expression[] (the RNA / bulk-protein bucket that prevents
-  expression from being misread as accessibility),
-  therapeutic_engagement, contradicting_evidence[].
+  contradicting_evidence[].
 * Section 2 — Biological Context: tissues[], cell_types[], cell_states[],
   subcellular_localization (primary_compartment + dual_localization[]
   + membrane_subdomains[]), anatomical_accessibility[],
@@ -636,37 +634,6 @@ def _render_method_card(m: dict[str, Any]) -> str:
     """
 
 
-def _render_nse(nse: dict[str, Any]) -> str:
-    return (
-        f"<tr>"
-        f"<td>{html.escape(nse.get('context', '—'))}</td>"
-        f"<td>{_badge(nse.get('sample_type', '—'), 'gray')}</td>"
-        f"<td>{_badge(nse.get('measurement_type', '—'), 'lavender')}</td>"
-        f"<td>{_badge(nse.get('level', '—'), _PRESENCE_KIND.get(nse.get('level') or '', 'gray'))}</td>"
-        f"<td>{_evi_chip_row(nse.get('cited_evidence_ids') or [])}</td>"
-        f"</tr>"
-    )
-
-
-def _render_te(te: dict[str, Any] | None) -> str:
-    if te is None:
-        return "<em class='muted'>no therapeutic engagement evidence</em>"
-    desc = html.escape(te.get("description") or "—")
-    rat = html.escape(te.get("surface_form_rationale") or "—")
-    return f"""
-    <div class="te-card">
-      <div class="te-head">
-        {_badge('stage: ' + str(te.get('highest_stage', '—')), 'amber')}
-      </div>
-      <div class="quote-label">description</div>
-      <div class="prose-block">{desc}</div>
-      <div class="quote-label">surface-form rationale</div>
-      <div class="prose-block">{rat}</div>
-      <div class="citations">{_evi_chip_row(te.get('cited_evidence_ids') or [])}</div>
-    </div>
-    """
-
-
 def _render_contradiction(c: dict[str, Any]) -> str:
     return f"""
     <div class="contra-card">
@@ -687,22 +654,12 @@ def _render_surface_evidence(record: dict[str, Any]) -> str:
     grade = se.get("evidence_grade") or "—"
     rationale = html.escape(se.get("grade_rationale") or "—")
     methods = se.get("methods") or []
-    nse = se.get("non_surface_expression") or []
-    te = se.get("therapeutic_engagement")
     contras = se.get("contradicting_evidence") or []
 
     methods_html = (
         "".join(_render_method_card(m) for m in methods)
         if methods
         else "<em class='muted'>no method observations</em>"
-    )
-    nse_table = (
-        "<table class='compact'><thead><tr><th>context</th><th>sample</th>"
-        "<th>measurement</th><th>level</th><th>cites</th></tr></thead><tbody>"
-        + "".join(_render_nse(n) for n in nse)
-        + "</tbody></table>"
-        if nse
-        else "<em class='muted'>no non-surface expression rows</em>"
     )
     contras_html = (
         "".join(_render_contradiction(c) for c in contras)
@@ -727,14 +684,6 @@ def _render_surface_evidence(record: dict[str, Any]) -> str:
       <h3>Methods ({len(methods)})</h3>
       {methods_html}
 
-      <h3>Non-surface expression ({len(nse)})</h3>
-      <div class="muted small">RNA / bulk-protein / non-fractionated observations — held
-      separately so expression isn't read as accessibility.</div>
-      {nse_table}
-
-      <h3>Therapeutic engagement</h3>
-      {_render_te(te)}
-
       <h3>Contradicting evidence ({len(contras)})</h3>
       {contras_html}
     </section>
@@ -746,33 +695,45 @@ def _render_surface_evidence(record: dict[str, Any]) -> str:
 # ---------------------------------------------------------------------------
 
 
-def _render_tissue(t: dict[str, Any]) -> str:
-    cell_types = ", ".join(t.get("cell_types") or [])
-    cell_states = ", ".join(t.get("cell_states") or [])
+def _render_expression_row(r: dict[str, Any]) -> str:
+    cell_states = ", ".join(r.get("cell_states") or [])
+    dx = r.get("disease_label") or r.get("disease_context", "—")
     return (
         f"<tr>"
-        f"<td><strong>{html.escape(t.get('tissue', '—'))}</strong></td>"
-        f"<td>{_species_badge(t)}</td>"
-        f"<td>{_badge(t.get('present', '—'), _PRESENCE_KIND.get(t.get('present') or '', 'gray'))}</td>"
-        f"<td>{_badge(t.get('disease_context', '—'), 'gray')}</td>"
-        f"<td class='small'>{html.escape(cell_types)}</td>"
+        f"<td><strong>{html.escape(r.get('tissue') or '—')}</strong></td>"
+        f"<td>{html.escape(r.get('cell_type') or '—')}</td>"
+        f"<td>{_species_badge(r)}</td>"
+        f"<td>{_badge(r.get('present', '—'), _PRESENCE_KIND.get(r.get('present') or '', 'gray'))}</td>"
+        f"<td>{_badge(dx, 'gray')}</td>"
         f"<td class='small'>{html.escape(cell_states)}</td>"
-        f"<td>{_evi_chip_row(t.get('cited_evidence_ids') or [])}</td>"
+        f"<td>{_evi_chip_row(r.get('cited_evidence_ids') or [])}</td>"
         f"</tr>"
     )
 
 
-def _render_cell_type(c: dict[str, Any]) -> str:
-    tissues = ", ".join(c.get("present_in_tissues") or [])
-    return (
-        f"<tr>"
-        f"<td><strong>{html.escape(c.get('cell_type', '—'))}</strong></td>"
-        f"<td>{_species_badge(c)}</td>"
-        f"<td><code>{html.escape(c.get('ontology_id') or '—')}</code></td>"
-        f"<td class='small'>{html.escape(tissues)}</td>"
-        f"<td>{_evi_chip_row(c.get('cited_evidence_ids') or [])}</td>"
-        f"</tr>"
-    )
+def _expression_rows(bc: dict[str, Any]) -> list[dict[str, Any]]:
+    """Unified expression rows. Reads the current ``expression`` field;
+    falls back to deriving rows from the pre-unify ``tissues`` +
+    ``cell_types`` split so older records still render."""
+    expr = bc.get("expression")
+    if expr:
+        return expr
+    rows: list[dict[str, Any]] = []
+    for t in bc.get("tissues") or []:
+        rows.append({**t, "cell_type": None})
+    for c in bc.get("cell_types") or []:
+        for tn in c.get("present_in_tissues") or [None]:
+            rows.append(
+                {
+                    "tissue": tn,
+                    "cell_type": c.get("cell_type"),
+                    "present": c.get("present", "unknown"),
+                    "disease_context": c.get("disease_context", "unknown"),
+                    "disease_label": c.get("disease_label"),
+                    "cited_evidence_ids": c.get("cited_evidence_ids") or [],
+                }
+            )
+    return rows
 
 
 def _render_subcellular(s: dict[str, Any]) -> str:
@@ -864,27 +825,20 @@ def _render_modulation(m: dict[str, Any]) -> str:
 
 def _render_biological_context(record: dict[str, Any]) -> str:
     bc = record.get("biological_context") or {}
-    tissues = bc.get("tissues") or []
-    cell_types = bc.get("cell_types") or []
+    expression = _expression_rows(bc)
     cell_states = bc.get("cell_states") or []
     sub = bc.get("subcellular_localization") or {}
     anat = bc.get("anatomical_accessibility") or []
     mods = bc.get("accessibility_modulation") or []
 
-    tissues_html = (
-        "<table class='compact'><thead><tr><th>tissue</th><th>species</th>"
-        "<th>presence</th><th>disease</th><th>cell types</th>"
-        "<th>cell states</th><th>cites</th>"
-        "</tr></thead><tbody>" + "".join(_render_tissue(t) for t in tissues) + "</tbody></table>"
-        if tissues
-        else "<em class='muted'>no tissue rows</em>"
-    )
-    cell_types_html = (
-        "<table class='compact'><thead><tr><th>cell type</th><th>species</th>"
-        "<th>ontology</th><th>in tissues</th><th>cites</th></tr></thead><tbody>"
-        + "".join(_render_cell_type(c) for c in cell_types) + "</tbody></table>"
-        if cell_types
-        else "<em class='muted'>no cell-type rows</em>"
+    expression_html = (
+        "<table class='compact'><thead><tr><th>tissue</th><th>cell of origin</th>"
+        "<th>species</th><th>presence</th><th>disease</th><th>cell states</th>"
+        "<th>cites</th></tr></thead><tbody>"
+        + "".join(_render_expression_row(r) for r in expression)
+        + "</tbody></table>"
+        if expression
+        else "<em class='muted'>no expression rows</em>"
     )
     # v2 records hardcode cell_states=[] (legacy v1 field; modulation
     # block subsumes it). Hide the subsection entirely when empty so
@@ -921,13 +875,9 @@ def _render_biological_context(record: dict[str, Any]) -> str:
     <section class="block">
       <h2>Section 2 — Biological context</h2>
 
-      <h3>Tissues ({len(tissues)})</h3>
-      {_species_counter(tissues)}
-      {tissues_html}
-
-      <h3>Cell types ({len(cell_types)})</h3>
-      {_species_counter(cell_types)}
-      {cell_types_html}
+      <h3>Expression ({len(expression)})</h3>
+      {_species_counter(expression)}
+      {expression_html}
 
 {cell_states_block}
 

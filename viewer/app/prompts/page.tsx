@@ -4,12 +4,14 @@ import type { Metadata } from "next";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import { Shell } from "../../components/Shell/Shell";
+import { SectionAutoOpen } from "./SectionAutoOpen";
+import { SearchCatalog } from "./SearchCatalog";
 import styles from "./page.module.css";
 
 export const metadata: Metadata = {
   title: "Agent prompts — Surfaceome",
   description:
-    "The exact system prompts the Haiku triage and Sonnet deep-dive agents " +
+    "The exact system prompts the Sonnet 4.6 triage and deep-dive agents " +
     "run with — read straight from the agent source tree at build time.",
 };
 
@@ -35,7 +37,7 @@ interface PromptGroup {
  * always the file the agents actually run with.
  *
  * Coverage:
- *  - Surface triage — Haiku genome-wide first pass.
+ *  - Surface triage — Sonnet 4.6 genome-wide first pass.
  *  - Deep dive Phase 1 — ``plan_trim_select`` literature agent
  *    (per-focus A1/A2 plan-trim-select, plus joint single-agent
  *    plan-trim-select).
@@ -49,7 +51,7 @@ const PROMPT_GROUPS: PromptGroup[] = [
     id: "triage",
     label: "Surface accessibility triage",
     description:
-      "Haiku first-pass over the protein-coding genome — produces the " +
+      "Sonnet 4.6 first-pass over the protein-coding genome — produces the " +
       "yes / no / contextual triage verdict that gates which genes get a " +
       "full deep dive.",
     prompts: [
@@ -64,7 +66,7 @@ const PROMPT_GROUPS: PromptGroup[] = [
     id: "deep-dive-phase-1",
     label: "Deep dive · Phase 1 — plan_trim_select (literature agent)",
     description:
-      "Three Sonnet / Haiku passes per agent focus: plan the searches, " +
+      "Three Sonnet 4.6 passes per agent focus: plan the searches, " +
       "trim each paper's candidate clips down to load-bearing ones, then " +
       "select the final EvidenceClaim ledger. The per-focus A1 + A2 " +
       "prompts split into a surface-evidence-methodology run and a " +
@@ -85,7 +87,7 @@ const PROMPT_GROUPS: PromptGroup[] = [
         label: "A1 — per-paper trim",
         rel: "src/accessible_surfaceome/agents/plan_trim_select/prompts/a1_trim_system.md",
         blurb:
-          "One Haiku call per paper — keeps the clips that name a surface-" +
+          "One Sonnet 4.6 call per paper — keeps the clips that name a surface-" +
           "detection method, antibody, or non-permeabilized assay; drops " +
           "tissue/biology-only clips that the A2 trim handles.",
       },
@@ -165,14 +167,6 @@ const PROMPT_GROUPS: PromptGroup[] = [
           "for every surface-detection method the literature reports.",
       },
       {
-        id: "builder-therapeutic-engagement",
-        label: "A1 — therapeutic_engagement builder",
-        rel: "src/accessible_surfaceome/agents/surfaceome_v2/prompts/therapeutic_engagement_builder_system.md",
-        blurb:
-          "Drugs, antibodies, CARs, ADCs, vaccines, PROTACs that imply " +
-          "surface accessibility by way of binding.",
-      },
-      {
         id: "builder-contradictions",
         label: "A1 — contradictions builder",
         rel: "src/accessible_surfaceome/agents/surfaceome_v2/prompts/contradiction_builder_system.md",
@@ -190,20 +184,14 @@ const PROMPT_GROUPS: PromptGroup[] = [
           "supportive_but_indirect / conflicting / weak).",
       },
       {
-        id: "builder-tissues",
-        label: "A2 — tissues builder",
-        rel: "src/accessible_surfaceome/agents/surfaceome_v2/prompts/tissues_builder_system.md",
+        id: "builder-expression",
+        label: "A2 — expression builder",
+        rel: "src/accessible_surfaceome/agents/surfaceome_v2/prompts/expression_builder_system.md",
         blurb:
-          "Per-tissue presence + reliability flags from HPA, GTEx, tissue " +
-          "atlases, and disease-context tissue staining.",
-      },
-      {
-        id: "builder-cell-types",
-        label: "A2 — cell_types builder",
-        rel: "src/accessible_surfaceome/agents/surfaceome_v2/prompts/cell_types_builder_system.md",
-        blurb:
-          "Per-cell-type expression — single-cell atlases, sorted " +
-          "populations, immune subsets.",
+          "Unified tissue × cell-of-origin × disease-context expression rows " +
+          "(merges what were the separate tissues + cell_types builders) — " +
+          "per-tissue / per-cell-type surface presence from HPA, GTEx, tissue " +
+          "atlases, single-cell data, and disease-context staining.",
       },
       {
         id: "builder-cell-states",
@@ -288,18 +276,48 @@ function slugify(text: string): string {
     .replace(/^-+|-+$/g, "");
 }
 
+/** A line that looks like a fenced-code DELIMITER: starts with ``` and
+ *  carries only an optional info string (no further backticks). */
+function looksLikeFence(line: string): boolean {
+  return /^\s*```+[^`]*$/.test(line.trimEnd());
+}
+
+/** Per-line "is inside a real code block" flags. A fence is only honored
+ *  when it actually CLOSES — an opener with no matching closer is treated
+ *  as ordinary text. This is what stops a prose line that merely *starts*
+ *  with a wrapped "```json block. No prose…" (the methods-builder prompt)
+ *  from opening a code block that swallows every heading after it: that
+ *  "fence" never closes, so we don't enter code state at all. */
+function codeLineMask(lines: string[]): boolean[] {
+  const mask = new Array<boolean>(lines.length).fill(false);
+  let i = 0;
+  while (i < lines.length) {
+    if (looksLikeFence(lines[i])) {
+      // Look for a closing fence.
+      let j = i + 1;
+      while (j < lines.length && !looksLikeFence(lines[j])) j++;
+      if (j < lines.length) {
+        // Balanced block [i..j] — mark the fence lines + their interior.
+        for (let k = i; k <= j; k++) mask[k] = true;
+        i = j + 1;
+        continue;
+      }
+      // No closer — this opener is just text; fall through.
+    }
+    i++;
+  }
+  return mask;
+}
+
 function extractToc(body: string): TocItem[] {
   // Match `#` … `######` headings, but skip lines inside fenced code blocks.
   const lines = body.split("\n");
+  const inCode = codeLineMask(lines);
   const out: TocItem[] = [];
-  let inCodeBlock = false;
   const seenSlugs = new Map<string, number>();
-  for (const line of lines) {
-    if (line.startsWith("```")) {
-      inCodeBlock = !inCodeBlock;
-      continue;
-    }
-    if (inCodeBlock) continue;
+  for (let li = 0; li < lines.length; li++) {
+    const line = lines[li];
+    if (inCode[li]) continue;
     const m = /^(#{1,6})\s+(.+?)\s*$/.exec(line);
     if (!m) continue;
     const level = m[1].length;
@@ -313,6 +331,88 @@ function extractToc(body: string): TocItem[] {
     out.push({ level, text, slug });
   }
   return out;
+}
+
+/** The shallowest heading level in a prompt body, EXCLUDING the H1 title
+ *  (which duplicates the card heading). Prompts vary — some open H1 + H2,
+ *  some are already H2-rooted — so the "top" tier is computed per prompt. */
+function topHeadingLevel(items: TocItem[]): number | null {
+  const body = items.filter((i) => i.level > 1);
+  if (body.length === 0) return null;
+  return Math.min(...body.map((i) => i.level));
+}
+
+/** Flat top-level outline: one entry per top-tier heading, no nesting,
+ *  no expand control. Deeper sub-headings are intentionally omitted — the
+ *  reader pops into a section from here and the section's own content
+ *  carries the detail. */
+function flatToc(items: TocItem[]): TocItem[] {
+  const top = topHeadingLevel(items);
+  if (top == null) return [];
+  return items.filter((i) => i.level === top);
+}
+
+/** One collapsible top-level section of a prompt body. `heading` is the
+ *  raw markdown heading line (e.g. "## Schema fields"); `markdown` is that
+ *  heading PLUS everything under it up to the next top-level heading. */
+interface PromptSection {
+  slug: string;
+  title: string;
+  markdown: string;
+}
+
+/** Split a prompt's markdown into top-level sections so each can render as a
+ *  collapsed <details>. Lines before the first top-level heading (the H1
+ *  title + any intro) are returned as a `preamble` rendered open, above the
+ *  collapsible sections. Fenced code blocks are respected so a `##` inside a
+ *  ``` block never starts a false section. */
+function splitIntoSections(
+  body: string,
+  toc: TocItem[],
+): { preamble: string; sections: PromptSection[] } {
+  const top = topHeadingLevel(toc);
+  const lines = body.split("\n");
+  if (top == null) return { preamble: body, sections: [] };
+
+  const headingRe = new RegExp(`^#{${top}}\\s+(.+?)\\s*$`);
+  const inCode = codeLineMask(lines);
+  const preamble: string[] = [];
+  const sections: PromptSection[] = [];
+  let cur: { title: string; buf: string[] } | null = null;
+  const seen = new Map<string, number>();
+
+  for (let li = 0; li < lines.length; li++) {
+    const line = lines[li];
+    const m = !inCode[li] ? headingRe.exec(line) : null;
+    if (m) {
+      if (cur) {
+        const base = slugify(cur.title.replace(/`/g, ""));
+        const n = (seen.get(base) || 0) + 1;
+        seen.set(base, n);
+        sections.push({
+          slug: n === 1 ? base : `${base}-${n - 1}`,
+          title: cur.title.replace(/`/g, ""),
+          markdown: cur.buf.join("\n"),
+        });
+      }
+      cur = { title: m[1], buf: [line] };
+    } else if (cur) {
+      cur.buf.push(line);
+    } else {
+      preamble.push(line);
+    }
+  }
+  if (cur) {
+    const base = slugify(cur.title.replace(/`/g, ""));
+    const n = (seen.get(base) || 0) + 1;
+    seen.set(base, n);
+    sections.push({
+      slug: n === 1 ? base : `${base}-${n - 1}`,
+      title: cur.title.replace(/`/g, ""),
+      markdown: cur.buf.join("\n"),
+    });
+  }
+  return { preamble: preamble.join("\n"), sections };
 }
 
 function loadPrompt(def: PromptDef): LoadedPrompt | null {
@@ -406,6 +506,7 @@ export default function PromptsPage() {
 
   return (
     <Shell>
+      <SectionAutoOpen />
       <section className={`${styles.page} page-width`}>
         <header className={styles.hero}>
           <h1 className={`h-display ${styles.heroH1}`}>Agent prompts</h1>
@@ -415,12 +516,9 @@ export default function PromptsPage() {
             build time. No paraphrase, no edits.{" "}
             <strong>{totalPrompts} prompts</strong> totalling{" "}
             <strong>{(totalBytes / 1024).toFixed(1)} KB</strong> of
-            instructions. If a prompt on this page changed, the next agent
-            run picks it up after{" "}
-            <code className={styles.inlineCode}>
-              uv run accessible-surfaceome agents sync
-            </code>
-            .
+            instructions. Every prompt is read from this source tree at run
+            time, so a change here takes effect on the next agent run — there
+            is no separate sync step.
           </p>
         </header>
 
@@ -443,15 +541,28 @@ export default function PromptsPage() {
                   <a href={`#group-${g.id}`} className={styles.pageIndexGroupLink}>
                     {g.label}
                   </a>
-                  <ul className={styles.pageIndexPromptList}>
-                    {g.prompts.map((p) => (
-                      <li key={p.id}>
-                        <a href={`#${p.id}`} className={styles.tocLink}>
-                          {p.label}
-                        </a>
-                      </li>
-                    ))}
-                  </ul>
+                  {/* Single-prompt groups (triage, synthesizer) would just
+                      repeat the group name as a lone sub-item — skip the
+                      nested list and let the group link stand alone. The two
+                      multi-prompt deep-dive groups (plan_trim_select =
+                      deep-dive-phase-1; block builders = deep-dive-phase-2)
+                      are also suppressed: their many near-identical per-prompt
+                      entries bloated the index, so each group link carries the
+                      reader to its section (which still renders in full below)
+                      without per-prompt links. */}
+                  {g.prompts.length > 1 &&
+                  g.id !== "deep-dive-phase-1" &&
+                  g.id !== "deep-dive-phase-2" ? (
+                    <ul className={styles.pageIndexPromptList}>
+                      {g.prompts.map((p) => (
+                        <li key={p.id}>
+                          <a href={`#${p.id}`} className={styles.tocLink}>
+                            {p.label}
+                          </a>
+                        </li>
+                      ))}
+                    </ul>
+                  ) : null}
                 </li>
               ))}
             </ol>
@@ -459,62 +570,176 @@ export default function PromptsPage() {
         ) : null}
 
         {loaded.map((group) => (
-          <div key={group.id} id={`group-${group.id}`}>
+          <div
+            key={group.id}
+            id={`group-${group.id}`}
+            className={styles.groupAnchor}
+          >
             <header className={styles.groupHeader}>
               <h2 className={`h-section ${styles.groupH2}`}>{group.label}</h2>
               <p className={styles.groupDescription}>{group.description}</p>
             </header>
 
-            {group.prompts.map((p) => (
-              <article key={p.id} id={p.id} className={styles.promptBlock}>
-                <header className={styles.promptHeader}>
-                  <h3 className={`${styles.promptH2}`}>{p.label}</h3>
-                  {p.blurb ? (
-                    <p className={styles.promptBlurb}>{p.blurb}</p>
-                  ) : null}
-                  <p className={styles.promptMeta}>
-                    <code className={styles.inlineCode}>{p.source_path}</code>
-                    <span className={styles.metaSep}> · </span>
-                    {p.size_bytes.toLocaleString()} bytes
-                    <span className={styles.metaSep}> · </span>
-                    {p.body.split("\n").length.toLocaleString()} lines
-                  </p>
-                </header>
+            {/* The plan_trim_select agents issue the searches; document the
+                search surface (deterministic sweeps + LLM-planned modes)
+                here so the reader can interpret what the prompts below work
+                from. Only under this group — the builder/synthesizer groups
+                don't issue searches. */}
+            {group.id === "deep-dive-phase-1" ? <SearchCatalog /> : null}
 
+            {group.prompts.map((p) => {
+              // For a multi-prompt deep-dive group (plan_trim_select's 9
+              // A1/A2/Joint prompts, the 10 block builders), collapse each
+              // prompt CARD so the group reads as a scannable stack of
+              // sub-prompt titles you pop open — matches the section-level
+              // collapse below. Single-prompt groups (triage, synthesizer)
+              // render open. `data-collapsible` switches the wrapper.
+              const collapsible = group.prompts.length > 1;
+              const cardInner = (
+                <>
                 <div className={styles.promptLayout}>
                   <div className={styles.promptBody}>
-                    <ReactMarkdown
-                      remarkPlugins={[remarkGfm]}
-                      components={makeMarkdownComponents(p.id)}
-                    >
-                      {p.body}
-                    </ReactMarkdown>
+                    {(() => {
+                      const { preamble, sections } = splitIntoSections(
+                        p.body,
+                        p.toc,
+                      );
+                      // No top-level headings → render the body flat (rare;
+                      // e.g. a prompt that's all prose).
+                      if (sections.length === 0) {
+                        return (
+                          <ReactMarkdown
+                            remarkPlugins={[remarkGfm]}
+                            components={makeMarkdownComponents(p.id)}
+                          >
+                            {p.body}
+                          </ReactMarkdown>
+                        );
+                      }
+                      return (
+                        <>
+                          {preamble.trim() ? (
+                            <ReactMarkdown
+                              remarkPlugins={[remarkGfm]}
+                              components={makeMarkdownComponents(p.id)}
+                            >
+                              {preamble}
+                            </ReactMarkdown>
+                          ) : null}
+                          {sections.map((s) => (
+                            // Collapsed by default so the prompt opens as a
+                            // compact list of section headings; the flat TOC
+                            // link + SectionAutoOpen expand the one you jump to.
+                            // The anchor id lives on the <summary> so TOC links
+                            // resolve and SectionAutoOpen can open the parent.
+                            <details
+                              key={s.slug}
+                              className={styles.promptSection}
+                            >
+                              <summary
+                                id={`${p.id}--${s.slug}`}
+                                className={styles.promptSectionSummary}
+                              >
+                                {s.title}
+                              </summary>
+                              <div className={styles.promptSectionBody}>
+                                <ReactMarkdown
+                                  remarkPlugins={[remarkGfm]}
+                                  components={makeMarkdownComponents(p.id)}
+                                >
+                                  {/* Drop the heading line itself — the
+                                      <summary> already shows the title. */}
+                                  {s.markdown.replace(/^[^\n]*\n?/, "")}
+                                </ReactMarkdown>
+                              </div>
+                            </details>
+                          ))}
+                        </>
+                      );
+                    })()}
                   </div>
 
-                  {p.toc.length > 1 ? (
-                    <aside className={styles.toc} aria-label="Table of contents">
-                      <p className={styles.tocLabel}>On this page</p>
-                      <ol className={styles.tocList}>
-                        {p.toc.map((item) => (
-                          <li
-                            key={item.slug}
-                            className={styles.tocItem}
-                            data-level={item.level}
-                          >
-                            <a
-                              href={`#${p.id}--${item.slug}`}
-                              className={styles.tocLink}
+                  {(() => {
+                    const top = flatToc(p.toc);
+                    if (top.length < 2) return null;
+                    return (
+                      <aside
+                        className={styles.toc}
+                        aria-label="Table of contents"
+                      >
+                        <p className={styles.tocLabel}>On this page</p>
+                        <ol className={styles.tocList}>
+                          {top.map((item) => (
+                            <li
+                              key={item.slug}
+                              className={styles.tocItem}
+                              data-level={item.level}
                             >
-                              {item.text}
-                            </a>
-                          </li>
-                        ))}
-                      </ol>
-                    </aside>
-                  ) : null}
+                              <a
+                                href={`#${p.id}--${item.slug}`}
+                                className={styles.tocLink}
+                              >
+                                {item.text}
+                              </a>
+                            </li>
+                          ))}
+                        </ol>
+                      </aside>
+                    );
+                  })()}
                 </div>
-              </article>
-            ))}
+                </>
+              );
+
+              const cardMeta = (
+                <p className={styles.promptMeta}>
+                  <code className={styles.inlineCode}>{p.source_path}</code>
+                  <span className={styles.metaSep}> · </span>
+                  {p.size_bytes.toLocaleString()} bytes
+                  <span className={styles.metaSep}> · </span>
+                  {p.body.split("\n").length.toLocaleString()} lines
+                </p>
+              );
+
+              if (collapsible) {
+                return (
+                  <details
+                    key={p.id}
+                    id={p.id}
+                    className={styles.promptBlock}
+                  >
+                    <summary className={styles.promptCardSummary}>
+                      <span className={styles.promptCardTitle}>{p.label}</span>
+                    </summary>
+                    <div className={styles.promptCardBody}>
+                      {p.blurb ? (
+                        <p className={styles.promptBlurb}>{p.blurb}</p>
+                      ) : null}
+                      {cardMeta}
+                      {cardInner}
+                    </div>
+                  </details>
+                );
+              }
+
+              return (
+                <article key={p.id} id={p.id} className={styles.promptBlock}>
+                  <header className={styles.promptHeader}>
+                    {/* Don't repeat the group title as the card title for a
+                        single-prompt group whose prompt shares the group
+                        name (e.g. "Surface accessibility triage"). */}
+                    {p.label === group.label ? null : (
+                      <h3 className={`${styles.promptH2}`}>{p.label}</h3>
+                    )}
+                    {p.blurb ? (
+                      <p className={styles.promptBlurb}>{p.blurb}</p>
+                    ) : null}
+                    {cardMeta}
+                  </header>
+                  {cardInner}
+                </article>
+              );
+            })}
           </div>
         ))}
       </section>

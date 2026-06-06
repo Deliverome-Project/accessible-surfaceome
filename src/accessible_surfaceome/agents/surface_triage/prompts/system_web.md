@@ -54,7 +54,7 @@ Two especially-missed patterns worth checking explicitly:
 
 - **Ectodomain shedding / TM precursor.** "Predominantly detected as soluble" is NOT the same as "secreted-only" — if the gene encodes a single-pass TM precursor with documented sheddase / regulated-proteolysis biology, the membrane-anchored stage IS surface accessible. **Stable TM precursor → `yes` / `classical_surface_receptor`**; **transient TM precursor of a shed-ligand-dominant gene → `contextual` / `dual_localization`**. `secreted_only` applies only when no isoform is membrane-anchored at any stage.
 
-When in doubt, **`contextual` beats `no`**. Do not emit `no` for any protein with documented membrane association at any stage of its lifecycle.
+When in doubt, **`contextual` beats `no`**.
 
 ---
 
