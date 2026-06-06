@@ -42,6 +42,8 @@ from accessible_surfaceome.agents._support.pricing import (
 )
 from accessible_surfaceome.tools._shared.models import (
     BiologicalContextDraft,
+    DeterministicFeatures,
+    OrthologEntry,
     SurfaceEvidenceDraft,
     SynthesizerDraft,
 )
@@ -93,12 +95,138 @@ def _load_json(path: Path) -> dict[str, Any]:
     return cast("dict[str, Any]", json.loads(path.read_text()))
 
 
+def _summarize_deterministic_for_synthesizer(
+    features: DeterministicFeatures,
+    *,
+    hgnc_gene_groups: list[str] | None = None,
+    uniprot_family: str | None = None,
+) -> str:
+    """Compact JSON summary of the deterministic block handed to B.
+
+    Richer than ``_summarize_deterministic_for_planner`` (plan-trim-select's
+    summarizer) because B's decisions weight more deterministic axes:
+
+    * Threshold calls against ``canonical_topology.ecd_length_residues`` for
+      the ``ecd_accessibility_class`` filter (``system.md`` L165-166).
+    * Paralog cross-reactivity discussion in the methods evidence-grade
+      section needs the close-paralog cluster (top by ECD identity).
+    * SURFACE-Bind sites + scores anchor the structure-quality and
+      binder-tractability prose B emits in ``executive_summary``.
+    * AFDB pLDDT + experimental-structure availability gate the confidence
+      modifiers B applies in ``confidence_reasoning``.
+    * Mouse + cyno ortholog identity drives the cross-species translatability
+      hint B can offer on ``key_uncertainty``.
+
+    Curator-assigned family tags (``hgnc_gene_groups``, ``uniprot_family``)
+    are NOT in ``DeterministicFeatures`` — they live on the resolved
+    :class:`IdentifierBundle`. ``_attach_deterministic_families`` overwrites
+    these on B's output AFTER synthesis, so showing them to B at decision
+    time lets it cross-check its own ``llm_family`` call against curator
+    ground truth rather than discover the mismatch only at post-pass.
+    Optional kwargs so callers without a bundle (CLI re-runs from disk) can
+    omit them.
+    """
+    canon = features.canonical_topology
+    # Sort: numeric identity first (high → low), Nones last (sentinel -1
+    # below any valid 0-100 identity).
+    top_paralogs = sorted(
+        features.paralogs,
+        key=lambda p: (
+            p.ecd_pct_identity if p.ecd_pct_identity is not None else -1.0
+        ),
+        reverse=True,
+    )[:5]
+
+    def _canonical(entries: list[OrthologEntry]) -> OrthologEntry | None:
+        for entry in entries:
+            if entry.is_canonical:
+                return entry
+        return entries[0] if entries else None
+
+    mouse = _canonical(list(features.orthologs.mouse))
+    cyno = _canonical(list(features.orthologs.cynomolgus))
+    structure = features.structure
+    surface_bind = features.surface_bind
+
+    payload: dict[str, Any] = {
+        "canonical_topology": {
+            "tm_helix_count": canon.tm_helix_count,
+            "n_terminal_orientation": canon.n_terminal_orientation,
+            "c_terminal_orientation": canon.c_terminal_orientation,
+            "ecd_length_residues": canon.ecd_length_residues,
+            "icd_length_residues": canon.icd_length_residues,
+            "signal_peptide_length": canon.signal_peptide_length,
+        },
+        "isoform_topologies": {
+            "count": len(features.isoform_topologies),
+            "checked": features.isoform_topologies_checked,
+        },
+        "paralogs": {
+            "count": len(features.paralogs),
+            "checked": features.paralogs_checked,
+            "top_by_ecd_identity": [
+                {
+                    "symbol": p.paralog_symbol,
+                    "ecd_pct_identity": p.ecd_pct_identity,
+                    "tm_helix_count": p.tm_helix_count,
+                    "ecd_length_residues": p.ecd_length_residues,
+                }
+                for p in top_paralogs
+            ],
+        },
+        "orthologs": {
+            "mouse": {
+                "count": len(features.orthologs.mouse),
+                "canonical_symbol": mouse.ortholog_symbol if mouse else None,
+                "ecd_pct_identity_to_human": (
+                    mouse.ecd_pct_identity_to_human_canonical if mouse else None
+                ),
+            },
+            "cynomolgus": {
+                "count": len(features.orthologs.cynomolgus),
+                "canonical_symbol": cyno.ortholog_symbol if cyno else None,
+                "ecd_pct_identity_to_human": (
+                    cyno.ecd_pct_identity_to_human_canonical if cyno else None
+                ),
+            },
+        },
+        "structure": {
+            "afdb_id": structure.afdb_id,
+            "ecd_mean_plddt": structure.ecd_mean_plddt,
+            "ecd_disordered_fraction": structure.ecd_disordered_fraction,
+            "has_afdb_model_urls": structure.model_cif_url is not None,
+        },
+        "surface_bind": {
+            "has_data": surface_bind.has_data,
+            "n_sites": surface_bind.n_sites,
+            "n_seeds_total": surface_bind.n_seeds_total,
+            "n_seeds_alpha": surface_bind.n_seeds_alpha,
+            "n_seeds_beta": surface_bind.n_seeds_beta,
+            "representative_pdb_id": (
+                surface_bind.representative_structure.pdb_id
+                if surface_bind.representative_structure
+                else None
+            ),
+        },
+        # Curator-assigned ground truth from the resolved IdentifierBundle.
+        # NOT model output — shown to B so it can cross-check its own
+        # ``llm_family`` call against curator labels rather than learning of
+        # the mismatch only after ``_attach_deterministic_families`` runs.
+        "curator_family_tags": {
+            "hgnc_gene_groups": hgnc_gene_groups or [],
+            "uniprot_family": uniprot_family,
+        },
+    }
+    return json.dumps(payload, indent=2)
+
+
 def _build_task(
     gene: str,
     *,
     a1_draft: dict[str, Any],
     a2_draft: dict[str, Any] | None,
     triage_summary_json: str | None = None,
+    deterministic_summary_json: str | None = None,
 ) -> str:
     schema = json.dumps(SynthesizerDraft.model_json_schema(), indent=2)
     a1_json = json.dumps(a1_draft, indent=2)
@@ -132,6 +260,32 @@ def _build_task(
             "look for what went wrong — quote it if useful.\n\n"
             f"```json\n{triage_summary_json}\n```\n\n"
         )
+    deterministic_section = ""
+    if deterministic_summary_json:
+        deterministic_section = (
+            "## Deterministic features (read-only)\n\n"
+            "Prefetched tool output the orchestrator computed for you — "
+            "NOT something you're allowed to modify or cite as evidence. "
+            "Use these as numeric thresholds and structural priors when "
+            "your system prompt asks you to:\n\n"
+            "* `canonical_topology.ecd_length_residues` → "
+            "`filters.ecd_accessibility_class` thresholds (see system "
+            "prompt §ECD accessibility).\n"
+            "* `paralogs.top_by_ecd_identity` → antibody cross-reactivity "
+            "discussion in the methods grade rationale + paralog-decoy "
+            "headline risk.\n"
+            "* `surface_bind.n_sites` / `n_seeds_total` → structure "
+            "tractability prose in `executive_summary.one_paragraph`.\n"
+            "* `structure.ecd_mean_plddt` → confidence modifier when "
+            "antibody-finding rests on AFDB epitope geometry.\n"
+            "* `orthologs.{mouse,cynomolgus}` ECD identity → "
+            "`key_uncertainty` notes on cross-species translatability.\n"
+            "* `curator_family_tags.{hgnc_gene_groups,uniprot_family}` → "
+            "cross-check your `executive_summary.llm_family` call. These "
+            "are curator ground truth (not model output); a strong "
+            "disagreement should land in `confidence_reasoning`.\n\n"
+            f"```json\n{deterministic_summary_json}\n```\n\n"
+        )
     return (
         f"Synthesize the deep-dive top-line for the human gene **{gene}**.\n\n"
         "You receive the A1 (surface_evidence) and A2 (biological_context) "
@@ -140,6 +294,7 @@ def _build_task(
         "A2 is present). Emit exactly one fenced ```json block as your final "
         "message — no prose around it — matching the schema at the end.\n\n"
         f"{triage_section}"
+        f"{deterministic_section}"
         "## A1 (Surface Evidence Compiler) output\n\n"
         "Full `SurfaceEvidenceDraft` (including its evidence ledger slice):\n\n"
         f"```json\n{a1_json}\n```\n\n"
@@ -156,6 +311,7 @@ def run_synthesizer(
     a2_path: Path | None = None,
     client: Anthropic | None = None,
     triage_summary_json: str | None = None,
+    deterministic_summary_json: str | None = None,
 ) -> BResult:
     """Run B against one gene's A1 (+ optional A2) draft from disk.
 
@@ -164,6 +320,13 @@ def run_synthesizer(
     :func:`accessible_surfaceome.agents.plan_trim_select.runner._summarize_triage_for_planner`.
     When present, it lands as a "Triage prior" section at the top of B's
     task message — see PR #23 design doc §1110-1116.
+
+    ``deterministic_summary_json`` is the prefetched-tool-output summary the
+    orchestrator builds via :func:`_summarize_deterministic_for_synthesizer`
+    (topology + paralog/ortholog + structure + SURFACE-Bind + curator family
+    tags). When present, it lands as a "Deterministic features (read-only)"
+    section — grounding the numeric thresholds + paralog-cross-reactivity
+    discussion the system prompt asks for.
     """
     client = client or get_client()
     a1_draft = _load_json(a1_path)
@@ -174,6 +337,7 @@ def run_synthesizer(
         a1_draft=a1_draft,
         a2_draft=a2_draft,
         triage_summary_json=triage_summary_json,
+        deterministic_summary_json=deterministic_summary_json,
     )
 
 
@@ -184,12 +348,14 @@ def run_synthesizer_with_drafts(
     a2_draft: BiologicalContextDraft | None = None,
     client: Anthropic | None = None,
     triage_summary_json: str | None = None,
+    deterministic_summary_json: str | None = None,
 ) -> BResult:
     """In-memory peer of :func:`run_synthesizer` — for orchestrator usage.
 
     Accepts Pydantic drafts directly so the orchestrator doesn't have to
     round-trip A1 / A2 outputs through disk just to feed them into B.
-    ``triage_summary_json`` semantics match :func:`run_synthesizer`.
+    ``triage_summary_json`` + ``deterministic_summary_json`` semantics match
+    :func:`run_synthesizer`.
     """
     client = client or get_client()
     a1_dict = a1_draft.model_dump(mode="json")
@@ -200,6 +366,7 @@ def run_synthesizer_with_drafts(
         a1_draft=a1_dict,
         a2_draft=a2_dict,
         triage_summary_json=triage_summary_json,
+        deterministic_summary_json=deterministic_summary_json,
     )
 
 
@@ -210,6 +377,7 @@ def _run(
     a1_draft: dict[str, Any],
     a2_draft: dict[str, Any] | None,
     triage_summary_json: str | None = None,
+    deterministic_summary_json: str | None = None,
 ) -> BResult:
     system_prompt = SYSTEM_PROMPT_PATH.read_text()
     cached_system_blocks = cached_system(system_prompt)
@@ -223,6 +391,7 @@ def _run(
                 a1_draft=a1_draft,
                 a2_draft=a2_draft,
                 triage_summary_json=triage_summary_json,
+                deterministic_summary_json=deterministic_summary_json,
             )
         )
     ]

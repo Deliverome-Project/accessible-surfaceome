@@ -185,12 +185,11 @@ DETERMINISTIC_GROUPS = [
         ],
     },
     {
-        "group": "surfaceome_v2 — 8 block builders",
+        "group": "surfaceome_v2 — 7 of 8 builders (the narrow ones)",
         "shape": "none",
         "prompts": [
             "methods_builder_system.md",
             "contradiction_builder_system.md",
-            "evidence_grade_builder_system.md",
             "expression_builder_system.md",
             "cell_states_builder_system.md",
             "subcellular_localization_builder_system.md",
@@ -198,39 +197,81 @@ DETERMINISTIC_GROUPS = [
             "accessibility_modulation_builder_system.md",
         ],
         "note": (
-            "Builders receive only <code>{gene: hgnc_symbol}</code> plus the "
-            "A1 or A2 claim ledger (orchestrator.py L373-374). Zero "
-            "<code>DeterministicFeatures</code> fields land in the builder "
-            "prompts &mdash; block extraction is an LLM operation over claims, "
-            "not over topology / orthologs / structure."
+            "Receive only <code>{gene: hgnc_symbol}</code> plus the A1 or A2 "
+            "claim ledger (orchestrator.py <code>a1_ctx</code> / "
+            "<code>a2_ctx</code>). Zero <code>DeterministicFeatures</code> "
+            "fields land in these builder prompts &mdash; block extraction "
+            "is an LLM operation over claims, not over topology / orthologs "
+            "/ structure. <code>evidence_grade</code> is the exception "
+            "(see next card)."
         ),
         "fields": [],
+    },
+    {
+        "group": "surfaceome_v2 — evidence_grade builder",
+        "shape": "calibration-only",
+        "prompts": [
+            "evidence_grade_builder_system.md",
+        ],
+        "note": (
+            "Exception to &ldquo;builders see only the gene symbol&rdquo;. "
+            "Receives an extended <code>evidence_grade_ctx</code> with the "
+            "upstream <code>triage_summary_json</code> + "
+            "<code>hgnc_gene_groups</code> + <code>uniprot_family</code>. "
+            "The grade verdict is the deep-dive&rsquo;s load-bearing "
+            "confidence anchor, so these calibration signals land here even "
+            "though other builders stay narrow. Triage is used for "
+            "calibration ONLY (don&rsquo;t cite); the family tags anchor "
+            "the antibody-cross-reactivity-with-paralog discussion in "
+            "<code>grade_rationale</code> + the <code>paralog_decoy</code> "
+            "claim stance."
+        ),
+        "fields": [
+            "(no DeterministicFeatures fields)",
+            "triage_summary_json  (TriageRecord: verdict, reason, key_uncertainty, confidence)",
+            "hgnc_gene_groups  (curator family tags from IdentifierBundle)",
+            "uniprot_family  (curator family tag from IdentifierBundle)",
+        ],
     },
     {
         "group": "surfaceome_synthesizer (B)",
         "shape": "full",
         "prompts": [
             "system.md",
-            "task_template.md",
         ],
         "note": (
             "The <strong>entire</strong> <code>DeterministicFeatures</code> "
-            "block is rendered into the user message as a read-only context "
-            "blob via the <code>{{deterministic_features}}</code> placeholder. "
-            "<code>system.md</code> references nested paths directly "
+            "block (canonical + isoform topology, paralogs, orthologs, "
+            "structure, SURFACE-Bind) is summarized to compact JSON via "
+            "<code>_summarize_deterministic_for_synthesizer</code> and "
+            "rendered into the user message by "
+            "<code>synthesizer/runner.py:_build_task()</code> as a "
+            "&ldquo;Deterministic features (read-only)&rdquo; section. "
+            "<code>task_template.md</code> is a stub left over from the "
+            "v1.0.0-stub design &mdash; NOT read at runtime; the real wiring "
+            "is procedural in <code>_build_task</code>. "
+            "<code>system.md</code>&rsquo;s direct references "
             "(e.g. <code>deterministic_features.canonical_topology"
-            ".ecd_length_residues</code> @ L165-166)."
+            ".ecd_length_residues</code> @ L165-166) are now grounded in "
+            "something the model can actually read. The synthesizer also "
+            "receives curator family tags (<code>hgnc_gene_groups</code> + "
+            "<code>uniprot_family</code>) so it can cross-check its own "
+            "<code>llm_family</code> call against ground truth at decision "
+            "time, rather than discovering the mismatch only when "
+            "<code>_attach_deterministic_families</code> overwrites them "
+            "post-hoc."
         ),
         "fields": [
-            "canonical_topology  (IsoformTopology — full)",
-            "isoform_topologies[]  (IsoformTopology[])",
-            "isoform_topologies_checked  (sentinel)",
-            "orthologs.mouse[]  (OrthologEntry[])",
-            "orthologs.cynomolgus[]  (OrthologEntry[])",
-            "paralogs[]  (ParalogEntry[])",
+            "canonical_topology  (TM count, ECD/ICD len, N/C orientation, signal peptide)",
+            "isoform_topologies  (count + checked sentinel)",
+            "paralogs  (count + top-5 by ECD identity, each with TM + ECD len)",
             "paralogs_checked  (sentinel)",
-            "structure  (StructureFeatures: AFDB pLDDT, model URLs)",
-            "surface_bind  (SurfaceBindFeatures: sites, scores, representative_structure)",
+            "orthologs.mouse  (count + canonical symbol + ECD identity)",
+            "orthologs.cynomolgus  (count + canonical symbol + ECD identity)",
+            "structure  (AFDB id, ecd_mean_plddt, ecd_disordered_fraction, model URL flag)",
+            "surface_bind  (has_data, n_sites, n_seeds_total/alpha/beta, representative_pdb_id)",
+            "curator_family_tags.hgnc_gene_groups  (from IdentifierBundle)",
+            "curator_family_tags.uniprot_family  (from IdentifierBundle)",
         ],
     },
     {
@@ -263,6 +304,7 @@ def deterministic_section() -> str:
         "full":       ("full",   "full block"),
         "none":       ("none",   "claim-ledger only"),
         "identifiers-only": ("ids", "identifiers only"),
+        "calibration-only": ("calibration-only", "calibration only"),
     }
     cards = []
     for g in DETERMINISTIC_GROUPS:
@@ -303,6 +345,214 @@ def deterministic_section() -> str:
       the gene symbol + extracted claims; <span class="dbadge d-ids">identifiers
       only</span> = triage runs before topology is even fetched.</p>
       <div class="dgrid">{''.join(cards)}</div>
+    </section>"""
+
+
+# ---- Example flow for a single gene (EGFR) --------------------------------
+# Walks the deep-dive pipeline stage-by-stage with the EGFR-shaped data each
+# agent sees + emits at that stage. Hand-curated reference, NOT introspected
+# at runtime — the goal is "what a reader needs to trace a record from
+# cohort row to SurfaceomeRecord", which is fundamentally documentation, not
+# generated output. Update when the runtime wiring changes (the source-of-
+# truth pointers in DETERMINISTIC_GROUPS double as the update checklist).
+EXAMPLE_FLOW_STAGES = [
+    {
+        "stage": "0 — cohort entry",
+        "actor": "build_universe_v2 / cohort row",
+        "inputs": ["hgnc_id: HGNC:3236  (canonical stable key)"],
+        "process": (
+            "Cohort row is the canonical entry. The DB-vote table in "
+            "<code>candidate_universe</code> says EGFR landed via 5 of the 5 "
+            "surface-source DBs (UniProt-KW, GO-CC, HPA, CSPA, SURFY) &mdash; "
+            "no LLM needed."
+        ),
+        "outputs": [
+            "hgnc_symbol: EGFR",
+            "uniprot_acc: P00533",
+            "ncbi_gene_id: 1956",
+            "aliases: ERBB, HER1, mENA",
+            "previous_symbols: (none for EGFR)",
+            "hgnc_gene_groups: [&ldquo;Erb-b2 receptor tyrosine kinases&rdquo;]",
+            "uniprot_family: &ldquo;Protein kinase superfamily&rdquo;",
+        ],
+    },
+    {
+        "stage": "1 — surface_triage",
+        "actor": "Haiku · system.md + task_template.md",
+        "inputs": [
+            "hgnc_symbol, uniprot_acc, ncbi_gene_id",
+            "aliases, previous_symbols",
+            "hgnc_gene_groups, cd_designation",
+            "ncbi_summary  (NCBI&rsquo;s curated functional summary)",
+        ],
+        "process": (
+            "First-pass alarm-clock judgment: is this a surface protein worth "
+            "deep-diving? Pure identifier + summary input &mdash; runs upstream "
+            "of any deterministic topology fetch."
+        ),
+        "outputs": [
+            "verdict: &ldquo;likely&rdquo;",
+            "reason: &ldquo;classical_surface_receptor&rdquo;",
+            "verdict_reasoning: &ldquo;EGFR is the canonical single-pass type I "
+            "receptor tyrosine kinase &hellip;&rdquo;",
+            "key_uncertainty: (often empty for canonical receptors)",
+            "confidence: &ldquo;high&rdquo;",
+        ],
+    },
+    {
+        "stage": "2 — plan_trim_select (A1 + A2)",
+        "actor": "Sonnet · a1_select / a1_trim / a2_select / a2_trim / abstract_triage",
+        "inputs": [
+            "Triage prior  (the stage-1 record above, via _summarize_triage_for_planner)",
+            "deterministic_summary_json  (canonical topology + paralogs + orthologs)",
+            "Kickoff search terms  (deterministic; tox_panel + reachability + co_receptor + subdomain anchors)",
+        ],
+        "process": (
+            "Runs the deterministic kickoff (tox-panel + membrane+ECD-gated "
+            "axes), iterates the planner / trim / select loop over PubMed + "
+            "Europe PMC + PubTator, and lands a deduplicated ledger of "
+            "<code>EvidenceClaim</code>s plus the search-log audit trail. "
+            "Topic searches now OR over <code>aliases</code> + "
+            "<code>previous_symbols</code> so renamed genes don&rsquo;t drop "
+            "pre-rename literature."
+        ),
+        "outputs": [
+            "a1_claims  (~50&ndash;80 surface-evidence claims for EGFR)",
+            "a2_claims  (~30&ndash;60 biological-context claims for EGFR)",
+            "search_log  (every PubMed / EuropePMC / PubTator query + count)",
+        ],
+    },
+    {
+        "stage": "3 — fetch_deterministic_features  (was post-pass; now pre-synthesizer)",
+        "actor": "D1 + AFDB + PDBe SIFTS + SURFACE-Bind (no LLM)",
+        "inputs": [
+            "uniprot_acc: P00533",
+        ],
+        "process": (
+            "Tool pull (no LLM): DeepTMHMM topology from public D1, "
+            "Compara paralog + cross-species ortholog rows from D1, AFDB "
+            "structure metrics from the AlphaFold DB API, SURFACE-Bind "
+            "sites from the checked-in JSON, representative experimental "
+            "PDB from PDBe SIFTS <code>best_structures</code>. Falls back "
+            "to a labeled stub if D1 is unreachable. <strong>Moved before "
+            "step 4&rsquo;s synthesizer call so B can read the real topology "
+            "thresholds the system prompt references.</strong>"
+        ),
+        "outputs": [
+            "canonical_topology  (TM=1, ECD&asymp;620, ICD&asymp;542, sigP=24, N=extracellular)",
+            "isoform_topologies  (4 isoforms; 3 with full topology rows)",
+            "paralogs  (HER2 / HER3 / HER4 + 28 more, ECD identity 36&ndash;82%)",
+            "orthologs  (mouse Egfr 88% ECD identity; cyno EGFR 99%)",
+            "structure  (AFDB AF-P00533-F1 pLDDT 92.4; experimental PDB 5SX4)",
+            "surface_bind  (n_sites=4, n_seeds_total=1287, alpha=812, beta=475)",
+        ],
+    },
+    {
+        "stage": "4 — 8 block builders (parallel)",
+        "actor": "Sonnet · methods_builder / contradictions_builder / etc.",
+        "inputs": [
+            "a1_claims OR a2_claims  (per-builder slice)",
+            "a1_ctx = {gene: EGFR}  (or a2_ctx — narrow by design)",
+            "<strong>evidence_grade only:</strong> evidence_grade_ctx adds triage_summary + hgnc_gene_groups + uniprot_family",
+        ],
+        "process": (
+            "Eight independent block builders fan out in parallel: 4 on the "
+            "A1 (surface-evidence) side &mdash; methods, contradictions, "
+            "evidence_grade, evidence_grade also gets calibration context as "
+            "of this PR &mdash; and 4 on the A2 (biological-context) side: "
+            "expression, cell_states, subcellular_localization, "
+            "anatomical_accessibility, accessibility_modulation. Each one "
+            "extracts a structured block out of its claim slice; the "
+            "extracted block embeds <code>(a1_evi_NN)</code> / "
+            "<code>(a2_evi_NN)</code> cites back into the ledger."
+        ),
+        "outputs": [
+            "SurfaceEvidence  (methods + non_surface_expression + evidence_grade + claim_stances + contradictions)",
+            "BiologicalContext  (expression + cell_states + subcellular_localization + anatomical + modulation)",
+        ],
+    },
+    {
+        "stage": "5 — surfaceome_synthesizer (B)",
+        "actor": "Sonnet · system.md  (tool-less Messages call)",
+        "inputs": [
+            "Triage prior  (_summarize_triage_for_planner)",
+            "<strong>NEW — Deterministic features (read-only)</strong>  (_summarize_deterministic_for_synthesizer)",
+            "<strong>NEW — curator_family_tags</strong>  (hgnc_gene_groups + uniprot_family from IdentifierBundle)",
+            "SurfaceEvidenceDraft  (A1 block + ledger slice)",
+            "BiologicalContextDraft  (A2 block + ledger slice, when present)",
+            "SynthesizerDraft JSON schema",
+        ],
+        "process": (
+            "Single-shot, tool-less Messages-API call (with a small repair "
+            "loop). B integrates A1 + A2 into a <code>SynthesizerDraft</code> "
+            "&mdash; emits the executive_summary, filters rollups, "
+            "accessibility_risks, confidence + confidence_reasoning. With "
+            "the new deterministic block in the user message, threshold "
+            "calls against <code>ecd_length_residues</code> + the paralog "
+            "cross-reactivity discussion are now grounded in real numeric "
+            "input."
+        ),
+        "outputs": [
+            "executive_summary  (surface_accessibility=&ldquo;high&rdquo;, llm_family=&ldquo;receptor&rdquo;, &hellip;)",
+            "filters_llm  (4 LLM rollup chips: expression_level/breadth, surface_specificity, has_known_ligand)",
+            "accessibility_risks  (per-risk present/severity/cited_evidence_ids)",
+            "confidence + confidence_reasoning  (anchors on the triage prior + deterministic data)",
+        ],
+    },
+    {
+        "stage": "6 — post-passes  (deterministic)",
+        "actor": "orchestrator post-pass helpers (no LLM)",
+        "inputs": [
+            "SynthesizerDraft  (B&rsquo;s output above)",
+            "DeterministicFeatures  (from stage 3)",
+            "IdentifierBundle  (curator family tags)",
+        ],
+        "process": (
+            "Three post-passes: <code>scrub_headline_risks</code> deletes "
+            "structurally-incoherent risks, "
+            "<code>_attach_deterministic_families</code> overwrites "
+            "<code>hgnc_gene_groups</code> + <code>uniprot_family</code> on "
+            "the executive_summary, <code>secreted_form_post_pass</code> "
+            "upgrades the secreted_form risk from isoform topology if the "
+            "synthesizer hadn&rsquo;t (this is now defense-in-depth since B "
+            "sees the topology at stage 5; was load-bearing before this PR). "
+            "Then <code>_derive_filters</code> composes the full 17-field "
+            "<code>Filters</code> block from the LLM rollups + the "
+            "deterministic blocks."
+        ),
+        "outputs": [
+            "SurfaceomeRecord  (gene, executive_summary, filters, surface_evidence, biological_context, accessibility_risks, deterministic_features, evidence, knowledge_gaps, &hellip;)",
+        ],
+    },
+]
+
+
+def flow_section() -> str:
+    cards = []
+    for i, s in enumerate(EXAMPLE_FLOW_STAGES):
+        ins = "".join(f'<li>{x}</li>' for x in s["inputs"])
+        outs = "".join(f'<li>{x}</li>' for x in s["outputs"])
+        arrow = '<div class="farrow">&darr;</div>' if i < len(EXAMPLE_FLOW_STAGES) - 1 else ""
+        cards.append(f"""
+          <div class="fcard">
+            <div class="fhead"><h3>{s["stage"]}</h3><span class="factor">{s["actor"]}</span></div>
+            <div class="fbody">
+              <div class="fcol"><h4>Input</h4><ul>{ins}</ul></div>
+              <div class="fcol fproc"><h4>Process</h4><div class="fproctxt">{s["process"]}</div></div>
+              <div class="fcol"><h4>Output</h4><ul>{outs}</ul></div>
+            </div>
+          </div>
+          {arrow}""")
+    return f"""<section class="flow">
+      <h2>Example flow for one gene &mdash; EGFR end-to-end</h2>
+      <p class="sub2">Walks the v2 deep-dive pipeline stage by stage with the
+      EGFR-shaped data each agent reads + emits. The arrows mark the boundary
+      between agents. Hand-curated reference &mdash; numbers are typical not
+      exact (paralog count + AFDB pLDDT vary across resolver releases). To
+      regenerate against fresh runtime data: run <code>uv run python
+      scripts/surfaceome_v2_annotate.py EGFR --no-publish</code> and read the
+      orchestrator log + the synthesizer&rsquo;s persisted task message.</p>
+      <div class="fflow">{''.join(cards)}</div>
     </section>"""
 
 
@@ -477,6 +727,23 @@ footer{{color:var(--mut);font-size:12px;margin:28px 0 0;border-top:1px solid var
 .d-subset{{background:#142544;color:#8fb4ff;border:1px solid #2a4a8a}}
 .d-none{{background:#2a1d28;color:#cfd8ea;border:1px solid var(--line)}}
 .d-ids{{background:#3a2e16;color:#f0c577;border:1px solid #6e5a2e}}
+.d-calibration-only{{background:#2a1e44;color:#cdb6f0;border:1px solid #5a3e8a}}
+.flow{{margin:0 0 30px}}.flow h2{{font-size:17px;margin:0 0 4px}}
+.fflow{{display:flex;flex-direction:column;gap:8px}}
+.fcard{{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:14px}}
+.fhead{{display:flex;align-items:baseline;justify-content:space-between;gap:8px;margin:0 0 12px;flex-wrap:wrap}}
+.fhead h3{{margin:0;font-size:13px;color:var(--ink)}}
+.factor{{font-family:ui-monospace,monospace;font-size:11px;color:var(--mut)}}
+.fbody{{display:grid;grid-template-columns:1fr 1.2fr 1fr;gap:14px}}
+@media(max-width:860px){{.fbody{{grid-template-columns:1fr}}}}
+.fcol h4{{margin:0 0 6px;font-size:10.5px;text-transform:uppercase;letter-spacing:.05em;color:var(--mut)}}
+.fcol ul{{margin:0;padding:0;list-style:none;display:flex;flex-direction:column;gap:3px}}
+.fcol li{{font-family:ui-monospace,monospace;font-size:11px;color:#cfd8ea;background:#0f1014;border-left:2px solid var(--line);padding:3px 8px;border-radius:0 4px 4px 0;line-height:1.45}}
+.fcol.fproc{{font-family:inherit}}
+.fproctxt{{font-size:12px;color:var(--ink);line-height:1.5}}
+.fproctxt code{{font-family:ui-monospace,monospace;font-size:11px;color:#8fb4ff;background:#1b2230;border-radius:3px;padding:1px 4px}}
+.fproctxt strong{{color:#56d364}}
+.farrow{{text-align:center;font-size:18px;color:#5a3e8a;line-height:1}}
 .dprompts{{display:flex;flex-wrap:wrap;gap:5px;margin:0 0 10px}}
 .dprompt{{font-family:ui-monospace,Menlo,monospace;font-size:10.5px;background:#1b2230;border:1px solid var(--line);border-radius:4px;padding:2px 6px;color:#bcd0f0}}
 .dnote{{color:var(--mut);font-size:11.5px;line-height:1.5;margin:0 0 10px;border-top:1px solid var(--line);padding-top:8px}}
@@ -492,6 +759,7 @@ footer{{color:var(--mut);font-size:12px;margin:28px 0 0;border-top:1px solid var
 <div class="chips"><span class="chip"><b>{nm}</b> modified</span><span class="chip"><b>{nn}</b> new</span><span class="chip"><b>{nd}</b> deleted</span></div>
 {kickoff_section()}
 {deterministic_section()}
+{flow_section()}
 {enum_section()}
 <h2 style="font-size:17px;margin:0 0 12px">Prompts</h2>
 <nav class="nav">{''.join(nav)}</nav>
