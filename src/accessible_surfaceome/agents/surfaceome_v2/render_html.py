@@ -676,6 +676,14 @@ def _render_surface_evidence(record: dict[str, Any]) -> str:
         if methods
         else "<em class='muted'>no method observations</em>"
     )
+    nse_table = (
+        "<table class='compact'><thead><tr><th>context</th><th>sample</th>"
+        "<th>measurement</th><th>level</th><th>cites</th></tr></thead><tbody>"
+        + "".join(_render_nse(n) for n in nse)
+        + "</tbody></table>"
+        if nse
+        else "<em class='muted'>no non-surface expression rows</em>"
+    )
     contras_html = (
         "".join(_render_contradiction(c) for c in contras)
         if contras

@@ -36,9 +36,6 @@ from accessible_surfaceome.agents.surfaceome_v2.builders.evidence_grade import (
     EvidenceGradeBlock,
     build_evidence_grade,
 )
-from accessible_surfaceome.agents.surfaceome_v2.builders.expression import (
-    build_expression,
-)
 from accessible_surfaceome.agents.surfaceome_v2.builders.methods import build_methods
 from accessible_surfaceome.agents.surfaceome_v2.builders.subcellular_localization import (
     build_subcellular_localization,
