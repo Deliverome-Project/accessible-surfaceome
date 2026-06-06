@@ -106,15 +106,41 @@ interface LegendProps {
    *  "Membrane" swatch is suppressed even if a stray ``M`` state
    *  slips into ``presentStates``. */
   globular?: boolean;
+  /** DeepTMHMM type — drives label-relabeling for state O. The
+   *  default label "Extracellular" is correct when the protein has
+   *  TM(s) and a real plasma-membrane outside. For ``SP``-only
+   *  proteins (signal peptide, no TM — secreted / ER-luminal — e.g.
+   *  HSPA5 / BiP), the same O state means "secretory-pathway side
+   *  of the membrane" which is the ER / Golgi lumen, NOT outside
+   *  the cell. Relabel as "Luminal / secreted" so the legend
+   *  doesn't tell readers an ER chaperone is extracellular. */
+  deeptmhmmType?: "TM" | "SP+TM" | "SP" | "BETA" | "GLOB";
 }
 
-export function TopologyLegend({ presentStates, showMembrane = true, globular = false }: LegendProps) {
+export function TopologyLegend({
+  presentStates,
+  showMembrane = true,
+  globular = false,
+  deeptmhmmType,
+}: LegendProps) {
   const states = presentStates ?? ["M", "O", "I", "S", "B"];
   // Only show "Membrane" when the M state is actually present and the
   // protein isn't globular — matches the StructureViewer's "no slab on
   // soluble proteins" rule exactly, so the legend can never advertise a
   // slab the viewer didn't draw.
   const includeMembrane = showMembrane && states.includes("M") && !globular;
+  // State-O relabeling. The dataset's three modes:
+  //   GLOB → state O shouldn't appear (handled upstream); fall through.
+  //   SP   → soluble protein with N-terminal signal — state O is the
+  //          secretory side (ER lumen → Golgi → secreted). Label as
+  //          "Luminal / secreted" so HSPA5 doesn't read as
+  //          "extracellular".
+  //   TM, SP+TM, BETA → state O is the true extracellular face
+  //          opposite the cytoplasm; keep "Extracellular".
+  const labelFor = (s: string): string => {
+    if (s === "O" && deeptmhmmType === "SP") return "Luminal / secreted";
+    return STATE_LABELS[s] ?? s;
+  };
   return (
     <ul className={styles.legend} aria-label="Topology color legend">
       {states.map((s) => (
@@ -124,7 +150,7 @@ export function TopologyLegend({ presentStates, showMembrane = true, globular = 
             style={{ background: TOPOLOGY_COLORS[s] ?? "transparent" }}
             aria-hidden="true"
           />
-          <span className={styles.legendLabel}>{STATE_LABELS[s] ?? s}</span>
+          <span className={styles.legendLabel}>{labelFor(s)}</span>
         </li>
       ))}
       {includeMembrane ? (

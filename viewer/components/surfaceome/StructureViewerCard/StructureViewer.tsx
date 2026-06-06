@@ -2263,6 +2263,7 @@ export function StructureViewer({
         <TopologyLegend
           presentStates={_presentTopologyStates(activeTopology)}
           globular={activeDeepTMHMMType === "GLOB"}
+          deeptmhmmType={activeDeepTMHMMType}
         />
       )}
     </div>
