@@ -779,23 +779,24 @@ function md(rec, structureData, sequences, afdbEntry) {
     }
   }
   // Representative experimental structure — read from the record's
-  // deterministic_features.structure.representative_experimental_structure
-  // (PDBe SIFTS best_structures, highest coverage / best resolution). Its
-  // construct sequence + projected topology are embedded in the appendix.
-  const repStruct = s.representative_experimental_structure;
+  // deterministic_features.surface_bind.representative_structure (PDBe
+  // SIFTS best_structures, highest coverage_fraction / best
+  // resolution_angstrom). Its construct sequence + projected topology
+  // are embedded in the appendix.
+  const repStruct = (df.surface_bind ?? {}).representative_structure;
   if (repStruct?.pdb_id) {
     const meth = [
-      repStruct.experimental_method,
-      repStruct.resolution_a != null ? `${repStruct.resolution_a} Å` : null,
+      repStruct.method,
+      repStruct.resolution_angstrom != null ? `${repStruct.resolution_angstrom} Å` : null,
     ]
       .filter(Boolean)
       .join(" ");
     const cov =
-      repStruct.unp_start != null && repStruct.unp_end != null
-        ? ` · UniProt ${repStruct.unp_start}–${repStruct.unp_end}`
+      repStruct.residue_start != null && repStruct.residue_end != null
+        ? ` · UniProt ${repStruct.residue_start}–${repStruct.residue_end}${repStruct.coverage_fraction != null ? ` (${(repStruct.coverage_fraction * 100).toFixed(0)}% coverage_fraction)` : ""}`
         : "";
     lines.push(
-      `| Experimental (best) | [${String(repStruct.pdb_id).toUpperCase()}](https://www.rcsb.org/structure/${repStruct.pdb_id}) chain ${repStruct.chain_id} | RCSB PDB${meth ? ` · ${meth}` : ""}${cov} |`,
+      `| Experimental (best) | [${String(repStruct.pdb_id).toUpperCase()}](https://www.rcsb.org/structure/${repStruct.pdb_id}) chain ${repStruct.chain} | RCSB PDB${meth ? ` · ${meth}` : ""}${cov} |`,
     );
   }
   const sbStruct = df.surface_bind;
@@ -1101,23 +1102,23 @@ function md(rec, structureData, sequences, afdbEntry) {
   if (
     repStruct?.pdb_id &&
     canonSeqForStruct &&
-    repStruct.unp_start != null &&
-    repStruct.unp_end != null
+    repStruct.residue_start != null &&
+    repStruct.residue_end != null
   ) {
-    const start = Number(repStruct.unp_start);
-    const end = Number(repStruct.unp_end);
+    const start = Number(repStruct.residue_start);
+    const end = Number(repStruct.residue_end);
     const span = canonSeqForStruct.slice(start - 1, end);
     if (span) {
       const meth = [
-        repStruct.experimental_method,
-        repStruct.resolution_a != null ? `${repStruct.resolution_a} Å` : null,
+        repStruct.method,
+        repStruct.resolution_angstrom != null ? `${repStruct.resolution_angstrom} Å` : null,
       ]
         .filter(Boolean)
         .join(", ");
       lines.push("### Experimental-structure sequence");
       lines.push("");
       lines.push(
-        `**${String(repStruct.pdb_id).toUpperCase()}** chain ${repStruct.chain_id}${meth ? ` · ${meth}` : ""} · covers UniProt residues ${start}–${end} (${span.length} aa)${repStruct.n_experimental_structures ? ` · representative of ${repStruct.n_experimental_structures} experimental structures` : ""}. Residues sliced from the canonical sequence over the structure's SIFTS-mapped span; unresolved loops in the deposited coordinates are not removed here.`,
+        `**${String(repStruct.pdb_id).toUpperCase()}** chain ${repStruct.chain}${meth ? ` · ${meth}` : ""} · covers UniProt residues ${start}–${end} (${span.length} aa). Residues sliced from the canonical sequence over the structure's SIFTS-mapped span; unresolved loops in the deposited coordinates are not removed here.`,
       );
       lines.push("");
       lines.push("```");
@@ -1186,15 +1187,15 @@ function md(rec, structureData, sequences, afdbEntry) {
   if (
     repStruct?.pdb_id &&
     ct.per_residue_topology &&
-    repStruct.unp_start != null &&
-    repStruct.unp_end != null
+    repStruct.residue_start != null &&
+    repStruct.residue_end != null
   ) {
-    const start = Number(repStruct.unp_start);
-    const end = Number(repStruct.unp_end);
+    const start = Number(repStruct.residue_start);
+    const end = Number(repStruct.residue_end);
     const topoSpan = ct.per_residue_topology.slice(start - 1, end);
     if (topoSpan) {
       lines.push(
-        `**Experimental — ${String(repStruct.pdb_id).toUpperCase()} chain ${repStruct.chain_id}** (UniProt residues ${start}–${end}, projected from canonical)`,
+        `**Experimental — ${String(repStruct.pdb_id).toUpperCase()} chain ${repStruct.chain}** (UniProt residues ${start}–${end}, projected from canonical)`,
       );
       lines.push("");
       lines.push("```");

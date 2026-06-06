@@ -301,7 +301,6 @@ def _llm_filters() -> SynthesizerLLMFilters:
         expression_breadth_rationale="detected across several tissue families",
         surface_specificity="surface_dominant",
         surface_specificity_rationale="predominantly plasma-membrane localized",
-        has_known_ligand_rationale="binds a documented endogenous ligand",
     )
 
 
