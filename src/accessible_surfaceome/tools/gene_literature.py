@@ -442,8 +442,17 @@ def _topic_search(
         if previous_symbols is None:
             previous_symbols = list(bundle.previous_symbols)
 
-    aliases = aliases or []
-    previous_symbols = previous_symbols or []
+    # Cap before quoting to bound the Europe PMC query length on outliers.
+    # A 200-gene candidate-universe audit (2026-06-06) found previous_symbols
+    # rarely exceeds 3 (SLC67A1 with 5 is the lone outlier in the sample),
+    # but aliases regularly spills past 5 — 14% of genes have >5, CD44 has
+    # 15 ('IN' / 'MC56' / 'ECM-III' / 'Hermes-1' / ...). HGNC orders aliases
+    # roughly by primacy / clinical recognition, so the first N are the
+    # high-recall ones; the long tail is mostly obscure variants that bloat
+    # the query without paper-side payback. Truncate silently — predictable
+    # query length matters more than recovering the 5+th synonym.
+    aliases = (aliases or [])[:5]
+    previous_symbols = (previous_symbols or [])[:3]
     # Dedup while preserving order. ``aliases`` + ``previous_symbols`` often
     # overlap (HGNC moves rejected aliases into previous_symbols), so a
     # naive concat blows the query length without adding coverage. Drop
