@@ -2,13 +2,15 @@
 genome-wide surface verdicts (yes + contextual).
 
 Each row carries:
-  gene_symbol, uniprot_accession,
+  gene_symbol, uniprot_accession, hgnc_id, ensembl_gene,
   m1_n_db_votes, m1_uniprot_flag, m1_go_flag, m1_hpa_flag,
                  m1_surfy_flag, m1_cspa_flag,
   sonnet_verdict, sonnet_reason, sonnet_confidence,
   source ('m1_only' | 'sonnet_only' | 'both')
 
-so downstream callers can filter on any axis.
+so downstream callers can filter on any axis. Stable IDs prefer the
+M1 row (bench-pinned), falling back to the Sonnet-side resolver IDs
+from ``triage_run`` for ``sonnet_only`` symbols.
 
 Source data:
   * candidate_universe.tsv (M1 universe; ≥1 of 5 classical surface DBs)
@@ -16,7 +18,7 @@ Source data:
     (the 2026-05-12 Sonnet/ncbi sweep over 19,464 NCBI protein-coding
     genes with the slim-canonical prompt).
 
-Total output rows: 6,539 (3,374 in both + 2,295 M1-only + 870 Sonnet-only).
+Total output rows: 6,521 (3,381 in both + 2,288 M1-only + 852 Sonnet-only).
 
 Re-run after any genome-wide Sonnet sweep refresh; outputs to
 ``data/processed/candidate_universe/candidate_universe_v2.tsv``.
@@ -54,6 +56,8 @@ def _load_m1() -> dict[str, dict]:
                 continue
             out[r["gene_symbol"]] = {
                 "uniprot_accession": r["uniprot_accession"],
+                "hgnc_id":           r.get("hgnc_id", ""),
+                "ensembl_gene":      r.get("ensembl_gene", ""),
                 "m1_n_db_votes":     str(votes),
                 **{dst: r.get(src, "0") for src, dst in DB_FLAGS},
             }
@@ -63,7 +67,8 @@ def _load_m1() -> dict[str, dict]:
 def _load_sonnet() -> dict[str, dict]:
     with D1Client() as d1:
         rows = d1.query(
-            "SELECT gene_symbol, predicted_verdict, predicted_reason, "
+            "SELECT gene_symbol, uniprot_acc, hgnc_id, ensembl_gene, "
+            "       predicted_verdict, predicted_reason, "
             "       predicted_confidence "
             "FROM triage_run "
             "WHERE run_id = ? "
@@ -87,7 +92,9 @@ def main() -> int:
         s_data = sonnet.get(sym, {})
         out.append({
             "gene_symbol":       sym,
-            "uniprot_accession": m1_data.get("uniprot_accession", ""),
+            "uniprot_accession": m1_data.get("uniprot_accession") or s_data.get("uniprot_acc") or "",
+            "hgnc_id":           m1_data.get("hgnc_id") or s_data.get("hgnc_id") or "",
+            "ensembl_gene":      m1_data.get("ensembl_gene") or s_data.get("ensembl_gene") or "",
             "m1_n_db_votes":     m1_data.get("m1_n_db_votes", "0"),
             "m1_uniprot_flag":   m1_data.get("m1_uniprot_flag", "0"),
             "m1_go_flag":        m1_data.get("m1_go_flag", "0"),
@@ -104,7 +111,7 @@ def main() -> int:
     fieldnames = list(out[0].keys())
     with CAND_OUT.open("w", newline="") as fh:
         w = csv.DictWriter(fh, fieldnames=fieldnames, delimiter="\t",
-                           quoting=csv.QUOTE_MINIMAL)
+                           lineterminator="\n", quoting=csv.QUOTE_MINIMAL)
         w.writeheader()
         for row in out:
             w.writerow(row)
