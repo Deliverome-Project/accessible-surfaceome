@@ -102,6 +102,13 @@ export interface StructureVariantSchwekeHomomer extends StructureVariantBase {
    *  Drives the "ECD only" caption + skips membrane orientation
    *  because no TM residues are present to align. */
   ecd_only: boolean;
+  /** Cyclic-symmetry order N of the rendered model (homo-N-mer). 2
+   *  for a plain dimer (the default — ``AF_dimer_models_core``), 3..13
+   *  for an AnAnaS-reconstructed full complex from Schweke's
+   *  ``full_complexes_bigbang.zip``. The viewer reads this to size the
+   *  per-chain darken gradient and label the caption ("dimer" /
+   *  "trimer" / "13-mer"). Defaults to 2 when omitted. */
+  stoichiometry?: number;
 }
 
 export interface StructureVariantExperimental extends StructureVariantBase {
@@ -598,10 +605,31 @@ function _renderCaption(args: {
   if (activeVariant?.source === "schweke-homomer") {
     const v = activeVariant;
     const figshareUrl = "https://figshare.com/s/af3c1d5969f7468f2caa";
+    const n = v.stoichiometry ?? 2;
+    const stoichLabel =
+      n === 2
+        ? "homo-dimer"
+        : n === 3
+          ? "homo-trimer"
+          : n === 4
+            ? "homo-tetramer"
+            : n === 5
+              ? "homo-pentamer"
+              : n === 6
+                ? "homo-hexamer"
+                : n === 7
+                  ? "homo-heptamer"
+                  : n === 8
+                    ? "homo-octamer"
+                    : `homo-${n}-mer`;
+    const copiesLabel = n === 2 ? "two copies" : `${n} copies`;
+    const datasetLabel =
+      n === 2 ? "AF2 dimer" : `AF2 ${stoichLabel.replace("homo-", "")} (c${n})`;
     return (
       <div className={styles.caption} aria-label="Structure caption">
         <p className={styles.captionTitle}>
-          Predicted homo-dimer · two copies of {proteinName ?? canonicalUniprot}
+          Predicted {stoichLabel} · {copiesLabel} of{" "}
+          {proteinName ?? canonicalUniprot}
         </p>
         <p className={styles.captionStats}>
           <span className={styles.captionStat}>
@@ -618,7 +646,7 @@ function _renderCaption(args: {
           </span>
           <span className={styles.captionSep} aria-hidden="true">·</span>
           <span className={styles.captionStat}>
-            AF2 dimer · model{" "}
+            {datasetLabel} · model{" "}
             <strong>{v.uniprot_acc}_V1_{v.af_model_num}</strong>
           </span>
           <span className={styles.captionSep} aria-hidden="true">·</span>
@@ -637,7 +665,7 @@ function _renderCaption(args: {
           <p className={styles.captionCaveat}>
             ECD only — Schweke's <code>nodiso3</code> contact-clustering
             filter dropped the single-pass TM helix as a disconnected
-            cluster, so the model shows the soluble extracellular dimer
+            cluster, so the model shows the soluble extracellular
             interface only (no membrane orientation). For multi-pass
             membrane proteins, all TMs are retained and the homomer
             renders embedded in the bilayer.
@@ -944,11 +972,68 @@ interface ViewerInstance {
 const MEMBRANE_OPACITY = 0.34;
 
 /** Chain-A color on the Schweke homo-oligomer tab. Maroon-mid from
- *  the Deliverome design tokens — pairs with the page accent. */
+ *  the Deliverome design tokens — pairs with the page accent. (Legacy
+ *  binary-chain palette, kept for the optional caption swatches; the
+ *  rendered cartoons use DeepTMHMM topology coloring per chain instead,
+ *  see {@link _darkenHex}.) */
 const SCHWEKE_CHAIN_A_COLOR = "#922038";
 /** Chain-B color on the Schweke homo-oligomer tab. Teal-mid — the
- *  high-contrast complement to maroon in the brand palette. */
+ *  high-contrast complement to maroon in the brand palette. (Legacy —
+ *  see SCHWEKE_CHAIN_A_COLOR for why this is no longer the renderer's
+ *  primary chain color.) */
 const SCHWEKE_CHAIN_B_COLOR = "#3d6b60";
+
+/** Maximum darkening fraction applied to chains > 0 of a Schweke
+ *  homo-oligomer. Chain 0 (typically "A") renders at the canonical
+ *  DeepTMHMM topology palette (TOPOLOGY_COLORS), and each subsequent
+ *  chain shades darker toward black so the N chains of a c2–c13
+ *  complex stay visually distinct. The darkest chain in a homomer of
+ *  cyclic order N gets `(N-1)/(N-1) × DARKEST = DARKEST` applied — so
+ *  this is the literal darkness of chain N-1 in any size complex. 1.0
+ *  is pure black; we leave a small headroom so the cartoon outline is
+ *  still distinguishable from the canvas background, but the user
+ *  authorized going "all the way to black if you need to" for the
+ *  c13 BSCL2 / c12 CALHM5 cases, so this is set high. */
+const SCHWEKE_DARKEST_CHAIN_FRACTION = 0.95;
+
+/** Mix ``hex`` toward black by ``fraction`` ∈ [0,1].
+ *  ``fraction=0`` returns ``hex`` unchanged; ``fraction=1`` returns
+ *  ``#000000``. Used to differentiate the chains of a Schweke
+ *  homo-oligomer by linearly interpolating each DeepTMHMM topology
+ *  color toward black across the N chains. */
+function _darkenHex(hex: string, fraction: number): string {
+  const f = Math.max(0, Math.min(1, fraction));
+  const cleaned = hex.startsWith("#") ? hex.slice(1) : hex;
+  if (cleaned.length !== 6) return hex;
+  const r = Number.parseInt(cleaned.slice(0, 2), 16);
+  const g = Number.parseInt(cleaned.slice(2, 4), 16);
+  const b = Number.parseInt(cleaned.slice(4, 6), 16);
+  if (!Number.isFinite(r) || !Number.isFinite(g) || !Number.isFinite(b)) {
+    return hex;
+  }
+  const dr = Math.round(r * (1 - f));
+  const dg = Math.round(g * (1 - f));
+  const db = Math.round(b * (1 - f));
+  const hh = (n: number) => n.toString(16).padStart(2, "0");
+  return `#${hh(dr)}${hh(dg)}${hh(db)}`;
+}
+
+/** Extract the unique chain IDs present in a PDB text (ATOM/HETATM,
+ *  column 22, 1-char). Returns them sorted so the chain ordering is
+ *  stable across renders — chain ID "A" gets the brightest topology
+ *  colors, "B" slightly darker, ..., the last chain darkest. Used by
+ *  the Schweke render branch to know how many chains exist (a c2
+ *  dimer up to a c13 13-mer) so the darken gradient spans them. */
+function _extractChainIds(pdbText: string): string[] {
+  const seen = new Set<string>();
+  for (const line of pdbText.split(/\r?\n/)) {
+    if (!line.startsWith("ATOM") && !line.startsWith("HETATM")) continue;
+    if (line.length < 22) continue;
+    const ch = line.charAt(21);
+    if (ch && ch !== " ") seen.add(ch);
+  }
+  return Array.from(seen).sort();
+}
 
 /**
  * StructureViewer — the 3Dmol.js-backed canvas. Client-only because
@@ -1575,26 +1660,65 @@ export function StructureViewer({
       // in both modes, matching the user's "make the membrane look
       // the same" requirement.
       if (schwekeVariant) {
-        // Homo-oligomer view: drop the topology / sites coloring and
-        // paint the two chains in distinct colors so the dimer
-        // interface reads at a glance. Maroon-mid (CHAIN_A) + teal-mid
-        // (CHAIN_B) — both come from the Deliverome design tokens; the
-        // saved screenshots in data/external/schweke_homomer_atlas/ use
-        // these exact hex values. SURFACE-Bind anchors / topology /
-        // membrane slab are intentionally NOT drawn on this tab: the
-        // SB anchor residue numbers are canonical-keyed (don't translate
-        // cleanly to the homomer's residue range), topology coloring
-        // would compete with chain-distinguishing, and membrane slab is
-        // only meaningful when TMs are in the model (multi-pass cases —
-        // ``ecd_only=false`` — handled by the orientation block above).
-        viewer.setStyle(
-          { chain: "A" },
-          { cartoon: { color: SCHWEKE_CHAIN_A_COLOR, opacity: 1.0 } },
-        );
-        viewer.setStyle(
-          { chain: "B" },
-          { cartoon: { color: SCHWEKE_CHAIN_B_COLOR, opacity: 1.0 } },
-        );
+        // Homo-oligomer view: color chain 0 (typically "A") with the
+        // canonical DeepTMHMM topology palette, then linearly darken
+        // each subsequent chain toward black so that an N-mer has N
+        // visually distinct chains while every chain still encodes the
+        // membrane-context biology (TM yellow / EC lavender / IC green
+        // / signal red). The dimer interface reads as "chain A in
+        // topology, chain B in dim topology"; a 13-mer (BSCL2) reads as
+        // a ring whose 13 subunits fade from bright topology at chain A
+        // to near-black at chain M. Chain N-1 darkness is
+        // {@link SCHWEKE_DARKEST_CHAIN_FRACTION}.
+        //
+        // SURFACE-Bind anchors are still suppressed (anchor residue
+        // numbers are canonical-keyed and don't translate cleanly to
+        // an ECD-only or alternate-numbered homomer model — see the
+        // anchor block below for the `!schwekeVariant` gate).
+        const chainIds = _extractChainIds(pdbText);
+        const nChains = chainIds.length;
+        // Ranges from the canonical topology — Schweke's PDB chains
+        // keep canonical UniProt numbering (verified for CD69 dimer
+        // [84-198], BSCL2 c13 [residue ranges match canonical] etc.),
+        // so the canonical `data.topology_ranges` projects directly.
+        const schwekeRanges = data.topology_ranges;
+        chainIds.forEach((chainId, ci) => {
+          const darkenFraction =
+            nChains > 1
+              ? (ci / (nChains - 1)) * SCHWEKE_DARKEST_CHAIN_FRACTION
+              : 0;
+          // Base color for residues outside every topology range
+          // (shouldn't normally happen — DeepTMHMM covers the whole
+          // sequence — but a Schweke nodiso-trimmed chain can lose
+          // ends, so make sure those still get a per-chain shade).
+          const baseColor = _darkenHex(
+            activeDeepTMHMMType === "GLOB"
+              ? TOPOLOGY_COLORS.M
+              : TOPOLOGY_COLORS.B,
+            darkenFraction,
+          );
+          viewer.setStyle(
+            { chain: chainId },
+            { cartoon: { color: baseColor, opacity: 1.0 } },
+          );
+          (["M", "O", "I", "S", "B"] as const).forEach((state) => {
+            const color = _darkenHex(
+              activeDeepTMHMMType === "GLOB"
+                ? TOPOLOGY_COLORS.M
+                : TOPOLOGY_COLORS[state],
+              darkenFraction,
+            );
+            (schwekeRanges[state] ?? []).forEach(([start, end]) => {
+              viewer.setStyle(
+                { chain: chainId, resi: `${start}-${end}` },
+                {
+                  cartoon: { color, opacity: 1.0 },
+                  line: { color, linewidth: 1.2 },
+                },
+              );
+            });
+          });
+        });
       } else if (viewMode === "sites") {
         const baseSel = expVariant && effectiveChainId
           ? { chain: effectiveChainId }
