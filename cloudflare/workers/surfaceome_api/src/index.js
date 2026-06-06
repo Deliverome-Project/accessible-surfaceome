@@ -525,6 +525,99 @@ async function handleGene(env, symbol) {
         };
       }
     }
+
+    // ----- surface_bind -----
+    // Mirror tools.surface_bind.lookup (D1-first). SURFACE-Bind's
+    // ``surface_bind_protein`` table is keyed PRIMARY KEY on uniprot_acc
+    // (one row per acc), and ``surface_bind_site`` is keyed (uniprot_acc,
+    // site_id). There's no separate release table; the version is the
+    // per-row ``surfacebind_version`` column. ORDER BY surfacebind_version
+    // DESC LIMIT 1 is defensive — today the PK guarantees uniqueness, so
+    // the ORDER BY is a no-op, but it keeps the query future-proof if the
+    // schema ever allows multi-version coexistence (e.g. v1 + v2 atlases).
+    //
+    // Enrich when the record's surface_bind is missing OR carries
+    // ``has_data=false`` despite a row existing in D1. Annotator-baked
+    // positives win — a v2-orchestrator record with a real
+    // SurfaceBindFeatures block is left alone so the data the LLM saw at
+    // annotation time matches what the viewer renders.
+    const existingSurfaceBind = record?.deterministic_features?.surface_bind;
+    const sbNeedsEnrichment = !existingSurfaceBind
+      || existingSurfaceBind.has_data === false;
+    if (sbNeedsEnrichment) {
+      const sbProteinRow = await env.DB.prepare(
+        `SELECT chain, main_class, sub_class, protein_name, n_sites,
+                n_seeds_alpha, n_seeds_beta, n_seeds_total, pdbs
+           FROM surface_bind_protein
+          WHERE uniprot_acc = ?
+          ORDER BY surfacebind_version DESC
+          LIMIT 1`
+      ).bind(uniprot).first().catch(() => null);
+      if (sbProteinRow) {
+        const sbSiteRows = await env.DB.prepare(
+          `SELECT site_id, anchor_residue, area_a2, n_seeds_alpha,
+                  n_seeds_beta, hydrophobicity
+             FROM surface_bind_site
+            WHERE uniprot_acc = ?
+            ORDER BY site_id`
+        ).bind(uniprot).all().catch(() => null);
+        // ``pdbs`` is stored as a JSON-encoded array string (see
+        // scripts/sync_surface_bind_to_d1.py: ``json.dumps(entry.get("pdbs",
+        // []))``). Defensively accept a real array (forward-compat), an
+        // empty / null cell, or a comma-separated string (legacy snapshots).
+        let pdbs = [];
+        const rawPdbs = sbProteinRow.pdbs;
+        if (Array.isArray(rawPdbs)) {
+          pdbs = rawPdbs.map((x) => String(x)).filter(Boolean);
+        } else if (typeof rawPdbs === "string" && rawPdbs.trim()) {
+          const trimmed = rawPdbs.trim();
+          if (trimmed.startsWith("[")) {
+            try {
+              const decoded = JSON.parse(trimmed);
+              if (Array.isArray(decoded)) {
+                pdbs = decoded.map((x) => String(x)).filter(Boolean);
+              }
+            } catch {
+              // Fall through to comma-split below.
+            }
+          }
+          if (pdbs.length === 0) {
+            pdbs = trimmed.split(",").map((x) => x.trim()).filter(Boolean);
+          }
+        }
+        const sites = (sbSiteRows?.results ?? []).map((s) => ({
+          site_id: Number(s.site_id),
+          anchor_residue: Number(s.anchor_residue),
+          area_a2: Number(s.area_a2),
+          n_seeds_alpha: Number(s.n_seeds_alpha),
+          n_seeds_beta: Number(s.n_seeds_beta),
+          hydrophobicity: Number(s.hydrophobicity),
+        }));
+        if (!record.deterministic_features) record.deterministic_features = {};
+        record.deterministic_features.surface_bind = {
+          has_data: true,
+          n_sites: Number(sbProteinRow.n_sites ?? 0),
+          n_seeds_alpha: Number(sbProteinRow.n_seeds_alpha ?? 0),
+          n_seeds_beta: Number(sbProteinRow.n_seeds_beta ?? 0),
+          n_seeds_total: Number(sbProteinRow.n_seeds_total ?? 0),
+          chain: sbProteinRow.chain ?? null,
+          sites,
+          main_class: sbProteinRow.main_class ?? null,
+          sub_class: sbProteinRow.sub_class ?? null,
+          protein_name: sbProteinRow.protein_name ?? null,
+          pdbs,
+          // ``representative_structure`` is sourced from PDBe SIFTS at
+          // annotation time (PR #54), not from the SURFACE-Bind tables.
+          // Preserve whatever the record carried (often null) rather than
+          // dropping it — the structure ranker isn't wired to the Worker.
+          representative_structure:
+            existingSurfaceBind?.representative_structure ?? null,
+          source: "SURFACE-Bind v1 (Balbi 2026 PNAS)",
+          attribution: "© Balbi et al., Correia lab — EPFL / Inria / Novo Nordisk",
+          citation: "10.1073/pnas.2506269123",
+        };
+      }
+    }
   }
   return json(record, { ttl: CACHE_TTL_LONG });
 }
