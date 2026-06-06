@@ -263,23 +263,27 @@ def test_epitope_masking_axis_gated_like_other_membrane_axes():
     assert not _has_anchor(build_a1_kickoff(0, 0), "epitope_masking")
 
 
-_STANDING_ANCHOR_SET = {
-    "normal_tissue_expression",
-    "surface_reachability",
-    "partner_dependency",
-    "membrane_subdomain",
-    "epitope_masking",
-}
+# Single-anchor standing searches that MUST be byte-identical between A1 and
+# A2 — they come from the one shared ``_standing_axes()`` helper. Listed
+# explicitly so a new shared axis has to be added here on purpose; the
+# byte-for-byte mirror is asserted by
+# test_shared_standing_searches_identical_across_a1_a2.
+_MIRRORED_STANDING_ANCHORS = [
+    "normal_tissue_expression",  # always-on
+    "surface_reachability",      # gated on membrane+ECD
+    "partner_dependency",        # gated
+    "membrane_subdomain",        # gated
+    "epitope_masking",           # gated
+]
 
 
-def _standing_anchors(plan) -> list[tuple]:
-    return sorted(
-        tuple(s.anchors)
-        for s in plan.searches
-        if s.mode == "topic_search"
-        and s.anchors
-        and set(s.anchors) <= _STANDING_ANCHOR_SET
-    )
+def _search_sig(plan, anchor):
+    """Full signature (tool, mode, anchors, intent) of the single-anchor
+    standing search carrying ``anchor`` in ``plan``, or None if absent."""
+    for s in plan.searches:
+        if s.anchors == [anchor]:
+            return (s.tool, s.mode, tuple(s.anchors), s.intent)
+    return None
 
 
 def test_a2_surface_search_mirrors_a1_method_anchors():
@@ -307,15 +311,26 @@ def test_a2_surface_search_mirrors_a1_method_anchors():
     )
 
 
-def test_standing_axes_mirrored_across_a1_and_a2():
-    # The standing axes (normal_tissue_expression + the gated barrier / masking
-    # axes) come from the shared ``_standing_axes`` helper, so A1 and A2 must
-    # emit an identical set at every topology. Guards a future divergence.
-    for tmh, ecd in ((7, 89), (None, None), (0, 0)):
-        assert _standing_anchors(build_a1_kickoff(tmh, ecd)) == _standing_anchors(
-            build_a2_kickoff(tmh, ecd)
-        )
-    # normal_tissue_expression is the always-on member — present in both foci
-    # regardless of topology.
-    assert _has_anchor(build_a1_kickoff(0, 0), "normal_tissue_expression")
-    assert _has_anchor(build_a2_kickoff(0, 0), "normal_tissue_expression")
+def test_shared_standing_searches_identical_across_a1_a2():
+    # Each shared standing/gated axis must be BYTE-IDENTICAL in A1 and A2 (same
+    # tool, mode, anchors, intent) — they come from the single _standing_axes()
+    # helper, so any divergence means someone bypassed it. Explicitly covers
+    # membrane_subdomain, epitope_masking, surface_reachability,
+    # partner_dependency, and normal_tissue_expression, at gated-on /
+    # gated-off / unknown topology.
+    for tmh, ecd in ((7, 89), (0, 0), (None, None)):
+        a1 = build_a1_kickoff(tmh, ecd)
+        a2 = build_a2_kickoff(tmh, ecd)
+        for anchor in _MIRRORED_STANDING_ANCHORS:
+            s1 = _search_sig(a1, anchor)
+            s2 = _search_sig(a2, anchor)
+            assert s1 == s2, (
+                f"{anchor}: A1 vs A2 standing search differs "
+                f"(A1={s1!r}, A2={s2!r}) at tmh={tmh}, ecd={ecd}"
+            )
+    # normal_tissue_expression is the always-on member (present even for a
+    # known non-membrane gene); the gated axes are absent there in BOTH foci.
+    assert _search_sig(build_a1_kickoff(0, 0), "normal_tissue_expression") is not None
+    assert _search_sig(build_a2_kickoff(0, 0), "normal_tissue_expression") is not None
+    assert _search_sig(build_a1_kickoff(0, 0), "epitope_masking") is None
+    assert _search_sig(build_a2_kickoff(0, 0), "epitope_masking") is None
