@@ -4,7 +4,7 @@ import { DEMO_TOPOLOGIES } from "../_demo-topologies";
 import styles from "../homomer-demo.module.css";
 
 export const metadata = {
-  title: "AQP1 — predicted homo-dimer · surfaceome",
+  title: "AQP1 — predicted Homo-Dimer · surfaceome",
   description:
     "Demo of the Schweke 2024 AF2 homo-oligomer prediction for AQP1 (P29972, aquaporin-1) — the simplest multi-pass-TM case in the demo set: 6-TM hourglass-fold water channel forming a Schweke dimer interface. Use to verify the two-chain topology-darken contrast at small N.",
 };
@@ -22,7 +22,7 @@ export default function AQP1DemoPage() {
           <p className={styles.lede}>
             Water-channel subunit, 6 TM helices per chain in an
             hourglass fold. Schweke et al. 2024 predict a{" "}
-            <strong>homo-dimer</strong> — the AQP1 tetramer's
+            <strong>Homo-Dimer</strong> — the AQP1 tetramer's
             assembly-unit dimer. With only 2 chains the darken contrast
             is maximal: chain A renders at the full DeepTMHMM palette,
             chain B at ~95% black (near-monochrome). The membrane band

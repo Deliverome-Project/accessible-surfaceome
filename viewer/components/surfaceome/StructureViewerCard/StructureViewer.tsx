@@ -608,23 +608,23 @@ function _renderCaption(args: {
     const n = v.stoichiometry ?? 2;
     const stoichLabel =
       n === 2
-        ? "homo-dimer"
+        ? "Homo-Dimer"
         : n === 3
-          ? "homo-trimer"
+          ? "Homo-Trimer"
           : n === 4
-            ? "homo-tetramer"
+            ? "Homo-Tetramer"
             : n === 5
-              ? "homo-pentamer"
+              ? "Homo-Pentamer"
               : n === 6
-                ? "homo-hexamer"
+                ? "Homo-Hexamer"
                 : n === 7
-                  ? "homo-heptamer"
+                  ? "Homo-Heptamer"
                   : n === 8
-                    ? "homo-octamer"
-                    : `homo-${n}-mer`;
+                    ? "Homo-Octamer"
+                    : `Homo-${n}-Mer`;
     const copiesLabel = n === 2 ? "two copies" : `${n} copies`;
     const datasetLabel =
-      n === 2 ? "AF2 dimer" : `AF2 ${stoichLabel.replace("homo-", "")} (c${n})`;
+      n === 2 ? "AF2 Dimer" : `AF2 ${stoichLabel.replace("Homo-", "")} (c${n})`;
     return (
       <div className={styles.caption} aria-label="Structure caption">
         <p className={styles.captionTitle}>
@@ -1109,6 +1109,20 @@ export function StructureViewer({
   const [afdbMetaByAcc, setAfdbMetaByAcc] = useState<
     Record<string, AfdbVariantMeta | "loading" | "error">
   >({});
+  // Per-variant rendered-residue range. Schweke's nodiso3 contact-
+  // clustering filter trims disordered ends and signal peptides as
+  // disconnected clusters, so a Schweke PDB typically covers a
+  // RESTRICTED window of the canonical sequence (HSPA5's mature-
+  // protein dimer drops residues 1–18 / 31, the signal peptide; CD69's
+  // dimer covers 84–198 only). The legend should reflect what's
+  // actually drawn — not the full canonical topology — so a truncated
+  // Schweke model doesn't advertise a "Signal peptide" swatch when no
+  // S-state residues are in the rendered atoms. Keyed by activeVariant
+  // id (Schweke variant id), set by the render branch after the PDB
+  // is parsed. ``null`` ⟹ use the full topology (canonical / AFDB /
+  // experimental — those don't trim by topology). */
+  const [activeRenderedResidueRange, setActiveRenderedResidueRange] =
+    useState<{ variantId: string; min: number; max: number } | null>(null);
 
   // SURFACE-Bind sphere overlay only makes sense on the canonical
   // AFDB view — anchor residues are canonical-UniProt-keyed and
@@ -1295,6 +1309,33 @@ export function StructureViewer({
   const activeTopology = activeVariant?.topology ?? data.topology;
   const activeDeepTMHMMType =
     activeVariant?.deeptmhmm_type ?? data.deeptmhmm_type;
+
+  // Present-state list for the legend. For canonical / AFDB-variant /
+  // experimental tabs this is just the unique states in the active
+  // per-residue topology — the full canonical sequence is what's
+  // rendered. For the Schweke homo-oligomer tab, Schweke's nodiso3
+  // contact-clustering filter trims disordered termini + signal
+  // peptides as disconnected clusters, so the rendered atoms cover
+  // only a window of canonical residues (e.g. HSPA5 dimer covers
+  // ~31–650, no signal peptide; CD69 dimer covers 84–198 only). We
+  // pin the legend to that window so it doesn't advertise a "Signal
+  // peptide" swatch for a model that doesn't actually contain any S
+  // residues. The window comes from ``activeRenderedResidueRange``,
+  // which the schweke render branch populates after parsing the PDB.
+  const legendPresentStates = (() => {
+    if (
+      isSchwekeActive &&
+      activeRenderedResidueRange &&
+      activeRenderedResidueRange.variantId === activeVariant?.id &&
+      activeTopology
+    ) {
+      const { min, max } = activeRenderedResidueRange;
+      const lo = Math.max(0, min - 1);
+      const hi = Math.min(activeTopology.length, max);
+      return _presentTopologyStates(activeTopology.slice(lo, hi));
+    }
+    return _presentTopologyStates(activeTopology);
+  })();
   // SURFACE-Bind anchor overlay only fires on canonical-AFDB view:
   // (1) anchor residue numbers are canonical-UniProt-keyed, don't
   // translate to isoforms or orthologs; (2) on experimental tabs
@@ -1677,6 +1718,36 @@ export function StructureViewer({
         // anchor block below for the `!schwekeVariant` gate).
         const chainIds = _extractChainIds(pdbText);
         const nChains = chainIds.length;
+        // Walk the PDB once more for the actual residue range of the
+        // rendered atoms. Schweke's nodiso3 contact-clustering filter
+        // typically clips signal peptides + disordered termini, so the
+        // canonical topology can claim states (e.g. "S" for the SP
+        // residues 1–18) that aren't present in the rendered atoms.
+        // Pin the topology legend to this window so a truncated
+        // Schweke model doesn't advertise a "Signal peptide" swatch
+        // when the model doesn't actually contain any S residues.
+        let renderedMin = Number.POSITIVE_INFINITY;
+        let renderedMax = Number.NEGATIVE_INFINITY;
+        for (const line of pdbText.split(/\r?\n/)) {
+          if (!line.startsWith("ATOM") && !line.startsWith("HETATM")) continue;
+          if (line.length < 26) continue;
+          const resi = Number.parseInt(line.slice(22, 26).trim(), 10);
+          if (Number.isFinite(resi)) {
+            if (resi < renderedMin) renderedMin = resi;
+            if (resi > renderedMax) renderedMax = resi;
+          }
+        }
+        if (
+          Number.isFinite(renderedMin) &&
+          Number.isFinite(renderedMax) &&
+          activeVariant
+        ) {
+          setActiveRenderedResidueRange({
+            variantId: activeVariant.id,
+            min: renderedMin,
+            max: renderedMax,
+          });
+        }
         // Ranges from the canonical topology — Schweke's PDB chains
         // keep canonical UniProt numbering (verified for CD69 dimer
         // [84-198], BSCL2 c13 [residue ranges match canonical] etc.),
@@ -2261,9 +2332,8 @@ export function StructureViewer({
         </>
       ) : (
         <TopologyLegend
-          presentStates={_presentTopologyStates(activeTopology)}
+          presentStates={legendPresentStates}
           globular={activeDeepTMHMMType === "GLOB"}
-          deeptmhmmType={activeDeepTMHMMType}
         />
       )}
     </div>

@@ -4,7 +4,7 @@ import { DEMO_TOPOLOGIES } from "../_demo-topologies";
 import styles from "../homomer-demo.module.css";
 
 export const metadata = {
-  title: "GJA1 — predicted homo-heptamer (c7) · surfaceome",
+  title: "GJA1 — predicted Homo-Heptamer (c7) · surfaceome",
   description:
     "Demo of the Schweke 2024 AF2 homo-oligomer prediction for GJA1 (P17302, connexin-43) — a 4-TM multi-pass membrane homomer; Schweke's AnAnaS reconstruction picks c7 cyclic symmetry. Use this as a multi-pass-TM example to verify the topology + chain-darken coloring renders the membrane-embedded helices correctly.",
 };
