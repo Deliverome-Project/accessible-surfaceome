@@ -357,3 +357,36 @@ def test_shared_standing_searches_identical_across_a1_a2():
     assert _search_sig(build_a2_kickoff(0, 0), "normal_tissue_expression") is not None
     assert _search_sig(build_a1_kickoff(0, 0), "epitope_masking") is None
     assert _search_sig(build_a2_kickoff(0, 0), "epitope_masking") is None
+
+
+def _has_category(plan, category):
+    return any(
+        s.tool == "evidence_retrieval" and s.category == category
+        for s in plan.searches
+    )
+
+
+def test_shedding_is_a_dedicated_evidence_retrieval_category():
+    # shedding was reformulated from a topic-only anchor into a dedicated,
+    # quote-grounded evidence_retrieval category (feeds shed_form/secreted_form
+    # risks). It must: (1) have a spec with sheddase + serum/plasma decoy
+    # signals, (2) be emitted by BOTH A1 and A2 (shared), (3) no longer be
+    # double-covered by the catch-all `other`.
+    from accessible_surfaceome.tools.evidence_retrieval import _CATEGORY_SPECS
+
+    spec = _CATEGORY_SPECS.get("shedding")
+    assert spec is not None, "shedding must be a dedicated evidence_retrieval category"
+    clauses = " ".join(spec.query_clauses).lower()
+    assert "shedding" in clauses or "sheddase" in clauses
+    assert "serum level" in clauses and "plasma level" in clauses  # decoy signal
+    hp = " ".join(p.pattern for p in spec.hallmark_patterns).lower()
+    assert "ectodomain" in hp and "adam" in hp
+
+    assert _has_category(build_a1_kickoff(7, 89), "shedding")
+    assert _has_category(build_a2_kickoff(7, 89), "shedding")
+
+    other = " ".join(_CATEGORY_SPECS["other"].query_clauses).lower()
+    assert "shedding" not in other and "soluble form" not in other, (
+        "shedding should live only in its dedicated category, not the `other` "
+        "catch-all"
+    )

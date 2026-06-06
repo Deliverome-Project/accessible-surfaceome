@@ -471,6 +471,11 @@ EvidenceCategory = Literal[
     "flow_cytometry",
     "surface_biotinylation",
     "mass_spec_surfaceome",
+    # Ectodomain shedding / soluble-form-in-circulation evidence. Quote-grounded
+    # because shed_form + secreted_form risks need a verbatim "soluble ectodomain
+    # measured in serum" / "ADAM17-mediated shedding" sentence. Pulled out of the
+    # catch-all ``other`` into its own focused category.
+    "shedding",
     "western_blot_paired",
     "structure_with_ecd",
     "other",

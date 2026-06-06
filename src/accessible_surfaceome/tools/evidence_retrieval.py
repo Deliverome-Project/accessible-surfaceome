@@ -304,6 +304,37 @@ _CATEGORY_SPECS: dict[EvidenceCategory, _CategorySpec] = {
         section_weights=_DEFAULT_MS_WEIGHTS,
         accepts_paper_level_evidence=True,
     ),
+    # Ectodomain shedding + soluble-form-in-circulation. Feeds the
+    # shed_form / secreted_form accessibility risks, which need a verbatim
+    # sentence (substring check passes by construction). The second query
+    # clause carries the serum/plasma/circulating "decoy" signal that the
+    # old catch-all ``other`` shedding terms lacked.
+    "shedding": _CategorySpec(
+        query_clauses=(
+            '("ectodomain shedding" OR "ectodomain release" OR "shedding" '
+            'OR "proteolytic cleavage" OR "regulated intramembrane proteolysis")',
+            '("ADAM17" OR "ADAM10" OR "BACE1" OR "γ-secretase" OR "gamma-secretase" '
+            'OR "MMP" OR "sheddase" OR "soluble form" OR "soluble ectodomain" '
+            'OR "shed form" OR "serum level" OR "plasma level" OR "circulating")',
+        ),
+        pubtator_terms="ectodomain shedding soluble",
+        hallmark_patterns=(
+            # Sheddase / proteolytic ectodomain release of the target.
+            re.compile(
+                r"(ectodomain\s+shedding|ectodomain\s+release|shedding\s+of|sheddase|"
+                r"ADAM[-\s]?17|ADAM[-\s]?10|BACE[-\s]?1|MMP[-\s]?\d+|"
+                r"γ[-\s]?secretase|gamma[-\s]?secretase|regulated\s+intramembrane)",
+                re.IGNORECASE,
+            ),
+            # Soluble / shed form measured in circulation — the secreted-decoy signal.
+            re.compile(
+                r"(soluble|shed|cleaved)\s+(form|ectodomain|fragment|protein)"
+                r"[^.]{0,200}?(serum|plasma|circulat|supernatant|detect|measur|elevat)",
+                re.IGNORECASE,
+            ),
+        ),
+        section_weights=_DEFAULT_ANTIBODY_WEIGHTS,
+    ),
     "western_blot_paired": _CategorySpec(
         query_clauses=(
             '("western blot" OR "immunoblot")',
@@ -353,8 +384,6 @@ _CATEGORY_SPECS: dict[EvidenceCategory, _CategorySpec] = {
     # methodology-specific categories above:
     #   • Pharmacology — radioligand binding, BRET, β-arrestin recruitment,
     #     agonist potency curves (the dominant evidence type for tm=7 GPCRs).
-    #   • Shedding — ADAM/MMP/BACE-mediated ectodomain release, soluble
-    #     form in serum / supernatant (implies prior surface presence).
     #   • Proximity labeling — APEX2 / TurboID / BioID anchored at a
     #     known surface marker, identifying neighbors.
     #   • Functional surface assays — internalization / endocytosis
@@ -365,7 +394,6 @@ _CATEGORY_SPECS: dict[EvidenceCategory, _CategorySpec] = {
             'OR "cell-surface" OR "membrane localization")',
             '("radioligand" OR "BRET" OR "β-arrestin" OR "beta-arrestin" '
             'OR "agonist potency" OR "EC50" OR "IC50" '
-            'OR "shedding" OR "ectodomain release" OR "soluble form" '
             'OR "proximity labeling" OR "proximity biotinylation" '
             'OR "APEX2" OR "TurboID" OR "BioID" '
             'OR "internalization" OR "endocytosis rate")',
@@ -378,13 +406,6 @@ _CATEGORY_SPECS: dict[EvidenceCategory, _CategorySpec] = {
                 r"agonist|antagonist|cAMP|EC50|IC50|\bKi\b|\bKd\b)"
                 r"[^.]{0,200}?(binding|recruitment|potency|engagement|"
                 r"surface|extracellular)",
-                re.IGNORECASE,
-            ),
-            # Shedding / soluble form — implies prior surface presence.
-            re.compile(
-                r"(shedding|ectodomain\s+release|sheddase|"
-                r"ADAM[-\s]?17|ADAM[-\s]?10|BACE[-\s]?1|MMP[-\s]?\d+|"
-                r"γ[-\s]?secretase|gamma[-\s]?secretase|soluble\s+form)",
                 re.IGNORECASE,
             ),
             # Proximity labeling near the PM / extracellular face.

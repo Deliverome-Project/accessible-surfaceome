@@ -36,6 +36,9 @@ _A1_CATEGORIES: tuple[EvidenceCategory, ...] = (
     "flow_cytometry",
     "surface_biotinylation",
     "mass_spec_surfaceome",
+    # Shared with A2 — shed/soluble-form evidence feeds both the surface-side
+    # shed_form risk and A2's secreted_form risk.
+    "shedding",
     "western_blot_paired",
     "structure_with_ecd",
     "other",
@@ -45,6 +48,7 @@ _A2_CATEGORIES: tuple[EvidenceCategory, ...] = (
     "if",
     "flow_cytometry",
     "mass_spec_surfaceome",
+    "shedding",
 )
 
 # Surface-method topic anchors shared by A1's method search and A2's
