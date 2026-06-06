@@ -262,12 +262,13 @@ def gene_literature(
     already have those values can pass them directly to skip the resolve hop.
 
     ``previous_symbols`` are HGNC's prior approved symbols (HGNC's
-    ``prev_symbol`` field). Renamed genes lose their pre-rename Europe PMC
-    hits unless these are OR'd into the topic-search disjunction alongside
-    ``hgnc_symbol`` + ``aliases``. PubTator's NER (used by ``recent_corpus``)
-    + NCBI's gene2pubmed link table (used by ``gene2pubmed``) both
-    normalize across symbol revisions upstream, so this param only affects
-    the ``topic_search`` Europe PMC path.
+    ``prev_symbol`` field). Renamed genes (e.g. STING1 was TMEM173until
+    2020) lose their pre-rename Europe PMC hits unless these are OR'd into
+    the topic-search disjunction alongside ``hgnc_symbol`` + ``aliases``.
+    PubTator's NER (used by ``recent_corpus``) + NCBI's gene2pubmed link
+    table (used by ``gene2pubmed``) both normalize across symbol revisions
+    upstream, so this param only affects the ``topic_search`` Europe PMC
+    path.
 
     ``retraction_index`` is consulted alongside Europe PMC's pubTypeList
     "Retracted Publication" marker; when ``None`` we use the empty index
@@ -424,16 +425,33 @@ def _topic_search(
 
     aliases = aliases or []
     previous_symbols = previous_symbols or []
-    # Dedup while preserving order — aliases + previous_symbols often overlap
-    # (HGNC moves rejected aliases into previous_symbols), so a naive concat
-    # blows the query length without adding coverage. Drop empties + the
-    # current hgnc_symbol from the supplement so it isn't quoted twice.
-    seen: set[str] = {hgnc_symbol} if hgnc_symbol else set()
+    # Dedup while preserving order. ``aliases`` + ``previous_symbols`` often
+    # overlap (HGNC moves rejected aliases into previous_symbols), so a
+    # naive concat blows the query length without adding coverage. Drop
+    # empties + the current hgnc_symbol from the supplement so it isn't
+    # quoted twice. Dedupe case-insensitively because Europe PMC's search
+    # is case-insensitive anyway; this just avoids double-quoting the same
+    # term in different casings (e.g. "PDL1" vs "PDl1").
+    #
+    # Note (2026-06-06 audit): we audited adding UniProt protein short
+    # names + HGNC descriptive full names and dropped both. HGNC aliases
+    # turn out to already cover virtually every paper-canonical short form
+    # case-insensitively (CD274's ``PD-L1`` is in aliases; STING1's
+    # ``MITA`` / ``ERIS`` / ``hSTING`` are in aliases). UniProt's
+    # ``shortNames`` arrays mostly hold obscure historical labels
+    # (``MLN 19`` for ERBB2) or repeat what HGNC already covers; the
+    # descriptive HGNC names like ``"cholinergic receptor, nicotinic,
+    # alpha 7 (neuronal)"`` rarely match paper titles verbatim.
+    seen_lower: set[str] = {hgnc_symbol.lower()} if hgnc_symbol else set()
     supplement: list[str] = []
     for n in [*aliases, *previous_symbols]:
-        if n and n not in seen:
-            seen.add(n)
-            supplement.append(n)
+        if not n:
+            continue
+        key = n.lower()
+        if key in seen_lower:
+            continue
+        seen_lower.add(key)
+        supplement.append(n)
     name_terms = [hgnc_symbol, *supplement]
     name_disjunction = " OR ".join(f'"{n}"' for n in name_terms if n)
     topic_terms: list[str] = []
