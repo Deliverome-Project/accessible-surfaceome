@@ -319,12 +319,13 @@ TopicAnchor = Literal[
     "structure",
     "ptm",
     "shedding",
-    # On-target/off-tumor normal-tissue coverage across the six
-    # high-consequence organs; retrieved as MED literature, never an
+    # Normal-tissue SURFACE expression across the six high-consequence tox
+    # organs (on-target/off-tumor); retrieved as MED literature, never an
     # RNA atlas (the protein-level method categories carry surface proof).
-    "tox_normal_tissue",
+    "normal_tissue_expression",
     # Surface-reachability barriers (BBB, tumor penetration,
-    # luminal/abluminal vasculature) — distinct axis from surface-presence.
+    # luminal/abluminal vasculature, surface/antibody accessibility) —
+    # distinct axis from surface-presence.
     "surface_reachability",
     # Partner / co-receptor dependency for surface trafficking — feeds the
     # co_receptor_requirements risk chip (obligate heterodimer, escort,
@@ -333,6 +334,11 @@ TopicAnchor = Literal[
     # Plasma-membrane subdomain / polarity distribution — feeds
     # restricted_subdomain (lipid raft, apical/basolateral, ciliary, synaptic).
     "membrane_subdomain",
+    # Epitope-masking evidence across the three mechanism axes the
+    # epitope_masking risk records: HOMO self-association (homodimer /
+    # oligomerization), HETERO partner/complex coverage, and OTHER
+    # (glycan shield / conformational occlusion). Feeds epitope_masking.
+    "epitope_masking",
 ]
 
 PublicationType = Literal[

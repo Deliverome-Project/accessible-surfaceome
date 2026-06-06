@@ -65,15 +65,17 @@ def _fires_membrane_ecd_gate(n_tmh: int | None, ecd_aa: int | None) -> bool:
 def _standing_axes(n_tmh: int | None, ecd_aa: int | None) -> list[SearchRequest]:
     """Retrieval axes shared by every focus.
 
-    The tox panel is **always** emitted — normal-tissue coverage across the
-    six high-consequence organs (liver/lung/kidney/intestine/heart/brain) is
-    mandatory for every gene because on-target/off-tumor toxicity is set by
-    surface expression there. Three barrier/distribution axes are **gated** on
-    the membrane+ECD predicate (they only matter for a surface-accessible
-    target): surface-reachability (BBB / tumor penetration / luminal-vs-
-    abluminal), partner-dependency (obligate co-receptor / escort — feeds
-    co_receptor_requirements), and membrane-subdomain (lipid raft / apical /
-    ciliary — feeds restricted_subdomain).
+    The normal-tissue surface-expression panel is **always** emitted —
+    surface coverage across the six high-consequence organs
+    (liver/lung/kidney/intestine/heart/brain) is mandatory for every gene
+    because on-target/off-tumor toxicity is set by surface expression there.
+    Four barrier/distribution axes are **gated** on the membrane+ECD predicate
+    (they only matter for a surface-accessible target): surface-reachability
+    (BBB / tumor penetration / luminal-vs-abluminal / binder accessibility),
+    partner-dependency (obligate co-receptor / escort — feeds
+    co_receptor_requirements), membrane-subdomain (lipid raft / apical /
+    ciliary — feeds restricted_subdomain), and epitope-masking (homo / hetero
+    / other occlusion — feeds epitope_masking).
 
     The soluble/shed-in-circulation axis (A2.4) is not a separate request
     here: it rides the always-on ``shedding`` topic_search, whose terms now
@@ -85,8 +87,8 @@ def _standing_axes(n_tmh: int | None, ecd_aa: int | None) -> list[SearchRequest]
         SearchRequest(
             tool="gene_literature",
             mode="topic_search",
-            anchors=["tox_normal_tissue"],
-            intent="standing: tox-organ normal-tissue coverage (six high-consequence organs)",
+            anchors=["normal_tissue_expression"],
+            intent="standing: normal-tissue surface expression (six high-consequence tox organs)",
         )
     ]
     if _fires_membrane_ecd_gate(n_tmh, ecd_aa):
@@ -95,7 +97,7 @@ def _standing_axes(n_tmh: int | None, ecd_aa: int | None) -> list[SearchRequest]
                 tool="gene_literature",
                 mode="topic_search",
                 anchors=["surface_reachability"],
-                intent="standing (gated): surface-reachability barriers (BBB / tumor penetration / luminal)",
+                intent="standing (gated): surface-reachability barriers (BBB / tumor penetration / luminal / accessibility)",
             ),
             SearchRequest(
                 tool="gene_literature",
@@ -108,6 +110,12 @@ def _standing_axes(n_tmh: int | None, ecd_aa: int | None) -> list[SearchRequest]
                 mode="topic_search",
                 anchors=["membrane_subdomain"],
                 intent="standing (gated): plasma-membrane subdomain / polarity distribution",
+            ),
+            SearchRequest(
+                tool="gene_literature",
+                mode="topic_search",
+                anchors=["epitope_masking"],
+                intent="standing (gated): epitope-masking evidence (homo / hetero / other)",
             ),
         ]
     return axes
@@ -168,7 +176,8 @@ def build_a1_kickoff(
             "A1 deterministic kickoff: all evidence_retrieval categories; "
             "gene2pubmed + recent_corpus; three topic_search variants "
             "(methods / structure / surface-presence); standing axes "
-            "(tox panel always; surface-reachability when membrane+ECD). "
+            "(normal-tissue surface-expression always; surface-reachability / "
+            "partner / subdomain / epitope-masking when membrane+ECD). "
             "Selector iterates from observed paper inventory."
         ),
     )
@@ -219,7 +228,8 @@ def build_a2_kickoff(
             "categories (ihc, if, flow_cytometry, mass_spec_surfaceome); "
             "gene2pubmed + recent_corpus; two topic_search variants "
             "(tissue/distribution + state/modulation); standing axes "
-            "(tox panel always; surface-reachability when membrane+ECD). "
+            "(normal-tissue surface-expression always; surface-reachability / "
+            "partner / subdomain / epitope-masking when membrane+ECD). "
             "Selector iterates from observed paper inventory."
         ),
     )
