@@ -49,12 +49,27 @@ export interface SchwekeHomomerLoaderRow {
   pdb_url: string;
   af_model_num: number;
   ecd_only: boolean;
+  /** Cyclic-symmetry order N of the rendered model (homo-N-mer). 2
+   *  for a plain dimer from ``AF_dimer_models_core.zip``; 3..13 for an
+   *  AnAnaS-reconstructed full complex from
+   *  ``full_complexes_bigbang.zip``. The viewer uses this both to
+   *  size the per-chain darken gradient (chain 0 = full topology palette,
+   *  chain N-1 = ~black) and to label the caption ("homo-dimer",
+   *  "homo-heptamer", "homo-13-mer"). */
+  stoichiometry: number;
 }
 
-type SchwekeManifest = Record<
-  string,
-  { af_model_num: number; ecd_only: boolean }
->;
+/** One manifest entry. Default ``stoichiometry`` is 2 (a plain
+ *  ``AF_dimer_models_core`` dimer); set ``stoichiometry`` to N≥3 when
+ *  the asset under ``/data/structures/schweke/`` is an AnAnaS-
+ *  reconstructed full complex (file pattern ``{ACC}_V1_{M}_cN.pdb``). */
+type SchwekeManifestEntry = {
+  af_model_num: number;
+  ecd_only: boolean;
+  stoichiometry?: number;
+};
+
+type SchwekeManifest = Record<string, SchwekeManifestEntry>;
 
 let _schwekeManifestCache: SchwekeManifest | null | undefined;
 
@@ -104,11 +119,24 @@ export function loadSchwekeHomomer(
   const acc = uniprotAcc.toUpperCase();
   const entry = manifest[acc];
   if (!entry) return null;
+  const stoichiometry =
+    typeof entry.stoichiometry === "number" && entry.stoichiometry >= 2
+      ? entry.stoichiometry
+      : 2;
+  // File-naming convention: dimers (c2) come from AF_dimer_models_core
+  // and live at ``{ACC}_V1_{N}.pdb``; higher-order complexes (c≥3) come
+  // from full_complexes_bigbang and live at ``{ACC}_V1_{N}_c{N}.pdb``.
+  // Keep both shapes in sync with the bulk-extract script.
+  const pdb_url =
+    stoichiometry > 2
+      ? `/data/structures/schweke/${acc}_V1_${entry.af_model_num}_c${stoichiometry}.pdb`
+      : `/data/structures/schweke/${acc}_V1_${entry.af_model_num}.pdb`;
   return {
     uniprot_acc: acc,
-    pdb_url: `/data/structures/schweke/${acc}_V1_${entry.af_model_num}.pdb`,
+    pdb_url,
     af_model_num: entry.af_model_num,
     ecd_only: entry.ecd_only,
+    stoichiometry,
   };
 }
 

@@ -34,6 +34,27 @@ export function DataSourcesFooter({ rec }: Props) {
           open data with citation (EMBL-EBI; Howe et al. 2024 + Vilella et al. 2009)
         </li>
         <li>
+          Schweke homo-oligomer atlas — AF2 dimer predictions across
+          four proteomes; 8,195 candidate complexes including ~3,946
+          human, with higher-order assemblies reconstructed by AnAnaS
+          symmetry detection ({CITATIONS.schwekeHomomer.authorYear},{" "}
+          <a
+            href={pubmedUrl(CITATIONS.schwekeHomomer.pmid)}
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            PMID {CITATIONS.schwekeHomomer.pmid}
+          </a>
+          , Cell) ·{" "}
+          <a
+            href="https://figshare.com/s/af3c1d5969f7468f2caa"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            figshare deposit
+          </a>
+        </li>
+        <li>
           SURFACE-Bind binding-site scoring — MaSIF-based surface patch
           scoring on the AlphaFold model ({CITATIONS.surfaceBind.authorYear},{" "}
           <a
