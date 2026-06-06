@@ -54,10 +54,17 @@ export function GeneJump({ genes, current, showSchemaDots = false }: GeneJumpPro
 
   const universe = useMemo(() => {
     const cur = (current ?? "").toUpperCase();
+    // When the freshness dots are on, surface the current (green) records
+    // first so the reader sees what's up-to-date at a glance; within each
+    // freshness group, sort alphabetically. When dots are off, the `stale`
+    // flag is invisible — fall back to plain alphabetical.
     return [...genes]
       .filter((g) => g.symbol && g.symbol.toUpperCase() !== cur)
-      .sort((a, b) => a.symbol.localeCompare(b.symbol));
-  }, [genes, current]);
+      .sort((a, b) => {
+        if (showSchemaDots && a.stale !== b.stale) return a.stale ? 1 : -1;
+        return a.symbol.localeCompare(b.symbol);
+      });
+  }, [genes, current, showSchemaDots]);
 
   const matches = useMemo(() => {
     const q = query.trim().toUpperCase();
