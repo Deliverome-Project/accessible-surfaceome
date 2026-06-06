@@ -265,7 +265,12 @@ _CATEGORY_SPECS: dict[EvidenceCategory, _CategorySpec] = {
         query_clauses=(
             '("surface biotinylation" OR "cell surface biotinylation" '
             'OR "biotin labeling" OR "biotinyl" OR "sulfo-NHS-biotin")',
-            '("plasma membrane" OR "cell surface" OR "streptavidin")',
+            # Host-agnostic heterologous-expression terms — surface biotinylation
+            # is routinely run on transfected / overexpressing cells, so include
+            # the OE-precedent readout. Mirrors the if + flow_cytometry OE terms.
+            '("plasma membrane" OR "cell surface" OR "streptavidin" '
+            'OR "transfected" OR "ectopic expression" OR "heterologous expression" '
+            'OR "overexpressing" OR "stably expressing")',
         ),
         pubtator_terms="surface biotinylation",
         hallmark_patterns=(
