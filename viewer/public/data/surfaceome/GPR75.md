@@ -20,6 +20,8 @@
 
 ## 1. Executive summary
 
+**Constitutively surface-accessible in peripheral tissues (pancreatic islets, VSMCs, adipocytes); CNS neuronal GPR75 is expression-confirmed but largely inaccessible to systemic large-molecule binders due to the blood-brain barrier.**
+
 GPR75 is an orphan Class A GPCR (7TM, Gαq-coupled) constitutively resident at the plasma membrane across multiple peripheral tissues — pancreatic beta cells, vascular and pulmonary smooth muscle, adipocytes — and highly expressed in CNS neurons (BBB-restricted). Surface residence is supported by a BRET plasma-membrane trafficking assay in live HEK293 cells and functional calcium/cAMP assays in primary beta cells and VSMCs responding to exogenous CCL5/20-HETE. Evidence grade is supportive_but_indirect: no live-cell flow or surface biotinylation data exist, and the BRET construct used an exogenous signal peptide.
 
 **Family / classification** — UniProt family: G-protein coupled receptor 1 family · HGNC gene group(s): G protein-coupled receptors, Class A orphans · functional class: Receptor.
@@ -130,15 +132,6 @@ The strongest surface-localization evidence for GPR75 comes from a BRET-based pl
 | Mouse CNS vs peripheral tissues (spleen, kidney, heart) — RT-PCR mRNA; CNS-enriched pattern corroborated by Human Protein Atlas | Ex Vivo | RNA | High | 1 |
 
 ## 4. Biological context
-
-*Accessibility context* — Constitutively surface-accessible in peripheral tissues (pancreatic islets, VSMCs, adipocytes); CNS neuronal GPR75 is expression-confirmed but largely inaccessible to systemic large-molecule binders due to the blood-brain barrier.
-
-**Tissues × disease context**
-
-| Tissue | Disease context | Level (protein) | Cell types | Cell states |
-|---|---|---|---|---|
-| pulmonary artery | Unknown | Moderate | pulmonary artery smooth muscle cells | — |
-| brain (neurons) | Other Disease | Moderate | neurons | Aβ exposure (Alzheimer's disease model) |
 
 **Cell types** *(orthogonal cell-type index)*
 
@@ -287,7 +280,6 @@ Structure data from [AlphaFold DB](https://alphafold.ebi.ac.uk/entry/O95800) · 
 | Canonical | [O95800](https://alphafold.ebi.ac.uk/entry/O95800) | AlphaFold DB (AF-O95800-F1, v6) |
 | Mouse ortholog (Gpr75) | [Q6X632](https://alphafold.ebi.ac.uk/entry/Q6X632) | AlphaFold DB |
 | Cynomolgus ortholog (GPR75) | [A0A7N9DAV0](https://alphafold.ebi.ac.uk/entry/A0A7N9DAV0) | AlphaFold DB |
-| Experimental (best) | [9XQN](https://www.rcsb.org/structure/9xqn) chain A | RCSB PDB · Electron Microscopy 3.91 Å · UniProt 21–392 |
 
 ## 8. SURFACE-Bind candidate sites
 
@@ -477,20 +469,6 @@ This Markdown is generated from the canonical JSON record at `/data/surfaceome/G
  481  PYYSIYNSSPSQEESSPCNLQPVNSFGFANSYIAMHYHTTNDLMQEYDSTSAKQIPVPSV
 ```
 
-### Experimental-structure sequence
-
-**9XQN** chain A · Electron Microscopy, 3.91 Å · covers UniProt residues 21–392 (372 aa) · representative of 4 experimental structures. Residues sliced from the canonical sequence over the structure's SIFTS-mapped span; unresolved loops in the deposited coordinates are not removed here.
-
-```
-   1  SQEGNSTSLQEGLQDLIHTATLVTCTFLLAVIFCLGSYGNFIVFLSFFDPAFRKFRTNFD
-  61  FMILNLSFCDLFICGVTAPMFTFVLFFSSASSIPDAFCFTFHLTSSGFIIMSLKTVAVIA
- 121  LHRLRMVLGKQPNRTASFPCTVLLTLLLWATSFTLATLATLKTSKSHLCLPMSSLIAGKG
- 181  KAILSLYVVDFTFCVAVVSVSYIMIAQTLRKNAQVRKCPPVITVDASRPQPFMGVPVQGG
- 241  GDPIQCAMPALYRNQNYNKLQHVQTRGYTKSPNQLVTPAASRLQLVSAINLSTAKDSKAV
- 301  VTCVIIVLSVLVCCLPLGISLVQVVLSSNGSFILYQFELFGFTLIFFKSGLNPFIYSRNS
- 361  AGLRRKVLWCLQ
-```
-
 ### Per-residue DeepTMHMM topology
 
 *Five-letter alphabet: `M` = TM helix, `O` = extracellular, `I` = intracellular, `S` = signal peptide, `B` = β-strand. Aligned to the UniProt sequence above (residue indices in the left column).*
@@ -535,18 +513,6 @@ This Markdown is generated from the canonical JSON record at `/data/surfaceome/G
  361  MMMMMMMMMMMMMMMMMIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIII
  421  IIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIII
  481  IIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIII
-```
-
-**Experimental — 9XQN chain A** (UniProt residues 21–392, projected from canonical)
-
-```
-   1  OOOOOOOOOOOOOOOOOOOOOMMMMMMMMMMMMMMMMMMMMMMMMIIIIIIIIIIIIIII
-  61  MMMMMMMMMMMMMMMMMMMMMMMMMMOOOOOOOOOOOOOOMMMMMMMMMMMMMMMMMMMM
- 121  MIIIIIIIIIIIIIIIIIIIIMMMMMMMMMMMMMMMMMMMMOOOOOOOOOOOOOOOOOOO
- 181  OMMMMMMMMMMMMMMMMMMMMMMMIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIII
- 241  IIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIII
- 301  IIMMMMMMMMMMMMMMMMMMMMOOOOOOOOOOOOOOMMMMMMMMMMMMMMMMMMMMMIII
- 361  IIIIIIIIIIII
 ```
 
 ### Data sources

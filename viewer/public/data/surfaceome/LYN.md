@@ -20,6 +20,8 @@
 
 ## 1. Executive summary
 
+**LYN is constitutively anchored to the cytoplasmic face of the plasma membrane and is not surface-accessible in any documented cell state or disease context.**
+
 LYN is a Src-family non-receptor tyrosine kinase anchored exclusively to the cytoplasmic (inner) leaflet of the plasma membrane via N-terminal myristoylation (Gly2) and palmitoylation (Cys3). It has zero transmembrane helices, no extracellular domain, and all catalytic domains (SH1/SH2/SH3) face the cytosol. The deep-dive evidence uniformly corroborates this topology: LYN-yPET serves as a standard inner-leaflet PM reference in BRET assays, and surface flow cytometry on LYN-deficient cells tested other antigens — not LYN itself. No ectopic-surface, cancer-state inversion, or outer-leaflet exposure has been documented for LYN in any lineage. Surface accessibility is absent.
 
 **Family / classification** — UniProt family: protein kinase superfamily. Tyr protein kinase family. SRC subfamily · HGNC gene group(s): SH2 domain containing; Src family tyrosine kinases · functional class: Enzyme.
@@ -105,14 +107,6 @@ All six claims are tangential to the question of surface accessibility. No claim
   - Likely explanation: The study used surface flow cytometry to characterize downstream phenotypic markers on LYN-deficient microglia, not to detect LYN itself at the surface — consistent with LYN being cytoplasmic and not surface-accessible.
 
 ## 4. Biological context
-
-*Accessibility context* — LYN is constitutively anchored to the cytoplasmic face of the plasma membrane and is not surface-accessible in any documented cell state or disease context.
-
-**Tissues × disease context**
-
-| Tissue | Disease context | Level (protein) | Cell types | Cell states |
-|---|---|---|---|---|
-| brain | Normal | Unknown | microglia | — |
 
 **Cell types** *(orthogonal cell-type index)*
 
