@@ -96,7 +96,7 @@ from accessible_surfaceome.tools._shared.source_text import SourceText, SourceTe
 logger = logging.getLogger(__name__)
 
 AGENT_MODEL = "claude-sonnet-4-6"
-SCHEMA_VERSION_LITERAL = "1.1.0"
+SCHEMA_VERSION_LITERAL = "2.3.0"
 RUNS_DIR = Path(".runs")
 
 
