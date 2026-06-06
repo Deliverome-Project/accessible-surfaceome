@@ -1,6 +1,6 @@
 {
   "_generated_by": "scripts/build_search_catalog.py",
-  "_source": "evidence_retrieval._CATEGORY_SPECS + plan_trim_select/prompts/{a1,a2}_plan_system.md",
+  "_source": "evidence_retrieval._CATEGORY_SPECS + the live deterministic kickoff (plan_trim_select/kickoff_templates.build_a1/a2_kickoff)",
   "categories": {
     "ihc": {
       "id": "ihc",
@@ -11,19 +11,19 @@
     "if": {
       "id": "if",
       "label": "Immunofluorescence",
-      "finds": "Non-permeabilized surface IF, plus permeabilized confocal IF that colocalizes with a plasma-membrane marker.",
+      "finds": "Non-permeabilized surface IF, plus permeabilized confocal IF that colocalizes with a plasma-membrane marker. Includes overexpression / transfected-cell readouts.",
       "query_preview": "(\"immunofluorescence\" OR \"confocal\" OR \"live-cell imaging\" OR \"IF microscopy\")"
     },
     "flow_cytometry": {
       "id": "flow_cytometry",
       "label": "Flow cytometry / FACS",
-      "finds": "Surface staining of intact, non-permeabilized cells \u2014 the strongest direct surface-accessibility signal.",
+      "finds": "Surface staining of intact, non-permeabilized cells \u2014 the strongest direct surface-accessibility signal. Includes overexpression / transfected-cell readouts.",
       "query_preview": "(\"flow cytometry\" OR \"FACS\")"
     },
     "surface_biotinylation": {
       "id": "surface_biotinylation",
       "label": "Surface biotinylation",
-      "finds": "Sulfo-NHS-biotin labeling of the cell surface + streptavidin pull-down \u2014 biochemical surface capture.",
+      "finds": "Sulfo-NHS-biotin labeling of the cell surface + streptavidin pull-down \u2014 biochemical surface capture. Includes overexpression / transfected-cell readouts.",
       "query_preview": "(\"surface biotinylation\" OR \"cell surface biotinylation\" OR \"biotin labeling\" OR \"biotinyl\" OR \"sulfo-NHS-biotin\")"
     },
     "mass_spec_surfaceome": {
@@ -31,6 +31,12 @@
       "label": "Surfaceome mass spec",
       "finds": "Cell-surface-capture / surfaceome LC-MS/MS proteomics (the high-throughput membership datasets).",
       "query_preview": "(\"surfaceome\" OR \"surface proteome\" OR \"cell surface proteomics\" OR \"cell-surface capture\")"
+    },
+    "shedding": {
+      "id": "shedding",
+      "label": "Ectodomain shedding / soluble form",
+      "finds": "Sheddase-mediated ectodomain release (ADAM/BACE/MMP) and soluble/shed form measured in serum, plasma, or supernatant \u2014 the shed_form + secreted_form (decoy) signal.",
+      "query_preview": "(\"ectodomain shedding\" OR \"ectodomain release\" OR \"shedding\" OR \"proteolytic cleavage\" OR \"regulated intramembrane proteolysis\")"
     },
     "western_blot_paired": {
       "id": "western_blot_paired",
@@ -47,7 +53,7 @@
     "other": {
       "id": "other",
       "label": "Other surface assays",
-      "finds": "Catch-all: radioligand / GPCR pharmacology, ectodomain shedding, proximity labeling (APEX2/TurboID/BioID), internalization kinetics.",
+      "finds": "Catch-all: radioligand / GPCR pharmacology, proximity labeling (APEX2/TurboID/BioID), internalization kinetics.",
       "query_preview": "(\"cell surface\" OR \"plasma membrane\" OR \"surface expression\" OR \"cell-surface\" OR \"membrane localization\")"
     }
   },
@@ -66,70 +72,116 @@
   "agents": [
     {
       "id": "a1",
-      "label": "A1 \u00b7 Surface evidence",
+      "label": "Surface-evidence agent (A1)",
       "tagline": "How the surface call was made \u2014 the methodology ledger.",
       "always_category_ids": [
+        "ihc",
+        "if",
         "flow_cytometry",
         "surface_biotinylation",
         "mass_spec_surfaceome",
-        "ihc",
-        "if"
+        "shedding",
+        "western_blot_paired",
+        "structure_with_ecd",
+        "other"
       ],
       "skip_category_ids": [],
-      "conditional_note": "Adds western blot (surface-paired) when cheap, structure-with-ECD when UniProt lists experimental structures or signal peptides, and 'other' for the gene class it fits (e.g. radioligand pharmacology for 7-TM GPCRs).",
+      "conditional_note": "Deterministic kickoff \u2014 every search above runs for every gene (no LLM planner).",
       "always_topic": [
         {
-          "label": "Method-anchored topic search",
-          "finds": "Europe PMC queries anchored on flow cytometry / surface biotinylation / mass-spec / IHC \u2014 the methods that produce a defensible surface call."
+          "label": "surface_expression + flow_cytometry + surface_biotinylation + mass_spec_surfaceome + ihc",
+          "finds": "FACS, IHC, cell surface, cell surface biotinylation, cell-surface, cell-surface biotinylation, cell-surface proteomics, flow cytometry, immunohistochemistry, plasma membrane, surface biotinylation, surface expression, surface marker, surface proteome, surface proteomics, surfaceome"
+        },
+        {
+          "label": "topology + structure",
+          "finds": "GPI anchor, GPI-anchor, cryo-EM, cryo-electron, cryoEM, crystal structure, membrane topology, signal peptide, transmembrane"
+        },
+        {
+          "label": "shedding + ptm",
+          "finds": "circulating, ectodomain, glycosylation, lipidation, palmitoylation, phosphorylation, plasma level, serum level, shedding, soluble ectodomain, soluble form"
+        },
+        {
+          "label": "normal_tissue_expression",
+          "finds": "brain, heart, intestine, kidney, liver, lung, surface expression"
+        },
+        {
+          "label": "surface_reachability",
+          "finds": "abluminal, antibody accessibility, blood-brain barrier, epitope accessibility, luminal, surface accessibility, tumor penetration"
+        },
+        {
+          "label": "partner_dependency",
+          "finds": "accessory subunit, auxiliary subunit, chaperone-assisted, co-receptor, coreceptor, escort protein, obligate heterodimer, required for surface expression, trafficking partner"
+        },
+        {
+          "label": "membrane_subdomain",
+          "finds": "apical membrane, basolateral, ciliary membrane, immunological synapse, lateral membrane, lipid raft, membrane microdomain, polarized epithelial, primary cilium, tight junction"
+        },
+        {
+          "label": "epitope_masking",
+          "finds": "conformational masking, epitope masking, glycan shield, heterodimer, homodimer, homodimerization, oligomerization, self-association, steric occlusion"
         }
       ]
     },
     {
       "id": "a2",
-      "label": "A2 \u00b7 Biological context",
+      "label": "Biology agent (A2)",
       "tagline": "Where & when the protein reaches the surface \u2014 tissue, cell type, localization, and what gates it.",
       "always_category_ids": [
         "ihc",
         "if",
         "flow_cytometry",
-        "mass_spec_surfaceome"
+        "mass_spec_surfaceome",
+        "shedding"
       ],
       "skip_category_ids": [
+        "surface_biotinylation",
         "western_blot_paired",
-        "structure_with_ecd"
+        "structure_with_ecd",
+        "other"
       ],
-      "conditional_note": "Adds surface biotinylation when UniProt lists multiple compartments (a dual-localization or stress-induced surface-fraction tell).",
+      "conditional_note": "Deterministic kickoff \u2014 every search above runs for every gene (no LLM planner).",
       "always_topic": [
         {
-          "label": "Normal-tissue tox panel",
-          "finds": "Surface expression in the six high-consequence tox organs \u2014 liver, lung, kidney, GI tract, heart, brain (incl. BBB). Runs for every gene, even canonical receptors; negatives count."
+          "label": "surface_expression + flow_cytometry + surface_biotinylation + mass_spec_surfaceome + ihc",
+          "finds": "FACS, IHC, cell surface, cell surface biotinylation, cell-surface, cell-surface biotinylation, cell-surface proteomics, flow cytometry, immunohistochemistry, plasma membrane, surface biotinylation, surface expression, surface marker, surface proteome, surface proteomics, surfaceome"
         },
         {
-          "label": "Subcellular-localization depth",
-          "finds": "Organelle colocalization (ER / Golgi / endosome / lysosome markers) + fractionation that quantifies the surface-vs-intracellular split \u2014 fills dual_localization and its fraction estimate."
+          "label": "shedding + ptm",
+          "finds": "circulating, ectodomain, glycosylation, lipidation, palmitoylation, phosphorylation, plasma level, serum level, shedding, soluble ectodomain, soluble form"
         },
         {
-          "label": "Biology-leaning topic search",
-          "finds": "Anchored on surface_expression / shedding / PTM / IHC \u2014 pulls the tissue-distribution and disease-state biology reviews A1 deliberately avoids."
+          "label": "normal_tissue_expression",
+          "finds": "brain, heart, intestine, kidney, liver, lung, surface expression"
+        },
+        {
+          "label": "surface_reachability",
+          "finds": "abluminal, antibody accessibility, blood-brain barrier, epitope accessibility, luminal, surface accessibility, tumor penetration"
+        },
+        {
+          "label": "partner_dependency",
+          "finds": "accessory subunit, auxiliary subunit, chaperone-assisted, co-receptor, coreceptor, escort protein, obligate heterodimer, required for surface expression, trafficking partner"
+        },
+        {
+          "label": "membrane_subdomain",
+          "finds": "apical membrane, basolateral, ciliary membrane, immunological synapse, lateral membrane, lipid raft, membrane microdomain, polarized epithelial, primary cilium, tight junction"
+        },
+        {
+          "label": "epitope_masking",
+          "finds": "conformational masking, epitope masking, glycan shield, heterodimer, homodimer, homodimerization, oligomerization, self-association, steric occlusion"
         }
       ]
     }
   ],
   "planned_fill": [
     {
-      "id": "topic_search_extra",
-      "label": "Topic search (extra)",
-      "finds": "Additional Europe PMC topic-anchored queries the planner composes beyond the mandated panels, to fill gene-specific gaps."
-    },
-    {
       "id": "fetch_abstract",
       "label": "Fetch abstract",
-      "finds": "Pull a single PMID's abstract (planner-chosen follow-up)."
+      "finds": "The selector pulls a specific PMID's abstract as a follow-up when the candidate menu has a gap."
     },
     {
       "id": "fetch_fulltext",
       "label": "Fetch full text",
-      "finds": "Pull a PMC open-access full text \u2014 planner-chosen deep read of a known method (A1) or biology / atlas (A2) source."
+      "finds": "The selector pulls a PMC open-access full text for a deep read of a known method (A1) or biology / atlas (A2) source."
     }
   ]
 }

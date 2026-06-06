@@ -218,6 +218,19 @@ def test_oe_retrieval_hits_any_host_no_wild_type_gate():
     assert "wild type" not in flow_query
 
 
+def test_overexpression_terms_in_all_cell_based_assay_categories():
+    # Surface localization is frequently shown in transfected / overexpressing
+    # systems, not just endogenously — so the cell-based assay categories carry
+    # host-agnostic OE terms. (ihc = primary tissue, mass_spec = endogenous
+    # surfaceome → OE terms don't apply there.)
+    for cat in ("flow_cytometry", "if", "surface_biotinylation"):
+        q = " ".join(_CATEGORY_SPECS[cat].query_clauses).lower()
+        assert "transfected" in q and "overexpressing" in q, (
+            f"{cat} should carry OE terms (transfected / overexpressing) — "
+            "surface localization is often demonstrated in OE systems"
+        )
+
+
 def test_shedding_anchor_enriched_for_circulating_soluble_target():
     terms = " ".join(_TOPIC_TERMS["shedding"]).lower()
     assert "circulating" in terms

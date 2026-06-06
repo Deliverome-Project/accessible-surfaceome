@@ -1,45 +1,35 @@
 """Emit the agent search catalog the /prompts page documents.
 
-The deep-dive runs **two** plan_trim_select literature agents over every
-gene, each with its own mandated search floor:
+The deep dive runs **two** plan_trim_select literature agents over every
+gene, each with its own deterministic search floor (there is no LLM planner
+anymore — a fixed kickoff template emits the searches):
 
-  * **A1 — surface evidence** ("HOW the surface call was made"). Its
-    planner prompt mandates all five method-centric ``evidence_retrieval``
-    categories plus the literature baselines.
-  * **A2 — biological context** ("WHERE / WHEN the protein reaches the
-    surface"). Its planner prompt mandates a *different* always-run set —
-    ``ihc`` flagship, ``if`` + ``flow_cytometry`` + ``mass_spec_surfaceome``
-    for the localization output, a normal-tissue tox panel across six
-    organs, and a subcellular-localization-depth sweep — and explicitly
-    SKIPS the method-only categories A1 owns.
+  * **Surface-evidence agent (A1)** — "HOW the surface call was made". Runs
+    the method-centric ``evidence_retrieval`` categories plus structure /
+    topology.
+  * **Biology agent (A2)** — "WHERE / WHEN the protein reaches the surface".
+    Runs the biology-leaning subset and SKIPS A1's method-only extras.
 
-Both agents also run the same two literature baselines (``gene2pubmed``,
-``recent_corpus``) and may emit planner-composed fill (extra
-``topic_search`` / ``fetch_abstract`` / ``fetch_fulltext``).
+Both share the literature baselines (``gene2pubmed`` + ``recent_corpus``) and
+a set of shared topic_search axes; the selector may pull follow-up
+``fetch_abstract`` / ``fetch_fulltext`` reads.
 
-Two sources of truth, deliberately:
+Single source of truth: this script reads the **live deterministic kickoff**
+(``build_a1_kickoff`` / ``build_a2_kickoff``) for each agent's categories +
+topic searches, and ``evidence_retrieval._CATEGORY_SPECS`` for the assay
+query previews — so the catalog can't drift from what the agents actually
+run. Only the human-readable per-category "what it finds" copy
+(``CATEGORY_DOCS``) is hand-curated; a new category with no entry raises.
 
-  * The **category set + query previews** are imported from
-    ``evidence_retrieval._CATEGORY_SPECS`` — so the docs can't drift from
-    the actual assay queries, and a new category with no description here
-    raises rather than silently dropping.
-  * The **per-agent always / conditional / skip designations and the A2
-    biology topic panels** are prose in the two planner prompts
-    (``plan_trim_select/prompts/{a1,a2}_plan_system.md``). They're encoded
-    below as an explicit mapping with the citing prompt section noted on
-    each entry, the same kept-in-step convention used for the literature
-    modes. Re-read those prompts after editing them and update here.
-
-Writes ``viewer/lib/search-catalog.json``, which the prompts page imports
-at SSG time and renders as the "Searches the agents run" section under the
-plan_trim_select group.
+Writes ``viewer/lib/search-catalog.json``, imported by the /prompts page at
+SSG time and rendered as the "Searches the agents run" section.
 
 Run::
 
     uv run python scripts/build_search_catalog.py
 
 Regenerate after changing the evidence_retrieval categories, the
-gene_literature modes, or the A1/A2 planner always-run mandates.
+gene_literature topic anchors, or the kickoff templates.
 """
 
 from __future__ import annotations
@@ -47,10 +37,19 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
+from accessible_surfaceome.agents.plan_trim_select.kickoff_templates import (
+    build_a1_kickoff,
+    build_a2_kickoff,
+)
 from accessible_surfaceome.tools.evidence_retrieval import _CATEGORY_SPECS
+from accessible_surfaceome.tools.gene_literature import _TOPIC_TERMS
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
 OUT_PATH = REPO_ROOT / "viewer" / "lib" / "search-catalog.json"
+
+# Topology that fires the membrane+ECD-gated standing axes, so the catalog
+# documents the full search set a surface-accessible target gets.
+_KICKOFF_TMH, _KICKOFF_ECD = 1, 600
 
 # Reader-facing names + one-line "what it finds" for each evidence_retrieval
 # assay category. Keyed on the canonical category id (the _CATEGORY_SPECS
@@ -60,7 +59,8 @@ CATEGORY_DOCS: dict[str, dict[str, str]] = {
     "flow_cytometry": {
         "label": "Flow cytometry / FACS",
         "finds": "Surface staining of intact, non-permeabilized cells — "
-        "the strongest direct surface-accessibility signal.",
+        "the strongest direct surface-accessibility signal. Includes "
+        "overexpression / transfected-cell readouts.",
     },
     "ihc": {
         "label": "Immunohistochemistry",
@@ -69,17 +69,25 @@ CATEGORY_DOCS: dict[str, dict[str, str]] = {
     "if": {
         "label": "Immunofluorescence",
         "finds": "Non-permeabilized surface IF, plus permeabilized confocal "
-        "IF that colocalizes with a plasma-membrane marker.",
+        "IF that colocalizes with a plasma-membrane marker. Includes "
+        "overexpression / transfected-cell readouts.",
     },
     "surface_biotinylation": {
         "label": "Surface biotinylation",
         "finds": "Sulfo-NHS-biotin labeling of the cell surface + "
-        "streptavidin pull-down — biochemical surface capture.",
+        "streptavidin pull-down — biochemical surface capture. Includes "
+        "overexpression / transfected-cell readouts.",
     },
     "mass_spec_surfaceome": {
         "label": "Surfaceome mass spec",
         "finds": "Cell-surface-capture / surfaceome LC-MS/MS proteomics "
         "(the high-throughput membership datasets).",
+    },
+    "shedding": {
+        "label": "Ectodomain shedding / soluble form",
+        "finds": "Sheddase-mediated ectodomain release (ADAM/BACE/MMP) and "
+        "soluble/shed form measured in serum, plasma, or supernatant — the "
+        "shed_form + secreted_form (decoy) signal.",
     },
     "western_blot_paired": {
         "label": "Western blot (surface-paired)",
@@ -93,15 +101,12 @@ CATEGORY_DOCS: dict[str, dict[str, str]] = {
     },
     "other": {
         "label": "Other surface assays",
-        "finds": "Catch-all: radioligand / GPCR pharmacology, ectodomain "
-        "shedding, proximity labeling (APEX2/TurboID/BioID), "
-        "internalization kinetics.",
+        "finds": "Catch-all: radioligand / GPCR pharmacology, proximity "
+        "labeling (APEX2/TurboID/BioID), internalization kinetics.",
     },
 }
 
-# Literature baselines BOTH agents are told to always include
-# (a1_plan_system.md §"A1-specific planning bias" items 5-6;
-#  a2_plan_system.md §"A2-specific planning bias" items 7-8).
+# Literature baselines BOTH agents always run (kickoff gene_literature modes).
 SHARED_BASELINES = [
     {
         "id": "gene2pubmed",
@@ -118,115 +123,36 @@ SHARED_BASELINES = [
     },
 ]
 
-# Planner-composed fill — emitted on top of the always-run floor when the
-# gene context warrants it. NOT guaranteed per gene (the planner LLM
-# chooses), so these are the genuinely non-deterministic searches.
-PLANNED_FILL = [
-    {
-        "id": "topic_search_extra",
-        "label": "Topic search (extra)",
-        "finds": "Additional Europe PMC topic-anchored queries the planner "
-        "composes beyond the mandated panels, to fill gene-specific gaps.",
-    },
+# Selector-requested follow-ups — not part of the deterministic floor; the
+# selector pulls these when the trimmed menu has an obvious gap.
+SELECTOR_FOLLOWUPS = [
     {
         "id": "fetch_abstract",
         "label": "Fetch abstract",
-        "finds": "Pull a single PMID's abstract (planner-chosen follow-up).",
+        "finds": "The selector pulls a specific PMID's abstract as a "
+        "follow-up when the candidate menu has a gap.",
     },
     {
         "id": "fetch_fulltext",
         "label": "Fetch full text",
-        "finds": "Pull a PMC open-access full text — planner-chosen deep "
+        "finds": "The selector pulls a PMC open-access full text for a deep "
         "read of a known method (A1) or biology / atlas (A2) source.",
     },
 ]
 
-# Per-agent always-run mandate. Sourced from the two planner prompts:
-#   A1 → a1_plan_system.md §"A1-specific planning bias" (items 1-8)
-#   A2 → a2_plan_system.md §"A2-specific planning bias" (items 1-9)
-#        + §"Normal-tissue tox panel (ALWAYS)".
-# `always_category_ids` = evidence_retrieval categories the prompt says to
-# run for every gene. `skip_category_ids` = categories the prompt tells the
-# agent to leave to the other pass (rendered as an explicit "skips" note so
-# a reader sees the division of labor). `always_topic` = mandated
-# topic_search panels unique to this agent.
-AGENT_PLANS = [
-    {
-        "id": "a1",
-        "label": "A1 · Surface evidence",
+# Human-readable tagline per focus; the search lists themselves are derived
+# live from the kickoff below.
+_AGENT_META = {
+    "a1": {
+        "label": "Surface-evidence agent (A1)",
         "tagline": "How the surface call was made — the methodology ledger.",
-        # a1_plan_system.md item 1: "Always run all 5 method-centric
-        # evidence_retrieval categories".
-        "always_category_ids": [
-            "flow_cytometry",
-            "surface_biotinylation",
-            "mass_spec_surfaceome",
-            "ihc",
-            "if",
-        ],
-        "skip_category_ids": [],
-        # a1 items 2-4: structure_with_ecd / western_blot_paired / other are
-        # gene-class conditional, not unconditional.
-        "conditional_note": "Adds western blot (surface-paired) when cheap, "
-        "structure-with-ECD when UniProt lists experimental structures or "
-        "signal peptides, and 'other' for the gene class it fits (e.g. "
-        "radioligand pharmacology for 7-TM GPCRs).",
-        # a1 item 8: method-anchored topic_search.
-        "always_topic": [
-            {
-                "label": "Method-anchored topic search",
-                "finds": "Europe PMC queries anchored on flow cytometry / "
-                "surface biotinylation / mass-spec / IHC — the methods "
-                "that produce a defensible surface call.",
-            },
-        ],
     },
-    {
-        "id": "a2",
-        "label": "A2 · Biological context",
+    "a2": {
+        "label": "Biology agent (A2)",
         "tagline": "Where & when the protein reaches the surface — tissue, "
         "cell type, localization, and what gates it.",
-        # a2 items 1-4: ihc (flagship), if + flow_cytometry, mass_spec.
-        "always_category_ids": [
-            "ihc",
-            "if",
-            "flow_cytometry",
-            "mass_spec_surfaceome",
-        ],
-        # a2 item 6: western_blot_paired + structure_with_ecd are "A1
-        # territory. SKIP."
-        "skip_category_ids": ["western_blot_paired", "structure_with_ecd"],
-        # a2 item 5: surface_biotinylation is borderline / conditional.
-        "conditional_note": "Adds surface biotinylation when UniProt lists "
-        "multiple compartments (a dual-localization or stress-induced "
-        "surface-fraction tell).",
-        "always_topic": [
-            # a2 §"Normal-tissue tox panel (ALWAYS — surface expression only)".
-            {
-                "label": "Normal-tissue tox panel",
-                "finds": "Surface expression in the six high-consequence "
-                "tox organs — liver, lung, kidney, GI tract, heart, brain "
-                "(incl. BBB). Runs for every gene, even canonical "
-                "receptors; negatives count.",
-            },
-            # a2 item 3: subcellular-localization depth.
-            {
-                "label": "Subcellular-localization depth",
-                "finds": "Organelle colocalization (ER / Golgi / endosome / "
-                "lysosome markers) + fractionation that quantifies the "
-                "surface-vs-intracellular split — fills dual_localization "
-                "and its fraction estimate.",
-            },
-            # a2 item 9: biology-leaning anchors.
-            {
-                "label": "Biology-leaning topic search",
-                "finds": "Anchored on surface_expression / shedding / PTM / "
-                "IHC — pulls the tissue-distribution and disease-state "
-                "biology reviews A1 deliberately avoids.",
-            },
-        ],
     },
-]
+}
 
 
 def _first_clause(spec: object) -> str:
@@ -234,6 +160,27 @@ def _first_clause(spec: object) -> str:
     primary phrase the assay query searches on."""
     clauses = getattr(spec, "query_clauses", None) or ()
     return clauses[0] if clauses else ""
+
+
+def _categories_in(plan) -> list[str]:
+    return [s.category for s in plan.searches if s.tool == "evidence_retrieval"]
+
+
+def _topic_panels(plan) -> list[dict[str, str]]:
+    """Each topic_search the kickoff emits → {label, finds} where finds is the
+    OR-set of Europe PMC terms the anchors expand to."""
+    panels: list[dict[str, str]] = []
+    for s in plan.searches:
+        if s.tool != "gene_literature" or s.mode != "topic_search" or not s.anchors:
+            continue
+        terms = sorted({t for a in s.anchors for t in _TOPIC_TERMS.get(a, [])})
+        panels.append(
+            {
+                "label": " + ".join(s.anchors),
+                "finds": ", ".join(terms),
+            }
+        )
+    return panels
 
 
 def main() -> int:
@@ -244,52 +191,61 @@ def main() -> int:
             "Add them to CATEGORY_DOCS so the /prompts catalog stays complete."
         )
 
-    # category id -> {label, finds, query_preview}; the per-agent plans
-    # reference these by id so a category's copy lives in exactly one place.
-    categories: dict[str, dict[str, str]] = {}
-    for cat_id, spec in _CATEGORY_SPECS.items():
-        doc = CATEGORY_DOCS[cat_id]
-        categories[cat_id] = {
+    categories: dict[str, dict[str, str]] = {
+        cat_id: {
             "id": cat_id,
-            "label": doc["label"],
-            "finds": doc["finds"],
+            "label": CATEGORY_DOCS[cat_id]["label"],
+            "finds": CATEGORY_DOCS[cat_id]["finds"],
             "query_preview": _first_clause(spec),
         }
+        for cat_id, spec in _CATEGORY_SPECS.items()
+    }
 
-    # Validate the per-agent id references against the canonical category set
-    # so a renamed/removed category can't leave a dangling reference.
-    known = set(categories)
-    for plan in AGENT_PLANS:
-        bad = [
-            c
-            for c in (*plan["always_category_ids"], *plan["skip_category_ids"])
-            if c not in known
-        ]
-        if bad:
-            raise SystemExit(
-                f"agent {plan['id']!r} references unknown categories {bad}; "
-                "fix AGENT_PLANS to match _CATEGORY_SPECS."
-            )
+    a1 = build_a1_kickoff(_KICKOFF_TMH, _KICKOFF_ECD)
+    a2 = build_a2_kickoff(_KICKOFF_TMH, _KICKOFF_ECD)
+    a1_cats, a2_cats = _categories_in(a1), _categories_in(a2)
+
+    agents = [
+        {
+            "id": "a1",
+            **_AGENT_META["a1"],
+            "always_category_ids": a1_cats,
+            # A1 runs everything A2 does plus the method-only extras.
+            "skip_category_ids": [c for c in a2_cats if c not in a1_cats],
+            "conditional_note": "Deterministic kickoff — every search above "
+            "runs for every gene (no LLM planner).",
+            "always_topic": _topic_panels(a1),
+        },
+        {
+            "id": "a2",
+            **_AGENT_META["a2"],
+            "always_category_ids": a2_cats,
+            # Categories A1 runs that A2 leaves to the surface-evidence pass.
+            "skip_category_ids": [c for c in a1_cats if c not in a2_cats],
+            "conditional_note": "Deterministic kickoff — every search above "
+            "runs for every gene (no LLM planner).",
+            "always_topic": _topic_panels(a2),
+        },
+    ]
 
     catalog = {
         "_generated_by": "scripts/build_search_catalog.py",
-        "_source": "evidence_retrieval._CATEGORY_SPECS + "
-        "plan_trim_select/prompts/{a1,a2}_plan_system.md",
+        "_source": "evidence_retrieval._CATEGORY_SPECS + the live deterministic "
+        "kickoff (plan_trim_select/kickoff_templates.build_a1/a2_kickoff)",
         "categories": categories,
         "shared_baselines": SHARED_BASELINES,
-        "agents": AGENT_PLANS,
-        "planned_fill": PLANNED_FILL,
+        "agents": agents,
+        "planned_fill": SELECTOR_FOLLOWUPS,
     }
     OUT_PATH.write_text(json.dumps(catalog, indent=2) + "\n")
 
     print(
         f"wrote {OUT_PATH.relative_to(REPO_ROOT)} — "
         f"{len(categories)} assay categories, {len(SHARED_BASELINES)} shared "
-        f"baselines, {len(AGENT_PLANS)} agents "
-        f"(A1 {len(AGENT_PLANS[0]['always_category_ids'])} always-assays, "
-        f"A2 {len(AGENT_PLANS[1]['always_category_ids'])} always-assays + "
-        f"{len(AGENT_PLANS[1]['always_topic'])} biology topic panels), "
-        f"{len(PLANNED_FILL)} planner-fill modes"
+        f"baselines, {len(agents)} agents "
+        f"(A1 {len(a1_cats)} assays + {len(agents[0]['always_topic'])} topic "
+        f"searches, A2 {len(a2_cats)} assays + {len(agents[1]['always_topic'])} "
+        f"topic searches), {len(SELECTOR_FOLLOWUPS)} selector follow-ups"
     )
     return 0
 
