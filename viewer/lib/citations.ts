@@ -22,6 +22,10 @@ export const CITATIONS = {
   antibodyInterface: { authorYear: "Ramaraj et al. 2012", pmid: "22246133" },
   /** HPA antigen-design single-target vs multitarget identity bands. */
   hpaAntigenDesign: { authorYear: "Edfors / Uhlén 2020", pmid: "33170010" },
+  /** Schweke et al. — AF2-based atlas of homo-oligomeric assemblies,
+   *  four proteomes, 8,195 predicted homomers including ~3,946 human.
+   *  Cited by the StructureViewer's "Homo-oligomer" tab. */
+  schwekeHomomer: { authorYear: "Schweke et al. 2024", pmid: "38325366" },
 } as const;
 
 /**

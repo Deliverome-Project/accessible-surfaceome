@@ -34,6 +34,7 @@ import {
   loadSurfaceomeRecord,
 } from "../../lib/surfaceome";
 import {
+  loadSchwekeHomomer,
   loadStructureViewerData,
   structureViewerDataFromRecord,
 } from "../../lib/structure-viewer";
@@ -99,6 +100,13 @@ export default async function GenePage({ params }: PageProps) {
       rec.gene.uniprot_acc,
       rec.deterministic_features.canonical_topology,
     );
+  // Schweke et al. 2024 (PMID 38325366) AF2 homo-oligomer prediction
+  // for this gene, when it's in the manifest under
+  // viewer/public/data/structures/schweke/. Drives the "Homo-oligomer"
+  // tab right after Canonical in the StructureViewer tab strip;
+  // null-safe — the tab simply doesn't render for genes outside the
+  // 8,195-homomer reference set.
+  const schwekeHomomerRow = loadSchwekeHomomer(rec.gene.uniprot_acc);
   // 5-DB presence vector (UniProt / GO / SURFY / CSPA / HPA) from the
   // candidate-universe build — the same vote pattern shown as dots on
   // the catalog (/) and SurfaceBench (/benchmark) rows. Catalog load
@@ -302,6 +310,7 @@ export default async function GenePage({ params }: PageProps) {
             rec={rec}
             geneName={geneName}
             structureData={structureData}
+            schwekeHomomer={schwekeHomomerRow}
             catalogRow={catalogRow}
             benchmarkRow={benchmarkRow}
           />

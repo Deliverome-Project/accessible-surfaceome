@@ -1,0 +1,5 @@
+{
+  "_comment": "Manifest of UniProt accessions with a Schweke et al. 2024 (PMID 38325366) AF2 homo-oligomer model. Each entry: af_model_num (the _V1_N suffix on the figshare filename) + ecd_only (true when Schweke's nodiso3 contact-clustering filter stripped the TM helix, leaving only the soluble ECD). PDB files for committed entries live under this same dir as {ACC}_V1_{N}.pdb. Generated from a join of data/external/schweke_homomer_atlas/list_models_refset.csv against the UniProt TM annotation; see data/external/schweke_homomer_atlas/PROVENANCE.md.",
+  "Q07108": { "af_model_num": 4, "ecd_only": true },
+  "P11021": { "af_model_num": 5, "ecd_only": false }
+}
