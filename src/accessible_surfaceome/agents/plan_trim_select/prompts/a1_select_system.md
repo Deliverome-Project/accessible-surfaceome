@@ -132,9 +132,12 @@ block builders route correctly.
    `direction=refutes` or `ambiguous` when the soluble form is the
    dominant species. Block builder reads prose to populate
    `risks.shed_form` / `risks.secreted_form`.
-4. **Epitope masking** (glycan / partner / conformational) →
-   `claim_type=surface_expression` with `direction=refutes` or
-   `ambiguous`. Block builder may route to a masking-risk row.
+4. **Epitope masking** (glycan / partner / oligomerization /
+   conformational) → `claim_type=surface_expression` with
+   `direction=refutes` or `ambiguous`. Block builder may route to a
+   masking-risk row. Keep clips on the protein's OWN homo-oligomerization /
+   self-association (homodimer interface burying the epitope), not just
+   partner-protein coverage.
 5. **Therapeutic engagement of the ECD** → `claim_type=surface_expression,
    direction=supports`. A clinical or preclinical binder (antibody, ADC,
    antagonist) that reaches the ECD on intact cells is direct
