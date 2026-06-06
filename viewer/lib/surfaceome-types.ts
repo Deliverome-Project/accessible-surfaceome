@@ -221,12 +221,6 @@ export interface ExecutiveSummary {
    *  synth re-derives from A1+A2 evidence; sometimes overrides the
    *  triage's own reason. */
   surface_call_reason: TriageReason;
-  /** One-sentence rationale for WHEN/WHERE the protein is surface-
-   *  accessible — the headline behind the §03 "Localization &
-   *  accessibility context" summary and the §01 echo. Synthesized over
-   *  the biological_context block. `null` on records generated before
-   *  this field landed (render nothing until re-annotated). */
-  accessibility_context_summary: string | null;
   headline_risks: HeadlineRisk[];
   cited_evidence_ids: string[];
 }
@@ -384,10 +378,6 @@ export interface IsoformTopology {
   full_length_pct_identity_to_canonical?: number | null;
   ecd_pct_identity_to_canonical?: number | null;
   ecd_pct_similarity_to_canonical?: number | null;
-  // Full amino-acid sequence the per_residue_topology string aligns to (1:1,
-  // same length) — sourced from topology_public.sequence. Null on records
-  // built before this field existed, or when the input FASTA wasn't retained.
-  sequence?: string | null;
 }
 
 export interface OrthologEntry {
@@ -882,15 +872,6 @@ export type ModulationCategory =
   | "other"
   | "unknown";
 
-// Up/down axis of the surface-accessible pool for a modulation row. Mirrors
-// the Pydantic `ModulationDirection` enum.
-export type ModulationDirection =
-  | "increases_surface"
-  | "decreases_surface"
-  | "bidirectional"
-  | "no_change"
-  | "unclear";
-
 export type CellStateTrigger =
   | "ER_stress"
   | "heat_shock"
@@ -988,23 +969,6 @@ export interface CellTypeContext {
   cited_evidence_ids: string[];
 }
 
-/** Unified tissue × cell-of-origin × disease-context expression row
- *  (v1.2 schema — replaces the split TissueContext + CellTypeContext). A row
- *  may name a `tissue`, a `cell_type` of origin, or both. `disease_label`
- *  names the specific disease when `disease_context` can't (e.g. "Fabry
- *  disease"). */
-export interface ExpressionRow {
-  tissue: string | null;
-  cell_type: string | null;
-  present: TissueLevel;
-  disease_context: DiseaseContext;
-  disease_label?: string | null;
-  cell_states: string[];
-  species?: Species;
-  species_inferred?: boolean;
-  cited_evidence_ids: string[];
-}
-
 export interface StateContext {
   state: string;
   descriptor: string;
@@ -1045,15 +1009,11 @@ export interface AccessibilityModulationObservation {
   dual_loc_partner_compartment: DualLocPartnerCompartment | null;
   baseline_context: string;
   modulating_state: string;
-  /** Up/down direction of the surface-pool change — orthogonal to the
-   *  favorable/restricted verdict in `accessibility_implication`. */
-  direction?: ModulationDirection;
   change: string;
   accessibility_implication: string;
-  // Structured up/down direction of the change. Records predating the field
-  // omit it at runtime (Python default "unclear"); the viewer guards for
-  // undefined before rendering the glyph. Non-optional to match the
-  // name-level Python↔TS sync check.
+  /** Up/down direction of the surface-pool change — orthogonal to the
+   *  favorable/restricted verdict in `accessibility_implication`. Mirrors
+   *  Pydantic's `direction: ModulationDirection = "unclear"` (always present). */
   direction: ModulationDirection;
   species?: Species;
   species_inferred?: boolean;

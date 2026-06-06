@@ -21,6 +21,8 @@
 
 ## 1. Executive summary
 
+**Surface-accessible specifically on AR-positive prostate cancer cells (localized PCa through mCRPC); absent in neuroendocrine/double-negative variants and non-prostate tissues.**
+
 KLK2 (human kallikrein-2) is a canonical secreted serine protease with no transmembrane domain, but a 2025 preclinical study (PMC12580770) demonstrates surface accessibility on intact prostate cancer cells by live-cell FACS on VCaP and fresh mCRPC patient tumor cells, confocal IF, and functional engagement via three distinct therapeutic modalities. Surface expression is strictly prostate-lineage- and AR-state-restricted, absent in neuroendocrine/double-negative mCRPC variants. The primary risk is a large competing secreted pool (KLK2 is constitutively secreted into conditioned medium and seminal plasma), and the surface-docking mechanism remains uncharacterized.
 
 **Family / classification** — UniProt family: peptidase S1 family. Kallikrein subfamily · HGNC gene group(s): Kallikreins · functional class: Enzyme.
@@ -200,8 +202,6 @@ KLK2 surface accessibility is supported by multiple direct methods from a single
   - Likely explanation: This is a meta-level historical acknowledgment rather than a direct experimental refutation; it reflects the field's prior consensus that KLK2 is primarily a secreted enzyme. The same paper then presents new evidence for surface expression, suggesting the contradiction is being actively resolved rather than standing as a definitive refutation.
 
 ## 4. Biological context
-
-*Accessibility context* — Surface-accessible specifically on AR-positive prostate cancer cells (localized PCa through mCRPC); absent in neuroendocrine/double-negative variants and non-prostate tissues.
 
 **Cell types** *(orthogonal cell-type index)*
 

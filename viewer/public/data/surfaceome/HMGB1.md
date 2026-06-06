@@ -21,6 +21,8 @@
 
 ## 1. Executive summary
 
+**HMGB1 has no validated plasma-membrane surface presence; it is released as a soluble DAMP into extracellular fluid upon inflammation, necrosis, ferroptosis, senescence, or chemotherapy stress, and appears on EV exteriors in arthritic disease state.**
+
 HMGB1 is a nuclear chromatin-binding protein with no transmembrane domain that becomes extracellularly accessible only upon cell activation, stress, or death. The entire ledger lacks a qualifying direct surface assay of HMGB1 on viable cells (live-cell flow, non-perm IF, or surface biotinylation with HMGB1 as a confirmed hit). Evidence shows HMGB1 in cell supernatants (pyroptosis, senescence SASP), on EV exteriors (proteinase-K confirmed, EV-shielded), and in solution binding TREM-1/RAGE, but none of these constitute plasma-membrane surface detection. Surface accessibility is therefore 'no' by the direct-assay gate.
 
 **Family / classification** — UniProt family: HMGB family · HGNC gene group(s): Canonical high mobility group · functional class: Miscellaneous.
@@ -221,14 +223,6 @@ No claim in this ledger places HMGB1 on the viable-cell plasma membrane via a di
   - Likely explanation: This evidence pertains to HMGB1 receptor surface levels rather than HMGB1 surface localization per se. The absence of receptor upregulation after HMGB1 treatment may reflect constitutive expression levels being sufficient for ligand engagement, or that HMGB1 functions predominantly in a soluble paracrine mode rather than through stable surface-to-surface contact.
 
 ## 4. Biological context
-
-*Accessibility context* — HMGB1 has no validated plasma-membrane surface presence; it is released as a soluble DAMP into extracellular fluid upon inflammation, necrosis, ferroptosis, senescence, or chemotherapy stress, and appears on EV exteriors in arthritic disease state.
-
-**Tissues × disease context**
-
-| Tissue | Disease context | Level (protein) | Cell types | Cell states |
-|---|---|---|---|---|
-| mast cells (unspecified tissue) | Normal | Moderate | mast cells | — |
 
 **Cell types** *(orthogonal cell-type index)*
 

@@ -21,6 +21,8 @@
 
 ## 1. Executive summary
 
+**Surface-accessible predominantly in diseased/tumor/fibrotic states — HCC, fibrotic intestine (Crohn's), heart failure, tumor stroma — where FN1 is markedly deposited in integrin-bound ECM and cell membranes; absent from normal liver membrane.**
+
 FN1/fibronectin is a large secreted ECM glycoprotein with a well-documented surface-accessible pool in disease contexts: HCC, fibrotic intestine, cardiac failure, tumor stroma, and chondrogenic differentiation all show elevated surface/ECM-deposited FN1 by mass spectrometry and IHC. The dominant plasma fibronectin pool (hepatocyte-secreted, soluble) is a genuine decoy risk. Surface accessibility is high in tumor/fibrotic/diseased states but near-absent in normal liver, making this a contextual target best suited for disease-selective ECM- or stroma-directed strategies (e.g., EDB- or EDA-isoform antibodies). ECD is large, with the RGD-containing FN10 domain confirmed in crystal structure with integrin αVβ3.
 
 **Family / classification** — HGNC gene group(s): Receptor ligands; Fibronectin type III domain containing · functional class: Miscellaneous.
@@ -168,16 +170,6 @@ The strongest direct surface evidence comes from a sialoglycoprotein-enrichment 
   - Likely explanation: FN1 is a secreted extracellular matrix glycoprotein that can be retained intracellularly or deposited in the sinusoidal space in normal liver. Tumor cells may upregulate FN1 and present it at the cell surface via integrin binding or altered secretion, explaining the tumor-specific membranous pattern. The contradiction is tissue/disease-state specific rather than a fundamental barrier to surface targeting in tumor contexts.
 
 ## 4. Biological context
-
-*Accessibility context* — Surface-accessible predominantly in diseased/tumor/fibrotic states — HCC, fibrotic intestine (Crohn's), heart failure, tumor stroma — where FN1 is markedly deposited in integrin-bound ECM and cell membranes; absent from normal liver membrane.
-
-**Tissues × disease context**
-
-| Tissue | Disease context | Level (protein) | Cell types | Cell states |
-|---|---|---|---|---|
-| liver | Normal | Absent | — | — |
-| liver | Tumor | High | — | — |
-| intestine (ileum and colon) | Other Disease | High | intestinal fibroblasts | — |
 
 **Cell types** *(orthogonal cell-type index)*
 

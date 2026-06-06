@@ -346,22 +346,19 @@ function paralogRow(p: ParalogEntry, key: string, maxResidues: number) {
       >
         {similarityCell(p.ecd_pct_identity, paralogToneClass(p.ecd_pct_identity))}
       </td>
-      <td className={p.signal_peptide_length != null ? undefined : styles.muted}>
-        {p.signal_peptide_length != null ? `${p.signal_peptide_length} aa` : "—"}
-      </td>
+      {/* PR #54 trimmed ParalogEntry to {tm_helix_count, ecd_length_residues,
+          per_residue_topology, sequence} — the dropped scalars
+          (signal_peptide_length, icd_length_residues, n_terminal_orientation,
+          c_terminal_orientation) render "—" so the column layout stays
+          aligned with isoform + ortholog rows that DO carry them. */}
+      <td className={styles.muted}>—</td>
       <td className={p.ecd_length_residues != null ? undefined : styles.muted}>
         {p.ecd_length_residues != null ? `${p.ecd_length_residues} aa` : "—"}
       </td>
-      <td className={p.icd_length_residues != null ? undefined : styles.muted}>
-        {p.icd_length_residues != null ? `${p.icd_length_residues} aa` : "—"}
-      </td>
+      <td className={styles.muted}>—</td>
       <td>{p.tm_helix_count ?? "—"}</td>
-      <td className={p.n_terminal_orientation ? undefined : styles.muted}>
-        {p.n_terminal_orientation ? orientationPill(p.n_terminal_orientation) : "—"}
-      </td>
-      <td className={p.c_terminal_orientation ? undefined : styles.muted}>
-        {p.c_terminal_orientation ? orientationPill(p.c_terminal_orientation) : "—"}
-      </td>
+      <td className={styles.muted}>—</td>
+      <td className={styles.muted}>—</td>
       <td className={styles.topoCell}>
         {p.per_residue_topology ? (
           <TopologyBar

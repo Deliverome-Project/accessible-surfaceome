@@ -1402,6 +1402,19 @@ export function StructureViewer({
           })
         : orientPdbForTopology(rawPdb, activeTopology);
 
+      // Final pre-createViewer guard. The renderSeq + isConnected check
+      // bails when React StrictMode (dev) double-mounts the component
+      // OR the user changed variant tab while a prior fetch was still
+      // in flight: by the time we reach this line, ``containerRef.current``
+      // can be a div that's been detached from the document, in which
+      // case ``createViewer`` attaches a canvas to a node out of the DOM,
+      // ``getContext('webgl')`` returns null, and 3Dmol's first
+      // ``clearDepth`` call throws "Cannot read properties of null".
+      // The token-based bail at the bottom of this function only guards
+      // the terminal ``setStatus``, not ``createViewer`` itself.
+      if (renderSeq !== renderSeqRef.current) return;
+      if (!containerRef.current?.isConnected) return;
+
       const viewer = $3Dmol.createViewer(containerRef.current, {
         backgroundColor: "white",
         antialias: true,

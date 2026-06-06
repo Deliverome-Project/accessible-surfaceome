@@ -21,6 +21,8 @@
 
 ## 1. Executive summary
 
+**Constitutively surface-accessible across normal epithelial tissues and diverse tumor types; EGF-induced internalization transiently reduces surface pool but baseline PM residence is stable and not lineage- or state-restricted.**
+
 EGFR is a canonical single-pass Type I transmembrane receptor with a large (~620 aa) extracellular domain constitutively displayed at the plasma membrane of epithelial and many tumor cell types. Surface accessibility is confirmed by live-cell flow cytometry across glioma, pancreatic, lung, cervical, breast, and epidermoid carcinoma lines; non-permeabilized IF; surface biotinylation MS in keratinocytes, prostate cancer, iPSC neurons, and A549; and membranous IHC in 97% of SIP patient cases. Approved antibody therapeutics (cetuximab, panitumumab) and ADCs clinically validate ECD engagement. Ectodomain shedding by ADAM10/17 yields a soluble sEGFR decoy documented in circulation.
 
 **Family / classification** — UniProt family: protein kinase superfamily. Tyr protein kinase family. EGF receptor subfamily · HGNC gene group(s): Erb-b2 receptor tyrosine kinases · functional class: Receptor.
@@ -390,19 +392,6 @@ EGFR surface accessibility is supported by multiple independent direct methods f
 
 ## 4. Biological context
 
-*Accessibility context* — Constitutively surface-accessible across normal epithelial tissues and diverse tumor types; EGF-induced internalization transiently reduces surface pool but baseline PM residence is stable and not lineage- or state-restricted.
-
-**Tissues × disease context**
-
-| Tissue | Disease context | Level (protein) | Cell types | Cell states |
-|---|---|---|---|---|
-| sinonasal epithelium | Tumor | High | epithelial tumor cells | — |
-| bone metastasis / prostate | Tumor | High | prostate cancer cells | — |
-| lung | Tumor | Unknown | lung adenocarcinoma cells | EGFR TKI-treated vs untreated, drug-tolerant persister state |
-| lung | Tumor | Low | small cell lung cancer cells | — |
-| skin | Normal | Moderate | keratinocytes | — |
-| peripheral nervous system | Other Disease | Unknown | sensory-like neurons | — |
-
 **Cell types** *(orthogonal cell-type index)*
 
 | Cell type | Ontology | Present in tissues | Species | Cites |
@@ -588,7 +577,6 @@ Structure data from [AlphaFold DB](https://alphafold.ebi.ac.uk/entry/P00533) · 
 | Isoform P00533-4 | [P00533-4](https://alphafold.ebi.ac.uk/entry/P00533-4) | AlphaFold DB |
 | Mouse ortholog (Egfr) | [Q01279](https://alphafold.ebi.ac.uk/entry/Q01279) | AlphaFold DB |
 | Cynomolgus ortholog (EGFR) | [A0A2K5WK39](https://alphafold.ebi.ac.uk/entry/A0A2K5WK39) | AlphaFold DB |
-| Experimental (best) | [7SYD](https://www.rcsb.org/structure/7syd) chain A | RCSB PDB · Electron Microscopy 3.1 Å · UniProt 1–1210 |
 | Experimental (277 total) | [1IVO](https://www.rcsb.org/structure/1IVO), [1M14](https://www.rcsb.org/structure/1M14), [1M17](https://www.rcsb.org/structure/1M17), [1MOX](https://www.rcsb.org/structure/1MOX), [1NQL](https://www.rcsb.org/structure/1NQL), … [all 277 →](https://www.rcsb.org/uniprot/P00533) | RCSB PDB |
 
 ## 8. SURFACE-Bind candidate sites
@@ -995,34 +983,6 @@ This Markdown is generated from the canonical JSON record at `/data/surfaceome/E
 1201  APQSSEFIGA
 ```
 
-### Experimental-structure sequence
-
-**7SYD** chain A · Electron Microscopy, 3.1 Å · covers UniProt residues 1–1210 (1210 aa) · representative of 642 experimental structures. Residues sliced from the canonical sequence over the structure's SIFTS-mapped span; unresolved loops in the deposited coordinates are not removed here.
-
-```
-   1  MRPSGTAGAALLALLAALCPASRALEEKKVCQGTSNKLTQLGTFEDHFLSLQRMFNNCEV
-  61  VLGNLEITYVQRNYDLSFLKTIQEVAGYVLIALNTVERIPLENLQIIRGNMYYENSYALA
- 121  VLSNYDANKTGLKELPMRNLQEILHGAVRFSNNPALCNVESIQWRDIVSSDFLSNMSMDF
- 181  QNHLGSCQKCDPSCPNGSCWGAGEENCQKLTKIICAQQCSGRCRGKSPSDCCHNQCAAGC
- 241  TGPRESDCLVCRKFRDEATCKDTCPPLMLYNPTTYQMDVNPEGKYSFGATCVKKCPRNYV
- 301  VTDHGSCVRACGADSYEMEEDGVRKCKKCEGPCRKVCNGIGIGEFKDSLSINATNIKHFK
- 361  NCTSISGDLHILPVAFRGDSFTHTPPLDPQELDILKTVKEITGFLLIQAWPENRTDLHAF
- 421  ENLEIIRGRTKQHGQFSLAVVSLNITSLGLRSLKEISDGDVIISGNKNLCYANTINWKKL
- 481  FGTSGQKTKIISNRGENSCKATGQVCHALCSPEGCWGPEPRDCVSCRNVSRGRECVDKCN
- 541  LLEGEPREFVENSECIQCHPECLPQAMNITCTGRGPDNCIQCAHYIDGPHCVKTCPAGVM
- 601  GENNTLVWKYADAGHVCHLCHPNCTYGCTGPGLEGCPTNGPKIPSIATGMVGALLLLLVV
- 661  ALGIGLFMRRRHIVRKRTLRRLLQERELVEPLTPSGEAPNQALLRILKETEFKKIKVLGS
- 721  GAFGTVYKGLWIPEGEKVKIPVAIKELREATSPKANKEILDEAYVMASVDNPHVCRLLGI
- 781  CLTSTVQLITQLMPFGCLLDYVREHKDNIGSQYLLNWCVQIAKGMNYLEDRRLVHRDLAA
- 841  RNVLVKTPQHVKITDFGLAKLLGAEEKEYHAEGGKVPIKWMALESILHRIYTHQSDVWSY
- 901  GVTVWELMTFGSKPYDGIPASEISSILEKGERLPQPPICTIDVYMIMVKCWMIDADSRPK
- 961  FRELIIEFSKMARDPQRYLVIQGDERMHLPSPTDSNFYRALMDEEDMDDVVDADEYLIPQ
-1021  QGFFSSPSTSRTPLLSSLSATSNNSTVACIDRNGLQSCPIKEDSFLQRYSSDPTGALTED
-1081  SIDDTFLPVPEYINQSVPKRPAGSVQNPVYHNQPLNPAPSRDPHYQDPHSTAVGNPEYLN
-1141  TVQPTCVNSTFDSPAHWAQKGSHQISLDNPDYQQDFFPKEAKPNGIFKGSTAENAEYLRV
-1201  APQSSEFIGA
-```
-
 ### Per-residue DeepTMHMM topology
 
 *Five-letter alphabet: `M` = TM helix, `O` = extracellular, `I` = intracellular, `S` = signal peptide, `B` = β-strand. Aligned to the UniProt sequence above (residue indices in the left column).*
@@ -1125,32 +1085,6 @@ This Markdown is generated from the canonical JSON record at `/data/surfaceome/E
 ```
 
 **Cynomolgus ortholog — EGFR** (`A0A2K5WK39`, projected onto human canonical)
-
-```
-   1  SSSSSSSSSSSSSSSSSSSSSSSSOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOO
-  61  OOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOO
- 121  OOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOO
- 181  OOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOO
- 241  OOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOO
- 301  OOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOO
- 361  OOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOO
- 421  OOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOO
- 481  OOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOO
- 541  OOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOO
- 601  OOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOMMMMMMMMMMMMMMM
- 661  MMMMMMMIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIII
- 721  IIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIII
- 781  IIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIII
- 841  IIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIII
- 901  IIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIII
- 961  IIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIII
-1021  IIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIII
-1081  IIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIII
-1141  IIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIII
-1201  IIIIIIIIII
-```
-
-**Experimental — 7SYD chain A** (UniProt residues 1–1210, projected from canonical)
 
 ```
    1  SSSSSSSSSSSSSSSSSSSSSSSSOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOO

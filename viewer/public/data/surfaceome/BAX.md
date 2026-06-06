@@ -20,6 +20,8 @@
 
 ## 1. Executive summary
 
+**BAX is not surface-accessible; it resides in the cytosol at rest and translocates to the mitochondrial outer membrane upon apoptotic stimulation — never the extracellular leaflet of the plasma membrane.**
+
 BAX is a BCL-2-family pro-apoptotic protein whose canonical localization is cytosolic in healthy cells, with stress-induced translocation to the mitochondrial outer membrane (OMM) to drive cytochrome-c release. No evidence from surface biotinylation, live-cell flow cytometry, or non-permeabilized immunofluorescence places BAX on the extracellular leaflet of the plasma membrane. The surfaceome capture database (Bausch-Fluck 2018) does not list BAX, and all direct assays confirm intracellular/mitochondrial localization. BAX is not a plasma-membrane surface target.
 
 **Family / classification** — UniProt family: Bcl-2 family · HGNC gene group(s): BCL2 family · functional class: Miscellaneous.
@@ -106,8 +108,6 @@ All three claims are tangential to a surface-accessibility call. a1_evi_01 is a 
   - Likely explanation: Cell-surface capture proteomics selectively biotinylates extracellular-facing glycoproteins; BAX lacks a canonical signal peptide and transmembrane domain oriented to the plasma membrane, so it would not be captured by this method, consistent with its established intracellular localization.
 
 ## 4. Biological context
-
-*Accessibility context* — BAX is not surface-accessible; it resides in the cytosol at rest and translocates to the mitochondrial outer membrane upon apoptotic stimulation — never the extracellular leaflet of the plasma membrane.
 
 **Cell types** *(orthogonal cell-type index)*
 
