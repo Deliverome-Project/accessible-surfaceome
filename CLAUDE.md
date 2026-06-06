@@ -56,6 +56,14 @@ cd viewer && npm install && npm run dev   # Next.js viewer at localhost:3000
 
 The **production deep-dive pipeline is `surfaceome_v2`** ([src/accessible_surfaceome/agents/surfaceome_v2/orchestrator.py](src/accessible_surfaceome/agents/surfaceome_v2/orchestrator.py), invoked via [scripts/surfaceome_v2_annotate.py](scripts/surfaceome_v2_annotate.py)). It runs entirely on **in-process Sonnet `messages.create` calls** — `plan_trim_select` (dual A1/A2), 9 block builders, and the synthesizer. **Every prompt is read locally from disk and takes effect on the next invocation — there is no remote agent registry to sync.** The synthesizer reads [surfaceome_synthesizer/prompts/system.md](src/accessible_surfaceome/agents/surfaceome_synthesizer/prompts/system.md) directly via `messages.create` (`run_synthesizer_with_drafts`); any historical Managed-Agent registration of it is vestigial and off the v2 code path. The in-process prompt files under [plan_trim_select/prompts/](src/accessible_surfaceome/agents/plan_trim_select/prompts/) and [surfaceome_v2/prompts/](src/accessible_surfaceome/agents/surfaceome_v2/prompts/) are likewise edit-and-go. See [docs/plans/2026-05-13-deep-dive-redesign-surface-accessibility.md](docs/plans/2026-05-13-deep-dive-redesign-surface-accessibility.md) for the original v1/v2 trade-off table.
 
+**Regenerate the prompt-review HTML in the same commit when you touch a prompt.** [docs/prompt_review.html](docs/prompt_review.html) is a committed, human-readable render of the live deep-dive prompts — each prompt's full text, the diff vs `main`, and a closed-enum reference (the structured-output options the model must choose from, e.g. `epitope_masking.mechanism` annotated with its homo / hetero / other axis). It is a **generated artifact**, so it goes stale the instant a prompt changes. Whenever you edit any in-process prompt under [plan_trim_select/prompts/](src/accessible_surfaceome/agents/plan_trim_select/prompts/), [surfaceome_v2/prompts/](src/accessible_surfaceome/agents/surfaceome_v2/prompts/), or [surfaceome_synthesizer/prompts/](src/accessible_surfaceome/agents/surfaceome_synthesizer/prompts/) — or change a closed enum the review renders (in [models.py](src/accessible_surfaceome/tools/_shared/models.py)) — regenerate it in the **same commit**:
+
+```bash
+uv run python scripts/gen_prompt_review.py
+```
+
+There is no CI gate on this by design, so it is on the committer (agent or human) to re-run it — a stale review misleads reviewers worse than no review does.
+
 ### v2 publishes records by default — `--no-publish` to opt out
 
 After a v2 annotate run validates, `scripts/surfaceome_v2_annotate.py` writes the record to **three** surfaces:
