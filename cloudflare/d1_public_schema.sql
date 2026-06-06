@@ -551,3 +551,102 @@ CREATE TABLE IF NOT EXISTS feedback_public (
 
 CREATE INDEX IF NOT EXISTS idx_feedback_public_gene
     ON feedback_public(gene_symbol, approved_at DESC);
+
+
+-- ---------------------------------------------------------------------------
+-- schweke_homomer_public — Schweke et al. 2024 (PMID 38325366) AF2 homo-
+-- oligomer atlas intersected with our candidate universe.
+--
+-- One row per (universe_version, uniprot_acc) in the intersection of:
+--   * Schweke's 8,195-protein reference set (figshare DOI
+--     10.6084/m9.figshare.22309177, share link
+--     https://figshare.com/s/af3c1d5969f7468f2caa)
+--   * Our candidate universe (e.g. v2 with 6,521 surfaceome candidates)
+--
+-- For each entry, Schweke publishes:
+--   * AF2 dimer model in ``AF_dimer_models_core.zip`` (file
+--     ``{ACC}_V1_{N}.pdb``) — the binary "candidate complex" call;
+--     always present.
+--   * Optional AnAnaS-reconstructed higher-order complex in
+--     ``full_complexes_bigbang.zip`` (file
+--     ``{ACC}_V1_{N}_c{K}_model_0_rank_1.pdb`` with K ∈ 3..13) — present
+--     when AnAnaS detected cyclic symmetry above c2 from the dimer
+--     model; populated for ~30% of the reference set.
+--
+-- Stable-ID denormalization: ``hgnc_id``, ``ensembl_gene``,
+-- ``ncbi_gene_id`` are joined in from ``gene_identifier_public`` at
+-- build time so the viewer / agents / SQL consumers can route through
+-- whichever identifier system they prefer without re-resolving by
+-- gene symbol (which silently misroutes ~0.2% of human genes per
+-- src/accessible_surfaceome/tools/gene_lookup.py). Always populated
+-- for the human cohort.
+--
+-- ``is_ecd_only`` records whether Schweke's nodiso3 contact-clustering
+-- filter clipped the TM helix as a disconnected cluster — true for
+-- most single-pass type-I/II proteins (CD69, CD28, TFRC, CD3 family);
+-- false for multi-pass proteins (AQP1, MS4A1, GJA1, KCN family, SLC
+-- family, GPCRs) where TMs pack tightly enough to survive nodiso3.
+-- Computed at build time by joining each ACC against UniProt's
+-- ``Transmembrane`` features + comparing against the PDB's residue
+-- coverage.
+--
+-- Build script: scripts/build_schweke_d1_table.py
+-- Sources: data/external/schweke_homomer_atlas/list_models_refset.csv
+--          + data/external/schweke_homomer_atlas/full_complex_index.tsv
+--          + data/processed/candidate_universe/candidate_universe_v2.tsv
+--          + (D1 query) gene_identifier_public
+-- ---------------------------------------------------------------------------
+
+CREATE TABLE IF NOT EXISTS schweke_homomer_public (
+    universe_version             TEXT NOT NULL,        -- e.g. 'v2' — joins schweke_homomer_release.universe_version
+    hgnc_id                      TEXT,                 -- denormalized stable join key (NULL if gene_identifier_public lookup failed)
+    uniprot_acc                  TEXT NOT NULL,        -- Schweke's primary key; canonical Swiss-Prot accession
+    gene_symbol                  TEXT,                 -- denormalized HGNC-canonical symbol; never use as a join key
+    ensembl_gene                 TEXT,                 -- denormalized stable ID
+    ncbi_gene_id                 TEXT,                 -- denormalized stable ID
+    af_model_num                 INTEGER NOT NULL,     -- the ``_V1_N`` suffix on the Schweke filename (1..5)
+    stoichiometry                INTEGER NOT NULL,     -- cyclic-symmetry order N; 2 for dimer-only, 3..13 when a reconstructed complex exists
+    has_higher_order_complex     INTEGER NOT NULL,     -- 1 iff a reconstructed complex with c≥3 was published
+    is_ecd_only                  INTEGER NOT NULL,     -- 1 iff Schweke's nodiso3 filter clipped the TM as a disconnected cluster — model is ECD only
+    dimer_pdb_filename           TEXT NOT NULL,        -- file inside AF_dimer_models_core.zip, e.g. 'Q07108_V1_4.pdb'
+    complex_pdb_filename         TEXT,                 -- file inside full_complexes_bigbang.zip, e.g. 'Q96G97_V1_3_c13_model_0_rank_1.pdb'; NULL when c2 dimer only
+    schweke_version              TEXT NOT NULL,        -- e.g. 'schweke-2024-cell' (Cell paper publication 2024-02-15)
+    synced_at                    TEXT NOT NULL DEFAULT (datetime('now')),
+    PRIMARY KEY (universe_version, uniprot_acc),
+    FOREIGN KEY (universe_version) REFERENCES candidate_universe_release (universe_version)
+);
+
+CREATE INDEX IF NOT EXISTS idx_schweke_homomer_public_hgnc
+    ON schweke_homomer_public (hgnc_id);
+CREATE INDEX IF NOT EXISTS idx_schweke_homomer_public_symbol
+    ON schweke_homomer_public (gene_symbol);
+CREATE INDEX IF NOT EXISTS idx_schweke_homomer_public_uniprot
+    ON schweke_homomer_public (uniprot_acc);
+CREATE INDEX IF NOT EXISTS idx_schweke_homomer_public_stoich
+    ON schweke_homomer_public (universe_version, stoichiometry);
+CREATE INDEX IF NOT EXISTS idx_schweke_homomer_public_ecd_only
+    ON schweke_homomer_public (universe_version, is_ecd_only);
+
+
+-- ---------------------------------------------------------------------------
+-- schweke_homomer_release — pointer to the active schweke_version so the
+-- Worker doesn't MAX() over the protein table to find "latest", and so
+-- attribution + license travel with the data.
+-- ---------------------------------------------------------------------------
+
+CREATE TABLE IF NOT EXISTS schweke_homomer_release (
+    schweke_version             TEXT PRIMARY KEY,      -- e.g. 'schweke-2024-cell'
+    universe_version            TEXT NOT NULL,         -- candidate universe this snapshot is keyed against
+    paper_doi                   TEXT NOT NULL,         -- '10.1016/j.cell.2024.01.022'
+    pmid                        TEXT NOT NULL,         -- '38325366'
+    figshare_doi                TEXT NOT NULL,         -- '10.6084/m9.figshare.22309177'
+    figshare_share_link         TEXT NOT NULL,         -- 'https://figshare.com/s/af3c1d5969f7468f2caa'
+    n_proteins_in_schweke       INTEGER NOT NULL,      -- 8195 (the published reference set size)
+    n_proteins_in_intersection  INTEGER NOT NULL,      -- number of proteins in this snapshot (rows in schweke_homomer_public for this universe_version)
+    n_with_higher_order         INTEGER NOT NULL,      -- count where has_higher_order_complex = 1
+    max_stoichiometry           INTEGER NOT NULL,      -- 13 (BSCL2) as of 2024 release
+    attribution                 TEXT NOT NULL,         -- 'Schweke et al. 2024, Cell 187:999, CC-BY 4.0'
+    license_url                 TEXT,                  -- 'https://creativecommons.org/licenses/by/4.0/'
+    loaded_at                   TEXT NOT NULL DEFAULT (datetime('now')),
+    notes                       TEXT
+);
