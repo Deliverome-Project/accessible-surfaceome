@@ -8,7 +8,7 @@
 set -euo pipefail
 cd "$(dirname "$0")/.."
 
-scenarios=(local happy retry5xx fail4xx)
+scenarios=(local happy retry5xx fail4xx entries entries-stale)
 fails=0
 for s in "${scenarios[@]}"; do
   if ! npx --yes tsx tests/list_surfaceome_genes.test.ts "$s"; then

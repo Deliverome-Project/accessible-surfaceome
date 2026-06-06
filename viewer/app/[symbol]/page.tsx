@@ -24,10 +24,13 @@ import { IsoformsCard } from "../../components/surfaceome/IsoformsCard/IsoformsC
 import { SurfaceBindCard } from "../../components/surfaceome/SurfaceBindCard/SurfaceBindCard";
 import { SurfaceEvidenceCard } from "../../components/surfaceome/SurfaceEvidenceCard/SurfaceEvidenceCard";
 import {
+  SCHEMA_FRESHNESS_DOTS_ENABLED,
+  listSurfaceomeGeneEntries,
   listSurfaceomeGenes,
   loadBenchmarkRow,
   loadCatalogRow,
   loadGeneName,
+  loadSchemaStatus,
   loadSurfaceomeRecord,
 } from "../../lib/surfaceome";
 import {
@@ -112,12 +115,18 @@ export default async function GenePage({ params }: PageProps) {
   // SURFACEOME_API_BASE=local (empty matrix) — the row simply doesn't show.
   const benchmarkRow = await loadBenchmarkRow(rec.gene.hgnc_symbol);
 
-  // Deep-dive gene symbols for the toolbar's <GeneJump> typeahead — the
-  // SAME set generateStaticParams emits, so every suggestion resolves to a
-  // real statically-generated page (a non-deep-dive symbol would 404 under
-  // output: export). Memoized in listSurfaceomeGenes, so this is one Worker
-  // call per build, not per page.
-  const deepDiveGenes = await listSurfaceomeGenes();
+  // Deep-dive genes (symbol + schema_version) for the toolbar's <GeneJump>
+  // typeahead — the SAME set generateStaticParams emits, so every
+  // suggestion resolves to a real statically-generated page (a non-deep-dive
+  // symbol would 404 under output: export). Each entry's schema_version
+  // drives its freshness dot (green = current, amber = out of date).
+  // Memoized — shares the single /v1/genes fetch with listSurfaceomeGenes —
+  // so this is one Worker call per build, not per page.
+  const deepDiveGenes = await listSurfaceomeGeneEntries();
+  // Show freshness dots only when the temporary feature is on AND the
+  // schema-status manifest exists (else the dots would be meaningless).
+  const showSchemaDots =
+    SCHEMA_FRESHNESS_DOTS_ENABLED && loadSchemaStatus() !== null;
 
   // v1.0.0 section order mirrors the EGFR mockup in
   // docs/plans/2026-05-13-deep-dive-redesign-surface-accessibility.md.
@@ -261,7 +270,11 @@ export default async function GenePage({ params }: PageProps) {
           </Link>
           {/* Jump to another gene's deep dive without going back to the
               catalog table. Suggestions are the deep-dive set only. */}
-          <GeneJump genes={deepDiveGenes} current={rec.gene.hgnc_symbol} />
+          <GeneJump
+            genes={deepDiveGenes}
+            current={rec.gene.hgnc_symbol}
+            showSchemaDots={showSchemaDots}
+          />
           <span className={styles.crumbActions}>
             <a
               className={styles.crumbAction}
