@@ -162,13 +162,12 @@ _TOPIC_TERMS: dict[TopicAnchor, list[str]] = {
         "serum level",
         "plasma level",
     ],
-    "tox_normal_tissue": [
-        # Six high-consequence tox organs + normal-tissue qualifiers. Surface
+    "normal_tissue_expression": [
+        # Six high-consequence tox organs, anchored on SURFACE expression —
+        # NOT a tissue-distribution / microarray (RNA-atlas) survey. Surface
         # proof comes from the always-on protein method categories; this anchor
-        # supplies the organ-coverage literature (never an RNA atlas).
-        "normal tissue",
-        "tissue distribution",
-        "tissue microarray",
+        # supplies the organ-coverage literature for on-target/off-tumor tox.
+        "surface expression",
         "liver",
         "lung",
         "kidney",
@@ -181,10 +180,13 @@ _TOPIC_TERMS: dict[TopicAnchor, list[str]] = {
         # unreachable by a systemically dosed binder.
         "blood-brain barrier",
         "tumor penetration",
-        "tumor vasculature",
         "luminal",
         "abluminal",
-        "vascular permeability",
+        # Binder-access vocabulary (qualified — bare "accessibility" would
+        # pull chromatin-accessibility / ATAC-seq noise).
+        "surface accessibility",
+        "antibody accessibility",
+        "epitope accessibility",
     ],
     "partner_dependency": [
         # Does a partner have to be present for the target to reach the
@@ -212,6 +214,23 @@ _TOPIC_TERMS: dict[TopicAnchor, list[str]] = {
         "ciliary membrane",
         "polarized epithelial",
         "immunological synapse",
+    ],
+    "epitope_masking": [
+        # Evidence the extracellular epitope is occluded, spanning the three
+        # mechanism axes the epitope_masking risk records. Feeds
+        # epitope_masking.mechanism (homo / hetero / other).
+        "epitope masking",
+        "steric occlusion",
+        # HOMO — the target's own homodimer / homo-oligomer interface
+        "homodimer",
+        "homodimerization",
+        "oligomerization",
+        "self-association",
+        # HETERO — a partner protein in a complex covers the epitope
+        "heterodimer",
+        # OTHER — glycan shield / conformational occlusion
+        "glycan shield",
+        "conformational masking",
     ],
 }
 

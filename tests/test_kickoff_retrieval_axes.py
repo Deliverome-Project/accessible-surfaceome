@@ -93,12 +93,12 @@ def test_tox_panel_always_emitted_every_focus():
         build_a1_kickoff(0, 0),  # even a known non-membrane gene
         build_a1_kickoff(None, None),  # even with unknown topology
     ):
-        assert _has_anchor(plan, "tox_normal_tissue")
+        assert _has_anchor(plan, "normal_tissue_expression")
 
 
 def test_build_kickoff_dispatch_all_foci_have_tox_panel():
     for focus in ("a1", "a2", None):
-        assert _has_anchor(build_kickoff(focus, 7, 89), "tox_normal_tissue")
+        assert _has_anchor(build_kickoff(focus, 7, 89), "normal_tissue_expression")
 
 
 # --------------------------------------------------------------------------
@@ -128,7 +128,7 @@ def test_reachability_fires_recall_biased_on_unknown_topology():
 def test_kickoff_backwards_compatible_no_topology_args():
     # Default (no topology) must still build and fire the gated axis.
     assert _has_anchor(build_a1_kickoff(), "surface_reachability")
-    assert _has_anchor(build_kickoff("a1"), "tox_normal_tissue")
+    assert _has_anchor(build_kickoff("a1"), "normal_tissue_expression")
 
 
 # --------------------------------------------------------------------------
@@ -187,10 +187,16 @@ def test_every_kickoff_anchor_is_protein_level_and_resolvable():
 
 
 def test_tox_anchor_terms_are_organ_literature_not_rna():
-    terms = " ".join(_TOPIC_TERMS["tox_normal_tissue"]).lower()
+    terms = " ".join(_TOPIC_TERMS["normal_tissue_expression"]).lower()
     # The six high-consequence organs are present...
     for organ in ("liver", "lung", "kidney", "intestine", "heart", "brain"):
         assert organ in terms
+    # ...anchored on SURFACE expression (not an RNA atlas / distribution survey)...
+    assert "surface expression" in terms
+    # ...with the atlas / microarray (RNA-flavored) qualifiers removed...
+    assert "tissue distribution" not in terms
+    assert "tissue microarray" not in terms
+    assert "normal tissue" not in terms
     # ...and the anchor doesn't pull an RNA-atlas channel.
     assert "rna" not in terms
     assert "transcript" not in terms
@@ -217,3 +223,74 @@ def test_shedding_anchor_enriched_for_circulating_soluble_target():
     assert "circulating" in terms
     assert "serum level" in terms
     assert "plasma level" in terms
+
+
+# --------------------------------------------------------------------------
+# surface_reachability retune + epitope_masking masking axis + A1/A2 mirror
+# --------------------------------------------------------------------------
+
+
+def test_surface_reachability_drops_vasculature_adds_qualified_accessibility():
+    terms = " ".join(_TOPIC_TERMS["surface_reachability"]).lower()
+    # Qualified binder-access vocabulary added...
+    assert "surface accessibility" in terms
+    assert "antibody accessibility" in terms
+    # ...never the bare/ambiguous form (would pull chromatin-accessibility /
+    # ATAC-seq + "data accessibility" noise)...
+    assert "chromatin" not in terms
+    # ...and the removed vasculature terms are gone.
+    assert "tumor vasculature" not in terms
+    assert "vascular permeability" not in terms
+
+
+def test_epitope_masking_anchor_covers_homo_hetero_other():
+    terms = " ".join(_TOPIC_TERMS["epitope_masking"]).lower()
+    # HOMO — the target's own self-association
+    assert "homodimer" in terms
+    assert "oligomerization" in terms or "self-association" in terms
+    # HETERO — a partner protein covering the epitope
+    assert "heterodimer" in terms
+    # OTHER — glycan / conformational occlusion
+    assert "glycan shield" in terms or "conformational masking" in terms
+
+
+def test_epitope_masking_axis_gated_like_other_membrane_axes():
+    # Fires for membrane+ECD and (recall-biased) unknown topology...
+    assert _has_anchor(build_a1_kickoff(7, 89), "epitope_masking")
+    assert _has_anchor(build_a2_kickoff(1, 40), "epitope_masking")
+    assert _has_anchor(build_a1_kickoff(None, None), "epitope_masking")
+    # ...suppressed for a known non-membrane / sub-threshold-ECD protein.
+    assert not _has_anchor(build_a1_kickoff(0, 0), "epitope_masking")
+
+
+_STANDING_ANCHOR_SET = {
+    "normal_tissue_expression",
+    "surface_reachability",
+    "partner_dependency",
+    "membrane_subdomain",
+    "epitope_masking",
+}
+
+
+def _standing_anchors(plan) -> list[tuple]:
+    return sorted(
+        tuple(s.anchors)
+        for s in plan.searches
+        if s.mode == "topic_search"
+        and s.anchors
+        and set(s.anchors) <= _STANDING_ANCHOR_SET
+    )
+
+
+def test_standing_axes_mirrored_across_a1_and_a2():
+    # The standing axes (normal_tissue_expression + the gated barrier / masking
+    # axes) come from the shared ``_standing_axes`` helper, so A1 and A2 must
+    # emit an identical set at every topology. Guards a future divergence.
+    for tmh, ecd in ((7, 89), (None, None), (0, 0)):
+        assert _standing_anchors(build_a1_kickoff(tmh, ecd)) == _standing_anchors(
+            build_a2_kickoff(tmh, ecd)
+        )
+    # normal_tissue_expression is the always-on member — present in both foci
+    # regardless of topology.
+    assert _has_anchor(build_a1_kickoff(0, 0), "normal_tissue_expression")
+    assert _has_anchor(build_a2_kickoff(0, 0), "normal_tissue_expression")

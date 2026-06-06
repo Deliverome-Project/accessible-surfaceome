@@ -13,9 +13,10 @@ from accessible_surfaceome.agents.plan_trim_select.kickoff_templates import (
 from accessible_surfaceome.tools._shared import models as _models
 from accessible_surfaceome.tools.gene_literature import _TOPIC_TERMS
 
-NEW_ANCHORS = {"tox_normal_tissue", "surface_reachability",
-               "partner_dependency", "membrane_subdomain"}
-GATED = {"surface_reachability", "partner_dependency", "membrane_subdomain"}
+NEW_ANCHORS = {"normal_tissue_expression", "surface_reachability",
+               "partner_dependency", "membrane_subdomain", "epitope_masking"}
+GATED = {"surface_reachability", "partner_dependency", "membrane_subdomain",
+         "epitope_masking"}
 
 
 def render_kickoff(label, sub, plan):
