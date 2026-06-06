@@ -186,7 +186,9 @@ footer{color:var(--mut);font-size:12px;margin:28px 0 0;border-top:1px solid var(
 <section class="flow">
       <h2>Example flow for one gene &mdash; EGFR end-to-end</h2>
       <p class="sub2">Walks the v2 deep-dive pipeline stage by stage with the
-      EGFR-shaped data each agent reads + emits. The arrows mark the boundary
+      EGFR-shaped data each agent reads + emits, plus the prerequisites the
+      deep-dive consumes as input (<code>surface_triage</code> runs
+      separately, upstream, and persists to D1). The arrows mark the boundary
       between agents. Hand-curated reference &mdash; numbers are typical not
       exact (paralog count + AFDB pLDDT vary across resolver releases). To
       regenerate against fresh runtime data: run <code>uv run python
@@ -203,10 +205,10 @@ footer{color:var(--mut);font-size:12px;margin:28px 0 0;border-top:1px solid var(
           </div>
           <div class="farrow">&darr;</div>
           <div class="fcard">
-            <div class="fhead"><h3>1 — surface_triage</h3><span class="factor">Haiku · system.md + task_template.md</span></div>
+            <div class="fhead"><h3>Prereq — surface_triage  (upstream batch, run separately)</h3><span class="factor">Sonnet · system.md + task_template.md  (canonical sweep <code>genome_full_sonnet_ncbi_v1</code>; Haiku / Opus also supported by <code>scripts/triage_runner.py</code>)</span></div>
             <div class="fbody">
               <div class="fcol"><h4>Input</h4><ul><li>hgnc_symbol, uniprot_acc, ncbi_gene_id</li><li>aliases, previous_symbols</li><li>hgnc_gene_groups, cd_designation</li><li>ncbi_summary  (NCBI&rsquo;s curated functional summary)</li></ul></div>
-              <div class="fcol fproc"><h4>Process</h4><div class="fproctxt">First-pass alarm-clock judgment: is this a surface protein worth deep-diving? Pure identifier + summary input &mdash; runs upstream of any deterministic topology fetch.</div></div>
+              <div class="fcol fproc"><h4>Process</h4><div class="fproctxt">First-pass alarm-clock judgment: is this a surface protein worth deep-diving? Pure identifier + summary input &mdash; runs upstream of any deterministic topology fetch. <strong>Not part of the deep-dive orchestrator:</strong> <code>surface_triage</code> is a separate whole-genome sweep run via <code>scripts/triage_runner.py</code> that persists <code>TriageRecord</code> rows to D1. The deep-dive consumes those rows as input (<code>_load_triage_record</code> in <code>surfaceome_v2/orchestrator.py</code>); it never invokes the triage agent itself.</div></div>
               <div class="fcol"><h4>Output</h4><ul><li>verdict: &ldquo;likely&rdquo;</li><li>reason: &ldquo;classical_surface_receptor&rdquo;</li><li>verdict_reasoning: &ldquo;EGFR is the canonical single-pass type I receptor tyrosine kinase &hellip;&rdquo;</li><li>key_uncertainty: (often empty for canonical receptors)</li><li>confidence: &ldquo;high&rdquo;</li></ul></div>
             </div>
           </div>
@@ -214,7 +216,7 @@ footer{color:var(--mut);font-size:12px;margin:28px 0 0;border-top:1px solid var(
           <div class="fcard">
             <div class="fhead"><h3>2 — plan_trim_select (A1 + A2)</h3><span class="factor">Sonnet · a1_select / a1_trim / a2_select / a2_trim / abstract_triage</span></div>
             <div class="fbody">
-              <div class="fcol"><h4>Input</h4><ul><li>Triage prior  (the stage-1 record above, via _summarize_triage_for_planner)</li><li>deterministic_summary_json  (canonical topology + paralogs + orthologs)</li><li>Kickoff search terms  (deterministic; tox_panel + reachability + co_receptor + subdomain anchors)</li></ul></div>
+              <div class="fcol"><h4>Input</h4><ul><li>Triage prior  (the prereq record above, loaded from D1 via _load_triage_record and summarized via _summarize_triage_for_planner)</li><li>deterministic_summary_json  (canonical topology + paralogs + orthologs)</li><li>Kickoff search terms  (deterministic; tox_panel + reachability + co_receptor + subdomain anchors)</li></ul></div>
               <div class="fcol fproc"><h4>Process</h4><div class="fproctxt">Runs the deterministic kickoff (tox-panel + membrane+ECD-gated axes), iterates the planner / trim / select loop over PubMed + Europe PMC + PubTator, and lands a deduplicated ledger of <code>EvidenceClaim</code>s plus the search-log audit trail. Topic searches now OR over <code>aliases</code> + <code>previous_symbols</code> so renamed genes don&rsquo;t drop pre-rename literature.</div></div>
               <div class="fcol"><h4>Output</h4><ul><li>a1_claims  (~50&ndash;80 surface-evidence claims for EGFR)</li><li>a2_claims  (~30&ndash;60 biological-context claims for EGFR)</li><li>search_log  (every PubMed / EuropePMC / PubTator query + count)</li></ul></div>
             </div>

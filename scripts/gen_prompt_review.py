@@ -422,8 +422,12 @@ EXAMPLE_FLOW_STAGES = [
         ],
     },
     {
-        "stage": "1 — surface_triage",
-        "actor": "Haiku · system.md + task_template.md",
+        "stage": "Prereq — surface_triage  (upstream batch, run separately)",
+        "actor": (
+            "Sonnet · system.md + task_template.md  "
+            "(canonical sweep <code>genome_full_sonnet_ncbi_v1</code>; "
+            "Haiku / Opus also supported by <code>scripts/triage_runner.py</code>)"
+        ),
         "inputs": [
             "hgnc_symbol, uniprot_acc, ncbi_gene_id",
             "aliases, previous_symbols",
@@ -433,7 +437,14 @@ EXAMPLE_FLOW_STAGES = [
         "process": (
             "First-pass alarm-clock judgment: is this a surface protein worth "
             "deep-diving? Pure identifier + summary input &mdash; runs upstream "
-            "of any deterministic topology fetch."
+            "of any deterministic topology fetch. "
+            "<strong>Not part of the deep-dive orchestrator:</strong> "
+            "<code>surface_triage</code> is a separate whole-genome sweep run "
+            "via <code>scripts/triage_runner.py</code> that persists "
+            "<code>TriageRecord</code> rows to D1. The deep-dive consumes "
+            "those rows as input (<code>_load_triage_record</code> in "
+            "<code>surfaceome_v2/orchestrator.py</code>); it never invokes "
+            "the triage agent itself."
         ),
         "outputs": [
             "verdict: &ldquo;likely&rdquo;",
@@ -448,7 +459,7 @@ EXAMPLE_FLOW_STAGES = [
         "stage": "2 — plan_trim_select (A1 + A2)",
         "actor": "Sonnet · a1_select / a1_trim / a2_select / a2_trim / abstract_triage",
         "inputs": [
-            "Triage prior  (the stage-1 record above, via _summarize_triage_for_planner)",
+            "Triage prior  (the prereq record above, loaded from D1 via _load_triage_record and summarized via _summarize_triage_for_planner)",
             "deterministic_summary_json  (canonical topology + paralogs + orthologs)",
             "Kickoff search terms  (deterministic; tox_panel + reachability + co_receptor + subdomain anchors)",
         ],
@@ -592,7 +603,9 @@ def flow_section() -> str:
     return f"""<section class="flow">
       <h2>Example flow for one gene &mdash; EGFR end-to-end</h2>
       <p class="sub2">Walks the v2 deep-dive pipeline stage by stage with the
-      EGFR-shaped data each agent reads + emits. The arrows mark the boundary
+      EGFR-shaped data each agent reads + emits, plus the prerequisites the
+      deep-dive consumes as input (<code>surface_triage</code> runs
+      separately, upstream, and persists to D1). The arrows mark the boundary
       between agents. Hand-curated reference &mdash; numbers are typical not
       exact (paralog count + AFDB pLDDT vary across resolver releases). To
       regenerate against fresh runtime data: run <code>uv run python
