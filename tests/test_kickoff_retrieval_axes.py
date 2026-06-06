@@ -286,15 +286,15 @@ def _search_sig(plan, anchor):
     return None
 
 
-def _combined_surface_method_sigs(plan):
-    """Signatures of any topic_search carrying surface_expression + the method
-    anchors (the shared _surface_method_search)."""
+def _topic_sigs(plan, *required):
+    """Signatures (tool, mode, anchors, intent) of topic_searches whose anchor
+    set contains all of ``required`` — used to locate a shared search and
+    compare it byte-for-byte across A1 and A2."""
+    req = set(required)
     return [
         (s.tool, s.mode, tuple(s.anchors), s.intent)
         for s in plan.searches
-        if s.anchors
-        and "surface_expression" in s.anchors
-        and "flow_cytometry" in s.anchors
+        if s.anchors and req <= set(s.anchors)
     ]
 
 
@@ -302,19 +302,36 @@ def test_surface_method_search_identical_across_a1_a2():
     # The combined surface-expression + surface-method topic_search
     # (surface_expression + flow_cytometry + surface_biotinylation +
     # mass_spec_surfaceome + ihc) must be BYTE-IDENTICAL in A1 and A2 — both
-    # emit the single _surface_method_search() helper. This is the exact search
-    # the review flagged as not matching across the two foci.
+    # emit the single _surface_method_search() helper.
     from accessible_surfaceome.agents.plan_trim_select.kickoff_templates import (
         _SURFACE_METHOD_ANCHORS,
     )
 
-    c1 = _combined_surface_method_sigs(build_a1_kickoff(7, 89))
-    c2 = _combined_surface_method_sigs(build_a2_kickoff(7, 89))
+    c1 = _topic_sigs(build_a1_kickoff(7, 89), "surface_expression", "flow_cytometry")
+    c2 = _topic_sigs(build_a2_kickoff(7, 89), "surface_expression", "flow_cytometry")
     assert len(c1) == 1, f"A1 should emit the combined search exactly once: {c1}"
     assert len(c2) == 1, f"A2 should emit the combined search exactly once: {c2}"
     assert c1 == c2, f"combined surface-method search differs: A1={c1}, A2={c2}"
-    # ...and it carries exactly surface_expression + the four method anchors.
     assert set(c1[0][2]) == set(_SURFACE_METHOD_ANCHORS)
+
+
+def test_shedding_ptm_search_identical_across_a1_a2():
+    # The shedding + PTM topic_search must be BYTE-IDENTICAL in A1 and A2 —
+    # both emit the single _shedding_ptm_search() helper (PTM lives here, not
+    # in A1's topology/structure search, so it stays mirrored).
+    c1 = _topic_sigs(build_a1_kickoff(7, 89), "shedding", "ptm")
+    c2 = _topic_sigs(build_a2_kickoff(7, 89), "shedding", "ptm")
+    assert len(c1) == 1, f"A1 should emit the shedding+ptm search once: {c1}"
+    assert len(c2) == 1, f"A2 should emit the shedding+ptm search once: {c2}"
+    assert c1 == c2, f"shedding+ptm search differs: A1={c1}, A2={c2}"
+    assert set(c1[0][2]) == {"shedding", "ptm"}
+    # PTM must NOT also live in A1's topology/structure search (else it'd be
+    # unmirrored again).
+    a1_struct = _topic_sigs(build_a1_kickoff(7, 89), "topology")
+    assert all("ptm" not in anchors for _, _, anchors, _ in a1_struct), (
+        "ptm leaked back into A1's topology/structure search — keep it only in "
+        "the shared _shedding_ptm_search()"
+    )
 
 
 def test_shared_standing_searches_identical_across_a1_a2():

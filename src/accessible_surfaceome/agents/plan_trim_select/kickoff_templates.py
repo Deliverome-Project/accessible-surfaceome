@@ -152,6 +152,18 @@ def _surface_method_search() -> SearchRequest:
     )
 
 
+def _shedding_ptm_search() -> SearchRequest:
+    """The shared shedding + PTM topic_search, emitted identically by A1 and
+    A2 (single source of truth for that mirror). PTM lives here, not in A1's
+    topology/structure search, so it stays mirrored across the two foci."""
+    return SearchRequest(
+        tool="gene_literature",
+        mode="topic_search",
+        anchors=["shedding", "ptm"],
+        intent="A1/A2 shared: shedding + PTM topic_search",
+    )
+
+
 def build_a1_kickoff(
     n_tmh: int | None = None, ecd_aa: int | None = None
 ) -> SearchPlan:
@@ -180,15 +192,10 @@ def build_a1_kickoff(
         SearchRequest(
             tool="gene_literature",
             mode="topic_search",
-            anchors=["topology", "structure", "ptm"],
-            intent="A1 default: structure / topology / PTM topic_search",
+            anchors=["topology", "structure"],
+            intent="A1 default: structure / topology topic_search",
         ),
-        SearchRequest(
-            tool="gene_literature",
-            mode="topic_search",
-            anchors=["shedding"],
-            intent="A1 default: shedding topic_search",
-        ),
+        _shedding_ptm_search(),
     ])
     searches.extend(_standing_axes(n_tmh, ecd_aa))
     return SearchPlan(
@@ -196,7 +203,7 @@ def build_a1_kickoff(
         rationale=(
             "A1 deterministic kickoff: all evidence_retrieval categories; "
             "gene2pubmed + recent_corpus; three topic_search variants "
-            "(surface+methods (shared with A2) / structure / shedding); standing axes "
+            "(surface+methods (shared) / structure / shedding+ptm (shared)); standing axes "
             "(normal-tissue surface-expression always; surface-reachability / "
             "partner / subdomain / epitope-masking when membrane+ECD). "
             "Selector iterates from observed paper inventory."
@@ -229,12 +236,7 @@ def build_a2_kickoff(
             intent="A2 default: recent_corpus sweep",
         ),
         _surface_method_search(),
-        SearchRequest(
-            tool="gene_literature",
-            mode="topic_search",
-            anchors=["shedding", "ptm"],
-            intent="A2 default: state / modulation topic_search",
-        ),
+        _shedding_ptm_search(),
     ])
     searches.extend(_standing_axes(n_tmh, ecd_aa))
     return SearchPlan(
@@ -243,7 +245,7 @@ def build_a2_kickoff(
             "A2 deterministic kickoff: four biology-leaning evidence_retrieval "
             "categories (ihc, if, flow_cytometry, mass_spec_surfaceome); "
             "gene2pubmed + recent_corpus; two topic_search variants "
-            "(surface+methods (shared with A1) + state/modulation); standing axes "
+            "(surface+methods (shared) + shedding+ptm (shared)); standing axes "
             "(normal-tissue surface-expression always; surface-reachability / "
             "partner / subdomain / epitope-masking when membrane+ECD). "
             "Selector iterates from observed paper inventory."
