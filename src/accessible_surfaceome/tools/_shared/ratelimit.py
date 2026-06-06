@@ -25,9 +25,16 @@ class RateLimiter:
         self._last_call: dict[str, float] = {}
         self._lock = Lock()
 
-    def wait(self, url: str) -> None:
+    def wait(self, url: str, min_interval_ms: float = 0.0) -> None:
+        """Block until ``min_interval_ms`` (or the per-host cap, whichever is
+        larger) has elapsed since the last call to this host.
+
+        ``min_interval_ms`` lets a caller impose a courtesy floor on hosts not
+        in the table — used by the PDF-download path to avoid hammering
+        publisher servers that have no configured per-host cap.
+        """
         host = urlparse(url).netloc
-        interval_s = self._intervals_ms.get(host, 0.0) / 1000.0
+        interval_s = max(self._intervals_ms.get(host, 0.0), min_interval_ms) / 1000.0
         if interval_s <= 0:
             return
         with self._lock:

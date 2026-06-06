@@ -13,6 +13,7 @@ dependencies = [
     "mygene>=3.2.2",
     "openpyxl>=3.1.5",
     "pandas>=2.3.0,<3",
+    "pdfplumber>=0.11.9",
     "pikepdf>=10.6.0",
     "polars>=1.39.0",
     "pydantic>=2.11.0",
@@ -40,6 +41,18 @@ build-backend = "hatchling.build"
 
 [tool.hatch.build.targets.wheel]
 packages = ["src/accessible_surfaceome"]
+
+[tool.uv]
+# Supply-chain cooldown pin (see CLAUDE.md "min-release-age" rationale for the
+# viewer; this is the Python-side equivalent applied surgically). pdfplumber
+# pulls pypdfium2 transitively with only a `>=4.18.0` floor, so a fresh resolve
+# would grab pypdfium2 5.9.0 — released 2026-06-01, i.e. <7 days old at the time
+# this dep was added (2026-06-02). We pin below it to the vetted 5.8.0
+# (released 2026-05-04, 29 days old, BSD-3-Clause/Apache-2.0). Persisted here —
+# not as a one-shot `--exclude-newer` — so `uv lock --check` in CI stays
+# reproducible. SAFE TO REMOVE once pypdfium2 5.9.0 has aged past the 7-day
+# cooldown (i.e. after ~2026-06-08) and has been spot-checked.
+constraint-dependencies = ["pypdfium2<5.9.0"]
 
 [dependency-groups]
 dev = [

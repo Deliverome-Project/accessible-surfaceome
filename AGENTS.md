@@ -37,6 +37,14 @@ Concise contributor guide for `accessible-surfaceome`.
 
 **Cost note:** a full v2 deep-dive is ~$2–3 on Sonnet 4.6 per gene (synthesizer step ~$0.10–0.20). There is no stale-remote-prompt risk — local edits are always what runs — but a re-run costs real money, so validate a prompt change on one gene before sweeping.
 
+## Triage body-fetch: Unpaywall + PDF fallback
+`plan_trim_select` abstract-triage fetches a `worth_fetching` paper's body via a 3-step fall-through: **PMC JATS** (`pmc_id` or PMID→PMCID eLink) → **Unpaywall OA PDF**. The Unpaywall step tries **all** OA PDF locations best-quality-first (so a bot-blocked publisher copy can fall through to a repository copy), parsed by [`pdf_parse.py`](src/accessible_surfaceome/agents/plan_trim_select/pdf_parse.py) (pdfplumber; gutter-based 2-column split + font-aware run-in/bold heading detection → the JATS `SectionName` enum). Any failure → abstract fallback, never crashes the batch.
+- **Dep**: `pdfplumber` (MIT); `pypdfium2` pinned `<5.9.0` via `[tool.uv] constraint-dependencies` (supply-chain cooldown — relax after it ages past 7 days).
+- **Binary cache**: `CachedHTTP.get_bytes` → `data/external/blob_cache/` (gitignored — copyrighted PDFs, never commit); streamed size+page caps; per-host courtesy interval.
+- **Config**: `UNPAYWALL_EMAIL` (optional). Keep the polite, identifiable User-Agent — no browser impersonation; ASH/Wiley 403 us regardless and fall back to abstract.
+- **Provenance/licensing**: `TriageAction.fetch_source` (`pmc_xml`|`unpaywall_pdf`) + `TriageAction.fetch_license` (raw Unpaywall OA license — "must track per-item license"). Redistribution **not gated** — short substring-anchored snippets only (fair use); license captured for a future gate. Clips key on `PMID:`/`PMC:` ids, not `DOI:`.
+- **Validate**: `scripts/probe_triage_fetch.py` / `scripts/probe_pdf_fallback.py` ($0, no model calls).
+
 ## Agent Command Allowlist
 - Codex and Claude agents may run `uv run python <module-or-script> [args...]` for repo analyses and processing.
 - Prefer `uv run ...` over bare `python ...`.
