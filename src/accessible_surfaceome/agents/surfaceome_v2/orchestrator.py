@@ -55,7 +55,6 @@ from accessible_surfaceome.agents.surfaceome_synthesizer.runner import (
 from accessible_surfaceome.agents.surfaceome_v1.orchestrator import (
     _attach_deterministic_families,
     _derive_filters,
-    _attach_deterministic_families,
     scrub_headline_risks,
     _load_triage_record,
     _TRIAGE_VERDICT_TO_SIGNAL,

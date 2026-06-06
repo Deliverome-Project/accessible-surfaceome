@@ -960,6 +960,9 @@ export interface ExpressionRow {
  *  records still type-check. */
 export interface TissueContext {
   tissue: string;
+  /** Optional cell-type narrowing for the tissue observation (e.g. a
+   *  specific epithelial subtype). Older records omit it. */
+  cell_type?: string | null;
   present: TissueLevel;
   disease_context: DiseaseContext;
   /** Specific disease name when `disease_context` can't name it on its own
