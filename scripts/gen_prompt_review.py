@@ -306,7 +306,7 @@ def deterministic_section() -> str:
         "full":       ("full",   "full block"),
         "none":       ("none",   "claim-ledger only"),
         "identifiers-only": ("ids", "identifiers only"),
-        "calibration-only": ("calibration-only", "calibration only"),
+        "calibration-only": ("calibration-only", "triage + family tags only"),
     }
     cards = []
     for g in DETERMINISTIC_GROUPS:
