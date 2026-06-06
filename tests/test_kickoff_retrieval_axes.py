@@ -286,29 +286,35 @@ def _search_sig(plan, anchor):
     return None
 
 
-def test_a2_surface_search_mirrors_a1_method_anchors():
-    # A2's surface-expression search was broadened beyond `ihc` to carry the
-    # same surface-method anchors A1 uses (flow / biotinylation / MS / IHC),
-    # so A2's biology extraction sees the same surface-method literature.
+def _combined_surface_method_sigs(plan):
+    """Signatures of any topic_search carrying surface_expression + the method
+    anchors (the shared _surface_method_search)."""
+    return [
+        (s.tool, s.mode, tuple(s.anchors), s.intent)
+        for s in plan.searches
+        if s.anchors
+        and "surface_expression" in s.anchors
+        and "flow_cytometry" in s.anchors
+    ]
+
+
+def test_surface_method_search_identical_across_a1_a2():
+    # The combined surface-expression + surface-method topic_search
+    # (surface_expression + flow_cytometry + surface_biotinylation +
+    # mass_spec_surfaceome + ihc) must be BYTE-IDENTICAL in A1 and A2 — both
+    # emit the single _surface_method_search() helper. This is the exact search
+    # the review flagged as not matching across the two foci.
     from accessible_surfaceome.agents.plan_trim_select.kickoff_templates import (
-        _METHOD_ANCHORS,
+        _SURFACE_METHOD_ANCHORS,
     )
 
-    methods = set(_METHOD_ANCHORS)
-    # A1 still emits the method anchors as its own search.
-    a1_sets = [set(a) for a in _topic_anchor_sets(build_a1_kickoff(7, 89))]
-    assert any(methods <= s for s in a1_sets), "A1 lost its method anchors"
-    # A2's surface_expression search now also carries all of them.
-    a2_surface = [
-        set(a)
-        for a in _topic_anchor_sets(build_a2_kickoff(7, 89))
-        if "surface_expression" in a
-    ]
-    assert a2_surface, "A2 has no surface_expression search"
-    assert any(methods <= s for s in a2_surface), (
-        "A2 surface_expression search must include A1's method anchors "
-        "(flow_cytometry / surface_biotinylation / mass_spec_surfaceome / ihc)"
-    )
+    c1 = _combined_surface_method_sigs(build_a1_kickoff(7, 89))
+    c2 = _combined_surface_method_sigs(build_a2_kickoff(7, 89))
+    assert len(c1) == 1, f"A1 should emit the combined search exactly once: {c1}"
+    assert len(c2) == 1, f"A2 should emit the combined search exactly once: {c2}"
+    assert c1 == c2, f"combined surface-method search differs: A1={c1}, A2={c2}"
+    # ...and it carries exactly surface_expression + the four method anchors.
+    assert set(c1[0][2]) == set(_SURFACE_METHOD_ANCHORS)
 
 
 def test_shared_standing_searches_identical_across_a1_a2():

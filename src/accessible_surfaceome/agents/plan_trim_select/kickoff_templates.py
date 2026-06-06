@@ -60,6 +60,13 @@ _METHOD_ANCHORS: tuple[TopicAnchor, ...] = (
     "ihc",
 )
 
+# The full surface-presence + surface-method topic_search = "surface_expression"
+# + the four method anchors. Emitted IDENTICALLY by A1 and A2 (both call
+# _surface_method_search()), so the two agents run the same surface/method
+# retrieval. Byte-for-byte mirror asserted by
+# test_surface_method_search_identical_across_a1_a2.
+_SURFACE_METHOD_ANCHORS: tuple[TopicAnchor, ...] = ("surface_expression", *_METHOD_ANCHORS)
+
 
 def _fires_membrane_ecd_gate(n_tmh: int | None, ecd_aa: int | None) -> bool:
     """Recall-biased membrane+ECD gate for the topology-conditional axes.
@@ -134,6 +141,17 @@ def _standing_axes(n_tmh: int | None, ecd_aa: int | None) -> list[SearchRequest]
     return axes
 
 
+def _surface_method_search() -> SearchRequest:
+    """The shared surface-expression + surface-method topic_search, emitted
+    identically by A1 and A2 (single source of truth for that mirror)."""
+    return SearchRequest(
+        tool="gene_literature",
+        mode="topic_search",
+        anchors=list(_SURFACE_METHOD_ANCHORS),
+        intent="A1/A2 shared: surface-expression + surface-method topic_search",
+    )
+
+
 def build_a1_kickoff(
     n_tmh: int | None = None, ecd_aa: int | None = None
 ) -> SearchPlan:
@@ -158,12 +176,7 @@ def build_a1_kickoff(
             mode="recent_corpus",
             intent="A1 default: recent_corpus sweep",
         ),
-        SearchRequest(
-            tool="gene_literature",
-            mode="topic_search",
-            anchors=list(_METHOD_ANCHORS),
-            intent="A1 default: method-anchored topic_search",
-        ),
+        _surface_method_search(),
         SearchRequest(
             tool="gene_literature",
             mode="topic_search",
@@ -173,8 +186,8 @@ def build_a1_kickoff(
         SearchRequest(
             tool="gene_literature",
             mode="topic_search",
-            anchors=["surface_expression", "shedding"],
-            intent="A1 default: surface-presence + shedding topic_search",
+            anchors=["shedding"],
+            intent="A1 default: shedding topic_search",
         ),
     ])
     searches.extend(_standing_axes(n_tmh, ecd_aa))
@@ -183,7 +196,7 @@ def build_a1_kickoff(
         rationale=(
             "A1 deterministic kickoff: all evidence_retrieval categories; "
             "gene2pubmed + recent_corpus; three topic_search variants "
-            "(methods / structure / surface-presence); standing axes "
+            "(surface+methods (shared with A2) / structure / shedding); standing axes "
             "(normal-tissue surface-expression always; surface-reachability / "
             "partner / subdomain / epitope-masking when membrane+ECD). "
             "Selector iterates from observed paper inventory."
@@ -215,12 +228,7 @@ def build_a2_kickoff(
             mode="recent_corpus",
             intent="A2 default: recent_corpus sweep",
         ),
-        SearchRequest(
-            tool="gene_literature",
-            mode="topic_search",
-            anchors=["surface_expression", *_METHOD_ANCHORS],
-            intent="A2 default: surface-expression + surface-method topic_search (mirrors A1 methods)",
-        ),
+        _surface_method_search(),
         SearchRequest(
             tool="gene_literature",
             mode="topic_search",
@@ -235,7 +243,7 @@ def build_a2_kickoff(
             "A2 deterministic kickoff: four biology-leaning evidence_retrieval "
             "categories (ihc, if, flow_cytometry, mass_spec_surfaceome); "
             "gene2pubmed + recent_corpus; two topic_search variants "
-            "(surface-expression+methods (mirrors A1) + state/modulation); standing axes "
+            "(surface+methods (shared with A1) + state/modulation); standing axes "
             "(normal-tissue surface-expression always; surface-reachability / "
             "partner / subdomain / epitope-masking when membrane+ECD). "
             "Selector iterates from observed paper inventory."
