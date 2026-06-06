@@ -149,8 +149,8 @@ export function Shell({ children }: ShellProps) {
             <p className={styles.footerMeta}>
               <span>© {new Date().getFullYear()} Deliverome Bio</span>
               <span aria-hidden="true" className={styles.metaSep}>·</span>
-              <a href="mailto:contact@deliverome.org" className={styles.footerLink}>
-                contact@deliverome.org
+              <a href="mailto:surfaceome-viewer@deliverome.org" className={styles.footerLink}>
+                surfaceome-viewer@deliverome.org
               </a>
             </p>
           </div>
