@@ -372,6 +372,23 @@ def _annotate(
     # the shared TimingRecorder uses CPython's atomic ``list.append``.
     a1_ctx = {"gene": gene_id.hgnc_symbol}
     a2_ctx = {"gene": gene_id.hgnc_symbol}
+    # evidence_grade gets the triage prior + curator-assigned family tags
+    # alongside the gene symbol. The grade verdict is load-bearing (it
+    # drives the deep-dive's confidence chain), so calibration signals
+    # the other builders don't need belong here: the triage's prior
+    # verdict prose + the HGNC / UniProt family tags that anchor the
+    # antibody-cross-reactivity-with-paralog discussion.
+    triage_record_for_ctx = _load_triage_record(gene_id.hgnc_symbol)
+    evidence_grade_ctx: dict[str, Any] = {
+        "gene": gene_id.hgnc_symbol,
+        "triage_summary_json": (
+            _summarize_triage_for_planner(triage_record_for_ctx)
+            if triage_record_for_ctx is not None
+            else None
+        ),
+        "hgnc_gene_groups": list(dual.bundle.hgnc_gene_groups),
+        "uniprot_family": dual.bundle.uniprot_family,
+    }
     specs: list[_BuilderSpec] = [
         _BuilderSpec("methods", "builders_a1", build_methods, a1_claims, a1_ctx),
         _BuilderSpec(
@@ -386,7 +403,7 @@ def _annotate(
             "builders_a1",
             build_evidence_grade,
             a1_claims,
-            a1_ctx,
+            evidence_grade_ctx,
         ),
         _BuilderSpec(
             "expression", "builders_a2", build_expression, a2_claims, a2_ctx
@@ -479,6 +496,31 @@ def _annotate(
             timing=list(timing.entries),
         )
 
+    # ---- step 4.5: deterministic features fetch (was step 7) ---------------
+    # Pull the real DeepTMHMM topology + Compara paralog + cross-species
+    # ortholog ECD rows + AFDB structure + SURFACE-Bind summary from public
+    # D1. Moved BEFORE the synthesizer so B can read the prefetched
+    # ``deterministic_features.canonical_topology.ecd_length_residues`` /
+    # paralog cluster / SURFACE-Bind sites the system prompt's threshold
+    # rules reference (was step 7 / post-pass; that left the synthesizer
+    # guessing and required the step 7.5 secreted_form post-pass to
+    # retro-patch its accessibility_risks). Falls back to the labeled stub
+    # if D1 is unreachable (no creds in the worktree) or the gene isn't in
+    # this sweep's coverage.
+    with timing.step("deterministic_features", phase="post"):
+        try:
+            from accessible_surfaceome.agents.surfaceome_v1.d1_deterministic import (
+                fetch_deterministic_features,
+            )
+            det_features = fetch_deterministic_features(gene_id.uniprot_acc)
+        except Exception as exc:  # noqa: BLE001 — keep the run going if D1 is down
+            logger.warning(
+                "DeterministicFeatures D1 fetch failed for %s (%s); using stub",
+                gene_id.uniprot_acc,
+                exc,
+            )
+            det_features = _stub_deterministic_features(gene_id.uniprot_acc)
+
     # ---- step 5: synthesizer (B) ------------------------------------------
     logger.info("v2 orchestrator: dispatching synthesizer for %s", gene_id.hgnc_symbol)
     with timing.step(
@@ -500,12 +542,25 @@ def _annotate(
             if triage_record is not None
             else None
         )
+        # Compact JSON snapshot of the deterministic block + the curator-
+        # assigned family tags so B sees what ``_attach_deterministic_families``
+        # is about to overwrite on its output (cross-check rather than
+        # discover-mismatch-post-hoc on llm_family).
+        from accessible_surfaceome.agents.surfaceome_synthesizer.runner import (
+            _summarize_deterministic_for_synthesizer,
+        )
+        deterministic_summary_json = _summarize_deterministic_for_synthesizer(
+            det_features,
+            hgnc_gene_groups=list(dual.bundle.hgnc_gene_groups),
+            uniprot_family=dual.bundle.uniprot_family,
+        )
         b = run_synthesizer_with_drafts(
             gene_id.hgnc_symbol,
             a1_draft=a1_draft,
             a2_draft=a2_draft,
             client=client,
             triage_summary_json=triage_summary_json,
+            deterministic_summary_json=deterministic_summary_json,
         )
         _h.model = b.usage.model
         # ``BResult.usage`` is a UsageSummary, not a UsageRecord. Build a
@@ -659,33 +714,17 @@ def _annotate(
             evidence=evidence,
         )
 
-    # ---- step 7: deterministic features stub (reused from v1) -------------
-    # Pull the real DeepTMHMM topology + Compara paralog + cross-species
-    # ortholog ECD rows from public D1 (uploaded by PR #29's
-    # ``scripts/run_topology_sweep.py``). Falls back to the labeled
-    # stub if D1 is unreachable (no creds in the worktree) or the gene
-    # isn't in this sweep's coverage. Mirrors the v1 orchestrator's
-    # try/D1/fallback pattern landed in PR #29.
-    with timing.step("deterministic_features", phase="post"):
-        try:
-            from accessible_surfaceome.agents.surfaceome_v1.d1_deterministic import (
-                fetch_deterministic_features,
-            )
-            det_features = fetch_deterministic_features(gene_id.uniprot_acc)
-        except Exception as exc:  # noqa: BLE001 — keep the run going if D1 is down
-            logger.warning(
-                "DeterministicFeatures D1 fetch failed for %s (%s); using stub",
-                gene_id.uniprot_acc,
-                exc,
-            )
-            det_features = _stub_deterministic_features(gene_id.uniprot_acc)
-
-    # ---- step 7.5: deterministic secreted_form upgrade -------------------
-    # The synthesizer ran before isoform topology was fetched (step 7), so it
-    # could not see a TM-less splice isoform implying a soluble species. Apply
-    # the topology-derived upgrade now — after the fetch, before _derive_filters
-    # (step 8) reads accessibility_risks. Only ever upgrades; never downgrades a
-    # literature-backed call. Module-level + importable for backfill parity.
+    # ---- step 7.5: deterministic secreted_form safety net ----------------
+    # Topology-derived check on accessibility_risks.secreted_form. The
+    # synthesizer now sees the deterministic block at step 4.5 so its
+    # secreted_form call SHOULD already be topology-correct, but this
+    # post-pass stays as a defensive net for:
+    #   * the stub-deterministic-features path (no D1 / no creds), where the
+    #     synthesizer had no real topology to read,
+    #   * any synthesizer LLM call that contradicted the threshold rule
+    #     despite seeing the data.
+    # Only ever upgrades; never downgrades a literature-backed call.
+    # Module-level + importable for backfill parity.
     with timing.step("secreted_form_post_pass", phase="post"):
         from accessible_surfaceome.agents.surfaceome_v2.secreted_form_postpass import (
             apply_secreted_form_post_pass,

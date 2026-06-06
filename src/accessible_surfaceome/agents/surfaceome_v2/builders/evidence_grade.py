@@ -75,9 +75,51 @@ def build_evidence_grade(
     if not claims:
         return _DEFAULT_BLOCK
     gene = context.get("gene", "<unknown>")
+    # Calibration context — triage prior + curator-assigned family tags.
+    # Other builders are intentionally narrow (gene-symbol-only) because
+    # extraction does best on focused input; evidence_grade is the
+    # exception because its grade verdict is the deep-dive's confidence
+    # anchor and benefits from these priors (see the orchestrator's
+    # ``evidence_grade_ctx`` comment).
+    triage_summary_json = context.get("triage_summary_json")
+    hgnc_gene_groups = context.get("hgnc_gene_groups") or []
+    uniprot_family = context.get("uniprot_family")
+
+    triage_block = ""
+    if triage_summary_json:
+        triage_block = (
+            "# Triage prior\n\n"
+            "The upstream `surface_triage` Haiku verdict on this gene "
+            "(before any deep literature). Use as calibration only: a "
+            "`verdict='likely'` with high triage `confidence` makes a "
+            "graded `weak` plausible IFF the ledger genuinely lacks "
+            "direct method evidence (don't downgrade past what the "
+            "claims support); a `verdict='no'` with high triage "
+            "confidence should make you re-check whether the A1 "
+            "claims really show surface accessibility or just "
+            "non-specific signal. Do NOT cite the triage in "
+            "`grade_rationale` — cite only the A1 ledger.\n\n"
+            f"```json\n{triage_summary_json}\n```\n\n"
+        )
+    family_block = ""
+    if hgnc_gene_groups or uniprot_family:
+        family_block = (
+            "# Curator-assigned family tags (ground truth)\n\n"
+            "HGNC gene-group memberships + the parsed UniProt SIMILARITY "
+            "family — NOT model output, curator-assigned. Use to anchor "
+            "the antibody-cross-reactivity-with-paralog discussion in "
+            "`grade_rationale` (and to weight any `paralog_decoy` "
+            "claim in `claim_stances`).\n\n"
+            "```json\n"
+            f'{{"hgnc_gene_groups": {hgnc_gene_groups!r}, '
+            f'"uniprot_family": {uniprot_family!r}}}\n'
+            "```\n\n"
+        )
     system_prompt = load_prompt("evidence_grade_builder_system")
     user_prompt = (
         f"# Gene: {gene}\n\n"
+        f"{triage_block}"
+        f"{family_block}"
         f"{format_ledger_block(claims, header='A1 full ledger')}\n"
         f"{format_schema_block(EvidenceGradeBlock.model_json_schema(), name='EvidenceGradeBlock')}\n"
         "Emit ONE fenced ```json block containing a JSON OBJECT with keys "

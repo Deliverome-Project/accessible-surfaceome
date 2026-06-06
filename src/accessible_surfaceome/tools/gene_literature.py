@@ -247,6 +247,7 @@ def gene_literature(
     ncbi_gene_id: int | None = None,
     hgnc_symbol: str | None = None,
     aliases: list[str] | None = None,
+    previous_symbols: list[str] | None = None,
     pmid: int | None = None,
     pmcid: str | None = None,
     topic_anchors: list[TopicAnchor] | None = None,
@@ -256,9 +257,17 @@ def gene_literature(
     """Single dispatcher mirroring the registered tool schema.
 
     ``uniprot_acc`` is the simplest input: when provided we resolve it
-    internally to ``ncbi_gene_id`` + ``hgnc_symbol`` + ``aliases`` via the
-    cached gene_lookup pipeline. Callers who already have those values can
-    pass them directly to skip the resolve hop.
+    internally to ``ncbi_gene_id`` + ``hgnc_symbol`` + ``aliases`` +
+    ``previous_symbols`` via the cached gene_lookup pipeline. Callers who
+    already have those values can pass them directly to skip the resolve hop.
+
+    ``previous_symbols`` are HGNC's prior approved symbols (HGNC's
+    ``prev_symbol`` field). Renamed genes lose their pre-rename Europe PMC
+    hits unless these are OR'd into the topic-search disjunction alongside
+    ``hgnc_symbol`` + ``aliases``. PubTator's NER (used by ``recent_corpus``)
+    + NCBI's gene2pubmed link table (used by ``gene2pubmed``) both
+    normalize across symbol revisions upstream, so this param only affects
+    the ``topic_search`` Europe PMC path.
 
     ``retraction_index`` is consulted alongside Europe PMC's pubTypeList
     "Retracted Publication" marker; when ``None`` we use the empty index
@@ -288,6 +297,7 @@ def gene_literature(
                 uniprot_acc=uniprot_acc,
                 hgnc_symbol=hgnc_symbol,
                 aliases=aliases,
+                previous_symbols=previous_symbols,
                 topic_anchors=topic_anchors,
                 max_results=max_results,
                 retraction_index=index,
@@ -397,6 +407,7 @@ def _topic_search(
     uniprot_acc: str | None,
     hgnc_symbol: str | None,
     aliases: list[str] | None,
+    previous_symbols: list[str] | None,
     topic_anchors: list[TopicAnchor],
     max_results: int,
     retraction_index: RetractionIndex,
@@ -408,9 +419,22 @@ def _topic_search(
         hgnc_symbol = bundle.hgnc_symbol
         if aliases is None:
             aliases = list(bundle.aliases)
+        if previous_symbols is None:
+            previous_symbols = list(bundle.previous_symbols)
 
     aliases = aliases or []
-    name_terms = [hgnc_symbol, *aliases]
+    previous_symbols = previous_symbols or []
+    # Dedup while preserving order — aliases + previous_symbols often overlap
+    # (HGNC moves rejected aliases into previous_symbols), so a naive concat
+    # blows the query length without adding coverage. Drop empties + the
+    # current hgnc_symbol from the supplement so it isn't quoted twice.
+    seen: set[str] = {hgnc_symbol} if hgnc_symbol else set()
+    supplement: list[str] = []
+    for n in [*aliases, *previous_symbols]:
+        if n and n not in seen:
+            seen.add(n)
+            supplement.append(n)
+    name_terms = [hgnc_symbol, *supplement]
     name_disjunction = " OR ".join(f'"{n}"' for n in name_terms if n)
     topic_terms: list[str] = []
     for anchor in topic_anchors:

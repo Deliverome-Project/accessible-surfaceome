@@ -721,6 +721,7 @@ def _execute_plan(
                         hgnc_symbol=bundle.hgnc_symbol,
                         ncbi_gene_id=bundle.ncbi_gene_id,
                         aliases=bundle.aliases,
+                        previous_symbols=bundle.previous_symbols,
                         topic_anchors=list(req.anchors),
                         http=http,
                         retraction_index=retraction_index,
