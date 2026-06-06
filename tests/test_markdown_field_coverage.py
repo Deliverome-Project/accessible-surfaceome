@@ -95,7 +95,6 @@ OMITTED: dict[str, str] = {
     "primary_evidence_count": "computed inline in the ledger header",
     "secondary_evidence_count": "computed inline in the ledger header",
     # --- ECD % similarity (secondary to the % identity that IS shown) ---
-    "ecd_pct_similarity": "secondary to ecd_pct_identity (shown)",
     "ecd_pct_similarity_to_canonical": "secondary to ECD %identity (shown)",
     "ecd_pct_similarity_to_human_canonical": "secondary to ECD %identity (shown)",
     # --- topology projection / model internals (shown qualitatively) ---

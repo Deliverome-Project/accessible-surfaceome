@@ -1535,20 +1535,6 @@ class ExecutiveSummary(BaseModel):
     surface_call_reason: TriageReason
     # One-sentence, reader-facing rationale for WHEN / WHERE the protein
     # is surface-accessible — the headline behind the §03 "Localization &
-    # accessibility context" summary (and echoed in the §01 signal
-    # panel). Synthesized over the ``biological_context`` block
-    # (``accessibility_modulation`` + ``subcellular_localization`` +
-    # ``anatomical_accessibility``), NOT a copy of ``one_paragraph``.
-    # Optional / defaults ``None`` for back-compat: records generated
-    # before this field landed validate fine and render no summary line
-    # until re-annotated.
-    accessibility_context_summary: str | None = Field(
-        default=None,
-        description=(
-            "One sentence (≤240 chars) on when/where this protein is "
-            "surface-accessible — the accessibility-context headline."
-        ),
-    )
     headline_risks: list[HeadlineRisk] = Field(default_factory=list, max_length=3)
     cited_evidence_ids: list[str] = Field(default_factory=list)
 
@@ -2153,18 +2139,6 @@ class AnatomicalAccessibilityObservation(BaseModel):
         return self
 
 
-# Structured direction of the surface-accessibility change a modulation row
-# describes. Distinct from ``AccessibilityImplication`` (favorable / restricted
-# / …) — this is purely the up/down axis of the surface-accessible pool.
-ModulationDirection = Literal[
-    "increases_surface",
-    "decreases_surface",
-    "bidirectional",
-    "no_change",
-    "unclear",
-]
-
-
 class AccessibilityModulationObservation(BaseModel):
     """How surface presence/exposure shifts with cell state, tissue, or disease.
 
@@ -2486,9 +2460,6 @@ class StructureFeatures(BaseModel):
     model_cif_url: str | None = None
     model_pdb_url: str | None = None
     model_pae_url: str | None = None
-    # Representative experimental (PDB) structure — PDBe SIFTS best_structures.
-    # ``None`` when the protein has no deposited experimental structure.
-    representative_experimental_structure: RepresentativeStructure | None = None
 
 
 class SurfaceBindSite(BaseModel):
@@ -2600,7 +2571,7 @@ class SurfaceBindFeatures(BaseModel):
     # ranked from ``pdbs`` via PDBe SIFTS. Nullable: no PDB entries, or a
     # record emitted before the structure ranker was wired.
     representative_structure: RepresentativeStructure | None = None
-    source: str = "SURFACE-Bind v1 (Marchand 2026 PNAS)"
+    source: str = "SURFACE-Bind v1 (Balbi 2026 PNAS)"
     attribution: str = (
         "© Balbi et al., Correia lab — EPFL / Inria / Novo Nordisk"
     )

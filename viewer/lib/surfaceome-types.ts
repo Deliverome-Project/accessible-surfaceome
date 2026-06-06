@@ -494,9 +494,6 @@ export interface StructureFeatures {
   model_cif_url?: string | null;
   model_pdb_url?: string | null;
   model_pae_url?: string | null;
-  // Representative experimental (PDB) structure — PDBe SIFTS best_structures.
-  // Null when the protein has no deposited experimental structure.
-  representative_experimental_structure?: RepresentativeStructure | null;
 }
 
 /**

@@ -722,15 +722,9 @@
         "full_length_pct_identity": 12.037,
         "family_id": "Bilateria",
         "compara_version": "Compara r112",
-        "ecd_pct_similarity": null,
         "per_residue_topology": null,
-        "deeptmhmm_label": null,
         "tm_helix_count": null,
-        "ecd_length_residues": null,
-        "icd_length_residues": null,
-        "n_terminal_orientation": null,
-        "c_terminal_orientation": null,
-        "signal_peptide_length": null
+        "ecd_length_residues": null
       },
       {
         "paralog_symbol": "OR51F1",
@@ -739,15 +733,9 @@
         "full_length_pct_identity": 8.33333,
         "family_id": "Bilateria",
         "compara_version": "Compara r112",
-        "ecd_pct_similarity": null,
         "per_residue_topology": null,
-        "deeptmhmm_label": null,
         "tm_helix_count": null,
-        "ecd_length_residues": null,
-        "icd_length_residues": null,
-        "n_terminal_orientation": null,
-        "c_terminal_orientation": null,
-        "signal_peptide_length": null
+        "ecd_length_residues": null
       },
       {
         "paralog_symbol": "GPR19",
@@ -756,15 +744,9 @@
         "full_length_pct_identity": 9.44444,
         "family_id": "Bilateria",
         "compara_version": "Compara r112",
-        "ecd_pct_similarity": null,
         "per_residue_topology": null,
-        "deeptmhmm_label": null,
         "tm_helix_count": null,
-        "ecd_length_residues": null,
-        "icd_length_residues": null,
-        "n_terminal_orientation": null,
-        "c_terminal_orientation": null,
-        "signal_peptide_length": null
+        "ecd_length_residues": null
       },
       {
         "paralog_symbol": "OR11A1",
@@ -773,15 +755,9 @@
         "full_length_pct_identity": 10.7407,
         "family_id": "Bilateria",
         "compara_version": "Compara r112",
-        "ecd_pct_similarity": null,
         "per_residue_topology": null,
-        "deeptmhmm_label": null,
         "tm_helix_count": null,
-        "ecd_length_residues": null,
-        "icd_length_residues": null,
-        "n_terminal_orientation": null,
-        "c_terminal_orientation": null,
-        "signal_peptide_length": null
+        "ecd_length_residues": null
       },
       {
         "paralog_symbol": "OR11G2",
@@ -790,15 +766,9 @@
         "full_length_pct_identity": 12.5926,
         "family_id": "Bilateria",
         "compara_version": "Compara r112",
-        "ecd_pct_similarity": null,
         "per_residue_topology": null,
-        "deeptmhmm_label": null,
         "tm_helix_count": null,
-        "ecd_length_residues": null,
-        "icd_length_residues": null,
-        "n_terminal_orientation": null,
-        "c_terminal_orientation": null,
-        "signal_peptide_length": null
+        "ecd_length_residues": null
       },
       {
         "paralog_symbol": "NPY1R",
@@ -807,15 +777,9 @@
         "full_length_pct_identity": 12.7778,
         "family_id": "Bilateria",
         "compara_version": "Compara r112",
-        "ecd_pct_similarity": null,
         "per_residue_topology": null,
-        "deeptmhmm_label": null,
         "tm_helix_count": null,
-        "ecd_length_residues": null,
-        "icd_length_residues": null,
-        "n_terminal_orientation": null,
-        "c_terminal_orientation": null,
-        "signal_peptide_length": null
+        "ecd_length_residues": null
       },
       {
         "paralog_symbol": "TACR2",
@@ -824,15 +788,9 @@
         "full_length_pct_identity": 13.1481,
         "family_id": "Bilateria",
         "compara_version": "Compara r112",
-        "ecd_pct_similarity": null,
         "per_residue_topology": null,
-        "deeptmhmm_label": null,
         "tm_helix_count": null,
-        "ecd_length_residues": null,
-        "icd_length_residues": null,
-        "n_terminal_orientation": null,
-        "c_terminal_orientation": null,
-        "signal_peptide_length": null
+        "ecd_length_residues": null
       },
       {
         "paralog_symbol": "NPY4R",
@@ -841,15 +799,9 @@
         "full_length_pct_identity": 10.5556,
         "family_id": "Bilateria",
         "compara_version": "Compara r112",
-        "ecd_pct_similarity": null,
         "per_residue_topology": null,
-        "deeptmhmm_label": null,
         "tm_helix_count": null,
-        "ecd_length_residues": null,
-        "icd_length_residues": null,
-        "n_terminal_orientation": null,
-        "c_terminal_orientation": null,
-        "signal_peptide_length": null
+        "ecd_length_residues": null
       },
       {
         "paralog_symbol": "NPY4R2",
@@ -858,15 +810,9 @@
         "full_length_pct_identity": 10.5556,
         "family_id": "Bilateria",
         "compara_version": "Compara r112",
-        "ecd_pct_similarity": null,
         "per_residue_topology": null,
-        "deeptmhmm_label": null,
         "tm_helix_count": null,
-        "ecd_length_residues": null,
-        "icd_length_residues": null,
-        "n_terminal_orientation": null,
-        "c_terminal_orientation": null,
-        "signal_peptide_length": null
+        "ecd_length_residues": null
       },
       {
         "paralog_symbol": "PRLHR",
@@ -875,15 +821,9 @@
         "full_length_pct_identity": 12.7778,
         "family_id": "Bilateria",
         "compara_version": "Compara r112",
-        "ecd_pct_similarity": null,
         "per_residue_topology": null,
-        "deeptmhmm_label": null,
         "tm_helix_count": null,
-        "ecd_length_residues": null,
-        "icd_length_residues": null,
-        "n_terminal_orientation": null,
-        "c_terminal_orientation": null,
-        "signal_peptide_length": null
+        "ecd_length_residues": null
       },
       {
         "paralog_symbol": "OR11H2",
@@ -892,15 +832,9 @@
         "full_length_pct_identity": 12.037,
         "family_id": "Bilateria",
         "compara_version": "Compara r112",
-        "ecd_pct_similarity": null,
         "per_residue_topology": null,
-        "deeptmhmm_label": null,
         "tm_helix_count": null,
-        "ecd_length_residues": null,
-        "icd_length_residues": null,
-        "n_terminal_orientation": null,
-        "c_terminal_orientation": null,
-        "signal_peptide_length": null
+        "ecd_length_residues": null
       },
       {
         "paralog_symbol": "OR11H1",
@@ -909,15 +843,9 @@
         "full_length_pct_identity": 11.8519,
         "family_id": "Bilateria",
         "compara_version": "Compara r112",
-        "ecd_pct_similarity": null,
         "per_residue_topology": null,
-        "deeptmhmm_label": null,
         "tm_helix_count": null,
-        "ecd_length_residues": null,
-        "icd_length_residues": null,
-        "n_terminal_orientation": null,
-        "c_terminal_orientation": null,
-        "signal_peptide_length": null
+        "ecd_length_residues": null
       },
       {
         "paralog_symbol": "PROKR1",
@@ -926,15 +854,9 @@
         "full_length_pct_identity": 11.4815,
         "family_id": "Bilateria",
         "compara_version": "Compara r112",
-        "ecd_pct_similarity": null,
         "per_residue_topology": null,
-        "deeptmhmm_label": null,
         "tm_helix_count": null,
-        "ecd_length_residues": null,
-        "icd_length_residues": null,
-        "n_terminal_orientation": null,
-        "c_terminal_orientation": null,
-        "signal_peptide_length": null
+        "ecd_length_residues": null
       },
       {
         "paralog_symbol": "OR11H12",
@@ -943,15 +865,9 @@
         "full_length_pct_identity": 11.6667,
         "family_id": "Bilateria",
         "compara_version": "Compara r112",
-        "ecd_pct_similarity": null,
         "per_residue_topology": null,
-        "deeptmhmm_label": null,
         "tm_helix_count": null,
-        "ecd_length_residues": null,
-        "icd_length_residues": null,
-        "n_terminal_orientation": null,
-        "c_terminal_orientation": null,
-        "signal_peptide_length": null
+        "ecd_length_residues": null
       },
       {
         "paralog_symbol": "GPR83",
@@ -960,15 +876,9 @@
         "full_length_pct_identity": 14.4444,
         "family_id": "Bilateria",
         "compara_version": "Compara r112",
-        "ecd_pct_similarity": null,
         "per_residue_topology": null,
-        "deeptmhmm_label": null,
         "tm_helix_count": null,
-        "ecd_length_residues": null,
-        "icd_length_residues": null,
-        "n_terminal_orientation": null,
-        "c_terminal_orientation": null,
-        "signal_peptide_length": null
+        "ecd_length_residues": null
       },
       {
         "paralog_symbol": "TACR3",
@@ -977,15 +887,9 @@
         "full_length_pct_identity": 15.7407,
         "family_id": "Bilateria",
         "compara_version": "Compara r112",
-        "ecd_pct_similarity": null,
         "per_residue_topology": null,
-        "deeptmhmm_label": null,
         "tm_helix_count": null,
-        "ecd_length_residues": null,
-        "icd_length_residues": null,
-        "n_terminal_orientation": null,
-        "c_terminal_orientation": null,
-        "signal_peptide_length": null
+        "ecd_length_residues": null
       },
       {
         "paralog_symbol": "NPY2R",
@@ -994,15 +898,9 @@
         "full_length_pct_identity": 14.2593,
         "family_id": "Bilateria",
         "compara_version": "Compara r112",
-        "ecd_pct_similarity": null,
         "per_residue_topology": null,
-        "deeptmhmm_label": null,
         "tm_helix_count": null,
-        "ecd_length_residues": null,
-        "icd_length_residues": null,
-        "n_terminal_orientation": null,
-        "c_terminal_orientation": null,
-        "signal_peptide_length": null
+        "ecd_length_residues": null
       },
       {
         "paralog_symbol": "OR9A4",
@@ -1011,15 +909,9 @@
         "full_length_pct_identity": 11.1111,
         "family_id": "Bilateria",
         "compara_version": "Compara r112",
-        "ecd_pct_similarity": null,
         "per_residue_topology": null,
-        "deeptmhmm_label": null,
         "tm_helix_count": null,
-        "ecd_length_residues": null,
-        "icd_length_residues": null,
-        "n_terminal_orientation": null,
-        "c_terminal_orientation": null,
-        "signal_peptide_length": null
+        "ecd_length_residues": null
       },
       {
         "paralog_symbol": "OR9A2",
@@ -1028,15 +920,9 @@
         "full_length_pct_identity": 10.7407,
         "family_id": "Bilateria",
         "compara_version": "Compara r112",
-        "ecd_pct_similarity": null,
         "per_residue_topology": null,
-        "deeptmhmm_label": null,
         "tm_helix_count": null,
-        "ecd_length_residues": null,
-        "icd_length_residues": null,
-        "n_terminal_orientation": null,
-        "c_terminal_orientation": null,
-        "signal_peptide_length": null
+        "ecd_length_residues": null
       },
       {
         "paralog_symbol": "MCHR1",
@@ -1045,15 +931,9 @@
         "full_length_pct_identity": 11.1111,
         "family_id": "Bilateria",
         "compara_version": "Compara r112",
-        "ecd_pct_similarity": null,
         "per_residue_topology": null,
-        "deeptmhmm_label": null,
         "tm_helix_count": null,
-        "ecd_length_residues": null,
-        "icd_length_residues": null,
-        "n_terminal_orientation": null,
-        "c_terminal_orientation": null,
-        "signal_peptide_length": null
+        "ecd_length_residues": null
       },
       {
         "paralog_symbol": "OR11H7",
@@ -1062,15 +942,9 @@
         "full_length_pct_identity": 11.4815,
         "family_id": "Bilateria",
         "compara_version": "Compara r112",
-        "ecd_pct_similarity": null,
         "per_residue_topology": null,
-        "deeptmhmm_label": null,
         "tm_helix_count": null,
-        "ecd_length_residues": null,
-        "icd_length_residues": null,
-        "n_terminal_orientation": null,
-        "c_terminal_orientation": null,
-        "signal_peptide_length": null
+        "ecd_length_residues": null
       },
       {
         "paralog_symbol": "PROKR2",
@@ -1079,15 +953,9 @@
         "full_length_pct_identity": 11.6667,
         "family_id": "Bilateria",
         "compara_version": "Compara r112",
-        "ecd_pct_similarity": null,
         "per_residue_topology": null,
-        "deeptmhmm_label": null,
         "tm_helix_count": null,
-        "ecd_length_residues": null,
-        "icd_length_residues": null,
-        "n_terminal_orientation": null,
-        "c_terminal_orientation": null,
-        "signal_peptide_length": null
+        "ecd_length_residues": null
       },
       {
         "paralog_symbol": "NPY5R",
@@ -1096,15 +964,9 @@
         "full_length_pct_identity": 11.2963,
         "family_id": "Bilateria",
         "compara_version": "Compara r112",
-        "ecd_pct_similarity": null,
         "per_residue_topology": null,
-        "deeptmhmm_label": null,
         "tm_helix_count": null,
-        "ecd_length_residues": null,
-        "icd_length_residues": null,
-        "n_terminal_orientation": null,
-        "c_terminal_orientation": null,
-        "signal_peptide_length": null
+        "ecd_length_residues": null
       },
       {
         "paralog_symbol": "OR11H6",
@@ -1113,15 +975,9 @@
         "full_length_pct_identity": 10.7407,
         "family_id": "Bilateria",
         "compara_version": "Compara r112",
-        "ecd_pct_similarity": null,
         "per_residue_topology": null,
-        "deeptmhmm_label": null,
         "tm_helix_count": null,
-        "ecd_length_residues": null,
-        "icd_length_residues": null,
-        "n_terminal_orientation": null,
-        "c_terminal_orientation": null,
-        "signal_peptide_length": null
+        "ecd_length_residues": null
       },
       {
         "paralog_symbol": "OR10X1",
@@ -1130,15 +986,9 @@
         "full_length_pct_identity": 10.7407,
         "family_id": "Bilateria",
         "compara_version": "Compara r112",
-        "ecd_pct_similarity": null,
         "per_residue_topology": null,
-        "deeptmhmm_label": null,
         "tm_helix_count": null,
-        "ecd_length_residues": null,
-        "icd_length_residues": null,
-        "n_terminal_orientation": null,
-        "c_terminal_orientation": null,
-        "signal_peptide_length": null
+        "ecd_length_residues": null
       },
       {
         "paralog_symbol": "GPR88",
@@ -1147,15 +997,9 @@
         "full_length_pct_identity": 10.3704,
         "family_id": "Bilateria",
         "compara_version": "Compara r112",
-        "ecd_pct_similarity": null,
         "per_residue_topology": null,
-        "deeptmhmm_label": null,
         "tm_helix_count": null,
-        "ecd_length_residues": null,
-        "icd_length_residues": null,
-        "n_terminal_orientation": null,
-        "c_terminal_orientation": null,
-        "signal_peptide_length": null
+        "ecd_length_residues": null
       },
       {
         "paralog_symbol": "OR11H4",
@@ -1164,15 +1008,9 @@
         "full_length_pct_identity": 12.2222,
         "family_id": "Bilateria",
         "compara_version": "Compara r112",
-        "ecd_pct_similarity": null,
         "per_residue_topology": null,
-        "deeptmhmm_label": null,
         "tm_helix_count": null,
-        "ecd_length_residues": null,
-        "icd_length_residues": null,
-        "n_terminal_orientation": null,
-        "c_terminal_orientation": null,
-        "signal_peptide_length": null
+        "ecd_length_residues": null
       },
       {
         "paralog_symbol": "MCHR2",
@@ -1181,15 +1019,9 @@
         "full_length_pct_identity": 10.1852,
         "family_id": "Bilateria",
         "compara_version": "Compara r112",
-        "ecd_pct_similarity": null,
         "per_residue_topology": null,
-        "deeptmhmm_label": null,
         "tm_helix_count": null,
-        "ecd_length_residues": null,
-        "icd_length_residues": null,
-        "n_terminal_orientation": null,
-        "c_terminal_orientation": null,
-        "signal_peptide_length": null
+        "ecd_length_residues": null
       },
       {
         "paralog_symbol": "GPR50",
@@ -1198,15 +1030,9 @@
         "full_length_pct_identity": 11.4815,
         "family_id": "Bilateria",
         "compara_version": "Compara r112",
-        "ecd_pct_similarity": null,
         "per_residue_topology": null,
-        "deeptmhmm_label": null,
         "tm_helix_count": null,
-        "ecd_length_residues": null,
-        "icd_length_residues": null,
-        "n_terminal_orientation": null,
-        "c_terminal_orientation": null,
-        "signal_peptide_length": null
+        "ecd_length_residues": null
       },
       {
         "paralog_symbol": "TACR1",
@@ -1215,15 +1041,9 @@
         "full_length_pct_identity": 14.6296,
         "family_id": "Bilateria",
         "compara_version": "Compara r112",
-        "ecd_pct_similarity": null,
         "per_residue_topology": null,
-        "deeptmhmm_label": null,
         "tm_helix_count": null,
-        "ecd_length_residues": null,
-        "icd_length_residues": null,
-        "n_terminal_orientation": null,
-        "c_terminal_orientation": null,
-        "signal_peptide_length": null
+        "ecd_length_residues": null
       },
       {
         "paralog_symbol": "MTNR1A",
@@ -1232,15 +1052,9 @@
         "full_length_pct_identity": 13.1481,
         "family_id": "Bilateria",
         "compara_version": "Compara r112",
-        "ecd_pct_similarity": null,
         "per_residue_topology": null,
-        "deeptmhmm_label": null,
         "tm_helix_count": null,
-        "ecd_length_residues": null,
-        "icd_length_residues": null,
-        "n_terminal_orientation": null,
-        "c_terminal_orientation": null,
-        "signal_peptide_length": null
+        "ecd_length_residues": null
       },
       {
         "paralog_symbol": "MTNR1B",
@@ -1249,15 +1063,9 @@
         "full_length_pct_identity": 12.4074,
         "family_id": "Bilateria",
         "compara_version": "Compara r112",
-        "ecd_pct_similarity": null,
         "per_residue_topology": null,
-        "deeptmhmm_label": null,
         "tm_helix_count": null,
-        "ecd_length_residues": null,
-        "icd_length_residues": null,
-        "n_terminal_orientation": null,
-        "c_terminal_orientation": null,
-        "signal_peptide_length": null
+        "ecd_length_residues": null
       }
     ],
     "structure": {
@@ -1274,19 +1082,7 @@
       ],
       "model_cif_url": "https://alphafold.ebi.ac.uk/files/AF-O95800-F1-model_v6.cif",
       "model_pdb_url": "https://alphafold.ebi.ac.uk/files/AF-O95800-F1-model_v6.pdb",
-      "model_pae_url": "https://alphafold.ebi.ac.uk/files/AF-O95800-F1-predicted_aligned_error_v6.json",
-      "representative_experimental_structure": {
-        "pdb_id": "9xqn",
-        "chain_id": "A",
-        "unp_start": 21,
-        "unp_end": 392,
-        "coverage": 0.685,
-        "resolution_a": 3.91,
-        "experimental_method": "Electron Microscopy",
-        "n_experimental_structures": 4,
-        "source": "PDBe SIFTS best_structures",
-        "retrieved_at": "2026-06-01T01:41:50.274752Z"
-      }
+      "model_pae_url": "https://alphafold.ebi.ac.uk/files/AF-O95800-F1-predicted_aligned_error_v6.json"
     },
     "surface_bind": {
       "has_data": true,

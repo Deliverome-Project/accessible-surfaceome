@@ -362,22 +362,15 @@ def _fetch_paralogs(
             full_raw = r.get("biomart_percent_identity")
             full_id = float(full_raw) if full_raw is not None else None
             is_close = full_id is not None and full_id >= CLOSE_PARALOG_THRESHOLD
-            # Topology + similarity + sequence are surfaced only for close
-            # paralogs (the ones that get a full topology row).
-            sim = topo = lbl = tmc = ecdl = icdl = nori = cori = spl = seq = None
+            # Topology + sequence are surfaced only for close paralogs
+            # (the ones that get a full topology row).
+            topo = tmc = ecdl = seq = None
             if is_close:
-                sim_raw = r.get("ecd_pct_similarity")
-                sim = float(sim_raw) if sim_raw is not None else None
                 topo = r.get("per_residue_topology") or None
                 if topo:
                     seq = r.get("sequence") or None
-                    lbl = r.get("deeptmhmm_label") or None
                     tmc = int(r["tm_helix_count"]) if r.get("tm_helix_count") is not None else None
                     ecdl = int(r["ecd_length_residues"]) if r.get("ecd_length_residues") is not None else None
-                    icdl = int(r["icd_length_residues"]) if r.get("icd_length_residues") is not None else None
-                    spl = int(r["signal_peptide_length"]) if r.get("signal_peptide_length") is not None else None
-                    nori = _coerce_orientation(r.get("n_terminal_orientation"))
-                    cori = _coerce_orientation(r.get("c_terminal_orientation"))
             out.append(
                 ParalogEntry(
                     paralog_symbol=r["paralog_gene_symbol"],
@@ -386,15 +379,9 @@ def _fetch_paralogs(
                     full_length_pct_identity=full_id,
                     family_id=r.get("family_id") or "",
                     compara_version=r.get("compara_version") or "",
-                    ecd_pct_similarity=sim,
                     per_residue_topology=topo,
-                    deeptmhmm_label=lbl,
                     tm_helix_count=tmc,
                     ecd_length_residues=ecdl,
-                    icd_length_residues=icdl,
-                    n_terminal_orientation=nori,
-                    c_terminal_orientation=cori,
-                    signal_peptide_length=spl,
                     sequence=seq,
                 )
             )
@@ -698,9 +685,6 @@ def fetch_deterministic_features(uniprot_acc: str) -> DeterministicFeatures:
         fetch_afdb_plddt,
         read_afdb_model_links,
     )
-    from accessible_surfaceome.tools.pdbe_structures import (
-        fetch_representative_structure,
-    )
     from accessible_surfaceome.tools.surface_bind import lookup as lookup_surface_bind
 
     structure = fetch_afdb_plddt(
@@ -715,9 +699,10 @@ def fetch_deterministic_features(uniprot_acc: str) -> DeterministicFeatures:
     structure.model_cif_url = _links["model_cif_url"]
     structure.model_pdb_url = _links["model_pdb_url"]
     structure.model_pae_url = _links["model_pae_url"]
-    structure.representative_experimental_structure = (
-        fetch_representative_structure(uniprot_acc)
-    )
+    # The representative experimental (PDB) structure pointer lives under
+    # ``surface_bind.representative_structure`` (see PR #54). The v1
+    # loader doesn't populate that side here; SURFACE-Bind's own loader
+    # fills it from PDBe SIFTS at lookup time.
 
     # SURFACE-Bind summary — in-memory lookup against the checked-in
     # JSON ``data/external/surface_bind/surface_bind_summary.json``.
