@@ -60,7 +60,6 @@ from __future__ import annotations
 import argparse
 import csv
 import json
-import os
 import sys
 import time
 import urllib.error
@@ -355,7 +354,7 @@ def _build_payload(
     Excludes any acc that isn't in BOTH (a) the Schweke refset AND
     (b) the candidate universe. That's the "1,205 hits in our
     surfaceome" we want to push."""
-    print(f"--- reading inputs ---")
+    print("--- reading inputs ---")
     refset = _read_refset()
     complex_index = _read_complex_index()
     universe = _read_surfaceome_x_schweke()
@@ -370,13 +369,13 @@ def _build_payload(
     accs = sorted(set(refset) & set(universe))
     print(f"  intersection     : {len(accs)} entries to push")
 
-    print(f"--- looking up stable IDs in gene_identifier_public ---")
+    print("--- looking up stable IDs in gene_identifier_public ---")
     with D1Client.public() as d1:
         stable = _query_gene_identifier(d1, accs)
     n_with_hgnc = sum(1 for v in stable.values() if v.get("hgnc_id"))
     print(f"  gene_identifier  : {n_with_hgnc}/{len(accs)} got an HGNC id")
 
-    print(f"--- classifying is_ecd_only via UniProt TM annotations ---")
+    print("--- classifying is_ecd_only via UniProt TM annotations ---")
     tm_cache = _load_tm_cache()
     print(f"  TM cache         : {len(tm_cache)} accs pre-cached")
     entries: list[SchwekeEntry] = []
@@ -464,13 +463,13 @@ def _write_payload_tsv(entries: list[SchwekeEntry]) -> None:
                     e.schweke_version,
                 ]
             )
-    print(f"--- payload TSV ---")
+    print("--- payload TSV ---")
     print(f"  wrote {len(entries)} rows → {PAYLOAD_PATH.relative_to(REPO_ROOT)}")
 
 
 def _push_to_d1(entries: list[SchwekeEntry], universe_version: str) -> None:
     """UPSERT entries + the single release row."""
-    print(f"--- pushing to D1 ---")
+    print("--- pushing to D1 ---")
     with D1Client.public() as d1:
         # Per-entry upsert — D1's HTTP API doesn't accept multi-statement
         # batches, so we issue one INSERT OR REPLACE per row.
@@ -533,7 +532,7 @@ def _push_to_d1(entries: list[SchwekeEntry], universe_version: str) -> None:
             ],
         )
         print(f"  release row      : upserted ({SCHWEKE_VERSION} / {universe_version})")
-    print(f"--- done ---")
+    print("--- done ---")
 
 
 def main() -> int:
@@ -559,7 +558,7 @@ def main() -> int:
     n_complex = sum(1 for e in entries if e.has_higher_order_complex)
     n_ecd = sum(1 for e in entries if e.is_ecd_only)
     n_hgnc = sum(1 for e in entries if e.hgnc_id)
-    print(f"--- summary ---")
+    print("--- summary ---")
     print(f"  entries          : {n}")
     print(f"  with HGNC id     : {n_hgnc}")
     print(f"  with c≥3 complex : {n_complex}")
@@ -571,7 +570,7 @@ def main() -> int:
     if args.execute:
         _push_to_d1(entries, args.universe_version)
     else:
-        print(f"--- dry run — pass --execute to push to D1 ---")
+        print("--- dry run — pass --execute to push to D1 ---")
     return 0
 
 

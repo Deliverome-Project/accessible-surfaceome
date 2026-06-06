@@ -101,12 +101,17 @@ export default async function GenePage({ params }: PageProps) {
       rec.deterministic_features.canonical_topology,
     );
   // Schweke et al. 2024 (PMID 38325366) AF2 homo-oligomer prediction
-  // for this gene, when it's in the manifest under
-  // viewer/public/data/structures/schweke/. Drives the "Homo-oligomer"
-  // tab right after Canonical in the StructureViewer tab strip;
-  // null-safe — the tab simply doesn't render for genes outside the
-  // 8,195-homomer reference set.
-  const schwekeHomomerRow = loadSchwekeHomomer(rec.gene.uniprot_acc);
+  // for this gene. Read from rec.deterministic_features.homo_oligomerization,
+  // populated by the Python annotator at annotation time AND injected
+  // by the Worker's schweke_homomer_public LEFT JOIN at serve time for
+  // records annotated before the Schweke wiring. Drives the
+  // "Homo-oligomer" tab right after Canonical in the StructureViewer
+  // tab strip; null-safe — the tab simply doesn't render when
+  // is_homo_oligomer=false.
+  const schwekeHomomerRow = loadSchwekeHomomer(
+    rec.gene.uniprot_acc,
+    rec.deterministic_features.homo_oligomerization,
+  );
   // 5-DB presence vector (UniProt / GO / SURFY / CSPA / HPA) from the
   // candidate-universe build — the same vote pattern shown as dots on
   // the catalog (/) and SurfaceBench (/benchmark) rows. Catalog load

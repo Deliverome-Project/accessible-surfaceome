@@ -184,6 +184,48 @@ async function handleGene(env, symbol) {
   } catch (e) {
     return json({ error: "bad_record_json" }, { status: 500, ttl: 0 });
   }
+  // Enrich with Schweke 2024 homo-oligomer prediction at serve time.
+  // The annotator already bakes ``deterministic_features.homo_oligomerization``
+  // into newly-annotated records (consistent with how the other deterministic
+  // blocks — topology, paralogs, orthologs, structure, surface_bind — are
+  // populated at annotation time). This LEFT JOIN is the back-compat hatch
+  // for records annotated BEFORE the schweke_homomer wiring landed: any
+  // record whose homo_oligomerization block is missing OR carries
+  // is_homo_oligomer=false despite the gene appearing in
+  // schweke_homomer_public gets the row injected. Records that already
+  // carry a positive Schweke entry from the annotator are left alone
+  // (annotator's bake wins; ensures the data the LLM saw at annotation
+  // time matches what the viewer renders).
+  const uniprot = record?.gene?.uniprot_acc;
+  if (uniprot) {
+    const existing = record?.deterministic_features?.homo_oligomerization;
+    const needsEnrichment = !existing || existing.is_homo_oligomer === false;
+    if (needsEnrichment) {
+      const schwekeRow = await env.DB.prepare(
+        `SELECT stoichiometry, af_model_num, is_ecd_only,
+                has_higher_order_complex, dimer_pdb_filename,
+                complex_pdb_filename
+           FROM schweke_homomer_public
+          WHERE uniprot_acc = ?
+          ORDER BY universe_version DESC
+          LIMIT 1`
+      ).bind(uniprot).first().catch(() => null);
+      if (schwekeRow) {
+        if (!record.deterministic_features) record.deterministic_features = {};
+        record.deterministic_features.homo_oligomerization = {
+          is_homo_oligomer: true,
+          stoichiometry: schwekeRow.stoichiometry ?? null,
+          af_model_num: schwekeRow.af_model_num ?? null,
+          is_ecd_only: !!schwekeRow.is_ecd_only,
+          has_higher_order_complex: !!schwekeRow.has_higher_order_complex,
+          dimer_pdb_filename: schwekeRow.dimer_pdb_filename ?? null,
+          complex_pdb_filename: schwekeRow.complex_pdb_filename ?? null,
+          source: "Schweke 2024 (PMID 38325366)",
+          citation: "10.1016/j.cell.2024.01.022",
+        };
+      }
+    }
+  }
   return json(record, { ttl: CACHE_TTL_LONG });
 }
 

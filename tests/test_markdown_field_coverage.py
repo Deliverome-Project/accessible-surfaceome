@@ -101,6 +101,11 @@ OMITTED: dict[str, str] = {
     "homo_oligomerization": "Schweke 2024 prior — fed to synthesizer for epitope-masking prior, not rendered standalone",
     "is_homo_oligomer": "Schweke 2024 prior — boolean fed to synthesizer",
     "stoichiometry": "Schweke 2024 prior — cyclic-symmetry order, fed to synthesizer",
+    "af_model_num": "Schweke 2024 model rank — viewer-side PDB URL builder, not surfaced in markdown",
+    "is_ecd_only": "Schweke 2024 ECD-only flag — viewer-side caption, not surfaced in markdown",
+    "has_higher_order_complex": "Schweke 2024 complex flag — viewer-side caption, not surfaced in markdown",
+    "dimer_pdb_filename": "Schweke 2024 dimer PDB filename — viewer-side asset URL, not surfaced in markdown",
+    "complex_pdb_filename": "Schweke 2024 complex PDB filename — viewer-side asset URL, not surfaced in markdown",
     # --- topology projection / model internals (shown qualitatively) ---
     "deeptmhmm_label": "categorical label; the per-residue string is shown",
     "topology_projection_source": "projection provenance; internal",

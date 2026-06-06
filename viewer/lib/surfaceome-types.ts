@@ -576,6 +576,23 @@ export interface HomoOligomerizationFeatures {
    *  full complex). Null when `is_homo_oligomer=false` or Schweke
    *  flagged a dimer but didn't reconstruct higher-order. */
   stoichiometry?: number | null;
+  /** AF2 model rank (1..5) Schweke retained as canonical. The viewer
+   *  uses this to construct the PDB asset URL ({ACC}_V1_{N}.pdb).
+   *  Null when `is_homo_oligomer=false`. */
+  af_model_num?: number | null;
+  /** True iff Schweke's nodiso3 filter stripped the TM helix as a
+   *  disconnected cluster — the predicted homomer is ECD-only.
+   *  Important context for the epitope-masking prior. */
+  is_ecd_only: boolean;
+  /** True iff Schweke published a higher-order complex (c≥3) for this
+   *  protein in addition to the dimer model. */
+  has_higher_order_complex: boolean;
+  /** PDB filename for the dimer model ({ACC}_V1_{N}.pdb). Null when
+   *  is_homo_oligomer=false. */
+  dimer_pdb_filename?: string | null;
+  /** PDB filename for the higher-order complex
+   *  ({ACC}_V1_{N}_c{stoichiometry}.pdb). Null for dimer-only entries. */
+  complex_pdb_filename?: string | null;
   source: string;
   citation: string;
 }

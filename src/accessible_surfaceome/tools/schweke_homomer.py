@@ -105,7 +105,10 @@ def _lookup_d1(uniprot_acc: str) -> HomoOligomerizationFeatures | None:
     try:
         with D1Client() as d1:
             rows = d1.query(
-                "SELECT stoichiometry FROM schweke_homomer_public "
+                "SELECT stoichiometry, af_model_num, is_ecd_only, "
+                "has_higher_order_complex, dimer_pdb_filename, "
+                "complex_pdb_filename "
+                "FROM schweke_homomer_public "
                 "WHERE uniprot_acc = ? ORDER BY universe_version DESC LIMIT 1;",
                 [uniprot_acc],
             )
@@ -116,10 +119,19 @@ def _lookup_d1(uniprot_acc: str) -> HomoOligomerizationFeatures | None:
     # explicitly so the manifest fallback doesn't get to second-guess.
     if not rows:
         return HomoOligomerizationFeatures(is_homo_oligomer=False)
-    raw_n = rows[0].get("stoichiometry")
+    r = rows[0]
+
+    def _intornull(v: Any) -> int | None:
+        return int(v) if isinstance(v, (int, float)) else None
+
     return HomoOligomerizationFeatures(
         is_homo_oligomer=True,
-        stoichiometry=int(raw_n) if isinstance(raw_n, (int, float)) else None,
+        stoichiometry=_intornull(r.get("stoichiometry")),
+        af_model_num=_intornull(r.get("af_model_num")),
+        is_ecd_only=bool(r.get("is_ecd_only")),
+        has_higher_order_complex=bool(r.get("has_higher_order_complex")),
+        dimer_pdb_filename=r.get("dimer_pdb_filename") or None,
+        complex_pdb_filename=r.get("complex_pdb_filename") or None,
     )
 
 
@@ -153,7 +165,25 @@ def lookup(uniprot_acc: str) -> HomoOligomerizationFeatures:
         # stoichiometry None rather than fabricate a value.
         n = None
 
+    # Reconstruct PDB filenames from the same conventions documented in
+    # the manifest comment so the viewer can build asset URLs even on the
+    # manifest-fallback path (when D1 isn't reachable).
+    af_model_num = entry.get("af_model_num")
+    af_n = af_model_num if isinstance(af_model_num, int) else None
+    dimer_filename = (
+        f"{uniprot_acc}_V1_{af_n}.pdb" if af_n is not None else None
+    )
+    complex_filename = (
+        f"{uniprot_acc}_V1_{af_n}_c{n}.pdb"
+        if af_n is not None and n is not None and n > 2
+        else None
+    )
     return HomoOligomerizationFeatures(
         is_homo_oligomer=True,
         stoichiometry=n,
+        af_model_num=af_n,
+        is_ecd_only=bool(entry.get("ecd_only")),
+        has_higher_order_complex=(n is not None and n > 2),
+        dimer_pdb_filename=dimer_filename,
+        complex_pdb_filename=complex_filename,
     )

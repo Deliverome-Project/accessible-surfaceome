@@ -2637,6 +2637,33 @@ class HomoOligomerizationFeatures(BaseModel):
     # weights epitope-masking severity by N (a 13-mer hides far more
     # surface than a 2-mer).
     stoichiometry: int | None = Field(default=None, ge=2, le=24)
+    # AF2 model rank (1..5) Schweke retained as the canonical homomer
+    # model. Carried so the viewer can construct the static-asset PDB
+    # URL (``{ACC}_V1_{N}.pdb``) without consulting a separate manifest.
+    # ``None`` when ``is_homo_oligomer=False``.
+    af_model_num: int | None = Field(default=None, ge=1, le=5)
+    # ``True`` iff Schweke's ``nodiso3`` contact-clustering filter
+    # stripped the TM helix as a disconnected cluster — the predicted
+    # homomer model is ECD-only. Important context for the synthesizer's
+    # epitope-masking prior: an ECD-only dimer means the soluble ECD is
+    # the dimerizing surface (which IS the epitope-accessible region),
+    # while a full-membrane homomer might be a membrane-resident
+    # oligomer with a different epitope-burial pattern.
+    is_ecd_only: bool = False
+    # ``True`` iff Schweke published a higher-order complex (c≥3) for
+    # this protein in addition to the dimer model. Mirrors the
+    # ``schweke_homomer_public.has_higher_order_complex`` column.
+    has_higher_order_complex: bool = False
+    # PDB filenames carried from D1 so the viewer can construct asset
+    # URLs without a local manifest. ``dimer_pdb_filename`` is always
+    # present for a Schweke homomer ({ACC}_V1_{N}.pdb);
+    # ``complex_pdb_filename`` is the AnAnaS-reconstructed higher-order
+    # complex ({ACC}_V1_{N}_c{stoichiometry}.pdb) — ``None`` for
+    # dimer-only entries. The viewer fetches these from
+    # ``/data/structures/schweke/`` and gracefully falls back when the
+    # asset isn't yet ingested.
+    dimer_pdb_filename: str | None = None
+    complex_pdb_filename: str | None = None
     source: str = "Schweke 2024 (PMID 38325366)"
     citation: str = "10.1016/j.cell.2024.01.022"
 
@@ -2872,7 +2899,7 @@ class SurfaceomeRecord(BaseModel):
 
     model_config = ConfigDict(extra="forbid")
 
-    schema_version: Literal["1.0.0", "1.1.0", "2.0.0", "2.1.0"] = "2.1.0"
+    schema_version: Literal["1.0.0", "1.1.0", "2.0.0", "2.1.0", "2.2.0"] = "2.2.0"
     gene: GeneIdentifier
 
     # Cross-agent coherence — populated by the orchestrator from the most
@@ -2969,7 +2996,7 @@ class SurfaceomeRecordDraft(BaseModel):
 
     model_config = ConfigDict(extra="forbid")
 
-    schema_version: Literal["1.0.0", "1.1.0", "2.0.0", "2.1.0"] = "2.1.0"
+    schema_version: Literal["1.0.0", "1.1.0", "2.0.0", "2.1.0", "2.2.0"] = "2.2.0"
     gene: GeneIdentifier
 
     # Orchestrator-injected before the agent call; the agent reads it but does
