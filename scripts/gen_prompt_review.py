@@ -127,6 +127,185 @@ def enum_section() -> str:
     </section>"""
 
 
+# ---- Deterministic-data flow into each prompt -----------------------------
+# Maps each agent group to the DeterministicFeatures fields its prompts
+# receive at runtime. Hand-curated from the runtime wiring (NOT introspected,
+# because the LLM prompts don't statically reference fields the same way the
+# Python schema does — the relevant truth is what gets rendered into the
+# system / user message, traced through the runners + kickoff templates).
+#
+# Source of truth references (paths relative to repo root):
+#   * plan_trim_select  — agents/plan_trim_select/runner.py
+#                         (_summarize_deterministic_for_planner @ ~L312;
+#                          deterministic_summary_json on context @ L302; rendered
+#                          into the user message @ L1083-1087).
+#   * v2 builders       — agents/surfaceome_v2/orchestrator.py
+#                         (a1_ctx / a2_ctx built @ L373-374: only {"gene": ...}).
+#   * synthesizer       — surfaceome_synthesizer/prompts/task_template.md
+#                         ({{deterministic_features}} placeholder); system.md
+#                         references nested paths (e.g. L165-166).
+#   * surface_triage    — agents/surface_triage/prompts/task_template.md
+#                         (HGNC + NCBI identifier resolution; no topology).
+DETERMINISTIC_GROUPS = [
+    {
+        "group": "plan_trim_select — A1 / A2 search planners",
+        "shape": "summarized",
+        "prompts": [
+            "a1_select_system.md",
+            "a1_trim_system.md",
+            "a2_select_system.md",
+            "a2_trim_system.md",
+            "abstract_triage_system.md",
+            "select_system.md",
+            "trim_system.md",
+        ],
+        "note": (
+            "Receives a JSON-stringified subset via "
+            "<code>_summarize_deterministic_for_planner</code> "
+            "(runner.py L312). The kickoff is gated on "
+            "<code>tm_helix_count</code> + <code>ecd_length_residues</code> "
+            "(membrane+ECD-only axes fire when both look real)."
+        ),
+        "fields": [
+            "canonical_topology.tm_helix_count",
+            "canonical_topology.n_terminal_orientation",
+            "canonical_topology.c_terminal_orientation",
+            "canonical_topology.ecd_length_residues",
+            "canonical_topology.icd_length_residues",
+            "canonical_topology.signal_peptide_length",
+            "paralogs[].paralog_symbol  (top 5 by ECD identity)",
+            "paralogs[].ecd_pct_identity  (top 5)",
+            "paralog_count  (= len(paralogs))",
+            "orthologs.mouse[].ortholog_symbol  (canonical)",
+            "orthologs.mouse[].ecd_pct_identity_to_human_canonical",
+            "orthologs.cynomolgus[].ortholog_symbol  (canonical)",
+            "orthologs.cynomolgus[].ecd_pct_identity_to_human_canonical",
+            "mouse_ortholog_count  (= len(orthologs.mouse))",
+            "cyno_ortholog_count  (= len(orthologs.cynomolgus))",
+        ],
+    },
+    {
+        "group": "surfaceome_v2 — 8 block builders",
+        "shape": "none",
+        "prompts": [
+            "methods_builder_system.md",
+            "contradiction_builder_system.md",
+            "evidence_grade_builder_system.md",
+            "expression_builder_system.md",
+            "cell_states_builder_system.md",
+            "subcellular_localization_builder_system.md",
+            "anatomical_accessibility_builder_system.md",
+            "accessibility_modulation_builder_system.md",
+        ],
+        "note": (
+            "Builders receive only <code>{gene: hgnc_symbol}</code> plus the "
+            "A1 or A2 claim ledger (orchestrator.py L373-374). Zero "
+            "<code>DeterministicFeatures</code> fields land in the builder "
+            "prompts &mdash; block extraction is an LLM operation over claims, "
+            "not over topology / orthologs / structure."
+        ),
+        "fields": [],
+    },
+    {
+        "group": "surfaceome_synthesizer (B)",
+        "shape": "full",
+        "prompts": [
+            "system.md",
+            "task_template.md",
+        ],
+        "note": (
+            "The <strong>entire</strong> <code>DeterministicFeatures</code> "
+            "block is rendered into the user message as a read-only context "
+            "blob via the <code>{{deterministic_features}}</code> placeholder. "
+            "<code>system.md</code> references nested paths directly "
+            "(e.g. <code>deterministic_features.canonical_topology"
+            ".ecd_length_residues</code> @ L165-166)."
+        ),
+        "fields": [
+            "canonical_topology  (IsoformTopology — full)",
+            "isoform_topologies[]  (IsoformTopology[])",
+            "isoform_topologies_checked  (sentinel)",
+            "orthologs.mouse[]  (OrthologEntry[])",
+            "orthologs.cynomolgus[]  (OrthologEntry[])",
+            "paralogs[]  (ParalogEntry[])",
+            "paralogs_checked  (sentinel)",
+            "structure  (StructureFeatures: AFDB pLDDT, model URLs)",
+            "surface_bind  (SurfaceBindFeatures: sites, scores, representative_structure)",
+        ],
+    },
+    {
+        "group": "surface_triage",
+        "shape": "identifiers-only",
+        "prompts": [
+            "system.md",
+            "system_naive.md",
+            "system_pubmed.md",
+            "system_web.md",
+            "system_web_naive.md",
+            "task_template.md",
+        ],
+        "note": (
+            "Triage runs <em>upstream</em> of the topology / paralog / ortholog "
+            "fetch, so it sees zero fields from <code>DeterministicFeatures</code>. "
+            "It receives identifier-resolution context only (HGNC + NCBI). "
+            "Includes <code>hgnc_gene_groups</code> &mdash; deterministic and "
+            "curator-assigned, but resolved separately via "
+            "<code>resolve_by_hgnc_id</code>, not via the topology pipeline."
+        ),
+        "fields": [],
+    },
+]
+
+
+def deterministic_section() -> str:
+    SHAPE_LABEL = {
+        "summarized": ("subset", "summarized"),
+        "full":       ("full",   "full block"),
+        "none":       ("none",   "claim-ledger only"),
+        "identifiers-only": ("ids", "identifiers only"),
+    }
+    cards = []
+    for g in DETERMINISTIC_GROUPS:
+        badge_class, badge_text = SHAPE_LABEL[g["shape"]]
+        prompt_chips = "".join(
+            f'<code class="dprompt">{html.escape(p)}</code>' for p in g["prompts"]
+        )
+        if g["fields"]:
+            field_chips = "".join(
+                f'<span class="dfield">{html.escape(f)}</span>' for f in g["fields"]
+            )
+            fields_block = f'<div class="dfields">{field_chips}</div>'
+        else:
+            fields_block = (
+                '<div class="dnone">No <code>DeterministicFeatures</code> '
+                'fields reach this prompt.</div>'
+            )
+        cards.append(f"""
+          <div class="dcard">
+            <div class="dhead">
+              <h3>{html.escape(g["group"])}</h3>
+              <span class="dbadge d-{badge_class}">{html.escape(badge_text)}</span>
+            </div>
+            <div class="dprompts">{prompt_chips}</div>
+            <div class="dnote">{g["note"]}</div>
+            {fields_block}
+          </div>""")
+    return f"""<section class="determ">
+      <h2>Deterministic data flow &mdash; what each prompt actually receives</h2>
+      <p class="sub2">From the runtime wiring: which fields of
+      <code>DeterministicFeatures</code> (canonical / isoform topology, orthologs,
+      paralogs, structure, SURFACE-Bind) the model can read in each agent's user
+      message. The <em>shape</em> badge says how much of the block is exposed:
+      <span class="dbadge d-full">full block</span> = the synthesizer gets
+      everything; <span class="dbadge d-subset">summarized</span> = the
+      plan-trim-select planners get a small JSON snapshot;
+      <span class="dbadge d-none">claim-ledger only</span> = builders see only
+      the gene symbol + extracted claims; <span class="dbadge d-ids">identifiers
+      only</span> = triage runs before topology is even fetched.</p>
+      <div class="dgrid">{''.join(cards)}</div>
+    </section>"""
+
+
 REPO = Path(
     subprocess.run(["git", "rev-parse", "--show-toplevel"],
                    capture_output=True, text=True).stdout.strip() or "."
@@ -287,11 +466,32 @@ footer{{color:var(--mut);font-size:12px;margin:28px 0 0;border-top:1px solid var
 .evaxis{{font-size:9px;text-transform:uppercase;letter-spacing:.04em;border-radius:3px;padding:1px 4px;background:#0d1014;color:var(--mut)}}
 .ev-homo .evaxis{{background:#143226;color:#56d364}}.ev-hetero .evaxis{{background:#142544;color:#8fb4ff}}
 .evaxis.ax-homo{{background:#143226;color:#56d364}}.evaxis.ax-hetero{{background:#142544;color:#8fb4ff}}
+.determ{{margin:0 0 30px}}.determ h2{{font-size:17px;margin:0 0 4px}}
+.dgrid{{display:grid;grid-template-columns:1fr 1fr;gap:14px}}
+@media(max-width:760px){{.dgrid{{grid-template-columns:1fr}}}}
+.dcard{{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:14px}}
+.dhead{{display:flex;align-items:center;justify-content:space-between;gap:8px;margin:0 0 8px}}
+.dhead h3{{margin:0;font-size:13px;color:var(--ink)}}
+.dbadge{{font-size:10px;text-transform:uppercase;letter-spacing:.05em;border-radius:5px;padding:2px 7px;font-weight:600}}
+.d-full{{background:#143226;color:#56d364;border:1px solid #2ea043}}
+.d-subset{{background:#142544;color:#8fb4ff;border:1px solid #2a4a8a}}
+.d-none{{background:#2a1d28;color:#cfd8ea;border:1px solid var(--line)}}
+.d-ids{{background:#3a2e16;color:#f0c577;border:1px solid #6e5a2e}}
+.dprompts{{display:flex;flex-wrap:wrap;gap:5px;margin:0 0 10px}}
+.dprompt{{font-family:ui-monospace,Menlo,monospace;font-size:10.5px;background:#1b2230;border:1px solid var(--line);border-radius:4px;padding:2px 6px;color:#bcd0f0}}
+.dnote{{color:var(--mut);font-size:11.5px;line-height:1.5;margin:0 0 10px;border-top:1px solid var(--line);padding-top:8px}}
+.dnote code{{font-family:ui-monospace,monospace;font-size:11px;color:#8fb4ff}}
+.dnote strong{{color:var(--ink)}}.dnote em{{color:var(--ink)}}
+.dfields{{display:flex;flex-direction:column;gap:3px;border-top:1px solid var(--line);padding-top:8px}}
+.dfield{{font-family:ui-monospace,monospace;font-size:11px;color:#c8f0d6;background:#0f1a14;border-left:2px solid var(--addbar);padding:3px 8px;border-radius:0 4px 4px 0;line-height:1.4}}
+.dnone{{font-size:11.5px;color:var(--mut);border-top:1px solid var(--line);padding-top:8px}}
+.dnone code{{font-family:ui-monospace,monospace;font-size:11px;color:#8fb4ff}}
 </style></head><body><div class="wrap">
 <h1>Deep-dive prompt review</h1>
 <p class="sub">PR&nbsp;#54 — full prompt text with the diff vs <b>main</b> (<code>{BASE[:7]}</code>) highlighted inline · {len(files)} files</p>
 <div class="chips"><span class="chip"><b>{nm}</b> modified</span><span class="chip"><b>{nn}</b> new</span><span class="chip"><b>{nd}</b> deleted</span></div>
 {kickoff_section()}
+{deterministic_section()}
 {enum_section()}
 <h2 style="font-size:17px;margin:0 0 12px">Prompts</h2>
 <nav class="nav">{''.join(nav)}</nav>
