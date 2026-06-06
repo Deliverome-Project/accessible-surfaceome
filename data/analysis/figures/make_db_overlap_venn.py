@@ -35,7 +35,7 @@ REPO = "Deliverome-Project/accessible-surfaceome"
 BRANCH = "main"
 CAND_URL = (
     f"https://raw.githubusercontent.com/{REPO}/{BRANCH}"
-    f"/data/processed/candidate_universe/candidate_universe.tsv"
+    f"/data/processed/catalog/whole_proteome_catalog.tsv"
 )
 
 # Published reproduction gist (embedded into output PNG Source / PDF
@@ -146,7 +146,7 @@ def main() -> None:
     sets: dict[str, set[str]] = {label: set() for _, label in DB_FLAGS}
     reader = csv.DictReader(io.StringIO(text), delimiter="\t")
     for row in reader:
-        acc = row["uniprot_accession"]
+        acc = row["uniprot_acc"]
         for flag, label in DB_FLAGS:
             if row.get(flag, "0") == "1":
                 sets[label].add(acc)

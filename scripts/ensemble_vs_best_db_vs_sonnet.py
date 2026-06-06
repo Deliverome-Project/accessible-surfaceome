@@ -36,7 +36,7 @@ from accessible_surfaceome.audit._plotting_config import (
 
 ROOT = Path(__file__).resolve().parents[1]
 BENCH_TSV = ROOT / "data/eval/triage_benchmark_v1.tsv"
-CAND_TSV = ROOT / "data/processed/candidate_universe/candidate_universe.tsv"
+CAND_TSV = ROOT / "data/processed/catalog/whole_proteome_catalog.tsv"
 PREDS_TSV = ROOT / "data/processed/triage_bench/mainbench_canonical_v2.tsv"
 OPT_CUTOFFS_TSV = ROOT / "data/processed/triage_bench/db_optimized_cutoffs.tsv"
 OUT_DIR = ROOT / "data/analysis/figures"  # promoted to canonical figures dir
@@ -62,7 +62,7 @@ def _vote_correct(vote: str, truth: str) -> bool:
 
 def main() -> None:
     bench = pd.read_csv(BENCH_TSV, sep="\t")
-    cand = pd.read_csv(CAND_TSV, sep="\t").set_index("uniprot_accession")
+    cand = pd.read_csv(CAND_TSV, sep="\t").set_index("uniprot_acc")
     preds = pd.read_csv(PREDS_TSV, sep="\t")
     opt = pd.read_csv(OPT_CUTOFFS_TSV, sep="\t")
     uniprot_opt = set(opt.loc[opt["uniprot_optimized"] == 1, "accession"].astype(str))

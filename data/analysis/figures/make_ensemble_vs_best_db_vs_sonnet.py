@@ -49,7 +49,7 @@ REPO = "Deliverome-Project/accessible-surfaceome"
 BRANCH = "main"
 BASE = f"https://raw.githubusercontent.com/{REPO}/{BRANCH}"
 BENCH_TSV = f"{BASE}/data/eval/triage_benchmark_v1.tsv"
-CAND_TSV = f"{BASE}/data/processed/candidate_universe/candidate_universe.tsv"
+CAND_TSV = f"{BASE}/data/processed/catalog/whole_proteome_catalog.tsv"
 PREDS_TSV = f"{BASE}/data/processed/triage_bench/mainbench_canonical_v2.tsv"
 # Per-replicate predictions — used to overlay the Sonnet bar's individual
 # replicate accuracies + SEM (the DB / ensemble bars are deterministic and
@@ -168,7 +168,7 @@ def main() -> None:
     _apply_brand_style()
 
     bench = _fetch_tsv(BENCH_TSV)
-    cand = _fetch_tsv(CAND_TSV).set_index("uniprot_accession")
+    cand = _fetch_tsv(CAND_TSV).set_index("uniprot_acc")
     preds = _fetch_tsv(PREDS_TSV)
     opt = _fetch_tsv(OPT_CUTOFFS_TSV)
     uniprot_opt = set(opt.loc[opt["uniprot_optimized"] == 1, "accession"].astype(str))
