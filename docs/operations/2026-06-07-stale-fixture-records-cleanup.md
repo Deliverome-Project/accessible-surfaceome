@@ -29,20 +29,28 @@ Both clearly named as test fixtures, neither is a real gene:
 
 | Symbol  | Schema   | Notes                              |
 |---------|----------|------------------------------------|
-| OLDREC  | 0.5.0    | predates surface_bind block        |
-| FAKE3   | 1.0.0    | predates surface_bind block        |
+| OLDREC  | 0.5.0    | predates `surface_bind` block      |
+| FAKE3   | 1.0.0    | predates `surface_bind` block      |
+| FAKE1   | 1.1.0    | predates `surface_bind` block (caught on the SECOND retry — only `deterministic_features` itself was present, no `surface_bind` inside) |
 
-`FAKE1` (schema 1.1.0) was left in place — it carries the required
-fields and renders cleanly. Decision on whether to also retire it is
-deferred to the next housekeeping pass.
+The first pass dropped only OLDREC + FAKE3 and left FAKE1 because its
+schema string (1.1.0) matched records that DO render cleanly. That call
+was wrong — schema-version-string alone doesn't promise the record
+carries the v2.x renderer's hard-required field set. The retry deploy
+crashed on FAKE1 with the same
+`Cannot read properties of undefined (reading 'surface_bind')`
+trace, so it joins the OLDREC / FAKE3 retirement.
 
-Final `surface_annotation` distribution after cleanup (18 records):
+The right gate is structural, not version-string-based — see
+"Systemic guard" below.
+
+Final `surface_annotation` distribution after cleanup (17 records):
 
 | Schema | n  | Notes                                                    |
 |--------|----|----------------------------------------------------------|
 | 2.9.0  | 5  | GPR75, HMGB1, SRC, TACSTD2, TGOLN2 — the v2 archetype reruns |
 | 2.6.0  | 2  | CD81, SLC7A5 — one minor cycle stale                     |
-| 1.1.0  | 11 | BAX, CLDN18, EGFR, FAKE1, FN1, HSPA5, IZUMO4, KIR2DL1, KLK2, LRP2, LYN |
+| 1.1.0  | 10 | BAX, CLDN18, EGFR, FN1, HSPA5, IZUMO4, KIR2DL1, KLK2, LRP2, LYN |
 
 Once the rebuild succeeds, the GeneJump freshness dots will use
 `max(schema_version)` from `/v1/genes` as the "current" cohort — so
@@ -68,3 +76,45 @@ deploy stays broken until something new lands on `main`.
 Ran via `D1Client(D1Config.from_env_public())` against
 `surfaceome_public` D1; private DB rows untouched (history preserved
 for traceability).
+
+## Systemic guard (added 2026-06-07, second pass)
+
+The recurrence-by-FAKE1 made it clear that the existing drift coverage
+had a hand-list shape that let new broken records slip through:
+
+* `tests/test_worker_response_shape.py` calls
+  `SurfaceomeRecord.model_validate` per gene, but only for a hand-
+  curated 4-gene list (EGFR / SRC / GPR75 / HSPA5). Records outside
+  that list aren't checked.
+* It's also marked `@pytest.mark.network` and gated behind
+  `--run-network`, so CI skips it by default.
+
+Replaced with `tests/test_d1_records_schema_drift.py`, which:
+
+1. Enumerates **every** row in public-D1 `surface_annotation` — no
+   allowlist to update.
+2. For each record, walks a small list of `REQUIRED_PATHS` that mirror
+   the v2.x renderer's hard-dereference set (root-level blocks plus
+   `deterministic_features.surface_bind` specifically). A missing or
+   `None` leaf fails the test with the offending
+   `(gene_symbol, schema_version, missing_path)` tuples.
+3. Skips when the public-D1 credentials are absent (local `pytest -q`
+   without `.env`), so it doesn't trip on fork PRs that legitimately
+   can't read secrets. CI runs that wire the secrets enforce it.
+
+`.github/workflows/ci.yml` now passes `CLOUDFLARE_API_TOKEN`,
+`CLOUDFLARE_ACCOUNT_ID`, `CLOUDFLARE_D1_SURFACEOME_PUBLIC_ID` into the
+python-checks step. Same secrets the d1-backup workflow already uses;
+the public-DB scope is read-only by convention.
+
+**Why path-walking, not strict Pydantic**: legacy v1.x records carry
+removed-in-v2 fields (e.g. `cell_states` merged into
+`accessibility_modulation` at schema 2.5.0). Strict Pydantic
+(`extra='forbid'`) rejects them, but the renderer reads specific
+fields only and ignores legacy extras. We care about
+renderer-crashing drift, not historical-shape drift — matching the
+renderer's actual access pattern catches the right thing.
+
+When the renderer dereferences a new field without a `?.` chain,
+extend `REQUIRED_PATHS`. Drift in the other direction (renderer stops
+touching a field) just leaves a harmless dead entry.
