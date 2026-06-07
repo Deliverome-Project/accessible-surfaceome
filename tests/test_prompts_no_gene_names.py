@@ -249,3 +249,144 @@ def test_blocklist_is_curated_not_empty() -> None:
         "If you're removing entries, double-check those tokens aren't "
         "real target genes."
     )
+
+
+# ---------------------------------------------------------------------------
+# Python string-literal scan (the .md scan is blind to LLM-visible content
+# that's embedded in Python — see tool_registry.EVIDENCE_RETRIEVAL_DESCRIPTION
+# for the canonical "tool description string" pattern).
+# ---------------------------------------------------------------------------
+
+import ast  # noqa: E402
+
+# Paths under ``agents/`` to NOT scan for Python string-literal leaks.
+# Docstrings (functions / modules / classes) are filtered via AST below;
+# this list is for files that contain LARGE non-prompt strings where a
+# forbidden token would just be noise (CSS class names, path strings,
+# eval-script ground-truth lists).
+PY_SCAN_EXCLUDE_FILES: tuple[str, ...] = (
+    # HTML/CSS template strings (gene name 'src' as CSS class etc.)
+    "plan_trim_select/render_html.py",
+    # Eval scripts hardcode ground-truth gene lists by design — they
+    # compare model predictions against known positives/negatives, so
+    # gene names there are reference data, not prompt content.
+    "_eval/benchmark.py",
+    "_eval/variant_b_deterministic.py",
+)
+
+# Subset of BLOCKLIST used for the Python scan. Excludes:
+# - Tokens that double as common code identifiers (e.g. MET, ABL, KIT)
+# - Drug-name lowercase tokens (those rarely appear in Python and the
+#   .md scan is the primary surface for them)
+# Keep this tight — false positives in Python code reviews are worse than
+# misses (the .md scan catches almost everything).
+PY_BLOCKLIST: tuple[str, ...] = (
+    "EGFR", "HER2", "HER3", "HSPA5", "CD81", "CD19", "CD138", "FCRL5",
+    "GPR75", "IZUMO4", "CLDN6", "CLDN18", "BCMA",
+    "ADAM10", "ADAM17", "BACE", "BiP", "csGRP78",
+    "TIM-3", "TIM3", "LAG-3", "LAG3", "PD-1", "PDL1", "PD-L1",
+    "CD9", "CD13", "CD20", "CD22", "CD26", "CD33", "CD38",
+    "CD55", "CD59", "CD62L", "CD63", "CD73",
+    "LUAD", "LAMP1", "LAMP2", "5A6", "AY13",
+    "HCC827", "HCC1954", "PC9", "H1650", "H1975", "MCF7",
+)
+
+_PY_BLOCKED_RE = re.compile(
+    r"(?<![A-Za-z0-9_-])(" + "|".join(re.escape(t) for t in PY_BLOCKLIST) + r")(?![A-Za-z0-9_-])"
+)
+
+
+def _agents_py_files() -> list[Path]:
+    return [
+        p for p in sorted(PROMPTS_ROOT.rglob("*.py"))
+        if not any(excluded in str(p) for excluded in PY_SCAN_EXCLUDE_FILES)
+        and "__pycache__" not in str(p)
+    ]
+
+
+def _docstring_node_ids(tree: ast.Module) -> set[int]:
+    """Set of ``id(node)`` for every ``ast.Constant`` node that is a
+    module / class / function docstring (Python ignores those at
+    runtime EXCEPT for ``__doc__`` lookup — they never reach the
+    LLM via the prompt path)."""
+    docstring_ids: set[int] = set()
+
+    def _maybe(body: list[ast.stmt]) -> None:
+        if (
+            body
+            and isinstance(body[0], ast.Expr)
+            and isinstance(body[0].value, ast.Constant)
+            and isinstance(body[0].value.value, str)
+        ):
+            docstring_ids.add(id(body[0].value))
+
+    _maybe(tree.body)
+    for node in ast.walk(tree):
+        if isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef, ast.ClassDef)):
+            _maybe(node.body)
+    return docstring_ids
+
+
+def _scan_py(path: Path) -> list[tuple[int, str, str]]:
+    """Find ``(lineno, token, surrounding_window)`` for every Python
+    string-literal occurrence of a PY_BLOCKLIST token in ``path``,
+    skipping docstrings."""
+    try:
+        tree = ast.parse(path.read_text())
+    except SyntaxError:
+        return []
+    docstring_ids = _docstring_node_ids(tree)
+    hits: list[tuple[int, str, str]] = []
+    for node in ast.walk(tree):
+        if not (isinstance(node, ast.Constant) and isinstance(node.value, str)):
+            continue
+        if id(node) in docstring_ids:
+            continue
+        s = node.value
+        for m in _PY_BLOCKED_RE.finditer(s):
+            token = m.group(1)
+            ctx_start = max(0, m.start() - CONTEXT_WINDOW)
+            ctx_end = min(len(s), m.end() + CONTEXT_WINDOW)
+            ctx = s[ctx_start:ctx_end].replace("\n", " ")
+            if token.startswith("CD") and CELL_TYPE_CONTEXT.search(ctx):
+                continue
+            hits.append((node.lineno, token, ctx))
+    return hits
+
+
+def test_python_string_literals_have_no_gene_names() -> None:
+    """Python string literals under ``agents/`` (excluding docstrings)
+    must not name specific genes.
+
+    The .md scan is blind to LLM-visible content embedded in Python —
+    e.g. the tool-description constants under
+    ``_support/tool_registry.py`` are concatenated string literals that
+    the LLM sees on every annotation, but the .md scan never touches
+    them. This test closes that gap.
+
+    Docstrings are exempted (they're Python developer documentation,
+    never sent to the LLM). HTML/CSS template files + eval scripts
+    that legitimately hardcode gene lists for ground-truth comparison
+    are excluded via ``PY_SCAN_EXCLUDE_FILES``.
+    """
+    all_hits: list[tuple[Path, list[tuple[int, str, str]]]] = []
+    for path in _agents_py_files():
+        hits = _scan_py(path)
+        if hits:
+            all_hits.append((path, hits))
+    if not all_hits:
+        return
+    report_lines = ["Gene-name string literals found in Python under agents/:\n"]
+    repo_root = PROMPTS_ROOT.parent.parent.parent.parent
+    for path, hits in all_hits:
+        rel = path.relative_to(repo_root)
+        for lineno, token, ctx in hits:
+            report_lines.append(f"  {rel}:{lineno}  [{token}]  …{ctx.strip()}…")
+    report_lines.append(
+        "\nReplace each gene-name example with a generic descriptor "
+        "('the target', 'a target protein', 'gene X'). If the literal "
+        "is genuinely developer-only (a docstring, a CSS class, an eval "
+        "ground-truth list), the AST already skips docstrings; add the "
+        "file to ``PY_SCAN_EXCLUDE_FILES`` for the other categories."
+    )
+    pytest.fail("\n".join(report_lines))
