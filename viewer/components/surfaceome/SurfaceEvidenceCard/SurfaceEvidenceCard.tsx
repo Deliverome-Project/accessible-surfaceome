@@ -324,9 +324,11 @@ function MethodBlock({
                     >
                       <ChipLabelValue
                         label="validation"
-                        value={prettyEnum(ab.validation_strength)}
-                        // none / unknown isn't a verdict — render it in the
-                        // muted (non-bold) style so it reads as "no data".
+                        value={
+                          ab.validation_strength === "none"
+                            ? "no validation"
+                            : prettyEnum(ab.validation_strength)
+                        }
                         muted={
                           ab.validation_strength === "none" ||
                           ab.validation_strength === "unknown"
