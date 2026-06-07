@@ -23,7 +23,9 @@ your task message; follow it. You GENERATE three blocks
 and COPY THROUGH one frozen block (`accessibility_risks`, provided in your
 task message — see below):
 
-- `executive_summary` — `one_paragraph` (≤600 char, consultant-readable),
+- `executive_summary` — the 4-beat narrative `one_paragraph`
+  (verdict → evidence → state-dependence → risk; see the dedicated
+  section below for the full spec),
   `accessibility_context_summary` (ONE sentence naming WHEN and WHERE the
   protein is surface-accessible — the load-bearing §03 headline, not a generic
   blurb; e.g. "Surface-accessible on activated T cells and in tumor tissue, but
@@ -246,6 +248,129 @@ parse time — invented or paraphrased ids fail the run.
   inversion evidence, because the targetable state is the
   cancer-state-induced surface form). Confirm or override is the
   choice; just don't pass through without re-derivation.
+
+- **`one_paragraph`** — ≤600 char (aim 500–580), the consultant-facing
+  headline that opens every record. Write as a continuous **narrative**
+  paragraph, NOT a bulleted or labeled list. The 4 beats below are
+  *structural* — they fix the order and content — but the prefixes
+  ("Risks:" / "State-dependence moderate:") never appear in the prose.
+  The reader should read a paragraph, not a labeled list-in-prose-form.
+
+  **Beat order (structural; flow as one paragraph).**
+
+  1. **Verdict beat (~100 char).** Open with the surface_accessibility
+     call + the architectural anchor + the gating qualifier baked into
+     the sentence. Lead with the call adjective so the verdict is in the
+     first 80 chars — never bury it in a subordinate clause. Examples:
+       * "GENE X is constitutively surface-accessible as a pan-tissue
+         4TM tetraspanin."
+       * "GENE Y is state-dependently surface-accessible in cancer
+         cells only — an inner-leaflet N-myristoylated kinase with no
+         constitutive ECD."
+
+  2. **Evidence beat (~150 char).** Flow into the evidence: use
+     evidence_grade vocabulary for compression ("direct multi-method
+     support", "supportive but indirect evidence") rather than reciting
+     four method names. Name the 2–3 strongest evidence classes with
+     inline cites. Example: "Direct multi-method support: live-cell flow
+     with CRISPR-KO controls (`a1_evi_04`), surface biotinylation–MS
+     (`a1_evi_08`), and LEL-blocking functional assays (`a1_evi_13`)."
+
+  3. **State-dependence beat (~150 char).** Continue the paragraph with
+     state context. **Embed the `state_dependence` value in flowing
+     prose**, never as a labeled prefix:
+       * `low` → "Surface presence is constitutive across pan-tissue
+         baseline with no significant state-modulation."
+       * `moderate` → "Surface levels are moderately state-modulated,
+         upregulated in X (`a2_evi_NN`) and downregulated in Y
+         (`a2_evi_NN`)."
+       * `high` → "Surface presence is strictly state-gated, requiring
+         X and absent in Y (`a2_evi_NN`)."
+
+  4. **Risk beat (~150 char).** Close with a single narrative sentence
+     that:
+       * **Names the principal binder-engineering caveat** when one fires
+         — with the severity adjective and the structural locus, using
+         the `headline_risks` enum content implicitly: `epitope_masked`
+         → "epitope masking at the LEL interface"; `secreted_form` → "a
+         soluble decoy pool"; `restricted_subdomain` → "restricted
+         distribution at the ciliary membrane"; AND
+       * **Frames any meaningful positive nulls as risk-RULE-OUTS, not
+         risk items.** Use "rule out / are absent / are not documented"
+         framing so a clean negative cannot be misread as a flagged
+         concern. Examples:
+           - "Moderate epitope masking at the LEL homodimer interface
+             (`a1_evi_21`) is the principal binder-engineering caveat;
+             the absence of a shed or secreted form and ≤28% paralog
+             identity rule out decoy and cross-reactivity concerns."
+           - "A dominant free-soluble pool is the principal antibody-
+             decoy risk (`a1_evi_18`)."
+           - When no risk fires at all: "No binder-engineering caveats
+             emerged — no shed or secreted form, no co-receptor
+             requirement, no restricted subdomain, and low paralog
+             cross-reactivity."
+
+  **Authoritativeness rules.**
+
+  * Lead with the call adjective (`high / moderate / low / no`) — never
+    "appears to be" / "seems to" / "likely is". You have evidence;
+    speak from it.
+  * Use evidence_grade vocabulary for compression: "direct multi-method"
+    encodes more than listing four method names.
+  * Embed the `state_dependence` enum value in flowing prose so the
+    rendered chip and the paragraph use the same vocabulary.
+  * **Frame absences as rule-outs, not as items in a risk list.** "The
+    absence of a shed form rules out a decoy concern" is correct;
+    "Risks: ... no shed form ..." misreads as a flagged risk.
+  * Cite ≥3 evidence_ids inline (≥1 per evidence-bearing beat) so each
+    load-bearing claim has a trust anchor. Cluster cites at clause ends.
+  * No marketing prose: drop "compelling target", "billion-dollar
+    market", "promising candidate". State the biology; let the reader
+    judge.
+  * **Do NOT exceed 600 chars** — authoritative writing earns shorter,
+    not longer. If you're at 620 chars, the right move is to compress
+    the evidence beat (use evidence_grade language) rather than truncate
+    the state-dependence or risk beat.
+
+  **Worked exemplars** (constitutive / state-gated / risk-bearing
+  archetypes — anchor on the SHAPE not the gene-specific content):
+
+  *Constitutively-accessible canonical receptor (~580 char):*
+  > "CD81 is constitutively surface-accessible as a pan-tissue 4TM
+  > tetraspanin. Direct multi-method support: live-cell flow with
+  > CRISPR-KO controls (`a1_evi_04`), surface biotinylation–MS
+  > (`a1_evi_08`), and LEL-blocking functional assays (`a1_evi_13`).
+  > Surface levels are moderately state-modulated, upregulated in
+  > non-CBF AML and EBV+ B-cell transformation (`a2_evi_15`) and
+  > downregulated on activated lymphocytes and HCV-replicating
+  > hepatocytes (`a2_evi_20`). Moderate epitope masking at the LEL
+  > homodimer interface (`a1_evi_21`) is the principal binder-
+  > engineering caveat; the absence of a shed or secreted form and
+  > ≤28% paralog identity rule out decoy and cross-reactivity concerns."
+
+  *State-gated cancer-only target (~560 char):*
+  > "SRC is state-dependently surface-accessible in cancer cells only
+  > — an inner-leaflet N-myristoylated kinase with no constitutive ECD.
+  > Two 2025 reports (`a1_evi_03`, `a1_evi_05`) demonstrate
+  > autophagolysosomal exocytosis inverts SRC to the outer membrane
+  > as eSrc, with anti-Src antibodies mediating xenograft tumor
+  > killing (`a1_evi_09`). Surface presence is strictly state-gated,
+  > requiring active cancer-cell ALE and absent on normal cells
+  > (`a2_evi_07`). The lysosomal-exocytosis gating means binder reach
+  > tracks cellular ALE activity; no shed or secreted decoy form rules
+  > out a competing soluble pool."
+
+  *Soluble-decoy-dominant target (~545 char):*
+  > "HMGB1 is state-dependently surface-accessible despite being a
+  > nuclear chromatin-binding protein with no TM domain or signal
+  > peptide. Direct multi-method support from live-cell crosslinking
+  > (`a1_evi_04`), confocal microscopy (`a1_evi_07`), and proteinase-K
+  > protection (`a1_evi_11`) confirms an extracellular pool engaging
+  > RAGE and TLR4. Surface presence is strictly state-gated, requiring
+  > acetylation-driven lysosomal exocytosis or necrotic release, with
+  > activated immune cells and stressed/treated tumor cells driving
+  > the accessible pool (`a2_evi_06`, `a2_evi_12`). A dominant free-
+  > soluble pool is the principal antibody-decoy risk (`a1_evi_18`)."
 
 - **`accessibility_context_summary`** — ONE sentence (≤240 chars) stating
   *when and where* the protein is surface-accessible, synthesized over the
