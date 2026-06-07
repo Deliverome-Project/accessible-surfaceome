@@ -145,8 +145,8 @@ your task message; follow it. Four blocks:
       should scale `severity`: N=2 typically `moderate`, N≥6 typically
       `high` for an ECD-exposed interface. `is_homo_oligomer = false`
       is a soft "not in Schweke's positives" — it does NOT mean AF2
-      called the protein a monomer (Schweke under-calls big multi-pass
-      channels and ligand/covalent dimers like EGFR / INSR / KCNQ1).
+      called the protein a monomer (Schweke under-calls
+      ligand/covalent dimers).
       If the literature documents a homodimer the prior missed, emit
       `oligomerization` and call this out in the rationale.
     - **HETERO → `partner`.** A *different* protein in a hetero-complex
