@@ -142,9 +142,9 @@ extracellular face):
   domain binds this protein at a named domain)
 - alternative GPI-anchored isoform (named isoform identifier)
 - β-barrel monotopic insertion at the outer leaflet
-- non-canonical surface translocation explicitly documented (named
-  mechanism, e.g. autophagolysosomal exocytosis with topological
-  inversion onto the outer surface, demonstrated by extracellular
+- non-canonical surface translocation explicitly documented (the
+  paper names a specific trafficking pathway that delivers the
+  protein to the outer leaflet, demonstrated by extracellular
   antibody binding or surface biotinylation)
 - palmitoylation at a named Cys **only when** the paper also names an
   outer-leaflet retention signal (a TM partner, a signal peptide,

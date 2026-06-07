@@ -46,12 +46,21 @@ buckets:
 
 ### HMGB1
 
+HMGB1 IS surface-accessible biologically — there's a real extracellular
+pool that engages PRRs after acetylation-driven lysosomal exocytosis or
+necrotic release. What the new prompt corpus should fix is the
+**evidence calibration**: the methods in the ledger are receptor-
+binding inferences, not direct surface staining of HMGB1 itself, so
+the grade should land at `supportive_but_indirect` rather than the
+old `direct_multi_method`.
+
 | Expectation | Owns it |
 |---|---|
-| `surface_evidence.evidence_grade` is no longer `direct_multi_method`. Expected: `weak` or `supportive_but_indirect` overall. | Methods builder inclusion filter (5587da60b) — receptor-engagement claims (HMGB1 binding TREM-1, RAGE, TLR4) shouldn't generate `MethodObservation` rows. |
-| `surface_evidence.excluded_as_ligand_engagement` is **non-empty** — at minimum the BS3-crosslinking-HMGB1-TREM-1 claim should appear with a reason like "HMGB1 binding TREM-1 on monocytes — soluble ligand engagement, not surface anchoring of HMGB1." | Evidence-grade builder prompt (5587da60b) `excluded_as_ligand_engagement` section. |
-| `executive_summary.surface_accessibility='no'` or `'low'` overall. The protein has no TM helix; the only "direct" methods in the previous record were receptor-engagement claims that no longer count. | Synthesizer; downstream of the filter. |
-| Inner-leaflet rejection (376588a5b) likewise excludes any "HMGB1 at inner leaflet of PM" interpretations — HMGB1 isn't inner-leaflet anyway, so this should be a no-op. | Methods builder inner-leaflet rejection. |
+| `executive_summary.surface_accessibility` is in the YES bucket (`high` or `moderate`) — the biology is real, just state-conditional | Synthesizer; the surface_accessibility section's "best-case state" rule (lines 167-179) |
+| `executive_summary.state_dependence='high'` — acetylation / necrotic-release gating is the entire mechanism | `_check_state_dependence_consistent_with_modulation` validator |
+| `surface_evidence.evidence_grade='supportive_but_indirect'` — NOT `direct_multi_method` (the receptor-engagement methods don't clear the direct bar) AND NOT `weak` (the biology IS established by independent methods). The first re-run landed `weak`, which over-fits on the ligand filter — the next re-run under the 2.9.0 prompts should re-calibrate up to `supportive_but_indirect`. | Methods builder inclusion filter + evidence-grade builder grade rules |
+| `surface_evidence.excluded_as_ligand_engagement` is **non-empty** — at minimum the BS3-crosslinking-HMGB1-TREM-1 claim should appear with a reason like "HMGB1 binding TREM-1 on monocytes — soluble ligand engagement, not surface anchoring of HMGB1." | Evidence-grade builder prompt (5587da60b) `excluded_as_ligand_engagement` section |
+| Inner-leaflet rejection (376588a5b) likewise excludes any "HMGB1 at inner leaflet of PM" interpretations — HMGB1 isn't inner-leaflet anyway, so this should be a no-op | Methods builder inner-leaflet rejection |
 
 ### SRC
 

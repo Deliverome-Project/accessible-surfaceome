@@ -128,11 +128,16 @@ BLOCKLIST: tuple[str, ...] = (
 )
 
 # Forbidden tokens compiled into a single regex. Word boundaries on each
-# side so ``HER2`` doesn't match ``HER2-positive-status`` (it WOULD match
-# ``HER2-positive`` because the hyphen is its own word boundary, and
-# ``HER2-positive`` IS a target-anchored phrase we want to catch).
+# side so ``HER2`` doesn't match ``HER2-positive-status``.
+#
+# Lookbehind allows a hyphen so ``3xFlag-GPR75`` IS matched
+# (catches construct-prefixed gene names that slipped past the old
+# regex). Lookahead still excludes hyphens so ``HER2-positive`` is
+# caught (we WANT to flag that — naming the drug-target form).
+# Underscore in both lookbehind + lookahead so it doesn't match
+# ``my_GPR75_var`` substring fragments (variable-name tokens).
 _BLOCKED_RE = re.compile(
-    r"(?<![A-Za-z0-9_-])(" + "|".join(re.escape(t) for t in BLOCKLIST) + r")(?![A-Za-z0-9_-])"
+    r"(?<![A-Za-z0-9_])(" + "|".join(re.escape(t) for t in BLOCKLIST) + r")(?![A-Za-z0-9_-])"
 )
 
 # Cell-type context patterns — a CD molecule token sitting near any of

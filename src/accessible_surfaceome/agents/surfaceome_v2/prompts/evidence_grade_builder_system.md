@@ -139,8 +139,11 @@ Writing the rationale first and back-filling stances to match leads to
 prose-driven post-hoc rationalization; the stance map should drive the
 prose, not the other way around.
 
-**Worked example — inner-leaflet kinase with a cancer-state outer-leaflet inversion story** (the canonical 5b.8 case, with the
-state-dependent-is-not-conflicting refinement applied):
+**Worked example — state-conditional surface form with a non-surface
+baseline** (the canonical 5b.8 case, with the state-dependent-is-not-
+conflicting refinement applied). Pull the SPECIFIC baseline-state
+biology and cancer-state mechanism from the gene's actual evidence
+ledger; the shape below is the template, not the content:
 
 ```
 "claim_stances": [
@@ -149,9 +152,9 @@ state-dependent-is-not-conflicting refinement applied):
   {"claim_id": "a1_evi_02", "stance": "supports_surface",    "weight": "high",
    "note": "antibody-mediated tumor killing in xenografts (cancer state)"},
   {"claim_id": "a1_evi_05", "stance": "tangential",          "weight": "high",
-   "note": "canonical inner-leaflet topology — describes baseline state, NOT a contradiction (different state)"},
+   "note": "canonical baseline topology — describes the baseline state, NOT a contradiction (different state)"},
   {"claim_id": "a1_evi_06", "stance": "supports_surface",    "weight": "low",
-   "note": "non-human chondrogenic cell surfaceome MS, weak species transfer"},
+   "note": "non-human cell-line surfaceome MS, weak species transfer"},
   {"claim_id": "a1_evi_12", "stance": "supports_surface",    "weight": "high",
    "note": "non-permeabilized surface biotinylation"},
   {"claim_id": "a1_evi_15", "stance": "tangential",          "weight": "high",
@@ -159,16 +162,15 @@ state-dependent-is-not-conflicting refinement applied):
 ],
 ```
 
-The canonical inner-leaflet claims (a1_evi_05, a1_evi_15) describe the
-target's BASELINE state in normal cells. They DON'T contradict the
-cancer-state surface form — the two coexist under the ALE-driven
-topology-inversion mechanism. Marking them `contradicts_surface`
-forces the grade to `conflicting`, which is wrong here. They're
-`tangential` to the surface call (they inform the baseline picture
-that `state_dependence=high` captures) and the grade is
-`direct_single_method` — anchored on the outer-leaflet-inversion
-papers' direct surface methodology, with the state-conditionality
-flagged separately.
+The canonical-baseline-topology claims (a1_evi_05, a1_evi_15) describe
+the target's BASELINE state in normal cells. They DON'T contradict the
+cancer-state surface form — the two coexist under the state-conditional
+mechanism. Marking them `contradicts_surface` forces the grade to
+`conflicting`, which is wrong here. They're `tangential` to the surface
+call (they inform the baseline picture that `state_dependence=high`
+captures) and the grade is `direct_single_method` — anchored on the
+cancer-state-surface papers' direct surface methodology, with the
+state-conditionality flagged separately.
 
 Only mark a canonical-topology claim as `contradicts_surface` when
 it's incompatible with the surface-positive evidence under EVERY
@@ -221,28 +223,32 @@ to its inline cite):
   glossing it over)
 
 A specific, citable, method-anchored claim looks like:
-> *"endogenous 3xFlag-GPR75 knockin mice showed ciliary PM
-> localization in hypothalamic neurons by IF (perm status unspecified)
-> with an internal L144P-mislocalization control (a1_evi_07)"*
+> *"endogenous epitope-tagged knockin mice showed compartment-specific
+> PM localization in a defined neuronal population by IF (perm status
+> unspecified) with an internal loss-of-function-mutant mislocalization
+> control (a1_evi_07)"*
 
 A vague claim that fails the discipline looks like:
-> *"VPS35-mediated retromer recycling to the hepatocyte PM"* — no
+> *"adaptor-mediated retromer recycling to the hepatocyte PM"* — no
 > method, no perm status, no cite.
 
 ### Worked example — citation-disciplined rationale
 
+Shape only; the prose is for a hypothetical class A GPCR. Apply the
+SAME structure to whatever gene you're grading.
+
 ```
 "grade_rationale": "Three direct lines of evidence support surface
-exposure: (1) endogenous 3xFlag-GPR75 knockin mice showing ciliary
-PM localization in hypothalamic neurons by IF (perm status not
-specified) with an L144P-mislocalization specificity control
-(a1_evi_07); (2) photoaffinity crosslinking of a 20-HETE analogue
-on membrane fractions of human endothelial cells with competitive
-displacement (a1_evi_12); (3) VPS35-mediated retromer recycling
-restoring the protein at the hepatocyte plasma membrane after
-internalization (a1_evi_11). None are live-cell nonperm flow with
-KO control, and (2)/(3) are indirect — fractionation-based and
-trafficking-inferred respectively — so the picture is strong
+exposure: (1) endogenous epitope-tagged knockin mice showing
+compartment-specific PM localization in a defined neuronal population
+by IF (perm status not specified) with a loss-of-function-mutant
+mislocalization control (a1_evi_07); (2) photoaffinity crosslinking of
+a small-molecule analogue on membrane fractions of human endothelial
+cells with competitive displacement (a1_evi_12); (3) adaptor-mediated
+retromer recycling restoring the protein at the hepatocyte plasma
+membrane after internalization (a1_evi_11). None are live-cell nonperm
+flow with KO control, and (2)/(3) are indirect — fractionation-based
+and trafficking-inferred respectively — so the picture is strong
 indirect evidence anchored by the canonical class A GPCR topology.
 Graded `supportive_but_indirect`."
 ```

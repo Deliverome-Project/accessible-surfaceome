@@ -261,12 +261,14 @@ parse time — invented or paraphrased ids fail the run.
   1. **Verdict beat (~100 char).** Open with the surface_accessibility
      call + the architectural anchor + the gating qualifier baked into
      the sentence. Lead with the call adjective so the verdict is in the
-     first 80 chars — never bury it in a subordinate clause. Examples:
-       * "GENE X is constitutively surface-accessible as a pan-tissue
-         4TM tetraspanin."
-       * "GENE Y is state-dependently surface-accessible in cancer
-         cells only — an inner-leaflet N-myristoylated kinase with no
-         constitutive ECD."
+     first 80 chars — never bury it in a subordinate clause. Shape
+     examples (replace the parenthetical with THIS gene's actual
+     architecture and gating):
+       * "GENE X is constitutively surface-accessible as a
+         (pan-tissue multi-pass receptor)."
+       * "GENE Y is state-dependently surface-accessible in
+         (cancer cells only) — a (non-surface-baseline protein with
+         a state-conditional surface form)."
 
   2. **Evidence beat (~150 char).** Flow into the evidence: use
      evidence_grade vocabulary for compression ("direct multi-method
@@ -361,28 +363,36 @@ parse time — invented or paraphrased ids fail the run.
 
   *State-gated cancer-only target (~560 char):*
   > "Gene Y is state-dependently surface-accessible in cancer cells
-  > only — an inner-leaflet N-myristoylated kinase with no constitutive
-  > ECD. Two recent reports (a1_evi_03, a1_evi_05) demonstrate
-  > autophagolysosomal exocytosis inverts the kinase to the outer
-  > membrane as an exposed form, with anti-target antibodies mediating
-  > xenograft tumor killing (a1_evi_09). Surface presence is strictly
-  > state-gated, requiring active cancer-cell ALE and absent on normal
-  > cells (a2_evi_07). The lysosomal-exocytosis gating means binder
-  > reach tracks cellular ALE activity; no shed or secreted decoy form
-  > rules out a competing soluble pool."
+  > only — a normally non-surface protein that acquires an outer-leaflet
+  > pool via a state-conditional anchoring mechanism. Two recent
+  > reports (a1_evi_03, a1_evi_05) document the cancer-state surface
+  > form, with target-directed antibodies mediating xenograft tumor
+  > killing (a1_evi_09). Surface presence is strictly state-gated,
+  > requiring the cancer-state mechanism and absent on normal cells
+  > (a2_evi_07). The state-conditional gating means binder reach
+  > tracks that cellular state; no shed or secreted decoy form rules
+  > out a competing soluble pool."
 
   *Soluble-decoy-dominant target (~545 char):*
-  > "Gene Z is state-dependently surface-accessible despite being a
-  > nuclear chromatin-binding protein with no TM domain or signal
-  > peptide. Direct multi-method support from live-cell crosslinking
-  > (a1_evi_04), confocal microscopy (a1_evi_07), and proteinase-K
-  > protection (a1_evi_11) confirms an extracellular pool engaging
-  > pattern-recognition receptors on responder cells. Surface presence
-  > is strictly state-gated, requiring acetylation-driven lysosomal
-  > exocytosis or necrotic release, with activated immune cells and
-  > stressed/treated tumor cells driving the accessible pool
-  > (a2_evi_06, a2_evi_12). A dominant free-soluble pool is the
-  > principal antibody-decoy risk (a1_evi_18)."
+  > "Gene Z is state-dependently surface-accessible despite a
+  > non-surface baseline localization. Multiple methods (a1_evi_04,
+  > a1_evi_07, a1_evi_11) document an extracellular pool that engages
+  > receptors on responder cells. Surface presence is strictly
+  > state-gated, requiring a stress / damage / activation trigger, with
+  > the implicated cell states driving the accessible pool (a2_evi_06,
+  > a2_evi_12). A dominant free-soluble pool — the protein released as
+  > a soluble factor under the same trigger — is the principal
+  > antibody-decoy risk (a1_evi_18)."
+
+  **Authoritativeness note on these exemplars.** Each archetype above
+  is a SHAPE template, not a content template. The mechanism phrases
+  ("state-conditional anchoring mechanism", "non-surface baseline
+  localization", "implicated cell states") are intentionally abstract:
+  do NOT paste the same molecular mechanism into every record you grade
+  that falls in the same archetype. Pull the SPECIFIC mechanism, cell
+  state, and trigger from THIS gene's evidence ledger; the exemplar
+  only fixes the narrative arc (verdict → evidence → state → risk) and
+  the character budgets.
 
 - **`accessibility_context_summary`** — ONE sentence (≤240 chars) stating
   *when and where* the protein is surface-accessible, synthesized over the
@@ -391,12 +401,14 @@ parse time — invented or paraphrased ids fail the run.
   headline behind the §03 "Localization & accessibility context" summary
   and the §01 signal panel, so keep it to the accessibility *condition* —
   the gating state / lineage / tissue and what becomes reachable — and do
-  NOT restate `one_paragraph`. Examples: "Surface-accessible only on
-  cancer cells, where oncogenic transformation drives ALE-mediated
-  inversion of an inner-leaflet kinase onto the outer membrane."; for a
-  canonical receptor: "Constitutively surface-accessible across normal and
-  tumor tissue; not state-gated." Leave it null only when A2 produced no
-  localization / modulation context at all.
+  NOT restate `one_paragraph`. Examples (shape only — pull the SPECIFIC
+  gating state, tissue, and mechanism from THIS gene's A2 ledger):
+  "Surface-accessible only on cancer cells, where the state-
+  conditional anchoring mechanism brings the protein to the outer
+  membrane."; for a canonical receptor: "Constitutively surface-
+  accessible across normal and tumor tissue; not state-gated." Leave
+  it null only when A2 produced no localization / modulation context
+  at all.
 
 - **`evidence_grade_summary`** rolls up A1's `evidence_grade` — it should
   track it unless a major A2 contradiction (e.g. dominant secreted form) drags
