@@ -112,22 +112,27 @@ def test_reachability_present_for_membrane_with_ecd():
     assert _has_anchor(build_a2_kickoff(1, 40), "surface_reachability")
 
 
-def test_reachability_absent_for_known_non_membrane():
-    # Known TM=0 with no ECD: a cytoplasmic/non-surface protein — the
-    # barrier axis is moot and must be suppressed.
-    assert not _has_anchor(build_a1_kickoff(0, 0), "surface_reachability")
-    # Known membrane but sub-threshold ECD: also suppressed.
-    assert not _has_anchor(build_a1_kickoff(1, 5), "surface_reachability")
+def test_reachability_present_for_known_non_membrane():
+    # NB: pre-2026-06 the membrane+ECD predicate gated this axis off for
+    # canonical TM=0 / small-ECD proteins. That gate was retired: the
+    # deep-dive runs on triage-positive genes, and "known non-membrane"
+    # is exactly the cohort where state-conditional / ectopic / cancer-
+    # specific surface exposure has to be looked for. Suppressing the
+    # reachability axis there silently dropped the edge cases the
+    # deep-dive exists to catch.
+    assert _has_anchor(build_a1_kickoff(0, 0), "surface_reachability")
+    assert _has_anchor(build_a1_kickoff(1, 5), "surface_reachability")
 
 
-def test_reachability_fires_recall_biased_on_unknown_topology():
-    # D1 miss / placeholder → topology unknown → fire the axis anyway.
+def test_reachability_present_on_unknown_topology():
+    # D1 miss / placeholder → topology unknown → axis fires (it always
+    # does now, for any topology including non-membrane).
     assert _has_anchor(build_a1_kickoff(None, None), "surface_reachability")
     assert _has_anchor(build_kickoff("a2", None, None), "surface_reachability")
 
 
 def test_kickoff_backwards_compatible_no_topology_args():
-    # Default (no topology) must still build and fire the gated axis.
+    # Default (no topology) must still build and fire every axis.
     assert _has_anchor(build_a1_kickoff(), "surface_reachability")
     assert _has_anchor(build_kickoff("a1"), "normal_tissue_expression")
 
@@ -144,10 +149,14 @@ def test_partner_and_subdomain_axes_fire_for_membrane_with_ecd():
     assert _has_anchor(p, "membrane_subdomain")
 
 
-def test_partner_and_subdomain_axes_suppressed_for_known_non_membrane():
+def test_partner_and_subdomain_axes_fire_for_known_non_membrane():
+    # Same retirement of the membrane+ECD gate as for surface_reachability:
+    # cancer-specific or state-conditional co-receptor recruitment, lipid-
+    # raft enrichment, and synaptic / immune-synapse localization are real
+    # signals for nominally cytoplasmic / small-ECD proteins (SRC, LCK).
     p = build_a1_kickoff(0, 0)
-    assert not _has_anchor(p, "partner_dependency")
-    assert not _has_anchor(p, "membrane_subdomain")
+    assert _has_anchor(p, "partner_dependency")
+    assert _has_anchor(p, "membrane_subdomain")
 
 
 def test_subdomain_anchor_includes_lipid_rafts():
@@ -268,13 +277,15 @@ def test_epitope_masking_anchor_covers_homo_hetero_other():
     assert "glycan shield" in terms or "conformational masking" in terms
 
 
-def test_epitope_masking_axis_gated_like_other_membrane_axes():
-    # Fires for membrane+ECD and (recall-biased) unknown topology...
+def test_epitope_masking_axis_fires_for_every_topology():
+    # The epitope-masking axis is always-on (the membrane+ECD gate was
+    # retired). Homo-oligomer / glycan / partner masking is just as
+    # informative for a TM=0 protein found surface-exposed in a tumor
+    # as it is for a canonical 7TM receptor.
     assert _has_anchor(build_a1_kickoff(7, 89), "epitope_masking")
     assert _has_anchor(build_a2_kickoff(1, 40), "epitope_masking")
     assert _has_anchor(build_a1_kickoff(None, None), "epitope_masking")
-    # ...suppressed for a known non-membrane / sub-threshold-ECD protein.
-    assert not _has_anchor(build_a1_kickoff(0, 0), "epitope_masking")
+    assert _has_anchor(build_a1_kickoff(0, 0), "epitope_masking")
 
 
 # Single-anchor standing searches that MUST be byte-identical between A1 and
@@ -283,12 +294,16 @@ def test_epitope_masking_axis_gated_like_other_membrane_axes():
 # byte-for-byte mirror is asserted by
 # test_shared_standing_searches_identical_across_a1_a2.
 _MIRRORED_STANDING_ANCHORS = [
-    "normal_tissue_expression",  # always-on
-    "surface_reachability",      # gated on membrane+ECD
-    "partner_dependency",        # gated
-    "membrane_subdomain",        # gated
-    "epitope_masking",           # gated
+    "normal_tissue_expression",
+    "surface_reachability",
+    "partner_dependency",
+    "membrane_subdomain",
+    "epitope_masking",
 ]
+# All five fire unconditionally — the membrane+ECD gate was retired so
+# the deep-dive never silently drops a surface-accessibility axis on
+# canonically-cytoplasmic genes (which are exactly where cancer- /
+# state-conditional surface exposure shows up).
 
 
 def _search_sig(plan, anchor):
@@ -365,12 +380,16 @@ def test_shared_standing_searches_identical_across_a1_a2():
                 f"{anchor}: A1 vs A2 standing search differs "
                 f"(A1={s1!r}, A2={s2!r}) at tmh={tmh}, ecd={ecd}"
             )
-    # normal_tissue_expression is the always-on member (present even for a
-    # known non-membrane gene); the gated axes are absent there in BOTH foci.
-    assert _search_sig(build_a1_kickoff(0, 0), "normal_tissue_expression") is not None
-    assert _search_sig(build_a2_kickoff(0, 0), "normal_tissue_expression") is not None
-    assert _search_sig(build_a1_kickoff(0, 0), "epitope_masking") is None
-    assert _search_sig(build_a2_kickoff(0, 0), "epitope_masking") is None
+    # All five standing axes are now always-on (the membrane+ECD gate
+    # was retired). normal_tissue_expression has always been unconditional,
+    # and the four surface-accessibility axes (surface_reachability,
+    # partner_dependency, membrane_subdomain, epitope_masking) now fire
+    # regardless of topology — including for canonically non-membrane
+    # genes, which is exactly the cohort where state-conditional / cancer-
+    # specific surface exposure shows up.
+    for anchor in _MIRRORED_STANDING_ANCHORS:
+        assert _search_sig(build_a1_kickoff(0, 0), anchor) is not None, anchor
+        assert _search_sig(build_a2_kickoff(0, 0), anchor) is not None, anchor
 
 
 def _has_category(plan, category):

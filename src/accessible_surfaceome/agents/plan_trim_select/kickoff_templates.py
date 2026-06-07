@@ -15,9 +15,6 @@ is unchanged.
 
 from __future__ import annotations
 
-from accessible_surfaceome.agents._support.topology_gate import (
-    is_likely_membrane_with_ecd,
-)
 from accessible_surfaceome.agents.plan_trim_select.schemas import (
     SearchPlan,
     SearchRequest,
@@ -80,77 +77,72 @@ _METHOD_ANCHORS: tuple[TopicAnchor, ...] = (
 _SURFACE_METHOD_ANCHORS: tuple[TopicAnchor, ...] = ("surface_expression", *_METHOD_ANCHORS)
 
 
-def _fires_membrane_ecd_gate(n_tmh: int | None, ecd_aa: int | None) -> bool:
-    """Recall-biased membrane+ECD gate for the topology-conditional axes.
+def _standing_axes(
+    n_tmh: int | None,  # noqa: ARG001  # kept for signature stability with callers
+    ecd_aa: int | None,  # noqa: ARG001
+) -> list[SearchRequest]:
+    """Retrieval axes shared by every focus — all unconditional.
 
-    Unknown topology (both ``None``) fires the gate so a D1 coverage miss
-    never silently suppresses a retrieval axis; a *known* non-membrane or
-    small-ECD protein is the only case that suppresses the membrane-specific
-    axes. The runner maps the D1 placeholder topology to ``None`` so a
-    coverage miss biases to recall rather than to a false TM=0 negative.
+    The deep-dive is only invoked on genes triage already thought might be
+    surface-accessible. Suppressing the barrier / co-receptor / subdomain /
+    masking axes for "known TM=0" or "small canonical ECD" genes loses
+    exactly the edge cases the deep-dive exists to catch — cancer-specific
+    surface exposure, ectopic trafficking, polarized non-canonical surface,
+    state-dependent topology inversion (e.g. SRC's ALE flip). The cost of
+    four extra topic_search queries per gene is trivial compared with the
+    cost of a silently missed surface-accessibility signal.
+
+    Five always-on axes:
+
+    * ``normal_tissue_expression`` — surface coverage across the six
+      high-consequence tox organs (liver/lung/kidney/intestine/heart/brain).
+      On-target / off-tumor toxicity is set by surface expression there.
+    * ``surface_reachability`` — BBB / tumor penetration /
+      luminal-vs-abluminal / binder accessibility.
+    * ``partner_dependency`` — obligate co-receptor / escort for surface
+      trafficking (feeds ``co_receptor_requirements``).
+    * ``membrane_subdomain`` — lipid raft / apical / ciliary / synaptic
+      microdomain distribution (feeds ``restricted_subdomain``).
+    * ``epitope_masking`` — homo-oligomer / hetero-partner / glycan /
+      conformational occlusion (feeds ``epitope_masking``).
+
+    ``n_tmh`` and ``ecd_aa`` are still accepted to keep the call signature
+    stable for other callers, but they no longer gate any axis here.
+    Topology-based grading still lives downstream in the orchestrator's
+    ``secreted_form`` post-pass — the right place for a precision call.
     """
-    if n_tmh is None and ecd_aa is None:
-        return True
-    return is_likely_membrane_with_ecd(n_tmh, ecd_aa)
-
-
-def _standing_axes(n_tmh: int | None, ecd_aa: int | None) -> list[SearchRequest]:
-    """Retrieval axes shared by every focus.
-
-    The normal-tissue surface-expression panel is **always** emitted —
-    surface coverage across the six high-consequence organs
-    (liver/lung/kidney/intestine/heart/brain) is mandatory for every gene
-    because on-target/off-tumor toxicity is set by surface expression there.
-    Four barrier/distribution axes are **gated** on the membrane+ECD predicate
-    (they only matter for a surface-accessible target): surface-reachability
-    (BBB / tumor penetration / luminal-vs-abluminal / binder accessibility),
-    partner-dependency (obligate co-receptor / escort — feeds
-    co_receptor_requirements), membrane-subdomain (lipid raft / apical /
-    ciliary — feeds restricted_subdomain), and epitope-masking (homo / hetero
-    / other occlusion — feeds epitope_masking).
-
-    The soluble/shed-in-circulation axis (A2.4) is not a separate request
-    here: it rides the always-on ``shedding`` topic_search, whose terms now
-    include serum/plasma/circulating. The topology gate for *grading* a
-    soluble form lives in the orchestrator's secreted_form post-pass, which
-    is the correct stage for that precision call.
-    """
-    axes = [
+    return [
         SearchRequest(
             tool="gene_literature",
             mode="topic_search",
             anchors=["normal_tissue_expression"],
             intent="standing: normal-tissue surface expression (six high-consequence tox organs)",
-        )
+        ),
+        SearchRequest(
+            tool="gene_literature",
+            mode="topic_search",
+            anchors=["surface_reachability"],
+            intent="standing: surface-reachability barriers (BBB / tumor penetration / luminal / accessibility)",
+        ),
+        SearchRequest(
+            tool="gene_literature",
+            mode="topic_search",
+            anchors=["partner_dependency"],
+            intent="standing: co-receptor / partner-dependency for surface trafficking",
+        ),
+        SearchRequest(
+            tool="gene_literature",
+            mode="topic_search",
+            anchors=["membrane_subdomain"],
+            intent="standing: plasma-membrane subdomain / polarity distribution",
+        ),
+        SearchRequest(
+            tool="gene_literature",
+            mode="topic_search",
+            anchors=["epitope_masking"],
+            intent="standing: epitope-masking evidence (homo / hetero / other)",
+        ),
     ]
-    if _fires_membrane_ecd_gate(n_tmh, ecd_aa):
-        axes += [
-            SearchRequest(
-                tool="gene_literature",
-                mode="topic_search",
-                anchors=["surface_reachability"],
-                intent="standing (gated): surface-reachability barriers (BBB / tumor penetration / luminal / accessibility)",
-            ),
-            SearchRequest(
-                tool="gene_literature",
-                mode="topic_search",
-                anchors=["partner_dependency"],
-                intent="standing (gated): co-receptor / partner-dependency for surface trafficking",
-            ),
-            SearchRequest(
-                tool="gene_literature",
-                mode="topic_search",
-                anchors=["membrane_subdomain"],
-                intent="standing (gated): plasma-membrane subdomain / polarity distribution",
-            ),
-            SearchRequest(
-                tool="gene_literature",
-                mode="topic_search",
-                anchors=["epitope_masking"],
-                intent="standing (gated): epitope-masking evidence (homo / hetero / other)",
-            ),
-        ]
-    return axes
 
 
 def _surface_method_search() -> SearchRequest:
@@ -217,7 +209,7 @@ def build_a1_kickoff(
             "gene2pubmed + recent_corpus; three topic_search variants "
             "(surface+methods (shared) / structure / shedding+ptm (shared)); standing axes "
             "(normal-tissue surface-expression always; surface-reachability / "
-            "partner / subdomain / epitope-masking when membrane+ECD). "
+            "partner + subdomain + epitope-masking — all always-on, no topology gate). "
             "Selector iterates from observed paper inventory."
         ),
     )
@@ -261,7 +253,7 @@ def build_a2_kickoff(
             "gene2pubmed + recent_corpus; two topic_search variants "
             "(surface+methods (shared) + shedding+ptm (shared)); standing axes "
             "(normal-tissue surface-expression always; surface-reachability / "
-            "partner / subdomain / epitope-masking when membrane+ECD). "
+            "partner + subdomain + epitope-masking — all always-on, no topology gate). "
             "Selector iterates from observed paper inventory."
         ),
     )
