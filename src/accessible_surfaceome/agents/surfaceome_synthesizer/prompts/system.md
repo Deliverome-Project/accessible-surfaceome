@@ -129,6 +129,26 @@ your task message; follow it. Four blocks:
       is involved. Use `oligomerization`, NOT `conformational` (a monomer
       closed/open state is a different mechanism) and NOT `partner` (that
       is a *different* protein).
+
+      **Deterministic prior — consult before deciding.** Check
+      `deterministic_features.homo_oligomerization` in the user message.
+      When `is_homo_oligomer = true`, Schweke 2024's AF2 multimer
+      pipeline placed this protein in its positive homo-oligomer refset
+      (8,195-protein scale; PMID 38325366). Treat this as a **strong
+      structural prior** that defaults the `mechanism` list to include
+      `oligomerization` — UNLESS the literature explicitly rules it out
+      for surface accessibility (e.g. the dimerization interface is
+      cytoplasmic / TM / strictly intracellular and doesn't bury any
+      extracellular epitope surface; or a higher-resolution structural
+      paper has overruled the AF2 prediction). The cited evidence in
+      that case must be the override rationale. `stoichiometry = N`
+      should scale `severity`: N=2 typically `moderate`, N≥6 typically
+      `high` for an ECD-exposed interface. `is_homo_oligomer = false`
+      is a soft "not in Schweke's positives" — it does NOT mean AF2
+      called the protein a monomer (Schweke under-calls big multi-pass
+      channels and ligand/covalent dimers like EGFR / INSR / KCNQ1).
+      If the literature documents a homodimer the prior missed, emit
+      `oligomerization` and call this out in the rationale.
     - **HETERO → `partner`.** A *different* protein in a hetero-complex
       covers the epitope — e.g. CD19 sitting over the CD81 large
       extracellular loop in the constitutive CD19/CD81 co-receptor
@@ -346,7 +366,17 @@ parse time — invented or paraphrased ids fail the run.
 - **`evidence_grade_summary`** rolls up A1's `evidence_grade` — it should
   track it unless a major A2 contradiction (e.g. dominant secreted form) drags
   the integrated verdict down. State the rollup logic in
-  `confidence_reasoning` only when you depart from A1's grade.
+  `confidence_reasoning` only when you depart from A1's grade. **Weight A1's
+  `methods[].validation_strength` explicitly when reasoning about the rollup**:
+  methods with `validation_strength="strong"` (paper-level `genetic_KO`,
+  `CRISPR_KO`, `isoform_specific_KO` validation) carry the surface call and
+  earn the `direct_*` grades; methods with `validation_strength="weak"`
+  (`vendor_claim_only` — no paper-level KO / siRNA / orthogonal-method
+  corroboration) corroborate but should not, on their own, support a
+  `direct_multi_method` grade. The schema enforces this cross-block
+  cardinality at record assembly: a `direct_multi_method` grade with
+  `methods=[]` (or fewer than 2 `direct_surface_accessibility` entries from
+  distinct sources) is rejected.
 - **`headline_risks`** (≤3) selects the *consequential* sub-blocks of
   `accessibility_risks`. A `secreted_form` with `present=true` and
   `severity=high` belongs; a low-severity `restricted_subdomain` doesn't.
