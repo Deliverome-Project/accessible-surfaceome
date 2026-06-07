@@ -673,6 +673,7 @@ export async function loadBenchmarkRow(
 export interface GeneEntry {
   symbol: string;
   stale: boolean;
+  synonyms?: string[];
 }
 
 /** Target `SurfaceomeRecord.schema_version` that the current code reads
@@ -768,11 +769,13 @@ async function _listSurfaceomeGeneEntriesImpl(): Promise<GeneEntry[]> {
       schemaBySymbol.set(sym, CURRENT_RECORD_SCHEMA_VERSION);
     }
   }
+  const names = loadGeneNamesMap();
   return Array.from(schemaBySymbol.keys())
     .sort((a, b) => a.localeCompare(b))
     .map((symbol) => ({
       symbol,
       stale: schemaBySymbol.get(symbol) !== CURRENT_RECORD_SCHEMA_VERSION,
+      synonyms: names[symbol]?.synonyms,
     }));
 }
 

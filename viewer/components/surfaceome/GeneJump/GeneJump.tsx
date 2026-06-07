@@ -14,6 +14,18 @@ import { useRouter } from "next/navigation";
 import type { GeneEntry } from "../../../lib/surfaceome";
 import styles from "./GeneJump.module.css";
 
+function geneJumpRank(g: GeneEntry, q: string): number {
+  const sym = g.symbol.toUpperCase();
+  const aliases = (g.synonyms ?? []).map((s) => s.toUpperCase());
+  if (sym === q) return 0;
+  if (aliases.some((a) => a === q)) return 1;
+  if (sym.startsWith(q)) return 2;
+  if (aliases.some((a) => a.startsWith(q))) return 3;
+  if (sym.includes(q)) return 4;
+  if (aliases.some((a) => a.includes(q))) return 5;
+  return 6;
+}
+
 interface GeneJumpProps {
   /** Deep-dive genes — the same set `generateStaticParams` emits
    *  (`listSurfaceomeGeneEntries()`), each carrying a `stale` flag.
@@ -68,9 +80,19 @@ export function GeneJump({ genes, current, showSchemaDots = false }: GeneJumpPro
 
   const matches = useMemo(() => {
     const q = query.trim().toUpperCase();
-    return q
-      ? universe.filter((g) => g.symbol.toUpperCase().includes(q))
-      : universe;
+    if (!q) return universe;
+    const hits = universe.filter((g) => {
+      if (g.symbol.toUpperCase().includes(q)) return true;
+      const aliases = g.synonyms ?? [];
+      return aliases.some((a) => a.toUpperCase().includes(q));
+    });
+    hits.sort((a, b) => {
+      const ra = geneJumpRank(a, q);
+      const rb = geneJumpRank(b, q);
+      if (ra !== rb) return ra - rb;
+      return a.symbol.localeCompare(b.symbol);
+    });
+    return hits;
   }, [universe, query]);
 
   useEffect(

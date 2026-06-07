@@ -115,12 +115,14 @@ interface BenchmarkTableProps {
   matrix: BenchmarkMatrix;
   deepDiveGenes: Set<string>;
   geneNames?: Record<string, string>;
+  geneSynonyms?: Record<string, string[]>;
 }
 
 export function BenchmarkTable({
   matrix,
   deepDiveGenes,
   geneNames,
+  geneSynonyms,
 }: BenchmarkTableProps) {
   const { rows, models } = matrix;
   const [query, setQuery] = useState("");
@@ -211,8 +213,9 @@ export function BenchmarkTable({
     const q = query.trim().toLowerCase();
     const passing = rows.filter((r) => {
       if (q) {
+        const syn = geneSynonyms?.[r.gene_symbol]?.join(" ") ?? "";
         const hay =
-          `${r.gene_symbol} ${r.uniprot_acc} ${r.class} ${r.truth_reason}`.toLowerCase();
+          `${r.gene_symbol} ${r.uniprot_acc} ${r.class} ${r.truth_reason} ${syn}`.toLowerCase();
         if (!hay.includes(q)) return false;
       }
       if (filter === "yes" && r.truth_verdict !== "yes") return false;
@@ -236,7 +239,7 @@ export function BenchmarkTable({
       return ((av as number) - (bv as number)) * dir;
     });
     return sorted;
-  }, [rows, query, filter, models, sortKey, sortDir]);
+  }, [rows, query, filter, models, sortKey, sortDir, geneSynonyms]);
 
   const [mounted, setMounted] = useState(false);
   useEffect(() => setMounted(true), []);
@@ -269,12 +272,12 @@ export function BenchmarkTable({
       <div className={styles.toolbar}>
         <div className={styles.search}>
           <label htmlFor="bench-search" className="sr-only">
-            Filter by gene, UniProt, class, or reason
+            Filter by gene, alias, UniProt, class, or reason
           </label>
           <input
             id="bench-search"
             className={styles.searchInput}
-            placeholder="gene · UniProt · class · reason…"
+            placeholder="gene · alias · UniProt · class · reason…"
             value={query}
             onChange={(e) => setQuery(e.target.value)}
             type="search"

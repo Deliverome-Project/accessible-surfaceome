@@ -31,9 +31,11 @@ export default async function BenchmarkPage() {
   // shipping the entire HGNC lookup to the client. `loadGeneName` is
   // memoized so all 147 calls share one TSV parse.
   const geneNames: Record<string, string> = {};
+  const geneSynonyms: Record<string, string[]> = {};
   for (const row of matrix.rows) {
     const entry = loadGeneName(row.gene_symbol);
     if (entry?.name) geneNames[row.gene_symbol] = entry.name;
+    if (entry?.synonyms?.length) geneSynonyms[row.gene_symbol] = entry.synonyms;
   }
 
   return (
@@ -60,6 +62,7 @@ export default async function BenchmarkPage() {
           matrix={matrix}
           deepDiveGenes={deepDiveGenes}
           geneNames={geneNames}
+          geneSynonyms={geneSynonyms}
         />
 
         <footer className={styles.footnotes}>
