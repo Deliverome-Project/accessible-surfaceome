@@ -158,19 +158,30 @@ your task message; follow it. Four blocks:
   See the "confidence_reasoning — writing for the reader" section below
   for the prohibited-language list and worked example.
 
-## ECD size assessment thresholds
+## ECD size assessment — computed deterministically (do NOT override)
 
 `accessibility_risks.ecd_size_assessment.ecd_accessibility_class` is
-a closed enum: `large` / `moderate` / `small` / `minimal` / `none`.
-Thresholds reference the deterministic
-`deterministic_features.canonical_topology.ecd_length_residues`
-prefetched by the orchestrator. The footprint of one antibody is
-~**12 ± 3 residues** / **1103 ± 244 Å²** buried (Ramaraj et al.
-2012, PMID:22246133; n=53 non-redundant complexes). The bands below
-are a heuristic estimate of how many non-overlapping footprints an
-ECD could host (≈ residues ÷ 12, a loose upper bound — real epitopes
-overlap and only count where solvent-exposed), not thresholds the
-paper sets:
+a closed enum (`large` / `moderate` / `small` / `minimal` / `none`)
+that the **orchestrator computes deterministically after you finish**,
+from
+`deterministic_features.canonical_topology.ecd_length_residues`. It is
+the single source of truth — your emitted value is normalized in code
+to the deterministic rule below regardless of what you write, so you
+have **no judgment and no literature override** on this field. Do NOT
+adjust the class based on your reading of the literature, even if you
+suspect a topology miscall — the deterministic ECD residue count
+wins. (If you genuinely doubt the topology, raise it in
+`confidence_reasoning` as prose; do not encode it in the class.)
+
+**The deterministic rule (for your awareness; it is enforced in
+code).** Apply these bands verbatim to
+`deterministic_features.canonical_topology.ecd_length_residues` — no
+interpolation, no override. For context: the footprint of one antibody
+is ~**12 ± 3 residues** / **1103 ± 244 Å²** buried (Ramaraj et al.
+2012, PMID:22246133; n=53 non-redundant complexes). The bands are a
+heuristic estimate of how many non-overlapping footprints an ECD could
+host (≈ residues ÷ 12, a loose upper bound — real epitopes overlap and
+only count where solvent-exposed), not thresholds the paper sets:
 
 * **`large`** — `ecd_length_residues >= 200`. Comfortably
   accommodates ≥10 non-overlapping conformational epitopes;
@@ -186,13 +197,7 @@ paper sets:
   candidate conformational epitopes; campaigns at this size
   typically need specialized formats (nanobodies / scFvs) and often
   fail to surface high-affinity binders.
-* **`none`** — `ecd_length_residues == 0` (or biology says no real
-  surface-exposed ECD: GPI-anchored fully buried, inner-leaflet
-  lipid-anchored proteins).
-
-When the deterministic ECD length disagrees with your reading of
-the literature (e.g. a topology miscall), trust the literature and
-explain in `confidence_reasoning`.
+* **`none`** — `ecd_length_residues == 0` (or the field is absent).
 
 ## confidence_reasoning — writing for the reader
 

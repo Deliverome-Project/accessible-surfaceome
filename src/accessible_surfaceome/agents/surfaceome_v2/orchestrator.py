@@ -78,6 +78,7 @@ from accessible_surfaceome.tools._shared.models import (
     BiologicalContext,
     BiologicalContextDraft,
     DeterministicFeatures,
+    ECDSizeAssessment,
     Evidence,
     EvidenceClaim,
     GeneIdentifier,
@@ -89,6 +90,7 @@ from accessible_surfaceome.tools._shared.models import (
     SurfaceEvidence,
     SurfaceEvidenceDraft,
     SurfaceomeRecord,
+    classify_ecd_accessibility_class,
 )
 from accessible_surfaceome.tools._shared.normalize import normalize_for_quote_matching
 from accessible_surfaceome.tools._shared.source_text import SourceText, SourceTextStore
@@ -197,6 +199,59 @@ def _attach_homo_oligomerization_prediction(
     )
     return accessibility_risks.model_copy(
         update={"homo_oligomerization_prediction": prediction}
+    )
+
+
+def _attach_deterministic_ecd_size_assessment(
+    accessibility_risks: AccessibilityRisks,
+    deterministic_features: DeterministicFeatures,
+) -> AccessibilityRisks:
+    """Overwrite ``ecd_size_assessment`` with a deterministic classification.
+
+    ``ecd_accessibility_class`` is the **single source of truth** for ECD
+    size: it is computed by :func:`classify_ecd_accessibility_class` from the
+    deterministic
+    ``deterministic_features.canonical_topology.ecd_length_residues`` count and
+    overwrites whatever the synthesizer emitted (the synthesizer is no longer
+    allowed a literature override). This mirrors
+    :func:`_attach_homo_oligomerization_prediction` /
+    :func:`_attach_deterministic_families`: an orchestrator-only post-pass that
+    replaces an LLM-authored field with a deterministic one.
+
+    Runs *before* the filters-derivation step so ``_derive_filters`` reads the
+    deterministic class straight off this block — keeping the
+    ``filters.ecd_accessibility_class`` mirror in lock-step (they cannot
+    diverge). Returns a *new* ``AccessibilityRisks`` via ``model_copy``.
+    """
+    ecd_len = deterministic_features.canonical_topology.ecd_length_residues
+    ecd_class = classify_ecd_accessibility_class(ecd_len)
+    if ecd_len is None:
+        rationale = (
+            "ECD length unavailable -> none; computed deterministically "
+            "from DeepTMHMM topology."
+        )
+    else:
+        if ecd_class == "large":
+            band = ">=200"
+        elif ecd_class == "moderate":
+            band = "60-199"
+        elif ecd_class == "small":
+            band = "30-59"
+        elif ecd_class == "minimal":
+            band = "<30"
+        else:  # "none"
+            band = "==0"
+        rationale = (
+            f"ECD length {ecd_len} residues ({band}) -> {ecd_class}; "
+            "computed deterministically from DeepTMHMM topology."
+        )
+    assessment = ECDSizeAssessment(
+        ecd_accessibility_class=ecd_class,
+        rationale=rationale,
+        cited_evidence_ids=[],
+    )
+    return accessibility_risks.model_copy(
+        update={"ecd_size_assessment": assessment}
     )
 
 
@@ -806,6 +861,29 @@ def _annotate(
         synth_draft = synth_draft.model_copy(
             update={
                 "accessibility_risks": _attach_homo_oligomerization_prediction(
+                    synth_draft.accessibility_risks, det_features
+                )
+            }
+        )
+
+    # ---- step 7.7: deterministic ecd_accessibility_class overwrite --------
+    # ``ecd_accessibility_class`` is deterministic, NOT LLM-synthesized: the
+    # synthesizer used to apply the size thresholds itself AND was allowed a
+    # "trust the literature on a topology miscall" override. That made the
+    # class diverge from the deterministic ECD residue count. We now compute
+    # it in one place — ``classify_ecd_accessibility_class`` over
+    # ``deterministic_features.canonical_topology.ecd_length_residues`` — and
+    # overwrite the synthesizer's block with it. This is the single source of
+    # truth regardless of what the synthesizer emitted. Mirrors
+    # ``_attach_homo_oligomerization_prediction``: orchestrator-only, free
+    # (reuses the already-fetched deterministic block), prevents stale-prompt
+    # drift. Runs BEFORE step 8 so ``_derive_filters`` reads the deterministic
+    # class off this block — keeping the ``filters.ecd_accessibility_class``
+    # mirror in lock-step (they cannot diverge).
+    with timing.step("ecd_size_assessment_post_pass", phase="post"):
+        synth_draft = synth_draft.model_copy(
+            update={
+                "accessibility_risks": _attach_deterministic_ecd_size_assessment(
                     synth_draft.accessibility_risks, det_features
                 )
             }
