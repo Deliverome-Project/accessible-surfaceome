@@ -63,7 +63,7 @@ OPT_CUTOFFS_TSV = f"{BASE}/data/processed/triage_bench/db_optimized_cutoffs.tsv"
 # Subject metadata — mirrors save_figure in _plotting_config.py).
 GIST_URL = "https://gist.github.com/beccajcarlson/1265c867a3bbb08efd81262789e1f013"
 
-# ──── Inline brand styling — sentinel: brand-style-v2 ────
+# ──── Inline brand styling — sentinel: brand-style-v3 ────
 # Mirrors src/accessible_surfaceome/audit/_plotting_config.py so the gist
 # stays self-contained. Kept in sync via tests/test_figure_gists_styling.py.
 BRAND_PALETTE = [
@@ -102,7 +102,7 @@ def _register_brand_fonts() -> None:
 
 
 def _apply_brand_style() -> None:
-    """Inline equivalent of `setup_plotting_style`. Sentinel: brand-style-v2.
+    """Inline equivalent of `setup_plotting_style`. Sentinel: brand-style-v3.
     v2: bumped sizes ~25% + explicit medium weight (avoids ExtraLight default
     that matplotlib picks from the Manrope variable file). Companion to the
     static Manrope-{regular,medium,semibold,bold}.otf files in assets/fonts/."""
@@ -117,8 +117,8 @@ def _apply_brand_style() -> None:
         "font.family": "sans-serif",
         "font.sans-serif": ["Manrope", "Outfit", "DejaVu Sans", "Liberation Sans", "Arial"],
         "font.weight": "medium",
-        "font.size": 21,
-        "axes.labelsize": 24,
+        "font.size": 25,
+        "axes.labelsize": 29,
         "axes.labelweight": "medium",
         "axes.titlesize": 0,
         "axes.titlepad": 0,
@@ -134,12 +134,12 @@ def _apply_brand_style() -> None:
         "grid.linestyle": "-",
         "grid.linewidth": 0.7,
         "grid.color": BRAND_GRID,
-        "xtick.labelsize": 19,
-        "ytick.labelsize": 19,
+        "xtick.labelsize": 23,
+        "ytick.labelsize": 23,
         "xtick.color": BRAND_INK,
         "ytick.color": BRAND_INK,
         "legend.frameon": False,
-        "legend.fontsize": 19,
+        "legend.fontsize": 23,
         "patch.edgecolor": "none",
         "patch.linewidth": 0.0,
     })
@@ -312,7 +312,7 @@ def main() -> None:
                 patch.get_height() + 0.01,
                 f"{frac:.0%}",
                 ha="center", va="bottom",
-                fontsize=11, color=BRAND_INK,
+                fontsize=13, color=BRAND_INK,
             )
 
     ax.set_xlabel("")
@@ -325,7 +325,7 @@ def main() -> None:
         handles, legend_labels,
         title="Caller (overall agreement)",
         loc="upper left", bbox_to_anchor=(1.02, 1.0),
-        frameon=False, fontsize=13,
+        frameon=False, fontsize=16,
     )
 
     totals = {
@@ -343,7 +343,7 @@ def main() -> None:
     ax.text(
         0.5, -0.18, subtitle,
         transform=ax.transAxes, ha="center", va="top",
-        fontsize=14, color=BRAND_NEUTRAL,
+        fontsize=17, color=BRAND_NEUTRAL,
     )
     sns.despine(ax=ax, top=True, right=True)
 

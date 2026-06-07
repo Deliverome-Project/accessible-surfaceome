@@ -42,7 +42,7 @@ CAND_URL = (
 # Subject metadata — mirrors save_figure in _plotting_config.py).
 GIST_URL = "https://gist.github.com/beccajcarlson/d655abfc9c7deeaff1cfbe584de96ffa"
 
-# ──── Inline brand styling — sentinel: brand-style-v2 ────
+# ──── Inline brand styling — sentinel: brand-style-v3 ────
 # Mirrors src/accessible_surfaceome/audit/_plotting_config.py so the gist
 # stays self-contained (no in-repo imports — Substack readers run it
 # standalone). Kept in sync via tests/test_figure_gists_styling.py.
@@ -82,7 +82,7 @@ def _register_brand_fonts() -> None:
 
 
 def _apply_brand_style() -> None:
-    """Inline equivalent of `setup_plotting_style`. Sentinel: brand-style-v2.
+    """Inline equivalent of `setup_plotting_style`. Sentinel: brand-style-v3.
     v2: bumped sizes ~25% + explicit medium weight (avoids ExtraLight default
     that matplotlib picks from the Manrope variable file). Companion to the
     static Manrope-{regular,medium,semibold,bold}.otf files in assets/fonts/."""
@@ -97,8 +97,8 @@ def _apply_brand_style() -> None:
         "font.family": "sans-serif",
         "font.sans-serif": ["Manrope", "Outfit", "DejaVu Sans", "Liberation Sans", "Arial"],
         "font.weight": "medium",
-        "font.size": 21,
-        "axes.labelsize": 24,
+        "font.size": 25,
+        "axes.labelsize": 29,
         "axes.labelweight": "medium",
         "axes.titlesize": 0,
         "axes.titlepad": 0,
@@ -114,12 +114,12 @@ def _apply_brand_style() -> None:
         "grid.linestyle": "-",
         "grid.linewidth": 0.7,
         "grid.color": BRAND_GRID,
-        "xtick.labelsize": 19,
-        "ytick.labelsize": 19,
+        "xtick.labelsize": 23,
+        "ytick.labelsize": 23,
         "xtick.color": BRAND_INK,
         "ytick.color": BRAND_INK,
         "legend.frameon": False,
-        "legend.fontsize": 19,
+        "legend.fontsize": 23,
         "patch.edgecolor": "none",
         "patch.linewidth": 0.0,
     })
@@ -161,7 +161,7 @@ def main() -> None:
     cmap = [PALETTE_BY_LABEL[k] for k in sorted_keys]
 
     fig, ax = plt.subplots(figsize=(11, 10))
-    venn(sorted_sets, ax=ax, cmap=cmap, fontsize=22, legend_loc=None)
+    venn(sorted_sets, ax=ax, cmap=cmap, fontsize=26, legend_loc=None)
     ax.set_xticks([])
     ax.set_yticks([])
     sns.despine(ax=ax, top=True, right=True, bottom=True, left=True)
@@ -171,10 +171,13 @@ def main() -> None:
         for k in sorted_keys
     ]
     labels = [f"{k}  (n = {len(sets[k]):,})" for k in sorted_keys]
+    # Two-row legend (ceil(N/2)) so the 5 DB chips fit at v3 fontsize
+    # without overflowing the figure width. 5 entries → ncols=3 → 3-on-top
+    # + 2-on-bottom rather than the v2 single-row layout that overflowed.
     ax.legend(
         handles, labels,
         loc="upper center", bbox_to_anchor=(0.5, -0.02),
-        ncols=len(sorted_keys), frameon=False, fontsize=21,
+        ncols=(len(sorted_keys) + 1) // 2, frameon=False, fontsize=25,
     )
 
     out_pdf = Path("db_overlap_venn.pdf")
