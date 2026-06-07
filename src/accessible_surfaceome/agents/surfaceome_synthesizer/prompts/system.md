@@ -539,11 +539,7 @@ membrane. Closed enum:
   tetraspanin). SLC family, claudins, ABC transporters, aquaporins.
 * `GPCR` — seven-pass heptahelical receptor architecture. Kept as
   a common-name shortcut because 7TM is essentially synonymous
-<<<<<<< Updated upstream
-  with GPCR in practice. GENE X, ADGRE5, CXCR4.
-=======
   with GPCR in practice.
->>>>>>> Stashed changes
 * `GPI_anchored` — post-translational GPI lipid anchor; no TM
   span. Complement regulators, prion-class proteins, glypicans.
 * `tetraspanin` — four-pass with large EC2 loop (~80-100 residues).
@@ -558,20 +554,11 @@ separately attaches deterministic, curator-assigned family tags —
 `hgnc_gene_groups` and `uniprot_family` — alongside this; you do not emit
 those.) Closed enum:
 * `receptor` — signaling receptors (GPCRs / RTKs / cytokine
-<<<<<<< Updated upstream
-  receptors / integrins / immunoreceptors / NHRs). EGFR, GENE X,
-  IFNAR2, CD3 family, FGFR2.
-* `enzyme` — surface-exposed catalytic activity. CD13/ANPEP
-  (aminopeptidase), CD26/DPP4 (dipeptidyl peptidase), CD73/NT5E
-  (ectonucleotidase), CD38, PSMA/FOLH1, ADAM10/17/SADAMs, MMP14,
-  ENPP family. **Inner-leaflet kinases like SRC count as `enzyme`
-=======
   receptors / integrins / immunoreceptors / NHRs).
 * `enzyme` — surface-exposed catalytic activity. Aminopeptidases,
   dipeptidyl peptidases, ectonucleotidases, ADP-ribosyl cyclases,
   surface peptidases, sheddases, matrix metalloproteinases,
   ectophosphodiesterases. **Inner-leaflet kinases count as `enzyme`
->>>>>>> Stashed changes
   by protein identity, regardless of whether the ectopic-surface
   story is moderate** — the catalog filters on what the protein
   IS, not just where it lives.
@@ -583,16 +570,6 @@ those.) Closed enum:
   (PDZ proteins), structural / cytoskeletal, chaperones,
   prion-class. Default when none of the above fit cleanly.
 
-<<<<<<< Updated upstream
-A given gene carries one value from EACH axis. **EGFR**:
-`subcategory=single_pass_T1, llm_family=receptor`. **GENE X**:
-`subcategory=GPCR, llm_family=receptor`. **CD26/DPP4**:
-`subcategory=single_pass_T2, llm_family=enzyme`. **CD81**:
-`subcategory=tetraspanin, llm_family=miscellaneous`. **SLC2A1**:
-`subcategory=multi_pass, llm_family=transporter`. **HSPA5**:
-`subcategory=other, llm_family=miscellaneous`. **SRC**:
-`subcategory=other, llm_family=enzyme` (kinase by identity).
-=======
 A given gene carries one value from EACH axis. Examples:
 * A classical single-pass receptor: `subcategory=single_pass_T1,
   llm_family=receptor`.
@@ -606,7 +583,6 @@ A given gene carries one value from EACH axis. Examples:
   llm_family=miscellaneous`.
 * An inner-leaflet kinase with an outer-leaflet inversion story:
   `subcategory=other, llm_family=enzyme` (kinase by identity).
->>>>>>> Stashed changes
 
 ## Has-known-ligand flag
 
