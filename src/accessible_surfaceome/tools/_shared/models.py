@@ -2019,6 +2019,14 @@ class SurfaceEvidence(BaseModel):
         _warn_prose_overshoot(self, type(self)._PROSE_TARGETS)
         return self
 
+    @model_validator(mode="after")
+    def _check_evidence_grade_methods_cardinality(self) -> "SurfaceEvidence":
+        _validate_evidence_grade_methods_cardinality(
+            self.evidence_grade,
+            self.methods,
+        )
+        return self
+
 
 # ---- biological context (section 2) ---------------------------------------
 
@@ -3010,6 +3018,192 @@ def _validate_triage_signal_consistency(
         )
 
 
+# ---- cross-block coherence validators ------------------------------------
+#
+# These enforce that the v2 block-builders' outputs are internally
+# coherent. The synthesizer is supposed to keep its claims aligned with
+# the builders' structured output, but until v2.4.0 nothing in the schema
+# stopped a record like ``evidence_grade='direct_multi_method'`` paired
+# with an empty ``methods=[]`` from validating — the synthesizer could
+# write a prose-level claim that no MethodObservation backed. Each helper
+# below is exposed for both ``SurfaceomeRecord`` and ``SurfaceomeRecordDraft``
+# so the agent's draft fails at synthesis time rather than at final
+# assembly.
+
+
+def _validate_evidence_grade_methods_cardinality(
+    evidence_grade: str,
+    methods: list["MethodObservation"],
+) -> None:
+    """``evidence_grade`` must have the methods support it claims.
+
+    * ``direct_multi_method`` ⇒ ≥2 ``MethodObservation`` entries with
+      ``accessibility_relevance='direct_surface_accessibility'`` and
+      those entries cite ≥2 distinct ``evidence_id`` sources. ("Multi-
+      method" requires at least two independent sources, not two
+      observations from the same paper.)
+    * ``direct_single_method`` ⇒ ≥1 such entry. The prompt allows "all
+      direct observations from a single source," so source diversity is
+      not required.
+    * Other grades (``supportive_but_indirect``, ``conflicting``,
+      ``weak``) impose no methods cardinality — they explicitly describe
+      cases where the methods evidence is partial / indirect / absent.
+    """
+    if evidence_grade not in ("direct_multi_method", "direct_single_method"):
+        return
+    direct = [
+        m for m in methods
+        if m.accessibility_relevance == "direct_surface_accessibility"
+    ]
+    if evidence_grade == "direct_single_method":
+        if not direct:
+            raise ValueError(
+                "evidence_grade='direct_single_method' requires at least one "
+                "MethodObservation with "
+                "accessibility_relevance='direct_surface_accessibility'; "
+                "surface_evidence.methods has none. Either downgrade the "
+                "grade or add the direct-method evidence."
+            )
+        return
+    # direct_multi_method
+    if len(direct) < 2:
+        raise ValueError(
+            "evidence_grade='direct_multi_method' requires at least 2 "
+            "MethodObservations with "
+            "accessibility_relevance='direct_surface_accessibility'; "
+            f"surface_evidence.methods has {len(direct)}. Either "
+            "downgrade the grade or add another direct-method observation."
+        )
+    distinct_sources: set[str] = set()
+    for m in direct:
+        distinct_sources.update(m.cited_evidence_ids or [])
+    if len(distinct_sources) < 2:
+        raise ValueError(
+            "evidence_grade='direct_multi_method' requires direct-method "
+            "observations from at least 2 distinct sources "
+            f"(cited_evidence_ids). Found {len(direct)} direct methods "
+            f"covering only {len(distinct_sources)} source(s) "
+            f"({sorted(distinct_sources)}). Either downgrade to "
+            "direct_single_method or cite an independent second source."
+        )
+
+
+# Compartments + dual-localization labels that count as secretory-pathway
+# corroboration for ``secreted_form.present=True``. Loose string match on
+# DualLocalization.compartment since the field is free-text (with a
+# canonical-token validator) rather than a closed enum.
+_SECRETORY_PRIMARY_COMPARTMENTS: frozenset[str] = frozenset({"secreted"})
+_SECRETORY_DUAL_LABELS: frozenset[str] = frozenset(
+    {
+        "secreted",
+        "extracellular",
+        "supernatant",
+        "serum",
+        "plasma",
+        "er",
+        "endoplasmic_reticulum",
+        "endoplasmic reticulum",
+        "golgi",
+        "secretory_vesicle",
+    }
+)
+
+
+def _validate_secreted_form_corroboration(
+    secreted_form: "SecretedForm",
+    subcellular_localization: "SubcellularLocalization",
+    methods: list["MethodObservation"],
+) -> None:
+    """``accessibility_risks.secreted_form.present=True`` must be backed
+    by at least one of:
+
+      a) ``cited_evidence_ids`` on the ``SecretedForm`` itself (the
+         synthesizer pointed to specific ledger entries),
+      b) a secretory-pathway compartment in
+         ``biological_context.subcellular_localization`` (primary or
+         dual),
+      c) a fractionation / glycoproteomics method in
+         ``surface_evidence.methods`` (``accessibility_relevance=
+         supports_membrane_association``).
+
+    A record claiming a secreted form with none of these is structurally
+    unbacked — the synthesizer prose may sound right, but downstream
+    consumers (the catalog, the viewer's risk chip) read this as a hard
+    risk signal and the absence of any backing is the signature pattern
+    of a hallucinated risk."""
+    if not secreted_form.present:
+        return
+    # (a) explicit citation — accept
+    if secreted_form.cited_evidence_ids:
+        return
+    # (b) subcellular_localization corroboration
+    if (
+        subcellular_localization.primary_compartment
+        in _SECRETORY_PRIMARY_COMPARTMENTS
+    ):
+        return
+    for dual in subcellular_localization.dual_localization:
+        compartment = (dual.compartment or "").strip().lower()
+        if compartment in _SECRETORY_DUAL_LABELS:
+            return
+    # (c) fractionation / glycoproteomics method evidence
+    for m in methods:
+        if m.accessibility_relevance == "supports_membrane_association":
+            return
+    raise ValueError(
+        "accessibility_risks.secreted_form.present=True but no "
+        "corroboration: SecretedForm.cited_evidence_ids is empty AND "
+        "biological_context.subcellular_localization has no secretory "
+        "compartment (primary or dual) AND surface_evidence.methods has "
+        "no supports_membrane_association entry. Either cite a ledger "
+        "evidence_id, add a secretory dual_localization, include a "
+        "fractionation method, or set secreted_form.present=False."
+    )
+
+
+def _is_headline_risk_backed(headline: str, risks: "AccessibilityRisks") -> bool:
+    """True iff ``headline`` corresponds to a non-trivially-present sub-block
+    in ``risks``. ``isoform_decoy`` has no dedicated risk sub-block — the
+    synthesizer's prose carries it — so it always passes here. Unknown
+    headline values also pass (forward-compat)."""
+    if headline == "shed_form":
+        return risks.shed_form.present
+    if headline == "secreted_form":
+        return risks.secreted_form.present
+    if headline == "co_receptor":
+        return risks.co_receptor_requirements.surface_expression_dependency in (
+            "required",
+            "modulatory",
+        )
+    if headline == "epitope_masked":
+        return risks.epitope_masking.severity in ("low", "moderate", "high")
+    return True
+
+
+def _validate_headline_risks_match_present_risks(
+    headline_risks: list[str],
+    risks: "AccessibilityRisks",
+) -> None:
+    """Each ``headline_risks`` entry must correspond to a present
+    ``accessibility_risks`` sub-block. The orchestrator post-pass already
+    SCRUBS unbacked entries (``scrub_headline_risks`` in orchestrator.py)
+    so this is a belt-and-suspenders check that fires at the schema
+    level — even if the orchestrator post-pass is skipped (e.g. a stub
+    annotate path), a record can never persist with an unbacked
+    headline."""
+    unbacked = [h for h in headline_risks if not _is_headline_risk_backed(h, risks)]
+    if unbacked:
+        raise ValueError(
+            f"executive_summary.headline_risks={headline_risks} contains "
+            f"entries with no backing in accessibility_risks: {unbacked}. "
+            "Either remove the unbacked entries from headline_risks or "
+            "update the corresponding sub-block "
+            "(shed_form.present / secreted_form.present / "
+            "epitope_masking.severity / "
+            "co_receptor_requirements.surface_expression_dependency)."
+        )
+
+
 # ---- assembled record + agent draft ---------------------------------------
 
 
@@ -3024,8 +3218,8 @@ class SurfaceomeRecord(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
     schema_version: Literal[
-        "1.0.0", "1.1.0", "2.0.0", "2.1.0", "2.2.0", "2.3.0"
-    ] = "2.3.0"
+        "1.0.0", "1.1.0", "2.0.0", "2.1.0", "2.2.0", "2.3.0", "2.4.0"
+    ] = "2.4.0"
     gene: GeneIdentifier
 
     # Cross-agent coherence — populated by the orchestrator from the most
@@ -3102,6 +3296,23 @@ class SurfaceomeRecord(BaseModel):
         )
         return self
 
+    @model_validator(mode="after")
+    def _check_secreted_form_corroboration(self) -> SurfaceomeRecord:
+        _validate_secreted_form_corroboration(
+            self.accessibility_risks.secreted_form,
+            self.biological_context.subcellular_localization,
+            self.surface_evidence.methods,
+        )
+        return self
+
+    @model_validator(mode="after")
+    def _check_headline_risks_match_present_risks(self) -> SurfaceomeRecord:
+        _validate_headline_risks_match_present_risks(
+            list(self.executive_summary.headline_risks),
+            self.accessibility_risks,
+        )
+        return self
+
 
 class SurfaceomeRecordDraft(BaseModel):
     """What the AGENT emits for a surface-accessibility deep-dive.
@@ -3123,8 +3334,8 @@ class SurfaceomeRecordDraft(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
     schema_version: Literal[
-        "1.0.0", "1.1.0", "2.0.0", "2.1.0", "2.2.0", "2.3.0"
-    ] = "2.3.0"
+        "1.0.0", "1.1.0", "2.0.0", "2.1.0", "2.2.0", "2.3.0", "2.4.0"
+    ] = "2.4.0"
     gene: GeneIdentifier
 
     # Orchestrator-injected before the agent call; the agent reads it but does
@@ -3170,6 +3381,23 @@ class SurfaceomeRecordDraft(BaseModel):
             self.triage_signal,
             self.executive_summary.surface_accessibility,
             self.confidence_reasoning,
+        )
+        return self
+
+    @model_validator(mode="after")
+    def _check_secreted_form_corroboration(self) -> SurfaceomeRecordDraft:
+        _validate_secreted_form_corroboration(
+            self.accessibility_risks.secreted_form,
+            self.biological_context.subcellular_localization,
+            self.surface_evidence.methods,
+        )
+        return self
+
+    @model_validator(mode="after")
+    def _check_headline_risks_match_present_risks(self) -> SurfaceomeRecordDraft:
+        _validate_headline_risks_match_present_risks(
+            list(self.executive_summary.headline_risks),
+            self.accessibility_risks,
         )
         return self
 

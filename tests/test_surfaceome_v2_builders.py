@@ -892,14 +892,29 @@ def test_surface_evidence_draft_validates_with_block_builder_outputs() -> None:
                 accessibility_relevance="direct_surface_accessibility",
                 surface_claim_type="surface_accessible",
                 expression_observations=[],
-                cited_evidence_ids=["a1_evi_01", "a1_evi_02"],
-            )
+                cited_evidence_ids=["a1_evi_01"],
+            ),
+            # direct_multi_method requires ≥2 direct methods from ≥2 distinct
+            # sources — pair the flow row with a surface-biotinylation row
+            # citing the SECOND evidence_id so the cross-block validator
+            # (_check_evidence_grade_methods_cardinality) accepts the grade.
+            MethodObservation(
+                method_family="biotinylation",
+                method_subclass="surface_biotinylation",
+                permeabilization="live_cell",
+                expression_system="endogenous",
+                antibodies=[],
+                accessibility_relevance="direct_surface_accessibility",
+                surface_claim_type="surface_accessible",
+                expression_observations=[],
+                cited_evidence_ids=["a1_evi_02"],
+            ),
         ],
         non_surface_expression=[],
         contradicting_evidence=[],
     )
     draft = SurfaceEvidenceDraft(surface_evidence=se, evidence_claims=a1_claims)
-    assert len(draft.surface_evidence.methods) == 1
+    assert len(draft.surface_evidence.methods) == 2
 
 
 def test_biological_context_draft_validates_with_block_builder_outputs() -> None:
