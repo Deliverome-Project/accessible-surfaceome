@@ -756,26 +756,33 @@ export function CatalogTable({
     // ahead of the canonical SRC gene because the user-selected sort
     // (deep-dive desc, n_sources desc) didn't know about the query.
     // Rank tiers (lower = better):
-    //   0 exact symbol  ("SRC" === q)
-    //   1 exact uniprot ("P12931" === q)
-    //   2 symbol prefix ("SRCM" startsWith q)
-    //   3 symbol contains q anywhere
-    //   4 uniprot contains q
-    //   5 name contains q
-    //   6 synonym contains q
-    //   7 fallback (shouldn't fire — filter would have excluded)
+    //   0 exact symbol      ("SRC" === q)
+    //   1 exact uniprot     ("P12931" === q)
+    //   2 exact alias       ("LAT1" === any alias of SLC7A5 → SLC7A5 wins
+    //                        over noisier substring matches in other rows)
+    //   3 symbol prefix     ("SRCM" startsWith q)
+    //   4 alias prefix      (search "cd8" surfaces CD8A/CD8B over genes
+    //                        that just contain "cd8" mid-name)
+    //   5 symbol contains q anywhere
+    //   6 uniprot contains q
+    //   7 name contains q
+    //   8 alias contains q anywhere
+    //   9 fallback (shouldn't fire — filter would have excluded)
     function relevanceRank(r: CatalogRow): number {
       if (!q) return 0;
       const sym = r.symbol.toLowerCase();
       const up = r.uniprot.toLowerCase();
+      const aliases = (r.synonyms ?? []).map((s) => s.toLowerCase());
       if (sym === q) return 0;
       if (up === q) return 1;
-      if (sym.startsWith(q)) return 2;
-      if (sym.includes(q)) return 3;
-      if (up.includes(q)) return 4;
-      if ((r.name ?? "").toLowerCase().includes(q)) return 5;
-      if ((r.synonyms ?? []).some((s) => s.toLowerCase().includes(q))) return 6;
-      return 7;
+      if (aliases.some((a) => a === q)) return 2;
+      if (sym.startsWith(q)) return 3;
+      if (aliases.some((a) => a.startsWith(q))) return 4;
+      if (sym.includes(q)) return 5;
+      if (up.includes(q)) return 6;
+      if ((r.name ?? "").toLowerCase().includes(q)) return 7;
+      if (aliases.some((a) => a.includes(q))) return 8;
+      return 9;
     }
     copy.sort((a, b) => {
       if (q) {
