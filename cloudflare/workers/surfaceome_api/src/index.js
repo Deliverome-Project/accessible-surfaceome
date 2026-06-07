@@ -166,6 +166,69 @@ async function handleGeneList(env) {
   return json({ count: rows.results.length, genes: rows.results }, { ttl: CACHE_TTL_SHORT });
 }
 
+// Verdict (in triage_run_public) → triage_signal (in SurfaceomeRecord).
+// MUST stay in sync with the Python side:
+//   src/accessible_surfaceome/agents/surfaceome_v1/orchestrator.py
+//     ::_TRIAGE_VERDICT_TO_SIGNAL
+// Both sides feed the viewer's gene page; a drift here would silently
+// recolor the triage chip.
+const TRIAGE_VERDICT_TO_SIGNAL = {
+  yes: "likely_accessible",
+  contextual: "possibly_accessible",
+  no: "unlikely",
+};
+
+// Priority order for the Sonnet triage prior. MUST stay in sync with:
+//   src/accessible_surfaceome/agents/surfaceome_v1/orchestrator.py
+//     ::_D1_TRIAGE_PRIORITY
+//   src/accessible_surfaceome/cloud/surface_annotation.py
+//     ::_TRIAGE_COHERENCE_PRIORITY
+// Walked in order; first hit wins. The bench-curated run is preferred
+// over the genome-wide sweep — same logic the publish-time coherence
+// guard uses. Public D1 currently carries only the ``_v2`` sweeps
+// (verified 2026-06-07).
+const TRIAGE_PRIORITY = [
+  ["mainbench_canonical_v2", "ncbi"],
+  ["genome_full_sonnet_ncbi_v2", "ncbi"],
+];
+
+/**
+ * Fetch the Sonnet triage row for `sym` honoring the priority order.
+ * Returns `{verdict, reason, reasoning} | null`. Walks priorities one
+ * by one — at most ~2 cheap point queries; the genome-wide sweep is the
+ * tail case so most lookups resolve on the first query.
+ *
+ * The June-2026 bug: when the annotator's `_load_triage_record_from_d1`
+ * failed silently (partial creds → empty token), records shipped with
+ * `triage_signal=unknown` even though D1 carried the Sonnet verdict.
+ * This overlay closes the loop: even if a record ships with `unknown`,
+ * the Worker serves the live verdict that D1 actually has — no
+ * re-annotation required.
+ */
+async function fetchTriagePrior(env, sym) {
+  for (const [runId, variant] of TRIAGE_PRIORITY) {
+    const row = await env.DB.prepare(
+      `SELECT predicted_verdict, predicted_reason, verdict_reasoning
+         FROM triage_run_public
+        WHERE gene_symbol = ?
+          AND run_id = ?
+          AND prompt_variant = ?
+          AND model LIKE '%sonnet%'
+          AND predicted_verdict IS NOT NULL
+        ORDER BY replicate ASC, created_at DESC
+        LIMIT 1`
+    ).bind(sym, runId, variant).first();
+    if (row) {
+      return {
+        verdict: row.predicted_verdict,
+        reason: row.predicted_reason,
+        reasoning: row.verdict_reasoning,
+      };
+    }
+  }
+  return null;
+}
+
 async function handleGene(env, symbol) {
   const sym = checkSymbol(symbol);
   if (!sym) return badRequest("invalid_symbol");
@@ -652,6 +715,31 @@ async function handleGene(env, symbol) {
         };
       }
     }
+  }
+  // Triage-signal overlay — the load-bearing freshness fix for the
+  // June-2026 silent-failure bug. The annotator bakes `triage_signal` +
+  // `triage_reasoning` at deep-dive time by reading
+  // `triage_run_public`; when that read silently failed (partial creds /
+  // priority-list drift / stale run_ids), the record shipped with
+  // `triage_signal=unknown` despite D1 carrying the Sonnet verdict.
+  // Overlaying live closes the loop: even a corrupted/stale record
+  // serves the verdict D1 actually has, no re-annotation required.
+  //
+  // Posture matches the other enrich steps: fail-open on a D1 hiccup
+  // (don't break the per-gene endpoint), and don't overwrite a
+  // populated record with null (a brand-new gene the triage sweep
+  // hasn't covered yet leaves the annotator's call intact).
+  try {
+    const triagePrior = await fetchTriagePrior(env, sym);
+    if (triagePrior) {
+      record.triage_signal =
+        TRIAGE_VERDICT_TO_SIGNAL[triagePrior.verdict] ?? "unknown";
+      if (triagePrior.reasoning && triagePrior.reasoning.trim()) {
+        record.triage_reasoning = triagePrior.reasoning;
+      }
+    }
+  } catch (e) {
+    // Best-effort — never break the endpoint over a triage miss.
   }
   return json(record, { ttl: CACHE_TTL_LONG });
 }
