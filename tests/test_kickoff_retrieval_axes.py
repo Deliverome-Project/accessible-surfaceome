@@ -300,7 +300,6 @@ _MIRRORED_STANDING_ANCHORS = [
     "membrane_subdomain",
     "epitope_masking",
     "cell_state_modulation",
-    "tissue_atlas",
 ]
 # All five fire unconditionally — the membrane+ECD gate was retired so
 # the deep-dive never silently drops a surface-accessibility axis on

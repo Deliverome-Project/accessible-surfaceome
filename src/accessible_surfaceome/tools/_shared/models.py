@@ -349,12 +349,6 @@ TopicAnchor = Literal[
     # state-modulated; without it, state-context evidence relied on
     # gene2pubmed / recent_corpus baselines that under-recalled.
     "cell_state_modulation",
-    # Broader tissue / cell-type expression atlas coverage —
-    # complements normal_tissue_expression (six-organ tox panel) with
-    # atlas-style retrieval (GTEx, HPA, Tabula Sapiens, single-cell)
-    # so the expression builder has thicker evidence for cell-type
-    # and lineage-restricted observations.
-    "tissue_atlas",
 ]
 
 PublicationType = Literal[

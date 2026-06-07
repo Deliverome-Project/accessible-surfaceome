@@ -148,12 +148,6 @@ def _standing_axes(
             anchors=["cell_state_modulation"],
             intent="standing: state-conditional surface biology (activation / stress / disease / EMT / senescence / differentiation) — feeds accessibility_modulation",
         ),
-        SearchRequest(
-            tool="gene_literature",
-            mode="topic_search",
-            anchors=["tissue_atlas"],
-            intent="standing: broader tissue / cell-type expression atlas coverage (HPA / GTEx / scRNA-seq) — feeds expression",
-        ),
     ]
 
 
