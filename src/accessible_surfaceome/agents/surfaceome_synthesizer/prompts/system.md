@@ -43,10 +43,9 @@ your task message; follow it. Four blocks:
   protein for circulating antibody — the antibody-decoy concern.
 
   **It is about the TARGET PROTEIN being soluble — NOT its ligand
-  being shed.** A sheddase (ADAM17, BACE, etc.) cleaving the target's
-  *ligand* (e.g. a sheddase releasing a target's cognate growth-factor
-  ligands) is IRRELEVANT here — that's the ligand becoming soluble, not
-  the target.
+  being shed.** A sheddase cleaving the target's *ligand* (e.g. a
+  sheddase releasing a target's cognate growth-factor ligands) is
+  IRRELEVANT here — that's the ligand becoming soluble, not the target.
   Only count evidence that THIS protein exists as a free soluble species:
   a proteolytically shed ectodomain OF THE TARGET, or a soluble /
   TM-less splice isoform OF THE TARGET. If the only "shedding" evidence

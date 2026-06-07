@@ -8,7 +8,11 @@
     "version": "v0.9.0"
   },
   "prompt_corpus": {
+<<<<<<< Updated upstream
     "fingerprint": "1b218717f8aeb8995e508bf1e3748ccc7a872919c27a351e4d14d46a66a56d99",
+=======
+    "fingerprint": "d46c5b2dcbcc62a431c48c0cafad316736accc40f39cf1c40c5bdc0deab4844c",
+>>>>>>> Stashed changes
     "version": "2.2.1"
   }
 }
