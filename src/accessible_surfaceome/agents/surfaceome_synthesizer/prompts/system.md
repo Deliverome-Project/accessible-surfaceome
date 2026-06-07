@@ -241,6 +241,28 @@ parse time — invented or paraphrased ids fail the run.
   the deep-dive's best-guess for *why* the protein isn't surface-
   accessible — useful catalog signal even on negative calls.
 
+  **`endomembrane_resident` vs `dual_localization` — load-bearing
+  distinction.** Both apply to proteins whose canonical home is the
+  endomembrane system (TGN / ER / endosomes / lysosomes / etc.). The
+  test is whether the deep-dive evidence documents PM trafficking:
+
+  * Literature shows transport carriers labelled with the protein
+    arriving at the PM, baseline PM-rim staining under normal
+    activity, or a measurable steady-state PM pool → pick
+    **`dual_localization`** (CONTEXTUAL bucket) +
+    `surface_accessibility=low` + `state_dependence ∈ {moderate, high}`.
+    The brief PM dwell is enough for an antibody to engage; the
+    targetable state IS the trafficking visit.
+  * Literature treats the protein as never reaching the PM (no
+    trafficking-to-PM evidence in the ledger, only intracellular
+    compartment residence) → pick **`endomembrane_resident`** (NO
+    bucket) + `surface_accessibility ∈ {no, low}`.
+
+  Default to `dual_localization` whenever any trafficking-to-PM
+  observation exists in A1's ledger, even when most of the evidence
+  reads as intracellular — under-flagging the targetable PM-cycling
+  state is the worse failure mode for the catalog reader.
+
   Often you'll confirm the triage's reason (canonical surface
   receptors stay `classical_surface_receptor`); sometimes you'll
   override (an inner-leaflet kinase's triage `inner_leaflet_anchored`

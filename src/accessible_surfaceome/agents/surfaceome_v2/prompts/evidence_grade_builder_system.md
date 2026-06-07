@@ -25,6 +25,20 @@ method in isolation. A live-cell flow study reading an EV-bound or
 exogenously-added pool of the protein does NOT lift the grade to
 direct.
 
+**Transient trafficking through the PM with documented dwell counts
+— at the low end.** Non-PM-resident proteins that cycle through the
+PM during their normal trafficking (with carriers arriving/departing
+the PM, baseline PM-rim labeling, or a small steady-state PM pool by
+surface biotinylation) DO clear the surface-accessibility bar —
+their brief PM dwell is enough for an extracellular antibody to
+engage. Methods builder emits these as
+`supports_surface_localization`; grade them
+`supportive_but_indirect` (NOT `weak`). The synth then picks
+`surface_accessibility=low` + `surface_call_reason=dual_localization`,
+NOT `endomembrane_resident`. Reserve `weak` / `surface_accessibility=no`
++ `endomembrane_resident` for genes the literature treats as never
+reaching the PM at all.
+
 You receive the FULL A1 `EvidenceClaim` ledger and emit ONE JSON object
 with five keys, **in this order** (so the structured per-claim call
 comes first; the rationale then summarizes the stances rather than the

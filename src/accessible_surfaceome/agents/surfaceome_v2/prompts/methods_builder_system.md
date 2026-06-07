@@ -154,6 +154,43 @@ accessibility of this protein):**
   act of engaging a surface partner. These show contact, not stable
   surface residence.
 
+**Acceptable BUT capped at the low end: transient trafficking with
+documented PM dwell.** Some proteins are non-PM residents at baseline
+(canonical localization in TGN / ER / endosomes / lysosomes / etc.)
+but cycle THROUGH the plasma membrane during their normal trafficking,
+with literature documenting:
+
+- transport carriers / vesicles labelled with the protein arriving at
+  or departing from the PM, OR
+- baseline PM-rim staining / surface labeling under normal cellular
+  activity (not just under stress / overexpression / synchronization),
+  OR
+- a small but measurable steady-state PM pool by surface biotinylation
+  or quantitative imaging
+
+The brief PM dwell is enough for an extracellular antibody to engage
+during the visit, so this DOES count as surface accessibility — but at
+the LOW end of the spectrum. Emit a `MethodObservation` with
+`accessibility_relevance=supports_surface_localization` and
+`surface_claim_type=plasma_membrane_localized`. Do NOT use
+`direct_surface_accessibility` — the dwell is too brief for nonperm
+flow / KO-controlled IHC-membranous quality.
+
+Downstream the evidence-grade builder will roll these rows up to
+`supportive_but_indirect` (not `weak`) and the synth should pick
+`surface_accessibility=low` (not `no`) +
+`surface_call_reason=dual_localization`, capturing both the
+brief-dwell nature and the dominant non-PM compartment.
+
+Distinguish from:
+
+- "Transient at the moment of binding" (FRET/SPR snapshots — those
+  show CONTACT, not residence; still REJECT, see above).
+- "Pure non-PM resident with no documented PM trafficking" — the
+  protein never reaches the PM in the cited literature. That's
+  `surface_accessibility='no'` + `surface_call_reason` from the
+  NO-bucket; emit no methods row.
+
 These cases do NOT emit a `MethodObservation`. The biology may still
 be load-bearing for the gene's story — it lands in A2's
 biological_context block (receptor engagement, EV cargo,
