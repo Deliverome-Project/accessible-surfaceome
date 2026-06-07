@@ -75,6 +75,7 @@ buckets:
 |---|---|
 | `executive_summary.surface_accessibility` ∈ `{low, moderate}` (at minimum) — not `no` or `uncertain`. The previous round graded it `weak` and the methods builder didn't surface any direct evidence; under the new prompts the inner-leaflet rejection should NOT block legitimate trans-Golgi-network → PM trafficking rows. | Methods builder inner-leaflet + state-dependence interaction. The user flagged this as a case to check carefully. |
 | **No isoform duplication** in the viewer's IsoformsCard table OR the 3D StructureViewer tab strip. The canonical accession should NOT appear as both `Canonical` and `Isoform`. | Viewer-side fixes (`8e01ef14c` IsoformsCard, `0fced4164` StructureViewer). Upstream annotator-side fix (don't emit canonical into `isoform_topologies`) is a separate follow-up. |
+| **`deterministic_features.isoform_topologies[i].full_length_pct_identity_to_canonical` is NO LONGER 100% for truncated isoforms.** The current TGOLN2 record has `O43493-4` (309/367 residues) reading `100.0`; under the new `max(len_a, len_b)` denominator (commit `aed9cdc40`) it should read ~84% (309/367). | Shared `merge/_sequence_identity.pct_identity` helper — applies to ALL isoform / paralog / ortholog identity numbers on every re-run record. |
 
 ---
 
@@ -110,6 +111,19 @@ ships violating one, the rule is broken.
 | `filters.tumor_associated` is True iff at least one `biological_context.expression` row has `disease_context ∈ {tumor, tumor_adjacent}` at a non-absent level | `_derive_filters` (unchanged) |
 | `filters.induction_trigger != 'none'` iff at least one `accessibility_modulation` row carries a `cell_state_trigger` mapping into a non-empty bucket | `_derive_filters` (unchanged) |
 | `filters.has_live_cell_surface_evidence` is True iff at least one `MethodObservation` is `live-cell flow / nonperm IF / surface biotin / proximity labeling` with endogenous/mixed expression system | `_derive_filters` (unchanged) |
+
+### Sequence-identity refresh (every re-run record)
+
+The denominator switch in commit `aed9cdc40` (`min(len_a, len_b)` →
+`max(len_a, len_b)`) affects every isoform / paralog / ortholog
+identity number on every re-annotated record. Worth a quick scan of
+each re-run record:
+
+| Check | Owns it |
+|---|---|
+| Truncated isoforms (canonical length > isoform length) no longer read 100% — they should read coverage (`isoform_len / canonical_len * 100`) | `merge/_sequence_identity.pct_identity` (commit `aed9cdc40`) |
+| Paralog `ecd_pct_identity` numbers refreshed; loop weights still use `min(loop_len)` for the aggregator but per-loop identity uses `max(loop_len)` | `merge/paralog_ecd_identity` |
+| `filters.cyno_ortholog_ecd` / `mouse_ortholog_ecd` / `max_paralog_ecd` bands are re-banded off the refreshed identity — a paralog that used to be `high` band could drop a band when its identity reads lower under the new denominator | `_derive_filters` ECD-band mapping (unchanged), reading the refreshed inputs |
 
 ---
 
