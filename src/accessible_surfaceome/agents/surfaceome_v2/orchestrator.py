@@ -4,8 +4,11 @@ Pipeline:
 
 1. ``run_plan_trim_select_dual(gene, http=http, client=client)`` →
    ``DualPlanTrimSelectResult`` with A1 + A2 ledgers (verbatim claims).
-2. Four A1-side block builders over the A1 ledger → ``SurfaceEvidence``.
-3. Five A2-side block builders over the A2 ledger → ``BiologicalContext``.
+2. Two A1-side block builders (methods, contradictions) + five A2-side
+   block builders run concurrently.
+3. evidence_grade runs sequentially after methods (needs methods output
+   to make a coherent grade call).
+3b. Assemble ``SurfaceEvidence`` + ``BiologicalContext`` from outputs.
 4. Wrap into ``SurfaceEvidenceDraft`` / ``BiologicalContextDraft`` (the
    draft validators ensure every cited evidence_id resolves to a claim).
 5. ``run_synthesizer_with_drafts`` → B output (executive_summary,
@@ -87,6 +90,7 @@ from accessible_surfaceome.tools._shared.models import (
     GeneIdentifier,
     HomoOligomerizationPredictionRisk,
     IsoformTopology,
+    MethodObservation,
     RestrictedSubdomain,
     RiskSeverity,
     SearchEntry,
@@ -123,9 +127,14 @@ def _triage_signal_and_reasoning_from_record(rec):
     return _TRIAGE_VERDICT_TO_SIGNAL.get(rec.verdict, "unknown"), rec.verdict_reasoning
 
 # Maximum block-builders to dispatch concurrently in the step-2+3 fan-out.
-# There are 8 builders in that fan-out — 3 A1-side (methods, contradictions,
-# evidence_grade) + 5 A2-side (expression, subcellular_localization,
-# anatomical_accessibility, accessibility_modulation, biological_context_grade).
+# There are 7 builders in that fan-out — 2 A1-side (methods, contradictions)
+# + 5 A2-side (expression, subcellular_localization, anatomical_accessibility,
+# accessibility_modulation, biological_context_grade). evidence_grade runs
+# AFTER the concurrent fan-out so it can see the methods builder's output
+# (accessibility_relevance values) and make a coherent grade call — without
+# this sequencing, the evidence_grade builder can assign direct_single_method
+# while methods tags every observation as supports_surface_localization,
+# tripping the cross-block validator (TGOLN2 failure, 2026-06-06).
 # Schema 2.5.0 merged the former ``cell_states`` builder into
 # ``accessibility_modulation`` — single-context state observations now emit as
 # modulation rows with baseline_context=None + modulating_state=None. The
@@ -140,6 +149,26 @@ def _triage_signal_and_reasoning_from_record(rec):
 # well-formed; the resulting timing-row order is non-deterministic but the
 # viewer sorts by ``elapsed_s`` anyway.
 BUILDER_CONCURRENCY = 8
+
+
+def _format_methods_summary_for_grade(
+    methods: list[MethodObservation],
+) -> str:
+    """Compact summary of the methods builder's output for the evidence_grade
+    builder.
+
+    Returns one line per method: ``method_type | accessibility_relevance |
+    cited_evidence_ids``.  Empty string when no methods were emitted.
+    """
+    if not methods:
+        return ""
+    lines = []
+    for m in methods:
+        cites = ", ".join(m.cited_evidence_ids) if m.cited_evidence_ids else "none"
+        lines.append(
+            f"- {m.method_type} | {m.accessibility_relevance} | cites: {cites}"
+        )
+    return "\n".join(lines)
 
 
 def _secreted_isoform_ids(isoform_topologies: list[IsoformTopology]) -> list[str]:
@@ -565,13 +594,7 @@ def _annotate(
             a1_claims,
             a1_ctx,
         ),
-        _BuilderSpec(
-            "evidence_grade",
-            "builders_a1",
-            build_evidence_grade,
-            a1_claims,
-            evidence_grade_ctx,
-        ),
+        # evidence_grade runs AFTER this fan-out — see step 3.5 below.
         _BuilderSpec(
             "expression", "builders_a2", build_expression, a2_claims, a2_ctx
         ),
@@ -611,7 +634,29 @@ def _annotate(
     outputs = _run_builders_concurrently(
         specs, client=client, timing=timing, builder_usage=builder_usage
     )
-    grade_block: EvidenceGradeBlock = outputs["evidence_grade"]
+
+    # ---- step 3.5: evidence_grade (sequenced after methods) ----------------
+    # Runs after the concurrent fan-out so it can see the methods builder's
+    # accessibility_relevance assignments. This prevents the grade/methods
+    # coherence failure where evidence_grade assigns direct_single_method
+    # but no MethodObservation carries direct_surface_accessibility (the
+    # TGOLN2 class of failure). The methods summary is injected into the
+    # builder's context dict so the LLM can cross-reference.
+    methods_output: list[MethodObservation] = outputs["methods"]
+    methods_summary = _format_methods_summary_for_grade(methods_output)
+    if methods_summary:
+        evidence_grade_ctx["methods_summary"] = methods_summary
+    grade_spec = _BuilderSpec(
+        "evidence_grade",
+        "builders_a1",
+        build_evidence_grade,
+        a1_claims,
+        evidence_grade_ctx,
+    )
+    grade_outputs = _run_builders_concurrently(
+        [grade_spec], client=client, timing=timing, builder_usage=builder_usage
+    )
+    grade_block: EvidenceGradeBlock = grade_outputs["evidence_grade"]
 
     surface_evidence = SurfaceEvidence(
         evidence_grade=grade_block.evidence_grade,

@@ -3772,11 +3772,13 @@ class SynthesizerLLMFilters(BaseModel):
     expression_level_rationale: str = ""
     expression_breadth_rationale: str = ""
     surface_specificity_rationale: str = ""
+    has_known_ligand_rationale: str = ""
 
     @field_validator(
         "expression_level_rationale",
         "expression_breadth_rationale",
         "surface_specificity_rationale",
+        "has_known_ligand_rationale",
     )
     @classmethod
     def _warn_rationale_missing_cite(cls, v: str) -> str:

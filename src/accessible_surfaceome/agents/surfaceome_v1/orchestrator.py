@@ -785,9 +785,7 @@ def _derive_filters(
         expression_level_rationale=filters_llm.expression_level_rationale,
         expression_breadth_rationale=filters_llm.expression_breadth_rationale,
         surface_specificity_rationale=filters_llm.surface_specificity_rationale,
-        # ``has_known_ligand_rationale`` stays at its Filters default ("") —
-        # PR's SynthesizerLLMFilters intentionally emits has_known_ligand as
-        # a bare bool without a paired rationale.
+        has_known_ligand_rationale=filters_llm.has_known_ligand_rationale,
         # D — the two composed rationales for the derived booleans.
         low_endogenous_expression_rationale=low_endog_rationale,
         overexpression_surface_localization_observed_rationale=oe_rationale,

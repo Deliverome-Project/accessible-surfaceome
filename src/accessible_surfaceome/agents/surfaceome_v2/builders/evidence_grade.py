@@ -115,11 +115,26 @@ def build_evidence_grade(
             f'"uniprot_family": {uniprot_family!r}}}\n'
             "```\n\n"
         )
+    methods_summary = context.get("methods_summary", "")
+    methods_block = ""
+    if methods_summary:
+        methods_block = (
+            "# Methods builder output (already committed)\n\n"
+            "The methods builder has already classified each experimental "
+            "observation's `accessibility_relevance`. Your `evidence_grade` "
+            "MUST be consistent with these classifications:\n"
+            "- `direct_single_method` / `direct_multi_method` require ≥1 / ≥2 "
+            "methods with `accessibility_relevance=direct_surface_accessibility`.\n"
+            "- If no method carries `direct_surface_accessibility`, the grade "
+            "cannot be `direct_*` — use `supportive_but_indirect` or lower.\n\n"
+            f"```\n{methods_summary}\n```\n\n"
+        )
     system_prompt = load_prompt("evidence_grade_builder_system")
     user_prompt = (
         f"# Gene: {gene}\n\n"
         f"{triage_block}"
         f"{family_block}"
+        f"{methods_block}"
         f"{format_ledger_block(claims, header='A1 full ledger')}\n"
         f"{format_schema_block(EvidenceGradeBlock.model_json_schema(), name='EvidenceGradeBlock')}\n"
         "Emit ONE fenced ```json block containing a JSON OBJECT with keys "
