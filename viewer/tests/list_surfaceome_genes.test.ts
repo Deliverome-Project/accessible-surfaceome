@@ -31,9 +31,10 @@
 
 const scenario = process.argv[2] ?? "";
 
-// The viewer's CURRENT_RECORD_SCHEMA_VERSION constant. Hard-coded here so
-// the test pins the comparison even if the constant moves; bump in lock-
-// step with lib/surfaceome.ts when the schema rolls.
+// Hardcoded "current" for the entries scenarios. With the auto-derived
+// current-schema-version (max observed across /v1/genes), the test just
+// needs SOME version that's the highest in the cohort; the actual value
+// is no longer load-bearing for matching the Pydantic default.
 const CURRENT = "2.9.0";
 let fetchCalls = 0;
 
@@ -75,6 +76,20 @@ globalThis.fetch = (async (): Promise<Response> => {
           { gene_symbol: "ZED", schema_version: CURRENT },
           { gene_symbol: "", schema_version: CURRENT }, // filtered (falsy)
           {}, // no gene_symbol -> filtered out
+        ],
+      });
+    case "entries-auto-current":
+      // The cohort contains a SINGLE early-adopter at a newer version
+      // (2.10.0); every other entry still at 2.9.0. With auto-derived
+      // current-target = max(schema_version), the 2.10.0 entry is fresh
+      // and the 2.9.0 entries flip to stale even though their version
+      // matches what was the target a moment ago. That's the whole
+      // point of the auto-derivation — no manual constant to bump.
+      return jsonResponse({
+        genes: [
+          { gene_symbol: "AAA", schema_version: "2.9.0" },
+          { gene_symbol: "BBB", schema_version: "2.9.0" },
+          { gene_symbol: "CCC", schema_version: "2.10.0" }, // newest → sets target
         ],
       });
     case "retry5xx":
@@ -182,9 +197,36 @@ if (scenario === "local") {
   pass(
     "schema_version lagging CURRENT_RECORD_SCHEMA_VERSION marks entry stale",
   );
+} else if (scenario === "entries-auto-current") {
+  const entries = await listSurfaceomeGeneEntries();
+  const got = entries.map((e: { symbol: string; stale: boolean }) => ({
+    symbol: e.symbol,
+    stale: e.stale,
+  }));
+  // Target auto-derives to "2.10.0" (the cohort max). AAA and BBB
+  // are now stale (they're at 2.9.0, behind the max); CCC is fresh.
+  const expected = [
+    { symbol: "AAA", stale: true },
+    { symbol: "BBB", stale: true },
+    { symbol: "CCC", stale: false },
+  ];
+  if (JSON.stringify(got) !== JSON.stringify(expected)) {
+    fail(`expected ${JSON.stringify(expected)}, got ${JSON.stringify(got)}`);
+  }
+  // Also verify the exported current-target moved to the cohort max.
+  const { CURRENT_RECORD_SCHEMA_VERSION } = await import("../lib/surfaceome.ts");
+  if (CURRENT_RECORD_SCHEMA_VERSION !== "2.10.0") {
+    fail(
+      `expected CURRENT_RECORD_SCHEMA_VERSION = '2.10.0' after fetch, ` +
+        `got ${JSON.stringify(CURRENT_RECORD_SCHEMA_VERSION)}`,
+    );
+  }
+  pass(
+    "auto-derived current schema_version follows the cohort max",
+  );
 } else {
   fail(
     `unknown scenario '${scenario}' ` +
-      `(use local|happy|retry5xx|fail4xx|entries|entries-stale)`,
+      `(use local|happy|retry5xx|fail4xx|entries|entries-stale|entries-auto-current)`,
   );
 }

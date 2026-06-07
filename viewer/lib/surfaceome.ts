@@ -656,24 +656,71 @@ export async function loadBenchmarkRow(
  */
 /** One deep-dive gene in the index: its symbol plus whether its published
  *  record is `stale` — i.e. its declared `schema_version` lags the current
- *  `SurfaceomeRecord` target (`CURRENT_RECORD_SCHEMA_VERSION` below). The
- *  per-gene `schema_version` is read straight off the Worker's `/v1/genes`
- *  index (D1 column `surface_annotation.schema_version`), so the freshness
+ *  observed target (the highest `schema_version` seen across the cohort,
+ *  computed per-fetch by :func:`maxSchemaVersion`). The per-gene
+ *  `schema_version` is read straight off the Worker's `/v1/genes` index
+ *  (D1 column `surface_annotation.schema_version`), so the freshness
  *  signal updates the moment a re-annotated record lands in D1 — no
- *  manifest to regenerate. The GeneJump dropdown colors each entry's
- *  freshness dot from this flag (amber = stale, green = current). */
+ *  manifest to regenerate, no constant to bump. The GeneJump dropdown
+ *  colors each entry's freshness dot from this flag (amber = stale,
+ *  green = current). */
 export interface GeneEntry {
   symbol: string;
   stale: boolean;
   synonyms?: string[];
 }
 
-/** Target `SurfaceomeRecord.schema_version` that the current code reads
- *  cleanly. Bump this in lock-step with the Pydantic `SurfaceomeRecord`
- *  default in `src/accessible_surfaceome/tools/_shared/models.py`. Records
- *  whose declared `schema_version` lags this constant render as stale
- *  (amber dot) in the GeneJump dropdown until they're re-annotated. */
-export const CURRENT_RECORD_SCHEMA_VERSION = "2.9.0";
+/** Hard-coded fallback when `/v1/genes` returns zero entries with a
+ *  `schema_version` field (offline-stub build, malformed payload, very
+ *  early bring-up). The cohort-observed max is preferred whenever it's
+ *  computable; this only fires as a safety net.
+ *
+ *  Update this string if the Pydantic `SurfaceomeRecord.schema_version`
+ *  default moves AND the entire cohort is empty (unlikely after bring-up).
+ *  In normal operation it has no effect on the freshness dot — the
+ *  observed-max wins. */
+const FALLBACK_SCHEMA_VERSION = "2.9.0";
+
+/** Cohort-wide current `schema_version` — derived from `/v1/genes` on
+ *  the most recent call to :func:`listSurfaceomeGeneEntries`. Initialized
+ *  to the fallback so the first import has a sensible value before the
+ *  Worker fetch runs; replaced with the observed max after each fetch.
+ *  Exported for any caller that wants to display "current schema
+ *  version: X" (none today; reserved for future use). */
+export let CURRENT_RECORD_SCHEMA_VERSION: string = FALLBACK_SCHEMA_VERSION;
+
+/** Compare two semver-shaped `"major.minor.patch"` strings numerically.
+ *  Returns negative / 0 / positive in the standard sort order. Falls
+ *  back to lexical comparison for non-numeric components so it doesn't
+ *  throw on a malformed value (just sorts it conservatively). */
+function _semverCmp(a: string, b: string): number {
+  const pa = a.split(".");
+  const pb = b.split(".");
+  const len = Math.max(pa.length, pb.length);
+  for (let i = 0; i < len; i++) {
+    const na = parseInt(pa[i] ?? "0", 10);
+    const nb = parseInt(pb[i] ?? "0", 10);
+    if (Number.isNaN(na) || Number.isNaN(nb)) {
+      return (pa[i] ?? "").localeCompare(pb[i] ?? "");
+    }
+    if (na !== nb) return na - nb;
+  }
+  return 0;
+}
+
+/** Pick the highest `schema_version` from an iterable of strings (skipping
+ *  `null` / `undefined` / empty). Returns `null` when no real version is
+ *  present so the caller can fall back to its preferred default. */
+export function maxSchemaVersion(
+  versions: Iterable<string | undefined | null>,
+): string | null {
+  let best: string | null = null;
+  for (const v of versions) {
+    if (!v) continue;
+    if (best === null || _semverCmp(v, best) > 0) best = v;
+  }
+  return best;
+}
 
 let _geneEntriesPromise: Promise<GeneEntry[]> | null = null;
 
@@ -735,23 +782,32 @@ async function _listSurfaceomeGeneEntriesImpl(): Promise<GeneEntry[]> {
   const data = (await res.json()) as {
     genes?: Array<{ gene_symbol?: string; schema_version?: string }>;
   };
-  // Map symbol → schema_version straight off the Worker payload. A gene's
-  // freshness is just (schema_version === CURRENT_RECORD_SCHEMA_VERSION),
-  // computed below. There used to be a backstop union with locally-published
-  // `public/data/surfaceome/{SYMBOL}.json` snapshots to paper over edge-cache
-  // lag on `/v1/genes`; that backstop was removed when publish_record gained
-  // by-URL edge-cache purge — the lag is now ~0 so the snapshot dir adds no
-  // signal, only drift risk. D1 (via the Worker) is the only source.
+  // Map symbol → schema_version straight off the Worker payload. There
+  // used to be a backstop union with locally-published
+  // `public/data/surfaceome/{SYMBOL}.json` snapshots to paper over edge-
+  // cache lag on `/v1/genes`; that backstop was removed when
+  // publish_record gained by-URL edge-cache purge — the lag is now ~0 so
+  // the snapshot dir adds no signal, only drift risk. D1 (via the Worker)
+  // is the only source.
   const schemaBySymbol = new Map<string, string | undefined>();
   for (const g of data.genes ?? []) {
     if (g.gene_symbol) schemaBySymbol.set(g.gene_symbol, g.schema_version);
   }
+  // Derive the current target from observation: the highest
+  // schema_version present across the cohort. This makes the freshness
+  // dot auto-update when a re-annotated record lands at a new schema
+  // version — no constant to bump in lock-step with the Pydantic
+  // default. Empty cohort → keep the fallback (so an early bring-up
+  // / stub build still has a sensible target).
+  const observed = maxSchemaVersion(schemaBySymbol.values());
+  if (observed !== null) CURRENT_RECORD_SCHEMA_VERSION = observed;
+  const target = CURRENT_RECORD_SCHEMA_VERSION;
   const names = loadGeneNamesMap();
   return Array.from(schemaBySymbol.keys())
     .sort((a, b) => a.localeCompare(b))
     .map((symbol) => ({
       symbol,
-      stale: schemaBySymbol.get(symbol) !== CURRENT_RECORD_SCHEMA_VERSION,
+      stale: schemaBySymbol.get(symbol) !== target,
       synonyms: names[symbol]?.synonyms,
     }));
 }
