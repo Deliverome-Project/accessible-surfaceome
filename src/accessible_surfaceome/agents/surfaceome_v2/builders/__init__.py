@@ -19,6 +19,12 @@ now emit as modulation rows with ``baseline_context=None`` +
 - :func:`build_subcellular_localization` → ``SubcellularLocalization``
 - :func:`build_anatomical_accessibility` → ``list[AnatomicalAccessibilityObservation]``
 - :func:`build_accessibility_modulation` → ``list[AccessibilityModulationObservation]``
+- :func:`build_biological_context_grade` → ``BiologicalContextGradeBlock``
+  (A2 rollup — the A2 analog of ``build_evidence_grade``)
+
+Cross-focus (merged A1+A2 ledger):
+- :func:`build_risks` → ``AccessibilityRisks`` (the six accessibility-risk
+  sub-blocks; consumes the merged ledger + deterministic features)
 """
 
 from accessible_surfaceome.agents.surfaceome_v2.builders.accessibility_modulation import (
@@ -26,6 +32,10 @@ from accessible_surfaceome.agents.surfaceome_v2.builders.accessibility_modulatio
 )
 from accessible_surfaceome.agents.surfaceome_v2.builders.anatomical_accessibility import (
     build_anatomical_accessibility,
+)
+from accessible_surfaceome.agents.surfaceome_v2.builders.biological_context_grade import (
+    BiologicalContextGradeBlock,
+    build_biological_context_grade,
 )
 from accessible_surfaceome.agents.surfaceome_v2.builders.contradictions import (
     build_contradictions,
@@ -38,17 +48,21 @@ from accessible_surfaceome.agents.surfaceome_v2.builders.evidence_grade import (
     build_evidence_grade,
 )
 from accessible_surfaceome.agents.surfaceome_v2.builders.methods import build_methods
+from accessible_surfaceome.agents.surfaceome_v2.builders.risks import build_risks
 from accessible_surfaceome.agents.surfaceome_v2.builders.subcellular_localization import (
     build_subcellular_localization,
 )
 
 __all__ = [
+    "BiologicalContextGradeBlock",
     "EvidenceGradeBlock",
     "build_accessibility_modulation",
     "build_anatomical_accessibility",
+    "build_biological_context_grade",
     "build_contradictions",
     "build_evidence_grade",
     "build_expression",
     "build_methods",
+    "build_risks",
     "build_subcellular_localization",
 ]
