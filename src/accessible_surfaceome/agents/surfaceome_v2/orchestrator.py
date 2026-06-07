@@ -67,14 +67,17 @@ from accessible_surfaceome.agents.surfaceome_v1.orchestrator import (
 from accessible_surfaceome.agents.surfaceome_v2.builders import (
     EvidenceGradeBlock,
     build_accessibility_modulation,
-    build_anatomical_accessibility,
+    build_anatomical_accessibility,  # noqa: F401 — back-compat for callers
     build_biological_context_grade,
     build_contradictions,
     build_evidence_grade,
     build_expression,
     build_methods,
     build_risks,
-    build_subcellular_localization,
+    build_subcellular_localization,  # noqa: F401 — back-compat for callers
+)
+from accessible_surfaceome.agents.surfaceome_v2.builders.subloc_anatomical_combined import (
+    build_subloc_anatomical_combined,
 )
 from accessible_surfaceome.paths import DATA_DIR
 from accessible_surfaceome.tools._shared.http import CachedHTTP, open_default_client
@@ -98,6 +101,7 @@ from accessible_surfaceome.tools._shared.models import (
     SecretedForm,
     ShedForm,
     SourceType,
+    SubcellularLocalization,
     SurfaceEvidence,
     SurfaceEvidenceDraft,
     SurfaceomeRecord,
@@ -670,17 +674,16 @@ def _annotate(
         _BuilderSpec(
             "expression", "builders_a2", build_expression, a2_claims, a2_ctx
         ),
+        # Consolidated A2 builder: subcellular_localization + anatomical_
+        # accessibility share the same A2 ledger and both reason about
+        # tissue/cell-type/membrane-subdomain context. One Sonnet call emits
+        # both — saves ~$0.04-0.08/gene with no schema change downstream
+        # (the wrapper is unpacked into two outputs keys post-call). See
+        # ``builders/subloc_anatomical_combined.py`` for the merged prompt.
         _BuilderSpec(
-            "subcellular_localization",
+            "subloc_anatomical_combined",
             "builders_a2",
-            build_subcellular_localization,
-            a2_claims,
-            a2_ctx,
-        ),
-        _BuilderSpec(
-            "anatomical_accessibility",
-            "builders_a2",
-            build_anatomical_accessibility,
+            build_subloc_anatomical_combined,
             a2_claims,
             a2_ctx,
         ),
@@ -706,6 +709,29 @@ def _annotate(
     outputs = _run_builders_concurrently(
         specs, client=client, timing=timing, builder_usage=builder_usage
     )
+    # Unpack the consolidated subloc+anatomical builder back into the two
+    # output keys downstream code expects. The combined builder emits a
+    # ``(SubcellularLocalization, list[AnatomicalAccessibilityObservation])``
+    # tuple; we project that into ``outputs["subcellular_localization"]`` +
+    # ``outputs["anatomical_accessibility"]`` so the BiologicalContext
+    # assembly below sees no change. The combined entry stays in
+    # ``builder_usage`` under its own name for cost-attribution, and the
+    # two original names are NOT added to ``builder_usage`` (zero records).
+    combined_result = outputs.pop("subloc_anatomical_combined", None)
+    if combined_result is not None and isinstance(combined_result, tuple):
+        subloc, anatomical = combined_result
+        outputs["subcellular_localization"] = subloc
+        outputs["anatomical_accessibility"] = anatomical
+    else:
+        # Defensive: fall back to empty defaults rather than crash the
+        # BiologicalContext assembly. Matches the standalone builders'
+        # failure path.
+        outputs["subcellular_localization"] = SubcellularLocalization(
+            primary_compartment="other",
+            dual_localization=[],
+            membrane_subdomains=[],
+        )
+        outputs["anatomical_accessibility"] = []
 
     # ---- step 3.5: evidence_grade (sequenced after methods) ----------------
     # Runs after the concurrent fan-out so it can see the methods builder's
