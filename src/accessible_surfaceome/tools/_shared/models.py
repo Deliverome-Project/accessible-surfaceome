@@ -340,6 +340,21 @@ TopicAnchor = Literal[
     # oligomerization), HETERO partner/complex coverage, and OTHER
     # (glycan shield / conformational occlusion). Feeds epitope_masking.
     "epitope_masking",
+    # Cell-state-conditional surface biology — activation, stress,
+    # senescence, differentiation, disease-state shifts, tumor-
+    # microenvironment effects. Feeds the merged accessibility_modulation
+    # builder (both CONTRAST and SINGLE-CONTEXT shapes — the latter
+    # absorbed the retired cell_states block in schema 2.5.0). Load-
+    # bearing A2 axis for genes whose surface accessibility is
+    # state-modulated; without it, state-context evidence relied on
+    # gene2pubmed / recent_corpus baselines that under-recalled.
+    "cell_state_modulation",
+    # Broader tissue / cell-type expression atlas coverage —
+    # complements normal_tissue_expression (six-organ tox panel) with
+    # atlas-style retrieval (GTEx, HPA, Tabula Sapiens, single-cell)
+    # so the expression builder has thicker evidence for cell-type
+    # and lineage-restricted observations.
+    "tissue_atlas",
 ]
 
 PublicationType = Literal[

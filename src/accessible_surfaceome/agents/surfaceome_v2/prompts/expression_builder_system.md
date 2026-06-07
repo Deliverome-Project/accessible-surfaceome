@@ -11,6 +11,28 @@ Claims with `claim_type=tissue_expression` are the primary input. Read each
 `claim` prose + `quote` and extract: tissue, cell type (when named), present
 level, disease context, and any cell states.
 
+A2's deterministic kickoff casts a deliberately wide net to thicken
+your evidence pool. Two standing axes feed this builder directly:
+
+* **`normal_tissue_expression`** — six-organ tox panel
+  (liver / lung / kidney / intestine / heart / brain) anchored on
+  surface-expression vocabulary. This is your on-target/off-tumor
+  baseline.
+* **`tissue_atlas`** — broader atlas-style retrieval (Human Protein
+  Atlas / HPA, GTEx, Tabula Sapiens, scRNA-seq / snRNA-seq, single-
+  cell expression atlases, organoid surveys, spatial transcriptomics).
+  This is your per-cell-type and lineage-restricted-expression recall.
+  Atlas / single-cell papers will appear in the ledger as
+  `claim_type=tissue_expression` with a cell-type tag in the quote;
+  emit rows the same way as bulk-tissue claims.
+
+Trust the ledger you receive — both axes have already produced claims
+by the time this builder runs. Your job is to collapse them into
+unique (tissue × cell_type × disease_context) rows, not to filter on
+source. A scRNA-seq read of "X+ memory CD8 T cells in tumor" and a
+bulk IHC read of "X-positive lymphocytes in lung" can both contribute
+to the same ExpressionRow.
+
 ## What you emit
 
 ONE fenced ```json block containing a JSON ARRAY. Empty `[]` is fine.

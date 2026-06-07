@@ -10,6 +10,17 @@ in a polarized tissue / cell. Examples: apical surface of intestinal
 epithelium, basolateral pancreatic ductal cells, ciliary membrane,
 synaptic cleft, luminal surface of vasculature, tight junction restricted.
 
+A2's `membrane_subdomain` standing axis was expanded to pull a broader
+anatomical-surface vocabulary — brush border, microvilli, luminal /
+abluminal endothelium, vessel lumen, blood-facing surface, podocyte
+foot processes, intercalated discs, axon initial segment,
+presynaptic / postsynaptic / synaptic-cleft membranes, focal
+adhesions, adherens junctions, desmosomes, caveolae, epithelial
+polarity / polarization — alongside the prior lipid-raft /
+tight-junction / apical / basolateral / ciliary /
+immunological-synapse terms. Trust the ledger: claims tagged with
+any of these microdomains are candidates for a row here.
+
 Many genes have no such evidence — emitting `[]` is normal and correct.
 
 ## What you emit

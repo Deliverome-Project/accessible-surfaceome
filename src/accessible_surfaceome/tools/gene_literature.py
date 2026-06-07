@@ -174,6 +174,16 @@ _TOPIC_TERMS: dict[TopicAnchor, list[str]] = {
         "intestine",
         "heart",
         "brain",
+        # Expanded vocab for thicker surface-expression recall — kept
+        # narrow to "expression IN X" / "expression PATTERN" phrasing
+        # that anchors on surface expression. The atlas-style vocab
+        # (tissue distribution, GTEx, HPA, scRNA-seq) lives in the
+        # tissue_atlas anchor so the RNA-atlas guard rail
+        # (test_tox_anchor_terms_are_organ_literature_not_rna) stays
+        # enforceable on this anchor.
+        "expressed in",
+        "expression in",
+        "expression pattern",
     ],
     "surface_reachability": [
         # Physical access barriers — a protein can be surface-present yet
@@ -214,6 +224,33 @@ _TOPIC_TERMS: dict[TopicAnchor, list[str]] = {
         "ciliary membrane",
         "polarized epithelial",
         "immunological synapse",
+        # Expanded anatomical-surface vocabulary so the anatomical_
+        # accessibility builder has broader recall on polarity /
+        # subdomain papers (the previous list missed brush border,
+        # luminal endothelium, podocyte / synaptic / junctional
+        # microdomains).
+        "brush border",
+        "microvilli",
+        "luminal membrane",
+        "luminal surface",
+        "abluminal surface",
+        "vessel lumen",
+        "blood-facing",
+        "endothelial lumen",
+        "podocyte",
+        "foot process",
+        "intercalated disc",
+        "axon initial segment",
+        "presynaptic membrane",
+        "postsynaptic membrane",
+        "synaptic cleft",
+        "synaptic membrane",
+        "focal adhesion",
+        "adherens junction",
+        "desmosome",
+        "caveolae",
+        "epithelial polarity",
+        "epithelial cell polarization",
     ],
     "epitope_masking": [
         # Evidence the extracellular epitope is occluded, spanning the three
@@ -231,6 +268,91 @@ _TOPIC_TERMS: dict[TopicAnchor, list[str]] = {
         # OTHER — glycan shield / conformational occlusion
         "glycan shield",
         "conformational masking",
+    ],
+    "cell_state_modulation": [
+        # State-conditional surface biology — the load-bearing A2 axis
+        # for genes whose surface accessibility is state-modulated.
+        # Feeds both shapes of accessibility_modulation row (contrast
+        # pairs AND single-context state observations). Catches papers
+        # describing the protein in activation / stress / disease /
+        # senescence / EMT / differentiation states.
+        # Activation states (immune, signaling)
+        "activated",
+        "stimulated",
+        "TCR stimulation",
+        "interferon-stimulated",
+        "IFN-gamma",
+        "cytokine-induced",
+        "TLR-induced",
+        # Stress states
+        "ER stress",
+        "oxidative stress",
+        "heat shock",
+        "hypoxia",
+        "hypoxic",
+        "nutrient starvation",
+        "unfolded protein response",
+        "UPR",
+        "stress response",
+        # Disease / tumor microenvironment
+        "tumor microenvironment",
+        "tumor cell",
+        "cancer cell",
+        "metastatic",
+        "EMT",
+        "epithelial-mesenchymal transition",
+        "epithelial mesenchymal transition",
+        # Senescence / differentiation / lineage
+        "senescent",
+        "senescence",
+        "differentiation",
+        "differentiated",
+        "stem cell",
+        "exhausted",
+        "memory T cell",
+        "M1 macrophage",
+        "M2 macrophage",
+        "polarization",
+        # Death pathways that expose / release the protein
+        "ferroptosis",
+        "ferroptotic",
+        "apoptosis",
+        "apoptotic",
+        "pyroptosis",
+        "autophagy",
+        "autophagolysosomal exocytosis",
+        # Drug-tolerant / persister states
+        "drug-tolerant persister",
+        "persister cell",
+        "TKI-tolerant",
+        "treatment-resistant",
+    ],
+    "tissue_atlas": [
+        # Broader tissue / cell-type expression atlas coverage —
+        # complements the six-organ normal_tissue_expression panel
+        # with atlas-style retrieval so the expression builder has
+        # thicker per-cell-type recall.
+        "tissue atlas",
+        "Human Protein Atlas",
+        "HPA",
+        "GTEx",
+        "Tabula Sapiens",
+        "Tabula Muris",
+        "single-cell RNA-seq",
+        "scRNA-seq",
+        "single cell",
+        "snRNA-seq",
+        "cell type",
+        "cell-type specific",
+        "cell-type-specific",
+        "lineage-restricted",
+        "lineage specific",
+        "transcriptomic profile",
+        "expression profile",
+        "expression atlas",
+        "spatial transcriptomics",
+        "primary tissue",
+        "organoid",
     ],
 }
 

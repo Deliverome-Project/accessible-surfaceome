@@ -16,6 +16,18 @@ activation, disease state; lysosomal exocytosis; restriction to a
 lineage; dual-localization with intracellular pool; polarized cells;
 post-translational shifts; developmental gating).
 
+A2's deterministic kickoff includes a dedicated
+**`cell_state_modulation`** standing axis that pulls papers describing
+the protein in activation / stress / disease-state / tumor-
+microenvironment / EMT / senescence / differentiation contexts —
+both the contrast-shape papers ("activated vs resting") and the
+single-context-shape papers ("in drug-tolerant persister cells the
+surfaceome is remodeled"). Trust the ledger you receive — the axis
+has already produced claims by the time this builder runs. Your job
+is to convert each state-relevant claim into the right ROW SHAPE
+(below) and the right `category`, not to filter on retrieval
+provenance.
+
 ## Two row shapes — CONTRAST or SINGLE-CONTEXT
 
 This builder emits two shapes of row, distinguished by whether the

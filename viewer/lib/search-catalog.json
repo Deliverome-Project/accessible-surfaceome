@@ -117,7 +117,7 @@
         },
         {
           "label": "normal_tissue_expression",
-          "finds": "brain, heart, intestine, kidney, liver, lung, surface expression"
+          "finds": "brain, expressed in, expression in, expression pattern, heart, intestine, kidney, liver, lung, surface expression"
         },
         {
           "label": "surface_reachability",
@@ -129,11 +129,19 @@
         },
         {
           "label": "membrane_subdomain",
-          "finds": "apical membrane, basolateral, ciliary membrane, immunological synapse, lateral membrane, lipid raft, membrane microdomain, polarized epithelial, primary cilium, tight junction"
+          "finds": "abluminal surface, adherens junction, apical membrane, axon initial segment, basolateral, blood-facing, brush border, caveolae, ciliary membrane, desmosome, endothelial lumen, epithelial cell polarization, epithelial polarity, focal adhesion, foot process, immunological synapse, intercalated disc, lateral membrane, lipid raft, luminal membrane, luminal surface, membrane microdomain, microvilli, podocyte, polarized epithelial, postsynaptic membrane, presynaptic membrane, primary cilium, synaptic cleft, synaptic membrane, tight junction, vessel lumen"
         },
         {
           "label": "epitope_masking",
           "finds": "conformational masking, epitope masking, glycan shield, heterodimer, homodimer, homodimerization, oligomerization, self-association, steric occlusion"
+        },
+        {
+          "label": "cell_state_modulation",
+          "finds": "EMT, ER stress, IFN-gamma, M1 macrophage, M2 macrophage, TCR stimulation, TKI-tolerant, TLR-induced, UPR, activated, apoptosis, apoptotic, autophagolysosomal exocytosis, autophagy, cancer cell, cytokine-induced, differentiated, differentiation, drug-tolerant persister, epithelial mesenchymal transition, epithelial-mesenchymal transition, exhausted, ferroptosis, ferroptotic, heat shock, hypoxia, hypoxic, interferon-stimulated, memory T cell, metastatic, nutrient starvation, oxidative stress, persister cell, polarization, pyroptosis, senescence, senescent, stem cell, stimulated, stress response, treatment-resistant, tumor cell, tumor microenvironment, unfolded protein response"
+        },
+        {
+          "label": "tissue_atlas",
+          "finds": "GTEx, HPA, Human Protein Atlas, Tabula Muris, Tabula Sapiens, cell type, cell-type specific, cell-type-specific, expression atlas, expression profile, lineage specific, lineage-restricted, organoid, primary tissue, scRNA-seq, single cell, single-cell RNA-seq, snRNA-seq, spatial transcriptomics, tissue atlas, transcriptomic profile"
         }
       ]
     },
@@ -168,7 +176,7 @@
         },
         {
           "label": "normal_tissue_expression",
-          "finds": "brain, heart, intestine, kidney, liver, lung, surface expression"
+          "finds": "brain, expressed in, expression in, expression pattern, heart, intestine, kidney, liver, lung, surface expression"
         },
         {
           "label": "surface_reachability",
@@ -180,11 +188,19 @@
         },
         {
           "label": "membrane_subdomain",
-          "finds": "apical membrane, basolateral, ciliary membrane, immunological synapse, lateral membrane, lipid raft, membrane microdomain, polarized epithelial, primary cilium, tight junction"
+          "finds": "abluminal surface, adherens junction, apical membrane, axon initial segment, basolateral, blood-facing, brush border, caveolae, ciliary membrane, desmosome, endothelial lumen, epithelial cell polarization, epithelial polarity, focal adhesion, foot process, immunological synapse, intercalated disc, lateral membrane, lipid raft, luminal membrane, luminal surface, membrane microdomain, microvilli, podocyte, polarized epithelial, postsynaptic membrane, presynaptic membrane, primary cilium, synaptic cleft, synaptic membrane, tight junction, vessel lumen"
         },
         {
           "label": "epitope_masking",
           "finds": "conformational masking, epitope masking, glycan shield, heterodimer, homodimer, homodimerization, oligomerization, self-association, steric occlusion"
+        },
+        {
+          "label": "cell_state_modulation",
+          "finds": "EMT, ER stress, IFN-gamma, M1 macrophage, M2 macrophage, TCR stimulation, TKI-tolerant, TLR-induced, UPR, activated, apoptosis, apoptotic, autophagolysosomal exocytosis, autophagy, cancer cell, cytokine-induced, differentiated, differentiation, drug-tolerant persister, epithelial mesenchymal transition, epithelial-mesenchymal transition, exhausted, ferroptosis, ferroptotic, heat shock, hypoxia, hypoxic, interferon-stimulated, memory T cell, metastatic, nutrient starvation, oxidative stress, persister cell, polarization, pyroptosis, senescence, senescent, stem cell, stimulated, stress response, treatment-resistant, tumor cell, tumor microenvironment, unfolded protein response"
+        },
+        {
+          "label": "tissue_atlas",
+          "finds": "GTEx, HPA, Human Protein Atlas, Tabula Muris, Tabula Sapiens, cell type, cell-type specific, cell-type-specific, expression atlas, expression profile, lineage specific, lineage-restricted, organoid, primary tissue, scRNA-seq, single cell, single-cell RNA-seq, snRNA-seq, spatial transcriptomics, tissue atlas, transcriptomic profile"
         }
       ]
     }
