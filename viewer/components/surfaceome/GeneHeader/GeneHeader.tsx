@@ -827,7 +827,15 @@ export function GeneHeader({
                 // otherwise overflow the tab strip (and add dead 404 tabs
                 // for isoforms AFDB doesn't model). The §Isoforms table
                 // below still lists EVERY isoform; this cap is 3D-only.
+                // Defensive filter: some annotated records (e.g. TACSTD2)
+                // carry the canonical accession itself inside
+                // `isoform_topologies`. The 3D viewer already renders the
+                // canonical as its own dedicated tab above this list, so
+                // including it again here surfaces a duplicate "Isoform"
+                // tab pointing at the same AFDB model. Same upstream bug
+                // as in IsoformsCard; same fix.
                 ...rec.deterministic_features.isoform_topologies
+                  .filter((iso) => iso.isoform_id !== rec.gene.uniprot_acc)
                   .slice(0, 3)
                   .map((iso) => ({
                     source: "afdb" as const,
