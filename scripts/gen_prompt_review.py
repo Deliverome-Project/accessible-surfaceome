@@ -147,6 +147,16 @@ PIPELINE_BUILDERS = {
          "vascular / BBB / tissue-restricted surface", False),
         ("accessibility_modulation_builder", "accessibility modulation",
          "stress / activation / PTM-gated surface changes", False),
+        ("biological_context_grade_builder", "biological_context_grade",
+         "A2 rollup of the five context axes", True),
+    ],
+    # Cross-focus: consumes the MERGED A1+A2 ledger + the deterministic ECD /
+    # homo-oligomer signals, so it runs AFTER the fan-out (not on one focus's
+    # slice). Produces the canonical accessibility_risks block the synthesizer
+    # used to author.
+    "shared": [
+        ("risks_builder", "AccessibilityRisks",
+         "six risk sub-blocks · merged ledger + deterministic", False),
     ],
 }
 
@@ -166,17 +176,25 @@ def _pipe_builder_card(name: str, out: str, sub: str, rollup: bool) -> str:
 def pipeline_section() -> str:
     a1_cards = "".join(_pipe_builder_card(*b) for b in PIPELINE_BUILDERS["a1"])
     a2_cards = "".join(_pipe_builder_card(*b) for b in PIPELINE_BUILDERS["a2"])
+    shared_cards = "".join(_pipe_builder_card(*b) for b in PIPELINE_BUILDERS["shared"])
     return f"""<section class="pipe" id="pipeline">
       <h2>Block-builder pipeline &mdash; how the deep-dive decomposes</h2>
       <p class="sub2">The map of the v2 deep-dive. Retrieval
       (<code>plan_trim_select</code>) lands two claim ledgers; the
       <span class="pbtag pbtag-a1">A1</span> (surface-evidence) and
       <span class="pbtag pbtag-a2">A2</span> (surface expression) builders each extract one
-      structured block from their slice; two
+      structured block from their slice. <strong>10 builders</strong> total
+      &mdash; 3 A1, 6 A2, 1 cross-focus &mdash; of which three are
       <span class="pbtag pbtag-rollup">ROLLUP</span> steps
-      (<code>evidence_grade</code> + the synthesizer) aggregate across blocks
-      rather than extract a single observation type. Use this to judge whether
-      the split into per-observation builders + rollups hangs together.</p>
+      (<code>evidence_grade</code>, <code>biological_context_grade</code>, and
+      the synthesizer) that aggregate across blocks rather than extract a
+      single observation type. The cross-focus
+      <span class="pbtag pbtag-shared">SHARED</span> <code>risks_builder</code>
+      consumes the MERGED A1+A2 ledger plus the deterministic ECD /
+      homo-oligomer signals, so it runs AFTER the fan-out (not on one focus's
+      slice) and produces the canonical <code>accessibility_risks</code> block
+      the synthesizer used to author. Use this to judge whether the split into
+      per-observation builders + rollups hangs together.</p>
       <div class="pflow">
 
         <div class="pstage pretrieval">
@@ -206,17 +224,30 @@ def pipeline_section() -> str:
           </div>
         </div>
 
-        <div class="parrow">&darr; all blocks + merged ledger &darr;</div>
+        <div class="parrow">&darr; merged A1+A2 ledger + deterministic ECD / homo-oligomer &darr;</div>
+
+        <div class="pbuilders">
+          <div class="pbcol pbcol-shared">
+            <div class="pbcol-h"><span class="pbtag pbtag-shared">SHARED</span>
+              cross-focus &mdash; merged ledger + deterministic</div>
+            {shared_cards}
+          </div>
+        </div>
+
+        <div class="parrow">&darr; all blocks + frozen risks + merged ledger &darr;</div>
 
         <div class="pstage psynth">
           <div class="pstage-h">Synthesizer
             <span class="pbtag pbtag-rollup">ROLLUP</span></div>
           <div class="pstage-b">Rolls up across all blocks + the merged ledger
-          into the final record</div>
+          into the final record. CONSUMES the frozen
+          <code>accessibility_risks</code> (copies it through verbatim, selects
+          headline_risks + weighs confidence from it) &mdash; it no longer
+          authors the risk calls.</div>
           <div class="psynth-out">
             <span class="poutchip">executive_summary</span>
             <span class="poutchip">filters</span>
-            <span class="poutchip">accessibility_risks</span>
+            <span class="poutchip poutchip-frozen">accessibility_risks (frozen)</span>
             <span class="poutchip">confidence</span>
           </div>
         </div>
@@ -356,7 +387,7 @@ DETERMINISTIC_GROUPS = [
         ],
     },
     {
-        "group": "surfaceome_v2 — 7 of 8 builders (the narrow ones)",
+        "group": "surfaceome_v2 — the narrow builders",
         "shape": "none",
         "prompts": [
             "methods_builder_system.md",
@@ -366,6 +397,7 @@ DETERMINISTIC_GROUPS = [
             "subcellular_localization_builder_system.md",
             "anatomical_accessibility_builder_system.md",
             "accessibility_modulation_builder_system.md",
+            "biological_context_grade_builder_system.md",
         ],
         "note": (
             "Receive only <code>{gene: hgnc_symbol}</code> plus the A1 or A2 "
@@ -373,8 +405,11 @@ DETERMINISTIC_GROUPS = [
             "<code>a2_ctx</code>). Zero <code>DeterministicFeatures</code> "
             "fields land in these builder prompts &mdash; block extraction "
             "is an LLM operation over claims, not over topology / orthologs "
-            "/ structure. <code>evidence_grade</code> is the exception "
-            "(see next card)."
+            "/ structure. <code>biological_context_grade</code> is the A2 "
+            "rollup (the A2 analog of <code>evidence_grade</code>) but stays "
+            "gene-symbol-only &mdash; it reads the full A2 ledger, no "
+            "calibration context. <code>evidence_grade</code> is the "
+            "exception that gets calibration context (see next card)."
         ),
         "fields": [],
     },
@@ -402,6 +437,32 @@ DETERMINISTIC_GROUPS = [
             "triage_summary_json  (TriageRecord: verdict, reason, key_uncertainty, confidence)",
             "hgnc_gene_groups  (curator family tags from IdentifierBundle)",
             "uniprot_family  (curator family tag from IdentifierBundle)",
+        ],
+    },
+    {
+        "group": "surfaceome_v2 — risks builder (cross-focus)",
+        "shape": "calibration-only",
+        "prompts": [
+            "risks_builder_system.md",
+        ],
+        "note": (
+            "Cross-focus builder: reads the MERGED A1+A2 claim ledger AND a "
+            "narrow deterministic summary (ONLY "
+            "<code>canonical_topology.ecd_length_residues</code> + "
+            "<code>homo_oligomerization.{is_homo_oligomer,stoichiometry}</code>) "
+            "rendered via <code>_summarize_deterministic_for_risks</code>. "
+            "It emits the six <code>accessibility_risks</code> sub-blocks "
+            "(formerly the synthesizer's job). The deterministic ECD class + "
+            "homo-oligomer chip are still overwritten / attached by the "
+            "orchestrator post-build, so the model emits "
+            "<code>ecd_size_assessment</code> per the bands and treats "
+            "homo-oligomerization as CORROBORATION-only."
+        ),
+        "fields": [
+            "canonical_topology.tm_helix_count",
+            "canonical_topology.ecd_length_residues",
+            "homo_oligomerization.is_homo_oligomer  (Schweke 2024 prior — corroboration only)",
+            "homo_oligomerization.stoichiometry  (severity scale when ledger-supported)",
         ],
     },
     {
@@ -985,9 +1046,12 @@ footer{{color:var(--mut);font-size:12px;margin:28px 0 0;border-top:1px solid var
 .pbtag-a1{{background:#3a2a14;color:#f0b85a}}
 .pbtag-a2{{background:#2a1440;color:#c89bf0}}
 .pbtag-rollup{{background:#241a3a;color:#b58af0;border:1px solid #5a3e8a}}
+.pbtag-shared{{background:#15303a;color:#5ad6e0;border:1px solid #2a6a78}}
+.pbcol-shared{{border-left:3px solid #2a6a78}}
 .psynth{{border-color:#5a3e8a}}
 .psynth-out{{display:flex;flex-wrap:wrap;gap:6px;margin:10px 0 0}}
 .poutchip{{font-family:ui-monospace,monospace;font-size:11px;color:#a9c8ff;background:#142544;border:1px solid #2a4a8a;border-radius:5px;padding:2px 8px}}
+.poutchip-frozen{{color:#5ad6e0;background:#15303a;border-color:#2a6a78}}
 .precord{{align-self:center;background:#143226;border:1px solid #2ea043;border-radius:8px;padding:8px 16px}}
 .precord code{{font-family:ui-monospace,monospace;font-size:13px;font-weight:600;color:#7ee2a8}}
 </style></head><body><div class="wrap">

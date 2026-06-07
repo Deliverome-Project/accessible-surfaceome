@@ -558,6 +558,17 @@ function md(rec, structureData, sequences, afdbEntry) {
   const bc = rec.biological_context;
   lines.push("## 4. Biological context");
   lines.push("");
+  // A2 rollup grade — the A2 analog of surface_evidence's evidence_grade.
+  // Pre-rollup records default to "absent" with an empty rationale; only
+  // surface it when there's something to say.
+  if (bc.biological_context_grade && bc.biological_context_grade !== "absent") {
+    lines.push(`**Biological-context grade** · ${prettyEnum(bc.biological_context_grade)}`);
+    lines.push("");
+    if (bc.grade_rationale) {
+      lines.push(`${bc.grade_rationale}${citeIds(bc.grade_cited_evidence_ids)}`);
+      lines.push("");
+    }
+  }
   const expressionRows = bc.expression ?? []; // transitional: pre-migration records lack `expression`
   if (expressionRows.length) {
     lines.push("**Expression × cell type × disease context**");

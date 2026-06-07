@@ -1091,6 +1091,18 @@ EvidenceGrade = Literal[
     "conflicting",
     "weak",
 ]
+# A2 analog of ``EvidenceGrade``: how well-characterized and internally
+# consistent the biological-context picture (expression / cell_states /
+# subcellular_localization / anatomical_accessibility /
+# accessibility_modulation) is. Rolled up by the A2 ``biological_context_grade``
+# builder and surfaced flat on ``BiologicalContext`` (mirroring how
+# ``SurfaceEvidence.evidence_grade`` sits flat). Values run high → low coverage.
+BiologicalContextGrade = Literal[
+    "rich",
+    "moderate",
+    "sparse",
+    "absent",
+]
 Confidence = Literal["high", "moderate", "low"]
 StateDependence = Literal["low", "moderate", "high", "unclear"]
 # Subcategory = ARCHITECTURE only — how the protein sits in the
@@ -2458,6 +2470,17 @@ class BiologicalContext(BaseModel):
     accessibility_modulation: list[AccessibilityModulationObservation] = Field(
         default_factory=list
     )
+    # A2 rollup (the A2 analog of ``SurfaceEvidence.evidence_grade``):
+    # how well-characterized + internally consistent the biological-context
+    # picture is, graded across the five A2 axes above. Emitted by the
+    # ``biological_context_grade`` builder. Defaults so records predating the
+    # rollup still validate.
+    biological_context_grade: BiologicalContextGrade = "absent"
+    grade_rationale: str = Field(
+        default="",
+        description="Why this biological_context_grade. Soft target ≤300 chars.",
+    )
+    grade_cited_evidence_ids: list[str] = Field(default_factory=list)
 
     @model_validator(mode="before")
     @classmethod
@@ -3392,8 +3415,9 @@ class SurfaceomeRecord(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
     schema_version: Literal[
-        "1.0.0", "1.1.0", "2.0.0", "2.1.0", "2.2.0", "2.3.0", "2.4.0", "2.4.1", "2.5.0"
-    ] = "2.5.0"
+        "1.0.0", "1.1.0", "2.0.0", "2.1.0", "2.2.0", "2.3.0", "2.4.0", "2.4.1",
+        "2.5.0", "2.6.0",
+    ] = "2.6.0"
     gene: GeneIdentifier
 
     # Cross-agent coherence — populated by the orchestrator from the most
@@ -3508,8 +3532,9 @@ class SurfaceomeRecordDraft(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
     schema_version: Literal[
-        "1.0.0", "1.1.0", "2.0.0", "2.1.0", "2.2.0", "2.3.0", "2.4.0", "2.4.1", "2.5.0"
-    ] = "2.5.0"
+        "1.0.0", "1.1.0", "2.0.0", "2.1.0", "2.2.0", "2.3.0", "2.4.0", "2.4.1",
+        "2.5.0", "2.6.0",
+    ] = "2.6.0"
     gene: GeneIdentifier
 
     # Orchestrator-injected before the agent call; the agent reads it but does
@@ -4209,6 +4234,7 @@ __all__ = [
     "TriageSignal",
     "SurfaceAccessibility",
     "EvidenceGrade",
+    "BiologicalContextGrade",
     "Confidence",
     "StateDependence",
     "Subcategory",

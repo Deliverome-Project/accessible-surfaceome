@@ -64,10 +64,12 @@ from accessible_surfaceome.agents.surfaceome_v2.builders import (
     EvidenceGradeBlock,
     build_accessibility_modulation,
     build_anatomical_accessibility,
+    build_biological_context_grade,
     build_contradictions,
     build_evidence_grade,
     build_expression,
     build_methods,
+    build_risks,
     build_subcellular_localization,
 )
 from accessible_surfaceome.paths import DATA_DIR
@@ -76,15 +78,20 @@ from accessible_surfaceome.tools._shared.models import (
     AccessibilityRisks,
     BiologicalContext,
     BiologicalContextDraft,
+    CoReceptorRequirements,
     DeterministicFeatures,
     ECDSizeAssessment,
+    EpitopeMasking,
     Evidence,
     EvidenceClaim,
     GeneIdentifier,
     HomoOligomerizationPredictionRisk,
     IsoformTopology,
+    RestrictedSubdomain,
     RiskSeverity,
     SearchEntry,
+    SecretedForm,
+    ShedForm,
     SourceType,
     SurfaceEvidence,
     SurfaceEvidenceDraft,
@@ -97,7 +104,7 @@ from accessible_surfaceome.tools._shared.source_text import SourceText, SourceTe
 logger = logging.getLogger(__name__)
 
 AGENT_MODEL = "claude-sonnet-4-6"
-SCHEMA_VERSION_LITERAL = "2.3.0"
+SCHEMA_VERSION_LITERAL = "2.6.0"
 RUNS_DIR = Path(".runs")
 
 
@@ -115,23 +122,24 @@ def _triage_signal_and_reasoning_from_record(rec):
         return "unknown", ""
     return _TRIAGE_VERDICT_TO_SIGNAL.get(rec.verdict, "unknown"), rec.verdict_reasoning
 
-# Maximum block-builders to dispatch concurrently. There are 7 builders
-# total — 3 A1-side (methods, contradictions, evidence_grade) + 4 A2-side
-# (expression, subcellular_localization, anatomical_accessibility,
-# accessibility_modulation). Schema 2.5.0 merged the former
-# ``cell_states`` builder into ``accessibility_modulation`` —
-# single-context state observations now emit as modulation rows with
-# baseline_context=None + modulating_state=None. Each builder consumes
-# an independent claim slice and makes a single Sonnet call, so a
-# worker pool sized to ``7`` lets every builder kick off immediately.
-# The Anthropic client is thread-safe (httpx underneath) and each
-# builder writes to its own ``usage_sink`` list so there's no shared
-# mutable state across workers. The shared ``TimingRecorder`` appends
-# rows from multiple threads — CPython's ``list.append`` is atomic
-# under the GIL, so the list stays well-formed; the resulting
-# timing-row order is non-deterministic but the viewer sorts by
-# ``elapsed_s`` anyway.
-BUILDER_CONCURRENCY = 7
+# Maximum block-builders to dispatch concurrently in the step-2+3 fan-out.
+# There are 8 builders in that fan-out — 3 A1-side (methods, contradictions,
+# evidence_grade) + 5 A2-side (expression, subcellular_localization,
+# anatomical_accessibility, accessibility_modulation, biological_context_grade).
+# Schema 2.5.0 merged the former ``cell_states`` builder into
+# ``accessibility_modulation`` — single-context state observations now emit as
+# modulation rows with baseline_context=None + modulating_state=None. The
+# cross-focus ``risks`` builder is NOT in this fan-out — it needs the
+# deterministic block fetched at step 4.5, so it runs serially afterward. Each
+# builder consumes an independent claim slice and makes a single Sonnet call,
+# so a worker pool sized to ``8`` lets every builder kick off immediately. The
+# Anthropic client is thread-safe (httpx underneath) and each builder writes to
+# its own ``usage_sink`` list so there's no shared mutable state across
+# workers. The shared ``TimingRecorder`` appends rows from multiple threads —
+# CPython's ``list.append`` is atomic under the GIL, so the list stays
+# well-formed; the resulting timing-row order is non-deterministic but the
+# viewer sorts by ``elapsed_s`` anyway.
+BUILDER_CONCURRENCY = 8
 
 
 def _secreted_isoform_ids(isoform_topologies: list[IsoformTopology]) -> list[str]:
@@ -256,6 +264,49 @@ def _attach_deterministic_ecd_size_assessment(
     )
     return accessibility_risks.model_copy(
         update={"ecd_size_assessment": assessment}
+    )
+
+
+def _stub_accessibility_risks() -> AccessibilityRisks:
+    """All-absent ``AccessibilityRisks`` fallback for the risks-builder miss.
+
+    ``build_risks`` returns ``None`` when its repair loop exhausts; a record
+    still needs a risks block to ship. This is the labeled fallback: every
+    literature-driven risk ``present=false`` / ``unknown`` with a "no data"
+    rationale. The deterministic post-passes (ECD-size class +
+    homo-oligomerization chip + the secreted_form topology safety net) still
+    run on top of it, so the record carries the deterministic signals even
+    when the LLM call failed. Mirrors the all-absent shapes the builder
+    itself emits on an empty ledger.
+    """
+    no_data = "risks builder produced no block; no literature risk call made."
+    return AccessibilityRisks(
+        co_receptor_requirements=CoReceptorRequirements(
+            surface_expression_dependency="unknown",
+            evidence_basis="mixed",
+            rationale=no_data,
+        ),
+        shed_form=ShedForm(present=False, severity="unknown", evidence_strength="weak"),
+        secreted_form=SecretedForm(
+            present=False, severity="unknown", evidence_strength="weak"
+        ),
+        restricted_subdomain=RestrictedSubdomain(
+            present=False,
+            domain="unknown",
+            severity="unknown",
+            evidence_strength="weak",
+            rationale=no_data,
+        ),
+        ecd_size_assessment=ECDSizeAssessment(
+            ecd_accessibility_class="none",
+            rationale=no_data,
+        ),
+        epitope_masking=EpitopeMasking(
+            mechanism=["none"],
+            severity="none",
+            evidence_strength="weak",
+            rationale=no_data,
+        ),
     )
 
 
@@ -545,6 +596,17 @@ def _annotate(
             a2_claims,
             a2_ctx,
         ),
+        # A2 rollup — the A2 analog of evidence_grade. Reads the full A2
+        # ledger and emits a single biological_context_grade verdict +
+        # rationale + cites. Rides the step-2+3 fan-out (A2-only, no
+        # deterministic dependency).
+        _BuilderSpec(
+            "biological_context_grade",
+            "builders_a2",
+            build_biological_context_grade,
+            a2_claims,
+            a2_ctx,
+        ),
     ]
     outputs = _run_builders_concurrently(
         specs, client=client, timing=timing, builder_usage=builder_usage
@@ -564,11 +626,19 @@ def _annotate(
         contradicting_evidence=outputs["contradictions"],
     )
 
+    # A2 rollup block (biological_context_grade builder) → flat fields on
+    # BiologicalContext, mirroring how the evidence_grade block maps onto
+    # SurfaceEvidence above. The block's attribute is ``cited_evidence_ids``;
+    # the record field is ``grade_cited_evidence_ids``.
+    bcg = outputs["biological_context_grade"]
     biological_context = BiologicalContext(
         expression=outputs["expression"],
         subcellular_localization=outputs["subcellular_localization"],
         anatomical_accessibility=outputs["anatomical_accessibility"],
         accessibility_modulation=outputs["accessibility_modulation"],
+        biological_context_grade=bcg.biological_context_grade,
+        grade_rationale=bcg.grade_rationale,
+        grade_cited_evidence_ids=bcg.cited_evidence_ids,
     )
 
     # ---- step 4: wrap into per-agent drafts --------------------------------
@@ -633,6 +703,59 @@ def _annotate(
             )
             det_features = _stub_deterministic_features(gene_id.uniprot_acc)
 
+    # ---- step 4.6: risks builder (cross-focus; needs det_features) ---------
+    # The risks builder is CROSS-FOCUS: it reads the MERGED A1+A2 ledger plus
+    # the deterministic ECD / homo-oligomer signals (fetched at step 4.5), so
+    # it can't ride the step-2+3 fan-out (those run before det_features
+    # exists). It runs HERE — after the deterministic fetch, before the
+    # synthesizer — and produces the canonical ``accessibility_risks`` block.
+    # The synthesizer then merely consumes + copies it through (the
+    # orchestrator overwrites B's echoed copy at step 5.4).
+    with timing.step("risks_builder", phase="builders_risks", model=AGENT_MODEL) as _rh:
+        risks_records: list[UsageRecord] = []
+        risks_block = build_risks(
+            a1_claims + a2_claims,
+            client=client,
+            usage_sink=risks_records,
+            context={
+                "gene": gene_id.hgnc_symbol,
+                "deterministic_features": det_features,
+            },
+        )
+        _rh.set_usage(risks_records, model=AGENT_MODEL)
+    builder_usage["risks_builder"] = BlockBuilderUsage("risks_builder", risks_records)
+    if risks_block is None:
+        # Repair-loop failure → labeled all-absent stub so a record can still
+        # ship. The deterministic post-passes below still attach the ECD /
+        # homo-oligomer signals on top.
+        logger.warning(
+            "risks_builder returned None for %s; using all-absent stub",
+            gene_id.hgnc_symbol,
+        )
+        risks_block = _stub_accessibility_risks()
+
+    # ---- step 4.7: deterministic post-passes on the RISKS-BUILDER output ---
+    # These were formerly step 7.5–7.7 patching synth_draft.accessibility_risks.
+    # The risks builder is now the single source of truth, so the post-passes
+    # run on ITS output here (before the synthesizer), making the canonical
+    # risks block available to feed B AND to overwrite B's echoed copy with.
+    #   * _attach_homo_oligomerization_prediction / _attach_deterministic_ecd_size_assessment
+    #     return NEW AccessibilityRisks (model_copy).
+    #   * apply_secreted_form_post_pass MUTATES in place and returns a bool;
+    #     run it last on the already-rebuilt object.
+    from accessible_surfaceome.agents.surfaceome_v2.secreted_form_postpass import (
+        apply_secreted_form_post_pass,
+    )
+
+    canonical_risks = _attach_deterministic_ecd_size_assessment(
+        _attach_homo_oligomerization_prediction(risks_block, det_features),
+        det_features,
+    )
+    apply_secreted_form_post_pass(
+        accessibility_risks=canonical_risks,
+        deterministic_features=det_features,
+    )
+
     # ---- step 5: synthesizer (B) ------------------------------------------
     logger.info("v2 orchestrator: dispatching synthesizer for %s", gene_id.hgnc_symbol)
     with timing.step(
@@ -673,6 +796,10 @@ def _annotate(
             client=client,
             triage_summary_json=triage_summary_json,
             deterministic_summary_json=deterministic_summary_json,
+            # The frozen, canonical risks block. B copies it through +
+            # consumes it (headline_risks + confidence); the orchestrator
+            # overwrites B's echoed copy with ``canonical_risks`` at step 5.4.
+            accessibility_risks=canonical_risks,
         )
         _h.model = b.usage.model
         # ``BResult.usage`` is a UsageSummary, not a UsageRecord. Build a
@@ -707,6 +834,19 @@ def _annotate(
     # downstream code reads from instead of ``b.draft``.
     synth_draft = b.draft
     assert synth_draft is not None  # for ty — narrowed by the guard above
+
+    # ---- step 5.4: make the risks builder the single source of truth ------
+    # The synthesizer echoes ``accessibility_risks`` (the prompt says copy
+    # it through verbatim), but the canonical block is the one the risks
+    # builder produced + the deterministic post-passes patched at step 4.7.
+    # Overwrite B's echoed copy with it BEFORE step 5.5's
+    # ``scrub_headline_risks`` reads ``synth_draft.accessibility_risks``, so
+    # everything downstream (scrub, _derive_filters, SurfaceomeRecord) reads
+    # the canonical risks. B's copy is discarded.
+    synth_draft = synth_draft.model_copy(
+        update={"accessibility_risks": canonical_risks}
+    )
+
     synth_draft = synth_draft.model_copy(
         update={
             # Inject curator-assigned deterministic family tags (HGNC gene
@@ -826,68 +966,13 @@ def _annotate(
             evidence=evidence,
         )
 
-    # ---- step 7.5: deterministic secreted_form safety net ----------------
-    # Topology-derived check on accessibility_risks.secreted_form. The
-    # synthesizer now sees the deterministic block at step 4.5 so its
-    # secreted_form call SHOULD already be topology-correct, but this
-    # post-pass stays as a defensive net for:
-    #   * the stub-deterministic-features path (no D1 / no creds), where the
-    #     synthesizer had no real topology to read,
-    #   * any synthesizer LLM call that contradicted the threshold rule
-    #     despite seeing the data.
-    # Only ever upgrades; never downgrades a literature-backed call.
-    # Module-level + importable for backfill parity.
-    with timing.step("secreted_form_post_pass", phase="post"):
-        from accessible_surfaceome.agents.surfaceome_v2.secreted_form_postpass import (
-            apply_secreted_form_post_pass,
-        )
-
-        apply_secreted_form_post_pass(
-            accessibility_risks=synth_draft.accessibility_risks,
-            deterministic_features=det_features,
-        )
-
-    # ---- step 7.6: deterministic homo-oligomerization prediction chip ----
-    # Mirror Schweke 2024's AF2 homo-oligomer prediction from
-    # ``deterministic_features.homo_oligomerization`` into a structured
-    # risk chip on ``accessibility_risks.homo_oligomerization_prediction``
-    # so the viewer renders it next to ``epitope_masking`` without
-    # conflating the deterministic AF2 call with the LLM-emitted masking
-    # mechanism. The synthesizer DOES NOT emit this — keeping it
-    # orchestrator-only mirrors ``_attach_deterministic_families`` and
-    # prevents stale-prompt drift. Free — reuses the already-populated
-    # deterministic block, no new fetch.
-    with timing.step("homo_oligomerization_prediction_post_pass", phase="post"):
-        synth_draft = synth_draft.model_copy(
-            update={
-                "accessibility_risks": _attach_homo_oligomerization_prediction(
-                    synth_draft.accessibility_risks, det_features
-                )
-            }
-        )
-
-    # ---- step 7.7: deterministic ecd_accessibility_class overwrite --------
-    # ``ecd_accessibility_class`` is deterministic, NOT LLM-synthesized: the
-    # synthesizer used to apply the size thresholds itself AND was allowed a
-    # "trust the literature on a topology miscall" override. That made the
-    # class diverge from the deterministic ECD residue count. We now compute
-    # it in one place — ``classify_ecd_accessibility_class`` over
-    # ``deterministic_features.canonical_topology.ecd_length_residues`` — and
-    # overwrite the synthesizer's block with it. This is the single source of
-    # truth regardless of what the synthesizer emitted. Mirrors
-    # ``_attach_homo_oligomerization_prediction``: orchestrator-only, free
-    # (reuses the already-fetched deterministic block), prevents stale-prompt
-    # drift. Runs BEFORE step 8 so ``_derive_filters`` reads the deterministic
-    # class off this block — keeping the ``filters.ecd_accessibility_class``
-    # mirror in lock-step (they cannot diverge).
-    with timing.step("ecd_size_assessment_post_pass", phase="post"):
-        synth_draft = synth_draft.model_copy(
-            update={
-                "accessibility_risks": _attach_deterministic_ecd_size_assessment(
-                    synth_draft.accessibility_risks, det_features
-                )
-            }
-        )
+    # NOTE: the deterministic risk post-passes (secreted_form safety net +
+    # homo-oligomerization prediction chip + ecd_accessibility_class
+    # overwrite) formerly ran HERE on ``synth_draft.accessibility_risks``.
+    # They now run at step 4.7 on the risks-builder output (``canonical_risks``),
+    # which is the single source of truth and was copied onto ``synth_draft``
+    # at step 5.4 — so ``synth_draft.accessibility_risks`` already carries all
+    # three. ``_derive_filters`` (step 8) reads them off it as before.
 
     # ---- step 8: derive filters (reused from v1) --------------------------
     with timing.step(

@@ -1077,6 +1077,13 @@ export interface BiologicalContext {
   subcellular_localization: SubcellularLocalization;
   anatomical_accessibility: AnatomicalAccessibilityObservation[];
   accessibility_modulation: AccessibilityModulationObservation[];
+  /** A2 rollup — the A2 analog of SurfaceEvidence.evidence_grade: how
+   *  well-characterized & internally consistent the A2 biological picture is
+   *  (coverage × consistency across expression / localization / anatomical /
+   *  modulation). */
+  biological_context_grade: "rich" | "moderate" | "sparse" | "absent";
+  grade_rationale: string;
+  grade_cited_evidence_ids: string[];
 }
 
 // ============================================================
