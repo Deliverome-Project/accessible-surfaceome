@@ -44,8 +44,9 @@ your task message; follow it. Four blocks:
 
   **It is about the TARGET PROTEIN being soluble — NOT its ligand
   being shed.** A sheddase (ADAM17, BACE, etc.) cleaving the target's
-  *ligand* (e.g. ADAM17 shedding EGFR's EGF / TGF-α ligands) is
-  IRRELEVANT here — that's the ligand becoming soluble, not the target.
+  *ligand* (e.g. a sheddase releasing a target's cognate growth-factor
+  ligands) is IRRELEVANT here — that's the ligand becoming soluble, not
+  the target.
   Only count evidence that THIS protein exists as a free soluble species:
   a proteolytically shed ectodomain OF THE TARGET, or a soluble /
   TM-less splice isoform OF THE TARGET. If the only "shedding" evidence
@@ -71,7 +72,7 @@ your task message; follow it. Four blocks:
   existence of a soluble form.** A protein can have a soluble form for
   two very different reasons, and they are NOT the same risk:
     - *An annotated / predicted soluble splice isoform exists* (e.g.
-      EGFR's TM-less isoforms) but the ledger shows no evidence it
+      a receptor's TM-less alternative isoform) but the ledger shows no evidence it
       actually circulates or competes for binder — this is the WEAK
       case: `severity="low"`, `evidence_strength="weak"`,
       `source="alternative_splicing"`. (The orchestrator already sets
@@ -84,8 +85,9 @@ your task message; follow it. Four blocks:
       `severity="moderate"` (or `"high"` when a paper explicitly ties
       it to reduced antibody efficacy / a clinical decoy effect), set
       `evidence_strength` to match the citation quality, and CITE the
-      serum-level / competition papers. EGFR's serum sEGFR (p110) vs
-      cetuximab is the canonical example of this stronger case.
+      serum-level / competition papers. A receptor's serum-soluble
+      ectodomain that competes with a therapeutic monoclonal is the
+      canonical example of this stronger case.
   So: name the soluble form, and if the ledger documents it circulating
   or out-competing a binder, the call is a real decoy risk — not a
   weak topology footnote. Cite that evidence.
@@ -111,9 +113,10 @@ your task message; follow it. Four blocks:
   "monovalent-binder-compatible targets" want `none`; "unknown" is the
   safe default but it makes those targets invisible to the filter.
   When your `rationale` explicitly states no co-receptor is needed
-  (e.g. SRC: "SRC membrane anchoring is entirely myristoylation-driven;
-  no obligate co-receptor is required for membrane association"),
-  set `surface_expression_dependency="none"`, not `"unknown"`. Reserve
+  (e.g. a lipid-anchored intracellular kinase whose membrane anchoring
+  is entirely lipid-modification-driven, with no obligate co-receptor
+  required for membrane association), set
+  `surface_expression_dependency="none"`, not `"unknown"`. Reserve
   `"unknown"` for cases where the ledger has no co-receptor information
   at all — not for cases where it has *negative* information.
 
@@ -150,23 +153,24 @@ your task message; follow it. Four blocks:
       If the literature documents a homodimer the prior missed, emit
       `oligomerization` and call this out in the rationale.
     - **HETERO → `partner`.** A *different* protein in a hetero-complex
-      covers the epitope — e.g. CD19 sitting over the CD81 large
-      extracellular loop in the constitutive CD19/CD81 co-receptor
-      complex. When you set `partner`, the masking protein is almost
-      always one already named in `co_receptor_requirements.partners`;
-      keep the two blocks consistent and cite the structural / complex
-      evidence (cryo-EM, co-crystal, pulldown), never a generic
-      surface-expression paper.
+      covers the epitope — e.g. a co-receptor sitting over the target's
+      large extracellular loop in a constitutive co-receptor complex.
+      When you set `partner`, the masking protein is almost always one
+      already named in `co_receptor_requirements.partners`; keep the two
+      blocks consistent and cite the structural / complex evidence
+      (cryo-EM, co-crystal, pulldown), never a generic surface-expression
+      paper.
     - **OTHER → `glycan` / `conformational` / `cleaved`.** Glycocalyx or
       N-/O-glycan shielding, intrinsic monomer closed/open occlusion, or
       proteolytic removal of the epitope.
-  Multi-mechanism is allowed and common: CD81 is `["partner",
-  "oligomerization"]` when the ledger documents BOTH CD19 coverage of the
-  LEL AND CD81's own tetraspanin-microdomain clustering. Grade `severity`
-  by how constitutively the masking holds in the *targetable* state — a
-  complex constitutive on the relevant cell (CD19/CD81 on B cells) is
-  more consequential than an occasional or inducible one — and set
-  `evidence_strength` to match the cited structural/complex evidence.
+  Multi-mechanism is allowed and common: a multi-pass tetraspanin can
+  carry `["partner", "oligomerization"]` when the ledger documents BOTH
+  a co-receptor covering the large extracellular loop AND the target's
+  own tetraspanin-microdomain clustering. Grade `severity` by how
+  constitutively the masking holds in the *targetable* state — a complex
+  constitutive on the relevant cell is more consequential than an
+  occasional or inducible one — and set `evidence_strength` to match the
+  cited structural/complex evidence.
 - `filters_llm` — three rollups only: `expression_level`,
   `expression_breadth`, `surface_specificity`, each paired with a one-line
   `*_rationale` (`expression_level_rationale`, etc.) carrying inline
@@ -209,8 +213,8 @@ only count where solvent-exposed), not thresholds the paper sets:
   masking, optimal kinetics, paralog discrimination.
 * **`moderate`** — `60 <= ecd_length_residues < 200`. Multiple
   candidate epitopes available; targetable but with less design
-  flexibility than `large`. Tetraspanin EC2 loops (~80-100 residues,
-  e.g. CD81 / CD9) land here and are demonstrably targetable.
+  flexibility than `large`. Tetraspanin EC2 loops (~80-100 residues)
+  land here and are demonstrably targetable.
 * **`small`** — `30 <= ecd_length_residues < 60`. 2-5 candidate
   conformational epitopes; antibody discovery harder but feasible.
 * **`minimal`** — `ecd_length_residues < 30`. Hosts at most 1-2
@@ -259,27 +263,26 @@ moderate or low — the specific weakness in the evidence, (b) what
 would lift it — the kind of follow-up that would make this a
 confident-high call.
 
-**Worked example — SRC's current confidence_reasoning rewritten:**
+**Worked example — gene X's confidence_reasoning rewritten:**
 
 BEFORE (pipeline-internal, current output):
 > "Triage called verdict='no', reason='inner_leaflet_anchored',
 > confidence='high'... We override to surface_accessibility='high' +
 > state_dependence='high' because two 2025 primary publications
-> (PMID:41818370, PMID:41818382) directly report cancer-specific
-> topological inversion via ALE... A1's evidence_grade is
-> 'conflicting' — canonical inner-leaflet topology is corroborated
-> by multiple independent sources (a1_evi_05, a1_evi_15, a1_evi_12-14)..."
+> (PMID:XXXX, PMID:YYYY) directly report cancer-specific topological
+> inversion via ALE... A1's evidence_grade is 'conflicting' —
+> canonical inner-leaflet topology is corroborated by multiple
+> independent sources (a1_evi_05, a1_evi_15, a1_evi_12-14)..."
 
 AFTER (user-facing):
-> "Confidence is moderate because the cancer-cell extracellular SRC
+> "Confidence is moderate because the cancer-cell extracellular gene-X
 > story comes from a single recent research cluster (two 2025 papers
-> from the same group, PMID:41818370 and PMID:41818382). The
-> canonical SRC topology — myristoylated, inner-leaflet, no
-> extracellular domain — is well-established across decades of
-> independent work. Lifting confidence would need a third independent
-> group to confirm the cancer-state outer-leaflet exposure, ideally
-> with a different methodology than anti-SRC antibody-mediated tumor
-> killing in xenografts."
+> from the same group, PMID:XXXX and PMID:YYYY). The canonical gene-X
+> topology — lipid-anchored, inner-leaflet, no extracellular domain —
+> is well-established across decades of independent work. Lifting
+> confidence would need a third independent group to confirm the
+> cancer-state outer-leaflet exposure, ideally with a different
+> methodology than antibody-mediated tumor killing in xenografts."
 
 Note: the AFTER version uses PMIDs (citable), mentions the methodology
 (antibody-killing in xenografts) so the reader knows what alternative
@@ -303,9 +306,10 @@ parse time — invented or paraphrased ids fail the run.
   that erases the targetable state. The reader filters on
   `surface_accessibility` to find candidates, and on
   `state_dependence` to understand whether targeting is constitutive
-  or state-gated. SRC's canonical case: cancer-state eSrc is high in
-  cancer cells, so `surface_accessibility=high` + `state_dependence=high`
-  (not `surface_accessibility=low` because normal-cell access is low).
+  or state-gated. Canonical case for an inner-leaflet kinase: a
+  cancer-state outer-leaflet inverted form is high in cancer cells, so
+  `surface_accessibility=high` + `state_dependence=high` (not
+  `surface_accessibility=low` because normal-cell access is low).
   Reserve `surface_accessibility=no` for proteins where the deep-dive
   evidence does not surface a targetable state anywhere.
 
@@ -343,11 +347,11 @@ parse time — invented or paraphrased ids fail the run.
 
   Often you'll confirm the triage's reason (canonical surface
   receptors stay `classical_surface_receptor`); sometimes you'll
-  override (SRC's triage `inner_leaflet_anchored` becomes
-  `lysosomal_exocytosis` when the deep-dive finds eSrc evidence,
-  because the targetable state is the ALE-induced surface form).
-  Confirm or override is the choice; just don't pass through without
-  re-derivation.
+  override (an inner-leaflet kinase's triage `inner_leaflet_anchored`
+  becomes `lysosomal_exocytosis` when the deep-dive finds outer-leaflet
+  inversion evidence, because the targetable state is the
+  cancer-state-induced surface form). Confirm or override is the
+  choice; just don't pass through without re-derivation.
 
 - **`accessibility_context_summary`** — ONE sentence (≤240 chars) stating
   *when and where* the protein is surface-accessible, synthesized over the
@@ -358,7 +362,7 @@ parse time — invented or paraphrased ids fail the run.
   the gating state / lineage / tissue and what becomes reachable — and do
   NOT restate `one_paragraph`. Examples: "Surface-accessible only on
   cancer cells, where oncogenic transformation drives ALE-mediated
-  inversion of inner-leaflet SRC onto the outer membrane (eSrc)."; for a
+  inversion of an inner-leaflet kinase onto the outer membrane."; for a
   canonical receptor: "Constitutively surface-accessible across normal and
   tumor tissue; not state-gated." Leave it null only when A2 produced no
   localization / modulation context at all.
@@ -509,10 +513,10 @@ The `surface_accessibility` enum has five values: `high`, `moderate`,
   deep-dive verdict). Pick when the literature directly contradicts
   surface presentation OR when the canonical localization
   (cytoplasmic / mitochondrial / nuclear) is corroborated by
-  multiple methods AND no ectopic-surface evidence surfaced. SRC's
-  conservative read might land here, for example — the dominant
-  population is cytoplasmic-side and the eSrc ectopic-surface story
-  is method-specific.
+  multiple methods AND no ectopic-surface evidence surfaced. A
+  conservative read of an inner-leaflet kinase might land here, for
+  example — the dominant population is cytoplasmic-side and the
+  ectopic-surface story is method-specific.
 * `"uncertain"` is for absence-of-signal cases — neither direction
   has enough evidence. Use this when you genuinely can't tell.
 * Don't pick `"no"` just because the evidence is weak; that's what
@@ -527,21 +531,26 @@ doi:10.1073/pnas.2506269123). Set BOTH on every record.
 **`subcategory`** = **architecture** — how the protein sits in the
 membrane. Closed enum:
 * `single_pass_T1` — Type I single-pass (N-term out, C-term in;
-  classical receptor topology). EGFR, HER2, CD55-precursor.
+  classical receptor topology). Classical single-pass receptors with
+  cleaved N-terminal signal peptides.
 * `single_pass_T2` — Type II single-pass (N-term in, C-term out).
-  CD13/ANPEP, CD26/DPP4, syndecans.
+  Surface aminopeptidases and dipeptidyl peptidases, syndecans.
 * `multi_pass` — generic multi-pass (≥2 TM, not 7TM and not
-  tetraspanin). SLC family, claudins, ABC transporters, AQPs.
+  tetraspanin). SLC family, claudins, ABC transporters, aquaporins.
 * `GPCR` — seven-pass heptahelical receptor architecture. Kept as
   a common-name shortcut because 7TM is essentially synonymous
+<<<<<<< Updated upstream
   with GPCR in practice. GENE X, ADGRE5, CXCR4.
+=======
+  with GPCR in practice.
+>>>>>>> Stashed changes
 * `GPI_anchored` — post-translational GPI lipid anchor; no TM
-  span. CD55, CD59, prion protein, glypicans.
+  span. Complement regulators, prion-class proteins, glypicans.
 * `tetraspanin` — four-pass with large EC2 loop (~80-100 residues).
-  CD9, CD81, CD63.
 * `other` — soluble-cytoplasmic with ectopic-surface story
-  (HSPA5, SRC, VIM); inner-leaflet lipid-anchored; or genuinely-
-  uncategorized topology.
+  (ER chaperones moonlighting on the cell surface, inner-leaflet
+  kinases, cytoskeletal proteins); inner-leaflet lipid-anchored;
+  or genuinely-uncategorized topology.
 
 **`llm_family`** = **function** — what the protein does, your high-level
 call. Mirrors SURFACE-Bind's four main classes. (The orchestrator
@@ -549,24 +558,32 @@ separately attaches deterministic, curator-assigned family tags —
 `hgnc_gene_groups` and `uniprot_family` — alongside this; you do not emit
 those.) Closed enum:
 * `receptor` — signaling receptors (GPCRs / RTKs / cytokine
+<<<<<<< Updated upstream
   receptors / integrins / immunoreceptors / NHRs). EGFR, GENE X,
   IFNAR2, CD3 family, FGFR2.
 * `enzyme` — surface-exposed catalytic activity. CD13/ANPEP
   (aminopeptidase), CD26/DPP4 (dipeptidyl peptidase), CD73/NT5E
   (ectonucleotidase), CD38, PSMA/FOLH1, ADAM10/17/SADAMs, MMP14,
   ENPP family. **Inner-leaflet kinases like SRC count as `enzyme`
+=======
+  receptors / integrins / immunoreceptors / NHRs).
+* `enzyme` — surface-exposed catalytic activity. Aminopeptidases,
+  dipeptidyl peptidases, ectonucleotidases, ADP-ribosyl cyclases,
+  surface peptidases, sheddases, matrix metalloproteinases,
+  ectophosphodiesterases. **Inner-leaflet kinases count as `enzyme`
+>>>>>>> Stashed changes
   by protein identity, regardless of whether the ectopic-surface
   story is moderate** — the catalog filters on what the protein
   IS, not just where it lives.
 * `transporter` — SLCs, ABC transporters, ion channels, aquaporins,
-  pumps. SLC2A1, SLC7A11, CFTR, KCNH2, ATP1A1, AQP1. Subsumes
-  the dropped `ion_channel` and `transporter` Subcategory values.
-* `miscellaneous` — adhesion molecules (ICAM, VCAM), junction
-  proteins (claudins, occludin, JAMs, cadherins), tetraspanins,
-  scaffolds (PDZ proteins), structural / cytoskeletal (VIM),
-  chaperones (HSPA5), prion-class. Default when none of the
-  above fit cleanly.
+  pumps. Subsumes the dropped `ion_channel` and `transporter`
+  Subcategory values.
+* `miscellaneous` — adhesion molecules, junction proteins
+  (claudins, occludin, cadherins), tetraspanins, scaffolds
+  (PDZ proteins), structural / cytoskeletal, chaperones,
+  prion-class. Default when none of the above fit cleanly.
 
+<<<<<<< Updated upstream
 A given gene carries one value from EACH axis. **EGFR**:
 `subcategory=single_pass_T1, llm_family=receptor`. **GENE X**:
 `subcategory=GPCR, llm_family=receptor`. **CD26/DPP4**:
@@ -575,6 +592,21 @@ A given gene carries one value from EACH axis. **EGFR**:
 `subcategory=multi_pass, llm_family=transporter`. **HSPA5**:
 `subcategory=other, llm_family=miscellaneous`. **SRC**:
 `subcategory=other, llm_family=enzyme` (kinase by identity).
+=======
+A given gene carries one value from EACH axis. Examples:
+* A classical single-pass receptor: `subcategory=single_pass_T1,
+  llm_family=receptor`.
+* A 7TM signaling receptor: `subcategory=GPCR, llm_family=receptor`.
+* A Type-II single-pass surface peptidase:
+  `subcategory=single_pass_T2, llm_family=enzyme`.
+* A tetraspanin: `subcategory=tetraspanin, llm_family=miscellaneous`.
+* A multi-pass solute carrier: `subcategory=multi_pass,
+  llm_family=transporter`.
+* An ER chaperone with an ectopic-surface story: `subcategory=other,
+  llm_family=miscellaneous`.
+* An inner-leaflet kinase with an outer-leaflet inversion story:
+  `subcategory=other, llm_family=enzyme` (kinase by identity).
+>>>>>>> Stashed changes
 
 ## Has-known-ligand flag
 

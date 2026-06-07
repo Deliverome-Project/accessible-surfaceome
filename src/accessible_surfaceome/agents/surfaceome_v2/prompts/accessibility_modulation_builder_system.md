@@ -32,8 +32,8 @@ occurs between.
 
 - A cell line / mutation / disease context that merely **expresses** the
   protein, with no before→after surface contrast — e.g. *"drug-naive
-  EGFR-mutant LUAD cells (HCC827, PC9, H1650) express EGFR"* is expression
-  CONTEXT, not a surface modulation. It belongs to the tissue / expression
+  oncogene-driven cancer cells express gene X"* is expression CONTEXT,
+  not a surface modulation. It belongs to the tissue / expression
   blocks, not here.
 - A change in **total or intracellular abundance, mRNA, signaling
   activity, phosphorylation, or downstream pathway** that is NOT tied to a
@@ -45,7 +45,7 @@ If you cannot name BOTH (a) the specific surface-accessibility change and
 (b) the two states it occurs between, DROP the row. Empty `[]` is the
 correct output when the ledger has expression / biology context but no
 surface-accessibility shift — an over-broad row that just restates "this
-cell type has EGFR" is worse than no row.
+cell type has gene X" is worse than no row.
 
 ## Schema fields — closed enums
 

@@ -23,11 +23,12 @@ steady-state cell-type identity. Concretely:
 * **Exhaustion** — chronic-antigen-driven T-cell exhaustion, PD-1
   / TIM-3 / LAG-3 co-expression states.
 * **EMT / MET** — epithelial-to-mesenchymal transition; relevant for
-  cytoskeletal IFs (VIM-class), claudins, E-cadherin neighbors.
+  cytoskeletal intermediate-filament proteins, claudins, and
+  E-cadherin neighbors.
 * **Cellular stress** — ER stress / UPR, oxidative stress, heat shock,
-  hypoxia, nutrient deprivation, DNA damage response. **csGRP78
-  (HSPA5) is the canonical example**: an ER-resident chaperone whose
-  surface fraction increases under ER stress.
+  hypoxia, nutrient deprivation, DNA damage response. A canonical
+  example: an ER-resident chaperone whose surface fraction increases
+  under ER stress.
 * **Differentiation stage** — naive vs. memory, immature vs. mature,
   progenitor vs. terminally-differentiated.
 * **Cell cycle** — quiescence vs. proliferation, M-phase-specific

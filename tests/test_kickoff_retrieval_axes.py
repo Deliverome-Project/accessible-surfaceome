@@ -26,7 +26,6 @@ from accessible_surfaceome.agents.plan_trim_select.kickoff_templates import (
     build_a1_kickoff,
     build_a2_kickoff,
     build_kickoff,
-    build_unified_kickoff,
 )
 from accessible_surfaceome.tools._shared.models import TopicAnchor
 from accessible_surfaceome.tools.evidence_retrieval import _CATEGORY_SPECS
@@ -89,7 +88,6 @@ def test_tox_panel_always_emitted_every_focus():
     for plan in (
         build_a1_kickoff(7, 89),
         build_a2_kickoff(7, 89),
-        build_unified_kickoff(7, 89),
         build_a1_kickoff(0, 0),  # even a known non-membrane gene
         build_a1_kickoff(None, None),  # even with unknown topology
     ):
@@ -97,7 +95,10 @@ def test_tox_panel_always_emitted_every_focus():
 
 
 def test_build_kickoff_dispatch_all_foci_have_tox_panel():
-    for focus in ("a1", "a2", None):
+    # The unified (None) path was retired with the legacy
+    # trim_system.md / select_system.md prompts — every kickoff dispatch
+    # must declare 'a1' or 'a2'.
+    for focus in ("a1", "a2"):
         assert _has_anchor(build_kickoff(focus, 7, 89), "normal_tissue_expression")
 
 

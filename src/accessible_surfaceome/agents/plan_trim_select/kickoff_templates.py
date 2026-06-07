@@ -267,67 +267,31 @@ def build_a2_kickoff(
     )
 
 
-def build_unified_kickoff(
-    n_tmh: int | None = None, ecd_aa: int | None = None
-) -> SearchPlan:
-    """Deterministic kickoff for the unified-ledger (focus=None) path.
-
-    Unions the A1 and A2 search sets, deduplicated on (tool, category,
-    mode, anchors). Used when no agent_focus is set — the single-agent
-    MVP path that harvests one combined ledger rather than a split A1/A2.
-    """
-
-    seen: set[tuple] = set()
-    merged: list[SearchRequest] = []
-    for req in (
-        *build_a1_kickoff(n_tmh, ecd_aa).searches,
-        *build_a2_kickoff(n_tmh, ecd_aa).searches,
-    ):
-        key = (
-            req.tool,
-            req.category,
-            req.mode,
-            tuple(req.anchors) if req.anchors else None,
-        )
-        if key in seen:
-            continue
-        seen.add(key)
-        merged.append(req)
-    return SearchPlan(
-        searches=merged,
-        rationale=(
-            "Unified deterministic kickoff: A1 ∪ A2 search sets, deduplicated. "
-            "Selector iterates from observed paper inventory."
-        ),
-    )
-
-
 def build_kickoff(
-    focus: str | None,
+    focus: str,
     n_tmh: int | None = None,
     ecd_aa: int | None = None,
 ) -> SearchPlan:
     """Dispatch to the per-focus deterministic kickoff builder.
 
-    ``focus=None`` returns the unified A1 ∪ A2 kickoff for the
-    single-agent ledger path. ``n_tmh`` / ``ecd_aa`` are the canonical
-    topology counts (TM-helix count and ectodomain length) used to gate the
-    membrane-specific standing axes; ``None`` means "topology unknown" and
-    fires those axes recall-biased.
+    ``focus`` is required and must be ``"a1"`` or ``"a2"`` — the
+    unified-ledger (None) path was retired with the legacy
+    ``trim_system.md`` / ``select_system.md`` prompts. ``n_tmh`` /
+    ``ecd_aa`` are the canonical topology counts (TM-helix count and
+    ectodomain length) used to gate the membrane-specific standing
+    axes; ``None`` means "topology unknown" and fires those axes
+    recall-biased.
     """
 
-    if focus is None:
-        return build_unified_kickoff(n_tmh, ecd_aa)
     if focus == "a1":
         return build_a1_kickoff(n_tmh, ecd_aa)
     if focus == "a2":
         return build_a2_kickoff(n_tmh, ecd_aa)
-    raise ValueError(f"unknown focus {focus!r}; expected 'a1', 'a2', or None")
+    raise ValueError(f"unknown focus {focus!r}; expected 'a1' or 'a2'")
 
 
 __all__ = [
     "build_a1_kickoff",
     "build_a2_kickoff",
-    "build_unified_kickoff",
     "build_kickoff",
 ]

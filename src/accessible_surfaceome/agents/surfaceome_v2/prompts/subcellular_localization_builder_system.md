@@ -49,8 +49,8 @@ listing subcellular locations are also primary input.
   ONLY for outer-leaflet / surface microdomains. Do NOT put whole
   compartments (endosome, lysosome, Golgi) here — those are
   `dual_localization`. Do NOT put the **inner leaflet / cytoplasmic face**
-  of the plasma membrane here (e.g. myristoylated/palmitoylated SRC, LYN):
-  that is NOT surface-accessible, so it belongs in `dual_localization` with
+  of the plasma membrane here (e.g. myristoylated/palmitoylated inner-leaflet
+  kinases): that is NOT surface-accessible, so it belongs in `dual_localization` with
   a compartment like `inner leaflet of plasma membrane` instead — never as
   a surface subdomain.
 

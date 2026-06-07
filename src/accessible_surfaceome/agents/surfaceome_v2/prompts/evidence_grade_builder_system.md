@@ -40,8 +40,9 @@ ONE fenced ```json block. Top-level OBJECT, not array.
   claims can't be reconciled without one being wrong.
   **Context- or cell-state-dependent variation is NOT conflicting.**
   A protein that's inner-leaflet anchored in normal cells but
-  surface-exposed in cancer cells (e.g. SRC's ALE-mediated
-  topology inversion) is **state-dependent**, not conflicting —
+  surface-exposed in cancer cells (e.g. an inner-leaflet kinase's
+  ALE-mediated topology inversion) is **state-dependent**, not
+  conflicting —
   both observations are coherent under a plausible mechanism
   (different cell state ⇒ different topology). Same for:
     * tissue-restricted surface expression vs broad RNA absence
@@ -130,19 +131,19 @@ Writing the rationale first and back-filling stances to match leads to
 prose-driven post-hoc rationalization; the stance map should drive the
 prose, not the other way around.
 
-**Worked SRC example** (the canonical 5b.8 case, with the
+**Worked example — inner-leaflet kinase with a cancer-state outer-leaflet inversion story** (the canonical 5b.8 case, with the
 state-dependent-is-not-conflicting refinement applied):
 
 ```
 "claim_stances": [
   {"claim_id": "a1_evi_01", "stance": "supports_surface",    "weight": "high",
-   "note": "eSrc translocation in cancer cells, in vitro + in vivo"},
+   "note": "outer-leaflet translocation in cancer cells, in vitro + in vivo"},
   {"claim_id": "a1_evi_02", "stance": "supports_surface",    "weight": "high",
    "note": "antibody-mediated tumor killing in xenografts (cancer state)"},
   {"claim_id": "a1_evi_05", "stance": "tangential",          "weight": "high",
    "note": "canonical inner-leaflet topology — describes baseline state, NOT a contradiction (different state)"},
   {"claim_id": "a1_evi_06", "stance": "supports_surface",    "weight": "low",
-   "note": "chick chondrogenic cell surfaceome MS, weak species transfer"},
+   "note": "non-human chondrogenic cell surfaceome MS, weak species transfer"},
   {"claim_id": "a1_evi_12", "stance": "supports_surface",    "weight": "high",
    "note": "non-permeabilized surface biotinylation"},
   {"claim_id": "a1_evi_15", "stance": "tangential",          "weight": "high",
@@ -150,15 +151,16 @@ state-dependent-is-not-conflicting refinement applied):
 ],
 ```
 
-The canonical inner-leaflet claims (a1_evi_05, a1_evi_15) describe
-SRC's BASELINE state in normal cells. They DON'T contradict the
+The canonical inner-leaflet claims (a1_evi_05, a1_evi_15) describe the
+target's BASELINE state in normal cells. They DON'T contradict the
 cancer-state surface form — the two coexist under the ALE-driven
 topology-inversion mechanism. Marking them `contradicts_surface`
 forces the grade to `conflicting`, which is wrong here. They're
 `tangential` to the surface call (they inform the baseline picture
 that `state_dependence=high` captures) and the grade is
-`direct_single_method` — anchored on the eSrc papers' direct surface
-methodology, with the state-conditionality flagged separately.
+`direct_single_method` — anchored on the outer-leaflet-inversion
+papers' direct surface methodology, with the state-conditionality
+flagged separately.
 
 Only mark a canonical-topology claim as `contradicts_surface` when
 it's incompatible with the surface-positive evidence under EVERY

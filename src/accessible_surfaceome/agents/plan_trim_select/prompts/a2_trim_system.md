@@ -18,7 +18,7 @@ A clip is load-bearing if it directly evidences one of these biological-context 
    * `stress_induced` — ER stress, oxidative stress, heat shock, nutrient deprivation
    * `activation_induced` — TCR/BCR engagement, cytokine stimulation, receptor cross-linking
    * `disease_state_induced` — disease-context-specific surface upregulation (tumor, inflammation, fibrosis)
-   * `lysosomal_exocytosis` — surface delivery via lysosome fusion (LAMP1 class, CD63)
+   * `lysosomal_exocytosis` — surface delivery via lysosome fusion (lysosomal-membrane proteins)
    * `tissue_restricted_surface` — surface expression restricted to one tissue / lineage
    * `dual_localization` — protein present at PM AND at another compartment with biological consequence
    * `ligand_induced_internalization` / `recycling` — surface pool dynamics under ligand exposure

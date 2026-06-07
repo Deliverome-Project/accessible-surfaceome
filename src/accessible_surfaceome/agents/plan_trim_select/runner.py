@@ -99,15 +99,14 @@ logger = logging.getLogger(__name__)
 
 
 PROMPTS_DIR = Path(__file__).parent / "prompts"
-SELECT_PROMPT_PATH = PROMPTS_DIR / "select_system.md"
 
-# Per-agent prompt variants. When ``agent_focus`` is None on the entry
-# point we use the generic trim_system.md / select_system.md (unified
-# ledger, ``pts_evi_`` prefix). When ``agent_focus="a1"`` we swap to the
-# surface-evidence-focused trim + select prompts and use the ``a1_evi_``
-# prefix that A1 block-builders downstream expect; ``"a2"`` likewise for
-# the biological-context ledger.
-TRIM_PROMPT_PATH = PROMPTS_DIR / "trim_system.md"
+# Per-agent trim + select prompt variants. ``agent_focus="a1"`` uses the
+# surface-evidence-focused prompts and the ``a1_evi_`` claim-id prefix
+# that A1 block-builders downstream expect; ``"a2"`` likewise for the
+# biological-context ledger. The legacy single-pass ``trim_system.md`` /
+# ``select_system.md`` and their ``pts_evi_`` prefix were retired with
+# the unified-ledger MVP path — production always runs the dual A1+A2
+# driver, so both legs are mandatory.
 A1_TRIM_PROMPT_PATH = PROMPTS_DIR / "a1_trim_system.md"
 A1_SELECT_PROMPT_PATH = PROMPTS_DIR / "a1_select_system.md"
 A2_TRIM_PROMPT_PATH = PROMPTS_DIR / "a2_trim_system.md"
@@ -115,12 +114,10 @@ A2_SELECT_PROMPT_PATH = PROMPTS_DIR / "a2_select_system.md"
 
 AgentFocus = Literal["a1", "a2"]
 
-# evidence_id prefix per focus. The default ``pts_evi_`` is used when no
-# focus is set (the single-agent MVP path). Per-agent prefixes restore the
-# discipline that ``SurfaceEvidenceDraft._check_claim_id_prefix`` / the
-# matching A2 validator expect when Phase 2's block builders run.
-_EVIDENCE_ID_PREFIX: dict[str | None, str] = {
-    None: "pts_evi_",
+# evidence_id prefix per focus. Per-agent prefixes are what
+# ``SurfaceEvidenceDraft._check_claim_id_prefix`` / the matching A2
+# validator expect when Phase 2's block builders run.
+_EVIDENCE_ID_PREFIX: dict[str, str] = {
     "a1": "a1_evi_",
     "a2": "a2_evi_",
 }
@@ -209,10 +206,11 @@ class PlanTrimSelectResult:
     bundle: IdentifierBundle | None
     plan: SearchPlan | None
     selection_response: SelectionResponse | None
-    # ``None`` = unified-ledger MVP path; ``"a1"`` = surface-evidence focus,
-    # ``"a2"`` = biological-context focus. Threaded through so the audit
-    # JSON makes the focus explicit.
-    agent_focus: AgentFocus | None = None
+    # ``"a1"`` = surface-evidence focus, ``"a2"`` = biological-context
+    # focus. Threaded through so the audit JSON makes the focus
+    # explicit. The legacy single-pass (unified-ledger) path was
+    # retired — every run must declare a focus.
+    agent_focus: AgentFocus = "a1"
     claims: list[EvidenceClaim] = field(default_factory=list)
     search_log: list[SearchLogEntry] = field(default_factory=list)
     iteration_log: list[IterationLogEntry] = field(default_factory=list)
@@ -989,7 +987,7 @@ def _run_trim(
     clips_by_source: dict[str, list[EvidenceClaimDraft]],
     gene: str,
     usage_sink: list[UsageRecord],
-    trim_prompt_path: Path = TRIM_PROMPT_PATH,
+    trim_prompt_path: Path,
     timing: TimingRecorder | None = None,
     timing_phase: str = "plan_trim_select",
     timing_iteration: int = 0,
@@ -1080,7 +1078,7 @@ def _run_selector(
     menu_markdown: str,
     n_kept: int,
     usage_sink: list[UsageRecord],
-    select_prompt_path: Path = SELECT_PROMPT_PATH,
+    select_prompt_path: Path,
     timing: TimingRecorder | None = None,
     timing_phase: str = "plan_trim_select",
 ) -> SelectionResponse | None:
@@ -1242,21 +1240,16 @@ def _promote_selections(
 
 
 def _resolve_focus_prompts(
-    agent_focus: AgentFocus | None,
+    agent_focus: AgentFocus,
 ) -> tuple[Path, Path, str]:
     """Map agent_focus → (trim_prompt_path, select_prompt_path, evi_prefix).
 
-    Centralized so an unknown / not-yet-wired focus fails fast with a
-    clear error before any model call. ``agent_focus=None`` keeps the
-    generic trim/select prompts for the single-agent unified-ledger path.
+    Centralized so an unknown focus fails fast with a clear error before
+    any model call. The legacy unified-ledger (``agent_focus=None``)
+    path was retired with the ``trim_system.md`` / ``select_system.md``
+    prompts — production runs both A1 and A2 via the dual driver.
     """
 
-    if agent_focus is None:
-        return (
-            TRIM_PROMPT_PATH,
-            SELECT_PROMPT_PATH,
-            _EVIDENCE_ID_PREFIX[None],
-        )
     if agent_focus == "a1":
         return (
             A1_TRIM_PROMPT_PATH,
@@ -1270,7 +1263,7 @@ def _resolve_focus_prompts(
             _EVIDENCE_ID_PREFIX["a2"],
         )
     raise ValueError(
-        f"unknown agent_focus={agent_focus!r}; expected 'a1', 'a2', or None"
+        f"unknown agent_focus={agent_focus!r}; expected 'a1' or 'a2'"
     )
 
 
@@ -1280,7 +1273,7 @@ def run_plan_trim_select(
     client: Anthropic | None = None,
     http: CachedHTTP | None = None,
     retraction_index: RetractionIndex | None = None,
-    agent_focus: AgentFocus | None = None,
+    agent_focus: AgentFocus,
     timing: TimingRecorder | None = None,
 ) -> PlanTrimSelectResult:
     """Run plan → trim → select for one gene. Returns the full audit result.
@@ -1288,14 +1281,16 @@ def run_plan_trim_select(
     ``agent_focus`` selects the trim + select prompt pair and the
     ``evidence_id`` prefix:
 
-    * ``None`` — generic A1+A2 unified ledger (today's MVP behavior,
-      ``pts_evi_`` prefix). Backwards-compatible default.
     * ``"a1"`` — surface-evidence focus (``a1_trim_system.md`` +
       ``a1_select_system.md``, ``a1_evi_`` prefix). Selects clips that
       feed `surface_evidence` block builders downstream.
     * ``"a2"`` — biological-context focus (``a2_trim_system.md`` +
       ``a2_select_system.md``, ``a2_evi_`` prefix). Selects clips that
       feed `biological_context` block builders downstream.
+
+    The legacy unified-ledger (``agent_focus=None``) path was retired
+    along with the ``trim_system.md`` / ``select_system.md`` prompts.
+    Every caller must declare a focus.
 
     The kickoff stage is *not* per-focus in its *search set* — both A1
     and A2 discover into the same shared candidate inventory. The
@@ -1320,9 +1315,7 @@ def run_plan_trim_select(
         select_prompt_path,
         evidence_id_prefix,
     ) = _resolve_focus_prompts(agent_focus)
-    timing_phase = (
-        f"plan_trim_select_{agent_focus}" if agent_focus else "plan_trim_select"
-    )
+    timing_phase = f"plan_trim_select_{agent_focus}"
     # Track the per-run timing slice so the result's ``timing`` field
     # contains *only* this run's rows (the recorder may carry rows from
     # the sibling A1/A2 run when called via the dual driver).

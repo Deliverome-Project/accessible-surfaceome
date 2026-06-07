@@ -173,18 +173,18 @@ not collapse it into `name`:
 pull them across claims before defaulting to null.** Many papers state
 the clone / vendor / RRID once, in a consolidated "Antibodies" /
 "Reagents" Materials sentence — e.g. *"Primary antibodies including
-purified anti-human CD81 (Clone 5A6), purified anti-human EGFR (Clone
-AY13), anti-human EGFR-Alexa Fluor 488 (Clone AY13) … were purchased
-from …"* — while the assay sentence that describes the actual flow / IF
-experiment only says "anti-EGFR antibody". When ANY claim in the ledger
-is such a reagent list naming `anti-[TARGET] (Clone X[, Vendor / RRID])`,
-APPLY that clone / vendor / RRID to the `AntibodyRef` of the method
-observation that used that antibody — matched by target (EGFR ↔
-anti-EGFR) and, when present, conjugate ("-Alexa Fluor 488" ↔ the
-fluor-tagged variant). Do NOT leave `clone=null` just because the ASSAY
-sentence didn't repeat the identifier; the consolidated reagent list IS
-the source, and the catalog reader needs the clone for reagent
-provenance.
+purified anti-human gene-X (Clone N), purified anti-human gene-Y
+(Clone M), anti-human gene-Y-Alexa Fluor 488 (Clone M) … were
+purchased from …"* — while the assay sentence that describes the
+actual flow / IF experiment only says "anti-gene-Y antibody". When
+ANY claim in the ledger is such a reagent list naming `anti-[TARGET]
+(Clone N[, Vendor / RRID])`, APPLY that clone / vendor / RRID to the
+`AntibodyRef` of the method observation that used that antibody —
+matched by target (gene Y ↔ anti-gene-Y) and, when present, conjugate
+("-Alexa Fluor 488" ↔ the fluor-tagged variant). Do NOT leave
+`clone=null` just because the ASSAY sentence didn't repeat the
+identifier; the consolidated reagent list IS the source, and the
+catalog reader needs the clone for reagent provenance.
 
 Only when NO claim anywhere in the ledger names that target's clone is
 the generic fallback correct: if the quote is generic ("a commercial
@@ -325,7 +325,7 @@ record. It is NOT for the surface evidence itself.
 - Search ONLY when (a) the paper did not state the field AND (b) you have
   a precise anchor: an `rrid` (best — resolve on the Antibody Registry),
   a `catalog` number, or a `clone` + `vendor` pair. A bare target name
-  ("anti-EGFR antibody") is NOT searchable — leave the field
+  ("anti-gene-X antibody") is NOT searchable — leave the field
   `unknown` / `none`.
 - Prioritize the antibodies backing the strongest / most-cited evidence;
   don't burn the budget on every reagent.

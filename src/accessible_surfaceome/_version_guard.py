@@ -37,7 +37,11 @@ from accessible_surfaceome.tools._shared.models import (
 # Bump this whenever any agents/*/prompts/*.md file changes, then run
 # scripts/update_version_fingerprints.py. One global version covers the whole
 # prompt corpus (the chosen granularity).
+<<<<<<< Updated upstream
 PROMPT_CORPUS_VERSION = "2.1.7"
+=======
+PROMPT_CORPUS_VERSION = "2.2.1"
+>>>>>>> Stashed changes
 
 
 def _repo_root() -> Path:

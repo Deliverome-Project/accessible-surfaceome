@@ -142,7 +142,7 @@ _A2_CLAIM_TYPES = {
 }
 
 
-def _claim_type_badge(claim_type: str, agent_focus: str | None) -> str:
+def _claim_type_badge(claim_type: str, agent_focus: str) -> str:
     """Color claim_type by whether it fits the agent's declared focus."""
 
     if agent_focus == "a1":
@@ -150,7 +150,9 @@ def _claim_type_badge(claim_type: str, agent_focus: str | None) -> str:
     elif agent_focus == "a2":
         kind = "green" if claim_type in _A2_CLAIM_TYPES else "red"
     else:
-        kind = "blue"
+        raise ValueError(
+            f"unknown agent_focus={agent_focus!r}; expected 'a1' or 'a2'"
+        )
     return _badge(claim_type, kind)
 
 
@@ -181,7 +183,7 @@ def _render_assay_context(ac: dict[str, Any]) -> str:
 
 def _render_claim(
     claim: dict[str, Any],
-    agent_focus: str | None,
+    agent_focus: str,
     *,
     bundle: dict[str, Any] | None = None,
 ) -> str:
@@ -378,7 +380,7 @@ def _render_selector_followups(selection_response: dict[str, Any] | None) -> str
 
 def _render_summary(result: dict[str, Any]) -> str:
     gene = html.escape(result.get("gene", "—"))
-    focus = result.get("agent_focus") or "(none — unified MVP)"
+    focus = result.get("agent_focus") or "—"
     focus_kind = "green" if focus == "a1" else "lavender" if focus == "a2" else "gray"
     uniprot = result.get("uniprot_acc") or "(unresolved)"
     pct_anchored = result.get("pct_anchored")
@@ -905,10 +907,9 @@ def render_dual_html(dual: dict[str, Any]) -> str:
 
 
 def render_html(result: dict[str, Any]) -> str:
-    agent_focus = result.get("agent_focus")
+    agent_focus = result.get("agent_focus") or "a1"
     gene = result.get("gene", "?")
-    focus_label = agent_focus or "MVP"
-    title = f"plan-trim-select QC · {gene} · {focus_label}"
+    title = f"plan-trim-select QC · {gene} · {agent_focus}"
 
     bundle = result.get("bundle")
     claims = result.get("claims") or []
