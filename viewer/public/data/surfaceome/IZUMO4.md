@@ -21,6 +21,8 @@
 
 ## 1. Executive summary
 
+**IZUMO4 is a constitutively secreted soluble protein with no membrane anchor; no surface-accessible state has been documented in any tissue or cell type.**
+
 IZUMO4 is a soluble, secreted member of the IZUMO immunoglobulin-like family that lacks a transmembrane domain, distinguishing it sharply from its paralogs IZUMO1/2/3. Multiple convergent review and computational sources (a1_evi_01, a1_evi_02, a1_evi_03) describe it as constitutively secreted rather than membrane-anchored, with expression detected in testis round spermatids at the RNA level (a1_evi_05). There is no experimental surface-display evidence and no documented plasma membrane anchor. IZUMO4 is not a viable surface-targeting candidate under current evidence.
 
 **Family / classification** — UniProt family: Izumo family · HGNC gene group(s): IZUMO family · functional class: Miscellaneous.
@@ -91,8 +93,6 @@ No direct surface assay (live flow cytometry, nonperm IF, surface biotinylation,
   - Likely explanation: IZUMO4 appears to be an evolutionarily diverged family member that retained the IZUMO immunoglobulin-like fold but lost the transmembrane segment, rendering it constitutively soluble/secreted. Any apparent 'surface' signal would likely reflect transient association of extracellular soluble protein with the cell surface rather than bona fide membrane anchoring.
 
 ## 4. Biological context
-
-*Accessibility context* — IZUMO4 is a constitutively secreted soluble protein with no membrane anchor; no surface-accessible state has been documented in any tissue or cell type.
 
 **Primary subcellular compartment**: Plasma membrane
 

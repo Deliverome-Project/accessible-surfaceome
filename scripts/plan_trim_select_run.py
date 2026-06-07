@@ -92,27 +92,27 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument(
         "--focus",
         choices=("a1", "a2"),
-        default=None,
+        required=True,
         help=(
-            "Per-agent focus. Default (omit) runs the unified-ledger MVP "
-            "(pts_evi_ prefix). 'a1' uses the surface-evidence trim+select "
-            "prompts (a1_evi_ prefix). 'a2' is not yet wired."
+            "Per-agent focus. 'a1' uses the surface-evidence trim+select "
+            "prompts (a1_evi_ prefix). 'a2' uses the biological-context "
+            "trim+select prompts (a2_evi_ prefix). The legacy "
+            "unified-ledger (no-focus) MVP path was retired with the "
+            "trim_system.md / select_system.md prompts."
         ),
     )
     args = parser.parse_args(argv)
 
-    focus_label = args.focus or "mvp"
-    print(f"=== plan_trim_select: {args.gene} (focus={focus_label}) ===", flush=True)
+    print(f"=== plan_trim_select: {args.gene} (focus={args.focus}) ===", flush=True)
     result = run_plan_trim_select(args.gene, agent_focus=args.focus)
 
-    suffix = f"_{args.focus}" if args.focus else ""
-    out_path = Path(f".runs/plan_trim_select_{args.gene}{suffix}.json")
+    out_path = Path(f".runs/plan_trim_select_{args.gene}_{args.focus}.json")
     out_path.parent.mkdir(parents=True, exist_ok=True)
     out_path.write_text(json.dumps(_result_to_jsonable(result), indent=2))
 
     print()
     print(f"gene:                   {result.gene}")
-    print(f"agent_focus:            {result.agent_focus or '(none — unified MVP)'}")
+    print(f"agent_focus:            {result.agent_focus}")
     print(f"uniprot_acc:            {result.bundle.uniprot_acc if result.bundle else '<unresolved>'}")
     print(f"elapsed:                {result.elapsed_s}s")
     print(f"iterations run:         {result.n_iterations_run}")

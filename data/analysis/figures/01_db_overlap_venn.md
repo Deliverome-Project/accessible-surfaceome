@@ -17,7 +17,7 @@ uv run make_db_overlap_venn.py
 
 Source (fetched live from the public repo):
 
-- DB votes: [`data/processed/candidate_universe/candidate_universe.tsv`](https://raw.githubusercontent.com/Deliverome-Project/accessible-surfaceome/main/data/processed/candidate_universe/candidate_universe.tsv)
+- DB votes (whole-proteome catalog): [`data/processed/catalog/whole_proteome_catalog.tsv`](https://raw.githubusercontent.com/Deliverome-Project/accessible-surfaceome/main/data/processed/catalog/whole_proteome_catalog.tsv)
 
 Canonical in-repo generator:
 [`scripts/triage_bench_db_venn.py::make_plot`](https://github.com/Deliverome-Project/accessible-surfaceome/blob/main/scripts/triage_bench_db_venn.py).

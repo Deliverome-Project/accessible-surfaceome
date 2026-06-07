@@ -20,6 +20,8 @@
 
 ## 1. Executive summary
 
+**Surface-accessible only on cancer cells, where autophagolysosomal exocytosis (ALE) drives topological inversion of inner-leaflet SRC onto the outer plasma membrane face (eSrc), enabling antibody-based tumor cell killing.**
+
 SRC (p60-Src) is a non-receptor tyrosine kinase canonically anchored to the inner leaflet of the plasma membrane via N-myristoylation and palmitoylation, with all functional domains facing the cytoplasm. Two 2025 publications (PMID:41818370, PMID:41818382) report that in cancer cells, autophagolysosomal exocytosis (ALE) drives topological inversion of Src onto the outer plasma membrane face, creating extracellular membrane-associated eSrc detectable in primary tumors and targetable by antibody-based therapies in xenograft models. Surface accessibility is therefore high in cancer but strictly state-gated; normal cells retain canonical inner-leaflet topology.
 
 **Family / classification** — UniProt family: protein kinase superfamily. Tyr protein kinase family. SRC subfamily · HGNC gene group(s): SH2 domain containing; Src family tyrosine kinases · functional class: Enzyme.
@@ -164,15 +166,6 @@ The primary surface evidence comes from two papers (PMID:41818370 and PMID:41818
   - Likely explanation: GPI-anchored proteins such as THY1 reside in the outer leaflet, while SRC is tethered to the inner leaflet via N-terminal myristoylation/palmitoylation. Co-IP simply reflects intracellular signaling complex formation at the cytoplasmic face of the membrane; SRC is not exposed on the extracellular surface.
 
 ## 4. Biological context
-
-*Accessibility context* — Surface-accessible only on cancer cells, where autophagolysosomal exocytosis (ALE) drives topological inversion of inner-leaflet SRC onto the outer plasma membrane face (eSrc), enabling antibody-based tumor cell killing.
-
-**Tissues × disease context**
-
-| Tissue | Disease context | Level (protein) | Cell types | Cell states |
-|---|---|---|---|---|
-| primary tumor tissue | Tumor | High | tumor cells | cancer-state-induced surface Src |
-| glioblastoma (small extracellular vesicle surfaceome) | Tumor | Moderate | glioblastoma cells | high invadopodia activity |
 
 **Cell types** *(orthogonal cell-type index)*
 
@@ -322,7 +315,6 @@ Structure data from [AlphaFold DB](https://alphafold.ebi.ac.uk/entry/P12931) · 
 | Isoform P12931-3 | [P12931-3](https://alphafold.ebi.ac.uk/entry/P12931-3) | AlphaFold DB |
 | Mouse ortholog (Src) | [P05480](https://alphafold.ebi.ac.uk/entry/P05480) | AlphaFold DB |
 | Cynomolgus ortholog (SRC) | [A0A7N9CC30](https://alphafold.ebi.ac.uk/entry/A0A7N9CC30) | AlphaFold DB |
-| Experimental (best) | [8JN8](https://www.rcsb.org/structure/8jn8) chain A | RCSB PDB · X-ray diffraction 1.902 Å · UniProt 1–536 |
 
 ## 8. SURFACE-Bind candidate sites
 
@@ -513,22 +505,6 @@ This Markdown is generated from the canonical JSON record at `/data/surfaceome/S
  601  RKEPEERPTFEYLQAFLEDYFTSTEPQYQPGENL
 ```
 
-### Experimental-structure sequence
-
-**8JN8** chain A · X-ray diffraction, 1.902 Å · covers UniProt residues 1–536 (536 aa) · representative of 112 experimental structures. Residues sliced from the canonical sequence over the structure's SIFTS-mapped span; unresolved loops in the deposited coordinates are not removed here.
-
-```
-   1  MGSNKSKPKDASQRRRSLEPAENVHGAGGGAFPASQTPSKPASADGHRGPSAAFAPAAAE
-  61  PKLFGGFNSSDTVTSPQRAGPLAGGVTTFVALYDYESRTETDLSFKKGERLQIVNNTEGD
- 121  WWLAHSLSTGQTGYIPSNYVAPSDSIQAEEWYFGKITRRESERLLLNAENPRGTFLVRES
- 181  ETTKGAYCLSVSDFDNAKGLNVKHYKIRKLDSGGFYITSRTQFNSLQQLVAYYSKHADGL
- 241  CHRLTTVCPTSKPQTQGLAKDAWEIPRESLRLEVKLGQGCFGEVWMGTWNGTTRVAIKTL
- 301  KPGTMSPEAFLQEAQVMKKLRHEKLVQLYAVVSEEPIYIVTEYMSKGSLLDFLKGETGKY
- 361  LRLPQLVDMAAQIASGMAYVERMNYVHRDLRAANILVGENLVCKVADFGLARLIEDNEYT
- 421  ARQGAKFPIKWTAPEAALYGRFTIKSDVWSFGILLTELTTKGRVPYPGMVNREVLDQVER
- 481  GYRMPCPPECPESLHDLMCQCWRKEPEERPTFEYLQAFLEDYFTSTEPQYQPGENL
-```
-
 ### Per-residue DeepTMHMM topology
 
 *Five-letter alphabet: `M` = TM helix, `O` = extracellular, `I` = intracellular, `S` = signal peptide, `B` = β-strand. Aligned to the UniProt sequence above (residue indices in the left column).*
@@ -605,20 +581,6 @@ This Markdown is generated from the canonical JSON record at `/data/surfaceome/S
  481  IIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIII
  541  IIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIII
  601  IIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIII
-```
-
-**Experimental — 8JN8 chain A** (UniProt residues 1–536, projected from canonical)
-
-```
-   1  IIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIII
-  61  IIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIII
- 121  IIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIII
- 181  IIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIII
- 241  IIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIII
- 301  IIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIII
- 361  IIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIII
- 421  IIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIII
- 481  IIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIII
 ```
 
 ### Data sources

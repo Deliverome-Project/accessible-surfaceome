@@ -191,6 +191,9 @@ export type DiseaseContext =
 
 export interface ExecutiveSummary {
   one_paragraph: string;
+  /** ONE sentence on WHEN and WHERE the protein is surface-accessible — the
+   *  load-bearing §03 headline (A1.7). Optional for pre-A1.7 records. */
+  accessibility_context_summary?: string;
   surface_accessibility: SurfaceAccessibility;
   evidence_grade_summary: EvidenceGrade;
   confidence: Confidence;
@@ -218,12 +221,6 @@ export interface ExecutiveSummary {
    *  synth re-derives from A1+A2 evidence; sometimes overrides the
    *  triage's own reason. */
   surface_call_reason: TriageReason;
-  /** One-sentence rationale for WHEN/WHERE the protein is surface-
-   *  accessible — the headline behind the §03 "Localization &
-   *  accessibility context" summary and the §01 echo. Synthesized over
-   *  the biological_context block. `null` on records generated before
-   *  this field landed (render nothing until re-annotated). */
-  accessibility_context_summary: string | null;
   headline_risks: HeadlineRisk[];
   cited_evidence_ids: string[];
 }
@@ -345,6 +342,8 @@ export interface CanonicalTopology {
   ecd_length_residues: number;
   icd_length_residues: number;
   per_residue_topology: string;
+  /** AA sequence the per_residue_topology indexes 1:1 (A1.8). */
+  sequence?: string | null;
   tool_version: string;
   retrieved_at: string;
 }
@@ -367,6 +366,8 @@ export interface IsoformTopology {
   ecd_length_residues: number;
   icd_length_residues: number;
   per_residue_topology: string;
+  /** AA sequence the per_residue_topology indexes 1:1 (A1.8). */
+  sequence?: string | null;
   tool_version: string;
   retrieved_at: string;
   // Sequence identity of an alternative isoform against this protein's own
@@ -377,10 +378,6 @@ export interface IsoformTopology {
   full_length_pct_identity_to_canonical?: number | null;
   ecd_pct_identity_to_canonical?: number | null;
   ecd_pct_similarity_to_canonical?: number | null;
-  // Full amino-acid sequence the per_residue_topology string aligns to (1:1,
-  // same length) — sourced from topology_public.sequence. Null on records
-  // built before this field existed, or when the input FASTA wasn't retained.
-  sequence?: string | null;
 }
 
 export interface OrthologEntry {
@@ -422,9 +419,7 @@ export interface OrthologEntry {
    *  topology dot. ``n_tm_regions_absent`` is how many fell in gaps. */
   tm_absent_from_model?: boolean;
   n_tm_regions_absent?: number;
-  // The ortholog's own full amino-acid sequence — aligns 1:1 with the
-  // (projected) per_residue_topology above. Source: topology_public.sequence
-  // for the ortholog accession. Null for rows predating the field.
+  /** AA sequence the per_residue_topology indexes 1:1 (A1.8). */
   sequence?: string | null;
 }
 
@@ -456,47 +451,13 @@ export interface ParalogEntry {
   full_length_pct_identity: number | null;
   family_id: string;
   compara_version: string;
-  // ECD percent similarity (identity + BLOSUM62-positive substitutions),
-  // and the paralog's real DeepTMHMM topology — populated ONLY for close
-  // paralogs (>=80% full-length), which the card promotes to full topology
-  // rows. All null for below-threshold / ECD-less / no-topology paralogs.
-  ecd_pct_similarity?: number | null;
+  // A1.9: topology + sequence populated only for CLOSE paralogs (>=80% ECD
+  // identity) — null for far/ECD-less paralogs and pre-population records,
+  // which avoids the all-GLOB noise that motivated the earlier revert.
   per_residue_topology?: string | null;
-  deeptmhmm_label?: string | null;
   tm_helix_count?: number | null;
   ecd_length_residues?: number | null;
-  icd_length_residues?: number | null;
-  n_terminal_orientation?: Orientation | null;
-  c_terminal_orientation?: Orientation | null;
-  signal_peptide_length?: number | null;
-  // Close-paralog full amino-acid sequence — populated only for close
-  // paralogs (>=80% full-length identity) that also carry topology, so it
-  // pairs with per_residue_topology above. Source: topology_public.sequence.
   sequence?: string | null;
-}
-
-/**
- * The single best experimental (PDB) structure for the canonical UniProt,
- * picked from PDBe's SIFTS ``best_structures`` ranking. Mirrors the Pydantic
- * ``RepresentativeStructure``. ``null`` on ``StructureFeatures`` when the
- * protein has no deposited experimental structure.
- */
-export interface RepresentativeStructure {
-  pdb_id: string;
-  chain_id: string;
-  /** SIFTS-mapped UniProt residue span this structure covers (1-based,
-   *  inclusive). A fragment structure has a sub-span; a full-length cryo-EM
-   *  model spans 1..len(canonical). */
-  unp_start: number;
-  unp_end: number;
-  coverage: number | null;
-  resolution_a: number | null;
-  experimental_method: string | null;
-  /** How many experimental structures PDBe lists for this UniProt (this one
-   *  is the representative of that set). */
-  n_experimental_structures: number | null;
-  source: string;
-  retrieved_at: string | null;
 }
 
 /**
@@ -523,9 +484,6 @@ export interface StructureFeatures {
   model_cif_url?: string | null;
   model_pdb_url?: string | null;
   model_pae_url?: string | null;
-  // Representative experimental (PDB) structure — PDBe SIFTS best_structures.
-  // Null when the protein has no deposited experimental structure.
-  representative_experimental_structure?: RepresentativeStructure | null;
 }
 
 /**
@@ -562,6 +520,19 @@ export interface SurfaceBindSite {
  * a reader pick the format that matches their downstream design
  * pipeline.
  */
+/** The single best experimental structure (highest coverage × resolution),
+ *  ranked from `pdbs` via PDBe SIFTS (A1.10). */
+export interface RepresentativeStructure {
+  pdb_id: string;
+  chain: string | null;
+  method: string | null;
+  resolution_angstrom: number | null;
+  coverage_fraction: number | null;
+  residue_start: number | null;
+  residue_end: number | null;
+  source: string;
+}
+
 export interface SurfaceBindFeatures {
   has_data: boolean;
   n_sites: number;
@@ -582,8 +553,47 @@ export interface SurfaceBindFeatures {
   protein_name: string | null;
   /** PDB entries cross-referenced. Truncated in viewer (often 100+). */
   pdbs: string[];
+  /** The one best experimental structure ranked from `pdbs` (A1.10). */
+  representative_structure?: RepresentativeStructure | null;
   source: string;
   attribution: string;
+  citation: string;
+}
+
+/**
+ * Schweke et al. 2024 AF2 homo-oligomer prediction (PMID 38325366).
+ * Positives-only refset (~1,049 of the v2 candidate-universe), so
+ * `is_homo_oligomer=false` means "not in Schweke's positives" rather than
+ * "AF2 explicitly says monomer" — known under-call on big multi-pass
+ * channels (KCNQ1, KCNMA1) and ligand/covalent dimers (EGFR, INSR).
+ */
+export interface HomoOligomerizationFeatures {
+  /** `false` is the explicit "not in Schweke's positive refset" signal —
+   *  block is always present so the catalog distinguishes "absent from
+   *  Schweke" from "in Schweke but no usable model". */
+  is_homo_oligomer: boolean;
+  /** Cyclic-symmetry order N (2 for dimer, 3–13 for AnAnaS-reconstructed
+   *  full complex). Null when `is_homo_oligomer=false` or Schweke
+   *  flagged a dimer but didn't reconstruct higher-order. */
+  stoichiometry?: number | null;
+  /** AF2 model rank (1..5) Schweke retained as canonical. The viewer
+   *  uses this to construct the PDB asset URL ({ACC}_V1_{N}.pdb).
+   *  Null when `is_homo_oligomer=false`. */
+  af_model_num?: number | null;
+  /** True iff Schweke's nodiso3 filter stripped the TM helix as a
+   *  disconnected cluster — the predicted homomer is ECD-only.
+   *  Important context for the epitope-masking prior. */
+  is_ecd_only: boolean;
+  /** True iff Schweke published a higher-order complex (c≥3) for this
+   *  protein in addition to the dimer model. */
+  has_higher_order_complex: boolean;
+  /** PDB filename for the dimer model ({ACC}_V1_{N}.pdb). Null when
+   *  is_homo_oligomer=false. */
+  dimer_pdb_filename?: string | null;
+  /** PDB filename for the higher-order complex
+   *  ({ACC}_V1_{N}_c{stoichiometry}.pdb). Null for dimer-only entries. */
+  complex_pdb_filename?: string | null;
+  source: string;
   citation: string;
 }
 
@@ -600,6 +610,11 @@ export interface DeterministicFeatures {
   isoform_topologies_checked?: boolean;
   structure: StructureFeatures;
   surface_bind: SurfaceBindFeatures;
+  /** Schweke 2024 AF2 homo-oligomer prediction. Always present, with
+   *  `is_homo_oligomer=false` as the explicit "not in the positive set"
+   *  signal. Strong AF2-derived structural prior on the synthesizer's
+   *  `epitope_masking.mechanism = "homo-oligomerization"` call. */
+  homo_oligomerization: HomoOligomerizationFeatures;
 }
 
 // ============================================================
@@ -810,6 +825,21 @@ export interface NonSurfaceExpression {
   cited_evidence_ids: string[];
 }
 
+// Audit trail of A1 ledger claims the methods builder rejected at the
+// inclusion stage as receptor-engagement-as-soluble-ligand evidence —
+// e.g. HMGB1 binding TREM-1 on monocytes. The protein is the soluble
+// partner; the TM partner is the membrane component. These describe
+// biology, not surface accessibility of this protein. Parallel to
+// `non_surface_expression`; empty for records emitted before the
+// inclusion filter landed.
+export interface ExcludedClaim {
+  evidence_id: string;
+  /** Short ≤240-char rationale naming the receptor / partner the protein
+   *  was binding (e.g. "HMGB1 binding TREM-1 on monocytes — soluble
+   *  ligand engagement, not surface anchoring of HMGB1"). */
+  reason: string;
+}
+
 export interface Contradiction {
   claim: string;
   contradiction_type: ContradictionType;
@@ -847,6 +877,10 @@ export interface SurfaceEvidence {
   methods: MethodObservation[];
   non_surface_expression: NonSurfaceExpression[];
   contradicting_evidence: Contradiction[];
+  /** Audit trail of A1 ledger claims rejected at the methods-builder
+   *  inclusion stage as receptor-engagement-as-soluble-ligand evidence.
+   *  Empty for records emitted before the inclusion filter landed. */
+  excluded_as_ligand_engagement: ExcludedClaim[];
 }
 
 // ============================================================
@@ -899,15 +933,6 @@ export type ModulationCategory =
   | "other"
   | "unknown";
 
-// Up/down axis of the surface-accessible pool for a modulation row. Mirrors
-// the Pydantic `ModulationDirection` enum.
-export type ModulationDirection =
-  | "increases_surface"
-  | "decreases_surface"
-  | "bidirectional"
-  | "no_change"
-  | "unclear";
-
 export type CellStateTrigger =
   | "ER_stress"
   | "heat_shock"
@@ -953,16 +978,31 @@ export type DualLocPartnerCompartment =
   | "other"
   | "unknown";
 
+/** One (tissue × cell_type × disease_context) expression observation —
+ *  the v2 unification of TissueContext + CellTypeContext. Self-describing:
+ *  each row carries its own disease context + present level. */
+export interface ExpressionRow {
+  tissue: string;
+  /** The specific cell type when named; null for a tissue-level row. */
+  cell_type: string | null;
+  present: TissueLevel;
+  disease_context: DiseaseContext;
+  /** Free-text specific disease (e.g. "clear-cell renal carcinoma"). */
+  disease_label: string | null;
+  cell_states: string[];
+  species?: Species;
+  species_inferred?: boolean;
+  cited_evidence_ids: string[];
+}
+
+/** DEPRECATED (v1 only). Superseded by ExpressionRow; retained so v1
+ *  records still type-check. */
 export interface TissueContext {
   tissue: string;
-  /** Six-level expression-level enum (upgraded from boolean in
-   *  PR23 round 5 — `mixed` covers tissues with heterogeneous
-   *  per-cell-type levels, `unknown` is the default when no
-   *  evidence speaks to it). */
+  /** Optional cell-type narrowing for the tissue observation (e.g. a
+   *  specific epithelial subtype). Older records omit it. */
+  cell_type?: string | null;
   present: TissueLevel;
-  /** New disease-context axis — same tissue can appear twice
-   *  (normal vs tumor) with different `present` levels. Obesity
-   *  / inflammation / etc. fall under `other_disease`. */
   disease_context: DiseaseContext;
   /** Specific disease name when `disease_context` can't name it on its own
    *  (e.g. "Fabry disease"). Optional — older records omit it. */
@@ -974,6 +1014,7 @@ export interface TissueContext {
   cited_evidence_ids: string[];
 }
 
+/** DEPRECATED (v1 only). Superseded by ExpressionRow. */
 export interface CellTypeContext {
   cell_type: string;
   ontology_id: string;
@@ -986,29 +1027,6 @@ export interface CellTypeContext {
   disease_label?: string | null;
   species?: Species;
   species_inferred?: boolean;
-  cited_evidence_ids: string[];
-}
-
-/** Unified tissue × cell-of-origin × disease-context expression row
- *  (v1.2 schema — replaces the split TissueContext + CellTypeContext). A row
- *  may name a `tissue`, a `cell_type` of origin, or both. `disease_label`
- *  names the specific disease when `disease_context` can't (e.g. "Fabry
- *  disease"). */
-export interface ExpressionRow {
-  tissue: string | null;
-  cell_type: string | null;
-  present: TissueLevel;
-  disease_context: DiseaseContext;
-  disease_label?: string | null;
-  cell_states: string[];
-  species?: Species;
-  species_inferred?: boolean;
-  cited_evidence_ids: string[];
-}
-
-export interface StateContext {
-  state: string;
-  descriptor: string;
   cited_evidence_ids: string[];
 }
 
@@ -1044,32 +1062,47 @@ export interface AccessibilityModulationObservation {
   cell_state_trigger: CellStateTrigger | null;
   restricted_lineage: RestrictedLineage | null;
   dual_loc_partner_compartment: DualLocPartnerCompartment | null;
-  baseline_context: string;
-  modulating_state: string;
+  /** Schema 2.5.0: both nullable. Contrast row has both set; single-
+   *  context row (former cell_states block) has both null. */
+  baseline_context: string | null;
+  modulating_state: string | null;
   change: string;
   accessibility_implication: string;
-  // Structured up/down direction of the change. Records predating the field
-  // omit it at runtime (Python default "unclear"); the viewer guards for
-  // undefined before rendering the glyph. Non-optional to match the
-  // name-level Python↔TS sync check.
+  /** Up/down direction of the surface-pool change — orthogonal to the
+   *  favorable/restricted verdict in `accessibility_implication`. Mirrors
+   *  Pydantic's `direction: ModulationDirection = "unclear"` (always present). */
   direction: ModulationDirection;
   species?: Species;
   species_inferred?: boolean;
   cited_evidence_ids: string[];
 }
 
+export type ModulationDirection =
+  | "increases"
+  | "decreases"
+  | "bidirectional"
+  | "no_change"
+  | "unclear";
+
 export interface BiologicalContext {
-  /** Unified expression rows (current schema). Optional so the viewer can
-   *  still read pre-unify records that carry `tissues` + `cell_types`. */
-  expression?: ExpressionRow[];
-  /** Legacy split pivots — present only on records generated before the
-   *  unify; the viewer falls back to these when `expression` is absent. */
-  tissues?: TissueContext[];
-  cell_types?: CellTypeContext[];
-  cell_states: StateContext[];
+  /** v2: one self-describing row per (tissue × cell_type × disease). */
+  expression: ExpressionRow[];
+  /** DEPRECATED (v1 only) — v2 leaves these empty. Schema 2.5.0
+   *  retired ``cell_states`` entirely; single-context state observations
+   *  now live in ``accessibility_modulation`` as rows with
+   *  ``baseline_context: null`` + ``modulating_state: null``. */
+  tissues: TissueContext[];
+  cell_types: CellTypeContext[];
   subcellular_localization: SubcellularLocalization;
   anatomical_accessibility: AnatomicalAccessibilityObservation[];
   accessibility_modulation: AccessibilityModulationObservation[];
+  /** A2 rollup — the A2 analog of SurfaceEvidence.evidence_grade: how
+   *  well-characterized & internally consistent the A2 biological picture is
+   *  (coverage × consistency across expression / localization / anatomical /
+   *  modulation). */
+  biological_context_grade: "rich" | "moderate" | "sparse" | "absent";
+  grade_rationale: string;
+  grade_cited_evidence_ids: string[];
 }
 
 // ============================================================
@@ -1150,6 +1183,7 @@ export interface EcdSizeAssessment {
 export type EpitopeMaskingMechanism =
   | "glycan"
   | "partner"
+  | "oligomerization"
   | "conformational"
   | "cleaved"
   | "none";
@@ -1159,13 +1193,49 @@ export type EpitopeMaskingSeverity = "high" | "moderate" | "low" | "none";
 export interface EpitopeMasking {
   /** PR23 round 6: upgraded from a single value to a list so
    *  multi-mechanism cases (GRP78: glycan + partner; GPR75:
-   *  glycan + conformational) don't collapse to one value. Empty
-   *  list means no mechanism documented; `["none"]` is the
-   *  explicit "no masking" call. */
+   *  glycan + conformational; CD81: partner + oligomerization)
+   *  don't collapse to one value. `oligomerization` is the HOMO
+   *  self-association axis (homodimer / homo-oligomer interface),
+   *  distinct from `partner` (a second protein) and `conformational`
+   *  (a monomer state). Empty list means no mechanism documented;
+   *  `["none"]` is the explicit "no masking" call. */
   mechanism: EpitopeMaskingMechanism[];
   severity: EpitopeMaskingSeverity;
   evidence_strength: EvidenceStrength;
   rationale: string;
+  cited_evidence_ids: string[];
+}
+
+/**
+ * Risk-side view of the Schweke 2024 AF2 homo-oligomer prediction
+ * (PMID 38325366), populated by the v2 orchestrator from
+ * `deterministic_features.homo_oligomerization`. Rendered as a sibling
+ * chip to `epitope_masking` so the reader can scan the deterministic
+ * AF2 signal independently from the LLM-emitted masking mechanism.
+ *
+ * Severity is derived from cyclic-symmetry order N: `<=2` → `low`,
+ * `3..7` → `moderate`, `8..24` → `high`, `null` → `unknown`. Optional
+ * field — older records emitted before this chip existed validate
+ * with `homo_oligomerization_prediction` absent.
+ */
+export interface HomoOligomerizationPredictionRisk {
+  /** `true` iff Schweke flagged the protein in the positive refset.
+   *  Mirrors `HomoOligomerizationFeatures.is_homo_oligomer`. */
+  present: boolean;
+  /** Cyclic-symmetry order N. Null when `present=false` or Schweke
+   *  flagged a dimer but didn't reconstruct higher-order. */
+  stoichiometry?: number | null;
+  /** Derived from `stoichiometry` deterministically — the viewer
+   *  reads this directly for the chip color. */
+  severity: Severity;
+  /** Schweke `nodiso3` flag: the predicted homomer is ECD-only.
+   *  Important context — the soluble ECD IS the dimerizing surface. */
+  is_ecd_only: boolean;
+  /** Default `"Schweke 2024 (PMID 38325366)"`. */
+  source: string;
+  /** Empty by default — this is a deterministic AF2 prediction, not
+   *  a literature-anchored claim. Kept for shape consistency with
+   *  the other accessibility-risk blocks. */
   cited_evidence_ids: string[];
 }
 
@@ -1176,6 +1246,10 @@ export interface AccessibilityRisks {
   co_receptor_requirements: CoReceptorRequirements;
   ecd_size_assessment: EcdSizeAssessment;
   epitope_masking: EpitopeMasking;
+  /** Deterministic AF2 homo-oligomer prediction (Schweke 2024)
+   *  rendered as a sibling chip to `epitope_masking`. Optional —
+   *  null/absent on records emitted before this chip existed. */
+  homo_oligomerization_prediction?: HomoOligomerizationPredictionRisk | null;
 }
 
 // ============================================================

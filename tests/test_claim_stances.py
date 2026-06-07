@@ -283,7 +283,7 @@ def _risks() -> AccessibilityRisks:
 
 def _bio_ctx() -> BiologicalContext:
     return BiologicalContext(
-        expression=[], cell_states=[],
+        expression=[],
         subcellular_localization=SubcellularLocalization(
             primary_compartment="plasma_membrane",
             dual_localization=[], membrane_subdomains=[],
@@ -301,7 +301,9 @@ def _llm_filters() -> SynthesizerLLMFilters:
         expression_breadth_rationale="detected across several tissue families",
         surface_specificity="surface_dominant",
         surface_specificity_rationale="predominantly plasma-membrane localized",
-        has_known_ligand_rationale="binds a documented endogenous ligand",
+        # Default to orphan-receptor case so the empty rationale is valid
+        # under the has_known_ligand=True-requires-rationale validator.
+        has_known_ligand=False,
     )
 
 
@@ -453,12 +455,18 @@ def test_overexpression_filter_true_for_mixed_expression_system():
     """`mixed` expression_system (overexpression + endogenous in the
     same panel) also counts — the OE side of the panel is what matters
     for the filter."""
+    # NB: ``direct_single_method`` is now enforced (v2.4.0) by the cross-
+    # block validator to require ≥1 ``direct_surface_accessibility``
+    # method. The OE filter we're exercising here doesn't care which
+    # accessibility_relevance the method has — it keys off
+    # ``expression_system='mixed'`` — so pin relevance to direct and the
+    # filter logic still runs.
     se = SurfaceEvidence.model_validate({
         "evidence_grade": "direct_single_method",
         "grade_rationale": "—",
         "methods": [_method(
             expression_system="mixed",
-            accessibility_relevance="supports_surface_localization",
+            accessibility_relevance="direct_surface_accessibility",
         )],
         "non_surface_expression": [],
         "contradicting_evidence": [],

@@ -27,7 +27,7 @@ uv run make_db_correctness_by_class.py
 Sources (fetched live from the public API):
 
 - Bench predictions: `https://api.deliverome.org/surfaceome/v1/triage/export.tsv?run_id=mainbench_canonical_v1&replicate=1`
-- Candidate-universe DB flags: [`data/processed/candidate_universe/candidate_universe.tsv`](https://raw.githubusercontent.com/Deliverome-Project/accessible-surfaceome/main/data/processed/candidate_universe/candidate_universe.tsv)
+- Whole-proteome catalog (DB flags + Sonnet verdicts): [`data/processed/catalog/whole_proteome_catalog.tsv`](https://raw.githubusercontent.com/Deliverome-Project/accessible-surfaceome/main/data/processed/catalog/whole_proteome_catalog.tsv)
 - Bench truth labels: [`data/eval/triage_benchmark_v1.tsv`](https://raw.githubusercontent.com/Deliverome-Project/accessible-surfaceome/main/data/eval/triage_benchmark_v1.tsv)
 - Optimized-cutoff accessions: [`data/processed/triage_bench/db_optimized_cutoffs.tsv`](https://raw.githubusercontent.com/Deliverome-Project/accessible-surfaceome/main/data/processed/triage_bench/db_optimized_cutoffs.tsv)
   (one row per accession admitted by either optimized rule; columns

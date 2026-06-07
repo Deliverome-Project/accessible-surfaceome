@@ -5,12 +5,74 @@ You receive an A2 `EvidenceClaim` ledger and emit a JSON ARRAY of
 
 ## When to emit a row
 
-Emit rows when the ledger describes the protein's ANATOMICAL ORIENTATION
-in a polarized tissue / cell. Examples: apical surface of intestinal
-epithelium, basolateral pancreatic ductal cells, ciliary membrane,
-synaptic cleft, luminal surface of vasculature, tight junction restricted.
+Emit rows when the ledger contains DIRECT evidence that the protein
+itself is at a polarized surface or membrane subdomain — and that
+position has a binder-reachability consequence. Examples of qualifying
+direct evidence:
+
+- **Polarized epithelium IHC / staining** that resolves apical vs
+  basolateral vs luminal location (not just "membranous staining" in a
+  polarized cell — the assay has to actually pick a side).
+- **Subdomain localization observed directly** — ciliary membrane,
+  synaptic cleft, immunological synapse, brush border, microvilli,
+  podocyte foot processes, intercalated discs, axon initial segment,
+  presynaptic / postsynaptic, focal adhesions, adherens junctions,
+  desmosomes, caveolae, lipid rafts, tight-junction restricted.
+- **Luminal-vs-abluminal endothelial labeling**, side-specific
+  biotinylation, intravascular tracer studies, etc. — assays that
+  specifically distinguish blood-facing from tissue-facing surfaces
+  of the same cell.
+- **Observed cell-layer restriction within a polarized tissue** that
+  pins the protein to the blood- or lumen-facing layer via a paired-
+  layer comparison — e.g. "positive in ductal luminal cells, negative
+  in the surrounding myoepithelial layer". A single-layer "expressed
+  in cell type X" claim, without the negative-layer comparator, does
+  not qualify on its own.
+
+**Do NOT manufacture a row by combining `tissue_expression` evidence
+with textbook anatomy.** Pattern to reject: *"Protein is expressed in
+cell type X. Cell type X is anatomically positioned at Y. Therefore
+accessibility = Z."* That is the **tissues** / **cell_types** builder's
+job (where the protein is expressed), followed by the **biological
+context grade** builder's reasoning (what reachability that implies).
+Every emitted row here must rest on evidence that **directly observed
+the protein at a polarized surface**, not on evidence that observed it
+in a cell type whose anatomical position you happen to know.
+
+Patterns that do NOT qualify on their own:
+- "Gene X is expressed on endothelial cells" → expression only;
+  endothelium-is-blood-facing is textbook anatomy, not a subdomain
+  observation. Emit nothing for this evidence.
+- "Gene X protein detected on the basal-cell layer of an epithelium"
+  → cell-type expression; the basal layer's anatomical position alone
+  is not enough without a paired-layer comparator.
+- "Complete-membrane staining in a polarized epithelium" → not side-
+  resolved; "complete-membrane" includes BOTH apical and basolateral,
+  so it does not pick a side.
+
+These same evidence rows belong in **tissues** / **cell_types** /
+**expression**; let those builders carry them. The downstream
+biological-context-grade builder then reasons across the full set —
+expression + true anatomical-accessibility rows + barriers — to give
+the reader the reachability picture. Your job is the narrow,
+high-confidence anatomical layer: protein-specific polarization or
+subdomain restriction.
+
+**Boundary — you answer a TISSUE-scale, binder-delivery question.** Given the
+protein's directly-observed orientation in a NAMED tissue, can a SYSTEMICALLY
+DELIVERED binder reach that surface? (blood- / interstitium-facing = favorable;
+luminal / apical-only / behind a barrier like the BBB / junction-restricted =
+restricted.) Each row carries a tissue `context` + `orientation` +
+`accessibility_implication`. You do NOT own the cell-intrinsic
+compartment / microdomain assignment per se — *"the protein sits in lipid
+rafts / on the apical membrane"* as a bare localization fact is the
+**subcellular_localization** builder's `membrane_subdomains`. Emit here
+ONLY when the claim ties a DIRECTLY OBSERVED orientation to a tissue context
+with a reachability consequence; a pure subdomain-localization fact with no
+tissue / accessibility framing belongs to subcellular_localization.
 
 Many genes have no such evidence — emitting `[]` is normal and correct.
+Empty output is strongly preferred to inference-padded rows.
 
 ## What you emit
 
@@ -31,7 +93,11 @@ ONE fenced ```json block containing a JSON ARRAY.
   `restricted` (BBB / tight-junction barrier blocks systemic access);
   `synaptic`, `matrix_facing` → `context_dependent`.
 - `rationale` — prose ≤300 chars explaining WHY this orientation affects
-  accessibility for systemic delivery.
+  accessibility for systemic delivery. **Lead with the directly-observed
+  localization** (the specific assay/finding that pinned the protein to
+  this surface), then the reachability consequence. Do NOT lead with
+  textbook tissue anatomy or with "the protein is expressed in cell type
+  X" — that pattern is the warning sign the row shouldn't exist.
 - `cited_evidence_ids` — every `evidence_id` whose claim contributed.
 
 **You have no tools.** Cite-only over the ledger.

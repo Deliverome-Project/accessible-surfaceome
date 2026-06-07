@@ -30,6 +30,106 @@ import {
 } from "./structure-viewer-types";
 
 const DATA_DIR = path.join(process.cwd(), "public", "structure-viewer");
+// Schweke PDB assets still live under ``viewer/public/data/structures/schweke/``;
+// the viewer constructs ``/data/structures/schweke/{filename}`` URLs from the
+// D1-served filename and lets the client fetch them as static assets. No
+// filesystem read needed here anymore — the old manifest.json was retired
+// when the data became D1-driven.
+
+/** A subset of {@link StructureVariantSchwekeHomomer} (defined in the
+ *  client component) — repeated here so this server-side loader doesn't
+ *  import the heavy 3Dmol-dependent client file. The caller assembles
+ *  the full variant by adding ``source``, ``id``, ``label``,
+ *  ``topology``, and ``deeptmhmm_type`` at the call site (where the
+ *  canonical topology / type is already in hand). */
+export interface SchwekeHomomerLoaderRow {
+  uniprot_acc: string;
+  pdb_url: string;
+  af_model_num: number;
+  ecd_only: boolean;
+  /** Cyclic-symmetry order N of the rendered model (homo-N-mer). 2
+   *  for a plain dimer from ``AF_dimer_models_core.zip``; 3..13 for an
+   *  AnAnaS-reconstructed full complex from
+   *  ``full_complexes_bigbang.zip``. The viewer uses this both to
+   *  size the per-chain darken gradient (chain 0 = full topology palette,
+   *  chain N-1 = ~black) and to label the caption ("homo-dimer",
+   *  "homo-heptamer", "homo-13-mer"). */
+  stoichiometry: number;
+}
+
+/** Build a Schweke loader row from the ``deterministic_features
+ *  .homo_oligomerization`` block served on the per-gene record. The
+ *  block is populated at annotation time by the Python annotator
+ *  (``schweke_homomer.lookup`` → ``DeterministicFeatures.homo_oligomerization``)
+ *  AND injected at serve time by the Worker's
+ *  ``schweke_homomer_public`` LEFT JOIN for records annotated before
+ *  the Schweke wiring landed.
+ *
+ *  Returns ``null`` when the protein isn't a Schweke positive (no row
+ *  in either source) OR when the served block lacks the PDB filename
+ *  needed to construct the asset URL (older records with only
+ *  ``is_homo_oligomer + stoichiometry`` and no ``dimer_pdb_filename``).
+ *  Once the Worker enrichment is universal, the filename will always
+ *  be present; the null check is a graceful degradation for any record
+ *  that slips through both paths.
+ *
+ *  No filesystem reads — the manifest.json this used to consult was
+ *  removed when Schweke became D1-driven. The PDB files in
+ *  ``viewer/public/data/structures/schweke/`` are still consulted by
+ *  the client when it fetches ``pdb_url``; that's a 404-tolerant fetch,
+ *  so a record pointing at a not-yet-ingested PDB just shows the tab
+ *  with a fetch-failed state. */
+export function loadSchwekeHomomer(
+  uniprotAcc: string | null | undefined,
+  homo_oligomerization?:
+    | {
+        is_homo_oligomer: boolean;
+        stoichiometry?: number | null;
+        af_model_num?: number | null;
+        is_ecd_only: boolean;
+        dimer_pdb_filename?: string | null;
+        complex_pdb_filename?: string | null;
+      }
+    | null,
+): SchwekeHomomerLoaderRow | null {
+  if (!uniprotAcc) return null;
+  if (!/^[A-Z0-9-]+$/i.test(uniprotAcc)) return null;
+  if (!homo_oligomerization || !homo_oligomerization.is_homo_oligomer) {
+    return null;
+  }
+  const acc = uniprotAcc.toUpperCase();
+  const stoichiometry =
+    typeof homo_oligomerization.stoichiometry === "number" &&
+    homo_oligomerization.stoichiometry >= 2
+      ? homo_oligomerization.stoichiometry
+      : 2;
+  // File-naming convention: dimers (c2) come from AF_dimer_models_core
+  // and live at ``{ACC}_V1_{N}.pdb``; higher-order complexes (c≥3) come
+  // from full_complexes_bigbang and live at ``{ACC}_V1_{N}_c{N}.pdb``.
+  // Prefer the D1-served filename when present (canonical source of
+  // truth + future-proof against naming-convention drift); fall back
+  // to the convention only when the served record predates the
+  // filename fields.
+  const filename =
+    stoichiometry > 2
+      ? homo_oligomerization.complex_pdb_filename
+      : homo_oligomerization.dimer_pdb_filename;
+  if (!filename && homo_oligomerization.af_model_num == null) {
+    return null;
+  }
+  const pdb_url = filename
+    ? `/data/structures/schweke/${filename}`
+    : stoichiometry > 2
+      ? `/data/structures/schweke/${acc}_V1_${homo_oligomerization.af_model_num}_c${stoichiometry}.pdb`
+      : `/data/structures/schweke/${acc}_V1_${homo_oligomerization.af_model_num}.pdb`;
+  return {
+    uniprot_acc: acc,
+    pdb_url,
+    af_model_num: homo_oligomerization.af_model_num ?? 1,
+    ecd_only: homo_oligomerization.is_ecd_only,
+    stoichiometry,
+  };
+}
 
 export function loadStructureViewerData(
   uniprotAcc: string | null | undefined,

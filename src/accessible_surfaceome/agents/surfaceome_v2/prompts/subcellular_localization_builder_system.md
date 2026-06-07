@@ -11,8 +11,8 @@ ONE fenced ```json block containing a JSON OBJECT (NOT an array).
 
 Claims with `claim_type=surface_expression` that describe the protein's
 compartment / subdomain (plasma membrane, cilium, endosome, lipid raft,
-tight junction, lateral membrane, etc.). HPA `db_annotation` claims
-listing subcellular locations are also primary input.
+tight junction, lateral membrane, etc.). Atlas-style `db_annotation`
+claims listing subcellular locations are also primary input.
 
 ## Schema fields
 
@@ -21,41 +21,54 @@ listing subcellular locations are also primary input.
   `secreted`, `other`. Default to `plasma_membrane` for surfaceome
   candidates UNLESS the ledger strongly indicates the dominant pool is
   elsewhere.
-- `dual_localization` — JSON ARRAY of `DualLocalization` rows, ONE per
-  non-primary **whole compartment** the protein is reported in. Each row:
-    - `compartment` — a SHORT canonical compartment NAME, not a sentence.
-      Use the plain organelle / compartment term: `endosome`, `lysosome`,
-      `Golgi`, `ER`, `mitochondrion`, `nucleus`, `cytosol`, `secreted`,
-      `extracellular matrix`, `extracellular vesicle`. Do NOT pack the
-      condition, the membrane leaflet, or a clause into this field — e.g.
-      write `compartment="endosome"` with `condition="EGF-induced
-      internalization"`, NOT `compartment="endosome (upon EGF ligand
-      stimulation)"`. Do NOT use this field for plasma-membrane *subdomains*
-      or *leaflets* (apical, basolateral, inner leaflet, lipid raft) — those
-      go in `membrane_subdomains` below.
+- `dual_localization` — JSON ARRAY of `DualLocalization` rows. Each row:
+    - `compartment` — SHORT canonical organelle name (e.g. `endosome`,
+      `cilium`, `Golgi`). Validator-enforced: no parentheticals, no
+      conditional clauses ("upon X", "under Y"), ≤40 chars.
     - `fraction_estimate` — float between 0 and 1, OR null when no
       quantitative estimate exists.
-    - `condition` — the qualifier that the localization in this compartment
-      depends on (e.g. `EGF-induced internalization`, `in polarized cells`,
-      `cancer cells`) or null. This is where the "when / where" clause goes.
+    - `condition` — free-text qualifier (e.g. `under stress`,
+      `in polarized cells`) or null. **Put every condition HERE, never in
+      `compartment`.**
     - `cited_evidence_ids` — list.
-- `membrane_subdomains` — JSON ARRAY of `MembraneSubdomain` rows for
-  **plasma-membrane surface microdomains** the protein localizes to — the
-  region of the OUTER, extracellular-facing membrane an antibody would
-  encounter. Each row:
-    - `subdomain` — a SHORT canonical subdomain NAME: `apical membrane`,
-      `basolateral membrane`, `lateral membrane`, `tight junction`,
-      `lipid raft`, `primary cilium`, `microvilli`, `synapse`,
-      `leading edge`, `filopodia`. Keep it terse — no parenthetical
-      mechanism.
+  Use this for non-primary compartments the protein is reported in.
+- `membrane_subdomains` — JSON ARRAY of `MembraneSubdomain` rows. Each
+  row:
+    - `subdomain` — SHORT canonical microdomain name of the OUTER-leaflet
+      plasma membrane. It MUST be one of this exact closed set (verbatim,
+      lowercase, snake_case), using `other` when none fit: `lipid_raft`,
+      `tight_junction`, `primary_cilium`, `apical_membrane`,
+      `basolateral_membrane`, `immune_synapse`, `focal_adhesion`,
+      `caveolae`, `other`. Do not invent capitalization / singularization
+      variants (e.g. not "cilia" / "Primary Cilium" — use `primary_cilium`).
+      Same name discipline as `compartment`. An inner-leaflet /
+      cytoplasmic-face anchor is NOT surface-accessible — route it to
+      `dual_localization`, not here (a non-canonical value emitted here is
+      coerced to `other`, so put it in the right field instead).
     - `cited_evidence_ids` — list.
   ONLY for outer-leaflet / surface microdomains. Do NOT put whole
   compartments (endosome, lysosome, Golgi) here — those are
   `dual_localization`. Do NOT put the **inner leaflet / cytoplasmic face**
-  of the plasma membrane here (e.g. myristoylated/palmitoylated SRC, LYN):
-  that is NOT surface-accessible, so it belongs in `dual_localization` with
+  of the plasma membrane here (e.g. myristoylated/palmitoylated inner-leaflet
+  kinases): that is NOT surface-accessible, so it belongs in `dual_localization` with
   a compartment like `inner leaflet of plasma membrane` instead — never as
   a surface subdomain.
+
+## Boundary — cell-intrinsic microdomain here, tissue-level reachability in anatomical_accessibility
+
+`membrane_subdomains` records the CELL-INTRINSIC microdomain — which face of
+which membrane / which microdomain the protein occupies — as a localization
+FACT, independent of tissue context or how a binder is delivered. You do NOT
+assess whether a systemically delivered binder can REACH that surface in a given
+organ; that is the **anatomical_accessibility** builder's job. So *"localizes to
+the apical membrane"* (a bare subdomain fact) → here; *"apical / luminal in
+intestinal epithelium, so shielded from the blood"* (orientation + tissue +
+reachability consequence) → anatomical_accessibility. The `apical` /
+`basolateral` / `ciliary` labels appear in both blocks on purpose: here they
+mark WHERE on the cell; there they mark what that orientation MEANS for binder
+access in a named tissue. When a claim has both, the bare subdomain fact is
+yours and the tissue-level reachability is anatomical_accessibility's (same
+`evidence_id`, different substance).
 
 ## Empty cases
 

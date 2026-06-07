@@ -35,14 +35,14 @@ REPO = "Deliverome-Project/accessible-surfaceome"
 BRANCH = "main"
 CAND_URL = (
     f"https://raw.githubusercontent.com/{REPO}/{BRANCH}"
-    f"/data/processed/candidate_universe/candidate_universe.tsv"
+    f"/data/processed/catalog/whole_proteome_catalog.tsv"
 )
 
 # Published reproduction gist (embedded into output PNG Source / PDF
 # Subject metadata — mirrors save_figure in _plotting_config.py).
 GIST_URL = "https://gist.github.com/beccajcarlson/d655abfc9c7deeaff1cfbe584de96ffa"
 
-# ──── Inline brand styling — sentinel: brand-style-v1 ────
+# ──── Inline brand styling — sentinel: brand-style-v2 ────
 # Mirrors src/accessible_surfaceome/audit/_plotting_config.py so the gist
 # stays self-contained (no in-repo imports — Substack readers run it
 # standalone). Kept in sync via tests/test_figure_gists_styling.py.
@@ -73,16 +73,19 @@ def _register_brand_fonts() -> None:
     ]
     for fonts_dir in candidates:
         if fonts_dir.is_dir():
-            for ttf in sorted(fonts_dir.glob("*.ttf")):
+            for path in sorted(list(fonts_dir.glob("*.ttf")) + list(fonts_dir.glob("*.otf"))):
                 try:
-                    fm.fontManager.addfont(str(ttf))
+                    fm.fontManager.addfont(str(path))
                 except Exception:  # noqa: BLE001
                     continue
             return
 
 
 def _apply_brand_style() -> None:
-    """Inline equivalent of `setup_plotting_style`. Sentinel: brand-style-v1."""
+    """Inline equivalent of `setup_plotting_style`. Sentinel: brand-style-v2.
+    v2: bumped sizes ~25% + explicit medium weight (avoids ExtraLight default
+    that matplotlib picks from the Manrope variable file). Companion to the
+    static Manrope-{regular,medium,semibold,bold}.otf files in assets/fonts/."""
     _register_brand_fonts()
     sns.set_style("whitegrid")
     sns.set_context("notebook", font_scale=1.0)
@@ -93,8 +96,10 @@ def _apply_brand_style() -> None:
         "savefig.facecolor": "none",
         "font.family": "sans-serif",
         "font.sans-serif": ["Manrope", "Outfit", "DejaVu Sans", "Liberation Sans", "Arial"],
-        "font.size": 17,
-        "axes.labelsize": 19,
+        "font.weight": "medium",
+        "font.size": 21,
+        "axes.labelsize": 24,
+        "axes.labelweight": "medium",
         "axes.titlesize": 0,
         "axes.titlepad": 0,
         "axes.spines.top": False,
@@ -109,12 +114,12 @@ def _apply_brand_style() -> None:
         "grid.linestyle": "-",
         "grid.linewidth": 0.7,
         "grid.color": BRAND_GRID,
-        "xtick.labelsize": 16,
-        "ytick.labelsize": 16,
+        "xtick.labelsize": 19,
+        "ytick.labelsize": 19,
         "xtick.color": BRAND_INK,
         "ytick.color": BRAND_INK,
         "legend.frameon": False,
-        "legend.fontsize": 16,
+        "legend.fontsize": 19,
         "patch.edgecolor": "none",
         "patch.linewidth": 0.0,
     })
@@ -146,7 +151,7 @@ def main() -> None:
     sets: dict[str, set[str]] = {label: set() for _, label in DB_FLAGS}
     reader = csv.DictReader(io.StringIO(text), delimiter="\t")
     for row in reader:
-        acc = row["uniprot_accession"]
+        acc = row["uniprot_acc"]
         for flag, label in DB_FLAGS:
             if row.get(flag, "0") == "1":
                 sets[label].add(acc)
@@ -156,7 +161,7 @@ def main() -> None:
     cmap = [PALETTE_BY_LABEL[k] for k in sorted_keys]
 
     fig, ax = plt.subplots(figsize=(11, 10))
-    venn(sorted_sets, ax=ax, cmap=cmap, fontsize=18, legend_loc=None)
+    venn(sorted_sets, ax=ax, cmap=cmap, fontsize=22, legend_loc=None)
     ax.set_xticks([])
     ax.set_yticks([])
     sns.despine(ax=ax, top=True, right=True, bottom=True, left=True)
@@ -169,7 +174,7 @@ def main() -> None:
     ax.legend(
         handles, labels,
         loc="upper center", bbox_to_anchor=(0.5, -0.02),
-        ncols=len(sorted_keys), frameon=False, fontsize=17,
+        ncols=len(sorted_keys), frameon=False, fontsize=21,
     )
 
     out_pdf = Path("db_overlap_venn.pdf")

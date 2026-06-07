@@ -19,6 +19,7 @@ persisted ``Evidence`` record after deterministic validation.
 from __future__ import annotations
 
 import logging
+import re
 from datetime import datetime
 from typing import Any, ClassVar, Literal
 
@@ -53,6 +54,14 @@ def _warn_prose_overshoot(instance: BaseModel, targets: dict[str, int]) -> None:
                 n - target,
                 100.0 * (n - target) / target,
             )
+
+
+def _has_inline_evi_cite(s: str) -> bool:
+    """True when the string carries at least one inline ``(a1_evi_NN)`` /
+    ``(a2_evi_NN)`` evidence-id token (A1.6 / A8.2). Substring check —
+    deliberately loose, since this only backstops a warn-only validator."""
+    return "a1_evi_" in s or "a2_evi_" in s
+
 
 # ---------------------------------------------------------------------------
 # Shared identifiers
@@ -311,6 +320,35 @@ TopicAnchor = Literal[
     "structure",
     "ptm",
     "shedding",
+    # Normal-tissue SURFACE expression across the six high-consequence tox
+    # organs (on-target/off-tumor); retrieved as MED literature, never an
+    # RNA atlas (the protein-level method categories carry surface proof).
+    "normal_tissue_expression",
+    # Surface-reachability barriers (BBB, tumor penetration,
+    # luminal/abluminal vasculature, surface/antibody accessibility) —
+    # distinct axis from surface-presence.
+    "surface_reachability",
+    # Partner / co-receptor dependency for surface trafficking — feeds the
+    # co_receptor_requirements risk chip (obligate heterodimer, escort,
+    # chaperone-assisted surface delivery, accessory subunit).
+    "partner_dependency",
+    # Plasma-membrane subdomain / polarity distribution — feeds
+    # restricted_subdomain (lipid raft, apical/basolateral, ciliary, synaptic).
+    "membrane_subdomain",
+    # Epitope-masking evidence across the three mechanism axes the
+    # epitope_masking risk records: HOMO self-association (homodimer /
+    # oligomerization), HETERO partner/complex coverage, and OTHER
+    # (glycan shield / conformational occlusion). Feeds epitope_masking.
+    "epitope_masking",
+    # Cell-state-conditional surface biology — activation, stress,
+    # senescence, differentiation, disease-state shifts, tumor-
+    # microenvironment effects. Feeds the merged accessibility_modulation
+    # builder (both CONTRAST and SINGLE-CONTEXT shapes — the latter
+    # absorbed the retired cell_states block in schema 2.5.0). Load-
+    # bearing A2 axis for genes whose surface accessibility is
+    # state-modulated; without it, state-context evidence relied on
+    # gene2pubmed / recent_corpus baselines that under-recalled.
+    "cell_state_modulation",
 ]
 
 PublicationType = Literal[
@@ -443,6 +481,27 @@ EvidenceCategory = Literal[
     "flow_cytometry",
     "surface_biotinylation",
     "mass_spec_surfaceome",
+    # Ectodomain shedding / soluble-form-in-circulation evidence. Quote-grounded
+    # because shed_form + secreted_form risks need a verbatim "soluble ectodomain
+    # measured in serum" / "ADAM17-mediated shedding" sentence. Pulled out of the
+    # catch-all ``other`` into its own focused category.
+    "shedding",
+    # Assay-less, context-tagged surface-expression mentions. The method
+    # categories (ihc / if / flow / biotin / MS) all require a method term in
+    # their query, so they systematically MISS bare location-tagged statements
+    # like "X is expressed on the surface of activated T cells". This category
+    # casts a precision-tuned net for surface/membrane tokens PAIRED with a
+    # context cue (tissue / cell type / expression-level word) so A2's
+    # ExpressionObservation rows are quote-grounded. A2-focus.
+    "surface_expression",
+    # Dedicated over-expression-precedent search: papers showing the protein
+    # TRAFFICS TO THE CELL SURFACE when over-expressed / ectopically /
+    # heterologously expressed (a surface-CAPABILITY signal — can it reach the
+    # surface at all). Distinct from the OE *terms* sprinkled inside if / flow /
+    # surface_biotinylation (those find OE-context WITHIN those assays); this
+    # casts a wider net for OE-surface-trafficking regardless of detection
+    # method. A1-focus.
+    "overexpression",
     "western_blot_paired",
     "structure_with_ecd",
     "other",
@@ -1032,6 +1091,18 @@ EvidenceGrade = Literal[
     "conflicting",
     "weak",
 ]
+# A2 analog of ``EvidenceGrade``: how well-characterized and internally
+# consistent the biological-context picture (expression / cell_states /
+# subcellular_localization / anatomical_accessibility /
+# accessibility_modulation) is. Rolled up by the A2 ``biological_context_grade``
+# builder and surfaced flat on ``BiologicalContext`` (mirroring how
+# ``SurfaceEvidence.evidence_grade`` sits flat). Values run high → low coverage.
+BiologicalContextGrade = Literal[
+    "rich",
+    "moderate",
+    "sparse",
+    "absent",
+]
 Confidence = Literal["high", "moderate", "low"]
 StateDependence = Literal["low", "moderate", "high", "unclear"]
 # Subcategory = ARCHITECTURE only — how the protein sits in the
@@ -1083,8 +1154,9 @@ ProteinFamily = Literal[
 #     antibody detail lives in ``AntibodyRef.validation_strategy``.
 #   * ``low_endogenous_expression`` → read the DERIVED
 #     ``filters.low_endogenous_expression`` (computed deterministically
-#     from ``filters.expression_level ∈ {low, absent}``), so the
-#     headline list can't drift from the filter the catalog filters on.
+#     from ``filters.expression_level`` + ``expression_breadth`` — see
+#     the field's docstring for the exact rule), so the headline list
+#     can't drift from the filter the catalog filters on.
 #   * ``ligand_unknown`` → not a "risk"; orphan-receptor status now
 #     lives on ``filters.has_known_ligand: bool``.
 #   * ``other`` → forbidden escape hatch. If the risk doesn't fit one
@@ -1277,6 +1349,16 @@ ModulationCategory = Literal[
     "other",
     "unknown",
 ]
+# Direction of the surface-pool change — orthogonal to the favorable/restricted
+# accessibility verdict, so the viewer can show the up/down arrow independently
+# of the risk grade.
+ModulationDirection = Literal[
+    "increases",
+    "decreases",
+    "bidirectional",
+    "no_change",
+    "unclear",
+]
 CellStateTrigger = Literal[
     "ER_stress",
     "heat_shock",
@@ -1347,6 +1429,53 @@ _STATE_INDUCED_CATEGORIES: frozenset[str] = frozenset(
     }
 )
 
+# Cancer-context vocabulary — gates the oncogenic_transformation trigger so a
+# non-cancer disease state can't be mapped into it (A7.2). Substring match,
+# case-insensitive.
+_CANCER_VOCAB: tuple[str, ...] = (
+    "tumor", "tumour", "cancer", "carcinoma", "malignan", "oncogen",
+    "metasta", "neoplas", "sarcoma", "leukemia", "leukaemia", "lymphoma",
+    "glioma", "glioblastoma", "melanoma", "adenocarcinoma",
+)
+
+# Clause markers that signal a value is a sentence, not a canonical name —
+# rejected in compartment / subdomain fields (A5.1).
+_CLAUSE_MARKERS: tuple[str, ...] = (
+    " upon ", " under ", " when ", " during ", " after ", " following ",
+    " if ", " in response to ", " stimulat",
+)
+
+
+def _assert_short_canonical(value: str, field: str) -> str:
+    """Reject sentence-like compartment / subdomain values (A5.1).
+
+    Canonical organelle / microdomain names are short and condition-free; a
+    clause-packed value ("endosome upon ligand stimulation") belongs in a
+    ``condition`` field, not the name.
+    """
+    # Generous length backstop — the parenthetical + clause-marker guards below
+    # catch the real "packed a sentence into the field" failure mode; the cap
+    # only stops a genuine run-on. 60 admits the longest real organelle names
+    # (e.g. "endoplasmic reticulum-Golgi intermediate compartment", 52 chars).
+    if len(value) > 60:
+        raise ValueError(
+            f"{field} must be a short canonical name (≤60 chars), not a "
+            f"sentence; got {value!r}. Move conditions out of the name."
+        )
+    if "(" in value or ")" in value:
+        raise ValueError(
+            f"{field} must not contain parentheticals; got {value!r}."
+        )
+    padded = f" {value.lower()} "
+    for marker in _CLAUSE_MARKERS:
+        if marker in padded:
+            raise ValueError(
+                f"{field} must be a canonical name, not a conditional clause; "
+                f"got {value!r} (contains '{marker.strip()}')."
+            )
+    return value
+
+
 TerminalOrientation = Literal["extracellular", "cytoplasmic"]
 OrthologyType = Literal["one2one", "one2many", "many2many"]
 # AFDB bumps its model version periodically (v1→v6 between 2021 and
@@ -1381,9 +1510,20 @@ CoreceptorEvidenceBasis = Literal[
 ]
 SecretedFormSource = Literal["alternative_splicing", "proteolytic", "both", "unknown"]
 EpitopeMaskingMechanism = Literal[
+    # OTHER — glycocalyx / N-/O-glycan shielding of the epitope.
     "glycan",
+    # HETERO — a *different* protein in a hetero-complex covers the epitope
+    # (e.g. CD19 over the CD81 large extracellular loop). Self-association
+    # does NOT go here — use ``oligomerization``.
     "partner",
+    # HOMO — the target's *own* homodimer / homo-oligomer interface buries
+    # epitope surface (tetraspanin / claudin cis-clustering, GPCR or
+    # receptor homodimers). Distinct from ``partner`` (a second protein) and
+    # from ``conformational`` (a monomer closed/open state).
+    "oligomerization",
+    # OTHER — closed/open conformer occlusion intrinsic to the monomer.
     "conformational",
+    # OTHER — epitope removed by proteolytic cleavage.
     "cleaved",
     "none",
 ]
@@ -1402,6 +1542,10 @@ class ExecutiveSummary(BaseModel):
         ...,
         description="Consultant-readable headline. Soft target ≤600 chars (overshoots are warned but accepted).",
     )
+    # A1.7 — the load-bearing §03 headline: ONE sentence on WHEN and WHERE the
+    # protein is surface-accessible (not a generic blurb). Optional default ""
+    # so v1 records emitted before this field still validate.
+    accessibility_context_summary: str = ""
     surface_accessibility: SurfaceAccessibility
     evidence_grade_summary: EvidenceGrade
     confidence: Confidence
@@ -1452,20 +1596,6 @@ class ExecutiveSummary(BaseModel):
     surface_call_reason: TriageReason
     # One-sentence, reader-facing rationale for WHEN / WHERE the protein
     # is surface-accessible — the headline behind the §03 "Localization &
-    # accessibility context" summary (and echoed in the §01 signal
-    # panel). Synthesized over the ``biological_context`` block
-    # (``accessibility_modulation`` + ``subcellular_localization`` +
-    # ``anatomical_accessibility``), NOT a copy of ``one_paragraph``.
-    # Optional / defaults ``None`` for back-compat: records generated
-    # before this field landed validate fine and render no summary line
-    # until re-annotated.
-    accessibility_context_summary: str | None = Field(
-        default=None,
-        description=(
-            "One sentence (≤240 chars) on when/where this protein is "
-            "surface-accessible — the accessibility-context headline."
-        ),
-    )
     headline_risks: list[HeadlineRisk] = Field(default_factory=list, max_length=3)
     cited_evidence_ids: list[str] = Field(default_factory=list)
 
@@ -1618,12 +1748,19 @@ class Filters(BaseModel):
     cyno_ortholog_ecd_pct_identity: float | None = Field(default=None, ge=0.0, le=100.0)
     n_term_extracellular: bool
     c_term_extracellular: bool
-    # Derived, NOT agent-emitted: the orchestrator computes this from
-    # ``expression_level`` after the synthesizer call so the headline
-    # signal can't drift from the catalog filter. ``True`` when
-    # ``expression_level ∈ {low, absent}``. Replaces the now-dropped
-    # ``HeadlineRisk.low_endogenous_expression`` enum value — readers
-    # see one canonical signal, the catalog filters on it.
+    # Derived, NOT agent-emitted: the orchestrator computes this in
+    # ``_derive_filters`` after the synthesizer call so the headline
+    # signal can't drift from the catalog filter. ``True`` when EITHER
+    # the baseline expression is low/absent OR it's moderate but
+    # concentrated in one or two tissues:
+    #   * ``expression_level ∈ {low, absent}``, OR
+    #   * ``expression_level == 'moderate'`` AND
+    #     ``expression_breadth == 'restricted'`` (catches the moderate-
+    #     but-tissue-restricted case where endogenous burden in non-
+    #     target tissues is effectively low — GPR75-class).
+    # Replaces the now-dropped ``HeadlineRisk.low_endogenous_expression``
+    # enum value — readers see one canonical signal, the catalog filters
+    # on it.
     low_endogenous_expression: bool = False
     # Orphan-receptor status — ``True`` (the default) when a validated
     # endogenous ligand is documented. Set ``False`` for orphan
@@ -1692,13 +1829,39 @@ class Filters(BaseModel):
     expression_breadth_rationale: str = ""
     surface_specificity_rationale: str = ""
     has_known_ligand_rationale: str = ""
-    # Orchestrator-composed (deterministic): references ``expression_level``
-    # and its rationale — ``low_endogenous_expression`` fires iff
-    # ``expression_level ∈ {low, absent}``.
+    # Orchestrator-composed (deterministic): the synth's
+    # ``expression_level_rationale`` verbatim. No pipeline-internal
+    # preamble (no enum names, no "Derived from" framing) — the synth
+    # already writes natural-language reasoning anchored by cites; the
+    # composition rule (see ``low_endogenous_expression`` above) is
+    # documented in code, not surfaced to the reader. Empty when the
+    # synth left its rationale blank.
     low_endogenous_expression_rationale: str = ""
     # Orchestrator-composed (deterministic): names the overexpression +
     # surface-localization method observation(s) that set the flag True.
     overexpression_surface_localization_observed_rationale: str = ""
+
+    @model_validator(mode="after")
+    def _require_has_known_ligand_rationale_when_true(self) -> "Filters":
+        """Persisted-record gate: ``has_known_ligand=True`` requires a
+        non-empty rationale.
+
+        Same rule as the validator on ``SynthesizerLLMFilters`` (the
+        draft slice), repeated here on ``Filters`` (the persisted shape
+        the orchestrator assembles after merging the draft) so a record
+        can't ship the bug even if a future code path bypasses the
+        draft-side check. If the ligand can't be named, the bool should
+        be ``False`` (orphan-receptor case).
+        """
+        if self.has_known_ligand and not self.has_known_ligand_rationale.strip():
+            raise ValueError(
+                "filters.has_known_ligand=True requires a non-empty "
+                "has_known_ligand_rationale naming the ligand. If the "
+                "ligand identity is genuinely unknown, set "
+                "has_known_ligand=False (orphan-receptor case) and "
+                "explain in the rationale."
+            )
+        return self
 
 
 # ---- surface evidence (section 1) -----------------------------------------
@@ -1881,6 +2044,100 @@ class ClaimStanceRow(BaseModel):
     )
 
 
+class ExcludedClaim(BaseModel):
+    """One claim the methods builder REJECTED at the inclusion stage as
+    receptor-engagement-as-ligand evidence rather than surface accessibility
+    of the protein itself.
+
+    The methods builder's inclusion criterion is: the protein must be the
+    membrane-anchored entity in the assay. Claims where the protein is the
+    SOLUBLE LIGAND whose engagement was captured by binding / crosslinking
+    a receptor on ANOTHER cell describe biology (receptor pharmacology, DAMP
+    signaling, partner engagement) but NOT surface accessibility of the
+    protein in question. Those claims don't emit a ``MethodObservation``
+    row; they're enumerated here with their original ``evidence_id`` + a
+    short reason so the audit trail of "which papers were excluded and
+    why" is visible to readers (and downstream re-grade scripts).
+
+    Populated by the evidence-grade builder from its read of the same A1
+    ledger the methods builder consumed — the grade builder marks each
+    such claim with ``stance=tangential`` in ``claim_stances`` AND adds a
+    row here. Parallel surface to ``non_surface_expression`` (claims that
+    are real expression data but not surface evidence) so the reader can
+    triage A1's input pile cleanly: surface-method observations, expression-
+    only observations, ligand-engagement observations, and the residual.
+    """
+
+    model_config = ConfigDict(extra="forbid")
+
+    evidence_id: str = Field(
+        ...,
+        description="The evidence_id from the input A1 ledger (e.g. 'a1_evi_13').",
+    )
+    reason: str = Field(
+        ...,
+        max_length=240,
+        description=(
+            "Short explanation of why this claim was excluded as ligand-"
+            "engagement evidence rather than surface accessibility. Name "
+            "the specific receptor / partner the protein was binding "
+            "(e.g. 'HMGB1 binding TREM-1 on monocytes — soluble ligand "
+            "engagement, not surface anchoring of HMGB1')."
+        ),
+    )
+
+
+# Tokens that mark a "specific surface-method claim" in grade_rationale
+# prose — used by the fail-validator below. When ANY of these appear in
+# the rationale AND ``claim_stances`` has ≥2 rows AND zero inline
+# ``(aN_evi_NN)`` cites are present, the validator refuses the record.
+# Anchored on tokens that REQUIRE a citable source under the citation-
+# discipline rule (named experimental method, structured enumeration of
+# multiple claims, named structural technique). Kept narrow on purpose:
+# loose prose without these tokens still passes warn-only so genuinely
+# narrative rationales aren't blocked.
+_GRADE_RATIONALE_STRUCTURED_CLAIM_TOKENS: frozenset[str] = frozenset(
+    {
+        # Numbered enumerations of separate claims: "(1)", "(2)", "(3)"
+        "(1)",
+        "(2)",
+        "(3)",
+        # Direct surface-method terms — when these appear, the reader
+        # expects a citable source on the same line.
+        "knockin",
+        "knock-in",
+        "knockout",
+        "knock-out",
+        "live-cell flow",
+        "live cell flow",
+        "non-permeabilized",
+        "nonpermeabilized",
+        "flow cytometry",
+        "surface biotinylation",
+        "cell surface capture",
+        "crosslinking",
+        "cross-linking",
+        "cryo-em",
+        "cryo em",
+        "x-ray",
+        "photoaffinity",
+        "proteinase-k",
+        "proteinase k",
+    }
+)
+
+
+def _has_structured_claim_marker(s: str) -> bool:
+    """True when ``s`` contains a token that marks a specific surface-method
+    claim (per :data:`_GRADE_RATIONALE_STRUCTURED_CLAIM_TOKENS`). Case-
+    insensitive substring match; kept loose because this gates a hard
+    failure and the false-negative cost (no fail) is lower than the false-
+    positive cost (fail on prose that doesn't actually need a cite).
+    """
+    lower = s.lower()
+    return any(tok in lower for tok in _GRADE_RATIONALE_STRUCTURED_CLAIM_TOKENS)
+
+
 class SurfaceEvidence(BaseModel):
     """Section 1 — the surface-accessibility evidence the agent assembled."""
 
@@ -1904,6 +2161,12 @@ class SurfaceEvidence(BaseModel):
     methods: list[MethodObservation] = Field(default_factory=list)
     non_surface_expression: list[NonSurfaceExpression] = Field(default_factory=list)
     contradicting_evidence: list[Contradiction] = Field(default_factory=list)
+    # Audit trail of A1 ledger claims the methods builder rejected at the
+    # inclusion stage as ligand-engagement-as-soluble-partner evidence
+    # rather than surface accessibility of the protein itself. Parallel to
+    # ``non_surface_expression``; default-empty for back-compat with v2
+    # records emitted before this field landed.
+    excluded_as_ligand_engagement: list[ExcludedClaim] = Field(default_factory=list)
 
     _PROSE_TARGETS: ClassVar[dict[str, int]] = {"grade_rationale": 800}
 
@@ -1912,30 +2175,126 @@ class SurfaceEvidence(BaseModel):
         _warn_prose_overshoot(self, type(self)._PROSE_TARGETS)
         return self
 
+    @model_validator(mode="after")
+    def _check_evidence_grade_methods_cardinality(self) -> "SurfaceEvidence":
+        _validate_evidence_grade_methods_cardinality(
+            self.evidence_grade,
+            self.methods,
+        )
+        return self
+
+    @model_validator(mode="after")
+    def _warn_grade_rationale_missing_cite(self) -> "SurfaceEvidence":
+        """Warn when ``grade_rationale`` has no inline ``(aN_evi_NN)`` cite.
+
+        Same shape as ``_warn_rationale_missing_cite`` on
+        ``SynthesizerLLMFilters`` — soft signal for citation discipline so
+        the reader can click straight to the source for every claim.
+        Loud-fails to a hard error are reserved for the stricter validator
+        below; this one just logs.
+
+        Skip placeholder content (an em-dash, "n/a", "—", or anything
+        shorter than 20 chars when stripped) — those can't carry claim-
+        shaped prose, so flagging a missing cite would be noise.
+        """
+        stripped = (self.grade_rationale or "").strip()
+        if len(stripped) < 20:
+            return self
+        if not _has_inline_evi_cite(self.grade_rationale):
+            logger.warning(
+                "SurfaceEvidence.grade_rationale lacks an inline "
+                "(a1_evi_NN)/(a2_evi_NN) cite: %r",
+                self.grade_rationale[:200],
+            )
+        return self
+
+    @model_validator(mode="after")
+    def _fail_grade_rationale_structured_claims_uncited(
+        self,
+    ) -> "SurfaceEvidence":
+        """Refuse the record when ``grade_rationale`` makes specific
+        surface-method claims without backing them with inline cites.
+
+        Trigger condition:
+          * the rationale contains structured-claim markers (numbered
+            enumerations like ``(1)`` / ``(2)`` / ``(3)``, OR named
+            experimental methods — see
+            :data:`_GRADE_RATIONALE_STRUCTURED_CLAIM_TOKENS`), AND
+          * ``claim_stances`` has ≥2 rows (i.e. the grader already
+            committed structured per-claim attributions, so the cites are
+            available — the writer just didn't inline them), AND
+          * the rationale contains zero ``(aN_evi_NN)`` cites.
+
+        Together those three conditions mean "the writer made specific
+        claims that the schema knows have citable sources, and chose not
+        to cite them." That's an unambiguous citation-discipline failure
+        and the reader can't audit it.
+
+        Loose prose without specific method claims still passes (warn-
+        only above), so genuinely narrative rationales for genes with
+        only one or two stance rows aren't blocked.
+        """
+        rationale = self.grade_rationale or ""
+        if not rationale:
+            return self
+        if _has_inline_evi_cite(rationale):
+            return self
+        if len(self.claim_stances) < 2:
+            return self
+        if not _has_structured_claim_marker(rationale):
+            return self
+        raise ValueError(
+            "SurfaceEvidence.grade_rationale makes specific surface-method "
+            "claims (numbered items or named experimental methods) and "
+            "claim_stances has "
+            f"{len(self.claim_stances)} attributions, but the rationale "
+            "carries no inline (aN_evi_NN) cites — readers cannot verify "
+            "which claim_stances row backs each prose claim. "
+            "Inline a cite per substantive claim, drawn from claim_stances."
+        )
+
 
 # ---- biological context (section 2) ---------------------------------------
 
 
 class ExpressionRow(BaseModel):
-    """Unified expression observation — one (tissue × cell-of-origin ×
-    disease_context) surface-expression read.
+    """One ``(tissue × cell_type × disease_context)`` expression observation.
 
-    Replaces the split ``TissueContext`` / ``CellTypeContextV1`` pivots with a
-    single row that may name a ``tissue``, a ``cell_type`` of origin, or both:
+    Tissue and cell-type are the same pivot — where the protein was seen — so
+    they live on one self-describing row rather than two cross-referenced
+    arrays. Each row carries its OWN disease context (``disease_context`` enum
+    + free-text ``disease_label``) and ``present`` level, so a reader never
+    walks from a cell row to a paired tissue row to learn its disease state.
 
-    * tissue-level read (no cell breakdown) → ``tissue`` set, ``cell_type``
-      ``None``.
-    * cell-of-origin read → ``cell_type`` set, ``tissue`` set to the tissue it
-      was observed in (``None`` if the source doesn't name one).
+    The same tissue/cell_type can appear twice (a normal baseline row + a
+    disease row) with different ``present`` levels — both are kept, because the
+    off-tumor baseline is load-bearing for toxicity even when the level matches
+    the disease read. ``cell_type`` is ``None`` for a tissue-level observation
+    with no resolved cell type. Names are free text — no ontology IDs for
+    v1.0.0. See ``ExpressionObservation`` for the ``species`` /
+    ``species_inferred`` contract.
+    """
 
-    ``present`` is the surface-expression level; ``disease_label`` names the
-    SPECIFIC disease when ``disease_context`` can't on its own (e.g. "Fabry
-    disease"). The same tissue can appear in several rows (normal + tumor, or
-    one row per cell type). Tissue / cell-type / cell-state names are free text
-    — no ontology IDs.
+    model_config = ConfigDict(extra="forbid")
 
-    See ``ExpressionObservation`` (the method-anchored level read) for the
-    ``species`` / ``species_inferred`` contract.
+    tissue: str
+    cell_type: str | None = None
+    present: TissuePresence
+    disease_context: DiseaseContext
+    disease_label: str | None = None
+    cell_states: list[str] = Field(default_factory=list)
+    species: Species = "unspecified"
+    species_inferred: bool = False
+    cited_evidence_ids: list[str] = Field(default_factory=list)
+
+
+class TissueContext(BaseModel):
+    """DEPRECATED (v1 only). Superseded by :class:`ExpressionRow`.
+
+    Retained so the v1 ``biology_compiler`` Managed Agent — which emits
+    ``tissues`` / ``cell_types`` and validates against the shared
+    ``BiologicalContext`` — still reproduces. The v2 path leaves this empty and
+    populates ``expression`` instead. Delete when v1 reproducibility is retired.
     """
 
     model_config = ConfigDict(extra="forbid")
@@ -1955,13 +2314,17 @@ class ExpressionRow(BaseModel):
     cited_evidence_ids: list[str] = Field(default_factory=list)
 
 
-class StateContext(BaseModel):
-    """Orthogonal cell-state pivot — activated/resting, stressed, EMT, etc."""
+class CellTypeContextV1(BaseModel):
+    """DEPRECATED (v1 only). Superseded by :class:`ExpressionRow`. See
+    :class:`TissueContext` for why it's retained."""
 
     model_config = ConfigDict(extra="forbid")
 
-    state: str
-    descriptor: str
+    cell_type: str
+    ontology_id: str | None = None
+    present_in_tissues: list[str] = Field(default_factory=list)
+    species: Species = "unspecified"
+    species_inferred: bool = False
     cited_evidence_ids: list[str] = Field(default_factory=list)
 
 
@@ -1975,14 +2338,120 @@ class DualLocalization(BaseModel):
     condition: str | None = None
     cited_evidence_ids: list[str] = Field(default_factory=list)
 
+    @field_validator("compartment")
+    @classmethod
+    def _short_compartment(cls, v: str) -> str:
+        return _assert_short_canonical(v, "DualLocalization.compartment")
+
+
+# Closed enum for membrane-subdomain assignments. Free text let models emit
+# "cilia" / "primary cilium" / "Primary Cilium" for the same biology, which
+# broke grouping queries; the enum collapses that to a canonical token. The
+# ``mode="before"`` coercion below normalizes legacy free-text values so
+# already-stored records (D1 rows, viewer snapshots) still load.
+MembraneSubdomainName = Literal[
+    "lipid_raft",
+    "tight_junction",
+    "primary_cilium",
+    "apical_membrane",
+    "basolateral_membrane",
+    "immune_synapse",
+    "focal_adhesion",
+    "caveolae",
+    "other",
+]
+
+# Synonym → canonical map applied AFTER whitespace/hyphen normalization
+# (lowercase, strip, collapse runs of space/hyphen to a single underscore).
+# Anything not present here — including inner-leaflet / cytoplasmic-face
+# anchors, which are not surface-accessible — coerces to ``"other"`` rather
+# than raising, so no legacy record is ever rejected on load.
+_MEMBRANE_SUBDOMAIN_SYNONYMS: dict[str, str] = {
+    # primary cilium
+    "cilia": "primary_cilium",
+    "cilium": "primary_cilium",
+    "primary_cilium": "primary_cilium",
+    "ciliary": "primary_cilium",
+    "ciliary_membrane": "primary_cilium",
+    # lipid raft
+    "lipid_raft": "lipid_raft",
+    "lipid_rafts": "lipid_raft",
+    "raft": "lipid_raft",
+    "rafts": "lipid_raft",
+    "membrane_raft": "lipid_raft",
+    # apical membrane
+    "apical": "apical_membrane",
+    "apical_membrane": "apical_membrane",
+    "apical_surface": "apical_membrane",
+    # basolateral membrane
+    "basolateral": "basolateral_membrane",
+    "basolateral_membrane": "basolateral_membrane",
+    # tight junction
+    "tight_junction": "tight_junction",
+    "tight_junctions": "tight_junction",
+    "zonula_occludens": "tight_junction",
+    # immune synapse
+    "immune_synapse": "immune_synapse",
+    "immunological_synapse": "immune_synapse",
+    "immunologic_synapse": "immune_synapse",
+    # focal adhesion
+    "focal_adhesion": "focal_adhesion",
+    "focal_adhesions": "focal_adhesion",
+    # caveolae
+    "caveolae": "caveolae",
+    "caveola": "caveolae",
+    "caveolar": "caveolae",
+}
+
+# Canonical tokens that pass straight through (the Literal members).
+_MEMBRANE_SUBDOMAIN_CANONICAL: frozenset[str] = frozenset(
+    {
+        "lipid_raft",
+        "tight_junction",
+        "primary_cilium",
+        "apical_membrane",
+        "basolateral_membrane",
+        "immune_synapse",
+        "focal_adhesion",
+        "caveolae",
+        "other",
+    }
+)
+
+
+def _coerce_membrane_subdomain(value: str) -> str:
+    """Normalize a free-text subdomain to a canonical ``MembraneSubdomainName``.
+
+    Lowercase + strip, collapse any run of spaces / hyphens / underscores to a
+    single underscore, then map through the synonym table. Already-canonical
+    values pass through; anything unrecognized coerces to ``"other"`` — the
+    field is a closed enum for NEW data but never rejects legacy data.
+    """
+    normalized = re.sub(r"[\s\-_]+", "_", value.strip().lower()).strip("_")
+    if normalized in _MEMBRANE_SUBDOMAIN_CANONICAL:
+        return normalized
+    return _MEMBRANE_SUBDOMAIN_SYNONYMS.get(normalized, "other")
+
 
 class MembraneSubdomain(BaseModel):
     """One membrane subdomain assignment (lipid raft, tight junction, cilium...)."""
 
     model_config = ConfigDict(extra="forbid")
 
-    subdomain: str
+    subdomain: MembraneSubdomainName
     cited_evidence_ids: list[str] = Field(default_factory=list)
+
+    @field_validator("subdomain", mode="before")
+    @classmethod
+    def _coerce_subdomain(cls, v: object) -> object:
+        # Backward-compat: stored records carry FREE-TEXT subdomain values
+        # ("lipid rafts", "Primary Cilium", "apical surface", or even an
+        # inner-leaflet / cytoplasmic-face anchor that is not surface-
+        # accessible). Normalize every string to a canonical token so the
+        # closed enum never rejects legacy data; unrecognized → "other".
+        if isinstance(v, str):
+            return _coerce_membrane_subdomain(v)
+        return v
 
 
 class SubcellularLocalization(BaseModel):
@@ -2018,18 +2487,6 @@ class AnatomicalAccessibilityObservation(BaseModel):
         return self
 
 
-# Structured direction of the surface-accessibility change a modulation row
-# describes. Distinct from ``AccessibilityImplication`` (favorable / restricted
-# / …) — this is purely the up/down axis of the surface-accessible pool.
-ModulationDirection = Literal[
-    "increases_surface",
-    "decreases_surface",
-    "bidirectional",
-    "no_change",
-    "unclear",
-]
-
-
 class AccessibilityModulationObservation(BaseModel):
     """How surface presence/exposure shifts with cell state, tissue, or disease.
 
@@ -2049,8 +2506,22 @@ class AccessibilityModulationObservation(BaseModel):
     cell_state_trigger: CellStateTrigger | None = None
     restricted_lineage: RestrictedLineage | None = None
     dual_loc_partner_compartment: DualLocPartnerCompartment | None = None
-    baseline_context: str
-    modulating_state: str
+    # ``baseline_context`` and ``modulating_state`` are the two endpoints
+    # of a state contrast. Both optional (default None) so the merged-in
+    # cell_states case — a single-context state observation where the
+    # paper describes the protein's behavior in one state without a
+    # comparison condition — emits as a row with both fields null. When
+    # both are set, the row is a contrast pair (the original modulation
+    # row shape); when both are null, it is a single-context observation
+    # (the former cell_states row shape). Mixed (one set, one null) is
+    # forbidden by ``_check_contrast_and_trigger_vocab`` — pick one
+    # shape per row.
+    baseline_context: str | None = None
+    modulating_state: str | None = None
+    # Up/down direction of the surface-pool change — orthogonal to the
+    # favorable/restricted verdict in ``accessibility_implication``. Optional
+    # (defaults ``unclear``) so v1 records emitted before this field validate.
+    direction: ModulationDirection = "unclear"
     change: str = Field(
         ...,
         description="What changes between baseline_context and modulating_state. Soft target ≤300 chars (overshoots warned but accepted).",
@@ -2115,17 +2586,87 @@ class AccessibilityModulationObservation(BaseModel):
             )
         return self
 
+    @model_validator(mode="after")
+    def _check_contrast_and_trigger_vocab(self) -> AccessibilityModulationObservation:
+        # Post-2.5.0 — a row is either a CONTRAST (both baseline_context
+        # and modulating_state set, naming two different states) or a
+        # SINGLE-CONTEXT observation (both null — the merged-in
+        # cell_states case where the paper describes the protein in one
+        # state without a comparison condition). One set and the other
+        # null is an under-specified contrast and is rejected — emit
+        # both, or neither.
+        has_baseline = bool(
+            self.baseline_context is not None and self.baseline_context.strip()
+        )
+        has_modulating = bool(
+            self.modulating_state is not None and self.modulating_state.strip()
+        )
+        if has_baseline != has_modulating:
+            raise ValueError(
+                "AccessibilityModulationObservation: baseline_context and "
+                "modulating_state must both be set (contrast row) or both be "
+                "null (single-context state observation). Got "
+                f"baseline_context={self.baseline_context!r}, "
+                f"modulating_state={self.modulating_state!r}."
+            )
+        # A7.1 — when the row IS a contrast, the two endpoints must name
+        # two DIFFERENT states (a documented change), not the same one
+        # ("cells express X" is not a modulation contrast).
+        if has_baseline and has_modulating:
+            assert self.baseline_context is not None  # narrowing for ty
+            assert self.modulating_state is not None
+            if (
+                self.baseline_context.strip().lower()
+                == self.modulating_state.strip().lower()
+            ):
+                raise ValueError(
+                    "AccessibilityModulationObservation contrast: "
+                    "baseline_context and modulating_state must name two "
+                    "DIFFERENT states. Drop rows that merely restate "
+                    "expression context, or emit as a single-context "
+                    "observation (both null)."
+                )
+        # A7.2 — the oncogenic_transformation trigger is cancer-specific; a
+        # non-cancer disease state must not be coerced into it. Only
+        # enforceable when the row carries a contrast pair (single-context
+        # observations pass through — the trigger still has to match the
+        # category, which is checked separately).
+        if self.cell_state_trigger == "oncogenic_transformation" and has_baseline:
+            text = f"{self.baseline_context or ''} {self.modulating_state or ''}".lower()
+            if not any(v in text for v in _CANCER_VOCAB):
+                raise ValueError(
+                    "cell_state_trigger='oncogenic_transformation' requires a "
+                    "cancer / tumor context in baseline_context or "
+                    "modulating_state; use a different trigger for non-cancer "
+                    "disease states."
+                )
+        return self
+
 
 class BiologicalContext(BaseModel):
     """Section 2 — where, in what cell types/states, and under what
-    conditions the protein presents at the surface."""
+    conditions the protein presents at the surface.
+
+    Schema 2.5.0 retired the standalone ``cell_states: list[StateContext]``
+    field — empirically ~70% of cell_states rows duplicated information
+    already structured in ``accessibility_modulation``, and the unique
+    remainder (single-context state observations without a clean baseline ↔
+    modulating contrast) is now absorbed into
+    ``AccessibilityModulationObservation`` rows with
+    ``baseline_context=None`` + ``modulating_state=None``. Legacy records
+    carrying a populated ``cell_states`` field are loadable — a
+    ``model_validator(mode="before")`` drops the legacy data and emits a
+    warning (re-annotate to recover the state content as modulation rows).
+    """
 
     model_config = ConfigDict(extra="forbid")
 
-    # Unified tissue × cell-of-origin × disease-context expression rows
-    # (replaces the old split ``tissues`` + ``cell_types`` pivots).
+    # v2: one self-describing (tissue × cell_type × disease_context) row each.
     expression: list[ExpressionRow] = Field(default_factory=list)
-    cell_states: list[StateContext] = Field(default_factory=list)
+    # DEPRECATED (v1 only) — the v1 biology_compiler emits these; v2 leaves
+    # them empty and populates ``expression``. Retained for v1 reproducibility.
+    tissues: list[TissueContext] = Field(default_factory=list)
+    cell_types: list[CellTypeContextV1] = Field(default_factory=list)
     subcellular_localization: SubcellularLocalization
     anatomical_accessibility: list[AnatomicalAccessibilityObservation] = Field(
         default_factory=list
@@ -2133,6 +2674,41 @@ class BiologicalContext(BaseModel):
     accessibility_modulation: list[AccessibilityModulationObservation] = Field(
         default_factory=list
     )
+    # A2 rollup (the A2 analog of ``SurfaceEvidence.evidence_grade``):
+    # how well-characterized + internally consistent the biological-context
+    # picture is, graded across the five A2 axes above. Emitted by the
+    # ``biological_context_grade`` builder. Defaults so records predating the
+    # rollup still validate.
+    biological_context_grade: BiologicalContextGrade = "absent"
+    grade_rationale: str = Field(
+        default="",
+        description="Why this biological_context_grade. Soft target ≤300 chars.",
+    )
+    grade_cited_evidence_ids: list[str] = Field(default_factory=list)
+
+    @model_validator(mode="before")
+    @classmethod
+    def _drop_legacy_cell_states(cls, data: Any) -> Any:
+        """Schema 2.5.0 retired ``BiologicalContext.cell_states``. Old
+        records (≤ 2.4.0) emit this field; absorb-on-load by dropping it
+        so the record still parses. State content is permanently lost
+        for those records — re-annotate to populate the corresponding
+        single-context ``accessibility_modulation`` rows."""
+        if isinstance(data, dict) and "cell_states" in data:
+            dropped = data.pop("cell_states")
+            if dropped:
+                import warnings
+
+                warnings.warn(
+                    f"BiologicalContext: dropped {len(dropped)} legacy "
+                    "cell_states row(s) on load (schema 2.5.0 merged "
+                    "cell_states into accessibility_modulation). "
+                    "Re-annotate to recover the state content as "
+                    "single-context modulation rows.",
+                    DeprecationWarning,
+                    stacklevel=2,
+                )
+        return data
 
 
 # ---- deterministic features (sections 3, 4, 5, appendix) ------------------
@@ -2152,6 +2728,11 @@ class IsoformTopology(BaseModel):
     ecd_length_residues: int
     icd_length_residues: int
     per_residue_topology: str
+    # Amino-acid sequence this isoform's per_residue_topology indexes 1:1, so a
+    # downstream consumer can do residue-level alignment without re-fetching
+    # UniProt (A1.8). Nullable for records emitted before sequences were
+    # populated.
+    sequence: str | None = None
     tool_version: str
     retrieved_at: datetime
     # Sequence identity of an alternative isoform against this protein's own
@@ -2218,12 +2799,9 @@ class OrthologEntry(BaseModel):
     # is how many human helices fell in ortholog gaps.
     tm_absent_from_model: bool = False
     n_tm_regions_absent: int = 0
-    # The ortholog's own full amino-acid sequence — aligns 1:1 with the
-    # (projected) ``per_residue_topology`` above. Same source + rationale as
-    # ``IsoformTopology.sequence``: ``topology_public.sequence`` for the
-    # ortholog accession. ``None`` for rows whose topology row predates the
-    # field or lacked a stored sequence.
-    sequence: str | None = Field(default=None)
+    # Amino-acid sequence the per_residue_topology indexes 1:1 (A1.8). Nullable
+    # for records emitted before sequences were populated.
+    sequence: str | None = None
 
 
 class Orthologs(BaseModel):
@@ -2271,66 +2849,21 @@ class ParalogEntry(BaseModel):
     full_length_pct_identity: float | None = Field(default=None, ge=0.0, le=100.0)
     family_id: str
     compara_version: str
-    # ECD percent SIMILARITY (identity + BLOSUM62-positive substitutions),
-    # the companion to ``ecd_pct_identity``. Populated only for CLOSE paralog
-    # pairs (>=80% full-length identity) — the ones the viewer promotes to
-    # full topology rows. None for ECD-less proteins and below-threshold pairs.
-    # Sourced from ``compara_paralog.ecd_pct_similarity``.
-    ecd_pct_similarity: float | None = Field(default=None, ge=0.0, le=100.0)
-    # Real DeepTMHMM topology for the paralog, joined from ``topology_public``
-    # (cohort=human_canonical) — NOT inferred from any string. Populated for
-    # close paralogs (>=80%) so the viewer can render a full topology row
-    # (ECD / ICD / TM / orientations) like the ortholog rows. All None when
-    # the paralog has no topology row or the pair is below threshold.
-    per_residue_topology: str | None = Field(default=None)
-    deeptmhmm_label: str | None = Field(default=None)  # 'TM'|'SP+TM'|'SP'|'BETA'|'GLOB'
-    tm_helix_count: int | None = Field(default=None)
-    ecd_length_residues: int | None = Field(default=None)
-    icd_length_residues: int | None = Field(default=None)
-    n_terminal_orientation: TerminalOrientation | None = Field(default=None)
-    c_terminal_orientation: TerminalOrientation | None = Field(default=None)
-    signal_peptide_length: int | None = Field(default=None)
-    # Close-paralog full amino-acid sequence — populated only for the close
-    # paralogs (>=80% full-length identity) that also carry topology, so the
-    # sequence pairs with the ``per_residue_topology`` above. Distant
-    # paralogs keep the lean chip-only shape (no topology, no sequence) to
-    # avoid bloating records with up to 50 sequences per gene. Source:
-    # ``topology_public.sequence`` for the paralog accession.
-    sequence: str | None = Field(default=None)
-
-
-class RepresentativeStructure(BaseModel):
-    """The single best experimental (PDB) structure for the canonical UniProt.
-
-    Selected from PDBe's SIFTS ``best_structures`` ranking (pre-sorted by
-    coverage desc, then resolution asc), so ``[0]`` is the most complete,
-    best-resolved deposited structure. A reproducible pointer to "the
-    experimental structure": the record otherwise carries only a flat list
-    of PDB IDs (``surface_bind.pdbs``) with no coverage metadata, so a
-    consumer couldn't tell which entry is the canonical full-length one.
-
-    The construct's sequence + per-residue topology over
-    ``unp_start``–``unp_end`` are derivable by slicing the canonical
-    sequence / topology — we store the pointer, not the duplicated residues.
-    """
-
-    model_config = ConfigDict(extra="forbid")
-
-    pdb_id: str
-    chain_id: str
-    # SIFTS-mapped UniProt residue span this structure covers (1-based,
-    # inclusive). A fragment structure (e.g. a kinase domain) has a sub-span;
-    # a full-length cryo-EM model spans 1..len(canonical).
-    unp_start: int = Field(..., ge=1)
-    unp_end: int = Field(..., ge=1)
-    coverage: float | None = Field(default=None, ge=0.0, le=1.0)
-    resolution_a: float | None = Field(default=None, ge=0.0)
-    experimental_method: str | None = None
-    # How many experimental structures PDBe lists for this UniProt (this one
-    # is the representative of that set).
-    n_experimental_structures: int | None = Field(default=None, ge=0)
-    source: str = "PDBe SIFTS best_structures"
-    retrieved_at: datetime | None = None
+    # (Per-residue DeepTMHMM topology was briefly added to this entry
+    # in 6a220a90 and reverted shortly after: SRC's 32 paralogs are all
+    # GLOB intracellular kinases, so the bars rendered as solid blue
+    # with no signal. Isoform + ortholog topology are still surfaced
+    # in §04 because those CAN show real TM patterns.)
+    #
+    # A1.9 re-adds topology + sequence, but GATED on close homology: only
+    # paralogs at or above ``CLOSE_PARALOG_THRESHOLD`` ECD identity get these
+    # populated — those are the ones a reader can actually reason about, and
+    # the gate avoids the all-GLOB noise that motivated the earlier revert.
+    # Nullable so far/ECD-less paralogs (and pre-population records) carry None.
+    per_residue_topology: str | None = None
+    tm_helix_count: int | None = None
+    ecd_length_residues: int | None = None
+    sequence: str | None = None
 
 
 class StructureFeatures(BaseModel):
@@ -2360,9 +2893,6 @@ class StructureFeatures(BaseModel):
     model_cif_url: str | None = None
     model_pdb_url: str | None = None
     model_pae_url: str | None = None
-    # Representative experimental (PDB) structure — PDBe SIFTS best_structures.
-    # ``None`` when the protein has no deposited experimental structure.
-    representative_experimental_structure: RepresentativeStructure | None = None
 
 
 class SurfaceBindSite(BaseModel):
@@ -2396,6 +2926,32 @@ class SurfaceBindSite(BaseModel):
     n_seeds_alpha: int = Field(..., ge=0)
     n_seeds_beta: int = Field(..., ge=0)
     hydrophobicity: float
+
+
+# A1.9 — only paralogs at/above this ECD %identity get full topology +
+# sequence populated; below it they carry identity only (a far paralog's
+# topology is noise a reader can't act on).
+CLOSE_PARALOG_THRESHOLD: float = 80.0
+
+
+class RepresentativeStructure(BaseModel):
+    """The single best experimental structure for a protein.
+
+    Chosen from the PDBe SIFTS UniProt→PDB mapping by (coverage × resolution)
+    so the reader gets "the experimental structure" with the metadata to judge
+    it, instead of a flat list of PDB IDs with no ranking (A1.10).
+    """
+
+    model_config = ConfigDict(extra="forbid")
+
+    pdb_id: str
+    chain: str | None = None
+    method: str | None = None  # e.g. "X-ray diffraction", "Electron Microscopy"
+    resolution_angstrom: float | None = Field(default=None, ge=0.0)
+    coverage_fraction: float | None = Field(default=None, ge=0.0, le=1.0)
+    residue_start: int | None = None
+    residue_end: int | None = None
+    source: str = "PDBe SIFTS"
 
 
 class SurfaceBindFeatures(BaseModel):
@@ -2441,18 +2997,91 @@ class SurfaceBindFeatures(BaseModel):
     protein_name: str | None = None
     # PDB entries cross-referenced by SURFACE-Bind for this protein.
     # Often >100 entries for well-studied targets (EGFR has 250+);
-    # truncated in the viewer to the first few.
+    # truncated in the viewer to the first few. Kept as the raw list; the
+    # ranked single pointer is ``representative_structure`` below (A1.10).
     pdbs: list[str] = Field(default_factory=list)
-    # First author is Balbi PEM (verified: PMID 41604262 == DOI
-    # 10.1073/pnas.2506269123, "Mapping targetable sites on the human
-    # surfaceome…", PNAS 2026). An earlier draft mislabeled the lead
-    # author as "Marchand" (the 3rd author); kept here as the canonical
-    # record-facing attribution, so don't reintroduce that name first.
-    source: str = "SURFACE-Bind v1 (Balbi et al. 2026 PNAS)"
+    # The one best experimental structure (highest coverage × resolution),
+    # ranked from ``pdbs`` via PDBe SIFTS. Nullable: no PDB entries, or a
+    # record emitted before the structure ranker was wired.
+    representative_structure: RepresentativeStructure | None = None
+    source: str = "SURFACE-Bind v1 (Balbi 2026 PNAS)"
     attribution: str = (
         "© Balbi et al., Correia lab — EPFL / Inria / Novo Nordisk"
     )
     citation: str = "10.1073/pnas.2506269123"
+
+
+class HomoOligomerizationFeatures(BaseModel):
+    """Schweke et al. 2024 AF2 homo-oligomer prediction (PMID 38325366).
+
+    Schweke's atlas covers four proteomes; the human refset is ~3,946
+    predicted homo-oligomers — a protein is a "candidate complex" when
+    its AF2 homodimer interface clears a logistic-regression
+    ``dimer_proba`` threshold. ~1,049 of the v2 candidate-universe
+    surfaceome proteins are flagged as Schweke homomers (memory entry
+    ``schweke-homomer-atlas``).
+
+    The lookup is positives-only — Schweke's refset doesn't carry
+    explicit negatives, so ``is_homo_oligomer=False`` means "not in the
+    positive set" rather than "AF2 explicitly disagrees". This is a
+    well-documented under-call: big multi-pass channels (KCNQ1, KCNMA1)
+    and ligand/covalent dimers (EGFR, INSR) are missing despite being
+    known dimers. Treat as a lower bound when piped into the synthesizer
+    as a prior on ``epitope_masking.mechanism = "homo-oligomerization"``.
+
+    The synthesizer should consult this block when deciding whether to
+    emit a ``homo-oligomerization`` epitope-masking mechanism: a True
+    here is a strong AF2-derived structural prior; a False is a soft
+    "no positive prediction" — still allow the literature to override.
+
+    Loaded by :func:`accessible_surfaceome.tools.schweke_homomer.lookup`.
+    """
+
+    model_config = ConfigDict(extra="forbid")
+
+    # ``False`` is the explicit "not in Schweke's positive refset"
+    # signal — analogous to :attr:`SurfaceBindFeatures.has_data`. The
+    # block is always present so the catalog can distinguish "absent
+    # from Schweke" from "in Schweke but no usable model" rather than
+    # collapsing both to null.
+    is_homo_oligomer: bool = False
+    # Cyclic-symmetry order N of the predicted complex (2 for an
+    # AF_dimer_models_core dimer; 3..13 for an AnAnaS-reconstructed
+    # full complex from full_complexes_bigbang). ``None`` when
+    # ``is_homo_oligomer=False`` OR when Schweke flagged the protein
+    # as a dimer but didn't reconstruct higher-order. The synthesizer
+    # weights epitope-masking severity by N (a 13-mer hides far more
+    # surface than a 2-mer).
+    stoichiometry: int | None = Field(default=None, ge=2, le=24)
+    # AF2 model rank (1..5) Schweke retained as the canonical homomer
+    # model. Carried so the viewer can construct the static-asset PDB
+    # URL (``{ACC}_V1_{N}.pdb``) without consulting a separate manifest.
+    # ``None`` when ``is_homo_oligomer=False``.
+    af_model_num: int | None = Field(default=None, ge=1, le=5)
+    # ``True`` iff Schweke's ``nodiso3`` contact-clustering filter
+    # stripped the TM helix as a disconnected cluster — the predicted
+    # homomer model is ECD-only. Important context for the synthesizer's
+    # epitope-masking prior: an ECD-only dimer means the soluble ECD is
+    # the dimerizing surface (which IS the epitope-accessible region),
+    # while a full-membrane homomer might be a membrane-resident
+    # oligomer with a different epitope-burial pattern.
+    is_ecd_only: bool = False
+    # ``True`` iff Schweke published a higher-order complex (c≥3) for
+    # this protein in addition to the dimer model. Mirrors the
+    # ``schweke_homomer_public.has_higher_order_complex`` column.
+    has_higher_order_complex: bool = False
+    # PDB filenames carried from D1 so the viewer can construct asset
+    # URLs without a local manifest. ``dimer_pdb_filename`` is always
+    # present for a Schweke homomer ({ACC}_V1_{N}.pdb);
+    # ``complex_pdb_filename`` is the AnAnaS-reconstructed higher-order
+    # complex ({ACC}_V1_{N}_c{stoichiometry}.pdb) — ``None`` for
+    # dimer-only entries. The viewer fetches these from
+    # ``/data/structures/schweke/`` and gracefully falls back when the
+    # asset isn't yet ingested.
+    dimer_pdb_filename: str | None = None
+    complex_pdb_filename: str | None = None
+    source: str = "Schweke 2024 (PMID 38325366)"
+    citation: str = "10.1016/j.cell.2024.01.022"
 
 
 class DeterministicFeatures(BaseModel):
@@ -2479,6 +3108,14 @@ class DeterministicFeatures(BaseModel):
     # ``has_data=False`` as the explicit "not scored" signal for the
     # ~12% of surfaceome proteins SURFACE-Bind omitted.
     surface_bind: SurfaceBindFeatures = Field(default_factory=SurfaceBindFeatures)
+    # Schweke 2024 AF2 homo-oligomer prediction (PMID 38325366); always
+    # present, with ``is_homo_oligomer=False`` as the explicit "not in the
+    # positive set" signal. Strong AF2-derived structural prior on the
+    # synthesizer's ``epitope_masking.mechanism = "homo-oligomerization"``
+    # call (memory: schweke-homomer-atlas).
+    homo_oligomerization: HomoOligomerizationFeatures = Field(
+        default_factory=HomoOligomerizationFeatures
+    )
 
 
 # ---- accessibility risks (section 6) --------------------------------------
@@ -2560,6 +3197,42 @@ class RestrictedSubdomain(BaseModel):
         return self
 
 
+def classify_ecd_accessibility_class(
+    ecd_length_residues: int | None,
+) -> ECDAccessibilityClass:
+    """Canonical deterministic ECD-size classifier.
+
+    These thresholds are the **single source of truth** for
+    ``ecd_accessibility_class`` — the v2 orchestrator applies them to the
+    deterministic
+    ``deterministic_features.canonical_topology.ecd_length_residues`` after
+    synthesis, overwriting whatever the synthesizer emitted. The synthesizer
+    prompt documents the same numbers (for the model's awareness only); they
+    are enforced here in code, not by LLM judgment, so there is no literature
+    override.
+
+    Threshold table (residue count → class):
+
+    * ``None`` or ``0`` → ``"none"``   (no surface-exposed ECD)
+    * ``< 30``          → ``"minimal"``
+    * ``30 <= n < 60``  → ``"small"``
+    * ``60 <= n < 200`` → ``"moderate"``
+    * ``>= 200``        → ``"large"``
+
+    ``None`` is treated identically to ``0`` (no ECD): a record without a
+    deterministic ECD length has no surface to host a binder.
+    """
+    if ecd_length_residues is None or ecd_length_residues == 0:
+        return "none"
+    if ecd_length_residues < 30:
+        return "minimal"
+    if ecd_length_residues < 60:
+        return "small"
+    if ecd_length_residues < 200:
+        return "moderate"
+    return "large"
+
+
 class ECDSizeAssessment(BaseModel):
     """How much extracellular surface a binder has to engage.
 
@@ -2567,6 +3240,12 @@ class ECDSizeAssessment(BaseModel):
     ``deterministic_features.canonical_topology.ecd_length_residues``
     directly — no FK needed since that field is a known singleton.
     """
+    # NOTE: ``ecd_accessibility_class`` is deterministic — the v2 orchestrator
+    # overwrites this block post-synthesis via
+    # ``classify_ecd_accessibility_class`` (single source of truth, no LLM
+    # override). Kept as a code comment, not a class docstring, because the
+    # docstring becomes the JSON-schema ``description`` and would churn the
+    # SurfaceomeRecord schema fingerprint for a non-structural change.
 
     model_config = ConfigDict(extra="forbid")
 
@@ -2579,6 +3258,8 @@ class ECDSizeAssessment(BaseModel):
 
     _PROSE_TARGETS: ClassVar[dict[str, int]] = {"rationale": 300}
 
+    classify = staticmethod(classify_ecd_accessibility_class)
+
     @model_validator(mode="after")
     def _warn_soft_target_overshoot(self) -> "ECDSizeAssessment":
         _warn_prose_overshoot(self, type(self)._PROSE_TARGETS)
@@ -2589,7 +3270,10 @@ class EpitopeMasking(BaseModel):
     """Whether the extracellular epitope is masked from binders.
 
     ``mechanism`` is a list so multi-mechanism cases don't collapse to a
-    single value.
+    single value. It spans three masking axes: HOMO self-association
+    (``oligomerization``), HETERO partner/complex coverage (``partner``),
+    and other monomer-level causes (``glycan`` / ``conformational`` /
+    ``cleaved``).
     """
 
     model_config = ConfigDict(extra="forbid")
@@ -2611,6 +3295,58 @@ class EpitopeMasking(BaseModel):
         return self
 
 
+class HomoOligomerizationPredictionRisk(BaseModel):
+    """Risk-side view of the Schweke 2024 AF2 homo-oligomer prediction.
+
+    Mirrors ``deterministic_features.homo_oligomerization`` (Schweke 2024,
+    PMID 38325366) as a structured *risk* chip so the viewer can render it
+    alongside ``epitope_masking`` without conflating the two. The synthesizer
+    already consults the deterministic block when choosing the
+    ``homo-oligomerization`` mechanism for ``epitope_masking``; this field
+    is the **deterministic, orchestrator-populated** counterpart — a separate
+    AF2-derived signal a reader can scan independently from the LLM call.
+
+    Severity is derived from cyclic-symmetry order N:
+
+    * ``stoichiometry <= 2`` → ``low`` (a dimer hides relatively little
+      surface),
+    * ``3..7`` → ``moderate``,
+    * ``8..24`` → ``high`` (large complexes bury substantial surface),
+    * ``None`` (Schweke didn't reconstruct higher-order or
+      ``present=False``) → ``unknown``.
+
+    Populated by the v2 orchestrator post-pass (`_attach_homo_oligomerization_prediction`)
+    from ``deterministic_features.homo_oligomerization``. The synthesizer
+    never emits this — keeping it orchestrator-only mirrors the
+    ``_attach_deterministic_families`` pattern and prevents the agent from
+    smuggling a competing AF2 call into the draft.
+    """
+
+    model_config = ConfigDict(extra="forbid")
+
+    # ``True`` iff Schweke flagged the protein in the positive refset.
+    # Mirrors ``HomoOligomerizationFeatures.is_homo_oligomer``.
+    present: bool = False
+    # Cyclic-symmetry order N from Schweke's atlas. ``None`` when
+    # ``present=False`` or Schweke flagged the protein as a dimer but
+    # didn't reconstruct higher-order.
+    stoichiometry: int | None = Field(default=None, ge=2, le=24)
+    # Severity derived from N — the viewer reads it directly for the
+    # chip color. See class docstring for the mapping.
+    severity: RiskSeverity = "unknown"
+    # Schweke ``nodiso3`` flag: the predicted homomer is ECD-only (the
+    # TM helix was stripped as a disconnected cluster). Important
+    # context — an ECD-only dimer means the soluble ECD is the
+    # dimerizing surface, which IS the epitope-accessible region.
+    is_ecd_only: bool = False
+    source: str = "Schweke 2024 (PMID 38325366)"
+    # Empty by default — this is a deterministic AF2 prediction, not a
+    # literature-anchored claim. Kept for shape consistency with the
+    # other accessibility-risk blocks so the viewer / markdown
+    # renderers can iterate uniformly.
+    cited_evidence_ids: list[str] = Field(default_factory=list)
+
+
 class AccessibilityRisks(BaseModel):
     """Section 6 — risks to a binder physically engaging the surface form.
 
@@ -2626,18 +3362,39 @@ class AccessibilityRisks(BaseModel):
     restricted_subdomain: RestrictedSubdomain
     ecd_size_assessment: ECDSizeAssessment
     epitope_masking: EpitopeMasking
+    # Deterministic AF2 homo-oligomer prediction (Schweke 2024) rendered
+    # as a sibling chip to ``epitope_masking``. ``None`` (the default) on
+    # records emitted before this field existed — back-compat.
+    # **Orchestrator-populated only.** The synthesizer never emits this;
+    # the v2 orchestrator post-pass copies it from
+    # ``deterministic_features.homo_oligomerization``.
+    homo_oligomerization_prediction: HomoOligomerizationPredictionRisk | None = None
 
 
 # ---- triage_signal ↔ surface_accessibility consistency --------------------
 
-# Cross-agent coherence: a triage verdict of ``unlikely`` paired with a
-# deep-dive ``surface_accessibility`` of ``high`` is a disagreement the LLM
-# must justify in ``confidence_reasoning``. We don't hard-reject the
-# disagreement (the deep-dive can legitimately overturn triage) — we require
-# the record to carry an explanation. Only the strongest contradiction
-# (triage=unlikely + accessibility=high) is gated.
-_TRIAGE_HIGH_CONFLICT: dict[str, frozenset[str]] = {
-    "unlikely": frozenset({"high"}),
+# Cross-agent coherence: when the triage verdict and the deep-dive
+# ``surface_accessibility`` class point in OPPOSITE directions, that is a
+# disagreement the LLM must justify in ``confidence_reasoning``. We don't
+# hard-reject the disagreement (the deep-dive can legitimately overturn
+# triage) — we require the record to carry an explanation. The synthesizer
+# prompt promises ANY cross-agent disagreement is gated, so we enumerate
+# every opposing (triage, accessibility) pair rather than only the strongest
+# one (the historical ``unlikely``↔``high`` case).
+#
+# "Opposing" = the two agents lean to opposite ends of the accessibility
+# scale:
+#   * triage ``unlikely`` (surface-UNlikely) vs deep-dive a strongly
+#     ACCESSIBLE class (``high`` / ``moderate``); and
+#   * triage ``likely_accessible`` (likely-surface) vs deep-dive an
+#     INACCESSIBLE / none class (``no`` / ``low``).
+# Neutral / uncertain pairings do NOT fire: ``possibly_accessible`` and
+# ``unknown`` are weak/no-signal on the triage side, ``uncertain`` is
+# no-signal on the deep-dive side, and same-direction pairs (e.g.
+# ``unlikely``↔``low``, ``likely_accessible``↔``high``) agree.
+_TRIAGE_ACCESSIBILITY_CONFLICT: dict[str, frozenset[str]] = {
+    "unlikely": frozenset({"high", "moderate"}),
+    "likely_accessible": frozenset({"no", "low"}),
 }
 
 
@@ -2648,17 +3405,203 @@ def _validate_triage_signal_consistency(
 ) -> None:
     """Flag triage ↔ deep-dive disagreement that lacks a written justification.
 
-    Raises ``ValueError`` when ``triage_signal`` strongly contradicts
-    ``executive_summary.surface_accessibility`` and ``confidence_reasoning``
-    is empty — the LLM must explain the disagreement.
+    Raises ``ValueError`` when ``triage_signal`` points in the opposite
+    direction from ``executive_summary.surface_accessibility`` and
+    ``confidence_reasoning`` is empty — the LLM must explain the disagreement.
     """
 
-    conflicting = _TRIAGE_HIGH_CONFLICT.get(triage_signal, frozenset())
+    conflicting = _TRIAGE_ACCESSIBILITY_CONFLICT.get(triage_signal, frozenset())
     if surface_accessibility in conflicting and not confidence_reasoning.strip():
         raise ValueError(
             f"triage_signal={triage_signal!r} conflicts with "
             f"surface_accessibility={surface_accessibility!r}; the disagreement must "
             "be justified in a non-empty confidence_reasoning"
+        )
+
+
+# ---- cross-block coherence validators ------------------------------------
+#
+# These enforce that the v2 block-builders' outputs are internally
+# coherent. The synthesizer is supposed to keep its claims aligned with
+# the builders' structured output, but until v2.4.0 nothing in the schema
+# stopped a record like ``evidence_grade='direct_multi_method'`` paired
+# with an empty ``methods=[]`` from validating — the synthesizer could
+# write a prose-level claim that no MethodObservation backed. Each helper
+# below is exposed for both ``SurfaceomeRecord`` and ``SurfaceomeRecordDraft``
+# so the agent's draft fails at synthesis time rather than at final
+# assembly.
+
+
+def _validate_evidence_grade_methods_cardinality(
+    evidence_grade: str,
+    methods: list["MethodObservation"],
+) -> None:
+    """``evidence_grade`` must have the methods support it claims.
+
+    * ``direct_multi_method`` ⇒ ≥2 ``MethodObservation`` entries with
+      ``accessibility_relevance='direct_surface_accessibility'`` and
+      those entries cite ≥2 distinct ``evidence_id`` sources. ("Multi-
+      method" requires at least two independent sources, not two
+      observations from the same paper.)
+    * ``direct_single_method`` ⇒ ≥1 such entry. The prompt allows "all
+      direct observations from a single source," so source diversity is
+      not required.
+    * Other grades (``supportive_but_indirect``, ``conflicting``,
+      ``weak``) impose no methods cardinality — they explicitly describe
+      cases where the methods evidence is partial / indirect / absent.
+    """
+    if evidence_grade not in ("direct_multi_method", "direct_single_method"):
+        return
+    direct = [
+        m for m in methods
+        if m.accessibility_relevance == "direct_surface_accessibility"
+    ]
+    if evidence_grade == "direct_single_method":
+        if not direct:
+            raise ValueError(
+                "evidence_grade='direct_single_method' requires at least one "
+                "MethodObservation with "
+                "accessibility_relevance='direct_surface_accessibility'; "
+                "surface_evidence.methods has none. Either downgrade the "
+                "grade or add the direct-method evidence."
+            )
+        return
+    # direct_multi_method
+    if len(direct) < 2:
+        raise ValueError(
+            "evidence_grade='direct_multi_method' requires at least 2 "
+            "MethodObservations with "
+            "accessibility_relevance='direct_surface_accessibility'; "
+            f"surface_evidence.methods has {len(direct)}. Either "
+            "downgrade the grade or add another direct-method observation."
+        )
+    distinct_sources: set[str] = set()
+    for m in direct:
+        distinct_sources.update(m.cited_evidence_ids or [])
+    if len(distinct_sources) < 2:
+        raise ValueError(
+            "evidence_grade='direct_multi_method' requires direct-method "
+            "observations from at least 2 distinct sources "
+            f"(cited_evidence_ids). Found {len(direct)} direct methods "
+            f"covering only {len(distinct_sources)} source(s) "
+            f"({sorted(distinct_sources)}). Either downgrade to "
+            "direct_single_method or cite an independent second source."
+        )
+
+
+# Compartments + dual-localization labels that count as secretory-pathway
+# corroboration for ``secreted_form.present=True``. Loose string match on
+# DualLocalization.compartment since the field is free-text (with a
+# canonical-token validator) rather than a closed enum.
+_SECRETORY_PRIMARY_COMPARTMENTS: frozenset[str] = frozenset({"secreted"})
+_SECRETORY_DUAL_LABELS: frozenset[str] = frozenset(
+    {
+        "secreted",
+        "extracellular",
+        "supernatant",
+        "serum",
+        "plasma",
+        "er",
+        "endoplasmic_reticulum",
+        "endoplasmic reticulum",
+        "golgi",
+        "secretory_vesicle",
+    }
+)
+
+
+def _validate_secreted_form_corroboration(
+    secreted_form: "SecretedForm",
+    subcellular_localization: "SubcellularLocalization",
+    methods: list["MethodObservation"],
+) -> None:
+    """``accessibility_risks.secreted_form.present=True`` must be backed
+    by at least one of:
+
+      a) ``cited_evidence_ids`` on the ``SecretedForm`` itself (the
+         synthesizer pointed to specific ledger entries),
+      b) a secretory-pathway compartment in
+         ``biological_context.subcellular_localization`` (primary or
+         dual),
+      c) a fractionation / glycoproteomics method in
+         ``surface_evidence.methods`` (``accessibility_relevance=
+         supports_membrane_association``).
+
+    A record claiming a secreted form with none of these is structurally
+    unbacked — the synthesizer prose may sound right, but downstream
+    consumers (the catalog, the viewer's risk chip) read this as a hard
+    risk signal and the absence of any backing is the signature pattern
+    of a hallucinated risk."""
+    if not secreted_form.present:
+        return
+    # (a) explicit citation — accept
+    if secreted_form.cited_evidence_ids:
+        return
+    # (b) subcellular_localization corroboration
+    if (
+        subcellular_localization.primary_compartment
+        in _SECRETORY_PRIMARY_COMPARTMENTS
+    ):
+        return
+    for dual in subcellular_localization.dual_localization:
+        compartment = (dual.compartment or "").strip().lower()
+        if compartment in _SECRETORY_DUAL_LABELS:
+            return
+    # (c) fractionation / glycoproteomics method evidence
+    for m in methods:
+        if m.accessibility_relevance == "supports_membrane_association":
+            return
+    raise ValueError(
+        "accessibility_risks.secreted_form.present=True but no "
+        "corroboration: SecretedForm.cited_evidence_ids is empty AND "
+        "biological_context.subcellular_localization has no secretory "
+        "compartment (primary or dual) AND surface_evidence.methods has "
+        "no supports_membrane_association entry. Either cite a ledger "
+        "evidence_id, add a secretory dual_localization, include a "
+        "fractionation method, or set secreted_form.present=False."
+    )
+
+
+def _is_headline_risk_backed(headline: str, risks: "AccessibilityRisks") -> bool:
+    """True iff ``headline`` corresponds to a non-trivially-present sub-block
+    in ``risks``. ``isoform_decoy`` has no dedicated risk sub-block — the
+    synthesizer's prose carries it — so it always passes here. Unknown
+    headline values also pass (forward-compat)."""
+    if headline == "shed_form":
+        return risks.shed_form.present
+    if headline == "secreted_form":
+        return risks.secreted_form.present
+    if headline == "co_receptor":
+        return risks.co_receptor_requirements.surface_expression_dependency in (
+            "required",
+            "modulatory",
+        )
+    if headline == "epitope_masked":
+        return risks.epitope_masking.severity in ("low", "moderate", "high")
+    return True
+
+
+def _validate_headline_risks_match_present_risks(
+    headline_risks: list[str],
+    risks: "AccessibilityRisks",
+) -> None:
+    """Each ``headline_risks`` entry must correspond to a present
+    ``accessibility_risks`` sub-block. The orchestrator post-pass already
+    SCRUBS unbacked entries (``scrub_headline_risks`` in orchestrator.py)
+    so this is a belt-and-suspenders check that fires at the schema
+    level — even if the orchestrator post-pass is skipped (e.g. a stub
+    annotate path), a record can never persist with an unbacked
+    headline."""
+    unbacked = [h for h in headline_risks if not _is_headline_risk_backed(h, risks)]
+    if unbacked:
+        raise ValueError(
+            f"executive_summary.headline_risks={headline_risks} contains "
+            f"entries with no backing in accessibility_risks: {unbacked}. "
+            "Either remove the unbacked entries from headline_risks or "
+            "update the corresponding sub-block "
+            "(shed_form.present / secreted_form.present / "
+            "epitope_masking.severity / "
+            "co_receptor_requirements.surface_expression_dependency)."
         )
 
 
@@ -2675,7 +3618,10 @@ class SurfaceomeRecord(BaseModel):
 
     model_config = ConfigDict(extra="forbid")
 
-    schema_version: Literal["1.0.0", "1.1.0"] = "1.1.0"
+    schema_version: Literal[
+        "1.0.0", "1.1.0", "2.0.0", "2.1.0", "2.2.0", "2.3.0", "2.4.0", "2.4.1",
+        "2.5.0", "2.6.0", "2.7.0", "2.8.0", "2.9.0",
+    ] = "2.9.0"
     gene: GeneIdentifier
 
     # Cross-agent coherence — populated by the orchestrator from the most
@@ -2752,6 +3698,99 @@ class SurfaceomeRecord(BaseModel):
         )
         return self
 
+    @model_validator(mode="after")
+    def _check_secreted_form_corroboration(self) -> SurfaceomeRecord:
+        _validate_secreted_form_corroboration(
+            self.accessibility_risks.secreted_form,
+            self.biological_context.subcellular_localization,
+            self.surface_evidence.methods,
+        )
+        return self
+
+    @model_validator(mode="after")
+    def _check_headline_risks_match_present_risks(self) -> SurfaceomeRecord:
+        _validate_headline_risks_match_present_risks(
+            list(self.executive_summary.headline_risks),
+            self.accessibility_risks,
+        )
+        return self
+
+    @model_validator(mode="after")
+    def _check_state_dependence_consistent_with_modulation(
+        self,
+    ) -> SurfaceomeRecord:
+        """Refuse ``state_dependence='low'`` when the biology shows
+        state-conditional upregulation of the surface form.
+
+        ``state_dependence`` captures how much the targetable surface
+        fraction VARIES by state. ``low`` means "essentially the same
+        across observed contexts." That is incompatible with the
+        evidence patterns flagged below — picking ``low`` when the
+        ledger carries oncogenic-induction or repeated "increases"
+        modulation rows erases the very signal the catalog reader is
+        filtering for (the TROP2-class miscalibration the synth made
+        for this gene: state_dependence='low' alongside 10 increases-
+        direction modulation rows + induction_trigger='oncogenic').
+
+        Conditions that forbid ``state_dependence='low'``:
+          * ``filters.induction_trigger != 'none'`` — the synth's own
+            rollup says there IS a dominant induction trigger.
+          * ``accessibility_modulation`` has ≥3 rows with
+            ``direction='increases'`` — multiple independent
+            observations of the surface form going up under some state.
+          * any ``accessibility_modulation`` row carries
+            ``cell_state_trigger='oncogenic_transformation'`` with
+            ``direction='increases'`` AND the call isn't
+            ``surface_accessibility='no'`` — the textbook tumor-induced
+            overexpression case.
+
+        ``tumor_associated=True`` is intentionally NOT in the gate —
+        that flag means "found on tumors" (could be constitutive
+        expression in tumor tissue without state-induction); the
+        actual state-induction signal lives in
+        ``induction_trigger`` and the modulation rows.
+        """
+        if self.executive_summary.state_dependence != "low":
+            return self
+
+        modulation = self.biological_context.accessibility_modulation
+        n_increases = sum(1 for m in modulation if m.direction == "increases")
+        has_oncogenic_increase = any(
+            m.cell_state_trigger == "oncogenic_transformation"
+            and m.direction == "increases"
+            for m in modulation
+        )
+        sa = self.executive_summary.surface_accessibility
+        induction = self.filters.induction_trigger
+
+        violations: list[str] = []
+        if induction != "none":
+            violations.append(
+                f"filters.induction_trigger={induction!r} (≠ 'none')"
+            )
+        if n_increases >= 3:
+            violations.append(
+                f"{n_increases} accessibility_modulation rows have "
+                f"direction='increases'"
+            )
+        if has_oncogenic_increase and sa != "no":
+            violations.append(
+                "an accessibility_modulation row has "
+                "cell_state_trigger='oncogenic_transformation' with "
+                f"direction='increases' alongside surface_accessibility={sa!r}"
+            )
+
+        if violations:
+            raise ValueError(
+                "executive_summary.state_dependence='low' is incompatible "
+                "with the A2 biology: "
+                + "; ".join(violations)
+                + ". The targetable surface fraction is state-conditional — "
+                "pick at least state_dependence='moderate' so the catalog "
+                "reader sees the gating."
+            )
+        return self
+
 
 class SurfaceomeRecordDraft(BaseModel):
     """What the AGENT emits for a surface-accessibility deep-dive.
@@ -2772,7 +3811,10 @@ class SurfaceomeRecordDraft(BaseModel):
 
     model_config = ConfigDict(extra="forbid")
 
-    schema_version: Literal["1.0.0", "1.1.0"] = "1.1.0"
+    schema_version: Literal[
+        "1.0.0", "1.1.0", "2.0.0", "2.1.0", "2.2.0", "2.3.0", "2.4.0", "2.4.1",
+        "2.5.0", "2.6.0", "2.7.0", "2.8.0", "2.9.0",
+    ] = "2.9.0"
     gene: GeneIdentifier
 
     # Orchestrator-injected before the agent call; the agent reads it but does
@@ -2818,6 +3860,23 @@ class SurfaceomeRecordDraft(BaseModel):
             self.triage_signal,
             self.executive_summary.surface_accessibility,
             self.confidence_reasoning,
+        )
+        return self
+
+    @model_validator(mode="after")
+    def _check_secreted_form_corroboration(self) -> SurfaceomeRecordDraft:
+        _validate_secreted_form_corroboration(
+            self.accessibility_risks.secreted_form,
+            self.biological_context.subcellular_localization,
+            self.surface_evidence.methods,
+        )
+        return self
+
+    @model_validator(mode="after")
+    def _check_headline_risks_match_present_risks(self) -> SurfaceomeRecordDraft:
+        _validate_headline_risks_match_present_risks(
+            list(self.executive_summary.headline_risks),
+            self.accessibility_risks,
         )
         return self
 
@@ -2925,8 +3984,10 @@ class BiologicalContextDraft(BaseModel):
         bc = self.biological_context
         for row in bc.expression:
             cited.update(row.cited_evidence_ids)
-        for state in bc.cell_states:
-            cited.update(state.cited_evidence_ids)
+        for tissue in bc.tissues:  # deprecated v1 path
+            cited.update(tissue.cited_evidence_ids)
+        for cell_type in bc.cell_types:  # deprecated v1 path
+            cited.update(cell_type.cited_evidence_ids)
         for dual in bc.subcellular_localization.dual_localization:
             cited.update(dual.cited_evidence_ids)
         for sub in bc.subcellular_localization.membrane_subdomains:
@@ -2983,21 +4044,56 @@ class SynthesizerLLMFilters(BaseModel):
     # ``False`` for orphan GPCRs / nuclear receptors / kinases where
     # the deorphanization status is genuinely unknown.
     has_known_ligand: bool = True
-    has_known_ligand_rationale: str = Field(
-        ...,
-        description="Name the documented ligand/partner (true) or state why the protein is orphan-class (false). Soft target ≤300 chars.",
-    )
+    # A1.6 — one-line "why" per LLM-rollup chip, each with inline
+    # ``(a1_evi_NN)`` / ``(a2_evi_NN)`` cites so the chip is self-auditable.
+    # Optional default "" (v1-safe); a warn-only validator flags a non-empty
+    # rationale that omits any inline cite (A8.2) — it warns rather than raises
+    # because the synthesizer is a Managed Agent with no in-process repair loop.
+    expression_level_rationale: str = ""
+    expression_breadth_rationale: str = ""
+    surface_specificity_rationale: str = ""
+    has_known_ligand_rationale: str = ""
 
-    _PROSE_TARGETS: ClassVar[dict[str, int]] = {
-        "expression_level_rationale": 300,
-        "expression_breadth_rationale": 300,
-        "surface_specificity_rationale": 300,
-        "has_known_ligand_rationale": 300,
-    }
+    @field_validator(
+        "expression_level_rationale",
+        "expression_breadth_rationale",
+        "surface_specificity_rationale",
+        "has_known_ligand_rationale",
+    )
+    @classmethod
+    def _warn_rationale_missing_cite(cls, v: str) -> str:
+        if v and not _has_inline_evi_cite(v):
+            logger.warning(
+                "SynthesizerLLMFilters rationale lacks an inline (a1_evi_NN)/"
+                "(a2_evi_NN) cite: %r",
+                v,
+            )
+        return v
 
     @model_validator(mode="after")
-    def _warn_soft_target_overshoot(self) -> "SynthesizerLLMFilters":
-        _warn_prose_overshoot(self, type(self)._PROSE_TARGETS)
+    def _require_has_known_ligand_rationale_when_true(
+        self,
+    ) -> SynthesizerLLMFilters:
+        """``has_known_ligand=True`` requires a non-empty rationale.
+
+        Catches the TROP2-class miscalibration: the synth flipped the
+        bool to ``True`` (its default) but left
+        ``has_known_ligand_rationale`` empty, so the catalog reader
+        has no way to verify which ligand grounds the claim. If the
+        ligand can't be named, the bool should be ``False`` (orphan-
+        receptor case) — empty strings are not a valid third state.
+
+        Warn-only on missing inline cite stays above; this validator
+        is the harder backstop on the boolean half of the flag.
+        """
+        if self.has_known_ligand and not self.has_known_ligand_rationale.strip():
+            raise ValueError(
+                "has_known_ligand=True requires a non-empty "
+                "has_known_ligand_rationale naming the ligand. If the "
+                "ligand identity is genuinely unknown, set "
+                "has_known_ligand=False (orphan-receptor case) and "
+                "explain in the rationale."
+            )
         return self
 
 
@@ -3446,6 +4542,7 @@ __all__ = [
     "TriageSignal",
     "SurfaceAccessibility",
     "EvidenceGrade",
+    "BiologicalContextGrade",
     "Confidence",
     "StateDependence",
     "Subcategory",
@@ -3476,6 +4573,7 @@ __all__ = [
     "Orientation",
     "AccessibilityImplication",
     "ModulationCategory",
+    "ModulationDirection",
     "CellStateTrigger",
     "RestrictedLineage",
     "DualLocPartnerCompartment",
@@ -3485,6 +4583,7 @@ __all__ = [
     "RiskSeverity",
     "EvidenceStrength",
     "RestrictedSubdomainName",
+    "MembraneSubdomainName",
     "CoreceptorDependency",
     "CoreceptorEvidenceBasis",
     "SecretedFormSource",
@@ -3499,11 +4598,13 @@ __all__ = [
     "OverexpressionContext",
     "MethodObservation",
     "NonSurfaceExpression",
+    "ExcludedClaim",
     "Contradiction",
     "SurfaceEvidence",
     # v1.0.0 — biological context (section 2)
     "ExpressionRow",
-    "StateContext",
+    "TissueContext",
+    "CellTypeContextV1",
     "DualLocalization",
     "MembraneSubdomain",
     "SubcellularLocalization",
@@ -3516,6 +4617,7 @@ __all__ = [
     "Orthologs",
     "ParalogEntry",
     "StructureFeatures",
+    "RepresentativeStructure",
     "SurfaceBindSite",
     "SurfaceBindFeatures",
     "DeterministicFeatures",
@@ -3525,7 +4627,9 @@ __all__ = [
     "SecretedForm",
     "RestrictedSubdomain",
     "ECDSizeAssessment",
+    "classify_ecd_accessibility_class",
     "EpitopeMasking",
+    "HomoOligomerizationPredictionRisk",
     "AccessibilityRisks",
     # TriageRecord
     "TRIAGE_SCHEMA_VERSION",

@@ -118,16 +118,17 @@ def _load_gene_identifier_index() -> tuple[dict[str, StableID], dict[str, Stable
 
 # ------------------------------ Sonnet verdict index -----------------------
 
-SONNET_RUN_ID = "genome_full_sonnet_ncbi_v1"
+SONNET_RUN_ID = "genome_full_sonnet_ncbi_v2"
 SONNET_MODEL = "claude-sonnet-4-6"
 SONNET_VARIANT = "ncbi"
 
 
 def _load_sonnet_verdict_index() -> dict[str, tuple[str, str]]:
     """Return ``{gene_symbol: (predicted_verdict, predicted_reason)}`` for the
-    canonical genome-wide Sonnet sweep. Public D1 already holds the
-    resolver-v3-fixed rows under the same run_id (verified — 45 fix-run
-    cells overwrote the originals in place), so no COALESCE is needed.
+    canonical genome-wide Sonnet sweep. As of the SurfaceBench v2 cutover
+    (commit 45fbaffdb), the live sweep is ``genome_full_sonnet_ncbi_v2``
+    (19,324 rows, replicate=1 only) — v1 has been replaced in public D1
+    rather than coexisting, so no COALESCE / preference logic is needed.
     """
     rows = _query_public(
         "SELECT gene_symbol, predicted_verdict, predicted_reason "

@@ -134,6 +134,102 @@ def test_extractor_returns_empty_when_no_hallmark_match() -> None:
     assert snippets == []
 
 
+def test_surface_expression_extractor_fires_on_context_tagged_sentences() -> None:
+    # surface_expression must capture ASSAY-LESS, location-tagged surface
+    # mentions that the method categories miss.
+    paper = _fixture_paper(
+        sections=[
+            PaperSection(
+                name="results",
+                text=(
+                    "CD19 is expressed on the surface of activated T cells. "
+                    "In hepatocytes, cell surface levels of the receptor are "
+                    "markedly elevated during regeneration."
+                ),
+            ),
+        ]
+    )
+    snippets = er._extract_snippets(
+        paper=paper,
+        spec=er._CATEGORY_SPECS["surface_expression"],
+        max_snippets=3,
+    )
+    assert snippets, "expected context-tagged surface-expression snippets"
+    full_text = "\n\n".join(s.text for s in paper.sections)
+    for snippet in snippets:
+        assert snippet.text in full_text
+
+
+def test_surface_expression_extractor_does_not_fire_on_bare_surface() -> None:
+    # Precision guard: a bare "surface" mention with no context cue (no
+    # tissue / cell-type / expression-level pairing) must NOT match.
+    paper = _fixture_paper(
+        sections=[
+            PaperSection(
+                name="results",
+                text=(
+                    "The protein has a smooth surface topology. "
+                    "Cells were plated on a treated surface before imaging."
+                ),
+            ),
+        ]
+    )
+    snippets = er._extract_snippets(
+        paper=paper,
+        spec=er._CATEGORY_SPECS["surface_expression"],
+        max_snippets=3,
+    )
+    assert snippets == [], "bare 'surface' should not fire surface_expression"
+
+
+def test_overexpression_extractor_fires_on_oe_surface_trafficking() -> None:
+    # overexpression must capture OE-precedent surface trafficking regardless of
+    # detection method.
+    paper = _fixture_paper(
+        sections=[
+            PaperSection(
+                name="results",
+                text=(
+                    "Ectopically expressed CLDN18 localized to the plasma "
+                    "membrane of HEK293 cells. Surface expression of "
+                    "transfected receptor was readily detectable."
+                ),
+            ),
+        ]
+    )
+    snippets = er._extract_snippets(
+        paper=paper,
+        spec=er._CATEGORY_SPECS["overexpression"],
+        max_snippets=3,
+    )
+    assert snippets, "expected OE-surface-trafficking snippets"
+    full_text = "\n\n".join(s.text for s in paper.sections)
+    for snippet in snippets:
+        assert snippet.text in full_text
+
+
+def test_overexpression_extractor_does_not_fire_without_surface_localization() -> None:
+    # Precision guard: an OE term with no nearby surface/membrane-localization
+    # phrase must NOT match (it's not surface-trafficking evidence).
+    paper = _fixture_paper(
+        sections=[
+            PaperSection(
+                name="results",
+                text=(
+                    "Cells overexpressing the construct showed increased "
+                    "proliferation and elevated cytokine secretion."
+                ),
+            ),
+        ]
+    )
+    snippets = er._extract_snippets(
+        paper=paper,
+        spec=er._CATEGORY_SPECS["overexpression"],
+        max_snippets=3,
+    )
+    assert snippets == [], "OE without surface localization should not fire"
+
+
 def test_target_mention_extractor_emits_for_high_throughput_categories() -> None:
     """For high-throughput categories, ``_extract_target_mentions`` emits a
     target-naming sentence even when it doesn't match a hallmark pattern.

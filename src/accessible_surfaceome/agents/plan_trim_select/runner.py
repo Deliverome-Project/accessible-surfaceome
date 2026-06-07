@@ -45,6 +45,7 @@ from anthropic.types import TextBlock
 from pydantic import BaseModel, ValidationError
 
 from accessible_surfaceome.agents._support.client import get_client
+from accessible_surfaceome.agents._support.payload import cached_system
 from accessible_surfaceome.agents._support.pricing import (
     UsageRecord,
     UsageSummary,
@@ -98,28 +99,76 @@ logger = logging.getLogger(__name__)
 
 
 PROMPTS_DIR = Path(__file__).parent / "prompts"
-SELECT_PROMPT_PATH = PROMPTS_DIR / "select_system.md"
 
-# Per-agent prompt variants. When ``agent_focus`` is None on the entry
-# point we use the generic trim_system.md / select_system.md (unified
-# ledger, ``pts_evi_`` prefix). When ``agent_focus="a1"`` we swap to the
-# surface-evidence-focused trim + select prompts and use the ``a1_evi_``
-# prefix that A1 block-builders downstream expect; ``"a2"`` likewise for
-# the biological-context ledger.
-TRIM_PROMPT_PATH = PROMPTS_DIR / "trim_system.md"
+# Per-agent trim + select prompt variants. ``agent_focus="a1"`` uses the
+# surface-evidence-focused prompts and the ``a1_evi_`` claim-id prefix
+# that A1 block-builders downstream expect; ``"a2"`` likewise for the
+# biological-context ledger. The legacy single-pass ``trim_system.md`` /
+# ``select_system.md`` and their ``pts_evi_`` prefix were retired with
+# the unified-ledger MVP path — production always runs the dual A1+A2
+# driver, so both legs are mandatory.
 A1_TRIM_PROMPT_PATH = PROMPTS_DIR / "a1_trim_system.md"
 A1_SELECT_PROMPT_PATH = PROMPTS_DIR / "a1_select_system.md"
 A2_TRIM_PROMPT_PATH = PROMPTS_DIR / "a2_trim_system.md"
 A2_SELECT_PROMPT_PATH = PROMPTS_DIR / "a2_select_system.md"
 
+
+# Trim-prompt cached-system + per-paper user split.
+#
+# The trim prompts mix gene-agnostic RULES (what A1/A2 cares about, what to
+# drop, how to calibrate) with per-paper DATA (paper_id + clip list). For
+# Anthropic prompt caching, the rules must be byte-identical across calls —
+# so we split each template at the `## Output` header, swap any `{gene}`
+# placeholders in the rules block for a fixed gene-agnostic phrase ("the
+# target gene"), and substitute the JSON schema once. The result is a cached
+# system prompt that's reused across every paper trimmed for a given gene
+# (and across genes, when the 5-min TTL lets the cache survive between
+# them).
+#
+# The per-paper user message carries the actual gene name explicitly
+# ("Target gene: SLC7A5") in a preamble, then the legacy `## Output` block
+# with paper_id + clips. Haiku sees the same content as before; the change
+# is purely transport-level (where each part of the prompt lives).
+def _split_trim_template(template_text: str, schema_str: str) -> tuple[str, str]:
+    """Return ``(cached_system_text, user_template)``.
+
+    Splits at the first ``## Output`` heading. The rules block (everything
+    before) gets ``{gene}`` → ``the target gene`` substitution so it's
+    byte-identical across genes — required for the cache key. The user
+    template (everything from ``## Output`` onward) keeps the original
+    placeholders, to be filled per-call with the actual paper data.
+
+    The schema is substituted into the user template too (it's only
+    referenced in the output section). The cached system never carries
+    `{schema}` so we don't have to worry about JSON-dump whitespace drift
+    invalidating the cache key.
+    """
+    parts = template_text.split("## Output", 1)
+    if len(parts) != 2:
+        # Defensive: prompt structure changed; fall back to the whole template
+        # as the user message and an empty system (no caching). Loud log so
+        # the prompt-corpus version test catches it.
+        logger.warning(
+            "trim template missing '## Output' header — caching disabled"
+        )
+        return "", template_text
+    rules_block, output_section = parts[0], "## Output" + parts[1]
+    cached_rules = rules_block.replace("{gene}", "the target gene")
+    return cached_rules, output_section
+
+
+# Module-level cache: parsed trim template per path. Each entry is
+# ``(cached_system_text, user_template_with_schema_substituted)``. Populated
+# lazily on first use of each prompt path so test overrides still work
+# (legacy tests sometimes pass a custom template string in directly).
+_TRIM_TEMPLATE_CACHE: dict[Path, tuple[str, str]] = {}
+
 AgentFocus = Literal["a1", "a2"]
 
-# evidence_id prefix per focus. The default ``pts_evi_`` is used when no
-# focus is set (the single-agent MVP path). Per-agent prefixes restore the
-# discipline that ``SurfaceEvidenceDraft._check_claim_id_prefix`` / the
-# matching A2 validator expect when Phase 2's block builders run.
-_EVIDENCE_ID_PREFIX: dict[str | None, str] = {
-    None: "pts_evi_",
+# evidence_id prefix per focus. Per-agent prefixes are what
+# ``SurfaceEvidenceDraft._check_claim_id_prefix`` / the matching A2
+# validator expect when Phase 2's block builders run.
+_EVIDENCE_ID_PREFIX: dict[str, str] = {
     "a1": "a1_evi_",
     "a2": "a2_evi_",
 }
@@ -208,10 +257,11 @@ class PlanTrimSelectResult:
     bundle: IdentifierBundle | None
     plan: SearchPlan | None
     selection_response: SelectionResponse | None
-    # ``None`` = unified-ledger MVP path; ``"a1"`` = surface-evidence focus,
-    # ``"a2"`` = biological-context focus. Threaded through so the audit
-    # JSON makes the focus explicit.
-    agent_focus: AgentFocus | None = None
+    # ``"a1"`` = surface-evidence focus, ``"a2"`` = biological-context
+    # focus. Threaded through so the audit JSON makes the focus
+    # explicit. The legacy single-pass (unified-ledger) path was
+    # retired — every run must declare a focus.
+    agent_focus: AgentFocus = "a1"
     claims: list[EvidenceClaim] = field(default_factory=list)
     search_log: list[SearchLogEntry] = field(default_factory=list)
     iteration_log: list[IterationLogEntry] = field(default_factory=list)
@@ -249,6 +299,10 @@ class PlanTrimSelectResult:
     # Per-step wall-clock audit, populated when a TimingRecorder is
     # threaded through the run (orchestrator does this by default).
     timing: list[StepTiming] = field(default_factory=list)
+    # Pre-trim filter decisions per iteration. Populated whether or not
+    # the filter is enabled; shadow-mode runs collect the audit for
+    # validation without actually dropping papers. Default empty.
+    pretrim_audits: list[Any] = field(default_factory=list)
 
     @property
     def total_cost_usd(self) -> float:
@@ -301,6 +355,12 @@ class GeneContext:
     db_panel_json: str
     deterministic_summary_json: str | None = None
     triage_summary_json: str | None = None
+    # Canonical topology counts threaded into the deterministic kickoff to
+    # gate the membrane-specific standing axes. ``None`` means "topology
+    # unknown" (D1 miss / placeholder) — the kickoff fires those axes
+    # recall-biased rather than suppressing them on a coverage gap.
+    n_tmh: int | None = None
+    ecd_aa: int | None = None
 
 
 def _summarize_deterministic_for_planner(features: DeterministicFeatures) -> str:
@@ -363,7 +423,7 @@ def _summarize_deterministic_for_planner(features: DeterministicFeatures) -> str
             cyno.ecd_pct_identity_to_human_canonical if cyno else None
         ),
     }
-    return json.dumps(payload, indent=2)
+    return json.dumps(payload, indent=2, sort_keys=True)
 
 
 def _summarize_triage_for_planner(record: TriageRecord) -> str:
@@ -389,7 +449,7 @@ def _summarize_triage_for_planner(record: TriageRecord) -> str:
         "key_uncertainty": record.key_uncertainty,
         "confidence": record.confidence,
     }
-    return json.dumps(payload, indent=2)
+    return json.dumps(payload, indent=2, sort_keys=True)
 
 
 def _build_gene_context(
@@ -439,6 +499,8 @@ def _build_gene_context(
     # available"). Local import keeps the D1 dependency out of import
     # time for code paths that don't run the planner.
     deterministic_summary: str | None
+    n_tmh: int | None = None
+    ecd_aa: int | None = None
     try:
         from accessible_surfaceome.agents.surfaceome_v1.d1_deterministic import (
             fetch_deterministic_features,
@@ -446,6 +508,15 @@ def _build_gene_context(
 
         features = fetch_deterministic_features(bundle.uniprot_acc)
         deterministic_summary = _summarize_deterministic_for_planner(features)
+        # Real topology only — the D1-miss placeholder (tool_version
+        # "placeholder-no-d1-row", which carries a synthetic tm_helix_count=0)
+        # must read as "topology unknown" so the kickoff fires its
+        # membrane-gated axes recall-biased instead of treating the
+        # placeholder as a real TM=0 (non-membrane) negative.
+        canon = features.canonical_topology
+        if canon.tool_version != "placeholder-no-d1-row":
+            n_tmh = canon.tm_helix_count
+            ecd_aa = canon.ecd_length_residues
     except Exception as exc:  # noqa: BLE001 — keep planning even if D1 is down
         logger.warning(
             "deterministic-features D1 fetch failed for %s (%s); "
@@ -488,6 +559,8 @@ def _build_gene_context(
         db_panel_json=db.model_dump_json(indent=2),
         deterministic_summary_json=deterministic_summary,
         triage_summary_json=triage_summary,
+        n_tmh=n_tmh,
+        ecd_aa=ecd_aa,
     )
 
 
@@ -559,12 +632,17 @@ def _call_with_repair(
     parsed: BaseModel | None = None
     raw_json: dict[str, Any] | None = None
     final_text = ""
+    # Cache the (static, focus-specific) selector system prompt — mirrors the
+    # synthesizer's cached_system pattern. Cuts cost on repair-loop retries and
+    # across genes in a sweep; byte-identical output (cache_control is a
+    # transport/billing directive, not a generation change).
+    cached_sys = cached_system(system_prompt)
 
     for attempt in range(MAX_REPAIRS + 1):
         resp = client.messages.create(
             model=model,
             max_tokens=max_tokens,
-            system=system_prompt,
+            system=cast("Any", cached_sys),
             messages=cast("Any", messages),
         )
         usage_sink.append(record_from_response(resp.usage, model))
@@ -702,6 +780,7 @@ def _execute_plan(
                         hgnc_symbol=bundle.hgnc_symbol,
                         ncbi_gene_id=bundle.ncbi_gene_id,
                         aliases=bundle.aliases,
+                        previous_symbols=bundle.previous_symbols,
                         topic_anchors=list(req.anchors),
                         http=http,
                         retraction_index=retraction_index,
@@ -868,21 +947,51 @@ def _trim_one_paper(
     bounded = sorted(clips, key=lambda c: c.score, reverse=True)[
         :MAX_CLIPS_PER_TRIM_CALL
     ]
-    prompt = trim_prompt_template.format(
-        gene=gene,
-        paper_id=source_id,
-        n_clips=len(bounded),
-        numbered_clips=_format_clips_for_trim(bounded),
-        schema=schema_str,
+    # Caching path: split the trim template into a gene-agnostic cached
+    # system block + a per-paper user template. Each unique template gets
+    # split once (cached in _TRIM_TEMPLATE_CACHE). Per-call we only format
+    # the small user template (paper_id + clips); the rules block is
+    # served from Anthropic's prompt cache. ~88% savings on the prefix
+    # cost for the 30-100 trim calls per gene.
+    cached_system_text, user_template = _split_trim_template(
+        trim_prompt_template, schema_str
+    )
+    user_msg = (
+        f"Target gene: {gene}\n\n"
+        + user_template.format(
+            gene=gene,
+            paper_id=source_id,
+            n_clips=len(bounded),
+            numbered_clips=_format_clips_for_trim(bounded),
+            schema=schema_str,
+        )
     )
     started_at = datetime.now(UTC)
     t0 = time.perf_counter()
     try:
-        resp = client.messages.create(
-            model=HAIKU_MODEL,
-            max_tokens=MAX_TOKENS_TRIM,
-            messages=cast("Any", [{"role": "user", "content": prompt}]),
-        )
+        if cached_system_text:
+            resp = client.messages.create(
+                model=HAIKU_MODEL,
+                max_tokens=MAX_TOKENS_TRIM,
+                system=cast("Any", cached_system(cached_system_text)),
+                messages=cast("Any", [{"role": "user", "content": user_msg}]),
+            )
+        else:
+            # Fallback (no '## Output' header found — old prompt shape).
+            legacy_prompt = trim_prompt_template.format(
+                gene=gene,
+                paper_id=source_id,
+                n_clips=len(bounded),
+                numbered_clips=_format_clips_for_trim(bounded),
+                schema=schema_str,
+            )
+            resp = client.messages.create(
+                model=HAIKU_MODEL,
+                max_tokens=MAX_TOKENS_TRIM,
+                messages=cast(
+                    "Any", [{"role": "user", "content": legacy_prompt}]
+                ),
+            )
     except Exception as exc:  # noqa: BLE001
         logger.warning("trim call failed for %s: %s", source_id, exc)
         timing_row = (
@@ -963,7 +1072,7 @@ def _run_trim(
     clips_by_source: dict[str, list[EvidenceClaimDraft]],
     gene: str,
     usage_sink: list[UsageRecord],
-    trim_prompt_path: Path = TRIM_PROMPT_PATH,
+    trim_prompt_path: Path,
     timing: TimingRecorder | None = None,
     timing_phase: str = "plan_trim_select",
     timing_iteration: int = 0,
@@ -982,7 +1091,7 @@ def _run_trim(
     template; per-agent paths narrow the trim focus.
     """
 
-    schema_str = json.dumps(TrimResponse.model_json_schema(), indent=2)
+    schema_str = json.dumps(TrimResponse.model_json_schema(), indent=2, sort_keys=True)
     trim_prompt_template = trim_prompt_path.read_text()
     results: dict[str, TrimResponse] = {}
     non_empty = [(sid, clips) for sid, clips in clips_by_source.items() if clips]
@@ -1054,12 +1163,12 @@ def _run_selector(
     menu_markdown: str,
     n_kept: int,
     usage_sink: list[UsageRecord],
-    select_prompt_path: Path = SELECT_PROMPT_PATH,
+    select_prompt_path: Path,
     timing: TimingRecorder | None = None,
     timing_phase: str = "plan_trim_select",
 ) -> SelectionResponse | None:
     system_prompt = select_prompt_path.read_text()
-    schema_str = json.dumps(SelectionResponse.model_json_schema(), indent=2)
+    schema_str = json.dumps(SelectionResponse.model_json_schema(), indent=2, sort_keys=True)
     deterministic_block = ""
     if context.deterministic_summary_json:
         deterministic_block = (
@@ -1077,7 +1186,7 @@ def _run_selector(
     user_prompt = (
         f"# Gene: {context.gene}\n\n"
         f"UniProt summary (for context):\n```json\n{context.uniprot_summary_json}\n```\n\n"
-        f"DB vote panel (HPA + SURFY/CSPA, for context):\n"
+        f"DB vote panel (5-database surface vote, for context):\n"
         f"```json\n{context.db_panel_json}\n```\n\n"
         f"{deterministic_block}"
         f"{triage_block}"
@@ -1216,21 +1325,16 @@ def _promote_selections(
 
 
 def _resolve_focus_prompts(
-    agent_focus: AgentFocus | None,
+    agent_focus: AgentFocus,
 ) -> tuple[Path, Path, str]:
     """Map agent_focus → (trim_prompt_path, select_prompt_path, evi_prefix).
 
-    Centralized so an unknown / not-yet-wired focus fails fast with a
-    clear error before any model call. ``agent_focus=None`` keeps the
-    generic trim/select prompts for the single-agent unified-ledger path.
+    Centralized so an unknown focus fails fast with a clear error before
+    any model call. The legacy unified-ledger (``agent_focus=None``)
+    path was retired with the ``trim_system.md`` / ``select_system.md``
+    prompts — production runs both A1 and A2 via the dual driver.
     """
 
-    if agent_focus is None:
-        return (
-            TRIM_PROMPT_PATH,
-            SELECT_PROMPT_PATH,
-            _EVIDENCE_ID_PREFIX[None],
-        )
     if agent_focus == "a1":
         return (
             A1_TRIM_PROMPT_PATH,
@@ -1244,7 +1348,7 @@ def _resolve_focus_prompts(
             _EVIDENCE_ID_PREFIX["a2"],
         )
     raise ValueError(
-        f"unknown agent_focus={agent_focus!r}; expected 'a1', 'a2', or None"
+        f"unknown agent_focus={agent_focus!r}; expected 'a1' or 'a2'"
     )
 
 
@@ -1254,22 +1358,26 @@ def run_plan_trim_select(
     client: Anthropic | None = None,
     http: CachedHTTP | None = None,
     retraction_index: RetractionIndex | None = None,
-    agent_focus: AgentFocus | None = None,
+    agent_focus: AgentFocus,
     timing: TimingRecorder | None = None,
+    enable_pretrim_filter: bool = False,
+    triage_cache: dict[str, Any] | None = None,
 ) -> PlanTrimSelectResult:
     """Run plan → trim → select for one gene. Returns the full audit result.
 
     ``agent_focus`` selects the trim + select prompt pair and the
     ``evidence_id`` prefix:
 
-    * ``None`` — generic A1+A2 unified ledger (today's MVP behavior,
-      ``pts_evi_`` prefix). Backwards-compatible default.
     * ``"a1"`` — surface-evidence focus (``a1_trim_system.md`` +
       ``a1_select_system.md``, ``a1_evi_`` prefix). Selects clips that
       feed `surface_evidence` block builders downstream.
     * ``"a2"`` — biological-context focus (``a2_trim_system.md`` +
       ``a2_select_system.md``, ``a2_evi_`` prefix). Selects clips that
       feed `biological_context` block builders downstream.
+
+    The legacy unified-ledger (``agent_focus=None``) path was retired
+    along with the ``trim_system.md`` / ``select_system.md`` prompts.
+    Every caller must declare a focus.
 
     The kickoff stage is *not* per-focus in its *search set* — both A1
     and A2 discover into the same shared candidate inventory. The
@@ -1294,9 +1402,7 @@ def run_plan_trim_select(
         select_prompt_path,
         evidence_id_prefix,
     ) = _resolve_focus_prompts(agent_focus)
-    timing_phase = (
-        f"plan_trim_select_{agent_focus}" if agent_focus else "plan_trim_select"
-    )
+    timing_phase = f"plan_trim_select_{agent_focus}"
     # Track the per-run timing slice so the result's ``timing`` field
     # contains *only* this run's rows (the recorder may carry rows from
     # the sibling A1/A2 run when called via the dual driver).
@@ -1323,6 +1429,11 @@ def run_plan_trim_select(
     # Paper source_ids already routed through triage, so later iterations
     # triage only newly-discovered papers (each paper triaged exactly once).
     triaged_ids: set[str] = set()
+    # Per-iteration pre-trim filter audits. Captured whether or not the
+    # filter is enabled; under shadow mode (default), the audit records what
+    # WOULD be dropped without actually dropping. Routed onto the final
+    # result so callers can persist + validate before flipping the default.
+    _pretrim_audits: list[Any] = []
 
     try:
         # Step 0 — gene context (once per run)
@@ -1332,8 +1443,10 @@ def run_plan_trim_select(
 
         # Step 1 — deterministic kickoff plan (no LLM planner). The fixed
         # per-focus search set reproduces the retired planner's average
-        # coverage.
-        initial_plan = build_kickoff(agent_focus)
+        # coverage; canonical topology counts gate the membrane-specific
+        # standing axes (tox panel always; surface-reachability when
+        # membrane+ECD or topology unknown).
+        initial_plan = build_kickoff(agent_focus, context.n_tmh, context.ecd_aa)
         result.plan = initial_plan
         logger.info("kickoff emitted %d searches", len(initial_plan.searches))
 
@@ -1398,16 +1511,84 @@ def run_plan_trim_select(
                 papers_by_id[sid] = paper
 
             if new_papers:
-                logger.info(
-                    "iteration %d: triaging %d newly-discovered papers",
-                    iteration, len(new_papers),
+                # Pre-trim filter: drop high-waste papers (reviews in low-quality
+                # venues, drug-discovery summaries, broad atlases) BEFORE the
+                # Haiku abstract triage runs. Activates only for heavy-literature
+                # candidate pools (>=50 papers); thin-lit genes pass through
+                # unchanged. The audit is collected regardless of activation so
+                # the operator can validate filter behaviour offline.
+                from accessible_surfaceome.agents.plan_trim_select.pretrim_filter import (
+                    pretrim_filter,
                 )
-                triage_outcomes = triage_abstracts(
+
+                filtered_papers, pretrim_audit = pretrim_filter(
+                    new_papers, enable=enable_pretrim_filter
+                )
+                if (
+                    enable_pretrim_filter
+                    and pretrim_audit.activated
+                    and len(filtered_papers) < len(new_papers)
+                ):
+                    # Mark the dropped papers as triaged so they aren't
+                    # re-considered on a later iteration. The audit decisions
+                    # carry the filter's reason for skipping each one.
+                    dropped_pmids = {
+                        d.paper_pmid
+                        for d in pretrim_audit.decisions
+                        if not d.kept
+                    }
+                    for paper in new_papers:
+                        if paper.pmid in dropped_pmids:
+                            sid = paper_source_id(paper)
+                            triaged_ids.add(sid)
+                    new_papers = filtered_papers
+                _pretrim_audits.append(pretrim_audit)
+
+                # Tier 4: A1↔A2 triage dedup. When run_plan_trim_select_dual
+                # runs both A1 and A2 sequentially, every paper gets Haiku-
+                # triaged twice today — once in A1's pipeline, once in A2's —
+                # even though the abstract-triage question ("is this paper
+                # relevant to the gene's surface biology?") is identical
+                # across both agents (they only diverge at trim+select). The
+                # ``triage_cache`` (dict keyed on paper source_id) lets A2
+                # reuse A1's outcomes: papers in the cache skip the Haiku
+                # call entirely. ~$0.30-0.50/gene saved on heavy-lit genes
+                # where the cross-A1-A2 paper overlap is largest.
+                cached_outcomes: list[Any] = []
+                papers_needing_triage: list[Paper] = []
+                if triage_cache is not None:
+                    for paper in new_papers:
+                        sid = paper_source_id(paper)
+                        if sid in triage_cache:
+                            cached_outcomes.append(triage_cache[sid])
+                        else:
+                            papers_needing_triage.append(paper)
+                else:
+                    papers_needing_triage = list(new_papers)
+
+                logger.info(
+                    "iteration %d: triaging %d newly-discovered papers"
+                    " (pretrim_filter: activated=%s, dropped=%d, "
+                    "triage_cache_hits=%d, fresh=%d)",
+                    iteration,
+                    len(new_papers),
+                    pretrim_audit.activated,
+                    pretrim_audit.n_input - pretrim_audit.n_kept,
+                    len(cached_outcomes),
+                    len(papers_needing_triage),
+                )
+                fresh_outcomes = triage_abstracts(
                     client,
-                    papers=new_papers,
+                    papers=papers_needing_triage,
                     gene=gene,
                     bundle=context.bundle,
-                )
+                ) if papers_needing_triage else []
+                # Populate the cross-agent cache with the fresh decisions so
+                # the next agent (A2) reuses them.
+                if triage_cache is not None:
+                    for o in fresh_outcomes:
+                        triage_cache[o.paper_id] = o
+                triage_outcomes = cached_outcomes + fresh_outcomes
                 for o in triage_outcomes:
                     if o.usage is not None:
                         triage_usage.append(o.usage)
@@ -1540,6 +1721,7 @@ def run_plan_trim_select(
         result.trim_usage = summarize_usage(trim_usage, HAIKU_PRICING_KEY)
         result.select_usage = summarize_usage(select_usage, SONNET_MODEL)
         result.elapsed_s = round(time.time() - t0, 1)
+        result.pretrim_audits = _pretrim_audits
         if timing is not None:
             result.timing = list(timing.entries[timing_start_index:])
         if own_http:
@@ -1596,6 +1778,7 @@ def run_plan_trim_select_dual(
     http: CachedHTTP | None = None,
     retraction_index: RetractionIndex | None = None,
     timing: TimingRecorder | None = None,
+    enable_pretrim_filter: bool = False,
 ) -> DualPlanTrimSelectResult:
     """Phase 1's sequential-dual driver: A1 then A2, shared HTTP cache.
 
@@ -1609,6 +1792,14 @@ def run_plan_trim_select_dual(
     fetched for surface methodology. Cost ceiling for the dual is the
     sum of two single-focus runs — no double execution of the search
     layer.
+
+    **Tier 4 — A1↔A2 abstract-triage dedup.** A shared
+    ``triage_cache`` (paper source_id → TriageOutcome) is created here
+    and passed to both A1 and A2. A1 populates it; A2 reuses every
+    decision. The abstract-triage question is identical across agents
+    (only the trim+select stages diverge), so this is a pure no-loss
+    win — ~$0.30-0.50/gene saved on heavy-lit genes where the cross-
+    agent paper overlap is largest.
     """
 
     t0 = time.time()
@@ -1616,6 +1807,9 @@ def run_plan_trim_select_dual(
     own_http = http is None
     http = http or open_default_client()
     retraction = retraction_index or _empty_retraction_index()
+
+    # Shared cache so A2 reuses A1's abstract-triage outcomes (Tier 4).
+    shared_triage_cache: dict[str, Any] = {}
 
     try:
         logger.info("=== dual run %s: starting A1 ===", gene)
@@ -1626,6 +1820,8 @@ def run_plan_trim_select_dual(
             retraction_index=retraction,
             agent_focus="a1",
             timing=timing,
+            enable_pretrim_filter=enable_pretrim_filter,
+            triage_cache=shared_triage_cache,
         )
         logger.info(
             "=== dual run %s: A1 done (%d claims, %s anchored) — starting A2 ===",
@@ -1640,6 +1836,8 @@ def run_plan_trim_select_dual(
             retraction_index=retraction,
             agent_focus="a2",
             timing=timing,
+            enable_pretrim_filter=enable_pretrim_filter,
+            triage_cache=shared_triage_cache,
         )
         logger.info(
             "=== dual run %s: A2 done (%d claims, %s anchored) ===",

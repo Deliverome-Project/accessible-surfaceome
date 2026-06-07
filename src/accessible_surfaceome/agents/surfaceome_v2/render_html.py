@@ -14,8 +14,10 @@ The viewer is organized as a full QC pass over a v1.0.0 SurfaceomeRecord:
 * Section 0 — Executive summary (B synthesizer prose).
 * Section 1 — Surface Evidence: evidence_grade + grade_rationale,
   methods[] cards (with antibody table + expression_observations),
+  non_surface_expression[] (the RNA / bulk-protein bucket that prevents
+  expression from being misread as accessibility),
   contradicting_evidence[].
-* Section 2 — Biological Context: tissues[], cell_types[], cell_states[],
+* Section 2 — Biological Context: expression[], cell_states[],
   subcellular_localization (primary_compartment + dual_localization[]
   + membrane_subdomains[]), anatomical_accessibility[],
   accessibility_modulation[] (the heaviest — colored by ModulationCategory).
@@ -634,6 +636,18 @@ def _render_method_card(m: dict[str, Any]) -> str:
     """
 
 
+def _render_nse(nse: dict[str, Any]) -> str:
+    return (
+        f"<tr>"
+        f"<td>{html.escape(nse.get('context', '—'))}</td>"
+        f"<td>{_badge(nse.get('sample_type', '—'), 'gray')}</td>"
+        f"<td>{_badge(nse.get('measurement_type', '—'), 'lavender')}</td>"
+        f"<td>{_badge(nse.get('level', '—'), _PRESENCE_KIND.get(nse.get('level') or '', 'gray'))}</td>"
+        f"<td>{_evi_chip_row(nse.get('cited_evidence_ids') or [])}</td>"
+        f"</tr>"
+    )
+
+
 def _render_contradiction(c: dict[str, Any]) -> str:
     return f"""
     <div class="contra-card">
@@ -654,12 +668,21 @@ def _render_surface_evidence(record: dict[str, Any]) -> str:
     grade = se.get("evidence_grade") or "—"
     rationale = html.escape(se.get("grade_rationale") or "—")
     methods = se.get("methods") or []
+    nse = se.get("non_surface_expression") or []
     contras = se.get("contradicting_evidence") or []
 
     methods_html = (
         "".join(_render_method_card(m) for m in methods)
         if methods
         else "<em class='muted'>no method observations</em>"
+    )
+    nse_table = (
+        "<table class='compact'><thead><tr><th>context</th><th>sample</th>"
+        "<th>measurement</th><th>level</th><th>cites</th></tr></thead><tbody>"
+        + "".join(_render_nse(n) for n in nse)
+        + "</tbody></table>"
+        if nse
+        else "<em class='muted'>no non-surface expression rows</em>"
     )
     contras_html = (
         "".join(_render_contradiction(c) for c in contras)
@@ -684,6 +707,11 @@ def _render_surface_evidence(record: dict[str, Any]) -> str:
       <h3>Methods ({len(methods)})</h3>
       {methods_html}
 
+      <h3>Non-surface expression ({len(nse)})</h3>
+      <div class="muted small">RNA / bulk-protein / non-fractionated observations — held
+      separately so expression isn't read as accessibility.</div>
+      {nse_table}
+
       <h3>Contradicting evidence ({len(contras)})</h3>
       {contras_html}
     </section>
@@ -695,45 +723,22 @@ def _render_surface_evidence(record: dict[str, Any]) -> str:
 # ---------------------------------------------------------------------------
 
 
-def _render_expression_row(r: dict[str, Any]) -> str:
-    cell_states = ", ".join(r.get("cell_states") or [])
-    dx = r.get("disease_label") or r.get("disease_context", "—")
+def _render_expression(row: dict[str, Any]) -> str:
+    cell_states = ", ".join(row.get("cell_states") or [])
+    disease = row.get("disease_context", "—")
+    label = row.get("disease_label")
+    disease_disp = f"{disease} ({label})" if label else disease
     return (
         f"<tr>"
-        f"<td><strong>{html.escape(r.get('tissue') or '—')}</strong></td>"
-        f"<td>{html.escape(r.get('cell_type') or '—')}</td>"
-        f"<td>{_species_badge(r)}</td>"
-        f"<td>{_badge(r.get('present', '—'), _PRESENCE_KIND.get(r.get('present') or '', 'gray'))}</td>"
-        f"<td>{_badge(dx, 'gray')}</td>"
+        f"<td><strong>{html.escape(row.get('tissue') or '—')}</strong></td>"
+        f"<td class='small'>{html.escape(row.get('cell_type') or '—')}</td>"
+        f"<td>{_species_badge(row)}</td>"
+        f"<td>{_badge(row.get('present', '—'), _PRESENCE_KIND.get(row.get('present') or '', 'gray'))}</td>"
+        f"<td>{_badge(disease_disp, 'gray')}</td>"
         f"<td class='small'>{html.escape(cell_states)}</td>"
-        f"<td>{_evi_chip_row(r.get('cited_evidence_ids') or [])}</td>"
+        f"<td>{_evi_chip_row(row.get('cited_evidence_ids') or [])}</td>"
         f"</tr>"
     )
-
-
-def _expression_rows(bc: dict[str, Any]) -> list[dict[str, Any]]:
-    """Unified expression rows. Reads the current ``expression`` field;
-    falls back to deriving rows from the pre-unify ``tissues`` +
-    ``cell_types`` split so older records still render."""
-    expr = bc.get("expression")
-    if expr:
-        return expr
-    rows: list[dict[str, Any]] = []
-    for t in bc.get("tissues") or []:
-        rows.append({**t, "cell_type": None})
-    for c in bc.get("cell_types") or []:
-        for tn in c.get("present_in_tissues") or [None]:
-            rows.append(
-                {
-                    "tissue": tn,
-                    "cell_type": c.get("cell_type"),
-                    "present": c.get("present", "unknown"),
-                    "disease_context": c.get("disease_context", "unknown"),
-                    "disease_label": c.get("disease_label"),
-                    "cited_evidence_ids": c.get("cited_evidence_ids") or [],
-                }
-            )
-    return rows
 
 
 def _render_subcellular(s: dict[str, Any]) -> str:
@@ -825,41 +830,24 @@ def _render_modulation(m: dict[str, Any]) -> str:
 
 def _render_biological_context(record: dict[str, Any]) -> str:
     bc = record.get("biological_context") or {}
-    expression = _expression_rows(bc)
-    cell_states = bc.get("cell_states") or []
+    expression = bc.get("expression") or []
     sub = bc.get("subcellular_localization") or {}
     anat = bc.get("anatomical_accessibility") or []
     mods = bc.get("accessibility_modulation") or []
 
     expression_html = (
-        "<table class='compact'><thead><tr><th>tissue</th><th>cell of origin</th>"
-        "<th>species</th><th>presence</th><th>disease</th><th>cell states</th>"
-        "<th>cites</th></tr></thead><tbody>"
-        + "".join(_render_expression_row(r) for r in expression)
-        + "</tbody></table>"
+        "<table class='compact'><thead><tr><th>tissue</th><th>cell type</th>"
+        "<th>species</th><th>presence</th><th>disease</th>"
+        "<th>cell states</th><th>cites</th>"
+        "</tr></thead><tbody>"
+        + "".join(_render_expression(r) for r in expression) + "</tbody></table>"
         if expression
         else "<em class='muted'>no expression rows</em>"
     )
-    # v2 records hardcode cell_states=[] (legacy v1 field; modulation
-    # block subsumes it). Hide the subsection entirely when empty so
-    # the viewer doesn't show a perpetually-zero "Cell states (0)".
-    cell_states_html = (
-        "<ul class='compact-list'>"
-        + "".join(
-            f"<li><strong>{html.escape(s.get('state', '—'))}</strong>: "
-            f"{html.escape(s.get('descriptor', '—'))} "
-            f"{_evi_chip_row(s.get('cited_evidence_ids') or [])}</li>"
-            for s in cell_states
-        )
-        + "</ul>"
-        if cell_states
-        else "<em class='muted'>no cell-state rows</em>"
-    )
-    cell_states_block = (
-        f"<h3>Cell states ({len(cell_states)})</h3>\n      {cell_states_html}"
-        if cell_states
-        else ""
-    )
+    # Schema 2.5.0 retired the standalone cell_states block — single-
+    # context state observations now live inside accessibility_modulation
+    # as rows with baseline_context=None + modulating_state=None. The
+    # viewer no longer renders a separate "Cell states" subsection.
     anat_html = (
         "".join(_render_anat(a) for a in anat)
         if anat
@@ -878,8 +866,6 @@ def _render_biological_context(record: dict[str, Any]) -> str:
       <h3>Expression ({len(expression)})</h3>
       {_species_counter(expression)}
       {expression_html}
-
-{cell_states_block}
 
       <h3>Subcellular localization</h3>
       {_render_subcellular(sub)}

@@ -94,10 +94,39 @@ OMITTED: dict[str, str] = {
     "evidence_count": "shown as evidence[].length in the ledger header",
     "primary_evidence_count": "computed inline in the ledger header",
     "secondary_evidence_count": "computed inline in the ledger header",
+    # --- methods-builder inclusion-filter audit trail ---
+    # The methods builder REJECTS receptor-engagement-as-soluble-ligand
+    # claims at the inclusion stage (e.g. HMGB1 binding TREM-1 — the
+    # protein is the ligand, not the membrane component). The grade
+    # builder enumerates each excluded claim here for the audit trail.
+    # The companion claim_stances row already carries the same info in
+    # the human-facing prose with stance=tangential; the audit-trail
+    # field is for downstream re-grade scripts + provenance, not the
+    # reader's gene-page markdown.
+    "excluded_as_ligand_engagement": "methods-builder inclusion-filter audit trail; provenance not findings",
     # --- ECD % similarity (secondary to the % identity that IS shown) ---
-    "ecd_pct_similarity": "secondary to ecd_pct_identity (shown)",
     "ecd_pct_similarity_to_canonical": "secondary to ECD %identity (shown)",
     "ecd_pct_similarity_to_human_canonical": "secondary to ECD %identity (shown)",
+    # --- Schweke 2024 homo-oligomer prior (piped into synthesizer; no viewer card yet) ---
+    "homo_oligomerization": "Schweke 2024 prior — fed to synthesizer for epitope-masking prior, not rendered standalone",
+    "is_homo_oligomer": "Schweke 2024 prior — boolean fed to synthesizer",
+    "stoichiometry": "Schweke 2024 prior — cyclic-symmetry order, fed to synthesizer",
+    "af_model_num": "Schweke 2024 model rank — viewer-side PDB URL builder, not surfaced in markdown",
+    "is_ecd_only": "Schweke 2024 ECD-only flag — viewer-side caption, not surfaced in markdown",
+    "has_higher_order_complex": "Schweke 2024 complex flag — viewer-side caption, not surfaced in markdown",
+    "dimer_pdb_filename": "Schweke 2024 dimer PDB filename — viewer-side asset URL, not surfaced in markdown",
+    "complex_pdb_filename": "Schweke 2024 complex PDB filename — viewer-side asset URL, not surfaced in markdown",
+    # --- Schweke 2024 homo-oligomer prediction RISK chip (viewer-side only) ---
+    # Orchestrator-populated mirror of the deterministic block onto the
+    # AccessibilityRisks region so the viewer renders it next to the
+    # epitope_masking chip. The deterministic block is already
+    # markdown-omitted above; the risk-side mirror is likewise viewer-only.
+    # The sub-fields (present, severity, stoichiometry, is_ecd_only, source,
+    # cited_evidence_ids) are name-shared with other AccessibilityRisks
+    # blocks (ShedForm, SecretedForm, etc.) so the name-level coverage
+    # check passes via those siblings — only the new container field needs
+    # an OMITTED entry.
+    "homo_oligomerization_prediction": "Schweke 2024 risk chip — viewer-side mirror of deterministic block, not rendered standalone in markdown",
     # --- topology projection / model internals (shown qualitatively) ---
     "deeptmhmm_label": "categorical label; the per-residue string is shown",
     "topology_projection_source": "projection provenance; internal",

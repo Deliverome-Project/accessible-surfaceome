@@ -9,15 +9,18 @@
  * `npm run build`, no per-page-load D1 hits in production.
  *
  * D1 is the SINGLE source of truth for deep-dive records. There is no
- * on-disk fallback: deep-dive SurfaceomeRecords are written direct to
- * public D1 (`cloud.surface_annotation.publish_record`), and the
- * viewer reads them only through the Worker. The set of routes is
+ * on-disk fallback whatsoever: deep-dive SurfaceomeRecords are written
+ * direct to public D1 (`cloud.surface_annotation.publish_record`), and
+ * the viewer reads them only through the Worker. The set of routes is
  * sourced the same way — `listSurfaceomeGenes` hits the Worker's
  * `/v1/genes` (the annotated-gene list backed by `surface_annotation`)
- * to decide which gene pages `generateStaticParams` emits. The old
- * committed `viewer/public/data/surfaceome/*.json` snapshots (and the
- * fs-readback fallback they powered) were removed deliberately so a
- * stale on-disk copy can never mask the authoritative D1 record.
+ * to decide which gene pages `generateStaticParams` emits. There used
+ * to be a backstop union with `viewer/public/data/surfaceome/*.json`
+ * snapshots to paper over edge-cache lag on `/v1/genes` after a fresh
+ * publish; that backstop was removed when publish_record gained
+ * by-URL edge-cache purge — the lag is now ~0 so the snapshot dir
+ * adds no signal, only drift risk (a stale local snapshot could route
+ * a gene the Worker hasn't published yet, then 500 at render time).
  *
  * Like the catalog (`loadCatalog`), the gene pages therefore
  * hard-require the live Worker in production. `SURFACEOME_API_BASE=local`
@@ -26,7 +29,7 @@
  * Pages-side build runs against the real Worker and emits the full set.
  */
 
-import { readFileSync, readdirSync } from "node:fs";
+import { readFileSync } from "node:fs";
 import path from "node:path";
 import { pickDeepDiveFilters } from "./deep-dive-fields";
 import type {
@@ -79,16 +82,6 @@ const HGNC_TSV = path.join(
   "external",
   "hgnc",
   "hgnc_complete_set.tsv",
-);
-
-// In-tree per-gene record snapshots (`publish_record` writes these on
-// every annotate run). Used to backfill the `generateStaticParams` route
-// list when the Worker's edge-cached `/v1/genes` lags a fresh publish.
-const SURFACEOME_SNAPSHOT_DIR = path.join(
-  process.cwd(),
-  "public",
-  "data",
-  "surfaceome",
 );
 
 /**
@@ -220,6 +213,26 @@ export interface Catalog {
 
 const DEFAULT_API_BASE = "https://api.deliverome.org/surfaceome";
 const FETCH_TIMEOUT_MS = 8_000;
+
+/**
+ * Cache mode for the live Worker fetches (/v1/genes index + per-gene
+ * record + triage reasoning). Production keeps `force-cache` so each
+ * fetched payload is baked into the static export (SSG,
+ * citation-stable). In dev / any non-production build we use
+ * `no-store` so the page always reflects the LATEST published D1
+ * record immediately — no stale Next-dev fetch-cache to fight while
+ * iterating on annotations. Flip is driven by NODE_ENV (Next sets it:
+ * `development` under `next dev`, `production` under `next build`).
+ *
+ * Applies to BOTH `/v1/genes` (the freshness-dot auto-derive reads
+ * cohort schema_versions off this) and per-gene record fetches.
+ * Skipping this for `/v1/genes` lets the freshness signal go stale
+ * after a re-annotation lands — symptom: a gene republished at a new
+ * schema_version still reads amber because the cached payload only
+ * has the pre-republish version.
+ */
+const RECORD_FETCH_CACHE: RequestCache =
+  process.env.NODE_ENV === "production" ? "force-cache" : "no-store";
 
 /**
  * Build-time catalog fetch. The committed
@@ -661,15 +674,93 @@ export async function loadBenchmarkRow(
  * with no gene pages and no error. The build must fail loudly instead,
  * exactly like the catalog fetch.
  */
-let _geneListPromise: Promise<string[]> | null = null;
-
-export async function listSurfaceomeGenes(): Promise<string[]> {
-  if (_geneListPromise) return _geneListPromise;
-  _geneListPromise = _listSurfaceomeGenesImpl();
-  return _geneListPromise;
+/** One deep-dive gene in the index: its symbol plus whether its published
+ *  record is `stale` — i.e. its declared `schema_version` lags the current
+ *  observed target (the highest `schema_version` seen across the cohort,
+ *  computed per-fetch by :func:`maxSchemaVersion`). The per-gene
+ *  `schema_version` is read straight off the Worker's `/v1/genes` index
+ *  (D1 column `surface_annotation.schema_version`), so the freshness
+ *  signal updates the moment a re-annotated record lands in D1 — no
+ *  manifest to regenerate, no constant to bump. The GeneJump dropdown
+ *  colors each entry's freshness dot from this flag (amber = stale,
+ *  green = current). */
+export interface GeneEntry {
+  symbol: string;
+  stale: boolean;
+  synonyms?: string[];
 }
 
-async function _listSurfaceomeGenesImpl(): Promise<string[]> {
+/** Hard-coded fallback when `/v1/genes` returns zero entries with a
+ *  `schema_version` field (offline-stub build, malformed payload, very
+ *  early bring-up). The cohort-observed max is preferred whenever it's
+ *  computable; this only fires as a safety net.
+ *
+ *  Update this string if the Pydantic `SurfaceomeRecord.schema_version`
+ *  default moves AND the entire cohort is empty (unlikely after bring-up).
+ *  In normal operation it has no effect on the freshness dot — the
+ *  observed-max wins. */
+const FALLBACK_SCHEMA_VERSION = "2.9.0";
+
+/** Cohort-wide current `schema_version` — derived from `/v1/genes` on
+ *  the most recent call to :func:`listSurfaceomeGeneEntries`. Initialized
+ *  to the fallback so the first import has a sensible value before the
+ *  Worker fetch runs; replaced with the observed max after each fetch.
+ *  Exported for any caller that wants to display "current schema
+ *  version: X" (none today; reserved for future use). */
+export let CURRENT_RECORD_SCHEMA_VERSION: string = FALLBACK_SCHEMA_VERSION;
+
+/** Compare two semver-shaped `"major.minor.patch"` strings numerically.
+ *  Returns negative / 0 / positive in the standard sort order. Falls
+ *  back to lexical comparison for non-numeric components so it doesn't
+ *  throw on a malformed value (just sorts it conservatively). */
+function _semverCmp(a: string, b: string): number {
+  const pa = a.split(".");
+  const pb = b.split(".");
+  const len = Math.max(pa.length, pb.length);
+  for (let i = 0; i < len; i++) {
+    const na = parseInt(pa[i] ?? "0", 10);
+    const nb = parseInt(pb[i] ?? "0", 10);
+    if (Number.isNaN(na) || Number.isNaN(nb)) {
+      return (pa[i] ?? "").localeCompare(pb[i] ?? "");
+    }
+    if (na !== nb) return na - nb;
+  }
+  return 0;
+}
+
+/** Pick the highest `schema_version` from an iterable of strings (skipping
+ *  `null` / `undefined` / empty). Returns `null` when no real version is
+ *  present so the caller can fall back to its preferred default. */
+export function maxSchemaVersion(
+  versions: Iterable<string | undefined | null>,
+): string | null {
+  let best: string | null = null;
+  for (const v of versions) {
+    if (!v) continue;
+    if (best === null || _semverCmp(v, best) > 0) best = v;
+  }
+  return best;
+}
+
+let _geneEntriesPromise: Promise<GeneEntry[]> | null = null;
+
+/**
+ * Deep-dive genes WITH each gene's declared `schema_version`. This is the
+ * single primitive behind the gene list: `listSurfaceomeGenes()` projects
+ * it to symbols, so the Worker's `/v1/genes` index is fetched at most once
+ * per build (the result is memoized).
+ */
+export async function listSurfaceomeGeneEntries(): Promise<GeneEntry[]> {
+  if (_geneEntriesPromise) return _geneEntriesPromise;
+  _geneEntriesPromise = _listSurfaceomeGeneEntriesImpl();
+  return _geneEntriesPromise;
+}
+
+export async function listSurfaceomeGenes(): Promise<string[]> {
+  return (await listSurfaceomeGeneEntries()).map((e) => e.symbol);
+}
+
+async function _listSurfaceomeGeneEntriesImpl(): Promise<GeneEntry[]> {
   const base = (process.env.SURFACEOME_API_BASE ?? DEFAULT_API_BASE).trim();
   // Offline-build stub stays a benign empty list: the GitHub-Actions
   // viewer-build smoke sets SURFACEOME_API_BASE=local and expects zero
@@ -686,8 +777,15 @@ async function _listSurfaceomeGenesImpl(): Promise<string[]> {
     const controller = new AbortController();
     const timer = setTimeout(() => controller.abort(), FETCH_TIMEOUT_MS);
     try {
+      // Same dev/prod pattern as RECORD_FETCH_CACHE: force-cache in prod
+      // so the static export bakes the gene list, no-store in dev so the
+      // freshness-dot auto-derive sees the live cohort. Without this,
+      // Next dev's fetch-cache persists across restarts and the
+      // auto-derived current-schema-version reads off a frozen cohort
+      // (the symptom: gene republished at 2.9.0 still reads amber because
+      // the cached /v1/genes payload only has the pre-republish 1.1.0).
       res = await fetch(`${base}/v1/genes`, {
-        cache: "force-cache",
+        cache: RECORD_FETCH_CACHE,
         signal: controller.signal,
       });
     } finally {
@@ -709,50 +807,37 @@ async function _listSurfaceomeGenesImpl(): Promise<string[]> {
     );
   }
   const data = (await res.json()) as {
-    genes?: Array<{ gene_symbol?: string }>;
+    genes?: Array<{ gene_symbol?: string; schema_version?: string }>;
   };
-  const fromWorker = (data.genes ?? [])
-    .map((g) => g.gene_symbol)
-    .filter((s): s is string => Boolean(s));
-  // Union with locally-published snapshots. `publish_record` writes
-  // `public/data/surfaceome/{SYMBOL}.json` on every annotate run, but the
-  // Worker's `/v1/genes` list is fronted by Cloudflare's edge cache and
-  // can lag a freshly-published gene by minutes — long enough that under
-  // `output: export` the just-generated route 500s ("missing param in
-  // generateStaticParams") even though the record is already live in D1.
-  // The snapshots are the in-tree source of truth, so any gene with one
-  // gets a route regardless of edge-cache state; its record data still
-  // comes from the Worker at render time. Best-effort — a missing dir
-  // (clean checkout / CI smoke build) just leaves the Worker list as-is.
-  const merged = new Set(fromWorker);
-  for (const sym of _localSnapshotGenes()) merged.add(sym);
-  return Array.from(merged).sort();
-}
-
-/** Gene symbols with a committed `public/data/surfaceome/{SYMBOL}.json`
- *  snapshot. Best-effort: returns `[]` if the directory is absent. */
-function _localSnapshotGenes(): string[] {
-  try {
-    return readdirSync(SURFACEOME_SNAPSHOT_DIR)
-      .filter((f) => f.endsWith(".json"))
-      .map((f) => f.slice(0, -".json".length));
-  } catch {
-    return [];
+  // Map symbol → schema_version straight off the Worker payload. There
+  // used to be a backstop union with locally-published
+  // `public/data/surfaceome/{SYMBOL}.json` snapshots to paper over edge-
+  // cache lag on `/v1/genes`; that backstop was removed when
+  // publish_record gained by-URL edge-cache purge — the lag is now ~0 so
+  // the snapshot dir adds no signal, only drift risk. D1 (via the Worker)
+  // is the only source.
+  const schemaBySymbol = new Map<string, string | undefined>();
+  for (const g of data.genes ?? []) {
+    if (g.gene_symbol) schemaBySymbol.set(g.gene_symbol, g.schema_version);
   }
+  // Derive the current target from observation: the highest
+  // schema_version present across the cohort. This makes the freshness
+  // dot auto-update when a re-annotated record lands at a new schema
+  // version — no constant to bump in lock-step with the Pydantic
+  // default. Empty cohort → keep the fallback (so an early bring-up
+  // / stub build still has a sensible target).
+  const observed = maxSchemaVersion(schemaBySymbol.values());
+  if (observed !== null) CURRENT_RECORD_SCHEMA_VERSION = observed;
+  const target = CURRENT_RECORD_SCHEMA_VERSION;
+  const names = loadGeneNamesMap();
+  return Array.from(schemaBySymbol.keys())
+    .sort((a, b) => a.localeCompare(b))
+    .map((symbol) => ({
+      symbol,
+      stale: schemaBySymbol.get(symbol) !== target,
+      synonyms: names[symbol]?.synonyms,
+    }));
 }
-
-/**
- * Cache mode for the live per-gene Worker fetches (record + triage
- * reasoning). Production keeps `force-cache` so each gene's record is
- * fetched once per build and baked into the static export (SSG,
- * citation-stable). In dev / any non-production build we use `no-store`
- * so the page always reflects the LATEST published D1 record immediately
- * — no stale build-cache to fight while iterating on annotations. Flip is
- * driven by NODE_ENV (Next sets it: `development` under `next dev`,
- * `production` under `next build`).
- */
-const RECORD_FETCH_CACHE: RequestCache =
-  process.env.NODE_ENV === "production" ? "force-cache" : "no-store";
 
 /**
  * Worker fetch for one gene's full SurfaceomeRecord. Returns `null` on

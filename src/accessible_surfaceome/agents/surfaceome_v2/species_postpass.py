@@ -78,12 +78,22 @@ class SpeciesPostPassStats:
 
 
 def _expression_haystack(row: ExpressionRow) -> str:
-    parts = [p for p in (row.tissue, row.cell_type) if p]
-    return " ".join([*parts, *row.cell_states])
+    return " ".join(
+        [
+            row.tissue,
+            *( [row.cell_type] if row.cell_type else [] ),
+            *row.cell_states,
+        ]
+    )
 
 
 def _modulation_haystack(row: AccessibilityModulationObservation) -> str:
-    return " ".join([row.baseline_context, row.modulating_state, row.change])
+    # Schema 2.5.0: baseline_context + modulating_state are nullable
+    # (single-context rows have both None). Filter out the nulls so the
+    # join doesn't TypeError, then rely on `change` to carry the prose
+    # the species gazetteer scans.
+    parts = [row.baseline_context, row.modulating_state, row.change]
+    return " ".join(p for p in parts if p)
 
 
 def _expression_obs_haystack(row: ExpressionObservation) -> str:

@@ -1186,14 +1186,15 @@
   justify-content: center;
 }
 
-/* Deep-dive vital chip — mirrors .verdictMini sizing so it sits tight in
-   the narrow columns; tone classes below reuse the verdict-pill palette. */
+/* Deep-dive vital chip — mirrors .verdictMini sizing AND its uppercase
+   typesetting so deep-dive chips read the same as triage chips at a
+   glance. Tone classes below reuse the verdict-pill palette. */
 .ddVital {
   padding: 0.12rem 0.36rem;
   font-size: 0.62rem;
   font-weight: var(--fw-medium);
   letter-spacing: 0.02em;
-  text-transform: lowercase;
+  text-transform: uppercase;
   border-radius: var(--radius-pill);
   border: 1px solid transparent;
   white-space: nowrap;

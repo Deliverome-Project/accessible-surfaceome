@@ -29,6 +29,55 @@ import matplotlib.font_manager as fm
 import matplotlib.pyplot as plt
 import pandas as pd
 import seaborn as sns
+from matplotlib.ticker import FixedLocator, FuncFormatter, NullLocator
+
+
+def _log_tick_label(x: float, _pos: int) -> str:
+    """Human-readable label for log-scale x-axis ticks.
+
+    Examples: 100 → "100", 200 → "200", 500 → "500", 1000 → "1k",
+    1500 → "1.5k", 2000 → "2k", 5000 → "5k", 10000 → "10k". Half-decimal
+    precision in the "k" range so 1k / 1.5k / 2k are visually distinct.
+    """
+    if x < 1000:
+        return f"{int(x)}"
+    k = x / 1000
+    if abs(k - round(k)) < 0.05:
+        return f"{int(round(k))}k"
+    return f"{k:.1f}k"
+
+
+def _nice_log_ticks(lo: float, hi: float, *, min_ticks: int = 3) -> list[float]:
+    """Pick ≥``min_ticks`` "round" log-spaced tick positions within [lo, hi].
+
+    Tier 1: 1×, 2×, 5× per decade (the standard log-axis choice). This
+    covers wide ranges nicely (HPA 60→4400 gets 100/200/500/1k/2k).
+
+    Tier 2: 1×, 1.5×, 2×, 3×, 5×, 7× per decade. Falls back to this finer
+    grid when the panel's range is too narrow for tier 1 to land
+    ``min_ticks`` inside it (CSPA 577→2686 gets 1k/1.5k/2k, GO 1015→4603
+    gets 1.5k/2k/3k/5k).
+
+    Matplotlib's LogLocator(subs=(1,2,5), numticks=N) auto-falls-back to
+    half-decade positions when the range is narrow, but does so without
+    bound (GO ended up with 7 ticks at 1.5k/2k/2.5k/3k/3.5k/4k/4.5k —
+    visually crowded). This helper bounds the output deterministically.
+    """
+    import math
+    lo_dec = math.floor(math.log10(lo))
+    hi_dec = math.ceil(math.log10(hi))
+    def gen(subs):
+        out = []
+        for d in range(lo_dec - 1, hi_dec + 1):
+            for s in subs:
+                t = s * 10 ** d
+                if lo <= t <= hi and t not in out:
+                    out.append(t)
+        return out
+    ticks = gen((1, 2, 5))
+    if len(ticks) < min_ticks:
+        ticks = gen((1, 1.5, 2, 3, 5, 7))
+    return ticks
 
 REPO = "Deliverome-Project/accessible-surfaceome"
 BRANCH = "main"
@@ -41,7 +90,7 @@ POINTS_URL = (
 # Subject metadata — mirrors save_figure in _plotting_config.py).
 GIST_URL = "https://gist.github.com/beccajcarlson/f9319af882e372194bd30640c0cbf2ed"
 
-# ──── Inline brand styling — sentinel: brand-style-v1 ────
+# ──── Inline brand styling — sentinel: brand-style-v2 ────
 # Mirrors src/accessible_surfaceome/audit/_plotting_config.py so the gist
 # stays self-contained. Kept in sync via tests/test_figure_gists_styling.py.
 BRAND_PALETTE = [
@@ -71,16 +120,19 @@ def _register_brand_fonts() -> None:
     ]
     for fonts_dir in candidates:
         if fonts_dir.is_dir():
-            for ttf in sorted(fonts_dir.glob("*.ttf")):
+            for path in sorted(list(fonts_dir.glob("*.ttf")) + list(fonts_dir.glob("*.otf"))):
                 try:
-                    fm.fontManager.addfont(str(ttf))
+                    fm.fontManager.addfont(str(path))
                 except Exception:  # noqa: BLE001
                     continue
             return
 
 
 def _apply_brand_style() -> None:
-    """Inline equivalent of `setup_plotting_style`. Sentinel: brand-style-v1."""
+    """Inline equivalent of `setup_plotting_style`. Sentinel: brand-style-v2.
+    v2: bumped sizes ~25% + explicit medium weight (avoids ExtraLight default
+    that matplotlib picks from the Manrope variable file). Companion to the
+    static Manrope-{regular,medium,semibold,bold}.otf files in assets/fonts/."""
     _register_brand_fonts()
     sns.set_style("whitegrid")
     sns.set_context("notebook", font_scale=1.0)
@@ -91,8 +143,10 @@ def _apply_brand_style() -> None:
         "savefig.facecolor": "none",
         "font.family": "sans-serif",
         "font.sans-serif": ["Manrope", "Outfit", "DejaVu Sans", "Liberation Sans", "Arial"],
-        "font.size": 17,
-        "axes.labelsize": 19,
+        "font.weight": "medium",
+        "font.size": 21,
+        "axes.labelsize": 24,
+        "axes.labelweight": "medium",
         "axes.titlesize": 0,
         "axes.titlepad": 0,
         "axes.spines.top": False,
@@ -107,12 +161,12 @@ def _apply_brand_style() -> None:
         "grid.linestyle": "-",
         "grid.linewidth": 0.7,
         "grid.color": BRAND_GRID,
-        "xtick.labelsize": 16,
-        "ytick.labelsize": 16,
+        "xtick.labelsize": 19,
+        "ytick.labelsize": 19,
         "xtick.color": BRAND_INK,
         "ytick.color": BRAND_INK,
         "legend.frameon": False,
-        "legend.fontsize": 16,
+        "legend.fontsize": 19,
         "patch.edgecolor": "none",
         "patch.linewidth": 0.0,
     })
@@ -167,9 +221,11 @@ def main() -> None:
     _apply_brand_style()
     df = _fetch_tsv(POINTS_URL)
 
-    # Taller figure now that per-variant info moved to caption blocks
-    # below each panel — needs vertical room for the captions.
-    fig, axes = plt.subplots(2, 3, figsize=(13, 11))
+    # Wider + taller than v2's (13, 11): v2's panels were noticeably taller
+    # than wide (≈4.3"w × 5.5"h each). (19, 13) gives ≈6.3"w × 6.5"h —
+    # near-square. Extra height also makes room for the per-panel caption
+    # block to breathe under v2's larger caption fontsize.
+    fig, axes = plt.subplots(2, 3, figsize=(19, 13))
     axes_flat = axes.flatten()
 
     for gi, group in enumerate(GROUP_ORDER):
@@ -203,12 +259,20 @@ def main() -> None:
 
         ax.set_xscale("log")
         ax.text(0.02, 0.97, group, transform=ax.transAxes,
-                ha="left", va="top", fontsize=19, fontweight="bold",
+                ha="left", va="top", fontsize=23, fontweight="bold",
                 color=ramp[0])
         ax.set_ylim(25, 102)
         xs = [p["size"] for p in pts]
         if xs:
             ax.set_xlim(max(40, min(xs) / 1.8), max(xs) * 1.8)
+        # Tick set must be computed AFTER set_xlim so the adaptive locator
+        # sees the actual panel range — narrow ranges fall back to a finer
+        # 1×/1.5×/2×/3×/5×/7× per-decade grid to guarantee ≥3 labels.
+        lo, hi = ax.get_xlim()
+        tick_positions = _nice_log_ticks(lo, hi, min_ticks=3)
+        ax.xaxis.set_major_locator(FixedLocator(tick_positions))
+        ax.xaxis.set_major_formatter(FuncFormatter(_log_tick_label))
+        ax.xaxis.set_minor_locator(NullLocator())
         sns.despine(ax=ax, top=True, right=True)
 
         # Per-panel caption block — one line per cutoff variant, marker
@@ -219,7 +283,7 @@ def main() -> None:
             0.0, -0.30, "\n".join(caption_lines),
             transform=ax.transAxes,
             ha="left", va="top",
-            fontsize=12, color=BRAND_INK,
+            fontsize=15, color=BRAND_INK,
             family="monospace",
         )
 
@@ -237,28 +301,30 @@ def main() -> None:
                    markersize=20, markeredgecolor=RECOMMENDED_EDGE,
                    markeredgewidth=1.4, label="Recommended after trade-off audit"),
     ]
-    legend_ax.legend(handles=handles, loc="upper center", fontsize=16,
+    legend_ax.legend(handles=handles, loc="upper center", fontsize=19,
                      frameon=False, title="Marker shape",
-                     title_fontsize=17)
-    legend_ax.text(
-        0.5, 0.10,
-        "Per-source missing rule:\n"
-        "UniProt / GO / SURFY / CSPA absence → predict 'no'.\n"
-        "HPA absence → abstain.",
-        transform=legend_ax.transAxes, ha="center", va="bottom",
-        fontsize=13, color=BRAND_NEUTRAL,
-    )
+                     title_fontsize=21)
 
     fig.supxlabel("Universe size — proteins this filter would admit "
-                  "(log scale; lower = stricter)", fontsize=16, y=0.02,
+                  "(log scale; lower = stricter)", fontsize=20, y=0.02,
                   color=BRAND_INK)
-    fig.supylabel("Accuracy on 147-gene benchmark (%)", fontsize=16, x=0.005,
-                  color=BRAND_INK)
-    plt.tight_layout(rect=[0.015, 0.03, 1, 0.985])
-    # Add vertical space between row 1 panels (which have captions below
-    # them) and row 2 panels (whose top edge would otherwise crash into
-    # row 1's caption).
-    plt.subplots_adjust(hspace=0.55)
+    # supylabel y defaults to 0.5 (figure midline) which is what reads as
+    # "centered" against the supxlabel's default x=0.5. Earlier overrides
+    # to 0.54 (axes-content midpoint) and the dynamic equivalent were
+    # technically correct but visually off — keep the matplotlib default.
+    # x=0.02 just keeps the rotated label off the canvas-left edge under
+    # brand-style-v2's larger axes.labelsize.
+    fig.supylabel("Accuracy on\n147-gene benchmark (%)", fontsize=20,
+                  x=0.02, color=BRAND_INK)
+    plt.tight_layout(rect=[0.04, 0.03, 1, 0.985])
+    # Vertical gap between row-1 panels (with caption blocks BELOW them at
+    # axes-y=-0.30, extending further for the longest panel — 6 variants
+    # × ~22pt line height) and row-2 panels. Without this, row-1 captions
+    # crash into row-2 axes / row-2 captions extend into the supxlabel.
+    # Bumped 0.95 → 1.40 to give room for the now-larger (19, 13) figure +
+    # the recommended-cutoff line (★) below the canonical line (◆) in
+    # each panel.
+    plt.subplots_adjust(hspace=1.40)
 
     out_pdf = Path("db_cutoff_tradeoff.pdf")
     out_png = Path("db_cutoff_tradeoff.png")

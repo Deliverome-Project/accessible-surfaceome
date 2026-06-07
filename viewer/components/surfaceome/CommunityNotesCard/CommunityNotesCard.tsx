@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { FeedbackButton } from "../../FeedbackButton/FeedbackButton";
 import { SectionCard } from "../SectionCard/SectionCard";
 import styles from "./CommunityNotesCard.module.css";
 
@@ -26,6 +27,7 @@ interface PublicResponse {
 
 interface Props {
   gene: string;
+  uniprotAcc?: string | null;
   n: number;
 }
 
@@ -82,7 +84,7 @@ function usingMock(): boolean {
  * fetching at view time means readers see the latest notes without a
  * site rebuild.
  */
-export function CommunityNotesCard({ gene, n }: Props) {
+export function CommunityNotesCard({ gene, uniprotAcc, n }: Props) {
   const [notes, setNotes] = useState<Note[] | null>(null);
   const [errored, setErrored] = useState(false);
   const [mock, setMock] = useState(false);
@@ -127,11 +129,7 @@ export function CommunityNotesCard({ gene, n }: Props) {
     return () => { cancelled = true; };
   }, [gene]);
 
-  // Hide the entire section when the list is empty (or before load,
-  // or on transient fetch error). The AnchorNav strip will skip
-  // through to the next available section. Approved notes are rare
-  // enough that always-rendering an empty box would be noise.
-  if (notes === null || notes.length === 0 || errored) return null;
+  const empty = notes === null || notes.length === 0 || errored;
 
   return (
     <SectionCard
@@ -139,11 +137,20 @@ export function CommunityNotesCard({ gene, n }: Props) {
       eyebrow={mock ? "Community · MOCK" : "Community"}
       title="Community notes"
       meta={
-        mock
-          ? `${notes.length} synthetic notes for design review (URL ?mock=notes)`
-          : `${notes.length} ${notes.length === 1 ? "note" : "notes"}`
+        empty
+          ? undefined
+          : mock
+            ? `${notes.length} synthetic notes for design review (URL ?mock=notes)`
+            : `${notes.length} ${notes.length === 1 ? "note" : "notes"}`
       }
     >
+      {empty ? (
+        <div className={styles.emptyState}>
+          <span className={styles.emptyText}>None yet</span>
+          <FeedbackButton gene={gene} uniprotAcc={uniprotAcc} variant="standalone" />
+        </div>
+      ) : (
+        <>
       {mock ? (
         <p className={styles.mockBanner}>
           Preview only — these notes don&apos;t exist in production.
@@ -151,7 +158,7 @@ export function CommunityNotesCard({ gene, n }: Props) {
         </p>
       ) : null}
       <ul className={styles.list}>
-        {notes.map((note) => (
+        {notes!.map((note) => (
           <li key={note.id} className={styles.note}>
             <p className={styles.comment}>{note.comment}</p>
             <p className={styles.byline}>
@@ -184,6 +191,8 @@ export function CommunityNotesCard({ gene, n }: Props) {
           </li>
         ))}
       </ul>
+        </>
+      )}
     </SectionCard>
   );
 }

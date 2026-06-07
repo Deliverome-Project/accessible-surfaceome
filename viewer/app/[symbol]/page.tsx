@@ -24,6 +24,7 @@ import { IsoformsCard } from "../../components/surfaceome/IsoformsCard/IsoformsC
 import { SurfaceBindCard } from "../../components/surfaceome/SurfaceBindCard/SurfaceBindCard";
 import { SurfaceEvidenceCard } from "../../components/surfaceome/SurfaceEvidenceCard/SurfaceEvidenceCard";
 import {
+  listSurfaceomeGeneEntries,
   listSurfaceomeGenes,
   loadBenchmarkRow,
   loadCatalogRow,
@@ -31,6 +32,7 @@ import {
   loadSurfaceomeRecord,
 } from "../../lib/surfaceome";
 import {
+  loadSchwekeHomomer,
   loadStructureViewerData,
   structureViewerDataFromRecord,
 } from "../../lib/structure-viewer";
@@ -96,6 +98,18 @@ export default async function GenePage({ params }: PageProps) {
       rec.gene.uniprot_acc,
       rec.deterministic_features.canonical_topology,
     );
+  // Schweke et al. 2024 (PMID 38325366) AF2 homo-oligomer prediction
+  // for this gene. Read from rec.deterministic_features.homo_oligomerization,
+  // populated by the Python annotator at annotation time AND injected
+  // by the Worker's schweke_homomer_public LEFT JOIN at serve time for
+  // records annotated before the Schweke wiring. Drives the
+  // "Homo-oligomer" tab right after Canonical in the StructureViewer
+  // tab strip; null-safe — the tab simply doesn't render when
+  // is_homo_oligomer=false.
+  const schwekeHomomerRow = loadSchwekeHomomer(
+    rec.gene.uniprot_acc,
+    rec.deterministic_features.homo_oligomerization,
+  );
   // 5-DB presence vector (UniProt / GO / SURFY / CSPA / HPA) from the
   // candidate-universe build — the same vote pattern shown as dots on
   // the catalog (/) and SurfaceBench (/benchmark) rows. Catalog load
@@ -112,12 +126,16 @@ export default async function GenePage({ params }: PageProps) {
   // SURFACEOME_API_BASE=local (empty matrix) — the row simply doesn't show.
   const benchmarkRow = await loadBenchmarkRow(rec.gene.hgnc_symbol);
 
-  // Deep-dive gene symbols for the toolbar's <GeneJump> typeahead — the
-  // SAME set generateStaticParams emits, so every suggestion resolves to a
-  // real statically-generated page (a non-deep-dive symbol would 404 under
-  // output: export). Memoized in listSurfaceomeGenes, so this is one Worker
-  // call per build, not per page.
-  const deepDiveGenes = await listSurfaceomeGenes();
+  // Deep-dive genes (symbol + freshness flag) for the toolbar's <GeneJump>
+  // typeahead — the SAME set generateStaticParams emits, so every
+  // suggestion resolves to a real statically-generated page (a non-deep-dive
+  // symbol would 404 under output: export). Each entry's `stale` flag is
+  // computed from the Worker's per-gene `schema_version` (D1) vs the
+  // current `CURRENT_RECORD_SCHEMA_VERSION` target — green = current,
+  // amber = out of date. Memoized — shares the single /v1/genes fetch
+  // with listSurfaceomeGenes — so this is one Worker call per build,
+  // not per page.
+  const deepDiveGenes = await listSurfaceomeGeneEntries();
 
   // v1.0.0 section order mirrors the EGFR mockup in
   // docs/plans/2026-05-13-deep-dive-redesign-surface-accessibility.md.
@@ -222,7 +240,7 @@ export default async function GenePage({ params }: PageProps) {
       kind: "community",
       label: "Community notes",
       render: (n) => (
-        <CommunityNotesCard gene={rec.gene.hgnc_symbol} n={n} />
+        <CommunityNotesCard gene={rec.gene.hgnc_symbol} uniprotAcc={rec.gene.uniprot_acc} n={n} />
       ),
     },
   ];
@@ -261,7 +279,11 @@ export default async function GenePage({ params }: PageProps) {
           </Link>
           {/* Jump to another gene's deep dive without going back to the
               catalog table. Suggestions are the deep-dive set only. */}
-          <GeneJump genes={deepDiveGenes} current={rec.gene.hgnc_symbol} />
+          <GeneJump
+            genes={deepDiveGenes}
+            current={rec.gene.hgnc_symbol}
+            showSchemaDots
+          />
           <span className={styles.crumbActions}>
             <a
               className={styles.crumbAction}
@@ -289,6 +311,7 @@ export default async function GenePage({ params }: PageProps) {
             rec={rec}
             geneName={geneName}
             structureData={structureData}
+            schwekeHomomer={schwekeHomomerRow}
             catalogRow={catalogRow}
             benchmarkRow={benchmarkRow}
           />

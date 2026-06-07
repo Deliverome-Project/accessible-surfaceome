@@ -86,3 +86,4 @@ data/processed/triage_bench/db_optimized_cutoffs.tsv -filter -diff -merge text
 # figures-folder gist for db_correctness_by_class.
 data/processed/triage_bench/uniprot_tm_signal_accs.tsv -filter -diff -merge text
 data/processed/triage_bench/cspa_hc_only_accs.tsv       -filter -diff -merge text
+data/processed/catalog/whole_proteome_catalog.tsv -filter -diff -merge text

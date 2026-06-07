@@ -1,7 +1,46 @@
-# Evidence grade builder (A1 → grade + claim_stances + rationale + non_surface_expression)
+# Evidence grade builder (A1 → grade + claim_stances + rationale + non_surface_expression + excluded_as_ligand_engagement)
+
+**What "surface accessibility" means here:** the protein, expressed by
+the cell in question, is **stably present at the outer face of that
+cell's plasma membrane — in AT LEAST one context or state.** Surface
+presence can be state-conditional (cancer-only, activation-induced,
+stress-released-and-re-anchored, lineage-restricted, etc.); the bar
+is "stably AT the surface in some state", NOT "constitutively
+anchored in every state."
+
+**These observations DON'T count toward the grade** (mirrors the
+methods builder's inclusion filter):
+
+- Soluble-ligand engagement at another cell's surface receptor
+- EV / exosome / microvesicle / apoptotic-body surface display
+  (cell-derived particle, not live cell PM)
+- Exogenously added recombinant / synthetic protein decorating cells
+  from outside
+- Transient interaction at the moment of binding (FRET / SPR
+  snapshots; the protein is in the act of engaging, not stably
+  present)
+
+Grade against THIS bar — not against the directness of the assay
+method in isolation. A live-cell flow study reading an EV-bound or
+exogenously-added pool of the protein does NOT lift the grade to
+direct.
+
+**Transient trafficking through the PM with documented dwell counts
+— at the low end.** Non-PM-resident proteins that cycle through the
+PM during their normal trafficking (with carriers arriving/departing
+the PM, baseline PM-rim labeling, or a small steady-state PM pool by
+surface biotinylation) DO clear the surface-accessibility bar —
+their brief PM dwell is enough for an extracellular antibody to
+engage. Methods builder emits these as
+`supports_surface_localization`; grade them
+`supportive_but_indirect` (NOT `weak`). The synth then picks
+`surface_accessibility=low` + `surface_call_reason=dual_localization`,
+NOT `endomembrane_resident`. Reserve `weak` / `surface_accessibility=no`
++ `endomembrane_resident` for genes the literature treats as never
+reaching the PM at all.
 
 You receive the FULL A1 `EvidenceClaim` ledger and emit ONE JSON object
-with four keys, **in this order** (so the structured per-claim call
+with five keys, **in this order** (so the structured per-claim call
 comes first; the rationale then summarizes the stances rather than the
 reverse):
 
@@ -10,7 +49,8 @@ reverse):
   "evidence_grade": "<one of the five enum values>",
   "claim_stances": [<ClaimStanceRow entries — one per claim that informed the grade>],
   "grade_rationale": "<≤800 char prose>",
-  "non_surface_expression": [<NonSurfaceExpression rows>]
+  "non_surface_expression": [<NonSurfaceExpression rows>],
+  "excluded_as_ligand_engagement": [<ExcludedClaim rows>]
 }
 ```
 
@@ -27,7 +67,10 @@ ONE fenced ```json block. Top-level OBJECT, not array.
   observations from a single source.
 - `supportive_but_indirect` — only fractionation / glycoproteomics /
   RNA-level / IHC without nonperm specification — implies surface but
-  doesn't prove extracellular exposure.
+  doesn't prove extracellular exposure. This grade EXPLICITLY includes
+  permeabilized immunofluorescence with strong plasma-membrane / PM-rim
+  colocalization (e.g. co-stain with a PM marker), ESPECIALLY when the
+  deterministic canonical topology already places the ECD extracellular.
 - `conflicting` — **reserved for true logical / mechanistic
   inconsistency**. The bar is high: two pieces of evidence cannot
   BOTH be true given a plausible mechanism. Example: one paper
@@ -37,8 +80,9 @@ ONE fenced ```json block. Top-level OBJECT, not array.
   claims can't be reconciled without one being wrong.
   **Context- or cell-state-dependent variation is NOT conflicting.**
   A protein that's inner-leaflet anchored in normal cells but
-  surface-exposed in cancer cells (e.g. SRC's ALE-mediated
-  topology inversion) is **state-dependent**, not conflicting —
+  surface-exposed in cancer cells (e.g. an inner-leaflet kinase's
+  ALE-mediated topology inversion) is **state-dependent**, not
+  conflicting —
   both observations are coherent under a plausible mechanism
   (different cell state ⇒ different topology). Same for:
     * tissue-restricted surface expression vs broad RNA absence
@@ -53,8 +97,18 @@ ONE fenced ```json block. Top-level OBJECT, not array.
   alt-isoform state) and have the context variation captured via
   `state_dependence=high` + the biological_context section, NOT
   by collapsing the call to `conflicting`.
-- `weak` — only db_annotations, review_assertions, or weak/permeabilized
-  reads with no direct surface assay.
+- `weak` — db_annotations / review_assertions / RNA-level only, OR
+  permeabilized reads with NO membrane-localized signal — i.e. reserve
+  `weak` for genuinely non-localizing or assertion-only evidence. Do NOT
+  put permeabilized IF with strong PM / PM-rim colocalization here; that
+  lifts to `supportive_but_indirect` (above).
+
+  NOTE: this is the gene-level evidence_grade tiebreaker ONLY. Permeabilized
+  assays still stay `expression_only` on the METHODS side
+  (methods_builder) — a permeabilized assay can't PROVE surface
+  accessibility — so the underlying claim's relevance stays
+  `expression_only` even when perm-IF-with-PM-colocalization lifts the
+  GRADE from `weak` to `supportive_but_indirect`.
 
 ## claim_stances — emit BEFORE grade_rationale
 
@@ -117,19 +171,22 @@ Writing the rationale first and back-filling stances to match leads to
 prose-driven post-hoc rationalization; the stance map should drive the
 prose, not the other way around.
 
-**Worked SRC example** (the canonical 5b.8 case, with the
-state-dependent-is-not-conflicting refinement applied):
+**Worked example — state-conditional surface form with a non-surface
+baseline** (the canonical 5b.8 case, with the state-dependent-is-not-
+conflicting refinement applied). Pull the SPECIFIC baseline-state
+biology and cancer-state mechanism from the gene's actual evidence
+ledger; the shape below is the template, not the content:
 
 ```
 "claim_stances": [
   {"claim_id": "a1_evi_01", "stance": "supports_surface",    "weight": "high",
-   "note": "eSrc translocation in cancer cells, in vitro + in vivo"},
+   "note": "outer-leaflet translocation in cancer cells, in vitro + in vivo"},
   {"claim_id": "a1_evi_02", "stance": "supports_surface",    "weight": "high",
    "note": "antibody-mediated tumor killing in xenografts (cancer state)"},
   {"claim_id": "a1_evi_05", "stance": "tangential",          "weight": "high",
-   "note": "canonical inner-leaflet topology — describes baseline state, NOT a contradiction (different state)"},
+   "note": "canonical baseline topology — describes the baseline state, NOT a contradiction (different state)"},
   {"claim_id": "a1_evi_06", "stance": "supports_surface",    "weight": "low",
-   "note": "chick chondrogenic cell surfaceome MS, weak species transfer"},
+   "note": "non-human cell-line surfaceome MS, weak species transfer"},
   {"claim_id": "a1_evi_12", "stance": "supports_surface",    "weight": "high",
    "note": "non-permeabilized surface biotinylation"},
   {"claim_id": "a1_evi_15", "stance": "tangential",          "weight": "high",
@@ -137,15 +194,15 @@ state-dependent-is-not-conflicting refinement applied):
 ],
 ```
 
-The canonical inner-leaflet claims (a1_evi_05, a1_evi_15) describe
-SRC's BASELINE state in normal cells. They DON'T contradict the
-cancer-state surface form — the two coexist under the ALE-driven
-topology-inversion mechanism. Marking them `contradicts_surface`
-forces the grade to `conflicting`, which is wrong here. They're
-`tangential` to the surface call (they inform the baseline picture
-that `state_dependence=high` captures) and the grade is
-`direct_single_method` — anchored on the eSrc papers' direct surface
-methodology, with the state-conditionality flagged separately.
+The canonical-baseline-topology claims (a1_evi_05, a1_evi_15) describe
+the target's BASELINE state in normal cells. They DON'T contradict the
+cancer-state surface form — the two coexist under the state-conditional
+mechanism. Marking them `contradicts_surface` forces the grade to
+`conflicting`, which is wrong here. They're `tangential` to the surface
+call (they inform the baseline picture that `state_dependence=high`
+captures) and the grade is `direct_single_method` — anchored on the
+cancer-state-surface papers' direct surface methodology, with the
+state-conditionality flagged separately.
 
 Only mark a canonical-topology claim as `contradicts_surface` when
 it's incompatible with the surface-positive evidence under EVERY
@@ -159,6 +216,77 @@ contradictions if any. Soft target ≤800 chars (overshoots are accepted
 with a warning, prefer concision). The rationale should **summarize
 the stance map you just emitted** — name the high-weight supports +
 contradicts in plain language, then state the grade.
+
+### Citation discipline — inline cites on every specific claim
+
+**Every numbered item, named experiment, mechanism, or method-specific
+assertion in `grade_rationale` REQUIRES an inline `(aN_evi_NN)` cite
+immediately after the claim, drawn from `claim_stances`.** The reader
+must be able to click straight to the source for every substantive
+claim. Loose summarizing prose ("the surface evidence is moderate
+overall") doesn't need a per-sentence cite; specific claims do.
+
+A specific claim is anything that:
+- enumerates separate experiments (`(1)`, `(2)`, `(3)` lists)
+- names an experimental method (live-cell flow, surface biotinylation,
+  crosslinking, photoaffinity labeling, knockin / knockout, cryo-EM,
+  proteinase-K protection, ChIP, etc.)
+- names a mechanism, observation, or result (e.g. "ciliary PM
+  localization in hypothalamic neurons", "competitive displacement",
+  "VPS35-mediated retromer recycling")
+- names a cell line, tissue, species, or assay condition
+
+The schema enforces this: when `grade_rationale` contains
+structured-claim markers AND `claim_stances` has ≥2 rows AND zero
+inline cites are present, validation FAILS. Inline a cite per
+substantive claim, drawn from `claim_stances` — never leave a numbered
+item or named experiment uncited.
+
+### Per-claim specificity
+
+Each substantive claim in the rationale should also name (in addition
+to its inline cite):
+- the **assay readout** (what was measured — surface staining, flow MFI,
+  crosslink band, localization pattern, structural complex)
+- the **cell type / species** (mouse hypothalamic neurons, human
+  monocytes, hepatocytes, etc.)
+- the **permeabilization status** when relevant (live-cell, nonperm,
+  permeabilized — say `permeabilization unspecified` rather than
+  glossing it over)
+
+A specific, citable, method-anchored claim looks like:
+> *"endogenous epitope-tagged knockin mice showed compartment-specific
+> PM localization in a defined neuronal population by IF (perm status
+> unspecified) with an internal loss-of-function-mutant mislocalization
+> control (a1_evi_07)"*
+
+A vague claim that fails the discipline looks like:
+> *"adaptor-mediated retromer recycling to the hepatocyte PM"* — no
+> method, no perm status, no cite.
+
+### Worked example — citation-disciplined rationale
+
+Shape only; the prose is for a hypothetical class A GPCR. Apply the
+SAME structure to whatever gene you're grading.
+
+```
+"grade_rationale": "Three direct lines of evidence support surface
+exposure: (1) endogenous epitope-tagged knockin mice showing
+compartment-specific PM localization in a defined neuronal population
+by IF (perm status not specified) with a loss-of-function-mutant
+mislocalization control (a1_evi_07); (2) photoaffinity crosslinking of
+a small-molecule analogue on membrane fractions of human endothelial
+cells with competitive displacement (a1_evi_12); (3) adaptor-mediated
+retromer recycling restoring the protein at the hepatocyte plasma
+membrane after internalization (a1_evi_11). None are live-cell nonperm
+flow with KO control, and (2)/(3) are indirect — fractionation-based
+and trafficking-inferred respectively — so the picture is strong
+indirect evidence anchored by the canonical class A GPCR topology.
+Graded supportive_but_indirect."
+```
+
+Every numbered item carries its `(aN_evi_NN)` chip. The reader can
+click each to verify.
 
 ## non_surface_expression
 
@@ -187,6 +315,46 @@ Fields:
 - `cited_evidence_ids` — every `evidence_id` whose claim contributed.
 
 Group claims describing the same context into one row.
+
+## excluded_as_ligand_engagement
+
+Audit trail of A1 ledger claims that describe **the protein as a soluble
+ligand engaging a surface receptor on another cell**, NOT the protein
+being on the outer face of the plasma membrane that expresses it. These
+claims are real biology — receptor pharmacology, DAMP signaling, partner
+binding — but they're not surface-accessibility evidence for *this*
+protein, and the methods builder's inclusion criterion rejects them. Log
+them here so the reader can see "we filtered N claims as ligand-
+engagement; here's why" rather than wondering whether the agent missed
+papers.
+
+Each row:
+
+```
+{
+  "evidence_id": "<one of the input ledger's evidence_ids>",
+  "reason": "<short why, ≤240 chars, name the receptor the protein was binding>"
+}
+```
+
+**When a claim belongs here:**
+- The protein is studied as an extracellular factor / DAMP / cytokine /
+  chemokine / alarmin engaging a named receptor on another cell.
+- Crosslinking / FRET / co-IP captures the protein bound to a TM partner
+  on the cell surface, where the TM partner IS the membrane component
+  and this protein is the soluble ligand.
+- Antibody-neutralization assays where the antibody sequesters the
+  soluble form of the protein (NOT a surface-anchored form).
+- ELISA / Western on cell-supernatant or extracellular fractions
+  detecting the protein after release.
+
+Each excluded claim should ALSO appear in `claim_stances` with
+`stance=tangential` and a note explaining the exclusion — the two rows
+agree (stance tags WHY the claim doesn't count toward the grade;
+`excluded_as_ligand_engagement` tags it for the audit trail).
+
+If the ledger has no ligand-engagement claims, emit
+`"excluded_as_ligand_engagement": []`.
 
 ## Empty cases
 

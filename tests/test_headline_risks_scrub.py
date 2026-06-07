@@ -238,27 +238,11 @@ def _minimal_v2_record(
     }
 
 
-def test_viewer_hides_cell_states_section_when_empty() -> None:
-    """v2 records (cell_states=[]) should not render a 'Cell states (0)'
-    subsection — that's the CD81 review complaint about the ghost
-    section displayed alongside 10 modulation rows."""
+def test_viewer_never_renders_cell_states_section() -> None:
+    """Schema 2.5.0 retired cell_states[] — modulation block subsumes it.
+    The viewer must never render a 'Cell states' subsection (the v1
+    CD81 ghost-section complaint that prompted hiding-when-empty is
+    now resolved structurally — the field doesn't exist)."""
     html = render_html(_minimal_v2_record())
-    assert "Cell states (0)" not in html
+    assert "Cell states" not in html
     assert "no cell-state rows" not in html
-
-
-def test_viewer_renders_cell_states_section_when_populated() -> None:
-    """Legacy v1 records that DO carry cell_states should still render."""
-    html = render_html(
-        _minimal_v2_record(
-            cell_states=[
-                {
-                    "state": "activated",
-                    "descriptor": "post-stimulation T-cell activation",
-                    "cited_evidence_ids": [],
-                }
-            ]
-        )
-    )
-    assert "Cell states (1)" in html
-    assert "activated" in html

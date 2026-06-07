@@ -31,6 +31,7 @@ import pytest
 from accessible_surfaceome.agents._support.pricing import UsageRecord
 from accessible_surfaceome.agents._support.timing import TimingRecorder
 from accessible_surfaceome.agents.plan_trim_select.runner import (
+    A1_TRIM_PROMPT_PATH,
     TRIM_CONCURRENCY,
     _run_trim,
 )
@@ -217,7 +218,7 @@ def test_builders_run_concurrently_and_collect_outputs() -> None:
     )
     elapsed = time.perf_counter() - t0
 
-    # All 9 outputs land in the dict, each with its own builder's label.
+    # All 8 outputs land in the dict, each with its own builder's label.
     assert set(outputs.keys()) == {s.name for s in specs}
     for name, payload in outputs.items():
         assert payload["label"] == name
@@ -229,7 +230,7 @@ def test_builders_run_concurrently_and_collect_outputs() -> None:
         assert bu.n_calls == 1
         assert bu.cost_usd == pytest.approx(0.001, abs=1e-6)
 
-    # Concurrent: 9 × 0.1s = 0.9s sequential. Pool of 9 should finish
+    # Concurrent: 8 × 0.1s = 0.8s sequential. Pool of 8 should finish
     # in well under half that.
     assert elapsed < 0.45, (
         f"expected concurrent dispatch to finish in <0.45s, took {elapsed:.3f}s"
@@ -330,6 +331,7 @@ def test_trim_runs_per_paper_concurrently_and_returns_all_papers() -> None:
         clips_by_source=clips_by_source,
         gene="TEST",
         usage_sink=usage_sink,
+        trim_prompt_path=A1_TRIM_PROMPT_PATH,
         timing=timing,
         timing_phase="plan_trim_select_a1",
         timing_iteration=0,
@@ -385,6 +387,7 @@ def test_trim_handles_paper_with_no_clips() -> None:
         clips_by_source=clips_by_source,
         gene="X",
         usage_sink=usage_sink,
+        trim_prompt_path=A1_TRIM_PROMPT_PATH,
     )
     # Only the non-empty paper produced a result.
     assert set(results.keys()) == {"PMID:43"}
@@ -434,6 +437,7 @@ def test_trim_concurrency_recovers_from_one_paper_failing() -> None:
         clips_by_source=clips_by_source,
         gene="X",
         usage_sink=usage_sink,
+        trim_prompt_path=A1_TRIM_PROMPT_PATH,
         timing=timing,
     )
 
@@ -463,14 +467,14 @@ _ = MethodObservation
 def test_resolve_focus_prompts_returns_triple() -> None:
     """``_resolve_focus_prompts`` returns (trim, select, evi_prefix) per
     focus. The LLM planner was retired in favor of a deterministic
-    kickoff, so there is no longer a planner-prompt path in the tuple."""
+    kickoff, so there is no longer a planner-prompt path in the tuple.
+    The legacy unified-ledger (``None``) path was retired with the
+    ``trim_system.md`` / ``select_system.md`` prompts."""
+    from typing import Any, cast
+
     from accessible_surfaceome.agents.plan_trim_select.runner import (
         _resolve_focus_prompts,
     )
-
-    trim_none, select_none, prefix_none = _resolve_focus_prompts(None)
-    assert prefix_none == "pts_evi_"
-    assert trim_none.exists() and select_none.exists()
 
     trim_a1, select_a1, prefix_a1 = _resolve_focus_prompts("a1")
     assert prefix_a1 == "a1_evi_"
@@ -481,8 +485,14 @@ def test_resolve_focus_prompts_returns_triple() -> None:
     assert trim_a2.exists() and select_a2.exists()
 
     # The per-focus trim + select prompts are distinct files.
-    assert len({trim_none, trim_a1, trim_a2}) == 3
-    assert len({select_none, select_a1, select_a2}) == 3
+    assert trim_a1 != trim_a2
+    assert select_a1 != select_a2
+
+    # ``None`` is no longer accepted — production runs a1+a2 via the
+    # dual driver. Cast through ``Any`` so static typing doesn't
+    # complain about the deliberately-wrong argument.
+    with pytest.raises(ValueError, match="expected 'a1' or 'a2'"):
+        _resolve_focus_prompts(cast(Any, None))
 
 
 def test_a1_kickoff_emphasizes_methodology() -> None:

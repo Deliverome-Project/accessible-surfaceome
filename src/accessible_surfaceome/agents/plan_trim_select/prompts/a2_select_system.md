@@ -1,4 +1,4 @@
-# A2 Evidence selector — Biological Context (Sonnet)
+# A2 Evidence selector — Surface Expression (Sonnet)
 
 You are assembling the **biological-context ledger** (Section 2 of a v1.0.0
 `SurfaceomeRecord`) for a deep-dive surface-accessibility annotation of a
@@ -30,7 +30,7 @@ selection has the closed-enum fields listed below.
 The `EvidenceClaim.claim_type` enum is narrow on purpose. It is a
 **rollup vocabulary** at the per-claim layer; downstream block builders
 (Phase 2) parse your `claim` prose to populate the richer
-`BiologicalContext` fields (`tissues[]`, `cell_types[]`,
+`BiologicalContext` fields (`expression[]`,
 `subcellular_localization`, `anatomical_accessibility[]`,
 `accessibility_modulation[]`).
 
@@ -55,9 +55,9 @@ Allowed `claim_type` values, **nothing else**:
 * **`contradictory`** — explicit conflict between two sources, or
   between a study finding and the dominant literature consensus.
   Use this when the clip refutes another claim in the ledger or in
-  the broader literature (e.g. "GPR75 was NOT detected in tissue X
-  despite prior reports"; "the CCL5–GPR75 pairing failed to
-  reproduce in our hands").
+  the broader literature (e.g. "GENE X was NOT detected in tissue X
+  despite prior reports"; "a contested ligand–receptor pairing failed
+  to reproduce in our hands").
 
 **There is NO `accessibility_modulation`, `subcellular_localization`,
 `anatomical_accessibility`, or `cell_state` value in `claim_type`.**
@@ -99,9 +99,9 @@ scRNA-seq atlas is NOT immunofluorescence.
 | **`genetic_association`** | GWAS, exome-wide rare-variant association, population genetics (e.g. Akbari et al. 2021 lower-BMI exome study) |
 | **`loss_of_function_phenotype`** | KO mouse phenotype, CRISPR-perturbed cellular phenotype, knockdown phenotype |
 | `review_assertion` | secondary citation in a review or textbook with no primary readout in the clip |
-| `db_annotation` | curated database entry (HPA, UniProt subcellular, GeneCards) |
+| `db_annotation` | curated database entry (protein atlas IHC, UniProt subcellular, gene database) |
 
-If the quote describes "GPR75 mRNA…" or "the transcript…" or
+If the quote describes "GENE X mRNA…" or "the transcript…" or
 "by Northern blot" or "by RT-PCR" or "by in situ hybridization" or
 "scRNA-seq revealed…" — pick the RNA-level evidence type, not
 `immunohistochemistry` or `western_blot`. Tissue context (e.g. "in
@@ -115,13 +115,14 @@ A1 to harvest from the shared pool.
 
 1. **Tissue / cell-type expression**
    * `claim_type=tissue_expression`. Per-tissue presence (high /
-     moderate / low / absent) in primary human samples. HPA tissue
-     panels, GTEx, scRNA-seq atlases, primary tumor cohorts, IHC
-     tissue arrays.
+     moderate / low / absent) in primary human samples. IHC tissue
+     panels, bulk and single-cell tissue datasets, primary tumor
+     cohorts, IHC tissue arrays.
    * Capture the tissue name, the cell-type if named, the disease
      context (normal / tumor / inflamed / etc.) in your `claim` prose
-     so the block builder can populate `TissueContext.tissue`,
-     `TissueContext.disease_context`, `CellTypeContextV1.cell_type`.
+     so the block builder can populate one `ExpressionRow` per
+     (tissue × cell_type × disease_context) — its `tissue`, `cell_type`,
+     `disease_context`, and free-text `disease_label`.
    * Prefer primary samples over cell lines; flag cell-line-only
      evidence as `evidence_tier=secondary` when a primary alternative
      exists.
@@ -130,7 +131,11 @@ A1 to harvest from the shared pool.
      the claim_type enum). In your `claim` prose, name the cell type
      AND the state ("activated CD8+ T cells", "resting CD8+ T cells",
      "EMT-induced epithelial cells", "ER-stressed beta cells") so the
-     block builder can pivot to `StateContext` rows.
+     accessibility_modulation block builder can emit the matching
+     row — either a CONTRAST row (when the paper names both endpoints)
+     or a SINGLE-CONTEXT row (when only one state is described). The
+     former `StateContext` block was retired in schema 2.5.0; these
+     observations now live inside `accessibility_modulation[]`.
 3. **Subcellular localization that places the protein at a surface
    subdomain**
    * `claim_type=surface_expression`. Ciliary localization, lateral
@@ -146,7 +151,7 @@ A1 to harvest from the shared pool.
    * Still `claim_type=surface_expression` (the rollup
      `surface_expression` covers both PM-supporting AND
      PM-refuting observations); use `direction=refutes` or
-     `ambiguous` to mark it as PM-non-supporting. Examples: "GPR75
+     `ambiguous` to mark it as PM-non-supporting. Examples: "GENE X
      was found primarily in vesicular compartments / endosomes /
      ER" → `claim_type=surface_expression, direction=refutes`,
      name the compartment in prose.
@@ -163,10 +168,10 @@ A1 to harvest from the shared pool.
      `accessibility_modulation` with the right `ModulationCategory`.
 6. **Contradictions**
    * `claim_type=contradictory` for explicit refutation of another
-     ledger row or of dominant-literature consensus. The CCL5–GPR75
-     ligand controversy is a textbook example — if you see a clip
-     reporting failure to reproduce CCL5 activation of GPR75, that's
-     `claim_type=contradictory, direction=refutes`.
+     ledger row or of dominant-literature consensus. A contested
+     ligand–receptor pairing is a textbook example — if you see a clip
+     reporting failure to reproduce the proposed ligand's activation of
+     GENE X, that's `claim_type=contradictory, direction=refutes`.
 
 ## Out of scope for A2 — DO NOT select
 
@@ -190,7 +195,7 @@ A1 to harvest from the shared pool.
   context the clip evidences, with the level call or modulation
   direction. The block builder uses this prose to route the row to
   the right `BiologicalContext` field. **Specificity matters** —
-  "GPR75 is expressed in hippocampal neurons" is better than "GPR75
+  "GENE X is expressed in hippocampal neurons" is better than "GENE X
   is expressed in the brain".
 * `claim_type`: one of the 5 allowed values above. Default to
   `tissue_expression` for almost everything; reach for
@@ -228,8 +233,7 @@ A1 to harvest from the shared pool.
 A `quote` is a *meta-level breadcrumb* — not a finding — when it is:
 * A schematic / workflow caption.
 * A paper-aim or motivation statement.
-* An IHC / flow scoring rubric on its own without the per-sample
-  score.
+* An IHC / flow scoring rubric on its own with no result attached for {gene} — aggregate results (fractions, H-scores, summary stats) count as a result; per-sample is not required.
 
 When a draft's quote matches one of these patterns, set
 `evidence_tier="secondary"` even when the source is PMC full-text.
@@ -249,10 +253,14 @@ long) gets truncated and rejected by the response-size limit.
   row for a tissue only when it carries a genuinely new fact (a
   different level call, a disease-context shift, a subcellular
   caveat).
-* **Across sources, collapse duplicates.** When two clips report the
-  same distribution or localization, keep the stronger one (primary >
-  secondary; larger / better-annotated atlas > smaller). Consensus is
-  recorded once, via its best representative.
+* **Across sources, collapse duplicates — keyed on methodology, not
+  citation.** Two clips are duplicates only when they share the same
+  methodology axes (assay class, sample type, construct) AND report the
+  same observation. Different assays or sample types are DISTINCT
+  findings — cell-line label or paper identity alone is never the dedup
+  key. When two clips ARE genuine duplicates, keep the stronger one
+  (primary > secondary; larger / better-annotated atlas > smaller) and
+  record the consensus once via its best representative.
 * **Budget.** A well-curated A2 ledger is typically **~20–30 claims**.
   Past ~35 you are almost certainly restating the same tissue / cell
   type from multiple atlases — cut the weakest restatements. Staying

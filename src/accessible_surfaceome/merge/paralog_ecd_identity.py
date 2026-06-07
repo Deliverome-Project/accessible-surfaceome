@@ -6,31 +6,40 @@ positionally (loop 1 of A ↔ loop 1 of B, etc.) up to ``min(n_loops_a,
 n_loops_b)``. For each loop pair:
 
     BLOSUM62 global pairwise alignment (gap_open=-10, gap_extend=-0.5).
-    loop_identity = matches / min(len_loop_a, len_loop_b)
+    loop_identity = matches / max(len_loop_a, len_loop_b)
 
 Aggregate per protein-pair, length-weighted across all aligned loops::
 
     ecd_pct_identity = sum(loop_identity_i * loop_len_i) / sum(loop_len_i) * 100
 
-Loop length used for both the denominator and the weight is the **min** of the
-two paired loop lengths — symmetric and bounded in [0, 1].
+The denominator switched from ``min(len)`` to ``max(len)`` (2026-06) so
+truncated loops no longer read 100% identity — see the docstring on
+:mod:`accessible_surfaceome.merge._sequence_identity` for the rationale.
+``loop_len_i`` used for the aggregator weight is still the ``min`` of the
+two paired loop lengths (the safe shared signal); only the per-loop
+identity denominator changed.
 
 When either protein has zero ``'O'`` residues → ``ecd_pct_identity = None``,
 ``n_ecd_loops_compared = 0``.
 
 Reproducing the GPR75 example: GPR75 (O95800, 7TM GPCR) vs CCRL2 (O00421) →
-both have an N-terminal ECD + three ECLs. With BLOSUM62 length-weighted per-loop
-alignment, the value lands in the high-teens — close to GPR75.json's
-``ecd_pct_identity: 18.2``, regenerated rather than reproduced exactly.
+both have an N-terminal ECD + three ECLs. The value will be slightly lower
+than the GPR75.json snapshot's ``ecd_pct_identity: 18.2`` after the
+``max(len)`` switch — published records will need re-annotation to refresh
+the number.
 """
 
 from __future__ import annotations
 
 from dataclasses import dataclass
-from functools import lru_cache
 from typing import Any
 
-from Bio.Align import PairwiseAligner, substitution_matrices
+from accessible_surfaceome.merge._sequence_identity import (
+    _aligner,  # noqa: F401 — re-exported for downstream scripts
+    _blosum62,  # noqa: F401 — re-exported for downstream scripts
+    _sanitize,  # noqa: F401 — re-exported for downstream scripts
+    alignment_match_counts,
+)
 
 
 @dataclass(frozen=True)
@@ -72,103 +81,37 @@ def extract_ecd_loops(per_residue_topology: str, sequence: str) -> list[LoopSpan
     return loops
 
 
-@lru_cache(maxsize=1)
-def _aligner() -> PairwiseAligner:
-    aligner = PairwiseAligner()
-    aligner.substitution_matrix = substitution_matrices.load("BLOSUM62")
-    aligner.open_gap_score = -10.0
-    aligner.extend_gap_score = -0.5
-    aligner.mode = "global"
-    return aligner
-
-
-def _count_matches(aligned_a: str, aligned_b: str) -> int:
-    """Count positions where the two aligned strings agree (no gaps)."""
-    return sum(1 for a, b in zip(aligned_a, aligned_b) if a == b and a != "-")
-
-
 def _pairwise_loop_identity(loop_a: LoopSpan, loop_b: LoopSpan) -> float:
-    """Global BLOSUM62 alignment of two loops; identity = matches / min_len.
+    """Global BLOSUM62 alignment of two loops; identity = matches / max_len.
 
     Returns 0.0 when either loop is empty (defensive — the caller should
     skip empty loops, but extract_ecd_loops can in principle hand back
     zero-length spans if topology has malformed contiguous-O detection).
+
+    Delegates the alignment + match counting to
+    :func:`accessible_surfaceome.merge._sequence_identity.alignment_match_counts`
+    so paralog, ortholog (via the shared aggregator below), and isoform
+    identity numbers all flow through the same arithmetic.
     """
     if loop_a.length == 0 or loop_b.length == 0:
         return 0.0
-    aligner = _aligner()
-    # BLOSUM62 only knows the 20 standard residues; substitute selenocysteine
-    # (U) and the ambiguity codes BZXJO* with X. Rare (selenoproteins, stop
-    # codons in odd entries) and the residue subbed never matches anyway.
-    seq_a = _sanitize(loop_a.sequence)
-    seq_b = _sanitize(loop_b.sequence)
-    try:
-        alignment = aligner.align(seq_a, seq_b)[0]
-    except (ValueError, KeyError):
-        return 0.0
-    # Use Biopython's coordinates representation: alignment.aligned is a
-    # numpy array of shape (2, n_blocks, 2) holding [target_start,target_end]
-    # / [query_start,query_end] for each aligned block. Within each block the
-    # two slices are guaranteed equal-length and gap-free, so identical
-    # residues at matching positions are matches; that gives an exact count
-    # without restringifying.
-    aligned = alignment.aligned  # numpy ndarray
-    matches = 0
-    for (a_start, a_end), (b_start, b_end) in zip(aligned[0], aligned[1]):
-        block_a = seq_a[a_start:a_end]
-        block_b = seq_b[b_start:b_end]
-        matches += sum(1 for x, y in zip(block_a, block_b) if x == y)
-    return matches / min(loop_a.length, loop_b.length)
-
-
-@lru_cache(maxsize=1)
-def _blosum62():
-    return substitution_matrices.load("BLOSUM62")
+    matches, _ = alignment_match_counts(loop_a.sequence, loop_b.sequence)
+    return matches / max(loop_a.length, loop_b.length)
 
 
 def _loop_id_and_sim(loop_a: LoopSpan, loop_b: LoopSpan) -> tuple[float, float]:
-    """(identity, similarity) fractions over min_len for one loop pair.
+    """(identity, similarity) fractions over max_len for one loop pair.
 
-    Identity = exact matches / min_len (same as ``_pairwise_loop_identity``).
+    Identity = exact matches / max_len (matches ``_pairwise_loop_identity``).
     Similarity additionally counts BLOSUM62-positive substitutions (score > 0)
-    — the conventional "conservative substitution" definition, mirroring the
-    ortholog ``ecd_pct_similarity`` so paralog and ortholog similarity numbers
-    are computed the same way and are directly comparable in the viewer.
+    — the conventional "conservative substitution" definition. Shared with
+    isoform full-length identity via ``_sequence_identity``.
     """
     if loop_a.length == 0 or loop_b.length == 0:
         return 0.0, 0.0
-    aligner = _aligner()
-    seq_a = _sanitize(loop_a.sequence)
-    seq_b = _sanitize(loop_b.sequence)
-    try:
-        alignment = aligner.align(seq_a, seq_b)[0]
-    except (ValueError, KeyError):
-        return 0.0, 0.0
-    mat = _blosum62()
-    matches = positives = 0
-    for (a0, a1), (b0, b1) in zip(alignment.aligned[0], alignment.aligned[1]):
-        for x, y in zip(seq_a[a0:a1], seq_b[b0:b1]):
-            if x == y:
-                matches += 1
-                positives += 1
-            else:
-                try:
-                    if mat[x, y] > 0:
-                        positives += 1
-                except (KeyError, IndexError):
-                    pass
-    denom = min(loop_a.length, loop_b.length)
+    matches, positives = alignment_match_counts(loop_a.sequence, loop_b.sequence)
+    denom = max(loop_a.length, loop_b.length)
     return matches / denom, positives / denom
-
-
-_NONSTANDARD = set("UBJZXO*")
-
-
-def _sanitize(sequence: str) -> str:
-    """Replace non-BLOSUM62 residues with 'X' so the aligner doesn't choke."""
-    if not any(ch in _NONSTANDARD for ch in sequence):
-        return sequence
-    return "".join("X" if ch in _NONSTANDARD else ch for ch in sequence)
 
 
 @dataclass(frozen=True)

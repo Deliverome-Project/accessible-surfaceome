@@ -352,11 +352,16 @@ def test_gene_context_deterministic_field_can_be_none():
 
 def _selector_kwargs(ctx: "GeneContext") -> dict:
     """Minimal kwargs to drive ``_run_selector`` for prompt-shape tests."""
+    from accessible_surfaceome.agents.plan_trim_select.runner import (
+        A1_SELECT_PROMPT_PATH,
+    )
+
     return {
         "context": ctx,
         "menu_markdown": "(menu)",
         "n_kept": 0,
         "usage_sink": [],
+        "select_prompt_path": A1_SELECT_PROMPT_PATH,
     }
 
 

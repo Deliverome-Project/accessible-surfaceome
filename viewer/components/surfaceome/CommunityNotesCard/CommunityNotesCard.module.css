@@ -76,6 +76,19 @@
   border-bottom-color: var(--accent);
 }
 
+/* Empty state — "None yet" text + Submit feedback CTA. */
+.emptyState {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+}
+
+.emptyText {
+  font-size: 0.9rem;
+  color: var(--muted);
+  font-style: italic;
+}
+
 /* Mock-mode banner — only renders when ?mock=notes is in the URL.
    Tinted background + dashed border so a casual reader doesn't
    mistake the synthetic notes for real submissions. */

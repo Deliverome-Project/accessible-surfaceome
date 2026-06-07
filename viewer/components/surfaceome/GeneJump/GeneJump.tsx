@@ -9,19 +9,37 @@ import {
   useState,
 } from "react";
 import { useRouter } from "next/navigation";
+// Type-only import → erased at compile, so the client bundle never pulls
+// in lib/surfaceome.ts (which imports node:fs).
+import type { GeneEntry } from "../../../lib/surfaceome";
 import styles from "./GeneJump.module.css";
 
-interface GeneJumpProps {
-  /** Deep-dive gene symbols — the same set `generateStaticParams` emits
-   *  (`listSurfaceomeGenes()`). Restricting the typeahead to this set
-   *  means every pick lands on a real statically-generated page; under
-   *  `output: export` a non-deep-dive symbol would 404. */
-  genes: readonly string[];
-  /** Current gene symbol — excluded from its own suggestions. */
-  current?: string;
+function geneJumpRank(g: GeneEntry, q: string): number {
+  const sym = g.symbol.toUpperCase();
+  const aliases = (g.synonyms ?? []).map((s) => s.toUpperCase());
+  if (sym === q) return 0;
+  if (aliases.some((a) => a === q)) return 1;
+  if (sym.startsWith(q)) return 2;
+  if (aliases.some((a) => a.startsWith(q))) return 3;
+  if (sym.includes(q)) return 4;
+  if (aliases.some((a) => a.includes(q))) return 5;
+  return 6;
 }
 
-const MAX_SHOWN = 8;
+interface GeneJumpProps {
+  /** Deep-dive genes — the same set `generateStaticParams` emits
+   *  (`listSurfaceomeGeneEntries()`), each carrying a `stale` flag.
+   *  Restricting the typeahead to this set means every pick lands on a real
+   *  statically-generated page; under `output: export` a non-deep-dive symbol
+   *  would 404. */
+  genes: readonly GeneEntry[];
+  /** Current gene symbol — excluded from its own suggestions. */
+  current?: string;
+  /** When true, each suggestion shows a schema-freshness dot (green = record
+   *  validates against the current schema, amber = out of date / needs
+   *  re-running). A temporary migration aid — off restores plain symbols. */
+  showSchemaDots?: boolean;
+}
 
 /**
  * GeneJump — typeahead "jump to another gene's deep dive" box for the
@@ -32,8 +50,13 @@ const MAX_SHOWN = 8;
  * gene universe is passed in from the server component rather than
  * fetched, so the searchable set is guaranteed to match the built page
  * set (no runtime list that could drift ahead of the static export).
+ *
+ * When `showSchemaDots` is set, each suggestion carries a freshness dot
+ * driven by the precomputed `stale` flag (green = current schema, amber =
+ * out of date). The status is also a `title` tooltip + visually-hidden
+ * text, so it never relies on color alone.
  */
-export function GeneJump({ genes, current }: GeneJumpProps) {
+export function GeneJump({ genes, current, showSchemaDots = false }: GeneJumpProps) {
   const router = useRouter();
   const [query, setQuery] = useState("");
   const [open, setOpen] = useState(false);
@@ -43,17 +66,33 @@ export function GeneJump({ genes, current }: GeneJumpProps) {
 
   const universe = useMemo(() => {
     const cur = (current ?? "").toUpperCase();
+    // When the freshness dots are on, surface the current (green) records
+    // first so the reader sees what's up-to-date at a glance; within each
+    // freshness group, sort alphabetically. When dots are off, the `stale`
+    // flag is invisible — fall back to plain alphabetical.
     return [...genes]
-      .filter((g) => g && g.toUpperCase() !== cur)
-      .sort((a, b) => a.localeCompare(b));
-  }, [genes, current]);
+      .filter((g) => g.symbol && g.symbol.toUpperCase() !== cur)
+      .sort((a, b) => {
+        if (showSchemaDots && a.stale !== b.stale) return a.stale ? 1 : -1;
+        return a.symbol.localeCompare(b.symbol);
+      });
+  }, [genes, current, showSchemaDots]);
 
   const matches = useMemo(() => {
     const q = query.trim().toUpperCase();
-    const pool = q
-      ? universe.filter((g) => g.toUpperCase().includes(q))
-      : universe;
-    return pool.slice(0, MAX_SHOWN);
+    if (!q) return universe;
+    const hits = universe.filter((g) => {
+      if (g.symbol.toUpperCase().includes(q)) return true;
+      const aliases = g.synonyms ?? [];
+      return aliases.some((a) => a.toUpperCase().includes(q));
+    });
+    hits.sort((a, b) => {
+      const ra = geneJumpRank(a, q);
+      const rb = geneJumpRank(b, q);
+      if (ra !== rb) return ra - rb;
+      return a.symbol.localeCompare(b.symbol);
+    });
+    return hits;
   }, [universe, query]);
 
   useEffect(
@@ -85,7 +124,7 @@ export function GeneJump({ genes, current }: GeneJumpProps) {
       const pick = matches[activeIdx] ?? matches[0];
       if (pick) {
         e.preventDefault();
-        go(pick);
+        go(pick.symbol);
       }
     } else if (e.key === "Escape") {
       setOpen(false);
@@ -136,7 +175,7 @@ export function GeneJump({ genes, current }: GeneJumpProps) {
           ) : (
             matches.map((g, i) => (
               <li
-                key={g}
+                key={g.symbol}
                 id={`${baseId}-opt-${i}`}
                 role="option"
                 aria-selected={i === activeIdx}
@@ -147,15 +186,35 @@ export function GeneJump({ genes, current }: GeneJumpProps) {
                   className={`${styles.option} ${
                     i === activeIdx ? styles.optionActive : ""
                   }`}
+                  title={
+                    showSchemaDots
+                      ? g.stale
+                        ? "Deep-dive record is out of date with the current schema — needs re-running"
+                        : "Deep-dive record is up to date with the current schema"
+                      : undefined
+                  }
                   onMouseDown={(e) => {
                     // mousedown fires before the input's blur; preventDefault
                     // keeps focus so onBlur doesn't race the navigation.
                     e.preventDefault();
-                    go(g);
+                    go(g.symbol);
                   }}
                   onMouseEnter={() => setActiveIdx(i)}
                 >
-                  {g}
+                  {showSchemaDots ? (
+                    <>
+                      <span
+                        className={`${styles.dot} ${
+                          g.stale ? styles.dotStale : styles.dotCurrent
+                        }`}
+                        aria-hidden="true"
+                      />
+                      <span className="sr-only">
+                        {g.stale ? "out of date — " : "up to date — "}
+                      </span>
+                    </>
+                  ) : null}
+                  <span className={styles.optionSymbol}>{g.symbol}</span>
                 </button>
               </li>
             ))

@@ -1,29 +1,41 @@
 /*
- * Behavioral test for listSurfaceomeGenes() — the build-time fetch that
- * drives which gene pages generateStaticParams() emits.
+ * Behavioral test for listSurfaceomeGenes() / listSurfaceomeGeneEntries() —
+ * the build-time fetch that drives which gene pages generateStaticParams()
+ * emits and the GeneJump dropdown's per-gene freshness dot.
  *
  * The viewer has no JS unit-test runner, so this is a standalone tsx
- * script. listSurfaceomeGenes memoizes its result in a module-level
- * promise, so each scenario must run in its OWN process to re-exercise
- * the function cleanly:
+ * script. The result is memoized in a module-level promise, so each scenario
+ * must run in its OWN process to re-exercise the function cleanly:
  *
  *   npx --yes tsx tests/list_surfaceome_genes.test.ts <scenario>
  *
- * Scenarios: local | happy | retry5xx | fail4xx
- * Run all four (fresh process each) via tests/run_list_genes_tests.sh.
+ * Scenarios: local | happy | retry5xx | fail4xx | entries | entries-stale
+ * Run all (fresh process each) via tests/run_list_genes_tests.sh.
  *
  * What it pins:
- *   - local    → returns [] WITHOUT fetching (offline CI-smoke stub).
- *   - happy    → returns the gene_symbol list, sorted, empties filtered.
- *   - retry5xx → THROWS after 3 attempts on persistent 5xx (no silent []).
- *   - fail4xx  → THROWS after 1 attempt on 4xx (deterministic, no retry).
- * The last two are the hardening: a flaky Worker must fail the build
- * loudly instead of returning [] (an empty list silently drops every
- * gene route AND flips every catalog row to deep_dive=false via the
- * loadCatalog reconciliation).
+ *   - local         → returns [] WITHOUT fetching (offline CI-smoke stub).
+ *   - happy         → gene_symbol list, sorted, empties filtered.
+ *   - retry5xx      → THROWS after 3 attempts on persistent 5xx (no silent []).
+ *   - fail4xx       → THROWS after 1 attempt on 4xx (deterministic, no retry).
+ *   - entries       → listSurfaceomeGeneEntries() returns {symbol, stale};
+ *                     every gene at the current schema_version is fresh
+ *                     (stale=false), sorted, empties filtered.
+ *   - entries-stale → genes whose Worker-reported schema_version lags
+ *                     CURRENT_RECORD_SCHEMA_VERSION are marked stale=true;
+ *                     those at the current version stay false.
+ * retry5xx/fail4xx are the hardening: a flaky Worker must fail the build
+ * loudly instead of returning [] (an empty list silently drops every gene
+ * route AND flips every catalog row to deep_dive=false via the loadCatalog
+ * reconciliation).
  */
 
 const scenario = process.argv[2] ?? "";
+
+// Hardcoded "current" for the entries scenarios. With the auto-derived
+// current-schema-version (max observed across /v1/genes), the test just
+// needs SOME version that's the highest in the cohort; the actual value
+// is no longer load-bearing for matching the Pydantic default.
+const CURRENT = "2.9.0";
 let fetchCalls = 0;
 
 function jsonResponse(body: unknown, status = 200): Response {
@@ -46,6 +58,40 @@ globalThis.fetch = (async (): Promise<Response> => {
           {}, // no gene_symbol -> filtered out
         ],
       });
+    case "entries":
+      return jsonResponse({
+        genes: [
+          { gene_symbol: "KIR2DL1", schema_version: CURRENT },
+          { gene_symbol: "EGFR", schema_version: CURRENT },
+          { gene_symbol: "ZED", schema_version: CURRENT },
+          { gene_symbol: "", schema_version: CURRENT }, // filtered (falsy)
+          {}, // no gene_symbol -> filtered out
+        ],
+      });
+    case "entries-stale":
+      return jsonResponse({
+        genes: [
+          { gene_symbol: "KIR2DL1", schema_version: CURRENT },
+          { gene_symbol: "EGFR", schema_version: "1.1.0" }, // lags target
+          { gene_symbol: "ZED", schema_version: CURRENT },
+          { gene_symbol: "", schema_version: CURRENT }, // filtered (falsy)
+          {}, // no gene_symbol -> filtered out
+        ],
+      });
+    case "entries-auto-current":
+      // The cohort contains a SINGLE early-adopter at a newer version
+      // (2.10.0); every other entry still at 2.9.0. With auto-derived
+      // current-target = max(schema_version), the 2.10.0 entry is fresh
+      // and the 2.9.0 entries flip to stale even though their version
+      // matches what was the target a moment ago. That's the whole
+      // point of the auto-derivation — no manual constant to bump.
+      return jsonResponse({
+        genes: [
+          { gene_symbol: "AAA", schema_version: "2.9.0" },
+          { gene_symbol: "BBB", schema_version: "2.9.0" },
+          { gene_symbol: "CCC", schema_version: "2.10.0" }, // newest → sets target
+        ],
+      });
     case "retry5xx":
       return new Response("upstream busy", { status: 503 });
     case "fail4xx":
@@ -66,7 +112,17 @@ function pass(msg: string): void {
 process.env.SURFACEOME_API_BASE =
   scenario === "local" ? "local" : "https://example.test/surfaceome";
 
-const { listSurfaceomeGenes } = await import("../lib/surfaceome.ts");
+// Isolate the on-disk snapshot union: lib/surfaceome.ts unions the
+// /v1/genes list with the committed public/data/surfaceome/*.json
+// snapshots. Point at a non-existent dir so _localSnapshotGenes() catches
+// readdir's ENOENT and returns [] — these scenarios then exercise ONLY
+// the /v1/genes fetch+parse path, deterministically (independent of how
+// many snapshots happen to be committed).
+process.env.SURFACEOME_SNAPSHOT_DIR = "/tmp/__surfaceome_no_snapshots__";
+
+const { listSurfaceomeGenes, listSurfaceomeGeneEntries } = await import(
+  "../lib/surfaceome.ts"
+);
 
 if (scenario === "local") {
   const genes = await listSurfaceomeGenes();
@@ -103,6 +159,74 @@ if (scenario === "local") {
     fail(`expected 1 attempt (no retry on 4xx), got ${fetchCalls}`);
   }
   pass("throws immediately on 4xx without retrying");
+} else if (scenario === "entries") {
+  const entries = await listSurfaceomeGeneEntries();
+  // Partial match: GeneEntry may carry extra fields beyond {symbol, stale}
+  // (e.g. synonyms backfilled from the gene-names TSV). The test pins the
+  // (symbol, stale) contract — extras are fine.
+  const got = entries.map((e: { symbol: string; stale: boolean }) => ({
+    symbol: e.symbol,
+    stale: e.stale,
+  }));
+  const expected = [
+    { symbol: "EGFR", stale: false },
+    { symbol: "KIR2DL1", stale: false },
+    { symbol: "ZED", stale: false },
+  ];
+  if (JSON.stringify(got) !== JSON.stringify(expected)) {
+    fail(`expected ${JSON.stringify(expected)}, got ${JSON.stringify(got)}`);
+  }
+  if (fetchCalls !== 1) fail(`expected 1 fetch, got ${fetchCalls}`);
+  pass(
+    "entries at current schema_version are stale:false; sorted, filtered",
+  );
+} else if (scenario === "entries-stale") {
+  const entries = await listSurfaceomeGeneEntries();
+  const got = entries.map((e: { symbol: string; stale: boolean }) => ({
+    symbol: e.symbol,
+    stale: e.stale,
+  }));
+  const expected = [
+    { symbol: "EGFR", stale: true },
+    { symbol: "KIR2DL1", stale: false },
+    { symbol: "ZED", stale: false },
+  ];
+  if (JSON.stringify(got) !== JSON.stringify(expected)) {
+    fail(`expected ${JSON.stringify(expected)}, got ${JSON.stringify(got)}`);
+  }
+  pass(
+    "schema_version lagging CURRENT_RECORD_SCHEMA_VERSION marks entry stale",
+  );
+} else if (scenario === "entries-auto-current") {
+  const entries = await listSurfaceomeGeneEntries();
+  const got = entries.map((e: { symbol: string; stale: boolean }) => ({
+    symbol: e.symbol,
+    stale: e.stale,
+  }));
+  // Target auto-derives to "2.10.0" (the cohort max). AAA and BBB
+  // are now stale (they're at 2.9.0, behind the max); CCC is fresh.
+  const expected = [
+    { symbol: "AAA", stale: true },
+    { symbol: "BBB", stale: true },
+    { symbol: "CCC", stale: false },
+  ];
+  if (JSON.stringify(got) !== JSON.stringify(expected)) {
+    fail(`expected ${JSON.stringify(expected)}, got ${JSON.stringify(got)}`);
+  }
+  // Also verify the exported current-target moved to the cohort max.
+  const { CURRENT_RECORD_SCHEMA_VERSION } = await import("../lib/surfaceome.ts");
+  if (CURRENT_RECORD_SCHEMA_VERSION !== "2.10.0") {
+    fail(
+      `expected CURRENT_RECORD_SCHEMA_VERSION = '2.10.0' after fetch, ` +
+        `got ${JSON.stringify(CURRENT_RECORD_SCHEMA_VERSION)}`,
+    );
+  }
+  pass(
+    "auto-derived current schema_version follows the cohort max",
+  );
 } else {
-  fail(`unknown scenario '${scenario}' (use local|happy|retry5xx|fail4xx)`);
+  fail(
+    `unknown scenario '${scenario}' ` +
+      `(use local|happy|retry5xx|fail4xx|entries|entries-stale|entries-auto-current)`,
+  );
 }

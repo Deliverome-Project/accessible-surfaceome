@@ -166,6 +166,69 @@ async function handleGeneList(env) {
   return json({ count: rows.results.length, genes: rows.results }, { ttl: CACHE_TTL_SHORT });
 }
 
+// Verdict (in triage_run_public) → triage_signal (in SurfaceomeRecord).
+// MUST stay in sync with the Python side:
+//   src/accessible_surfaceome/agents/surfaceome_v1/orchestrator.py
+//     ::_TRIAGE_VERDICT_TO_SIGNAL
+// Both sides feed the viewer's gene page; a drift here would silently
+// recolor the triage chip.
+const TRIAGE_VERDICT_TO_SIGNAL = {
+  yes: "likely_accessible",
+  contextual: "possibly_accessible",
+  no: "unlikely",
+};
+
+// Priority order for the Sonnet triage prior. MUST stay in sync with:
+//   src/accessible_surfaceome/agents/surfaceome_v1/orchestrator.py
+//     ::_D1_TRIAGE_PRIORITY
+//   src/accessible_surfaceome/cloud/surface_annotation.py
+//     ::_TRIAGE_COHERENCE_PRIORITY
+// Walked in order; first hit wins. The bench-curated run is preferred
+// over the genome-wide sweep — same logic the publish-time coherence
+// guard uses. Public D1 currently carries only the ``_v2`` sweeps
+// (verified 2026-06-07).
+const TRIAGE_PRIORITY = [
+  ["mainbench_canonical_v2", "ncbi"],
+  ["genome_full_sonnet_ncbi_v2", "ncbi"],
+];
+
+/**
+ * Fetch the Sonnet triage row for `sym` honoring the priority order.
+ * Returns `{verdict, reason, reasoning} | null`. Walks priorities one
+ * by one — at most ~2 cheap point queries; the genome-wide sweep is the
+ * tail case so most lookups resolve on the first query.
+ *
+ * The June-2026 bug: when the annotator's `_load_triage_record_from_d1`
+ * failed silently (partial creds → empty token), records shipped with
+ * `triage_signal=unknown` even though D1 carried the Sonnet verdict.
+ * This overlay closes the loop: even if a record ships with `unknown`,
+ * the Worker serves the live verdict that D1 actually has — no
+ * re-annotation required.
+ */
+async function fetchTriagePrior(env, sym) {
+  for (const [runId, variant] of TRIAGE_PRIORITY) {
+    const row = await env.DB.prepare(
+      `SELECT predicted_verdict, predicted_reason, verdict_reasoning
+         FROM triage_run_public
+        WHERE gene_symbol = ?
+          AND run_id = ?
+          AND prompt_variant = ?
+          AND model LIKE '%sonnet%'
+          AND predicted_verdict IS NOT NULL
+        ORDER BY replicate ASC, created_at DESC
+        LIMIT 1`
+    ).bind(sym, runId, variant).first();
+    if (row) {
+      return {
+        verdict: row.predicted_verdict,
+        reason: row.predicted_reason,
+        reasoning: row.verdict_reasoning,
+      };
+    }
+  }
+  return null;
+}
+
 async function handleGene(env, symbol) {
   const sym = checkSymbol(symbol);
   if (!sym) return badRequest("invalid_symbol");
@@ -183,6 +246,552 @@ async function handleGene(env, symbol) {
     record = JSON.parse(row.annotation_json);
   } catch (e) {
     return json({ error: "bad_record_json" }, { status: 500, ttl: 0 });
+  }
+  // Enrich with Schweke 2024 homo-oligomer prediction at serve time.
+  // The annotator already bakes ``deterministic_features.homo_oligomerization``
+  // into newly-annotated records (consistent with how the other deterministic
+  // blocks — topology, paralogs, orthologs, structure, surface_bind — are
+  // populated at annotation time). This LEFT JOIN is the back-compat hatch
+  // for records annotated BEFORE the schweke_homomer wiring landed: any
+  // record whose homo_oligomerization block is missing OR carries
+  // is_homo_oligomer=false despite the gene appearing in
+  // schweke_homomer_public gets the row injected. Records that already
+  // carry a positive Schweke entry from the annotator are left alone
+  // (annotator's bake wins; ensures the data the LLM saw at annotation
+  // time matches what the viewer renders).
+  const uniprot = record?.gene?.uniprot_acc;
+  if (uniprot) {
+    const existing = record?.deterministic_features?.homo_oligomerization;
+    const needsEnrichment = !existing || existing.is_homo_oligomer === false;
+    if (needsEnrichment) {
+      const schwekeRow = await env.DB.prepare(
+        `SELECT stoichiometry, af_model_num, is_ecd_only,
+                has_higher_order_complex, dimer_pdb_filename,
+                complex_pdb_filename
+           FROM schweke_homomer_public
+          WHERE uniprot_acc = ?
+          ORDER BY universe_version DESC
+          LIMIT 1`
+      ).bind(uniprot).first().catch(() => null);
+      if (schwekeRow) {
+        if (!record.deterministic_features) record.deterministic_features = {};
+        record.deterministic_features.homo_oligomerization = {
+          is_homo_oligomer: true,
+          stoichiometry: schwekeRow.stoichiometry ?? null,
+          af_model_num: schwekeRow.af_model_num ?? null,
+          is_ecd_only: !!schwekeRow.is_ecd_only,
+          has_higher_order_complex: !!schwekeRow.has_higher_order_complex,
+          dimer_pdb_filename: schwekeRow.dimer_pdb_filename ?? null,
+          complex_pdb_filename: schwekeRow.complex_pdb_filename ?? null,
+          source: "Schweke 2024 (PMID 38325366)",
+          citation: "10.1016/j.cell.2024.01.022",
+        };
+        // Cat 3 mitigation — also derive
+        // ``accessibility_risks.homo_oligomerization_prediction`` from the
+        // injected block. This field is normally populated at annotation
+        // time by the orchestrator's ``_attach_homo_oligomerization_prediction``
+        // post-pass (see ``agents/surfaceome_v2/orchestrator.py``); the
+        // Worker mirrors the same derivation so old records served before
+        // re-annotation also carry the structured risk chip the viewer
+        // renders next to ``epitope_masking``. Severity bands MUST match
+        // the Python implementation's ``_homo_oligomerization_severity``
+        // helper — keep them in sync (≤2 → low, 3..7 → moderate, 8..24 →
+        // high, None → unknown). Annotator-populated risk chips win: only
+        // inject when the served record doesn't already carry one (mirrors
+        // the same "annotator-bake wins" convention as every other
+        // serve-time enrichment in handleGene).
+        const existingRisk =
+          record?.accessibility_risks?.homo_oligomerization_prediction;
+        if (!existingRisk) {
+          const n = schwekeRow.stoichiometry;
+          let severity = "unknown";
+          if (typeof n === "number") {
+            if (n <= 2) severity = "low";
+            else if (n <= 7) severity = "moderate";
+            else if (n <= 24) severity = "high";
+          }
+          if (!record.accessibility_risks) record.accessibility_risks = {};
+          record.accessibility_risks.homo_oligomerization_prediction = {
+            present: true,
+            stoichiometry: n ?? null,
+            severity,
+            is_ecd_only: !!schwekeRow.is_ecd_only,
+            source: "Schweke 2024 (PMID 38325366)",
+            cited_evidence_ids: [],
+          };
+        }
+      }
+    }
+  }
+  // Defense-in-depth dedup for the three enrichment queries below. Each one
+  // selects from a topology_public / compara_paralog / compara_ortholog
+  // table that carries the same accession at MULTIPLE topology / release
+  // versions. The query filters by a single version, so the happy path
+  // returns ≤ 1 row per accession. But when the version-resolution lookup
+  // hiccups (a topology_release row is missing / NULL / older than the data
+  // it points at), the filter degrades and we get one row per (accession ×
+  // version) → the duplication TGOLN2 showed: 11 isoform_topologies for a
+  // gene that has 5 alternative isoforms (5 × 2 topology_versions + the
+  // canonical row leaking in). Drop duplicates by primary accession so the
+  // shape returned to the viewer is correct even when version resolution
+  // misbehaves. Picks the first-occurring row (D1's order-by puts the
+  // alphabetically-earliest accession first; later versions overwrite when
+  // they sort later — close enough for a safety net, and the annotator
+  // path is the authoritative source either way).
+  function dedupeByKey(rows, keyFn) {
+    if (!Array.isArray(rows) || rows.length === 0) return rows;
+    const seen = new Set();
+    const out = [];
+    for (const r of rows) {
+      const k = keyFn(r);
+      if (k == null || seen.has(k)) continue;
+      seen.add(k);
+      out.push(r);
+    }
+    return out;
+  }
+  // Enrich with canonical + isoform topology, paralogs, and orthologs at
+  // serve time. Same back-compat rationale as the Schweke block above: the
+  // annotator already bakes these into newly-annotated records (see
+  // src/accessible_surfaceome/agents/surfaceome_v1/d1_deterministic.py
+  // _fetch_canonical_topology / _fetch_isoform_topologies / _fetch_paralogs
+  // / _fetch_orthologs). These LEFT JOINs are the back-compat hatch for
+  // records annotated BEFORE each feature's wiring landed. Annotator-baked
+  // positives ALWAYS win — the "needsEnrichment" gate only fires when the
+  // record's field is missing, carries the explicit placeholder, OR is
+  // empty without a "checked, none found" sentinel (see
+  // DeterministicFeatures.{paralogs,isoform_topologies}_checked and
+  // OrthologSet.checked — those are the annotator's "we looked and there's
+  // genuinely nothing" signal, and we leave that alone).
+  if (uniprot) {
+    // Resolve the active per-table versions in parallel. Each defaults to
+    // null on a missing release row or D1 hiccup; the per-feature blocks
+    // below skip enrichment when their version is absent.
+    const [topoCanonRow, topoIsoRow, paralogRelRow, orthoEcdRelRow] = await Promise.all([
+      env.DB.prepare(
+        `SELECT topology_version FROM topology_release
+            WHERE topology_version IN (
+              SELECT DISTINCT topology_version FROM topology_public WHERE cohort = 'human_canonical'
+            )
+            ORDER BY loaded_at DESC LIMIT 1`
+      ).first().catch(() => null),
+      env.DB.prepare(
+        `SELECT topology_version FROM topology_release
+            WHERE topology_version IN (
+              SELECT DISTINCT topology_version FROM topology_public WHERE cohort = 'human_isoforms'
+            )
+            ORDER BY loaded_at DESC LIMIT 1`
+      ).first().catch(() => null),
+      env.DB.prepare(
+        `SELECT paralog_version FROM compara_paralog_release
+            ORDER BY fetched_at DESC LIMIT 1`
+      ).first().catch(() => null),
+      env.DB.prepare(
+        `SELECT ortholog_ecd_version FROM compara_ortholog_ecd_release
+            ORDER BY computed_at DESC LIMIT 1`
+      ).first().catch(() => null),
+    ]);
+    const canonicalTopoVersion = topoCanonRow?.topology_version ?? null;
+    const isoformTopoVersion = topoIsoRow?.topology_version ?? null;
+    const paralogVersion = paralogRelRow?.paralog_version ?? null;
+    const orthologEcdVersion = orthoEcdRelRow?.ortholog_ecd_version ?? null;
+
+    // ----- canonical_topology -----
+    // Mirror _fetch_canonical_topology. Enrich when the record's
+    // canonical_topology is missing OR carries the
+    // ``tool_version='placeholder-no-d1-row'`` stub the Python annotator
+    // emits when no D1 row was available at annotation time. Annotator
+    // records with a real DeepTMHMM row are left alone.
+    const existingCanonTopo = record?.deterministic_features?.canonical_topology;
+    const canonTopoIsPlaceholder = existingCanonTopo?.tool_version === "placeholder-no-d1-row";
+    const canonTopoNeedsEnrich = !existingCanonTopo || canonTopoIsPlaceholder;
+    if (canonTopoNeedsEnrich && canonicalTopoVersion) {
+      const tr = await env.DB.prepare(
+        `SELECT uniprot_acc_full, isoform_id, tm_helix_count,
+                n_terminal_orientation, c_terminal_orientation,
+                signal_peptide_length, ecd_length_residues, icd_length_residues,
+                per_residue_topology, sequence, tool_version, retrieved_at
+           FROM topology_public
+          WHERE uniprot_acc = ? AND cohort = 'human_canonical'
+            AND topology_version = ?
+          LIMIT 1`
+      ).bind(uniprot, canonicalTopoVersion).first().catch(() => null);
+      if (tr) {
+        if (!record.deterministic_features) record.deterministic_features = {};
+        record.deterministic_features.canonical_topology = {
+          isoform_id: tr.isoform_id || `${uniprot}-1`,
+          uniprot_acc: tr.uniprot_acc_full || uniprot,
+          tm_helix_count: Number(tr.tm_helix_count || 0),
+          n_terminal_orientation: tr.n_terminal_orientation === "extracellular" ? "extracellular" : "cytoplasmic",
+          c_terminal_orientation: tr.c_terminal_orientation === "extracellular" ? "extracellular" : "cytoplasmic",
+          signal_peptide_length: Number(tr.signal_peptide_length || 0),
+          ecd_length_residues: Number(tr.ecd_length_residues || 0),
+          icd_length_residues: Number(tr.icd_length_residues || 0),
+          per_residue_topology: tr.per_residue_topology || "",
+          sequence: tr.sequence ?? null,
+          tool_version: tr.tool_version || "deeptmhmm-1.0.24",
+          retrieved_at: tr.retrieved_at || new Date().toISOString(),
+        };
+      }
+    }
+
+    // ----- isoform_topologies -----
+    // Mirror _fetch_isoform_topologies. Enrich when the field is missing
+    // OR (the array is empty AND ``isoform_topologies_checked`` is not
+    // True). The latter sentinel is the annotator's "we ran the isoforms
+    // cohort and this gene genuinely has no alternative isoforms" signal;
+    // we honor it. The Worker does NOT compute %identity to canonical
+    // (BLOSUM62 alignment is too heavy for the request hot path); identity
+    // fields are emitted as null. Records that need real %identity values
+    // get them via re-annotation, not at serve time.
+    const existingIsoTopo = record?.deterministic_features?.isoform_topologies;
+    const isoTopoChecked = record?.deterministic_features?.isoform_topologies_checked === true;
+    const isoTopoNeedsEnrich = !Array.isArray(existingIsoTopo)
+      || (existingIsoTopo.length === 0 && !isoTopoChecked);
+    if (isoTopoNeedsEnrich && isoformTopoVersion) {
+      const isoRows = await env.DB.prepare(
+        `SELECT uniprot_acc_full, isoform_id, tm_helix_count,
+                n_terminal_orientation, c_terminal_orientation,
+                signal_peptide_length, ecd_length_residues, icd_length_residues,
+                per_residue_topology, sequence, tool_version, retrieved_at
+           FROM topology_public
+          WHERE uniprot_acc = ? AND cohort = 'human_isoforms'
+            AND topology_version = ?
+          ORDER BY uniprot_acc_full ASC`
+      ).bind(uniprot, isoformTopoVersion).all().catch(() => null);
+      // Belt-and-suspenders dedup: even though the query filters by
+      // topology_version, a stale topology_release row would let multiple
+      // versions slip through and produce duplicate isoform rows (one per
+      // version). Also drop any row whose uniprot_acc_full matches the
+      // canonical accession — those belong to the human_canonical cohort
+      // and shouldn't be inside human_isoforms.
+      const rawIsoResults = isoRows?.results ?? [];
+      const results = dedupeByKey(
+        rawIsoResults.filter((r) => r.uniprot_acc_full && r.uniprot_acc_full !== uniprot),
+        (r) => r.uniprot_acc_full,
+      );
+      if (results.length > 0) {
+        if (!record.deterministic_features) record.deterministic_features = {};
+        record.deterministic_features.isoform_topologies = results.map((r) => ({
+          isoform_id: r.isoform_id || r.uniprot_acc_full,
+          uniprot_acc: r.uniprot_acc_full || uniprot,
+          tm_helix_count: Number(r.tm_helix_count || 0),
+          n_terminal_orientation: r.n_terminal_orientation === "extracellular" ? "extracellular" : "cytoplasmic",
+          c_terminal_orientation: r.c_terminal_orientation === "extracellular" ? "extracellular" : "cytoplasmic",
+          signal_peptide_length: Number(r.signal_peptide_length || 0),
+          ecd_length_residues: Number(r.ecd_length_residues || 0),
+          icd_length_residues: Number(r.icd_length_residues || 0),
+          per_residue_topology: r.per_residue_topology || "",
+          sequence: r.sequence ?? null,
+          tool_version: r.tool_version || "deeptmhmm-1.0.24",
+          retrieved_at: r.retrieved_at || new Date().toISOString(),
+          // %identity to canonical not computed at serve time (BLOSUM62
+          // alignment is too heavy here). Re-annotation fills these in.
+          full_length_pct_identity_to_canonical: null,
+          ecd_pct_identity_to_canonical: null,
+          ecd_pct_similarity_to_canonical: null,
+        }));
+      }
+    }
+
+    // ----- paralogs -----
+    // Mirror _fetch_paralogs. Enrich when the field is missing OR (the
+    // array is empty AND ``paralogs_checked`` is not True). Close paralogs
+    // (>=80% full-length identity, the CLOSE_PARALOG_THRESHOLD constant in
+    // d1_deterministic.py) get their DeepTMHMM topology + sequence threaded
+    // on via LEFT JOIN against topology_public; far/ECD-less paralogs stay
+    // chip-only. PARALOG_TOP_N is 50 in the Python annotator — same cap here.
+    const existingParalogs = record?.deterministic_features?.paralogs;
+    const paralogsChecked = record?.deterministic_features?.paralogs_checked === true;
+    const paralogsNeedEnrich = !Array.isArray(existingParalogs)
+      || (existingParalogs.length === 0 && !paralogsChecked);
+    if (paralogsNeedEnrich && paralogVersion) {
+      const paralogRows = await env.DB.prepare(
+        `SELECT cp.paralog_gene_symbol, cp.paralog_uniprot_acc, cp.ecd_pct_identity,
+                cp.ecd_pct_similarity, cp.biomart_percent_identity, cp.family_id,
+                cp.compara_version, cp.rank_by_ecd_identity,
+                tp.per_residue_topology, tp.deeptmhmm_label, tp.tm_helix_count,
+                tp.ecd_length_residues, tp.icd_length_residues,
+                tp.n_terminal_orientation, tp.c_terminal_orientation,
+                tp.signal_peptide_length, tp.sequence
+           FROM compara_paralog cp
+           LEFT JOIN topology_public tp
+             ON tp.uniprot_acc = cp.paralog_uniprot_acc
+            AND tp.cohort = 'human_canonical' AND tp.topology_version = ?
+          WHERE cp.human_uniprot_acc = ? AND cp.paralog_version = ?
+            AND cp.paralog_gene_symbol IS NOT NULL
+            AND cp.paralog_uniprot_acc IS NOT NULL
+          ORDER BY cp.rank_by_ecd_identity ASC NULLS LAST LIMIT 50`
+      ).bind(canonicalTopoVersion ?? "", uniprot, paralogVersion).all().catch(() => null);
+      // Belt-and-suspenders dedup: the LEFT JOIN against topology_public
+      // is keyed on (uniprot_acc, cohort, topology_version); a stale
+      // topology_release would let multiple cohort/version rows survive
+      // per paralog and double-count entries here.
+      const presults = dedupeByKey(
+        paralogRows?.results ?? [],
+        (r) => r.paralog_uniprot_acc,
+      );
+      if (presults.length > 0) {
+        if (!record.deterministic_features) record.deterministic_features = {};
+        const CLOSE_PARALOG_THRESHOLD = 80.0;
+        record.deterministic_features.paralogs = presults.map((r) => {
+          const fullId = r.biomart_percent_identity != null ? Number(r.biomart_percent_identity) : null;
+          const ecdId = r.ecd_pct_identity != null ? Number(r.ecd_pct_identity) : null;
+          const isClose = fullId !== null && fullId >= CLOSE_PARALOG_THRESHOLD;
+          // Topology + sequence surfaced only for close paralogs (same gate
+          // as the Python annotator). Far/ECD-less paralogs stay chip-only.
+          let topo = null, tmc = null, ecdl = null, seq = null;
+          if (isClose && r.per_residue_topology) {
+            topo = r.per_residue_topology;
+            seq = r.sequence ?? null;
+            tmc = r.tm_helix_count != null ? Number(r.tm_helix_count) : null;
+            ecdl = r.ecd_length_residues != null ? Number(r.ecd_length_residues) : null;
+          }
+          return {
+            paralog_symbol: r.paralog_gene_symbol,
+            paralog_uniprot_acc: r.paralog_uniprot_acc,
+            ecd_pct_identity: ecdId,
+            full_length_pct_identity: fullId,
+            family_id: r.family_id || "",
+            compara_version: r.compara_version || "",
+            per_residue_topology: topo,
+            tm_helix_count: tmc,
+            ecd_length_residues: ecdl,
+            sequence: seq,
+          };
+        });
+      }
+    }
+
+    // ----- orthologs (mouse + cynomolgus) -----
+    // Mirror _fetch_orthologs. Enrich when the field is missing OR (both
+    // species lists are empty AND ``checked`` is not True). The Python
+    // annotator projects the human canonical topology onto each ortholog
+    // (via merge.ortholog_topology_projection) — that's a global alignment
+    // not feasible in a Worker, so we ship the RAW DeepTMHMM-on-ortholog
+    // topology (cohort='mouse_ortholog' / 'cyno_ortholog') with
+    // topology_projection_source=null. Records that need the projected
+    // topology get it via re-annotation, not at serve time. Higher-order
+    // (one-to-many) ortholog rows are emitted as-is, same as the Python
+    // path — there's no is_canonical filter on compara_ortholog_ecd.
+    const existingOrthologs = record?.deterministic_features?.orthologs;
+    const orthologsChecked = existingOrthologs?.checked === true;
+    const orthologsEmpty = !existingOrthologs
+      || ((existingOrthologs.mouse?.length ?? 0) === 0
+          && (existingOrthologs.cynomolgus?.length ?? 0) === 0);
+    const orthologsNeedEnrich = orthologsEmpty && !orthologsChecked;
+    if (orthologsNeedEnrich && orthologEcdVersion) {
+      // Pick the topology_version that has ortholog cohorts. The Python
+      // annotator resolves mouse_topo_version specifically; in practice
+      // mouse_ortholog + cyno_ortholog share a version. Default to the
+      // canonical topology_version if no mouse-cohort row exists.
+      const mouseTopoRow = await env.DB.prepare(
+        `SELECT topology_version FROM topology_release
+            WHERE topology_version IN (
+              SELECT DISTINCT topology_version FROM topology_public WHERE cohort = 'mouse_ortholog'
+            )
+            ORDER BY loaded_at DESC LIMIT 1`
+      ).first().catch(() => null);
+      const orthoTopoVersion = mouseTopoRow?.topology_version ?? canonicalTopoVersion ?? "";
+      const orthologRows = await env.DB.prepare(
+        `SELECT eo.species, eo.ortholog_uniprot_acc, eo.ortholog_ensembl_gene,
+                eo.ortholog_gene_symbol, eo.ecd_pct_identity,
+                co.percent_identity AS full_length_pct_identity,
+                tp.tm_helix_count, tp.ecd_length_residues,
+                tp.per_residue_topology, tp.deeptmhmm_label,
+                tp.sequence AS ortholog_sequence,
+                eo.compara_release
+           FROM compara_ortholog_ecd eo
+           LEFT JOIN topology_public tp
+             ON tp.uniprot_acc = eo.ortholog_uniprot_acc
+            AND tp.topology_version = ?
+            AND (
+              (eo.species = 'mouse' AND tp.cohort = 'mouse_ortholog') OR
+              (eo.species IN ('cynomolgus','cyno') AND tp.cohort = 'cyno_ortholog')
+            )
+           LEFT JOIN compara_ortholog co
+             ON co.release_version = eo.compara_release
+            AND co.human_ensembl_gene = eo.human_ensembl_gene
+            AND co.species = eo.species
+            AND co.ortholog_ensembl_gene = eo.ortholog_ensembl_gene
+          WHERE eo.human_uniprot_acc = ?
+            AND eo.ortholog_ecd_version = ?
+          ORDER BY eo.species ASC`
+      ).bind(orthoTopoVersion, uniprot, orthologEcdVersion).all().catch(() => null);
+      // Belt-and-suspenders dedup: the LEFT JOIN against topology_public is
+      // gated on topology_version; a stale topology_release lets multiple
+      // versions slip through and produce two rows per (species, ortholog).
+      // Key by (species, ortholog_uniprot_acc) — same gene's mouse + cyno
+      // rows are legitimately distinct.
+      const oresults = dedupeByKey(
+        orthologRows?.results ?? [],
+        (r) => `${r.species}::${r.ortholog_uniprot_acc}`,
+      );
+      const mouse = [];
+      const cyno = [];
+      const nowIso = new Date().toISOString();
+      for (const r of oresults) {
+        const species = String(r.species || "").toLowerCase();
+        const ecdPct = r.ecd_pct_identity != null ? Number(r.ecd_pct_identity) : null;
+        const fullPct = r.full_length_pct_identity != null ? Number(r.full_length_pct_identity) : null;
+        const entry = {
+          is_canonical: true,
+          isoform_id: r.ortholog_uniprot_acc || "",
+          ensembl_id: r.ortholog_ensembl_gene || "",
+          ortholog_uniprot_acc: r.ortholog_uniprot_acc || "",
+          ortholog_symbol: r.ortholog_gene_symbol || "",
+          type: "one2one",
+          ecd_pct_identity_to_human_canonical: ecdPct,
+          // Similarity not yet wired in the underlying table; mirror identity.
+          ecd_pct_similarity_to_human_canonical: ecdPct,
+          full_length_pct_identity_to_human_canonical: fullPct,
+          ecd_length_residues: Number(r.ecd_length_residues || 0),
+          tm_helix_count: Number(r.tm_helix_count || 0),
+          compara_version: r.compara_release || "",
+          retrieved_at: nowIso,
+          // Raw DeepTMHMM-on-ortholog values; the Python annotator's
+          // projection is skipped at serve time (no alignment library in
+          // the Worker). projection_source=null signals "raw values".
+          per_residue_topology: r.per_residue_topology ?? null,
+          deeptmhmm_label: r.deeptmhmm_label != null ? String(r.deeptmhmm_label) : null,
+          topology_projection_source: null,
+          tm_absent_from_model: false,
+          n_tm_regions_absent: 0,
+          sequence: r.ortholog_sequence ?? null,
+        };
+        if (species === "mouse") {
+          mouse.push(entry);
+        } else if (species === "cynomolgus" || species === "cyno") {
+          cyno.push(entry);
+        }
+      }
+      if (mouse.length > 0 || cyno.length > 0) {
+        if (!record.deterministic_features) record.deterministic_features = {};
+        record.deterministic_features.orthologs = {
+          mouse,
+          cynomolgus: cyno,
+          checked: true,
+        };
+      }
+    }
+
+    // ----- surface_bind -----
+    // Mirror tools.surface_bind.lookup (D1-first). SURFACE-Bind's
+    // ``surface_bind_protein`` table is keyed PRIMARY KEY on uniprot_acc
+    // (one row per acc), and ``surface_bind_site`` is keyed (uniprot_acc,
+    // site_id). There's no separate release table; the version is the
+    // per-row ``surfacebind_version`` column. ORDER BY surfacebind_version
+    // DESC LIMIT 1 is defensive — today the PK guarantees uniqueness, so
+    // the ORDER BY is a no-op, but it keeps the query future-proof if the
+    // schema ever allows multi-version coexistence (e.g. v1 + v2 atlases).
+    //
+    // Enrich when the record's surface_bind is missing OR carries
+    // ``has_data=false`` despite a row existing in D1. Annotator-baked
+    // positives win — a v2-orchestrator record with a real
+    // SurfaceBindFeatures block is left alone so the data the LLM saw at
+    // annotation time matches what the viewer renders.
+    const existingSurfaceBind = record?.deterministic_features?.surface_bind;
+    const sbNeedsEnrichment = !existingSurfaceBind
+      || existingSurfaceBind.has_data === false;
+    if (sbNeedsEnrichment) {
+      const sbProteinRow = await env.DB.prepare(
+        `SELECT chain, main_class, sub_class, protein_name, n_sites,
+                n_seeds_alpha, n_seeds_beta, n_seeds_total, pdbs
+           FROM surface_bind_protein
+          WHERE uniprot_acc = ?
+          ORDER BY surfacebind_version DESC
+          LIMIT 1`
+      ).bind(uniprot).first().catch(() => null);
+      if (sbProteinRow) {
+        const sbSiteRows = await env.DB.prepare(
+          `SELECT site_id, anchor_residue, area_a2, n_seeds_alpha,
+                  n_seeds_beta, hydrophobicity
+             FROM surface_bind_site
+            WHERE uniprot_acc = ?
+            ORDER BY site_id`
+        ).bind(uniprot).all().catch(() => null);
+        // ``pdbs`` is stored as a JSON-encoded array string (see
+        // scripts/sync_surface_bind_to_d1.py: ``json.dumps(entry.get("pdbs",
+        // []))``). Defensively accept a real array (forward-compat), an
+        // empty / null cell, or a comma-separated string (legacy snapshots).
+        let pdbs = [];
+        const rawPdbs = sbProteinRow.pdbs;
+        if (Array.isArray(rawPdbs)) {
+          pdbs = rawPdbs.map((x) => String(x)).filter(Boolean);
+        } else if (typeof rawPdbs === "string" && rawPdbs.trim()) {
+          const trimmed = rawPdbs.trim();
+          if (trimmed.startsWith("[")) {
+            try {
+              const decoded = JSON.parse(trimmed);
+              if (Array.isArray(decoded)) {
+                pdbs = decoded.map((x) => String(x)).filter(Boolean);
+              }
+            } catch {
+              // Fall through to comma-split below.
+            }
+          }
+          if (pdbs.length === 0) {
+            pdbs = trimmed.split(",").map((x) => x.trim()).filter(Boolean);
+          }
+        }
+        const sites = (sbSiteRows?.results ?? []).map((s) => ({
+          site_id: Number(s.site_id),
+          anchor_residue: Number(s.anchor_residue),
+          area_a2: Number(s.area_a2),
+          n_seeds_alpha: Number(s.n_seeds_alpha),
+          n_seeds_beta: Number(s.n_seeds_beta),
+          hydrophobicity: Number(s.hydrophobicity),
+        }));
+        if (!record.deterministic_features) record.deterministic_features = {};
+        record.deterministic_features.surface_bind = {
+          has_data: true,
+          n_sites: Number(sbProteinRow.n_sites ?? 0),
+          n_seeds_alpha: Number(sbProteinRow.n_seeds_alpha ?? 0),
+          n_seeds_beta: Number(sbProteinRow.n_seeds_beta ?? 0),
+          n_seeds_total: Number(sbProteinRow.n_seeds_total ?? 0),
+          chain: sbProteinRow.chain ?? null,
+          sites,
+          main_class: sbProteinRow.main_class ?? null,
+          sub_class: sbProteinRow.sub_class ?? null,
+          protein_name: sbProteinRow.protein_name ?? null,
+          pdbs,
+          // ``representative_structure`` is sourced from PDBe SIFTS at
+          // annotation time (PR #54), not from the SURFACE-Bind tables.
+          // Preserve whatever the record carried (often null) rather than
+          // dropping it — the structure ranker isn't wired to the Worker.
+          representative_structure:
+            existingSurfaceBind?.representative_structure ?? null,
+          source: "SURFACE-Bind v1 (Balbi 2026 PNAS)",
+          attribution: "© Balbi et al., Correia lab — EPFL / Inria / Novo Nordisk",
+          citation: "10.1073/pnas.2506269123",
+        };
+      }
+    }
+  }
+  // Triage-signal overlay — the load-bearing freshness fix for the
+  // June-2026 silent-failure bug. The annotator bakes `triage_signal` +
+  // `triage_reasoning` at deep-dive time by reading
+  // `triage_run_public`; when that read silently failed (partial creds /
+  // priority-list drift / stale run_ids), the record shipped with
+  // `triage_signal=unknown` despite D1 carrying the Sonnet verdict.
+  // Overlaying live closes the loop: even a corrupted/stale record
+  // serves the verdict D1 actually has, no re-annotation required.
+  //
+  // Posture matches the other enrich steps: fail-open on a D1 hiccup
+  // (don't break the per-gene endpoint), and don't overwrite a
+  // populated record with null (a brand-new gene the triage sweep
+  // hasn't covered yet leaves the annotator's call intact).
+  try {
+    const triagePrior = await fetchTriagePrior(env, sym);
+    if (triagePrior) {
+      record.triage_signal =
+        TRIAGE_VERDICT_TO_SIGNAL[triagePrior.verdict] ?? "unknown";
+      if (triagePrior.reasoning && triagePrior.reasoning.trim()) {
+        record.triage_reasoning = triagePrior.reasoning;
+      }
+    }
+  } catch (e) {
+    // Best-effort — never break the endpoint over a triage miss.
   }
   return json(record, { ttl: CACHE_TTL_LONG });
 }

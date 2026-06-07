@@ -86,19 +86,22 @@ class PublishResult:
     cache_purged: bool | None = None
 
 
-def _public_config_from_env() -> D1Config | None:
+def _public_config_from_env(symbol: str | None = None) -> D1Config | None:
     """Build a public-DB :class:`D1Config` from env, or return ``None`` on miss.
 
-    Missing creds is a soft skip, not an error — agents on CI runners /
-    fresh checkouts shouldn't crash because Cloudflare secrets aren't
-    wired in. The caller logs a clear message in that case.
+    Delegates to
+    :func:`accessible_surfaceome.cloud.d1_env.public_d1_config_or_warn`,
+    which routes the three credential states (all-set, all-missing,
+    partial) to the right log level + enforcement. Missing creds is a soft
+    skip by default; partial creds emit a *loud* warning that named the
+    missing var (the June-2026 bug where an empty token shipped 6 records
+    with ``triage_signal=unknown``), and any miss-or-partial state under
+    ``ACCESSIBLE_SURFACEOME_REQUIRE_D1=1`` raises ``D1AuthError`` so prod
+    sweeps fail fast.
     """
-    acct = os.environ.get("CLOUDFLARE_ACCOUNT_ID", "").strip()
-    token = os.environ.get("CLOUDFLARE_API_TOKEN", "").strip()
-    db = os.environ.get("CLOUDFLARE_D1_SURFACEOME_PUBLIC_ID", "").strip()
-    if not (acct and token and db):
-        return None
-    return D1Config(account_id=acct, database_id=db, api_token=token)
+    from accessible_surfaceome.cloud.d1_env import public_d1_config_or_warn
+
+    return public_d1_config_or_warn(operation="publish_record", symbol=symbol)
 
 
 def _post(
@@ -221,6 +224,66 @@ def _existing_versions_for(
     return [r["schema_version"] for r in body["result"][0].get("results", [])]
 
 
+# Run-id priority for the triage-coherence guard. MUST stay in sync with
+# ``surfaceome_v1.orchestrator._D1_TRIAGE_PRIORITY`` (we duplicate the list
+# rather than import it to avoid a cloud↔agents import cycle). If you
+# update one, update the other — the test in
+# ``tests/test_d1_env_preflight.py`` enforces equality.
+_TRIAGE_COHERENCE_PRIORITY: list[tuple[str, str]] = [
+    ("mainbench_canonical_v2", "ncbi"),
+    ("genome_full_sonnet_ncbi_v2", "ncbi"),
+]
+
+
+def _is_triage_signal_drift(
+    rec_dict: dict[str, Any], cfg: D1Config, *, client: httpx.Client
+) -> bool:
+    """``True`` iff the record carries ``triage_signal=unknown`` AND D1
+    has a Sonnet triage verdict for the gene under one of the priority
+    run_ids.
+
+    Returns ``False`` immediately when the record's triage signal is
+    something other than ``unknown`` (the common case — no D1 round
+    trip). On a transport failure, returns ``False`` to fail open —
+    annotate must keep running even if the coherence query times out;
+    other guards still apply and a true unknown-with-no-row case is
+    legitimate (a brand-new gene the triage sweep hasn't covered yet).
+    """
+    if (rec_dict.get("triage_signal") or "").strip() != "unknown":
+        return False
+    sym = (rec_dict.get("gene") or {}).get("hgnc_symbol")
+    if not sym:
+        return False
+    try:
+        for run_id, variant in _TRIAGE_COHERENCE_PRIORITY:
+            body = _post(
+                cfg,
+                """
+                SELECT 1 FROM triage_run_public
+                WHERE gene_symbol = ?
+                  AND run_id = ?
+                  AND prompt_variant = ?
+                  AND model LIKE '%sonnet%'
+                  AND predicted_verdict IS NOT NULL
+                LIMIT 1
+                """,
+                [sym, run_id, variant],
+                client=client,
+            )
+            rows = body.get("result", [{}])[0].get("results", [])
+            if rows:
+                return True
+    except Exception as exc:  # noqa: BLE001 — fail open, never break publish
+        logger.warning(
+            "triage-coherence guard: D1 lookup for %s failed: %s; allowing "
+            "publish (other guards still apply)",
+            sym,
+            exc,
+        )
+        return False
+    return False
+
+
 def _surface_bind_has_data(rec_dict: dict[str, Any]) -> bool | None:
     """``deterministic_features.surface_bind.has_data`` of a record dict.
 
@@ -244,60 +307,6 @@ def _family_populated(rec_dict: dict[str, Any]) -> bool:
     """
     es = rec_dict.get("executive_summary") or {}
     return bool(es.get("uniprot_family")) or bool(es.get("hgnc_gene_groups"))
-
-
-def _heal_family_in_place(
-    rec_dict: dict[str, Any], hgnc_id: str | None, *, sym: str
-) -> bool:
-    """Fill ``executive_summary.{hgnc_gene_groups,uniprot_family}`` from the
-    canonical resolver when the record arrives without them. Mutates
-    ``rec_dict`` in place; returns ``True`` iff it injected real tags.
-
-    The family is curator-assigned ground truth keyed on ``hgnc_id``, so
-    resolving it at publish time is equivalent to what
-    ``_attach_deterministic_families`` does at generation time — just applied
-    to EVERY write, so already-published or degraded-at-generation records
-    repair themselves on the next publish instead of needing a bespoke
-    backfill. Idempotent (re-resolves the same ground truth each time).
-
-    Resolver failure or a genuinely family-less gene leaves the record
-    untouched — the publish-time regression guard still protects populated
-    D1 rows, so this never *masks* a degraded resolver, it only *fills* when
-    the resolver is healthy.
-    """
-    if not hgnc_id:
-        return False
-    # Lazy import keeps the resolver's HTTP stack out of this module's import
-    # graph (and sidesteps any import cycle) for the common already-populated
-    # path, which never calls this.
-    try:
-        from accessible_surfaceome.tools._shared.http import open_default_client
-        from accessible_surfaceome.tools.gene_lookup import resolve_by_hgnc_id
-
-        with open_default_client() as http:
-            bundle = resolve_by_hgnc_id(hgnc_id, http=http)
-    except Exception as exc:  # noqa: BLE001 — self-heal must never break a publish
-        logger.warning(
-            "family self-heal: resolver failed for %s (%s): %s; leaving "
-            "family empty (regression guard still applies)",
-            sym,
-            hgnc_id,
-            exc,
-        )
-        return False
-    groups = list(bundle.hgnc_gene_groups or [])
-    fam = bundle.uniprot_family
-    if not groups and not fam:
-        return False  # gene genuinely has no curated family — correct as-is
-    es = rec_dict.setdefault("executive_summary", {})
-    es["hgnc_gene_groups"] = groups
-    es["uniprot_family"] = fam
-    logger.info(
-        "family self-heal: injected %d HGNC group(s) + uniprot_family for %s",
-        len(groups),
-        sym,
-    )
-    return True
 
 
 def _fetch_existing_record(
@@ -408,6 +417,68 @@ def _row_from_dict(
     ]
 
 
+def _heal_family_in_place(rec_dict: dict[str, Any]) -> bool:
+    """Re-assert the deterministic, ``hgnc_id``-keyed family tags at publish time.
+
+    ``hgnc_gene_groups`` / ``uniprot_family`` are curator-assigned ground truth
+    resolved from the gene's stable identifier — not model output. A record
+    generated under a degraded resolver, or an older snapshot pushed through the
+    bulk-sync path, can carry empty family fields, which blanks the viewer's
+    Family chip. Healing them on every publish surface (this runs inside the
+    shared ``_publish_dict``, so both the agent path and the bulk-sync path hit
+    it) closes the gap that lets a fix land in the JSON without reaching D1.
+
+    Cheap by default: a record whose family fields are already populated is left
+    untouched — no network. Only an empty field triggers a stable-ID re-resolve.
+    The fill is guarded so a resolver miss never overwrites a populated value
+    with an empty one, and any resolver failure is swallowed so publish never
+    breaks. Returns ``True`` if a field was healed.
+    """
+    summary = rec_dict.get("executive_summary")
+    if not isinstance(summary, dict):
+        return False
+    existing_groups = summary.get("hgnc_gene_groups") or []
+    existing_family = summary.get("uniprot_family")
+    if existing_groups and existing_family:
+        return False  # healthy — skip the network re-resolve
+
+    hgnc_id = (rec_dict.get("gene") or {}).get("hgnc_id")
+    if not hgnc_id:
+        return False
+
+    try:
+        from accessible_surfaceome.tools._shared.http import open_default_client
+        from accessible_surfaceome.tools.gene_lookup import resolve_by_hgnc_id
+
+        bundle = resolve_by_hgnc_id(hgnc_id, http=open_default_client())
+    except Exception as exc:  # noqa: BLE001 — never break publish on a resolver miss
+        logger.warning(
+            "family self-heal: stable-ID resolve failed for %s (%s); "
+            "leaving family fields as-is",
+            hgnc_id,
+            exc,
+        )
+        return False
+
+    healed = False
+    resolved_groups = list(bundle.hgnc_gene_groups)
+    # Populated-to-empty guard: only fill an empty field with a non-empty
+    # resolved value; never the reverse.
+    if not existing_groups and resolved_groups:
+        summary["hgnc_gene_groups"] = resolved_groups
+        healed = True
+    if existing_family is None and bundle.uniprot_family is not None:
+        summary["uniprot_family"] = bundle.uniprot_family
+        healed = True
+    if healed:
+        logger.info(
+            "family self-heal: filled family tags for %s from %s",
+            (rec_dict.get("gene") or {}).get("hgnc_symbol"),
+            hgnc_id,
+        )
+    return healed
+
+
 def _publish_dict(
     rec_dict: dict[str, Any],
     *,
@@ -423,15 +494,9 @@ def _publish_dict(
     if not sym:
         raise ValueError("record dict missing required gene.hgnc_symbol")
 
-    # Self-heal the deterministic family BEFORE writing anywhere (snapshot or
-    # D1). An old pre-injection record — or one from a worktree whose resolver
-    # was degraded at generation time — arrives with empty family tags;
-    # resolving them from the record's own hgnc_id here means no publish path
-    # (annotate / bulk sync / re-publish) can ship an empty Family bucket, and
-    # already-empty rows repair on their next publish without a bespoke
-    # backfill. Only runs when the record is missing them.
-    if not _family_populated(rec_dict):
-        _heal_family_in_place(rec_dict, gene.get("hgnc_id"), sym=sym)
+    # Self-heal deterministic, stable-ID-keyed tags before BOTH surfaces get
+    # written, so the snapshot and D1 can never carry divergent family fields.
+    _heal_family_in_place(rec_dict)
 
     snap_dir = snapshot_dir or DEFAULT_SNAPSHOT_DIR
     snap_path: Path | None = None
@@ -453,14 +518,12 @@ def _publish_dict(
             skipped_reason="push_to_d1=False",
         )
 
-    cfg = _public_config_from_env()
+    # Pre-flight credential check — under REQUIRE_D1, raises D1AuthError
+    # before we touch any state; otherwise routes to the right log level.
+    # The single-source log line lives in ``public_d1_config_or_warn``, so
+    # nothing extra to print here on the miss path.
+    cfg = _public_config_from_env(symbol=sym)
     if cfg is None:
-        logger.warning(
-            "public D1 env vars missing (CLOUDFLARE_ACCOUNT_ID / "
-            "CLOUDFLARE_API_TOKEN / CLOUDFLARE_D1_SURFACEOME_PUBLIC_ID) — "
-            "skipping D1 publish for %s. Snapshot was still written.",
-            sym,
-        )
         return PublishResult(
             gene_symbol=sym,
             snapshot_path=snap_path,
@@ -481,6 +544,39 @@ def _publish_dict(
         # when the incoming record looks degraded — a cheap fast-path for
         # the common, fully-populated case.
         if not force:
+            # Triage-coherence guard — refuse to publish a record carrying
+            # ``triage_signal=unknown`` when ``triage_run_public`` has a
+            # Sonnet row for this gene under one of the priority run_ids.
+            # The annotator's job is to *copy* the triage prior; an
+            # ``unknown`` in the record while the row exists in D1 means
+            # ``_load_triage_record_from_d1`` failed silently (the
+            # June-2026 ``Bearer `` empty-token bug). Publishing it
+            # poisons the record with a never-was-triaged signal that the
+            # viewer surfaces as a confusing "unknown" chip. Catching it
+            # here means the misconfig surfaces at the moment of harm,
+            # regardless of whether the pre-flight check fired.
+            if _is_triage_signal_drift(rec_dict, cfg, client=client):
+                logger.error(
+                    "REFUSING to publish %s: record has triage_signal=unknown "
+                    "but triage_run_public has a Sonnet verdict for this "
+                    "gene under one of the priority run_ids. This usually "
+                    "means the annotator's D1 triage fallback failed "
+                    "silently (partial/empty CLOUDFLARE_* env in the "
+                    "generating worktree). Re-run with healthy creds, or "
+                    "pass force=True to override.",
+                    sym,
+                )
+                return PublishResult(
+                    gene_symbol=sym,
+                    snapshot_path=snap_path,
+                    d1_written=False,
+                    d1_database_id=cfg.database_id,
+                    stale_versions_dropped=[],
+                    skipped_reason=(
+                        "blocked by triage-coherence guard: record carries "
+                        "triage_signal=unknown but D1 has a Sonnet verdict"
+                    ),
+                )
             existing = _fetch_existing_record(cfg, sym, client=client)
             if existing is not None:
                 # Staleness guard — never overwrite a NEWER D1 run with an
@@ -592,15 +688,26 @@ def publish_record(
     record: SurfaceomeRecord,
     *,
     snapshot_dir: Path | None = None,
-    write_snapshot: bool = True,
+    write_snapshot: bool = False,
     push_to_d1: bool = True,
     force: bool = False,
 ) -> PublishResult:
-    """Write a freshly-validated ``SurfaceomeRecord`` to snapshot + D1.
+    """Write a freshly-validated ``SurfaceomeRecord`` to public D1.
 
     The standard agent-side entry point: takes a validated Pydantic model
-    (so the record is known good), serializes it to disk and pushes to
-    public D1. Returns a :class:`PublishResult` describing what landed.
+    (so the record is known good) and pushes to public D1. Returns a
+    :class:`PublishResult` describing what landed.
+
+    **D1 is now the only authoritative source the viewer reads.** The
+    viewer-snapshot write (``viewer/public/data/surfaceome/{SYMBOL}.json``)
+    used to be a Worker-down fallback — a stale local copy could mask the
+    authoritative D1 row, so the fallback was removed and ``write_snapshot``
+    now defaults to ``False``. Pass ``write_snapshot=True`` to opt in to an
+    ad-hoc operator dump (used by ``scripts/upload_viewer_snapshots_to_d1.py``
+    for the reverse-sync maintenance path); nothing else should set it.
+
+    Agent-side disk artifacts live at ``data/annotations/{symbol}.json``;
+    that's written by the annotate driver itself, not here.
 
     For pushing arbitrary on-disk JSON (the bulk-sync maintenance path)
     use :func:`publish_record_dict` — it skips validation so older
@@ -609,8 +716,10 @@ def publish_record(
     Args:
         record: The validated ``SurfaceomeRecord`` to publish.
         snapshot_dir: Override for the viewer-snapshot directory. Defaults
-            to ``viewer/public/data/surfaceome``.
-        write_snapshot: Skip the viewer-snapshot write when False.
+            to ``viewer/public/data/surfaceome``; only consulted when
+            ``write_snapshot=True``.
+        write_snapshot: Opt in to the viewer-snapshot dump. Default
+            ``False`` — D1 is the only authoritative surface.
         push_to_d1: Skip the D1 push when False (e.g. ``--no-publish``).
     """
     rec_dict = json.loads(record.model_dump_json())

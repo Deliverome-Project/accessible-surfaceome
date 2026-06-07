@@ -30,7 +30,6 @@ from accessible_surfaceome.agents.surfaceome_v2.builders import (
     EvidenceGradeBlock,
     build_accessibility_modulation,
     build_anatomical_accessibility,
-    build_cell_states,
     build_contradictions,
     build_evidence_grade,
     build_expression,
@@ -51,7 +50,6 @@ from accessible_surfaceome.tools._shared.models import (
     ExpressionRow,
     MethodFamily,
     MethodObservation,
-    StateContext,
     SubcellularLocalization,
     SurfaceEvidence,
     SurfaceEvidenceDraft,
@@ -571,7 +569,7 @@ def test_build_evidence_grade_empty_input_returns_default() -> None:
 
 
 # ---------------------------------------------------------------------------
-# expression_builder (unified tissue × cell-of-origin pivot)
+# expression_builder
 # ---------------------------------------------------------------------------
 
 
@@ -598,6 +596,7 @@ def test_build_expression_happy() -> None:
             "cell_type": "Purkinje neurons",
             "present": "high",
             "disease_context": "normal",
+            "disease_label": None,
             "cell_states": [],
             "cited_evidence_ids": ["a2_evi_01", "a2_evi_02"],
         }
@@ -614,99 +613,23 @@ def test_build_expression_happy() -> None:
 
 
 def test_build_expression_empty_input() -> None:
+    # No tissue_expression claims → builder short-circuits without a call.
+    claims = [_claim("01", prefix="a2", claim_type="surface_expression")]
     client = _mock_client([])
-    sink: list[UsageRecord] = []
-    rows = build_expression([], client=client, usage_sink=sink, context={"gene": "X"})
-    assert rows == []
-    client.messages.create.assert_not_called()
-
-
-def test_build_expression_scrubs_unknown_citations() -> None:
-    claims = [_claim("01", prefix="a2", claim_type="tissue_expression")]
-    output = [
-        {
-            "tissue": "cerebellum",
-            "cell_type": None,
-            "present": "high",
-            "disease_context": "normal",
-            "cell_states": [],
-            # 99 isn't in input; should be scrubbed
-            "cited_evidence_ids": ["a2_evi_01", "a2_evi_99"],
-        }
-    ]
-    client = _mock_client([_fenced(json.dumps(output))])
     sink: list[UsageRecord] = []
     rows = build_expression(
         claims, client=client, usage_sink=sink, context={"gene": "X"}
     )
-    assert len(rows) == 1
-    assert rows[0].cited_evidence_ids == ["a2_evi_01"]
-
-
-# ---------------------------------------------------------------------------
-# cell_states_builder
-# ---------------------------------------------------------------------------
-
-
-def test_build_cell_states_happy() -> None:
-    """A claim binding ER stress to surface translocation should emit a
-    StateContext row with the state, descriptor, and evidence id."""
-    claims = [_claim("01", prefix="a2", claim_type="surface_expression")]
-    output = [
-        {
-            "state": "ER stress",
-            "descriptor": (
-                "Tunicamycin- and thapsigargin-induced UPR translocates a "
-                "fraction to the plasma membrane in tumor cells."
-            ),
-            "cited_evidence_ids": ["a2_evi_01"],
-        }
-    ]
-    client = _mock_client([_fenced(json.dumps(output))])
-    sink: list[UsageRecord] = []
-    rows = build_cell_states(
-        claims, client=client, usage_sink=sink, context={"gene": "HSPA5"}
-    )
-    assert len(rows) == 1
-    assert isinstance(rows[0], StateContext)
-    assert rows[0].state == "ER stress"
-    assert rows[0].cited_evidence_ids == ["a2_evi_01"]
-
-
-def test_build_cell_states_scrubs_unknown_evidence_ids() -> None:
-    """Builder must drop cited_evidence_ids the input ledger doesn't carry."""
-    claims = [_claim("01", prefix="a2")]
-    output = [
-        {
-            "state": "EMT",
-            "descriptor": "EMT-induced surface fraction.",
-            "cited_evidence_ids": ["a2_evi_01", "a2_evi_99"],
-        }
-    ]
-    client = _mock_client([_fenced(json.dumps(output))])
-    sink: list[UsageRecord] = []
-    rows = build_cell_states(
-        claims, client=client, usage_sink=sink, context={"gene": "VIM"}
-    )
-    assert len(rows) == 1
-    assert rows[0].cited_evidence_ids == ["a2_evi_01"]
-
-
-def test_build_cell_states_empty_input() -> None:
-    client = _mock_client([])
-    sink: list[UsageRecord] = []
-    rows = build_cell_states([], client=client, usage_sink=sink, context={"gene": "X"})
     assert rows == []
     client.messages.create.assert_not_called()
 
 
-def test_build_cell_states_empty_array_is_valid() -> None:
-    """Most genes don't have state-modulated surface — empty array is normal."""
-    claims = [_claim("01", prefix="a2")]
-    client = _mock_client([_fenced("[]")])
-    sink: list[UsageRecord] = []
-    rows = build_cell_states(claims, client=client, usage_sink=sink, context={"gene": "X"})
-    assert rows == []
+# ---------------------------------------------------------------------------
+# (former cell_states_builder tests retired in schema 2.5.0 — single-context
+# state observations now emit as AccessibilityModulationObservation rows with
+# baseline_context=None + modulating_state=None; see
+# test_build_accessibility_modulation_* below for coverage.)
+# ---------------------------------------------------------------------------
 
 
 # ---------------------------------------------------------------------------
@@ -909,14 +832,29 @@ def test_surface_evidence_draft_validates_with_block_builder_outputs() -> None:
                 accessibility_relevance="direct_surface_accessibility",
                 surface_claim_type="surface_accessible",
                 expression_observations=[],
-                cited_evidence_ids=["a1_evi_01", "a1_evi_02"],
-            )
+                cited_evidence_ids=["a1_evi_01"],
+            ),
+            # direct_multi_method requires ≥2 direct methods from ≥2 distinct
+            # sources — pair the flow row with a surface-biotinylation row
+            # citing the SECOND evidence_id so the cross-block validator
+            # (_check_evidence_grade_methods_cardinality) accepts the grade.
+            MethodObservation(
+                method_family="biotinylation",
+                method_subclass="surface_biotinylation",
+                permeabilization="live_cell",
+                expression_system="endogenous",
+                antibodies=[],
+                accessibility_relevance="direct_surface_accessibility",
+                surface_claim_type="surface_accessible",
+                expression_observations=[],
+                cited_evidence_ids=["a1_evi_02"],
+            ),
         ],
         non_surface_expression=[],
         contradicting_evidence=[],
     )
     draft = SurfaceEvidenceDraft(surface_evidence=se, evidence_claims=a1_claims)
-    assert len(draft.surface_evidence.methods) == 1
+    assert len(draft.surface_evidence.methods) == 2
 
 
 def test_biological_context_draft_validates_with_block_builder_outputs() -> None:
@@ -928,22 +866,12 @@ def test_biological_context_draft_validates_with_block_builder_outputs() -> None
         expression=[
             ExpressionRow(
                 tissue="cerebellum",
-                cell_type=None,
-                present="high",
-                disease_context="normal",
-                cell_states=[],
-                cited_evidence_ids=["a2_evi_01"],
-            ),
-            ExpressionRow(
-                tissue="cerebellum",
                 cell_type="Purkinje neurons",
                 present="high",
                 disease_context="normal",
-                cell_states=[],
                 cited_evidence_ids=["a2_evi_01"],
-            ),
+            )
         ],
-        cell_states=[],
         subcellular_localization=SubcellularLocalization(
             primary_compartment="plasma_membrane",
             dual_localization=[],
@@ -955,7 +883,7 @@ def test_biological_context_draft_validates_with_block_builder_outputs() -> None
     draft = BiologicalContextDraft(
         biological_context=bc, evidence_claims=a2_claims
     )
-    assert len(draft.biological_context.expression) == 2
+    assert len(draft.biological_context.expression) == 1
 
 
 def test_block_counts_helper() -> None:
@@ -970,7 +898,6 @@ def test_block_counts_helper() -> None:
     )
     bc = BiologicalContext(
         expression=[],
-        cell_states=[],
         subcellular_localization=SubcellularLocalization(
             primary_compartment="plasma_membrane",
             dual_localization=[],

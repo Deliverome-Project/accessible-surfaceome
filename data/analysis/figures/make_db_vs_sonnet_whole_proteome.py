@@ -56,15 +56,14 @@ REPO = "Deliverome-Project/accessible-surfaceome"
 BRANCH = "main"
 BASE = f"https://raw.githubusercontent.com/{REPO}/{BRANCH}"
 
-CATALOG_URL = "https://api.deliverome.org/surfaceome/v1/catalog"
-CAND_TSV = f"{BASE}/data/processed/candidate_universe/candidate_universe.tsv"
+CATALOG_TSV = f"{BASE}/data/processed/catalog/whole_proteome_catalog.tsv"
 OPT_CUTOFFS_TSV = f"{BASE}/data/processed/triage_bench/db_optimized_cutoffs.tsv"
 
 # Published reproduction gist (embedded into output PNG Source / PDF
 # Subject metadata — mirrors save_figure in _plotting_config.py).
 GIST_URL = "https://gist.github.com/beccajcarlson/1265c867a3bbb08efd81262789e1f013"
 
-# ──── Inline brand styling — sentinel: brand-style-v1 ────
+# ──── Inline brand styling — sentinel: brand-style-v2 ────
 # Mirrors src/accessible_surfaceome/audit/_plotting_config.py so the gist
 # stays self-contained. Kept in sync via tests/test_figure_gists_styling.py.
 BRAND_PALETTE = [
@@ -94,16 +93,19 @@ def _register_brand_fonts() -> None:
     ]
     for fonts_dir in candidates:
         if fonts_dir.is_dir():
-            for ttf in sorted(fonts_dir.glob("*.ttf")):
+            for path in sorted(list(fonts_dir.glob("*.ttf")) + list(fonts_dir.glob("*.otf"))):
                 try:
-                    fm.fontManager.addfont(str(ttf))
+                    fm.fontManager.addfont(str(path))
                 except Exception:  # noqa: BLE001
                     continue
             return
 
 
 def _apply_brand_style() -> None:
-    """Inline equivalent of `setup_plotting_style`. Sentinel: brand-style-v1."""
+    """Inline equivalent of `setup_plotting_style`. Sentinel: brand-style-v2.
+    v2: bumped sizes ~25% + explicit medium weight (avoids ExtraLight default
+    that matplotlib picks from the Manrope variable file). Companion to the
+    static Manrope-{regular,medium,semibold,bold}.otf files in assets/fonts/."""
     _register_brand_fonts()
     sns.set_style("whitegrid")
     sns.set_context("notebook", font_scale=1.0)
@@ -114,8 +116,10 @@ def _apply_brand_style() -> None:
         "savefig.facecolor": "none",
         "font.family": "sans-serif",
         "font.sans-serif": ["Manrope", "Outfit", "DejaVu Sans", "Liberation Sans", "Arial"],
-        "font.size": 17,
-        "axes.labelsize": 19,
+        "font.weight": "medium",
+        "font.size": 21,
+        "axes.labelsize": 24,
+        "axes.labelweight": "medium",
         "axes.titlesize": 0,
         "axes.titlepad": 0,
         "axes.spines.top": False,
@@ -130,12 +134,12 @@ def _apply_brand_style() -> None:
         "grid.linestyle": "-",
         "grid.linewidth": 0.7,
         "grid.color": BRAND_GRID,
-        "xtick.labelsize": 16,
-        "ytick.labelsize": 16,
+        "xtick.labelsize": 19,
+        "ytick.labelsize": 19,
         "xtick.color": BRAND_INK,
         "ytick.color": BRAND_INK,
         "legend.frameon": False,
-        "legend.fontsize": 16,
+        "legend.fontsize": 19,
         "patch.edgecolor": "none",
         "patch.linewidth": 0.0,
     })
@@ -181,50 +185,36 @@ def _vote_match(db_vote: str, sonnet: str) -> bool:
 def main() -> None:
     _apply_brand_style()
 
-    print(f"Fetching {CATALOG_URL} ...")
-    r = httpx.get(CATALOG_URL, timeout=60)
-    r.raise_for_status()
-    body = r.json()
-    catalog_rows = body["rows"]
-    models = body.get("models") or []
-    # Catalog ``row_schema=3`` emits ``tr: [variant_0, ..., variant_N]`` per
-    # row. Canonical figure uses claude-sonnet-4-6 — resolve its index from
-    # the models array, fallback to 1.
-    sonnet_idx = next(
-        (i for i, m in enumerate(models) if "sonnet" in (m or "").lower()),
-        1,
-    )
-    print(f"  fetched {len(catalog_rows):,} catalog rows; sonnet = "
-          f"{models[sonnet_idx] if sonnet_idx < len(models) else '?'}")
+    # Catalog now comes from a static TSV (sourced from D1 by
+    # scripts/export_whole_proteome_catalog_to_tsv.py) instead of the
+    # live Worker — keeps the gist self-contained and snapshot-pinned
+    # to whatever branch/SHA this script is fetched from. Each row
+    # carries the v1-style ``*_surface_flag`` columns AND the
+    # canonical Sonnet+NCBI verdict, so this single TSV replaces the
+    # CATALOG_URL + CAND_TSV pair the figure used previously.
+    catalog = _fetch_tsv(CATALOG_TSV)
+    print(f"  loaded {len(catalog):,} catalog rows; sonnet = claude-sonnet-4-6")
 
-    cand = _fetch_tsv(CAND_TSV).set_index("uniprot_accession")
     opt = _fetch_tsv(OPT_CUTOFFS_TSV)
     uniprot_opt = set(opt.loc[opt["uniprot_optimized"] == 1, "accession"].astype(str))
     cspa_opt = set(opt.loc[opt["cspa_optimized"] == 1, "accession"].astype(str))
 
-    def db_votes(acc: str) -> dict[str, bool]:
-        out = {label: False for label in DB_LABELS}
-        if not acc:
-            return out
-        out["UniProt"] = acc in uniprot_opt
-        out["CSPA"] = acc in cspa_opt
-        if acc in cand.index:
-            row = cand.loc[acc]
-            out["GO CC"] = row["go_surface_flag"] == 1
-            out["HPA"] = row["hpa_surface_flag"] == 1
-            out["SURFY"] = row["surfy_surface_flag"] == 1
-        return out
-
     records = []
-    for row in catalog_rows:
-        tr = row.get("tr") or []
-        entry = tr[sonnet_idx] if 0 <= sonnet_idx < len(tr) else None
-        v = entry[0] if entry and isinstance(entry, list) and entry else None
+    for row in catalog.itertuples(index=False):
+        v = (str(getattr(row, "sonnet_verdict", "") or "")).strip()
         if v not in ("yes", "contextual", "no"):
             continue
-        acc = row.get("uniprot") or ""
-        rec = {"symbol": row.get("symbol", ""), "acc": acc, "sonnet": v}
-        rec.update(db_votes(acc))
+        acc = str(getattr(row, "uniprot_acc", "") or "")
+        rec = {
+            "symbol": str(getattr(row, "hgnc_symbol", "") or ""),
+            "acc": acc,
+            "sonnet": v,
+            "UniProt": acc in uniprot_opt,
+            "CSPA": acc in cspa_opt,
+            "GO CC": int(getattr(row, "go_surface_flag", 0) or 0) == 1,
+            "HPA": int(getattr(row, "hpa_surface_flag", 0) or 0) == 1,
+            "SURFY": int(getattr(row, "surfy_surface_flag", 0) or 0) == 1,
+        }
         records.append(rec)
 
     df = pd.DataFrame(records)
@@ -322,11 +312,11 @@ def main() -> None:
                 patch.get_height() + 0.01,
                 f"{frac:.0%}",
                 ha="center", va="bottom",
-                fontsize=8, color=BRAND_INK,
+                fontsize=11, color=BRAND_INK,
             )
 
     ax.set_xlabel("")
-    ax.set_ylabel("Fraction agreeing with Sonnet (+ NCBI) verdict")
+    ax.set_ylabel("Fraction agreeing with\nSonnet (+ NCBI) verdict")
     ax.set_ylim(0, 1.14)
 
     handles, _ = ax.get_legend_handles_labels()
@@ -335,7 +325,7 @@ def main() -> None:
         handles, legend_labels,
         title="Caller (overall agreement)",
         loc="upper left", bbox_to_anchor=(1.02, 1.0),
-        frameon=False, fontsize=10,
+        frameon=False, fontsize=13,
     )
 
     totals = {
@@ -353,7 +343,7 @@ def main() -> None:
     ax.text(
         0.5, -0.18, subtitle,
         transform=ax.transAxes, ha="center", va="top",
-        fontsize=11, color=BRAND_NEUTRAL,
+        fontsize=14, color=BRAND_NEUTRAL,
     )
     sns.despine(ax=ax, top=True, right=True)
 

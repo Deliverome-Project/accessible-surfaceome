@@ -5,6 +5,7 @@ import type {
   BenchmarkRow,
   SurfaceomeRecord,
 } from "../../../lib/surfaceome-types";
+import type { SchwekeHomomerLoaderRow } from "../../../lib/structure-viewer";
 import type { StructureViewerData } from "../../../lib/structure-viewer-types";
 import { prettyEnum } from "../../../lib/surfaceome";
 import { tooltips } from "../../../lib/tooltips";
@@ -77,6 +78,13 @@ interface GeneHeaderProps {
    *  intracellular and the caption is adjusted to describe the
    *  membrane-anchoring rather than a transmembrane orientation. */
   structureData?: StructureViewerData | null;
+  /** Schweke et al. 2024 (PMID 38325366) AF2 homo-oligomer entry, when
+   *  this gene is in the manifest. Forwarded as the ``schwekeHomomer``
+   *  prop on <StructureViewer>, where it surfaces as a "Homo-oligomer"
+   *  tab IMMEDIATELY after Canonical. Null for genes outside the
+   *  8,195-homomer reference set or whose PDB asset hasn't been
+   *  ingested yet. */
+  schwekeHomomer?: SchwekeHomomerLoaderRow | null;
   /** 5-DB surface-vote vector from the candidate-universe build.
    *  When present, a slim ``<DatabasePresenceStrip>`` renders inline
    *  above the executive summary so the reader sees DB consensus
@@ -283,6 +291,7 @@ export function GeneHeader({
   rec,
   geneName,
   structureData,
+  schwekeHomomer,
   catalogRow,
   benchmarkRow,
 }: GeneHeaderProps) {
@@ -701,6 +710,43 @@ export function GeneHeader({
             <StructureViewer
               data={structureData}
               geneSymbol={g.hgnc_symbol}
+              // Schweke et al. 2024 (PMID 38325366) AF2 homo-oligomer
+              // model when this gene is in the manifest. Renders as a
+              // "Homo-oligomer" tab right after Canonical and before
+              // isoforms / orthologs. Assemble the full variant here
+              // (rather than in the loader) so the canonical topology
+              // and DeepTMHMM type — already in hand via structureData
+              // — don't have to be re-derived.
+              schwekeHomomer={
+                schwekeHomomer
+                  ? (() => {
+                      // Label/sublabel depend on the assembly:
+                      //   c2 dimer ECD-only  → "ECD Dimer · Schweke 2024"
+                      //   c2 dimer (full)    → "Dimer · Schweke 2024"
+                      //   c3..c13            → "{N}-Mer (c{N}) · Schweke 2024"
+                      const n = schwekeHomomer.stoichiometry;
+                      const sub =
+                        n === 2
+                          ? schwekeHomomer.ecd_only
+                            ? "ECD Dimer · Schweke 2024"
+                            : "Dimer · Schweke 2024"
+                          : `${n}-Mer (c${n}) · Schweke 2024`;
+                      return {
+                        source: "schweke-homomer" as const,
+                        id: `schweke-${schwekeHomomer.uniprot_acc}-V1-${schwekeHomomer.af_model_num}-c${n}`,
+                        label: "Homo-oligomer",
+                        sublabel: sub,
+                        uniprot_acc: schwekeHomomer.uniprot_acc,
+                        pdb_url: schwekeHomomer.pdb_url,
+                        af_model_num: schwekeHomomer.af_model_num,
+                        ecd_only: schwekeHomomer.ecd_only,
+                        stoichiometry: n,
+                        topology: structureData.topology,
+                        deeptmhmm_type: structureData.deeptmhmm_type,
+                      };
+                    })()
+                  : null
+              }
               // Canonical AFDB stats — the new caption inside the
               // viewer renders these for the canonical tab (and
               // lazy-fetches metadata for other AFDB variants when
@@ -781,7 +827,15 @@ export function GeneHeader({
                 // otherwise overflow the tab strip (and add dead 404 tabs
                 // for isoforms AFDB doesn't model). The §Isoforms table
                 // below still lists EVERY isoform; this cap is 3D-only.
+                // Defensive filter: some annotated records (e.g. TACSTD2)
+                // carry the canonical accession itself inside
+                // `isoform_topologies`. The 3D viewer already renders the
+                // canonical as its own dedicated tab above this list, so
+                // including it again here surfaces a duplicate "Isoform"
+                // tab pointing at the same AFDB model. Same upstream bug
+                // as in IsoformsCard; same fix.
                 ...rec.deterministic_features.isoform_topologies
+                  .filter((iso) => iso.isoform_id !== rec.gene.uniprot_acc)
                   .slice(0, 3)
                   .map((iso) => ({
                     source: "afdb" as const,

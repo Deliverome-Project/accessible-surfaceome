@@ -346,22 +346,19 @@ function paralogRow(p: ParalogEntry, key: string, maxResidues: number) {
       >
         {similarityCell(p.ecd_pct_identity, paralogToneClass(p.ecd_pct_identity))}
       </td>
-      <td className={p.signal_peptide_length != null ? undefined : styles.muted}>
-        {p.signal_peptide_length != null ? `${p.signal_peptide_length} aa` : "—"}
-      </td>
+      {/* PR #54 trimmed ParalogEntry to {tm_helix_count, ecd_length_residues,
+          per_residue_topology, sequence} — the dropped scalars
+          (signal_peptide_length, icd_length_residues, n_terminal_orientation,
+          c_terminal_orientation) render "—" so the column layout stays
+          aligned with isoform + ortholog rows that DO carry them. */}
+      <td className={styles.muted}>—</td>
       <td className={p.ecd_length_residues != null ? undefined : styles.muted}>
         {p.ecd_length_residues != null ? `${p.ecd_length_residues} aa` : "—"}
       </td>
-      <td className={p.icd_length_residues != null ? undefined : styles.muted}>
-        {p.icd_length_residues != null ? `${p.icd_length_residues} aa` : "—"}
-      </td>
+      <td className={styles.muted}>—</td>
       <td>{p.tm_helix_count ?? "—"}</td>
-      <td className={p.n_terminal_orientation ? undefined : styles.muted}>
-        {p.n_terminal_orientation ? orientationPill(p.n_terminal_orientation) : "—"}
-      </td>
-      <td className={p.c_terminal_orientation ? undefined : styles.muted}>
-        {p.c_terminal_orientation ? orientationPill(p.c_terminal_orientation) : "—"}
-      </td>
+      <td className={styles.muted}>—</td>
+      <td className={styles.muted}>—</td>
       <td className={styles.topoCell}>
         {p.per_residue_topology ? (
           <TopologyBar
@@ -567,8 +564,20 @@ export function IsoformsCard({ rec, n }: Props) {
                   over the shorter length; see merge/isoform_identity.py).
                   ECD %similarity isn't computed for same-gene isoforms, so
                   that one column stays "—". Older records with no identity
-                  number also fall back to "—". */}
-              {df.isoform_topologies.map((iso, i) => {
+                  number also fall back to "—".
+                  Defensive filter: some annotated records (e.g. TACSTD2)
+                  carry the canonical accession itself inside
+                  `isoform_topologies`. Rendering it here as an "alt
+                  isoform" duplicates the Canonical row above and shows
+                  null %-identity cells (since canonical-vs-self is
+                  trivial and not computed), reading to users as
+                  "%-identity is missing". Skip the canonical accession so
+                  the section only lists genuine alternatives. The
+                  annotator-side fix is upstream — this guard keeps the
+                  table honest until it lands. */}
+              {df.isoform_topologies
+                .filter((iso) => iso.isoform_id !== rec.gene.uniprot_acc)
+                .map((iso, i) => {
                 const fullId = iso.full_length_pct_identity_to_canonical;
                 const ecdId = iso.ecd_pct_identity_to_canonical;
                 return (
@@ -631,7 +640,9 @@ export function IsoformsCard({ rec, n }: Props) {
           showMembrane={false}
         />
 
-        {df.isoform_topologies.length === 0 ? (
+        {df.isoform_topologies.filter(
+          (iso) => iso.isoform_id !== rec.gene.uniprot_acc,
+        ).length === 0 ? (
           <p className={styles.empty}>
             No alternative isoforms in our DeepTMHMM coverage for{" "}
             {rec.gene.hgnc_symbol}. (UniProt may list additional isoforms whose

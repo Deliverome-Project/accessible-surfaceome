@@ -26,6 +26,7 @@ from anthropic import Anthropic
 from anthropic.types import TextBlock
 from pydantic import BaseModel, ValidationError
 
+from accessible_surfaceome.agents._support.payload import cached_system
 from accessible_surfaceome.agents._support.pricing import (
     UsageRecord,
     record_from_response,
@@ -88,14 +89,14 @@ def format_ledger_block(claims: list[EvidenceClaim], *, header: str = "ledger") 
     needs to extract the structured block.
     """
     payload = claims_to_jsonable(claims)
-    return f"## {header} ({len(claims)} claims)\n\n```json\n{json.dumps(payload, indent=2)}\n```\n"
+    return f"## {header} ({len(claims)} claims)\n\n```json\n{json.dumps(payload, indent=2, sort_keys=True)}\n```\n"
 
 
 def format_schema_block(schema: dict[str, Any], *, name: str) -> str:
     """Render the target Pydantic JSON schema."""
     return (
         f"## Target schema — `{name}`\n\n"
-        f"```json\n{json.dumps(schema, indent=2)}\n```\n"
+        f"```json\n{json.dumps(schema, indent=2, sort_keys=True)}\n```\n"
     )
 
 
@@ -152,6 +153,12 @@ def call_builder(
     parsed: Any = None
     raw_json: Any = None
 
+    # Cache the (static, per-builder) system prompt — mirrors the synthesizer's
+    # cached_system pattern. Cuts cost on repair-loop retries and across genes
+    # in a sweep; byte-identical output (cache_control is a transport/billing
+    # directive, not a generation change).
+    cached_sys = cached_system(system_prompt)
+
     # When ``tools`` is supplied (today: Anthropic's server-side
     # ``web_search`` for the methods builder's antibody-metadata
     # enrichment), pass it through. The server tool resolves within a
@@ -167,7 +174,7 @@ def call_builder(
             resp = client.messages.create(
                 model=SONNET_MODEL,
                 max_tokens=max_tokens,
-                system=system_prompt,
+                system=cast("Any", cached_sys),
                 messages=cast("Any", messages),
                 **cast("Any", extra_kwargs),
             )
@@ -187,7 +194,7 @@ def call_builder(
             resp = client.messages.create(
                 model=SONNET_MODEL,
                 max_tokens=max_tokens,
-                system=system_prompt,
+                system=cast("Any", cached_sys),
                 messages=cast("Any", messages),
             )
         usage_sink.append(record_from_response(resp.usage, SONNET_MODEL))

@@ -30,6 +30,17 @@ from accessible_surfaceome.cloud.surface_annotation import (
 )
 
 
+@pytest.fixture(autouse=True)
+def _block_dotenv_load(monkeypatch: pytest.MonkeyPatch) -> None:
+    """Stub the in-helper ``.env`` reader so tests that ``delenv`` the
+    CLOUDFLARE_* vars don't get them re-populated by the loader walking
+    up to a symlinked ``.env`` at the repo root. Matches the pattern in
+    ``tests/test_d1_env_preflight.py::_isolate_env``."""
+    monkeypatch.setattr(
+        "accessible_surfaceome.cloud.d1_env.load_env", lambda: None
+    )
+
+
 def test_publish_record_dict_writes_snapshot_and_skips_d1_when_no_env(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:
@@ -88,6 +99,46 @@ def test_publish_record_dict_does_not_write_snapshot_by_default(
     result = publish_record_dict(blob, snapshot_dir=tmp_path)
     assert result.snapshot_path is None
     assert not (tmp_path / "FAKE3.json").exists()
+
+
+def test_publish_record_default_skips_snapshot(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """The Pydantic-model entry point used to write the viewer snapshot
+    by default. After the June-2026 fallback-removal, the viewer no
+    longer reads from a per-gene JSON file — D1 is the only source — so
+    ``publish_record`` now defaults to ``write_snapshot=False`` too.
+    This test pins that default; flipping it back would silently
+    reintroduce the fallback the viewer no longer needs."""
+    monkeypatch.delenv("CLOUDFLARE_ACCOUNT_ID", raising=False)
+    monkeypatch.delenv("CLOUDFLARE_API_TOKEN", raising=False)
+    monkeypatch.delenv("CLOUDFLARE_D1_SURFACEOME_PUBLIC_ID", raising=False)
+    from accessible_surfaceome.cloud.surface_annotation import publish_record
+    from accessible_surfaceome.tools._shared.models import (
+        ExecutiveSummary,
+        GeneIdentifier,
+        SurfaceomeRecord,
+    )
+
+    # Minimal-but-valid record; the model's defaults populate the rest.
+    rec = SurfaceomeRecord.model_construct(
+        schema_version="2.6.0",
+        gene=GeneIdentifier(
+            hgnc_symbol="FAKE4",
+            hgnc_id="HGNC:1",
+            uniprot_acc="P00001",
+            ncbi_gene_id=1,
+            ensembl_gene="ENSG00000000001",
+        ),
+        executive_summary=ExecutiveSummary.model_construct(),
+    )
+    # Stub out D1 path entirely — we only care about the snapshot default.
+    result = publish_record(rec, snapshot_dir=tmp_path, push_to_d1=False)
+    assert result.snapshot_path is None
+    assert list(tmp_path.iterdir()) == [], (
+        "publish_record default must not touch the snapshot dir — "
+        "the viewer no longer reads JSON fallbacks"
+    )
 
 
 def test_publish_record_dict_rejects_missing_gene_symbol(tmp_path: Path) -> None:

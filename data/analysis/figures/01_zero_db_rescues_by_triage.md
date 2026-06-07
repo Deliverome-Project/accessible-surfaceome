@@ -21,11 +21,7 @@ Run:
 uv run make_zero_db_rescues_by_triage.py
 ```
 
-Source: the catalog endpoint is fetched live —
-[`api.deliverome.org/surfaceome/v1/catalog`](https://api.deliverome.org/surfaceome/v1/catalog).
-19,324 protein-coding human genes; each row carries `db` (the
-classical-DB yes-vote count) plus a `triage` block with `verdict`
-and `reason`. The rescue slice = `db == 0 AND verdict ∈ {yes, contextual}`.
+Source: the whole-proteome catalog TSV — [`data/processed/catalog/whole_proteome_catalog.tsv`](https://raw.githubusercontent.com/Deliverome-Project/accessible-surfaceome/main/data/processed/catalog/whole_proteome_catalog.tsv). 19,324 protein-coding human genes; each row carries the five `*_surface_flag` fields + `n_sources_surface` + the canonical Sonnet `sonnet_verdict` and `sonnet_reason`. The rescue slice = `n_sources_surface == 0 AND sonnet_verdict ∈ {yes, contextual}`. Sourced from D1 by [`scripts/export_whole_proteome_catalog_to_tsv.py`](https://github.com/Deliverome-Project/accessible-surfaceome/blob/main/scripts/export_whole_proteome_catalog_to_tsv.py).
 
 Canonical in-repo generator:
 [`scripts/zero_db_rescues_by_triage.py`](https://github.com/Deliverome-Project/accessible-surfaceome/blob/main/scripts/zero_db_rescues_by_triage.py).

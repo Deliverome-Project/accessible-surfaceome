@@ -1,5 +1,39 @@
 # Methods block builder (A1 → MethodObservation list)
 
+**What "surface accessibility" means here:** the protein, expressed by
+the cell in question, is **stably present at the outer face of that
+cell's plasma membrane — in AT LEAST one context or state.** Surface
+presence can be state-conditional (cancer-only, activation-induced,
+stress-released-and-re-anchored, lineage-restricted, etc.); the bar is
+"stably AT the surface in some state", NOT "constitutively anchored in
+every state."
+
+**Evidence that does NOT count as surface accessibility of this
+protein** (filter these out at the inclusion stage):
+
+- **Soluble-ligand engagement.** The protein engaging the surface of a
+  *different* cell as a soluble ligand — that's the partner's surface
+  receptor, not this protein's PM presence. Receptor pharmacology /
+  DAMP–PRR / cytokine–receptor / patient-IgG binding all fall here.
+- **EV / exosome / microvesicle / apoptotic-body surface display.** A
+  protein on the OUTER face of a cell-derived particle is NOT on a
+  live cell's plasma membrane. Proteinase-K-protection on intact
+  exosomes, EV surface biotinylation, and similar assays on
+  particle-bound protein land in A2's secretion / EV biology, NOT
+  A1's surface-methods grid.
+- **Exogenously added.** Recombinant / synthetic protein dumped onto
+  cells and observed to decorate the surface — decorates the membrane
+  but says nothing about endogenous surface accessibility of the
+  protein in question. (Knock-in expression of the gene's OWN coding
+  sequence, with or without an epitope tag, IS endogenous.)
+- **Transient interaction at the moment of binding.** Snapshot
+  captures of the protein in the *act* of engaging a surface partner
+  (FRET while binding, real-time SPR onto an immobilised receptor)
+  show contact, not stable surface residence.
+
+Every `MethodObservation` you emit must clear this bar — see
+"Inclusion criterion" below.
+
 You receive a slice of an `EvidenceClaim` ledger and emit a JSON ARRAY of
 `MethodObservation` objects. Each `MethodObservation` describes one
 surface-evidence method panel from one source: HOW the surface claim was
@@ -59,6 +93,190 @@ Before finalizing, scan your output: for any two rows sharing a
 `cited_evidence_ids` value, confirm their `method_subclass` differs. If it
 doesn't, merge them.
 
+## Inclusion criterion — reject ligand-engagement evidence
+
+**Before emitting a `MethodObservation`, ask: in the assay, is the
+protein the stably membrane-associated entity at the cell surface, or
+the soluble partner whose engagement was captured by binding /
+crosslinking a surface receptor on another cell?** Only the first
+emits a methods row. Receptor-engagement claims — RAGE / TLR / TREM /
+CCR / CXCR / DC-SIGN / CD14 / patient-IgG binding — describe biology,
+not surface accessibility of *this* protein. They belong to A2's
+biological-context block (receptor engagement, partner binding), not
+A1's methods grid.
+
+**The principle is about the protein's role IN THE ASSAY, not its
+baseline localization.** A protein with an abundant intracellular pool
+can still emit a methods row when the assay directly observes a
+stably membrane-associated form at the cell surface — the question is
+which role the assay captured, not where else the protein is found.
+Conversely, a protein with a canonical TM helix can still trip this
+filter if the cited assay measured it engaging a different surface
+receptor as a soluble partner (rare but possible for shed forms).
+
+**Concrete signs to REJECT (the observation does NOT count as surface
+accessibility of this protein):**
+
+*Soluble-ligand engagement:*
+- The paper studies the protein as an extracellular factor / DAMP /
+  cytokine / chemokine / alarmin engaging a named receptor on the
+  cell whose surface was probed.
+- Crosslinking / FRET / co-IP captures the protein bound TO a TM
+  protein on the cell surface (the TM partner IS the membrane
+  component; this protein is the ligand).
+- "Soluble-factor X engages receptor Y at the cell surface" framing.
+- Antibody-neutralization experiments that block the protein's
+  extracellular activity by sequestering it as a soluble factor
+  (NOT by reaching a surface-anchored form).
+
+*Cell-derived particle surface (not live PM):*
+- Proteinase-K-protection on intact exosomes / EVs / microvesicles
+  showing the protein on the OUTER face of the particle.
+- Surface biotinylation of isolated EVs / exosomes / apoptotic bodies.
+- Flow cytometry on isolated particles (vs intact cells).
+
+*Released / secreted form (not on the live cell):*
+- ELISA / Western on cell-supernatant fractions detecting the protein
+  AFTER release.
+- Serum / plasma quantification of the soluble form.
+
+*Exogenous decoration:*
+- Recombinant protein (+His / +Fc / unmodified) or synthetic peptide
+  added to cells from outside and observed to bind the surface.
+  This decorates the cell with externally-supplied material; it says
+  nothing about endogenous PM accessibility.
+- Knock-in expression of the gene's own coding sequence (with or
+  without an epitope tag) IS endogenous — that's NOT exogenous
+  addition.
+
+*Transient capture at the moment of binding:*
+- FRET / SPR / kinetic-binding snapshots where the protein is in the
+  act of engaging a surface partner. These show contact, not stable
+  surface residence.
+
+**Acceptable BUT capped at the low end: transient trafficking with
+documented PM dwell.** Some proteins are non-PM residents at baseline
+(canonical localization in TGN / ER / endosomes / lysosomes / etc.)
+but cycle THROUGH the plasma membrane during their normal trafficking,
+with literature documenting:
+
+- transport carriers / vesicles labelled with the protein arriving at
+  or departing from the PM, OR
+- baseline PM-rim staining / surface labeling under normal cellular
+  activity (not just under stress / overexpression / synchronization),
+  OR
+- a small but measurable steady-state PM pool by surface biotinylation
+  or quantitative imaging
+
+The brief PM dwell is enough for an extracellular antibody to engage
+during the visit, so this DOES count as surface accessibility — but at
+the LOW end of the spectrum. Emit a `MethodObservation` with
+`accessibility_relevance=supports_surface_localization` and
+`surface_claim_type=plasma_membrane_localized`. Do NOT use
+`direct_surface_accessibility` — the dwell is too brief for nonperm
+flow / KO-controlled IHC-membranous quality.
+
+Downstream the evidence-grade builder will roll these rows up to
+`supportive_but_indirect` (not `weak`) and the synth should pick
+`surface_accessibility=low` (not `no`) +
+`surface_call_reason=dual_localization`, capturing both the
+brief-dwell nature and the dominant non-PM compartment.
+
+Distinguish from:
+
+- "Transient at the moment of binding" (FRET/SPR snapshots — those
+  show CONTACT, not residence; still REJECT, see above).
+- "Pure non-PM resident with no documented PM trafficking" — the
+  protein never reaches the PM in the cited literature. That's
+  `surface_accessibility='no'` + `surface_call_reason` from the
+  NO-bucket; emit no methods row.
+
+These cases do NOT emit a `MethodObservation`. The biology may still
+be load-bearing for the gene's story — it lands in A2's
+biological_context block (receptor engagement, EV cargo,
+shed/secreted biology, etc.), not A1's surface-methods grid.
+
+**Concrete signs the protein IS the membrane component (emit the
+row):**
+
+- Has a canonical TM helix, GPI anchor, lipid anchor, or
+  signal-peptide-driven membrane insertion AND the assay observed it
+  on the outer face (live-cell flow, nonperm IF, surface biotinylation,
+  IHC membranous).
+- Has NO canonical anchoring features but the paper explicitly names a
+  non-canonical anchoring mechanism that retains the protein at the
+  outer leaflet (e.g. partner-tethered via X domain to TM protein Y,
+  palmitoylated at Cys-N for membrane retention, GPI-anchored isoform Z
+  observed at the surface). See "Non-canonical anchoring gate" below.
+
+If you're unsure whether a claim is ligand-engagement or
+membrane-component evidence, default to REJECT (don't emit the row).
+A1's methods grid is for direct surface-accessibility evidence of *this*
+protein; biology that explains the protein's extracellular activity
+lives in A2.
+
+## Non-canonical anchoring gate — non-TM proteins
+
+When the input ledger or your trim notes indicate the protein has
+**no TM helix, no GPI anchor, no signal peptide for membrane insertion,
+no outer-leaflet anchor** — i.e. no canonical mechanism for sitting at
+the outer leaflet — you may still emit a `MethodObservation` with
+`accessibility_relevance=direct_surface_accessibility`, BUT only when
+the claim or quote explicitly identifies an **outer-leaflet** anchoring
+mechanism. Acceptable mechanisms (all place the protein on the
+extracellular face):
+
+- partner-protein tethering (named TM partner whose extracellular
+  domain binds this protein at a named domain)
+- alternative GPI-anchored isoform (named isoform identifier)
+- β-barrel monotopic insertion at the outer leaflet
+- non-canonical surface translocation explicitly documented (the
+  paper names a specific trafficking pathway that delivers the
+  protein to the outer leaflet, demonstrated by extracellular
+  antibody binding or surface biotinylation)
+- palmitoylation at a named Cys **only when** the paper also names an
+  outer-leaflet retention signal (a TM partner, a signal peptide,
+  GPI). Palmitoylation alone is leaflet-agnostic — it can tether to
+  either face — so without an outer-leaflet qualifier it falls into
+  the inner-leaflet rejection below.
+
+If no such mechanism is named, cap the row at
+`accessibility_relevance=supports_surface_localization` (cannot prove
+extracellular epitope reachable) and add a one-clause note in the
+observations field flagging "no anchoring mechanism named for non-TM
+protein". This forces the grader to confront *how* the protein is at the
+surface before granting a direct call — without locking out legitimate
+non-canonical anchored proteins where the mechanism is described.
+
+### Inner-leaflet evidence is NOT surface accessibility
+
+A protein anchored to the **inner (cytoplasmic) leaflet** of the plasma
+membrane is at the PM but on the WRONG side — its body and epitopes
+hang into the cytoplasm and are not extracellularly accessible to a
+systemically delivered binder. Evidence that observes such a protein
+"at the plasma membrane" documents inner-leaflet association, not
+surface accessibility.
+
+When the ledger names (or your trim notes flag) an inner-leaflet /
+cytoplasmic-facing anchor for this protein AND the assay observed it
+at the PM (live-cell imaging, FRAP, live-cell mutagenesis showing
+membrane-targeting loss in an anchoring-deficient mutant), cap the row
+at `accessibility_relevance=weak_or_ambiguous` and set
+`surface_claim_type=intracellular_pool`. Add a one-clause observation
+noting "inner-leaflet anchoring — not extracellularly accessible".
+Never promote such a row to `direct_surface_accessibility` or
+`supports_surface_localization`.
+
+The non-permeabilized condition of an assay does NOT override this
+rule. Intact cells just mean the membrane is intact; the protein can
+still be on the cytoplasmic side of it.
+
+Exception: when the SAME paper or a sibling claim documents a
+non-canonical OUTER-surface event for this protein via a named
+mechanism (per the "Non-canonical anchoring gate" above), emit a
+SEPARATE row at `direct_surface_accessibility` keyed to that outer-
+surface evidence. The inner-leaflet row stays `weak_or_ambiguous`.
+
 ## Field-by-field rules
 
 - `method_family` — closed enum: `flow_cytometry`, `immunofluorescence`,
@@ -74,9 +292,9 @@ doesn't, merge them.
       surface, APEX-surface), FRET-on-surface, radioligand binding,
       surface-restricted small-molecule probes. These claims don't
       stain or isolate the protein directly, but the functional
-      readout is impossible without surface access. The SRC eSrc
-      anti-Src antibody-killing paper (PMID:41818370 / 41818382) is
-      the canonical case.
+      readout is impossible without surface access (e.g. an antibody
+      that depletes target-expressing cells only if the target is
+      reachable from outside).
     - `other` — true catch-all for surface evidence that doesn't fit
       any of the named families. Reach for `functional_surface_assay`
       first; only fall to `other` when the evidence genuinely doesn't
@@ -106,7 +324,7 @@ doesn't, merge them.
         no leader-replacement mention.
       - `exogenous` — methods sentence names a foreign SP. Phrases:
         "IgG kappa leader", "IgG κ light-chain SP", "preprotrypsin
-        signal peptide", "BiP leader", "PreS", "honeybee melittin SP",
+        signal peptide", "PreS", "honeybee melittin SP",
         "interleukin-2 secretion signal", "Igλ leader", or any
         chimeric leader replacing the native sequence.
       - `unspecified` — methods don't mention the leader source.
@@ -147,9 +365,9 @@ your job is to SPLIT the identifier into the right structured fields,
 not collapse it into `name`:
 
 * **`clone`** — alphanumeric clone ID (examples: `528`, `4D6`,
-  `D38B1`, `43-14A`, `AB-101`, `H300`, `9G4`, `5A6`, `B-A18`). When
-  the quote says "clone 528", "528 antibody", "anti-EGFR clone 528",
-  "anti-CD81 (5A6)", set `clone="528"` / `clone="5A6"`.
+  `D38B1`, `43-14A`, `AB-101`, `H300`, `9G4`, `B-A18`). When
+  the quote says "clone 528", "528 antibody", "anti-TARGET clone 528",
+  "anti-TARGET (528)", set `clone="528"`.
 * **`vendor`** — company name when stated (examples: `BD Pharmingen`,
   `BD Biosciences`, `Cell Signaling Technology`, `Abcam`,
   `R&D Systems`, `Thermo Fisher`, `Santa Cruz`, `Sigma`, `BioLegend`,
@@ -159,32 +377,32 @@ not collapse it into `name`:
 * **`rrid`** — Research Resource Identifier when stated (examples:
   `AB_2138158`, `RRID:AB_396171`). Strip the `RRID:` prefix when
   present so the field is just the `AB_...` identifier.
-* **`name`** — short canonical label, NOT the clone or vendor.
-  Examples: `"anti-EGFR"`, `"anti-CD81"`, `"anti-GRP78"`. The name
+* **`name`** — short canonical label, NOT the clone or vendor. Use
+  `anti-TARGET` (the gene/protein the antibody recognizes). The name
   field is for what the antibody recognizes, not for stuffing the
   identifier in.
 
-**Bad**: `name="anti-CD81 antibody clone 5A6 (BD Biosciences)"`,
+**Bad**: `name="anti-TARGET antibody clone 528 (BD Biosciences)"`,
 `clone=null`, `vendor=null`
-**Good**: `name="anti-CD81"`, `clone="5A6"`, `vendor="BD Biosciences"`,
+**Good**: `name="anti-TARGET"`, `clone="528"`, `vendor="BD Biosciences"`,
 `validation_strategy="genetic_KO"`, `validation_strength="strong"`
 
 **Antibody identifiers often live in a SEPARATE reagent-list claim —
 pull them across claims before defaulting to null.** Many papers state
 the clone / vendor / RRID once, in a consolidated "Antibodies" /
 "Reagents" Materials sentence — e.g. *"Primary antibodies including
-purified anti-human CD81 (Clone 5A6), purified anti-human EGFR (Clone
-AY13), anti-human EGFR-Alexa Fluor 488 (Clone AY13) … were purchased
-from …"* — while the assay sentence that describes the actual flow / IF
-experiment only says "anti-EGFR antibody". When ANY claim in the ledger
-is such a reagent list naming `anti-[TARGET] (Clone X[, Vendor / RRID])`,
-APPLY that clone / vendor / RRID to the `AntibodyRef` of the method
-observation that used that antibody — matched by target (EGFR ↔
-anti-EGFR) and, when present, conjugate ("-Alexa Fluor 488" ↔ the
-fluor-tagged variant). Do NOT leave `clone=null` just because the ASSAY
-sentence didn't repeat the identifier; the consolidated reagent list IS
-the source, and the catalog reader needs the clone for reagent
-provenance.
+purified anti-human gene-X (Clone N), purified anti-human gene-Y
+(Clone M), anti-human gene-Y-Alexa Fluor 488 (Clone M) … were
+purchased from …"* — while the assay sentence that describes the
+actual flow / IF experiment only says "anti-gene-Y antibody". When
+ANY claim in the ledger is such a reagent list naming `anti-[TARGET]
+(Clone N[, Vendor / RRID])`, APPLY that clone / vendor / RRID to the
+`AntibodyRef` of the method observation that used that antibody —
+matched by target (gene Y ↔ anti-gene-Y) and, when present, conjugate
+("-Alexa Fluor 488" ↔ the fluor-tagged variant). Do NOT leave
+`clone=null` just because the ASSAY sentence didn't repeat the
+identifier; the consolidated reagent list IS the source, and the
+catalog reader needs the clone for reagent provenance.
 
 Only when NO claim anywhere in the ledger names that target's clone is
 the generic fallback correct: if the quote is generic ("a commercial
@@ -204,7 +422,7 @@ paper) mentions:
 |---|---|---|
 | "signal disappears in [GENE]-KO cells", "validated by genetic knockout" | `genetic_KO` | `strong` |
 | "signal disappears in CRISPR-Cas9 [GENE]-knockout cells" | `CRISPR_KO` | `strong` |
-| "isoform-specific KO (CLDN18.2 only, CLDN18.1 unchanged)" | `isoform_specific_KO` | `strong` |
+| "isoform-specific KO (isoform N only, isoform M unchanged)" | `isoform_specific_KO` | `strong` |
 | "siRNA knockdown abolishes the signal" | `siRNA_knockdown` | `moderate` |
 | "confirmed by an orthogonal method", "mass spec confirms the flow signal", "two antibodies against non-overlapping epitopes give the same result" | `orthogonal_method` | `moderate` |
 | "validated against [GENE]-overexpression cell line as positive control" | `overexpression_reference` | `moderate` |
@@ -267,6 +485,27 @@ overexpression_reference, vendor_claim_only, none, unknown}`;
 - `cited_evidence_ids` — every `evidence_id` whose claim contributed to
   this row.
 
+## Permeabilization & row granularity
+
+- **Permeabilized assays prove localization, not surface accessibility —
+  but a permeabilized IF that describes a membrane-staining pattern or
+  colocalization with a known plasma-membrane protein IS valid
+  localization evidence.** In that case set
+  `accessibility_relevance=supports_surface_localization` and
+  `surface_claim_type=plasma_membrane_localized` (it shows WHERE the
+  protein is, just not that the epitope is reachable from outside). Only a
+  permeabilized assay that measures *total* protein with no membrane
+  pattern stays `accessibility_relevance=expression_only`. Either way,
+  never upgrade a permeabilized read to `direct_surface_accessibility` /
+  `surface_accessible` — that tier is for non-permeabilized / live-cell
+  readouts only.
+- **One row per distinct assay; collapse only true duplicates.** Two
+  method rows are redundant ONLY when they share the same source citation
+  AND the same `method_subclass` AND the same `expression_system`.
+  Distinct assay conditions — permeabilized vs non-permeabilized, OE vs
+  endogenous, flow vs biotinylation — are SEPARATE rows even from the
+  same paper; collapsing them erases the surface-vs-total readout.
+
 ## Western-blot caveat
 
 `western_blot` claims are only valid as surface evidence when paired
@@ -304,7 +543,7 @@ record. It is NOT for the surface evidence itself.
 - Search ONLY when (a) the paper did not state the field AND (b) you have
   a precise anchor: an `rrid` (best — resolve on the Antibody Registry),
   a `catalog` number, or a `clone` + `vendor` pair. A bare target name
-  ("anti-EGFR antibody") is NOT searchable — leave the field
+  ("anti-gene-X antibody") is NOT searchable — leave the field
   `unknown` / `none`.
 - Prioritize the antibodies backing the strongest / most-cited evidence;
   don't burn the budget on every reagent.

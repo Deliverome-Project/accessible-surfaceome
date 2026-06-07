@@ -67,8 +67,11 @@ def test_gists_dir_exists():
 @pytest.mark.parametrize("gist", _gist_files(), ids=lambda p: p.name)
 def test_gist_has_brand_style_sentinel(gist: Path):
     text = gist.read_text()
-    assert "brand-style-v1" in text, (
-        f"{gist.name}: missing `brand-style-v1` sentinel — gists must include the "
+    # Accept any versioned sentinel (brand-style-v1, brand-style-v2, ...).
+    # v2 added the static-Manrope OTFs + medium weight + ~25% size bump
+    # on 2026-06-07 to fix the variable-font ExtraLight default.
+    assert re.search(r"brand-style-v\d+", text), (
+        f"{gist.name}: missing `brand-style-v<n>` sentinel — gists must include the "
         f"inlined brand-style block from the canonical _plotting_config.py mirror."
     )
 

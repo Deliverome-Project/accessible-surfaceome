@@ -20,28 +20,11 @@ def main(argv: list[str] | None = None) -> None:
         description=merge.__doc__,
         add_help=False,
     )
-    agents_parser = subparsers.add_parser(
-        "agents", help="Run the v1.0.0 deep-dive pipeline (A1 ∥ A2 → B → assemble)."
-    )
-    agents_sub = agents_parser.add_subparsers(dest="agents_command", required=True)
-    annotate = agents_sub.add_parser(
-        "annotate", help="Run a one-off annotation session for a single gene."
-    )
-    annotate.add_argument("gene", help="Gene symbol or UniProt accession (e.g. KAAG1, Q9UBP8).")
-    # ``sync`` (Managed-Agents create/update), ``audit-corpus`` (v0.5.1
-    # ``surface_annotator.audit``), and ``view`` (v0.5.1 record viewer) were
-    # retired alongside the surface_annotator/ directory when the v1.0.0
-    # 3-agent pipeline replaced the single Managed Agent. v1.0.0 runs on the
-    # Messages API — no remote agent registry to sync; viewer-style
-    # rendering moved to the per-agent ``render_html.py`` modules.
-
-    # The legacy `triage` subcommand (Managed Agents one-off via
-    # `client.beta.sessions`) was retired because Anthropic's
-    # ``beta.agents`` API doesn't expose ``cache_control`` blocks — at
-    # genome scale that's roughly $200 of avoidable cost per sweep
-    # relative to the direct ``messages.create`` runner. For sweeps,
-    # use ``scripts/triage_runner.py``; for benchmark eval, use
-    # ``accessible-surfaceome triage-bench`` below.
+    # The v1.0.0 ``agents annotate`` deep-dive (Surface Evidence Compiler ∥
+    # Biology Compiler → Synthesizer) was removed — it is deprecated; the
+    # production deep-dive is ``surfaceome_v2``, run via
+    # ``scripts/surfaceome_v2_annotate.py``. (TODO: repoint a CLI ``annotate``
+    # command at the v2 orchestrator if a first-class CLI entry is wanted.)
 
     bench_parser = subparsers.add_parser(
         "triage-bench",
@@ -69,59 +52,8 @@ def main(argv: list[str] | None = None) -> None:
     args, remainder = parser.parse_known_args(argv)
     if args.command == "build":
         merge.main(remainder)
-    elif args.command == "agents":
-        _run_agents(args)
     elif args.command == "triage-bench":
         _run_triage_bench(args)
-
-
-def _run_agents(args: argparse.Namespace) -> None:
-    logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(name)s — %(message)s")
-
-    if args.agents_command == "annotate":
-        # v1.0.0 deep-dive pipeline: dispatch A1 ∥ A2 → B → assemble via
-        # ``surfaceome_v1.annotate``. Output JSON carries per-agent counters
-        # and the assembled-record path.
-        from accessible_surfaceome.agents import surfaceome_v1
-
-        result = surfaceome_v1.annotate(args.gene)
-        a1, a2, b = result.a1, result.a2, result.b
-        print(
-            json.dumps(
-                {
-                    "gene": result.gene,
-                    "schema_version": "1.0.0",
-                    "annotation_path": str(result.annotation_path) if result.annotation_path else None,
-                    "annotation_emitted": result.record is not None,
-                    "error": result.error,
-                    "evidence_count": result.record.evidence_count if result.record else None,
-                    "n_tool_calls": {
-                        "a1": a1.n_tool_calls if a1 else None,
-                        "a2": a2.n_tool_calls if a2 else None,
-                        "b": b.n_tool_calls if b else None,
-                    },
-                    "n_repair_attempts": {
-                        "a1": a1.n_repair_attempts if a1 else None,
-                        "a2": a2.n_repair_attempts if a2 else None,
-                        "b": b.n_repair_attempts if b else None,
-                    },
-                    "cost_usd": {
-                        "a1": round(result.a1_cost_usd, 6),
-                        "a2": round(result.a2_cost_usd, 6),
-                        "b": round(result.b_cost_usd, 6),
-                        "total": round(result.total_cost_usd, 6),
-                    },
-                    "tokens": {
-                        "a1": a1.usage.as_dict() if a1 else None,
-                        "a2": a2.usage.as_dict() if a2 else None,
-                        "b": b.usage.as_dict() if b else None,
-                    },
-                },
-                indent=2,
-            )
-        )
-        if result.error:
-            raise SystemExit(1)
 
 
 def _run_triage_bench(args: argparse.Namespace) -> None:

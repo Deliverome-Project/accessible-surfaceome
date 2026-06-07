@@ -5,7 +5,7 @@ import type {
 } from "../../../lib/surfaceome-types";
 import { prettyEnum } from "../../../lib/surfaceome";
 import { ChipLabelValue } from "../ChipLabelValue/ChipLabelValue";
-import { EvidenceChipList } from "../EvidenceChip/EvidenceChip";
+import { EvidenceChipList, linkifyEvidenceRefs } from "../EvidenceChip/EvidenceChip";
 import { FeatureRationales } from "../FeatureChips/FeatureChips";
 import { SectionCard } from "../SectionCard/SectionCard";
 import { StatusPill } from "../StatusPill/StatusPill";
@@ -39,13 +39,13 @@ function directionCell(
     string,
     { glyph: string; text: string; color: string; title: string }
   > = {
-    increases_surface: {
+    increases: {
       glyph: "↑",
       text: "Increase",
       color: "var(--success, #1b5e3f)",
       title: "Increases surface-accessible pool",
     },
-    decreases_surface: {
+    decreases: {
       glyph: "↓",
       text: "Decrease",
       color: "var(--maroon-dark, #922038)",
@@ -286,7 +286,9 @@ export function BiologicalContextCard({ rec, n }: Props) {
                 />
               </div>
               {rs.rationale ? (
-                <p className={styles.locProse}>{rs.rationale}</p>
+                <p className={styles.locProse}>
+                  {linkifyEvidenceRefs(rs.rationale)}
+                </p>
               ) : null}
             </div>
           );
@@ -321,7 +323,7 @@ export function BiologicalContextCard({ rec, n }: Props) {
                       {prettyEnum(a.accessibility_implication)}
                     </StatusPill>
                   </td>
-                  <td>{a.rationale}</td>
+                  <td>{linkifyEvidenceRefs(a.rationale)}</td>
                   <td>
                     <EvidenceChipList ids={a.cited_evidence_ids} label="References" />
                   </td>
@@ -364,7 +366,11 @@ export function BiologicalContextCard({ rec, n }: Props) {
             {cr.partners.join(", ")}
           </p>
         ) : null}
-        {cr.rationale ? <p className={styles.locProse}>{cr.rationale}</p> : null}
+        {cr.rationale ? (
+          <p className={styles.locProse}>
+            {linkifyEvidenceRefs(cr.rationale)}
+          </p>
+        ) : null}
       </div>
 
     </SectionCard>

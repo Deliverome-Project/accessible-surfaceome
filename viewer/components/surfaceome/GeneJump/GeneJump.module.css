@@ -61,7 +61,9 @@
 }
 
 .option {
-  display: block;
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
   width: 100%;
   padding: 0.3rem 0.5rem;
   text-align: left;
@@ -88,4 +90,34 @@
   font-size: 0.8rem;
   font-style: italic;
   color: var(--muted);
+}
+
+/*
+ * Schema-freshness dot. Green (var(--success)) when the deep-dive record
+ * matches CURRENT_SCHEMA_VERSION; amber (var(--amber-bright)) when it's
+ * out of date. GeneJump.tsx pairs this with a title tooltip + sr-only
+ * text, so the status is never conveyed by color alone. The 1px ring
+ * keeps the dot legible against the popover fill.
+ */
+.dot {
+  flex: 0 0 auto;
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  box-shadow: 0 0 0 1px var(--line);
+}
+
+.dotCurrent {
+  background: var(--success);
+}
+
+.dotStale {
+  background: var(--amber-bright);
+}
+
+/* Symbol takes the remaining row width; min-width:0 lets it ellipsize
+ * rather than push the dot around if a symbol is unusually long. */
+.optionSymbol {
+  flex: 1 1 auto;
+  min-width: 0;
 }

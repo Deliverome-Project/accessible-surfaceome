@@ -155,6 +155,189 @@ _TOPIC_TERMS: dict[TopicAnchor, list[str]] = {
         "shedding",
         "ectodomain",
         "soluble form",
+        # Soluble/shed TARGET measured in circulation — the signal that
+        # distinguishes a real decoy from a merely-annotated soluble isoform.
+        "soluble ectodomain",
+        "circulating",
+        "serum level",
+        "plasma level",
+    ],
+    "normal_tissue_expression": [
+        # Six high-consequence tox organs, anchored on SURFACE expression —
+        # NOT a tissue-distribution / microarray (RNA-atlas) survey. Surface
+        # proof comes from the always-on protein method categories; this anchor
+        # supplies the organ-coverage literature for on-target/off-tumor tox.
+        "surface expression",
+        "liver",
+        "lung",
+        "kidney",
+        "intestine",
+        "heart",
+        "brain",
+        # Expanded vocab for thicker surface-expression recall.
+        # Includes per-cell-type / lineage descriptors and primary-
+        # tissue / organoid surface readouts. Deliberately EXCLUDES
+        # RNA-flavored sources (scRNA-seq, snRNA-seq, spatial
+        # transcriptomics, transcriptomic profile, microarray, tissue
+        # distribution) so the
+        # test_tox_anchor_terms_are_organ_literature_not_rna guard
+        # rail stays enforceable. Also DOES NOT name specific atlas
+        # brands — surface-expression evidence is judged on the
+        # measurement type (IHC / flow / surface-MS / etc.) carried
+        # by the protein-method categories, not on which atlas /
+        # consortium published it.
+        "expressed in",
+        "expression in",
+        "expression pattern",
+        "cell type",
+        "cell-type specific",
+        "cell-type-specific",
+        "lineage-restricted",
+        "lineage specific",
+        "primary tissue",
+        "organoid",
+    ],
+    "surface_reachability": [
+        # Physical access barriers — a protein can be surface-present yet
+        # unreachable by a systemically dosed binder.
+        "blood-brain barrier",
+        "tumor penetration",
+        "luminal",
+        "abluminal",
+        # Binder-access vocabulary (qualified — bare "accessibility" would
+        # pull chromatin-accessibility / ATAC-seq noise).
+        "surface accessibility",
+        "antibody accessibility",
+        "epitope accessibility",
+    ],
+    "partner_dependency": [
+        # Does a partner have to be present for the target to reach the
+        # surface? Feeds co_receptor_requirements.
+        "obligate heterodimer",
+        "co-receptor",
+        "coreceptor",
+        "escort protein",
+        "chaperone-assisted",
+        "trafficking partner",
+        "accessory subunit",
+        "auxiliary subunit",
+        "required for surface expression",
+    ],
+    "membrane_subdomain": [
+        # Where in the plasma membrane — a binder may not reach a restricted
+        # subdomain. Feeds restricted_subdomain + anatomical accessibility.
+        "lipid raft",
+        "membrane microdomain",
+        "tight junction",
+        "apical membrane",
+        "basolateral",
+        "lateral membrane",
+        "primary cilium",
+        "ciliary membrane",
+        "polarized epithelial",
+        "immunological synapse",
+        # Expanded anatomical-surface vocabulary so the anatomical_
+        # accessibility builder has broader recall on polarity /
+        # subdomain papers (the previous list missed brush border,
+        # luminal endothelium, podocyte / synaptic / junctional
+        # microdomains).
+        "brush border",
+        "microvilli",
+        "luminal membrane",
+        "luminal surface",
+        "abluminal surface",
+        "vessel lumen",
+        "blood-facing",
+        "endothelial lumen",
+        "podocyte",
+        "foot process",
+        "intercalated disc",
+        "axon initial segment",
+        "presynaptic membrane",
+        "postsynaptic membrane",
+        "synaptic cleft",
+        "synaptic membrane",
+        "focal adhesion",
+        "adherens junction",
+        "desmosome",
+        "caveolae",
+        "epithelial polarity",
+        "epithelial cell polarization",
+    ],
+    "epitope_masking": [
+        # Evidence the extracellular epitope is occluded, spanning the three
+        # mechanism axes the epitope_masking risk records. Feeds
+        # epitope_masking.mechanism (homo / hetero / other).
+        "epitope masking",
+        "steric occlusion",
+        # HOMO — the target's own homodimer / homo-oligomer interface
+        "homodimer",
+        "homodimerization",
+        "oligomerization",
+        "self-association",
+        # HETERO — a partner protein in a complex covers the epitope
+        "heterodimer",
+        # OTHER — glycan shield / conformational occlusion
+        "glycan shield",
+        "conformational masking",
+    ],
+    "cell_state_modulation": [
+        # State-conditional surface biology — the load-bearing A2 axis
+        # for genes whose surface accessibility is state-modulated.
+        # Feeds both shapes of accessibility_modulation row (contrast
+        # pairs AND single-context state observations). Catches papers
+        # describing the protein in activation / stress / disease /
+        # senescence / EMT / differentiation states.
+        # Activation states (immune, signaling)
+        "activated",
+        "stimulated",
+        "TCR stimulation",
+        "interferon-stimulated",
+        "IFN-gamma",
+        "cytokine-induced",
+        "TLR-induced",
+        # Stress states
+        "ER stress",
+        "oxidative stress",
+        "heat shock",
+        "hypoxia",
+        "hypoxic",
+        "nutrient starvation",
+        "unfolded protein response",
+        "UPR",
+        "stress response",
+        # Disease / tumor microenvironment
+        "tumor microenvironment",
+        "tumor cell",
+        "cancer cell",
+        "metastatic",
+        "EMT",
+        "epithelial-mesenchymal transition",
+        "epithelial mesenchymal transition",
+        # Senescence / differentiation / lineage
+        "senescent",
+        "senescence",
+        "differentiation",
+        "differentiated",
+        "stem cell",
+        "exhausted",
+        "memory T cell",
+        "M1 macrophage",
+        "M2 macrophage",
+        "polarization",
+        # Death pathways that expose / release the protein
+        "ferroptosis",
+        "ferroptotic",
+        "apoptosis",
+        "apoptotic",
+        "pyroptosis",
+        "autophagy",
+        "autophagolysosomal exocytosis",
+        # Drug-tolerant / persister states
+        "drug-tolerant persister",
+        "persister cell",
+        "TKI-tolerant",
+        "treatment-resistant",
     ],
 }
 
@@ -190,6 +373,7 @@ def gene_literature(
     ncbi_gene_id: int | None = None,
     hgnc_symbol: str | None = None,
     aliases: list[str] | None = None,
+    previous_symbols: list[str] | None = None,
     pmid: int | None = None,
     pmcid: str | None = None,
     topic_anchors: list[TopicAnchor] | None = None,
@@ -199,9 +383,18 @@ def gene_literature(
     """Single dispatcher mirroring the registered tool schema.
 
     ``uniprot_acc`` is the simplest input: when provided we resolve it
-    internally to ``ncbi_gene_id`` + ``hgnc_symbol`` + ``aliases`` via the
-    cached gene_lookup pipeline. Callers who already have those values can
-    pass them directly to skip the resolve hop.
+    internally to ``ncbi_gene_id`` + ``hgnc_symbol`` + ``aliases`` +
+    ``previous_symbols`` via the cached gene_lookup pipeline. Callers who
+    already have those values can pass them directly to skip the resolve hop.
+
+    ``previous_symbols`` are HGNC's prior approved symbols (HGNC's
+    ``prev_symbol`` field). Renamed genes (e.g. STING1 was TMEM173until
+    2020) lose their pre-rename Europe PMC hits unless these are OR'd into
+    the topic-search disjunction alongside ``hgnc_symbol`` + ``aliases``.
+    PubTator's NER (used by ``recent_corpus``) + NCBI's gene2pubmed link
+    table (used by ``gene2pubmed``) both normalize across symbol revisions
+    upstream, so this param only affects the ``topic_search`` Europe PMC
+    path.
 
     ``retraction_index`` is consulted alongside Europe PMC's pubTypeList
     "Retracted Publication" marker; when ``None`` we use the empty index
@@ -231,6 +424,7 @@ def gene_literature(
                 uniprot_acc=uniprot_acc,
                 hgnc_symbol=hgnc_symbol,
                 aliases=aliases,
+                previous_symbols=previous_symbols,
                 topic_anchors=topic_anchors,
                 max_results=max_results,
                 retraction_index=index,
@@ -340,6 +534,7 @@ def _topic_search(
     uniprot_acc: str | None,
     hgnc_symbol: str | None,
     aliases: list[str] | None,
+    previous_symbols: list[str] | None,
     topic_anchors: list[TopicAnchor],
     max_results: int,
     retraction_index: RetractionIndex,
@@ -351,9 +546,52 @@ def _topic_search(
         hgnc_symbol = bundle.hgnc_symbol
         if aliases is None:
             aliases = list(bundle.aliases)
+        if previous_symbols is None:
+            previous_symbols = list(bundle.previous_symbols)
 
+    # Cap previous_symbols at 3 to bound query length on outliers — a
+    # 200-gene candidate-universe audit (2026-06-06) showed the field rarely
+    # exceeds 3 (SLC67A1 with 5 is the lone outlier), so this is essentially
+    # a no-op for predictability rather than a recall trade-off.
+    #
+    # No cap on aliases. Earlier audit showed HGNC's ``alias_symbol`` is NOT
+    # ordered by importance — CD44's first 5 are obscure (``IN`` / ``MC56`` /
+    # ``Pgp1`` / ``PGP-1`` / ``CD44R``) while paper-canonical ``HCELL`` is at
+    # position 6, ``Hermes-1`` at 8, ``H-CAM`` at 13. Truncating ANY low
+    # number drops famous-name aliases at random; the case-insensitive dedupe
+    # loop below already collapses near-duplicates, so the realistic upper
+    # bound is the genuine alias count per gene (mean 3.25, max 15 in our
+    # sample). Europe PMC handles multi-KB queries without breaking.
     aliases = aliases or []
-    name_terms = [hgnc_symbol, *aliases]
+    previous_symbols = (previous_symbols or [])[:3]
+    # Dedup while preserving order. ``aliases`` + ``previous_symbols`` often
+    # overlap (HGNC moves rejected aliases into previous_symbols), so a
+    # naive concat blows the query length without adding coverage. Drop
+    # empties + the current hgnc_symbol from the supplement so it isn't
+    # quoted twice. Dedupe case-insensitively because Europe PMC's search
+    # is case-insensitive anyway; this just avoids double-quoting the same
+    # term in different casings (e.g. "PDL1" vs "PDl1").
+    #
+    # Note (2026-06-06 audit): we audited adding UniProt protein short
+    # names + HGNC descriptive full names and dropped both. HGNC aliases
+    # turn out to already cover virtually every paper-canonical short form
+    # case-insensitively (CD274's ``PD-L1`` is in aliases; STING1's
+    # ``MITA`` / ``ERIS`` / ``hSTING`` are in aliases). UniProt's
+    # ``shortNames`` arrays mostly hold obscure historical labels
+    # (``MLN 19`` for ERBB2) or repeat what HGNC already covers; the
+    # descriptive HGNC names like ``"cholinergic receptor, nicotinic,
+    # alpha 7 (neuronal)"`` rarely match paper titles verbatim.
+    seen_lower: set[str] = {hgnc_symbol.lower()} if hgnc_symbol else set()
+    supplement: list[str] = []
+    for n in [*aliases, *previous_symbols]:
+        if not n:
+            continue
+        key = n.lower()
+        if key in seen_lower:
+            continue
+        seen_lower.add(key)
+        supplement.append(n)
+    name_terms = [hgnc_symbol, *supplement]
     name_disjunction = " OR ".join(f'"{n}"' for n in name_terms if n)
     topic_terms: list[str] = []
     for anchor in topic_anchors:

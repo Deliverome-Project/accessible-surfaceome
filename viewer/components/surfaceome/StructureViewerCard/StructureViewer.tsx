@@ -38,9 +38,13 @@ export interface SurfaceBindAnchor {
 }
 
 /** A variant the user can switch to via the tab strip above the
- *  canvas. Either AFDB-fetchable (isoforms, orthologs) or an
- *  experimental PDB resolved at runtime via PDBe + RCSB. */
-export type StructureVariant = StructureVariantAfdb | StructureVariantExperimental;
+ *  canvas. AFDB (isoforms, orthologs), an experimental PDB resolved
+ *  at runtime via PDBe + RCSB, or a Schweke et al. 2024 homo-oligomer
+ *  AF2 prediction served from a checked-in / Worker-served PDB. */
+export type StructureVariant =
+  | StructureVariantAfdb
+  | StructureVariantExperimental
+  | StructureVariantSchwekeHomomer;
 
 interface StructureVariantBase {
   /** Stable key for the React tab list. */
@@ -63,6 +67,48 @@ export interface StructureVariantAfdb extends StructureVariantBase {
   uniprot_acc: string;
   /** Full UniProt acc including isoform suffix (e.g. "P00533-2"). */
   uniprot_acc_full?: string;
+}
+
+/** Schweke et al. 2024 AF2 homo-dimer prediction (Cell 187:999, PMID
+ *  38325366). The protein-level call is binary — a protein is a
+ *  "candidate complex" when its AF2 dimer interface clears the
+ *  logistic-regression dimer_proba threshold — and the structure file
+ *  is one of the 8,195 entries in the figshare deposit
+ *  ``AF_dimer_models_core.zip`` (DOI 10.6084/m9.figshare.22309177,
+ *  share-link only as of 2026-06).
+ *
+ *  Renderer differs from AFDB / experimental tabs: two chains, distinct
+ *  colors (maroon-mid + teal-mid, mirrors the Deliverome palette), no
+ *  topology coloring (the homomer view is about the dimer interface,
+ *  not which residue is in which compartment). Membrane orientation
+ *  via {@link orientPdbForTopology} runs when the model includes TM
+ *  residues (multi-pass cases: AQP1, MS4A1/CD20, KCN*, SLC*, GPCRs);
+ *  for single-pass ECDs that Schweke's ``nodiso3`` filter clipped to
+ *  the soluble domain (CD69, CD28, TFRC, CD3*), orientation is
+ *  skipped and the caption flags it as ECD-only. */
+export interface StructureVariantSchwekeHomomer extends StructureVariantBase {
+  source: "schweke-homomer";
+  /** UniProt accession of the homomer subunit. */
+  uniprot_acc: string;
+  /** Schweke model file URL — typically a static asset path like
+   *  ``/data/structures/schweke/{ACC}_V1_{N}.pdb`` checked in under
+   *  ``viewer/public/`` (or a future Worker endpoint). */
+  pdb_url: string;
+  /** AF model number 1-5 — the ``_V1_N`` suffix on the figshare
+   *  filename. Display-only. */
+  af_model_num: number;
+  /** True when Schweke's pipeline trimmed the TM helix as a
+   *  disconnected contact cluster (the single-pass ECD-only case).
+   *  Drives the "ECD only" caption + skips membrane orientation
+   *  because no TM residues are present to align. */
+  ecd_only: boolean;
+  /** Cyclic-symmetry order N of the rendered model (homo-N-mer). 2
+   *  for a plain dimer (the default — ``AF_dimer_models_core``), 3..13
+   *  for an AnAnaS-reconstructed full complex from Schweke's
+   *  ``full_complexes_bigbang.zip``. The viewer reads this to size the
+   *  per-chain darken gradient and label the caption ("dimer" /
+   *  "trimer" / "13-mer"). Defaults to 2 when omitted. */
+  stoichiometry?: number;
 }
 
 export interface StructureVariantExperimental extends StructureVariantBase {
@@ -345,6 +391,13 @@ interface StructureViewerProps {
    *  variant's AFDB model + topology. Canonical is implied as the
    *  first tab — don't include it in this list. */
   variants?: StructureVariant[];
+  /** Optional Schweke et al. 2024 (PMID 38325366) AF2 homo-oligomer
+   *  prediction. When non-null, a "Homo-oligomer" tab is rendered
+   *  IMMEDIATELY after Canonical and before isoforms / orthologs /
+   *  experimental — that ordering matches the biological reading
+   *  flow: the canonical fold first, then how two copies of it
+   *  assemble, then alternate-isoform / cross-species comparisons. */
+  schwekeHomomer?: StructureVariantSchwekeHomomer | null;
 }
 
 /** Renderer mode toggle. ``topology`` is the default — full topology
@@ -547,6 +600,80 @@ function _renderCaption(args: {
     activeVariant, canonicalStruct, proteinName, canonicalUniprot,
     afdbMetaByAcc, pdbTitles,
   } = args;
+
+  // ---- Schweke homo-oligomer branch ----
+  if (activeVariant?.source === "schweke-homomer") {
+    const v = activeVariant;
+    const figshareUrl = "https://figshare.com/s/af3c1d5969f7468f2caa";
+    const n = v.stoichiometry ?? 2;
+    const stoichLabel =
+      n === 2
+        ? "Homo-Dimer"
+        : n === 3
+          ? "Homo-Trimer"
+          : n === 4
+            ? "Homo-Tetramer"
+            : n === 5
+              ? "Homo-Pentamer"
+              : n === 6
+                ? "Homo-Hexamer"
+                : n === 7
+                  ? "Homo-Heptamer"
+                  : n === 8
+                    ? "Homo-Octamer"
+                    : `Homo-${n}-Mer`;
+    const copiesLabel = n === 2 ? "two copies" : `${n} copies`;
+    const datasetLabel =
+      n === 2 ? "AF2 Dimer" : `AF2 ${stoichLabel.replace("Homo-", "")} (c${n})`;
+    return (
+      <div className={styles.caption} aria-label="Structure caption">
+        <p className={styles.captionTitle}>
+          Predicted {stoichLabel} · {copiesLabel} of{" "}
+          {proteinName ?? canonicalUniprot}
+        </p>
+        <p className={styles.captionStats}>
+          <span className={styles.captionStat}>
+            {CITATIONS.schwekeHomomer.authorYear} (PMID{" "}
+            <a
+              href={pubmedUrl(CITATIONS.schwekeHomomer.pmid)}
+              target="_blank"
+              rel="noopener noreferrer"
+              className={styles.captionLink}
+            >
+              {CITATIONS.schwekeHomomer.pmid}
+            </a>
+            )
+          </span>
+          <span className={styles.captionSep} aria-hidden="true">·</span>
+          <span className={styles.captionStat}>
+            {datasetLabel} · model{" "}
+            <strong>{v.uniprot_acc}_V1_{v.af_model_num}</strong>
+          </span>
+          <span className={styles.captionSep} aria-hidden="true">·</span>
+          <span className={styles.captionStat}>candidate complex</span>
+          <span className={styles.captionSep} aria-hidden="true">·</span>
+          <a
+            href={figshareUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            className={styles.captionLink}
+          >
+            figshare deposit ↗
+          </a>
+        </p>
+        {v.ecd_only ? (
+          <p className={styles.captionCaveat}>
+            ECD only — Schweke's <code>nodiso3</code> contact-clustering
+            filter dropped the single-pass TM helix as a disconnected
+            cluster, so the model shows the soluble extracellular
+            interface only (no membrane orientation). For multi-pass
+            membrane proteins, all TMs are retained and the homomer
+            renders embedded in the bilayer.
+          </p>
+        ) : null}
+      </div>
+    );
+  }
 
   // ---- Experimental branch ----
   if (activeVariant?.source === "experimental") {
@@ -844,6 +971,71 @@ interface ViewerInstance {
  *  it's wrapped around. */
 const MEMBRANE_OPACITY = 0.34;
 
+/** Chain-A color on the Schweke homo-oligomer tab. Maroon-mid from
+ *  the Deliverome design tokens — pairs with the page accent. (Legacy
+ *  binary-chain palette, kept for the optional caption swatches; the
+ *  rendered cartoons use DeepTMHMM topology coloring per chain instead,
+ *  see {@link _darkenHex}.) */
+const SCHWEKE_CHAIN_A_COLOR = "#922038";
+/** Chain-B color on the Schweke homo-oligomer tab. Teal-mid — the
+ *  high-contrast complement to maroon in the brand palette. (Legacy —
+ *  see SCHWEKE_CHAIN_A_COLOR for why this is no longer the renderer's
+ *  primary chain color.) */
+const SCHWEKE_CHAIN_B_COLOR = "#3d6b60";
+
+/** Darken fraction for odd-indexed chains in a Schweke homo-oligomer.
+ *  We use an alternating light / dark scheme rather than a linear
+ *  gradient because in a ring assembly the spatially-adjacent chains
+ *  are the ones the eye needs to disambiguate — a smooth gradient
+ *  makes chains 6 and 7 look nearly identical in a c13 ring, but
+ *  alternation forces every neighbor to read at maximum contrast.
+ *  Even-indexed chains (A, C, E, …) render at the full DeepTMHMM
+ *  topology palette (TOPOLOGY_COLORS), odd-indexed chains (B, D,
+ *  F, …) at this fraction darker. 0.7 gives a strong but not
+ *  black-on-black contrast, so the dark chain's topology palette
+ *  (e.g. dark yellow TM helices, dark lavender ECD) is still
+ *  discriminable from the light chain's. */
+const SCHWEKE_ODD_CHAIN_DARKEN_FRACTION = 0.7;
+
+/** Mix ``hex`` toward black by ``fraction`` ∈ [0,1].
+ *  ``fraction=0`` returns ``hex`` unchanged; ``fraction=1`` returns
+ *  ``#000000``. Used to differentiate the chains of a Schweke
+ *  homo-oligomer by linearly interpolating each DeepTMHMM topology
+ *  color toward black across the N chains. */
+function _darkenHex(hex: string, fraction: number): string {
+  const f = Math.max(0, Math.min(1, fraction));
+  const cleaned = hex.startsWith("#") ? hex.slice(1) : hex;
+  if (cleaned.length !== 6) return hex;
+  const r = Number.parseInt(cleaned.slice(0, 2), 16);
+  const g = Number.parseInt(cleaned.slice(2, 4), 16);
+  const b = Number.parseInt(cleaned.slice(4, 6), 16);
+  if (!Number.isFinite(r) || !Number.isFinite(g) || !Number.isFinite(b)) {
+    return hex;
+  }
+  const dr = Math.round(r * (1 - f));
+  const dg = Math.round(g * (1 - f));
+  const db = Math.round(b * (1 - f));
+  const hh = (n: number) => n.toString(16).padStart(2, "0");
+  return `#${hh(dr)}${hh(dg)}${hh(db)}`;
+}
+
+/** Extract the unique chain IDs present in a PDB text (ATOM/HETATM,
+ *  column 22, 1-char). Returns them sorted so the chain ordering is
+ *  stable across renders — chain ID "A" gets the brightest topology
+ *  colors, "B" slightly darker, ..., the last chain darkest. Used by
+ *  the Schweke render branch to know how many chains exist (a c2
+ *  dimer up to a c13 13-mer) so the darken gradient spans them. */
+function _extractChainIds(pdbText: string): string[] {
+  const seen = new Set<string>();
+  for (const line of pdbText.split(/\r?\n/)) {
+    if (!line.startsWith("ATOM") && !line.startsWith("HETATM")) continue;
+    if (line.length < 22) continue;
+    const ch = line.charAt(21);
+    if (ch && ch !== " ") seen.add(ch);
+  }
+  return Array.from(seen).sort();
+}
+
 /**
  * StructureViewer — the 3Dmol.js-backed canvas. Client-only because
  * 3Dmol expects a DOM + WebGL. The 3Dmol module is dynamically
@@ -859,6 +1051,7 @@ export function StructureViewer({
   proteinName,
   surfaceBindAnchors = [],
   variants = [],
+  schwekeHomomer = null,
 }: StructureViewerProps) {
   const containerRef = useRef<HTMLDivElement | null>(null);
   const viewerRef = useRef<ViewerInstance | null>(null);
@@ -917,6 +1110,20 @@ export function StructureViewer({
   const [afdbMetaByAcc, setAfdbMetaByAcc] = useState<
     Record<string, AfdbVariantMeta | "loading" | "error">
   >({});
+  // Per-variant rendered-residue range. Schweke's nodiso3 contact-
+  // clustering filter trims disordered ends and signal peptides as
+  // disconnected clusters, so a Schweke PDB typically covers a
+  // RESTRICTED window of the canonical sequence (HSPA5's mature-
+  // protein dimer drops residues 1–18 / 31, the signal peptide; CD69's
+  // dimer covers 84–198 only). The legend should reflect what's
+  // actually drawn — not the full canonical topology — so a truncated
+  // Schweke model doesn't advertise a "Signal peptide" swatch when no
+  // S-state residues are in the rendered atoms. Keyed by activeVariant
+  // id (Schweke variant id), set by the render branch after the PDB
+  // is parsed. ``null`` ⟹ use the full topology (canonical / AFDB /
+  // experimental — those don't trim by topology). */
+  const [activeRenderedResidueRange, setActiveRenderedResidueRange] =
+    useState<{ variantId: string; min: number; max: number } | null>(null);
 
   // SURFACE-Bind sphere overlay only makes sense on the canonical
   // AFDB view — anchor residues are canonical-UniProt-keyed and
@@ -1035,11 +1242,18 @@ export function StructureViewer({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [data.uniprot_acc, variants.map((v) => v.id).join(",")]);
 
-  // Effective variants = caller-provided (isoforms / orthologs) +
-  // experimental tab when PDBe has a hit. Experimental always lands
-  // after isoforms / orthologs in the tab strip.
+  // Effective variants =
+  //   Schweke homo-oligomer (if any) +
+  //   caller-provided (isoforms / orthologs) +
+  //   experimental (when PDBe has a hit).
+  // Ordering: Schweke right after Canonical → isoforms / orthologs →
+  // experimental last. Mirrors the biological reading flow: how the
+  // canonical fold assembles into a complex, then alternate-isoform /
+  // cross-species comparisons, then the experimental ground truth.
   const effectiveVariants: StructureVariant[] = useMemo(() => {
-    const v: StructureVariant[] = [...variants];
+    const v: StructureVariant[] = [];
+    if (schwekeHomomer) v.push(schwekeHomomer);
+    v.push(...variants);
     if (pdbeCandidate && pdbeCandidate !== "loading") {
       v.push({
         source: "experimental",
@@ -1072,13 +1286,20 @@ export function StructureViewer({
       });
     }
     return v;
-  }, [variants, pdbeCandidate, data.topology, data.deeptmhmm_type]);
+  }, [
+    variants,
+    schwekeHomomer,
+    pdbeCandidate,
+    data.topology,
+    data.deeptmhmm_type,
+  ]);
 
   const isCanonicalActive = variantIdx === 0;
   const activeVariant: StructureVariant | null = isCanonicalActive
     ? null
     : effectiveVariants[variantIdx - 1] ?? null;
   const isExperimentalActive = activeVariant?.source === "experimental";
+  const isSchwekeActive = activeVariant?.source === "schweke-homomer";
   // The uniprot_acc / topology / type used by the render pipeline.
   // For experimental view, ``activeUniprot`` is unused (we fetch
   // RCSB by pdb_id instead) — keep canonical for the aria-label.
@@ -1089,6 +1310,33 @@ export function StructureViewer({
   const activeTopology = activeVariant?.topology ?? data.topology;
   const activeDeepTMHMMType =
     activeVariant?.deeptmhmm_type ?? data.deeptmhmm_type;
+
+  // Present-state list for the legend. For canonical / AFDB-variant /
+  // experimental tabs this is just the unique states in the active
+  // per-residue topology — the full canonical sequence is what's
+  // rendered. For the Schweke homo-oligomer tab, Schweke's nodiso3
+  // contact-clustering filter trims disordered termini + signal
+  // peptides as disconnected clusters, so the rendered atoms cover
+  // only a window of canonical residues (e.g. HSPA5 dimer covers
+  // ~31–650, no signal peptide; CD69 dimer covers 84–198 only). We
+  // pin the legend to that window so it doesn't advertise a "Signal
+  // peptide" swatch for a model that doesn't actually contain any S
+  // residues. The window comes from ``activeRenderedResidueRange``,
+  // which the schweke render branch populates after parsing the PDB.
+  const legendPresentStates = (() => {
+    if (
+      isSchwekeActive &&
+      activeRenderedResidueRange &&
+      activeRenderedResidueRange.variantId === activeVariant?.id &&
+      activeTopology
+    ) {
+      const { min, max } = activeRenderedResidueRange;
+      const lo = Math.max(0, min - 1);
+      const hi = Math.min(activeTopology.length, max);
+      return _presentTopologyStates(activeTopology.slice(lo, hi));
+    }
+    return _presentTopologyStates(activeTopology);
+  })();
   // SURFACE-Bind anchor overlay only fires on canonical-AFDB view:
   // (1) anchor residue numbers are canonical-UniProt-keyed, don't
   // translate to isoforms or orthologs; (2) on experimental tabs
@@ -1220,16 +1468,36 @@ export function StructureViewer({
       type Mod3D = typeof import("3dmol");
       const Mod = (await import("3dmol")) as Mod3D & { default?: Mod3D };
       const $3Dmol: Mod3D = Mod.default ?? Mod;
-      // Branch on AFDB vs experimental. AFDB fetches by UniProt acc
-      // through AFDB DB; experimental fetches by PDB id through RCSB
-      // and uses PDBe's chain + offset mapping to project canonical
-      // DeepTMHMM topology onto the (potentially partial, chain-
-      // restricted) PDB residue numbering.
+      // Branch on which variant flavor is active:
+      //   - schweke-homomer  → fetch the AF2 dimer PDB from a static
+      //     asset URL (committed under viewer/public/data/structures/
+      //     schweke/, or a future Worker endpoint) and short-circuit
+      //     the topology-projection / SURFACE-Bind paths below — the
+      //     homomer view is its own visualization (chain A / chain B
+      //     duotone, optional membrane slab when TMs are in the model).
+      //   - experimental    → fetch by PDB id through RCSB; PDBe gives
+      //     us the chain + UniProt→author offset to project canonical
+      //     DeepTMHMM topology onto the (potentially partial, chain-
+      //     restricted) PDB residue numbering.
+      //   - AFDB (default)  → fetch by UniProt acc through AFDB DB.
       let rawPdb: string;
+      const schwekeVariant = isSchwekeActive
+        ? (activeVariant as StructureVariantSchwekeHomomer)
+        : null;
       const expVariant = isExperimentalActive
         ? (activeVariant as StructureVariantExperimental)
         : null;
-      if (expVariant) {
+      if (schwekeVariant) {
+        const resp = await fetch(schwekeVariant.pdb_url, {
+          cache: "force-cache",
+        });
+        if (!resp.ok) {
+          throw new Error(
+            `Schweke homomer PDB returned ${resp.status} for ${schwekeVariant.pdb_url}`,
+          );
+        }
+        rawPdb = await resp.text();
+      } else if (expVariant) {
         // RCSB returns the PDB file directly. Aggressive caching is
         // fine — PDB entries are immutable per release.
         const rcsbUrl = `https://files.rcsb.org/download/${expVariant.pdb_id}.pdb`;
@@ -1395,12 +1663,21 @@ export function StructureViewer({
       // covers no TM residues (ECD-only crystals, soluble fragments),
       // in which case the structure renders unoriented + slab-less —
       // 3Dmol auto-frames the native coords cleanly.
-      const { pdbText, membrane } = expVariant
-        ? orientPdbForTopology(rawPdb, activeTopology, {
-            chainId: effectiveChainId ?? expVariant.chain_id,
-            resiToTopo: _makeResiToTopo(projSegments),
-          })
-        : orientPdbForTopology(rawPdb, activeTopology);
+      // Schweke ECD-only: nodiso3 stripped the TM helix as a
+      // disconnected contact cluster, so the model carries no M
+      // residues to align — orient against an all-M topology would
+      // produce a degenerate axis. Pass through unoriented; 3Dmol
+      // auto-frames the dimer cleanly and the caption flags it.
+      const schwekeSkipOrient = schwekeVariant?.ecd_only === true;
+      const { pdbText, membrane } =
+        schwekeSkipOrient
+          ? { pdbText: rawPdb, membrane: null }
+          : expVariant
+            ? orientPdbForTopology(rawPdb, activeTopology, {
+                chainId: effectiveChainId ?? expVariant.chain_id,
+                resiToTopo: _makeResiToTopo(projSegments),
+              })
+            : orientPdbForTopology(rawPdb, activeTopology);
 
       const viewer = $3Dmol.createViewer(containerRef.current, {
         backgroundColor: "white",
@@ -1424,7 +1701,100 @@ export function StructureViewer({
       // the membrane slab (MEMBRANE_OPACITY 0.34) renders identically
       // in both modes, matching the user's "make the membrane look
       // the same" requirement.
-      if (viewMode === "sites") {
+      if (schwekeVariant) {
+        // Homo-oligomer view: color chain 0 (typically "A") with the
+        // canonical DeepTMHMM topology palette, then linearly darken
+        // each subsequent chain toward black so that an N-mer has N
+        // visually distinct chains while every chain still encodes the
+        // membrane-context biology (TM yellow / EC lavender / IC green
+        // / signal red). The dimer interface reads as "chain A in
+        // topology, chain B in dim topology"; a 13-mer (BSCL2) reads as
+        // a ring whose 13 subunits fade from bright topology at chain A
+        // to near-black at chain M. Chain N-1 darkness is
+        // {@link SCHWEKE_DARKEST_CHAIN_FRACTION}.
+        //
+        // SURFACE-Bind anchors are still suppressed (anchor residue
+        // numbers are canonical-keyed and don't translate cleanly to
+        // an ECD-only or alternate-numbered homomer model — see the
+        // anchor block below for the `!schwekeVariant` gate).
+        const chainIds = _extractChainIds(pdbText);
+        const nChains = chainIds.length;
+        // Walk the PDB once more for the actual residue range of the
+        // rendered atoms. Schweke's nodiso3 contact-clustering filter
+        // typically clips signal peptides + disordered termini, so the
+        // canonical topology can claim states (e.g. "S" for the SP
+        // residues 1–18) that aren't present in the rendered atoms.
+        // Pin the topology legend to this window so a truncated
+        // Schweke model doesn't advertise a "Signal peptide" swatch
+        // when the model doesn't actually contain any S residues.
+        let renderedMin = Number.POSITIVE_INFINITY;
+        let renderedMax = Number.NEGATIVE_INFINITY;
+        for (const line of pdbText.split(/\r?\n/)) {
+          if (!line.startsWith("ATOM") && !line.startsWith("HETATM")) continue;
+          if (line.length < 26) continue;
+          const resi = Number.parseInt(line.slice(22, 26).trim(), 10);
+          if (Number.isFinite(resi)) {
+            if (resi < renderedMin) renderedMin = resi;
+            if (resi > renderedMax) renderedMax = resi;
+          }
+        }
+        if (
+          Number.isFinite(renderedMin) &&
+          Number.isFinite(renderedMax) &&
+          activeVariant
+        ) {
+          setActiveRenderedResidueRange({
+            variantId: activeVariant.id,
+            min: renderedMin,
+            max: renderedMax,
+          });
+        }
+        // Ranges from the canonical topology — Schweke's PDB chains
+        // keep canonical UniProt numbering (verified for CD69 dimer
+        // [84-198], BSCL2 c13 [residue ranges match canonical] etc.),
+        // so the canonical `data.topology_ranges` projects directly.
+        const schwekeRanges = data.topology_ranges;
+        chainIds.forEach((chainId, ci) => {
+          // Alternating scheme — see SCHWEKE_ODD_CHAIN_DARKEN_FRACTION.
+          // Even ci → 0 darken (full palette). Odd ci → strong darken.
+          // Neighbor chains in a ring always read at maximum contrast.
+          const darkenFraction =
+            nChains > 1 && ci % 2 === 1
+              ? SCHWEKE_ODD_CHAIN_DARKEN_FRACTION
+              : 0;
+          // Base color for residues outside every topology range
+          // (shouldn't normally happen — DeepTMHMM covers the whole
+          // sequence — but a Schweke nodiso-trimmed chain can lose
+          // ends, so make sure those still get a per-chain shade).
+          const baseColor = _darkenHex(
+            activeDeepTMHMMType === "GLOB"
+              ? TOPOLOGY_COLORS.M
+              : TOPOLOGY_COLORS.B,
+            darkenFraction,
+          );
+          viewer.setStyle(
+            { chain: chainId },
+            { cartoon: { color: baseColor, opacity: 1.0 } },
+          );
+          (["M", "O", "I", "S", "B"] as const).forEach((state) => {
+            const color = _darkenHex(
+              activeDeepTMHMMType === "GLOB"
+                ? TOPOLOGY_COLORS.M
+                : TOPOLOGY_COLORS[state],
+              darkenFraction,
+            );
+            (schwekeRanges[state] ?? []).forEach(([start, end]) => {
+              viewer.setStyle(
+                { chain: chainId, resi: `${start}-${end}` },
+                {
+                  cartoon: { color, opacity: 1.0 },
+                  line: { color, linewidth: 1.2 },
+                },
+              );
+            });
+          });
+        });
+      } else if (viewMode === "sites") {
         const baseSel = expVariant && effectiveChainId
           ? { chain: effectiveChainId }
           : {};
@@ -1517,7 +1887,12 @@ export function StructureViewer({
       // contacts (separate task). The sphere is the honest
       // approximation: "the patch is centered here."
       const viewerExt = viewer as ViewerInstance;
-      const shouldRenderAnchors = viewMode === "sites" && hasAnchors;
+      // Suppress SURFACE-Bind anchors on the homo-oligomer tab: the
+      // SB anchor residue numbers are canonical-keyed and don't
+      // translate cleanly onto a homomer whose residue range may be
+      // ECD-only (nodiso3) or a different model than canonical AFDB.
+      const shouldRenderAnchors =
+        viewMode === "sites" && hasAnchors && !schwekeVariant;
       for (let i = 0; shouldRenderAnchors && i < surfaceBindAnchors.length; i += 1) {
         const { siteId, residue, compartment } = surfaceBindAnchors[i];
         const color = COMPARTMENT_COLOR[compartment];
@@ -1780,7 +2155,9 @@ export function StructureViewer({
                 title={
                   vUnavail
                     ? `No AlphaFold model for ${v.label}${v.sublabel ? ` (${v.sublabel})` : ""} — AlphaFold DB doesn't model this protein.`
-                    : `AlphaFold model for ${v.label}${v.sublabel ? ` (${v.sublabel})` : ""}.`
+                    : v.source === "schweke-homomer"
+                      ? `Schweke 2024 AF2 homo-oligomer prediction for ${geneSymbol} — predicted dimer of UniProt ${data.uniprot_acc}.`
+                      : `AlphaFold model for ${v.label}${v.sublabel ? ` (${v.sublabel})` : ""}.`
                 }
                 aria-selected={isActive}
               >
@@ -1959,7 +2336,7 @@ export function StructureViewer({
         </>
       ) : (
         <TopologyLegend
-          presentStates={_presentTopologyStates(activeTopology)}
+          presentStates={legendPresentStates}
           globular={activeDeepTMHMMType === "GLOB"}
         />
       )}

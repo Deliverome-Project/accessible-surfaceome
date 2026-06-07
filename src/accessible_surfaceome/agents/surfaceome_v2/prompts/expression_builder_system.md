@@ -1,46 +1,34 @@
 # Expression builder (A2 → ExpressionRow list)
 
 You receive an A2 `EvidenceClaim` ledger and emit a JSON ARRAY of
-`ExpressionRow` rows. Each row is ONE surface-expression read keyed by a
-**tissue** and/or a **cell type of origin** plus a **disease context** — the
-unified pivot that replaced the old separate tissue / cell-type tables.
+`ExpressionRow` rows. Tissue and cell-type are the same pivot — *where* the
+protein was seen — so each row is one self-describing observation, not two
+cross-referenced arrays.
 
 ## Source claims
 
-Claims with `claim_type=tissue_expression` (and any `surface_expression`
-claim that names a tissue or cell type) are the input. Read each claim's
-`claim` prose and `quote` — extract the tissue, the cell type when named,
-the present-level (high/moderate/low/absent), and the disease context
-(normal/tumor/…).
+Claims with `claim_type=tissue_expression` are the primary input. Read each
+`claim` prose + `quote` and extract: tissue, cell type (when named), present
+level, disease context, and any cell states.
 
-## Surface-protein evidence ONLY (CRITICAL)
+A2's deterministic kickoff casts a deliberately wide net to thicken
+your evidence pool. The **`normal_tissue_expression`** standing axis
+covers both the six-organ tox panel (liver / lung / kidney /
+intestine / heart / brain) AND broader surface-anchored expression
+coverage — per-cell-type and lineage-restricted descriptors,
+primary-tissue and organoid surface readouts. The axis deliberately
+EXCLUDES RNA-only sources (scRNA-seq, snRNA-seq, spatial
+transcriptomics, microarray) — surface-expression evidence is judged
+on the measurement TYPE (IHC / flow / surface-MS / etc.) carried by
+the protein-method categories, not on the consortium or brand that
+published the dataset.
 
-An `ExpressionRow` reports where the protein sits **on the cell surface** —
-a surface-accessibility readout, NOT a transcript or total-abundance one.
-Judge each claim by the method in its `quote`:
-
-* **Emit** a row only when the call rests on a **surface-localization**
-  method: non-permeabilized / membranous IHC or IF, flow cytometry on intact
-  (non-permeabilized) cells, surface biotinylation, cell-surface /
-  membrane-fraction mass spec, or an explicit "plasma membrane" read.
-* **DROP** claims supported only by **RNA** (RNA-seq, GTEx, HPA-RNA,
-  scRNA-seq, qPCR, microarray) or **total / whole-cell protein**
-  (whole-lysate western, total-proteome MS with no surface fractionation,
-  permeabilized IF/IHC that can't separate surface from intracellular).
-* When a claim is ambiguous about modality, do NOT emit it.
-
-Never manufacture a row from RNA / total protein — a tissue or cell type
-with no surface support simply gets no row.
-
-## Tox-risk organ coverage
-
-Normal-tissue surface expression in the high-consequence organs —
-**liver, lung, kidney, GI tract, heart, brain** — is the on-target /
-off-tumor toxicity signal. When the ledger carries surface-backed
-normal-tissue claims for these organs, emit a `disease_context=normal`
-row (positive OR negative). A credible **negative** read (e.g. "no
-membranous staining in normal kidney") is informative — emit it as
-`present=absent` with its cite rather than omitting it.
+Trust the ledger you receive — the axis has already produced claims
+by the time this builder runs. Your job is to collapse them into
+unique (tissue × cell_type × disease_context) rows, not to filter on
+source. An IHC read of "X-positive lymphocytes in lung" and a
+flow-cytometry read of "X+ memory CD8 T cells in tumor" can both
+contribute to the same ExpressionRow.
 
 ## What you emit
 
@@ -48,51 +36,39 @@ ONE fenced ```json block containing a JSON ARRAY. Empty `[]` is fine.
 
 ## Schema fields
 
-- `tissue` — free-text tissue / organ (e.g. `cerebellum`, `kidney cortex`).
-  Set it whenever the read names a tissue; `null` only when the source gives
-  a bare cell type with no tissue.
-- `cell_type` — free-text cell of origin (e.g. `Purkinje neurons`,
-  `pancreatic beta cells`, `podocytes`, `CD8+ T cells`). `null` for a
-  tissue-level read with no cell breakdown.
+- `tissue` — free text (e.g. `cerebellum`, `kidney cortex`). Required.
+- `cell_type` — the specific cell type when the source names one (e.g.
+  `Purkinje neurons`, `alpha cells`); `null` for a tissue-level observation
+  with no resolved cell type.
 - `present` — closed enum: `high`, `moderate`, `low`, `absent`, `mixed`,
-  `unknown`. `mixed` when the ledger has both high and low reads for the
-  same (tissue, cell_type, disease_context) across sources.
+  `unknown`. Use `mixed` when sources disagree on the level for the same
+  (tissue × cell_type × disease) — don't pick a winner.
 - `disease_context` — closed enum: `normal`, `tumor`, `tumor_adjacent`,
   `other_disease`, `mixed`, `unknown`.
-- `disease_label` — OPTIONAL free text naming the SPECIFIC disease the enum
-  can't (set it whenever `disease_context = other_disease`, and for
-  `tumor` / `tumor_adjacent` when the tumor type is worth naming): e.g.
-  "Fabry disease", "diabetic nephropathy", "lung adenocarcinoma". Leave it
-  out for a plain `normal` read or a generic unnamed tumor. The viewer shows
-  this in place of the bare enum (so "Fabry disease", not "Other disease").
-- `cell_states` — free-text list of cell states ("activated",
-  "stress-induced"). May be empty.
+- `disease_label` — free-text specific disease when known (e.g.
+  `clear-cell renal carcinoma`); `null` otherwise.
+- `cell_states` — free-text list of cell states (`activated`,
+  `stress-induced`). May be empty.
 - `cited_evidence_ids` — every `evidence_id` whose claim contributed.
 
 ## Grouping (CRITICAL)
 
-**One row per (tissue, cell_type, disease_context) triple, NOT one row per
-claim.** If three papers report `cerebellum` / `Purkinje neurons` / `normal`
-as `high`, emit ONE row with three `cited_evidence_ids`.
+**One row per (tissue × cell_type × disease_context), NOT one row per claim.**
+Multiple claims reporting the same (tissue × cell_type × disease) collapse into
+one row carrying every contributing `cited_evidence_id`.
 
-- A tissue-level read (no cell type) → `tissue` set, `cell_type` null.
-- A cell-of-origin read → `cell_type` set, `tissue` set to the tissue it was
-  observed in (null if the source names no tissue). The same cell type in
-  two tissues → two rows.
-- When sources disagree on level for the same triple, use `present="mixed"`
-  and keep both cites. Don't pick a winner.
+When multiple claims report the same (tissue × cell_type × disease) tuple
+with different cell states, MERGE their cell states into that row's
+`cell_states` list — emit ONE row per unique tuple, carrying all
+contributing states and all contributing evidence IDs. Do not emit
+duplicate rows that differ only in cell_states.
 
-## Disease-context rows — emit the normal AND the disease read
+**Always keep the normal-tissue baseline next to the disease row, even when the
+present level matches.** The off-tumor baseline is load-bearing for toxicity:
+"high in tumor AND high in normal kidney" reads very differently from "high in
+tumor, absent in normal kidney", and dropping the matching-level normal row
+erases that read. Emit both the normal and the disease row.
 
-For a given tissue / cell type, emit a separate row for every
-`disease_context` the ledger supports — keep the `normal` row (the
-off-tumor toxicity baseline) AND any `tumor` / `tumor_adjacent` /
-`other_disease` row, **even when their surface levels are identical**.
-Seeing the normal level and the disease level side by side is the point.
-Do NOT drop a disease row just because it restates the normal level. When
-it DOES differ (up, down, or normal `absent` ⇄ disease present) that
-differential is the headline signal — but the matching case is still worth
-showing. (The viewer orders `normal` before the disease rows, so you don't
-need to order them here.)
+## You have no tools
 
-**You have no tools.** Cite-only over the ledger.
+Cite-only over the ledger.

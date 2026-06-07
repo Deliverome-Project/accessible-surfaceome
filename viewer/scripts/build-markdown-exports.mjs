@@ -346,6 +346,10 @@ function md(rec, structureData, sequences, afdbEntry) {
 
   lines.push("## 1. Executive summary");
   lines.push("");
+  if (e.accessibility_context_summary) {
+    lines.push(`**${e.accessibility_context_summary}**`);
+    lines.push("");
+  }
   lines.push(e.one_paragraph);
   lines.push("");
   // Family / classification — curated UniProt family + HGNC gene group(s) +
@@ -554,52 +558,29 @@ function md(rec, structureData, sequences, afdbEntry) {
   const bc = rec.biological_context;
   lines.push("## 4. Biological context");
   lines.push("");
-  // One-sentence WHEN/WHERE-reachable summary (executive_summary field;
-  // surfaced at the top of the viewer's Biological context card).
-  if (e.accessibility_context_summary) {
-    lines.push(`*Accessibility context* — ${e.accessibility_context_summary}`);
+  // A2 rollup grade — the A2 analog of surface_evidence's evidence_grade.
+  // Pre-rollup records default to "absent" with an empty rationale; only
+  // surface it when there's something to say.
+  if (bc.biological_context_grade && bc.biological_context_grade !== "absent") {
+    lines.push(`**Biological-context grade** · ${prettyEnum(bc.biological_context_grade)}`);
     lines.push("");
+    if (bc.grade_rationale) {
+      lines.push(`${bc.grade_rationale}${citeIds(bc.grade_cited_evidence_ids)}`);
+      lines.push("");
+    }
   }
-  // Unified expression rows (current schema). Fall back to the pre-unify
-  // split tissues + cell_types for older records.
-  const exprRows =
-    bc.expression && bc.expression.length
-      ? bc.expression.map((r) => ({
-          tissue: r.tissue ?? "—",
-          cell_type: r.cell_type ?? "—",
-          present: r.present,
-          disease_context: r.disease_context,
-          disease_label: r.disease_label,
-        }))
-      : [
-          ...(bc.tissues ?? []).map((t) => ({
-            tissue: t.tissue,
-            cell_type: "—",
-            present: t.present,
-            disease_context: t.disease_context,
-            disease_label: t.disease_label,
-          })),
-          ...(bc.cell_types ?? []).flatMap((c) =>
-            (c.present_in_tissues.length ? c.present_in_tissues : ["—"]).map(
-              (tn) => ({
-                tissue: tn,
-                cell_type: c.cell_type,
-                present: c.present ?? "unknown",
-                disease_context: c.disease_context ?? "unknown",
-                disease_label: c.disease_label,
-              }),
-            ),
-          ),
-        ];
-  if (exprRows.length) {
-    lines.push("**Expression by tissue of origin**");
+  const expressionRows = bc.expression ?? []; // transitional: pre-migration records lack `expression`
+  if (expressionRows.length) {
+    lines.push("**Expression × cell type × disease context**");
     lines.push("");
-    lines.push("| Tissue | Cell of origin | Disease context | Level (protein) |");
-    lines.push("|---|---|---|---|");
-    for (const r of exprRows) {
-      const dx = r.disease_label || prettyEnum(r.disease_context);
+    lines.push("| Tissue | Cell type | Disease context | Level (protein) | Cell states |");
+    lines.push("|---|---|---|---|---|");
+    for (const row of expressionRows) {
+      const disease = row.disease_label
+        ? `${prettyEnum(row.disease_context)} (${row.disease_label})`
+        : prettyEnum(row.disease_context);
       lines.push(
-        `| ${r.tissue} | ${r.cell_type} | ${dx} | ${prettyEnum(r.present)} |`,
+        `| ${row.tissue || "—"} | ${row.cell_type || "—"} | ${disease} | ${prettyEnum(row.present)} | ${row.cell_states.join(", ") || "—"} |`,
       );
     }
     lines.push("");
@@ -809,23 +790,24 @@ function md(rec, structureData, sequences, afdbEntry) {
     }
   }
   // Representative experimental structure — read from the record's
-  // deterministic_features.structure.representative_experimental_structure
-  // (PDBe SIFTS best_structures, highest coverage / best resolution). Its
-  // construct sequence + projected topology are embedded in the appendix.
-  const repStruct = s.representative_experimental_structure;
+  // deterministic_features.surface_bind.representative_structure (PDBe
+  // SIFTS best_structures, highest coverage_fraction / best
+  // resolution_angstrom). Its construct sequence + projected topology
+  // are embedded in the appendix.
+  const repStruct = (df.surface_bind ?? {}).representative_structure;
   if (repStruct?.pdb_id) {
     const meth = [
-      repStruct.experimental_method,
-      repStruct.resolution_a != null ? `${repStruct.resolution_a} Å` : null,
+      repStruct.method,
+      repStruct.resolution_angstrom != null ? `${repStruct.resolution_angstrom} Å` : null,
     ]
       .filter(Boolean)
       .join(" ");
     const cov =
-      repStruct.unp_start != null && repStruct.unp_end != null
-        ? ` · UniProt ${repStruct.unp_start}–${repStruct.unp_end}`
+      repStruct.residue_start != null && repStruct.residue_end != null
+        ? ` · UniProt ${repStruct.residue_start}–${repStruct.residue_end}${repStruct.coverage_fraction != null ? ` (${(repStruct.coverage_fraction * 100).toFixed(0)}% coverage_fraction)` : ""}`
         : "";
     lines.push(
-      `| Experimental (best) | [${String(repStruct.pdb_id).toUpperCase()}](https://www.rcsb.org/structure/${repStruct.pdb_id}) chain ${repStruct.chain_id} | RCSB PDB${meth ? ` · ${meth}` : ""}${cov} |`,
+      `| Experimental (best) | [${String(repStruct.pdb_id).toUpperCase()}](https://www.rcsb.org/structure/${repStruct.pdb_id}) chain ${repStruct.chain} | RCSB PDB${meth ? ` · ${meth}` : ""}${cov} |`,
     );
   }
   const sbStruct = df.surface_bind;
@@ -1131,23 +1113,23 @@ function md(rec, structureData, sequences, afdbEntry) {
   if (
     repStruct?.pdb_id &&
     canonSeqForStruct &&
-    repStruct.unp_start != null &&
-    repStruct.unp_end != null
+    repStruct.residue_start != null &&
+    repStruct.residue_end != null
   ) {
-    const start = Number(repStruct.unp_start);
-    const end = Number(repStruct.unp_end);
+    const start = Number(repStruct.residue_start);
+    const end = Number(repStruct.residue_end);
     const span = canonSeqForStruct.slice(start - 1, end);
     if (span) {
       const meth = [
-        repStruct.experimental_method,
-        repStruct.resolution_a != null ? `${repStruct.resolution_a} Å` : null,
+        repStruct.method,
+        repStruct.resolution_angstrom != null ? `${repStruct.resolution_angstrom} Å` : null,
       ]
         .filter(Boolean)
         .join(", ");
       lines.push("### Experimental-structure sequence");
       lines.push("");
       lines.push(
-        `**${String(repStruct.pdb_id).toUpperCase()}** chain ${repStruct.chain_id}${meth ? ` · ${meth}` : ""} · covers UniProt residues ${start}–${end} (${span.length} aa)${repStruct.n_experimental_structures ? ` · representative of ${repStruct.n_experimental_structures} experimental structures` : ""}. Residues sliced from the canonical sequence over the structure's SIFTS-mapped span; unresolved loops in the deposited coordinates are not removed here.`,
+        `**${String(repStruct.pdb_id).toUpperCase()}** chain ${repStruct.chain}${meth ? ` · ${meth}` : ""} · covers UniProt residues ${start}–${end} (${span.length} aa). Residues sliced from the canonical sequence over the structure's SIFTS-mapped span; unresolved loops in the deposited coordinates are not removed here.`,
       );
       lines.push("");
       lines.push("```");
@@ -1216,15 +1198,15 @@ function md(rec, structureData, sequences, afdbEntry) {
   if (
     repStruct?.pdb_id &&
     ct.per_residue_topology &&
-    repStruct.unp_start != null &&
-    repStruct.unp_end != null
+    repStruct.residue_start != null &&
+    repStruct.residue_end != null
   ) {
-    const start = Number(repStruct.unp_start);
-    const end = Number(repStruct.unp_end);
+    const start = Number(repStruct.residue_start);
+    const end = Number(repStruct.residue_end);
     const topoSpan = ct.per_residue_topology.slice(start - 1, end);
     if (topoSpan) {
       lines.push(
-        `**Experimental — ${String(repStruct.pdb_id).toUpperCase()} chain ${repStruct.chain_id}** (UniProt residues ${start}–${end}, projected from canonical)`,
+        `**Experimental — ${String(repStruct.pdb_id).toUpperCase()} chain ${repStruct.chain}** (UniProt residues ${start}–${end}, projected from canonical)`,
       );
       lines.push("");
       lines.push("```");

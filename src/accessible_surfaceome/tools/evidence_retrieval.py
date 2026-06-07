@@ -199,7 +199,12 @@ _CATEGORY_SPECS: dict[EvidenceCategory, _CategorySpec] = {
             'OR "Na/K-ATPase" OR "Na+/K+-ATPase" OR "Na,K-ATPase" '
             'OR "E-cadherin" OR "β1-integrin" OR "beta-1 integrin" '
             'OR "pan-cadherin" OR "ZO-1" OR "GM1" '
-            'OR "membrane colocalization" OR "plasma membrane marker")',
+            'OR "membrane colocalization" OR "plasma membrane marker" '
+            # Host-agnostic heterologous-expression terms so OE-precedent IF
+            # (membrane localization of an over-expressed construct, permeabilized
+            # or not) is retrieved — mirrors the flow_cytometry OE additions.
+            'OR "transfected" OR "ectopic expression" OR "heterologous expression" '
+            'OR "overexpressing" OR "stably expressing")',
         ),
         pubtator_terms="immunofluorescence",
         hallmark_patterns=(
@@ -234,7 +239,13 @@ _CATEGORY_SPECS: dict[EvidenceCategory, _CategorySpec] = {
     "flow_cytometry": _CategorySpec(
         query_clauses=(
             '("flow cytometry" OR "FACS")',
-            '("surface" OR "non-permeabilized" OR "live cells" OR "intact cells")',
+            # Includes host-agnostic heterologous-expression terms so the
+            # overexpression-precedent readout (surface trafficking when
+            # over-expressed) is retrieved in ANY host, not just HEK293. No
+            # "wild-type" gate — real WT-transfectant papers rarely use it.
+            '("surface" OR "non-permeabilized" OR "live cells" OR "intact cells" '
+            'OR "transfected" OR "ectopic expression" OR "heterologous expression" '
+            'OR "overexpressing" OR "stably expressing")',
         ),
         pubtator_terms="flow cytometry",
         hallmark_patterns=(
@@ -254,7 +265,12 @@ _CATEGORY_SPECS: dict[EvidenceCategory, _CategorySpec] = {
         query_clauses=(
             '("surface biotinylation" OR "cell surface biotinylation" '
             'OR "biotin labeling" OR "biotinyl" OR "sulfo-NHS-biotin")',
-            '("plasma membrane" OR "cell surface" OR "streptavidin")',
+            # Host-agnostic heterologous-expression terms — surface biotinylation
+            # is routinely run on transfected / overexpressing cells, so include
+            # the OE-precedent readout. Mirrors the if + flow_cytometry OE terms.
+            '("plasma membrane" OR "cell surface" OR "streptavidin" '
+            'OR "transfected" OR "ectopic expression" OR "heterologous expression" '
+            'OR "overexpressing" OR "stably expressing")',
         ),
         pubtator_terms="surface biotinylation",
         hallmark_patterns=(
@@ -292,6 +308,128 @@ _CATEGORY_SPECS: dict[EvidenceCategory, _CategorySpec] = {
         ),
         section_weights=_DEFAULT_MS_WEIGHTS,
         accepts_paper_level_evidence=True,
+    ),
+    # Ectodomain shedding + soluble-form-in-circulation. Feeds the
+    # shed_form / secreted_form accessibility risks, which need a verbatim
+    # sentence (substring check passes by construction). The second query
+    # clause carries the serum/plasma/circulating "decoy" signal that the
+    # old catch-all ``other`` shedding terms lacked.
+    "shedding": _CategorySpec(
+        query_clauses=(
+            '("ectodomain shedding" OR "ectodomain release" OR "shedding" '
+            'OR "proteolytic cleavage" OR "regulated intramembrane proteolysis")',
+            '("ADAM17" OR "ADAM10" OR "BACE1" OR "γ-secretase" OR "gamma-secretase" '
+            'OR "MMP" OR "sheddase" OR "soluble form" OR "soluble ectodomain" '
+            'OR "shed form" OR "serum level" OR "plasma level" OR "circulating")',
+        ),
+        pubtator_terms="ectodomain shedding soluble",
+        hallmark_patterns=(
+            # Sheddase / proteolytic ectodomain release of the target.
+            re.compile(
+                r"(ectodomain\s+shedding|ectodomain\s+release|shedding\s+of|sheddase|"
+                r"ADAM[-\s]?17|ADAM[-\s]?10|BACE[-\s]?1|MMP[-\s]?\d+|"
+                r"γ[-\s]?secretase|gamma[-\s]?secretase|regulated\s+intramembrane)",
+                re.IGNORECASE,
+            ),
+            # Soluble / shed form measured in circulation — the secreted-decoy signal.
+            re.compile(
+                r"(soluble|shed|cleaved)\s+(form|ectodomain|fragment|protein)"
+                r"[^.]{0,200}?(serum|plasma|circulat|supernatant|detect|measur|elevat)",
+                re.IGNORECASE,
+            ),
+        ),
+        section_weights=_DEFAULT_ANTIBODY_WEIGHTS,
+    ),
+    # Assay-less, context-tagged surface-expression. The method categories
+    # require a method term in their query, so a bare location-tagged
+    # statement ("X is expressed on the surface of activated T cells",
+    # "surface levels of X are elevated in hepatocytes") never matches them.
+    # surface_expression fills that gap, but "surface" alone is far too
+    # noisy — so the query AND's a surface/membrane clause WITH an
+    # expression/level/positive clause, and every hallmark pattern requires a
+    # surface/membrane token PAIRED with a context cue (a tissue / cell-type
+    # word, an expression-level word, or an explicit "expressed on the cell
+    # surface of …" phrase). It never fires on bare "surface".
+    "surface_expression": _CategorySpec(
+        query_clauses=(
+            '("cell surface" OR "cell-surface" OR "plasma membrane" '
+            'OR "surface expression" OR "surface-expressed" '
+            'OR "membranous" OR "membrane localization")',
+            '("expressed" OR "expression" OR "express" OR "levels" '
+            'OR "positive" OR "detected" OR "present on")',
+        ),
+        pubtator_terms="cell surface expression",
+        hallmark_patterns=(
+            # "expressed / present / localized on/at the (cell) surface of <X>"
+            # — explicit surface-localization-of phrase with a trailing context.
+            re.compile(
+                r"(express|present|localiz|detect|display|found|abundant)\w*"
+                r"\s+(?:on|at|to)\s+(?:the\s+)?"
+                r"(cell[-\s]?surface|plasma\s*membrane|surface)"
+                r"(?:\s+of\b|\s+in\b)",
+                re.IGNORECASE,
+            ),
+            # "surface-expressed in <X>" / "surface-expressed on <X>".
+            re.compile(
+                r"surface[-\s]?expressed\s+(?:on|in|by|of)\b",
+                re.IGNORECASE,
+            ),
+            # "surface / membrane levels / expression … <expression-level word>"
+            # — surface token glued to an expression-level readout.
+            re.compile(
+                r"(cell[-\s]?surface|plasma\s*membrane|membranous)\s+"
+                r"(express|level|abundance|density|positiv|stain|present)\w*",
+                re.IGNORECASE,
+            ),
+            # "surface / membrane …" within ~80 chars of an expression-level
+            # cue (elevated / upregulated / high / increased / reduced …) —
+            # captures "surface levels of X are elevated in hepatocytes".
+            re.compile(
+                r"(cell[-\s]?surface|plasma\s*membrane|surface\s+level)"
+                r"[^.]{0,80}?(elevat|upregulat|up[-\s]?regulat|increas|"
+                r"reduc|downregulat|down[-\s]?regulat|high(?:ly|er)?|enrich|abundan)",
+                re.IGNORECASE,
+            ),
+        ),
+        section_weights=_DEFAULT_ANTIBODY_WEIGHTS,
+    ),
+    # Dedicated over-expression-precedent search: does the protein reach the
+    # cell surface AT ALL when over-expressed / ectopically / heterologously
+    # expressed? A surface-CAPABILITY signal, host-agnostic, independent of
+    # the detection method. Query AND's an OE/ectopic/heterologous clause WITH
+    # a surface/membrane-localization clause; every hallmark fires only when
+    # an OE term sits within ~200 chars of a surface/membrane-localization
+    # phrase ("ectopically expressed X localizes to the plasma membrane of
+    # HEK293", "surface expression of transfected X"). No "wild-type" gate.
+    "overexpression": _CategorySpec(
+        query_clauses=(
+            '("transfected" OR "ectopic expression" OR "ectopically expressed" '
+            'OR "heterologous expression" OR "heterologously expressed" '
+            'OR "overexpressing" OR "overexpressed" OR "stably expressing")',
+            '("cell surface" OR "plasma membrane" OR "surface expression" '
+            'OR "membrane localization" OR "surface localization" '
+            'OR "cell-surface")',
+        ),
+        pubtator_terms="ectopic expression cell surface",
+        hallmark_patterns=(
+            # OE term → (within ~200 chars) surface/membrane-localization phrase.
+            re.compile(
+                r"(transfect|ectopic\w*|heterolog\w*|over[-\s]?express\w*|"
+                r"stably\s+express\w*)"
+                r"[^.]{0,200}?(cell[-\s]?surface|plasma\s*membrane|"
+                r"surface\s+(?:express|localiz)|membrane\s+localiz)",
+                re.IGNORECASE,
+            ),
+            # surface/membrane-localization phrase → (within ~200 chars) OE term.
+            re.compile(
+                r"(cell[-\s]?surface|plasma\s*membrane|"
+                r"surface\s+(?:express|localiz)|membrane\s+localiz)"
+                r"[^.]{0,200}?(transfect|ectopic\w*|heterolog\w*|"
+                r"over[-\s]?express\w*|stably\s+express\w*)",
+                re.IGNORECASE,
+            ),
+        ),
+        section_weights=_DEFAULT_ANTIBODY_WEIGHTS,
     ),
     "western_blot_paired": _CategorySpec(
         query_clauses=(
@@ -342,8 +480,6 @@ _CATEGORY_SPECS: dict[EvidenceCategory, _CategorySpec] = {
     # methodology-specific categories above:
     #   • Pharmacology — radioligand binding, BRET, β-arrestin recruitment,
     #     agonist potency curves (the dominant evidence type for tm=7 GPCRs).
-    #   • Shedding — ADAM/MMP/BACE-mediated ectodomain release, soluble
-    #     form in serum / supernatant (implies prior surface presence).
     #   • Proximity labeling — APEX2 / TurboID / BioID anchored at a
     #     known surface marker, identifying neighbors.
     #   • Functional surface assays — internalization / endocytosis
@@ -354,7 +490,6 @@ _CATEGORY_SPECS: dict[EvidenceCategory, _CategorySpec] = {
             'OR "cell-surface" OR "membrane localization")',
             '("radioligand" OR "BRET" OR "β-arrestin" OR "beta-arrestin" '
             'OR "agonist potency" OR "EC50" OR "IC50" '
-            'OR "shedding" OR "ectodomain release" OR "soluble form" '
             'OR "proximity labeling" OR "proximity biotinylation" '
             'OR "APEX2" OR "TurboID" OR "BioID" '
             'OR "internalization" OR "endocytosis rate")',
@@ -367,13 +502,6 @@ _CATEGORY_SPECS: dict[EvidenceCategory, _CategorySpec] = {
                 r"agonist|antagonist|cAMP|EC50|IC50|\bKi\b|\bKd\b)"
                 r"[^.]{0,200}?(binding|recruitment|potency|engagement|"
                 r"surface|extracellular)",
-                re.IGNORECASE,
-            ),
-            # Shedding / soluble form — implies prior surface presence.
-            re.compile(
-                r"(shedding|ectodomain\s+release|sheddase|"
-                r"ADAM[-\s]?17|ADAM[-\s]?10|BACE[-\s]?1|MMP[-\s]?\d+|"
-                r"γ[-\s]?secretase|gamma[-\s]?secretase|soluble\s+form)",
                 re.IGNORECASE,
             ),
             # Proximity labeling near the PM / extracellular face.
