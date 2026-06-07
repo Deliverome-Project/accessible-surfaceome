@@ -39,6 +39,30 @@ function presenceLabel(present: boolean) {
   return present ? "Present" : "Not present";
 }
 
+/** Colloquial homomer label for a cyclic-symmetry order N. Mirrors the
+ *  vocabulary used by the StructureViewer's Schweke tab ("Homo-Dimer" /
+ *  "Homo-Trimer" / …) so a reader scanning the risks card for "dimer"
+ *  finds it without having to translate "2-mer" mentally. Falls through
+ *  to the N-mer form for orders the explicit set doesn't cover (so a
+ *  hypothetical 17-mer renders as "17-mer" rather than crashing). */
+function stoichiometryLabel(n: number): string {
+  const map: Record<number, string> = {
+    2: "Dimer",
+    3: "Trimer",
+    4: "Tetramer",
+    5: "Pentamer",
+    6: "Hexamer",
+    7: "Heptamer",
+    8: "Octamer",
+    9: "Nonamer",
+    10: "Decamer",
+    11: "Undecamer",
+    12: "Dodecamer",
+    13: "Tridecamer",
+  };
+  return map[n] ?? `${n}-mer`;
+}
+
 export function AccessibilityRisksCard({ rec, n }: Props) {
   const r = rec.accessibility_risks;
   const ctx = rec.deterministic_features.canonical_topology;
@@ -219,13 +243,18 @@ export function AccessibilityRisksCard({ rec, n }: Props) {
             </StatusPill>
             {r.homo_oligomerization_prediction.present &&
             r.homo_oligomerization_prediction.stoichiometry != null ? (
+              // Use the colloquial homomer label ("Dimer" / "Trimer" / ...)
+              // as the primary pill text so a reader scanning the risks
+              // card for "dimer" sees it immediately. The numeric
+              // stoichiometry appears as a parenthetical to retain the
+              // unambiguous N value. Mirrors the vocabulary used by the
+              // StructureViewer's Schweke tab ("Homo-Dimer" /
+              // "Homo-Trimer" / ...) so the two surfaces stay
+              // verbally consistent.
               <StatusPill tone="lavender" size="sm">
-                <ChipLabelValue
-                  label="N"
-                  value={String(
-                    r.homo_oligomerization_prediction.stoichiometry,
-                  )}
-                />
+                {stoichiometryLabel(
+                  r.homo_oligomerization_prediction.stoichiometry,
+                )}
               </StatusPill>
             ) : null}
             {r.homo_oligomerization_prediction.is_ecd_only ? (
@@ -237,7 +266,7 @@ export function AccessibilityRisksCard({ rec, n }: Props) {
           <p className={styles.prose}>
             {r.homo_oligomerization_prediction.present
               ? r.homo_oligomerization_prediction.stoichiometry != null
-                ? `Predicted ${r.homo_oligomerization_prediction.stoichiometry}-mer (stoichiometry).`
+                ? `Predicted ${stoichiometryLabel(r.homo_oligomerization_prediction.stoichiometry).toLowerCase()} (homo-${r.homo_oligomerization_prediction.stoichiometry}-mer).`
                 : "Predicted homo-oligomer (stoichiometry not reconstructed)."
               : "Not in Schweke's positive refset (treat as a lower bound; known under-call on big multi-pass channels and ligand/covalent dimers)."}{" "}
             {r.homo_oligomerization_prediction.is_ecd_only
