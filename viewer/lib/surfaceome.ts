@@ -215,6 +215,26 @@ const DEFAULT_API_BASE = "https://api.deliverome.org/surfaceome";
 const FETCH_TIMEOUT_MS = 8_000;
 
 /**
+ * Cache mode for the live Worker fetches (/v1/genes index + per-gene
+ * record + triage reasoning). Production keeps `force-cache` so each
+ * fetched payload is baked into the static export (SSG,
+ * citation-stable). In dev / any non-production build we use
+ * `no-store` so the page always reflects the LATEST published D1
+ * record immediately — no stale Next-dev fetch-cache to fight while
+ * iterating on annotations. Flip is driven by NODE_ENV (Next sets it:
+ * `development` under `next dev`, `production` under `next build`).
+ *
+ * Applies to BOTH `/v1/genes` (the freshness-dot auto-derive reads
+ * cohort schema_versions off this) and per-gene record fetches.
+ * Skipping this for `/v1/genes` lets the freshness signal go stale
+ * after a re-annotation lands — symptom: a gene republished at a new
+ * schema_version still reads amber because the cached payload only
+ * has the pre-republish version.
+ */
+const RECORD_FETCH_CACHE: RequestCache =
+  process.env.NODE_ENV === "production" ? "force-cache" : "no-store";
+
+/**
  * Build-time catalog fetch. The committed
  * ``viewer/public/data/catalog.json`` snapshot fallback was dropped
  * once the public Worker stabilized — the snapshot's 270k-line
@@ -757,8 +777,15 @@ async function _listSurfaceomeGeneEntriesImpl(): Promise<GeneEntry[]> {
     const controller = new AbortController();
     const timer = setTimeout(() => controller.abort(), FETCH_TIMEOUT_MS);
     try {
+      // Same dev/prod pattern as RECORD_FETCH_CACHE: force-cache in prod
+      // so the static export bakes the gene list, no-store in dev so the
+      // freshness-dot auto-derive sees the live cohort. Without this,
+      // Next dev's fetch-cache persists across restarts and the
+      // auto-derived current-schema-version reads off a frozen cohort
+      // (the symptom: gene republished at 2.9.0 still reads amber because
+      // the cached /v1/genes payload only has the pre-republish 1.1.0).
       res = await fetch(`${base}/v1/genes`, {
-        cache: "force-cache",
+        cache: RECORD_FETCH_CACHE,
         signal: controller.signal,
       });
     } finally {
@@ -811,19 +838,6 @@ async function _listSurfaceomeGeneEntriesImpl(): Promise<GeneEntry[]> {
       synonyms: names[symbol]?.synonyms,
     }));
 }
-
-/**
- * Cache mode for the live per-gene Worker fetches (record + triage
- * reasoning). Production keeps `force-cache` so each gene's record is
- * fetched once per build and baked into the static export (SSG,
- * citation-stable). In dev / any non-production build we use `no-store`
- * so the page always reflects the LATEST published D1 record immediately
- * — no stale build-cache to fight while iterating on annotations. Flip is
- * driven by NODE_ENV (Next sets it: `development` under `next dev`,
- * `production` under `next build`).
- */
-const RECORD_FETCH_CACHE: RequestCache =
-  process.env.NODE_ENV === "production" ? "force-cache" : "no-store";
 
 /**
  * Worker fetch for one gene's full SurfaceomeRecord. Returns `null` on
