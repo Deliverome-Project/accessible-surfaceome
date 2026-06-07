@@ -35,9 +35,9 @@ from dataclasses import dataclass
 from typing import Any
 
 from accessible_surfaceome.merge._sequence_identity import (
-    _aligner,
-    _blosum62,
-    _sanitize,
+    _aligner,  # noqa: F401 — re-exported for downstream scripts
+    _blosum62,  # noqa: F401 — re-exported for downstream scripts
+    _sanitize,  # noqa: F401 — re-exported for downstream scripts
     alignment_match_counts,
 )
 

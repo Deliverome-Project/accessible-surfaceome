@@ -621,3 +621,37 @@ CREATE INDEX IF NOT EXISTS idx_feedback_gene
 
 CREATE INDEX IF NOT EXISTS idx_feedback_status
     ON feedback(status, created_at DESC);
+
+-- ---------------------------------------------------------------------------
+-- Per-run intermediates (private — A1/A2 ledgers, raw builder outputs,
+-- synthesizer raw JSON). Populated by the deep-dive annotate driver via
+-- ``cloud.intermediates.publish_intermediates`` after every successful or
+-- failed run. Keeps the diagnostic trail that previously lived at
+-- ``.runs/surfaceome_v2_{gene}.intermediates.json`` — but reachable from
+-- any worktree, and not lost when the Modal container shuts down.
+--
+-- PRIMARY KEY includes ``created_at`` so a re-annotation of the same gene
+-- under the same schema_version + prompt_corpus_version APPENDS a new
+-- audit row rather than overwriting — preserving the full re-run history
+-- for post-mortem. Look up the latest with
+-- ``ORDER BY created_at DESC LIMIT 1``; the index supports that path.
+
+CREATE TABLE IF NOT EXISTS agent_run_intermediates (
+    gene_symbol           TEXT NOT NULL,                    -- e.g. "TROP2"
+    schema_version        TEXT NOT NULL,                    -- e.g. "2.9.0"
+    prompt_corpus_version TEXT NOT NULL,                    -- e.g. "2.8.0"
+    created_at            TEXT NOT NULL,                    -- ISO-8601 UTC at publish
+    record_valid          INTEGER NOT NULL,                 -- 0|1, did the run validate
+    intermediates_bytes   INTEGER NOT NULL,                 -- size of the blob below
+    intermediates_json    TEXT NOT NULL,                    -- compact JSON of the dict
+    PRIMARY KEY (gene_symbol, schema_version, prompt_corpus_version, created_at)
+);
+
+CREATE INDEX IF NOT EXISTS idx_agent_run_intermediates_gene
+    ON agent_run_intermediates (gene_symbol, created_at DESC);
+
+CREATE INDEX IF NOT EXISTS idx_agent_run_intermediates_created
+    ON agent_run_intermediates (created_at DESC);
+
+CREATE INDEX IF NOT EXISTS idx_agent_run_intermediates_prompt_corpus
+    ON agent_run_intermediates (prompt_corpus_version, created_at DESC);

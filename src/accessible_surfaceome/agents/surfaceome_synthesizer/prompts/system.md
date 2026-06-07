@@ -336,41 +336,43 @@ parse time — invented or paraphrased ids fail the run.
   archetypes — anchor on the SHAPE not the gene-specific content):
 
   *Constitutively-accessible canonical receptor (~580 char):*
-  > "CD81 is constitutively surface-accessible as a pan-tissue 4TM
-  > tetraspanin. Direct multi-method support: live-cell flow with
-  > CRISPR-KO controls (`a1_evi_04`), surface biotinylation–MS
-  > (`a1_evi_08`), and LEL-blocking functional assays (`a1_evi_13`).
+  > "Gene X is constitutively surface-accessible as a pan-tissue
+  > multi-pass tetraspanin. Direct multi-method support: live-cell flow
+  > with CRISPR-KO controls (`a1_evi_04`), surface biotinylation–MS
+  > (`a1_evi_08`), and ECD-blocking functional assays (`a1_evi_13`).
   > Surface levels are moderately state-modulated, upregulated in
-  > non-CBF AML and EBV+ B-cell transformation (`a2_evi_15`) and
-  > downregulated on activated lymphocytes and HCV-replicating
-  > hepatocytes (`a2_evi_20`). Moderate epitope masking at the LEL
-  > homodimer interface (`a1_evi_21`) is the principal binder-
-  > engineering caveat; the absence of a shed or secreted form and
-  > ≤28% paralog identity rule out decoy and cross-reactivity concerns."
+  > selected hematologic malignancies and viral-transformed B-cell
+  > contexts (`a2_evi_15`) and downregulated on activated lymphocytes
+  > and a hepatotropic-virus-replicating hepatocyte state (`a2_evi_20`).
+  > Moderate epitope masking at the homodimer interface (`a1_evi_21`)
+  > is the principal binder-engineering caveat; the absence of a shed
+  > or secreted form and low paralog identity rule out decoy and
+  > cross-reactivity concerns."
 
   *State-gated cancer-only target (~560 char):*
-  > "SRC is state-dependently surface-accessible in cancer cells only
-  > — an inner-leaflet N-myristoylated kinase with no constitutive ECD.
-  > Two 2025 reports (`a1_evi_03`, `a1_evi_05`) demonstrate
-  > autophagolysosomal exocytosis inverts SRC to the outer membrane
-  > as eSrc, with anti-Src antibodies mediating xenograft tumor
-  > killing (`a1_evi_09`). Surface presence is strictly state-gated,
-  > requiring active cancer-cell ALE and absent on normal cells
-  > (`a2_evi_07`). The lysosomal-exocytosis gating means binder reach
-  > tracks cellular ALE activity; no shed or secreted decoy form rules
-  > out a competing soluble pool."
+  > "Gene Y is state-dependently surface-accessible in cancer cells
+  > only — an inner-leaflet N-myristoylated kinase with no constitutive
+  > ECD. Two recent reports (`a1_evi_03`, `a1_evi_05`) demonstrate
+  > autophagolysosomal exocytosis inverts the kinase to the outer
+  > membrane as an exposed form, with anti-target antibodies mediating
+  > xenograft tumor killing (`a1_evi_09`). Surface presence is strictly
+  > state-gated, requiring active cancer-cell ALE and absent on normal
+  > cells (`a2_evi_07`). The lysosomal-exocytosis gating means binder
+  > reach tracks cellular ALE activity; no shed or secreted decoy form
+  > rules out a competing soluble pool."
 
   *Soluble-decoy-dominant target (~545 char):*
-  > "HMGB1 is state-dependently surface-accessible despite being a
+  > "Gene Z is state-dependently surface-accessible despite being a
   > nuclear chromatin-binding protein with no TM domain or signal
   > peptide. Direct multi-method support from live-cell crosslinking
   > (`a1_evi_04`), confocal microscopy (`a1_evi_07`), and proteinase-K
   > protection (`a1_evi_11`) confirms an extracellular pool engaging
-  > RAGE and TLR4. Surface presence is strictly state-gated, requiring
-  > acetylation-driven lysosomal exocytosis or necrotic release, with
-  > activated immune cells and stressed/treated tumor cells driving
-  > the accessible pool (`a2_evi_06`, `a2_evi_12`). A dominant free-
-  > soluble pool is the principal antibody-decoy risk (`a1_evi_18`)."
+  > pattern-recognition receptors on responder cells. Surface presence
+  > is strictly state-gated, requiring acetylation-driven lysosomal
+  > exocytosis or necrotic release, with activated immune cells and
+  > stressed/treated tumor cells driving the accessible pool
+  > (`a2_evi_06`, `a2_evi_12`). A dominant free-soluble pool is the
+  > principal antibody-decoy risk (`a1_evi_18`)."
 
 - **`accessibility_context_summary`** — ONE sentence (≤240 chars) stating
   *when and where* the protein is surface-accessible, synthesized over the

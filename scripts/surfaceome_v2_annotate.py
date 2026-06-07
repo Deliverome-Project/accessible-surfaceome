@@ -24,8 +24,10 @@ from pathlib import Path
 
 from accessible_surfaceome.agents.surfaceome_v2 import annotate
 from accessible_surfaceome.agents.surfaceome_v2.orchestrator import write_summary_meta
+from accessible_surfaceome.cloud.intermediates import publish_intermediates
 from accessible_surfaceome.cloud.surface_annotation import publish_record
 from accessible_surfaceome.env import load_env
+from accessible_surfaceome.tools._shared.models import SurfaceomeRecord
 
 
 def main(argv: list[str] | None = None) -> int:
@@ -109,10 +111,6 @@ def main(argv: list[str] | None = None) -> int:
 
     meta_out = write_summary_meta(result)
 
-    intermediates_out = runs / f"surfaceome_v2_{safe_id}.intermediates.json"
-    if result.intermediates:
-        intermediates_out.write_text(json.dumps(result.intermediates, indent=2))
-
     # Publish-by-default: a valid record goes to public D1 so the Worker
     # (and viewer through it) serves the fresh record immediately. The
     # viewer no longer reads from a per-gene JSON fallback — D1 is the
@@ -122,6 +120,35 @@ def main(argv: list[str] | None = None) -> int:
     publish_result = None
     if args.publish and result.record is not None:
         publish_result = publish_record(result.record, push_to_d1=True)
+
+    # Intermediates go to the PRIVATE surfaceome_agents D1, not local disk.
+    # The previous behavior was to write
+    # ``.runs/surfaceome_v2_{gene}.intermediates.json``, which is lost the
+    # moment a Modal container shuts down — so every $2-3 deep-dive run
+    # would silently throw away its post-mortem trail. Pushing to D1 keeps
+    # the diagnostic blob (A1/A2 ledgers, builder raw outputs, synthesizer
+    # raw_json) queryable from any worktree forever. Independent of
+    # ``publish_record`` — a failed annotate that produced no valid
+    # ``result.record`` still benefits from having its intermediates
+    # captured (in fact, that's the highest-value case). Skips with a
+    # warning on a missing CLOUDFLARE_* env or a >900KB blob; never
+    # raises and never blocks the publish path.
+    intermediates_result = None
+    if args.publish and result.intermediates:
+        # Use the schema_version from the record if it validated, else
+        # fall back to the in-tree default so the audit row still pins
+        # to a real version string (the run failed under THIS schema).
+        sv = (
+            result.record.schema_version
+            if result.record is not None
+            else SurfaceomeRecord.model_fields["schema_version"].default
+        )
+        intermediates_result = publish_intermediates(
+            gene_symbol=result.gene,
+            intermediates=result.intermediates,
+            schema_version=sv,
+            record_valid=result.record is not None,
+        )
 
     print()
     print(f"gene:        {result.gene}")
@@ -162,8 +189,16 @@ def main(argv: list[str] | None = None) -> int:
         print()
     print(f"record_out:       {record_out}")
     print(f"meta_out:         {meta_out}")
-    if result.intermediates:
-        print(f"intermediates:    {intermediates_out}")
+    if intermediates_result is not None:
+        if intermediates_result.pushed:
+            print(
+                f"intermediates:    private D1 row "
+                f"({intermediates_result.intermediates_bytes} bytes)"
+            )
+        else:
+            print(
+                f"intermediates:    SKIPPED — {intermediates_result.skipped_reason}"
+            )
     if result.annotation_path is not None:
         print(f"persisted:   {result.annotation_path}")
     if publish_result is not None:

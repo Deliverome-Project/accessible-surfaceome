@@ -58,7 +58,9 @@ def test_pure_truncation_reads_coverage_not_100() -> None:
 def test_truncation_is_below_full_length() -> None:
     """Belt-and-suspenders: identity should be strictly below 100% for any
     sequence shorter than its reference."""
-    assert pct_identity(CANONICAL_FULL, TRUNCATION_30) < 99.0
+    pct = pct_identity(CANONICAL_FULL, TRUNCATION_30)
+    assert pct is not None
+    assert pct < 99.0
 
 
 def test_empty_inputs_return_none() -> None:

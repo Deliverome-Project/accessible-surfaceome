@@ -127,7 +127,7 @@ def test_publish_record_default_skips_snapshot(
             hgnc_symbol="FAKE4",
             hgnc_id="HGNC:1",
             uniprot_acc="P00001",
-            ncbi_gene_id="1",
+            ncbi_gene_id=1,
             ensembl_gene="ENSG00000000001",
         ),
         executive_summary=ExecutiveSummary.model_construct(),
