@@ -26,6 +26,7 @@ derivation helpers.
 
 from __future__ import annotations
 
+import dataclasses
 import hashlib
 import json
 import logging
@@ -166,9 +167,49 @@ def _format_methods_summary_for_grade(
     for m in methods:
         cites = ", ".join(m.cited_evidence_ids) if m.cited_evidence_ids else "none"
         lines.append(
-            f"- {m.method_type} | {m.accessibility_relevance} | cites: {cites}"
+            f"- {m.method_family} / {m.method_subclass} | {m.accessibility_relevance} | cites: {cites}"
         )
     return "\n".join(lines)
+
+
+def _serialize_pts(dual: DualPlanTrimSelectResult) -> dict[str, Any]:
+    """Serialize plan-trim-select outputs for the intermediates dump."""
+
+    def _side(pts) -> dict[str, Any]:
+        return {
+            "agent_focus": pts.agent_focus,
+            "claims": [c.model_dump(mode="json") for c in pts.claims],
+            "search_log": [dataclasses.asdict(e) for e in pts.search_log],
+            "iteration_log": [dataclasses.asdict(e) for e in pts.iteration_log],
+            "triage_actions": [dataclasses.asdict(a) for a in pts.triage_actions],
+            "n_claims": pts.n_claims,
+            "n_anchored": pts.n_anchored,
+            "n_papers_total": pts.n_papers_total,
+            "n_drafts_total": pts.n_drafts_total,
+            "n_kept_after_trim": pts.n_kept_after_trim,
+            "n_iterations_run": pts.n_iterations_run,
+            "warnings": pts.warnings,
+        }
+
+    return {
+        "gene": dual.gene,
+        "bundle": dual.bundle.model_dump(mode="json") if dual.bundle else None,
+        "a1": _side(dual.a1),
+        "a2": _side(dual.a2),
+        "elapsed_s": dual.elapsed_s,
+    }
+
+
+def _dump_builder_output(name: str, output: Any) -> Any:
+    """Serialize one builder's output for JSON persistence."""
+    if isinstance(output, list):
+        return [
+            item.model_dump(mode="json") if hasattr(item, "model_dump") else item
+            for item in output
+        ]
+    if hasattr(output, "model_dump"):
+        return output.model_dump(mode="json")
+    return output
 
 
 def _secreted_isoform_ids(isoform_topologies: list[IsoformTopology]) -> list[str]:
@@ -474,6 +515,14 @@ class AnnotateResultV2:
     # in execution order. Empty when ``annotate`` was invoked with
     # ``timing=None`` (legacy path).
     timing: list[StepTiming] = field(default_factory=list)
+    # Serialized intermediate artifacts for debugging / replay. Populated
+    # by ``_annotate`` at each pipeline stage so a post-mortem can inspect
+    # evidence ledgers, per-builder raw outputs, and the synthesizer's
+    # pre-validation JSON even when the final record assembly succeeded
+    # (or failed). Written to ``.runs/surfaceome_v2_{gene}.intermediates.json``
+    # by the driver script. Dict is JSON-serializable (all Pydantic
+    # sub-trees are pre-dumped via ``.model_dump(mode="json")``).
+    intermediates: dict[str, Any] = field(default_factory=dict)
 
     @property
     def plan_trim_select_cost_usd(self) -> float:
@@ -543,6 +592,7 @@ def _annotate(
             synthesizer=None,
             error="plan-trim-select did not resolve a gene bundle",
             timing=list(timing.entries),
+            intermediates={"plan_trim_select": _serialize_pts(dual)},
         )
     gene_id = GeneIdentifier(
         hgnc_symbol=dual.bundle.hgnc_symbol,
@@ -560,6 +610,10 @@ def _annotate(
         len(a2_claims),
         dual.total_cost_usd,
     )
+
+    intermediates: dict[str, Any] = {
+        "plan_trim_select": _serialize_pts(dual),
+    }
 
     # ---- steps 2+3: A1+A2 block builders (parallel dispatch) ---------------
     # All 8 builders consume independent claim slices and emit independent
@@ -658,6 +712,13 @@ def _annotate(
     )
     grade_block: EvidenceGradeBlock = grade_outputs["evidence_grade"]
 
+    # Capture per-builder raw outputs before they're assembled into blocks.
+    all_builder_outputs = {**outputs, "evidence_grade": grade_block}
+    intermediates["builders"] = {
+        name: _dump_builder_output(name, out)
+        for name, out in all_builder_outputs.items()
+    }
+
     surface_evidence = SurfaceEvidence(
         evidence_grade=grade_block.evidence_grade,
         grade_rationale=grade_block.grade_rationale,
@@ -705,6 +766,7 @@ def _annotate(
             builder_usage=builder_usage,
             error=f"SurfaceEvidenceDraft validation failed: {exc}",
             timing=list(timing.entries),
+            intermediates=intermediates,
         )
     try:
         a2_draft = BiologicalContextDraft(
@@ -721,6 +783,7 @@ def _annotate(
             builder_usage=builder_usage,
             error=f"BiologicalContextDraft validation failed: {exc}",
             timing=list(timing.entries),
+            intermediates=intermediates,
         )
 
     # ---- step 4.5: deterministic features fetch (was step 7) ---------------
@@ -801,6 +864,12 @@ def _annotate(
         deterministic_features=det_features,
     )
 
+    intermediates["risks_builder"] = (
+        risks_block.model_dump(mode="json") if risks_block is not None else None
+    )
+    intermediates["canonical_risks"] = canonical_risks.model_dump(mode="json")
+    intermediates["deterministic_features"] = det_features.model_dump(mode="json")
+
     # ---- step 5: synthesizer (B) ------------------------------------------
     logger.info("v2 orchestrator: dispatching synthesizer for %s", gene_id.hgnc_symbol)
     with timing.step(
@@ -857,6 +926,14 @@ def _annotate(
             cost_usd=b.usage.cost_usd,
         )
         _h.set_usage([synth_rec], model=b.usage.model)
+
+    intermediates["synthesizer"] = {
+        "raw_json": b.raw_json,
+        "validation_error": b.validation_error,
+        "n_repair_attempts": b.n_repair_attempts,
+        "draft": b.draft.model_dump(mode="json") if b.draft is not None else None,
+    }
+
     if b.draft is None:
         return AnnotateResultV2(
             gene=gene_id.hgnc_symbol,
@@ -867,6 +944,7 @@ def _annotate(
             builder_usage=builder_usage,
             error=f"synthesizer returned no valid draft: {b.validation_error}",
             timing=list(timing.entries),
+            intermediates=intermediates,
         )
 
     # ---- step 5.5: scrub headline_risks for structured coherence ---------
@@ -1077,6 +1155,7 @@ def _annotate(
             builder_usage=builder_usage,
             error=f"SurfaceomeRecord assembly failed: {exc}",
             timing=list(timing.entries),
+            intermediates=intermediates,
         )
 
     annotation_path: Path | None = None
@@ -1094,6 +1173,7 @@ def _annotate(
         builder_usage=builder_usage,
         annotation_path=annotation_path,
         timing=list(timing.entries),
+        intermediates=intermediates,
     )
 
 

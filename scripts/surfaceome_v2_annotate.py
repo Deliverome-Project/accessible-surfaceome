@@ -109,6 +109,10 @@ def main(argv: list[str] | None = None) -> int:
 
     meta_out = write_summary_meta(result)
 
+    intermediates_out = runs / f"surfaceome_v2_{safe_id}.intermediates.json"
+    if result.intermediates:
+        intermediates_out.write_text(json.dumps(result.intermediates, indent=2))
+
     # Publish-by-default: a valid record goes to the viewer snapshot +
     # public D1 so the Worker and viewer serve the fresh record
     # immediately (no manual sync step). The D1 push auto-skips with a
@@ -155,8 +159,10 @@ def main(argv: list[str] | None = None) -> int:
                 )
             )
         print()
-    print(f"record_out:  {record_out}")
-    print(f"meta_out:    {meta_out}")
+    print(f"record_out:       {record_out}")
+    print(f"meta_out:         {meta_out}")
+    if result.intermediates:
+        print(f"intermediates:    {intermediates_out}")
     if result.annotation_path is not None:
         print(f"persisted:   {result.annotation_path}")
     if publish_result is not None:
