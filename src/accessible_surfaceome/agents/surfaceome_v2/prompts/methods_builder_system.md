@@ -147,9 +147,9 @@ your job is to SPLIT the identifier into the right structured fields,
 not collapse it into `name`:
 
 * **`clone`** — alphanumeric clone ID (examples: `528`, `4D6`,
-  `D38B1`, `43-14A`, `AB-101`, `H300`, `9G4`, `5A6`, `B-A18`). When
+  `D38B1`, `43-14A`, `AB-101`, `H300`, `9G4`, `B-A18`). When
   the quote says "clone 528", "528 antibody", "anti-TARGET clone 528",
-  "anti-TARGET (5A6)", set `clone="528"` / `clone="5A6"`.
+  "anti-TARGET (528)", set `clone="528"`.
 * **`vendor`** — company name when stated (examples: `BD Pharmingen`,
   `BD Biosciences`, `Cell Signaling Technology`, `Abcam`,
   `R&D Systems`, `Thermo Fisher`, `Santa Cruz`, `Sigma`, `BioLegend`,
