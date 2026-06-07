@@ -9,15 +9,18 @@
  * `npm run build`, no per-page-load D1 hits in production.
  *
  * D1 is the SINGLE source of truth for deep-dive records. There is no
- * on-disk fallback: deep-dive SurfaceomeRecords are written direct to
- * public D1 (`cloud.surface_annotation.publish_record`), and the
- * viewer reads them only through the Worker. The set of routes is
+ * on-disk fallback whatsoever: deep-dive SurfaceomeRecords are written
+ * direct to public D1 (`cloud.surface_annotation.publish_record`), and
+ * the viewer reads them only through the Worker. The set of routes is
  * sourced the same way — `listSurfaceomeGenes` hits the Worker's
  * `/v1/genes` (the annotated-gene list backed by `surface_annotation`)
- * to decide which gene pages `generateStaticParams` emits. The old
- * committed `viewer/public/data/surfaceome/*.json` snapshots (and the
- * fs-readback fallback they powered) were removed deliberately so a
- * stale on-disk copy can never mask the authoritative D1 record.
+ * to decide which gene pages `generateStaticParams` emits. There used
+ * to be a backstop union with `viewer/public/data/surfaceome/*.json`
+ * snapshots to paper over edge-cache lag on `/v1/genes` after a fresh
+ * publish; that backstop was removed when publish_record gained
+ * by-URL edge-cache purge — the lag is now ~0 so the snapshot dir
+ * adds no signal, only drift risk (a stale local snapshot could route
+ * a gene the Worker hasn't published yet, then 500 at render time).
  *
  * Like the catalog (`loadCatalog`), the gene pages therefore
  * hard-require the live Worker in production. `SURFACEOME_API_BASE=local`
@@ -26,7 +29,7 @@
  * Pages-side build runs against the real Worker and emits the full set.
  */
 
-import { readFileSync, readdirSync } from "node:fs";
+import { readFileSync } from "node:fs";
 import path from "node:path";
 import { pickDeepDiveFilters } from "./deep-dive-fields";
 import type {
@@ -79,16 +82,6 @@ const HGNC_TSV = path.join(
   "external",
   "hgnc",
   "hgnc_complete_set.tsv",
-);
-
-// In-tree per-gene record snapshots (`publish_record` writes these on
-// every annotate run). Used to backfill the `generateStaticParams` route
-// list when the Worker's edge-cached `/v1/genes` lags a fresh publish.
-const SURFACEOME_SNAPSHOT_DIR = path.join(
-  process.cwd(),
-  "public",
-  "data",
-  "surfaceome",
 );
 
 /**
@@ -711,34 +704,10 @@ async function _listSurfaceomeGenesImpl(): Promise<string[]> {
   const data = (await res.json()) as {
     genes?: Array<{ gene_symbol?: string }>;
   };
-  const fromWorker = (data.genes ?? [])
+  return (data.genes ?? [])
     .map((g) => g.gene_symbol)
-    .filter((s): s is string => Boolean(s));
-  // Union with locally-published snapshots. `publish_record` writes
-  // `public/data/surfaceome/{SYMBOL}.json` on every annotate run, but the
-  // Worker's `/v1/genes` list is fronted by Cloudflare's edge cache and
-  // can lag a freshly-published gene by minutes — long enough that under
-  // `output: export` the just-generated route 500s ("missing param in
-  // generateStaticParams") even though the record is already live in D1.
-  // The snapshots are the in-tree source of truth, so any gene with one
-  // gets a route regardless of edge-cache state; its record data still
-  // comes from the Worker at render time. Best-effort — a missing dir
-  // (clean checkout / CI smoke build) just leaves the Worker list as-is.
-  const merged = new Set(fromWorker);
-  for (const sym of _localSnapshotGenes()) merged.add(sym);
-  return Array.from(merged).sort();
-}
-
-/** Gene symbols with a committed `public/data/surfaceome/{SYMBOL}.json`
- *  snapshot. Best-effort: returns `[]` if the directory is absent. */
-function _localSnapshotGenes(): string[] {
-  try {
-    return readdirSync(SURFACEOME_SNAPSHOT_DIR)
-      .filter((f) => f.endsWith(".json"))
-      .map((f) => f.slice(0, -".json".length));
-  } catch {
-    return [];
-  }
+    .filter((s): s is string => Boolean(s))
+    .sort();
 }
 
 /**

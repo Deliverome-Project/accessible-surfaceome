@@ -525,10 +525,29 @@ def _load_triage_record(symbol: str) -> TriageRecord | None:
 # sweeps run with; the others (web_ncbi, pubmed_ncbi, recent_corpus)
 # add tool-use variants we don't want to elevate to the headline
 # triage_signal without explicit configuration.
+#
+# **Current as of 2026-06-07:** D1 carries only ``_v2`` run_ids
+# (``mainbench_canonical_v2`` with 441 genes per variant, and
+# ``genome_full_sonnet_ncbi_v2`` with all 19,324 protein-coding genes;
+# verified via ``SELECT DISTINCT run_id FROM triage_run_public``). The
+# earlier ``_v1`` + ``_resolver_v3_fix`` entries previously listed here
+# matched nothing in public D1, so the fallback silently returned
+# ``None`` — same observable failure mode as a credential bug. This
+# was the June-2026 root cause for ``triage_signal=unknown`` on the
+# 6 deep-dive records published that day. Update this list whenever a
+# new genome-wide sweep replaces the canonical run_id.
+#
+# **Synchronization:** MUST stay equal to
+# - ``surface_annotation._TRIAGE_COHERENCE_PRIORITY`` (the publish-time
+#   coherence guard), AND
+# - ``cloudflare/workers/surfaceome_api/src/index.js::TRIAGE_PRIORITY``
+#   (the Worker per-gene enrichment).
+# The Python-side equality is enforced by
+# ``tests/test_d1_env_preflight.py::test_triage_coherence_priority_in_sync_with_orchestrator``.
+# JS-side equality is on visual review.
 _D1_TRIAGE_PRIORITY: list[tuple[str, str]] = [
-    ("mainbench_canonical_v1", "ncbi"),
-    ("genome_full_sonnet_ncbi_v1__resolver_v3_fix", "ncbi"),
-    ("genome_full_sonnet_ncbi_v1", "ncbi"),
+    ("mainbench_canonical_v2", "ncbi"),
+    ("genome_full_sonnet_ncbi_v2", "ncbi"),
 ]
 
 
@@ -536,36 +555,35 @@ def _load_triage_record_from_d1(symbol: str) -> TriageRecord | None:
     """Hydrate a ``TriageRecord`` from public D1 ``triage_run_public``.
 
     See ``_D1_TRIAGE_PRIORITY`` for the (run_id, variant) priority
-    list. Each step queries D1 once; first hit wins. All errors are
-    logged + swallowed so a D1 outage doesn't fail annotate — the
-    caller falls back to ``triage_signal=unknown``, which is the same
-    behavior as before this fallback existed.
+    list. Each step queries D1 once; first hit wins.
+
+    Credential handling goes through
+    :func:`accessible_surfaceome.cloud.d1_env.public_d1_config_or_warn`:
+    a fresh-checkout / CI miss returns ``None`` silently, a *partial*
+    credential set (the June-2026 bug shape — empty token left a
+    record with ``triage_signal=unknown`` despite the triage row
+    existing in D1) returns ``None`` with a loud warning, and any
+    miss-or-partial state under ``ACCESSIBLE_SURFACEOME_REQUIRE_D1=1``
+    raises :class:`D1AuthError` so a production sweep fails fast rather
+    than accumulating silent unknowns.
+
+    Transport / D1-query failures (timeout, 500, malformed JSON) are
+    caught and logged at warning level — annotate still proceeds with
+    ``triage_signal=unknown`` because the local fallback is the same
+    behavior we had before this D1 hydrate existed.
     """
 
+    from accessible_surfaceome.cloud.d1_client import D1Client
+    from accessible_surfaceome.cloud.d1_env import public_d1_config_or_warn
+
+    # ``public_d1_config_or_warn`` raises ``D1AuthError`` under REQUIRE_D1;
+    # that propagates uncaught (the try below only wraps the D1 transport
+    # path). Soft-skip otherwise — ``None`` cfg means CI / fresh-checkout.
+    cfg = public_d1_config_or_warn(operation="triage D1 fallback", symbol=symbol)
+    if cfg is None:
+        return None
+
     try:
-        # Imports are local: keeps `D1Client` out of the hot path for
-        # the case where the local file is present (common in CI / on
-        # cohort sweeps that pre-populate ``data/triage/``).
-        import os
-
-        from accessible_surfaceome.cloud.d1_client import D1Client, D1Config
-        from accessible_surfaceome.env import load_env
-
-        load_env()
-        public_db_id = os.environ.get("CLOUDFLARE_D1_SURFACEOME_PUBLIC_ID", "").strip()
-        account_id = os.environ.get("CLOUDFLARE_ACCOUNT_ID", "").strip()
-        api_token = os.environ.get("CLOUDFLARE_API_TOKEN", "").strip()
-        if not (public_db_id and account_id and api_token):
-            logger.info(
-                "no D1 public credentials in env; skipping triage D1 fallback for %s",
-                symbol,
-            )
-            return None
-        cfg = D1Config(
-            account_id=account_id,
-            database_id=public_db_id,
-            api_token=api_token,
-        )
         with D1Client(cfg) as d1:
             for run_id, variant in _D1_TRIAGE_PRIORITY:
                 rows = d1.query(

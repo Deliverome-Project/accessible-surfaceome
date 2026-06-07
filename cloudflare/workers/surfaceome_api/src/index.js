@@ -64,13 +64,14 @@ const CORS_HEADERS = {
   "Access-Control-Allow-Headers": "Content-Type",
 };
 
-function json(data, { status = 200, ttl = CACHE_TTL_SHORT } = {}) {
+function json(data, { status = 200, ttl = CACHE_TTL_SHORT, headers = {} } = {}) {
   return new Response(JSON.stringify(data, null, 2), {
     status,
     headers: {
       "Content-Type": "application/json; charset=utf-8",
       "Cache-Control": cacheControl(ttl),
       ...CORS_HEADERS,
+      ...headers,
     },
   });
 }
@@ -166,6 +167,241 @@ async function handleGeneList(env) {
   return json({ count: rows.results.length, genes: rows.results }, { ttl: CACHE_TTL_SHORT });
 }
 
+// Verdict (in triage_run_public) → triage_signal (in SurfaceomeRecord).
+// MUST stay in sync with the Python side:
+//   src/accessible_surfaceome/agents/surfaceome_v1/orchestrator.py
+//     ::_TRIAGE_VERDICT_TO_SIGNAL
+// Both sides feed the viewer's gene page; a drift here would silently
+// recolor the triage chip. The Python-side guard in
+// ``tests/test_d1_env_preflight.py::test_triage_coherence_priority_in_sync_with_orchestrator``
+// catches priority-list drift; this map is small enough that visual
+// review on PR diff is the enforcement mechanism.
+const TRIAGE_VERDICT_TO_SIGNAL = {
+  yes: "likely_accessible",
+  contextual: "possibly_accessible",
+  no: "unlikely",
+};
+
+// Priority order for the Sonnet triage prior. MUST stay in sync with:
+//   src/accessible_surfaceome/agents/surfaceome_v1/orchestrator.py
+//     ::_D1_TRIAGE_PRIORITY
+//   src/accessible_surfaceome/cloud/surface_annotation.py
+//     ::_TRIAGE_COHERENCE_PRIORITY
+// Walked in order; first hit wins. The bench-curated run is preferred
+// over the genome-wide sweep — same logic the publish-time coherence
+// guard uses.
+//
+// As of 2026-06-07 the public D1 carries only _v2 sweeps; the _v1 +
+// _resolver_v3_fix run_ids previously listed here were stale (they
+// matched nothing in production D1), which was the actual root cause of
+// the June-2026 triage_signal=unknown shipment — not the credential
+// drop alone. Update this list whenever a new genome-wide sweep
+// replaces the canonical run_id.
+const TRIAGE_PRIORITY = [
+  ["mainbench_canonical_v2", "ncbi"],
+  ["genome_full_sonnet_ncbi_v2", "ncbi"],
+];
+
+/**
+ * Fetch the Sonnet triage row for `sym` honoring the priority order.
+ * Returns `{verdict, reason, reasoning} | null`. Walks priorities one
+ * by one — at most 3 cheap point queries; the genome-wide sweep is the
+ * tail case so most lookups resolve on the first or second query.
+ */
+async function fetchTriagePrior(env, sym) {
+  for (const [runId, variant] of TRIAGE_PRIORITY) {
+    const row = await env.DB.prepare(
+      `SELECT predicted_verdict, predicted_reason, verdict_reasoning
+         FROM triage_run_public
+        WHERE gene_symbol = ?
+          AND run_id = ?
+          AND prompt_variant = ?
+          AND model LIKE '%sonnet%'
+          AND predicted_verdict IS NOT NULL
+        ORDER BY replicate ASC, created_at DESC
+        LIMIT 1`
+    ).bind(sym, runId, variant).first();
+    if (row) {
+      return {
+        verdict: row.predicted_verdict,
+        reason: row.predicted_reason,
+        reasoning: row.verdict_reasoning,
+      };
+    }
+  }
+  return null;
+}
+
+/**
+ * Build one IsoformTopology-shaped object from a topology_public row.
+ * Same shape the Python ``IsoformTopology`` pydantic model serializes —
+ * the enum-typed fields (n/c_terminal_orientation) come through as-is.
+ * The full-length / ECD percent-identity-to-canonical fields are NOT in
+ * topology_public; they're populated at annotate time by a separate
+ * BLOSUM62 alignment pass, so we leave them null here. The annotator's
+ * baked copy still carries those for already-annotated records — the
+ * Worker enrichment overlays them on top, preserving the alignment
+ * fields when re-merged at the caller.
+ */
+function topologyRowToIsoform(row) {
+  return {
+    isoform_id: row.isoform_id,
+    uniprot_acc: row.uniprot_acc_full,
+    tm_helix_count: row.tm_helix_count,
+    n_terminal_orientation: row.n_terminal_orientation,
+    c_terminal_orientation: row.c_terminal_orientation,
+    signal_peptide_length: row.signal_peptide_length,
+    ecd_length_residues: row.ecd_length_residues,
+    icd_length_residues: row.icd_length_residues,
+    per_residue_topology: row.per_residue_topology,
+    tool_version: row.tool_version,
+    retrieved_at: row.retrieved_at,
+    sequence: row.sequence,
+    // Identity-to-canonical fields are computed offline (not in D1) —
+    // the caller shallow-merges this onto the baked record to preserve
+    // them. Defaults shown for the cold-record case.
+    full_length_pct_identity_to_canonical: null,
+    ecd_pct_identity_to_canonical: null,
+    ecd_pct_similarity_to_canonical: null,
+  };
+}
+
+/**
+ * Fetch the live canonical-isoform topology + all isoform topologies for
+ * `uniprot_acc`. Returns `{canonical, isoforms} | null`. Both come from
+ * the same ``topology_public`` table; ``cohort`` distinguishes them. We
+ * key on ``uniprot_acc`` (the base accession) — the table also carries
+ * ``uniprot_acc_full`` with isoform suffix.
+ *
+ * Returns null when the gene has no topology row at all (rare —
+ * topology_public covers ~all protein-coding genes), so the caller
+ * keeps the baked record's topology rather than overwriting with null.
+ */
+async function fetchTopology(env, uniprotAcc) {
+  if (!uniprotAcc) return null;
+  // ``human_canonical`` cohort = the canonical isoform row.
+  // ``human_isoforms`` cohort = every alternative isoform (NOT the canonical).
+  // We union both, then split client-side. One query keeps the round-trip
+  // tight; ORDER BY puts the canonical first deterministically.
+  const rows = await env.DB.prepare(
+    `SELECT cohort, isoform_id, uniprot_acc, uniprot_acc_full,
+            tm_helix_count, n_terminal_orientation, c_terminal_orientation,
+            signal_peptide_length, ecd_length_residues, icd_length_residues,
+            per_residue_topology, tool_version, retrieved_at, sequence,
+            is_canonical
+       FROM topology_public
+      WHERE uniprot_acc = ?
+        AND cohort IN ('human_canonical', 'human_isoforms')
+      ORDER BY is_canonical DESC, isoform_id ASC`
+  ).bind(uniprotAcc).all();
+  if (!rows.results.length) return null;
+  const canonicalRow = rows.results.find(
+    (r) => r.cohort === "human_canonical" || r.is_canonical === 1
+  );
+  if (!canonicalRow) return null;
+  return {
+    canonical: topologyRowToIsoform(canonicalRow),
+    // isoform_topologies includes the canonical row PLUS each isoform
+    // row — matches the Python ``DeterministicFeatures.isoform_topologies``
+    // shape (canonical first, then alternatives).
+    isoforms: rows.results.map(topologyRowToIsoform),
+  };
+}
+
+/**
+ * Fetch the live SURFACE-Bind features for `uniprot_acc`, or null.
+ * Returns a partial SurfaceBindFeatures-shaped object — the caller
+ * shallow-merges over the record's baked copy so any field-defaults the
+ * record carried (source, attribution, citation) stick around.
+ */
+async function fetchSurfaceBindFeatures(env, uniprotAcc) {
+  if (!uniprotAcc) return null;
+  const proteinRow = await env.DB.prepare(
+    `SELECT chain, main_class, sub_class, protein_name,
+            n_sites, n_seeds_alpha, n_seeds_beta, n_seeds_total, pdbs
+       FROM surface_bind_protein
+      WHERE uniprot_acc = ?
+      LIMIT 1`
+  ).bind(uniprotAcc).first();
+  if (!proteinRow) return null;
+  const siteRows = await env.DB.prepare(
+    `SELECT site_id, anchor_residue, area_a2, n_seeds_alpha, n_seeds_beta,
+            hydrophobicity
+       FROM surface_bind_site
+      WHERE uniprot_acc = ?
+      ORDER BY site_id ASC`
+  ).bind(uniprotAcc).all();
+  let pdbs = [];
+  try {
+    pdbs = JSON.parse(proteinRow.pdbs ?? "[]");
+    if (!Array.isArray(pdbs)) pdbs = [];
+  } catch (e) {
+    pdbs = [];
+  }
+  return {
+    has_data: true,
+    n_sites: proteinRow.n_sites,
+    n_seeds_alpha: proteinRow.n_seeds_alpha,
+    n_seeds_beta: proteinRow.n_seeds_beta,
+    n_seeds_total: proteinRow.n_seeds_total,
+    chain: proteinRow.chain,
+    sites: siteRows.results.map((s) => ({
+      site_id: s.site_id,
+      anchor_residue: s.anchor_residue,
+      area_a2: s.area_a2,
+      n_seeds_alpha: s.n_seeds_alpha,
+      n_seeds_beta: s.n_seeds_beta,
+      hydrophobicity: s.hydrophobicity,
+    })),
+    main_class: proteinRow.main_class,
+    sub_class: proteinRow.sub_class,
+    protein_name: proteinRow.protein_name,
+    pdbs,
+  };
+}
+
+/**
+ * Per-gene endpoint: read the latest SurfaceomeRecord from D1, then
+ * enrich the D1-backed deterministic fields IN-PLACE before serving.
+ *
+ * Why enrich here instead of trusting what the annotator baked?
+ * Some fields are *priors* the annotator copied from another D1 table
+ * (triage_signal from triage_run_public; surface_bind from
+ * surface_bind_protein). If those tables move under us — a triage
+ * re-sweep with a better model, a SURFACE-Bind v2 sync, the resolver
+ * fix-run replacing a stale verdict — the baked copy goes stale until
+ * someone re-annotates. Re-annotation is ~$3-5 per gene, so enrichment
+ * is the cheap path: every page load resolves to today's truth without
+ * touching the costly LLM pipeline.
+ *
+ * Crucially, this also closes the June-2026 silent-failure window:
+ * even if an annotate ships a record with triage_signal=unknown (e.g.
+ * a partial-creds bug ate the D1 fallback at generate time), the
+ * Worker overlays the live verdict and the viewer never sees the
+ * corrupted field.
+ *
+ * Fields the annotator wholly OWNS (executive_summary, surface_evidence,
+ * biological_context, accessibility_risks, etc.) are passed through
+ * untouched — those are the deep-dive's own synthesis and enrichment
+ * has no source-of-truth to merge against.
+ *
+ * **Not currently enriched (intentional):**
+ *
+ * * ``deterministic_features.orthologs`` and ``.paralogs`` — although
+ *   ``compara_ortholog`` / ``compara_paralog`` / ``compara_ortholog_ecd``
+ *   are D1-backed, the record shape carries fields the merge pipeline
+ *   computes at annotate time and are NOT in D1:
+ *   ``topology_projection_source``, ``tm_absent_from_model``,
+ *   ``n_tm_regions_absent`` on OrthologEntry, and
+ *   ``ecd_pct_similarity`` on ParalogEntry. Rebuilding the lists in the
+ *   Worker would blank those fields. Re-annotation handles compara
+ *   bumps (which ship every ~3 months) without information loss.
+ * * ``deterministic_features.structure`` — AlphaFold links derived
+ *   directly from uniprot_acc; no D1 table to enrich from.
+ * * ``deterministic_features.homo_oligomerization`` — Schweke 2024 atlas
+ *   isn't synced as a public D1 table today (the score lives in figshare).
+ *   When that lands in public D1, wire a fourth enrich step here.
+ */
 async function handleGene(env, symbol) {
   const sym = checkSymbol(symbol);
   if (!sym) return badRequest("invalid_symbol");
@@ -184,7 +420,109 @@ async function handleGene(env, symbol) {
   } catch (e) {
     return json({ error: "bad_record_json" }, { status: 500, ttl: 0 });
   }
-  return json(record, { ttl: CACHE_TTL_LONG });
+  // --- live D1 enrichment ---------------------------------------------
+  // Each enrich step is wrapped so a single table outage / schema drift
+  // can't take down the per-gene endpoint. We log via the response
+  // header `X-Surfaceome-Enrich-Errors` (read by the viewer + curl) so
+  // the misses are visible without making the endpoint flaky.
+  //
+  // **Parallelization** — all three enrich fetches fire concurrently via
+  // Promise.all. Each is an independent D1 query (or short query chain);
+  // serial they'd add ~3 round-trips, parallel they add ~1. Edge cache
+  // (CACHE_TTL_LONG = 1 day) means most production hits never even reach
+  // this code, so the cold-cache cost is what matters.
+  const enrichErrors = [];
+  const uniprotAcc = record?.gene?.uniprot_acc;
+
+  const [triagePrior, surfaceBind, topology] = await Promise.all([
+    // 1) triage_signal + triage_reasoning — Sonnet verdict prior
+    fetchTriagePrior(env, sym).catch((e) => {
+      enrichErrors.push(`triage:${e.message}`);
+      return null;
+    }),
+    // 2) deterministic_features.surface_bind — SURFACE-Bind aggregate +
+    //    sites; keyed on the record's resolved uniprot_acc
+    fetchSurfaceBindFeatures(env, uniprotAcc).catch((e) => {
+      enrichErrors.push(`surface_bind:${e.message}`);
+      return null;
+    }),
+    // 3) deterministic_features.canonical_topology + .isoform_topologies —
+    //    DeepTMHMM annotations from topology_public. Refreshes when the
+    //    upstream sweep re-runs (sequence updates from UniProt, model
+    //    upgrades). The annotator bakes these at deep-dive time; the
+    //    overlay catches the case where topology re-ran after annotate.
+    fetchTopology(env, uniprotAcc).catch((e) => {
+      enrichErrors.push(`topology:${e.message}`);
+      return null;
+    }),
+  ]);
+
+  // Apply enrichments. Each step gracefully no-ops on null (legitimate
+  // miss — gene not in the table) so an unannotated gene's baked record
+  // doesn't get blanked.
+
+  // 1) Triage prior — don't overwrite a populated record's signal with
+  //    `null` when D1 has nothing; only overlay when D1 has a verdict.
+  if (triagePrior) {
+    record.triage_signal =
+      TRIAGE_VERDICT_TO_SIGNAL[triagePrior.verdict] ?? "unknown";
+    if (triagePrior.reasoning && triagePrior.reasoning.trim()) {
+      record.triage_reasoning = triagePrior.reasoning;
+    }
+  }
+
+  // 2) Surface-Bind overlay — shallow merge so the baked
+  //    source/attribution/citation strings (Pydantic-model constants) stick.
+  if (surfaceBind) {
+    record.deterministic_features = record.deterministic_features ?? {};
+    const baked = record.deterministic_features.surface_bind ?? {};
+    record.deterministic_features.surface_bind = { ...baked, ...surfaceBind };
+  }
+
+  // 3) Topology overlay — replace canonical_topology + isoform_topologies
+  //    wholesale because the topology_public row IS the authoritative shape
+  //    (DeepTMHMM output). Preserve the annotator-computed identity-to-
+  //    canonical fields by copying them from the baked record onto the
+  //    fresh canonical/isoform objects: identity is OFFLINE-computed (a
+  //    BLOSUM62 pass against canonical) and lives only in the baked
+  //    record, not in topology_public.
+  if (topology) {
+    record.deterministic_features = record.deterministic_features ?? {};
+    const bakedCanonical = record.deterministic_features.canonical_topology;
+    const bakedIsoforms = Array.isArray(
+      record.deterministic_features.isoform_topologies,
+    )
+      ? record.deterministic_features.isoform_topologies
+      : [];
+    // Identity-to-canonical lookup by isoform_id, sourced from the baked
+    // record (annotate-time BLOSUM62 alignment). Empty when the record
+    // predates the field.
+    const idFields = new Map();
+    for (const iso of [bakedCanonical, ...bakedIsoforms].filter(Boolean)) {
+      idFields.set(iso.isoform_id, {
+        full_length_pct_identity_to_canonical:
+          iso.full_length_pct_identity_to_canonical ?? null,
+        ecd_pct_identity_to_canonical: iso.ecd_pct_identity_to_canonical ?? null,
+        ecd_pct_similarity_to_canonical:
+          iso.ecd_pct_similarity_to_canonical ?? null,
+      });
+    }
+    const mergeIdentity = (iso) => ({
+      ...iso,
+      ...(idFields.get(iso.isoform_id) ?? {}),
+    });
+    record.deterministic_features.canonical_topology = mergeIdentity(
+      topology.canonical,
+    );
+    record.deterministic_features.isoform_topologies =
+      topology.isoforms.map(mergeIdentity);
+  }
+
+  const headers = {};
+  if (enrichErrors.length) {
+    headers["X-Surfaceome-Enrich-Errors"] = enrichErrors.join("; ");
+  }
+  return json(record, { ttl: CACHE_TTL_LONG, headers });
 }
 
 async function handleOrthologs(env, symbol) {

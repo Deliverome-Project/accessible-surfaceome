@@ -109,11 +109,12 @@ def main(argv: list[str] | None = None) -> int:
 
     meta_out = write_summary_meta(result)
 
-    # Publish-by-default: a valid record goes to the viewer snapshot +
-    # public D1 so the Worker and viewer serve the fresh record
-    # immediately (no manual sync step). The D1 push auto-skips with a
-    # warning when CLOUDFLARE_* env vars are absent, so CI / offline runs
-    # still succeed. Opt out with --no-publish.
+    # Publish-by-default: a valid record goes to public D1 so the Worker
+    # (and viewer through it) serves the fresh record immediately. The
+    # viewer no longer reads from a per-gene JSON fallback — D1 is the
+    # only authoritative source. The D1 push auto-skips with a warning
+    # when CLOUDFLARE_* env vars are absent, so CI / offline runs still
+    # succeed. Opt out with --no-publish.
     publish_result = None
     if args.publish and result.record is not None:
         publish_result = publish_record(result.record, push_to_d1=True)
@@ -160,12 +161,11 @@ def main(argv: list[str] | None = None) -> int:
     if result.annotation_path is not None:
         print(f"persisted:   {result.annotation_path}")
     if publish_result is not None:
-        print(f"published:   snapshot={publish_result.snapshot_path}")
         if publish_result.skipped_reason:
-            print(f"             D1 push SKIPPED — {publish_result.skipped_reason}")
+            print(f"published:   D1 push SKIPPED — {publish_result.skipped_reason}")
         else:
             print(
-                f"             D1 push={'OK' if publish_result.d1_written else 'FAILED'}"
+                f"published:   D1 push={'OK' if publish_result.d1_written else 'FAILED'}"
                 + (
                     f" (dropped stale {publish_result.stale_versions_dropped})"
                     if publish_result.stale_versions_dropped
