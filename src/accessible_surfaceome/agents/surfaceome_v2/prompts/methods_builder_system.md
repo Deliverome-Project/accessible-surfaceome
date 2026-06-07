@@ -164,49 +164,30 @@ non-canonical anchored proteins where the mechanism is described.
 
 A protein anchored to the **inner (cytoplasmic) leaflet** of the plasma
 membrane is at the PM but on the WRONG side — its body and epitopes
-hang into the cytoplasm and are unreachable by any systemically
-delivered binder. Evidence that observes such a protein "at the plasma
-membrane" documents inner-leaflet association, not surface
-accessibility. Treat the following as inner-leaflet anchoring signals
-and reject `direct_surface_accessibility` / `supports_surface_localization`
-when the evidence relies on them:
+hang into the cytoplasm and are not extracellularly accessible to a
+systemically delivered binder. Evidence that observes such a protein
+"at the plasma membrane" documents inner-leaflet association, not
+surface accessibility.
 
-- **N-terminal myristoylation** at Gly-2 (often paired with an
-  SH4 / unique-domain whose polybasic patch binds inner-leaflet
-  acidic phospholipids). Canonical for non-receptor tyrosine
-  kinases and many heterotrimeric G-protein α subunits.
-- **C-terminal prenylation** (farnesylation, geranylgeranylation) at
-  a CAAX motif. Canonical for small GTPases.
-- **Polybasic-patch / electrostatic-only anchoring** to PI(4,5)P₂ /
-  acidic inner-leaflet lipids without a TM helix or signal peptide.
-- **SH4 domain / unique-domain membrane-binding** without a TM helix.
-- **Palmitoylation alone** on a protein with no signal peptide / no TM
-  helix (defaults to inner leaflet; only counts toward outer-leaflet
-  evidence when paired with an outer-leaflet retention signal as above).
-
-When the ledger names any of these inner-leaflet anchors AND the assay
-observed the protein at the PM (live-cell imaging, FRAP, live-cell
-mutagenesis showing membrane-targeting loss in the anchoring-deficient
-mutant), the appropriate `accessibility_relevance` is
-`weak_or_ambiguous` (inner-leaflet PM association) — never
-`direct_surface_accessibility` or `supports_surface_localization`. Set
-`surface_claim_type=intracellular_pool` (the cytoplasmic-facing
-inner-leaflet pool is intracellular for binder-access purposes), and
-add a one-clause observation noting "inner-leaflet anchoring (named
-mechanism) — not extracellularly accessible". The exception is when
-the SAME paper or a sibling claim documents a non-canonical OUTER
-surface event for this protein (e.g. cancer-specific autophagolysosomal
-exocytosis with topological inversion + extracellular antibody binding);
-that warrants a SEPARATE row at `direct_surface_accessibility` keyed to
-the outer-surface evidence, with the inner-leaflet row remaining
-`weak_or_ambiguous`.
+When the ledger names (or your trim notes flag) an inner-leaflet /
+cytoplasmic-facing anchor for this protein AND the assay observed it
+at the PM (live-cell imaging, FRAP, live-cell mutagenesis showing
+membrane-targeting loss in an anchoring-deficient mutant), cap the row
+at `accessibility_relevance=weak_or_ambiguous` and set
+`surface_claim_type=intracellular_pool`. Add a one-clause observation
+noting "inner-leaflet anchoring — not extracellularly accessible".
+Never promote such a row to `direct_surface_accessibility` or
+`supports_surface_localization`.
 
 The non-permeabilized condition of an assay does NOT override this
-rule. Live-cell FRAP, live-cell mutagenesis, and live-cell imaging
-performed on intact cells are still observing inner-leaflet anchoring
-when the protein being imaged has no outer-leaflet route to the
-membrane — the membrane is intact, but the protein is on the
-cytoplasmic side of it.
+rule. Intact cells just mean the membrane is intact; the protein can
+still be on the cytoplasmic side of it.
+
+Exception: when the SAME paper or a sibling claim documents a
+non-canonical OUTER-surface event for this protein via a named
+mechanism (per the "Non-canonical anchoring gate" above), emit a
+SEPARATE row at `direct_surface_accessibility` keyed to that outer-
+surface evidence. The inner-leaflet row stays `weak_or_ambiguous`.
 
 ## Field-by-field rules
 
