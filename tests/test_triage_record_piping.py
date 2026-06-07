@@ -299,11 +299,16 @@ def test_gene_context_triage_field_defaults_to_none():
 
 
 def _selector_kwargs(ctx: "GeneContext") -> dict:
+    from accessible_surfaceome.agents.plan_trim_select.runner import (
+        A1_SELECT_PROMPT_PATH,
+    )
+
     return {
         "context": ctx,
         "menu_markdown": "(menu)",
         "n_kept": 0,
         "usage_sink": [],
+        "select_prompt_path": A1_SELECT_PROMPT_PATH,
     }
 
 
