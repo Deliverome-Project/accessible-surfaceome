@@ -324,11 +324,7 @@ function MethodBlock({
                     >
                       <ChipLabelValue
                         label="validation"
-                        value={
-                          ab.validation_strength === "none"
-                            ? "no validation"
-                            : prettyEnum(ab.validation_strength)
-                        }
+                        value={prettyEnum(ab.validation_strength)}
                         muted={
                           ab.validation_strength === "none" ||
                           ab.validation_strength === "unknown"
@@ -453,39 +449,68 @@ export function SurfaceEvidenceCard({ rec, n }: Props) {
                 <div className={styles.antibodies}>
                   <p className={`label-mono ${styles.subLabel}`}>Antibodies</p>
                   <ul className={styles.abList}>
-                    {m.antibodies.map((ab, j) => (
-                      <li key={j} className={styles.abItem}>
-                        <span className={styles.abName}>{ab.name}</span>
-                        <span className={styles.abMeta}>
-                          {[ab.clone, ab.vendor, ab.catalog, ab.rrid]
-                            .filter((x): x is string => Boolean(x))
-                            .join(" · ") || "(reagent details not in source)"}
-                        </span>
-                        <span className={styles.abPills}>
-                          <StatusPill tone="neutral" size="sm">
-                            {prettyEnum(ab.monoclonal_or_polyclonal)}
-                          </StatusPill>
-                          <StatusPill tone="teal" size="sm">
-                            {prettyEnum(ab.antibody_epitope_region)}
-                          </StatusPill>
-                          <StatusPill
-                            tone={
-                              ab.validation_strength === "strong"
-                                ? "success"
-                                : ab.validation_strength === "moderate"
-                                ? "amber"
-                                : "neutral"
-                            }
-                            size="sm"
-                          >
-                            {prettyEnum(ab.validation_strength)} validation
-                          </StatusPill>
-                          <InfoTip label="About validation strength">
-                            {tooltips.antibody_validation_strength}
-                          </InfoTip>
-                        </span>
-                      </li>
-                    ))}
+                    {m.antibodies.map((ab, j) => {
+                      const reagentParts = [
+                        ab.clone,
+                        ab.vendor,
+                        ab.catalog,
+                        ab.rrid,
+                      ].filter((x): x is string => Boolean(x));
+                      const hasReagentDetails = reagentParts.length > 0;
+                      const link = hasReagentDetails
+                        ? antibodyLink(geneSymbol, ab)
+                        : null;
+                      return (
+                        <li key={j} className={styles.abItem}>
+                          <span className={styles.abName}>{ab.name}</span>
+                          <span className={styles.abMeta}>
+                            {hasReagentDetails
+                              ? reagentParts.join(" · ")
+                              : "(reagent details not in source)"}
+                            {link ? (
+                              <a
+                                className={styles.abLink}
+                                href={link.href}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                title={
+                                  link.kind === "rrid"
+                                    ? "Open this antibody on the Antibody Registry (resolved via RRID)"
+                                    : "Search the web for this antibody (gene symbol + clone / vendor / catalog)"
+                                }
+                              >
+                                {link.label}
+                              </a>
+                            ) : null}
+                          </span>
+                          <span className={styles.abPills}>
+                            <StatusPill tone="neutral" size="sm">
+                              {prettyEnum(ab.monoclonal_or_polyclonal)}
+                            </StatusPill>
+                            <StatusPill tone="teal" size="sm">
+                              {prettyEnum(ab.antibody_epitope_region)}
+                            </StatusPill>
+                            <StatusPill
+                              tone={
+                                ab.validation_strength === "strong"
+                                  ? "success"
+                                  : ab.validation_strength === "moderate"
+                                  ? "amber"
+                                  : "neutral"
+                              }
+                              size="sm"
+                            >
+                              {ab.validation_strength === "none"
+                                ? "no validation"
+                                : `${prettyEnum(ab.validation_strength)} validation`}
+                            </StatusPill>
+                            <InfoTip label="About validation strength">
+                              {tooltips.antibody_validation_strength}
+                            </InfoTip>
+                          </span>
+                        </li>
+                      );
+                    })}
                   </ul>
                 </div>
               ) : null}
