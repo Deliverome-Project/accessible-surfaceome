@@ -270,10 +270,12 @@ CREATE TABLE IF NOT EXISTS gene_identifier_public (
     synced_at                 TEXT NOT NULL DEFAULT (datetime('now'))
 );
 
-CREATE INDEX IF NOT EXISTS idx_gene_identifier_public_symbol  ON gene_identifier_public (hgnc_symbol);
-CREATE INDEX IF NOT EXISTS idx_gene_identifier_public_uniprot ON gene_identifier_public (uniprot_acc);
-CREATE INDEX IF NOT EXISTS idx_gene_identifier_public_ncbi    ON gene_identifier_public (ncbi_gene_id);
-CREATE INDEX IF NOT EXISTS idx_gene_identifier_public_ensembl ON gene_identifier_public (ensembl_gene);
+CREATE INDEX IF NOT EXISTS idx_gene_identifier_public_symbol       ON gene_identifier_public (hgnc_symbol);
+CREATE INDEX IF NOT EXISTS idx_gene_identifier_public_uniprot      ON gene_identifier_public (uniprot_acc);
+CREATE INDEX IF NOT EXISTS idx_gene_identifier_public_ncbi         ON gene_identifier_public (ncbi_gene_id);
+CREATE INDEX IF NOT EXISTS idx_gene_identifier_public_ensembl      ON gene_identifier_public (ensembl_gene);
+CREATE INDEX IF NOT EXISTS idx_gene_identifier_public_cohort       ON gene_identifier_public (cohort_symbol);
+CREATE INDEX IF NOT EXISTS idx_gene_identifier_public_needs_review ON gene_identifier_public (needs_review);
 
 
 -- ---------------------------------------------------------------------------
@@ -533,6 +535,78 @@ CREATE INDEX IF NOT EXISTS idx_surface_bind_site_alpha
     ON surface_bind_site (n_seeds_alpha);
 CREATE INDEX IF NOT EXISTS idx_surface_bind_site_beta
     ON surface_bind_site (n_seeds_beta);
+
+-- ---------------------------------------------------------------------------
+-- Schweke 2024 homo-oligomer prediction (public mirror)
+-- ---------------------------------------------------------------------------
+-- Schweke et al. 2024 (Cell 187:999, PMID 38325366, DOI
+-- 10.1016/j.cell.2024.01.022) — AF2-based per-UniProt homo-oligomer
+-- atlas. The published refset covers ~8,195 proteins across four
+-- proteomes; the intersection with our candidate-universe surfaceome
+-- is 1,205 proteins (~273 with higher-order complexes c >=3, max
+-- stoichiometry 13).
+--
+-- **Positives-only.** A row means "predicted homo-oligomer at the
+-- configured ``dimer_proba`` threshold"; a missing row means "not in
+-- the positive set" rather than "AF2 explicitly disagrees" (well-
+-- documented under-call: KCNQ1/KCNMA1, EGFR/INSR, etc. are missing
+-- despite being known dimers). Consumers default ``is_homo_oligomer
+-- =False`` for any uniprot_acc with no row.
+--
+-- Sync script: ``scripts/build_schweke_d1_table.py`` reads the figshare
+-- deposit (see ``data/external/schweke_homomer_atlas/PROVENANCE.md``)
+-- and UPSERTs per ``(universe_version, uniprot_acc)``. Released here as
+-- a public mirror — CC-BY 4.0 per Schweke's deposit, attribution
+-- "Schweke et al. 2024, Cell 187:999, CC-BY 4.0".
+
+CREATE TABLE IF NOT EXISTS schweke_homomer_public (
+    universe_version          TEXT NOT NULL,                         -- joins to candidate_universe_release
+    hgnc_id                   TEXT,
+    uniprot_acc               TEXT NOT NULL,                         -- the join key consumers use
+    gene_symbol               TEXT,
+    ensembl_gene              TEXT,
+    ncbi_gene_id              TEXT,
+    af_model_num              INTEGER NOT NULL,                      -- AF2 model rank 1..5 Schweke retained
+    stoichiometry             INTEGER NOT NULL,                      -- cyclic-symmetry order N (2..13)
+    has_higher_order_complex  INTEGER NOT NULL,                      -- 1 iff a c>=3 complex was reconstructed
+    is_ecd_only               INTEGER NOT NULL,                      -- 1 iff Schweke's nodiso3 stripped TM
+    dimer_pdb_filename        TEXT NOT NULL,                         -- ``{ACC}_V1_{model_num}.pdb`` convention
+    complex_pdb_filename      TEXT,                                  -- ``{ACC}_V1_{model_num}_c{N}_model_0_rank_1.pdb`` when has_higher_order=1
+    schweke_version           TEXT NOT NULL,                         -- e.g. 'schweke-2024-cell'
+    synced_at                 TEXT NOT NULL DEFAULT (datetime('now')),
+    PRIMARY KEY (universe_version, uniprot_acc),
+    FOREIGN KEY (universe_version) REFERENCES candidate_universe_release (universe_version)
+);
+
+CREATE INDEX IF NOT EXISTS idx_schweke_homomer_public_uniprot
+    ON schweke_homomer_public (uniprot_acc);
+CREATE INDEX IF NOT EXISTS idx_schweke_homomer_public_hgnc
+    ON schweke_homomer_public (hgnc_id);
+CREATE INDEX IF NOT EXISTS idx_schweke_homomer_public_symbol
+    ON schweke_homomer_public (gene_symbol);
+CREATE INDEX IF NOT EXISTS idx_schweke_homomer_public_stoich
+    ON schweke_homomer_public (universe_version, stoichiometry);
+CREATE INDEX IF NOT EXISTS idx_schweke_homomer_public_ecd_only
+    ON schweke_homomer_public (universe_version, is_ecd_only);
+
+
+CREATE TABLE IF NOT EXISTS schweke_homomer_release (
+    schweke_version            TEXT PRIMARY KEY,                     -- e.g. 'schweke-2024-cell'
+    universe_version           TEXT NOT NULL,                        -- candidate-universe snapshot intersected against
+    paper_doi                  TEXT NOT NULL,                        -- '10.1016/j.cell.2024.01.022'
+    pmid                       TEXT NOT NULL,                        -- '38325366'
+    figshare_doi               TEXT NOT NULL,                        -- '10.6084/m9.figshare.22309177'
+    figshare_share_link        TEXT NOT NULL,                        -- private-link recovery path
+    n_proteins_in_schweke      INTEGER NOT NULL,                     -- full Schweke positives (across proteomes)
+    n_proteins_in_intersection INTEGER NOT NULL,                     -- positives ∩ candidate_universe (~1205)
+    n_with_higher_order        INTEGER NOT NULL,                     -- subset with c >= 3
+    max_stoichiometry          INTEGER NOT NULL,                     -- 13 in the 2024-cell release
+    attribution                TEXT NOT NULL,                        -- 'Schweke et al. 2024, Cell 187:999, CC-BY 4.0'
+    license_url                TEXT,                                 -- 'https://creativecommons.org/licenses/by/4.0/'
+    loaded_at                  TEXT NOT NULL DEFAULT (datetime('now')),
+    notes                      TEXT
+);
+
 
 -- ---------------------------------------------------------------------------
 -- Approved-only community notes (public mirror)
