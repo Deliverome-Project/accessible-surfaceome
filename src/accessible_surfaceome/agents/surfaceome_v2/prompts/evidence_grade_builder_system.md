@@ -250,7 +250,7 @@ membrane after internalization (a1_evi_11). None are live-cell nonperm
 flow with KO control, and (2)/(3) are indirect — fractionation-based
 and trafficking-inferred respectively — so the picture is strong
 indirect evidence anchored by the canonical class A GPCR topology.
-Graded `supportive_but_indirect`."
+Graded supportive_but_indirect."
 ```
 
 Every numbered item carries its `(aN_evi_NN)` chip. The reader can
