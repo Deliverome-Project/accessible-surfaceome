@@ -1,26 +1,26 @@
-"""Paywall + bot-block landscape for the v2 deep-dive cohort.
+"""Paywall + bot-block landscape across 150 random cohort genes.
 
-Two-panel figure:
+Single-panel horizontal stacked bar showing how the 6,521-gene v2 deep-
+dive cohort distributes across the four operationally-relevant body-fetch
+outcomes. For each of 150 random genes, we sampled the top-5 most-recent
+PubMed papers (n = 750 total) and classified each by:
 
-* **Top**: de-facto body-fetch outcomes from the 5 anchor deep-dive runs
-  (TACSTD2 / HMGB1 / SRC / GPR75 / TGOLN2). Stacked bar shows what fraction
-  of each gene's contributing-paper set arrived as PMC full text vs.
-  PMID-only abstract. This is the OPERATIONAL truth — what the pipeline
-  actually retrieved through its full fallback chain (PMC native →
-  PMID→PMCID eLink → Unpaywall PDF), with the gap explained downstream as
-  bot-blocked / paywalled / parse-failed.
+* **PMC** — paper has a PMC ID → native PMC OA fetches the full body
+  reliably (the happy path; the pipeline's first-choice fallback step).
+* **Unpaywall** — no PMC, but Unpaywall finds an OA copy via a publisher
+  or repository whose host is *not* on the known-bot-blocked list. The
+  pipeline's second-choice fallback recovers the body.
+* **Bot-blocked** — Unpaywall's only OA path is a publisher that 403s
+  our polite User-Agent (Wiley, ASH/*Blood*, sometimes Elsevier per the
+  in-repo operational notes). The pipeline falls back to abstract.
+* **No OA** — Unpaywall returns ``is_oa=false`` (truly paywalled) OR
+  has no record at all. The pipeline falls back to abstract.
 
-* **Bottom**: forward-looking OA mix for 28 random cohort genes × top-5
-  most-recent PubMed papers each (140 papers checked via Unpaywall). Shows
-  the distribution of OA states *before* the fetch chain runs — informs
-  what the bottom-up expected paywall rate looks like across the cohort.
-
-The gap between the two panels — the anchor genes' PMC% is consistently
-HIGHER than the Unpaywall sample's "OA via PMC" rate — comes from the
-fact that the deep-dive's selector preferentially picks PMC-OA papers
-when both PMC and non-PMC options are available (PMC body is cheaper to
-parse and richer than PDF). The bottom panel is the worst case; the top
-panel is what actually happens.
+The figure is the bottom-up worst-case estimate for the cohort: PMC + Unpaywall
+buckets succeed in body-fetch; Bot-blocked + No OA degrade to
+abstract-only. Production runs typically do better because the selector
+preferentially picks PMC papers when both PMC and non-PMC options
+exist — the figure shows what we'd face on a random walk.
 
 # Reproduction:
 #   Public gist (reader-side standalone, PEP 723 deps):
@@ -38,8 +38,8 @@ from collections import Counter
 from pathlib import Path
 
 import matplotlib.pyplot as plt
-import pandas as pd
 import seaborn as sns
+from matplotlib.patches import Patch
 
 from accessible_surfaceome.audit._plotting_config import (
     CATEGORICAL_PALETTE,
@@ -48,154 +48,100 @@ from accessible_surfaceome.audit._plotting_config import (
 )
 
 ROOT = Path(__file__).resolve().parents[1]
-ANCHOR_JSON = ROOT / "data/analysis/paywall_bot_block/anchor_genes_body_fetch_rates.json"
-SAMPLE_JSON = ROOT / "data/analysis/paywall_bot_block/oa_status_sample_28genes.json"
+SAMPLE_JSON = ROOT / "data/analysis/paywall_bot_block/cohort_150_4bucket.json"
 OUT_DIR = ROOT / "data/analysis/paywall_bot_block"
 
-# Anchor colors from the brand palette
-PMC_COLOR = CATEGORICAL_PALETTE[1]      # teal — "happy path, full body retrieved"
-PMID_COLOR = CATEGORICAL_PALETTE[0]     # maroon — "fell back to abstract"
-PUBLISHER_OA = CATEGORICAL_PALETTE[3]   # lavender — Unpaywall OA via publisher
-REPO_OA = CATEGORICAL_PALETTE[2]        # amber — OA via repository
-UNKNOWN = "#9CA3AF"                      # neutral grey — Unpaywall has no record
+# Bucket → palette mapping. Teal+amber for the two successful paths;
+# maroon dark+light for the two failure paths. The ordering left→right
+# tells the story: pipeline tries PMC first, then Unpaywall, then falls
+# back when both succeed or both fail.
+PMC_COLOR = CATEGORICAL_PALETTE[1]          # teal-mid — happy path
+UNPAYWALL_COLOR = CATEGORICAL_PALETTE[2]    # amber — fallback that works
+BOTBLOCK_COLOR = CATEGORICAL_PALETTE[0]     # maroon-light — fetch fails, falls back to abstract
+NOOA_COLOR = CATEGORICAL_PALETTE[4]         # maroon-dark — truly paywalled, no fetch possible
 
+BUCKET_ORDER = ["pmc", "unpaywall", "bot_blocked", "no_oa"]
+BUCKET_LABEL = {
+    "pmc": "Full body via PMC",
+    "unpaywall": "Full body via Unpaywall",
+    "bot_blocked": "Bot-blocked publisher\n(falls back to abstract)",
+    "no_oa": "No open access\n(falls back to abstract)",
+}
+BUCKET_COLOR = {
+    "pmc": PMC_COLOR,
+    "unpaywall": UNPAYWALL_COLOR,
+    "bot_blocked": BOTBLOCK_COLOR,
+    "no_oa": NOOA_COLOR,
+}
 
-# Gist mirror gets a public URL after `gh gist create`; embedded in saved
-# artifacts via save_figure(gist_url=...).
 GIST_URL = "https://gist.github.com/beccajcarlson/76242a980c18d98ee3a2fc759a756422"
-
-
-def _load_anchors() -> pd.DataFrame:
-    rows = json.loads(ANCHOR_JSON.read_text())
-    df = pd.DataFrame(rows)
-    # Order anchors by descending PMC rate so the visual ramp is clear
-    return df.sort_values("pct_pmc", ascending=False).reset_index(drop=True)
-
-
-def _summarize_sample() -> pd.DataFrame:
-    """Collapse the 140-paper sample into a per-OA-status count + share."""
-    raw = json.loads(SAMPLE_JSON.read_text())
-    counts = Counter(r["oa_status"] for r in raw)
-    total = sum(counts.values())
-    label_order = ["oa_pmc", "oa_repo", "oa_publisher", "oa_unknown", "unknown", "closed"]
-    label_pretty = {
-        "oa_pmc": "OA via PMC\n(works reliably)",
-        "oa_repo": "OA via repository\n(Unpaywall recovers)",
-        "oa_publisher": "OA via publisher\n(some bot-blocked)",
-        "oa_unknown": "OA via other",
-        "unknown": "Unknown\n(no Unpaywall record)",
-        "closed": "Closed access\n(paywalled)",
-    }
-    label_color = {
-        "oa_pmc": PMC_COLOR,
-        "oa_repo": REPO_OA,
-        "oa_publisher": PUBLISHER_OA,
-        "oa_unknown": UNKNOWN,
-        "unknown": UNKNOWN,
-        "closed": PMID_COLOR,
-    }
-    rows = []
-    for key in label_order:
-        n = counts.get(key, 0)
-        if n == 0:
-            continue
-        rows.append(
-            {
-                "status_key": key,
-                "label": label_pretty[key],
-                "color": label_color[key],
-                "n": n,
-                "pct": 100 * n / total,
-            }
-        )
-    return pd.DataFrame(rows)
 
 
 def main() -> None:
     setup_plotting_style()
 
-    anchors = _load_anchors()
-    sample = _summarize_sample()
+    raw = json.loads(SAMPLE_JSON.read_text())
+    n_papers = len(raw)
+    n_genes = len({r["gene"] for r in raw})
+    counts = Counter(r["bucket"] for r in raw)
 
-    fig, (ax_top, ax_bot) = plt.subplots(
-        2, 1, figsize=(11, 9), gridspec_kw={"height_ratios": [1, 1.05]}
-    )
+    fig, ax = plt.subplots(figsize=(12, 5))
 
-    # ---- Top panel: per-anchor stacked bar -----------------------------
-    x = list(range(len(anchors)))
-    pmc_vals = anchors["pct_pmc"].tolist()
-    pmid_vals = anchors["pct_pmid_only"].tolist()
-    ax_top.bar(
-        x, pmc_vals, color=PMC_COLOR, label="Full body via PMC",
-        edgecolor="white", linewidth=1.0,
-    )
-    ax_top.bar(
-        x, pmid_vals, bottom=pmc_vals, color=PMID_COLOR,
-        label="Abstract-only fallback", edgecolor="white", linewidth=1.0,
-    )
-    # Annotate each bar with the absolute paper count
-    for i, row in anchors.iterrows():
-        ax_top.text(
-            i, 102,
-            f"n={row['n_unique_papers']}",
-            ha="center", va="bottom", fontsize=10, color="#374151",
-        )
-    ax_top.set_xticks(x)
-    ax_top.set_xticklabels(anchors["gene"].tolist())
-    ax_top.set_ylabel("% of contributing papers")
-    ax_top.set_ylim(0, 112)
-    ax_top.set_yticks([0, 25, 50, 75, 100])
-    ax_top.set_title(
-        "Operational: body-fetch outcomes in 5 deep-dive runs\n"
-        "(after full fallback chain: PMC native → eLink → Unpaywall PDF)",
-        fontsize=13,
-    )
-    ax_top.legend(loc="lower right", framealpha=0.95, fontsize=10)
-    sns.despine(ax=ax_top, top=True, right=True)
-
-    # ---- Bottom panel: cohort-wide Unpaywall mix -----------------------
-    # Horizontal stacked bar so the legend labels stay readable.
     cum = 0
     handles = []
-    for _, row in sample.iterrows():
-        ax_bot.barh(
-            [0], [row["pct"]], left=cum,
-            color=row["color"], edgecolor="white", linewidth=1.5,
+    for key in BUCKET_ORDER:
+        n = counts.get(key, 0)
+        if n == 0:
+            continue
+        pct = 100 * n / n_papers
+        color = BUCKET_COLOR[key]
+        ax.barh(
+            [0], [pct], left=cum, color=color,
+            edgecolor="white", linewidth=2.0,
         )
         # In-bar label when wide enough
-        if row["pct"] >= 8:
-            ax_bot.text(
-                cum + row["pct"] / 2, 0,
-                f"{row['pct']:.0f}%",
+        if pct >= 7:
+            ax.text(
+                cum + pct / 2, 0,
+                f"{pct:.0f}%",
                 ha="center", va="center",
-                color="white", fontweight="bold", fontsize=11,
+                color="white", fontweight="bold", fontsize=14,
             )
-        from matplotlib.patches import Patch
         handles.append(
-            Patch(facecolor=row["color"], edgecolor="white", linewidth=1.5,
-                  label=f"{row['label']}  ({row['n']}/{sample['n'].sum()})")
+            Patch(
+                facecolor=color, edgecolor="white", linewidth=1.5,
+                label=f"{BUCKET_LABEL[key]}  ({n}/{n_papers})",
+            )
         )
-        cum += row["pct"]
-    ax_bot.set_xlim(0, 100)
-    ax_bot.set_ylim(-0.7, 0.7)
-    ax_bot.set_yticks([])
-    ax_bot.set_xlabel("% of papers (n = 140 random papers from 28 cohort genes × top-5 most-recent)")
-    ax_bot.set_title(
-        "Cohort-wide OA mix for the 6,521-gene candidate-universe sample (Unpaywall lookup)",
+        cum += pct
+
+    # Annotate the operational success-rate cutpoint (PMC + Unpaywall together)
+    success = counts.get("pmc", 0) + counts.get("unpaywall", 0)
+    success_pct = 100 * success / n_papers
+    ax.axvline(success_pct, 0.10, 0.90, color="#1F1718", linewidth=1.2, alpha=0.6)
+    ax.text(
+        success_pct, 0.7,
+        f"  ← {success_pct:.0f}% full-body success rate",
+        ha="left", va="center", fontsize=11, color="#1F1718",
+        style="italic",
+    )
+
+    ax.set_xlim(0, 100)
+    ax.set_ylim(-0.7, 0.9)
+    ax.set_yticks([])
+    ax.set_xlabel(f"% of papers (n = {n_papers} papers from {n_genes} random cohort genes × top-5 most-recent)")
+    ax.set_title(
+        "Body-fetch outcome buckets for the v2 surfaceome deep-dive cohort\n"
+        "(150 random genes from candidate_universe_v2; 4-bucket classification per the operational fetch chain)",
         fontsize=13,
     )
-    ax_bot.legend(
-        handles=handles, loc="lower center", bbox_to_anchor=(0.5, -0.55),
-        ncol=3, frameon=False, fontsize=10,
+    ax.legend(
+        handles=handles, loc="lower center", bbox_to_anchor=(0.5, -0.45),
+        ncol=4, frameon=False, fontsize=11,
     )
-    sns.despine(ax=ax_bot, top=True, right=True, left=True)
+    sns.despine(ax=ax, top=True, right=True, left=True)
 
-    fig.suptitle(
-        "Paywall & bot-block landscape for the v2 surfaceome deep-dive cohort",
-        fontsize=15, y=1.0,
-    )
     fig.tight_layout()
-
     save_figure(
         fig, "paywall_bot_block_overview", OUT_DIR,
         formats=("pdf", "png"), gist_url=GIST_URL,
