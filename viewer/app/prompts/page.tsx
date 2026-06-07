@@ -282,6 +282,38 @@ function codeLineMask(lines: string[]): boolean[] {
   return mask;
 }
 
+/** Escape ORPHAN fenced-code openers (a ```-fence line whose matching closer
+ *  is missing) so react-markdown / CommonMark renders them as the literal prose
+ *  the author wrote, instead of opening a code block that swallows the rest of
+ *  the chunk. `codeLineMask` already classifies which fence lines are real
+ *  (balanced) vs orphan; we only neutralize the orphans, leaving genuine code
+ *  blocks untouched.
+ *
+ *  This handles the methods-builder hazard: a prose sentence wraps so a
+ *  ``` run lands at the start of a line — e.g.
+ *      A JSON ARRAY (top-level `[...]`) of `MethodObservation` rows. ONE fenced
+ *      ```json block. No prose around it.
+ *  CommonMark would read line 2 as a fence opener (info string
+ *  "json block. No prose around it.") that never closes, hiding the text and
+ *  cutting the sentence off at "ONE fenced". Escaping the leading backtick run
+ *  (`\``) drops it back to inline prose; CommonMark renders `\`` as a literal
+ *  backtick, so the visible characters are exactly what the author typed.
+ *  Closed/real fences keep their backticks and stay code blocks. */
+function neutralizeOrphanFences(md: string): string {
+  const lines = md.split("\n");
+  const inCode = codeLineMask(lines);
+  let changed = false;
+  for (let i = 0; i < lines.length; i++) {
+    if (!inCode[i] && looksLikeFence(lines[i])) {
+      // Escape only the leading run of backticks; keep the info string intact.
+      lines[i] = lines[i].replace(/^(\s*)(`+)/, (_m, ws: string, ticks: string) =>
+        ws + ticks.replace(/`/g, "\\`"));
+      changed = true;
+    }
+  }
+  return changed ? lines.join("\n") : md;
+}
+
 function extractToc(body: string): TocItem[] {
   // Match `#` … `######` headings, but skip lines inside fenced code blocks.
   const lines = body.split("\n");
@@ -590,7 +622,7 @@ export default function PromptsPage() {
                             remarkPlugins={[remarkGfm]}
                             components={makeMarkdownComponents(p.id)}
                           >
-                            {p.body}
+                            {neutralizeOrphanFences(p.body)}
                           </ReactMarkdown>
                         );
                       }
@@ -601,7 +633,7 @@ export default function PromptsPage() {
                               remarkPlugins={[remarkGfm]}
                               components={makeMarkdownComponents(p.id)}
                             >
-                              {preamble}
+                              {neutralizeOrphanFences(preamble)}
                             </ReactMarkdown>
                           ) : null}
                           {sections.map((s) => (
@@ -627,7 +659,9 @@ export default function PromptsPage() {
                                 >
                                   {/* Drop the heading line itself — the
                                       <summary> already shows the title. */}
-                                  {s.markdown.replace(/^[^\n]*\n?/, "")}
+                                  {neutralizeOrphanFences(
+                                    s.markdown.replace(/^[^\n]*\n?/, ""),
+                                  )}
                                 </ReactMarkdown>
                               </div>
                             </details>
