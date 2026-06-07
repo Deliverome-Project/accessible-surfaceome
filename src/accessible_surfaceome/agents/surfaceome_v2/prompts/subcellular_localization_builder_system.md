@@ -11,8 +11,8 @@ ONE fenced ```json block containing a JSON OBJECT (NOT an array).
 
 Claims with `claim_type=surface_expression` that describe the protein's
 compartment / subdomain (plasma membrane, cilium, endosome, lipid raft,
-tight junction, lateral membrane, etc.). HPA `db_annotation` claims
-listing subcellular locations are also primary input.
+tight junction, lateral membrane, etc.). Atlas-style `db_annotation`
+claims listing subcellular locations are also primary input.
 
 ## Schema fields
 

@@ -1101,7 +1101,7 @@ def _run_selector(
     user_prompt = (
         f"# Gene: {context.gene}\n\n"
         f"UniProt summary (for context):\n```json\n{context.uniprot_summary_json}\n```\n\n"
-        f"DB vote panel (HPA + SURFY/CSPA, for context):\n"
+        f"DB vote panel (5-database surface vote, for context):\n"
         f"```json\n{context.db_panel_json}\n```\n\n"
         f"{deterministic_block}"
         f"{triage_block}"

@@ -99,7 +99,7 @@ scRNA-seq atlas is NOT immunofluorescence.
 | **`genetic_association`** | GWAS, exome-wide rare-variant association, population genetics (e.g. Akbari et al. 2021 lower-BMI exome study) |
 | **`loss_of_function_phenotype`** | KO mouse phenotype, CRISPR-perturbed cellular phenotype, knockdown phenotype |
 | `review_assertion` | secondary citation in a review or textbook with no primary readout in the clip |
-| `db_annotation` | curated database entry (HPA, UniProt subcellular, GeneCards) |
+| `db_annotation` | curated database entry (protein atlas IHC, UniProt subcellular, gene database) |
 
 If the quote describes "GENE X mRNA…" or "the transcript…" or
 "by Northern blot" or "by RT-PCR" or "by in situ hybridization" or
@@ -115,9 +115,9 @@ A1 to harvest from the shared pool.
 
 1. **Tissue / cell-type expression**
    * `claim_type=tissue_expression`. Per-tissue presence (high /
-     moderate / low / absent) in primary human samples. HPA tissue
-     panels, GTEx, scRNA-seq atlases, primary tumor cohorts, IHC
-     tissue arrays.
+     moderate / low / absent) in primary human samples. IHC tissue
+     panels, bulk and single-cell tissue datasets, primary tumor
+     cohorts, IHC tissue arrays.
    * Capture the tissue name, the cell-type if named, the disease
      context (normal / tumor / inflamed / etc.) in your `claim` prose
      so the block builder can populate one `ExpressionRow` per

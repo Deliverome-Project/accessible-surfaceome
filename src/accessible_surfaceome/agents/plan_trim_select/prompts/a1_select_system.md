@@ -101,7 +101,7 @@ quote**, not the inference you'd draw from the result.
 | `genetic_association` | GWAS, exome-wide rare-variant association (Akbari-class) |
 | `loss_of_function_phenotype` | KO mouse phenotype, CRISPR-perturbed phenotype |
 | `review_assertion` | secondary citation in a review or textbook with no primary readout in the clip |
-| `db_annotation` | curated database entry (HPA, UniProt subcellular, GeneCards) |
+| `db_annotation` | curated database entry (protein atlas IHC, UniProt subcellular, gene database) |
 
 When the quote says "Northern blot", pick `northern_blot`, not
 `western_blot`. When the quote says "in situ hybridization", pick
