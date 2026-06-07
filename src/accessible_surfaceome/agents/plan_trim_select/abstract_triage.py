@@ -35,6 +35,7 @@ from anthropic import Anthropic
 from anthropic.types import TextBlock
 from pydantic import ValidationError
 
+from accessible_surfaceome.agents._support.payload import cached_system
 from accessible_surfaceome.agents._support.pricing import (
     UsageRecord,
     record_from_response,
@@ -74,6 +75,48 @@ TRIAGE_CONCURRENCY = 10
 
 _FENCED_JSON_RE = re.compile(r"```(?:json)?\s*(\{.*?\})\s*```", re.DOTALL)
 
+# Cache the system prompt at module load — it carries the rules + schema and
+# is byte-identical across every per-paper triage call. Hoisting the JSON
+# schema serialization to module scope keeps the cached prefix stable across
+# calls (was: re-serialized per call, which created subtle whitespace drift
+# that defeated the cache key). Caching is the highest-ROI cost lever on the
+# Haiku triage path — ~50 calls/gene × ~1.9k cached input tokens → ~$0.08
+# saved per gene at $0.10/M cached read vs $1/M cold input.
+_SCHEMA_JSON: str = json.dumps(
+    AbstractTriageResponse.model_json_schema(), indent=2
+)
+_SYSTEM_PROMPT_CACHED: str = ABSTRACT_TRIAGE_PROMPT_PATH.read_text().format(
+    schema=_SCHEMA_JSON
+)
+
+
+def _build_user_message(
+    *,
+    gene: str,
+    synonyms: str,
+    paper_id: str,
+    title: str,
+    year: str,
+    abstract: str,
+) -> str:
+    """Per-paper user message — the only thing that varies between calls.
+
+    The system prompt (rules + schema) is cached; only this payload is billed
+    at full input-token rate on each call. Keep the structure stable so the
+    cached system prefix never falls out of cache due to message-formatting
+    drift.
+    """
+    return (
+        f"Gene: {gene}\n"
+        f"Synonyms: {synonyms}\n"
+        f"Paper id: {paper_id}\n"
+        f"Title: {title}\n"
+        f"Year: {year}\n"
+        f"\n"
+        f"Abstract:\n"
+        f"{abstract}"
+    )
+
 
 def _extract_json(text: str) -> dict[str, Any] | None:
     match = _FENCED_JSON_RE.search(text)
@@ -109,6 +152,14 @@ def triage_one_abstract(
     symbol to identify the gene, which leads it to treat the common
     name as a different protein (e.g. CD20 vs MS4A1). Passing the
     bundle is strongly recommended.
+
+    The rules + schema live in a cached system prompt (loaded once at
+    module import); only the per-paper user message is billed at full
+    input rate on each call. ``prompt_template`` is kept as a kwarg
+    for back-compat with tests that override the prompt path, but it
+    is now respected by re-serializing into the user-message format
+    rather than by re-templating the system block — semantic-identical
+    to the pre-caching path.
     """
 
     if not paper.abstract or not paper.abstract.strip():
@@ -120,26 +171,44 @@ def triage_one_abstract(
             error="no abstract",
         )
 
-    template = prompt_template or ABSTRACT_TRIAGE_PROMPT_PATH.read_text()
     paper_id = _paper_source_id(paper)
-    schema_str = json.dumps(AbstractTriageResponse.model_json_schema(), indent=2)
-    prompt = template.format(
+    user_msg = _build_user_message(
         gene=gene,
         synonyms=_format_synonyms(bundle),
         paper_id=paper_id,
         title=paper.title or "(no title)",
         year=str(paper.year) if paper.year else "(unknown)",
         abstract=paper.abstract.strip(),
-        schema=schema_str,
     )
+    # Tests may override the prompt template by passing a custom one — when
+    # they do, fall back to the legacy single-message path so test-side prompt
+    # substitutions still flow into the call body. Production never sets this.
+    if prompt_template is not None:
+        legacy_prompt = prompt_template.format(
+            gene=gene,
+            synonyms=_format_synonyms(bundle),
+            paper_id=paper_id,
+            title=paper.title or "(no title)",
+            year=str(paper.year) if paper.year else "(unknown)",
+            abstract=paper.abstract.strip(),
+            schema=_SCHEMA_JSON,
+        )
+        create_kwargs: dict[str, Any] = {
+            "model": HAIKU_MODEL,
+            "max_tokens": MAX_TOKENS_TRIAGE,
+            "messages": cast("Any", [{"role": "user", "content": legacy_prompt}]),
+        }
+    else:
+        create_kwargs = {
+            "model": HAIKU_MODEL,
+            "max_tokens": MAX_TOKENS_TRIAGE,
+            "system": cast("Any", cached_system(_SYSTEM_PROMPT_CACHED)),
+            "messages": cast("Any", [{"role": "user", "content": user_msg}]),
+        }
 
     t0 = time.perf_counter()
     try:
-        resp = client.messages.create(
-            model=HAIKU_MODEL,
-            max_tokens=MAX_TOKENS_TRIAGE,
-            messages=cast("Any", [{"role": "user", "content": prompt}]),
-        )
+        resp = client.messages.create(**create_kwargs)
     except Exception as exc:  # noqa: BLE001
         return TriageOutcome(
             paper_id=paper_id,
