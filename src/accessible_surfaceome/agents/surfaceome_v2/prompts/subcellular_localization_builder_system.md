@@ -54,6 +54,22 @@ claims listing subcellular locations are also primary input.
   a compartment like `inner leaflet of plasma membrane` instead — never as
   a surface subdomain.
 
+## Boundary — cell-intrinsic microdomain here, tissue-level reachability in anatomical_accessibility
+
+`membrane_subdomains` records the CELL-INTRINSIC microdomain — which face of
+which membrane / which microdomain the protein occupies — as a localization
+FACT, independent of tissue context or how a binder is delivered. You do NOT
+assess whether a systemically delivered binder can REACH that surface in a given
+organ; that is the **anatomical_accessibility** builder's job. So *"localizes to
+the apical membrane"* (a bare subdomain fact) → here; *"apical / luminal in
+intestinal epithelium, so shielded from the blood"* (orientation + tissue +
+reachability consequence) → anatomical_accessibility. The `apical` /
+`basolateral` / `ciliary` labels appear in both blocks on purpose: here they
+mark WHERE on the cell; there they mark what that orientation MEANS for binder
+access in a named tissue. When a claim has both, the bare subdomain fact is
+yours and the tissue-level reachability is anatomical_accessibility's (same
+`evidence_id`, different substance).
+
 ## Empty cases
 
 If the ledger has no compartment claims at all, emit

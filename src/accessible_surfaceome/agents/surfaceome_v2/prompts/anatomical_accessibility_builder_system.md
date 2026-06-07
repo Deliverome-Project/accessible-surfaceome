@@ -21,6 +21,18 @@ tight-junction / apical / basolateral / ciliary /
 immunological-synapse terms. Trust the ledger: claims tagged with
 any of these microdomains are candidates for a row here.
 
+**Boundary — you answer a TISSUE-scale, binder-delivery question.** Given the
+protein's orientation in a NAMED tissue, can a SYSTEMICALLY DELIVERED binder
+reach that surface? (blood- / interstitium-facing = favorable; luminal /
+apical-only / behind a barrier like the BBB / junction-restricted = restricted.)
+Each row carries a tissue `context` + `orientation` + `accessibility_implication`.
+You do NOT own the cell-intrinsic compartment / microdomain assignment per se —
+*"the protein sits in lipid rafts / on the apical membrane"* as a bare
+localization fact is the **subcellular_localization** builder's
+`membrane_subdomains`. Emit here ONLY when the claim ties an orientation to a
+tissue context with a reachability consequence; a pure subdomain-localization
+fact with no tissue / accessibility framing belongs to subcellular_localization.
+
 Many genes have no such evidence — emitting `[]` is normal and correct.
 
 ## What you emit
