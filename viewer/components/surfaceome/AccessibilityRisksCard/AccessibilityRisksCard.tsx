@@ -5,7 +5,7 @@ import type {
 } from "../../../lib/surfaceome-types";
 import { prettyEnum } from "../../../lib/surfaceome";
 import { ChipLabelValue } from "../ChipLabelValue/ChipLabelValue";
-import { EvidenceChipList } from "../EvidenceChip/EvidenceChip";
+import { EvidenceChipList, linkifyEvidenceRefs } from "../EvidenceChip/EvidenceChip";
 import { FeatureRationales } from "../FeatureChips/FeatureChips";
 import { SectionCard } from "../SectionCard/SectionCard";
 import { StatusPill } from "../StatusPill/StatusPill";
@@ -114,7 +114,9 @@ export function AccessibilityRisksCard({ rec, n }: Props) {
           />
         </div>
         {r.epitope_masking.rationale ? (
-          <p className={styles.prose}>{r.epitope_masking.rationale}</p>
+          <p className={styles.prose}>
+            {linkifyEvidenceRefs(r.epitope_masking.rationale)}
+          </p>
         ) : null}
       </div>
 
@@ -275,7 +277,9 @@ export function AccessibilityRisksCard({ rec, n }: Props) {
           />
         </div>
         {r.ecd_size_assessment.rationale ? (
-          <p className={styles.prose}>{r.ecd_size_assessment.rationale}</p>
+          <p className={styles.prose}>
+            {linkifyEvidenceRefs(r.ecd_size_assessment.rationale)}
+          </p>
         ) : null}
       </div>
 
