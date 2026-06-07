@@ -1154,8 +1154,9 @@ ProteinFamily = Literal[
 #     antibody detail lives in ``AntibodyRef.validation_strategy``.
 #   * ``low_endogenous_expression`` → read the DERIVED
 #     ``filters.low_endogenous_expression`` (computed deterministically
-#     from ``filters.expression_level ∈ {low, absent}``), so the
-#     headline list can't drift from the filter the catalog filters on.
+#     from ``filters.expression_level`` + ``expression_breadth`` — see
+#     the field's docstring for the exact rule), so the headline list
+#     can't drift from the filter the catalog filters on.
 #   * ``ligand_unknown`` → not a "risk"; orphan-receptor status now
 #     lives on ``filters.has_known_ligand: bool``.
 #   * ``other`` → forbidden escape hatch. If the risk doesn't fit one
@@ -1747,12 +1748,19 @@ class Filters(BaseModel):
     cyno_ortholog_ecd_pct_identity: float | None = Field(default=None, ge=0.0, le=100.0)
     n_term_extracellular: bool
     c_term_extracellular: bool
-    # Derived, NOT agent-emitted: the orchestrator computes this from
-    # ``expression_level`` after the synthesizer call so the headline
-    # signal can't drift from the catalog filter. ``True`` when
-    # ``expression_level ∈ {low, absent}``. Replaces the now-dropped
-    # ``HeadlineRisk.low_endogenous_expression`` enum value — readers
-    # see one canonical signal, the catalog filters on it.
+    # Derived, NOT agent-emitted: the orchestrator computes this in
+    # ``_derive_filters`` after the synthesizer call so the headline
+    # signal can't drift from the catalog filter. ``True`` when EITHER
+    # the baseline expression is low/absent OR it's moderate but
+    # concentrated in one or two tissues:
+    #   * ``expression_level ∈ {low, absent}``, OR
+    #   * ``expression_level == 'moderate'`` AND
+    #     ``expression_breadth == 'restricted'`` (catches the moderate-
+    #     but-tissue-restricted case where endogenous burden in non-
+    #     target tissues is effectively low — GPR75-class).
+    # Replaces the now-dropped ``HeadlineRisk.low_endogenous_expression``
+    # enum value — readers see one canonical signal, the catalog filters
+    # on it.
     low_endogenous_expression: bool = False
     # Orphan-receptor status — ``True`` (the default) when a validated
     # endogenous ligand is documented. Set ``False`` for orphan
@@ -1821,9 +1829,13 @@ class Filters(BaseModel):
     expression_breadth_rationale: str = ""
     surface_specificity_rationale: str = ""
     has_known_ligand_rationale: str = ""
-    # Orchestrator-composed (deterministic): references ``expression_level``
-    # and its rationale — ``low_endogenous_expression`` fires iff
-    # ``expression_level ∈ {low, absent}``.
+    # Orchestrator-composed (deterministic): the synth's
+    # ``expression_level_rationale`` verbatim. No pipeline-internal
+    # preamble (no enum names, no "Derived from" framing) — the synth
+    # already writes natural-language reasoning anchored by cites; the
+    # composition rule (see ``low_endogenous_expression`` above) is
+    # documented in code, not surfaced to the reader. Empty when the
+    # synth left its rationale blank.
     low_endogenous_expression_rationale: str = ""
     # Orchestrator-composed (deterministic): names the overexpression +
     # surface-localization method observation(s) that set the flag True.
@@ -3608,8 +3620,8 @@ class SurfaceomeRecord(BaseModel):
 
     schema_version: Literal[
         "1.0.0", "1.1.0", "2.0.0", "2.1.0", "2.2.0", "2.3.0", "2.4.0", "2.4.1",
-        "2.5.0", "2.6.0", "2.7.0", "2.8.0",
-    ] = "2.8.0"
+        "2.5.0", "2.6.0", "2.7.0", "2.8.0", "2.9.0",
+    ] = "2.9.0"
     gene: GeneIdentifier
 
     # Cross-agent coherence — populated by the orchestrator from the most
@@ -3801,8 +3813,8 @@ class SurfaceomeRecordDraft(BaseModel):
 
     schema_version: Literal[
         "1.0.0", "1.1.0", "2.0.0", "2.1.0", "2.2.0", "2.3.0", "2.4.0", "2.4.1",
-        "2.5.0", "2.6.0", "2.7.0", "2.8.0",
-    ] = "2.8.0"
+        "2.5.0", "2.6.0", "2.7.0", "2.8.0", "2.9.0",
+    ] = "2.9.0"
     gene: GeneIdentifier
 
     # Orchestrator-injected before the agent call; the agent reads it but does

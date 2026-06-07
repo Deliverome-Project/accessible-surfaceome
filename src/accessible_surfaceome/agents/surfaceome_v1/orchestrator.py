@@ -631,22 +631,35 @@ def _derive_filters(
             "system with a direct or supportive surface-accessibility readout."
         )
 
-    # Composed rationale for the low-endogenous derived boolean — references
-    # the expression_level it was derived from + the synthesizer's reason.
-    _low_endog = filters_llm.expression_level in ("low", "absent")
-    low_endog_rationale = (
-        f"Derived from expression_level={filters_llm.expression_level!r}"
-        + (
-            " (∈ {low, absent} → flagged)."
-            if _low_endog
-            else " (not low/absent → not flagged)."
-        )
-        + (
-            f" {filters_llm.expression_level_rationale}"
-            if filters_llm.expression_level_rationale
-            else ""
-        )
+    # Derived boolean for the low-endogenous-exposure chip.
+    #
+    # Two cases trip the flag:
+    #   1. Outright low / absent baseline expression
+    #      (``expression_level ∈ {low, absent}``).
+    #   2. Moderate baseline that's concentrated in one or two tissues
+    #      (``expression_level=='moderate'`` AND
+    #      ``expression_breadth=='restricted'``). Catches the GPR75-class
+    #      gene where the synth call is "moderate" but the breadth is
+    #      narrow enough that endogenous burden in non-target tissues is
+    #      effectively low — relevant for ADC therapeutic-window
+    #      framing.
+    #
+    # Surface_specificity is intentionally NOT in this rule even when it's
+    # ``restricted`` / ``tumor_enriched``: that field has its own catalog
+    # chip, and folding it in here would have the same biology fire two
+    # correlated rationales for the reader.
+    _low_endog = filters_llm.expression_level in ("low", "absent") or (
+        filters_llm.expression_level == "moderate"
+        and filters_llm.expression_breadth == "restricted"
     )
+    # The rationale text the reader sees is the synth's
+    # ``expression_level_rationale`` verbatim — natural-language reasoning
+    # anchored by cites. No pipeline-internal preamble (no enum names,
+    # no boolean arithmetic, no "Derived from" framing): those leaked
+    # schema state into user prose and added nothing the synth's
+    # rationale didn't already say. Empty rationale falls back to the
+    # field default ``""``, which the viewer renders as no expansion.
+    low_endog_rationale = filters_llm.expression_level_rationale
 
     def _canonical_species_identity(entries: list) -> float | None:
         for e in entries:

@@ -1,14 +1,14 @@
 {
   "SurfaceomeRecord": {
-    "fingerprint": "ca863658daf7f49913e4521695a4fe290adcfbdbd49c0b79a76607fcf403be3e",
-    "version": "2.8.0"
+    "fingerprint": "b7cd625ebaa1dbb8e2bf5c5095c545265f37ffeb72045aba9a13f787856732c2",
+    "version": "2.9.0"
   },
   "TriageRecord": {
     "fingerprint": "974f419bd1f6547fe28bcd7317a236bab0ef1efec8a9c8ac2bdb27d10ccf98ac",
     "version": "v0.9.0"
   },
   "prompt_corpus": {
-    "fingerprint": "2203758714964509f4a390a3df1070f52539459f282a91a4c6a9f196ab8100b4",
-    "version": "2.6.0"
+    "fingerprint": "fdac2a3cc1d1928341f8915b1bb2de04543c0b77f3c540c476cb88dc2cb1a5ea",
+    "version": "2.7.0"
   }
 }
