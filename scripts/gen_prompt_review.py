@@ -100,7 +100,7 @@ def kickoff_section():
         )
         a2_block = (
             '<h3 class="kgrouphead"><span class="b a2only">A2 only</span> '
-            f"biological-context extras ({len(a2_only)})</h3>"
+            f"surface-expression extras ({len(a2_only)})</h3>"
             f'<div class="srows">{a2_rows}</div>'
         )
     return f"""<section class="kick">
@@ -171,7 +171,7 @@ def pipeline_section() -> str:
       <p class="sub2">The map of the v2 deep-dive. Retrieval
       (<code>plan_trim_select</code>) lands two claim ledgers; the
       <span class="pbtag pbtag-a1">A1</span> (surface-evidence) and
-      <span class="pbtag pbtag-a2">A2</span> (biology) builders each extract one
+      <span class="pbtag pbtag-a2">A2</span> (surface expression) builders each extract one
       structured block from their slice; two
       <span class="pbtag pbtag-rollup">ROLLUP</span> steps
       (<code>evidence_grade</code> + the synthesizer) aggregate across blocks
@@ -187,7 +187,7 @@ def pipeline_section() -> str:
             <span class="pledger pledger-a1">A1 ledger
             <span class="pln">surface-evidence claims</span></span>
             <span class="pledger pledger-a2">A2 ledger
-            <span class="pln">biology claims</span></span>
+            <span class="pln">surface expression claims</span></span>
           </div>
         </div>
 
@@ -201,7 +201,7 @@ def pipeline_section() -> str:
           </div>
           <div class="pbcol pbcol-a2">
             <div class="pbcol-h"><span class="pbtag pbtag-a2">A2</span>
-              biology focus</div>
+              surface expression focus</div>
             {a2_cards}
           </div>
         </div>
@@ -604,7 +604,7 @@ EXAMPLE_FLOW_STAGES = [
         ),
         "outputs": [
             "a1_claims  (~50&ndash;80 surface-evidence claims for EGFR)",
-            "a2_claims  (~30&ndash;60 biological-context claims for EGFR)",
+            "a2_claims  (~30&ndash;60 surface-expression claims for EGFR)",
             "search_log  (every PubMed / EuropePMC / PubTator query + count)",
         ],
     },
@@ -646,7 +646,7 @@ EXAMPLE_FLOW_STAGES = [
             "Eight independent block builders fan out in parallel: 4 on the "
             "A1 (surface-evidence) side &mdash; methods, contradictions, "
             "evidence_grade, evidence_grade also gets calibration context as "
-            "of this PR &mdash; and 4 on the A2 (biological-context) side: "
+            "of this PR &mdash; and 4 on the A2 (surface-expression) side: "
             "expression, cell_states, subcellular_localization, "
             "anatomical_accessibility, accessibility_modulation. Each one "
             "extracts a structured block out of its claim slice; the "
