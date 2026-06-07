@@ -46,7 +46,16 @@ export function ExpressionCard({ rec, n }: Props) {
   // unification and lack `expression`. Fall back to empty so the page
   // renders during the re-sync window. Remove once every served record has
   // been re-annotated and D1 carries `expression`.
-  const expression = bc.expression ?? [];
+  // Stable-sort by DISEASE_CONTEXT_RANK so normal-tissue rows lead the
+  // table (the on-target / off-tumor baseline reads first), followed by
+  // tumor_adjacent → tumor → other_disease → mixed → unknown. Agent-
+  // emitted order is preserved within each disease_context bucket, so a
+  // gene's own "important first" ordering still shows through.
+  const expression = [...(bc.expression ?? [])].sort(
+    (a, b) =>
+      (DISEASE_CONTEXT_RANK[a.disease_context] ?? 99) -
+      (DISEASE_CONTEXT_RANK[b.disease_context] ?? 99),
+  );
   return (
     <SectionCard
       n={n}
