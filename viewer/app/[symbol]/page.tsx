@@ -24,13 +24,11 @@ import { IsoformsCard } from "../../components/surfaceome/IsoformsCard/IsoformsC
 import { SurfaceBindCard } from "../../components/surfaceome/SurfaceBindCard/SurfaceBindCard";
 import { SurfaceEvidenceCard } from "../../components/surfaceome/SurfaceEvidenceCard/SurfaceEvidenceCard";
 import {
-  SCHEMA_FRESHNESS_DOTS_ENABLED,
   listSurfaceomeGeneEntries,
   listSurfaceomeGenes,
   loadBenchmarkRow,
   loadCatalogRow,
   loadGeneName,
-  loadSchemaStatus,
   loadSurfaceomeRecord,
 } from "../../lib/surfaceome";
 import {
@@ -128,18 +126,16 @@ export default async function GenePage({ params }: PageProps) {
   // SURFACEOME_API_BASE=local (empty matrix) — the row simply doesn't show.
   const benchmarkRow = await loadBenchmarkRow(rec.gene.hgnc_symbol);
 
-  // Deep-dive genes (symbol + schema_version) for the toolbar's <GeneJump>
+  // Deep-dive genes (symbol + freshness flag) for the toolbar's <GeneJump>
   // typeahead — the SAME set generateStaticParams emits, so every
   // suggestion resolves to a real statically-generated page (a non-deep-dive
-  // symbol would 404 under output: export). Each entry's schema_version
-  // drives its freshness dot (green = current, amber = out of date).
-  // Memoized — shares the single /v1/genes fetch with listSurfaceomeGenes —
-  // so this is one Worker call per build, not per page.
+  // symbol would 404 under output: export). Each entry's `stale` flag is
+  // computed from the Worker's per-gene `schema_version` (D1) vs the
+  // current `CURRENT_RECORD_SCHEMA_VERSION` target — green = current,
+  // amber = out of date. Memoized — shares the single /v1/genes fetch
+  // with listSurfaceomeGenes — so this is one Worker call per build,
+  // not per page.
   const deepDiveGenes = await listSurfaceomeGeneEntries();
-  // Show freshness dots only when the temporary feature is on AND the
-  // schema-status manifest exists (else the dots would be meaningless).
-  const showSchemaDots =
-    SCHEMA_FRESHNESS_DOTS_ENABLED && loadSchemaStatus() !== null;
 
   // v1.0.0 section order mirrors the EGFR mockup in
   // docs/plans/2026-05-13-deep-dive-redesign-surface-accessibility.md.
@@ -286,7 +282,7 @@ export default async function GenePage({ params }: PageProps) {
           <GeneJump
             genes={deepDiveGenes}
             current={rec.gene.hgnc_symbol}
-            showSchemaDots={showSchemaDots}
+            showSchemaDots
           />
           <span className={styles.crumbActions}>
             <a

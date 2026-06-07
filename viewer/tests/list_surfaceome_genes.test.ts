@@ -18,18 +18,23 @@
  *   - retry5xx      → THROWS after 3 attempts on persistent 5xx (no silent []).
  *   - fail4xx       → THROWS after 1 attempt on 4xx (deterministic, no retry).
  *   - entries       → listSurfaceomeGeneEntries() returns {symbol, stale};
- *                     no manifest → nothing stale; sorted, empties filtered.
- *   - entries-stale → a gene listed in schema_status.json's `stale` set gets
- *                     stale=true; others stay false.
+ *                     every gene at the current schema_version is fresh
+ *                     (stale=false), sorted, empties filtered.
+ *   - entries-stale → genes whose Worker-reported schema_version lags
+ *                     CURRENT_RECORD_SCHEMA_VERSION are marked stale=true;
+ *                     those at the current version stay false.
  * retry5xx/fail4xx are the hardening: a flaky Worker must fail the build
  * loudly instead of returning [] (an empty list silently drops every gene
  * route AND flips every catalog row to deep_dive=false via the loadCatalog
  * reconciliation).
  */
 
-import { writeFileSync } from "node:fs";
-
 const scenario = process.argv[2] ?? "";
+
+// The viewer's CURRENT_RECORD_SCHEMA_VERSION constant. Hard-coded here so
+// the test pins the comparison even if the constant moves; bump in lock-
+// step with lib/surfaceome.ts when the schema rolls.
+const CURRENT = "2.6.0";
 let fetchCalls = 0;
 
 function jsonResponse(body: unknown, status = 200): Response {
@@ -53,13 +58,22 @@ globalThis.fetch = (async (): Promise<Response> => {
         ],
       });
     case "entries":
+      return jsonResponse({
+        genes: [
+          { gene_symbol: "KIR2DL1", schema_version: CURRENT },
+          { gene_symbol: "EGFR", schema_version: CURRENT },
+          { gene_symbol: "ZED", schema_version: CURRENT },
+          { gene_symbol: "", schema_version: CURRENT }, // filtered (falsy)
+          {}, // no gene_symbol -> filtered out
+        ],
+      });
     case "entries-stale":
       return jsonResponse({
         genes: [
-          { gene_symbol: "KIR2DL1" },
-          { gene_symbol: "EGFR" },
-          { gene_symbol: "ZED" },
-          { gene_symbol: "" }, // filtered out (falsy)
+          { gene_symbol: "KIR2DL1", schema_version: CURRENT },
+          { gene_symbol: "EGFR", schema_version: "1.1.0" }, // lags target
+          { gene_symbol: "ZED", schema_version: CURRENT },
+          { gene_symbol: "", schema_version: CURRENT }, // filtered (falsy)
           {}, // no gene_symbol -> filtered out
         ],
       });
@@ -90,20 +104,6 @@ process.env.SURFACEOME_API_BASE =
 // the /v1/genes fetch+parse path, deterministically (independent of how
 // many snapshots happen to be committed).
 process.env.SURFACEOME_SNAPSHOT_DIR = "/tmp/__surfaceome_no_snapshots__";
-
-// Isolate the schema-freshness manifest. Most scenarios point at a
-// non-existent path (loadSchemaStatus() → null → nothing stale). The
-// 'entries-stale' scenario writes a fixture marking EGFR stale.
-if (scenario === "entries-stale") {
-  const fixture = "/tmp/__surfaceome_schema_status_fixture.json";
-  writeFileSync(
-    fixture,
-    JSON.stringify({ stale: ["EGFR"], current: ["KIR2DL1", "ZED"] }),
-  );
-  process.env.SCHEMA_STATUS_PATH = fixture;
-} else {
-  process.env.SCHEMA_STATUS_PATH = "/tmp/__surfaceome_no_schema_status__";
-}
 
 const { listSurfaceomeGenes, listSurfaceomeGeneEntries } = await import(
   "../lib/surfaceome.ts"
@@ -155,7 +155,9 @@ if (scenario === "local") {
     fail(`expected ${JSON.stringify(expected)}, got ${JSON.stringify(entries)}`);
   }
   if (fetchCalls !== 1) fail(`expected 1 fetch, got ${fetchCalls}`);
-  pass("entries are {symbol, stale:false} with no manifest, sorted, filtered");
+  pass(
+    "entries at current schema_version are stale:false; sorted, filtered",
+  );
 } else if (scenario === "entries-stale") {
   const entries = await listSurfaceomeGeneEntries();
   const expected = [
@@ -166,7 +168,9 @@ if (scenario === "local") {
   if (JSON.stringify(entries) !== JSON.stringify(expected)) {
     fail(`expected ${JSON.stringify(expected)}, got ${JSON.stringify(entries)}`);
   }
-  pass("manifest 'stale' set marks the right entry stale");
+  pass(
+    "schema_version lagging CURRENT_RECORD_SCHEMA_VERSION marks entry stale",
+  );
 } else {
   fail(
     `unknown scenario '${scenario}' ` +

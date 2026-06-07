@@ -663,17 +663,24 @@ export async function loadBenchmarkRow(
  * exactly like the catalog fetch.
  */
 /** One deep-dive gene in the index: its symbol plus whether its published
- *  record is `stale` — i.e. fails validation against the current
- *  SurfaceomeRecord schema and needs re-running. `stale` comes from the
- *  committed `schema_status.json` manifest (scripts/check_schema_freshness.py),
- *  NOT from the record's `schema_version` string (which wasn't maintained
- *  across schema reworks). The GeneJump dropdown colors each entry's
- *  freshness dot from it (amber = stale, green = current). Genes absent from
- *  the manifest default to non-stale. */
+ *  record is `stale` — i.e. its declared `schema_version` lags the current
+ *  `SurfaceomeRecord` target (`CURRENT_RECORD_SCHEMA_VERSION` below). The
+ *  per-gene `schema_version` is read straight off the Worker's `/v1/genes`
+ *  index (D1 column `surface_annotation.schema_version`), so the freshness
+ *  signal updates the moment a re-annotated record lands in D1 — no
+ *  manifest to regenerate. The GeneJump dropdown colors each entry's
+ *  freshness dot from this flag (amber = stale, green = current). */
 export interface GeneEntry {
   symbol: string;
   stale: boolean;
 }
+
+/** Target `SurfaceomeRecord.schema_version` that the current code reads
+ *  cleanly. Bump this in lock-step with the Pydantic `SurfaceomeRecord`
+ *  default in `src/accessible_surfaceome/tools/_shared/models.py`. Records
+ *  whose declared `schema_version` lags this constant render as stale
+ *  (amber dot) in the GeneJump dropdown until they're re-annotated. */
+export const CURRENT_RECORD_SCHEMA_VERSION = "2.6.0";
 
 let _geneEntriesPromise: Promise<GeneEntry[]> | null = null;
 
@@ -733,11 +740,14 @@ async function _listSurfaceomeGeneEntriesImpl(): Promise<GeneEntry[]> {
     );
   }
   const data = (await res.json()) as {
-    genes?: Array<{ gene_symbol?: string }>;
+    genes?: Array<{ gene_symbol?: string; schema_version?: string }>;
   };
-  const symbols = new Set<string>();
+  // Map symbol → schema_version straight off the Worker payload. A gene's
+  // freshness is just (schema_version === CURRENT_RECORD_SCHEMA_VERSION),
+  // computed below.
+  const schemaBySymbol = new Map<string, string | undefined>();
   for (const g of data.genes ?? []) {
-    if (g.gene_symbol) symbols.add(g.gene_symbol);
+    if (g.gene_symbol) schemaBySymbol.set(g.gene_symbol, g.schema_version);
   }
   // Union with locally-published snapshots. `publish_record` writes
   // `public/data/surfaceome/{SYMBOL}.json` on every annotate run, but the
@@ -749,16 +759,20 @@ async function _listSurfaceomeGeneEntriesImpl(): Promise<GeneEntry[]> {
   // gets a route regardless of edge-cache state; its record data still
   // comes from the Worker at render time. Best-effort — a missing dir
   // (clean checkout / CI smoke build) just leaves the Worker list as-is.
-  for (const sym of _localSnapshotGenes()) symbols.add(sym);
-  // Overlay schema-freshness: a gene listed in the manifest's `stale` set
-  // gets the amber dot. Absent manifest → nothing stale (all green).
-  const status = loadSchemaStatus();
-  const staleSet = status ? new Set(status.stale) : null;
-  return Array.from(symbols)
+  // Snapshot-only genes (no /v1/genes row yet) have no schema_version —
+  // treat them as current (green) on the assumption that a just-published
+  // snapshot is on the current schema; the next /v1/genes refresh corrects
+  // it if not.
+  for (const sym of _localSnapshotGenes()) {
+    if (!schemaBySymbol.has(sym)) {
+      schemaBySymbol.set(sym, CURRENT_RECORD_SCHEMA_VERSION);
+    }
+  }
+  return Array.from(schemaBySymbol.keys())
     .sort((a, b) => a.localeCompare(b))
     .map((symbol) => ({
       symbol,
-      stale: staleSet ? staleSet.has(symbol) : false,
+      stale: schemaBySymbol.get(symbol) !== CURRENT_RECORD_SCHEMA_VERSION,
     }));
 }
 
@@ -771,53 +785,6 @@ function _localSnapshotGenes(): string[] {
       .map((f) => f.slice(0, -".json".length));
   } catch {
     return [];
-  }
-}
-
-/**
- * Temporary migration aid: show schema-freshness dots in the GeneJump
- * dropdown. The dots flag deep-dive records that fail the current schema
- * (per `schema_status.json`). Flip to `false` (or delete the manifest) to
- * retire the dots once the cohort is regenerated against the current schema.
- */
-export const SCHEMA_FRESHNESS_DOTS_ENABLED = true;
-
-// `SCHEMA_STATUS_PATH` env var overrides the manifest location — used by
-// tests to point at a fixture (or a non-existent path → no stale flags).
-const SCHEMA_STATUS_PATH =
-  process.env.SCHEMA_STATUS_PATH ??
-  path.join(process.cwd(), "public", "data", "schema_status.json");
-
-export interface SchemaStatus {
-  generatedAt: string | null;
-  schemaVersion: string | null;
-  /** Genes whose published record fails the current schema. */
-  stale: string[];
-  /** Genes whose record validates against the current schema. */
-  current: string[];
-}
-
-/**
- * The committed schema-freshness manifest written by
- * `scripts/check_schema_freshness.py`, or `null` when it's absent (the dots
- * then don't render). Best-effort: malformed JSON also yields `null`.
- */
-export function loadSchemaStatus(): SchemaStatus | null {
-  try {
-    const j = JSON.parse(readFileSync(SCHEMA_STATUS_PATH, "utf8")) as {
-      generated_at?: string;
-      schema_version?: string;
-      stale?: string[];
-      current?: string[];
-    };
-    return {
-      generatedAt: j.generated_at ?? null,
-      schemaVersion: j.schema_version ?? null,
-      stale: Array.isArray(j.stale) ? j.stale : [],
-      current: Array.isArray(j.current) ? j.current : [],
-    };
-  } catch {
-    return null;
   }
 }
 
