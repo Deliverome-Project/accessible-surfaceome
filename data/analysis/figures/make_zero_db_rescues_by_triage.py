@@ -348,18 +348,31 @@ def main() -> None:
     if bad:
         raise RuntimeError(f"Callouts not found in rescue slice: {bad}")
 
-    fig = plt.figure(figsize=(19, 11))
+    fig = plt.figure(figsize=(19, 13))
     gs = gridspec.GridSpec(
         2, 2, figure=fig,
-        height_ratios=[2.2, 1.05],
+        # v2: bumped callout-row weight (1.05 → 1.55) + figure height
+        # (11 → 13) so the per-row callout text (larger under brand-style-v2)
+        # has room to breathe instead of crashing into the bar panels.
+        height_ratios=[2.2, 1.55],
         width_ratios=[1.0, 1.5],
-        hspace=0.20, wspace=0.10,
-        top=0.92, bottom=0.04, left=0.06, right=0.97,
+        hspace=0.22, wspace=0.10,
+        top=0.93, bottom=0.04, left=0.06, right=0.97,
     )
     ax_yes = fig.add_subplot(gs[0, 0])
     ax_ctx = fig.add_subplot(gs[0, 1], sharey=ax_yes)
     ax_callouts_yes = fig.add_subplot(gs[1, 0])
     ax_callouts_ctx = fig.add_subplot(gs[1, 1])
+
+    # Subpanel labels — Manrope ExtraBold (weight 800), upper-left of each
+    # bar panel. Convention: lowercase letters, axis coordinates so they
+    # track the panel through resize.
+    for ax, letter in ((ax_yes, "a"), (ax_ctx, "b")):
+        ax.text(
+            -0.06, 1.08, letter,
+            transform=ax.transAxes, ha="left", va="bottom",
+            fontsize=32, fontweight=800, color=BRAND_INK,
+        )
 
     max_count = max(
         max(yes_counts.values(), default=0),
