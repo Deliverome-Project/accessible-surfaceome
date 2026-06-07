@@ -113,12 +113,39 @@ export function TopologyLegend({
   showMembrane = true,
   globular = false,
 }: LegendProps) {
+  // GLOB / soluble proteins (e.g. SRC's myristoyl-anchored cytoplasmic
+  // kinase fold, IZUMO4 outside the topology-sweep cohort): the
+  // StructureViewer paints every residue with ``TOPOLOGY_COLORS.M``
+  // (TM-yellow) rather than the intracellular-green that a literal
+  // "IIIII…I" topology would imply — see the comment at
+  // ``StructureViewer.tsx`` next to the GLOB color branch. The legend
+  // has to match, so render a single ``Globular`` swatch instead of
+  // walking through per-state labels (which would advertise "Intracellular"
+  // for a sequence the viewer is actually colouring TM-yellow). This
+  // implements the intent of commit ac52920ac (the comment "the legend
+  // says 'Globular' to match" was added but the legend update was
+  // never landed; the swatch then drifted relative to the cartoon for
+  // every globular gene until reported as a regression).
+  if (globular) {
+    return (
+      <ul className={styles.legend} aria-label="Topology color legend">
+        <li className={styles.legendItem}>
+          <span
+            className={styles.legendSwatch}
+            style={{ background: TOPOLOGY_COLORS.M ?? "transparent" }}
+            aria-hidden="true"
+          />
+          <span className={styles.legendLabel}>Globular</span>
+        </li>
+      </ul>
+    );
+  }
   const states = presentStates ?? ["M", "O", "I", "S", "B"];
   // Only show "Membrane" when the M state is actually present and the
   // protein isn't globular — matches the StructureViewer's "no slab on
   // soluble proteins" rule exactly, so the legend can never advertise a
   // slab the viewer didn't draw.
-  const includeMembrane = showMembrane && states.includes("M") && !globular;
+  const includeMembrane = showMembrane && states.includes("M");
   return (
     <ul className={styles.legend} aria-label="Topology color legend">
       {states.map((s) => (
