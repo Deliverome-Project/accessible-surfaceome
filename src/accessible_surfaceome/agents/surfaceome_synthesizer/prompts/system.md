@@ -273,8 +273,8 @@ parse time — invented or paraphrased ids fail the run.
      support", "supportive but indirect evidence") rather than reciting
      four method names. Name the 2–3 strongest evidence classes with
      inline cites. Example: "Direct multi-method support: live-cell flow
-     with CRISPR-KO controls (`a1_evi_04`), surface biotinylation–MS
-     (`a1_evi_08`), and LEL-blocking functional assays (`a1_evi_13`)."
+     with CRISPR-KO controls (a1_evi_04), surface biotinylation–MS
+     (a1_evi_08), and LEL-blocking functional assays (a1_evi_13)."
 
   3. **State-dependence beat (~150 char).** Continue the paragraph with
      state context. **Embed the `state_dependence` value in flowing
@@ -282,10 +282,10 @@ parse time — invented or paraphrased ids fail the run.
        * `low` → "Surface presence is constitutive across pan-tissue
          baseline with no significant state-modulation."
        * `moderate` → "Surface levels are moderately state-modulated,
-         upregulated in X (`a2_evi_NN`) and downregulated in Y
-         (`a2_evi_NN`)."
+         upregulated in X (a2_evi_NN) and downregulated in Y
+         (a2_evi_NN)."
        * `high` → "Surface presence is strictly state-gated, requiring
-         X and absent in Y (`a2_evi_NN`)."
+         X and absent in Y (a2_evi_NN)."
 
   4. **Risk beat (~150 char).** Close with a single narrative sentence
      that:
@@ -300,15 +300,25 @@ parse time — invented or paraphrased ids fail the run.
          framing so a clean negative cannot be misread as a flagged
          concern. Examples:
            - "Moderate epitope masking at the LEL homodimer interface
-             (`a1_evi_21`) is the principal binder-engineering caveat;
+             (a1_evi_21) is the principal binder-engineering caveat;
              the absence of a shed or secreted form and ≤28% paralog
              identity rule out decoy and cross-reactivity concerns."
            - "A dominant free-soluble pool is the principal antibody-
-             decoy risk (`a1_evi_18`)."
+             decoy risk (a1_evi_18)."
            - When no risk fires at all: "No binder-engineering caveats
              emerged — no shed or secreted form, no co-receptor
              requirement, no restricted subdomain, and low paralog
              cross-reactivity."
+
+  **Citation syntax (load-bearing for the viewer).** Inline cites are
+  bare tokens in parentheses: write `(a1_evi_04)`, never
+  `` (`a1_evi_04`) ``. The viewer's linkifier matches the bare
+  `aN_evi_NN` token; backticks around it leak into the rendered chip as
+  stray characters. Same rule applies to `expression_level_rationale`,
+  `expression_breadth_rationale`, `surface_specificity_rationale`,
+  `has_known_ligand_rationale`, `accessibility_context_summary`, and
+  every other rationale field. The token shape is `(a1_evi_NN)` or
+  `(a1_evi_NN, a1_evi_MM)` for lists — no backticks anywhere.
 
   **Authoritativeness rules.**
 
@@ -338,13 +348,13 @@ parse time — invented or paraphrased ids fail the run.
   *Constitutively-accessible canonical receptor (~580 char):*
   > "Gene X is constitutively surface-accessible as a pan-tissue
   > multi-pass tetraspanin. Direct multi-method support: live-cell flow
-  > with CRISPR-KO controls (`a1_evi_04`), surface biotinylation–MS
-  > (`a1_evi_08`), and ECD-blocking functional assays (`a1_evi_13`).
+  > with CRISPR-KO controls (a1_evi_04), surface biotinylation–MS
+  > (a1_evi_08), and ECD-blocking functional assays (a1_evi_13).
   > Surface levels are moderately state-modulated, upregulated in
   > selected hematologic malignancies and viral-transformed B-cell
-  > contexts (`a2_evi_15`) and downregulated on activated lymphocytes
-  > and a hepatotropic-virus-replicating hepatocyte state (`a2_evi_20`).
-  > Moderate epitope masking at the homodimer interface (`a1_evi_21`)
+  > contexts (a2_evi_15) and downregulated on activated lymphocytes
+  > and a hepatotropic-virus-replicating hepatocyte state (a2_evi_20).
+  > Moderate epitope masking at the homodimer interface (a1_evi_21)
   > is the principal binder-engineering caveat; the absence of a shed
   > or secreted form and low paralog identity rule out decoy and
   > cross-reactivity concerns."
@@ -352,12 +362,12 @@ parse time — invented or paraphrased ids fail the run.
   *State-gated cancer-only target (~560 char):*
   > "Gene Y is state-dependently surface-accessible in cancer cells
   > only — an inner-leaflet N-myristoylated kinase with no constitutive
-  > ECD. Two recent reports (`a1_evi_03`, `a1_evi_05`) demonstrate
+  > ECD. Two recent reports (a1_evi_03, a1_evi_05) demonstrate
   > autophagolysosomal exocytosis inverts the kinase to the outer
   > membrane as an exposed form, with anti-target antibodies mediating
-  > xenograft tumor killing (`a1_evi_09`). Surface presence is strictly
+  > xenograft tumor killing (a1_evi_09). Surface presence is strictly
   > state-gated, requiring active cancer-cell ALE and absent on normal
-  > cells (`a2_evi_07`). The lysosomal-exocytosis gating means binder
+  > cells (a2_evi_07). The lysosomal-exocytosis gating means binder
   > reach tracks cellular ALE activity; no shed or secreted decoy form
   > rules out a competing soluble pool."
 
@@ -365,14 +375,14 @@ parse time — invented or paraphrased ids fail the run.
   > "Gene Z is state-dependently surface-accessible despite being a
   > nuclear chromatin-binding protein with no TM domain or signal
   > peptide. Direct multi-method support from live-cell crosslinking
-  > (`a1_evi_04`), confocal microscopy (`a1_evi_07`), and proteinase-K
-  > protection (`a1_evi_11`) confirms an extracellular pool engaging
+  > (a1_evi_04), confocal microscopy (a1_evi_07), and proteinase-K
+  > protection (a1_evi_11) confirms an extracellular pool engaging
   > pattern-recognition receptors on responder cells. Surface presence
   > is strictly state-gated, requiring acetylation-driven lysosomal
   > exocytosis or necrotic release, with activated immune cells and
   > stressed/treated tumor cells driving the accessible pool
-  > (`a2_evi_06`, `a2_evi_12`). A dominant free-soluble pool is the
-  > principal antibody-decoy risk (`a1_evi_18`)."
+  > (a2_evi_06, a2_evi_12). A dominant free-soluble pool is the
+  > principal antibody-decoy risk (a1_evi_18)."
 
 - **`accessibility_context_summary`** — ONE sentence (≤240 chars) stating
   *when and where* the protein is surface-accessible, synthesized over the

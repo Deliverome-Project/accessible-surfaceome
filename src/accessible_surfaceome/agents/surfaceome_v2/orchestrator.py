@@ -109,7 +109,15 @@ from accessible_surfaceome.tools._shared.source_text import SourceText, SourceTe
 logger = logging.getLogger(__name__)
 
 AGENT_MODEL = "claude-sonnet-4-6"
-SCHEMA_VERSION_LITERAL = "2.6.0"
+# Read the current schema_version off the Pydantic model so the version
+# stamp on every emitted record stays in lock-step with the Literal's
+# declared default — no separate string constant to forget to bump. When
+# ``SurfaceomeRecord``'s default rolls (2.6.0 → 2.7.0 → … → 2.9.0 etc.)
+# the orchestrator stamps the new value automatically. Previously this
+# was a hard-coded ``"2.6.0"`` that kept records labeled with the old
+# version even after the Pydantic default moved, which silently kept the
+# viewer's freshness dots marking fresh records as stale.
+SCHEMA_VERSION_LITERAL = SurfaceomeRecord.model_fields["schema_version"].default
 RUNS_DIR = Path(".runs")
 
 
