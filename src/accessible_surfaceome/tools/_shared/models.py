@@ -2802,6 +2802,42 @@ class RestrictedSubdomain(BaseModel):
         return self
 
 
+def classify_ecd_accessibility_class(
+    ecd_length_residues: int | None,
+) -> ECDAccessibilityClass:
+    """Canonical deterministic ECD-size classifier.
+
+    These thresholds are the **single source of truth** for
+    ``ecd_accessibility_class`` — the v2 orchestrator applies them to the
+    deterministic
+    ``deterministic_features.canonical_topology.ecd_length_residues`` after
+    synthesis, overwriting whatever the synthesizer emitted. The synthesizer
+    prompt documents the same numbers (for the model's awareness only); they
+    are enforced here in code, not by LLM judgment, so there is no literature
+    override.
+
+    Threshold table (residue count → class):
+
+    * ``None`` or ``0`` → ``"none"``   (no surface-exposed ECD)
+    * ``< 30``          → ``"minimal"``
+    * ``30 <= n < 60``  → ``"small"``
+    * ``60 <= n < 200`` → ``"moderate"``
+    * ``>= 200``        → ``"large"``
+
+    ``None`` is treated identically to ``0`` (no ECD): a record without a
+    deterministic ECD length has no surface to host a binder.
+    """
+    if ecd_length_residues is None or ecd_length_residues == 0:
+        return "none"
+    if ecd_length_residues < 30:
+        return "minimal"
+    if ecd_length_residues < 60:
+        return "small"
+    if ecd_length_residues < 200:
+        return "moderate"
+    return "large"
+
+
 class ECDSizeAssessment(BaseModel):
     """How much extracellular surface a binder has to engage.
 
@@ -2809,6 +2845,12 @@ class ECDSizeAssessment(BaseModel):
     ``deterministic_features.canonical_topology.ecd_length_residues``
     directly — no FK needed since that field is a known singleton.
     """
+    # NOTE: ``ecd_accessibility_class`` is deterministic — the v2 orchestrator
+    # overwrites this block post-synthesis via
+    # ``classify_ecd_accessibility_class`` (single source of truth, no LLM
+    # override). Kept as a code comment, not a class docstring, because the
+    # docstring becomes the JSON-schema ``description`` and would churn the
+    # SurfaceomeRecord schema fingerprint for a non-structural change.
 
     model_config = ConfigDict(extra="forbid")
 
@@ -2820,6 +2862,8 @@ class ECDSizeAssessment(BaseModel):
     cited_evidence_ids: list[str] = Field(default_factory=list)
 
     _PROSE_TARGETS: ClassVar[dict[str, int]] = {"rationale": 300}
+
+    classify = staticmethod(classify_ecd_accessibility_class)
 
     @model_validator(mode="after")
     def _warn_soft_target_overshoot(self) -> "ECDSizeAssessment":
@@ -3848,6 +3892,7 @@ __all__ = [
     "SecretedForm",
     "RestrictedSubdomain",
     "ECDSizeAssessment",
+    "classify_ecd_accessibility_class",
     "EpitopeMasking",
     "HomoOligomerizationPredictionRisk",
     "AccessibilityRisks",
