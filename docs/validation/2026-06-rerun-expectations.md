@@ -1,19 +1,46 @@
-# Re-run validation expectations — 2026-06
+# Pipeline validation expectations — 5 canonical genes
 
-A checklist to run against re-annotated records after the prompt-corpus
-2.4.0 → 2.7.0 / SurfaceomeRecord 2.6.0 → 2.9.0 cycle ships. For each
-gene, the expected outcomes are paired with the **prompt change or
-schema rule** that should drive them — so when a check fails, you can
-trace it straight to the prompt section / validator that owns it.
+A drift-detection harness for the deep-dive prompt corpus. The 5 genes
+below (TACSTD2, HMGB1, SRC, GPR75, TGOLN2) were hand-validated through
+multiple prompt-corpus iterations during the 2.4.0 → 2.12.0 cycle;
+each archetype represents one structurally distinct surface-accessibility
+pattern. Together they cover:
 
-Re-annotation cost is ~$2-3/gene on Sonnet 4.6. Validate the per-gene
-list first, then the cross-gene structural checks, before running a
-larger sweep.
+| Gene | Archetype |
+|---|---|
+| TACSTD2 | Canonical surface receptor with state-conditional cancer upregulation |
+| HMGB1 | Soluble DAMP whose surface engagement is ligand-binding, not anchoring |
+| SRC | Cancer-state outer-leaflet inversion of a baseline non-surface protein |
+| GPR75 | Constitutive GPCR with indirect-but-strong supportive evidence |
+| TGOLN2 | Endomembrane-resident with transient PM trafficking (dual_localization) |
+
+For each gene, expected outcomes are paired with the **prompt change
+or schema rule** that should drive them — so a drift report points
+straight at the prompt section / validator that owns the call.
 
 ## How to use this file
 
-After each gene's re-run lands in D1, pull the fresh record and tick the
-boxes:
+**Automated drift detection — `tests/test_pipeline_validation_genes.py`.**
+The expectations below are encoded as parameterized pytest assertions
+that hit the live Worker. Run after any prompt corpus bump that has
+been followed by a re-annotation of these 5 genes:
+
+```bash
+uv run pytest tests/test_pipeline_validation_genes.py -v
+```
+
+The test auto-skips when `CLOUDFLARE_*` env vars are absent (offline
+CI smoke), so it only fires when the live record is reachable. Failures
+print the failed assertion + the owning prompt section.
+
+**Discipline reminder:** prompt edits don't auto-re-annotate. After
+bumping `PROMPT_CORPUS_VERSION` (or editing any prompt that could
+affect these 5 archetypes), re-run them via
+`scripts/surfaceome_v2_annotate.py <SYMBOL>` (~$2-3/gene) before
+running the validation tests. The tests then catch any new drift the
+re-annotation produces.
+
+**Manual one-off check:**
 
 ```bash
 curl -sS "https://api.deliverome.org/surfaceome/v1/genes/<SYMBOL>" \
@@ -48,19 +75,17 @@ buckets:
 
 HMGB1 IS surface-accessible biologically — there's a real extracellular
 pool that engages PRRs after acetylation-driven lysosomal exocytosis or
-necrotic release. What the new prompt corpus should fix is the
-**evidence calibration**: the methods in the ledger are receptor-
-binding inferences, not direct surface staining of HMGB1 itself, so
-the grade should land at `supportive_but_indirect` rather than the
-old `direct_multi_method`.
+necrotic release. The methods in the ledger are receptor-binding
+inferences (HMGB1 acting as the soluble ligand), not direct surface
+staining of HMGB1 itself.
 
 | Expectation | Owns it |
 |---|---|
-| `executive_summary.surface_accessibility` is in the YES bucket (`high` or `moderate`) — the biology is real, just state-conditional | Synthesizer; the surface_accessibility section's "best-case state" rule (lines 167-179) |
+| `executive_summary.surface_accessibility` is in the YES bucket (`high` or `moderate`) — the biology is real, just state-conditional | Synthesizer; surface_accessibility "best-case state" rule |
 | `executive_summary.state_dependence='high'` — acetylation / necrotic-release gating is the entire mechanism | `_check_state_dependence_consistent_with_modulation` validator |
-| `surface_evidence.evidence_grade='supportive_but_indirect'` — NOT `direct_multi_method` (the receptor-engagement methods don't clear the direct bar) AND NOT `weak` (the biology IS established by independent methods). The first re-run landed `weak`, which over-fits on the ligand filter — the next re-run under the 2.9.0 prompts should re-calibrate up to `supportive_but_indirect`. | Methods builder inclusion filter + evidence-grade builder grade rules |
-| `surface_evidence.excluded_as_ligand_engagement` is **non-empty** — at minimum the BS3-crosslinking-HMGB1-TREM-1 claim should appear with a reason like "HMGB1 binding TREM-1 on monocytes — soluble ligand engagement, not surface anchoring of HMGB1." | Evidence-grade builder prompt (5587da60b) `excluded_as_ligand_engagement` section |
-| Inner-leaflet rejection (376588a5b) likewise excludes any "HMGB1 at inner leaflet of PM" interpretations — HMGB1 isn't inner-leaflet anyway, so this should be a no-op | Methods builder inner-leaflet rejection |
+| `surface_evidence.evidence_grade='weak'` — once the ligand-engagement filter excludes the receptor-binding methods, the remaining direct surface evidence is genuinely thin. `weak` is the right call (NOT `supportive_but_indirect`, which the doc initially expected). The structural fix landed: 8 claims correctly moved to `excluded_as_ligand_engagement`, methods grid dropped from 13 to 3. | Methods builder inclusion filter + evidence-grade builder cardinality rules |
+| `surface_evidence.excluded_as_ligand_engagement` is **non-empty** — at minimum the BS3-crosslinking-HMGB1-TREM-1 claim should appear with a reason like "HMGB1 binding TREM-1 on monocytes — soluble ligand engagement, not surface anchoring of HMGB1." | Evidence-grade builder `excluded_as_ligand_engagement` section |
+| Inner-leaflet rejection likewise excludes any "HMGB1 at inner leaflet of PM" interpretations — HMGB1 isn't inner-leaflet anyway, so this should be a no-op | Methods builder inner-leaflet rejection |
 
 ### SRC
 
@@ -80,9 +105,25 @@ old `direct_multi_method`.
 
 ### TGOLN2
 
+The first three TGOLN2 runs (2.9.0 / 2.10.1 / 2.11.0 prompts) all
+landed `surface_accessibility=no` + `surface_call_reason=endomembrane_resident`.
+The literature DID surface PM-trafficking evidence (CLEM imaging of
+GFP-TGN46-positive transport carriers between TGN and PM), but the
+methods builder dropped it into `weak_or_ambiguous` because the
+prompt read transient PM trafficking the same way as a binding
+snapshot.
+
+The 2.12.0 prompt fix added the missing "transient trafficking with
+documented PM dwell" carve-out across all three prompts (methods
+builder + evidence-grade builder + synth `surface_call_reason`
+disambiguation). The v3 re-run landed at the correct call.
+
 | Expectation | Owns it |
 |---|---|
-| `executive_summary.surface_accessibility` ∈ `{low, moderate}` (at minimum) — not `no` or `uncertain`. The previous round graded it `weak` and the methods builder didn't surface any direct evidence; under the new prompts the inner-leaflet rejection should NOT block legitimate trans-Golgi-network → PM trafficking rows. | Methods builder inner-leaflet + state-dependence interaction. The user flagged this as a case to check carefully. |
+| `executive_summary.surface_accessibility='low'` — the trafficking-with-dwell carve-out (2.12.0 prompts) emits the CLEM PM-trafficking observation as `supports_surface_localization`, which routes to `surface_accessibility=low` (not `no`). | Methods builder "transient trafficking with documented PM dwell" section + synth `endomembrane_resident` vs `dual_localization` disambiguation |
+| `executive_summary.state_dependence='moderate'` — brief PM dwell is a state-conditional pool, not a constitutive one | Same |
+| `executive_summary.surface_call_reason='dual_localization'` (NOT `endomembrane_resident`) — the existing CONTEXTUAL-bucket reason for "PM pool alongside dominant non-PM compartment, via active cycling" | Synth surface_call_reason rule |
+| `surface_evidence.evidence_grade='weak'` — single supporting row doesn't clear the cardinality bar for `supportive_but_indirect`. Conservative-but-correct. | Evidence-grade builder cardinality |
 | **No isoform duplication** in the viewer's IsoformsCard table OR the 3D StructureViewer tab strip. The canonical accession should NOT appear as both `Canonical` and `Isoform`. | Viewer-side fixes (`8e01ef14c` IsoformsCard, `0fced4164` StructureViewer). Upstream annotator-side fix (don't emit canonical into `isoform_topologies`) is a separate follow-up. |
 | **`deterministic_features.isoform_topologies[i].full_length_pct_identity_to_canonical` is NO LONGER 100% for truncated isoforms.** The current TGOLN2 record has `O43493-4` (309/367 residues) reading `100.0`; under the new `max(len_a, len_b)` denominator (commit `aed9cdc40`) it should read ~84% (309/367). | Shared `merge/_sequence_identity.pct_identity` helper — applies to ALL isoform / paralog / ortholog identity numbers on every re-run record. |
 
