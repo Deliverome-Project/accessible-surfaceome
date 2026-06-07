@@ -51,7 +51,6 @@ def _bio(
 ) -> BiologicalContext:
     return BiologicalContext(
         expression=expression or [],
-        cell_states=[],
         subcellular_localization=SubcellularLocalization(
             primary_compartment="plasma_membrane",
         ),

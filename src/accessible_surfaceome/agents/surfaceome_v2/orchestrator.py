@@ -64,7 +64,6 @@ from accessible_surfaceome.agents.surfaceome_v2.builders import (
     EvidenceGradeBlock,
     build_accessibility_modulation,
     build_anatomical_accessibility,
-    build_cell_states,
     build_contradictions,
     build_evidence_grade,
     build_expression,
@@ -116,19 +115,23 @@ def _triage_signal_and_reasoning_from_record(rec):
         return "unknown", ""
     return _TRIAGE_VERDICT_TO_SIGNAL.get(rec.verdict, "unknown"), rec.verdict_reasoning
 
-# Maximum block-builders to dispatch concurrently. There are 8 builders
-# total — 3 A1-side (methods, contradictions, evidence_grade) + 5 A2-side
-# (expression, cell_states, subcellular_localization, anatomical_accessibility,
-# accessibility_modulation); they consume independent claim slices and
-# each makes a single Sonnet call, so a worker pool sized to ``8`` lets
-# every builder kick off immediately. The Anthropic client is thread-safe
-# (httpx underneath) and each builder writes to its own ``usage_sink``
-# list so there's no shared mutable state across workers. The shared
-# ``TimingRecorder`` appends rows from multiple threads — CPython's
-# ``list.append`` is atomic under the GIL, so the list stays
-# well-formed; the resulting timing-row order is non-deterministic but
-# the viewer sorts by ``elapsed_s`` anyway.
-BUILDER_CONCURRENCY = 8
+# Maximum block-builders to dispatch concurrently. There are 7 builders
+# total — 3 A1-side (methods, contradictions, evidence_grade) + 4 A2-side
+# (expression, subcellular_localization, anatomical_accessibility,
+# accessibility_modulation). Schema 2.5.0 merged the former
+# ``cell_states`` builder into ``accessibility_modulation`` —
+# single-context state observations now emit as modulation rows with
+# baseline_context=None + modulating_state=None. Each builder consumes
+# an independent claim slice and makes a single Sonnet call, so a
+# worker pool sized to ``7`` lets every builder kick off immediately.
+# The Anthropic client is thread-safe (httpx underneath) and each
+# builder writes to its own ``usage_sink`` list so there's no shared
+# mutable state across workers. The shared ``TimingRecorder`` appends
+# rows from multiple threads — CPython's ``list.append`` is atomic
+# under the GIL, so the list stays well-formed; the resulting
+# timing-row order is non-deterministic but the viewer sorts by
+# ``elapsed_s`` anyway.
+BUILDER_CONCURRENCY = 7
 
 
 def _secreted_isoform_ids(isoform_topologies: list[IsoformTopology]) -> list[str]:
@@ -522,9 +525,6 @@ def _annotate(
             "expression", "builders_a2", build_expression, a2_claims, a2_ctx
         ),
         _BuilderSpec(
-            "cell_states", "builders_a2", build_cell_states, a2_claims, a2_ctx
-        ),
-        _BuilderSpec(
             "subcellular_localization",
             "builders_a2",
             build_subcellular_localization,
@@ -566,7 +566,6 @@ def _annotate(
 
     biological_context = BiologicalContext(
         expression=outputs["expression"],
-        cell_states=outputs["cell_states"],
         subcellular_localization=outputs["subcellular_localization"],
         anatomical_accessibility=outputs["anatomical_accessibility"],
         accessibility_modulation=outputs["accessibility_modulation"],

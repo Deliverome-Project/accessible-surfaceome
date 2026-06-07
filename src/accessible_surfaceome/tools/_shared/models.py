@@ -2103,16 +2103,6 @@ class CellTypeContextV1(BaseModel):
     cited_evidence_ids: list[str] = Field(default_factory=list)
 
 
-class StateContext(BaseModel):
-    """Orthogonal cell-state pivot — activated/resting, stressed, EMT, etc."""
-
-    model_config = ConfigDict(extra="forbid")
-
-    state: str
-    descriptor: str
-    cited_evidence_ids: list[str] = Field(default_factory=list)
-
-
 class DualLocalization(BaseModel):
     """One non-primary compartment the protein also occupies."""
 
@@ -2291,8 +2281,18 @@ class AccessibilityModulationObservation(BaseModel):
     cell_state_trigger: CellStateTrigger | None = None
     restricted_lineage: RestrictedLineage | None = None
     dual_loc_partner_compartment: DualLocPartnerCompartment | None = None
-    baseline_context: str
-    modulating_state: str
+    # ``baseline_context`` and ``modulating_state`` are the two endpoints
+    # of a state contrast. Both optional (default None) so the merged-in
+    # cell_states case — a single-context state observation where the
+    # paper describes the protein's behavior in one state without a
+    # comparison condition — emits as a row with both fields null. When
+    # both are set, the row is a contrast pair (the original modulation
+    # row shape); when both are null, it is a single-context observation
+    # (the former cell_states row shape). Mixed (one set, one null) is
+    # forbidden by ``_check_contrast_and_trigger_vocab`` — pick one
+    # shape per row.
+    baseline_context: str | None = None
+    modulating_state: str | None = None
     # Up/down direction of the surface-pool change — orthogonal to the
     # favorable/restricted verdict in ``accessibility_implication``. Optional
     # (defaults ``unclear``) so v1 records emitted before this field validate.
@@ -2363,22 +2363,51 @@ class AccessibilityModulationObservation(BaseModel):
 
     @model_validator(mode="after")
     def _check_contrast_and_trigger_vocab(self) -> AccessibilityModulationObservation:
-        # A7.1 — a modulation row is a CONTRAST, not a CONTEXT: baseline_context
-        # and modulating_state must name two different states (a documented
-        # change), not the same one ("cells express X" is not a modulation).
-        if (
-            self.baseline_context.strip().lower()
-            == self.modulating_state.strip().lower()
-        ):
+        # Post-2.5.0 — a row is either a CONTRAST (both baseline_context
+        # and modulating_state set, naming two different states) or a
+        # SINGLE-CONTEXT observation (both null — the merged-in
+        # cell_states case where the paper describes the protein in one
+        # state without a comparison condition). One set and the other
+        # null is an under-specified contrast and is rejected — emit
+        # both, or neither.
+        has_baseline = bool(
+            self.baseline_context is not None and self.baseline_context.strip()
+        )
+        has_modulating = bool(
+            self.modulating_state is not None and self.modulating_state.strip()
+        )
+        if has_baseline != has_modulating:
             raise ValueError(
-                "AccessibilityModulationObservation is a contrast, not a context: "
-                "baseline_context and modulating_state must name two DIFFERENT "
-                "states. Drop rows that merely restate expression context."
+                "AccessibilityModulationObservation: baseline_context and "
+                "modulating_state must both be set (contrast row) or both be "
+                "null (single-context state observation). Got "
+                f"baseline_context={self.baseline_context!r}, "
+                f"modulating_state={self.modulating_state!r}."
             )
+        # A7.1 — when the row IS a contrast, the two endpoints must name
+        # two DIFFERENT states (a documented change), not the same one
+        # ("cells express X" is not a modulation contrast).
+        if has_baseline and has_modulating:
+            assert self.baseline_context is not None  # narrowing for ty
+            assert self.modulating_state is not None
+            if (
+                self.baseline_context.strip().lower()
+                == self.modulating_state.strip().lower()
+            ):
+                raise ValueError(
+                    "AccessibilityModulationObservation contrast: "
+                    "baseline_context and modulating_state must name two "
+                    "DIFFERENT states. Drop rows that merely restate "
+                    "expression context, or emit as a single-context "
+                    "observation (both null)."
+                )
         # A7.2 — the oncogenic_transformation trigger is cancer-specific; a
-        # non-cancer disease state must not be coerced into it.
-        if self.cell_state_trigger == "oncogenic_transformation":
-            text = f"{self.baseline_context} {self.modulating_state}".lower()
+        # non-cancer disease state must not be coerced into it. Only
+        # enforceable when the row carries a contrast pair (single-context
+        # observations pass through — the trigger still has to match the
+        # category, which is checked separately).
+        if self.cell_state_trigger == "oncogenic_transformation" and has_baseline:
+            text = f"{self.baseline_context or ''} {self.modulating_state or ''}".lower()
             if not any(v in text for v in _CANCER_VOCAB):
                 raise ValueError(
                     "cell_state_trigger='oncogenic_transformation' requires a "
@@ -2391,7 +2420,19 @@ class AccessibilityModulationObservation(BaseModel):
 
 class BiologicalContext(BaseModel):
     """Section 2 — where, in what cell types/states, and under what
-    conditions the protein presents at the surface."""
+    conditions the protein presents at the surface.
+
+    Schema 2.5.0 retired the standalone ``cell_states: list[StateContext]``
+    field — empirically ~70% of cell_states rows duplicated information
+    already structured in ``accessibility_modulation``, and the unique
+    remainder (single-context state observations without a clean baseline ↔
+    modulating contrast) is now absorbed into
+    ``AccessibilityModulationObservation`` rows with
+    ``baseline_context=None`` + ``modulating_state=None``. Legacy records
+    carrying a populated ``cell_states`` field are loadable — a
+    ``model_validator(mode="before")`` drops the legacy data and emits a
+    warning (re-annotate to recover the state content as modulation rows).
+    """
 
     model_config = ConfigDict(extra="forbid")
 
@@ -2401,7 +2442,6 @@ class BiologicalContext(BaseModel):
     # them empty and populates ``expression``. Retained for v1 reproducibility.
     tissues: list[TissueContext] = Field(default_factory=list)
     cell_types: list[CellTypeContextV1] = Field(default_factory=list)
-    cell_states: list[StateContext] = Field(default_factory=list)
     subcellular_localization: SubcellularLocalization
     anatomical_accessibility: list[AnatomicalAccessibilityObservation] = Field(
         default_factory=list
@@ -2409,6 +2449,30 @@ class BiologicalContext(BaseModel):
     accessibility_modulation: list[AccessibilityModulationObservation] = Field(
         default_factory=list
     )
+
+    @model_validator(mode="before")
+    @classmethod
+    def _drop_legacy_cell_states(cls, data: Any) -> Any:
+        """Schema 2.5.0 retired ``BiologicalContext.cell_states``. Old
+        records (≤ 2.4.0) emit this field; absorb-on-load by dropping it
+        so the record still parses. State content is permanently lost
+        for those records — re-annotate to populate the corresponding
+        single-context ``accessibility_modulation`` rows."""
+        if isinstance(data, dict) and "cell_states" in data:
+            dropped = data.pop("cell_states")
+            if dropped:
+                import warnings
+
+                warnings.warn(
+                    f"BiologicalContext: dropped {len(dropped)} legacy "
+                    "cell_states row(s) on load (schema 2.5.0 merged "
+                    "cell_states into accessibility_modulation). "
+                    "Re-annotate to recover the state content as "
+                    "single-context modulation rows.",
+                    DeprecationWarning,
+                    stacklevel=2,
+                )
+        return data
 
 
 # ---- deterministic features (sections 3, 4, 5, appendix) ------------------
@@ -3319,8 +3383,8 @@ class SurfaceomeRecord(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
     schema_version: Literal[
-        "1.0.0", "1.1.0", "2.0.0", "2.1.0", "2.2.0", "2.3.0", "2.4.0", "2.4.1"
-    ] = "2.4.1"
+        "1.0.0", "1.1.0", "2.0.0", "2.1.0", "2.2.0", "2.3.0", "2.4.0", "2.4.1", "2.5.0"
+    ] = "2.5.0"
     gene: GeneIdentifier
 
     # Cross-agent coherence — populated by the orchestrator from the most
@@ -3435,8 +3499,8 @@ class SurfaceomeRecordDraft(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
     schema_version: Literal[
-        "1.0.0", "1.1.0", "2.0.0", "2.1.0", "2.2.0", "2.3.0", "2.4.0", "2.4.1"
-    ] = "2.4.1"
+        "1.0.0", "1.1.0", "2.0.0", "2.1.0", "2.2.0", "2.3.0", "2.4.0", "2.4.1", "2.5.0"
+    ] = "2.5.0"
     gene: GeneIdentifier
 
     # Orchestrator-injected before the agent call; the agent reads it but does
@@ -3610,8 +3674,6 @@ class BiologicalContextDraft(BaseModel):
             cited.update(tissue.cited_evidence_ids)
         for cell_type in bc.cell_types:  # deprecated v1 path
             cited.update(cell_type.cited_evidence_ids)
-        for state in bc.cell_states:
-            cited.update(state.cited_evidence_ids)
         for dual in bc.subcellular_localization.dual_localization:
             cited.update(dual.cited_evidence_ids)
         for sub in bc.subcellular_localization.membrane_subdomains:
@@ -4199,7 +4261,6 @@ __all__ = [
     "ExpressionRow",
     "TissueContext",
     "CellTypeContextV1",
-    "StateContext",
     "DualLocalization",
     "MembraneSubdomain",
     "SubcellularLocalization",

@@ -107,7 +107,11 @@ def test_modulation_direction_field_accepts_enum():
 
 def test_modulation_rejects_context_not_contrast():
     # baseline_context == modulating_state → not a documented change.
-    with pytest.raises(ValidationError, match="contrast, not a context"):
+    # Schema 2.5.0 rewrote the message: "contrast: ... two DIFFERENT
+    # states" (the validator now also recognises single-context rows
+    # via both-null, so the historical "not a context" framing was
+    # dropped — match the new message).
+    with pytest.raises(ValidationError, match="two DIFFERENT"):
         AccessibilityModulationObservation(
             **_mod(baseline_context="tumor cells", modulating_state="Tumor Cells")
         )

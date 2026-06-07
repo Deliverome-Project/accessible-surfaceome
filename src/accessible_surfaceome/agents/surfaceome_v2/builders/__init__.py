@@ -9,9 +9,13 @@ A1 side (surface_evidence sub-blocks):
 - :func:`build_contradictions` → ``list[Contradiction]``
 - :func:`build_evidence_grade` → ``EvidenceGradeBlock``
 
-A2 side (biological_context sub-blocks):
+A2 side (biological_context sub-blocks). Schema 2.5.0 merged the
+former ``build_cell_states`` builder into
+``build_accessibility_modulation`` — single-context state observations
+now emit as modulation rows with ``baseline_context=None`` +
+``modulating_state=None``.
+
 - :func:`build_expression` → ``list[ExpressionRow]`` (unified tissue × cell_type)
-- :func:`build_cell_states` → ``list[StateContext]`` (csGRP78-class)
 - :func:`build_subcellular_localization` → ``SubcellularLocalization``
 - :func:`build_anatomical_accessibility` → ``list[AnatomicalAccessibilityObservation]``
 - :func:`build_accessibility_modulation` → ``list[AccessibilityModulationObservation]``
@@ -22,9 +26,6 @@ from accessible_surfaceome.agents.surfaceome_v2.builders.accessibility_modulatio
 )
 from accessible_surfaceome.agents.surfaceome_v2.builders.anatomical_accessibility import (
     build_anatomical_accessibility,
-)
-from accessible_surfaceome.agents.surfaceome_v2.builders.cell_states import (
-    build_cell_states,
 )
 from accessible_surfaceome.agents.surfaceome_v2.builders.contradictions import (
     build_contradictions,
@@ -45,7 +46,6 @@ __all__ = [
     "EvidenceGradeBlock",
     "build_accessibility_modulation",
     "build_anatomical_accessibility",
-    "build_cell_states",
     "build_contradictions",
     "build_evidence_grade",
     "build_expression",

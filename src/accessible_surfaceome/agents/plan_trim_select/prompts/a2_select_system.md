@@ -131,7 +131,11 @@ A1 to harvest from the shared pool.
      the claim_type enum). In your `claim` prose, name the cell type
      AND the state ("activated CD8+ T cells", "resting CD8+ T cells",
      "EMT-induced epithelial cells", "ER-stressed beta cells") so the
-     block builder can pivot to `StateContext` rows.
+     accessibility_modulation block builder can emit the matching
+     row — either a CONTRAST row (when the paper names both endpoints)
+     or a SINGLE-CONTEXT row (when only one state is described). The
+     former `StateContext` block was retired in schema 2.5.0; these
+     observations now live inside `accessibility_modulation[]`.
 3. **Subcellular localization that places the protein at a surface
    subdomain**
    * `claim_type=surface_expression`. Ciliary localization, lateral

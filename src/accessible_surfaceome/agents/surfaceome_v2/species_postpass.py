@@ -88,7 +88,12 @@ def _expression_haystack(row: ExpressionRow) -> str:
 
 
 def _modulation_haystack(row: AccessibilityModulationObservation) -> str:
-    return " ".join([row.baseline_context, row.modulating_state, row.change])
+    # Schema 2.5.0: baseline_context + modulating_state are nullable
+    # (single-context rows have both None). Filter out the nulls so the
+    # join doesn't TypeError, then rely on `change` to carry the prose
+    # the species gazetteer scans.
+    parts = [row.baseline_context, row.modulating_state, row.change]
+    return " ".join(p for p in parts if p)
 
 
 def _expression_obs_haystack(row: ExpressionObservation) -> str:

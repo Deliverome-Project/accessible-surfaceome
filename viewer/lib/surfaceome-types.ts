@@ -1011,12 +1011,6 @@ export interface CellTypeContext {
   cited_evidence_ids: string[];
 }
 
-export interface StateContext {
-  state: string;
-  descriptor: string;
-  cited_evidence_ids: string[];
-}
-
 export interface DualLocalization {
   compartment: Compartment;
   fraction_estimate: number | null;
@@ -1049,8 +1043,10 @@ export interface AccessibilityModulationObservation {
   cell_state_trigger: CellStateTrigger | null;
   restricted_lineage: RestrictedLineage | null;
   dual_loc_partner_compartment: DualLocPartnerCompartment | null;
-  baseline_context: string;
-  modulating_state: string;
+  /** Schema 2.5.0: both nullable. Contrast row has both set; single-
+   *  context row (former cell_states block) has both null. */
+  baseline_context: string | null;
+  modulating_state: string | null;
   change: string;
   accessibility_implication: string;
   /** Up/down direction of the surface-pool change — orthogonal to the
@@ -1072,10 +1068,12 @@ export type ModulationDirection =
 export interface BiologicalContext {
   /** v2: one self-describing row per (tissue × cell_type × disease). */
   expression: ExpressionRow[];
-  /** DEPRECATED (v1 only) — v2 leaves these empty. */
+  /** DEPRECATED (v1 only) — v2 leaves these empty. Schema 2.5.0
+   *  retired ``cell_states`` entirely; single-context state observations
+   *  now live in ``accessibility_modulation`` as rows with
+   *  ``baseline_context: null`` + ``modulating_state: null``. */
   tissues: TissueContext[];
   cell_types: CellTypeContext[];
-  cell_states: StateContext[];
   subcellular_localization: SubcellularLocalization;
   anatomical_accessibility: AnatomicalAccessibilityObservation[];
   accessibility_modulation: AccessibilityModulationObservation[];

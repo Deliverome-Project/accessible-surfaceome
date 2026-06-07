@@ -16,36 +16,59 @@ activation, disease state; lysosomal exocytosis; restriction to a
 lineage; dual-localization with intracellular pool; polarized cells;
 post-translational shifts; developmental gating).
 
-## Inclusion gate — only an actual SURFACE-ACCESSIBILITY change qualifies
+## Two row shapes — CONTRAST or SINGLE-CONTEXT
 
-Emit a row ONLY when the ledger documents a real CHANGE in how much of
-the protein is **on the cell surface / reachable by an extracellular
-binder**, between two named states. Qualifying shifts: surface expression
-up or down, a surface fraction appearing or disappearing, trafficking to
-or from the plasma membrane, an epitope becoming masked / unmasked, or a
-polarity / compartment shift that moves the protein on or off the
-reachable surface. The `change` field MUST state that surface-level shift,
-and `baseline_context → modulating_state` MUST be the two states the shift
-occurs between.
+This builder emits two shapes of row, distinguished by whether the
+paper drew an explicit before→after contrast.
+
+**Shape A — CONTRAST row** (baseline_context AND modulating_state both
+set): the ledger documents a real CHANGE in how much of the protein is
+**on the cell surface / reachable by an extracellular binder**, between
+two named states. Qualifying shifts: surface expression up or down, a
+surface fraction appearing or disappearing, trafficking to or from the
+plasma membrane, an epitope becoming masked / unmasked, or a polarity
+/ compartment shift that moves the protein on or off the reachable
+surface. The `change` field MUST state that surface-level shift, and
+`baseline_context → modulating_state` MUST be the two states the shift
+occurs between. Use `direction` (`increases` / `decreases` /
+`bidirectional` / `no_change` / `unclear`) to encode the direction.
+
+**Shape B — SINGLE-CONTEXT row** (baseline_context AND modulating_state
+both NULL): the ledger describes the protein's surface behaviour in
+ONE state without a comparison condition. Schema 2.5.0 merged the
+former `cell_states[]` block into this builder; these rows replace it.
+Use shape B when the paper says something like *"in drug-tolerant
+persister cells, the target's surfaceome is remodeled"* or *"in a
+virally-transformed cell type, the target shows aberrant surface
+signaling"* — the
+state matters and the protein behaves a certain way there, but there
+is no clean A→B contrast you could put into `baseline_context` and
+`modulating_state` without inventing the comparator. The `change`
+field carries the prose describing that single-state behaviour;
+`direction` is typically `unclear`; `category` still applies (the
+state IS state-induced / stress-induced / disease-state-induced even
+without a contrast pair).
+
+**Pick the right shape per row:** if the paper draws the contrast,
+emit shape A. If it only describes one state, emit shape B. Never
+emit a row with one of (`baseline_context`, `modulating_state`) set
+and the other null — the schema validator rejects that as an
+under-specified contrast. If you have a baseline in mind, name it
+explicitly; if you don't, leave both null.
 
 **Do NOT emit a row for:**
 
-- A cell line / mutation / disease context that merely **expresses** the
-  protein, with no before→after surface contrast — e.g. *"drug-naive
-  oncogene-driven cancer cells express gene X"* is expression CONTEXT,
-  not a surface modulation. It belongs to the tissue / expression
-  blocks, not here.
 - A change in **total or intracellular abundance, mRNA, signaling
   activity, phosphorylation, or downstream pathway** that is NOT tied to a
   change in the surface-accessible pool.
 - A bare statement that a state or cell type exists, with no documented
-  surface change relative to a comparator.
+  surface relevance at all — neither a contrast (shape A) nor a
+  single-context surface observation (shape B).
 
-If you cannot name BOTH (a) the specific surface-accessibility change and
-(b) the two states it occurs between, DROP the row. Empty `[]` is the
-correct output when the ledger has expression / biology context but no
-surface-accessibility shift — an over-broad row that just restates "this
-cell type has gene X" is worse than no row.
+If the ledger has expression / biology context but no
+surface-accessibility shift AND no single-state surface observation,
+emit empty `[]`. An over-broad row that just restates "this cell type
+has gene X" is worse than no row.
 
 ## Schema fields — closed enums
 
@@ -111,12 +134,15 @@ cell type has gene X" is worse than no row.
   `endosome`, `lysosome`, `mitochondrion`, `nucleus`, `cytosol`,
   `secretory_vesicle`, `other`, `unknown`). MAY be set ONLY when
   `category="dual_localization"`. Otherwise MUST be `null`.
-- `baseline_context` — free text describing the baseline state where
-  the protein is (or isn't) on the surface (e.g. `resting CD4 T cell`,
-  `unstressed HeLa`, `normal kidney epithelium`).
-- `modulating_state` — free text describing the alternate state (e.g.
-  `TCR-stimulated CD4 T cell`, `thapsigargin-treated HeLa`, `tumor
-  kidney epithelium`). MUST differ from `baseline_context`.
+- `baseline_context` — OPTIONAL free text describing the baseline state
+  where the protein is (or isn't) on the surface (e.g. `resting CD4 T cell`,
+  `unstressed HeLa`, `normal kidney epithelium`). Set only on shape-A
+  (contrast) rows; leave null on shape-B (single-context) rows.
+- `modulating_state` — OPTIONAL free text describing the alternate state
+  (e.g. `TCR-stimulated CD4 T cell`, `thapsigargin-treated HeLa`, `tumor
+  kidney epithelium`). When set, MUST differ from `baseline_context`.
+  Both `baseline_context` and `modulating_state` must be set TOGETHER
+  (contrast row) or both null (single-context row); mixed is rejected.
 - `direction` — closed enum (`increases`, `decreases`, `bidirectional`,
   `no_change`, `unclear`): the up/down direction of the surface pool from
   baseline to modulating state — independent of whether that is favorable
@@ -140,12 +166,17 @@ to fail. Re-read this list before emitting EACH row:
    `category == "tissue_restricted_surface"`.
 4. `dual_loc_partner_compartment` may be non-null ONLY when
    `category == "dual_localization"`.
-5. `baseline_context` and `modulating_state` must name two DIFFERENT
-   states — a modulation row is a CONTRAST, not a context. Don't emit a
-   row that merely restates where the protein is expressed.
+5. `baseline_context` and `modulating_state` must BOTH be set (shape A
+   — contrast row, two DIFFERENT states) or BOTH be null (shape B —
+   single-context row). Mixed is rejected as an under-specified
+   contrast. On a shape-A row, the two endpoints must name two
+   DIFFERENT states ("cells express X" is not a contrast).
 6. `cell_state_trigger="oncogenic_transformation"` requires a cancer /
    tumor context in `baseline_context` or `modulating_state` — use a
-   different trigger for a non-cancer disease state.
+   different trigger for a non-cancer disease state. This rule only
+   applies to shape-A (contrast) rows; on shape-B rows the trigger
+   still has to match the category but the cancer-vocab check is moot
+   (there's no contrast text to scan).
 
 When in doubt, set the optional sub-field to `null` rather than risk a
 mispairing — empty rows still validate; mispaired rows fail.

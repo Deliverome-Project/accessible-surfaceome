@@ -831,7 +831,6 @@ def _render_modulation(m: dict[str, Any]) -> str:
 def _render_biological_context(record: dict[str, Any]) -> str:
     bc = record.get("biological_context") or {}
     expression = bc.get("expression") or []
-    cell_states = bc.get("cell_states") or []
     sub = bc.get("subcellular_localization") or {}
     anat = bc.get("anatomical_accessibility") or []
     mods = bc.get("accessibility_modulation") or []
@@ -845,26 +844,10 @@ def _render_biological_context(record: dict[str, Any]) -> str:
         if expression
         else "<em class='muted'>no expression rows</em>"
     )
-    # v2 records hardcode cell_states=[] (legacy v1 field; modulation
-    # block subsumes it). Hide the subsection entirely when empty so
-    # the viewer doesn't show a perpetually-zero "Cell states (0)".
-    cell_states_html = (
-        "<ul class='compact-list'>"
-        + "".join(
-            f"<li><strong>{html.escape(s.get('state', '—'))}</strong>: "
-            f"{html.escape(s.get('descriptor', '—'))} "
-            f"{_evi_chip_row(s.get('cited_evidence_ids') or [])}</li>"
-            for s in cell_states
-        )
-        + "</ul>"
-        if cell_states
-        else "<em class='muted'>no cell-state rows</em>"
-    )
-    cell_states_block = (
-        f"<h3>Cell states ({len(cell_states)})</h3>\n      {cell_states_html}"
-        if cell_states
-        else ""
-    )
+    # Schema 2.5.0 retired the standalone cell_states block — single-
+    # context state observations now live inside accessibility_modulation
+    # as rows with baseline_context=None + modulating_state=None. The
+    # viewer no longer renders a separate "Cell states" subsection.
     anat_html = (
         "".join(_render_anat(a) for a in anat)
         if anat
@@ -883,8 +866,6 @@ def _render_biological_context(record: dict[str, Any]) -> str:
       <h3>Expression ({len(expression)})</h3>
       {_species_counter(expression)}
       {expression_html}
-
-{cell_states_block}
 
       <h3>Subcellular localization</h3>
       {_render_subcellular(sub)}
