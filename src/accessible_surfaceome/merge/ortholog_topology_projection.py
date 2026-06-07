@@ -29,7 +29,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 
-from accessible_surfaceome.merge.paralog_ecd_identity import _aligner, _sanitize
+from accessible_surfaceome.merge._sequence_identity import _aligner, _sanitize
 
 
 @dataclass(frozen=True)
