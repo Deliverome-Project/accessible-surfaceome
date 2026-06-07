@@ -438,6 +438,12 @@ async function fetchSurfaceBindFeatures(env, uniprotAcc) {
  *   bumps (which ship every ~3 months) without information loss.
  * * ``deterministic_features.structure`` — AlphaFold links derived
  *   directly from uniprot_acc; no D1 table to enrich from.
+ *
+ * That's the complete enumeration: every other public-D1 table is
+ * either a release/meta table, the surfaceome catalog (joined into
+ * /v1/catalog instead of /v1/genes/:symbol), or this very
+ * ``surface_annotation`` table. See ``tests/test_d1_schema_in_sync.py``
+ * for the drift-detection pin.
  */
 async function handleGene(env, symbol) {
   const sym = checkSymbol(symbol);
