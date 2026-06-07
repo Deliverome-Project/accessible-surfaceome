@@ -38,6 +38,18 @@
       "finds": "Sheddase-mediated ectodomain release (ADAM/BACE/MMP) and soluble/shed form measured in serum, plasma, or supernatant \u2014 the shed_form + secreted_form (decoy) signal.",
       "query_preview": "(\"ectodomain shedding\" OR \"ectodomain release\" OR \"shedding\" OR \"proteolytic cleavage\" OR \"regulated intramembrane proteolysis\")"
     },
+    "surface_expression": {
+      "id": "surface_expression",
+      "label": "Surface expression (context-tagged)",
+      "finds": "Assay-less, location-tagged surface-expression mentions the method categories miss \u2014 e.g. \"expressed on the surface of activated T cells\" or \"surface levels elevated in hepatocytes\". Surface/membrane token paired with a tissue, cell-type, or expression-level cue (never bare \"surface\").",
+      "query_preview": "(\"cell surface\" OR \"cell-surface\" OR \"plasma membrane\" OR \"surface expression\" OR \"surface-expressed\" OR \"membranous\" OR \"membrane localization\")"
+    },
+    "overexpression": {
+      "id": "overexpression",
+      "label": "Overexpression surface-trafficking",
+      "finds": "Papers showing the protein reaches the cell surface when over-expressed / ectopically / heterologously expressed \u2014 a surface-capability signal, host-agnostic and detection-method-independent.",
+      "query_preview": "(\"transfected\" OR \"ectopic expression\" OR \"ectopically expressed\" OR \"heterologous expression\" OR \"heterologously expressed\" OR \"overexpressing\" OR \"overexpressed\" OR \"stably expressing\")"
+    },
     "western_blot_paired": {
       "id": "western_blot_paired",
       "label": "Western blot (surface-paired)",
@@ -81,11 +93,14 @@
         "surface_biotinylation",
         "mass_spec_surfaceome",
         "shedding",
+        "overexpression",
         "western_blot_paired",
         "structure_with_ecd",
         "other"
       ],
-      "skip_category_ids": [],
+      "skip_category_ids": [
+        "surface_expression"
+      ],
       "conditional_note": "Deterministic kickoff \u2014 every search above runs for every gene (no LLM planner).",
       "always_topic": [
         {
@@ -131,10 +146,12 @@
         "if",
         "flow_cytometry",
         "mass_spec_surfaceome",
-        "shedding"
+        "shedding",
+        "surface_expression"
       ],
       "skip_category_ids": [
         "surface_biotinylation",
+        "overexpression",
         "western_blot_paired",
         "structure_with_ecd",
         "other"

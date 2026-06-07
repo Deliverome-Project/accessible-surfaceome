@@ -39,6 +39,10 @@ _A1_CATEGORIES: tuple[EvidenceCategory, ...] = (
     # Shared with A2 — shed/soluble-form evidence feeds both the surface-side
     # shed_form risk and A2's secreted_form risk.
     "shedding",
+    # A1-only — dedicated over-expression-precedent search (does the protein
+    # traffic to the surface AT ALL when over-expressed). A surface-capability
+    # signal, distinct from the OE terms inside if/flow/surface_biotinylation.
+    "overexpression",
     "western_blot_paired",
     "structure_with_ecd",
     "other",
@@ -49,6 +53,10 @@ _A2_CATEGORIES: tuple[EvidenceCategory, ...] = (
     "flow_cytometry",
     "mass_spec_surfaceome",
     "shedding",
+    # A2-only — assay-less, context-tagged surface-expression mentions so A2's
+    # ExpressionObservation rows are quote-grounded. This makes A2 no longer a
+    # strict subset of A1 (the prompt-review renders an "A2 only" block).
+    "surface_expression",
 )
 
 # Surface-method topic anchors shared by A1's method search and A2's
@@ -246,8 +254,10 @@ def build_a2_kickoff(
     return SearchPlan(
         searches=searches,
         rationale=(
-            "A2 deterministic kickoff: four biology-leaning evidence_retrieval "
-            "categories (ihc, if, flow_cytometry, mass_spec_surfaceome); "
+            "A2 deterministic kickoff: biology-leaning evidence_retrieval "
+            "categories (ihc, if, flow_cytometry, mass_spec_surfaceome, shedding, "
+            "surface_expression — the last A2-only, for quote-grounded "
+            "ExpressionObservation rows); "
             "gene2pubmed + recent_corpus; two topic_search variants "
             "(surface+methods (shared) + shedding+ptm (shared)); standing axes "
             "(normal-tissue surface-expression always; surface-reachability / "

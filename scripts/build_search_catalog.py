@@ -89,6 +89,21 @@ CATEGORY_DOCS: dict[str, dict[str, str]] = {
         "soluble/shed form measured in serum, plasma, or supernatant — the "
         "shed_form + secreted_form (decoy) signal.",
     },
+    "surface_expression": {
+        "label": "Surface expression (context-tagged)",
+        "finds": "Assay-less, location-tagged surface-expression mentions "
+        "the method categories miss — e.g. \"expressed on the surface of "
+        "activated T cells\" or \"surface levels elevated in hepatocytes\". "
+        "Surface/membrane token paired with a tissue, cell-type, or "
+        "expression-level cue (never bare \"surface\").",
+    },
+    "overexpression": {
+        "label": "Overexpression surface-trafficking",
+        "finds": "Papers showing the protein reaches the cell surface when "
+        "over-expressed / ectopically / heterologously expressed — a "
+        "surface-capability signal, host-agnostic and detection-method-"
+        "independent.",
+    },
     "western_blot_paired": {
         "label": "Western blot (surface-paired)",
         "finds": "Immunoblot paired with a surface-biotinylation or "

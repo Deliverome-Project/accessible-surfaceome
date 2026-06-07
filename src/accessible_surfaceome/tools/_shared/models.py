@@ -476,6 +476,22 @@ EvidenceCategory = Literal[
     # measured in serum" / "ADAM17-mediated shedding" sentence. Pulled out of the
     # catch-all ``other`` into its own focused category.
     "shedding",
+    # Assay-less, context-tagged surface-expression mentions. The method
+    # categories (ihc / if / flow / biotin / MS) all require a method term in
+    # their query, so they systematically MISS bare location-tagged statements
+    # like "X is expressed on the surface of activated T cells". This category
+    # casts a precision-tuned net for surface/membrane tokens PAIRED with a
+    # context cue (tissue / cell type / expression-level word) so A2's
+    # ExpressionObservation rows are quote-grounded. A2-focus.
+    "surface_expression",
+    # Dedicated over-expression-precedent search: papers showing the protein
+    # TRAFFICS TO THE CELL SURFACE when over-expressed / ectopically /
+    # heterologously expressed (a surface-CAPABILITY signal — can it reach the
+    # surface at all). Distinct from the OE *terms* sprinkled inside if / flow /
+    # surface_biotinylation (those find OE-context WITHIN those assays); this
+    # casts a wider net for OE-surface-trafficking regardless of detection
+    # method. A1-focus.
+    "overexpression",
     "western_blot_paired",
     "structure_with_ecd",
     "other",

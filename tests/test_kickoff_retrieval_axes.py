@@ -403,3 +403,82 @@ def test_shedding_is_a_dedicated_evidence_retrieval_category():
         "shedding should live only in its dedicated category, not the `other` "
         "catch-all"
     )
+
+
+def test_surface_expression_is_a_dedicated_a2_evidence_retrieval_category():
+    # surface_expression captures ASSAY-LESS, context-tagged surface-expression
+    # mentions the method categories (ihc/if/flow/biotin/MS) miss because their
+    # queries require a method term. It must: (1) have a spec AND'ing a
+    # surface/membrane clause with an expression/level clause, (2) carry hallmark
+    # patterns that pair a surface token with a CONTEXT cue (never bare
+    # "surface"), and (3) be emitted by A2 (biology focus) but NOT A1.
+    from accessible_surfaceome.tools.evidence_retrieval import _CATEGORY_SPECS
+
+    spec = _CATEGORY_SPECS.get("surface_expression")
+    assert spec is not None, (
+        "surface_expression must be a dedicated evidence_retrieval category"
+    )
+    clauses = " ".join(spec.query_clauses).lower()
+    # First clause is the surface/membrane axis; second is the expression axis.
+    assert "cell surface" in clauses or "plasma membrane" in clauses
+    assert "expression" in clauses or "levels" in clauses
+    assert spec.accepts_paper_level_evidence is False
+
+    # Hallmark patterns must require a context cue alongside the surface token —
+    # the surface-localization-of phrase and the expression-level pairing.
+    hp = " ".join(p.pattern for p in spec.hallmark_patterns).lower()
+    assert "surface-expressed" in hp or "surface[-\\s]?expressed" in hp
+    assert "elevat" in hp  # surface-levels-elevated-in-tissue context cue
+    # Section weights ride the antibody profile (figure legends + methods first).
+    assert spec.section_weights is er_default_antibody_weights()
+
+    # Wired into A2 (biology focus), absent from A1 (surface-evidence focus).
+    assert _has_category(build_a2_kickoff(7, 89), "surface_expression")
+    assert not _has_category(build_a1_kickoff(7, 89), "surface_expression")
+
+
+def test_overexpression_is_a_dedicated_a1_evidence_retrieval_category():
+    # overexpression is a DEDICATED OE-precedent search — does the protein reach
+    # the cell surface AT ALL when over-expressed / ectopically / heterologously
+    # expressed (a surface-CAPABILITY signal, host-agnostic, method-independent).
+    # It must: (1) have a spec AND'ing an OE/ectopic/heterologous clause with a
+    # surface/membrane-localization clause, (2) carry hallmark patterns pairing
+    # an OE term with a surface/membrane-localization phrase, with NO "wild-type"
+    # gate, and (3) be emitted by A1 (surface-evidence focus) but NOT A2.
+    from accessible_surfaceome.tools.evidence_retrieval import _CATEGORY_SPECS
+
+    spec = _CATEGORY_SPECS.get("overexpression")
+    assert spec is not None, (
+        "overexpression must be a dedicated evidence_retrieval category"
+    )
+    clauses = " ".join(spec.query_clauses).lower()
+    # OE / ectopic / heterologous axis...
+    assert "transfected" in clauses
+    assert "ectopic expression" in clauses
+    assert "heterologous expression" in clauses
+    # ...AND'd with a surface/membrane-localization axis.
+    assert "cell surface" in clauses or "plasma membrane" in clauses
+    assert "membrane localization" in clauses or "surface localization" in clauses
+    # Host-agnostic — never gated on the "wild-type" keyword.
+    assert "wild-type" not in clauses and "wild type" not in clauses
+    assert spec.accepts_paper_level_evidence is False
+
+    # Hallmark patterns must couple an OE term with a surface/membrane phrase.
+    hp = " ".join(p.pattern for p in spec.hallmark_patterns).lower()
+    assert "transfect" in hp and "ectopic" in hp and "heterolog" in hp
+    assert "plasma" in hp or "cell[-\\s]?surface" in hp
+    assert "wild" not in hp  # no wild-type gating in the patterns either
+    assert spec.section_weights is er_default_antibody_weights()
+
+    # Wired into A1 (surface-evidence focus), absent from A2 (biology focus).
+    assert _has_category(build_a1_kickoff(7, 89), "overexpression")
+    assert not _has_category(build_a2_kickoff(7, 89), "overexpression")
+
+
+def er_default_antibody_weights():
+    """Handle on the antibody-weight constant for identity asserts above."""
+    from accessible_surfaceome.tools.evidence_retrieval import (
+        _DEFAULT_ANTIBODY_WEIGHTS,
+    )
+
+    return _DEFAULT_ANTIBODY_WEIGHTS
