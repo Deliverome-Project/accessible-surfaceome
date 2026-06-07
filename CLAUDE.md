@@ -64,6 +64,14 @@ uv run python scripts/gen_prompt_review.py
 
 There is no CI gate on this by design, so it is on the committer (agent or human) to re-run it — a stale review misleads reviewers worse than no review does.
 
+**Run the prompt-leak tests before committing any prompt change.** [tests/test_prompts_no_gene_names.py](tests/test_prompts_no_gene_names.py) + [tests/test_prompt_no_specific_proteins.py](tests/test_prompt_no_specific_proteins.py) scan every in-process prompt for specific human gene symbols (HGNC) and named proteins, and fail if any leak in. The whole point of the prompts being gene-agnostic is that the agent runs on every gene in the cohort — a worked example that names a real gene biases the model toward that gene's biology and poisons calls on every other gene. The tests run in `pytest -q` (so CI catches it), but CI catches it AFTER you've already pushed; run them locally first:
+
+```bash
+uv run pytest -q tests/test_prompts_no_gene_names.py tests/test_prompt_no_specific_proteins.py
+```
+
+If you need a concrete example to communicate a pattern, use "gene X" / "gene Y" placeholders or describe the pattern categorically ("a protein expressed on endothelial cells"). If a real gene name is structurally load-bearing (rare — e.g. it names a specific assay or reagent that the prompt has to invoke), add it to `ALLOWED_TOKENS` in the test file with a tight surrounding-context regex.
+
 ### v2 publishes records by default — `--no-publish` to opt out
 
 After a v2 annotate run validates, `scripts/surfaceome_v2_annotate.py` writes the record to **three** surfaces:
