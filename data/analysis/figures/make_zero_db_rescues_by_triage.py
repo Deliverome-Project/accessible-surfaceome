@@ -53,7 +53,7 @@ CATALOG_TSV_URL = (
 # Subject metadata — mirrors save_figure in _plotting_config.py).
 GIST_URL = "https://gist.github.com/beccajcarlson/a4526c9e6de5e958826bf1d764744c1b"
 
-# ──── Inline brand styling — sentinel: brand-style-v1 ────
+# ──── Inline brand styling — sentinel: brand-style-v2 ────
 # Mirrors src/accessible_surfaceome/audit/_plotting_config.py so the gist
 # stays self-contained. Kept in sync via tests/test_figure_gists_styling.py.
 BRAND_PALETTE = [
@@ -83,16 +83,19 @@ def _register_brand_fonts() -> None:
     ]
     for fonts_dir in candidates:
         if fonts_dir.is_dir():
-            for ttf in sorted(fonts_dir.glob("*.ttf")):
+            for path in sorted(list(fonts_dir.glob("*.ttf")) + list(fonts_dir.glob("*.otf"))):
                 try:
-                    fm.fontManager.addfont(str(ttf))
+                    fm.fontManager.addfont(str(path))
                 except Exception:  # noqa: BLE001
                     continue
             return
 
 
 def _apply_brand_style() -> None:
-    """Inline equivalent of `setup_plotting_style`. Sentinel: brand-style-v1."""
+    """Inline equivalent of `setup_plotting_style`. Sentinel: brand-style-v2.
+    v2: bumped sizes ~25% + explicit medium weight (avoids ExtraLight default
+    that matplotlib picks from the Manrope variable file). Companion to the
+    static Manrope-{regular,medium,semibold,bold}.otf files in assets/fonts/."""
     _register_brand_fonts()
     sns.set_style("whitegrid")
     sns.set_context("notebook", font_scale=1.0)
@@ -103,8 +106,10 @@ def _apply_brand_style() -> None:
         "savefig.facecolor": "none",
         "font.family": "sans-serif",
         "font.sans-serif": ["Manrope", "Outfit", "DejaVu Sans", "Liberation Sans", "Arial"],
-        "font.size": 17,
-        "axes.labelsize": 19,
+        "font.weight": "medium",
+        "font.size": 21,
+        "axes.labelsize": 24,
+        "axes.labelweight": "medium",
         "axes.titlesize": 0,
         "axes.titlepad": 0,
         "axes.spines.top": False,
@@ -119,12 +124,12 @@ def _apply_brand_style() -> None:
         "grid.linestyle": "-",
         "grid.linewidth": 0.7,
         "grid.color": BRAND_GRID,
-        "xtick.labelsize": 16,
-        "ytick.labelsize": 16,
+        "xtick.labelsize": 19,
+        "ytick.labelsize": 19,
         "xtick.color": BRAND_INK,
         "ytick.color": BRAND_INK,
         "legend.frameon": False,
-        "legend.fontsize": 16,
+        "legend.fontsize": 19,
         "patch.edgecolor": "none",
         "patch.linewidth": 0.0,
     })
@@ -211,9 +216,19 @@ def _load_catalog() -> list[dict]:
     plus stable IDs. Sourced from D1 via
     ``scripts/export_whole_proteome_catalog_to_tsv.py``.
     """
-    print(f"Fetching {CATALOG_TSV_URL} ...")
-    with urllib.request.urlopen(CATALOG_TSV_URL, timeout=60) as resp:  # noqa: S310
-        text = resp.read().decode("utf-8")
+    # Local-first: inside a repo checkout, prefer the on-disk TSV so the
+    # script renders against the working tree (matches the local-fallback
+    # pattern used by the other figure scripts in this folder).
+    local = Path(__file__).resolve().parents[3] / (
+        "data/processed/catalog/whole_proteome_catalog.tsv"
+    )
+    if local.is_file():
+        print(f"Reading {local} ...")
+        text = local.read_text(encoding="utf-8")
+    else:
+        print(f"Fetching {CATALOG_TSV_URL} ...")
+        with urllib.request.urlopen(CATALOG_TSV_URL, timeout=60) as resp:  # noqa: S310
+            text = resp.read().decode("utf-8")
     rows = list(csv.DictReader(io.StringIO(text), delimiter="\t"))
     for r in rows:
         r["n_sources_surface"] = int(r.get("n_sources_surface", 0) or 0)
@@ -240,20 +255,20 @@ def _draw_reason_bars(ax, counts, reasons, palette, header_label, header_color, 
             x, h + y_max * 0.015,
             f"{h}",
             ha="center", va="bottom",
-            fontsize=20, fontweight="bold", color=header_color,
+            fontsize=24, fontweight="bold", color=header_color,
         )
 
     ax.set_title(
         header_label,
-        fontsize=20, color=header_color, fontweight="bold",
+        fontsize=24, color=header_color, fontweight="bold",
         loc="left", pad=16,
     )
     ax.set_xticks(x_positions)
     ax.set_xticklabels(
         [REASON_LABEL[r] for r in visible],
-        fontsize=15, color=BRAND_INK,
+        fontsize=19, color=BRAND_INK,
     )
-    ax.tick_params(axis="y", labelsize=16)
+    ax.tick_params(axis="y", labelsize=19)
     ax.set_xlim(-0.9, x_positions[-1] + 0.9)
     sns.despine(ax=ax, top=True, right=True)
 
@@ -263,7 +278,7 @@ def _draw_callouts(ax, callouts, palette, title):
     ax.text(
         0.0, 1.0, title,
         transform=ax.transAxes, ha="left", va="top",
-        fontsize=19, color=BRAND_NEUTRAL, fontweight="bold",
+        fontsize=23, color=BRAND_NEUTRAL, fontweight="bold",
     )
     y0 = 0.82
     n = len(callouts)
@@ -280,12 +295,12 @@ def _draw_callouts(ax, callouts, palette, title):
         ax.text(
             0.07, y, symbol,
             transform=ax.transAxes, ha="left", va="center",
-            fontsize=19, fontweight="bold", color=BRAND_INK,
+            fontsize=23, fontweight="bold", color=BRAND_INK,
         )
         ax.text(
             0.28, y, f"— {desc}",
             transform=ax.transAxes, ha="left", va="center",
-            fontsize=16, color=BRAND_NEUTRAL,
+            fontsize=20, color=BRAND_NEUTRAL,
         )
 
 
@@ -364,8 +379,8 @@ def main() -> None:
         header_color=CONTEXTUAL_HEADER_COLOR, y_max=y_max,
     )
 
-    ax_yes.set_ylabel("Genes rescued from zero-DB universe", fontsize=20)
-    ax_yes.tick_params(axis="y", labelsize=16)
+    ax_yes.set_ylabel("Genes rescued from\nzero-DB universe", fontsize=24)
+    ax_yes.tick_params(axis="y", labelsize=19)
     plt.setp(ax_ctx.get_yticklabels(), visible=False)
 
     _draw_callouts(ax_callouts_yes, YES_CALLOUTS, YES_PALETTE, title="Select yes rescues")

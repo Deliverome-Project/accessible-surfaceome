@@ -61,7 +61,7 @@ OPT_CUTOFFS_TSV = f"{BASE}/data/processed/triage_bench/db_optimized_cutoffs.tsv"
 # Subject metadata — mirrors save_figure in _plotting_config.py).
 GIST_URL = "https://gist.github.com/beccajcarlson/0104308c239fe49d91d82a1007632b27"
 
-# ──── Inline brand styling — sentinel: brand-style-v1 ────
+# ──── Inline brand styling — sentinel: brand-style-v2 ────
 # Mirrors src/accessible_surfaceome/audit/_plotting_config.py so the gist
 # stays self-contained. Kept in sync via tests/test_figure_gists_styling.py.
 BRAND_PALETTE = [
@@ -91,16 +91,19 @@ def _register_brand_fonts() -> None:
     ]
     for fonts_dir in candidates:
         if fonts_dir.is_dir():
-            for ttf in sorted(fonts_dir.glob("*.ttf")):
+            for path in sorted(list(fonts_dir.glob("*.ttf")) + list(fonts_dir.glob("*.otf"))):
                 try:
-                    fm.fontManager.addfont(str(ttf))
+                    fm.fontManager.addfont(str(path))
                 except Exception:  # noqa: BLE001
                     continue
             return
 
 
 def _apply_brand_style() -> None:
-    """Inline equivalent of `setup_plotting_style`. Sentinel: brand-style-v1."""
+    """Inline equivalent of `setup_plotting_style`. Sentinel: brand-style-v2.
+    v2: bumped sizes ~25% + explicit medium weight (avoids ExtraLight default
+    that matplotlib picks from the Manrope variable file). Companion to the
+    static Manrope-{regular,medium,semibold,bold}.otf files in assets/fonts/."""
     _register_brand_fonts()
     sns.set_style("whitegrid")
     sns.set_context("notebook", font_scale=1.0)
@@ -111,8 +114,10 @@ def _apply_brand_style() -> None:
         "savefig.facecolor": "none",
         "font.family": "sans-serif",
         "font.sans-serif": ["Manrope", "Outfit", "DejaVu Sans", "Liberation Sans", "Arial"],
-        "font.size": 17,
-        "axes.labelsize": 19,
+        "font.weight": "medium",
+        "font.size": 21,
+        "axes.labelsize": 24,
+        "axes.labelweight": "medium",
         "axes.titlesize": 0,
         "axes.titlepad": 0,
         "axes.spines.top": False,
@@ -127,12 +132,12 @@ def _apply_brand_style() -> None:
         "grid.linestyle": "-",
         "grid.linewidth": 0.7,
         "grid.color": BRAND_GRID,
-        "xtick.labelsize": 16,
-        "ytick.labelsize": 16,
+        "xtick.labelsize": 19,
+        "ytick.labelsize": 19,
         "xtick.color": BRAND_INK,
         "ytick.color": BRAND_INK,
         "legend.frameon": False,
-        "legend.fontsize": 16,
+        "legend.fontsize": 19,
         "patch.edgecolor": "none",
         "patch.linewidth": 0.0,
     })
@@ -252,14 +257,14 @@ def main() -> None:
             bar.get_height() + 1.2,
             f"{row['accuracy']*100:.1f}%",
             ha="center", va="bottom",
-            fontsize=17, fontweight="bold", color=BRAND_INK,
+            fontsize=21, fontweight="bold", color=BRAND_INK,
         )
         ax.text(
             bar.get_x() + bar.get_width() / 2,
             bar.get_height() / 2,
             f"{row['n_correct']}/{row['n_total']}",
             ha="center", va="center",
-            fontsize=12, color="white", fontweight="bold",
+            fontsize=15, color="white", fontweight="bold",
         )
 
     # Overlay individual-replicate accuracies + SEM on the Sonnet bar only.
@@ -281,9 +286,9 @@ def main() -> None:
             ax.scatter(xc + jitter, rv, s=24, color=BRAND_INK,
                        edgecolor="white", linewidth=0.5, zorder=5, alpha=0.9)
 
-    ax.set_ylabel("Overall accuracy on 147-gene bench (%)", fontsize=14)
+    ax.set_ylabel("Overall accuracy on\n147-gene bench (%)", fontsize=18)
     ax.set_ylim(0, 105)
-    ax.tick_params(axis="x", labelsize=13)
+    ax.tick_params(axis="x", labelsize=17)
     ax.tick_params(axis="y", labelsize=13)
     sns.despine(ax=ax, top=True, right=True)
 

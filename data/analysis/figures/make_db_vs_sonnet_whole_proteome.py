@@ -63,7 +63,7 @@ OPT_CUTOFFS_TSV = f"{BASE}/data/processed/triage_bench/db_optimized_cutoffs.tsv"
 # Subject metadata — mirrors save_figure in _plotting_config.py).
 GIST_URL = "https://gist.github.com/beccajcarlson/1265c867a3bbb08efd81262789e1f013"
 
-# ──── Inline brand styling — sentinel: brand-style-v1 ────
+# ──── Inline brand styling — sentinel: brand-style-v2 ────
 # Mirrors src/accessible_surfaceome/audit/_plotting_config.py so the gist
 # stays self-contained. Kept in sync via tests/test_figure_gists_styling.py.
 BRAND_PALETTE = [
@@ -93,16 +93,19 @@ def _register_brand_fonts() -> None:
     ]
     for fonts_dir in candidates:
         if fonts_dir.is_dir():
-            for ttf in sorted(fonts_dir.glob("*.ttf")):
+            for path in sorted(list(fonts_dir.glob("*.ttf")) + list(fonts_dir.glob("*.otf"))):
                 try:
-                    fm.fontManager.addfont(str(ttf))
+                    fm.fontManager.addfont(str(path))
                 except Exception:  # noqa: BLE001
                     continue
             return
 
 
 def _apply_brand_style() -> None:
-    """Inline equivalent of `setup_plotting_style`. Sentinel: brand-style-v1."""
+    """Inline equivalent of `setup_plotting_style`. Sentinel: brand-style-v2.
+    v2: bumped sizes ~25% + explicit medium weight (avoids ExtraLight default
+    that matplotlib picks from the Manrope variable file). Companion to the
+    static Manrope-{regular,medium,semibold,bold}.otf files in assets/fonts/."""
     _register_brand_fonts()
     sns.set_style("whitegrid")
     sns.set_context("notebook", font_scale=1.0)
@@ -113,8 +116,10 @@ def _apply_brand_style() -> None:
         "savefig.facecolor": "none",
         "font.family": "sans-serif",
         "font.sans-serif": ["Manrope", "Outfit", "DejaVu Sans", "Liberation Sans", "Arial"],
-        "font.size": 17,
-        "axes.labelsize": 19,
+        "font.weight": "medium",
+        "font.size": 21,
+        "axes.labelsize": 24,
+        "axes.labelweight": "medium",
         "axes.titlesize": 0,
         "axes.titlepad": 0,
         "axes.spines.top": False,
@@ -129,12 +134,12 @@ def _apply_brand_style() -> None:
         "grid.linestyle": "-",
         "grid.linewidth": 0.7,
         "grid.color": BRAND_GRID,
-        "xtick.labelsize": 16,
-        "ytick.labelsize": 16,
+        "xtick.labelsize": 19,
+        "ytick.labelsize": 19,
         "xtick.color": BRAND_INK,
         "ytick.color": BRAND_INK,
         "legend.frameon": False,
-        "legend.fontsize": 16,
+        "legend.fontsize": 19,
         "patch.edgecolor": "none",
         "patch.linewidth": 0.0,
     })
@@ -307,11 +312,11 @@ def main() -> None:
                 patch.get_height() + 0.01,
                 f"{frac:.0%}",
                 ha="center", va="bottom",
-                fontsize=8, color=BRAND_INK,
+                fontsize=11, color=BRAND_INK,
             )
 
     ax.set_xlabel("")
-    ax.set_ylabel("Fraction agreeing with Sonnet (+ NCBI) verdict")
+    ax.set_ylabel("Fraction agreeing with\nSonnet (+ NCBI) verdict")
     ax.set_ylim(0, 1.14)
 
     handles, _ = ax.get_legend_handles_labels()
@@ -320,7 +325,7 @@ def main() -> None:
         handles, legend_labels,
         title="Caller (overall agreement)",
         loc="upper left", bbox_to_anchor=(1.02, 1.0),
-        frameon=False, fontsize=10,
+        frameon=False, fontsize=13,
     )
 
     totals = {
@@ -338,7 +343,7 @@ def main() -> None:
     ax.text(
         0.5, -0.18, subtitle,
         transform=ax.transAxes, ha="center", va="top",
-        fontsize=11, color=BRAND_NEUTRAL,
+        fontsize=14, color=BRAND_NEUTRAL,
     )
     sns.despine(ax=ax, top=True, right=True)
 

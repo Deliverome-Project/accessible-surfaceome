@@ -41,7 +41,7 @@ POINTS_URL = (
 # Subject metadata — mirrors save_figure in _plotting_config.py).
 GIST_URL = "https://gist.github.com/beccajcarlson/f9319af882e372194bd30640c0cbf2ed"
 
-# ──── Inline brand styling — sentinel: brand-style-v1 ────
+# ──── Inline brand styling — sentinel: brand-style-v2 ────
 # Mirrors src/accessible_surfaceome/audit/_plotting_config.py so the gist
 # stays self-contained. Kept in sync via tests/test_figure_gists_styling.py.
 BRAND_PALETTE = [
@@ -71,16 +71,19 @@ def _register_brand_fonts() -> None:
     ]
     for fonts_dir in candidates:
         if fonts_dir.is_dir():
-            for ttf in sorted(fonts_dir.glob("*.ttf")):
+            for path in sorted(list(fonts_dir.glob("*.ttf")) + list(fonts_dir.glob("*.otf"))):
                 try:
-                    fm.fontManager.addfont(str(ttf))
+                    fm.fontManager.addfont(str(path))
                 except Exception:  # noqa: BLE001
                     continue
             return
 
 
 def _apply_brand_style() -> None:
-    """Inline equivalent of `setup_plotting_style`. Sentinel: brand-style-v1."""
+    """Inline equivalent of `setup_plotting_style`. Sentinel: brand-style-v2.
+    v2: bumped sizes ~25% + explicit medium weight (avoids ExtraLight default
+    that matplotlib picks from the Manrope variable file). Companion to the
+    static Manrope-{regular,medium,semibold,bold}.otf files in assets/fonts/."""
     _register_brand_fonts()
     sns.set_style("whitegrid")
     sns.set_context("notebook", font_scale=1.0)
@@ -91,8 +94,10 @@ def _apply_brand_style() -> None:
         "savefig.facecolor": "none",
         "font.family": "sans-serif",
         "font.sans-serif": ["Manrope", "Outfit", "DejaVu Sans", "Liberation Sans", "Arial"],
-        "font.size": 17,
-        "axes.labelsize": 19,
+        "font.weight": "medium",
+        "font.size": 21,
+        "axes.labelsize": 24,
+        "axes.labelweight": "medium",
         "axes.titlesize": 0,
         "axes.titlepad": 0,
         "axes.spines.top": False,
@@ -107,12 +112,12 @@ def _apply_brand_style() -> None:
         "grid.linestyle": "-",
         "grid.linewidth": 0.7,
         "grid.color": BRAND_GRID,
-        "xtick.labelsize": 16,
-        "ytick.labelsize": 16,
+        "xtick.labelsize": 19,
+        "ytick.labelsize": 19,
         "xtick.color": BRAND_INK,
         "ytick.color": BRAND_INK,
         "legend.frameon": False,
-        "legend.fontsize": 16,
+        "legend.fontsize": 19,
         "patch.edgecolor": "none",
         "patch.linewidth": 0.0,
     })
@@ -203,7 +208,7 @@ def main() -> None:
 
         ax.set_xscale("log")
         ax.text(0.02, 0.97, group, transform=ax.transAxes,
-                ha="left", va="top", fontsize=19, fontweight="bold",
+                ha="left", va="top", fontsize=23, fontweight="bold",
                 color=ramp[0])
         ax.set_ylim(25, 102)
         xs = [p["size"] for p in pts]
@@ -219,7 +224,7 @@ def main() -> None:
             0.0, -0.30, "\n".join(caption_lines),
             transform=ax.transAxes,
             ha="left", va="top",
-            fontsize=12, color=BRAND_INK,
+            fontsize=15, color=BRAND_INK,
             family="monospace",
         )
 
@@ -237,28 +242,35 @@ def main() -> None:
                    markersize=20, markeredgecolor=RECOMMENDED_EDGE,
                    markeredgewidth=1.4, label="Recommended after trade-off audit"),
     ]
-    legend_ax.legend(handles=handles, loc="upper center", fontsize=16,
+    legend_ax.legend(handles=handles, loc="upper center", fontsize=19,
                      frameon=False, title="Marker shape",
-                     title_fontsize=17)
+                     title_fontsize=21)
     legend_ax.text(
         0.5, 0.10,
         "Per-source missing rule:\n"
         "UniProt / GO / SURFY / CSPA absence → predict 'no'.\n"
         "HPA absence → abstain.",
         transform=legend_ax.transAxes, ha="center", va="bottom",
-        fontsize=13, color=BRAND_NEUTRAL,
+        fontsize=16, color=BRAND_NEUTRAL,
     )
 
     fig.supxlabel("Universe size — proteins this filter would admit "
-                  "(log scale; lower = stricter)", fontsize=16, y=0.02,
+                  "(log scale; lower = stricter)", fontsize=20, y=0.02,
                   color=BRAND_INK)
-    fig.supylabel("Accuracy on 147-gene benchmark (%)", fontsize=16, x=0.005,
-                  color=BRAND_INK)
-    plt.tight_layout(rect=[0.015, 0.03, 1, 0.985])
+    # supylabel y position is the vertical center of the two-row axes grid
+    # (default 0.5 is the figure center, which sits below the axes center
+    # once the supxlabel reserves space at the bottom + the figure has
+    # asymmetric top/bottom margins). x just past the figure-left margin
+    # keeps the rotated text off the canvas edge under brand-style-v2's
+    # larger axes.labelsize.
+    fig.supylabel("Accuracy on\n147-gene benchmark (%)", fontsize=20,
+                  x=0.02, y=0.54, color=BRAND_INK)
+    plt.tight_layout(rect=[0.04, 0.03, 1, 0.985])
     # Add vertical space between row 1 panels (which have captions below
     # them) and row 2 panels (whose top edge would otherwise crash into
-    # row 1's caption).
-    plt.subplots_adjust(hspace=0.55)
+    # row 1's caption). v2 fonts (caption fontsize=15, was 12) need more
+    # gap than v1's hspace=0.55.
+    plt.subplots_adjust(hspace=0.95)
 
     out_pdf = Path("db_cutoff_tradeoff.pdf")
     out_png = Path("db_cutoff_tradeoff.png")
