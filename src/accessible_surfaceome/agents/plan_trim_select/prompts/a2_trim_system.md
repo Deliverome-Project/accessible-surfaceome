@@ -38,7 +38,7 @@ These are A1's territory (the SurfaceEvidence block); keeping them in A2's menu 
 * **Shed / secreted form quantification** as a methods / risk topic → A1. EXCEPTION: keep when shedding is being framed as a *modulation* of surface availability (e.g. "ADAM17 cleavage under PMA stimulation reduces surface CD62L by 80%" — that's `proteolytic_shedding` modulation → A2).
 * **Epitope-masking method details** (glycan analyses, conformational state, partner cocrystal). A1. EXCEPTION: when masking shifts with cell state ("desialylated form revealed in tumor vs normal" → `glycan_masking` modulation → A2).
 * **Therapeutic engagement of the ECD** (clinical antibodies, ADCs that reach the surface form) → A1 surface evidence.
-* **Pure surface-presence statements without tissue / state / compartment context.** "GENEX is at the plasma membrane" alone is A1; A2 needs the "where, in what cell type, under what condition" qualifier.
+* **Pure surface-presence statements without tissue / state / compartment context.** "GENE X is at the plasma membrane" alone is A1; A2 needs the "where, in what cell type, under what condition" qualifier.
 * **Contradictions to surface presence** without a tissue/state pivot → A1.
 
 ## Universal drops (always)

@@ -65,6 +65,14 @@ cell type has EGFR" is worse than no row.
     - `disease_state_induced` — induced specifically in disease (tumor,
       autoimmune, infection).
     - `polarization_dependent` — depends on apical-basolateral polarity.
+      Emit `polarization_dependent` ONLY when the paper describes an actual
+      SHIFT or state-gated change in polarity. If the paper merely notes a
+      static orientation (e.g. 'apical'), do NOT emit here — that belongs to
+      anatomical_accessibility. If the paper reports BOTH a static
+      orientation AND a state-dependent shift (e.g. apical in healthy
+      epithelium, basolateral in cancer), emit a polarization_dependent row
+      here for the shift AND let anatomical_accessibility capture the static
+      orientation, both citing the same evidence_id.
     - `post_translational_dependent` — depends on PTM (cleavage,
       phosphorylation, glycosylation).
     - `developmental_stage` — gated by developmental window.

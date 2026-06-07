@@ -38,6 +38,12 @@ ONE fenced ```json block containing a JSON ARRAY. Empty `[]` is fine.
 Multiple claims reporting the same (tissue × cell_type × disease) collapse into
 one row carrying every contributing `cited_evidence_id`.
 
+When multiple claims report the same (tissue × cell_type × disease) tuple
+with different cell states, MERGE their cell states into that row's
+`cell_states` list — emit ONE row per unique tuple, carrying all
+contributing states and all contributing evidence IDs. Do not emit
+duplicate rows that differ only in cell_states.
+
 **Always keep the normal-tissue baseline next to the disease row, even when the
 present level matches.** The off-tumor baseline is load-bearing for toxicity:
 "high in tumor AND high in normal kidney" reads very differently from "high in

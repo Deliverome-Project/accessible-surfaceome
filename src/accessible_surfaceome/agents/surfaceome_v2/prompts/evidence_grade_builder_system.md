@@ -27,7 +27,10 @@ ONE fenced ```json block. Top-level OBJECT, not array.
   observations from a single source.
 - `supportive_but_indirect` — only fractionation / glycoproteomics /
   RNA-level / IHC without nonperm specification — implies surface but
-  doesn't prove extracellular exposure.
+  doesn't prove extracellular exposure. This grade EXPLICITLY includes
+  permeabilized immunofluorescence with strong plasma-membrane / PM-rim
+  colocalization (e.g. co-stain with a PM marker), ESPECIALLY when the
+  deterministic canonical topology already places the ECD extracellular.
 - `conflicting` — **reserved for true logical / mechanistic
   inconsistency**. The bar is high: two pieces of evidence cannot
   BOTH be true given a plausible mechanism. Example: one paper
@@ -53,8 +56,18 @@ ONE fenced ```json block. Top-level OBJECT, not array.
   alt-isoform state) and have the context variation captured via
   `state_dependence=high` + the biological_context section, NOT
   by collapsing the call to `conflicting`.
-- `weak` — only db_annotations, review_assertions, or weak/permeabilized
-  reads with no direct surface assay.
+- `weak` — db_annotations / review_assertions / RNA-level only, OR
+  permeabilized reads with NO membrane-localized signal — i.e. reserve
+  `weak` for genuinely non-localizing or assertion-only evidence. Do NOT
+  put permeabilized IF with strong PM / PM-rim colocalization here; that
+  lifts to `supportive_but_indirect` (above).
+
+  NOTE: this is the gene-level evidence_grade tiebreaker ONLY. Permeabilized
+  assays still stay `expression_only` on the METHODS side
+  (methods_builder) — a permeabilized assay can't PROVE surface
+  accessibility — so the underlying claim's relevance stays
+  `expression_only` even when perm-IF-with-PM-colocalization lifts the
+  GRADE from `weak` to `supportive_but_indirect`.
 
 ## claim_stances — emit BEFORE grade_rationale
 

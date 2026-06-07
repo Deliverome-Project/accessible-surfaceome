@@ -35,11 +35,16 @@ listing subcellular locations are also primary input.
 - `membrane_subdomains` — JSON ARRAY of `MembraneSubdomain` rows. Each
   row:
     - `subdomain` — SHORT canonical microdomain name of the OUTER-leaflet
-      plasma membrane (e.g. `lipid raft`, `tight junction`, `primary
-      cilium`, `apical membrane`, `synapse`). Same name discipline as
-      `compartment`. An inner-leaflet / cytoplasmic-face anchor is NOT
-      surface-accessible — route it to `dual_localization`, not here
-      (validator-enforced).
+      plasma membrane. It MUST be one of this exact closed set (verbatim,
+      lowercase, snake_case), using `other` when none fit: `lipid_raft`,
+      `tight_junction`, `primary_cilium`, `apical_membrane`,
+      `basolateral_membrane`, `immune_synapse`, `focal_adhesion`,
+      `caveolae`, `other`. Do not invent capitalization / singularization
+      variants (e.g. not "cilia" / "Primary Cilium" — use `primary_cilium`).
+      Same name discipline as `compartment`. An inner-leaflet /
+      cytoplasmic-face anchor is NOT surface-accessible — route it to
+      `dual_localization`, not here (a non-canonical value emitted here is
+      coerced to `other`, so put it in the right field instead).
     - `cited_evidence_ids` — list.
   ONLY for outer-leaflet / surface microdomains. Do NOT put whole
   compartments (endosome, lysosome, Golgi) here — those are

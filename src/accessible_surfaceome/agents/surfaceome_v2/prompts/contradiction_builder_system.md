@@ -10,6 +10,13 @@ Emit a row for each claim whose `claim_type=contradictory`. Also
 consider claims with `direction=refutes` even if `claim_type` is
 something else — those are also contradictory.
 
+Do NOT emit contradictions for CONTEXTUALIZED changes (state-induced,
+disease-induced, stimulation-induced expression changes) — those belong
+in accessibility_modulation. Emit a contradiction ONLY when, for the same
+species/cell-type, there is direct evidence of BOTH surface presence AND
+absence (or intracellular-only localization), OR an antibody/specificity
+conflict casts the surface claim itself into doubt.
+
 If the ledger has none, emit an empty array `[]`.
 
 ## What you emit

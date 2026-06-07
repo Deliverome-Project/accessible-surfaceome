@@ -120,6 +120,114 @@ def kickoff_section():
     </section>"""
 
 
+# ---- Block-builder pipeline diagram ----------------------------------------
+# A visual map of the v2 deep-dive decomposition: the shared retrieval ledger
+# (A1 + A2) fans out into per-focus block builders, two of which are ROLLUP
+# steps (evidence_grade + the synthesizer) that aggregate rather than extract a
+# single observation type. Hand-curated reference — the goal is "does this
+# decomposition make sense", which is documentation, not introspected output.
+# Update alongside DETERMINISTIC_GROUPS / EXAMPLE_FLOW_STAGES when builders move.
+PIPELINE_BUILDERS = {
+    "a1": [
+        ("methods_builder", "list[MethodObservation]",
+         "antibody / assay / permeabilization", False),
+        ("contradiction_builder", "list[Contradiction]",
+         "conflicting surface-evidence claims", False),
+        ("evidence_grade_builder", "evidence_grade",
+         "rollup of methods + contradictions", True),
+    ],
+    "a2": [
+        ("expression_builder", "expression rows",
+         "tissue × cell_type × disease", False),
+        ("cell_states_builder", "cell-state modulation",
+         "activation / differentiation states", False),
+        ("subcellular_localization_builder", "primary compartment",
+         "+ membrane_subdomains", False),
+        ("anatomical_accessibility_builder", "anatomical reach",
+         "vascular / BBB / tissue-restricted surface", False),
+        ("accessibility_modulation_builder", "accessibility modulation",
+         "stress / activation / PTM-gated surface changes", False),
+    ],
+}
+
+
+def _pipe_builder_card(name: str, out: str, sub: str, rollup: bool) -> str:
+    cls = "pbcard pbrollup" if rollup else "pbcard"
+    tag = '<span class="pbtag pbtag-rollup">ROLLUP</span>' if rollup else ""
+    return (
+        f'<div class="{cls}">'
+        f'<div class="pbname"><code>{html.escape(name)}</code>{tag}</div>'
+        f'<div class="pbout">&rarr; {html.escape(out)}</div>'
+        f'<div class="pbsub">{html.escape(sub)}</div>'
+        f"</div>"
+    )
+
+
+def pipeline_section() -> str:
+    a1_cards = "".join(_pipe_builder_card(*b) for b in PIPELINE_BUILDERS["a1"])
+    a2_cards = "".join(_pipe_builder_card(*b) for b in PIPELINE_BUILDERS["a2"])
+    return f"""<section class="pipe" id="pipeline">
+      <h2>Block-builder pipeline &mdash; how the deep-dive decomposes</h2>
+      <p class="sub2">The map of the v2 deep-dive. Retrieval
+      (<code>plan_trim_select</code>) lands two claim ledgers; the
+      <span class="pbtag pbtag-a1">A1</span> (surface-evidence) and
+      <span class="pbtag pbtag-a2">A2</span> (biology) builders each extract one
+      structured block from their slice; two
+      <span class="pbtag pbtag-rollup">ROLLUP</span> steps
+      (<code>evidence_grade</code> + the synthesizer) aggregate across blocks
+      rather than extract a single observation type. Use this to judge whether
+      the split into per-observation builders + rollups hangs together.</p>
+      <div class="pflow">
+
+        <div class="pstage pretrieval">
+          <div class="pstage-h">Retrieval &mdash; <code>plan_trim_select</code></div>
+          <div class="pstage-b">PubMed + Europe PMC + PubTator &rarr; two
+          deduplicated <code>EvidenceClaim</code> ledgers</div>
+          <div class="pledgers">
+            <span class="pledger pledger-a1">A1 ledger
+            <span class="pln">surface-evidence claims</span></span>
+            <span class="pledger pledger-a2">A2 ledger
+            <span class="pln">biology claims</span></span>
+          </div>
+        </div>
+
+        <div class="parrow">&darr; ledgers fan out to block builders &darr;</div>
+
+        <div class="pbuilders">
+          <div class="pbcol pbcol-a1">
+            <div class="pbcol-h"><span class="pbtag pbtag-a1">A1</span>
+              surface-evidence focus</div>
+            {a1_cards}
+          </div>
+          <div class="pbcol pbcol-a2">
+            <div class="pbcol-h"><span class="pbtag pbtag-a2">A2</span>
+              biology focus</div>
+            {a2_cards}
+          </div>
+        </div>
+
+        <div class="parrow">&darr; all blocks + merged ledger &darr;</div>
+
+        <div class="pstage psynth">
+          <div class="pstage-h">Synthesizer
+            <span class="pbtag pbtag-rollup">ROLLUP</span></div>
+          <div class="pstage-b">Rolls up across all blocks + the merged ledger
+          into the final record</div>
+          <div class="psynth-out">
+            <span class="poutchip">executive_summary</span>
+            <span class="poutchip">filters</span>
+            <span class="poutchip">accessibility_risks</span>
+            <span class="poutchip">confidence</span>
+          </div>
+        </div>
+
+        <div class="parrow">&darr;</div>
+        <div class="precord"><code>SurfaceomeRecord</code></div>
+
+      </div>
+    </section>"""
+
+
 # ---- Closed-enum reference -------------------------------------------------
 # The structured-output options the model must choose from, introspected live
 # from models.py so the review never drifts from the shipped schema. Each
@@ -139,6 +247,9 @@ ENUM_GROUPS = [
     ]),
     ("Executive summary", [
         ("HeadlineRisk", "executive_summary.headline_risks[]"),
+    ]),
+    ("Subcellular localization", [
+        ("MembraneSubdomainName", "subcellular_localization.membrane_subdomains[].subdomain"),
     ]),
 ]
 
@@ -844,11 +955,47 @@ footer{{color:var(--mut);font-size:12px;margin:28px 0 0;border-top:1px solid var
 .dfield{{font-family:ui-monospace,monospace;font-size:11px;color:#c8f0d6;background:#0f1a14;border-left:2px solid var(--addbar);padding:3px 8px;border-radius:0 4px 4px 0;line-height:1.4}}
 .dnone{{font-size:11.5px;color:var(--mut);border-top:1px solid var(--line);padding-top:8px}}
 .dnone code{{font-family:ui-monospace,monospace;font-size:11px;color:#8fb4ff}}
+.pipe{{margin:0 0 30px;scroll-margin-top:14px}}.pipe h2{{font-size:17px;margin:0 0 4px}}
+.pflow{{display:flex;flex-direction:column;align-items:stretch;gap:6px}}
+.pstage{{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:14px}}
+.pstage-h{{font-size:13px;font-weight:600;color:var(--ink);display:flex;align-items:center;gap:8px;margin:0 0 6px}}
+.pstage-h code{{font-family:ui-monospace,monospace;font-size:12px;color:#8fb4ff}}
+.pstage-b{{color:var(--mut);font-size:11.5px;line-height:1.5}}
+.pstage-b code{{font-family:ui-monospace,monospace;font-size:11px;color:#8fb4ff}}
+.pretrieval{{border-color:#2a4a8a}}
+.pledgers{{display:flex;flex-wrap:wrap;gap:8px;margin:10px 0 0}}
+.pledger{{display:flex;flex-direction:column;font-family:ui-monospace,monospace;font-size:12px;font-weight:600;border-radius:6px;padding:6px 10px}}
+.pledger .pln{{font-weight:400;font-size:10px;text-transform:uppercase;letter-spacing:.04em;color:var(--mut);margin-top:2px}}
+.pledger-a1{{background:#241a0c;border:1px solid #6e5320;color:#f0b85a}}
+.pledger-a2{{background:#1f0f30;border:1px solid #5a3e8a;color:#c89bf0}}
+.parrow{{text-align:center;font-size:12px;color:var(--mut);line-height:1.4;padding:2px 0}}
+.pbuilders{{display:grid;grid-template-columns:1fr 1fr;gap:14px}}
+@media(max-width:760px){{.pbuilders{{grid-template-columns:1fr}}}}
+.pbcol{{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:12px;display:flex;flex-direction:column;gap:8px}}
+.pbcol-a1{{border-left:3px solid #b5762a}}
+.pbcol-a2{{border-left:3px solid #8a5fc8}}
+.pbcol-h{{font-size:12px;font-weight:600;color:var(--ink);display:flex;align-items:center;gap:8px;margin:0 0 2px}}
+.pbcard{{background:#0f1014;border:1px solid var(--line);border-radius:7px;padding:8px 10px}}
+.pbcard.pbrollup{{background:#1a1228;border:1px solid #5a3e8a;border-left:3px solid #8a5fc8}}
+.pbname{{display:flex;align-items:center;gap:6px;flex-wrap:wrap}}
+.pbname code{{font-family:ui-monospace,monospace;font-size:11.5px;color:#cfd8ea}}
+.pbout{{font-family:ui-monospace,monospace;font-size:11px;color:#7ee2a8;margin:3px 0 0}}
+.pbsub{{font-size:10.5px;color:var(--mut);margin:2px 0 0;line-height:1.45}}
+.pbtag{{font-size:9px;text-transform:uppercase;letter-spacing:.04em;border-radius:4px;padding:1px 6px;font-weight:600}}
+.pbtag-a1{{background:#3a2a14;color:#f0b85a}}
+.pbtag-a2{{background:#2a1440;color:#c89bf0}}
+.pbtag-rollup{{background:#241a3a;color:#b58af0;border:1px solid #5a3e8a}}
+.psynth{{border-color:#5a3e8a}}
+.psynth-out{{display:flex;flex-wrap:wrap;gap:6px;margin:10px 0 0}}
+.poutchip{{font-family:ui-monospace,monospace;font-size:11px;color:#a9c8ff;background:#142544;border:1px solid #2a4a8a;border-radius:5px;padding:2px 8px}}
+.precord{{align-self:center;background:#143226;border:1px solid #2ea043;border-radius:8px;padding:8px 16px}}
+.precord code{{font-family:ui-monospace,monospace;font-size:13px;font-weight:600;color:#7ee2a8}}
 </style></head><body><div class="wrap">
 <h1>Deep-dive prompt review</h1>
 <p class="sub">PR&nbsp;#54 — full prompt text with the diff vs <b>main</b> (<code>{BASE[:7]}</code>) highlighted inline · {len(files)} files</p>
 <div class="chips"><span class="chip"><b>{nm}</b> modified</span><span class="chip"><b>{nn}</b> new</span><span class="chip"><b>{nd}</b> deleted</span></div>
 {kickoff_section()}
+{pipeline_section()}
 {deterministic_section()}
 {flow_section()}
 {enum_section()}

@@ -51,23 +51,30 @@ def test_compartment_accepts_long_canonical_organelle_name():
     assert DualLocalization(compartment=name).compartment == name
 
 
-def test_subdomain_accepts_short_canonical_name():
-    assert MembraneSubdomain(subdomain="lipid raft").subdomain == "lipid raft"
+def test_subdomain_coerces_free_text_to_canonical_enum():
+    # ``subdomain`` is now a closed enum; the free-text "lipid raft" coerces
+    # to the canonical ``lipid_raft`` token rather than passing through.
+    # Built via ``model_validate`` (the legacy-JSON path) so the closed-enum
+    # field type doesn't reject the free-text input at static-check time.
+    assert MembraneSubdomain.model_validate({"subdomain": "lipid raft"}).subdomain == "lipid_raft"
 
 
 # --------------------------------------------------------------------------
-# A5.2 — inner-leaflet / cytoplasmic-face is NOT a surface subdomain
+# A5.2 — inner-leaflet / cytoplasmic-face is NOT a surface subdomain.
+# These aren't in the synonym set, so the closed enum coerces them to
+# ``"other"`` rather than raising — backward-compat means never rejecting a
+# stored record. (Discouraging inner-leaflet at write time now lives in the
+# builder prompt, not a hard schema reject.)
 # --------------------------------------------------------------------------
 
 
-def test_subdomain_rejects_inner_leaflet():
-    with pytest.raises(ValidationError, match="dual_localization"):
-        MembraneSubdomain(subdomain="inner leaflet")
+def test_subdomain_inner_leaflet_coerces_to_other():
+    assert MembraneSubdomain.model_validate({"subdomain": "inner leaflet"}).subdomain == "other"
 
 
-def test_subdomain_rejects_cytoplasmic_face():
-    with pytest.raises(ValidationError, match="dual_localization"):
-        MembraneSubdomain(subdomain="cytoplasmic face microdomain")
+def test_subdomain_cytoplasmic_face_coerces_to_other():
+    rec = MembraneSubdomain.model_validate({"subdomain": "cytoplasmic face microdomain"})
+    assert rec.subdomain == "other"
 
 
 # --------------------------------------------------------------------------

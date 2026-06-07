@@ -19,6 +19,7 @@ persisted ``Evidence`` record after deterministic validation.
 from __future__ import annotations
 
 import logging
+import re
 from datetime import datetime
 from typing import Any, ClassVar, Literal
 
@@ -2128,28 +2129,114 @@ class DualLocalization(BaseModel):
         return _assert_short_canonical(v, "DualLocalization.compartment")
 
 
+# Closed enum for membrane-subdomain assignments. Free text let models emit
+# "cilia" / "primary cilium" / "Primary Cilium" for the same biology, which
+# broke grouping queries; the enum collapses that to a canonical token. The
+# ``mode="before"`` coercion below normalizes legacy free-text values so
+# already-stored records (D1 rows, viewer snapshots) still load.
+MembraneSubdomainName = Literal[
+    "lipid_raft",
+    "tight_junction",
+    "primary_cilium",
+    "apical_membrane",
+    "basolateral_membrane",
+    "immune_synapse",
+    "focal_adhesion",
+    "caveolae",
+    "other",
+]
+
+# Synonym → canonical map applied AFTER whitespace/hyphen normalization
+# (lowercase, strip, collapse runs of space/hyphen to a single underscore).
+# Anything not present here — including inner-leaflet / cytoplasmic-face
+# anchors, which are not surface-accessible — coerces to ``"other"`` rather
+# than raising, so no legacy record is ever rejected on load.
+_MEMBRANE_SUBDOMAIN_SYNONYMS: dict[str, str] = {
+    # primary cilium
+    "cilia": "primary_cilium",
+    "cilium": "primary_cilium",
+    "primary_cilium": "primary_cilium",
+    "ciliary": "primary_cilium",
+    "ciliary_membrane": "primary_cilium",
+    # lipid raft
+    "lipid_raft": "lipid_raft",
+    "lipid_rafts": "lipid_raft",
+    "raft": "lipid_raft",
+    "rafts": "lipid_raft",
+    "membrane_raft": "lipid_raft",
+    # apical membrane
+    "apical": "apical_membrane",
+    "apical_membrane": "apical_membrane",
+    "apical_surface": "apical_membrane",
+    # basolateral membrane
+    "basolateral": "basolateral_membrane",
+    "basolateral_membrane": "basolateral_membrane",
+    # tight junction
+    "tight_junction": "tight_junction",
+    "tight_junctions": "tight_junction",
+    "zonula_occludens": "tight_junction",
+    # immune synapse
+    "immune_synapse": "immune_synapse",
+    "immunological_synapse": "immune_synapse",
+    "immunologic_synapse": "immune_synapse",
+    # focal adhesion
+    "focal_adhesion": "focal_adhesion",
+    "focal_adhesions": "focal_adhesion",
+    # caveolae
+    "caveolae": "caveolae",
+    "caveola": "caveolae",
+    "caveolar": "caveolae",
+}
+
+# Canonical tokens that pass straight through (the Literal members).
+_MEMBRANE_SUBDOMAIN_CANONICAL: frozenset[str] = frozenset(
+    {
+        "lipid_raft",
+        "tight_junction",
+        "primary_cilium",
+        "apical_membrane",
+        "basolateral_membrane",
+        "immune_synapse",
+        "focal_adhesion",
+        "caveolae",
+        "other",
+    }
+)
+
+
+def _coerce_membrane_subdomain(value: str) -> str:
+    """Normalize a free-text subdomain to a canonical ``MembraneSubdomainName``.
+
+    Lowercase + strip, collapse any run of spaces / hyphens / underscores to a
+    single underscore, then map through the synonym table. Already-canonical
+    values pass through; anything unrecognized coerces to ``"other"`` — the
+    field is a closed enum for NEW data but never rejects legacy data.
+    """
+    normalized = re.sub(r"[\s\-_]+", "_", value.strip().lower()).strip("_")
+    if normalized in _MEMBRANE_SUBDOMAIN_CANONICAL:
+        return normalized
+    return _MEMBRANE_SUBDOMAIN_SYNONYMS.get(normalized, "other")
+
+
 class MembraneSubdomain(BaseModel):
     """One membrane subdomain assignment (lipid raft, tight junction, cilium...)."""
 
     model_config = ConfigDict(extra="forbid")
 
-    subdomain: str
+    subdomain: MembraneSubdomainName
     cited_evidence_ids: list[str] = Field(default_factory=list)
 
-    @field_validator("subdomain")
+    @field_validator("subdomain", mode="before")
     @classmethod
-    def _check_subdomain(cls, v: str) -> str:
-        low = v.lower()
-        # A5.2 — a cytoplasmic-face / inner-leaflet anchor is NOT
-        # surface-accessible; it belongs in dual_localization, not here.
-        if "inner leaflet" in low or "cytoplasmic face" in low or "cytosolic face" in low:
-            raise ValueError(
-                "MembraneSubdomain.subdomain rejects inner-leaflet / "
-                "cytoplasmic-face values — a cytoplasmic-face lipid anchor is "
-                "not surface-accessible; record it in "
-                "subcellular_localization.dual_localization instead."
-            )
-        return _assert_short_canonical(v, "MembraneSubdomain.subdomain")
+    def _coerce_subdomain(cls, v: object) -> object:
+        # Backward-compat: stored records carry FREE-TEXT subdomain values
+        # ("lipid rafts", "Primary Cilium", "apical surface", or even an
+        # inner-leaflet / cytoplasmic-face anchor that is not surface-
+        # accessible). Normalize every string to a canonical token so the
+        # closed enum never rejects legacy data; unrecognized → "other".
+        if isinstance(v, str):
+            return _coerce_membrane_subdomain(v)
+        return v
 
 
 class SubcellularLocalization(BaseModel):
@@ -2986,14 +3073,28 @@ class AccessibilityRisks(BaseModel):
 
 # ---- triage_signal ↔ surface_accessibility consistency --------------------
 
-# Cross-agent coherence: a triage verdict of ``unlikely`` paired with a
-# deep-dive ``surface_accessibility`` of ``high`` is a disagreement the LLM
-# must justify in ``confidence_reasoning``. We don't hard-reject the
-# disagreement (the deep-dive can legitimately overturn triage) — we require
-# the record to carry an explanation. Only the strongest contradiction
-# (triage=unlikely + accessibility=high) is gated.
-_TRIAGE_HIGH_CONFLICT: dict[str, frozenset[str]] = {
-    "unlikely": frozenset({"high"}),
+# Cross-agent coherence: when the triage verdict and the deep-dive
+# ``surface_accessibility`` class point in OPPOSITE directions, that is a
+# disagreement the LLM must justify in ``confidence_reasoning``. We don't
+# hard-reject the disagreement (the deep-dive can legitimately overturn
+# triage) — we require the record to carry an explanation. The synthesizer
+# prompt promises ANY cross-agent disagreement is gated, so we enumerate
+# every opposing (triage, accessibility) pair rather than only the strongest
+# one (the historical ``unlikely``↔``high`` case).
+#
+# "Opposing" = the two agents lean to opposite ends of the accessibility
+# scale:
+#   * triage ``unlikely`` (surface-UNlikely) vs deep-dive a strongly
+#     ACCESSIBLE class (``high`` / ``moderate``); and
+#   * triage ``likely_accessible`` (likely-surface) vs deep-dive an
+#     INACCESSIBLE / none class (``no`` / ``low``).
+# Neutral / uncertain pairings do NOT fire: ``possibly_accessible`` and
+# ``unknown`` are weak/no-signal on the triage side, ``uncertain`` is
+# no-signal on the deep-dive side, and same-direction pairs (e.g.
+# ``unlikely``↔``low``, ``likely_accessible``↔``high``) agree.
+_TRIAGE_ACCESSIBILITY_CONFLICT: dict[str, frozenset[str]] = {
+    "unlikely": frozenset({"high", "moderate"}),
+    "likely_accessible": frozenset({"no", "low"}),
 }
 
 
@@ -3004,12 +3105,12 @@ def _validate_triage_signal_consistency(
 ) -> None:
     """Flag triage ↔ deep-dive disagreement that lacks a written justification.
 
-    Raises ``ValueError`` when ``triage_signal`` strongly contradicts
-    ``executive_summary.surface_accessibility`` and ``confidence_reasoning``
-    is empty — the LLM must explain the disagreement.
+    Raises ``ValueError`` when ``triage_signal`` points in the opposite
+    direction from ``executive_summary.surface_accessibility`` and
+    ``confidence_reasoning`` is empty — the LLM must explain the disagreement.
     """
 
-    conflicting = _TRIAGE_HIGH_CONFLICT.get(triage_signal, frozenset())
+    conflicting = _TRIAGE_ACCESSIBILITY_CONFLICT.get(triage_signal, frozenset())
     if surface_accessibility in conflicting and not confidence_reasoning.strip():
         raise ValueError(
             f"triage_signal={triage_signal!r} conflicts with "
@@ -3218,8 +3319,8 @@ class SurfaceomeRecord(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
     schema_version: Literal[
-        "1.0.0", "1.1.0", "2.0.0", "2.1.0", "2.2.0", "2.3.0", "2.4.0"
-    ] = "2.4.0"
+        "1.0.0", "1.1.0", "2.0.0", "2.1.0", "2.2.0", "2.3.0", "2.4.0", "2.4.1"
+    ] = "2.4.1"
     gene: GeneIdentifier
 
     # Cross-agent coherence — populated by the orchestrator from the most
@@ -3334,8 +3435,8 @@ class SurfaceomeRecordDraft(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
     schema_version: Literal[
-        "1.0.0", "1.1.0", "2.0.0", "2.1.0", "2.2.0", "2.3.0", "2.4.0"
-    ] = "2.4.0"
+        "1.0.0", "1.1.0", "2.0.0", "2.1.0", "2.2.0", "2.3.0", "2.4.0", "2.4.1"
+    ] = "2.4.1"
     gene: GeneIdentifier
 
     # Orchestrator-injected before the agent call; the agent reads it but does
@@ -4077,6 +4178,7 @@ __all__ = [
     "RiskSeverity",
     "EvidenceStrength",
     "RestrictedSubdomainName",
+    "MembraneSubdomainName",
     "CoreceptorDependency",
     "CoreceptorEvidenceBasis",
     "SecretedFormSource",
