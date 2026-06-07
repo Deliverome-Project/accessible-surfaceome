@@ -106,7 +106,7 @@ doesn't, merge them.
         no leader-replacement mention.
       - `exogenous` — methods sentence names a foreign SP. Phrases:
         "IgG kappa leader", "IgG κ light-chain SP", "preprotrypsin
-        signal peptide", "BiP leader", "PreS", "honeybee melittin SP",
+        signal peptide", "PreS", "honeybee melittin SP",
         "interleukin-2 secretion signal", "Igλ leader", or any
         chimeric leader replacing the native sequence.
       - `unspecified` — methods don't mention the leader source.
@@ -164,9 +164,9 @@ not collapse it into `name`:
   field is for what the antibody recognizes, not for stuffing the
   identifier in.
 
-**Bad**: `name="anti-TARGET antibody clone 5A6 (BD Biosciences)"`,
+**Bad**: `name="anti-TARGET antibody clone 528 (BD Biosciences)"`,
 `clone=null`, `vendor=null`
-**Good**: `name="anti-TARGET"`, `clone="5A6"`, `vendor="BD Biosciences"`,
+**Good**: `name="anti-TARGET"`, `clone="528"`, `vendor="BD Biosciences"`,
 `validation_strategy="genetic_KO"`, `validation_strength="strong"`
 
 **Antibody identifiers often live in a SEPARATE reagent-list claim —
