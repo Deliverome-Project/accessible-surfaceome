@@ -259,19 +259,18 @@ def test_blocklist_is_curated_not_empty() -> None:
 
 import ast  # noqa: E402
 
-# Paths under ``agents/`` to NOT scan for Python string-literal leaks.
-# Docstrings (functions / modules / classes) are filtered via AST below;
-# this list is for files that contain LARGE non-prompt strings where a
-# forbidden token would just be noise (CSS class names, path strings,
-# eval-script ground-truth lists).
-PY_SCAN_EXCLUDE_FILES: tuple[str, ...] = (
-    # HTML/CSS template strings (gene name 'src' as CSS class etc.)
-    "plan_trim_select/render_html.py",
-    # Eval scripts hardcode ground-truth gene lists by design — they
-    # compare model predictions against known positives/negatives, so
-    # gene names there are reference data, not prompt content.
-    "_eval/benchmark.py",
-    "_eval/variant_b_deterministic.py",
+# Allowlist of Python files that build LLM-visible content (tool
+# descriptions, prompt constants, etc.). The scan ONLY looks at strings
+# in these files — everything else (CLI defaults, log format strings,
+# error messages, regex patterns, comments, docstrings) is developer
+# code that never reaches the LLM and shouldn't be flagged.
+#
+# When you add a new Python module that assembles prompt text or tool
+# descriptions, add it here.
+PY_SCAN_INCLUDE_FILES: tuple[str, ...] = (
+    # Tool descriptions sent to the LLM via the messages.create() tools
+    # block. EVIDENCE_RETRIEVAL_DESCRIPTION etc. live here.
+    "_support/tool_registry.py",
 )
 
 # Subset of BLOCKLIST used for the Python scan. Excludes:
@@ -299,7 +298,7 @@ _PY_BLOCKED_RE = re.compile(
 def _agents_py_files() -> list[Path]:
     return [
         p for p in sorted(PROMPTS_ROOT.rglob("*.py"))
-        if not any(excluded in str(p) for excluded in PY_SCAN_EXCLUDE_FILES)
+        if any(included in str(p) for included in PY_SCAN_INCLUDE_FILES)
         and "__pycache__" not in str(p)
     ]
 
@@ -355,19 +354,23 @@ def _scan_py(path: Path) -> list[tuple[int, str, str]]:
 
 
 def test_python_string_literals_have_no_gene_names() -> None:
-    """Python string literals under ``agents/`` (excluding docstrings)
-    must not name specific genes.
+    """Python string literals in known prompt-building modules must
+    not name specific genes.
 
-    The .md scan is blind to LLM-visible content embedded in Python —
-    e.g. the tool-description constants under
-    ``_support/tool_registry.py`` are concatenated string literals that
-    the LLM sees on every annotation, but the .md scan never touches
-    them. This test closes that gap.
+    The .md scan covers prompt files. This test closes the gap for
+    LLM-visible content that lives in Python — e.g. the tool-description
+    constants under ``_support/tool_registry.py`` are concatenated
+    string literals passed to the LLM as tool definitions on every
+    annotation. A bare CD81 / EGFR in that file would never be caught
+    by the .md scan.
 
-    Docstrings are exempted (they're Python developer documentation,
-    never sent to the LLM). HTML/CSS template files + eval scripts
-    that legitimately hardcode gene lists for ground-truth comparison
-    are excluded via ``PY_SCAN_EXCLUDE_FILES``.
+    Scope is intentionally narrow: only files in
+    ``PY_SCAN_INCLUDE_FILES`` are scanned. Code-internal strings (CLI
+    defaults, log format strings, error messages, comments, docstrings)
+    are developer code that never reaches the LLM — flagging them
+    would produce noise without preventing real leaks. When you add a
+    new Python module that builds prompt text or tool descriptions,
+    add it to ``PY_SCAN_INCLUDE_FILES``.
     """
     all_hits: list[tuple[Path, list[tuple[int, str, str]]]] = []
     for path in _agents_py_files():
