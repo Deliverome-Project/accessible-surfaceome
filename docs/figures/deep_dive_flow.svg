@@ -132,7 +132,7 @@
       run in parallel; one Sonnet call per block
     </text>
 
-    <!-- Surface Evidence column (4 boxes) -->
+    <!-- Surface Evidence column (3 boxes; risks moved to shared row below) -->
     <g id="builders-surface-evidence">
       <text x="512" y="110" font-size="10.5" font-weight="700"
             letter-spacing="0.06em" fill="#6A6A6A">SURFACE EVIDENCE</text>
@@ -145,12 +145,9 @@
       <rect x="512" y="182" width="208" height="28" rx="5" ry="5"
             fill="#FFFFFF" stroke="#A8A8A8"/>
       <text x="520" y="200" font-size="11.5" font-weight="600" fill="#1A1A1A">conflicting evidence</text>
-      <rect x="512" y="214" width="208" height="28" rx="5" ry="5"
-            fill="#FFFFFF" stroke="#A8A8A8"/>
-      <text x="520" y="232" font-size="11.5" font-weight="600" fill="#1A1A1A">risks</text>
     </g>
 
-    <!-- Surface Expression column (6 boxes; cell states merged into modulation) -->
+    <!-- Surface Expression column (5 boxes; cell states merged into modulation; risks moved to shared row below) -->
     <g id="builders-surface-expression">
       <text x="732" y="110" font-size="10.5" font-weight="700"
             letter-spacing="0.06em" fill="#6A6A6A">SURFACE EXPRESSION</text>
@@ -169,9 +166,15 @@
       <rect x="732" y="246" width="208" height="28" rx="5" ry="5"
             fill="#FFFFFF" stroke="#A8A8A8"/>
       <text x="740" y="264" font-size="11.5" font-weight="600" fill="#1A1A1A">accessibility modulation</text>
-      <rect x="732" y="278" width="208" height="28" rx="5" ry="5"
+    </g>
+
+    <!-- Shared row: risks reads from BOTH ledgers (single builder) -->
+    <g id="builders-shared-risks">
+      <text x="624" y="294" font-size="10.5" font-weight="700"
+            letter-spacing="0.06em" fill="#6A6A6A" text-anchor="middle">SHARED  &#183;  reads both ledgers</text>
+      <rect x="512" y="302" width="428" height="28" rx="5" ry="5"
             fill="#FFFFFF" stroke="#A8A8A8"/>
-      <text x="740" y="296" font-size="11.5" font-weight="600" fill="#1A1A1A">risks</text>
+      <text x="726" y="320" font-size="11.5" font-weight="600" fill="#1A1A1A" text-anchor="middle">risks</text>
     </g>
 
     <!-- Model chip -->
