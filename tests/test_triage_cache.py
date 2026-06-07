@@ -32,7 +32,7 @@ def _outcome(paper_id: str, decision: str = "keep_abstract") -> TriageOutcome:
         paper_id=paper_id,
         response=AbstractTriageResponse(
             paper_id=paper_id,
-            decision=decision,
+            decision=decision,  # ty: ignore[invalid-argument-type]
             reason=f"test outcome for {paper_id}",
         ),
         usage=None,

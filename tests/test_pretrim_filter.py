@@ -41,7 +41,7 @@ def _paper(
         journal=journal,
         year=year,
         is_review=is_review,
-        publication_type=publication_type,  # type: ignore[arg-type]
+        publication_type=publication_type,  # type: ignore[arg-type]  # ty: ignore[invalid-argument-type]
         is_pmc_oa=is_pmc_oa,
     )
 

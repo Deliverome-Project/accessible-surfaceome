@@ -208,7 +208,13 @@ def triage_one_abstract(
 
     t0 = time.perf_counter()
     try:
-        resp = client.messages.create(**create_kwargs)
+        # create_kwargs is typed dict[str, Any] — the two branches above
+        # build different shapes for cached vs legacy prompt paths. The
+        # static checker can't resolve **kwargs unpack against the typed
+        # Messages.create overloads, but the runtime shapes are correct:
+        # both branches set model + max_tokens + messages, and the cached
+        # branch adds system. The trailing directive below suppresses ty.
+        resp = client.messages.create(**create_kwargs)  # ty: ignore[no-matching-overload]
     except Exception as exc:  # noqa: BLE001
         return TriageOutcome(
             paper_id=paper_id,
