@@ -564,8 +564,20 @@ export function IsoformsCard({ rec, n }: Props) {
                   over the shorter length; see merge/isoform_identity.py).
                   ECD %similarity isn't computed for same-gene isoforms, so
                   that one column stays "—". Older records with no identity
-                  number also fall back to "—". */}
-              {df.isoform_topologies.map((iso, i) => {
+                  number also fall back to "—".
+                  Defensive filter: some annotated records (e.g. TACSTD2)
+                  carry the canonical accession itself inside
+                  `isoform_topologies`. Rendering it here as an "alt
+                  isoform" duplicates the Canonical row above and shows
+                  null %-identity cells (since canonical-vs-self is
+                  trivial and not computed), reading to users as
+                  "%-identity is missing". Skip the canonical accession so
+                  the section only lists genuine alternatives. The
+                  annotator-side fix is upstream — this guard keeps the
+                  table honest until it lands. */}
+              {df.isoform_topologies
+                .filter((iso) => iso.isoform_id !== rec.gene.uniprot_acc)
+                .map((iso, i) => {
                 const fullId = iso.full_length_pct_identity_to_canonical;
                 const ecdId = iso.ecd_pct_identity_to_canonical;
                 return (
@@ -628,7 +640,9 @@ export function IsoformsCard({ rec, n }: Props) {
           showMembrane={false}
         />
 
-        {df.isoform_topologies.length === 0 ? (
+        {df.isoform_topologies.filter(
+          (iso) => iso.isoform_id !== rec.gene.uniprot_acc,
+        ).length === 0 ? (
           <p className={styles.empty}>
             No alternative isoforms in our DeepTMHMM coverage for{" "}
             {rec.gene.hgnc_symbol}. (UniProt may list additional isoforms whose
