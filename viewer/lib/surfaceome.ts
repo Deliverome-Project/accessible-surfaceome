@@ -673,7 +673,7 @@ export interface GeneEntry {
  *  default in `src/accessible_surfaceome/tools/_shared/models.py`. Records
  *  whose declared `schema_version` lags this constant render as stale
  *  (amber dot) in the GeneJump dropdown until they're re-annotated. */
-export const CURRENT_RECORD_SCHEMA_VERSION = "2.6.0";
+export const CURRENT_RECORD_SCHEMA_VERSION = "2.9.0";
 
 let _geneEntriesPromise: Promise<GeneEntry[]> | null = null;
 

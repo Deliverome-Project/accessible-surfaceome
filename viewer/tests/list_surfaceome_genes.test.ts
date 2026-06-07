@@ -34,7 +34,7 @@ const scenario = process.argv[2] ?? "";
 // The viewer's CURRENT_RECORD_SCHEMA_VERSION constant. Hard-coded here so
 // the test pins the comparison even if the constant moves; bump in lock-
 // step with lib/surfaceome.ts when the schema rolls.
-const CURRENT = "2.6.0";
+const CURRENT = "2.9.0";
 let fetchCalls = 0;
 
 function jsonResponse(body: unknown, status = 200): Response {
@@ -146,13 +146,20 @@ if (scenario === "local") {
   pass("throws immediately on 4xx without retrying");
 } else if (scenario === "entries") {
   const entries = await listSurfaceomeGeneEntries();
+  // Partial match: GeneEntry may carry extra fields beyond {symbol, stale}
+  // (e.g. synonyms backfilled from the gene-names TSV). The test pins the
+  // (symbol, stale) contract — extras are fine.
+  const got = entries.map((e: { symbol: string; stale: boolean }) => ({
+    symbol: e.symbol,
+    stale: e.stale,
+  }));
   const expected = [
     { symbol: "EGFR", stale: false },
     { symbol: "KIR2DL1", stale: false },
     { symbol: "ZED", stale: false },
   ];
-  if (JSON.stringify(entries) !== JSON.stringify(expected)) {
-    fail(`expected ${JSON.stringify(expected)}, got ${JSON.stringify(entries)}`);
+  if (JSON.stringify(got) !== JSON.stringify(expected)) {
+    fail(`expected ${JSON.stringify(expected)}, got ${JSON.stringify(got)}`);
   }
   if (fetchCalls !== 1) fail(`expected 1 fetch, got ${fetchCalls}`);
   pass(
@@ -160,13 +167,17 @@ if (scenario === "local") {
   );
 } else if (scenario === "entries-stale") {
   const entries = await listSurfaceomeGeneEntries();
+  const got = entries.map((e: { symbol: string; stale: boolean }) => ({
+    symbol: e.symbol,
+    stale: e.stale,
+  }));
   const expected = [
     { symbol: "EGFR", stale: true },
     { symbol: "KIR2DL1", stale: false },
     { symbol: "ZED", stale: false },
   ];
-  if (JSON.stringify(entries) !== JSON.stringify(expected)) {
-    fail(`expected ${JSON.stringify(expected)}, got ${JSON.stringify(entries)}`);
+  if (JSON.stringify(got) !== JSON.stringify(expected)) {
+    fail(`expected ${JSON.stringify(expected)}, got ${JSON.stringify(got)}`);
   }
   pass(
     "schema_version lagging CURRENT_RECORD_SCHEMA_VERSION marks entry stale",
