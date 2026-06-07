@@ -143,6 +143,9 @@ def _llm_filters() -> SynthesizerLLMFilters:
         expression_breadth_rationale="detected across several tissue families",
         surface_specificity="surface_dominant",
         surface_specificity_rationale="predominantly plasma-membrane localized",
+        # Default to orphan-receptor case so the empty rationale is valid
+        # under the has_known_ligand=True-requires-rationale validator.
+        has_known_ligand=False,
     )
 
 

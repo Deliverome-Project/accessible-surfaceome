@@ -1829,6 +1829,28 @@ class Filters(BaseModel):
     # surface-localization method observation(s) that set the flag True.
     overexpression_surface_localization_observed_rationale: str = ""
 
+    @model_validator(mode="after")
+    def _require_has_known_ligand_rationale_when_true(self) -> "Filters":
+        """Persisted-record gate: ``has_known_ligand=True`` requires a
+        non-empty rationale.
+
+        Same rule as the validator on ``SynthesizerLLMFilters`` (the
+        draft slice), repeated here on ``Filters`` (the persisted shape
+        the orchestrator assembles after merging the draft) so a record
+        can't ship the bug even if a future code path bypasses the
+        draft-side check. If the ligand can't be named, the bool should
+        be ``False`` (orphan-receptor case).
+        """
+        if self.has_known_ligand and not self.has_known_ligand_rationale.strip():
+            raise ValueError(
+                "filters.has_known_ligand=True requires a non-empty "
+                "has_known_ligand_rationale naming the ligand. If the "
+                "ligand identity is genuinely unknown, set "
+                "has_known_ligand=False (orphan-receptor case) and "
+                "explain in the rationale."
+            )
+        return self
+
 
 # ---- surface evidence (section 1) -----------------------------------------
 
@@ -3586,8 +3608,8 @@ class SurfaceomeRecord(BaseModel):
 
     schema_version: Literal[
         "1.0.0", "1.1.0", "2.0.0", "2.1.0", "2.2.0", "2.3.0", "2.4.0", "2.4.1",
-        "2.5.0", "2.6.0", "2.7.0",
-    ] = "2.7.0"
+        "2.5.0", "2.6.0", "2.7.0", "2.8.0",
+    ] = "2.8.0"
     gene: GeneIdentifier
 
     # Cross-agent coherence — populated by the orchestrator from the most
@@ -3681,6 +3703,82 @@ class SurfaceomeRecord(BaseModel):
         )
         return self
 
+    @model_validator(mode="after")
+    def _check_state_dependence_consistent_with_modulation(
+        self,
+    ) -> SurfaceomeRecord:
+        """Refuse ``state_dependence='low'`` when the biology shows
+        state-conditional upregulation of the surface form.
+
+        ``state_dependence`` captures how much the targetable surface
+        fraction VARIES by state. ``low`` means "essentially the same
+        across observed contexts." That is incompatible with the
+        evidence patterns flagged below — picking ``low`` when the
+        ledger carries oncogenic-induction or repeated "increases"
+        modulation rows erases the very signal the catalog reader is
+        filtering for (the TROP2-class miscalibration the synth made
+        for this gene: state_dependence='low' alongside 10 increases-
+        direction modulation rows + induction_trigger='oncogenic').
+
+        Conditions that forbid ``state_dependence='low'``:
+          * ``filters.induction_trigger != 'none'`` — the synth's own
+            rollup says there IS a dominant induction trigger.
+          * ``accessibility_modulation`` has ≥3 rows with
+            ``direction='increases'`` — multiple independent
+            observations of the surface form going up under some state.
+          * any ``accessibility_modulation`` row carries
+            ``cell_state_trigger='oncogenic_transformation'`` with
+            ``direction='increases'`` AND the call isn't
+            ``surface_accessibility='no'`` — the textbook tumor-induced
+            overexpression case.
+
+        ``tumor_associated=True`` is intentionally NOT in the gate —
+        that flag means "found on tumors" (could be constitutive
+        expression in tumor tissue without state-induction); the
+        actual state-induction signal lives in
+        ``induction_trigger`` and the modulation rows.
+        """
+        if self.executive_summary.state_dependence != "low":
+            return self
+
+        modulation = self.biological_context.accessibility_modulation
+        n_increases = sum(1 for m in modulation if m.direction == "increases")
+        has_oncogenic_increase = any(
+            m.cell_state_trigger == "oncogenic_transformation"
+            and m.direction == "increases"
+            for m in modulation
+        )
+        sa = self.executive_summary.surface_accessibility
+        induction = self.filters.induction_trigger
+
+        violations: list[str] = []
+        if induction != "none":
+            violations.append(
+                f"filters.induction_trigger={induction!r} (≠ 'none')"
+            )
+        if n_increases >= 3:
+            violations.append(
+                f"{n_increases} accessibility_modulation rows have "
+                f"direction='increases'"
+            )
+        if has_oncogenic_increase and sa != "no":
+            violations.append(
+                "an accessibility_modulation row has "
+                "cell_state_trigger='oncogenic_transformation' with "
+                f"direction='increases' alongside surface_accessibility={sa!r}"
+            )
+
+        if violations:
+            raise ValueError(
+                "executive_summary.state_dependence='low' is incompatible "
+                "with the A2 biology: "
+                + "; ".join(violations)
+                + ". The targetable surface fraction is state-conditional — "
+                "pick at least state_dependence='moderate' so the catalog "
+                "reader sees the gating."
+            )
+        return self
+
 
 class SurfaceomeRecordDraft(BaseModel):
     """What the AGENT emits for a surface-accessibility deep-dive.
@@ -3703,8 +3801,8 @@ class SurfaceomeRecordDraft(BaseModel):
 
     schema_version: Literal[
         "1.0.0", "1.1.0", "2.0.0", "2.1.0", "2.2.0", "2.3.0", "2.4.0", "2.4.1",
-        "2.5.0", "2.6.0", "2.7.0",
-    ] = "2.7.0"
+        "2.5.0", "2.6.0", "2.7.0", "2.8.0",
+    ] = "2.8.0"
     gene: GeneIdentifier
 
     # Orchestrator-injected before the agent call; the agent reads it but does
@@ -3959,6 +4057,32 @@ class SynthesizerLLMFilters(BaseModel):
                 v,
             )
         return v
+
+    @model_validator(mode="after")
+    def _require_has_known_ligand_rationale_when_true(
+        self,
+    ) -> SynthesizerLLMFilters:
+        """``has_known_ligand=True`` requires a non-empty rationale.
+
+        Catches the TROP2-class miscalibration: the synth flipped the
+        bool to ``True`` (its default) but left
+        ``has_known_ligand_rationale`` empty, so the catalog reader
+        has no way to verify which ligand grounds the claim. If the
+        ligand can't be named, the bool should be ``False`` (orphan-
+        receptor case) — empty strings are not a valid third state.
+
+        Warn-only on missing inline cite stays above; this validator
+        is the harder backstop on the boolean half of the flag.
+        """
+        if self.has_known_ligand and not self.has_known_ligand_rationale.strip():
+            raise ValueError(
+                "has_known_ligand=True requires a non-empty "
+                "has_known_ligand_rationale naming the ligand. If the "
+                "ligand identity is genuinely unknown, set "
+                "has_known_ligand=False (orphan-receptor case) and "
+                "explain in the rationale."
+            )
+        return self
 
 
 class SynthesizerDraft(BaseModel):

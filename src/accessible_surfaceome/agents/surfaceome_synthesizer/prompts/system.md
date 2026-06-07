@@ -178,6 +178,35 @@ parse time — invented or paraphrased ids fail the run.
   Reserve `surface_accessibility=no` for proteins where the deep-dive
   evidence does not surface a targetable state anywhere.
 
+- **`state_dependence`** — captures how much the targetable surface
+  fraction VARIES by state (cell type, activation, cancer induction,
+  stress, etc.). `low` means the surface form is essentially the same
+  across the contexts the evidence covers; `moderate` / `high` mean the
+  targetable state is state-conditional and the catalog reader should
+  know that before scoping a campaign.
+
+  **`state_dependence='low'` is forbidden when the A2 biology shows
+  state-conditional upregulation of the surface form.** Specifically,
+  pick at least `moderate` when ANY of:
+    * `filters_llm.induction_trigger != "none"` (you set this — your
+      own derivation of the dominant trigger bucket)
+    * A2's `accessibility_modulation` contains ≥3 rows with
+      `direction="increases"` (independent observations of the surface
+      form going up under some state)
+    * A2's `accessibility_modulation` contains any
+      `cell_state_trigger="oncogenic_transformation"` row with
+      `direction="increases"` AND `surface_accessibility != "no"`
+      (the textbook tumor-induced overexpression case)
+
+  Picking `low` in these situations erases the targetable state the
+  catalog reader is filtering for. A protein with broad expression in
+  normal tissue PLUS cancer-induced surface upregulation is exactly
+  the case where the targetable signal is the *delta* — set
+  `state_dependence ∈ {moderate, high}` so the reader sees it.
+
+  The orchestrator validates this rule post-hoc; a violation raises
+  rather than silently shipping a miscalibrated record.
+
 - **`surface_call_reason`** — emit your own reason for the call, using
   the same closed 19-value enum as `triage_record.reason`. **Re-derive
   it from the A1+A2 evidence ledger** — do not blindly copy the
@@ -463,10 +492,16 @@ A given gene carries one value from EACH axis. Examples:
 ## Has-known-ligand flag
 
 `filters_llm.has_known_ligand` is a bool with a required
-`has_known_ligand_rationale` (≤300 char). **Default `True`** — most
-surface proteins have a validated endogenous ligand. Set `False`
-ONLY for orphan-class genes where ligand identity is genuinely
-unknown:
+`has_known_ligand_rationale` (≤300 char). **The rationale is
+mandatory: an empty string is invalid when `has_known_ligand=True`.**
+If you can't name the ligand specifically — flip `has_known_ligand`
+to `False` and put the orphan-receptor reasoning in the rationale
+instead. The orchestrator rejects records with `has_known_ligand=True`
++ empty `has_known_ligand_rationale` (no silent placeholders).
+
+**Default `True`** — most surface proteins have a validated endogenous
+ligand. Set `False` ONLY for orphan-class genes where ligand identity
+is genuinely unknown:
 
 * Orphan GPCRs (no validated endogenous agonist) — e.g. GENE X, a
   hypothetical orphan receptor with no deorphanized ligand.

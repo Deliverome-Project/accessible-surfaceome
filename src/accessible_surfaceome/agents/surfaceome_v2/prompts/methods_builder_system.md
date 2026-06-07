@@ -69,14 +69,23 @@ doesn't, merge them.
 ## Inclusion criterion — reject ligand-engagement evidence
 
 **Before emitting a `MethodObservation`, ask: in the assay, is the
-protein the membrane-anchored entity being observed at the surface, or
+protein the stably membrane-associated entity at the cell surface, or
 the soluble partner whose engagement was captured by binding /
-crosslinking a surface receptor on another cell?** Only the first emits
-a methods row. Receptor-engagement claims — RAGE / TLR / TREM / CCR /
-CXCR / DC-SIGN / CD14 / patient-IgG binding — describe biology, not
-surface accessibility of *this* protein. They belong to A2's
+crosslinking a surface receptor on another cell?** Only the first
+emits a methods row. Receptor-engagement claims — RAGE / TLR / TREM /
+CCR / CXCR / DC-SIGN / CD14 / patient-IgG binding — describe biology,
+not surface accessibility of *this* protein. They belong to A2's
 biological-context block (receptor engagement, partner binding), not
 A1's methods grid.
+
+**The principle is about the protein's role IN THE ASSAY, not its
+baseline localization.** A protein with an abundant intracellular pool
+can still emit a methods row when the assay directly observes a
+stably membrane-associated form at the cell surface — the question is
+which role the assay captured, not where else the protein is found.
+Conversely, a protein with a canonical TM helix can still trip this
+filter if the cited assay measured it engaging a different surface
+receptor as a soluble partner (rare but possible for shed forms).
 
 **Concrete signs the protein is the soluble ligand, not the membrane
 component:**

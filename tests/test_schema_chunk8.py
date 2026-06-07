@@ -18,6 +18,10 @@ def _llm_filters(
         expression_level="moderate",
         expression_breadth="broad",
         surface_specificity="surface_dominant",
+        # Default to orphan-receptor case so the empty rationale is
+        # valid under the has_known_ligand=True-requires-rationale
+        # validator. Tests that need a positive ligand override.
+        has_known_ligand=False,
         expression_level_rationale=expression_level_rationale,
         expression_breadth_rationale=expression_breadth_rationale,
         surface_specificity_rationale=surface_specificity_rationale,
