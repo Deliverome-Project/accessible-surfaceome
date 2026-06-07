@@ -240,7 +240,7 @@ export default async function GenePage({ params }: PageProps) {
       kind: "community",
       label: "Community notes",
       render: (n) => (
-        <CommunityNotesCard gene={rec.gene.hgnc_symbol} n={n} />
+        <CommunityNotesCard gene={rec.gene.hgnc_symbol} uniprotAcc={rec.gene.uniprot_acc} n={n} />
       ),
     },
   ];
