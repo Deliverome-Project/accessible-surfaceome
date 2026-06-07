@@ -323,6 +323,33 @@ async function handleGene(env, symbol) {
       }
     }
   }
+  // Defense-in-depth dedup for the three enrichment queries below. Each one
+  // selects from a topology_public / compara_paralog / compara_ortholog
+  // table that carries the same accession at MULTIPLE topology / release
+  // versions. The query filters by a single version, so the happy path
+  // returns ≤ 1 row per accession. But when the version-resolution lookup
+  // hiccups (a topology_release row is missing / NULL / older than the data
+  // it points at), the filter degrades and we get one row per (accession ×
+  // version) → the duplication TGOLN2 showed: 11 isoform_topologies for a
+  // gene that has 5 alternative isoforms (5 × 2 topology_versions + the
+  // canonical row leaking in). Drop duplicates by primary accession so the
+  // shape returned to the viewer is correct even when version resolution
+  // misbehaves. Picks the first-occurring row (D1's order-by puts the
+  // alphabetically-earliest accession first; later versions overwrite when
+  // they sort later — close enough for a safety net, and the annotator
+  // path is the authoritative source either way).
+  function dedupeByKey(rows, keyFn) {
+    if (!Array.isArray(rows) || rows.length === 0) return rows;
+    const seen = new Set();
+    const out = [];
+    for (const r of rows) {
+      const k = keyFn(r);
+      if (k == null || seen.has(k)) continue;
+      seen.add(k);
+      out.push(r);
+    }
+    return out;
+  }
   // Enrich with canonical + isoform topology, paralogs, and orthologs at
   // serve time. Same back-compat rationale as the Schweke block above: the
   // annotator already bakes these into newly-annotated records (see
@@ -432,7 +459,17 @@ async function handleGene(env, symbol) {
             AND topology_version = ?
           ORDER BY uniprot_acc_full ASC`
       ).bind(uniprot, isoformTopoVersion).all().catch(() => null);
-      const results = isoRows?.results ?? [];
+      // Belt-and-suspenders dedup: even though the query filters by
+      // topology_version, a stale topology_release row would let multiple
+      // versions slip through and produce duplicate isoform rows (one per
+      // version). Also drop any row whose uniprot_acc_full matches the
+      // canonical accession — those belong to the human_canonical cohort
+      // and shouldn't be inside human_isoforms.
+      const rawIsoResults = isoRows?.results ?? [];
+      const results = dedupeByKey(
+        rawIsoResults.filter((r) => r.uniprot_acc_full && r.uniprot_acc_full !== uniprot),
+        (r) => r.uniprot_acc_full,
+      );
       if (results.length > 0) {
         if (!record.deterministic_features) record.deterministic_features = {};
         record.deterministic_features.isoform_topologies = results.map((r) => ({
@@ -486,7 +523,14 @@ async function handleGene(env, symbol) {
             AND cp.paralog_uniprot_acc IS NOT NULL
           ORDER BY cp.rank_by_ecd_identity ASC NULLS LAST LIMIT 50`
       ).bind(canonicalTopoVersion ?? "", uniprot, paralogVersion).all().catch(() => null);
-      const presults = paralogRows?.results ?? [];
+      // Belt-and-suspenders dedup: the LEFT JOIN against topology_public
+      // is keyed on (uniprot_acc, cohort, topology_version); a stale
+      // topology_release would let multiple cohort/version rows survive
+      // per paralog and double-count entries here.
+      const presults = dedupeByKey(
+        paralogRows?.results ?? [],
+        (r) => r.paralog_uniprot_acc,
+      );
       if (presults.length > 0) {
         if (!record.deterministic_features) record.deterministic_features = {};
         const CLOSE_PARALOG_THRESHOLD = 80.0;
@@ -574,7 +618,15 @@ async function handleGene(env, symbol) {
             AND eo.ortholog_ecd_version = ?
           ORDER BY eo.species ASC`
       ).bind(orthoTopoVersion, uniprot, orthologEcdVersion).all().catch(() => null);
-      const oresults = orthologRows?.results ?? [];
+      // Belt-and-suspenders dedup: the LEFT JOIN against topology_public is
+      // gated on topology_version; a stale topology_release lets multiple
+      // versions slip through and produce two rows per (species, ortholog).
+      // Key by (species, ortholog_uniprot_acc) — same gene's mouse + cyno
+      // rows are legitimately distinct.
+      const oresults = dedupeByKey(
+        orthologRows?.results ?? [],
+        (r) => `${r.species}::${r.ortholog_uniprot_acc}`,
+      );
       const mouse = [];
       const cyno = [];
       const nowIso = new Date().toISOString();
