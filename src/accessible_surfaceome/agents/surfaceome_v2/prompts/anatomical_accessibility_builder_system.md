@@ -23,9 +23,11 @@ direct evidence:
   specifically distinguish blood-facing from tissue-facing surfaces
   of the same cell.
 - **Observed cell-layer restriction within a polarized tissue** that
-  pins the protein to the blood- or lumen-facing layer (e.g.
-  "TROP2 in ductal luminal cells, myoepithelial layer negative" → a
-  paired-layer comparison, not a single-layer-expressed-here claim).
+  pins the protein to the blood- or lumen-facing layer via a paired-
+  layer comparison — e.g. "positive in ductal luminal cells, negative
+  in the surrounding myoepithelial layer". A single-layer "expressed
+  in cell type X" claim, without the negative-layer comparator, does
+  not qualify on its own.
 
 **Do NOT manufacture a row by combining `tissue_expression` evidence
 with textbook anatomy.** Pattern to reject: *"Protein is expressed in
@@ -37,15 +39,16 @@ Every emitted row here must rest on evidence that **directly observed
 the protein at a polarized surface**, not on evidence that observed it
 in a cell type whose anatomical position you happen to know.
 
-Examples of evidence that does NOT qualify on its own:
-- "GPR75 is expressed on endothelial cells" → expression only;
+Patterns that do NOT qualify on their own:
+- "Gene X is expressed on endothelial cells" → expression only;
   endothelium-is-blood-facing is textbook anatomy, not a subdomain
   observation. Emit nothing for this evidence.
-- "TROP2 protein detected on bronchial basal cells" → cell-type
-  expression; the basal layer's anatomical position is not enough.
-- "Complete-membrane staining in urothelium" → not side-resolved;
-  "complete-membrane" includes BOTH apical and basolateral, so it does
-  not pick a side.
+- "Gene X protein detected on the basal-cell layer of an epithelium"
+  → cell-type expression; the basal layer's anatomical position alone
+  is not enough without a paired-layer comparator.
+- "Complete-membrane staining in a polarized epithelium" → not side-
+  resolved; "complete-membrane" includes BOTH apical and basolateral,
+  so it does not pick a side.
 
 These same evidence rows belong in **tissues** / **cell_types** /
 **expression**; let those builders carry them. The downstream
