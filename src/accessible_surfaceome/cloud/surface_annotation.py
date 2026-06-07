@@ -86,19 +86,22 @@ class PublishResult:
     cache_purged: bool | None = None
 
 
-def _public_config_from_env() -> D1Config | None:
+def _public_config_from_env(symbol: str | None = None) -> D1Config | None:
     """Build a public-DB :class:`D1Config` from env, or return ``None`` on miss.
 
-    Missing creds is a soft skip, not an error — agents on CI runners /
-    fresh checkouts shouldn't crash because Cloudflare secrets aren't
-    wired in. The caller logs a clear message in that case.
+    Delegates to
+    :func:`accessible_surfaceome.cloud.d1_env.public_d1_config_or_warn`,
+    which routes the three credential states (all-set, all-missing,
+    partial) to the right log level + enforcement. Missing creds is a soft
+    skip by default; partial creds emit a *loud* warning that named the
+    missing var (the June-2026 bug where an empty token shipped 6 records
+    with ``triage_signal=unknown``), and any miss-or-partial state under
+    ``ACCESSIBLE_SURFACEOME_REQUIRE_D1=1`` raises ``D1AuthError`` so prod
+    sweeps fail fast.
     """
-    acct = os.environ.get("CLOUDFLARE_ACCOUNT_ID", "").strip()
-    token = os.environ.get("CLOUDFLARE_API_TOKEN", "").strip()
-    db = os.environ.get("CLOUDFLARE_D1_SURFACEOME_PUBLIC_ID", "").strip()
-    if not (acct and token and db):
-        return None
-    return D1Config(account_id=acct, database_id=db, api_token=token)
+    from accessible_surfaceome.cloud.d1_env import public_d1_config_or_warn
+
+    return public_d1_config_or_warn(operation="publish_record", symbol=symbol)
 
 
 def _post(
@@ -219,6 +222,66 @@ def _existing_versions_for(
         client=client,
     )
     return [r["schema_version"] for r in body["result"][0].get("results", [])]
+
+
+# Run-id priority for the triage-coherence guard. MUST stay in sync with
+# ``surfaceome_v1.orchestrator._D1_TRIAGE_PRIORITY`` (we duplicate the list
+# rather than import it to avoid a cloud↔agents import cycle). If you
+# update one, update the other — the test in
+# ``tests/test_d1_env_preflight.py`` enforces equality.
+_TRIAGE_COHERENCE_PRIORITY: list[tuple[str, str]] = [
+    ("mainbench_canonical_v2", "ncbi"),
+    ("genome_full_sonnet_ncbi_v2", "ncbi"),
+]
+
+
+def _is_triage_signal_drift(
+    rec_dict: dict[str, Any], cfg: D1Config, *, client: httpx.Client
+) -> bool:
+    """``True`` iff the record carries ``triage_signal=unknown`` AND D1
+    has a Sonnet triage verdict for the gene under one of the priority
+    run_ids.
+
+    Returns ``False`` immediately when the record's triage signal is
+    something other than ``unknown`` (the common case — no D1 round
+    trip). On a transport failure, returns ``False`` to fail open —
+    annotate must keep running even if the coherence query times out;
+    other guards still apply and a true unknown-with-no-row case is
+    legitimate (a brand-new gene the triage sweep hasn't covered yet).
+    """
+    if (rec_dict.get("triage_signal") or "").strip() != "unknown":
+        return False
+    sym = (rec_dict.get("gene") or {}).get("hgnc_symbol")
+    if not sym:
+        return False
+    try:
+        for run_id, variant in _TRIAGE_COHERENCE_PRIORITY:
+            body = _post(
+                cfg,
+                """
+                SELECT 1 FROM triage_run_public
+                WHERE gene_symbol = ?
+                  AND run_id = ?
+                  AND prompt_variant = ?
+                  AND model LIKE '%sonnet%'
+                  AND predicted_verdict IS NOT NULL
+                LIMIT 1
+                """,
+                [sym, run_id, variant],
+                client=client,
+            )
+            rows = body.get("result", [{}])[0].get("results", [])
+            if rows:
+                return True
+    except Exception as exc:  # noqa: BLE001 — fail open, never break publish
+        logger.warning(
+            "triage-coherence guard: D1 lookup for %s failed: %s; allowing "
+            "publish (other guards still apply)",
+            sym,
+            exc,
+        )
+        return False
+    return False
 
 
 def _surface_bind_has_data(rec_dict: dict[str, Any]) -> bool | None:
@@ -455,14 +518,12 @@ def _publish_dict(
             skipped_reason="push_to_d1=False",
         )
 
-    cfg = _public_config_from_env()
+    # Pre-flight credential check — under REQUIRE_D1, raises D1AuthError
+    # before we touch any state; otherwise routes to the right log level.
+    # The single-source log line lives in ``public_d1_config_or_warn``, so
+    # nothing extra to print here on the miss path.
+    cfg = _public_config_from_env(symbol=sym)
     if cfg is None:
-        logger.warning(
-            "public D1 env vars missing (CLOUDFLARE_ACCOUNT_ID / "
-            "CLOUDFLARE_API_TOKEN / CLOUDFLARE_D1_SURFACEOME_PUBLIC_ID) — "
-            "skipping D1 publish for %s. Snapshot was still written.",
-            sym,
-        )
         return PublishResult(
             gene_symbol=sym,
             snapshot_path=snap_path,
@@ -483,6 +544,39 @@ def _publish_dict(
         # when the incoming record looks degraded — a cheap fast-path for
         # the common, fully-populated case.
         if not force:
+            # Triage-coherence guard — refuse to publish a record carrying
+            # ``triage_signal=unknown`` when ``triage_run_public`` has a
+            # Sonnet row for this gene under one of the priority run_ids.
+            # The annotator's job is to *copy* the triage prior; an
+            # ``unknown`` in the record while the row exists in D1 means
+            # ``_load_triage_record_from_d1`` failed silently (the
+            # June-2026 ``Bearer `` empty-token bug). Publishing it
+            # poisons the record with a never-was-triaged signal that the
+            # viewer surfaces as a confusing "unknown" chip. Catching it
+            # here means the misconfig surfaces at the moment of harm,
+            # regardless of whether the pre-flight check fired.
+            if _is_triage_signal_drift(rec_dict, cfg, client=client):
+                logger.error(
+                    "REFUSING to publish %s: record has triage_signal=unknown "
+                    "but triage_run_public has a Sonnet verdict for this "
+                    "gene under one of the priority run_ids. This usually "
+                    "means the annotator's D1 triage fallback failed "
+                    "silently (partial/empty CLOUDFLARE_* env in the "
+                    "generating worktree). Re-run with healthy creds, or "
+                    "pass force=True to override.",
+                    sym,
+                )
+                return PublishResult(
+                    gene_symbol=sym,
+                    snapshot_path=snap_path,
+                    d1_written=False,
+                    d1_database_id=cfg.database_id,
+                    stale_versions_dropped=[],
+                    skipped_reason=(
+                        "blocked by triage-coherence guard: record carries "
+                        "triage_signal=unknown but D1 has a Sonnet verdict"
+                    ),
+                )
             existing = _fetch_existing_record(cfg, sym, client=client)
             if existing is not None:
                 # Staleness guard — never overwrite a NEWER D1 run with an
@@ -594,15 +688,26 @@ def publish_record(
     record: SurfaceomeRecord,
     *,
     snapshot_dir: Path | None = None,
-    write_snapshot: bool = True,
+    write_snapshot: bool = False,
     push_to_d1: bool = True,
     force: bool = False,
 ) -> PublishResult:
-    """Write a freshly-validated ``SurfaceomeRecord`` to snapshot + D1.
+    """Write a freshly-validated ``SurfaceomeRecord`` to public D1.
 
     The standard agent-side entry point: takes a validated Pydantic model
-    (so the record is known good), serializes it to disk and pushes to
-    public D1. Returns a :class:`PublishResult` describing what landed.
+    (so the record is known good) and pushes to public D1. Returns a
+    :class:`PublishResult` describing what landed.
+
+    **D1 is now the only authoritative source the viewer reads.** The
+    viewer-snapshot write (``viewer/public/data/surfaceome/{SYMBOL}.json``)
+    used to be a Worker-down fallback — a stale local copy could mask the
+    authoritative D1 row, so the fallback was removed and ``write_snapshot``
+    now defaults to ``False``. Pass ``write_snapshot=True`` to opt in to an
+    ad-hoc operator dump (used by ``scripts/upload_viewer_snapshots_to_d1.py``
+    for the reverse-sync maintenance path); nothing else should set it.
+
+    Agent-side disk artifacts live at ``data/annotations/{symbol}.json``;
+    that's written by the annotate driver itself, not here.
 
     For pushing arbitrary on-disk JSON (the bulk-sync maintenance path)
     use :func:`publish_record_dict` — it skips validation so older
@@ -611,8 +716,10 @@ def publish_record(
     Args:
         record: The validated ``SurfaceomeRecord`` to publish.
         snapshot_dir: Override for the viewer-snapshot directory. Defaults
-            to ``viewer/public/data/surfaceome``.
-        write_snapshot: Skip the viewer-snapshot write when False.
+            to ``viewer/public/data/surfaceome``; only consulted when
+            ``write_snapshot=True``.
+        write_snapshot: Opt in to the viewer-snapshot dump. Default
+            ``False`` — D1 is the only authoritative surface.
         push_to_d1: Skip the D1 push when False (e.g. ``--no-publish``).
     """
     rec_dict = json.loads(record.model_dump_json())

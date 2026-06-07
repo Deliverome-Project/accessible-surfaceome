@@ -1,31 +1,29 @@
-"""Push the committed viewer snapshots to public D1 ``surface_annotation``.
+"""Push the agent-side annotation snapshots to public D1 ``surface_annotation``.
 
 The Worker at ``api.deliverome.org/surfaceome/v1/genes/:symbol`` reads from
-``surface_annotation.annotation_json``. The committed snapshots under
-``viewer/public/data/surfaceome/*.json`` are the source of truth for what
-the viewer should render — same shape as the per-gene ``SurfaceomeRecord``
-the Worker serves.
+``surface_annotation.annotation_json``. The agent's canonical disk
+artifact lives at ``data/annotations/{SYMBOL}.json`` — same shape as the
+per-gene ``SurfaceomeRecord`` the Worker serves.
 
-This script syncs the committed snapshots → public D1 so D1 stays
-aligned with whatever's in the viewer dir. Idempotent INSERT OR REPLACE on
+This script syncs those agent-side snapshots → public D1 so D1 stays
+aligned with the in-tree records. Idempotent INSERT OR REPLACE on
 ``(gene_symbol, schema_version)``, with stale older-``schema_version``
 rows dropped per gene.
 
-When records older than the current schema live in D1 (e.g. ones that
-predate the ``deterministic_features.surface_bind`` field) the viewer
-would crash on ``rec.deterministic_features.surface_bind.has_data``. The
-right fix is to add the field to the records — not to add defensive
-``?.`` chains in the viewer — so this script is the maintenance utility
-that brings D1 up to date with the field-complete snapshots in tree.
+The viewer no longer reads from any per-gene JSON fallback — D1 is the
+only authoritative surface — so the previous source
+(``viewer/public/data/surfaceome/*.json``) was removed and this script
+now reads from ``data/annotations/`` directly. Pass ``--source PATH`` to
+override (e.g. point at ``data/eval/surfaceome_v2_samples/`` for a
+historical-sample reimport).
 
 In normal day-to-day operation you shouldn't need to run this:
 ``scripts/surfaceome_v2_annotate.py`` publishes by default after every
 successful annotate run (via the same
 :func:`accessible_surfaceome.cloud.surface_annotation.publish_record`
-helper this script delegates to). The use cases for running it
-explicitly are:
+helper this script delegates to). Run it explicitly when:
 
-* You hand-edited a committed snapshot and want to reflect the edit in D1.
+* You hand-edited an in-tree annotation and want to reflect the edit in D1.
 * You bulk-re-imported a set of historical samples from
   ``data/eval/surfaceome_v2_samples/`` and want the viewer to render them.
 * You're verifying that an out-of-sync D1 row matches what's in tree.
@@ -44,12 +42,15 @@ import logging
 from pathlib import Path
 from typing import Any
 
-from accessible_surfaceome.cloud.surface_annotation import (
-    DEFAULT_SNAPSHOT_DIR,
-    publish_record_dict,
-)
+from accessible_surfaceome.cloud.surface_annotation import publish_record_dict
 from accessible_surfaceome.env import load_env
 from accessible_surfaceome.paths import REPO_ROOT
+
+# Default source — the agent's canonical disk artifact dir. Previously
+# this script read from ``viewer/public/data/surfaceome/`` (the viewer
+# fallback snapshots); when that fallback was removed the source moved to
+# ``data/annotations/``. Use ``--source PATH`` to override.
+DEFAULT_ANNOTATION_DIR = REPO_ROOT / "data" / "annotations"
 
 logger = logging.getLogger(__name__)
 
@@ -106,16 +107,28 @@ def main() -> int:
             "genuinely newer than what's in D1."
         ),
     )
+    ap.add_argument(
+        "--source",
+        type=Path,
+        default=DEFAULT_ANNOTATION_DIR,
+        help=(
+            "Directory to read SurfaceomeRecord JSONs from. Default is "
+            "data/annotations/ — the agent's canonical disk artifact. "
+            "Override e.g. with data/eval/surfaceome_v2_samples/ for a "
+            "historical-sample reimport."
+        ),
+    )
     args = ap.parse_args()
 
-    logger.info("snapshot dir: %s", DEFAULT_SNAPSHOT_DIR.relative_to(REPO_ROOT))
+    source_dir: Path = args.source
+    logger.info("source dir: %s", source_dir.relative_to(REPO_ROOT))
 
-    if not DEFAULT_SNAPSHOT_DIR.exists():
-        logger.error("snapshot dir missing: %s", DEFAULT_SNAPSHOT_DIR)
+    if not source_dir.exists():
+        logger.error("source dir missing: %s", source_dir)
         return 1
-    files = sorted(DEFAULT_SNAPSHOT_DIR.glob("*.json"))
+    files = sorted(source_dir.glob("*.json"))
     if not files:
-        logger.error("no *.json snapshots found in %s", DEFAULT_SNAPSHOT_DIR)
+        logger.error("no *.json files found in %s", source_dir)
         return 1
 
     blobs: list[tuple[Path, dict[str, Any]]] = []
