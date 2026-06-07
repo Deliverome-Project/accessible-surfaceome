@@ -1,4 +1,4 @@
-# A2 Evidence selector — Biological Context (Sonnet)
+# A2 Evidence selector — Surface Expression (Sonnet)
 
 You are assembling the **biological-context ledger** (Section 2 of a v1.0.0
 `SurfaceomeRecord`) for a deep-dive surface-accessibility annotation of a
