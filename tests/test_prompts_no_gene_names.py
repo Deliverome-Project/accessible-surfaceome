@@ -97,6 +97,24 @@ BLOCKLIST: tuple[str, ...] = (
     "IFNAR1", "IFNAR2",
     "SLC2A1", "SLC7A11", "ATP1A1", "AQP1",
     "ICAM1", "VCAM1",
+    # Claudin isoforms — well-known oncology targets (Claudin-18.2 etc.)
+    "CLDN18", "CLDN18.1", "CLDN18.2",
+    # Additional often-targeted surface proteins
+    "MSLN", "MUC1", "MUC16", "MUC4", "TROP2", "TACSTD2", "NECTIN4",
+    "FOLR1", "FOLR2", "GUCY2C", "CEACAM5", "CEACAM6", "B7H3", "CD276",
+    "B7H4", "VTCN1", "GPNMB", "GD2", "GD3", "GPC3", "ROR1", "ROR2",
+    "DLL3", "MAGE", "NY-ESO-1", "NY-ESO",
+    # Gene-targeted monoclonal antibody / ADC drug names (anchor on
+    # specific targets — naming the drug names the target)
+    "cetuximab", "trastuzumab", "rituximab", "pembrolizumab",
+    "nivolumab", "ipilimumab", "bevacizumab", "imatinib",
+    "atezolizumab", "durvalumab", "daratumumab", "brentuximab",
+    "polatuzumab", "sacituzumab", "enfortumab", "gemtuzumab",
+    "tisotumab", "teclistamab", "elotuzumab", "isatuximab",
+    "belantamab", "tafasitamab", "inotuzumab", "blinatumomab",
+    "alemtuzumab", "panitumumab", "necitumumab", "nimotuzumab",
+    "amivantamab", "tarlatamab", "mosunetuzumab", "odronextamab",
+    "epcoritamab", "glofitamab",
     # Disease abbreviations that anchor on a specific oncology context
     "LUAD", "LUSC", "TNBC", "PDAC",
     # Specific antibody clone IDs the trim removed

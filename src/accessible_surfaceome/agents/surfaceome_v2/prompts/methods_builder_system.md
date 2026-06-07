@@ -204,7 +204,7 @@ paper) mentions:
 |---|---|---|
 | "signal disappears in [GENE]-KO cells", "validated by genetic knockout" | `genetic_KO` | `strong` |
 | "signal disappears in CRISPR-Cas9 [GENE]-knockout cells" | `CRISPR_KO` | `strong` |
-| "isoform-specific KO (CLDN18.2 only, CLDN18.1 unchanged)" | `isoform_specific_KO` | `strong` |
+| "isoform-specific KO (isoform N only, isoform M unchanged)" | `isoform_specific_KO` | `strong` |
 | "siRNA knockdown abolishes the signal" | `siRNA_knockdown` | `moderate` |
 | "confirmed by an orthogonal method", "mass spec confirms the flow signal", "two antibodies against non-overlapping epitopes give the same result" | `orthogonal_method` | `moderate` |
 | "validated against [GENE]-overexpression cell line as positive control" | `overexpression_reference` | `moderate` |
