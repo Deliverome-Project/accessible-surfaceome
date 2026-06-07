@@ -1,7 +1,14 @@
-# Evidence grade builder (A1 → grade + claim_stances + rationale + non_surface_expression)
+# Evidence grade builder (A1 → grade + claim_stances + rationale + non_surface_expression + excluded_as_ligand_engagement)
+
+**What "surface accessibility" means here:** the protein is at the
+outer face of the plasma membrane of the cell that expresses it, or
+becomes stably anchored to it. Evidence that the protein engages the
+surface of a *different* cell as a soluble ligand is biology, not
+surface accessibility of this protein. Grade against THIS bar — not
+against the directness of the assay method in isolation.
 
 You receive the FULL A1 `EvidenceClaim` ledger and emit ONE JSON object
-with four keys, **in this order** (so the structured per-claim call
+with five keys, **in this order** (so the structured per-claim call
 comes first; the rationale then summarizes the stances rather than the
 reverse):
 
@@ -10,7 +17,8 @@ reverse):
   "evidence_grade": "<one of the five enum values>",
   "claim_stances": [<ClaimStanceRow entries — one per claim that informed the grade>],
   "grade_rationale": "<≤800 char prose>",
-  "non_surface_expression": [<NonSurfaceExpression rows>]
+  "non_surface_expression": [<NonSurfaceExpression rows>],
+  "excluded_as_ligand_engagement": [<ExcludedClaim rows>]
 }
 ```
 
@@ -175,6 +183,73 @@ with a warning, prefer concision). The rationale should **summarize
 the stance map you just emitted** — name the high-weight supports +
 contradicts in plain language, then state the grade.
 
+### Citation discipline — inline cites on every specific claim
+
+**Every numbered item, named experiment, mechanism, or method-specific
+assertion in `grade_rationale` REQUIRES an inline `(aN_evi_NN)` cite
+immediately after the claim, drawn from `claim_stances`.** The reader
+must be able to click straight to the source for every substantive
+claim. Loose summarizing prose ("the surface evidence is moderate
+overall") doesn't need a per-sentence cite; specific claims do.
+
+A specific claim is anything that:
+- enumerates separate experiments (`(1)`, `(2)`, `(3)` lists)
+- names an experimental method (live-cell flow, surface biotinylation,
+  crosslinking, photoaffinity labeling, knockin / knockout, cryo-EM,
+  proteinase-K protection, ChIP, etc.)
+- names a mechanism, observation, or result (e.g. "ciliary PM
+  localization in hypothalamic neurons", "competitive displacement",
+  "VPS35-mediated retromer recycling")
+- names a cell line, tissue, species, or assay condition
+
+The schema enforces this: when `grade_rationale` contains
+structured-claim markers AND `claim_stances` has ≥2 rows AND zero
+inline cites are present, validation FAILS. Inline a cite per
+substantive claim, drawn from `claim_stances` — never leave a numbered
+item or named experiment uncited.
+
+### Per-claim specificity
+
+Each substantive claim in the rationale should also name (in addition
+to its inline cite):
+- the **assay readout** (what was measured — surface staining, flow MFI,
+  crosslink band, localization pattern, structural complex)
+- the **cell type / species** (mouse hypothalamic neurons, human
+  monocytes, hepatocytes, etc.)
+- the **permeabilization status** when relevant (live-cell, nonperm,
+  permeabilized — say `permeabilization unspecified` rather than
+  glossing it over)
+
+A specific, citable, method-anchored claim looks like:
+> *"endogenous 3xFlag-GPR75 knockin mice showed ciliary PM
+> localization in hypothalamic neurons by IF (perm status unspecified)
+> with an internal L144P-mislocalization control (a1_evi_07)"*
+
+A vague claim that fails the discipline looks like:
+> *"VPS35-mediated retromer recycling to the hepatocyte PM"* — no
+> method, no perm status, no cite.
+
+### Worked example — citation-disciplined rationale
+
+```
+"grade_rationale": "Three direct lines of evidence support surface
+exposure: (1) endogenous 3xFlag-GPR75 knockin mice showing ciliary
+PM localization in hypothalamic neurons by IF (perm status not
+specified) with an L144P-mislocalization specificity control
+(a1_evi_07); (2) photoaffinity crosslinking of a 20-HETE analogue
+on membrane fractions of human endothelial cells with competitive
+displacement (a1_evi_12); (3) VPS35-mediated retromer recycling
+restoring the protein at the hepatocyte plasma membrane after
+internalization (a1_evi_11). None are live-cell nonperm flow with
+KO control, and (2)/(3) are indirect — fractionation-based and
+trafficking-inferred respectively — so the picture is strong
+indirect evidence anchored by the canonical class A GPCR topology.
+Graded `supportive_but_indirect`."
+```
+
+Every numbered item carries its `(aN_evi_NN)` chip. The reader can
+click each to verify.
+
 ## non_surface_expression
 
 Each row is RNA / IHC / bulk-protein expression observation that does NOT
@@ -202,6 +277,46 @@ Fields:
 - `cited_evidence_ids` — every `evidence_id` whose claim contributed.
 
 Group claims describing the same context into one row.
+
+## excluded_as_ligand_engagement
+
+Audit trail of A1 ledger claims that describe **the protein as a soluble
+ligand engaging a surface receptor on another cell**, NOT the protein
+being on the outer face of the plasma membrane that expresses it. These
+claims are real biology — receptor pharmacology, DAMP signaling, partner
+binding — but they're not surface-accessibility evidence for *this*
+protein, and the methods builder's inclusion criterion rejects them. Log
+them here so the reader can see "we filtered N claims as ligand-
+engagement; here's why" rather than wondering whether the agent missed
+papers.
+
+Each row:
+
+```
+{
+  "evidence_id": "<one of the input ledger's evidence_ids>",
+  "reason": "<short why, ≤240 chars, name the receptor the protein was binding>"
+}
+```
+
+**When a claim belongs here:**
+- The protein is studied as an extracellular factor / DAMP / cytokine /
+  chemokine / alarmin engaging a named receptor on another cell.
+- Crosslinking / FRET / co-IP captures the protein bound to a TM partner
+  on the cell surface, where the TM partner IS the membrane component
+  and this protein is the soluble ligand.
+- Antibody-neutralization assays where the antibody sequesters the
+  soluble form of the protein (NOT a surface-anchored form).
+- ELISA / Western on cell-supernatant or extracellular fractions
+  detecting the protein after release.
+
+Each excluded claim should ALSO appear in `claim_stances` with
+`stance=tangential` and a note explaining the exclusion — the two rows
+agree (stance tags WHY the claim doesn't count toward the grade;
+`excluded_as_ligand_engagement` tags it for the audit trail).
+
+If the ledger has no ligand-engagement claims, emit
+`"excluded_as_ligand_engagement": []`.
 
 ## Empty cases
 

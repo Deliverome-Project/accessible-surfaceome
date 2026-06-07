@@ -1,5 +1,12 @@
 # Methods block builder (A1 → MethodObservation list)
 
+**What "surface accessibility" means here:** the protein is at the
+outer face of the plasma membrane of the cell that expresses it, or
+becomes stably anchored to it. Evidence that the protein engages the
+surface of a *different* cell as a soluble ligand is not surface
+accessibility of this protein. Every `MethodObservation` you emit must
+clear this bar — see "Inclusion criterion" below.
+
 You receive a slice of an `EvidenceClaim` ledger and emit a JSON ARRAY of
 `MethodObservation` objects. Each `MethodObservation` describes one
 surface-evidence method panel from one source: HOW the surface claim was
@@ -58,6 +65,82 @@ differs, keep them separate.
 Before finalizing, scan your output: for any two rows sharing a
 `cited_evidence_ids` value, confirm their `method_subclass` differs. If it
 doesn't, merge them.
+
+## Inclusion criterion — reject ligand-engagement evidence
+
+**Before emitting a `MethodObservation`, ask: in the assay, is the
+protein the membrane-anchored entity being observed at the surface, or
+the soluble partner whose engagement was captured by binding /
+crosslinking a surface receptor on another cell?** Only the first emits
+a methods row. Receptor-engagement claims — RAGE / TLR / TREM / CCR /
+CXCR / DC-SIGN / CD14 / patient-IgG binding — describe biology, not
+surface accessibility of *this* protein. They belong to A2's
+biological-context block (receptor engagement, partner binding), not
+A1's methods grid.
+
+**Concrete signs the protein is the soluble ligand, not the membrane
+component:**
+
+- The paper studies the protein as an extracellular factor, DAMP,
+  cytokine, chemokine, or alarmin engaging a named receptor on the
+  cell whose surface was probed.
+- Crosslinking / FRET / co-IP captures the protein bound TO a TM
+  protein on the cell surface (the TM partner IS the membrane
+  component; this protein is the ligand).
+- "HMGB1 / S100 / HSP / cytokine X engages receptor Y at the cell
+  surface" — the protein IS the soluble partner. Reject as
+  ligand-engagement evidence.
+- Antibody-neutralization experiments that block the protein's
+  extracellular activity by sequestering it as a soluble factor
+  (NOT by reaching a surface-anchored form).
+- ELISA / Western on cell-supernatant fractions detecting the protein
+  AFTER release — secreted/released state, not surface state.
+
+These cases do NOT emit a `MethodObservation`. They land in A2's
+biology block.
+
+**Concrete signs the protein IS the membrane component (emit the
+row):**
+
+- Has a canonical TM helix, GPI anchor, lipid anchor, or
+  signal-peptide-driven membrane insertion AND the assay observed it
+  on the outer face (live-cell flow, nonperm IF, surface biotinylation,
+  IHC membranous).
+- Has NO canonical anchoring features but the paper explicitly names a
+  non-canonical anchoring mechanism that retains the protein at the
+  outer leaflet (e.g. partner-tethered via X domain to TM protein Y,
+  palmitoylated at Cys-N for membrane retention, GPI-anchored isoform Z
+  observed at the surface). See "Non-canonical anchoring gate" below.
+
+If you're unsure whether a claim is ligand-engagement or
+membrane-component evidence, default to REJECT (don't emit the row).
+A1's methods grid is for direct surface-accessibility evidence of *this*
+protein; biology that explains the protein's extracellular activity
+lives in A2.
+
+## Non-canonical anchoring gate — non-TM proteins
+
+When the input ledger or your trim notes indicate the protein has
+**no TM helix, no GPI anchor, no signal peptide for membrane insertion,
+no lipid anchor** — i.e. no canonical mechanism for sitting at the
+outer leaflet — you may still emit a `MethodObservation` with
+`accessibility_relevance=direct_surface_accessibility`, BUT only when
+the claim or quote explicitly identifies the proposed non-canonical
+anchoring mechanism. Examples of acceptable mechanisms:
+
+- partner-protein tethering (named TM partner, named binding domain)
+- post-translational lipid modification keeping the protein at the PM
+  (palmitoylation at named Cys, prenylation, myristoylation)
+- alternative GPI-anchored isoform (named isoform identifier)
+- β-barrel monotopic insertion at the outer leaflet
+
+If no such mechanism is named, cap the row at
+`accessibility_relevance=supports_surface_localization` (cannot prove
+extracellular epitope reachable) and add a one-clause note in the
+observations field flagging "no anchoring mechanism named for non-TM
+protein". This forces the grader to confront *how* the protein is at the
+surface before granting a direct call — without locking out legitimate
+non-canonical anchored proteins where the mechanism is described.
 
 ## Field-by-field rules
 

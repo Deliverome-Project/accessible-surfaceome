@@ -94,6 +94,16 @@ OMITTED: dict[str, str] = {
     "evidence_count": "shown as evidence[].length in the ledger header",
     "primary_evidence_count": "computed inline in the ledger header",
     "secondary_evidence_count": "computed inline in the ledger header",
+    # --- methods-builder inclusion-filter audit trail ---
+    # The methods builder REJECTS receptor-engagement-as-soluble-ligand
+    # claims at the inclusion stage (e.g. HMGB1 binding TREM-1 — the
+    # protein is the ligand, not the membrane component). The grade
+    # builder enumerates each excluded claim here for the audit trail.
+    # The companion claim_stances row already carries the same info in
+    # the human-facing prose with stance=tangential; the audit-trail
+    # field is for downstream re-grade scripts + provenance, not the
+    # reader's gene-page markdown.
+    "excluded_as_ligand_engagement": "methods-builder inclusion-filter audit trail; provenance not findings",
     # --- ECD % similarity (secondary to the % identity that IS shown) ---
     "ecd_pct_similarity_to_canonical": "secondary to ECD %identity (shown)",
     "ecd_pct_similarity_to_human_canonical": "secondary to ECD %identity (shown)",

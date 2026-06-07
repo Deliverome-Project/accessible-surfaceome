@@ -24,6 +24,7 @@ from accessible_surfaceome.tools._shared.models import (
     ClaimStanceRow,
     EvidenceClaim,
     EvidenceGrade,
+    ExcludedClaim,
     NonSurfaceExpression,
 )
 
@@ -48,6 +49,13 @@ class EvidenceGradeBlock(BaseModel):
     claim_stances: list[ClaimStanceRow] = Field(default_factory=list)
     grade_rationale: str
     non_surface_expression: list[NonSurfaceExpression] = Field(default_factory=list)
+    # Audit trail of ledger claims rejected by the methods builder's
+    # inclusion criterion as ligand-engagement-as-soluble-partner evidence.
+    # Empty by default for back-compat with rollouts that emit the older
+    # 4-key shape; the grade builder prompt asks for this key explicitly.
+    excluded_as_ligand_engagement: list[ExcludedClaim] = Field(
+        default_factory=list
+    )
 
 
 _DEFAULT_BLOCK = EvidenceGradeBlock(
@@ -55,6 +63,7 @@ _DEFAULT_BLOCK = EvidenceGradeBlock(
     claim_stances=[],
     grade_rationale="No evidence claims were available to grade.",
     non_surface_expression=[],
+    excluded_as_ligand_engagement=[],
 )
 
 
@@ -139,10 +148,10 @@ def build_evidence_grade(
         f"{format_schema_block(EvidenceGradeBlock.model_json_schema(), name='EvidenceGradeBlock')}\n"
         "Emit ONE fenced ```json block containing a JSON OBJECT with keys "
         "`evidence_grade`, `claim_stances`, `grade_rationale`, "
-        "`non_surface_expression`. Emit `claim_stances` BEFORE "
-        "`grade_rationale` so per-claim judgments commit first; the "
-        "rationale then summarizes the stances rather than the reverse. "
-        "No prose around it.\n"
+        "`non_surface_expression`, `excluded_as_ligand_engagement`. "
+        "Emit `claim_stances` BEFORE `grade_rationale` so per-claim "
+        "judgments commit first; the rationale then summarizes the "
+        "stances rather than the reverse. No prose around it.\n"
     )
     parsed = call_builder(
         client,
@@ -179,10 +188,23 @@ def build_evidence_grade(
             "unresolved claim_id (LLM cited evidence_ids absent from the input ledger)",
             n_dropped,
         )
+    cleaned_excluded = [
+        ex for ex in parsed.excluded_as_ligand_engagement if ex.evidence_id in known
+    ]
+    n_excluded_dropped = (
+        len(parsed.excluded_as_ligand_engagement) - len(cleaned_excluded)
+    )
+    if n_excluded_dropped > 0:
+        logger.warning(
+            "evidence_grade_builder: dropped %d excluded_as_ligand_engagement "
+            "rows with unresolved evidence_id (LLM cited ids absent from input)",
+            n_excluded_dropped,
+        )
     return parsed.model_copy(
         update={
             "non_surface_expression": cleaned_rows,
             "claim_stances": cleaned_stances,
+            "excluded_as_ligand_engagement": cleaned_excluded,
         }
     )
 

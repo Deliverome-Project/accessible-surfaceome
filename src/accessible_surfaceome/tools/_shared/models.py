@@ -2010,6 +2010,100 @@ class ClaimStanceRow(BaseModel):
     )
 
 
+class ExcludedClaim(BaseModel):
+    """One claim the methods builder REJECTED at the inclusion stage as
+    receptor-engagement-as-ligand evidence rather than surface accessibility
+    of the protein itself.
+
+    The methods builder's inclusion criterion is: the protein must be the
+    membrane-anchored entity in the assay. Claims where the protein is the
+    SOLUBLE LIGAND whose engagement was captured by binding / crosslinking
+    a receptor on ANOTHER cell describe biology (receptor pharmacology, DAMP
+    signaling, partner engagement) but NOT surface accessibility of the
+    protein in question. Those claims don't emit a ``MethodObservation``
+    row; they're enumerated here with their original ``evidence_id`` + a
+    short reason so the audit trail of "which papers were excluded and
+    why" is visible to readers (and downstream re-grade scripts).
+
+    Populated by the evidence-grade builder from its read of the same A1
+    ledger the methods builder consumed — the grade builder marks each
+    such claim with ``stance=tangential`` in ``claim_stances`` AND adds a
+    row here. Parallel surface to ``non_surface_expression`` (claims that
+    are real expression data but not surface evidence) so the reader can
+    triage A1's input pile cleanly: surface-method observations, expression-
+    only observations, ligand-engagement observations, and the residual.
+    """
+
+    model_config = ConfigDict(extra="forbid")
+
+    evidence_id: str = Field(
+        ...,
+        description="The evidence_id from the input A1 ledger (e.g. 'a1_evi_13').",
+    )
+    reason: str = Field(
+        ...,
+        max_length=240,
+        description=(
+            "Short explanation of why this claim was excluded as ligand-"
+            "engagement evidence rather than surface accessibility. Name "
+            "the specific receptor / partner the protein was binding "
+            "(e.g. 'HMGB1 binding TREM-1 on monocytes — soluble ligand "
+            "engagement, not surface anchoring of HMGB1')."
+        ),
+    )
+
+
+# Tokens that mark a "specific surface-method claim" in grade_rationale
+# prose — used by the fail-validator below. When ANY of these appear in
+# the rationale AND ``claim_stances`` has ≥2 rows AND zero inline
+# ``(aN_evi_NN)`` cites are present, the validator refuses the record.
+# Anchored on tokens that REQUIRE a citable source under the citation-
+# discipline rule (named experimental method, structured enumeration of
+# multiple claims, named structural technique). Kept narrow on purpose:
+# loose prose without these tokens still passes warn-only so genuinely
+# narrative rationales aren't blocked.
+_GRADE_RATIONALE_STRUCTURED_CLAIM_TOKENS: frozenset[str] = frozenset(
+    {
+        # Numbered enumerations of separate claims: "(1)", "(2)", "(3)"
+        "(1)",
+        "(2)",
+        "(3)",
+        # Direct surface-method terms — when these appear, the reader
+        # expects a citable source on the same line.
+        "knockin",
+        "knock-in",
+        "knockout",
+        "knock-out",
+        "live-cell flow",
+        "live cell flow",
+        "non-permeabilized",
+        "nonpermeabilized",
+        "flow cytometry",
+        "surface biotinylation",
+        "cell surface capture",
+        "crosslinking",
+        "cross-linking",
+        "cryo-em",
+        "cryo em",
+        "x-ray",
+        "photoaffinity",
+        "proteinase-k",
+        "proteinase k",
+    }
+)
+
+
+def _has_structured_claim_marker(s: str) -> bool:
+    """True when ``s`` contains a token that marks a specific surface-method
+    claim (per :data:`_GRADE_RATIONALE_STRUCTURED_CLAIM_TOKENS`). Case-
+    insensitive substring match; kept loose because this gates a hard
+    failure and the false-negative cost (no fail) is lower than the false-
+    positive cost (fail on prose that doesn't actually need a cite).
+    """
+    lower = s.lower()
+    return any(tok in lower for tok in _GRADE_RATIONALE_STRUCTURED_CLAIM_TOKENS)
+
+
 class SurfaceEvidence(BaseModel):
     """Section 1 — the surface-accessibility evidence the agent assembled."""
 
@@ -2033,6 +2127,12 @@ class SurfaceEvidence(BaseModel):
     methods: list[MethodObservation] = Field(default_factory=list)
     non_surface_expression: list[NonSurfaceExpression] = Field(default_factory=list)
     contradicting_evidence: list[Contradiction] = Field(default_factory=list)
+    # Audit trail of A1 ledger claims the methods builder rejected at the
+    # inclusion stage as ligand-engagement-as-soluble-partner evidence
+    # rather than surface accessibility of the protein itself. Parallel to
+    # ``non_surface_expression``; default-empty for back-compat with v2
+    # records emitted before this field landed.
+    excluded_as_ligand_engagement: list[ExcludedClaim] = Field(default_factory=list)
 
     _PROSE_TARGETS: ClassVar[dict[str, int]] = {"grade_rationale": 800}
 
@@ -2048,6 +2148,76 @@ class SurfaceEvidence(BaseModel):
             self.methods,
         )
         return self
+
+    @model_validator(mode="after")
+    def _warn_grade_rationale_missing_cite(self) -> "SurfaceEvidence":
+        """Warn when ``grade_rationale`` has no inline ``(aN_evi_NN)`` cite.
+
+        Same shape as ``_warn_rationale_missing_cite`` on
+        ``SynthesizerLLMFilters`` — soft signal for citation discipline so
+        the reader can click straight to the source for every claim.
+        Loud-fails to a hard error are reserved for the stricter validator
+        below; this one just logs.
+
+        Skip placeholder content (an em-dash, "n/a", "—", or anything
+        shorter than 20 chars when stripped) — those can't carry claim-
+        shaped prose, so flagging a missing cite would be noise.
+        """
+        stripped = (self.grade_rationale or "").strip()
+        if len(stripped) < 20:
+            return self
+        if not _has_inline_evi_cite(self.grade_rationale):
+            logger.warning(
+                "SurfaceEvidence.grade_rationale lacks an inline "
+                "(a1_evi_NN)/(a2_evi_NN) cite: %r",
+                self.grade_rationale[:200],
+            )
+        return self
+
+    @model_validator(mode="after")
+    def _fail_grade_rationale_structured_claims_uncited(
+        self,
+    ) -> "SurfaceEvidence":
+        """Refuse the record when ``grade_rationale`` makes specific
+        surface-method claims without backing them with inline cites.
+
+        Trigger condition:
+          * the rationale contains structured-claim markers (numbered
+            enumerations like ``(1)`` / ``(2)`` / ``(3)``, OR named
+            experimental methods — see
+            :data:`_GRADE_RATIONALE_STRUCTURED_CLAIM_TOKENS`), AND
+          * ``claim_stances`` has ≥2 rows (i.e. the grader already
+            committed structured per-claim attributions, so the cites are
+            available — the writer just didn't inline them), AND
+          * the rationale contains zero ``(aN_evi_NN)`` cites.
+
+        Together those three conditions mean "the writer made specific
+        claims that the schema knows have citable sources, and chose not
+        to cite them." That's an unambiguous citation-discipline failure
+        and the reader can't audit it.
+
+        Loose prose without specific method claims still passes (warn-
+        only above), so genuinely narrative rationales for genes with
+        only one or two stance rows aren't blocked.
+        """
+        rationale = self.grade_rationale or ""
+        if not rationale:
+            return self
+        if _has_inline_evi_cite(rationale):
+            return self
+        if len(self.claim_stances) < 2:
+            return self
+        if not _has_structured_claim_marker(rationale):
+            return self
+        raise ValueError(
+            "SurfaceEvidence.grade_rationale makes specific surface-method "
+            "claims (numbered items or named experimental methods) and "
+            "claim_stances has "
+            f"{len(self.claim_stances)} attributions, but the rationale "
+            "carries no inline (aN_evi_NN) cites — readers cannot verify "
+            "which claim_stances row backs each prose claim. "
+            "Inline a cite per substantive claim, drawn from claim_stances."
+        )
 
 
 # ---- biological context (section 2) ---------------------------------------
@@ -3416,8 +3586,8 @@ class SurfaceomeRecord(BaseModel):
 
     schema_version: Literal[
         "1.0.0", "1.1.0", "2.0.0", "2.1.0", "2.2.0", "2.3.0", "2.4.0", "2.4.1",
-        "2.5.0", "2.6.0",
-    ] = "2.6.0"
+        "2.5.0", "2.6.0", "2.7.0",
+    ] = "2.7.0"
     gene: GeneIdentifier
 
     # Cross-agent coherence — populated by the orchestrator from the most
@@ -3533,8 +3703,8 @@ class SurfaceomeRecordDraft(BaseModel):
 
     schema_version: Literal[
         "1.0.0", "1.1.0", "2.0.0", "2.1.0", "2.2.0", "2.3.0", "2.4.0", "2.4.1",
-        "2.5.0", "2.6.0",
-    ] = "2.6.0"
+        "2.5.0", "2.6.0", "2.7.0",
+    ] = "2.7.0"
     gene: GeneIdentifier
 
     # Orchestrator-injected before the agent call; the agent reads it but does
@@ -4292,6 +4462,7 @@ __all__ = [
     "OverexpressionContext",
     "MethodObservation",
     "NonSurfaceExpression",
+    "ExcludedClaim",
     "Contradiction",
     "SurfaceEvidence",
     # v1.0.0 — biological context (section 2)

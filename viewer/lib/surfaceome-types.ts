@@ -825,6 +825,21 @@ export interface NonSurfaceExpression {
   cited_evidence_ids: string[];
 }
 
+// Audit trail of A1 ledger claims the methods builder rejected at the
+// inclusion stage as receptor-engagement-as-soluble-ligand evidence —
+// e.g. HMGB1 binding TREM-1 on monocytes. The protein is the soluble
+// partner; the TM partner is the membrane component. These describe
+// biology, not surface accessibility of this protein. Parallel to
+// `non_surface_expression`; empty for records emitted before the
+// inclusion filter landed.
+export interface ExcludedClaim {
+  evidence_id: string;
+  /** Short ≤240-char rationale naming the receptor / partner the protein
+   *  was binding (e.g. "HMGB1 binding TREM-1 on monocytes — soluble
+   *  ligand engagement, not surface anchoring of HMGB1"). */
+  reason: string;
+}
+
 export interface Contradiction {
   claim: string;
   contradiction_type: ContradictionType;
@@ -862,6 +877,10 @@ export interface SurfaceEvidence {
   methods: MethodObservation[];
   non_surface_expression: NonSurfaceExpression[];
   contradicting_evidence: Contradiction[];
+  /** Audit trail of A1 ledger claims rejected at the methods-builder
+   *  inclusion stage as receptor-engagement-as-soluble-ligand evidence.
+   *  Empty for records emitted before the inclusion filter landed. */
+  excluded_as_ligand_engagement: ExcludedClaim[];
 }
 
 // ============================================================

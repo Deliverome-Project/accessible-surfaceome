@@ -730,6 +730,12 @@ def _annotate(
         methods=outputs["methods"],
         non_surface_expression=grade_block.non_surface_expression,
         contradicting_evidence=outputs["contradictions"],
+        # Audit trail of A1 ledger claims rejected as receptor-engagement-
+        # as-soluble-ligand evidence (e.g. HMGB1 binding TREM-1 on
+        # monocytes — protein-is-ligand, not membrane-component). The
+        # methods builder filters these out of the methods grid; the
+        # evidence-grade builder enumerates them here.
+        excluded_as_ligand_engagement=grade_block.excluded_as_ligand_engagement,
     )
 
     # A2 rollup block (biological_context_grade builder) → flat fields on

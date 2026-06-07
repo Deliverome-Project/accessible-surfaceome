@@ -79,6 +79,24 @@ accepted with a warning; prefer concision). Name the axes that carried the
 grade in plain language, then state the grade. If consistency (not
 coverage) capped the grade, say so. Cite only the A2 ledger.
 
+## Receptor-engagement biology — claim it here
+
+A1's methods builder REJECTS claims describing the protein as a soluble
+ligand engaging a surface receptor on another cell (DAMP signaling,
+cytokine binding, alarmin engagement, secreted-factor receptor
+pharmacology — these don't establish surface accessibility of *this*
+protein). When the A2 ledger carries those claims — receptor engagement,
+named binding partners, signaling pathway activation downstream of
+binding — pull them into the A2 axes that cover them: typically
+`accessibility_modulation` (state-conditional receptor engagement),
+`cell_types` (which cells express the cognate receptor), or
+`expression`/`subcellular_localization` (where the secreted form
+accumulates). The A1 ledger may flag a claim as
+`excluded_as_ligand_engagement`; A2 should still claim that biology if
+it's load-bearing for the picture. Cite the A2 ledger directly — don't
+reference A1's `excluded_as_ligand_engagement` rows by id (those
+identifiers live on the A1 side).
+
 ## cited_evidence_ids
 
 Every `evidence_id` from the input A2 ledger that materially informed your
