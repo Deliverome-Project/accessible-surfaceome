@@ -240,7 +240,7 @@ same paper for the leader-sequence detail.
   `evidence_tier="primary"` for direct multi-method confirmation,
   `evidence_tier="secondary"` for single-method.
 * **Exogenous / foreign SP** ("IgG kappa leader", "preprotrypsin
-  signal peptide", "BiP leader", "PreS", "honeybee melittin SP",
+  signal peptide", "PreS", "honeybee melittin SP",
   "interleukin-2 secretion signal", any chimeric leader replacing
   the native sequence): foreign SP forces secretory-pathway entry
   regardless of native trafficking. Cap at
