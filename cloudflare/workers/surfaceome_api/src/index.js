@@ -233,6 +233,46 @@ async function fetchTriagePrior(env, sym) {
 }
 
 /**
+ * Fetch the Schweke 2024 homo-oligomer prediction for `uniprot_acc`, or
+ * null when the protein isn't in Schweke's positive refset.
+ *
+ * Schweke is **positives-only**: a missing row means "not predicted as a
+ * homo-oligomer at the configured ``dimer_proba`` threshold", NOT "AF2
+ * disagrees". The caller treats null as the explicit-False signal
+ * (matching the Pydantic ``HomoOligomerizationFeatures`` model's
+ * ``is_homo_oligomer=False`` default).
+ *
+ * The ``universe_version`` subquery pins us to the latest sync.
+ * ``schweke_homomer_public`` is keyed on (universe_version, uniprot_acc),
+ * so without the filter the query would return every release a protein
+ * was synced under.
+ */
+async function fetchSchwekeHomomer(env, uniprotAcc) {
+  if (!uniprotAcc) return null;
+  const row = await env.DB.prepare(
+    `SELECT stoichiometry, af_model_num, has_higher_order_complex,
+            is_ecd_only, dimer_pdb_filename, complex_pdb_filename
+       FROM schweke_homomer_public
+      WHERE uniprot_acc = ?
+        AND universe_version = (
+          SELECT universe_version FROM schweke_homomer_release
+           ORDER BY loaded_at DESC LIMIT 1
+        )
+      LIMIT 1`
+  ).bind(uniprotAcc).first();
+  if (!row) return null;
+  return {
+    is_homo_oligomer: true,
+    stoichiometry: row.stoichiometry,
+    af_model_num: row.af_model_num,
+    has_higher_order_complex: row.has_higher_order_complex === 1,
+    is_ecd_only: row.is_ecd_only === 1,
+    dimer_pdb_filename: row.dimer_pdb_filename,
+    complex_pdb_filename: row.complex_pdb_filename,
+  };
+}
+
+/**
  * Build one IsoformTopology-shaped object from a topology_public row.
  * Same shape the Python ``IsoformTopology`` pydantic model serializes —
  * the enum-typed fields (n/c_terminal_orientation) come through as-is.
@@ -398,9 +438,6 @@ async function fetchSurfaceBindFeatures(env, uniprotAcc) {
  *   bumps (which ship every ~3 months) without information loss.
  * * ``deterministic_features.structure`` — AlphaFold links derived
  *   directly from uniprot_acc; no D1 table to enrich from.
- * * ``deterministic_features.homo_oligomerization`` — Schweke 2024 atlas
- *   isn't synced as a public D1 table today (the score lives in figshare).
- *   When that lands in public D1, wire a fourth enrich step here.
  */
 async function handleGene(env, symbol) {
   const sym = checkSymbol(symbol);
@@ -434,28 +471,40 @@ async function handleGene(env, symbol) {
   const enrichErrors = [];
   const uniprotAcc = record?.gene?.uniprot_acc;
 
-  const [triagePrior, surfaceBind, topology] = await Promise.all([
-    // 1) triage_signal + triage_reasoning — Sonnet verdict prior
-    fetchTriagePrior(env, sym).catch((e) => {
-      enrichErrors.push(`triage:${e.message}`);
-      return null;
-    }),
-    // 2) deterministic_features.surface_bind — SURFACE-Bind aggregate +
-    //    sites; keyed on the record's resolved uniprot_acc
-    fetchSurfaceBindFeatures(env, uniprotAcc).catch((e) => {
-      enrichErrors.push(`surface_bind:${e.message}`);
-      return null;
-    }),
-    // 3) deterministic_features.canonical_topology + .isoform_topologies —
-    //    DeepTMHMM annotations from topology_public. Refreshes when the
-    //    upstream sweep re-runs (sequence updates from UniProt, model
-    //    upgrades). The annotator bakes these at deep-dive time; the
-    //    overlay catches the case where topology re-ran after annotate.
-    fetchTopology(env, uniprotAcc).catch((e) => {
-      enrichErrors.push(`topology:${e.message}`);
-      return null;
-    }),
-  ]);
+  const [triagePrior, surfaceBind, topology, schwekeHomomer] =
+    await Promise.all([
+      // 1) triage_signal + triage_reasoning — Sonnet verdict prior
+      fetchTriagePrior(env, sym).catch((e) => {
+        enrichErrors.push(`triage:${e.message}`);
+        return null;
+      }),
+      // 2) deterministic_features.surface_bind — SURFACE-Bind aggregate +
+      //    sites; keyed on the record's resolved uniprot_acc
+      fetchSurfaceBindFeatures(env, uniprotAcc).catch((e) => {
+        enrichErrors.push(`surface_bind:${e.message}`);
+        return null;
+      }),
+      // 3) deterministic_features.canonical_topology + .isoform_topologies —
+      //    DeepTMHMM annotations from topology_public. Refreshes when the
+      //    upstream sweep re-runs (sequence updates from UniProt, model
+      //    upgrades). The annotator bakes these at deep-dive time; the
+      //    overlay catches the case where topology re-ran after annotate.
+      fetchTopology(env, uniprotAcc).catch((e) => {
+        enrichErrors.push(`topology:${e.message}`);
+        return null;
+      }),
+      // 4) deterministic_features.homo_oligomerization — Schweke 2024
+      //    AF2 homomer prediction. Positives-only table, so null means
+      //    "not in the positive refset" (the explicit-False signal that
+      //    the Pydantic model's is_homo_oligomer=False default already
+      //    encodes). When Schweke re-runs at a new threshold or with an
+      //    extended atlas, every record picks up the new prediction
+      //    without re-annotation.
+      fetchSchwekeHomomer(env, uniprotAcc).catch((e) => {
+        enrichErrors.push(`schweke:${e.message}`);
+        return null;
+      }),
+    ]);
 
   // Apply enrichments. Each step gracefully no-ops on null (legitimate
   // miss — gene not in the table) so an unannotated gene's baked record
@@ -516,6 +565,20 @@ async function handleGene(env, symbol) {
     );
     record.deterministic_features.isoform_topologies =
       topology.isoforms.map(mergeIdentity);
+  }
+
+  // 4) Schweke homo-oligomer overlay — shallow merge so the baked
+  //    source/citation strings (Pydantic-model constants) survive.
+  //    Positives-only: when fetchSchwekeHomomer returns null we leave
+  //    the baked record's homo_oligomerization alone (the annotator
+  //    already wrote is_homo_oligomer=False).
+  if (schwekeHomomer) {
+    record.deterministic_features = record.deterministic_features ?? {};
+    const baked = record.deterministic_features.homo_oligomerization ?? {};
+    record.deterministic_features.homo_oligomerization = {
+      ...baked,
+      ...schwekeHomomer,
+    };
   }
 
   const headers = {};
