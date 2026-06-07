@@ -14,18 +14,19 @@ level, disease context, and any cell states.
 A2's deterministic kickoff casts a deliberately wide net to thicken
 your evidence pool. The **`normal_tissue_expression`** standing axis
 covers both the six-organ tox panel (liver / lung / kidney /
-intestine / heart / brain) AND broader surface-anchored atlas
-coverage — Human Protein Atlas (HPA) IHC surveys, cell-type and
-lineage-restricted expression descriptors, primary-tissue and
-organoid surface readouts. The axis deliberately EXCLUDES RNA-only
-sources (GTEx, scRNA-seq, snRNA-seq, spatial transcriptomics,
-microarray) — surface-expression evidence comes from protein-level
-methods + IHC-based atlases, not from transcript-level retrieval.
+intestine / heart / brain) AND broader surface-anchored expression
+coverage — per-cell-type and lineage-restricted descriptors,
+primary-tissue and organoid surface readouts. The axis deliberately
+EXCLUDES RNA-only sources (scRNA-seq, snRNA-seq, spatial
+transcriptomics, microarray) — surface-expression evidence is judged
+on the measurement TYPE (IHC / flow / surface-MS / etc.) carried by
+the protein-method categories, not on the consortium or brand that
+published the dataset.
 
 Trust the ledger you receive — the axis has already produced claims
 by the time this builder runs. Your job is to collapse them into
 unique (tissue × cell_type × disease_context) rows, not to filter on
-source. An HPA IHC read of "X-positive lymphocytes in lung" and a
+source. An IHC read of "X-positive lymphocytes in lung" and a
 flow-cytometry read of "X+ memory CD8 T cells in tumor" can both
 contribute to the same ExpressionRow.
 

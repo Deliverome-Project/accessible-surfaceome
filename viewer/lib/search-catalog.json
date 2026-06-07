@@ -117,7 +117,7 @@
         },
         {
           "label": "normal_tissue_expression",
-          "finds": "HPA, Human Protein Atlas, brain, cell type, cell-type specific, cell-type-specific, expressed in, expression in, expression pattern, heart, intestine, kidney, lineage specific, lineage-restricted, liver, lung, organoid, primary tissue, surface expression"
+          "finds": "brain, cell type, cell-type specific, cell-type-specific, expressed in, expression in, expression pattern, heart, intestine, kidney, lineage specific, lineage-restricted, liver, lung, organoid, primary tissue, surface expression"
         },
         {
           "label": "surface_reachability",
@@ -172,7 +172,7 @@
         },
         {
           "label": "normal_tissue_expression",
-          "finds": "HPA, Human Protein Atlas, brain, cell type, cell-type specific, cell-type-specific, expressed in, expression in, expression pattern, heart, intestine, kidney, lineage specific, lineage-restricted, liver, lung, organoid, primary tissue, surface expression"
+          "finds": "brain, cell type, cell-type specific, cell-type-specific, expressed in, expression in, expression pattern, heart, intestine, kidney, lineage specific, lineage-restricted, liver, lung, organoid, primary tissue, surface expression"
         },
         {
           "label": "surface_reachability",

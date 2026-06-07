@@ -175,20 +175,20 @@ _TOPIC_TERMS: dict[TopicAnchor, list[str]] = {
         "heart",
         "brain",
         # Expanded vocab for thicker surface-expression recall.
-        # Includes surface-protein-level atlas terms (Human Protein
-        # Atlas / HPA — IHC-based, surface-anchored) and per-cell-type
-        # descriptors. Deliberately EXCLUDES RNA-flavored sources
-        # (GTEx, scRNA-seq, snRNA-seq, spatial transcriptomics,
-        # transcriptomic profile, microarray, tissue distribution) so
-        # the test_tox_anchor_terms_are_organ_literature_not_rna
-        # guard rail stays enforceable — surface-expression evidence
-        # comes from the protein method categories + IHC-based
-        # atlases, never from RNA-only retrieval.
+        # Includes per-cell-type / lineage descriptors and primary-
+        # tissue / organoid surface readouts. Deliberately EXCLUDES
+        # RNA-flavored sources (scRNA-seq, snRNA-seq, spatial
+        # transcriptomics, transcriptomic profile, microarray, tissue
+        # distribution) so the
+        # test_tox_anchor_terms_are_organ_literature_not_rna guard
+        # rail stays enforceable. Also DOES NOT name specific atlas
+        # brands — surface-expression evidence is judged on the
+        # measurement type (IHC / flow / surface-MS / etc.) carried
+        # by the protein-method categories, not on which atlas /
+        # consortium published it.
         "expressed in",
         "expression in",
         "expression pattern",
-        "Human Protein Atlas",
-        "HPA",
         "cell type",
         "cell-type specific",
         "cell-type-specific",
