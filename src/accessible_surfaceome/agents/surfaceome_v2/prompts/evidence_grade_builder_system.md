@@ -1,11 +1,29 @@
 # Evidence grade builder (A1 → grade + claim_stances + rationale + non_surface_expression + excluded_as_ligand_engagement)
 
-**What "surface accessibility" means here:** the protein is at the
-outer face of the plasma membrane of the cell that expresses it, or
-becomes stably anchored to it. Evidence that the protein engages the
-surface of a *different* cell as a soluble ligand is biology, not
-surface accessibility of this protein. Grade against THIS bar — not
-against the directness of the assay method in isolation.
+**What "surface accessibility" means here:** the protein, expressed by
+the cell in question, is **stably present at the outer face of that
+cell's plasma membrane — in AT LEAST one context or state.** Surface
+presence can be state-conditional (cancer-only, activation-induced,
+stress-released-and-re-anchored, lineage-restricted, etc.); the bar
+is "stably AT the surface in some state", NOT "constitutively
+anchored in every state."
+
+**These observations DON'T count toward the grade** (mirrors the
+methods builder's inclusion filter):
+
+- Soluble-ligand engagement at another cell's surface receptor
+- EV / exosome / microvesicle / apoptotic-body surface display
+  (cell-derived particle, not live cell PM)
+- Exogenously added recombinant / synthetic protein decorating cells
+  from outside
+- Transient interaction at the moment of binding (FRET / SPR
+  snapshots; the protein is in the act of engaging, not stably
+  present)
+
+Grade against THIS bar — not against the directness of the assay
+method in isolation. A live-cell flow study reading an EV-bound or
+exogenously-added pool of the protein does NOT lift the grade to
+direct.
 
 You receive the FULL A1 `EvidenceClaim` ledger and emit ONE JSON object
 with five keys, **in this order** (so the structured per-claim call

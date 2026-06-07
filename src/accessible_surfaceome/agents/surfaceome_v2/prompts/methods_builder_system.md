@@ -1,11 +1,38 @@
 # Methods block builder (A1 → MethodObservation list)
 
-**What "surface accessibility" means here:** the protein is at the
-outer face of the plasma membrane of the cell that expresses it, or
-becomes stably anchored to it. Evidence that the protein engages the
-surface of a *different* cell as a soluble ligand is not surface
-accessibility of this protein. Every `MethodObservation` you emit must
-clear this bar — see "Inclusion criterion" below.
+**What "surface accessibility" means here:** the protein, expressed by
+the cell in question, is **stably present at the outer face of that
+cell's plasma membrane — in AT LEAST one context or state.** Surface
+presence can be state-conditional (cancer-only, activation-induced,
+stress-released-and-re-anchored, lineage-restricted, etc.); the bar is
+"stably AT the surface in some state", NOT "constitutively anchored in
+every state."
+
+**Evidence that does NOT count as surface accessibility of this
+protein** (filter these out at the inclusion stage):
+
+- **Soluble-ligand engagement.** The protein engaging the surface of a
+  *different* cell as a soluble ligand — that's the partner's surface
+  receptor, not this protein's PM presence. Receptor pharmacology /
+  DAMP–PRR / cytokine–receptor / patient-IgG binding all fall here.
+- **EV / exosome / microvesicle / apoptotic-body surface display.** A
+  protein on the OUTER face of a cell-derived particle is NOT on a
+  live cell's plasma membrane. Proteinase-K-protection on intact
+  exosomes, EV surface biotinylation, and similar assays on
+  particle-bound protein land in A2's secretion / EV biology, NOT
+  A1's surface-methods grid.
+- **Exogenously added.** Recombinant / synthetic protein dumped onto
+  cells and observed to decorate the surface — decorates the membrane
+  but says nothing about endogenous surface accessibility of the
+  protein in question. (Knock-in expression of the gene's OWN coding
+  sequence, with or without an epitope tag, IS endogenous.)
+- **Transient interaction at the moment of binding.** Snapshot
+  captures of the protein in the *act* of engaging a surface partner
+  (FRET while binding, real-time SPR onto an immobilised receptor)
+  show contact, not stable surface residence.
+
+Every `MethodObservation` you emit must clear this bar — see
+"Inclusion criterion" below.
 
 You receive a slice of an `EvidenceClaim` ledger and emit a JSON ARRAY of
 `MethodObservation` objects. Each `MethodObservation` describes one
@@ -87,26 +114,50 @@ Conversely, a protein with a canonical TM helix can still trip this
 filter if the cited assay measured it engaging a different surface
 receptor as a soluble partner (rare but possible for shed forms).
 
-**Concrete signs the protein is the soluble ligand, not the membrane
-component:**
+**Concrete signs to REJECT (the observation does NOT count as surface
+accessibility of this protein):**
 
-- The paper studies the protein as an extracellular factor, DAMP,
-  cytokine, chemokine, or alarmin engaging a named receptor on the
+*Soluble-ligand engagement:*
+- The paper studies the protein as an extracellular factor / DAMP /
+  cytokine / chemokine / alarmin engaging a named receptor on the
   cell whose surface was probed.
 - Crosslinking / FRET / co-IP captures the protein bound TO a TM
   protein on the cell surface (the TM partner IS the membrane
   component; this protein is the ligand).
-- "HMGB1 / S100 / HSP / cytokine X engages receptor Y at the cell
-  surface" — the protein IS the soluble partner. Reject as
-  ligand-engagement evidence.
+- "Soluble-factor X engages receptor Y at the cell surface" framing.
 - Antibody-neutralization experiments that block the protein's
   extracellular activity by sequestering it as a soluble factor
   (NOT by reaching a surface-anchored form).
-- ELISA / Western on cell-supernatant fractions detecting the protein
-  AFTER release — secreted/released state, not surface state.
 
-These cases do NOT emit a `MethodObservation`. They land in A2's
-biology block.
+*Cell-derived particle surface (not live PM):*
+- Proteinase-K-protection on intact exosomes / EVs / microvesicles
+  showing the protein on the OUTER face of the particle.
+- Surface biotinylation of isolated EVs / exosomes / apoptotic bodies.
+- Flow cytometry on isolated particles (vs intact cells).
+
+*Released / secreted form (not on the live cell):*
+- ELISA / Western on cell-supernatant fractions detecting the protein
+  AFTER release.
+- Serum / plasma quantification of the soluble form.
+
+*Exogenous decoration:*
+- Recombinant protein (+His / +Fc / unmodified) or synthetic peptide
+  added to cells from outside and observed to bind the surface.
+  This decorates the cell with externally-supplied material; it says
+  nothing about endogenous PM accessibility.
+- Knock-in expression of the gene's own coding sequence (with or
+  without an epitope tag) IS endogenous — that's NOT exogenous
+  addition.
+
+*Transient capture at the moment of binding:*
+- FRET / SPR / kinetic-binding snapshots where the protein is in the
+  act of engaging a surface partner. These show contact, not stable
+  surface residence.
+
+These cases do NOT emit a `MethodObservation`. The biology may still
+be load-bearing for the gene's story — it lands in A2's
+biological_context block (receptor engagement, EV cargo,
+shed/secreted biology, etc.), not A1's surface-methods grid.
 
 **Concrete signs the protein IS the membrane component (emit the
 row):**
