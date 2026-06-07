@@ -304,26 +304,18 @@ def main() -> None:
     legend_ax.legend(handles=handles, loc="upper center", fontsize=19,
                      frameon=False, title="Marker shape",
                      title_fontsize=21)
-    legend_ax.text(
-        0.5, 0.10,
-        "Per-source missing rule:\n"
-        "UniProt / GO / SURFY / CSPA absence → predict 'no'.\n"
-        "HPA absence → abstain.",
-        transform=legend_ax.transAxes, ha="center", va="bottom",
-        fontsize=16, color=BRAND_NEUTRAL,
-    )
 
     fig.supxlabel("Universe size — proteins this filter would admit "
                   "(log scale; lower = stricter)", fontsize=20, y=0.02,
                   color=BRAND_INK)
-    # supylabel y position is the vertical center of the two-row axes grid
-    # (default 0.5 is the figure center, which sits below the axes center
-    # once the supxlabel reserves space at the bottom + the figure has
-    # asymmetric top/bottom margins). x just past the figure-left margin
-    # keeps the rotated text off the canvas edge under brand-style-v2's
-    # larger axes.labelsize.
+    # supylabel y defaults to 0.5 (figure midline) which is what reads as
+    # "centered" against the supxlabel's default x=0.5. Earlier overrides
+    # to 0.54 (axes-content midpoint) and the dynamic equivalent were
+    # technically correct but visually off — keep the matplotlib default.
+    # x=0.02 just keeps the rotated label off the canvas-left edge under
+    # brand-style-v2's larger axes.labelsize.
     fig.supylabel("Accuracy on\n147-gene benchmark (%)", fontsize=20,
-                  x=0.02, y=0.54, color=BRAND_INK)
+                  x=0.02, color=BRAND_INK)
     plt.tight_layout(rect=[0.04, 0.03, 1, 0.985])
     # Vertical gap between row-1 panels (with caption blocks BELOW them at
     # axes-y=-0.30, extending further for the longest panel — 6 variants
