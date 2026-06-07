@@ -789,6 +789,12 @@ export function CatalogTable({
         const ra = relevanceRank(a);
         const rb = relevanceRank(b);
         if (ra !== rb) return ra - rb;
+        // Within-tier tiebreak: prefer rows with stronger surface signal
+        // (more DB votes among UniProt-KW / GO-CC / SURFY / CSPA / HPA).
+        // Catalog readers are looking for surface proteins by default, so
+        // when two rows tie on relevance (e.g. "lat1" exact-matches both
+        // LAT and SLC7A5 as aliases), the higher-vote row wins.
+        if (a.n_sources !== b.n_sources) return b.n_sources - a.n_sources;
       }
       const av = sortValue(a, sortKey);
       const bv = sortValue(b, sortKey);
