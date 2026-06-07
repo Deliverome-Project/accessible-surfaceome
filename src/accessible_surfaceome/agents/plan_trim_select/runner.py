@@ -1361,6 +1361,7 @@ def run_plan_trim_select(
     agent_focus: AgentFocus,
     timing: TimingRecorder | None = None,
     enable_pretrim_filter: bool = False,
+    triage_cache: dict[str, Any] | None = None,
 ) -> PlanTrimSelectResult:
     """Run plan → trim → select for one gene. Returns the full audit result.
 
@@ -1542,20 +1543,52 @@ def run_plan_trim_select(
                             triaged_ids.add(sid)
                     new_papers = filtered_papers
                 _pretrim_audits.append(pretrim_audit)
+
+                # Tier 4: A1↔A2 triage dedup. When run_plan_trim_select_dual
+                # runs both A1 and A2 sequentially, every paper gets Haiku-
+                # triaged twice today — once in A1's pipeline, once in A2's —
+                # even though the abstract-triage question ("is this paper
+                # relevant to the gene's surface biology?") is identical
+                # across both agents (they only diverge at trim+select). The
+                # ``triage_cache`` (dict keyed on paper source_id) lets A2
+                # reuse A1's outcomes: papers in the cache skip the Haiku
+                # call entirely. ~$0.30-0.50/gene saved on heavy-lit genes
+                # where the cross-A1-A2 paper overlap is largest.
+                cached_outcomes: list[Any] = []
+                papers_needing_triage: list[Paper] = []
+                if triage_cache is not None:
+                    for paper in new_papers:
+                        sid = paper_source_id(paper)
+                        if sid in triage_cache:
+                            cached_outcomes.append(triage_cache[sid])
+                        else:
+                            papers_needing_triage.append(paper)
+                else:
+                    papers_needing_triage = list(new_papers)
+
                 logger.info(
                     "iteration %d: triaging %d newly-discovered papers"
-                    " (pretrim_filter: activated=%s, dropped=%d)",
+                    " (pretrim_filter: activated=%s, dropped=%d, "
+                    "triage_cache_hits=%d, fresh=%d)",
                     iteration,
                     len(new_papers),
                     pretrim_audit.activated,
                     pretrim_audit.n_input - pretrim_audit.n_kept,
+                    len(cached_outcomes),
+                    len(papers_needing_triage),
                 )
-                triage_outcomes = triage_abstracts(
+                fresh_outcomes = triage_abstracts(
                     client,
-                    papers=new_papers,
+                    papers=papers_needing_triage,
                     gene=gene,
                     bundle=context.bundle,
-                )
+                ) if papers_needing_triage else []
+                # Populate the cross-agent cache with the fresh decisions so
+                # the next agent (A2) reuses them.
+                if triage_cache is not None:
+                    for o in fresh_outcomes:
+                        triage_cache[o.paper_id] = o
+                triage_outcomes = cached_outcomes + fresh_outcomes
                 for o in triage_outcomes:
                     if o.usage is not None:
                         triage_usage.append(o.usage)
@@ -1745,6 +1778,7 @@ def run_plan_trim_select_dual(
     http: CachedHTTP | None = None,
     retraction_index: RetractionIndex | None = None,
     timing: TimingRecorder | None = None,
+    enable_pretrim_filter: bool = False,
 ) -> DualPlanTrimSelectResult:
     """Phase 1's sequential-dual driver: A1 then A2, shared HTTP cache.
 
@@ -1758,6 +1792,14 @@ def run_plan_trim_select_dual(
     fetched for surface methodology. Cost ceiling for the dual is the
     sum of two single-focus runs — no double execution of the search
     layer.
+
+    **Tier 4 — A1↔A2 abstract-triage dedup.** A shared
+    ``triage_cache`` (paper source_id → TriageOutcome) is created here
+    and passed to both A1 and A2. A1 populates it; A2 reuses every
+    decision. The abstract-triage question is identical across agents
+    (only the trim+select stages diverge), so this is a pure no-loss
+    win — ~$0.30-0.50/gene saved on heavy-lit genes where the cross-
+    agent paper overlap is largest.
     """
 
     t0 = time.time()
@@ -1765,6 +1807,9 @@ def run_plan_trim_select_dual(
     own_http = http is None
     http = http or open_default_client()
     retraction = retraction_index or _empty_retraction_index()
+
+    # Shared cache so A2 reuses A1's abstract-triage outcomes (Tier 4).
+    shared_triage_cache: dict[str, Any] = {}
 
     try:
         logger.info("=== dual run %s: starting A1 ===", gene)
@@ -1775,6 +1820,8 @@ def run_plan_trim_select_dual(
             retraction_index=retraction,
             agent_focus="a1",
             timing=timing,
+            enable_pretrim_filter=enable_pretrim_filter,
+            triage_cache=shared_triage_cache,
         )
         logger.info(
             "=== dual run %s: A1 done (%d claims, %s anchored) — starting A2 ===",
@@ -1789,6 +1836,8 @@ def run_plan_trim_select_dual(
             retraction_index=retraction,
             agent_focus="a2",
             timing=timing,
+            enable_pretrim_filter=enable_pretrim_filter,
+            triage_cache=shared_triage_cache,
         )
         logger.info(
             "=== dual run %s: A2 done (%d claims, %s anchored) ===",

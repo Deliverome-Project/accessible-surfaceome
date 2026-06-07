@@ -184,12 +184,22 @@ def _serialize_pts(dual: DualPlanTrimSelectResult) -> dict[str, Any]:
     """Serialize plan-trim-select outputs for the intermediates dump."""
 
     def _side(pts) -> dict[str, Any]:
+        # pretrim_audits are PreTrimAudit dataclasses (or empty list for runs
+        # that predate the feature). Serialize defensively so older runs
+        # without the field don't crash the dump.
+        pretrim_dumps = []
+        for audit in getattr(pts, "pretrim_audits", []) or []:
+            try:
+                pretrim_dumps.append(dataclasses.asdict(audit))
+            except (TypeError, AttributeError):
+                continue
         return {
             "agent_focus": pts.agent_focus,
             "claims": [c.model_dump(mode="json") for c in pts.claims],
             "search_log": [dataclasses.asdict(e) for e in pts.search_log],
             "iteration_log": [dataclasses.asdict(e) for e in pts.iteration_log],
             "triage_actions": [dataclasses.asdict(a) for a in pts.triage_actions],
+            "pretrim_audits": pretrim_dumps,
             "n_claims": pts.n_claims,
             "n_anchored": pts.n_anchored,
             "n_papers_total": pts.n_papers_total,

@@ -355,6 +355,20 @@ class TriageAction:
     fetch_error: str | None = None
     fell_back_to_abstract: bool = False
     elapsed_s: float = 0.0
+    # Paper metadata captured at triage time so the intermediates dump
+    # preserves the title / year / journal / abstract that Haiku saw.
+    # Persisted into ``.runs/*.intermediates.json`` (gitignored) for:
+    #   * future cost-vs-content analyses (without re-fetching abstracts)
+    #   * pre-rank model training on observed contribute-vs-drop labels
+    #   * debugging trim decisions
+    # Default-None so existing test fixtures + records without this field
+    # still deserialize cleanly. The publish path strips this before D1.
+    paper_title: str | None = None
+    paper_year: int | None = None
+    paper_journal: str | None = None
+    paper_abstract: str | None = None  # truncated to first 1500 chars to bound size
+    paper_publication_type: str | None = None
+    paper_is_review: bool = False
 
 
 _ABSTRACT_QUOTE_CAP = 600  # matches EvidenceClaimDraft.quote max_length
@@ -740,6 +754,31 @@ def _fetch_body_via_unpaywall_pdf(
     return [], None
 
 
+_ABSTRACT_PERSIST_CAP = 1500  # bound intermediates blob size
+
+
+def _meta_kwargs(paper: Paper | None) -> dict[str, Any]:
+    """Capture (title, year, journal, abstract, pubtype, is_review) from a
+    Paper into the kwargs accepted by ``TriageAction``. Returns an empty
+    dict when the paper is None so the action carries the metadata-default
+    values (all None / False). The abstract is truncated to
+    ``_ABSTRACT_PERSIST_CAP`` chars to bound the intermediates blob size.
+    """
+    if paper is None:
+        return {}
+    abstract = (paper.abstract or "").strip()
+    if len(abstract) > _ABSTRACT_PERSIST_CAP:
+        abstract = abstract[:_ABSTRACT_PERSIST_CAP]
+    return {
+        "paper_title": paper.title or None,
+        "paper_year": paper.year,
+        "paper_journal": paper.journal,
+        "paper_abstract": abstract or None,
+        "paper_publication_type": paper.publication_type or None,
+        "paper_is_review": bool(paper.is_review),
+    }
+
+
 def apply_triage_outcomes(
     outcomes: list[TriageOutcome],
     papers_by_id: dict[str, Paper],
@@ -808,13 +847,20 @@ def apply_triage_outcomes(
                     paper_id=o.paper_id,
                     decision="error",
                     fetch_error=o.error,
+                    **_meta_kwargs(paper),
                 )
             )
             continue
 
         decision = o.response.decision
         if decision == "discard":
-            actions.append(TriageAction(paper_id=o.paper_id, decision="discard"))
+            actions.append(
+                TriageAction(
+                    paper_id=o.paper_id,
+                    decision="discard",
+                    **_meta_kwargs(paper),
+                )
+            )
         elif decision == "keep_abstract":
             clips = _abstract_clips(paper)
             for clip in clips:
@@ -825,6 +871,7 @@ def apply_triage_outcomes(
                     decision="keep_abstract",
                     drafts_added=len(clips),
                     fetch_error=None if clips else "no abstract text to clip",
+                    **_meta_kwargs(paper),
                 )
             )
         elif decision == "worth_fetching":
@@ -840,6 +887,7 @@ def apply_triage_outcomes(
                         fetched_body=True,
                         fetch_source=result.source,
                         fetch_license=result.oa_license,
+                        **_meta_kwargs(paper),
                     )
                 )
             else:
@@ -863,6 +911,7 @@ def apply_triage_outcomes(
                         fetched_body=False,
                         fetch_error=fetch_error,
                         fell_back_to_abstract=len(clips) > 0,
+                        **_meta_kwargs(paper),
                     )
                 )
 
