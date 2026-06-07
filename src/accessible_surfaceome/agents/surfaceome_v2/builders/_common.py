@@ -89,14 +89,14 @@ def format_ledger_block(claims: list[EvidenceClaim], *, header: str = "ledger") 
     needs to extract the structured block.
     """
     payload = claims_to_jsonable(claims)
-    return f"## {header} ({len(claims)} claims)\n\n```json\n{json.dumps(payload, indent=2)}\n```\n"
+    return f"## {header} ({len(claims)} claims)\n\n```json\n{json.dumps(payload, indent=2, sort_keys=True)}\n```\n"
 
 
 def format_schema_block(schema: dict[str, Any], *, name: str) -> str:
     """Render the target Pydantic JSON schema."""
     return (
         f"## Target schema — `{name}`\n\n"
-        f"```json\n{json.dumps(schema, indent=2)}\n```\n"
+        f"```json\n{json.dumps(schema, indent=2, sort_keys=True)}\n```\n"
     )
 
 

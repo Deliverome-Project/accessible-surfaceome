@@ -230,7 +230,7 @@ def _summarize_deterministic_for_synthesizer(
             "uniprot_family": uniprot_family,
         },
     }
-    return json.dumps(payload, indent=2)
+    return json.dumps(payload, indent=2, sort_keys=True)
 
 
 def _build_task(
@@ -242,8 +242,8 @@ def _build_task(
     deterministic_summary_json: str | None = None,
     accessibility_risks_json: str | None = None,
 ) -> str:
-    schema = json.dumps(SynthesizerDraft.model_json_schema(), indent=2)
-    a1_json = json.dumps(a1_draft, indent=2)
+    schema = json.dumps(SynthesizerDraft.model_json_schema(), indent=2, sort_keys=True)
+    a1_json = json.dumps(a1_draft, indent=2, sort_keys=True)
     a2_section: str
     if a2_draft is None:
         a2_section = (
@@ -256,7 +256,7 @@ def _build_task(
         a2_section = (
             "## A2 (Biology Compiler) output\n\n"
             "Full `BiologicalContextDraft` (including its evidence ledger slice):\n\n"
-            f"```json\n{json.dumps(a2_draft, indent=2)}\n```\n"
+            f"```json\n{json.dumps(a2_draft, indent=2, sort_keys=True)}\n```\n"
         )
     triage_section = ""
     if triage_summary_json:
@@ -405,7 +405,7 @@ def run_synthesizer_with_drafts(
     a1_dict = a1_draft.model_dump(mode="json")
     a2_dict = a2_draft.model_dump(mode="json") if a2_draft is not None else None
     accessibility_risks_json = (
-        json.dumps(accessibility_risks.model_dump(mode="json"), indent=2)
+        json.dumps(accessibility_risks.model_dump(mode="json"), indent=2, sort_keys=True)
         if accessibility_risks is not None
         else None
     )

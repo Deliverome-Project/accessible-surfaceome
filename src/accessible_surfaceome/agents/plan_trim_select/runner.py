@@ -368,7 +368,7 @@ def _summarize_deterministic_for_planner(features: DeterministicFeatures) -> str
             cyno.ecd_pct_identity_to_human_canonical if cyno else None
         ),
     }
-    return json.dumps(payload, indent=2)
+    return json.dumps(payload, indent=2, sort_keys=True)
 
 
 def _summarize_triage_for_planner(record: TriageRecord) -> str:
@@ -394,7 +394,7 @@ def _summarize_triage_for_planner(record: TriageRecord) -> str:
         "key_uncertainty": record.key_uncertainty,
         "confidence": record.confidence,
     }
-    return json.dumps(payload, indent=2)
+    return json.dumps(payload, indent=2, sort_keys=True)
 
 
 def _build_gene_context(
@@ -1006,7 +1006,7 @@ def _run_trim(
     template; per-agent paths narrow the trim focus.
     """
 
-    schema_str = json.dumps(TrimResponse.model_json_schema(), indent=2)
+    schema_str = json.dumps(TrimResponse.model_json_schema(), indent=2, sort_keys=True)
     trim_prompt_template = trim_prompt_path.read_text()
     results: dict[str, TrimResponse] = {}
     non_empty = [(sid, clips) for sid, clips in clips_by_source.items() if clips]
@@ -1083,7 +1083,7 @@ def _run_selector(
     timing_phase: str = "plan_trim_select",
 ) -> SelectionResponse | None:
     system_prompt = select_prompt_path.read_text()
-    schema_str = json.dumps(SelectionResponse.model_json_schema(), indent=2)
+    schema_str = json.dumps(SelectionResponse.model_json_schema(), indent=2, sort_keys=True)
     deterministic_block = ""
     if context.deterministic_summary_json:
         deterministic_block = (

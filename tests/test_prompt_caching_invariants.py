@@ -81,6 +81,22 @@ PROMPT_BUILDER_FILES: tuple[Path, ...] = (
     SRC_ROOT / "surfaceome_v2" / "builders" / "anatomical_accessibility.py",
 )
 
+# Lines matching ANY of these patterns are NEVER in a cached prefix — they
+# are pure telemetry / file IO / debug output. Skipped by both scans below.
+# This is heuristic, not exhaustive — add ``# cache-ok`` to any line where
+# the heuristic is too narrow for an unusual pattern.
+NON_PROMPT_HEURISTICS: tuple[str, ...] = (
+    # Elapsed-time / start-time telemetry (never in prompt content)
+    r"^\s*(t0|started_at|finished_at|elapsed|elapsed_s|ts|now)\s*=",
+    r"\belapsed(_s)?\s*=\s*round\(time\.time\(\)",
+    r"\belapsed(_s)?\s*=\s*time\.time\(\)\s*-",
+    r"\belapsed_s=round\(time\.time\(\)",  # kwarg form
+    # File-write / print of JSON — disk artifact or debug output, not prompt
+    r"\.(write_text|write_bytes)\(json\.dumps",
+    r"^\s*print\(json\.dumps",
+)
+
+
 # Per-gene-varying tokens that would invalidate the cached prefix if they
 # landed in it. Each tuple is ``(regex, human-readable-remediation)``.
 INVALIDATOR_PATTERNS: tuple[tuple[str, str], ...] = (
@@ -172,6 +188,17 @@ def test_no_silent_invalidators_in_prompt_paths() -> None:
             stripped = line.lstrip()
             if stripped.startswith("#"):
                 continue
+            # Allowlist: ``# cache-ok`` on the same line marks a non-prompt
+            # usage that the heuristics below can't recognize. Use sparingly
+            # — prefer adopting one of the standard non-prompt patterns
+            # (telemetry naming, .write_text(json.dumps(...)), etc.) so the
+            # test stays maintainable.
+            if "# cache-ok" in line:
+                continue
+            # Heuristic: skip lines that are clearly telemetry / file IO /
+            # debug output — they don't flow into a cached prompt.
+            if any(re.search(p, line) for p in NON_PROMPT_HEURISTICS):
+                continue
             for pattern, remediation in INVALIDATOR_PATTERNS:
                 if re.search(pattern, line):
                     hits.append((path, lineno, line.strip(), remediation))
@@ -209,7 +236,12 @@ def test_json_dumps_in_prompt_paths_uses_sort_keys() -> None:
         for lineno, line in enumerate(text.splitlines(), start=1):
             if "json.dumps" not in line:
                 continue
-            if "noqa: prompt-caching" in line:
+            # Allowlist: ``# cache-ok`` marks an annotated exception.
+            if "# cache-ok" in line:
+                continue
+            # Heuristic: skip lines that are file IO or debug print — these
+            # never flow into a cached prompt.
+            if any(re.search(p, line) for p in NON_PROMPT_HEURISTICS):
                 continue
             # Allowed shapes: ``sort_keys=True`` anywhere on the line OR
             # the next continuation line. Cheap inspection: peek ahead.
@@ -229,8 +261,7 @@ def test_json_dumps_in_prompt_paths_uses_sort_keys() -> None:
         "produce different bytes on different Python builds and "
         "intermittently invalidate the cache.\n",
         "Add sort_keys=True to each call, or annotate with "
-        "# noqa: prompt-caching if the call really doesn't serialize a "
-        "dict.\n",
+        "# cache-ok if the call really doesn't serialize a dict.\n",
     ]
     for path, lineno, snippet in bad:
         rel = path.relative_to(REPO_ROOT)
