@@ -872,15 +872,10 @@
   font-size: 0.7rem;
   line-height: 1.2;
   color: var(--muted);
-  /* The Symbol column is narrow now (10rem) — let long descriptive
-   * names wrap to a second line instead of being ellipsis-clipped.
-   * Cap the height at three lines so a wildly long name doesn't
-   * blow out the row height; the full name is still available in
-   * the title-attr tooltip. */
-  display: -webkit-box;
-  -webkit-line-clamp: 3;
-  line-clamp: 3;
-  -webkit-box-orient: vertical;
+  /* Holds the gene symbol now (the protein/gene name took its old slot
+   * above). Symbols are short, so no line-clamp needed — just ellipsize
+   * on the rare overflow. */
+  white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
 }
@@ -896,6 +891,15 @@
   font-weight: var(--fw-medium);
   font-size: 0.95rem;
   color: var(--ink);
+  /* Holds the descriptive protein/gene name now; wrap to 2 lines so
+   * "solute carrier family 7 member 5" doesn't blow out the column.
+   * The full name remains in the title-attr tooltip. */
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  line-height: 1.2;
 }
 
 .nCell {
@@ -1186,14 +1190,15 @@
   justify-content: center;
 }
 
-/* Deep-dive vital chip — mirrors .verdictMini sizing so it sits tight in
-   the narrow columns; tone classes below reuse the verdict-pill palette. */
+/* Deep-dive vital chip — mirrors .verdictMini sizing AND its uppercase
+   typesetting so deep-dive chips read the same as triage chips at a
+   glance. Tone classes below reuse the verdict-pill palette. */
 .ddVital {
   padding: 0.12rem 0.36rem;
   font-size: 0.62rem;
   font-weight: var(--fw-medium);
   letter-spacing: 0.02em;
-  text-transform: lowercase;
+  text-transform: uppercase;
   border-radius: var(--radius-pill);
   border: 1px solid transparent;
   white-space: nowrap;

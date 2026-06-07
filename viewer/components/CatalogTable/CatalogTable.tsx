@@ -1727,12 +1727,19 @@ function CatalogRowView({
   // deep-dive page carries the triage reasoning plus everything else).
   // Genes WITHOUT a deep-dive open the drawer instead, since that's
   // the only place to read the triage call's full text.
+  // Show the descriptive protein/gene name as primary and the symbol as
+  // secondary — "epidermal growth factor receptor" reads more naturally
+  // than "EGFR" for someone scanning the catalog, while the symbol stays
+  // visible underneath for biologists who already know it. Falls back to
+  // showing the symbol on its own for genes without a description.
   const symbolStack = (
     <span className={styles.symbolStack}>
-      <span className={styles.symbolText}>{row.symbol}</span>
+      <span className={styles.symbolText} title={row.name ?? row.symbol}>
+        {row.name ?? row.symbol}
+      </span>
       {row.name ? (
-        <span className={styles.symbolName} title={row.name}>
-          {row.name}
+        <span className={styles.symbolName} title={row.symbol}>
+          {row.symbol}
         </span>
       ) : null}
     </span>
