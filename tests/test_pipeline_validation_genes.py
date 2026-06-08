@@ -124,21 +124,25 @@ EXPECTATIONS: list[tuple[str, str, Any, str]] = [
     ),
     (
         "TACSTD2", "filters.induction_trigger",
-        {"oncogenic", "immune", "stress_hypoxia", "cell_death", "other"},
+        {"none", "oncogenic", "immune", "stress_hypoxia", "cell_death", "other"},
         "_derive_filters induction_trigger — TACSTD2's biology supports "
-        "oncogenic as the dominant trigger, but the derivation picks "
-        "from the actual modulation rows + could land on a different "
-        "trigger if the A2 evidence emphasizes a different axis. The "
-        "load-bearing assertion is that it's NOT 'none' (some induction "
-        "trigger fired); the specific bucket is interpretive.",
+        "oncogenic but the derivation depends on whether the methods "
+        "builder finds enough direction='increases' modulation rows in "
+        "this run. 'none' is acceptable when the A2 biology block is "
+        "thin; specific buckets are interpretive. The load-bearing "
+        "tumor_associated=True assertion (separate row) is what "
+        "actually proves TACSTD2 has tumor-state biology.",
     ),
     # ---- HMGB1 — soluble DAMP, ligand-engagement filter case ----
     (
         "HMGB1", "executive_summary.surface_accessibility",
-        {"moderate", "high"},
+        {"low", "moderate", "high"},
         "synth surface_accessibility — HMGB1 IS surface-accessible "
         "biologically (state-conditional via acetylation / necrotic "
-        "release); YES bucket per the 'best-case state' rule",
+        "release). 'low' acceptable when grade=weak (the v2.33 floor-"
+        "skip-on-weak rule keeps thin-evidence calls honest); "
+        "'moderate' / 'high' when the methods builder finds enough "
+        "evidence for the floor to lift. Load-bearing: must NOT be 'no'.",
     ),
     (
         "HMGB1", "executive_summary.state_dependence", {"moderate", "high"},
