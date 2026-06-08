@@ -385,6 +385,7 @@ def run_synthesizer_with_drafts(
     triage_summary_json: str | None = None,
     deterministic_summary_json: str | None = None,
     accessibility_risks: AccessibilityRisks | None = None,
+    external_feedback: str | None = None,
 ) -> BResult:
     """In-memory peer of :func:`run_synthesizer` — for orchestrator usage.
 
@@ -417,6 +418,7 @@ def run_synthesizer_with_drafts(
         triage_summary_json=triage_summary_json,
         deterministic_summary_json=deterministic_summary_json,
         accessibility_risks_json=accessibility_risks_json,
+        external_feedback=external_feedback,
     )
 
 
@@ -429,24 +431,42 @@ def _run(
     triage_summary_json: str | None = None,
     deterministic_summary_json: str | None = None,
     accessibility_risks_json: str | None = None,
+    external_feedback: str | None = None,
 ) -> BResult:
     system_prompt = SYSTEM_PROMPT_PATH.read_text()
     cached_system_blocks = cached_system(system_prompt)
     # The initial user task message embeds both ledgers + the SynthesizerDraft
     # JSON schema — large, static across repair iterations. Cache it once so
     # repairs only pay full price for the new error-feedback turn.
-    messages: list[dict[str, Any]] = [
-        cached_user_text(
-            _build_task(
-                gene,
-                a1_draft=a1_draft,
-                a2_draft=a2_draft,
-                triage_summary_json=triage_summary_json,
-                deterministic_summary_json=deterministic_summary_json,
-                accessibility_risks_json=accessibility_risks_json,
-            )
+    task_text = _build_task(
+        gene,
+        a1_draft=a1_draft,
+        a2_draft=a2_draft,
+        triage_summary_json=triage_summary_json,
+        deterministic_summary_json=deterministic_summary_json,
+        accessibility_risks_json=accessibility_risks_json,
+    )
+    # External-feedback channel — orchestrator wraps the synth call in
+    # a retry-with-feedback loop. When the assembled SurfaceomeRecord
+    # fails Pydantic validation (state_dependence='low' violation,
+    # secreted_form orphan, etc.) the orchestrator catches the error
+    # and re-invokes the synthesizer with the validator message
+    # prepended. The synth reads it, corrects the specific field(s),
+    # and re-emits. Caching note: the task body stays byte-identical
+    # so the prompt cache still hits; only the feedback prefix is
+    # new on the second attempt.
+    if external_feedback:
+        task_text = (
+            "# Feedback from a prior synthesis attempt\n\n"
+            "Your previous output failed downstream Pydantic validation "
+            "on the assembled SurfaceomeRecord. The validator's message:\n\n"
+            f"```\n{external_feedback}\n```\n\n"
+            "Re-emit your output with the affected field(s) corrected. "
+            "Keep everything else identical — only fix what the "
+            "validator flagged.\n\n"
+            + task_text
         )
-    ]
+    messages: list[dict[str, Any]] = [cached_user_text(task_text)]
     n_repair_attempts = 0
     usage_records: list[UsageRecord] = []
     final_text = ""
