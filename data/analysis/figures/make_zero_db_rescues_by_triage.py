@@ -107,8 +107,8 @@ def _apply_brand_style() -> None:
         "font.family": "sans-serif",
         "font.sans-serif": ["Manrope", "Outfit", "DejaVu Sans", "Liberation Sans", "Arial"],
         "font.weight": "medium",
-        "font.size": 21,
-        "axes.labelsize": 25,
+        "font.size": 20,
+        "axes.labelsize": 20,
         "axes.labelweight": "medium",
         "axes.titlesize": 0,
         "axes.titlepad": 0,
@@ -255,12 +255,12 @@ def _draw_reason_bars(ax, counts, reasons, palette, header_label, header_color, 
             x, h + y_max * 0.015,
             f"{h}",
             ha="center", va="bottom",
-            fontsize=25, fontweight="bold", color=header_color,
+            fontsize=20, fontweight="bold", color=header_color,
         )
 
     ax.set_title(
         header_label,
-        fontsize=25, color=header_color, fontweight="bold",
+        fontsize=20, color=header_color, fontweight="bold",
         loc="left", pad=16,
     )
     ax.set_xticks(x_positions)
@@ -281,7 +281,7 @@ def _draw_callouts(ax, callouts, palette, title):
     ax.text(
         0.0, 1.0, title,
         transform=ax.transAxes, ha="left", va="top",
-        fontsize=24, color=BRAND_NEUTRAL, fontweight="bold",
+        fontsize=20, color=BRAND_NEUTRAL, fontweight="bold",
     )
     y0 = 0.82
     n = len(callouts)
@@ -298,7 +298,7 @@ def _draw_callouts(ax, callouts, palette, title):
         ax.text(
             0.07, y, symbol,
             transform=ax.transAxes, ha="left", va="center",
-            fontsize=21, fontweight="bold", color=BRAND_INK,
+            fontsize=20, fontweight="bold", color=BRAND_INK,
         )
         ax.text(
             0.26, y, f"— {desc}",
@@ -395,7 +395,7 @@ def main() -> None:
         header_color=CONTEXTUAL_HEADER_COLOR, y_max=y_max,
     )
 
-    ax_yes.set_ylabel("Genes rescued from\nzero-DB universe", fontsize=25)
+    ax_yes.set_ylabel("Genes rescued from\nzero-DB universe", fontsize=20)
     ax_yes.tick_params(axis="y", labelsize=20)
     plt.setp(ax_ctx.get_yticklabels(), visible=False)
 

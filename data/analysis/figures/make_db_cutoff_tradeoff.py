@@ -144,8 +144,8 @@ def _apply_brand_style() -> None:
         "font.family": "sans-serif",
         "font.sans-serif": ["Manrope", "Outfit", "DejaVu Sans", "Liberation Sans", "Arial"],
         "font.weight": "medium",
-        "font.size": 21,
-        "axes.labelsize": 25,
+        "font.size": 20,
+        "axes.labelsize": 20,
         "axes.labelweight": "medium",
         "axes.titlesize": 0,
         "axes.titlepad": 0,
@@ -259,7 +259,7 @@ def main() -> None:
 
         ax.set_xscale("log")
         ax.text(0.02, 0.97, group, transform=ax.transAxes,
-                ha="left", va="top", fontsize=24, fontweight="bold",
+                ha="left", va="top", fontsize=20, fontweight="bold",
                 color=ramp[0])
         ax.set_ylim(25, 102)
         xs = [p["size"] for p in pts]
@@ -303,7 +303,7 @@ def main() -> None:
     ]
     legend_ax.legend(handles=handles, loc="upper center", fontsize=20,
                      frameon=False, title="Marker shape",
-                     title_fontsize=21)
+                     title_fontsize=20)
 
     fig.supxlabel("Universe size — proteins this filter would admit "
                   "(log scale; lower = stricter)", fontsize=20, y=0.02,

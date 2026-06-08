@@ -115,8 +115,8 @@ def _apply_brand_style() -> None:
         "font.family": "sans-serif",
         "font.sans-serif": ["Manrope", "Outfit", "DejaVu Sans", "Liberation Sans", "Arial"],
         "font.weight": "medium",
-        "font.size": 21,
-        "axes.labelsize": 25,
+        "font.size": 20,
+        "axes.labelsize": 20,
         "axes.labelweight": "medium",
         "axes.titlesize": 0,
         "axes.titlepad": 0,
@@ -259,7 +259,7 @@ def main() -> None:
             bar.get_height() + 1.2,
             f"{row['accuracy']*100:.1f}%",
             ha="center", va="bottom",
-            fontsize=21, fontweight="bold", color=BRAND_INK,
+            fontsize=20, fontweight="bold", color=BRAND_INK,
         )
         ax.text(
             bar.get_x() + bar.get_width() / 2,
