@@ -1339,10 +1339,30 @@ def _annotate(
         "supports_membrane_association",
     }
     current_reason = synth_draft.executive_summary.surface_call_reason
-    has_surface_signal = any(
-        m.accessibility_relevance in SURFACE_SIGNAL_RELEVANCES
-        for m in outputs["methods"]
-    )
+    # Only count surface-signal methods rows whose cited claims actually
+    # SUPPORT surface localization (direction='supports'). Claims with
+    # direction='refutes' or claim_type='contradictory' can get mis-
+    # classified by the methods builder (it reads the assay type but
+    # misses the WT conclusion in contradictory experiments — e.g.
+    # ABCB9 v2.29.0: a domain-deletion mutant mislocalizes to PM, proving
+    # the WT does NOT, but methods builder tagged the IF assay as
+    # supports_surface_localization). Filter at the override gate using
+    # the claim's own direction field, which the synthesizer already sets.
+    claims_by_id = {c.evidence_id: c for c in a1_claims if c.evidence_id}
+    def _has_supporting_cite(method):
+        for cid in method.cited_evidence_ids or []:
+            claim = claims_by_id.get(cid)
+            if claim is None:
+                continue
+            if claim.direction == "supports":
+                return True
+        return False
+    supporting_signal_methods = [
+        m for m in outputs["methods"]
+        if m.accessibility_relevance in SURFACE_SIGNAL_RELEVANCES
+        and _has_supporting_cite(m)
+    ]
+    has_surface_signal = bool(supporting_signal_methods)
     if current_reason in NO_BUCKET_REASONS and has_surface_signal:
         # Pick the CONTEXTUAL replacement: dual_localization for the
         # TGN46-style trafficking case, cell_state_induced otherwise.
@@ -1351,7 +1371,7 @@ def _annotate(
             if current_reason == "endomembrane_resident"
             and any(
                 m.accessibility_relevance == "supports_surface_localization"
-                for m in outputs["methods"]
+                for m in supporting_signal_methods
             )
             else "cell_state_induced"
         )
