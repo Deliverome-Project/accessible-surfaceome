@@ -130,11 +130,16 @@ EXPECTATIONS: list[tuple[str, str, Any, str]] = [
         "biology forces 'high'",
     ),
     (
-        "HMGB1", "surface_evidence.evidence_grade", "weak",
+        "HMGB1", "surface_evidence.evidence_grade",
+        {"weak", "supportive_but_indirect"},
         "evidence_grade_builder + methods_builder inclusion filter — "
         "once ligand-engagement claims (HMGB1 binding RAGE/TREM-1) are "
         "excluded, remaining direct surface evidence is genuinely thin. "
-        "Conservative-but-correct.",
+        "Either `weak` (when only expression_only methods survive) or "
+        "`supportive_but_indirect` (when the trafficking-with-dwell rule "
+        "lifts permeabilized-IF + PM-trafficking observations) is in-range; "
+        "the call SHOULD NOT be direct_*. Confirmed acceptable in the "
+        "2.15.0 / 2.16.0 validation review.",
     ),
     (
         "HMGB1", "surface_evidence.excluded_as_ligand_engagement.len>=2", True,
