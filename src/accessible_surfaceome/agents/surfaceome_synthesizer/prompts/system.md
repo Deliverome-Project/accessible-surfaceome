@@ -706,26 +706,77 @@ A given gene carries one value from EACH axis. Examples:
 
 ## Has-known-ligand flag
 
-`filters_llm.has_known_ligand` is a bool with a required
-`has_known_ligand_rationale` (≤300 char). **The rationale is
-mandatory: an empty string is invalid when `has_known_ligand=True`.**
-If you can't name the ligand specifically — flip `has_known_ligand`
-to `False` and put the orphan-receptor reasoning in the rationale
-instead. The orchestrator rejects records with `has_known_ligand=True`
-+ empty `has_known_ligand_rationale` (no silent placeholders).
+`filters_llm.has_known_ligand` is a bool tracking whether the gene
+has a **validated, endogenous binding partner** — natural biology,
+NOT therapeutics. Required `has_known_ligand_rationale` (≤300 char).
+**The rationale is mandatory: an empty string is invalid when
+`has_known_ligand=True`.** The orchestrator rejects records with
+`has_known_ligand=True` + empty `has_known_ligand_rationale` (no
+silent placeholders).
 
-**Default `True`** — most surface proteins have a validated endogenous
-ligand. Set `False` ONLY for orphan-class genes where ligand identity
-is genuinely unknown:
+**The "ligand" here means an endogenous biological binding partner**
+— a natural agonist, cognate receptor, physiological cargo, native
+substrate, or constitutive heterodimer partner produced by human
+biology. Therapeutic engagement is a SEPARATE concept and MUST NOT
+flip this flag to True.
 
-* Orphan GPCRs (no validated endogenous agonist) — e.g. GENE X, a
-  hypothetical orphan receptor with no deorphanized ligand.
-* Orphan nuclear receptors.
-* Orphan receptor tyrosine kinases.
+**What counts as a known endogenous ligand (→ `True`):**
 
-A receptor with a proposed but unconfirmed ligand stays `True` if
-the proposal is widely cited; flip to `False` if the literature
-explicitly calls it orphan / deorphanization-pending.
+* Validated natural agonist for a GPCR (chemokines for chemokine
+  receptors, neurotransmitters for neurotransmitter receptors, etc.).
+* Cognate receptor for a ligand-class protein (the gene's natural
+  binding partner in physiology).
+* Documented constitutive heterodimer / cargo partner (e.g.
+  invariant chain for MHC II, β-microglobulin-equivalent partners).
+* A natural binding partner with multiple independent biochemical
+  characterizations (binding affinity, structural data, functional
+  consequence). Proposed-but-widely-cited endogenous ligands count.
+
+**What DOES NOT count (→ `False` if these are all the gene has):**
+
+* **Therapeutic antibodies, ADCs, CAR-T binders.** A clinically-
+  approved or experimental antibody / ADC targeting the protein is
+  *engineered binding*, not endogenous biology. Approved ADCs and
+  investigational immunoconjugates against tumor-associated antigens
+  (or any clinically-developed antibody, ADC, bispecific, or CAR-T
+  binder, named or unnamed) MUST NOT lift `has_known_ligand=True`.
+  The catalog reader interprets `has_known_ligand=True` as "natural
+  biology gives you a ready binding pocket / signaling pathway";
+  therapeutic agents fail that test by definition.
+* **Small-molecule drugs, blockers, agonists, antagonists** — even
+  when widely used in pharmacology. Endogenous biology is the bar;
+  pharmacology is not.
+* **Investigational tool compounds, fluorescent probes, biotinylated
+  binders, photoaffinity ligands.** These are reagents, not biology.
+* **Bound IgG / patient autoantibodies / disease-state autoreactive
+  antibodies.** Disease-associated binding is biology of the disease,
+  not endogenous receptor-ligand pairing.
+
+**Orphan-class call (→ `False`):** When the only documented binding
+is therapeutic / pharmacological / investigational, OR when the gene
+is an orphan GPCR / NHR / RTK with no deorphanized endogenous ligand,
+set `has_known_ligand=False`. The rationale names the orphan status
++ what's been TRIED but not confirmed (if anything).
+
+**Worked examples:**
+
+* A canonical surface receptor with documented endogenous agonist
+  binding: `has_known_ligand=True`. Rationale names the agonist +
+  the binding evidence.
+* A tumor-associated antigen with FDA-approved ADC targeting it but
+  no validated endogenous ligand: `has_known_ligand=False`. Rationale:
+  *"Orphan-like: no validated endogenous ligand reported. The clinical
+  ADCs ([drug-1] and [drug-2]) are therapeutic antibody-conjugates,
+  not endogenous biology. The receptor's natural binding partner
+  remains unidentified."*
+* An orphan GPCR with proposed but unconfirmed natural ligand candidate:
+  `has_known_ligand=False`. Rationale names the proposed candidate +
+  why the field treats it as unconfirmed.
+
+A proposed but widely-cited endogenous ligand stays `True` if the
+proposal has multiple independent characterizations; flip to `False`
+if the literature explicitly calls the gene orphan /
+deorphanization-pending.
 
 ## Citation discipline
 

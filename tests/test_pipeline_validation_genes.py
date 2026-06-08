@@ -92,13 +92,24 @@ EXPECTATIONS: list[tuple[str, str, Any, str]] = [
         "(live flow + biotinylation + IHC membranous)",
     ),
     (
-        "TACSTD2", "filters.has_known_ligand", True,
-        "synth has_known_ligand — TACSTD2 has documented ligands",
+        "TACSTD2", "filters.has_known_ligand", False,
+        "synth has_known_ligand — endogenous ligands ONLY, not therapeutics. "
+        "TROP2's clinical ADCs (sacituzumab govitecan, datopotamab deruxtecan) "
+        "are engineered antibody-drug conjugates, NOT endogenous biology. "
+        "TROP2's natural endogenous binding partner is contested / unidentified "
+        "(some Ca²⁺-signaling and IGF1R-interaction proposals exist but aren't "
+        "validated as canonical ligand-receptor binding). The flag should be "
+        "False, with the rationale naming the orphan-like status + the "
+        "therapeutic ADCs as engineered (not endogenous) binders. Owner: "
+        "synth Has-known-ligand section in surfaceome_synthesizer/prompts/system.md.",
     ),
     (
         "TACSTD2", "filters.has_known_ligand_rationale.len>0", True,
         "Filters._require_has_known_ligand_rationale_when_true validator — "
-        "non-empty rationale required when has_known_ligand=True",
+        "rationale must be non-empty regardless of the bool's value. When "
+        "has_known_ligand=False (orphan-class call), the rationale names "
+        "the orphan status + what's been tried; when True, it names the "
+        "endogenous ligand.",
     ),
     (
         "TACSTD2", "filters.tumor_associated", True,
