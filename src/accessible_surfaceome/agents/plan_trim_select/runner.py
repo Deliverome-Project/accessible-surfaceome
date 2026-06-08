@@ -1360,7 +1360,7 @@ def run_plan_trim_select(
     retraction_index: RetractionIndex | None = None,
     agent_focus: AgentFocus,
     timing: TimingRecorder | None = None,
-    enable_pretrim_filter: bool = False,
+    enable_pretrim_filter: bool = True,
     triage_cache: dict[str, Any] | None = None,
 ) -> PlanTrimSelectResult:
     """Run plan → trim → select for one gene. Returns the full audit result.
@@ -1778,7 +1778,7 @@ def run_plan_trim_select_dual(
     http: CachedHTTP | None = None,
     retraction_index: RetractionIndex | None = None,
     timing: TimingRecorder | None = None,
-    enable_pretrim_filter: bool = False,
+    enable_pretrim_filter: bool = True,
 ) -> DualPlanTrimSelectResult:
     """Phase 1's sequential-dual driver: A1 then A2, shared HTTP cache.
 

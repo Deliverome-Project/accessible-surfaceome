@@ -77,11 +77,17 @@ logger = logging.getLogger(__name__)
 THIN_THRESHOLD: int = 25
 HEAVY_THRESHOLD: int = 50
 
-# Safety-ceiling cap: applied only after the rule filter. 150 was chosen
-# because heavy-lit anchor genes (TACSTD2/HMGB1/SRC) all sit below it after
-# rule filtering, so the cap doesn't bite them. The cap exists to bound the
-# worst case (EGFR-class genes with 250+ candidates) at ~$5 instead of $10+.
-HARD_CAP: int = 150
+# Safety-ceiling cap: applied after the rule filter. Lowered from 150 → 132
+# on the cost-mitigation pass after an empirical production-cohort study
+# (sample of 100 random cohort genes) showed papers-per-gene production
+# distribution at p25=132, median=208, mean=205. Capping at the production
+# p25 lands the 6,521-gene cohort at ~$12k (down from a $18k projection at
+# uncapped median) while preserving the top-of-tail evidence on heavy-lit
+# genes — the gain past 132 papers is in the long tail of reviews /
+# drug-discovery summaries the rule filter mostly already catches. Papers
+# above the cap are sorted by year (newest first), then by PMC-OA
+# preference, then dropped.
+HARD_CAP: int = 132
 
 
 # Pattern 2: drug-review titles. These are typically secondary syntheses

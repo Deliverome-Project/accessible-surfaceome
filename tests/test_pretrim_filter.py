@@ -288,9 +288,11 @@ def test_primary_research_with_atlas_word_in_body_kept():
 
 
 def test_hard_cap_at_default_ceiling():
-    """151 primary papers → cap drops the oldest one."""
+    """`HARD_CAP + 1` primary papers → cap drops the oldest one. The
+    HARD_CAP value is updated by the cost-mitigation work; the test
+    proves the cap behavior holds at whatever the current value is."""
     papers = []
-    for i in range(151):
+    for i in range(HARD_CAP + 1):
         papers.append(
             _paper(
                 pmid=10_000 + i,
@@ -375,4 +377,7 @@ def test_thresholds_match_published_defaults():
     """
     assert THIN_THRESHOLD == 25
     assert HEAVY_THRESHOLD == 50
-    assert HARD_CAP == 150
+    # Lowered 150 → 132 in the cost-mitigation pass (cohort projected
+    # $18k against $12k budget at the 150 cap; 132 = production p25 of
+    # papers-per-gene). Bump in lockstep with the constant.
+    assert HARD_CAP == 132
