@@ -33,7 +33,9 @@ import pytest
 
 
 _PUBLIC_API = "https://api.deliverome.org/surfaceome/v1/genes"
-_VALIDATION_GENES = ("TACSTD2", "HMGB1", "SRC", "GPR75", "TGOLN2", "PVRIG")
+_VALIDATION_GENES = (
+    "TACSTD2", "HMGB1", "SRC", "GPR75", "TGOLN2", "PVRIG", "ABCB9",
+)
 
 
 @pytest.fixture(scope="module")
@@ -217,6 +219,41 @@ EXPECTATIONS: list[tuple[str, str, Any, str]] = [
         "synth endomembrane_resident vs dual_localization disambiguation "
         "(load-bearing rule) — when any trafficking-to-PM observation "
         "exists in A1, default to dual_localization (CONTEXTUAL bucket)",
+    ),
+
+    # ---- ABCB9 — strict-null FP regression test (Sonnet-NCBI miss) ----
+    # ABCB9 is a lysosome-resident multi-pass ABC transporter (truth=no
+    # in the benchmark). Sonnet-NCBI mis-called contextual /
+    # lysosomal_exocytosis. The deep dive's FIRST v2.28.0 run also
+    # mis-called CONTEXTUAL because the orchestrator's NO-bucket
+    # override (intended for synth pessimism on TGOLN2 / C3) was
+    # too-permissive — it fired on `supports_membrane_association`
+    # (just PM-fractionation), which can include endomembrane
+    # contaminants. The v2.29.0 fix restricts the override trigger
+    # to direct_surface_accessibility or supports_surface_localization;
+    # ABCB9 now correctly stays in the NO bucket. Pin both halves so a
+    # future relaxation of the override re-introduces the bug.
+    (
+        "ABCB9", "executive_summary.surface_accessibility", {"no", "low"},
+        "synth surface_accessibility — ABCB9 is lysosome-resident with "
+        "no PM accessibility. Benchmark truth=no; 'low' acceptable only "
+        "when paired with a NO-bucket surface_call_reason.",
+    ),
+    (
+        "ABCB9", "executive_summary.surface_call_reason",
+        {"endomembrane_resident", "cytoplasmic"},
+        "orchestrator NO-bucket override discipline — methods builder's "
+        "supports_membrane_association (PM-fractionation) is NOT strong "
+        "enough to overturn synth's correct NO-bucket call. Only "
+        "direct_surface_accessibility or supports_surface_localization "
+        "rows should flip a NO-bucket reason to CONTEXTUAL. Regression "
+        "guard against ABCB9 v2.28.0's wrong cell_state_induced call.",
+    ),
+    (
+        "ABCB9", "surface_evidence.evidence_grade", {"weak", "supportive_but_indirect"},
+        "evidence_grade — no direct surface methodology survives the "
+        "methods builder's inclusion filter for a strict-intracellular "
+        "ABC transporter; grade should be weak or supportive_but_indirect.",
     ),
 
     # ---- PVRIG — checkpoint receptor, tumor-immunology archetype ----
