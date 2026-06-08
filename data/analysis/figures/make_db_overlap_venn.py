@@ -166,6 +166,22 @@ def main() -> None:
     ax.set_yticks([])
     sns.despine(ax=ax, top=True, right=True, bottom=True, left=True)
 
+    # Hide intersection counts below MIN_DISPLAY — the 32 regions of a
+    # 5-set Venn include many small sliver intersections (3-DB / 4-DB /
+    # 5-DB cells with double-digit counts) whose labels collide with
+    # neighboring labels visually and read as noise rather than
+    # information. Suppress them; the per-DB totals still match the
+    # legend's `n = X,XXX` chips and the figure caption.
+    MIN_DISPLAY = 100
+    for t in ax.texts:
+        raw = t.get_text().strip().replace(",", "")
+        try:
+            if int(raw) < MIN_DISPLAY:
+                t.set_text("")
+        except ValueError:
+            # Non-integer label (set name etc.) — preserve.
+            continue
+
     handles = [
         plt.Rectangle((0, 0), 1, 1, color=PALETTE_BY_LABEL[k], alpha=0.6)
         for k in sorted_keys

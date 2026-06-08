@@ -340,7 +340,7 @@ def main() -> None:
                 patch.get_height() + 0.01,
                 f"{frac:.0%}",
                 ha="center", va="bottom",
-                fontsize=14, color=BRAND_INK,
+                fontsize=11, color=BRAND_INK,
             )
 
     # Overlay individual-replicate accuracy + SEM on the Sonnet bars (caller
@@ -389,13 +389,16 @@ def main() -> None:
         frameon=False, borderaxespad=0.0,
     )
 
-    # n-per-class subtitle.
+    # n-per-class subtitle. Pushed below the x-tick labels (which are
+    # multi-line for the "overall" + "contextual" columns) so the subtitle
+    # doesn't collide with the "(all 147 proteins)" / "(yes-vote = correct)"
+    # second lines.
     subtitle_parts = [f"n(overall) = {sum(totals.values())}"]
     subtitle_parts += [f"n({v}) = {totals[v]}" for v in ["yes", "contextual", "no"]]
     ax.text(
-        0.5, -0.16, "  ·  ".join(subtitle_parts),
+        0.5, -0.34, "  ·  ".join(subtitle_parts),
         transform=ax.transAxes, ha="center", va="top",
-        fontsize=15, color=BRAND_NEUTRAL,
+        fontsize=13, color=BRAND_NEUTRAL,
     )
     sns.despine(ax=ax, top=True, right=True)
 

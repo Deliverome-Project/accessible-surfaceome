@@ -264,9 +264,12 @@ def _draw_reason_bars(ax, counts, reasons, palette, header_label, header_color, 
         loc="left", pad=16,
     )
     ax.set_xticks(x_positions)
+    # Flatten the pre-wrapped REASON_LABEL strings (\n → space) so the
+    # rotated labels read on one line; multi-line + rotation looks broken.
     ax.set_xticklabels(
-        [REASON_LABEL[r] for r in visible],
-        fontsize=20, color=BRAND_INK,
+        [REASON_LABEL[r].replace("\n", " ") for r in visible],
+        fontsize=18, color=BRAND_INK,
+        rotation=30, ha="right", rotation_mode="anchor",
     )
     ax.tick_params(axis="y", labelsize=20)
     ax.set_xlim(-0.9, x_positions[-1] + 0.9)
@@ -295,12 +298,12 @@ def _draw_callouts(ax, callouts, palette, title):
         ax.text(
             0.07, y, symbol,
             transform=ax.transAxes, ha="left", va="center",
-            fontsize=24, fontweight="bold", color=BRAND_INK,
+            fontsize=21, fontweight="bold", color=BRAND_INK,
         )
         ax.text(
-            0.28, y, f"— {desc}",
+            0.26, y, f"— {desc}",
             transform=ax.transAxes, ha="left", va="center",
-            fontsize=20, color=BRAND_NEUTRAL,
+            fontsize=15, color=BRAND_NEUTRAL,
         )
 
 
@@ -356,7 +359,7 @@ def main() -> None:
         # has room to breathe instead of crashing into the bar panels.
         height_ratios=[2.2, 1.55],
         width_ratios=[1.0, 1.5],
-        hspace=0.22, wspace=0.10,
+        hspace=0.36, wspace=0.28,
         top=0.93, bottom=0.04, left=0.06, right=0.97,
     )
     ax_yes = fig.add_subplot(gs[0, 0])
