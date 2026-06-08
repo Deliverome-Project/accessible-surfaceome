@@ -22,7 +22,7 @@ also conserves Pages D1-binding slots (free plan caps at 5/project).
 ### Provisioning (one-time, from your local machine)
 
 You need the Cloudflare account at
-[dash.cloudflare.com/8e7d57ba080f9fec53b320a1b9449b18](https://dash.cloudflare.com/8e7d57ba080f9fec53b320a1b9449b18)
+[dash.cloudflare.com/<your-cloudflare-account-id>](https://dash.cloudflare.com/<your-cloudflare-account-id>)
 with `wrangler` available. Wrangler is pinned at the repo root via
 `/package.json` — run `npm ci` from the repo root to install it under
 `node_modules/.bin/wrangler`, and prefix calls with `npx --yes wrangler ...`
@@ -90,7 +90,7 @@ directly to D1's HTTP API (not via a worker), so it needs:
 
 ```sh
 # Account UUID — same hex that appears in the dashboard URL.
-CLOUDFLARE_ACCOUNT_ID=8e7d57ba080f9fec53b320a1b9449b18
+CLOUDFLARE_ACCOUNT_ID=<your-cloudflare-account-id>
 
 # UUID returned by `npx --yes wrangler d1 create surfaceome_agents` above.
 CLOUDFLARE_D1_SURFACEOME_AGENTS_ID=<uuid-from-step-2>
