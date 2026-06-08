@@ -1247,16 +1247,10 @@ def _annotate(
                 "dual_localization + no fractionation method — risks "
                 "builder set the flag without corroboration)"
             )
+            # SecretedForm has no `rationale` field — just flip present
+            # + severity. The orchestrator log captures the demote reason.
             new_sf = sf.model_copy(
-                update={
-                    "present": False,
-                    "rationale": (
-                        sf.rationale
-                        + " [orchestrator: demoted from present=True — "
-                        "no corroborating cites / secretory dual_localization "
-                        "/ fractionation method in the record.]"
-                    ).strip(),
-                }
+                update={"present": False, "severity": "low"}
             )
             synth_draft = synth_draft.model_copy(
                 update={
