@@ -6,6 +6,14 @@ out
 *.tsbuildinfo
 next-env.d.ts
 
+# Build-time snapshot cache for the over-2MB Worker endpoints
+# (/v1/catalog + /v1/benchmark/matrix). Written by
+# `scripts/build-data-snapshot.mjs` before `next build` so SSG
+# workers read from disk instead of refetching per-page-per-worker
+# and tripping Next.js' 2MB Data-Cache cap. Pure derived artifact —
+# regenerated on every build; never commit.
+build-cache/
+
 # Per-developer env overrides. Next.js auto-loads `.env.local`,
 # `.env.development.local`, etc. at dev/build time. NEXT_PUBLIC_*
 # values for local dev (Turnstile site key, feedback API base, etc.)

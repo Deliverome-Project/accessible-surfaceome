@@ -31,6 +31,29 @@
 
 import { readFileSync } from "node:fs";
 import path from "node:path";
+
+// Build-time snapshot cache for the two over-2MB Worker endpoints
+// (/v1/catalog ≈ 5.7 MB, /v1/benchmark/matrix ≈ 3 MB). Pre-written by
+// `viewer/scripts/build-data-snapshot.mjs` BEFORE `next build` runs, so
+// SSG reads from disk instead of refetching per-worker per-page (each
+// fetch was a Next.js Data-Cache miss because both exceed the 2 MB cap,
+// hammering D1 ~15× per build). Falls back to the live fetch path when
+// the snapshot file is missing — i.e. `next dev` or any contributor who
+// didn't run `npm run build:snapshot` first.
+const BUILD_CACHE_DIR = path.join(process.cwd(), "build-cache");
+
+function readBuildCache<T>(file: string): T | null {
+  try {
+    const p = path.join(BUILD_CACHE_DIR, file);
+    const raw = readFileSync(p, "utf-8");
+    return JSON.parse(raw) as T;
+  } catch {
+    // ENOENT (no snapshot run yet) or malformed JSON — let the caller
+    // fall through to the live fetch. Deliberately swallowed: the
+    // snapshot is an optimization, not a correctness gate.
+    return null;
+  }
+}
 import { pickDeepDiveFilters } from "./deep-dive-fields";
 import type {
   BenchmarkMatrix,
@@ -496,49 +519,55 @@ async function _loadCatalogImpl(): Promise<Catalog> {
       rows: [],
     };
   }
-  // Retry-on-5xx loop. The /v1/catalog response is ~4.5 MB and the
-  // Worker brushes Cloudflare's per-request CPU cap when D1 is cold,
-  // so intermittent 503s are normal — they almost always recover on
-  // the next call. Three attempts at 1.5s / 3s / 6s backoff. After
-  // that, fall through to the throw so build failures stay loud
-  // (we don't want to ship a viewer built against a wedged Worker).
-  let res: Response | null = null;
-  let lastStatus: number | null = null;
-  for (let attempt = 0; attempt < 3; attempt += 1) {
-    const controller = new AbortController();
-    const timer = setTimeout(() => controller.abort(), FETCH_TIMEOUT_MS);
-    try {
-      res = await fetch(`${base}/v1/catalog`, {
-        // `force-cache` makes the response part of the static build
-        // artifact under `output: "export"`. A re-deploy of the Worker
-        // surfaces in the viewer on the next `npm run build` — exactly
-        // the SSG lifecycle we want for a research catalogue (no
-        // per-page-load D1 hits in production).
-        cache: "force-cache",
-        signal: controller.signal,
-      });
-    } finally {
-      clearTimeout(timer);
-    }
-    if (res.ok) break;
-    lastStatus = res.status;
-    // Don't retry on 4xx — those are deterministic.
-    if (res.status < 500) break;
-    // 503 / 502 / 504 — usually transient; back off and retry.
-    if (attempt < 2) {
-      const delay = [1500, 3000][attempt] ?? 3000;
-      await new Promise((r) => setTimeout(r, delay));
-    }
-  }
-  if (!res || !res.ok) {
-    throw new Error(
-      `${base}/v1/catalog returned ${lastStatus ?? "no-response"} ` +
-        `after 3 attempts`,
-    );
-  }
-  const payload = (await res.json()) as Omit<Catalog, "source" | "rows"> & {
+  // Try the build-time snapshot first (written by
+  // `viewer/scripts/build-data-snapshot.mjs` before `next build`). When
+  // present this saves us a ~5.7 MB Worker fetch × every SSG worker —
+  // and avoids the Next.js Data-Cache miss that the 2MB cap forces.
+  type CatalogPayload = Omit<Catalog, "source" | "rows"> & {
     rows: unknown[];
   };
+  let payload = readBuildCache<CatalogPayload>("catalog.json");
+  if (!payload) {
+    // Retry-on-5xx loop. The /v1/catalog response is ~5.7 MB and the
+    // Worker brushes Cloudflare's per-request CPU cap when D1 is cold,
+    // so intermittent 503s are normal — they almost always recover on
+    // the next call. Three attempts at 1.5s / 3s / 6s backoff. After
+    // that, fall through to the throw so build failures stay loud
+    // (we don't want to ship a viewer built against a wedged Worker).
+    let res: Response | null = null;
+    let lastStatus: number | null = null;
+    for (let attempt = 0; attempt < 3; attempt += 1) {
+      const controller = new AbortController();
+      const timer = setTimeout(() => controller.abort(), FETCH_TIMEOUT_MS);
+      try {
+        res = await fetch(`${base}/v1/catalog`, {
+          // `force-cache` is still set on the fallback path so dev / no-
+          // snapshot builds at least share the response across pages,
+          // even though Next.js will warn that the payload exceeds 2MB.
+          cache: "force-cache",
+          signal: controller.signal,
+        });
+      } finally {
+        clearTimeout(timer);
+      }
+      if (res.ok) break;
+      lastStatus = res.status;
+      // Don't retry on 4xx — those are deterministic.
+      if (res.status < 500) break;
+      // 503 / 502 / 504 — usually transient; back off and retry.
+      if (attempt < 2) {
+        const delay = [1500, 3000][attempt] ?? 3000;
+        await new Promise((r) => setTimeout(r, delay));
+      }
+    }
+    if (!res || !res.ok) {
+      throw new Error(
+        `${base}/v1/catalog returned ${lastStatus ?? "no-response"} ` +
+          `after 3 attempts`,
+      );
+    }
+    payload = (await res.json()) as CatalogPayload;
+  }
   if (!payload.rows || payload.rows.length === 0) {
     throw new Error(
       `${base}/v1/catalog returned an empty catalog — the Worker is ` +
@@ -616,6 +645,13 @@ export async function loadBenchmarkMatrix(): Promise<BenchmarkMatrix> {
       n_genes: 0,
       rows: [],
     };
+  }
+  // Build-time snapshot first (same rationale as loadCatalog: matrix is
+  // ~3 MB, exceeds the Next.js Data-Cache 2 MB cap, refetched per page
+  // without the snapshot).
+  const cached = readBuildCache<BenchmarkMatrix>("benchmark-matrix.json");
+  if (cached) {
+    return cached;
   }
   const controller = new AbortController();
   const timer = setTimeout(() => controller.abort(), FETCH_TIMEOUT_MS);
