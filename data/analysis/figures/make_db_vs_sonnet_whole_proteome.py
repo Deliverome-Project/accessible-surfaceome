@@ -277,7 +277,10 @@ def main() -> None:
         for c in callers
     ]
 
-    fig, ax = plt.subplots(figsize=(17, 6.5))
+    # Wider figure (was 17) so the 10-bar clusters in the dense
+    # "Sonnet = no" bucket — where 4 ensemble bars all sit at ~100% —
+    # spread out enough for their bar-top % labels to read distinctly.
+    fig, ax = plt.subplots(figsize=(22, 6.5))
     sns.barplot(
         data=plot_df,
         x="bucket_label", y="fraction",
