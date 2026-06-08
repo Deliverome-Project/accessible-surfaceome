@@ -289,12 +289,55 @@ surface evidence. The inner-leaflet row stays `weak_or_ambiguous`.
       tumor killing (anti-target Ab depletes / kills target-expressing
       cells in xenograft), ADC efficacy on cells expressing the
       target, surface-targeted photo-tag labeling (RaPID, BioID-
-      surface, APEX-surface), FRET-on-surface, radioligand binding,
-      surface-restricted small-molecule probes. These claims don't
-      stain or isolate the protein directly, but the functional
-      readout is impossible without surface access (e.g. an antibody
-      that depletes target-expressing cells only if the target is
-      reachable from outside).
+      surface, APEX-surface), FRET-on-surface, radioligand binding
+      on live cells, surface-restricted small-molecule probes. These
+      claims don't stain or isolate the protein directly, but the
+      functional readout is impossible without surface access (e.g.
+      an antibody that depletes target-expressing cells only if the
+      target is reachable from outside).
+
+      **Anti-patterns — these MUST NOT take
+      `accessibility_relevance=direct_surface_accessibility`, even
+      when they're functional and use the target's name:**
+
+      * **Knockdown / KO validation of a surface-signaling response.**
+        siRNA / shRNA / CRISPR-KO abolishing a downstream signaling
+        readout (Ca²⁺ flux, β-arrestin recruitment, IP1 accumulation,
+        ERK phosphorylation, etc.) **validates the gene's involvement
+        in the pathway** — it does NOT directly observe the protein at
+        the surface. The KO could just as well be cutting off an
+        intracellular step. Set
+        `accessibility_relevance=supports_membrane_association`
+        and let the structural-class prior (TM helix, GPCR
+        topology, etc.) carry the residual surface inference.
+      * **Functional readouts on overexpression with unknown /
+        non-native signal peptide.** PRESTO-Tango β-arrestin,
+        DiscoverX, NFAT-luciferase, and similar GPCR functional
+        screens in transfected cells where the construct's
+        signal-peptide source is **not stated in the cited paper**
+        cannot establish surface accessibility of the endogenous
+        protein — a foreign SP could be forcing membrane delivery
+        independent of the protein's native trafficking. Cap at
+        `accessibility_relevance=supports_surface_localization`
+        until the paper specifies a native-SP construct.
+      * **In vivo therapeutic-outcome inference.** A small-molecule
+        antagonist or peptide blocker reversing a whole-organ
+        phenotype (cardiac hypertrophy, tumor growth, blood
+        pressure) in a mouse / rat model is several inference
+        layers removed from "the protein is on the cell surface."
+        The drug could be acting on an intracellular pool, a
+        compensatory pathway, or a secreted form. Set
+        `accessibility_relevance=supports_membrane_association`
+        and rely on the protein's topology + paired direct-assay
+        evidence to lift the gene-level grade.
+      * **Radioligand binding on isolated membrane fractions.**
+        Saturation binding / Scatchard analysis on a microsomal
+        or "P2"/PNS pellet preparation isn't a live-cell readout
+        — the membrane is enriched but its orientation can be
+        random (inside-out vesicles bind cytoplasmic-face epitopes).
+        Cap at `accessibility_relevance=supports_membrane_association`.
+        Binding on **intact, non-permeabilized live cells** with
+        an extracellular ligand DOES count as direct.
     - `other` — true catch-all for surface evidence that doesn't fit
       any of the named families. Reach for `functional_surface_assay`
       first; only fall to `other` when the evidence genuinely doesn't
