@@ -65,6 +65,29 @@ ONE fenced ```json block. Top-level OBJECT, not array.
   sources, both supporting surface accessibility.
 - `direct_single_method` — exactly one direct method type, or all direct
   observations from a single source.
+
+**Hard cardinality rule (load-bearing — schema-enforced):** the
+`direct_*` grades REQUIRE at least one `MethodObservation` from the
+methods builder with `accessibility_relevance=direct_surface_accessibility`.
+The methods builder has already committed its classifications by the
+time you grade — they're delivered in your task message as the
+"Methods builder output (already committed)" block. If that block
+shows no row with `accessibility_relevance=direct_surface_accessibility`,
+you CANNOT pick `direct_multi_method` or `direct_single_method`. The
+correct grade is at most `supportive_but_indirect` (when there are
+indirect-but-membrane-suggestive rows like permeabilized-IF-with-PM-
+colocalization or `supports_surface_localization`) or `weak` (when
+there are none).
+
+A common trap: the input ledger may have receptor-engagement /
+ligand-engagement claims (e.g. soluble-DAMP–PRR binding, cytokine-
+receptor crosslinking). Those claims correctly land in
+`excluded_as_ligand_engagement` per the methods builder's inclusion
+criterion — they don't establish surface accessibility of THIS
+protein, only of the binding partner. They MUST NOT lift the grade
+to `direct_*`. Grade the surviving methods only; if the survivors
+contain no direct rows, the grade is `supportive_but_indirect` or
+`weak`.
 - `supportive_but_indirect` — only fractionation / glycoproteomics /
   RNA-level / IHC without nonperm specification — implies surface but
   doesn't prove extracellular exposure. This grade EXPLICITLY includes

@@ -756,6 +756,55 @@ def _annotate(
     )
     grade_block: EvidenceGradeBlock = grade_outputs["evidence_grade"]
 
+    # Retry-with-feedback fallback for the grade × methods cardinality
+    # cross-check. The static prompt rule + the user-message methods
+    # summary BOTH say "direct_* requires ≥1 method with
+    # accessibility_relevance=direct_surface_accessibility", and the
+    # SurfaceEvidence Pydantic validator enforces it. When the synth
+    # still slips through with direct_* despite zero direct methods —
+    # observed on HMGB1, where the ligand-engagement filter correctly
+    # moved 8 receptor-binding claims to excluded_as_ligand_engagement,
+    # leaving the methods grid with only expression_only / ambiguous
+    # rows — re-call the grade builder once with explicit feedback in
+    # the context dict. Capped at one retry to bound cost.
+    n_direct = sum(
+        1 for m in methods_output
+        if getattr(m, "accessibility_relevance", None)
+        == "direct_surface_accessibility"
+    )
+    if n_direct == 0 and grade_block.evidence_grade in (
+        "direct_multi_method", "direct_single_method"
+    ):
+        logger.warning(
+            "evidence_grade_builder picked %r with %d direct_surface_accessibility "
+            "methods (cardinality validator would raise) — retrying with explicit "
+            "feedback",
+            grade_block.evidence_grade, n_direct,
+        )
+        retry_ctx = dict(evidence_grade_ctx)
+        retry_ctx["cardinality_feedback"] = (
+            f"PREVIOUS ATTEMPT WAS REJECTED. You picked "
+            f"evidence_grade={grade_block.evidence_grade!r}, but the methods "
+            f"builder produced 0 rows with "
+            f"accessibility_relevance='direct_surface_accessibility'. The "
+            f"direct_* grades REQUIRE at least one such row. Re-grade now "
+            f"with this constraint: the grade MUST be one of "
+            f"{{supportive_but_indirect, weak, conflicting}} — pick whichever "
+            f"the surviving (non-excluded) methods support."
+        )
+        retry_spec = _BuilderSpec(
+            "evidence_grade",
+            "builders_a1",
+            build_evidence_grade,
+            a1_claims,
+            retry_ctx,
+        )
+        retry_outputs = _run_builders_concurrently(
+            [retry_spec], client=client, timing=timing,
+            builder_usage=builder_usage,
+        )
+        grade_block = retry_outputs["evidence_grade"]
+
     # Capture per-builder raw outputs before they're assembled into blocks.
     all_builder_outputs = {**outputs, "evidence_grade": grade_block}
     intermediates["builders"] = {

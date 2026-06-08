@@ -138,9 +138,23 @@ def build_evidence_grade(
             "cannot be `direct_*` — use `supportive_but_indirect` or lower.\n\n"
             f"```\n{methods_summary}\n```\n\n"
         )
+    # Retry-with-feedback path: when the orchestrator catches a
+    # cardinality mismatch (direct_* grade with 0 direct_surface_
+    # accessibility methods) and re-calls this builder, it injects an
+    # explicit constraint into the context. Surface it at the top of the
+    # user prompt so the second-attempt response sees the rejection
+    # before the rest of the ledger.
+    cardinality_feedback = context.get("cardinality_feedback", "")
+    cardinality_block = ""
+    if cardinality_feedback:
+        cardinality_block = (
+            "# CARDINALITY FEEDBACK (read first)\n\n"
+            f"{cardinality_feedback}\n\n"
+        )
     system_prompt = load_prompt("evidence_grade_builder_system")
     user_prompt = (
         f"# Gene: {gene}\n\n"
+        f"{cardinality_block}"
         f"{triage_block}"
         f"{family_block}"
         f"{methods_block}"
