@@ -115,8 +115,8 @@ def _apply_brand_style() -> None:
         "font.family": "sans-serif",
         "font.sans-serif": ["Manrope", "Outfit", "DejaVu Sans", "Liberation Sans", "Arial"],
         "font.weight": "medium",
-        "font.size": 25,
-        "axes.labelsize": 29,
+        "font.size": 21,
+        "axes.labelsize": 25,
         "axes.labelweight": "medium",
         "axes.titlesize": 0,
         "axes.titlepad": 0,
@@ -132,12 +132,12 @@ def _apply_brand_style() -> None:
         "grid.linestyle": "-",
         "grid.linewidth": 0.7,
         "grid.color": BRAND_GRID,
-        "xtick.labelsize": 23,
-        "ytick.labelsize": 23,
+        "xtick.labelsize": 20,
+        "ytick.labelsize": 20,
         "xtick.color": BRAND_INK,
         "ytick.color": BRAND_INK,
         "legend.frameon": False,
-        "legend.fontsize": 23,
+        "legend.fontsize": 20,
         "patch.edgecolor": "none",
         "patch.linewidth": 0.0,
     })
@@ -257,14 +257,14 @@ def main() -> None:
             bar.get_height() + 1.2,
             f"{row['accuracy']*100:.1f}%",
             ha="center", va="bottom",
-            fontsize=25, fontweight="bold", color=BRAND_INK,
+            fontsize=21, fontweight="bold", color=BRAND_INK,
         )
         ax.text(
             bar.get_x() + bar.get_width() / 2,
             bar.get_height() / 2,
             f"{row['n_correct']}/{row['n_total']}",
             ha="center", va="center",
-            fontsize=18, color="white", fontweight="bold",
+            fontsize=15, color="white", fontweight="bold",
         )
 
     # Overlay individual-replicate accuracies + SEM on the Sonnet bar only.
@@ -286,10 +286,10 @@ def main() -> None:
             ax.scatter(xc + jitter, rv, s=24, color=BRAND_INK,
                        edgecolor="white", linewidth=0.5, zorder=5, alpha=0.9)
 
-    ax.set_ylabel("Overall accuracy on\n147-gene bench (%)", fontsize=22)
+    ax.set_ylabel("Overall accuracy on\n147-gene bench (%)", fontsize=19)
     ax.set_ylim(0, 105)
-    ax.tick_params(axis="x", labelsize=20)
-    ax.tick_params(axis="y", labelsize=16)
+    ax.tick_params(axis="x", labelsize=17)
+    ax.tick_params(axis="y", labelsize=14)
     sns.despine(ax=ax, top=True, right=True)
 
     fig.tight_layout()

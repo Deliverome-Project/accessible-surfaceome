@@ -99,8 +99,8 @@ def _apply_brand_style() -> None:
         "font.family": "sans-serif",
         "font.sans-serif": ["Manrope", "Outfit", "DejaVu Sans", "Liberation Sans", "Arial"],
         "font.weight": "medium",
-        "font.size": 25,
-        "axes.labelsize": 29,
+        "font.size": 21,
+        "axes.labelsize": 25,
         "axes.labelweight": "medium",
         "axes.titlesize": 0,
         "axes.titlepad": 0,
@@ -116,12 +116,12 @@ def _apply_brand_style() -> None:
         "grid.linestyle": "-",
         "grid.linewidth": 0.7,
         "grid.color": BRAND_GRID,
-        "xtick.labelsize": 23,
-        "ytick.labelsize": 23,
+        "xtick.labelsize": 20,
+        "ytick.labelsize": 20,
         "xtick.color": BRAND_INK,
         "ytick.color": BRAND_INK,
         "legend.frameon": False,
-        "legend.fontsize": 23,
+        "legend.fontsize": 20,
         "patch.edgecolor": "none",
         "patch.linewidth": 0.0,
     })
@@ -230,12 +230,12 @@ def main() -> None:
                 )
             ax.text(
                 x, mean_rep + 2.6, f"{mean_rep:.1f}%",
-                ha="center", va="bottom", fontsize=17, color=BRAND_INK,
+                ha="center", va="bottom", fontsize=14, color=BRAND_INK,
             )
 
     ax.set_xticks(range(n_models))
-    ax.set_xticklabels([m_label for _, m_label, _ in MODEL_ORDER], fontsize=22)
-    ax.set_ylabel("Overall accuracy on\n147-gene benchmark", fontsize=20)
+    ax.set_xticklabels([m_label for _, m_label, _ in MODEL_ORDER], fontsize=19)
+    ax.set_ylabel("Overall accuracy on\n147-gene benchmark", fontsize=17)
     ax.set_ylim(0, 105)
     legend_handles = [
         plt.Rectangle((0, 0), 1, 1, facecolor="white", edgecolor=BRAND_INK,
@@ -245,7 +245,7 @@ def main() -> None:
     ax.legend(
         handles=legend_handles, title="Variant (hatch)",
         loc="center left", bbox_to_anchor=(1.01, 0.5),
-        frameon=False, fontsize=19, title_fontsize=22,
+        frameon=False, fontsize=16, title_fontsize=19,
     )
     sns.despine(ax=ax, top=True, right=True)
 

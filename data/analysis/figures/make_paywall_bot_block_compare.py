@@ -94,16 +94,16 @@ def _apply_brand_style() -> None:
         # reads as light against the variable range (300-800); default to
         # 500 so figures don't render with thin defaults.
         "font.weight": "medium",
-        "font.size": 14, "axes.labelsize": 16, "axes.titlesize": 0, "axes.titlepad": 0,
+        "font.size": 12, "axes.labelsize": 14, "axes.titlesize": 0, "axes.titlepad": 0,
         "axes.labelweight": "medium", "axes.titleweight": "semibold",
         "axes.spines.top": False, "axes.spines.right": False,
         "axes.grid": True, "axes.axisbelow": True,
         "axes.edgecolor": BRAND_GRID, "axes.labelcolor": BRAND_INK,
         "axes.facecolor": "none", "text.color": BRAND_INK,
         "grid.alpha": 0.35, "grid.linestyle": "-", "grid.linewidth": 0.7, "grid.color": BRAND_GRID,
-        "xtick.labelsize": 16, "ytick.labelsize": 12,
+        "xtick.labelsize": 14, "ytick.labelsize": 10,
         "xtick.color": BRAND_INK, "ytick.color": BRAND_INK,
-        "legend.frameon": False, "legend.fontsize": 12,
+        "legend.frameon": False, "legend.fontsize": 10,
         "patch.edgecolor": "none", "patch.linewidth": 0.0,
     })
 
@@ -177,12 +177,12 @@ def main() -> None:
             if pct >= 6:
                 ax.text(cum + pct / 2, ypos, f"{pct:.0f}%",
                         ha="center", va="center",
-                        color="white", fontweight="bold", fontsize=16)
+                        color="white", fontweight="bold", fontsize=14)
             cum += pct
         ax.text(
             104, ypos,
             f"{total} papers /\n{len(genes)} genes",
-            ha="left", va="center", fontsize=11, fontweight="medium",
+            ha="left", va="center", fontsize=9, fontweight="medium",
             color=BRAND_INK,
         )
 

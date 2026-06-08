@@ -97,8 +97,8 @@ def _apply_brand_style() -> None:
         "font.family": "sans-serif",
         "font.sans-serif": ["Manrope", "Outfit", "DejaVu Sans", "Liberation Sans", "Arial"],
         "font.weight": "medium",
-        "font.size": 25,
-        "axes.labelsize": 29,
+        "font.size": 21,
+        "axes.labelsize": 25,
         "axes.labelweight": "medium",
         "axes.titlesize": 0,
         "axes.titlepad": 0,
@@ -114,12 +114,12 @@ def _apply_brand_style() -> None:
         "grid.linestyle": "-",
         "grid.linewidth": 0.7,
         "grid.color": BRAND_GRID,
-        "xtick.labelsize": 23,
-        "ytick.labelsize": 23,
+        "xtick.labelsize": 20,
+        "ytick.labelsize": 20,
         "xtick.color": BRAND_INK,
         "ytick.color": BRAND_INK,
         "legend.frameon": False,
-        "legend.fontsize": 23,
+        "legend.fontsize": 20,
         "patch.edgecolor": "none",
         "patch.linewidth": 0.0,
     })
@@ -161,7 +161,7 @@ def main() -> None:
     cmap = [PALETTE_BY_LABEL[k] for k in sorted_keys]
 
     fig, ax = plt.subplots(figsize=(11, 10))
-    venn(sorted_sets, ax=ax, cmap=cmap, fontsize=26, legend_loc=None)
+    venn(sorted_sets, ax=ax, cmap=cmap, fontsize=22, legend_loc=None)
     ax.set_xticks([])
     ax.set_yticks([])
     sns.despine(ax=ax, top=True, right=True, bottom=True, left=True)
@@ -177,7 +177,7 @@ def main() -> None:
     ax.legend(
         handles, labels,
         loc="upper center", bbox_to_anchor=(0.5, -0.02),
-        ncols=(len(sorted_keys) + 1) // 2, frameon=False, fontsize=25,
+        ncols=(len(sorted_keys) + 1) // 2, frameon=False, fontsize=21,
     )
 
     out_pdf = Path("db_overlap_venn.pdf")

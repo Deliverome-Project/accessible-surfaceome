@@ -106,8 +106,8 @@ def _apply_brand_style() -> None:
         "font.family": "sans-serif",
         "font.sans-serif": ["Manrope", "Outfit", "DejaVu Sans", "Liberation Sans", "Arial"],
         "font.weight": "medium",
-        "font.size": 25,
-        "axes.labelsize": 29,
+        "font.size": 21,
+        "axes.labelsize": 25,
         "axes.labelweight": "medium",
         "axes.titlesize": 0,
         "axes.titlepad": 0,
@@ -123,12 +123,12 @@ def _apply_brand_style() -> None:
         "grid.linestyle": "-",
         "grid.linewidth": 0.7,
         "grid.color": BRAND_GRID,
-        "xtick.labelsize": 23,
-        "ytick.labelsize": 23,
+        "xtick.labelsize": 20,
+        "ytick.labelsize": 20,
         "xtick.color": BRAND_INK,
         "ytick.color": BRAND_INK,
         "legend.frameon": False,
-        "legend.fontsize": 23,
+        "legend.fontsize": 20,
         "patch.edgecolor": "none",
         "patch.linewidth": 0.0,
     })
@@ -291,7 +291,7 @@ def main() -> None:
         ax.annotate(
             row["label"], (x, y),
             xytext=(dx, dy), textcoords="offset points",
-            fontsize=17, color=BRAND_INK,
+            fontsize=14, color=BRAND_INK,
             arrowprops=arrowprops,
         )
     ax.set_xscale("log")

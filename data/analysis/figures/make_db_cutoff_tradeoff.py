@@ -144,8 +144,8 @@ def _apply_brand_style() -> None:
         "font.family": "sans-serif",
         "font.sans-serif": ["Manrope", "Outfit", "DejaVu Sans", "Liberation Sans", "Arial"],
         "font.weight": "medium",
-        "font.size": 25,
-        "axes.labelsize": 29,
+        "font.size": 21,
+        "axes.labelsize": 25,
         "axes.labelweight": "medium",
         "axes.titlesize": 0,
         "axes.titlepad": 0,
@@ -161,12 +161,12 @@ def _apply_brand_style() -> None:
         "grid.linestyle": "-",
         "grid.linewidth": 0.7,
         "grid.color": BRAND_GRID,
-        "xtick.labelsize": 23,
-        "ytick.labelsize": 23,
+        "xtick.labelsize": 20,
+        "ytick.labelsize": 20,
         "xtick.color": BRAND_INK,
         "ytick.color": BRAND_INK,
         "legend.frameon": False,
-        "legend.fontsize": 23,
+        "legend.fontsize": 20,
         "patch.edgecolor": "none",
         "patch.linewidth": 0.0,
     })
@@ -259,7 +259,7 @@ def main() -> None:
 
         ax.set_xscale("log")
         ax.text(0.02, 0.97, group, transform=ax.transAxes,
-                ha="left", va="top", fontsize=28, fontweight="bold",
+                ha="left", va="top", fontsize=24, fontweight="bold",
                 color=ramp[0])
         ax.set_ylim(25, 102)
         xs = [p["size"] for p in pts]
@@ -283,7 +283,7 @@ def main() -> None:
             0.0, -0.30, "\n".join(caption_lines),
             transform=ax.transAxes,
             ha="left", va="top",
-            fontsize=18, color=BRAND_INK,
+            fontsize=15, color=BRAND_INK,
             family="monospace",
         )
 
@@ -301,12 +301,12 @@ def main() -> None:
                    markersize=20, markeredgecolor=RECOMMENDED_EDGE,
                    markeredgewidth=1.4, label="Recommended after trade-off audit"),
     ]
-    legend_ax.legend(handles=handles, loc="upper center", fontsize=23,
+    legend_ax.legend(handles=handles, loc="upper center", fontsize=20,
                      frameon=False, title="Marker shape",
-                     title_fontsize=25)
+                     title_fontsize=21)
 
     fig.supxlabel("Universe size — proteins this filter would admit "
-                  "(log scale; lower = stricter)", fontsize=24, y=0.02,
+                  "(log scale; lower = stricter)", fontsize=20, y=0.02,
                   color=BRAND_INK)
     # supylabel y defaults to 0.5 (figure midline) which is what reads as
     # "centered" against the supxlabel's default x=0.5. Earlier overrides
@@ -314,7 +314,7 @@ def main() -> None:
     # technically correct but visually off — keep the matplotlib default.
     # x=0.02 just keeps the rotated label off the canvas-left edge under
     # brand-style-v3's larger axes.labelsize.
-    fig.supylabel("Accuracy on\n147-gene benchmark (%)", fontsize=24,
+    fig.supylabel("Accuracy on\n147-gene benchmark (%)", fontsize=20,
                   x=0.02, color=BRAND_INK)
     plt.tight_layout(rect=[0.04, 0.03, 1, 0.985])
     # Vertical gap between row-1 panels (with caption blocks BELOW them at

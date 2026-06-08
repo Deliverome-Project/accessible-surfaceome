@@ -107,8 +107,8 @@ def _apply_brand_style() -> None:
         "font.family": "sans-serif",
         "font.sans-serif": ["Manrope", "Outfit", "DejaVu Sans", "Liberation Sans", "Arial"],
         "font.weight": "medium",
-        "font.size": 25,
-        "axes.labelsize": 29,
+        "font.size": 21,
+        "axes.labelsize": 25,
         "axes.labelweight": "medium",
         "axes.titlesize": 0,
         "axes.titlepad": 0,
@@ -124,12 +124,12 @@ def _apply_brand_style() -> None:
         "grid.linestyle": "-",
         "grid.linewidth": 0.7,
         "grid.color": BRAND_GRID,
-        "xtick.labelsize": 23,
-        "ytick.labelsize": 23,
+        "xtick.labelsize": 20,
+        "ytick.labelsize": 20,
         "xtick.color": BRAND_INK,
         "ytick.color": BRAND_INK,
         "legend.frameon": False,
-        "legend.fontsize": 23,
+        "legend.fontsize": 20,
         "patch.edgecolor": "none",
         "patch.linewidth": 0.0,
     })
@@ -255,20 +255,20 @@ def _draw_reason_bars(ax, counts, reasons, palette, header_label, header_color, 
             x, h + y_max * 0.015,
             f"{h}",
             ha="center", va="bottom",
-            fontsize=29, fontweight="bold", color=header_color,
+            fontsize=25, fontweight="bold", color=header_color,
         )
 
     ax.set_title(
         header_label,
-        fontsize=29, color=header_color, fontweight="bold",
+        fontsize=25, color=header_color, fontweight="bold",
         loc="left", pad=16,
     )
     ax.set_xticks(x_positions)
     ax.set_xticklabels(
         [REASON_LABEL[r] for r in visible],
-        fontsize=23, color=BRAND_INK,
+        fontsize=20, color=BRAND_INK,
     )
-    ax.tick_params(axis="y", labelsize=23)
+    ax.tick_params(axis="y", labelsize=20)
     ax.set_xlim(-0.9, x_positions[-1] + 0.9)
     sns.despine(ax=ax, top=True, right=True)
 
@@ -278,7 +278,7 @@ def _draw_callouts(ax, callouts, palette, title):
     ax.text(
         0.0, 1.0, title,
         transform=ax.transAxes, ha="left", va="top",
-        fontsize=28, color=BRAND_NEUTRAL, fontweight="bold",
+        fontsize=24, color=BRAND_NEUTRAL, fontweight="bold",
     )
     y0 = 0.82
     n = len(callouts)
@@ -295,12 +295,12 @@ def _draw_callouts(ax, callouts, palette, title):
         ax.text(
             0.07, y, symbol,
             transform=ax.transAxes, ha="left", va="center",
-            fontsize=28, fontweight="bold", color=BRAND_INK,
+            fontsize=24, fontweight="bold", color=BRAND_INK,
         )
         ax.text(
             0.28, y, f"— {desc}",
             transform=ax.transAxes, ha="left", va="center",
-            fontsize=24, color=BRAND_NEUTRAL,
+            fontsize=20, color=BRAND_NEUTRAL,
         )
 
 
@@ -371,7 +371,7 @@ def main() -> None:
         ax.text(
             -0.06, 1.08, letter,
             transform=ax.transAxes, ha="left", va="bottom",
-            fontsize=38, fontweight=800, color=BRAND_INK,
+            fontsize=32, fontweight=800, color=BRAND_INK,
         )
 
     max_count = max(
@@ -392,8 +392,8 @@ def main() -> None:
         header_color=CONTEXTUAL_HEADER_COLOR, y_max=y_max,
     )
 
-    ax_yes.set_ylabel("Genes rescued from\nzero-DB universe", fontsize=29)
-    ax_yes.tick_params(axis="y", labelsize=23)
+    ax_yes.set_ylabel("Genes rescued from\nzero-DB universe", fontsize=25)
+    ax_yes.tick_params(axis="y", labelsize=20)
     plt.setp(ax_ctx.get_yticklabels(), visible=False)
 
     _draw_callouts(ax_callouts_yes, YES_CALLOUTS, YES_PALETTE, title="Select yes rescues")
