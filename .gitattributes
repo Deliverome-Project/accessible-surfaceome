@@ -7,7 +7,13 @@ data/analysis/** filter=lfs diff=lfs merge=lfs -text
 # plain git, not LFS — they're tiny (1–13 KB each) and CI needs to
 # read their contents directly (tests/test_figure_gists_styling.py
 # greps each script for the brand-style sentinel + palette anchors;
-# an LFS pointer there fails every assertion).
+# an LFS pointer there fails every assertion). Pattern recurses into
+# per-analysis subdirs so a figure parked under
+# data/analysis/<area>/make_*.py is also exempted — earlier
+# `data/analysis/figures/*.py` rule didn't recurse, and the paywall
+# figure ended up in LFS by accident.
+data/analysis/**/make_*.py -filter -diff -merge text
+data/analysis/**/01_*.md -filter -diff -merge text
 data/analysis/figures/*.py -filter -diff -merge text
 data/analysis/figures/*.md -filter -diff -merge text
 
