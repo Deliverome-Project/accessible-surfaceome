@@ -1302,22 +1302,72 @@ def _annotate(
             }
         )
 
-    # NOTE: an earlier "NO-bucket reason override" post-pass lived here
-    # (step 5.7). It flipped synth's `surface_call_reason` from a NO-bucket
-    # value (endomembrane_resident, secreted_only, etc.) to a CONTEXTUAL
-    # one (dual_localization, cell_state_induced) whenever the methods
-    # builder emitted any surface-signal row. It was added in v2.24.0 for
-    # TGOLN2 + C3 cases where the synth picked NO bucket pessimistically.
+    # ---- step 5.7: NO-bucket reason override (NARROW + DIRECTION-FILTERED)
+    # The methods builder emits accessibility_relevance per observation.
+    # When synth picks a NO-bucket reason (endomembrane_resident,
+    # secreted_only, etc.) but methods has a `direct_surface_accessibility`
+    # or `supports_surface_localization` row whose CITED CLAIM has
+    # direction='supports', flip to CONTEXTUAL. The narrow trigger set
+    # (no supports_membrane_association — PM fractionation alone is too
+    # weak) + direction filter (refuting / contradictory claims don't
+    # count even if methods builder mis-classified them) is the form
+    # that handles both TGOLN2 (flips correctly via supports_surface_
+    # localization trafficking row) and ABCB9 (does NOT flip — its
+    # supports_membrane_association rows aren't in the trigger set,
+    # and its one supports_surface_localization row from a
+    # domain-deletion mutant has direction='refutes').
     #
-    # Removed in v2.30.0 after 4 rounds of patches to keep it from
-    # misfiring on ABCB9 (a lysosomal protein where PM-fractionation
-    # supports_membrane_association rows incorrectly triggered the
-    # override). The prompt corpus has improved enough that the synth
-    # picks the right bucket natively — TGOLN2 v2.29 lands
-    # dual_localization without the override firing. If a regression
-    # appears (e.g. C3 reverts to secreted_only), add a much narrower
-    # targeted rule for that specific case rather than a catchall over
-    # all NO-bucket reasons.
+    # History: v2.30.0 briefly removed this entire post-pass on the
+    # theory that prompt rules had caught up; TGOLN2 v2.30 regressed
+    # to endomembrane_resident. Restored.
+    NO_BUCKET_REASONS = {
+        "cytoplasmic", "nuclear", "mitochondrial_internal",
+        "endomembrane_resident", "nuclear_envelope",
+        "inner_leaflet_anchored", "secreted_only",
+        "pmhc_only_intracellular",
+    }
+    SURFACE_SIGNAL_RELEVANCES = {
+        "direct_surface_accessibility",
+        "supports_surface_localization",
+    }
+    claims_by_id = {c.evidence_id: c for c in a1_claims if c.evidence_id}
+    def _has_supporting_cite(method):
+        for cid in (method.cited_evidence_ids or []):
+            claim = claims_by_id.get(cid)
+            if claim is None:
+                continue
+            if claim.direction == "supports":
+                return True
+        return False
+    supporting_signal_methods = [
+        m for m in outputs["methods"]
+        if m.accessibility_relevance in SURFACE_SIGNAL_RELEVANCES
+        and _has_supporting_cite(m)
+    ]
+    current_reason = synth_draft.executive_summary.surface_call_reason
+    if current_reason in NO_BUCKET_REASONS and supporting_signal_methods:
+        new_reason = (
+            "dual_localization"
+            if current_reason == "endomembrane_resident"
+            and any(
+                m.accessibility_relevance == "supports_surface_localization"
+                for m in supporting_signal_methods
+            )
+            else "cell_state_induced"
+        )
+        logger.info(
+            "v2 orchestrator: overriding surface_call_reason %r → %r "
+            "(methods has %d supporting-cite surface-signal row(s); "
+            "NO-bucket reason contradicts the record's own evidence)",
+            current_reason, new_reason, len(supporting_signal_methods),
+        )
+        synth_draft = synth_draft.model_copy(
+            update={
+                "executive_summary": synth_draft.executive_summary.model_copy(
+                    update={"surface_call_reason": new_reason}
+                )
+            }
+        )
 
     # ---- step 6: promote claims → Evidence (synthetic source store) -------
     merged_claims = a1_claims + a2_claims
