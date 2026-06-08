@@ -1302,102 +1302,22 @@ def _annotate(
             }
         )
 
-    # ---- step 5.7: enforce CONTEXTUAL bucket when methods detected any
-    # surface signal ------------------------------------------------------
-    # The methods builder's accessibility_relevance is the canonical
-    # "did we see a surface signal?" classifier. If it emitted ANY row
-    # at `direct_surface_accessibility`, `supports_surface_localization`,
-    # or `supports_membrane_association` for this gene, the synth's
-    # `surface_call_reason` MUST be in the CONTEXTUAL or YES bucket —
-    # NOT in the NO bucket (endomembrane_resident, secreted_only,
-    # cytoplasmic, nuclear, mitochondrial_internal, etc.). Picking a
-    # NO-bucket reason while methods evidence says surface contradicts
-    # the record's own data.
+    # NOTE: an earlier "NO-bucket reason override" post-pass lived here
+    # (step 5.7). It flipped synth's `surface_call_reason` from a NO-bucket
+    # value (endomembrane_resident, secreted_only, etc.) to a CONTEXTUAL
+    # one (dual_localization, cell_state_induced) whenever the methods
+    # builder emitted any surface-signal row. It was added in v2.24.0 for
+    # TGOLN2 + C3 cases where the synth picked NO bucket pessimistically.
     #
-    # Specific re-routings (each picks the CONTEXTUAL value that best
-    # matches the methods + biology block):
-    # * endomembrane_resident + supports_surface_localization rows
-    #   → dual_localization (TGN46 / trafficking-with-dwell case)
-    # * secreted_only + any surface methods row → cell_state_induced
-    #   (C3 / complement / DAMP pattern — protein is secreted but
-    #   deposits on / is captured at cell surfaces in disease states)
-    # * other NO bucket + any surface methods row → cell_state_induced
-    #   (catch-all conservative bump to CONTEXTUAL)
-    NO_BUCKET_REASONS = {
-        "cytoplasmic",
-        "nuclear",
-        "mitochondrial_internal",
-        "endomembrane_resident",
-        "nuclear_envelope",
-        "inner_leaflet_anchored",
-        "secreted_only",
-        "pmhc_only_intracellular",
-    }
-    # `supports_membrane_association` is INTENTIONALLY excluded. PM
-    # fractionation alone can include endomembrane contaminants
-    # (ER/Golgi/lysosomes under co-sedimentation), so it's too weak to
-    # overturn a synth NO-bucket call. ABCB9 v2.28.0 had 3 such rows
-    # (PM-fractionation + whole-cell proteomics co-purification), each
-    # with direction='supports' cites — direction filter alone couldn't
-    # save it. Only direct_surface_accessibility (live-cell flow /
-    # nonperm IF / surface biotinylation) and supports_surface_localization
-    # (trafficking-to-PM, perm-IF with PM-rim co-localization) are
-    # strong enough.
-    SURFACE_SIGNAL_RELEVANCES = {
-        "direct_surface_accessibility",
-        "supports_surface_localization",
-    }
-    current_reason = synth_draft.executive_summary.surface_call_reason
-    # Only count surface-signal methods rows whose cited claims actually
-    # SUPPORT surface localization (direction='supports'). Claims with
-    # direction='refutes' or claim_type='contradictory' can get mis-
-    # classified by the methods builder (it reads the assay type but
-    # misses the WT conclusion in contradictory experiments — e.g.
-    # ABCB9 v2.29.0: a domain-deletion mutant mislocalizes to PM, proving
-    # the WT does NOT, but methods builder tagged the IF assay as
-    # supports_surface_localization). Filter at the override gate using
-    # the claim's own direction field, which the synthesizer already sets.
-    claims_by_id = {c.evidence_id: c for c in a1_claims if c.evidence_id}
-    def _has_supporting_cite(method):
-        for cid in method.cited_evidence_ids or []:
-            claim = claims_by_id.get(cid)
-            if claim is None:
-                continue
-            if claim.direction == "supports":
-                return True
-        return False
-    supporting_signal_methods = [
-        m for m in outputs["methods"]
-        if m.accessibility_relevance in SURFACE_SIGNAL_RELEVANCES
-        and _has_supporting_cite(m)
-    ]
-    has_surface_signal = bool(supporting_signal_methods)
-    if current_reason in NO_BUCKET_REASONS and has_surface_signal:
-        # Pick the CONTEXTUAL replacement: dual_localization for the
-        # TGN46-style trafficking case, cell_state_induced otherwise.
-        new_reason = (
-            "dual_localization"
-            if current_reason == "endomembrane_resident"
-            and any(
-                m.accessibility_relevance == "supports_surface_localization"
-                for m in supporting_signal_methods
-            )
-            else "cell_state_induced"
-        )
-        logger.info(
-            "v2 orchestrator: overriding surface_call_reason %r → %r "
-            "(methods builder emitted surface-signal rows; NO-bucket "
-            "reason contradicts the record's own surface evidence)",
-            current_reason,
-            new_reason,
-        )
-        synth_draft = synth_draft.model_copy(
-            update={
-                "executive_summary": synth_draft.executive_summary.model_copy(
-                    update={"surface_call_reason": new_reason}
-                )
-            }
-        )
+    # Removed in v2.30.0 after 4 rounds of patches to keep it from
+    # misfiring on ABCB9 (a lysosomal protein where PM-fractionation
+    # supports_membrane_association rows incorrectly triggered the
+    # override). The prompt corpus has improved enough that the synth
+    # picks the right bucket natively — TGOLN2 v2.29 lands
+    # dual_localization without the override firing. If a regression
+    # appears (e.g. C3 reverts to secreted_only), add a much narrower
+    # targeted rule for that specific case rather than a catchall over
+    # all NO-bucket reasons.
 
     # ---- step 6: promote claims → Evidence (synthetic source store) -------
     merged_claims = a1_claims + a2_claims
