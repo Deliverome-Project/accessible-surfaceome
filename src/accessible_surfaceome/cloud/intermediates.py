@@ -90,6 +90,51 @@ _SCHEMA_SQL = [
 ]
 
 
+def _slim_intermediates_for_d1(blob: dict[str, Any]) -> dict[str, Any]:
+    """Return a copy of `blob` with the bulkiest audit-only fields removed.
+
+    Preserves everything the synth-only / builders-only retry path needs:
+      * `plan_trim_select.{a1,a2}.claims` (the trimmed evidence ledger)
+      * `plan_trim_select.{a1,a2}.{n_claims, n_anchored, ...}` summary
+      * `builders.*` (all builder outputs)
+      * `risks_builder`, `canonical_risks`, `deterministic_features`
+      * `synthesizer.{draft, raw_json, validation_error, n_repair_attempts}`
+      * `bundle`, `triage_summary` (when present)
+      * `cost_total_usd`, `cost_per_builder` (when present)
+
+    Drops audit-only bulk:
+      * `plan_trim_select.{a1,a2}.search_log` (per-iteration search results)
+      * `plan_trim_select.{a1,a2}.triage_actions` (per-paper triage decisions)
+      * `plan_trim_select.{a1,a2}.pretrim_audits` (pretrim filter decisions)
+      * Paper metadata (`paper_abstract`) on any remaining audit list
+
+    The forensic audit (which papers triaged + dropped) goes to R2 in
+    a follow-up — D1 keeps the slim retry-path payload only.
+    """
+    out: dict[str, Any] = {}
+    for k, v in blob.items():
+        if k == "plan_trim_select" and isinstance(v, dict):
+            pts: dict[str, Any] = {}
+            for side, side_blob in v.items():
+                if not isinstance(side_blob, dict):
+                    pts[side] = side_blob
+                    continue
+                pts[side] = {
+                    sk: sv
+                    for sk, sv in side_blob.items()
+                    if sk not in (
+                        "search_log",
+                        "triage_actions",
+                        "pretrim_audits",
+                        "iteration_log",
+                    )
+                }
+            out[k] = pts
+        else:
+            out[k] = v
+    return out
+
+
 @dataclass(frozen=True)
 class IntermediatesPushResult:
     """Outcome of one :func:`publish_intermediates` call."""
@@ -150,24 +195,50 @@ def publish_intermediates(
     n_bytes = len(blob.encode("utf-8"))
     stamp = created_at or datetime.now(UTC).isoformat()
 
+    # Slim-fallback when the full blob would exceed D1's row limit.
+    # Drop the bulkiest pieces (per-side plan-trim-select search_log +
+    # triage_actions + paper-metadata fields) and keep what the synth-
+    # only retry path actually needs: claims, builder outputs,
+    # deterministic_features, canonical_risks, synthesizer raw_json,
+    # bundle, triage_summary. Observed: TGOLN2 v2.32 at 897KB (99.7%
+    # of 900KB limit) — heavier genes WILL exceed. R2 full-audit
+    # offload is a follow-up; slim mode unblocks genome-wide today.
     if n_bytes > _MAX_INTERMEDIATES_BYTES:
         logger.warning(
-            "intermediates for %s exceed D1 row soft-limit "
-            "(%d bytes > %d). Skipping push — file a follow-up to "
-            "spill these to R2 with a D1 pointer.",
-            gene_symbol,
-            n_bytes,
-            _MAX_INTERMEDIATES_BYTES,
+            "intermediates for %s would exceed D1 row limit "
+            "(%d bytes > %d). Stripping bulky audit fields "
+            "(search_log + triage_actions + paper_metadata) so the "
+            "slim blob fits. Full audit retention follows in R2.",
+            gene_symbol, n_bytes, _MAX_INTERMEDIATES_BYTES,
         )
-        return IntermediatesPushResult(
-            gene_symbol=gene_symbol,
-            pushed=False,
-            skipped_reason=f"size {n_bytes} > limit {_MAX_INTERMEDIATES_BYTES}",
-            intermediates_bytes=n_bytes,
-            created_at=stamp,
-            schema_version=schema_version,
-            prompt_corpus_version=PROMPT_CORPUS_VERSION,
+        slim = _slim_intermediates_for_d1(intermediates)
+        blob = json.dumps(slim, separators=(",", ":"))
+        n_bytes_slim = len(blob.encode("utf-8"))
+        logger.info(
+            "intermediates slimmed for %s: %d → %d bytes (%.1f%% saved)",
+            gene_symbol, n_bytes, n_bytes_slim,
+            100.0 * (1 - n_bytes_slim / n_bytes),
         )
+        n_bytes = n_bytes_slim
+        # Defensive: if even the slim blob exceeds the limit (some
+        # genes have giant builder outputs), fall back to skip rather
+        # than corrupt D1 with a truncation.
+        if n_bytes > _MAX_INTERMEDIATES_BYTES:
+            logger.warning(
+                "intermediates for %s still exceed limit after slimming "
+                "(%d bytes). Skipping push — review whether deterministic_"
+                "features or claims need further compression.",
+                gene_symbol, n_bytes,
+            )
+            return IntermediatesPushResult(
+                gene_symbol=gene_symbol,
+                pushed=False,
+                skipped_reason=f"size {n_bytes} > limit even after slim",
+                intermediates_bytes=n_bytes,
+                created_at=stamp,
+                schema_version=schema_version,
+                prompt_corpus_version=PROMPT_CORPUS_VERSION,
+            )
 
     if not push_to_d1:
         return IntermediatesPushResult(

@@ -1117,6 +1117,60 @@ def _annotate(
         "draft": b.draft.model_dump(mode="json") if b.draft is not None else None,
     }
 
+    # Persist bundle (gene resolution) + triage_summary so a future
+    # synth-only retry can reconstruct the synthesizer's full input
+    # context without re-running plan-trim-select. The bundle carries
+    # uniprot_acc / hgnc_id / aliases / family tags; triage_summary is
+    # the upstream Sonnet verdict the synth uses as a prior.
+    try:
+        intermediates["bundle"] = dual.bundle.model_dump(mode="json")
+    except Exception:  # noqa: BLE001
+        intermediates["bundle"] = None
+    intermediates["triage_summary_json"] = triage_summary_json
+
+    # Persist per-pipeline cost so we can do cohort-level cost analytics
+    # from D1 without re-parsing log files. Per-builder breakdown lives
+    # in `builder_usage`; pts + synth cost are atomic.
+    intermediates["cost_total_usd"] = (
+        (dual.total_cost_usd if dual is not None else 0.0)
+        + sum(u.cost_usd for u in builder_usage.values())
+        + (b.usage.cost_usd if b is not None else 0.0)
+    )
+    intermediates["cost_per_pipeline"] = {
+        "plan_trim_select": dual.total_cost_usd if dual is not None else 0.0,
+        "builders": sum(u.cost_usd for u in builder_usage.values()),
+        "synthesizer": b.usage.cost_usd if b is not None else 0.0,
+    }
+
+    # Hard cost ceiling — per-gene abort. Bounds runaway-cost scenarios
+    # on a genome-wide sweep (a single pathological gene could otherwise
+    # run $20+ before any post-passes catch it). 7 USD chosen to give
+    # ~2x headroom over the heaviest validation gene (TACSTD2 ~$3.94).
+    # Aborts with a VALID error result instead of silently billing.
+    MAX_COST_USD = 7.0
+    if intermediates["cost_total_usd"] > MAX_COST_USD:
+        logger.warning(
+            "v2 orchestrator: per-gene cost ceiling exceeded for %s: "
+            "$%.2f > $%.2f. Aborting before record assembly.",
+            gene_id.hgnc_symbol,
+            intermediates["cost_total_usd"],
+            MAX_COST_USD,
+        )
+        return AnnotateResultV2(
+            gene=gene_id.hgnc_symbol,
+            record=None,
+            dual=dual,
+            synthesizer=b,
+            blocks_used=_count_blocks(surface_evidence, biological_context),
+            builder_usage=builder_usage,
+            error=(
+                f"per-gene cost ceiling exceeded: "
+                f"${intermediates['cost_total_usd']:.2f} > ${MAX_COST_USD:.2f}"
+            ),
+            timing=list(timing.entries),
+            intermediates=intermediates,
+        )
+
     if b.draft is None:
         return AnnotateResultV2(
             gene=gene_id.hgnc_symbol,
