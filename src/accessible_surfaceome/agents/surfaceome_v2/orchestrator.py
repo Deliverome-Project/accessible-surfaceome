@@ -638,6 +638,7 @@ def annotate(
     persist: bool = False,
     timing: TimingRecorder | None = None,
     skip_if_fresh: bool = False,
+    cached_dual: DualPlanTrimSelectResult | None = None,
 ) -> AnnotateResultV2:
     """Run the v2 deep-dive pipeline on one gene.
 
@@ -654,6 +655,16 @@ def annotate(
     Modal's :class:`D1DeepDiveSink` filters the gene list at dispatch
     via :meth:`already_done`; this flag is the equivalent guard for
     direct-CLI re-runs and any non-Modal cohort dispatcher.
+
+    When ``cached_dual`` is supplied (a previously-computed
+    :class:`DualPlanTrimSelectResult` reconstructed from D1 intermediates),
+    the orchestrator SKIPS the expensive plan-trim-select step and runs
+    only the builders + synth + assembly. Used by the
+    ``surfaceome_v2_replay_builders`` driver for cheap prompt iteration
+    on builder / synth changes — ~\$0.65/iteration vs ~\$2 for a full
+    pipeline run. The cached dual must have been produced under prompts
+    compatible with the current builders' input contracts (typically
+    same major prompt_corpus version).
     """
     if skip_if_fresh:
         existing = _existing_fresh_record(gene)
@@ -679,7 +690,14 @@ def annotate(
     http = http or open_default_client()
     timing = timing if timing is not None else TimingRecorder()
     try:
-        return _annotate(client, http, gene, persist=persist, timing=timing)
+        return _annotate(
+            client,
+            http,
+            gene,
+            persist=persist,
+            timing=timing,
+            cached_dual=cached_dual,
+        )
     finally:
         if own_http:
             http.close()
@@ -728,12 +746,23 @@ def _annotate(
     *,
     persist: bool,
     timing: TimingRecorder,
+    cached_dual: DualPlanTrimSelectResult | None = None,
 ) -> AnnotateResultV2:
     builder_usage: dict[str, BlockBuilderUsage] = {}
 
     # ---- step 1: plan-trim-select dual -------------------------------------
-    logger.info("v2 orchestrator: running plan-trim-select dual for %s", gene)
-    dual = run_plan_trim_select_dual(gene, client=client, http=http, timing=timing)
+    # Skip when an externally-reconstructed dual is supplied (replay path —
+    # iterate on builder / synth prompts without re-paying for retrieval).
+    if cached_dual is not None:
+        logger.info(
+            "v2 orchestrator: using cached plan-trim-select dual for %s "
+            "(replay path — skipping retrieval, saves ~70%% per-gene cost)",
+            gene,
+        )
+        dual = cached_dual
+    else:
+        logger.info("v2 orchestrator: running plan-trim-select dual for %s", gene)
+        dual = run_plan_trim_select_dual(gene, client=client, http=http, timing=timing)
     if dual.bundle is None:
         return AnnotateResultV2(
             gene=gene,
