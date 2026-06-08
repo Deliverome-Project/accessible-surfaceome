@@ -1333,10 +1333,19 @@ def _annotate(
         "secreted_only",
         "pmhc_only_intracellular",
     }
+    # `supports_membrane_association` is INTENTIONALLY excluded. PM
+    # fractionation alone can include endomembrane contaminants
+    # (ER/Golgi/lysosomes under co-sedimentation), so it's too weak to
+    # overturn a synth NO-bucket call. ABCB9 v2.28.0 had 3 such rows
+    # (PM-fractionation + whole-cell proteomics co-purification), each
+    # with direction='supports' cites — direction filter alone couldn't
+    # save it. Only direct_surface_accessibility (live-cell flow /
+    # nonperm IF / surface biotinylation) and supports_surface_localization
+    # (trafficking-to-PM, perm-IF with PM-rim co-localization) are
+    # strong enough.
     SURFACE_SIGNAL_RELEVANCES = {
         "direct_surface_accessibility",
         "supports_surface_localization",
-        "supports_membrane_association",
     }
     current_reason = synth_draft.executive_summary.surface_call_reason
     # Only count surface-signal methods rows whose cited claims actually
