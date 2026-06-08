@@ -45,10 +45,13 @@ from accessible_surfaceome.audit._plotting_config import (
 
 ROOT = Path(__file__).resolve().parents[1]
 PROBE_DIR = ROOT / "data/analysis/paywall_bot_block/probe_results"
-# Figure assets live in the canonical figures folder (next to the rest
-# of the published figures). Per-paper probe inputs stay in the
-# paywall_bot_block/probe_results subfolder.
-OUT_DIR = ROOT / "data/analysis/figures"
+# Visual artifacts (PDF/PNG/.md/.py) live in data/analysis/figures alongside
+# the other published figures.
+FIG_OUT_DIR = ROOT / "data/analysis/figures"
+# Per the figure-TSV convention in CLAUDE.md, the long-form per-paper TSV
+# (the figure's reader-fetched input data) lives under data/processed/**
+# and is LFS-exempted so raw.githubusercontent.com serves it as text.
+TSV_OUT = ROOT / "data/processed/paywall_bot_block/paywall_bot_block_compare.tsv"
 
 PROD_JSONL = PROBE_DIR / "cohort100x10_production.jsonl"
 # Live OpenAlex JSONL (preferred — has correct n_avail per gene). Falls back
@@ -261,9 +264,10 @@ def main() -> None:
     print(f"production: {len(prod_genes)} genes / {len(prod_papers)} papers (live JSONL)")
     print(f"openalex:   {len(oax_genes)} genes / {len(oax_papers)} papers ({oax_note})")
 
-    write_tsv(prod_papers, oax_papers, OUT_DIR / "paywall_bot_block_compare.tsv")
-    make_figure(prod_genes, prod_papers, oax_genes, oax_papers, OUT_DIR)
-    print(f"  wrote {OUT_DIR}/paywall_bot_block_compare.{{pdf,png}}")
+    TSV_OUT.parent.mkdir(parents=True, exist_ok=True)
+    write_tsv(prod_papers, oax_papers, TSV_OUT)
+    make_figure(prod_genes, prod_papers, oax_genes, oax_papers, FIG_OUT_DIR)
+    print(f"  wrote {FIG_OUT_DIR}/paywall_bot_block_compare.{{pdf,png}}")
 
 
 if __name__ == "__main__":

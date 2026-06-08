@@ -89,14 +89,14 @@ uv run https://gist.githubusercontent.com/beccajcarlson/cbc950dad1c3a6595fd5018c
 ```
 
 PEP 723 inline-deps script reads the per-paper TSV from
-`raw.githubusercontent.com/Deliverome-Project/accessible-surfaceome/main/data/analysis/figures/paywall_bot_block_compare.tsv`
+`raw.githubusercontent.com/Deliverome-Project/accessible-surfaceome/main/data/processed/paywall_bot_block/paywall_bot_block_compare.tsv`
 (one row per source × gene × paper).
 
 ## Data sources
 
 | File | Contents |
 |---|---|
-| `paywall_bot_block_compare.tsv` | Tidy long-form: source × gene × paper × bucket. 1,989 rows. |
+| `data/processed/paywall_bot_block/paywall_bot_block_compare.tsv` | Tidy long-form figure input: source × gene × paper × bucket. 1,989 rows. LFS-exempted so raw.githubusercontent.com serves it as text. |
 | `probe_results/cohort100x10_production.jsonl` | Per-gene production-strategy probe results (live JSONL, 100/100 genes done) |
 | `probe_results/cohort100x10_openalex.jsonl` | Per-gene OpenAlex-strategy probe results, 21-axis run with API key (100/100 genes done) |
 | Probe script | `scripts/probe_oa_buckets.py --source {production,openalex} --n-genes 100 --papers-per-gene 10 --workers 8` — resume-capable, JSONL-per-gene incremental writer, 8-wide parallelism |

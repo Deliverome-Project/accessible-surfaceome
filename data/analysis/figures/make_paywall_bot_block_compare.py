@@ -52,7 +52,7 @@ REPO = "Deliverome-Project/accessible-surfaceome"
 BRANCH = "main"
 BASE = f"https://raw.githubusercontent.com/{REPO}/{BRANCH}"
 
-TSV_URL = f"{BASE}/data/analysis/figures/paywall_bot_block_compare.tsv"
+TSV_URL = f"{BASE}/data/processed/paywall_bot_block/paywall_bot_block_compare.tsv"
 
 # Published reproduction gist (embedded into output PNG Source / PDF Subject)
 GIST_URL = "https://gist.github.com/beccajcarlson/cbc950dad1c3a6595fd5018cdb6b030d"
@@ -132,7 +132,7 @@ def fetch_tsv() -> list[dict]:
     """Read the TSV — from the public repo over HTTP, or from a local checkout."""
     local = (
         Path(__file__).resolve().parents[3]
-        / "data/analysis/figures/paywall_bot_block_compare.tsv"
+        / "data/processed/paywall_bot_block/paywall_bot_block_compare.tsv"
     )
     if local.is_file():
         text = local.read_text()

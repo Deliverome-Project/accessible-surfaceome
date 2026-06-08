@@ -87,3 +87,8 @@ data/processed/triage_bench/db_optimized_cutoffs.tsv -filter -diff -merge text
 data/processed/triage_bench/uniprot_tm_signal_accs.tsv -filter -diff -merge text
 data/processed/triage_bench/cspa_hc_only_accs.tsv       -filter -diff -merge text
 data/processed/catalog/whole_proteome_catalog.tsv -filter -diff -merge text
+
+# Paywall/bot-block reachability figure input — per-paper buckets for the
+# production-vs-OpenAlex comparison figure. ~310KB, raw-fetched by the
+# figures-folder gist (cbc950dad1c3a6595fd5018cdb6b030d).
+data/processed/paywall_bot_block/paywall_bot_block_compare.tsv -filter -diff -merge text
