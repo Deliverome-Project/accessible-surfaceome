@@ -176,13 +176,15 @@ EXPECTATIONS: list[tuple[str, str, Any, str]] = [
         "topology; YES bucket",
     ),
     (
-        "GPR75", "surface_evidence.evidence_grade",
-        {"supportive_but_indirect", "direct_single_method"},
-        "evidence_grade_builder — methods aren't clean nonperm-flow + "
-        "KO-control (knockin IF + photoaffinity crosslinking + retromer "
-        "trafficking are all indirect-but-strong); supportive_but_indirect "
-        "expected, direct_single_method tolerated as a notch-high "
-        "synth-judgment call",
+        "GPR75", "surface_evidence.evidence_grade", "direct_single_method",
+        "methods_builder anti-patterns + species-aware multi-species "
+        "handling — under 2.17.0+, the SH-SY5Y (human) component of the "
+        "rat-cortical-neurons / SH-SY5Y live-cell flow study is the "
+        "load-bearing direct row. Single direct method + indirect "
+        "supporting rows → direct_single_method (NOT multi, not "
+        "supportive_but_indirect). The synth's tone-discipline rule "
+        "then caps surface_accessibility at moderate (since "
+        "direct_single + confidence<high).",
     ),
 
     # ---- TGOLN2 — endomembrane resident with PM trafficking ----

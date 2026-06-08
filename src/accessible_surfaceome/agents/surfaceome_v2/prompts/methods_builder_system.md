@@ -349,6 +349,53 @@ surface evidence. The inner-leaflet row stays `weak_or_ambiguous`.
 - `permeabilization` — closed enum: `live_cell`, `nonpermeabilized`,
   `permeabilized`, `fixed_unknown`, `unknown`. Use the claim's
   `assay_context.permeabilized` when set; default `unknown` when silent.
+
+## Species handling — human-anchored, with explicit cross-species warnings
+
+The annotation target is the **human** protein. Cross-species evidence
+(rat, mouse, cyno, etc.) is informative but DOES NOT directly observe
+the human protein at the surface — ortholog inference adds an extra
+step that the catalog reader needs to see explicitly.
+
+**Multi-species papers — prefer the human variant.** When the claim's
+`assay_context.cell_type_or_line` names multiple cell systems across
+species (e.g. *"rat cortical neurons / SH-SY5Y"* — SH-SY5Y is a
+human neuroblastoma line), and the same methodology was applied to
+both, emit the `MethodObservation` with the row's **species set to
+`human`** and `cell_type_or_line` set to the human cell line. The
+human variant is the load-bearing read for human-protein surface
+accessibility; the ortholog variant is corroboration, not the anchor.
+Cite both papers' evidence_ids in `cited_evidence_ids` — the cross-
+species replication strengthens the call.
+
+**Single-species non-human evidence — flag and cap.** When the claim
+ONLY covers non-human species (no paired human cell line in the same
+paper), the `MethodObservation`:
+
+* MUST set `species` to the non-human label (rat, mouse, dog, etc.)
+* MUST NOT use `accessibility_relevance=direct_surface_accessibility`,
+  regardless of how clean the assay is — set
+  `accessibility_relevance=supports_membrane_association` instead. The
+  catalog can pick up the human-protein direct call from a human-cell
+  observation; non-human evidence supports membrane association via
+  orthology but cannot be the sole anchor.
+* MUST add a note in the row's observations or assay-context summary
+  flagging the cross-species inference. Use prose like *"non-human
+  evidence (rat); ortholog %identity available from deterministic
+  orthologs block — confirm before relying on this for the human
+  surface call."*
+* The synth + downstream consumers WILL apply additional caution to
+  rows where `species != "human"`. Don't quietly tag a rat-only
+  experiment as "human" — be honest about the species and let the
+  pipeline route it correctly.
+
+**If the ONLY direct surface methodology in the ledger is non-human**:
+the gene-level grade SHOULD NOT be `direct_*`. With no human-anchored
+direct row, the highest defensible grade is `supportive_but_indirect`
+(carried by the cross-species `supports_membrane_association` rows
+plus any human supports_* rows). The evidence_grade builder picks
+this up from the methods summary — your job is to honestly tag the
+species so it can.
 - `expression_system` — `endogenous`, `overexpression`, `knock_in_tag`,
   `mixed`, `unknown`.
 - `overexpression` — REQUIRED when `expression_system` is

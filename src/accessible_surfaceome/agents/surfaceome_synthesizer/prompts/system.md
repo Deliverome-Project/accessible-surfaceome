@@ -180,6 +180,28 @@ parse time — invented or paraphrased ids fail the run.
   Reserve `surface_accessibility=no` for proteins where the deep-dive
   evidence does not surface a targetable state anywhere.
 
+  **`high` requires direct evidence in hand.** The catalog filter
+  treats `high` as "confidently surface-accessible" — picking it on
+  topology prior alone (e.g. "it's a canonical 7TM GPCR so it must be
+  surface") OVERSTATES the call to a reader scoping a campaign.
+  Apply this bracket:
+
+  | grade + confidence | allowed surface_accessibility |
+  |---|---|
+  | `direct_multi_method` + any | `high` is allowed |
+  | `direct_single_method` + `confidence=high` | `high` is allowed |
+  | `direct_single_method` + `confidence ∈ {moderate, low}` | cap at `moderate` |
+  | `supportive_but_indirect` (any confidence) | cap at `moderate` |
+  | `weak` or `conflicting` | cap at `low` |
+
+  The bracket is load-bearing for catalog readers — over-flagging
+  genes as `high` when the experimental evidence is thin (single
+  method type, cross-species only, weak antibody validation) leads
+  campaigns to scope on assumptions the evidence doesn't actually
+  carry. When the bracket forces a drop from `high` → `moderate`,
+  the `state_dependence` axis still captures targetable conditionality
+  — readers needing the canonical-receptor signal can still find it.
+
 - **`state_dependence`** — captures how much the targetable surface
   fraction VARIES by state (cell type, activation, cancer induction,
   stress, etc.). `low` means the surface form is essentially the same
@@ -291,6 +313,28 @@ parse time — invented or paraphrased ids fail the run.
        * "GENE Y is state-dependently surface-accessible in
          (cancer cells only) — a (non-surface-baseline protein with
          a state-conditional surface form)."
+
+     **Verdict-beat tone discipline — match the strength of the
+     evidence, don't overclaim from the topology prior.** The verdict
+     adjective must reflect the evidence_grade + confidence pair, not
+     just the architectural class. Use this table:
+
+     | grade + confidence | verdict-beat opener |
+     |---|---|
+     | `direct_multi_method` + `confidence=high` | "is constitutively / state-dependently surface-accessible" |
+     | `direct_single_method` + `confidence=high` | "is constitutively / state-dependently surface-accessible" |
+     | `direct_single_method` + `confidence ∈ {moderate, low}` | "is likely surface-accessible" or "has supportive surface evidence" |
+     | `supportive_but_indirect` (any confidence) | "has supportive but indirect surface evidence" or "is likely surface-accessible based on topology + indirect support" |
+     | `weak` | "has weak surface evidence; topology suggests but direct readouts are missing" |
+
+     The wrong tone reads as overconfident: opening with "is
+     constitutively surface-accessible" when the data is one
+     direct row (especially cross-species) + topology prior reads
+     to a campaign-scoping reader as "yes definitely on the
+     surface" — even though the `confidence_reasoning` later
+     acknowledges thinness. The verdict-beat opener is the FIRST
+     thing readers see; it must NOT promise more than the evidence
+     carries.
 
   2. **Evidence beat (~150 char).** Flow into the evidence: use
      evidence_grade vocabulary for compression ("direct multi-method
