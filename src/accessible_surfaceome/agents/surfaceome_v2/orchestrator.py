@@ -1570,6 +1570,75 @@ def _annotate(
                 }
             )
 
+        # ---- step 5.75: enforce sa-magnitude ↔ reason-bucket consistency ----
+        # surface_accessibility (magnitude axis) and surface_call_reason
+        # (categorical bucket axis) must agree. Earlier post-passes go
+        # asymmetrically — the NO-bucket override flips reason UP (NO →
+        # CONTEXTUAL) when methods supports surface, the floor bumps sa UP
+        # (low → moderate) when state-conditional + substantial CONTEXTUAL.
+        # The symmetric rules going DOWN were missing — ABCB9 v2.35 landed
+        # surface_accessibility='low' + surface_call_reason='endomembrane_
+        # resident' (the synth picked the right reason but the wrong
+        # magnitude; nothing caught the mismatch).
+        #
+        # Three deterministic forcings:
+        #   * NO bucket reason → sa = 'no'      (covers ABCB9 / LYN / BAX)
+        #   * CONTEXTUAL reason + sa='no' → sa='low'   (rare; ensures
+        #     CONTEXTUAL state-induced surface gets at least 'low')
+        #   * YES reason + sa∈{'no','low'} → sa='moderate'   (rare; ensures
+        #     YES-bucket canonical receptor doesn't undershoot)
+        _reason = synth_draft.executive_summary.surface_call_reason
+        _sa = synth_draft.executive_summary.surface_accessibility
+        _YES_REASONS = {
+            "classical_surface_receptor", "gpi_anchored",
+            "multipass_with_exposed_loops", "extracellular_face_protein",
+            "stable_complex_partner",
+        }
+        _new_sa = _sa
+        if _reason in NO_BUCKET_REASONS and _sa != "no":
+            _new_sa = "no"
+        elif _reason in {
+            "cell_state_induced", "tissue_restricted_surface",
+            "lysosomal_exocytosis", "dual_localization",
+            "stable_surface_attachment",
+        } and _sa == "no":
+            _new_sa = "low"
+        elif _reason in _YES_REASONS and _sa in ("no", "low"):
+            _new_sa = "moderate"
+        if _new_sa != _sa:
+            logger.info(
+                "v2 orchestrator: forcing surface_accessibility %r → %r "
+                "(reason=%r requires consistent bucket; the two axes were "
+                "mismatched in the synth output)",
+                _sa, _new_sa, _reason,
+            )
+            synth_draft = synth_draft.model_copy(
+                update={
+                    "executive_summary": synth_draft.executive_summary.model_copy(
+                        update={"surface_accessibility": _new_sa}
+                    )
+                }
+            )
+            # If we just forced sa='no', the earlier state-dep=unclear
+            # rule may now need to fire too (it ran at step 5.685 against
+            # the OLD sa value). Mirror its decision here for the freshly-
+            # forced sa='no' case so the record stays internally consistent.
+            if (
+                _new_sa == "no"
+                and synth_draft.executive_summary.state_dependence != "unclear"
+            ):
+                logger.info(
+                    "v2 orchestrator: cascading state_dependence → 'unclear' "
+                    "after sa forced to 'no'"
+                )
+                synth_draft = synth_draft.model_copy(
+                    update={
+                        "executive_summary": synth_draft.executive_summary.model_copy(
+                            update={"state_dependence": "unclear"}
+                        )
+                    }
+                )
+
         # ---- step 6: promote claims → Evidence (synthetic source store) -------
         merged_claims = a1_claims + a2_claims
         with timing.step(
