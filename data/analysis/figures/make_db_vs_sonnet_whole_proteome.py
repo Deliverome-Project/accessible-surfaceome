@@ -230,16 +230,21 @@ def main() -> None:
     db_overall_acc = {label: _db_overall(label) for label in DB_LABELS}
     db_sorted = sorted(DB_LABELS, key=lambda d: -db_overall_acc[d])
 
+    # Label uses "k+ DB" rather than "≥k DB" because the static Manrope OTFs
+    # bundled in assets/fonts/ (medium-weight subset, 414 glyphs) lack the
+    # ≥ glyph and matplotlib's per-glyph fallback silently drops it. "+"
+    # reads identically in scientific contexts and stays ASCII so font swaps
+    # can't regress it.
     callers: list[tuple[str, str]] = []
     for k in ENSEMBLE_KS:
-        callers.append((f"≥{k} DB", "ensemble"))
+        callers.append((f"{k}+ DB", "ensemble"))
     for label in db_sorted:
         callers.append((label, "single"))
 
     def caller_vote(caller: str, kind: str, row: pd.Series) -> str:
         if kind == "single":
             return "yes" if row[caller] else "no"
-        k = int(caller.lstrip("≥").rstrip(" DB"))
+        k = int(caller.split("+")[0])
         return "yes" if sum(bool(row[d]) for d in DB_LABELS) >= k else "no"
 
     rows_long: list[dict] = []
@@ -272,7 +277,7 @@ def main() -> None:
 
     caller_order = [c[0] for c in callers]
     palette = [
-        (ENSEMBLE_PALETTE[int(c[0].lstrip("≥").rstrip(" DB"))] if c[1] == "ensemble"
+        (ENSEMBLE_PALETTE[int(c[0].split("+")[0])] if c[1] == "ensemble"
          else DB_PALETTE[c[0]])
         for c in callers
     ]

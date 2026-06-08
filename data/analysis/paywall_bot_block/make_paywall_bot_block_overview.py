@@ -106,8 +106,12 @@ def _apply_brand_style() -> None:
                 "Manrope", "Outfit", "DejaVu Sans", "Liberation Sans", "Arial",
             ],
             "font.weight": "medium",
-            "font.size": 14,
-            "axes.labelsize": 16,
+            # Sized to be visually consistent with the v3-baseline cohort
+            # figures (font.size=21) while accounting for this script's
+            # smaller (12, 5) figsize — picked to ride slightly below them
+            # so the figure doesn't read as oversized at its native scale.
+            "font.size": 16,
+            "axes.labelsize": 18,
             "axes.titlesize": 14,
             "axes.titlepad": 12,
             "axes.spines.top": False,
@@ -122,12 +126,12 @@ def _apply_brand_style() -> None:
             "grid.linestyle": "-",
             "grid.linewidth": 0.7,
             "grid.color": BRAND_GRID,
-            "xtick.labelsize": 14,
-            "ytick.labelsize": 14,
+            "xtick.labelsize": 15,
+            "ytick.labelsize": 15,
             "xtick.color": BRAND_INK,
             "ytick.color": BRAND_INK,
             "legend.frameon": False,
-            "legend.fontsize": 12,
+            "legend.fontsize": 13,
             "patch.edgecolor": "none",
             "patch.linewidth": 0.0,
         }
@@ -206,7 +210,7 @@ def main() -> None:
     ax.text(
         success_pct, 0.7,
         f"  ← {success_pct:.0f}% full-body success rate",
-        ha="left", va="center", fontsize=9, color=BRAND_INK,
+        ha="left", va="center", fontsize=12, color=BRAND_INK,
         style="italic",
     )
 
@@ -223,7 +227,7 @@ def main() -> None:
     )
     ax.legend(
         handles=handles, loc="lower center", bbox_to_anchor=(0.5, -0.45),
-        ncol=4, frameon=False, fontsize=9,
+        ncol=4, frameon=False, fontsize=12,
     )
     sns.despine(ax=ax, top=True, right=True, left=True)
 

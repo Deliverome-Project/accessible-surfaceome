@@ -94,16 +94,20 @@ def _apply_brand_style() -> None:
         # reads as light against the variable range (300-800); default to
         # 500 so figures don't render with thin defaults.
         "font.weight": "medium",
-        "font.size": 12, "axes.labelsize": 14, "axes.titlesize": 0, "axes.titlepad": 0,
+        # Sized to be visually consistent with the v3-baseline cohort
+        # figures (font.size=21) while accounting for this script's
+        # smaller (10, 6) figsize — picked to ride slightly below them
+        # so the figure doesn't read as oversized at its native scale.
+        "font.size": 16, "axes.labelsize": 18, "axes.titlesize": 0, "axes.titlepad": 0,
         "axes.labelweight": "medium", "axes.titleweight": "semibold",
         "axes.spines.top": False, "axes.spines.right": False,
         "axes.grid": True, "axes.axisbelow": True,
         "axes.edgecolor": BRAND_GRID, "axes.labelcolor": BRAND_INK,
         "axes.facecolor": "none", "text.color": BRAND_INK,
         "grid.alpha": 0.35, "grid.linestyle": "-", "grid.linewidth": 0.7, "grid.color": BRAND_GRID,
-        "xtick.labelsize": 14, "ytick.labelsize": 10,
+        "xtick.labelsize": 15, "ytick.labelsize": 14,
         "xtick.color": BRAND_INK, "ytick.color": BRAND_INK,
-        "legend.frameon": False, "legend.fontsize": 10,
+        "legend.frameon": False, "legend.fontsize": 13,
         "patch.edgecolor": "none", "patch.linewidth": 0.0,
     })
 
@@ -182,7 +186,7 @@ def main() -> None:
         ax.text(
             104, ypos,
             f"{total} papers /\n{len(genes)} genes",
-            ha="left", va="center", fontsize=9, fontweight="medium",
+            ha="left", va="center", fontsize=12, fontweight="medium",
             color=BRAND_INK,
         )
 

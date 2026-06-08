@@ -204,9 +204,11 @@ def main() -> None:
         ("UniProt\n(TM+signal)", lambda g: "yes" if db_votes_for(acc_by_gene.get(g, "")).get("UniProt") else "no",
                                                                                                     BRAND_PALETTE[0]),
     ]
+    # "k+ DB" rather than "≥k DB" — static Manrope OTFs lack the ≥ glyph
+    # and matplotlib silently drops it; ASCII "+" stays robust.
     for k in (2, 3, 4, 5):
         callers.append((
-            f"≥{k} DB",
+            f"{k}+ DB",
             (lambda g, k=k: "yes" if sum(db_votes_for(acc_by_gene.get(g, "")).values()) >= k else "no"),
             ENSEMBLE_PALETTE[k],
         ))
