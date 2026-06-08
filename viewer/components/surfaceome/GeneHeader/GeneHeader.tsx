@@ -173,30 +173,104 @@ function benchmarkVerdictTone(
   return "neutral";
 }
 
-/** Compare the Sonnet triage prior to the deep-dive surface verdict.
+/** Closed-enum buckets for ``executive_summary.surface_call_reason``, mirrored
+ * from ``src/accessible_surfaceome/tools/_shared/models.py`` (``_YES_REASONS``
+ * / ``_CONTEXTUAL_REASONS`` / ``_NO_REASONS``). The reason field is what
+ * actually determines the deep-dive's yes/contextual/no bucket — looking at
+ * ``surface_accessibility`` alone misclassifies the entire CONTEXTUAL bucket
+ * (which renders as ``surface_accessibility = "low"`` plus a CONTEXTUAL
+ * reason like ``cell_state_induced``). ``other`` appears in every bucket in
+ * the schema, so we deliberately leave it out here and let the fallback by
+ * accessibility magnitude decide. */
+const DEEP_DIVE_YES_REASONS: ReadonlySet<string> = new Set([
+  "classical_surface_receptor",
+  "gpi_anchored",
+  "multipass_with_exposed_loops",
+  "extracellular_face_protein",
+  "stable_complex_partner",
+]);
+const DEEP_DIVE_CONTEXTUAL_REASONS: ReadonlySet<string> = new Set([
+  "cell_state_induced",
+  "tissue_restricted_surface",
+  "lysosomal_exocytosis",
+  "dual_localization",
+  "stable_surface_attachment",
+]);
+const DEEP_DIVE_NO_REASONS: ReadonlySet<string> = new Set([
+  "cytoplasmic",
+  "nuclear",
+  "mitochondrial_internal",
+  "endomembrane_resident",
+  "nuclear_envelope",
+  "inner_leaflet_anchored",
+  "secreted_only",
+  "pmhc_only_intracellular",
+]);
+
+/** Collapse the deep-dive's ``(surface_accessibility, surface_call_reason)``
+ * to a yes / contextual / no bucket matching the bench-truth taxonomy. The
+ * call_reason is the primary signal (it directly names the bucket); we only
+ * fall back to accessibility magnitude when the reason is absent or out-of-
+ * vocabulary (``"other"`` or a future schema addition). */
+function collapseDeepDive(
+  accessibility: string,
+  callReason: string | null | undefined,
+): "yes" | "contextual" | "no" | "unclear" {
+  if (callReason) {
+    if (DEEP_DIVE_CONTEXTUAL_REASONS.has(callReason)) return "contextual";
+    if (DEEP_DIVE_YES_REASONS.has(callReason)) return "yes";
+    if (DEEP_DIVE_NO_REASONS.has(callReason)) return "no";
+  }
+  if (accessibility === "high" || accessibility === "moderate") return "yes";
+  if (accessibility === "low" || accessibility === "no") return "no";
+  return "unclear";
+}
+
+/** Compare a positive-side signal (Sonnet triage prior or curated bench
+ * truth, both expressed in triage-signal vocabulary) against the deep-dive
+ * verdict.
  *
  * Returns one of:
- * - `"agree"` — both sides on the same side of the binary surface call
- * - `"conflict"` — triage and deep-dive disagree (e.g. SRC's eSrc finding:
- *     triage said `unlikely`, deep dive said `high`)
- * - `"unclear"` — one or both sides emit `unknown` / `uncertain`, so no
- *     useful comparison
+ * - `"agree"` — both sides land in the same yes / contextual / no bucket.
+ *   ``possibly_accessible`` (≈ contextual) is also a soft agree with
+ *   ``yes`` (a surface that's reachable across more states than the triage
+ *   estimated isn't a conflict — just a stronger result).
+ * - `"conflict"` — strong disagreement: positive vs no, or negative vs yes.
+ *   Tighter than the old naive-binary check: a deep-dive verdict of
+ *   ``low + cell_state_induced`` no longer trips ``conflict`` against a
+ *   ``possibly_accessible`` triage / ``contextual`` bench truth.
+ * - `"unclear"` — one or both sides emit ``unknown`` / ``uncertain``, or the
+ *   axes are too far apart to call (e.g. ``unlikely`` triage vs deep-dive
+ *   ``contextual``: the triage missed a state-induced surface, which is
+ *   informative but not a hard "the deep dive said the opposite" pill).
  *
  * The deep dive wins on conflict (it has the per-method evidence); the
  * triage row just flags the disagreement for transparency. */
 function triageVsDeepDive(
   triage: string,
   accessibility: string,
+  callReason: string | null | undefined,
 ): "agree" | "conflict" | "unclear" {
-  const triagePositive =
-    triage === "likely_accessible" || triage === "possibly_accessible";
+  const triageStrongPositive = triage === "likely_accessible";
+  const triageSoftPositive = triage === "possibly_accessible";
   const triageNegative = triage === "unlikely";
-  const deepPositive = accessibility === "high" || accessibility === "moderate";
-  const deepNegative = accessibility === "low" || accessibility === "no";
-  if (triagePositive && deepPositive) return "agree";
-  if (triageNegative && deepNegative) return "agree";
-  if (triagePositive && deepNegative) return "conflict";
-  if (triageNegative && deepPositive) return "conflict";
+  const deepVerdict = collapseDeepDive(accessibility, callReason);
+
+  if (triageStrongPositive) {
+    if (deepVerdict === "yes") return "agree";
+    if (deepVerdict === "no") return "conflict";
+    return "unclear"; // contextual under "yes"-leaning triage — softer than expected, not a hard conflict
+  }
+  if (triageSoftPositive) {
+    if (deepVerdict === "yes" || deepVerdict === "contextual") return "agree";
+    if (deepVerdict === "no") return "conflict";
+    return "unclear";
+  }
+  if (triageNegative) {
+    if (deepVerdict === "no") return "agree";
+    if (deepVerdict === "yes") return "conflict";
+    return "unclear"; // contextual under "unlikely" triage — triage missed a state-induced surface
+  }
   return "unclear";
 }
 
@@ -422,6 +496,7 @@ export function GeneHeader({
                 const benchVerdict = triageVsDeepDive(
                   benchSignal,
                   exec.surface_accessibility,
+                  exec.surface_call_reason,
                 );
                 return (
                   <p className={styles.triageRow}>
@@ -461,6 +536,7 @@ export function GeneHeader({
             const verdict = triageVsDeepDive(
               rec.triage_signal,
               exec.surface_accessibility,
+              exec.surface_call_reason,
             );
             return (
               <p className={styles.triageRow}>
