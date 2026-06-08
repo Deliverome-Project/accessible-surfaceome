@@ -79,6 +79,29 @@ indirect-but-membrane-suggestive rows like permeabilized-IF-with-PM-
 colocalization or `supports_surface_localization`) or `weak` (when
 there are none).
 
+**Default rule — when the methods builder gave you ≥1
+direct_surface_accessibility row, default to `direct_single_method`
+(or `direct_multi_method` if ≥2 distinct method types).** Do NOT
+downgrade to `supportive_but_indirect` just because the source count
+is low (1-2 papers) or because the direct row's subclass is
+`unknown` — the methods builder already vetted whether the assay
+qualifies as direct. The grade vocabulary distinction
+`direct_single_method` vs `supportive_but_indirect` is about METHOD
+DIRECTNESS, not about source count or robustness — confidence and
+state_dependence carry the source-count / context-breadth signal
+separately. Downgrade from direct_* ONLY when:
+* The direct row's underlying claim is internally inconsistent
+  (e.g. the assay description contradicts itself), OR
+* The direct row is from a retracted paper / preprint that the
+  field has not corroborated AND no other direct methods exist.
+
+Single-source single-direct-method evidence (e.g. a cancer-state
+outer-leaflet topology inversion of an otherwise inner-leaflet
+kinase, captured in one paper plus its companion abstract on the
+same mechanism) IS `direct_single_method` — single-source is
+exactly what the rule allows. Use `confidence={moderate, low}` to
+flag the source-count weakness, not by collapsing the grade.
+
 A common trap: the input ledger may have receptor-engagement /
 ligand-engagement claims (e.g. soluble-DAMP–PRR binding, cytokine-
 receptor crosslinking). Those claims correctly land in

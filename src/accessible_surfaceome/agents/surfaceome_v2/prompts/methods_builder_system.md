@@ -357,16 +357,28 @@ The annotation target is the **human** protein. Cross-species evidence
 the human protein at the surface — ortholog inference adds an extra
 step that the catalog reader needs to see explicitly.
 
-**Multi-species papers — prefer the human variant.** When the claim's
-`assay_context.cell_type_or_line` names multiple cell systems across
-species (e.g. *"rat cortical neurons / SH-SY5Y"* — SH-SY5Y is a
-human neuroblastoma line), and the same methodology was applied to
+**Default rule — populate `species` from `assay_context.species`.**
+Every `MethodObservation` MUST have a non-null `species` field. The
+default source is the claim's `assay_context.species` value:
+* If all cited claims have the same `species` value (e.g. all
+  `human`, all `mouse`, all `rat`), use that value.
+* Never leave `species` as null when the claims carry a species tag
+  — the catalog reader filters and weighs by species, and a null
+  field is silently treated as "unknown" which is the wrong default
+  for a row whose source claims explicitly say "human."
+
+**Multi-species papers — prefer the human variant.** ONLY when the
+claim's `assay_context.cell_type_or_line` names multiple cell systems
+across species (e.g. *"rat cortical neurons / SH-SY5Y"* — SH-SY5Y is
+a human neuroblastoma line), and the same methodology was applied to
 both, emit the `MethodObservation` with the row's **species set to
 `human`** and `cell_type_or_line` set to the human cell line. The
 human variant is the load-bearing read for human-protein surface
 accessibility; the ortholog variant is corroboration, not the anchor.
 Cite both papers' evidence_ids in `cited_evidence_ids` — the cross-
-species replication strengthens the call.
+species replication strengthens the call. This rule does NOT apply
+to single-species claims — those use the assay_context's species
+verbatim.
 
 **Single-species non-human evidence — flag and cap.** When the claim
 ONLY covers non-human species (no paired human cell line in the same

@@ -358,30 +358,54 @@ parse time — invented or paraphrased ids fail the run.
      direct surface evidence — they're supporting / indirect /
      non-load-bearing.
 
-     If you list permeabilized IF, photoaffinity crosslinking on
-     membrane fractions, knockin-tag IF, or other indirect-but-strong
-     methods under a "Direct surface evidence:" header, you mislead
-     the reader: the methods builder de-rated those rows specifically
-     because they DON'T directly observe the protein at the surface.
+     **Strong default — don't enumerate the indirect methods at all.**
+     When `evidence_grade=direct_single_method` (one direct row + the
+     rest indirect / weak), the Evidence beat should name ONLY the
+     direct method and the cite that anchors it. Listing 3-6
+     additional indirect-method cites (photoaffinity on membrane
+     fractions, perm IF with PM-colocalization, knockin-tag IF,
+     siRNA knockdown of signaling) AFTER a "Direct surface evidence
+     is single-method" statement reads to the catalog reader as if
+     all six methods are part of the direct support — even though
+     the methods builder explicitly de-rated five of them. The
+     reader has the full `surface_evidence.methods[]` table on the
+     gene page for the supporting cites; the one_paragraph headline
+     does NOT need to repeat them.
 
-     Two correct ways to cite the indirect-but-strong methods:
+     **Correct shape (single direct row):**
+       * *"Direct surface evidence is single-method: live-cell flow
+         cytometry on differentiated [cell line] confirms surface
+         expression ([cite])."* — STOP. Don't list the 5 indirect
+         cites; they're in the methods table.
 
-     * Group them separately: *"Direct surface evidence is single-
-       method (live-cell flow on intact cells, [cite]). Supporting
-       indirect evidence includes membrane-fraction photoaffinity
-       crosslinking ([cite]) and knockin IF showing PM-rim
-       co-localization ([cite])."*
-     * Lead with the grade vocabulary and let the inline cites do
-       the work: *"Supportive but indirect: permeabilized IF with
-       strong PM-rim co-localization ([cite]) and membrane-fraction
-       glycoproteomics ([cite])."*
+     **Correct shape (≥2 direct rows):**
+       * *"Direct multi-method support: live-cell flow with
+         CRISPR-KO controls ([cite]), surface biotinylation–MS
+         ([cite]), and antibody-mediated tumor killing ([cite])."*
 
-     Before emitting `one_paragraph`, check each method you cite
-     against the assembled record's `methods[]` list. If a cite's
-     evidence_id appears under a `MethodObservation` whose
-     `accessibility_relevance ≠ direct_surface_accessibility`, do not
-     describe that cite as "direct surface evidence" — describe it as
-     "supportive" or move it to a separate clause.
+     **Optional only when load-bearing:** if a non-direct method
+     CHANGES the inferential picture (e.g. a single in-vivo
+     antibody-mediated tumor-killing readout that's the ONLY
+     non-cell-line surface evidence), a single supportive line is
+     allowed: *"Corroborated by [one named indirect method] ([cite])."*
+     Cap at ONE indirect cite even then; if more matter, leave them
+     for the methods table.
+
+     **Forbidden language patterns** (catch these in self-review
+     before emitting):
+       * *"Direct surface evidence is single-method: [direct]
+         (cite), supported by [indirect 1] (cite), [indirect 2]
+         (cite), [indirect 3] (cite), and [indirect 4] (cite)"*
+         — enumerating 3+ indirect cites contradicts the
+         "single-method" framing.
+       * *"Direct support from [direct cite]; further confirmed by
+         [3+ indirect cites]"* — same pattern, different wording.
+
+     Before emitting `one_paragraph`, count the cites you've placed
+     in the Evidence beat. If it's >2 cites total and the
+     `evidence_grade` is `direct_single_method` or weaker, you're
+     over-citing — drop the indirect cites and let the methods
+     table speak for itself.
 
   3. **State-dependence beat (~150 char).** Continue the paragraph with
      state context. **Embed the `state_dependence` value in flowing
