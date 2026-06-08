@@ -129,13 +129,20 @@ def build_evidence_grade(
     if methods_summary:
         methods_block = (
             "# Methods builder output (already committed)\n\n"
-            "The methods builder has already classified each experimental "
-            "observation's `accessibility_relevance`. Your `evidence_grade` "
-            "MUST be consistent with these classifications:\n"
-            "- `direct_single_method` / `direct_multi_method` require ≥1 / ≥2 "
-            "methods with `accessibility_relevance=direct_surface_accessibility`.\n"
-            "- If no method carries `direct_surface_accessibility`, the grade "
-            "cannot be `direct_*` — use `supportive_but_indirect` or lower.\n\n"
+            "Each row: `family/subclass | accessibility_relevance | "
+            "species | cites`. Species is resolved deterministically from "
+            "the cited claims' `assay_context.species` (human-anchored "
+            "when any cite is human; otherwise the union of non-human "
+            "species). Use it when applying the species rule:\n"
+            "- `direct_*` requires ≥1 / ≥2 methods with "
+            "`accessibility_relevance=direct_surface_accessibility`.\n"
+            "- If no method carries `direct_surface_accessibility`, the "
+            "grade cannot be `direct_*`.\n"
+            "- If the ONLY direct rows are non-human-anchored "
+            "(`species != human`), the grade caps at "
+            "`supportive_but_indirect` — cross-species evidence supports "
+            "membrane association but cannot anchor a `direct_*` call "
+            "for the human protein on its own.\n\n"
             f"```\n{methods_summary}\n```\n\n"
         )
     # Retry-with-feedback path: when the orchestrator catches a

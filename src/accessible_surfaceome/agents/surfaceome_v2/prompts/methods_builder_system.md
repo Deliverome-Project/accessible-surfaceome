@@ -334,24 +334,17 @@ surface evidence. The inner-leaflet row stays `weak_or_ambiguous`.
   `permeabilized`, `fixed_unknown`, `unknown`. Use the claim's
   `assay_context.permeabilized` when set; default `unknown` when silent.
 
-## Species handling — human-anchored
+## Species handling — deterministic, downstream
 
-Target is the **human** protein. Cross-species evidence corroborates
-but doesn't directly observe it.
-
-* **Default:** `species` MUST come from `assay_context.species`. If
-  all cited claims share a species, use that value. Never leave it
-  null when the claims carry a species tag.
-* **Multi-species papers** (`cell_type_or_line` lists cells across
-  species, e.g. *"rat cortical neurons / SH-SY5Y"*): tag the row
-  `species=human` + cell = the human line. Cite both evidence_ids;
-  cross-species replication strengthens the call.
-* **Single-species non-human** (claim covers only rat / mouse / dog /
-  etc., no paired human cell line): tag `species=<non-human label>`,
-  cap at `accessibility_relevance=supports_membrane_association`
-  (never `direct_*`), and add a note flagging the cross-species
-  inference. If the ONLY direct surface methodology in the ledger
-  is non-human, the gene-level grade caps at `supportive_but_indirect`.
+`MethodObservation` has no `species` field of its own. Species lives
+on each cited `EvidenceClaim.assay_context.species`, and the
+orchestrator resolves it deterministically per-row (human-anchored
+when any cite is human; otherwise the union of cited non-human
+species). The grade builder + synth see the resolved species in the
+methods summary they receive. You don't need to do anything special
+with species — focus on getting `accessibility_relevance` right per
+the inclusion criterion and anti-patterns above; species attribution
+follows from the cites you pick.
 - `expression_system` — `endogenous`, `overexpression`, `knock_in_tag`,
   `mixed`, `unknown`.
 - `overexpression` — REQUIRED when `expression_system` is

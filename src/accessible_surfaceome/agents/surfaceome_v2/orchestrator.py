@@ -164,23 +164,86 @@ def _triage_signal_and_reasoning_from_record(rec):
 BUILDER_CONCURRENCY = 8
 
 
+def _resolve_method_species(
+    method: MethodObservation,
+    claims_by_id: dict[str, EvidenceClaim],
+) -> str:
+    """Deterministic species inheritance for a MethodObservation.
+
+    MethodObservation has no `species` field of its own — species lives on
+    each cited `EvidenceClaim.assay_context.species`. This helper walks
+    the row's `cited_evidence_ids`, collects the species values, and
+    returns a single human-readable label following the human-anchored
+    rule: if any cited claim is human, the row is human-anchored;
+    otherwise return the unique species, or a comma-joined string when
+    the cites span multiple non-human species.
+
+    Returns ``"unspecified"`` when no cite resolves or all assay_contexts
+    are unspecified.
+
+    This deterministic post-pass replaces an earlier prompt-only rule
+    that asked the LLM to "default species from assay_context" — but
+    the schema doesn't even have a species field on MethodObservation,
+    so the prompt rule had nowhere to land. The species data was
+    always in the claims; we just need to read it programmatically.
+    """
+    species_set: set[str] = set()
+    for evid in method.cited_evidence_ids:
+        claim = claims_by_id.get(evid)
+        if claim is None:
+            continue
+        s = (claim.assay_context.species or "unspecified").strip()
+        if s and s != "unspecified":
+            species_set.add(s)
+    if not species_set:
+        return "unspecified"
+    # Human-anchored rule: if any cite is human, the row is human.
+    if "human" in species_set:
+        return "human"
+    # Otherwise return the unique species, or a comma-joined cross-species
+    # list (alphabetized for stability).
+    if len(species_set) == 1:
+        return next(iter(species_set))
+    return ", ".join(sorted(species_set))
+
+
 def _format_methods_summary_for_grade(
     methods: list[MethodObservation],
+    claims: list[EvidenceClaim] | None = None,
 ) -> str:
     """Compact summary of the methods builder's output for the evidence_grade
     builder.
 
     Returns one line per method: ``method_type | accessibility_relevance |
-    cited_evidence_ids``.  Empty string when no methods were emitted.
+    species | cited_evidence_ids``. Species is resolved deterministically
+    from each cited claim's `assay_context.species` (see
+    :func:`_resolve_method_species`). Empty string when no methods were
+    emitted.
+
+    ``claims`` is the A1 ledger used to resolve species; when omitted the
+    summary falls back to the older shape (no species column) for
+    callers that don't have the claim list handy.
     """
     if not methods:
         return ""
+    claims_by_id: dict[str, EvidenceClaim] = {}
+    if claims:
+        claims_by_id = {c.evidence_id: c for c in claims if c.evidence_id}
     lines = []
     for m in methods:
         cites = ", ".join(m.cited_evidence_ids) if m.cited_evidence_ids else "none"
-        lines.append(
-            f"- {m.method_family} / {m.method_subclass} | {m.accessibility_relevance} | cites: {cites}"
-        )
+        if claims_by_id:
+            species = _resolve_method_species(m, claims_by_id)
+            lines.append(
+                f"- {m.method_family} / {m.method_subclass} | "
+                f"{m.accessibility_relevance} | species: {species} | "
+                f"cites: {cites}"
+            )
+        else:
+            lines.append(
+                f"- {m.method_family} / {m.method_subclass} | "
+                f"{m.accessibility_relevance} | cites: {cites}"
+            )
     return "\n".join(lines)
 
 
@@ -741,7 +804,9 @@ def _annotate(
     # TGOLN2 class of failure). The methods summary is injected into the
     # builder's context dict so the LLM can cross-reference.
     methods_output: list[MethodObservation] = outputs["methods"]
-    methods_summary = _format_methods_summary_for_grade(methods_output)
+    methods_summary = _format_methods_summary_for_grade(
+        methods_output, claims=a1_claims
+    )
     if methods_summary:
         evidence_grade_ctx["methods_summary"] = methods_summary
     grade_spec = _BuilderSpec(
