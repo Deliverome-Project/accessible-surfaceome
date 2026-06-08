@@ -192,7 +192,10 @@ def main() -> None:
     # Per-replicate accuracies for the points + SEM overlay (3 reps/cell).
     rep_acc = _per_rep_accuracy(_fetch_tsv(REPS_TSV))
 
-    fig, ax = plt.subplots(figsize=(12, 5.5))
+    # Wider figure (was 12) so the 4-bar Haiku / Sonnet / Opus clusters'
+    # bar-top "9X.X%" labels (one per prompt variant) sit with breathing
+    # room instead of touching neighbours.
+    fig, ax = plt.subplots(figsize=(16, 5.5))
     n_models = len(MODEL_ORDER)
     n_variants = len(VARIANT_ORDER)
     bar_w = 0.78 / n_variants
