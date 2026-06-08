@@ -1267,36 +1267,112 @@ def _annotate(
                 }
             )
 
-    # ---- step 5.7: enforce CONTEXTUAL bucket when methods detected
-    # trafficking-to-PM ---------------------------------------------------
-    # The methods builder is the canonical "did we see PM trafficking?"
-    # detector — it emits `accessibility_relevance=supports_surface_localization`
-    # for transient PM-cycling observations (TGN46-style transport carriers,
-    # CLEM-Reg, perm-IF with PM-rim co-localization). The synth's
-    # `surface_call_reason` MUST then land in the CONTEXTUAL bucket
-    # (dual_localization) rather than the NO bucket (endomembrane_resident)
-    # — that's what the trafficking-with-dwell rule was meant to enforce.
-    # Observed failure: synth picked endomembrane_resident on TGOLN2 v2.21.0
-    # despite methods having a `supports_surface_localization` row citing
-    # CLEM-Reg PM-trafficking. Prompt rule alone wasn't load-bearing
-    # enough; this deterministic override is the safety net.
+    # ---- step 5.69: surface_accessibility floor when state-conditional --
+    # When state-conditional (state_dependence ∈ {moderate, high}) AND
+    # surface_call_reason names a CONTEXTUAL bucket where the surface
+    # pool is substantial in its best state — cell_state_induced (HMGB1
+    # on activated platelets; ICD-induced tumor cells), lysosomal_
+    # exocytosis (SRC eSrc in cancer cells), tissue_restricted_surface,
+    # stable_surface_attachment — the synth MUST NOT pick
+    # surface_accessibility='low'. Low contradicts the state-induced
+    # surface pool the rest of the record describes. Bump to 'moderate'.
+    #
+    # Carve-out: `dual_localization` (TGN46-style trafficking-with-dwell)
+    # legitimately stays at 'low' because the PM dwell is brief even
+    # in the best state. NO-bucket reasons obviously stay at low/no.
+    SUBSTANTIAL_CONTEXTUAL_REASONS = {
+        "cell_state_induced",
+        "lysosomal_exocytosis",
+        "tissue_restricted_surface",
+        "stable_surface_attachment",
+    }
     if (
-        synth_draft.executive_summary.surface_call_reason == "endomembrane_resident"
-        and any(
-            m.accessibility_relevance == "supports_surface_localization"
-            for m in outputs["methods"]
-        )
+        synth_draft.executive_summary.surface_accessibility == "low"
+        and synth_draft.executive_summary.state_dependence
+        in ("moderate", "high")
+        and synth_draft.executive_summary.surface_call_reason
+        in SUBSTANTIAL_CONTEXTUAL_REASONS
     ):
         logger.info(
-            "v2 orchestrator: overriding surface_call_reason "
-            "endomembrane_resident → dual_localization "
-            "(methods builder emitted supports_surface_localization rows; "
-            "trafficking-to-PM evidence forces CONTEXTUAL bucket)"
+            "v2 orchestrator: bumping surface_accessibility low → "
+            "moderate (state_dependence=%r + surface_call_reason=%r: "
+            "substantial state-induced surface pool, low contradicts "
+            "the record)",
+            synth_draft.executive_summary.state_dependence,
+            synth_draft.executive_summary.surface_call_reason,
         )
         synth_draft = synth_draft.model_copy(
             update={
                 "executive_summary": synth_draft.executive_summary.model_copy(
-                    update={"surface_call_reason": "dual_localization"}
+                    update={"surface_accessibility": "moderate"}
+                )
+            }
+        )
+
+    # ---- step 5.7: enforce CONTEXTUAL bucket when methods detected any
+    # surface signal ------------------------------------------------------
+    # The methods builder's accessibility_relevance is the canonical
+    # "did we see a surface signal?" classifier. If it emitted ANY row
+    # at `direct_surface_accessibility`, `supports_surface_localization`,
+    # or `supports_membrane_association` for this gene, the synth's
+    # `surface_call_reason` MUST be in the CONTEXTUAL or YES bucket —
+    # NOT in the NO bucket (endomembrane_resident, secreted_only,
+    # cytoplasmic, nuclear, mitochondrial_internal, etc.). Picking a
+    # NO-bucket reason while methods evidence says surface contradicts
+    # the record's own data.
+    #
+    # Specific re-routings (each picks the CONTEXTUAL value that best
+    # matches the methods + biology block):
+    # * endomembrane_resident + supports_surface_localization rows
+    #   → dual_localization (TGN46 / trafficking-with-dwell case)
+    # * secreted_only + any surface methods row → cell_state_induced
+    #   (C3 / complement / DAMP pattern — protein is secreted but
+    #   deposits on / is captured at cell surfaces in disease states)
+    # * other NO bucket + any surface methods row → cell_state_induced
+    #   (catch-all conservative bump to CONTEXTUAL)
+    NO_BUCKET_REASONS = {
+        "cytoplasmic",
+        "nuclear",
+        "mitochondrial_internal",
+        "endomembrane_resident",
+        "nuclear_envelope",
+        "inner_leaflet_anchored",
+        "secreted_only",
+        "pmhc_only_intracellular",
+    }
+    SURFACE_SIGNAL_RELEVANCES = {
+        "direct_surface_accessibility",
+        "supports_surface_localization",
+        "supports_membrane_association",
+    }
+    current_reason = synth_draft.executive_summary.surface_call_reason
+    has_surface_signal = any(
+        m.accessibility_relevance in SURFACE_SIGNAL_RELEVANCES
+        for m in outputs["methods"]
+    )
+    if current_reason in NO_BUCKET_REASONS and has_surface_signal:
+        # Pick the CONTEXTUAL replacement: dual_localization for the
+        # TGN46-style trafficking case, cell_state_induced otherwise.
+        new_reason = (
+            "dual_localization"
+            if current_reason == "endomembrane_resident"
+            and any(
+                m.accessibility_relevance == "supports_surface_localization"
+                for m in outputs["methods"]
+            )
+            else "cell_state_induced"
+        )
+        logger.info(
+            "v2 orchestrator: overriding surface_call_reason %r → %r "
+            "(methods builder emitted surface-signal rows; NO-bucket "
+            "reason contradicts the record's own surface evidence)",
+            current_reason,
+            new_reason,
+        )
+        synth_draft = synth_draft.model_copy(
+            update={
+                "executive_summary": synth_draft.executive_summary.model_copy(
+                    update={"surface_call_reason": new_reason}
                 )
             }
         )

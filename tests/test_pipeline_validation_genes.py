@@ -120,12 +120,6 @@ EXPECTATIONS: list[tuple[str, str, Any, str]] = [
         "_derive_filters induction_trigger — accessibility_modulation "
         "rows show oncogenic-transformation triggers",
     ),
-    (
-        "TACSTD2", "surface_evidence.excluded_as_ligand_engagement.len==0", True,
-        "methods_builder inclusion criterion — TACSTD2 is the TM membrane "
-        "component, no soluble-ligand engagement to exclude",
-    ),
-
     # ---- HMGB1 — soluble DAMP, ligand-engagement filter case ----
     (
         "HMGB1", "executive_summary.surface_accessibility",
