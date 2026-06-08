@@ -1260,6 +1260,34 @@ def _annotate(
                 }
             )
 
+    # ---- step 5.685: state_dependence=unclear when surface_accessibility=no
+    # If the gene has NO surface fraction (cytoplasmic, nuclear,
+    # mitochondrial, secreted-only, etc.), state_dependence is not
+    # meaningful — there's no surface form to vary by state. The synth
+    # sometimes picks 'moderate' or 'high' anyway (because the protein's
+    # EXPRESSION is state-modulated, e.g. ABCB9 induced by inflammation
+    # in DCs), but that's a different axis from "targetable surface
+    # fraction state-dependence". Force 'unclear' deterministically so
+    # the record is internally consistent. Observed misfires: C3 v2.30
+    # (sa=no + state=high), LYN v2.27 (sa=no + state=moderate),
+    # ABCB9 v2.29 (sa=no + state=moderate).
+    if (
+        synth_draft.executive_summary.surface_accessibility == "no"
+        and synth_draft.executive_summary.state_dependence != "unclear"
+    ):
+        logger.info(
+            "v2 orchestrator: forcing state_dependence %r → 'unclear' "
+            "(surface_accessibility=no; no surface fraction to state-modulate)",
+            synth_draft.executive_summary.state_dependence,
+        )
+        synth_draft = synth_draft.model_copy(
+            update={
+                "executive_summary": synth_draft.executive_summary.model_copy(
+                    update={"state_dependence": "unclear"}
+                )
+            }
+        )
+
     # ---- step 5.69: surface_accessibility floor when state-conditional --
     # When state-conditional (state_dependence ∈ {moderate, high}) AND
     # surface_call_reason names a CONTEXTUAL bucket where the surface
@@ -1279,12 +1307,19 @@ def _annotate(
         "tissue_restricted_surface",
         "stable_surface_attachment",
     }
+    # Skip the floor when grade=weak. A weak grade means the evidence is
+    # thin; bumping surface_accessibility to moderate in that case
+    # contradicts the grade (HMGB1 v2.27 landed grade=weak + sa=moderate
+    # — overstated). Require at least supportive_but_indirect before
+    # the floor can lift.
+    _grade = grade_block.evidence_grade
     if (
         synth_draft.executive_summary.surface_accessibility == "low"
         and synth_draft.executive_summary.state_dependence
         in ("moderate", "high")
         and synth_draft.executive_summary.surface_call_reason
         in SUBSTANTIAL_CONTEXTUAL_REASONS
+        and _grade != "weak"
     ):
         logger.info(
             "v2 orchestrator: bumping surface_accessibility low → "
