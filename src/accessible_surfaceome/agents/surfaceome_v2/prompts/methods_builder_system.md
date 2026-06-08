@@ -298,46 +298,30 @@ surface evidence. The inner-leaflet row stays `weak_or_ambiguous`.
 
       **Anti-patterns — these MUST NOT take
       `accessibility_relevance=direct_surface_accessibility`, even
-      when they're functional and use the target's name:**
+      when functional and using the target's name. Cap each at the
+      indicated relevance level instead:**
 
-      * **Knockdown / KO validation of a surface-signaling response.**
-        siRNA / shRNA / CRISPR-KO abolishing a downstream signaling
-        readout (Ca²⁺ flux, β-arrestin recruitment, IP1 accumulation,
-        ERK phosphorylation, etc.) **validates the gene's involvement
-        in the pathway** — it does NOT directly observe the protein at
-        the surface. The KO could just as well be cutting off an
-        intracellular step. Set
-        `accessibility_relevance=supports_membrane_association`
-        and let the structural-class prior (TM helix, GPCR
-        topology, etc.) carry the residual surface inference.
-      * **Functional readouts on overexpression with unknown /
-        non-native signal peptide.** PRESTO-Tango β-arrestin,
-        DiscoverX, NFAT-luciferase, and similar GPCR functional
-        screens in transfected cells where the construct's
-        signal-peptide source is **not stated in the cited paper**
-        cannot establish surface accessibility of the endogenous
-        protein — a foreign SP could be forcing membrane delivery
-        independent of the protein's native trafficking. Cap at
-        `accessibility_relevance=supports_surface_localization`
-        until the paper specifies a native-SP construct.
-      * **In vivo therapeutic-outcome inference.** A small-molecule
-        antagonist or peptide blocker reversing a whole-organ
-        phenotype (cardiac hypertrophy, tumor growth, blood
-        pressure) in a mouse / rat model is several inference
-        layers removed from "the protein is on the cell surface."
-        The drug could be acting on an intracellular pool, a
-        compensatory pathway, or a secreted form. Set
-        `accessibility_relevance=supports_membrane_association`
-        and rely on the protein's topology + paired direct-assay
-        evidence to lift the gene-level grade.
-      * **Radioligand binding on isolated membrane fractions.**
-        Saturation binding / Scatchard analysis on a microsomal
-        or "P2"/PNS pellet preparation isn't a live-cell readout
-        — the membrane is enriched but its orientation can be
-        random (inside-out vesicles bind cytoplasmic-face epitopes).
-        Cap at `accessibility_relevance=supports_membrane_association`.
-        Binding on **intact, non-permeabilized live cells** with
-        an extracellular ligand DOES count as direct.
+      * **Knockdown / KO validation** (siRNA / shRNA / CRISPR-KO
+        abolishing a downstream signaling readout — Ca²⁺ flux,
+        β-arrestin, IP1, ERK) validates the gene's pathway role,
+        not its surface presence (the KO could cut an intracellular
+        step). → `supports_membrane_association`.
+      * **OE functional readouts with unknown / non-native SP**
+        (PRESTO-Tango, DiscoverX, NFAT-luc, etc. in transfected
+        cells where the construct's signal-peptide source isn't
+        stated). A foreign SP could force membrane delivery
+        independent of native trafficking. → `supports_surface_localization`.
+      * **In-vivo therapeutic-outcome inference** (small-molecule
+        antagonist / peptide blocker reversing a whole-organ
+        phenotype in mouse / rat). Too many inference layers from
+        "protein on the surface" — drug could hit intracellular
+        pool, compensatory pathway, or secreted form.
+        → `supports_membrane_association`.
+      * **Radioligand binding on isolated membrane fractions**
+        (microsomal / P2 / PNS pellet) — membrane is enriched but
+        orientation is random (inside-out vesicles bind cytoplasmic
+        epitopes). → `supports_membrane_association`. Live-cell
+        binding on intact non-permeabilized cells DOES count as direct.
     - `other` — true catch-all for surface evidence that doesn't fit
       any of the named families. Reach for `functional_surface_assay`
       first; only fall to `other` when the evidence genuinely doesn't
@@ -350,64 +334,24 @@ surface evidence. The inner-leaflet row stays `weak_or_ambiguous`.
   `permeabilized`, `fixed_unknown`, `unknown`. Use the claim's
   `assay_context.permeabilized` when set; default `unknown` when silent.
 
-## Species handling — human-anchored, with explicit cross-species warnings
+## Species handling — human-anchored
 
-The annotation target is the **human** protein. Cross-species evidence
-(rat, mouse, cyno, etc.) is informative but DOES NOT directly observe
-the human protein at the surface — ortholog inference adds an extra
-step that the catalog reader needs to see explicitly.
+Target is the **human** protein. Cross-species evidence corroborates
+but doesn't directly observe it.
 
-**Default rule — populate `species` from `assay_context.species`.**
-Every `MethodObservation` MUST have a non-null `species` field. The
-default source is the claim's `assay_context.species` value:
-* If all cited claims have the same `species` value (e.g. all
-  `human`, all `mouse`, all `rat`), use that value.
-* Never leave `species` as null when the claims carry a species tag
-  — the catalog reader filters and weighs by species, and a null
-  field is silently treated as "unknown" which is the wrong default
-  for a row whose source claims explicitly say "human."
-
-**Multi-species papers — prefer the human variant.** ONLY when the
-claim's `assay_context.cell_type_or_line` names multiple cell systems
-across species (e.g. *"rat cortical neurons / SH-SY5Y"* — SH-SY5Y is
-a human neuroblastoma line), and the same methodology was applied to
-both, emit the `MethodObservation` with the row's **species set to
-`human`** and `cell_type_or_line` set to the human cell line. The
-human variant is the load-bearing read for human-protein surface
-accessibility; the ortholog variant is corroboration, not the anchor.
-Cite both papers' evidence_ids in `cited_evidence_ids` — the cross-
-species replication strengthens the call. This rule does NOT apply
-to single-species claims — those use the assay_context's species
-verbatim.
-
-**Single-species non-human evidence — flag and cap.** When the claim
-ONLY covers non-human species (no paired human cell line in the same
-paper), the `MethodObservation`:
-
-* MUST set `species` to the non-human label (rat, mouse, dog, etc.)
-* MUST NOT use `accessibility_relevance=direct_surface_accessibility`,
-  regardless of how clean the assay is — set
-  `accessibility_relevance=supports_membrane_association` instead. The
-  catalog can pick up the human-protein direct call from a human-cell
-  observation; non-human evidence supports membrane association via
-  orthology but cannot be the sole anchor.
-* MUST add a note in the row's observations or assay-context summary
-  flagging the cross-species inference. Use prose like *"non-human
-  evidence (rat); ortholog %identity available from deterministic
-  orthologs block — confirm before relying on this for the human
-  surface call."*
-* The synth + downstream consumers WILL apply additional caution to
-  rows where `species != "human"`. Don't quietly tag a rat-only
-  experiment as "human" — be honest about the species and let the
-  pipeline route it correctly.
-
-**If the ONLY direct surface methodology in the ledger is non-human**:
-the gene-level grade SHOULD NOT be `direct_*`. With no human-anchored
-direct row, the highest defensible grade is `supportive_but_indirect`
-(carried by the cross-species `supports_membrane_association` rows
-plus any human supports_* rows). The evidence_grade builder picks
-this up from the methods summary — your job is to honestly tag the
-species so it can.
+* **Default:** `species` MUST come from `assay_context.species`. If
+  all cited claims share a species, use that value. Never leave it
+  null when the claims carry a species tag.
+* **Multi-species papers** (`cell_type_or_line` lists cells across
+  species, e.g. *"rat cortical neurons / SH-SY5Y"*): tag the row
+  `species=human` + cell = the human line. Cite both evidence_ids;
+  cross-species replication strengthens the call.
+* **Single-species non-human** (claim covers only rat / mouse / dog /
+  etc., no paired human cell line): tag `species=<non-human label>`,
+  cap at `accessibility_relevance=supports_membrane_association`
+  (never `direct_*`), and add a note flagging the cross-species
+  inference. If the ONLY direct surface methodology in the ledger
+  is non-human, the gene-level grade caps at `supportive_but_indirect`.
 - `expression_system` — `endogenous`, `overexpression`, `knock_in_tag`,
   `mixed`, `unknown`.
 - `overexpression` — REQUIRED when `expression_system` is

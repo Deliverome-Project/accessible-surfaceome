@@ -180,27 +180,20 @@ parse time — invented or paraphrased ids fail the run.
   Reserve `surface_accessibility=no` for proteins where the deep-dive
   evidence does not surface a targetable state anywhere.
 
-  **`high` requires direct evidence in hand.** The catalog filter
-  treats `high` as "confidently surface-accessible" — picking it on
-  topology prior alone (e.g. "it's a canonical 7TM GPCR so it must be
-  surface") OVERSTATES the call to a reader scoping a campaign.
-  Apply this bracket:
+  **`high` requires direct evidence in hand** (topology prior alone
+  is not enough — catalog readers treat `high` as "confidently
+  surface-accessible"):
 
-  | grade + confidence | allowed surface_accessibility |
+  | grade + confidence | max surface_accessibility |
   |---|---|
-  | `direct_multi_method` + any | `high` is allowed |
-  | `direct_single_method` + `confidence=high` | `high` is allowed |
-  | `direct_single_method` + `confidence ∈ {moderate, low}` | cap at `moderate` |
-  | `supportive_but_indirect` (any confidence) | cap at `moderate` |
-  | `weak` or `conflicting` | cap at `low` |
+  | `direct_multi_method` | `high` |
+  | `direct_single_method` + `confidence=high` | `high` |
+  | `direct_single_method` + `confidence ∈ {moderate, low}` | `moderate` |
+  | `supportive_but_indirect` | `moderate` |
+  | `weak` / `conflicting` | `low` |
 
-  The bracket is load-bearing for catalog readers — over-flagging
-  genes as `high` when the experimental evidence is thin (single
-  method type, cross-species only, weak antibody validation) leads
-  campaigns to scope on assumptions the evidence doesn't actually
-  carry. When the bracket forces a drop from `high` → `moderate`,
-  the `state_dependence` axis still captures targetable conditionality
-  — readers needing the canonical-receptor signal can still find it.
+  `state_dependence` still flags conditionality when the bracket caps
+  `high` → `moderate`, so canonical-receptor signal isn't lost.
 
 - **`state_dependence`** — captures how much the targetable surface
   fraction VARIES by state (cell type, activation, cancer induction,
@@ -314,27 +307,20 @@ parse time — invented or paraphrased ids fail the run.
          (cancer cells only) — a (non-surface-baseline protein with
          a state-conditional surface form)."
 
-     **Verdict-beat tone discipline — match the strength of the
-     evidence, don't overclaim from the topology prior.** The verdict
-     adjective must reflect the evidence_grade + confidence pair, not
-     just the architectural class. Use this table:
+     **Verdict-beat tone — match the evidence, not the topology
+     prior.** The opener's strength must reflect grade × confidence:
 
-     | grade + confidence | verdict-beat opener |
+     | grade + confidence | opener |
      |---|---|
-     | `direct_multi_method` + `confidence=high` | "is constitutively / state-dependently surface-accessible" |
-     | `direct_single_method` + `confidence=high` | "is constitutively / state-dependently surface-accessible" |
-     | `direct_single_method` + `confidence ∈ {moderate, low}` | "is likely surface-accessible" or "has supportive surface evidence" |
-     | `supportive_but_indirect` (any confidence) | "has supportive but indirect surface evidence" or "is likely surface-accessible based on topology + indirect support" |
+     | `direct_*` + `confidence=high` | "is constitutively / state-dependently surface-accessible" |
+     | `direct_single_method` + `confidence ∈ {moderate, low}` | "is likely surface-accessible" |
+     | `supportive_but_indirect` | "has supportive but indirect surface evidence" |
      | `weak` | "has weak surface evidence; topology suggests but direct readouts are missing" |
 
-     The wrong tone reads as overconfident: opening with "is
-     constitutively surface-accessible" when the data is one
-     direct row (especially cross-species) + topology prior reads
-     to a campaign-scoping reader as "yes definitely on the
-     surface" — even though the `confidence_reasoning` later
-     acknowledges thinness. The verdict-beat opener is the FIRST
-     thing readers see; it must NOT promise more than the evidence
-     carries.
+     Opening with "is constitutively surface-accessible" when grade is
+     direct_single + confidence is moderate (especially with
+     cross-species or single-source direct evidence) overclaims to a
+     campaign-scoping reader. The opener is the FIRST thing they see.
 
   2. **Evidence beat (~150 char).** Flow into the evidence: use
      evidence_grade vocabulary for compression ("direct multi-method
@@ -344,68 +330,34 @@ parse time — invented or paraphrased ids fail the run.
      with CRISPR-KO controls (a1_evi_04), surface biotinylation–MS
      (a1_evi_08), and LEL-blocking functional assays (a1_evi_13)."
 
-     **Methods-citing discipline (load-bearing — read the methods
-     builder output carefully):** the methods builder has already
-     classified each observation's `accessibility_relevance` (look at
-     `surface_evidence.methods[]` in your assembled record context).
-     The Evidence beat can ONLY label as "Direct surface evidence" /
-     "Direct multi-method support" / "Direct single-method support"
-     those methods the builder classified as
-     `accessibility_relevance=direct_surface_accessibility`. Methods
-     the builder classified as `supports_membrane_association`,
-     `supports_surface_localization`, `expression_only`,
-     `weak_or_ambiguous`, or `excluded_as_ligand_engagement` are NOT
-     direct surface evidence — they're supporting / indirect /
-     non-load-bearing.
+     **Methods-citing discipline.** Read `surface_evidence.methods[]`.
+     A cite can be labeled "Direct surface evidence" / "Direct
+     multi/single-method support" ONLY if its `accessibility_relevance
+     = direct_surface_accessibility`. Anything else
+     (`supports_membrane_association`, `supports_surface_localization`,
+     `expression_only`, `weak_or_ambiguous`,
+     `excluded_as_ligand_engagement`) is supportive / indirect — never
+     "direct".
 
-     **Strong default — don't enumerate the indirect methods at all.**
-     When `evidence_grade=direct_single_method` (one direct row + the
-     rest indirect / weak), the Evidence beat should name ONLY the
-     direct method and the cite that anchors it. Listing 3-6
-     additional indirect-method cites (photoaffinity on membrane
-     fractions, perm IF with PM-colocalization, knockin-tag IF,
-     siRNA knockdown of signaling) AFTER a "Direct surface evidence
-     is single-method" statement reads to the catalog reader as if
-     all six methods are part of the direct support — even though
-     the methods builder explicitly de-rated five of them. The
-     reader has the full `surface_evidence.methods[]` table on the
-     gene page for the supporting cites; the one_paragraph headline
-     does NOT need to repeat them.
+     **Cap the Evidence beat at the direct rows.** When
+     `evidence_grade=direct_single_method`, name the ONE direct method
+     + its anchor cite and stop. When `direct_multi_method`, name the
+     2-3 direct methods. Do NOT list 3-6 indirect cites after the
+     direct line — that contradicts the "single/multi" framing and the
+     reader gets the indirect rows from the methods table anyway.
+     Hard cap: **≤2 cites total in the Evidence beat when
+     `evidence_grade ≤ direct_single_method`.** A single indirect
+     cite is allowed ONLY when it changes the picture (e.g. the ONLY
+     in-vivo readout); even then, cap at one.
 
-     **Correct shape (single direct row):**
-       * *"Direct surface evidence is single-method: live-cell flow
-         cytometry on differentiated [cell line] confirms surface
-         expression ([cite])."* — STOP. Don't list the 5 indirect
-         cites; they're in the methods table.
-
-     **Correct shape (≥2 direct rows):**
-       * *"Direct multi-method support: live-cell flow with
-         CRISPR-KO controls ([cite]), surface biotinylation–MS
-         ([cite]), and antibody-mediated tumor killing ([cite])."*
-
-     **Optional only when load-bearing:** if a non-direct method
-     CHANGES the inferential picture (e.g. a single in-vivo
-     antibody-mediated tumor-killing readout that's the ONLY
-     non-cell-line surface evidence), a single supportive line is
-     allowed: *"Corroborated by [one named indirect method] ([cite])."*
-     Cap at ONE indirect cite even then; if more matter, leave them
-     for the methods table.
-
-     **Forbidden language patterns** (catch these in self-review
-     before emitting):
-       * *"Direct surface evidence is single-method: [direct]
-         (cite), supported by [indirect 1] (cite), [indirect 2]
-         (cite), [indirect 3] (cite), and [indirect 4] (cite)"*
-         — enumerating 3+ indirect cites contradicts the
-         "single-method" framing.
-       * *"Direct support from [direct cite]; further confirmed by
-         [3+ indirect cites]"* — same pattern, different wording.
-
-     Before emitting `one_paragraph`, count the cites you've placed
-     in the Evidence beat. If it's >2 cites total and the
-     `evidence_grade` is `direct_single_method` or weaker, you're
-     over-citing — drop the indirect cites and let the methods
-     table speak for itself.
+     Shapes:
+       * direct_single → *"Direct surface evidence is single-method:
+         live-cell flow on [cell line] ([cite])."*
+       * direct_multi → *"Direct multi-method support: live-cell flow
+         with KO controls ([cite]) and surface biotinylation ([cite])."*
+       * supportive_but_indirect / weak → lead with the grade
+         vocabulary, name the strongest 1-2 lines of support: *"Supportive
+         but indirect: perm IF with PM-rim colocalization ([cite])."*
 
   3. **State-dependence beat (~150 char).** Continue the paragraph with
      state context. **Embed the `state_dependence` value in flowing
