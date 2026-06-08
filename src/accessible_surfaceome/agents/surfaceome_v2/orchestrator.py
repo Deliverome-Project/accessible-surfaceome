@@ -1166,6 +1166,40 @@ def _annotate(
         }
     )
 
+    # ---- step 5.7: enforce CONTEXTUAL bucket when methods detected
+    # trafficking-to-PM ---------------------------------------------------
+    # The methods builder is the canonical "did we see PM trafficking?"
+    # detector — it emits `accessibility_relevance=supports_surface_localization`
+    # for transient PM-cycling observations (TGN46-style transport carriers,
+    # CLEM-Reg, perm-IF with PM-rim co-localization). The synth's
+    # `surface_call_reason` MUST then land in the CONTEXTUAL bucket
+    # (dual_localization) rather than the NO bucket (endomembrane_resident)
+    # — that's what the trafficking-with-dwell rule was meant to enforce.
+    # Observed failure: synth picked endomembrane_resident on TGOLN2 v2.21.0
+    # despite methods having a `supports_surface_localization` row citing
+    # CLEM-Reg PM-trafficking. Prompt rule alone wasn't load-bearing
+    # enough; this deterministic override is the safety net.
+    if (
+        synth_draft.executive_summary.surface_call_reason == "endomembrane_resident"
+        and any(
+            m.accessibility_relevance == "supports_surface_localization"
+            for m in outputs["methods"]
+        )
+    ):
+        logger.info(
+            "v2 orchestrator: overriding surface_call_reason "
+            "endomembrane_resident → dual_localization "
+            "(methods builder emitted supports_surface_localization rows; "
+            "trafficking-to-PM evidence forces CONTEXTUAL bucket)"
+        )
+        synth_draft = synth_draft.model_copy(
+            update={
+                "executive_summary": synth_draft.executive_summary.model_copy(
+                    update={"surface_call_reason": "dual_localization"}
+                )
+            }
+        )
+
     # ---- step 6: promote claims → Evidence (synthetic source store) -------
     merged_claims = a1_claims + a2_claims
     with timing.step(
