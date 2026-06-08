@@ -1185,28 +1185,27 @@ def _annotate(
         }
     )
 
-    # ---- step 5.65: state_dependence demote-block ------------------------
+    # ---- step 5.65: state_dependence bump-when-state-conditional --------
     # The SurfaceomeRecord validator forbids state_dependence='low' when
-    # the A2 biology shows state-conditional induction
-    # (filters.induction_trigger != 'none'). When the synth slips through
-    # (observed on TGOLN2 v2.24.0 induction=infection, LYN v2.24.0
-    # induction=oncogenic), bump to 'moderate' deterministically before
-    # the validator raises. Same shape as the cardinality / trafficking
-    # post-passes: trust the upstream signal, fix the downstream choice
-    # mechanically.
-    induction_trigger = getattr(
-        synth_draft.filters_llm, "induction_trigger", None
+    # the A2 biology shows state-conditional induction. The validator
+    # reads from the derived filters.induction_trigger, but at this
+    # point in the pipeline that field hasn't been derived yet — so we
+    # check the upstream signal it depends on: any
+    # accessibility_modulation row with direction='increases' indicates
+    # the surface form is state-induced. Bump low → moderate so the
+    # downstream validator doesn't raise.
+    has_state_induction = any(
+        getattr(m, "direction", None) == "increases"
+        for m in (biological_context.accessibility_modulation or [])
     )
     if (
         synth_draft.executive_summary.state_dependence == "low"
-        and induction_trigger
-        and induction_trigger != "none"
+        and has_state_induction
     ):
         logger.info(
             "v2 orchestrator: bumping state_dependence low → moderate "
-            "(filters.induction_trigger=%r ≠ 'none'; biology is "
-            "state-conditional)",
-            induction_trigger,
+            "(biological_context.accessibility_modulation has "
+            "direction='increases' rows; surface form is state-induced)"
         )
         synth_draft = synth_draft.model_copy(
             update={
@@ -1231,9 +1230,9 @@ def _annotate(
         has_secretory_dual = any(
             "secret" in (d.compartment or "").lower()
             for d in (
-                synth_draft.biological_context.subcellular_localization.dual_localization
-                if synth_draft.biological_context
-                and synth_draft.biological_context.subcellular_localization
+                biological_context.subcellular_localization.dual_localization
+                if biological_context
+                and biological_context.subcellular_localization
                 else []
             )
         )
