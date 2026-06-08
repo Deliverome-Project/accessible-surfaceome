@@ -870,6 +870,25 @@ def _annotate(
         )
         grade_block = retry_outputs["evidence_grade"]
 
+    # Deterministic grade demote: if grade is direct_multi_method but
+    # only 1 direct row exists, demote to direct_single_method (the
+    # cardinality validator on SurfaceEvidence would otherwise reject
+    # the record). Observed on GPR75 v2.24.0. Same shape as the
+    # n_direct=0 retry above, but resolved without a re-LLM call —
+    # the answer is mechanical (the cardinality permits direct_single).
+    if (
+        grade_block.evidence_grade == "direct_multi_method"
+        and n_direct == 1
+    ):
+        logger.info(
+            "v2 orchestrator: demoting evidence_grade direct_multi_method → "
+            "direct_single_method (only 1 direct_surface_accessibility "
+            "method row, cardinality requires ≥2 for multi)"
+        )
+        grade_block = grade_block.model_copy(
+            update={"evidence_grade": "direct_single_method"}
+        )
+
     # Capture per-builder raw outputs before they're assembled into blocks.
     all_builder_outputs = {**outputs, "evidence_grade": grade_block}
     intermediates["builders"] = {
@@ -1165,6 +1184,88 @@ def _annotate(
             )
         }
     )
+
+    # ---- step 5.65: state_dependence demote-block ------------------------
+    # The SurfaceomeRecord validator forbids state_dependence='low' when
+    # the A2 biology shows state-conditional induction
+    # (filters.induction_trigger != 'none'). When the synth slips through
+    # (observed on TGOLN2 v2.24.0 induction=infection, LYN v2.24.0
+    # induction=oncogenic), bump to 'moderate' deterministically before
+    # the validator raises. Same shape as the cardinality / trafficking
+    # post-passes: trust the upstream signal, fix the downstream choice
+    # mechanically.
+    induction_trigger = getattr(
+        synth_draft.filters_llm, "induction_trigger", None
+    )
+    if (
+        synth_draft.executive_summary.state_dependence == "low"
+        and induction_trigger
+        and induction_trigger != "none"
+    ):
+        logger.info(
+            "v2 orchestrator: bumping state_dependence low → moderate "
+            "(filters.induction_trigger=%r ≠ 'none'; biology is "
+            "state-conditional)",
+            induction_trigger,
+        )
+        synth_draft = synth_draft.model_copy(
+            update={
+                "executive_summary": synth_draft.executive_summary.model_copy(
+                    update={"state_dependence": "moderate"}
+                )
+            }
+        )
+
+    # ---- step 5.68: secreted_form demote-when-uncorroborated -------------
+    # The SurfaceomeRecord validator rejects accessibility_risks.secreted_form
+    # with present=True AND no cited evidence AND no secretory
+    # dual_localization AND no fractionation method — that's an
+    # uncorroborated risk claim. The risks builder occasionally slips
+    # (observed on BAX v2.24.0, a mitochondrial-only protein where
+    # secreted_form should be False). Demote to present=False
+    # deterministically rather than crashing the run.
+    risks = synth_draft.accessibility_risks
+    if risks and risks.secreted_form and risks.secreted_form.present:
+        sf = risks.secreted_form
+        has_cites = bool(sf.cited_evidence_ids)
+        has_secretory_dual = any(
+            "secret" in (d.compartment or "").lower()
+            for d in (
+                synth_draft.biological_context.subcellular_localization.dual_localization
+                if synth_draft.biological_context
+                and synth_draft.biological_context.subcellular_localization
+                else []
+            )
+        )
+        has_fractionation_method = any(
+            m.accessibility_relevance == "supports_membrane_association"
+            for m in outputs["methods"]
+        )
+        if not (has_cites or has_secretory_dual or has_fractionation_method):
+            logger.info(
+                "v2 orchestrator: demoting accessibility_risks.secreted_form "
+                "present=True → False (no cites + no secretory "
+                "dual_localization + no fractionation method — risks "
+                "builder set the flag without corroboration)"
+            )
+            new_sf = sf.model_copy(
+                update={
+                    "present": False,
+                    "rationale": (
+                        sf.rationale
+                        + " [orchestrator: demoted from present=True — "
+                        "no corroborating cites / secretory dual_localization "
+                        "/ fractionation method in the record.]"
+                    ).strip(),
+                }
+            )
+            synth_draft = synth_draft.model_copy(
+                update={
+                    "accessibility_risks": risks.model_copy(
+                        update={"secreted_form": new_sf}
+                    )
+                }
+            )
 
     # ---- step 5.7: enforce CONTEXTUAL bucket when methods detected
     # trafficking-to-PM ---------------------------------------------------
