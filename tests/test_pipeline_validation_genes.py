@@ -33,7 +33,7 @@ import pytest
 
 
 _PUBLIC_API = "https://api.deliverome.org/surfaceome/v1/genes"
-_VALIDATION_GENES = ("TACSTD2", "HMGB1", "SRC", "GPR75", "TGOLN2")
+_VALIDATION_GENES = ("TACSTD2", "HMGB1", "SRC", "GPR75", "TGOLN2", "PVRIG")
 
 
 @pytest.fixture(scope="module")
@@ -217,6 +217,38 @@ EXPECTATIONS: list[tuple[str, str, Any, str]] = [
         "synth endomembrane_resident vs dual_localization disambiguation "
         "(load-bearing rule) — when any trafficking-to-PM observation "
         "exists in A1, default to dual_localization (CONTEXTUAL bucket)",
+    ),
+
+    # ---- PVRIG — checkpoint receptor, tumor-immunology archetype ----
+    # Added 2026-06-08 after the Sonnet NCBI benchmark divergence review.
+    # PVRIG is a co-inhibitory checkpoint receptor (PVR family / TIGIT
+    # axis) on NK and T cells; binds PVRL2 (cognate endogenous partner).
+    # Therapeutic anti-PVRIG mAbs are in clinical development — perfect
+    # has_known_ligand stress test (endogenous PVRL2 should keep the
+    # flag True; the therapeutics should NOT be the load-bearing reason).
+    (
+        "PVRIG", "executive_summary.surface_accessibility",
+        {"high", "moderate"},
+        "synth surface_accessibility — PVRIG is a single-pass type I "
+        "membrane co-inhibitory receptor on lymphocytes; YES-bucket",
+    ),
+    (
+        "PVRIG", "executive_summary.surface_call_reason",
+        "classical_surface_receptor",
+        "synth surface_call_reason — PVRIG is canonical surface "
+        "checkpoint receptor with documented immunology biology",
+    ),
+    (
+        "PVRIG", "filters.has_known_ligand", True,
+        "synth has_known_ligand — PVRL2 (CD112) is PVRIG's documented "
+        "ENDOGENOUS cognate ligand (validated by surface plasmon "
+        "resonance, FACS binding, structural studies). True is correct; "
+        "the anti-PVRIG clinical mAbs are therapeutics and should NOT "
+        "be the load-bearing reason in the rationale.",
+    ),
+    (
+        "PVRIG", "filters.has_known_ligand_rationale.len>0", True,
+        "Filters._require_has_known_ligand_rationale_when_true validator",
     ),
 ]
 

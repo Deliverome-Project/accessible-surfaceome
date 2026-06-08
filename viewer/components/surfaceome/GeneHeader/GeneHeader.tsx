@@ -269,7 +269,18 @@ function triageVsDeepDive(
   if (triageNegative) {
     if (deepVerdict === "no") return "agree";
     if (deepVerdict === "yes") return "conflict";
-    return "unclear"; // contextual under "unlikely" triage — triage missed a state-induced surface
+    // contextual under "unlikely" triage IS a disagreement — the triage
+    // missed a state-induced or trafficking-cycling surface that the
+    // deep dive found (e.g. TGN46/TGOLN2: triage said `no` /
+    // `endomembrane_resident`, the deep dive found CONTEXTUAL surface
+    // via dual_localization with documented PM trafficking). Render as
+    // `conflict` so the row shows a non-empty pill — "unclear" hides
+    // the case entirely and the reader can't tell whether to trust the
+    // triage chip or the deep-dive call. The deep dive wins on
+    // conflict (it has the per-method evidence), and surfacing the
+    // disagreement is the whole point of the pill.
+    if (deepVerdict === "contextual") return "conflict";
+    return "unclear";
   }
   return "unclear";
 }

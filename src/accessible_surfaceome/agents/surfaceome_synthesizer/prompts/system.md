@@ -344,6 +344,45 @@ parse time — invented or paraphrased ids fail the run.
      with CRISPR-KO controls (a1_evi_04), surface biotinylation–MS
      (a1_evi_08), and LEL-blocking functional assays (a1_evi_13)."
 
+     **Methods-citing discipline (load-bearing — read the methods
+     builder output carefully):** the methods builder has already
+     classified each observation's `accessibility_relevance` (look at
+     `surface_evidence.methods[]` in your assembled record context).
+     The Evidence beat can ONLY label as "Direct surface evidence" /
+     "Direct multi-method support" / "Direct single-method support"
+     those methods the builder classified as
+     `accessibility_relevance=direct_surface_accessibility`. Methods
+     the builder classified as `supports_membrane_association`,
+     `supports_surface_localization`, `expression_only`,
+     `weak_or_ambiguous`, or `excluded_as_ligand_engagement` are NOT
+     direct surface evidence — they're supporting / indirect /
+     non-load-bearing.
+
+     If you list permeabilized IF, photoaffinity crosslinking on
+     membrane fractions, knockin-tag IF, or other indirect-but-strong
+     methods under a "Direct surface evidence:" header, you mislead
+     the reader: the methods builder de-rated those rows specifically
+     because they DON'T directly observe the protein at the surface.
+
+     Two correct ways to cite the indirect-but-strong methods:
+
+     * Group them separately: *"Direct surface evidence is single-
+       method (live-cell flow on intact cells, [cite]). Supporting
+       indirect evidence includes membrane-fraction photoaffinity
+       crosslinking ([cite]) and knockin IF showing PM-rim
+       co-localization ([cite])."*
+     * Lead with the grade vocabulary and let the inline cites do
+       the work: *"Supportive but indirect: permeabilized IF with
+       strong PM-rim co-localization ([cite]) and membrane-fraction
+       glycoproteomics ([cite])."*
+
+     Before emitting `one_paragraph`, check each method you cite
+     against the assembled record's `methods[]` list. If a cite's
+     evidence_id appears under a `MethodObservation` whose
+     `accessibility_relevance ≠ direct_surface_accessibility`, do not
+     describe that cite as "direct surface evidence" — describe it as
+     "supportive" or move it to a separate clause.
+
   3. **State-dependence beat (~150 char).** Continue the paragraph with
      state context. **Embed the `state_dependence` value in flowing
      prose**, never as a labeled prefix:
