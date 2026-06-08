@@ -1149,107 +1149,583 @@ def _annotate(
 
     # ---- step 5: synthesizer (B) ------------------------------------------
     logger.info("v2 orchestrator: dispatching synthesizer for %s", gene_id.hgnc_symbol)
-    with timing.step(
-        "synthesizer",
-        phase="synthesizer",
-        n_items=len(a1_claims) + len(a2_claims),
-        model=AGENT_MODEL,
-    ) as _h:
-        # Compute the triage prior once for the synthesizer's task
-        # message. ``plan_trim_select`` already computed its own copy
-        # during ``_build_gene_context`` (cheap file read); we compute
-        # again here so a synthesizer-only re-invocation doesn't depend
-        # on plumbing it from the earlier phase. Implements PR #23
-        # design doc §1110-1116's "common preamble — triage_record" for
-        # the v2 pipeline's B agent.
-        triage_record = _load_triage_record(gene_id.hgnc_symbol)
-        triage_summary_json = (
-            _summarize_triage_for_planner(triage_record)
-            if triage_record is not None
-            else None
+    # ---- Phase 2: synth-retry-with-feedback closure -------------------
+    # Wraps synth call + orchestrator post-passes + SurfaceomeRecord
+    # assembly in a 2-attempt loop. On first ValidationError, the
+    # synthesizer is re-invoked with the validator's error message
+    # threaded into a 'Feedback from a prior synthesis attempt' block
+    # so it can correct the flagged field(s). Catches NEW validator
+    # failures the deterministic post-passes don't anticipate, without
+    # per-failure code. Bounded at 1 retry — additional cost when
+    # triggered: ~$0.15 (one extra synth call); typical case (success
+    # on first attempt): zero overhead.
+    last_validation_error: ValidationError | None = None
+    record: SurfaceomeRecord | None = None
+    for retry_attempt in range(2):
+        synth_feedback = (
+            None if last_validation_error is None
+            else f"SurfaceomeRecord assembly failed: {last_validation_error}"
         )
-        # Compact JSON snapshot of the deterministic block + the curator-
-        # assigned family tags so B sees what ``_attach_deterministic_families``
-        # is about to overwrite on its output (cross-check rather than
-        # discover-mismatch-post-hoc on llm_family).
-        from accessible_surfaceome.agents.surfaceome_synthesizer.runner import (
-            _summarize_deterministic_for_synthesizer,
-        )
-        deterministic_summary_json = _summarize_deterministic_for_synthesizer(
-            det_features,
-            hgnc_gene_groups=list(dual.bundle.hgnc_gene_groups),
-            uniprot_family=dual.bundle.uniprot_family,
-        )
-        b = run_synthesizer_with_drafts(
-            gene_id.hgnc_symbol,
-            a1_draft=a1_draft,
-            a2_draft=a2_draft,
-            client=client,
-            triage_summary_json=triage_summary_json,
-            deterministic_summary_json=deterministic_summary_json,
-            # The frozen, canonical risks block. B copies it through +
-            # consumes it (headline_risks + confidence); the orchestrator
-            # overwrites B's echoed copy with ``canonical_risks`` at step 5.4.
-            accessibility_risks=canonical_risks,
-        )
-        _h.model = b.usage.model
-        # ``BResult.usage`` is a UsageSummary, not a UsageRecord. Build a
-        # one-shot UsageRecord-shaped record so ``set_usage`` rolls it.
-        synth_rec = UsageRecord(
-            input_tokens=b.usage.input_tokens,
-            output_tokens=b.usage.output_tokens,
-            cache_creation_input_tokens=b.usage.cache_creation_input_tokens,
-            cache_read_input_tokens=b.usage.cache_read_input_tokens,
-            cost_usd=b.usage.cost_usd,
-        )
-        _h.set_usage([synth_rec], model=b.usage.model)
+        with timing.step(
+            "synthesizer",
+            phase="synthesizer",
+            n_items=len(a1_claims) + len(a2_claims),
+            model=AGENT_MODEL,
+        ) as _h:
+            # Compute the triage prior once for the synthesizer's task
+            # message. ``plan_trim_select`` already computed its own copy
+            # during ``_build_gene_context`` (cheap file read); we compute
+            # again here so a synthesizer-only re-invocation doesn't depend
+            # on plumbing it from the earlier phase. Implements PR #23
+            # design doc §1110-1116's "common preamble — triage_record" for
+            # the v2 pipeline's B agent.
+            triage_record = _load_triage_record(gene_id.hgnc_symbol)
+            triage_summary_json = (
+                _summarize_triage_for_planner(triage_record)
+                if triage_record is not None
+                else None
+            )
+            # Compact JSON snapshot of the deterministic block + the curator-
+            # assigned family tags so B sees what ``_attach_deterministic_families``
+            # is about to overwrite on its output (cross-check rather than
+            # discover-mismatch-post-hoc on llm_family).
+            from accessible_surfaceome.agents.surfaceome_synthesizer.runner import (
+                _summarize_deterministic_for_synthesizer,
+            )
+            deterministic_summary_json = _summarize_deterministic_for_synthesizer(
+                det_features,
+                hgnc_gene_groups=list(dual.bundle.hgnc_gene_groups),
+                uniprot_family=dual.bundle.uniprot_family,
+            )
+            b = run_synthesizer_with_drafts(
+                gene_id.hgnc_symbol,
+                a1_draft=a1_draft,
+                a2_draft=a2_draft,
+                client=client,
+                triage_summary_json=triage_summary_json,
+                deterministic_summary_json=deterministic_summary_json,
+                # The frozen, canonical risks block. B copies it through +
+                # consumes it (headline_risks + confidence); the orchestrator
+                # overwrites B's echoed copy with ``canonical_risks`` at step 5.4.
+                accessibility_risks=canonical_risks,
+                external_feedback=synth_feedback,
+            )
+            _h.model = b.usage.model
+            # ``BResult.usage`` is a UsageSummary, not a UsageRecord. Build a
+            # one-shot UsageRecord-shaped record so ``set_usage`` rolls it.
+            synth_rec = UsageRecord(
+                input_tokens=b.usage.input_tokens,
+                output_tokens=b.usage.output_tokens,
+                cache_creation_input_tokens=b.usage.cache_creation_input_tokens,
+                cache_read_input_tokens=b.usage.cache_read_input_tokens,
+                cost_usd=b.usage.cost_usd,
+            )
+            _h.set_usage([synth_rec], model=b.usage.model)
 
-    intermediates["synthesizer"] = {
-        "raw_json": b.raw_json,
-        "validation_error": b.validation_error,
-        "n_repair_attempts": b.n_repair_attempts,
-        "draft": b.draft.model_dump(mode="json") if b.draft is not None else None,
-    }
+        intermediates["synthesizer"] = {
+            "raw_json": b.raw_json,
+            "validation_error": b.validation_error,
+            "n_repair_attempts": b.n_repair_attempts,
+            "draft": b.draft.model_dump(mode="json") if b.draft is not None else None,
+        }
 
-    # Persist bundle (gene resolution) + triage_summary so a future
-    # synth-only retry can reconstruct the synthesizer's full input
-    # context without re-running plan-trim-select. The bundle carries
-    # uniprot_acc / hgnc_id / aliases / family tags; triage_summary is
-    # the upstream Sonnet verdict the synth uses as a prior.
-    try:
-        intermediates["bundle"] = dual.bundle.model_dump(mode="json")
-    except Exception:  # noqa: BLE001
-        intermediates["bundle"] = None
-    intermediates["triage_summary_json"] = triage_summary_json
+        # Persist bundle (gene resolution) + triage_summary so a future
+        # synth-only retry can reconstruct the synthesizer's full input
+        # context without re-running plan-trim-select. The bundle carries
+        # uniprot_acc / hgnc_id / aliases / family tags; triage_summary is
+        # the upstream Sonnet verdict the synth uses as a prior.
+        try:
+            intermediates["bundle"] = dual.bundle.model_dump(mode="json")
+        except Exception:  # noqa: BLE001
+            intermediates["bundle"] = None
+        intermediates["triage_summary_json"] = triage_summary_json
 
-    # Persist per-pipeline cost so we can do cohort-level cost analytics
-    # from D1 without re-parsing log files. Per-builder breakdown lives
-    # in `builder_usage`; pts + synth cost are atomic.
-    intermediates["cost_total_usd"] = (
-        (dual.total_cost_usd if dual is not None else 0.0)
-        + sum(u.cost_usd for u in builder_usage.values())
-        + (b.usage.cost_usd if b is not None else 0.0)
-    )
-    intermediates["cost_per_pipeline"] = {
-        "plan_trim_select": dual.total_cost_usd if dual is not None else 0.0,
-        "builders": sum(u.cost_usd for u in builder_usage.values()),
-        "synthesizer": b.usage.cost_usd if b is not None else 0.0,
-    }
-
-    # Hard cost ceiling — per-gene abort. Bounds runaway-cost scenarios
-    # on a genome-wide sweep (a single pathological gene could otherwise
-    # run $20+ before any post-passes catch it). 7 USD chosen to give
-    # ~2x headroom over the heaviest validation gene (TACSTD2 ~$3.94).
-    # Aborts with a VALID error result instead of silently billing.
-    MAX_COST_USD = 7.0
-    if intermediates["cost_total_usd"] > MAX_COST_USD:
-        logger.warning(
-            "v2 orchestrator: per-gene cost ceiling exceeded for %s: "
-            "$%.2f > $%.2f. Aborting before record assembly.",
-            gene_id.hgnc_symbol,
-            intermediates["cost_total_usd"],
-            MAX_COST_USD,
+        # Persist per-pipeline cost so we can do cohort-level cost analytics
+        # from D1 without re-parsing log files. Per-builder breakdown lives
+        # in `builder_usage`; pts + synth cost are atomic.
+        intermediates["cost_total_usd"] = (
+            (dual.total_cost_usd if dual is not None else 0.0)
+            + sum(u.cost_usd for u in builder_usage.values())
+            + (b.usage.cost_usd if b is not None else 0.0)
         )
+        intermediates["cost_per_pipeline"] = {
+            "plan_trim_select": dual.total_cost_usd if dual is not None else 0.0,
+            "builders": sum(u.cost_usd for u in builder_usage.values()),
+            "synthesizer": b.usage.cost_usd if b is not None else 0.0,
+        }
+
+        # Hard cost ceiling — per-gene abort. Bounds runaway-cost scenarios
+        # on a genome-wide sweep (a single pathological gene could otherwise
+        # run $20+ before any post-passes catch it). 7 USD chosen to give
+        # ~2x headroom over the heaviest validation gene (TACSTD2 ~$3.94).
+        # Aborts with a VALID error result instead of silently billing.
+        MAX_COST_USD = 7.0
+        if intermediates["cost_total_usd"] > MAX_COST_USD:
+            logger.warning(
+                "v2 orchestrator: per-gene cost ceiling exceeded for %s: "
+                "$%.2f > $%.2f. Aborting before record assembly.",
+                gene_id.hgnc_symbol,
+                intermediates["cost_total_usd"],
+                MAX_COST_USD,
+            )
+            return AnnotateResultV2(
+                gene=gene_id.hgnc_symbol,
+                record=None,
+                dual=dual,
+                synthesizer=b,
+                blocks_used=_count_blocks(surface_evidence, biological_context),
+                builder_usage=builder_usage,
+                error=(
+                    f"per-gene cost ceiling exceeded: "
+                    f"${intermediates['cost_total_usd']:.2f} > ${MAX_COST_USD:.2f}"
+                ),
+                timing=list(timing.entries),
+                intermediates=intermediates,
+            )
+
+        if b.draft is None:
+            return AnnotateResultV2(
+                gene=gene_id.hgnc_symbol,
+                record=None,
+                dual=dual,
+                synthesizer=b,
+                blocks_used=_count_blocks(surface_evidence, biological_context),
+                builder_usage=builder_usage,
+                error=f"synthesizer returned no valid draft: {b.validation_error}",
+                timing=list(timing.entries),
+                intermediates=intermediates,
+            )
+
+        # ---- step 5.5: scrub headline_risks for structured coherence ---------
+        # Reviewers (CD81 audit) caught the synthesizer over-claiming
+        # ``co_receptor`` / ``epitope_masked`` in headline_risks even when
+        # the corresponding structured risk field doesn't back it. The
+        # structured fields are the canonical signal; drop unbacked entries
+        # from the list before they reach the record. ``b.draft`` is
+        # non-None here (guarded above); take a narrowed local handle that
+        # downstream code reads from instead of ``b.draft``.
+        synth_draft = b.draft
+        assert synth_draft is not None  # for ty — narrowed by the guard above
+
+        # ---- step 5.4: make the risks builder the single source of truth ------
+        # The synthesizer echoes ``accessibility_risks`` (the prompt says copy
+        # it through verbatim), but the canonical block is the one the risks
+        # builder produced + the deterministic post-passes patched at step 4.7.
+        # Overwrite B's echoed copy with it BEFORE step 5.5's
+        # ``scrub_headline_risks`` reads ``synth_draft.accessibility_risks``, so
+        # everything downstream (scrub, _derive_filters, SurfaceomeRecord) reads
+        # the canonical risks. B's copy is discarded.
+        synth_draft = synth_draft.model_copy(
+            update={"accessibility_risks": canonical_risks}
+        )
+
+        synth_draft = synth_draft.model_copy(
+            update={
+                # Inject curator-assigned deterministic family tags (HGNC gene
+                # groups + UniProt SIMILARITY family) from the resolved bundle.
+                # These are ground truth, NOT model output (the synthesizer
+                # leaves them at their defaults). v1 does this via
+                # _attach_deterministic_families; v2 previously skipped it, so
+                # every v2 record shipped with empty family fields. Runs on
+                # every LLM pass, so deterministic family lands automatically.
+                "executive_summary": _attach_deterministic_families(
+                    scrub_headline_risks(
+                        synth_draft.executive_summary,
+                        synth_draft.accessibility_risks,
+                    ),
+                    dual.bundle,
+                )
+            }
+        )
+
+        # ---- step 5.6: attach deterministic family tags ----------------------
+        # hgnc_gene_groups + uniprot_family are curator-assigned ground truth, not
+        # model output. v1 overwrites them from the resolved bundle; v2 must too,
+        # or it ships records with empty family fields (which blanks the viewer's
+        # Family chip). Free — reuses the already-resolved ``dual.bundle``.
+        synth_draft = synth_draft.model_copy(
+            update={
+                "executive_summary": _attach_deterministic_families(
+                    synth_draft.executive_summary, dual.bundle
+                )
+            }
+        )
+
+        # ---- step 5.65: state_dependence bump-when-state-conditional --------
+        # The SurfaceomeRecord validator forbids state_dependence='low' when
+        # the A2 biology shows state-conditional induction. The validator
+        # reads from the derived filters.induction_trigger, but at this
+        # point in the pipeline that field hasn't been derived yet — so we
+        # check the upstream signal it depends on: any
+        # accessibility_modulation row with direction='increases' indicates
+        # the surface form is state-induced. Bump low → moderate so the
+        # downstream validator doesn't raise.
+        has_state_induction = any(
+            getattr(m, "direction", None) == "increases"
+            for m in (biological_context.accessibility_modulation or [])
+        )
+        if (
+            synth_draft.executive_summary.state_dependence == "low"
+            and has_state_induction
+        ):
+            logger.info(
+                "v2 orchestrator: bumping state_dependence low → moderate "
+                "(biological_context.accessibility_modulation has "
+                "direction='increases' rows; surface form is state-induced)"
+            )
+            synth_draft = synth_draft.model_copy(
+                update={
+                    "executive_summary": synth_draft.executive_summary.model_copy(
+                        update={"state_dependence": "moderate"}
+                    )
+                }
+            )
+
+        # ---- step 5.68: secreted_form demote-when-uncorroborated -------------
+        # The SurfaceomeRecord validator rejects accessibility_risks.secreted_form
+        # with present=True AND no cited evidence AND no secretory
+        # dual_localization AND no fractionation method — that's an
+        # uncorroborated risk claim. The risks builder occasionally slips
+        # (observed on BAX v2.24.0, a mitochondrial-only protein where
+        # secreted_form should be False). Demote to present=False
+        # deterministically rather than crashing the run.
+        risks = synth_draft.accessibility_risks
+        if risks and risks.secreted_form and risks.secreted_form.present:
+            sf = risks.secreted_form
+            has_cites = bool(sf.cited_evidence_ids)
+            has_secretory_dual = any(
+                "secret" in (d.compartment or "").lower()
+                for d in (
+                    biological_context.subcellular_localization.dual_localization
+                    if biological_context
+                    and biological_context.subcellular_localization
+                    else []
+                )
+            )
+            has_fractionation_method = any(
+                m.accessibility_relevance == "supports_membrane_association"
+                for m in outputs["methods"]
+            )
+            if not (has_cites or has_secretory_dual or has_fractionation_method):
+                logger.info(
+                    "v2 orchestrator: demoting accessibility_risks.secreted_form "
+                    "present=True → False (no cites + no secretory "
+                    "dual_localization + no fractionation method — risks "
+                    "builder set the flag without corroboration)"
+                )
+                # SecretedForm has no `rationale` field — just flip present
+                # + severity. The orchestrator log captures the demote reason.
+                new_sf = sf.model_copy(
+                    update={"present": False, "severity": "low"}
+                )
+                synth_draft = synth_draft.model_copy(
+                    update={
+                        "accessibility_risks": risks.model_copy(
+                            update={"secreted_form": new_sf}
+                        )
+                    }
+                )
+
+        # ---- step 5.685: state_dependence=unclear when surface_accessibility=no
+        # If the gene has NO surface fraction (cytoplasmic, nuclear,
+        # mitochondrial, secreted-only, etc.), state_dependence is not
+        # meaningful — there's no surface form to vary by state. The synth
+        # sometimes picks 'moderate' or 'high' anyway (because the protein's
+        # EXPRESSION is state-modulated, e.g. ABCB9 induced by inflammation
+        # in DCs), but that's a different axis from "targetable surface
+        # fraction state-dependence". Force 'unclear' deterministically so
+        # the record is internally consistent. Observed misfires: C3 v2.30
+        # (sa=no + state=high), LYN v2.27 (sa=no + state=moderate),
+        # ABCB9 v2.29 (sa=no + state=moderate).
+        if (
+            synth_draft.executive_summary.surface_accessibility == "no"
+            and synth_draft.executive_summary.state_dependence != "unclear"
+        ):
+            logger.info(
+                "v2 orchestrator: forcing state_dependence %r → 'unclear' "
+                "(surface_accessibility=no; no surface fraction to state-modulate)",
+                synth_draft.executive_summary.state_dependence,
+            )
+            synth_draft = synth_draft.model_copy(
+                update={
+                    "executive_summary": synth_draft.executive_summary.model_copy(
+                        update={"state_dependence": "unclear"}
+                    )
+                }
+            )
+
+        # ---- step 5.69: surface_accessibility floor when state-conditional --
+        # When state-conditional (state_dependence ∈ {moderate, high}) AND
+        # surface_call_reason names a CONTEXTUAL bucket where the surface
+        # pool is substantial in its best state — cell_state_induced (HMGB1
+        # on activated platelets; ICD-induced tumor cells), lysosomal_
+        # exocytosis (SRC eSrc in cancer cells), tissue_restricted_surface,
+        # stable_surface_attachment — the synth MUST NOT pick
+        # surface_accessibility='low'. Low contradicts the state-induced
+        # surface pool the rest of the record describes. Bump to 'moderate'.
+        #
+        # Carve-out: `dual_localization` (TGN46-style trafficking-with-dwell)
+        # legitimately stays at 'low' because the PM dwell is brief even
+        # in the best state. NO-bucket reasons obviously stay at low/no.
+        SUBSTANTIAL_CONTEXTUAL_REASONS = {
+            "cell_state_induced",
+            "lysosomal_exocytosis",
+            "tissue_restricted_surface",
+            "stable_surface_attachment",
+        }
+        # Skip the floor when grade=weak. A weak grade means the evidence is
+        # thin; bumping surface_accessibility to moderate in that case
+        # contradicts the grade (HMGB1 v2.27 landed grade=weak + sa=moderate
+        # — overstated). Require at least supportive_but_indirect before
+        # the floor can lift.
+        _grade = grade_block.evidence_grade
+        if (
+            synth_draft.executive_summary.surface_accessibility == "low"
+            and synth_draft.executive_summary.state_dependence
+            in ("moderate", "high")
+            and synth_draft.executive_summary.surface_call_reason
+            in SUBSTANTIAL_CONTEXTUAL_REASONS
+            and _grade != "weak"
+        ):
+            logger.info(
+                "v2 orchestrator: bumping surface_accessibility low → "
+                "moderate (state_dependence=%r + surface_call_reason=%r: "
+                "substantial state-induced surface pool, low contradicts "
+                "the record)",
+                synth_draft.executive_summary.state_dependence,
+                synth_draft.executive_summary.surface_call_reason,
+            )
+            synth_draft = synth_draft.model_copy(
+                update={
+                    "executive_summary": synth_draft.executive_summary.model_copy(
+                        update={"surface_accessibility": "moderate"}
+                    )
+                }
+            )
+
+        # ---- step 5.7: NO-bucket reason override (NARROW + DIRECTION-FILTERED)
+        # The methods builder emits accessibility_relevance per observation.
+        # When synth picks a NO-bucket reason (endomembrane_resident,
+        # secreted_only, etc.) but methods has a `direct_surface_accessibility`
+        # or `supports_surface_localization` row whose CITED CLAIM has
+        # direction='supports', flip to CONTEXTUAL. The narrow trigger set
+        # (no supports_membrane_association — PM fractionation alone is too
+        # weak) + direction filter (refuting / contradictory claims don't
+        # count even if methods builder mis-classified them) is the form
+        # that handles both TGOLN2 (flips correctly via supports_surface_
+        # localization trafficking row) and ABCB9 (does NOT flip — its
+        # supports_membrane_association rows aren't in the trigger set,
+        # and its one supports_surface_localization row from a
+        # domain-deletion mutant has direction='refutes').
+        #
+        # History: v2.30.0 briefly removed this entire post-pass on the
+        # theory that prompt rules had caught up; TGOLN2 v2.30 regressed
+        # to endomembrane_resident. Restored.
+        NO_BUCKET_REASONS = {
+            "cytoplasmic", "nuclear", "mitochondrial_internal",
+            "endomembrane_resident", "nuclear_envelope",
+            "inner_leaflet_anchored", "secreted_only",
+            "pmhc_only_intracellular",
+        }
+        SURFACE_SIGNAL_RELEVANCES = {
+            "direct_surface_accessibility",
+            "supports_surface_localization",
+        }
+        claims_by_id = {c.evidence_id: c for c in a1_claims if c.evidence_id}
+        def _has_supporting_cite(method):
+            for cid in (method.cited_evidence_ids or []):
+                claim = claims_by_id.get(cid)
+                if claim is None:
+                    continue
+                if claim.direction == "supports":
+                    return True
+            return False
+        supporting_signal_methods = [
+            m for m in outputs["methods"]
+            if m.accessibility_relevance in SURFACE_SIGNAL_RELEVANCES
+            and _has_supporting_cite(m)
+        ]
+        current_reason = synth_draft.executive_summary.surface_call_reason
+        if current_reason in NO_BUCKET_REASONS and supporting_signal_methods:
+            new_reason = (
+                "dual_localization"
+                if current_reason == "endomembrane_resident"
+                and any(
+                    m.accessibility_relevance == "supports_surface_localization"
+                    for m in supporting_signal_methods
+                )
+                else "cell_state_induced"
+            )
+            logger.info(
+                "v2 orchestrator: overriding surface_call_reason %r → %r "
+                "(methods has %d supporting-cite surface-signal row(s); "
+                "NO-bucket reason contradicts the record's own evidence)",
+                current_reason, new_reason, len(supporting_signal_methods),
+            )
+            synth_draft = synth_draft.model_copy(
+                update={
+                    "executive_summary": synth_draft.executive_summary.model_copy(
+                        update={"surface_call_reason": new_reason}
+                    )
+                }
+            )
+
+        # ---- step 6: promote claims → Evidence (synthetic source store) -------
+        merged_claims = a1_claims + a2_claims
+        with timing.step(
+            "evidence_promotion",
+            phase="post",
+            n_items=len(merged_claims),
+        ):
+            source_store = _synthetic_source_store(merged_claims)
+            evidence: list[Evidence] = [
+                promote_claim(c, store=source_store) for c in merged_claims
+            ]
+
+        # ---- step 6.25: cross-planner duplicate marking -----------------------
+        # A1 (surface evidence) and A2 (biological context) run independently
+        # and frequently both pull the same paper / same span (e.g. SRC's
+        # PMC10356899 sEV paper landed as both a1_evi_10 + a2_evi_09).
+        # We can't drop the duplicate — each planner's builders cite by
+        # evidence_id, so removing the row would break references — but we
+        # CAN mark the non-canonical entries with ``duplicate_of`` so the
+        # viewer collapses them onto one card per unique source span.
+        #
+        # Dedup key: ``(spans[0].source.source_id, spans[0].quote_sha256)``
+        # — same source, same exact extracted quote. Records without a
+        # populated first span (entailment_verified=False, no anchored
+        # span) skip dedup; they're rare and inherently uncomparable.
+        #
+        # Canonical pick: A1 ids ("a1_evi_*") sort before A2 ids
+        # ("a2_evi_*") under lex compare, and within a planner the
+        # earlier-numbered id wins. A1's claim_type/direction frame is
+        # anchored on surface methodology, which is what most downstream
+        # readers care about — also a desirable default.
+        with timing.step("evidence_dedup", phase="post"):
+            clusters: dict[tuple[str, str], list[int]] = {}
+            for i, ev in enumerate(evidence):
+                if not ev.spans:
+                    continue
+                first = ev.spans[0]
+                src = (first.source.source_id or "").strip()
+                qsha = (first.quote_sha256 or "").strip()
+                if not src or not qsha:
+                    continue
+                clusters.setdefault((src, qsha), []).append(i)
+            n_dups = 0
+            n_clusters_with_dups = 0
+            for indices in clusters.values():
+                if len(indices) < 2:
+                    continue
+                n_clusters_with_dups += 1
+                canonical_i = min(
+                    indices, key=lambda j: evidence[j].evidence_id
+                )
+                canonical_id = evidence[canonical_i].evidence_id
+                for j in indices:
+                    if j == canonical_i:
+                        continue
+                    evidence[j].duplicate_of = canonical_id
+                    n_dups += 1
+            if n_dups > 0:
+                logger.info(
+                    "evidence_dedup: %d duplicate(s) marked across %d cluster(s) "
+                    "(viewer collapses; citations still resolve)",
+                    n_dups,
+                    n_clusters_with_dups,
+                )
+
+        # ---- step 6.5: deterministic species post-pass ------------------------
+        # Two passes:
+        # 1. Cell-line gazetteer over each row's free text (MC3T3-E1 →
+        #    mouse, U251 MG → human, FRTL-5 → rat).
+        # 2. Cite-aggregation over each row's cited_evidence_ids — pulls
+        #    species from the cited Evidence's AssayContext.species and
+        #    fills the row if all cited evidence agrees. Catches abstract
+        #    tissue rows like ``tissue="bone"`` where the cell-line name
+        #    doesn't appear in the row itself but the cited paper's
+        #    assay_context.species was already populated by the agent.
+        # Doesn't override anything the builders set explicitly.
+        with timing.step("species_post_pass", phase="post"):
+            from accessible_surfaceome.agents.surfaceome_v2.species_postpass import (
+                apply_species_post_pass,
+            )
+
+            apply_species_post_pass(
+                biological_context=biological_context,
+                surface_evidence=surface_evidence,
+                evidence=evidence,
+            )
+
+        # NOTE: the deterministic risk post-passes (secreted_form safety net +
+        # homo-oligomerization prediction chip + ecd_accessibility_class
+        # overwrite) formerly ran HERE on ``synth_draft.accessibility_risks``.
+        # They now run at step 4.7 on the risks-builder output (``canonical_risks``),
+        # which is the single source of truth and was copied onto ``synth_draft``
+        # at step 5.4 — so ``synth_draft.accessibility_risks`` already carries all
+        # three. ``_derive_filters`` (step 8) reads them off it as before.
+
+        # ---- step 8: derive filters (reused from v1) --------------------------
+        with timing.step(
+            "filters_derivation",
+            phase="post",
+            n_items=len(evidence),
+        ):
+            filters = _derive_filters(
+                executive_summary=synth_draft.executive_summary,
+                surface_evidence=surface_evidence,
+                biological_context=biological_context,
+                accessibility_risks=synth_draft.accessibility_risks,
+                filters_llm=synth_draft.filters_llm,
+                deterministic_features=det_features,
+                n_evidence=len(evidence),
+            )
+
+        # ---- step 9: assemble SurfaceomeRecord --------------------------------
+        primary = sum(1 for e in evidence if e.evidence_tier == "primary")
+        secondary = sum(1 for e in evidence if e.evidence_tier == "secondary")
+        # Reuse the ``triage_record`` already loaded above for the synthesizer's
+        # task message — derive both the signal enum and the verdict prose from
+        # it so the record carries the triage's "why" without a second D1 fetch.
+        triage_signal_value, triage_reasoning_value = (
+            _triage_signal_and_reasoning_from_record(triage_record)
+        )
+        search_log = _build_search_log(dual)
+        try:
+            record = SurfaceomeRecord(
+                schema_version=SCHEMA_VERSION_LITERAL,
+                gene=gene_id,
+                triage_signal=triage_signal_value,
+                triage_reasoning=triage_reasoning_value,
+                executive_summary=synth_draft.executive_summary,
+                filters=filters,
+                surface_evidence=surface_evidence,
+                biological_context=biological_context,
+                deterministic_features=det_features,
+                accessibility_risks=synth_draft.accessibility_risks,
+                evidence=evidence,
+                search_log=search_log,
+                evidence_count=len(evidence),
+                primary_evidence_count=primary,
+                secondary_evidence_count=secondary,
+                confidence=synth_draft.confidence,
+                confidence_reasoning=synth_draft.confidence_reasoning,
+                model_path=AGENT_MODEL,
+                record_generated_at=datetime.now(UTC),
+            )
+        except ValidationError as exc:
+            last_validation_error = exc
+            logger.warning(
+                "SurfaceomeRecord assembly failed on attempt %d/2: %s",
+                retry_attempt + 1, exc,
+            )
+            # Loop continues — synth_feedback gets populated for the
+            # next iteration's run_synthesizer_with_drafts call.
+        else:
+            # Assembly succeeded — exit the retry loop.
+            break
+    if record is None:
+        # Both attempts failed validation; return the last error.
         return AnnotateResultV2(
             gene=gene_id.hgnc_symbol,
             record=None,
@@ -1258,452 +1734,9 @@ def _annotate(
             blocks_used=_count_blocks(surface_evidence, biological_context),
             builder_usage=builder_usage,
             error=(
-                f"per-gene cost ceiling exceeded: "
-                f"${intermediates['cost_total_usd']:.2f} > ${MAX_COST_USD:.2f}"
+                f"SurfaceomeRecord assembly failed after retry: "
+                f"{last_validation_error}"
             ),
-            timing=list(timing.entries),
-            intermediates=intermediates,
-        )
-
-    if b.draft is None:
-        return AnnotateResultV2(
-            gene=gene_id.hgnc_symbol,
-            record=None,
-            dual=dual,
-            synthesizer=b,
-            blocks_used=_count_blocks(surface_evidence, biological_context),
-            builder_usage=builder_usage,
-            error=f"synthesizer returned no valid draft: {b.validation_error}",
-            timing=list(timing.entries),
-            intermediates=intermediates,
-        )
-
-    # ---- step 5.5: scrub headline_risks for structured coherence ---------
-    # Reviewers (CD81 audit) caught the synthesizer over-claiming
-    # ``co_receptor`` / ``epitope_masked`` in headline_risks even when
-    # the corresponding structured risk field doesn't back it. The
-    # structured fields are the canonical signal; drop unbacked entries
-    # from the list before they reach the record. ``b.draft`` is
-    # non-None here (guarded above); take a narrowed local handle that
-    # downstream code reads from instead of ``b.draft``.
-    synth_draft = b.draft
-    assert synth_draft is not None  # for ty — narrowed by the guard above
-
-    # ---- step 5.4: make the risks builder the single source of truth ------
-    # The synthesizer echoes ``accessibility_risks`` (the prompt says copy
-    # it through verbatim), but the canonical block is the one the risks
-    # builder produced + the deterministic post-passes patched at step 4.7.
-    # Overwrite B's echoed copy with it BEFORE step 5.5's
-    # ``scrub_headline_risks`` reads ``synth_draft.accessibility_risks``, so
-    # everything downstream (scrub, _derive_filters, SurfaceomeRecord) reads
-    # the canonical risks. B's copy is discarded.
-    synth_draft = synth_draft.model_copy(
-        update={"accessibility_risks": canonical_risks}
-    )
-
-    synth_draft = synth_draft.model_copy(
-        update={
-            # Inject curator-assigned deterministic family tags (HGNC gene
-            # groups + UniProt SIMILARITY family) from the resolved bundle.
-            # These are ground truth, NOT model output (the synthesizer
-            # leaves them at their defaults). v1 does this via
-            # _attach_deterministic_families; v2 previously skipped it, so
-            # every v2 record shipped with empty family fields. Runs on
-            # every LLM pass, so deterministic family lands automatically.
-            "executive_summary": _attach_deterministic_families(
-                scrub_headline_risks(
-                    synth_draft.executive_summary,
-                    synth_draft.accessibility_risks,
-                ),
-                dual.bundle,
-            )
-        }
-    )
-
-    # ---- step 5.6: attach deterministic family tags ----------------------
-    # hgnc_gene_groups + uniprot_family are curator-assigned ground truth, not
-    # model output. v1 overwrites them from the resolved bundle; v2 must too,
-    # or it ships records with empty family fields (which blanks the viewer's
-    # Family chip). Free — reuses the already-resolved ``dual.bundle``.
-    synth_draft = synth_draft.model_copy(
-        update={
-            "executive_summary": _attach_deterministic_families(
-                synth_draft.executive_summary, dual.bundle
-            )
-        }
-    )
-
-    # ---- step 5.65: state_dependence bump-when-state-conditional --------
-    # The SurfaceomeRecord validator forbids state_dependence='low' when
-    # the A2 biology shows state-conditional induction. The validator
-    # reads from the derived filters.induction_trigger, but at this
-    # point in the pipeline that field hasn't been derived yet — so we
-    # check the upstream signal it depends on: any
-    # accessibility_modulation row with direction='increases' indicates
-    # the surface form is state-induced. Bump low → moderate so the
-    # downstream validator doesn't raise.
-    has_state_induction = any(
-        getattr(m, "direction", None) == "increases"
-        for m in (biological_context.accessibility_modulation or [])
-    )
-    if (
-        synth_draft.executive_summary.state_dependence == "low"
-        and has_state_induction
-    ):
-        logger.info(
-            "v2 orchestrator: bumping state_dependence low → moderate "
-            "(biological_context.accessibility_modulation has "
-            "direction='increases' rows; surface form is state-induced)"
-        )
-        synth_draft = synth_draft.model_copy(
-            update={
-                "executive_summary": synth_draft.executive_summary.model_copy(
-                    update={"state_dependence": "moderate"}
-                )
-            }
-        )
-
-    # ---- step 5.68: secreted_form demote-when-uncorroborated -------------
-    # The SurfaceomeRecord validator rejects accessibility_risks.secreted_form
-    # with present=True AND no cited evidence AND no secretory
-    # dual_localization AND no fractionation method — that's an
-    # uncorroborated risk claim. The risks builder occasionally slips
-    # (observed on BAX v2.24.0, a mitochondrial-only protein where
-    # secreted_form should be False). Demote to present=False
-    # deterministically rather than crashing the run.
-    risks = synth_draft.accessibility_risks
-    if risks and risks.secreted_form and risks.secreted_form.present:
-        sf = risks.secreted_form
-        has_cites = bool(sf.cited_evidence_ids)
-        has_secretory_dual = any(
-            "secret" in (d.compartment or "").lower()
-            for d in (
-                biological_context.subcellular_localization.dual_localization
-                if biological_context
-                and biological_context.subcellular_localization
-                else []
-            )
-        )
-        has_fractionation_method = any(
-            m.accessibility_relevance == "supports_membrane_association"
-            for m in outputs["methods"]
-        )
-        if not (has_cites or has_secretory_dual or has_fractionation_method):
-            logger.info(
-                "v2 orchestrator: demoting accessibility_risks.secreted_form "
-                "present=True → False (no cites + no secretory "
-                "dual_localization + no fractionation method — risks "
-                "builder set the flag without corroboration)"
-            )
-            # SecretedForm has no `rationale` field — just flip present
-            # + severity. The orchestrator log captures the demote reason.
-            new_sf = sf.model_copy(
-                update={"present": False, "severity": "low"}
-            )
-            synth_draft = synth_draft.model_copy(
-                update={
-                    "accessibility_risks": risks.model_copy(
-                        update={"secreted_form": new_sf}
-                    )
-                }
-            )
-
-    # ---- step 5.685: state_dependence=unclear when surface_accessibility=no
-    # If the gene has NO surface fraction (cytoplasmic, nuclear,
-    # mitochondrial, secreted-only, etc.), state_dependence is not
-    # meaningful — there's no surface form to vary by state. The synth
-    # sometimes picks 'moderate' or 'high' anyway (because the protein's
-    # EXPRESSION is state-modulated, e.g. ABCB9 induced by inflammation
-    # in DCs), but that's a different axis from "targetable surface
-    # fraction state-dependence". Force 'unclear' deterministically so
-    # the record is internally consistent. Observed misfires: C3 v2.30
-    # (sa=no + state=high), LYN v2.27 (sa=no + state=moderate),
-    # ABCB9 v2.29 (sa=no + state=moderate).
-    if (
-        synth_draft.executive_summary.surface_accessibility == "no"
-        and synth_draft.executive_summary.state_dependence != "unclear"
-    ):
-        logger.info(
-            "v2 orchestrator: forcing state_dependence %r → 'unclear' "
-            "(surface_accessibility=no; no surface fraction to state-modulate)",
-            synth_draft.executive_summary.state_dependence,
-        )
-        synth_draft = synth_draft.model_copy(
-            update={
-                "executive_summary": synth_draft.executive_summary.model_copy(
-                    update={"state_dependence": "unclear"}
-                )
-            }
-        )
-
-    # ---- step 5.69: surface_accessibility floor when state-conditional --
-    # When state-conditional (state_dependence ∈ {moderate, high}) AND
-    # surface_call_reason names a CONTEXTUAL bucket where the surface
-    # pool is substantial in its best state — cell_state_induced (HMGB1
-    # on activated platelets; ICD-induced tumor cells), lysosomal_
-    # exocytosis (SRC eSrc in cancer cells), tissue_restricted_surface,
-    # stable_surface_attachment — the synth MUST NOT pick
-    # surface_accessibility='low'. Low contradicts the state-induced
-    # surface pool the rest of the record describes. Bump to 'moderate'.
-    #
-    # Carve-out: `dual_localization` (TGN46-style trafficking-with-dwell)
-    # legitimately stays at 'low' because the PM dwell is brief even
-    # in the best state. NO-bucket reasons obviously stay at low/no.
-    SUBSTANTIAL_CONTEXTUAL_REASONS = {
-        "cell_state_induced",
-        "lysosomal_exocytosis",
-        "tissue_restricted_surface",
-        "stable_surface_attachment",
-    }
-    # Skip the floor when grade=weak. A weak grade means the evidence is
-    # thin; bumping surface_accessibility to moderate in that case
-    # contradicts the grade (HMGB1 v2.27 landed grade=weak + sa=moderate
-    # — overstated). Require at least supportive_but_indirect before
-    # the floor can lift.
-    _grade = grade_block.evidence_grade
-    if (
-        synth_draft.executive_summary.surface_accessibility == "low"
-        and synth_draft.executive_summary.state_dependence
-        in ("moderate", "high")
-        and synth_draft.executive_summary.surface_call_reason
-        in SUBSTANTIAL_CONTEXTUAL_REASONS
-        and _grade != "weak"
-    ):
-        logger.info(
-            "v2 orchestrator: bumping surface_accessibility low → "
-            "moderate (state_dependence=%r + surface_call_reason=%r: "
-            "substantial state-induced surface pool, low contradicts "
-            "the record)",
-            synth_draft.executive_summary.state_dependence,
-            synth_draft.executive_summary.surface_call_reason,
-        )
-        synth_draft = synth_draft.model_copy(
-            update={
-                "executive_summary": synth_draft.executive_summary.model_copy(
-                    update={"surface_accessibility": "moderate"}
-                )
-            }
-        )
-
-    # ---- step 5.7: NO-bucket reason override (NARROW + DIRECTION-FILTERED)
-    # The methods builder emits accessibility_relevance per observation.
-    # When synth picks a NO-bucket reason (endomembrane_resident,
-    # secreted_only, etc.) but methods has a `direct_surface_accessibility`
-    # or `supports_surface_localization` row whose CITED CLAIM has
-    # direction='supports', flip to CONTEXTUAL. The narrow trigger set
-    # (no supports_membrane_association — PM fractionation alone is too
-    # weak) + direction filter (refuting / contradictory claims don't
-    # count even if methods builder mis-classified them) is the form
-    # that handles both TGOLN2 (flips correctly via supports_surface_
-    # localization trafficking row) and ABCB9 (does NOT flip — its
-    # supports_membrane_association rows aren't in the trigger set,
-    # and its one supports_surface_localization row from a
-    # domain-deletion mutant has direction='refutes').
-    #
-    # History: v2.30.0 briefly removed this entire post-pass on the
-    # theory that prompt rules had caught up; TGOLN2 v2.30 regressed
-    # to endomembrane_resident. Restored.
-    NO_BUCKET_REASONS = {
-        "cytoplasmic", "nuclear", "mitochondrial_internal",
-        "endomembrane_resident", "nuclear_envelope",
-        "inner_leaflet_anchored", "secreted_only",
-        "pmhc_only_intracellular",
-    }
-    SURFACE_SIGNAL_RELEVANCES = {
-        "direct_surface_accessibility",
-        "supports_surface_localization",
-    }
-    claims_by_id = {c.evidence_id: c for c in a1_claims if c.evidence_id}
-    def _has_supporting_cite(method):
-        for cid in (method.cited_evidence_ids or []):
-            claim = claims_by_id.get(cid)
-            if claim is None:
-                continue
-            if claim.direction == "supports":
-                return True
-        return False
-    supporting_signal_methods = [
-        m for m in outputs["methods"]
-        if m.accessibility_relevance in SURFACE_SIGNAL_RELEVANCES
-        and _has_supporting_cite(m)
-    ]
-    current_reason = synth_draft.executive_summary.surface_call_reason
-    if current_reason in NO_BUCKET_REASONS and supporting_signal_methods:
-        new_reason = (
-            "dual_localization"
-            if current_reason == "endomembrane_resident"
-            and any(
-                m.accessibility_relevance == "supports_surface_localization"
-                for m in supporting_signal_methods
-            )
-            else "cell_state_induced"
-        )
-        logger.info(
-            "v2 orchestrator: overriding surface_call_reason %r → %r "
-            "(methods has %d supporting-cite surface-signal row(s); "
-            "NO-bucket reason contradicts the record's own evidence)",
-            current_reason, new_reason, len(supporting_signal_methods),
-        )
-        synth_draft = synth_draft.model_copy(
-            update={
-                "executive_summary": synth_draft.executive_summary.model_copy(
-                    update={"surface_call_reason": new_reason}
-                )
-            }
-        )
-
-    # ---- step 6: promote claims → Evidence (synthetic source store) -------
-    merged_claims = a1_claims + a2_claims
-    with timing.step(
-        "evidence_promotion",
-        phase="post",
-        n_items=len(merged_claims),
-    ):
-        source_store = _synthetic_source_store(merged_claims)
-        evidence: list[Evidence] = [
-            promote_claim(c, store=source_store) for c in merged_claims
-        ]
-
-    # ---- step 6.25: cross-planner duplicate marking -----------------------
-    # A1 (surface evidence) and A2 (biological context) run independently
-    # and frequently both pull the same paper / same span (e.g. SRC's
-    # PMC10356899 sEV paper landed as both a1_evi_10 + a2_evi_09).
-    # We can't drop the duplicate — each planner's builders cite by
-    # evidence_id, so removing the row would break references — but we
-    # CAN mark the non-canonical entries with ``duplicate_of`` so the
-    # viewer collapses them onto one card per unique source span.
-    #
-    # Dedup key: ``(spans[0].source.source_id, spans[0].quote_sha256)``
-    # — same source, same exact extracted quote. Records without a
-    # populated first span (entailment_verified=False, no anchored
-    # span) skip dedup; they're rare and inherently uncomparable.
-    #
-    # Canonical pick: A1 ids ("a1_evi_*") sort before A2 ids
-    # ("a2_evi_*") under lex compare, and within a planner the
-    # earlier-numbered id wins. A1's claim_type/direction frame is
-    # anchored on surface methodology, which is what most downstream
-    # readers care about — also a desirable default.
-    with timing.step("evidence_dedup", phase="post"):
-        clusters: dict[tuple[str, str], list[int]] = {}
-        for i, ev in enumerate(evidence):
-            if not ev.spans:
-                continue
-            first = ev.spans[0]
-            src = (first.source.source_id or "").strip()
-            qsha = (first.quote_sha256 or "").strip()
-            if not src or not qsha:
-                continue
-            clusters.setdefault((src, qsha), []).append(i)
-        n_dups = 0
-        n_clusters_with_dups = 0
-        for indices in clusters.values():
-            if len(indices) < 2:
-                continue
-            n_clusters_with_dups += 1
-            canonical_i = min(
-                indices, key=lambda j: evidence[j].evidence_id
-            )
-            canonical_id = evidence[canonical_i].evidence_id
-            for j in indices:
-                if j == canonical_i:
-                    continue
-                evidence[j].duplicate_of = canonical_id
-                n_dups += 1
-        if n_dups > 0:
-            logger.info(
-                "evidence_dedup: %d duplicate(s) marked across %d cluster(s) "
-                "(viewer collapses; citations still resolve)",
-                n_dups,
-                n_clusters_with_dups,
-            )
-
-    # ---- step 6.5: deterministic species post-pass ------------------------
-    # Two passes:
-    # 1. Cell-line gazetteer over each row's free text (MC3T3-E1 →
-    #    mouse, U251 MG → human, FRTL-5 → rat).
-    # 2. Cite-aggregation over each row's cited_evidence_ids — pulls
-    #    species from the cited Evidence's AssayContext.species and
-    #    fills the row if all cited evidence agrees. Catches abstract
-    #    tissue rows like ``tissue="bone"`` where the cell-line name
-    #    doesn't appear in the row itself but the cited paper's
-    #    assay_context.species was already populated by the agent.
-    # Doesn't override anything the builders set explicitly.
-    with timing.step("species_post_pass", phase="post"):
-        from accessible_surfaceome.agents.surfaceome_v2.species_postpass import (
-            apply_species_post_pass,
-        )
-
-        apply_species_post_pass(
-            biological_context=biological_context,
-            surface_evidence=surface_evidence,
-            evidence=evidence,
-        )
-
-    # NOTE: the deterministic risk post-passes (secreted_form safety net +
-    # homo-oligomerization prediction chip + ecd_accessibility_class
-    # overwrite) formerly ran HERE on ``synth_draft.accessibility_risks``.
-    # They now run at step 4.7 on the risks-builder output (``canonical_risks``),
-    # which is the single source of truth and was copied onto ``synth_draft``
-    # at step 5.4 — so ``synth_draft.accessibility_risks`` already carries all
-    # three. ``_derive_filters`` (step 8) reads them off it as before.
-
-    # ---- step 8: derive filters (reused from v1) --------------------------
-    with timing.step(
-        "filters_derivation",
-        phase="post",
-        n_items=len(evidence),
-    ):
-        filters = _derive_filters(
-            executive_summary=synth_draft.executive_summary,
-            surface_evidence=surface_evidence,
-            biological_context=biological_context,
-            accessibility_risks=synth_draft.accessibility_risks,
-            filters_llm=synth_draft.filters_llm,
-            deterministic_features=det_features,
-            n_evidence=len(evidence),
-        )
-
-    # ---- step 9: assemble SurfaceomeRecord --------------------------------
-    primary = sum(1 for e in evidence if e.evidence_tier == "primary")
-    secondary = sum(1 for e in evidence if e.evidence_tier == "secondary")
-    # Reuse the ``triage_record`` already loaded above for the synthesizer's
-    # task message — derive both the signal enum and the verdict prose from
-    # it so the record carries the triage's "why" without a second D1 fetch.
-    triage_signal_value, triage_reasoning_value = (
-        _triage_signal_and_reasoning_from_record(triage_record)
-    )
-    search_log = _build_search_log(dual)
-    try:
-        record = SurfaceomeRecord(
-            schema_version=SCHEMA_VERSION_LITERAL,
-            gene=gene_id,
-            triage_signal=triage_signal_value,
-            triage_reasoning=triage_reasoning_value,
-            executive_summary=synth_draft.executive_summary,
-            filters=filters,
-            surface_evidence=surface_evidence,
-            biological_context=biological_context,
-            deterministic_features=det_features,
-            accessibility_risks=synth_draft.accessibility_risks,
-            evidence=evidence,
-            search_log=search_log,
-            evidence_count=len(evidence),
-            primary_evidence_count=primary,
-            secondary_evidence_count=secondary,
-            confidence=synth_draft.confidence,
-            confidence_reasoning=synth_draft.confidence_reasoning,
-            model_path=AGENT_MODEL,
-            record_generated_at=datetime.now(UTC),
-        )
-    except ValidationError as exc:
-        return AnnotateResultV2(
-            gene=gene_id.hgnc_symbol,
-            record=None,
-            dual=dual,
-            synthesizer=b,
-            blocks_used=_count_blocks(surface_evidence, biological_context),
-            builder_usage=builder_usage,
-            error=f"SurfaceomeRecord assembly failed: {exc}",
             timing=list(timing.entries),
             intermediates=intermediates,
         )

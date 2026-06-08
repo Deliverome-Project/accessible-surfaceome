@@ -201,23 +201,57 @@ def publish_intermediates(
     # only retry path actually needs: claims, builder outputs,
     # deterministic_features, canonical_risks, synthesizer raw_json,
     # bundle, triage_summary. Observed: TGOLN2 v2.32 at 897KB (99.7%
-    # of 900KB limit) — heavier genes WILL exceed. R2 full-audit
-    # offload is a follow-up; slim mode unblocks genome-wide today.
+    # of 900KB limit) — heavier genes WILL exceed.
     if n_bytes > _MAX_INTERMEDIATES_BYTES:
         logger.warning(
             "intermediates for %s would exceed D1 row limit "
             "(%d bytes > %d). Stripping bulky audit fields "
             "(search_log + triage_actions + paper_metadata) so the "
-            "slim blob fits. Full audit retention follows in R2.",
+            "slim blob fits; full blob spilling to R2.",
             gene_symbol, n_bytes, _MAX_INTERMEDIATES_BYTES,
         )
+        # R2 full-audit offload: upload the FULL pre-slim blob to R2
+        # using the existing CLOUDFLARE_API_TOKEN (Option A — no new
+        # access keys needed). Best-effort: R2 outages should not
+        # block the slim-D1 publish. The R2 key gets stitched into
+        # the slim blob so a future audit query can follow the
+        # pointer.
+        try:
+            from accessible_surfaceome.cloud import r2_client
+            r2_key = r2_client.intermediates_object_key(
+                gene_symbol=gene_symbol,
+                schema_version=schema_version,
+                prompt_corpus_version=PROMPT_CORPUS_VERSION,
+                created_at=stamp,
+            )
+            r2_ok = r2_client.put_object(key=r2_key, body=blob)
+        except Exception as exc:  # noqa: BLE001
+            logger.warning(
+                "R2 spillover for %s skipped (%s); slim D1 will publish "
+                "without an audit-blob pointer",
+                gene_symbol, exc,
+            )
+            r2_key = None
+            r2_ok = False
+        # Slim AFTER the R2 upload — preserves the original blob shape
+        # for the audit copy.
         slim = _slim_intermediates_for_d1(intermediates)
+        if r2_ok:
+            slim["_r2_full_audit_key"] = r2_key
+            slim["_r2_full_audit_bucket"] = (
+                r2_client.R2Config.from_env().bucket
+            )
+        elif r2_key:
+            slim["_r2_full_audit_attempted_key"] = r2_key
+            slim["_r2_full_audit_status"] = "upload_failed"
         blob = json.dumps(slim, separators=(",", ":"))
         n_bytes_slim = len(blob.encode("utf-8"))
         logger.info(
-            "intermediates slimmed for %s: %d → %d bytes (%.1f%% saved)",
+            "intermediates slimmed for %s: %d → %d bytes (%.1f%% saved); "
+            "R2 audit blob: %s",
             gene_symbol, n_bytes, n_bytes_slim,
             100.0 * (1 - n_bytes_slim / n_bytes),
+            "uploaded" if r2_ok else "skipped",
         )
         n_bytes = n_bytes_slim
         # Defensive: if even the slim blob exceeds the limit (some
