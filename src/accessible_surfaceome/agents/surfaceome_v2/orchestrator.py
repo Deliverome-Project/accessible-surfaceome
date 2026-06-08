@@ -637,6 +637,7 @@ def annotate(
     http: CachedHTTP | None = None,
     persist: bool = False,
     timing: TimingRecorder | None = None,
+    skip_if_fresh: bool = False,
 ) -> AnnotateResultV2:
     """Run the v2 deep-dive pipeline on one gene.
 
@@ -644,7 +645,35 @@ def annotate(
     ``None`` so every annotate run captures the per-step wall-clock
     trace by default. Pass an externally-owned recorder to merge into a
     larger audit (e.g. a sweep over multiple genes).
+
+    When ``skip_if_fresh=True``, returns an early-exit
+    :class:`AnnotateResultV2` (record=None, error='already_fresh') if
+    public D1's ``surface_annotation`` already carries a row for this
+    gene at the current ``SurfaceomeRecord.schema_version``. Used by
+    cohort resume — avoids re-paying ~\$2/gene to land an identical call.
+    Modal's :class:`D1DeepDiveSink` filters the gene list at dispatch
+    via :meth:`already_done`; this flag is the equivalent guard for
+    direct-CLI re-runs and any non-Modal cohort dispatcher.
     """
+    if skip_if_fresh:
+        existing = _existing_fresh_record(gene)
+        if existing is not None:
+            logger.info(
+                "v2 orchestrator: skipping %s — fresh record exists at "
+                "schema_version=%s, generated_at=%s",
+                gene, existing["schema_version"], existing["record_generated_at"],
+            )
+            return AnnotateResultV2(
+                gene=gene,
+                record=None,
+                dual=None,
+                synthesizer=None,
+                blocks_used={},
+                builder_usage={},
+                error=f"skipped: fresh record already in public D1 ({existing['record_generated_at']})",
+                timing=[],
+                intermediates={},
+            )
     own_http = http is None
     client = client or get_client()
     http = http or open_default_client()
@@ -654,6 +683,42 @@ def annotate(
     finally:
         if own_http:
             http.close()
+
+
+def _existing_fresh_record(gene_symbol: str) -> dict[str, str] | None:
+    """Return a slim dict ({schema_version, record_generated_at}) for a
+    gene whose latest public-D1 ``surface_annotation`` row is at the
+    current ``SurfaceomeRecord.schema_version``. Returns None when no
+    row exists or the row is on an older schema (which the cohort sweep
+    SHOULD refresh).
+
+    Best-effort: when D1 credentials are missing or the query fails,
+    returns None so the annotate proceeds as usual. The sweep-time
+    cost of an extra annotate is bounded; the cost of MISSING the
+    skip on a credential blip is also bounded — both errors are safe.
+    """
+    try:
+        from accessible_surfaceome.cloud.d1_client import D1Client, D1Config
+    except Exception:  # noqa: BLE001
+        return None
+    current_schema = SurfaceomeRecord.model_fields["schema_version"].default
+    try:
+        with D1Client(D1Config.from_env_public()) as c:
+            rows = c.query(
+                "SELECT schema_version, annotated_at AS record_generated_at "
+                "FROM surface_annotation WHERE gene_symbol = ? "
+                "ORDER BY annotated_at DESC LIMIT 1",
+                [gene_symbol],
+            )
+    except Exception as exc:  # noqa: BLE001
+        logger.debug("skip_if_fresh probe failed for %s: %s", gene_symbol, exc)
+        return None
+    if not rows:
+        return None
+    row = rows[0]
+    if row.get("schema_version") != current_schema:
+        return None
+    return row
 
 
 def _annotate(
