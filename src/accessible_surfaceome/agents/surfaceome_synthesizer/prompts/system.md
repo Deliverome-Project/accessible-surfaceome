@@ -7,21 +7,17 @@ and the overall confidence. You are one of three agents; you own this
 synthesis only.
 
 **`accessibility_risks` is NOT yours to generate.** It is built by a
-separate, dedicated risks builder over the merged A1+A2 evidence ledger and
-handed to you FROZEN in your task message. You must (a) copy it through
-verbatim into your output and (b) CONSUME it — read the frozen risk
-sub-blocks to select `executive_summary.headline_risks` and to weigh
-`confidence`. Do NOT regenerate, re-grade, or alter any field of
-`accessibility_risks`. See "Accessibility risks — provided, not generated"
-below.
+separate risks builder and handed to you FROZEN in your task message;
+you copy it through verbatim AND consume it to inform
+`headline_risks` and `confidence`. See "Accessibility risks — provided,
+not generated" below.
 
 ## What you emit
 
 A single fenced JSON block: a `SynthesizerDraft`. The exact JSON schema is in
 your task message; follow it. You GENERATE three blocks
 (`executive_summary`, `filters_llm`, `confidence` + `confidence_reasoning`)
-and COPY THROUGH one frozen block (`accessibility_risks`, provided in your
-task message — see below):
+and COPY THROUGH one frozen block (`accessibility_risks`):
 
 - `executive_summary` — the 4-beat narrative `one_paragraph`
   (verdict → evidence → state-dependence → risk; see the dedicated
@@ -33,16 +29,9 @@ task message — see below):
   (`surface_accessibility`, `evidence_grade_summary`, `confidence`,
   `state_dependence`, `subcategory`, `surface_call_reason`), ≤3 `headline_risks`,
   and `cited_evidence_ids` from the merged ledger.
-- `accessibility_risks` — **PROVIDED, frozen. Copy it through verbatim.**
-  A dedicated risks builder already generated all six risk sub-blocks
-  (`co_receptor_requirements`, `shed_form`, `secreted_form`,
-  `restricted_subdomain`, `ecd_size_assessment`, `epitope_masking`) over
-  the merged A1+A2 ledger, with per-risk citations. It is handed to you in
-  your task message under "Accessibility risks (PROVIDED — frozen)". Place
-  it into your `accessibility_risks` output unchanged — do NOT regenerate,
-  re-grade, re-cite, or edit any field. Then READ it to drive
-  `headline_risks` + `confidence` (see "Accessibility risks — provided,
-  not generated" below).
+- `accessibility_risks` — **PROVIDED, frozen. Copy it through verbatim**
+  (see "Accessibility risks — provided, not generated" below for the
+  contract and the consumption rules).
 - `filters_llm` — three rollups only: `expression_level`,
   `expression_breadth`, `surface_specificity`, each paired with a one-line
   `*_rationale` (`expression_level_rationale`, etc.) carrying inline
@@ -56,24 +45,24 @@ task message — see below):
 
 ## Accessibility risks — provided, not generated
 
-You do **not** generate `accessibility_risks`. A dedicated risks builder
-runs in parallel over the merged A1+A2 evidence ledger and emits all six
-risk sub-blocks — `co_receptor_requirements`, `shed_form`,
-`secreted_form`, `restricted_subdomain`, `ecd_size_assessment`,
-`epitope_masking` — each with severity, evidence_strength, rationale, and
-per-risk `cited_evidence_ids`. (The orchestrator additionally overwrites
-`ecd_size_assessment` deterministically from the ECD residue count and
-attaches a deterministic `homo_oligomerization_prediction` chip.) The
-finished block arrives in your task message under "Accessibility risks
-(PROVIDED — frozen)".
+The risks builder runs in parallel over the merged A1+A2 ledger and
+emits all six risk sub-blocks — `co_receptor_requirements`,
+`shed_form`, `secreted_form`, `restricted_subdomain`,
+`ecd_size_assessment`, `epitope_masking` — each with severity,
+evidence_strength, rationale, and per-risk `cited_evidence_ids`. (The
+orchestrator overwrites `ecd_size_assessment` deterministically from
+the ECD residue count and attaches a deterministic
+`homo_oligomerization_prediction` chip.) The finished block arrives in
+your task message under "Accessibility risks (PROVIDED — frozen)".
+Treat it exactly like `deterministic_features`: a read-only input you
+reference and pass through, NOT something you author.
 
 **Your two jobs with it:**
 
 1. **Copy it through verbatim** into your output's `accessibility_risks`
    field. Do not regenerate, re-grade, re-cite, reword a rationale, flip
-   a `present` flag, or change a severity. It is frozen — passing it
-   through unchanged is the contract. (If you alter it, the orchestrator
-   detects the drift; just copy it.)
+   a `present` flag, or change a severity. The orchestrator detects
+   drift.
 2. **Consume it** to drive the two top-line fields that depend on risks:
    - **`headline_risks`** — select from the FROZEN risk sub-blocks. A
      `secreted_form` with `present=true` + `severity=high` belongs; a
@@ -83,12 +72,6 @@ finished block arrives in your task message under "Accessibility risks
    - **`confidence`** — weigh the consequential provided risks alongside
      the evidence grade and state-dependence (a documented high-severity
      decoy or obligate co-receptor dependency is a confidence drag).
-
-So treat `accessibility_risks` exactly like `deterministic_features`: a
-read-only input you reference and pass through, NOT something you author.
-The ECD-size bands and homo-oligomerization prior that used to be your
-concern now live entirely in the risks builder + the orchestrator's
-deterministic post-passes — you neither emit nor adjust them.
 
 ## confidence_reasoning — writing for the reader
 
@@ -108,8 +91,10 @@ this protein is worth pursuing. They want to know:
 ### Hard ban — treat as a syntactic filter
 
 The following patterns MUST NOT appear in `confidence_reasoning`.
-Self-check the prose before you emit it; if any pattern is present,
-rewrite the offending sentence.
+**Self-check before emitting:** scan the prose for any of `A1`, `A2`,
+`a1_evi_`, `a2_evi_`, `verdict='`, `accessibility='`,
+`state_dependence='`, `evidence_grade='`, `deep-dive`, or
+`triage called`. If any appear, rewrite that sentence.
 
 | Forbidden token | Translate to |
 |---|---|
@@ -120,41 +105,24 @@ rewrite the offending sentence.
 | "deep-dive", "A1+A2 evidence", "the merged ledger" | Describe what the evidence shows — don't name the pipeline that produced it |
 | "single source cluster", "single replicate", "prompt_sha", "schema mismatch" | The biology: "the result comes from one research group; independent corroboration would be needed" |
 
-Self-check before emitting: scan the prose for any of `A1`, `A2`,
-`a1_evi_`, `a2_evi_`, `verdict='`, `accessibility='`,
-`state_dependence='`, `evidence_grade='`, `deep-dive`, or
-`triage called`. If any appear, rewrite that sentence.
-
 **Required content:** 2-3 sentences naming (a) why confidence is
 moderate or low — the specific weakness in the evidence, (b) what
 would lift it — the kind of follow-up that would make this a
 confident-high call.
 
-**Worked example — gene X's confidence_reasoning rewritten:**
+**Worked example — reader-facing shape (state-conditional cancer
+target):**
+> "Confidence is moderate because the cancer-cell extracellular form
+> comes from a single recent research cluster (two papers from the
+> same group, PMID:XXXX and PMID:YYYY). The canonical baseline
+> topology is well-established across decades of independent work.
+> Lifting confidence would need a third independent group to confirm
+> the cancer-state outer-leaflet exposure, ideally with a different
+> methodology than the one in the existing reports."
 
-BEFORE (pipeline-internal, current output):
-> "Triage called verdict='no', reason='inner_leaflet_anchored',
-> confidence='high'... We override to surface_accessibility='high' +
-> state_dependence='high' because two 2025 primary publications
-> (PMID:XXXX, PMID:YYYY) directly report cancer-specific topological
-> inversion via ALE... A1's evidence_grade is 'conflicting' —
-> canonical inner-leaflet topology is corroborated by multiple
-> independent sources (a1_evi_05, a1_evi_15, a1_evi_12-14)..."
-
-AFTER (user-facing):
-> "Confidence is moderate because the cancer-cell extracellular gene-X
-> story comes from a single recent research cluster (two 2025 papers
-> from the same group, PMID:XXXX and PMID:YYYY). The canonical gene-X
-> topology — lipid-anchored, inner-leaflet, no extracellular domain —
-> is well-established across decades of independent work. Lifting
-> confidence would need a third independent group to confirm the
-> cancer-state outer-leaflet exposure, ideally with a different
-> methodology than antibody-mediated tumor killing in xenografts."
-
-Note: the AFTER version uses PMIDs (citable), mentions the methodology
-(antibody-killing in xenografts) so the reader knows what alternative
-would corroborate, and explicitly says what would change the call.
-It does NOT mention "A1", "evidence_grade", or `aN_evi_N`.
+The exemplar uses PMIDs (citable), names what alternative would
+corroborate, and says what would change the call. It does NOT mention
+`A1`, `evidence_grade`, or `aN_evi_NN` tokens.
 
 **You have no tools.** Cite-only over the merged A1 + A2 evidence ledger in your task message. If
 you cannot quote it from the ledger, you cannot claim it. Every
@@ -179,6 +147,22 @@ parse time — invented or paraphrased ids fail the run.
   `surface_accessibility=low` because normal-cell access is low).
   Reserve `surface_accessibility=no` for proteins where the deep-dive
   evidence does not surface a targetable state anywhere.
+
+  **`high` requires direct evidence in hand** (topology prior alone
+  is not enough — catalog readers treat `high` as "confidently
+  surface-accessible"). **THE BRACKET** below is the single source of
+  truth — other sections cross-reference it, never restate it:
+
+  | grade + confidence | max surface_accessibility |
+  |---|---|
+  | `direct_multi_method` | `high` |
+  | `direct_single_method` + `confidence=high` | `high` |
+  | `direct_single_method` + `confidence ∈ {moderate, low}` | `moderate` |
+  | `supportive_but_indirect` | `moderate` |
+  | `weak` / `conflicting` | `low` |
+
+  `state_dependence` still flags conditionality when the bracket caps
+  `high` → `moderate`, so canonical-receptor signal isn't lost.
 
 - **`state_dependence`** — captures how much the targetable surface
   fraction VARIES by state (cell type, activation, cancer induction,
@@ -229,10 +213,24 @@ parse time — invented or paraphrased ids fail the run.
   conditional): `cell_state_induced`, `tissue_restricted_surface`,
   `lysosomal_exocytosis`, `dual_localization`,
   `stable_surface_attachment`, `other`. The first five mirror
-  `accessibility_modulation.category` verbatim — if you pick one of
-  these, A2's `accessibility_modulation` should also have a matching
-  row, otherwise that's a recall miss to flag in
-  `confidence_reasoning`.
+  `accessibility_modulation.category` verbatim.
+
+  **Soft recall-check on scr ↔ amod.category coupling.** If `scr ∈
+  {lysosomal_exocytosis, dual_localization,
+  tissue_restricted_surface}`, the amod block should contain at least
+  one row whose `category` is in the same finer-grained family —
+  these three reasons name a specific accessibility mechanism, so
+  the absence of a matching amod row is a recall miss worth flagging
+  in `confidence_reasoning`. **`cell_state_induced` is the umbrella
+  category** — finer-grained reasons like `activation_induced`,
+  `lysosomal_exocytosis`, `stress_induced`, or `disease_state_induced`
+  on an amod row are all valid backing for `scr =
+  cell_state_induced`, and any non-empty amod block satisfies the
+  check; only an empty amod block under `scr = cell_state_induced`
+  is a soft signal to note. If no matching family row exists for
+  any of these, note the recall miss in `confidence_reasoning` —
+  the synth call still stands, but the catalog reader should know
+  the amod backing is thin.
 
   **NO-bucket** (use when `surface_accessibility ∈ {low, no}`):
   `cytoplasmic`, `nuclear`, `mitochondrial_internal`,
@@ -292,6 +290,20 @@ parse time — invented or paraphrased ids fail the run.
          (cancer cells only) — a (non-surface-baseline protein with
          a state-conditional surface form)."
 
+     **Verdict-beat tone — match the evidence, not the topology
+     prior.** The opener tracks THE BRACKET row (above) — same row,
+     fixed opener phrasing:
+
+     | bracket row | opener |
+     |---|---|
+     | `direct_*` + `confidence=high` | "is constitutively / state-dependently surface-accessible" |
+     | `direct_single_method` + `confidence ∈ {moderate, low}` | "is likely surface-accessible" |
+     | `supportive_but_indirect` | "has supportive but indirect surface evidence" |
+     | `weak` | "has weak surface evidence; topology suggests but direct readouts are missing" |
+
+     The opener is the FIRST thing the reader sees — overclaiming
+     misleads a campaign-scoping reader.
+
   2. **Evidence beat (~150 char).** Flow into the evidence: use
      evidence_grade vocabulary for compression ("direct multi-method
      support", "supportive but indirect evidence") rather than reciting
@@ -299,6 +311,35 @@ parse time — invented or paraphrased ids fail the run.
      inline cites. Example: "Direct multi-method support: live-cell flow
      with CRISPR-KO controls (a1_evi_04), surface biotinylation–MS
      (a1_evi_08), and LEL-blocking functional assays (a1_evi_13)."
+
+     **Methods-citing discipline.** Read `surface_evidence.methods[]`.
+     A cite can be labeled "Direct surface evidence" / "Direct
+     multi/single-method support" ONLY if its `accessibility_relevance
+     = direct_surface_accessibility`. Anything else
+     (`supports_membrane_association`, `supports_surface_localization`,
+     `expression_only`, `weak_or_ambiguous`,
+     `excluded_as_ligand_engagement`) is supportive / indirect — never
+     "direct".
+
+     **Cap the Evidence beat at the direct rows.** When
+     `evidence_grade=direct_single_method`, name the ONE direct method
+     + its anchor cite and stop. When `direct_multi_method`, name the
+     2-3 direct methods. Do NOT list 3-6 indirect cites after the
+     direct line — that contradicts the "single/multi" framing and the
+     reader gets the indirect rows from the methods table anyway.
+     Hard cap: **≤2 cites total in the Evidence beat when
+     `evidence_grade ≤ direct_single_method`.** A single indirect
+     cite is allowed ONLY when it changes the picture (e.g. the ONLY
+     in-vivo readout); even then, cap at one.
+
+     Shapes:
+       * direct_single → *"Direct surface evidence is single-method:
+         live-cell flow on [cell line] ([cite])."*
+       * direct_multi → *"Direct multi-method support: live-cell flow
+         with KO controls ([cite]) and surface biotinylation ([cite])."*
+       * supportive_but_indirect / weak → lead with the grade
+         vocabulary, name the strongest 1-2 lines of support: *"Supportive
+         but indirect: perm IF with PM-rim colocalization ([cite])."*
 
   3. **State-dependence beat (~150 char).** Continue the paragraph with
      state context. **Embed the `state_dependence` value in flowing
@@ -366,10 +407,12 @@ parse time — invented or paraphrased ids fail the run.
     the evidence beat (use evidence_grade language) rather than truncate
     the state-dependence or risk beat.
 
-  **Worked exemplars** (constitutive / state-gated / risk-bearing
-  archetypes — anchor on the SHAPE not the gene-specific content):
+  **Worked exemplars** — two archetypes covering the rule-out vs
+  risk-firing risk-beat patterns. Anchor on the SHAPE not the
+  gene-specific content.
 
-  *Constitutively-accessible canonical receptor (~580 char):*
+  *Constitutive accessibility, state-modulated, risks ruled out
+  (~580 char):*
   > "Gene X is constitutively surface-accessible as a pan-tissue
   > multi-pass tetraspanin. Direct multi-method support: live-cell flow
   > with CRISPR-KO controls (a1_evi_04), surface biotinylation–MS
@@ -383,19 +426,7 @@ parse time — invented or paraphrased ids fail the run.
   > or secreted form and low paralog identity rule out decoy and
   > cross-reactivity concerns."
 
-  *State-gated cancer-only target (~560 char):*
-  > "Gene Y is state-dependently surface-accessible in cancer cells
-  > only — a normally non-surface protein that acquires an outer-leaflet
-  > pool via a state-conditional anchoring mechanism. Two recent
-  > reports (a1_evi_03, a1_evi_05) document the cancer-state surface
-  > form, with target-directed antibodies mediating xenograft tumor
-  > killing (a1_evi_09). Surface presence is strictly state-gated,
-  > requiring the cancer-state mechanism and absent on normal cells
-  > (a2_evi_07). The state-conditional gating means binder reach
-  > tracks that cellular state; no shed or secreted decoy form rules
-  > out a competing soluble pool."
-
-  *Soluble-decoy-dominant target (~545 char):*
+  *State-gated accessibility, decoy risk firing (~545 char):*
   > "Gene Z is state-dependently surface-accessible despite a
   > non-surface baseline localization. Multiple methods (a1_evi_04,
   > a1_evi_07, a1_evi_11) document an extracellular pool that engages
@@ -406,15 +437,12 @@ parse time — invented or paraphrased ids fail the run.
   > a soluble factor under the same trigger — is the principal
   > antibody-decoy risk (a1_evi_18)."
 
-  **Authoritativeness note on these exemplars.** Each archetype above
-  is a SHAPE template, not a content template. The mechanism phrases
-  ("state-conditional anchoring mechanism", "non-surface baseline
-  localization", "implicated cell states") are intentionally abstract:
-  do NOT paste the same molecular mechanism into every record you grade
-  that falls in the same archetype. Pull the SPECIFIC mechanism, cell
-  state, and trigger from THIS gene's evidence ledger; the exemplar
-  only fixes the narrative arc (verdict → evidence → state → risk) and
-  the character budgets.
+  **Authoritativeness note on these exemplars.** Each archetype is a
+  SHAPE template, not a content template. The abstract mechanism
+  phrases are intentional — do NOT paste them into every record. Pull
+  the SPECIFIC mechanism, cell state, and trigger from THIS gene's
+  evidence ledger; the exemplar only fixes the narrative arc (verdict
+  → evidence → state → risk) and the character budgets.
 
 - **`accessibility_context_summary`** — ONE sentence (≤240 chars) stating
   *when and where* the protein is surface-accessible, synthesized over the
@@ -446,14 +474,10 @@ parse time — invented or paraphrased ids fail the run.
   cardinality at record assembly: a `direct_multi_method` grade with
   `methods=[]` (or fewer than 2 `direct_surface_accessibility` entries from
   distinct sources) is rejected.
-- **`headline_risks`** (≤3) selects the *consequential* sub-blocks of the
-  **PROVIDED, frozen** `accessibility_risks` block (you do not generate
-  that block — see "Accessibility risks — provided, not generated"). Read
-  its flags: a `secreted_form` with `present=true` and `severity=high`
-  belongs; a low-severity `restricted_subdomain` doesn't. Pick what would
-  change a target-discovery decision. See the dedicated "Headline-risks
-  selection discipline" section below for the closed enum values and the
-  anti-`other` rule.
+- **`headline_risks`** (≤3) selects the *consequential* sub-blocks of
+  the PROVIDED, frozen `accessibility_risks` block. See "Headline-risks
+  selection discipline" below for the closed enum values, the
+  anti-`other` rule, and the historically-misused patterns.
 - **`confidence`** weighs three things: A1's `evidence_grade`, the count and
   severity of A1's `contradicting_evidence`, and A2's `state_dependence` —
   plus the consequential risks in the PROVIDED `accessibility_risks` block
@@ -662,26 +686,67 @@ A given gene carries one value from EACH axis. Examples:
 
 ## Has-known-ligand flag
 
-`filters_llm.has_known_ligand` is a bool with a required
-`has_known_ligand_rationale` (≤300 char). **The rationale is
-mandatory: an empty string is invalid when `has_known_ligand=True`.**
-If you can't name the ligand specifically — flip `has_known_ligand`
-to `False` and put the orphan-receptor reasoning in the rationale
-instead. The orchestrator rejects records with `has_known_ligand=True`
-+ empty `has_known_ligand_rationale` (no silent placeholders).
+`filters_llm.has_known_ligand` is a bool tracking whether the gene
+has a **validated, endogenous binding partner** — natural biology,
+NOT therapeutics. `has_known_ligand_rationale` (≤300 char) is
+mandatory and non-empty when `has_known_ligand=True` (orchestrator
+rejects placeholders).
 
-**Default `True`** — most surface proteins have a validated endogenous
-ligand. Set `False` ONLY for orphan-class genes where ligand identity
-is genuinely unknown:
+**The "ligand" here means an endogenous biological binding partner**
+— a natural agonist, cognate receptor, physiological cargo, native
+substrate, or constitutive heterodimer partner produced by human
+biology. Therapeutic engagement is a SEPARATE concept and MUST NOT
+flip this flag to True.
 
-* Orphan GPCRs (no validated endogenous agonist) — e.g. GENE X, a
-  hypothetical orphan receptor with no deorphanized ligand.
-* Orphan nuclear receptors.
-* Orphan receptor tyrosine kinases.
+**What counts as a known endogenous ligand (→ `True`):**
 
-A receptor with a proposed but unconfirmed ligand stays `True` if
-the proposal is widely cited; flip to `False` if the literature
-explicitly calls it orphan / deorphanization-pending.
+* Validated natural agonist for a GPCR (chemokines for chemokine
+  receptors, neurotransmitters for neurotransmitter receptors, etc.).
+* Cognate receptor for a ligand-class protein (the gene's natural
+  binding partner in physiology).
+* Documented constitutive heterodimer / cargo partner (e.g.
+  invariant chain for MHC II, β-microglobulin-equivalent partners).
+* A natural binding partner with multiple independent biochemical
+  characterizations (binding affinity, structural data, functional
+  consequence). Proposed-but-widely-cited endogenous ligands count.
+
+**What DOES NOT count (→ `False` if these are all the gene has):**
+
+* **Therapeutic antibodies, ADCs, CAR-T, bispecifics** (clinical or
+  investigational, named or unnamed). Engineered binding ≠ endogenous
+  biology. The catalog reader treats `has_known_ligand=True` as
+  "natural biology gives you a ready binding pocket / signaling
+  pathway"; therapeutic agents fail that test by definition.
+* **Small-molecule drugs, blockers, agonists, antagonists** — even
+  widely-used pharmacology. Endogenous biology is the bar;
+  pharmacology is not.
+* **Tool compounds, fluorescent probes, biotinylated binders,
+  photoaffinity ligands.** Reagents, not biology.
+* **Patient autoantibodies / disease-state autoreactive antibodies.**
+  Biology of the disease, not endogenous receptor-ligand pairing.
+
+**Orphan-class call (→ `False`):** When the only documented binding
+is therapeutic / pharmacological / investigational, OR when the gene
+is an orphan GPCR / NHR / RTK with no deorphanized endogenous ligand,
+set `has_known_ligand=False`. The rationale names the orphan status
++ what's been TRIED but not confirmed (if anything).
+
+**Worked example — orphan-like rationale shape:**
+> *"Orphan-like: no validated endogenous ligand reported. The clinical
+> ADCs ([drug-1] and [drug-2]) are therapeutic antibody-conjugates,
+> not endogenous biology. The receptor's natural binding partner
+> remains unidentified."*
+
+In the `True` direction, the rationale names the agonist + binding
+evidence. In the `False` direction (orphan GPCR with proposed-but-
+unconfirmed ligand candidate, or tumor antigen with therapeutic
+binder only), the rationale names the orphan status + what's been
+tried.
+
+A proposed but widely-cited endogenous ligand stays `True` if the
+proposal has multiple independent characterizations; flip to `False`
+if the literature explicitly calls the gene orphan /
+deorphanization-pending.
 
 ## Citation discipline
 

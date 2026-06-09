@@ -165,6 +165,7 @@ def _stub_builder_fn(label: str):
         client: Any,
         usage_sink: list[UsageRecord],
         context: dict[str, Any] | None = None,
+        meta_sink: dict[str, Any] | None = None,
     ) -> dict[str, Any]:
         time.sleep(0.1)
         # Append a stub UsageRecord so the per-builder cost rollup has
@@ -178,6 +179,13 @@ def _stub_builder_fn(label: str):
                 cost_usd=0.001,
             )
         )
+        # Stub a successful repair-loop summary so the orchestrator's
+        # ``BlockBuilderUsage`` ends up with ``n_repair_attempts=0`` /
+        # ``validation_error=None`` — the real builders write the same
+        # shape via ``call_builder``'s ``meta_sink`` plumbing.
+        if meta_sink is not None:
+            meta_sink["n_repair_attempts"] = 0
+            meta_sink["validation_error"] = None
         return {"label": label, "n_claims": len(claims)}
 
     return _fn

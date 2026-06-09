@@ -140,6 +140,7 @@ def build_risks(
     client: Anthropic,
     usage_sink: list[UsageRecord],
     context: dict[str, Any] | None = None,
+    meta_sink: dict[str, Any] | None = None,
 ) -> AccessibilityRisks | None:
     """Emit an ``AccessibilityRisks`` from the MERGED A1+A2 ledger.
 
@@ -212,6 +213,7 @@ def build_risks(
         # Heavy builder: six nested sub-blocks, each with rationale + cites,
         # over a merged ledger that can exceed 50 claims.
         max_tokens=MAX_TOKENS_HEAVY,
+        meta_sink=meta_sink,
     )
     if parsed is None or not isinstance(parsed, AccessibilityRisks):
         logger.warning("risks_builder: validation failed; returning None")

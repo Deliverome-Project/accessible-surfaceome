@@ -289,23 +289,145 @@ surface evidence. The inner-leaflet row stays `weak_or_ambiguous`.
       tumor killing (anti-target Ab depletes / kills target-expressing
       cells in xenograft), ADC efficacy on cells expressing the
       target, surface-targeted photo-tag labeling (RaPID, BioID-
-      surface, APEX-surface), FRET-on-surface, radioligand binding,
-      surface-restricted small-molecule probes. These claims don't
-      stain or isolate the protein directly, but the functional
-      readout is impossible without surface access (e.g. an antibody
-      that depletes target-expressing cells only if the target is
-      reachable from outside).
+      surface, APEX-surface), FRET-on-surface, radioligand binding
+      on live cells, surface-restricted small-molecule probes. These
+      claims don't stain or isolate the protein directly, but the
+      functional readout is impossible without surface access (e.g.
+      an antibody that depletes target-expressing cells only if the
+      target is reachable from outside).
+
+      **Anti-patterns — these MUST NOT take
+      `accessibility_relevance=direct_surface_accessibility`, even
+      when functional and using the target's name. Cap each at the
+      indicated relevance level instead:**
+
+      * **Knockdown / KO validation** (siRNA / shRNA / CRISPR-KO
+        abolishing a downstream signaling readout — Ca²⁺ flux,
+        β-arrestin, IP1, ERK) validates the gene's pathway role,
+        not its surface presence (the KO could cut an intracellular
+        step). → `supports_membrane_association`.
+      * **OE functional readouts with unknown / non-native SP**
+        (PRESTO-Tango, DiscoverX, NFAT-luc, etc. in transfected
+        cells where the construct's signal-peptide source isn't
+        stated). A foreign SP could force membrane delivery
+        independent of native trafficking. → `supports_surface_localization`.
+      * **In-vivo therapeutic-outcome inference** (small-molecule
+        antagonist / peptide blocker reversing a whole-organ
+        phenotype in mouse / rat). Too many inference layers from
+        "protein on the surface" — drug could hit intracellular
+        pool, compensatory pathway, or secreted form.
+        → `supports_membrane_association`.
+      * **Radioligand binding on isolated membrane fractions**
+        (microsomal / P2 / PNS pellet) — membrane is enriched but
+        orientation is random (inside-out vesicles bind cytoplasmic
+        epitopes). → `supports_membrane_association`. Live-cell
+        binding on intact non-permeabilized cells DOES count as direct.
     - `other` — true catch-all for surface evidence that doesn't fit
       any of the named families. Reach for `functional_surface_assay`
       first; only fall to `other` when the evidence genuinely doesn't
       involve antibody / pharmacology / labeling engagement.
 - `method_subclass` — closed enum: `live_cell_flow`, `fixed_cell_flow`,
-  `nonpermeabilized_IF`, `permeabilized_IF`, `IHC_membranous`,
+  `nonpermeabilized_IF`, `permeabilized_IF`, `IHC_membranous`, `IHC`,
   `surface_biotinylation`, `cell_surface_capture`, `N_glycoproteomics`,
-  `plasma_membrane_fractionation`, `whole_cell_proteomics`, `unknown`.
+  `plasma_membrane_fractionation`, `whole_cell_proteomics`,
+  `functional_surface_assay`, `other`, `unknown`.
+    - `functional_surface_assay` — the subclass to pair with
+      `method_family=functional_surface_assay` (anti-target-mediated
+      tumor killing in xenografts, ADC efficacy on target-expressing
+      cells, CAR-T cytotoxicity that's abrogated when the target is
+      knocked out, radioligand binding on live cells, surface-restricted
+      small-molecule probes). The functional readout is impossible
+      without surface access — so this subclass pairs with
+      `accessibility_relevance=direct_surface_accessibility` UNLESS one
+      of the anti-patterns above caps it lower (knockdown / KO of a
+      downstream signaling readout, OE with unspecified SP, in-vivo
+      therapeutic inference, radioligand binding on isolated membrane
+      fractions).
+    - `IHC` — tissue immunohistochemistry that reports expression
+      WITHOUT describing a membranous staining pattern (no PM-rim, no
+      cell-junction co-stain, no apical-domain pattern). Pair with
+      `accessibility_relevance=expression_only` (it shows the protein
+      is present in the tissue but doesn't localize it to the surface)
+      and `surface_claim_type=unclear` (or whatever the paper's
+      localization claim is). Reserve `IHC_membranous` for explicit
+      membrane-pattern staining; reach for `IHC` for everything else
+      labelled "IHC" / "immunohistochemistry" without a membrane call.
+    - `other` — true catch-all for an identified method that doesn't
+      fit any named subclass (rare: novel / hybrid methods, an assay
+      family the enum demonstrably doesn't cover). **Prefer `other`
+      over `unknown` whenever you've identified the method but can't
+      classify it** — `unknown` is reserved STRICTLY for cases where
+      the paper is genuinely silent on what method was used. See the
+      cross-cutting rule below.
+
+    **Silent-permeabilization defaults — `permeabilized_IF` and
+    `fixed_cell_flow`.** When the paper describes an IF or
+    flow-cytometry experiment WITHOUT stating the permeabilization
+    condition, do NOT default `method_subclass=unknown`. Instead:
+
+    - IF on fixed cells / tissue sections with no perm condition
+      stated → default `method_subclass=permeabilized_IF`. Most
+      fixed-cell / tissue IF is permeabilized; non-permeabilized IF
+      would be named explicitly (it's the exceptional condition).
+      Pair with `accessibility_relevance=expression_only` (the
+      default-permeabilized read can't prove surface accessibility).
+    - Flow cytometry with no live-vs-fixed call → default
+      `method_subclass=fixed_cell_flow`. Live-cell flow is the
+      surface-readout claim a paper makes explicitly when present
+      ("non-permeabilized", "live-cell staining"); silence on the
+      perm condition is most consistent with a fixed-cell panel.
+      Pair with `accessibility_relevance=expression_only` (same
+      reasoning — can't prove surface accessibility from a
+      fixed-perm flow run).
+
+    These defaults follow Anthropic's conservative-default principle:
+    when silent, pick the value that doesn't OVERCLAIM surface
+    accessibility. A non-permeabilized assay would be named; treating
+    silence as the surface-claiming condition is the wrong default.
+    Separately, `permeabilization` itself defaults to `unknown` when
+    the paper is silent (it's a metadata field, not an assay
+    classification) — only `method_subclass` flips to the
+    permeabilized-default value.
 - `permeabilization` — closed enum: `live_cell`, `nonpermeabilized`,
   `permeabilized`, `fixed_unknown`, `unknown`. Use the claim's
   `assay_context.permeabilized` when set; default `unknown` when silent.
+  Note: per the silent-perm defaults above, when the
+  `method_subclass` is being set to a permeabilized-default value
+  (`permeabilized_IF` / `fixed_cell_flow`) on the basis of perm
+  silence, `permeabilization` itself should stay `unknown` — the
+  paper hasn't actually told you the perm condition; the subclass
+  default just reflects the most likely assay type.
+
+### Cross-cutting rule — prefer `other` over `unknown` as the fallback
+
+`method_subclass=unknown` is reserved STRICTLY for cases where the
+paper is genuinely silent on what method was used — never as a
+fallback when you've identified the method but can't classify it
+into one of the named subclass values.
+
+- The paper names an assay family the enum doesn't cover (a novel
+  technique, a hybrid method, a CLEM-style multi-modal readout) →
+  pick `other`.
+- The paper says "we measured surface expression" without naming
+  the assay → that's genuine method silence; `unknown` is correct.
+
+This rule applies generally to every enum on this row: when you've
+identified the actual value but it doesn't fit a named slot, reach
+for the `other` slot (where the enum has one) before `unknown`.
+`unknown` is for "I don't know"; `other` is for "I know, but the
+enum doesn't have a slot for it".
+
+## Species handling — deterministic, downstream
+
+`MethodObservation` has no `species` field of its own. Species lives
+on each cited `EvidenceClaim.assay_context.species`, and the
+orchestrator resolves it deterministically per-row (human-anchored
+when any cite is human; otherwise the union of cited non-human
+species). The grade builder + synth see the resolved species in the
+methods summary they receive. You don't need to do anything special
+with species — focus on getting `accessibility_relevance` right per
+the inclusion criterion and anti-patterns above; species attribution
+follows from the cites you pick.
 - `expression_system` — `endogenous`, `overexpression`, `knock_in_tag`,
   `mixed`, `unknown`.
 - `overexpression` — REQUIRED when `expression_system` is

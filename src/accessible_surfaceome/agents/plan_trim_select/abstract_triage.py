@@ -35,6 +35,9 @@ from anthropic import Anthropic
 from anthropic.types import TextBlock
 from pydantic import ValidationError
 
+from accessible_surfaceome.agents._support.api_retry import (
+    messages_create_with_backoff,
+)
 from accessible_surfaceome.agents._support.payload import cached_system
 from accessible_surfaceome.agents._support.pricing import (
     UsageRecord,
@@ -214,7 +217,7 @@ def triage_one_abstract(
         # Messages.create overloads, but the runtime shapes are correct:
         # both branches set model + max_tokens + messages, and the cached
         # branch adds system. The trailing directive below suppresses ty.
-        resp = client.messages.create(**create_kwargs)  # ty: ignore[no-matching-overload]
+        resp = messages_create_with_backoff(client, **cast("Any", create_kwargs))
     except Exception as exc:  # noqa: BLE001
         return TriageOutcome(
             paper_id=paper_id,
@@ -225,7 +228,7 @@ def triage_one_abstract(
         )
 
     elapsed = round(time.perf_counter() - t0, 3)
-    usage = record_from_response(resp.usage, HAIKU_PRICING_KEY)
+    usage = record_from_response(resp.usage, HAIKU_PRICING_KEY, response=resp)
     text = "\n".join(
         b.text for b in resp.content if isinstance(b, TextBlock)
     ).strip()
@@ -263,11 +266,22 @@ def triage_abstracts(
     bundle: IdentifierBundle | None = None,
     concurrency: int = TRIAGE_CONCURRENCY,
 ) -> list[TriageOutcome]:
-    """Fan out per-paper triage across ``concurrency`` threads."""
+    """Fan out per-paper triage across ``concurrency`` threads.
+
+    Production drops ``prompt_template`` so :func:`triage_one_abstract`
+    takes the cached-system path (rules+schema in cached system block,
+    per-paper data in the user message). Passing a template here would
+    trigger the legacy single-message branch — and after the gene-
+    agnostic rewrite that branch produces a paperless prompt (the
+    template no longer carries ``{gene}`` / ``{title}`` / ``{abstract}``
+    placeholders, so ``.format(**kwargs)`` silently drops them and the
+    user-visible message contains only the rules + schema, with no
+    paper data). Tests still pass an explicit template via
+    ``triage_one_abstract`` directly.
+    """
 
     if not papers:
         return []
-    template = ABSTRACT_TRIAGE_PROMPT_PATH.read_text()
     out: list[TriageOutcome] = []
     with ThreadPoolExecutor(max_workers=concurrency) as pool:
         futures = [
@@ -277,7 +291,6 @@ def triage_abstracts(
                 paper=p,
                 gene=gene,
                 bundle=bundle,
-                prompt_template=template,
             )
             for p in papers
         ]

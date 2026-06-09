@@ -62,7 +62,11 @@ _TRIGGER_BUCKET = {
 }
 _TRIGGER_PRIORITY = ("oncogenic", "immune", "stress_hypoxia", "cell_death", "infection", "other")
 _TUMOR_CTX = {"tumor", "tumor_adjacent"}
-_PRESENT_LEVELS = {"high", "moderate", "low", "mixed"}
+# ``unknown`` is included: a paper asserting functional engagement on tumor
+# cells without quantifying the level (CD63-on-tumor-macrophages shape) still
+# establishes tumor presence. Only ``absent`` / ``undetected`` are excluded.
+# Mirrors surfaceome_v1/orchestrator.py:_derive_filters — keep in sync.
+_PRESENT_LEVELS = {"high", "moderate", "low", "mixed", "unknown"}
 _LIVE_CELL_FAMILIES = {"flow_cytometry", "biotinylation", "proximity_labeling"}
 _ENDOG_SYSTEMS = {"endogenous", "mixed"}
 

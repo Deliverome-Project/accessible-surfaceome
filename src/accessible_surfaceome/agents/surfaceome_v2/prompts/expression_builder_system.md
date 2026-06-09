@@ -11,6 +11,28 @@ Claims with `claim_type=tissue_expression` are the primary input. Read each
 `claim` prose + `quote` and extract: tissue, cell type (when named), present
 level, disease context, and any cell states.
 
+**Also consider `claim_type=surface_expression` claims as candidate expression
+rows — this is a safety net.** Many clips carry BOTH dimensions: surface
+engagement AND a named tissue / cell type / disease context. When PTS A2 tags
+a dual-dimension clip as `surface_expression` (e.g. "ligand engages protein X
+on tumor macrophages"; "marker of activated effector cells in the tumor
+microenvironment"), the tissue dimension still belongs in this block. For
+each `surface_expression` claim whose `claim` prose or `assay_context`
+(especially `cell_context.disease_state` and `cell_type_or_line`) names a
+tissue / cell type / disease context, emit a corresponding `ExpressionRow`
+with `disease_context` derived from that prose. Pure subcellular-localization
+claims that name only a compartment (apical vs basolateral, PM vs ER vs
+Golgi, ciliary, etc.) without a tissue/cell-type/disease context do NOT yield
+an expression row.
+
+**Don't emit redundant rows.** If the same (tissue × cell_type ×
+disease_context) tuple is already covered by a `tissue_expression` claim,
+prefer the `tissue_expression` source — merge the `surface_expression`
+claim's `evidence_id` into the existing row's `cited_evidence_ids` rather
+than emitting a duplicate row. Emit a fresh row only when the
+`surface_expression` claim names a tuple no `tissue_expression` claim
+covers.
+
 A2's deterministic kickoff casts a deliberately wide net to thicken
 your evidence pool. The **`normal_tissue_expression`** standing axis
 covers both the six-organ tox panel (liver / lung / kidney /

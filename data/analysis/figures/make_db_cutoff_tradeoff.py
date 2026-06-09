@@ -90,7 +90,7 @@ POINTS_URL = (
 # Subject metadata — mirrors save_figure in _plotting_config.py).
 GIST_URL = "https://gist.github.com/beccajcarlson/f9319af882e372194bd30640c0cbf2ed"
 
-# ──── Inline brand styling — sentinel: brand-style-v2 ────
+# ──── Inline brand styling — sentinel: brand-style-v3 ────
 # Mirrors src/accessible_surfaceome/audit/_plotting_config.py so the gist
 # stays self-contained. Kept in sync via tests/test_figure_gists_styling.py.
 BRAND_PALETTE = [
@@ -129,7 +129,7 @@ def _register_brand_fonts() -> None:
 
 
 def _apply_brand_style() -> None:
-    """Inline equivalent of `setup_plotting_style`. Sentinel: brand-style-v2.
+    """Inline equivalent of `setup_plotting_style`. Sentinel: brand-style-v3.
     v2: bumped sizes ~25% + explicit medium weight (avoids ExtraLight default
     that matplotlib picks from the Manrope variable file). Companion to the
     static Manrope-{regular,medium,semibold,bold}.otf files in assets/fonts/."""
@@ -144,8 +144,8 @@ def _apply_brand_style() -> None:
         "font.family": "sans-serif",
         "font.sans-serif": ["Manrope", "Outfit", "DejaVu Sans", "Liberation Sans", "Arial"],
         "font.weight": "medium",
-        "font.size": 21,
-        "axes.labelsize": 24,
+        "font.size": 20,
+        "axes.labelsize": 20,
         "axes.labelweight": "medium",
         "axes.titlesize": 0,
         "axes.titlepad": 0,
@@ -161,12 +161,12 @@ def _apply_brand_style() -> None:
         "grid.linestyle": "-",
         "grid.linewidth": 0.7,
         "grid.color": BRAND_GRID,
-        "xtick.labelsize": 19,
-        "ytick.labelsize": 19,
+        "xtick.labelsize": 20,
+        "ytick.labelsize": 20,
         "xtick.color": BRAND_INK,
         "ytick.color": BRAND_INK,
         "legend.frameon": False,
-        "legend.fontsize": 19,
+        "legend.fontsize": 20,
         "patch.edgecolor": "none",
         "patch.linewidth": 0.0,
     })
@@ -259,7 +259,7 @@ def main() -> None:
 
         ax.set_xscale("log")
         ax.text(0.02, 0.97, group, transform=ax.transAxes,
-                ha="left", va="top", fontsize=23, fontweight="bold",
+                ha="left", va="top", fontsize=20, fontweight="bold",
                 color=ramp[0])
         ax.set_ylim(25, 102)
         xs = [p["size"] for p in pts]
@@ -301,9 +301,9 @@ def main() -> None:
                    markersize=20, markeredgecolor=RECOMMENDED_EDGE,
                    markeredgewidth=1.4, label="Recommended after trade-off audit"),
     ]
-    legend_ax.legend(handles=handles, loc="upper center", fontsize=19,
+    legend_ax.legend(handles=handles, loc="upper center", fontsize=20,
                      frameon=False, title="Marker shape",
-                     title_fontsize=21)
+                     title_fontsize=20)
 
     fig.supxlabel("Universe size — proteins this filter would admit "
                   "(log scale; lower = stricter)", fontsize=20, y=0.02,
@@ -313,7 +313,7 @@ def main() -> None:
     # to 0.54 (axes-content midpoint) and the dynamic equivalent were
     # technically correct but visually off — keep the matplotlib default.
     # x=0.02 just keeps the rotated label off the canvas-left edge under
-    # brand-style-v2's larger axes.labelsize.
+    # brand-style-v3's larger axes.labelsize.
     fig.supylabel("Accuracy on\n147-gene benchmark (%)", fontsize=20,
                   x=0.02, color=BRAND_INK)
     plt.tight_layout(rect=[0.04, 0.03, 1, 0.985])

@@ -225,6 +225,15 @@ KNOWN_NO_MARKDOWN_EXPORT: frozenset[str] = frozenset({
     "CLDN18",
     "HSPA5",
     "KIR2DL1",
+    # v2.9.0 records published from the cohort rerun on PR54 — JSON
+    # snapshots committed (this commit), but the markdown exporter at
+    # viewer/scripts/build-markdown-exports.mjs only handles schema
+    # ``v1.x`` and skips them. Move out of this allowlist once the
+    # exporter learns the v2.x block-builder output shape.
+    "ABCB9",
+    "C3",
+    "CD63",
+    "PVRIG",
 })
 
 

@@ -32,9 +32,18 @@ def build_expression(
     client: Anthropic,
     usage_sink: list[UsageRecord],
     context: dict[str, Any] | None = None,
+    meta_sink: dict[str, Any] | None = None,
 ) -> list[ExpressionRow]:
     context = context or {}
-    selected = filter_by_claim_type(claims, {"tissue_expression"})
+    # Safety net for dual-dimension routing: PTS A2 can tag a clip that names
+    # a tissue / cell type / disease context as ``surface_expression`` when
+    # surface-engagement language dominates the verbatim quote (CD63 EV/tumor
+    # literature is the worked example). Include those claims as candidates so
+    # the tissue dimension still reaches this block; the prompt decides which
+    # ones name a tissue context vs which ones are pure subcellular calls.
+    selected = filter_by_claim_type(
+        claims, {"tissue_expression", "surface_expression"}
+    )
     if not selected:
         logger.info("expression_builder: no qualifying claims → empty")
         return []
@@ -42,7 +51,7 @@ def build_expression(
     system_prompt = load_prompt("expression_builder_system")
     user_prompt = (
         f"# Gene: {gene}\n\n"
-        f"{format_ledger_block(selected, header='A2 tissue_expression claims')}\n"
+        f"{format_ledger_block(selected, header='A2 tissue_expression + surface_expression claims')}\n"
         f"{format_schema_block(ExpressionRow.model_json_schema(), name='ExpressionRow')}\n"
         "Emit a JSON ARRAY of ExpressionRow rows in ONE fenced ```json block. "
         "One row per (tissue × cell_type × disease_context). No prose around it.\n"
@@ -59,6 +68,7 @@ def build_expression(
         # Heavy builder: per-(tissue × cell_type × disease) rows can blow past
         # 8k tokens on broadly-expressed proteins. Use the high cap.
         max_tokens=MAX_TOKENS_HEAVY,
+        meta_sink=meta_sink,
     )
     if parsed is None:
         return []

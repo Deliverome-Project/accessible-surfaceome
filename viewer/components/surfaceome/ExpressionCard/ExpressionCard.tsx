@@ -1,23 +1,12 @@
-import type { SurfaceomeRecord, TissueLevel } from "../../../lib/surfaceome-types";
-import { prettyEnum } from "../../../lib/surfaceome";
-import { EvidenceChipList } from "../EvidenceChip/EvidenceChip";
+import type { SurfaceomeRecord } from "../../../lib/surfaceome-types";
 import { FeatureRationales } from "../FeatureChips/FeatureChips";
 import { SectionCard } from "../SectionCard/SectionCard";
-import { StatusPill } from "../StatusPill/StatusPill";
+import { ExpressionTable } from "./ExpressionTable";
 import styles from "./ExpressionCard.module.css";
 
 interface Props {
   rec: SurfaceomeRecord;
   n: number;
-}
-
-function tissueLevelTone(v: TissueLevel) {
-  if (v === "high") return "success" as const;
-  if (v === "moderate") return "teal" as const;
-  if (v === "low") return "amber" as const;
-  if (v === "absent") return "neutral" as const;
-  if (v === "mixed") return "lavender" as const;
-  return "neutral" as const;
 }
 
 /**
@@ -70,39 +59,7 @@ export function ExpressionCard({ rec, n }: Props) {
         {expression.length === 0 ? (
           <p className={styles.empty}>No expression rows recorded.</p>
         ) : (
-          <table className={styles.table}>
-            <thead>
-              <tr>
-                <th scope="col">Tissue</th>
-                <th scope="col">Cell type</th>
-                <th scope="col">Disease context</th>
-                <th scope="col">Level (protein)</th>
-                <th scope="col">Cell states</th>
-                <th scope="col">Cites</th>
-              </tr>
-            </thead>
-            <tbody>
-              {expression.map((row, i) => (
-                <tr key={i}>
-                  <td>{row.tissue || "—"}</td>
-                  <td>{row.cell_type || "—"}</td>
-                  <td>
-                    <span className={styles.mono}>{prettyEnum(row.disease_context)}</span>
-                    {row.disease_label ? ` (${row.disease_label})` : ""}
-                  </td>
-                  <td>
-                    <StatusPill tone={tissueLevelTone(row.present)} size="sm">
-                      {prettyEnum(row.present)}
-                    </StatusPill>
-                  </td>
-                  <td>{row.cell_states.join(", ") || "—"}</td>
-                  <td>
-                    <EvidenceChipList ids={row.cited_evidence_ids} label="Cites" />
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+          <ExpressionTable rows={expression} />
         )}
       </div>
     </SectionCard>

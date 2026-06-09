@@ -82,6 +82,47 @@ surface-accessibility shift AND no single-state surface observation,
 emit empty `[]`. An over-broad row that just restates "this cell type
 has gene X" is worse than no row.
 
+## Tumor-vs-normal expression deltas — DETERMINISTIC LIFT RULE
+
+**When two ledger claims describe SAME-TISSUE expression observations
+of this protein under different `disease_context`s — one `normal` /
+`healthy` / `non-tumor` baseline, one `tumor` / `tumor-adjacent`
+modulating state — AND the present level differs by ≥1 enum step
+(`absent` → any present; `low/moderate` → `high`; etc.), you MUST emit
+ONE contrast (shape A) row capturing the modulation:**
+
+- `category` = `cell_state_induced`
+- `cell_state_trigger` = `oncogenic_transformation`
+- `direction` = `increases` when the tumor read is the higher level;
+  `decreases` when the normal read is the higher level;
+  `bidirectional` if the ledger documents both directions across
+  multiple cancer sites.
+- `baseline_context` = the normal observation's tissue / cell context
+  (e.g. `"normal colonic epithelium"`).
+- `modulating_state` = the tumor observation's tissue / cell context
+  (e.g. `"colorectal carcinoma"`).
+- `cited_evidence_ids` = BOTH the normal and tumor `evidence_id`s.
+
+This rule lifts evidence that the model previously skipped because the
+paper did not draw the contrast in a single sentence — the contrast is
+across two separate ledger entries. The synthesizer's `surface_call_
+reason = cell_state_induced` ↔ amod recall-check depends on these rows
+landing; missing them produces a false confidence-reasoning miss.
+
+Apply the rule independently per tissue pair. A protein normal-vs-
+tumor-induced across breast / colon / lung emits THREE separate rows,
+not one merged row. Combine into one row ONLY when the tissues are part
+of the same anatomical-site family (e.g. "non-small-cell lung
+carcinoma" + "small-cell lung carcinoma" → one `modulating_state =
+"lung carcinoma"` row).
+
+If a `## Candidate modulation rows derived from expression-level
+deltas` section appears in the user prompt, it lists the pairs the
+deterministic detector found. Apply the qualifying-shift gate (level
+delta + surface relevance) to each candidate before emitting. False-
+positive candidates in that list are expected — skip any that don't
+clear the gate.
+
 ## Schema fields — closed enums
 
 - `category` — 12-value enum. PICK ONE:

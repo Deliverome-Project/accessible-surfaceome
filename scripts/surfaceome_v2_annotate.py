@@ -55,10 +55,37 @@ def main(argv: list[str] | None = None) -> int:
         "skip). The D1 push auto-skips with a warning when CLOUDFLARE_* env "
         "vars are absent.",
     )
+    parser.add_argument(
+        "--checkpoint",
+        action=argparse.BooleanOptionalAction,
+        default=True,
+        help=(
+            "Read mid-gene PTS checkpoint from .runs/_phase_checkpoint/ on "
+            "launch (default on; --no-checkpoint forces a fresh PTS dual "
+            "even when a checkpoint exists). Checkpoints save the ~$1.35 "
+            "PTS spend when an annotate is restarted mid-gene after a "
+            "builder/synth failure. Write is always on — only the read is "
+            "guarded by this flag, so a forced re-run still leaves a "
+            "checkpoint for the next attempt."
+        ),
+    )
+    parser.add_argument(
+        "--cohort-run-id",
+        default=None,
+        help=(
+            "Sweep tag stamped on the published intermediates / "
+            "surface_annotation row. None for ad-hoc single-gene runs; set "
+            "by the cohort sweep driver to a per-sweep UUID."
+        ),
+    )
     args = parser.parse_args(argv)
 
     print(f"=== surfaceome_v2 annotate: {args.gene} ===", flush=True)
-    result = annotate(args.gene, persist=args.persist)
+    result = annotate(
+        args.gene,
+        persist=args.persist,
+        read_phase_checkpoint=args.checkpoint,
+    )
 
     safe_id = result.gene.replace(":", "_")
     runs = Path(".runs")
@@ -119,7 +146,11 @@ def main(argv: list[str] | None = None) -> int:
     # succeed. Opt out with --no-publish.
     publish_result = None
     if args.publish and result.record is not None:
-        publish_result = publish_record(result.record, push_to_d1=True)
+        publish_result = publish_record(
+            result.record,
+            push_to_d1=True,
+            cohort_run_id=args.cohort_run_id,
+        )
 
     # Intermediates go to the PRIVATE surfaceome_agents D1, not local disk.
     # The previous behavior was to write
@@ -148,6 +179,8 @@ def main(argv: list[str] | None = None) -> int:
             intermediates=result.intermediates,
             schema_version=sv,
             record_valid=result.record is not None,
+            cohort_run_id=args.cohort_run_id,
+            failure_mode=result.failure_mode,
         )
 
     print()

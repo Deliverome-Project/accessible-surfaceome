@@ -201,6 +201,33 @@ A1 to harvest from the shared pool.
   `tissue_expression` for almost everything; reach for
   `surface_expression` only when the clip is specifically about a
   surface subdomain or PM-non-supporting localization.
+
+  **The disambiguating question is: what is the clip's LOAD-BEARING
+  point?** If the clip's primary assertion is a tissue, cell type, or
+  disease context (WHICH cells the protein is in / WHICH tumor / WHICH
+  disease state), tag `tissue_expression` even when surface-engagement
+  language ("surface", "membrane", "PM", "plasma membrane", "engages on")
+  appears. Only tag `surface_expression` when the clip's primary
+  assertion is the *cellular sublocation* of the protein (PM vs ER vs
+  Golgi vs cilium vs apical vs basolateral subdomain) and the
+  tissue/cell-type context is incidental qualifier.
+
+  Worked example — discriminator: a clip naming a binder engaging the
+  protein at a tumor-cell-type context. The load-bearing point is the
+  CELL-TYPE PRESENCE in the tumor, not the surface subdomain — tag
+  `tissue_expression` so the expression builder lifts the tumor-context
+  row. Flip to `surface_expression` only when the load-bearing point
+  IS a surface subdomain (apical / basolateral / ciliary / synaptic /
+  junction-restricted) and the tissue context is incidental qualifier.
+
+  When BOTH dimensions are equally load-bearing, prefer
+  `tissue_expression` (the schema's strong-default direction) and name
+  the surface engagement explicitly in your `claim` prose so the methods
+  + amod builders can lift it. Functional engagement on a named tissue
+  / cell type / disease context is ALWAYS `tissue_expression` — naming
+  the protein at a cell context IS the expression observation. This is
+  the canonical EV/tetraspanin and immune-receptor literature shape;
+  it belongs in the expression block.
 * `evidence_type`: closed enum match to the technique named in the
   quote (see the table above). When in doubt, READ THE QUOTE FOR THE
   METHOD WORD, don't infer from the result.

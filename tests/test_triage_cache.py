@@ -79,8 +79,10 @@ def test_dual_run_signature_accepts_pretrim_flag():
 
     sig = inspect.signature(run_plan_trim_select_dual)
     assert "enable_pretrim_filter" in sig.parameters
-    # Default OFF for shadow-mode rollout.
-    assert sig.parameters["enable_pretrim_filter"].default is False
+    # Default ON after the cost-mitigation rollout: shadow-mode audit
+    # confirmed 94-100% contribution retention on heavy-lit anchor
+    # genes; flipping it on shaves ~$4-5k off the cohort projection.
+    assert sig.parameters["enable_pretrim_filter"].default is True
 
 
 def test_run_plan_trim_select_signature_accepts_triage_cache():

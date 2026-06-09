@@ -1034,16 +1034,19 @@ export interface DualLocalization {
   compartment: Compartment;
   fraction_estimate: number | null;
   condition: string | null;
+  rationale: string;
   cited_evidence_ids: string[];
 }
 
 export interface MembraneSubdomain {
   subdomain: string;
+  rationale: string;
   cited_evidence_ids: string[];
 }
 
 export interface SubcellularLocalization {
   primary_compartment: Compartment;
+  rationale: string;
   dual_localization: DualLocalization[];
   membrane_subdomains: MembraneSubdomain[];
 }
@@ -1122,6 +1125,7 @@ export interface ShedForm {
   evidence_strength: EvidenceStrength;
   mechanism: string | null;
   sheddase_if_known: string | null;
+  rationale: string;
   cited_evidence_ids: string[];
 }
 
@@ -1137,6 +1141,7 @@ export interface SecretedForm {
   evidence_strength: EvidenceStrength;
   ratio_to_membrane: number | null;
   source: SecretedSource | null;
+  rationale: string;
   cited_evidence_ids: string[];
 }
 
@@ -1355,6 +1360,12 @@ export interface SearchEntry {
 
 export interface SurfaceomeRecord {
   schema_version: "1.0.0";
+  /** The prompt corpus version active when this record was synthesized
+   *  (e.g. ``"2.50.1"``). Default ``""`` for legacy records that pre-date
+   *  the field. Used by the freshness dot + post-cohort forensic
+   *  queries — joins the record to the prompt corpus that produced it
+   *  without going through the D1 mirror column. */
+  prompt_corpus_version: string;
   gene: GeneIdentifier;
   triage_signal: TriageSignal;
   /** The triage agent's prose justification for its verdict

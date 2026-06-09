@@ -63,7 +63,7 @@ OPT_CUTOFFS_TSV = f"{BASE}/data/processed/triage_bench/db_optimized_cutoffs.tsv"
 # Subject metadata — mirrors save_figure in _plotting_config.py).
 GIST_URL = "https://gist.github.com/beccajcarlson/1265c867a3bbb08efd81262789e1f013"
 
-# ──── Inline brand styling — sentinel: brand-style-v2 ────
+# ──── Inline brand styling — sentinel: brand-style-v3 ────
 # Mirrors src/accessible_surfaceome/audit/_plotting_config.py so the gist
 # stays self-contained. Kept in sync via tests/test_figure_gists_styling.py.
 BRAND_PALETTE = [
@@ -102,7 +102,7 @@ def _register_brand_fonts() -> None:
 
 
 def _apply_brand_style() -> None:
-    """Inline equivalent of `setup_plotting_style`. Sentinel: brand-style-v2.
+    """Inline equivalent of `setup_plotting_style`. Sentinel: brand-style-v3.
     v2: bumped sizes ~25% + explicit medium weight (avoids ExtraLight default
     that matplotlib picks from the Manrope variable file). Companion to the
     static Manrope-{regular,medium,semibold,bold}.otf files in assets/fonts/."""
@@ -117,8 +117,8 @@ def _apply_brand_style() -> None:
         "font.family": "sans-serif",
         "font.sans-serif": ["Manrope", "Outfit", "DejaVu Sans", "Liberation Sans", "Arial"],
         "font.weight": "medium",
-        "font.size": 21,
-        "axes.labelsize": 24,
+        "font.size": 20,
+        "axes.labelsize": 20,
         "axes.labelweight": "medium",
         "axes.titlesize": 0,
         "axes.titlepad": 0,
@@ -134,12 +134,12 @@ def _apply_brand_style() -> None:
         "grid.linestyle": "-",
         "grid.linewidth": 0.7,
         "grid.color": BRAND_GRID,
-        "xtick.labelsize": 19,
-        "ytick.labelsize": 19,
+        "xtick.labelsize": 20,
+        "ytick.labelsize": 20,
         "xtick.color": BRAND_INK,
         "ytick.color": BRAND_INK,
         "legend.frameon": False,
-        "legend.fontsize": 19,
+        "legend.fontsize": 20,
         "patch.edgecolor": "none",
         "patch.linewidth": 0.0,
     })
@@ -230,16 +230,21 @@ def main() -> None:
     db_overall_acc = {label: _db_overall(label) for label in DB_LABELS}
     db_sorted = sorted(DB_LABELS, key=lambda d: -db_overall_acc[d])
 
+    # Label uses "k+ DB" rather than "≥k DB" because the static Manrope OTFs
+    # bundled in assets/fonts/ (medium-weight subset, 414 glyphs) lack the
+    # ≥ glyph and matplotlib's per-glyph fallback silently drops it. "+"
+    # reads identically in scientific contexts and stays ASCII so font swaps
+    # can't regress it.
     callers: list[tuple[str, str]] = []
     for k in ENSEMBLE_KS:
-        callers.append((f"≥{k} DB", "ensemble"))
+        callers.append((f"{k}+ DB", "ensemble"))
     for label in db_sorted:
         callers.append((label, "single"))
 
     def caller_vote(caller: str, kind: str, row: pd.Series) -> str:
         if kind == "single":
             return "yes" if row[caller] else "no"
-        k = int(caller.lstrip("≥").rstrip(" DB"))
+        k = int(caller.split("+")[0])
         return "yes" if sum(bool(row[d]) for d in DB_LABELS) >= k else "no"
 
     rows_long: list[dict] = []
@@ -272,12 +277,15 @@ def main() -> None:
 
     caller_order = [c[0] for c in callers]
     palette = [
-        (ENSEMBLE_PALETTE[int(c[0].lstrip("≥").rstrip(" DB"))] if c[1] == "ensemble"
+        (ENSEMBLE_PALETTE[int(c[0].split("+")[0])] if c[1] == "ensemble"
          else DB_PALETTE[c[0]])
         for c in callers
     ]
 
-    fig, ax = plt.subplots(figsize=(17, 6.5))
+    # Wider figure (was 17) so the 10-bar clusters in the dense
+    # "Sonnet = no" bucket — where 4 ensemble bars all sit at ~100% —
+    # spread out enough for their bar-top % labels to read distinctly.
+    fig, ax = plt.subplots(figsize=(22, 6.5))
     sns.barplot(
         data=plot_df,
         x="bucket_label", y="fraction",
@@ -325,7 +333,7 @@ def main() -> None:
         handles, legend_labels,
         title="Caller (overall agreement)",
         loc="upper left", bbox_to_anchor=(1.02, 1.0),
-        frameon=False, fontsize=13,
+        frameon=False, fontsize=14,
     )
 
     totals = {

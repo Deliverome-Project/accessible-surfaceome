@@ -82,6 +82,7 @@ def build_biological_context_grade(
     client: Anthropic,
     usage_sink: list[UsageRecord],
     context: dict[str, Any] | None = None,
+    meta_sink: dict[str, Any] | None = None,
 ) -> BiologicalContextGradeBlock:
     """Grade the A2 ledger's biological-context coverage + consistency.
 
@@ -117,6 +118,7 @@ def build_biological_context_grade(
         # Light builder: one small object (grade + ≤300-char rationale +
         # an id list). The default block cap is ample — no nested lists.
         max_tokens=MAX_TOKENS_BLOCK,
+        meta_sink=meta_sink,
     )
     if parsed is None or not isinstance(parsed, BiologicalContextGradeBlock):
         logger.warning(

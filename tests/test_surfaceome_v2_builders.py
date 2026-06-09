@@ -480,6 +480,134 @@ def test_methods_builder_prompt_mentions_validation_strategy_table() -> None:
     assert "ip_ms_pulldown" in body
 
 
+def test_build_methods_caps_input_claims_at_max(
+    caplog: pytest.LogCaptureFixture,
+) -> None:
+    """When _select_input_claims returns >MAX_CLAIMS_TO_LLM qualifying
+    claims, the methods builder must pre-truncate to the top MAX_CLAIMS_TO_LLM
+    BEFORE invoking the LLM. Caps cost on heaviest-gene cases (TACSTD2's
+    methods builder hit $0.36/call at 87k input tokens; tail genes much
+    higher).
+
+    Verifies:
+      1. The ledger embedded in the user prompt contains exactly
+         MAX_CLAIMS_TO_LLM claims, not the full input.
+      2. The top-ranked evidence types (live_cell_flow / biotinylation /
+         nonperm IF) survive over the bottom ones (rt_qpcr /
+         tissue_expression).
+      3. A log line records the truncation so an operator can see it.
+    """
+    from accessible_surfaceome.agents.surfaceome_v2.builders.methods import (
+        MAX_CLAIMS_TO_LLM,
+    )
+    import logging
+
+    # 30 claims: 10 high-rank surface (flow_cytometry, surface_biotinylation,
+    # immunofluorescence with permeabilized=False), 10 mid-rank (IHC, WB),
+    # 10 low-rank (rt_qpcr methodological).
+    high_rank = [
+        _claim(f"h{i:02d}", evidence_type="surface_biotinylation",
+               quote=f"Surface biotin probe {i}.")
+        for i in range(5)
+    ] + [
+        _claim(f"f{i:02d}", evidence_type="flow_cytometry",
+               quote=f"Live flow {i}.")
+        for i in range(5)
+    ]
+    mid_rank = [
+        _claim(f"ih{i:02d}", evidence_type="immunohistochemistry",
+               quote=f"IHC {i}.")
+        for i in range(5)
+    ] + [
+        _claim(f"wb{i:02d}", evidence_type="western_blot",
+               quote=f"WB {i}.")
+        for i in range(5)
+    ]
+    low_rank = [
+        _claim(
+            f"q{i:02d}",
+            claim_type="methodological",
+            evidence_type="rt_qpcr",
+            quote=f"qPCR {i}.",
+        )
+        for i in range(10)
+    ]
+
+    # Make some low-rank claims have non-human species so they sort lower:
+    # easier than that, we just trust the evidence_type weight to push
+    # rt_qpcr below the surface assays.
+    claims = high_rank + mid_rank + low_rank
+    assert len(claims) == 30  # confirm setup
+
+    # Model returns an empty array so the test focuses on what got
+    # sent to the model, not what came back.
+    client = _mock_client([_fenced("[]")])
+    sink: list[UsageRecord] = []
+    with caplog.at_level(logging.INFO):
+        rows = build_methods(
+            claims, client=client, usage_sink=sink, context={"gene": "TACSTD2"}
+        )
+    assert rows == []
+    # Exactly one model call (no repair loop).
+    assert client.messages.create.call_count == 1
+    # The user prompt sent to the model must contain only 25 claims.
+    sent_kwargs = client.messages.create.call_args.kwargs
+    user_msg_content = sent_kwargs["messages"][0]["content"]
+    # Ledger header looks like "## A1 surface-method claims (N claims)"
+    import re
+    m = re.search(r"A1 surface-method claims \((\d+) claims\)", user_msg_content)
+    assert m is not None, f"ledger header missing in prompt: {user_msg_content[:500]}"
+    assert int(m.group(1)) == MAX_CLAIMS_TO_LLM, (
+        f"expected {MAX_CLAIMS_TO_LLM} claims in user-prompt ledger, got {m.group(1)}"
+    )
+    # The top-ranked surface assays (h*/f* evidence_ids) must all survive;
+    # the low-rank rt_qpcr ones (q*) must have been dropped first.
+    assert "a1_evi_h00" in user_msg_content
+    assert "a1_evi_f00" in user_msg_content
+    # Confirm at least some rt_qpcr claims were dropped.
+    qpcr_present_count = sum(
+        1 for i in range(10) if f"a1_evi_q{i:02d}" in user_msg_content
+    )
+    assert qpcr_present_count < 10, (
+        "all 10 rt_qpcr claims survived truncation; "
+        "expected the cap to drop low-rank ones first"
+    )
+    # Truncation log emitted.
+    truncation_msgs = [
+        r.getMessage() for r in caplog.records
+        if "truncated" in r.getMessage().lower()
+    ]
+    assert truncation_msgs, (
+        "expected a log mentioning truncated; got: "
+        f"{[r.getMessage() for r in caplog.records]}"
+    )
+    expected_kept = str(MAX_CLAIMS_TO_LLM)
+    assert any("30" in m and expected_kept in m for m in truncation_msgs), (
+        f"expected the truncation log to show 30 -> {expected_kept}; got: "
+        f"{truncation_msgs}"
+    )
+
+
+def test_build_methods_no_truncation_when_under_cap() -> None:
+    """When _select_input_claims returns <=25 claims, no truncation
+    happens and all claims are sent to the LLM unchanged."""
+    claims = [
+        _claim(f"{i:02d}", evidence_type="flow_cytometry")
+        for i in range(10)
+    ]
+    client = _mock_client([_fenced("[]")])
+    sink: list[UsageRecord] = []
+    rows = build_methods(
+        claims, client=client, usage_sink=sink, context={"gene": "X"}
+    )
+    assert rows == []
+    sent = client.messages.create.call_args.kwargs["messages"][0]["content"]
+    import re
+    m = re.search(r"A1 surface-method claims \((\d+) claims\)", sent)
+    assert m is not None
+    assert int(m.group(1)) == 10  # unchanged
+
+
 # ---------------------------------------------------------------------------
 # contradiction_builder
 # ---------------------------------------------------------------------------
@@ -613,8 +741,12 @@ def test_build_expression_happy() -> None:
 
 
 def test_build_expression_empty_input() -> None:
-    # No tissue_expression claims → builder short-circuits without a call.
-    claims = [_claim("01", prefix="a2", claim_type="surface_expression")]
+    # No tissue_expression OR surface_expression claims → builder
+    # short-circuits without a call. (As of the dual-dimension safety net,
+    # surface_expression claims also qualify — they may carry a tissue
+    # dimension under the load-bearing-point rule — so the empty-input
+    # probe uses a claim_type that genuinely doesn't qualify.)
+    claims = [_claim("01", prefix="a2", claim_type="topology")]
     client = _mock_client([])
     sink: list[UsageRecord] = []
     rows = build_expression(
@@ -622,6 +754,40 @@ def test_build_expression_empty_input() -> None:
     )
     assert rows == []
     client.messages.create.assert_not_called()
+
+
+def test_build_expression_surface_expression_dual_dimension() -> None:
+    # Safety net: a surface_expression claim is now also a candidate input —
+    # the prompt decides whether its prose names a tissue / cell-type /
+    # disease context that warrants an ExpressionRow.
+    claims = [
+        _claim(
+            "01",
+            prefix="a2",
+            claim_type="surface_expression",
+            evidence_type="immunofluorescence",
+            source_id="PMID:444",
+        ),
+    ]
+    output = [
+        {
+            "tissue": "liver",
+            "cell_type": "Kupffer cell",
+            "present": "low",
+            "disease_context": "tumor",
+            "disease_label": "hepatocellular carcinoma",
+            "cell_states": [],
+            "cited_evidence_ids": ["a2_evi_01"],
+        }
+    ]
+    client = _mock_client([_fenced(json.dumps(output))])
+    sink: list[UsageRecord] = []
+    rows = build_expression(
+        claims, client=client, usage_sink=sink, context={"gene": "X"}
+    )
+    assert len(rows) == 1
+    assert rows[0].disease_context == "tumor"
+    assert rows[0].cited_evidence_ids == ["a2_evi_01"]
 
 
 # ---------------------------------------------------------------------------
@@ -783,6 +949,67 @@ def test_build_accessibility_modulation_empty() -> None:
         [], client=client, usage_sink=sink, context={"gene": "X"}
     )
     assert rows == []
+
+
+def test_build_accessibility_modulation_injects_tumor_pair_candidates() -> None:
+    """When the A2 ledger has same-tissue normal-vs-tumor expression
+    claims, the builder must inject a structured "candidate modulation
+    rows derived from expression-level deltas" block into the user prompt
+    so the LLM doesn't have to reconstruct the pair from prose.
+
+    Verifies the deterministic detector that addresses the TACSTD2 amod
+    regression (18→0 from v2.8.0 to v2.35.0): the v2.8.0 builder lifted
+    6× ``disease_state_induced × oncogenic_transformation`` rows from
+    normal-vs-cancer expression pairs that the model is no longer
+    reliably reconstructing under temperature=1.0."""
+    claims = [
+        _claim(
+            "01",
+            prefix="a2",
+            claim_type="tissue_expression",
+            evidence_type="immunohistochemistry",
+            source_id="PMID:111",
+            quote=(
+                "TROP2 is undetectable by IHC in normal colonic epithelium."
+            ),
+        ),
+        _claim(
+            "02",
+            prefix="a2",
+            claim_type="tissue_expression",
+            evidence_type="immunohistochemistry",
+            source_id="PMID:222",
+            quote=(
+                "TROP2 expression is high in colorectal tumor tissue compared "
+                "to normal colon, with heterogeneous membranous staining."
+            ),
+        ),
+        # An unrelated claim that should NOT pair (no tumor signal).
+        _claim(
+            "03",
+            prefix="a2",
+            quote="TROP2 is expressed on the surface of HEK293 cells.",
+        ),
+    ]
+    # The model returns []; we only care what got SENT in the user prompt.
+    client = _mock_client([_fenced("[]")])
+    sink: list[UsageRecord] = []
+    rows = build_accessibility_modulation(
+        claims, client=client, usage_sink=sink, context={"gene": "TACSTD2"}
+    )
+    assert rows == []
+    assert client.messages.create.call_count == 1
+    sent_user_msg = client.messages.create.call_args.kwargs["messages"][0][
+        "content"
+    ]
+    assert "candidate modulation rows" in sent_user_msg.lower(), (
+        "expected the prompt to inject a tumor-pair candidate block; "
+        f"got: {sent_user_msg[:500]}"
+    )
+    # Both paired evidence_ids must appear in the candidates section so
+    # the LLM can cite them.
+    assert "a2_evi_01" in sent_user_msg
+    assert "a2_evi_02" in sent_user_msg
 
 
 # ---------------------------------------------------------------------------

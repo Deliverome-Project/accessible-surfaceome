@@ -1,89 +1,17 @@
-import type {
-  AccessibilityImplication,
-  ModulationDirection,
-  SurfaceomeRecord,
-} from "../../../lib/surfaceome-types";
+import type { SurfaceomeRecord } from "../../../lib/surfaceome-types";
 import { prettyEnum } from "../../../lib/surfaceome";
 import { ChipLabelValue } from "../ChipLabelValue/ChipLabelValue";
 import { EvidenceChipList, linkifyEvidenceRefs } from "../EvidenceChip/EvidenceChip";
 import { FeatureRationales } from "../FeatureChips/FeatureChips";
 import { SectionCard } from "../SectionCard/SectionCard";
 import { StatusPill } from "../StatusPill/StatusPill";
+import { AccessibilityModulationTable } from "./AccessibilityModulationTable";
+import { AnatomicalAccessibilityTable } from "./AnatomicalAccessibilityTable";
 import styles from "./BiologicalContextCard.module.css";
 
 interface Props {
   rec: SurfaceomeRecord;
   n: number;
-}
-
-function implicationTone(v: AccessibilityImplication) {
-  if (v === "favorable") return "success" as const;
-  if (v === "restricted") return "danger" as const;
-  if (v === "context_dependent") return "amber" as const;
-  return "neutral" as const;
-}
-
-/** Small directional glyph for a modulation row's `direction` enum:
- *  ↑ increases surface (green), ↓ decreases (red), ↕ bidirectional (amber),
- *  = no change (muted). Returns null for "unclear" or an absent field (older
- *  records), so those rows show no glyph rather than a misleading one. */
-// Rendered "Change" cell for the modulation table — the structured
-// `direction` of the surface-accessible pool under the modulating state,
-// shown as a glyph + short word. `unclear` (and null / older records that
-// lack the field) render an explicit "?" rather than a blank cell, so the
-// reader can tell "not determined" apart from "no row".
-function directionCell(
-  direction: ModulationDirection | undefined,
-): React.ReactNode {
-  const map: Record<
-    string,
-    { glyph: string; text: string; color: string; title: string }
-  > = {
-    increases: {
-      glyph: "↑",
-      text: "Increase",
-      color: "var(--success, #1b5e3f)",
-      title: "Increases surface-accessible pool",
-    },
-    decreases: {
-      glyph: "↓",
-      text: "Decrease",
-      color: "var(--maroon-dark, #922038)",
-      title: "Decreases surface-accessible pool",
-    },
-    bidirectional: {
-      glyph: "↕",
-      text: "Bidirectional",
-      color: "var(--amber-dark, #8a5a16)",
-      title: "Both directions documented",
-    },
-    no_change: {
-      glyph: "=",
-      text: "Equal",
-      color: "var(--ink-faint, #999)",
-      title: "No net change in surface accessibility",
-    },
-  };
-  const d = direction ? map[direction] : undefined;
-  if (!d) {
-    return (
-      <span
-        title="Direction of change not determined"
-        style={{ color: "var(--ink-faint, #999)" }}
-      >
-        ?
-      </span>
-    );
-  }
-  return (
-    <span
-      aria-label={d.title}
-      title={d.title}
-      style={{ color: d.color, fontWeight: 600, whiteSpace: "nowrap" }}
-    >
-      {d.glyph} {d.text}
-    </span>
-  );
 }
 
 export function BiologicalContextCard({ rec, n }: Props) {
@@ -135,57 +63,30 @@ export function BiologicalContextCard({ rec, n }: Props) {
         </div>
       ) : null}
 
+      {/* Biological-context grade rationale — synth's reasoning for the
+          rich/moderate/sparse rollup of expression × cell types × tissues ×
+          modulation evidence. Lives at bc.grade_rationale + bc.grade_cited_evidence_ids.
+          Was hidden pre-2.50.x; surfaced here so the reader can see why the
+          A2 evidence picture was graded as it was. */}
+      {bc.grade_rationale ? (
+        <div className={styles.contextSummary}>
+          <p className={`label-mono ${styles.muted}`}>
+            Biology evidence — {prettyEnum(bc.biological_context_grade)}
+          </p>
+          <p className={styles.contextRationale}>
+            {linkifyEvidenceRefs(bc.grade_rationale)}
+          </p>
+        </div>
+      ) : null}
+
       <FeatureRationales category="biology" rec={rec} />
 
-      {/* Accessibility modulation — moved to the top (most decision-
-          relevant) and rendered as a table: one row per state/lineage
-          shift, far easier to scan than the old stacked prose blocks. */}
-      <div className={styles.subsection}>
-        <p className={`label-mono ${styles.subhead}`}>Accessibility modulation</p>
-        {bc.accessibility_modulation.length === 0 ? (
-          <p className={styles.empty}>No modulation rows recorded.</p>
-        ) : (
-          <table className={`${styles.table} ${styles.modTable}`}>
-            <thead>
-              <tr>
-                <th scope="col">Context</th>
-                <th scope="col">Change</th>
-                <th scope="col">Reference</th>
-                <th scope="col">Modulating state</th>
-                <th scope="col">Implication</th>
-                <th scope="col">References</th>
-              </tr>
-            </thead>
-            <tbody>
-              {bc.accessibility_modulation.map((m, i) => (
-                <tr key={i}>
-                  <td>
-                    <StatusPill tone="lavender" size="sm">
-                      {prettyEnum(m.category)}
-                    </StatusPill>
-                  </td>
-                  {/* Structured direction of the surface pool under the
-                      modulating state — its own column, "?" when unclear. */}
-                  <td>{directionCell(m.direction)}</td>
-                  <td>{m.baseline_context}</td>
-                  <td>{m.modulating_state}</td>
-                  <td>{m.accessibility_implication}</td>
-                  <td>
-                    {/* The change/effect narrative (the "evidence string")
-                     *  lives in the Cites column with its citations rather
-                     *  than widening the Shift column. */}
-                    {m.change ? (
-                      <p className={styles.modChangeCite}>{m.change}</p>
-                    ) : null}
-                    <EvidenceChipList ids={m.cited_evidence_ids} label="References" />
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        )}
-      </div>
-
+      {/* Accessibility modulation moved to the bottom of the Biology section
+          (was at top): rows are dense per-state/lineage detail that reads
+          better AFTER the static "where is the protein?" picture
+          (subcellular + anatomical + co-receptor) is in the reader's head.
+          The headline modulation signal (oncogenic / immune / stress trigger)
+          is already shown in the at-a-glance chip in the section header. */}
       <div className={styles.subsection}>
         <p className={`label-mono ${styles.subhead}`}>Subcellular localization</p>
         {/* Primary compartment + two labeled secondary axes in one
@@ -202,6 +103,11 @@ export function BiologicalContextCard({ rec, n }: Props) {
             <ChipLabelValue label="primary" value={prettyEnum(loc.primary_compartment)} />
           </StatusPill>
         </div>
+        {loc.rationale ? (
+          <p className={styles.locProse}>
+            {linkifyEvidenceRefs(loc.rationale)}
+          </p>
+        ) : null}
         {loc.membrane_subdomains.length > 0 ? (
           <div className={styles.locRow}>
             <span className={`label-mono ${styles.locRowLabel}`}>
@@ -209,7 +115,12 @@ export function BiologicalContextCard({ rec, n }: Props) {
             </span>
             <span className={styles.subdomains}>
               {loc.membrane_subdomains.map((s, i) => (
-                <StatusPill key={i} tone="lavender" size="sm">
+                <StatusPill
+                  key={i}
+                  tone="lavender"
+                  size="sm"
+                  title={s.rationale || undefined}
+                >
                   {prettyEnum(s.subdomain)}
                 </StatusPill>
               ))}
@@ -227,7 +138,11 @@ export function BiologicalContextCard({ rec, n }: Props) {
                   d.fraction_estimate != null
                     ? `${(d.fraction_estimate * 100).toFixed(0)}%`
                     : null;
-                const hover = [d.condition, pct ? `~${pct} of pool` : null]
+                const hover = [
+                  d.rationale,
+                  d.condition,
+                  pct ? `~${pct} of pool` : null,
+                ]
                   .filter(Boolean)
                   .join(" · ");
                 return (
@@ -300,37 +215,7 @@ export function BiologicalContextCard({ rec, n }: Props) {
         {bc.anatomical_accessibility.length === 0 ? (
           <p className={styles.empty}>No anatomical-accessibility rows recorded.</p>
         ) : (
-          <table className={styles.table}>
-            <thead>
-              <tr>
-                <th scope="col">Context</th>
-                <th scope="col">Orientation</th>
-                <th scope="col">Implication</th>
-                <th scope="col">Rationale</th>
-                <th scope="col">References</th>
-              </tr>
-            </thead>
-            <tbody>
-              {bc.anatomical_accessibility.map((a, i) => (
-                <tr key={i}>
-                  <td>{a.context}</td>
-                  <td>{prettyEnum(a.orientation)}</td>
-                  <td>
-                    <StatusPill
-                      tone={implicationTone(a.accessibility_implication)}
-                      size="sm"
-                    >
-                      {prettyEnum(a.accessibility_implication)}
-                    </StatusPill>
-                  </td>
-                  <td>{linkifyEvidenceRefs(a.rationale)}</td>
-                  <td>
-                    <EvidenceChipList ids={a.cited_evidence_ids} label="References" />
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+          <AnatomicalAccessibilityTable rows={bc.anatomical_accessibility} />
         )}
       </div>
 
@@ -371,6 +256,22 @@ export function BiologicalContextCard({ rec, n }: Props) {
             {linkifyEvidenceRefs(cr.rationale)}
           </p>
         ) : null}
+      </div>
+
+      {/* Accessibility modulation — moved to the BOTTOM of the Biology
+          section. Per-row state/lineage shifts (oncogenic upregulation,
+          immune activation, stress release) are dense table data that
+          reads better after the reader has the static "where is the
+          protein?" picture (subcellular + anatomical + co-receptor) in
+          their head. The headline modulation chip in the section header
+          covers the at-a-glance trigger bucket. */}
+      <div className={styles.subsection}>
+        <p className={`label-mono ${styles.subhead}`}>Accessibility modulation</p>
+        {bc.accessibility_modulation.length === 0 ? (
+          <p className={styles.empty}>No modulation rows recorded.</p>
+        ) : (
+          <AccessibilityModulationTable rows={bc.accessibility_modulation} />
+        )}
       </div>
 
     </SectionCard>

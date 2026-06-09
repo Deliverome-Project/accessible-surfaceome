@@ -1201,11 +1201,29 @@ MethodSubclass = Literal[
     "nonpermeabilized_IF",
     "permeabilized_IF",
     "IHC_membranous",
+    # Non-membranous IHC — tissue staining that reports expression
+    # without a described membrane-pattern. Supportive-but-indirect:
+    # the protein is present in the tissue but the assay does not
+    # localize it to the cell surface. ``IHC_membranous`` is reserved
+    # for explicit membrane-pattern staining.
+    "IHC",
     "surface_biotinylation",
     "cell_surface_capture",
     "N_glycoproteomics",
     "plasma_membrane_fractionation",
     "whole_cell_proteomics",
+    # Functional / pharmacological readouts that imply surface access
+    # without direct staining or isolation of the protein: ADC
+    # killing, anti-target-mediated tumor depletion, CAR-T cytotoxicity
+    # against target+ cells, radioligand binding on live cells,
+    # surface-restricted small-molecule probes. The functional
+    # readout is impossible without surface access, so this counts as
+    # DIRECT surface evidence (anti-pattern caps in the prompt apply).
+    "functional_surface_assay",
+    # True fallback for novel / hybrid methods the enum does not cover.
+    # Prefer over ``unknown`` whenever the method is identified but
+    # does not fit a named subclass.
+    "other",
     "unknown",
 ]
 Permeabilization = Literal[
@@ -2336,12 +2354,30 @@ class DualLocalization(BaseModel):
     compartment: str
     fraction_estimate: float | None = None
     condition: str | None = None
+    rationale: str = Field(
+        default="",
+        description=(
+            "Why this compartment - name the assay (IF / fractionation / IHC / "
+            "biotinylation / Atlas annotation), cell type, and permeabilization "
+            "status, with inline (a2_evi_NN) cites per claim. Soft target "
+            "<=300 chars (overshoots warned but accepted). Defaults to "" "
+            "for backward-compat with legacy records loaded from D1 / on-disk "
+            "snapshots that pre-date this field; new annotator runs must fill it."
+        ),
+    )
     cited_evidence_ids: list[str] = Field(default_factory=list)
+
+    _PROSE_TARGETS: ClassVar[dict[str, int]] = {"rationale": 300}
 
     @field_validator("compartment")
     @classmethod
     def _short_compartment(cls, v: str) -> str:
         return _assert_short_canonical(v, "DualLocalization.compartment")
+
+    @model_validator(mode="after")
+    def _warn_soft_target_overshoot(self) -> "DualLocalization":
+        _warn_prose_overshoot(self, type(self)._PROSE_TARGETS)
+        return self
 
 
 # Closed enum for membrane-subdomain assignments. Free text let models emit
@@ -2439,7 +2475,21 @@ class MembraneSubdomain(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
     subdomain: MembraneSubdomainName
+    rationale: str = Field(
+        default="",
+        description=(
+            "Why this microdomain — name the assay that assigned it (raft "
+            "purification, cilium IF, polarized-epithelium IHC, immune-synapse "
+            "co-cluster), cell type, and permeabilization status, with inline "
+            "``(a2_evi_NN)`` cites. Soft target ≤200 chars (overshoots warned "
+            "but accepted). Defaults to ``\"\"`` for backward-compat with legacy "
+            "records loaded from D1 / on-disk snapshots that pre-date this "
+            "field; new annotator runs must fill it."
+        ),
+    )
     cited_evidence_ids: list[str] = Field(default_factory=list)
+
+    _PROSE_TARGETS: ClassVar[dict[str, int]] = {"rationale": 200}
 
     @field_validator("subdomain", mode="before")
     @classmethod
@@ -2453,6 +2503,11 @@ class MembraneSubdomain(BaseModel):
             return _coerce_membrane_subdomain(v)
         return v
 
+    @model_validator(mode="after")
+    def _warn_soft_target_overshoot(self) -> "MembraneSubdomain":
+        _warn_prose_overshoot(self, type(self)._PROSE_TARGETS)
+        return self
+
 
 class SubcellularLocalization(BaseModel):
     """Where the protein lives, and how its localization is split."""
@@ -2460,8 +2515,28 @@ class SubcellularLocalization(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
     primary_compartment: PrimaryCompartment
+    rationale: str = Field(
+        default="",
+        description=(
+            "Why this primary compartment - name the methods that pinned it "
+            "(IF / fractionation / IHC / Atlas annotation / nonperm flow), "
+            "cell type, and permeabilization status, with inline "
+            "(a2_evi_NN) cites per claim. Soft target <=400 chars "
+            '(overshoots warned but accepted). Defaults to "" for '
+            "backward-compat with legacy records loaded from D1 / on-disk "
+            "snapshots that pre-date this field; new annotator runs must "
+            "fill it."
+        ),
+    )
     dual_localization: list[DualLocalization] = Field(default_factory=list)
     membrane_subdomains: list[MembraneSubdomain] = Field(default_factory=list)
+
+    _PROSE_TARGETS: ClassVar[dict[str, int]] = {"rationale": 400}
+
+    @model_validator(mode="after")
+    def _warn_soft_target_overshoot(self) -> "SubcellularLocalization":
+        _warn_prose_overshoot(self, type(self)._PROSE_TARGETS)
+        return self
 
 
 class AnatomicalAccessibilityObservation(BaseModel):
@@ -3157,7 +3232,28 @@ class ShedForm(BaseModel):
     evidence_strength: EvidenceStrength
     mechanism: str | None = None
     sheddase_if_known: str | None = None
+    rationale: str = Field(
+        default="",
+        description=(
+            "Why this shed-form call - name the proteolysis evidence "
+            "(sheddase identity, ectodomain release assay, serum/supernatant "
+            "detection of the soluble target), cell type, and decoy-behavior "
+            "evidence when graded above weak, with inline "
+            "(a1_evi_NN)/(a2_evi_NN) cites per claim. Soft target "
+            "<=300 chars (overshoots warned but accepted). Defaults to "
+            '"" for backward-compat with legacy records loaded from '
+            "D1 / on-disk snapshots that pre-date this field; new annotator "
+            "runs must fill it."
+        ),
+    )
     cited_evidence_ids: list[str] = Field(default_factory=list)
+
+    _PROSE_TARGETS: ClassVar[dict[str, int]] = {"rationale": 300}
+
+    @model_validator(mode="after")
+    def _warn_soft_target_overshoot(self) -> "ShedForm":
+        _warn_prose_overshoot(self, type(self)._PROSE_TARGETS)
+        return self
 
 
 class SecretedForm(BaseModel):
@@ -3170,7 +3266,28 @@ class SecretedForm(BaseModel):
     evidence_strength: EvidenceStrength
     ratio_to_membrane: float | None = None
     source: SecretedFormSource | None = None
+    rationale: str = Field(
+        default="",
+        description=(
+            "Why this secreted-form call - name the soluble-protein evidence "
+            "(serum / plasma quantification, alternative splicing producing a "
+            "TM-less isoform, documented antibody-decoy competition), cell "
+            "type / sample, and the decoy-behavior evidence when graded above "
+            "weak, with inline (a1_evi_NN)/(a2_evi_NN) cites per claim. "
+            "Soft target <=300 chars (overshoots warned but accepted). Defaults "
+            'to "" for backward-compat with legacy records loaded from D1 '
+            "/ on-disk snapshots that pre-date this field; new annotator runs "
+            "must fill it."
+        ),
+    )
     cited_evidence_ids: list[str] = Field(default_factory=list)
+
+    _PROSE_TARGETS: ClassVar[dict[str, int]] = {"rationale": 300}
+
+    @model_validator(mode="after")
+    def _warn_soft_target_overshoot(self) -> "SecretedForm":
+        _warn_prose_overshoot(self, type(self)._PROSE_TARGETS)
+        return self
 
 
 class RestrictedSubdomain(BaseModel):
@@ -3620,8 +3737,16 @@ class SurfaceomeRecord(BaseModel):
 
     schema_version: Literal[
         "1.0.0", "1.1.0", "2.0.0", "2.1.0", "2.2.0", "2.3.0", "2.4.0", "2.4.1",
-        "2.5.0", "2.6.0", "2.7.0", "2.8.0", "2.9.0",
-    ] = "2.9.0"
+        "2.5.0", "2.6.0", "2.7.0", "2.8.0", "2.9.0", "2.10.0", "2.11.0", "2.12.0",
+        "2.13.0",
+    ] = "2.13.0"
+    # The prompt corpus version active when this record was synthesized.
+    # Default ``""`` for backward-compat with legacy records loaded from D1
+    # / on-disk snapshots that pre-date this field; new annotator runs stamp
+    # it from ``_version_guard.PROMPT_CORPUS_VERSION`` at synthesis time so
+    # post-cohort forensic queries ("which prompt corpus produced this call?")
+    # can join on the record itself, not just on the D1 mirror column.
+    prompt_corpus_version: str = ""
     gene: GeneIdentifier
 
     # Cross-agent coherence — populated by the orchestrator from the most
@@ -3813,8 +3938,16 @@ class SurfaceomeRecordDraft(BaseModel):
 
     schema_version: Literal[
         "1.0.0", "1.1.0", "2.0.0", "2.1.0", "2.2.0", "2.3.0", "2.4.0", "2.4.1",
-        "2.5.0", "2.6.0", "2.7.0", "2.8.0", "2.9.0",
-    ] = "2.9.0"
+        "2.5.0", "2.6.0", "2.7.0", "2.8.0", "2.9.0", "2.10.0", "2.11.0", "2.12.0",
+        "2.13.0",
+    ] = "2.13.0"
+    # The prompt corpus version active when this record was synthesized.
+    # Default ``""`` for backward-compat with legacy records loaded from D1
+    # / on-disk snapshots that pre-date this field; new annotator runs stamp
+    # it from ``_version_guard.PROMPT_CORPUS_VERSION`` at synthesis time so
+    # post-cohort forensic queries ("which prompt corpus produced this call?")
+    # can join on the record itself, not just on the D1 mirror column.
+    prompt_corpus_version: str = ""
     gene: GeneIdentifier
 
     # Orchestrator-injected before the agent call; the agent reads it but does

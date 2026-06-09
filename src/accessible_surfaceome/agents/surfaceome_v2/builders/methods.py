@@ -37,6 +37,57 @@ _SURFACE_METHOD_EVIDENCE_TYPES: set[str] = {
 }
 _METHOD_CLAIM_TYPES: set[str] = {"surface_expression", "methodological"}
 
+# Hard cap on the number of claims sent to the methods LLM in a single
+# call. Above this size the per-call cost dominates the deep-dive budget:
+# TACSTD2's methods builder was observed at $0.36/call with 87k input
+# tokens (87 claims through the prompt-cache miss path), and tail genes
+# can push into low single dollars before the orchestrator's $7 ceiling
+# kicks in. Capping at 20 keeps the heaviest gene's methods call <$0.12
+# while preserving the top-confidence-first slice — the lower-rank
+# rt_qpcr / tissue_expression filler that gets dropped here would have
+# largely resolved to ``expression_only`` rows anyway. The ``direct_*``
+# grade only needs ≥2 direct surface methods, which are always ranked
+# above the cap. Reduced from 25 → 20 for cohort cost (saves ~$0.05/gene
+# × 6,500 genes = ~$325 with negligible recall impact — TACSTD2 at v2.50.1
+# already emitted 19 method rows even at cap=25 due to builder-side dedup).
+#
+# Important: ONLY the methods builder is capped. The synthesizer +
+# evidence_grade builder still see the full claim ledger so the headline
+# call and the grade count aren't affected by the trim.
+MAX_CLAIMS_TO_LLM = 20
+
+# Evidence-type weights for the pre-LLM rank.  Higher = more
+# direct-surface-accessibility evidence. Tied weights tie-break on the
+# rest of the rank key (permeabilization, species, evidence_tier,
+# confidence, evidence_id).  These intentionally favour live-cell flow,
+# surface biotinylation, and non-permeabilized IF — the three evidence
+# shapes the synthesis layer treats as ``direct`` — over tissue-IHC,
+# RNA, and review-assertion shapes that are at best
+# ``supports_surface_localization`` or ``expression_only``.
+_EVIDENCE_TYPE_RANK: dict[str, int] = {
+    "flow_cytometry": 10,
+    "surface_biotinylation": 10,
+    "mass_spec_surfaceome": 9,
+    "immunofluorescence": 8,
+    "immunohistochemistry": 6,
+    "western_blot": 5,
+    "functional_assay": 4,
+    "crystal_structure": 3,
+    "cryo_em": 3,
+    "computational_prediction": 2,
+    "orthology": 2,
+    "rt_qpcr": 1,
+    "rna_seq": 1,
+    "single_cell_rna_seq": 1,
+    "in_situ_hybridization": 1,
+    "northern_blot": 1,
+    "microarray": 1,
+    "genetic_association": 1,
+    "loss_of_function_phenotype": 1,
+    "review_assertion": 1,
+    "db_annotation": 1,
+}
+
 # Anthropic server-side web search — enabled ONLY for the methods builder
 # so it can resolve antibody REAGENT METADATA the source paper leaves
 # unstated (clonality / epitope region / validation) from the vendor
@@ -45,7 +96,21 @@ _METHOD_CLAIM_TYPES: set[str] = {"surface_expression", "methodological"}
 # ``max_uses`` caps the search spend per gene. Web search must be enabled
 # on the Anthropic account for this to run.
 _WEB_SEARCH_TOOL: list[dict[str, Any]] = [
-    {"type": "web_search_20250305", "name": "web_search", "max_uses": 8}
+    {
+        "type": "web_search_20250305",
+        "name": "web_search",
+        "max_uses": 8,
+        # ``cache_control`` on the last tool entry is the canonical
+        # recipe (per Anthropic docs) for caching the tools+system
+        # prefix together. The 2026-06-08 cache-engagement probe
+        # confirmed that today's call shape (cache_control on system
+        # only) ALREADY caches via the server's automatic-caching
+        # behaviour — but that's an implicit / undocumented contract.
+        # Marking the tool explicitly makes the recipe match the
+        # documented one and immunizes us against future server-side
+        # changes.
+        "cache_control": {"type": "ephemeral"},
+    }
 ]
 
 
@@ -62,12 +127,56 @@ def _select_input_claims(claims: list[EvidenceClaim]) -> list[EvidenceClaim]:
     return out
 
 
+def _rank_key(claim: EvidenceClaim) -> tuple[int, int, int, int, int, str]:
+    """Sort key for top-N truncation. Lower tuple sorts FIRST (most
+    valuable for the methods builder).
+
+    Ranking axes, in order of precedence:
+
+    1. Evidence-type weight — live flow / biotinylation / non-perm IF
+       outrank tissue-IHC, RNA, computational, review.
+    2. Permeabilization — ``False`` (i.e. live / non-perm) outranks the
+       ``True`` (permeabilized) or ``None`` (unknown) cases. The methods
+       builder is most valuable on non-perm signal.
+    3. Species — ``human`` outranks every other.
+    4. Evidence tier — ``primary`` outranks ``secondary``.
+    5. Confidence — ``strong`` outranks ``moderate`` outranks ``weak``.
+    6. Evidence id — stable tiebreaker so the truncation is deterministic
+       across re-runs.
+    """
+    evi_weight = _EVIDENCE_TYPE_RANK.get(claim.evidence_type, 0)
+    # Negate so higher weight sorts first.
+    evi_rank = -evi_weight
+    # permeabilized is Optional[bool]; False outranks True/None.
+    perm_value = claim.assay_context.permeabilized
+    if perm_value is False:
+        perm_rank = 0
+    elif perm_value is None:
+        perm_rank = 1
+    else:
+        perm_rank = 2
+    species_rank = 0 if claim.assay_context.species == "human" else 1
+    tier_rank = 0 if claim.evidence_tier == "primary" else 1
+    confidence_rank = {"strong": 0, "moderate": 1, "weak": 2}.get(
+        claim.confidence, 3
+    )
+    return (
+        evi_rank,
+        perm_rank,
+        species_rank,
+        tier_rank,
+        confidence_rank,
+        claim.evidence_id,
+    )
+
+
 def build_methods(
     claims: list[EvidenceClaim],
     *,
     client: Anthropic,
     usage_sink: list[UsageRecord],
     context: dict[str, Any] | None = None,
+    meta_sink: dict[str, Any] | None = None,
 ) -> list[MethodObservation]:
     """Extract MethodObservation rows from the A1 claim ledger.
 
@@ -79,6 +188,14 @@ def build_methods(
     if not selected:
         logger.info("methods_builder: no qualifying claims → empty")
         return []
+    if len(selected) > MAX_CLAIMS_TO_LLM:
+        original_n = len(selected)
+        selected = sorted(selected, key=_rank_key)[:MAX_CLAIMS_TO_LLM]
+        logger.info(
+            "methods_builder: truncated %d → %d (top-confidence-first)",
+            original_n,
+            MAX_CLAIMS_TO_LLM,
+        )
     gene = context.get("gene", "<unknown>")
     system_prompt = load_prompt("methods_builder_system")
     user_prompt = (
@@ -105,6 +222,7 @@ def build_methods(
         max_tokens=MAX_TOKENS_HEAVY,
         # Web search for antibody-metadata enrichment (see prompt §Tools).
         tools=_WEB_SEARCH_TOOL,
+        meta_sink=meta_sink,
     )
     if parsed is None:
         logger.warning("methods_builder: validation failed; returning empty list")

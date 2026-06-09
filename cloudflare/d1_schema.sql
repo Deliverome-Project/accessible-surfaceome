@@ -644,6 +644,9 @@ CREATE TABLE IF NOT EXISTS agent_run_intermediates (
     record_valid          INTEGER NOT NULL,                 -- 0|1, did the run validate
     intermediates_bytes   INTEGER NOT NULL,                 -- size of the blob below
     intermediates_json    TEXT NOT NULL,                    -- compact JSON of the dict
+    cohort_run_id         TEXT,                             -- sweep tag; matches deep_dive_run.run_id; nullable for single-gene runs
+    code_sha              TEXT,                             -- git rev at run time (40 chars) or "unknown"; nullable for pre-Tier-3 rows
+    failure_mode          TEXT,                             -- FailureMode literal (ok / cost_ceiling_pts / validation_failed / etc.); nullable for pre-Tier-3 rows
     PRIMARY KEY (gene_symbol, schema_version, prompt_corpus_version, created_at)
 );
 
@@ -655,3 +658,14 @@ CREATE INDEX IF NOT EXISTS idx_agent_run_intermediates_created
 
 CREATE INDEX IF NOT EXISTS idx_agent_run_intermediates_prompt_corpus
     ON agent_run_intermediates (prompt_corpus_version, created_at DESC);
+
+-- Cohort scope: "all rows from sweep X" — the analytic query the
+-- R2/reproducibility audit identified as the single biggest gap (the
+-- alternative is a fragile timestamp-window query on created_at).
+CREATE INDEX IF NOT EXISTS idx_agent_run_intermediates_cohort
+    ON agent_run_intermediates (cohort_run_id, created_at DESC);
+
+-- Failure-mode analytics: "how many runs hit cost_ceiling_pts in this
+-- sweep" should be a single SELECT, not a per-row JSON parse.
+CREATE INDEX IF NOT EXISTS idx_agent_run_intermediates_failure_mode
+    ON agent_run_intermediates (failure_mode, created_at DESC);

@@ -78,6 +78,15 @@ class UsageRecord:
     The four token fields mirror the SDK's ``Usage`` shape exactly; ``cost_usd``
     is computed from them at the model's per-MTok rate when the record is
     appended.
+
+    The ``api_*`` fields are best-effort capture of the Anthropic response
+    identifiers — the SDK ``response.id`` / ``response.model`` /
+    ``response.stop_reason``. ``None`` when the record came from a code
+    path that didn't thread the response (legacy / test). Populated via
+    ``record_from_response`` when an SDK response object is available, OR
+    via the ``api_metadata_sink`` path in ``messages_create_with_backoff``
+    when a caller wants per-call provenance without changing the
+    response handling code. See ``agents/_support/run_metadata.py``.
     """
 
     input_tokens: int = 0
@@ -85,6 +94,9 @@ class UsageRecord:
     cache_creation_input_tokens: int = 0
     cache_read_input_tokens: int = 0
     cost_usd: float = 0.0
+    api_response_id: str | None = None
+    api_model: str | None = None
+    api_stop_reason: str | None = None
 
 
 def cost_for_usage(usage: UsageRecord, model: str) -> float:
@@ -151,13 +163,25 @@ def summarize_usage(records: list[UsageRecord], model: str) -> UsageSummary:
     return summary
 
 
-def record_from_response(usage: object, model: str) -> UsageRecord:
+def record_from_response(
+    usage: object,
+    model: str,
+    *,
+    response: object | None = None,
+) -> UsageRecord:
     """Build a ``UsageRecord`` from an Anthropic SDK ``response.usage``.
 
     The SDK exposes ``input_tokens`` and ``output_tokens`` always; the cache
     fields are ``None`` when prompt caching wasn't engaged. We default
     missing fields to 0 so cost math is total-of-all-buckets without
     branching at every call site.
+
+    When ``response`` is supplied (the full SDK ``Message``), the per-
+    response identifiers (``id`` / ``model`` / ``stop_reason``) are
+    captured onto the record too — reproducibility metadata that travels
+    with the cost row. ``response=None`` (the back-compat path) leaves
+    those fields at their ``None`` defaults; nothing in the existing
+    callers reads them yet, so the omission is safe.
     """
     rec = UsageRecord(
         input_tokens=int(getattr(usage, "input_tokens", 0) or 0),
@@ -170,4 +194,12 @@ def record_from_response(usage: object, model: str) -> UsageRecord:
         ),
     )
     rec.cost_usd = cost_for_usage(rec, model)
+    if response is not None:
+        rec.api_response_id = getattr(response, "id", None)
+        # ``response.model`` is the resolved dated snapshot
+        # (``claude-sonnet-4-6-20251022``) — distinct from the bare
+        # alias the caller passed; we want both so a future audit can
+        # tell which physical snapshot ran.
+        rec.api_model = getattr(response, "model", None)
+        rec.api_stop_reason = getattr(response, "stop_reason", None)
     return rec

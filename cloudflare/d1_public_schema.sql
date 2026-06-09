@@ -168,6 +168,28 @@ CREATE UNIQUE INDEX IF NOT EXISTS uq_triage_run_public_natural
 -- One row per (gene_symbol, schema_version). Stores the full record JSON
 -- as a blob so the Worker can serve it on `GET /v1/genes/:symbol` with a
 -- single round-trip. The agent re-running a gene replaces the row.
+--
+-- ``prompt_corpus_version`` (column added 2026-06-08): denormalized off
+-- the record so two records at the same schema_version but different
+-- prompt-corpus versions (e.g. 2.28 + 2.35 of CD63 during a refresh)
+-- don't overwrite each other. Nullable for back-compat with rows that
+-- predate the column; ``COALESCE(prompt_corpus_version, '0.0.0')`` keeps
+-- the latest-wins SELECT working when mixed-vintage rows are present.
+--
+-- ``cohort_run_id`` (column added 2026-06-08): sweep tag — same UUID the
+-- private ``agent_run_intermediates.cohort_run_id`` carries so a cohort
+-- run can be SELECT-ed as a unit across the public + private tables.
+--
+-- **Primary-key extension to (gene_symbol, schema_version,
+-- prompt_corpus_version) is a TODO**: SQLite has no in-place ALTER PRIMARY
+-- KEY, so it requires a CREATE-TABLE-RENAME migration that is risky on
+-- live production data. The current PK still tie-breaks on
+-- ``ORDER BY schema_version DESC LIMIT 1`` which the Worker SELECTs use,
+-- so the staleness/regression guards in publish_record.py + the
+-- INSERT-OR-REPLACE upsert continue to behave correctly. See the
+-- ``Schema migration runbook`` in
+-- ``docs/audit/r2_and_reproducibility_2026_06_08.md`` for the
+-- step-by-step migration when the PK extension lands.
 -- ---------------------------------------------------------------------------
 
 CREATE TABLE IF NOT EXISTS surface_annotation (
@@ -183,13 +205,22 @@ CREATE TABLE IF NOT EXISTS surface_annotation (
     primary_evidence_count INTEGER,
     annotated_at        TEXT NOT NULL,           -- when the agent run completed
     synced_at           TEXT NOT NULL DEFAULT (datetime('now')),
+    prompt_corpus_version TEXT,                  -- e.g. '2.35.0'; denormalized off the record
+    cohort_run_id       TEXT,                    -- sweep tag; joins agent_run_intermediates.cohort_run_id
     PRIMARY KEY (gene_symbol, schema_version)
+    -- TODO: extend PK to (gene_symbol, schema_version, prompt_corpus_version)
+    -- once the migration runbook in docs/audit/r2_and_reproducibility_2026_06_08.md
+    -- is executed on prod D1.
 );
 
 CREATE INDEX IF NOT EXISTS idx_surface_annotation_uniprot
     ON surface_annotation (uniprot_acc);
 CREATE INDEX IF NOT EXISTS idx_surface_annotation_surface_status
     ON surface_annotation (surface_status);
+CREATE INDEX IF NOT EXISTS idx_surface_annotation_prompt_corpus
+    ON surface_annotation (gene_symbol, prompt_corpus_version);
+CREATE INDEX IF NOT EXISTS idx_surface_annotation_cohort
+    ON surface_annotation (cohort_run_id);
 
 
 -- ---------------------------------------------------------------------------

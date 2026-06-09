@@ -42,7 +42,7 @@ CAND_URL = (
 # Subject metadata — mirrors save_figure in _plotting_config.py).
 GIST_URL = "https://gist.github.com/beccajcarlson/d655abfc9c7deeaff1cfbe584de96ffa"
 
-# ──── Inline brand styling — sentinel: brand-style-v2 ────
+# ──── Inline brand styling — sentinel: brand-style-v3 ────
 # Mirrors src/accessible_surfaceome/audit/_plotting_config.py so the gist
 # stays self-contained (no in-repo imports — Substack readers run it
 # standalone). Kept in sync via tests/test_figure_gists_styling.py.
@@ -82,7 +82,7 @@ def _register_brand_fonts() -> None:
 
 
 def _apply_brand_style() -> None:
-    """Inline equivalent of `setup_plotting_style`. Sentinel: brand-style-v2.
+    """Inline equivalent of `setup_plotting_style`. Sentinel: brand-style-v3.
     v2: bumped sizes ~25% + explicit medium weight (avoids ExtraLight default
     that matplotlib picks from the Manrope variable file). Companion to the
     static Manrope-{regular,medium,semibold,bold}.otf files in assets/fonts/."""
@@ -98,7 +98,7 @@ def _apply_brand_style() -> None:
         "font.sans-serif": ["Manrope", "Outfit", "DejaVu Sans", "Liberation Sans", "Arial"],
         "font.weight": "medium",
         "font.size": 21,
-        "axes.labelsize": 24,
+        "axes.labelsize": 25,
         "axes.labelweight": "medium",
         "axes.titlesize": 0,
         "axes.titlepad": 0,
@@ -114,12 +114,12 @@ def _apply_brand_style() -> None:
         "grid.linestyle": "-",
         "grid.linewidth": 0.7,
         "grid.color": BRAND_GRID,
-        "xtick.labelsize": 19,
-        "ytick.labelsize": 19,
+        "xtick.labelsize": 20,
+        "ytick.labelsize": 20,
         "xtick.color": BRAND_INK,
         "ytick.color": BRAND_INK,
         "legend.frameon": False,
-        "legend.fontsize": 19,
+        "legend.fontsize": 20,
         "patch.edgecolor": "none",
         "patch.linewidth": 0.0,
     })
@@ -166,15 +166,34 @@ def main() -> None:
     ax.set_yticks([])
     sns.despine(ax=ax, top=True, right=True, bottom=True, left=True)
 
+    # Hide intersection counts below MIN_DISPLAY — the 32 regions of a
+    # 5-set Venn include many small sliver intersections (3-DB / 4-DB /
+    # 5-DB cells with double-digit counts) whose labels collide with
+    # neighboring labels visually and read as noise rather than
+    # information. Suppress them; the per-DB totals still match the
+    # legend's `n = X,XXX` chips and the figure caption.
+    MIN_DISPLAY = 100
+    for t in ax.texts:
+        raw = t.get_text().strip().replace(",", "")
+        try:
+            if int(raw) < MIN_DISPLAY:
+                t.set_text("")
+        except ValueError:
+            # Non-integer label (set name etc.) — preserve.
+            continue
+
     handles = [
         plt.Rectangle((0, 0), 1, 1, color=PALETTE_BY_LABEL[k], alpha=0.6)
         for k in sorted_keys
     ]
     labels = [f"{k}  (n = {len(sets[k]):,})" for k in sorted_keys]
+    # Two-row legend (ceil(N/2)) so the 5 DB chips fit at v3 fontsize
+    # without overflowing the figure width. 5 entries → ncols=3 → 3-on-top
+    # + 2-on-bottom rather than the v2 single-row layout that overflowed.
     ax.legend(
         handles, labels,
         loc="upper center", bbox_to_anchor=(0.5, -0.02),
-        ncols=len(sorted_keys), frameon=False, fontsize=21,
+        ncols=(len(sorted_keys) + 1) // 2, frameon=False, fontsize=21,
     )
 
     out_pdf = Path("db_overlap_venn.pdf")

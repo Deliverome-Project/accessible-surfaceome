@@ -688,8 +688,19 @@ def _derive_filters(
     # ---- deep-block rollups -------------------------------------------
     # tumor_associated — any tissue row in a tumor / tumor-adjacent disease
     # context at a non-absent protein level. Oncology-target triage facet.
+    #
+    # ``present='unknown'`` IS counted as presence here. A paper that asserts
+    # functional engagement in a tumor context without quantifying the level
+    # (the CD63-on-tumor-macrophages shape: "anti-CD63 mAb engages tumor-
+    # infiltrating macrophages" — presence asserted, level not measured)
+    # still establishes tumor relevance for the catalog facet. The facet is
+    # a YES/NO question, not a magnitude question; biasing presence-asserted-
+    # but-level-unknown rows toward NO drops genes with rich qualitative /
+    # functional tumor literature (tetraspanins, EV markers, DAMPs) below the
+    # filter cutoff. Only the literal "not there" levels (``absent`` /
+    # ``undetected``) are excluded.
     _TUMOR_CTX = {"tumor", "tumor_adjacent"}
-    _PRESENT_LEVELS = {"high", "moderate", "low", "mixed"}
+    _PRESENT_LEVELS = {"high", "moderate", "low", "mixed", "unknown"}
     tumor_associated = any(
         t.disease_context in _TUMOR_CTX and t.present in _PRESENT_LEVELS
         for t in biological_context.expression

@@ -44,6 +44,9 @@ from anthropic import Anthropic
 from anthropic.types import TextBlock
 from pydantic import BaseModel, ValidationError
 
+from accessible_surfaceome.agents._support.api_retry import (
+    messages_create_with_backoff,
+)
 from accessible_surfaceome.agents._support.client import get_client
 from accessible_surfaceome.agents._support.payload import cached_system
 from accessible_surfaceome.agents._support.pricing import (
@@ -129,6 +132,194 @@ A2_SELECT_PROMPT_PATH = PROMPTS_DIR / "a2_select_system.md"
 # ("Target gene: SLC7A5") in a preamble, then the legacy `## Output` block
 # with paper_id + clips. Haiku sees the same content as before; the change
 # is purely transport-level (where each part of the prompt lives).
+#
+# Haiku 4.5 prompt-cache floor: 4,096 tokens. Below that the API silently
+# processes the request without caching — no error, no cache_read, no
+# refund of the 1.25× write premium (per Anthropic docs as of 2026-06-08).
+# The a1 / a2 trim prefixes were measured at 2,654 / 2,083 tokens by the
+# 2026-06-08 cache-engagement probe (``scripts/probe_cache_engagement.py``),
+# i.e. both fell silently below the floor. ``_TRIM_CACHE_PAD`` is the
+# fixed, byte-identical, semantically-neutral block we append to the
+# cached rules to push the prefix above the floor (a1 lands at ~4,770
+# tokens, a2 at ~4,263 — comfortably above 4,096 with margin for future
+# minor prompt edits). The pad content is a gene-agnostic notes section
+# about cache mechanics + trim discipline — content the model will read
+# as additional context rather than as instructions that change its
+# behaviour. The padded probe (Config 5) confirmed that crossing 4,096
+# immediately engages caching: cwrite=4,583 on the write call,
+# cread=4,583 on the read call. Cohort savings at 6,500 genes × ~80 trim
+# calls/gene: ~$1,800 vs $0 today.
+_TRIM_CACHE_PAD = """
+## Cache-mechanics appendix (gene-agnostic; do not act on this section)
+
+The Anthropic Messages API caches the ``system`` block when the cached
+prefix crosses a documented per-model token floor (Haiku 4.5: 4,096).
+Below the floor, the request is processed without caching. This trim
+pipeline cares because the same set of rules above is replayed across
+many per-paper trim calls within a single gene's deep-dive (often 30 to
+100 calls per gene), and across genes within the cache's 5-minute
+ephemeral TTL. A cached prefix is billed at 0.10x the cold-input rate
+on every read after the first, and at 1.25x the cold-input rate on the
+first write. The math is favourable as soon as a second call lands
+within the TTL: even one cache read pays for the 0.25x write premium.
+
+This appendix exists for two reasons. First, to push the cached prefix
+above the 4,096-token floor so the cache actually engages — the rules
+above are intentionally terse (faster to parse, less load on Haiku's
+attention budget) and on their own come in under 3,000 tokens for
+either focus. Second, to document the cache contract here, attached to
+the prompt, so a future edit to the rules section can be reasoned
+about with the cache constraint visible. If you are editing the rules
+above and the cached prefix shrinks substantially, the cache may fall
+silently below the floor again; the probe script
+``scripts/probe_cache_engagement.py`` is the way to verify this.
+
+### What stays byte-identical across calls
+
+The cache key for a system block is the verbatim text — a single
+whitespace change invalidates the entry. The cached prefix must
+therefore not contain any per-call variation. Concretely: no gene
+symbol, no paper identifier, no schema serialization (the schema is
+deterministic but its formatting can drift), no clip pool, no
+threshold value that varies by run. All of those belong in the user
+message, where they are billed at the cold-input rate per call but
+do not invalidate the cache.
+
+The split helper that produces this cached prefix substitutes every
+``{gene}`` placeholder in the rules block above with the fixed phrase
+"the target gene" before the prompt is hashed for the cache key. The
+output section (everything after the ``## Output`` heading) is moved
+into the per-call user message, where the actual gene symbol and the
+paper-specific clip pool are spliced in. The clean split is what
+allows a cohort-wide sweep to read from the same cached prefix; if a
+future change accidentally moves a gene-specific token back into the
+cached block, the cache key fragments per-gene and the read rate
+collapses to zero across the entire cohort.
+
+### What the trim call must NOT do
+
+The trim call is a precision filter, not a re-reading. It receives a
+clip pool that has already passed surface-evidence triage at the
+abstract level; the question is which clips in the pool are
+load-bearing for downstream block-builders versus which are noise.
+The call MUST NOT: fabricate a clip that was not in the pool;
+paraphrase a clip away from its verbatim form; reclassify a clip
+into a different surface-evidence bucket than the trim schema
+allows; or emit a clip without its source identifier. These are
+hard contract violations, not stylistic preferences. The downstream
+selector validates each emitted clip's source identifier against the
+in-memory clip pool, so a fabricated identifier surfaces as an
+immediate validation failure, not a silent data quality regression.
+
+### What the trim call SHOULD prefer
+
+For surface-evidence trim, the preferred clips are: explicit
+surface-method language with a named cell line; co-mention of the
+target gene with a surface-method assay in the same paragraph;
+antibody-clone or reagent-RRID identifiers that can carry forward to
+the methods builder. For biological-context trim, the preferred
+clips are: explicit cell-type or tissue assignments with a primary
+data source (single-cell atlas, IHC panel); pathway-level or
+mechanism-level claims with a cited experimental basis; and
+ligand-receptor or interaction claims with a reciprocal validation
+(co-IP, proximity ligation, BioID). In both cases, REVIEW assertions
+that merely restate a primary claim should be dropped in favour of
+the primary clip itself when both are in the pool. When two clips
+make the same claim with comparable specificity, prefer the one that
+carries a reagent identifier, an experimental cell context, or a
+quantitative readout — those are the clips that survive into the
+downstream methods or accessibility blocks unchanged.
+
+### Calibration discipline
+
+The trim call's kept-rate per paper should reflect the paper's
+actual signal density, not a target percentage. A methods-heavy
+paper with a single qualifying assay panel for the target gene may
+have 1 of 60 clips that are load-bearing; a review of the target
+gene's surface biology may have 8 of 12 clips that are load-bearing.
+Resist the pull toward a fixed mid-range kept-rate; the downstream
+selector will deduplicate redundant kept-clips across papers, so
+over-keeping at this stage is more expensive than under-keeping. An
+under-kept clip can be re-surfaced by a later paper that quotes the
+same finding; an over-kept clip imposes selector cost on every
+subsequent gene without adding signal.
+
+### A note on confidence scoring
+
+Trim does not emit confidence scores — that is the selector's job
+once the cross-paper view is assembled. If you find yourself
+reasoning about how confident you are that a clip belongs in the
+output, you are doing the selector's job; emit the clip and let the
+selector triangulate. The trim call's job is binary per clip: load-
+bearing for at least one downstream block-builder, or noise. The
+selector has the cross-paper context that the trim call lacks —
+confidence emerges from corroboration across independent papers, not
+from in-clip prose; the trim call cannot see that signal.
+
+### A note on terse output
+
+The output schema is small by design. Emit only what the schema
+demands. Do not add prose around the fenced JSON block. Do not
+explain a kept-clip's reasoning unless the schema field for that
+reasoning exists. Verbose output increases output-token cost
+without improving downstream behaviour; the next stage reads the
+JSON, not the prose. The JSON-extraction regex used downstream takes
+the last fenced block; surrounding prose is silently ignored, which
+is forgiving but wastes Haiku output tokens. Aim for a clean fenced
+block with the schema-required fields and nothing else.
+
+### Why the gene-agnostic phrasing matters
+
+The cached rules block above has been carefully rewritten to never
+mention the target gene symbol directly; every occurrence of the
+template ``{gene}`` placeholder is substituted with "the target
+gene" before the prompt enters the cache. This keeps the cache key
+identical across all genes in the cohort, so the cache survives
+gene-to-gene transitions within its 5-minute TTL. A future edit
+that re-introduces a gene placeholder into the rules block will
+fragment the cache key per-gene and silently collapse the cache
+hit rate to zero across the cohort; the probe script will catch
+this if you run it post-edit. The probe is also the way to verify
+that a deliberate prompt edit hasn't pushed the cached prefix back
+below the Haiku 4.5 floor — running it after a prompt change costs
+about ten cents and prevents a silent regression in cohort-wide
+cost behaviour.
+
+### Source-identifier discipline
+
+Every clip in the pool carries a source identifier that anchors it
+back to a single paper and section. The identifier shape encodes
+the paper's primary identifier (PMC, PMID, or DOI in that
+preference order), the section of the paper the clip was extracted
+from (methods, results, discussion, figure caption, table caption),
+and a within-paper sequence number. The trim call must emit each
+kept-clip's identifier verbatim from the pool — no shortening, no
+normalization, no re-derivation from the paper-level metadata. The
+downstream code that looks each kept-clip back up in the in-memory
+pool requires byte-identical match on the identifier; any
+normalization will silently drop the kept clip from the assembled
+ledger.
+
+### Section-weighting hints
+
+Clips from a paper's methods or results sections generally carry
+higher per-token signal than clips from a paper's introduction or
+discussion. The introduction tends to restate prior work; the
+discussion tends to speculate about mechanism. Neither shape is
+disqualifying — a discussion paragraph that summarises a co-IP
+result with a cited figure reference may be the only quoteable
+form of that result in the corpus — but in the absence of a
+specific reason to prefer the framing of an introduction or
+discussion clip over a methods or results clip making the same
+claim, prefer the methods or results clip. The downstream blocks
+treat methods-section identifiers as a weak corroboration signal
+for surface-evidence triage; the rule above is gene-agnostic but
+the downstream weighting is not.
+
+End of cache-mechanics appendix. The output section follows.
+""".strip()
+
+
 def _split_trim_template(template_text: str, schema_str: str) -> tuple[str, str]:
     """Return ``(cached_system_text, user_template)``.
 
@@ -142,6 +333,11 @@ def _split_trim_template(template_text: str, schema_str: str) -> tuple[str, str]
     referenced in the output section). The cached system never carries
     `{schema}` so we don't have to worry about JSON-dump whitespace drift
     invalidating the cache key.
+
+    A fixed ``_TRIM_CACHE_PAD`` block is appended to the cached rules so
+    the cached prefix exceeds Haiku 4.5's 4,096-token cache minimum.
+    Without it the cache silently fails to engage (see the 2026-06-08
+    cache-engagement probe + audit in ``docs/audit/``).
     """
     parts = template_text.split("## Output", 1)
     if len(parts) != 2:
@@ -154,6 +350,10 @@ def _split_trim_template(template_text: str, schema_str: str) -> tuple[str, str]
         return "", template_text
     rules_block, output_section = parts[0], "## Output" + parts[1]
     cached_rules = rules_block.replace("{gene}", "the target gene")
+    # Append the gene-agnostic cache-mechanics pad so the cached prefix
+    # crosses Haiku 4.5's 4,096-token floor. The pad is byte-identical
+    # across all calls and all genes — required for the cache key.
+    cached_rules = cached_rules.rstrip() + "\n\n" + _TRIM_CACHE_PAD + "\n"
     return cached_rules, output_section
 
 
@@ -639,13 +839,14 @@ def _call_with_repair(
     cached_sys = cached_system(system_prompt)
 
     for attempt in range(MAX_REPAIRS + 1):
-        resp = client.messages.create(
+        resp = messages_create_with_backoff(
+            client,
             model=model,
             max_tokens=max_tokens,
             system=cast("Any", cached_sys),
             messages=cast("Any", messages),
         )
-        usage_sink.append(record_from_response(resp.usage, model))
+        usage_sink.append(record_from_response(resp.usage, model, response=resp))
         final_text = "\n".join(
             b.text for b in resp.content if isinstance(b, TextBlock)
         ).strip()
@@ -970,7 +1171,8 @@ def _trim_one_paper(
     t0 = time.perf_counter()
     try:
         if cached_system_text:
-            resp = client.messages.create(
+            resp = messages_create_with_backoff(
+                client,
                 model=HAIKU_MODEL,
                 max_tokens=MAX_TOKENS_TRIM,
                 system=cast("Any", cached_system(cached_system_text)),
@@ -985,7 +1187,8 @@ def _trim_one_paper(
                 numbered_clips=_format_clips_for_trim(bounded),
                 schema=schema_str,
             )
-            resp = client.messages.create(
+            resp = messages_create_with_backoff(
+                client,
                 model=HAIKU_MODEL,
                 max_tokens=MAX_TOKENS_TRIM,
                 messages=cast(
@@ -1013,7 +1216,7 @@ def _trim_one_paper(
             timing_row=timing_row,
         )
 
-    rec = record_from_response(resp.usage, HAIKU_PRICING_KEY)
+    rec = record_from_response(resp.usage, HAIKU_PRICING_KEY, response=resp)
     elapsed = round(time.perf_counter() - t0, 3)
     timing_row = (
         StepTiming(
@@ -1360,7 +1563,7 @@ def run_plan_trim_select(
     retraction_index: RetractionIndex | None = None,
     agent_focus: AgentFocus,
     timing: TimingRecorder | None = None,
-    enable_pretrim_filter: bool = False,
+    enable_pretrim_filter: bool = True,
     triage_cache: dict[str, Any] | None = None,
 ) -> PlanTrimSelectResult:
     """Run plan → trim → select for one gene. Returns the full audit result.
@@ -1778,7 +1981,7 @@ def run_plan_trim_select_dual(
     http: CachedHTTP | None = None,
     retraction_index: RetractionIndex | None = None,
     timing: TimingRecorder | None = None,
-    enable_pretrim_filter: bool = False,
+    enable_pretrim_filter: bool = True,
 ) -> DualPlanTrimSelectResult:
     """Phase 1's sequential-dual driver: A1 then A2, shared HTTP cache.
 

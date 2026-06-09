@@ -61,7 +61,7 @@ OPT_CUTOFFS_TSV = f"{BASE}/data/processed/triage_bench/db_optimized_cutoffs.tsv"
 # Subject metadata — mirrors save_figure in _plotting_config.py).
 GIST_URL = "https://gist.github.com/beccajcarlson/0104308c239fe49d91d82a1007632b27"
 
-# ──── Inline brand styling — sentinel: brand-style-v2 ────
+# ──── Inline brand styling — sentinel: brand-style-v3 ────
 # Mirrors src/accessible_surfaceome/audit/_plotting_config.py so the gist
 # stays self-contained. Kept in sync via tests/test_figure_gists_styling.py.
 BRAND_PALETTE = [
@@ -100,7 +100,7 @@ def _register_brand_fonts() -> None:
 
 
 def _apply_brand_style() -> None:
-    """Inline equivalent of `setup_plotting_style`. Sentinel: brand-style-v2.
+    """Inline equivalent of `setup_plotting_style`. Sentinel: brand-style-v3.
     v2: bumped sizes ~25% + explicit medium weight (avoids ExtraLight default
     that matplotlib picks from the Manrope variable file). Companion to the
     static Manrope-{regular,medium,semibold,bold}.otf files in assets/fonts/."""
@@ -115,8 +115,8 @@ def _apply_brand_style() -> None:
         "font.family": "sans-serif",
         "font.sans-serif": ["Manrope", "Outfit", "DejaVu Sans", "Liberation Sans", "Arial"],
         "font.weight": "medium",
-        "font.size": 21,
-        "axes.labelsize": 24,
+        "font.size": 20,
+        "axes.labelsize": 20,
         "axes.labelweight": "medium",
         "axes.titlesize": 0,
         "axes.titlepad": 0,
@@ -132,12 +132,12 @@ def _apply_brand_style() -> None:
         "grid.linestyle": "-",
         "grid.linewidth": 0.7,
         "grid.color": BRAND_GRID,
-        "xtick.labelsize": 19,
-        "ytick.labelsize": 19,
+        "xtick.labelsize": 20,
+        "ytick.labelsize": 20,
         "xtick.color": BRAND_INK,
         "ytick.color": BRAND_INK,
         "legend.frameon": False,
-        "legend.fontsize": 19,
+        "legend.fontsize": 20,
         "patch.edgecolor": "none",
         "patch.linewidth": 0.0,
     })
@@ -204,9 +204,11 @@ def main() -> None:
         ("UniProt\n(TM+signal)", lambda g: "yes" if db_votes_for(acc_by_gene.get(g, "")).get("UniProt") else "no",
                                                                                                     BRAND_PALETTE[0]),
     ]
+    # "k+ DB" rather than "≥k DB" — static Manrope OTFs lack the ≥ glyph
+    # and matplotlib silently drops it; ASCII "+" stays robust.
     for k in (2, 3, 4, 5):
         callers.append((
-            f"≥{k} DB",
+            f"{k}+ DB",
             (lambda g, k=k: "yes" if sum(db_votes_for(acc_by_gene.get(g, "")).values()) >= k else "no"),
             ENSEMBLE_PALETTE[k],
         ))
@@ -257,7 +259,7 @@ def main() -> None:
             bar.get_height() + 1.2,
             f"{row['accuracy']*100:.1f}%",
             ha="center", va="bottom",
-            fontsize=21, fontweight="bold", color=BRAND_INK,
+            fontsize=20, fontweight="bold", color=BRAND_INK,
         )
         ax.text(
             bar.get_x() + bar.get_width() / 2,
@@ -286,10 +288,10 @@ def main() -> None:
             ax.scatter(xc + jitter, rv, s=24, color=BRAND_INK,
                        edgecolor="white", linewidth=0.5, zorder=5, alpha=0.9)
 
-    ax.set_ylabel("Overall accuracy on\n147-gene bench (%)", fontsize=18)
+    ax.set_ylabel("Overall accuracy on\n147-gene bench (%)", fontsize=19)
     ax.set_ylim(0, 105)
     ax.tick_params(axis="x", labelsize=17)
-    ax.tick_params(axis="y", labelsize=13)
+    ax.tick_params(axis="y", labelsize=14)
     sns.despine(ax=ax, top=True, right=True)
 
     fig.tight_layout()

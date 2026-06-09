@@ -32,6 +32,9 @@ from anthropic import Anthropic
 from anthropic.types import TextBlock
 from pydantic import ValidationError
 
+from accessible_surfaceome.agents._support.api_retry import (
+    messages_create_with_backoff,
+)
 from accessible_surfaceome.agents._support.client import get_client
 from accessible_surfaceome.agents._support.payload import cached_system, cached_user_text
 from accessible_surfaceome.agents._support.pricing import (
@@ -385,6 +388,7 @@ def run_synthesizer_with_drafts(
     triage_summary_json: str | None = None,
     deterministic_summary_json: str | None = None,
     accessibility_risks: AccessibilityRisks | None = None,
+    external_feedback: str | None = None,
 ) -> BResult:
     """In-memory peer of :func:`run_synthesizer` — for orchestrator usage.
 
@@ -417,6 +421,7 @@ def run_synthesizer_with_drafts(
         triage_summary_json=triage_summary_json,
         deterministic_summary_json=deterministic_summary_json,
         accessibility_risks_json=accessibility_risks_json,
+        external_feedback=external_feedback,
     )
 
 
@@ -429,24 +434,42 @@ def _run(
     triage_summary_json: str | None = None,
     deterministic_summary_json: str | None = None,
     accessibility_risks_json: str | None = None,
+    external_feedback: str | None = None,
 ) -> BResult:
     system_prompt = SYSTEM_PROMPT_PATH.read_text()
     cached_system_blocks = cached_system(system_prompt)
     # The initial user task message embeds both ledgers + the SynthesizerDraft
     # JSON schema — large, static across repair iterations. Cache it once so
     # repairs only pay full price for the new error-feedback turn.
-    messages: list[dict[str, Any]] = [
-        cached_user_text(
-            _build_task(
-                gene,
-                a1_draft=a1_draft,
-                a2_draft=a2_draft,
-                triage_summary_json=triage_summary_json,
-                deterministic_summary_json=deterministic_summary_json,
-                accessibility_risks_json=accessibility_risks_json,
-            )
+    task_text = _build_task(
+        gene,
+        a1_draft=a1_draft,
+        a2_draft=a2_draft,
+        triage_summary_json=triage_summary_json,
+        deterministic_summary_json=deterministic_summary_json,
+        accessibility_risks_json=accessibility_risks_json,
+    )
+    # External-feedback channel — orchestrator wraps the synth call in
+    # a retry-with-feedback loop. When the assembled SurfaceomeRecord
+    # fails Pydantic validation (state_dependence='low' violation,
+    # secreted_form orphan, etc.) the orchestrator catches the error
+    # and re-invokes the synthesizer with the validator message
+    # prepended. The synth reads it, corrects the specific field(s),
+    # and re-emits. Caching note: the task body stays byte-identical
+    # so the prompt cache still hits; only the feedback prefix is
+    # new on the second attempt.
+    if external_feedback:
+        task_text = (
+            "# Feedback from a prior synthesis attempt\n\n"
+            "Your previous output failed downstream Pydantic validation "
+            "on the assembled SurfaceomeRecord. The validator's message:\n\n"
+            f"```\n{external_feedback}\n```\n\n"
+            "Re-emit your output with the affected field(s) corrected. "
+            "Keep everything else identical — only fix what the "
+            "validator flagged.\n\n"
+            + task_text
         )
-    ]
+    messages: list[dict[str, Any]] = [cached_user_text(task_text)]
     n_repair_attempts = 0
     usage_records: list[UsageRecord] = []
     final_text = ""
@@ -454,14 +477,17 @@ def _run(
     validation_error: str | None = None
 
     for _ in range(MAX_ITERATIONS):
-        resp = client.messages.create(
+        resp = messages_create_with_backoff(
+            client,
             model=AGENT_MODEL,
             max_tokens=MAX_TOKENS,
             system=cast("Any", cached_system_blocks),
             # No tools by design — see module docstring.
             messages=cast("Any", messages),
         )
-        usage_records.append(record_from_response(resp.usage, AGENT_MODEL))
+        usage_records.append(
+            record_from_response(resp.usage, AGENT_MODEL, response=resp)
+        )
         messages.append({"role": "assistant", "content": resp.content})
 
         # Defensive: B should never trigger tool_use (no tools were offered),

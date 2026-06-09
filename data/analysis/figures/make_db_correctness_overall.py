@@ -45,7 +45,7 @@ REPS_TSV = f"{BASE}/data/processed/triage_bench/mainbench_replicates_v2.tsv"
 # Subject metadata — mirrors save_figure in _plotting_config.py).
 GIST_URL = "https://gist.github.com/beccajcarlson/9c765ed9673d7bd845c3ac091ad2204d"
 
-# ──── Inline brand styling — sentinel: brand-style-v2 ────
+# ──── Inline brand styling — sentinel: brand-style-v3 ────
 # Mirrors src/accessible_surfaceome/audit/_plotting_config.py so the gist
 # stays self-contained. Kept in sync via tests/test_figure_gists_styling.py.
 BRAND_PALETTE = [
@@ -84,7 +84,7 @@ def _register_brand_fonts() -> None:
 
 
 def _apply_brand_style() -> None:
-    """Inline equivalent of `setup_plotting_style`. Sentinel: brand-style-v2.
+    """Inline equivalent of `setup_plotting_style`. Sentinel: brand-style-v3.
     v2: bumped sizes ~25% + explicit medium weight (avoids ExtraLight default
     that matplotlib picks from the Manrope variable file). Companion to the
     static Manrope-{regular,medium,semibold,bold}.otf files in assets/fonts/."""
@@ -99,8 +99,8 @@ def _apply_brand_style() -> None:
         "font.family": "sans-serif",
         "font.sans-serif": ["Manrope", "Outfit", "DejaVu Sans", "Liberation Sans", "Arial"],
         "font.weight": "medium",
-        "font.size": 21,
-        "axes.labelsize": 24,
+        "font.size": 20,
+        "axes.labelsize": 20,
         "axes.labelweight": "medium",
         "axes.titlesize": 0,
         "axes.titlepad": 0,
@@ -116,12 +116,12 @@ def _apply_brand_style() -> None:
         "grid.linestyle": "-",
         "grid.linewidth": 0.7,
         "grid.color": BRAND_GRID,
-        "xtick.labelsize": 19,
-        "ytick.labelsize": 19,
+        "xtick.labelsize": 20,
+        "ytick.labelsize": 20,
         "xtick.color": BRAND_INK,
         "ytick.color": BRAND_INK,
         "legend.frameon": False,
-        "legend.fontsize": 19,
+        "legend.fontsize": 20,
         "patch.edgecolor": "none",
         "patch.linewidth": 0.0,
     })
@@ -192,7 +192,10 @@ def main() -> None:
     # Per-replicate accuracies for the points + SEM overlay (3 reps/cell).
     rep_acc = _per_rep_accuracy(_fetch_tsv(REPS_TSV))
 
-    fig, ax = plt.subplots(figsize=(12, 5.5))
+    # Wider figure (was 12) so the 4-bar Haiku / Sonnet / Opus clusters'
+    # bar-top "9X.X%" labels (one per prompt variant) sit with breathing
+    # room instead of touching neighbours.
+    fig, ax = plt.subplots(figsize=(16, 5.5))
     n_models = len(MODEL_ORDER)
     n_variants = len(VARIANT_ORDER)
     bar_w = 0.78 / n_variants
@@ -234,7 +237,7 @@ def main() -> None:
             )
 
     ax.set_xticks(range(n_models))
-    ax.set_xticklabels([m_label for _, m_label, _ in MODEL_ORDER], fontsize=18)
+    ax.set_xticklabels([m_label for _, m_label, _ in MODEL_ORDER], fontsize=19)
     ax.set_ylabel("Overall accuracy on\n147-gene benchmark", fontsize=17)
     ax.set_ylim(0, 105)
     legend_handles = [
@@ -245,7 +248,7 @@ def main() -> None:
     ax.legend(
         handles=legend_handles, title="Variant (hatch)",
         loc="center left", bbox_to_anchor=(1.01, 0.5),
-        frameon=False, fontsize=16, title_fontsize=18,
+        frameon=False, fontsize=16, title_fontsize=19,
     )
     sns.despine(ax=ax, top=True, right=True)
 

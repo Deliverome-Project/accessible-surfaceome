@@ -73,6 +73,7 @@ def build_evidence_grade(
     client: Anthropic,
     usage_sink: list[UsageRecord],
     context: dict[str, Any] | None = None,
+    meta_sink: dict[str, Any] | None = None,
 ) -> EvidenceGradeBlock:
     """Grade the A1 ledger + emit non-surface expression rows.
 
@@ -129,18 +130,39 @@ def build_evidence_grade(
     if methods_summary:
         methods_block = (
             "# Methods builder output (already committed)\n\n"
-            "The methods builder has already classified each experimental "
-            "observation's `accessibility_relevance`. Your `evidence_grade` "
-            "MUST be consistent with these classifications:\n"
-            "- `direct_single_method` / `direct_multi_method` require ≥1 / ≥2 "
-            "methods with `accessibility_relevance=direct_surface_accessibility`.\n"
-            "- If no method carries `direct_surface_accessibility`, the grade "
-            "cannot be `direct_*` — use `supportive_but_indirect` or lower.\n\n"
+            "Each row: `family/subclass | accessibility_relevance | "
+            "species | cites`. Species is resolved deterministically from "
+            "the cited claims' `assay_context.species` (human-anchored "
+            "when any cite is human; otherwise the union of non-human "
+            "species). Use it when applying the species rule:\n"
+            "- `direct_*` requires ≥1 / ≥2 methods with "
+            "`accessibility_relevance=direct_surface_accessibility`.\n"
+            "- If no method carries `direct_surface_accessibility`, the "
+            "grade cannot be `direct_*`.\n"
+            "- If the ONLY direct rows are non-human-anchored "
+            "(`species != human`), the grade caps at "
+            "`supportive_but_indirect` — cross-species evidence supports "
+            "membrane association but cannot anchor a `direct_*` call "
+            "for the human protein on its own.\n\n"
             f"```\n{methods_summary}\n```\n\n"
+        )
+    # Retry-with-feedback path: when the orchestrator catches a
+    # cardinality mismatch (direct_* grade with 0 direct_surface_
+    # accessibility methods) and re-calls this builder, it injects an
+    # explicit constraint into the context. Surface it at the top of the
+    # user prompt so the second-attempt response sees the rejection
+    # before the rest of the ledger.
+    cardinality_feedback = context.get("cardinality_feedback", "")
+    cardinality_block = ""
+    if cardinality_feedback:
+        cardinality_block = (
+            "# CARDINALITY FEEDBACK (read first)\n\n"
+            f"{cardinality_feedback}\n\n"
         )
     system_prompt = load_prompt("evidence_grade_builder_system")
     user_prompt = (
         f"# Gene: {gene}\n\n"
+        f"{cardinality_block}"
         f"{triage_block}"
         f"{family_block}"
         f"{methods_block}"
@@ -164,6 +186,7 @@ def build_evidence_grade(
         # grade verdict + a non_surface_expression list. The latter can
         # be long on broadly-expressed proteins.
         max_tokens=MAX_TOKENS_HEAVY,
+        meta_sink=meta_sink,
     )
     if parsed is None or not isinstance(parsed, EvidenceGradeBlock):
         logger.warning("evidence_grade_builder failed → falling back to weak/empty")

@@ -288,9 +288,11 @@ def test_primary_research_with_atlas_word_in_body_kept():
 
 
 def test_hard_cap_at_default_ceiling():
-    """151 primary papers → cap drops the oldest one."""
+    """`HARD_CAP + 1` primary papers → cap drops the oldest one. The
+    HARD_CAP value is updated by the cost-mitigation work; the test
+    proves the cap behavior holds at whatever the current value is."""
     papers = []
-    for i in range(151):
+    for i in range(HARD_CAP + 1):
         papers.append(
             _paper(
                 pmid=10_000 + i,
@@ -375,4 +377,12 @@ def test_thresholds_match_published_defaults():
     """
     assert THIN_THRESHOLD == 25
     assert HEAVY_THRESHOLD == 50
-    assert HARD_CAP == 150
+    # Raised back 132 → 150 after Agent #21's A1 selection drift audit
+    # (docs/audit/a1_selection_drift_2026_06_08.md) showed the year-sorted
+    # cap was biasing against founding-era localization papers (PMID-style
+    # PMC:* with direct IF/IHC surface evidence). SRC's methods builder
+    # dropped from 12 → 3 MethodObservation rows between v2.9.0 and v2.35.0
+    # — 5 of 8 dropped papers were pretrim cap-drops. The cost delta
+    # (132 → 150, +13% papers on the ~25% of genes >132 candidates) is
+    # ~$200 vs the ~$1,800 saved by the cache + Haiku-pad fixes.
+    assert HARD_CAP == 160

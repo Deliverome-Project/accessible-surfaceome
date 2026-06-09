@@ -53,7 +53,7 @@ CATALOG_TSV_URL = (
 # Subject metadata — mirrors save_figure in _plotting_config.py).
 GIST_URL = "https://gist.github.com/beccajcarlson/a4526c9e6de5e958826bf1d764744c1b"
 
-# ──── Inline brand styling — sentinel: brand-style-v2 ────
+# ──── Inline brand styling — sentinel: brand-style-v3 ────
 # Mirrors src/accessible_surfaceome/audit/_plotting_config.py so the gist
 # stays self-contained. Kept in sync via tests/test_figure_gists_styling.py.
 BRAND_PALETTE = [
@@ -92,7 +92,7 @@ def _register_brand_fonts() -> None:
 
 
 def _apply_brand_style() -> None:
-    """Inline equivalent of `setup_plotting_style`. Sentinel: brand-style-v2.
+    """Inline equivalent of `setup_plotting_style`. Sentinel: brand-style-v3.
     v2: bumped sizes ~25% + explicit medium weight (avoids ExtraLight default
     that matplotlib picks from the Manrope variable file). Companion to the
     static Manrope-{regular,medium,semibold,bold}.otf files in assets/fonts/."""
@@ -107,8 +107,8 @@ def _apply_brand_style() -> None:
         "font.family": "sans-serif",
         "font.sans-serif": ["Manrope", "Outfit", "DejaVu Sans", "Liberation Sans", "Arial"],
         "font.weight": "medium",
-        "font.size": 21,
-        "axes.labelsize": 24,
+        "font.size": 20,
+        "axes.labelsize": 20,
         "axes.labelweight": "medium",
         "axes.titlesize": 0,
         "axes.titlepad": 0,
@@ -124,12 +124,12 @@ def _apply_brand_style() -> None:
         "grid.linestyle": "-",
         "grid.linewidth": 0.7,
         "grid.color": BRAND_GRID,
-        "xtick.labelsize": 19,
-        "ytick.labelsize": 19,
+        "xtick.labelsize": 20,
+        "ytick.labelsize": 20,
         "xtick.color": BRAND_INK,
         "ytick.color": BRAND_INK,
         "legend.frameon": False,
-        "legend.fontsize": 19,
+        "legend.fontsize": 20,
         "patch.edgecolor": "none",
         "patch.linewidth": 0.0,
     })
@@ -255,20 +255,23 @@ def _draw_reason_bars(ax, counts, reasons, palette, header_label, header_color, 
             x, h + y_max * 0.015,
             f"{h}",
             ha="center", va="bottom",
-            fontsize=24, fontweight="bold", color=header_color,
+            fontsize=20, fontweight="bold", color=header_color,
         )
 
     ax.set_title(
         header_label,
-        fontsize=24, color=header_color, fontweight="bold",
+        fontsize=20, color=header_color, fontweight="bold",
         loc="left", pad=16,
     )
     ax.set_xticks(x_positions)
+    # Flatten the pre-wrapped REASON_LABEL strings (\n → space) so the
+    # rotated labels read on one line; multi-line + rotation looks broken.
     ax.set_xticklabels(
-        [REASON_LABEL[r] for r in visible],
-        fontsize=19, color=BRAND_INK,
+        [REASON_LABEL[r].replace("\n", " ") for r in visible],
+        fontsize=18, color=BRAND_INK,
+        rotation=30, ha="right", rotation_mode="anchor",
     )
-    ax.tick_params(axis="y", labelsize=19)
+    ax.tick_params(axis="y", labelsize=20)
     ax.set_xlim(-0.9, x_positions[-1] + 0.9)
     sns.despine(ax=ax, top=True, right=True)
 
@@ -278,7 +281,7 @@ def _draw_callouts(ax, callouts, palette, title):
     ax.text(
         0.0, 1.0, title,
         transform=ax.transAxes, ha="left", va="top",
-        fontsize=23, color=BRAND_NEUTRAL, fontweight="bold",
+        fontsize=20, color=BRAND_NEUTRAL, fontweight="bold",
     )
     y0 = 0.82
     n = len(callouts)
@@ -295,12 +298,12 @@ def _draw_callouts(ax, callouts, palette, title):
         ax.text(
             0.07, y, symbol,
             transform=ax.transAxes, ha="left", va="center",
-            fontsize=23, fontweight="bold", color=BRAND_INK,
+            fontsize=20, fontweight="bold", color=BRAND_INK,
         )
         ax.text(
-            0.28, y, f"— {desc}",
+            0.26, y, f"— {desc}",
             transform=ax.transAxes, ha="left", va="center",
-            fontsize=20, color=BRAND_NEUTRAL,
+            fontsize=15, color=BRAND_NEUTRAL,
         )
 
 
@@ -352,11 +355,11 @@ def main() -> None:
     gs = gridspec.GridSpec(
         2, 2, figure=fig,
         # v2: bumped callout-row weight (1.05 → 1.55) + figure height
-        # (11 → 13) so the per-row callout text (larger under brand-style-v2)
+        # (11 → 13) so the per-row callout text (larger under brand-style-v3)
         # has room to breathe instead of crashing into the bar panels.
         height_ratios=[2.2, 1.55],
         width_ratios=[1.0, 1.5],
-        hspace=0.22, wspace=0.10,
+        hspace=0.55, wspace=0.28,
         top=0.93, bottom=0.04, left=0.06, right=0.97,
     )
     ax_yes = fig.add_subplot(gs[0, 0])
@@ -392,8 +395,8 @@ def main() -> None:
         header_color=CONTEXTUAL_HEADER_COLOR, y_max=y_max,
     )
 
-    ax_yes.set_ylabel("Genes rescued from\nzero-DB universe", fontsize=24)
-    ax_yes.tick_params(axis="y", labelsize=19)
+    ax_yes.set_ylabel("Genes rescued from\nzero-DB universe", fontsize=20)
+    ax_yes.tick_params(axis="y", labelsize=20)
     plt.setp(ax_ctx.get_yticklabels(), visible=False)
 
     _draw_callouts(ax_callouts_yes, YES_CALLOUTS, YES_PALETTE, title="Select yes rescues")

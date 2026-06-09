@@ -131,6 +131,11 @@ def setup_plotting_style(style="default", context="notebook", font_scale=2.0):
         'font.sans-serif': ['Manrope', 'Outfit', 'DejaVu Sans', 'Liberation Sans', 'Arial'],
         'font.serif': ['Playfair Display', 'Georgia', 'Times New Roman', 'serif'],
         'font.size': 14,
+        # Manrope at weight 400 reads as light against Manrope's variable
+        # range (300-800). Default to 500 (medium) so figures don't ever
+        # render with the thin defaults — explicit ``fontweight='light'``
+        # is still respected on a per-text basis if a figure wants it.
+        'font.weight': 'medium',
 
         # Axes
         'axes.labelsize': 16,
@@ -143,8 +148,8 @@ def setup_plotting_style(style="default", context="notebook", font_scale=2.0):
         # calling setup_plotting_style.
         'axes.titlesize': 0,
         'axes.titlepad': 0,
-        'axes.titleweight': 'medium',
-        'axes.labelweight': 'normal',
+        'axes.titleweight': 'semibold',
+        'axes.labelweight': 'medium',
         'axes.spines.top': False,
         'axes.spines.right': False,
         'axes.grid': True,

@@ -20,6 +20,10 @@ from typing import Any
 
 from anthropic import Anthropic
 
+from accessible_surfaceome.agents._support.api_retry import (
+    messages_create_with_backoff,
+)
+
 # Per-million-token rates for cost accounting. Update as Anthropic pricing
 # changes; these are list prices (no batch discount).
 MODEL_PRICING: dict[str, tuple[float, float]] = {
@@ -73,7 +77,8 @@ def run_variant_a(
     )
 
     started = time.monotonic()
-    response = client.messages.create(
+    response = messages_create_with_backoff(
+        client,
         model=model,
         max_tokens=max_tokens,
         system=[

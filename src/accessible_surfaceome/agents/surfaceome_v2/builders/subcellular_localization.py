@@ -35,6 +35,7 @@ def build_subcellular_localization(
     client: Anthropic,
     usage_sink: list[UsageRecord],
     context: dict[str, Any] | None = None,
+    meta_sink: dict[str, Any] | None = None,
 ) -> SubcellularLocalization:
     """Always returns a valid block — the parent BiologicalContext
     REQUIRES this field, so a builder failure falls back to ``other`` /
@@ -62,6 +63,7 @@ def build_subcellular_localization(
         schema=SubcellularLocalization,
         usage_sink=usage_sink,
         label="subcellular_localization_builder",
+        meta_sink=meta_sink,
     )
     if parsed is None or not isinstance(parsed, SubcellularLocalization):
         logger.warning("subcellular_localization_builder failed → fallback")
