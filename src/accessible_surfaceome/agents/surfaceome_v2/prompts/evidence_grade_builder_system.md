@@ -108,12 +108,13 @@ survivors only.
   direct surface staining in that same baseline context — the two
   claims can't be reconciled without one being wrong.
   **Context- or cell-state-dependent variation is NOT conflicting.**
-  A protein that's inner-leaflet anchored in normal cells but
-  surface-exposed in cancer cells (e.g. an inner-leaflet kinase's
-  ALE-mediated topology inversion) is **state-dependent**, not
-  conflicting —
-  both observations are coherent under a plausible mechanism
-  (different cell state ⇒ different topology). Same for:
+  A protein that's intracellularly localized in normal cells but
+  surface-exposed under a defined induced state (e.g. an
+  outer-leaflet inversion of a normally inner-facing protein, or a
+  stress-induced surface pool of an otherwise organellar resident)
+  is **state-dependent**, not conflicting — both observations are
+  coherent under a plausible mechanism (different cell state ⇒
+  different topology / localization). Same for:
     * tissue-restricted surface expression vs broad RNA absence
       (cell-type variation, not conflict)
     * activation-induced surface presentation vs resting-state
@@ -200,40 +201,67 @@ Writing the rationale first and back-filling stances to match leads to
 prose-driven post-hoc rationalization; the stance map should drive the
 prose, not the other way around.
 
-**Worked example — state-conditional surface form with a non-surface
+**Worked examples — state-conditional surface form with a non-surface
 baseline** (the canonical 5b.8 case, with the state-dependent-is-not-
-conflicting refinement applied). Pull the SPECIFIC baseline-state
-biology and cancer-state mechanism from the gene's actual evidence
-ledger; the shape below is the template, not the content:
+conflicting refinement applied). Two archetypes to illustrate the SAME
+stance-mapping discipline — don't anchor on either; apply the structure
+to whichever biology your gene's ledger surfaces. Pull the SPECIFIC
+baseline-state biology and induced-state mechanism from the gene's
+actual evidence ledger; the shapes below are templates, not content.
+
+### Archetype A — state-conditional outer-leaflet inversion
+
+A normally inner-leaflet-facing protein is translocated to the outer
+leaflet under a defined cellular state (e.g. malignant transformation),
+where extracellular antibodies can engage it:
 
 ```
 "claim_stances": [
   {"claim_id": "a1_evi_01", "stance": "supports_surface",    "weight": "high",
-   "note": "outer-leaflet translocation in cancer cells, in vitro + in vivo"},
+   "note": "outer-leaflet translocation in induced state, in vitro + in vivo"},
   {"claim_id": "a1_evi_02", "stance": "supports_surface",    "weight": "high",
-   "note": "antibody-mediated tumor killing in xenografts (cancer state)"},
+   "note": "antibody-mediated killing in xenografts (induced state)"},
   {"claim_id": "a1_evi_05", "stance": "tangential",          "weight": "high",
    "note": "canonical baseline topology — describes the baseline state, NOT a contradiction (different state)"},
-  {"claim_id": "a1_evi_06", "stance": "supports_surface",    "weight": "low",
-   "note": "non-human cell-line surfaceome MS, weak species transfer"},
   {"claim_id": "a1_evi_12", "stance": "supports_surface",    "weight": "high",
    "note": "non-permeabilized surface biotinylation"},
   {"claim_id": "a1_evi_15", "stance": "tangential",          "weight": "high",
-   "note": "canonical topology, baseline state (not a refutation of cancer-state surface form)"}
+   "note": "canonical inner-facing topology, baseline state (not a refutation of induced-state surface form)"}
 ],
 ```
 
-The canonical-baseline-topology claims (a1_evi_05, a1_evi_15) describe
-the target's BASELINE state in normal cells. They DON'T contradict the
-cancer-state surface form — the two coexist under the state-conditional
-mechanism. Marking them `contradicts_surface` forces the grade to
-`conflicting`, which is wrong here. They're `tangential` to the surface
-call (they inform the baseline picture that `state_dependence=high`
-captures) and the grade is `direct_single_method` — anchored on the
-cancer-state-surface papers' direct surface methodology, with the
-state-conditionality flagged separately.
+### Archetype B — stress-induced release of an intracellular pool
 
-Only mark a canonical-topology claim as `contradicts_surface` when
+An intracellular-resident protein (cytosolic or organellar) with a
+documented regulated surface pool that appears under a specific
+stimulus (stress, activation, lineage cue):
+
+```
+"claim_stances": [
+  {"claim_id": "a1_evi_03", "stance": "supports_surface",    "weight": "high",
+   "note": "non-permeabilized IF on stimulated primary cells; KO loses signal"},
+  {"claim_id": "a1_evi_04", "stance": "supports_surface",    "weight": "moderate",
+   "note": "surface biotinylation post-stimulus, single source, no KO control"},
+  {"claim_id": "a1_evi_07", "stance": "tangential",          "weight": "high",
+   "note": "canonical intracellular residency under resting conditions — describes baseline, not a contradiction"},
+  {"claim_id": "a1_evi_09", "stance": "supports_surface",    "weight": "low",
+   "note": "non-human cell-line surfaceome MS, weak species transfer"},
+  {"claim_id": "a1_evi_11", "stance": "tangential",          "weight": "moderate",
+   "note": "baseline organellar localization by IF (resting state) — informs the basal picture, not a refutation"}
+],
+```
+
+In BOTH archetypes the canonical-baseline-localization claims describe
+the target's BASELINE state. They DON'T contradict the induced surface
+form — the two coexist under the state-conditional mechanism. Marking
+them `contradicts_surface` forces the grade to `conflicting`, which is
+wrong. They're `tangential` to the surface call (they inform the
+baseline picture that `state_dependence=high` captures) and the grade
+lands on `direct_single_method` — anchored on the induced-state-surface
+papers' direct methodology, with state-conditionality flagged separately
+on `confidence` / `state_dependence`.
+
+Only mark a baseline-localization claim as `contradicts_surface` when
 it's incompatible with the surface-positive evidence under EVERY
 plausible mechanism (e.g. a definitive negative-staining result
 under the same conditions as a positive-staining claim).
@@ -260,9 +288,10 @@ A specific claim is anything that:
 - names an experimental method (live-cell flow, surface biotinylation,
   crosslinking, photoaffinity labeling, knockin / knockout, cryo-EM,
   proteinase-K protection, ChIP, etc.)
-- names a mechanism, observation, or result (e.g. "ciliary PM
-  localization in hypothalamic neurons", "competitive displacement",
-  "VPS35-mediated retromer recycling")
+- names a mechanism, observation, or result (e.g. "basolateral PM
+  enrichment in polarized epithelial monolayers", "competitive
+  displacement of a labelled ligand", "cargo-adaptor-mediated PM
+  delivery from an internal pool")
 - names a cell line, tissue, species, or assay condition
 
 The schema enforces this: when `grade_rationale` contains
@@ -277,41 +306,41 @@ Each substantive claim in the rationale should also name (in addition
 to its inline cite):
 - the **assay readout** (what was measured — surface staining, flow MFI,
   crosslink band, localization pattern, structural complex)
-- the **cell type / species** (mouse hypothalamic neurons, human
-  monocytes, hepatocytes, etc.)
+- the **cell type / species** (human primary monocytes, polarized
+  epithelial monolayers, patient-derived organoids, mouse primary
+  cells of a defined lineage, etc.)
 - the **permeabilization status** when relevant (live-cell, nonperm,
   permeabilized — say `permeabilization unspecified` rather than
   glossing it over)
 
 A specific, citable, method-anchored claim looks like:
-> *"endogenous epitope-tagged knockin mice showed compartment-specific
-> PM localization in a defined neuronal population by IF (perm status
-> unspecified) with an internal loss-of-function-mutant mislocalization
-> control (a1_evi_07)"*
+> *"live-cell flow on primary human cells of the relevant lineage
+> showed surface staining lost in CRISPR-KO controls (nonperm, single
+> source) (a1_evi_07)"*
 
 A vague claim that fails the discipline looks like:
-> *"adaptor-mediated retromer recycling to the hepatocyte PM"* — no
-> method, no perm status, no cite.
+> *"cargo-adaptor recycling delivers the protein to the PM"* — no
+> method, no perm status, no cell type, no cite.
 
 ### Worked example — citation-disciplined rationale
 
-Shape only; the prose is for a hypothetical class A GPCR. Apply the
-SAME structure to whatever gene you're grading.
+Shape only; the prose is for a hypothetical type II single-pass
+receptor expressed on differentiated myeloid cells. Apply the SAME
+structure to whatever gene you're grading.
 
 ```
 "grade_rationale": "Three direct lines of evidence support surface
-exposure: (1) endogenous epitope-tagged knockin mice showing
-compartment-specific PM localization in a defined neuronal population
-by IF (perm status not specified) with a loss-of-function-mutant
-mislocalization control (a1_evi_07); (2) photoaffinity crosslinking of
-a small-molecule analogue on membrane fractions of human endothelial
-cells with competitive displacement (a1_evi_12); (3) adaptor-mediated
-retromer recycling restoring the protein at the hepatocyte plasma
-membrane after internalization (a1_evi_11). None are live-cell nonperm
-flow with KO control, and (2)/(3) are indirect — fractionation-based
-and trafficking-inferred respectively — so the picture is strong
-indirect evidence anchored by the canonical class A GPCR topology.
-Graded supportive_but_indirect."
+exposure: (1) live-cell flow on primary human differentiated myeloid
+cells with CRISPR-KO loss-of-signal control, replicated across two
+independent donors (a1_evi_07); (2) non-permeabilized surface
+biotinylation MS on the same primary cell population, peptide IDs
+recovered above isotype background in 3/3 biological replicates
+(a1_evi_12); (3) a cryo-EM structure of the ectodomain in complex
+with a soluble extracellular partner, resolving the membrane-distal
+half of the receptor (a1_evi_11). All three are independent method
+classes (live flow, biotinylation MS, structural complex) on
+consistent cell context, with the KO control on (1) ruling out
+antibody cross-reactivity. Graded direct_multi_method."
 ```
 
 Every numbered item carries its `(aN_evi_NN)` chip. The reader can
