@@ -37,14 +37,20 @@ interface PromptGroup {
  * always the file the agents actually run with.
  *
  * Coverage:
- *  - Surface triage — genome-wide first pass.
+ *  - Surface triage — genome-wide first pass (default system prompt,
+ *    its four variants, and the shared task template).
  *  - Deep dive Phase 1 — ``plan_trim_select`` literature agent
- *    (per-focus A1/A2 plan-trim-select, plus joint single-agent
- *    plan-trim-select).
- *  - Deep dive Phase 2 — 8 block builders that turn the A1/A2 ledger
- *    into the SurfaceomeRecord sub-blocks.
+ *    (abstract triage, plus per-focus A1/A2 plan-trim-select).
+ *  - Deep dive Phase 2 — 10 block builders that turn the A1/A2 ledger
+ *    into the SurfaceomeRecord sub-blocks (8 evidence builders + the
+ *    biological-context grade + accessibility-risks builders).
  *  - Deep dive Phase 3 — synthesizer that assembles the executive
- *    summary, filters, and confidence.
+ *    summary, filters, and confidence (system prompt + task template).
+ *
+ * Drift guard: ``tests/test_viewer_prompts_coverage.py`` enforces the
+ * bidirectional invariant — every prompt file on disk must have a
+ * ``rel:`` entry here (modulo an explicit allowlist), and every entry
+ * here must point at a real file. See that test for the contract.
  */
 const PROMPT_GROUPS: PromptGroup[] = [
   {
@@ -53,12 +59,63 @@ const PROMPT_GROUPS: PromptGroup[] = [
     description:
       "First-pass over the protein-coding genome — produces the " +
       "yes / no / contextual triage verdict that gates which genes get a " +
-      "full deep dive.",
+      "full deep dive. The default prompt runs with HGNC/UniProt/NCBI " +
+      "resolver context; four variants exercise the same task with " +
+      "different evidence sources (naive / PubMed-grounded / web-grounded / " +
+      "web-grounded naive) so we can attribute lifts to context vs tools.",
     prompts: [
       {
         id: "triage-system",
-        label: "Surface accessibility triage",
+        label: "Surface accessibility triage — default",
         rel: "src/accessible_surfaceome/agents/surface_triage/prompts/system.md",
+        blurb:
+          "Production system prompt. Resolver-grounded (HGNC + UniProt + " +
+          "NCBI + gene-group + CD designation) but no fetch tools.",
+      },
+      {
+        id: "triage-system-naive",
+        label: "Triage variant — naive (no context)",
+        rel: "src/accessible_surfaceome/agents/surface_triage/prompts/system_naive.md",
+        blurb:
+          "Ablation: only the gene symbol, no resolver context, no tools. " +
+          "Measures how much of the verdict comes from trained knowledge " +
+          "alone.",
+      },
+      {
+        id: "triage-system-pubmed",
+        label: "Triage variant — PubMed evidence",
+        rel: "src/accessible_surfaceome/agents/surface_triage/prompts/system_pubmed.md",
+        blurb:
+          "Resolver context plus a PubMed-esearch-ranked, sentence-filtered " +
+          "bag of surface-context literature. PMIDs are cited inline in " +
+          "verdict_reasoning when a record is load-bearing.",
+      },
+      {
+        id: "triage-system-web",
+        label: "Triage variant — web search",
+        rel: "src/accessible_surfaceome/agents/surface_triage/prompts/system_web.md",
+        blurb:
+          "Resolver context plus a single ``web_search`` tool. Used " +
+          "sparingly (1–3 queries) to ground gene-specific evidence when " +
+          "trained knowledge is uncertain about non-baseline surface biology.",
+      },
+      {
+        id: "triage-system-web-naive",
+        label: "Triage variant — web search, naive",
+        rel: "src/accessible_surfaceome/agents/surface_triage/prompts/system_web_naive.md",
+        blurb:
+          "Ablation: ``web_search`` available but no resolver context. " +
+          "Isolates the contribution of the resolver bundle from the " +
+          "contribution of live retrieval.",
+      },
+      {
+        id: "triage-task-template",
+        label: "Triage — task template",
+        rel: "src/accessible_surfaceome/agents/surface_triage/prompts/task_template.md",
+        blurb:
+          "Per-gene user message rendered from the resolver bundle. The " +
+          "same template feeds every triage variant — only the system " +
+          "prompt and tool surface change between runs.",
       },
     ],
   },
@@ -67,15 +124,24 @@ const PROMPT_GROUPS: PromptGroup[] = [
     label: "Deep dive · Phase 1 — literature agent",
     description:
       "A deterministic kickoff template emits the searches (no LLM planner), " +
-      "then two passes per agent focus: trim each paper's candidate " +
-      "clips down to the load-bearing ones, then select the final " +
-      "EvidenceClaim ledger. The Surface-evidence agent (A1) and Biology " +
-      "agent (A2) split into a methodology run and a biology-context run; the " +
-      "joint prompts run the same loop on a unified ledger.",
+      "an abstract-triage pass discards or fetches each hit, then two " +
+      "passes per agent focus: trim each paper's candidate clips down to " +
+      "the load-bearing ones, then select the final EvidenceClaim ledger. " +
+      "The Surface-evidence agent (A1) and Biology agent (A2) split into a " +
+      "methodology run and a biology-context run.",
     prompts: [
       {
+        id: "pts-abstract-triage",
+        label: "Abstract triage",
+        rel: "src/accessible_surfaceome/agents/plan_trim_select/prompts/abstract_triage_system.md",
+        blurb:
+          "One call per hit — decides ``discard`` / ``keep_abstract`` / " +
+          "``worth_fetching`` so the body-fetch budget targets papers " +
+          "whose full text actually adds claims beyond the abstract.",
+      },
+      {
         id: "pts-a1-trim",
-        label: "Surface-evidence agent (A1) —per-paper trim",
+        label: "Surface-evidence agent (A1) — per-paper trim",
         rel: "src/accessible_surfaceome/agents/plan_trim_select/prompts/a1_trim_system.md",
         blurb:
           "One call per paper — keeps the clips that name a surface-" +
@@ -84,7 +150,7 @@ const PROMPT_GROUPS: PromptGroup[] = [
       },
       {
         id: "pts-a1-select",
-        label: "Surface-evidence agent (A1) —final selector",
+        label: "Surface-evidence agent (A1) — final selector",
         rel: "src/accessible_surfaceome/agents/plan_trim_select/prompts/a1_select_system.md",
         blurb:
           "Picks the final A1 clip_ids → EvidenceClaim records with " +
@@ -93,7 +159,7 @@ const PROMPT_GROUPS: PromptGroup[] = [
       },
       {
         id: "pts-a2-trim",
-        label: "Biology agent (A2) —per-paper trim",
+        label: "Biology agent (A2) — per-paper trim",
         rel: "src/accessible_surfaceome/agents/plan_trim_select/prompts/a2_trim_system.md",
         blurb:
           "Keeps clips that name a tissue, cell type, cell state, " +
@@ -102,22 +168,12 @@ const PROMPT_GROUPS: PromptGroup[] = [
       },
       {
         id: "pts-a2-select",
-        label: "Biology agent (A2) —final selector",
+        label: "Biology agent (A2) — final selector",
         rel: "src/accessible_surfaceome/agents/plan_trim_select/prompts/a2_select_system.md",
         blurb:
           "Picks the final A2 clip_ids → EvidenceClaim records that feed " +
-          "tissues, cell_types, cell_states, subcellular_localization, " +
-          "anatomical_accessibility, and accessibility_modulation builders.",
-      },
-      {
-        id: "pts-joint-trim",
-        label: "Joint — per-paper trim",
-        rel: "src/accessible_surfaceome/agents/plan_trim_select/prompts/trim_system.md",
-      },
-      {
-        id: "pts-joint-select",
-        label: "Joint — final selector",
-        rel: "src/accessible_surfaceome/agents/plan_trim_select/prompts/select_system.md",
+          "the expression, subcellular_localization, anatomical_accessibility, " +
+          "and accessibility_modulation builders.",
       },
     ],
   },
@@ -127,12 +183,12 @@ const PROMPT_GROUPS: PromptGroup[] = [
     description:
       "Each builder consumes a slice of the surface-evidence (A1) or biology " +
       "(A2) EvidenceClaim ledger and emits a structured sub-block of the " +
-      "SurfaceomeRecord. All 8 run concurrently; their outputs assemble into " +
-      "surface_evidence + biological_context.",
+      "SurfaceomeRecord. All run concurrently; their outputs assemble into " +
+      "surface_evidence + biological_context + accessibility_risks.",
     prompts: [
       {
         id: "builder-methods",
-        label: "Surface-evidence agent (A1) —methods builder",
+        label: "Surface-evidence agent (A1) — methods builder",
         rel: "src/accessible_surfaceome/agents/surfaceome_v2/prompts/methods_builder_system.md",
         blurb:
           "EvidenceClaim ledger → list[MethodObservation]. Captures " +
@@ -141,7 +197,7 @@ const PROMPT_GROUPS: PromptGroup[] = [
       },
       {
         id: "builder-contradictions",
-        label: "Surface-evidence agent (A1) —contradictions builder",
+        label: "Surface-evidence agent (A1) — contradictions builder",
         rel: "src/accessible_surfaceome/agents/surfaceome_v2/prompts/contradiction_builder_system.md",
         blurb:
           "Papers actively refuting surface localization (intracellular-only " +
@@ -149,7 +205,7 @@ const PROMPT_GROUPS: PromptGroup[] = [
       },
       {
         id: "builder-evidence-grade",
-        label: "Surface-evidence agent (A1) —evidence_grade builder",
+        label: "Surface-evidence agent (A1) — evidence_grade builder",
         rel: "src/accessible_surfaceome/agents/surfaceome_v2/prompts/evidence_grade_builder_system.md",
         blurb:
           "Rolls up across methods + contradictions into the gene-level " +
@@ -158,7 +214,7 @@ const PROMPT_GROUPS: PromptGroup[] = [
       },
       {
         id: "builder-expression",
-        label: "Biology agent (A2) —expression builder",
+        label: "Biology agent (A2) — expression builder",
         rel: "src/accessible_surfaceome/agents/surfaceome_v2/prompts/expression_builder_system.md",
         blurb:
           "Unified tissue × cell-of-origin × disease-context expression rows " +
@@ -167,16 +223,8 @@ const PROMPT_GROUPS: PromptGroup[] = [
           "atlases, single-cell data, and disease-context staining.",
       },
       {
-        id: "builder-cell-states",
-        label: "Biology agent (A2) —cell_states builder",
-        rel: "src/accessible_surfaceome/agents/surfaceome_v2/prompts/cell_states_builder_system.md",
-        blurb:
-          "Cell-state modulation: activation, exhaustion, EMT, ER stress, " +
-          "hypoxia, senescence, polarization, disease state.",
-      },
-      {
         id: "builder-subcellular-localization",
-        label: "Biology agent (A2) —subcellular_localization builder",
+        label: "Biology agent (A2) — subcellular_localization builder",
         rel: "src/accessible_surfaceome/agents/surfaceome_v2/prompts/subcellular_localization_builder_system.md",
         blurb:
           "Primary compartment + dual_localization + membrane_subdomains " +
@@ -184,7 +232,7 @@ const PROMPT_GROUPS: PromptGroup[] = [
       },
       {
         id: "builder-anatomical-accessibility",
-        label: "Biology agent (A2) —anatomical_accessibility builder",
+        label: "Biology agent (A2) — anatomical_accessibility builder",
         rel: "src/accessible_surfaceome/agents/surfaceome_v2/prompts/anatomical_accessibility_builder_system.md",
         blurb:
           "Vascular accessibility, blood-brain barrier, tissue-restricted " +
@@ -192,12 +240,34 @@ const PROMPT_GROUPS: PromptGroup[] = [
       },
       {
         id: "builder-accessibility-modulation",
-        label: "Biology agent (A2) —accessibility_modulation builder",
+        label: "Biology agent (A2) — accessibility_modulation builder",
         rel: "src/accessible_surfaceome/agents/surfaceome_v2/prompts/accessibility_modulation_builder_system.md",
         blurb:
           "Stress-induced surface fraction, activation-induced upregulation, " +
           "post-translational gates (palmitoylation, ubiquitination), " +
-          "recycling / endocytosis kinetics.",
+          "recycling / endocytosis kinetics. Now also carries the cell-state " +
+          "context rows that previously lived in a dedicated cell_states builder.",
+      },
+      {
+        id: "builder-biological-context-grade",
+        label: "Biology agent (A2) — biological_context_grade builder",
+        rel: "src/accessible_surfaceome/agents/surfaceome_v2/prompts/biological_context_grade_builder_system.md",
+        blurb:
+          "A2 analog of evidence_grade: rolls up the expression / " +
+          "localization / anatomical / modulation rows into a gene-level " +
+          "grade + rationale + cited_evidence_ids that the viewer renders " +
+          "alongside the surface-evidence grade.",
+      },
+      {
+        id: "builder-risks",
+        label: "Merged A1+A2 — accessibility_risks builder",
+        rel: "src/accessible_surfaceome/agents/surfaceome_v2/prompts/risks_builder_system.md",
+        blurb:
+          "Merged A1+A2 EvidenceClaim ledger + deterministic-features " +
+          "summary → AccessibilityRisks (the six risk chips on the catalog: " +
+          "epitope masking, shedding, processing, internalization, paralog " +
+          "cross-reactivity, off-target tissue exposure) each with its own " +
+          "rationale + cited_evidence_ids.",
       },
     ],
   },
@@ -205,15 +275,25 @@ const PROMPT_GROUPS: PromptGroup[] = [
     id: "deep-dive-phase-3",
     label: "Deep dive · Phase 3 — synthesizer",
     description:
-      "Reads the 8 builder outputs + the merged A1+A2 EvidenceClaim ledger " +
-      "and emits the executive summary, LLM filters, accessibility risks, " +
-      "and confidence with reasoning. The synthesizer doesn't fetch new " +
-      "evidence — it only synthesizes from frozen Phase-2 blocks.",
+      "Reads the Phase-2 builder outputs + the merged A1+A2 EvidenceClaim " +
+      "ledger and emits the executive summary, LLM filters, and confidence " +
+      "with reasoning. The synthesizer doesn't fetch new evidence — it only " +
+      "synthesizes from frozen Phase-2 blocks.",
     prompts: [
       {
         id: "synth-system",
-        label: "Synthesizer",
+        label: "Synthesizer — system",
         rel: "src/accessible_surfaceome/agents/surfaceome_synthesizer/prompts/system.md",
+      },
+      {
+        id: "synth-task-template",
+        label: "Synthesizer — task template",
+        rel: "src/accessible_surfaceome/agents/surfaceome_synthesizer/prompts/task_template.md",
+        blurb:
+          "Per-gene user message wrapping the frozen Phase-2 builder " +
+          "outputs and the merged ledger. Placeholder while v1.0.0 of the " +
+          "synthesizer is being finalized — current invocations construct " +
+          "the user turn inline.",
       },
     ],
   },
@@ -551,18 +631,20 @@ export default function PromptsPage() {
                   <a href={`#group-${g.id}`} className={styles.pageIndexGroupLink}>
                     {g.label}
                   </a>
-                  {/* Single-prompt groups (triage, synthesizer) would just
-                      repeat the group name as a lone sub-item — skip the
-                      nested list and let the group link stand alone. The two
-                      multi-prompt deep-dive groups (plan_trim_select =
-                      deep-dive-phase-1; block builders = deep-dive-phase-2)
-                      are also suppressed: their many near-identical per-prompt
-                      entries bloated the index, so each group link carries the
-                      reader to its section (which still renders in full below)
-                      without per-prompt links. */}
-                  {g.prompts.length > 1 &&
-                  g.id !== "deep-dive-phase-1" &&
-                  g.id !== "deep-dive-phase-2" ? (
+                  {/* Single-prompt groups would just repeat the group name
+                      as a lone sub-item — skip the nested list and let the
+                      group link stand alone. Every multi-prompt group
+                      (triage + variants + task template; plan_trim_select =
+                      deep-dive-phase-1; block builders = deep-dive-phase-2;
+                      synthesizer + task template) is also suppressed: their
+                      many near-identical per-prompt entries bloated the
+                      index, so each group link carries the reader to its
+                      section (which still renders in full below) without
+                      per-prompt links. Today every group falls into one of
+                      these buckets, so no nested list ever renders — kept
+                      as a stub for the case where a future group has only
+                      2–3 genuinely-distinct entries worth surfacing. */}
+                  {false ? (
                     <ul className={styles.pageIndexPromptList}>
                       {g.prompts.map((p) => (
                         <li key={p.id}>
@@ -598,12 +680,14 @@ export default function PromptsPage() {
             {group.id === "deep-dive-phase-1" ? <SearchCatalog /> : null}
 
             {group.prompts.map((p) => {
-              // For a multi-prompt deep-dive group (plan_trim_select's 9
-              // A1/A2/Joint prompts, the 10 block builders), collapse each
-              // prompt CARD so the group reads as a scannable stack of
-              // sub-prompt titles you pop open — matches the section-level
-              // collapse below. Single-prompt groups (triage, synthesizer)
-              // render open. `data-collapsible` switches the wrapper.
+              // For a multi-prompt group (triage's 6 system + variant +
+              // task-template prompts, plan_trim_select's abstract-triage +
+              // A1/A2 prompts, the 9 block builders, the synthesizer's
+              // system + task-template), collapse each prompt CARD so the
+              // group reads as a scannable stack of sub-prompt titles you
+              // pop open — matches the section-level collapse below.
+              // Single-prompt groups render open. `data-collapsible`
+              // switches the wrapper.
               const collapsible = group.prompts.length > 1;
               const cardInner = (
                 <>
