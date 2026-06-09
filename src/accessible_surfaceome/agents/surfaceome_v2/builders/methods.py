@@ -92,7 +92,21 @@ _EVIDENCE_TYPE_RANK: dict[str, int] = {
 # ``max_uses`` caps the search spend per gene. Web search must be enabled
 # on the Anthropic account for this to run.
 _WEB_SEARCH_TOOL: list[dict[str, Any]] = [
-    {"type": "web_search_20250305", "name": "web_search", "max_uses": 8}
+    {
+        "type": "web_search_20250305",
+        "name": "web_search",
+        "max_uses": 8,
+        # ``cache_control`` on the last tool entry is the canonical
+        # recipe (per Anthropic docs) for caching the tools+system
+        # prefix together. The 2026-06-08 cache-engagement probe
+        # confirmed that today's call shape (cache_control on system
+        # only) ALREADY caches via the server's automatic-caching
+        # behaviour — but that's an implicit / undocumented contract.
+        # Marking the tool explicitly makes the recipe match the
+        # documented one and immunizes us against future server-side
+        # changes.
+        "cache_control": {"type": "ephemeral"},
+    }
 ]
 
 

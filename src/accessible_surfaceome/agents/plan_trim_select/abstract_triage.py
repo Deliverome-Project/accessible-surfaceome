@@ -35,6 +35,9 @@ from anthropic import Anthropic
 from anthropic.types import TextBlock
 from pydantic import ValidationError
 
+from accessible_surfaceome.agents._support.api_retry import (
+    messages_create_with_backoff,
+)
 from accessible_surfaceome.agents._support.payload import cached_system
 from accessible_surfaceome.agents._support.pricing import (
     UsageRecord,
@@ -214,7 +217,7 @@ def triage_one_abstract(
         # Messages.create overloads, but the runtime shapes are correct:
         # both branches set model + max_tokens + messages, and the cached
         # branch adds system. The trailing directive below suppresses ty.
-        resp = client.messages.create(**create_kwargs)  # ty: ignore[no-matching-overload]
+        resp = messages_create_with_backoff(client, **create_kwargs)
     except Exception as exc:  # noqa: BLE001
         return TriageOutcome(
             paper_id=paper_id,

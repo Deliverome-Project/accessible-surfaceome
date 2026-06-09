@@ -26,6 +26,9 @@ from anthropic import Anthropic
 from anthropic.types import TextBlock
 from pydantic import BaseModel, ValidationError
 
+from accessible_surfaceome.agents._support.api_retry import (
+    messages_create_with_backoff,
+)
 from accessible_surfaceome.agents._support.payload import cached_system
 from accessible_surfaceome.agents._support.pricing import (
     UsageRecord,
@@ -171,7 +174,8 @@ def call_builder(
 
     for attempt in range(MAX_REPAIRS + 1):
         try:
-            resp = client.messages.create(
+            resp = messages_create_with_backoff(
+                client,
                 model=SONNET_MODEL,
                 max_tokens=max_tokens,
                 system=cast("Any", cached_sys),
@@ -191,7 +195,8 @@ def call_builder(
                 exc,
             )
             extra_kwargs = {}
-            resp = client.messages.create(
+            resp = messages_create_with_backoff(
+                client,
                 model=SONNET_MODEL,
                 max_tokens=max_tokens,
                 system=cast("Any", cached_sys),

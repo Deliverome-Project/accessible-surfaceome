@@ -32,6 +32,9 @@ from anthropic import Anthropic
 from anthropic.types import TextBlock
 from pydantic import ValidationError
 
+from accessible_surfaceome.agents._support.api_retry import (
+    messages_create_with_backoff,
+)
 from accessible_surfaceome.agents._support.client import get_client
 from accessible_surfaceome.agents._support.payload import cached_system, cached_user_text
 from accessible_surfaceome.agents._support.pricing import (
@@ -474,7 +477,8 @@ def _run(
     validation_error: str | None = None
 
     for _ in range(MAX_ITERATIONS):
-        resp = client.messages.create(
+        resp = messages_create_with_backoff(
+            client,
             model=AGENT_MODEL,
             max_tokens=MAX_TOKENS,
             system=cast("Any", cached_system_blocks),

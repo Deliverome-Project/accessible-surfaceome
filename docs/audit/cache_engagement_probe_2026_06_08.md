@@ -5,6 +5,14 @@ Read-only investigation: why Anthropic prompt caching shows
 builder + Haiku trim paths despite `cache_control` being wired in. Probe
 script: [`scripts/probe_cache_engagement.py`](../../scripts/probe_cache_engagement.py).
 
+**STATUS (2026-06-08, post-fix):** Probe results reproduced + fix applied.
+Haiku trim cached prefix padded from 2,654 / 2,083 tokens (a1 / a2) to
+4,770 / 4,263 tokens (both above Haiku 4.5's 4,096-token floor).
+Production-shape verification confirms caching now engages: call 1
+`cw=4,764`, call 2 `cr=4,764` (`in=529` per call thereafter). Defensive
+`cache_control` marker also added to the methods builder's
+`_WEB_SEARCH_TOOL`. See "Fix landed (2026-06-08)" section below.
+
 ## TL;DR
 
 | Path | Was-it-broken-as-described? | Root cause | Cohort savings if fixed |
@@ -52,6 +60,43 @@ Sonnet methods: cached system + tools w/ cache_control on tool (PROPOSED FIX)   
 Haiku trim: cached system (TODAY'S SHAPE, ~2.5k cached tokens)                        2654       0       0       0       0
 Haiku trim: cached system PADDED to 4589 tokens (>4096 min)                           4589    4583       0       0    4583
 ```
+
+### Raw probe results (Run 3, taken 2026-06-08 ~20:30, immediately pre-fix)
+
+```
+config                                                                          cached_tok   c1_cw   c1_cr   c2_cw   c2_cr
+Sonnet methods: cached system + web_search tool (TODAY'S SHAPE)                          -   24894   10999   13998   21998
+Sonnet methods: cached system, NO TOOLS (control)                                     9115    9109       0     160    9109
+Sonnet methods: cached system + tools w/ cache_control on tool (PROPOSED FIX)            -   14354   21998     477   10999
+Haiku trim: cached system (TODAY'S SHAPE, ~2.5k cached tokens)                        2654       0       0       0       0
+Haiku trim: cached system PADDED to 4589 tokens (>4096 min)                           4589    4583       0       0    4583
+```
+
+Run 3 was the immediate pre-fix repro. All three runs are mutually
+consistent: Sonnet builders cache cleanly, Haiku trim at 2,654 cached
+tokens silently fails cache (0/0 on both calls), and padding above the
+floor (4,589 tokens) restores caching to the documented behaviour.
+
+### Post-fix verification (2026-06-08, after applying Option A)
+
+Production-shape verification using the actual `_split_trim_template`
+helper with `_TRIM_CACHE_PAD` appended:
+
+```
+a1_trim_system.md: cached prefix = 4,770 tokens (char count: 19,251)
+a2_trim_system.md: cached prefix = 4,263 tokens (char count: 17,416)
+```
+
+Both above 4,096, with margin (a1: +674, a2: +167). End-to-end Haiku
+trim call shape with the padded prefix on the live API:
+
+```
+CALL 1: in=529 cw=4,764 cr=0      ← cache write engages
+CALL 2: in=529 cw=0     cr=4,764  ← cache read engages on the same prefix
+```
+
+The pre-fix shape would have shown `cw=0, cr=0` on both calls. Caching
+is now active on the Haiku trim path.
 
 (`count_tokens` rejects server-side tools — `BadRequestError: Server tools
 are not supported in the count_tokens endpoint: web_search_20250305` — so the
@@ -227,15 +272,45 @@ keeps its current ~80 calls/gene.
 * `scripts/probe_cache_engagement.py` — committed; future regressions
   re-tested by `uv run python scripts/probe_cache_engagement.py` (~$0.10).
 
-## Files implicated (no edits in this PR)
+## Fix landed (2026-06-08)
 
-| Path | Issue |
+Option A (pad cached prefix above 4,096 floor) was chosen for the
+Haiku trim path on TCO grounds: Option B (drop the `cache_control`
+marker) is cleanup only — Anthropic does NOT charge the 1.25× premium
+when caching silently fails to engage, so there's no money saved by
+removing the marker. Option A delivers real per-call savings once
+above the floor: a per-gene reduction of ~$0.275 (78 trim calls/gene
+× cache_read vs cold-input rate), ~$1,790 across 6,500 genes.
+
+### What changed
+
+* `src/accessible_surfaceome/agents/plan_trim_select/runner.py`:
+  Added `_TRIM_CACHE_PAD` — a fixed, byte-identical, gene-agnostic
+  9,000-char appendix that documents the cache mechanic + trim
+  discipline. Appended to the cached rules block inside
+  `_split_trim_template` so both a1 and a2 cached prefixes cross the
+  4,096-token floor (a1: 2,654 → 4,770 tokens; a2: 2,083 → 4,263
+  tokens). The pad is byte-identical across all calls and all genes,
+  required for cache-key stability.
+* `src/accessible_surfaceome/agents/surfaceome_v2/builders/methods.py`:
+  Added `cache_control: ephemeral` to the `_WEB_SEARCH_TOOL` entry
+  (defensive Fix #2 — explicitness, not a behavior change).
+
+### Files NOT touched in this fix
+
+| Path | Issue (deferred) |
 |---|---|
-| `src/accessible_surfaceome/agents/plan_trim_select/prompts/a1_trim_system.md` | Cached prefix 2,654 tokens — too small for Haiku |
-| `src/accessible_surfaceome/agents/plan_trim_select/prompts/a2_trim_system.md` | Cached prefix 2,083 tokens — too small for Haiku |
-| `src/accessible_surfaceome/agents/plan_trim_select/prompts/abstract_triage_system.md` | Cached prompt ~635 tokens — too small for Haiku |
+| `src/accessible_surfaceome/agents/plan_trim_select/prompts/a1_trim_system.md` | Cached prefix originally 2,654 tokens — now padded externally; the prompt file itself is unchanged |
+| `src/accessible_surfaceome/agents/plan_trim_select/prompts/a2_trim_system.md` | Cached prefix originally 2,083 tokens — same |
+| `src/accessible_surfaceome/agents/plan_trim_select/prompts/abstract_triage_system.md` | Cached prompt ~635 tokens — too small for Haiku; still uncached |
 | `src/accessible_surfaceome/agents/plan_trim_select/abstract_triage.py:78-90` | Stale "2,048-token" comment + stale "$0.08 saved" projection |
-| `src/accessible_surfaceome/agents/surfaceome_v2/builders/methods.py:47-49` | (defensive) Add `cache_control` to web_search tool entry |
+
+The abstract-triage path (the third Haiku-on-tiny-prefix path the
+audit identified) is left unaddressed in this fix. Its cached prefix
+is ~635 tokens — far below the floor, and would need ~14k chars of
+padding to cross. Defer to a follow-up if cohort-cost analysis shows
+it's worth the prompt expansion. Estimated additional savings:
+~$0.06/gene × 6,500 = ~$390 cohort.
 
 ## Reproducing
 
