@@ -377,7 +377,12 @@ def test_thresholds_match_published_defaults():
     """
     assert THIN_THRESHOLD == 25
     assert HEAVY_THRESHOLD == 50
-    # Lowered 150 → 132 in the cost-mitigation pass (cohort projected
-    # $18k against $12k budget at the 150 cap; 132 = production p25 of
-    # papers-per-gene). Bump in lockstep with the constant.
-    assert HARD_CAP == 132
+    # Raised back 132 → 150 after Agent #21's A1 selection drift audit
+    # (docs/audit/a1_selection_drift_2026_06_08.md) showed the year-sorted
+    # cap was biasing against founding-era localization papers (PMID-style
+    # PMC:* with direct IF/IHC surface evidence). SRC's methods builder
+    # dropped from 12 → 3 MethodObservation rows between v2.9.0 and v2.35.0
+    # — 5 of 8 dropped papers were pretrim cap-drops. The cost delta
+    # (132 → 150, +13% papers on the ~25% of genes >132 candidates) is
+    # ~$200 vs the ~$1,800 saved by the cache + Haiku-pad fixes.
+    assert HARD_CAP == 150

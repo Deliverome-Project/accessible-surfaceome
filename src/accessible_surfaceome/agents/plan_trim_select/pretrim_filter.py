@@ -77,17 +77,35 @@ logger = logging.getLogger(__name__)
 THIN_THRESHOLD: int = 25
 HEAVY_THRESHOLD: int = 50
 
-# Safety-ceiling cap: applied after the rule filter. Lowered from 150 → 132
-# on the cost-mitigation pass after an empirical production-cohort study
-# (sample of 100 random cohort genes) showed papers-per-gene production
-# distribution at p25=132, median=208, mean=205. Capping at the production
-# p25 lands the 6,521-gene cohort at ~$12k (down from a $18k projection at
-# uncapped median) while preserving the top-of-tail evidence on heavy-lit
-# genes — the gain past 132 papers is in the long tail of reviews /
-# drug-discovery summaries the rule filter mostly already catches. Papers
-# above the cap are sorted by year (newest first), then by PMC-OA
+# Safety-ceiling cap: applied after the rule filter. Currently 150 (was
+# briefly 132 for cost mitigation 2026-06-07 to 2026-06-09, then raised back
+# after the A1 selection drift audit — see docs/audit/a1_selection_drift_2026_06_08.md).
+#
+# History: dropped 150 → 132 on the cost-mitigation pass after an empirical
+# production-cohort study (sample of 100 random cohort genes) showed
+# papers-per-gene production distribution at p25=132, median=208, mean=205.
+# Capping at the production p25 lands the 6,521-gene cohort at ~$12k
+# vs $18k at uncapped median.
+#
+# Reverted to 150 after SRC's methods builder dropped from 12 → 3
+# MethodObservation rows between v2.9.0 and v2.35.0. Agent #21's audit
+# found 5 of 8 dropped papers were cap-drops — founding-era localization
+# papers (PMID:17537435, 17620427, 28543306, PMC:PMC3733647, +1) carrying
+# the direct PM-trafficking IF/IHC evidence the methods builder needs to
+# clear ``direct_*`` grades on canonically-cytoplasmic kinases. The
+# year-sorted cap is biased against older PMID-style papers — exactly
+# the cohort of papers carrying load-bearing surface evidence for
+# pre-2020 kinase / GPCR / channel literature.
+#
+# The cost delta (132 → 150, +13% papers on the ~25% of genes that exceed
+# 132 candidates) is small (~$200 on the cohort) relative to the recall
+# improvement. A future fix would replace year-sort with content-weighted
+# ranking (prefer experimental over review, prefer KO-validated over
+# overexpression-only, etc.) — until then, 150 is the safe floor.
+#
+# Papers above the cap are sorted by year (newest first), then by PMC-OA
 # preference, then dropped.
-HARD_CAP: int = 132
+HARD_CAP: int = 150
 
 
 # Pattern 2: drug-review titles. These are typically secondary syntheses
