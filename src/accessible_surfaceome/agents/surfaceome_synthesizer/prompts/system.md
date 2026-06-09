@@ -182,7 +182,8 @@ parse time — invented or paraphrased ids fail the run.
 
   **`high` requires direct evidence in hand** (topology prior alone
   is not enough — catalog readers treat `high` as "confidently
-  surface-accessible"):
+  surface-accessible"). **THE BRACKET** below is the single source of
+  truth — other sections cross-reference it, never restate it:
 
   | grade + confidence | max surface_accessibility |
   |---|---|
@@ -308,19 +309,18 @@ parse time — invented or paraphrased ids fail the run.
          a state-conditional surface form)."
 
      **Verdict-beat tone — match the evidence, not the topology
-     prior.** The opener's strength must reflect grade × confidence:
+     prior.** The opener tracks THE BRACKET row (above) — same row,
+     fixed opener phrasing:
 
-     | grade + confidence | opener |
+     | bracket row | opener |
      |---|---|
      | `direct_*` + `confidence=high` | "is constitutively / state-dependently surface-accessible" |
      | `direct_single_method` + `confidence ∈ {moderate, low}` | "is likely surface-accessible" |
      | `supportive_but_indirect` | "has supportive but indirect surface evidence" |
      | `weak` | "has weak surface evidence; topology suggests but direct readouts are missing" |
 
-     Opening with "is constitutively surface-accessible" when grade is
-     direct_single + confidence is moderate (especially with
-     cross-species or single-source direct evidence) overclaims to a
-     campaign-scoping reader. The opener is the FIRST thing they see.
+     The opener is the FIRST thing the reader sees — overclaiming
+     misleads a campaign-scoping reader.
 
   2. **Evidence beat (~150 char).** Flow into the evidence: use
      evidence_grade vocabulary for compression ("direct multi-method
