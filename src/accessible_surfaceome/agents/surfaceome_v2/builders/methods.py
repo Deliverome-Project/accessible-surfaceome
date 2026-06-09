@@ -42,15 +42,19 @@ _METHOD_CLAIM_TYPES: set[str] = {"surface_expression", "methodological"}
 # TACSTD2's methods builder was observed at $0.36/call with 87k input
 # tokens (87 claims through the prompt-cache miss path), and tail genes
 # can push into low single dollars before the orchestrator's $7 ceiling
-# kicks in. Capping at 25 keeps the heaviest gene's methods call <$0.15
+# kicks in. Capping at 20 keeps the heaviest gene's methods call <$0.12
 # while preserving the top-confidence-first slice — the lower-rank
 # rt_qpcr / tissue_expression filler that gets dropped here would have
-# largely resolved to ``expression_only`` rows anyway.
+# largely resolved to ``expression_only`` rows anyway. The ``direct_*``
+# grade only needs ≥2 direct surface methods, which are always ranked
+# above the cap. Reduced from 25 → 20 for cohort cost (saves ~$0.05/gene
+# × 6,500 genes = ~$325 with negligible recall impact — TACSTD2 at v2.50.1
+# already emitted 19 method rows even at cap=25 due to builder-side dedup).
 #
 # Important: ONLY the methods builder is capped. The synthesizer +
 # evidence_grade builder still see the full claim ledger so the headline
 # call and the grade count aren't affected by the trim.
-MAX_CLAIMS_TO_LLM = 25
+MAX_CLAIMS_TO_LLM = 20
 
 # Evidence-type weights for the pre-LLM rank.  Higher = more
 # direct-surface-accessibility evidence. Tied weights tie-break on the
