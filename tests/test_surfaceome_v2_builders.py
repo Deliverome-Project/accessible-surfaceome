@@ -751,6 +751,40 @@ def test_build_expression_empty_input() -> None:
     client.messages.create.assert_not_called()
 
 
+def test_build_expression_surface_expression_dual_dimension() -> None:
+    # Safety net: a surface_expression claim is now also a candidate input —
+    # the prompt decides whether its prose names a tissue / cell-type /
+    # disease context that warrants an ExpressionRow.
+    claims = [
+        _claim(
+            "01",
+            prefix="a2",
+            claim_type="surface_expression",
+            evidence_type="immunofluorescence",
+            source_id="PMID:444",
+        ),
+    ]
+    output = [
+        {
+            "tissue": "liver",
+            "cell_type": "Kupffer cell",
+            "present": "low",
+            "disease_context": "tumor",
+            "disease_label": "hepatocellular carcinoma",
+            "cell_states": [],
+            "cited_evidence_ids": ["a2_evi_01"],
+        }
+    ]
+    client = _mock_client([_fenced(json.dumps(output))])
+    sink: list[UsageRecord] = []
+    rows = build_expression(
+        claims, client=client, usage_sink=sink, context={"gene": "X"}
+    )
+    assert len(rows) == 1
+    assert rows[0].disease_context == "tumor"
+    assert rows[0].cited_evidence_ids == ["a2_evi_01"]
+
+
 # ---------------------------------------------------------------------------
 # (former cell_states_builder tests retired in schema 2.5.0 — single-context
 # state observations now emit as AccessibilityModulationObservation rows with
