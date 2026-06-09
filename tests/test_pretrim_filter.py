@@ -385,4 +385,4 @@ def test_thresholds_match_published_defaults():
     # — 5 of 8 dropped papers were pretrim cap-drops. The cost delta
     # (132 → 150, +13% papers on the ~25% of genes >132 candidates) is
     # ~$200 vs the ~$1,800 saved by the cache + Haiku-pad fixes.
-    assert HARD_CAP == 150
+    assert HARD_CAP == 160

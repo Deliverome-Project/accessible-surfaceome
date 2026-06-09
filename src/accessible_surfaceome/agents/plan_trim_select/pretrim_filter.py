@@ -105,7 +105,7 @@ HEAVY_THRESHOLD: int = 50
 #
 # Papers above the cap are sorted by year (newest first), then by PMC-OA
 # preference, then dropped.
-HARD_CAP: int = 150
+HARD_CAP: int = 160
 
 
 # Pattern 2: drug-review titles. These are typically secondary syntheses
