@@ -107,6 +107,7 @@ from accessible_surfaceome.tools._shared.models import (
     SurfaceomeRecord,
     classify_ecd_accessibility_class,
 )
+from accessible_surfaceome.tools._shared.failure_modes import FailureMode
 from accessible_surfaceome.tools._shared.normalize import normalize_for_quote_matching
 from accessible_surfaceome.tools._shared.source_text import SourceText, SourceTextStore
 
@@ -122,6 +123,13 @@ AGENT_MODEL = "claude-sonnet-4-6"
 # version even after the Pydantic default moved, which silently kept the
 # viewer's freshness dots marking fresh records as stale.
 SCHEMA_VERSION_LITERAL = SurfaceomeRecord.model_fields["schema_version"].default
+
+# Read PROMPT_CORPUS_VERSION at module load so the orchestrator stamps it
+# onto every record. The version_guard module's value is the canonical truth;
+# stamping it on the record gives us a "which prompt corpus produced this
+# call?" join key independent of the D1 mirror denormalization.
+from accessible_surfaceome._version_guard import PROMPT_CORPUS_VERSION
+
 RUNS_DIR = Path(".runs")
 
 # Mid-gene PTS checkpoint directory. After ``run_plan_trim_select_dual``
@@ -778,6 +786,14 @@ class AnnotateResultV2:
     builder_usage: dict[str, BlockBuilderUsage] = field(default_factory=dict)
     annotation_path: Path | None = None
     error: str | None = None
+    # Structured failure-mode tag — complementary to the free-text
+    # ``error`` field. ``"ok"`` on every success path; a specific abort
+    # category on every error path (cost_ceiling_pts / cost_ceiling_total
+    # / validation_failed / synth_draft_missing / pts_failure / etc.).
+    # See ``tools/_shared/failure_modes.py`` for the enum + the cohort-
+    # analytics rationale ("WHERE failure_mode = 'cost_ceiling_pts'"
+    # without parsing prose).
+    failure_mode: FailureMode = "ok"
     # Per-step wall-clock audit: every model call + post-process step,
     # in execution order. Empty when ``annotate`` was invoked with
     # ``timing=None`` (legacy path).
@@ -875,6 +891,7 @@ def annotate(
                 blocks_used={},
                 builder_usage={},
                 error=f"skipped: fresh record already in public D1 ({existing['record_generated_at']})",
+                failure_mode="ok",
                 timing=[],
                 intermediates={},
             )
@@ -975,6 +992,7 @@ def _annotate(
             dual=dual,
             synthesizer=None,
             error="plan-trim-select did not resolve a gene bundle",
+            failure_mode="pts_failure",
             timing=list(timing.entries),
             intermediates={"plan_trim_select": _serialize_pts(dual)},
         )
@@ -1048,6 +1066,7 @@ def _annotate(
                 f"PTS-level cost ceiling exceeded: "
                 f"${pts_cost:.2f} > ${MAX_PTS_COST_USD:.2f}"
             ),
+            failure_mode="cost_ceiling_pts",
             timing=list(timing.entries),
             intermediates=pts_only_intermediates,
         )
@@ -1304,6 +1323,7 @@ def _annotate(
             blocks_used=_count_blocks(surface_evidence, biological_context),
             builder_usage=builder_usage,
             error=f"SurfaceEvidenceDraft validation failed: {exc}",
+            failure_mode="validation_failed",
             timing=list(timing.entries),
             intermediates=intermediates,
         )
@@ -1321,6 +1341,7 @@ def _annotate(
             blocks_used=_count_blocks(surface_evidence, biological_context),
             builder_usage=builder_usage,
             error=f"BiologicalContextDraft validation failed: {exc}",
+            failure_mode="validation_failed",
             timing=list(timing.entries),
             intermediates=intermediates,
         )
@@ -1502,6 +1523,28 @@ def _annotate(
             intermediates["bundle"] = None
         intermediates["triage_summary_json"] = triage_summary_json
 
+        # Triage source-link denormalization. ``triage_summary_json`` carries
+        # the consumed prior verbatim, but cohort-scale analytics want to
+        # answer "all v2 runs whose triage came from mainbench_canonical_v2
+        # ncbi" without parsing the JSON blob — so denormalize the three
+        # provenance keys onto the intermediates row. ``triage_record`` is
+        # set in the surrounding scope (it's the same object the synth
+        # consumed); ``provenance`` is ``None`` when triage was loaded from
+        # a local ``data/triage/{gene}.json`` file rather than from D1's
+        # ``triage_run_public`` table.
+        prov = (
+            triage_record.provenance if triage_record is not None else None
+        )
+        intermediates["triage_run_id"] = (
+            prov.run_id if prov is not None else None
+        )
+        intermediates["triage_model"] = (
+            prov.model if prov is not None else None
+        )
+        intermediates["triage_prompt_variant"] = (
+            prov.prompt_variant if prov is not None else None
+        )
+
         # Persist per-pipeline cost so we can do cohort-level cost analytics
         # from D1 without re-parsing log files. Per-builder breakdown lives
         # in `builder_usage`; pts + synth cost are atomic.
@@ -1515,6 +1558,17 @@ def _annotate(
             "builders": sum(u.cost_usd for u in builder_usage.values()),
             "synthesizer": b.usage.cost_usd if b is not None else 0.0,
         }
+
+        # Per-step wall-clock trace. Mirrored from the in-memory
+        # ``TimingRecorder`` into the intermediates blob so it survives
+        # Modal container shutdown — local ``.runs/*.meta.json`` is lost
+        # on tear-down, but D1 is durable. Re-mirrored on every error-
+        # path early return below that publishes intermediates (the ones
+        # that pass ``intermediates=intermediates``) — see docs/audit/
+        # reproducibility_followup_2026_06_09.md item #8.
+        intermediates["timing"] = [
+            t.as_dict() for t in list(timing.entries)
+        ]
 
         # Hard cost ceiling — per-gene abort. Bounds runaway-cost scenarios
         # on a genome-wide sweep (a single pathological gene could otherwise
@@ -1541,11 +1595,23 @@ def _annotate(
                     f"per-gene cost ceiling exceeded: "
                     f"${intermediates['cost_total_usd']:.2f} > ${MAX_COST_USD:.2f}"
                 ),
+                failure_mode="cost_ceiling_total",
                 timing=list(timing.entries),
                 intermediates=intermediates,
             )
 
         if b.draft is None:
+            # ``validation_error`` is populated iff the model emitted SOME
+            # JSON that failed Pydantic validation (we ran the repair loop
+            # against a real ``raw_json``). It's ``None`` when the model
+            # never emitted a fenced JSON block at all — the failure modes
+            # are distinct (a 'wandered off-spec' draft vs a 'tried but
+            # the schema was wrong' draft), and the analytics queries
+            # want them broken out.
+            mode: FailureMode = (
+                "validation_failed" if b.validation_error is not None
+                else "synth_draft_missing"
+            )
             return AnnotateResultV2(
                 gene=gene_id.hgnc_symbol,
                 record=None,
@@ -1554,6 +1620,7 @@ def _annotate(
                 blocks_used=_count_blocks(surface_evidence, biological_context),
                 builder_usage=builder_usage,
                 error=f"synthesizer returned no valid draft: {b.validation_error}",
+                failure_mode=mode,
                 timing=list(timing.entries),
                 intermediates=intermediates,
             )
@@ -2025,6 +2092,7 @@ def _annotate(
         try:
             record = SurfaceomeRecord(
                 schema_version=SCHEMA_VERSION_LITERAL,
+                prompt_corpus_version=PROMPT_CORPUS_VERSION,
                 gene=gene_id,
                 triage_signal=triage_signal_value,
                 triage_reasoning=triage_reasoning_value,
@@ -2068,6 +2136,7 @@ def _annotate(
                 f"SurfaceomeRecord assembly failed after retry: "
                 f"{last_validation_error}"
             ),
+            failure_mode="schema_drift",
             timing=list(timing.entries),
             intermediates=intermediates,
         )

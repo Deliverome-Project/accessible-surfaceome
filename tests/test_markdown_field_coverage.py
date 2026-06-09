@@ -66,6 +66,8 @@ def _all_field_names(
 # helping a reader. To surface one, render it in the generator and delete it
 # here; to add a new omission, add it here WITH the reasoning in review.
 OMITTED: dict[str, str] = {
+    # --- version + provenance tags (already implicit in the schema_version meta) ---
+    "prompt_corpus_version": "prompt corpus tag for forensic D1 queries; markdown export already carries `_version_guard` provenance in its footer; not user-facing in the markdown brief",
     # --- search / tool-consultation log (provenance, not findings) ---
     "search_log": "tool consultation log; provenance not findings",
     "query": "search query string; provenance",
