@@ -210,6 +210,11 @@ export function AccessibilityRisksCard({ rec, n }: Props) {
               : ""}
           </p>
         ) : null}
+        {r.shed_form.rationale ? (
+          <p className={styles.prose}>
+            {linkifyEvidenceRefs(r.shed_form.rationale)}
+          </p>
+        ) : null}
       </div>
 
       <div className={styles.subsection}>
@@ -233,6 +238,11 @@ export function AccessibilityRisksCard({ rec, n }: Props) {
             {r.secreted_form.ratio_to_membrane != null
               ? ` · ratio-to-membrane: ${r.secreted_form.ratio_to_membrane}`
               : ""}
+          </p>
+        ) : null}
+        {r.secreted_form.rationale ? (
+          <p className={styles.prose}>
+            {linkifyEvidenceRefs(r.secreted_form.rationale)}
           </p>
         ) : null}
       </div>

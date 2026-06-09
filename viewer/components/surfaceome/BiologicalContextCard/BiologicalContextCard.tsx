@@ -202,6 +202,11 @@ export function BiologicalContextCard({ rec, n }: Props) {
             <ChipLabelValue label="primary" value={prettyEnum(loc.primary_compartment)} />
           </StatusPill>
         </div>
+        {loc.rationale ? (
+          <p className={styles.locProse}>
+            {linkifyEvidenceRefs(loc.rationale)}
+          </p>
+        ) : null}
         {loc.membrane_subdomains.length > 0 ? (
           <div className={styles.locRow}>
             <span className={`label-mono ${styles.locRowLabel}`}>
@@ -209,7 +214,12 @@ export function BiologicalContextCard({ rec, n }: Props) {
             </span>
             <span className={styles.subdomains}>
               {loc.membrane_subdomains.map((s, i) => (
-                <StatusPill key={i} tone="lavender" size="sm">
+                <StatusPill
+                  key={i}
+                  tone="lavender"
+                  size="sm"
+                  title={s.rationale || undefined}
+                >
                   {prettyEnum(s.subdomain)}
                 </StatusPill>
               ))}
@@ -227,7 +237,11 @@ export function BiologicalContextCard({ rec, n }: Props) {
                   d.fraction_estimate != null
                     ? `${(d.fraction_estimate * 100).toFixed(0)}%`
                     : null;
-                const hover = [d.condition, pct ? `~${pct} of pool` : null]
+                const hover = [
+                  d.rationale,
+                  d.condition,
+                  pct ? `~${pct} of pool` : null,
+                ]
                   .filter(Boolean)
                   .join(" · ");
                 return (
