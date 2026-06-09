@@ -101,7 +101,8 @@ disease papers that merely feature the protein.
 
 A proteolytically shed soluble form OF THE TARGET. Fields: `present`,
 `severity`, `evidence_strength`, `mechanism` (free text or null),
-`sheddase_if_known` (free text or null), `cited_evidence_ids`.
+`sheddase_if_known` (free text or null), `rationale` (soft target ≤300
+chars), `cited_evidence_ids`.
 
 Set `present=true` only when the ledger documents the TARGET's own
 ectodomain being proteolytically released (e.g. a sheddase / matrix
@@ -112,13 +113,24 @@ and `mechanism` when the ledger gives them. Grade `severity` by how
 much the shed form depletes surface target / acts as a decoy, not by
 the mere existence of a cleavage site.
 
+**Rationale discipline (mirrors the other risk chips).** Use the same
+inline-cite shape as `co_receptor_requirements.rationale` and
+`restricted_subdomain.rationale`: name the assay (sheddase cleavage
+mapping, serum/supernatant ectodomain quantification, surface-density
+depletion after sheddase induction), cell type / sample, and any
+documented decoy behavior, with an inline `(a1_evi_NN)` / `(a2_evi_NN)`
+cite per claim. On a `present=false` call with no relevant ledger
+evidence, write "no relevant data in the ledger" — never leave a
+rationale that alludes to evidence without an inline cite.
+
 ## `secreted_form` — soluble decoys only; exclude EV-enclosed protein
 
 This sub-block is for SOLUBLE protein free in supernatant / serum /
 plasma that can compete with the surface protein for circulating
 antibody — the antibody-decoy concern. Fields: `present`, `severity`,
 `evidence_strength`, `ratio_to_membrane` (float or null), `source`
-(closed enum or null), `cited_evidence_ids`.
+(closed enum or null), `rationale` (soft target ≤300 chars),
+`cited_evidence_ids`.
 
 **It is about the TARGET PROTEIN being soluble — NOT its ligand being
 shed.** A sheddase releasing the target's cognate growth-factor ligands
@@ -164,6 +176,20 @@ out-competing a binder, the call is a real decoy risk — not a weak
 topology footnote. Cite that evidence. NOTE: when you set
 `present=true`, the record validator requires `cited_evidence_ids` to
 back it — a `present=true` with empty cites fails downstream.
+
+**Rationale discipline (mirrors the other risk chips).** Use the same
+inline-cite shape as `co_receptor_requirements.rationale` and
+`restricted_subdomain.rationale`: name the assay (serum / plasma
+quantification, alternative-splicing isoform call, antibody-decoy
+competition assay), the sample / cell type, and the basis for the
+`severity` call, with inline `(a1_evi_NN)` / `(a2_evi_NN)` cites per
+claim. On a `present=false` call with no relevant ledger evidence,
+write "no relevant data in the ledger" — never leave a rationale that
+alludes to evidence without an inline cite. When the call rests
+entirely on the deterministic alternative-splicing floor (no ledger
+evidence of circulation / competition), state that explicitly so the
+reader can tell the floor apart from a literature-grounded decoy
+call.
 
 ## `restricted_subdomain`
 

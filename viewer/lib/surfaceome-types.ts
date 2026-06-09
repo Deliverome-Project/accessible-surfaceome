@@ -1034,16 +1034,19 @@ export interface DualLocalization {
   compartment: Compartment;
   fraction_estimate: number | null;
   condition: string | null;
+  rationale: string;
   cited_evidence_ids: string[];
 }
 
 export interface MembraneSubdomain {
   subdomain: string;
+  rationale: string;
   cited_evidence_ids: string[];
 }
 
 export interface SubcellularLocalization {
   primary_compartment: Compartment;
+  rationale: string;
   dual_localization: DualLocalization[];
   membrane_subdomains: MembraneSubdomain[];
 }
@@ -1122,6 +1125,7 @@ export interface ShedForm {
   evidence_strength: EvidenceStrength;
   mechanism: string | null;
   sheddase_if_known: string | null;
+  rationale: string;
   cited_evidence_ids: string[];
 }
 
@@ -1137,6 +1141,7 @@ export interface SecretedForm {
   evidence_strength: EvidenceStrength;
   ratio_to_membrane: number | null;
   source: SecretedSource | null;
+  rationale: string;
   cited_evidence_ids: string[];
 }
 

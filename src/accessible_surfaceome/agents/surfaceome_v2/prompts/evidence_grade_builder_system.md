@@ -67,7 +67,10 @@ direct rows in the survivors:
 
 - `direct_multi_method` — ≥2 distinct method types with
   `accessibility_relevance=direct_surface_accessibility` (live flow,
-  nonperm IF, surface biotinylation, IHC membranous).
+  nonperm IF, surface biotinylation, IHC membranous, functional
+  surface assay — e.g. anti-target-mediated tumor killing, ADC
+  efficacy, CAR-T cytotoxicity KO-abrogated, radioligand binding on
+  live cells).
 - `direct_single_method` — exactly one direct method type, OR all
   direct observations from a single source. Single-source / single-paper
   direct evidence (e.g. a one-paper cancer-state topology inversion
