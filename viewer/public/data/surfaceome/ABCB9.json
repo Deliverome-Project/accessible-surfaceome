@@ -1,0 +1,3033 @@
+{
+  "schema_version": "2.9.0",
+  "gene": {
+    "hgnc_symbol": "ABCB9",
+    "hgnc_id": "HGNC:50",
+    "uniprot_acc": "Q9NP78",
+    "ncbi_gene_id": 23457,
+    "ensembl_gene": "ENSG00000150967"
+  },
+  "triage_signal": "possibly_accessible",
+  "triage_reasoning": "ABCB9 (TAPL) is a multi-pass ABC transporter that resides primarily on lysosomal/late-endosomal membranes, where it translocates peptides from the cytosol into the lysosomal lumen. Its dominant steady-state localization is lysosomal, not the plasma membrane. However, lysosomal membrane proteins can reach the plasma membrane transiently via lysosomal exocytosis — a documented pathway for LAMP1, LAMP2, and other lysosomal TM proteins. No strong gene-specific flow cytometry or surface biotinylation data confirm a stable PM pool for ABCB9 itself. Checking contextual buckets: cell_state_induced — not specifically documented; tissue_restricted — ubiquitous expression, not tissue-restricted; lysosomal_exocytosis — plausible given lysosomal TM topology; dual_localization — possible minor PM cycling; stable_surface_attachment — not applicable (no evidence of secreted form). Given the lysosomal_exocytosis pathway applies to this class of proteins and 'contextual beats no', lysosomal_exocytosis is the best fit.",
+  "executive_summary": {
+    "one_paragraph": "ABCB9 (TAPL) has low surface accessibility as a canonical lysosomal multi-pass ABC transporter; its full-length form is not meaningfully present at the plasma membrane under any documented normal or disease state. The evidence is consistent and multi-method: permeabilized fluorescence microscopy showed TAPL-GFP co-localizing exclusively with LysoTracker in CHO-K1 cells (a1_evi_13), Percoll-gradient fractionation co-sedimented TAPL-GFP with cathepsin D rather than PM markers (a1_evi_14), and stable-expression studies in mammalian cells confirmed lysosomal sorting with no PM signal for the full-length protein (a1_evi_17). Surface presence is constitutively intracellular — state-modulation (DC differentiation, TME Tregs) upregulates ABCB9 expression within the lysosomal compartment, not at the cell surface (a2_evi_01, a2_evi_06). The principal binder-engineering caveat is the lysosomal subdomain restriction (high severity); moderate homodimer-mediated epitope masking at the TMD0 interface is an additional concern, while the absence of a shed or secreted form rules out decoy competition.",
+    "accessibility_context_summary": "ABCB9 localizes constitutively to the lysosomal limiting membrane across all documented cell types and states; no plasma membrane pool has been demonstrated for the full-length protein.",
+    "surface_accessibility": "no",
+    "evidence_grade_summary": "weak",
+    "confidence": "high",
+    "state_dependence": "unclear",
+    "subcategory": "multi_pass",
+    "llm_family": "transporter",
+    "hgnc_gene_groups": [
+      "ATP binding cassette subfamily B"
+    ],
+    "uniprot_family": "ABC transporter superfamily. ABCB family. MHC peptide exporter (TC 3.A.1.209) subfamily",
+    "surface_call_reason": "endomembrane_resident",
+    "headline_risks": [
+      "epitope_masked"
+    ],
+    "cited_evidence_ids": [
+      "a1_evi_01",
+      "a1_evi_02",
+      "a1_evi_06",
+      "a1_evi_13",
+      "a1_evi_14",
+      "a1_evi_17",
+      "a2_evi_01",
+      "a2_evi_06",
+      "a2_evi_09"
+    ]
+  },
+  "filters": {
+    "surface_accessibility": "no",
+    "confidence": "high",
+    "subcategory": "multi_pass",
+    "state_dependence": "unclear",
+    "surface_call_reason": "endomembrane_resident",
+    "llm_family": "transporter",
+    "evidence_grade": "weak",
+    "ecd_accessibility_class": "moderate",
+    "evidence_density": "high",
+    "expression_level": "moderate",
+    "expression_breadth": "broad",
+    "surface_specificity": "mostly_intracellular",
+    "has_shed_form": false,
+    "has_secreted_form": false,
+    "requires_coreceptor_for_expression": false,
+    "co_receptor_dependency": "modulatory",
+    "max_paralog_ecd_pct_identity": 31.818181818181817,
+    "has_epitope_masking": true,
+    "has_restricted_subdomain": true,
+    "mouse_ortholog_ecd_pct_identity": 96.42857142857143,
+    "cyno_ortholog_ecd_pct_identity": 100,
+    "n_term_extracellular": false,
+    "c_term_extracellular": false,
+    "low_endogenous_expression": false,
+    "has_known_ligand": true,
+    "n_supporting_claims_high_weight": 0,
+    "n_contradicting_claims_high_weight": 9,
+    "overexpression_surface_localization_observed": true,
+    "tumor_associated": true,
+    "induction_trigger": "immune",
+    "has_live_cell_surface_evidence": false,
+    "expression_level_rationale": "High expression in monocyte-derived DCs, macrophages, and testicular Sertoli cells (a2_evi_01, a2_evi_02); moderate in TME Tregs and tumor cells (a2_evi_06); low in brain microvessels (a2_evi_05). Overall: moderate across relevant cell types.",
+    "expression_breadth_rationale": "Expressed across immune (DCs, macrophages, Tregs), reproductive (testis), vascular (brain microvessels), and tumor compartments (a2_evi_01, a2_evi_02, a2_evi_04, a2_evi_05, a2_evi_06); not pan-tissue but spans multiple distinct lineages.",
+    "surface_specificity_rationale": "All direct localization studies place full-length ABCB9 on the lysosomal limiting membrane; no PM pool documented (a1_evi_13, a1_evi_14, a1_evi_17, a2_evi_08, a2_evi_09). Only TMD0-deleted truncations reach the PM.",
+    "has_known_ligand_rationale": "ABCB9/TAPL translocates oligo- and polypeptides (6–59 amino acids) from the cytosol into the lysosomal lumen in an ATP-dependent manner; cytosolic peptides are its validated endogenous substrates/cargo (a1_evi_08).",
+    "low_endogenous_expression_rationale": "High expression in monocyte-derived DCs, macrophages, and testicular Sertoli cells (a2_evi_01, a2_evi_02); moderate in TME Tregs and tumor cells (a2_evi_06); low in brain microvessels (a2_evi_05). Overall: moderate across relevant cell types.",
+    "overexpression_surface_localization_observed_rationale": "1 method observation(s) pair an overexpression/mixed expression system with a surface-localization readout (cites a1_evi_16)."
+  },
+  "surface_evidence": {
+    "evidence_grade": "weak",
+    "grade_rationale": "The ledger contains zero direct-surface-accessibility observations (no live-cell flow, non-permeabilized IF, or surface biotinylation). The methods builder found no `direct_surface_accessibility` rows, so the grade cannot reach `direct_*` or `supportive_but_indirect`. Multiple high-weight claims converge on strict lysosomal localization: (1) NMR structural analysis confirmed a four-TM lysosomal-loop topology for TMD0 with no exposed extracellular domain (a1_evi_02, a1_evi_03); (2) permeabilized fluorescence microscopy of TAPL-GFP in CHO-K1 cells showed co-localization with LysoTracker but no PM signal (a1_evi_13); (3) Percoll density-gradient fractionation of CHO-K1 cells co-sedimented TAPL-GFP with cathepsin D, not PM markers (a1_evi_14); (4) stable OE in mammalian cells showed full-length TAPL-GFP sorted exclusively to lysosomes (a1_evi_17); (5) multiple reviews corroborate lysosomal targeting via LAMP-1/LAMP-2 interaction mediated by TMD0 (a1_evi_01, a1_evi_05, a1_evi_06, a1_evi_08). The single indirect 'supports' signal (a1_evi_16) actually reinforces the lysosomal model: only the TMD0-deleted core reaches the PM, while the full-length protein does not. No lysosomal-exocytosis PM pool has been demonstrated. Graded `weak`.",
+    "claim_stances": [
+      {
+        "claim_id": "a1_evi_01",
+        "stance": "contradicts_surface",
+        "weight": "high",
+        "note": "Review: TMD0 mediates lysosomal targeting via LAMP-1/LAMP-2 interaction; canonical lysosomal destination"
+      },
+      {
+        "claim_id": "a1_evi_02",
+        "stance": "contradicts_surface",
+        "weight": "high",
+        "note": "NMR structure of TMD0 confirms four-TM lysosomal-loop topology; no extracellular domain exposed at PM"
+      },
+      {
+        "claim_id": "a1_evi_03",
+        "stance": "contradicts_surface",
+        "weight": "high",
+        "note": "Paramagnetic relaxation enhancement NMR validates four-TM topology of lysosomal-targeting domain"
+      },
+      {
+        "claim_id": "a1_evi_04",
+        "stance": "tangential",
+        "weight": "low",
+        "note": "TMD0 dimerization biology; no surface-accessibility information"
+      },
+      {
+        "claim_id": "a1_evi_05",
+        "stance": "contradicts_surface",
+        "weight": "high",
+        "note": "Review: homodimeric half-transporter with cytosolic NBD, no large ECD; canonical lysosomal topology"
+      },
+      {
+        "claim_id": "a1_evi_06",
+        "stance": "contradicts_surface",
+        "weight": "high",
+        "note": "Review: TMD0 four-TM helices essential for lysosomal targeting/LAMP interaction; not PM-directed"
+      },
+      {
+        "claim_id": "a1_evi_07",
+        "stance": "tangential",
+        "weight": "low",
+        "note": "Antibody provenance note (immunoblot reagent); no localization data"
+      },
+      {
+        "claim_id": "a1_evi_08",
+        "stance": "contradicts_surface",
+        "weight": "high",
+        "note": "Review: homodimeric translocon delivers cargo to lysosomal lumen; confirms intracellular orientation"
+      },
+      {
+        "claim_id": "a1_evi_09",
+        "stance": "tangential",
+        "weight": "low",
+        "note": "Membrane-fraction detection in Drosophila S2 OE; non-human, does not distinguish lysosome vs PM"
+      },
+      {
+        "claim_id": "a1_evi_10",
+        "stance": "tangential",
+        "weight": "low",
+        "note": "Method detail for S2-cell fractionation; non-human, no surface specificity"
+      },
+      {
+        "claim_id": "a1_evi_11",
+        "stance": "contradicts_surface",
+        "weight": "moderate",
+        "note": "Drosophila S2 OE: TAPL distributes primarily to intracellular membranes even under overexpression"
+      },
+      {
+        "claim_id": "a1_evi_12",
+        "stance": "tangential",
+        "weight": "low",
+        "note": "Construct description for TAPL-GFP in CHO-K1; methodological context only"
+      },
+      {
+        "claim_id": "a1_evi_13",
+        "stance": "contradicts_surface",
+        "weight": "high",
+        "note": "Permeabilized IF in CHO-K1: TAPL-GFP colocalizes with LysoTracker, not at PM; lysosomal localization"
+      },
+      {
+        "claim_id": "a1_evi_14",
+        "stance": "contradicts_surface",
+        "weight": "high",
+        "note": "Percoll gradient fractionation in CHO-K1: TAPL-GFP co-sediments with cathepsin D (lysosomal marker)"
+      },
+      {
+        "claim_id": "a1_evi_15",
+        "stance": "contradicts_surface",
+        "weight": "moderate",
+        "note": "Lipid-raft association with flotillin-1 on sucrose gradient in CHO-K1; consistent with lysosomal membrane"
+      },
+      {
+        "claim_id": "a1_evi_16",
+        "stance": "tangential",
+        "weight": "moderate",
+        "note": "Core-TAPL (TMD0-deleted) reaches PM in OE; full-length protein does NOT — confirms full-length is lysosomal"
+      },
+      {
+        "claim_id": "a1_evi_17",
+        "stance": "contradicts_surface",
+        "weight": "high",
+        "note": "Fluorescence microscopy of stable OE: full-length TAPL-GFP sorted to lysosomes; no PM signal noted"
+      },
+      {
+        "claim_id": "a1_evi_18",
+        "stance": "tangential",
+        "weight": "low",
+        "note": "shRNA reagent identifier; no localization data"
+      },
+      {
+        "claim_id": "a1_evi_19",
+        "stance": "expression_only",
+        "weight": "low",
+        "note": "RT-qPCR + whole-cell Western after shRNA knockdown; no surface-specificity"
+      },
+      {
+        "claim_id": "a1_evi_20",
+        "stance": "expression_only",
+        "weight": "low",
+        "note": "Label-free whole-tissue proteomics of mouse brain microvessels; no membrane fractionation or surface capture"
+      }
+    ],
+    "methods": [
+      {
+        "method_family": "other",
+        "method_subclass": "whole_cell_proteomics",
+        "permeabilization": "unknown",
+        "expression_system": "endogenous",
+        "antibodies": [
+          {
+            "name": "anti-TAPL",
+            "clone": null,
+            "vendor": null,
+            "catalog": null,
+            "rrid": null,
+            "monoclonal_or_polyclonal": "polyclonal",
+            "antibody_epitope_region": "unknown",
+            "validation_strategy": "none",
+            "validation_strength": "none",
+            "cross_reactivity_notes": "Rabbit polyclonal anti-TAPL cited as 'ref. 12' in PMC6695453; no catalog number or RRID provided; epitope region unspecified."
+          }
+        ],
+        "accessibility_relevance": "weak_or_ambiguous",
+        "surface_claim_type": "unclear",
+        "expression_observations": [],
+        "overexpression": null,
+        "cited_evidence_ids": [
+          "a1_evi_07"
+        ]
+      },
+      {
+        "method_family": "fractionation",
+        "method_subclass": "plasma_membrane_fractionation",
+        "permeabilization": "unknown",
+        "expression_system": "overexpression",
+        "antibodies": [
+          {
+            "name": "anti-polyHistidine",
+            "clone": "HIS-1",
+            "vendor": "Sigma-Aldrich",
+            "catalog": null,
+            "rrid": null,
+            "monoclonal_or_polyclonal": "monoclonal",
+            "antibody_epitope_region": "unknown",
+            "validation_strategy": "none",
+            "validation_strength": "none",
+            "cross_reactivity_notes": "Detects His6-tag on overexpressed TAPL constructs; not a native ABCB9 epitope antibody. Tag-directed."
+          }
+        ],
+        "accessibility_relevance": "supports_membrane_association",
+        "surface_claim_type": "intracellular_pool",
+        "expression_observations": [
+          {
+            "context": "Drosophila S2 cells overexpressing hTAPL and rTAPL (His-tagged): both detected exclusively in membrane fraction, not soluble fraction; noted to reside on intracellular membranes",
+            "sample_type": "established_cell_line",
+            "level": "moderate",
+            "species": "other",
+            "species_inferred": false,
+            "cited_evidence_ids": [
+              "a1_evi_09",
+              "a1_evi_10",
+              "a1_evi_11"
+            ]
+          }
+        ],
+        "overexpression": {
+          "signal_peptide_source": "unspecified",
+          "signal_peptide_detail": null,
+          "construct_tag": "C-terminal His6",
+          "cell_line": "S2",
+          "cited_evidence_ids": [
+            "a1_evi_09",
+            "a1_evi_10"
+          ]
+        },
+        "cited_evidence_ids": [
+          "a1_evi_09",
+          "a1_evi_10",
+          "a1_evi_11"
+        ]
+      },
+      {
+        "method_family": "immunofluorescence",
+        "method_subclass": "permeabilized_IF",
+        "permeabilization": "permeabilized",
+        "expression_system": "overexpression",
+        "antibodies": [],
+        "accessibility_relevance": "expression_only",
+        "surface_claim_type": "intracellular_pool",
+        "expression_observations": [
+          {
+            "context": "CHO-K1 cells stably expressing TAPL-GFP: GFP signal co-localizes with LysoTracker but not MitoTracker, indicating lysosomal localization",
+            "sample_type": "established_cell_line",
+            "level": "moderate",
+            "species": "human",
+            "species_inferred": false,
+            "cited_evidence_ids": [
+              "a1_evi_13"
+            ]
+          }
+        ],
+        "overexpression": {
+          "signal_peptide_source": "native",
+          "signal_peptide_detail": "full-length TAPL, native signal sequence implied; no heterologous leader mentioned",
+          "construct_tag": "C-terminal GFP",
+          "cell_line": "CHO-K1",
+          "cited_evidence_ids": [
+            "a1_evi_12",
+            "a1_evi_13"
+          ]
+        },
+        "cited_evidence_ids": [
+          "a1_evi_12",
+          "a1_evi_13"
+        ]
+      },
+      {
+        "method_family": "fractionation",
+        "method_subclass": "plasma_membrane_fractionation",
+        "permeabilization": "unknown",
+        "expression_system": "overexpression",
+        "antibodies": [],
+        "accessibility_relevance": "supports_membrane_association",
+        "surface_claim_type": "intracellular_pool",
+        "expression_observations": [
+          {
+            "context": "CHO-K1 cells stably expressing TAPL-GFP: co-sedimented with lysosomal marker cathepsin D on Percoll density gradient; also co-sedimented with flotillin-1 on sucrose density gradient, suggesting lysosomal lipid raft association",
+            "sample_type": "established_cell_line",
+            "level": "moderate",
+            "species": "human",
+            "species_inferred": false,
+            "cited_evidence_ids": [
+              "a1_evi_14",
+              "a1_evi_15"
+            ]
+          }
+        ],
+        "overexpression": {
+          "signal_peptide_source": "native",
+          "signal_peptide_detail": "full-length TAPL, native signal sequence implied; no heterologous leader mentioned",
+          "construct_tag": "C-terminal GFP",
+          "cell_line": "CHO-K1",
+          "cited_evidence_ids": [
+            "a1_evi_12",
+            "a1_evi_14",
+            "a1_evi_15"
+          ]
+        },
+        "cited_evidence_ids": [
+          "a1_evi_12",
+          "a1_evi_14",
+          "a1_evi_15"
+        ]
+      },
+      {
+        "method_family": "immunofluorescence",
+        "method_subclass": "unknown",
+        "permeabilization": "unknown",
+        "expression_system": "overexpression",
+        "antibodies": [],
+        "accessibility_relevance": "supports_surface_localization",
+        "surface_claim_type": "plasma_membrane_localized",
+        "expression_observations": [
+          {
+            "context": "Mammalian cells (unspecified line) stably overexpressing core-TAPL (six TM helices + NBD, lacking TMD0): preferentially targeted to plasma membrane; full-length TAPL targets lysosomes in the same system",
+            "sample_type": "established_cell_line",
+            "level": "moderate",
+            "species": "human",
+            "species_inferred": false,
+            "cited_evidence_ids": [
+              "a1_evi_16"
+            ]
+          }
+        ],
+        "overexpression": {
+          "signal_peptide_source": "native",
+          "signal_peptide_detail": "truncated core-TAPL construct (Arg141-Ala766, lacking TMD0); full-length and truncated constructs use native sequence; no heterologous leader mentioned",
+          "construct_tag": null,
+          "cell_line": null,
+          "cited_evidence_ids": [
+            "a1_evi_16"
+          ]
+        },
+        "cited_evidence_ids": [
+          "a1_evi_16"
+        ]
+      },
+      {
+        "method_family": "immunofluorescence",
+        "method_subclass": "unknown",
+        "permeabilization": "unknown",
+        "expression_system": "overexpression",
+        "antibodies": [],
+        "accessibility_relevance": "expression_only",
+        "surface_claim_type": "intracellular_pool",
+        "expression_observations": [
+          {
+            "context": "Unspecified mammalian cells stably expressing full-length TAPL-GFP or N-terminal domain (Met1-Arg141): sorted to lysosomal membranes; core domain (Arg141-Ala766) broadly distributed in intracellular membranes but not lysosomes specifically; no plasma membrane signal for full-length TAPL",
+            "sample_type": "established_cell_line",
+            "level": "moderate",
+            "species": "human",
+            "species_inferred": false,
+            "cited_evidence_ids": [
+              "a1_evi_17"
+            ]
+          }
+        ],
+        "overexpression": {
+          "signal_peptide_source": "native",
+          "signal_peptide_detail": "full-length TAPL-GFP and N-terminal domain (Met1-Arg141) constructs; native sequence implied; no heterologous leader mentioned",
+          "construct_tag": "C-terminal GFP (full-length construct)",
+          "cell_line": null,
+          "cited_evidence_ids": [
+            "a1_evi_17"
+          ]
+        },
+        "cited_evidence_ids": [
+          "a1_evi_17"
+        ]
+      },
+      {
+        "method_family": "other",
+        "method_subclass": "whole_cell_proteomics",
+        "permeabilization": "unknown",
+        "expression_system": "endogenous",
+        "antibodies": [],
+        "accessibility_relevance": "weak_or_ambiguous",
+        "surface_claim_type": "unclear",
+        "expression_observations": [
+          {
+            "context": "Unspecified human cells with stable shRNA knockdown of ABCB9 (sc-60115-SH, Santa Cruz Biotechnology): ABCB9 protein assessed by Western blot after 10 days of shRNA selection; whole-cell lysate, no fractionation",
+            "sample_type": "established_cell_line",
+            "level": "moderate",
+            "species": "human",
+            "species_inferred": false,
+            "cited_evidence_ids": [
+              "a1_evi_19"
+            ]
+          }
+        ],
+        "overexpression": null,
+        "cited_evidence_ids": [
+          "a1_evi_18",
+          "a1_evi_19"
+        ]
+      },
+      {
+        "method_family": "mass_spec",
+        "method_subclass": "whole_cell_proteomics",
+        "permeabilization": "unknown",
+        "expression_system": "endogenous",
+        "antibodies": [],
+        "accessibility_relevance": "weak_or_ambiguous",
+        "surface_claim_type": "unclear",
+        "expression_observations": [
+          {
+            "context": "Isolated mouse brain microvessels (BBB tissue): Abcb9 quantified by label-free proteomics (MaxQuant analysis); whole-tissue proteomics without surface-specific capture or fractionation",
+            "sample_type": "ex_vivo",
+            "level": "low",
+            "species": "mouse",
+            "species_inferred": false,
+            "cited_evidence_ids": [
+              "a1_evi_20"
+            ]
+          }
+        ],
+        "overexpression": null,
+        "cited_evidence_ids": [
+          "a1_evi_20"
+        ]
+      }
+    ],
+    "non_surface_expression": [
+      {
+        "context": "Unspecified human cells (stably transduced), shRNA knockdown validation by RT-qPCR and whole-cell Western blot",
+        "sample_type": "established_cell_line",
+        "measurement_type": "bulk_protein",
+        "level": "moderate",
+        "cited_evidence_ids": [
+          "a1_evi_18",
+          "a1_evi_19"
+        ]
+      },
+      {
+        "context": "Mouse brain microvessels (BBB tissue), isolated primary tissue, label-free whole-tissue proteomics",
+        "sample_type": "ex_vivo",
+        "measurement_type": "bulk_protein",
+        "level": "low",
+        "cited_evidence_ids": [
+          "a1_evi_20"
+        ]
+      }
+    ],
+    "contradicting_evidence": [
+      {
+        "claim": "Multiple structural and functional studies establish that ABCB9/TAPL is a lysosomal membrane protein, not a plasma membrane protein. The TMD0 domain is solely responsible for lysosomal targeting via interaction with LAMP-1 and LAMP-2, and NMR analysis confirms a four-transmembrane helix topology with a lysosomal loop. The nucleotide-binding domain (NBD) is cytoplasmic, and there is no large extracellular domain — making surface accessibility at the plasma membrane structurally implausible.",
+        "contradiction_type": "alternative_localization",
+        "severity_for_surface_accessibility": "high",
+        "likely_explanation": "ABCB9/TAPL is a canonical lysosomal ABC half-transporter; its TMD0 contains a lysosomal targeting signal that directs the entire protein to the lysosomal membrane. Any plasma membrane detection would likely represent a minor mistargeted fraction or an artifact of overexpression systems.",
+        "cited_evidence_ids": [
+          "a1_evi_01",
+          "a1_evi_02",
+          "a1_evi_03",
+          "a1_evi_05",
+          "a1_evi_06",
+          "a1_evi_08"
+        ]
+      },
+      {
+        "claim": "Direct cell-biological experiments consistently show ABCB9/TAPL localizing to lysosomal membranes rather than the plasma membrane. In CHO-K1 cells, TAPL-GFP co-localizes with LysoTracker (not MitoTracker) by fluorescence microscopy, co-sediments with the lysosomal marker cathepsin D on Percoll gradients, and associates with lipid raft microdomains of lysosomal membranes (co-sedimentation with flotillin-1). In mammalian stable-expression systems, full-length TAPL-GFP sorted specifically to lysosomal membranes with no plasma membrane signal reported.",
+        "contradiction_type": "alternative_localization",
+        "severity_for_surface_accessibility": "high",
+        "likely_explanation": "These orthogonal localization experiments (fluorescence microscopy, subcellular fractionation, detergent-resistance profiling) all converge on the lysosomal membrane as the primary residence of full-length ABCB9, consistent with the lysosomal targeting signal in TMD0. Surface expression at the plasma membrane is not supported by these data.",
+        "cited_evidence_ids": [
+          "a1_evi_13",
+          "a1_evi_14",
+          "a1_evi_15",
+          "a1_evi_17"
+        ]
+      },
+      {
+        "claim": "In a Drosophila S2 overexpression system, significant amounts of TAPL were expressed on intracellular membranes rather than the cell surface, even under conditions designed to drive high protein levels. This non-mammalian overexpression context reinforces the conclusion that ABCB9 preferentially localizes to intracellular membranes.",
+        "contradiction_type": "intracellular_pool",
+        "severity_for_surface_accessibility": "moderate",
+        "likely_explanation": "The S2 insect cell system lacks the precise mammalian lysosomal targeting machinery but still routes TAPL to intracellular membranes, consistent with an intrinsic intracellular retention/targeting signal. The non-mammalian context slightly reduces the severity compared to mammalian-cell data.",
+        "cited_evidence_ids": [
+          "a1_evi_11"
+        ]
+      }
+    ],
+    "excluded_as_ligand_engagement": []
+  },
+  "biological_context": {
+    "expression": [
+      {
+        "tissue": "immune compartment (in vitro)",
+        "cell_type": "monocytes",
+        "present": "absent",
+        "disease_context": "normal",
+        "disease_label": null,
+        "cell_states": [
+          "resting"
+        ],
+        "species": "human",
+        "species_inferred": false,
+        "cited_evidence_ids": [
+          "a2_evi_01"
+        ]
+      },
+      {
+        "tissue": "immune compartment (in vitro)",
+        "cell_type": "monocyte-derived dendritic cells",
+        "present": "high",
+        "disease_context": "normal",
+        "disease_label": null,
+        "cell_states": [
+          "differentiated (monocyte→DC)"
+        ],
+        "species": "human",
+        "species_inferred": false,
+        "cited_evidence_ids": [
+          "a2_evi_01",
+          "a2_evi_07"
+        ]
+      },
+      {
+        "tissue": "immune compartment (in vitro)",
+        "cell_type": "monocyte-derived macrophages",
+        "present": "high",
+        "disease_context": "normal",
+        "disease_label": null,
+        "cell_states": [
+          "differentiated (monocyte→macrophage)"
+        ],
+        "species": "human",
+        "species_inferred": false,
+        "cited_evidence_ids": [
+          "a2_evi_01"
+        ]
+      },
+      {
+        "tissue": "testis",
+        "cell_type": "Sertoli cells",
+        "present": "high",
+        "disease_context": "normal",
+        "disease_label": null,
+        "cell_states": [],
+        "species": "human",
+        "species_inferred": false,
+        "cited_evidence_ids": [
+          "a2_evi_02"
+        ]
+      },
+      {
+        "tissue": "placenta",
+        "cell_type": null,
+        "present": "low",
+        "disease_context": "other_disease",
+        "disease_label": "malaria-in-pregnancy (Plasmodium berghei ANKA)",
+        "cell_states": [],
+        "species": "mouse",
+        "species_inferred": false,
+        "cited_evidence_ids": [
+          "a2_evi_03"
+        ]
+      },
+      {
+        "tissue": "brain microvessels",
+        "cell_type": null,
+        "present": "moderate",
+        "disease_context": "normal",
+        "disease_label": null,
+        "cell_states": [],
+        "species": "rat",
+        "species_inferred": false,
+        "cited_evidence_ids": [
+          "a2_evi_04"
+        ]
+      },
+      {
+        "tissue": "brain microvessels",
+        "cell_type": null,
+        "present": "low",
+        "disease_context": "normal",
+        "disease_label": null,
+        "cell_states": [],
+        "species": "human",
+        "species_inferred": false,
+        "cited_evidence_ids": [
+          "a2_evi_05"
+        ]
+      },
+      {
+        "tissue": "lung",
+        "cell_type": null,
+        "present": "unknown",
+        "disease_context": "normal",
+        "disease_label": null,
+        "cell_states": [],
+        "species": "human",
+        "species_inferred": false,
+        "cited_evidence_ids": [
+          "a2_evi_05"
+        ]
+      },
+      {
+        "tissue": "liver",
+        "cell_type": null,
+        "present": "unknown",
+        "disease_context": "normal",
+        "disease_label": null,
+        "cell_states": [],
+        "species": "human",
+        "species_inferred": false,
+        "cited_evidence_ids": [
+          "a2_evi_05"
+        ]
+      },
+      {
+        "tissue": "spleen",
+        "cell_type": null,
+        "present": "unknown",
+        "disease_context": "normal",
+        "disease_label": null,
+        "cell_states": [],
+        "species": "human",
+        "species_inferred": false,
+        "cited_evidence_ids": [
+          "a2_evi_05"
+        ]
+      },
+      {
+        "tissue": "tumor microenvironment",
+        "cell_type": "regulatory T cells (Tregs)",
+        "present": "moderate",
+        "disease_context": "tumor",
+        "disease_label": null,
+        "cell_states": [],
+        "species": "human",
+        "species_inferred": false,
+        "cited_evidence_ids": [
+          "a2_evi_06"
+        ]
+      },
+      {
+        "tissue": "tumor microenvironment",
+        "cell_type": "tumor cells",
+        "present": "moderate",
+        "disease_context": "tumor",
+        "disease_label": null,
+        "cell_states": [],
+        "species": "human",
+        "species_inferred": false,
+        "cited_evidence_ids": [
+          "a2_evi_06"
+        ]
+      }
+    ],
+    "tissues": [],
+    "cell_types": [],
+    "subcellular_localization": {
+      "primary_compartment": "lysosome",
+      "dual_localization": [
+        {
+          "compartment": "endosome",
+          "fraction_estimate": null,
+          "condition": "retained on limiting membrane by LAMP proteins",
+          "cited_evidence_ids": [
+            "a2_evi_10"
+          ]
+        },
+        {
+          "compartment": "plasma_membrane",
+          "fraction_estimate": null,
+          "condition": "only when TMD0 is absent (core-TAPL truncation)",
+          "cited_evidence_ids": [
+            "a2_evi_09",
+            "a2_evi_12"
+          ]
+        }
+      ],
+      "membrane_subdomains": [
+        {
+          "subdomain": "lipid_raft",
+          "cited_evidence_ids": [
+            "a2_evi_14"
+          ]
+        }
+      ]
+    },
+    "anatomical_accessibility": [],
+    "accessibility_modulation": [
+      {
+        "category": "activation_induced",
+        "category_other_label": null,
+        "cell_state_trigger": "immune_activation",
+        "restricted_lineage": null,
+        "dual_loc_partner_compartment": null,
+        "baseline_context": "resting peripheral blood monocytes",
+        "modulating_state": "monocyte-derived dendritic cells or macrophages",
+        "direction": "increases",
+        "change": "ABCB9 (TAPL) expression is absent/low in resting monocytes and is strongly induced upon differentiation to dendritic cells or macrophages, where it localizes to the lysosomal compartment (co-localizes with LAMP-2).",
+        "accessibility_implication": "ABCB9 is not surface-accessible in resting monocytes; upon DC/macrophage differentiation it becomes present on lysosomal membranes — not the plasma membrane — so it remains inaccessible to extracellular binders even in the induced state.",
+        "species": "human",
+        "species_inferred": false,
+        "cited_evidence_ids": [
+          "a2_evi_01",
+          "a2_evi_07"
+        ]
+      },
+      {
+        "category": "post_translational_dependent",
+        "category_other_label": null,
+        "cell_state_trigger": null,
+        "restricted_lineage": null,
+        "dual_loc_partner_compartment": null,
+        "baseline_context": "cells expressing truncated core-TAPL (lacking TMD0)",
+        "modulating_state": "cells expressing full-length TAPL (with TMD0)",
+        "direction": "decreases",
+        "change": "Core-TAPL (without TMD0) localizes preferentially to the plasma membrane; full-length TAPL with TMD0 is directed exclusively to lysosomal membranes. TMD0 is the structural determinant routing the protein away from the cell surface.",
+        "accessibility_implication": "Full-length ABCB9 is inaccessible to extracellular binders under normal conditions because TMD0 enforces lysosomal targeting. Only truncated forms lacking TMD0 reach the plasma membrane.",
+        "species": "human",
+        "species_inferred": false,
+        "cited_evidence_ids": [
+          "a2_evi_09",
+          "a2_evi_12",
+          "a2_evi_13"
+        ]
+      },
+      {
+        "category": "disease_state_induced",
+        "category_other_label": null,
+        "cell_state_trigger": "infection_bacterial",
+        "restricted_lineage": null,
+        "dual_loc_partner_compartment": null,
+        "baseline_context": "placenta of uninfected pregnant mice",
+        "modulating_state": "placenta of Plasmodium berghei ANKA-infected pregnant mice (malaria-in-pregnancy)",
+        "direction": "decreases",
+        "change": "Placental Abcb9 mRNA/protein is decreased in malaria-in-pregnancy compared to uninfected controls.",
+        "accessibility_implication": "Reduced ABCB9 in malaria-infected placenta; as ABCB9 is a lysosomal membrane protein, reduced expression further limits any potential accessibility. Impact on extracellular binder access is minimal since protein is intracellular regardless.",
+        "species": "mouse",
+        "species_inferred": false,
+        "cited_evidence_ids": [
+          "a2_evi_03"
+        ]
+      },
+      {
+        "category": "cell_state_induced",
+        "category_other_label": null,
+        "cell_state_trigger": "unknown",
+        "restricted_lineage": null,
+        "dual_loc_partner_compartment": null,
+        "baseline_context": null,
+        "modulating_state": null,
+        "direction": "unclear",
+        "change": "In the tumor microenvironment, ABCB9 participates in lysosomal metabolic programs in both tumor cells and human Tregs; suppression of ABCB9 impairs GARP/TGF-β1 production and Treg immunosuppression, indicating functional relevance of ABCB9 lysosomal expression in this state.",
+        "accessibility_implication": "ABCB9 operates on the lysosomal membrane of Tregs in the tumor microenvironment. This intracellular localization means it is not accessible to conventional extracellular binders, though its functional importance in TME Tregs is noted.",
+        "species": "human",
+        "species_inferred": false,
+        "cited_evidence_ids": [
+          "a2_evi_06",
+          "a2_evi_15"
+        ]
+      }
+    ],
+    "biological_context_grade": "rich",
+    "grade_rationale": "All four A2 axes are well-populated: expression mapped across ≥5 tissues/cell types (monocytes/DCs/macrophages, testis, placenta, brain microvessels, Tregs) from multiple independent sources; subcellular localization to lysosomal limiting membrane is pinned by multiple primary IF/biochemical studies; anatomical context spans immune, reproductive, vascular, and CNS compartments; modulation evidence covers DC differentiation-state induction, disease-state downregulation (malaria/placenta), and pharmacological upregulation (NPt/Tregs). Picture is internally consistent—all roads lead to lysosomal membrane.",
+    "grade_cited_evidence_ids": [
+      "a2_evi_01",
+      "a2_evi_02",
+      "a2_evi_03",
+      "a2_evi_04",
+      "a2_evi_05",
+      "a2_evi_06",
+      "a2_evi_07",
+      "a2_evi_08",
+      "a2_evi_09",
+      "a2_evi_10",
+      "a2_evi_11",
+      "a2_evi_12",
+      "a2_evi_13",
+      "a2_evi_14",
+      "a2_evi_15"
+    ]
+  },
+  "deterministic_features": {
+    "canonical_topology": {
+      "isoform_id": "Q9NP78",
+      "uniprot_acc": "Q9NP78",
+      "tm_helix_count": 10,
+      "n_terminal_orientation": "cytoplasmic",
+      "c_terminal_orientation": "cytoplasmic",
+      "signal_peptide_length": 0,
+      "ecd_length_residues": 84,
+      "icd_length_residues": 482,
+      "per_residue_topology": "IIIIIMMMMMMMMMMMMMMMMMMMMMOOOOOOOOOOOOOOOOOOOOOMMMMMMMMMMMMMMMMMMMMMIIIIIIIIIIIIMMMMMMMMMMMMMMMMMMMOOOOOOOOOOOOOOOOMMMMMMMMMMMMMMMMMMMMMMIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIMMMMMMMMMMMMMMMMMMMMMMOOOOOOOOOOOOOOOOOOOOOOMMMMMMMMMMMMMMMMMMMMMIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIMMMMMMMMMMMMMMMMMMMMMOOOOOOOOOMMMMMMMMMMMMMMMMMMMMMIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIMMMMMMMMMMMOOOOOOOOOOOOOOOOMMMMMMMMMMMMMMMMMMMMMIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIII",
+      "sequence": "MRLWKAVVVTLAFMSVDICVTTAIYVFSHLDRSLLEDIRHFNIFDSVLDLWAACLYRSCLLLGATIGVAKNSALGPRRLRASWLVITLVCLFVGIYAMVKLLLFSEVRRPIRDPWFWALFVWTYISLGASFLLWWLLSTVRPGTQALEPGAATEAEGFPGSGRPPPEQASGATLQKLLSYTKPDVAFLVAASFFLIVAALGETFLPYYTGRAIDGIVIQKSMDQFSTAVVIVCLLAIGSSFAAGIRGGIFTLIFARLNIRLRNCLFRSLVSQETSFFDENRTGDLISRLTSDTTMVSDLVSQNINVFLRNTVKVTGVVVFMFSLSWQLSLVTFMGFPIIMMVSNIYGKYYKRLSKEVQNALARASNTAEETISAMKTVRSFANEEEEAEVYLRKLQQVYKLNRKEAAAYMYYVWGSGLTLLVVQVSILYYGGHLVISGQMTSGNLIAFIIYEFVLGDCMESVGSVYSGLMQGVGAAEKVFEFIDRQPTMVHDGSLAPDHLEGRVDFENVTFTYRTRPHTQVLQNVSFSLSPGKVTALVGPSGSGKSSCVNILENFYPLEGGRVLLDGKPISAYDHKYLHRVISLVSQEPVLFARSITDNISYGLPTVPFEMVVEAAQKANAHGFIMELQDGYSTETGEKGAQLSGGQKQRVAMARALVRNPPVLILDEATSALDAESEYLIQQAIHGNLQKHTVLIIAHRLSTVEHAHLIVVLDKGRVVQQGTHQQLLAQGGLYAKLVQRQMLGLQPAADFTAGHNEPVANGSHKA",
+      "tool_version": "deeptmhmm-1.0.24",
+      "retrieved_at": "2026-05-17T00:56:01Z",
+      "full_length_pct_identity_to_canonical": null,
+      "ecd_pct_identity_to_canonical": null,
+      "ecd_pct_similarity_to_canonical": null
+    },
+    "isoform_topologies": [
+      {
+        "isoform_id": "Q9NP78-2",
+        "uniprot_acc": "Q9NP78-2",
+        "tm_helix_count": 8,
+        "n_terminal_orientation": "cytoplasmic",
+        "c_terminal_orientation": "cytoplasmic",
+        "signal_peptide_length": 0,
+        "ecd_length_residues": 74,
+        "icd_length_residues": 484,
+        "per_residue_topology": "IIIIIMMMMMMMMMMMMMMMMMMMMMOOOOOOOOOOOOOOOOOOOOOMMMMMMMMMMMMMMMMMMMMMIIIIIIIIIIIIMMMMMMMMMMMMMMMMMMMOOOOOOOOOOOOOOOOMMMMMMMMMMMMMMMMMMMMMMIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIMMMMMMMMMMMMMMMMMMMMMMOOOOOOOOOOOOOOOOOOOOOOOOOOOOMMMMMMMMMMMMMMMMMMIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIMMMMMMMMMMMMMMMMMMMMMOOOOOOOOOMMMMMMMMMMMMMMMMMMMMMIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIII",
+        "sequence": "MRLWKAVVVTLAFMSVDICVTTAIYVFSHLDRSLLEDIRHFNIFDSVLDLWAACLYRSCLLLGATIGVAKNSALGPRRLRASWLVITLVCLFVGIYAMVKLLLFSEVRRPIRDPWFWALFVWTYISLGASFLLWWLLSTVRPGTQALEPGAATEAEGFPGSGRPPPEQASGATLQKLLSYTKPDVAFLVAASFFLIVAALGETFLPYYTGRAIDGIVIQKSMDQFSTAVVIVCLLAIGSSFAAGIRGGIFTLIFARLNIRLRNCLFRSLVSQETSFFDENRTGDLISRLTSDTTMVSDLVSQNINVFLRNTVKVTGVVVFMFSLSWQLSLVTFMGFPIIMMVSNIYGKYYKRLSKEVQNALARASNTAEETISAMKTVRSFANEEEEAEVYLRKLQQVYKLNRKEAAAYMYYVWGSGSVGSVYSGLMQGVGAAEKVFEFIDRQPTMVHDGSLAPDHLEGRVDFENVTFTYRTRPHTQVLQNVSFSLSPGKVTALVGPSGSGKSSCVNILENFYPLEGGRVLLDGKPISAYDHKYLHRVISLVSQEPVLFARSITDNISYGLPTVPFEMVVEAAQKANAHGFIMELQDGYSTETGEKGAQLSGGQKQRVAMARALVRNPPVLILDEATSALDAESEYLIQQAIHGNLQKHTVLIIAHRLSTVEHAHLIVVLDKGRVVQQGTHQQLLAQGGLYAKLVQRQMLGLQPAADFTAGHNEPVANGSHKA",
+        "tool_version": "deeptmhmm-1.0.24",
+        "retrieved_at": "2026-05-27T02:01:01Z",
+        "full_length_pct_identity_to_canonical": 94.38642297650131,
+        "ecd_pct_identity_to_canonical": 93.0672268907563,
+        "ecd_pct_similarity_to_canonical": 93.0672268907563
+      },
+      {
+        "isoform_id": "Q9NP78-3",
+        "uniprot_acc": "Q9NP78-3",
+        "tm_helix_count": 10,
+        "n_terminal_orientation": "cytoplasmic",
+        "c_terminal_orientation": "cytoplasmic",
+        "signal_peptide_length": 0,
+        "ecd_length_residues": 83,
+        "icd_length_residues": 317,
+        "per_residue_topology": "IIIIIMMMMMMMMMMMMMMMMMMMMMOOOOOOOOOOOOOOOOOOOOOMMMMMMMMMMMMMMMMMMMMMIIIIIIIIIIIIMMMMMMMMMMMMMMMMMMMOOOOOOOOOOOOOOOOMMMMMMMMMMMMMMMMMMMMMMIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIMMMMMMMMMMMMMMMMMMMMMMOOOOOOOOOOOOOOOOOOOOOOMMMMMMMMMMMMMMMMMMMMMIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIMMMMMMMMMMMMMMMMMMMMMOOOOOOOOOMMMMMMMMMMMMMMMMMMIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIMMMMMMMMMMOOOOOOOOOOOOOOOMMMMMMMMMMMMMMMMMMMMMIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIII",
+        "sequence": "MRLWKAVVVTLAFMSVDICVTTAIYVFSHLDRSLLEDIRHFNIFDSVLDLWAACLYRSCLLLGATIGVAKNSALGPRRLRASWLVITLVCLFVGIYAMVKLLLFSEVRRPIRDPWFWALFVWTYISLGASFLLWWLLSTVRPGTQALEPGAATEAEGFPGSGRPPPEQASGATLQKLLSYTKPDVAFLVAASFFLIVAALGETFLPYYTGRAIDGIVIQKSMDQFSTAVVIVCLLAIGSSFAAGIRGGIFTLIFARLNIRLRNCLFRSLVSQETSFFDENRTGDLISRLTSDTTMVSDLVSQNINVFLRNTVKVTGVVVFMFSLSWQLSLVTFMGFPIIMMVSNIYGKYYKRLSKEVQNALARASNTAEETISAMKTVRSFANEEEEAEVYLRKLQQVYKLNRKEAAAYMYYVWGSGLTLLVVQVSILYYGGHLVISGQMTSGNLIAFIIYEFVLGDCMESVGSVYSGLMQGVGAAEKVFEFIDRQPTMVHDGSLAPDHLEGRVDFENVTFTYRTRPHTQVLQNVSFSLSPGKVTALVGPSGSGKSSCVNILENFYPLEGGRVLLDGKPISAYDHKYLHRVVCARAWATLLRPFCI",
+        "tool_version": "deeptmhmm-1.0.24",
+        "retrieved_at": "2026-05-27T02:01:01Z",
+        "full_length_pct_identity_to_canonical": 76.76240208877284,
+        "ecd_pct_identity_to_canonical": 98.87048192771084,
+        "ecd_pct_similarity_to_canonical": 98.87048192771084
+      },
+      {
+        "isoform_id": "Q9NP78-5",
+        "uniprot_acc": "Q9NP78-5",
+        "tm_helix_count": 10,
+        "n_terminal_orientation": "cytoplasmic",
+        "c_terminal_orientation": "cytoplasmic",
+        "signal_peptide_length": 0,
+        "ecd_length_residues": 83,
+        "icd_length_residues": 401,
+        "per_residue_topology": "IIIIIMMMMMMMMMMMMMMMMMMMMMOOOOOOOOOOOOOOOOOOOOOMMMMMMMMMMMMMMMMMMMMMIIIIIIIIIIIIMMMMMMMMMMMMMMMMMMMOOOOOOOOOOOOOOOOMMMMMMMMMMMMMMMMMMMMMMIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIMMMMMMMMMMMMMMMMMMMMMMOOOOOOOOOOOOOOOOOOOOOOMMMMMMMMMMMMMMMMMMMMMIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIMMMMMMMMMMMMMMMMMMMMMOOOOOOOOOMMMMMMMMMMMMMMMMMMMMMIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIMMMMMMMMMMOOOOOOOOOOOOOOOMMMMMMMMMMMMMMMMMMMMMIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIII",
+        "sequence": "MRLWKAVVVTLAFMSVDICVTTAIYVFSHLDRSLLEDIRHFNIFDSVLDLWAACLYRSCLLLGATIGVAKNSALGPRRLRASWLVITLVCLFVGIYAMVKLLLFSEVRRPIRDPWFWALFVWTYISLGASFLLWWLLSTVRPGTQALEPGAATEAEGFPGSGRPPPEQASGATLQKLLSYTKPDVAFLVAASFFLIVAALGETFLPYYTGRAIDGIVIQKSMDQFSTAVVIVCLLAIGSSFAAGIRGGIFTLIFARLNIRLRNCLFRSLVSQETSFFDENRTGDLISRLTSDTTMVSDLVSQNINVFLRNTVKVTGVVVFMFSLSWQLSLVTFMGFPIIMMVSNIYGKYYKRLSKEVQNALARASNTAEETISAMKTVRSFANEEEEAEVYLRKLQQVYKLNRKEAAAYMYYVWGSGLTLLVVQVSILYYGGHLVISGQMTSGNLIAFIIYEFVLGDCMESVGSVYSGLMQGVGAAEKVFEFIDRQPTMVHDGSLAPDHLEGRVDFENVTFTYRTRPHTQVLQNVSFSLSPGKVTALVGPSGSGKSSCVNILENFYPLEGGRVLLDGKPISAYDHKYLHRVISLVSQEPVLFARSITDNISYGLPTVPFEMVVEAAQKANAHGFIMELQDGYSTETGEKGAQLSGGQKQRVAMARALVRNPPVLILDEATSALDAESEYLCAG",
+        "tool_version": "deeptmhmm-1.0.24",
+        "retrieved_at": "2026-05-27T02:01:01Z",
+        "full_length_pct_identity_to_canonical": 89.03394255874673,
+        "ecd_pct_identity_to_canonical": 98.87048192771084,
+        "ecd_pct_similarity_to_canonical": 98.87048192771084
+      },
+      {
+        "isoform_id": "Q9NP78-6",
+        "uniprot_acc": "Q9NP78-6",
+        "tm_helix_count": 10,
+        "n_terminal_orientation": "cytoplasmic",
+        "c_terminal_orientation": "cytoplasmic",
+        "signal_peptide_length": 0,
+        "ecd_length_residues": 83,
+        "icd_length_residues": 399,
+        "per_residue_topology": "IIIIIMMMMMMMMMMMMMMMMMMMMMOOOOOOOOOOOOOOOOOOOOOMMMMMMMMMMMMMMMMMMMMMIIIIIIIIIIIIMMMMMMMMMMMMMMMMMMMOOOOOOOOOOOOOOOOMMMMMMMMMMMMMMMMMMMMMMIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIMMMMMMMMMMMMMMMMMMMMMMOOOOOOOOOOOOOOOOOOOOOOMMMMMMMMMMMMMMMMMMMMMIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIMMMMMMMMMMMMMMMMMMMMMOOOOOOOOOMMMMMMMMMMMMMMMMMMMMMIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIMMMMMMMMMMOOOOOOOOOOOOOOOMMMMMMMMMMMMMMMMMMMMMIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIII",
+        "sequence": "MRLWKAVVVTLAFMSVDICVTTAIYVFSHLDRSLLEDIRHFNIFDSVLDLWAACLYRSCLLLGATIGVAKNSALGPRRLRASWLVITLVCLFVGIYAMVKLLLFSEVRRPIRDPWFWALFVWTYISLGASFLLWWLLSTVRPGTQALEPGAATEAEGFPGSGRPPPEQASGATLQKLLSYTKPDVAFLVAASFFLIVAALGETFLPYYTGRAIDGIVIQKSMDQFSTAVVIVCLLAIGSSFAAGIRGGIFTLIFARLNIRLRNCLFRSLVSQETSFFDENRTGDLISRLTSDTTMVSDLVSQNINVFLRNTVKVTGVVVFMFSLSWQLSLVTFMGFPIIMMVSNIYGKYYKRLSKEVQNALARASNTAEETISAMKTVRSFANEEEEAEVYLRKLQQVYKLNRKEAAAYMYYVWGSGLTLLVVQVSILYYGGHLVISGQMTSGNLIAFIIYEFVLGDCMESVGSVYSGLMQGVGAAEKVFEFIDRQPTMVHDGSLAPDHLEGRVDFENVTFTYRTRPHTQVLQNVSFSLSPGKVTALVGPSGSGKSSCVNILENFYPLEGGRVLLDGKPISAYDHKYLHRVISLVSQEPVLFARSITDNISYGLPTVPFEMVVEAAQKANAHGFIMELQDGYSTETGEKGAQLSGGQKQRVAMARALVRNPPVLILDEATSALDAESEYLI",
+        "tool_version": "deeptmhmm-1.0.24",
+        "retrieved_at": "2026-05-27T02:01:01Z",
+        "full_length_pct_identity_to_canonical": 88.90339425587467,
+        "ecd_pct_identity_to_canonical": 98.87048192771084,
+        "ecd_pct_similarity_to_canonical": 98.87048192771084
+      },
+      {
+        "isoform_id": "Q9NP78-7",
+        "uniprot_acc": "Q9NP78-7",
+        "tm_helix_count": 10,
+        "n_terminal_orientation": "cytoplasmic",
+        "c_terminal_orientation": "cytoplasmic",
+        "signal_peptide_length": 0,
+        "ecd_length_residues": 84,
+        "icd_length_residues": 429,
+        "per_residue_topology": "IIIIIMMMMMMMMMMMMMMMMMMMMMOOOOOOOOOOOOOOOOOOOOOMMMMMMMMMMMMMMMMMMMMMIIIIIIIIIIIIMMMMMMMMMMMMMMMMMMMOOOOOOOOOOOOOOOOMMMMMMMMMMMMMMMMMMMMMMIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIMMMMMMMMMMMMMMMMMMMMMMOOOOOOOOOOOOOOOOOOOOOOMMMMMMMMMMMMMMMMMMMMMIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIMMMMMMMMMMMMMMMMMMMMMOOOOOOOOOMMMMMMMMMMMMMMMMMMMMMIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIMMMMMMMMMMMOOOOOOOOOOOOOOOOMMMMMMMMMMMIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIII",
+        "sequence": "MRLWKAVVVTLAFMSVDICVTTAIYVFSHLDRSLLEDIRHFNIFDSVLDLWAACLYRSCLLLGATIGVAKNSALGPRRLRASWLVITLVCLFVGIYAMVKLLLFSEVRRPIRDPWFWALFVWTYISLGASFLLWWLLSTVRPGTQALEPGAATEAEGFPGSGRPPPEQASGATLQKLLSYTKPDVAFLVAASFFLIVAALGETFLPYYTGRAIDGIVIQKSMDQFSTAVVIVCLLAIGSSFAAGIRGGIFTLIFARLNIRLRNCLFRSLVSQETSFFDENRTGDLISRLTSDTTMVSDLVSQNINVFLRNTVKVTGVVVFMFSLSWQLSLVTFMGFPIIMMVSNIYGKYYKRLSKEVQNALARASNTAEETISAMKTVRSFANEEEEAEVYLRKLQQVYKLNRKEAAAYMYYVWGSGLTLLVVQVSILYYGGHLVISGQMTSGNLIAFIIYEFVLGDCMENVSFSLSPGKVTALVGPSGSGKSSCVNILENFYPLEGGRVLLDGKPISAYDHKYLHRVISLVSQEPVLFARSITDNISYGLPTVPFEMVVEAAQKANAHGFIMELQDGYSTETGEKGAQLSGGQKQRVAMARALVRNPPVLILDEATSALDAESEYLIQQAIHGNLQKHTVLIIAHRLSTVEHAHLIVVLDKGRVVQQGTHQQLLAQGGLYAKLVQRQMLGLQPAADFTAGHNEPVANGSHKA",
+        "tool_version": "deeptmhmm-1.0.24",
+        "retrieved_at": "2026-05-27T02:01:01Z",
+        "full_length_pct_identity_to_canonical": 91.77545691906005,
+        "ecd_pct_identity_to_canonical": 100,
+        "ecd_pct_similarity_to_canonical": 100
+      }
+    ],
+    "orthologs": {
+      "mouse": [
+        {
+          "is_canonical": true,
+          "isoform_id": "Q9JJ59",
+          "ensembl_id": "ENSMUSG00000029408",
+          "ortholog_uniprot_acc": "Q9JJ59",
+          "ortholog_symbol": "Abcb9",
+          "type": "one2one",
+          "ecd_pct_identity_to_human_canonical": 96.42857142857143,
+          "ecd_pct_similarity_to_human_canonical": 96.42857142857143,
+          "full_length_pct_identity_to_human_canonical": 93.7337,
+          "ecd_length_residues": 84,
+          "tm_helix_count": 10,
+          "compara_version": "ensembl_compara_2026_05_12",
+          "retrieved_at": "2026-06-08T21:21:06.109408Z",
+          "per_residue_topology": "IIIIIMMMMMMMMMMMMMMMMMMMMMOOOOOOOOOOOOOOOOOOOOOMMMMMMMMMMMMMMMMMMMMMIIIIIIIIIIIIMMMMMMMMMMMMMMMMMMMOOOOOOOOOOOOOOOOMMMMMMMMMMMMMMMMMMMMMMIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIMMMMMMMMMMMMMMMMMMMMMMOOOOOOOOOOOOOOOOOOOOOOMMMMMMMMMMMMMMMMMMMMMIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIMMMMMMMMMMMMMMMMMMMMMOOOOOOOOOMMMMMMMMMMMMMMMMMMMMMIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIMMMMMMMMMMMOOOOOOOOOOOOOOOOMMMMMMMMMMMMMMMMMMMMMIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIII",
+          "deeptmhmm_label": "TM",
+          "topology_projection_source": "projected_from_human_canonical",
+          "tm_absent_from_model": false,
+          "n_tm_regions_absent": 0,
+          "sequence": "MRLWKAVVVTLAFVSTDVGVTTAIYAFSHLDRSLLEDIRHFNIFDSVLDLWAACLYRSCLLLGATIGVAKNSALGPRRLRASWLVITLVCLFVGIYAMAKLLLFSEVRRPIRDPWFWALFVWTYISLAASFLLWGLLATVRPDAEALEPGNEGFHGEGGAPAEQASGATLQKLLSYTKPDVAFLVAASFFLIVAALGETFLPYYTGRAIDSIVIQKSMDQFTTAVVVVCLLAIGSSLAAGIRGGIFTLVFARLNIRLRNCLFRSLVSQETSFFDENRTGDLISRLTSDTTMVSDLVSQNINIFLRNTVKVTGVVVFMFSLSWQLSLVTFMGFPIIMMVSNIYGKYYKRLSKEVQSALARASTTAEETISAMKTVRSFANEEEEAEVFLRKLQQVYKLNRKEAAAYMSYVWGSGLTLLVVQVSILYYGGHLVISGQMSSGNLIAFIIYEFVLGDCMESVGSVYSGLMQGVGAAEKVFEFIDRQPTMVHDGSLAPDHLEGRVDFENVTFTYRTRPHTQVLQNVSFSLSPGKVTALVGPSGSGKSSCVNILENFYPLQGGRVLLDGKPIGAYDHKYLHRVISLVSQEPVLFARSITDNISYGLPTVPFEMVVEAAQKANAHGFIMELQDGYSTETGEKGAQLSGGQKQRVAMARALVRNPPVLILDEATSALDAESEYLIQQAIHGNLQRHTVLIIAHRLSTVERAHLIVVLDKGRVVQQGTHQQLLAQGGLYAKLVQRQMLGLEHPLDYTASHKEPPSNTEHKA"
+        }
+      ],
+      "cynomolgus": [
+        {
+          "is_canonical": true,
+          "isoform_id": "G8F535",
+          "ensembl_id": "ENSMFAG00000002483",
+          "ortholog_uniprot_acc": "G8F535",
+          "ortholog_symbol": "ABCB9",
+          "type": "one2one",
+          "ecd_pct_identity_to_human_canonical": 100,
+          "ecd_pct_similarity_to_human_canonical": 100,
+          "full_length_pct_identity_to_human_canonical": 98.9556,
+          "ecd_length_residues": 84,
+          "tm_helix_count": 10,
+          "compara_version": "ensembl_compara_2026_05_12",
+          "retrieved_at": "2026-06-08T21:21:06.104274Z",
+          "per_residue_topology": "IIIIIMMMMMMMMMMMMMMMMMMMMMOOOOOOOOOOOOOOOOOOOOOMMMMMMMMMMMMMMMMMMMMMIIIIIIIIIIIIMMMMMMMMMMMMMMMMMMMOOOOOOOOOOOOOOOOMMMMMMMMMMMMMMMMMMMMMMIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIMMMMMMMMMMMMMMMMMMMMMMOOOOOOOOOOOOOOOOOOOOOOMMMMMMMMMMMMMMMMMMMMMIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIMMMMMMMMMMMMMMMMMMMMMOOOOOOOOOMMMMMMMMMMMMMMMMMMMMMIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIMMMMMMMMMMMOOOOOOOOOOOOOOOOMMMMMMMMMMMMMMMMMMMMMIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIII",
+          "deeptmhmm_label": "TM",
+          "topology_projection_source": "projected_from_human_canonical",
+          "tm_absent_from_model": false,
+          "n_tm_regions_absent": 0,
+          "sequence": "MRLWKAVVVTLAFMSVDICVTTAIYVFSHLDRSLLEDIRHFNIFDSVLDLWAACLYRSCLLLGATIGVAKNSALGPRRLRASWLVITLVCLFVGIYAMVKLLLFSEVRRPIRDPWFWALFVWTYISLGASFLLWWLLSTVRPSTQALEPGAATEAEGFPGSGLPPPEQASGATLQKLLSYTKPDVAFLVAASFFLIVAALGETFLPYYTGRAIDGIVIQKSMDQFSTAVTIVCLLAIGSSFAAGIRGGIFTLIFARLNIRLRNCLFRSLVSQETSFFDENRTGDLISRLTSDTTMVSDLVSQNINVFLRNTVKVTGVVVFMFSLSWQLSLVTFMGFPIIMMVSNIYGKYYKRLSKEVQNALARASNTAEETISAMKTVRSFANEEEEAEVYLRKLQQVYKLNRKEAAAYMYYVWGSGLTLLVVQVSILYYGGHLVISGQMTSGNLIAFIIYEFVLGDCMESVGSVYSGLMQGVGAAEKVFEFIDRQPTMVHDGSLAPDHLEGRVDFENVTFTYRTRPHTQVLQNVSFSLCPGKVTALVGPSGSGKSSCVNILENFYPLEGGRVLLDGKPISAYDHKYLHRVISLVSQEPVLFARSITDNISYGLPTVPFEMVVEAAQKANAHGFIMELQDGYSTETGEKGAQLSGGQKQRVAMARALVRNPPVLILDEATSALDAESEYLIQQAIHGNLQKHTVLIIAHRLSTVEHAHLIVVLDKGRVVQQGTHQQLLAQGGLYAKLVQRQMLGLEPAVDFTAGHKEPAANGSHKA"
+        }
+      ],
+      "checked": true
+    },
+    "paralogs": [
+      {
+        "paralog_symbol": "TAP1",
+        "paralog_uniprot_acc": "Q03518",
+        "ecd_pct_identity": 31.818181818181817,
+        "full_length_pct_identity": 34.5953,
+        "family_id": "Opisthokonta",
+        "compara_version": "Compara r112",
+        "per_residue_topology": null,
+        "tm_helix_count": null,
+        "ecd_length_residues": null,
+        "sequence": null
+      },
+      {
+        "paralog_symbol": "ABCB11",
+        "paralog_uniprot_acc": "O95342",
+        "ecd_pct_identity": 28.57142857142857,
+        "full_length_pct_identity": 30.0261,
+        "family_id": "Opisthokonta",
+        "compara_version": "Compara r112",
+        "per_residue_topology": null,
+        "tm_helix_count": null,
+        "ecd_length_residues": null,
+        "sequence": null
+      },
+      {
+        "paralog_symbol": "ABCB7",
+        "paralog_uniprot_acc": "O75027",
+        "ecd_pct_identity": 24.390243902439025,
+        "full_length_pct_identity": 21.9321,
+        "family_id": "Opisthokonta",
+        "compara_version": "Compara r112",
+        "per_residue_topology": null,
+        "tm_helix_count": null,
+        "ecd_length_residues": null,
+        "sequence": null
+      },
+      {
+        "paralog_symbol": "ABCB4",
+        "paralog_uniprot_acc": "P21439",
+        "ecd_pct_identity": 24.193548387096776,
+        "full_length_pct_identity": 30.0261,
+        "family_id": "Opisthokonta",
+        "compara_version": "Compara r112",
+        "per_residue_topology": null,
+        "tm_helix_count": null,
+        "ecd_length_residues": null,
+        "sequence": null
+      },
+      {
+        "paralog_symbol": "ABCB5",
+        "paralog_uniprot_acc": "Q2M3G0",
+        "ecd_pct_identity": 24.137931034482758,
+        "full_length_pct_identity": 28.1984,
+        "family_id": "Opisthokonta",
+        "compara_version": "Compara r112",
+        "per_residue_topology": null,
+        "tm_helix_count": null,
+        "ecd_length_residues": null,
+        "sequence": null
+      },
+      {
+        "paralog_symbol": "TAP2",
+        "paralog_uniprot_acc": "Q03519",
+        "ecd_pct_identity": 24.050632911392405,
+        "full_length_pct_identity": 36.2924,
+        "family_id": "Opisthokonta",
+        "compara_version": "Compara r112",
+        "per_residue_topology": null,
+        "tm_helix_count": null,
+        "ecd_length_residues": null,
+        "sequence": null
+      },
+      {
+        "paralog_symbol": "ABCB10",
+        "paralog_uniprot_acc": "Q9NRK6",
+        "ecd_pct_identity": 20,
+        "full_length_pct_identity": 30.8094,
+        "family_id": "Opisthokonta",
+        "compara_version": "Compara r112",
+        "per_residue_topology": null,
+        "tm_helix_count": null,
+        "ecd_length_residues": null,
+        "sequence": null
+      },
+      {
+        "paralog_symbol": "ABCB1",
+        "paralog_uniprot_acc": "P08183",
+        "ecd_pct_identity": 18.867924528301888,
+        "full_length_pct_identity": 31.4621,
+        "family_id": "Opisthokonta",
+        "compara_version": "Compara r112",
+        "per_residue_topology": null,
+        "tm_helix_count": null,
+        "ecd_length_residues": null,
+        "sequence": null
+      },
+      {
+        "paralog_symbol": "ABCB8",
+        "paralog_uniprot_acc": "Q9NUT2",
+        "ecd_pct_identity": 17.77777777777778,
+        "full_length_pct_identity": 29.5039,
+        "family_id": "Opisthokonta",
+        "compara_version": "Compara r112",
+        "per_residue_topology": null,
+        "tm_helix_count": null,
+        "ecd_length_residues": null,
+        "sequence": null
+      },
+      {
+        "paralog_symbol": "ABCB6",
+        "paralog_uniprot_acc": "Q9NP58",
+        "ecd_pct_identity": 10.16949152542373,
+        "full_length_pct_identity": 22.5849,
+        "family_id": "Opisthokonta",
+        "compara_version": "Compara r112",
+        "per_residue_topology": null,
+        "tm_helix_count": null,
+        "ecd_length_residues": null,
+        "sequence": null
+      }
+    ],
+    "paralogs_checked": true,
+    "isoform_topologies_checked": true,
+    "structure": {
+      "afdb_id": "AF-Q9NP78-F1",
+      "afdb_version": "v6",
+      "ecd_mean_plddt": 83.32107142857143,
+      "ecd_disordered_fraction": 0.13095238095238096,
+      "source": "AlphaFold DB (ECD-restricted pLDDT, n=84)",
+      "license": "CC BY 4.0",
+      "attribution": "© DeepMind / EMBL-EBI",
+      "citations": [
+        "10.1038/s41586-021-03819-2",
+        "10.1093/nar/gkad1011"
+      ],
+      "model_cif_url": "https://alphafold.ebi.ac.uk/files/AF-Q9NP78-F1-model_v6.cif",
+      "model_pdb_url": "https://alphafold.ebi.ac.uk/files/AF-Q9NP78-F1-model_v6.pdb",
+      "model_pae_url": "https://alphafold.ebi.ac.uk/files/AF-Q9NP78-F1-predicted_aligned_error_v6.json"
+    },
+    "surface_bind": {
+      "has_data": true,
+      "n_sites": 2,
+      "n_seeds_alpha": 1130,
+      "n_seeds_beta": 2474,
+      "n_seeds_total": 3604,
+      "chain": "A",
+      "sites": [
+        {
+          "site_id": 0,
+          "anchor_residue": 301,
+          "area_a2": 1355.1599280836351,
+          "n_seeds_alpha": 1127,
+          "n_seeds_beta": 2330,
+          "hydrophobicity": 35.4
+        },
+        {
+          "site_id": 1,
+          "anchor_residue": 398,
+          "area_a2": 2365.7272846412657,
+          "n_seeds_alpha": 3,
+          "n_seeds_beta": 144,
+          "hydrophobicity": 6.3
+        }
+      ],
+      "main_class": "Transporters",
+      "sub_class": "Active_transporters",
+      "protein_name": "ABC-type oligopeptide transporter ABCB9",
+      "pdbs": [],
+      "representative_structure": null,
+      "source": "SURFACE-Bind v1 (Balbi 2026 PNAS)",
+      "attribution": "© Balbi et al., Correia lab — EPFL / Inria / Novo Nordisk",
+      "citation": "10.1073/pnas.2506269123"
+    },
+    "homo_oligomerization": {
+      "is_homo_oligomer": true,
+      "stoichiometry": 2,
+      "af_model_num": 3,
+      "is_ecd_only": false,
+      "has_higher_order_complex": false,
+      "dimer_pdb_filename": "Q9NP78_V1_3.pdb",
+      "complex_pdb_filename": null,
+      "source": "Schweke 2024 (PMID 38325366)",
+      "citation": "10.1016/j.cell.2024.01.022"
+    }
+  },
+  "accessibility_risks": {
+    "co_receptor_requirements": {
+      "surface_expression_dependency": "modulatory",
+      "partners": [
+        "LAMP-1",
+        "LAMP-2B"
+      ],
+      "evidence_basis": "knockout",
+      "rationale": "ABCB9 traffics to lysosomal membrane independently via TMD0 (a1_evi_06), but LAMP-1/LAMP-2B interaction stabilises it on the limiting membrane and prevents ILV sorting (a2_evi_10). LAMP KO reduces TAPL stability ~5-fold without fully abolishing membrane integration, so LAMPs are modulatory stabilisers, not obligate trafficking chaperones for initial surface/membrane targeting.",
+      "cited_evidence_ids": [
+        "a1_evi_06",
+        "a2_evi_10"
+      ]
+    },
+    "shed_form": {
+      "present": false,
+      "severity": "low",
+      "evidence_strength": "weak",
+      "mechanism": null,
+      "sheddase_if_known": null,
+      "cited_evidence_ids": []
+    },
+    "secreted_form": {
+      "present": false,
+      "severity": "low",
+      "evidence_strength": "weak",
+      "ratio_to_membrane": null,
+      "source": null,
+      "cited_evidence_ids": []
+    },
+    "restricted_subdomain": {
+      "present": true,
+      "domain": "other",
+      "severity": "high",
+      "evidence_strength": "strong",
+      "rationale": "ABCB9 localises exclusively to the lysosomal limiting membrane, not the plasma membrane, as demonstrated by LysoTracker co-localisation and cathepsin D co-sedimentation (a1_evi_13, a1_evi_14, a2_evi_08). Full-length TAPL-GFP shows no plasma membrane signal in multiple stable-expression systems (a1_evi_17, a2_evi_09). This intracellular compartment is inaccessible to circulating antibodies.",
+      "cited_evidence_ids": [
+        "a1_evi_13",
+        "a1_evi_14",
+        "a1_evi_17",
+        "a2_evi_08",
+        "a2_evi_09"
+      ]
+    },
+    "ecd_size_assessment": {
+      "ecd_accessibility_class": "moderate",
+      "rationale": "ECD length 84 residues (60-199) -> moderate; computed deterministically from DeepTMHMM topology.",
+      "cited_evidence_ids": []
+    },
+    "epitope_masking": {
+      "mechanism": [
+        "oligomerization",
+        "partner"
+      ],
+      "severity": "moderate",
+      "evidence_strength": "moderate",
+      "rationale": "TMD0 forms homodimers (assigned by PELDOR and static light scattering) (a1_evi_04), consistent with the deterministic homodimer prior (stoichiometry=2); dimer interface may bury extracellular-facing loop epitopes. Additionally, LAMP-1/LAMP-2B physically interact with TMD0 (a1_evi_01, a1_evi_06), and in LAMP-positive compartments this hetero-partner may occlude TMD0-facing epitopes. Both mechanisms operate in the lysosomal membrane context.",
+      "cited_evidence_ids": [
+        "a1_evi_04",
+        "a1_evi_01",
+        "a1_evi_06"
+      ]
+    },
+    "homo_oligomerization_prediction": {
+      "present": true,
+      "stoichiometry": 2,
+      "severity": "low",
+      "is_ecd_only": false,
+      "source": "Schweke 2024 (PMID 38325366)",
+      "cited_evidence_ids": []
+    }
+  },
+  "evidence": [
+    {
+      "evidence_id": "a1_evi_01",
+      "claim": "ABCB9/TAPL is functionally divided into coreTAPL (peptide translocation) and the N-terminal transmembrane domain TMD0. TMD0 is solely responsible for lysosomal targeting and mediates interaction with LAMP-1 and LAMP-2, establishing that the protein's intracellular destination is the lysosomal membrane, not the plasma membrane.",
+      "claim_type": "topology",
+      "direction": "refutes",
+      "evidence_type": "review_assertion",
+      "evidence_tier": "secondary",
+      "confidence": "strong",
+      "assay_context": {
+        "species": "human",
+        "cell_type_or_line": null,
+        "permeabilized": null,
+        "fixation": null,
+        "isoform": null,
+        "cell_context": null
+      },
+      "spans": [
+        {
+          "source": {
+            "source_type": "pmc",
+            "source_id": "PMC:PMC6199259",
+            "pmc_id": "PMC6199259",
+            "url": "https://www.ncbi.nlm.nih.gov/pmc/articles/PMC6199259/",
+            "title": "PMC:PMC6199259",
+            "retrieved_at": "2026-06-08T21:22:09.662698Z",
+            "content_sha256": "2aee7b111b87919a4882325968e2b8eb1817824261f303bf490abeeead12380b",
+            "publication_type": "other",
+            "is_retracted": false,
+            "retraction_checked_at": "2026-06-08T21:22:09.662698Z",
+            "license": "unknown"
+          },
+          "section": "abstract",
+          "figure_or_table_id": null,
+          "quote": "TAPL can be divided into two functional units: coreTAPL, active in ATP-dependent peptide translocation, and the N-terminal membrane spanning domain, TMD0, responsible for cellular localization and interaction with the lysosomal associated membrane proteins LAMP-1 and LAMP-2.",
+          "quote_sha256": "2903e2723f30271bff2fccfef85a4eb4b69b86819adb45a720ed9563d749ce29",
+          "char_offset": 0,
+          "normalized_source_sha256": "69c992fb08616db5e363a5c24b08833b023c30fb41529c34010968137bb82b1a"
+        }
+      ],
+      "entailment_verified": true,
+      "entailment_audit_passed": null,
+      "validation_warnings": [],
+      "duplicate_of": null
+    },
+    {
+      "evidence_id": "a1_evi_02",
+      "claim": "TMD0 of ABCB9/TAPL has a four transmembrane helix topology with a short helical segment in a lysosomal loop, established by NMR structural analysis. This four-TM architecture, combined with the lysosomal loop, confirms intracellular (luminal/cytoplasmic) orientation rather than extracellular exposure at the plasma membrane.",
+      "claim_type": "topology",
+      "direction": "refutes",
+      "evidence_type": "crystal_structure",
+      "evidence_tier": "primary",
+      "confidence": "strong",
+      "assay_context": {
+        "species": "human",
+        "cell_type_or_line": null,
+        "permeabilized": null,
+        "fixation": null,
+        "isoform": null,
+        "cell_context": null
+      },
+      "spans": [
+        {
+          "source": {
+            "source_type": "pmc",
+            "source_id": "PMC:PMC6199259",
+            "pmc_id": "PMC6199259",
+            "url": "https://www.ncbi.nlm.nih.gov/pmc/articles/PMC6199259/",
+            "title": "PMC:PMC6199259",
+            "retrieved_at": "2026-06-08T21:22:09.662698Z",
+            "content_sha256": "2aee7b111b87919a4882325968e2b8eb1817824261f303bf490abeeead12380b",
+            "publication_type": "other",
+            "is_retracted": false,
+            "retraction_checked_at": "2026-06-08T21:22:09.662698Z",
+            "license": "unknown"
+          },
+          "section": "abstract",
+          "figure_or_table_id": null,
+          "quote": "Accordingly, TMD0 has a four transmembrane helix topology with a short helical segment in a lysosomal loop.",
+          "quote_sha256": "602589bdacbdc0fa52da2d99627b0153fb9d73e275fc0d1aed1076fd488e2e91",
+          "char_offset": 276,
+          "normalized_source_sha256": "69c992fb08616db5e363a5c24b08833b023c30fb41529c34010968137bb82b1a"
+        }
+      ],
+      "entailment_verified": true,
+      "entailment_audit_passed": null,
+      "validation_warnings": [],
+      "duplicate_of": null
+    },
+    {
+      "evidence_id": "a1_evi_03",
+      "claim": "The four-TM topology of ABCB9/TAPL TMD0 was confirmed by paramagnetic relaxation enhancement using paramagnetic stearic acid and nuclear Overhauser effects with c6-DHPC and water cross-peaks — direct NMR structural validation of the membrane orientation of the lysosomal-targeting domain.",
+      "claim_type": "topology",
+      "direction": "refutes",
+      "evidence_type": "crystal_structure",
+      "evidence_tier": "primary",
+      "confidence": "strong",
+      "assay_context": {
+        "species": "human",
+        "cell_type_or_line": null,
+        "permeabilized": null,
+        "fixation": null,
+        "isoform": null,
+        "cell_context": null
+      },
+      "spans": [
+        {
+          "source": {
+            "source_type": "pmc",
+            "source_id": "PMC:PMC6199259",
+            "pmc_id": "PMC6199259",
+            "url": "https://www.ncbi.nlm.nih.gov/pmc/articles/PMC6199259/",
+            "title": "PMC:PMC6199259",
+            "retrieved_at": "2026-06-08T21:22:09.662698Z",
+            "content_sha256": "2aee7b111b87919a4882325968e2b8eb1817824261f303bf490abeeead12380b",
+            "publication_type": "other",
+            "is_retracted": false,
+            "retraction_checked_at": "2026-06-08T21:22:09.662698Z",
+            "license": "unknown"
+          },
+          "section": "abstract",
+          "figure_or_table_id": null,
+          "quote": "The topology of TMD0 was confirmed by paramagnetic relaxation enhancement with paramagnetic stearic acid as well as by nuclear Overhauser effects with c6-DHPC and cross-peaks with water.",
+          "quote_sha256": "fd17dd8f18ec979023a4e7dc4e930ef5b3870e25788228531bceca7ac575ad00",
+          "char_offset": 384,
+          "normalized_source_sha256": "69c992fb08616db5e363a5c24b08833b023c30fb41529c34010968137bb82b1a"
+        }
+      ],
+      "entailment_verified": true,
+      "entailment_audit_passed": null,
+      "validation_warnings": [],
+      "duplicate_of": null
+    },
+    {
+      "evidence_id": "a1_evi_04",
+      "claim": "TMD0 of ABCB9/TAPL forms oligomers assigned as dimers by PELDOR spectroscopy and static light scattering, both in-cell and cell-free expressed. Homodimerization at the TMD0 interface may partially bury epitopes, posing a risk of epitope masking for antibodies targeting this domain.",
+      "claim_type": "surface_expression",
+      "direction": "ambiguous",
+      "evidence_type": "functional_assay",
+      "evidence_tier": "primary",
+      "confidence": "moderate",
+      "assay_context": {
+        "species": "human",
+        "cell_type_or_line": null,
+        "permeabilized": null,
+        "fixation": null,
+        "isoform": null,
+        "cell_context": null
+      },
+      "spans": [
+        {
+          "source": {
+            "source_type": "pmc",
+            "source_id": "PMC:PMC6199259",
+            "pmc_id": "PMC6199259",
+            "url": "https://www.ncbi.nlm.nih.gov/pmc/articles/PMC6199259/",
+            "title": "PMC:PMC6199259",
+            "retrieved_at": "2026-06-08T21:22:09.662698Z",
+            "content_sha256": "2aee7b111b87919a4882325968e2b8eb1817824261f303bf490abeeead12380b",
+            "publication_type": "other",
+            "is_retracted": false,
+            "retraction_checked_at": "2026-06-08T21:22:09.662698Z",
+            "license": "unknown"
+          },
+          "section": "abstract",
+          "figure_or_table_id": null,
+          "quote": "In cell as well as cell-free expressed TMD0 forms oligomers, which were assigned as dimers by PELDOR spectroscopy and static light scattering.",
+          "quote_sha256": "beeb067affa90d054ba233ae0e2c98ac94c1dc9856930f34bfae66862aa4204e",
+          "char_offset": 571,
+          "normalized_source_sha256": "69c992fb08616db5e363a5c24b08833b023c30fb41529c34010968137bb82b1a"
+        }
+      ],
+      "entailment_verified": true,
+      "entailment_audit_passed": null,
+      "validation_warnings": [],
+      "duplicate_of": null
+    },
+    {
+      "evidence_id": "a1_evi_05",
+      "claim": "ABCB9/TAPL is a homodimeric half-transporter composed of one transmembrane domain (TMD), one cytoplasmic nucleotide-binding domain (NBD), and an N-terminal TMD0 — confirming the multi-pass membrane topology with cytosolic NBD orientation and the absence of a large extracellular domain.",
+      "claim_type": "topology",
+      "direction": "refutes",
+      "evidence_type": "review_assertion",
+      "evidence_tier": "secondary",
+      "confidence": "strong",
+      "assay_context": {
+        "species": "human",
+        "cell_type_or_line": null,
+        "permeabilized": null,
+        "fixation": null,
+        "isoform": null,
+        "cell_context": null
+      },
+      "spans": [
+        {
+          "source": {
+            "source_type": "pmc",
+            "source_id": "PMC:PMC9532399",
+            "pmc_id": "PMC9532399",
+            "url": "https://www.ncbi.nlm.nih.gov/pmc/articles/PMC9532399/",
+            "title": "PMC:PMC9532399",
+            "retrieved_at": "2026-06-08T21:22:09.662698Z",
+            "content_sha256": "c5395fc8afc2248e56f1512bf3ec8f0ac767547db55b6f516c3db2a56230c00b",
+            "publication_type": "other",
+            "is_retracted": false,
+            "retraction_checked_at": "2026-06-08T21:22:09.662698Z",
+            "license": "unknown"
+          },
+          "section": "introduction",
+          "figure_or_table_id": null,
+          "quote": "TAPL is a homodimeric half-transporter composed of a transmembrane domain (TMD) and a cytoplasmic nucleotide-binding domain (NBD) with an N-terminal TMD (TMD0) 3 , 4 .",
+          "quote_sha256": "982337e78934cbb17fb58ddf5604460832adb3061a8c120e57e1b310a84a06c2",
+          "char_offset": 0,
+          "normalized_source_sha256": "7d0f23a47ef059dd5d8b86400e4683759fad55b8c45f9b6da87dbfcb4e926ebd"
+        }
+      ],
+      "entailment_verified": true,
+      "entailment_audit_passed": null,
+      "validation_warnings": [],
+      "duplicate_of": null
+    },
+    {
+      "evidence_id": "a1_evi_06",
+      "claim": "TMD0 of ABCB9/TAPL comprises four transmembrane alpha-helices; it is dispensable for peptide transport but essential for lysosomal targeting and long-term stabilization by interacting with LAMP-1 and LAMP-2B. This interaction with lysosomal markers anchors ABCB9 in the lysosomal membrane, not the plasma membrane.",
+      "claim_type": "topology",
+      "direction": "refutes",
+      "evidence_type": "review_assertion",
+      "evidence_tier": "secondary",
+      "confidence": "strong",
+      "assay_context": {
+        "species": "human",
+        "cell_type_or_line": null,
+        "permeabilized": null,
+        "fixation": null,
+        "isoform": null,
+        "cell_context": null
+      },
+      "spans": [
+        {
+          "source": {
+            "source_type": "pmc",
+            "source_id": "PMC:PMC9532399",
+            "pmc_id": "PMC9532399",
+            "url": "https://www.ncbi.nlm.nih.gov/pmc/articles/PMC9532399/",
+            "title": "PMC:PMC9532399",
+            "retrieved_at": "2026-06-08T21:22:09.662698Z",
+            "content_sha256": "c5395fc8afc2248e56f1512bf3ec8f0ac767547db55b6f516c3db2a56230c00b",
+            "publication_type": "other",
+            "is_retracted": false,
+            "retraction_checked_at": "2026-06-08T21:22:09.662698Z",
+            "license": "unknown"
+          },
+          "section": "introduction",
+          "figure_or_table_id": null,
+          "quote": "TMD0 is made up of four transmembrane α-helices; it is dispensable for peptide transport but is essential for lysosomal targeting and long-term stabilization by interacting with the lysosome-associated membrane proteins, LAMP-1 and LAMP-2B 5 , 6 .",
+          "quote_sha256": "bdbe50e191edfd335921cd41c0a2f968330345068b9bdb3ddcb933b66162fae5",
+          "char_offset": 168,
+          "normalized_source_sha256": "7d0f23a47ef059dd5d8b86400e4683759fad55b8c45f9b6da87dbfcb4e926ebd"
+        }
+      ],
+      "entailment_verified": true,
+      "entailment_audit_passed": null,
+      "validation_warnings": [],
+      "duplicate_of": null
+    },
+    {
+      "evidence_id": "a1_evi_07",
+      "claim": "Antibody identifiers for TAPL/ABCB9 detection in the referenced study: rabbit anti-TAPL (ref. 12, polyclonal) used for immunoblotting, with HRP-conjugated goat anti-rabbit secondary (BD Pharmingen). No RRID or clone number provided. This clip provides the antibody provenance needed for downstream method validation assessment.",
+      "claim_type": "methodological",
+      "direction": "ambiguous",
+      "evidence_type": "western_blot",
+      "evidence_tier": "secondary",
+      "confidence": "moderate",
+      "assay_context": {
+        "species": "human",
+        "cell_type_or_line": null,
+        "permeabilized": null,
+        "fixation": null,
+        "isoform": null,
+        "cell_context": null
+      },
+      "spans": [
+        {
+          "source": {
+            "source_type": "pmc",
+            "source_id": "PMC:PMC6695453",
+            "pmc_id": "PMC6695453",
+            "url": "https://www.ncbi.nlm.nih.gov/pmc/articles/PMC6695453/",
+            "title": "PMC:PMC6695453",
+            "retrieved_at": "2026-06-08T21:22:09.662698Z",
+            "content_sha256": "5a1d21734f8827c54c83013b2765d2a0200254f10588ac5c652b3210474ef91c",
+            "publication_type": "other",
+            "is_retracted": false,
+            "retraction_checked_at": "2026-06-08T21:22:09.662698Z",
+            "license": "unknown"
+          },
+          "section": "methods",
+          "figure_or_table_id": null,
+          "quote": "For detection by immunoblotting the following antibodies were used: rabbit anti-TAPL 12 and mouse anti-His (monoclonal, HIS-1; Sigma-Aldrich now Merck); horseradish peroxidase-conjugated goat anti-rabbit (polyclonal; BD Pharmingen) and goat anti-mouse (polyclonal A2554; Sigma-Aldrich now Merck).",
+          "quote_sha256": "c7c271a97cfc9c330fdcada9af2198d2701e9e21d555c369fdce74910b62249a",
+          "char_offset": 0,
+          "normalized_source_sha256": "79b7392fec9f3a40006175903112619543544a2f952607b303a07197a3e736ba"
+        }
+      ],
+      "entailment_verified": true,
+      "entailment_audit_passed": null,
+      "validation_warnings": [],
+      "duplicate_of": null
+    },
+    {
+      "evidence_id": "a1_evi_08",
+      "claim": "TAPL/ABCB9 forms a homodimeric transport complex that translocates oligo- and polypeptides into the lysosomal lumen driven by ATP hydrolysis. Homodimerization establishes the quaternary structure relevant to epitope accessibility; the cargo destination (lysosomal lumen) confirms intracellular rather than extracellular orientation.",
+      "claim_type": "topology",
+      "direction": "refutes",
+      "evidence_type": "review_assertion",
+      "evidence_tier": "secondary",
+      "confidence": "strong",
+      "assay_context": {
+        "species": "human",
+        "cell_type_or_line": null,
+        "permeabilized": null,
+        "fixation": null,
+        "isoform": null,
+        "cell_context": null
+      },
+      "spans": [
+        {
+          "source": {
+            "source_type": "pmc",
+            "source_id": "PMC:PMC6695453",
+            "pmc_id": "PMC6695453",
+            "url": "https://www.ncbi.nlm.nih.gov/pmc/articles/PMC6695453/",
+            "title": "PMC:PMC6695453",
+            "retrieved_at": "2026-06-08T21:22:09.662698Z",
+            "content_sha256": "5a1d21734f8827c54c83013b2765d2a0200254f10588ac5c652b3210474ef91c",
+            "publication_type": "other",
+            "is_retracted": false,
+            "retraction_checked_at": "2026-06-08T21:22:09.662698Z",
+            "license": "unknown"
+          },
+          "section": "abstract",
+          "figure_or_table_id": null,
+          "quote": "TAPL forms a homodimeric transport complex, which translocates oligo- and polypeptides into the lumen of lysosomes driven by ATP hydrolysis.",
+          "quote_sha256": "4ec1dc158fa6e73ec69bd6fccab9f5f71b1d56a18c95adcac89b7104d73d715d",
+          "char_offset": 297,
+          "normalized_source_sha256": "79b7392fec9f3a40006175903112619543544a2f952607b303a07197a3e736ba"
+        }
+      ],
+      "entailment_verified": true,
+      "entailment_audit_passed": null,
+      "validation_warnings": [],
+      "duplicate_of": null
+    },
+    {
+      "evidence_id": "a1_evi_09",
+      "claim": "In Drosophila S2 cells overexpressing human TAPL (hTAPL) and rat TAPL (rTAPL) constructs (His-tagged), membrane/soluble fractionation followed by Western blot with anti-His6 antibodies detected both TAPL proteins exclusively in the membrane fraction and not in the soluble fraction. This confirms stable membrane integration of overexpressed TAPL but does not distinguish lysosomal from plasma membrane. Construct SP source: unspecified (full-length constructs implied but leader sequence not described).",
+      "claim_type": "methodological",
+      "direction": "supports",
+      "evidence_type": "western_blot",
+      "evidence_tier": "secondary",
+      "confidence": "moderate",
+      "assay_context": {
+        "species": "other",
+        "cell_type_or_line": "Drosophila S2",
+        "permeabilized": null,
+        "fixation": null,
+        "isoform": null,
+        "cell_context": {
+          "material_kind": "cell_line",
+          "material_kind_other_label": null,
+          "cell_type": "Drosophila insect cells",
+          "cell_line_name": "S2",
+          "cellosaurus_id": null,
+          "tissue": null,
+          "disease_state": null,
+          "activation_state": null
+        }
+      },
+      "spans": [
+        {
+          "source": {
+            "source_type": "pubmed",
+            "source_id": "PMID:18175933",
+            "pmc_id": null,
+            "url": "https://pubmed.ncbi.nlm.nih.gov/18175933/",
+            "title": "PMID:18175933",
+            "retrieved_at": "2026-06-08T21:22:09.662698Z",
+            "content_sha256": "29c568ed66ac3db8f47b8862ae994e3651e243b3cb759d4c66552e554e539037",
+            "publication_type": "other",
+            "is_retracted": false,
+            "retraction_checked_at": "2026-06-08T21:22:09.662698Z",
+            "license": "unknown"
+          },
+          "section": "results",
+          "figure_or_table_id": null,
+          "quote": "The recombinant hTAPL and rTAPL were detected in the membrane fraction but not in the soluble fraction (Fig. 1A).",
+          "quote_sha256": "73ada150efbe387aa887d3eb5bc2c82776792570792da45939674e2fe0450eca",
+          "char_offset": 0,
+          "normalized_source_sha256": "2dbcf693148bbd1a1c000df2877feaed1a2d1adb7888f7bdabb1c665c313dcec"
+        }
+      ],
+      "entailment_verified": true,
+      "entailment_audit_passed": null,
+      "validation_warnings": [],
+      "duplicate_of": null
+    },
+    {
+      "evidence_id": "a1_evi_10",
+      "claim": "Methodology detail for membrane/soluble fractionation of S2 cells overexpressing hTAPL and rTAPL: membranes prepared from expressing and mock-transfected cells, 20 µg protein aliquots analyzed by SDS-PAGE (7.5%) + Western blot with anti-His6 antibodies. This is the paired method detail for the membrane-fraction result clip.",
+      "claim_type": "methodological",
+      "direction": "supports",
+      "evidence_type": "western_blot",
+      "evidence_tier": "secondary",
+      "confidence": "moderate",
+      "assay_context": {
+        "species": "other",
+        "cell_type_or_line": "Drosophila S2",
+        "permeabilized": null,
+        "fixation": null,
+        "isoform": null,
+        "cell_context": {
+          "material_kind": "cell_line",
+          "material_kind_other_label": null,
+          "cell_type": "Drosophila insect cells",
+          "cell_line_name": "S2",
+          "cellosaurus_id": null,
+          "tissue": null,
+          "disease_state": null,
+          "activation_state": null
+        }
+      },
+      "spans": [
+        {
+          "source": {
+            "source_type": "pubmed",
+            "source_id": "PMID:18175933",
+            "pmc_id": null,
+            "url": "https://pubmed.ncbi.nlm.nih.gov/18175933/",
+            "title": "PMID:18175933",
+            "retrieved_at": "2026-06-08T21:22:09.662698Z",
+            "content_sha256": "29c568ed66ac3db8f47b8862ae994e3651e243b3cb759d4c66552e554e539037",
+            "publication_type": "other",
+            "is_retracted": false,
+            "retraction_checked_at": "2026-06-08T21:22:09.662698Z",
+            "license": "unknown"
+          },
+          "section": "results",
+          "figure_or_table_id": null,
+          "quote": "Membrane (lanes 1—3) and soluble (lanes 4—6) fractions were prepared from hTAPL-expressing (lanes 1, 4), rTAPLexpressing (lanes 2, 5), and mock-transfected (lanes 3, 6) cells, and then aliquots (20 m g protein) were analyzed by means of Western blotting using anti-His6 antibodies after SDS-polyacrylamide gel (7.5%) electrophoresis. [B] Membranes were prepared from S2 cells expressing rTAPL.",
+          "quote_sha256": "3ca187dc1fb5e816d7d59da72bf11790a2ffdb0bde0b50fa98bc1fc7f40ef2f8",
+          "char_offset": 114,
+          "normalized_source_sha256": "2dbcf693148bbd1a1c000df2877feaed1a2d1adb7888f7bdabb1c665c313dcec"
+        }
+      ],
+      "entailment_verified": true,
+      "entailment_audit_passed": null,
+      "validation_warnings": [],
+      "duplicate_of": null
+    },
+    {
+      "evidence_id": "a1_evi_11",
+      "claim": "The study notes that significant amounts of both TAPL proteins were expressed on intracellular membranes in the S2 overexpression system — establishing that even under OE conditions the protein distributes primarily to intracellular membranes rather than the cell surface.",
+      "claim_type": "surface_expression",
+      "direction": "refutes",
+      "evidence_type": "western_blot",
+      "evidence_tier": "primary",
+      "confidence": "moderate",
+      "assay_context": {
+        "species": "other",
+        "cell_type_or_line": "Drosophila S2",
+        "permeabilized": null,
+        "fixation": null,
+        "isoform": null,
+        "cell_context": {
+          "material_kind": "cell_line",
+          "material_kind_other_label": null,
+          "cell_type": "Drosophila insect cells",
+          "cell_line_name": "S2",
+          "cellosaurus_id": null,
+          "tissue": null,
+          "disease_state": null,
+          "activation_state": null
+        }
+      },
+      "spans": [
+        {
+          "source": {
+            "source_type": "pubmed",
+            "source_id": "PMID:18175933",
+            "pmc_id": null,
+            "url": "https://pubmed.ncbi.nlm.nih.gov/18175933/",
+            "title": "PMID:18175933",
+            "retrieved_at": "2026-06-08T21:22:09.662698Z",
+            "content_sha256": "29c568ed66ac3db8f47b8862ae994e3651e243b3cb759d4c66552e554e539037",
+            "publication_type": "other",
+            "is_retracted": false,
+            "retraction_checked_at": "2026-06-08T21:22:09.662698Z",
+            "license": "unknown"
+          },
+          "section": "discussion",
+          "figure_or_table_id": null,
+          "quote": "Significant amounts of both TAPL proteins were expressed on the intracellular membranes.",
+          "quote_sha256": "3785ad995252d2ff6a48a04eb1954f3fd074403f5832afe3718c89145025d73a",
+          "char_offset": 508,
+          "normalized_source_sha256": "2dbcf693148bbd1a1c000df2877feaed1a2d1adb7888f7bdabb1c665c313dcec"
+        }
+      ],
+      "entailment_verified": true,
+      "entailment_audit_passed": null,
+      "validation_warnings": [],
+      "duplicate_of": null
+    },
+    {
+      "evidence_id": "a1_evi_12",
+      "claim": "ABCB9/TAPL-GFP fusion construct (C-terminal GFP tag) was stably expressed in CHO-K1 cells. SP source: full-length TAPL implies native signal sequence; no heterologous leader mentioned. This is the OE construct description enabling tier assignment for downstream localization results.",
+      "claim_type": "methodological",
+      "direction": "ambiguous",
+      "evidence_type": "immunofluorescence",
+      "evidence_tier": "secondary",
+      "confidence": "moderate",
+      "assay_context": {
+        "species": "human",
+        "cell_type_or_line": "CHO-K1",
+        "permeabilized": null,
+        "fixation": null,
+        "isoform": null,
+        "cell_context": {
+          "material_kind": "cell_line",
+          "material_kind_other_label": null,
+          "cell_type": "Chinese hamster ovary cells",
+          "cell_line_name": "CHO-K1",
+          "cellosaurus_id": null,
+          "tissue": null,
+          "disease_state": null,
+          "activation_state": null
+        }
+      },
+      "spans": [
+        {
+          "source": {
+            "source_type": "pubmed",
+            "source_id": "PMID:21212514",
+            "pmc_id": null,
+            "url": "https://pubmed.ncbi.nlm.nih.gov/21212514/",
+            "title": "PMID:21212514",
+            "retrieved_at": "2026-06-08T21:22:09.662698Z",
+            "content_sha256": "483879ef75da414979098a4c37dfb48c1f33cc4851a482116b58a1d1a02473d1",
+            "publication_type": "other",
+            "is_retracted": false,
+            "retraction_checked_at": "2026-06-08T21:22:09.662698Z",
+            "license": "unknown"
+          },
+          "section": "abstract",
+          "figure_or_table_id": null,
+          "quote": "The carboxyl terminus of a human ATP-binding cassette (ABC) transporter, transporter associated with antigen processing (TAP)-like (TAPL), was tagged with green fluorescence protein (GFP), and the resulting fusion protein (TAPL-GFP) was stably expressed in Chinese hamster ovary (CHO)-K1 cells.",
+          "quote_sha256": "ffc9aa120cb0d4abbb83a9970b834c1c10162986f0f454df5631f69cc1db18ed",
+          "char_offset": 0,
+          "normalized_source_sha256": "08ec12b451ed01c2bd098bb687455cdc4612cc050faaf0272e2a4cc3a8108df3"
+        }
+      ],
+      "entailment_verified": true,
+      "entailment_audit_passed": null,
+      "validation_warnings": [],
+      "duplicate_of": null
+    },
+    {
+      "evidence_id": "a1_evi_13",
+      "claim": "Fluorescence microscopy of TAPL-GFP stably expressed in CHO-K1 cells showed GFP signal co-localizing with LysoTracker but not MitoTracker. This directly demonstrates lysosomal (not mitochondrial or plasma membrane) localization of overexpressed full-length ABCB9, consistent with intracellular rather than surface localization.",
+      "claim_type": "surface_expression",
+      "direction": "refutes",
+      "evidence_type": "immunofluorescence",
+      "evidence_tier": "primary",
+      "confidence": "strong",
+      "assay_context": {
+        "species": "human",
+        "cell_type_or_line": "CHO-K1",
+        "permeabilized": true,
+        "fixation": "fixed",
+        "isoform": null,
+        "cell_context": {
+          "material_kind": "cell_line",
+          "material_kind_other_label": null,
+          "cell_type": "Chinese hamster ovary cells",
+          "cell_line_name": "CHO-K1",
+          "cellosaurus_id": null,
+          "tissue": null,
+          "disease_state": null,
+          "activation_state": null
+        }
+      },
+      "spans": [
+        {
+          "source": {
+            "source_type": "pubmed",
+            "source_id": "PMID:21212514",
+            "pmc_id": null,
+            "url": "https://pubmed.ncbi.nlm.nih.gov/21212514/",
+            "title": "PMID:21212514",
+            "retrieved_at": "2026-06-08T21:22:09.662698Z",
+            "content_sha256": "483879ef75da414979098a4c37dfb48c1f33cc4851a482116b58a1d1a02473d1",
+            "publication_type": "other",
+            "is_retracted": false,
+            "retraction_checked_at": "2026-06-08T21:22:09.662698Z",
+            "license": "unknown"
+          },
+          "section": "abstract",
+          "figure_or_table_id": null,
+          "quote": "The GFP signal was co-localized with that of LysoTracker but not that of MitoTracker, as visualized under a microscope.",
+          "quote_sha256": "7ca1f8eef917ddb4dbaaf5657d8e0f57f3f4bc07472e2e1e82686f01c2d00787",
+          "char_offset": 295,
+          "normalized_source_sha256": "08ec12b451ed01c2bd098bb687455cdc4612cc050faaf0272e2a4cc3a8108df3"
+        }
+      ],
+      "entailment_verified": true,
+      "entailment_audit_passed": null,
+      "validation_warnings": [],
+      "duplicate_of": null
+    },
+    {
+      "evidence_id": "a1_evi_14",
+      "claim": "Subcellular fractionation on Percoll density gradient of CHO-K1 cells expressing TAPL-GFP: the fusion protein co-sedimented with the lysosomal marker cathepsin D, confirming lysosomal membrane residence. This paired fractionation result is required alongside the WB/IF result to satisfy the surface-assay pairing rule.",
+      "claim_type": "surface_expression",
+      "direction": "refutes",
+      "evidence_type": "western_blot",
+      "evidence_tier": "primary",
+      "confidence": "strong",
+      "assay_context": {
+        "species": "human",
+        "cell_type_or_line": "CHO-K1",
+        "permeabilized": null,
+        "fixation": null,
+        "isoform": null,
+        "cell_context": {
+          "material_kind": "cell_line",
+          "material_kind_other_label": null,
+          "cell_type": "Chinese hamster ovary cells",
+          "cell_line_name": "CHO-K1",
+          "cellosaurus_id": null,
+          "tissue": null,
+          "disease_state": null,
+          "activation_state": null
+        }
+      },
+      "spans": [
+        {
+          "source": {
+            "source_type": "pubmed",
+            "source_id": "PMID:21212514",
+            "pmc_id": null,
+            "url": "https://pubmed.ncbi.nlm.nih.gov/21212514/",
+            "title": "PMID:21212514",
+            "retrieved_at": "2026-06-08T21:22:09.662698Z",
+            "content_sha256": "483879ef75da414979098a4c37dfb48c1f33cc4851a482116b58a1d1a02473d1",
+            "publication_type": "other",
+            "is_retracted": false,
+            "retraction_checked_at": "2026-06-08T21:22:09.662698Z",
+            "license": "unknown"
+          },
+          "section": "abstract",
+          "figure_or_table_id": null,
+          "quote": "TAPL-GFP was co-sedimented with lysosomal marker cathepsin D on Percoll density gradient centrifugation.",
+          "quote_sha256": "f4f443f8d29c7f3fcefd4f0b0c6dc6fadb51ca55cd7ae934f4abc5955459c82f",
+          "char_offset": 415,
+          "normalized_source_sha256": "08ec12b451ed01c2bd098bb687455cdc4612cc050faaf0272e2a4cc3a8108df3"
+        }
+      ],
+      "entailment_verified": true,
+      "entailment_audit_passed": null,
+      "validation_warnings": [],
+      "duplicate_of": null
+    },
+    {
+      "evidence_id": "a1_evi_15",
+      "claim": "TAPL-GFP in CHO-K1 cells was not completely solubilized by non-ionic detergent under ice-cold conditions and co-sedimented with flotillin-1 on sucrose density gradient, indicating association with lipid raft microdomains of lysosomal membranes — consistent with intracellular (lysosomal) membrane residency.",
+      "claim_type": "surface_expression",
+      "direction": "refutes",
+      "evidence_type": "western_blot",
+      "evidence_tier": "primary",
+      "confidence": "moderate",
+      "assay_context": {
+        "species": "human",
+        "cell_type_or_line": "CHO-K1",
+        "permeabilized": null,
+        "fixation": null,
+        "isoform": null,
+        "cell_context": {
+          "material_kind": "cell_line",
+          "material_kind_other_label": null,
+          "cell_type": "Chinese hamster ovary cells",
+          "cell_line_name": "CHO-K1",
+          "cellosaurus_id": null,
+          "tissue": null,
+          "disease_state": null,
+          "activation_state": null
+        }
+      },
+      "spans": [
+        {
+          "source": {
+            "source_type": "pubmed",
+            "source_id": "PMID:21212514",
+            "pmc_id": null,
+            "url": "https://pubmed.ncbi.nlm.nih.gov/21212514/",
+            "title": "PMID:21212514",
+            "retrieved_at": "2026-06-08T21:22:09.662698Z",
+            "content_sha256": "483879ef75da414979098a4c37dfb48c1f33cc4851a482116b58a1d1a02473d1",
+            "publication_type": "other",
+            "is_retracted": false,
+            "retraction_checked_at": "2026-06-08T21:22:09.662698Z",
+            "license": "unknown"
+          },
+          "section": "abstract",
+          "figure_or_table_id": null,
+          "quote": "It was not solubilized completely with a non-ionic detergent under ice-cold conditions, and was co-sedimented with flotillin-1 on sucrose density gradient centrifugation.",
+          "quote_sha256": "2a5c28ccfdaeed354f2081c55ba87bfea358e545bd9476b1f8e8fb52f3ca63a9",
+          "char_offset": 520,
+          "normalized_source_sha256": "08ec12b451ed01c2bd098bb687455cdc4612cc050faaf0272e2a4cc3a8108df3"
+        }
+      ],
+      "entailment_verified": true,
+      "entailment_audit_passed": null,
+      "validation_warnings": [],
+      "duplicate_of": null
+    },
+    {
+      "evidence_id": "a1_evi_16",
+      "claim": "OE surface-localization precedent: core-TAPL construct (six predicted TM helices + NBD, lacking TMD0) overexpressed in mammalian cells is sufficient for peptide transport AND is preferentially targeted to the plasma membrane, in striking contrast to full-length TAPL which goes to lysosomes. TMD0 alone traffics to lysosomes. This is direct evidence that the core translocon domain CAN reach the PM when the lysosomal-targeting TMD0 is removed — but the full-length protein does not. SP source: full-length and truncated constructs, native sequence implied; no heterologous leader mentioned.",
+      "claim_type": "surface_expression",
+      "direction": "ambiguous",
+      "evidence_type": "immunofluorescence",
+      "evidence_tier": "primary",
+      "confidence": "moderate",
+      "assay_context": {
+        "species": "human",
+        "cell_type_or_line": "mammalian cells (OE, unspecified line)",
+        "permeabilized": null,
+        "fixation": "unspecified",
+        "isoform": null,
+        "cell_context": {
+          "material_kind": "cell_line",
+          "material_kind_other_label": null,
+          "cell_type": "mammalian cells (overexpression)",
+          "cell_line_name": "unknown",
+          "cellosaurus_id": null,
+          "tissue": null,
+          "disease_state": null,
+          "activation_state": null
+        }
+      },
+      "spans": [
+        {
+          "source": {
+            "source_type": "pubmed",
+            "source_id": "PMID:20377823",
+            "pmc_id": null,
+            "url": "https://pubmed.ncbi.nlm.nih.gov/20377823/",
+            "title": "PMID:20377823",
+            "retrieved_at": "2026-06-08T21:22:09.662698Z",
+            "content_sha256": "90a9ca942cf285289ef76dfe29e46b885b597b875ea6a3be4b082fca06258d21",
+            "publication_type": "other",
+            "is_retracted": false,
+            "retraction_checked_at": "2026-06-08T21:22:09.662698Z",
+            "license": "unknown"
+          },
+          "section": "abstract",
+          "figure_or_table_id": null,
+          "quote": "The core-TAPL complex, composed of six predicted transmembrane helices and a nucleotide-binding domain, is sufficient for peptide transport, showing that the core transport complex is correctly targeted to and assembled in the membrane. Strikingly, in contrast to the full-length transporter, the core translocation complex is targeted preferentially to the plasma membrane. However, TMD0 alone, comprising a putative four transmembrane helix bundle, traffics to lysosomes.",
+          "quote_sha256": "90a9ca942cf285289ef76dfe29e46b885b597b875ea6a3be4b082fca06258d21",
+          "char_offset": 0,
+          "normalized_source_sha256": "d0b923c50faa166a7a21321f92bac24480f03f2c532d31d2aab0a14c82964c0b"
+        }
+      ],
+      "entailment_verified": true,
+      "entailment_audit_passed": null,
+      "validation_warnings": [],
+      "duplicate_of": null
+    },
+    {
+      "evidence_id": "a1_evi_17",
+      "claim": "Full-length TAPL-GFP and the N-terminal domain (Met1-Arg141) both sorted to lysosomal membranes upon stable expression as visualized by fluorescence microscopy; the core domain (Arg141-Ala766) was broadly distributed in intracellular membranes but not specifically lysosomes. No plasma membrane signal was noted for full-length TAPL. This directly establishes lysosomal rather than plasma-membrane localization of full-length ABCB9.",
+      "claim_type": "surface_expression",
+      "direction": "refutes",
+      "evidence_type": "immunofluorescence",
+      "evidence_tier": "primary",
+      "confidence": "strong",
+      "assay_context": {
+        "species": "human",
+        "cell_type_or_line": "unspecified mammalian cells (stable OE)",
+        "permeabilized": null,
+        "fixation": "unspecified",
+        "isoform": null,
+        "cell_context": {
+          "material_kind": "cell_line",
+          "material_kind_other_label": null,
+          "cell_type": "mammalian cells (stable OE)",
+          "cell_line_name": "unknown",
+          "cellosaurus_id": null,
+          "tissue": null,
+          "disease_state": null,
+          "activation_state": null
+        }
+      },
+      "spans": [
+        {
+          "source": {
+            "source_type": "pubmed",
+            "source_id": "PMID:18952056",
+            "pmc_id": null,
+            "url": "https://pubmed.ncbi.nlm.nih.gov/18952056/",
+            "title": "PMID:18952056",
+            "retrieved_at": "2026-06-08T21:22:09.662698Z",
+            "content_sha256": "9dc62415dec1aeac1d0e1260c562899598022dcf6b7d113484408e3100e86bf8",
+            "publication_type": "other",
+            "is_retracted": false,
+            "retraction_checked_at": "2026-06-08T21:22:09.662698Z",
+            "license": "unknown"
+          },
+          "section": "abstract",
+          "figure_or_table_id": null,
+          "quote": "The amino-terminal domain (Met(1)-Arg(141)) as well as the full-length transporter fused with fluorescent protein GFP was sorted to lysosomal membranes upon their stable expression, as visualized by means of fluorescent microscopy, while the core domain (Arg(141)-Ala(766)) was broadly distributed in the intra-cellular membranes. These results suggest that the sorting signal for lysosomes is present within the amino-terminal transmembrane domain (Met(1)-Arg(141)) of the TAPL molecule.",
+          "quote_sha256": "9dc62415dec1aeac1d0e1260c562899598022dcf6b7d113484408e3100e86bf8",
+          "char_offset": 0,
+          "normalized_source_sha256": "cd9acbd2cd769ce3b121f649dd5413f9fe069abfcec31182cab2c6d9bacb7f55"
+        }
+      ],
+      "entailment_verified": true,
+      "entailment_audit_passed": null,
+      "validation_warnings": [],
+      "duplicate_of": null
+    },
+    {
+      "evidence_id": "a1_evi_18",
+      "claim": "shRNA construct for stable knockdown of human ABCB9 (sc-60115-SH, Santa Cruz Biotechnology) was used in the referenced study. This provides the knockdown reagent identifier enabling downstream assessment of antibody-validation strategy (siRNA/shRNA knockdown control).",
+      "claim_type": "methodological",
+      "direction": "ambiguous",
+      "evidence_type": "western_blot",
+      "evidence_tier": "secondary",
+      "confidence": "moderate",
+      "assay_context": {
+        "species": "human",
+        "cell_type_or_line": "unspecified human cells",
+        "permeabilized": null,
+        "fixation": null,
+        "isoform": null,
+        "cell_context": {
+          "material_kind": "cell_line",
+          "material_kind_other_label": null,
+          "cell_type": "transfected cells",
+          "cell_line_name": "unknown",
+          "cellosaurus_id": null,
+          "tissue": null,
+          "disease_state": null,
+          "activation_state": null
+        }
+      },
+      "spans": [
+        {
+          "source": {
+            "source_type": "pmc",
+            "source_id": "PMC:PMC10828454",
+            "pmc_id": "PMC10828454",
+            "url": "https://www.ncbi.nlm.nih.gov/pmc/articles/PMC10828454/",
+            "title": "PMC:PMC10828454",
+            "retrieved_at": "2026-06-08T21:22:09.662698Z",
+            "content_sha256": "631a51f46abc1b5013bc296dd0ee5ba09cf1dc1cf1b8a6d4d22c394f974897f7",
+            "publication_type": "other",
+            "is_retracted": false,
+            "retraction_checked_at": "2026-06-08T21:22:09.662698Z",
+            "license": "unknown"
+          },
+          "section": "methods",
+          "figure_or_table_id": null,
+          "quote": "Four hours later, transfection with jetPRIME (Polyplus transfection) was carried out following the manufacturer’s instructions.\nshRNAs constructs for the stable knockdown of human ABCB6 (sc-94721-SH) and ABCB9 (sc-60115-SH) were obtained from Santa Cruz Biotechnology.",
+          "quote_sha256": "15ac0d07189830e75e8e8874be58ed2ba522fd4bcd788016643390a1dfa2abdc",
+          "char_offset": 0,
+          "normalized_source_sha256": "b5c4ed3867b9fa02341bdd873791d35527cc96a86eaa0938e0ffccadcb45ef69"
+        }
+      ],
+      "entailment_verified": true,
+      "entailment_audit_passed": null,
+      "validation_warnings": [],
+      "duplicate_of": null
+    },
+    {
+      "evidence_id": "a1_evi_19",
+      "claim": "ABCB9 mRNA expression was assessed by RT-qPCR and protein expression by Western blot after 10 days of shRNA selection in the referenced study. No membrane fractionation step is mentioned; this is a whole-cell protein detection readout without surface specificity.",
+      "claim_type": "tissue_expression",
+      "direction": "ambiguous",
+      "evidence_type": "western_blot",
+      "evidence_tier": "secondary",
+      "confidence": "moderate",
+      "assay_context": {
+        "species": "human",
+        "cell_type_or_line": "unspecified human cells (shRNA knockdown)",
+        "permeabilized": null,
+        "fixation": null,
+        "isoform": null,
+        "cell_context": {
+          "material_kind": "cell_line",
+          "material_kind_other_label": null,
+          "cell_type": "stably transduced cells",
+          "cell_line_name": "unknown",
+          "cellosaurus_id": null,
+          "tissue": null,
+          "disease_state": null,
+          "activation_state": null
+        }
+      },
+      "spans": [
+        {
+          "source": {
+            "source_type": "pmc",
+            "source_id": "PMC:PMC10828454",
+            "pmc_id": "PMC10828454",
+            "url": "https://www.ncbi.nlm.nih.gov/pmc/articles/PMC10828454/",
+            "title": "PMC:PMC10828454",
+            "retrieved_at": "2026-06-08T21:22:09.662698Z",
+            "content_sha256": "631a51f46abc1b5013bc296dd0ee5ba09cf1dc1cf1b8a6d4d22c394f974897f7",
+            "publication_type": "other",
+            "is_retracted": false,
+            "retraction_checked_at": "2026-06-08T21:22:09.662698Z",
+            "license": "unknown"
+          },
+          "section": "methods",
+          "figure_or_table_id": null,
+          "quote": "After 10 days of selection, ABCB6 and ABCB9 mRNA and protein expression were assessed using reverse transcription-quantitative polymerase chain reaction and Western blot.",
+          "quote_sha256": "ba9b7ab0a0c2632e123a8128758d74c7bb4d4236c06943e0d44f11deadf79632",
+          "char_offset": 269,
+          "normalized_source_sha256": "b5c4ed3867b9fa02341bdd873791d35527cc96a86eaa0938e0ffccadcb45ef69"
+        }
+      ],
+      "entailment_verified": true,
+      "entailment_audit_passed": null,
+      "validation_warnings": [],
+      "duplicate_of": null
+    },
+    {
+      "evidence_id": "a1_evi_20",
+      "claim": "Label-free proteomics of isolated brain microvessels (BBB tissue) quantified Abcb9 protein using MaxQuant analysis in rodent. This is a whole-tissue proteomics result without membrane fractionation or surface-specific capture, so it confirms ABCB9 protein expression in vascular tissue but provides no information on plasma membrane accessibility.",
+      "claim_type": "tissue_expression",
+      "direction": "ambiguous",
+      "evidence_type": "mass_spec_surfaceome",
+      "evidence_tier": "secondary",
+      "confidence": "weak",
+      "assay_context": {
+        "species": "mouse",
+        "cell_type_or_line": "brain microvessels (isolated)",
+        "permeabilized": null,
+        "fixation": null,
+        "isoform": null,
+        "cell_context": {
+          "material_kind": "primary_tissue",
+          "material_kind_other_label": null,
+          "cell_type": "brain microvessels",
+          "cell_line_name": null,
+          "cellosaurus_id": null,
+          "tissue": "brain",
+          "disease_state": null,
+          "activation_state": null
+        }
+      },
+      "spans": [
+        {
+          "source": {
+            "source_type": "pubmed",
+            "source_id": "PMID:29675872",
+            "pmc_id": null,
+            "url": "https://pubmed.ncbi.nlm.nih.gov/29675872/",
+            "title": "PMID:29675872",
+            "retrieved_at": "2026-06-08T21:22:09.662698Z",
+            "content_sha256": "5f43d61ea49ddb0ddcbc247117ddc4ccb07dd3e2750bdc39a1905ee5791d9986",
+            "publication_type": "other",
+            "is_retracted": false,
+            "retraction_checked_at": "2026-06-08T21:22:09.662698Z",
+            "license": "unknown"
+          },
+          "section": "abstract",
+          "figure_or_table_id": null,
+          "quote": "Label-free proteomics was used to identify nearly 2000 proteins and quantify 1276 proteins in isolated microvessels. A combination of targeted and global proteomics was adopted to measure protein abundance of 6 ATP-binding cassette and 27 solute carrier transporters. Data analysis using proprietary Progenesis and open access MaxQuant software showed overall agreement; however, Abcb9 and Slc22a8 were quantified only by MaxQuant, whereas Abcc9 and Abcd3 were quantified only by Progenesis.",
+          "quote_sha256": "5f43d61ea49ddb0ddcbc247117ddc4ccb07dd3e2750bdc39a1905ee5791d9986",
+          "char_offset": 0,
+          "normalized_source_sha256": "fc99ca69eea33117f56b4d6c407b9ea0a3ffb64e5dec48334a5954c95ba16a1a"
+        }
+      ],
+      "entailment_verified": true,
+      "entailment_audit_passed": null,
+      "validation_warnings": [],
+      "duplicate_of": null
+    },
+    {
+      "evidence_id": "a2_evi_01",
+      "claim": "ABCB9 (TAPL) expression is strongly induced during differentiation of monocytes to dendritic cells and to macrophages; it is not expressed in resting monocytes. In these antigen-presenting cell lineages, TAPL localizes to the lysosomal compartment, co-localizing with LAMP-2 as demonstrated by quantitative immunofluorescence and subcellular fractionation.",
+      "claim_type": "tissue_expression",
+      "direction": "supports",
+      "evidence_type": "immunofluorescence",
+      "evidence_tier": "primary",
+      "confidence": "strong",
+      "assay_context": {
+        "species": "human",
+        "cell_type_or_line": "monocytes, monocyte-derived dendritic cells, monocyte-derived macrophages",
+        "permeabilized": true,
+        "fixation": "fixed",
+        "isoform": null,
+        "cell_context": {
+          "material_kind": "primary_cell",
+          "material_kind_other_label": null,
+          "cell_type": "monocytes / dendritic cells / macrophages",
+          "cell_line_name": null,
+          "cellosaurus_id": null,
+          "tissue": null,
+          "disease_state": null,
+          "activation_state": "differentiated (monocyte→DC or macrophage)"
+        }
+      },
+      "spans": [
+        {
+          "source": {
+            "source_type": "pubmed",
+            "source_id": "PMID:17977821",
+            "pmc_id": null,
+            "url": "https://pubmed.ncbi.nlm.nih.gov/17977821/",
+            "title": "PMID:17977821",
+            "retrieved_at": "2026-06-08T21:22:09.662698Z",
+            "content_sha256": "e5e86271452d2be4f9a1a99656a35edb0743103c6083045d61b72c9f8243558c",
+            "publication_type": "other",
+            "is_retracted": false,
+            "retraction_checked_at": "2026-06-08T21:22:09.662698Z",
+            "license": "unknown"
+          },
+          "section": "abstract",
+          "figure_or_table_id": null,
+          "quote": "Remarkably, TAPL expression is strongly induced during differentiation of monocytes to dendritic cells and to macrophages. TAPL does not, however, restore MHC class I surface expression in TAP-deficient cells, demonstrating that TAPL alone or in combination with single TAP subunits does not form a functional transport complex required for peptide loading of MHC I in the endoplasmic reticulum. In fact, by using quantitative immunofluorescence and subcellular fractionation, TAPL was detected in the lysosomal compartment co-localizing with the lysosome-associated membrane protein LAMP-2.",
+          "quote_sha256": "e5e86271452d2be4f9a1a99656a35edb0743103c6083045d61b72c9f8243558c",
+          "char_offset": 0,
+          "normalized_source_sha256": "96b5cd1f27fd21014a3ab2cd77b67ae1a73eba4e47ada1cc53a19afaf005d3ef"
+        }
+      ],
+      "entailment_verified": true,
+      "entailment_audit_passed": null,
+      "validation_warnings": [],
+      "duplicate_of": null
+    },
+    {
+      "evidence_id": "a2_evi_02",
+      "claim": "ABCB9 (TAPL) is expressed at high levels in testicular Sertoli cells, which are known for lysosomal-mediated phagocytosis; this is a key tissue with enriched ABCB9 expression.",
+      "claim_type": "tissue_expression",
+      "direction": "supports",
+      "evidence_type": "review_assertion",
+      "evidence_tier": "secondary",
+      "confidence": "moderate",
+      "assay_context": {
+        "species": "human",
+        "cell_type_or_line": "testicular Sertoli cells",
+        "permeabilized": null,
+        "fixation": null,
+        "isoform": null,
+        "cell_context": {
+          "material_kind": "primary_tissue",
+          "material_kind_other_label": null,
+          "cell_type": "Sertoli cells",
+          "cell_line_name": null,
+          "cellosaurus_id": null,
+          "tissue": "testis",
+          "disease_state": null,
+          "activation_state": null
+        }
+      },
+      "spans": [
+        {
+          "source": {
+            "source_type": "pmc",
+            "source_id": "PMC:PMC9532399",
+            "pmc_id": "PMC9532399",
+            "url": "https://www.ncbi.nlm.nih.gov/pmc/articles/PMC9532399/",
+            "title": "PMC:PMC9532399",
+            "retrieved_at": "2026-06-08T21:22:09.662698Z",
+            "content_sha256": "c5395fc8afc2248e56f1512bf3ec8f0ac767547db55b6f516c3db2a56230c00b",
+            "publication_type": "other",
+            "is_retracted": false,
+            "retraction_checked_at": "2026-06-08T21:22:09.662698Z",
+            "license": "unknown"
+          },
+          "section": "introduction",
+          "figure_or_table_id": null,
+          "quote": "Despite its high sequence homology to the TAP complex, TAPL is not involved in the MHC class I-dependent pathway of antigen presentation 14 , and high levels are found in testicular Sertoli cells, which function in lysosomal-mediated phagocytosis 7 .",
+          "quote_sha256": "b8c0da1961f17131cac8c1be0b531cdec96daf9430c078aeb1bdc2bab6d9f7dc",
+          "char_offset": 420,
+          "normalized_source_sha256": "7d0f23a47ef059dd5d8b86400e4683759fad55b8c45f9b6da87dbfcb4e926ebd"
+        }
+      ],
+      "entailment_verified": true,
+      "entailment_audit_passed": null,
+      "validation_warnings": [],
+      "duplicate_of": null
+    },
+    {
+      "evidence_id": "a2_evi_03",
+      "claim": "Placental Abcb9 mRNA/protein expression is decreased in pregnant mice with malaria-in-pregnancy (Plasmodium berghei ANKA infection) compared to uninfected controls, indicating disease-state-dependent downregulation of ABCB9 in placental tissue.",
+      "claim_type": "tissue_expression",
+      "direction": "supports",
+      "evidence_type": "rna_seq",
+      "evidence_tier": "primary",
+      "confidence": "moderate",
+      "assay_context": {
+        "species": "mouse",
+        "cell_type_or_line": "placenta",
+        "permeabilized": null,
+        "fixation": null,
+        "isoform": null,
+        "cell_context": {
+          "material_kind": "primary_tissue",
+          "material_kind_other_label": null,
+          "cell_type": null,
+          "cell_line_name": null,
+          "cellosaurus_id": null,
+          "tissue": "placenta",
+          "disease_state": "malaria-in-pregnancy (Plasmodium berghei ANKA)",
+          "activation_state": null
+        }
+      },
+      "spans": [
+        {
+          "source": {
+            "source_type": "pmc",
+            "source_id": "PMC:PMC6685947",
+            "pmc_id": "PMC6685947",
+            "url": "https://www.ncbi.nlm.nih.gov/pmc/articles/PMC6685947/",
+            "title": "PMC:PMC6685947",
+            "retrieved_at": "2026-06-08T21:22:09.662698Z",
+            "content_sha256": "368d67977dee57aadb2ca85909e5204a2b43bd3bab559ebab74468f1ac480dae",
+            "publication_type": "other",
+            "is_retracted": false,
+            "retraction_checked_at": "2026-06-08T21:22:09.662698Z",
+            "license": "unknown"
+          },
+          "section": "abstract",
+          "figure_or_table_id": null,
+          "quote": "Additionally, a decrease in placental Abca1 (ABCA1), Abcb1b (P-glycoprotein), Abcb9 and Abcg2 (BCRP) expression was observed in MiP mice.",
+          "quote_sha256": "368d67977dee57aadb2ca85909e5204a2b43bd3bab559ebab74468f1ac480dae",
+          "char_offset": 0,
+          "normalized_source_sha256": "ae4c0f7ce6ed97e647cf66587e84c06a0b6b2d484e7c2479e4a0beb28e3fee65"
+        }
+      ],
+      "entailment_verified": true,
+      "entailment_audit_passed": null,
+      "validation_warnings": [],
+      "duplicate_of": null
+    },
+    {
+      "evidence_id": "a2_evi_04",
+      "claim": "ABCB9 (Abcb9) protein was quantified by label-free proteomics in isolated rat blood-brain barrier microvessels, establishing its presence at the protein level in this specialized brain vascular compartment.",
+      "claim_type": "tissue_expression",
+      "direction": "supports",
+      "evidence_type": "mass_spec_surfaceome",
+      "evidence_tier": "primary",
+      "confidence": "moderate",
+      "assay_context": {
+        "species": "rat",
+        "cell_type_or_line": "brain microvessels / blood-brain barrier",
+        "permeabilized": null,
+        "fixation": null,
+        "isoform": null,
+        "cell_context": {
+          "material_kind": "primary_tissue",
+          "material_kind_other_label": null,
+          "cell_type": null,
+          "cell_line_name": null,
+          "cellosaurus_id": null,
+          "tissue": "brain microvessels",
+          "disease_state": null,
+          "activation_state": null
+        }
+      },
+      "spans": [
+        {
+          "source": {
+            "source_type": "pubmed",
+            "source_id": "PMID:29675872",
+            "pmc_id": null,
+            "url": "https://pubmed.ncbi.nlm.nih.gov/29675872/",
+            "title": "PMID:29675872",
+            "retrieved_at": "2026-06-08T21:22:09.662698Z",
+            "content_sha256": "5f43d61ea49ddb0ddcbc247117ddc4ccb07dd3e2750bdc39a1905ee5791d9986",
+            "publication_type": "other",
+            "is_retracted": false,
+            "retraction_checked_at": "2026-06-08T21:22:09.662698Z",
+            "license": "unknown"
+          },
+          "section": "abstract",
+          "figure_or_table_id": null,
+          "quote": "Label-free proteomics was used to identify nearly 2000 proteins and quantify 1276 proteins in isolated microvessels. A combination of targeted and global proteomics was adopted to measure protein abundance of 6 ATP-binding cassette and 27 solute carrier transporters. Data analysis using proprietary Progenesis and open access MaxQuant software showed overall agreement; however, Abcb9 and Slc22a8 were quantified only by MaxQuant, whereas Abcc9 and Abcd3 were quantified only by Progenesis.",
+          "quote_sha256": "5f43d61ea49ddb0ddcbc247117ddc4ccb07dd3e2750bdc39a1905ee5791d9986",
+          "char_offset": 0,
+          "normalized_source_sha256": "fc99ca69eea33117f56b4d6c407b9ea0a3ffb64e5dec48334a5954c95ba16a1a"
+        }
+      ],
+      "entailment_verified": true,
+      "entailment_audit_passed": null,
+      "validation_warnings": [],
+      "duplicate_of": "a1_evi_20"
+    },
+    {
+      "evidence_id": "a2_evi_05",
+      "claim": "ABC transporter gene expression patterns in human brain microvessels versus peripheral tissues (lung, liver, spleen) and lung vessels were systematically profiled by RNA-seq across human, mouse, and rat; most ABC transporters including ABCB9 are enriched in peripheral tissues compared to brain microvessels in humans.",
+      "claim_type": "tissue_expression",
+      "direction": "supports",
+      "evidence_type": "rna_seq",
+      "evidence_tier": "primary",
+      "confidence": "moderate",
+      "assay_context": {
+        "species": "human",
+        "cell_type_or_line": "brain microvessels, lung, liver, spleen",
+        "permeabilized": null,
+        "fixation": null,
+        "isoform": null,
+        "cell_context": {
+          "material_kind": "primary_tissue",
+          "material_kind_other_label": null,
+          "cell_type": null,
+          "cell_line_name": null,
+          "cellosaurus_id": null,
+          "tissue": "brain microvessels / peripheral tissues",
+          "disease_state": null,
+          "activation_state": null
+        }
+      },
+      "spans": [
+        {
+          "source": {
+            "source_type": "pmc",
+            "source_id": "PMC:PMC10221359",
+            "pmc_id": "PMC10221359",
+            "url": "https://www.ncbi.nlm.nih.gov/pmc/articles/PMC10221359/",
+            "title": "PMC:PMC10221359",
+            "retrieved_at": "2026-06-08T21:22:09.662698Z",
+            "content_sha256": "0b05287432712f6cdbcc3bbd5c2fe1a6e328f1e16bc38b84b087bde4f8397d79",
+            "publication_type": "other",
+            "is_retracted": false,
+            "retraction_checked_at": "2026-06-08T21:22:09.662698Z",
+            "license": "unknown"
+          },
+          "section": "abstract",
+          "figure_or_table_id": null,
+          "quote": "The expression patterns/enrichment of <i>ABC</i> transporter genes in brain microvessels compared to peripheral vessels and tissues are largely uncharacterized.<h4>Methods</h4>In this study, the expression patterns of <i>ABC</i> transporter genes in brain microvessels, peripheral tissues (lung, liver and spleen) and lung vessels were investigated using RNA-seq and Wes<sup>TM</sup> analyses in three species: human, mouse and rat.<h4>Results</h4>The study demonstrated that <i>ABC</i> drug efflux transporter genes (including <i>ABCB1</i>, <i>ABCG2</i>",
+          "quote_sha256": "0b05287432712f6cdbcc3bbd5c2fe1a6e328f1e16bc38b84b087bde4f8397d79",
+          "char_offset": 0,
+          "normalized_source_sha256": "2a6c6b158f19d9bc603ec0397f6885fb9de13c77dc248f8eba6fac16213d81d6"
+        }
+      ],
+      "entailment_verified": true,
+      "entailment_audit_passed": null,
+      "validation_warnings": [],
+      "duplicate_of": null
+    },
+    {
+      "evidence_id": "a2_evi_06",
+      "claim": "ABCB9 is expressed in regulatory T cells (Tregs) and localizes to the lysosomal membrane within these cells. In the tumor microenvironment, ABCB9 participates in lysosomal metabolic programs in both tumor cells and human Tregs. Suppression of ABCB9 impairs GARP/TGF-β1 production, indicating a functional role in Treg immunosuppression.",
+      "claim_type": "tissue_expression",
+      "direction": "supports",
+      "evidence_type": "functional_assay",
+      "evidence_tier": "primary",
+      "confidence": "moderate",
+      "assay_context": {
+        "species": "human",
+        "cell_type_or_line": "regulatory T cells (Tregs), tumor cells",
+        "permeabilized": null,
+        "fixation": null,
+        "isoform": null,
+        "cell_context": {
+          "material_kind": "primary_cell",
+          "material_kind_other_label": null,
+          "cell_type": "regulatory T cells (Tregs)",
+          "cell_line_name": null,
+          "cellosaurus_id": null,
+          "tissue": null,
+          "disease_state": "tumor microenvironment",
+          "activation_state": null
+        }
+      },
+      "spans": [
+        {
+          "source": {
+            "source_type": "pubmed",
+            "source_id": "PMID:38698265",
+            "pmc_id": null,
+            "url": "https://pubmed.ncbi.nlm.nih.gov/38698265/",
+            "title": "PMID:38698265",
+            "retrieved_at": "2026-06-08T21:22:09.662698Z",
+            "content_sha256": "b5c71abfcb25a459b5809a63e6acc6bafff01addc618aca929caccdf1cc41060",
+            "publication_type": "other",
+            "is_retracted": false,
+            "retraction_checked_at": "2026-06-08T21:22:09.662698Z",
+            "license": "unknown"
+          },
+          "section": "abstract",
+          "figure_or_table_id": null,
+          "quote": "Here, we demonstrated that tumour necrosis factor receptor-associated factor 3 interacting protein 3 (TRAF3IP3) in the Treg lysosome is involved in this activation mechanism. Using a novel naphthalenelactam-platinum-based anticancer drug (NPt), we developed a new synergistic effect by suppressing ATP-binding cassette subfamily B member 9 (ABCB9) and TRAF3IP3-mediated divergent lysosomal metabolic programs in tumors and human Tregs to block the production of active GARP/TGF-β1 for remodeling the tumor microenvironment.",
+          "quote_sha256": "5fb18c58eae100c00a4471f1f034fdc025e1ba7627e2fafea95f57398e73733c",
+          "char_offset": 0,
+          "normalized_source_sha256": "414b5a90699d110cdf4a8f8a5072d7e20e3326aeffc0927d6c513e1adb52bd87"
+        }
+      ],
+      "entailment_verified": true,
+      "entailment_audit_passed": null,
+      "validation_warnings": [],
+      "duplicate_of": null
+    },
+    {
+      "evidence_id": "a2_evi_07",
+      "claim": "ABCB9 (TAPL) expression is induced upon dendritic cell differentiation, consistent with a cell-state-dependent upregulation in professional antigen-presenting cells. This represents an accessibility modulation: baseline (resting monocytes) = absent/low; differentiated state (DCs) = induced.",
+      "claim_type": "tissue_expression",
+      "direction": "supports",
+      "evidence_type": "review_assertion",
+      "evidence_tier": "secondary",
+      "confidence": "moderate",
+      "assay_context": {
+        "species": "human",
+        "cell_type_or_line": "monocytes / dendritic cells",
+        "permeabilized": null,
+        "fixation": null,
+        "isoform": null,
+        "cell_context": {
+          "material_kind": "primary_cell",
+          "material_kind_other_label": null,
+          "cell_type": "dendritic cells",
+          "cell_line_name": null,
+          "cellosaurus_id": null,
+          "tissue": null,
+          "disease_state": null,
+          "activation_state": "differentiated from monocytes"
+        }
+      },
+      "spans": [
+        {
+          "source": {
+            "source_type": "pubmed",
+            "source_id": "PMID:21212514",
+            "pmc_id": null,
+            "url": "https://pubmed.ncbi.nlm.nih.gov/21212514/",
+            "title": "PMID:21212514",
+            "retrieved_at": "2026-06-08T21:22:09.662698Z",
+            "content_sha256": "483879ef75da414979098a4c37dfb48c1f33cc4851a482116b58a1d1a02473d1",
+            "publication_type": "other",
+            "is_retracted": false,
+            "retraction_checked_at": "2026-06-08T21:22:09.662698Z",
+            "license": "unknown"
+          },
+          "section": "discussion",
+          "figure_or_table_id": null,
+          "quote": "Although the physiological roles of TAPL have not been determined, expression of TAPL is induced upon dendritic cell differentiation. 12) Peptide transport into lysosomes could be enhanced under such conditions.",
+          "quote_sha256": "88a9598484305a587074533fbcecb4d9f5eda056f524c692ef951210b1ae5456",
+          "char_offset": 691,
+          "normalized_source_sha256": "08ec12b451ed01c2bd098bb687455cdc4612cc050faaf0272e2a4cc3a8108df3"
+        }
+      ],
+      "entailment_verified": true,
+      "entailment_audit_passed": null,
+      "validation_warnings": [],
+      "duplicate_of": null
+    },
+    {
+      "evidence_id": "a2_evi_08",
+      "claim": "Full-length ABCB9 (TAPL-GFP) co-localizes with the lysosomal marker LysoTracker in mammalian cells, while free GFP does not, confirming lysosomal membrane as the primary subcellular compartment. TAPL does not localize to ER or endosomes.",
+      "claim_type": "surface_expression",
+      "direction": "refutes",
+      "evidence_type": "immunofluorescence",
+      "evidence_tier": "primary",
+      "confidence": "strong",
+      "assay_context": {
+        "species": "human",
+        "cell_type_or_line": "transfected mammalian cells",
+        "permeabilized": true,
+        "fixation": "fixed",
+        "isoform": null,
+        "cell_context": {
+          "material_kind": "cell_line",
+          "material_kind_other_label": null,
+          "cell_type": "mammalian cultured cells",
+          "cell_line_name": null,
+          "cellosaurus_id": null,
+          "tissue": null,
+          "disease_state": null,
+          "activation_state": null
+        }
+      },
+      "spans": [
+        {
+          "source": {
+            "source_type": "pubmed",
+            "source_id": "PMID:21212514",
+            "pmc_id": null,
+            "url": "https://pubmed.ncbi.nlm.nih.gov/21212514/",
+            "title": "PMID:21212514",
+            "retrieved_at": "2026-06-08T21:22:09.662698Z",
+            "content_sha256": "483879ef75da414979098a4c37dfb48c1f33cc4851a482116b58a1d1a02473d1",
+            "publication_type": "other",
+            "is_retracted": false,
+            "retraction_checked_at": "2026-06-08T21:22:09.662698Z",
+            "license": "unknown"
+          },
+          "section": "results",
+          "figure_or_table_id": null,
+          "quote": "The merged image (right) showed the good co-localization of the signals of hTAPL-GFP and LysoTracker, while the signal of free GFP did not overlap with that of LysoTracker (Fig. 1A, lower).",
+          "quote_sha256": "550348cc73ec20208bd9b72a9c029011e4c4a7c3191c9c323d8b9d79c5c994e6",
+          "char_offset": 903,
+          "normalized_source_sha256": "08ec12b451ed01c2bd098bb687455cdc4612cc050faaf0272e2a4cc3a8108df3"
+        }
+      ],
+      "entailment_verified": true,
+      "entailment_audit_passed": null,
+      "validation_warnings": [],
+      "duplicate_of": null
+    },
+    {
+      "evidence_id": "a2_evi_09",
+      "claim": "The core-TAPL complex (six-TM + NBD, lacking TMD0) localizes preferentially to the plasma membrane when expressed alone, demonstrating that TMD0 is the determinant of lysosomal vs plasma membrane targeting. Full-length TAPL with TMD0 is directed to lysosomes. This establishes that the full-length protein is a lysosomal membrane protein, not a cell-surface protein under normal conditions.",
+      "claim_type": "surface_expression",
+      "direction": "refutes",
+      "evidence_type": "immunofluorescence",
+      "evidence_tier": "primary",
+      "confidence": "strong",
+      "assay_context": {
+        "species": "human",
+        "cell_type_or_line": "transfected mammalian cells",
+        "permeabilized": true,
+        "fixation": "fixed",
+        "isoform": null,
+        "cell_context": {
+          "material_kind": "cell_line",
+          "material_kind_other_label": null,
+          "cell_type": "mammalian cultured cells",
+          "cell_line_name": null,
+          "cellosaurus_id": null,
+          "tissue": null,
+          "disease_state": null,
+          "activation_state": null
+        }
+      },
+      "spans": [
+        {
+          "source": {
+            "source_type": "pubmed",
+            "source_id": "PMID:20377823",
+            "pmc_id": null,
+            "url": "https://pubmed.ncbi.nlm.nih.gov/20377823/",
+            "title": "PMID:20377823",
+            "retrieved_at": "2026-06-08T21:22:09.662698Z",
+            "content_sha256": "90a9ca942cf285289ef76dfe29e46b885b597b875ea6a3be4b082fca06258d21",
+            "publication_type": "other",
+            "is_retracted": false,
+            "retraction_checked_at": "2026-06-08T21:22:09.662698Z",
+            "license": "unknown"
+          },
+          "section": "abstract",
+          "figure_or_table_id": null,
+          "quote": "The core-TAPL complex, composed of six predicted transmembrane helices and a nucleotide-binding domain, is sufficient for peptide transport, showing that the core transport complex is correctly targeted to and assembled in the membrane. Strikingly, in contrast to the full-length transporter, the core translocation complex is targeted preferentially to the plasma membrane. However, TMD0 alone, comprising a putative four transmembrane helix bundle, traffics to lysosomes.",
+          "quote_sha256": "90a9ca942cf285289ef76dfe29e46b885b597b875ea6a3be4b082fca06258d21",
+          "char_offset": 0,
+          "normalized_source_sha256": "d0b923c50faa166a7a21321f92bac24480f03f2c532d31d2aab0a14c82964c0b"
+        }
+      ],
+      "entailment_verified": true,
+      "entailment_audit_passed": null,
+      "validation_warnings": [],
+      "duplicate_of": "a1_evi_16"
+    },
+    {
+      "evidence_id": "a2_evi_10",
+      "claim": "In LAMP-deficient cells, ABCB9 (TAPL) stability is markedly reduced (half-life decreased ~5-fold) due to increased lysosomal degradation. LAMP proteins normally retain TAPL on the limiting membrane of endosomes/lysosomes and prevent its sorting to intraluminal vesicles (ILVs). This LAMP interaction is a critical determinant of ABCB9's subcellular compartment positioning on the lysosomal limiting membrane rather than ILVs.",
+      "claim_type": "surface_expression",
+      "direction": "refutes",
+      "evidence_type": "functional_assay",
+      "evidence_tier": "primary",
+      "confidence": "strong",
+      "assay_context": {
+        "species": "human",
+        "cell_type_or_line": "LAMP-deficient cells",
+        "permeabilized": null,
+        "fixation": null,
+        "isoform": null,
+        "cell_context": {
+          "material_kind": "cell_line",
+          "material_kind_other_label": null,
+          "cell_type": "LAMP1/LAMP2-deficient cells",
+          "cell_line_name": null,
+          "cellosaurus_id": null,
+          "tissue": null,
+          "disease_state": "LAMP knockout",
+          "activation_state": null
+        }
+      },
+      "spans": [
+        {
+          "source": {
+            "source_type": "pubmed",
+            "source_id": "PMID:22641697",
+            "pmc_id": null,
+            "url": "https://pubmed.ncbi.nlm.nih.gov/22641697/",
+            "title": "PMID:22641697",
+            "retrieved_at": "2026-06-08T21:22:09.662698Z",
+            "content_sha256": "578abcb9c536a1414c23aaaaa827ae9a9f33ba80f005f9fe1ff63d057c9849e2",
+            "publication_type": "other",
+            "is_retracted": false,
+            "retraction_checked_at": "2026-06-08T21:22:09.662698Z",
+            "license": "unknown"
+          },
+          "section": "abstract",
+          "figure_or_table_id": null,
+          "quote": "Reduced stability of TAPL is caused by increased lysosomal degradation, indicating that LAMP proteins retain TAPL on the limiting membrane of endosomes and prevent its sorting to intraluminal vesicles.",
+          "quote_sha256": "578abcb9c536a1414c23aaaaa827ae9a9f33ba80f005f9fe1ff63d057c9849e2",
+          "char_offset": 0,
+          "normalized_source_sha256": "3cef387384bfa23e48024e4059db7cc9d473123ab5418bf5653335fde770ce7d"
+        }
+      ],
+      "entailment_verified": true,
+      "entailment_audit_passed": null,
+      "validation_warnings": [],
+      "duplicate_of": null
+    },
+    {
+      "evidence_id": "a2_evi_11",
+      "claim": "Full-length ABCB9 (TAPL) subcellular localization depends solely on its N-terminal TMD0 domain (which lacks conventional lysosomal targeting sequences). The intracellular trafficking route to lysosomes is direct; conserved charged residues in TMD0 transmembrane helices are essential for lysosomal targeting steps.",
+      "claim_type": "surface_expression",
+      "direction": "refutes",
+      "evidence_type": "immunofluorescence",
+      "evidence_tier": "primary",
+      "confidence": "strong",
+      "assay_context": {
+        "species": "human",
+        "cell_type_or_line": "transfected cells",
+        "permeabilized": true,
+        "fixation": "fixed",
+        "isoform": null,
+        "cell_context": {
+          "material_kind": "cell_line",
+          "material_kind_other_label": null,
+          "cell_type": "mammalian cultured cells",
+          "cell_line_name": null,
+          "cellosaurus_id": null,
+          "tissue": null,
+          "disease_state": null,
+          "activation_state": null
+        }
+      },
+      "spans": [
+        {
+          "source": {
+            "source_type": "pmc",
+            "source_id": "PMC:PMC6509505",
+            "pmc_id": "PMC6509505",
+            "url": "https://www.ncbi.nlm.nih.gov/pmc/articles/PMC6509505/",
+            "title": "PMC:PMC6509505",
+            "retrieved_at": "2026-06-08T21:22:09.662698Z",
+            "content_sha256": "9dbcab449620c132b553861dff73dba1a00d6c36723899f088339fac3aae2227",
+            "publication_type": "other",
+            "is_retracted": false,
+            "retraction_checked_at": "2026-06-08T21:22:09.662698Z",
+            "license": "unknown"
+          },
+          "section": "abstract",
+          "figure_or_table_id": null,
+          "quote": "The human lysosomal polypeptide ABC transporter TAPL (ABC subfamily B member 9, ABCB9) transports 6-59-amino-acid-long polypeptides from the cytosol into lysosomes. The subcellular localization of TAPL depends solely on its N-terminal transmembrane domain, TMD0, which lacks conventional targeting sequences. However, the intracellular route and the molecular mechanisms that control TAPL localization remain unclear. Here, we delineated the route of TAPL to lysosomes and investigated the determinants of single trafficking steps.",
+          "quote_sha256": "9dbcab449620c132b553861dff73dba1a00d6c36723899f088339fac3aae2227",
+          "char_offset": 0,
+          "normalized_source_sha256": "2e0c70d9196a77596969f166656c2883256b5f38459244d7125c407048b87476"
+        }
+      ],
+      "entailment_verified": true,
+      "entailment_audit_passed": null,
+      "validation_warnings": [],
+      "duplicate_of": null
+    },
+    {
+      "evidence_id": "a2_evi_12",
+      "claim": "An N-terminal truncation of TAPL (M1-G75, TAPL-S-GFP) distributes over all cellular membranes including the plasma membrane, whereas full-length TAPL localizes to intracellular membranes. This indicates that the M1-S275 region is essential for restricting TAPL to intracellular membranes and away from the cell surface.",
+      "claim_type": "surface_expression",
+      "direction": "refutes",
+      "evidence_type": "immunofluorescence",
+      "evidence_tier": "primary",
+      "confidence": "strong",
+      "assay_context": {
+        "species": "human",
+        "cell_type_or_line": "transfected mammalian cells",
+        "permeabilized": true,
+        "fixation": "fixed",
+        "isoform": null,
+        "cell_context": {
+          "material_kind": "cell_line",
+          "material_kind_other_label": null,
+          "cell_type": "mammalian cultured cells",
+          "cell_line_name": null,
+          "cellosaurus_id": null,
+          "tissue": null,
+          "disease_state": null,
+          "activation_state": null
+        }
+      },
+      "spans": [
+        {
+          "source": {
+            "source_type": "pubmed",
+            "source_id": "PMID:15577206",
+            "pmc_id": null,
+            "url": "https://pubmed.ncbi.nlm.nih.gov/15577206/",
+            "title": "PMID:15577206",
+            "retrieved_at": "2026-06-08T21:22:09.662698Z",
+            "content_sha256": "a525d0c19da49ab7bd3d529306c07ac30bac156f2849751d4172001c9b229791",
+            "publication_type": "other",
+            "is_retracted": false,
+            "retraction_checked_at": "2026-06-08T21:22:09.662698Z",
+            "license": "unknown"
+          },
+          "section": "abstract",
+          "figure_or_table_id": null,
+          "quote": "However, the fluorescence of TAPL-S-GFP (M1-G75) was distributed over all the cellular membranes including plasma membrane, indicating that the amino terminal region of TAPL (M1-S275) is essential for its localization to the intracellular membranes. A co-expression study demonstrated that TAPL-S-GFP was co-localized with TAPL-DR (DsRed-tagged TAPL) or TAP1-DR, suggesting that TAPL is able to interact with not only itself but also with TAP1 through the M1-G75 region of TAPL.",
+          "quote_sha256": "a525d0c19da49ab7bd3d529306c07ac30bac156f2849751d4172001c9b229791",
+          "char_offset": 0,
+          "normalized_source_sha256": "b822d755df9df3b40848e7eabc0af64da1dc3b7b2f7f7ef4015a0978141a683f"
+        }
+      ],
+      "entailment_verified": true,
+      "entailment_audit_passed": null,
+      "validation_warnings": [],
+      "duplicate_of": null
+    },
+    {
+      "evidence_id": "a2_evi_13",
+      "claim": "The full-length ABCB9 (TAPL) protein fused to GFP localizes to lysosomal membranes upon stable expression. The N-terminal domain (Met1-Arg141) is sufficient for lysosomal targeting, while the core domain (Arg141-Ala766) distributes broadly to intracellular membranes. The lysosomal sorting signal resides within TMD0.",
+      "claim_type": "surface_expression",
+      "direction": "refutes",
+      "evidence_type": "immunofluorescence",
+      "evidence_tier": "primary",
+      "confidence": "strong",
+      "assay_context": {
+        "species": "human",
+        "cell_type_or_line": "stably transfected mammalian cells",
+        "permeabilized": true,
+        "fixation": "fixed",
+        "isoform": null,
+        "cell_context": {
+          "material_kind": "cell_line",
+          "material_kind_other_label": null,
+          "cell_type": "mammalian cultured cells",
+          "cell_line_name": null,
+          "cellosaurus_id": null,
+          "tissue": null,
+          "disease_state": null,
+          "activation_state": null
+        }
+      },
+      "spans": [
+        {
+          "source": {
+            "source_type": "pubmed",
+            "source_id": "PMID:18952056",
+            "pmc_id": null,
+            "url": "https://pubmed.ncbi.nlm.nih.gov/18952056/",
+            "title": "PMID:18952056",
+            "retrieved_at": "2026-06-08T21:22:09.662698Z",
+            "content_sha256": "9dc62415dec1aeac1d0e1260c562899598022dcf6b7d113484408e3100e86bf8",
+            "publication_type": "other",
+            "is_retracted": false,
+            "retraction_checked_at": "2026-06-08T21:22:09.662698Z",
+            "license": "unknown"
+          },
+          "section": "abstract",
+          "figure_or_table_id": null,
+          "quote": "The amino-terminal domain (Met(1)-Arg(141)) as well as the full-length transporter fused with fluorescent protein GFP was sorted to lysosomal membranes upon their stable expression, as visualized by means of fluorescent microscopy, while the core domain (Arg(141)-Ala(766)) was broadly distributed in the intra-cellular membranes. These results suggest that the sorting signal for lysosomes is present within the amino-terminal transmembrane domain (Met(1)-Arg(141)) of the TAPL molecule.",
+          "quote_sha256": "9dc62415dec1aeac1d0e1260c562899598022dcf6b7d113484408e3100e86bf8",
+          "char_offset": 0,
+          "normalized_source_sha256": "cd9acbd2cd769ce3b121f649dd5413f9fe069abfcec31182cab2c6d9bacb7f55"
+        }
+      ],
+      "entailment_verified": true,
+      "entailment_audit_passed": null,
+      "validation_warnings": [],
+      "duplicate_of": "a1_evi_17"
+    },
+    {
+      "evidence_id": "a2_evi_14",
+      "claim": "ABCB9 (TAPL) may be localized to lipid raft microdomains (cholesterol-enriched regions) of lysosomal membranes, as suggested by co-sedimentation with lysosomal marker cathepsin D and detergent-resistant membrane fractionation.",
+      "claim_type": "surface_expression",
+      "direction": "refutes",
+      "evidence_type": "western_blot",
+      "evidence_tier": "primary",
+      "confidence": "moderate",
+      "assay_context": {
+        "species": "human",
+        "cell_type_or_line": "transfected mammalian cells",
+        "permeabilized": true,
+        "fixation": null,
+        "isoform": null,
+        "cell_context": {
+          "material_kind": "cell_line",
+          "material_kind_other_label": null,
+          "cell_type": "mammalian cultured cells",
+          "cell_line_name": null,
+          "cellosaurus_id": null,
+          "tissue": null,
+          "disease_state": null,
+          "activation_state": null
+        }
+      },
+      "spans": [
+        {
+          "source": {
+            "source_type": "pubmed",
+            "source_id": "PMID:21212514",
+            "pmc_id": null,
+            "url": "https://pubmed.ncbi.nlm.nih.gov/21212514/",
+            "title": "PMID:21212514",
+            "retrieved_at": "2026-06-08T21:22:09.662698Z",
+            "content_sha256": "483879ef75da414979098a4c37dfb48c1f33cc4851a482116b58a1d1a02473d1",
+            "publication_type": "other",
+            "is_retracted": false,
+            "retraction_checked_at": "2026-06-08T21:22:09.662698Z",
+            "license": "unknown"
+          },
+          "section": "abstract",
+          "figure_or_table_id": null,
+          "quote": "These results suggest that TAPL may be localized to the microdomains (lipid rafts) of lysosomal membranes enriched in cholesterol.",
+          "quote_sha256": "349be351747b3533fba3dd3b356b9bb658af3b285d973ccd9efc61bbad310cee",
+          "char_offset": 1093,
+          "normalized_source_sha256": "08ec12b451ed01c2bd098bb687455cdc4612cc050faaf0272e2a4cc3a8108df3"
+        }
+      ],
+      "entailment_verified": true,
+      "entailment_audit_passed": null,
+      "validation_warnings": [],
+      "duplicate_of": null
+    },
+    {
+      "evidence_id": "a2_evi_15",
+      "claim": "In regulatory T cells (Tregs), ABCB9 protein expression in the lysosomal membrane is promoted by the anticancer drug NPt, which increases ABCB9 levels and thereby inhibits SARA/p-SMAD2/3 signaling. This represents a cell-state/pharmacological modulation of ABCB9 lysosomal expression in Tregs.",
+      "claim_type": "surface_expression",
+      "direction": "supports",
+      "evidence_type": "functional_assay",
+      "evidence_tier": "primary",
+      "confidence": "moderate",
+      "assay_context": {
+        "species": "human",
+        "cell_type_or_line": "regulatory T cells (Tregs)",
+        "permeabilized": null,
+        "fixation": null,
+        "isoform": null,
+        "cell_context": {
+          "material_kind": "primary_cell",
+          "material_kind_other_label": null,
+          "cell_type": "regulatory T cells (Tregs)",
+          "cell_line_name": null,
+          "cellosaurus_id": null,
+          "tissue": null,
+          "disease_state": "tumor microenvironment / drug-treated",
+          "activation_state": null
+        }
+      },
+      "spans": [
+        {
+          "source": {
+            "source_type": "pubmed",
+            "source_id": "PMID:38698265",
+            "pmc_id": null,
+            "url": "https://pubmed.ncbi.nlm.nih.gov/38698265/",
+            "title": "PMID:38698265",
+            "retrieved_at": "2026-06-08T21:22:09.662698Z",
+            "content_sha256": "b5c71abfcb25a459b5809a63e6acc6bafff01addc618aca929caccdf1cc41060",
+            "publication_type": "other",
+            "is_retracted": false,
+            "retraction_checked_at": "2026-06-08T21:22:09.662698Z",
+            "license": "unknown"
+          },
+          "section": "abstract",
+          "figure_or_table_id": null,
+          "quote": "Mechanistically, NPt is stored in Treg lysosome to inhibit TRAF3IP3-meditated GARP/TGF-β1 complex activation to specifically deplete Tregs. In addition, by promoting the expression of ABCB9 in lysosome membrane, NPt inhibits SARA/p-SMAD2/3 through CHRD-induced TGF-β1 signaling pathway.",
+          "quote_sha256": "3e25c0bdf197dec74e14c99e5df283134d050b34e7e99a7c03f6a6e223c67fb4",
+          "char_offset": 527,
+          "normalized_source_sha256": "414b5a90699d110cdf4a8f8a5072d7e20e3326aeffc0927d6c513e1adb52bd87"
+        }
+      ],
+      "entailment_verified": true,
+      "entailment_audit_passed": null,
+      "validation_warnings": [],
+      "duplicate_of": null
+    }
+  ],
+  "search_log": [],
+  "evidence_count": 35,
+  "primary_evidence_count": 22,
+  "secondary_evidence_count": 13,
+  "confidence": "high",
+  "confidence_reasoning": "Confidence is high for the low/endomembrane call because the evidence is internally consistent, multi-method, and from multiple independent groups: NMR structural analysis, LysoTracker co-localization, Percoll-gradient fractionation, and stable-expression fluorescence microscopy all converge on strict lysosomal localization with no plasma membrane signal for the full-length protein. The triage verdict (contextual via lysosomal exocytosis) is overridden here because no gene-specific evidence for a PM pool via lysosomal exocytosis exists — this is class-level extrapolation, not ABCB9-specific data. The restricted_subdomain risk (high severity, strong evidence) further reinforces that the lysosomal compartment is inaccessible to extracellular binders. No contradictions exist; state-modulation (DC differentiation, TME) increases lysosomal expression, not PM exposure.",
+  "model_path": "claude-sonnet-4-6",
+  "record_generated_at": "2026-06-08T21:22:09.672189Z"
+}
