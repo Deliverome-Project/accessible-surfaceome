@@ -32,6 +32,7 @@ def build_expression(
     client: Anthropic,
     usage_sink: list[UsageRecord],
     context: dict[str, Any] | None = None,
+    meta_sink: dict[str, Any] | None = None,
 ) -> list[ExpressionRow]:
     context = context or {}
     # Safety net for dual-dimension routing: PTS A2 can tag a clip that names
@@ -67,6 +68,7 @@ def build_expression(
         # Heavy builder: per-(tissue × cell_type × disease) rows can blow past
         # 8k tokens on broadly-expressed proteins. Use the high cap.
         max_tokens=MAX_TOKENS_HEAVY,
+        meta_sink=meta_sink,
     )
     if parsed is None:
         return []

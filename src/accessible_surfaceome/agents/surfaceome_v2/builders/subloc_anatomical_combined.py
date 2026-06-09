@@ -74,6 +74,7 @@ def build_subloc_anatomical_combined(
     client: Anthropic,
     usage_sink: list[UsageRecord],
     context: dict[str, Any] | None = None,
+    meta_sink: dict[str, Any] | None = None,
 ) -> tuple[SubcellularLocalization, list[AnatomicalAccessibilityObservation]]:
     """One Sonnet call → both blocks unpacked + scrubbed.
 
@@ -137,6 +138,7 @@ def build_subloc_anatomical_combined(
         schema=_CombinedOutput,
         usage_sink=usage_sink,
         label="subloc_anatomical_combined",
+        meta_sink=meta_sink,
     )
     if parsed is None or not isinstance(parsed, _CombinedOutput):
         logger.warning(

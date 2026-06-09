@@ -128,6 +128,8 @@ def _log_before_sleep(retry_state: RetryCallState) -> None:
 
 def messages_create_with_backoff(
     client: anthropic.Anthropic,
+    *,
+    api_metadata_sink: list[dict[str, Any]] | None = None,
     **kwargs: Any,
 ) -> Message:
     """Wrap ``client.messages.create`` in tenacity-driven exponential backoff.
@@ -139,12 +141,47 @@ def messages_create_with_backoff(
     The ``kwargs`` are passed through to ``messages.create`` verbatim;
     this helper is otherwise a thin transparent wrapper.
 
+    Two pieces of reproducibility metadata are injected here (single
+    plumb-point so every call site picks them up uniformly — see
+    ``docs/audit/reproducibility_followup_2026_06_09.md`` items 3 + 4):
+
+    * **``temperature``** — defaults to ``cohort_temperature()`` (0.2 in
+      cohort runs; overridable via ``COHORT_TEMPERATURE`` env). Callers
+      that pass ``temperature=`` explicitly keep their value (e.g. a
+      reproducibility probe at 1.0). The cohort default cuts stochastic
+      variation on structured-JSON tasks without sacrificing reasoning.
+
+    * **``api_metadata_sink``** (optional) — when provided, the call's
+      ``response.id`` / ``response.model`` / ``response.stop_reason`` are
+      appended as a dict via ``api_response_metadata`` so the per-call
+      Anthropic identifiers can be cross-referenced against support
+      tickets / billing. Captured AFTER tenacity's retry loop, so the
+      sink records the final successful call's metadata only.
+
     Returns the parsed ``Message`` response on success. Raises the
     original exception once ``_MAX_ATTEMPTS`` has been exhausted —
     callers should let that propagate to the orchestrator's per-gene
     error handler, where it'll be recorded as a gene-level failure
     rather than aborting the cohort run.
     """
+    # Lazy import to avoid a circular: ``run_metadata`` is in the same
+    # ``_support`` package and pure-stdlib, but the lazy form keeps this
+    # module importable even in a stripped-down test harness that mocks
+    # the helpers.
+    from accessible_surfaceome.agents._support.run_metadata import (
+        api_response_metadata,
+        cohort_temperature,
+    )
+
+    # Inject explicit temperature when the caller didn't pass one. The
+    # SDK default (1.0) is dev-appropriate but elevates stochastic
+    # variation across cohort sweeps; ``cohort_temperature()`` reads the
+    # ``COHORT_TEMPERATURE`` env at call time (not module load) so a
+    # one-off ``COHORT_TEMPERATURE=1.0 uv run ...`` works without an SDK
+    # restart.
+    if "temperature" not in kwargs:
+        kwargs["temperature"] = cohort_temperature()
+
     # The wrapped callable is built per-call (not module-level) so each
     # call gets a fresh tenacity ``RetryCallState`` — important for
     # the per-attempt logging to be accurate. The decorator pattern
@@ -166,7 +203,15 @@ def messages_create_with_backoff(
     def _call() -> Message:
         return client.messages.create(**kwargs)
 
-    return _call()
+    resp = _call()
+
+    # Best-effort capture of Anthropic's per-response identifiers. The
+    # helper is defensive (returns ``{}`` on a malformed response), so
+    # a future SDK shape change can't crash a cohort run here.
+    if api_metadata_sink is not None:
+        api_metadata_sink.append(api_response_metadata(resp))
+
+    return resp
 
 
 __all__ = ["messages_create_with_backoff"]

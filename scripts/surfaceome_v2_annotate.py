@@ -180,6 +180,7 @@ def main(argv: list[str] | None = None) -> int:
             schema_version=sv,
             record_valid=result.record is not None,
             cohort_run_id=args.cohort_run_id,
+            failure_mode=result.failure_mode,
         )
 
     print()

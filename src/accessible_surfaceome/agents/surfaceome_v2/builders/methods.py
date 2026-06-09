@@ -176,6 +176,7 @@ def build_methods(
     client: Anthropic,
     usage_sink: list[UsageRecord],
     context: dict[str, Any] | None = None,
+    meta_sink: dict[str, Any] | None = None,
 ) -> list[MethodObservation]:
     """Extract MethodObservation rows from the A1 claim ledger.
 
@@ -221,6 +222,7 @@ def build_methods(
         max_tokens=MAX_TOKENS_HEAVY,
         # Web search for antibody-metadata enrichment (see prompt §Tools).
         tools=_WEB_SEARCH_TOOL,
+        meta_sink=meta_sink,
     )
     if parsed is None:
         logger.warning("methods_builder: validation failed; returning empty list")

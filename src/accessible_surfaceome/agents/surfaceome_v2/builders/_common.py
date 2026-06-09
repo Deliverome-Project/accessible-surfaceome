@@ -136,6 +136,7 @@ def call_builder(
     array_item_model: type[BaseModel] | None = None,
     max_tokens: int = MAX_TOKENS_BLOCK,
     tools: list[dict[str, Any]] | None = None,
+    meta_sink: dict[str, Any] | None = None,
 ) -> T | list[BaseModel] | None:
     """Call Sonnet with a repair loop until the emitted JSON validates.
 
@@ -147,6 +148,21 @@ def call_builder(
 
     All four token-bucket counts go into ``usage_sink`` via
     :func:`record_from_response`.
+
+    When ``meta_sink`` is supplied (a caller-owned dict — same pattern
+    the existing ``usage_sink`` follows), the helper writes:
+
+      * ``n_repair_attempts`` — count of repair-loop iterations actually
+        used (0 when the first emission validated; up to ``MAX_REPAIRS``
+        on validation-loop exhaustion).
+      * ``validation_error`` — the last validation error message when
+        the loop didn't succeed; ``None`` on success.
+
+    Per-call Anthropic identifiers (``api_response_id`` / ``api_model``
+    / ``api_stop_reason``) are stamped directly onto each ``UsageRecord``
+    via the SDK ``response`` object, so the per-call provenance is on
+    ``usage_sink`` already — ``meta_sink`` carries the per-INVOCATION
+    repair-loop summary only.
     """
     if expect_array and array_item_model is None:
         raise ValueError("expect_array=True requires array_item_model")
@@ -155,6 +171,7 @@ def call_builder(
     validation_error: str | None = None
     parsed: Any = None
     raw_json: Any = None
+    n_repair_attempts: int = 0
 
     # Cache the (static, per-builder) system prompt — mirrors the synthesizer's
     # cached_system pattern. Cuts cost on repair-loop retries and across genes
@@ -202,7 +219,9 @@ def call_builder(
                 system=cast("Any", cached_sys),
                 messages=cast("Any", messages),
             )
-        usage_sink.append(record_from_response(resp.usage, SONNET_MODEL))
+        usage_sink.append(
+            record_from_response(resp.usage, SONNET_MODEL, response=resp)
+        )
         final_text = "\n".join(
             b.text for b in resp.content if isinstance(b, TextBlock)
         ).strip()
@@ -243,15 +262,25 @@ def call_builder(
                         raise _ArrayShapeError(validation_error)
                     assert array_item_model is not None  # for ty
                     parsed = [array_item_model.model_validate(it) for it in raw_json]
+                    if meta_sink is not None:
+                        meta_sink["n_repair_attempts"] = n_repair_attempts
+                        meta_sink["validation_error"] = None
                     return parsed
                 else:
                     parsed = schema.model_validate(raw_json)
+                    if meta_sink is not None:
+                        meta_sink["n_repair_attempts"] = n_repair_attempts
+                        meta_sink["validation_error"] = None
                     return parsed
             except ValidationError as exc:
                 validation_error = str(exc)
             except _ArrayShapeError:
                 # validation_error already set above
                 pass
+        # The current attempt failed (no fenced JSON or schema-invalid);
+        # bump the repair counter before logging so the printed
+        # "repair N/MAX" matches the next call's iteration count.
+        n_repair_attempts += 1
         logger.info(
             "%s repair %d/%d — %s",
             label,
@@ -275,6 +304,9 @@ def call_builder(
             }
         )
     logger.warning("%s validation failed after %d repairs", label, MAX_REPAIRS)
+    if meta_sink is not None:
+        meta_sink["n_repair_attempts"] = n_repair_attempts
+        meta_sink["validation_error"] = validation_error
     return None
 
 

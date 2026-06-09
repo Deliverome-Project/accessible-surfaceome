@@ -681,10 +681,21 @@ def _wall_clock_for_timing(timing: list[StepTiming]) -> float:
 
 @dataclass
 class BlockBuilderUsage:
-    """Per-builder token usage rollup."""
+    """Per-builder token usage rollup.
+
+    Carries the per-call ``UsageRecord``s + an optional repair-loop
+    summary populated by ``call_builder``'s ``meta_sink``. When the
+    summary is present, ``n_repair_attempts`` reflects how many times
+    the validation loop fired (0 when the first JSON validated; up to
+    ``MAX_REPAIRS=2``). ``validation_error`` is ``None`` on success.
+    Both default-None so the legacy construction path (no meta_sink
+    threaded) still works without populating them.
+    """
 
     label: str
     records: list[UsageRecord] = field(default_factory=list)
+    n_repair_attempts: int = 0
+    validation_error: str | None = None
 
     @property
     def cost_usd(self) -> float:
@@ -742,8 +753,11 @@ def _run_builders_concurrently(
     where a builder failure raised out of the orchestrator.
     """
 
-    def _runner(spec: _BuilderSpec) -> tuple[str, Any, list[UsageRecord]]:
+    def _runner(
+        spec: _BuilderSpec,
+    ) -> tuple[str, Any, list[UsageRecord], dict[str, Any]]:
         records: list[UsageRecord] = []
+        meta_sink: dict[str, Any] = {}
         with timing.step(
             f"builder:{spec.name}",
             phase=spec.phase,
@@ -751,18 +765,27 @@ def _run_builders_concurrently(
             model=AGENT_MODEL,
         ) as handle:
             result = spec.fn(
-                spec.claims, client=client, usage_sink=records, context=spec.ctx
+                spec.claims,
+                client=client,
+                usage_sink=records,
+                context=spec.ctx,
+                meta_sink=meta_sink,
             )
             handle.set_usage(records, model=AGENT_MODEL)
-        return spec.name, result, records
+        return spec.name, result, records, meta_sink
 
     outputs: dict[str, Any] = {}
     with ThreadPoolExecutor(max_workers=BUILDER_CONCURRENCY) as executor:
         futures = [executor.submit(_runner, spec) for spec in specs]
         for fut in futures:
-            name, result, records = fut.result()
+            name, result, records, meta_sink = fut.result()
             outputs[name] = result
-            builder_usage[name] = BlockBuilderUsage(name, records)
+            builder_usage[name] = BlockBuilderUsage(
+                label=name,
+                records=records,
+                n_repair_attempts=int(meta_sink.get("n_repair_attempts", 0) or 0),
+                validation_error=meta_sink.get("validation_error"),
+            )
     return outputs
 
 
@@ -992,7 +1015,12 @@ def _annotate(
             error="plan-trim-select did not resolve a gene bundle",
             failure_mode="pts_failure",
             timing=list(timing.entries),
-            intermediates={"plan_trim_select": _serialize_pts(dual)},
+            intermediates={
+                "plan_trim_select": _serialize_pts(dual),
+                # Mirror per-step timing into the persisted blob — Modal
+                # tears down ``.runs/`` on container shutdown, D1 is durable.
+                "timing": [t.as_dict() for t in list(timing.entries)],
+            },
         )
     gene_id = GeneIdentifier(
         hgnc_symbol=dual.bundle.hgnc_symbol,
@@ -1052,6 +1080,9 @@ def _annotate(
                 "builders": 0.0,
                 "synthesizer": 0.0,
             },
+            # Mirror per-step timing into the persisted blob — Modal
+            # tears down ``.runs/`` on container shutdown, D1 is durable.
+            "timing": [t.as_dict() for t in list(timing.entries)],
         }
         return AnnotateResultV2(
             gene=gene_id.hgnc_symbol,
@@ -1268,6 +1299,22 @@ def _annotate(
         name: _dump_builder_output(name, out)
         for name, out in all_builder_outputs.items()
     }
+    # Per-builder reproducibility summary (Tier 3 follow-up): repair-loop
+    # attempts + any residual validation error + per-call token / cost
+    # rollup. Denormalized so a cohort analytics query can answer
+    # "which builders are repair-loop-bound on heavy genes" without
+    # parsing the bulky ``builders`` dict above. Keys mirror
+    # ``builder_usage`` 1:1 — same builder names. ``risks_builder``
+    # is added at its own step below (it runs after this point).
+    intermediates["builder_usage"] = {
+        name: {
+            "n_calls": bu.n_calls,
+            "cost_usd": round(bu.cost_usd, 6),
+            "n_repair_attempts": bu.n_repair_attempts,
+            "validation_error": bu.validation_error,
+        }
+        for name, bu in builder_usage.items()
+    }
 
     surface_evidence = SurfaceEvidence(
         evidence_grade=grade_block.evidence_grade,
@@ -1313,6 +1360,11 @@ def _annotate(
             evidence_claims=a1_claims,
         )
     except ValidationError as exc:
+        # Mirror per-step timing into the blob before returning — Modal
+        # tears down ``.runs/`` on container shutdown, D1 is durable.
+        intermediates["timing"] = [
+            t.as_dict() for t in list(timing.entries)
+        ]
         return AnnotateResultV2(
             gene=gene_id.hgnc_symbol,
             record=None,
@@ -1331,6 +1383,9 @@ def _annotate(
             evidence_claims=a2_claims,
         )
     except ValidationError as exc:
+        intermediates["timing"] = [
+            t.as_dict() for t in list(timing.entries)
+        ]
         return AnnotateResultV2(
             gene=gene_id.hgnc_symbol,
             record=None,
@@ -1379,6 +1434,7 @@ def _annotate(
     # orchestrator overwrites B's echoed copy at step 5.4).
     with timing.step("risks_builder", phase="builders_risks", model=AGENT_MODEL) as _rh:
         risks_records: list[UsageRecord] = []
+        risks_meta: dict[str, Any] = {}
         risks_block = build_risks(
             a1_claims + a2_claims,
             client=client,
@@ -1387,9 +1443,15 @@ def _annotate(
                 "gene": gene_id.hgnc_symbol,
                 "deterministic_features": det_features,
             },
+            meta_sink=risks_meta,
         )
         _rh.set_usage(risks_records, model=AGENT_MODEL)
-    builder_usage["risks_builder"] = BlockBuilderUsage("risks_builder", risks_records)
+    builder_usage["risks_builder"] = BlockBuilderUsage(
+        label="risks_builder",
+        records=risks_records,
+        n_repair_attempts=int(risks_meta.get("n_repair_attempts", 0) or 0),
+        validation_error=risks_meta.get("validation_error"),
+    )
     if risks_block is None:
         # Repair-loop failure → labeled all-absent stub so a record can still
         # ship. The deterministic post-passes below still attach the ECD /
@@ -1508,6 +1570,21 @@ def _annotate(
             "validation_error": b.validation_error,
             "n_repair_attempts": b.n_repair_attempts,
             "draft": b.draft.model_dump(mode="json") if b.draft is not None else None,
+        }
+
+        # Re-snapshot the per-builder usage summary now that ``risks_builder``
+        # has run (the initial snapshot at the step 2+3 fan-out only saw the
+        # 8 parallel builders; ``risks_builder`` runs at step 4.6 after the
+        # deterministic-features fetch). Same shape so downstream queries
+        # don't need a special case for "before/after risks".
+        intermediates["builder_usage"] = {
+            name: {
+                "n_calls": bu.n_calls,
+                "cost_usd": round(bu.cost_usd, 6),
+                "n_repair_attempts": bu.n_repair_attempts,
+                "validation_error": bu.validation_error,
+            }
+            for name, bu in builder_usage.items()
         }
 
         # Persist bundle (gene resolution) + triage_summary so a future
@@ -2121,6 +2198,11 @@ def _annotate(
         else:
             # Assembly succeeded — exit the retry loop.
             break
+    # Re-mirror per-step timing into the blob now that the retry loop has
+    # settled — captures the final attempt's entries so the persisted
+    # ``intermediates["timing"]`` reflects the actual end-state of the
+    # run rather than the synth-block-only snapshot taken inside the loop.
+    intermediates["timing"] = [t.as_dict() for t in list(timing.entries)]
     if record is None:
         # Both attempts failed validation; return the last error.
         return AnnotateResultV2(

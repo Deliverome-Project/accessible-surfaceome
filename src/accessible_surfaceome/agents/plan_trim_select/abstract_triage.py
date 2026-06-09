@@ -217,7 +217,7 @@ def triage_one_abstract(
         # Messages.create overloads, but the runtime shapes are correct:
         # both branches set model + max_tokens + messages, and the cached
         # branch adds system. The trailing directive below suppresses ty.
-        resp = messages_create_with_backoff(client, **create_kwargs)
+        resp = messages_create_with_backoff(client, **cast("Any", create_kwargs))
     except Exception as exc:  # noqa: BLE001
         return TriageOutcome(
             paper_id=paper_id,
@@ -228,7 +228,7 @@ def triage_one_abstract(
         )
 
     elapsed = round(time.perf_counter() - t0, 3)
-    usage = record_from_response(resp.usage, HAIKU_PRICING_KEY)
+    usage = record_from_response(resp.usage, HAIKU_PRICING_KEY, response=resp)
     text = "\n".join(
         b.text for b in resp.content if isinstance(b, TextBlock)
     ).strip()

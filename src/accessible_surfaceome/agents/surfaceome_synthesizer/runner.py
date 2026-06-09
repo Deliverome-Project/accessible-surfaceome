@@ -485,7 +485,9 @@ def _run(
             # No tools by design — see module docstring.
             messages=cast("Any", messages),
         )
-        usage_records.append(record_from_response(resp.usage, AGENT_MODEL))
+        usage_records.append(
+            record_from_response(resp.usage, AGENT_MODEL, response=resp)
+        )
         messages.append({"role": "assistant", "content": resp.content})
 
         # Defensive: B should never trigger tool_use (no tools were offered),

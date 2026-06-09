@@ -200,6 +200,7 @@ def annotate_one(
                     schema_version=sv,
                     record_valid=result.record is not None,
                     cohort_run_id=cohort_id,
+                    failure_mode=result.failure_mode,
                 )
             except Exception as exc:  # noqa: BLE001 — never break the sweep
                 logger.warning(

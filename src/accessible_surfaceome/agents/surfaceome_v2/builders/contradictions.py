@@ -40,6 +40,7 @@ def build_contradictions(
     client: Anthropic,
     usage_sink: list[UsageRecord],
     context: dict[str, Any] | None = None,
+    meta_sink: dict[str, Any] | None = None,
 ) -> list[Contradiction]:
     context = context or {}
     selected = _select_input_claims(claims)
@@ -64,6 +65,7 @@ def build_contradictions(
         label="contradiction_builder",
         expect_array=True,
         array_item_model=Contradiction,
+        meta_sink=meta_sink,
     )
     if parsed is None:
         return []

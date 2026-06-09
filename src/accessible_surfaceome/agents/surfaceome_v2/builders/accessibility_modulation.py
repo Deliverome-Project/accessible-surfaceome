@@ -224,6 +224,7 @@ def build_accessibility_modulation(
     client: Anthropic,
     usage_sink: list[UsageRecord],
     context: dict[str, Any] | None = None,
+    meta_sink: dict[str, Any] | None = None,
 ) -> list[AccessibilityModulationObservation]:
     context = context or {}
     if not claims:
@@ -256,6 +257,7 @@ def build_accessibility_modulation(
         # produced 9 rows; rich proteins (CD81-class signaling) may
         # produce 15+.
         max_tokens=MAX_TOKENS_HEAVY,
+        meta_sink=meta_sink,
     )
     if parsed is None:
         return []

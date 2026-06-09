@@ -75,6 +75,8 @@ _SCHEMA_SQL = [
         intermediates_bytes   INTEGER NOT NULL,
         intermediates_json    TEXT NOT NULL,
         cohort_run_id         TEXT,
+        code_sha              TEXT,
+        failure_mode          TEXT,
         PRIMARY KEY (gene_symbol, schema_version, prompt_corpus_version, created_at)
     );
     """,
@@ -83,6 +85,16 @@ _SCHEMA_SQL = [
     # swallows the duplicate-column failure when this is a no-op.
     """
     ALTER TABLE agent_run_intermediates ADD COLUMN cohort_run_id TEXT;
+    """,
+    # Tier-3 reproducibility columns (Wave 2 follow-up — see
+    # ``docs/audit/reproducibility_followup_2026_06_09.md``). Both are
+    # nullable so pre-Tier-3 rows back-compat cleanly; new rows always
+    # populate them via ``publish_intermediates``.
+    """
+    ALTER TABLE agent_run_intermediates ADD COLUMN code_sha TEXT;
+    """,
+    """
+    ALTER TABLE agent_run_intermediates ADD COLUMN failure_mode TEXT;
     """,
     # Most common lookup: latest intermediates for a gene.
     """
@@ -104,6 +116,12 @@ _SCHEMA_SQL = [
     """
     CREATE INDEX IF NOT EXISTS idx_agent_run_intermediates_cohort
         ON agent_run_intermediates (cohort_run_id, created_at DESC);
+    """,
+    # Failure-mode analytics: "how many runs hit cost_ceiling_pts in this
+    # sweep" should be a single SELECT, not a per-row JSON parse.
+    """
+    CREATE INDEX IF NOT EXISTS idx_agent_run_intermediates_failure_mode
+        ON agent_run_intermediates (failure_mode, created_at DESC);
     """,
 ]
 
@@ -211,6 +229,7 @@ def publish_intermediates(
     push_to_d1: bool = True,
     created_at: str | None = None,
     cohort_run_id: str | None = None,
+    failure_mode: str | None = None,
 ) -> IntermediatesPushResult:
     """Push one run's intermediates to private D1.
 
@@ -230,11 +249,43 @@ def publish_intermediates(
     single-gene CLI path; the cohort sweep driver supplies one per
     invocation.
 
+    ``failure_mode`` (optional) denormalizes the
+    :class:`AnnotateResultV2.failure_mode` tag onto the row's own column
+    so cohort analytics can query ``WHERE failure_mode = 'cost_ceiling_pts'``
+    without per-row JSON parsing. ``None`` for the back-compat CLI path
+    or any caller that hasn't been threaded yet — that just falls through
+    to the column default (NULL). See ``tools/_shared/failure_modes.py``
+    for the enum.
+
     Returns an :class:`IntermediatesPushResult` with the bytes pushed
     and any skip reason. The function NEVER raises on a D1 / credentials
     miss; misses log + return a skipped result so the annotate driver
     can continue.
     """
+    # Stamp run-level reproducibility metadata before serializing — these
+    # are fields that must travel with the blob so a 1-year-later audit
+    # can fully reproduce the record from saved metadata alone. See
+    # ``agents/_support/run_metadata.py`` for the helpers and
+    # ``docs/audit/r2_and_reproducibility_2026_06_08.md`` for the
+    # original audit that surfaced the gaps.
+    #
+    # The ``{**intermediates, ...}`` pattern keeps the caller's dict
+    # immutable — same convention ``_slim_intermediates_for_d1`` uses
+    # below.
+    from accessible_surfaceome.agents._support.run_metadata import code_sha
+    # Lazy import — ``agents.surfaceome_v2.orchestrator`` imports
+    # ``cloud.*`` transitively for D1 reads, so doing this at module
+    # level would race the orchestrator's own import chain. The model
+    # id is a constant string in practice (no runtime mutation), so the
+    # cost of resolving it per-publish is negligible.
+    from accessible_surfaceome.agents.surfaceome_v2.orchestrator import (
+        AGENT_MODEL,
+    )
+    intermediates = {
+        **intermediates,
+        "code_sha": code_sha(),
+        "model_id": AGENT_MODEL,
+    }
     blob = json.dumps(intermediates, separators=(",", ":"))
     n_bytes = len(blob.encode("utf-8"))
     stamp = created_at or datetime.now(UTC).isoformat()
@@ -356,14 +407,20 @@ def publish_intermediates(
             cohort_run_id=cohort_run_id,
         )
 
+    # ``code_sha`` is denormalized off the blob into its own column for
+    # analytics (so "all rows from commit X" is a SELECT, not a JSON
+    # parse). We read it back from the blob rather than recomputing —
+    # avoids a drift window between the stamped value and the column
+    # value if the helper got called twice with different env state.
+    code_sha_col = intermediates.get("code_sha")
     try:
         with D1Client(cfg, timeout_s=60.0) as client:
             client.query(
                 "INSERT INTO agent_run_intermediates ("
                 "gene_symbol, schema_version, prompt_corpus_version, "
                 "created_at, record_valid, intermediates_bytes, "
-                "intermediates_json, cohort_run_id"
-                ") VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
+                "intermediates_json, cohort_run_id, code_sha, failure_mode"
+                ") VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
                 [
                     gene_symbol,
                     schema_version,
@@ -373,6 +430,8 @@ def publish_intermediates(
                     n_bytes,
                     blob,
                     cohort_run_id,
+                    code_sha_col,
+                    failure_mode,
                 ],
             )
     except Exception as exc:  # noqa: BLE001

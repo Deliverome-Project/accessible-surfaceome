@@ -846,7 +846,7 @@ def _call_with_repair(
             system=cast("Any", cached_sys),
             messages=cast("Any", messages),
         )
-        usage_sink.append(record_from_response(resp.usage, model))
+        usage_sink.append(record_from_response(resp.usage, model, response=resp))
         final_text = "\n".join(
             b.text for b in resp.content if isinstance(b, TextBlock)
         ).strip()
@@ -1216,7 +1216,7 @@ def _trim_one_paper(
             timing_row=timing_row,
         )
 
-    rec = record_from_response(resp.usage, HAIKU_PRICING_KEY)
+    rec = record_from_response(resp.usage, HAIKU_PRICING_KEY, response=resp)
     elapsed = round(time.perf_counter() - t0, 3)
     timing_row = (
         StepTiming(

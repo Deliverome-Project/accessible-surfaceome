@@ -73,6 +73,7 @@ def build_evidence_grade(
     client: Anthropic,
     usage_sink: list[UsageRecord],
     context: dict[str, Any] | None = None,
+    meta_sink: dict[str, Any] | None = None,
 ) -> EvidenceGradeBlock:
     """Grade the A1 ledger + emit non-surface expression rows.
 
@@ -185,6 +186,7 @@ def build_evidence_grade(
         # grade verdict + a non_surface_expression list. The latter can
         # be long on broadly-expressed proteins.
         max_tokens=MAX_TOKENS_HEAVY,
+        meta_sink=meta_sink,
     )
     if parsed is None or not isinstance(parsed, EvidenceGradeBlock):
         logger.warning("evidence_grade_builder failed → falling back to weak/empty")

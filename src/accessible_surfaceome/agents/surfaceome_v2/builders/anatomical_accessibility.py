@@ -28,6 +28,7 @@ def build_anatomical_accessibility(
     client: Anthropic,
     usage_sink: list[UsageRecord],
     context: dict[str, Any] | None = None,
+    meta_sink: dict[str, Any] | None = None,
 ) -> list[AnatomicalAccessibilityObservation]:
     context = context or {}
     if not claims:
@@ -50,6 +51,7 @@ def build_anatomical_accessibility(
         label="anatomical_accessibility_builder",
         expect_array=True,
         array_item_model=AnatomicalAccessibilityObservation,
+        meta_sink=meta_sink,
     )
     if parsed is None:
         return []
