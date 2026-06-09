@@ -158,10 +158,20 @@ def head_object(
     key: str,
     cfg: R2Config | None = None,
 ) -> dict[str, Any] | None:
-    """HEAD probe for an object. Returns response headers or None on miss.
+    """Existence probe for an R2 object. Returns response headers or None on miss.
 
     Used by analytics + back-fill scripts that want to know "did this
     intermediates spillover land?" without downloading the full blob.
+
+    Implementation note: Cloudflare's REST endpoint for an R2 object
+    returns HTTP 405 on a bare ``HEAD`` request (probed 2026-06-08 — see
+    ``docs/audit/r2_and_reproducibility_2026_06_08.md``), so a literal
+    HEAD silently turned every probe into "not found". We instead issue
+    a ``Range: bytes=0-15`` GET — Cloudflare honours Range on R2 GET
+    reliably, returning HTTP 206 (Partial Content) for a hit and 404 for
+    a miss. We discard the 16-byte body and surface the response headers
+    just like a HEAD would; that's what analytics callers expect
+    (Content-Length, ETag, Last-Modified).
     """
     try:
         cfg = cfg or R2Config.from_env()
@@ -170,12 +180,24 @@ def head_object(
     url = _object_url(cfg, key)
     try:
         with httpx.Client(timeout=_R2_OBJECT_TIMEOUT_S) as c:
-            resp = c.head(
+            resp = c.get(
                 url,
-                headers={"Authorization": f"Bearer {cfg.api_token}"},
+                headers={
+                    "Authorization": f"Bearer {cfg.api_token}",
+                    "Range": "bytes=0-15",
+                },
             )
-        if resp.status_code == 200:
+        # 206 Partial Content = exists; 200 = exists (server ignored Range);
+        # 404 = miss. Anything else is unexpected — log and treat as miss
+        # so callers don't crash, but the warning surfaces real outages.
+        if resp.status_code in (200, 206):
             return dict(resp.headers)
+        if resp.status_code == 404:
+            return None
+        logger.warning(
+            "R2 head probe got unexpected HTTP %d for %s",
+            resp.status_code, key,
+        )
         return None
     except Exception as exc:  # noqa: BLE001
         logger.debug("R2 head errored for %s: %s", key, exc)
