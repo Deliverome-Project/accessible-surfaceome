@@ -1,0 +1,39 @@
+/* Sortable header trigger — mirrors the SurfaceBindCard sortBtn (the
+   first sortable-table implementation in this app) so every sortable
+   column on the gene page reads the same. */
+.sortBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  background: none;
+  border: 0;
+  padding: 0;
+  margin: 0;
+  font: inherit;
+  letter-spacing: inherit;
+  text-transform: inherit;
+  color: inherit;
+  cursor: pointer;
+  transition: color var(--dur-fast) var(--ease-out);
+}
+
+.sortBtn:hover,
+.sortBtn:focus-visible {
+  color: var(--ink);
+  outline: none;
+}
+
+/* Faint ↕ on every sortable column (signals the column is sortable),
+   brightening to an accent ▲ / ▼ on the active sort column. */
+.sortArrow {
+  font-size: 0.7em;
+  opacity: 0.4;
+  transition:
+    opacity var(--dur-fast) var(--ease-out),
+    color var(--dur-fast) var(--ease-out);
+}
+
+.sortArrowActive {
+  opacity: 1;
+  color: var(--accent);
+}
