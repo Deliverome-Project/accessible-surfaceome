@@ -483,19 +483,23 @@ def test_methods_builder_prompt_mentions_validation_strategy_table() -> None:
 def test_build_methods_caps_input_claims_at_max(
     caplog: pytest.LogCaptureFixture,
 ) -> None:
-    """When _select_input_claims returns >25 qualifying claims, the
-    methods builder must pre-truncate to the top 25 BEFORE invoking the
-    LLM. Caps cost on heaviest-gene cases (TACSTD2's methods builder hit
-    $0.36/call at 87k input tokens; tail genes much higher).
+    """When _select_input_claims returns >MAX_CLAIMS_TO_LLM qualifying
+    claims, the methods builder must pre-truncate to the top MAX_CLAIMS_TO_LLM
+    BEFORE invoking the LLM. Caps cost on heaviest-gene cases (TACSTD2's
+    methods builder hit $0.36/call at 87k input tokens; tail genes much
+    higher).
 
     Verifies:
-      1. The ledger embedded in the user prompt contains exactly 25
-         claims, not the full input.
+      1. The ledger embedded in the user prompt contains exactly
+         MAX_CLAIMS_TO_LLM claims, not the full input.
       2. The top-ranked evidence types (live_cell_flow / biotinylation /
          nonperm IF) survive over the bottom ones (rt_qpcr /
          tissue_expression).
       3. A log line records the truncation so an operator can see it.
     """
+    from accessible_surfaceome.agents.surfaceome_v2.builders.methods import (
+        MAX_CLAIMS_TO_LLM,
+    )
     import logging
 
     # 30 claims: 10 high-rank surface (flow_cytometry, surface_biotinylation,
@@ -553,8 +557,8 @@ def test_build_methods_caps_input_claims_at_max(
     import re
     m = re.search(r"A1 surface-method claims \((\d+) claims\)", user_msg_content)
     assert m is not None, f"ledger header missing in prompt: {user_msg_content[:500]}"
-    assert int(m.group(1)) == 25, (
-        f"expected 25 claims in user-prompt ledger, got {m.group(1)}"
+    assert int(m.group(1)) == MAX_CLAIMS_TO_LLM, (
+        f"expected {MAX_CLAIMS_TO_LLM} claims in user-prompt ledger, got {m.group(1)}"
     )
     # The top-ranked surface assays (h*/f* evidence_ids) must all survive;
     # the low-rank rt_qpcr ones (q*) must have been dropped first.
@@ -577,8 +581,9 @@ def test_build_methods_caps_input_claims_at_max(
         "expected a log mentioning truncated; got: "
         f"{[r.getMessage() for r in caplog.records]}"
     )
-    assert any("30" in m and "25" in m for m in truncation_msgs), (
-        "expected the truncation log to show 30 -> 25; got: "
+    expected_kept = str(MAX_CLAIMS_TO_LLM)
+    assert any("30" in m and expected_kept in m for m in truncation_msgs), (
+        f"expected the truncation log to show 30 -> {expected_kept}; got: "
         f"{truncation_msgs}"
     )
 
