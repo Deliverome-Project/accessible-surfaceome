@@ -4,7 +4,7 @@ import type {
   AccessibilityImplication,
   AnatomicalAccessibilityObservation,
 } from "../../../lib/surfaceome-types";
-import { prettyEnum } from "../../../lib/surfaceome";
+import { prettyEnum } from "../../../lib/enums";
 import { EvidenceChipList, linkifyEvidenceRefs } from "../EvidenceChip/EvidenceChip";
 import { StatusPill } from "../StatusPill/StatusPill";
 import { SortableHeader } from "../_shared/SortableHeader";

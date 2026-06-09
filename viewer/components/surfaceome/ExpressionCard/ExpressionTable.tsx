@@ -1,7 +1,7 @@
 "use client";
 
 import type { ExpressionRow, TissueLevel } from "../../../lib/surfaceome-types";
-import { prettyEnum } from "../../../lib/surfaceome";
+import { prettyEnum } from "../../../lib/enums";
 import { EvidenceChipList } from "../EvidenceChip/EvidenceChip";
 import { StatusPill } from "../StatusPill/StatusPill";
 import { SortableHeader } from "../_shared/SortableHeader";
