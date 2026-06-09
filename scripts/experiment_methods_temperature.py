@@ -128,7 +128,7 @@ def main() -> int:
             # Show which cite-relevance pairs differed
             cite_sets = [set(c) for _, c in rep_outputs]
             all_pairs = set().union(*cite_sets)
-            print(f"  cite-relevance pairs where reps disagree:")
+            print("  cite-relevance pairs where reps disagree:")
             for pair in sorted(all_pairs):
                 present_in = [1 if pair in cs else 0 for cs in cite_sets]
                 if 0 < sum(present_in) < len(cite_sets):

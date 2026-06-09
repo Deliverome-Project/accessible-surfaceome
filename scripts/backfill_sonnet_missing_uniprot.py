@@ -30,8 +30,6 @@ Run from the repo root (writes go to public D1):
 """
 from __future__ import annotations
 import argparse
-import json
-import sys
 import time
 import urllib.parse
 
