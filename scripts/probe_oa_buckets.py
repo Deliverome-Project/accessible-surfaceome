@@ -247,7 +247,7 @@ def harvest_openalex(hgnc_symbol, aliases, previous_symbols, oa_client):
                     # Daily budget exhausted. Log + bail cleanly so per-gene
                     # progress so far is preserved; resume tomorrow.
                     import sys
-                    print(f"  OpenAlex 429 — daily budget exhausted, stopping cleanly", file=sys.stderr, flush=True)
+                    print("  OpenAlex 429 — daily budget exhausted, stopping cleanly", file=sys.stderr, flush=True)
                     raise SystemExit(2)
                 if r.status_code != 200:
                     break
@@ -497,7 +497,8 @@ def main():
                         print(f"  [{i+1:3d}/{total}] {sym}: {status}", flush=True)
                         continue
                     row.pop("_status", None)
-                    out_f.write(json.dumps(row) + "\n"); out_f.flush()
+                    out_f.write(json.dumps(row) + "\n")
+                    out_f.flush()
                     if status == "ok":
                         c = Counter(p["bucket"] for p in row["papers"])
                         print(f"  [{i+1:3d}/{total}] {sym}: {row['n_avail']} avail, "
@@ -516,7 +517,8 @@ def main():
                         with file_lock:
                             if row is not None:
                                 row.pop("_status", None)
-                                out_f.write(json.dumps(row) + "\n"); out_f.flush()
+                                out_f.write(json.dumps(row) + "\n")
+                                out_f.flush()
                             if row is None:
                                 print(f"  [{completed:3d}/{total}] {sym}: {status}", flush=True)
                             elif status == "ok":

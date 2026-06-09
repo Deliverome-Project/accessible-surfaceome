@@ -212,30 +212,22 @@ A1 to harvest from the shared pool.
   Golgi vs cilium vs apical vs basolateral subdomain) and the
   tissue/cell-type context is incidental qualifier.
 
-  Worked example A — `tissue_expression`: "anti-protein-X mAb engages
-  tumor macrophages and slows tumor growth in xenografts" — the
-  load-bearing point is THE TUMOR-MACROPHAGE PRESENCE; the surface
-  engagement is incidental. Tag `tissue_expression` so the expression
-  builder lifts this into a tumor-context row.
+  Worked example — discriminator: a clip naming a binder engaging the
+  protein at a tumor-cell-type context. The load-bearing point is the
+  CELL-TYPE PRESENCE in the tumor, not the surface subdomain — tag
+  `tissue_expression` so the expression builder lifts the tumor-context
+  row. Flip to `surface_expression` only when the load-bearing point
+  IS a surface subdomain (apical / basolateral / ciliary / synaptic /
+  junction-restricted) and the tissue context is incidental qualifier.
 
-  Worked example B — `surface_expression`: "protein X is restricted to
-  the apical membrane of polarized epithelial cells" — the load-bearing
-  point is THE APICAL SUBDOMAIN; the polarized-epithelial context is
-  incidental qualifier. Tag `surface_expression`.
-
-  Worked example C — BOTH dimensions equally load-bearing (e.g. "protein
-  X is expressed on the surface of activated CD8+ T cells in tumor
-  infiltrates"): prefer `tissue_expression` (the schema's strong-default
-  direction). Name the surface engagement explicitly in your `claim`
-  prose so the methods + amod builders can also lift it from the prose.
-
-  Functional engagement on a named tissue / cell type / disease context
-  is ALWAYS a `tissue_expression` claim — naming the protein at a cell
-  context is the expression observation. "Ligand engages protein X on
-  tumor macrophages" → `tissue_expression`. "Protein X marks activated
-  effector cells in the tumor microenvironment" → `tissue_expression`.
-  These are the canonical EV/tetraspanin and immune-receptor literature
-  shape; they belong in the expression block.
+  When BOTH dimensions are equally load-bearing, prefer
+  `tissue_expression` (the schema's strong-default direction) and name
+  the surface engagement explicitly in your `claim` prose so the methods
+  + amod builders can lift it. Functional engagement on a named tissue
+  / cell type / disease context is ALWAYS `tissue_expression` — naming
+  the protein at a cell context IS the expression observation. This is
+  the canonical EV/tetraspanin and immune-receptor literature shape;
+  it belongs in the expression block.
 * `evidence_type`: closed enum match to the technique named in the
   quote (see the table above). When in doubt, READ THE QUOTE FOR THE
   METHOD WORD, don't infer from the result.

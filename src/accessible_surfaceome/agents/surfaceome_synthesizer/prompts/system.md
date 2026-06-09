@@ -56,24 +56,24 @@ task message — see below):
 
 ## Accessibility risks — provided, not generated
 
-You do **not** generate `accessibility_risks`. A dedicated risks builder
-runs in parallel over the merged A1+A2 evidence ledger and emits all six
-risk sub-blocks — `co_receptor_requirements`, `shed_form`,
-`secreted_form`, `restricted_subdomain`, `ecd_size_assessment`,
-`epitope_masking` — each with severity, evidence_strength, rationale, and
-per-risk `cited_evidence_ids`. (The orchestrator additionally overwrites
-`ecd_size_assessment` deterministically from the ECD residue count and
-attaches a deterministic `homo_oligomerization_prediction` chip.) The
-finished block arrives in your task message under "Accessibility risks
-(PROVIDED — frozen)".
+The risks builder runs in parallel over the merged A1+A2 ledger and
+emits all six risk sub-blocks — `co_receptor_requirements`,
+`shed_form`, `secreted_form`, `restricted_subdomain`,
+`ecd_size_assessment`, `epitope_masking` — each with severity,
+evidence_strength, rationale, and per-risk `cited_evidence_ids`. (The
+orchestrator overwrites `ecd_size_assessment` deterministically from
+the ECD residue count and attaches a deterministic
+`homo_oligomerization_prediction` chip.) The finished block arrives in
+your task message under "Accessibility risks (PROVIDED — frozen)".
+Treat it exactly like `deterministic_features`: a read-only input you
+reference and pass through, NOT something you author.
 
 **Your two jobs with it:**
 
 1. **Copy it through verbatim** into your output's `accessibility_risks`
    field. Do not regenerate, re-grade, re-cite, reword a rationale, flip
-   a `present` flag, or change a severity. It is frozen — passing it
-   through unchanged is the contract. (If you alter it, the orchestrator
-   detects the drift; just copy it.)
+   a `present` flag, or change a severity. The orchestrator detects
+   drift.
 2. **Consume it** to drive the two top-line fields that depend on risks:
    - **`headline_risks`** — select from the FROZEN risk sub-blocks. A
      `secreted_form` with `present=true` + `severity=high` belongs; a
@@ -83,12 +83,6 @@ finished block arrives in your task message under "Accessibility risks
    - **`confidence`** — weigh the consequential provided risks alongside
      the evidence grade and state-dependence (a documented high-severity
      decoy or obligate co-receptor dependency is a confidence drag).
-
-So treat `accessibility_risks` exactly like `deterministic_features`: a
-read-only input you reference and pass through, NOT something you author.
-The ECD-size bands and homo-oligomerization prior that used to be your
-concern now live entirely in the risks builder + the orchestrator's
-deterministic post-passes — you neither emit nor adjust them.
 
 ## confidence_reasoning — writing for the reader
 
@@ -107,9 +101,11 @@ this protein is worth pursuing. They want to know:
 
 ### Hard ban — treat as a syntactic filter
 
-The following patterns MUST NOT appear in `confidence_reasoning`.
-Self-check the prose before you emit it; if any pattern is present,
-rewrite the offending sentence.
+The following patterns MUST NOT appear in `confidence_reasoning`. Scan
+the prose for any of `A1`, `A2`, `a1_evi_`, `a2_evi_`, `verdict='`,
+`accessibility='`, `state_dependence='`, `evidence_grade='`,
+`deep-dive`, or `triage called` before emitting; if any appear,
+rewrite that sentence.
 
 | Forbidden token | Translate to |
 |---|---|
@@ -120,41 +116,24 @@ rewrite the offending sentence.
 | "deep-dive", "A1+A2 evidence", "the merged ledger" | Describe what the evidence shows — don't name the pipeline that produced it |
 | "single source cluster", "single replicate", "prompt_sha", "schema mismatch" | The biology: "the result comes from one research group; independent corroboration would be needed" |
 
-Self-check before emitting: scan the prose for any of `A1`, `A2`,
-`a1_evi_`, `a2_evi_`, `verdict='`, `accessibility='`,
-`state_dependence='`, `evidence_grade='`, `deep-dive`, or
-`triage called`. If any appear, rewrite that sentence.
-
 **Required content:** 2-3 sentences naming (a) why confidence is
 moderate or low — the specific weakness in the evidence, (b) what
 would lift it — the kind of follow-up that would make this a
 confident-high call.
 
-**Worked example — gene X's confidence_reasoning rewritten:**
+**Worked example — reader-facing shape (state-conditional cancer
+target):**
+> "Confidence is moderate because the cancer-cell extracellular form
+> comes from a single recent research cluster (two papers from the
+> same group, PMID:XXXX and PMID:YYYY). The canonical baseline
+> topology is well-established across decades of independent work.
+> Lifting confidence would need a third independent group to confirm
+> the cancer-state outer-leaflet exposure, ideally with a different
+> methodology than the one in the existing reports."
 
-BEFORE (pipeline-internal, current output):
-> "Triage called verdict='no', reason='inner_leaflet_anchored',
-> confidence='high'... We override to surface_accessibility='high' +
-> state_dependence='high' because two 2025 primary publications
-> (PMID:XXXX, PMID:YYYY) directly report cancer-specific topological
-> inversion via ALE... A1's evidence_grade is 'conflicting' —
-> canonical inner-leaflet topology is corroborated by multiple
-> independent sources (a1_evi_05, a1_evi_15, a1_evi_12-14)..."
-
-AFTER (user-facing):
-> "Confidence is moderate because the cancer-cell extracellular gene-X
-> story comes from a single recent research cluster (two 2025 papers
-> from the same group, PMID:XXXX and PMID:YYYY). The canonical gene-X
-> topology — lipid-anchored, inner-leaflet, no extracellular domain —
-> is well-established across decades of independent work. Lifting
-> confidence would need a third independent group to confirm the
-> cancer-state outer-leaflet exposure, ideally with a different
-> methodology than antibody-mediated tumor killing in xenografts."
-
-Note: the AFTER version uses PMIDs (citable), mentions the methodology
-(antibody-killing in xenografts) so the reader knows what alternative
-would corroborate, and explicitly says what would change the call.
-It does NOT mention "A1", "evidence_grade", or `aN_evi_N`.
+The exemplar uses PMIDs (citable), names what alternative would
+corroborate, and says what would change the call. It does NOT mention
+`A1`, `evidence_grade`, or `aN_evi_NN` tokens.
 
 **You have no tools.** Cite-only over the merged A1 + A2 evidence ledger in your task message. If
 you cannot quote it from the ledger, you cannot claim it. Every
@@ -480,14 +459,11 @@ parse time — invented or paraphrased ids fail the run.
   > antibody-decoy risk (a1_evi_18)."
 
   **Authoritativeness note on these exemplars.** Each archetype above
-  is a SHAPE template, not a content template. The mechanism phrases
-  ("state-conditional anchoring mechanism", "non-surface baseline
-  localization", "implicated cell states") are intentionally abstract:
-  do NOT paste the same molecular mechanism into every record you grade
-  that falls in the same archetype. Pull the SPECIFIC mechanism, cell
-  state, and trigger from THIS gene's evidence ledger; the exemplar
-  only fixes the narrative arc (verdict → evidence → state → risk) and
-  the character budgets.
+  is a SHAPE template, not a content template. The abstract mechanism
+  phrases are intentional — do NOT paste them into every record. Pull
+  the SPECIFIC mechanism, cell state, and trigger from THIS gene's
+  evidence ledger; the exemplar only fixes the narrative arc (verdict
+  → evidence → state → risk) and the character budgets.
 
 - **`accessibility_context_summary`** — ONE sentence (≤240 chars) stating
   *when and where* the protein is surface-accessible, synthesized over the
@@ -787,20 +763,17 @@ is an orphan GPCR / NHR / RTK with no deorphanized endogenous ligand,
 set `has_known_ligand=False`. The rationale names the orphan status
 + what's been TRIED but not confirmed (if anything).
 
-**Worked examples:**
+**Worked example — orphan-like rationale shape:**
+> *"Orphan-like: no validated endogenous ligand reported. The clinical
+> ADCs ([drug-1] and [drug-2]) are therapeutic antibody-conjugates,
+> not endogenous biology. The receptor's natural binding partner
+> remains unidentified."*
 
-* A canonical surface receptor with documented endogenous agonist
-  binding: `has_known_ligand=True`. Rationale names the agonist +
-  the binding evidence.
-* A tumor-associated antigen with FDA-approved ADC targeting it but
-  no validated endogenous ligand: `has_known_ligand=False`. Rationale:
-  *"Orphan-like: no validated endogenous ligand reported. The clinical
-  ADCs ([drug-1] and [drug-2]) are therapeutic antibody-conjugates,
-  not endogenous biology. The receptor's natural binding partner
-  remains unidentified."*
-* An orphan GPCR with proposed but unconfirmed natural ligand candidate:
-  `has_known_ligand=False`. Rationale names the proposed candidate +
-  why the field treats it as unconfirmed.
+In the `True` direction, the rationale names the agonist + binding
+evidence. In the `False` direction (orphan GPCR with proposed-but-
+unconfirmed ligand candidate, or tumor antigen with therapeutic
+binder only), the rationale names the orphan status + what's been
+tried.
 
 A proposed but widely-cited endogenous ligand stays `True` if the
 proposal has multiple independent characterizations; flip to `False`

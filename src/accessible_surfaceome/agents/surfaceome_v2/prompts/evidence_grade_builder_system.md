@@ -204,24 +204,19 @@ Writing the rationale first and back-filling stances to match leads to
 prose-driven post-hoc rationalization; the stance map should drive the
 prose, not the other way around.
 
-**Worked examples — state-conditional surface form with a non-surface
-baseline** (the canonical 5b.8 case, with the state-dependent-is-not-
-conflicting refinement applied). Two archetypes to illustrate the SAME
-stance-mapping discipline — don't anchor on either; apply the structure
-to whichever biology your gene's ledger surfaces. Pull the SPECIFIC
-baseline-state biology and induced-state mechanism from the gene's
-actual evidence ledger; the shapes below are templates, not content.
-
-### Archetype A — state-conditional outer-leaflet inversion
-
-A normally inner-leaflet-facing protein is translocated to the outer
-leaflet under a defined cellular state (e.g. malignant transformation),
-where extracellular antibodies can engage it:
+**Worked example — state-conditional surface form with a non-surface
+baseline** (the canonical 5b.8 case). Apply the structure to whichever
+biology your gene's ledger surfaces — outer-leaflet inversion under
+transformation, stress-induced release of an intracellular pool,
+activation-induced display from an organellar reserve, etc. Pull the
+SPECIFIC baseline-state biology and induced-state mechanism from the
+gene's actual evidence ledger; the shape below is a template, not
+content.
 
 ```
 "claim_stances": [
   {"claim_id": "a1_evi_01", "stance": "supports_surface",    "weight": "high",
-   "note": "outer-leaflet translocation in induced state, in vitro + in vivo"},
+   "note": "induced-state surface form, primary evidence in vitro + in vivo"},
   {"claim_id": "a1_evi_02", "stance": "supports_surface",    "weight": "high",
    "note": "antibody-mediated killing in xenografts (induced state)"},
   {"claim_id": "a1_evi_05", "stance": "tangential",          "weight": "high",
@@ -229,45 +224,24 @@ where extracellular antibodies can engage it:
   {"claim_id": "a1_evi_12", "stance": "supports_surface",    "weight": "high",
    "note": "non-permeabilized surface biotinylation"},
   {"claim_id": "a1_evi_15", "stance": "tangential",          "weight": "high",
-   "note": "canonical inner-facing topology, baseline state (not a refutation of induced-state surface form)"}
+   "note": "canonical baseline localization, resting state (not a refutation of induced-state surface form)"}
 ],
 ```
 
-### Archetype B — stress-induced release of an intracellular pool
-
-An intracellular-resident protein (cytosolic or organellar) with a
-documented regulated surface pool that appears under a specific
-stimulus (stress, activation, lineage cue):
-
-```
-"claim_stances": [
-  {"claim_id": "a1_evi_03", "stance": "supports_surface",    "weight": "high",
-   "note": "non-permeabilized IF on stimulated primary cells; KO loses signal"},
-  {"claim_id": "a1_evi_04", "stance": "supports_surface",    "weight": "moderate",
-   "note": "surface biotinylation post-stimulus, single source, no KO control"},
-  {"claim_id": "a1_evi_07", "stance": "tangential",          "weight": "high",
-   "note": "canonical intracellular residency under resting conditions — describes baseline, not a contradiction"},
-  {"claim_id": "a1_evi_09", "stance": "supports_surface",    "weight": "low",
-   "note": "non-human cell-line surfaceome MS, weak species transfer"},
-  {"claim_id": "a1_evi_11", "stance": "tangential",          "weight": "moderate",
-   "note": "baseline organellar localization by IF (resting state) — informs the basal picture, not a refutation"}
-],
-```
-
-In BOTH archetypes the canonical-baseline-localization claims describe
-the target's BASELINE state. They DON'T contradict the induced surface
-form — the two coexist under the state-conditional mechanism. Marking
-them `contradicts_surface` forces the grade to `conflicting`, which is
-wrong. They're `tangential` to the surface call (they inform the
-baseline picture that `state_dependence=high` captures) and the grade
-lands on `direct_single_method` — anchored on the induced-state-surface
-papers' direct methodology, with state-conditionality flagged separately
-on `confidence` / `state_dependence`.
+Canonical-baseline-localization claims describe the target's BASELINE
+state. They DON'T contradict the induced surface form — the two coexist
+under the state-conditional mechanism. Marking them
+`contradicts_surface` forces the grade to `conflicting`, which is wrong.
+They're `tangential` to the surface call (they inform the baseline
+picture that `state_dependence=high` captures) and the grade lands on
+`direct_single_method` — anchored on the induced-state-surface papers'
+direct methodology, with state-conditionality flagged separately on
+`confidence` / `state_dependence`.
 
 Only mark a baseline-localization claim as `contradicts_surface` when
 it's incompatible with the surface-positive evidence under EVERY
-plausible mechanism (e.g. a definitive negative-staining result
-under the same conditions as a positive-staining claim).
+plausible mechanism (e.g. a definitive negative-staining result under
+the same conditions as a positive-staining claim).
 
 ## grade_rationale
 

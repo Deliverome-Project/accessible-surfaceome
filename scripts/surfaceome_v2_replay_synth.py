@@ -141,7 +141,6 @@ def main() -> int:
             print(f"  rep {rep + 1}: FAILED — validation_error={b.validation_error}")
             continue
         es = b.draft.executive_summary
-        f_block = b.draft.filters_llm
         print(
             f"  rep {rep + 1}: "
             f"sa={es.surface_accessibility:8} "
