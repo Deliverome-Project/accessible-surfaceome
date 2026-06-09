@@ -299,4 +299,3 @@ test("sortRows: string comparator — asc is alphabetical on the displayed value
     ["Apricot", "Mango", "Zebrafish"],
   );
 });
-
