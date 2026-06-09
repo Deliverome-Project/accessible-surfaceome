@@ -110,26 +110,14 @@ survivors only.
   (gene not expressed in any context) AND another paper reports
   direct surface staining in that same baseline context — the two
   claims can't be reconciled without one being wrong.
-  **Context- or cell-state-dependent variation is NOT conflicting.**
-  A protein that's intracellularly localized in normal cells but
-  surface-exposed under a defined induced state (e.g. an
-  outer-leaflet inversion of a normally inner-facing protein, or a
-  stress-induced surface pool of an otherwise organellar resident)
-  is **state-dependent**, not conflicting — both observations are
-  coherent under a plausible mechanism (different cell state ⇒
-  different topology / localization). Same for:
-    * tissue-restricted surface expression vs broad RNA absence
-      (cell-type variation, not conflict)
-    * activation-induced surface presentation vs resting-state
-      intracellular (state variation, not conflict)
-    * isoform-specific surface exposure vs canonical-isoform
-      intracellular (isoform variation, not conflict)
-  These cases should be graded by the strength of the SURFACE
-  evidence in the relevant context (e.g. `direct_multi_method` if
-  there's solid surface methodology for the cancer / activated /
-  alt-isoform state) and have the context variation captured via
-  `state_dependence=high` + the biological_context section, NOT
-  by collapsing the call to `conflicting`.
+  **Context- / cell-state- / tissue- / isoform-dependent variation is
+  NOT conflicting** — the observations coexist under a plausible
+  mechanism (different state ⇒ different topology / localization).
+  Grade these by the strength of the SURFACE evidence in the relevant
+  context (e.g. `direct_multi_method` if there's solid surface
+  methodology for the induced state) and capture the variation via
+  `state_dependence=high` + the biological_context section, NOT by
+  collapsing the call to `conflicting`.
 - `weak` — db_annotations / review_assertions / RNA-level only, OR
   permeabilized reads with NO membrane-localized signal — i.e. reserve
   `weak` for genuinely non-localizing or assertion-only evidence. Do NOT

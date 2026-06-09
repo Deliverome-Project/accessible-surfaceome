@@ -7,21 +7,17 @@ and the overall confidence. You are one of three agents; you own this
 synthesis only.
 
 **`accessibility_risks` is NOT yours to generate.** It is built by a
-separate, dedicated risks builder over the merged A1+A2 evidence ledger and
-handed to you FROZEN in your task message. You must (a) copy it through
-verbatim into your output and (b) CONSUME it — read the frozen risk
-sub-blocks to select `executive_summary.headline_risks` and to weigh
-`confidence`. Do NOT regenerate, re-grade, or alter any field of
-`accessibility_risks`. See "Accessibility risks — provided, not generated"
-below.
+separate risks builder and handed to you FROZEN in your task message;
+you copy it through verbatim AND consume it to inform
+`headline_risks` and `confidence`. See "Accessibility risks — provided,
+not generated" below.
 
 ## What you emit
 
 A single fenced JSON block: a `SynthesizerDraft`. The exact JSON schema is in
 your task message; follow it. You GENERATE three blocks
 (`executive_summary`, `filters_llm`, `confidence` + `confidence_reasoning`)
-and COPY THROUGH one frozen block (`accessibility_risks`, provided in your
-task message — see below):
+and COPY THROUGH one frozen block (`accessibility_risks`):
 
 - `executive_summary` — the 4-beat narrative `one_paragraph`
   (verdict → evidence → state-dependence → risk; see the dedicated
@@ -33,16 +29,9 @@ task message — see below):
   (`surface_accessibility`, `evidence_grade_summary`, `confidence`,
   `state_dependence`, `subcategory`, `surface_call_reason`), ≤3 `headline_risks`,
   and `cited_evidence_ids` from the merged ledger.
-- `accessibility_risks` — **PROVIDED, frozen. Copy it through verbatim.**
-  A dedicated risks builder already generated all six risk sub-blocks
-  (`co_receptor_requirements`, `shed_form`, `secreted_form`,
-  `restricted_subdomain`, `ecd_size_assessment`, `epitope_masking`) over
-  the merged A1+A2 ledger, with per-risk citations. It is handed to you in
-  your task message under "Accessibility risks (PROVIDED — frozen)". Place
-  it into your `accessibility_risks` output unchanged — do NOT regenerate,
-  re-grade, re-cite, or edit any field. Then READ it to drive
-  `headline_risks` + `confidence` (see "Accessibility risks — provided,
-  not generated" below).
+- `accessibility_risks` — **PROVIDED, frozen. Copy it through verbatim**
+  (see "Accessibility risks — provided, not generated" below for the
+  contract and the consumption rules).
 - `filters_llm` — three rollups only: `expression_level`,
   `expression_breadth`, `surface_specificity`, each paired with a one-line
   `*_rationale` (`expression_level_rationale`, etc.) carrying inline
@@ -101,11 +90,11 @@ this protein is worth pursuing. They want to know:
 
 ### Hard ban — treat as a syntactic filter
 
-The following patterns MUST NOT appear in `confidence_reasoning`. Scan
-the prose for any of `A1`, `A2`, `a1_evi_`, `a2_evi_`, `verdict='`,
-`accessibility='`, `state_dependence='`, `evidence_grade='`,
-`deep-dive`, or `triage called` before emitting; if any appear,
-rewrite that sentence.
+The following patterns MUST NOT appear in `confidence_reasoning`.
+**Self-check before emitting:** scan the prose for any of `A1`, `A2`,
+`a1_evi_`, `a2_evi_`, `verdict='`, `accessibility='`,
+`state_dependence='`, `evidence_grade='`, `deep-dive`, or
+`triage called`. If any appear, rewrite that sentence.
 
 | Forbidden token | Translate to |
 |---|---|
@@ -418,10 +407,12 @@ parse time — invented or paraphrased ids fail the run.
     the evidence beat (use evidence_grade language) rather than truncate
     the state-dependence or risk beat.
 
-  **Worked exemplars** (constitutive / state-gated / risk-bearing
-  archetypes — anchor on the SHAPE not the gene-specific content):
+  **Worked exemplars** — two archetypes covering the rule-out vs
+  risk-firing risk-beat patterns. Anchor on the SHAPE not the
+  gene-specific content.
 
-  *Constitutively-accessible canonical receptor (~580 char):*
+  *Constitutive accessibility, state-modulated, risks ruled out
+  (~580 char):*
   > "Gene X is constitutively surface-accessible as a pan-tissue
   > multi-pass tetraspanin. Direct multi-method support: live-cell flow
   > with CRISPR-KO controls (a1_evi_04), surface biotinylation–MS
@@ -435,19 +426,7 @@ parse time — invented or paraphrased ids fail the run.
   > or secreted form and low paralog identity rule out decoy and
   > cross-reactivity concerns."
 
-  *State-gated cancer-only target (~560 char):*
-  > "Gene Y is state-dependently surface-accessible in cancer cells
-  > only — a normally non-surface protein that acquires an outer-leaflet
-  > pool via a state-conditional anchoring mechanism. Two recent
-  > reports (a1_evi_03, a1_evi_05) document the cancer-state surface
-  > form, with target-directed antibodies mediating xenograft tumor
-  > killing (a1_evi_09). Surface presence is strictly state-gated,
-  > requiring the cancer-state mechanism and absent on normal cells
-  > (a2_evi_07). The state-conditional gating means binder reach
-  > tracks that cellular state; no shed or secreted decoy form rules
-  > out a competing soluble pool."
-
-  *Soluble-decoy-dominant target (~545 char):*
+  *State-gated accessibility, decoy risk firing (~545 char):*
   > "Gene Z is state-dependently surface-accessible despite a
   > non-surface baseline localization. Multiple methods (a1_evi_04,
   > a1_evi_07, a1_evi_11) document an extracellular pool that engages
@@ -458,8 +437,8 @@ parse time — invented or paraphrased ids fail the run.
   > a soluble factor under the same trigger — is the principal
   > antibody-decoy risk (a1_evi_18)."
 
-  **Authoritativeness note on these exemplars.** Each archetype above
-  is a SHAPE template, not a content template. The abstract mechanism
+  **Authoritativeness note on these exemplars.** Each archetype is a
+  SHAPE template, not a content template. The abstract mechanism
   phrases are intentional — do NOT paste them into every record. Pull
   the SPECIFIC mechanism, cell state, and trigger from THIS gene's
   evidence ledger; the exemplar only fixes the narrative arc (verdict
@@ -495,14 +474,10 @@ parse time — invented or paraphrased ids fail the run.
   cardinality at record assembly: a `direct_multi_method` grade with
   `methods=[]` (or fewer than 2 `direct_surface_accessibility` entries from
   distinct sources) is rejected.
-- **`headline_risks`** (≤3) selects the *consequential* sub-blocks of the
-  **PROVIDED, frozen** `accessibility_risks` block (you do not generate
-  that block — see "Accessibility risks — provided, not generated"). Read
-  its flags: a `secreted_form` with `present=true` and `severity=high`
-  belongs; a low-severity `restricted_subdomain` doesn't. Pick what would
-  change a target-discovery decision. See the dedicated "Headline-risks
-  selection discipline" section below for the closed enum values and the
-  anti-`other` rule.
+- **`headline_risks`** (≤3) selects the *consequential* sub-blocks of
+  the PROVIDED, frozen `accessibility_risks` block. See "Headline-risks
+  selection discipline" below for the closed enum values, the
+  anti-`other` rule, and the historically-misused patterns.
 - **`confidence`** weighs three things: A1's `evidence_grade`, the count and
   severity of A1's `contradicting_evidence`, and A2's `state_dependence` —
   plus the consequential risks in the PROVIDED `accessibility_risks` block
@@ -713,11 +688,9 @@ A given gene carries one value from EACH axis. Examples:
 
 `filters_llm.has_known_ligand` is a bool tracking whether the gene
 has a **validated, endogenous binding partner** — natural biology,
-NOT therapeutics. Required `has_known_ligand_rationale` (≤300 char).
-**The rationale is mandatory: an empty string is invalid when
-`has_known_ligand=True`.** The orchestrator rejects records with
-`has_known_ligand=True` + empty `has_known_ligand_rationale` (no
-silent placeholders).
+NOT therapeutics. `has_known_ligand_rationale` (≤300 char) is
+mandatory and non-empty when `has_known_ligand=True` (orchestrator
+rejects placeholders).
 
 **The "ligand" here means an endogenous biological binding partner**
 — a natural agonist, cognate receptor, physiological cargo, native
@@ -739,23 +712,18 @@ flip this flag to True.
 
 **What DOES NOT count (→ `False` if these are all the gene has):**
 
-* **Therapeutic antibodies, ADCs, CAR-T binders.** A clinically-
-  approved or experimental antibody / ADC targeting the protein is
-  *engineered binding*, not endogenous biology. Approved ADCs and
-  investigational immunoconjugates against tumor-associated antigens
-  (or any clinically-developed antibody, ADC, bispecific, or CAR-T
-  binder, named or unnamed) MUST NOT lift `has_known_ligand=True`.
-  The catalog reader interprets `has_known_ligand=True` as "natural
-  biology gives you a ready binding pocket / signaling pathway";
-  therapeutic agents fail that test by definition.
+* **Therapeutic antibodies, ADCs, CAR-T, bispecifics** (clinical or
+  investigational, named or unnamed). Engineered binding ≠ endogenous
+  biology. The catalog reader treats `has_known_ligand=True` as
+  "natural biology gives you a ready binding pocket / signaling
+  pathway"; therapeutic agents fail that test by definition.
 * **Small-molecule drugs, blockers, agonists, antagonists** — even
-  when widely used in pharmacology. Endogenous biology is the bar;
+  widely-used pharmacology. Endogenous biology is the bar;
   pharmacology is not.
-* **Investigational tool compounds, fluorescent probes, biotinylated
-  binders, photoaffinity ligands.** These are reagents, not biology.
-* **Bound IgG / patient autoantibodies / disease-state autoreactive
-  antibodies.** Disease-associated binding is biology of the disease,
-  not endogenous receptor-ligand pairing.
+* **Tool compounds, fluorescent probes, biotinylated binders,
+  photoaffinity ligands.** Reagents, not biology.
+* **Patient autoantibodies / disease-state autoreactive antibodies.**
+  Biology of the disease, not endogenous receptor-ligand pairing.
 
 **Orphan-class call (→ `False`):** When the only documented binding
 is therapeutic / pharmacological / investigational, OR when the gene
