@@ -245,10 +245,24 @@ parse time — invented or paraphrased ids fail the run.
   conditional): `cell_state_induced`, `tissue_restricted_surface`,
   `lysosomal_exocytosis`, `dual_localization`,
   `stable_surface_attachment`, `other`. The first five mirror
-  `accessibility_modulation.category` verbatim — if you pick one of
-  these, A2's `accessibility_modulation` should also have a matching
-  row, otherwise that's a recall miss to flag in
-  `confidence_reasoning`.
+  `accessibility_modulation.category` verbatim.
+
+  **Soft recall-check on scr ↔ amod.category coupling.** If `scr ∈
+  {lysosomal_exocytosis, dual_localization,
+  tissue_restricted_surface}`, the amod block should contain at least
+  one row whose `category` is in the same finer-grained family —
+  these three reasons name a specific accessibility mechanism, so
+  the absence of a matching amod row is a recall miss worth flagging
+  in `confidence_reasoning`. **`cell_state_induced` is the umbrella
+  category** — finer-grained reasons like `activation_induced`,
+  `lysosomal_exocytosis`, `stress_induced`, or `disease_state_induced`
+  on an amod row are all valid backing for `scr =
+  cell_state_induced`, and any non-empty amod block satisfies the
+  check; only an empty amod block under `scr = cell_state_induced`
+  is a soft signal to note. If no matching family row exists for
+  any of these, note the recall miss in `confidence_reasoning` —
+  the synth call still stands, but the catalog reader should know
+  the amod backing is thin.
 
   **NO-bucket** (use when `surface_accessibility ∈ {low, no}`):
   `cytoplasmic`, `nuclear`, `mitochondrial_internal`,
