@@ -40,6 +40,10 @@ from typing import Any
 from anthropic import Anthropic
 from pydantic import ValidationError
 
+# Prompt-corpus tag stamped onto every record at synthesis time. Read at
+# module load so the orchestrator snapshot a stable value at worker spawn
+# (Modal-friendly: workers can't see version bumps mid-cohort).
+from accessible_surfaceome._version_guard import PROMPT_CORPUS_VERSION
 from accessible_surfaceome.agents._support.client import get_client
 from accessible_surfaceome.agents._support.evidence_promotion import promote_claim
 from accessible_surfaceome.agents._support.pricing import UsageRecord, UsageSummary
@@ -123,12 +127,6 @@ AGENT_MODEL = "claude-sonnet-4-6"
 # version even after the Pydantic default moved, which silently kept the
 # viewer's freshness dots marking fresh records as stale.
 SCHEMA_VERSION_LITERAL = SurfaceomeRecord.model_fields["schema_version"].default
-
-# Read PROMPT_CORPUS_VERSION at module load so the orchestrator stamps it
-# onto every record. The version_guard module's value is the canonical truth;
-# stamping it on the record gives us a "which prompt corpus produced this
-# call?" join key independent of the D1 mirror denormalization.
-from accessible_surfaceome._version_guard import PROMPT_CORPUS_VERSION
 
 RUNS_DIR = Path(".runs")
 
