@@ -153,55 +153,12 @@ export function BiologicalContextCard({ rec, n }: Props) {
 
       <FeatureRationales category="biology" rec={rec} />
 
-      {/* Accessibility modulation — moved to the top (most decision-
-          relevant) and rendered as a table: one row per state/lineage
-          shift, far easier to scan than the old stacked prose blocks. */}
-      <div className={styles.subsection}>
-        <p className={`label-mono ${styles.subhead}`}>Accessibility modulation</p>
-        {bc.accessibility_modulation.length === 0 ? (
-          <p className={styles.empty}>No modulation rows recorded.</p>
-        ) : (
-          <table className={`${styles.table} ${styles.modTable}`}>
-            <thead>
-              <tr>
-                <th scope="col">Context</th>
-                <th scope="col">Change</th>
-                <th scope="col">Reference</th>
-                <th scope="col">Modulating state</th>
-                <th scope="col">Implication</th>
-                <th scope="col">References</th>
-              </tr>
-            </thead>
-            <tbody>
-              {bc.accessibility_modulation.map((m, i) => (
-                <tr key={i}>
-                  <td>
-                    <StatusPill tone="lavender" size="sm">
-                      {prettyEnum(m.category)}
-                    </StatusPill>
-                  </td>
-                  {/* Structured direction of the surface pool under the
-                      modulating state — its own column, "?" when unclear. */}
-                  <td>{directionCell(m.direction)}</td>
-                  <td>{m.baseline_context}</td>
-                  <td>{m.modulating_state}</td>
-                  <td>{m.accessibility_implication}</td>
-                  <td>
-                    {/* The change/effect narrative (the "evidence string")
-                     *  lives in the Cites column with its citations rather
-                     *  than widening the Shift column. */}
-                    {m.change ? (
-                      <p className={styles.modChangeCite}>{m.change}</p>
-                    ) : null}
-                    <EvidenceChipList ids={m.cited_evidence_ids} label="References" />
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        )}
-      </div>
-
+      {/* Accessibility modulation moved to the bottom of the Biology section
+          (was at top): rows are dense per-state/lineage detail that reads
+          better AFTER the static "where is the protein?" picture
+          (subcellular + anatomical + co-receptor) is in the reader's head.
+          The headline modulation signal (oncogenic / immune / stress trigger)
+          is already shown in the at-a-glance chip in the section header. */}
       <div className={styles.subsection}>
         <p className={`label-mono ${styles.subhead}`}>Subcellular localization</p>
         {/* Primary compartment + two labeled secondary axes in one
@@ -401,6 +358,59 @@ export function BiologicalContextCard({ rec, n }: Props) {
             {linkifyEvidenceRefs(cr.rationale)}
           </p>
         ) : null}
+      </div>
+
+      {/* Accessibility modulation — moved to the BOTTOM of the Biology
+          section. Per-row state/lineage shifts (oncogenic upregulation,
+          immune activation, stress release) are dense table data that
+          reads better after the reader has the static "where is the
+          protein?" picture (subcellular + anatomical + co-receptor) in
+          their head. The headline modulation chip in the section header
+          covers the at-a-glance trigger bucket. */}
+      <div className={styles.subsection}>
+        <p className={`label-mono ${styles.subhead}`}>Accessibility modulation</p>
+        {bc.accessibility_modulation.length === 0 ? (
+          <p className={styles.empty}>No modulation rows recorded.</p>
+        ) : (
+          <table className={`${styles.table} ${styles.modTable}`}>
+            <thead>
+              <tr>
+                <th scope="col">Context</th>
+                <th scope="col">Change</th>
+                <th scope="col">Reference</th>
+                <th scope="col">Modulating state</th>
+                <th scope="col">Implication</th>
+                <th scope="col">References</th>
+              </tr>
+            </thead>
+            <tbody>
+              {bc.accessibility_modulation.map((m, i) => (
+                <tr key={i}>
+                  <td>
+                    <StatusPill tone="lavender" size="sm">
+                      {prettyEnum(m.category)}
+                    </StatusPill>
+                  </td>
+                  {/* Structured direction of the surface pool under the
+                      modulating state — its own column, "?" when unclear. */}
+                  <td>{directionCell(m.direction)}</td>
+                  <td>{m.baseline_context}</td>
+                  <td>{m.modulating_state}</td>
+                  <td>{m.accessibility_implication}</td>
+                  <td>
+                    {/* The change/effect narrative (the "evidence string")
+                     *  lives in the Cites column with its citations rather
+                     *  than widening the Shift column. */}
+                    {m.change ? (
+                      <p className={styles.modChangeCite}>{m.change}</p>
+                    ) : null}
+                    <EvidenceChipList ids={m.cited_evidence_ids} label="References" />
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        )}
       </div>
 
     </SectionCard>
