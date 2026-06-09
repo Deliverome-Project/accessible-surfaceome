@@ -124,6 +124,188 @@ AGENT_MODEL = "claude-sonnet-4-6"
 SCHEMA_VERSION_LITERAL = SurfaceomeRecord.model_fields["schema_version"].default
 RUNS_DIR = Path(".runs")
 
+# Mid-gene PTS checkpoint directory. After ``run_plan_trim_select_dual``
+# completes (which is the heavy half of a gene at ~$1.35 of the typical
+# ~$2 per-gene cost), the orchestrator persists the dual's serialized
+# form here. A subsequent re-launch of the same gene reads the checkpoint
+# and short-circuits past the PTS dual, jumping straight to the builders
+# + synth — saving ~$1.35 / retried gene. On a ~5% builder/synth failure
+# rate over the ~6,500-gene cohort, that's ~$440 of recovered spend.
+#
+# **Local-only.** ``.runs/_phase_checkpoint/`` is a per-runner directory;
+# Modal containers don't share disk between attempts, so the Modal analog
+# is a Modal volume mount at the same path. Future Modal-side work
+# should mount a ``modal.Volume`` at ``.runs/_phase_checkpoint/`` and the
+# checkpoint code below works unchanged.
+#
+# **Read is opt-out** (``read_phase_checkpoint=True`` by default — the
+# safe choice for cohort retry). **Write is always on** so a forced
+# rerun still leaves a checkpoint for the NEXT attempt.
+_CHECKPOINT_DIR = RUNS_DIR / "_phase_checkpoint"
+
+
+def _checkpoint_path(gene: str) -> Path:
+    """Per-gene PTS checkpoint file under ``.runs/_phase_checkpoint/``.
+
+    Filename keys on the colon-substituted gene id so HGNC:1234 and
+    GENESYM both produce stable filesystem-safe paths.
+    """
+    safe_id = gene.replace(":", "_")
+    return _CHECKPOINT_DIR / f"{safe_id}.pts.json"
+
+
+def _save_pts_checkpoint(gene: str, dual: DualPlanTrimSelectResult) -> None:
+    """Persist the PTS dual result for mid-gene resume.
+
+    Best-effort: a write failure (disk full, permission error) logs and
+    returns. The checkpoint is an optimization; if it can't be written
+    the next run just re-pays the PTS cost.
+
+    Reuses :func:`_serialize_pts` so the on-disk shape matches what
+    intermediates carry — that means the checkpoint can be reconstructed
+    by the same code path the ``surfaceome_v2_replay_builders`` driver
+    uses to rebuild a dual from intermediates.
+    """
+    try:
+        _CHECKPOINT_DIR.mkdir(parents=True, exist_ok=True)
+        payload = _serialize_pts(dual)
+        _checkpoint_path(gene).write_text(json.dumps(payload, indent=2))
+        logger.info(
+            "v2 orchestrator: PTS checkpoint saved for %s (%d A1 + %d A2 claims)",
+            gene, len(dual.a1.claims), len(dual.a2.claims),
+        )
+    except Exception as exc:  # noqa: BLE001 — best-effort, never raise
+        logger.warning(
+            "v2 orchestrator: PTS checkpoint write failed for %s: %s "
+            "(continuing — next retry will re-pay PTS cost)",
+            gene, exc,
+        )
+
+
+def _load_pts_checkpoint(gene: str) -> DualPlanTrimSelectResult | None:
+    """Re-hydrate a saved PTS dual, or return ``None`` if no checkpoint
+    or the on-disk file fails to deserialize.
+
+    Conservative: any failure path returns None so the caller re-runs
+    the PTS dual fresh. This matches the philosophy of the rest of the
+    pipeline — degraded inputs are recoverable; we'd rather re-pay the
+    cost than continue on a half-corrupt checkpoint.
+    """
+    path = _checkpoint_path(gene)
+    if not path.exists():
+        return None
+    try:
+        blob = json.loads(path.read_text())
+    except Exception as exc:  # noqa: BLE001
+        logger.warning(
+            "v2 orchestrator: PTS checkpoint read failed for %s: %s "
+            "(falling back to fresh PTS dual)",
+            gene, exc,
+        )
+        return None
+    try:
+        return _dual_from_serialized(gene, blob)
+    except Exception as exc:  # noqa: BLE001
+        logger.warning(
+            "v2 orchestrator: PTS checkpoint deserialize failed for %s: %s "
+            "(falling back to fresh PTS dual)",
+            gene, exc,
+        )
+        return None
+
+
+def _delete_pts_checkpoint(gene: str) -> None:
+    """Remove a per-gene checkpoint after a successful annotate run.
+
+    Best-effort: a delete failure logs but doesn't raise. A stale
+    checkpoint left around is harmless — the next successful run will
+    overwrite it, and a re-launch on a non-existent gene will just hit
+    the no-file branch in :func:`_load_pts_checkpoint`.
+    """
+    path = _checkpoint_path(gene)
+    if not path.exists():
+        return
+    try:
+        path.unlink()
+        logger.info(
+            "v2 orchestrator: PTS checkpoint cleared for %s (gene completed)",
+            gene,
+        )
+    except Exception as exc:  # noqa: BLE001
+        logger.warning(
+            "v2 orchestrator: PTS checkpoint delete failed for %s: %s "
+            "(harmless — next run will overwrite or reuse it)",
+            gene, exc,
+        )
+
+
+def _dual_from_serialized(gene: str, blob: dict[str, Any]) -> DualPlanTrimSelectResult:
+    """Reconstruct a :class:`DualPlanTrimSelectResult` from the same blob
+    shape :func:`_serialize_pts` emits.
+
+    Mirrors ``scripts/surfaceome_v2_replay_builders._reconstruct_dual``
+    — kept inline here so the orchestrator's checkpoint resume path
+    doesn't depend on the script being importable. The downstream
+    pipeline reads: ``dual.bundle``, ``dual.a1``, ``dual.a2``,
+    ``dual.total_cost_usd``, ``dual.elapsed_s``. The reconstructed
+    sides hold zero cost (a replay incurs no PTS spend — that's the
+    whole point) and empty audit logs (the slim path on intermediates
+    drops ``search_log`` etc; we mirror that here).
+    """
+    from accessible_surfaceome.agents.plan_trim_select.runner import (
+        PlanTrimSelectResult,
+    )
+    from accessible_surfaceome.tools._shared.models import (
+        EvidenceClaim,
+        IdentifierBundle,
+    )
+
+    bundle_dict = blob.get("bundle")
+    if not bundle_dict:
+        raise ValueError(
+            "PTS checkpoint has no bundle — incompatible with the "
+            "current schema. Falling back to fresh PTS dual."
+        )
+    bundle = IdentifierBundle.model_validate(bundle_dict)
+
+    def _side(side_blob: dict[str, Any]) -> PlanTrimSelectResult:
+        claims = [
+            EvidenceClaim.model_validate(c)
+            for c in side_blob.get("claims") or []
+        ]
+        # plan + selection_response are required by the dataclass init
+        # but the orchestrator's downstream pipeline doesn't read them
+        # off the replayed dual — None marks "no replay state" (the
+        # surfaceome_v2_replay_builders driver uses the same shape).
+        return PlanTrimSelectResult(
+            gene=blob.get("gene") or gene,
+            bundle=bundle,
+            plan=None,
+            selection_response=None,
+            agent_focus=side_blob.get("agent_focus") or "a1",
+            claims=claims,
+            search_log=[],
+            iteration_log=[],
+            triage_actions=[],
+            pretrim_audits=[],
+            n_claims=len(claims),
+            n_anchored=side_blob.get("n_anchored") or len(claims),
+            n_papers_total=side_blob.get("n_papers_total") or 0,
+            n_drafts_total=side_blob.get("n_drafts_total") or 0,
+            n_kept_after_trim=side_blob.get("n_kept_after_trim") or 0,
+            n_iterations_run=side_blob.get("n_iterations_run") or 0,
+            elapsed_s=0.0,
+            warnings=[],
+        )
+
+    return DualPlanTrimSelectResult(
+        gene=blob.get("gene") or gene,
+        bundle=bundle,
+        a1=_side(blob.get("a1") or {}),
+        a2=_side(blob.get("a2") or {}),
+        elapsed_s=0.0,
+    )
+
 
 def _triage_signal_and_reasoning_from_record(rec):
     """Map a loaded ``TriageRecord`` onto the deep-dive record's
@@ -639,6 +821,7 @@ def annotate(
     timing: TimingRecorder | None = None,
     skip_if_fresh: bool = False,
     cached_dual: DualPlanTrimSelectResult | None = None,
+    read_phase_checkpoint: bool = True,
 ) -> AnnotateResultV2:
     """Run the v2 deep-dive pipeline on one gene.
 
@@ -665,6 +848,16 @@ def annotate(
     pipeline run. The cached dual must have been produced under prompts
     compatible with the current builders' input contracts (typically
     same major prompt_corpus version).
+
+    When ``read_phase_checkpoint=True`` (default) and a per-gene
+    checkpoint file exists at ``.runs/_phase_checkpoint/{gene}.pts.json``,
+    the saved dual is loaded and used as ``cached_dual``. This lets a
+    mid-gene crash on the builders/synth half restart cheaply — the
+    PTS spend (~$1.35 of a typical $2 gene) is recovered. Pass
+    ``read_phase_checkpoint=False`` to force a fresh PTS dual even when
+    a checkpoint exists (e.g. when iterating on PTS prompts). Write of
+    the checkpoint is always on; only the read is opt-out. Explicit
+    ``cached_dual`` wins over the on-disk checkpoint.
     """
     if skip_if_fresh:
         existing = _existing_fresh_record(gene)
@@ -685,6 +878,18 @@ def annotate(
                 timing=[],
                 intermediates={},
             )
+    # Checkpoint-driven resume — load before the http/client allocation
+    # so a successful checkpoint hit doesn't even open a network handle
+    # for the PTS-side. Explicit cached_dual wins (caller knows best).
+    if cached_dual is None and read_phase_checkpoint:
+        loaded = _load_pts_checkpoint(gene)
+        if loaded is not None:
+            logger.info(
+                "v2 orchestrator: PTS checkpoint hit for %s — skipping "
+                "PTS dual (saved ~$1.35 in PTS spend)",
+                gene,
+            )
+            cached_dual = loaded
     own_http = http is None
     client = client or get_client()
     http = http or open_default_client()
@@ -789,6 +994,63 @@ def _annotate(
         len(a2_claims),
         dual.total_cost_usd,
     )
+
+    # Mid-gene PTS checkpoint: persist the dual so a restart after a
+    # builder/synth failure can short-circuit past the PTS spend. Only
+    # write a checkpoint for FRESH PTS dual runs — when cached_dual was
+    # already provided (replay or checkpoint resume), the on-disk file
+    # is either unchanged or being re-asserted with identical data.
+    # Modal note: ``.runs/_phase_checkpoint/`` is per-container; the
+    # Modal-side analog is a Modal volume mount at the same path. See
+    # the comment on ``_CHECKPOINT_DIR``.
+    if cached_dual is None:
+        _save_pts_checkpoint(gene_id.hgnc_symbol, dual)
+
+    # ---- PTS-level cost cap ----------------------------------------------
+    # Separate from the post-builders MAX_COST_USD ceiling. A pathological
+    # PTS dual (deep-iteration retrieval on a heavy-lit gene gone wrong)
+    # can rack up $5+ before the builders even start. Aborting here with
+    # a valid error result + intermediates publish path means we keep the
+    # diagnostic blob for post-mortem (which papers were fetched, which
+    # claims trimmed) without burning another $0.65+ on the builders.
+    # 5 USD chosen with ~3x headroom over the heaviest observed PTS run
+    # (TGOLN2 ~$1.65) — pathological runs jump well past this.
+    MAX_PTS_COST_USD = 5.0
+    pts_cost = dual.total_cost_usd
+    if pts_cost > MAX_PTS_COST_USD:
+        logger.warning(
+            "v2 orchestrator: PTS-level cost ceiling exceeded for %s: "
+            "$%.2f > $%.2f. Aborting before builders run.",
+            gene_id.hgnc_symbol,
+            pts_cost,
+            MAX_PTS_COST_USD,
+        )
+        pts_only_intermediates: dict[str, Any] = {
+            "plan_trim_select": _serialize_pts(dual),
+            "bundle": dual.bundle.model_dump(mode="json")
+            if dual.bundle is not None
+            else None,
+            "cost_total_usd": pts_cost,
+            "cost_per_pipeline": {
+                "plan_trim_select": pts_cost,
+                "builders": 0.0,
+                "synthesizer": 0.0,
+            },
+        }
+        return AnnotateResultV2(
+            gene=gene_id.hgnc_symbol,
+            record=None,
+            dual=dual,
+            synthesizer=None,
+            blocks_used={},
+            builder_usage={},
+            error=(
+                f"PTS-level cost ceiling exceeded: "
+                f"${pts_cost:.2f} > ${MAX_PTS_COST_USD:.2f}"
+            ),
+            timing=list(timing.entries),
+            intermediates=pts_only_intermediates,
+        )
 
     intermediates: dict[str, Any] = {
         "plan_trim_select": _serialize_pts(dual),
@@ -1815,6 +2077,16 @@ def _annotate(
         annotation_path = DATA_DIR / "annotations" / f"{gene_id.hgnc_symbol}.json"
         annotation_path.parent.mkdir(parents=True, exist_ok=True)
         annotation_path.write_text(record.model_dump_json(indent=2))
+
+    # Mid-gene checkpoint cleanup — only on the success path. A run that
+    # validates the record + assembles the intermediates has no use for a
+    # stashed PTS dual; clear it so the next run on this gene picks up
+    # the freshest PTS state. Failure paths above intentionally leave
+    # the checkpoint in place so the retry can short-circuit. Driver-side
+    # intermediates publish happens after this return, so the success
+    # criterion here is "record validated" (the intermediates push is
+    # best-effort and doesn't gate the cleanup).
+    _delete_pts_checkpoint(gene_id.hgnc_symbol)
 
     return AnnotateResultV2(
         gene=gene_id.hgnc_symbol,

@@ -2522,7 +2522,7 @@ class SubcellularLocalization(BaseModel):
             "(IF / fractionation / IHC / Atlas annotation / nonperm flow), "
             "cell type, and permeabilization status, with inline "
             "(a2_evi_NN) cites per claim. Soft target <=400 chars "
-            "(overshoots warned but accepted). Defaults to "" for "
+            '(overshoots warned but accepted). Defaults to "" for '
             "backward-compat with legacy records loaded from D1 / on-disk "
             "snapshots that pre-date this field; new annotator runs must "
             "fill it."
@@ -3241,7 +3241,7 @@ class ShedForm(BaseModel):
             "evidence when graded above weak, with inline "
             "(a1_evi_NN)/(a2_evi_NN) cites per claim. Soft target "
             "<=300 chars (overshoots warned but accepted). Defaults to "
-            """ for backward-compat with legacy records loaded from "
+            '"" for backward-compat with legacy records loaded from '
             "D1 / on-disk snapshots that pre-date this field; new annotator "
             "runs must fill it."
         ),
@@ -3275,7 +3275,7 @@ class SecretedForm(BaseModel):
             "type / sample, and the decoy-behavior evidence when graded above "
             "weak, with inline (a1_evi_NN)/(a2_evi_NN) cites per claim. "
             "Soft target <=300 chars (overshoots warned but accepted). Defaults "
-            "to "" for backward-compat with legacy records loaded from D1 "
+            'to "" for backward-compat with legacy records loaded from D1 '
             "/ on-disk snapshots that pre-date this field; new annotator runs "
             "must fill it."
         ),

@@ -33,9 +33,12 @@ from pathlib import Path
 
 from accessible_surfaceome.agents.surfaceome_v2 import annotate
 from accessible_surfaceome.cloud.deep_dive_upload import D1DeepDiveSink
+from accessible_surfaceome.cloud.intermediates import publish_intermediates
+from accessible_surfaceome.cloud.surface_annotation import publish_record
 from accessible_surfaceome.env import load_env
 from accessible_surfaceome.paths import DATA_DIR
 from accessible_surfaceome.tools._shared.http import open_default_client
+from accessible_surfaceome.tools._shared.models import SurfaceomeRecord
 from accessible_surfaceome.tools.gene_lookup import resolve_by_hgnc_id
 
 logger = logging.getLogger(__name__)
@@ -136,13 +139,36 @@ def annotate_one(
     sink: D1DeepDiveSink | None,
     annotations_dir: Path,
     max_cost_per_gene_usd: float,
+    cohort_run_id: str | None = None,
+    publish_intermediates_enabled: bool = True,
 ) -> GeneResult:
     """Annotate one gene end-to-end. Used by both the local sweep loop and
     (importable) the Modal Function. Writes per-gene JSON to
     ``annotations_dir`` and best-effort streams to D1 via ``sink``.
+
+    Also pushes the run's intermediates (PTS ledgers, builder outputs,
+    synth raw JSON, deterministic blocks) into private D1's
+    ``agent_run_intermediates`` table — same call shape as the
+    single-gene driver ``scripts/surfaceome_v2_annotate.py``. Per the
+    R2/reproducibility audit
+    (``docs/audit/r2_and_reproducibility_2026_06_08.md``), the cohort
+    sweep previously skipped this and lost every gene's diagnostic blob;
+    wiring it here means the ~6,500 gene production sweep persists the
+    forensic trail for free. The push is best-effort — a D1 outage logs
+    a warning but never fails the gene. Set
+    ``publish_intermediates_enabled=False`` to opt out (offline smoke
+    runs).
+
+    ``cohort_run_id`` is threaded through to ``publish_intermediates``
+    and ``publish_record`` so post-sweep analytics can SELECT all rows
+    from a given cohort in one query rather than via a fragile
+    timestamp window. Defaults to ``run_id`` when not explicitly
+    provided — same UUID the ``deep_dive_run.run_id`` carries, so the
+    tables join cleanly.
     """
     http = open_default_client()
     t0 = time.monotonic()
+    cohort_id = cohort_run_id or run_id
     try:
         try:
             bundle = resolve_by_hgnc_id(row.hgnc_id, http=http)
@@ -156,6 +182,30 @@ def annotate_one(
         result = annotate(bundle.hgnc_symbol, http=http, persist=False)
         cost = float(result.total_cost_usd)
         latency = time.monotonic() - t0
+
+        # Push intermediates to private D1 regardless of record validity —
+        # failed runs are the highest-value case for the audit trail.
+        # publish_intermediates never raises (D1 outage / missing creds
+        # → skip with a warning). Best-effort, by design.
+        if publish_intermediates_enabled and result.intermediates:
+            sv = (
+                result.record.schema_version
+                if result.record is not None
+                else SurfaceomeRecord.model_fields["schema_version"].default
+            )
+            try:
+                publish_intermediates(
+                    gene_symbol=bundle.hgnc_symbol,
+                    intermediates=result.intermediates,
+                    schema_version=sv,
+                    record_valid=result.record is not None,
+                    cohort_run_id=cohort_id,
+                )
+            except Exception as exc:  # noqa: BLE001 — never break the sweep
+                logger.warning(
+                    "intermediates publish for %s failed: %s; sweep continues",
+                    bundle.hgnc_symbol, exc,
+                )
 
         if result.record is None:
             # Pipeline didn't produce a valid record — nothing to save.
@@ -198,6 +248,22 @@ def annotate_one(
                 n_tool_calls=len(result.timing),
             )
 
+        # Publish-to-public-D1 for the viewer: also threads cohort_run_id
+        # through so the public surface_annotation row carries the same
+        # cohort grouping key as the private intermediates row. Best-effort;
+        # a publish-side failure (regression / coherence / staleness guard,
+        # or missing CLOUDFLARE_* env) does NOT fail the gene — the record
+        # is already on disk + (likely) in the private deep_dive sink.
+        try:
+            publish_record(
+                result.record, push_to_d1=True, cohort_run_id=cohort_id
+            )
+        except Exception as exc:  # noqa: BLE001 — never break the sweep
+            logger.warning(
+                "publish_record for %s failed: %s; sweep continues",
+                bundle.hgnc_symbol, exc,
+            )
+
         return GeneResult(
             hgnc_id=row.hgnc_id, hgnc_symbol=row.hgnc_symbol,
             cost_usd=cost, latency_s=latency,
@@ -226,6 +292,8 @@ def run_local(
     concurrency: int,
     max_cost_per_gene_usd: float,
     max_total_cost_usd: float | None,
+    cohort_run_id: str | None = None,
+    publish_intermediates_enabled: bool = True,
 ) -> list[GeneResult]:
     results: list[GeneResult] = []
     total_cost = 0.0
@@ -238,6 +306,8 @@ def run_local(
                 sink=sink,
                 annotations_dir=annotations_dir,
                 max_cost_per_gene_usd=max_cost_per_gene_usd,
+                cohort_run_id=cohort_run_id,
+                publish_intermediates_enabled=publish_intermediates_enabled,
             ): r
             for r in rows
         }
@@ -384,6 +454,28 @@ def main(argv: list[str] | None = None) -> int:
                    help="Skip the D1 sink (JSON only); useful for offline smoke tests")
     p.add_argument("--limit", type=int, default=None,
                    help="Truncate the gene list to N rows after resume filtering (debug only)")
+    p.add_argument(
+        "--cohort-run-id",
+        default=None,
+        help=(
+            "UUID-like tag stamped on every published intermediates / "
+            "surface_annotation row produced by this sweep — lets a "
+            "post-sweep query say 'all rows from THIS run' without a "
+            "fragile timestamp window. Defaults to --run-id (matching "
+            "deep_dive_run.run_id) so the tables join trivially."
+        ),
+    )
+    p.add_argument(
+        "--no-publish-intermediates",
+        action="store_true",
+        help=(
+            "Skip publishing intermediates (PTS ledgers, builder outputs, "
+            "synth raw JSON) to private D1. On by default — the sweep's "
+            "diagnostic blob is high-value and the publish never fails the "
+            "gene. Useful only for offline smoke tests where private D1 "
+            "isn't reachable."
+        ),
+    )
     args = p.parse_args(argv)
 
     if args.canary and args.confirm_full_sweep:
@@ -422,6 +514,8 @@ def main(argv: list[str] | None = None) -> int:
             concurrency=args.concurrency,
             max_cost_per_gene_usd=args.max_cost_per_gene_usd,
             max_total_cost_usd=None,  # canary has its own implicit budget (N × cap)
+            cohort_run_id=args.cohort_run_id,
+            publish_intermediates_enabled=not args.no_publish_intermediates,
         )
         summary = summarize_canary(results, total_genes=len(all_rows))
         print_canary_report(summary)
@@ -446,6 +540,8 @@ def main(argv: list[str] | None = None) -> int:
         concurrency=args.concurrency,
         max_cost_per_gene_usd=args.max_cost_per_gene_usd,
         max_total_cost_usd=args.max_total_cost_usd,
+        cohort_run_id=args.cohort_run_id,
+        publish_intermediates_enabled=not args.no_publish_intermediates,
     )
     summary = summarize_canary(results, total_genes=len(rows))
     print_canary_report(summary)

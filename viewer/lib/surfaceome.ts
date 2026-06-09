@@ -843,18 +843,28 @@ async function _listSurfaceomeGeneEntriesImpl(): Promise<GeneEntry[]> {
     );
   }
   const data = (await res.json()) as {
-    genes?: Array<{ gene_symbol?: string; schema_version?: string }>;
+    genes?: Array<{
+      gene_symbol?: string;
+      schema_version?: string;
+      prompt_corpus_version?: string;
+    }>;
   };
-  // Map symbol → schema_version straight off the Worker payload. There
-  // used to be a backstop union with locally-published
-  // `public/data/surfaceome/{SYMBOL}.json` snapshots to paper over edge-
-  // cache lag on `/v1/genes`; that backstop was removed when
-  // publish_record gained by-URL edge-cache purge — the lag is now ~0 so
-  // the snapshot dir adds no signal, only drift risk. D1 (via the Worker)
-  // is the only source.
+  // Map symbol → (schema_version, prompt_corpus_version) straight off
+  // the Worker payload. ``prompt_corpus_version`` joined the
+  // ``surface_annotation`` row in 2026-06: the freshness dot now
+  // tracks BOTH coordinates so a re-annotation under the same schema
+  // but a newer prompt_corpus surfaces as fresh. Pre-corpus rows
+  // (missing column) fall back to '0.0.0' so they don't masquerade as
+  // newer than corpus-tagged rows. The /v1/genes index runs through
+  // `COALESCE(prompt_corpus_version, '0.0.0')` on the Worker side, so
+  // this fallback is symmetric.
   const schemaBySymbol = new Map<string, string | undefined>();
+  const promptCorpusBySymbol = new Map<string, string | undefined>();
   for (const g of data.genes ?? []) {
-    if (g.gene_symbol) schemaBySymbol.set(g.gene_symbol, g.schema_version);
+    if (g.gene_symbol) {
+      schemaBySymbol.set(g.gene_symbol, g.schema_version);
+      promptCorpusBySymbol.set(g.gene_symbol, g.prompt_corpus_version);
+    }
   }
   // Derive the current target from observation: the highest
   // schema_version present across the cohort. This makes the freshness
@@ -865,12 +875,21 @@ async function _listSurfaceomeGeneEntriesImpl(): Promise<GeneEntry[]> {
   const observed = maxSchemaVersion(schemaBySymbol.values());
   if (observed !== null) CURRENT_RECORD_SCHEMA_VERSION = observed;
   const target = CURRENT_RECORD_SCHEMA_VERSION;
+  // The current prompt_corpus target is the highest one observed
+  // across the cohort, computed the same way the schema_version
+  // target is. Both axes default-stale when missing — a row whose
+  // schema is current but whose corpus lags the observed max still
+  // reads stale.
+  const observedCorpus = maxSchemaVersion(promptCorpusBySymbol.values());
+  const targetCorpus = observedCorpus ?? "0.0.0";
   const names = loadGeneNamesMap();
   return Array.from(schemaBySymbol.keys())
     .sort((a, b) => a.localeCompare(b))
     .map((symbol) => ({
       symbol,
-      stale: schemaBySymbol.get(symbol) !== target,
+      stale:
+        schemaBySymbol.get(symbol) !== target ||
+        (promptCorpusBySymbol.get(symbol) ?? "0.0.0") !== targetCorpus,
       synonyms: names[symbol]?.synonyms,
     }));
 }

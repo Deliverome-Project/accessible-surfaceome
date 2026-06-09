@@ -157,8 +157,16 @@ async function handleHealth(env) {
 }
 
 async function handleGeneList(env) {
+  // Return the latest (schema_version, prompt_corpus_version) row per
+  // gene. Until the PK migration runbook in
+  // docs/audit/r2_and_reproducibility_2026_06_08.md is executed, the PK
+  // is still (gene_symbol, schema_version), so the COALESCE keeps
+  // pre-prompt-corpus rows visible at a fallback '0.0.0' label rather
+  // than appearing newer than they actually are.
   const rows = await env.DB.prepare(
-    `SELECT gene_symbol, uniprot_acc, schema_version, confidence,
+    `SELECT gene_symbol, uniprot_acc, schema_version,
+            COALESCE(prompt_corpus_version, '0.0.0') AS prompt_corpus_version,
+            cohort_run_id, confidence,
             triage_signal, surface_status, annotated_at
        FROM surface_annotation
       ORDER BY gene_symbol`
@@ -232,12 +240,23 @@ async function fetchTriagePrior(env, sym) {
 async function handleGene(env, symbol) {
   const sym = checkSymbol(symbol);
   if (!sym) return badRequest("invalid_symbol");
-  // Latest schema_version wins (string ordering on v0.4.0 < v0.5.0 etc.).
+  // Latest (schema_version, prompt_corpus_version) row wins. The
+  // ``COALESCE(prompt_corpus_version, '0.0.0')`` keeps pre-corpus rows
+  // ordering deterministically below any row that carries the column —
+  // matches the behavior at handleGeneList. Until the PK migration in
+  // docs/audit/r2_and_reproducibility_2026_06_08.md is executed on
+  // prod D1, the PK is still (gene_symbol, schema_version) so the
+  // schema_version DESC tie-break is the load-bearing ordering;
+  // prompt_corpus is a secondary disambiguator that only matters when
+  // two rows accidentally share a schema_version.
   const row = await env.DB.prepare(
-    `SELECT annotation_json, schema_version, annotated_at
+    `SELECT annotation_json, schema_version, annotated_at,
+            COALESCE(prompt_corpus_version, '0.0.0') AS prompt_corpus_version,
+            cohort_run_id
        FROM surface_annotation
       WHERE gene_symbol = ?
-      ORDER BY schema_version DESC
+      ORDER BY schema_version DESC,
+               COALESCE(prompt_corpus_version, '0.0.0') DESC
       LIMIT 1`
   ).bind(sym).first();
   if (!row) return notFound("gene_not_annotated");
@@ -1040,12 +1059,23 @@ async function handleCatalog(env, request) {
        LEFT JOIN gene_identifier_public gi ON gi.hgnc_symbol = u.gene_symbol
        LEFT JOIN surface_bind_protein sb ON sb.uniprot_acc = u.uniprot_acc
        LEFT JOIN (
+         -- One row per gene: the latest (schema_version, prompt_corpus_version)
+         -- combo. The schema_version match is load-bearing today (the
+         -- PK is still (gene_symbol, schema_version) until the
+         -- migration runbook is applied); prompt_corpus is a secondary
+         -- tie-break that only matters when two rows share schema_version.
          SELECT gene_symbol, annotation_json
            FROM surface_annotation sa1
           WHERE schema_version = (
             SELECT MAX(schema_version) FROM surface_annotation sa2
              WHERE sa2.gene_symbol = sa1.gene_symbol
           )
+            AND COALESCE(prompt_corpus_version, '0.0.0') = (
+              SELECT MAX(COALESCE(prompt_corpus_version, '0.0.0'))
+                FROM surface_annotation sa3
+               WHERE sa3.gene_symbol = sa1.gene_symbol
+                 AND sa3.schema_version = sa1.schema_version
+            )
        ) sa ON sa.gene_symbol = u.gene_symbol
       WHERE u.universe_version = ?
       ORDER BY u.gene_symbol`
@@ -1162,7 +1192,13 @@ async function handleCatalog(env, request) {
       WHERE sa1.schema_version = (
         SELECT MAX(schema_version) FROM surface_annotation sa2
          WHERE sa2.gene_symbol = sa1.gene_symbol
-      )`
+      )
+        AND COALESCE(sa1.prompt_corpus_version, '0.0.0') = (
+          SELECT MAX(COALESCE(prompt_corpus_version, '0.0.0'))
+            FROM surface_annotation sa3
+           WHERE sa3.gene_symbol = sa1.gene_symbol
+             AND sa3.schema_version = sa1.schema_version
+        )`
   ).all();
   for (const r of orphanDeep.results) {
     const sym = r.gene_symbol;

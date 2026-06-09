@@ -248,3 +248,119 @@ in a one-line edit on this read-only branch.
 * `scripts/surfaceome_v2_annotate.py:146` (single-gene publish call)
 * `scripts/deep_dive_sweep.py:132-210` (cohort sweep — does NOT call `publish_intermediates`)
 * `cloudflare/d1_schema.sql:625-657` (`agent_run_intermediates` DDL)
+
+---
+
+## Schema migration runbook — extend `surface_annotation` PK to include `prompt_corpus_version`
+
+**Status:** TODO. The columns (`prompt_corpus_version`, `cohort_run_id`) are
+already added — only the PK extension is deferred.
+
+**Why deferred:** SQLite has no in-place `ALTER TABLE ... ADD PRIMARY KEY` /
+`ALTER TABLE ... DROP PRIMARY KEY`. The migration is the standard rename-
+swap dance, which on a live D1 database with the current 65-row
+`surface_annotation` table risks silently dropping the cache_purge
+invariant if mid-flight any agent tries to write while the temp table
+exists. Worth the explicit operator confirmation.
+
+**Why the deferral is safe today:**
+
+* The current PK `(gene_symbol, schema_version)` still tie-breaks the
+  Worker's `ORDER BY schema_version DESC LIMIT 1` SELECTs correctly.
+* The `INSERT OR REPLACE` upsert in `publish_record._publish_dict`
+  combined with the staleness + regression guards prevent a same-
+  schema-version, same-gene write from overwriting a populated row
+  with a degraded one.
+* The new `(gene_symbol, prompt_corpus_version)` index added in the
+  same schema rev gives O(log N) per-corpus lookups for analytics
+  that need to ask "show me the 2.28-corpus row for CD63" without
+  requiring the PK extension.
+
+**The migration (run on the production `surfaceome_public` D1 in a
+maintenance window):**
+
+```sql
+-- 1. New table with the extended PK shape.
+CREATE TABLE surface_annotation_new (
+    gene_symbol         TEXT NOT NULL,
+    uniprot_acc         TEXT,
+    schema_version      TEXT NOT NULL,
+    annotation_json     TEXT NOT NULL,
+    confidence          TEXT,
+    triage_signal       TEXT,
+    surface_status      TEXT,
+    model_path          TEXT,
+    evidence_count      INTEGER,
+    primary_evidence_count INTEGER,
+    annotated_at        TEXT NOT NULL,
+    synced_at           TEXT NOT NULL DEFAULT (datetime('now')),
+    prompt_corpus_version TEXT NOT NULL DEFAULT '0.0.0',
+    cohort_run_id       TEXT,
+    PRIMARY KEY (gene_symbol, schema_version, prompt_corpus_version)
+);
+
+-- 2. Copy data, defaulting any NULL prompt_corpus_version to '0.0.0'.
+INSERT INTO surface_annotation_new
+SELECT gene_symbol, uniprot_acc, schema_version, annotation_json, confidence,
+       triage_signal, surface_status, model_path, evidence_count,
+       primary_evidence_count, annotated_at, synced_at,
+       COALESCE(prompt_corpus_version, '0.0.0'),
+       cohort_run_id
+  FROM surface_annotation;
+
+-- 3. Verify row counts match.
+SELECT COUNT(*) FROM surface_annotation;       -- N
+SELECT COUNT(*) FROM surface_annotation_new;   -- must equal N
+
+-- 4. Rename, then re-apply indexes on the new table.
+DROP TABLE surface_annotation;
+ALTER TABLE surface_annotation_new RENAME TO surface_annotation;
+
+CREATE INDEX IF NOT EXISTS idx_surface_annotation_uniprot
+    ON surface_annotation (uniprot_acc);
+CREATE INDEX IF NOT EXISTS idx_surface_annotation_surface_status
+    ON surface_annotation (surface_status);
+CREATE INDEX IF NOT EXISTS idx_surface_annotation_prompt_corpus
+    ON surface_annotation (gene_symbol, prompt_corpus_version);
+CREATE INDEX IF NOT EXISTS idx_surface_annotation_cohort
+    ON surface_annotation (cohort_run_id);
+```
+
+Run via `D1Client.query()` one statement at a time (D1's HTTP API
+doesn't accept multi-statement batches). Take a Time-Travel-pinned R2
+backup before step 1 — the public D1 already has nightly R2 dumps via
+`.github/workflows/d1-backup.yml` so the recovery surface is layered.
+
+**After the migration**, drop the TODO comment in
+`cloudflare/d1_public_schema.sql` (the only operator-side change is
+remembering to call `publish_record(..., cohort_run_id=...)` from the
+sweep — already wired today).
+
+---
+
+## 2026-06-08 — slim implementation of P0 + cohort_run_id
+
+Landed in branch ``claude/eloquent-cori-5b6b55``:
+
+1. ``scripts/deep_dive_sweep.py::annotate_one`` now calls
+   ``publish_intermediates(...)`` after every gene (success or fail) and
+   threads ``cohort_run_id`` through. Per-sweep CLI flag
+   ``--cohort-run-id`` defaults to ``--run-id`` when not specified.
+2. ``cloud/intermediates.publish_intermediates`` accepts ``cohort_run_id``
+   and writes it to the new ``agent_run_intermediates.cohort_run_id``
+   column. Schema bumped (idempotent ``ALTER TABLE ADD COLUMN`` swallowed
+   on existing DBs via ``ensure_schema``).
+3. ``cloud/surface_annotation.publish_record`` accepts ``cohort_run_id``
+   and denormalizes ``prompt_corpus_version`` off the record into the
+   new ``surface_annotation`` columns of the same names.
+4. Mid-gene PTS checkpoint + $5 PTS cost cap in the orchestrator —
+   recovers ~$1.35 / retried-gene on the ~5% failure rate.
+
+Items NOT in this slice:
+
+* PR54's $7 total cost ceiling (already on this branch).
+* PR54's R2 client (already on this branch).
+* The Worker code path for the new ``prompt_corpus_version`` column —
+  the Worker continues to tie-break on ``schema_version`` until the PK
+  migration above lands. Reader code still works because the latest
+  row wins per the existing tie-break.

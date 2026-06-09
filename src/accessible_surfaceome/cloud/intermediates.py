@@ -55,6 +55,11 @@ _MAX_INTERMEDIATES_BYTES = 900 * 1024
 # Idempotent DDL — mirrors the block at the tail of
 # ``cloudflare/d1_schema.sql``. Kept here too so ``ensure_schema()`` can
 # bring up a fresh private D1 from Python without needing wrangler.
+#
+# ``cohort_run_id`` is added as a nullable column (back-compat with rows
+# written before the column existed) — sweep drivers stamp it on every
+# row so "all rows from cohort sweep X" is a single SELECT rather than a
+# fragile timestamp-window query (per the R2/reproducibility audit).
 _SCHEMA_SQL = [
     # The intermediates row. PRIMARY KEY includes ``created_at`` so a
     # re-run on the same (gene, schema_version, prompt_corpus_version)
@@ -69,8 +74,15 @@ _SCHEMA_SQL = [
         record_valid          INTEGER NOT NULL,
         intermediates_bytes   INTEGER NOT NULL,
         intermediates_json    TEXT NOT NULL,
+        cohort_run_id         TEXT,
         PRIMARY KEY (gene_symbol, schema_version, prompt_corpus_version, created_at)
     );
+    """,
+    # Idempotent ALTER for DBs created before ``cohort_run_id`` landed.
+    # SQLite has no ``ADD COLUMN IF NOT EXISTS``, so ``ensure_schema``
+    # swallows the duplicate-column failure when this is a no-op.
+    """
+    ALTER TABLE agent_run_intermediates ADD COLUMN cohort_run_id TEXT;
     """,
     # Most common lookup: latest intermediates for a gene.
     """
@@ -86,6 +98,12 @@ _SCHEMA_SQL = [
     """
     CREATE INDEX IF NOT EXISTS idx_agent_run_intermediates_prompt_corpus
         ON agent_run_intermediates (prompt_corpus_version, created_at DESC);
+    """,
+    # Cohort scope: "all rows from sweep X" — the analytic query the
+    # audit identified as the single biggest reproducibility gap.
+    """
+    CREATE INDEX IF NOT EXISTS idx_agent_run_intermediates_cohort
+        ON agent_run_intermediates (cohort_run_id, created_at DESC);
     """,
 ]
 
@@ -146,20 +164,38 @@ class IntermediatesPushResult:
     created_at: str
     schema_version: str
     prompt_corpus_version: str
+    # Cohort sweep tag stamped on the published row. ``None`` for the
+    # single-gene CLI driver path (no cohort context); set by the
+    # sweep driver to the per-sweep UUID — same value the matching
+    # ``deep_dive_run.run_id`` carries, so the two tables join cleanly.
+    cohort_run_id: str | None = None
 
 
 def ensure_schema(d1: D1Client | None = None) -> None:
     """Apply the intermediates DDL to the private D1.
 
-    Idempotent — the ``CREATE TABLE IF NOT EXISTS`` / ``CREATE INDEX IF
-    NOT EXISTS`` statements are safe to call repeatedly. Useful for
-    one-off bring-up in a fresh worktree without needing wrangler.
+    Idempotent for the ``CREATE TABLE IF NOT EXISTS`` / ``CREATE INDEX IF
+    NOT EXISTS`` statements. The ``ALTER TABLE ADD COLUMN cohort_run_id``
+    needed for backfilling pre-cohort DBs has no ``IF NOT EXISTS``
+    syntax in SQLite, so we swallow its "duplicate column" failure on
+    DBs that already carry the column. Useful for one-off bring-up in a
+    fresh worktree without needing wrangler.
     """
     owns_client = d1 is None
     client = d1 or D1Client()
     try:
         for stmt in _SCHEMA_SQL:
-            client.query(stmt.strip(), [])
+            try:
+                client.query(stmt.strip(), [])
+            except Exception as exc:  # noqa: BLE001 — ALTER may already be applied
+                msg = str(exc).lower()
+                if "duplicate column" in msg or "already exists" in msg:
+                    logger.debug(
+                        "intermediates schema stmt no-op (already applied): %s",
+                        stmt.strip()[:60],
+                    )
+                    continue
+                raise
         logger.info("agent_run_intermediates schema applied")
     finally:
         if owns_client:
@@ -174,6 +210,7 @@ def publish_intermediates(
     record_valid: bool,
     push_to_d1: bool = True,
     created_at: str | None = None,
+    cohort_run_id: str | None = None,
 ) -> IntermediatesPushResult:
     """Push one run's intermediates to private D1.
 
@@ -185,6 +222,13 @@ def publish_intermediates(
     ``record_valid`` reflects whether the annotate run produced a
     schema-validating ``SurfaceomeRecord``. Failed runs are still
     preserved here — that's the whole point of the audit trail.
+
+    ``cohort_run_id`` (optional) stamps the row with the sweep tag —
+    same UUID the matching ``deep_dive_run.run_id`` carries so post-sweep
+    analytics can SELECT all rows from a given cohort in one query
+    rather than via a fragile timestamp window. ``None`` for the
+    single-gene CLI path; the cohort sweep driver supplies one per
+    invocation.
 
     Returns an :class:`IntermediatesPushResult` with the bytes pushed
     and any skip reason. The function NEVER raises on a D1 / credentials
@@ -272,6 +316,7 @@ def publish_intermediates(
                 created_at=stamp,
                 schema_version=schema_version,
                 prompt_corpus_version=PROMPT_CORPUS_VERSION,
+                cohort_run_id=cohort_run_id,
             )
 
     if not push_to_d1:
@@ -283,6 +328,7 @@ def publish_intermediates(
             created_at=stamp,
             schema_version=schema_version,
             prompt_corpus_version=PROMPT_CORPUS_VERSION,
+            cohort_run_id=cohort_run_id,
         )
 
     # Use the private surfaceome_agents D1 — same credentials path the
@@ -307,6 +353,7 @@ def publish_intermediates(
             created_at=stamp,
             schema_version=schema_version,
             prompt_corpus_version=PROMPT_CORPUS_VERSION,
+            cohort_run_id=cohort_run_id,
         )
 
     try:
@@ -315,8 +362,8 @@ def publish_intermediates(
                 "INSERT INTO agent_run_intermediates ("
                 "gene_symbol, schema_version, prompt_corpus_version, "
                 "created_at, record_valid, intermediates_bytes, "
-                "intermediates_json"
-                ") VALUES (?, ?, ?, ?, ?, ?, ?)",
+                "intermediates_json, cohort_run_id"
+                ") VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
                 [
                     gene_symbol,
                     schema_version,
@@ -325,6 +372,7 @@ def publish_intermediates(
                     1 if record_valid else 0,
                     n_bytes,
                     blob,
+                    cohort_run_id,
                 ],
             )
     except Exception as exc:  # noqa: BLE001
@@ -343,14 +391,16 @@ def publish_intermediates(
             created_at=stamp,
             schema_version=schema_version,
             prompt_corpus_version=PROMPT_CORPUS_VERSION,
+            cohort_run_id=cohort_run_id,
         )
 
     logger.info(
         "intermediates pushed to private D1: %s @ %s "
-        "(prompt_corpus=%s, %d bytes)",
+        "(prompt_corpus=%s, cohort=%s, %d bytes)",
         gene_symbol,
         schema_version,
         PROMPT_CORPUS_VERSION,
+        cohort_run_id or "<none>",
         n_bytes,
     )
     return IntermediatesPushResult(
@@ -361,6 +411,7 @@ def publish_intermediates(
         created_at=stamp,
         schema_version=schema_version,
         prompt_corpus_version=PROMPT_CORPUS_VERSION,
+        cohort_run_id=cohort_run_id,
     )
 
 

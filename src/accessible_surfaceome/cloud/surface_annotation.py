@@ -54,6 +54,16 @@ PUBLIC_API_BASE = "https://api.deliverome.org/surfaceome"
 
 # Mirrors ``cloudflare/d1_public_schema.sql::surface_annotation``. Keep in
 # sync with ``scripts/sync_public_d1.py::sync_surface_annotations``.
+#
+# ``prompt_corpus_version`` is denormalized from the record so two records
+# at the same ``schema_version`` but different prompt-corpus versions
+# don't collide on the (gene_symbol, schema_version) primary key — per
+# the R2/reproducibility audit, the previous PK shape would have caused
+# a 2.28→2.35 republish to overwrite the 2.28 row before its companion
+# triage/intermediates data could be cross-referenced. ``cohort_run_id``
+# is the cohort sweep tag — see ``publish_intermediates``'s same-named
+# field; both tables carry it so a sweep's outputs can be SELECT-ed as a
+# unit.
 _COLS = [
     "gene_symbol",
     "uniprot_acc",
@@ -66,6 +76,8 @@ _COLS = [
     "evidence_count",
     "primary_evidence_count",
     "annotated_at",
+    "prompt_corpus_version",
+    "cohort_run_id",
 ]
 
 
@@ -387,7 +399,10 @@ def _is_stale(incoming: dict[str, Any], existing: dict[str, Any]) -> bool:
 
 
 def _row_from_dict(
-    rec_dict: dict[str, Any], *, annotated_at: str | None = None
+    rec_dict: dict[str, Any],
+    *,
+    annotated_at: str | None = None,
+    cohort_run_id: str | None = None,
 ) -> list[Any]:
     """Project a raw record dict to the column tuple D1 expects.
 
@@ -397,9 +412,29 @@ def _row_from_dict(
     canonical source of truth for "what the viewer renders" is the
     JSON blob on disk; validation belongs at agent-write time, not at
     publish time.
+
+    ``cohort_run_id`` is the sweep tag stamped on the row — same UUID
+    the matching ``agent_run_intermediates.cohort_run_id`` carries so
+    public-side analytics can SELECT all rows from a given cohort in
+    one query. ``None`` for ad-hoc single-gene publishes.
+    ``prompt_corpus_version`` is read off the record's own field when
+    present (annotator-stamped) and falls back to the in-tree
+    ``PROMPT_CORPUS_VERSION`` constant when absent (historical snapshot,
+    bulk-sync path) — so the column is never NULL.
     """
+    from accessible_surfaceome._version_guard import PROMPT_CORPUS_VERSION
+
     gene = rec_dict.get("gene") or {}
     sb = rec_dict.get("surface_biology") or {}
+    # Prompt-corpus version: prefer the value stamped on the record by
+    # the annotator (a record produced under prompt_corpus_version 2.30
+    # should publish with that value forever even if the in-tree default
+    # has since rolled to 2.40). Fall back to the in-tree default only
+    # when the record predates the field — keeps the column NOT NULL.
+    prompt_corpus = (
+        rec_dict.get("prompt_corpus_version")
+        or PROMPT_CORPUS_VERSION
+    )
     return [
         gene.get("hgnc_symbol"),
         gene.get("uniprot_acc"),
@@ -414,6 +449,8 @@ def _row_from_dict(
         rec_dict.get("evidence_count") or 0,
         rec_dict.get("primary_evidence_count") or 0,
         annotated_at or datetime.now(UTC).isoformat(),
+        prompt_corpus,
+        cohort_run_id,
     ]
 
 
@@ -487,8 +524,14 @@ def _publish_dict(
     push_to_d1: bool,
     pretty_snapshot: bool,
     force: bool = False,
+    cohort_run_id: str | None = None,
 ) -> PublishResult:
-    """Shared core: write the snapshot + push to D1 from a raw record dict."""
+    """Shared core: write the snapshot + push to D1 from a raw record dict.
+
+    ``cohort_run_id`` (optional) is stamped on the published D1 row and
+    is propagated through to ``_row_from_dict``. ``None`` for ad-hoc
+    single-gene publishes; set by the cohort sweep driver.
+    """
     gene = rec_dict.get("gene") or {}
     sym = gene.get("hgnc_symbol")
     if not sym:
@@ -533,7 +576,7 @@ def _publish_dict(
             skipped_reason="missing CLOUDFLARE_* env vars",
         )
 
-    row = _row_from_dict(rec_dict)
+    row = _row_from_dict(rec_dict, cohort_run_id=cohort_run_id)
     new_version = row[2]
     with httpx.Client(timeout=60) as client:
         # Regression guard — never let a publish blank out a populated
@@ -691,6 +734,7 @@ def publish_record(
     write_snapshot: bool = False,
     push_to_d1: bool = True,
     force: bool = False,
+    cohort_run_id: str | None = None,
 ) -> PublishResult:
     """Write a freshly-validated ``SurfaceomeRecord`` to public D1.
 
@@ -721,6 +765,11 @@ def publish_record(
         write_snapshot: Opt in to the viewer-snapshot dump. Default
             ``False`` — D1 is the only authoritative surface.
         push_to_d1: Skip the D1 push when False (e.g. ``--no-publish``).
+        cohort_run_id: Sweep tag stamped on the published D1 row. Same
+            UUID the matching ``agent_run_intermediates.cohort_run_id``
+            carries so the two tables can be joined on cohort. ``None``
+            for ad-hoc single-gene publishes; set by the cohort sweep
+            driver to the per-sweep ID.
     """
     rec_dict = json.loads(record.model_dump_json())
     return _publish_dict(
@@ -730,6 +779,7 @@ def publish_record(
         push_to_d1=push_to_d1,
         pretty_snapshot=True,
         force=force,
+        cohort_run_id=cohort_run_id,
     )
 
 
@@ -741,6 +791,7 @@ def publish_record_dict(
     push_to_d1: bool = True,
     pretty_snapshot: bool = True,
     force: bool = False,
+    cohort_run_id: str | None = None,
 ) -> PublishResult:
     """Push a raw record dict — no Pydantic validation.
 
@@ -755,6 +806,8 @@ def publish_record_dict(
     Defaults to ``write_snapshot=False`` because the typical caller for
     this entry point is reading FROM the snapshot dir and just wants to
     push that content to D1.
+
+    ``cohort_run_id`` is the optional sweep tag — see :func:`publish_record`.
     """
     return _publish_dict(
         rec_dict,
@@ -763,4 +816,5 @@ def publish_record_dict(
         push_to_d1=push_to_d1,
         pretty_snapshot=pretty_snapshot,
         force=force,
+        cohort_run_id=cohort_run_id,
     )
