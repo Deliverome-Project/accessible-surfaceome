@@ -135,6 +135,22 @@ export function BiologicalContextCard({ rec, n }: Props) {
         </div>
       ) : null}
 
+      {/* Biological-context grade rationale — synth's reasoning for the
+          rich/moderate/sparse rollup of expression × cell types × tissues ×
+          modulation evidence. Lives at bc.grade_rationale + bc.grade_cited_evidence_ids.
+          Was hidden pre-2.50.x; surfaced here so the reader can see why the
+          A2 evidence picture was graded as it was. */}
+      {bc.grade_rationale ? (
+        <div className={styles.contextSummary}>
+          <p className={`label-mono ${styles.muted}`}>
+            Biology evidence — {prettyEnum(bc.biological_context_grade)}
+          </p>
+          <p className={styles.contextRationale}>
+            {linkifyEvidenceRefs(bc.grade_rationale)}
+          </p>
+        </div>
+      ) : null}
+
       <FeatureRationales category="biology" rec={rec} />
 
       {/* Accessibility modulation — moved to the top (most decision-

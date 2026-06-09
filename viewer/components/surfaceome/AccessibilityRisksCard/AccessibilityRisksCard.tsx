@@ -201,18 +201,18 @@ export function AccessibilityRisksCard({ rec, n }: Props) {
           </StatusPill>
           <EvidenceChipList ids={r.shed_form.cited_evidence_ids} label="Cites" />
         </div>
-        {r.shed_form.mechanism ? (
-          <p className={styles.prose}>
-            <span className={`label-mono ${styles.muted}`}>Mechanism</span>{" "}
-            {r.shed_form.mechanism}
-            {r.shed_form.sheddase_if_known
-              ? ` · sheddase: ${r.shed_form.sheddase_if_known}`
-              : ""}
-          </p>
-        ) : null}
         {r.shed_form.rationale ? (
           <p className={styles.prose}>
             {linkifyEvidenceRefs(r.shed_form.rationale)}
+          </p>
+        ) : null}
+        {r.shed_form.mechanism ? (
+          <p className={styles.prose}>
+            <span className={`label-mono ${styles.muted}`}>Mechanism</span>{" "}
+            {linkifyEvidenceRefs(r.shed_form.mechanism)}
+            {r.shed_form.sheddase_if_known
+              ? ` · sheddase: ${r.shed_form.sheddase_if_known}`
+              : ""}
           </p>
         ) : null}
       </div>
@@ -231,6 +231,11 @@ export function AccessibilityRisksCard({ rec, n }: Props) {
           </StatusPill>
           <EvidenceChipList ids={r.secreted_form.cited_evidence_ids} label="Cites" />
         </div>
+        {r.secreted_form.rationale ? (
+          <p className={styles.prose}>
+            {linkifyEvidenceRefs(r.secreted_form.rationale)}
+          </p>
+        ) : null}
         {r.secreted_form.source ? (
           <p className={styles.prose}>
             <span className={`label-mono ${styles.muted}`}>Source</span>{" "}
@@ -238,11 +243,6 @@ export function AccessibilityRisksCard({ rec, n }: Props) {
             {r.secreted_form.ratio_to_membrane != null
               ? ` · ratio-to-membrane: ${r.secreted_form.ratio_to_membrane}`
               : ""}
-          </p>
-        ) : null}
-        {r.secreted_form.rationale ? (
-          <p className={styles.prose}>
-            {linkifyEvidenceRefs(r.secreted_form.rationale)}
           </p>
         ) : null}
       </div>
