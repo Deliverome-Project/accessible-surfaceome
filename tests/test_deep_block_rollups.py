@@ -43,6 +43,23 @@ def test_tumor_associated() -> None:
     assert not derive_rollups(
         _rec(expression=[{"disease_context": "normal", "present": "high"}])
     )["tumor_associated"]
+    # tumor context with unknown level → tumor_associated=True.
+    # Functional-engagement claims (CD63-on-tumor-macrophages shape) that
+    # assert presence without quantifying the level still establish tumor
+    # relevance for this YES/NO facet — see ``_PRESENT_LEVELS`` comment.
+    assert derive_rollups(
+        _rec(expression=[{"disease_context": "tumor", "present": "unknown"}])
+    )["tumor_associated"]
+    # tumor_adjacent context with unknown level also qualifies
+    assert derive_rollups(
+        _rec(
+            expression=[{"disease_context": "tumor_adjacent", "present": "unknown"}]
+        )
+    )["tumor_associated"]
+    # absent / undetected always excluded, even with tumor context
+    assert not derive_rollups(
+        _rec(expression=[{"disease_context": "tumor", "present": "undetected"}])
+    )["tumor_associated"]
 
 
 def test_induction_trigger_priority_and_bucketing() -> None:
