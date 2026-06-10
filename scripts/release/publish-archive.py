@@ -225,9 +225,20 @@ EXTRA_FILES: list[str | dict[str, Any]] = [
     #   - inline gene-name italics from the .docx survive as <italic>
     #     in JATS — exactly the JATS convention
     #
-    # `extra_pandoc_args` lets you add `--citeproc --bibliography=...`
-    # for citation processing, `--metadata title="…"` overrides, etc.
-    # The script always passes `--standalone --to jats`.
+    # `extra_pandoc_args` is empty in the default below. The script
+    # always passes `--standalone --to jats`; you only need extras for
+    # specific transformations (e.g. `--metadata title="…"` override).
+    #
+    # **Citations note** — if you're using Zotero in Word, leave
+    # `extra_pandoc_args` empty. Zotero already bakes the formatted
+    # citations + bibliography into the `.docx` as text, and pandoc
+    # carries that through into the JATS XML verbatim. References
+    # land as plain text (not structured `<ref>` elements), which is
+    # plenty for a Zenodo deposit. Switching to pandoc-managed
+    # citations would require exporting a `.bib` from Zotero AND
+    # toggling the Zotero Word plugin from "Word fields" mode to
+    # "BibTeX cite keys" mode in Document Preferences — only worth
+    # doing if you specifically need structured-reference JATS.
     #
     # Tooling install:
     #   macOS:   brew install pandoc
@@ -237,10 +248,7 @@ EXTRA_FILES: list[str | dict[str, Any]] = [
     #     "source": "paper/manuscript.docx",
     #     "pdf_path": "paper/build/manuscript.pdf",
     #     "jats_filename": "manuscript.xml",
-    #     "extra_pandoc_args": [
-    #         "--citeproc",
-    #         "--bibliography=paper/refs.bib",
-    #     ],
+    #     "extra_pandoc_args": [],
     # },
 ]
 
