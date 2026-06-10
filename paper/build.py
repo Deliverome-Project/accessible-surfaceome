@@ -158,7 +158,14 @@ def build(src: Path) -> dict[str, Path]:
         outputfile=str(html_path),
         extra_args=[
             "--standalone",
-            "--section-divs",
+            # NOTE: NOT passing --section-divs. With it, pandoc wraps
+            # each heading + its content in a <section class="levelN">,
+            # which makes the body's headings and figures grandchildren
+            # of <body> instead of direct children. column-span:all only
+            # spans the immediate multi-column container, so a heading
+            # or figure nested two levels deep can't span. Flat structure
+            # (headings + paragraphs as direct body children) is what
+            # the print stylesheet expects.
             f"--extract-media={media_dir}",
             f"--css={CSS_PATH}",
         ],
