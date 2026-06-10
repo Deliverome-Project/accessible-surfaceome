@@ -72,7 +72,17 @@ export function renumberEvidenceIds(
 
 /** Recursive deep-walker over plain JSON. Rewrites every string leaf
  *  via the supplied transform; arrays + objects are reconstructed
- *  immutably so the caller's input record is not mutated. */
+ *  immutably so the caller's input record is not mutated.
+ *
+ *  Special case: when an object key is ``cited_evidence_ids`` and its
+ *  value is a string array, dedupe the result preserving the first
+ *  occurrence's order. Without this, a list that cites both a
+ *  canonical and its cross-planner duplicate (e.g. ``a1_evi_18`` plus
+ *  the ``a2_evi_03`` that's ``duplicate_of`` it) collapses to two
+ *  identical ``evi_18`` strings after renumber — and React throws on
+ *  the duplicate key in the chip list. Dedup is the right behavior
+ *  semantically too: two chips pointing to the same canonical entry
+ *  is reader noise, not signal. */
 function rewriteNode(node: unknown, rewriteString: (s: string) => string): unknown {
   if (typeof node === "string") return rewriteString(node);
   if (Array.isArray(node)) {
@@ -81,7 +91,16 @@ function rewriteNode(node: unknown, rewriteString: (s: string) => string): unkno
   if (node && typeof node === "object") {
     const out: Record<string, unknown> = {};
     for (const [k, v] of Object.entries(node)) {
-      out[k] = rewriteNode(v, rewriteString);
+      const rewritten = rewriteNode(v, rewriteString);
+      if (
+        k === "cited_evidence_ids" &&
+        Array.isArray(rewritten) &&
+        rewritten.every((x) => typeof x === "string")
+      ) {
+        out[k] = Array.from(new Set(rewritten as string[]));
+      } else {
+        out[k] = rewritten;
+      }
     }
     return out;
   }

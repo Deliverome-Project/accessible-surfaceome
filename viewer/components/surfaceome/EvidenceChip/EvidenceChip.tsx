@@ -95,16 +95,21 @@ export function EvidenceChipList({ ids, label, maxVisible = 12 }: EvidenceChipLi
         <span className={`label-mono ${styles.chipRowLabel}`}>{label}</span>
       ) : null}
       <span className={styles.chips}>
-        {head.map((id) => (
-          <EvidenceChip key={id} evidenceId={id} />
+        {/* Belt-and-suspenders unique key: the loader already dedupes
+         *  ``cited_evidence_ids`` arrays after renumbering, but if any
+         *  unrenumbered list slips through (test fixtures, offline
+         *  local mode, future regression), `${id}-${i}` keeps React
+         *  from throwing on duplicate keys. */}
+        {head.map((id, i) => (
+          <EvidenceChip key={`${id}-${i}`} evidenceId={id} />
         ))}
         {rest.length > 0 ? (
           <details className={styles.chipOverflowDetails}>
             <summary className={styles.chipOverflow}>+{rest.length} more</summary>
             {/* Revealed on toggle — each remaining id is a real chip that
                 opens the EvidenceDrawer, same as the head chips. */}
-            {rest.map((id) => (
-              <EvidenceChip key={id} evidenceId={id} />
+            {rest.map((id, i) => (
+              <EvidenceChip key={`${id}-${i + head.length}`} evidenceId={id} />
             ))}
           </details>
         ) : null}
