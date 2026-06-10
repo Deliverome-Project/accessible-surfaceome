@@ -834,13 +834,43 @@ export function FiltersCard({ rec, n }: Props) {
         "ECD-size class, evidence density). Same fields the catalog " +
         "filters on.",
     },
-    // No "Expression" entry — per user feedback the Expression group
-    // carries NO category-wide InfoTip. Each Expression chip (level /
-    // breadth / specificity / low-endogenous / known-ligand /
-    // OE-precedent) already has its own specific tooltip, so a
-    // group-level summary tip was redundant. Cross-species / Paralogs /
-    // Topology / Candidate-sites keep their group tips because those
-    // carry cutoff/threshold provenance not repeated on each chip.
+    // Expression group — explains the Source bucketing rule that the
+    // §Expression card's table uses (surface / bulk / other) AND the
+    // render-time RNA-only row drop. Per-chip tooltips cover the
+    // individual LLM rollups; this group tip is about the table
+    // discipline downstream of those rollups, so a reader scanning the
+    // panel sees the read-side filter that's making rows go away.
+    Expression: {
+      title: (
+        <>
+          Expression rows are bucketed by their strongest cited
+          evidence_type:
+          <ul style={{ margin: "0.4rem 0 0", paddingLeft: "1.1rem" }}>
+            <li>
+              <em>surface</em> — direct surface assay (flow / surface
+              biotinylation / surface MS)
+            </li>
+            <li>
+              <em>bulk</em> — protein-level non-surface (IHC / IF /
+              Western blot)
+            </li>
+            <li>
+              <em>other</em> — review assertions, functional assays,
+              database annotations
+            </li>
+          </ul>
+          <strong>RNA-only rows are dropped</strong> (RNA-seq / scRNA /
+          RT-qPCR / in-situ hybridization / Northern / microarray) —
+          RNA doesn&apos;t demonstrate the protein is made, let alone
+          surface-accessible.
+          <br />
+          <br />
+          See <a href="#section-expression">§Expression</a> for the
+          per-row Source column + the &quot;N RNA-only rows hidden&quot;
+          rollup.
+        </>
+      ),
+    },
     // No "Risks" entry — the overarching group InfoTip was dropped per
     // user feedback; each risk chip carries its own tooltip and the
     // §Risks card below covers the supporting evidence.
@@ -910,7 +940,12 @@ export function FiltersCard({ rec, n }: Props) {
     const meta = GROUP_META[g.label];
     return (
       <div key={g.label} className={styles.group}>
-        <p className={`label-mono ${styles.groupLabel}`}>
+        {/* Group heading is a <div>, not a <p>: some InfoTip bodies
+         *  contain block content (e.g. the Expression group's <ul>),
+         *  and <ul> inside <p> trips the browser's implicit </p>
+         *  insertion, breaking React hydration. .groupLabel margin
+         *  is set explicitly so the swap is visually identical. */}
+        <div className={`label-mono ${styles.groupLabel}`}>
           {/* When the group maps to a tab (Biology / Accessibility
               context → §03), render the heading as a section-jump link.
               The `#section-<id>` hash is what <SectionTabs> listens for to
@@ -933,7 +968,7 @@ export function FiltersCard({ rec, n }: Props) {
               {meta.title}
             </InfoTip>
           ) : null}
-        </p>
+        </div>
         {/* Source links on their own compact sub-row directly under the
             header label — keeps the header line short (label + ⓘ only)
             instead of letting "UniProt ↗ HGNC gene groups ↗ …" sprawl it

@@ -209,6 +209,22 @@ EXTRA_FILES: list[str | dict[str, Any]] = [
     # PDF in the deposit is whatever you've already built (`pdf_path`),
     # so the deposit matches what readers actually citation-link.
     #
+    # **Word (.docx) manuscripts** are well-supported by pandoc's JATS
+    # writer — heading levels, lists, tables, and inline italic/bold
+    # come through cleanly, and pandoc's `--citeproc` honors a
+    # standalone `.bib` file even when the .docx uses Word's own
+    # bibliography manager. Common pre-flight checklist for a .docx
+    # → JATS run:
+    #   - structure headings with Word's heading styles (H1/H2/H3),
+    #     not bold-italic body text — pandoc maps styles to <sec>
+    #     nesting
+    #   - figure captions written as Word-style "Figure 1. <caption>"
+    #     paragraphs render to <fig>/<caption>
+    #   - tables can stay as native Word tables; pandoc emits
+    #     <table-wrap>
+    #   - inline gene-name italics from the .docx survive as <italic>
+    #     in JATS — exactly the JATS convention
+    #
     # `extra_pandoc_args` lets you add `--citeproc --bibliography=...`
     # for citation processing, `--metadata title="…"` overrides, etc.
     # The script always passes `--standalone --to jats`.
@@ -218,7 +234,7 @@ EXTRA_FILES: list[str | dict[str, Any]] = [
     #   Linux:   apt install pandoc   (or download from pandoc.org)
     # {
     #     "manuscript": True,
-    #     "source": "paper/manuscript.md",
+    #     "source": "paper/manuscript.docx",
     #     "pdf_path": "paper/build/manuscript.pdf",
     #     "jats_filename": "manuscript.xml",
     #     "extra_pandoc_args": [
