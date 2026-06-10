@@ -97,10 +97,22 @@ body {
 #title-block-header {
   column-span: all;
   background: var(--bg-warm, #f3ece5);
-  padding: 0.6em 0.8em 0.8em;
+  padding: 0.6em 0.8em 0.8em 0.8em;
   margin: 0 0 0.5in 0;
   border-bottom: 1px solid var(--maroon-pale, #f0a098);
   break-after: avoid-page;
+  /* Logo anchors top-right of the cream title band, mirroring
+   * Pioneer's "Pioneer Labs" mark in the same position. The
+   * --deliverome-logo-url custom property is set from the cover
+   * stamp at the bottom of this file so the URL can be swapped
+   * (different orientation, different file format) without
+   * editing the rule. */
+  position: relative;
+  padding-right: 1.8in;
+  background-image: var(--deliverome-logo-url);
+  background-repeat: no-repeat;
+  background-position: top 0.6em right 0.8em;
+  background-size: 1.1in 1.1in;
 }
 
 h1.title {
@@ -111,9 +123,10 @@ h1.title {
   letter-spacing: -0.015em;
   color: var(--maroon-deepest, #3e0a18);
   margin: 0 0 0.4em 0;
-  /* Pioneer keeps their title to ~3 lines on the cover — line-height
-   * 1.1 + 28pt fits a typical "<adjective> method for <subject>
-   * <verbed phrase>" in two lines. */
+  /* Playfair Display is used ONLY for the title — every other
+   * heading (section labels h1, subsection h2/h3) is Manrope. The
+   * serif display sets the title apart as the cover line; sans
+   * everywhere else keeps the body scan visually consistent. */
 }
 
 #title-block-header .author,
@@ -162,21 +175,24 @@ h1 {
 h1:first-of-type { margin-top: 0; }
 
 h2 {
-  font-family: "Playfair Display", Georgia, serif;
-  font-weight: 600;
-  font-size: 13pt;
-  line-height: 1.2;
+  font-family: "Manrope", sans-serif;
+  font-weight: 700;
+  font-size: 12pt;
+  line-height: 1.25;
   color: var(--maroon-dark, #6e1428);
   margin: 1.1em 0 0.3em 0;
+  letter-spacing: -0.005em;
 }
 
 h3 {
-  font-family: "Playfair Display", Georgia, serif;
+  font-family: "Manrope", sans-serif;
   font-weight: 600;
-  font-style: italic;
-  font-size: 11pt;
+  font-size: 10.5pt;
   color: var(--maroon-dark, #6e1428);
   margin: 0.9em 0 0.2em 0;
+  /* Slight tracking on h3 so it reads as a label-like sub-step
+   * rather than competing with h2's weight. */
+  letter-spacing: 0.005em;
 }
 
 /* ============================================================
@@ -227,6 +243,10 @@ ul li::marker {
  * pattern below mirrors that.
  * ============================================================ */
 
+/* Every figure spans the full two-column width — no inline-floating
+ * variant. The image inside fills the available width too (100% of
+ * the figure's content box) so a small docx-embedded raster doesn't
+ * float weakly in the middle of a wide card. */
 figure {
   column-span: all;
   break-inside: avoid;
@@ -238,7 +258,7 @@ figure {
 }
 
 figure img {
-  max-width: 100%;
+  width: 100%;
   height: auto;
   display: block;
   margin: 0 auto 0.4em;
@@ -258,12 +278,15 @@ figcaption {
  * default we leave the leading text in the same body font and rely
  * on the leading "Figure N: " text reading as a label naturally. */
 
-/* If you tag figures by class in the source, you can opt one out
- * of the wide-span layout so it stays inside its column:
- *   <figure class="inline">…</figure>
- */
-figure.inline {
-  column-span: none;
+/* Standalone <img> not wrapped in <figure> — sometimes pandoc emits
+ * these from a .docx paragraph that has just an image. Treat them
+ * the same way (full width) so layout is consistent. */
+main img,
+body > img,
+section img:not(figure img) {
+  width: 100%;
+  height: auto;
+  display: block;
   margin: 0.5em 0;
 }
 
@@ -371,6 +394,22 @@ a.footnote-back {
   font-size: 7.5pt;
   vertical-align: super;
   color: var(--maroon-mid, #922038);
+}
+
+/* ============================================================
+ * Brand logo — anchored top-right of the title block.
+ *
+ * `paper/build.py` resolves the URL relative to the CSS file's
+ * directory, so the path is `assets/deliverome-logo.png`
+ * (relative to paper/) — WeasyPrint reads it directly off disk.
+ *
+ * Swap the URL here when the logo rev's (different orientation,
+ * transparent vs. solid background, etc.) without touching the
+ * `#title-block-header` rule above.
+ * ============================================================ */
+
+:root {
+  --deliverome-logo-url: url("assets/deliverome-logo.png");
 }
 
 /* ============================================================
