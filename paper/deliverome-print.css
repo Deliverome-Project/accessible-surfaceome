@@ -114,13 +114,15 @@ body > h1:first-of-type {
   /* Negative margins MUST match the @page margin values above to
    * full-bleed exactly to the page edge. Update these if the
    *   @page margin is ever changed.
-   * Order: top right bottom left. */
-  margin: -0.85in -0.75in 0.5in -0.75in;
+   * Order: top right bottom left.
+   * Bottom margin is 0 — the author-metadata paragraphs that
+   * follow get the same beige wash and butt up directly against
+   * this block to form one continuous title band. */
+  margin: -0.85in -0.75in 0 -0.75in;
   /* Padding absorbs the negative margins (top 0.85in + side 0.75in)
    * and adds a comfortable internal gutter so the title doesn't
    * crash into the page edge. */
-  padding: 1.05in 0.95in 0.5in 0.95in;
-  border-bottom: 1px solid var(--maroon-pale, #f0a098);
+  padding: 1.05in 0.95in 0.3em 0.95in;
   break-after: avoid-page;
   font-family: "Playfair Display", Georgia, serif;
   font-weight: 600;
@@ -128,6 +130,42 @@ body > h1:first-of-type {
   line-height: 1.1;
   letter-spacing: -0.015em;
   color: var(--maroon-deepest, #3e0a18);
+}
+
+/* Author / affiliation / corresponding-author paragraphs that sit
+ * between the title and the first section heading (typically
+ * Abstract). Pandoc emits them as plain <p> in body order; we keep
+ * them in the cream banner by giving each one a full-bleed beige
+ * stripe matching the title.
+ *
+ * Selector logic: `body > p:has(~ h2:first-of-type)` matches every
+ * <p> direct child of body that has the FIRST h2 (i.e., the very
+ * first section heading) later in the sibling chain. Paragraphs
+ * AFTER the first h2 don't have it as a later sibling, so they're
+ * excluded — only the title-block metadata matches.
+ *
+ * `column-span: all` is required because body is multi-column;
+ * without it the metadata paragraphs would get column-confined to
+ * half-width. */
+body > p:has(~ h2:first-of-type) {
+  column-span: all;
+  background: var(--paper-beige);
+  margin: 0 -0.75in;
+  padding: 0.15em 0.95in;
+  font-family: "Manrope", sans-serif;
+  font-size: 9.5pt;
+  line-height: 1.5;
+  color: var(--ink, #1f1718);
+  break-inside: avoid;
+}
+
+/* The LAST metadata paragraph (the one immediately before the
+ * first h2) carries the bottom border + extra padding that
+ * separates the title block from the body below. */
+body > p:has(+ h2:first-of-type) {
+  padding-bottom: 0.45in;
+  margin-bottom: 0.45in;
+  border-bottom: 1px solid var(--maroon-pale, #f0a098);
 }
 
 #title-block-header .author,
@@ -273,15 +311,15 @@ img {
   margin: 0 auto;
 }
 
-/* The paragraph immediately following a figure-paragraph is the
- * figure caption ("Figure N. <caption text>"). Beige card sits ONLY
- * around the caption — the figure above stays clean (just the
- * maroon side bar). Caption keeps the same side bar so the figure
- * + caption pair reads as one connected unit visually.
+/* Figure captions — current docx convention is Heading 5 in Word,
+ * which pandoc emits as <h5>. Style it as the figure caption (NOT
+ * as a section heading): beige card, side bar, Manrope, with a
+ * bold first-line treatment for the "Figure N. Title" lead clause.
  *
- * Brittle: matches by sibling position, not by content. In practice
- * .docx authors put the caption directly under the image. */
-p:has(> img) + p {
+ * Heading semantics are overridden first (font-family / weight /
+ * text-transform / letter-spacing) so this h5 doesn't get the
+ * stronger h3/h4-style treatment. */
+h5 {
   column-span: all;
   break-inside: avoid;
   margin: 0.4em 0 1.4em 0;
@@ -290,10 +328,40 @@ p:has(> img) + p {
   border-left: 4px solid var(--maroon-mid, #922038);
   border-radius: 2px;
   font-family: "Manrope", sans-serif;
+  font-weight: 400;
   font-size: 9pt;
   line-height: 1.45;
+  letter-spacing: 0;
+  text-transform: none;
   color: var(--ink, #1f1718);
   text-align: left;
+}
+
+h5::first-line {
+  font-weight: 700;
+  color: var(--maroon-dark, #6e1428);
+  letter-spacing: -0.005em;
+}
+
+/* Rescue: when a .docx author accidentally applies a Heading 2
+ * Word style to a figure paragraph, pandoc emits <h2><img></h2>.
+ * Override the h2 styling so the image renders like a regular
+ * figure paragraph (no UPPERCASE caps, no maroon caps treatment).
+ * Same shape as `p:has(> img)` above so the layout is identical. */
+h2:has(> img) {
+  font-family: inherit;
+  font-weight: normal;
+  font-size: inherit;
+  line-height: inherit;
+  text-transform: none;
+  letter-spacing: normal;
+  color: inherit;
+
+  column-span: all;
+  break-inside: avoid;
+  margin: 1.2em 0 0;
+  padding: 0.4em 0 0.3em 0.7em;
+  border-left: 4px solid var(--maroon-mid, #922038);
 }
 
 /* The Pioneer-style "Figure N." prefix — bold + brand maroon, set
