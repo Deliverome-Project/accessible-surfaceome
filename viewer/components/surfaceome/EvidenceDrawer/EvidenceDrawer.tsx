@@ -2,7 +2,11 @@
 
 import { useEffect, useMemo, useState } from "react";
 import type { Evidence } from "../../../lib/surfaceome-types";
-import { scrubAgentJargon, scrubEvidenceTokens } from "../../../lib/textScrub";
+import {
+  scrubAgentJargon,
+  scrubEvidenceTokens,
+  stripInlineHtml,
+} from "../../../lib/textScrub";
 import { StatusPill } from "../StatusPill/StatusPill";
 
 // Local minimal prettyEnum — the canonical one in lib/surfaceome.ts
@@ -38,7 +42,7 @@ function prettyEvidenceLabel(evidenceId: string): string {
  *  ``cited_evidence_ids`` strip below the prose is the right surface
  *  for that). */
 function cleanDrawerProse(text: string | null | undefined): string {
-  return scrubEvidenceTokens(scrubAgentJargon(text));
+  return stripInlineHtml(scrubEvidenceTokens(scrubAgentJargon(text)));
 }
 import styles from "./EvidenceDrawer.module.css";
 

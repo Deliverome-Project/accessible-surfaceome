@@ -76,6 +76,33 @@ export function scrubAgentJargon(
   );
 }
 
+/** Strip JATS-style inline HTML tags (`<i>` / `<b>` / `<sub>` / `<sup>`
+ *  / `<em>` / `<strong>`) from a verbatim quote.
+ *
+ *  When the deep-dive agent quotes from PMC JATS XML it pulls the
+ *  raw `<i>GENE</i>` italics markup into the verbatim, which the
+ *  drawer would otherwise render literally — `"…expression patterns
+ *  of <i>ABC</i> transporter genes…"`. A spot-check of 14 records
+ *  found 80 such occurrences, dominating every other "weird text"
+ *  pattern we looked at.
+ *
+ *  Strip the tags rather than render them as React `<em>` / `<strong>`:
+ *  the verbatim is there to let the reader cross-check the agent's
+ *  source, and the source link sits directly above for italic-aware
+ *  rendering. Plain text keeps the implementation safe (no
+ *  `dangerouslySetInnerHTML`) and the quote readable.
+ */
+export function stripInlineHtml(text: string | null | undefined): string {
+  if (!text) return "";
+  return text
+    // Whitelist-style strip: only the JATS-common inline tags we've
+    // actually seen leak. Anything else stays as-is so we don't
+    // accidentally scrub legitimate angle-bracket text (e.g. ``<5%``).
+    .replace(/<\/?(?:i|b|em|strong|sub|sup|italic|bold|subscript|superscript)>/gi, "")
+    .replace(/[ \t]{2,}/g, " ")
+    .trim();
+}
+
 /** Strip inline `a[12]_evi_NN` annotation tokens from a string.
  *
  *  Used on the verbatim quote (where these tokens come through as

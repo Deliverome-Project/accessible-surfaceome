@@ -4,6 +4,11 @@ import type {
   SurfaceomeRecord,
 } from "../../../lib/surfaceome-types";
 import { prettyEnum } from "../../../lib/surfaceome";
+import {
+  scrubAgentJargon,
+  scrubEvidenceTokens,
+  stripInlineHtml,
+} from "../../../lib/textScrub";
 import { EvidenceChip, defaultEvidenceLabel } from "../EvidenceChip/EvidenceChip";
 import { SectionCard } from "../SectionCard/SectionCard";
 import { StatusPill } from "../StatusPill/StatusPill";
@@ -172,9 +177,19 @@ export function EvidenceLedgerCard({ rec, n }: Props) {
                       </span>
                     ) : null}
                   </div>
-                  <p className={styles.claim}>{e.claim}</p>
+                  {/* Same scrub composer the drawer uses — strip
+                   *  internal a1/a2 prose jargon + `aN_evi_NN` annotation
+                   *  tokens + JATS-extracted `<i>` / `<b>` tags so the
+                   *  ledger preview reads clean too. */}
+                  <p className={styles.claim}>
+                    {stripInlineHtml(scrubEvidenceTokens(scrubAgentJargon(e.claim)))}
+                  </p>
                   {firstSpan ? (
-                    <p className={styles.span}>&ldquo;{firstSpan}&rdquo;</p>
+                    <p className={styles.span}>
+                      &ldquo;
+                      {stripInlineHtml(scrubEvidenceTokens(firstSpan))}
+                      &rdquo;
+                    </p>
                   ) : null}
                   {link ? (
                     <a
