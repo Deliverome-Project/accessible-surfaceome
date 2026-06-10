@@ -1,0 +1,384 @@
+/*
+ * Deliverome paper print stylesheet
+ * ------------------------------------------------------------
+ * Renders a manuscript HTML (produced by `pandoc paper.docx --to html
+ * --standalone --css=deliverome-print.css`) into a Deliverome-branded
+ * PDF when read by WeasyPrint.
+ *
+ * Reference aesthetic: bioRxiv preprint layout, polished like Pioneer
+ * Labs' BioBloom paper (bioRxiv 10.64898/2026.02.04.703572) — cream
+ * title band, serif display title, two-column body, monospace caps
+ * section headings, branded figure side-bar, footer with brand mark
+ * and page number.
+ *
+ * Single source of brand truth: imports the project's design tokens
+ * from `viewer/app/design-tokens.css`. When the web brand evolves
+ * (color tweak, font swap), the paper picks it up automatically on
+ * the next build. Override anything in the "Local overrides" block
+ * at the bottom of this file.
+ */
+
+@import url("../viewer/app/design-tokens.css");
+
+/* Web fonts — same families as the live viewer (Manrope + Playfair
+ * Display from Google Fonts). WeasyPrint fetches these at build time
+ * and embeds the subsets it needs into the PDF, so the resulting
+ * file has no external font dependency. If you ever build OFFLINE
+ * (no network), download the .ttfs from Google Fonts and replace the
+ * remote URLs with local paths. */
+@import url("https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700&family=Playfair+Display:ital,wght@0,500;0,600;0,700;1,500&display=swap");
+
+/* ============================================================
+ * Page setup
+ * ============================================================ */
+
+@page {
+  size: letter;
+  margin: 0.85in 0.75in 0.95in 0.75in;
+
+  /* Branded footer on every page — "Deliverome" left, page number
+   * right, both in the brand maroon. Matches Pioneer's footer
+   * treatment ("Pioneer Labs" / page number, same brand color). */
+  @bottom-left {
+    content: "Deliverome";
+    font-family: "Manrope", sans-serif;
+    font-size: 8.5pt;
+    font-weight: 600;
+    color: var(--maroon-mid);
+    letter-spacing: 0.06em;
+    padding-top: 0.3in;
+  }
+  @bottom-right {
+    /* `decimal-leading-zero` mirrors the "01 / 02 / 03" look in
+     * Pioneer's footer; switch to `decimal` for plain "1 / 2 / 3". */
+    content: counter(page, decimal-leading-zero);
+    font-family: "Manrope", sans-serif;
+    font-size: 8.5pt;
+    font-weight: 600;
+    color: var(--maroon-mid);
+    padding-top: 0.3in;
+  }
+}
+
+/* First page strips the page-number from the bottom-right so the
+ * title-page reads cleanly. Optional — comment out if you want page 1
+ * numbered too. */
+@page :first {
+  @bottom-right { content: ""; }
+}
+
+/* ============================================================
+ * Body — two-column layout with serif display headings
+ * ============================================================ */
+
+html, body {
+  font-family: "Manrope", "Inter", system-ui, sans-serif;
+  font-size: 9.5pt;
+  line-height: 1.5;
+  color: var(--ink, #1f1718);
+  background: var(--bg, #fefefe);
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  column-count: 2;
+  column-gap: 0.35in;
+  column-fill: balance;
+}
+
+/* ============================================================
+ * Title block — pandoc emits #title-block-header containing the
+ * <h1 class="title">, .author, .date paragraphs. Pinned to full
+ * column-span so it sits above the two-column body, with a warm
+ * cream wash that echoes Pioneer's title band.
+ * ============================================================ */
+
+#title-block-header {
+  column-span: all;
+  background: var(--bg-warm, #f3ece5);
+  padding: 0.6em 0.8em 0.8em;
+  margin: 0 0 0.5in 0;
+  border-bottom: 1px solid var(--maroon-pale, #f0a098);
+  break-after: avoid-page;
+}
+
+h1.title {
+  font-family: "Playfair Display", Georgia, serif;
+  font-weight: 600;
+  font-size: 28pt;
+  line-height: 1.1;
+  letter-spacing: -0.015em;
+  color: var(--maroon-deepest, #3e0a18);
+  margin: 0 0 0.4em 0;
+  /* Pioneer keeps their title to ~3 lines on the cover — line-height
+   * 1.1 + 28pt fits a typical "<adjective> method for <subject>
+   * <verbed phrase>" in two lines. */
+}
+
+#title-block-header .author,
+#title-block-header .date {
+  font-family: "Manrope", sans-serif;
+  font-size: 9.5pt;
+  color: var(--ink-soft, #2a2122);
+  margin: 0;
+  line-height: 1.5;
+}
+
+#title-block-header .author { font-weight: 500; }
+#title-block-header .date {
+  color: var(--muted, #6f5d5a);
+  font-size: 8.5pt;
+  margin-top: 0.4em;
+  letter-spacing: 0.03em;
+}
+
+/* ============================================================
+ * Section headings — monospace UPPERCASE caps, brand maroon.
+ * Pioneer uses this treatment for ABSTRACT / INTRODUCTION /
+ * RESULTS / METHODS — it reads as confident wayfinding without
+ * shouting like all-caps serif would.
+ * ============================================================ */
+
+h1, h2, h3, h4, h5, h6 {
+  break-after: avoid-page;
+  break-inside: avoid-page;
+}
+
+h1 {
+  font-family: "Manrope", sans-serif;
+  font-weight: 700;
+  font-size: 10pt;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--maroon-dark, #6e1428);
+  margin: 1.4em 0 0.5em 0;
+  /* Section headings stay inside their column (no column-span) so
+   * a "Results" heading sits at the top of column 2 if that's where
+   * the flow lands it. Add `column-span: all;` if you'd rather each
+   * h1 split the page horizontally. */
+}
+
+h1:first-of-type { margin-top: 0; }
+
+h2 {
+  font-family: "Playfair Display", Georgia, serif;
+  font-weight: 600;
+  font-size: 13pt;
+  line-height: 1.2;
+  color: var(--maroon-dark, #6e1428);
+  margin: 1.1em 0 0.3em 0;
+}
+
+h3 {
+  font-family: "Playfair Display", Georgia, serif;
+  font-weight: 600;
+  font-style: italic;
+  font-size: 11pt;
+  color: var(--maroon-dark, #6e1428);
+  margin: 0.9em 0 0.2em 0;
+}
+
+/* ============================================================
+ * Body copy
+ * ============================================================ */
+
+p {
+  margin: 0 0 0.5em 0;
+  text-align: justify;
+  hyphens: auto;
+  orphans: 3;
+  widows: 3;
+}
+
+a {
+  color: var(--maroon-mid, #922038);
+  text-decoration: none;
+  /* WeasyPrint embeds links as clickable annotations in the PDF;
+   * the visual underline stays off so the printed page stays clean.
+   * The cursor effect happens automatically in PDF readers. */
+}
+
+strong { font-weight: 600; }
+em { font-style: italic; }
+
+/* ============================================================
+ * Lists
+ * ============================================================ */
+
+ul, ol {
+  margin: 0.3em 0 0.5em 1.1em;
+  padding: 0;
+}
+
+li {
+  margin: 0 0 0.2em 0;
+}
+
+ul li::marker {
+  color: var(--maroon-mid, #922038);
+}
+
+/* ============================================================
+ * Figures — branded side-bar accent + tight caption styling
+ *
+ * Pioneer's figures sit inside a beige card with a thin maroon-ish
+ * bar on the left and a monospaced "Figure N:" caption label. The
+ * pattern below mirrors that.
+ * ============================================================ */
+
+figure {
+  column-span: all;
+  break-inside: avoid;
+  margin: 1em 0 1.2em;
+  padding: 0.6em 0.8em;
+  background: var(--bg-warm, #f3ece5);
+  border-left: 4px solid var(--maroon-mid, #922038);
+  border-radius: 2px;
+}
+
+figure img {
+  max-width: 100%;
+  height: auto;
+  display: block;
+  margin: 0 auto 0.4em;
+}
+
+figcaption {
+  font-family: "Manrope", sans-serif;
+  font-size: 8.5pt;
+  line-height: 1.4;
+  color: var(--ink-soft, #2a2122);
+  margin-top: 0.4em;
+}
+
+/* Pandoc emits figure captions from .docx "Figure N: <caption>"
+ * paragraphs. Style the "Figure N:" prefix as a monospaced caps
+ * label using ::first-line / ::before tricks if you want — by
+ * default we leave the leading text in the same body font and rely
+ * on the leading "Figure N: " text reading as a label naturally. */
+
+/* If you tag figures by class in the source, you can opt one out
+ * of the wide-span layout so it stays inside its column:
+ *   <figure class="inline">…</figure>
+ */
+figure.inline {
+  column-span: none;
+  margin: 0.5em 0;
+}
+
+/* ============================================================
+ * Tables
+ * ============================================================ */
+
+table {
+  column-span: all;
+  break-inside: avoid;
+  border-collapse: collapse;
+  width: 100%;
+  font-size: 9pt;
+  margin: 0.5em 0 0.8em;
+}
+
+th, td {
+  padding: 0.35em 0.6em;
+  text-align: left;
+  vertical-align: top;
+  border-bottom: 1px solid var(--line, rgba(31, 23, 24, 0.1));
+}
+
+thead th {
+  background: var(--maroon-blush, #fde8e6);
+  color: var(--maroon-dark, #6e1428);
+  font-family: "Manrope", sans-serif;
+  font-weight: 600;
+  font-size: 8.5pt;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  border-bottom: 2px solid var(--maroon-mid, #922038);
+}
+
+/* ============================================================
+ * Block quotes — abstract-style pull quote
+ * ============================================================ */
+
+blockquote {
+  font-size: 10pt;
+  line-height: 1.45;
+  color: var(--ink-soft, #2a2122);
+  margin: 0.8em 0;
+  padding: 0.5em 0.8em;
+  background: var(--maroon-blush, #fde8e6);
+  border-left: 3px solid var(--maroon-mid, #922038);
+}
+
+blockquote p:last-child { margin-bottom: 0; }
+
+/* ============================================================
+ * Code
+ * ============================================================ */
+
+code, kbd, samp {
+  font-family: "JetBrains Mono", "SF Mono", Menlo, monospace;
+  font-size: 88%;
+  background: rgba(146, 32, 56, 0.06);
+  padding: 0 0.25em;
+  border-radius: 2px;
+}
+
+pre {
+  font-family: "JetBrains Mono", "SF Mono", Menlo, monospace;
+  font-size: 8.5pt;
+  line-height: 1.4;
+  background: var(--bg-warm, #f3ece5);
+  padding: 0.6em 0.8em;
+  border-left: 3px solid var(--maroon-mid, #922038);
+  overflow-wrap: anywhere;
+  break-inside: avoid;
+  column-span: all;
+}
+
+pre code {
+  background: transparent;
+  padding: 0;
+}
+
+/* ============================================================
+ * References / footnotes — pandoc emits these as <section
+ * id="refs"> at the document end. Keep them in single column at the
+ * end so the numbered list reads sequentially.
+ * ============================================================ */
+
+section#refs,
+.references,
+.csl-bib-body {
+  column-span: all;
+  font-size: 8.5pt;
+  line-height: 1.4;
+  margin-top: 1.5em;
+}
+
+section#refs p,
+.csl-entry {
+  margin-bottom: 0.5em;
+  padding-left: 1.5em;
+  text-indent: -1.5em;
+}
+
+/* Pandoc's footnote markers */
+a.footnote-ref,
+a.footnote-back {
+  font-size: 7.5pt;
+  vertical-align: super;
+  color: var(--maroon-mid, #922038);
+}
+
+/* ============================================================
+ * Local overrides — paste any one-off tweaks here so the
+ * imported design tokens stay clean. Empty by default.
+ * ============================================================ */
+
+/* e.g.
+ *   h1.title { font-size: 32pt; }  // bump display title
+ *   body { column-gap: 0.5in; }    // wider gutter
+ */
