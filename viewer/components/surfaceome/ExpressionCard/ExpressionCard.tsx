@@ -93,7 +93,12 @@ export function ExpressionCard({ rec, n }: Props) {
       <FeatureRationales category="expression" rec={rec} />
 
       <div className={styles.subsection}>
-        <p className={`label-mono ${styles.subhead}`}>
+        {/* Subhead is a <div>, not a <p>, because the InfoTip body
+         *  contains a <ul> — putting a <ul> inside a <p> triggers
+         *  the browser's implicit </p>, breaking React hydration
+         *  (CD63 issue). The .subhead style sets margin:0 so no
+         *  visual change from the swap. */}
+        <div className={`label-mono ${styles.subhead}`}>
           Expression × cell type × disease context
           {classified.length > 0 ? (
             <span className={styles.sourceRollup}>
@@ -133,7 +138,7 @@ export function ExpressionCard({ rec, n }: Props) {
             microarray). RNA doesn&apos;t demonstrate the protein is
             made, let alone surface-accessible.
           </InfoTip>
-        </p>
+        </div>
         {classified.length === 0 ? (
           <p className={styles.empty}>
             {expression.length === 0
