@@ -55,9 +55,13 @@ end
 
 -- Phase 1 ALSO: split image-in-heading. Returns either:
 --   * `elem` unchanged (no image inside)
---   * a list of blocks: [Para(img), Para(img), ..., Header(caption)]
--- The Header keeps its original level + attributes (so the id
--- survives for downstream linkification).
+--   * a list of blocks: [Para(span#id, img), Para(img), ..., Header(caption_no_id)]
+--
+-- The heading's id MOVES to the first image's paragraph so links
+-- to `#figure-N` land at the top of the image rather than at the
+-- caption beneath. Implementation: the first image paragraph gets
+-- an inline `<span id="…"></span>` anchor before the image; the
+-- heading is reissued WITHOUT the id (it'd otherwise collide).
 local function split_image_in_heading(elem)
   local imgs = {}
   local rest = pandoc.List({})
@@ -72,15 +76,27 @@ local function split_image_in_heading(elem)
     return elem
   end
   local results = pandoc.List({})
-  for _, img in ipairs(imgs) do
-    results:insert(pandoc.Para({img}))
+  for idx, img in ipairs(imgs) do
+    if idx == 1 and elem.identifier and elem.identifier ~= "" then
+      -- Empty Span with the heading's id — acts as the in-page
+      -- anchor target. The link from body text now scrolls so this
+      -- span (at the top of the image paragraph) is at the top of
+      -- the viewport.
+      local anchor = pandoc.Span({}, pandoc.Attr(elem.identifier))
+      results:insert(pandoc.Para({anchor, img}))
+    else
+      results:insert(pandoc.Para({img}))
+    end
   end
-  -- Drop the heading entirely if no caption text survives — the
-  -- bare-image case (some .docx authors style a standalone image
-  -- paragraph as a heading; the heading carries no semantic content).
-  -- Otherwise keep the heading with just the caption text.
   if #rest > 0 then
-    results:insert(pandoc.Header(elem.level, rest, elem.attr))
+    -- Heading keeps its content but loses the id (now on the image
+    -- paragraph). Classes / extra attributes preserved.
+    local stripped_attr = pandoc.Attr(
+      "",
+      elem.attr and elem.attr.classes or {},
+      elem.attr and elem.attr.attributes or {}
+    )
+    results:insert(pandoc.Header(elem.level, rest, stripped_attr))
   end
   return results
 end
@@ -131,6 +147,39 @@ local function tail_match(s)
   return s:match("^(%d+)([^%a%d]*)$")
 end
 
+-- Emit a body-text figure reference as a Link, pulling matched
+-- bracket pairs INSIDE the link text. The complication is that the
+-- prefix (a leading "(" or "[" on the head Str) and the suffix
+-- (a tail Str like ")." / ");" / ".") may or may not form a
+-- matched pair around the reference:
+--
+--   "(Figure 1)"        prefix="(", suffix=")"   → link covers whole thing
+--   "(Figure 1)."       prefix="(", suffix=")."  → link covers "(Figure 1)", trailing "."
+--   "[Figure 1]"        prefix="[", suffix="]"   → link covers whole thing
+--   "(Figure 1, 2)"     prefix="(", suffix=","   → no close paren in suffix; prefix stays OUTSIDE the link (the ")" lives further along the inline chain, with the rest of the citation group)
+--   "Figure 1."         prefix="",  suffix="."   → link covers "Figure 1", trailing "."
+local function emit_link_with_brackets(result, prefix, ref_text, suffix, id)
+  local opener_to_closer = {["("] = ")", ["["] = "]"}
+  local matching_close = opener_to_closer[prefix]
+  local before_link, link_text, after_link
+  if matching_close and suffix:sub(1, 1) == matching_close then
+    -- Matched bracket pair — pull both INTO the link text.
+    before_link = ""
+    link_text = prefix .. ref_text .. matching_close
+    after_link = suffix:sub(2)
+  else
+    -- No matching close — prefix stays outside; the link covers
+    -- just the reference text. Suffix (punctuation like "." or
+    -- ",") sits to the right of the link.
+    before_link = prefix
+    link_text = ref_text
+    after_link = suffix
+  end
+  if before_link ~= "" then result:insert(pandoc.Str(before_link)) end
+  result:insert(pandoc.Link({pandoc.Str(link_text)}, "#" .. id))
+  if after_link ~= "" then result:insert(pandoc.Str(after_link)) end
+end
+
 local function linkify_figure_refs(inlines)
   local result = pandoc.List({})
   local i = 1
@@ -152,10 +201,7 @@ local function linkify_figure_refs(inlines)
           local key = "appendix figure " .. num
           local id = figure_ids[key]
           if id then
-            if prefix ~= "" then result:insert(pandoc.Str(prefix)) end
-            local link_text = app_word .. " " .. fig_word .. " " .. num
-            result:insert(pandoc.Link({pandoc.Str(link_text)}, "#" .. id))
-            if suffix ~= "" then result:insert(pandoc.Str(suffix)) end
+            emit_link_with_brackets(result, prefix, app_word .. " " .. fig_word .. " " .. num, suffix, id)
             i = i + 5
             matched = true
           end
@@ -176,10 +222,7 @@ local function linkify_figure_refs(inlines)
           local key = "figure " .. num
           local id = figure_ids[key]
           if id then
-            if prefix ~= "" then result:insert(pandoc.Str(prefix)) end
-            local link_text = fig_word .. " " .. num
-            result:insert(pandoc.Link({pandoc.Str(link_text)}, "#" .. id))
-            if suffix ~= "" then result:insert(pandoc.Str(suffix)) end
+            emit_link_with_brackets(result, prefix, fig_word .. " " .. num, suffix, id)
             i = i + 3
             matched = true
           end
@@ -195,24 +238,80 @@ local function linkify_figure_refs(inlines)
   return result
 end
 
--- Two-phase pipeline. Pandoc applies each filter table in order,
--- against the FULL document tree. So Phase 1 fully populates
--- `figure_ids` before Phase 2 runs (otherwise body paragraphs that
--- appear in the doc BEFORE the captioning h5 would see an empty
--- map and skip linkification).
+-- Predicates for the Blocks pass below.
+local function para_contains_img(elem)
+  if elem.t ~= "Para" then return false end
+  for _, inl in ipairs(elem.content) do
+    if inl.t == "Image" then return true end
+  end
+  return false
+end
+
+local function is_figure_caption_heading(elem)
+  return elem.t == "Header"
+    and elem.identifier ~= nil
+    and elem.identifier ~= ""
+    and (elem.identifier:match("^figure%-%d")
+         or elem.identifier:match("^appendix%-figure%-%d"))
+end
+
+-- After splitting + emitting, walk neighbouring (img-Para, caption-Hdr)
+-- pairs and move the heading's anchor id onto the preceding Para via
+-- a leading empty Span. Without this, a body-text link to
+-- `#figure-2` lands at the CAPTION block — i.e., one figure-card
+-- below where the reader wants to land. With it, the same link
+-- scrolls so the image appears at the top of the viewport.
+local function reattach_ids_to_image_paras(blocks)
+  local result = pandoc.List({})
+  local i = 1
+  while i <= #blocks do
+    local cur = blocks[i]
+    local nxt = blocks[i + 1]
+    if para_contains_img(cur) and nxt and is_figure_caption_heading(nxt) then
+      local id = nxt.identifier
+      -- If the Para's content already starts with a Span carrying
+      -- the same id (Fig 2 case — heading was split earlier),
+      -- there's nothing to move; the heading has already lost its
+      -- id during the split. The conditional above (h5 must have a
+      -- non-empty figure id) shields us from that case naturally.
+      local anchor = pandoc.Span({}, pandoc.Attr(id))
+      local new_inlines = pandoc.List({anchor})
+      for _, inl in ipairs(cur.content) do new_inlines:insert(inl) end
+      result:insert(pandoc.Para(new_inlines))
+      local stripped_h = pandoc.Header(
+        nxt.level, nxt.content,
+        pandoc.Attr("", nxt.attr.classes, nxt.attr.attributes)
+      )
+      result:insert(stripped_h)
+      i = i + 2
+    else
+      result:insert(cur)
+      i = i + 1
+    end
+  end
+  return result
+end
+
+-- Three-phase pipeline. Pandoc applies each filter table in order
+-- against the full document tree.
 return {
   -- Phase 1: walk all headings, record figure-N id → anchor map.
   {
     Header = function(elem)
       collect_figure_ids(elem)
-      return nil -- no transform in this pass
+      return nil
     end,
   },
-  -- Phase 2: split image-in-heading shapes; linkify body refs.
+  -- Phase 2: split image-in-heading shapes.
   {
     Header = function(elem)
       return split_image_in_heading(elem)
     end,
+  },
+  -- Phase 3: move figure-caption ids from h5 → preceding Para(img)
+  -- so body links land at the image's top, then linkify body refs.
+  {
+    Blocks = reattach_ids_to_image_paras,
     Para = function(elem)
       return pandoc.Para(linkify_figure_refs(elem.content))
     end,
