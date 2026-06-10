@@ -2,6 +2,11 @@
 
 import { useEffect, useMemo, useState } from "react";
 import type { Evidence } from "../../../lib/surfaceome-types";
+import {
+  scrubAgentJargon,
+  scrubEvidenceTokens,
+  stripInlineHtml,
+} from "../../../lib/textScrub";
 import { StatusPill } from "../StatusPill/StatusPill";
 
 // Local minimal prettyEnum — the canonical one in lib/surfaceome.ts
@@ -16,6 +21,28 @@ function prettyEnum(s: string | null | undefined): string {
   return s
     .replace(/_/g, " ")
     .replace(/\b\w/g, (c) => c.toUpperCase());
+}
+
+/** Reader-facing label for an evidence id. Mirrors the EvidenceChip
+ *  helper — strip the ``evi_`` (or legacy ``a[12]_evi_``) prefix so
+ *  the drawer's eyebrow shows just the bare number. */
+function prettyEvidenceLabel(evidenceId: string): string {
+  const newForm = /^evi_(\d+)$/.exec(evidenceId);
+  if (newForm) return newForm[1];
+  const legacyForm = /^a[12]_evi_(\d+)$/.exec(evidenceId);
+  if (legacyForm) return legacyForm[1];
+  return evidenceId;
+}
+
+/** Compose the two viewer-side scrubbers — strip ``aN_evi_NN`` annotation
+ *  tokens AND rewrite "A1 ledger" / "the merged A1+A2 evidence" / etc.
+ *  prose jargon — so reader-facing strings in the drawer never carry
+ *  internal pipeline namespace. Used on the agent's claim + verbatim
+ *  quote where the chip-linkify path isn't appropriate (the
+ *  ``cited_evidence_ids`` strip below the prose is the right surface
+ *  for that). */
+function cleanDrawerProse(text: string | null | undefined): string {
+  return stripInlineHtml(scrubEvidenceTokens(scrubAgentJargon(text)));
 }
 import styles from "./EvidenceDrawer.module.css";
 
@@ -212,7 +239,9 @@ function EvidenceCard({ ev, onClose }: { ev: Evidence; onClose: () => void }) {
       >
         ×
       </button>
-      <p className={`label-mono ${styles.eyebrow}`}>{ev.evidence_id}</p>
+      <p className={`label-mono ${styles.eyebrow}`}>
+        {prettyEvidenceLabel(ev.evidence_id)}
+      </p>
       <div className={styles.badges}>
         <StatusPill tone={tierTone(ev.evidence_tier)} size="sm">
           {prettyEnum(ev.evidence_tier)}
@@ -242,9 +271,43 @@ function EvidenceCard({ ev, onClose }: { ev: Evidence; onClose: () => void }) {
          *  PMC ID recovery from validation_warnings (above) still
          *  fires so entailment-failed claims still get a source link. */}
       </div>
-      {/* Source first — the reader wants "which paper is this from?"
-          before the agent's interpretation of it. */}
-      {sources.length ? (
+      <h2 className={styles.title}>Agent&apos;s claim</h2>
+      <p className={styles.claim}>{cleanDrawerProse(ev.claim)}</p>
+      {headSpan?.quote ? (
+        <>
+          {/* Source sits right above the verbatim it anchors so the
+              reader can confirm "this quote came from THAT paper" in
+              one glance. */}
+          {sources.length ? (
+            <>
+              <h3 className={styles.subhead}>
+                Source{sources.length > 1 ? "s" : ""}
+              </h3>
+              <ul className={styles.sources}>
+                {sources.map((s) => (
+                  <li key={s.href}>
+                    <a
+                      href={s.href}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className={styles.sourceLink}
+                      title={s.title}
+                    >
+                      {s.label} ↗
+                    </a>
+                  </li>
+                ))}
+              </ul>
+            </>
+          ) : null}
+          <h3 className={styles.subhead}>Verbatim quote</h3>
+          <blockquote className={styles.quote}>
+            {cleanDrawerProse(headSpan.quote)}
+          </blockquote>
+        </>
+      ) : sources.length ? (
+        // No verbatim quote — surface the source on its own so the
+        // reader still has the "which paper?" anchor.
         <>
           <h3 className={styles.subhead}>
             Source{sources.length > 1 ? "s" : ""}
@@ -264,14 +327,6 @@ function EvidenceCard({ ev, onClose }: { ev: Evidence; onClose: () => void }) {
               </li>
             ))}
           </ul>
-        </>
-      ) : null}
-      <h2 className={styles.title}>Agent&apos;s claim</h2>
-      <p className={styles.claim}>{ev.claim}</p>
-      {headSpan?.quote ? (
-        <>
-          <h3 className={styles.subhead}>Verbatim quote</h3>
-          <blockquote className={styles.quote}>{headSpan.quote}</blockquote>
         </>
       ) : null}
       {e.assay_context ? (

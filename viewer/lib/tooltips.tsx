@@ -24,12 +24,37 @@ export const tooltips: Record<string, ReactNode> = {
 
   surface_accessibility: (
     <>
-      <strong>From the deep-dive synthesizer</strong> (Sonnet 4.6) — not
-      the triage agent. Synthesized from the per-method evidence the
-      agent retrieved via web search (mass-spec, IHC, antibody-validated
-      surface stains, etc.). One of: high, moderate, low, no, uncertain.
-      The triage&apos;s first-pass call is a separate row below this
-      one for cross-check; when they disagree, the deep-dive wins.
+      The deep-dive&apos;s <strong>best-case-state</strong> verdict —
+      reaches the cell surface in at least one cell state?
+      <ul style={{ margin: "0.4rem 0 0", paddingLeft: "1.1rem" }}>
+        <li>
+          <em>high</em> — direct evidence (live-cell flow, surface
+          biotinylation, KO-controlled IHC); multi-method, or
+          single-method + high confidence.
+        </li>
+        <li>
+          <em>moderate</em> — direct single-method with limited
+          confidence, or only supportive / indirect.
+        </li>
+        <li>
+          <em>low</em> — weak or conflicting; can&apos;t rule in or
+          out.
+        </li>
+        <li>
+          <em>no</em> — confident negative: literature contradicts, or
+          canonical cytoplasmic / mitochondrial / nuclear
+          localization is multi-method corroborated.
+        </li>
+        <li>
+          <em>uncertain</em> — neither direction has enough evidence.
+        </li>
+      </ul>
+      Pair with <em>state_dependence</em> — <em>high</em> +{" "}
+      <em>state_dependence=high</em> = surfaces only in cancer / stress
+      states.
+      <br />
+      <br />
+      Deep-dive synthesizer (Sonnet 4.6).
     </>
   ),
 

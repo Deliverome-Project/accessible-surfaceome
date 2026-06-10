@@ -947,7 +947,7 @@ const COMPARTMENT_COLOR: Record<AnchorCompartment, string> = {
   unknown: "#6B7280", // gray-500
 };
 
-type LoadStatus = "loading" | "ready" | "error" | "nomodel";
+type LoadStatus = "loading" | "ready" | "error" | "nomodel" | "unavailable";
 
 interface ViewerInstance {
   clear: () => void;
@@ -1492,9 +1492,26 @@ export function StructureViewer({
           cache: "force-cache",
         });
         if (!resp.ok) {
-          throw new Error(
-            `Schweke homomer PDB returned ${resp.status} for ${schwekeVariant.pdb_url}`,
+          // 404 = the record annotates this protein as a Schweke
+          // positive but the PDB file isn't committed under
+          // viewer/public/data/structures/schweke/ yet. The
+          // ``loadSchwekeHomomer`` docstring already promises a
+          // graceful fetch-failed state — render the
+          // ``"unavailable"`` empty-state box instead of the generic
+          // "Could not load structure" error with a raw HTTP URL,
+          // which read as a viewer bug to colleagues. Bail before
+          // any 3Dmol setup so the canvas stays clean.
+          if (renderSeq !== renderSeqRef.current) return;
+          setStatus("unavailable");
+          setErrorMsg(
+            `Schweke 2024 predicts ${schwekeVariant.uniprot_acc} is a ` +
+              `homo-${schwekeVariant.stoichiometry}-mer, but the model ` +
+              `PDB file (${schwekeVariant.pdb_url.split("/").pop()}) ` +
+              "isn't ingested locally yet. The homomer signal still " +
+              "informs the accessibility-risks card; only the 3D view " +
+              "is unavailable until the file is added.",
           );
+          return;
         }
         rawPdb = await resp.text();
       } else if (expVariant) {
@@ -2204,6 +2221,22 @@ export function StructureViewer({
             >
               Why some proteins have no model — AlphaFold DB FAQ&nbsp;↗
             </a>
+          </div>
+        ) : null}
+        {/* Schweke homomer asset not yet ingested locally — reuses
+            the .nomodelBox styling but with a Schweke-specific message
+            sourced from `errorMsg`. The `errorMsg` setter at the
+            schweke-404 site produces a reader-friendly sentence; no
+            link to a generic FAQ here because the right next step is
+            "ingest the PDB", not "read about why a model is missing". */}
+        {status === "unavailable" ? (
+          <div className={styles.nomodelBox}>
+            <p className={styles.nomodelMsg}>
+              Homo-oligomer 3D view unavailable
+            </p>
+            <p className={styles.nomodelLink} style={{ textAlign: "left" }}>
+              {errorMsg}
+            </p>
           </div>
         ) : null}
         {/* Inlaid reset symbol — small icon button in the canvas's

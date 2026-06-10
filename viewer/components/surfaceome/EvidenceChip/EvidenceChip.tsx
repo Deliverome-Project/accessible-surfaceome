@@ -1,11 +1,30 @@
+import { scrubAgentJargon } from "../../../lib/textScrub";
 import styles from "./EvidenceChip.module.css";
 
 interface EvidenceChipProps {
   evidenceId: string;
-  /** Optional short label override (default: the evidence_id itself, e.g. "a1_evi_03"). */
+  /** Optional short label override. Default is a reader-facing
+   *  ``[NN]`` (citation-style) derived from the trailing index of the
+   *  internal ``aN_evi_NN`` id — the ``a1`` / ``a2`` planner namespace
+   *  is internal plumbing and must not surface in the UI. */
   label?: string;
   /** Optional one-line title for the tooltip (e.g. the agent's claim text). */
   title?: string;
+}
+
+/** Render-time label for an evidence id. The data loader renumbers
+ *  every ``a[12]_evi_NN`` id into a per-record ``evi_N`` sequence (see
+ *  ``lib/evidenceRenumber.ts``); this strips the ``evi_`` prefix so the
+ *  chip shows just the bare number — no brackets, no lane prefix.
+ *  Falls through to a legacy form (``a1_evi_03`` → ``3``) and finally
+ *  to the raw id, so we never erase information if the loader is
+ *  bypassed (tests, fixtures, etc.). */
+export function defaultEvidenceLabel(evidenceId: string): string {
+  const newForm = /^evi_(\d+)$/.exec(evidenceId);
+  if (newForm) return newForm[1];
+  const legacyForm = /^a[12]_evi_(\d+)$/.exec(evidenceId);
+  if (legacyForm) return legacyForm[1];
+  return evidenceId;
 }
 
 /**
@@ -41,9 +60,9 @@ export function EvidenceChip({ evidenceId, label, title }: EvidenceChipProps) {
       type="button"
       className={styles.chip}
       data-evidence-id={evidenceId}
-      title={title ?? `Open evidence ${evidenceId}`}
+      title={title ?? `Open evidence ${defaultEvidenceLabel(evidenceId)}`}
     >
-      {label ?? evidenceId}
+      {label ?? defaultEvidenceLabel(evidenceId)}
     </button>
   );
 }
@@ -76,16 +95,21 @@ export function EvidenceChipList({ ids, label, maxVisible = 12 }: EvidenceChipLi
         <span className={`label-mono ${styles.chipRowLabel}`}>{label}</span>
       ) : null}
       <span className={styles.chips}>
-        {head.map((id) => (
-          <EvidenceChip key={id} evidenceId={id} />
+        {/* Belt-and-suspenders unique key: the loader already dedupes
+         *  ``cited_evidence_ids`` arrays after renumbering, but if any
+         *  unrenumbered list slips through (test fixtures, offline
+         *  local mode, future regression), `${id}-${i}` keeps React
+         *  from throwing on duplicate keys. */}
+        {head.map((id, i) => (
+          <EvidenceChip key={`${id}-${i}`} evidenceId={id} />
         ))}
         {rest.length > 0 ? (
           <details className={styles.chipOverflowDetails}>
             <summary className={styles.chipOverflow}>+{rest.length} more</summary>
             {/* Revealed on toggle — each remaining id is a real chip that
                 opens the EvidenceDrawer, same as the head chips. */}
-            {rest.map((id) => (
-              <EvidenceChip key={id} evidenceId={id} />
+            {rest.map((id, i) => (
+              <EvidenceChip key={`${id}-${i + head.length}`} evidenceId={id} />
             ))}
           </details>
         ) : null}
@@ -117,10 +141,13 @@ export function EvidenceChipList({ ids, label, maxVisible = 12 }: EvidenceChipLi
  */
 
 // Token regex — combined alternation so we can walk the prose once
-// and dispatch by capture group:
-//   m[1] = "a1_evi_" / "a2_evi_" prefix (single or range head)
+// and dispatch by capture group. The evidence-id prefix is now
+// ``evi_`` (per-record renumbered by the loader); legacy
+// ``a[12]_evi_`` is kept as a fallback for any prose that escapes
+// the loader's rewrite (tests, fixtures, etc.).
+//   m[1] = "evi_" or "a1_evi_" / "a2_evi_" prefix (single or range head)
 //   m[2] = start number (zero-padded width preserved for output)
-//   m[3] = optional range end number (when ``a1_evi_01-05`` style)
+//   m[3] = optional range end number (when ``evi_01-05`` style)
 //   m[4] = bare PMID number
 //   m[5] = PMC article number (PubMed Central full-text link)
 //   m[6] = "<weight>-weight" explicit form
@@ -130,7 +157,7 @@ export function EvidenceChipList({ ids, label, maxVisible = 12 }: EvidenceChipLi
 //          label so the reader never sees snake_case.
 //   m[8] = bare "high" / "moderate" / "low" (context-checked)
 const TOKEN_RE =
-  /\b(a[12]_evi_)(\d+)(?:[–\-](\d+))?\b|\bPMID:(\d+)\b|\bPMC(\d+)\b|\b(high-weight|moderate-weight|low-weight)\b|\b(direct_multi_method|direct_single_method|supportive_but_indirect)\b|\b(high|moderate|low)\b/g;
+  /\b(evi_|a[12]_evi_)(\d+)(?:[–\-](\d+))?\b|\bPMID:(\d+)\b|\bPMC(\d+)\b|\b(high-weight|moderate-weight|low-weight)\b|\b(direct_multi_method|direct_single_method|supportive_but_indirect)\b|\b(high|moderate|low)\b/g;
 
 // Normalize compact evidence-ref lists into fully-qualified ids before
 // tokenizing. The synthesizer sometimes abbreviates a multi-ref citation
@@ -143,10 +170,10 @@ const TOKEN_RE =
 // contain an evidence ref, so prose numbers (e.g. "(see Fig 2)") are
 // untouched.
 function _expandCompactRefs(text: string): string {
-  return text.replace(/\(([^)]*a[12]_evi_\d+[^)]*)\)/g, (whole, inner) => {
+  return text.replace(/\(([^)]*(?:evi_|a[12]_evi_)\d+[^)]*)\)/g, (whole, inner) => {
     let prefix: string | null = null;
     const rewritten = inner.replace(
-      /(a[12]_evi_)(\d+)|(?<=[,;]\s*)(\d+)\b/g,
+      /(evi_|a[12]_evi_)(\d+)|(?<=[,;]\s*)(\d+)\b/g,
       (m: string, p: string | undefined, _n: string, bare: string | undefined) => {
         if (p) {
           prefix = p;
@@ -179,7 +206,7 @@ const GRADE_LABELS: Record<string, string> = {
 // same parens as ``a1_evi_NN``; otherwise natural-prose adjective).
 function _markEvidenceParens(text: string): boolean[] {
   const marks = new Array(text.length).fill(false);
-  for (const m of text.matchAll(/\(([^)]*a[12]_evi_\d+[^)]*)\)/g)) {
+  for (const m of text.matchAll(/\(([^)]*(?:evi_|a[12]_evi_)\d+[^)]*)\)/g)) {
     const start = m.index ?? 0;
     const end = start + m[0].length;
     for (let i = start; i < end; i++) marks[i] = true;
@@ -189,6 +216,12 @@ function _markEvidenceParens(text: string): boolean[] {
 
 export function linkifyEvidenceRefs(text: string): React.ReactNode[] {
   if (!text) return [text];
+  // Strip "A1 ledger" / "the merged A1+A2 evidence" / etc. BEFORE
+  // expanding compact refs so the chip-pass never sees jargon-rewritten
+  // mid-sentences. The scrub is conservative: it only touches phrases
+  // that pair A1/A2 with a noun like "ledger" / "evidence" / "biology",
+  // never the bare A1/A2 token (which can name real proteins).
+  text = scrubAgentJargon(text);
   text = _expandCompactRefs(text);
   const inRefParen = _markEvidenceParens(text);
   const out: React.ReactNode[] = [];

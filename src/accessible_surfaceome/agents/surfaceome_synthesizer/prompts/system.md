@@ -90,11 +90,24 @@ this protein is worth pursuing. They want to know:
 
 ### Hard ban — treat as a syntactic filter
 
-The following patterns MUST NOT appear in `confidence_reasoning`.
-**Self-check before emitting:** scan the prose for any of `A1`, `A2`,
-`a1_evi_`, `a2_evi_`, `verdict='`, `accessibility='`,
-`state_dependence='`, `evidence_grade='`, `deep-dive`, or
-`triage called`. If any appear, rewrite that sentence.
+The following patterns MUST NOT appear in **any freeform prose field
+you emit** — `confidence_reasoning`, `executive_summary.one_paragraph`,
+`executive_summary.accessibility_context_summary`,
+`surface_evidence.grade_rationale`,
+`biological_context.grade_rationale`, and every per-block `rationale`
+or `mechanism` string. The viewer renders these fields directly to a
+target-discovery analyst; pipeline-namespace words leak the agent's
+internal structure and read as "weird" prose. (Historically the ban
+applied only to `confidence_reasoning`; in production records we
+caught leaks like *"The entire A1 ledger consistently places BAX at
+intracellular compartments…"* in `executive_summary.one_paragraph`
+and the per-block rationales, so the scope is now every prose field.)
+
+**Self-check before emitting** every prose string: scan it for any of
+`A1`, `A2`, `a1_evi_`, `a2_evi_`, `the merged ledger`, `the A1+A2
+evidence`, `verdict='`, `accessibility='`, `state_dependence='`,
+`evidence_grade='`, `deep-dive`, or `triage called`. If any appear,
+rewrite that sentence.
 
 | Forbidden token | Translate to |
 |---|---|

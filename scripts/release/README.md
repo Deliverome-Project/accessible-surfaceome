@@ -65,8 +65,10 @@ until you click "Publish" in the Zenodo UI. Drafts can be deleted.
    Each entry is either a `{"url", "filename"}` dict (verbatim API
    fetch), a path string relative to repo root (local file), or one
    of the special builder shapes: `{"deep_dives_bundle": True, ...}`
-   (tarball), `{"deposit_readme": True, ...}` (in-deposit README).
-   Comment out anything you don't want in this particular deposit.
+   (tarball), `{"deposit_readme": True, ...}` (in-deposit README),
+   `{"manuscript": True, ...}` (pre-built PDF + pandoc-generated
+   JATS XML for the paper — off by default; see below). Comment out
+   anything you don't want in this particular deposit.
 
 2. **Deploy the Worker** if you've changed `handleTriageExport` or
    `handleBenchmarkExport` in
@@ -250,6 +252,73 @@ both gives readers the full picture.
   LFS-tracked (LFS bytes don't get included in auto-archive).
 - You want a citeable DOI for those data files, separate from any
   paper they appear in.
+- You're ready to deposit the paper itself alongside the data — see
+  the manuscript-bundle section below.
+
+## Depositing the paper alongside the data (manuscript bundle)
+
+The script can co-deposit the paper's PDF + a JATS XML version of
+the manuscript with the data. Off by default — uncomment the
+`{"manuscript": True, ...}` entry at the bottom of `EXTRA_FILES`.
+
+Why both formats:
+
+- **PDF** is what reviewers / readers actually open. The script
+  copies your pre-built PDF verbatim — whatever LaTeX engine /
+  Word / Typst you've used upstream is what reviewers will cite.
+- **JATS XML** is what PMC, reference managers, and downstream
+  text-miners ingest. Most journals derive the JATS at publication
+  time; pre-depositing it makes the record machine-readable from day
+  one and gives readers a stable structured representation regardless
+  of which journal accepts the paper.
+
+Requires `pandoc` on `PATH`:
+
+```bash
+# macOS
+brew install pandoc
+
+# Linux
+apt install pandoc   # or download from pandoc.org
+```
+
+The manuscript-bundle entry shape:
+
+```python
+{
+    "manuscript": True,
+    "source": "paper/manuscript.md",       # markdown / latex / docx
+    "pdf_path": "paper/build/manuscript.pdf",  # the PDF you've already built
+    "jats_filename": "manuscript.xml",     # name the JATS lands as
+    "extra_pandoc_args": [                  # optional — pass to pandoc
+        "--citeproc",
+        "--bibliography=paper/refs.bib",
+    ],
+}
+```
+
+At deposit time the script runs:
+
+```bash
+pandoc <source> --standalone --to jats -o <jats_filename> <extra_args>
+```
+
+`--standalone` is required for pandoc's JATS writer (without it it
+emits a fragment rather than a full `<article>`).
+
+**The script never re-renders the PDF.** A real paper needs a LaTeX
+engine + class files + bibliography styles + (often) journal-specific
+templates; pandoc can produce PDFs, but the output rarely matches
+what reviewers actually see. The deposit gets your pre-built PDF
+byte-for-byte. JATS conversion is plain XML — no engine needed —
+so it's safe to derive at deposit time.
+
+**JATS validation note.** Pandoc's `--standalone` output is well-
+formed but doesn't necessarily satisfy the tighter PMC DTD
+constraints (e.g. `article-meta` structure). Run it through the
+JATS4R validator (<https://www.jats4r.org/>) or `xmllint --dtdvalid`
+if you need PMC-grade validation; for deposit-alongside-data
+purposes the standalone XML is usually sufficient.
 
 ## Safety reminders
 

@@ -1,0 +1,558 @@
+/*
+ * Deliverome paper print stylesheet
+ * ------------------------------------------------------------
+ * Renders a manuscript HTML (produced by `pandoc paper.docx --to html
+ * --standalone --css=deliverome-print.css`) into a Deliverome-branded
+ * PDF when read by WeasyPrint.
+ *
+ * Reference aesthetic: bioRxiv preprint layout, polished like Pioneer
+ * Labs' BioBloom paper (bioRxiv 10.64898/2026.02.04.703572) — cream
+ * title band, serif display title, two-column body, monospace caps
+ * section headings, branded figure side-bar, footer with brand mark
+ * and page number.
+ *
+ * Single source of brand truth: imports the project's design tokens
+ * from `viewer/app/design-tokens.css`. When the web brand evolves
+ * (color tweak, font swap), the paper picks it up automatically on
+ * the next build. Override anything in the "Local overrides" block
+ * at the bottom of this file.
+ */
+
+@import url("../viewer/app/design-tokens.css");
+
+/* Paper-only tokens. Sit BELOW the design-tokens import so they
+ * override only what we need for print.
+ *
+ *   --paper-beige (#faf6ef) — softer than the web's `--bg-warm`,
+ *     more neutral than `--maroon-blush`. Used as the figure-
+ *     caption card wash.
+ *   --title-beige (#fdfbf6) — even-lighter variant for the title
+ *     banner; reads as almost-white-with-warmth so the large
+ *     Playfair Display title doesn't get swallowed by saturation.
+ */
+:root {
+  /* `--paper-beige` and `--title-beige` are now the SAME value —
+   * the title banner and the figure-caption cards share one
+   * unified cream. Kept as two named tokens (rather than one) so
+   * the title and figure surfaces can diverge again later without
+   * a rename across selectors. */
+  --title-beige: #fefdfa;
+  --paper-beige: var(--title-beige);
+}
+
+/* Web fonts — same families as the live viewer (Manrope + Playfair
+ * Display from Google Fonts). WeasyPrint fetches these at build time
+ * and embeds the subsets it needs into the PDF, so the resulting
+ * file has no external font dependency. If you ever build OFFLINE
+ * (no network), download the .ttfs from Google Fonts and replace the
+ * remote URLs with local paths. */
+@import url("https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700&family=Playfair+Display:ital,wght@0,500;0,600;0,700;1,500&display=swap");
+
+/* ============================================================
+ * Page setup
+ * ============================================================ */
+
+@page {
+  size: letter;
+  margin: 0.85in 0.75in 0.95in 0.75in;
+
+  /* Footer carries the page number only — the brand-mark slot was
+   * dropped per review. Centered so it reads neutrally rather than
+   * left-anchored. */
+  @bottom-center {
+    /* `decimal-leading-zero` mirrors the "01 / 02 / 03" preprint
+     * convention; switch to `decimal` for plain "1 / 2 / 3". */
+    content: counter(page, decimal-leading-zero);
+    font-family: "Manrope", sans-serif;
+    font-size: 8.5pt;
+    font-weight: 600;
+    color: var(--maroon-mid);
+    padding-top: 0.3in;
+  }
+}
+
+/* Page 1 also carries the page number (01) per review. The earlier
+ * "strip footer on first page" override is intentionally gone. */
+
+/* ============================================================
+ * Body — two-column layout with serif display headings
+ * ============================================================ */
+
+html, body {
+  font-family: "Manrope", "Inter", system-ui, sans-serif;
+  font-size: 9.5pt;
+  line-height: 1.5;
+  color: var(--ink, #1f1718);
+  background: var(--bg, #fefefe);
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  column-count: 2;
+  column-gap: 0.35in;
+  column-fill: balance;
+}
+
+/* ============================================================
+ * Title block — pandoc emits #title-block-header containing the
+ * <h1 class="title">, .author, .date paragraphs. Pinned to full
+ * column-span so it sits above the two-column body, with a warm
+ * cream wash that echoes Pioneer's title band.
+ * ============================================================ */
+
+/* Pandoc's docx reader (without --section-divs) emits a FLAT body:
+ * headings + paragraphs are direct children of <body>. So the title
+ * is just `body > h1:first-of-type` — and being a direct child of
+ * the multi-column container, `column-span: all` actually works.
+ *
+ * Title block: full-bleed banner that breaks out of the page
+ * margins on three sides — left, right, and top — so the lighter
+ * blush wash runs edge-to-edge of the page rather than living
+ * inside the 0.75in content margin. The negative margins match the
+ * `@page` margins above; padding compensates so the title text
+ * stays well-positioned within the banner.
+ */
+body > h1:first-of-type {
+  column-span: all;
+  background: var(--title-beige);
+  /* Negative margins MUST match the @page margin values above to
+   * full-bleed exactly to the page edge. Update these if the
+   *   @page margin is ever changed.
+   * Order: top right bottom left.
+   * Bottom margin is 0 — the author-metadata paragraphs that
+   * follow get the same beige wash and butt up directly against
+   * this block to form one continuous title band. */
+  margin: -0.85in -0.75in 0 -0.75in;
+  /* Padding absorbs the page-margin space + adds a tighter top
+   * gutter (1.05in → 0.5in extra over the bleed) so the title
+   * sits closer to the top of the page per review. */
+  padding: 0.95in 0.95in 0.3em 0.95in;
+  break-after: avoid-page;
+  font-family: "Playfair Display", Georgia, serif;
+  font-weight: 600;
+  font-size: 30pt;
+  line-height: 1.1;
+  letter-spacing: -0.015em;
+  /* Title shares the body ink color (var(--ink, #1f1718)) — the
+   * earlier maroon-deepest read too saturated against the lighter
+   * title beige and the rest-of-page body. */
+  color: var(--ink, #1f1718);
+}
+
+/* Author / affiliation / corresponding-author paragraphs that sit
+ * between the title and the first section heading (typically
+ * Abstract). Pandoc emits them as plain <p> in body order; we keep
+ * them in the cream banner by giving each one a full-bleed beige
+ * stripe matching the title.
+ *
+ * Selector logic: `body > p:has(~ h2:first-of-type)` matches every
+ * <p> direct child of body that has the FIRST h2 (i.e., the very
+ * first section heading) later in the sibling chain. Paragraphs
+ * AFTER the first h2 don't have it as a later sibling, so they're
+ * excluded — only the title-block metadata matches.
+ *
+ * `column-span: all` is required because body is multi-column;
+ * without it the metadata paragraphs would get column-confined to
+ * half-width. */
+body > p:has(~ h2:first-of-type) {
+  column-span: all;
+  background: var(--title-beige);
+  margin: 0 -0.75in;
+  padding: 0.15em 0.95in;
+  font-family: "Manrope", sans-serif;
+  font-size: 9.5pt;
+  line-height: 1.5;
+  color: var(--ink, #1f1718);
+  break-inside: avoid;
+}
+
+/* The LAST metadata paragraph (the one immediately before the
+ * first h2) carries the bottom rule that closes the title block.
+ * Border weight + style + color match the figure-caption side bar
+ * (4px solid maroon-mid) so the title section and the figure
+ * cards read with one shared brand accent. */
+body > p:has(+ h2:first-of-type) {
+  padding-bottom: 0.4in;
+  margin-bottom: 0.45in;
+  border-bottom: 4px solid var(--maroon-mid, #922038);
+}
+
+#title-block-header .author,
+#title-block-header .date {
+  font-family: "Manrope", sans-serif;
+  font-size: 9.5pt;
+  color: var(--ink-soft, #2a2122);
+  margin: 0;
+  line-height: 1.5;
+}
+
+#title-block-header .author { font-weight: 500; }
+#title-block-header .date {
+  color: var(--muted, #6f5d5a);
+  font-size: 8.5pt;
+  margin-top: 0.4em;
+  letter-spacing: 0.03em;
+}
+
+/* ============================================================
+ * Section headings — monospace UPPERCASE caps, brand maroon.
+ * Pioneer uses this treatment for ABSTRACT / INTRODUCTION /
+ * RESULTS / METHODS — it reads as confident wayfinding without
+ * shouting like all-caps serif would.
+ * ============================================================ */
+
+h1, h2, h3, h4, h5, h6 {
+  break-after: avoid-page;
+  break-inside: avoid-page;
+}
+
+/* SECTION headings (Abstract / Introduction / Results / Methods /
+ * Discussion / …) — pandoc emits these at <h2> from .docx "Heading 1"
+ * Word styles. Monospace-feel uppercase caps, brand maroon. Reads as
+ * confident wayfinding without shouting like all-caps serif would. */
+h2 {
+  font-family: "Manrope", sans-serif;
+  font-weight: 700;
+  font-size: 10pt;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--maroon-dark, #6e1428);
+  margin: 1.4em 0 0.5em 0;
+}
+
+/* SUBSECTION headings — Manrope (NOT serif). User feedback: serif
+ * is reserved for the title only; everything below stays in the body
+ * font for scan consistency. */
+h3 {
+  font-family: "Manrope", sans-serif;
+  font-weight: 700;
+  font-size: 12pt;
+  line-height: 1.25;
+  color: var(--maroon-dark, #6e1428);
+  margin: 1.1em 0 0.3em 0;
+  letter-spacing: -0.005em;
+}
+
+/* SUB-SUB-SECTION (h4) — lighter weight + slight tracking so it
+ * reads as a label-like step rather than competing with h3. */
+h4 {
+  font-family: "Manrope", sans-serif;
+  font-weight: 600;
+  font-size: 10.5pt;
+  color: var(--maroon-dark, #6e1428);
+  margin: 0.9em 0 0.2em 0;
+  letter-spacing: 0.005em;
+}
+
+/* ============================================================
+ * Body copy
+ * ============================================================ */
+
+p {
+  margin: 0 0 0.5em 0;
+  text-align: justify;
+  hyphens: auto;
+  orphans: 3;
+  widows: 3;
+}
+
+a {
+  color: var(--maroon-mid, #922038);
+  text-decoration: none;
+  /* WeasyPrint embeds links as clickable annotations in the PDF;
+   * the visual underline stays off so the printed page stays clean.
+   * The cursor effect happens automatically in PDF readers. */
+}
+
+strong { font-weight: 600; }
+em { font-style: italic; }
+
+/* ============================================================
+ * Lists
+ * ============================================================ */
+
+ul, ol {
+  margin: 0.3em 0 0.5em 1.1em;
+  padding: 0;
+}
+
+li {
+  margin: 0 0 0.2em 0;
+}
+
+ul li::marker {
+  color: var(--maroon-mid, #922038);
+}
+
+/* ============================================================
+ * Figures — branded side-bar accent + tight caption styling
+ *
+ * Pioneer's figures sit inside a beige card with a thin maroon-ish
+ * bar on the left and a monospaced "Figure N:" caption label. The
+ * pattern below mirrors that.
+ * ============================================================ */
+
+/* Figures: pandoc's docx reader emits `<p><img></p>` (no <figure>
+ * wrapper) with Word's absolute pixel/inch dimensions baked in as
+ * inline `style="width:N.NNNNNin;height:N.NNNNNin"`. We honor Word's
+ * natural sizing (no width: 100% force-scale), but cap with
+ * max-width: 100% as a safety net for Word images wider than the
+ * column. The maroon side bar stays on the figure itself (a thin
+ * brand anchor) but the beige wash is REMOVED from the figure —
+ * it now appears ONLY on the caption underneath. */
+p:has(> img) {
+  column-span: all;
+  break-inside: avoid;
+  margin: 1.2em 0 0;
+  padding: 0.4em 0 0.3em 0.7em;
+  border-left: 4px solid var(--maroon-mid, #922038);
+}
+
+p > img,
+img {
+  max-width: 100%;
+  /* `height: auto !important` overrides Word's inline pixel height
+   * so the aspect ratio stays correct when max-width clamps a too-
+   * wide image. Without `!important`, Word's inline `height=` wins
+   * because inline styles outrank external CSS. */
+  height: auto !important;
+  display: block;
+  margin: 0 auto;
+}
+
+/* Figure captions — current docx convention is Heading 5 in Word,
+ * which pandoc emits as <h5>. Style it as the figure caption (NOT
+ * as a section heading): beige card, side bar, Manrope, with a
+ * bold first-line treatment for the "Figure N. Title" lead clause.
+ *
+ * Heading semantics are overridden first (font-family / weight /
+ * text-transform / letter-spacing) so this h5 doesn't get the
+ * stronger h3/h4-style treatment. */
+h5 {
+  column-span: all;
+  break-inside: avoid;
+  margin: 0.4em 0 1.4em 0;
+  padding: 0.5em 0.9em 0.6em 0.9em;
+  background: var(--paper-beige);
+  border-left: 4px solid var(--maroon-mid, #922038);
+  border-radius: 2px;
+  font-family: "Manrope", sans-serif;
+  font-weight: 400;
+  font-size: 9pt;
+  line-height: 1.45;
+  letter-spacing: 0;
+  text-transform: none;
+  color: var(--ink, #1f1718);
+  text-align: left;
+}
+
+h5::first-line {
+  font-weight: 700;
+  color: var(--maroon-dark, #6e1428);
+  letter-spacing: -0.005em;
+}
+
+/* (Removed: h2:has(> img) rescue rule. .docx authors fix it
+ * upstream by switching the image paragraph to Heading 5 along
+ * with the caption.) */
+
+/* ============================================================
+ * References / Bibliography
+ *
+ * Pandoc emits the References section as <h2 id="references">
+ * followed by a series of <p> entries. We use the references
+ * heading's `id` selector to scope the rest. The Lua filter at
+ * `paper/filters/refs_dois.lua` walks each reference paragraph
+ * during pandoc's pass: it unwraps the outer Zotero google-docs
+ * <a> link (so the bulk of the reference text reads as plain
+ * prose, not a clickable Zotero anchor) and extracts the DOI URL
+ * into its OWN <a class="doi"> link. This stylesheet then renders
+ * everything in the section grey + smaller, with .doi links the
+ * only thing in brand-accent red.
+ * ============================================================ */
+
+h2#references ~ p {
+  font-size: 8.5pt;
+  line-height: 1.4;
+  color: var(--muted, #6f5d5a);
+  margin: 0 0 0.6em 0;
+  /* Hanging-indent for reference entries — first line at the
+   * margin, continuation lines indented so author names line up. */
+  padding-left: 1.2em;
+  text-indent: -1.2em;
+}
+
+/* All <a> inside the references section reads grey (no underline),
+ * EXCEPT the DOI links which the Lua filter tags with `class="doi"`. */
+h2#references ~ p a {
+  color: var(--muted, #6f5d5a);
+  text-decoration: none;
+}
+
+h2#references ~ p a.doi {
+  color: var(--maroon-mid, #922038);
+  text-decoration: none;
+}
+
+/* Re-apply the h2 section-heading look to the References heading
+ * itself (it'd otherwise inherit nothing special — but the global
+ * h2 rule above already handles it). */
+
+/* The Pioneer-style "Figure N." prefix — bold + brand maroon, set
+ * with `::first-line` so the lead phrase reads as a stylized
+ * label even though pandoc emits it as plain prose. ::first-line
+ * matches only what fits on the first rendered line, which for
+ * a typical "Figure 1. Title text. Body explanation…" caption
+ * means the leading title clause reads emphasized. */
+p:has(> img) + p::first-line {
+  font-weight: 700;
+  color: var(--maroon-dark, #6e1428);
+  letter-spacing: -0.005em;
+}
+
+/* Native <figure> wrapper — kept for any future pandoc filter that
+ * emits proper <figure>/<figcaption>, or for hand-authored HTML.
+ * Beige wash applies ONLY to the caption (figcaption), matching the
+ * docx-image path above. */
+figure {
+  column-span: all;
+  break-inside: avoid;
+  margin: 1.2em 0;
+  padding: 0.4em 0 0.3em 0.7em;
+  border-left: 4px solid var(--maroon-mid, #922038);
+}
+
+figcaption {
+  font-family: "Manrope", sans-serif;
+  font-size: 9pt;
+  line-height: 1.45;
+  color: var(--ink, #1f1718);
+  margin: 0.4em -0.7em 0 -0.7em;
+  padding: 0.5em 0.9em 0.6em 0.9em;
+  background: var(--paper-beige);
+  border-left: 4px solid var(--maroon-mid, #922038);
+  border-radius: 2px;
+}
+
+figcaption::first-line {
+  font-weight: 700;
+  color: var(--maroon-dark, #6e1428);
+  letter-spacing: -0.005em;
+}
+
+/* ============================================================
+ * Tables
+ * ============================================================ */
+
+table {
+  column-span: all;
+  break-inside: avoid;
+  border-collapse: collapse;
+  width: 100%;
+  font-size: 9pt;
+  margin: 0.5em 0 0.8em;
+}
+
+th, td {
+  padding: 0.35em 0.6em;
+  text-align: left;
+  vertical-align: top;
+  border-bottom: 1px solid var(--line, rgba(31, 23, 24, 0.1));
+}
+
+thead th {
+  background: var(--maroon-blush, #fde8e6);
+  color: var(--maroon-dark, #6e1428);
+  font-family: "Manrope", sans-serif;
+  font-weight: 600;
+  font-size: 8.5pt;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  border-bottom: 2px solid var(--maroon-mid, #922038);
+}
+
+/* ============================================================
+ * Block quotes — abstract-style pull quote
+ * ============================================================ */
+
+blockquote {
+  font-size: 10pt;
+  line-height: 1.45;
+  color: var(--ink-soft, #2a2122);
+  margin: 0.8em 0;
+  padding: 0.5em 0.8em;
+  background: var(--maroon-blush, #fde8e6);
+  border-left: 3px solid var(--maroon-mid, #922038);
+}
+
+blockquote p:last-child { margin-bottom: 0; }
+
+/* ============================================================
+ * Code
+ * ============================================================ */
+
+code, kbd, samp {
+  font-family: "JetBrains Mono", "SF Mono", Menlo, monospace;
+  font-size: 88%;
+  background: rgba(146, 32, 56, 0.06);
+  padding: 0 0.25em;
+  border-radius: 2px;
+}
+
+pre {
+  font-family: "JetBrains Mono", "SF Mono", Menlo, monospace;
+  font-size: 8.5pt;
+  line-height: 1.4;
+  background: var(--bg-warm, #f3ece5);
+  padding: 0.6em 0.8em;
+  border-left: 3px solid var(--maroon-mid, #922038);
+  overflow-wrap: anywhere;
+  break-inside: avoid;
+  column-span: all;
+}
+
+pre code {
+  background: transparent;
+  padding: 0;
+}
+
+/* ============================================================
+ * References / footnotes — pandoc emits these as <section
+ * id="refs"> at the document end. Keep them in single column at the
+ * end so the numbered list reads sequentially.
+ * ============================================================ */
+
+section#refs,
+.references,
+.csl-bib-body {
+  column-span: all;
+  font-size: 8.5pt;
+  line-height: 1.4;
+  margin-top: 1.5em;
+}
+
+section#refs p,
+.csl-entry {
+  margin-bottom: 0.5em;
+  padding-left: 1.5em;
+  text-indent: -1.5em;
+}
+
+/* Pandoc's footnote markers */
+a.footnote-ref,
+a.footnote-back {
+  font-size: 7.5pt;
+  vertical-align: super;
+  color: var(--maroon-mid, #922038);
+}
+
+/* ============================================================
+ * Local overrides — paste any one-off tweaks here so the
+ * imported design tokens stay clean. Empty by default.
+ * ============================================================ */
+
+/* e.g.
+ *   h1.title { font-size: 32pt; }  // bump display title
+ *   body { column-gap: 0.5in; }    // wider gutter
+ */

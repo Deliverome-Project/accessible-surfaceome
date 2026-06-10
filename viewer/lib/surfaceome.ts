@@ -55,6 +55,7 @@ function readBuildCache<T>(file: string): T | null {
   }
 }
 import { pickDeepDiveFilters } from "./deep-dive-fields";
+import { renumberEvidenceIds } from "./evidenceRenumber";
 import type {
   BenchmarkMatrix,
   BenchmarkRow,
@@ -994,12 +995,16 @@ export async function loadSurfaceomeRecord(
   if (base === "local" || !base) {
     return null;
   }
-  const record = await _fetchRecordFromWorker(symbol, base);
+  let record = await _fetchRecordFromWorker(symbol, base);
   if (record && !record.triage_reasoning?.trim()) {
     const reasoning = await _fetchTriageReasoningFromWorker(symbol, base);
-    if (reasoning) return { ...record, triage_reasoning: reasoning };
+    if (reasoning) record = { ...record, triage_reasoning: reasoning };
   }
-  return record;
+  // Renumber the `aN_evi_NN` ids into a single per-record `evi_N`
+  // sequence so chip labels are unambiguous across the merged ledger.
+  // See `renumberEvidenceIds` docstring — collisions are real (13/14
+  // sample records had them), so this is on by default rather than gated.
+  return record ? renumberEvidenceIds(record) : null;
 }
 
 /**

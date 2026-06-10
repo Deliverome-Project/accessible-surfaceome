@@ -13,6 +13,19 @@
   margin: 0;
 }
 
+/* Per-source row counts (e.g. "12 surface · 8 bulk · 3 other"), shown
+   between the subhead label and the InfoTip glyph. Slightly demoted
+   relative to the subhead so it reads as supporting metadata rather
+   than primary copy. */
+.sourceRollup {
+  margin-left: 0.5rem;
+  color: var(--ink-faint, var(--muted));
+  font-weight: var(--fw-regular, 400);
+  font-size: 0.85em;
+  letter-spacing: 0;
+  text-transform: none;
+}
+
 .empty {
   margin: 0;
   color: var(--muted);

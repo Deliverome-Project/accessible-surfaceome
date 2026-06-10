@@ -32,6 +32,17 @@ dependencies = [
 modal = [
     "modal>=0.66",
 ]
+# Paper build chain — `bash paper/build.sh <docx>` (or directly
+# `uv run python paper/build.py <docx>`) renders a manuscript .docx
+# into a Deliverome-branded PDF + JATS XML. Both deps are uv-native:
+#   pypandoc-binary bundles the pandoc binary inside the wheel so
+#     there's no separate `brew install pandoc` step.
+#   weasyprint is pure-Python (with CoreText / Pango on the system).
+# Install:  uv sync --extra paper
+paper = [
+    "pypandoc-binary>=1.13",
+    "weasyprint>=60.0",
+]
 
 [project.scripts]
 accessible-surfaceome = "accessible_surfaceome.cli:main"

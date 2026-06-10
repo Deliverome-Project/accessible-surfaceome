@@ -4,7 +4,12 @@ import type {
   SurfaceomeRecord,
 } from "../../../lib/surfaceome-types";
 import { prettyEnum } from "../../../lib/surfaceome";
-import { EvidenceChip } from "../EvidenceChip/EvidenceChip";
+import {
+  scrubAgentJargon,
+  scrubEvidenceTokens,
+  stripInlineHtml,
+} from "../../../lib/textScrub";
+import { EvidenceChip, defaultEvidenceLabel } from "../EvidenceChip/EvidenceChip";
 import { SectionCard } from "../SectionCard/SectionCard";
 import { StatusPill } from "../StatusPill/StatusPill";
 import styles from "./EvidenceLedgerCard.module.css";
@@ -147,7 +152,7 @@ export function EvidenceLedgerCard({ rec, n }: Props) {
                      *  chip strips open. */}
                     <EvidenceChip
                       evidenceId={e.evidence_id}
-                      title={`Open evidence ${e.evidence_id} — ${e.claim.slice(0, 80)}…`}
+                      title={`Open evidence ${defaultEvidenceLabel(e.evidence_id)} — ${e.claim.slice(0, 80)}…`}
                     />
                     <StatusPill tone={tierTone(e.evidence_tier)} size="sm">
                       {prettyEnum(e.evidence_tier)}
@@ -165,16 +170,26 @@ export function EvidenceLedgerCard({ rec, n }: Props) {
                             {i > 0 ? ", " : null}
                             <EvidenceChip
                               evidenceId={d.evidence_id}
-                              title={`Open ${d.evidence_id} — ${d.claim.slice(0, 80)}…`}
+                              title={`Open ${defaultEvidenceLabel(d.evidence_id)} — ${d.claim.slice(0, 80)}…`}
                             />
                           </span>
                         ))}
                       </span>
                     ) : null}
                   </div>
-                  <p className={styles.claim}>{e.claim}</p>
+                  {/* Same scrub composer the drawer uses — strip
+                   *  internal a1/a2 prose jargon + `aN_evi_NN` annotation
+                   *  tokens + JATS-extracted `<i>` / `<b>` tags so the
+                   *  ledger preview reads clean too. */}
+                  <p className={styles.claim}>
+                    {stripInlineHtml(scrubEvidenceTokens(scrubAgentJargon(e.claim)))}
+                  </p>
                   {firstSpan ? (
-                    <p className={styles.span}>&ldquo;{firstSpan}&rdquo;</p>
+                    <p className={styles.span}>
+                      &ldquo;
+                      {stripInlineHtml(scrubEvidenceTokens(firstSpan))}
+                      &rdquo;
+                    </p>
                   ) : null}
                   {link ? (
                     <a
