@@ -31,10 +31,13 @@
  *     Playfair Display title doesn't get swallowed by saturation.
  */
 :root {
-  /* Both lightened ~20% over the prior values per review — the
-   * pale-warm tone is meant to register as warmth, not saturation. */
-  --paper-beige: #fcfaf4;
+  /* `--paper-beige` and `--title-beige` are now the SAME value —
+   * the title banner and the figure-caption cards share one
+   * unified cream. Kept as two named tokens (rather than one) so
+   * the title and figure surfaces can diverge again later without
+   * a rename across selectors. */
   --title-beige: #fefdfa;
+  --paper-beige: var(--title-beige);
 }
 
 /* Web fonts — same families as the live viewer (Manrope + Playfair
