@@ -1,0 +1,46 @@
+/* "Reset sort" chip — top-right above any sortable table. Hidden in
+   place (visibility:hidden) so toggling it doesn't shift the table
+   vertically; aria-hidden mirrors visibility so screen readers don't
+   announce the inert button. */
+.row {
+  display: flex;
+  justify-content: flex-end;
+  margin: 0 0 0.35rem;
+  min-height: 1.4rem;
+}
+
+.row[data-visible="false"] .btn {
+  visibility: hidden;
+  pointer-events: none;
+}
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  background: none;
+  border: 1px solid var(--ink-faint, #cfc5b5);
+  border-radius: 999px;
+  padding: 0.1rem 0.55rem;
+  font: inherit;
+  font-size: 0.75rem;
+  color: var(--ink-mid, #6f6353);
+  cursor: pointer;
+  transition:
+    color var(--dur-fast) var(--ease-out),
+    border-color var(--dur-fast) var(--ease-out),
+    background-color var(--dur-fast) var(--ease-out);
+}
+
+.btn:hover,
+.btn:focus-visible {
+  color: var(--ink);
+  border-color: var(--accent);
+  background: var(--accent-tint, rgba(160, 56, 56, 0.06));
+  outline: none;
+}
+
+.glyph {
+  font-size: 0.85em;
+  line-height: 1;
+}

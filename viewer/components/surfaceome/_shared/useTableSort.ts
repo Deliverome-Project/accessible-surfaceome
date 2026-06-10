@@ -30,6 +30,12 @@ export interface UseTableSort<K extends string> {
   sortKey: K | null;
   sortDir: SortDir;
   onSort: (key: K) => void;
+  /** Drop any active column sort and restore the default agent-emitted
+   *  order. The third-click cycle on a header does the same thing, but
+   *  that path requires the reader to remember which column they last
+   *  clicked — this is the discoverable affordance, surfaced as a
+   *  ``Reset sort`` chip above the table when ``sortKey !== null``. */
+  reset: () => void;
   ariaSort: (key: K) => "ascending" | "descending" | "none";
   sortRows: <R>(
     rows: readonly R[],
@@ -67,6 +73,11 @@ export function useTableSort<K extends string>(): UseTableSort<K> {
     [sortKey, sortDir],
   );
 
+  const reset = useCallback(() => {
+    setSortKey(null);
+    setSortDir("asc");
+  }, []);
+
   const ariaSort = useCallback(
     (key: K): "ascending" | "descending" | "none" => {
       if (sortKey !== key) return "none";
@@ -96,8 +107,8 @@ export function useTableSort<K extends string>(): UseTableSort<K> {
   );
 
   return useMemo<UseTableSort<K>>(
-    () => ({ sortKey, sortDir, onSort, ariaSort, sortRows }),
-    [sortKey, sortDir, onSort, ariaSort, sortRows],
+    () => ({ sortKey, sortDir, onSort, reset, ariaSort, sortRows }),
+    [sortKey, sortDir, onSort, reset, ariaSort, sortRows],
   );
 }
 
