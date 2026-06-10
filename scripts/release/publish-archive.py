@@ -195,6 +195,37 @@ EXTRA_FILES: list[str | dict[str, Any]] = [
         "deposit_readme": True,
         "filename": "README.md",
     },
+    # ── Manuscript bundle ─────────────────────────────────────────────
+    # OFF BY DEFAULT. Uncomment + edit when you're ready to deposit the
+    # paper alongside the data. Produces TWO files in the deposit:
+    #   (a) the pre-built PDF you point at via `pdf_path` (verbatim copy)
+    #   (b) JATS XML derived from `source` via pandoc — for PMC indexing,
+    #       reference managers, and downstream text-mining
+    #
+    # `source` must be a pandoc-readable manuscript — markdown (`.md`),
+    # LaTeX (`.tex`), or Word (`.docx`). Pandoc detects format by
+    # extension. JATS conversion needs nothing beyond `pandoc` on PATH;
+    # PDF rendering would need a LaTeX engine and gets skipped — the
+    # PDF in the deposit is whatever you've already built (`pdf_path`),
+    # so the deposit matches what readers actually citation-link.
+    #
+    # `extra_pandoc_args` lets you add `--citeproc --bibliography=...`
+    # for citation processing, `--metadata title="…"` overrides, etc.
+    # The script always passes `--standalone --to jats`.
+    #
+    # Tooling install:
+    #   macOS:   brew install pandoc
+    #   Linux:   apt install pandoc   (or download from pandoc.org)
+    # {
+    #     "manuscript": True,
+    #     "source": "paper/manuscript.md",
+    #     "pdf_path": "paper/build/manuscript.pdf",
+    #     "jats_filename": "manuscript.xml",
+    #     "extra_pandoc_args": [
+    #         "--citeproc",
+    #         "--bibliography=paper/refs.bib",
+    #     ],
+    # },
 ]
 
 # Seed metadata for the Zenodo deposit. The Zenodo UI lets you edit
@@ -334,10 +365,17 @@ def poll_swh_until_done(origin: str, *, max_wait_s: int = 1200) -> str | None:
 
 def _resolve_extra_file(
     entry: str | dict[str, Any], *, dry_run: bool,
-) -> tuple[Path, bool] | None:
-    """Resolve one EXTRA_FILES entry to a (local_path, cleanup) pair.
+) -> list[tuple[Path, bool]] | None:
+    """Resolve one EXTRA_FILES entry to a list of (local_path, cleanup) pairs.
 
-    Four input shapes:
+    Most entry shapes resolve to exactly one file; the list-returning
+    contract is so the manuscript bundle can yield BOTH a PDF and a
+    JATS XML from a single config entry without callers needing to
+    know that. ``cleanup=True`` tells the upload loop to delete the
+    local file after the upload succeeds (used for tempfiles + scratch
+    builds); ``False`` is for in-repo files we mustn't touch.
+
+    Five input shapes:
 
       - bare HTTP(S) URL: fetched to a tempfile, returned with
         cleanup=True so the caller deletes it after upload. Destination
@@ -360,6 +398,14 @@ def _resolve_extra_file(
         resolver that generates an in-deposit README at deposit time
         documenting every file's columns + reproduction recipe.
 
+      - {"manuscript": True, "source": "paper/manuscript.md",
+        "pdf_path": "paper/build/manuscript.pdf",
+        "jats_filename": "manuscript.xml", ...}: pandoc-converts
+        ``source`` (a markdown / latex / docx manuscript) to JATS
+        XML and yields it alongside a verbatim copy of the pre-built
+        PDF at ``pdf_path``. See ``_build_manuscript_bundle`` for the
+        full contract.
+
       - other string: treated as a path relative to REPO_ROOT. If the
         local file doesn't exist, warns and returns None.
 
@@ -367,19 +413,21 @@ def _resolve_extra_file(
     """
     # Bare URL
     if isinstance(entry, str) and entry.startswith(("http://", "https://")):
-        return _download_to_tempfile(entry, filename=None, dry_run=dry_run), True
+        return [(_download_to_tempfile(entry, filename=None, dry_run=dry_run), True)]
 
     # Dict forms
     if isinstance(entry, dict):
         if entry.get("deep_dives_bundle"):
-            return _build_deep_dives_bundle(entry, dry_run=dry_run), True
+            return [(_build_deep_dives_bundle(entry, dry_run=dry_run), True)]
         if entry.get("deposit_readme"):
-            return _build_deposit_readme(entry, dry_run=dry_run), True
+            return [(_build_deposit_readme(entry, dry_run=dry_run), True)]
+        if entry.get("manuscript"):
+            return _build_manuscript_bundle(entry, dry_run=dry_run)
         url = entry.get("url")
         filename = entry.get("filename")
         if not url:
             raise ValueError("dict entry missing 'url'")
-        return _download_to_tempfile(url, filename=filename, dry_run=dry_run), True
+        return [(_download_to_tempfile(url, filename=filename, dry_run=dry_run), True)]
 
     # Local path
     if isinstance(entry, str):
@@ -387,7 +435,7 @@ def _resolve_extra_file(
         if not path.exists():
             warn(f"  - missing local file (will skip): {entry}")
             return None
-        return path, False
+        return [(path, False)]
 
     raise ValueError(f"unsupported entry type: {type(entry).__name__}")
 
@@ -642,6 +690,134 @@ def _build_deep_dives_bundle(
     size_mb = out_path.stat().st_size / 1024 / 1024
     ok(f"built {out_path.name} ({size_mb:.1f} MB, {len(symbols)} records)")
     return out_path
+
+
+def _build_manuscript_bundle(
+    entry: dict[str, Any], *, dry_run: bool,
+) -> list[tuple[Path, bool]]:
+    """Produce a (PDF, JATS XML) pair for the deposit from a manuscript
+    source.
+
+    Two outputs land in the deposit:
+
+      * **PDF**: verbatim copy of ``entry["pdf_path"]`` (relative to
+        ``REPO_ROOT``). The script never re-renders the PDF — whatever
+        you've built upstream (LaTeX in Overleaf, Word export, Pandoc
+        + a LaTeX engine, Typst, etc.) is what reviewers will cite, so
+        the deposit should match it byte-for-byte. Cleanup=False on this
+        entry — the file lives in your repo, we don't touch it.
+
+      * **JATS XML**: pandoc-converted from ``entry["source"]`` (any
+        pandoc-readable manuscript: ``.md`` / ``.tex`` / ``.docx``).
+        Written under ``_extra-download/`` and uploaded with
+        cleanup=True so it doesn't litter the working tree.
+
+    Pandoc invocation is:
+
+        pandoc <source> --standalone --to jats -o <jats_filename>
+               <...entry["extra_pandoc_args"]>
+
+    ``--standalone`` is required for pandoc's JATS writer (without it
+    pandoc emits a fragment, not a full ``<article>``). The caller can
+    add ``--citeproc --bibliography=refs.bib --csl=…`` etc. via
+    ``extra_pandoc_args`` for citation processing.
+
+    Why we don't auto-render the PDF too: a real paper needs a LaTeX
+    engine + class files + bibliography styles + (often) journal-
+    specific templates. Pandoc CAN produce PDFs, but the output rarely
+    matches what reviewers actually see. We make the JATS conversion
+    fully automatic (it's plain XML, no engine needed) and require the
+    PDF to be supplied as-is.
+
+    Validation note: the resulting JATS XML is ``--standalone``
+    pandoc output, which is well-formed but is NOT guaranteed to pass
+    the PMC JATS DTD's tighter constraints (e.g. ``article-meta``
+    structural requirements). Run it through JATS4R's validator
+    (https://www.jats4r.org/) or ``xmllint --dtdvalid …`` if you need
+    PMC-grade validation; for deposit-with-the-data purposes the
+    standalone XML is usually sufficient.
+
+    Pre-conditions checked:
+      - ``pandoc`` is installed and on ``PATH``. We shell out to it as
+        a binary — no Python ``pandoc-python`` dep (that wrapper is
+        thinly maintained and not worth the supply-chain).
+      - ``source`` exists at the declared path.
+      - ``pdf_path`` exists (when set).
+    """
+    source = REPO_ROOT / entry["source"]
+    jats_filename = entry.get("jats_filename") or (source.stem + ".xml")
+    pdf_path_str = entry.get("pdf_path")
+    extra_args = list(entry.get("extra_pandoc_args") or [])
+
+    outputs: list[tuple[Path, bool]] = []
+
+    # PDF: verbatim copy of the user's pre-built file. Cleanup=False,
+    # since the file lives in the repo.
+    if pdf_path_str:
+        pdf_path = REPO_ROOT / pdf_path_str
+        if not pdf_path.is_file():
+            raise FileNotFoundError(
+                f"manuscript bundle: pdf_path={pdf_path_str} not found "
+                f"(resolved to {pdf_path})"
+            )
+        outputs.append((pdf_path, False))
+        ok(f"manuscript PDF: {pdf_path.relative_to(REPO_ROOT)} (verbatim)")
+
+    # JATS XML: pandoc convert. Skipped if the entry opts out by
+    # setting jats_filename to None / empty / False explicitly.
+    if jats_filename:
+        if not source.is_file():
+            raise FileNotFoundError(
+                f"manuscript bundle: source={entry['source']} not found "
+                f"(resolved to {source})"
+            )
+        tmp_root = REPO_ROOT / "_extra-download"
+        out_path = tmp_root / jats_filename
+
+        if dry_run:
+            ok(
+                f"[dry-run] would pandoc-convert {source.relative_to(REPO_ROOT)} "
+                f"→ {jats_filename} (JATS, with args: {extra_args})"
+            )
+            outputs.append((out_path, True))
+        else:
+            # Refuse cleanly if pandoc isn't on PATH — better than the
+            # bare FileNotFoundError on subprocess invocation, since
+            # the failure mode tells the operator exactly what to fix.
+            from shutil import which
+            if which("pandoc") is None:
+                raise RuntimeError(
+                    "manuscript bundle needs `pandoc` on PATH but it "
+                    "isn't installed. Install with `brew install "
+                    "pandoc` (macOS) or `apt install pandoc` (Linux), "
+                    "or remove the manuscript entry from EXTRA_FILES."
+                )
+            tmp_root.mkdir(exist_ok=True)
+            cmd = [
+                "pandoc",
+                str(source),
+                "--standalone",
+                "--to", "jats",
+                "-o", str(out_path),
+                *extra_args,
+            ]
+            try:
+                subprocess.run(cmd, check=True, cwd=REPO_ROOT)
+            except subprocess.CalledProcessError as exc:
+                raise RuntimeError(
+                    f"pandoc JATS conversion failed (exit {exc.returncode}). "
+                    f"Command: {' '.join(cmd)}"
+                ) from exc
+            size_kb = out_path.stat().st_size / 1024
+            ok(f"built {out_path.name} ({size_kb:.1f} KB) via pandoc")
+            outputs.append((out_path, True))
+
+    if not outputs:
+        raise ValueError(
+            "manuscript bundle entry produced no outputs — set "
+            "`pdf_path` and/or `jats_filename`"
+        )
+    return outputs
 
 
 def _download_to_tempfile(
@@ -969,20 +1145,23 @@ def phase_zenodo(*, dry_run: bool, token: str | None, include_repo_tarball: bool
         except Exception as exc:
             warn(f"skipping entry {entry!r}: {exc}")
             continue
-        if resolved is None:
+        if not resolved:
             continue  # already warned (missing local file)
-        local_path, cleanup = resolved
-        try:
-            zenodo_upload_file(
-                bucket, token or "", local_path,
-                dry_run=dry_run, destination_name=local_path.name,
-            )
-        finally:
-            if cleanup:
-                try:
-                    local_path.unlink()
-                except FileNotFoundError:
-                    pass
+        # `resolved` is a list so one entry (e.g. the manuscript bundle)
+        # can yield multiple files — PDF + JATS XML — from a single
+        # config block.
+        for local_path, cleanup in resolved:
+            try:
+                zenodo_upload_file(
+                    bucket, token or "", local_path,
+                    dry_run=dry_run, destination_name=local_path.name,
+                )
+            finally:
+                if cleanup:
+                    try:
+                        local_path.unlink()
+                    except FileNotFoundError:
+                        pass
 
     # Cleanup local tarball (if we created one)
     if tarball is not None and not dry_run and tarball.exists():
