@@ -111,6 +111,7 @@ from weasyprint import CSS, HTML  # noqa: E402
 REPO_ROOT = Path(__file__).resolve().parents[1]
 CSS_PATH = REPO_ROOT / "paper" / "deliverome-print.css"
 REFS_DOIS_FILTER = REPO_ROOT / "paper" / "filters" / "refs_dois.lua"
+FIGURES_FILTER = REPO_ROOT / "paper" / "filters" / "figures.lua"
 
 
 def _stem_for(src: Path) -> str:
@@ -173,6 +174,11 @@ def build(src: Path) -> dict[str, Path]:
             # promotes the DOI URL inside to its own <a class="doi">
             # link the stylesheet paints maroon.
             f"--lua-filter={REFS_DOIS_FILTER}",
+            # Two figure-related transformations: split <h5><img>caption</h5>
+            # (and any heading-level variant) into <p><img></p> + <hN>caption</hN>,
+            # and linkify "Figure N" / "Appendix Figure N" body-text
+            # references so they jump to the matching caption.
+            f"--lua-filter={FIGURES_FILTER}",
         ],
     )
 

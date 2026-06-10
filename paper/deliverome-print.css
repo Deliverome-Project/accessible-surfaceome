@@ -31,8 +31,10 @@
  *     Playfair Display title doesn't get swallowed by saturation.
  */
 :root {
-  --paper-beige: #faf6ef;
-  --title-beige: #fdfbf6;
+  /* Both lightened ~20% over the prior values per review — the
+   * pale-warm tone is meant to register as warmth, not saturation. */
+  --paper-beige: #fcfaf4;
+  --title-beige: #fefdfa;
 }
 
 /* Web fonts — same families as the live viewer (Manrope + Playfair
@@ -66,12 +68,8 @@
   }
 }
 
-/* First page strips the page-number from the bottom-right so the
- * title-page reads cleanly. Optional — comment out if you want page 1
- * numbered too. */
-@page :first {
-  @bottom-center { content: ""; }
-}
+/* Page 1 also carries the page number (01) per review. The earlier
+ * "strip footer on first page" override is intentionally gone. */
 
 /* ============================================================
  * Body — two-column layout with serif display headings
@@ -123,17 +121,20 @@ body > h1:first-of-type {
    * follow get the same beige wash and butt up directly against
    * this block to form one continuous title band. */
   margin: -0.85in -0.75in 0 -0.75in;
-  /* Padding absorbs the negative margins (top 0.85in + side 0.75in)
-   * and adds a comfortable internal gutter so the title doesn't
-   * crash into the page edge. */
-  padding: 1.05in 0.95in 0.3em 0.95in;
+  /* Padding absorbs the page-margin space + adds a tighter top
+   * gutter (1.05in → 0.5in extra over the bleed) so the title
+   * sits closer to the top of the page per review. */
+  padding: 0.95in 0.95in 0.3em 0.95in;
   break-after: avoid-page;
   font-family: "Playfair Display", Georgia, serif;
   font-weight: 600;
   font-size: 30pt;
   line-height: 1.1;
   letter-spacing: -0.015em;
-  color: var(--maroon-deepest, #3e0a18);
+  /* Title shares the body ink color (var(--ink, #1f1718)) — the
+   * earlier maroon-deepest read too saturated against the lighter
+   * title beige and the rest-of-page body. */
+  color: var(--ink, #1f1718);
 }
 
 /* Author / affiliation / corresponding-author paragraphs that sit
