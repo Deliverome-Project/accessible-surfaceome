@@ -94,39 +94,40 @@ body {
  * cream wash that echoes Pioneer's title band.
  * ============================================================ */
 
-#title-block-header {
+/* Pandoc's --section-divs flag wraps each .docx heading level in a
+ * <section class="level{N}"> with the heading at <h{N}>. So for a
+ * typical article docx:
+ *   - <h1> is the paper title (appears once, in the outermost
+ *     <section class="level1">)
+ *   - <h2> is each section heading (Abstract / Introduction / …)
+ *   - <h3> is each subsection
+ *
+ * Title block: target the FIRST <h1> in the body (the title) so it
+ * paints as a full-width cream band with logo on the right, Playfair
+ * Display in maroon-deepest. Subsequent h1's (none in practice) would
+ * also pick up this treatment. */
+section.level1 > h1,
+body > h1:first-of-type {
   column-span: all;
   background: var(--bg-warm, #f3ece5);
-  padding: 0.6em 0.8em 0.8em 0.8em;
+  padding: 0.7em 2in 0.9em 0.8em;
   margin: 0 0 0.5in 0;
   border-bottom: 1px solid var(--maroon-pale, #f0a098);
   break-after: avoid-page;
-  /* Logo anchors top-right of the cream title band, mirroring
-   * Pioneer's "Pioneer Labs" mark in the same position. The
-   * --deliverome-logo-url custom property is set from the cover
-   * stamp at the bottom of this file so the URL can be swapped
-   * (different orientation, different file format) without
-   * editing the rule. */
-  position: relative;
-  padding-right: 1.8in;
-  background-image: var(--deliverome-logo-url);
-  background-repeat: no-repeat;
-  background-position: top 0.6em right 0.8em;
-  background-size: 1.1in 1.1in;
-}
-
-h1.title {
   font-family: "Playfair Display", Georgia, serif;
   font-weight: 600;
-  font-size: 28pt;
+  font-size: 30pt;
   line-height: 1.1;
   letter-spacing: -0.015em;
   color: var(--maroon-deepest, #3e0a18);
-  margin: 0 0 0.4em 0;
-  /* Playfair Display is used ONLY for the title — every other
-   * heading (section labels h1, subsection h2/h3) is Manrope. The
-   * serif display sets the title apart as the cover line; sans
-   * everywhere else keeps the body scan visually consistent. */
+  /* Brand mark anchored top-right of the cream title band. The
+   * SVG path resolves via the --deliverome-logo-url custom
+   * property at the bottom of this file. Size matches the title's
+   * line-height stack so it doesn't dwarf the words. */
+  background-image: var(--deliverome-logo-url);
+  background-repeat: no-repeat;
+  background-position: top 0.6em right 0.8em;
+  background-size: 1.4in 1.4in;
 }
 
 #title-block-header .author,
@@ -158,7 +159,11 @@ h1, h2, h3, h4, h5, h6 {
   break-inside: avoid-page;
 }
 
-h1 {
+/* SECTION headings (Abstract / Introduction / Results / Methods /
+ * Discussion / …) — pandoc emits these at <h2> from .docx "Heading 1"
+ * Word styles. Monospace-feel uppercase caps, brand maroon. Reads as
+ * confident wayfinding without shouting like all-caps serif would. */
+h2 {
   font-family: "Manrope", sans-serif;
   font-weight: 700;
   font-size: 10pt;
@@ -166,15 +171,12 @@ h1 {
   letter-spacing: 0.1em;
   color: var(--maroon-dark, #6e1428);
   margin: 1.4em 0 0.5em 0;
-  /* Section headings stay inside their column (no column-span) so
-   * a "Results" heading sits at the top of column 2 if that's where
-   * the flow lands it. Add `column-span: all;` if you'd rather each
-   * h1 split the page horizontally. */
 }
 
-h1:first-of-type { margin-top: 0; }
-
-h2 {
+/* SUBSECTION headings — Manrope (NOT serif). User feedback: serif
+ * is reserved for the title only; everything below stays in the body
+ * font for scan consistency. */
+h3 {
   font-family: "Manrope", sans-serif;
   font-weight: 700;
   font-size: 12pt;
@@ -184,14 +186,14 @@ h2 {
   letter-spacing: -0.005em;
 }
 
-h3 {
+/* SUB-SUB-SECTION (h4) — lighter weight + slight tracking so it
+ * reads as a label-like step rather than competing with h3. */
+h4 {
   font-family: "Manrope", sans-serif;
   font-weight: 600;
   font-size: 10.5pt;
   color: var(--maroon-dark, #6e1428);
   margin: 0.9em 0 0.2em 0;
-  /* Slight tracking on h3 so it reads as a label-like sub-step
-   * rather than competing with h2's weight. */
   letter-spacing: 0.005em;
 }
 
@@ -243,10 +245,56 @@ ul li::marker {
  * pattern below mirrors that.
  * ============================================================ */
 
-/* Every figure spans the full two-column width — no inline-floating
- * variant. The image inside fills the available width too (100% of
- * the figure's content box) so a small docx-embedded raster doesn't
- * float weakly in the middle of a wide card. */
+/* Figures: pandoc's docx reader emits `<p><img></p>` (no <figure>
+ * wrapper) with Word's absolute pixel/inch dimensions baked in as
+ * inline `style="width:N.NNNNNin;..."`. To make every figure span
+ * the full two-column width AND override Word's inline sizing, we
+ * style the paragraph as the figure card and use `!important` on
+ * the img dimensions. (`!important` is the right tool here — the
+ * inline style we're overriding is auto-generated, not author
+ * intent.) */
+p:has(> img) {
+  column-span: all;
+  break-inside: avoid;
+  margin: 1em 0 0.3em;
+  padding: 0.6em 0.8em 0.4em;
+  background: var(--bg-warm, #f3ece5);
+  border-left: 4px solid var(--maroon-mid, #922038);
+  border-radius: 2px;
+}
+
+p > img,
+img {
+  width: 100% !important;
+  height: auto !important;
+  max-width: 100% !important;
+  display: block;
+  margin: 0 auto 0.2em;
+}
+
+/* The paragraph immediately following a figure-paragraph is the
+ * figure caption ("Figure N. <caption text>"). Continue the cream
+ * card visually + style as small Manrope so the reader sees the
+ * caption belongs to the figure above. Brittle (matches by sibling
+ * position, not content), but in practice .docx authors always put
+ * the caption directly under the image. */
+p:has(> img) + p {
+  column-span: all;
+  break-inside: avoid;
+  margin: -0.3em 0 1.2em 0;
+  padding: 0.2em 0.8em 0.5em;
+  background: var(--bg-warm, #f3ece5);
+  border-left: 4px solid var(--maroon-mid, #922038);
+  border-radius: 0 0 2px 2px;
+  font-family: "Manrope", sans-serif;
+  font-size: 8.5pt;
+  line-height: 1.4;
+  color: var(--ink-soft, #2a2122);
+  text-align: left;
+}
+
+/* Native <figure> wrapper — kept for any future pandoc filter that
+ * emits proper <figure>/<figcaption>, or for hand-authored HTML. */
 figure {
   column-span: all;
   break-inside: avoid;
@@ -257,37 +305,12 @@ figure {
   border-radius: 2px;
 }
 
-figure img {
-  width: 100%;
-  height: auto;
-  display: block;
-  margin: 0 auto 0.4em;
-}
-
 figcaption {
   font-family: "Manrope", sans-serif;
   font-size: 8.5pt;
   line-height: 1.4;
   color: var(--ink-soft, #2a2122);
   margin-top: 0.4em;
-}
-
-/* Pandoc emits figure captions from .docx "Figure N: <caption>"
- * paragraphs. Style the "Figure N:" prefix as a monospaced caps
- * label using ::first-line / ::before tricks if you want — by
- * default we leave the leading text in the same body font and rely
- * on the leading "Figure N: " text reading as a label naturally. */
-
-/* Standalone <img> not wrapped in <figure> — sometimes pandoc emits
- * these from a .docx paragraph that has just an image. Treat them
- * the same way (full width) so layout is consistent. */
-main img,
-body > img,
-section img:not(figure img) {
-  width: 100%;
-  height: auto;
-  display: block;
-  margin: 0.5em 0;
 }
 
 /* ============================================================
@@ -399,17 +422,18 @@ a.footnote-back {
 /* ============================================================
  * Brand logo — anchored top-right of the title block.
  *
- * `paper/build.py` resolves the URL relative to the CSS file's
- * directory, so the path is `assets/deliverome-logo.png`
- * (relative to paper/) — WeasyPrint reads it directly off disk.
+ * Points at the existing brand mark in viewer/public/assets/,
+ * the same SVG the live viewer's Shell header uses. Keeps the
+ * paper and the website rooted in one logo file — when the brand
+ * mark evolves, both surfaces pick it up on rebuild.
  *
- * Swap the URL here when the logo rev's (different orientation,
- * transparent vs. solid background, etc.) without touching the
- * `#title-block-header` rule above.
+ * Path is relative to this CSS file (paper/deliverome-print.css).
+ * Swap the URL here for an orientation variant or alt format
+ * without touching the title-block rule above.
  * ============================================================ */
 
 :root {
-  --deliverome-logo-url: url("assets/deliverome-logo.png");
+  --deliverome-logo-url: url("../viewer/public/assets/internalization_logo.svg");
 }
 
 /* ============================================================
