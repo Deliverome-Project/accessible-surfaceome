@@ -1,4 +1,8 @@
 import type { SurfaceomeRecord } from "../../../lib/surfaceome-types";
+import {
+  classifyExpressionSource,
+  type ExpressionSource,
+} from "../../../lib/expression";
 import { FeatureRationales } from "../FeatureChips/FeatureChips";
 import { InfoTip } from "../../InfoTip/InfoTip";
 import { SectionCard } from "../SectionCard/SectionCard";
@@ -46,6 +50,23 @@ export function ExpressionCard({ rec, n }: Props) {
       (DISEASE_CONTEXT_RANK[a.disease_context] ?? 99) -
       (DISEASE_CONTEXT_RANK[b.disease_context] ?? 99),
   );
+  // Source-classify + drop RNA-only rows. Each remaining row gets a
+  // ``source`` field driving the new Source column. The
+  // ``expression_builder`` prompt already prescribes excluding
+  // RNA-only sources upstream, but the model doesn't always enforce
+  // it — render-time filter closes the gap until the prompt-level
+  // enforcement lands.
+  const evidenceById = new Map((rec.evidence ?? []).map((e) => [e.evidence_id, e]));
+  const classified: (typeof expression[number] & { source: ExpressionSource })[] = [];
+  let rnaOnlyDropped = 0;
+  for (const row of expression) {
+    const source = classifyExpressionSource(row, evidenceById);
+    if (source === null) {
+      rnaOnlyDropped += 1;
+      continue;
+    }
+    classified.push({ ...row, source });
+  }
   return (
     <SectionCard
       n={n}
@@ -63,19 +84,51 @@ export function ExpressionCard({ rec, n }: Props) {
             extracted from primary papers — <strong>not</strong> an
             exhaustive expression atlas. Coverage is bounded by the
             papers in the retrieved corpus; absence of a tissue here
-            means &quot;no protein-level statement was extracted,&quot;
-            not &quot;not expressed.&quot; Protein-level methods only
-            (IHC / flow / surface-MS); RNA-only sources (scRNA, bulk
-            RNA-seq, microarray) are deliberately excluded. For
-            atlas-grade tissue coverage, cross-reference Human Protein
-            Atlas / GTEx.
+            means &quot;no statement was extracted,&quot; not
+            &quot;not expressed.&quot; For atlas-grade tissue
+            coverage, cross-reference Human Protein Atlas / GTEx.
+            <br />
+            <br />
+            <strong>Source column.</strong> Each row is bucketed by
+            its strongest cited evidence_type:
+            <ul style={{ margin: "0.4rem 0 0", paddingLeft: "1.1rem" }}>
+              <li>
+                <em>surface</em> — at least one direct surface assay
+                (flow cytometry / surface biotinylation /
+                surface mass-spec).
+              </li>
+              <li>
+                <em>bulk</em> — protein-level methods that don&apos;t
+                distinguish surface from intracellular pool (IHC / IF
+                / Western blot).
+              </li>
+              <li>
+                <em>other</em> — review assertions, functional
+                assays, database annotations, etc.
+              </li>
+            </ul>
+            <strong>RNA-only rows are dropped</strong> (RNA-seq /
+            scRNA / RT-qPCR / in-situ hybridization / Northern /
+            microarray). RNA doesn&apos;t demonstrate the protein is
+            made, let alone surface-accessible.
           </InfoTip>
         </p>
-        {expression.length === 0 ? (
-          <p className={styles.empty}>No expression rows recorded.</p>
+        {classified.length === 0 ? (
+          <p className={styles.empty}>
+            {expression.length === 0
+              ? "No expression rows recorded."
+              : `No protein-level expression rows (all ${expression.length} cited rows were RNA-only).`}
+          </p>
         ) : (
-          <ExpressionTable rows={expression} />
+          <ExpressionTable rows={classified} />
         )}
+        {rnaOnlyDropped > 0 && classified.length > 0 ? (
+          <p className={styles.empty} style={{ marginTop: "0.5rem" }}>
+            {rnaOnlyDropped} RNA-only row{rnaOnlyDropped === 1 ? "" : "s"}{" "}
+            hidden — see the <em>About the expression rows</em> tip for
+            why.
+          </p>
+        ) : null}
       </div>
     </SectionCard>
   );
