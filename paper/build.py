@@ -29,7 +29,6 @@ Cairo system packages, which the WeasyPrint docs cover).
 from __future__ import annotations
 
 import argparse
-import ctypes
 import sys
 from pathlib import Path
 
