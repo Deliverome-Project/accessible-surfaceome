@@ -247,45 +247,48 @@ ul li::marker {
 
 /* Figures: pandoc's docx reader emits `<p><img></p>` (no <figure>
  * wrapper) with Word's absolute pixel/inch dimensions baked in as
- * inline `style="width:N.NNNNNin;..."`. Treatment mirrors Pioneer
- * Labs' BioBloom paper: soft beige card with a brand-maroon side
- * bar, generous internal padding around the image, caption tucks
- * underneath in the same card so reader scans "figure + caption"
- * as one unit. `!important` on the img dimensions overrides Word's
- * inline `style="width:N.NNNNNin"`. */
+ * inline `style="width:N.NNNNNin;height:N.NNNNNin"`. We honor Word's
+ * natural sizing (no width: 100% force-scale), but cap with
+ * max-width: 100% as a safety net for Word images wider than the
+ * column. The maroon side bar stays on the figure itself (a thin
+ * brand anchor) but the beige wash is REMOVED from the figure —
+ * it now appears ONLY on the caption underneath. */
 p:has(> img) {
   column-span: all;
   break-inside: avoid;
   margin: 1.2em 0 0;
-  padding: 0.8em 0.9em 0.5em 0.9em;
-  background: var(--paper-beige);
+  padding: 0.4em 0 0.3em 0.7em;
   border-left: 4px solid var(--maroon-mid, #922038);
-  border-radius: 2px 2px 0 0;
 }
 
 p > img,
 img {
-  width: 100% !important;
+  max-width: 100%;
+  /* `height: auto !important` overrides Word's inline pixel height
+   * so the aspect ratio stays correct when max-width clamps a too-
+   * wide image. Without `!important`, Word's inline `height=` wins
+   * because inline styles outrank external CSS. */
   height: auto !important;
-  max-width: 100% !important;
   display: block;
   margin: 0 auto;
 }
 
 /* The paragraph immediately following a figure-paragraph is the
- * figure caption ("Figure N. <caption text>"). Continues the beige
- * card downward (rounded top corners gone, padding flush against
- * the image above) so figure + caption read as one bound block.
- * Brittle: matches by sibling position, not by content. In
- * practice .docx authors put the caption directly under the image. */
+ * figure caption ("Figure N. <caption text>"). Beige card sits ONLY
+ * around the caption — the figure above stays clean (just the
+ * maroon side bar). Caption keeps the same side bar so the figure
+ * + caption pair reads as one connected unit visually.
+ *
+ * Brittle: matches by sibling position, not by content. In practice
+ * .docx authors put the caption directly under the image. */
 p:has(> img) + p {
   column-span: all;
   break-inside: avoid;
-  margin: 0 0 1.4em 0;
-  padding: 0.5em 0.9em 0.75em 0.9em;
+  margin: 0.4em 0 1.4em 0;
+  padding: 0.5em 0.9em 0.6em 0.9em;
   background: var(--paper-beige);
   border-left: 4px solid var(--maroon-mid, #922038);
-  border-radius: 0 0 2px 2px;
+  border-radius: 2px;
   font-family: "Manrope", sans-serif;
   font-size: 9pt;
   line-height: 1.45;
@@ -306,15 +309,15 @@ p:has(> img) + p::first-line {
 }
 
 /* Native <figure> wrapper — kept for any future pandoc filter that
- * emits proper <figure>/<figcaption>, or for hand-authored HTML. */
+ * emits proper <figure>/<figcaption>, or for hand-authored HTML.
+ * Beige wash applies ONLY to the caption (figcaption), matching the
+ * docx-image path above. */
 figure {
   column-span: all;
   break-inside: avoid;
   margin: 1.2em 0;
-  padding: 0.8em 0.9em;
-  background: var(--paper-beige);
+  padding: 0.4em 0 0.3em 0.7em;
   border-left: 4px solid var(--maroon-mid, #922038);
-  border-radius: 2px;
 }
 
 figcaption {
@@ -322,7 +325,11 @@ figcaption {
   font-size: 9pt;
   line-height: 1.45;
   color: var(--ink, #1f1718);
-  margin-top: 0.5em;
+  margin: 0.4em -0.7em 0 -0.7em;
+  padding: 0.5em 0.9em 0.6em 0.9em;
+  background: var(--paper-beige);
+  border-left: 4px solid var(--maroon-mid, #922038);
+  border-radius: 2px;
 }
 
 figcaption::first-line {
