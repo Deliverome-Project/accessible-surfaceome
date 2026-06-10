@@ -20,15 +20,19 @@
 
 @import url("../viewer/app/design-tokens.css");
 
-/* Paper-only token. Sits BELOW the design-tokens import so it
- * overrides only what we need for print. Very-pale neutral beige —
- * softer than the web's `--bg-warm` (#f3ece5), more neutral than
- * `--maroon-blush` (which read pink on review). Used as both the
- * title banner wash AND the figure-card wash so the two surfaces
- * share one warm cream — matches Pioneer Labs' BioBloom paper's
- * unified figure / title treatment. */
+/* Paper-only tokens. Sit BELOW the design-tokens import so they
+ * override only what we need for print.
+ *
+ *   --paper-beige (#faf6ef) — softer than the web's `--bg-warm`,
+ *     more neutral than `--maroon-blush`. Used as the figure-
+ *     caption card wash.
+ *   --title-beige (#fdfbf6) — even-lighter variant for the title
+ *     banner; reads as almost-white-with-warmth so the large
+ *     Playfair Display title doesn't get swallowed by saturation.
+ */
 :root {
   --paper-beige: #faf6ef;
+  --title-beige: #fdfbf6;
 }
 
 /* Web fonts — same families as the live viewer (Manrope + Playfair
@@ -110,7 +114,7 @@ body {
  */
 body > h1:first-of-type {
   column-span: all;
-  background: var(--paper-beige);
+  background: var(--title-beige);
   /* Negative margins MUST match the @page margin values above to
    * full-bleed exactly to the page edge. Update these if the
    *   @page margin is ever changed.
@@ -149,7 +153,7 @@ body > h1:first-of-type {
  * half-width. */
 body > p:has(~ h2:first-of-type) {
   column-span: all;
-  background: var(--paper-beige);
+  background: var(--title-beige);
   margin: 0 -0.75in;
   padding: 0.15em 0.95in;
   font-family: "Manrope", sans-serif;
@@ -160,12 +164,14 @@ body > p:has(~ h2:first-of-type) {
 }
 
 /* The LAST metadata paragraph (the one immediately before the
- * first h2) carries the bottom border + extra padding that
- * separates the title block from the body below. */
+ * first h2) carries the bottom rule that closes the title block.
+ * Border weight + style + color match the figure-caption side bar
+ * (4px solid maroon-mid) so the title section and the figure
+ * cards read with one shared brand accent. */
 body > p:has(+ h2:first-of-type) {
-  padding-bottom: 0.45in;
+  padding-bottom: 0.4in;
   margin-bottom: 0.45in;
-  border-bottom: 1px solid var(--maroon-pale, #f0a098);
+  border-bottom: 4px solid var(--maroon-mid, #922038);
 }
 
 #title-block-header .author,
@@ -343,26 +349,51 @@ h5::first-line {
   letter-spacing: -0.005em;
 }
 
-/* Rescue: when a .docx author accidentally applies a Heading 2
- * Word style to a figure paragraph, pandoc emits <h2><img></h2>.
- * Override the h2 styling so the image renders like a regular
- * figure paragraph (no UPPERCASE caps, no maroon caps treatment).
- * Same shape as `p:has(> img)` above so the layout is identical. */
-h2:has(> img) {
-  font-family: inherit;
-  font-weight: normal;
-  font-size: inherit;
-  line-height: inherit;
-  text-transform: none;
-  letter-spacing: normal;
-  color: inherit;
+/* (Removed: h2:has(> img) rescue rule. .docx authors fix it
+ * upstream by switching the image paragraph to Heading 5 along
+ * with the caption.) */
 
-  column-span: all;
-  break-inside: avoid;
-  margin: 1.2em 0 0;
-  padding: 0.4em 0 0.3em 0.7em;
-  border-left: 4px solid var(--maroon-mid, #922038);
+/* ============================================================
+ * References / Bibliography
+ *
+ * Pandoc emits the References section as <h2 id="references">
+ * followed by a series of <p> entries. We use the references
+ * heading's `id` selector to scope the rest. The Lua filter at
+ * `paper/filters/refs_dois.lua` walks each reference paragraph
+ * during pandoc's pass: it unwraps the outer Zotero google-docs
+ * <a> link (so the bulk of the reference text reads as plain
+ * prose, not a clickable Zotero anchor) and extracts the DOI URL
+ * into its OWN <a class="doi"> link. This stylesheet then renders
+ * everything in the section grey + smaller, with .doi links the
+ * only thing in brand-accent red.
+ * ============================================================ */
+
+h2#references ~ p {
+  font-size: 8.5pt;
+  line-height: 1.4;
+  color: var(--muted, #6f5d5a);
+  margin: 0 0 0.6em 0;
+  /* Hanging-indent for reference entries — first line at the
+   * margin, continuation lines indented so author names line up. */
+  padding-left: 1.2em;
+  text-indent: -1.2em;
 }
+
+/* All <a> inside the references section reads grey (no underline),
+ * EXCEPT the DOI links which the Lua filter tags with `class="doi"`. */
+h2#references ~ p a {
+  color: var(--muted, #6f5d5a);
+  text-decoration: none;
+}
+
+h2#references ~ p a.doi {
+  color: var(--maroon-mid, #922038);
+  text-decoration: none;
+}
+
+/* Re-apply the h2 section-heading look to the References heading
+ * itself (it'd otherwise inherit nothing special — but the global
+ * h2 rule above already handles it). */
 
 /* The Pioneer-style "Figure N." prefix — bold + brand maroon, set
  * with `::first-line` so the lead phrase reads as a stylized

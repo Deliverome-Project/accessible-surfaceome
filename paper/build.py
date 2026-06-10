@@ -110,6 +110,7 @@ from weasyprint import CSS, HTML  # noqa: E402
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
 CSS_PATH = REPO_ROOT / "paper" / "deliverome-print.css"
+REFS_DOIS_FILTER = REPO_ROOT / "paper" / "filters" / "refs_dois.lua"
 
 
 def _stem_for(src: Path) -> str:
@@ -167,6 +168,11 @@ def build(src: Path) -> dict[str, Path]:
             # the print stylesheet expects.
             f"--extract-media={media_dir}",
             f"--css={CSS_PATH}",
+            # Re-shapes the References section: unwraps Zotero google-
+            # docs anchors so each reference reads as plain prose, and
+            # promotes the DOI URL inside to its own <a class="doi">
+            # link the stylesheet paints maroon.
+            f"--lua-filter={REFS_DOIS_FILTER}",
         ],
     )
 
