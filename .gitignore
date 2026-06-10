@@ -130,3 +130,18 @@ data/external/surface_bind/
 # can't re-fetch in seconds, so neither belongs in version control.
 data/cache/afdb_prediction/*.cif
 data/cache/afdb_prediction/*.json
+
+# ── paper/ draft artifacts ─────────────────────────────────────────────
+# Manuscript build outputs (PDF, intermediate HTML, JATS XML, extracted
+# media) — produced locally by `bash paper/build.sh <docx>`. Always
+# regenerable from the .docx source; not for version control.
+paper/build/
+
+# Draft manuscript .docx / .pdf themselves — these are work-in-progress
+# author files, not project source. Track them in your own backup
+# (iCloud / Drive / OneDrive); the repo holds only the build chain
+# (paper/build.sh + paper/deliverome-print.css).
+paper/*.docx
+paper/*.pdf
+paper/*.html
+paper/*.xml
