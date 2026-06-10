@@ -93,13 +93,21 @@ export function scrubEvidenceTokens(
   text: string | null | undefined,
 ): string {
   if (!text) return "";
+  // The id form is ``evi_NN`` after the loader's renumber pass; legacy
+  // ``a[12]_evi_NN`` is kept so fixtures and pre-renumber fields still
+  // scrub correctly.
+  const tokenAlt = "(?:evi_|a[12]_evi_)\\d+";
   return text
-    // Paren-wrapped citation blocks: " (a1_evi_03)" /
-    // "(a1_evi_03, a2_evi_07)".
-    .replace(/\s*\((?:a[12]_evi_\d+(?:\s*[,;]\s*(?:a[12]_evi_\d+|\d+))*)\)/g, "")
-    // Bare tokens or comma-joined runs of them:
-    // "X a1_evi_03." / "X a1_evi_03, a2_evi_07."
-    .replace(/\s*a[12]_evi_\d+(?:\s*[,;]\s*(?:a[12]_evi_\d+|\d+))*/g, "")
+    // Paren-wrapped citation blocks: " (evi_3)" / "(evi_3, evi_7)".
+    .replace(
+      new RegExp(`\\s*\\((?:${tokenAlt}(?:\\s*[,;]\\s*(?:${tokenAlt}|\\d+))*)\\)`, "g"),
+      "",
+    )
+    // Bare tokens or comma-joined runs of them: "X evi_3." / "X evi_3, evi_7."
+    .replace(
+      new RegExp(`\\s*${tokenAlt}(?:\\s*[,;]\\s*(?:${tokenAlt}|\\d+))*`, "g"),
+      "",
+    )
     // Collapse double spaces the removals can leave behind.
     .replace(/[ \t]{2,}/g, " ")
     // Tidy " ." / " ," left after a trailing-token removal.

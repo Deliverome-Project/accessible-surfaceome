@@ -20,11 +20,14 @@ function prettyEnum(s: string | null | undefined): string {
 }
 
 /** Reader-facing label for an evidence id. Mirrors the EvidenceChip
- *  helper — strip the internal ``a[12]_evi_`` planner prefix so the
- *  drawer's eyebrow shows ``[03]`` rather than ``a1_evi_03``. */
+ *  helper — strip the ``evi_`` (or legacy ``a[12]_evi_``) prefix so
+ *  the drawer's eyebrow shows just the bare number. */
 function prettyEvidenceLabel(evidenceId: string): string {
-  const m = /^a[12]_evi_(\d+)$/.exec(evidenceId);
-  return m ? `[${m[1]}]` : evidenceId;
+  const newForm = /^evi_(\d+)$/.exec(evidenceId);
+  if (newForm) return newForm[1];
+  const legacyForm = /^a[12]_evi_(\d+)$/.exec(evidenceId);
+  if (legacyForm) return legacyForm[1];
+  return evidenceId;
 }
 
 /** Compose the two viewer-side scrubbers — strip ``aN_evi_NN`` annotation

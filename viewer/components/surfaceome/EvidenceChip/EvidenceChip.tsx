@@ -12,15 +12,19 @@ interface EvidenceChipProps {
   title?: string;
 }
 
-/** Render-time label for an evidence id. Strips the agent's internal
- *  ``a[12]_evi_`` planner-namespace prefix so a reader only sees the
- *  citation number — ``a1_evi_03`` and ``a2_evi_07`` render as ``[03]``
- *  and ``[07]``. Falls through to the raw id for any unexpected shape
- *  so we never erase information; the underlying ``evidenceId`` data
- *  attribute is untouched, so the drawer lookup still resolves. */
+/** Render-time label for an evidence id. The data loader renumbers
+ *  every ``a[12]_evi_NN`` id into a per-record ``evi_N`` sequence (see
+ *  ``lib/evidenceRenumber.ts``); this strips the ``evi_`` prefix so the
+ *  chip shows just the bare number — no brackets, no lane prefix.
+ *  Falls through to a legacy form (``a1_evi_03`` → ``3``) and finally
+ *  to the raw id, so we never erase information if the loader is
+ *  bypassed (tests, fixtures, etc.). */
 export function defaultEvidenceLabel(evidenceId: string): string {
-  const m = /^a[12]_evi_(\d+)$/.exec(evidenceId);
-  return m ? `[${m[1]}]` : evidenceId;
+  const newForm = /^evi_(\d+)$/.exec(evidenceId);
+  if (newForm) return newForm[1];
+  const legacyForm = /^a[12]_evi_(\d+)$/.exec(evidenceId);
+  if (legacyForm) return legacyForm[1];
+  return evidenceId;
 }
 
 /**
@@ -132,10 +136,13 @@ export function EvidenceChipList({ ids, label, maxVisible = 12 }: EvidenceChipLi
  */
 
 // Token regex — combined alternation so we can walk the prose once
-// and dispatch by capture group:
-//   m[1] = "a1_evi_" / "a2_evi_" prefix (single or range head)
+// and dispatch by capture group. The evidence-id prefix is now
+// ``evi_`` (per-record renumbered by the loader); legacy
+// ``a[12]_evi_`` is kept as a fallback for any prose that escapes
+// the loader's rewrite (tests, fixtures, etc.).
+//   m[1] = "evi_" or "a1_evi_" / "a2_evi_" prefix (single or range head)
 //   m[2] = start number (zero-padded width preserved for output)
-//   m[3] = optional range end number (when ``a1_evi_01-05`` style)
+//   m[3] = optional range end number (when ``evi_01-05`` style)
 //   m[4] = bare PMID number
 //   m[5] = PMC article number (PubMed Central full-text link)
 //   m[6] = "<weight>-weight" explicit form
@@ -145,7 +152,7 @@ export function EvidenceChipList({ ids, label, maxVisible = 12 }: EvidenceChipLi
 //          label so the reader never sees snake_case.
 //   m[8] = bare "high" / "moderate" / "low" (context-checked)
 const TOKEN_RE =
-  /\b(a[12]_evi_)(\d+)(?:[–\-](\d+))?\b|\bPMID:(\d+)\b|\bPMC(\d+)\b|\b(high-weight|moderate-weight|low-weight)\b|\b(direct_multi_method|direct_single_method|supportive_but_indirect)\b|\b(high|moderate|low)\b/g;
+  /\b(evi_|a[12]_evi_)(\d+)(?:[–\-](\d+))?\b|\bPMID:(\d+)\b|\bPMC(\d+)\b|\b(high-weight|moderate-weight|low-weight)\b|\b(direct_multi_method|direct_single_method|supportive_but_indirect)\b|\b(high|moderate|low)\b/g;
 
 // Normalize compact evidence-ref lists into fully-qualified ids before
 // tokenizing. The synthesizer sometimes abbreviates a multi-ref citation
@@ -158,10 +165,10 @@ const TOKEN_RE =
 // contain an evidence ref, so prose numbers (e.g. "(see Fig 2)") are
 // untouched.
 function _expandCompactRefs(text: string): string {
-  return text.replace(/\(([^)]*a[12]_evi_\d+[^)]*)\)/g, (whole, inner) => {
+  return text.replace(/\(([^)]*(?:evi_|a[12]_evi_)\d+[^)]*)\)/g, (whole, inner) => {
     let prefix: string | null = null;
     const rewritten = inner.replace(
-      /(a[12]_evi_)(\d+)|(?<=[,;]\s*)(\d+)\b/g,
+      /(evi_|a[12]_evi_)(\d+)|(?<=[,;]\s*)(\d+)\b/g,
       (m: string, p: string | undefined, _n: string, bare: string | undefined) => {
         if (p) {
           prefix = p;
@@ -194,7 +201,7 @@ const GRADE_LABELS: Record<string, string> = {
 // same parens as ``a1_evi_NN``; otherwise natural-prose adjective).
 function _markEvidenceParens(text: string): boolean[] {
   const marks = new Array(text.length).fill(false);
-  for (const m of text.matchAll(/\(([^)]*a[12]_evi_\d+[^)]*)\)/g)) {
+  for (const m of text.matchAll(/\(([^)]*(?:evi_|a[12]_evi_)\d+[^)]*)\)/g)) {
     const start = m.index ?? 0;
     const end = start + m[0].length;
     for (let i = start; i < end; i++) marks[i] = true;
