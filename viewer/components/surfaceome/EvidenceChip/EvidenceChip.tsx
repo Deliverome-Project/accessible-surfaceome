@@ -1,3 +1,4 @@
+import { scrubAgentJargon } from "../../../lib/textScrub";
 import styles from "./EvidenceChip.module.css";
 
 interface EvidenceChipProps {
@@ -203,6 +204,12 @@ function _markEvidenceParens(text: string): boolean[] {
 
 export function linkifyEvidenceRefs(text: string): React.ReactNode[] {
   if (!text) return [text];
+  // Strip "A1 ledger" / "the merged A1+A2 evidence" / etc. BEFORE
+  // expanding compact refs so the chip-pass never sees jargon-rewritten
+  // mid-sentences. The scrub is conservative: it only touches phrases
+  // that pair A1/A2 with a noun like "ledger" / "evidence" / "biology",
+  // never the bare A1/A2 token (which can name real proteins).
+  text = scrubAgentJargon(text);
   text = _expandCompactRefs(text);
   const inRefParen = _markEvidenceParens(text);
   const out: React.ReactNode[] = [];

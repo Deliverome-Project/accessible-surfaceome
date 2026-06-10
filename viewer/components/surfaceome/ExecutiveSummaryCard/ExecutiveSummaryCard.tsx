@@ -1,5 +1,6 @@
 import type { SurfaceomeRecord } from "../../../lib/surfaceome-types";
 import { prettyEnum } from "../../../lib/surfaceome";
+import { scrubAgentJargon } from "../../../lib/textScrub";
 import { EvidenceChipList, linkifyEvidenceRefs } from "../EvidenceChip/EvidenceChip";
 import { SectionCard } from "../SectionCard/SectionCard";
 import { StatusPill } from "../StatusPill/StatusPill";
@@ -72,10 +73,12 @@ export function ExecutiveSummaryCard({ rec, n }: Props) {
       meta="LLM synthesis · top-line accessibility judgment + headline risks"
     >
       {e.accessibility_context_summary ? (
-        <p className="lede">{e.accessibility_context_summary}</p>
+        <p className="lede">
+          {scrubAgentJargon(e.accessibility_context_summary)}
+        </p>
       ) : null}
 
-      <p className={styles.paragraph}>{e.one_paragraph}</p>
+      <p className={styles.paragraph}>{scrubAgentJargon(e.one_paragraph)}</p>
 
       <ul className={styles.pillStrip} aria-label="Executive summary pills">
         <li>
@@ -153,7 +156,7 @@ export function ExecutiveSummaryCard({ rec, n }: Props) {
             Why is confidence {prettyEnum(e.confidence)}? — rationale
           </summary>
           <p className={styles.confidenceRationaleBody}>
-            {rec.confidence_reasoning}
+            {scrubAgentJargon(rec.confidence_reasoning)}
           </p>
         </details>
       ) : null}

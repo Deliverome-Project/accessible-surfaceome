@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import type { Evidence } from "../../../lib/surfaceome-types";
+import { scrubAgentJargon, scrubEvidenceTokens } from "../../../lib/textScrub";
 import { StatusPill } from "../StatusPill/StatusPill";
 
 // Local minimal prettyEnum — the canonical one in lib/surfaceome.ts
@@ -26,26 +27,15 @@ function prettyEvidenceLabel(evidenceId: string): string {
   return m ? `[${m[1]}]` : evidenceId;
 }
 
-/** Strip the agent's inline evidence-token annotations from a string —
- *  ``(a1_evi_12)``, ``(a1_evi_10, a2_evi_07)``, bare ``a1_evi_NN``,
- *  and trailing-period variants. Used on the verbatim quote (where
- *  these tokens come through as noise — the colleague flagged them as
- *  "weird hashes") and the agent's claim prose. Collapses runs of
- *  whitespace introduced by the removals. The cited-evidence chip
- *  strip remains the right surface for "what backs this claim?" — the
- *  drawer's body prose itself should read clean. */
-function scrubEvidenceTokens(text: string | null | undefined): string {
-  if (!text) return "";
-  return text
-    // Paren-wrapped citation blocks: " (a1_evi_03)" / "(a1_evi_03, a2_evi_07)".
-    .replace(/\s*\((?:a[12]_evi_\d+(?:\s*[,;]\s*(?:a[12]_evi_\d+|\d+))*)\)/g, "")
-    // Bare tokens or comma-joined runs of them: "X a1_evi_03." / "X a1_evi_03, a2_evi_07."
-    .replace(/\s*a[12]_evi_\d+(?:\s*[,;]\s*(?:a[12]_evi_\d+|\d+))*/g, "")
-    // Collapse double spaces the removals can leave behind.
-    .replace(/[ \t]{2,}/g, " ")
-    // Tidy " ." / " ," left after a trailing-token removal.
-    .replace(/\s+([.,;:])/g, "$1")
-    .trim();
+/** Compose the two viewer-side scrubbers — strip ``aN_evi_NN`` annotation
+ *  tokens AND rewrite "A1 ledger" / "the merged A1+A2 evidence" / etc.
+ *  prose jargon — so reader-facing strings in the drawer never carry
+ *  internal pipeline namespace. Used on the agent's claim + verbatim
+ *  quote where the chip-linkify path isn't appropriate (the
+ *  ``cited_evidence_ids`` strip below the prose is the right surface
+ *  for that). */
+function cleanDrawerProse(text: string | null | undefined): string {
+  return scrubEvidenceTokens(scrubAgentJargon(text));
 }
 import styles from "./EvidenceDrawer.module.css";
 
@@ -275,7 +265,7 @@ function EvidenceCard({ ev, onClose }: { ev: Evidence; onClose: () => void }) {
          *  fires so entailment-failed claims still get a source link. */}
       </div>
       <h2 className={styles.title}>Agent&apos;s claim</h2>
-      <p className={styles.claim}>{scrubEvidenceTokens(ev.claim)}</p>
+      <p className={styles.claim}>{cleanDrawerProse(ev.claim)}</p>
       {headSpan?.quote ? (
         <>
           {/* Source sits right above the verbatim it anchors so the
@@ -305,7 +295,7 @@ function EvidenceCard({ ev, onClose }: { ev: Evidence; onClose: () => void }) {
           ) : null}
           <h3 className={styles.subhead}>Verbatim quote</h3>
           <blockquote className={styles.quote}>
-            {scrubEvidenceTokens(headSpan.quote)}
+            {cleanDrawerProse(headSpan.quote)}
           </blockquote>
         </>
       ) : sources.length ? (
