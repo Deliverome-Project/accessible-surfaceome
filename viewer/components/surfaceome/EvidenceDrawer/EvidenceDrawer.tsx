@@ -17,6 +17,36 @@ function prettyEnum(s: string | null | undefined): string {
     .replace(/_/g, " ")
     .replace(/\b\w/g, (c) => c.toUpperCase());
 }
+
+/** Reader-facing label for an evidence id. Mirrors the EvidenceChip
+ *  helper — strip the internal ``a[12]_evi_`` planner prefix so the
+ *  drawer's eyebrow shows ``[03]`` rather than ``a1_evi_03``. */
+function prettyEvidenceLabel(evidenceId: string): string {
+  const m = /^a[12]_evi_(\d+)$/.exec(evidenceId);
+  return m ? `[${m[1]}]` : evidenceId;
+}
+
+/** Strip the agent's inline evidence-token annotations from a string —
+ *  ``(a1_evi_12)``, ``(a1_evi_10, a2_evi_07)``, bare ``a1_evi_NN``,
+ *  and trailing-period variants. Used on the verbatim quote (where
+ *  these tokens come through as noise — the colleague flagged them as
+ *  "weird hashes") and the agent's claim prose. Collapses runs of
+ *  whitespace introduced by the removals. The cited-evidence chip
+ *  strip remains the right surface for "what backs this claim?" — the
+ *  drawer's body prose itself should read clean. */
+function scrubEvidenceTokens(text: string | null | undefined): string {
+  if (!text) return "";
+  return text
+    // Paren-wrapped citation blocks: " (a1_evi_03)" / "(a1_evi_03, a2_evi_07)".
+    .replace(/\s*\((?:a[12]_evi_\d+(?:\s*[,;]\s*(?:a[12]_evi_\d+|\d+))*)\)/g, "")
+    // Bare tokens or comma-joined runs of them: "X a1_evi_03." / "X a1_evi_03, a2_evi_07."
+    .replace(/\s*a[12]_evi_\d+(?:\s*[,;]\s*(?:a[12]_evi_\d+|\d+))*/g, "")
+    // Collapse double spaces the removals can leave behind.
+    .replace(/[ \t]{2,}/g, " ")
+    // Tidy " ." / " ," left after a trailing-token removal.
+    .replace(/\s+([.,;:])/g, "$1")
+    .trim();
+}
 import styles from "./EvidenceDrawer.module.css";
 
 interface EvidenceDrawerProps {
@@ -212,7 +242,9 @@ function EvidenceCard({ ev, onClose }: { ev: Evidence; onClose: () => void }) {
       >
         ×
       </button>
-      <p className={`label-mono ${styles.eyebrow}`}>{ev.evidence_id}</p>
+      <p className={`label-mono ${styles.eyebrow}`}>
+        {prettyEvidenceLabel(ev.evidence_id)}
+      </p>
       <div className={styles.badges}>
         <StatusPill tone={tierTone(ev.evidence_tier)} size="sm">
           {prettyEnum(ev.evidence_tier)}
@@ -242,9 +274,43 @@ function EvidenceCard({ ev, onClose }: { ev: Evidence; onClose: () => void }) {
          *  PMC ID recovery from validation_warnings (above) still
          *  fires so entailment-failed claims still get a source link. */}
       </div>
-      {/* Source first — the reader wants "which paper is this from?"
-          before the agent's interpretation of it. */}
-      {sources.length ? (
+      <h2 className={styles.title}>Agent&apos;s claim</h2>
+      <p className={styles.claim}>{scrubEvidenceTokens(ev.claim)}</p>
+      {headSpan?.quote ? (
+        <>
+          {/* Source sits right above the verbatim it anchors so the
+              reader can confirm "this quote came from THAT paper" in
+              one glance. */}
+          {sources.length ? (
+            <>
+              <h3 className={styles.subhead}>
+                Source{sources.length > 1 ? "s" : ""}
+              </h3>
+              <ul className={styles.sources}>
+                {sources.map((s) => (
+                  <li key={s.href}>
+                    <a
+                      href={s.href}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className={styles.sourceLink}
+                      title={s.title}
+                    >
+                      {s.label} ↗
+                    </a>
+                  </li>
+                ))}
+              </ul>
+            </>
+          ) : null}
+          <h3 className={styles.subhead}>Verbatim quote</h3>
+          <blockquote className={styles.quote}>
+            {scrubEvidenceTokens(headSpan.quote)}
+          </blockquote>
+        </>
+      ) : sources.length ? (
+        // No verbatim quote — surface the source on its own so the
+        // reader still has the "which paper?" anchor.
         <>
           <h3 className={styles.subhead}>
             Source{sources.length > 1 ? "s" : ""}
@@ -264,14 +330,6 @@ function EvidenceCard({ ev, onClose }: { ev: Evidence; onClose: () => void }) {
               </li>
             ))}
           </ul>
-        </>
-      ) : null}
-      <h2 className={styles.title}>Agent&apos;s claim</h2>
-      <p className={styles.claim}>{ev.claim}</p>
-      {headSpan?.quote ? (
-        <>
-          <h3 className={styles.subhead}>Verbatim quote</h3>
-          <blockquote className={styles.quote}>{headSpan.quote}</blockquote>
         </>
       ) : null}
       {e.assay_context ? (

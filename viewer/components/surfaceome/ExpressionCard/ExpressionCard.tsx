@@ -1,5 +1,6 @@
 import type { SurfaceomeRecord } from "../../../lib/surfaceome-types";
 import { FeatureRationales } from "../FeatureChips/FeatureChips";
+import { InfoTip } from "../../InfoTip/InfoTip";
 import { SectionCard } from "../SectionCard/SectionCard";
 import { ExpressionTable } from "./ExpressionTable";
 import styles from "./ExpressionCard.module.css";
@@ -55,7 +56,21 @@ export function ExpressionCard({ rec, n }: Props) {
       <FeatureRationales category="expression" rec={rec} />
 
       <div className={styles.subsection}>
-        <p className={`label-mono ${styles.subhead}`}>Expression × cell type × disease context</p>
+        <p className={`label-mono ${styles.subhead}`}>
+          Expression × cell type × disease context
+          <InfoTip wide label="About the expression rows">
+            Evidence-based literature statements the deep-dive agent
+            extracted from primary papers — <strong>not</strong> an
+            exhaustive expression atlas. Coverage is bounded by the
+            papers in the retrieved corpus; absence of a tissue here
+            means &quot;no protein-level statement was extracted,&quot;
+            not &quot;not expressed.&quot; Protein-level methods only
+            (IHC / flow / surface-MS); RNA-only sources (scRNA, bulk
+            RNA-seq, microarray) are deliberately excluded. For
+            atlas-grade tissue coverage, cross-reference Human Protein
+            Atlas / GTEx.
+          </InfoTip>
+        </p>
         {expression.length === 0 ? (
           <p className={styles.empty}>No expression rows recorded.</p>
         ) : (

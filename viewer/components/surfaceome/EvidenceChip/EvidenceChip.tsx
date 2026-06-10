@@ -2,10 +2,24 @@ import styles from "./EvidenceChip.module.css";
 
 interface EvidenceChipProps {
   evidenceId: string;
-  /** Optional short label override (default: the evidence_id itself, e.g. "a1_evi_03"). */
+  /** Optional short label override. Default is a reader-facing
+   *  ``[NN]`` (citation-style) derived from the trailing index of the
+   *  internal ``aN_evi_NN`` id — the ``a1`` / ``a2`` planner namespace
+   *  is internal plumbing and must not surface in the UI. */
   label?: string;
   /** Optional one-line title for the tooltip (e.g. the agent's claim text). */
   title?: string;
+}
+
+/** Render-time label for an evidence id. Strips the agent's internal
+ *  ``a[12]_evi_`` planner-namespace prefix so a reader only sees the
+ *  citation number — ``a1_evi_03`` and ``a2_evi_07`` render as ``[03]``
+ *  and ``[07]``. Falls through to the raw id for any unexpected shape
+ *  so we never erase information; the underlying ``evidenceId`` data
+ *  attribute is untouched, so the drawer lookup still resolves. */
+export function defaultEvidenceLabel(evidenceId: string): string {
+  const m = /^a[12]_evi_(\d+)$/.exec(evidenceId);
+  return m ? `[${m[1]}]` : evidenceId;
 }
 
 /**
@@ -41,9 +55,9 @@ export function EvidenceChip({ evidenceId, label, title }: EvidenceChipProps) {
       type="button"
       className={styles.chip}
       data-evidence-id={evidenceId}
-      title={title ?? `Open evidence ${evidenceId}`}
+      title={title ?? `Open evidence ${defaultEvidenceLabel(evidenceId)}`}
     >
-      {label ?? evidenceId}
+      {label ?? defaultEvidenceLabel(evidenceId)}
     </button>
   );
 }
