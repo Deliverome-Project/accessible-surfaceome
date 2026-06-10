@@ -1,6 +1,7 @@
 import type { SurfaceomeRecord } from "../../../lib/surfaceome-types";
 import {
   classifyExpressionSource,
+  expressionSourceRank,
   type ExpressionSource,
 } from "../../../lib/expression";
 import { FeatureRationales } from "../FeatureChips/FeatureChips";
@@ -67,6 +68,21 @@ export function ExpressionCard({ rec, n }: Props) {
     }
     classified.push({ ...row, source });
   }
+  // Default row order: enrich for surface evidence. Primary sort is
+  // source DESC (surface > bulk > other) so the direct-surface rows
+  // lead; within each bucket the original disease-context order is
+  // preserved (normal → tumor_adjacent → tumor → …) so the
+  // toxicity-baseline reading stays intact. ``Array.prototype.sort``
+  // is stable so the secondary disease-context tiebreaker comes from
+  // the pre-sort above.
+  classified.sort(
+    (a, b) => expressionSourceRank(b.source) - expressionSourceRank(a.source),
+  );
+  // Per-source headcount for the subhead rollup, so a reader sees at
+  // a glance how much of each evidence bucket backs the gene.
+  const surfaceCount = classified.filter((r) => r.source === "surface").length;
+  const bulkCount = classified.filter((r) => r.source === "bulk").length;
+  const otherCount = classified.filter((r) => r.source === "other").length;
   return (
     <SectionCard
       n={n}
@@ -79,6 +95,11 @@ export function ExpressionCard({ rec, n }: Props) {
       <div className={styles.subsection}>
         <p className={`label-mono ${styles.subhead}`}>
           Expression × cell type × disease context
+          {classified.length > 0 ? (
+            <span className={styles.sourceRollup}>
+              {surfaceCount} surface · {bulkCount} bulk · {otherCount} other
+            </span>
+          ) : null}
           <InfoTip wide label="About the expression rows">
             Evidence-based literature statements the deep-dive agent
             extracted from primary papers — <strong>not</strong> an

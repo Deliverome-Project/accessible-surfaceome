@@ -54,8 +54,7 @@ export const tooltips: Record<string, ReactNode> = {
       states.
       <br />
       <br />
-      Deep-dive synthesizer (Sonnet 4.6); triage row below is the
-      cross-check.
+      Deep-dive synthesizer (Sonnet 4.6).
     </>
   ),
 
