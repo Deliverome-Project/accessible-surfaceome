@@ -20,6 +20,17 @@
 
 @import url("../viewer/app/design-tokens.css");
 
+/* Paper-only token. Sits BELOW the design-tokens import so it
+ * overrides only what we need for print. Very-pale neutral beige —
+ * softer than the web's `--bg-warm` (#f3ece5), more neutral than
+ * `--maroon-blush` (which read pink on review). Used as both the
+ * title banner wash AND the figure-card wash so the two surfaces
+ * share one warm cream — matches Pioneer Labs' BioBloom paper's
+ * unified figure / title treatment. */
+:root {
+  --paper-beige: #faf6ef;
+}
+
 /* Web fonts — same families as the live viewer (Manrope + Playfair
  * Display from Google Fonts). WeasyPrint fetches these at build time
  * and embeds the subsets it needs into the PDF, so the resulting
@@ -99,7 +110,7 @@ body {
  */
 body > h1:first-of-type {
   column-span: all;
-  background: var(--maroon-blush, #fde8e6);
+  background: var(--paper-beige);
   /* Negative margins MUST match the @page margin values above to
    * full-bleed exactly to the page edge. Update these if the
    *   @page margin is ever changed.
@@ -236,18 +247,20 @@ ul li::marker {
 
 /* Figures: pandoc's docx reader emits `<p><img></p>` (no <figure>
  * wrapper) with Word's absolute pixel/inch dimensions baked in as
- * inline `style="width:N.NNNNNin;..."`. To make every figure span
- * the full two-column width AND override Word's inline sizing, we
- * style the paragraph as the figure container with column-span +
- * the maroon side-bar (no cream wash per review — just the
- * left rule). `!important` on the img dimensions overrides Word's
+ * inline `style="width:N.NNNNNin;..."`. Treatment mirrors Pioneer
+ * Labs' BioBloom paper: soft beige card with a brand-maroon side
+ * bar, generous internal padding around the image, caption tucks
+ * underneath in the same card so reader scans "figure + caption"
+ * as one unit. `!important` on the img dimensions overrides Word's
  * inline `style="width:N.NNNNNin"`. */
 p:has(> img) {
   column-span: all;
   break-inside: avoid;
-  margin: 1em 0 0.3em;
-  padding: 0.4em 0 0.4em 0.7em;
+  margin: 1.2em 0 0;
+  padding: 0.8em 0.9em 0.5em 0.9em;
+  background: var(--paper-beige);
   border-left: 4px solid var(--maroon-mid, #922038);
+  border-radius: 2px 2px 0 0;
 }
 
 p > img,
@@ -256,26 +269,40 @@ img {
   height: auto !important;
   max-width: 100% !important;
   display: block;
-  margin: 0 auto 0.2em;
+  margin: 0 auto;
 }
 
 /* The paragraph immediately following a figure-paragraph is the
- * figure caption ("Figure N. <caption text>"). Inherits the same
- * left side-bar so the reader sees the caption belongs to the
- * figure above. Brittle (matches by sibling position, not content),
- * but in practice .docx authors put the caption directly under the
- * image. */
+ * figure caption ("Figure N. <caption text>"). Continues the beige
+ * card downward (rounded top corners gone, padding flush against
+ * the image above) so figure + caption read as one bound block.
+ * Brittle: matches by sibling position, not by content. In
+ * practice .docx authors put the caption directly under the image. */
 p:has(> img) + p {
   column-span: all;
   break-inside: avoid;
-  margin: -0.3em 0 1.2em 0;
-  padding: 0 0 0.4em 0.7em;
+  margin: 0 0 1.4em 0;
+  padding: 0.5em 0.9em 0.75em 0.9em;
+  background: var(--paper-beige);
   border-left: 4px solid var(--maroon-mid, #922038);
+  border-radius: 0 0 2px 2px;
   font-family: "Manrope", sans-serif;
-  font-size: 8.5pt;
-  line-height: 1.4;
-  color: var(--ink-soft, #2a2122);
+  font-size: 9pt;
+  line-height: 1.45;
+  color: var(--ink, #1f1718);
   text-align: left;
+}
+
+/* The Pioneer-style "Figure N." prefix — bold + brand maroon, set
+ * with `::first-line` so the lead phrase reads as a stylized
+ * label even though pandoc emits it as plain prose. ::first-line
+ * matches only what fits on the first rendered line, which for
+ * a typical "Figure 1. Title text. Body explanation…" caption
+ * means the leading title clause reads emphasized. */
+p:has(> img) + p::first-line {
+  font-weight: 700;
+  color: var(--maroon-dark, #6e1428);
+  letter-spacing: -0.005em;
 }
 
 /* Native <figure> wrapper — kept for any future pandoc filter that
@@ -283,17 +310,25 @@ p:has(> img) + p {
 figure {
   column-span: all;
   break-inside: avoid;
-  margin: 1em 0 1.2em;
-  padding: 0.4em 0 0.4em 0.7em;
+  margin: 1.2em 0;
+  padding: 0.8em 0.9em;
+  background: var(--paper-beige);
   border-left: 4px solid var(--maroon-mid, #922038);
+  border-radius: 2px;
 }
 
 figcaption {
   font-family: "Manrope", sans-serif;
-  font-size: 8.5pt;
-  line-height: 1.4;
-  color: var(--ink-soft, #2a2122);
-  margin-top: 0.4em;
+  font-size: 9pt;
+  line-height: 1.45;
+  color: var(--ink, #1f1718);
+  margin-top: 0.5em;
+}
+
+figcaption::first-line {
+  font-weight: 700;
+  color: var(--maroon-dark, #6e1428);
+  letter-spacing: -0.005em;
 }
 
 /* ============================================================
