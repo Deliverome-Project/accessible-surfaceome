@@ -176,9 +176,9 @@
 }
 
 .colBar {
-  flex: 1 1 0;
-  min-width: 18px;
-  max-width: 48px;
+  flex: 0 0 22px;
+  min-width: 22px;
+  max-width: 36px;
   height: 100%;
   display: flex;
   flex-direction: column;
@@ -186,6 +186,13 @@
   align-items: stretch;
   position: relative;
   cursor: default;
+}
+
+/* Mute trace bars at the label level too — the colFill gets the
+   transparency via inline color-mix in the chart code. */
+.colBar[data-trace="true"] .colLabel {
+  color: var(--ink-faded);
+  font-style: italic;
 }
 
 .colTrack {
@@ -208,23 +215,23 @@
   outline-offset: 1px;
 }
 
-/* Label below each bar, rotated -45° to fit. Anchored to the top-right
-   of its grid cell so rotation keeps it under the bar. */
+/* Label below each bar, rotated -45° to fit. Anchored to the
+   TOP-LEFT of the position-rect (transform-origin at the top-left
+   corner) so rotation pivots from the bar's left edge — labels then
+   read like a list when scanned along the rotated axis. */
 .colLabel {
   position: absolute;
-  top: 100%;
+  top: calc(100% + 6px);
   left: 50%;
-  margin-top: 6px;
   font-family: var(--font-sans);
-  font-size: 0.65rem;
+  font-size: 0.7rem;
   color: var(--ink-soft);
   white-space: nowrap;
-  transform: translate(-50%, 0) rotate(-45deg);
-  transform-origin: center top;
+  transform: rotate(-45deg);
+  transform-origin: top left;
   pointer-events: none;
-  /* Allow labels to render past the bar's width — they overlap by
-     design, hover popover gives the unambiguous read. */
-  max-width: 220px;
+  /* Wide enough for long CL terms; truncate the worst offenders. */
+  max-width: 280px;
   text-overflow: ellipsis;
   overflow: hidden;
 }
@@ -235,9 +242,9 @@
 }
 
 /* Pad the chart bottom enough that rotated labels don't overlap the
-   next block. ~64 px covers a 24-char label at 0.65 rem rotated 45°. */
+   next block. ~140 px covers a 24-char label at 0.7 rem rotated 45°. */
 .colChart {
-  padding-bottom: 80px;
+  padding-bottom: 140px;
 }
 
 /* --- per-category summary bars (horizontal) -------------------------- */

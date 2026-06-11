@@ -14,33 +14,42 @@ import {
 import styles from "./CellxGeneCard.module.css";
 
 interface Props {
-  /** All rows for this gene — split into common + rare internally on
-   *  each row's `is_rare` flag. */
   rows: CellTypeRow[];
-  /** Top tissues for the gene, used by sort-by-tissue and by the
-   *  optional per-tissue summary block (v2.1+). Empty array if the
-   *  record is pre-v2.1. */
   tissues?: TissueAggregateRow[];
 }
 
-type YMetric = "mean" | "pct" | "score";
+type YMetric = "score" | "mean" | "pct";
 type SortMode = "value" | "type" | "category" | "tissue";
 
-// v2.1.1: removed per-chart row caps. The bars are horizontal and the
-// row container scrolls, so the data tells the reader how many cell
-// types there are. The build still caps at ~100 cell types per gene
-// so JSON / D1 payload stays bounded.
-const COMMON_MAX = 200;
-const RARE_MAX = 200;
-const LABEL_TRUNCATE_AT = 24;
+/**
+ * Per-metric scale floor. Bars fill against `max(floor, observed)`
+ * so:
+ *  - For genes whose top expression is moderate, the bar still
+ *    shows visible fill (no 0..7 axis dwarfing a 1.97 brain hit).
+ *  - For genes whose top expression exceeds the floor, the scale
+ *    expands so the bar isn't pinned at 100%.
+ *
+ * Defaults: 4.5 for mean log1p(CP10K) (a "moderate-to-high"
+ * boundary), 1.0 for pct (full saturation, can't exceed 1), and
+ * 4.5 × 0.5 = 2.25 for score (a moderate mean × half-population
+ * boundary). The user can read the absolute number off the bar's
+ * inline value; the bar width is for visual comparison within the
+ * gene.
+ */
+function metricScaleFloor(yMetric: YMetric): number {
+  if (yMetric === "mean") return 4.5;
+  if (yMetric === "pct") return 1.0;
+  return 2.25; // score = mean × pct
+}
 
 /**
- * Read the active metric off a row. `mean` is mean log1p(CP10K) among
- * EXPRESSING cells. `pct` is fraction of cells expressing. `score` is
- * mean × pct — the population-mean expression (an HPA-nTPM-style
- * weighted metric) that combines both channels into one number.
- * Useful for "if I pick cells of this type, what total signal do I
- * get?" delivery questions.
+ * Read the active metric off a row.
+ *  - mean: mean log1p(CP10K) among expressing cells (the WMG viewer's scale)
+ *  - pct: fraction of cells expressing (n_expressing / n_total)
+ *  - score: mean × pct, the population-mean expression — an
+ *    HPA-nTPM-style metric that combines both channels into one
+ *    number. Best single metric for delivery-target questions
+ *    ("if I pick cells of this type, what total signal do I get?").
  */
 function readMetric(
   m: { mean_log1p_cp10k?: number; pct_expressing?: number },
@@ -51,16 +60,6 @@ function readMetric(
   if (yMetric === "mean") return mean;
   if (yMetric === "pct") return pct;
   return mean * pct;
-}
-
-function metricScaleMax(yMetric: YMetric): number {
-  // log1p(CP10K) tops at ~7. pct is [0, 1]. score = mean × pct tops
-  // around 7 × 1 = 7 in extreme cases; 4 is a reasonable visual cap
-  // (lets the strongest expressors fill the bar without dwarfing
-  // moderate ones).
-  if (yMetric === "mean") return 7;
-  if (yMetric === "pct") return 1;
-  return 4;
 }
 
 function fmtN(n: number): string {
@@ -75,6 +74,10 @@ function fmtPct(p: number): string {
 
 function fmtMean(v: number): string {
   return v.toFixed(2);
+}
+
+function fmtValue(v: number, yMetric: YMetric): string {
+  return yMetric === "pct" ? fmtPct(v) : fmtMean(v);
 }
 
 function truncate(s: string, n: number): string {
@@ -93,83 +96,236 @@ function dominantTissue(r: Decorated): string {
   return r.tissues?.[0]?.tissue ?? "—";
 }
 
-function sortRows(
-  rows: Decorated[],
-  sortMode: SortMode,
-  yMetric: YMetric,
-): Decorated[] {
-  const arr = [...rows];
-  const metric = (r: Decorated): number => readMetric(r, yMetric);
-  if (sortMode === "value") {
-    arr.sort((a, b) => metric(b) - metric(a));
-  } else if (sortMode === "type") {
-    arr.sort((a, b) => a.cell_type.localeCompare(b.cell_type));
-  } else if (sortMode === "category") {
-    const order = new Map(CATEGORIES.map((c, i) => [c, i]));
-    arr.sort((a, b) => {
-      const oa = order.get(a.category) ?? 99;
-      const ob = order.get(b.category) ?? 99;
-      if (oa !== ob) return oa - ob;
-      return metric(b) - metric(a);
-    });
-  } else {
-    // sortMode === "tissue": cluster cell types by their dominant tissue
-    // (from each row's top_tissues[0]). Tissues are ranked by the max
-    // value-on-the-current-metric within the group, so the strongest
-    // tissue cluster reads left-to-right first.
-    const tissueRank = new Map<string, number>();
-    for (const r of arr) {
-      const t = dominantTissue(r);
-      const cur = tissueRank.get(t) ?? -Infinity;
-      tissueRank.set(t, Math.max(cur, metric(r)));
-    }
-    arr.sort((a, b) => {
-      const ta = dominantTissue(a);
-      const tb = dominantTissue(b);
-      const ra = tissueRank.get(ta) ?? 0;
-      const rb = tissueRank.get(tb) ?? 0;
-      if (ra !== rb) return rb - ra;
-      if (ta !== tb) return ta.localeCompare(tb);
-      return metric(b) - metric(a);
-    });
-  }
-  return arr;
+/**
+ * Per-chart toolbar. Each chart owns its own yMetric + sortMode
+ * state, so the reader can answer "what's the top score?" and "what's
+ * the top % expressing?" simultaneously across the Tissues / Common
+ * cell types / Per-category blocks without one toggle dragging all
+ * three. `sortOptions` is parameterized because tissue charts don't
+ * have a "by category" mode and category-average charts don't take
+ * any sort mode at all.
+ */
+function ChartControls({
+  yMetric,
+  setYMetric,
+  sortMode,
+  setSortMode,
+  sortOptions,
+}: {
+  yMetric: YMetric;
+  setYMetric: (m: YMetric) => void;
+  sortMode?: SortMode;
+  setSortMode?: (s: SortMode) => void;
+  sortOptions?: { value: SortMode; label: string; title?: string }[];
+}) {
+  return (
+    <div
+      className={styles.controls}
+      role="toolbar"
+      aria-label="Chart controls"
+    >
+      <div className={styles.controlGroup}>
+        <span className={styles.controlLabel}>Y-axis</span>
+        <div
+          className={styles.toggle}
+          role="radiogroup"
+          aria-label="Y-axis metric"
+        >
+          <button
+            type="button"
+            role="radio"
+            aria-checked={yMetric === "score"}
+            data-active={yMetric === "score"}
+            onClick={() => setYMetric("score")}
+            title="Mean × % expressing — population-mean expression (HPA-nTPM-like). Best one-number metric: 'if I pick cells of this type, what total signal do I get?'"
+          >
+            Score (mean × %)
+          </button>
+          <button
+            type="button"
+            role="radio"
+            aria-checked={yMetric === "mean"}
+            data-active={yMetric === "mean"}
+            onClick={() => setYMetric("mean")}
+            title="Mean log1p(CP10K) among expressing cells — how strongly the cells that DO express it transcribe it"
+          >
+            Mean
+          </button>
+          <button
+            type="button"
+            role="radio"
+            aria-checked={yMetric === "pct"}
+            data-active={yMetric === "pct"}
+            onClick={() => setYMetric("pct")}
+            title="Fraction of cells expressing the gene — n_expressing / n_total"
+          >
+            % expressing
+          </button>
+        </div>
+      </div>
+      {sortOptions && setSortMode && sortMode && (
+        <div className={styles.controlGroup}>
+          <span className={styles.controlLabel}>Sort</span>
+          <div
+            className={styles.toggle}
+            role="radiogroup"
+            aria-label="Sort order"
+          >
+            {sortOptions.map((opt) => (
+              <button
+                key={opt.value}
+                type="button"
+                role="radio"
+                aria-checked={sortMode === opt.value}
+                data-active={sortMode === opt.value}
+                onClick={() => setSortMode(opt.value)}
+                title={opt.title}
+              >
+                {opt.label}
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
+    </div>
+  );
 }
 
 /**
- * Cell-type chart — horizontal bars, one row per cell type. Reverted
- * from the column layout because for genes like GPR75 (1-4 cell types
- * after the noise filter) the column chart's fixed 240 px height was
- * wasted whitespace. Horizontal rows are ~24 px each so 5 rows takes
- * ~120 px and 25 rows fit in ~600 px — the layout scales with the
- * data instead of reserving a fixed canvas.
- *
- * Each bar fills horizontally to a percentage of `scaleMax` (7 for
- * mean log1p, 1 for pct), colored by the cell type's category. The
- * row's hover/focus state shows a popover with the full label, %
- * expressing, cell counts, and top tissues.
+ * One vertical column bar in a chart. Height = pct of scale max.
+ * Color = caller-provided (categories for cell types, neutral teal
+ * for tissues). Trace bars render with reduced opacity. Label
+ * rotated -45° beneath the bar; full label + hover detail in the
+ * popover.
+ */
+function ColumnBar({
+  height,
+  color,
+  label,
+  isTrace,
+  popover,
+  hoverTitle,
+}: {
+  /** 0..100 percentage of chart scale. */
+  height: number;
+  color: string;
+  label: string;
+  isTrace?: boolean;
+  popover: React.ReactNode;
+  hoverTitle?: string;
+}) {
+  const fill = isTrace
+    ? `color-mix(in srgb, ${color} 35%, transparent)`
+    : color;
+  return (
+    <li
+      className={styles.colBar}
+      tabIndex={0}
+      data-trace={isTrace || undefined}
+      title={hoverTitle}
+    >
+      <div className={styles.colTrack}>
+        <div
+          className={styles.colFill}
+          style={{ height: `${height}%`, background: fill }}
+          aria-hidden
+        />
+      </div>
+      <span className={styles.colLabel} title={label} aria-label={label}>
+        {truncate(label, 24)}
+        {isTrace && (
+          <span className={styles.traceBadge} aria-label="trace expression">
+            trace
+          </span>
+        )}
+      </span>
+      <div className={styles.popover} role="tooltip">
+        {popover}
+      </div>
+    </li>
+  );
+}
+
+/**
+ * Y-axis ticks scaled to the chart's actual max value.
+ */
+function YAxis({ scaleMax, yMetric }: { scaleMax: number; yMetric: YMetric }) {
+  const ticks = [scaleMax, scaleMax * 0.75, scaleMax * 0.5, scaleMax * 0.25, 0];
+  return (
+    <div className={styles.yAxis} aria-hidden>
+      {ticks.map((v) => (
+        <span key={v} className={styles.yTick}>
+          {fmtValue(v, yMetric)}
+        </span>
+      ))}
+    </div>
+  );
+}
+
+/**
+ * Cell-type column chart. Vertical bars colored by category, labels
+ * rotated below. Reader's own yMetric + sortMode controls in the
+ * header. Qualified bars first, trace at the end.
  */
 function CellTypeChart({
   title,
   subtitle,
   rows,
-  maxRows,
-  yMetric,
-  sortMode,
-  scaleMax,
 }: {
   title: string;
   subtitle: string;
   rows: Decorated[];
-  maxRows: number;
-  yMetric: YMetric;
-  sortMode: SortMode;
-  scaleMax: number;
 }) {
-  const sorted = useMemo(
-    () => sortRows(rows, sortMode, yMetric).slice(0, maxRows),
-    [rows, sortMode, yMetric, maxRows],
-  );
+  const [yMetric, setYMetric] = useState<YMetric>("score");
+  const [sortMode, setSortMode] = useState<SortMode>("value");
+
+  const sorted = useMemo(() => {
+    const arr = [...rows];
+    const m = (r: Decorated): number => readMetric(r, yMetric);
+    const traceTier = (r: Decorated): number => (r.is_trace ? 1 : 0);
+    if (sortMode === "value") {
+      arr.sort((a, b) => {
+        const tt = traceTier(a) - traceTier(b);
+        if (tt !== 0) return tt;
+        return m(b) - m(a);
+      });
+    } else if (sortMode === "type") {
+      arr.sort((a, b) => a.cell_type.localeCompare(b.cell_type));
+    } else if (sortMode === "category") {
+      const order = new Map(CATEGORIES.map((c, i) => [c, i]));
+      arr.sort((a, b) => {
+        const oa = order.get(a.category) ?? 99;
+        const ob = order.get(b.category) ?? 99;
+        if (oa !== ob) return oa - ob;
+        return m(b) - m(a);
+      });
+    } else {
+      const tissueRank = new Map<string, number>();
+      for (const r of arr) {
+        const t = dominantTissue(r);
+        const cur = tissueRank.get(t) ?? -Infinity;
+        tissueRank.set(t, Math.max(cur, m(r)));
+      }
+      arr.sort((a, b) => {
+        const ta = dominantTissue(a);
+        const tb = dominantTissue(b);
+        const ra = tissueRank.get(ta) ?? 0;
+        const rb = tissueRank.get(tb) ?? 0;
+        if (ra !== rb) return rb - ra;
+        if (ta !== tb) return ta.localeCompare(tb);
+        return m(b) - m(a);
+      });
+    }
+    return arr;
+  }, [rows, sortMode, yMetric]);
+
+  const scaleMax = useMemo(() => {
+    const observed = sorted.reduce(
+      (mx, r) => Math.max(mx, readMetric(r, yMetric)),
+      0,
+    );
+    return Math.max(metricScaleFloor(yMetric), observed);
+  }, [sorted, yMetric]);
 
   if (sorted.length === 0) {
     return (
@@ -178,7 +334,7 @@ function CellTypeChart({
           {title}
           <span className={styles.subheadMeta}>{subtitle}</span>
         </h3>
-        <p className={styles.empty}>No qualifying cell types in this bucket.</p>
+        <p className={styles.empty}>No qualifying cell types.</p>
       </section>
     );
   }
@@ -189,73 +345,39 @@ function CellTypeChart({
         {title}
         <span className={styles.subheadMeta}>{subtitle}</span>
       </h3>
-      <ul className={styles.barList}>
-        {sorted.map((r) => {
-          const meanVal = r.mean_log1p_cp10k ?? 0;
-          const pctVal = r.pct_expressing ?? 0;
-          const nExpressing = r.n_expressing ?? 0;
-          const nTotal = r.n_total ?? nExpressing;
-          const tissueList = r.tissues ?? [];
-          const value = readMetric(r, yMetric);
-          const pct = Math.max(0, Math.min(100, (value / scaleMax) * 100));
-          const isTrace = !!r.is_trace;
-          // Mute trace cell types so the qualified ones lead. Build
-          // sorts qualified-first so trace clusters at the bottom of
-          // the list.
-          const baseColor = CATEGORY_COLORS[r.category];
-          const color = isTrace
-            ? `color-mix(in srgb, ${baseColor} 35%, transparent)`
-            : baseColor;
-          const topTissues = tissueList.slice(0, 3);
-          const tissuesInline = topTissues.map((t) => t.tissue).join(" · ");
-          return (
-            <li
-              key={r.cl_id}
-              className={styles.barRow}
-              tabIndex={0}
-              data-trace={isTrace || undefined}
-              title={
-                isTrace
-                  ? `Trace: only ${nExpressing} of ${nTotal.toLocaleString()} cells expressing (${(pctVal * 100).toFixed(2)}%). Mean is real but small-n.`
-                  : undefined
-              }
-            >
-              <div className={styles.barLabel}>
-                <span
-                  className={styles.swatch}
-                  style={{ background: color }}
-                  aria-hidden
-                />
-                <span className={styles.barName} title={r.cell_type}>
-                  {truncate(r.cell_type, LABEL_TRUNCATE_AT + 16)}
-                </span>
-                {isTrace && (
-                  <span className={styles.traceBadge} aria-label="trace expression">
-                    trace
-                  </span>
-                )}
-                {tissuesInline && (
-                  <span className={styles.tissues}>{tissuesInline}</span>
-                )}
-              </div>
-              <div className={styles.barTrack}>
-                <div
-                  className={styles.barFill}
-                  style={{ width: `${pct}%`, background: color }}
-                  aria-hidden
-                />
-                <span className={styles.barValue}>
-                  {yMetric === "pct" ? fmtPct(value) : fmtMean(value)}
-                </span>
-              </div>
-              {/* Hover/focus popover — full detail. Positioned BELOW
-                  the row by the .barRow .popover CSS so it doesn't
-                  overlap the next row on the way down the list. */}
-              <div className={styles.popover} role="tooltip">
+      <ChartControls
+        yMetric={yMetric}
+        setYMetric={setYMetric}
+        sortMode={sortMode}
+        setSortMode={setSortMode}
+        sortOptions={[
+          { value: "value", label: "By value" },
+          { value: "category", label: "By category" },
+          { value: "tissue", label: "By tissue" },
+          { value: "type", label: "A → Z" },
+        ]}
+      />
+      <div className={styles.colChart}>
+        <YAxis scaleMax={scaleMax} yMetric={yMetric} />
+        <ul className={styles.colCanvas}>
+          {sorted.map((r) => {
+            const meanVal = r.mean_log1p_cp10k ?? 0;
+            const pctVal = r.pct_expressing ?? 0;
+            const nExpressing = r.n_expressing ?? 0;
+            const nTotal = r.n_total ?? nExpressing;
+            const value = readMetric(r, yMetric);
+            const height = Math.max(
+              0,
+              Math.min(100, (value / scaleMax) * 100),
+            );
+            const baseColor = CATEGORY_COLORS[r.category];
+            const tissues = (r.tissues ?? []).slice(0, 3);
+            const popover = (
+              <>
                 <div className={styles.popHeader}>
                   <span
                     className={styles.swatch}
-                    style={{ background: color }}
+                    style={{ background: baseColor }}
                     aria-hidden
                   />
                   <strong>{r.cell_type}</strong>
@@ -264,7 +386,11 @@ function CellTypeChart({
                 </div>
                 <dl className={styles.popStats}>
                   <div>
-                    <dt>Mean log1p(CP10K)</dt>
+                    <dt>Score</dt>
+                    <dd>{fmtMean(meanVal * pctVal)}</dd>
+                  </div>
+                  <div>
+                    <dt>Mean log1p</dt>
                     <dd>{fmtMean(meanVal)}</dd>
                   </div>
                   <div>
@@ -278,11 +404,11 @@ function CellTypeChart({
                     </dd>
                   </div>
                 </dl>
-                {topTissues.length > 0 && (
+                {tissues.length > 0 && (
                   <div className={styles.popTissues}>
                     <span className={styles.popTissuesLabel}>Tissues</span>
                     <ul>
-                      {topTissues.map((t) => (
+                      {tissues.map((t) => (
                         <li key={t.uberon_id}>
                           {t.tissue}
                           <span className={styles.popHint}>
@@ -297,31 +423,160 @@ function CellTypeChart({
                     </ul>
                   </div>
                 )}
-              </div>
-            </li>
-          );
-        })}
-      </ul>
+              </>
+            );
+            const hoverTitle = r.is_trace
+              ? `Trace: only ${nExpressing} of ${nTotal.toLocaleString()} cells expressing (${(pctVal * 100).toFixed(2)}%). Mean is real but small-n.`
+              : undefined;
+            return (
+              <ColumnBar
+                key={r.cl_id}
+                height={height}
+                color={baseColor}
+                label={r.cell_type}
+                isTrace={r.is_trace}
+                popover={popover}
+                hoverTitle={hoverTitle}
+              />
+            );
+          })}
+        </ul>
+      </div>
     </section>
   );
 }
 
 /**
- * Per-category summary: one horizontal bar per category that appears
- * in the gene's top_cell_types, showing the average of the active
- * metric across the cell types in that category. Sits ABOVE the
- * detail charts as the "first read" — answers "which broad cell
- * class is this gene strongest in?" before the reader scans 30 bars.
+ * Top tissues column chart. Same shape as CellTypeChart but rows are
+ * UBERON terms with a single neutral fill (teal) — there are too many
+ * tissue terms to color individually without diluting the cell-class
+ * palette below.
  */
-function CategoryAverages({
-  rows,
-  yMetric,
-  scaleMax,
-}: {
-  rows: Decorated[];
-  yMetric: YMetric;
-  scaleMax: number;
-}) {
+function TopTissues({ rows }: { rows: TissueAggregateRow[] }) {
+  const [yMetric, setYMetric] = useState<YMetric>("score");
+  const [sortMode, setSortMode] = useState<SortMode>("value");
+
+  const sorted = useMemo(() => {
+    const arr = [...rows];
+    const m = (r: TissueAggregateRow): number => readMetric(r, yMetric);
+    const traceTier = (r: TissueAggregateRow): number => (r.is_trace ? 1 : 0);
+    if (sortMode === "type") {
+      arr.sort((a, b) => a.tissue.localeCompare(b.tissue));
+    } else {
+      arr.sort((a, b) => {
+        const tt = traceTier(a) - traceTier(b);
+        if (tt !== 0) return tt;
+        return m(b) - m(a);
+      });
+    }
+    return arr;
+  }, [rows, sortMode, yMetric]);
+
+  const scaleMax = useMemo(() => {
+    const observed = sorted.reduce(
+      (mx, r) => Math.max(mx, readMetric(r, yMetric)),
+      0,
+    );
+    return Math.max(metricScaleFloor(yMetric), observed);
+  }, [sorted, yMetric]);
+
+  if (sorted.length === 0) return null;
+
+  const tissueColor = "var(--teal-mid, #3d6b60)";
+
+  return (
+    <section className={styles.chartBlock}>
+      <h3 className={styles.subhead}>
+        Top tissues
+        <span className={styles.subheadMeta}>
+          pooled across cell types in each UBERON tissue · qualified
+          first, then trace (small-n)
+        </span>
+      </h3>
+      <ChartControls
+        yMetric={yMetric}
+        setYMetric={setYMetric}
+        sortMode={sortMode}
+        setSortMode={setSortMode}
+        sortOptions={[
+          { value: "value", label: "By value" },
+          { value: "type", label: "A → Z" },
+        ]}
+      />
+      <div className={styles.colChart}>
+        <YAxis scaleMax={scaleMax} yMetric={yMetric} />
+        <ul className={styles.colCanvas}>
+          {sorted.map((r) => {
+            const value = readMetric(r, yMetric);
+            const height = Math.max(
+              0,
+              Math.min(100, (value / scaleMax) * 100),
+            );
+            const meanVal = r.mean_log1p_cp10k ?? 0;
+            const pctVal = r.pct_expressing ?? 0;
+            const popover = (
+              <>
+                <div className={styles.popHeader}>
+                  <span
+                    className={styles.swatch}
+                    style={{ background: tissueColor }}
+                    aria-hidden
+                  />
+                  <strong>{r.tissue}</strong>
+                  <span className={styles.popMeta}>{r.uberon_id}</span>
+                </div>
+                <dl className={styles.popStats}>
+                  <div>
+                    <dt>Score</dt>
+                    <dd>{fmtMean(meanVal * pctVal)}</dd>
+                  </div>
+                  <div>
+                    <dt>Mean log1p</dt>
+                    <dd>{fmtMean(meanVal)}</dd>
+                  </div>
+                  <div>
+                    <dt>% expressing</dt>
+                    <dd>
+                      {fmtPct(pctVal)}
+                      <span className={styles.popHint}>
+                        {" "}
+                        ({fmtN(r.n_expressing)} / {fmtN(r.n_total)} cells)
+                      </span>
+                    </dd>
+                  </div>
+                </dl>
+              </>
+            );
+            const hoverTitle = r.is_trace
+              ? `Trace: only ${r.n_expressing} of ${r.n_total.toLocaleString()} cells expressing (${(pctVal * 100).toFixed(2)}%). Mean is real but small-n.`
+              : undefined;
+            return (
+              <ColumnBar
+                key={r.uberon_id}
+                height={height}
+                color={tissueColor}
+                label={r.tissue}
+                isTrace={r.is_trace}
+                popover={popover}
+                hoverTitle={hoverTitle}
+              />
+            );
+          })}
+        </ul>
+      </div>
+    </section>
+  );
+}
+
+/**
+ * Per-category summary. One horizontal bar per category present in
+ * the gene's top_cell_types. Reader-visible as the "first read" of
+ * which broad cell class the gene is strongest in. Vertical-column
+ * layout would be overkill for ≤10 short rows; keeping horizontal.
+ */
+function CategoryAverages({ rows }: { rows: Decorated[] }) {
+  const [yMetric, setYMetric] = useState<YMetric>("score");
+
   const summary = useMemo(() => {
     const groups = new Map<CellCategory, Decorated[]>();
     for (const r of rows) {
@@ -329,21 +584,24 @@ function CategoryAverages({
       arr.push(r);
       groups.set(r.category, arr);
     }
-    const metric = (r: Decorated): number => readMetric(r, yMetric);
+    const m = (r: Decorated): number => readMetric(r, yMetric);
     return CATEGORIES.map((c) => {
       const arr = groups.get(c) ?? [];
       if (arr.length === 0) return null;
-      const avg =
-        arr.reduce((s, r) => s + metric(r), 0) / arr.length;
+      const avg = arr.reduce((s, r) => s + m(r), 0) / arr.length;
       return { category: c, n: arr.length, avg };
     })
-      .filter((d): d is { category: CellCategory; n: number; avg: number } => !!d)
+      .filter(
+        (d): d is { category: CellCategory; n: number; avg: number } => !!d,
+      )
       .sort((a, b) => b.avg - a.avg);
   }, [rows, yMetric]);
 
-  // Hide the per-category block when only 1 (or 0) categories qualify:
-  // 1 row is redundant with the Common Cell Types chart below (e.g.
-  // GPR75 only has 1 kidney epithelial hit → 1 Epithelial row here).
+  const scaleMax = useMemo(() => {
+    const observed = summary.reduce((mx, r) => Math.max(mx, r.avg), 0);
+    return Math.max(metricScaleFloor(yMetric), observed);
+  }, [summary, yMetric]);
+
   if (summary.length <= 1) return null;
 
   return (
@@ -354,6 +612,7 @@ function CategoryAverages({
           mean of the active metric across cell types in each category
         </span>
       </h3>
+      <ChartControls yMetric={yMetric} setYMetric={setYMetric} />
       <ul className={styles.catList}>
         {summary.map((row) => {
           const pct = Math.max(0, Math.min(100, (row.avg / scaleMax) * 100));
@@ -376,118 +635,7 @@ function CategoryAverages({
                   aria-hidden
                 />
                 <span className={styles.catValue}>
-                  {yMetric === "pct" ? fmtPct(row.avg) : fmtMean(row.avg)}
-                </span>
-              </div>
-            </li>
-          );
-        })}
-      </ul>
-    </section>
-  );
-}
-
-/**
- * Top tissues block — horizontal bars, one per UBERON term in the
- * gene's `top_tissues` (v2.1+). Sits ABOVE the cell-type charts as
- * the coarsest read: "which organs is this gene in?" before drilling
- * into the cell-type subdivisions below. Same shape / metric as
- * `CategoryAverages` — keeps the visual language consistent.
- *
- * Uses a single neutral fill (teal) rather than per-tissue colors:
- * there are ~150 distinct UBERON terms in CZI, too many to color
- * individually without diluting the cell-type category palette
- * below. The reader uses the bar's TEXT label, not its fill, to
- * identify the tissue.
- */
-function TopTissues({
-  rows,
-  yMetric,
-  scaleMax,
-}: {
-  rows: TissueAggregateRow[];
-  yMetric: YMetric;
-  scaleMax: number;
-}) {
-  const sorted = useMemo(() => {
-    const metric = (r: TissueAggregateRow): number => readMetric(r, yMetric);
-    // Qualified tissues first, then trace, each by metric DESC.
-    // Otherwise a high-mean small-n trace tissue (pleura at mean 2.3,
-    // n=4) would outrank a moderate-mean qualified one (brain at
-    // mean 1.97, n=20k) and the visual story would be wrong.
-    // v2.1.1: no truncation — the build already emits a bounded list
-    // (~50-150 tissues per gene) and the user explicitly asked to see
-    // all of them.
-    return [...rows].sort((a, b) => {
-      const ta = a.is_trace ? 1 : 0;
-      const tb = b.is_trace ? 1 : 0;
-      if (ta !== tb) return ta - tb;
-      return metric(b) - metric(a);
-    });
-  }, [rows, yMetric]);
-
-  if (sorted.length === 0) return null;
-
-  const tissueColor = "var(--teal-mid, #3d6b60)";
-
-  return (
-    <section className={styles.chartBlock}>
-      <h3 className={styles.subhead}>
-        Top tissues
-        <span className={styles.subheadMeta}>
-          pooled across cell types in each UBERON tissue · qualified
-          first, then trace (small-n) tissues
-        </span>
-      </h3>
-      <ul className={styles.catList}>
-        {sorted.map((row) => {
-          const value = readMetric(row, yMetric);
-          const pct = Math.max(0, Math.min(100, (value / scaleMax) * 100));
-          const isTrace = !!row.is_trace;
-          // Mute trace rows so the qualified ones read first. The build
-          // sorts qualified-first so all trace rows cluster at the
-          // bottom of the list — visual hierarchy reinforces the data.
-          const rowColor = isTrace
-            ? "color-mix(in srgb, var(--teal-mid, #3d6b60) 35%, transparent)"
-            : tissueColor;
-          return (
-            <li
-              key={row.uberon_id}
-              className={styles.catRow}
-              data-trace={isTrace || undefined}
-              title={
-                isTrace
-                  ? `Trace: only ${row.n_expressing} of ${row.n_total.toLocaleString()} cells expressing (${(row.pct_expressing * 100).toFixed(2)}%). Mean is real but small-n.`
-                  : undefined
-              }
-            >
-              <div className={styles.catLabel}>
-                <span
-                  className={styles.swatch}
-                  style={{ background: rowColor }}
-                  aria-hidden
-                />
-                <span className={styles.catName}>{row.tissue}</span>
-                {isTrace && (
-                  <span className={styles.traceBadge} aria-label="trace expression">
-                    trace
-                  </span>
-                )}
-                <span
-                  className={styles.catCount}
-                  title={`${row.n_expressing.toLocaleString()} of ${row.n_total.toLocaleString()} cells expressing`}
-                >
-                  {fmtN(row.n_expressing)}
-                </span>
-              </div>
-              <div className={styles.catTrack}>
-                <div
-                  className={styles.catFill}
-                  style={{ width: `${pct}%`, background: rowColor }}
-                  aria-hidden
-                />
-                <span className={styles.catValue}>
-                  {yMetric === "pct" ? fmtPct(value) : fmtMean(value)}
+                  {fmtValue(row.avg, yMetric)}
                 </span>
               </div>
             </li>
@@ -499,17 +647,7 @@ function TopTissues({
 }
 
 export function CellxGeneChart({ rows, tissues = [] }: Props) {
-  const [yMetric, setYMetric] = useState<YMetric>("mean");
-  const [sortMode, setSortMode] = useState<SortMode>("value");
-
   const decorated = useMemo(() => decorate(rows), [rows]);
-  const common = useMemo(
-    () => decorated.filter((r) => !r.is_rare),
-    [decorated],
-  );
-  const rare = useMemo(() => decorated.filter((r) => r.is_rare), [decorated]);
-
-  const scaleMax = metricScaleMax(yMetric);
 
   const presentCategories = useMemo(() => {
     const seen = new Set<CellCategory>();
@@ -519,117 +657,13 @@ export function CellxGeneChart({ rows, tissues = [] }: Props) {
 
   return (
     <div className={styles.chart}>
-      <div
-        className={styles.controls}
-        role="toolbar"
-        aria-label="Chart controls"
-      >
-        <div className={styles.controlGroup}>
-          <span className={styles.controlLabel}>Y-axis</span>
-          <div className={styles.toggle} role="radiogroup" aria-label="Y-axis metric">
-            <button
-              type="button"
-              role="radio"
-              aria-checked={yMetric === "mean"}
-              data-active={yMetric === "mean"}
-              onClick={() => setYMetric("mean")}
-              title="Mean log1p(CP10K) among expressing cells — how strongly the cells that DO express it transcribe it"
-            >
-              Mean expression
-            </button>
-            <button
-              type="button"
-              role="radio"
-              aria-checked={yMetric === "pct"}
-              data-active={yMetric === "pct"}
-              onClick={() => setYMetric("pct")}
-              title="Fraction of cells expressing the gene — n_expressing / n_total"
-            >
-              % expressing
-            </button>
-            <button
-              type="button"
-              role="radio"
-              aria-checked={yMetric === "score"}
-              data-active={yMetric === "score"}
-              onClick={() => setYMetric("score")}
-              title="Mean × % expressing — population-mean expression. Approximates HPA-style nTPM. Best single number for delivery-target questions: 'if I pick cells of this type, what total signal do I get?'"
-            >
-              Score (mean × %)
-            </button>
-          </div>
-        </div>
-        <div className={styles.controlGroup}>
-          <span className={styles.controlLabel}>Sort</span>
-          <div className={styles.toggle} role="radiogroup" aria-label="Sort order">
-            <button
-              type="button"
-              role="radio"
-              aria-checked={sortMode === "value"}
-              data-active={sortMode === "value"}
-              onClick={() => setSortMode("value")}
-            >
-              By value
-            </button>
-            <button
-              type="button"
-              role="radio"
-              aria-checked={sortMode === "category"}
-              data-active={sortMode === "category"}
-              onClick={() => setSortMode("category")}
-            >
-              By category
-            </button>
-            <button
-              type="button"
-              role="radio"
-              aria-checked={sortMode === "tissue"}
-              data-active={sortMode === "tissue"}
-              onClick={() => setSortMode("tissue")}
-            >
-              By tissue
-            </button>
-            <button
-              type="button"
-              role="radio"
-              aria-checked={sortMode === "type"}
-              data-active={sortMode === "type"}
-              onClick={() => setSortMode("type")}
-            >
-              A → Z
-            </button>
-          </div>
-        </div>
-      </div>
-
-      {tissues.length > 0 && (
-        <TopTissues rows={tissues} yMetric={yMetric} scaleMax={scaleMax} />
-      )}
-
-      <CategoryAverages rows={decorated} yMetric={yMetric} scaleMax={scaleMax} />
-
+      {tissues.length > 0 && <TopTissues rows={tissues} />}
+      <CategoryAverages rows={decorated} />
       <CellTypeChart
-        title="Common cell types"
-        subtitle="≥ 10,000 cells sampled per cell type — high-confidence rankings"
-        rows={common}
-        maxRows={COMMON_MAX}
-        yMetric={yMetric}
-        sortMode={sortMode}
-        scaleMax={scaleMax}
+        title="Cell types"
+        subtitle="every cell type with detectable expression · qualified first, then trace"
+        rows={decorated}
       />
-
-      {rare.length > 0 && (
-        <CellTypeChart
-          title="Rare high-expressors"
-          subtitle="< 10,000 cells sampled, mean ≥ 2 — comparison only; small-n caveat"
-          rows={rare}
-          maxRows={RARE_MAX}
-          yMetric={yMetric}
-          sortMode={sortMode}
-          scaleMax={scaleMax}
-        />
-      )}
-
       {presentCategories.length > 0 && (
         <ul className={styles.legend} aria-label="Category legend">
           {presentCategories.map((c) => (
