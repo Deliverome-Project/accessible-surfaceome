@@ -359,7 +359,18 @@ function TopTissues({
   const sorted = useMemo(() => {
     const metric = (r: TissueAggregateRow): number =>
       yMetric === "mean" ? r.mean_log1p_cp10k ?? 0 : r.pct_expressing ?? 0;
-    return [...rows].sort((a, b) => metric(b) - metric(a)).slice(0, 15);
+    // Qualified tissues first, then trace, each by metric DESC.
+    // Otherwise a high-mean small-n trace tissue (pleura at mean 2.3,
+    // n=4) would outrank a moderate-mean qualified one (brain at
+    // mean 1.97, n=20k) and the visual story would be wrong.
+    return [...rows]
+      .sort((a, b) => {
+        const ta = a.is_trace ? 1 : 0;
+        const tb = b.is_trace ? 1 : 0;
+        if (ta !== tb) return ta - tb;
+        return metric(b) - metric(a);
+      })
+      .slice(0, 15);
   }, [rows, yMetric]);
 
   if (sorted.length === 0) return null;
@@ -371,7 +382,8 @@ function TopTissues({
       <h3 className={styles.subhead}>
         Top tissues
         <span className={styles.subheadMeta}>
-          pooled across all cell types in each UBERON tissue
+          pooled across cell types in each UBERON tissue · qualified
+          first, then trace (small-n) tissues
         </span>
       </h3>
       <ul className={styles.catList}>
@@ -379,23 +391,47 @@ function TopTissues({
           const value =
             yMetric === "mean" ? row.mean_log1p_cp10k : row.pct_expressing;
           const pct = Math.max(0, Math.min(100, (value / scaleMax) * 100));
+          const isTrace = !!row.is_trace;
+          // Mute trace rows so the qualified ones read first. The build
+          // sorts qualified-first so all trace rows cluster at the
+          // bottom of the list — visual hierarchy reinforces the data.
+          const rowColor = isTrace
+            ? "color-mix(in srgb, var(--teal-mid, #3d6b60) 35%, transparent)"
+            : tissueColor;
           return (
-            <li key={row.uberon_id} className={styles.catRow}>
+            <li
+              key={row.uberon_id}
+              className={styles.catRow}
+              data-trace={isTrace || undefined}
+              title={
+                isTrace
+                  ? `Trace: only ${row.n_expressing} of ${row.n_total.toLocaleString()} cells expressing (${(row.pct_expressing * 100).toFixed(2)}%). Mean is real but small-n.`
+                  : undefined
+              }
+            >
               <div className={styles.catLabel}>
                 <span
                   className={styles.swatch}
-                  style={{ background: tissueColor }}
+                  style={{ background: rowColor }}
                   aria-hidden
                 />
                 <span className={styles.catName}>{row.tissue}</span>
-                <span className={styles.catCount} title={`${row.n_expressing.toLocaleString()} of ${row.n_total.toLocaleString()} cells`}>
+                {isTrace && (
+                  <span className={styles.traceBadge} aria-label="trace expression">
+                    trace
+                  </span>
+                )}
+                <span
+                  className={styles.catCount}
+                  title={`${row.n_expressing.toLocaleString()} of ${row.n_total.toLocaleString()} cells expressing`}
+                >
                   {fmtN(row.n_expressing)}
                 </span>
               </div>
               <div className={styles.catTrack}>
                 <div
                   className={styles.catFill}
-                  style={{ width: `${pct}%`, background: tissueColor }}
+                  style={{ width: `${pct}%`, background: rowColor }}
                   aria-hidden
                 />
                 <span className={styles.catValue}>

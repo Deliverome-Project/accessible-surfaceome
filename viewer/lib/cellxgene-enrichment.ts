@@ -108,6 +108,12 @@ export interface TissueAggregateRow {
   n_expressing: number;
   n_total: number;
   pct_expressing: number;
+  /** True when the tissue passes n_total ≥ 1000 but fails the noise
+   *  filter (n_expressing < 10 OR pct < 1%). Trace rows render muted
+   *  with a "trace" badge — useful for low-expression genes whose
+   *  qualified tissues alone don't tell the story (GPR75: only brain
+   *  and embryo qualify, but pleura/forelimb/intestine carry signal). */
+  is_trace?: boolean;
 }
 
 export interface CellxGeneEnrichment {

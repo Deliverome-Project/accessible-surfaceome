@@ -282,6 +282,34 @@
   background: color-mix(in srgb, var(--ink) 5%, transparent);
 }
 
+/* Mute trace rows — tissue name dims, count emphasizes the small n
+   (so the reader sees WHY this row is faded), value-text stays
+   tabular-nums readable. The bar fill is muted at the inline-color
+   level (see TopTissues render). */
+.catRow[data-trace="true"] .catName {
+  color: var(--ink-soft);
+  font-style: italic;
+}
+.catRow[data-trace="true"] .catValue {
+  color: var(--ink-soft);
+}
+
+/* The "trace" badge — sits between the tissue label and the count.
+   Small, lowercase, low-saturation so it doesn't compete with the
+   qualified rows above it. */
+.traceBadge {
+  display: inline-block;
+  padding: 1px 6px;
+  margin-left: 4px;
+  border-radius: 99px;
+  font-size: 0.6rem;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: lowercase;
+  background: color-mix(in srgb, var(--ink) 8%, transparent);
+  color: var(--ink-faded);
+}
+
 .catTrack {
   position: relative;
   display: flex;

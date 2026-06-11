@@ -227,18 +227,29 @@ def main():
     for r in rare: r["is_rare"] = True
     top_cell_types = common + rare
 
-    # Sort + cap top_tissues: top 15 by mean DESC. Apply the SAME noise
-    # filter we use for cell types so we don't rank tissues with 4
-    # expressing cells out of 19,000 at the top — pleura at mean=2.3
-    # with pct=0.0002 is noise, not "high in pleura". A tissue must
-    # have n_expressing >= MIN_N_EXPRESSING AND pct >= MIN_PCT to
-    # qualify as a "top tissue" worth showing.
+    # Sort + cap top_tissues. Include BOTH qualified and trace tissues
+    # in one ranked list so the reader sees the long tail for low-
+    # expression genes (GPR75 has only 4 qualified tissues but ~10
+    # trace tissues that still carry signal — pleura/forelimb at high
+    # mean but n_expressing < 10).
+    #
+    # is_trace = passes n_total >= TISSUE_MIN_TOTAL but fails the
+    # MIN_N_EXPRESSING or MIN_PCT noise filter. Viewer renders trace
+    # rows muted with a badge.
+    eligible = [r for r in tissue_rows if r["n_total"] >= TISSUE_MIN_TOTAL]
+    for r in eligible:
+        r["is_trace"] = (
+            r["n_expressing"] < MIN_N_EXPRESSING
+            or r["pct_expressing"] < MIN_PCT
+        )
+    # Two-tier sort: qualified tissues first (by mean DESC), then
+    # trace (by mean DESC). Otherwise a 4-cell pleura at mean 2.3
+    # outranks a 20k-cell brain at mean 1.97 — wrong story for the
+    # reader. Within each tier, mean ordering tells the magnitude
+    # story.
     top_tissues = sorted(
-        [r for r in tissue_rows
-         if r["n_total"] >= TISSUE_MIN_TOTAL
-         and r["n_expressing"] >= MIN_N_EXPRESSING
-         and r["pct_expressing"] >= MIN_PCT],
-        key=lambda r: -r["mean_log1p_cp10k"],
+        eligible,
+        key=lambda r: (r["is_trace"], -r["mean_log1p_cp10k"]),
     )[:15]
 
     rec = {
