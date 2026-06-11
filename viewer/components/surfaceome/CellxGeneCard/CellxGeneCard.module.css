@@ -1,0 +1,168 @@
+/* CellxGene tab styles. Editorial register matching FiltersCard /
+   ExpressionCard — no card chrome, type-system carries structure.
+   Bars use the maroon accent the rest of the gene page uses. */
+
+.viewerLink {
+  font-family: var(--font-sans);
+}
+
+.empty {
+  font-family: var(--font-sans);
+  font-size: 0.95rem;
+  color: var(--ink-soft);
+  margin: var(--space-3) 0 0;
+}
+
+/* Each subsection (selective targets, top cell types) gets its own
+   block. Subhead reads as a label rather than a header — the SectionCard
+   title already does the heavy lifting. */
+.block {
+  margin-top: var(--space-6);
+}
+.block:first-of-type {
+  margin-top: var(--space-4);
+}
+
+.subhead {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: var(--space-3);
+  margin: 0 0 var(--space-3);
+  padding-top: var(--space-3);
+  border-top: 1px solid var(--line);
+  font-family: var(--font-sans);
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--ink-soft);
+}
+.block:first-of-type .subhead {
+  padding-top: 0;
+  border-top: none;
+}
+
+.subheadMeta {
+  font-family: var(--font-sans);
+  font-size: 0.7rem;
+  font-weight: 400;
+  letter-spacing: 0.02em;
+  text-transform: none;
+  color: var(--ink-faded);
+}
+
+/* Each row in the lists: label / bar / value, side-by-side. */
+.targetList,
+.cellList {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.targetRow,
+.cellRow {
+  display: grid;
+  grid-template-columns: minmax(180px, 1.25fr) minmax(120px, 2fr) auto;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-2) 0;
+  border-bottom: 1px solid var(--line-soft);
+  font-family: var(--font-sans);
+}
+.targetRow:last-child,
+.cellRow:last-child {
+  border-bottom: none;
+}
+
+/* On narrow screens (phone), collapse to two-line rows. */
+@media (max-width: 640px) {
+  .targetRow,
+  .cellRow {
+    grid-template-columns: 1fr;
+  }
+  .delta {
+    text-align: left;
+  }
+}
+
+.targetLabel,
+.cellLabel {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.targetTitle,
+.cellTitle {
+  font-size: 0.92rem;
+  font-weight: 600;
+  color: var(--ink);
+  /* Long cell-type names wrap rather than truncate — readers care about
+     the difference between "alveolar type 2" and "alveolar type 1" so
+     ellipsis is the wrong tradeoff. */
+  overflow-wrap: anywhere;
+}
+
+.targetMeta,
+.cellMeta {
+  font-size: 0.72rem;
+  color: var(--ink-faded);
+  letter-spacing: 0.02em;
+}
+
+/* The expression bar. Fixed 0-6 scale (typical WMG range tops out
+   ~6-7 for the highest-expressing marker genes), so a gene's bars are
+   comparable across pages without re-scaling. */
+.barWrap {
+  position: relative;
+  display: flex;
+  align-items: center;
+  height: 14px;
+  background: var(--accent-wash, color-mix(in srgb, var(--accent) 8%, transparent));
+  border-radius: 2px;
+}
+
+.barFill {
+  height: 100%;
+  background: var(--accent-fill);
+  border-radius: 2px;
+  transition: width 200ms ease-out;
+}
+
+.barValue {
+  position: absolute;
+  right: var(--space-2);
+  font-size: 0.72rem;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  color: var(--ink);
+  letter-spacing: 0.02em;
+}
+
+.delta {
+  font-size: 0.85rem;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  color: var(--accent-deep);
+  text-align: right;
+}
+
+/* The lymphoid-baseline reference line. Small, italic, sits under the
+   selective-target list as the "background" anchor. */
+.baselineLine {
+  margin: var(--space-3) 0 0;
+  font-family: var(--font-sans);
+  font-size: 0.8rem;
+  color: var(--ink-soft);
+  font-style: italic;
+}
+.baselineLine strong {
+  font-style: normal;
+  color: var(--ink);
+  font-variant-numeric: tabular-nums;
+}

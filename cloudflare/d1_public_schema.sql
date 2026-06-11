@@ -755,3 +755,45 @@ CREATE TABLE IF NOT EXISTS schweke_homomer_release (
     loaded_at                   TEXT NOT NULL DEFAULT (datetime('now')),
     notes                       TEXT
 );
+
+
+-- ---------------------------------------------------------------------------
+-- czi_cellxgene_enrichment — per-gene CZI CellxGene RNA enrichment summary.
+--
+-- Backs the viewer's "CellxGene" tab. One row per (gene_symbol,
+-- schema_version, census_version). The `enrichment_json` blob holds the
+-- summary the viewer renders: top cell types globally, per-enrichment-target
+-- aggregates (mapped via tissue_mappings.json's `czi_cell_types` slot),
+-- lymphoid baseline (B + CD4T + CD8T), and the top-N targets ranked by
+-- selectivity delta vs that lymphoid baseline.
+--
+-- The data is "WMG-scale" — mean log1p(census_normalized_counts_per_10k)
+-- among expressing cells, identical to what cellxgene.cziscience.com's
+-- gene-expression viewer displays. Pre-computed from CZI's published
+-- condensed expression summary (`expression-summary-condensed-DD-MM-YY.csv.gz`),
+-- so consumers don't have to stream a 1 GB file every request.
+--
+-- Census data is published under CC-BY 4.0; the enrichment summary inherits
+-- that license. Each row carries the census release date so old viewer
+-- snapshots stay traceable when CZI rolls a new census version.
+-- ---------------------------------------------------------------------------
+
+CREATE TABLE IF NOT EXISTS czi_cellxgene_enrichment (
+    gene_symbol         TEXT NOT NULL,
+    hgnc_id             TEXT,                          -- denormalized for cheap join
+    ensembl_gene        TEXT,                          -- denormalized
+    schema_version      TEXT NOT NULL,                 -- enrichment-record schema (e.g. '1.0')
+    census_version      TEXT NOT NULL,                 -- e.g. '2025-11-08'
+    enrichment_json     TEXT NOT NULL,                 -- the per-gene summary, JSON-encoded
+    computed_at         TEXT NOT NULL,                 -- when the summary was built
+    synced_at           TEXT NOT NULL DEFAULT (datetime('now')),
+    PRIMARY KEY (gene_symbol, schema_version, census_version)
+);
+
+CREATE INDEX IF NOT EXISTS idx_czi_cellxgene_enrichment_hgnc
+    ON czi_cellxgene_enrichment (hgnc_id);
+CREATE INDEX IF NOT EXISTS idx_czi_cellxgene_enrichment_ensembl
+    ON czi_cellxgene_enrichment (ensembl_gene);
+CREATE INDEX IF NOT EXISTS idx_czi_cellxgene_enrichment_census
+    ON czi_cellxgene_enrichment (census_version);
+

@@ -10,6 +10,11 @@
 //   GET /v1/health
 //   GET /v1/genes               — list of annotated genes
 //   GET /v1/genes/:symbol       — full SurfaceomeRecord
+//   GET /v1/genes/:symbol/cellxgene — CZI CellxGene RNA enrichment summary
+//                                  (top cell types, per-enrichment-target
+//                                  aggregates, lymphoid baseline, top-N
+//                                  selective targets — pre-computed from
+//                                  CZI's WMG condensed export)
 //   GET /v1/catalog             — genome-wide candidate-universe table
 //                                  (DB votes + latest triage + deep-dive flag)
 //   GET /v1/orthologs/:symbol   — ortholog table for a gene
@@ -815,6 +820,40 @@ async function handleGene(env, symbol) {
   return json(record, { ttl: CACHE_TTL_LONG });
 }
 
+// Per-gene CZI CellxGene RNA enrichment summary. Pre-computed from CZI's
+// WMG condensed expression export (the file backing
+// cellxgene.cziscience.com's gene-expression viewer) and pushed to D1 by
+// scripts/sync_czi_enrichment_to_d1.py. The "Summary" framing — top cell
+// types, per-enrichment-target aggregates, lymphoid baseline, top-N
+// selective targets — is what the viewer's CellxGene tab renders. Long
+// TTL because the rows only refresh when CZI cuts a new census release
+// (currently quarterly); republishes purge by URL via publish_record's
+// edge-cache purge mechanism.
+async function handleGeneCellxGene(env, symbol) {
+  const sym = checkSymbol(symbol);
+  if (!sym) return badRequest("invalid_symbol");
+  const row = await env.DB.prepare(
+    `SELECT enrichment_json, schema_version, census_version, computed_at
+       FROM czi_cellxgene_enrichment
+      WHERE gene_symbol = ?
+      ORDER BY census_version DESC, schema_version DESC
+      LIMIT 1`
+  ).bind(sym).first();
+  if (!row) return notFound("gene_not_in_cellxgene");
+  let payload;
+  try {
+    payload = JSON.parse(row.enrichment_json);
+  } catch (e) {
+    return json({ error: "bad_enrichment_json" }, { status: 500, ttl: 0 });
+  }
+  // Echo the (schema_version, census_version, computed_at) tuple so the
+  // viewer can render a "CZI Census 2025-11-08" tag without re-fetching.
+  payload.schema_version = row.schema_version;
+  payload.census_version = row.census_version;
+  payload.computed_at = row.computed_at;
+  return json(payload, { ttl: CACHE_TTL_LONG });
+}
+
 async function handleOrthologs(env, symbol) {
   const sym = checkSymbol(symbol);
   if (!sym) return badRequest("invalid_symbol");
@@ -1543,6 +1582,7 @@ const V1_ENDPOINTS = [
   { group: "Deep dive", method: "GET", path: "/v1/health", summary: "Liveness + n_annotations" },
   { group: "Deep dive", method: "GET", path: "/v1/genes", summary: "Index of genes with a deep-dive SurfaceomeRecord" },
   { group: "Deep dive", method: "GET", path: "/v1/genes/{symbol}", summary: "Full SurfaceomeRecord JSON" },
+  { group: "Deep dive", method: "GET", path: "/v1/genes/{symbol}/cellxgene", summary: "CZI CellxGene RNA enrichment summary — top cell types + per-target aggregates + lymphoid baseline" },
   { group: "Deep dive", method: "GET", path: "/v1/orthologs/{symbol}", summary: "Mouse + cyno orthologs from the latest Ensembl Compara release" },
   { group: "Utility", method: "GET", path: "/v1/meta/sizes", summary: "Approximate per-endpoint response sizes, computed live from D1" },
   { group: "Utility", method: "GET", path: "/v1", summary: "This index" },
@@ -2480,6 +2520,11 @@ export default {
     if (path === "/v1/feedback/public") return handleFeedbackPublic(env, url);
 
     let m;
+    // /v1/genes/:symbol/cellxgene is MORE specific than /v1/genes/:symbol,
+    // so it must match first or the broader pattern would steal it.
+    if ((m = path.match(/^\/v1\/genes\/([^/]+)\/cellxgene$/))) {
+      return handleGeneCellxGene(env, m[1]);
+    }
     if ((m = path.match(/^\/v1\/genes\/([^/]+)$/))) return handleGene(env, m[1]);
     if ((m = path.match(/^\/v1\/orthologs\/([^/]+)$/))) return handleOrthologs(env, m[1]);
     if ((m = path.match(/^\/v1\/benchmark\/([^/]+)$/))) return handleBenchmarkOne(env, m[1]);
