@@ -1426,9 +1426,9 @@ export function CatalogTable({
             sortDir={sortDir}
             onClick={setSort}
             align="center"
-            title="Deep-dive agent surface-accessibility call (sort)"
+            title="Deep-dive agent surface verdict (sort)"
             extraClass={styles.ddHeaderCell}
-            info="The deep-dive agent's headline call — how reachable the protein is from outside the cell (high, moderate, low, or no). Present only for genes with a deep dive; click to open it."
+            info="The deep-dive agent's surface verdict — does this protein reach the cell surface in at least one cell state (high, moderate, low, or no)? The levels are evidence strength for the surfaces-at-all call, not a steady-state magnitude. Present only for genes with a deep dive; click to open it."
           />
           <SortableHeader
             label="Conf"
@@ -1439,7 +1439,7 @@ export function CatalogTable({
             align="center"
             title="Deep-dive agent confidence in the call (sort)"
             extraClass={styles.ddHeaderCell}
-            info="How confident the deep-dive agent is in its surface-accessibility call — high, moderate, or low."
+            info="How confident the deep-dive agent is in its surface verdict — high, moderate, or low."
           />
           <SortableHeader
             label="Evidence"
@@ -1461,7 +1461,7 @@ export function CatalogTable({
             align="center"
             title="Deep-dive state-dependence of the surface call (sort)"
             extraClass={styles.ddHeaderCell}
-            info="How much surface accessibility depends on cell state or context (e.g. activation, stress) — low, moderate, or high."
+            info="How much the surface verdict depends on cell state or context (e.g. activation, stress) — low, moderate, or high."
           />
         </div>
 
@@ -1896,7 +1896,7 @@ function CatalogRowView({
               ddf?.surface_accessibility,
               accessibilityTone(ddf?.surface_accessibility),
               ddf?.surface_accessibility ?? "—",
-              `Deep-dive surface accessibility: ${ddf?.surface_accessibility ?? "n/a"}`,
+              `Deep-dive surface verdict: ${ddf?.surface_accessibility ?? "n/a"}`,
             )}
             {vital(
               ddf?.confidence,

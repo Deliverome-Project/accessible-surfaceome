@@ -619,7 +619,7 @@ export function GeneHeader({
                 <>
                   <div className={styles.vital}>
                     <dt className={`label-mono ${styles.vitalK}`}>
-                      Accessibility
+                      Surface verdict
                       <InfoTip>{tooltips.surface_accessibility}</InfoTip>
                     </dt>
                     <dd className={styles.vitalV}>

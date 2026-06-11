@@ -112,8 +112,16 @@ export interface DdBoolSpec {
 
 export const DD_ENUM_FIELDS: readonly DdEnumSpec[] = [
   {
+    // Wire/storage name stays `surface_accessibility` everywhere (Pydantic,
+    // records on disk, D1, Worker, /v1/* API consumers). Only the DISPLAY
+    // LABEL changes — the field reads as a verdict graded by evidence
+    // strength (best-case-state, capped by THE BRACKET in
+    // surfaceome_synthesizer/prompts/system.md), not a steady-state
+    // magnitude. "Accessibility" misled readers into expecting % surface;
+    // "Surface verdict" is what it actually is. Pair with
+    // `surface_specificity` for the proportion axis.
     key: "surface_accessibility",
-    label: "Accessibility",
+    label: "Surface verdict",
     values: ["high", "moderate", "low", "uncertain", "no"],
     tooltipKey: "surface_accessibility",
     provenance: "llm",
