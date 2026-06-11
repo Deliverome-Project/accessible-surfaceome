@@ -160,25 +160,36 @@ export function CellxGeneCard({ data }: Props) {
       }
       lede={
         <>
-          Top cell types ranked by mean log1p(CP10K) expression in
-          expressing cells — the same scale cellxgene.cziscience.com&apos;s
-          gene-expression viewer shows. Switch the Y-axis to %
-          expressing for the dot-size channel of the WMG dot plot.{" "}
-          <InfoTip label="What these metrics mean">
-            <strong>Mean log1p(CP10K)</strong> averages over cells with
-            at least one transcript — how strongly the cells that DO
-            express it transcribe it. 1 ≈ detected, 2 = moderate, 4+ =
-            high, 6+ = among the strongest transcripts in that cell
-            type. <strong>% expressing</strong> is{" "}
-            <code>n_expressing / n_total</code> in the Census-primary
-            cohort. Hover any bar for cell-type details + the top
-            tissues that cell type was sampled from. Common cell types
-            (≥ 10,000 cells sampled) are plotted in the main panel;
-            rare high-expressors (&lt; 10,000 cells, mean ≥ 2) get their
-            own comparison panel below since small-n means are noisy.
-            The top-tissues block above the cell-type charts answers
-            &ldquo;which organs is this gene in?&rdquo; before drilling
-            into cell-type subdivisions.
+          Top cell types and tissues ranked by mean log1p(CP10K)
+          expression in expressing cells — the same scale
+          cellxgene.cziscience.com&apos;s gene-expression viewer shows.
+          Switch the Y-axis to % expressing for the dot-size channel
+          of the WMG dot plot.{" "}
+          <InfoTip label="What each block shows">
+            <strong>Top tissues</strong> — anatomical / organ axis,
+            pooled by UBERON term across every cell type sampled
+            from that tissue. &ldquo;Which organs is this gene
+            in?&rdquo;{" "}
+            <strong>Per-category average</strong> — cell-class axis,
+            grouping cell types into broad classes (Epithelial /
+            Immune / Neural / Endothelial / Stromal / Muscle /
+            Reproductive / Stem / Tumor / Other) by keyword on the
+            CL label. &ldquo;What kind of cell?&rdquo; Hidden when
+            only one class qualifies.{" "}
+            <strong>Common cell types</strong> — the specific CL
+            terms with ≥ 10,000 cells sampled (high-confidence).{" "}
+            <strong>Rare high-expressors</strong> — CL terms with
+            &lt; 10,000 cells but mean ≥ 2; comparison only,
+            small-n caveat.
+            <br />
+            <br />
+            <strong>Mean log1p(CP10K)</strong> averages over cells
+            with ≥ 1 transcript: 1 ≈ detected, 2 = moderate, 4+ =
+            high, 6+ = among the strongest. <strong>%
+            expressing</strong> is <code>n_expressing / n_total</code>{" "}
+            in the Census-primary cohort. Hover any bar for full
+            cell-type detail + the top 3 tissues that cell type was
+            sampled from.
           </InfoTip>
         </>
       }

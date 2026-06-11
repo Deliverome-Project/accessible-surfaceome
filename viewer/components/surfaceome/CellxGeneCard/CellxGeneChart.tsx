@@ -105,20 +105,19 @@ function sortRows(
 }
 
 /**
- * One column chart — vertical bars, cell types along the X-axis.
- * Each bar's height encodes the selected metric (mean log1p(CP10K) or
- * % expressing) on a fixed 0..scaleMax axis. Bar fills are colored by
- * the cell type's category (Epithelial / Immune / Neural / …).
+ * Cell-type chart — horizontal bars, one row per cell type. Reverted
+ * from the column layout because for genes like GPR75 (1-4 cell types
+ * after the noise filter) the column chart's fixed 240 px height was
+ * wasted whitespace. Horizontal rows are ~24 px each so 5 rows takes
+ * ~120 px and 25 rows fit in ~600 px — the layout scales with the
+ * data instead of reserving a fixed canvas.
  *
- * Why column instead of horizontal row-list: the row-list layout used
- * one line per cell type (~22 px), so ~10 cell types fit in a typical
- * gene-page viewport. The column layout puts each cell type in a
- * ~28 px-wide bar, so ~25 fit in the same horizontal space, with the
- * y-axis grid carrying scale. Reader trades labels-always-visible for
- * more cell types at a glance — every label is still recoverable via
- * the hover popover.
+ * Each bar fills horizontally to a percentage of `scaleMax` (7 for
+ * mean log1p, 1 for pct), colored by the cell type's category. The
+ * row's hover/focus state shows a popover with the full label, %
+ * expressing, cell counts, and top tissues.
  */
-function ColumnChart({
+function CellTypeChart({
   title,
   subtitle,
   rows,
@@ -152,111 +151,103 @@ function ColumnChart({
     );
   }
 
-  // Y-axis ticks at 25% intervals against the fixed scaleMax. Drawn
-  // as background grid lines via the .yGrid pseudo-element rules in
-  // CSS — here we emit the labels.
-  const tickValues =
-    yMetric === "mean"
-      ? [0, 1.75, 3.5, 5.25, 7]
-      : [0, 0.25, 0.5, 0.75, 1.0];
-
   return (
     <section className={styles.chartBlock}>
       <h3 className={styles.subhead}>
         {title}
         <span className={styles.subheadMeta}>{subtitle}</span>
       </h3>
-      <div className={styles.colChart}>
-        <div className={styles.yAxis} aria-hidden>
-          {[...tickValues].reverse().map((v) => (
-            <span key={v} className={styles.yTick}>
-              {yMetric === "mean" ? v.toFixed(1) : fmtPct(v)}
-            </span>
-          ))}
-        </div>
-        <ul className={styles.colCanvas}>
-          {sorted.map((r) => {
-            const meanVal = r.mean_log1p_cp10k ?? 0;
-            const pctVal = r.pct_expressing ?? 0;
-            const nExpressing = r.n_expressing ?? 0;
-            const nTotal = r.n_total ?? nExpressing;
-            const tissueList = r.tissues ?? [];
-            const value = yMetric === "mean" ? meanVal : pctVal;
-            const pct = Math.max(0, Math.min(100, (value / scaleMax) * 100));
-            const color = CATEGORY_COLORS[r.category];
-            const topTissues = tissueList.slice(0, 3);
-            return (
-              <li key={r.cl_id} className={styles.colBar} tabIndex={0}>
-                <div className={styles.colTrack}>
-                  <div
-                    className={styles.colFill}
-                    style={{ height: `${pct}%`, background: color }}
+      <ul className={styles.barList}>
+        {sorted.map((r) => {
+          const meanVal = r.mean_log1p_cp10k ?? 0;
+          const pctVal = r.pct_expressing ?? 0;
+          const nExpressing = r.n_expressing ?? 0;
+          const nTotal = r.n_total ?? nExpressing;
+          const tissueList = r.tissues ?? [];
+          const value = yMetric === "mean" ? meanVal : pctVal;
+          const pct = Math.max(0, Math.min(100, (value / scaleMax) * 100));
+          const color = CATEGORY_COLORS[r.category];
+          const topTissues = tissueList.slice(0, 3);
+          const tissuesInline = topTissues.map((t) => t.tissue).join(" · ");
+          return (
+            <li key={r.cl_id} className={styles.barRow} tabIndex={0}>
+              <div className={styles.barLabel}>
+                <span
+                  className={styles.swatch}
+                  style={{ background: color }}
+                  aria-hidden
+                />
+                <span className={styles.barName} title={r.cell_type}>
+                  {truncate(r.cell_type, LABEL_TRUNCATE_AT + 16)}
+                </span>
+                {tissuesInline && (
+                  <span className={styles.tissues}>{tissuesInline}</span>
+                )}
+              </div>
+              <div className={styles.barTrack}>
+                <div
+                  className={styles.barFill}
+                  style={{ width: `${pct}%`, background: color }}
+                  aria-hidden
+                />
+                <span className={styles.barValue}>
+                  {yMetric === "mean" ? fmtMean(value) : fmtPct(value)}
+                </span>
+              </div>
+              {/* Hover/focus popover — full detail. Positioned BELOW
+                  the row by the .barRow .popover CSS so it doesn't
+                  overlap the next row on the way down the list. */}
+              <div className={styles.popover} role="tooltip">
+                <div className={styles.popHeader}>
+                  <span
+                    className={styles.swatch}
+                    style={{ background: color }}
                     aria-hidden
                   />
+                  <strong>{r.cell_type}</strong>
+                  <span className={styles.popMeta}>{r.cl_id}</span>
+                  <span className={styles.popCategory}>{r.category}</span>
                 </div>
-                <span
-                  className={styles.colLabel}
-                  title={r.cell_type}
-                  aria-label={r.cell_type}
-                >
-                  {truncate(r.cell_type, LABEL_TRUNCATE_AT)}
-                </span>
-                {/* Hover/focus popover — same content as the previous
-                    horizontal layout. Z-indexed above bars; positioned
-                    at bar top so it doesn't get cut off when the bar is
-                    short. */}
-                <div className={styles.popover} role="tooltip">
-                  <div className={styles.popHeader}>
-                    <span
-                      className={styles.swatch}
-                      style={{ background: color }}
-                      aria-hidden
-                    />
-                    <strong>{r.cell_type}</strong>
-                    <span className={styles.popMeta}>{r.cl_id}</span>
-                    <span className={styles.popCategory}>{r.category}</span>
+                <dl className={styles.popStats}>
+                  <div>
+                    <dt>Mean log1p(CP10K)</dt>
+                    <dd>{fmtMean(meanVal)}</dd>
                   </div>
-                  <dl className={styles.popStats}>
-                    <div>
-                      <dt>Mean log1p(CP10K)</dt>
-                      <dd>{fmtMean(meanVal)}</dd>
-                    </div>
-                    <div>
-                      <dt>% expressing</dt>
-                      <dd>
-                        {fmtPct(pctVal)}
-                        <span className={styles.popHint}>
-                          {" "}
-                          ({fmtN(nExpressing)} / {fmtN(nTotal)} cells)
-                        </span>
-                      </dd>
-                    </div>
-                  </dl>
-                  {topTissues.length > 0 && (
-                    <div className={styles.popTissues}>
-                      <span className={styles.popTissuesLabel}>Tissues</span>
-                      <ul>
-                        {topTissues.map((t) => (
-                          <li key={t.uberon_id}>
-                            {t.tissue}
-                            <span className={styles.popHint}>
-                              {" "}
-                              {t.pct_expressing != null
-                                ? fmtPct(t.pct_expressing)
-                                : ""}{" "}
-                              {fmtMean(t.mean_log1p_cp10k)}
-                            </span>
-                          </li>
-                        ))}
-                      </ul>
-                    </div>
-                  )}
-                </div>
-              </li>
-            );
-          })}
-        </ul>
-      </div>
+                  <div>
+                    <dt>% expressing</dt>
+                    <dd>
+                      {fmtPct(pctVal)}
+                      <span className={styles.popHint}>
+                        {" "}
+                        ({fmtN(nExpressing)} / {fmtN(nTotal)} cells)
+                      </span>
+                    </dd>
+                  </div>
+                </dl>
+                {topTissues.length > 0 && (
+                  <div className={styles.popTissues}>
+                    <span className={styles.popTissuesLabel}>Tissues</span>
+                    <ul>
+                      {topTissues.map((t) => (
+                        <li key={t.uberon_id}>
+                          {t.tissue}
+                          <span className={styles.popHint}>
+                            {" "}
+                            {t.pct_expressing != null
+                              ? fmtPct(t.pct_expressing)
+                              : ""}{" "}
+                            {fmtMean(t.mean_log1p_cp10k)}
+                          </span>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
+              </div>
+            </li>
+          );
+        })}
+      </ul>
     </section>
   );
 }
@@ -297,7 +288,10 @@ function CategoryAverages({
       .sort((a, b) => b.avg - a.avg);
   }, [rows, yMetric]);
 
-  if (summary.length === 0) return null;
+  // Hide the per-category block when only 1 (or 0) categories qualify:
+  // 1 row is redundant with the Common Cell Types chart below (e.g.
+  // GPR75 only has 1 kidney epithelial hit → 1 Epithelial row here).
+  if (summary.length <= 1) return null;
 
   return (
     <section className={styles.chartBlock}>
@@ -514,7 +508,7 @@ export function CellxGeneChart({ rows, tissues = [] }: Props) {
 
       <CategoryAverages rows={decorated} yMetric={yMetric} scaleMax={scaleMax} />
 
-      <ColumnChart
+      <CellTypeChart
         title="Common cell types"
         subtitle="≥ 10,000 cells sampled per cell type — high-confidence rankings"
         rows={common}
@@ -525,7 +519,7 @@ export function CellxGeneChart({ rows, tissues = [] }: Props) {
       />
 
       {rare.length > 0 && (
-        <ColumnChart
+        <CellTypeChart
           title="Rare high-expressors"
           subtitle="< 10,000 cells sampled, mean ≥ 2 — comparison only; small-n caveat"
           rows={rare}
