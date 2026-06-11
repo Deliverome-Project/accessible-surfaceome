@@ -63,15 +63,19 @@ export interface CellTypeRow {
 
 /**
  * HPA-style elevation class. Computed per-gene from the linear (expm1)
- * mean expression across all cell types with n_total >= 50:
+ * mean expression on the relevant axis (cell type or tissue):
  *
- * - tissue_enriched: top cell type's linear mean >= 4× the 2nd highest
- * - group_enriched: a group of 2-5 contiguously-ranked cell types whose
- *   minimum mean >= 4× the next-ranked cell type after the group
- * - tissue_enhanced: top cell type's mean >= 4× the average of all others
+ * - tissue_enriched: top entity's linear mean >= 4× the 2nd highest
+ * - group_enriched: a group of 2-5 contiguously-ranked entities whose
+ *   minimum mean >= 4× the next-ranked entity after the group
+ * - tissue_enhanced: top entity's mean >= 4× the average of all others
  * - low_specificity: none of the above
  *
- * Priority on tie: enriched > group > enhanced > low.
+ * Priority on tie: enriched > group > enhanced > low. HPA reports this
+ * on both the cell-type axis AND the tissue axis because a gene like
+ * SLC34A2 (6+ co-expressing alveolar subtypes) exceeds the 2-5
+ * group cap at the cell-type level but is unambiguously
+ * tissue_enriched at lung.
  */
 export type EnrichmentClass =
   | "tissue_enriched"
@@ -79,23 +83,57 @@ export type EnrichmentClass =
   | "tissue_enhanced"
   | "low_specificity";
 
+export interface CellTypeEnrichment {
+  class: EnrichmentClass;
+  /** CL IDs the elevation applies to (1 for enriched/enhanced,
+   *  2-5 for group_enriched, empty for low_specificity). */
+  cl_ids: string[];
+  /** Linear fold change at the elevation boundary. Null for low_specificity. */
+  fold_change: number | null;
+}
+
+export interface TissueEnrichment {
+  class: EnrichmentClass;
+  /** UBERON IDs the elevation applies to. */
+  uberon_ids: string[];
+  /** Human labels parallel to uberon_ids ("lung", "brain", …). */
+  tissue_labels: string[];
+  fold_change: number | null;
+}
+
+export interface TissueAggregateRow {
+  tissue: string;
+  uberon_id: string;
+  mean_log1p_cp10k: number;
+  n_expressing: number;
+  n_total: number;
+  pct_expressing: number;
+}
+
 export interface CellxGeneEnrichment {
   schema_version: string;
   census_version: string;
   gene_symbol: string;
   hgnc_id: string | null;
   ensembl_gene: string | null;
-  /** HPA-style elevation class for the gene (see EnrichmentClass). */
+
+  /** Per-cell-type HPA elevation class. v2.1+. */
+  cell_type_enrichment?: CellTypeEnrichment;
+  /** Per-tissue HPA elevation class. v2.1+. */
+  tissue_enrichment?: TissueEnrichment;
+
+  /** Legacy back-compat fields. In v2.0 these were the only classification
+   *  surface; v2.1 keeps them populated mirroring cell_type_enrichment.* so
+   *  the viewer's older readers continue to work during transitions. */
   enrichment_class?: EnrichmentClass;
-  /** CL IDs the elevation applies to (length 1 for enriched/enhanced,
-   *  2-5 for group_enriched, empty for low_specificity). */
   enrichment_cl_ids?: string[];
-  /** Linear fold change at the elevation boundary. Null for low_specificity. */
   fold_change?: number | null;
-  /** Top cell types overall, ranked by mean_log1p_cp10k DESC. Capped at
-   *  30 entries: up to 20 common (n_total ≥ 1000) plus up to 10 rare
-   *  high-expressors (n_total < 1000, mean ≥ 2.0). */
+
+  /** Top cell types overall, ranked by mean_log1p_cp10k DESC. v2.1 caps
+   *  at 30: up to 20 common (n_total ≥ 10,000) + up to 10 rare. */
   top_cell_types: CellTypeRow[];
+  /** Top tissues overall, ranked by mean_log1p_cp10k DESC. v2.1+. */
+  top_tissues?: TissueAggregateRow[];
   computed_at?: string;
 }
 

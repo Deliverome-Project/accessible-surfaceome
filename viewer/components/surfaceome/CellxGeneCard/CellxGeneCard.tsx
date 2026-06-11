@@ -1,6 +1,7 @@
 import type {
   CellxGeneEnrichment,
   EnrichmentClass,
+  TissueAggregateRow,
 } from "../../../lib/cellxgene-enrichment";
 import { CITATIONS, pubmedUrl } from "../../../lib/citations";
 import { InfoTip } from "../../InfoTip/InfoTip";
@@ -37,6 +38,57 @@ function fmtFold(v: number | null | undefined): string {
   return `${v.toFixed(1)}×`;
 }
 
+function EnrichmentChip({
+  axis,
+  klass,
+  foldChange,
+  entityNames,
+}: {
+  axis: "cell type" | "tissue";
+  klass: EnrichmentClass;
+  foldChange: number | null;
+  entityNames: string[];
+}) {
+  return (
+    <div className={styles.classChip} data-class={klass}>
+      <span className={styles.classAxis}>{axis}</span>
+      <span className={styles.classLabel}>
+        <span className={styles.classDot} aria-hidden />
+        {ENRICHMENT_LABELS[klass]}
+        {foldChange != null && Number.isFinite(foldChange) && (
+          <span className={styles.classFold}> · {fmtFold(foldChange)}</span>
+        )}
+      </span>
+      {entityNames.length > 0 && (
+        <span className={styles.classCells}>
+          in {entityNames.join(" · ")}
+        </span>
+      )}
+      <InfoTip label="What this classification means" wide>
+        <strong>{ENRICHMENT_LABELS[klass]}</strong> at the {axis} level.{" "}
+        {ENRICHMENT_BLURB[klass]} Definition follows{" "}
+        <a
+          href="https://www.proteinatlas.org/about/assays+annotation#singlecell_rna"
+          target="_blank"
+          rel="noopener noreferrer"
+        >
+          the HPA single-cell elevation taxonomy
+        </a>
+        , applied to CZI Census mean log1p(CP10K) after expm1 so the 4×
+        rule is on the linear CP10K scale.{" "}
+        {axis === "tissue" && (
+          <>
+            Reported at the tissue axis because a gene like SLC34A2 has 6+
+            co-expressing alveolar cell subtypes, which exceeds HPA&apos;s
+            2-5 group cap at the cell-type axis — at the tissue axis (lung)
+            the elevation is unambiguous.
+          </>
+        )}
+      </InfoTip>
+    </div>
+  );
+}
+
 /**
  * CellxGene tab — CZI WMG gene-expression enrichment, presented as
  * two interactive HPA-style barplots (common vs rare cell types) +
@@ -67,24 +119,19 @@ export function CellxGeneCard({ data }: Props) {
   const cellxgeneUrl = `https://cellxgene.cziscience.com/gene-expression?gene=${encodeURIComponent(
     data.gene_symbol,
   )}`;
-  const enrichmentClass = data.enrichment_class;
-  const enrichmentLabel = enrichmentClass
-    ? ENRICHMENT_LABELS[enrichmentClass]
-    : null;
-  const enrichmentBlurb = enrichmentClass
-    ? ENRICHMENT_BLURB[enrichmentClass]
-    : null;
-  const foldChange = data.fold_change;
-  const enrichmentClIds = data.enrichment_cl_ids ?? [];
 
-  // Resolve cl_id → display name from the chart's own rows so the chip
-  // doesn't need a second lookup.
+  // v2.1 ships cell_type_enrichment + tissue_enrichment as separate
+  // objects; v2.0 collapsed them onto the top-level (enrichment_class /
+  // enrichment_cl_ids / fold_change). Read v2.1 first, fall back to the
+  // v2.0 surface so older D1 rows still render their chip.
+  const cellTypeEnr = data.cell_type_enrichment ?? (data.enrichment_class
+    ? { class: data.enrichment_class, cl_ids: data.enrichment_cl_ids ?? [], fold_change: data.fold_change ?? null }
+    : null);
+  const tissueEnr = data.tissue_enrichment ?? null;
+
   const clToName = new Map(
     data.top_cell_types.map((r) => [r.cl_id, r.cell_type]),
   );
-  const enrichmentNames = enrichmentClIds
-    .map((id) => clToName.get(id) ?? id)
-    .slice(0, 3);
 
   return (
     <SectionCard
@@ -126,45 +173,42 @@ export function CellxGeneCard({ data }: Props) {
             <code>n_expressing / n_total</code> in the Census-primary
             cohort. Hover any bar for cell-type details + the top
             tissues that cell type was sampled from. Common cell types
-            (≥ 1,000 cells sampled) are plotted above; rare
-            high-expressors (&lt; 1,000 cells, mean ≥ 2) get their own
-            comparison panel below since small-n means are noisy.
+            (≥ 10,000 cells sampled) are plotted in the main panel;
+            rare high-expressors (&lt; 10,000 cells, mean ≥ 2) get their
+            own comparison panel below since small-n means are noisy.
+            The top-tissues block above the cell-type charts answers
+            &ldquo;which organs is this gene in?&rdquo; before drilling
+            into cell-type subdivisions.
           </InfoTip>
         </>
       }
     >
-      {enrichmentClass && (
-        <div className={styles.classChip} data-class={enrichmentClass}>
-          <span className={styles.classLabel}>
-            <span className={styles.classDot} aria-hidden />
-            {enrichmentLabel}
-            {foldChange != null && Number.isFinite(foldChange) && (
-              <span className={styles.classFold}> · {fmtFold(foldChange)}</span>
-            )}
-          </span>
-          {enrichmentNames.length > 0 && (
-            <span className={styles.classCells}>
-              in {enrichmentNames.join(" · ")}
-            </span>
+      {(cellTypeEnr || tissueEnr) && (
+        <div className={styles.chipRow}>
+          {cellTypeEnr && (
+            <EnrichmentChip
+              axis="cell type"
+              klass={cellTypeEnr.class}
+              foldChange={cellTypeEnr.fold_change}
+              entityNames={cellTypeEnr.cl_ids
+                .map((id) => clToName.get(id) ?? id)
+                .slice(0, 3)}
+            />
           )}
-          {enrichmentBlurb && (
-            <InfoTip label="What this classification means" wide>
-              <strong>{enrichmentLabel}</strong>. {enrichmentBlurb} Definition
-              follows{" "}
-              <a
-                href="https://www.proteinatlas.org/about/assays+annotation#singlecell_rna"
-                target="_blank"
-                rel="noopener noreferrer"
-              >
-                the HPA single-cell elevation taxonomy
-              </a>
-              , applied to CZI Census mean log1p(CP10K) after expm1 so the 4×
-              rule is on the linear CP10K scale.
-            </InfoTip>
+          {tissueEnr && (
+            <EnrichmentChip
+              axis="tissue"
+              klass={tissueEnr.class}
+              foldChange={tissueEnr.fold_change}
+              entityNames={tissueEnr.tissue_labels.slice(0, 3)}
+            />
           )}
         </div>
       )}
-      <CellxGeneChart rows={data.top_cell_types} />
+      <CellxGeneChart
+        rows={data.top_cell_types}
+        tissues={data.top_tissues ?? []}
+      />
     </SectionCard>
   );
 }

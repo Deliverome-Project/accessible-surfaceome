@@ -553,19 +553,42 @@
   font-size: 0.78rem;
 }
 
-/* --- gene-level enrichment chip -------------------------------------- */
+/* --- gene-level enrichment chips ------------------------------------- */
+
+/* Row container holds both axis chips (cell type + tissue) side by
+   side. Wrap on narrow viewports. */
+.chipRow {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  margin-top: var(--space-3);
+}
 
 .classChip {
   display: inline-flex;
   flex-wrap: wrap;
   align-items: center;
   gap: var(--space-2);
-  margin-top: var(--space-3);
   padding: 6px 12px;
   border: 1px solid var(--line);
   border-radius: 99px;
   font-family: var(--font-sans);
   font-size: 0.82rem;
+  background: var(--surface);
+}
+
+/* Axis pill on the left — labels which axis (cell type vs tissue)
+   this elevation applies to. Lets the reader scan the chip in any
+   order. */
+.classAxis {
+  padding: 1px 8px;
+  border-radius: 99px;
+  font-size: 0.65rem;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  background: color-mix(in srgb, var(--accent) 8%, transparent);
+  color: var(--accent-deep);
 }
 
 .classLabel {

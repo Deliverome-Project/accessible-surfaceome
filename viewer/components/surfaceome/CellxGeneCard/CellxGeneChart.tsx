@@ -1,7 +1,10 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import type { CellTypeRow } from "../../../lib/cellxgene-enrichment";
+import type {
+  CellTypeRow,
+  TissueAggregateRow,
+} from "../../../lib/cellxgene-enrichment";
 import {
   CATEGORIES,
   CATEGORY_COLORS,
@@ -14,10 +17,14 @@ interface Props {
   /** All rows for this gene — split into common + rare internally on
    *  each row's `is_rare` flag. */
   rows: CellTypeRow[];
+  /** Top tissues for the gene, used by sort-by-tissue and by the
+   *  optional per-tissue summary block (v2.1+). Empty array if the
+   *  record is pre-v2.1. */
+  tissues?: TissueAggregateRow[];
 }
 
 type YMetric = "mean" | "pct";
-type SortMode = "value" | "type" | "category";
+type SortMode = "value" | "type" | "category" | "tissue";
 
 const COMMON_MAX = 25;
 const RARE_MAX = 10;
@@ -49,6 +56,10 @@ function decorate(rows: CellTypeRow[]): Decorated[] {
   return rows.map((r) => ({ ...r, category: categorize(r.cell_type) }));
 }
 
+function dominantTissue(r: Decorated): string {
+  return r.tissues?.[0]?.tissue ?? "—";
+}
+
 function sortRows(
   rows: Decorated[],
   sortMode: SortMode,
@@ -61,12 +72,32 @@ function sortRows(
     arr.sort((a, b) => metric(b) - metric(a));
   } else if (sortMode === "type") {
     arr.sort((a, b) => a.cell_type.localeCompare(b.cell_type));
-  } else {
+  } else if (sortMode === "category") {
     const order = new Map(CATEGORIES.map((c, i) => [c, i]));
     arr.sort((a, b) => {
       const oa = order.get(a.category) ?? 99;
       const ob = order.get(b.category) ?? 99;
       if (oa !== ob) return oa - ob;
+      return metric(b) - metric(a);
+    });
+  } else {
+    // sortMode === "tissue": cluster cell types by their dominant tissue
+    // (from each row's top_tissues[0]). Tissues are ranked by the max
+    // value-on-the-current-metric within the group, so the strongest
+    // tissue cluster reads left-to-right first.
+    const tissueRank = new Map<string, number>();
+    for (const r of arr) {
+      const t = dominantTissue(r);
+      const cur = tissueRank.get(t) ?? -Infinity;
+      tissueRank.set(t, Math.max(cur, metric(r)));
+    }
+    arr.sort((a, b) => {
+      const ta = dominantTissue(a);
+      const tb = dominantTissue(b);
+      const ra = tissueRank.get(ta) ?? 0;
+      const rb = tissueRank.get(tb) ?? 0;
+      if (ra !== rb) return rb - ra;
+      if (ta !== tb) return ta.localeCompare(tb);
       return metric(b) - metric(a);
     });
   }
@@ -309,7 +340,83 @@ function CategoryAverages({
   );
 }
 
-export function CellxGeneChart({ rows }: Props) {
+/**
+ * Top tissues block — horizontal bars, one per UBERON term in the
+ * gene's `top_tissues` (v2.1+). Sits ABOVE the cell-type charts as
+ * the coarsest read: "which organs is this gene in?" before drilling
+ * into the cell-type subdivisions below. Same shape / metric as
+ * `CategoryAverages` — keeps the visual language consistent.
+ *
+ * Uses a single neutral fill (teal) rather than per-tissue colors:
+ * there are ~150 distinct UBERON terms in CZI, too many to color
+ * individually without diluting the cell-type category palette
+ * below. The reader uses the bar's TEXT label, not its fill, to
+ * identify the tissue.
+ */
+function TopTissues({
+  rows,
+  yMetric,
+  scaleMax,
+}: {
+  rows: TissueAggregateRow[];
+  yMetric: YMetric;
+  scaleMax: number;
+}) {
+  const sorted = useMemo(() => {
+    const metric = (r: TissueAggregateRow): number =>
+      yMetric === "mean" ? r.mean_log1p_cp10k ?? 0 : r.pct_expressing ?? 0;
+    return [...rows].sort((a, b) => metric(b) - metric(a)).slice(0, 15);
+  }, [rows, yMetric]);
+
+  if (sorted.length === 0) return null;
+
+  const tissueColor = "var(--teal-mid, #3d6b60)";
+
+  return (
+    <section className={styles.chartBlock}>
+      <h3 className={styles.subhead}>
+        Top tissues
+        <span className={styles.subheadMeta}>
+          pooled across all cell types in each UBERON tissue
+        </span>
+      </h3>
+      <ul className={styles.catList}>
+        {sorted.map((row) => {
+          const value =
+            yMetric === "mean" ? row.mean_log1p_cp10k : row.pct_expressing;
+          const pct = Math.max(0, Math.min(100, (value / scaleMax) * 100));
+          return (
+            <li key={row.uberon_id} className={styles.catRow}>
+              <div className={styles.catLabel}>
+                <span
+                  className={styles.swatch}
+                  style={{ background: tissueColor }}
+                  aria-hidden
+                />
+                <span className={styles.catName}>{row.tissue}</span>
+                <span className={styles.catCount} title={`${row.n_expressing.toLocaleString()} of ${row.n_total.toLocaleString()} cells`}>
+                  {fmtN(row.n_expressing)}
+                </span>
+              </div>
+              <div className={styles.catTrack}>
+                <div
+                  className={styles.catFill}
+                  style={{ width: `${pct}%`, background: tissueColor }}
+                  aria-hidden
+                />
+                <span className={styles.catValue}>
+                  {yMetric === "mean" ? fmtMean(value) : fmtPct(value)}
+                </span>
+              </div>
+            </li>
+          );
+        })}
+      </ul>
+    </section>
+  );
+}
+
+export function CellxGeneChart({ rows, tissues = [] }: Props) {
   const [yMetric, setYMetric] = useState<YMetric>("mean");
   const [sortMode, setSortMode] = useState<SortMode>("value");
 
@@ -382,6 +489,15 @@ export function CellxGeneChart({ rows }: Props) {
             <button
               type="button"
               role="radio"
+              aria-checked={sortMode === "tissue"}
+              data-active={sortMode === "tissue"}
+              onClick={() => setSortMode("tissue")}
+            >
+              By tissue
+            </button>
+            <button
+              type="button"
+              role="radio"
               aria-checked={sortMode === "type"}
               data-active={sortMode === "type"}
               onClick={() => setSortMode("type")}
@@ -392,11 +508,15 @@ export function CellxGeneChart({ rows }: Props) {
         </div>
       </div>
 
+      {tissues.length > 0 && (
+        <TopTissues rows={tissues} yMetric={yMetric} scaleMax={scaleMax} />
+      )}
+
       <CategoryAverages rows={decorated} yMetric={yMetric} scaleMax={scaleMax} />
 
       <ColumnChart
         title="Common cell types"
-        subtitle="≥ 1,000 cells sampled per cell type — high-confidence rankings"
+        subtitle="≥ 10,000 cells sampled per cell type — high-confidence rankings"
         rows={common}
         maxRows={COMMON_MAX}
         yMetric={yMetric}
@@ -407,7 +527,7 @@ export function CellxGeneChart({ rows }: Props) {
       {rare.length > 0 && (
         <ColumnChart
           title="Rare high-expressors"
-          subtitle="< 1,000 cells sampled, mean ≥ 2 — comparison only; small-n caveat"
+          subtitle="< 10,000 cells sampled, mean ≥ 2 — comparison only; small-n caveat"
           rows={rare}
           maxRows={RARE_MAX}
           yMetric={yMetric}
