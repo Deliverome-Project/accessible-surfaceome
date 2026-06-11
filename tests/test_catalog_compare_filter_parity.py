@@ -141,6 +141,51 @@ def test_compare_iterates_full_enum_and_bool_registries() -> None:
     )
 
 
+def test_deterministic_filters_are_tool_derived_from_sequence() -> None:
+    """Hard pin on which fields can carry `provenance: "deterministic"`.
+
+    Per the DdProvenance contract in deep-dive-fields.ts, a field is
+    deterministic ONLY when its value is derived purely from tool
+    output on the protein sequence — DeepTMHMM topology, AlphaFold
+    pLDDT, Compara %-identity, SURFACE-Bind MaSIF patch scoring. A
+    field that buckets an LLM-pulled input (e.g. `evidence_density`,
+    which buckets `len(evidence_rows)` selected by the synthesizer)
+    is `llm`, not `deterministic`, even when the final transform is a
+    one-liner.
+
+    This pin makes the bucketing call explicit so a future addition
+    can't silently expand "deterministic" to mean "the last transform
+    looks deterministic". Extend `_ALLOWED_DETERMINISTIC` only when a
+    new field is genuinely sequence-tool-derived.
+    """
+    _ALLOWED_DETERMINISTIC = {
+        # Topology — DeepTMHMM on the sequence.
+        "ecd_accessibility_class",
+        "n_term_extracellular",
+        "c_term_extracellular",
+        # Cross-species + paralog %-identity — Compara on the sequence.
+        "cyno_ortholog_ecd",
+        "mouse_ortholog_ecd",
+        "max_paralog_ecd",
+    }
+    # Re-parse the registry to harvest (key, provenance) pairs from
+    # both ENUM and BOOL blocks.
+    pat = re.compile(
+        r'key:\s*"([^"]+)"[^}]*?provenance:\s*"([^"]+)"',
+        re.S,
+    )
+    actual_deterministic = {
+        key for key, prov in pat.findall(_DDF) if prov == "deterministic"
+    }
+    extras = actual_deterministic - _ALLOWED_DETERMINISTIC
+    assert not extras, (
+        f"Fields marked `provenance: \"deterministic\"` that aren't on the"
+        f" sequence-tool whitelist: {sorted(extras)}. Either reclassify"
+        f" to `llm` (if the value depends on LLM-pulled input) or add"
+        f" the new sequence-tool field to _ALLOWED_DETERMINISTIC."
+    )
+
+
 def test_every_registry_key_referenced_in_compare_or_via_iteration() -> None:
     """Final defense-in-depth: every key in the shared registry must
     surface in BOTH files — either via the bulk iteration (`.map((f) =>

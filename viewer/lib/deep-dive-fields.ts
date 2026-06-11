@@ -58,14 +58,26 @@ export type DdBoolKey =
 
 /**
  * Provenance bucket used by the catalog filter panel to partition
- * deep-dive fields under the Deep Dive group:
+ * deep-dive fields under the Deep Dive group.
  *
- * - `llm` — rollups the deep-dive *synthesizer* emits as its own
- *   classification (re-derived from the merged A1+A2 evidence ledger
- *   but still an LLM judgement).
- * - `deterministic` — tool-derived readouts (DeepTMHMM topology,
- *   ledger-count buckets, SURFACE-Bind MaSIF patch scoring). No LLM
- *   involvement; values are reproducible by re-running the tool.
+ * **The contract — what makes a field `deterministic`:** the value is
+ * derived purely from tool output on the protein sequence (DeepTMHMM
+ * topology, AlphaFold pLDDT, Compara %-identity, SURFACE-Bind MaSIF
+ * patch scoring). Re-running the same tool on the same sequence gives
+ * the same value, regardless of which deep-dive agent ran. No LLM
+ * inclusion judgement enters the chain.
+ *
+ * **What is NOT `deterministic`, even when the final transform is
+ * mechanical:** a field whose input depends on what the LLM chose to
+ * include. Example: `evidence_density` buckets `len(evidence_rows)`
+ * with fixed thresholds, but the agent's pick of which rows to include
+ * is LLM-driven, so the bucket value reflects that judgement. That's
+ * `llm` provenance even though the bucketing itself is a one-liner.
+ *
+ * - `llm` — synthesizer rollups (re-derived from the merged A1+A2
+ *   evidence ledger but still an LLM judgement), and any mechanical
+ *   downstream transforms of LLM-pulled inputs.
+ * - `deterministic` — tool-derived readouts on the sequence only.
  *
  * The catalog filter panel renders three collapsible subsections:
  * "Surface call" (`provenance === "llm" && !isRisk`), "Risks"
@@ -333,11 +345,20 @@ export const DD_ENUM_FIELDS: readonly DdEnumSpec[] = [
     provenance: "llm",
   },
   {
+    // Provenance is `llm`, NOT `deterministic`: the buckets (≥30 / ≥10
+    // / else) are mechanical, but the INPUT count is the number of
+    // evidence rows the synthesizer chose to include from the merged
+    // A1+A2 ledger. That inclusion judgement is an LLM rollup, so the
+    // final value depends on the LLM. The `deterministic` bucket is
+    // reserved for fields derived purely from tool output on the
+    // protein sequence — DeepTMHMM topology, AlphaFold pLDDT, Compara
+    // identity — where rerunning the same tool on the same sequence
+    // gives the same value regardless of the agent.
     key: "evidence_density",
     label: "Evidence density",
     values: ["low", "moderate", "high"],
     tooltipKey: "catalog_evidence_density",
-    provenance: "deterministic",
+    provenance: "llm",
   },
   {
     key: "ecd_accessibility_class",
