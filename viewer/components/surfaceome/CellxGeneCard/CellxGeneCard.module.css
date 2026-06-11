@@ -116,11 +116,36 @@
 /* Outer grid: y-axis labels column on the left, bar canvas on the right.
    Fixed height per chart so the y-axis ticks line up across charts. */
 .colChart {
+  /* Layout: 12 px y-axis title (rotated 90°) + 36 px tick-numbers
+     column + 1fr bar canvas. The vertical title spells out what
+     the bars are heights of, so "mean" alone isn't ambiguous. */
   display: grid;
-  grid-template-columns: 36px 1fr;
+  grid-template-columns: 12px 36px 1fr;
   align-items: stretch;
   margin-top: var(--space-2);
   position: relative;
+}
+
+.yAxisContainer {
+  display: contents;
+}
+
+.yAxisTitle {
+  /* Vertical rotated label sitting to the LEFT of the tick column.
+     Reads bottom-up so the english scans naturally with the chart. */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 240px;
+  font-family: var(--font-sans);
+  font-size: 0.62rem;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: lowercase;
+  color: var(--ink-soft);
+  writing-mode: vertical-rl;
+  transform: rotate(180deg);
+  white-space: nowrap;
 }
 
 .yAxis {
@@ -159,7 +184,7 @@
   padding: 0 0 var(--space-2);
   display: flex;
   align-items: flex-end;
-  gap: 3px;
+  gap: 2px;
   height: 240px;
   border-bottom: 1px solid var(--line);
   background:
@@ -171,14 +196,21 @@
       transparent 50%, transparent calc(75% - 1px),
       var(--line-soft) calc(75% - 1px), var(--line-soft) 75%,
       transparent 75%, transparent 100%);
-  overflow-x: auto;
+  /* No scrolling — bars flex to fit. With ~50 cell types in
+     ~830 px (chart width minus y-axis), each bar gets ~14 px which
+     is narrow but the rotated label below + hover popover are the
+     identification channels, not the bar width. */
+  overflow-x: hidden;
   overflow-y: visible;
 }
 
 .colBar {
-  flex: 0 0 22px;
-  min-width: 22px;
-  max-width: 36px;
+  /* Equal-share flex so 50 bars fit in the available width without
+     scrolling. min-width allows the row to compress when needed;
+     max-width keeps single-bar charts from blowing up. */
+  flex: 1 1 0;
+  min-width: 4px;
+  max-width: 32px;
   height: 100%;
   display: flex;
   flex-direction: column;
@@ -271,25 +303,26 @@ button.colBarHit:focus-visible {
   outline-offset: 1px;
 }
 
-/* Label below each bar, rotated -45° to fit. Anchored to the
-   TOP-LEFT of the position-rect (transform-origin at the top-left
-   corner) so rotation pivots from the bar's left edge — labels then
-   read like a list when scanned along the rotated axis. */
+/* Label below each bar, rotated -55° so they stack more vertically
+   (less horizontal projection = less neighbor-overlap with narrow
+   bars). Anchored to top-right of the bar so rotation pivots from
+   the bar's right edge — labels then sit cleanly to the lower-left
+   of each bar, lined up with the bar itself. */
 .colLabel {
   position: absolute;
   top: calc(100% + 6px);
-  left: 50%;
+  right: 4px;
   font-family: var(--font-sans);
-  font-size: 0.7rem;
+  font-size: 0.62rem;
   color: var(--ink-soft);
   white-space: nowrap;
-  transform: rotate(-45deg);
-  transform-origin: top left;
+  transform: rotate(-55deg);
+  transform-origin: top right;
   pointer-events: none;
-  /* Wide enough for long CL terms; truncate the worst offenders. */
-  max-width: 280px;
+  max-width: 240px;
   text-overflow: ellipsis;
   overflow: hidden;
+  line-height: 1;
 }
 
 .colBar:hover .colLabel,

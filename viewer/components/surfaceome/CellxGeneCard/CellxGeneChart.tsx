@@ -165,15 +165,24 @@ function ChartControls({
   );
 }
 
+const Y_AXIS_TITLES: Record<YMetric, string> = {
+  mean: "mean log1p(CP10K) in expressing cells",
+  pct: "fraction of cells expressing",
+  score: "score = mean log1p(CP10K) × % expressing",
+};
+
 function YAxis({ scaleMax, yMetric }: { scaleMax: number; yMetric: YMetric }) {
   const ticks = [scaleMax, scaleMax * 0.75, scaleMax * 0.5, scaleMax * 0.25, 0];
   return (
-    <div className={styles.yAxis} aria-hidden>
-      {ticks.map((v) => (
-        <span key={v} className={styles.yTick}>
-          {fmtValue(v, yMetric)}
-        </span>
-      ))}
+    <div className={styles.yAxisContainer} aria-hidden>
+      <div className={styles.yAxisTitle}>{Y_AXIS_TITLES[yMetric]}</div>
+      <div className={styles.yAxis}>
+        {ticks.map((v) => (
+          <span key={v} className={styles.yTick}>
+            {fmtValue(v, yMetric)}
+          </span>
+        ))}
+      </div>
     </div>
   );
 }
@@ -401,10 +410,11 @@ function TopTissues({
   return (
     <section className={styles.chartBlock}>
       <h3 className={styles.subhead}>
-        Top tissues
+        Tissues
         <span className={styles.subheadMeta}>
-          UBERON axis · pooled across cell types · click a bar to
-          filter the &ldquo;All cell types&rdquo; chart below
+          every UBERON tissue with detectable signal (n_total ≥ 1k) ·
+          {sorted.length} shown · click a bar to filter the
+          &ldquo;All cell types&rdquo; chart below
         </span>
       </h3>
       <ChartControls
