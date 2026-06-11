@@ -222,7 +222,7 @@ function ColumnBar({
         />
       </div>
       <span className={styles.colLabel} title={label} aria-label={label}>
-        {truncate(label, 24)}
+        {truncate(label, 14)}
         {isTrace && (
           <span className={styles.traceBadge} aria-label="trace expression">
             trace

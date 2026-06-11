@@ -124,6 +124,10 @@
   align-items: stretch;
   margin-top: var(--space-2);
   position: relative;
+  /* Don't clip overflow — popovers project upward from individual
+     bars and need to render above the chart. Labels stay short
+     enough (truncated at 14 chars) that they don't push the page
+     sideways. */
 }
 
 .yAxisContainer {
@@ -196,12 +200,12 @@
       transparent 50%, transparent calc(75% - 1px),
       var(--line-soft) calc(75% - 1px), var(--line-soft) 75%,
       transparent 75%, transparent 100%);
-  /* No scrolling — bars flex to fit. With ~50 cell types in
-     ~830 px (chart width minus y-axis), each bar gets ~14 px which
-     is narrow but the rotated label below + hover popover are the
-     identification channels, not the bar width. */
-  overflow-x: hidden;
-  overflow-y: visible;
+  /* No overflow rules — let the bars and their rotated labels
+     project naturally. Previous `overflow-x: hidden` combined with
+     `overflow-y: visible` got the Y axis treated as `auto` per CSS
+     spec, which silently added a vertical scrollbar for the label
+     row — the very scroll the user wanted gone. */
+  overflow: visible;
 }
 
 .colBar {
@@ -249,11 +253,15 @@ button.colBarHit:focus-visible {
   outline-offset: 2px;
 }
 
-/* Selected tissue bar — emphasized outline + fully opaque fill so
-   the reader sees what they clicked. */
-.colBar[data-selected="true"] .colFill {
-  outline: 2px solid var(--ink);
-  outline-offset: 1px;
+/* Selected tissue bar — the bar color already changes to maroon
+   (see SELECTED_TISSUE_COLOR in the chart code), which is the
+   indicator. The label below is also emphasized so the reader can
+   trace the selection downward to its name. No outline or shading
+   — those read as "highlighted state" rather than "I clicked
+   this". */
+.colBar[data-selected="true"] .colLabel {
+  color: var(--accent-deep);
+  font-weight: 700;
 }
 
 /* Reset link in the chart subhead — used to clear the tissue
@@ -303,23 +311,23 @@ button.colBarHit:focus-visible {
   outline-offset: 1px;
 }
 
-/* Label below each bar, rotated -55° so they stack more vertically
-   (less horizontal projection = less neighbor-overlap with narrow
-   bars). Anchored to top-right of the bar so rotation pivots from
-   the bar's right edge — labels then sit cleanly to the lower-left
-   of each bar, lined up with the bar itself. */
+/* Label below each bar, rotated -65° so they stack closer to
+   vertical (less horizontal projection = labels don't extend past
+   the chart's horizontal bounds and force page scroll). Anchored
+   to top-right so the rotation pivots from the bar's right edge;
+   text reads bottom-up along its rotated baseline. */
 .colLabel {
   position: absolute;
   top: calc(100% + 6px);
   right: 4px;
   font-family: var(--font-sans);
-  font-size: 0.62rem;
+  font-size: 0.6rem;
   color: var(--ink-soft);
   white-space: nowrap;
-  transform: rotate(-55deg);
+  transform: rotate(-65deg);
   transform-origin: top right;
   pointer-events: none;
-  max-width: 240px;
+  max-width: 110px;
   text-overflow: ellipsis;
   overflow: hidden;
   line-height: 1;
