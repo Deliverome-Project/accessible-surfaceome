@@ -242,18 +242,15 @@ function ColumnBar({
           type="button"
           className={styles.colBarHit}
           onClick={onClick}
-          tabIndex={0}
           title={hoverTitle}
           aria-pressed={!!isSelected}
         >
           {hitContents}
         </button>
       ) : (
-        <div
-          className={styles.colBarHit}
-          tabIndex={0}
-          title={hoverTitle}
-        >
+        // No onClick, no tabIndex — cell-type bars aren't selectable;
+        // tab-stopping them implied an interaction that doesn't exist.
+        <div className={styles.colBarHit} title={hoverTitle}>
           {hitContents}
         </div>
       )}
@@ -464,83 +461,21 @@ function TopTissues({
 }
 
 /**
- * Top-N cell types chart. Always sorted by the active metric DESC and
- * truncated at N (default 20). Trace cell types are INCLUDED (so
- * low-expression genes like GPR75 still get a real top-20 view) but
- * qualified cells rank first, then trace. Trace bars carry the muted
- * styling + badge so the reader sees the small-n caveat.
- */
-function TopCellTypes({ rows, n = 20 }: { rows: CellTypeRow[]; n?: number }) {
-  const [yMetric, setYMetric] = useState<YMetric>("score");
-
-  const sorted = useMemo(() => {
-    const m = (r: CellTypeRow): number => readMetric(r, yMetric);
-    const traceTier = (r: CellTypeRow): number => (r.is_trace ? 1 : 0);
-    return [...rows]
-      .sort((a, b) => {
-        const tt = traceTier(a) - traceTier(b);
-        if (tt !== 0) return tt;
-        return m(b) - m(a);
-      })
-      .slice(0, n);
-  }, [rows, yMetric, n]);
-
-  const scaleMax = useMemo(() => {
-    const observed = sorted.reduce(
-      (mx, r) => Math.max(mx, readMetric(r, yMetric)),
-      0,
-    );
-    return Math.max(metricScaleFloor(yMetric), observed);
-  }, [sorted, yMetric]);
-
-  if (sorted.length === 0) return null;
-
-  return (
-    <section className={styles.chartBlock}>
-      <h3 className={styles.subhead}>
-        Top {n} cell types
-        <span className={styles.subheadMeta}>
-          highest expression overall · qualified first, trace
-          (small-n) cells appended · ranked by the active metric
-        </span>
-      </h3>
-      <ChartControls yMetric={yMetric} setYMetric={setYMetric} />
-      <div className={styles.colChart}>
-        <YAxis scaleMax={scaleMax} yMetric={yMetric} />
-        <ul className={styles.colCanvas}>
-          {sorted.map((r) => {
-            const value = readMetric(r, yMetric);
-            const height = Math.max(
-              0,
-              Math.min(100, (value / scaleMax) * 100),
-            );
-            const hoverTitle = r.is_trace
-              ? `Trace: only ${r.n_expressing} of ${r.n_total.toLocaleString()} cells expressing (${(r.pct_expressing * 100).toFixed(2)}%). Mean is real but small-n.`
-              : undefined;
-            return (
-              <ColumnBar
-                key={r.cl_id}
-                height={height}
-                color={CELL_BAR_COLOR}
-                label={r.cell_type}
-                isTrace={r.is_trace}
-                popover={cellPopover(r, value)}
-                hoverTitle={hoverTitle}
-              />
-            );
-          })}
-        </ul>
-      </div>
-    </section>
-  );
-}
-
-/**
- * Full cell-type chart. When a tissue is selected (via the Top
- * tissues chart), filters cell types to those that include the
- * tissue in their top-3 tissue list and reads stats from that
- * tissue's row inside each cell type. Otherwise renders all cell
- * types with their pooled (across-tissue) stats.
+ * One unified cell-type chart, sitting directly under the Tissues
+ * chart. Two modes:
+ *
+ *  - **No tissue selected**: shows the top 20 cell types globally,
+ *    sorted DESC by the active metric. Qualified first, trace
+ *    (small-n) appended. Headline: "Top 20 cell types".
+ *
+ *  - **Tissue selected (via Tissues bar click)**: shows every cell
+ *    type whose top-3 tissue list includes the selection, with
+ *    stats re-keyed to that tissue's specific mean/pct/n. Headline:
+ *    "Cell types in {tissue}". A reset chip in the header returns
+ *    to the Top 20 view.
+ *
+ * Bars are NOT clickable in either mode — cell types are leaves of
+ * the hierarchy; there's no concept of "drill into a cell type".
  */
 function CellTypeChart({
   rows,
@@ -555,16 +490,8 @@ function CellTypeChart({
 }) {
   const [yMetric, setYMetric] = useState<YMetric>("score");
   const [sortMode, setSortMode] = useState<SortMode>("value");
+  const TOP_N = 20;
 
-  /**
-   * Build a derived "view row" for each cell type. When a tissue is
-   * selected, the view row's mean/pct come from the cell type's
-   * tissue-specific stats (looked up in r.tissues[]); when no tissue
-   * is selected, they come from the cell type's pooled-across-tissues
-   * stats. is_trace is also recomputed from the active stats so the
-   * filter-by-tissue view doesn't carry "trace" badges based on
-   * cross-tissue n.
-   */
   interface ViewRow {
     cl_id: string;
     cell_type: string;
@@ -573,10 +500,14 @@ function CellTypeChart({
     n_expressing: number;
     n_total: number;
     is_trace: boolean;
-    // keep the original for popover detail
     base: CellTypeRow;
   }
 
+  // Build view rows: tissue-specific stats when filtered, global
+  // stats otherwise. In the unfiltered case we keep all rows and cap
+  // at TOP_N after sorting (top-20 view). In the filtered case we
+  // keep all qualifying rows (no extra cap — the universe is already
+  // small since each cell type's tissues[] only includes its top 3).
   const viewRows: ViewRow[] = useMemo(() => {
     return rows
       .map((r): ViewRow | null => {
@@ -615,7 +546,8 @@ function CellTypeChart({
     if (sortMode === "type") {
       arr.sort((a, b) => a.cell_type.localeCompare(b.cell_type));
     } else if (sortMode === "tissue") {
-      // Sort by dominant tissue (from base row) then by metric DESC.
+      // Only meaningful in the unfiltered view; sort by dominant
+      // tissue (from base row) then by metric DESC.
       arr.sort((a, b) => {
         const ta = a.base.tissues?.[0]?.tissue ?? "";
         const tb = b.base.tissues?.[0]?.tissue ?? "";
@@ -629,8 +561,10 @@ function CellTypeChart({
         return m(b) - m(a);
       });
     }
-    return arr;
-  }, [viewRows, sortMode, yMetric]);
+    // Only cap the unfiltered view at TOP_N — the filtered view
+    // shows every cell type in the tissue (usually < 30).
+    return selectedUberonId ? arr : arr.slice(0, TOP_N);
+  }, [viewRows, sortMode, yMetric, selectedUberonId]);
 
   const scaleMax = useMemo(() => {
     const observed = sorted.reduce(
@@ -642,10 +576,23 @@ function CellTypeChart({
 
   const title = selectedTissueLabel
     ? `Cell types in ${selectedTissueLabel}`
-    : "All cell types";
+    : `Top ${TOP_N} cell types`;
   const subtitle = selectedTissueLabel
-    ? `tissue-specific expression within ${selectedTissueLabel}`
-    : "every cell type with detectable expression · qualified first, then trace";
+    ? `tissue-specific expression within ${selectedTissueLabel} · ${sorted.length} shown`
+    : `highest expression overall · qualified first, trace (small-n) appended`;
+
+  // Sort options depend on view: tissue-filtered view doesn't need
+  // a "by tissue" sort (all rows are in the same tissue).
+  const sortOptions: SortOption[] = selectedTissueLabel
+    ? [
+        { value: "value", label: "By value" },
+        { value: "type", label: "A → Z" },
+      ]
+    : [
+        { value: "value", label: "By value" },
+        { value: "tissue", label: "By tissue" },
+        { value: "type", label: "A → Z" },
+      ];
 
   return (
     <section className={styles.chartBlock}>
@@ -658,7 +605,7 @@ function CellTypeChart({
             className={styles.resetLink}
             onClick={onClearTissue}
           >
-            Show all tissues
+            Show top {TOP_N} overall
           </button>
         )}
       </h3>
@@ -667,11 +614,7 @@ function CellTypeChart({
         setYMetric={setYMetric}
         sortMode={sortMode}
         setSortMode={setSortMode}
-        sortOptions={[
-          { value: "value", label: "By value" },
-          { value: "tissue", label: "By tissue" },
-          { value: "type", label: "A → Z" },
-        ]}
+        sortOptions={sortOptions}
       />
       {sorted.length === 0 ? (
         <p className={styles.empty}>
@@ -730,7 +673,10 @@ export function CellxGeneChart({ rows, tissues = [] }: Props) {
           onSelect={handleSelectTissue}
         />
       )}
-      <TopCellTypes rows={rows} />
+      {/* One combined cell-type chart directly under Tissues. Shows
+          Top 20 overall when no tissue is selected; swaps to
+          tissue-filtered when a tissue bar is clicked. The clear
+          chip on the chart's subhead returns to the Top 20 view. */}
       <CellTypeChart
         rows={rows}
         selectedUberonId={selectedUberonId}

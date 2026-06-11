@@ -166,23 +166,22 @@ export function CellxGeneCard({ data }: Props) {
           Switch the Y-axis to % expressing for the dot-size channel
           of the WMG dot plot.{" "}
           <InfoTip label="What each block shows">
-            <strong>Top tissues</strong> — UBERON ontology axis,
-            pooled across every cell type sampled from that tissue.
-            CLICK a tissue bar to filter the &ldquo;All cell
-            types&rdquo; chart below to that tissue&apos;s
-            cell-type-specific expression (look-up from each cell
-            type&apos;s top-3 tissue stats — cell types whose top-3
-            doesn&apos;t include the selection drop out).{" "}
-            <strong>Top 20 cell types</strong> — highest-expressing
-            CL terms overall, trace cell types excluded.{" "}
-            <strong>All cell types</strong> — every CL term with
-            detectable expression, qualified first, then trace
-            (small-n) cells.
+            <strong>Tissues</strong> — every UBERON tissue with
+            detectable signal (n_total ≥ 1k), pooled across every
+            cell type sampled from that tissue. CLICK a tissue bar
+            to filter the cell-type chart below to that tissue.{" "}
+            <strong>Top 20 cell types / Cell types in {"{tissue}"}</strong>{" "}
+            — one chart that shows the global top-20 by default and
+            swaps to the selected tissue&apos;s cell types when a
+            tissue is clicked. Stats are re-keyed to the
+            tissue&apos;s row inside each cell type&apos;s top-3
+            tissue list. A reset chip in the chart subhead returns
+            to the Top 20 view.
             <br />
             <br />
             <strong>Y-axis options</strong> — Score (mean × pct,
-            population-mean), Mean log1p(CP10K), or % expressing.
-            Each chart has its own toggle.{" "}
+            population-mean), Mean log1p(CP10K) of expressing cells,
+            or % expressing. Each chart has its own toggle.{" "}
             <strong>Mean log1p</strong> values: 1 ≈ detected, 2 =
             moderate, 4+ = high, 6+ = among the strongest.{" "}
             <strong>% expressing</strong> is{" "}
