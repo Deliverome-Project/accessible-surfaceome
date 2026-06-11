@@ -54,9 +54,30 @@ export interface CellTypeRow {
   n_total: number;
   /** Pooled n_expressing / n_total. */
   pct_expressing: number;
+  /** True when n_total < 1000 — rendered in a separate "rare cell types"
+   *  panel so a rare high-expressor doesn't dominate the main chart. */
+  is_rare: boolean;
   /** Top tissues for this cell type, ranked by n_expressing DESC (≤ 3). */
   tissues: TissueRow[];
 }
+
+/**
+ * HPA-style elevation class. Computed per-gene from the linear (expm1)
+ * mean expression across all cell types with n_total >= 50:
+ *
+ * - tissue_enriched: top cell type's linear mean >= 4× the 2nd highest
+ * - group_enriched: a group of 2-5 contiguously-ranked cell types whose
+ *   minimum mean >= 4× the next-ranked cell type after the group
+ * - tissue_enhanced: top cell type's mean >= 4× the average of all others
+ * - low_specificity: none of the above
+ *
+ * Priority on tie: enriched > group > enhanced > low.
+ */
+export type EnrichmentClass =
+  | "tissue_enriched"
+  | "group_enriched"
+  | "tissue_enhanced"
+  | "low_specificity";
 
 export interface CellxGeneEnrichment {
   schema_version: string;
@@ -64,7 +85,16 @@ export interface CellxGeneEnrichment {
   gene_symbol: string;
   hgnc_id: string | null;
   ensembl_gene: string | null;
-  /** Top cell types overall, ranked by mean_log1p_cp10k DESC. */
+  /** HPA-style elevation class for the gene (see EnrichmentClass). */
+  enrichment_class?: EnrichmentClass;
+  /** CL IDs the elevation applies to (length 1 for enriched/enhanced,
+   *  2-5 for group_enriched, empty for low_specificity). */
+  enrichment_cl_ids?: string[];
+  /** Linear fold change at the elevation boundary. Null for low_specificity. */
+  fold_change?: number | null;
+  /** Top cell types overall, ranked by mean_log1p_cp10k DESC. Capped at
+   *  30 entries: up to 20 common (n_total ≥ 1000) plus up to 10 rare
+   *  high-expressors (n_total < 1000, mean ≥ 2.0). */
   top_cell_types: CellTypeRow[];
   computed_at?: string;
 }

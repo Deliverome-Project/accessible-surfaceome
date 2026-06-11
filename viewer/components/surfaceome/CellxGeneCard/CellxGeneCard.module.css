@@ -176,6 +176,224 @@
   text-shadow: 0 0 2px var(--surface);
 }
 
+/* --- chart blocks (common vs rare) ----------------------------------- */
+
+.chartBlock {
+  margin-top: var(--space-5);
+}
+.chartBlock:first-of-type {
+  margin-top: var(--space-3);
+}
+
+.subhead {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: var(--space-3);
+  margin: 0 0 var(--space-2);
+  font-family: var(--font-sans);
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--ink-soft);
+}
+
+.subheadMeta {
+  font-family: var(--font-sans);
+  font-size: 0.7rem;
+  font-weight: 400;
+  letter-spacing: 0.02em;
+  text-transform: none;
+  color: var(--ink-faded);
+}
+
+/* --- popover (hover/focus per row) ----------------------------------- */
+
+/* The popover sits inside each .barRow as a positioned descendant.
+   Hidden by default, visible on :hover / :focus-within. CSS-only —
+   no JS state — so it survives a re-sort without re-mounting. */
+.barRow {
+  position: relative;
+}
+
+.popover {
+  position: absolute;
+  top: calc(100% + 4px);
+  left: 0;
+  right: 0;
+  z-index: 30;
+  display: none;
+  padding: var(--space-3);
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  box-shadow: 0 12px 28px rgba(0, 0, 0, 0.16);
+  font-family: var(--font-sans);
+  font-size: 0.78rem;
+  line-height: 1.45;
+  color: var(--ink);
+  pointer-events: none;
+}
+
+.barRow:hover .popover,
+.barRow:focus-within .popover {
+  display: block;
+}
+
+.popHeader {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 8px;
+  font-size: 0.82rem;
+}
+
+.popHeader strong {
+  color: var(--ink);
+  font-weight: 600;
+}
+
+.popMeta {
+  font-family: var(--font-mono, ui-monospace, "SF Mono", monospace);
+  font-size: 0.7rem;
+  color: var(--ink-faded);
+}
+
+.popCategory {
+  margin-left: auto;
+  padding: 1px 8px;
+  border-radius: 99px;
+  font-size: 0.65rem;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  background: color-mix(in srgb, var(--accent) 8%, transparent);
+  color: var(--accent-deep);
+}
+
+.popStats {
+  display: grid;
+  grid-template-columns: 1fr 1.2fr;
+  gap: 4px var(--space-3);
+  margin: 0 0 8px;
+}
+
+.popStats > div {
+  display: flex;
+  flex-direction: column;
+}
+
+.popStats dt {
+  font-size: 0.66rem;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--ink-soft);
+  font-weight: 600;
+  margin: 0;
+}
+
+.popStats dd {
+  margin: 0;
+  font-size: 0.92rem;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  color: var(--ink);
+}
+
+.popHint {
+  font-size: 0.7rem;
+  font-weight: 400;
+  color: var(--ink-faded);
+}
+
+.popTissues {
+  margin-top: 6px;
+  padding-top: 6px;
+  border-top: 1px solid var(--line-soft);
+}
+
+.popTissuesLabel {
+  display: block;
+  font-size: 0.66rem;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--ink-soft);
+  font-weight: 600;
+  margin-bottom: 4px;
+}
+
+.popTissues ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.popTissues li {
+  font-size: 0.78rem;
+}
+
+/* --- gene-level enrichment chip -------------------------------------- */
+
+.classChip {
+  display: inline-flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2);
+  margin-top: var(--space-3);
+  padding: 6px 12px;
+  border: 1px solid var(--line);
+  border-radius: 99px;
+  font-family: var(--font-sans);
+  font-size: 0.82rem;
+}
+
+.classLabel {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-weight: 600;
+  color: var(--ink);
+}
+
+.classFold {
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  color: var(--accent-deep);
+}
+
+.classCells {
+  color: var(--ink-soft);
+  font-size: 0.78rem;
+}
+
+.classDot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--ink-faded);
+}
+
+/* Color the chip dot by enrichment strength. Tissue-enriched gets the
+   primary accent; group gets the secondary; enhanced gets warm amber;
+   low-specificity gets neutral grey. */
+.classChip[data-class="tissue_enriched"] .classDot {
+  background: var(--accent-fill);
+}
+.classChip[data-class="group_enriched"] .classDot {
+  background: var(--teal-mid, #3d6b60);
+}
+.classChip[data-class="tissue_enhanced"] .classDot {
+  background: var(--amber-bright, #f4aa28);
+}
+.classChip[data-class="low_specificity"] .classDot {
+  background: var(--ink-faded);
+}
+
 /* --- legend ---------------------------------------------------------- */
 
 .legend {
