@@ -956,6 +956,34 @@ function projectDeepDiveFilters(annotationJson) {
       any = true;
     }
   }
+  // Primary subcellular compartment lives in biological_context, not the
+  // top-level `filters` block. Keep in sync with viewer/lib/deep-dive-fields.ts
+  // `pickDeepDiveFilters`. Powers the "Primary localization" facet on the
+  // catalog filter panel + compare tool.
+  const pc =
+    rec?.biological_context?.subcellular_localization?.primary_compartment;
+  if (typeof pc === "string") {
+    out.primary_compartment = pc;
+    any = true;
+  }
+  // Restricted subdomain kind — sourced from accessibility_risks, but
+  // ONLY when present === true. The schema requires `domain` to always
+  // be set with "unknown" as the not-applicable sentinel; projecting
+  // unconditionally would pile every non-restricted gene into the
+  // "unknown" bucket and drown the signal. Keep in sync with the
+  // viewer's `pickDeepDiveFilters`.
+  const rs = rec?.accessibility_risks?.restricted_subdomain;
+  if (rs && rs.present === true && typeof rs.domain === "string") {
+    out.restricted_subdomain_kind = rs.domain;
+    any = true;
+  }
+  // Same project-when-present contract for secreted_form.source — only
+  // surface the source when a secreted form actually exists.
+  const sf = rec?.accessibility_risks?.secreted_form;
+  if (sf && sf.present === true && typeof sf.source === "string") {
+    out.secreted_form_source = sf.source;
+    any = true;
+  }
   return any ? out : null;
 }
 

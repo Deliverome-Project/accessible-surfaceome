@@ -76,30 +76,73 @@ export function scrubAgentJargon(
   );
 }
 
-/** Strip JATS-style inline HTML tags (`<i>` / `<b>` / `<sub>` / `<sup>`
- *  / `<em>` / `<strong>`) from a verbatim quote.
+/** Strip JATS-style HTML tags from a verbatim quote.
  *
  *  When the deep-dive agent quotes from PMC JATS XML it pulls the
- *  raw `<i>GENE</i>` italics markup into the verbatim, which the
- *  drawer would otherwise render literally — `"…expression patterns
- *  of <i>ABC</i> transporter genes…"`. A spot-check of 14 records
- *  found 80 such occurrences, dominating every other "weird text"
- *  pattern we looked at.
+ *  raw markup into the verbatim, which the drawer would otherwise
+ *  render literally:
+ *    - inline italics — `"…expression patterns of <i>ABC</i> transporter…"`
+ *    - structured-abstract section headings — `"<h4>Background</h4>Severe
+ *      Omicron cases…<h4>Results</h4>We identify CD63…"` (PMID 41818370,
+ *      the bug the user flagged on CD63's EVI drawer; affects 42 records
+ *      in the cohort).
  *
- *  Strip the tags rather than render them as React `<em>` / `<strong>`:
- *  the verbatim is there to let the reader cross-check the agent's
- *  source, and the source link sits directly above for italic-aware
- *  rendering. Plain text keeps the implementation safe (no
+ *  Strip the inline tags rather than render them as React `<em>` /
+ *  `<strong>`: the verbatim is there to let the reader cross-check the
+ *  agent's source, and the source link sits directly above for italic-
+ *  aware rendering. Plain text keeps the implementation safe (no
  *  `dangerouslySetInnerHTML`) and the quote readable.
+ *
+ *  Headings are transformed `<h[1-6]>X</h[1-6]>` → ` X: ` so the section
+ *  label survives as an inline marker — "Background: …injury. Results: …"
+ *  reads cleanly, where a bare strip would collide the label into the
+ *  next sentence ("BackgroundSevere Omicron…").
+ *
+ *  Conservative on what gets stripped: only tags whose first char inside
+ *  `<` is a letter. `<5%` (math, not a tag) passes through untouched.
  */
 export function stripInlineHtml(text: string | null | undefined): string {
   if (!text) return "";
   return text
-    // Whitelist-style strip: only the JATS-common inline tags we've
-    // actually seen leak. Anything else stays as-is so we don't
-    // accidentally scrub legitimate angle-bracket text (e.g. ``<5%``).
-    .replace(/<\/?(?:i|b|em|strong|sub|sup|italic|bold|subscript|superscript)>/gi, "")
+    // 1. Structured-abstract section headings — turn into inline labels
+    //    so "Background"/"Methods"/"Results"/"Conclusions" survive as
+    //    readable separators instead of evaporating into a wall of text.
+    .replace(
+      /<h([1-6])[^>]*>\s*([^<]+?)\s*<\/h\1>/gi,
+      " $2: ",
+    )
+    // 2. JATS inline + block tags we've seen leak. Whitelist keeps us
+    //    safe from over-scrubbing legitimate angle-bracket text.
+    .replace(
+      /<\/?(?:i|b|em|strong|sub|sup|italic|bold|subscript|superscript|sec|p|title|list|list-item|xref|ext-link|break)(?:\s+[^>]*)?\/?>/gi,
+      "",
+    )
+    // 3. Normalize Unicode whitespace + hyphen variants so quotes render
+    //    cleanly and are search/copy-paste friendly. Conservative
+    //    whitelist — only the chars that visually equal an ASCII
+    //    counterpart get converted:
+    //      • U+00A0  NO-BREAK SPACE      → ` ` (regular space)
+    //      • U+2009  THIN SPACE          → ` `
+    //      • U+2010  HYPHEN              → `-`
+    //      • U+2011  NON-BREAKING HYPHEN → `-`
+    //      • U+2212  MINUS SIGN          → `-`
+    //    Deliberately LEAVES legitimate typography untouched:
+    //    en-dash (U+2013), em-dash (U+2014), curly quotes (U+2018/9),
+    //    Greek letters (α/β/κ/μ), ±, ×, °, →, ′, ≥. Those convey
+    //    distinct semantic meaning in scientific prose.
+    .replace(/[  ]/g, " ")
+    .replace(/[‐‑−]/g, "-")
+    // 4. Tidy whitespace inside inline parenthetical citations — PMC
+    //    sources frequently emit `(Author et al., 2020 )` with a stray
+    //    trailing space before the close paren (and occasionally a
+    //    leading one). Cosmetic but distracting at quote-density.
+    .replace(/\(\s+/g, "(")
+    .replace(/\s+\)/g, ")")
     .replace(/[ \t]{2,}/g, " ")
+    // Tidy up `injury. Results:` cases — the heading transform leaves a
+    // space before the punctuation when a sentence terminated right
+    // before the heading and the heading inserted its leading space.
+    .replace(/\s+([.,;:])/g, "$1")
     .trim();
 }
 

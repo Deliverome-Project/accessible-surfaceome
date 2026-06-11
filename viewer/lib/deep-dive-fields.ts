@@ -26,6 +26,9 @@ export type DdEnumKey =
   | "surface_call_reason"
   | "subcategory"
   | "llm_family"
+  | "primary_compartment"
+  | "restricted_subdomain_kind"
+  | "secreted_form_source"
   | "evidence_grade"
   | "evidence_density"
   | "ecd_accessibility_class"
@@ -212,6 +215,101 @@ export const DD_ENUM_FIELDS: readonly DdEnumSpec[] = [
     values: ["receptor", "enzyme", "transporter", "miscellaneous"],
     tooltipKey: "catalog_llm_family",
     provenance: "llm",
+  },
+  {
+    // Mirrors `biological_context.subcellular_localization.primary_compartment`
+    // (the `Compartment` enum in `viewer/lib/surfaceome-types.ts`, sourced from
+    // `PrimaryCompartment` in `src/accessible_surfaceome/tools/_shared/models.py`).
+    // Note: sourced from the biological-context block, NOT the top-level
+    // `filters` block — see `pickDeepDiveFilters` in this file + the Worker's
+    // `projectDeepDiveFilters`.
+    key: "primary_compartment",
+    label: "Primary localization",
+    values: [
+      "plasma_membrane",
+      "endosome",
+      "lysosome",
+      "ER",
+      "Golgi",
+      "mitochondrion",
+      "nucleus",
+      "cytosol",
+      "secreted",
+      "other",
+    ],
+    valueLabels: {
+      plasma_membrane: "Plasma membrane",
+      endosome: "Endosome",
+      lysosome: "Lysosome",
+      ER: "ER",
+      Golgi: "Golgi",
+      mitochondrion: "Mitochondrion",
+      nucleus: "Nucleus",
+      cytosol: "Cytosol",
+      secreted: "Secreted",
+      other: "Other",
+    },
+    tooltipKey: "catalog_primary_compartment",
+    provenance: "llm",
+  },
+  {
+    // Sourced from `accessibility_risks.restricted_subdomain.domain`
+    // ONLY when `restricted_subdomain.present === true`. The schema
+    // requires `domain` to always be set (with "unknown" as the
+    // not-applicable sentinel); projecting unconditionally would pile
+    // every non-restricted gene into "unknown" and drown the signal.
+    // The bool `has_restricted_subdomain` says whether the protein has
+    // a polarized localization at all; this enum says what kind of
+    // domain.
+    key: "restricted_subdomain_kind",
+    label: "Restricted subdomain",
+    values: [
+      "apical",
+      "junctional",
+      "ciliary",
+      "synaptic",
+      "raft",
+      "basolateral",
+      "other",
+      "unknown",
+    ],
+    valueLabels: {
+      apical: "Apical",
+      junctional: "Junctional",
+      ciliary: "Ciliary",
+      synaptic: "Synaptic",
+      raft: "Lipid raft",
+      basolateral: "Basolateral",
+      other: "Other",
+      unknown: "Unknown",
+    },
+    tooltipKey: "catalog_restricted_subdomain_kind",
+    provenance: "llm",
+    isRisk: true,
+  },
+  {
+    // Sourced from `accessibility_risks.secreted_form.source` ONLY when
+    // `secreted_form.present === true` — same project-when-present
+    // pattern as restricted_subdomain_kind. The bool
+    // `has_secreted_form` says whether a non-membrane-anchored form
+    // exists; this enum says how it's made. `alternative_splicing`
+    // covers soluble splice isoforms (per the Pydantic SecretedForm
+    // rationale field's own docstring: "alternative splicing producing
+    // a TM-less isoform"). Useful to find decoys with a specific
+    // sheddability profile (e.g. proteolytic-only shed targets that
+    // antibody campaigns must compete with).
+    key: "secreted_form_source",
+    label: "Secreted-form source",
+    values: ["alternative_splicing", "proteolytic", "both", "unknown"],
+    valueLabels: {
+      alternative_splicing: "Alt. splicing (incl. soluble isoform)",
+      proteolytic: "Proteolytic shedding",
+      both: "Both (splicing + proteolysis)",
+      unknown: "Unknown",
+    },
+    tooltipKey: "catalog_secreted_form_source",
+    provenance: "llm",
+    isRisk: true,
   },
   {
     key: "evidence_grade",
@@ -456,6 +554,8 @@ const ECD_BAND_SOURCES: readonly {
 
 export function pickDeepDiveFilters(
   filters: Record<string, unknown> | null | undefined,
+  biologicalContext?: Record<string, unknown> | null,
+  accessibilityRisks?: Record<string, unknown> | null,
 ): Record<string, unknown> | undefined {
   if (!filters) return undefined;
   const out: Record<string, unknown> = {};
@@ -471,6 +571,41 @@ export function pickDeepDiveFilters(
     if (b.source in filters) {
       out[b.key] = ecdBand(filters[b.source] as number | null, b.hi, b.mid);
     }
+  }
+  // Sourced from biological_context, not filters — the record schema
+  // keeps the localization in the biology block. MUST stay in sync with
+  // the Worker's `projectDeepDiveFilters` (which performs the same
+  // pull on the server side).
+  const sl =
+    (biologicalContext?.subcellular_localization as
+      | { primary_compartment?: unknown }
+      | undefined) ?? undefined;
+  if (sl && typeof sl.primary_compartment === "string") {
+    out.primary_compartment = sl.primary_compartment;
+  }
+  // Sourced from accessibility_risks.restricted_subdomain.domain ONLY
+  // when present === true. The schema requires `domain` to always be
+  // set (with "unknown" as the not-applicable sentinel); projecting it
+  // unconditionally would pile every non-restricted gene into the
+  // "unknown" bucket and drown the signal. MUST stay in sync with the
+  // Worker's `projectDeepDiveFilters`.
+  const rs =
+    (accessibilityRisks?.restricted_subdomain as
+      | { present?: unknown; domain?: unknown }
+      | undefined) ?? undefined;
+  if (rs && rs.present === true && typeof rs.domain === "string") {
+    out.restricted_subdomain_kind = rs.domain;
+  }
+  // Same project-when-present pattern for secreted_form.source — only
+  // surface the source when there's a secreted form to attribute it to.
+  // Empty/null source on a present-true secreted form is allowed by the
+  // schema (`source: SecretedFormSource | None`); skip silently.
+  const sf =
+    (accessibilityRisks?.secreted_form as
+      | { present?: unknown; source?: unknown }
+      | undefined) ?? undefined;
+  if (sf && sf.present === true && typeof sf.source === "string") {
+    out.secreted_form_source = sf.source;
   }
   return Object.keys(out).length > 0 ? out : undefined;
 }

@@ -25,7 +25,9 @@ export const tooltips: Record<string, ReactNode> = {
   surface_accessibility: (
     <>
       The deep-dive&apos;s <strong>best-case-state</strong> verdict —
-      reaches the cell surface in at least one cell state?
+      reaches the cell surface in at least one cell state? The levels
+      are <strong>evidence strength for the surfaces-at-all call</strong>,
+      not a steady-state magnitude.
       <ul style={{ margin: "0.4rem 0 0", paddingLeft: "1.1rem" }}>
         <li>
           <em>high</em> — direct evidence (live-cell flow, surface
@@ -49,9 +51,14 @@ export const tooltips: Record<string, ReactNode> = {
           <em>uncertain</em> — neither direction has enough evidence.
         </li>
       </ul>
-      Pair with <em>state_dependence</em> — <em>high</em> +{" "}
-      <em>state_dependence=high</em> = surfaces only in cancer / stress
-      states.
+      <strong>Not the same as steady-state surface fraction.</strong>{" "}
+      CD63 reads <em>high</em> + <em>state_dependence=high</em> + a
+      primarily lysosomal localization — it surfaces (well-evidenced),
+      but only on degranulation, and most of the pool sits in
+      lysosomes. For &ldquo;how much sits at the surface at baseline?&rdquo;
+      use <em>surface_specificity</em> (<em>surface_dominant</em> /{" "}
+      <em>mixed</em> / <em>mostly_intracellular</em>) and{" "}
+      <em>primary_compartment</em>.
       <br />
       <br />
       Deep-dive synthesizer (Sonnet 4.6).
@@ -598,6 +605,62 @@ export const tooltips: Record<string, ReactNode> = {
         PMID 41604262
       </a>
       ). Function vs. topology — orthogonal to the architecture axis.
+    </>
+  ),
+
+  catalog_primary_compartment: (
+    <>
+      Primary subcellular compartment — where the deep-dive agent places
+      the protein&apos;s dominant steady-state pool. A coarse 10-class
+      readout (<em>plasma_membrane</em>, <em>endosome</em>, <em>lysosome</em>,
+      etc.) from <code>biological_context.subcellular_localization.primary_compartment</code>;
+      reconciled across the merged evidence ledger and reflects the
+      majority steady-state localization, not every pool the protein
+      visits. Use alongside the &ldquo;Surface call&rdquo; group to find
+      e.g. lysosome-resident proteins with cell-state-induced surface
+      access.
+    </>
+  ),
+
+  catalog_restricted_subdomain_kind: (
+    <>
+      <strong>Kind</strong> of polarized localization when the protein
+      is restricted to a specific membrane subdomain — apical,
+      junctional, ciliary, synaptic, lipid-raft, basolateral, or other.
+      Sourced from <code>accessibility_risks.restricted_subdomain.domain</code>{" "}
+      and only populated when <em>has_restricted_subdomain</em> is true,
+      so the filter scopes to the genes where domain restriction is
+      actually relevant (e.g. find all ciliary-restricted GPCRs).
+    </>
+  ),
+
+  catalog_secreted_form_source: (
+    <>
+      How the soluble (non-membrane-anchored) form of the protein is
+      generated:
+      <ul style={{ margin: "0.4rem 0 0", paddingLeft: "1.1rem" }}>
+        <li>
+          <em>alternative_splicing</em> — a TM-less isoform is encoded
+          by alternative splicing (covers e.g. soluble FAS, sIL6R, the
+          decoy IL1R2 isoform).
+        </li>
+        <li>
+          <em>proteolytic</em> — sheddase / convertase cleavage of the
+          membrane form releases the extracellular domain.
+        </li>
+        <li>
+          <em>both</em> — both routes contribute meaningfully.
+        </li>
+        <li>
+          <em>unknown</em> — the form is documented as soluble but the
+          biogenesis isn&apos;t resolved in the evidence.
+        </li>
+      </ul>
+      Sourced from <code>accessibility_risks.secreted_form.source</code>{" "}
+      and only populated when <em>has_secreted_form</em> is true, so the
+      filter scopes to genes where a soluble form actually exists. Useful
+      to stratify decoy / shedding risk — proteolytic-shed targets force
+      a different campaign than splice-isoform decoys.
     </>
   ),
 

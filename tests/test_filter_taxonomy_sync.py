@@ -30,6 +30,21 @@ _WORKER = (
 # (Python carries the *_ecd_pct_identity floats; the band is derived).
 _ECD_BANDS = {"cyno_ortholog_ecd", "mouse_ortholog_ecd", "max_paralog_ecd"}
 
+# Facets sourced from BiologicalContext (not the Filters block) — they
+# appear in the catalog/compare filter taxonomy but aren't shipped as flat
+# DDF_KEYS by the Worker. The viewer's `pickDeepDiveFilters` and the
+# Worker's `projectDeepDiveFilters` both pull these from the deep-dive
+# record's biological_context tree directly.
+_BIOLOGY_DERIVED = {"primary_compartment"}
+
+# Facets sourced from AccessibilityRisks (not the Filters block). Same
+# contract as _BIOLOGY_DERIVED — viewer + Worker pull from the record
+# directly, not from the flat filters block.
+_ACCESSIBILITY_RISK_DERIVED = {
+    "restricted_subdomain_kind",
+    "secreted_form_source",
+}
+
 
 def _dd_facet_keys() -> set[str]:
     """Every catalog facet key — the `key: "..."` literals in the field
@@ -80,8 +95,51 @@ def test_registry_matches_interface() -> None:
 
 def test_facets_equal_worker_keys_plus_bands() -> None:
     """Catalog facets = the flat fields the Worker ships + the derived ECD
-    bands (the bands are the ONLY facets not in DDF_KEYS)."""
-    assert _dd_facet_keys() == _worker_ddf_keys() | _ECD_BANDS
+    bands + facets sourced from BiologicalContext + facets sourced from
+    AccessibilityRisks (these are the ONLY ones not in DDF_KEYS)."""
+    assert (
+        _dd_facet_keys()
+        == _worker_ddf_keys()
+        | _ECD_BANDS
+        | _BIOLOGY_DERIVED
+        | _ACCESSIBILITY_RISK_DERIVED
+    )
+
+
+def test_biology_derived_facets_pulled_from_biological_context() -> None:
+    """Every facet in `_BIOLOGY_DERIVED` must be sourced from
+    `biological_context` in BOTH the viewer's `pickDeepDiveFilters` and
+    the Worker's `projectDeepDiveFilters` — never from the flat `filters`
+    block."""
+    # Light-weight string check: each derived facet's key should appear
+    # alongside a `biological_context` reference in both files. Tightens
+    # the parity contract so a future renaming of one side surfaces here.
+    for facet in _BIOLOGY_DERIVED:
+        assert facet in _DDF and "biological_context" in _DDF, (
+            f"viewer pickDeepDiveFilters missing biological_context"
+            f" wiring for {facet}"
+        )
+        assert facet in _WORKER and "biological_context" in _WORKER, (
+            f"Worker projectDeepDiveFilters missing biological_context"
+            f" wiring for {facet}"
+        )
+
+
+def test_risk_derived_facets_pulled_from_accessibility_risks() -> None:
+    """Every facet in `_ACCESSIBILITY_RISK_DERIVED` must be sourced from
+    `accessibility_risks` in BOTH viewer's `pickDeepDiveFilters` and the
+    Worker's `projectDeepDiveFilters`, NOT from the flat `filters`
+    block. Parallels test_biology_derived_facets_pulled_from_biological_context
+    for the AccessibilityRisks → restricted_subdomain projection."""
+    for facet in _ACCESSIBILITY_RISK_DERIVED:
+        assert facet in _DDF and "accessibility_risks" in _DDF, (
+            f"viewer pickDeepDiveFilters missing accessibility_risks"
+            f" wiring for {facet}"
+        )
+        assert facet in _WORKER and "accessibility_risks" in _WORKER, (
+            f"Worker projectDeepDiveFilters missing accessibility_risks"
+            f" wiring for {facet}"
+        )
 
 
 def test_worker_keys_are_real_filters_fields() -> None:
