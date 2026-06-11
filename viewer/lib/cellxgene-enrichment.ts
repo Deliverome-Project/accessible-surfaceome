@@ -79,24 +79,54 @@ export interface CellxGeneEnrichment {
  * This is a separate fetch from `loadSurfaceomeRecord` so a gene without
  * a deep-dive record can still get a CellxGene tab (every protein-coding
  * gene is in the Census).
+ *
+ * **Dev fallback** — in development mode, if the Worker returns null (e.g.
+ * the new `/cellxgene` route hasn't been deployed yet to the live
+ * Worker), we fall back to reading the per-gene snapshot off the local
+ * filesystem at `CELLXGENE_DEV_SNAPSHOT_DIR` (default: `/tmp/czi_enrichment`).
+ * Gated on `NODE_ENV !== "production"` so the prod bundle never imports
+ * `node:fs`. The path is the same one `scripts/sync_czi_enrichment_to_d1.py`
+ * reads from, so a local CZI build feeds both the D1 push and the dev
+ * server without an extra hop.
  */
 export async function loadCellxGeneEnrichment(
   symbol: string,
 ): Promise<CellxGeneEnrichment | null> {
   const base = (process.env.SURFACEOME_API_BASE ?? DEFAULT_API_BASE).trim();
-  if (base === "local" || !base) return null;
-  const controller = new AbortController();
-  const timer = setTimeout(() => controller.abort(), FETCH_TIMEOUT_MS);
+  if (base !== "local" && base) {
+    const controller = new AbortController();
+    const timer = setTimeout(() => controller.abort(), FETCH_TIMEOUT_MS);
+    try {
+      const res = await fetch(`${base}/v1/genes/${symbol}/cellxgene`, {
+        cache: RECORD_FETCH_CACHE,
+        signal: controller.signal,
+      });
+      if (res.ok) return (await res.json()) as CellxGeneEnrichment;
+    } catch {
+      // fall through to dev fs fallback
+    } finally {
+      clearTimeout(timer);
+    }
+  }
+  if (process.env.NODE_ENV !== "production") {
+    return _loadFromDevSnapshot(symbol);
+  }
+  return null;
+}
+
+async function _loadFromDevSnapshot(
+  symbol: string,
+): Promise<CellxGeneEnrichment | null> {
   try {
-    const res = await fetch(`${base}/v1/genes/${symbol}/cellxgene`, {
-      cache: RECORD_FETCH_CACHE,
-      signal: controller.signal,
-    });
-    if (!res.ok) return null;
-    return (await res.json()) as CellxGeneEnrichment;
+    // Dynamic import keeps `node:fs` out of any client/edge bundle —
+    // server components and route handlers can resolve it at runtime.
+    const fs = await import("node:fs/promises");
+    const path = await import("node:path");
+    const dir = process.env.CELLXGENE_DEV_SNAPSHOT_DIR ?? "/tmp/czi_enrichment";
+    const file = path.join(dir, `${symbol.toUpperCase()}.json`);
+    const text = await fs.readFile(file, "utf8");
+    return JSON.parse(text) as CellxGeneEnrichment;
   } catch {
     return null;
-  } finally {
-    clearTimeout(timer);
   }
 }
