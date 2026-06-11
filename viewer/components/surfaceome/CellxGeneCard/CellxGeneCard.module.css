@@ -88,9 +88,9 @@
   gap: 4px;
 }
 
-/* Each row is a 2-column grid: label (cell type name + tissues) on
-   the left, value bar on the right. Compact (~22 px row height)
-   so 20+ rows fit at a glance. */
+/* Legacy .barRow / .barTrack / .barFill kept for the per-category
+   horizontal-bar summary; the main cell-type chart uses .colChart
+   below (vertical bars / column layout). */
 .barRow {
   display: grid;
   grid-template-columns: minmax(180px, 1fr) minmax(160px, 2.2fr);
@@ -109,6 +109,204 @@
     gap: 2px;
     padding: 4px 0;
   }
+}
+
+/* --- column (vertical-bar) chart for cell types ---------------------- */
+
+/* Outer grid: y-axis labels column on the left, bar canvas on the right.
+   Fixed height per chart so the y-axis ticks line up across charts. */
+.colChart {
+  display: grid;
+  grid-template-columns: 36px 1fr;
+  align-items: stretch;
+  margin-top: var(--space-2);
+  position: relative;
+}
+
+.yAxis {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  height: 240px;
+  font-family: var(--font-sans);
+  font-size: 0.65rem;
+  font-variant-numeric: tabular-nums;
+  color: var(--ink-faded);
+  padding-right: 6px;
+  text-align: right;
+}
+
+.yTick {
+  display: block;
+  line-height: 1;
+  transform: translateY(-50%);
+}
+.yTick:first-child {
+  transform: translateY(0);
+}
+.yTick:last-child {
+  transform: translateY(-100%);
+}
+
+/* Bar canvas: a horizontal flex row of fixed-height bars. Each bar
+   gets equal share via `flex: 1`, with a min-width so 30 bars at
+   ~900 px don't collapse on narrow screens (the .barRow / popover
+   then becomes the scroll axis). */
+.colCanvas {
+  list-style: none;
+  margin: 0;
+  padding: 0 0 var(--space-2);
+  display: flex;
+  align-items: flex-end;
+  gap: 3px;
+  height: 240px;
+  border-bottom: 1px solid var(--line);
+  background:
+    linear-gradient(to top,
+      transparent 0%, transparent calc(25% - 1px),
+      var(--line-soft) calc(25% - 1px), var(--line-soft) 25%,
+      transparent 25%, transparent calc(50% - 1px),
+      var(--line-soft) calc(50% - 1px), var(--line-soft) 50%,
+      transparent 50%, transparent calc(75% - 1px),
+      var(--line-soft) calc(75% - 1px), var(--line-soft) 75%,
+      transparent 75%, transparent 100%);
+  overflow-x: auto;
+  overflow-y: visible;
+}
+
+.colBar {
+  flex: 1 1 0;
+  min-width: 18px;
+  max-width: 48px;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  align-items: stretch;
+  position: relative;
+  cursor: default;
+}
+
+.colTrack {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: flex-end;
+}
+
+.colFill {
+  width: 100%;
+  border-radius: 2px 2px 0 0;
+  transition: height 200ms ease-out, opacity 100ms;
+}
+
+/* Faint outline + opacity on focus so keyboard navigation is visible. */
+.colBar:hover .colFill,
+.colBar:focus-within .colFill {
+  outline: 1px solid var(--ink);
+  outline-offset: 1px;
+}
+
+/* Label below each bar, rotated -45° to fit. Anchored to the top-right
+   of its grid cell so rotation keeps it under the bar. */
+.colLabel {
+  position: absolute;
+  top: 100%;
+  left: 50%;
+  margin-top: 6px;
+  font-family: var(--font-sans);
+  font-size: 0.65rem;
+  color: var(--ink-soft);
+  white-space: nowrap;
+  transform: translate(-50%, 0) rotate(-45deg);
+  transform-origin: center top;
+  pointer-events: none;
+  /* Allow labels to render past the bar's width — they overlap by
+     design, hover popover gives the unambiguous read. */
+  max-width: 220px;
+  text-overflow: ellipsis;
+  overflow: hidden;
+}
+
+.colBar:hover .colLabel,
+.colBar:focus-within .colLabel {
+  color: var(--ink);
+}
+
+/* Pad the chart bottom enough that rotated labels don't overlap the
+   next block. ~64 px covers a 24-char label at 0.65 rem rotated 45°. */
+.colChart {
+  padding-bottom: 80px;
+}
+
+/* --- per-category summary bars (horizontal) -------------------------- */
+
+.catList {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.catRow {
+  display: grid;
+  grid-template-columns: minmax(120px, 0.8fr) minmax(160px, 3fr);
+  align-items: center;
+  gap: var(--space-3);
+  padding: 3px 0;
+}
+
+.catLabel {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-family: var(--font-sans);
+  font-size: 0.78rem;
+  color: var(--ink);
+}
+
+.catName {
+  font-weight: 600;
+}
+
+.catCount {
+  margin-left: auto;
+  font-size: 0.66rem;
+  font-variant-numeric: tabular-nums;
+  color: var(--ink-faded);
+  padding: 1px 8px;
+  border-radius: 99px;
+  background: color-mix(in srgb, var(--ink) 5%, transparent);
+}
+
+.catTrack {
+  position: relative;
+  display: flex;
+  align-items: center;
+  height: 12px;
+  background: color-mix(in srgb, var(--ink) 5%, transparent);
+  border-radius: 2px;
+  overflow: hidden;
+}
+
+.catFill {
+  height: 100%;
+  border-radius: 2px;
+  transition: width 200ms ease-out;
+}
+
+.catValue {
+  position: absolute;
+  right: 6px;
+  font-size: 0.68rem;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  color: var(--ink);
+  letter-spacing: 0.02em;
+  text-shadow: 0 0 2px var(--surface);
 }
 
 .barLabel {
@@ -219,9 +417,11 @@
 
 .popover {
   position: absolute;
-  top: calc(100% + 4px);
-  left: 0;
-  right: 0;
+  bottom: calc(100% + 6px);
+  left: 50%;
+  transform: translateX(-50%);
+  width: 320px;
+  max-width: calc(100vw - 32px);
   z-index: 30;
   display: none;
   padding: var(--space-3);
@@ -237,8 +437,24 @@
 }
 
 .barRow:hover .popover,
-.barRow:focus-within .popover {
+.barRow:focus-within .popover,
+.colBar:hover .popover,
+.colBar:focus-within .popover {
   display: block;
+}
+
+/* Column-bar popovers sit ABOVE the bar (positioned via .popover's
+   bottom rule). On the leftmost/rightmost bars the centered transform
+   would clip; flex-end alignment via :first-child/:last-child fixes
+   the typical edge case. */
+.colBar:first-child .popover {
+  left: 0;
+  transform: translateX(0);
+}
+.colBar:last-child .popover {
+  left: auto;
+  right: 0;
+  transform: translateX(0);
 }
 
 .popHeader {
