@@ -198,6 +198,24 @@ export interface DeepDiveFilters {
    *  unknown). `alternative_splicing` covers soluble splice isoforms.
    *  Use alongside `has_secreted_form` which is the bool presence flag. */
   secreted_form_source?: SecretedSource;
+  /** Sourced from `deterministic_features.surface_bind` (Balbi 2026,
+   *  PMID 41604262). 4-way bucket of `n_sites` × `has_data`. */
+  surface_bind_targetability?:
+    | "high"
+    | "moderate"
+    | "none"
+    | "not_scored";
+  /** SURFACE-Bind's native family axis. Only set when `has_data=true`. */
+  surface_bind_main_class?:
+    | "Receptors"
+    | "Enzymes"
+    | "Transporters"
+    | "Miscellaneous";
+  /** Schweke 2024 AF2 homo-oligomer prediction (PMID 38325366). Schweke
+   *  is positives-only — `false` (or absent in the record) means "not
+   *  in the predicted homomer refset", NOT "AF2 disagrees". Use as a
+   *  lower-bound structural prior on homo-oligomerization risk. */
+  is_homo_oligomer?: boolean;
 }
 
 export interface CatalogRow {
@@ -1050,6 +1068,7 @@ export async function withDeepDiveFilters(
       records[i]?.filters as Record<string, unknown> | undefined,
       records[i]?.biological_context as Record<string, unknown> | undefined,
       records[i]?.accessibility_risks as Record<string, unknown> | undefined,
+      records[i]?.deterministic_features as Record<string, unknown> | undefined,
     );
     // Partial DeepDiveFilters (older records omit newer fields); every
     // reader accesses fields optionally, so route the cast through unknown.

@@ -638,6 +638,82 @@ export const tooltips: Record<string, ReactNode> = {
     </>
   ),
 
+  catalog_surface_bind_targetability: (
+    <>
+      4-way targetability bucket from{" "}
+      <strong>SURFACE-Bind</strong> (Balbi et al. 2026,{" "}
+      <a
+        href={pubmedUrl(CITATIONS.surfaceBind.pmid)}
+        target="_blank"
+        rel="noopener noreferrer"
+      >
+        PMID {CITATIONS.surfaceBind.pmid}
+      </a>
+      ), based on the per-protein count of MaSIF-scored targetable
+      patches on the AF2 structure:
+      <ul style={{ margin: "0.4rem 0 0", paddingLeft: "1.1rem" }}>
+        <li>
+          <em>high</em> — ≥3 scored patches (rich epitope landscape)
+        </li>
+        <li>
+          <em>moderate</em> — 1-2 scored patches
+        </li>
+        <li>
+          <em>none</em> — in the SURFACE-Bind dataset but 0 patches
+          cleared the targetability threshold (rare; e.g. GPR75)
+        </li>
+        <li>
+          <em>not_scored</em> — protein omitted from SURFACE-Bind&apos;s{" "}
+          <code>results_no_TM.csv</code> (~12% of surfaceome
+          proteins). Different from &ldquo;none&rdquo;: no claim
+          either way.
+        </li>
+      </ul>
+      Pure structural prior; identical MaSIF run on the same AF2 model
+      gives the same value — true <em>deterministic</em> filter.
+    </>
+  ),
+
+  catalog_surface_bind_main_class: (
+    <>
+      SURFACE-Bind&apos;s native family axis — Receptors, Enzymes,
+      Transporters, or Miscellaneous (Balbi et al. 2026,{" "}
+      <a
+        href={pubmedUrl(CITATIONS.surfaceBind.pmid)}
+        target="_blank"
+        rel="noopener noreferrer"
+      >
+        PMID {CITATIONS.surfaceBind.pmid}
+      </a>
+      ). Same four categories the LLM&apos;s <em>llm_family</em> rollup
+      is curated against — when the two diverge, the deep-dive saw
+      cell-biology evidence that overrode the structural prior. Useful
+      for auditing model disagreement. Only populated when the protein
+      is in the SURFACE-Bind dataset (<em>has_data=true</em>).
+    </>
+  ),
+
+  catalog_is_homo_oligomer: (
+    <>
+      Schweke 2024 AF2 homo-oligomer prediction (PMID{" "}
+      <a
+        href="https://pubmed.ncbi.nlm.nih.gov/38325366/"
+        target="_blank"
+        rel="noopener noreferrer"
+      >
+        38325366
+      </a>
+      ). When <em>true</em>, the protein is in the predicted homomer
+      refset (~1,049 surfaceome proteins). When <em>false</em>, the
+      protein is <strong>not in the positive set</strong> — this is
+      NOT &ldquo;AF2 explicitly disagrees&rdquo;; the atlas is
+      positives-only. Known dimers like EGFR and INSR are missing per
+      the Pydantic docstring, so treat <em>false</em> as a lower bound.
+      Useful as a structural prior for filtering homo-oligomerization
+      epitope-masking risk.
+    </>
+  ),
+
   catalog_secreted_form_source: (
     <>
       How the soluble (non-membrane-anchored) form of the protein is

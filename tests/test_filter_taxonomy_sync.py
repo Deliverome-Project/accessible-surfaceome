@@ -45,6 +45,16 @@ _ACCESSIBILITY_RISK_DERIVED = {
     "secreted_form_source",
 }
 
+# Facets sourced from DeterministicFeatures (tool output baked at
+# annotation time + Worker LEFT-JOIN backfill at serve time). Same
+# contract as _BIOLOGY_DERIVED — viewer + Worker pull from the record
+# directly, not from the flat filters block.
+_DETERMINISTIC_FEATURE_DERIVED = {
+    "surface_bind_targetability",
+    "surface_bind_main_class",
+    "is_homo_oligomer",
+}
+
 
 def _dd_facet_keys() -> set[str]:
     """Every catalog facet key — the `key: "..."` literals in the field
@@ -96,13 +106,15 @@ def test_registry_matches_interface() -> None:
 def test_facets_equal_worker_keys_plus_bands() -> None:
     """Catalog facets = the flat fields the Worker ships + the derived ECD
     bands + facets sourced from BiologicalContext + facets sourced from
-    AccessibilityRisks (these are the ONLY ones not in DDF_KEYS)."""
+    AccessibilityRisks + facets sourced from DeterministicFeatures (these
+    are the ONLY ones not in DDF_KEYS)."""
     assert (
         _dd_facet_keys()
         == _worker_ddf_keys()
         | _ECD_BANDS
         | _BIOLOGY_DERIVED
         | _ACCESSIBILITY_RISK_DERIVED
+        | _DETERMINISTIC_FEATURE_DERIVED
     )
 
 
@@ -121,6 +133,23 @@ def test_biology_derived_facets_pulled_from_biological_context() -> None:
         )
         assert facet in _WORKER and "biological_context" in _WORKER, (
             f"Worker projectDeepDiveFilters missing biological_context"
+            f" wiring for {facet}"
+        )
+
+
+def test_deterministic_feature_derived_facets_pulled_from_deterministic_features() -> None:
+    """Every facet in `_DETERMINISTIC_FEATURE_DERIVED` must be sourced from
+    `deterministic_features` in BOTH viewer's `pickDeepDiveFilters` and
+    the Worker's `projectDeepDiveFilters`, NOT from the flat `filters`
+    block. Parallels the BiologicalContext / AccessibilityRisks parity
+    tests for the SURFACE-Bind + Schweke projections."""
+    for facet in _DETERMINISTIC_FEATURE_DERIVED:
+        assert facet in _DDF and "deterministic_features" in _DDF, (
+            f"viewer pickDeepDiveFilters missing deterministic_features"
+            f" wiring for {facet}"
+        )
+        assert facet in _WORKER and "deterministic_features" in _WORKER, (
+            f"Worker projectDeepDiveFilters missing deterministic_features"
             f" wiring for {facet}"
         )
 

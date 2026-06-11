@@ -167,6 +167,12 @@ def test_deterministic_filters_are_tool_derived_from_sequence() -> None:
         "cyno_ortholog_ecd",
         "mouse_ortholog_ecd",
         "max_paralog_ecd",
+        # SURFACE-Bind MaSIF patches — Balbi 2026, on the AF2 structure
+        # (which is itself deterministic on the sequence).
+        "surface_bind_targetability",
+        "surface_bind_main_class",
+        # Schweke 2024 AF2 homomer prior — also on the AF2 structure.
+        "is_homo_oligomer",
     }
     # Re-parse the registry to harvest (key, provenance) pairs from
     # both ENUM and BOOL blocks.

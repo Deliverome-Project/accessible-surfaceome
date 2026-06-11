@@ -29,6 +29,8 @@ export type DdEnumKey =
   | "primary_compartment"
   | "restricted_subdomain_kind"
   | "secreted_form_source"
+  | "surface_bind_targetability"
+  | "surface_bind_main_class"
   | "evidence_grade"
   | "evidence_density"
   | "ecd_accessibility_class"
@@ -54,7 +56,8 @@ export type DdBoolKey =
   | "n_term_extracellular"
   | "c_term_extracellular"
   | "tumor_associated"
-  | "has_live_cell_surface_evidence";
+  | "has_live_cell_surface_evidence"
+  | "is_homo_oligomer";
 
 /**
  * Provenance bucket used by the catalog filter panel to partition
@@ -308,6 +311,49 @@ export const DD_ENUM_FIELDS: readonly DdEnumSpec[] = [
     isRisk: true,
   },
   {
+    // Sourced from `deterministic_features.surface_bind.{has_data,n_sites}`
+    // (Balbi et al. 2026, PMID 41604262). 4-way bucketing of the
+    // existing catalog quick-filter so it surfaces in the registry +
+    // compare TSV too:
+    //   • `high`        — has_data && n_sites >= 3 (multiple MaSIF patches)
+    //   • `moderate`    — has_data && 1 <= n_sites < 3 (a few patches)
+    //   • `none`        — has_data && n_sites == 0 (in SURFACE-Bind dataset
+    //                     but no scored sites — rare; e.g. GPR75)
+    //   • `not_scored`  — !has_data (not in SURFACE-Bind's results_no_TM
+    //                     table — ~12% of surfaceome proteins)
+    // Pure structural prior; truly deterministic — same MaSIF run on
+    // the same AF2 model gives the same n_sites.
+    key: "surface_bind_targetability",
+    label: "SURFACE-Bind targetability",
+    values: ["high", "moderate", "none", "not_scored"],
+    valueLabels: {
+      high: "High (≥3 patches)",
+      moderate: "Moderate (1-2 patches)",
+      none: "None (0 patches scored)",
+      not_scored: "Not in SURFACE-Bind",
+    },
+    tooltipKey: "catalog_surface_bind_targetability",
+    provenance: "deterministic",
+  },
+  {
+    // SURFACE-Bind's native family axis — cross-check against the LLM's
+    // `llm_family` (which is curated against the same 4 categories per
+    // tooltips.tsx). When the two diverge, the LLM saw cell-biology
+    // evidence that overrode the structural prior — useful filter for
+    // auditing model disagreement. Only populated when has_data=true.
+    key: "surface_bind_main_class",
+    label: "SURFACE-Bind family",
+    values: ["Receptors", "Enzymes", "Transporters", "Miscellaneous"],
+    valueLabels: {
+      Receptors: "Receptors",
+      Enzymes: "Enzymes",
+      Transporters: "Transporters",
+      Miscellaneous: "Miscellaneous",
+    },
+    tooltipKey: "catalog_surface_bind_main_class",
+    provenance: "deterministic",
+  },
+  {
     // Sourced from `accessibility_risks.secreted_form.source` ONLY when
     // `secreted_form.present === true` — same project-when-present
     // pattern as restricted_subdomain_kind. The bool
@@ -541,6 +587,22 @@ export const DD_BOOL_FIELDS: readonly DdBoolSpec[] = [
     tooltipKey: "catalog_live_cell_evidence",
     provenance: "llm",
   },
+  {
+    // Schweke 2024 AF2 homo-oligomer prediction (PMID 38325366) —
+    // sourced from `deterministic_features.homo_oligomerization.is_homo_oligomer`.
+    // Schweke's atlas is POSITIVES-ONLY: a `false` (or absent) value
+    // means "not in the predicted homomer refset", NOT "AF2 explicitly
+    // disagrees" — this is a lower bound (the docstring on
+    // `HomoOligomerizationFeatures` explicitly calls out EGFR + INSR
+    // as known dimers Schweke under-calls). Useful as a structural
+    // prior for filtering homo-oligomerization epitope-masking risk —
+    // a `true` is a strong AF2-derived signal.
+    key: "is_homo_oligomer",
+    label: "Schweke homomer (AF2)",
+    tooltipKey: "catalog_is_homo_oligomer",
+    provenance: "deterministic",
+    isRisk: true,
+  },
 ];
 
 /**
@@ -581,10 +643,25 @@ const ECD_BAND_SOURCES: readonly {
   { key: "max_paralog_ecd", source: "max_paralog_ecd_pct_identity", hi: 70, mid: 40 },
 ];
 
+/** Bucket a SURFACE-Bind n_sites count into the catalog's targetability
+ *  enum. Mirrors the 4-way logic from the existing catalog quick-filter
+ *  but as a forward enum value rather than a filter state. Keep in sync
+ *  with the Worker's `projectDeepDiveFilters`. */
+function surfaceBindTargetability(
+  hasData: boolean,
+  nSites: number,
+): "high" | "moderate" | "none" | "not_scored" {
+  if (!hasData) return "not_scored";
+  if (nSites >= 3) return "high";
+  if (nSites >= 1) return "moderate";
+  return "none";
+}
+
 export function pickDeepDiveFilters(
   filters: Record<string, unknown> | null | undefined,
   biologicalContext?: Record<string, unknown> | null,
   accessibilityRisks?: Record<string, unknown> | null,
+  deterministicFeatures?: Record<string, unknown> | null,
 ): Record<string, unknown> | undefined {
   if (!filters) return undefined;
   const out: Record<string, unknown> = {};
@@ -636,5 +713,41 @@ export function pickDeepDiveFilters(
   if (sf && sf.present === true && typeof sf.source === "string") {
     out.secreted_form_source = sf.source;
   }
+  // SURFACE-Bind facets (Balbi 2026, PMID 41604262) — sourced from
+  // `deterministic_features.surface_bind`. MUST stay in sync with the
+  // Worker's `projectDeepDiveFilters`. Bucket `n_sites` into the same
+  // 4-way targetability enum the existing catalog quick-filter uses.
+  const sb =
+    (deterministicFeatures?.surface_bind as
+      | { has_data?: unknown; n_sites?: unknown; main_class?: unknown }
+      | undefined) ?? undefined;
+  if (sb) {
+    const hasData = sb.has_data === true;
+    const nSites = typeof sb.n_sites === "number" ? sb.n_sites : 0;
+    out.surface_bind_targetability = surfaceBindTargetability(hasData, nSites);
+    // `main_class` is only meaningful when has_data=true (it's the
+    // family axis from SURFACE-Bind's reference table). Skip when
+    // unscored so the filter UI doesn't show every not-in-SURFACE-Bind
+    // gene as a single bucket.
+    if (hasData && typeof sb.main_class === "string") {
+      out.surface_bind_main_class = sb.main_class;
+    }
+  }
+  // Schweke 2024 homo-oligomer prediction (PMID 38325366) — sourced
+  // from `deterministic_features.homo_oligomerization.is_homo_oligomer`.
+  // Schweke is POSITIVES-ONLY: an absent/empty block (pre-Schweke
+  // annotation, ~16% of in-tree snapshots) means "not in the predicted
+  // homomer refset" — coerce to `false` so the filter has a value to
+  // match against. The live Worker LEFT JOINs `schweke_homomer_public`
+  // and patches the record at serve-time for these legacy snapshots
+  // (see handleGene in cloudflare/workers/surfaceome_api/src/index.js,
+  // commit e14a2feb4) — the SSG-fallback path here mirrors the same
+  // "absent = false" semantics so the filter behaves consistently
+  // whether the record arrived via Worker or local snapshot.
+  const ho =
+    (deterministicFeatures?.homo_oligomerization as
+      | { is_homo_oligomer?: unknown }
+      | undefined) ?? undefined;
+  out.is_homo_oligomer = ho?.is_homo_oligomer === true;
   return Object.keys(out).length > 0 ? out : undefined;
 }
