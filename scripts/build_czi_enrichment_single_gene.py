@@ -27,9 +27,15 @@ MIN_N_TOTAL_CLASS = 50
 MIN_N_EXPRESSING = 10
 MIN_PCT = 0.01
 COMMON_THRESHOLD = 10_000  # v2.1: was 1000
-COMMON_TOP_N = 20
-RARE_TOP_N = 10
-RARE_MIN_MEAN = 2.0
+# v2.1.1: expanded caps — show the long tail. Cell types: 50 qualified
+# + 50 trace = up to 100 rows per gene. Tissues: emit ALL passing the
+# basic n_total >= 1000 filter (~50-150 per gene). JSON stays < 50 KB
+# per gene; viewer renders all in horizontal-row layout with scroll.
+COMMON_TOP_N = 50
+RARE_TOP_N = 50
+RARE_MIN_MEAN = 1.0  # was 2.0 — let the trace badge do the muting
+TRACE_MIN_N = 1
+TRACE_MIN_PCT = 0.0001
 TISSUE_MIN_TOTAL = 1_000
 
 
@@ -215,17 +221,29 @@ def main():
     tis_class, tis_ids, tis_fold = classify_hpa(tissue_class_items)
     print(f"tissue_enrichment:    class={tis_class} fold={tis_fold} ids={tis_ids[:3]}")
 
-    # Sort + cap top_cell_types: 20 common (n_total >= 10k) + 10 rare (rest, mean>=2)
-    cell_rows_qualified = [r for r in cell_rows
-                           if r["n_expressing"] >= MIN_N_EXPRESSING
-                           and r["pct_expressing"] >= MIN_PCT]
-    cell_rows_qualified.sort(key=lambda r: -r["mean_log1p_cp10k"])
-    common = [r for r in cell_rows_qualified if r["n_total"] >= COMMON_THRESHOLD][:COMMON_TOP_N]
-    rare = [r for r in cell_rows_qualified
-            if r["n_total"] < COMMON_THRESHOLD and r["mean_log1p_cp10k"] >= RARE_MIN_MEAN][:RARE_TOP_N]
-    for r in common: r["is_rare"] = False
-    for r in rare: r["is_rare"] = True
-    top_cell_types = common + rare
+    # Sort + emit top_cell_types: qualified (high-confidence n/pct)
+    # first, then trace (low-n cell types with any signal). Within
+    # each tier, common (n_total >= 10k) ahead of rare (< 10k).
+    # is_rare flag stays (viewer respects it); is_trace flag is new.
+    def _classify(r):
+        r["is_rare"] = r["n_total"] < COMMON_THRESHOLD
+        qualified = (r["n_expressing"] >= MIN_N_EXPRESSING
+                     and r["pct_expressing"] >= MIN_PCT)
+        r["is_trace"] = not qualified
+        return r
+
+    cell_rows_keep = [_classify(r) for r in cell_rows
+                      if r["n_expressing"] >= TRACE_MIN_N
+                      and r["pct_expressing"] >= TRACE_MIN_PCT
+                      and r["mean_log1p_cp10k"] >= RARE_MIN_MEAN]
+    # Two-tier sort: qualified first (by mean DESC, common ahead of rare),
+    # then trace (same intra-tier ordering).
+    cell_rows_keep.sort(key=lambda r: (
+        r["is_trace"], r["is_rare"], -r["mean_log1p_cp10k"]
+    ))
+    qualified = [r for r in cell_rows_keep if not r["is_trace"]]
+    trace = [r for r in cell_rows_keep if r["is_trace"]]
+    top_cell_types = qualified[:COMMON_TOP_N] + trace[:RARE_TOP_N]
 
     # Sort + cap top_tissues. Include BOTH qualified and trace tissues
     # in one ranked list so the reader sees the long tail for low-
@@ -247,10 +265,14 @@ def main():
     # outranks a 20k-cell brain at mean 1.97 — wrong story for the
     # reader. Within each tier, mean ordering tells the magnitude
     # story.
+    # Emit ALL eligible tissues — no truncation. GPR75 has 51 distinct
+    # UBERON terms with any signal; capping at 15 hid the long tail
+    # the reader wants to see for low-expression genes. Two-tier sort
+    # (qualified first, then trace) preserves the visual story.
     top_tissues = sorted(
         eligible,
         key=lambda r: (r["is_trace"], -r["mean_log1p_cp10k"]),
-    )[:15]
+    )
 
     rec = {
         "schema_version": SCHEMA_VERSION,

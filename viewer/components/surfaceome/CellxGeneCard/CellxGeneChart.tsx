@@ -23,12 +23,45 @@ interface Props {
   tissues?: TissueAggregateRow[];
 }
 
-type YMetric = "mean" | "pct";
+type YMetric = "mean" | "pct" | "score";
 type SortMode = "value" | "type" | "category" | "tissue";
 
-const COMMON_MAX = 25;
-const RARE_MAX = 10;
+// v2.1.1: removed per-chart row caps. The bars are horizontal and the
+// row container scrolls, so the data tells the reader how many cell
+// types there are. The build still caps at ~100 cell types per gene
+// so JSON / D1 payload stays bounded.
+const COMMON_MAX = 200;
+const RARE_MAX = 200;
 const LABEL_TRUNCATE_AT = 24;
+
+/**
+ * Read the active metric off a row. `mean` is mean log1p(CP10K) among
+ * EXPRESSING cells. `pct` is fraction of cells expressing. `score` is
+ * mean × pct — the population-mean expression (an HPA-nTPM-style
+ * weighted metric) that combines both channels into one number.
+ * Useful for "if I pick cells of this type, what total signal do I
+ * get?" delivery questions.
+ */
+function readMetric(
+  m: { mean_log1p_cp10k?: number; pct_expressing?: number },
+  yMetric: YMetric,
+): number {
+  const mean = m.mean_log1p_cp10k ?? 0;
+  const pct = m.pct_expressing ?? 0;
+  if (yMetric === "mean") return mean;
+  if (yMetric === "pct") return pct;
+  return mean * pct;
+}
+
+function metricScaleMax(yMetric: YMetric): number {
+  // log1p(CP10K) tops at ~7. pct is [0, 1]. score = mean × pct tops
+  // around 7 × 1 = 7 in extreme cases; 4 is a reasonable visual cap
+  // (lets the strongest expressors fill the bar without dwarfing
+  // moderate ones).
+  if (yMetric === "mean") return 7;
+  if (yMetric === "pct") return 1;
+  return 4;
+}
 
 function fmtN(n: number): string {
   if (n >= 1_000_000) return `${(n / 1_000_000).toFixed(1)}M`;
@@ -66,8 +99,7 @@ function sortRows(
   yMetric: YMetric,
 ): Decorated[] {
   const arr = [...rows];
-  const metric = (r: Decorated): number =>
-    yMetric === "mean" ? r.mean_log1p_cp10k ?? 0 : r.pct_expressing ?? 0;
+  const metric = (r: Decorated): number => readMetric(r, yMetric);
   if (sortMode === "value") {
     arr.sort((a, b) => metric(b) - metric(a));
   } else if (sortMode === "type") {
@@ -164,13 +196,30 @@ function CellTypeChart({
           const nExpressing = r.n_expressing ?? 0;
           const nTotal = r.n_total ?? nExpressing;
           const tissueList = r.tissues ?? [];
-          const value = yMetric === "mean" ? meanVal : pctVal;
+          const value = readMetric(r, yMetric);
           const pct = Math.max(0, Math.min(100, (value / scaleMax) * 100));
-          const color = CATEGORY_COLORS[r.category];
+          const isTrace = !!r.is_trace;
+          // Mute trace cell types so the qualified ones lead. Build
+          // sorts qualified-first so trace clusters at the bottom of
+          // the list.
+          const baseColor = CATEGORY_COLORS[r.category];
+          const color = isTrace
+            ? `color-mix(in srgb, ${baseColor} 35%, transparent)`
+            : baseColor;
           const topTissues = tissueList.slice(0, 3);
           const tissuesInline = topTissues.map((t) => t.tissue).join(" · ");
           return (
-            <li key={r.cl_id} className={styles.barRow} tabIndex={0}>
+            <li
+              key={r.cl_id}
+              className={styles.barRow}
+              tabIndex={0}
+              data-trace={isTrace || undefined}
+              title={
+                isTrace
+                  ? `Trace: only ${nExpressing} of ${nTotal.toLocaleString()} cells expressing (${(pctVal * 100).toFixed(2)}%). Mean is real but small-n.`
+                  : undefined
+              }
+            >
               <div className={styles.barLabel}>
                 <span
                   className={styles.swatch}
@@ -180,6 +229,11 @@ function CellTypeChart({
                 <span className={styles.barName} title={r.cell_type}>
                   {truncate(r.cell_type, LABEL_TRUNCATE_AT + 16)}
                 </span>
+                {isTrace && (
+                  <span className={styles.traceBadge} aria-label="trace expression">
+                    trace
+                  </span>
+                )}
                 {tissuesInline && (
                   <span className={styles.tissues}>{tissuesInline}</span>
                 )}
@@ -191,7 +245,7 @@ function CellTypeChart({
                   aria-hidden
                 />
                 <span className={styles.barValue}>
-                  {yMetric === "mean" ? fmtMean(value) : fmtPct(value)}
+                  {yMetric === "pct" ? fmtPct(value) : fmtMean(value)}
                 </span>
               </div>
               {/* Hover/focus popover — full detail. Positioned BELOW
@@ -275,8 +329,7 @@ function CategoryAverages({
       arr.push(r);
       groups.set(r.category, arr);
     }
-    const metric = (r: Decorated): number =>
-      yMetric === "mean" ? r.mean_log1p_cp10k ?? 0 : r.pct_expressing ?? 0;
+    const metric = (r: Decorated): number => readMetric(r, yMetric);
     return CATEGORIES.map((c) => {
       const arr = groups.get(c) ?? [];
       if (arr.length === 0) return null;
@@ -323,7 +376,7 @@ function CategoryAverages({
                   aria-hidden
                 />
                 <span className={styles.catValue}>
-                  {yMetric === "mean" ? fmtMean(row.avg) : fmtPct(row.avg)}
+                  {yMetric === "pct" ? fmtPct(row.avg) : fmtMean(row.avg)}
                 </span>
               </div>
             </li>
@@ -357,20 +410,20 @@ function TopTissues({
   scaleMax: number;
 }) {
   const sorted = useMemo(() => {
-    const metric = (r: TissueAggregateRow): number =>
-      yMetric === "mean" ? r.mean_log1p_cp10k ?? 0 : r.pct_expressing ?? 0;
+    const metric = (r: TissueAggregateRow): number => readMetric(r, yMetric);
     // Qualified tissues first, then trace, each by metric DESC.
     // Otherwise a high-mean small-n trace tissue (pleura at mean 2.3,
     // n=4) would outrank a moderate-mean qualified one (brain at
     // mean 1.97, n=20k) and the visual story would be wrong.
-    return [...rows]
-      .sort((a, b) => {
-        const ta = a.is_trace ? 1 : 0;
-        const tb = b.is_trace ? 1 : 0;
-        if (ta !== tb) return ta - tb;
-        return metric(b) - metric(a);
-      })
-      .slice(0, 15);
+    // v2.1.1: no truncation — the build already emits a bounded list
+    // (~50-150 tissues per gene) and the user explicitly asked to see
+    // all of them.
+    return [...rows].sort((a, b) => {
+      const ta = a.is_trace ? 1 : 0;
+      const tb = b.is_trace ? 1 : 0;
+      if (ta !== tb) return ta - tb;
+      return metric(b) - metric(a);
+    });
   }, [rows, yMetric]);
 
   if (sorted.length === 0) return null;
@@ -388,8 +441,7 @@ function TopTissues({
       </h3>
       <ul className={styles.catList}>
         {sorted.map((row) => {
-          const value =
-            yMetric === "mean" ? row.mean_log1p_cp10k : row.pct_expressing;
+          const value = readMetric(row, yMetric);
           const pct = Math.max(0, Math.min(100, (value / scaleMax) * 100));
           const isTrace = !!row.is_trace;
           // Mute trace rows so the qualified ones read first. The build
@@ -435,7 +487,7 @@ function TopTissues({
                   aria-hidden
                 />
                 <span className={styles.catValue}>
-                  {yMetric === "mean" ? fmtMean(value) : fmtPct(value)}
+                  {yMetric === "pct" ? fmtPct(value) : fmtMean(value)}
                 </span>
               </div>
             </li>
@@ -457,7 +509,7 @@ export function CellxGeneChart({ rows, tissues = [] }: Props) {
   );
   const rare = useMemo(() => decorated.filter((r) => r.is_rare), [decorated]);
 
-  const scaleMax = yMetric === "mean" ? 7 : 1;
+  const scaleMax = metricScaleMax(yMetric);
 
   const presentCategories = useMemo(() => {
     const seen = new Set<CellCategory>();
@@ -481,6 +533,7 @@ export function CellxGeneChart({ rows, tissues = [] }: Props) {
               aria-checked={yMetric === "mean"}
               data-active={yMetric === "mean"}
               onClick={() => setYMetric("mean")}
+              title="Mean log1p(CP10K) among expressing cells — how strongly the cells that DO express it transcribe it"
             >
               Mean expression
             </button>
@@ -490,8 +543,19 @@ export function CellxGeneChart({ rows, tissues = [] }: Props) {
               aria-checked={yMetric === "pct"}
               data-active={yMetric === "pct"}
               onClick={() => setYMetric("pct")}
+              title="Fraction of cells expressing the gene — n_expressing / n_total"
             >
               % expressing
+            </button>
+            <button
+              type="button"
+              role="radio"
+              aria-checked={yMetric === "score"}
+              data-active={yMetric === "score"}
+              onClick={() => setYMetric("score")}
+              title="Mean × % expressing — population-mean expression. Approximates HPA-style nTPM. Best single number for delivery-target questions: 'if I pick cells of this type, what total signal do I get?'"
+            >
+              Score (mean × %)
             </button>
           </div>
         </div>

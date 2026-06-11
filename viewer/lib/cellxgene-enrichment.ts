@@ -54,9 +54,13 @@ export interface CellTypeRow {
   n_total: number;
   /** Pooled n_expressing / n_total. */
   pct_expressing: number;
-  /** True when n_total < 1000 — rendered in a separate "rare cell types"
-   *  panel so a rare high-expressor doesn't dominate the main chart. */
+  /** True when n_total < 10,000 — rendered after common cell types in
+   *  the same chart, so a rare high-expressor doesn't dominate the
+   *  ranking but stays visible for comparison. */
   is_rare: boolean;
+  /** True when the cell type fails the noise filter (n_expressing < 10
+   *  OR pct < 1%). v2.1.1+. Trace rows render muted with a badge. */
+  is_trace?: boolean;
   /** Top tissues for this cell type, ranked by n_expressing DESC (≤ 3). */
   tissues: TissueRow[];
 }
