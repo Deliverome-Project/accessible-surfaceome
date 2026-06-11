@@ -796,4 +796,3 @@ CREATE INDEX IF NOT EXISTS idx_czi_cellxgene_enrichment_ensembl
     ON czi_cellxgene_enrichment (ensembl_gene);
 CREATE INDEX IF NOT EXISTS idx_czi_cellxgene_enrichment_census
     ON czi_cellxgene_enrichment (census_version);
-
