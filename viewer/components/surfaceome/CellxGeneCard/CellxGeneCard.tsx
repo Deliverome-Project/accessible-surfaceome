@@ -166,30 +166,28 @@ export function CellxGeneCard({ data }: Props) {
           Switch the Y-axis to % expressing for the dot-size channel
           of the WMG dot plot.{" "}
           <InfoTip label="What each block shows">
-            <strong>Top tissues</strong> — anatomical / organ axis,
-            pooled by UBERON term across every cell type sampled
-            from that tissue. &ldquo;Which organs is this gene
-            in?&rdquo;{" "}
-            <strong>Per-category average</strong> — cell-class axis,
-            grouping cell types into broad classes (Epithelial /
-            Immune / Neural / Endothelial / Stromal / Muscle /
-            Reproductive / Stem / Tumor / Other) by keyword on the
-            CL label. &ldquo;What kind of cell?&rdquo; Hidden when
-            only one class qualifies.{" "}
-            <strong>Common cell types</strong> — the specific CL
-            terms with ≥ 10,000 cells sampled (high-confidence).{" "}
-            <strong>Rare high-expressors</strong> — CL terms with
-            &lt; 10,000 cells but mean ≥ 2; comparison only,
-            small-n caveat.
+            <strong>Top tissues</strong> — UBERON ontology axis,
+            pooled across every cell type sampled from that tissue.
+            CLICK a tissue bar to filter the &ldquo;All cell
+            types&rdquo; chart below to that tissue&apos;s
+            cell-type-specific expression (look-up from each cell
+            type&apos;s top-3 tissue stats — cell types whose top-3
+            doesn&apos;t include the selection drop out).{" "}
+            <strong>Top 20 cell types</strong> — highest-expressing
+            CL terms overall, trace cell types excluded.{" "}
+            <strong>All cell types</strong> — every CL term with
+            detectable expression, qualified first, then trace
+            (small-n) cells.
             <br />
             <br />
-            <strong>Mean log1p(CP10K)</strong> averages over cells
-            with ≥ 1 transcript: 1 ≈ detected, 2 = moderate, 4+ =
-            high, 6+ = among the strongest. <strong>%
-            expressing</strong> is <code>n_expressing / n_total</code>{" "}
-            in the Census-primary cohort. Hover any bar for full
-            cell-type detail + the top 3 tissues that cell type was
-            sampled from.
+            <strong>Y-axis options</strong> — Score (mean × pct,
+            population-mean), Mean log1p(CP10K), or % expressing.
+            Each chart has its own toggle.{" "}
+            <strong>Mean log1p</strong> values: 1 ≈ detected, 2 =
+            moderate, 4+ = high, 6+ = among the strongest.{" "}
+            <strong>% expressing</strong> is{" "}
+            <code>n_expressing / n_total</code> in the Census-primary
+            cohort.
           </InfoTip>
         </>
       }
