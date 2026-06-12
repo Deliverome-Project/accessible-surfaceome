@@ -871,14 +871,22 @@ function CellTypeChart({
                       ]
                     : [],
               };
-              // Color each cell-type bar by its dominant tissue's
-              // organ-system category (e.g. CD20 in a B cell whose
-              // top tissue is spleen → lymphoid amber). Falls back
-              // to the mode-default color (lavender for global Top
-              // 20, maroon for tissue-filtered) when the cell type
-              // has no tissue data (synthetic rows in the filtered
-              // view).
-              const dominantUberon = popoverRow.tissues?.[0]?.uberon_id;
+              // Color logic by view:
+              //  * UNFILTERED Top 20 — color each bar by its
+              //    DOMINANT tissue's organ-system category (e.g. a
+              //    B cell whose top tissue is spleen → lymphoid
+              //    amber). The legend below adapts to whatever
+              //    categories actually show up.
+              //  * TISSUE-FILTERED — every bar gets the SELECTED
+              //    tissue's category color. Otherwise we'd color
+              //    bars by their cross-tissue dominant tissue and
+              //    show a misleading legend (e.g. "Cell types in
+              //    embryo" with CNS / reproductive / developmental
+              //    bars), even though all the rows are actually in
+              //    embryo specifically.
+              const dominantUberon = selectedUberonId
+                ? selectedUberonId
+                : popoverRow.tissues?.[0]?.uberon_id;
               const barColor = dominantUberon
                 ? tissueCategoryColorFor(dominantUberon)
                 : cellBarColor;
@@ -897,21 +905,27 @@ function CellTypeChart({
           </ul>
         </div>
       )}
-      {/* Cell-type chart legend — derives the set of organ-system
-          categories present from each cell type's DOMINANT tissue
-          (tissues[0].uberon_id). Adapts to the current view: in the
-          unfiltered Top-20 mode it'll typically show 4-8 categories;
-          in a tissue-filtered view it usually collapses to 1-2
-          because all the rows are in the selected tissue. The legend
-          auto-hides when only 1 category is present (per
-          TissueCategoryLegend's `present.size < 2` check). */}
+      {/* Cell-type chart legend. Two modes mirror the bar coloring:
+          * UNFILTERED — derive each row's category from its DOMINANT
+            tissue (tissues[0].uberon_id). Legend shows whatever
+            categories actually appear (4-8 typical).
+          * TISSUE-FILTERED — every bar uses the selected tissue's
+            category, so the legend collapses to 1 entry and auto-
+            hides (per `present.size < 2` in TissueCategoryLegend).
+            That's the right outcome — having a legend with mixed
+            CNS/reproductive/developmental entries while the chart
+            header says "Cell types in embryo" was confusing. */}
       {sorted.length > 0 && (
         <TissueCategoryLegend
-          rows={sorted
-            .map((r) => ({
-              uberon_id: r.base?.tissues?.[0]?.uberon_id ?? "",
-            }))
-            .filter((r) => r.uberon_id)}
+          rows={
+            selectedUberonId
+              ? [{ uberon_id: selectedUberonId }]
+              : sorted
+                  .map((r) => ({
+                    uberon_id: r.base?.tissues?.[0]?.uberon_id ?? "",
+                  }))
+                  .filter((r) => r.uberon_id)
+          }
         />
       )}
     </section>
