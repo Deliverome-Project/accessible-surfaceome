@@ -6,12 +6,17 @@
   font-family: var(--font-sans);
 }
 
-/* The CellxGene card's lede is denser than most (3 charts to introduce
-   + an InfoTip) and the global 75 ch cap on .lede forces aggressive
-   wrapping. Free it to the section width so the description sits in
-   one or two clean paragraphs instead of a tall narrow column. */
+/* The CellxGene card's lede is denser than most (3 charts to
+   introduce + an InfoTip). Two earlier caps fight us:
+   - app/globals.css `.lede { max-width: 38rem }` (the editorial cap)
+   - SectionCard.module.css `.lede { max-width: 75ch }` (the section
+     reading-width cap)
+   Both apply at specificity (0,1,0); CSS-module load order is
+   unpredictable, so a plain `max-width: none` here loses the cascade
+   roughly half the time. `!important` is the correct hammer for a
+   per-card opt-out from a global guard. */
 .fullWidthLede {
-  max-width: none;
+  max-width: none !important;
 }
 
 .empty {
