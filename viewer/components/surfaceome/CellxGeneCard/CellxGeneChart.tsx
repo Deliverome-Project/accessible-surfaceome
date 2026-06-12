@@ -17,7 +17,16 @@ interface Props {
 type YMetric = "score" | "mean" | "pct";
 type SortMode = "value" | "type" | "tissue";
 
-const CELL_BAR_COLOR = "var(--maroon-mid, #922038)";
+/* Cell-type bars carry the "mode" signal:
+   - Overall Top-20 view: lavender (the same purple used in design
+     tokens for Neural / non-tissue-specific reads). Distinct from
+     the tissue chart's teal, signals "this is the global view, not
+     filtered to anything."
+   - Tissue-filtered view: maroon (the primary editorial accent).
+     The mode change is visible without having to read the chart
+     title — the bar color shifts when you click a tissue. */
+const CELL_BAR_COLOR_FILTERED = "var(--maroon-mid, #922038)";
+const CELL_BAR_COLOR_OVERALL = "var(--lavender-bright, #8878c8)";
 const TISSUE_BAR_COLOR = "var(--teal-mid, #3d6b60)";
 const SELECTED_TISSUE_COLOR = "var(--maroon-mid, #922038)";
 
@@ -263,7 +272,11 @@ function ColumnBar({
   );
 }
 
-function cellPopover(r: CellTypeRow, value: number): React.ReactNode {
+function cellPopover(
+  r: CellTypeRow,
+  value: number,
+  swatchColor: string,
+): React.ReactNode {
   const meanVal = r.mean_log1p_cp10k ?? 0;
   const pctVal = r.pct_expressing ?? 0;
   const nExpressing = r.n_expressing ?? 0;
@@ -274,7 +287,7 @@ function cellPopover(r: CellTypeRow, value: number): React.ReactNode {
       <div className={styles.popHeader}>
         <span
           className={styles.swatch}
-          style={{ background: CELL_BAR_COLOR }}
+          style={{ background: swatchColor }}
           aria-hidden
         />
         <strong>{r.cell_type}</strong>
@@ -606,20 +619,32 @@ function CellTypeChart({
         { value: "type", label: "A → Z" },
       ];
 
+  // Bar color signals the mode (purple = global Top-20, maroon =
+  // tissue-filtered). Reader sees the mode shift at a glance when
+  // they click a tissue, even before reading the title.
+  const cellBarColor = selectedTissueLabel
+    ? CELL_BAR_COLOR_FILTERED
+    : CELL_BAR_COLOR_OVERALL;
+
   return (
     <section className={styles.chartBlock}>
       <h3 className={styles.subhead}>
-        {title}
+        {/* Title + reset button sit on one row so the "back to Top 20"
+            action is right next to the chart's current name; the meta
+            subtitle drops to the line below. */}
+        <span className={styles.titleRow}>
+          <span className={styles.titleText}>{title}</span>
+          {selectedTissueLabel && (
+            <button
+              type="button"
+              className={styles.resetLink}
+              onClick={onClearTissue}
+            >
+              ← Show top {TOP_N} overall
+            </button>
+          )}
+        </span>
         <span className={styles.subheadMeta}>{subtitle}</span>
-        {selectedTissueLabel && (
-          <button
-            type="button"
-            className={styles.resetLink}
-            onClick={onClearTissue}
-          >
-            Show top {TOP_N} overall
-          </button>
-        )}
       </h3>
       <ChartControls
         yMetric={yMetric}
@@ -663,10 +688,10 @@ function CellTypeChart({
                 <ColumnBar
                   key={r.cl_id}
                   height={height}
-                  color={CELL_BAR_COLOR}
+                  color={cellBarColor}
                   label={r.cell_type}
                   isTrace={r.is_trace}
-                  popover={cellPopover(popoverRow, value)}
+                  popover={cellPopover(popoverRow, value, cellBarColor)}
                   hoverTitle={hoverTitle}
                 />
               );
