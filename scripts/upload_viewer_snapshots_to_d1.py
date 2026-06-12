@@ -118,6 +118,19 @@ def main() -> int:
             "historical-sample reimport."
         ),
     )
+    ap.add_argument(
+        "--no-purge",
+        action="store_true",
+        help=(
+            "Skip the per-gene Cloudflare edge-cache purge after each D1 "
+            "write. Use for bulk loads (≥ a few hundred genes) — Cloudflare's "
+            "purge-cache rate limit is ~1k/day on the free plan and ~30k/h on "
+            "Pro+, so per-URL purges across the 6,500-gene cohort would burn "
+            "the budget. With --no-purge, records still land in D1 atomically; "
+            "the Worker's edge cache refreshes on its Cache-Control TTL "
+            "(≤ 1 day for per-gene records) instead of immediately."
+        ),
+    )
     args = ap.parse_args()
 
     source_dir: Path = args.source
@@ -153,12 +166,22 @@ def main() -> int:
     # Delegate to the canonical publish helper — same code path the v2
     # annotate driver uses, so the two surfaces (annotate-time publish
     # and bulk-sync publish) can't drift.
+    if args.no_purge:
+        logger.info(
+            "edge-cache purge SUPPRESSED (--no-purge); records live on "
+            "Worker Cache-Control TTL (≤ 1 day) instead of immediately"
+        )
     n_written = 0
     n_skipped = 0
     for _path, blob in blobs:
         # write_snapshot=False — the snapshot is already on disk; we're
         # just bringing D1 in line with it.
-        pub = publish_record_dict(blob, write_snapshot=False, force=args.force)
+        pub = publish_record_dict(
+            blob,
+            write_snapshot=False,
+            force=args.force,
+            skip_purge=args.no_purge,
+        )
         if pub.d1_written:
             n_written += 1
             stale = (
