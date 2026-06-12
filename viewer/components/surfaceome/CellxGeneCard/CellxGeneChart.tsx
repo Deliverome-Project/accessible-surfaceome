@@ -757,7 +757,11 @@ function CellTypeChart({
                 : undefined;
               // For tissue-filtered rows whose cell type isn't in
               // top_cell_types, build a synthetic CellTypeRow from
-              // the view-row stats so the popover renders.
+              // the view-row stats. We KNOW the selected tissue, so
+              // stamp it into the tissues subarray — otherwise the
+              // popover renders "tissues: (none)" for the very
+              // tissue the user just clicked, which the user
+              // (correctly) flagged as confusing.
               const popoverRow: CellTypeRow = r.base ?? {
                 cl_id: r.cl_id,
                 cell_type: r.cell_type,
@@ -767,7 +771,19 @@ function CellTypeChart({
                 n_total: r.n_total,
                 is_rare: r.n_total < 10_000,
                 is_trace: r.is_trace,
-                tissues: [],
+                tissues:
+                  selectedUberonId && selectedTissueLabel
+                    ? [
+                        {
+                          tissue: selectedTissueLabel,
+                          uberon_id: selectedUberonId,
+                          mean_log1p_cp10k: r.mean_log1p_cp10k,
+                          n_expressing: r.n_expressing,
+                          n_total: r.n_total,
+                          pct_expressing: r.pct_expressing,
+                        },
+                      ]
+                    : [],
               };
               return (
                 <ColumnBar

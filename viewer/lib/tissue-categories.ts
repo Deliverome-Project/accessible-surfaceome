@@ -47,6 +47,18 @@ export interface TissueCategory {
  * Display order — used by the legend strip. Roughly anatomical
  * head-to-toe with fluids/dev at the end as "everything else."
  */
+/**
+ * Palette notes:
+ *  - Two near-white slots removed: `developmental` was `lavender-tint`
+ *    (#e4e0f8) which read as blank-bar against the white card; `fluids_
+ *    other` was `line-soft` (rgba ~6% black) which was likewise invisible.
+ *  - Yellow added for developmental (#e9b62a — saturated mustard so it
+ *    sits distinctly between amber and lavender on the color wheel).
+ *  - Purple-heavy distribution: CNS, head/sensory, musculoskeletal, and
+ *    fluids/other all draw from the lavender family, giving the
+ *    palette an editorial purple identity matching the rest of the
+ *    deliverome system.
+ */
 export const TISSUE_CATEGORIES: readonly TissueCategory[] = [
   { id: "cns", label: "CNS", colorVar: "--lavender-mid", colorFallback: "#5848a8" },
   { id: "head_sensory", label: "Head & sensory", colorVar: "--lavender-deepest", colorFallback: "#1e1450" },
@@ -59,9 +71,18 @@ export const TISSUE_CATEGORIES: readonly TissueCategory[] = [
   { id: "endocrine", label: "Endocrine", colorVar: "--endocrine-mid", colorFallback: "#6b8e4e" },
   { id: "reproductive", label: "Reproductive", colorVar: "--maroon-deepest", colorFallback: "#3e0a18" },
   { id: "skin_adipose", label: "Skin & adipose", colorVar: "--skin-mid", colorFallback: "#b8704a" },
-  { id: "musculoskeletal", label: "Musculoskeletal", colorVar: "--muted-soft", colorFallback: "#80706a" },
-  { id: "developmental", label: "Developmental", colorVar: "--lavender-tint", colorFallback: "#e4e0f8" },
-  { id: "fluids_other", label: "Fluids / other", colorVar: "--line-soft", colorFallback: "rgba(31,23,24,0.06)" },
+  // Musculoskeletal: bumped from `muted-soft` (warm gray) to a mid
+  // lavender so the purple identity carries through to the
+  // motor-system bars without colliding with CNS (deeper purple).
+  { id: "musculoskeletal", label: "Musculoskeletal", colorVar: "--lavender-bright", colorFallback: "#8878c8" },
+  // Developmental: yellow (mustard) — distinct hue from amber, picked
+  // because trophoblast / embryo / placenta read as a separate axis
+  // from "warm" GI / hepatobiliary tones nearby.
+  { id: "developmental", label: "Developmental", colorVar: "--mustard", colorFallback: "#e9b62a" },
+  // Fluids / other: an overall neutral, but bumped to a real dusty
+  // lavender so it shows up against the card background instead of
+  // disappearing.
+  { id: "fluids_other", label: "Fluids / other", colorVar: "--lavender-dusty", colorFallback: "#9a8fb8" },
 ] as const;
 
 /**

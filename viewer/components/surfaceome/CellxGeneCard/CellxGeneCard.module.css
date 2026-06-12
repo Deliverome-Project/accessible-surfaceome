@@ -366,7 +366,14 @@ button.colBarHit:focus-visible {
 .colLabel {
   position: absolute;
   top: calc(100% + 6px);
-  right: 50%;
+  /* Anchor pivot 6 px LEFT of the bar's center so the rotated label
+     visually sits flush under the bar instead of trailing off
+     toward the bar's right edge. `right: 50%` (pivot AT center)
+     put the label visibly right-shifted because the CCW rotation
+     swings the bulk of the text leftward but leaves the anchor
+     dot at the pivot point. Nudging the pivot left by `+ 6 px` of
+     `right:` recenters the visual mass under the bar. */
+  right: calc(50% + 6px);
   font-family: var(--font-sans);
   font-size: 0.6rem;
   color: var(--ink-soft);
