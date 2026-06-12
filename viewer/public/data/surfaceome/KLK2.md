@@ -476,7 +476,7 @@ This Markdown is generated from the canonical JSON record at `/data/surfaceome/K
 
 ## CellxGene RNA enrichment (CZI Census)
 
-*Schema v2.1.10 · CZI Census 2025-11-08 · τ-cutoff classification (Yanai 2005, PMID 15388519) on linear population mean (mean × pct, ≈ nTPM) over the full measured universe with a 1e-3 noise floor: τ≥0.85 enriched, 0.5–0.85 enhanced, <0.5 low specificity, no eligibles not detected. Cutoffs from Kryuchkova-Mostacci & Robinson-Rechavi 2017 (PMID 26891983) + Lüleci & Yılmaz 2022. Cell ontology graph (cl-basic.obo) walked to ~150 cell-family terms; UBERON ontology walked to ~150 organ-level tissues. CC-BY 4.0 (CZI Census).*
+*Schema v2.1.11 · CZI Census 2025-11-08 · τ-cutoff classification (Yanai 2005, PMID 15388519) on linear population mean (mean × pct, ≈ nTPM) over the full measured universe with a 1e-3 noise floor: τ≥0.85 enriched, 0.5–0.85 enhanced, <0.5 low specificity, no eligibles not detected. Cutoffs from Kryuchkova-Mostacci & Robinson-Rechavi 2017 (PMID 26891983) + Lüleci & Yılmaz 2022. Cell ontology graph (cl-basic.obo) walked to ~150 cell-family terms; UBERON ontology walked to ~150 organ-level tissues. CC-BY 4.0 (CZI Census).*
 
 **Classification:**
 
@@ -498,10 +498,10 @@ This Markdown is generated from the canonical JSON record at `/data/surfaceome/K
 
 | Tissue | UBERON ID | Mean log1p(CP10K) | % expressing | n_expressing / n_total |
 |---|---|---|---|---|
-| prostate gland | UBERON:0002367 | 3.477 | 36.56% | 19,653 / 53,755 |
-| small intestine | UBERON:0002108 | 1.710 | 0.54% | 36 / 6,609 | (trace)
-| eye | UBERON:0000970 | 1.870 | 0.43% | 69 / 16,084 | (trace)
-| heart | UBERON:0000948 | 1.855 | 0.42% | 34 / 8,065 | (trace)
-| saliva | UBERON:0001836 | 1.778 | 0.34% | 24 / 7,162 | (trace)
+| exocrine gland | UBERON:0002365 | 3.729 | 100.00% | 2,093 / 2,093 |
+| prostate gland | UBERON:0002367 | 3.454 | 36.88% | 19,925 / 54,027 |
+| skin of body | UBERON:0002097 | 1.908 | 1.17% | 234 / 20,032 |
+| eye | UBERON:0000970 | 1.725 | 1.20% | 194 / 16,209 |
+| heart | UBERON:0000948 | 1.810 | 0.74% | 60 / 8,091 | (trace)
 
 <!-- /cellxgene -->

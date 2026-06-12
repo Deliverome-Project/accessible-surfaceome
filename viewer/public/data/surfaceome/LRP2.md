@@ -1059,7 +1059,7 @@ This Markdown is generated from the canonical JSON record at `/data/surfaceome/L
 
 ## CellxGene RNA enrichment (CZI Census)
 
-*Schema v2.1.10 · CZI Census 2025-11-08 · τ-cutoff classification (Yanai 2005, PMID 15388519) on linear population mean (mean × pct, ≈ nTPM) over the full measured universe with a 1e-3 noise floor: τ≥0.85 enriched, 0.5–0.85 enhanced, <0.5 low specificity, no eligibles not detected. Cutoffs from Kryuchkova-Mostacci & Robinson-Rechavi 2017 (PMID 26891983) + Lüleci & Yılmaz 2022. Cell ontology graph (cl-basic.obo) walked to ~150 cell-family terms; UBERON ontology walked to ~150 organ-level tissues. CC-BY 4.0 (CZI Census).*
+*Schema v2.1.11 · CZI Census 2025-11-08 · τ-cutoff classification (Yanai 2005, PMID 15388519) on linear population mean (mean × pct, ≈ nTPM) over the full measured universe with a 1e-3 noise floor: τ≥0.85 enriched, 0.5–0.85 enhanced, <0.5 low specificity, no eligibles not detected. Cutoffs from Kryuchkova-Mostacci & Robinson-Rechavi 2017 (PMID 26891983) + Lüleci & Yılmaz 2022. Cell ontology graph (cl-basic.obo) walked to ~150 cell-family terms; UBERON ontology walked to ~150 organ-level tissues. CC-BY 4.0 (CZI Census).*
 
 **Classification:**
 
@@ -1081,10 +1081,10 @@ This Markdown is generated from the canonical JSON record at `/data/surfaceome/L
 
 | Tissue | UBERON ID | Mean log1p(CP10K) | % expressing | n_expressing / n_total |
 |---|---|---|---|---|
-| spinal cord | UBERON:0002240 | 2.014 | 76.81% | 10,382 / 13,517 |
+| kidney | UBERON:0002113 | 2.643 | 53.47% | 165,733 / 309,976 |
+| eye | UBERON:0000970 | 2.066 | 99.32% | 738,674 / 743,729 |
+| brain | UBERON:0000955 | 2.051 | 91.83% | 2,604,868 / 2,836,585 |
+| spinal cord | UBERON:0002240 | 2.013 | 76.86% | 10,414 / 13,549 |
 | chest wall | UBERON:0016435 | 1.732 | 31.19% | 3,199 / 10,255 |
-| heart | UBERON:0000948 | 1.836 | 12.97% | 1,502 / 11,579 |
-| kidney | UBERON:0002113 | 2.094 | 8.40% | 13,229 / 157,472 |
-| adipose tissue | UBERON:0001013 | 1.821 | 10.90% | 655 / 6,011 |
 
 <!-- /cellxgene -->

@@ -3094,7 +3094,7 @@
   "model_path": "claude-sonnet-4-6",
   "record_generated_at": "2026-05-31T15:33:42.417728Z",
   "cellxgene": {
-    "schema_version": "2.1.10",
+    "schema_version": "2.1.11",
     "census_version": "2025-11-08",
     "cell_class_enrichment": {
       "class": "enriched",
@@ -3129,7 +3129,7 @@
       ],
       "fold_change": 3.137,
       "fold_change_infinite": false,
-      "tau": 0.9980251846310578,
+      "tau": 0.9980320644191273,
       "top_entity_contribs": [
         {
           "id": "CL:0002340",
@@ -3440,46 +3440,68 @@
     ],
     "top_tissues": [
       {
+        "tissue": "exocrine gland",
+        "uberon_id": "UBERON:0002365",
+        "mean_log1p_cp10k": 3.7293,
+        "n_expressing": 2093,
+        "n_total": 2093,
+        "pct_expressing": 1.0,
+        "score": 40.6502,
+        "is_trace": false,
+        "is_stale_denominator": true
+      },
+      {
         "tissue": "prostate gland",
         "uberon_id": "UBERON:0002367",
-        "mean_log1p_cp10k": 3.4773,
-        "n_expressing": 19653,
-        "n_total": 53755,
-        "pct_expressing": 0.3656,
-        "score": 11.4703,
+        "mean_log1p_cp10k": 3.4542,
+        "n_expressing": 19925,
+        "n_total": 54027,
+        "pct_expressing": 0.3688,
+        "score": 11.2973,
         "is_trace": false,
         "is_stale_denominator": false
       },
       {
-        "tissue": "small intestine",
-        "uberon_id": "UBERON:0002108",
-        "mean_log1p_cp10k": 1.7095,
-        "n_expressing": 36,
-        "n_total": 6609,
-        "pct_expressing": 0.0054,
-        "score": 0.0247,
-        "is_trace": true,
-        "is_stale_denominator": false
+        "tissue": "skin of body",
+        "uberon_id": "UBERON:0002097",
+        "mean_log1p_cp10k": 1.9079,
+        "n_expressing": 234,
+        "n_total": 20032,
+        "pct_expressing": 0.0117,
+        "score": 0.067,
+        "is_trace": false,
+        "is_stale_denominator": true
       },
       {
         "tissue": "eye",
         "uberon_id": "UBERON:0000970",
-        "mean_log1p_cp10k": 1.8696,
-        "n_expressing": 69,
-        "n_total": 16084,
-        "pct_expressing": 0.0043,
-        "score": 0.0235,
-        "is_trace": true,
+        "mean_log1p_cp10k": 1.7253,
+        "n_expressing": 194,
+        "n_total": 16209,
+        "pct_expressing": 0.012,
+        "score": 0.0552,
+        "is_trace": false,
         "is_stale_denominator": true
       },
       {
         "tissue": "heart",
         "uberon_id": "UBERON:0000948",
-        "mean_log1p_cp10k": 1.8555,
-        "n_expressing": 34,
-        "n_total": 8065,
-        "pct_expressing": 0.0042,
-        "score": 0.0227,
+        "mean_log1p_cp10k": 1.8101,
+        "n_expressing": 60,
+        "n_total": 8091,
+        "pct_expressing": 0.0074,
+        "score": 0.0379,
+        "is_trace": true,
+        "is_stale_denominator": false
+      },
+      {
+        "tissue": "small intestine",
+        "uberon_id": "UBERON:0002108",
+        "mean_log1p_cp10k": 1.7154,
+        "n_expressing": 38,
+        "n_total": 6611,
+        "pct_expressing": 0.0057,
+        "score": 0.0262,
         "is_trace": true,
         "is_stale_denominator": false
       },
@@ -3495,15 +3517,15 @@
         "is_stale_denominator": false
       },
       {
-        "tissue": "skin of body",
-        "uberon_id": "UBERON:0002097",
-        "mean_log1p_cp10k": 1.8768,
-        "n_expressing": 36,
-        "n_total": 19834,
-        "pct_expressing": 0.0018,
-        "score": 0.01,
+        "tissue": "large intestine",
+        "uberon_id": "UBERON:0000059",
+        "mean_log1p_cp10k": 1.8774,
+        "n_expressing": 11,
+        "n_total": 5414,
+        "pct_expressing": 0.002,
+        "score": 0.0112,
         "is_trace": true,
-        "is_stale_denominator": true
+        "is_stale_denominator": false
       },
       {
         "tissue": "urinary bladder",
@@ -3524,28 +3546,6 @@
         "n_total": 1818,
         "pct_expressing": 0.0017,
         "score": 0.0075,
-        "is_trace": true,
-        "is_stale_denominator": false
-      },
-      {
-        "tissue": "large intestine",
-        "uberon_id": "UBERON:0000059",
-        "mean_log1p_cp10k": 1.8915,
-        "n_expressing": 7,
-        "n_total": 5410,
-        "pct_expressing": 0.0013,
-        "score": 0.0073,
-        "is_trace": true,
-        "is_stale_denominator": false
-      },
-      {
-        "tissue": "brain",
-        "uberon_id": "UBERON:0000955",
-        "mean_log1p_cp10k": 1.6925,
-        "n_expressing": 312,
-        "n_total": 243913,
-        "pct_expressing": 0.0013,
-        "score": 0.0057,
         "is_trace": true,
         "is_stale_denominator": false
       }

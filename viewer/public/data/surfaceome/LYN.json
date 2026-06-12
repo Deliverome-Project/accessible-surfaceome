@@ -2256,7 +2256,7 @@
   "model_path": "claude-sonnet-4-6",
   "record_generated_at": "2026-05-31T15:31:28.680125Z",
   "cellxgene": {
-    "schema_version": "2.1.10",
+    "schema_version": "2.1.11",
     "census_version": "2025-11-08",
     "cell_class_enrichment": {
       "class": "enhanced",
@@ -2297,7 +2297,7 @@
       ],
       "fold_change": 1.074,
       "fold_change_infinite": false,
-      "tau": 0.9415671307670543,
+      "tau": 0.9424267086466804,
       "top_entity_contribs": [
         {
           "id": "CL:0000094",
@@ -2692,6 +2692,61 @@
     ],
     "top_tissues": [
       {
+        "tissue": "adipose tissue",
+        "uberon_id": "UBERON:0001013",
+        "mean_log1p_cp10k": 2.2493,
+        "n_expressing": 19161,
+        "n_total": 19161,
+        "pct_expressing": 1.0,
+        "score": 8.481,
+        "is_trace": false,
+        "is_stale_denominator": true
+      },
+      {
+        "tissue": "endocrine gland",
+        "uberon_id": "UBERON:0002368",
+        "mean_log1p_cp10k": 2.1776,
+        "n_expressing": 5148,
+        "n_total": 5148,
+        "pct_expressing": 1.0,
+        "score": 7.8255,
+        "is_trace": false,
+        "is_stale_denominator": true
+      },
+      {
+        "tissue": "exocrine gland",
+        "uberon_id": "UBERON:0002365",
+        "mean_log1p_cp10k": 2.1505,
+        "n_expressing": 6078,
+        "n_total": 6078,
+        "pct_expressing": 1.0,
+        "score": 7.5894,
+        "is_trace": false,
+        "is_stale_denominator": true
+      },
+      {
+        "tissue": "musculature",
+        "uberon_id": "UBERON:0001015",
+        "mean_log1p_cp10k": 2.0056,
+        "n_expressing": 3499,
+        "n_total": 3499,
+        "pct_expressing": 1.0,
+        "score": 6.4304,
+        "is_trace": false,
+        "is_stale_denominator": true
+      },
+      {
+        "tissue": "eye",
+        "uberon_id": "UBERON:0000970",
+        "mean_log1p_cp10k": 1.8709,
+        "n_expressing": 172206,
+        "n_total": 174328,
+        "pct_expressing": 0.9878,
+        "score": 5.4271,
+        "is_trace": false,
+        "is_stale_denominator": true
+      },
+      {
         "tissue": "saliva",
         "uberon_id": "UBERON:0001836",
         "mean_log1p_cp10k": 2.3062,
@@ -2703,103 +2758,48 @@
         "is_stale_denominator": false
       },
       {
-        "tissue": "lymph node",
-        "uberon_id": "UBERON:0000029",
-        "mean_log1p_cp10k": 2.1053,
-        "n_expressing": 60788,
-        "n_total": 210265,
-        "pct_expressing": 0.2891,
-        "score": 2.0843,
+        "tissue": "heart",
+        "uberon_id": "UBERON:0000948",
+        "mean_log1p_cp10k": 1.8841,
+        "n_expressing": 34194,
+        "n_total": 38244,
+        "pct_expressing": 0.8941,
+        "score": 4.9894,
         "is_trace": false,
-        "is_stale_denominator": false
+        "is_stale_denominator": true
       },
       {
-        "tissue": "placenta",
-        "uberon_id": "UBERON:0001987",
-        "mean_log1p_cp10k": 2.0279,
-        "n_expressing": 58258,
-        "n_total": 214058,
-        "pct_expressing": 0.2722,
-        "score": 1.7957,
+        "tissue": "vasculature",
+        "uberon_id": "UBERON:0002049",
+        "mean_log1p_cp10k": 1.7898,
+        "n_expressing": 2820,
+        "n_total": 2820,
+        "pct_expressing": 1.0,
+        "score": 4.9885,
         "is_trace": false,
-        "is_stale_denominator": false
+        "is_stale_denominator": true
       },
       {
-        "tissue": "cerebrospinal fluid",
-        "uberon_id": "UBERON:0001359",
-        "mean_log1p_cp10k": 1.8545,
-        "n_expressing": 2125,
-        "n_total": 8035,
-        "pct_expressing": 0.2645,
-        "score": 1.4251,
+        "tissue": "uterus",
+        "uberon_id": "UBERON:0000995",
+        "mean_log1p_cp10k": 1.6526,
+        "n_expressing": 1820,
+        "n_total": 1864,
+        "pct_expressing": 0.9764,
+        "score": 4.1209,
         "is_trace": false,
-        "is_stale_denominator": false
+        "is_stale_denominator": true
       },
       {
-        "tissue": "lung",
-        "uberon_id": "UBERON:0002048",
-        "mean_log1p_cp10k": 1.9453,
-        "n_expressing": 106869,
-        "n_total": 527556,
-        "pct_expressing": 0.2026,
-        "score": 1.2145,
+        "tissue": "mucosa",
+        "uberon_id": "UBERON:0000344",
+        "mean_log1p_cp10k": 1.8157,
+        "n_expressing": 1671,
+        "n_total": 2602,
+        "pct_expressing": 0.6422,
+        "score": 3.3043,
         "is_trace": false,
-        "is_stale_denominator": false
-      },
-      {
-        "tissue": "spleen",
-        "uberon_id": "UBERON:0002106",
-        "mean_log1p_cp10k": 1.9435,
-        "n_expressing": 35406,
-        "n_total": 205649,
-        "pct_expressing": 0.1722,
-        "score": 1.0301,
-        "is_trace": false,
-        "is_stale_denominator": false
-      },
-      {
-        "tissue": "blood",
-        "uberon_id": "UBERON:0000178",
-        "mean_log1p_cp10k": 1.9395,
-        "n_expressing": 2323342,
-        "n_total": 17928853,
-        "pct_expressing": 0.1296,
-        "score": 0.7718,
-        "is_trace": false,
-        "is_stale_denominator": false
-      },
-      {
-        "tissue": "axilla",
-        "uberon_id": "UBERON:0009472",
-        "mean_log1p_cp10k": 1.9997,
-        "n_expressing": 5293,
-        "n_total": 44201,
-        "pct_expressing": 0.1197,
-        "score": 0.7648,
-        "is_trace": false,
-        "is_stale_denominator": false
-      },
-      {
-        "tissue": "brain",
-        "uberon_id": "UBERON:0000955",
-        "mean_log1p_cp10k": 1.7772,
-        "n_expressing": 41415,
-        "n_total": 271836,
-        "pct_expressing": 0.1524,
-        "score": 0.7486,
-        "is_trace": false,
-        "is_stale_denominator": false
-      },
-      {
-        "tissue": "skin of body",
-        "uberon_id": "UBERON:0002097",
-        "mean_log1p_cp10k": 2.136,
-        "n_expressing": 2515,
-        "n_total": 26474,
-        "pct_expressing": 0.095,
-        "score": 0.7092,
-        "is_trace": false,
-        "is_stale_denominator": false
+        "is_stale_denominator": true
       }
     ]
   }

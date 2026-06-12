@@ -595,7 +595,7 @@ This Markdown is generated from the canonical JSON record at `/data/surfaceome/S
 
 ## CellxGene RNA enrichment (CZI Census)
 
-*Schema v2.1.10 · CZI Census 2025-11-08 · τ-cutoff classification (Yanai 2005, PMID 15388519) on linear population mean (mean × pct, ≈ nTPM) over the full measured universe with a 1e-3 noise floor: τ≥0.85 enriched, 0.5–0.85 enhanced, <0.5 low specificity, no eligibles not detected. Cutoffs from Kryuchkova-Mostacci & Robinson-Rechavi 2017 (PMID 26891983) + Lüleci & Yılmaz 2022. Cell ontology graph (cl-basic.obo) walked to ~150 cell-family terms; UBERON ontology walked to ~150 organ-level tissues. CC-BY 4.0 (CZI Census).*
+*Schema v2.1.11 · CZI Census 2025-11-08 · τ-cutoff classification (Yanai 2005, PMID 15388519) on linear population mean (mean × pct, ≈ nTPM) over the full measured universe with a 1e-3 noise floor: τ≥0.85 enriched, 0.5–0.85 enhanced, <0.5 low specificity, no eligibles not detected. Cutoffs from Kryuchkova-Mostacci & Robinson-Rechavi 2017 (PMID 26891983) + Lüleci & Yılmaz 2022. Cell ontology graph (cl-basic.obo) walked to ~150 cell-family terms; UBERON ontology walked to ~150 organ-level tissues. CC-BY 4.0 (CZI Census).*
 
 **Classification:**
 
@@ -617,10 +617,10 @@ This Markdown is generated from the canonical JSON record at `/data/surfaceome/S
 
 | Tissue | UBERON ID | Mean log1p(CP10K) | % expressing | n_expressing / n_total |
 |---|---|---|---|---|
-| skin of body | UBERON:0002097 | 2.071 | 8.35% | 1,656 / 19,834 |
-| eye | UBERON:0000970 | 1.635 | 13.49% | 2,668 / 19,782 |
-| adipose tissue | UBERON:0001013 | 1.720 | 11.51% | 692 / 6,011 |
-| mucosa | UBERON:0000344 | 1.899 | 6.50% | 76 / 1,169 |
-| brain | UBERON:0000955 | 1.699 | 7.86% | 21,388 / 272,008 |
+| eye | UBERON:0000970 | 1.728 | 78.65% | 63,059 / 80,173 |
+| heart | UBERON:0000948 | 1.789 | 35.45% | 6,116 / 17,251 |
+| adipose tissue | UBERON:0001013 | 1.775 | 28.93% | 2,165 / 7,484 |
+| skin of body | UBERON:0002097 | 1.980 | 15.05% | 3,221 / 21,399 |
+| embryo | UBERON:0000922 | 2.097 | 10.94% | 1,722 / 15,746 |
 
 <!-- /cellxgene -->

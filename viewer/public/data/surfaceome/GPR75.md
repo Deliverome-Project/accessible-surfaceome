@@ -527,7 +527,7 @@ This Markdown is generated from the canonical JSON record at `/data/surfaceome/G
 
 ## CellxGene RNA enrichment (CZI Census)
 
-*Schema v2.1.10 · CZI Census 2025-11-08 · τ-cutoff classification (Yanai 2005, PMID 15388519) on linear population mean (mean × pct, ≈ nTPM) over the full measured universe with a 1e-3 noise floor: τ≥0.85 enriched, 0.5–0.85 enhanced, <0.5 low specificity, no eligibles not detected. Cutoffs from Kryuchkova-Mostacci & Robinson-Rechavi 2017 (PMID 26891983) + Lüleci & Yılmaz 2022. Cell ontology graph (cl-basic.obo) walked to ~150 cell-family terms; UBERON ontology walked to ~150 organ-level tissues. CC-BY 4.0 (CZI Census).*
+*Schema v2.1.11 · CZI Census 2025-11-08 · τ-cutoff classification (Yanai 2005, PMID 15388519) on linear population mean (mean × pct, ≈ nTPM) over the full measured universe with a 1e-3 noise floor: τ≥0.85 enriched, 0.5–0.85 enhanced, <0.5 low specificity, no eligibles not detected. Cutoffs from Kryuchkova-Mostacci & Robinson-Rechavi 2017 (PMID 26891983) + Lüleci & Yılmaz 2022. Cell ontology graph (cl-basic.obo) walked to ~150 cell-family terms; UBERON ontology walked to ~150 organ-level tissues. CC-BY 4.0 (CZI Census).*
 
 **Classification:**
 
@@ -549,10 +549,10 @@ This Markdown is generated from the canonical JSON record at `/data/surfaceome/G
 
 | Tissue | UBERON ID | Mean log1p(CP10K) | % expressing | n_expressing / n_total |
 |---|---|---|---|---|
-| eye | UBERON:0000970 | 1.805 | 3.08% | 608 / 19,729 |
-| brain | UBERON:0000955 | 1.824 | 0.80% | 2,011 / 250,903 | (trace)
-| heart | UBERON:0000948 | 1.775 | 0.47% | 42 / 9,009 | (trace)
-| small intestine | UBERON:0002108 | 1.645 | 0.35% | 17 / 4,913 | (trace)
-| adrenal gland | UBERON:0002369 | 2.212 | 0.12% | 437 / 349,970 | (trace)
+| eye | UBERON:0000970 | 1.671 | 15.30% | 3,455 / 22,576 |
+| brain | UBERON:0000955 | 1.878 | 2.12% | 5,393 / 254,285 |
+| heart | UBERON:0000948 | 1.767 | 0.77% | 70 / 9,037 | (trace)
+| adipose tissue | UBERON:0001013 | 1.759 | 0.65% | 39 / 6,041 | (trace)
+| small intestine | UBERON:0002108 | 1.624 | 0.39% | 19 / 4,915 | (trace)
 
 <!-- /cellxgene -->

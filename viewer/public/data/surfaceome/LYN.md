@@ -459,7 +459,7 @@ This Markdown is generated from the canonical JSON record at `/data/surfaceome/L
 
 ## CellxGene RNA enrichment (CZI Census)
 
-*Schema v2.1.10 · CZI Census 2025-11-08 · τ-cutoff classification (Yanai 2005, PMID 15388519) on linear population mean (mean × pct, ≈ nTPM) over the full measured universe with a 1e-3 noise floor: τ≥0.85 enriched, 0.5–0.85 enhanced, <0.5 low specificity, no eligibles not detected. Cutoffs from Kryuchkova-Mostacci & Robinson-Rechavi 2017 (PMID 26891983) + Lüleci & Yılmaz 2022. Cell ontology graph (cl-basic.obo) walked to ~150 cell-family terms; UBERON ontology walked to ~150 organ-level tissues. CC-BY 4.0 (CZI Census).*
+*Schema v2.1.11 · CZI Census 2025-11-08 · τ-cutoff classification (Yanai 2005, PMID 15388519) on linear population mean (mean × pct, ≈ nTPM) over the full measured universe with a 1e-3 noise floor: τ≥0.85 enriched, 0.5–0.85 enhanced, <0.5 low specificity, no eligibles not detected. Cutoffs from Kryuchkova-Mostacci & Robinson-Rechavi 2017 (PMID 26891983) + Lüleci & Yılmaz 2022. Cell ontology graph (cl-basic.obo) walked to ~150 cell-family terms; UBERON ontology walked to ~150 organ-level tissues. CC-BY 4.0 (CZI Census).*
 
 **Classification:**
 
@@ -481,10 +481,10 @@ This Markdown is generated from the canonical JSON record at `/data/surfaceome/L
 
 | Tissue | UBERON ID | Mean log1p(CP10K) | % expressing | n_expressing / n_total |
 |---|---|---|---|---|
-| saliva | UBERON:0001836 | 2.306 | 55.93% | 4,079 / 7,293 |
-| lymph node | UBERON:0000029 | 2.105 | 28.91% | 60,788 / 210,265 |
-| placenta | UBERON:0001987 | 2.028 | 27.22% | 58,258 / 214,058 |
-| cerebrospinal fluid | UBERON:0001359 | 1.855 | 26.45% | 2,125 / 8,035 |
-| lung | UBERON:0002048 | 1.945 | 20.26% | 106,869 / 527,556 |
+| adipose tissue | UBERON:0001013 | 2.249 | 100.00% | 19,161 / 19,161 |
+| endocrine gland | UBERON:0002368 | 2.178 | 100.00% | 5,148 / 5,148 |
+| exocrine gland | UBERON:0002365 | 2.151 | 100.00% | 6,078 / 6,078 |
+| musculature | UBERON:0001015 | 2.006 | 100.00% | 3,499 / 3,499 |
+| eye | UBERON:0000970 | 1.871 | 98.78% | 172,206 / 174,328 |
 
 <!-- /cellxgene -->

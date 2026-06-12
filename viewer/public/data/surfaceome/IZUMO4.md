@@ -250,7 +250,7 @@ This Markdown is generated from the canonical JSON record at `/data/surfaceome/I
 
 ## CellxGene RNA enrichment (CZI Census)
 
-*Schema v2.1.10 · CZI Census 2025-11-08 · τ-cutoff classification (Yanai 2005, PMID 15388519) on linear population mean (mean × pct, ≈ nTPM) over the full measured universe with a 1e-3 noise floor: τ≥0.85 enriched, 0.5–0.85 enhanced, <0.5 low specificity, no eligibles not detected. Cutoffs from Kryuchkova-Mostacci & Robinson-Rechavi 2017 (PMID 26891983) + Lüleci & Yılmaz 2022. Cell ontology graph (cl-basic.obo) walked to ~150 cell-family terms; UBERON ontology walked to ~150 organ-level tissues. CC-BY 4.0 (CZI Census).*
+*Schema v2.1.11 · CZI Census 2025-11-08 · τ-cutoff classification (Yanai 2005, PMID 15388519) on linear population mean (mean × pct, ≈ nTPM) over the full measured universe with a 1e-3 noise floor: τ≥0.85 enriched, 0.5–0.85 enhanced, <0.5 low specificity, no eligibles not detected. Cutoffs from Kryuchkova-Mostacci & Robinson-Rechavi 2017 (PMID 26891983) + Lüleci & Yılmaz 2022. Cell ontology graph (cl-basic.obo) walked to ~150 cell-family terms; UBERON ontology walked to ~150 organ-level tissues. CC-BY 4.0 (CZI Census).*
 
 **Classification:**
 
@@ -272,10 +272,10 @@ This Markdown is generated from the canonical JSON record at `/data/surfaceome/I
 
 | Tissue | UBERON ID | Mean log1p(CP10K) | % expressing | n_expressing / n_total |
 |---|---|---|---|---|
+| endocrine gland | UBERON:0002368 | 1.867 | 100.00% | 3,367 / 3,367 |
 | testis | UBERON:0000473 | 2.259 | 56.53% | 5,834 / 10,321 |
-| eye | UBERON:0000970 | 1.634 | 8.93% | 1,559 / 17,461 |
-| small intestine | UBERON:0002108 | 1.712 | 6.34% | 803 / 12,673 |
-| mucosa | UBERON:0000344 | 1.861 | 5.05% | 59 / 1,169 |
-| lymph node | UBERON:0000029 | 1.914 | 3.61% | 7,584 / 210,223 |
+| eye | UBERON:0000970 | 1.717 | 61.38% | 25,274 / 41,176 |
+| brain | UBERON:0000955 | 1.696 | 31.11% | 106,324 / 341,803 |
+| heart | UBERON:0000948 | 1.772 | 25.98% | 3,817 / 14,693 |
 
 <!-- /cellxgene -->

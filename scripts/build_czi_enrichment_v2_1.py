@@ -89,7 +89,7 @@ ENS_MAP = Path(
 OUT_DIR = Path(os.environ.get("CZI_OUT_DIR", "/tmp/czi_enrichment_v2_1"))
 MANIFEST = OUT_DIR.parent / (OUT_DIR.name + "_manifest.tsv")
 CENSUS_VERSION = "2025-11-08"
-SCHEMA_VERSION = "2.1.10"
+SCHEMA_VERSION = "2.1.11"
 
 # Classifier eligibility (lenient — captures whatever has signal).
 MIN_N_TOTAL_FOR_CLASS = 50
@@ -771,7 +771,15 @@ def build_record(
     ub_means_log: dict[str, float] = {}
     ub_pop_linear: dict[str, float] = {}
     ub_pooled: dict[str, dict[str, float]] = {}
-    # Track stale-fraction for the is_stale_denominator display flag.
+    # Stale-only fallback aggregates — used to populate top_tissues
+    # display rows (NOT the τ classifier) when a UBERON has substantial
+    # WMG signal but every (cl, ub) pair is cache-stale. TROP2-eye is
+    # the canonical case: 240k epithelial-cell + 12k corneal-epithelial
+    # WMG nnz in eye, but the cache n_total values are off by 100×, so
+    # the clean-only path drops eye entirely. Showing eye in the chart
+    # with is_stale_denominator=True + pct=100% (ceiling) is more
+    # informative than silently omitting it.
+    ub_stale_pooled: dict[str, dict[str, float]] = {}
     ub_stale_observed_nnz: dict[str, float] = {}
     ub_total_observed_nnz: dict[str, float] = {}
     for cl, ub_to_stats in cl_to_uberon.items():
@@ -783,13 +791,18 @@ def build_record(
                 continue
             cache_n = pair_counts.get((cl, ub), 0)
             is_stale_pair = cache_n < int(nnz)
-            # Track stale fraction across ALL observed pairs (clean
-            # + stale) so the display flag reflects what the cache
-            # is missing for this tissue.
             ub_total_observed_nnz[ub] = ub_total_observed_nnz.get(ub, 0.0) + nnz
             if is_stale_pair:
                 ub_stale_observed_nnz[ub] = ub_stale_observed_nnz.get(ub, 0.0) + nnz
-                continue  # drop from aggregation
+                # Stale-fallback aggregate: use WMG nnz as a lower-bound
+                # denominator (pct ceiling = 1.0). Mean across expressing
+                # cells is still meaningful. The classifier ignores this.
+                sslot = ub_stale_pooled.setdefault(ub, {
+                    "nnz": 0.0, "sum": 0.0,
+                })
+                sslot["nnz"] += nnz
+                sslot["sum"] += ssum
+                continue
             if cache_n <= 0:
                 continue
             slot = ub_pooled.setdefault(ub, {
@@ -825,6 +838,40 @@ def build_record(
         ub_means_log[ub] = mean_log
         ub_pop_linear[ub] = math.expm1(mean_log) * pct
         ub_n_total_for_class[ub] = n_total
+
+    # **Stale-aware merge for display.** When a UBERON has both clean
+    # and stale pair signal — but stale dominates (e.g. TROP2-eye:
+    # 2 clean pairs at 69 nnz vs 70 stale pairs at 59k nnz, all corneal /
+    # conjunctival epithelial cells the cache massively undercounts) —
+    # the clean-only display row understates the tissue's signal by
+    # ~1000×. Merge clean + stale aggregates here for the top_tissues
+    # display (WMG nnz as a lower-bound denominator for stale pairs;
+    # pct lands as a ceiling, flagged is_stale_denominator). The
+    # classifier (ub_pop_linear) is NOT touched — τ + class still come
+    # from clean-only signal so the ranking is honest.
+    for ub, sst in ub_stale_pooled.items():
+        stale_nnz = sst["nnz"]
+        if stale_nnz <= 0:
+            continue
+        if ub in ub_n_expressing:
+            # Merge: clean nnz/sum/n_total + stale nnz/sum (n_total = WMG nnz).
+            ub_n_expressing[ub] = int(ub_n_expressing[ub] + stale_nnz)
+            ub_n_total_display[ub] = int(ub_n_total_display[ub] + stale_nnz)
+        else:
+            ub_n_expressing[ub] = int(stale_nnz)
+            ub_n_total_display[ub] = int(stale_nnz)
+        # is_stale_denominator flag — already populated from ub_stale_fraction
+        # for clean UBs; force >0.5 for stale-only UBs.
+        if ub not in ub_stale_fraction:
+            ub_stale_fraction[ub] = 1.0
+        else:
+            # Recompute including the stale-pool nnz that we're now
+            # exposing in display.
+            total_obs = ub_total_observed_nnz.get(ub, 0.0)
+            if total_obs > 0:
+                ub_stale_fraction[ub] = (
+                    ub_stale_observed_nnz.get(ub, 0.0) / total_obs
+                )
 
     # Pass the full UBERON universe (every tissue with n_total >=
     # MIN_N_TOTAL_FOR_CLASS) so the zero-baseline kicks in for
@@ -1094,7 +1141,21 @@ def build_record(
         n_total = ub_n_total_display[ub]
         if n_total < COMMON_THRESHOLD:
             continue
-        mean_log = ub_pooled[ub]["sum"] / ub_pooled[ub]["nnz"]
+        # Compute mean across BOTH clean + stale pools so display rows
+        # for stale-dominated UBERONs (TROP2-eye) reflect their actual
+        # signal level instead of the trivial 2-clean-pairs view.
+        # Classifier still uses clean-only (ub_pop_linear above).
+        sum_log_combined = 0.0
+        nnz_combined = 0.0
+        if ub in ub_pooled:
+            sum_log_combined += ub_pooled[ub]["sum"]
+            nnz_combined += ub_pooled[ub]["nnz"]
+        if ub in ub_stale_pooled:
+            sum_log_combined += ub_stale_pooled[ub]["sum"]
+            nnz_combined += ub_stale_pooled[ub]["nnz"]
+        if nnz_combined <= 0:
+            continue
+        mean_log = sum_log_combined / nnz_combined
         pct = n_exp / n_total
         score = math.expm1(mean_log) * pct
         tissue_rows.append(

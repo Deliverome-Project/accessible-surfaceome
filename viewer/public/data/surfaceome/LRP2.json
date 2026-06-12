@@ -4187,7 +4187,7 @@
   "model_path": "claude-sonnet-4-6",
   "record_generated_at": "2026-05-30T20:29:01.447637Z",
   "cellxgene": {
-    "schema_version": "2.1.10",
+    "schema_version": "2.1.11",
     "census_version": "2025-11-08",
     "cell_class_enrichment": {
       "class": "enriched",
@@ -4222,7 +4222,7 @@
       ],
       "fold_change": 2.129,
       "fold_change_infinite": false,
-      "tau": 0.9882127635853319,
+      "tau": 0.9884308275203368,
       "top_entity_contribs": [
         {
           "id": "CL:0000239",
@@ -4512,13 +4512,46 @@
     ],
     "top_tissues": [
       {
+        "tissue": "kidney",
+        "uberon_id": "UBERON:0002113",
+        "mean_log1p_cp10k": 2.6431,
+        "n_expressing": 165733,
+        "n_total": 309976,
+        "pct_expressing": 0.5347,
+        "score": 6.9808,
+        "is_trace": false,
+        "is_stale_denominator": true
+      },
+      {
+        "tissue": "eye",
+        "uberon_id": "UBERON:0000970",
+        "mean_log1p_cp10k": 2.0658,
+        "n_expressing": 738674,
+        "n_total": 743729,
+        "pct_expressing": 0.9932,
+        "score": 6.8449,
+        "is_trace": false,
+        "is_stale_denominator": true
+      },
+      {
+        "tissue": "brain",
+        "uberon_id": "UBERON:0000955",
+        "mean_log1p_cp10k": 2.0509,
+        "n_expressing": 2604868,
+        "n_total": 2836585,
+        "pct_expressing": 0.9183,
+        "score": 6.2216,
+        "is_trace": false,
+        "is_stale_denominator": true
+      },
+      {
         "tissue": "spinal cord",
         "uberon_id": "UBERON:0002240",
-        "mean_log1p_cp10k": 2.0138,
-        "n_expressing": 10382,
-        "n_total": 13517,
-        "pct_expressing": 0.7681,
-        "score": 4.9858,
+        "mean_log1p_cp10k": 2.0131,
+        "n_expressing": 10414,
+        "n_total": 13549,
+        "pct_expressing": 0.7686,
+        "score": 4.9854,
         "is_trace": false,
         "is_stale_denominator": false
       },
@@ -4534,37 +4567,37 @@
         "is_stale_denominator": false
       },
       {
-        "tissue": "heart",
-        "uberon_id": "UBERON:0000948",
-        "mean_log1p_cp10k": 1.8356,
-        "n_expressing": 1502,
-        "n_total": 11579,
-        "pct_expressing": 0.1297,
-        "score": 0.6835,
-        "is_trace": false,
-        "is_stale_denominator": false
-      },
-      {
-        "tissue": "kidney",
-        "uberon_id": "UBERON:0002113",
-        "mean_log1p_cp10k": 2.0939,
-        "n_expressing": 13229,
-        "n_total": 157472,
-        "pct_expressing": 0.084,
-        "score": 0.5979,
+        "tissue": "embryo",
+        "uberon_id": "UBERON:0000922",
+        "mean_log1p_cp10k": 2.0357,
+        "n_expressing": 3902,
+        "n_total": 18005,
+        "pct_expressing": 0.2167,
+        "score": 1.4428,
         "is_trace": false,
         "is_stale_denominator": true
       },
       {
         "tissue": "adipose tissue",
         "uberon_id": "UBERON:0001013",
-        "mean_log1p_cp10k": 1.8205,
-        "n_expressing": 655,
-        "n_total": 6011,
-        "pct_expressing": 0.109,
-        "score": 0.5639,
+        "mean_log1p_cp10k": 1.8568,
+        "n_expressing": 1794,
+        "n_total": 7150,
+        "pct_expressing": 0.2509,
+        "score": 1.3558,
         "is_trace": false,
         "is_stale_denominator": true
+      },
+      {
+        "tissue": "heart",
+        "uberon_id": "UBERON:0000948",
+        "mean_log1p_cp10k": 1.8423,
+        "n_expressing": 2568,
+        "n_total": 12645,
+        "pct_expressing": 0.2031,
+        "score": 1.0786,
+        "is_trace": false,
+        "is_stale_denominator": false
       },
       {
         "tissue": "axilla",
@@ -4587,39 +4620,6 @@
         "score": 0.5474,
         "is_trace": false,
         "is_stale_denominator": false
-      },
-      {
-        "tissue": "liver",
-        "uberon_id": "UBERON:0002107",
-        "mean_log1p_cp10k": 1.8197,
-        "n_expressing": 29487,
-        "n_total": 331671,
-        "pct_expressing": 0.0889,
-        "score": 0.4597,
-        "is_trace": false,
-        "is_stale_denominator": false
-      },
-      {
-        "tissue": "eye",
-        "uberon_id": "UBERON:0000970",
-        "mean_log1p_cp10k": 1.82,
-        "n_expressing": 361,
-        "n_total": 5416,
-        "pct_expressing": 0.0667,
-        "score": 0.3447,
-        "is_trace": false,
-        "is_stale_denominator": true
-      },
-      {
-        "tissue": "brain",
-        "uberon_id": "UBERON:0000955",
-        "mean_log1p_cp10k": 1.7636,
-        "n_expressing": 17138,
-        "n_total": 248855,
-        "pct_expressing": 0.0689,
-        "score": 0.3329,
-        "is_trace": false,
-        "is_stale_denominator": true
       }
     ]
   }

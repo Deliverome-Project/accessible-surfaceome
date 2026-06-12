@@ -2086,7 +2086,7 @@ This Markdown is generated from the canonical JSON record at `/data/surfaceome/F
 
 ## CellxGene RNA enrichment (CZI Census)
 
-*Schema v2.1.10 · CZI Census 2025-11-08 · τ-cutoff classification (Yanai 2005, PMID 15388519) on linear population mean (mean × pct, ≈ nTPM) over the full measured universe with a 1e-3 noise floor: τ≥0.85 enriched, 0.5–0.85 enhanced, <0.5 low specificity, no eligibles not detected. Cutoffs from Kryuchkova-Mostacci & Robinson-Rechavi 2017 (PMID 26891983) + Lüleci & Yılmaz 2022. Cell ontology graph (cl-basic.obo) walked to ~150 cell-family terms; UBERON ontology walked to ~150 organ-level tissues. CC-BY 4.0 (CZI Census).*
+*Schema v2.1.11 · CZI Census 2025-11-08 · τ-cutoff classification (Yanai 2005, PMID 15388519) on linear population mean (mean × pct, ≈ nTPM) over the full measured universe with a 1e-3 noise floor: τ≥0.85 enriched, 0.5–0.85 enhanced, <0.5 low specificity, no eligibles not detected. Cutoffs from Kryuchkova-Mostacci & Robinson-Rechavi 2017 (PMID 26891983) + Lüleci & Yılmaz 2022. Cell ontology graph (cl-basic.obo) walked to ~150 cell-family terms; UBERON ontology walked to ~150 organ-level tissues. CC-BY 4.0 (CZI Census).*
 
 **Classification:**
 
@@ -2108,10 +2108,10 @@ This Markdown is generated from the canonical JSON record at `/data/surfaceome/F
 
 | Tissue | UBERON ID | Mean log1p(CP10K) | % expressing | n_expressing / n_total |
 |---|---|---|---|---|
-| mucosa | UBERON:0000344 | 2.765 | 50.88% | 575 / 1,130 |
-| placenta | UBERON:0001987 | 2.777 | 39.14% | 80,108 / 204,689 |
-| skin of body | UBERON:0002097 | 2.569 | 32.36% | 7,840 / 24,228 |
-| embryo | UBERON:0000922 | 2.048 | 49.65% | 7,021 / 14,142 |
-| ovary | UBERON:0000992 | 2.543 | 21.17% | 5,816 / 27,479 |
+| esophagus | UBERON:0001043 | 3.104 | 67.70% | 6,019 / 8,891 |
+| exocrine gland | UBERON:0002365 | 2.408 | 100.00% | 2,528 / 2,528 |
+| embryo | UBERON:0000922 | 2.561 | 80.98% | 30,315 / 37,436 |
+| heart | UBERON:0000948 | 2.338 | 98.28% | 235,627 / 239,762 |
+| musculature | UBERON:0001015 | 2.188 | 100.00% | 19,151 / 19,151 |
 
 <!-- /cellxgene -->

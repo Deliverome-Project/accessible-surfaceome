@@ -1122,7 +1122,7 @@ This Markdown is generated from the canonical JSON record at `/data/surfaceome/E
 
 ## CellxGene RNA enrichment (CZI Census)
 
-*Schema v2.1.10 · CZI Census 2025-11-08 · τ-cutoff classification (Yanai 2005, PMID 15388519) on linear population mean (mean × pct, ≈ nTPM) over the full measured universe with a 1e-3 noise floor: τ≥0.85 enriched, 0.5–0.85 enhanced, <0.5 low specificity, no eligibles not detected. Cutoffs from Kryuchkova-Mostacci & Robinson-Rechavi 2017 (PMID 26891983) + Lüleci & Yılmaz 2022. Cell ontology graph (cl-basic.obo) walked to ~150 cell-family terms; UBERON ontology walked to ~150 organ-level tissues. CC-BY 4.0 (CZI Census).*
+*Schema v2.1.11 · CZI Census 2025-11-08 · τ-cutoff classification (Yanai 2005, PMID 15388519) on linear population mean (mean × pct, ≈ nTPM) over the full measured universe with a 1e-3 noise floor: τ≥0.85 enriched, 0.5–0.85 enhanced, <0.5 low specificity, no eligibles not detected. Cutoffs from Kryuchkova-Mostacci & Robinson-Rechavi 2017 (PMID 26891983) + Lüleci & Yılmaz 2022. Cell ontology graph (cl-basic.obo) walked to ~150 cell-family terms; UBERON ontology walked to ~150 organ-level tissues. CC-BY 4.0 (CZI Census).*
 
 **Classification:**
 
@@ -1144,10 +1144,10 @@ This Markdown is generated from the canonical JSON record at `/data/surfaceome/E
 
 | Tissue | UBERON ID | Mean log1p(CP10K) | % expressing | n_expressing / n_total |
 |---|---|---|---|---|
-| placenta | UBERON:0001987 | 2.519 | 37.93% | 73,759 / 194,482 |
-| chest wall | UBERON:0016435 | 1.906 | 51.06% | 5,236 / 10,255 |
-| mucosa | UBERON:0000344 | 2.158 | 34.39% | 402 / 1,169 |
-| bladder organ | UBERON:0018707 | 1.899 | 32.00% | 9,404 / 29,392 |
-| prostate gland | UBERON:0002367 | 2.412 | 16.83% | 9,013 / 53,544 |
+| heart | UBERON:0000948 | 2.297 | 97.49% | 172,236 / 176,677 |
+| musculature | UBERON:0001015 | 2.177 | 100.00% | 26,282 / 26,282 |
+| adipose tissue | UBERON:0001013 | 2.234 | 93.32% | 71,220 / 76,316 |
+| exocrine gland | UBERON:0002365 | 2.070 | 100.00% | 6,829 / 6,829 |
+| brain | UBERON:0000955 | 2.084 | 93.76% | 1,133,916 / 1,209,352 |
 
 <!-- /cellxgene -->
