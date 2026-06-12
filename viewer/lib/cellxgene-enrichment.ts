@@ -144,7 +144,25 @@ export interface CellxGeneEnrichment {
   top_cell_types: CellTypeRow[];
   /** Top tissues overall, ranked by mean_log1p_cp10k DESC. v2.1+. */
   top_tissues?: TissueAggregateRow[];
+  /** Reverse map: UBERON ID → cell types that express the gene in
+   *  that tissue, ranked by n_expressing DESC, capped at 20. v2.1.2+.
+   *  Lets the viewer's tissue cross-filter find cell types that the
+   *  global top_cell_types cap drops (e.g. fibroblast in vasculature
+   *  for GPR75 — small per-tissue cell count, pooled mean too low
+   *  to rank in top 50 cell types overall). */
+  cells_by_tissue?: Record<string, CellInTissue[]>;
   computed_at?: string;
+}
+
+/** One row inside cells_by_tissue[uberon_id]. */
+export interface CellInTissue {
+  cl_id: string;
+  cell_type: string;
+  mean_log1p_cp10k: number;
+  n_expressing: number;
+  n_total: number;
+  pct_expressing: number;
+  is_trace?: boolean;
 }
 
 /**

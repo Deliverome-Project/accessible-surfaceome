@@ -165,8 +165,11 @@ def main():
         ssum = d["sum"]
         mean = (ssum / nnz) if nnz else 0.0
         pct = min(1.0, nnz / n_tot_cl) if n_tot_cl else 0.0
-        # sort + cap tissues for this cell type
-        tissues = sorted(d["tissues"], key=lambda t: -t["n_expressing"])[:3]
+        # Per-cell-type tissues list — bumped from top 3 to top 20 so
+        # the viewer's tissue cross-filter can find cell types whose
+        # GPR75-expressing cells in the selected tissue rank outside
+        # their top-3 contexts. JSON-size delta ~3 KB per gene.
+        tissues = sorted(d["tissues"], key=lambda t: -t["n_expressing"])[:20]
         cell_rows.append({
             "cl_id": cl,
             "cell_type": cl_labels.get(cl, cl),
@@ -274,6 +277,39 @@ def main():
         key=lambda r: (r["is_trace"], -r["mean_log1p_cp10k"]),
     )
 
+    # Reverse map: per UBERON tissue ID, list of cell types that
+    # express the gene IN THAT TISSUE, ranked by tissue-specific
+    # n_expressing. Lets the viewer answer "which cell types express
+    # this gene in vasculature?" directly — top_cell_types alone
+    # under-represents tissues where many cell types contribute a
+    # small handful of cells each (fibroblast in vasculature: 4 cells
+    # of 502 fibroblast-expressing cells globally, so fibroblast's
+    # pooled mean ranks too low to make the top-50 trace cap, but
+    # vasculature is still where those 4 cells live).
+    cells_by_tissue: dict = {}
+    for (cl, ub), d in by_cl_ub.items():
+        if d["nnz"] < 1:
+            continue
+        n_total_pair = pair_counts.get((cl, ub), 0)
+        if n_total_pair < 50:  # too few cells to give meaningful pct
+            continue
+        mean = d["sum"] / d["nnz"]
+        pct = min(1.0, d["nnz"] / n_total_pair)
+        cells_by_tissue.setdefault(ub, []).append({
+            "cl_id": cl,
+            "cell_type": cl_labels.get(cl, cl),
+            "mean_log1p_cp10k": round(mean, 4),
+            "n_expressing": int(d["nnz"]),
+            "n_total": int(n_total_pair),
+            "pct_expressing": round(pct, 4),
+            "is_trace": int(d["nnz"]) < MIN_N_EXPRESSING or pct < MIN_PCT,
+        })
+    # Sort each tissue's cell list by n_expressing DESC (the "who
+    # most expresses this in this tissue" question); cap at 20.
+    for ub in cells_by_tissue:
+        cells_by_tissue[ub].sort(key=lambda c: -c["n_expressing"])
+        cells_by_tissue[ub] = cells_by_tissue[ub][:20]
+
     rec = {
         "schema_version": SCHEMA_VERSION,
         "census_version": CENSUS_VERSION,
@@ -297,6 +333,7 @@ def main():
         "fold_change": round(ct_fold, 2) if ct_fold is not None else None,
         "top_cell_types": top_cell_types,
         "top_tissues": top_tissues,
+        "cells_by_tissue": cells_by_tissue,
     }
 
     os.makedirs(os.path.dirname(OUT_PATH), exist_ok=True)

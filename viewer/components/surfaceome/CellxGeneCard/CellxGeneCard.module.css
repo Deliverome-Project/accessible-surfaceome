@@ -311,21 +311,22 @@ button.colBarHit:focus-visible {
   outline-offset: 1px;
 }
 
-/* Label below each bar, rotated -65° so they stack closer to
-   vertical (less horizontal projection = labels don't extend past
-   the chart's horizontal bounds and force page scroll). Anchored
-   to top-right so the rotation pivots from the bar's right edge;
-   text reads bottom-up along its rotated baseline. */
+/* Label below each bar, rotated -65° so they stack close to
+   vertical. Pivot at top-left positioned at the bar's center
+   (`left: 50%`) — the label's START is below the bar's center and
+   the text reads down-left. Previous top-right pivot put the
+   label's END below the bar's right edge, making the visual flow
+   look right-shifted across the chart. */
 .colLabel {
   position: absolute;
   top: calc(100% + 6px);
-  right: 4px;
+  left: 50%;
   font-family: var(--font-sans);
   font-size: 0.6rem;
   color: var(--ink-soft);
   white-space: nowrap;
   transform: rotate(-65deg);
-  transform-origin: top right;
+  transform-origin: top left;
   pointer-events: none;
   max-width: 110px;
   text-overflow: ellipsis;

@@ -2,8 +2,8 @@
 
 import { useMemo, useState } from "react";
 import type {
+  CellInTissue,
   CellTypeRow,
-  TissueRow,
   TissueAggregateRow,
 } from "../../../lib/cellxgene-enrichment";
 import styles from "./CellxGeneCard.module.css";
@@ -11,6 +11,7 @@ import styles from "./CellxGeneCard.module.css";
 interface Props {
   rows: CellTypeRow[];
   tissues?: TissueAggregateRow[];
+  cellsByTissue?: Record<string, CellInTissue[]>;
 }
 
 type YMetric = "score" | "mean" | "pct";
@@ -61,16 +62,17 @@ function truncate(s: string, n: number): string {
   return s.length > n ? `${s.slice(0, n - 1)}…` : s;
 }
 
-/**
- * For a cell type, look up the row in its `tissues[]` array whose
- * uberon_id matches. Returns undefined if the cell type doesn't have
- * that tissue in its top-3 tissue subarray (the build truncates the
- * per-cell-type tissue list at 3). When the user filters by tissue,
- * we use this to surface the tissue-specific stats; rows whose
- * truncated tissue list misses the selection get filtered out.
- */
-function tissueOf(r: CellTypeRow, uberonId: string): TissueRow | undefined {
-  return (r.tissues ?? []).find((t) => t.uberon_id === uberonId);
+// Lookup via the reverse `cells_by_tissue` map (v2.1.2+). The build
+// emits this so the tissue cross-filter doesn't have to walk each
+// cell type's truncated tissues[] array. Returns [] if the gene
+// doesn't have any cell types in the requested tissue or the map
+// is missing.
+function cellsInTissue(
+  cellsByTissue: Record<string, CellInTissue[]> | undefined,
+  uberonId: string | null,
+): CellInTissue[] {
+  if (!uberonId || !cellsByTissue) return [];
+  return cellsByTissue[uberonId] ?? [];
 }
 
 interface SortOption {
@@ -479,11 +481,13 @@ function TopTissues({
  */
 function CellTypeChart({
   rows,
+  cellsByTissue,
   selectedUberonId,
   selectedTissueLabel,
   onClearTissue,
 }: {
   rows: CellTypeRow[];
+  cellsByTissue: Record<string, CellInTissue[]>;
   selectedUberonId: string | null;
   selectedTissueLabel: string | null;
   onClearTissue: () => void;
@@ -500,44 +504,49 @@ function CellTypeChart({
     n_expressing: number;
     n_total: number;
     is_trace: boolean;
-    base: CellTypeRow;
+    // Original row (when available) for popover detail. In the
+    // tissue-filtered case the source is CellInTissue which doesn't
+    // carry a `tissues` subarray; popover falls back to single-line
+    // info in that case.
+    base: CellTypeRow | null;
   }
 
-  // Build view rows: tissue-specific stats when filtered, global
-  // stats otherwise. In the unfiltered case we keep all rows and cap
-  // at TOP_N after sorting (top-20 view). In the filtered case we
-  // keep all qualifying rows (no extra cap — the universe is already
-  // small since each cell type's tissues[] only includes its top 3).
+  // Build view rows:
+  //  - Filtered: read from `cellsByTissue[selectedUberonId]` directly.
+  //    Cell types not in the global top_cell_types still appear here
+  //    (e.g. fibroblast in GPR75's vasculature — pooled mean too low
+  //    to make top-50 trace, but vasculature is where its 4
+  //    expressing cells live).
+  //  - Unfiltered: read from `rows` (top_cell_types), capped at TOP_N
+  //    after sorting.
   const viewRows: ViewRow[] = useMemo(() => {
-    return rows
-      .map((r): ViewRow | null => {
-        if (selectedUberonId) {
-          const t = tissueOf(r, selectedUberonId);
-          if (!t) return null;
-          return {
-            cl_id: r.cl_id,
-            cell_type: r.cell_type,
-            mean_log1p_cp10k: t.mean_log1p_cp10k,
-            pct_expressing: t.pct_expressing,
-            n_expressing: t.n_expressing,
-            n_total: t.n_total,
-            is_trace: t.n_expressing < 10 || t.pct_expressing < 0.01,
-            base: r,
-          };
-        }
-        return {
-          cl_id: r.cl_id,
-          cell_type: r.cell_type,
-          mean_log1p_cp10k: r.mean_log1p_cp10k,
-          pct_expressing: r.pct_expressing,
-          n_expressing: r.n_expressing,
-          n_total: r.n_total,
-          is_trace: !!r.is_trace,
-          base: r,
-        };
-      })
-      .filter((r): r is ViewRow => r !== null);
-  }, [rows, selectedUberonId]);
+    if (selectedUberonId) {
+      const cells = cellsInTissue(cellsByTissue, selectedUberonId);
+      // Index the global top_cell_types so a popover can show the
+      // cell type's cross-tissue context where available.
+      const byCl = new Map(rows.map((r) => [r.cl_id, r]));
+      return cells.map((c): ViewRow => ({
+        cl_id: c.cl_id,
+        cell_type: c.cell_type,
+        mean_log1p_cp10k: c.mean_log1p_cp10k,
+        pct_expressing: c.pct_expressing,
+        n_expressing: c.n_expressing,
+        n_total: c.n_total,
+        is_trace: !!c.is_trace,
+        base: byCl.get(c.cl_id) ?? null,
+      }));
+    }
+    return rows.map((r): ViewRow => ({
+      cl_id: r.cl_id,
+      cell_type: r.cell_type,
+      mean_log1p_cp10k: r.mean_log1p_cp10k,
+      pct_expressing: r.pct_expressing,
+      n_expressing: r.n_expressing,
+      n_total: r.n_total,
+      is_trace: !!r.is_trace,
+      base: r,
+    }));
+  }, [rows, selectedUberonId, cellsByTissue]);
 
   const sorted = useMemo(() => {
     const arr = [...viewRows];
@@ -549,8 +558,11 @@ function CellTypeChart({
       // Only meaningful in the unfiltered view; sort by dominant
       // tissue (from base row) then by metric DESC.
       arr.sort((a, b) => {
-        const ta = a.base.tissues?.[0]?.tissue ?? "";
-        const tb = b.base.tissues?.[0]?.tissue ?? "";
+        // "By tissue" sort is only shown in the unfiltered view
+        // (no `cellsByTissue` source), where base is always non-null.
+        // Safe-guard with optional chaining anyway.
+        const ta = a.base?.tissues?.[0]?.tissue ?? "";
+        const tb = b.base?.tissues?.[0]?.tissue ?? "";
         if (ta !== tb) return ta.localeCompare(tb);
         return m(b) - m(a);
       });
@@ -633,6 +645,20 @@ function CellTypeChart({
               const hoverTitle = r.is_trace
                 ? `Trace: only ${r.n_expressing} of ${r.n_total.toLocaleString()} cells expressing (${(r.pct_expressing * 100).toFixed(2)}%). Mean is real but small-n.`
                 : undefined;
+              // For tissue-filtered rows whose cell type isn't in
+              // top_cell_types, build a synthetic CellTypeRow from
+              // the view-row stats so the popover renders.
+              const popoverRow: CellTypeRow = r.base ?? {
+                cl_id: r.cl_id,
+                cell_type: r.cell_type,
+                mean_log1p_cp10k: r.mean_log1p_cp10k,
+                pct_expressing: r.pct_expressing,
+                n_expressing: r.n_expressing,
+                n_total: r.n_total,
+                is_rare: r.n_total < 10_000,
+                is_trace: r.is_trace,
+                tissues: [],
+              };
               return (
                 <ColumnBar
                   key={r.cl_id}
@@ -640,7 +666,7 @@ function CellTypeChart({
                   color={CELL_BAR_COLOR}
                   label={r.cell_type}
                   isTrace={r.is_trace}
-                  popover={cellPopover(r.base, value)}
+                  popover={cellPopover(popoverRow, value)}
                   hoverTitle={hoverTitle}
                 />
               );
@@ -652,7 +678,11 @@ function CellTypeChart({
   );
 }
 
-export function CellxGeneChart({ rows, tissues = [] }: Props) {
+export function CellxGeneChart({
+  rows,
+  tissues = [],
+  cellsByTissue = {},
+}: Props) {
   const [selectedUberonId, setSelectedUberonId] = useState<string | null>(null);
 
   const tissueLabel = useMemo(() => {
@@ -679,6 +709,7 @@ export function CellxGeneChart({ rows, tissues = [] }: Props) {
           chip on the chart's subhead returns to the Top 20 view. */}
       <CellTypeChart
         rows={rows}
+        cellsByTissue={cellsByTissue}
         selectedUberonId={selectedUberonId}
         selectedTissueLabel={tissueLabel}
         onClearTissue={() => setSelectedUberonId(null)}

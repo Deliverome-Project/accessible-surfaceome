@@ -216,6 +216,7 @@ export function CellxGeneCard({ data }: Props) {
       <CellxGeneChart
         rows={data.top_cell_types}
         tissues={data.top_tissues ?? []}
+        cellsByTissue={data.cells_by_tissue ?? {}}
       />
     </SectionCard>
   );
