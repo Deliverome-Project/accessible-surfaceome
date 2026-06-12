@@ -4390,7 +4390,7 @@
   "model_path": "claude-sonnet-4-6",
   "record_generated_at": "2026-05-31T15:21:51.367224Z",
   "cellxgene": {
-    "schema_version": "2.1.3",
+    "schema_version": "2.1.4",
     "census_version": "2025-11-08",
     "cell_class_enrichment": {
       "class": "low_specificity",
@@ -4399,6 +4399,21 @@
       "fold_change": null,
       "fold_change_infinite": false,
       "tau": 0.5489123214641908
+    },
+    "cell_family_enrichment": {
+      "class": "enhanced",
+      "family_ids": [
+        "Stromal"
+      ],
+      "family_labels": [
+        "Stromal"
+      ],
+      "top_cl_labels": [
+        "cycling stromal cell"
+      ],
+      "fold_change": 7.955,
+      "fold_change_infinite": false,
+      "tau": 0.8742853329610367
     },
     "cell_type_enrichment": {
       "class": "enhanced",
@@ -4435,6 +4450,21 @@
       "fold_change": 4.44,
       "fold_change_infinite": false,
       "tau": 0.9581905923709381
+    },
+    "tissue_organ_enrichment": {
+      "class": "enriched",
+      "organ_ids": [
+        "UBERON:0002049"
+      ],
+      "organ_labels": [
+        "vasculature"
+      ],
+      "top_uberon_labels": [
+        "vasculature"
+      ],
+      "fold_change": 4.44,
+      "fold_change_infinite": false,
+      "tau": 0.9834223492872188
     },
     "enrichment_class": "low_specificity",
     "enrichment_cl_ids": [],

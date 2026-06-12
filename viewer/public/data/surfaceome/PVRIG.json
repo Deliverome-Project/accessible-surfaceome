@@ -5601,7 +5601,7 @@
   "model_path": "claude-sonnet-4-6",
   "record_generated_at": "2026-06-08T20:48:27.517803Z",
   "cellxgene": {
-    "schema_version": "2.1.3",
+    "schema_version": "2.1.4",
     "census_version": "2025-11-08",
     "cell_class_enrichment": {
       "class": "enriched",
@@ -5614,6 +5614,15 @@
       "fold_change": null,
       "fold_change_infinite": true,
       "tau": null
+    },
+    "cell_family_enrichment": {
+      "class": "low_specificity",
+      "family_ids": [],
+      "family_labels": [],
+      "top_cl_labels": [],
+      "fold_change": null,
+      "fold_change_infinite": false,
+      "tau": 0.48545773616246574
     },
     "cell_type_enrichment": {
       "class": "low_specificity",
@@ -5648,6 +5657,21 @@
       "fold_change": 4.086,
       "fold_change_infinite": false,
       "tau": 0.9271026020463078
+    },
+    "tissue_organ_enrichment": {
+      "class": "enriched",
+      "organ_ids": [
+        "UBERON:0000922"
+      ],
+      "organ_labels": [
+        "embryo"
+      ],
+      "top_uberon_labels": [
+        "embryo"
+      ],
+      "fold_change": 4.086,
+      "fold_change_infinite": false,
+      "tau": 0.9355212044720521
     },
     "enrichment_class": "enriched",
     "enrichment_cl_ids": [

@@ -3637,7 +3637,7 @@
   "model_path": "claude-sonnet-4-6",
   "record_generated_at": "2026-05-31T20:15:43.094500Z",
   "cellxgene": {
-    "schema_version": "2.1.3",
+    "schema_version": "2.1.4",
     "census_version": "2025-11-08",
     "cell_class_enrichment": {
       "class": "low_specificity",
@@ -3646,6 +3646,21 @@
       "fold_change": null,
       "fold_change_infinite": false,
       "tau": 0.6919376170980474
+    },
+    "cell_family_enrichment": {
+      "class": "enhanced",
+      "family_ids": [
+        "CL:0000817"
+      ],
+      "family_labels": [
+        "precursor B cell"
+      ],
+      "top_cl_labels": [
+        "large pre-B-II cell"
+      ],
+      "fold_change": 6.881,
+      "fold_change_infinite": false,
+      "tau": 0.8546647656255836
     },
     "cell_type_enrichment": {
       "class": "enhanced",
@@ -3682,6 +3697,21 @@
       "fold_change": 6.525,
       "fold_change_infinite": false,
       "tau": 0.846736458664935
+    },
+    "tissue_organ_enrichment": {
+      "class": "enhanced",
+      "organ_ids": [
+        "UBERON:0002049"
+      ],
+      "organ_labels": [
+        "vasculature"
+      ],
+      "top_uberon_labels": [
+        "vasculature"
+      ],
+      "fold_change": 19.638,
+      "fold_change_infinite": false,
+      "tau": 0.9490791159367806
     },
     "enrichment_class": "low_specificity",
     "enrichment_cl_ids": [],

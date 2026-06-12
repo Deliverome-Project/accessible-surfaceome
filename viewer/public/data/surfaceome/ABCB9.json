@@ -3031,7 +3031,7 @@
   "model_path": "claude-sonnet-4-6",
   "record_generated_at": "2026-06-08T21:22:09.672189Z",
   "cellxgene": {
-    "schema_version": "2.1.3",
+    "schema_version": "2.1.4",
     "census_version": "2025-11-08",
     "cell_class_enrichment": {
       "class": "group_enriched",
@@ -3046,6 +3046,21 @@
       "fold_change": null,
       "fold_change_infinite": true,
       "tau": 0.5908489205700999
+    },
+    "cell_family_enrichment": {
+      "class": "enhanced",
+      "family_ids": [
+        "CL:0000946"
+      ],
+      "family_labels": [
+        "antibody secreting cell"
+      ],
+      "top_cl_labels": [
+        "antibody secreting cell"
+      ],
+      "fold_change": 5.766,
+      "fold_change_infinite": false,
+      "tau": 0.8265657268022027
     },
     "cell_type_enrichment": {
       "class": "enhanced",
@@ -3082,6 +3097,21 @@
       "fold_change": 13.061,
       "fold_change_infinite": false,
       "tau": 0.9234389145802793
+    },
+    "tissue_organ_enrichment": {
+      "class": "enhanced",
+      "organ_ids": [
+        "UBERON:0000970"
+      ],
+      "organ_labels": [
+        "eye"
+      ],
+      "top_uberon_labels": [
+        "eye"
+      ],
+      "fold_change": 22.711,
+      "fold_change_infinite": false,
+      "tau": 0.9559685826999672
     },
     "enrichment_class": "group_enriched",
     "enrichment_cl_ids": [

@@ -62,10 +62,18 @@ from accessible_surfaceome.audit.cl_graph import (
     BROAD_CLASSES,
     cl_compartment,
 )
+from accessible_surfaceome.audit.cl_family import (
+    cl_family,
+    cl_family_label,
+)
 from accessible_surfaceome.audit.uberon_categories import (
     TISSUE_CATEGORIES,
     all_categories_and_uberons,
     uberon_category,
+)
+from accessible_surfaceome.audit.uberon_organ import (
+    uberon_organ,
+    uberon_organ_label,
 )
 
 WMG = Path(os.environ.get(
@@ -82,7 +90,7 @@ ENS_MAP = Path(
 OUT_DIR = Path(os.environ.get("CZI_OUT_DIR", "/tmp/czi_enrichment_v2_1"))
 MANIFEST = OUT_DIR.parent / (OUT_DIR.name + "_manifest.tsv")
 CENSUS_VERSION = "2025-11-08"
-SCHEMA_VERSION = "2.1.3"
+SCHEMA_VERSION = "2.1.4"
 
 # Classifier eligibility (lenient — captures whatever has signal).
 MIN_N_TOTAL_FOR_CLASS = 50
@@ -472,6 +480,37 @@ def build_record(
     )
     class_tau = compute_tau(class_max_leaf_mean, class_n_total_summed)
 
+    # ---- Cell-FAMILY axis (middle granularity, ~150 terms) ----
+    # Between leaf CL (~600, where the 4× rule rarely fires) and the
+    # 10 broad compartments. The family is the leaf CL's nearest
+    # ancestor with 6-40 CZI cohort descendants — programmatic walk
+    # via cl_family.py. Signal aggregation matches the broad-class
+    # axis: max-pop-mean leaf within each family. Family of one cell
+    # type IS that cell type — so the family axis converges to the
+    # leaf for fine-grained CL terms with few siblings.
+    family_max_leaf_mean: dict[str, float] = {}
+    family_top_cl: dict[str, str] = {}
+    family_n_total_universe: dict[str, int] = {}
+    # Family universe: every cl in cl_total_counts contributes its
+    # n_total to its family's denominator (for the zero baseline).
+    for cl, n_total in cl_total_counts.items():
+        fam = cl_family(cl, cl_labels.get(cl, ""))
+        family_n_total_universe[fam] = family_n_total_universe.get(fam, 0) + n_total
+    for cl, pop in cl_pop_linear.items():
+        fam = cl_family(cl, cl_labels.get(cl, ""))
+        if pop > family_max_leaf_mean.get(fam, -math.inf):
+            family_max_leaf_mean[fam] = pop
+            family_top_cl[fam] = cl
+
+    family_class, family_ids, family_fold = classify_hpa(
+        family_max_leaf_mean, family_n_total_universe
+    )
+    family_tau = compute_tau(family_max_leaf_mean, family_n_total_universe)
+    family_labels = [cl_family_label(fid) for fid in family_ids]
+    family_top_cl_labels = [
+        cl_labels.get(family_top_cl.get(fid, ""), "") for fid in family_ids
+    ]
+
     # ---- Per-UBERON pooled across all cell types ----
     # Build it once across the gene's WMG entries — every (cl, ub) pair
     # in cl_to_uberon contributes to the UBERON axis.
@@ -557,6 +596,34 @@ def build_record(
     # signal rests on.
     cat_top_tissues = [
         uberon_labels.get(cat_top_ub.get(c, ""), "") for c in cat_ids
+    ]
+
+    # ---- Tissue-ORGAN axis (middle granularity, ~150 terms) ----
+    # Between leaf UBERON (~410, brain fragments across 96 subregions)
+    # and the 13 organ-system categories. The organ is the leaf
+    # UBERON's nearest ancestor with 4-30 CZI cohort descendants —
+    # programmatic walk via uberon_organ.py. Signal aggregation
+    # matches the tissue-category axis: max-pop-mean UBERON within
+    # each organ.
+    organ_max_leaf_mean: dict[str, float] = {}
+    organ_top_ub: dict[str, str] = {}
+    organ_n_total_universe: dict[str, int] = {}
+    for ub, n_total in ub_total_counts.items():
+        organ = uberon_organ(ub)
+        organ_n_total_universe[organ] = organ_n_total_universe.get(organ, 0) + n_total
+    for ub, pop in ub_pop_linear.items():
+        organ = uberon_organ(ub)
+        if pop > organ_max_leaf_mean.get(organ, -math.inf):
+            organ_max_leaf_mean[organ] = pop
+            organ_top_ub[organ] = ub
+
+    organ_class, organ_ids, organ_fold = classify_hpa(
+        organ_max_leaf_mean, organ_n_total_universe
+    )
+    organ_tau = compute_tau(organ_max_leaf_mean, organ_n_total_universe)
+    organ_labels = [uberon_organ_label(oid) for oid in organ_ids]
+    organ_top_ub_labels = [
+        uberon_labels.get(organ_top_ub.get(oid, ""), "") for oid in organ_ids
     ]
 
     # ---- Build display lists ----
@@ -704,6 +771,8 @@ def build_record(
     ub_fold_val, ub_fold_inf = fold_change_payload(ub_fold)
     class_fold_val, class_fold_inf = fold_change_payload(class_fold)
     cat_fold_val, cat_fold_inf = fold_change_payload(cat_fold)
+    family_fold_val, family_fold_inf = fold_change_payload(family_fold)
+    organ_fold_val, organ_fold_inf = fold_change_payload(organ_fold)
     record = {
         "schema_version": SCHEMA_VERSION,
         "census_version": CENSUS_VERSION,
@@ -722,6 +791,21 @@ def build_record(
             "fold_change": class_fold_val,
             "fold_change_infinite": class_fold_inf,
             "tau": class_tau,
+        },
+        # v2.1.4+ cell-FAMILY axis — middle granularity (~150 terms).
+        # Walks each leaf CL to its nearest ancestor with 6-40 CZI
+        # cohort descendants (see cl_family.py). The names that
+        # surface are biologically meaningful: B cell, T cell,
+        # macrophage, hepatocyte, astrocyte, kidney loop of Henle
+        # cell, etc.
+        "cell_family_enrichment": {
+            "class": family_class,
+            "family_ids": family_ids,
+            "family_labels": family_labels,
+            "top_cl_labels": family_top_cl_labels,
+            "fold_change": family_fold_val,
+            "fold_change_infinite": family_fold_inf,
+            "tau": family_tau,
         },
         # Leaf-CL classification — debugging / power users. Noisy at
         # the leaf-CL granularity (600+ entities) but τ is still
@@ -760,6 +844,21 @@ def build_record(
             "fold_change": cat_fold_val,
             "fold_change_infinite": cat_fold_inf,
             "tau": cat_tau,
+        },
+        # v2.1.4+ tissue-ORGAN axis — middle granularity (~150
+        # terms). Between leaf UBERON (~410) and the 13 organ-system
+        # categories. Walks each UBERON to its nearest ancestor with
+        # 4-30 cohort descendants (see uberon_organ.py). Brain
+        # subregions roll to "brain" or "Brodmann area"; gut
+        # subregions roll to "intestine"/"colon"/etc.
+        "tissue_organ_enrichment": {
+            "class": organ_class,
+            "organ_ids": organ_ids,
+            "organ_labels": organ_labels,
+            "top_uberon_labels": organ_top_ub_labels,
+            "fold_change": organ_fold_val,
+            "fold_change_infinite": organ_fold_inf,
+            "tau": organ_tau,
         },
         # v2.0 legacy mirror so older readers don't break during the
         # transition. Points at the broad-class rollup (v2.1.1's

@@ -5011,7 +5011,7 @@
   "model_path": "claude-sonnet-4-6",
   "record_generated_at": "2026-06-07T02:42:21.474347Z",
   "cellxgene": {
-    "schema_version": "2.1.3",
+    "schema_version": "2.1.4",
     "census_version": "2025-11-08",
     "cell_class_enrichment": {
       "class": "not_detected",
@@ -5019,6 +5019,21 @@
       "class_labels": [],
       "fold_change": null,
       "fold_change_infinite": false,
+      "tau": null
+    },
+    "cell_family_enrichment": {
+      "class": "enriched",
+      "family_ids": [
+        "CL:1000909"
+      ],
+      "family_labels": [
+        "kidney loop of Henle epithelial cell"
+      ],
+      "top_cl_labels": [
+        "kidney loop of Henle ascending limb epithelial cell"
+      ],
+      "fold_change": null,
+      "fold_change_infinite": true,
       "tau": null
     },
     "cell_type_enrichment": {
@@ -5063,6 +5078,30 @@
         "cardiovascular"
       ],
       "top_tissues": [
+        "eye",
+        "embryo",
+        "brain",
+        "vasculature"
+      ],
+      "fold_change": null,
+      "fold_change_infinite": true,
+      "tau": 0.5829862190252092
+    },
+    "tissue_organ_enrichment": {
+      "class": "group_enriched",
+      "organ_ids": [
+        "UBERON:0000970",
+        "UBERON:0000922",
+        "UBERON:0000955",
+        "UBERON:0002049"
+      ],
+      "organ_labels": [
+        "eye",
+        "embryo",
+        "brain",
+        "vasculature"
+      ],
+      "top_uberon_labels": [
         "eye",
         "embryo",
         "brain",

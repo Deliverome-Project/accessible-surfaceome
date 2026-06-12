@@ -7250,7 +7250,7 @@
   "model_path": "claude-sonnet-4-6",
   "record_generated_at": "2026-06-01T00:28:03.567292Z",
   "cellxgene": {
-    "schema_version": "2.1.3",
+    "schema_version": "2.1.4",
     "census_version": "2025-11-08",
     "cell_class_enrichment": {
       "class": "low_specificity",
@@ -7259,6 +7259,21 @@
       "fold_change": null,
       "fold_change_infinite": false,
       "tau": 0.4919611802504194
+    },
+    "cell_family_enrichment": {
+      "class": "enhanced",
+      "family_ids": [
+        "CL:0000068"
+      ],
+      "family_labels": [
+        "duct epithelial cell"
+      ],
+      "top_cl_labels": [
+        "basal epithelial cell of prostatic duct"
+      ],
+      "fold_change": 5.484,
+      "fold_change_infinite": false,
+      "tau": 0.8176663797972656
     },
     "cell_type_enrichment": {
       "class": "enhanced",
@@ -7295,6 +7310,21 @@
       "fold_change": 9.53,
       "fold_change_infinite": false,
       "tau": 0.9707687044191102
+    },
+    "tissue_organ_enrichment": {
+      "class": "enhanced",
+      "organ_ids": [
+        "UBERON:0001723"
+      ],
+      "organ_labels": [
+        "tongue"
+      ],
+      "top_uberon_labels": [
+        "tongue"
+      ],
+      "fold_change": 55.557,
+      "fold_change_infinite": false,
+      "tau": 0.9820004280453283
     },
     "enrichment_class": "low_specificity",
     "enrichment_cl_ids": [],
