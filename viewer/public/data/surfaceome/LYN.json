@@ -2256,15 +2256,19 @@
   "model_path": "claude-sonnet-4-6",
   "record_generated_at": "2026-05-31T15:31:28.680125Z",
   "cellxgene": {
-    "schema_version": "2.1.11",
+    "schema_version": "2.1.12",
     "census_version": "2025-11-08",
     "cell_class_enrichment": {
       "class": "enhanced",
       "class_ids": [
-        "Immune"
+        "Immune",
+        "Epithelial",
+        "Endothelial"
       ],
       "class_labels": [
-        "Immune"
+        "Immune",
+        "Epithelial",
+        "Endothelial"
       ],
       "fold_change": 2.158,
       "fold_change_infinite": false,
@@ -2275,6 +2279,18 @@
           "label": "Immune",
           "pop_mean": 8.4344,
           "tau_contrib": 0.0
+        },
+        {
+          "id": "Epithelial",
+          "label": "Epithelial",
+          "pop_mean": 3.9081,
+          "tau_contrib": 0.5366
+        },
+        {
+          "id": "Endothelial",
+          "label": "Endothelial",
+          "pop_mean": 2.8554,
+          "tau_contrib": 0.6615
         }
       ]
     },
@@ -2297,7 +2313,7 @@
       ],
       "fold_change": 1.074,
       "fold_change_infinite": false,
-      "tau": 0.9424267086466804,
+      "tau": 0.94286253143509,
       "top_entity_contribs": [
         {
           "id": "CL:0000094",
@@ -2356,11 +2372,13 @@
       "class": "enriched",
       "uberon_ids": [
         "UBERON:0001913",
-        "UBERON:0001836"
+        "UBERON:0001836",
+        "UBERON:0000995"
       ],
       "tissue_labels": [
         "milk",
-        "saliva"
+        "saliva",
+        "uterus"
       ],
       "fold_change": 1.257,
       "fold_change_infinite": false,
@@ -2377,19 +2395,31 @@
           "label": "saliva",
           "pop_mean": 5.0539,
           "tau_contrib": 0.2045
+        },
+        {
+          "id": "UBERON:0000995",
+          "label": "uterus",
+          "pop_mean": 2.3278,
+          "tau_contrib": 0.6336
         }
       ]
     },
     "tissue_category_enrichment": {
       "class": "enriched",
       "category_ids": [
-        "fluids_other"
+        "fluids_other",
+        "reproductive",
+        "lymphoid"
       ],
       "category_labels": [
-        "fluids_other"
+        "fluids_other",
+        "reproductive",
+        "lymphoid"
       ],
       "top_tissues": [
-        "milk"
+        "milk",
+        "uterus",
+        "lymph node"
       ],
       "fold_change": 2.729,
       "fold_change_infinite": false,
@@ -2401,6 +2431,20 @@
           "pop_mean": 6.3533,
           "tau_contrib": 0.0,
           "sub_label": "milk"
+        },
+        {
+          "id": "reproductive",
+          "label": "reproductive",
+          "pop_mean": 2.3278,
+          "tau_contrib": 0.6336,
+          "sub_label": "uterus"
+        },
+        {
+          "id": "lymphoid",
+          "label": "lymphoid",
+          "pop_mean": 2.0843,
+          "tau_contrib": 0.6719,
+          "sub_label": "lymph node"
         }
       ]
     },
@@ -2408,15 +2452,18 @@
       "class": "enriched",
       "organ_ids": [
         "UBERON:0001913",
-        "UBERON:0001836"
+        "UBERON:0001836",
+        "UBERON:0000995"
       ],
       "organ_labels": [
         "milk",
-        "saliva"
+        "saliva",
+        "uterus"
       ],
       "top_uberon_labels": [
         "milk",
-        "saliva"
+        "saliva",
+        "uterus"
       ],
       "fold_change": 1.257,
       "fold_change_infinite": false,
@@ -2433,12 +2480,20 @@
           "label": "saliva",
           "pop_mean": 5.0539,
           "tau_contrib": 0.2045
+        },
+        {
+          "id": "UBERON:0000995",
+          "label": "uterus",
+          "pop_mean": 2.3278,
+          "tau_contrib": 0.6336
         }
       ]
     },
     "enrichment_class": "enhanced",
     "enrichment_cl_ids": [
-      "Immune"
+      "Immune",
+      "Epithelial",
+      "Endothelial"
     ],
     "fold_change": 2.158,
     "fold_change_infinite": false,

@@ -6375,15 +6375,19 @@
   "model_path": "claude-sonnet-4-6",
   "record_generated_at": "2026-06-08T20:51:36.090195Z",
   "cellxgene": {
-    "schema_version": "2.1.11",
+    "schema_version": "2.1.12",
     "census_version": "2025-11-08",
     "cell_class_enrichment": {
       "class": "enhanced",
       "class_ids": [
-        "Epithelial"
+        "Epithelial",
+        "Stromal",
+        "Immune"
       ],
       "class_labels": [
-        "Epithelial"
+        "Epithelial",
+        "Stromal",
+        "Immune"
       ],
       "fold_change": 1.575,
       "fold_change_infinite": false,
@@ -6394,6 +6398,18 @@
           "label": "Epithelial",
           "pop_mean": 30.427,
           "tau_contrib": 0.0
+        },
+        {
+          "id": "Stromal",
+          "label": "Stromal",
+          "pop_mean": 19.3172,
+          "tau_contrib": 0.3651
+        },
+        {
+          "id": "Immune",
+          "label": "Immune",
+          "pop_mean": 6.091,
+          "tau_contrib": 0.7998
         }
       ]
     },
@@ -6416,7 +6432,7 @@
       ],
       "fold_change": 1.444,
       "fold_change_infinite": false,
-      "tau": 0.971659398966536,
+      "tau": 0.9719406850544381,
       "top_entity_contribs": [
         {
           "id": "CL:0000077",
@@ -6509,13 +6525,19 @@
     "tissue_category_enrichment": {
       "class": "enhanced",
       "category_ids": [
-        "hepatobiliary_pancreas"
+        "hepatobiliary_pancreas",
+        "digestive",
+        "fluids_other"
       ],
       "category_labels": [
-        "hepatobiliary_pancreas"
+        "hepatobiliary_pancreas",
+        "digestive",
+        "fluids_other"
       ],
       "top_tissues": [
-        "gallbladder"
+        "gallbladder",
+        "intestine",
+        "omentum"
       ],
       "fold_change": 1.003,
       "fold_change_infinite": false,
@@ -6527,6 +6549,20 @@
           "pop_mean": 1.9502,
           "tau_contrib": 0.0,
           "sub_label": "gallbladder"
+        },
+        {
+          "id": "digestive",
+          "label": "digestive",
+          "pop_mean": 1.9437,
+          "tau_contrib": 0.0033,
+          "sub_label": "intestine"
+        },
+        {
+          "id": "fluids_other",
+          "label": "fluids_other",
+          "pop_mean": 1.7103,
+          "tau_contrib": 0.123,
+          "sub_label": "omentum"
         }
       ]
     },
@@ -6574,7 +6610,9 @@
     },
     "enrichment_class": "enhanced",
     "enrichment_cl_ids": [
-      "Epithelial"
+      "Epithelial",
+      "Stromal",
+      "Immune"
     ],
     "fold_change": 1.575,
     "fold_change_infinite": false,

@@ -4390,15 +4390,19 @@
   "model_path": "claude-sonnet-4-6",
   "record_generated_at": "2026-05-31T15:21:51.367224Z",
   "cellxgene": {
-    "schema_version": "2.1.11",
+    "schema_version": "2.1.12",
     "census_version": "2025-11-08",
     "cell_class_enrichment": {
       "class": "enhanced",
       "class_ids": [
-        "Stromal"
+        "Stromal",
+        "Other",
+        "Endothelial"
       ],
       "class_labels": [
-        "Stromal"
+        "Stromal",
+        "Other",
+        "Endothelial"
       ],
       "fold_change": 1.003,
       "fold_change_infinite": false,
@@ -4409,6 +4413,18 @@
           "label": "Stromal",
           "pop_mean": 23.7767,
           "tau_contrib": 0.0
+        },
+        {
+          "id": "Other",
+          "label": "Other",
+          "pop_mean": 23.6975,
+          "tau_contrib": 0.0033
+        },
+        {
+          "id": "Endothelial",
+          "label": "Endothelial",
+          "pop_mean": 14.0253,
+          "tau_contrib": 0.4101
         }
       ]
     },
@@ -4431,7 +4447,7 @@
       ],
       "fold_change": 1.003,
       "fold_change_infinite": false,
-      "tau": 0.9362161698237133,
+      "tau": 0.9315500581751498,
       "top_entity_contribs": [
         {
           "id": "CL:4047001",
@@ -4524,13 +4540,19 @@
     "tissue_category_enrichment": {
       "class": "enhanced",
       "category_ids": [
-        "fluids_other"
+        "fluids_other",
+        "reproductive",
+        "skin_adipose"
       ],
       "category_labels": [
-        "fluids_other"
+        "fluids_other",
+        "reproductive",
+        "skin_adipose"
       ],
       "top_tissues": [
-        "mucosa"
+        "mucosa",
+        "placenta",
+        "skin of body"
       ],
       "fold_change": 1.284,
       "fold_change_infinite": false,
@@ -4542,6 +4564,20 @@
           "pop_mean": 7.5731,
           "tau_contrib": 0.0,
           "sub_label": "mucosa"
+        },
+        {
+          "id": "reproductive",
+          "label": "reproductive",
+          "pop_mean": 5.8964,
+          "tau_contrib": 0.2214,
+          "sub_label": "placenta"
+        },
+        {
+          "id": "skin_adipose",
+          "label": "skin_adipose",
+          "pop_mean": 3.8992,
+          "tau_contrib": 0.4851,
+          "sub_label": "skin of body"
         }
       ]
     },
@@ -4588,7 +4624,9 @@
     },
     "enrichment_class": "enhanced",
     "enrichment_cl_ids": [
-      "Stromal"
+      "Stromal",
+      "Other",
+      "Endothelial"
     ],
     "fold_change": 1.003,
     "fold_change_infinite": false,

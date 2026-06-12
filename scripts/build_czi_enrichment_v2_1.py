@@ -89,7 +89,7 @@ ENS_MAP = Path(
 OUT_DIR = Path(os.environ.get("CZI_OUT_DIR", "/tmp/czi_enrichment_v2_1"))
 MANIFEST = OUT_DIR.parent / (OUT_DIR.name + "_manifest.tsv")
 CENSUS_VERSION = "2025-11-08"
-SCHEMA_VERSION = "2.1.11"
+SCHEMA_VERSION = "2.1.12"
 
 # Classifier eligibility (lenient — captures whatever has signal).
 MIN_N_TOTAL_FOR_CLASS = 50
@@ -416,16 +416,26 @@ def classify_hpa(
 
     # τ cutoffs: Yanai 2005 + Kryuchkova-Mostacci 2017; 0.85 idiom
     # from Lüleci & Yılmaz 2022.
+    #
+    # v2.1.12+ contribs list: surface up to 3 entities with pop_mean ≥
+    # MIN_TOP_POP_MEAN (the same magnitude floor that gates the call
+    # itself), not "within 50% of peak". The previous 50%-of-peak rule
+    # filtered out broader-lineage signal — CD19's chip listed only
+    # "precursor B cell" (5.02) and dropped mature B cell (2.50) /
+    # B cell, CD19-positive (1.67) / B cell (1.05) even though all
+    # four families clear the magnitude gate. Switching the filter to
+    # the magnitude floor lets the chip show the full enriched
+    # lineage / pattern (CD19 → precursor B + mature B + CD19+ B cell)
+    # while keeping noise out via the gate. Same rule for enhanced.
     if tau >= 0.85:
-        # Up to 3 top entities by pop mean for the chip's "in {ents}"
-        # line + the per-entity tooltip — restrict to entities within
-        # 50% of the top so we don't list weakly-contributing ones.
-        top_ids = [k for k, v in eligible if v >= 0.5 * x_max][:3]
+        top_ids = [k for k, v in eligible if v >= MIN_TOP_POP_MEAN][:3]
         if not top_ids:
             top_ids = [ids[0]]
         return "enriched", top_ids, fold, _top_contribs(top_ids, x_max)
     if tau >= 0.5:
-        top_ids = [ids[0]]
+        top_ids = [k for k, v in eligible if v >= MIN_TOP_POP_MEAN][:3]
+        if not top_ids:
+            top_ids = [ids[0]]
         return "enhanced", top_ids, fold, _top_contribs(top_ids, x_max)
     return "low_specificity", [], fold, []
 

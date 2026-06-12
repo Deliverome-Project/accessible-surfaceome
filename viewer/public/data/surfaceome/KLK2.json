@@ -3094,7 +3094,7 @@
   "model_path": "claude-sonnet-4-6",
   "record_generated_at": "2026-05-31T15:33:42.417728Z",
   "cellxgene": {
-    "schema_version": "2.1.11",
+    "schema_version": "2.1.12",
     "census_version": "2025-11-08",
     "cell_class_enrichment": {
       "class": "enriched",
@@ -3119,30 +3119,50 @@
     "cell_family_enrichment": {
       "class": "enriched",
       "family_ids": [
-        "CL:0002340"
+        "CL:0002340",
+        "CL:0002231",
+        "CL:4032000"
       ],
       "family_labels": [
-        "luminal cell of prostate epithelium"
+        "luminal cell of prostate epithelium",
+        "epithelial cell of prostate",
+        "club-like cell of the urethral epithelium"
       ],
       "top_cl_labels": [
-        "luminal cell of prostate epithelium"
+        "luminal cell of prostate epithelium",
+        "epithelial cell of prostate",
+        "club-like cell of the urethral epithelium"
       ],
       "fold_change": 3.137,
       "fold_change_infinite": false,
-      "tau": 0.9980320644191273,
+      "tau": 0.9980182553481102,
       "top_entity_contribs": [
         {
           "id": "CL:0002340",
           "label": "luminal cell of prostate epithelium",
           "pop_mean": 20.6293,
           "tau_contrib": 0.0
+        },
+        {
+          "id": "CL:0002231",
+          "label": "epithelial cell of prostate",
+          "pop_mean": 6.5767,
+          "tau_contrib": 0.6812
+        },
+        {
+          "id": "CL:4032000",
+          "label": "club-like cell of the urethral epithelium",
+          "pop_mean": 1.939,
+          "tau_contrib": 0.906
         }
       ]
     },
     "cell_type_enrichment": {
       "class": "enriched",
       "cl_ids": [
-        "CL:0002340"
+        "CL:0002340",
+        "CL:0002231",
+        "CL:4032000"
       ],
       "fold_change": 3.137,
       "fold_change_infinite": false,
@@ -3153,6 +3173,18 @@
           "label": "luminal cell of prostate epithelium",
           "pop_mean": 20.6293,
           "tau_contrib": 0.0
+        },
+        {
+          "id": "CL:0002231",
+          "label": "epithelial cell of prostate",
+          "pop_mean": 6.5767,
+          "tau_contrib": 0.6812
+        },
+        {
+          "id": "CL:4032000",
+          "label": "club-like cell of the urethral epithelium",
+          "pop_mean": 1.939,
+          "tau_contrib": 0.906
         }
       ]
     },

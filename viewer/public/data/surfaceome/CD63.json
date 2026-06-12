@@ -5886,7 +5886,7 @@
   "model_path": "claude-sonnet-4-6",
   "record_generated_at": "2026-06-08T20:49:59.438647Z",
   "cellxgene": {
-    "schema_version": "2.1.11",
+    "schema_version": "2.1.12",
     "census_version": "2025-11-08",
     "cell_class_enrichment": {
       "class": "low_specificity",
@@ -5900,23 +5900,43 @@
     "cell_family_enrichment": {
       "class": "enhanced",
       "family_ids": [
-        "CL:0002622"
+        "CL:0002622",
+        "CL:0000057",
+        "CL:0002078"
       ],
       "family_labels": [
-        "prostate stromal cell"
+        "prostate stromal cell",
+        "fibroblast",
+        "meso-epithelial cell"
       ],
       "top_cl_labels": [
-        "prostate stromal cell"
+        "prostate stromal cell",
+        "pancreatic stellate cell",
+        "endosteal cell"
       ],
       "fold_change": 1.09,
       "fold_change_infinite": false,
-      "tau": 0.7910980751818673,
+      "tau": 0.7865772683473135,
       "top_entity_contribs": [
         {
           "id": "CL:0002622",
           "label": "prostate stromal cell",
           "pop_mean": 24.3775,
           "tau_contrib": 0.0
+        },
+        {
+          "id": "CL:0000057",
+          "label": "fibroblast",
+          "pop_mean": 22.3696,
+          "tau_contrib": 0.0824,
+          "sub_label": "pancreatic stellate cell"
+        },
+        {
+          "id": "CL:0002078",
+          "label": "meso-epithelial cell",
+          "pop_mean": 22.117,
+          "tau_contrib": 0.0927,
+          "sub_label": "endosteal cell"
         }
       ]
     },

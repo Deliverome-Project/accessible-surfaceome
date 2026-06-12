@@ -3637,15 +3637,19 @@
   "model_path": "claude-sonnet-4-6",
   "record_generated_at": "2026-05-31T20:15:43.094500Z",
   "cellxgene": {
-    "schema_version": "2.1.11",
+    "schema_version": "2.1.12",
     "census_version": "2025-11-08",
     "cell_class_enrichment": {
       "class": "enhanced",
       "class_ids": [
-        "Immune"
+        "Immune",
+        "Stem",
+        "Neural"
       ],
       "class_labels": [
-        "Immune"
+        "Immune",
+        "Stem",
+        "Neural"
       ],
       "fold_change": 1.748,
       "fold_change_infinite": false,
@@ -3656,6 +3660,18 @@
           "label": "Immune",
           "pop_mean": 56.4343,
           "tau_contrib": 0.0
+        },
+        {
+          "id": "Stem",
+          "label": "Stem",
+          "pop_mean": 32.2867,
+          "tau_contrib": 0.4279
+        },
+        {
+          "id": "Neural",
+          "label": "Neural",
+          "pop_mean": 25.3514,
+          "tau_contrib": 0.5508
         }
       ]
     },
@@ -3678,7 +3694,7 @@
       ],
       "fold_change": 1.095,
       "fold_change_infinite": false,
-      "tau": 0.8784460167052985,
+      "tau": 0.8780656691691615,
       "top_entity_contribs": [
         {
           "id": "CL:0000817",
@@ -3738,11 +3754,13 @@
       "class": "enriched",
       "uberon_ids": [
         "UBERON:0001851",
-        "UBERON:0002102"
+        "UBERON:0002102",
+        "UBERON:0002103"
       ],
       "tissue_labels": [
         "cortex",
-        "forelimb"
+        "forelimb",
+        "hindlimb"
       ],
       "fold_change": 1.984,
       "fold_change_infinite": false,
@@ -3759,19 +3777,31 @@
           "label": "forelimb",
           "pop_mean": 13.5665,
           "tau_contrib": 0.4959
+        },
+        {
+          "id": "UBERON:0002103",
+          "label": "hindlimb",
+          "pop_mean": 11.9682,
+          "tau_contrib": 0.5553
         }
       ]
     },
     "tissue_category_enrichment": {
       "class": "enhanced",
       "category_ids": [
-        "fluids_other"
+        "fluids_other",
+        "head_sensory",
+        "cns"
       ],
       "category_labels": [
-        "fluids_other"
+        "fluids_other",
+        "head_sensory",
+        "cns"
       ],
       "top_tissues": [
-        "cortex"
+        "cortex",
+        "scalp",
+        "brain"
       ],
       "fold_change": 2.732,
       "fold_change_infinite": false,
@@ -3783,6 +3813,20 @@
           "pop_mean": 26.9127,
           "tau_contrib": 0.0,
           "sub_label": "cortex"
+        },
+        {
+          "id": "head_sensory",
+          "label": "head_sensory",
+          "pop_mean": 9.8523,
+          "tau_contrib": 0.6339,
+          "sub_label": "scalp"
+        },
+        {
+          "id": "cns",
+          "label": "cns",
+          "pop_mean": 9.4822,
+          "tau_contrib": 0.6477,
+          "sub_label": "brain"
         }
       ]
     },
@@ -3790,15 +3834,18 @@
       "class": "enriched",
       "organ_ids": [
         "UBERON:0001851",
-        "UBERON:0002102"
+        "UBERON:0002102",
+        "UBERON:0002103"
       ],
       "organ_labels": [
         "cortex",
-        "forelimb"
+        "forelimb",
+        "hindlimb"
       ],
       "top_uberon_labels": [
         "cortex",
-        "forelimb"
+        "forelimb",
+        "hindlimb"
       ],
       "fold_change": 1.984,
       "fold_change_infinite": false,
@@ -3815,12 +3862,20 @@
           "label": "forelimb",
           "pop_mean": 13.5665,
           "tau_contrib": 0.4959
+        },
+        {
+          "id": "UBERON:0002103",
+          "label": "hindlimb",
+          "pop_mean": 11.9682,
+          "tau_contrib": 0.5553
         }
       ]
     },
     "enrichment_class": "enhanced",
     "enrichment_cl_ids": [
-      "Immune"
+      "Immune",
+      "Stem",
+      "Neural"
     ],
     "fold_change": 1.748,
     "fold_change_infinite": false,

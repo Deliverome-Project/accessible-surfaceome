@@ -3704,15 +3704,17 @@
   "record_generated_at": "2026-06-09T01:43:58.622412Z",
   "prompt_corpus_version": "2.50.1",
   "cellxgene": {
-    "schema_version": "2.1.11",
+    "schema_version": "2.1.12",
     "census_version": "2025-11-08",
     "cell_class_enrichment": {
       "class": "enriched",
       "class_ids": [
-        "Epithelial"
+        "Epithelial",
+        "Other"
       ],
       "class_labels": [
-        "Epithelial"
+        "Epithelial",
+        "Other"
       ],
       "fold_change": 2.283,
       "fold_change_infinite": false,
@@ -3723,37 +3725,64 @@
           "label": "Epithelial",
           "pop_mean": 3.5228,
           "tau_contrib": 0.0
+        },
+        {
+          "id": "Other",
+          "label": "Other",
+          "pop_mean": 1.5432,
+          "tau_contrib": 0.5619
         }
       ]
     },
     "cell_family_enrichment": {
       "class": "enriched",
       "family_ids": [
-        "CL:0000319"
+        "CL:0002178",
+        "CL:1000458",
+        "CL:0000150"
       ],
       "family_labels": [
-        "mucus secreting cell"
+        "epithelial cell of stomach",
+        "melanocyte of skin",
+        "glandular secretory epithelial cell"
       ],
       "top_cl_labels": [
-        "mucous cell of stomach"
+        "mucous cell of stomach",
+        "melanocyte of skin",
+        "salivary gland glandular cell"
       ],
       "fold_change": 2.283,
       "fold_change_infinite": false,
-      "tau": 0.9804447424729386,
+      "tau": 0.9792714161584084,
       "top_entity_contribs": [
         {
-          "id": "CL:0000319",
-          "label": "mucus secreting cell",
+          "id": "CL:0002178",
+          "label": "epithelial cell of stomach",
           "pop_mean": 3.5228,
           "tau_contrib": 0.0,
           "sub_label": "mucous cell of stomach"
+        },
+        {
+          "id": "CL:1000458",
+          "label": "melanocyte of skin",
+          "pop_mean": 1.5432,
+          "tau_contrib": 0.5619
+        },
+        {
+          "id": "CL:0000150",
+          "label": "glandular secretory epithelial cell",
+          "pop_mean": 1.3219,
+          "tau_contrib": 0.6248,
+          "sub_label": "salivary gland glandular cell"
         }
       ]
     },
     "cell_type_enrichment": {
       "class": "enriched",
       "cl_ids": [
-        "CL:0002180"
+        "CL:0002180",
+        "CL:1000458",
+        "CL:1001596"
       ],
       "fold_change": 2.283,
       "fold_change_infinite": false,
@@ -3764,6 +3793,18 @@
           "label": "mucous cell of stomach",
           "pop_mean": 3.5228,
           "tau_contrib": 0.0
+        },
+        {
+          "id": "CL:1000458",
+          "label": "melanocyte of skin",
+          "pop_mean": 1.5432,
+          "tau_contrib": 0.5619
+        },
+        {
+          "id": "CL:1001596",
+          "label": "salivary gland glandular cell",
+          "pop_mean": 1.3219,
+          "tau_contrib": 0.6248
         }
       ]
     },
@@ -3798,7 +3839,8 @@
     },
     "enrichment_class": "enriched",
     "enrichment_cl_ids": [
-      "Epithelial"
+      "Epithelial",
+      "Other"
     ],
     "fold_change": 2.283,
     "fold_change_infinite": false,

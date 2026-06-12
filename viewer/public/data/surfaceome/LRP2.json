@@ -4187,15 +4187,19 @@
   "model_path": "claude-sonnet-4-6",
   "record_generated_at": "2026-05-30T20:29:01.447637Z",
   "cellxgene": {
-    "schema_version": "2.1.11",
+    "schema_version": "2.1.12",
     "census_version": "2025-11-08",
     "cell_class_enrichment": {
       "class": "enriched",
       "class_ids": [
-        "Epithelial"
+        "Epithelial",
+        "Neural",
+        "Immune"
       ],
       "class_labels": [
-        "Epithelial"
+        "Epithelial",
+        "Neural",
+        "Immune"
       ],
       "fold_change": 5.798,
       "fold_change_infinite": false,
@@ -4206,23 +4210,41 @@
           "label": "Epithelial",
           "pop_mean": 18.0216,
           "tau_contrib": 0.0
+        },
+        {
+          "id": "Neural",
+          "label": "Neural",
+          "pop_mean": 3.1082,
+          "tau_contrib": 0.8275
+        },
+        {
+          "id": "Immune",
+          "label": "Immune",
+          "pop_mean": 1.5323,
+          "tau_contrib": 0.915
         }
       ]
     },
     "cell_family_enrichment": {
       "class": "enriched",
       "family_ids": [
-        "CL:0000239"
+        "CL:0000239",
+        "CL:0002078",
+        "CL:0000710"
       ],
       "family_labels": [
-        "brush border epithelial cell"
+        "brush border epithelial cell",
+        "meso-epithelial cell",
+        "neurecto-epithelial cell"
       ],
       "top_cl_labels": [
-        "kidney proximal convoluted tubule epithelial cell"
+        "kidney proximal convoluted tubule epithelial cell",
+        "epithelial cell of proximal tubule",
+        "non-pigmented ciliary epithelial cell"
       ],
       "fold_change": 2.129,
       "fold_change_infinite": false,
-      "tau": 0.9884308275203368,
+      "tau": 0.9876948864931054,
       "top_entity_contribs": [
         {
           "id": "CL:0000239",
@@ -4230,6 +4252,20 @@
           "pop_mean": 18.0216,
           "tau_contrib": 0.0,
           "sub_label": "kidney proximal convoluted tubule epithelial cell"
+        },
+        {
+          "id": "CL:0002078",
+          "label": "meso-epithelial cell",
+          "pop_mean": 8.4644,
+          "tau_contrib": 0.5303,
+          "sub_label": "epithelial cell of proximal tubule"
+        },
+        {
+          "id": "CL:0000710",
+          "label": "neurecto-epithelial cell",
+          "pop_mean": 7.6135,
+          "tau_contrib": 0.5775,
+          "sub_label": "non-pigmented ciliary epithelial cell"
         }
       ]
     },
@@ -4237,7 +4273,8 @@
       "class": "enriched",
       "cl_ids": [
         "CL:1000838",
-        "CL:4030011"
+        "CL:4030011",
+        "CL:0002306"
       ],
       "fold_change": 1.112,
       "fold_change_infinite": false,
@@ -4254,16 +4291,24 @@
           "label": "epithelial cell of proximal tubule segment 3",
           "pop_mean": 16.2,
           "tau_contrib": 0.1011
+        },
+        {
+          "id": "CL:0002306",
+          "label": "epithelial cell of proximal tubule",
+          "pop_mean": 8.4644,
+          "tau_contrib": 0.5303
         }
       ]
     },
     "tissue_enrichment": {
       "class": "enriched",
       "uberon_ids": [
-        "UBERON:0002240"
+        "UBERON:0002240",
+        "UBERON:0016435"
       ],
       "tissue_labels": [
-        "spinal cord"
+        "spinal cord",
+        "chest wall"
       ],
       "fold_change": 3.435,
       "fold_change_infinite": false,
@@ -4274,19 +4319,28 @@
           "label": "spinal cord",
           "pop_mean": 4.9858,
           "tau_contrib": 0.0
+        },
+        {
+          "id": "UBERON:0016435",
+          "label": "chest wall",
+          "pop_mean": 1.4516,
+          "tau_contrib": 0.7089
         }
       ]
     },
     "tissue_category_enrichment": {
       "class": "enriched",
       "category_ids": [
-        "cns"
+        "cns",
+        "fluids_other"
       ],
       "category_labels": [
-        "cns"
+        "cns",
+        "fluids_other"
       ],
       "top_tissues": [
-        "spinal cord"
+        "spinal cord",
+        "chest wall"
       ],
       "fold_change": 3.435,
       "fold_change_infinite": false,
@@ -4298,19 +4352,29 @@
           "pop_mean": 4.9858,
           "tau_contrib": 0.0,
           "sub_label": "spinal cord"
+        },
+        {
+          "id": "fluids_other",
+          "label": "fluids_other",
+          "pop_mean": 1.4516,
+          "tau_contrib": 0.7089,
+          "sub_label": "chest wall"
         }
       ]
     },
     "tissue_organ_enrichment": {
       "class": "enriched",
       "organ_ids": [
-        "UBERON:0002240"
+        "UBERON:0002240",
+        "UBERON:0016435"
       ],
       "organ_labels": [
-        "spinal cord"
+        "spinal cord",
+        "chest wall"
       ],
       "top_uberon_labels": [
-        "spinal cord"
+        "spinal cord",
+        "chest wall"
       ],
       "fold_change": 3.435,
       "fold_change_infinite": false,
@@ -4321,12 +4385,20 @@
           "label": "spinal cord",
           "pop_mean": 4.9858,
           "tau_contrib": 0.0
+        },
+        {
+          "id": "UBERON:0016435",
+          "label": "chest wall",
+          "pop_mean": 1.4516,
+          "tau_contrib": 0.7089
         }
       ]
     },
     "enrichment_class": "enriched",
     "enrichment_cl_ids": [
-      "Epithelial"
+      "Epithelial",
+      "Neural",
+      "Immune"
     ],
     "fold_change": 5.798,
     "fold_change_infinite": false,

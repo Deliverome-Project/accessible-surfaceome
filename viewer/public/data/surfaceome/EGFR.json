@@ -7250,7 +7250,7 @@
   "model_path": "claude-sonnet-4-6",
   "record_generated_at": "2026-06-01T00:28:03.567292Z",
   "cellxgene": {
-    "schema_version": "2.1.11",
+    "schema_version": "2.1.12",
     "census_version": "2025-11-08",
     "cell_class_enrichment": {
       "class": "low_specificity",
@@ -7280,7 +7280,7 @@
       ],
       "fold_change": 1.14,
       "fold_change_infinite": false,
-      "tau": 0.8988952529453391,
+      "tau": 0.8941434817597791,
       "top_entity_contribs": [
         {
           "id": "CL:0000068",
@@ -7375,13 +7375,19 @@
     "tissue_category_enrichment": {
       "class": "enhanced",
       "category_ids": [
-        "reproductive"
+        "reproductive",
+        "fluids_other",
+        "urinary"
       ],
       "category_labels": [
-        "reproductive"
+        "reproductive",
+        "fluids_other",
+        "urinary"
       ],
       "top_tissues": [
-        "placenta"
+        "placenta",
+        "chest wall",
+        "kidney"
       ],
       "fold_change": 1.482,
       "fold_change_infinite": false,
@@ -7393,6 +7399,20 @@
           "pop_mean": 4.3315,
           "tau_contrib": 0.0,
           "sub_label": "placenta"
+        },
+        {
+          "id": "fluids_other",
+          "label": "fluids_other",
+          "pop_mean": 2.9231,
+          "tau_contrib": 0.3252,
+          "sub_label": "chest wall"
+        },
+        {
+          "id": "urinary",
+          "label": "urinary",
+          "pop_mean": 1.5895,
+          "tau_contrib": 0.633,
+          "sub_label": "kidney"
         }
       ]
     },

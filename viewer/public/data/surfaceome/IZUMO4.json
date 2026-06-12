@@ -965,7 +965,7 @@
   "model_path": "claude-sonnet-4-6",
   "record_generated_at": "2026-05-31T15:24:58.797948Z",
   "cellxgene": {
-    "schema_version": "2.1.11",
+    "schema_version": "2.1.12",
     "census_version": "2025-11-08",
     "cell_class_enrichment": {
       "class": "enriched",
@@ -1000,7 +1000,7 @@
       ],
       "fold_change": 23.864,
       "fold_change_infinite": false,
-      "tau": 0.9980727474554485,
+      "tau": 0.9980233189087593,
       "top_entity_contribs": [
         {
           "id": "CL:0000586",
@@ -1014,7 +1014,8 @@
     "cell_type_enrichment": {
       "class": "enriched",
       "cl_ids": [
-        "CL:0000017"
+        "CL:0000017",
+        "CL:0000018"
       ],
       "fold_change": 2.128,
       "fold_change_infinite": false,
@@ -1025,6 +1026,12 @@
           "label": "spermatocyte",
           "pop_mean": 10.6053,
           "tau_contrib": 0.0
+        },
+        {
+          "id": "CL:0000018",
+          "label": "spermatid",
+          "pop_mean": 4.9846,
+          "tau_contrib": 0.53
         }
       ]
     },

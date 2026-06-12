@@ -459,13 +459,13 @@ This Markdown is generated from the canonical JSON record at `/data/surfaceome/L
 
 ## CellxGene RNA enrichment (CZI Census)
 
-*Schema v2.1.11 · CZI Census 2025-11-08 · τ-cutoff classification (Yanai 2005, PMID 15388519) on linear population mean (mean × pct, ≈ nTPM) over the full measured universe with a 1e-3 noise floor: τ≥0.85 enriched, 0.5–0.85 enhanced, <0.5 low specificity, no eligibles not detected. Cutoffs from Kryuchkova-Mostacci & Robinson-Rechavi 2017 (PMID 26891983) + Lüleci & Yılmaz 2022. Cell ontology graph (cl-basic.obo) walked to ~150 cell-family terms; UBERON ontology walked to ~150 organ-level tissues. CC-BY 4.0 (CZI Census).*
+*Schema v2.1.12 · CZI Census 2025-11-08 · τ-cutoff classification (Yanai 2005, PMID 15388519) on linear population mean (mean × pct, ≈ nTPM) over the full measured universe with a 1e-3 noise floor: τ≥0.85 enriched, 0.5–0.85 enhanced, <0.5 low specificity, no eligibles not detected. Cutoffs from Kryuchkova-Mostacci & Robinson-Rechavi 2017 (PMID 26891983) + Lüleci & Yılmaz 2022. Cell ontology graph (cl-basic.obo) walked to ~150 cell-family terms; UBERON ontology walked to ~150 organ-level tissues. CC-BY 4.0 (CZI Census).*
 
 **Classification:**
 
-- **Cell class (CL ontology graph, ~10 compartments):** enhanced · Immune · 2.2× · τ=0.81
+- **Cell class (CL ontology graph, ~10 compartments):** enhanced · Immune · Epithelial · Endothelial · 2.2× · τ=0.81
 - **Cell type (leaf Cell Ontology terms, ~600):** enriched · neutrophil · CD14-low, CD16-positive monocyte · mature neutrophil · 1.1× · τ=0.96
-- **Tissue (UBERON terms, ~56):** enriched · milk · saliva · 1.3× · τ=0.99
+- **Tissue (UBERON terms, ~56):** enriched · milk · saliva · uterus · 1.3× · τ=0.99
 
 **Top 5 cell types (leaf CL, pooled across tissues):**
 

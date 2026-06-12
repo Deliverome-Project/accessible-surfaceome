@@ -1754,7 +1754,7 @@
   "model_path": "claude-sonnet-4-6",
   "record_generated_at": "2026-05-31T15:14:10.992681Z",
   "cellxgene": {
-    "schema_version": "2.1.11",
+    "schema_version": "2.1.12",
     "census_version": "2025-11-08",
     "cell_class_enrichment": {
       "class": "low_specificity",
@@ -1768,17 +1768,23 @@
     "cell_family_enrichment": {
       "class": "enhanced",
       "family_ids": [
-        "CL:0002563"
+        "CL:0002563",
+        "CL:0000817",
+        "CL:0002321"
       ],
       "family_labels": [
-        "intestinal epithelial cell"
+        "intestinal epithelial cell",
+        "precursor B cell",
+        "embryonic cell (metazoa)"
       ],
       "top_cl_labels": [
-        "M cell of gut"
+        "M cell of gut",
+        "pre-B-I cell",
+        "premigratory neural crest cell"
       ],
       "fold_change": 1.087,
       "fold_change_infinite": false,
-      "tau": 0.7995714361313939,
+      "tau": 0.8008224105553132,
       "top_entity_contribs": [
         {
           "id": "CL:0002563",
@@ -1786,6 +1792,20 @@
           "pop_mean": 2.262,
           "tau_contrib": 0.0,
           "sub_label": "M cell of gut"
+        },
+        {
+          "id": "CL:0000817",
+          "label": "precursor B cell",
+          "pop_mean": 2.0802,
+          "tau_contrib": 0.0804,
+          "sub_label": "pre-B-I cell"
+        },
+        {
+          "id": "CL:0002321",
+          "label": "embryonic cell (metazoa)",
+          "pop_mean": 1.9097,
+          "tau_contrib": 0.1557,
+          "sub_label": "premigratory neural crest cell"
         }
       ]
     },
@@ -1859,13 +1879,19 @@
     "tissue_category_enrichment": {
       "class": "enhanced",
       "category_ids": [
-        "developmental"
+        "developmental",
+        "cardiovascular",
+        "head_sensory"
       ],
       "category_labels": [
-        "developmental"
+        "developmental",
+        "cardiovascular",
+        "head_sensory"
       ],
       "top_tissues": [
-        "embryo"
+        "embryo",
+        "heart",
+        "eye"
       ],
       "fold_change": 1.078,
       "fold_change_infinite": false,
@@ -1877,6 +1903,20 @@
           "pop_mean": 2.8287,
           "tau_contrib": 0.0,
           "sub_label": "embryo"
+        },
+        {
+          "id": "cardiovascular",
+          "label": "cardiovascular",
+          "pop_mean": 2.6241,
+          "tau_contrib": 0.0723,
+          "sub_label": "heart"
+        },
+        {
+          "id": "head_sensory",
+          "label": "head_sensory",
+          "pop_mean": 1.8403,
+          "tau_contrib": 0.3494,
+          "sub_label": "eye"
         }
       ]
     },
