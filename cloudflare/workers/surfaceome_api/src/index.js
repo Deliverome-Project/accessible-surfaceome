@@ -1154,7 +1154,18 @@ async function handleCatalog(env, request) {
             u.cspa_surface_flag, u.hpa_surface_flag,
             sb.n_sites AS sb_n_sites,
             sa.annotation_json AS sa_annotation_json,
-            CASE WHEN sa.gene_symbol IS NOT NULL THEN 1 ELSE 0 END AS has_deep_dive
+            CASE WHEN sa.gene_symbol IS NOT NULL THEN 1 ELSE 0 END AS has_deep_dive,
+            -- v2.1.5+ denormalized CellxGene enrichment columns.
+            -- LEFT JOIN: any gene without a Census row contributes
+            -- nulls (filtered out in catalog filter logic on the client).
+            -- Pick the latest census_version per gene; schema_version is
+            -- expected to be 2.1.5+ for any rows we want to surface.
+            cxg.cell_family_class    AS cxg_cell_family_class,
+            cxg.cell_family_top      AS cxg_cell_family_top,
+            cxg.cell_family_tau      AS cxg_cell_family_tau,
+            cxg.tissue_organ_class   AS cxg_tissue_organ_class,
+            cxg.tissue_organ_top     AS cxg_tissue_organ_top,
+            cxg.tissue_organ_tau     AS cxg_tissue_organ_tau
        FROM candidate_universe_public u
        LEFT JOIN gene_identifier_public gi ON gi.hgnc_symbol = u.gene_symbol
        LEFT JOIN surface_bind_protein sb ON sb.uniprot_acc = u.uniprot_acc
@@ -1177,6 +1188,17 @@ async function handleCatalog(env, request) {
                  AND sa3.schema_version = sa1.schema_version
             )
        ) sa ON sa.gene_symbol = u.gene_symbol
+       LEFT JOIN (
+         -- Latest CellxGene enrichment row per gene. census_version is
+         -- ISO-8601 dates so MAX() sorts lexicographically as expected.
+         SELECT gene_symbol, cell_family_class, cell_family_top, cell_family_tau,
+                tissue_organ_class, tissue_organ_top, tissue_organ_tau
+           FROM czi_cellxgene_enrichment cxg1
+          WHERE census_version = (
+            SELECT MAX(census_version) FROM czi_cellxgene_enrichment cxg2
+             WHERE cxg2.gene_symbol = cxg1.gene_symbol
+          )
+       ) cxg ON cxg.gene_symbol = u.gene_symbol
       WHERE u.universe_version = ?
       ORDER BY u.gene_symbol`
   ).bind(universe).all();
@@ -1276,6 +1298,24 @@ async function handleCatalog(env, request) {
     if (u.has_deep_dive && u.sa_annotation_json) {
       const ddf = projectDeepDiveFilters(u.sa_annotation_json);
       if (ddf) row.ddf = ddf;
+    }
+    // v2.1.5+: project CellxGene chip-facing classification onto the
+    // catalog row when present. Short keys (`cxg_cf` / `cxg_to`) to
+    // keep the wire payload compact — viewer unpacks into the
+    // CellxGeneEnrichmentChip type at render time.
+    if (u.cxg_cell_family_class) {
+      row.cxg_cf = {
+        c: u.cxg_cell_family_class,
+        t: u.cxg_cell_family_top || null,
+        tau: u.cxg_cell_family_tau,
+      };
+    }
+    if (u.cxg_tissue_organ_class) {
+      row.cxg_to = {
+        c: u.cxg_tissue_organ_class,
+        t: u.cxg_tissue_organ_top || null,
+        tau: u.cxg_tissue_organ_tau,
+      };
     }
     return row;
   });

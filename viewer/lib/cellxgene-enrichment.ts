@@ -66,25 +66,29 @@ export interface CellTypeRow {
 }
 
 /**
- * HPA-style elevation class. Computed per-gene from the linear (expm1)
- * mean expression on the relevant axis (cell type or tissue):
+ * τ-cutoff classification (v2.1.5+). Computed per-gene from the
+ * eligible-entity distribution's Yanai 2005 τ score on linear
+ * population mean (mean × pct, ≈ HPA nTPM):
  *
- * - tissue_enriched: top entity's linear mean >= 4× the 2nd highest
- * - group_enriched: a group of 2-5 contiguously-ranked entities whose
- *   minimum mean >= 4× the next-ranked entity after the group
- * - tissue_enhanced: top entity's mean >= 4× the average of all others
- * - low_specificity: none of the above
- * - not_detected (v2.1+): no entity meets the CZI noise threshold
- *   (n_expressing >= 10 AND pct >= 1%) on this axis. Distinct from
- *   low_specificity, which means "expressed in many entities, none
- *   stands out" — not_detected means "couldn't find expression at
- *   Census coverage."
+ * - enriched      → τ ≥ 0.85 (or single eligible — definitionally
+ *                   enriched since there's no other entity to spread
+ *                   expression over)
+ * - enhanced      → 0.5 ≤ τ < 0.85
+ * - low_specificity → τ < 0.5
+ * - not_detected  → zero eligibles (no entity meets the CZI noise
+ *                   threshold: n_expressing ≥ 10 AND pct ≥ 1%, or
+ *                   ≥ 5% for the broad-class axis). Distinct from
+ *                   low_specificity — "couldn't measure above
+ *                   background" vs "broadly expressed."
  *
- * Priority on tie: enriched > group > enhanced > low. HPA reports this
- * on both the cell-type axis AND the tissue axis because a gene like
- * SLC34A2 (6+ co-expressing alveolar subtypes) exceeds the 2-5
- * group cap at the cell-type level but is unambiguously
- * tissue_enriched at lung.
+ * Cutoffs follow HPA's tissue-specificity nTPM convention:
+ * https://www.proteinatlas.org/humanproteome/tissue/tissue+specific
+ *
+ * group_enriched dropped from the active set — under τ cutoffs a
+ * 1-tissue and a 3-tissue concentration both register as enriched;
+ * the chip's entity list (top 3 by pop mean) conveys "how many"
+ * without a separate class. Kept in the legacy union below so older
+ * D1 rows still render correctly during the schema transition.
  */
 export type EnrichmentClass =
   | "enriched"

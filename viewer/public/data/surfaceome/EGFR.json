@@ -7273,7 +7273,7 @@
       ],
       "fold_change": 1.14,
       "fold_change_infinite": false,
-      "tau": 0.8194402748130521
+      "tau": 0.8158506649172586
     },
     "cell_type_enrichment": {
       "class": "enriched",

@@ -787,6 +787,20 @@ CREATE TABLE IF NOT EXISTS czi_cellxgene_enrichment (
     enrichment_json     TEXT NOT NULL,                 -- the per-gene summary, JSON-encoded
     computed_at         TEXT NOT NULL,                 -- when the summary was built
     synced_at           TEXT NOT NULL DEFAULT (datetime('now')),
+    -- v2.1.5+: denormalized chip-facing columns so the Worker's
+    -- /v1/catalog endpoint can filter on cellxgene enrichment without
+    -- parsing JSON. cell_family_top / tissue_organ_top are
+    -- pipe-separated lists of the top 1-3 entity labels by linear
+    -- pop mean; *_class is the τ-cutoff class
+    -- ('enriched' | 'enhanced' | 'low_specificity' | 'not_detected');
+    -- *_tau is the continuous Yanai 2005 specificity score over the
+    -- eligible distribution. See docs/cellxgene-enrichment.md.
+    cell_family_class   TEXT,
+    cell_family_top     TEXT,
+    cell_family_tau     REAL,
+    tissue_organ_class  TEXT,
+    tissue_organ_top    TEXT,
+    tissue_organ_tau    REAL,
     PRIMARY KEY (gene_symbol, schema_version, census_version)
 );
 
@@ -796,3 +810,10 @@ CREATE INDEX IF NOT EXISTS idx_czi_cellxgene_enrichment_ensembl
     ON czi_cellxgene_enrichment (ensembl_gene);
 CREATE INDEX IF NOT EXISTS idx_czi_cellxgene_enrichment_census
     ON czi_cellxgene_enrichment (census_version);
+-- v2.1.5+: indexes for catalog-filter queries on the denormalized
+-- chip columns. Used by /v1/catalog when a request includes
+-- ?cellxgene_cell_family=enriched or ?cellxgene_tissue_organ=enhanced.
+CREATE INDEX IF NOT EXISTS idx_czi_cellxgene_cell_family_class
+    ON czi_cellxgene_enrichment (cell_family_class);
+CREATE INDEX IF NOT EXISTS idx_czi_cellxgene_tissue_organ_class
+    ON czi_cellxgene_enrichment (tissue_organ_class);

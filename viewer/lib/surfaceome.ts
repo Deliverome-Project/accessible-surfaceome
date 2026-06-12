@@ -252,6 +252,23 @@ export interface CatalogRow {
    *  DeepDiveFilters docstring for the field set; the catalog
    *  filter panel reads this for the "Deep Dive" filter group. */
   deep_dive_filters?: DeepDiveFilters;
+  /** v2.1.5+ CellxGene cell-family chip projection (denormalized in
+   *  D1 + JOINed by the Worker). Present only for genes with a
+   *  v2.1.4+ enrichment row in czi_cellxgene_enrichment. */
+  cellxgene_cell_family?: {
+    /** τ-cutoff class. */
+    class: "enriched" | "enhanced" | "low_specificity" | "not_detected";
+    /** Top 1-3 entity labels by linear pop mean, pipe-separated. */
+    top: string | null;
+    /** Yanai 2005 τ ∈ [0, 1] over the eligible distribution. */
+    tau: number | null;
+  };
+  /** v2.1.5+ CellxGene tissue-organ chip projection. */
+  cellxgene_tissue_organ?: {
+    class: "enriched" | "enhanced" | "low_specificity" | "not_detected";
+    top: string | null;
+    tau: number | null;
+  };
 }
 
 export interface Catalog {
@@ -476,6 +493,11 @@ function inflateCatalogRow(raw: unknown): CatalogRow {
   // either. Type-cast pass-through; the field is fully optional and
   // the catalog filter pass guards `r.deep_dive_filters` before reading.
   const ddf = (r.ddf ?? r.deep_dive_filters) as DeepDiveFilters | undefined;
+  // v2.1.5+ CellxGene chip projection. Worker wire shape uses short
+  // keys (`c` / `t` / `tau`) to keep the catalog payload compact;
+  // inflate to the long-form chip type here.
+  const cxgCf = r.cxg_cf as { c: string; t: string | null; tau: number | null } | undefined;
+  const cxgTo = r.cxg_to as { c: string; t: string | null; tau: number | null } | undefined;
   return {
     symbol: r.symbol as string,
     uniprot: (r.uniprot as string | undefined) ?? "",
@@ -487,6 +509,20 @@ function inflateCatalogRow(raw: unknown): CatalogRow {
     deep_dive: Boolean(r.deep_dive),
     surface_bind_sites: typeof sb === "number" ? sb : undefined,
     deep_dive_filters: ddf,
+    cellxgene_cell_family: cxgCf
+      ? {
+          class: cxgCf.c as NonNullable<CatalogRow["cellxgene_cell_family"]>["class"],
+          top: cxgCf.t,
+          tau: cxgCf.tau,
+        }
+      : undefined,
+    cellxgene_tissue_organ: cxgTo
+      ? {
+          class: cxgTo.c as NonNullable<CatalogRow["cellxgene_tissue_organ"]>["class"],
+          top: cxgTo.t,
+          tau: cxgTo.tau,
+        }
+      : undefined,
   };
 }
 

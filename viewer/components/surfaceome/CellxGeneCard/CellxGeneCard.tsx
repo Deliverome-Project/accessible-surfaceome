@@ -114,7 +114,9 @@ function EnrichmentChip({
 /**
  * CellxGene tab — CZI WMG gene-expression enrichment, presented as
  * two interactive HPA-style barplots (common vs rare cell types) +
- * the gene's HPA-style elevation classification.
+ * the gene's τ-cutoff elevation classification (Yanai 2005 on linear
+ * population mean — cutoffs follow HPA's tissue-specificity nTPM
+ * convention).
  *
  * The chart components are client components (Y-axis + sort + hover
  * are reactive); this wrapper stays a server component so the

@@ -73,18 +73,38 @@ CREATE TABLE IF NOT EXISTS czi_cellxgene_enrichment (
     enrichment_json     TEXT NOT NULL,
     computed_at         TEXT NOT NULL,
     synced_at           TEXT NOT NULL DEFAULT (datetime('now')),
+    cell_family_class   TEXT,
+    cell_family_top     TEXT,
+    cell_family_tau     REAL,
+    tissue_organ_class  TEXT,
+    tissue_organ_top    TEXT,
+    tissue_organ_tau    REAL,
     PRIMARY KEY (gene_symbol, schema_version, census_version)
 );""",
+    # Idempotent column-adds for tables already created without the
+    # v2.1.5 denormalized columns. D1 / SQLite doesn't have ALTER
+    # ADD COLUMN IF NOT EXISTS, so we wrap each in a try/except at
+    # apply time (see _apply_ddl).
+    "ALTER TABLE czi_cellxgene_enrichment ADD COLUMN cell_family_class TEXT;",
+    "ALTER TABLE czi_cellxgene_enrichment ADD COLUMN cell_family_top TEXT;",
+    "ALTER TABLE czi_cellxgene_enrichment ADD COLUMN cell_family_tau REAL;",
+    "ALTER TABLE czi_cellxgene_enrichment ADD COLUMN tissue_organ_class TEXT;",
+    "ALTER TABLE czi_cellxgene_enrichment ADD COLUMN tissue_organ_top TEXT;",
+    "ALTER TABLE czi_cellxgene_enrichment ADD COLUMN tissue_organ_tau REAL;",
     "CREATE INDEX IF NOT EXISTS idx_czi_cellxgene_enrichment_hgnc ON czi_cellxgene_enrichment (hgnc_id);",
     "CREATE INDEX IF NOT EXISTS idx_czi_cellxgene_enrichment_ensembl ON czi_cellxgene_enrichment (ensembl_gene);",
     "CREATE INDEX IF NOT EXISTS idx_czi_cellxgene_enrichment_census ON czi_cellxgene_enrichment (census_version);",
+    "CREATE INDEX IF NOT EXISTS idx_czi_cellxgene_cell_family_class ON czi_cellxgene_enrichment (cell_family_class);",
+    "CREATE INDEX IF NOT EXISTS idx_czi_cellxgene_tissue_organ_class ON czi_cellxgene_enrichment (tissue_organ_class);",
 ]
 
 UPSERT_SQL = """\
 INSERT OR REPLACE INTO czi_cellxgene_enrichment
     (gene_symbol, hgnc_id, ensembl_gene, schema_version,
-     census_version, enrichment_json, computed_at)
-VALUES (?, ?, ?, ?, ?, ?, ?);
+     census_version, enrichment_json, computed_at,
+     cell_family_class, cell_family_top, cell_family_tau,
+     tissue_organ_class, tissue_organ_top, tissue_organ_tau)
+VALUES (?, ?, ?, ?, ?, ?, ?,  ?, ?, ?,  ?, ?, ?);
 """
 
 
@@ -97,6 +117,13 @@ class Row:
     census_version: str
     enrichment_json: str
     computed_at: str
+    # v2.1.5+ denormalized chip-facing columns.
+    cell_family_class: str | None
+    cell_family_top: str | None  # pipe-separated top 1-3 entity labels
+    cell_family_tau: float | None
+    tissue_organ_class: str | None
+    tissue_organ_top: str | None
+    tissue_organ_tau: float | None
 
     @classmethod
     def from_snapshot(cls, path: Path) -> Row | None:
@@ -109,6 +136,10 @@ class Row:
         if not sym:
             logger.warning("skip %s: no gene_symbol", path.name)
             return None
+        # Extract chip-facing columns from v2.1.4+ records. Older records
+        # leave them None; the DB columns are nullable.
+        cf = payload.get("cell_family_enrichment") or {}
+        to = payload.get("tissue_organ_enrichment") or {}
         return cls(
             gene_symbol=str(sym),
             hgnc_id=payload.get("hgnc_id"),
@@ -117,6 +148,12 @@ class Row:
             census_version=str(payload.get("census_version", "")),
             enrichment_json=json.dumps(payload, separators=(",", ":")),
             computed_at=str(payload.get("computed_at") or _utc_now()),
+            cell_family_class=cf.get("class"),
+            cell_family_top="|".join((cf.get("family_labels") or [])[:3]) or None,
+            cell_family_tau=cf.get("tau"),
+            tissue_organ_class=to.get("class"),
+            tissue_organ_top="|".join((to.get("organ_labels") or [])[:3]) or None,
+            tissue_organ_tau=to.get("tau"),
         )
 
     def params(self) -> list[object]:
@@ -128,6 +165,12 @@ class Row:
             self.census_version,
             self.enrichment_json,
             self.computed_at,
+            self.cell_family_class,
+            self.cell_family_top,
+            self.cell_family_tau,
+            self.tissue_organ_class,
+            self.tissue_organ_top,
+            self.tissue_organ_tau,
         ]
 
 
@@ -143,6 +186,14 @@ def _apply_ddl(client: D1Client, *, label: str) -> None:
         try:
             client.query(stmt, [])
         except D1Error as e:
+            # ALTER TABLE ADD COLUMN fails on D1 / SQLite when the
+            # column already exists. Treat that as a no-op; everything
+            # else is a real DDL failure.
+            msg = str(e).lower()
+            if stmt.lstrip().upper().startswith("ALTER TABLE") and (
+                "duplicate column" in msg or "already exists" in msg
+            ):
+                continue
             logger.error("[%s] DDL failed: %s\nstatement: %s", label, e, stmt)
             raise
 

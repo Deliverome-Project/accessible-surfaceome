@@ -134,11 +134,12 @@ def build_cellxgene_md_section(cx: dict) -> str:
         CX_SECTION_MARKER,
         "",
         f"*Schema v{schema} · CZI Census {census} · "
-        "HPA-style 4× fold-change classification on log1p(CP10K) → linear means, "
-        "plus Yanai et al. 2005 τ (specificity score ∈ [0, 1], computed over "
-        "the eligible-entity set). Cell-class rollup walks the Cell Ontology graph "
-        "(cl-basic.obo, OBO Foundry) — leaf CL → nearest compartment ancestor. "
-        "CC-BY 4.0 (CZI Census).*",
+        "τ-cutoff classification (Yanai 2005) on linear population mean "
+        "(mean × pct, ≈ nTPM): τ≥0.85 enriched, 0.5–0.85 enhanced, <0.5 "
+        "low specificity, no eligibles not detected. Cell ontology graph "
+        "(cl-basic.obo) walked to ~150 cell-family terms; UBERON ontology "
+        "walked to ~150 organ-level tissues. Cutoffs follow HPA's tissue-"
+        "specificity nTPM convention. CC-BY 4.0 (CZI Census).*",
         "",
         "**Classification:**",
         "",
