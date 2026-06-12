@@ -75,8 +75,11 @@ _SCHEMA_SQL = [
         intermediates_bytes   INTEGER NOT NULL,
         intermediates_json    TEXT NOT NULL,
         cohort_run_id         TEXT,
+<<<<<<< Updated upstream
         code_sha              TEXT,
         failure_mode          TEXT,
+=======
+>>>>>>> Stashed changes
         PRIMARY KEY (gene_symbol, schema_version, prompt_corpus_version, created_at)
     );
     """,
@@ -86,6 +89,7 @@ _SCHEMA_SQL = [
     """
     ALTER TABLE agent_run_intermediates ADD COLUMN cohort_run_id TEXT;
     """,
+<<<<<<< Updated upstream
     # Tier-3 reproducibility columns (Wave 2 follow-up — see
     # ``docs/audit/reproducibility_followup_2026_06_09.md``). Both are
     # nullable so pre-Tier-3 rows back-compat cleanly; new rows always
@@ -96,6 +100,8 @@ _SCHEMA_SQL = [
     """
     ALTER TABLE agent_run_intermediates ADD COLUMN failure_mode TEXT;
     """,
+=======
+>>>>>>> Stashed changes
     # Most common lookup: latest intermediates for a gene.
     """
     CREATE INDEX IF NOT EXISTS idx_agent_run_intermediates_gene
@@ -117,12 +123,15 @@ _SCHEMA_SQL = [
     CREATE INDEX IF NOT EXISTS idx_agent_run_intermediates_cohort
         ON agent_run_intermediates (cohort_run_id, created_at DESC);
     """,
+<<<<<<< Updated upstream
     # Failure-mode analytics: "how many runs hit cost_ceiling_pts in this
     # sweep" should be a single SELECT, not a per-row JSON parse.
     """
     CREATE INDEX IF NOT EXISTS idx_agent_run_intermediates_failure_mode
         ON agent_run_intermediates (failure_mode, created_at DESC);
     """,
+=======
+>>>>>>> Stashed changes
 ]
 
 
@@ -229,7 +238,10 @@ def publish_intermediates(
     push_to_d1: bool = True,
     created_at: str | None = None,
     cohort_run_id: str | None = None,
+<<<<<<< Updated upstream
     failure_mode: str | None = None,
+=======
+>>>>>>> Stashed changes
 ) -> IntermediatesPushResult:
     """Push one run's intermediates to private D1.
 
@@ -249,6 +261,7 @@ def publish_intermediates(
     single-gene CLI path; the cohort sweep driver supplies one per
     invocation.
 
+<<<<<<< Updated upstream
     ``failure_mode`` (optional) denormalizes the
     :class:`AnnotateResultV2.failure_mode` tag onto the row's own column
     so cohort analytics can query ``WHERE failure_mode = 'cost_ceiling_pts'``
@@ -257,6 +270,8 @@ def publish_intermediates(
     to the column default (NULL). See ``tools/_shared/failure_modes.py``
     for the enum.
 
+=======
+>>>>>>> Stashed changes
     Returns an :class:`IntermediatesPushResult` with the bytes pushed
     and any skip reason. The function NEVER raises on a D1 / credentials
     miss; misses log + return a skipped result so the annotate driver
@@ -419,8 +434,13 @@ def publish_intermediates(
                 "INSERT INTO agent_run_intermediates ("
                 "gene_symbol, schema_version, prompt_corpus_version, "
                 "created_at, record_valid, intermediates_bytes, "
+<<<<<<< Updated upstream
                 "intermediates_json, cohort_run_id, code_sha, failure_mode"
                 ") VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
+=======
+                "intermediates_json, cohort_run_id"
+                ") VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
+>>>>>>> Stashed changes
                 [
                     gene_symbol,
                     schema_version,
@@ -430,8 +450,11 @@ def publish_intermediates(
                     n_bytes,
                     blob,
                     cohort_run_id,
+<<<<<<< Updated upstream
                     code_sha_col,
                     failure_mode,
+=======
+>>>>>>> Stashed changes
                 ],
             )
     except Exception as exc:  # noqa: BLE001

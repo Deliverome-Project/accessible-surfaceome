@@ -4259,8 +4259,9 @@
             "uberon_id": "UBERON:0002113",
             "mean_log1p_cp10k": 3.289,
             "n_expressing": 2296,
-            "n_total": 989,
-            "pct_expressing": 2.3215
+            "n_total": 2296,
+            "pct_expressing": 1.0,
+            "is_uncertain": true
           }
         ]
       },
@@ -4279,8 +4280,9 @@
             "uberon_id": "UBERON:0002113",
             "mean_log1p_cp10k": 3.2061,
             "n_expressing": 15755,
-            "n_total": 6609,
-            "pct_expressing": 2.3839
+            "n_total": 15755,
+            "pct_expressing": 1.0,
+            "is_uncertain": true
           }
         ]
       },
@@ -4293,7 +4295,17 @@
         "pct_expressing": 0.0037,
         "is_rare": true,
         "is_trace": true,
-        "tissues": []
+        "tissues": [
+          {
+            "tissue": "UBERON:0001032",
+            "uberon_id": "UBERON:0001032",
+            "mean_log1p_cp10k": 3.1529,
+            "n_expressing": 1,
+            "n_total": 1,
+            "pct_expressing": 1.0,
+            "is_uncertain": true
+          }
+        ]
       },
       {
         "cell_type": "epithelial cell of proximal tubule",
@@ -4310,8 +4322,18 @@
             "uberon_id": "UBERON:0002113",
             "mean_log1p_cp10k": 2.7072,
             "n_expressing": 141793,
-            "n_total": 74541,
-            "pct_expressing": 1.9022
+            "n_total": 141793,
+            "pct_expressing": 1.0,
+            "is_uncertain": true
+          },
+          {
+            "tissue": "vasculature",
+            "uberon_id": "UBERON:0002049",
+            "mean_log1p_cp10k": 2.197,
+            "n_expressing": 57,
+            "n_total": 57,
+            "pct_expressing": 1.0,
+            "is_uncertain": true
           },
           {
             "tissue": "adrenal gland",
@@ -4319,15 +4341,8 @@
             "mean_log1p_cp10k": 2.6279,
             "n_expressing": 11,
             "n_total": 19,
-            "pct_expressing": 0.5789
-          },
-          {
-            "tissue": "testis",
-            "uberon_id": "UBERON:0000473",
-            "mean_log1p_cp10k": 2.5192,
-            "n_expressing": 4,
-            "n_total": 21,
-            "pct_expressing": 0.1905
+            "pct_expressing": 0.5789,
+            "is_uncertain": false
           }
         ]
       },
@@ -4340,7 +4355,17 @@
         "pct_expressing": 0.3118,
         "is_rare": false,
         "is_trace": false,
-        "tissues": []
+        "tissues": [
+          {
+            "tissue": "eye",
+            "uberon_id": "UBERON:0000970",
+            "mean_log1p_cp10k": 2.6813,
+            "n_expressing": 9349,
+            "n_total": 9349,
+            "pct_expressing": 1.0,
+            "is_uncertain": true
+          }
+        ]
       },
       {
         "cell_type": "epicardial adipocyte",
@@ -4358,7 +4383,8 @@
             "mean_log1p_cp10k": 2.6641,
             "n_expressing": 234,
             "n_total": 1891,
-            "pct_expressing": 0.1237
+            "pct_expressing": 0.1237,
+            "is_uncertain": false
           }
         ]
       },
@@ -4378,7 +4404,17 @@
             "mean_log1p_cp10k": 2.5201,
             "n_expressing": 919,
             "n_total": 19578,
-            "pct_expressing": 0.0469
+            "pct_expressing": 0.0469,
+            "is_uncertain": false
+          },
+          {
+            "tissue": "embryo",
+            "uberon_id": "UBERON:0000922",
+            "mean_log1p_cp10k": 1.621,
+            "n_expressing": 5,
+            "n_total": 5,
+            "pct_expressing": 1.0,
+            "is_uncertain": true
           }
         ]
       },
@@ -4397,8 +4433,9 @@
             "uberon_id": "UBERON:0000970",
             "mean_log1p_cp10k": 2.4664,
             "n_expressing": 61238,
-            "n_total": 14930,
-            "pct_expressing": 4.1017
+            "n_total": 61238,
+            "pct_expressing": 1.0,
+            "is_uncertain": true
           },
           {
             "tissue": "brain",
@@ -4406,7 +4443,8 @@
             "mean_log1p_cp10k": 1.6586,
             "n_expressing": 16,
             "n_total": 1238,
-            "pct_expressing": 0.0129
+            "pct_expressing": 0.0129,
+            "is_uncertain": false
           }
         ]
       },
@@ -4419,7 +4457,17 @@
         "pct_expressing": 0.7109,
         "is_rare": false,
         "is_trace": false,
-        "tissues": []
+        "tissues": [
+          {
+            "tissue": "eye",
+            "uberon_id": "UBERON:0000970",
+            "mean_log1p_cp10k": 2.4604,
+            "n_expressing": 118663,
+            "n_total": 118663,
+            "pct_expressing": 1.0,
+            "is_uncertain": true
+          }
+        ]
       },
       {
         "cell_type": "photoreceptor cell",
@@ -4437,7 +4485,8 @@
             "mean_log1p_cp10k": 2.4501,
             "n_expressing": 243,
             "n_total": 12398,
-            "pct_expressing": 0.0196
+            "pct_expressing": 0.0196,
+            "is_uncertain": false
           }
         ]
       }

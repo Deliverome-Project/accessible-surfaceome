@@ -5952,8 +5952,9 @@
             "uberon_id": "UBERON:0001264",
             "mean_log1p_cp10k": 3.2674,
             "n_expressing": 14306,
-            "n_total": 1764,
-            "pct_expressing": 8.11
+            "n_total": 14306,
+            "pct_expressing": 1.0,
+            "is_uncertain": true
           }
         ]
       },
@@ -5966,7 +5967,17 @@
         "pct_expressing": 1.0,
         "is_rare": true,
         "is_trace": false,
-        "tissues": []
+        "tissues": [
+          {
+            "tissue": "prostate gland",
+            "uberon_id": "UBERON:0002367",
+            "mean_log1p_cp10k": 3.2339,
+            "n_expressing": 63,
+            "n_total": 63,
+            "pct_expressing": 1.0,
+            "is_uncertain": true
+          }
+        ]
       },
       {
         "cell_type": "endosteal cell",
@@ -5984,7 +5995,8 @@
             "mean_log1p_cp10k": 3.1406,
             "n_expressing": 54,
             "n_total": 54,
-            "pct_expressing": 1.0
+            "pct_expressing": 1.0,
+            "is_uncertain": false
           }
         ]
       },
@@ -6003,24 +6015,27 @@
             "uberon_id": "UBERON:0001155",
             "mean_log1p_cp10k": 3.0799,
             "n_expressing": 1614,
-            "n_total": 957,
-            "pct_expressing": 1.6865
+            "n_total": 1614,
+            "pct_expressing": 1.0,
+            "is_uncertain": true
           },
           {
             "tissue": "stomach",
             "uberon_id": "UBERON:0000945",
             "mean_log1p_cp10k": 3.1607,
             "n_expressing": 374,
-            "n_total": 346,
-            "pct_expressing": 1.0809
+            "n_total": 374,
+            "pct_expressing": 1.0,
+            "is_uncertain": true
           },
           {
-            "tissue": "esophagus",
-            "uberon_id": "UBERON:0001043",
-            "mean_log1p_cp10k": 3.0434,
-            "n_expressing": 11,
-            "n_total": 11,
-            "pct_expressing": 1.0
+            "tissue": "large intestine",
+            "uberon_id": "UBERON:0000059",
+            "mean_log1p_cp10k": 3.0444,
+            "n_expressing": 247,
+            "n_total": 247,
+            "pct_expressing": 1.0,
+            "is_uncertain": true
           }
         ]
       },
@@ -6033,7 +6048,17 @@
         "pct_expressing": 0.9878,
         "is_rare": false,
         "is_trace": false,
-        "tissues": []
+        "tissues": [
+          {
+            "tissue": "prostate gland",
+            "uberon_id": "UBERON:0002367",
+            "mean_log1p_cp10k": 3.0719,
+            "n_expressing": 1534,
+            "n_total": 1534,
+            "pct_expressing": 1.0,
+            "is_uncertain": true
+          }
+        ]
       },
       {
         "cell_type": "fibroblastic reticular cell",
@@ -6050,8 +6075,9 @@
             "uberon_id": "UBERON:0001155",
             "mean_log1p_cp10k": 3.1508,
             "n_expressing": 290,
-            "n_total": 261,
-            "pct_expressing": 1.1111
+            "n_total": 290,
+            "pct_expressing": 1.0,
+            "is_uncertain": true
           },
           {
             "tissue": "small intestine",
@@ -6059,7 +6085,8 @@
             "mean_log1p_cp10k": 2.7868,
             "n_expressing": 105,
             "n_total": 106,
-            "pct_expressing": 0.9906
+            "pct_expressing": 0.9906,
+            "is_uncertain": false
           },
           {
             "tissue": "stomach",
@@ -6067,7 +6094,8 @@
             "mean_log1p_cp10k": 3.2769,
             "n_expressing": 37,
             "n_total": 37,
-            "pct_expressing": 1.0
+            "pct_expressing": 1.0,
+            "is_uncertain": false
           }
         ]
       },
@@ -6087,7 +6115,8 @@
             "mean_log1p_cp10k": 3.053,
             "n_expressing": 1939,
             "n_total": 1971,
-            "pct_expressing": 0.9838
+            "pct_expressing": 0.9838,
+            "is_uncertain": false
           }
         ]
       },
@@ -6100,7 +6129,17 @@
         "pct_expressing": 0.9822,
         "is_rare": false,
         "is_trace": false,
-        "tissues": []
+        "tissues": [
+          {
+            "tissue": "lung",
+            "uberon_id": "UBERON:0002048",
+            "mean_log1p_cp10k": 3.032,
+            "n_expressing": 1382,
+            "n_total": 1382,
+            "pct_expressing": 1.0,
+            "is_uncertain": true
+          }
+        ]
       },
       {
         "cell_type": "lung interstitial macrophage",
@@ -6117,8 +6156,9 @@
             "uberon_id": "UBERON:0002048",
             "mean_log1p_cp10k": 3.0294,
             "n_expressing": 10014,
-            "n_total": 9173,
-            "pct_expressing": 1.0917
+            "n_total": 10014,
+            "pct_expressing": 1.0,
+            "is_uncertain": true
           }
         ]
       },
@@ -6137,8 +6177,9 @@
             "uberon_id": "UBERON:0002048",
             "mean_log1p_cp10k": 3.0284,
             "n_expressing": 862,
-            "n_total": 859,
-            "pct_expressing": 1.0035
+            "n_total": 862,
+            "pct_expressing": 1.0,
+            "is_uncertain": true
           }
         ]
       }

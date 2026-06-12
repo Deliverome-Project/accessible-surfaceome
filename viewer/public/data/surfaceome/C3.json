@@ -6450,7 +6450,17 @@
         "pct_expressing": 0.007,
         "is_rare": true,
         "is_trace": true,
-        "tissues": []
+        "tissues": [
+          {
+            "tissue": "pancreas",
+            "uberon_id": "UBERON:0001264",
+            "mean_log1p_cp10k": 3.7294,
+            "n_expressing": 7,
+            "n_total": 7,
+            "pct_expressing": 1.0,
+            "is_uncertain": true
+          }
+        ]
       },
       {
         "cell_type": "mesothelial cell of pleura",
@@ -6468,7 +6478,8 @@
             "mean_log1p_cp10k": 3.4694,
             "n_expressing": 2731,
             "n_total": 2783,
-            "pct_expressing": 0.9813
+            "pct_expressing": 0.9813,
+            "is_uncertain": false
           }
         ]
       },
@@ -6483,20 +6494,31 @@
         "is_trace": false,
         "tissues": [
           {
-            "tissue": "stomach",
-            "uberon_id": "UBERON:0000945",
-            "mean_log1p_cp10k": 2.7092,
-            "n_expressing": 3,
-            "n_total": 19,
-            "pct_expressing": 0.1579
+            "tissue": "lymph node",
+            "uberon_id": "UBERON:0000029",
+            "mean_log1p_cp10k": 3.3399,
+            "n_expressing": 1145,
+            "n_total": 1145,
+            "pct_expressing": 1.0,
+            "is_uncertain": true
           },
           {
-            "tissue": "hindlimb",
-            "uberon_id": "UBERON:0002103",
-            "mean_log1p_cp10k": 1.6128,
-            "n_expressing": 2,
-            "n_total": 6906,
-            "pct_expressing": 0.0003
+            "tissue": "skin of body",
+            "uberon_id": "UBERON:0002097",
+            "mean_log1p_cp10k": 2.9024,
+            "n_expressing": 102,
+            "n_total": 102,
+            "pct_expressing": 1.0,
+            "is_uncertain": true
+          },
+          {
+            "tissue": "small intestine",
+            "uberon_id": "UBERON:0002108",
+            "mean_log1p_cp10k": 2.6484,
+            "n_expressing": 66,
+            "n_total": 66,
+            "pct_expressing": 1.0,
+            "is_uncertain": true
           }
         ]
       },
@@ -6515,8 +6537,9 @@
             "uberon_id": "UBERON:0002107",
             "mean_log1p_cp10k": 3.2451,
             "n_expressing": 77117,
-            "n_total": 252,
-            "pct_expressing": 306.0198
+            "n_total": 77117,
+            "pct_expressing": 1.0,
+            "is_uncertain": true
           }
         ]
       },
@@ -6535,8 +6558,9 @@
             "uberon_id": "UBERON:0002107",
             "mean_log1p_cp10k": 3.1765,
             "n_expressing": 19007,
-            "n_total": 733,
-            "pct_expressing": 25.9304
+            "n_total": 19007,
+            "pct_expressing": 1.0,
+            "is_uncertain": true
           }
         ]
       },
@@ -6556,7 +6580,8 @@
             "mean_log1p_cp10k": 3.109,
             "n_expressing": 4891,
             "n_total": 5418,
-            "pct_expressing": 0.9027
+            "pct_expressing": 0.9027,
+            "is_uncertain": false
           }
         ]
       },
@@ -6576,7 +6601,8 @@
             "mean_log1p_cp10k": 3.0905,
             "n_expressing": 838,
             "n_total": 1891,
-            "pct_expressing": 0.4432
+            "pct_expressing": 0.4432,
+            "is_uncertain": false
           }
         ]
       },
@@ -6596,7 +6622,8 @@
             "mean_log1p_cp10k": 3.0124,
             "n_expressing": 11,
             "n_total": 287,
-            "pct_expressing": 0.0383
+            "pct_expressing": 0.0383,
+            "is_uncertain": false
           }
         ]
       },
@@ -6616,7 +6643,8 @@
             "mean_log1p_cp10k": 3.0045,
             "n_expressing": 111,
             "n_total": 232,
-            "pct_expressing": 0.4784
+            "pct_expressing": 0.4784,
+            "is_uncertain": false
           }
         ]
       },
@@ -6636,7 +6664,8 @@
             "mean_log1p_cp10k": 2.979,
             "n_expressing": 507,
             "n_total": 2149,
-            "pct_expressing": 0.2359
+            "pct_expressing": 0.2359,
+            "is_uncertain": false
           }
         ]
       }

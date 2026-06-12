@@ -5093,7 +5093,8 @@
             "mean_log1p_cp10k": 2.3431,
             "n_expressing": 3,
             "n_total": 348,
-            "pct_expressing": 0.0086
+            "pct_expressing": 0.0086,
+            "is_uncertain": false
           }
         ]
       },
@@ -5106,7 +5107,17 @@
         "pct_expressing": 0.0011,
         "is_rare": true,
         "is_trace": true,
-        "tissues": []
+        "tissues": [
+          {
+            "tissue": "UBERON:0001015",
+            "uberon_id": "UBERON:0001015",
+            "mean_log1p_cp10k": 2.2725,
+            "n_expressing": 1,
+            "n_total": 1,
+            "pct_expressing": 1.0,
+            "is_uncertain": true
+          }
+        ]
       },
       {
         "cell_type": "IgA plasmablast",
@@ -5124,7 +5135,8 @@
             "mean_log1p_cp10k": 2.1409,
             "n_expressing": 1,
             "n_total": 956,
-            "pct_expressing": 0.001
+            "pct_expressing": 0.001,
+            "is_uncertain": false
           }
         ]
       },
@@ -5144,7 +5156,8 @@
             "mean_log1p_cp10k": 2.0776,
             "n_expressing": 2,
             "n_total": 603,
-            "pct_expressing": 0.0033
+            "pct_expressing": 0.0033,
+            "is_uncertain": false
           }
         ]
       },
@@ -5164,7 +5177,8 @@
             "mean_log1p_cp10k": 1.7559,
             "n_expressing": 202,
             "n_total": 10530,
-            "pct_expressing": 0.0192
+            "pct_expressing": 0.0192,
+            "is_uncertain": false
           }
         ]
       }

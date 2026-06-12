@@ -618,6 +618,17 @@ def build_record(
             if nnz <= 0:
                 continue
             n_total_pair = pair_counts.get((cl, ub), 0)
+            # WMG nnz fallback (per 4f4a51a05): when the cell-count
+            # cache says fewer cells than WMG actually observed, the
+            # cache is stale relative to the WMG export. EGFR-embryo
+            # canonical case: cache says 4 CL terms profiled, WMG sees
+            # 36 with 28k expressing cells. Use WMG nnz as the
+            # denominator (pct→1.0, conservative ceiling) and flag
+            # the row is_uncertain so the viewer can render distinctly.
+            is_uncertain = False
+            if n_total_pair < int(nnz):
+                n_total_pair = int(nnz)
+                is_uncertain = True
             if n_total_pair <= 0:
                 continue
             mean_t = ssum / nnz
@@ -628,7 +639,8 @@ def build_record(
                     "mean_log1p_cp10k": round(mean_t, 4),
                     "n_expressing": int(nnz),
                     "n_total": int(n_total_pair),
-                    "pct_expressing": round(nnz / n_total_pair, 4),
+                    "pct_expressing": round(min(1.0, nnz / n_total_pair), 4),
+                    "is_uncertain": is_uncertain,
                 }
             )
         tissues.sort(key=lambda t: t["n_expressing"], reverse=True)

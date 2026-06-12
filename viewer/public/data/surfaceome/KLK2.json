@@ -3167,7 +3167,8 @@
             "mean_log1p_cp10k": 3.6836,
             "n_expressing": 17072,
             "n_total": 28518,
-            "pct_expressing": 0.5986
+            "pct_expressing": 0.5986,
+            "is_uncertain": false
           }
         ]
       },
@@ -3187,7 +3188,8 @@
             "mean_log1p_cp10k": 3.3223,
             "n_expressing": 389,
             "n_total": 1939,
-            "pct_expressing": 0.2006
+            "pct_expressing": 0.2006,
+            "is_uncertain": false
           },
           {
             "tissue": "pancreas",
@@ -3195,7 +3197,8 @@
             "mean_log1p_cp10k": 2.2277,
             "n_expressing": 1,
             "n_total": 5424,
-            "pct_expressing": 0.0002
+            "pct_expressing": 0.0002,
+            "is_uncertain": false
           }
         ]
       },
@@ -3215,7 +3218,8 @@
             "mean_log1p_cp10k": 3.2615,
             "n_expressing": 2032,
             "n_total": 7752,
-            "pct_expressing": 0.2621
+            "pct_expressing": 0.2621,
+            "is_uncertain": false
           }
         ]
       },
@@ -3235,7 +3239,8 @@
             "mean_log1p_cp10k": 2.9152,
             "n_expressing": 1,
             "n_total": 232,
-            "pct_expressing": 0.0043
+            "pct_expressing": 0.0043,
+            "is_uncertain": false
           }
         ]
       },
@@ -3248,7 +3253,17 @@
         "pct_expressing": 0.0159,
         "is_rare": true,
         "is_trace": true,
-        "tissues": []
+        "tissues": [
+          {
+            "tissue": "prostate gland",
+            "uberon_id": "UBERON:0002367",
+            "mean_log1p_cp10k": 2.8998,
+            "n_expressing": 1,
+            "n_total": 1,
+            "pct_expressing": 1.0,
+            "is_uncertain": true
+          }
+        ]
       },
       {
         "cell_type": "smooth muscle cell of prostate",
@@ -3266,7 +3281,8 @@
             "mean_log1p_cp10k": 2.5516,
             "n_expressing": 103,
             "n_total": 2060,
-            "pct_expressing": 0.05
+            "pct_expressing": 0.05,
+            "is_uncertain": false
           }
         ]
       },
@@ -3286,7 +3302,8 @@
             "mean_log1p_cp10k": 2.5338,
             "n_expressing": 830,
             "n_total": 4966,
-            "pct_expressing": 0.1671
+            "pct_expressing": 0.1671,
+            "is_uncertain": false
           }
         ]
       },
@@ -3306,7 +3323,8 @@
             "mean_log1p_cp10k": 2.5044,
             "n_expressing": 175,
             "n_total": 7295,
-            "pct_expressing": 0.024
+            "pct_expressing": 0.024,
+            "is_uncertain": false
           }
         ]
       },
@@ -3319,7 +3337,17 @@
         "pct_expressing": 0.0043,
         "is_rare": true,
         "is_trace": true,
-        "tissues": []
+        "tissues": [
+          {
+            "tissue": "skin of body",
+            "uberon_id": "UBERON:0002097",
+            "mean_log1p_cp10k": 2.1291,
+            "n_expressing": 1,
+            "n_total": 1,
+            "pct_expressing": 1.0,
+            "is_uncertain": true
+          }
+        ]
       },
       {
         "cell_type": "eosinophil",
@@ -3330,7 +3358,17 @@
         "pct_expressing": 0.002,
         "is_rare": true,
         "is_trace": true,
-        "tissues": []
+        "tissues": [
+          {
+            "tissue": "UBERON:0001015",
+            "uberon_id": "UBERON:0001015",
+            "mean_log1p_cp10k": 2.058,
+            "n_expressing": 1,
+            "n_total": 1,
+            "pct_expressing": 1.0,
+            "is_uncertain": true
+          }
+        ]
       }
     ],
     "top_tissues": [

@@ -1039,7 +1039,8 @@
             "mean_log1p_cp10k": 2.5987,
             "n_expressing": 2616,
             "n_total": 3070,
-            "pct_expressing": 0.8521
+            "pct_expressing": 0.8521,
+            "is_uncertain": false
           }
         ]
       },
@@ -1052,7 +1053,17 @@
         "pct_expressing": 0.0033,
         "is_rare": true,
         "is_trace": true,
-        "tissues": []
+        "tissues": [
+          {
+            "tissue": "skin of body",
+            "uberon_id": "UBERON:0002097",
+            "mean_log1p_cp10k": 2.5554,
+            "n_expressing": 1,
+            "n_total": 1,
+            "pct_expressing": 1.0,
+            "is_uncertain": true
+          }
+        ]
       },
       {
         "cell_type": "inhibitory motor neuron",
@@ -1063,7 +1074,17 @@
         "pct_expressing": 0.0013,
         "is_rare": true,
         "is_trace": true,
-        "tissues": []
+        "tissues": [
+          {
+            "tissue": "small intestine",
+            "uberon_id": "UBERON:0002108",
+            "mean_log1p_cp10k": 2.537,
+            "n_expressing": 1,
+            "n_total": 1,
+            "pct_expressing": 1.0,
+            "is_uncertain": true
+          }
+        ]
       },
       {
         "cell_type": "visceromotor neuron",
@@ -1081,7 +1102,8 @@
             "mean_log1p_cp10k": 2.437,
             "n_expressing": 1,
             "n_total": 348,
-            "pct_expressing": 0.0029
+            "pct_expressing": 0.0029,
+            "is_uncertain": false
           }
         ]
       },
@@ -1094,7 +1116,35 @@
         "pct_expressing": 0.016,
         "is_rare": false,
         "is_trace": false,
-        "tissues": []
+        "tissues": [
+          {
+            "tissue": "lung",
+            "uberon_id": "UBERON:0002048",
+            "mean_log1p_cp10k": 2.3976,
+            "n_expressing": 85,
+            "n_total": 85,
+            "pct_expressing": 1.0,
+            "is_uncertain": true
+          },
+          {
+            "tissue": "stomach",
+            "uberon_id": "UBERON:0000945",
+            "mean_log1p_cp10k": 1.7151,
+            "n_expressing": 18,
+            "n_total": 18,
+            "pct_expressing": 1.0,
+            "is_uncertain": true
+          },
+          {
+            "tissue": "UBERON:0002365",
+            "uberon_id": "UBERON:0002365",
+            "mean_log1p_cp10k": 2.5529,
+            "n_expressing": 6,
+            "n_total": 6,
+            "pct_expressing": 1.0,
+            "is_uncertain": true
+          }
+        ]
       },
       {
         "cell_type": "CD34-positive, CD56-positive, CD117-positive common innate lymphoid precursor, human",
@@ -1105,7 +1155,17 @@
         "pct_expressing": 0.0048,
         "is_rare": true,
         "is_trace": true,
-        "tissues": []
+        "tissues": [
+          {
+            "tissue": "small intestine",
+            "uberon_id": "UBERON:0002108",
+            "mean_log1p_cp10k": 2.2445,
+            "n_expressing": 2,
+            "n_total": 2,
+            "pct_expressing": 1.0,
+            "is_uncertain": true
+          }
+        ]
       },
       {
         "cell_type": "salivary gland glandular cell",
@@ -1118,12 +1178,22 @@
         "is_trace": false,
         "tissues": [
           {
+            "tissue": "small intestine",
+            "uberon_id": "UBERON:0002108",
+            "mean_log1p_cp10k": 2.2481,
+            "n_expressing": 14,
+            "n_total": 14,
+            "pct_expressing": 1.0,
+            "is_uncertain": true
+          },
+          {
             "tissue": "stomach",
             "uberon_id": "UBERON:0000945",
             "mean_log1p_cp10k": 2.1707,
             "n_expressing": 2,
             "n_total": 102,
-            "pct_expressing": 0.0196
+            "pct_expressing": 0.0196,
+            "is_uncertain": false
           }
         ]
       },
@@ -1143,7 +1213,17 @@
             "mean_log1p_cp10k": 2.2205,
             "n_expressing": 1071,
             "n_total": 56645,
-            "pct_expressing": 0.0189
+            "pct_expressing": 0.0189,
+            "is_uncertain": false
+          },
+          {
+            "tissue": "lung",
+            "uberon_id": "UBERON:0002048",
+            "mean_log1p_cp10k": 1.8455,
+            "n_expressing": 3,
+            "n_total": 3,
+            "pct_expressing": 1.0,
+            "is_uncertain": true
           }
         ]
       },
@@ -1156,7 +1236,17 @@
         "pct_expressing": 0.0011,
         "is_rare": true,
         "is_trace": true,
-        "tissues": []
+        "tissues": [
+          {
+            "tissue": "brain",
+            "uberon_id": "UBERON:0000955",
+            "mean_log1p_cp10k": 2.2172,
+            "n_expressing": 1,
+            "n_total": 1,
+            "pct_expressing": 1.0,
+            "is_uncertain": true
+          }
+        ]
       },
       {
         "cell_type": "embryonic blood vessel endothelial progenitor cell",
@@ -1167,7 +1257,17 @@
         "pct_expressing": 0.001,
         "is_rare": true,
         "is_trace": true,
-        "tissues": []
+        "tissues": [
+          {
+            "tissue": "brain",
+            "uberon_id": "UBERON:0000955",
+            "mean_log1p_cp10k": 2.1679,
+            "n_expressing": 1,
+            "n_total": 1,
+            "pct_expressing": 1.0,
+            "is_uncertain": true
+          }
+        ]
       }
     ],
     "top_tissues": [

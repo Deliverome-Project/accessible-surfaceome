@@ -2329,7 +2329,8 @@
             "mean_log1p_cp10k": 3.1388,
             "n_expressing": 32679,
             "n_total": 36089,
-            "pct_expressing": 0.9055
+            "pct_expressing": 0.9055,
+            "is_uncertain": false
           },
           {
             "tissue": "liver",
@@ -2337,7 +2338,8 @@
             "mean_log1p_cp10k": 2.5733,
             "n_expressing": 16043,
             "n_total": 24285,
-            "pct_expressing": 0.6606
+            "pct_expressing": 0.6606,
+            "is_uncertain": false
           },
           {
             "tissue": "spleen",
@@ -2345,7 +2347,8 @@
             "mean_log1p_cp10k": 2.9917,
             "n_expressing": 14146,
             "n_total": 16610,
-            "pct_expressing": 0.8517
+            "pct_expressing": 0.8517,
+            "is_uncertain": false
           }
         ]
       },
@@ -2365,7 +2368,8 @@
             "mean_log1p_cp10k": 2.6683,
             "n_expressing": 386,
             "n_total": 859,
-            "pct_expressing": 0.4494
+            "pct_expressing": 0.4494,
+            "is_uncertain": false
           }
         ]
       },
@@ -2384,8 +2388,9 @@
             "uberon_id": "UBERON:0002097",
             "mean_log1p_cp10k": 2.7171,
             "n_expressing": 1142,
-            "n_total": 18,
-            "pct_expressing": 63.4444
+            "n_total": 1142,
+            "pct_expressing": 1.0,
+            "is_uncertain": true
           },
           {
             "tissue": "lung",
@@ -2393,15 +2398,17 @@
             "mean_log1p_cp10k": 1.954,
             "n_expressing": 82,
             "n_total": 3884,
-            "pct_expressing": 0.0211
+            "pct_expressing": 0.0211,
+            "is_uncertain": false
           },
           {
-            "tissue": "hindlimb",
-            "uberon_id": "UBERON:0002103",
-            "mean_log1p_cp10k": 1.7755,
-            "n_expressing": 11,
-            "n_total": 8028,
-            "pct_expressing": 0.0014
+            "tissue": "UBERON:0001015",
+            "uberon_id": "UBERON:0001015",
+            "mean_log1p_cp10k": 2.0652,
+            "n_expressing": 38,
+            "n_total": 38,
+            "pct_expressing": 1.0,
+            "is_uncertain": true
           }
         ]
       },
@@ -2414,7 +2421,17 @@
         "pct_expressing": 0.0072,
         "is_rare": true,
         "is_trace": true,
-        "tissues": []
+        "tissues": [
+          {
+            "tissue": "brain",
+            "uberon_id": "UBERON:0000955",
+            "mean_log1p_cp10k": 2.6214,
+            "n_expressing": 1,
+            "n_total": 1,
+            "pct_expressing": 1.0,
+            "is_uncertain": true
+          }
+        ]
       },
       {
         "cell_type": "dermis microvascular lymphatic vessel endothelial cell",
@@ -2432,7 +2449,8 @@
             "mean_log1p_cp10k": 2.5734,
             "n_expressing": 68,
             "n_total": 603,
-            "pct_expressing": 0.1128
+            "pct_expressing": 0.1128,
+            "is_uncertain": false
           }
         ]
       },
@@ -2452,7 +2470,8 @@
             "mean_log1p_cp10k": 2.5227,
             "n_expressing": 2,
             "n_total": 287,
-            "pct_expressing": 0.007
+            "pct_expressing": 0.007,
+            "is_uncertain": false
           }
         ]
       },
@@ -2465,7 +2484,17 @@
         "pct_expressing": 0.3175,
         "is_rare": true,
         "is_trace": false,
-        "tissues": []
+        "tissues": [
+          {
+            "tissue": "brain",
+            "uberon_id": "UBERON:0000955",
+            "mean_log1p_cp10k": 2.5009,
+            "n_expressing": 20,
+            "n_total": 20,
+            "pct_expressing": 1.0,
+            "is_uncertain": true
+          }
+        ]
       },
       {
         "cell_type": "professional antigen presenting cell",
@@ -2482,8 +2511,9 @@
             "uberon_id": "UBERON:0000948",
             "mean_log1p_cp10k": 2.529,
             "n_expressing": 973,
-            "n_total": 15,
-            "pct_expressing": 64.8667
+            "n_total": 973,
+            "pct_expressing": 1.0,
+            "is_uncertain": true
           },
           {
             "tissue": "blood",
@@ -2491,15 +2521,17 @@
             "mean_log1p_cp10k": 2.4918,
             "n_expressing": 91,
             "n_total": 3635,
-            "pct_expressing": 0.025
+            "pct_expressing": 0.025,
+            "is_uncertain": false
           },
           {
-            "tissue": "bone marrow",
-            "uberon_id": "UBERON:0002371",
-            "mean_log1p_cp10k": 2.2854,
-            "n_expressing": 28,
-            "n_total": 821,
-            "pct_expressing": 0.0341
+            "tissue": "UBERON:0001015",
+            "uberon_id": "UBERON:0001015",
+            "mean_log1p_cp10k": 2.4787,
+            "n_expressing": 50,
+            "n_total": 50,
+            "pct_expressing": 1.0,
+            "is_uncertain": true
           }
         ]
       },
@@ -2512,7 +2544,17 @@
         "pct_expressing": 0.0431,
         "is_rare": false,
         "is_trace": false,
-        "tissues": []
+        "tissues": [
+          {
+            "tissue": "skin of body",
+            "uberon_id": "UBERON:0002097",
+            "mean_log1p_cp10k": 2.4925,
+            "n_expressing": 82,
+            "n_total": 82,
+            "pct_expressing": 1.0,
+            "is_uncertain": true
+          }
+        ]
       },
       {
         "cell_type": "sympathetic neuron",
@@ -2530,7 +2572,8 @@
             "mean_log1p_cp10k": 2.4887,
             "n_expressing": 112,
             "n_total": 3805,
-            "pct_expressing": 0.0294
+            "pct_expressing": 0.0294,
+            "is_uncertain": false
           }
         ]
       }

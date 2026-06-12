@@ -4457,7 +4457,8 @@
             "mean_log1p_cp10k": 3.793,
             "n_expressing": 179,
             "n_total": 191,
-            "pct_expressing": 0.9372
+            "pct_expressing": 0.9372,
+            "is_uncertain": false
           }
         ]
       },
@@ -4477,23 +4478,26 @@
             "mean_log1p_cp10k": 3.8278,
             "n_expressing": 3622,
             "n_total": 5420,
-            "pct_expressing": 0.6683
+            "pct_expressing": 0.6683,
+            "is_uncertain": false
           },
           {
             "tissue": "kidney",
             "uberon_id": "UBERON:0002113",
             "mean_log1p_cp10k": 2.4142,
             "n_expressing": 52,
-            "n_total": 4,
-            "pct_expressing": 13.0
+            "n_total": 52,
+            "pct_expressing": 1.0,
+            "is_uncertain": true
           },
           {
-            "tissue": "breast",
-            "uberon_id": "UBERON:0000310",
-            "mean_log1p_cp10k": 1.6968,
-            "n_expressing": 36,
-            "n_total": 9059,
-            "pct_expressing": 0.004
+            "tissue": "UBERON:0002365",
+            "uberon_id": "UBERON:0002365",
+            "mean_log1p_cp10k": 2.7418,
+            "n_expressing": 47,
+            "n_total": 47,
+            "pct_expressing": 1.0,
+            "is_uncertain": true
           }
         ]
       },
@@ -4513,7 +4517,8 @@
             "mean_log1p_cp10k": 3.7217,
             "n_expressing": 40,
             "n_total": 1137,
-            "pct_expressing": 0.0352
+            "pct_expressing": 0.0352,
+            "is_uncertain": false
           }
         ]
       },
@@ -4526,7 +4531,17 @@
         "pct_expressing": 0.4985,
         "is_rare": false,
         "is_trace": false,
-        "tissues": []
+        "tissues": [
+          {
+            "tissue": "embryo",
+            "uberon_id": "UBERON:0000922",
+            "mean_log1p_cp10k": 3.5464,
+            "n_expressing": 4273,
+            "n_total": 4273,
+            "pct_expressing": 1.0,
+            "is_uncertain": true
+          }
+        ]
       },
       {
         "cell_type": "respiratory tract hillock cell",
@@ -4544,7 +4559,8 @@
             "mean_log1p_cp10k": 3.8905,
             "n_expressing": 59,
             "n_total": 2443,
-            "pct_expressing": 0.0242
+            "pct_expressing": 0.0242,
+            "is_uncertain": false
           },
           {
             "tissue": "lung",
@@ -4552,7 +4568,8 @@
             "mean_log1p_cp10k": 2.693,
             "n_expressing": 49,
             "n_total": 844,
-            "pct_expressing": 0.0581
+            "pct_expressing": 0.0581,
+            "is_uncertain": false
           }
         ]
       },
@@ -4565,7 +4582,17 @@
         "pct_expressing": 0.0049,
         "is_rare": true,
         "is_trace": true,
-        "tissues": []
+        "tissues": [
+          {
+            "tissue": "brain",
+            "uberon_id": "UBERON:0000955",
+            "mean_log1p_cp10k": 3.345,
+            "n_expressing": 1,
+            "n_total": 1,
+            "pct_expressing": 1.0,
+            "is_uncertain": true
+          }
+        ]
       },
       {
         "cell_type": "cell",
@@ -4582,8 +4609,9 @@
             "uberon_id": "UBERON:0000955",
             "mean_log1p_cp10k": 3.2914,
             "n_expressing": 10881,
-            "n_total": 153,
-            "pct_expressing": 71.1176
+            "n_total": 10881,
+            "pct_expressing": 1.0,
+            "is_uncertain": true
           },
           {
             "tissue": "cortex",
@@ -4591,7 +4619,8 @@
             "mean_log1p_cp10k": 3.5038,
             "n_expressing": 557,
             "n_total": 563,
-            "pct_expressing": 0.9893
+            "pct_expressing": 0.9893,
+            "is_uncertain": false
           },
           {
             "tissue": "head",
@@ -4599,7 +4628,8 @@
             "mean_log1p_cp10k": 2.1147,
             "n_expressing": 19,
             "n_total": 28,
-            "pct_expressing": 0.6786
+            "pct_expressing": 0.6786,
+            "is_uncertain": false
           }
         ]
       },
@@ -4619,7 +4649,8 @@
             "mean_log1p_cp10k": 3.2437,
             "n_expressing": 251,
             "n_total": 260,
-            "pct_expressing": 0.9654
+            "pct_expressing": 0.9654,
+            "is_uncertain": false
           }
         ]
       },
@@ -4634,12 +4665,22 @@
         "is_trace": false,
         "tissues": [
           {
+            "tissue": "embryo",
+            "uberon_id": "UBERON:0000922",
+            "mean_log1p_cp10k": 3.2127,
+            "n_expressing": 2200,
+            "n_total": 2200,
+            "pct_expressing": 1.0,
+            "is_uncertain": true
+          },
+          {
             "tissue": "testis",
             "uberon_id": "UBERON:0000473",
             "mean_log1p_cp10k": 1.9548,
             "n_expressing": 47,
             "n_total": 1912,
-            "pct_expressing": 0.0246
+            "pct_expressing": 0.0246,
+            "is_uncertain": false
           },
           {
             "tissue": "ovary",
@@ -4647,15 +4688,8 @@
             "mean_log1p_cp10k": 2.1624,
             "n_expressing": 4,
             "n_total": 1514,
-            "pct_expressing": 0.0026
-          },
-          {
-            "tissue": "adrenal gland",
-            "uberon_id": "UBERON:0002369",
-            "mean_log1p_cp10k": 2.1902,
-            "n_expressing": 4,
-            "n_total": 113,
-            "pct_expressing": 0.0354
+            "pct_expressing": 0.0026,
+            "is_uncertain": false
           }
         ]
       },
@@ -4668,7 +4702,17 @@
         "pct_expressing": 0.0017,
         "is_rare": true,
         "is_trace": true,
-        "tissues": []
+        "tissues": [
+          {
+            "tissue": "colon",
+            "uberon_id": "UBERON:0001155",
+            "mean_log1p_cp10k": 3.1542,
+            "n_expressing": 1,
+            "n_total": 1,
+            "pct_expressing": 1.0,
+            "is_uncertain": true
+          }
+        ]
       }
     ],
     "top_tissues": [

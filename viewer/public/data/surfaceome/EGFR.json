@@ -7317,7 +7317,8 @@
             "mean_log1p_cp10k": 2.8981,
             "n_expressing": 124,
             "n_total": 1137,
-            "pct_expressing": 0.1091
+            "pct_expressing": 0.1091,
+            "is_uncertain": false
           }
         ]
       },
@@ -7336,8 +7337,9 @@
             "uberon_id": "UBERON:0000955",
             "mean_log1p_cp10k": 3.0778,
             "n_expressing": 172687,
-            "n_total": 138673,
-            "pct_expressing": 1.2453
+            "n_total": 172687,
+            "pct_expressing": 1.0,
+            "is_uncertain": true
           },
           {
             "tissue": "lung",
@@ -7345,7 +7347,8 @@
             "mean_log1p_cp10k": 1.9706,
             "n_expressing": 8120,
             "n_total": 76341,
-            "pct_expressing": 0.1064
+            "pct_expressing": 0.1064,
+            "is_uncertain": false
           },
           {
             "tissue": "axilla",
@@ -7353,7 +7356,8 @@
             "mean_log1p_cp10k": 1.688,
             "n_expressing": 7925,
             "n_total": 40778,
-            "pct_expressing": 0.1943
+            "pct_expressing": 0.1943,
+            "is_uncertain": false
           }
         ]
       },
@@ -7373,7 +7377,8 @@
             "mean_log1p_cp10k": 2.8543,
             "n_expressing": 13,
             "n_total": 287,
-            "pct_expressing": 0.0453
+            "pct_expressing": 0.0453,
+            "is_uncertain": false
           }
         ]
       },
@@ -7393,7 +7398,8 @@
             "mean_log1p_cp10k": 2.8455,
             "n_expressing": 4203,
             "n_total": 7295,
-            "pct_expressing": 0.5761
+            "pct_expressing": 0.5761,
+            "is_uncertain": false
           }
         ]
       },
@@ -7406,7 +7412,17 @@
         "pct_expressing": 0.4901,
         "is_rare": false,
         "is_trace": false,
-        "tissues": []
+        "tissues": [
+          {
+            "tissue": "UBERON:0001015",
+            "uberon_id": "UBERON:0001015",
+            "mean_log1p_cp10k": 2.7951,
+            "n_expressing": 2898,
+            "n_total": 2898,
+            "pct_expressing": 1.0,
+            "is_uncertain": true
+          }
+        ]
       },
       {
         "cell_type": "neuroendocrine cell",
@@ -7424,7 +7440,8 @@
             "mean_log1p_cp10k": 2.8182,
             "n_expressing": 152,
             "n_total": 14905,
-            "pct_expressing": 0.0102
+            "pct_expressing": 0.0102,
+            "is_uncertain": false
           },
           {
             "tissue": "prostate gland",
@@ -7432,7 +7449,8 @@
             "mean_log1p_cp10k": 2.0457,
             "n_expressing": 6,
             "n_total": 79,
-            "pct_expressing": 0.0759
+            "pct_expressing": 0.0759,
+            "is_uncertain": false
           },
           {
             "tissue": "intestine",
@@ -7440,7 +7458,8 @@
             "mean_log1p_cp10k": 1.5447,
             "n_expressing": 2,
             "n_total": 216,
-            "pct_expressing": 0.0093
+            "pct_expressing": 0.0093,
+            "is_uncertain": false
           }
         ]
       },
@@ -7460,7 +7479,8 @@
             "mean_log1p_cp10k": 2.7554,
             "n_expressing": 1,
             "n_total": 260,
-            "pct_expressing": 0.0038
+            "pct_expressing": 0.0038,
+            "is_uncertain": false
           }
         ]
       },
@@ -7473,7 +7493,17 @@
         "pct_expressing": 0.2905,
         "is_rare": false,
         "is_trace": false,
-        "tissues": []
+        "tissues": [
+          {
+            "tissue": "embryo",
+            "uberon_id": "UBERON:0000922",
+            "mean_log1p_cp10k": 2.6059,
+            "n_expressing": 2490,
+            "n_total": 2490,
+            "pct_expressing": 1.0,
+            "is_uncertain": true
+          }
+        ]
       },
       {
         "cell_type": "basal epithelial cell of tracheobronchial tree",
@@ -7491,7 +7521,8 @@
             "mean_log1p_cp10k": 2.5803,
             "n_expressing": 4250,
             "n_total": 8145,
-            "pct_expressing": 0.5218
+            "pct_expressing": 0.5218,
+            "is_uncertain": false
           }
         ]
       },
@@ -7510,8 +7541,9 @@
             "uberon_id": "UBERON:0002048",
             "mean_log1p_cp10k": 2.5702,
             "n_expressing": 259,
-            "n_total": 14,
-            "pct_expressing": 18.5
+            "n_total": 259,
+            "pct_expressing": 1.0,
+            "is_uncertain": true
           }
         ]
       }
