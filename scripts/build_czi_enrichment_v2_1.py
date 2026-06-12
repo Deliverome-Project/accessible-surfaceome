@@ -260,11 +260,24 @@ def classify_hpa(
     if best_group_size >= 2:
         return ("group_enriched", ids[:best_group_size], best_group_fold)
 
-    # enhanced: top >= 4× mean of rest (rest = all other entities in
-    # the universe, including the implicit zeros).
-    rest = linear[1:]
-    if rest:
-        avg_rest = sum(rest) / len(rest)
+    # enhanced: top >= 4× mean of rest.
+    #
+    # **Rest = OTHER ELIGIBLES, NOT the full universe.** This is
+    # asymmetric with the enriched / group_enriched tests above,
+    # which DO use the zero-baseline universe. The reason: enhanced
+    # asks "does the top stand out vs the typical entity that
+    # expresses the gene?" — a question about the shape of the
+    # expressed distribution, not the share-of-universe. Including
+    # ~50 zeros in the denominator drags the average down to ~0.5
+    # and EVERY broadly-expressed gene's top entity reads as 4×
+    # over the average. EGFR's tendon (linear ~11) becomes
+    # "enhanced over avg ~1" not because tendon is special but
+    # because most tissues are at zero in the broader universe.
+    # Compare only among eligibles — if no eligible dominates the
+    # mean of the rest, it's broadly expressed (low_specificity).
+    rest_eligibles = [v for _, v in eligible[1:]]
+    if rest_eligibles:
+        avg_rest = sum(rest_eligibles) / len(rest_eligibles)
         if avg_rest > 0 and linear[0] >= HPA_FOLD * avg_rest:
             return "enhanced", [ids[0]], linear[0] / avg_rest
         if avg_rest == 0 and linear[0] > 0:
