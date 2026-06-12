@@ -204,15 +204,6 @@ export default async function GenePage({ params }: PageProps) {
       label: FEATURE_TAB_LABEL.expression,
       render: (n) => <ExpressionCard rec={rec} n={n} />,
     },
-    // CellxGene RNA enrichment sits next to the deep-dive expression tab
-    // because both answer the "where is this gene expressed" question;
-    // Expression is the LLM-synthesized prose + per-tissue evidence
-    // table, CellxGene is the WMG single-cell read.
-    {
-      kind: "cellxgene",
-      label: "CellxGene",
-      render: (n) => <CellxGeneCard data={cellxgene} n={n} />,
-    },
     // Risks promoted above the evolutionary-context group per user
     // feedback — accessibility risks are higher-priority reading than
     // the isoform / ortholog / paralog comparison that follows it.
@@ -240,6 +231,17 @@ export default async function GenePage({ params }: PageProps) {
           },
         ]
       : []),
+    // CellxGene RNA enrichment sits AFTER SURFACE-Bind per user
+    // feedback. Originally placed next to the deep-dive expression
+    // tab (both answer "where is this gene expressed?"), but the
+    // CellxGene chart is a heavier read than Expression — it makes
+    // more sense in the second pass after the structural / risks /
+    // SURFACE-Bind story lands.
+    {
+      kind: "cellxgene",
+      label: "CellxGene",
+      render: (n) => <CellxGeneCard data={cellxgene} n={n} />,
+    },
     // Evolutionary context — isoforms + orthologs + paralogs combined
     // into one section per user feedback. The previous three-tab split
     // each had its own AnchorNav entry so empty subsections stayed
