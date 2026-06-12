@@ -1393,6 +1393,13 @@ export interface SurfaceomeRecord {
    *  which capture tool-fetch time). */
   record_generated_at: string;
   model_path: string;
+  /** Layered annotation: CellxGene RNA enrichment.
+   *  Embedded by ``scripts/embed_cellxgene_into_records.py`` AFTER
+   *  the deep-dive synthesis (not a deep-dive output). Typed
+   *  loosely as a dict here; the structured shape lives in
+   *  ``viewer/lib/cellxgene-enrichment.ts`` as ``CellxGeneEnrichment``.
+   *  ``null`` for records the cellxgene build hasn't covered yet. */
+  cellxgene: Record<string, unknown> | null;
 }
 
 
