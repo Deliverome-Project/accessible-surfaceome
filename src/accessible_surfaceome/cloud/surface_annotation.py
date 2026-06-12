@@ -525,12 +525,23 @@ def _publish_dict(
     pretty_snapshot: bool,
     force: bool = False,
     cohort_run_id: str | None = None,
+    skip_purge: bool = False,
 ) -> PublishResult:
     """Shared core: write the snapshot + push to D1 from a raw record dict.
 
     ``cohort_run_id`` (optional) is stamped on the published D1 row and
     is propagated through to ``_row_from_dict``. ``None`` for ad-hoc
     single-gene publishes; set by the cohort sweep driver.
+
+    ``skip_purge`` (default ``False``) suppresses the per-gene Cloudflare
+    edge-cache purge after the D1 write. Default-on purge is the right
+    posture for single-gene publishes (agent-time, hand-edits) so the new
+    record goes live immediately. Set ``skip_purge=True`` for bulk loads
+    where N × 3 per-gene purges would exhaust Cloudflare's purge-cache
+    rate limit (~1k/day on free, ~30k/h on Pro); cached responses then
+    fall off via the Worker's Cache-Control TTL (≤ 1 day) instead of
+    immediately. Records still land in D1 atomically — only the edge
+    cache freshness shifts.
     """
     gene = rec_dict.get("gene") or {}
     sym = gene.get("hgnc_symbol")
@@ -714,7 +725,13 @@ def _publish_dict(
         # purge reuses the D1 token (same Cloudflare account), so the only
         # extra requirement is CLOUDFLARE_ZONE_ID + a Cache Purge scope on
         # the token; missing either soft-skips with a warning.
-        cache_purged = _maybe_purge(sym, token=cfg.api_token, client=client)
+        if skip_purge:
+            cache_purged = None
+            logger.info(
+                "skip-purge for %s — record live on Worker TTL (≤1 day)", sym
+            )
+        else:
+            cache_purged = _maybe_purge(sym, token=cfg.api_token, client=client)
 
     return PublishResult(
         gene_symbol=sym,
@@ -792,6 +809,7 @@ def publish_record_dict(
     pretty_snapshot: bool = True,
     force: bool = False,
     cohort_run_id: str | None = None,
+    skip_purge: bool = False,
 ) -> PublishResult:
     """Push a raw record dict — no Pydantic validation.
 
@@ -808,6 +826,10 @@ def publish_record_dict(
     push that content to D1.
 
     ``cohort_run_id`` is the optional sweep tag — see :func:`publish_record`.
+
+    ``skip_purge`` (default ``False``) — see ``_publish_dict``. Use
+    ``True`` for bulk loads where per-gene cache purges would saturate
+    Cloudflare's purge-cache rate limit.
     """
     return _publish_dict(
         rec_dict,
@@ -817,4 +839,5 @@ def publish_record_dict(
         pretty_snapshot=pretty_snapshot,
         force=force,
         cohort_run_id=cohort_run_id,
+        skip_purge=skip_purge,
     )

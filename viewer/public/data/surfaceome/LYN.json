@@ -2254,5 +2254,608 @@
   "confidence": "high",
   "confidence_reasoning": "Confidence is high because the canonical inner-leaflet topology of LYN is corroborated by multiple independent lines of evidence: review-level consensus on Src-family myristoylation, palmitoylation biochemistry at Gly2/Cys3, use as a validated inner-leaflet PM reference sensor in published BRET assays, and E3-ligase regulation of its N-terminally processed cytoplasmic form. No deep-dive evidence surfaced any ectopic outer-leaflet exposure, cancer-state topological inversion, or surface-proteomics detection of LYN on intact cells. The triage call of inner-leaflet-anchored is fully consistent with A1 and A2 findings; no override is required.",
   "model_path": "claude-sonnet-4-6",
-  "record_generated_at": "2026-05-31T15:31:28.680125Z"
+  "record_generated_at": "2026-05-31T15:31:28.680125Z",
+  "cellxgene": {
+    "schema_version": "2.1.12",
+    "census_version": "2025-11-08",
+    "cell_class_enrichment": {
+      "class": "enhanced",
+      "class_ids": [
+        "Immune",
+        "Epithelial",
+        "Endothelial"
+      ],
+      "class_labels": [
+        "Immune",
+        "Epithelial",
+        "Endothelial"
+      ],
+      "fold_change": 2.158,
+      "fold_change_infinite": false,
+      "tau": 0.8064848265515644,
+      "top_entity_contribs": [
+        {
+          "id": "Immune",
+          "label": "Immune",
+          "pop_mean": 8.4344,
+          "tau_contrib": 0.0
+        },
+        {
+          "id": "Epithelial",
+          "label": "Epithelial",
+          "pop_mean": 3.9081,
+          "tau_contrib": 0.5366
+        },
+        {
+          "id": "Endothelial",
+          "label": "Endothelial",
+          "pop_mean": 2.8554,
+          "tau_contrib": 0.6615
+        }
+      ]
+    },
+    "cell_family_enrichment": {
+      "class": "enriched",
+      "family_ids": [
+        "CL:0000094",
+        "CL:0000576",
+        "CL:0000878"
+      ],
+      "family_labels": [
+        "granulocyte",
+        "monocyte",
+        "central nervous system macrophage"
+      ],
+      "top_cl_labels": [
+        "neutrophil",
+        "CD14-low, CD16-positive monocyte",
+        "central nervous system macrophage"
+      ],
+      "fold_change": 1.074,
+      "fold_change_infinite": false,
+      "tau": 0.94286253143509,
+      "top_entity_contribs": [
+        {
+          "id": "CL:0000094",
+          "label": "granulocyte",
+          "pop_mean": 8.4344,
+          "tau_contrib": 0.0,
+          "sub_label": "neutrophil"
+        },
+        {
+          "id": "CL:0000576",
+          "label": "monocyte",
+          "pop_mean": 7.85,
+          "tau_contrib": 0.0693,
+          "sub_label": "CD14-low, CD16-positive monocyte"
+        },
+        {
+          "id": "CL:0000878",
+          "label": "central nervous system macrophage",
+          "pop_mean": 5.1312,
+          "tau_contrib": 0.3916
+        }
+      ]
+    },
+    "cell_type_enrichment": {
+      "class": "enriched",
+      "cl_ids": [
+        "CL:0000775",
+        "CL:0002396",
+        "CL:0000096"
+      ],
+      "fold_change": 1.074,
+      "fold_change_infinite": false,
+      "tau": 0.9617550078462945,
+      "top_entity_contribs": [
+        {
+          "id": "CL:0000775",
+          "label": "neutrophil",
+          "pop_mean": 8.4344,
+          "tau_contrib": 0.0
+        },
+        {
+          "id": "CL:0002396",
+          "label": "CD14-low, CD16-positive monocyte",
+          "pop_mean": 7.85,
+          "tau_contrib": 0.0693
+        },
+        {
+          "id": "CL:0000096",
+          "label": "mature neutrophil",
+          "pop_mean": 5.4978,
+          "tau_contrib": 0.3482
+        }
+      ]
+    },
+    "tissue_enrichment": {
+      "class": "enriched",
+      "uberon_ids": [
+        "UBERON:0001913",
+        "UBERON:0001836",
+        "UBERON:0000995"
+      ],
+      "tissue_labels": [
+        "milk",
+        "saliva",
+        "uterus"
+      ],
+      "fold_change": 1.257,
+      "fold_change_infinite": false,
+      "tau": 0.9887059111391504,
+      "top_entity_contribs": [
+        {
+          "id": "UBERON:0001913",
+          "label": "milk",
+          "pop_mean": 6.3533,
+          "tau_contrib": 0.0
+        },
+        {
+          "id": "UBERON:0001836",
+          "label": "saliva",
+          "pop_mean": 5.0539,
+          "tau_contrib": 0.2045
+        },
+        {
+          "id": "UBERON:0000995",
+          "label": "uterus",
+          "pop_mean": 2.3278,
+          "tau_contrib": 0.6336
+        }
+      ]
+    },
+    "tissue_category_enrichment": {
+      "class": "enriched",
+      "category_ids": [
+        "fluids_other",
+        "reproductive",
+        "lymphoid"
+      ],
+      "category_labels": [
+        "fluids_other",
+        "reproductive",
+        "lymphoid"
+      ],
+      "top_tissues": [
+        "milk",
+        "uterus",
+        "lymph node"
+      ],
+      "fold_change": 2.729,
+      "fold_change_infinite": false,
+      "tau": 0.8617861071615783,
+      "top_entity_contribs": [
+        {
+          "id": "fluids_other",
+          "label": "fluids_other",
+          "pop_mean": 6.3533,
+          "tau_contrib": 0.0,
+          "sub_label": "milk"
+        },
+        {
+          "id": "reproductive",
+          "label": "reproductive",
+          "pop_mean": 2.3278,
+          "tau_contrib": 0.6336,
+          "sub_label": "uterus"
+        },
+        {
+          "id": "lymphoid",
+          "label": "lymphoid",
+          "pop_mean": 2.0843,
+          "tau_contrib": 0.6719,
+          "sub_label": "lymph node"
+        }
+      ]
+    },
+    "tissue_organ_enrichment": {
+      "class": "enriched",
+      "organ_ids": [
+        "UBERON:0001913",
+        "UBERON:0001836",
+        "UBERON:0000995"
+      ],
+      "organ_labels": [
+        "milk",
+        "saliva",
+        "uterus"
+      ],
+      "top_uberon_labels": [
+        "milk",
+        "saliva",
+        "uterus"
+      ],
+      "fold_change": 1.257,
+      "fold_change_infinite": false,
+      "tau": 0.9847749602560346,
+      "top_entity_contribs": [
+        {
+          "id": "UBERON:0001913",
+          "label": "milk",
+          "pop_mean": 6.3533,
+          "tau_contrib": 0.0
+        },
+        {
+          "id": "UBERON:0001836",
+          "label": "saliva",
+          "pop_mean": 5.0539,
+          "tau_contrib": 0.2045
+        },
+        {
+          "id": "UBERON:0000995",
+          "label": "uterus",
+          "pop_mean": 2.3278,
+          "tau_contrib": 0.6336
+        }
+      ]
+    },
+    "enrichment_class": "enhanced",
+    "enrichment_cl_ids": [
+      "Immune",
+      "Epithelial",
+      "Endothelial"
+    ],
+    "fold_change": 2.158,
+    "fold_change_infinite": false,
+    "top_cell_types": [
+      {
+        "cell_type": "neutrophil",
+        "cl_id": "CL:0000775",
+        "mean_log1p_cp10k": 2.8285,
+        "n_expressing": 97180,
+        "n_total": 183432,
+        "pct_expressing": 0.5298,
+        "is_rare": false,
+        "is_trace": false,
+        "tissues": [
+          {
+            "tissue": "blood",
+            "uberon_id": "UBERON:0000178",
+            "mean_log1p_cp10k": 3.1388,
+            "n_expressing": 32679,
+            "n_total": 36089,
+            "pct_expressing": 0.9055
+          },
+          {
+            "tissue": "liver",
+            "uberon_id": "UBERON:0002107",
+            "mean_log1p_cp10k": 2.5733,
+            "n_expressing": 16043,
+            "n_total": 24285,
+            "pct_expressing": 0.6606
+          },
+          {
+            "tissue": "spleen",
+            "uberon_id": "UBERON:0002106",
+            "mean_log1p_cp10k": 2.9917,
+            "n_expressing": 14146,
+            "n_total": 16610,
+            "pct_expressing": 0.8517
+          }
+        ]
+      },
+      {
+        "cell_type": "CD14-low, CD16-positive monocyte",
+        "cl_id": "CL:0002396",
+        "mean_log1p_cp10k": 2.3013,
+        "n_expressing": 396859,
+        "n_total": 454338,
+        "pct_expressing": 0.8735,
+        "is_rare": false,
+        "is_trace": false,
+        "tissues": [
+          {
+            "tissue": "blood",
+            "uberon_id": "UBERON:0000178",
+            "mean_log1p_cp10k": 2.3015,
+            "n_expressing": 396509,
+            "n_total": 453547,
+            "pct_expressing": 0.8742
+          },
+          {
+            "tissue": "lung",
+            "uberon_id": "UBERON:0002048",
+            "mean_log1p_cp10k": 1.7969,
+            "n_expressing": 102,
+            "n_total": 295,
+            "pct_expressing": 0.3458
+          }
+        ]
+      },
+      {
+        "cell_type": "mature neutrophil",
+        "cl_id": "CL:0000096",
+        "mean_log1p_cp10k": 2.3468,
+        "n_expressing": 527,
+        "n_total": 906,
+        "pct_expressing": 0.5817,
+        "is_rare": true,
+        "is_trace": false,
+        "tissues": []
+      },
+      {
+        "cell_type": "central nervous system macrophage",
+        "cl_id": "CL:0000878",
+        "mean_log1p_cp10k": 2.159,
+        "n_expressing": 140403,
+        "n_total": 209669,
+        "pct_expressing": 0.6696,
+        "is_rare": false,
+        "is_trace": false,
+        "tissues": [
+          {
+            "tissue": "spinal cord",
+            "uberon_id": "UBERON:0002240",
+            "mean_log1p_cp10k": 2.1885,
+            "n_expressing": 1026,
+            "n_total": 1676,
+            "pct_expressing": 0.6122
+          }
+        ]
+      },
+      {
+        "cell_type": "CD14-positive monocyte",
+        "cl_id": "CL:0001054",
+        "mean_log1p_cp10k": 2.3042,
+        "n_expressing": 341536,
+        "n_total": 706897,
+        "pct_expressing": 0.4831,
+        "is_rare": false,
+        "is_trace": false,
+        "tissues": [
+          {
+            "tissue": "blood",
+            "uberon_id": "UBERON:0000178",
+            "mean_log1p_cp10k": 2.3218,
+            "n_expressing": 329766,
+            "n_total": 662327,
+            "pct_expressing": 0.4979
+          },
+          {
+            "tissue": "bone marrow",
+            "uberon_id": "UBERON:0002371",
+            "mean_log1p_cp10k": 1.7701,
+            "n_expressing": 9605,
+            "n_total": 34424,
+            "pct_expressing": 0.279
+          },
+          {
+            "tissue": "lung",
+            "uberon_id": "UBERON:0002048",
+            "mean_log1p_cp10k": 2.0796,
+            "n_expressing": 1263,
+            "n_total": 1550,
+            "pct_expressing": 0.8148
+          }
+        ]
+      },
+      {
+        "cell_type": "Hofbauer cell",
+        "cl_id": "CL:3000001",
+        "mean_log1p_cp10k": 2.0424,
+        "n_expressing": 32943,
+        "n_total": 52563,
+        "pct_expressing": 0.6267,
+        "is_rare": false,
+        "is_trace": false,
+        "tissues": [
+          {
+            "tissue": "placenta",
+            "uberon_id": "UBERON:0001987",
+            "mean_log1p_cp10k": 2.0424,
+            "n_expressing": 32941,
+            "n_total": 46322,
+            "pct_expressing": 0.7111
+          },
+          {
+            "tissue": "blood",
+            "uberon_id": "UBERON:0000178",
+            "mean_log1p_cp10k": 2.3603,
+            "n_expressing": 2,
+            "n_total": 7,
+            "pct_expressing": 0.2857
+          }
+        ]
+      },
+      {
+        "cell_type": "tissue-resident macrophage",
+        "cl_id": "CL:0000864",
+        "mean_log1p_cp10k": 2.1396,
+        "n_expressing": 723,
+        "n_total": 1355,
+        "pct_expressing": 0.5336,
+        "is_rare": false,
+        "is_trace": false,
+        "tissues": [
+          {
+            "tissue": "testis",
+            "uberon_id": "UBERON:0000473",
+            "mean_log1p_cp10k": 1.8384,
+            "n_expressing": 20,
+            "n_total": 54,
+            "pct_expressing": 0.3704
+          }
+        ]
+      },
+      {
+        "cell_type": "mucus secreting cell of tracheobronchial tree submucosal gland",
+        "cl_id": "CL:4033037",
+        "mean_log1p_cp10k": 2.6683,
+        "n_expressing": 386,
+        "n_total": 1325,
+        "pct_expressing": 0.2913,
+        "is_rare": false,
+        "is_trace": false,
+        "tissues": [
+          {
+            "tissue": "lung",
+            "uberon_id": "UBERON:0002048",
+            "mean_log1p_cp10k": 2.6683,
+            "n_expressing": 386,
+            "n_total": 859,
+            "pct_expressing": 0.4494
+          }
+        ]
+      },
+      {
+        "cell_type": "mature microglial cell",
+        "cl_id": "CL:0002629",
+        "mean_log1p_cp10k": 2.3977,
+        "n_expressing": 9883,
+        "n_total": 26211,
+        "pct_expressing": 0.3771,
+        "is_rare": false,
+        "is_trace": false,
+        "tissues": []
+      },
+      {
+        "cell_type": "non-classical monocyte",
+        "cl_id": "CL:0000875",
+        "mean_log1p_cp10k": 2.071,
+        "n_expressing": 106429,
+        "n_total": 197117,
+        "pct_expressing": 0.5399,
+        "is_rare": false,
+        "is_trace": false,
+        "tissues": [
+          {
+            "tissue": "blood",
+            "uberon_id": "UBERON:0000178",
+            "mean_log1p_cp10k": 2.0361,
+            "n_expressing": 73674,
+            "n_total": 138586,
+            "pct_expressing": 0.5316
+          },
+          {
+            "tissue": "lung",
+            "uberon_id": "UBERON:0002048",
+            "mean_log1p_cp10k": 2.1868,
+            "n_expressing": 23537,
+            "n_total": 24961,
+            "pct_expressing": 0.943
+          },
+          {
+            "tissue": "bone marrow",
+            "uberon_id": "UBERON:0002371",
+            "mean_log1p_cp10k": 1.9551,
+            "n_expressing": 4427,
+            "n_total": 11120,
+            "pct_expressing": 0.3981
+          }
+        ]
+      }
+    ],
+    "top_tissues": [
+      {
+        "tissue": "adipose tissue",
+        "uberon_id": "UBERON:0001013",
+        "mean_log1p_cp10k": 2.2493,
+        "n_expressing": 19161,
+        "n_total": 19161,
+        "pct_expressing": 1.0,
+        "score": 8.481,
+        "is_trace": false,
+        "is_stale_denominator": true
+      },
+      {
+        "tissue": "endocrine gland",
+        "uberon_id": "UBERON:0002368",
+        "mean_log1p_cp10k": 2.1776,
+        "n_expressing": 5148,
+        "n_total": 5148,
+        "pct_expressing": 1.0,
+        "score": 7.8255,
+        "is_trace": false,
+        "is_stale_denominator": true
+      },
+      {
+        "tissue": "exocrine gland",
+        "uberon_id": "UBERON:0002365",
+        "mean_log1p_cp10k": 2.1505,
+        "n_expressing": 6078,
+        "n_total": 6078,
+        "pct_expressing": 1.0,
+        "score": 7.5894,
+        "is_trace": false,
+        "is_stale_denominator": true
+      },
+      {
+        "tissue": "musculature",
+        "uberon_id": "UBERON:0001015",
+        "mean_log1p_cp10k": 2.0056,
+        "n_expressing": 3499,
+        "n_total": 3499,
+        "pct_expressing": 1.0,
+        "score": 6.4304,
+        "is_trace": false,
+        "is_stale_denominator": true
+      },
+      {
+        "tissue": "eye",
+        "uberon_id": "UBERON:0000970",
+        "mean_log1p_cp10k": 1.8709,
+        "n_expressing": 172206,
+        "n_total": 174328,
+        "pct_expressing": 0.9878,
+        "score": 5.4271,
+        "is_trace": false,
+        "is_stale_denominator": true
+      },
+      {
+        "tissue": "saliva",
+        "uberon_id": "UBERON:0001836",
+        "mean_log1p_cp10k": 2.3062,
+        "n_expressing": 4079,
+        "n_total": 7293,
+        "pct_expressing": 0.5593,
+        "score": 5.0539,
+        "is_trace": false,
+        "is_stale_denominator": false
+      },
+      {
+        "tissue": "heart",
+        "uberon_id": "UBERON:0000948",
+        "mean_log1p_cp10k": 1.8841,
+        "n_expressing": 34194,
+        "n_total": 38244,
+        "pct_expressing": 0.8941,
+        "score": 4.9894,
+        "is_trace": false,
+        "is_stale_denominator": true
+      },
+      {
+        "tissue": "vasculature",
+        "uberon_id": "UBERON:0002049",
+        "mean_log1p_cp10k": 1.7898,
+        "n_expressing": 2820,
+        "n_total": 2820,
+        "pct_expressing": 1.0,
+        "score": 4.9885,
+        "is_trace": false,
+        "is_stale_denominator": true
+      },
+      {
+        "tissue": "uterus",
+        "uberon_id": "UBERON:0000995",
+        "mean_log1p_cp10k": 1.6526,
+        "n_expressing": 1820,
+        "n_total": 1864,
+        "pct_expressing": 0.9764,
+        "score": 4.1209,
+        "is_trace": false,
+        "is_stale_denominator": true
+      },
+      {
+        "tissue": "mucosa",
+        "uberon_id": "UBERON:0000344",
+        "mean_log1p_cp10k": 1.8157,
+        "n_expressing": 1671,
+        "n_total": 2602,
+        "pct_expressing": 0.6422,
+        "score": 3.3043,
+        "is_trace": false,
+        "is_stale_denominator": true
+      }
+    ]
+  }
 }

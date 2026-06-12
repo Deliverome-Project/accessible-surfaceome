@@ -2083,3 +2083,35 @@ This Markdown is generated from the canonical JSON record at `/data/surfaceome/F
 - UniProt — CC BY 4.0 (UniProt Consortium)
 
 *Confidence moderate — Confidence is moderate for two reasons. First, the direct surface-accessibility evidence comes from a single primary method (cell-surface capture mass spectrometry on chondrogenic cells, PMC12777226, and µCSC in cardiac tissue, PMC10030153); IHC data are from permeabilized/fixed tissue and cannot distinguish surface from intracellular FN1. Second, the dominant biological pool is the hepatocyte-secreted plasma fibronectin, which circulates freely in blood — a genuine high-severity decoy that complicates antibody-based targeting. Surface membranous FN1 is disease-state-enriched (tumor, fibrosis, cardiac failure) and absent in normal liver (PMC11907257), so confidence in a constitutive surface call is low; confidence in the disease-state surface call is moderate. To lift confidence, non-permeabilized live-cell flow cytometry or surface-capture MS in human tumor cell lines, combined with direct plasma/serum competition experiments, would be needed.*
+
+## CellxGene RNA enrichment (CZI Census)
+
+*Schema v2.1.12 · CZI Census 2025-11-08 · τ-cutoff classification (Yanai 2005, PMID 15388519) on linear population mean (mean × pct, ≈ nTPM) over the full measured universe with a 1e-3 noise floor: τ≥0.85 enriched, 0.5–0.85 enhanced, <0.5 low specificity, no eligibles not detected. Cutoffs from Kryuchkova-Mostacci & Robinson-Rechavi 2017 (PMID 26891983) + Lüleci & Yılmaz 2022. Cell ontology graph (cl-basic.obo) walked to ~150 cell-family terms; UBERON ontology walked to ~150 organ-level tissues. CC-BY 4.0 (CZI Census).*
+
+**Classification:**
+
+- **Cell class (CL ontology graph, ~10 compartments):** enhanced · Stromal · Other · Endothelial · 1.0× · τ=0.55
+- **Cell type (leaf Cell Ontology terms, ~600):** enriched · cycling stromal cell · cell · embryonic fibroblast · 1.0× · τ=0.96
+- **Tissue (UBERON terms, ~56):** enriched · mucosa · placenta · skin of body · 1.3× · τ=0.99
+
+**Top 5 cell types (leaf CL, pooled across tissues):**
+
+| Cell type | CL ID | Mean log1p(CP10K) | % expressing | n_expressing / n_total |
+|---|---|---|---|---|
+| cycling stromal cell | CL:4047001 | 3.244 | 96.54% | 251 / 260 |
+| cell | CL:0000000 | 3.298 | 90.93% | 11,469 / 12,613 |
+| embryonic fibroblast | CL:2000042 | 3.117 | 94.98% | 11,223 / 11,816 |
+| pulmonary interstitial fibroblast | CL:0002241 | 2.980 | 98.02% | 8,179 / 8,344 |
+| endodermal cell | CL:0000223 | 3.546 | 49.85% | 4,273 / 8,571 |
+
+**Top 5 tissues (UBERON, pooled across cell types):**
+
+| Tissue | UBERON ID | Mean log1p(CP10K) | % expressing | n_expressing / n_total |
+|---|---|---|---|---|
+| esophagus | UBERON:0001043 | 3.104 | 67.70% | 6,019 / 8,891 |
+| exocrine gland | UBERON:0002365 | 2.408 | 100.00% | 2,528 / 2,528 |
+| embryo | UBERON:0000922 | 2.561 | 80.98% | 30,315 / 37,436 |
+| heart | UBERON:0000948 | 2.338 | 98.28% | 235,627 / 239,762 |
+| musculature | UBERON:0001015 | 2.188 | 100.00% | 19,151 / 19,151 |
+
+<!-- /cellxgene -->

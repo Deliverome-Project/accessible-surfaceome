@@ -3738,8 +3738,8 @@ class SurfaceomeRecord(BaseModel):
     schema_version: Literal[
         "1.0.0", "1.1.0", "2.0.0", "2.1.0", "2.2.0", "2.3.0", "2.4.0", "2.4.1",
         "2.5.0", "2.6.0", "2.7.0", "2.8.0", "2.9.0", "2.10.0", "2.11.0", "2.12.0",
-        "2.13.0",
-    ] = "2.13.0"
+        "2.13.0", "2.14.0",
+    ] = "2.14.0"
     # The prompt corpus version active when this record was synthesized.
     # Default ``""`` for backward-compat with legacy records loaded from D1
     # / on-disk snapshots that pre-date this field; new annotator runs stamp
@@ -3798,6 +3798,17 @@ class SurfaceomeRecord(BaseModel):
     )
     model_path: str
     record_generated_at: datetime
+
+    # **Layered annotation: CellxGene RNA enrichment.** Embedded by
+    # ``scripts/embed_cellxgene_into_records.py`` into the per-gene
+    # snapshot AFTER the deep-dive synthesis, NOT a deep-dive output.
+    # Typed loosely as a dict here so the Pydantic gate accepts it
+    # without coupling the deep-dive schema to the cellxgene record
+    # shape; the canonical TypeScript shape lives at
+    # ``viewer/lib/cellxgene-enrichment.ts``. ``None`` for records
+    # the cellxgene build hasn't covered yet — the viewer renders
+    # only when the field is populated.
+    cellxgene: dict[str, Any] | None = None
 
     _PROSE_TARGETS: ClassVar[dict[str, int]] = {"confidence_reasoning": 600}
 
@@ -3939,8 +3950,8 @@ class SurfaceomeRecordDraft(BaseModel):
     schema_version: Literal[
         "1.0.0", "1.1.0", "2.0.0", "2.1.0", "2.2.0", "2.3.0", "2.4.0", "2.4.1",
         "2.5.0", "2.6.0", "2.7.0", "2.8.0", "2.9.0", "2.10.0", "2.11.0", "2.12.0",
-        "2.13.0",
-    ] = "2.13.0"
+        "2.13.0", "2.14.0",
+    ] = "2.14.0"
     # The prompt corpus version active when this record was synthesized.
     # Default ``""`` for backward-compat with legacy records loaded from D1
     # / on-disk snapshots that pre-date this field; new annotator runs stamp

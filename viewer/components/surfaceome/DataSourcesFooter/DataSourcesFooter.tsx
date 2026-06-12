@@ -12,6 +12,10 @@ interface Props {
  * record. Adding a new deterministic source means stamping the
  * `source` / `license` / `attribution` fields on its block and then
  * adding a line here.
+ *
+ * Source list is sorted alphabetically by source name so attribution
+ * is in a predictable order — reader scans by name not by section
+ * authorship history.
  */
 export function DataSourcesFooter({ rec }: Props) {
   const df = rec.deterministic_features;
@@ -22,17 +26,43 @@ export function DataSourcesFooter({ rec }: Props) {
     <aside className={styles.footer} aria-label="Data sources">
       <p className={`label-mono ${styles.label}`}>Data sources</p>
       <ul className={styles.list}>
+        {/* AlphaFold */}
         <li>
           AlphaFold DB structures — {df.structure.license} ({df.structure.attribution})
         </li>
+        {/* CZI CELLxGENE */}
+        <li>
+          CZI CELLxGENE Census single-cell expression — per-gene
+          tissue + cell-type enrichment summaries (Census release{" "}
+          <code>2025-11-08</code>; WMG / Where&apos;s My Gene condensed
+          export) ·{" "}
+          <a
+            href={pubmedUrl(CITATIONS.czCellxgene.pmid)}
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            {CITATIONS.czCellxgene.authorYear}
+          </a>{" "}
+          · CC BY 4.0 (CZI Cell Science Program) ·{" "}
+          <a
+            href="https://cellxgene.cziscience.com/"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            cellxgene.cziscience.com
+          </a>
+        </li>
+        {/* DeepTMHMM */}
         <li>
           DeepTMHMM topology — {deeptmhmm} · DTU Health Tech (Hallgren et al. 2022)
         </li>
+        {/* Ensembl Compara */}
         <li>
           Ensembl Compara orthologs &amp; paralogs
           {comparaVersion ? ` — ${comparaVersion} ` : " — "}
           open data with citation (EMBL-EBI; Howe et al. 2024 + Vilella et al. 2009)
         </li>
+        {/* Schweke */}
         <li>
           Schweke homo-oligomer atlas — AF2 dimer predictions across
           four proteomes; 8,195 candidate complexes including ~3,946
@@ -54,6 +84,7 @@ export function DataSourcesFooter({ rec }: Props) {
             figshare deposit
           </a>
         </li>
+        {/* SURFACE-Bind */}
         <li>
           SURFACE-Bind binding-site scoring — MaSIF-based surface patch
           scoring on the AlphaFold model ({CITATIONS.surfaceBind.authorYear},{" "}
@@ -73,6 +104,7 @@ export function DataSourcesFooter({ rec }: Props) {
             surface-bind.inria.fr
           </a>
         </li>
+        {/* UniProt */}
         <li>UniProt — CC BY 4.0 (UniProt Consortium)</li>
       </ul>
     </aside>

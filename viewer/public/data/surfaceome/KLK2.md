@@ -473,3 +473,35 @@ This Markdown is generated from the canonical JSON record at `/data/surfaceome/K
 - UniProt — CC BY 4.0 (UniProt Consortium)
 
 *Confidence moderate — Confidence is moderate for two reasons. First, the surface-expression evidence originates predominantly from a single 2025 research publication (PMC12580770); while that study used rigorous live-cell FACS on both VCaP cells and fresh patient mCRPC tumor specimens, and the surface activity is corroborated by three therapeutic modalities, independent replication by a second research group is not yet documented. Second, the molecular mechanism by which a signal-peptide-only secreted protease is retained at the plasma membrane remains uncharacterized — the docking partner is unknown — introducing uncertainty about the robustness and prevalence of the surface pool relative to the dominant secreted form. Confidence would increase with an independent group confirming live-cell surface staining in a different prostate cancer model, or with biochemical identification of the surface-retention partner.*
+
+## CellxGene RNA enrichment (CZI Census)
+
+*Schema v2.1.12 · CZI Census 2025-11-08 · τ-cutoff classification (Yanai 2005, PMID 15388519) on linear population mean (mean × pct, ≈ nTPM) over the full measured universe with a 1e-3 noise floor: τ≥0.85 enriched, 0.5–0.85 enhanced, <0.5 low specificity, no eligibles not detected. Cutoffs from Kryuchkova-Mostacci & Robinson-Rechavi 2017 (PMID 26891983) + Lüleci & Yılmaz 2022. Cell ontology graph (cl-basic.obo) walked to ~150 cell-family terms; UBERON ontology walked to ~150 organ-level tissues. CC-BY 4.0 (CZI Census).*
+
+**Classification:**
+
+- **Cell class (CL ontology graph, ~10 compartments):** enriched · Epithelial · 47.4× · τ=1.00
+- **Cell type (leaf Cell Ontology terms, ~600):** enriched · luminal cell of prostate epithelium · epithelial cell of prostate · club-like cell of the urethral epithelium · 3.1× · τ=1.00
+- **Tissue (UBERON terms, ~56):** enriched · prostate gland · ∞× · τ=1.00
+
+**Top 5 cell types (leaf CL, pooled across tissues):**
+
+| Cell type | CL ID | Mean log1p(CP10K) | % expressing | n_expressing / n_total |
+|---|---|---|---|---|
+| luminal cell of prostate epithelium | CL:0002340 | 3.684 | 53.19% | 17,072 / 32,099 |
+| epithelial cell of prostate | CL:0002231 | 3.261 | 26.21% | 2,032 / 7,752 |
+| club-like cell of the urethral epithelium | CL:4032000 | 2.534 | 16.71% | 830 / 4,966 |
+| endocrine cell | CL:0000163 | 3.320 | 4.65% | 390 / 8,385 |
+| fibroblast of connective tissue of prostate | CL:1000299 | 1.789 | 8.74% | 223 / 2,552 |
+
+**Top 5 tissues (UBERON, pooled across cell types):**
+
+| Tissue | UBERON ID | Mean log1p(CP10K) | % expressing | n_expressing / n_total |
+|---|---|---|---|---|
+| exocrine gland | UBERON:0002365 | 3.729 | 100.00% | 2,093 / 2,093 |
+| prostate gland | UBERON:0002367 | 3.454 | 36.88% | 19,925 / 54,027 |
+| skin of body | UBERON:0002097 | 1.908 | 1.17% | 234 / 20,032 |
+| eye | UBERON:0000970 | 1.725 | 1.20% | 194 / 16,209 |
+| heart | UBERON:0000948 | 1.810 | 0.74% | 60 / 8,091 | (trace)
+
+<!-- /cellxgene -->

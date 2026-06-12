@@ -1119,3 +1119,35 @@ This Markdown is generated from the canonical JSON record at `/data/surfaceome/E
 - UniProt — CC BY 4.0 (UniProt Consortium)
 
 *Confidence high — EGFR surface accessibility is supported by multiple independent direct assay types across dozens of cell lines and primary patient tissue, fully concordant with the triage verdict. The evidence grade is direct multi-method with no meaningful contradictions to surface expression. The triage prior assigned high confidence for a classical surface receptor, which the experimental evidence fully corroborates.*
+
+## CellxGene RNA enrichment (CZI Census)
+
+*Schema v2.1.12 · CZI Census 2025-11-08 · τ-cutoff classification (Yanai 2005, PMID 15388519) on linear population mean (mean × pct, ≈ nTPM) over the full measured universe with a 1e-3 noise floor: τ≥0.85 enriched, 0.5–0.85 enhanced, <0.5 low specificity, no eligibles not detected. Cutoffs from Kryuchkova-Mostacci & Robinson-Rechavi 2017 (PMID 26891983) + Lüleci & Yılmaz 2022. Cell ontology graph (cl-basic.obo) walked to ~150 cell-family terms; UBERON ontology walked to ~150 organ-level tissues. CC-BY 4.0 (CZI Census).*
+
+**Classification:**
+
+- **Cell class (CL ontology graph, ~10 compartments):** low specificity · 1.1× · τ=0.49
+- **Cell type (leaf Cell Ontology terms, ~600):** enriched · basal epithelial cell of prostatic duct · placental villous trophoblast · skeletal muscle fibroblast · 1.1× · τ=0.94
+- **Tissue (UBERON terms, ~56):** enriched · placenta · chest wall · mucosa · 1.5× · τ=0.99
+
+**Top 5 cell types (leaf CL, pooled across tissues):**
+
+| Cell type | CL ID | Mean log1p(CP10K) | % expressing | n_expressing / n_total |
+|---|---|---|---|---|
+| basal epithelial cell of prostatic duct | CL:0002236 | 2.845 | 57.61% | 4,203 / 7,295 |
+| placental villous trophoblast | CL:2000060 | 2.557 | 68.84% | 69,568 / 101,062 |
+| skeletal muscle fibroblast | CL:0011027 | 2.795 | 49.01% | 2,898 / 5,913 |
+| fibroblast of cardiac tissue | CL:0002548 | 2.426 | 65.99% | 127,804 / 193,676 |
+| lens epithelial cell | CL:0002224 | 2.291 | 76.36% | 4,029 / 5,276 |
+
+**Top 5 tissues (UBERON, pooled across cell types):**
+
+| Tissue | UBERON ID | Mean log1p(CP10K) | % expressing | n_expressing / n_total |
+|---|---|---|---|---|
+| heart | UBERON:0000948 | 2.297 | 97.49% | 172,236 / 176,677 |
+| musculature | UBERON:0001015 | 2.177 | 100.00% | 26,282 / 26,282 |
+| adipose tissue | UBERON:0001013 | 2.234 | 93.32% | 71,220 / 76,316 |
+| exocrine gland | UBERON:0002365 | 2.070 | 100.00% | 6,829 / 6,829 |
+| brain | UBERON:0000955 | 2.084 | 93.76% | 1,133,916 / 1,209,352 |
+
+<!-- /cellxgene -->

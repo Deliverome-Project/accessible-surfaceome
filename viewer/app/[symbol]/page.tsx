@@ -7,6 +7,7 @@ import { Reveal } from "../../components/Reveal/Reveal";
 import { Shell } from "../../components/Shell/Shell";
 import { AccessibilityRisksCard } from "../../components/surfaceome/AccessibilityRisksCard/AccessibilityRisksCard";
 import { BiologicalContextCard } from "../../components/surfaceome/BiologicalContextCard/BiologicalContextCard";
+import { CellxGeneCard } from "../../components/surfaceome/CellxGeneCard/CellxGeneCard";
 import { CommunityNotesCard } from "../../components/surfaceome/CommunityNotesCard/CommunityNotesCard";
 import { DataSourcesFooter } from "../../components/surfaceome/DataSourcesFooter/DataSourcesFooter";
 import { EvidenceClickDelegator } from "../../components/surfaceome/EvidenceClickDelegator/EvidenceClickDelegator";
@@ -31,6 +32,7 @@ import {
   loadGeneName,
   loadSurfaceomeRecord,
 } from "../../lib/surfaceome";
+import { loadCellxGeneEnrichment } from "../../lib/cellxgene-enrichment";
 import {
   loadSchwekeHomomer,
   loadStructureViewerData,
@@ -137,6 +139,15 @@ export default async function GenePage({ params }: PageProps) {
   // not per page.
   const deepDiveGenes = await listSurfaceomeGeneEntries();
 
+  // CZI CellxGene RNA enrichment summary — per-gene mean log1p(CP10K)
+  // expression across the delivery-relevant cell types in
+  // tissue_mappings.json, with a B+CD4T+CD8T lymphoid baseline as the
+  // selectivity reference. Independent fetch (separate D1 table) so a
+  // gene without a deep-dive record could still surface a CellxGene tab
+  // in a later iteration. Returns null on Worker miss; the card renders
+  // the null path as an empty state rather than disappearing.
+  const cellxgene = await loadCellxGeneEnrichment(rec.gene.hgnc_symbol);
+
   // v1.0.0 section order mirrors the EGFR mockup in
   // docs/plans/2026-05-13-deep-dive-redesign-surface-accessibility.md.
   // The 3D structure viewer + AFDB pLDDT / disordered-fraction stats
@@ -161,7 +172,7 @@ export default async function GenePage({ params }: PageProps) {
     {
       kind: "metrics",
       label: "Summary metrics",
-      render: (n) => <FiltersCard rec={rec} n={n} />,
+      render: (n) => <FiltersCard rec={rec} cellxgene={cellxgene} n={n} />,
     },
     {
       kind: "evidence",
@@ -220,6 +231,17 @@ export default async function GenePage({ params }: PageProps) {
           },
         ]
       : []),
+    // CellxGene RNA enrichment sits AFTER SURFACE-Bind per user
+    // feedback. Originally placed next to the deep-dive expression
+    // tab (both answer "where is this gene expressed?"), but the
+    // CellxGene chart is a heavier read than Expression — it makes
+    // more sense in the second pass after the structural / risks /
+    // SURFACE-Bind story lands.
+    {
+      kind: "cellxgene",
+      label: "CellxGene",
+      render: (n) => <CellxGeneCard data={cellxgene} n={n} />,
+    },
     // Evolutionary context — isoforms + orthologs + paralogs combined
     // into one section per user feedback. The previous three-tab split
     // each had its own AnchorNav entry so empty subsections stayed

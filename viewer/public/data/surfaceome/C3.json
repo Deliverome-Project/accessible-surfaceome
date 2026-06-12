@@ -8,9 +8,9 @@
     "ensembl_gene": "ENSG00000125730"
   },
   "triage_signal": "unlikely",
-  "triage_reasoning": "C3 is a secreted plasma protein synthesized primarily by the liver and macrophages. It circulates in blood as a soluble alpha-beta disulfide-linked heterodimer (~185 kDa). It has no transmembrane domain, no GPI anchor, and no known stable membrane partner that would co-traffic it to the cell surface. Checking each contextual bucket: (1) cell_state_induced — C3 deposits covalently on opsonized targets via its thioester-mediated attachment, but this is matrix/surface deposition on pathogens/debris, not PM display of the C3 protein body accessible from outside a host cell. (2) tissue_restricted_surface — no evidence of lineage-specific PM display. (3) lysosomal_exocytosis — not documented. (4) dual_localization — no evidence of a stable PM pool; covalent deposition on cells is on target cells/pathogens, not on C3-secreting cells. (5) stable_surface_attachment — opsonization deposits C3b/iC3b on target surfaces, but this reflects extracellular covalent attachment to glycoproteins/carbohydrates on those target cells, not the C3-producing cell's own PM. No antibody/ADC/CAR-T programs target C3 on a host cell surface. Anti-C3 therapeutics (e.g., pegcetacoplan) neutralize the soluble circulating form. Verdict: secreted_only.",
+  "triage_reasoning": "C3 is a secreted plasma protein synthesized primarily by the liver and macrophages. It circulates in blood as a soluble alpha-beta disulfide-linked heterodimer (~185 kDa). It has no transmembrane domain, no GPI anchor, and no known stable membrane partner that would co-traffic it to the cell surface. Checking each contextual bucket: (1) cell_state_induced \u2014 C3 deposits covalently on opsonized targets via its thioester-mediated attachment, but this is matrix/surface deposition on pathogens/debris, not PM display of the C3 protein body accessible from outside a host cell. (2) tissue_restricted_surface \u2014 no evidence of lineage-specific PM display. (3) lysosomal_exocytosis \u2014 not documented. (4) dual_localization \u2014 no evidence of a stable PM pool; covalent deposition on cells is on target cells/pathogens, not on C3-secreting cells. (5) stable_surface_attachment \u2014 opsonization deposits C3b/iC3b on target surfaces, but this reflects extracellular covalent attachment to glycoproteins/carbohydrates on those target cells, not the C3-producing cell's own PM. No antibody/ADC/CAR-T programs target C3 on a host cell surface. Anti-C3 therapeutics (e.g., pegcetacoplan) neutralize the soluble circulating form. Verdict: secreted_only.",
   "executive_summary": {
-    "one_paragraph": "C3 is state-dependently surface-accessible as a secreted complement glycoprotein — no transmembrane domain, with surface presence achieved exclusively via thioester-mediated covalent deposition of activated C3b/iC3b fragments onto target cell surfaces. Direct surface evidence is single-method: live-cell flow cytometry detecting C3 deposition on infected cells (a1_evi_23) and a functional assay showing CR2-fH reducing C3b deposits on RPE cell membranes (a1_evi_42); IHC in human tauopathy brain shows neuronal C3b/iC3b deposition (a1_evi_22). Surface presence is strictly state-gated, requiring complement activation triggers — viral infection, thromboinflammation, oncogenic transformation, or neurodegenerative disease — and is absent in normal resting tissue (a2_evi_12, a2_evi_13). A dominant free-soluble circulating pool is the principal antibody-decoy risk (a1_evi_01, a1_evi_03); moderate conformational epitope masking arises from activation-state-dependent neoepitope exposure (a1_evi_17, a1_evi_18).",
+    "one_paragraph": "C3 is state-dependently surface-accessible as a secreted complement glycoprotein \u2014 no transmembrane domain, with surface presence achieved exclusively via thioester-mediated covalent deposition of activated C3b/iC3b fragments onto target cell surfaces. Direct surface evidence is single-method: live-cell flow cytometry detecting C3 deposition on infected cells (a1_evi_23) and a functional assay showing CR2-fH reducing C3b deposits on RPE cell membranes (a1_evi_42); IHC in human tauopathy brain shows neuronal C3b/iC3b deposition (a1_evi_22). Surface presence is strictly state-gated, requiring complement activation triggers \u2014 viral infection, thromboinflammation, oncogenic transformation, or neurodegenerative disease \u2014 and is absent in normal resting tissue (a2_evi_12, a2_evi_13). A dominant free-soluble circulating pool is the principal antibody-decoy risk (a1_evi_01, a1_evi_03); moderate conformational epitope masking arises from activation-state-dependent neoepitope exposure (a1_evi_17, a1_evi_18).",
     "accessibility_context_summary": "Surface-accessible only in disease states (complement activation, viral infection, tauopathy, thromboinflammation, tumor), where activated C3b/iC3b fragments deposit covalently onto target cell surfaces; the dominant C3 pool is freely circulating/secreted and not surface-anchored in normal resting tissue.",
     "surface_accessibility": "moderate",
     "evidence_grade_summary": "direct_single_method",
@@ -75,7 +75,7 @@
     "induction_trigger": "oncogenic",
     "has_live_cell_surface_evidence": true,
     "expression_level_rationale": "C3 is the most abundant complement component in circulation, synthesized at high levels by hepatocytes (a2_evi_01); also expressed at moderate levels in immune cells, epithelial cells, and multiple non-hepatic cell types (a2_evi_04, a2_evi_05).",
-    "expression_breadth_rationale": "C3 is expressed across liver, immune cells (T cells, monocytes, macrophages, eosinophils), retinal cells (RPE, Müller glia, photoreceptors), epithelial cells, fibroblasts, astrocytes, mast cells, and adipose macrophages (a2_evi_01, a2_evi_04, a2_evi_05, a2_evi_08, a2_evi_30, a2_evi_31).",
+    "expression_breadth_rationale": "C3 is expressed across liver, immune cells (T cells, monocytes, macrophages, eosinophils), retinal cells (RPE, M\u00fcller glia, photoreceptors), epithelial cells, fibroblasts, astrocytes, mast cells, and adipose macrophages (a2_evi_01, a2_evi_04, a2_evi_05, a2_evi_08, a2_evi_30, a2_evi_31).",
     "surface_specificity_rationale": "C3 is a secreted glycoprotein with no TM domain; the dominant pool is freely circulating/secreted or intracellular (complosome), with surface presence only via state-dependent covalent deposition of activated fragments (a1_evi_01, a1_evi_03, a2_evi_28).",
     "has_known_ligand_rationale": "C3b binds complement receptors CR1 (CD35), CR2 (CD21), CR3 (CD11b/CD18), and CR4 (CD11c/CD18) as validated endogenous binding partners mediating opsonisation and immune cell engagement (a2_evi_28).",
     "low_endogenous_expression_rationale": "C3 is the most abundant complement component in circulation, synthesized at high levels by hepatocytes (a2_evi_01); also expressed at moderate levels in immune cells, epithelial cells, and multiple non-hepatic cell types (a2_evi_04, a2_evi_05).",
@@ -83,271 +83,271 @@
   },
   "surface_evidence": {
     "evidence_grade": "direct_single_method",
-    "grade_rationale": "The methods builder identified two direct_surface_accessibility rows: live_cell_flow (a1_evi_23, a1_evi_24) and a functional_surface_assay (a1_evi_42). All three are human-anchored. However, critical context: (1) a1_evi_23 shows surface C3 deposition on virus-infected cells by live flow (no permeabilization), single source, infection-state dependent (a1_evi_23); (2) a1_evi_24 shows live flow iC3b on serum-treated bacteria surfaces — the 'cell surface' here is a non-host bacterial target, not a human host cell PM (a1_evi_24); (3) a1_evi_42 shows CR2-fH therapeutically reducing C3b deposition on RPE cell membranes in a live-cell functional assay (a1_evi_42). Supporting IHC membranous from human tauopathy neurons (a1_evi_22) and IF localization on human photoreceptors (a1_evi_38) add indirect support. Critically, what is detected in all surface-positive claims is deposited C3b/iC3b fragments (or activation-state-deposited C3), not a stably PM-resident C3 protein expressed by the cell itself. The triage verdict is 'secreted_only' and most claims confirm C3 is secreted/intracellular with surface presence only via thioester-mediated covalent deposition on target cells in specific states. Given ≥1 direct method row with human species (a1_evi_23, a1_evi_42), grade is direct_single_method with low confidence — the surface presence is state/deposition-conditional on non-producing target cells.",
+    "grade_rationale": "The methods builder identified two direct_surface_accessibility rows: live_cell_flow (a1_evi_23, a1_evi_24) and a functional_surface_assay (a1_evi_42). All three are human-anchored. However, critical context: (1) a1_evi_23 shows surface C3 deposition on virus-infected cells by live flow (no permeabilization), single source, infection-state dependent (a1_evi_23); (2) a1_evi_24 shows live flow iC3b on serum-treated bacteria surfaces \u2014 the 'cell surface' here is a non-host bacterial target, not a human host cell PM (a1_evi_24); (3) a1_evi_42 shows CR2-fH therapeutically reducing C3b deposition on RPE cell membranes in a live-cell functional assay (a1_evi_42). Supporting IHC membranous from human tauopathy neurons (a1_evi_22) and IF localization on human photoreceptors (a1_evi_38) add indirect support. Critically, what is detected in all surface-positive claims is deposited C3b/iC3b fragments (or activation-state-deposited C3), not a stably PM-resident C3 protein expressed by the cell itself. The triage verdict is 'secreted_only' and most claims confirm C3 is secreted/intracellular with surface presence only via thioester-mediated covalent deposition on target cells in specific states. Given \u22651 direct method row with human species (a1_evi_23, a1_evi_42), grade is direct_single_method with low confidence \u2014 the surface presence is state/deposition-conditional on non-producing target cells.",
     "claim_stances": [
       {
         "claim_id": "a1_evi_01",
         "stance": "tangential",
         "weight": "moderate",
-        "note": "Structural classification: secreted AMCOM thioester protein, no TM domain — describes baseline biology, not a refutation of surface deposition"
+        "note": "Structural classification: secreted AMCOM thioester protein, no TM domain \u2014 describes baseline biology, not a refutation of surface deposition"
       },
       {
         "claim_id": "a1_evi_02",
         "stance": "tangential",
         "weight": "moderate",
-        "note": "Thioester/furin cleavage site — mechanism underlying covalent surface attachment; not surface-accessibility evidence per se"
+        "note": "Thioester/furin cleavage site \u2014 mechanism underlying covalent surface attachment; not surface-accessibility evidence per se"
       },
       {
         "claim_id": "a1_evi_03",
         "stance": "tangential",
         "weight": "moderate",
-        "note": "Canonical description: secreted/intracellular glycoprotein, no TM domain — baseline biology, not incompatible with surface deposition"
+        "note": "Canonical description: secreted/intracellular glycoprotein, no TM domain \u2014 baseline biology, not incompatible with surface deposition"
       },
       {
         "claim_id": "a1_evi_04",
         "stance": "supports_surface",
         "weight": "low",
-        "note": "C3b thioester-mediated covalent surface attachment — review-level assertion, fragment not intact C3"
+        "note": "C3b thioester-mediated covalent surface attachment \u2014 review-level assertion, fragment not intact C3"
       },
       {
         "claim_id": "a1_evi_05",
         "stance": "supports_surface",
         "weight": "low",
-        "note": "Surface-bound C3b forms AP proconvertase — review-level; fragment-level surface presence"
+        "note": "Surface-bound C3b forms AP proconvertase \u2014 review-level; fragment-level surface presence"
       },
       {
         "claim_id": "a1_evi_06",
         "stance": "expression_only",
         "weight": "low",
-        "note": "Fixed/permeabilized flow cytometry — detects intracellular C3 in VECs; not surface-accessibility evidence"
+        "note": "Fixed/permeabilized flow cytometry \u2014 detects intracellular C3 in VECs; not surface-accessibility evidence"
       },
       {
         "claim_id": "a1_evi_07",
         "stance": "expression_only",
         "weight": "low",
-        "note": "Fixed/permeabilized flow — quantifies C3-positive VECs; intracellular pool, no surface localization"
+        "note": "Fixed/permeabilized flow \u2014 quantifies C3-positive VECs; intracellular pool, no surface localization"
       },
       {
         "claim_id": "a1_evi_08",
         "stance": "expression_only",
         "weight": "low",
-        "note": "Fixed/permeabilized flow — C3b-positive VECs baseline/infection; not surface-specific"
+        "note": "Fixed/permeabilized flow \u2014 C3b-positive VECs baseline/infection; not surface-specific"
       },
       {
         "claim_id": "a1_evi_09",
         "stance": "tangential",
         "weight": "low",
-        "note": "Antibody clone detail for VEC flow experiments — methodological annotation"
+        "note": "Antibody clone detail for VEC flow experiments \u2014 methodological annotation"
       },
       {
         "claim_id": "a1_evi_10",
         "stance": "tangential",
         "weight": "low",
-        "note": "Gating strategy for VEC flow — methodological; cells are live but antibody applied after fixation/perm per study design"
+        "note": "Gating strategy for VEC flow \u2014 methodological; cells are live but antibody applied after fixation/perm per study design"
       },
       {
         "claim_id": "a1_evi_11",
         "stance": "supports_surface",
         "weight": "moderate",
-        "note": "Flow synaptometry on mouse synaptosome membranes detects C3b surface deposition on synaptic particles — non-human, particle not live cell PM"
+        "note": "Flow synaptometry on mouse synaptosome membranes detects C3b surface deposition on synaptic particles \u2014 non-human, particle not live cell PM"
       },
       {
         "claim_id": "a1_evi_12",
         "stance": "tangential",
         "weight": "low",
-        "note": "ECM shielding of C3-tagging — contextual biology, weak refutation; mechanistic not direct"
+        "note": "ECM shielding of C3-tagging \u2014 contextual biology, weak refutation; mechanistic not direct"
       },
       {
         "claim_id": "a1_evi_13",
         "stance": "tangential",
         "weight": "moderate",
-        "note": "Exogenous C3/C3b added to platelets in binding assay — soluble C3 engaging platelet surface, not C3 anchored on C3-producing cell; excluded as ligand engagement"
+        "note": "Exogenous C3/C3b added to platelets in binding assay \u2014 soluble C3 engaging platelet surface, not C3 anchored on C3-producing cell; excluded as ligand engagement"
       },
       {
         "claim_id": "a1_evi_14",
         "stance": "tangential",
         "weight": "moderate",
-        "note": "Native C3 binding to activated platelets (exogenous ligand assay) — soluble C3 engaging platelet PM; excluded as ligand engagement"
+        "note": "Native C3 binding to activated platelets (exogenous ligand assay) \u2014 soluble C3 engaging platelet PM; excluded as ligand engagement"
       },
       {
         "claim_id": "a1_evi_15",
         "stance": "tangential",
         "weight": "moderate",
-        "note": "Annexin V competition for C3 binding on platelets — tests soluble C3 as ligand, not anchored surface form; excluded as ligand engagement"
+        "note": "Annexin V competition for C3 binding on platelets \u2014 tests soluble C3 as ligand, not anchored surface form; excluded as ligand engagement"
       },
       {
         "claim_id": "a1_evi_16",
         "stance": "supports_surface",
         "weight": "low",
-        "note": "Review assertion: C3(H2O) bound on activated platelets/ECs in thromboinflammation — surface association of C3 fragment under pathological state"
+        "note": "Review assertion: C3(H2O) bound on activated platelets/ECs in thromboinflammation \u2014 surface association of C3 fragment under pathological state"
       },
       {
         "claim_id": "a1_evi_17",
         "stance": "tangential",
         "weight": "low",
-        "note": "Antibody clones for sandwich ELISA detection of C3 conformational states — methodological detail"
+        "note": "Antibody clones for sandwich ELISA detection of C3 conformational states \u2014 methodological detail"
       },
       {
         "claim_id": "a1_evi_18",
         "stance": "tangential",
         "weight": "low",
-        "note": "mAb validation of C3 conformational change on hydrolysis — methodological"
+        "note": "mAb validation of C3 conformational change on hydrolysis \u2014 methodological"
       },
       {
         "claim_id": "a1_evi_19",
         "stance": "expression_only",
         "weight": "moderate",
-        "note": "iPSC-RPE WB shows C3a/C3(H2O)/iC3b secreted apically; dominant secreted not membrane-anchored — bulk protein without surface localization"
+        "note": "iPSC-RPE WB shows C3a/C3(H2O)/iC3b secreted apically; dominant secreted not membrane-anchored \u2014 bulk protein without surface localization"
       },
       {
         "claim_id": "a1_evi_20",
         "stance": "expression_only",
         "weight": "moderate",
-        "note": "IF/WB iPSC-RPE: apical + intracellular C3 β-chain; permeabilization status unspecified — does not distinguish surface from intracellular"
+        "note": "IF/WB iPSC-RPE: apical + intracellular C3 \u03b2-chain; permeabilization status unspecified \u2014 does not distinguish surface from intracellular"
       },
       {
         "claim_id": "a1_evi_21",
         "stance": "expression_only",
         "weight": "low",
-        "note": "Permeabilized IF for intracellular C3 processing in iPSC-RPE — methodological, intracellular"
+        "note": "Permeabilized IF for intracellular C3 processing in iPSC-RPE \u2014 methodological, intracellular"
       },
       {
         "claim_id": "a1_evi_22",
         "stance": "supports_surface",
         "weight": "moderate",
-        "note": "IHC on post-mortem human tauopathy brain: C3b/iC3b deposition on neurons — IHC membranous, human tissue, tauopathy state"
+        "note": "IHC on post-mortem human tauopathy brain: C3b/iC3b deposition on neurons \u2014 IHC membranous, human tissue, tauopathy state"
       },
       {
         "claim_id": "a1_evi_23",
         "stance": "supports_surface",
         "weight": "moderate",
-        "note": "Live-cell surface deposition of C3 on infected cells by flow (no permeabilization) — direct surface accessibility, single source, infection state"
+        "note": "Live-cell surface deposition of C3 on infected cells by flow (no permeabilization) \u2014 direct surface accessibility, single source, infection state"
       },
       {
         "claim_id": "a1_evi_24",
         "stance": "supports_surface",
         "weight": "moderate",
-        "note": "Live flow on serum-treated bacteria: iC3b dominant surface fragment — direct surface, non-host cell target"
+        "note": "Live flow on serum-treated bacteria: iC3b dominant surface fragment \u2014 direct surface, non-host cell target"
       },
       {
         "claim_id": "a1_evi_25",
         "stance": "tangential",
         "weight": "low",
-        "note": "Rat anti-C3/C3b antibody clone detail — methodological annotation, rat species"
+        "note": "Rat anti-C3/C3b antibody clone detail \u2014 methodological annotation, rat species"
       },
       {
         "claim_id": "a1_evi_26",
         "stance": "expression_only",
         "weight": "low",
-        "note": "IHC: C3 in protein casts and proximal tubules in nephrotic mouse kidney — tissue localization, surface vs intracellular not distinguished"
+        "note": "IHC: C3 in protein casts and proximal tubules in nephrotic mouse kidney \u2014 tissue localization, surface vs intracellular not distinguished"
       },
       {
         "claim_id": "a1_evi_27",
         "stance": "tangential",
         "weight": "moderate",
-        "note": "C3-KO mouse model — genetic control validating specificity; methodological support"
+        "note": "C3-KO mouse model \u2014 genetic control validating specificity; methodological support"
       },
       {
         "claim_id": "a1_evi_28",
         "stance": "tangential",
         "weight": "low",
-        "note": "iC3b on nanoparticle surface driving macrophage uptake — nanoparticle/EV-like surface, not host cell PM; excluded as non-cell-PM context"
+        "note": "iC3b on nanoparticle surface driving macrophage uptake \u2014 nanoparticle/EV-like surface, not host cell PM; excluded as non-cell-PM context"
       },
       {
         "claim_id": "a1_evi_29",
         "stance": "tangential",
         "weight": "low",
-        "note": "Soft-corona masking of C3 on nanoparticle surface — nanoparticle system, not host cell PM"
+        "note": "Soft-corona masking of C3 on nanoparticle surface \u2014 nanoparticle system, not host cell PM"
       },
       {
         "claim_id": "a1_evi_30",
         "stance": "tangential",
         "weight": "moderate",
-        "note": "Crystal structure compstatin–C3c — structural biology of soluble C3c, not cell-surface accessibility"
+        "note": "Crystal structure compstatin\u2013C3c \u2014 structural biology of soluble C3c, not cell-surface accessibility"
       },
       {
         "claim_id": "a1_evi_31",
         "stance": "tangential",
         "weight": "moderate",
-        "note": "Cryo-EM of C3bB–Cp60 complex — structural; soluble C3b complex, not cell-surface evidence"
+        "note": "Cryo-EM of C3bB\u2013Cp60 complex \u2014 structural; soluble C3b complex, not cell-surface evidence"
       },
       {
         "claim_id": "a1_evi_32",
         "stance": "tangential",
         "weight": "low",
-        "note": "Compstatins bind C3 ECD — therapeutic engagement of soluble/deposited C3; not anchored surface evidence"
+        "note": "Compstatins bind C3 ECD \u2014 therapeutic engagement of soluble/deposited C3; not anchored surface evidence"
       },
       {
         "claim_id": "a1_evi_33",
         "stance": "tangential",
         "weight": "moderate",
-        "note": "Cryo-EM C3 substrate binding to C4b convertase — structural; soluble C3 as substrate in convertase complex"
+        "note": "Cryo-EM C3 substrate binding to C4b convertase \u2014 structural; soluble C3 as substrate in convertase complex"
       },
       {
         "claim_id": "a1_evi_34",
         "stance": "tangential",
         "weight": "low",
-        "note": "Anti-C3 nanobody hC3Nb3 in therapeutic construct — engages soluble/deposited C3; methodological"
+        "note": "Anti-C3 nanobody hC3Nb3 in therapeutic construct \u2014 engages soluble/deposited C3; methodological"
       },
       {
         "claim_id": "a1_evi_35",
         "stance": "tangential",
         "weight": "moderate",
-        "note": "Review: intracellular C3 in hepatocyte autophagy/ER/lipid — describes intracellular pool; consistent with secreted/intracellular not PM"
+        "note": "Review: intracellular C3 in hepatocyte autophagy/ER/lipid \u2014 describes intracellular pool; consistent with secreted/intracellular not PM"
       },
       {
         "claim_id": "a1_evi_36",
         "stance": "expression_only",
         "weight": "moderate",
-        "note": "Flow cytometry for intracellular C3 in HBV immune cells — permeabilized, intracellular; no surface component"
+        "note": "Flow cytometry for intracellular C3 in HBV immune cells \u2014 permeabilized, intracellular; no surface component"
       },
       {
         "claim_id": "a1_evi_37",
         "stance": "expression_only",
         "weight": "moderate",
-        "note": "RT-qPCR: C3 mRNA decreased in CHB liver biopsy — RNA only, no surface information"
+        "note": "RT-qPCR: C3 mRNA decreased in CHB liver biopsy \u2014 RNA only, no surface information"
       },
       {
         "claim_id": "a1_evi_38",
         "stance": "supports_surface",
         "weight": "moderate",
-        "note": "IF: C3 and CFH localized on human photoreceptors — fixed IF, perm status unspecified; surface-localized staining in specialized neurons"
+        "note": "IF: C3 and CFH localized on human photoreceptors \u2014 fixed IF, perm status unspecified; surface-localized staining in specialized neurons"
       },
       {
         "claim_id": "a1_evi_39",
         "stance": "supports_surface",
         "weight": "low",
-        "note": "IF: C3 deposition on Panc02 cancer cell surface post-treatment — mouse cell line, perm status unspecified"
+        "note": "IF: C3 deposition on Panc02 cancer cell surface post-treatment \u2014 mouse cell line, perm status unspecified"
       },
       {
         "claim_id": "a1_evi_40",
         "stance": "tangential",
         "weight": "low",
-        "note": "FHR51-9FH1-5 binding to surface-immobilized C3/C3b in ELISA — plate-immobilized C3 as ligand, not cell-surface C3"
+        "note": "FHR51-9FH1-5 binding to surface-immobilized C3/C3b in ELISA \u2014 plate-immobilized C3 as ligand, not cell-surface C3"
       },
       {
         "claim_id": "a1_evi_41",
         "stance": "tangential",
         "weight": "moderate",
-        "note": "Intracellular AP activation in FRCs after SFTSV infection — intracellular C3a generation; contextualizes non-PM C3 pools"
+        "note": "Intracellular AP activation in FRCs after SFTSV infection \u2014 intracellular C3a generation; contextualizes non-PM C3 pools"
       },
       {
         "claim_id": "a1_evi_42",
         "stance": "supports_surface",
         "weight": "moderate",
-        "note": "CR2-fH reduces C3b deposition on RPE cell membranes (ARPE-19, live cells, non-permeabilized) — direct functional surface assay; C3b accessible on RPE PM"
+        "note": "CR2-fH reduces C3b deposition on RPE cell membranes (ARPE-19, live cells, non-permeabilized) \u2014 direct functional surface assay; C3b accessible on RPE PM"
       },
       {
         "claim_id": "a1_evi_43",
         "stance": "tangential",
         "weight": "moderate",
-        "note": "Efb-C binds C3b TED — structural/biochemical engagement of C3b fragment; not cell-surface accessibility assay"
+        "note": "Efb-C binds C3b TED \u2014 structural/biochemical engagement of C3b fragment; not cell-surface accessibility assay"
       },
       {
         "claim_id": "a1_evi_44",
         "stance": "expression_only",
         "weight": "low",
-        "note": "WB: C3 protein in whole placental tissue extract — bulk protein, no surface fractionation"
+        "note": "WB: C3 protein in whole placental tissue extract \u2014 bulk protein, no surface fractionation"
       }
     ],
     "methods": [
@@ -396,7 +396,7 @@
             ]
           },
           {
-            "context": "Candida albicans-infected VECs: C3-positive fraction rises to ~63%; C3b-positive fraction rises from 8.5% to 20–30% post-infection",
+            "context": "Candida albicans-infected VECs: C3-positive fraction rises to ~63%; C3b-positive fraction rises from 8.5% to 20\u201330% post-infection",
             "sample_type": "primary_human_cell",
             "level": "moderate",
             "species": "human",
@@ -439,7 +439,7 @@
         "surface_claim_type": "apical_or_luminal",
         "expression_observations": [
           {
-            "context": "Highly mature (HM) iPSC-RPE: apical localization of C3 protein with intracellular C3 β-chain retention",
+            "context": "Highly mature (HM) iPSC-RPE: apical localization of C3 protein with intracellular C3 \u03b2-chain retention",
             "sample_type": "iPSC_derived",
             "level": "moderate",
             "species": "human",
@@ -595,7 +595,7 @@
             "antibody_epitope_region": "extracellular",
             "validation_strategy": "genetic_KO",
             "validation_strength": "strong",
-            "cross_reactivity_notes": "Specificity validated by C3-knockout (C3−/−) mouse controls used in the same study; clone/vendor not specified in ledger."
+            "cross_reactivity_notes": "Specificity validated by C3-knockout (C3\u2212/\u2212) mouse controls used in the same study; clone/vendor not specified in ledger."
           }
         ],
         "accessibility_relevance": "supports_surface_localization",
@@ -798,7 +798,7 @@
     ],
     "non_surface_expression": [
       {
-        "context": "Vaginal epithelial cells (VECs) — baseline and Candida albicans infection; intracellular C3, C3a, C3b by permeabilized flow cytometry",
+        "context": "Vaginal epithelial cells (VECs) \u2014 baseline and Candida albicans infection; intracellular C3, C3a, C3b by permeabilized flow cytometry",
         "sample_type": "primary_human_cell",
         "measurement_type": "bulk_protein",
         "level": "moderate",
@@ -809,7 +809,7 @@
         ]
       },
       {
-        "context": "iPSC-derived retinal pigment epithelium (iPSC-RPE) — apical localization and intracellular C3 β-chain; secreted C3a/C3(H2O)/iC3b by WB and IF",
+        "context": "iPSC-derived retinal pigment epithelium (iPSC-RPE) \u2014 apical localization and intracellular C3 \u03b2-chain; secreted C3a/C3(H2O)/iC3b by WB and IF",
         "sample_type": "iPSC_derived",
         "measurement_type": "bulk_protein",
         "level": "moderate",
@@ -820,7 +820,7 @@
         ]
       },
       {
-        "context": "Immune cells of chronic HBV-infected patients — intracellular C3 by permeabilized flow cytometry",
+        "context": "Immune cells of chronic HBV-infected patients \u2014 intracellular C3 by permeabilized flow cytometry",
         "sample_type": "primary_human_cell",
         "measurement_type": "bulk_protein",
         "level": "moderate",
@@ -829,7 +829,7 @@
         ]
       },
       {
-        "context": "Liver biopsy tissue from chronic hepatitis B patients — C3 mRNA by RT-qPCR; decreased vs uninfected",
+        "context": "Liver biopsy tissue from chronic hepatitis B patients \u2014 C3 mRNA by RT-qPCR; decreased vs uninfected",
         "sample_type": "patient_sample",
         "measurement_type": "RNA",
         "level": "low",
@@ -838,7 +838,7 @@
         ]
       },
       {
-        "context": "Mouse nephrotic kidney — proximal tubule epithelial cells and protein casts; C3 protein by IHC",
+        "context": "Mouse nephrotic kidney \u2014 proximal tubule epithelial cells and protein casts; C3 protein by IHC",
         "sample_type": "unknown",
         "measurement_type": "IHC_protein",
         "level": "moderate",
@@ -847,7 +847,7 @@
         ]
       },
       {
-        "context": "Human placenta (pre-eclampsia / gestational diabetes) — whole tissue extract C3 protein by Western blot",
+        "context": "Human placenta (pre-eclampsia / gestational diabetes) \u2014 whole tissue extract C3 protein by Western blot",
         "sample_type": "patient_sample",
         "measurement_type": "bulk_protein",
         "level": "moderate",
@@ -889,7 +889,7 @@
         "claim": "ECM components (brevican, aggrecan) in mouse cerebellum can shield synaptic surfaces from C3b tagging, and protein corona components on nanoparticles can mask HC-bound C3 fragments from complement receptor recognition. These epitope-masking phenomena indicate that even when C3 fragments are deposited on surfaces, their accessibility to receptors can be substantially reduced by surrounding molecular environments.",
         "contradiction_type": "other",
         "severity_for_surface_accessibility": "low",
-        "likely_explanation": "These masking effects are context-dependent and do not negate C3 surface deposition per se; rather, they modulate functional accessibility of deposited C3 fragments. For target-discovery purposes, the relevant question is whether C3 fragments are present on cell surfaces, which these findings do not directly contradict — they only show that detection or receptor engagement can be hindered in specific microenvironments.",
+        "likely_explanation": "These masking effects are context-dependent and do not negate C3 surface deposition per se; rather, they modulate functional accessibility of deposited C3 fragments. For target-discovery purposes, the relevant question is whether C3 fragments are present on cell surfaces, which these findings do not directly contradict \u2014 they only show that detection or receptor engagement can be hindered in specific microenvironments.",
         "cited_evidence_ids": [
           "a1_evi_12",
           "a1_evi_29"
@@ -899,23 +899,23 @@
     "excluded_as_ligand_engagement": [
       {
         "evidence_id": "a1_evi_13",
-        "reason": "Exogenous C3/C3b/C3(H2O) added to activated platelets in binding assay — soluble C3 acting as ligand engaging platelet PM phosphatidylserine; not C3 anchored on C3-producing cell surface."
+        "reason": "Exogenous C3/C3b/C3(H2O) added to activated platelets in binding assay \u2014 soluble C3 acting as ligand engaging platelet PM phosphatidylserine; not C3 anchored on C3-producing cell surface."
       },
       {
         "evidence_id": "a1_evi_14",
-        "reason": "Native C3 binding to activated platelets — soluble circulating C3 engaging platelet phospholipid-scrambled membranes; C3 is the soluble ligand, not the surface-anchored entity."
+        "reason": "Native C3 binding to activated platelets \u2014 soluble circulating C3 engaging platelet phospholipid-scrambled membranes; C3 is the soluble ligand, not the surface-anchored entity."
       },
       {
         "evidence_id": "a1_evi_15",
-        "reason": "Annexin V competition assay testing soluble C3 binding to platelets, PMN, and ECs via phosphatidylserine — C3 is soluble ligand engaging PS receptor on target cells, not anchored at C3-producing cell surface."
+        "reason": "Annexin V competition assay testing soluble C3 binding to platelets, PMN, and ECs via phosphatidylserine \u2014 C3 is soluble ligand engaging PS receptor on target cells, not anchored at C3-producing cell surface."
       },
       {
         "evidence_id": "a1_evi_28",
-        "reason": "iC3b on nanoparticle hard corona drives macrophage uptake via complement receptors — C3 fragment is on nanoparticle surface engaging CR on macrophages; not host cell PM surface accessibility."
+        "reason": "iC3b on nanoparticle hard corona drives macrophage uptake via complement receptors \u2014 C3 fragment is on nanoparticle surface engaging CR on macrophages; not host cell PM surface accessibility."
       },
       {
         "evidence_id": "a1_evi_40",
-        "reason": "FHR51-9FH1-5 binding to plate-immobilized C3/C3b/iC3b/C3d in ELISA — C3 is plate-immobilized antigen acting as ligand; not cell-surface accessibility evidence."
+        "reason": "FHR51-9FH1-5 binding to plate-immobilized C3/C3b/iC3b/C3d in ELISA \u2014 C3 is plate-immobilized antigen acting as ligand; not cell-surface accessibility evidence."
       }
     ]
   },
@@ -1056,7 +1056,7 @@
       },
       {
         "tissue": "retina",
-        "cell_type": "Müller glia",
+        "cell_type": "M\u00fcller glia",
         "present": "moderate",
         "disease_context": "normal",
         "disease_label": null,
@@ -1301,7 +1301,7 @@
         "disease_context": "normal",
         "disease_label": null,
         "cell_states": [
-          "IL-33 + TNF-α stimulated"
+          "IL-33 + TNF-\u03b1 stimulated"
         ],
         "species": "human",
         "species_inferred": false,
@@ -1407,7 +1407,7 @@
         "cell_state_trigger": "infection_viral",
         "restricted_lineage": null,
         "dual_loc_partner_compartment": null,
-        "baseline_context": "splenic fibroblastic reticular cells (FRCs) — uninfected",
+        "baseline_context": "splenic fibroblastic reticular cells (FRCs) \u2014 uninfected",
         "modulating_state": "splenic FRCs infected with SFTSV",
         "direction": "increases",
         "change": "SFTSV infection significantly induces intracellular C3 production in splenic FRCs via a type I IFN-independent mechanism, generating active C3a via the alternative pathway intracellularly.",
@@ -1425,11 +1425,11 @@
         "cell_state_trigger": "cytokine_stimulation",
         "restricted_lineage": null,
         "dual_loc_partner_compartment": null,
-        "baseline_context": "resting human Müller glia (MIO-M1 / primary retinal Müller cells)",
-        "modulating_state": "pro-inflammatory cytokine-stimulated Müller glia (IFNγ, TNFα, IL-4, IL-6, IL-10, VEGF, TGFβ)",
+        "baseline_context": "resting human M\u00fcller glia (MIO-M1 / primary retinal M\u00fcller cells)",
+        "modulating_state": "pro-inflammatory cytokine-stimulated M\u00fcller glia (IFN\u03b3, TNF\u03b1, IL-4, IL-6, IL-10, VEGF, TGF\u03b2)",
         "direction": "increases",
-        "change": "Cytokine stimulation of Müller cells induces secretion of complement components including C3, shifting C3 from an intracellular/non-secreted state to an extracellular secreted pool.",
-        "accessibility_implication": "Secreted C3 from activated Müller cells becomes available for complement activation in the retinal extracellular space, increasing local C3b deposition and opsonisation potential.",
+        "change": "Cytokine stimulation of M\u00fcller cells induces secretion of complement components including C3, shifting C3 from an intracellular/non-secreted state to an extracellular secreted pool.",
+        "accessibility_implication": "Secreted C3 from activated M\u00fcller cells becomes available for complement activation in the retinal extracellular space, increasing local C3b deposition and opsonisation potential.",
         "species": "human",
         "species_inferred": false,
         "cited_evidence_ids": [
@@ -1670,9 +1670,9 @@
         "restricted_lineage": null,
         "dual_loc_partner_compartment": null,
         "baseline_context": "resting human eosinophils",
-        "modulating_state": "IL-33 + TNF-α stimulated human eosinophils",
+        "modulating_state": "IL-33 + TNF-\u03b1 stimulated human eosinophils",
         "direction": "increases",
-        "change": "Multi-omics analysis shows C3 is upregulated as an inflammatory mediator in IL-33 + TNF-α stimulated eosinophils alongside surface markers CD22, CD4, and ICAM-1.",
+        "change": "Multi-omics analysis shows C3 is upregulated as an inflammatory mediator in IL-33 + TNF-\u03b1 stimulated eosinophils alongside surface markers CD22, CD4, and ICAM-1.",
         "accessibility_implication": "Cytokine-induced C3 upregulation in eosinophils may increase local complement production and secretion in inflammatory settings, enhancing C3-dependent opsonisation in the tissue microenvironment.",
         "species": "human",
         "species_inferred": false,
@@ -1682,7 +1682,7 @@
       }
     ],
     "biological_context_grade": "rich",
-    "grade_rationale": "All four A2 axes are well-populated from multiple independent sources: expression mapped across ≥10 cell/tissue types (liver, spleen, retina, brain, lung, kidney, skin, adipose, placenta, epithelial/immune cells); subcellular localization pinned (intracellular complosome vs. secreted); anatomical accessibility detailed (opsonization, platelet/endothelial surface binding); modulation documented across disease states, aging, cytokine stimulation, and maturation state. Picture is coherent — context-dependent variation is biologically consistent.",
+    "grade_rationale": "All four A2 axes are well-populated from multiple independent sources: expression mapped across \u226510 cell/tissue types (liver, spleen, retina, brain, lung, kidney, skin, adipose, placenta, epithelial/immune cells); subcellular localization pinned (intracellular complosome vs. secreted); anatomical accessibility detailed (opsonization, platelet/endothelial surface binding); modulation documented across disease states, aging, cytokine stimulation, and maturation state. Picture is coherent \u2014 context-dependent variation is biologically consistent.",
     "grade_cited_evidence_ids": [
       "a2_evi_01",
       "a2_evi_02",
@@ -1870,7 +1870,7 @@
       "ecd_disordered_fraction": 0.182205971968312,
       "source": "AlphaFold DB (ECD-restricted pLDDT, n=1641)",
       "license": "CC BY 4.0",
-      "attribution": "© DeepMind / EMBL-EBI",
+      "attribution": "\u00a9 DeepMind / EMBL-EBI",
       "citations": [
         "10.1038/s41586-021-03819-2",
         "10.1093/nar/gkad1011"
@@ -1893,7 +1893,7 @@
       "pdbs": [],
       "representative_structure": null,
       "source": "SURFACE-Bind v1 (Balbi 2026 PNAS)",
-      "attribution": "© Balbi et al., Correia lab — EPFL / Inria / Novo Nordisk",
+      "attribution": "\u00a9 Balbi et al., Correia lab \u2014 EPFL / Inria / Novo Nordisk",
       "citation": "10.1073/pnas.2506269123"
     },
     "homo_oligomerization": {
@@ -1988,7 +1988,7 @@
   "evidence": [
     {
       "evidence_id": "a1_evi_01",
-      "claim": "C3 belongs to the AMCOM thioester protein family (C3, C4, C5, CD109, α2-macroglobulin), establishing its structural classification as a secreted complement glycoprotein without a transmembrane domain.",
+      "claim": "C3 belongs to the AMCOM thioester protein family (C3, C4, C5, CD109, \u03b12-macroglobulin), establishing its structural classification as a secreted complement glycoprotein without a transmembrane domain.",
       "claim_type": "topology",
       "direction": "supports",
       "evidence_type": "review_assertion",
@@ -2019,7 +2019,7 @@
           },
           "section": "results",
           "figure_or_table_id": null,
-          "quote": "The vertebrate AMCOM family of thioester proteins includes complement components C3, C4, C5, CD109, and α2-macroglobulin ( Solomon et al., 2004 ).",
+          "quote": "The vertebrate AMCOM family of thioester proteins includes complement components C3, C4, C5, CD109, and \u03b12-macroglobulin ( Solomon et al., 2004 ).",
           "quote_sha256": "ea2544a1b931ca407832d00a3b7301f10b8f7fd46c49d587395ea5e9b8a0be58",
           "char_offset": 0,
           "normalized_source_sha256": "3ab637a6900f7845f80b9b2c4b27eccad11718d59fcedcd82d16debdb81aa624"
@@ -2032,7 +2032,7 @@
     },
     {
       "evidence_id": "a1_evi_02",
-      "claim": "C3 contains the conserved thioester linkage consensus sequence GCGEQ and a furin cleavage site — the structural basis for covalent surface attachment via thioester transacylation and proteolytic activation into C3a/C3b.",
+      "claim": "C3 contains the conserved thioester linkage consensus sequence GCGEQ and a furin cleavage site \u2014 the structural basis for covalent surface attachment via thioester transacylation and proteolytic activation into C3a/C3b.",
       "claim_type": "topology",
       "direction": "supports",
       "evidence_type": "review_assertion",
@@ -2120,7 +2120,7 @@
     },
     {
       "evidence_id": "a1_evi_04",
-      "claim": "C3b (the large activation fragment of C3) covalently attaches to reactive surfaces via its exposed thioester — this is the primary mechanism by which C3 achieves surface presence; C3 itself is not a transmembrane protein.",
+      "claim": "C3b (the large activation fragment of C3) covalently attaches to reactive surfaces via its exposed thioester \u2014 this is the primary mechanism by which C3 achieves surface presence; C3 itself is not a transmembrane protein.",
       "claim_type": "surface_expression",
       "direction": "supports",
       "evidence_type": "review_assertion",
@@ -2314,7 +2314,7 @@
     },
     {
       "evidence_id": "a1_evi_08",
-      "claim": "Flow cytometry showed C3b-positive VECs at 8.5% at baseline rising to 20–30% post-Candida infection, indicating activation-dependent generation and retention of C3b fragment within/on VECs.",
+      "claim": "Flow cytometry showed C3b-positive VECs at 8.5% at baseline rising to 20\u201330% post-Candida infection, indicating activation-dependent generation and retention of C3b fragment within/on VECs.",
       "claim_type": "surface_expression",
       "direction": "ambiguous",
       "evidence_type": "flow_cytometry",
@@ -2526,7 +2526,7 @@
     },
     {
       "evidence_id": "a1_evi_12",
-      "claim": "Proteoglycans brevican and aggrecan (neural extracellular matrix components) were upregulated in middle-aged cerebellum, and ECM-mediated shielding of synapses is proposed to reduce complement C3-tagging — a form of epitope masking that limits C3b accessibility at the synapse surface.",
+      "claim": "Proteoglycans brevican and aggrecan (neural extracellular matrix components) were upregulated in middle-aged cerebellum, and ECM-mediated shielding of synapses is proposed to reduce complement C3-tagging \u2014 a form of epitope masking that limits C3b accessibility at the synapse surface.",
       "claim_type": "surface_expression",
       "direction": "refutes",
       "evidence_type": "review_assertion",
@@ -2632,7 +2632,7 @@
     },
     {
       "evidence_id": "a1_evi_14",
-      "claim": "Native C3 showed the highest binding to activated platelets compared to C3b and soluble C3(H2O), and generated the most efficient C3bBb convertase on the platelet surface — demonstrating that intact C3 preferentially engages phospholipid-scrambled membranes.",
+      "claim": "Native C3 showed the highest binding to activated platelets compared to C3b and soluble C3(H2O), and generated the most efficient C3bBb convertase on the platelet surface \u2014 demonstrating that intact C3 preferentially engages phospholipid-scrambled membranes.",
       "claim_type": "surface_expression",
       "direction": "supports",
       "evidence_type": "functional_assay",
@@ -2685,7 +2685,7 @@
     },
     {
       "evidence_id": "a1_evi_15",
-      "claim": "Annexin V competitively inhibited C3 binding to activated platelets, apoptotic PMN, and endothelial cells by blocking phosphatidylserine; properdin enhanced binding and convertase formation — demonstrating that C3 surface accessibility on intact cells is modulated by phospholipid exposure and properdin (a form of membrane-availability gating).",
+      "claim": "Annexin V competitively inhibited C3 binding to activated platelets, apoptotic PMN, and endothelial cells by blocking phosphatidylserine; properdin enhanced binding and convertase formation \u2014 demonstrating that C3 surface accessibility on intact cells is modulated by phospholipid exposure and properdin (a form of membrane-availability gating).",
       "claim_type": "surface_expression",
       "direction": "ambiguous",
       "evidence_type": "functional_assay",
@@ -2738,7 +2738,7 @@
     },
     {
       "evidence_id": "a1_evi_16",
-      "claim": "In thromboinflammatory disorders, C3(H2O) exists in a bound form on activated platelets and endothelial cells — demonstrating that a soluble, hydrolyzed C3 form can associate with cell surfaces under pathological conditions.",
+      "claim": "In thromboinflammatory disorders, C3(H2O) exists in a bound form on activated platelets and endothelial cells \u2014 demonstrating that a soluble, hydrolyzed C3 form can associate with cell surfaces under pathological conditions.",
       "claim_type": "surface_expression",
       "direction": "supports",
       "evidence_type": "review_assertion",
@@ -2835,7 +2835,7 @@
     },
     {
       "evidence_id": "a1_evi_18",
-      "claim": "Three additional mAb clones (7D169.1, 7D84.1, 7D398.1) all confirmed the conformational change in C3 upon hydrolysis — orthogonal antibody validation strategy confirming C3 epitope accessibility is conformation-dependent.",
+      "claim": "Three additional mAb clones (7D169.1, 7D84.1, 7D398.1) all confirmed the conformational change in C3 upon hydrolysis \u2014 orthogonal antibody validation strategy confirming C3 epitope accessibility is conformation-dependent.",
       "claim_type": "methodological",
       "direction": "supports",
       "evidence_type": "functional_assay",
@@ -2879,7 +2879,7 @@
     },
     {
       "evidence_id": "a1_evi_19",
-      "claim": "Mature (HM) iPSC-RPE cells secreted increased C3a, C3(H2O), and iC3b apically and basally, while less mature (LM) cells retained C3 fragments intracellularly — demonstrating maturation-dependent partitioning between secreted/shed C3 forms and intracellular retention. This is evidence that the dominant C3 species in RPE is secreted rather than membrane-anchored.",
+      "claim": "Mature (HM) iPSC-RPE cells secreted increased C3a, C3(H2O), and iC3b apically and basally, while less mature (LM) cells retained C3 fragments intracellularly \u2014 demonstrating maturation-dependent partitioning between secreted/shed C3 forms and intracellular retention. This is evidence that the dominant C3 species in RPE is secreted rather than membrane-anchored.",
       "claim_type": "surface_expression",
       "direction": "refutes",
       "evidence_type": "western_blot",
@@ -2932,7 +2932,7 @@
     },
     {
       "evidence_id": "a1_evi_20",
-      "claim": "Western blotting and immunostaining of iPSC-RPE showed apical localization of C3 protein and intracellular C3 β-chain — indicating that in epithelial cells C3 is present at apical membrane/secretory surface and intracellularly, not as a stable basolateral PM protein.",
+      "claim": "Western blotting and immunostaining of iPSC-RPE showed apical localization of C3 protein and intracellular C3 \u03b2-chain \u2014 indicating that in epithelial cells C3 is present at apical membrane/secretory surface and intracellularly, not as a stable basolateral PM protein.",
       "claim_type": "surface_expression",
       "direction": "ambiguous",
       "evidence_type": "immunofluorescence",
@@ -2972,7 +2972,7 @@
           },
           "section": "abstract",
           "figure_or_table_id": null,
-          "quote": "Western blotting and immunostaining revealed maturation-dependent C3 fragment profiles, with apical localization of C3 and intracellular presence of the intact C3 β chain in HM iPSC-RPE, while C3 fragments were present in LM and ARPE-19 cells.<h4>Conclusions</h4>HM iPSC-RPE cells most closely mimic native RPE features and provide a robust model for in vitro studies.",
+          "quote": "Western blotting and immunostaining revealed maturation-dependent C3 fragment profiles, with apical localization of C3 and intracellular presence of the intact C3 \u03b2 chain in HM iPSC-RPE, while C3 fragments were present in LM and ARPE-19 cells.<h4>Conclusions</h4>HM iPSC-RPE cells most closely mimic native RPE features and provide a robust model for in vitro studies.",
           "quote_sha256": "cd1f6a16bf0d0b815b0d9d9fb1d3f2c796528e577b65956b51babc028a2b2b6b",
           "char_offset": 121,
           "normalized_source_sha256": "defc224c132b7f5493f408ba4d12bad638dfbe9c7bc666b46e171fb8074c5135"
@@ -2985,7 +2985,7 @@
     },
     {
       "evidence_id": "a1_evi_21",
-      "claim": "Intracellular complement C3 processing in iPSC-RPE was characterized using epitope-specific antibodies — methodological detail confirming antibody-based assay for C3 in non-hepatic cells; permeabilization required for intracellular detection.",
+      "claim": "Intracellular complement C3 processing in iPSC-RPE was characterized using epitope-specific antibodies \u2014 methodological detail confirming antibody-based assay for C3 in non-hepatic cells; permeabilization required for intracellular detection.",
       "claim_type": "methodological",
       "direction": "supports",
       "evidence_type": "immunofluorescence",
@@ -3038,7 +3038,7 @@
     },
     {
       "evidence_id": "a1_evi_22",
-      "claim": "Immunohistochemistry on post-mortem human tauopathy brain tissue detected C1q and complement activation markers iC3b and TCC on neurons, with C3b/iC3b deposition particularly prominent on neuronal surfaces — direct IHC evidence of C3 fragment deposition on a human cell surface.",
+      "claim": "Immunohistochemistry on post-mortem human tauopathy brain tissue detected C1q and complement activation markers iC3b and TCC on neurons, with C3b/iC3b deposition particularly prominent on neuronal surfaces \u2014 direct IHC evidence of C3 fragment deposition on a human cell surface.",
       "claim_type": "surface_expression",
       "direction": "supports",
       "evidence_type": "immunohistochemistry",
@@ -3091,7 +3091,7 @@
     },
     {
       "evidence_id": "a1_evi_23",
-      "claim": "Surface deposition of C3 (along with MAC) was measured on infected cells and found to be greatly reduced on persistently infected (PI) vs acutely infected (AI) cells — direct surface deposition evidence using an implied flow or IF surface assay without permeabilization.",
+      "claim": "Surface deposition of C3 (along with MAC) was measured on infected cells and found to be greatly reduced on persistently infected (PI) vs acutely infected (AI) cells \u2014 direct surface deposition evidence using an implied flow or IF surface assay without permeabilization.",
       "claim_type": "surface_expression",
       "direction": "supports",
       "evidence_type": "flow_cytometry",
@@ -3144,7 +3144,7 @@
     },
     {
       "evidence_id": "a1_evi_24",
-      "claim": "Flow cytometry on serum-treated bacteria confirmed that only iC3b (not C3b) was present on their surface due to rapid C3b cleavage — direct evidence that iC3b is the dominant surface-deposited C3 fragment on serum-resistant bacterial isolates.",
+      "claim": "Flow cytometry on serum-treated bacteria confirmed that only iC3b (not C3b) was present on their surface due to rapid C3b cleavage \u2014 direct evidence that iC3b is the dominant surface-deposited C3 fragment on serum-resistant bacterial isolates.",
       "claim_type": "surface_expression",
       "direction": "supports",
       "evidence_type": "flow_cytometry",
@@ -3197,7 +3197,7 @@
     },
     {
       "evidence_id": "a1_evi_25",
-      "claim": "Anti-rat C3/C3b mouse monoclonal antibody clone 2B10B9B2 (Hycult Biotech, cat HM3031) used in complement-assay studies — antibody identifier pairing with C3 detection methods (allows downstream annotation of antibody validation).",
+      "claim": "Anti-rat C3/C3b mouse monoclonal antibody clone 2B10B9B2 (Hycult Biotech, cat HM3031) used in complement-assay studies \u2014 antibody identifier pairing with C3 detection methods (allows downstream annotation of antibody validation).",
       "claim_type": "methodological",
       "direction": "supports",
       "evidence_type": "flow_cytometry",
@@ -3241,7 +3241,7 @@
     },
     {
       "evidence_id": "a1_evi_26",
-      "claim": "IHC demonstrated positive C3 staining in protein casts and within proximal tubule epithelial cells in nephrotic mouse kidney — tissue-level localization evidence showing C3 protein in epithelial compartment; surface vs intracellular not distinguished by IHC alone.",
+      "claim": "IHC demonstrated positive C3 staining in protein casts and within proximal tubule epithelial cells in nephrotic mouse kidney \u2014 tissue-level localization evidence showing C3 protein in epithelial compartment; surface vs intracellular not distinguished by IHC alone.",
       "claim_type": "tissue_expression",
       "direction": "ambiguous",
       "evidence_type": "immunohistochemistry",
@@ -3294,7 +3294,7 @@
     },
     {
       "evidence_id": "a1_evi_27",
-      "claim": "C3-knockout mice (C3−/−) were used in a nephrotic mouse model, providing a genetic loss-of-function control validating C3 specificity of complement-pathway readouts.",
+      "claim": "C3-knockout mice (C3\u2212/\u2212) were used in a nephrotic mouse model, providing a genetic loss-of-function control validating C3 specificity of complement-pathway readouts.",
       "claim_type": "methodological",
       "direction": "supports",
       "evidence_type": "loss_of_function_phenotype",
@@ -3334,7 +3334,7 @@
           },
           "section": "methods",
           "figure_or_table_id": null,
-          "quote": "These mice were intercrossed with mice deficient for complement factor B ( Cfb −/− [ 20 ]),, complement factor D ( Cfd −/− [ 21 ]), and complement factor C3 ( C3 −/− [ 22 ]), to yield Nphs2 Δipod *Cfb −/− , Nphs2 Δipod *Cfd −/− or Nphs2 Δipod *C3 −/− mice, respectively.",
+          "quote": "These mice were intercrossed with mice deficient for complement factor B ( Cfb \u2212/\u2212 [ 20 ]),, complement factor D ( Cfd \u2212/\u2212 [ 21 ]), and complement factor C3 ( C3 \u2212/\u2212 [ 22 ]), to yield Nphs2 \u0394ipod *Cfb \u2212/\u2212 , Nphs2 \u0394ipod *Cfd \u2212/\u2212 or Nphs2 \u0394ipod *C3 \u2212/\u2212 mice, respectively.",
           "quote_sha256": "8aed02a9d102ff0af10adc81013d404398d4736b7e789ce63c5e88f2d74434b3",
           "char_offset": 104,
           "normalized_source_sha256": "8982ff9d8054471a39153576683939b3f1b94a75ec8317a81ad4e9a06232c2de"
@@ -3347,7 +3347,7 @@
     },
     {
       "evidence_id": "a1_evi_28",
-      "claim": "HC-bound iC3b on nanoparticles drives macrophage uptake via complement receptors; soft-corona proteins attenuate this by shielding/masking C3 fragment accessibility — direct functional evidence that soft-corona proteins act as epitope-masking agents limiting iC3b accessibility to complement receptors.",
+      "claim": "HC-bound iC3b on nanoparticles drives macrophage uptake via complement receptors; soft-corona proteins attenuate this by shielding/masking C3 fragment accessibility \u2014 direct functional evidence that soft-corona proteins act as epitope-masking agents limiting iC3b accessibility to complement receptors.",
       "claim_type": "surface_expression",
       "direction": "ambiguous",
       "evidence_type": "functional_assay",
@@ -3400,7 +3400,7 @@
     },
     {
       "evidence_id": "a1_evi_29",
-      "claim": "SC (soft-corona) proteins mask HC-bound C3 fragments on nanoparticle surfaces, reducing their accessibility to complement receptors on macrophages — mechanistic evidence for epitope masking of C3/iC3b by protein corona analogous to ECM shielding in biological contexts.",
+      "claim": "SC (soft-corona) proteins mask HC-bound C3 fragments on nanoparticle surfaces, reducing their accessibility to complement receptors on macrophages \u2014 mechanistic evidence for epitope masking of C3/iC3b by protein corona analogous to ECM shielding in biological contexts.",
       "claim_type": "surface_expression",
       "direction": "refutes",
       "evidence_type": "functional_assay",
@@ -3440,7 +3440,7 @@
           },
           "section": "discussion",
           "figure_or_table_id": null,
-          "quote": "Importantly, the macrophage uptake of NPs was primarily governed by HC‐bound C3 fragments, whereas SC proteins may attenuate uptake by masking C3 fragments associated with the HC, thereby reducing their accessibility to CRs.",
+          "quote": "Importantly, the macrophage uptake of NPs was primarily governed by HC\u2010bound C3 fragments, whereas SC proteins may attenuate uptake by masking C3 fragments associated with the HC, thereby reducing their accessibility to CRs.",
           "quote_sha256": "110fe40b3692972e5b07ca0acf2d87a399e48b80fca99f31c783a9bfcbd85556",
           "char_offset": 225,
           "normalized_source_sha256": "eac2ee4e89f515fba34a268e135f8c9a650ebba86477c391961242341d54965a"
@@ -3453,7 +3453,7 @@
     },
     {
       "evidence_id": "a1_evi_30",
-      "claim": "A cocrystal structure of compstatin analogue Cp01 in complex with C3c fragment is available and was used to guide SAR study — crystal structure evidence for a small-molecule inhibitor engaging the surface-accessible C3c epitope.",
+      "claim": "A cocrystal structure of compstatin analogue Cp01 in complex with C3c fragment is available and was used to guide SAR study \u2014 crystal structure evidence for a small-molecule inhibitor engaging the surface-accessible C3c epitope.",
       "claim_type": "surface_expression",
       "direction": "supports",
       "evidence_type": "crystal_structure",
@@ -3497,7 +3497,7 @@
     },
     {
       "evidence_id": "a1_evi_31",
-      "claim": "Cryo-EM structure of C3bB-Cp60 complex at 2.88 Å resolution confirms the structural basis for compstatin (Cp60) binding to C3b — direct structural evidence of therapeutic engagement of the C3 ECD by a clinical-stage compstatin inhibitor.",
+      "claim": "Cryo-EM structure of C3bB-Cp60 complex at 2.88 \u00c5 resolution confirms the structural basis for compstatin (Cp60) binding to C3b \u2014 direct structural evidence of therapeutic engagement of the C3 ECD by a clinical-stage compstatin inhibitor.",
       "claim_type": "surface_expression",
       "direction": "supports",
       "evidence_type": "cryo_em",
@@ -3528,7 +3528,7 @@
           },
           "section": "abstract",
           "figure_or_table_id": null,
-          "quote": "Cryogenic electron microscopy of the C3bB-Cp60 complex at 2.88 Å resolution confirmed the structural basis for enhanced target affinity and provided mechanistic insights.",
+          "quote": "Cryogenic electron microscopy of the C3bB-Cp60 complex at 2.88 \u00c5 resolution confirmed the structural basis for enhanced target affinity and provided mechanistic insights.",
           "quote_sha256": "8ca6c06e647303dfa585cd14f1be98c0b67e9b725f46a1795be04850f0ef6f28",
           "char_offset": 174,
           "normalized_source_sha256": "ae80741d6db56fe2c040675480e6a19b4c1e28565a3db4909e0d4f7378a4c49a"
@@ -3541,7 +3541,7 @@
     },
     {
       "evidence_id": "a1_evi_32",
-      "claim": "Compstatins (including clinical-stage analogs) directly inhibit C3 activation by binding the C3 ECD — therapeutic engagement of soluble/deposited C3 as surface accessibility evidence; these binders engage C3/C3b at the convertase-forming surface.",
+      "claim": "Compstatins (including clinical-stage analogs) directly inhibit C3 activation by binding the C3 ECD \u2014 therapeutic engagement of soluble/deposited C3 as surface accessibility evidence; these binders engage C3/C3b at the convertase-forming surface.",
       "claim_type": "surface_expression",
       "direction": "supports",
       "evidence_type": "review_assertion",
@@ -3585,7 +3585,7 @@
     },
     {
       "evidence_id": "a1_evi_33",
-      "claim": "Structural study revealed that substrate C3 binds C4b of the CP convertase through two interfaces (one shared with the SCIN-inhibited C3bBb dimer), defined by conformational changes in C3 — direct structural evidence of C3 ECD accessibility in convertase complex.",
+      "claim": "Structural study revealed that substrate C3 binds C4b of the CP convertase through two interfaces (one shared with the SCIN-inhibited C3bBb dimer), defined by conformational changes in C3 \u2014 direct structural evidence of C3 ECD accessibility in convertase complex.",
       "claim_type": "surface_expression",
       "direction": "supports",
       "evidence_type": "cryo_em",
@@ -3629,7 +3629,7 @@
     },
     {
       "evidence_id": "a1_evi_34",
-      "claim": "Anti-C3 nanobody hC3Nb3 was used in a therapeutic duo-nanobody construct targeting C3/C4b — names the nanobody binder engaging C3 ECD; validates therapeutic accessibility of C3 epitope.",
+      "claim": "Anti-C3 nanobody hC3Nb3 was used in a therapeutic duo-nanobody construct targeting C3/C4b \u2014 names the nanobody binder engaging C3 ECD; validates therapeutic accessibility of C3 epitope.",
       "claim_type": "surface_expression",
       "direction": "supports",
       "evidence_type": "functional_assay",
@@ -3673,7 +3673,7 @@
     },
     {
       "evidence_id": "a1_evi_35",
-      "claim": "C3 has documented intracellular functions in autophagy, ER function, and lipid homeostasis in hepatocytes — evidence that a significant pool of C3 resides intracellularly in its major producing cell type, consistent with the secreted/intracellular rather than membrane-anchored classification.",
+      "claim": "C3 has documented intracellular functions in autophagy, ER function, and lipid homeostasis in hepatocytes \u2014 evidence that a significant pool of C3 resides intracellularly in its major producing cell type, consistent with the secreted/intracellular rather than membrane-anchored classification.",
       "claim_type": "surface_expression",
       "direction": "refutes",
       "evidence_type": "review_assertion",
@@ -3726,7 +3726,7 @@
     },
     {
       "evidence_id": "a1_evi_36",
-      "claim": "Flow cytometry was used to measure intracellular C3 levels in immune cells of HBV-infected patients — intracellular C3 detection in immune cells by flow cytometry (implies permeabilization); non-surface measurement qualifying the surface-accessibility read.",
+      "claim": "Flow cytometry was used to measure intracellular C3 levels in immune cells of HBV-infected patients \u2014 intracellular C3 detection in immune cells by flow cytometry (implies permeabilization); non-surface measurement qualifying the surface-accessibility read.",
       "claim_type": "tissue_expression",
       "direction": "ambiguous",
       "evidence_type": "flow_cytometry",
@@ -3779,7 +3779,7 @@
     },
     {
       "evidence_id": "a1_evi_37",
-      "claim": "C3 mRNA was profoundly decreased in liver biopsy tissue of chronic hepatitis B patients vs uninfected individuals — RNA-level expression evidence; confirms hepatic C3 transcription but provides no surface-accessibility information.",
+      "claim": "C3 mRNA was profoundly decreased in liver biopsy tissue of chronic hepatitis B patients vs uninfected individuals \u2014 RNA-level expression evidence; confirms hepatic C3 transcription but provides no surface-accessibility information.",
       "claim_type": "tissue_expression",
       "direction": "ambiguous",
       "evidence_type": "rt_qpcr",
@@ -3832,7 +3832,7 @@
     },
     {
       "evidence_id": "a1_evi_38",
-      "claim": "C3 and CFH were localized on human photoreceptors by immunostaining — direct evidence of C3 protein presence at photoreceptor cell surfaces in human retina, supporting a non-canonical extracellular/surface-accessible C3 pool in a specialized neuronal cell type.",
+      "claim": "C3 and CFH were localized on human photoreceptors by immunostaining \u2014 direct evidence of C3 protein presence at photoreceptor cell surfaces in human retina, supporting a non-canonical extracellular/surface-accessible C3 pool in a specialized neuronal cell type.",
       "claim_type": "surface_expression",
       "direction": "supports",
       "evidence_type": "immunofluorescence",
@@ -3938,7 +3938,7 @@
     },
     {
       "evidence_id": "a1_evi_40",
-      "claim": "In vitro binding assay showed dose-dependent binding of the therapeutic fusion protein FHR51-9FH1-5 to surface-immobilized C3, C3b, iC3b, and C3d — direct evidence that these C3 isoforms/fragments are accessible for therapeutic engagement when surface-immobilized.",
+      "claim": "In vitro binding assay showed dose-dependent binding of the therapeutic fusion protein FHR51-9FH1-5 to surface-immobilized C3, C3b, iC3b, and C3d \u2014 direct evidence that these C3 isoforms/fragments are accessible for therapeutic engagement when surface-immobilized.",
       "claim_type": "surface_expression",
       "direction": "supports",
       "evidence_type": "functional_assay",
@@ -3982,7 +3982,7 @@
     },
     {
       "evidence_id": "a1_evi_41",
-      "claim": "Intracellular complement pathway activation in spleen stromal fibroblastic reticular cells (FRCs) generates C3a via the alternative pathway after SFTSV infection — evidence for intracellular (non-surface) C3 activation in a non-hepatic cell type, reinforcing the intracellular/secreted-rather-than-PM nature of C3.",
+      "claim": "Intracellular complement pathway activation in spleen stromal fibroblastic reticular cells (FRCs) generates C3a via the alternative pathway after SFTSV infection \u2014 evidence for intracellular (non-surface) C3 activation in a non-hepatic cell type, reinforcing the intracellular/secreted-rather-than-PM nature of C3.",
       "claim_type": "surface_expression",
       "direction": "refutes",
       "evidence_type": "functional_assay",
@@ -4035,7 +4035,7 @@
     },
     {
       "evidence_id": "a1_evi_42",
-      "claim": "CR2-fH (a therapeutic complement inhibitor) targets C3b deposited on membranes via its CR2 domain, and was shown to significantly reduce C3b deposition and complement activation on RPE cell membranes — therapeutic engagement of surface-deposited C3b as surface accessibility evidence.",
+      "claim": "CR2-fH (a therapeutic complement inhibitor) targets C3b deposited on membranes via its CR2 domain, and was shown to significantly reduce C3b deposition and complement activation on RPE cell membranes \u2014 therapeutic engagement of surface-deposited C3b as surface accessibility evidence.",
       "claim_type": "surface_expression",
       "direction": "supports",
       "evidence_type": "functional_assay",
@@ -4075,7 +4075,7 @@
           },
           "section": "discussion",
           "figure_or_table_id": null,
-          "quote": "Overall, CR2 targeting of the inhibitory domain of fH is more effective than SCR-mediated binding of the endogenous full-length fH in blocking deposition of C3b and ensuing complement activation on membranes. 22 , 39 Here, we showed that CR2-fH significantly reduced or prevented CC-HS–induced TEER reduction, complement activation (MAC), APOE deposition, lipid accumulation (Nile Red), and autophagy impairment in RPE cells.",
+          "quote": "Overall, CR2 targeting of the inhibitory domain of fH is more effective than SCR-mediated binding of the endogenous full-length fH in blocking deposition of C3b and ensuing complement activation on membranes. 22 , 39 Here, we showed that CR2-fH significantly reduced or prevented CC-HS\u2013induced TEER reduction, complement activation (MAC), APOE deposition, lipid accumulation (Nile Red), and autophagy impairment in RPE cells.",
           "quote_sha256": "231c0327a59e2b2005aa388dee7b4e4d96a1166ad03f16768679d1b0c57b6a0c",
           "char_offset": 0,
           "normalized_source_sha256": "58ef53fac3c3416c683e5af4d15a1992fb05739fcc64a6ee68b96e78c7440d2e"
@@ -4088,7 +4088,7 @@
     },
     {
       "evidence_id": "a1_evi_43",
-      "claim": "The C-terminal domain of staphylococcal Efb (Efb-C) forms a high-affinity interaction with the thioester-containing domain (TED/C3d) of C3b, blocking C3 proconvertase formation — direct structural evidence of C3b TED accessibility as a therapeutic target epitope.",
+      "claim": "The C-terminal domain of staphylococcal Efb (Efb-C) forms a high-affinity interaction with the thioester-containing domain (TED/C3d) of C3b, blocking C3 proconvertase formation \u2014 direct structural evidence of C3b TED accessibility as a therapeutic target epitope.",
       "claim_type": "surface_expression",
       "direction": "supports",
       "evidence_type": "functional_assay",
@@ -4132,7 +4132,7 @@
     },
     {
       "evidence_id": "a1_evi_44",
-      "claim": "Western blot detection of C3 and C5 protein in whole placental tissue extracts from PE and GDM pregnancies — whole-tissue Western blot without fractionation; confirms C3 protein expression in placenta but does not distinguish surface from intracellular localization.",
+      "claim": "Western blot detection of C3 and C5 protein in whole placental tissue extracts from PE and GDM pregnancies \u2014 whole-tissue Western blot without fractionation; confirms C3 protein expression in placenta but does not distinguish surface from intracellular localization.",
       "claim_type": "tissue_expression",
       "direction": "ambiguous",
       "evidence_type": "western_blot",
@@ -4556,7 +4556,7 @@
     },
     {
       "evidence_id": "a2_evi_08",
-      "claim": "Human Müller cells (retinal macroglial cells) secrete components of the complement system upon pro-inflammatory cytokine stimulation, indicating that retinal Müller cells are a source of complement C3 under inflammatory conditions.",
+      "claim": "Human M\u00fcller cells (retinal macroglial cells) secrete components of the complement system upon pro-inflammatory cytokine stimulation, indicating that retinal M\u00fcller cells are a source of complement C3 under inflammatory conditions.",
       "claim_type": "tissue_expression",
       "direction": "supports",
       "evidence_type": "mass_spec_surfaceome",
@@ -4564,19 +4564,19 @@
       "confidence": "moderate",
       "assay_context": {
         "species": "human",
-        "cell_type_or_line": "MIO-M1 Müller cell line; primary retinal Müller glia (pRMG)",
+        "cell_type_or_line": "MIO-M1 M\u00fcller cell line; primary retinal M\u00fcller glia (pRMG)",
         "permeabilized": null,
         "fixation": null,
         "isoform": null,
         "cell_context": {
           "material_kind": "cell_line",
           "material_kind_other_label": null,
-          "cell_type": "Müller glia",
+          "cell_type": "M\u00fcller glia",
           "cell_line_name": "MIO-M1",
           "cellosaurus_id": null,
           "tissue": "retina",
           "disease_state": null,
-          "activation_state": "cytokine-stimulated (IFNγ, TNFα, IL-4, IL-6, IL-10, VEGF, TGFβ)"
+          "activation_state": "cytokine-stimulated (IFN\u03b3, TNF\u03b1, IL-4, IL-6, IL-10, VEGF, TGF\u03b2)"
         }
       },
       "spans": [
@@ -4596,7 +4596,7 @@
           },
           "section": "abstract",
           "figure_or_table_id": null,
-          "quote": "Stimulation of Müller cells resulted in a primarily pro-inflammatory phenotype with secretion of cytokines and components of the complement system.",
+          "quote": "Stimulation of M\u00fcller cells resulted in a primarily pro-inflammatory phenotype with secretion of cytokines and components of the complement system.",
           "quote_sha256": "f1a5e620f59dab92460f16c7c846743acd7a5b8bbf69a22135c8db600802e154",
           "char_offset": 0,
           "normalized_source_sha256": "1b09330c7350e2c5d6eed1bd4bc90e6dbfb8d595a93022f20c5b65ba49089149"
@@ -4702,7 +4702,7 @@
           },
           "section": "abstract",
           "figure_or_table_id": null,
-          "quote": "Western blotting and immunostaining revealed maturation-dependent C3 fragment profiles, with apical localization of C3 and intracellular presence of the intact C3 β chain in HM iPSC-RPE, while C3 fragments were present in LM and ARPE-19 cells.<h4>Conclusions</h4>HM iPSC-RPE cells most closely mimic native RPE features and provide a robust model for in vitro studies.",
+          "quote": "Western blotting and immunostaining revealed maturation-dependent C3 fragment profiles, with apical localization of C3 and intracellular presence of the intact C3 \u03b2 chain in HM iPSC-RPE, while C3 fragments were present in LM and ARPE-19 cells.<h4>Conclusions</h4>HM iPSC-RPE cells most closely mimic native RPE features and provide a robust model for in vitro studies.",
           "quote_sha256": "cd1f6a16bf0d0b815b0d9d9fb1d3f2c796528e577b65956b51babc028a2b2b6b",
           "char_offset": 121,
           "normalized_source_sha256": "defc224c132b7f5493f408ba4d12bad638dfbe9c7bc666b46e171fb8074c5135"
@@ -4715,7 +4715,7 @@
     },
     {
       "evidence_id": "a2_evi_11",
-      "claim": "C3 protein (intact) and its bioactive fragment C3a are abundantly present in Hedgehog-type medulloblastoma (MB) tumor tissue sections by IHC, whereas neither C3 nor C3a is detectable in tumor-adjacent normal brain tissue — establishing tumor-restricted C3 accumulation in this CNS malignancy.",
+      "claim": "C3 protein (intact) and its bioactive fragment C3a are abundantly present in Hedgehog-type medulloblastoma (MB) tumor tissue sections by IHC, whereas neither C3 nor C3a is detectable in tumor-adjacent normal brain tissue \u2014 establishing tumor-restricted C3 accumulation in this CNS malignancy.",
       "claim_type": "tissue_expression",
       "direction": "supports",
       "evidence_type": "immunohistochemistry",
@@ -4768,7 +4768,7 @@
     },
     {
       "evidence_id": "a2_evi_12",
-      "claim": "C3 and C3a were not detectable in tumor-adjacent normal brain tissue in medulloblastoma patients, establishing absence of C3 in normal adult cerebellar tissue by IHC — contradicting any assumption of constitutive CNS C3 protein accumulation.",
+      "claim": "C3 and C3a were not detectable in tumor-adjacent normal brain tissue in medulloblastoma patients, establishing absence of C3 in normal adult cerebellar tissue by IHC \u2014 contradicting any assumption of constitutive CNS C3 protein accumulation.",
       "claim_type": "contradictory",
       "direction": "refutes",
       "evidence_type": "immunohistochemistry",
@@ -4829,7 +4829,7 @@
       "confidence": "strong",
       "assay_context": {
         "species": "human",
-        "cell_type_or_line": "post-mortem brain — tauopathy (PiD, CBD, GGT) vs controls",
+        "cell_type_or_line": "post-mortem brain \u2014 tauopathy (PiD, CBD, GGT) vs controls",
         "permeabilized": true,
         "fixation": "fixed",
         "isoform": null,
@@ -5041,7 +5041,7 @@
       "confidence": "moderate",
       "assay_context": {
         "species": "human",
-        "cell_type_or_line": "kidney biopsies — RIAKI patients",
+        "cell_type_or_line": "kidney biopsies \u2014 RIAKI patients",
         "permeabilized": true,
         "fixation": "fixed",
         "isoform": null,
@@ -5139,7 +5139,7 @@
     },
     {
       "evidence_id": "a2_evi_19",
-      "claim": "Local complement system expression (including C3) declines during lymphatic spread of non-metastatic luminal breast cancer, with further reduction of tumoral C3 in LNM indicative of poor survival — establishing a disease-state-dependent downregulation of C3 in metastatic breast cancer tissue.",
+      "claim": "Local complement system expression (including C3) declines during lymphatic spread of non-metastatic luminal breast cancer, with further reduction of tumoral C3 in LNM indicative of poor survival \u2014 establishing a disease-state-dependent downregulation of C3 in metastatic breast cancer tissue.",
       "claim_type": "tissue_expression",
       "direction": "supports",
       "evidence_type": "rna_seq",
@@ -5306,7 +5306,7 @@
       "confidence": "moderate",
       "assay_context": {
         "species": "human",
-        "cell_type_or_line": "vaginal epithelial cells (VECs) — uninfected vs Candida-infected",
+        "cell_type_or_line": "vaginal epithelial cells (VECs) \u2014 uninfected vs Candida-infected",
         "permeabilized": null,
         "fixation": null,
         "isoform": null,
@@ -5510,7 +5510,7 @@
     },
     {
       "evidence_id": "a2_evi_26",
-      "claim": "Native C3 demonstrates the highest binding to activated platelets (phospholipid-scrambled membranes) compared to C3b and soluble C3(H2O), and native C3 bound to activated platelets supports the most efficient C3bBb convertase formation — establishing activated platelet surface as a site of preferential C3 engagement.",
+      "claim": "Native C3 demonstrates the highest binding to activated platelets (phospholipid-scrambled membranes) compared to C3b and soluble C3(H2O), and native C3 bound to activated platelets supports the most efficient C3bBb convertase formation \u2014 establishing activated platelet surface as a site of preferential C3 engagement.",
       "claim_type": "surface_expression",
       "direction": "supports",
       "evidence_type": "flow_cytometry",
@@ -5616,7 +5616,7 @@
     },
     {
       "evidence_id": "a2_evi_28",
-      "claim": "Upon complement activation on target surfaces, C3 is proteolytically activated to C3b, which becomes covalently attached to surface-exposed nucleophiles via transacylation mediated by its reactive internal thioester bond — this is the primary mechanism by which C3b becomes cell-surface associated (opsonization).",
+      "claim": "Upon complement activation on target surfaces, C3 is proteolytically activated to C3b, which becomes covalently attached to surface-exposed nucleophiles via transacylation mediated by its reactive internal thioester bond \u2014 this is the primary mechanism by which C3b becomes cell-surface associated (opsonization).",
       "claim_type": "surface_expression",
       "direction": "supports",
       "evidence_type": "review_assertion",
@@ -5762,7 +5762,7 @@
           },
           "section": "abstract",
           "figure_or_table_id": null,
-          "quote": "The effect of rh-chymase on purified human C3, C3a and IgG was studied using SDS-PAGE electrophoresis and LAD2 mast cell cultures. The results show that 34.2 ± 17.9, 37.4 ± 15.5 and 43.4 ± 18.6 % (mean ± SD) of the mast cells express C3c immunoreactivity in the healthy skin, initial petechial (IP) and palpable purpura (PP) lesions, respectively. About 9.4-12.1 % of the chymase(+) mast cells were in apparent contact with C3c(+) vessels in IP and PP. The treatment of cryosections with rh-chymase decreased the IF staining of C3c, but not that of immunoglobulins.",
+          "quote": "The effect of rh-chymase on purified human C3, C3a and IgG was studied using SDS-PAGE electrophoresis and LAD2 mast cell cultures. The results show that 34.2\u00a0\u00b1\u00a017.9, 37.4\u00a0\u00b1\u00a015.5 and 43.4\u00a0\u00b1\u00a018.6\u00a0% (mean\u00a0\u00b1\u00a0SD) of the mast cells express C3c immunoreactivity in the healthy skin, initial petechial (IP) and palpable purpura (PP) lesions, respectively. About 9.4-12.1\u00a0% of the chymase(+) mast cells were in apparent contact with C3c(+) vessels in IP and PP. The treatment of cryosections with rh-chymase decreased the IF staining of C3c, but not that of immunoglobulins.",
           "quote_sha256": "a26812ff9911145c542bfb2afa1c07966a190e649abfba20d259aaa48702b66a",
           "char_offset": 0,
           "normalized_source_sha256": "549a77fa270ea8a4ce0a2fc44f90c31ea936080b1b24d2f0f43c63f093363ad5"
@@ -5775,7 +5775,7 @@
     },
     {
       "evidence_id": "a2_evi_31",
-      "claim": "In IL-33- and TNF-α-stimulated eosinophils (multi-omics analysis), C3 is upregulated as an inflammatory mediator, establishing eosinophils as a C3-expressing cell type under cytokine-activated (inflammatory) conditions.",
+      "claim": "In IL-33- and TNF-\u03b1-stimulated eosinophils (multi-omics analysis), C3 is upregulated as an inflammatory mediator, establishing eosinophils as a C3-expressing cell type under cytokine-activated (inflammatory) conditions.",
       "claim_type": "tissue_expression",
       "direction": "supports",
       "evidence_type": "rna_seq",
@@ -5783,7 +5783,7 @@
       "confidence": "moderate",
       "assay_context": {
         "species": "human",
-        "cell_type_or_line": "eosinophils (IL-33 + TNF-α stimulated)",
+        "cell_type_or_line": "eosinophils (IL-33 + TNF-\u03b1 stimulated)",
         "permeabilized": null,
         "fixation": null,
         "isoform": null,
@@ -5795,7 +5795,7 @@
           "cellosaurus_id": null,
           "tissue": null,
           "disease_state": null,
-          "activation_state": "IL-33 + TNF-α stimulated"
+          "activation_state": "IL-33 + TNF-\u03b1 stimulated"
         }
       },
       "spans": [
@@ -5815,7 +5815,7 @@
           },
           "section": "abstract",
           "figure_or_table_id": null,
-          "quote": "Multi-omics analyses, including transcriptomics and proteomics, were performed. Extracellular trap formation (ETosis) was assessed by SYTOX nucleic acid staining and was visualised by immunofluorescence and transmission electron microscopy.<h4>Results</h4>Multi-omics analyses revealed an IL-33- and TNF-α-induced inflammatory gene signature characterised by the upregulation of cell surface markers (oxLDL receptor 1, CD22, CD4 and ICAM-1) and inflammatory mediators (C3, CCL3/4 and IL1A/B). CD22 upregulation was specific to IL-33 stimulation.",
+          "quote": "Multi-omics analyses, including transcriptomics and proteomics, were performed. Extracellular trap formation (ETosis) was assessed by SYTOX nucleic acid staining and was visualised by immunofluorescence and transmission electron microscopy.<h4>Results</h4>Multi-omics analyses revealed an IL-33- and TNF-\u03b1-induced inflammatory gene signature characterised by the upregulation of cell surface markers (oxLDL receptor 1, CD22, CD4 and ICAM-1) and inflammatory mediators (C3, CCL3/4 and IL1A/B). CD22 upregulation was specific to IL-33 stimulation.",
           "quote_sha256": "6272fe9e318ee0e4ed576375e95355c64b295b6acd6e147138f6338c2e6787ce",
           "char_offset": 0,
           "normalized_source_sha256": "8dbd78f04250e8035be1110499a7b0c1be2cdf5c016baca761914dcbae733da5"
@@ -6123,7 +6123,7 @@
       "mode": "topic_search",
       "query": {
         "agent_focus": "a1",
-        "intent": "standing: state-conditional surface biology (activation / stress / disease / EMT / senescence / differentiation) — feeds accessibility_modulation",
+        "intent": "standing: state-conditional surface biology (activation / stress / disease / EMT / senescence / differentiation) \u2014 feeds accessibility_modulation",
         "anchors": [
           "cell_state_modulation"
         ]
@@ -6356,7 +6356,7 @@
       "mode": "topic_search",
       "query": {
         "agent_focus": "a2",
-        "intent": "standing: state-conditional surface biology (activation / stress / disease / EMT / senescence / differentiation) — feeds accessibility_modulation",
+        "intent": "standing: state-conditional surface biology (activation / stress / disease / EMT / senescence / differentiation) \u2014 feeds accessibility_modulation",
         "anchors": [
           "cell_state_modulation"
         ]
@@ -6373,5 +6373,574 @@
   "confidence": "low",
   "confidence_reasoning": "Confidence is low because C3 is canonically a secreted plasma protein with no transmembrane domain, and all surface-accessibility evidence reflects state-conditional covalent deposition of activated fragments (C3b/iC3b) rather than stable plasma-membrane anchoring of the intact protein. The direct surface evidence is limited to a single live-cell flow cytometry report in virus-infected cells (one source, infection-state dependent) and a functional inhibitor assay on RPE cells; no independent corroboration exists with genetic controls or orthogonal surface proteomics. The dominant high-severity secreted-form risk means any circulating antibody must compete with a vast excess of soluble C3 in plasma (~1 mg/mL). Lifting confidence would require independent live-cell surface proteomics (e.g., cell-surface biotinylation with knockout validation) confirming C3 fragment deposition on a defined target-cell population, and quantification of the surface-to-soluble ratio under the proposed targeting condition.",
   "model_path": "claude-sonnet-4-6",
-  "record_generated_at": "2026-06-08T20:51:36.090195Z"
+  "record_generated_at": "2026-06-08T20:51:36.090195Z",
+  "cellxgene": {
+    "schema_version": "2.1.12",
+    "census_version": "2025-11-08",
+    "cell_class_enrichment": {
+      "class": "enhanced",
+      "class_ids": [
+        "Epithelial",
+        "Stromal",
+        "Immune"
+      ],
+      "class_labels": [
+        "Epithelial",
+        "Stromal",
+        "Immune"
+      ],
+      "fold_change": 1.575,
+      "fold_change_infinite": false,
+      "tau": 0.8269545713151732,
+      "top_entity_contribs": [
+        {
+          "id": "Epithelial",
+          "label": "Epithelial",
+          "pop_mean": 30.427,
+          "tau_contrib": 0.0
+        },
+        {
+          "id": "Stromal",
+          "label": "Stromal",
+          "pop_mean": 19.3172,
+          "tau_contrib": 0.3651
+        },
+        {
+          "id": "Immune",
+          "label": "Immune",
+          "pop_mean": 6.091,
+          "tau_contrib": 0.7998
+        }
+      ]
+    },
+    "cell_family_enrichment": {
+      "class": "enriched",
+      "family_ids": [
+        "CL:0000077",
+        "CL:0019026",
+        "CL:0019028"
+      ],
+      "family_labels": [
+        "mesothelial cell",
+        "periportal region hepatocyte",
+        "midzonal region hepatocyte"
+      ],
+      "top_cl_labels": [
+        "mesothelial cell of pleura",
+        "periportal region hepatocyte",
+        "midzonal region hepatocyte"
+      ],
+      "fold_change": 1.444,
+      "fold_change_infinite": false,
+      "tau": 0.9719406850544381,
+      "top_entity_contribs": [
+        {
+          "id": "CL:0000077",
+          "label": "mesothelial cell",
+          "pop_mean": 30.427,
+          "tau_contrib": 0.0,
+          "sub_label": "mesothelial cell of pleura"
+        },
+        {
+          "id": "CL:0019026",
+          "label": "periportal region hepatocyte",
+          "pop_mean": 21.0746,
+          "tau_contrib": 0.3074
+        },
+        {
+          "id": "CL:0019028",
+          "label": "midzonal region hepatocyte",
+          "pop_mean": 19.7819,
+          "tau_contrib": 0.3499
+        }
+      ]
+    },
+    "cell_type_enrichment": {
+      "class": "enriched",
+      "cl_ids": [
+        "CL:1000491",
+        "CL:0019026",
+        "CL:0019028"
+      ],
+      "fold_change": 1.444,
+      "fold_change_infinite": false,
+      "tau": 0.9837191351600225,
+      "top_entity_contribs": [
+        {
+          "id": "CL:1000491",
+          "label": "mesothelial cell of pleura",
+          "pop_mean": 30.427,
+          "tau_contrib": 0.0
+        },
+        {
+          "id": "CL:0019026",
+          "label": "periportal region hepatocyte",
+          "pop_mean": 21.0746,
+          "tau_contrib": 0.3074
+        },
+        {
+          "id": "CL:0019028",
+          "label": "midzonal region hepatocyte",
+          "pop_mean": 19.7819,
+          "tau_contrib": 0.3499
+        }
+      ]
+    },
+    "tissue_enrichment": {
+      "class": "enriched",
+      "uberon_ids": [
+        "UBERON:0002110",
+        "UBERON:0000160",
+        "UBERON:0003688"
+      ],
+      "tissue_labels": [
+        "gallbladder",
+        "intestine",
+        "omentum"
+      ],
+      "fold_change": 1.003,
+      "fold_change_infinite": false,
+      "tau": 0.976520106644171,
+      "top_entity_contribs": [
+        {
+          "id": "UBERON:0002110",
+          "label": "gallbladder",
+          "pop_mean": 1.9502,
+          "tau_contrib": 0.0
+        },
+        {
+          "id": "UBERON:0000160",
+          "label": "intestine",
+          "pop_mean": 1.9437,
+          "tau_contrib": 0.0033
+        },
+        {
+          "id": "UBERON:0003688",
+          "label": "omentum",
+          "pop_mean": 1.7103,
+          "tau_contrib": 0.123
+        }
+      ]
+    },
+    "tissue_category_enrichment": {
+      "class": "enhanced",
+      "category_ids": [
+        "hepatobiliary_pancreas",
+        "digestive",
+        "fluids_other"
+      ],
+      "category_labels": [
+        "hepatobiliary_pancreas",
+        "digestive",
+        "fluids_other"
+      ],
+      "top_tissues": [
+        "gallbladder",
+        "intestine",
+        "omentum"
+      ],
+      "fold_change": 1.003,
+      "fold_change_infinite": false,
+      "tau": 0.5923941992715204,
+      "top_entity_contribs": [
+        {
+          "id": "hepatobiliary_pancreas",
+          "label": "hepatobiliary_pancreas",
+          "pop_mean": 1.9502,
+          "tau_contrib": 0.0,
+          "sub_label": "gallbladder"
+        },
+        {
+          "id": "digestive",
+          "label": "digestive",
+          "pop_mean": 1.9437,
+          "tau_contrib": 0.0033,
+          "sub_label": "intestine"
+        },
+        {
+          "id": "fluids_other",
+          "label": "fluids_other",
+          "pop_mean": 1.7103,
+          "tau_contrib": 0.123,
+          "sub_label": "omentum"
+        }
+      ]
+    },
+    "tissue_organ_enrichment": {
+      "class": "enriched",
+      "organ_ids": [
+        "UBERON:0018707",
+        "UBERON:0000160",
+        "UBERON:0003688"
+      ],
+      "organ_labels": [
+        "bladder organ",
+        "intestine",
+        "omentum"
+      ],
+      "top_uberon_labels": [
+        "gallbladder",
+        "intestine",
+        "omentum"
+      ],
+      "fold_change": 1.003,
+      "fold_change_infinite": false,
+      "tau": 0.9681185409554388,
+      "top_entity_contribs": [
+        {
+          "id": "UBERON:0018707",
+          "label": "bladder organ",
+          "pop_mean": 1.9502,
+          "tau_contrib": 0.0,
+          "sub_label": "gallbladder"
+        },
+        {
+          "id": "UBERON:0000160",
+          "label": "intestine",
+          "pop_mean": 1.9437,
+          "tau_contrib": 0.0033
+        },
+        {
+          "id": "UBERON:0003688",
+          "label": "omentum",
+          "pop_mean": 1.7103,
+          "tau_contrib": 0.123
+        }
+      ]
+    },
+    "enrichment_class": "enhanced",
+    "enrichment_cl_ids": [
+      "Epithelial",
+      "Stromal",
+      "Immune"
+    ],
+    "fold_change": 1.575,
+    "fold_change_infinite": false,
+    "top_cell_types": [
+      {
+        "cell_type": "mesothelial cell of pleura",
+        "cl_id": "CL:1000491",
+        "mean_log1p_cp10k": 3.4694,
+        "n_expressing": 2731,
+        "n_total": 2793,
+        "pct_expressing": 0.9778,
+        "is_rare": false,
+        "is_trace": false,
+        "tissues": [
+          {
+            "tissue": "lung",
+            "uberon_id": "UBERON:0002048",
+            "mean_log1p_cp10k": 3.4694,
+            "n_expressing": 2731,
+            "n_total": 2783,
+            "pct_expressing": 0.9813
+          }
+        ]
+      },
+      {
+        "cell_type": "periportal region hepatocyte",
+        "cl_id": "CL:0019026",
+        "mean_log1p_cp10k": 3.2451,
+        "n_expressing": 77117,
+        "n_total": 90251,
+        "pct_expressing": 0.8545,
+        "is_rare": false,
+        "is_trace": false,
+        "tissues": []
+      },
+      {
+        "cell_type": "midzonal region hepatocyte",
+        "cl_id": "CL:0019028",
+        "mean_log1p_cp10k": 3.1765,
+        "n_expressing": 19007,
+        "n_total": 22063,
+        "pct_expressing": 0.8615,
+        "is_rare": false,
+        "is_trace": false,
+        "tissues": []
+      },
+      {
+        "cell_type": "adventitial fibroblast",
+        "cl_id": "CL:4052030",
+        "mean_log1p_cp10k": 3.109,
+        "n_expressing": 4891,
+        "n_total": 5418,
+        "pct_expressing": 0.9027,
+        "is_rare": false,
+        "is_trace": false,
+        "tissues": [
+          {
+            "tissue": "lung",
+            "uberon_id": "UBERON:0002048",
+            "mean_log1p_cp10k": 3.109,
+            "n_expressing": 4891,
+            "n_total": 5418,
+            "pct_expressing": 0.9027
+          }
+        ]
+      },
+      {
+        "cell_type": "fibroblastic reticular cell",
+        "cl_id": "CL:0009101",
+        "mean_log1p_cp10k": 2.9551,
+        "n_expressing": 431,
+        "n_total": 468,
+        "pct_expressing": 0.9209,
+        "is_rare": true,
+        "is_trace": false,
+        "tissues": [
+          {
+            "tissue": "small intestine",
+            "uberon_id": "UBERON:0002108",
+            "mean_log1p_cp10k": 3.1984,
+            "n_expressing": 105,
+            "n_total": 106,
+            "pct_expressing": 0.9906
+          },
+          {
+            "tissue": "stomach",
+            "uberon_id": "UBERON:0000945",
+            "mean_log1p_cp10k": 3.1986,
+            "n_expressing": 34,
+            "n_total": 37,
+            "pct_expressing": 0.9189
+          },
+          {
+            "tissue": "esophagus",
+            "uberon_id": "UBERON:0001043",
+            "mean_log1p_cp10k": 2.1497,
+            "n_expressing": 4,
+            "n_total": 6,
+            "pct_expressing": 0.6667
+          }
+        ]
+      },
+      {
+        "cell_type": "centrilobular region hepatocyte",
+        "cl_id": "CL:0019029",
+        "mean_log1p_cp10k": 2.8911,
+        "n_expressing": 42444,
+        "n_total": 47737,
+        "pct_expressing": 0.8891,
+        "is_rare": false,
+        "is_trace": false,
+        "tissues": []
+      },
+      {
+        "cell_type": "hepatocyte",
+        "cl_id": "CL:0000182",
+        "mean_log1p_cp10k": 2.7785,
+        "n_expressing": 105461,
+        "n_total": 122143,
+        "pct_expressing": 0.8634,
+        "is_rare": false,
+        "is_trace": false,
+        "tissues": [
+          {
+            "tissue": "liver",
+            "uberon_id": "UBERON:0002107",
+            "mean_log1p_cp10k": 2.7574,
+            "n_expressing": 97516,
+            "n_total": 105216,
+            "pct_expressing": 0.9268
+          },
+          {
+            "tissue": "adrenal gland",
+            "uberon_id": "UBERON:0002369",
+            "mean_log1p_cp10k": 3.0421,
+            "n_expressing": 7917,
+            "n_total": 8330,
+            "pct_expressing": 0.9504
+          },
+          {
+            "tissue": "abdomen",
+            "uberon_id": "UBERON:0000916",
+            "mean_log1p_cp10k": 1.6319,
+            "n_expressing": 22,
+            "n_total": 650,
+            "pct_expressing": 0.0338
+          }
+        ]
+      },
+      {
+        "cell_type": "mesothelial cell",
+        "cl_id": "CL:0000077",
+        "mean_log1p_cp10k": 2.7227,
+        "n_expressing": 103912,
+        "n_total": 152401,
+        "pct_expressing": 0.6818,
+        "is_rare": false,
+        "is_trace": false,
+        "tissues": [
+          {
+            "tissue": "lung",
+            "uberon_id": "UBERON:0002048",
+            "mean_log1p_cp10k": 3.0174,
+            "n_expressing": 3115,
+            "n_total": 3895,
+            "pct_expressing": 0.7997
+          },
+          {
+            "tissue": "pleura",
+            "uberon_id": "UBERON:0000977",
+            "mean_log1p_cp10k": 3.5492,
+            "n_expressing": 1478,
+            "n_total": 2581,
+            "pct_expressing": 0.5726
+          },
+          {
+            "tissue": "colon",
+            "uberon_id": "UBERON:0001155",
+            "mean_log1p_cp10k": 2.4494,
+            "n_expressing": 215,
+            "n_total": 2244,
+            "pct_expressing": 0.0958
+          }
+        ]
+      },
+      {
+        "cell_type": "cholangiocyte",
+        "cl_id": "CL:1000488",
+        "mean_log1p_cp10k": 2.6482,
+        "n_expressing": 4074,
+        "n_total": 5816,
+        "pct_expressing": 0.7005,
+        "is_rare": false,
+        "is_trace": false,
+        "tissues": []
+      },
+      {
+        "cell_type": "mesothelial fibroblast",
+        "cl_id": "CL:4023054",
+        "mean_log1p_cp10k": 3.0045,
+        "n_expressing": 111,
+        "n_total": 232,
+        "pct_expressing": 0.4784,
+        "is_rare": true,
+        "is_trace": false,
+        "tissues": [
+          {
+            "tissue": "lung",
+            "uberon_id": "UBERON:0002048",
+            "mean_log1p_cp10k": 3.0045,
+            "n_expressing": 111,
+            "n_total": 232,
+            "pct_expressing": 0.4784
+          }
+        ]
+      }
+    ],
+    "top_tissues": [
+      {
+        "tissue": "endocrine gland",
+        "uberon_id": "UBERON:0002368",
+        "mean_log1p_cp10k": 2.3258,
+        "n_expressing": 10782,
+        "n_total": 10782,
+        "pct_expressing": 1.0,
+        "score": 9.2345,
+        "is_trace": false,
+        "is_stale_denominator": true
+      },
+      {
+        "tissue": "pleural fluid",
+        "uberon_id": "UBERON:0001087",
+        "mean_log1p_cp10k": 2.3248,
+        "n_expressing": 2578,
+        "n_total": 2578,
+        "pct_expressing": 1.0,
+        "score": 9.2243,
+        "is_trace": false,
+        "is_stale_denominator": true
+      },
+      {
+        "tissue": "musculature",
+        "uberon_id": "UBERON:0001015",
+        "mean_log1p_cp10k": 2.2652,
+        "n_expressing": 5869,
+        "n_total": 5869,
+        "pct_expressing": 1.0,
+        "score": 8.6328,
+        "is_trace": false,
+        "is_stale_denominator": true
+      },
+      {
+        "tissue": "adipose tissue",
+        "uberon_id": "UBERON:0001013",
+        "mean_log1p_cp10k": 2.3437,
+        "n_expressing": 53884,
+        "n_total": 58921,
+        "pct_expressing": 0.9145,
+        "score": 8.6143,
+        "is_trace": false,
+        "is_stale_denominator": true
+      },
+      {
+        "tissue": "liver",
+        "uberon_id": "UBERON:0002107",
+        "mean_log1p_cp10k": 2.9619,
+        "n_expressing": 185520,
+        "n_total": 495883,
+        "pct_expressing": 0.3741,
+        "score": 6.8597,
+        "is_trace": false,
+        "is_stale_denominator": true
+      },
+      {
+        "tissue": "exocrine gland",
+        "uberon_id": "UBERON:0002365",
+        "mean_log1p_cp10k": 2.026,
+        "n_expressing": 4650,
+        "n_total": 4650,
+        "pct_expressing": 1.0,
+        "score": 6.5834,
+        "is_trace": false,
+        "is_stale_denominator": true
+      },
+      {
+        "tissue": "uterus",
+        "uberon_id": "UBERON:0000995",
+        "mean_log1p_cp10k": 2.0076,
+        "n_expressing": 26616,
+        "n_total": 26644,
+        "pct_expressing": 0.9989,
+        "score": 6.4387,
+        "is_trace": false,
+        "is_stale_denominator": true
+      },
+      {
+        "tissue": "heart",
+        "uberon_id": "UBERON:0000948",
+        "mean_log1p_cp10k": 2.0027,
+        "n_expressing": 69547,
+        "n_total": 74008,
+        "pct_expressing": 0.9397,
+        "score": 6.023,
+        "is_trace": false,
+        "is_stale_denominator": true
+      },
+      {
+        "tissue": "abdomen",
+        "uberon_id": "UBERON:0000916",
+        "mean_log1p_cp10k": 2.0289,
+        "n_expressing": 15361,
+        "n_total": 17314,
+        "pct_expressing": 0.8872,
+        "score": 5.8606,
+        "is_trace": false,
+        "is_stale_denominator": true
+      },
+      {
+        "tissue": "eye",
+        "uberon_id": "UBERON:0000970",
+        "mean_log1p_cp10k": 1.9849,
+        "n_expressing": 52115,
+        "n_total": 69609,
+        "pct_expressing": 0.7487,
+        "score": 4.7005,
+        "is_trace": false,
+        "is_stale_denominator": true
+      }
+    ]
+  }
 }

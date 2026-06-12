@@ -4185,5 +4185,514 @@
   "confidence": "high",
   "confidence_reasoning": "",
   "model_path": "claude-sonnet-4-6",
-  "record_generated_at": "2026-05-30T20:29:01.447637Z"
+  "record_generated_at": "2026-05-30T20:29:01.447637Z",
+  "cellxgene": {
+    "schema_version": "2.1.12",
+    "census_version": "2025-11-08",
+    "cell_class_enrichment": {
+      "class": "enriched",
+      "class_ids": [
+        "Epithelial",
+        "Neural",
+        "Immune"
+      ],
+      "class_labels": [
+        "Epithelial",
+        "Neural",
+        "Immune"
+      ],
+      "fold_change": 5.798,
+      "fold_change_infinite": false,
+      "tau": 0.9386901045614905,
+      "top_entity_contribs": [
+        {
+          "id": "Epithelial",
+          "label": "Epithelial",
+          "pop_mean": 18.0216,
+          "tau_contrib": 0.0
+        },
+        {
+          "id": "Neural",
+          "label": "Neural",
+          "pop_mean": 3.1082,
+          "tau_contrib": 0.8275
+        },
+        {
+          "id": "Immune",
+          "label": "Immune",
+          "pop_mean": 1.5323,
+          "tau_contrib": 0.915
+        }
+      ]
+    },
+    "cell_family_enrichment": {
+      "class": "enriched",
+      "family_ids": [
+        "CL:0000239",
+        "CL:0002078",
+        "CL:0000710"
+      ],
+      "family_labels": [
+        "brush border epithelial cell",
+        "meso-epithelial cell",
+        "neurecto-epithelial cell"
+      ],
+      "top_cl_labels": [
+        "kidney proximal convoluted tubule epithelial cell",
+        "epithelial cell of proximal tubule",
+        "non-pigmented ciliary epithelial cell"
+      ],
+      "fold_change": 2.129,
+      "fold_change_infinite": false,
+      "tau": 0.9876948864931054,
+      "top_entity_contribs": [
+        {
+          "id": "CL:0000239",
+          "label": "brush border epithelial cell",
+          "pop_mean": 18.0216,
+          "tau_contrib": 0.0,
+          "sub_label": "kidney proximal convoluted tubule epithelial cell"
+        },
+        {
+          "id": "CL:0002078",
+          "label": "meso-epithelial cell",
+          "pop_mean": 8.4644,
+          "tau_contrib": 0.5303,
+          "sub_label": "epithelial cell of proximal tubule"
+        },
+        {
+          "id": "CL:0000710",
+          "label": "neurecto-epithelial cell",
+          "pop_mean": 7.6135,
+          "tau_contrib": 0.5775,
+          "sub_label": "non-pigmented ciliary epithelial cell"
+        }
+      ]
+    },
+    "cell_type_enrichment": {
+      "class": "enriched",
+      "cl_ids": [
+        "CL:1000838",
+        "CL:4030011",
+        "CL:0002306"
+      ],
+      "fold_change": 1.112,
+      "fold_change_infinite": false,
+      "tau": 0.9931298147834786,
+      "top_entity_contribs": [
+        {
+          "id": "CL:1000838",
+          "label": "kidney proximal convoluted tubule epithelial cell",
+          "pop_mean": 18.0216,
+          "tau_contrib": 0.0
+        },
+        {
+          "id": "CL:4030011",
+          "label": "epithelial cell of proximal tubule segment 3",
+          "pop_mean": 16.2,
+          "tau_contrib": 0.1011
+        },
+        {
+          "id": "CL:0002306",
+          "label": "epithelial cell of proximal tubule",
+          "pop_mean": 8.4644,
+          "tau_contrib": 0.5303
+        }
+      ]
+    },
+    "tissue_enrichment": {
+      "class": "enriched",
+      "uberon_ids": [
+        "UBERON:0002240",
+        "UBERON:0016435"
+      ],
+      "tissue_labels": [
+        "spinal cord",
+        "chest wall"
+      ],
+      "fold_change": 3.435,
+      "fold_change_infinite": false,
+      "tau": 0.9965976002016195,
+      "top_entity_contribs": [
+        {
+          "id": "UBERON:0002240",
+          "label": "spinal cord",
+          "pop_mean": 4.9858,
+          "tau_contrib": 0.0
+        },
+        {
+          "id": "UBERON:0016435",
+          "label": "chest wall",
+          "pop_mean": 1.4516,
+          "tau_contrib": 0.7089
+        }
+      ]
+    },
+    "tissue_category_enrichment": {
+      "class": "enriched",
+      "category_ids": [
+        "cns",
+        "fluids_other"
+      ],
+      "category_labels": [
+        "cns",
+        "fluids_other"
+      ],
+      "top_tissues": [
+        "spinal cord",
+        "chest wall"
+      ],
+      "fold_change": 3.435,
+      "fold_change_infinite": false,
+      "tau": 0.9222193069333726,
+      "top_entity_contribs": [
+        {
+          "id": "cns",
+          "label": "cns",
+          "pop_mean": 4.9858,
+          "tau_contrib": 0.0,
+          "sub_label": "spinal cord"
+        },
+        {
+          "id": "fluids_other",
+          "label": "fluids_other",
+          "pop_mean": 1.4516,
+          "tau_contrib": 0.7089,
+          "sub_label": "chest wall"
+        }
+      ]
+    },
+    "tissue_organ_enrichment": {
+      "class": "enriched",
+      "organ_ids": [
+        "UBERON:0002240",
+        "UBERON:0016435"
+      ],
+      "organ_labels": [
+        "spinal cord",
+        "chest wall"
+      ],
+      "top_uberon_labels": [
+        "spinal cord",
+        "chest wall"
+      ],
+      "fold_change": 3.435,
+      "fold_change_infinite": false,
+      "tau": 0.9953767581498735,
+      "top_entity_contribs": [
+        {
+          "id": "UBERON:0002240",
+          "label": "spinal cord",
+          "pop_mean": 4.9858,
+          "tau_contrib": 0.0
+        },
+        {
+          "id": "UBERON:0016435",
+          "label": "chest wall",
+          "pop_mean": 1.4516,
+          "tau_contrib": 0.7089
+        }
+      ]
+    },
+    "enrichment_class": "enriched",
+    "enrichment_cl_ids": [
+      "Epithelial",
+      "Neural",
+      "Immune"
+    ],
+    "fold_change": 5.798,
+    "fold_change_infinite": false,
+    "top_cell_types": [
+      {
+        "cell_type": "kidney proximal convoluted tubule epithelial cell",
+        "cl_id": "CL:1000838",
+        "mean_log1p_cp10k": 3.2061,
+        "n_expressing": 15755,
+        "n_total": 20704,
+        "pct_expressing": 0.761,
+        "is_rare": false,
+        "is_trace": false,
+        "tissues": []
+      },
+      {
+        "cell_type": "epithelial cell of proximal tubule segment 3",
+        "cl_id": "CL:4030011",
+        "mean_log1p_cp10k": 3.289,
+        "n_expressing": 2296,
+        "n_total": 3659,
+        "pct_expressing": 0.6275,
+        "is_rare": false,
+        "is_trace": false,
+        "tissues": []
+      },
+      {
+        "cell_type": "epithelial cell of proximal tubule",
+        "cl_id": "CL:0002306",
+        "mean_log1p_cp10k": 2.707,
+        "n_expressing": 141865,
+        "n_total": 234384,
+        "pct_expressing": 0.6053,
+        "is_rare": false,
+        "is_trace": false,
+        "tissues": [
+          {
+            "tissue": "adrenal gland",
+            "uberon_id": "UBERON:0002369",
+            "mean_log1p_cp10k": 2.6279,
+            "n_expressing": 11,
+            "n_total": 19,
+            "pct_expressing": 0.5789
+          },
+          {
+            "tissue": "testis",
+            "uberon_id": "UBERON:0000473",
+            "mean_log1p_cp10k": 2.5192,
+            "n_expressing": 4,
+            "n_total": 21,
+            "pct_expressing": 0.1905
+          }
+        ]
+      },
+      {
+        "cell_type": "non-pigmented ciliary epithelial cell",
+        "cl_id": "CL:0002304",
+        "mean_log1p_cp10k": 2.4604,
+        "n_expressing": 118663,
+        "n_total": 166913,
+        "pct_expressing": 0.7109,
+        "is_rare": false,
+        "is_trace": false,
+        "tissues": []
+      },
+      {
+        "cell_type": "parietal epithelial cell",
+        "cl_id": "CL:1000452",
+        "mean_log1p_cp10k": 2.4192,
+        "n_expressing": 4174,
+        "n_total": 6552,
+        "pct_expressing": 0.6371,
+        "is_rare": false,
+        "is_trace": false,
+        "tissues": []
+      },
+      {
+        "cell_type": "pigmented epithelial cell",
+        "cl_id": "CL:0000529",
+        "mean_log1p_cp10k": 2.6813,
+        "n_expressing": 9349,
+        "n_total": 29987,
+        "pct_expressing": 0.3118,
+        "is_rare": false,
+        "is_trace": false,
+        "tissues": []
+      },
+      {
+        "cell_type": "epithelial cell of proximal tubule segment 1",
+        "cl_id": "CL:4030009",
+        "mean_log1p_cp10k": 2.2913,
+        "n_expressing": 297,
+        "n_total": 777,
+        "pct_expressing": 0.3822,
+        "is_rare": true,
+        "is_trace": false,
+        "tissues": [
+          {
+            "tissue": "kidney",
+            "uberon_id": "UBERON:0002113",
+            "mean_log1p_cp10k": 2.2878,
+            "n_expressing": 296,
+            "n_total": 772,
+            "pct_expressing": 0.3834
+          }
+        ]
+      },
+      {
+        "cell_type": "oligodendrocyte",
+        "cl_id": "CL:0000128",
+        "mean_log1p_cp10k": 2.0532,
+        "n_expressing": 2610753,
+        "n_total": 5705502,
+        "pct_expressing": 0.4576,
+        "is_rare": false,
+        "is_trace": false,
+        "tissues": [
+          {
+            "tissue": "spinal cord",
+            "uberon_id": "UBERON:0002240",
+            "mean_log1p_cp10k": 2.0148,
+            "n_expressing": 10339,
+            "n_total": 11547,
+            "pct_expressing": 0.8954
+          },
+          {
+            "tissue": "cortex",
+            "uberon_id": "UBERON:0001851",
+            "mean_log1p_cp10k": 1.4742,
+            "n_expressing": 1,
+            "n_total": 156,
+            "pct_expressing": 0.0064
+          }
+        ]
+      },
+      {
+        "cell_type": "mesothelial cell",
+        "cl_id": "CL:0000077",
+        "mean_log1p_cp10k": 2.2086,
+        "n_expressing": 53243,
+        "n_total": 152401,
+        "pct_expressing": 0.3494,
+        "is_rare": false,
+        "is_trace": false,
+        "tissues": [
+          {
+            "tissue": "pleura",
+            "uberon_id": "UBERON:0000977",
+            "mean_log1p_cp10k": 2.2507,
+            "n_expressing": 255,
+            "n_total": 2581,
+            "pct_expressing": 0.0988
+          },
+          {
+            "tissue": "lung",
+            "uberon_id": "UBERON:0002048",
+            "mean_log1p_cp10k": 1.9986,
+            "n_expressing": 125,
+            "n_total": 3895,
+            "pct_expressing": 0.0321
+          },
+          {
+            "tissue": "intestine",
+            "uberon_id": "UBERON:0000160",
+            "mean_log1p_cp10k": 1.924,
+            "n_expressing": 52,
+            "n_total": 3349,
+            "pct_expressing": 0.0155
+          }
+        ]
+      },
+      {
+        "cell_type": "S cone cell",
+        "cl_id": "CL:0003050",
+        "mean_log1p_cp10k": 1.8153,
+        "n_expressing": 4158,
+        "n_total": 8229,
+        "pct_expressing": 0.5053,
+        "is_rare": false,
+        "is_trace": false,
+        "tissues": []
+      }
+    ],
+    "top_tissues": [
+      {
+        "tissue": "kidney",
+        "uberon_id": "UBERON:0002113",
+        "mean_log1p_cp10k": 2.6431,
+        "n_expressing": 165733,
+        "n_total": 309976,
+        "pct_expressing": 0.5347,
+        "score": 6.9808,
+        "is_trace": false,
+        "is_stale_denominator": true
+      },
+      {
+        "tissue": "eye",
+        "uberon_id": "UBERON:0000970",
+        "mean_log1p_cp10k": 2.0658,
+        "n_expressing": 738674,
+        "n_total": 743729,
+        "pct_expressing": 0.9932,
+        "score": 6.8449,
+        "is_trace": false,
+        "is_stale_denominator": true
+      },
+      {
+        "tissue": "brain",
+        "uberon_id": "UBERON:0000955",
+        "mean_log1p_cp10k": 2.0509,
+        "n_expressing": 2604868,
+        "n_total": 2836585,
+        "pct_expressing": 0.9183,
+        "score": 6.2216,
+        "is_trace": false,
+        "is_stale_denominator": true
+      },
+      {
+        "tissue": "spinal cord",
+        "uberon_id": "UBERON:0002240",
+        "mean_log1p_cp10k": 2.0131,
+        "n_expressing": 10414,
+        "n_total": 13549,
+        "pct_expressing": 0.7686,
+        "score": 4.9854,
+        "is_trace": false,
+        "is_stale_denominator": false
+      },
+      {
+        "tissue": "chest wall",
+        "uberon_id": "UBERON:0016435",
+        "mean_log1p_cp10k": 1.7323,
+        "n_expressing": 3199,
+        "n_total": 10255,
+        "pct_expressing": 0.3119,
+        "score": 1.4516,
+        "is_trace": false,
+        "is_stale_denominator": false
+      },
+      {
+        "tissue": "embryo",
+        "uberon_id": "UBERON:0000922",
+        "mean_log1p_cp10k": 2.0357,
+        "n_expressing": 3902,
+        "n_total": 18005,
+        "pct_expressing": 0.2167,
+        "score": 1.4428,
+        "is_trace": false,
+        "is_stale_denominator": true
+      },
+      {
+        "tissue": "adipose tissue",
+        "uberon_id": "UBERON:0001013",
+        "mean_log1p_cp10k": 1.8568,
+        "n_expressing": 1794,
+        "n_total": 7150,
+        "pct_expressing": 0.2509,
+        "score": 1.3558,
+        "is_trace": false,
+        "is_stale_denominator": true
+      },
+      {
+        "tissue": "heart",
+        "uberon_id": "UBERON:0000948",
+        "mean_log1p_cp10k": 1.8423,
+        "n_expressing": 2568,
+        "n_total": 12645,
+        "pct_expressing": 0.2031,
+        "score": 1.0786,
+        "is_trace": false,
+        "is_stale_denominator": false
+      },
+      {
+        "tissue": "axilla",
+        "uberon_id": "UBERON:0009472",
+        "mean_log1p_cp10k": 1.6429,
+        "n_expressing": 5813,
+        "n_total": 44093,
+        "pct_expressing": 0.1318,
+        "score": 0.5498,
+        "is_trace": false,
+        "is_stale_denominator": false
+      },
+      {
+        "tissue": "placenta",
+        "uberon_id": "UBERON:0001987",
+        "mean_log1p_cp10k": 2.0141,
+        "n_expressing": 18102,
+        "n_total": 214760,
+        "pct_expressing": 0.0843,
+        "score": 0.5474,
+        "is_trace": false,
+        "is_stale_denominator": false
+      }
+    ]
+  }
 }

@@ -4388,5 +4388,559 @@
   "confidence": "moderate",
   "confidence_reasoning": "Confidence is moderate for two reasons. First, the direct surface-accessibility evidence comes from a single primary method (cell-surface capture mass spectrometry on chondrogenic cells, PMC12777226, and \u00b5CSC in cardiac tissue, PMC10030153); IHC data are from permeabilized/fixed tissue and cannot distinguish surface from intracellular FN1. Second, the dominant biological pool is the hepatocyte-secreted plasma fibronectin, which circulates freely in blood \u2014 a genuine high-severity decoy that complicates antibody-based targeting. Surface membranous FN1 is disease-state-enriched (tumor, fibrosis, cardiac failure) and absent in normal liver (PMC11907257), so confidence in a constitutive surface call is low; confidence in the disease-state surface call is moderate. To lift confidence, non-permeabilized live-cell flow cytometry or surface-capture MS in human tumor cell lines, combined with direct plasma/serum competition experiments, would be needed.",
   "model_path": "claude-sonnet-4-6",
-  "record_generated_at": "2026-05-31T15:21:51.367224Z"
+  "record_generated_at": "2026-05-31T15:21:51.367224Z",
+  "cellxgene": {
+    "schema_version": "2.1.12",
+    "census_version": "2025-11-08",
+    "cell_class_enrichment": {
+      "class": "enhanced",
+      "class_ids": [
+        "Stromal",
+        "Other",
+        "Endothelial"
+      ],
+      "class_labels": [
+        "Stromal",
+        "Other",
+        "Endothelial"
+      ],
+      "fold_change": 1.003,
+      "fold_change_infinite": false,
+      "tau": 0.5489123214641908,
+      "top_entity_contribs": [
+        {
+          "id": "Stromal",
+          "label": "Stromal",
+          "pop_mean": 23.7767,
+          "tau_contrib": 0.0
+        },
+        {
+          "id": "Other",
+          "label": "Other",
+          "pop_mean": 23.6975,
+          "tau_contrib": 0.0033
+        },
+        {
+          "id": "Endothelial",
+          "label": "Endothelial",
+          "pop_mean": 14.0253,
+          "tau_contrib": 0.4101
+        }
+      ]
+    },
+    "cell_family_enrichment": {
+      "class": "enriched",
+      "family_ids": [
+        "CL:4047001",
+        "CL:0000000",
+        "CL:0000057"
+      ],
+      "family_labels": [
+        "cycling stromal cell",
+        "cell",
+        "fibroblast"
+      ],
+      "top_cl_labels": [
+        "cycling stromal cell",
+        "cell",
+        "embryonic fibroblast"
+      ],
+      "fold_change": 1.003,
+      "fold_change_infinite": false,
+      "tau": 0.9315500581751498,
+      "top_entity_contribs": [
+        {
+          "id": "CL:4047001",
+          "label": "cycling stromal cell",
+          "pop_mean": 23.7767,
+          "tau_contrib": 0.0
+        },
+        {
+          "id": "CL:0000000",
+          "label": "cell",
+          "pop_mean": 23.6975,
+          "tau_contrib": 0.0033
+        },
+        {
+          "id": "CL:0000057",
+          "label": "fibroblast",
+          "pop_mean": 20.5037,
+          "tau_contrib": 0.1377,
+          "sub_label": "embryonic fibroblast"
+        }
+      ]
+    },
+    "cell_type_enrichment": {
+      "class": "enriched",
+      "cl_ids": [
+        "CL:4047001",
+        "CL:0000000",
+        "CL:2000042"
+      ],
+      "fold_change": 1.003,
+      "fold_change_infinite": false,
+      "tau": 0.9609956014593205,
+      "top_entity_contribs": [
+        {
+          "id": "CL:4047001",
+          "label": "cycling stromal cell",
+          "pop_mean": 23.7767,
+          "tau_contrib": 0.0
+        },
+        {
+          "id": "CL:0000000",
+          "label": "cell",
+          "pop_mean": 23.6975,
+          "tau_contrib": 0.0033
+        },
+        {
+          "id": "CL:2000042",
+          "label": "embryonic fibroblast",
+          "pop_mean": 20.5037,
+          "tau_contrib": 0.1377
+        }
+      ]
+    },
+    "tissue_enrichment": {
+      "class": "enriched",
+      "uberon_ids": [
+        "UBERON:0000344",
+        "UBERON:0001987",
+        "UBERON:0002097"
+      ],
+      "tissue_labels": [
+        "mucosa",
+        "placenta",
+        "skin of body"
+      ],
+      "fold_change": 1.284,
+      "fold_change_infinite": false,
+      "tau": 0.9869447656796874,
+      "top_entity_contribs": [
+        {
+          "id": "UBERON:0000344",
+          "label": "mucosa",
+          "pop_mean": 7.5731,
+          "tau_contrib": 0.0
+        },
+        {
+          "id": "UBERON:0001987",
+          "label": "placenta",
+          "pop_mean": 5.8964,
+          "tau_contrib": 0.2214
+        },
+        {
+          "id": "UBERON:0002097",
+          "label": "skin of body",
+          "pop_mean": 3.8992,
+          "tau_contrib": 0.4851
+        }
+      ]
+    },
+    "tissue_category_enrichment": {
+      "class": "enhanced",
+      "category_ids": [
+        "fluids_other",
+        "reproductive",
+        "skin_adipose"
+      ],
+      "category_labels": [
+        "fluids_other",
+        "reproductive",
+        "skin_adipose"
+      ],
+      "top_tissues": [
+        "mucosa",
+        "placenta",
+        "skin of body"
+      ],
+      "fold_change": 1.284,
+      "fold_change_infinite": false,
+      "tau": 0.7389684265507525,
+      "top_entity_contribs": [
+        {
+          "id": "fluids_other",
+          "label": "fluids_other",
+          "pop_mean": 7.5731,
+          "tau_contrib": 0.0,
+          "sub_label": "mucosa"
+        },
+        {
+          "id": "reproductive",
+          "label": "reproductive",
+          "pop_mean": 5.8964,
+          "tau_contrib": 0.2214,
+          "sub_label": "placenta"
+        },
+        {
+          "id": "skin_adipose",
+          "label": "skin_adipose",
+          "pop_mean": 3.8992,
+          "tau_contrib": 0.4851,
+          "sub_label": "skin of body"
+        }
+      ]
+    },
+    "tissue_organ_enrichment": {
+      "class": "enriched",
+      "organ_ids": [
+        "UBERON:0000344",
+        "UBERON:0001987",
+        "UBERON:0002097"
+      ],
+      "organ_labels": [
+        "mucosa",
+        "placenta",
+        "skin of body"
+      ],
+      "top_uberon_labels": [
+        "mucosa",
+        "placenta",
+        "skin of body"
+      ],
+      "fold_change": 1.284,
+      "fold_change_infinite": false,
+      "tau": 0.9820533142068548,
+      "top_entity_contribs": [
+        {
+          "id": "UBERON:0000344",
+          "label": "mucosa",
+          "pop_mean": 7.5731,
+          "tau_contrib": 0.0
+        },
+        {
+          "id": "UBERON:0001987",
+          "label": "placenta",
+          "pop_mean": 5.8964,
+          "tau_contrib": 0.2214
+        },
+        {
+          "id": "UBERON:0002097",
+          "label": "skin of body",
+          "pop_mean": 3.8992,
+          "tau_contrib": 0.4851
+        }
+      ]
+    },
+    "enrichment_class": "enhanced",
+    "enrichment_cl_ids": [
+      "Stromal",
+      "Other",
+      "Endothelial"
+    ],
+    "fold_change": 1.003,
+    "fold_change_infinite": false,
+    "top_cell_types": [
+      {
+        "cell_type": "cycling stromal cell",
+        "cl_id": "CL:4047001",
+        "mean_log1p_cp10k": 3.2437,
+        "n_expressing": 251,
+        "n_total": 260,
+        "pct_expressing": 0.9654,
+        "is_rare": true,
+        "is_trace": false,
+        "tissues": [
+          {
+            "tissue": "breast",
+            "uberon_id": "UBERON:0000310",
+            "mean_log1p_cp10k": 3.2437,
+            "n_expressing": 251,
+            "n_total": 260,
+            "pct_expressing": 0.9654
+          }
+        ]
+      },
+      {
+        "cell_type": "cell",
+        "cl_id": "CL:0000000",
+        "mean_log1p_cp10k": 3.2981,
+        "n_expressing": 11469,
+        "n_total": 12613,
+        "pct_expressing": 0.9093,
+        "is_rare": false,
+        "is_trace": false,
+        "tissues": [
+          {
+            "tissue": "cortex",
+            "uberon_id": "UBERON:0001851",
+            "mean_log1p_cp10k": 3.5038,
+            "n_expressing": 557,
+            "n_total": 563,
+            "pct_expressing": 0.9893
+          },
+          {
+            "tissue": "head",
+            "uberon_id": "UBERON:0000033",
+            "mean_log1p_cp10k": 2.1147,
+            "n_expressing": 19,
+            "n_total": 28,
+            "pct_expressing": 0.6786
+          },
+          {
+            "tissue": "fallopian tube",
+            "uberon_id": "UBERON:0003889",
+            "mean_log1p_cp10k": 1.6444,
+            "n_expressing": 9,
+            "n_total": 409,
+            "pct_expressing": 0.022
+          }
+        ]
+      },
+      {
+        "cell_type": "embryonic fibroblast",
+        "cl_id": "CL:2000042",
+        "mean_log1p_cp10k": 3.1174,
+        "n_expressing": 11223,
+        "n_total": 11816,
+        "pct_expressing": 0.9498,
+        "is_rare": false,
+        "is_trace": false,
+        "tissues": []
+      },
+      {
+        "cell_type": "pulmonary interstitial fibroblast",
+        "cl_id": "CL:0002241",
+        "mean_log1p_cp10k": 2.9799,
+        "n_expressing": 8179,
+        "n_total": 8344,
+        "pct_expressing": 0.9802,
+        "is_rare": false,
+        "is_trace": false,
+        "tissues": [
+          {
+            "tissue": "lung",
+            "uberon_id": "UBERON:0002048",
+            "mean_log1p_cp10k": 2.9799,
+            "n_expressing": 8179,
+            "n_total": 8344,
+            "pct_expressing": 0.9802
+          }
+        ]
+      },
+      {
+        "cell_type": "endodermal cell",
+        "cl_id": "CL:0000223",
+        "mean_log1p_cp10k": 3.5464,
+        "n_expressing": 4273,
+        "n_total": 8571,
+        "pct_expressing": 0.4985,
+        "is_rare": false,
+        "is_trace": false,
+        "tissues": []
+      },
+      {
+        "cell_type": "endothelial stalk cell",
+        "cl_id": "CL:0002671",
+        "mean_log1p_cp10k": 2.7104,
+        "n_expressing": 4222,
+        "n_total": 4225,
+        "pct_expressing": 0.9993,
+        "is_rare": false,
+        "is_trace": false,
+        "tissues": [
+          {
+            "tissue": "liver",
+            "uberon_id": "UBERON:0002107",
+            "mean_log1p_cp10k": 2.7104,
+            "n_expressing": 4222,
+            "n_total": 4224,
+            "pct_expressing": 0.9995
+          }
+        ]
+      },
+      {
+        "cell_type": "precursor cell",
+        "cl_id": "CL:0011115",
+        "mean_log1p_cp10k": 3.793,
+        "n_expressing": 179,
+        "n_total": 567,
+        "pct_expressing": 0.3157,
+        "is_rare": true,
+        "is_trace": false,
+        "tissues": [
+          {
+            "tissue": "bone marrow",
+            "uberon_id": "UBERON:0002371",
+            "mean_log1p_cp10k": 3.793,
+            "n_expressing": 179,
+            "n_total": 191,
+            "pct_expressing": 0.9372
+          }
+        ]
+      },
+      {
+        "cell_type": "alveolar type 1 fibroblast cell",
+        "cl_id": "CL:4028004",
+        "mean_log1p_cp10k": 2.9648,
+        "n_expressing": 36742,
+        "n_total": 51100,
+        "pct_expressing": 0.719,
+        "is_rare": false,
+        "is_trace": false,
+        "tissues": [
+          {
+            "tissue": "nose",
+            "uberon_id": "UBERON:0000004",
+            "mean_log1p_cp10k": 2.8401,
+            "n_expressing": 5,
+            "n_total": 8,
+            "pct_expressing": 0.625
+          }
+        ]
+      },
+      {
+        "cell_type": "preosteoblast",
+        "cl_id": "CL:0007010",
+        "mean_log1p_cp10k": 2.794,
+        "n_expressing": 622,
+        "n_total": 736,
+        "pct_expressing": 0.8451,
+        "is_rare": true,
+        "is_trace": false,
+        "tissues": [
+          {
+            "tissue": "bone marrow",
+            "uberon_id": "UBERON:0002371",
+            "mean_log1p_cp10k": 2.794,
+            "n_expressing": 622,
+            "n_total": 736,
+            "pct_expressing": 0.8451
+          }
+        ]
+      },
+      {
+        "cell_type": "extravillous trophoblast",
+        "cl_id": "CL:0008036",
+        "mean_log1p_cp10k": 3.0709,
+        "n_expressing": 34519,
+        "n_total": 58381,
+        "pct_expressing": 0.5913,
+        "is_rare": false,
+        "is_trace": false,
+        "tissues": [
+          {
+            "tissue": "placenta",
+            "uberon_id": "UBERON:0001987",
+            "mean_log1p_cp10k": 3.2495,
+            "n_expressing": 28598,
+            "n_total": 40344,
+            "pct_expressing": 0.7089
+          }
+        ]
+      }
+    ],
+    "top_tissues": [
+      {
+        "tissue": "esophagus",
+        "uberon_id": "UBERON:0001043",
+        "mean_log1p_cp10k": 3.104,
+        "n_expressing": 6019,
+        "n_total": 8891,
+        "pct_expressing": 0.677,
+        "score": 14.4106,
+        "is_trace": false,
+        "is_stale_denominator": true
+      },
+      {
+        "tissue": "exocrine gland",
+        "uberon_id": "UBERON:0002365",
+        "mean_log1p_cp10k": 2.4079,
+        "n_expressing": 2528,
+        "n_total": 2528,
+        "pct_expressing": 1.0,
+        "score": 10.1107,
+        "is_trace": false,
+        "is_stale_denominator": true
+      },
+      {
+        "tissue": "embryo",
+        "uberon_id": "UBERON:0000922",
+        "mean_log1p_cp10k": 2.5613,
+        "n_expressing": 30315,
+        "n_total": 37436,
+        "pct_expressing": 0.8098,
+        "score": 9.679,
+        "is_trace": false,
+        "is_stale_denominator": true
+      },
+      {
+        "tissue": "heart",
+        "uberon_id": "UBERON:0000948",
+        "mean_log1p_cp10k": 2.3384,
+        "n_expressing": 235627,
+        "n_total": 239762,
+        "pct_expressing": 0.9828,
+        "score": 9.2027,
+        "is_trace": false,
+        "is_stale_denominator": true
+      },
+      {
+        "tissue": "musculature",
+        "uberon_id": "UBERON:0001015",
+        "mean_log1p_cp10k": 2.1875,
+        "n_expressing": 19151,
+        "n_total": 19151,
+        "pct_expressing": 1.0,
+        "score": 7.9125,
+        "is_trace": false,
+        "is_stale_denominator": true
+      },
+      {
+        "tissue": "endocrine gland",
+        "uberon_id": "UBERON:0002368",
+        "mean_log1p_cp10k": 2.1331,
+        "n_expressing": 15480,
+        "n_total": 15480,
+        "pct_expressing": 1.0,
+        "score": 7.4408,
+        "is_trace": false,
+        "is_stale_denominator": true
+      },
+      {
+        "tissue": "vasculature",
+        "uberon_id": "UBERON:0002049",
+        "mean_log1p_cp10k": 2.0998,
+        "n_expressing": 3107,
+        "n_total": 3107,
+        "pct_expressing": 1.0,
+        "score": 7.1645,
+        "is_trace": false,
+        "is_stale_denominator": true
+      },
+      {
+        "tissue": "adipose tissue",
+        "uberon_id": "UBERON:0001013",
+        "mean_log1p_cp10k": 2.2158,
+        "n_expressing": 30137,
+        "n_total": 35203,
+        "pct_expressing": 0.8561,
+        "score": 6.9934,
+        "is_trace": false,
+        "is_stale_denominator": true
+      },
+      {
+        "tissue": "placenta",
+        "uberon_id": "UBERON:0001987",
+        "mean_log1p_cp10k": 2.7952,
+        "n_expressing": 102596,
+        "n_total": 227177,
+        "pct_expressing": 0.4516,
+        "score": 6.9395,
+        "is_trace": false,
+        "is_stale_denominator": false
+      },
+      {
+        "tissue": "mucosa",
+        "uberon_id": "UBERON:0000344",
+        "mean_log1p_cp10k": 2.4159,
+        "n_expressing": 971,
+        "n_total": 1526,
+        "pct_expressing": 0.6363,
+        "score": 6.4899,
+        "is_trace": false,
+        "is_stale_denominator": false
+      }
+    ]
+  }
 }

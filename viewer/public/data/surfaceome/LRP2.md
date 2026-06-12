@@ -1056,3 +1056,35 @@ This Markdown is generated from the canonical JSON record at `/data/surfaceome/L
 - UniProt — CC BY 4.0 (UniProt Consortium)
 
 *Confidence high — *
+
+## CellxGene RNA enrichment (CZI Census)
+
+*Schema v2.1.12 · CZI Census 2025-11-08 · τ-cutoff classification (Yanai 2005, PMID 15388519) on linear population mean (mean × pct, ≈ nTPM) over the full measured universe with a 1e-3 noise floor: τ≥0.85 enriched, 0.5–0.85 enhanced, <0.5 low specificity, no eligibles not detected. Cutoffs from Kryuchkova-Mostacci & Robinson-Rechavi 2017 (PMID 26891983) + Lüleci & Yılmaz 2022. Cell ontology graph (cl-basic.obo) walked to ~150 cell-family terms; UBERON ontology walked to ~150 organ-level tissues. CC-BY 4.0 (CZI Census).*
+
+**Classification:**
+
+- **Cell class (CL ontology graph, ~10 compartments):** enriched · Epithelial · Neural · Immune · 5.8× · τ=0.94
+- **Cell type (leaf Cell Ontology terms, ~600):** enriched · kidney proximal convoluted tubule epithelial cell · epithelial cell of proximal tubule segment 3 · epithelial cell of proximal tubule · 1.1× · τ=0.99
+- **Tissue (UBERON terms, ~56):** enriched · spinal cord · chest wall · 3.4× · τ=1.00
+
+**Top 5 cell types (leaf CL, pooled across tissues):**
+
+| Cell type | CL ID | Mean log1p(CP10K) | % expressing | n_expressing / n_total |
+|---|---|---|---|---|
+| kidney proximal convoluted tubule epithelial cell | CL:1000838 | 3.206 | 76.10% | 15,755 / 20,704 |
+| epithelial cell of proximal tubule segment 3 | CL:4030011 | 3.289 | 62.75% | 2,296 / 3,659 |
+| epithelial cell of proximal tubule | CL:0002306 | 2.707 | 60.53% | 141,865 / 234,384 |
+| non-pigmented ciliary epithelial cell | CL:0002304 | 2.460 | 71.09% | 118,663 / 166,913 |
+| parietal epithelial cell | CL:1000452 | 2.419 | 63.71% | 4,174 / 6,552 |
+
+**Top 5 tissues (UBERON, pooled across cell types):**
+
+| Tissue | UBERON ID | Mean log1p(CP10K) | % expressing | n_expressing / n_total |
+|---|---|---|---|---|
+| kidney | UBERON:0002113 | 2.643 | 53.47% | 165,733 / 309,976 |
+| eye | UBERON:0000970 | 2.066 | 99.32% | 738,674 / 743,729 |
+| brain | UBERON:0000955 | 2.051 | 91.83% | 2,604,868 / 2,836,585 |
+| spinal cord | UBERON:0002240 | 2.013 | 76.86% | 10,414 / 13,549 |
+| chest wall | UBERON:0016435 | 1.732 | 31.19% | 3,199 / 10,255 |
+
+<!-- /cellxgene -->

@@ -10,8 +10,8 @@
   "triage_signal": "likely_accessible",
   "triage_reasoning": "PVRIG (CD112R) is a type I single-pass transmembrane receptor expressed on T cells and NK cells. It contains an extracellular immunoglobulin domain that binds PVRL2 (Nectin-2/CD112) on tumor cells, acting as an inhibitory immune checkpoint receptor analogous to TIGIT. Flow cytometry on intact (non-permeabilized) lymphocytes and NK cells confirms cell-surface expression. Multiple therapeutic programs (antibodies targeting the extracellular domain in intact immune cells) are in clinical development (e.g., COM701). NCBI annotation explicitly states 'located in plasma membrane' with signaling receptor activity. The extracellular Ig domain is stably displayed on the outer leaflet under baseline conditions in T/NK cells.",
   "executive_summary": {
-    "one_paragraph": "PVRIG is constitutively surface-accessible as a Type I single-pass inhibitory immune checkpoint receptor on NK, NKT, γδ T, and CD8+ T cells. Direct multi-method support: live-cell flow cytometry on primary human lymphocytes (a1_evi_10, a1_evi_15, a1_evi_17) and functional surface-blockade assays with COM701 and a TIGIT×PVRIG bispecific antibody on intact T and NK cells (a1_evi_08, a1_evi_24), plus ER/Golgi trafficking assay confirming constitutive PM delivery (a1_evi_19). Surface levels are moderately state-modulated: upregulated on tumor-infiltrating and activated CD8+ T cells across multiple solid tumor types (a2_evi_12, a2_evi_14), downregulated on activated NK cells (a2_evi_25), and elevated in disease contexts such as MDS/AML bone marrow (a2_evi_11). No shed or secreted form, no co-receptor requirement, and no paralog cross-reactivity rules out decoy and selectivity concerns; ligand-trans engagement rather than constitutive cis masking means the epitope is freely accessible in the unbound state.",
-    "accessibility_context_summary": "Constitutively surface-accessible on circulating NK, NKT, γδ T, and CD8+ T cells; further upregulated on tumor-infiltrating lymphocytes across multiple solid tumors and in hematologic malignancies, with activation-induced downregulation on NK cells.",
+    "one_paragraph": "PVRIG is constitutively surface-accessible as a Type I single-pass inhibitory immune checkpoint receptor on NK, NKT, \u03b3\u03b4 T, and CD8+ T cells. Direct multi-method support: live-cell flow cytometry on primary human lymphocytes (a1_evi_10, a1_evi_15, a1_evi_17) and functional surface-blockade assays with COM701 and a TIGIT\u00d7PVRIG bispecific antibody on intact T and NK cells (a1_evi_08, a1_evi_24), plus ER/Golgi trafficking assay confirming constitutive PM delivery (a1_evi_19). Surface levels are moderately state-modulated: upregulated on tumor-infiltrating and activated CD8+ T cells across multiple solid tumor types (a2_evi_12, a2_evi_14), downregulated on activated NK cells (a2_evi_25), and elevated in disease contexts such as MDS/AML bone marrow (a2_evi_11). No shed or secreted form, no co-receptor requirement, and no paralog cross-reactivity rules out decoy and selectivity concerns; ligand-trans engagement rather than constitutive cis masking means the epitope is freely accessible in the unbound state.",
+    "accessibility_context_summary": "Constitutively surface-accessible on circulating NK, NKT, \u03b3\u03b4 T, and CD8+ T cells; further upregulated on tumor-infiltrating lymphocytes across multiple solid tumors and in hematologic malignancies, with activation-induced downregulation on NK cells.",
     "surface_accessibility": "high",
     "evidence_grade_summary": "direct_multi_method",
     "confidence": "high",
@@ -68,15 +68,15 @@
     "induction_trigger": "oncogenic",
     "has_live_cell_surface_evidence": true,
     "expression_level_rationale": "High expression on NK and CD8+ T cell subsets in peripheral blood and tumor-infiltrating contexts (a1_evi_10, a1_evi_15, a2_evi_06); low-to-moderate on CD4+ T cells and Tregs (a2_evi_06, a2_evi_04); absent on B cells, monocytes, neutrophils (a2_evi_03).",
-    "expression_breadth_rationale": "Expression is confined to hematopoietic cytotoxic lymphocytes (NK, NKT, γδ T, CD8+ T cells) and absent on non-lymphoid immune cells and non-hematopoietic tissues under normal conditions (a2_evi_01, a2_evi_02, a2_evi_03).",
+    "expression_breadth_rationale": "Expression is confined to hematopoietic cytotoxic lymphocytes (NK, NKT, \u03b3\u03b4 T, CD8+ T cells) and absent on non-lymphoid immune cells and non-hematopoietic tissues under normal conditions (a2_evi_01, a2_evi_02, a2_evi_03).",
     "surface_specificity_rationale": "Live-cell flow confirms surface PVRIG on NK and T cells (a1_evi_10, a1_evi_17), but permeabilized staining shows cytoplasmic pool exceeds surface pool especially on CD56bright NK cells (a1_evi_18, a2_evi_26); constitutive ER/Golgi trafficking maintains the surface fraction (a1_evi_19).",
-    "has_known_ligand_rationale": "PVRIG binds PVRL2 (Nectin-2/CD112) as its validated endogenous ligand; the 2.2 Å crystal structure of the PVRIG ECD–Nectin-2 complex defines the binding interface (a1_evi_21, a1_evi_22).",
+    "has_known_ligand_rationale": "PVRIG binds PVRL2 (Nectin-2/CD112) as its validated endogenous ligand; the 2.2 \u00c5 crystal structure of the PVRIG ECD\u2013Nectin-2 complex defines the binding interface (a1_evi_21, a1_evi_22).",
     "low_endogenous_expression_rationale": "High expression on NK and CD8+ T cell subsets in peripheral blood and tumor-infiltrating contexts (a1_evi_10, a1_evi_15, a2_evi_06); low-to-moderate on CD4+ T cells and Tregs (a2_evi_06, a2_evi_04); absent on B cells, monocytes, neutrophils (a2_evi_03).",
     "overexpression_surface_localization_observed_rationale": "1 method observation(s) pair an overexpression/mixed expression system with a surface-localization readout (cites a1_evi_01, a1_evi_03)."
   },
   "surface_evidence": {
     "evidence_grade": "direct_multi_method",
-    "grade_rationale": "Multiple distinct direct-surface-accessibility method types support PVRIG surface expression on human immune cells. (1) Live-cell flow cytometry (non-permeabilized) with an explicit non-perm surface staining protocol (FcR block + viability dye exclusion) detected PVRIG on primary human NK cells (CD56dimCD16+ subset) in AML patient PBMCs and BMMCs (a1_evi_15, a1_evi_16), on resting primary human NK cells with activation-dependent downregulation (a1_evi_17), and on CD103+ T cell subsets in human bone marrow samples (a1_evi_25, a1_evi_26). (2) Functional surface-blockade assays: COM701 blocked PVRIG–PVRL2 interaction on intact primary T/NK cells (a1_evi_08); a bispecific antibody blocked PVRIG–CD112 on intact T and NK cells with functional T-cell and NK-cell enhancement (a1_evi_24); ER/Golgi trafficking to the cell surface confirmed by intracellular trafficking inhibitor assay in NK cells (a1_evi_19); anti-PVRIG antibody blockade enhanced NK killing of AML lines (a1_evi_20). The permeabilized-flow finding of a larger cytoplasmic pool than surface pool on CD56bright NK cells (a1_evi_18) describes pool distribution, not absence of surface expression, and is tangential (not contradictory) given the direct surface evidence. Graded direct_multi_method (live-cell flow + functional surface blockade across multiple independent human primary-cell studies).",
+    "grade_rationale": "Multiple distinct direct-surface-accessibility method types support PVRIG surface expression on human immune cells. (1) Live-cell flow cytometry (non-permeabilized) with an explicit non-perm surface staining protocol (FcR block + viability dye exclusion) detected PVRIG on primary human NK cells (CD56dimCD16+ subset) in AML patient PBMCs and BMMCs (a1_evi_15, a1_evi_16), on resting primary human NK cells with activation-dependent downregulation (a1_evi_17), and on CD103+ T cell subsets in human bone marrow samples (a1_evi_25, a1_evi_26). (2) Functional surface-blockade assays: COM701 blocked PVRIG\u2013PVRL2 interaction on intact primary T/NK cells (a1_evi_08); a bispecific antibody blocked PVRIG\u2013CD112 on intact T and NK cells with functional T-cell and NK-cell enhancement (a1_evi_24); ER/Golgi trafficking to the cell surface confirmed by intracellular trafficking inhibitor assay in NK cells (a1_evi_19); anti-PVRIG antibody blockade enhanced NK killing of AML lines (a1_evi_20). The permeabilized-flow finding of a larger cytoplasmic pool than surface pool on CD56bright NK cells (a1_evi_18) describes pool distribution, not absence of surface expression, and is tangential (not contradictory) given the direct surface evidence. Graded direct_multi_method (live-cell flow + functional surface blockade across multiple independent human primary-cell studies).",
     "claim_stances": [
       {
         "claim_id": "a1_evi_01",
@@ -136,7 +136,7 @@
         "claim_id": "a1_evi_10",
         "stance": "supports_surface",
         "weight": "high",
-        "note": "Live flow cytometry surface detection of PVRIG on primary human NK, NKT, γδ, CD8+, CD4+ T cells"
+        "note": "Live flow cytometry surface detection of PVRIG on primary human NK, NKT, \u03b3\u03b4, CD8+, CD4+ T cells"
       },
       {
         "claim_id": "a1_evi_11",
@@ -208,7 +208,7 @@
         "claim_id": "a1_evi_22",
         "stance": "tangential",
         "weight": "high",
-        "note": "2.2Å crystal structure of CD112R ECD bound to CD112; topology confirmation, not direct surface-anchoring evidence"
+        "note": "2.2\u00c5 crystal structure of CD112R ECD bound to CD112; topology confirmation, not direct surface-anchoring evidence"
       },
       {
         "claim_id": "a1_evi_23",
@@ -325,7 +325,7 @@
         "surface_claim_type": "surface_accessible",
         "expression_observations": [
           {
-            "context": "Primary human circulating NK, NKT, γδ T, CD8+ T, and CD4+ T cells (PBMCs) under physiologic conditions; PVRIG detectable on surface, highest on NK/NKT",
+            "context": "Primary human circulating NK, NKT, \u03b3\u03b4 T, CD8+ T, and CD4+ T cells (PBMCs) under physiologic conditions; PVRIG detectable on surface, highest on NK/NKT",
             "sample_type": "primary_human_cell",
             "level": "moderate",
             "species": "human",
@@ -763,7 +763,7 @@
         "surface_claim_type": "surface_accessible",
         "expression_observations": [
           {
-            "context": "Primary human T cells and NK cells (activated); bispecific anti-TIGIT×PVRIG antibody blocks PVRIG-CD112 interaction, increasing T-cell activation 2.8-fold and NK-cell cytotoxicity 1.8-fold",
+            "context": "Primary human T cells and NK cells (activated); bispecific anti-TIGIT\u00d7PVRIG antibody blocks PVRIG-CD112 interaction, increasing T-cell activation 2.8-fold and NK-cell cytotoxicity 1.8-fold",
             "sample_type": "primary_human_cell",
             "level": "moderate",
             "species": "human",
@@ -781,7 +781,7 @@
     ],
     "non_surface_expression": [
       {
-        "context": "Murine NK, NKT, CD4+ T, CD8+ T, and B cells — steady-state transcript levels by qPCR",
+        "context": "Murine NK, NKT, CD4+ T, CD8+ T, and B cells \u2014 steady-state transcript levels by qPCR",
         "sample_type": "primary_human_cell",
         "measurement_type": "RNA",
         "level": "high",
@@ -790,7 +790,7 @@
         ]
       },
       {
-        "context": "CD8+ T cells in colorectal cancer tumor microenvironment — spatial IHC without membrane scoring",
+        "context": "CD8+ T cells in colorectal cancer tumor microenvironment \u2014 spatial IHC without membrane scoring",
         "sample_type": "primary_human_tissue",
         "measurement_type": "IHC_protein",
         "level": "moderate",
@@ -799,7 +799,7 @@
         ]
       },
       {
-        "context": "Placental tissue from preeclampsia and healthy controls — IHC and RT-PCR without membrane-specific scoring",
+        "context": "Placental tissue from preeclampsia and healthy controls \u2014 IHC and RT-PCR without membrane-specific scoring",
         "sample_type": "primary_human_tissue",
         "measurement_type": "IHC_protein",
         "level": "moderate",
@@ -808,7 +808,7 @@
         ]
       },
       {
-        "context": "Immune cells in COAD (colon adenocarcinoma) tumor sections — IHC without membrane scoring",
+        "context": "Immune cells in COAD (colon adenocarcinoma) tumor sections \u2014 IHC without membrane scoring",
         "sample_type": "primary_human_tissue",
         "measurement_type": "IHC_protein",
         "level": "moderate",
@@ -895,7 +895,7 @@
       },
       {
         "tissue": "peripheral blood",
-        "cell_type": "γδ T cells",
+        "cell_type": "\u03b3\u03b4 T cells",
         "present": "moderate",
         "disease_context": "normal",
         "disease_label": null,
@@ -1622,7 +1622,7 @@
         "baseline_context": null,
         "modulating_state": null,
         "direction": "unclear",
-        "change": "PVRIG surface expression is restricted to hematopoietic lymphocytes (NK cells, NKT cells, γδ T cells, CD8+ T cells, and to a lesser extent CD4+ T cells) in peripheral blood; absent on B cells, monocytes, and neutrophils.",
+        "change": "PVRIG surface expression is restricted to hematopoietic lymphocytes (NK cells, NKT cells, \u03b3\u03b4 T cells, CD8+ T cells, and to a lesser extent CD4+ T cells) in peripheral blood; absent on B cells, monocytes, and neutrophils.",
         "accessibility_implication": "An extracellular binder targeting PVRIG will only engage hematopoietic cytotoxic lymphocyte subsets; non-lymphoid immune cells are non-targets by virtue of absent surface expression.",
         "species": "human",
         "species_inferred": false,
@@ -1811,7 +1811,7 @@
       }
     ],
     "biological_context_grade": "rich",
-    "grade_rationale": "All four A2 axes are well-populated from independent sources. Expression is mapped across ≥10 cell types and ≥15 tissues/cancer contexts (primary flow, IHC, RNA-seq, qPCR). Subcellular localization is pinned: cytoplasmic pool > surface, ER/Golgi trafficking documented. Anatomical accessibility spans peripheral blood, bone marrow, solid tumor TME, and placenta. Modulation is richly evidenced: activation upregulates PVRIG on CD8+ T cells but downregulates surface PVRIG on NK cells, with disease-state variation (AML, BoM, AS, cancer TME). The NK activation discrepancy is state-context variation, not contradiction. Coherent and multi-sourced across all axes.",
+    "grade_rationale": "All four A2 axes are well-populated from independent sources. Expression is mapped across \u226510 cell types and \u226515 tissues/cancer contexts (primary flow, IHC, RNA-seq, qPCR). Subcellular localization is pinned: cytoplasmic pool > surface, ER/Golgi trafficking documented. Anatomical accessibility spans peripheral blood, bone marrow, solid tumor TME, and placenta. Modulation is richly evidenced: activation upregulates PVRIG on CD8+ T cells but downregulates surface PVRIG on NK cells, with disease-state variation (AML, BoM, AS, cancer TME). The NK activation discrepancy is state-context variation, not contradiction. Coherent and multi-sourced across all axes.",
     "grade_cited_evidence_ids": [
       "a2_evi_01",
       "a2_evi_02",
@@ -1879,7 +1879,7 @@
       "ecd_disordered_fraction": 0.3333333333333333,
       "source": "AlphaFold DB (ECD-restricted pLDDT, n=132)",
       "license": "CC BY 4.0",
-      "attribution": "© DeepMind / EMBL-EBI",
+      "attribution": "\u00a9 DeepMind / EMBL-EBI",
       "citations": [
         "10.1038/s41586-021-03819-2",
         "10.1093/nar/gkad1011"
@@ -1902,7 +1902,7 @@
       "pdbs": [],
       "representative_structure": null,
       "source": "SURFACE-Bind v1 (Balbi 2026 PNAS)",
-      "attribution": "© Balbi et al., Correia lab — EPFL / Inria / Novo Nordisk",
+      "attribution": "\u00a9 Balbi et al., Correia lab \u2014 EPFL / Inria / Novo Nordisk",
       "citation": "10.1073/pnas.2506269123"
     },
     "homo_oligomerization": {
@@ -1951,7 +1951,7 @@
       "domain": "unknown",
       "severity": "low",
       "evidence_strength": "moderate",
-      "rationale": "PVRIG surface staining is detected broadly on circulating NK, NKT, γδ T, CD8+ and CD4+ T cells by flow cytometry (a1_evi_10, a2_evi_06) and on tumor-infiltrating lymphocytes across multiple tumor types (a1_evi_13, a2_evi_15). Antibody blockade works on intact primary cells with no polarized-epithelium or subdomain restriction reported. No ledger entry documents apical, junctional, ciliary, or other subdomain restriction.",
+      "rationale": "PVRIG surface staining is detected broadly on circulating NK, NKT, \u03b3\u03b4 T, CD8+ and CD4+ T cells by flow cytometry (a1_evi_10, a2_evi_06) and on tumor-infiltrating lymphocytes across multiple tumor types (a1_evi_13, a2_evi_15). Antibody blockade works on intact primary cells with no polarized-epithelium or subdomain restriction reported. No ledger entry documents apical, junctional, ciliary, or other subdomain restriction.",
       "cited_evidence_ids": [
         "a1_evi_10",
         "a1_evi_13",
@@ -1970,7 +1970,7 @@
       ],
       "severity": "low",
       "evidence_strength": "moderate",
-      "rationale": "The PVRIG ECD binds its ligand PVRL2/Nectin-2 in trans (on opposing cells), not in cis on the same cell surface, so ligand engagement is an intermittent trans interaction rather than constitutive masking. The 2.2 Å crystal structure defines the ECD–Nectin-2 interface (a1_evi_22, a1_evi_21), and clinical antibodies (COM701, IBI352g4a) fully block this interaction, implying the epitope is accessible in the free receptor state (a1_evi_04, a1_evi_08). Homo-oligomerization is not predicted (is_homo_oligomer=false) and the ledger contains no homo-oligomer evidence. Severity is low because cis partner masking is not documented.",
+      "rationale": "The PVRIG ECD binds its ligand PVRL2/Nectin-2 in trans (on opposing cells), not in cis on the same cell surface, so ligand engagement is an intermittent trans interaction rather than constitutive masking. The 2.2 \u00c5 crystal structure defines the ECD\u2013Nectin-2 interface (a1_evi_22, a1_evi_21), and clinical antibodies (COM701, IBI352g4a) fully block this interaction, implying the epitope is accessible in the free receptor state (a1_evi_04, a1_evi_08). Homo-oligomerization is not predicted (is_homo_oligomer=false) and the ledger contains no homo-oligomer evidence. Severity is low because cis partner masking is not documented.",
       "cited_evidence_ids": [
         "a1_evi_04",
         "a1_evi_08",
@@ -2030,7 +2030,7 @@
           },
           "section": "methods",
           "figure_or_table_id": null,
-          "quote": "GS-CHO stable cell lines overexpressing human PVRIG or cynomolgus monkey PVRIG (cynoPVRIG) were generated according to the manufacturer’s instructions using the GS Xceed Expression System (Lonza) and cultured in CD CHO medium (Gibco, Grand Island, NY, USA) supplemented with 75 μM MSX (Sigma).",
+          "quote": "GS-CHO stable cell lines overexpressing human PVRIG or cynomolgus monkey PVRIG (cynoPVRIG) were generated according to the manufacturer\u2019s instructions using the GS Xceed Expression System (Lonza) and cultured in CD CHO medium (Gibco, Grand Island, NY, USA) supplemented with 75 \u03bcM MSX (Sigma).",
           "quote_sha256": "536d92ee1cb68b623c1566011e3f135afca1cade94d5d2254c0daac359f16cb8",
           "char_offset": 0,
           "normalized_source_sha256": "c257a98b7b228c42068452673884e156d9ae2fd784ce44fbce2ee130652b86ce"
@@ -2140,7 +2140,7 @@
     },
     {
       "evidence_id": "a1_evi_04",
-      "claim": "IBI352g4a (humanized IgG1 anti-PVRIG) binds the extracellular domain of human PVRIG with high affinity (Kd = 0.53 nM) and fully blocks PVRIG–PVRL2 interaction, constituting therapeutic-antibody engagement of the surface-accessible ECD. This is direct surface-accessibility evidence from a clinical-stage antibody program.",
+      "claim": "IBI352g4a (humanized IgG1 anti-PVRIG) binds the extracellular domain of human PVRIG with high affinity (Kd = 0.53 nM) and fully blocks PVRIG\u2013PVRL2 interaction, constituting therapeutic-antibody engagement of the surface-accessible ECD. This is direct surface-accessibility evidence from a clinical-stage antibody program.",
       "claim_type": "surface_expression",
       "direction": "supports",
       "evidence_type": "functional_assay",
@@ -2171,7 +2171,7 @@
           },
           "section": "abstract",
           "figure_or_table_id": null,
-          "quote": "IBI352g4a binds to the extracellular domain of human PVRIG with high affinity (Kd = 0.53 nM) and specificity, and fully blocks the interaction between PVRIG and its ligand PVRL2.",
+          "quote": "IBI352g4a binds to the extracellular domain of human PVRIG with high affinity (Kd\u2009=\u20090.53\u00a0nM) and specificity, and fully blocks the interaction between PVRIG and its ligand PVRL2.",
           "quote_sha256": "711f2c3b873c7cbfb235372218faa0134767983163a09a5ca523836a00f33531",
           "char_offset": 617,
           "normalized_source_sha256": "c257a98b7b228c42068452673884e156d9ae2fd784ce44fbce2ee130652b86ce"
@@ -2184,7 +2184,7 @@
     },
     {
       "evidence_id": "a1_evi_05",
-      "claim": "Anti-PVRIG antibody COM701 was generated by immunizing mice with human PVRIG-Fc fusion protein and screening for clones that bind PVRIG and disrupt PVRIG–PVRL2 interaction (hybridoma technology). Antibody provenance: anti-PVRIG blocking antibody, generated against human PVRIG ECD (Fc fusion immunogen), screened by ligand-competition.",
+      "claim": "Anti-PVRIG antibody COM701 was generated by immunizing mice with human PVRIG-Fc fusion protein and screening for clones that bind PVRIG and disrupt PVRIG\u2013PVRL2 interaction (hybridoma technology). Antibody provenance: anti-PVRIG blocking antibody, generated against human PVRIG ECD (Fc fusion immunogen), screened by ligand-competition.",
       "claim_type": "methodological",
       "direction": "supports",
       "evidence_type": "functional_assay",
@@ -2215,7 +2215,7 @@
           },
           "section": "methods",
           "figure_or_table_id": null,
-          "quote": "Anti-PVRIG was generated via hybridoma technology by immunizing mice with human PVRIG Fc and screening for antibodies that bind to human PVRIG and disrupt PVRIG–PVRL2 interactions.",
+          "quote": "Anti-PVRIG was generated via hybridoma technology by immunizing mice with human PVRIG Fc and screening for antibodies that bind to human PVRIG and disrupt PVRIG\u2013PVRL2 interactions.",
           "quote_sha256": "82bbd162ff649769251ac1a466698c66628e143f242419499cb37a3a9274bfe2",
           "char_offset": 0,
           "normalized_source_sha256": "63afecc28b0781126d39e2363cc1d8ba1317c8cc9c731e8f88f0d42442e31565"
@@ -2422,7 +2422,7 @@
     },
     {
       "evidence_id": "a1_evi_10",
-      "claim": "Human PVRIG is detectable at the surface of circulating NK, NKT, γδ T, CD8+, and to a lesser extent CD4+ T cells under physiologic conditions. This is a direct surface-detection statement in primary human lymphocytes (implied flow cytometry, established by the group describing PVRIG as CD112R).",
+      "claim": "Human PVRIG is detectable at the surface of circulating NK, NKT, \u03b3\u03b4 T, CD8+, and to a lesser extent CD4+ T cells under physiologic conditions. This is a direct surface-detection statement in primary human lymphocytes (implied flow cytometry, established by the group describing PVRIG as CD112R).",
       "claim_type": "surface_expression",
       "direction": "supports",
       "evidence_type": "flow_cytometry",
@@ -2430,7 +2430,7 @@
       "confidence": "strong",
       "assay_context": {
         "species": "human",
-        "cell_type_or_line": "NK, NKT, γδ, CD8+ T, CD4+ T cells (PBMCs)",
+        "cell_type_or_line": "NK, NKT, \u03b3\u03b4, CD8+ T, CD4+ T cells (PBMCs)",
         "permeabilized": false,
         "fixation": "live",
         "isoform": null,
@@ -2462,7 +2462,7 @@
           },
           "section": "results",
           "figure_or_table_id": null,
-          "quote": "In the physiologic setting, human Pvrig is detectable in circulating NK, NKT, γδ, CD8 + , and to a lesser extent in CD4 + T cells ( 10 ).",
+          "quote": "In the physiologic setting, human Pvrig is detectable in circulating NK, NKT, \u03b3\u03b4, CD8 + , and to a lesser extent in CD4 + T cells ( 10 ).",
           "quote_sha256": "790897b30619bd3386c3e65d96786aa3ea4c7dcd15b70904940c05bfb6c8d12a",
           "char_offset": 0,
           "normalized_source_sha256": "c2b1642c73e56f10be872904d237b462d3e9060ff48a6fd0a6521bf90c4e85f5"
@@ -2780,7 +2780,7 @@
           },
           "section": "methods",
           "figure_or_table_id": null,
-          "quote": "After FcR blocking (FcR Blocking Reagent, human, Miltenyi Biotec, Bergisch Gladbach, Germany) for 5 min in the dark, PBMCs and BMMCs were stained with the Zombie NIR ™ Fixable Viability Kit (BioLegend, San Diego, CA, USA) for exclusion of dead cells according to the manufacturer’s instructions.",
+          "quote": "After FcR blocking (FcR Blocking Reagent, human, Miltenyi Biotec, Bergisch Gladbach, Germany) for 5 min in the dark, PBMCs and BMMCs were stained with the Zombie NIR \u2122 Fixable Viability Kit (BioLegend, San Diego, CA, USA) for exclusion of dead cells according to the manufacturer\u2019s instructions.",
           "quote_sha256": "4f1e167d09f3acc5f895a58fa43fc5688e37f8dfc9d354e38f7ae7af2997a6c8",
           "char_offset": 229,
           "normalized_source_sha256": "5cfad476f886df9ebd11b7368ddd90ca9155206422218aa9c054a094574bd4cb"
@@ -3049,7 +3049,7 @@
     },
     {
       "evidence_id": "a1_evi_22",
-      "claim": "A 2.2 Å crystal structure of CD112R (PVRIG) ECD bound to domain 1 of CD112 (Nectin-2) was determined, establishing the molecular determinants of CD112R–CD112 interactions. This high-resolution structural evidence confirms the PVRIG extracellular domain is a well-folded, surface-accessible immunoglobulin domain.",
+      "claim": "A 2.2 \u00c5 crystal structure of CD112R (PVRIG) ECD bound to domain 1 of CD112 (Nectin-2) was determined, establishing the molecular determinants of CD112R\u2013CD112 interactions. This high-resolution structural evidence confirms the PVRIG extracellular domain is a well-folded, surface-accessible immunoglobulin domain.",
       "claim_type": "topology",
       "direction": "supports",
       "evidence_type": "crystal_structure",
@@ -3080,7 +3080,7 @@
           },
           "section": "results",
           "figure_or_table_id": null,
-          "quote": "We determined the 2.2 Å-resolution structure of CD112R bound to D1 of CD112 to establish the molecular determinants of CD112R-CD112 interactions ( Figure 1C and Table S1 ).",
+          "quote": "We determined the 2.2 \u00c5-resolution structure of CD112R bound to D1 of CD112 to establish the molecular determinants of CD112R-CD112 interactions ( Figure 1C and Table S1 ).",
           "quote_sha256": "63f8918db6238e1fa3445111dae0f553dccb45e47ee847e0af762a19ae91c171",
           "char_offset": 0,
           "normalized_source_sha256": "f9421ca1a98ab9e0f9ba4ea5496625721badeff5a60378265223e9ce204876fd"
@@ -3146,7 +3146,7 @@
     },
     {
       "evidence_id": "a1_evi_24",
-      "claim": "A bispecific antibody (BsAb) co-targeting TIGIT and PVRIG blocked both receptors from binding their respective ligands (PVRIG–CD112 interaction blocked), leading to significant T-cell activation and NK-cell cytotoxicity enhancement. This bispecific therapeutic engagement confirms surface accessibility of the PVRIG ECD on intact T and NK cells.",
+      "claim": "A bispecific antibody (BsAb) co-targeting TIGIT and PVRIG blocked both receptors from binding their respective ligands (PVRIG\u2013CD112 interaction blocked), leading to significant T-cell activation and NK-cell cytotoxicity enhancement. This bispecific therapeutic engagement confirms surface accessibility of the PVRIG ECD on intact T and NK cells.",
       "claim_type": "surface_expression",
       "direction": "supports",
       "evidence_type": "functional_assay",
@@ -3239,7 +3239,7 @@
           },
           "section": "abstract",
           "figure_or_table_id": null,
-          "quote": "Age-matched bone marrow samples from individuals without malignancy (NMCs) were controls. Multiparametric flow cytometry (MFC) was utilized to assess the expression of CD103 and exhaustion markers (TIGIT, PVRIG, KIR2DL5, CD39) in CD3<sup>+</sup> cells.<h4>Results</h4>CD103⁺CD3<sup>+</sup> T cells are significantly elevated in BoM compared to NMC, driven by an increase in CD103⁺CD4⁺ cells, despite a relative decrease in frequency of CD103⁺CD8⁺ cells. Furthermore, CD103<sup>+</sup>CD4<sup>+</sup> cells from BoM displayed a significantly increased fraction of the central memory (CM) phenotype.",
+          "quote": "Age-matched bone marrow samples from individuals without malignancy (NMCs) were controls. Multiparametric flow cytometry (MFC) was utilized to assess the expression of CD103 and exhaustion markers (TIGIT, PVRIG, KIR2DL5, CD39) in CD3<sup>+</sup> cells.<h4>Results</h4>CD103\u207aCD3<sup>+</sup> T cells are significantly elevated in BoM compared to NMC, driven by an increase in CD103\u207aCD4\u207a cells, despite a relative decrease in frequency of CD103\u207aCD8\u207a cells. Furthermore, CD103<sup>+</sup>CD4<sup>+</sup> cells from BoM displayed a significantly increased fraction of the central memory (CM) phenotype.",
           "quote_sha256": "bbf6d37329d43753186e37544f39a3880d632c3d830679af80621e11f7ca8380",
           "char_offset": 0,
           "normalized_source_sha256": "a1c6cafa51ee59b7cac18635448a6f588b4471632e3bad6f02b797480a2b65bf"
@@ -3292,7 +3292,7 @@
           },
           "section": "abstract",
           "figure_or_table_id": null,
-          "quote": "Expression and coexpression of TIGIT, PVRIG, KIR2DL5 and CD39 on CD103<sup>+</sup> cells both in the CD4 and CD8 compartment was significantly increased in BoM, compared within CD103<sup>-</sup> within BoM and CD103<sup>+</sup> in NMC.<h4>Conclusion</h4>In conclusion, BoM exhibit a distinct T-cell composition, highlighted by an increase in CD103⁺CD4⁺ cells displaying an increased CM phenotype. In BoM, cregulatory receptor expression is increased on CD103⁺ T cells, with distinct coexpression signatures in both CD4⁺ and CD8⁺ cells.",
+          "quote": "Expression and coexpression of TIGIT, PVRIG, KIR2DL5 and CD39 on CD103<sup>+</sup> cells both in the CD4 and CD8 compartment was significantly increased in BoM, compared within CD103<sup>-</sup> within BoM and CD103<sup>+</sup> in NMC.<h4>Conclusion</h4>In conclusion, BoM exhibit a distinct T-cell composition, highlighted by an increase in CD103\u207aCD4\u207a cells displaying an increased CM phenotype. In BoM, cregulatory receptor expression is increased on CD103\u207a T cells, with distinct coexpression signatures in both CD4\u207a and CD8\u207a cells.",
           "quote_sha256": "c8220b49d646e755a1dc0bccfc12400aa30a53a3b2b3c3c3c07132bf4597c1e6",
           "char_offset": 598,
           "normalized_source_sha256": "a1c6cafa51ee59b7cac18635448a6f588b4471632e3bad6f02b797480a2b65bf"
@@ -3716,7 +3716,7 @@
           },
           "section": "abstract",
           "figure_or_table_id": null,
-          "quote": "The poliovirus receptor-related immunoglobulin domain-containing protein (PVRIG) is a recently identified immune checkpoint receptor predominantly expressed on natural killer and CD8 + T cells.",
+          "quote": "The poliovirus receptor-related immunoglobulin domain-containing protein (PVRIG) is a recently identified immune checkpoint receptor predominantly expressed on natural killer and CD8\u2009+\u2009T cells.",
           "quote_sha256": "e66ace9da08d45048386edbca0ffdff9145ae22960ba325e9376db134f911c4d",
           "char_offset": 0,
           "normalized_source_sha256": "fe311dbd6c6b1cee25b5295da9de45a5dbbc044a9c8894c6d0491b075cf22500"
@@ -3729,7 +3729,7 @@
     },
     {
       "evidence_id": "a2_evi_06",
-      "claim": "In the physiologic setting, human PVRIG is detectable in circulating NK, NKT, γδ T cells, CD8+ T cells, and to a lesser extent in CD4+ T cells. This comprehensive flow cytometry survey of peripheral blood immune subsets establishes the baseline expression hierarchy across lymphocyte subpopulations.",
+      "claim": "In the physiologic setting, human PVRIG is detectable in circulating NK, NKT, \u03b3\u03b4 T cells, CD8+ T cells, and to a lesser extent in CD4+ T cells. This comprehensive flow cytometry survey of peripheral blood immune subsets establishes the baseline expression hierarchy across lymphocyte subpopulations.",
       "claim_type": "tissue_expression",
       "direction": "supports",
       "evidence_type": "flow_cytometry",
@@ -3737,14 +3737,14 @@
       "confidence": "strong",
       "assay_context": {
         "species": "human",
-        "cell_type_or_line": "NK, NKT, γδ T cells, CD8+ T cells, CD4+ T cells (peripheral blood)",
+        "cell_type_or_line": "NK, NKT, \u03b3\u03b4 T cells, CD8+ T cells, CD4+ T cells (peripheral blood)",
         "permeabilized": false,
         "fixation": "live",
         "isoform": null,
         "cell_context": {
           "material_kind": "primary_cell",
           "material_kind_other_label": null,
-          "cell_type": "NK, NKT, γδ, CD8+, CD4+ T cells",
+          "cell_type": "NK, NKT, \u03b3\u03b4, CD8+, CD4+ T cells",
           "cell_line_name": null,
           "cellosaurus_id": null,
           "tissue": "peripheral blood",
@@ -3769,7 +3769,7 @@
           },
           "section": "results",
           "figure_or_table_id": null,
-          "quote": "In the physiologic setting, human Pvrig is detectable in circulating NK, NKT, γδ, CD8 + , and to a lesser extent in CD4 + T cells ( 10 ).",
+          "quote": "In the physiologic setting, human Pvrig is detectable in circulating NK, NKT, \u03b3\u03b4, CD8 + , and to a lesser extent in CD4 + T cells ( 10 ).",
           "quote_sha256": "790897b30619bd3386c3e65d96786aa3ea4c7dcd15b70904940c05bfb6c8d12a",
           "char_offset": 0,
           "normalized_source_sha256": "c2b1642c73e56f10be872904d237b462d3e9060ff48a6fd0a6521bf90c4e85f5"
@@ -3782,7 +3782,7 @@
     },
     {
       "evidence_id": "a2_evi_07",
-      "claim": "In mouse cells at steady state (by qPCR), Pvrig transcripts are abundant in NK and NKT cells, barely detectable in CD4+ and CD8+ T cells, and absent in B cells. This species difference—mouse NK/NKT >> T cells, vs human where CD8+ T cells also express PVRIG—is important for model translation.",
+      "claim": "In mouse cells at steady state (by qPCR), Pvrig transcripts are abundant in NK and NKT cells, barely detectable in CD4+ and CD8+ T cells, and absent in B cells. This species difference\u2014mouse NK/NKT >> T cells, vs human where CD8+ T cells also express PVRIG\u2014is important for model translation.",
       "claim_type": "tissue_expression",
       "direction": "supports",
       "evidence_type": "rt_qpcr",
@@ -4789,7 +4789,7 @@
     },
     {
       "evidence_id": "a2_evi_26",
-      "claim": "PVRIG protein is present at higher levels in the cytoplasm than on the cell surface, particularly on CD56bright NK cells. Following IL-2 and IL-12 activation, cytoplasmic PVRIG levels further increase on CD56bright NK cells. This subcellular distribution—cytoplasm > cell surface—places PVRIG primarily in an intracellular compartment, with surface expression being the minor pool, especially in CD56bright NK cells.",
+      "claim": "PVRIG protein is present at higher levels in the cytoplasm than on the cell surface, particularly on CD56bright NK cells. Following IL-2 and IL-12 activation, cytoplasmic PVRIG levels further increase on CD56bright NK cells. This subcellular distribution\u2014cytoplasm > cell surface\u2014places PVRIG primarily in an intracellular compartment, with surface expression being the minor pool, especially in CD56bright NK cells.",
       "claim_type": "surface_expression",
       "direction": "ambiguous",
       "evidence_type": "flow_cytometry",
@@ -5041,7 +5041,7 @@
           },
           "section": "abstract",
           "figure_or_table_id": null,
-          "quote": "Expression and coexpression of TIGIT, PVRIG, KIR2DL5 and CD39 on CD103<sup>+</sup> cells both in the CD4 and CD8 compartment was significantly increased in BoM, compared within CD103<sup>-</sup> within BoM and CD103<sup>+</sup> in NMC.<h4>Conclusion</h4>In conclusion, BoM exhibit a distinct T-cell composition, highlighted by an increase in CD103⁺CD4⁺ cells displaying an increased CM phenotype. In BoM, cregulatory receptor expression is increased on CD103⁺ T cells, with distinct coexpression signatures in both CD4⁺ and CD8⁺ cells.",
+          "quote": "Expression and coexpression of TIGIT, PVRIG, KIR2DL5 and CD39 on CD103<sup>+</sup> cells both in the CD4 and CD8 compartment was significantly increased in BoM, compared within CD103<sup>-</sup> within BoM and CD103<sup>+</sup> in NMC.<h4>Conclusion</h4>In conclusion, BoM exhibit a distinct T-cell composition, highlighted by an increase in CD103\u207aCD4\u207a cells displaying an increased CM phenotype. In BoM, cregulatory receptor expression is increased on CD103\u207a T cells, with distinct coexpression signatures in both CD4\u207a and CD8\u207a cells.",
           "quote_sha256": "c8220b49d646e755a1dc0bccfc12400aa30a53a3b2b3c3c3c07132bf4597c1e6",
           "char_offset": 598,
           "normalized_source_sha256": "a1c6cafa51ee59b7cac18635448a6f588b4471632e3bad6f02b797480a2b65bf"
@@ -5349,7 +5349,7 @@
       "mode": "topic_search",
       "query": {
         "agent_focus": "a1",
-        "intent": "standing: state-conditional surface biology (activation / stress / disease / EMT / senescence / differentiation) — feeds accessibility_modulation",
+        "intent": "standing: state-conditional surface biology (activation / stress / disease / EMT / senescence / differentiation) \u2014 feeds accessibility_modulation",
         "anchors": [
           "cell_state_modulation"
         ]
@@ -5582,7 +5582,7 @@
       "mode": "topic_search",
       "query": {
         "agent_focus": "a2",
-        "intent": "standing: state-conditional surface biology (activation / stress / disease / EMT / senescence / differentiation) — feeds accessibility_modulation",
+        "intent": "standing: state-conditional surface biology (activation / stress / disease / EMT / senescence / differentiation) \u2014 feeds accessibility_modulation",
         "anchors": [
           "cell_state_modulation"
         ]
@@ -5599,5 +5599,487 @@
   "confidence": "high",
   "confidence_reasoning": "",
   "model_path": "claude-sonnet-4-6",
-  "record_generated_at": "2026-06-08T20:48:27.517803Z"
+  "record_generated_at": "2026-06-08T20:48:27.517803Z",
+  "cellxgene": {
+    "schema_version": "2.1.12",
+    "census_version": "2025-11-08",
+    "cell_class_enrichment": {
+      "class": "not_detected",
+      "class_ids": [],
+      "class_labels": [],
+      "fold_change": null,
+      "fold_change_infinite": false,
+      "tau": 0.9965122742340063,
+      "top_entity_contribs": []
+    },
+    "cell_family_enrichment": {
+      "class": "not_detected",
+      "family_ids": [],
+      "family_labels": [],
+      "top_cl_labels": [],
+      "fold_change": null,
+      "fold_change_infinite": false,
+      "tau": 0.9748429512753739,
+      "top_entity_contribs": []
+    },
+    "cell_type_enrichment": {
+      "class": "not_detected",
+      "cl_ids": [],
+      "fold_change": null,
+      "fold_change_infinite": false,
+      "tau": 0.9863914241030763,
+      "top_entity_contribs": []
+    },
+    "tissue_enrichment": {
+      "class": "not_detected",
+      "uberon_ids": [],
+      "tissue_labels": [],
+      "fold_change": null,
+      "fold_change_infinite": false,
+      "tau": 0.9910763194487219,
+      "top_entity_contribs": []
+    },
+    "tissue_category_enrichment": {
+      "class": "not_detected",
+      "category_ids": [],
+      "category_labels": [],
+      "top_tissues": [],
+      "fold_change": null,
+      "fold_change_infinite": false,
+      "tau": 0.9393507531509252,
+      "top_entity_contribs": []
+    },
+    "tissue_organ_enrichment": {
+      "class": "not_detected",
+      "organ_ids": [],
+      "organ_labels": [],
+      "top_uberon_labels": [],
+      "fold_change": null,
+      "fold_change_infinite": false,
+      "tau": 0.9896989787816414,
+      "top_entity_contribs": []
+    },
+    "enrichment_class": "not_detected",
+    "enrichment_cl_ids": [],
+    "fold_change": null,
+    "fold_change_infinite": false,
+    "top_cell_types": [
+      {
+        "cell_type": "double negative T regulatory cell",
+        "cl_id": "CL:0011024",
+        "mean_log1p_cp10k": 1.8252,
+        "n_expressing": 278,
+        "n_total": 5046,
+        "pct_expressing": 0.0551,
+        "is_rare": false,
+        "is_trace": false,
+        "tissues": [
+          {
+            "tissue": "blood",
+            "uberon_id": "UBERON:0000178",
+            "mean_log1p_cp10k": 1.8252,
+            "n_expressing": 278,
+            "n_total": 5046,
+            "pct_expressing": 0.0551
+          }
+        ]
+      },
+      {
+        "cell_type": "CD8-positive, alpha-beta cytotoxic T cell",
+        "cl_id": "CL:0000794",
+        "mean_log1p_cp10k": 1.6594,
+        "n_expressing": 6332,
+        "n_total": 106143,
+        "pct_expressing": 0.0597,
+        "is_rare": false,
+        "is_trace": false,
+        "tissues": [
+          {
+            "tissue": "blood",
+            "uberon_id": "UBERON:0000178",
+            "mean_log1p_cp10k": 1.6613,
+            "n_expressing": 5918,
+            "n_total": 76622,
+            "pct_expressing": 0.0772
+          },
+          {
+            "tissue": "lung",
+            "uberon_id": "UBERON:0002048",
+            "mean_log1p_cp10k": 1.6112,
+            "n_expressing": 321,
+            "n_total": 13008,
+            "pct_expressing": 0.0247
+          }
+        ]
+      },
+      {
+        "cell_type": "gamma-delta T cell",
+        "cl_id": "CL:0000798",
+        "mean_log1p_cp10k": 1.6853,
+        "n_expressing": 7130,
+        "n_total": 194781,
+        "pct_expressing": 0.0366,
+        "is_rare": false,
+        "is_trace": false,
+        "tissues": [
+          {
+            "tissue": "blood",
+            "uberon_id": "UBERON:0000178",
+            "mean_log1p_cp10k": 1.6896,
+            "n_expressing": 6440,
+            "n_total": 119137,
+            "pct_expressing": 0.0541
+          },
+          {
+            "tissue": "colon",
+            "uberon_id": "UBERON:0001155",
+            "mean_log1p_cp10k": 1.6772,
+            "n_expressing": 159,
+            "n_total": 6312,
+            "pct_expressing": 0.0252
+          },
+          {
+            "tissue": "small intestine",
+            "uberon_id": "UBERON:0002108",
+            "mean_log1p_cp10k": 1.5842,
+            "n_expressing": 100,
+            "n_total": 246,
+            "pct_expressing": 0.4065
+          }
+        ]
+      },
+      {
+        "cell_type": "activated type II NK T cell",
+        "cl_id": "CL:0000931",
+        "mean_log1p_cp10k": 1.6745,
+        "n_expressing": 419,
+        "n_total": 11568,
+        "pct_expressing": 0.0362,
+        "is_rare": false,
+        "is_trace": false,
+        "tissues": [
+          {
+            "tissue": "kidney",
+            "uberon_id": "UBERON:0002113",
+            "mean_log1p_cp10k": 1.6837,
+            "n_expressing": 365,
+            "n_total": 10257,
+            "pct_expressing": 0.0356
+          },
+          {
+            "tissue": "blood",
+            "uberon_id": "UBERON:0000178",
+            "mean_log1p_cp10k": 1.7584,
+            "n_expressing": 11,
+            "n_total": 234,
+            "pct_expressing": 0.047
+          }
+        ]
+      },
+      {
+        "cell_type": "CD4-positive, alpha-beta cytotoxic T cell",
+        "cl_id": "CL:0000934",
+        "mean_log1p_cp10k": 1.6736,
+        "n_expressing": 1519,
+        "n_total": 46415,
+        "pct_expressing": 0.0327,
+        "is_rare": false,
+        "is_trace": false,
+        "tissues": [
+          {
+            "tissue": "blood",
+            "uberon_id": "UBERON:0000178",
+            "mean_log1p_cp10k": 1.6695,
+            "n_expressing": 1481,
+            "n_total": 41441,
+            "pct_expressing": 0.0357
+          },
+          {
+            "tissue": "lymph node",
+            "uberon_id": "UBERON:0000029",
+            "mean_log1p_cp10k": 1.8257,
+            "n_expressing": 32,
+            "n_total": 1263,
+            "pct_expressing": 0.0253
+          }
+        ]
+      },
+      {
+        "cell_type": "effector CD4-positive, alpha-beta T cell",
+        "cl_id": "CL:0001044",
+        "mean_log1p_cp10k": 1.8771,
+        "n_expressing": 1347,
+        "n_total": 56638,
+        "pct_expressing": 0.0238,
+        "is_rare": false,
+        "is_trace": false,
+        "tissues": [
+          {
+            "tissue": "blood",
+            "uberon_id": "UBERON:0000178",
+            "mean_log1p_cp10k": 1.8776,
+            "n_expressing": 1294,
+            "n_total": 46980,
+            "pct_expressing": 0.0275
+          },
+          {
+            "tissue": "kidney",
+            "uberon_id": "UBERON:0002113",
+            "mean_log1p_cp10k": 1.8868,
+            "n_expressing": 36,
+            "n_total": 2237,
+            "pct_expressing": 0.0161
+          },
+          {
+            "tissue": "lung",
+            "uberon_id": "UBERON:0002048",
+            "mean_log1p_cp10k": 1.8266,
+            "n_expressing": 15,
+            "n_total": 1951,
+            "pct_expressing": 0.0077
+          }
+        ]
+      },
+      {
+        "cell_type": "CD16-positive, CD56-dim natural killer cell, human",
+        "cl_id": "CL:0000939",
+        "mean_log1p_cp10k": 1.7336,
+        "n_expressing": 38226,
+        "n_total": 1450191,
+        "pct_expressing": 0.0264,
+        "is_rare": false,
+        "is_trace": false,
+        "tissues": [
+          {
+            "tissue": "blood",
+            "uberon_id": "UBERON:0000178",
+            "mean_log1p_cp10k": 1.7391,
+            "n_expressing": 36421,
+            "n_total": 1342028,
+            "pct_expressing": 0.0271
+          },
+          {
+            "tissue": "bone marrow",
+            "uberon_id": "UBERON:0002371",
+            "mean_log1p_cp10k": 1.6175,
+            "n_expressing": 819,
+            "n_total": 48035,
+            "pct_expressing": 0.0171
+          },
+          {
+            "tissue": "lung",
+            "uberon_id": "UBERON:0002048",
+            "mean_log1p_cp10k": 1.6251,
+            "n_expressing": 500,
+            "n_total": 23635,
+            "pct_expressing": 0.0212
+          }
+        ]
+      },
+      {
+        "cell_type": "double-positive, alpha-beta thymocyte",
+        "cl_id": "CL:0000809",
+        "mean_log1p_cp10k": 1.7781,
+        "n_expressing": 4432,
+        "n_total": 215543,
+        "pct_expressing": 0.0206,
+        "is_rare": false,
+        "is_trace": false,
+        "tissues": [
+          {
+            "tissue": "blood",
+            "uberon_id": "UBERON:0000178",
+            "mean_log1p_cp10k": 1.5509,
+            "n_expressing": 26,
+            "n_total": 6735,
+            "pct_expressing": 0.0039
+          },
+          {
+            "tissue": "spleen",
+            "uberon_id": "UBERON:0002106",
+            "mean_log1p_cp10k": 1.5319,
+            "n_expressing": 1,
+            "n_total": 133,
+            "pct_expressing": 0.0075
+          }
+        ]
+      },
+      {
+        "cell_type": "CD8-positive, alpha-beta memory T cell",
+        "cl_id": "CL:0000909",
+        "mean_log1p_cp10k": 1.7026,
+        "n_expressing": 7080,
+        "n_total": 317298,
+        "pct_expressing": 0.0223,
+        "is_rare": false,
+        "is_trace": false,
+        "tissues": [
+          {
+            "tissue": "blood",
+            "uberon_id": "UBERON:0000178",
+            "mean_log1p_cp10k": 1.72,
+            "n_expressing": 5569,
+            "n_total": 102150,
+            "pct_expressing": 0.0545
+          },
+          {
+            "tissue": "spleen",
+            "uberon_id": "UBERON:0002106",
+            "mean_log1p_cp10k": 1.6697,
+            "n_expressing": 105,
+            "n_total": 6305,
+            "pct_expressing": 0.0167
+          },
+          {
+            "tissue": "colon",
+            "uberon_id": "UBERON:0001155",
+            "mean_log1p_cp10k": 1.6784,
+            "n_expressing": 89,
+            "n_total": 2828,
+            "pct_expressing": 0.0315
+          }
+        ]
+      },
+      {
+        "cell_type": "exhausted T cell",
+        "cl_id": "CL:0011025",
+        "mean_log1p_cp10k": 1.7391,
+        "n_expressing": 313,
+        "n_total": 15489,
+        "pct_expressing": 0.0202,
+        "is_rare": false,
+        "is_trace": false,
+        "tissues": [
+          {
+            "tissue": "breast",
+            "uberon_id": "UBERON:0000310",
+            "mean_log1p_cp10k": 1.7225,
+            "n_expressing": 197,
+            "n_total": 13142,
+            "pct_expressing": 0.015
+          },
+          {
+            "tissue": "lymph node",
+            "uberon_id": "UBERON:0000029",
+            "mean_log1p_cp10k": 1.7673,
+            "n_expressing": 116,
+            "n_total": 2347,
+            "pct_expressing": 0.0494
+          }
+        ]
+      }
+    ],
+    "top_tissues": [
+      {
+        "tissue": "endocrine gland",
+        "uberon_id": "UBERON:0002368",
+        "mean_log1p_cp10k": 1.7725,
+        "n_expressing": 4603,
+        "n_total": 4603,
+        "pct_expressing": 1.0,
+        "score": 4.8856,
+        "is_trace": false,
+        "is_stale_denominator": true
+      },
+      {
+        "tissue": "small intestine",
+        "uberon_id": "UBERON:0002108",
+        "mean_log1p_cp10k": 1.693,
+        "n_expressing": 556,
+        "n_total": 10911,
+        "pct_expressing": 0.051,
+        "score": 0.226,
+        "is_trace": false,
+        "is_stale_denominator": false
+      },
+      {
+        "tissue": "eye",
+        "uberon_id": "UBERON:0000970",
+        "mean_log1p_cp10k": 1.6182,
+        "n_expressing": 405,
+        "n_total": 16418,
+        "pct_expressing": 0.0247,
+        "score": 0.0998,
+        "is_trace": false,
+        "is_stale_denominator": true
+      },
+      {
+        "tissue": "skin of body",
+        "uberon_id": "UBERON:0002097",
+        "mean_log1p_cp10k": 1.6552,
+        "n_expressing": 495,
+        "n_total": 21635,
+        "pct_expressing": 0.0229,
+        "score": 0.0969,
+        "is_trace": false,
+        "is_stale_denominator": true
+      },
+      {
+        "tissue": "lymph node",
+        "uberon_id": "UBERON:0000029",
+        "mean_log1p_cp10k": 1.7173,
+        "n_expressing": 3743,
+        "n_total": 200169,
+        "pct_expressing": 0.0187,
+        "score": 0.0854,
+        "is_trace": false,
+        "is_stale_denominator": false
+      },
+      {
+        "tissue": "kidney",
+        "uberon_id": "UBERON:0002113",
+        "mean_log1p_cp10k": 1.7695,
+        "n_expressing": 2914,
+        "n_total": 206532,
+        "pct_expressing": 0.0141,
+        "score": 0.0687,
+        "is_trace": false,
+        "is_stale_denominator": false
+      },
+      {
+        "tissue": "adipose tissue",
+        "uberon_id": "UBERON:0001013",
+        "mean_log1p_cp10k": 1.6858,
+        "n_expressing": 77,
+        "n_total": 6057,
+        "pct_expressing": 0.0127,
+        "score": 0.0559,
+        "is_trace": false,
+        "is_stale_denominator": true
+      },
+      {
+        "tissue": "colon",
+        "uberon_id": "UBERON:0001155",
+        "mean_log1p_cp10k": 1.6724,
+        "n_expressing": 480,
+        "n_total": 51327,
+        "pct_expressing": 0.0094,
+        "score": 0.0404,
+        "is_trace": true,
+        "is_stale_denominator": false
+      },
+      {
+        "tissue": "spleen",
+        "uberon_id": "UBERON:0002106",
+        "mean_log1p_cp10k": 1.6319,
+        "n_expressing": 1707,
+        "n_total": 182319,
+        "pct_expressing": 0.0094,
+        "score": 0.0385,
+        "is_trace": true,
+        "is_stale_denominator": false
+      },
+      {
+        "tissue": "large intestine",
+        "uberon_id": "UBERON:0000059",
+        "mean_log1p_cp10k": 1.8662,
+        "n_expressing": 50,
+        "n_total": 8829,
+        "pct_expressing": 0.0057,
+        "score": 0.0309,
+        "is_trace": true,
+        "is_stale_denominator": true
+      }
+    ]
+  }
 }

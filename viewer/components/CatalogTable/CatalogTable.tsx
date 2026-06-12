@@ -347,6 +347,49 @@ export function CatalogTable({
   type SurfaceBindFilter = "any" | "ge1" | "ge3" | "not_in" | null;
   const [surfaceBindFilter, setSurfaceBindFilter] =
     useState<SurfaceBindFilter>(null);
+  // v2.1.6+ CellxGene filters. Two τ-class multiselects + an entity
+  // dropdown each. Pattern matches the SURFACE-Bind filter — semantic
+  // class chips on top, with a free-text dropdown for the specific
+  // top entity once a class is picked.
+  type CxgClass = "enriched" | "enhanced" | "low_specificity" | "not_detected";
+  const [cxgCellFamilyClass, setCxgCellFamilyClass] = useState<Set<CxgClass>>(
+    new Set(),
+  );
+  const [cxgCellFamilyTop, setCxgCellFamilyTop] = useState<string>("");
+  const [cxgTissueOrganClass, setCxgTissueOrganClass] = useState<Set<CxgClass>>(
+    new Set(),
+  );
+  const [cxgTissueOrganTop, setCxgTissueOrganTop] = useState<string>("");
+  const [cxgGroupOpen, setCxgGroupOpen] = useState(false);
+  // Build the option list for the entity dropdowns dynamically from
+  // the catalog rows — only show entities that some currently-loaded
+  // row actually has, so the dropdown never lists ghost options.
+  const cxgCellFamilyOptions = useMemo(() => {
+    const set = new Set<string>();
+    for (const r of rows) {
+      const top = r.cellxgene_cell_family?.top;
+      if (top) {
+        for (const e of top.split("|")) {
+          const trimmed = e.trim();
+          if (trimmed) set.add(trimmed);
+        }
+      }
+    }
+    return Array.from(set).sort();
+  }, [rows]);
+  const cxgTissueOrganOptions = useMemo(() => {
+    const set = new Set<string>();
+    for (const r of rows) {
+      const top = r.cellxgene_tissue_organ?.top;
+      if (top) {
+        for (const e of top.split("|")) {
+          const trimmed = e.trim();
+          if (trimmed) set.add(trimmed);
+        }
+      }
+    }
+    return Array.from(set).sort();
+  }, [rows]);
   // Deep-dive filters — 13 enum-valued + 8 boolean. Enum filters use
   // OR-semantics within a field (any of the checked values passes)
   // and AND across fields. Bool filters are tri-state — "any"
@@ -442,6 +485,10 @@ export function CatalogTable({
     setReasonFilter(new Set());
     setDeepDiveFilter(null);
     setSurfaceBindFilter(null);
+    setCxgCellFamilyClass(new Set());
+    setCxgCellFamilyTop("");
+    setCxgTissueOrganClass(new Set());
+    setCxgTissueOrganTop("");
     setDdEnumFilters(() => {
       const out = {} as Record<DdEnumKey, Set<string>>;
       for (const f of DD_ENUM_FIELDS) out[f.key] = new Set();
@@ -706,6 +753,38 @@ export function CatalogTable({
             break;
         }
       }
+      // CellxGene filters. Each is OR-semantics within (class chip set
+      // OR top dropdown), AND-semantics between cell-family and
+      // tissue-organ.
+      if (cxgCellFamilyClass.size > 0) {
+        const cf = r.cellxgene_cell_family;
+        if (!cf || !cxgCellFamilyClass.has(cf.class)) return false;
+      }
+      if (cxgCellFamilyTop) {
+        const cf = r.cellxgene_cell_family;
+        const top = cf?.top ?? "";
+        // Pipe-separated top entities; row passes if any of them
+        // contains the search query (case-insensitive substring) so
+        // partial typing in the search input still matches.
+        const q = cxgCellFamilyTop.toLowerCase();
+        const entities = top.split("|").map((s) => s.trim().toLowerCase());
+        if (!entities.some((e) => e.includes(q))) {
+          return false;
+        }
+      }
+      if (cxgTissueOrganClass.size > 0) {
+        const to = r.cellxgene_tissue_organ;
+        if (!to || !cxgTissueOrganClass.has(to.class)) return false;
+      }
+      if (cxgTissueOrganTop) {
+        const to = r.cellxgene_tissue_organ;
+        const top = to?.top ?? "";
+        const q = cxgTissueOrganTop.toLowerCase();
+        const entities = top.split("|").map((s) => s.trim().toLowerCase());
+        if (!entities.some((e) => e.includes(q))) {
+          return false;
+        }
+      }
       // Deep-dive filter group. Any active filter here implies
       // deep_dive=true — rows without a deep_dive_filters payload
       // drop out entirely, because we can't evaluate the predicate.
@@ -743,6 +822,10 @@ export function CatalogTable({
     ddActive,
     ddEnumFilters,
     ddBoolFilters,
+    cxgCellFamilyClass,
+    cxgCellFamilyTop,
+    cxgTissueOrganClass,
+    cxgTissueOrganTop,
   ]);
 
   const sorted = useMemo(() => {
@@ -1318,6 +1401,148 @@ export function CatalogTable({
                     {DD_BOOL_FIELDS.filter(
                       (f) => f.provenance === "deterministic",
                     ).map(renderDdBoolRow)}
+                    {/* v2.1.6+ CellxGene τ-class filter rows. Two rows —
+                        cell family + tissue organ — each with the four τ
+                        classes as multiselect chips and an entity
+                        dropdown that becomes the AND filter. Inline
+                        because they're driven by Worker-JOINed data,
+                        not the deep-dive filters payload. */}
+                    {(() => {
+                      const renderCxgRow = (
+                        label: string,
+                        ariaLabel: string,
+                        classSet: Set<CxgClass>,
+                        setClassSet: (s: Set<CxgClass>) => void,
+                        topValue: string,
+                        setTopValue: (v: string) => void,
+                        options: string[],
+                      ) => {
+                        const toggleClass = (k: CxgClass) => {
+                          const n = new Set(classSet);
+                          if (n.has(k)) n.delete(k);
+                          else n.add(k);
+                          setClassSet(n);
+                        };
+                        return (
+                          <div
+                            className={styles.filterRow}
+                            role="group"
+                            aria-label={ariaLabel}
+                          >
+                            <span className={styles.filterLabel}>{label}</span>
+                            <div className={styles.filterChips}>
+                              {(
+                                [
+                                  { k: "enriched" as const, label: "enriched (τ≥0.85)" },
+                                  { k: "enhanced" as const, label: "enhanced (0.5≤τ<0.85)" },
+                                  { k: "low_specificity" as const, label: "low specificity" },
+                                  { k: "not_detected" as const, label: "below detection" },
+                                ] as const
+                              ).map(({ k, label }) => {
+                                const on = classSet.has(k);
+                                return (
+                                  <button
+                                    key={`cxg-${label}-${k}`}
+                                    type="button"
+                                    role="checkbox"
+                                    aria-checked={on}
+                                    className={`${styles.filterVerdictChip} ${on ? styles.verdictYes : ""}`}
+                                    onClick={() => toggleClass(k)}
+                                  >
+                                    {label}
+                                  </button>
+                                );
+                              })}
+                              {(() => {
+                                const datalistId = `cxg-options-${ariaLabel.replace(/\s+/g, "-")}`;
+                                return (
+                                  <span
+                                    style={{
+                                      marginLeft: "8px",
+                                      display: "inline-flex",
+                                      alignItems: "center",
+                                      gap: "4px",
+                                    }}
+                                  >
+                                    <input
+                                      type="text"
+                                      list={datalistId}
+                                      aria-label={`${ariaLabel} top entity — search ${options.length} options`}
+                                      value={topValue}
+                                      placeholder={
+                                        options.length
+                                          ? `search ${options.length} entities…`
+                                          : "any entity"
+                                      }
+                                      onChange={(e) =>
+                                        setTopValue(e.target.value)
+                                      }
+                                      style={{
+                                        fontFamily: "var(--font-sans)",
+                                        fontSize: "0.78rem",
+                                        padding: "4px 6px",
+                                        minWidth: "180px",
+                                      }}
+                                    />
+                                    {topValue && (
+                                      <button
+                                        type="button"
+                                        onClick={() => setTopValue("")}
+                                        aria-label={`Clear ${ariaLabel} entity filter`}
+                                        title="Clear"
+                                        style={{
+                                          fontFamily: "var(--font-sans)",
+                                          fontSize: "0.78rem",
+                                          padding: "2px 6px",
+                                          background: "transparent",
+                                          border: "1px solid var(--border-color, #ccc)",
+                                          borderRadius: "3px",
+                                          cursor: "pointer",
+                                        }}
+                                      >
+                                        ×
+                                      </button>
+                                    )}
+                                    <datalist id={datalistId}>
+                                      {options.map((o) => (
+                                        <option key={o} value={o} />
+                                      ))}
+                                    </datalist>
+                                  </span>
+                                );
+                              })()}
+                            </div>
+                            <span className={styles.filterHint}>
+                              τ-cutoff classification on CZI Census linear
+                              pop mean (Yanai 2005). Pick one or more class
+                              chips and/or a specific top entity.
+                            </span>
+                          </div>
+                        );
+                      };
+                      return (
+                        <>
+                          {renderCxgRow(
+                            "CellxGene · cell family",
+                            "CellxGene cell-family τ classification",
+                            cxgCellFamilyClass,
+                            setCxgCellFamilyClass,
+                            cxgCellFamilyTop,
+                            setCxgCellFamilyTop,
+                            cxgCellFamilyOptions,
+                          )}
+                          {renderCxgRow(
+                            "CellxGene · tissue organ",
+                            "CellxGene tissue-organ τ classification",
+                            cxgTissueOrganClass,
+                            setCxgTissueOrganClass,
+                            cxgTissueOrganTop,
+                            setCxgTissueOrganTop,
+                            cxgTissueOrganOptions,
+                          )}
+                        </>
+                      );
+                    })()}
                   </div>
                 ) : null}
               </div>

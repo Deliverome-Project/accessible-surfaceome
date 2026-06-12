@@ -156,6 +156,14 @@ OMITTED: dict[str, str] = {
     "dual_loc_partner_compartment": "niche modulation sub-field",
     # --- superseded ---
     "requires_coreceptor_for_expression": "superseded by co_receptor_dependency (shown)",
+    # --- layered annotation: CellxGene RNA enrichment ---
+    # Embedded by scripts/embed_cellxgene_into_records.py AFTER the
+    # deep-dive synthesis (not a deep-dive output). The MD rendering
+    # of the cellxgene section is appended by the embed script's MD
+    # path, not by build-markdown-exports.mjs — the Pydantic field is
+    # carried so D1's annotation_json validates, but the md is
+    # generated upstream of the export pipeline.
+    "cellxgene": "layered annotation rendered by embed script's MD path; not in build-markdown-exports.mjs",
 }
 
 

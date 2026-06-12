@@ -963,5 +963,478 @@
   "confidence": "moderate",
   "confidence_reasoning": "Confidence is moderate rather than low because multiple independent sources converge on the same conclusion \u2014 IZUMO4 lacks a transmembrane domain and is constitutively secreted \u2014 but these sources are all review assertions or computational predictions rather than direct experimental assays (e.g. western blot of conditioned medium, live-cell surface biotinylation, or flow cytometry). The triage verdict of 'nuclear' is partially at odds with the ledger, which describes secreted rather than nuclear localization; both agree there is no plasma membrane surface display. Confidence would rise to high if a direct surface-proteomics or conditioned-medium mass spectrometry study confirmed the secreted topology and ruled out any membrane-anchored isoform, particularly in sperm or testicular cell lines.",
   "model_path": "claude-sonnet-4-6",
-  "record_generated_at": "2026-05-31T15:24:58.797948Z"
+  "record_generated_at": "2026-05-31T15:24:58.797948Z",
+  "cellxgene": {
+    "schema_version": "2.1.12",
+    "census_version": "2025-11-08",
+    "cell_class_enrichment": {
+      "class": "enriched",
+      "class_ids": [
+        "Reproductive"
+      ],
+      "class_labels": [
+        "Reproductive"
+      ],
+      "fold_change": 23.864,
+      "fold_change_infinite": false,
+      "tau": 0.989154931983881,
+      "top_entity_contribs": [
+        {
+          "id": "Reproductive",
+          "label": "Reproductive",
+          "pop_mean": 10.6053,
+          "tau_contrib": 0.0
+        }
+      ]
+    },
+    "cell_family_enrichment": {
+      "class": "enriched",
+      "family_ids": [
+        "CL:0000586"
+      ],
+      "family_labels": [
+        "germ cell"
+      ],
+      "top_cl_labels": [
+        "spermatocyte"
+      ],
+      "fold_change": 23.864,
+      "fold_change_infinite": false,
+      "tau": 0.9980233189087593,
+      "top_entity_contribs": [
+        {
+          "id": "CL:0000586",
+          "label": "germ cell",
+          "pop_mean": 10.6053,
+          "tau_contrib": 0.0,
+          "sub_label": "spermatocyte"
+        }
+      ]
+    },
+    "cell_type_enrichment": {
+      "class": "enriched",
+      "cl_ids": [
+        "CL:0000017",
+        "CL:0000018"
+      ],
+      "fold_change": 2.128,
+      "fold_change_infinite": false,
+      "tau": 0.9984512518244034,
+      "top_entity_contribs": [
+        {
+          "id": "CL:0000017",
+          "label": "spermatocyte",
+          "pop_mean": 10.6053,
+          "tau_contrib": 0.0
+        },
+        {
+          "id": "CL:0000018",
+          "label": "spermatid",
+          "pop_mean": 4.9846,
+          "tau_contrib": 0.53
+        }
+      ]
+    },
+    "tissue_enrichment": {
+      "class": "enriched",
+      "uberon_ids": [
+        "UBERON:0000473"
+      ],
+      "tissue_labels": [
+        "testis"
+      ],
+      "fold_change": 13.167,
+      "fold_change_infinite": false,
+      "tau": 0.9985897826270295,
+      "top_entity_contribs": [
+        {
+          "id": "UBERON:0000473",
+          "label": "testis",
+          "pop_mean": 4.847,
+          "tau_contrib": 0.0
+        }
+      ]
+    },
+    "tissue_category_enrichment": {
+      "class": "enriched",
+      "category_ids": [
+        "reproductive"
+      ],
+      "category_labels": [
+        "reproductive"
+      ],
+      "top_tissues": [
+        "testis"
+      ],
+      "fold_change": 13.167,
+      "fold_change_infinite": false,
+      "tau": 0.9707811761425987,
+      "top_entity_contribs": [
+        {
+          "id": "reproductive",
+          "label": "reproductive",
+          "pop_mean": 4.847,
+          "tau_contrib": 0.0,
+          "sub_label": "testis"
+        }
+      ]
+    },
+    "tissue_organ_enrichment": {
+      "class": "enriched",
+      "organ_ids": [
+        "UBERON:0000991"
+      ],
+      "organ_labels": [
+        "gonad"
+      ],
+      "top_uberon_labels": [
+        "testis"
+      ],
+      "fold_change": 13.167,
+      "fold_change_infinite": false,
+      "tau": 0.9981307403956928,
+      "top_entity_contribs": [
+        {
+          "id": "UBERON:0000991",
+          "label": "gonad",
+          "pop_mean": 4.847,
+          "tau_contrib": 0.0,
+          "sub_label": "testis"
+        }
+      ]
+    },
+    "enrichment_class": "enriched",
+    "enrichment_cl_ids": [
+      "Reproductive"
+    ],
+    "fold_change": 23.864,
+    "fold_change_infinite": false,
+    "top_cell_types": [
+      {
+        "cell_type": "spermatocyte",
+        "cl_id": "CL:0000017",
+        "mean_log1p_cp10k": 2.5987,
+        "n_expressing": 2616,
+        "n_total": 3070,
+        "pct_expressing": 0.8521,
+        "is_rare": false,
+        "is_trace": false,
+        "tissues": [
+          {
+            "tissue": "testis",
+            "uberon_id": "UBERON:0000473",
+            "mean_log1p_cp10k": 2.5987,
+            "n_expressing": 2616,
+            "n_total": 3070,
+            "pct_expressing": 0.8521
+          }
+        ]
+      },
+      {
+        "cell_type": "spermatid",
+        "cl_id": "CL:0000018",
+        "mean_log1p_cp10k": 1.9841,
+        "n_expressing": 3186,
+        "n_total": 4009,
+        "pct_expressing": 0.7947,
+        "is_rare": false,
+        "is_trace": false,
+        "tissues": [
+          {
+            "tissue": "testis",
+            "uberon_id": "UBERON:0000473",
+            "mean_log1p_cp10k": 1.9841,
+            "n_expressing": 3186,
+            "n_total": 4009,
+            "pct_expressing": 0.7947
+          }
+        ]
+      },
+      {
+        "cell_type": "sensory neuron of dorsal root ganglion",
+        "cl_id": "CL:1001451",
+        "mean_log1p_cp10k": 1.8705,
+        "n_expressing": 185,
+        "n_total": 2286,
+        "pct_expressing": 0.0809,
+        "is_rare": false,
+        "is_trace": false,
+        "tissues": [
+          {
+            "tissue": "brain",
+            "uberon_id": "UBERON:0000955",
+            "mean_log1p_cp10k": 1.5712,
+            "n_expressing": 1,
+            "n_total": 41,
+            "pct_expressing": 0.0244
+          }
+        ]
+      },
+      {
+        "cell_type": "mature astrocyte",
+        "cl_id": "CL:0002627",
+        "mean_log1p_cp10k": 2.087,
+        "n_expressing": 723,
+        "n_total": 15250,
+        "pct_expressing": 0.0474,
+        "is_rare": false,
+        "is_trace": false,
+        "tissues": []
+      },
+      {
+        "cell_type": "type EC enteroendocrine cell",
+        "cl_id": "CL:0000577",
+        "mean_log1p_cp10k": 1.9047,
+        "n_expressing": 220,
+        "n_total": 3847,
+        "pct_expressing": 0.0572,
+        "is_rare": false,
+        "is_trace": false,
+        "tissues": [
+          {
+            "tissue": "stomach",
+            "uberon_id": "UBERON:0000945",
+            "mean_log1p_cp10k": 1.9197,
+            "n_expressing": 205,
+            "n_total": 735,
+            "pct_expressing": 0.2789
+          },
+          {
+            "tissue": "small intestine",
+            "uberon_id": "UBERON:0002108",
+            "mean_log1p_cp10k": 1.717,
+            "n_expressing": 14,
+            "n_total": 93,
+            "pct_expressing": 0.1505
+          },
+          {
+            "tissue": "colon",
+            "uberon_id": "UBERON:0001155",
+            "mean_log1p_cp10k": 1.4633,
+            "n_expressing": 1,
+            "n_total": 287,
+            "pct_expressing": 0.0035
+          }
+        ]
+      },
+      {
+        "cell_type": "group 1 innate lymphoid cell",
+        "cl_id": "CL:0001067",
+        "mean_log1p_cp10k": 1.703,
+        "n_expressing": 669,
+        "n_total": 11358,
+        "pct_expressing": 0.0589,
+        "is_rare": false,
+        "is_trace": false,
+        "tissues": [
+          {
+            "tissue": "lung",
+            "uberon_id": "UBERON:0002048",
+            "mean_log1p_cp10k": 1.7899,
+            "n_expressing": 8,
+            "n_total": 1451,
+            "pct_expressing": 0.0055
+          },
+          {
+            "tissue": "spleen",
+            "uberon_id": "UBERON:0002106",
+            "mean_log1p_cp10k": 1.3922,
+            "n_expressing": 1,
+            "n_total": 45,
+            "pct_expressing": 0.0222
+          }
+        ]
+      },
+      {
+        "cell_type": "suprabasal keratinocyte",
+        "cl_id": "CL:4033013",
+        "mean_log1p_cp10k": 1.7403,
+        "n_expressing": 93,
+        "n_total": 1901,
+        "pct_expressing": 0.0489,
+        "is_rare": false,
+        "is_trace": false,
+        "tissues": []
+      },
+      {
+        "cell_type": "pulmonary neuroendocrine cell",
+        "cl_id": "CL:1000223",
+        "mean_log1p_cp10k": 1.7295,
+        "n_expressing": 219,
+        "n_total": 4485,
+        "pct_expressing": 0.0488,
+        "is_rare": false,
+        "is_trace": false,
+        "tissues": [
+          {
+            "tissue": "lung",
+            "uberon_id": "UBERON:0002048",
+            "mean_log1p_cp10k": 1.7295,
+            "n_expressing": 219,
+            "n_total": 3777,
+            "pct_expressing": 0.058
+          }
+        ]
+      },
+      {
+        "cell_type": "group 3 innate lymphoid cell",
+        "cl_id": "CL:0001071",
+        "mean_log1p_cp10k": 1.8916,
+        "n_expressing": 616,
+        "n_total": 16266,
+        "pct_expressing": 0.0379,
+        "is_rare": false,
+        "is_trace": false,
+        "tissues": [
+          {
+            "tissue": "spleen",
+            "uberon_id": "UBERON:0002106",
+            "mean_log1p_cp10k": 1.8304,
+            "n_expressing": 100,
+            "n_total": 2770,
+            "pct_expressing": 0.0361
+          },
+          {
+            "tissue": "colon",
+            "uberon_id": "UBERON:0001155",
+            "mean_log1p_cp10k": 1.7619,
+            "n_expressing": 27,
+            "n_total": 1215,
+            "pct_expressing": 0.0222
+          },
+          {
+            "tissue": "lung",
+            "uberon_id": "UBERON:0002048",
+            "mean_log1p_cp10k": 1.767,
+            "n_expressing": 8,
+            "n_total": 388,
+            "pct_expressing": 0.0206
+          }
+        ]
+      },
+      {
+        "cell_type": "hippocampal astrocyte",
+        "cl_id": "CL:0002604",
+        "mean_log1p_cp10k": 1.876,
+        "n_expressing": 1000,
+        "n_total": 27092,
+        "pct_expressing": 0.0369,
+        "is_rare": false,
+        "is_trace": false,
+        "tissues": []
+      }
+    ],
+    "top_tissues": [
+      {
+        "tissue": "endocrine gland",
+        "uberon_id": "UBERON:0002368",
+        "mean_log1p_cp10k": 1.8668,
+        "n_expressing": 3367,
+        "n_total": 3367,
+        "pct_expressing": 1.0,
+        "score": 5.4676,
+        "is_trace": false,
+        "is_stale_denominator": true
+      },
+      {
+        "tissue": "testis",
+        "uberon_id": "UBERON:0000473",
+        "mean_log1p_cp10k": 2.2591,
+        "n_expressing": 5834,
+        "n_total": 10321,
+        "pct_expressing": 0.5653,
+        "score": 4.847,
+        "is_trace": false,
+        "is_stale_denominator": false
+      },
+      {
+        "tissue": "eye",
+        "uberon_id": "UBERON:0000970",
+        "mean_log1p_cp10k": 1.7173,
+        "n_expressing": 25274,
+        "n_total": 41176,
+        "pct_expressing": 0.6138,
+        "score": 2.8049,
+        "is_trace": false,
+        "is_stale_denominator": true
+      },
+      {
+        "tissue": "brain",
+        "uberon_id": "UBERON:0000955",
+        "mean_log1p_cp10k": 1.6964,
+        "n_expressing": 106324,
+        "n_total": 341803,
+        "pct_expressing": 0.3111,
+        "score": 1.3856,
+        "is_trace": false,
+        "is_stale_denominator": true
+      },
+      {
+        "tissue": "heart",
+        "uberon_id": "UBERON:0000948",
+        "mean_log1p_cp10k": 1.7723,
+        "n_expressing": 3817,
+        "n_total": 14693,
+        "pct_expressing": 0.2598,
+        "score": 1.2688,
+        "is_trace": false,
+        "is_stale_denominator": true
+      },
+      {
+        "tissue": "mucosa",
+        "uberon_id": "UBERON:0000344",
+        "mean_log1p_cp10k": 1.8629,
+        "n_expressing": 112,
+        "n_total": 1222,
+        "pct_expressing": 0.0917,
+        "score": 0.4988,
+        "is_trace": false,
+        "is_stale_denominator": false
+      },
+      {
+        "tissue": "small intestine",
+        "uberon_id": "UBERON:0002108",
+        "mean_log1p_cp10k": 1.7625,
+        "n_expressing": 1300,
+        "n_total": 13170,
+        "pct_expressing": 0.0987,
+        "score": 0.4765,
+        "is_trace": false,
+        "is_stale_denominator": false
+      },
+      {
+        "tissue": "esophagus",
+        "uberon_id": "UBERON:0001043",
+        "mean_log1p_cp10k": 2.1346,
+        "n_expressing": 170,
+        "n_total": 3121,
+        "pct_expressing": 0.0545,
+        "score": 0.406,
+        "is_trace": false,
+        "is_stale_denominator": true
+      },
+      {
+        "tissue": "skin of body",
+        "uberon_id": "UBERON:0002097",
+        "mean_log1p_cp10k": 1.7506,
+        "n_expressing": 2047,
+        "n_total": 27728,
+        "pct_expressing": 0.0738,
+        "score": 0.3513,
+        "is_trace": false,
+        "is_stale_denominator": true
+      },
+      {
+        "tissue": "adipose tissue",
+        "uberon_id": "UBERON:0001013",
+        "mean_log1p_cp10k": 1.7752,
+        "n_expressing": 365,
+        "n_total": 6287,
+        "pct_expressing": 0.0581,
+        "score": 0.2846,
+        "is_trace": false,
+        "is_stale_denominator": true
+      }
+    ]
+  }
 }

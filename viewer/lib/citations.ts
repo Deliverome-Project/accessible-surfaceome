@@ -26,6 +26,10 @@ export const CITATIONS = {
    *  four proteomes, 8,195 predicted homomers including ~3,946 human.
    *  Cited by the StructureViewer's "Homo-oligomer" tab. */
   schwekeHomomer: { authorYear: "Schweke et al. 2024", pmid: "38325366" },
+  /** CZ CELLxGENE Discover — the single-cell platform reference paper.
+   *  Cited by the CellxGene tab; the 2025 NAR Database issue paper that
+   *  documents the Census + Discover stack the tab's data comes from. */
+  czCellxgene: { authorYear: "CZI Cell Science Program 2025", pmid: "39607691" },
 } as const;
 
 /**

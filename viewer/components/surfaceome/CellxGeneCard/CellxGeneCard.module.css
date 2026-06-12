@@ -1,0 +1,913 @@
+/* CellxGene tab — interactive barplot, HPA-style. Editorial register
+   matching the rest of the gene page (no card chrome; type carries
+   structure). Dense rows so 20+ cell types fit without scrolling. */
+
+.viewerLink {
+  font-family: var(--font-sans);
+}
+
+/* The CellxGene card's lede needs to span the full section width
+   (the description is dense and the charts below are wide). THREE
+   caps fight us:
+   - app/globals.css `.lede { max-width: 38rem }` (editorial cap)
+   - SectionCard.module.css `.lede { max-width: 75ch }` (section
+     reading cap)
+   - SectionCard.module.css `.head { max-width: 64ch }` (the PARENT,
+     which clips its children regardless of their own rules — this
+     was why the first override silently failed)
+   Both classes override with !important to win the cascade against
+   the global rules at the same specificity. */
+.fullWidthLede {
+  max-width: none !important;
+}
+.fullWidthHead {
+  max-width: none !important;
+}
+
+.empty {
+  font-family: var(--font-sans);
+  font-size: 0.95rem;
+  color: var(--ink-soft);
+  margin: var(--space-3) 0 0;
+}
+
+.chart {
+  margin-top: var(--space-4);
+  font-family: var(--font-sans);
+}
+
+/* --- toolbar: Y-axis + sort toggles ---------------------------------- */
+
+.controls {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-5);
+  align-items: center;
+  margin-bottom: var(--space-4);
+  padding-bottom: var(--space-3);
+  border-bottom: 1px solid var(--line-soft);
+}
+
+.controlGroup {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.controlLabel {
+  font-size: 0.7rem;
+  font-weight: 600;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--ink-soft);
+}
+
+.toggle {
+  display: inline-flex;
+  border: 1px solid var(--line);
+  border-radius: 4px;
+  overflow: hidden;
+  background: var(--surface);
+}
+
+.toggle button {
+  padding: 4px 10px;
+  font-family: var(--font-sans);
+  font-size: 0.78rem;
+  font-weight: 500;
+  color: var(--ink-soft);
+  background: transparent;
+  border: none;
+  border-left: 1px solid var(--line);
+  cursor: pointer;
+  transition: background 100ms ease, color 100ms ease;
+}
+.toggle button:first-child {
+  border-left: none;
+}
+.toggle button:hover {
+  color: var(--ink);
+  background: color-mix(in srgb, var(--accent) 6%, transparent);
+}
+.toggle button[data-active="true"] {
+  background: var(--accent-fill);
+  color: var(--surface);
+  font-weight: 600;
+}
+
+/* --- bar list -------------------------------------------------------- */
+
+.barList {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+/* Legacy .barRow / .barTrack / .barFill kept for the per-category
+   horizontal-bar summary; the main cell-type chart uses .colChart
+   below (vertical bars / column layout). */
+.barRow {
+  display: grid;
+  grid-template-columns: minmax(180px, 1fr) minmax(160px, 2.2fr);
+  align-items: center;
+  gap: var(--space-3);
+  padding: 3px 0;
+  border-bottom: 1px solid var(--line-faint, color-mix(in srgb, var(--line) 35%, transparent));
+}
+.barRow:last-child {
+  border-bottom: none;
+}
+
+@media (max-width: 640px) {
+  .barRow {
+    grid-template-columns: 1fr;
+    gap: 2px;
+    padding: 4px 0;
+  }
+}
+
+/* --- column (vertical-bar) chart for cell types ---------------------- */
+
+/* Outer grid: y-axis labels column on the left, bar canvas on the right.
+   Fixed height per chart so the y-axis ticks line up across charts. */
+.colChart {
+  /* Layout: 12 px y-axis title (rotated 90°) + 36 px tick-numbers
+     column + 1fr bar canvas. The vertical title spells out what
+     the bars are heights of, so "mean" alone isn't ambiguous. */
+  display: grid;
+  grid-template-columns: 12px 36px 1fr;
+  align-items: stretch;
+  margin-top: var(--space-2);
+  position: relative;
+  /* Don't clip overflow — popovers project upward from individual
+     bars and need to render above the chart. Labels stay short
+     enough (truncated at 14 chars) that they don't push the page
+     sideways. */
+}
+
+.yAxisContainer {
+  display: contents;
+}
+
+.yAxisTitle {
+  /* Vertical rotated label sitting to the LEFT of the tick column.
+     Reads bottom-up so the english scans naturally with the chart. */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 240px;
+  font-family: var(--font-sans);
+  font-size: 0.62rem;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: lowercase;
+  color: var(--ink-soft);
+  writing-mode: vertical-rl;
+  transform: rotate(180deg);
+  white-space: nowrap;
+}
+
+.yAxis {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  height: 240px;
+  font-family: var(--font-sans);
+  font-size: 0.65rem;
+  font-variant-numeric: tabular-nums;
+  color: var(--ink-faded);
+  padding-right: 6px;
+  text-align: right;
+}
+
+.yTick {
+  display: block;
+  line-height: 1;
+  transform: translateY(-50%);
+}
+.yTick:first-child {
+  transform: translateY(0);
+}
+.yTick:last-child {
+  transform: translateY(-100%);
+}
+
+/* Bar canvas: a horizontal flex row of fixed-height bars. Each bar
+   gets equal share via `flex: 1`, with a min-width so 30 bars at
+   ~900 px don't collapse on narrow screens (the .barRow / popover
+   then becomes the scroll axis). */
+.colCanvas {
+  list-style: none;
+  margin: 0;
+  padding: 0 0 var(--space-2);
+  display: flex;
+  align-items: flex-end;
+  gap: 2px;
+  height: 240px;
+  border-bottom: 1px solid var(--line);
+  background:
+    linear-gradient(to top,
+      transparent 0%, transparent calc(25% - 1px),
+      var(--line-soft) calc(25% - 1px), var(--line-soft) 25%,
+      transparent 25%, transparent calc(50% - 1px),
+      var(--line-soft) calc(50% - 1px), var(--line-soft) 50%,
+      transparent 50%, transparent calc(75% - 1px),
+      var(--line-soft) calc(75% - 1px), var(--line-soft) 75%,
+      transparent 75%, transparent 100%);
+  /* No overflow rules — let the bars and their rotated labels
+     project naturally. Previous `overflow-x: hidden` combined with
+     `overflow-y: visible` got the Y axis treated as `auto` per CSS
+     spec, which silently added a vertical scrollbar for the label
+     row — the very scroll the user wanted gone. */
+  overflow: visible;
+}
+
+.colBar {
+  /* Equal-share flex so 50 bars fit in the available width without
+     scrolling. min-width allows the row to compress when needed;
+     max-width keeps single-bar charts from blowing up. */
+  flex: 1 1 0;
+  min-width: 4px;
+  max-width: 32px;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  align-items: stretch;
+  position: relative;
+  cursor: default;
+  list-style: none;
+}
+
+/* The interactive surface inside each bar. When the bar is
+   clickable (tissue chart), this is a <button>; otherwise it's a
+   transparent div. Same shape either way so the visual layout
+   doesn't shift. */
+.colBarHit {
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  align-items: stretch;
+  width: 100%;
+  height: 100%;
+  border: none;
+  background: transparent;
+  padding: 0;
+  cursor: inherit;
+  appearance: none;
+}
+button.colBarHit {
+  cursor: pointer;
+}
+button.colBarHit:hover .colFill {
+  filter: brightness(0.92);
+}
+button.colBarHit:focus-visible {
+  outline: 2px solid var(--accent-deep);
+  outline-offset: 2px;
+}
+
+/* Selected tissue bar — the bar color already changes to maroon
+   (see SELECTED_TISSUE_COLOR in the chart code), which is the
+   indicator. The label below is also emphasized so the reader can
+   trace the selection downward to its name. No outline or shading
+   — those read as "highlighted state" rather than "I clicked
+   this". */
+.colBar[data-selected="true"] .colLabel {
+  color: var(--accent-deep);
+  font-weight: 700;
+}
+
+/* Title row groups the chart title with its reset button — sits
+   above the meta subtitle so the "back to Top 20" affordance is
+   inline with the current title rather than tucked at the far
+   right of the row. */
+.titleRow {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-3);
+  width: 100%;
+  font-family: var(--font-sans);
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--ink-soft);
+}
+
+.titleText {
+  display: inline-block;
+}
+
+/* Reset link in the title row — sits right next to the chart title
+   text. Compact pill so it doesn't compete with the title for
+   visual weight. */
+.resetLink {
+  padding: 3px 12px;
+  font-family: var(--font-sans);
+  font-size: 0.7rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: none;
+  color: var(--accent-deep);
+  background: color-mix(in srgb, var(--accent) 8%, transparent);
+  border: 1px solid color-mix(in srgb, var(--accent) 24%, transparent);
+  border-radius: 99px;
+  cursor: pointer;
+  white-space: nowrap;
+}
+.resetLink:hover {
+  background: color-mix(in srgb, var(--accent) 16%, transparent);
+}
+
+/* Mute trace bars at the label level too — the colFill gets the
+   transparency via inline color-mix in the chart code. */
+.colBar[data-trace="true"] .colLabel {
+  color: var(--ink-faded);
+  font-style: italic;
+}
+
+.colTrack {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: flex-end;
+}
+
+.colFill {
+  width: 100%;
+  border-radius: 2px 2px 0 0;
+  transition: height 200ms ease-out, opacity 100ms;
+}
+
+/* Faint outline + opacity on focus so keyboard navigation is visible. */
+.colBar:hover .colFill,
+.colBar:focus-within .colFill {
+  outline: 1px solid var(--ink);
+  outline-offset: 1px;
+}
+
+/* Label below each bar. Pivot at top-right of the label,
+   positioned at the bar's bottom-CENTER (`right: 50%`). CCW
+   rotation `-65deg` so the label projects DOWN-LEFT from the
+   pivot, like a / slash sitting under the bar. Reading order:
+   lower-left (first char) → bar's bottom-center (last char), the
+   conventional bar-chart label layout.
+
+   `white-space: normal` allows wrapping on whitespace within the
+   140 px max-width, so "pulmonary alveolar type 2 cell" reads on
+   2-3 wrapped lines instead of being truncated with an ellipsis.
+   `text-align: right` keeps each wrapped line right-aligned at the
+   pivot, so the visual edge of the label stays under the bar. */
+.colLabel {
+  position: absolute;
+  top: calc(100% + 6px);
+  /* Anchor pivot 6 px LEFT of the bar's center so the rotated label
+     visually sits flush under the bar instead of trailing off
+     toward the bar's right edge. */
+  right: calc(50% + 6px);
+  font-family: var(--font-sans);
+  /* Bumped ~7% from 0.6 rem so labels read more legibly at the
+     -65° rotation without growing as much vertical reserve as the
+     full 15% step would. */
+  font-size: 0.64rem;
+  color: var(--ink-soft);
+  /* Allow wrapping on whitespace, but cap at 2 LINES via
+     -webkit-line-clamp — long CL terms like "kidney loop of Henle
+     ascending limb epithelial cell" don't sprawl into 4 lines
+     when they're rotated and overlap their neighbors. Hover
+     popover stays the canonical full-label channel. */
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+  -webkit-box-orient: vertical;
+  word-break: normal;
+  overflow-wrap: break-word;
+  text-align: right;
+  transform: rotate(-65deg);
+  transform-origin: top right;
+  pointer-events: none;
+  max-width: 160px;
+  line-height: 1.15;
+  overflow: hidden;
+}
+
+.colBar:hover .colLabel,
+.colBar:focus-within .colLabel {
+  color: var(--ink);
+}
+
+/* Reserve space below the chart canvas for the rotated labels.
+   Bumped to 100 px to accommodate the ~15% larger label font
+   (0.69 rem vs 0.6 rem) on 2 wrapped lines at -65° rotation. */
+.colChart {
+  padding-bottom: 100px;
+}
+
+/* --- per-category summary bars (horizontal) -------------------------- */
+
+.catList {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.catRow {
+  display: grid;
+  grid-template-columns: minmax(120px, 0.8fr) minmax(160px, 3fr);
+  align-items: center;
+  gap: var(--space-3);
+  padding: 3px 0;
+}
+
+.catLabel {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-family: var(--font-sans);
+  font-size: 0.78rem;
+  color: var(--ink);
+}
+
+.catName {
+  font-weight: 600;
+}
+
+.catCount {
+  margin-left: auto;
+  font-size: 0.66rem;
+  font-variant-numeric: tabular-nums;
+  color: var(--ink-faded);
+  padding: 1px 8px;
+  border-radius: 99px;
+  background: color-mix(in srgb, var(--ink) 5%, transparent);
+}
+
+/* Mute trace rows — tissue name dims, count emphasizes the small n
+   (so the reader sees WHY this row is faded), value-text stays
+   tabular-nums readable. The bar fill is muted at the inline-color
+   level (see TopTissues render). */
+.catRow[data-trace="true"] .catName {
+  color: var(--ink-soft);
+  font-style: italic;
+}
+.catRow[data-trace="true"] .catValue {
+  color: var(--ink-soft);
+}
+
+/* The "trace" badge — sits between the tissue label and the count.
+   Small, lowercase, low-saturation so it doesn't compete with the
+   qualified rows above it. */
+.traceBadge {
+  display: inline-block;
+  padding: 1px 6px;
+  margin-left: 4px;
+  border-radius: 99px;
+  font-size: 0.6rem;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: lowercase;
+  background: color-mix(in srgb, var(--ink) 8%, transparent);
+  color: var(--ink-faded);
+}
+
+.catTrack {
+  position: relative;
+  display: flex;
+  align-items: center;
+  height: 12px;
+  background: color-mix(in srgb, var(--ink) 5%, transparent);
+  border-radius: 2px;
+  overflow: hidden;
+}
+
+.catFill {
+  height: 100%;
+  border-radius: 2px;
+  transition: width 200ms ease-out;
+}
+
+.catValue {
+  position: absolute;
+  right: 6px;
+  font-size: 0.68rem;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  color: var(--ink);
+  letter-spacing: 0.02em;
+  text-shadow: 0 0 2px var(--surface);
+}
+
+.barLabel {
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+  min-width: 0;
+  font-size: 0.82rem;
+  line-height: 1.25;
+}
+
+.swatch {
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  align-self: center;
+  transform: translateY(-1px);
+}
+
+.barName {
+  color: var(--ink);
+  font-weight: 500;
+  overflow-wrap: anywhere;
+}
+
+/* Tissues subtext — small, faded, inline so the row stays one line at
+   normal screen widths. Truncates rather than wraps if very long. */
+.tissues {
+  font-size: 0.7rem;
+  color: var(--ink-faded);
+  font-style: italic;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  min-width: 0;
+  flex-shrink: 1;
+}
+
+.barTrack {
+  position: relative;
+  display: flex;
+  align-items: center;
+  height: 14px;
+  background: color-mix(in srgb, var(--ink) 5%, transparent);
+  border-radius: 2px;
+  overflow: hidden;
+}
+
+.barFill {
+  height: 100%;
+  border-radius: 2px;
+  transition: width 200ms ease-out;
+}
+
+.barValue {
+  position: absolute;
+  right: 6px;
+  font-size: 0.7rem;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  color: var(--ink);
+  letter-spacing: 0.02em;
+  text-shadow: 0 0 2px var(--surface);
+}
+
+/* --- chart blocks (common vs rare) ----------------------------------- */
+
+/* Margin between adjacent chart blocks. First-of-type sits close
+   to the lede. All later blocks get a bit more breathing room so
+   the chart titles aren't cramped against the previous chart's
+   rotated labels. */
+.chartBlock {
+  margin-top: var(--space-4);
+}
+.chartBlock:first-of-type {
+  margin-top: var(--space-3);
+}
+
+.subhead {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: var(--space-3);
+  margin: 0 0 var(--space-2);
+  font-family: var(--font-sans);
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--ink-soft);
+}
+
+.subheadMeta {
+  font-family: var(--font-sans);
+  font-size: 0.7rem;
+  font-weight: 400;
+  letter-spacing: 0.02em;
+  text-transform: none;
+  color: var(--ink-faded);
+}
+
+/* --- popover (hover/focus per row) ----------------------------------- */
+
+/* The popover sits inside each .barRow as a positioned descendant.
+   Hidden by default, visible on :hover / :focus-within. CSS-only —
+   no JS state — so it survives a re-sort without re-mounting. */
+.barRow {
+  position: relative;
+}
+
+.popover {
+  position: absolute;
+  /* Anchor the popover's bottom edge to the bar fill's TOP
+     (--bar-height is the fill's height % set per-row inline). For a
+     short bar where the fill is only 20% of the canvas, the popover
+     now sits at 20% + 6px from the colBar's bottom — directly above
+     the visible fill. Without this it was hard-coded at `bottom:
+     calc(100% + 6px)`, which put the popover above the whole 240 px
+     canvas slot, hundreds of px above where the user is looking. */
+  bottom: calc(var(--bar-height, 100%) + 6px);
+  left: 50%;
+  transform: translateX(-50%);
+  width: 320px;
+  max-width: calc(100vw - 32px);
+  z-index: 30;
+  display: none;
+  padding: var(--space-3);
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  box-shadow: 0 12px 28px rgba(0, 0, 0, 0.16);
+  font-family: var(--font-sans);
+  font-size: 0.78rem;
+  line-height: 1.45;
+  color: var(--ink);
+  pointer-events: none;
+}
+
+.barRow:hover .popover,
+.barRow:focus-within .popover,
+.colBar:hover .popover,
+.colBar:focus-within .popover {
+  display: block;
+}
+
+/* Column-bar popovers sit ABOVE the bar (positioned via .popover's
+   bottom rule). On the leftmost/rightmost bars the centered transform
+   would clip; flex-end alignment via :first-child/:last-child fixes
+   the typical edge case. */
+.colBar:first-child .popover {
+  left: 0;
+  transform: translateX(0);
+}
+.colBar:last-child .popover {
+  left: auto;
+  right: 0;
+  transform: translateX(0);
+}
+
+.popHeader {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 8px;
+  font-size: 0.82rem;
+}
+
+.popHeader strong {
+  color: var(--ink);
+  font-weight: 600;
+}
+
+.popMeta {
+  font-family: var(--font-mono, ui-monospace, "SF Mono", monospace);
+  font-size: 0.7rem;
+  color: var(--ink-faded);
+}
+
+.popCategory {
+  margin-left: auto;
+  padding: 1px 8px;
+  border-radius: 99px;
+  font-size: 0.65rem;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  background: color-mix(in srgb, var(--accent) 8%, transparent);
+  color: var(--accent-deep);
+}
+
+.popStats {
+  display: grid;
+  grid-template-columns: 1fr 1.2fr;
+  gap: 4px var(--space-3);
+  margin: 0 0 8px;
+}
+
+.popStats > div {
+  display: flex;
+  flex-direction: column;
+}
+
+.popStats dt {
+  font-size: 0.66rem;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--ink-soft);
+  font-weight: 600;
+  margin: 0;
+}
+
+.popStats dd {
+  margin: 0;
+  font-size: 0.92rem;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  color: var(--ink);
+}
+
+.popHint {
+  font-size: 0.7rem;
+  font-weight: 400;
+  color: var(--ink-faded);
+}
+
+.popTissues {
+  margin-top: 6px;
+  padding-top: 6px;
+  border-top: 1px solid var(--line-soft);
+}
+
+.popTissuesLabel {
+  display: block;
+  font-size: 0.66rem;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--ink-soft);
+  font-weight: 600;
+  margin-bottom: 4px;
+}
+
+.popTissues ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.popTissues li {
+  font-size: 0.78rem;
+}
+
+/* --- gene-level enrichment chips ------------------------------------- */
+
+/* Row container holds both axis chips (cell type + tissue) side by
+   side. Wrap on narrow viewports. */
+.chipRow {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  margin-top: var(--space-3);
+}
+
+.classChip {
+  display: inline-flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2);
+  padding: 6px 12px;
+  border: 1px solid var(--line);
+  border-radius: 99px;
+  font-family: var(--font-sans);
+  font-size: 0.82rem;
+  background: var(--surface);
+}
+
+/* Axis pill on the left — labels which axis (cell type vs tissue)
+   this elevation applies to. Lets the reader scan the chip in any
+   order. */
+.classAxis {
+  padding: 1px 8px;
+  border-radius: 99px;
+  font-size: 0.65rem;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  background: color-mix(in srgb, var(--accent) 8%, transparent);
+  color: var(--accent-deep);
+}
+
+.classLabel {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-weight: 600;
+  color: var(--ink);
+}
+
+.classFold {
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  color: var(--accent-deep);
+}
+
+.classCells {
+  color: var(--ink-soft);
+  font-size: 0.78rem;
+}
+
+.classDot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--ink-faded);
+}
+
+/* Color the chip dot by enrichment strength. Tissue-enriched gets the
+   primary accent; group gets the secondary; enhanced gets warm amber;
+   low-specificity gets neutral grey. */
+.classChip[data-class="tissue_enriched"] .classDot {
+  background: var(--accent-fill);
+}
+.classChip[data-class="group_enriched"] .classDot {
+  background: var(--teal-mid, #3d6b60);
+}
+.classChip[data-class="tissue_enhanced"] .classDot {
+  background: var(--amber-bright, #f4aa28);
+}
+.classChip[data-class="low_specificity"] .classDot {
+  background: var(--ink-faded);
+}
+/* not_detected reads "we couldn't measure" rather than "broadly expressed"
+   — a separate visual treatment (dashed outline + light fill) so a reader
+   doesn't conflate it with low_specificity at first glance. */
+.classChip[data-class="not_detected"] {
+  border-style: dashed;
+  /* Mute the text instead of `opacity: 0.85` on the chip — opacity
+     cascades to children including the InfoTip popover, making the
+     tooltip appear translucent. */
+  color: var(--muted, #6f5d5a);
+}
+.classChip[data-class="not_detected"] .classDot {
+  background: transparent;
+  border: 1.5px dashed var(--muted-soft, #80706a);
+  width: 9px;
+  height: 9px;
+}
+
+/* --- legend ---------------------------------------------------------- */
+
+.legend {
+  list-style: none;
+  margin: var(--space-4) 0 0;
+  padding: var(--space-3) 0 0;
+  border-top: 1px solid var(--line-soft);
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2) var(--space-4);
+}
+
+.legendItem {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.72rem;
+  color: var(--ink-soft);
+  font-weight: 500;
+  letter-spacing: 0.02em;
+}
+
+/* --- tissue category legend ----------------------------------------- *
+ * Per-gene legend strip beneath the tissue-axis chart. Lists the
+ * organ-system categories present in this gene's tissue rows so the
+ * bar colors decode without a global key. Hidden when only one
+ * category is present (the chart's caption already says the same
+ * thing). */
+.tissueCatLegend {
+  list-style: none;
+  margin: 8px 0 0;
+  padding: 8px 0 0;
+  border-top: 1px solid var(--line-soft);
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 14px;
+}
+
+.tissueCatLegendItem {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.72rem;
+  color: var(--ink-soft);
+  font-weight: 500;
+  letter-spacing: 0.01em;
+}
+
+.tissueCatSwatch {
+  display: inline-block;
+  width: 10px;
+  height: 10px;
+  border-radius: 2px;
+  flex-shrink: 0;
+}

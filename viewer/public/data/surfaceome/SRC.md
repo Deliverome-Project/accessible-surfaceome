@@ -592,3 +592,35 @@ This Markdown is generated from the canonical JSON record at `/data/surfaceome/S
 - UniProt — CC BY 4.0 (UniProt Consortium)
 
 *Confidence moderate — Confidence is moderate because the cancer-cell outer-surface SRC story derives from a single recent research cluster — two 2025 publications (PMID:41818370 and PMID:41818382) that appear to originate from the same group. The canonical SRC topology — myristoylated, inner-leaflet-anchored, no extracellular domain — is well-established across decades of independent work from multiple labs and cell contexts, and the triage prior correctly identified this as the baseline. Lifting confidence to high would require an independent group to confirm eSrc surface exposure using orthogonal methodology (e.g., non-permeabilized flow cytometry with validated anti-eSrc antibody + KO control, or cell-surface biotinylation with direct SRC WB confirmation) in a published primary study.*
+
+## CellxGene RNA enrichment (CZI Census)
+
+*Schema v2.1.12 · CZI Census 2025-11-08 · τ-cutoff classification (Yanai 2005, PMID 15388519) on linear population mean (mean × pct, ≈ nTPM) over the full measured universe with a 1e-3 noise floor: τ≥0.85 enriched, 0.5–0.85 enhanced, <0.5 low specificity, no eligibles not detected. Cutoffs from Kryuchkova-Mostacci & Robinson-Rechavi 2017 (PMID 26891983) + Lüleci & Yılmaz 2022. Cell ontology graph (cl-basic.obo) walked to ~150 cell-family terms; UBERON ontology walked to ~150 organ-level tissues. CC-BY 4.0 (CZI Census).*
+
+**Classification:**
+
+- **Cell class (CL ontology graph, ~10 compartments):** enriched · Epithelial · Other · 2.3× · τ=0.92
+- **Cell type (leaf Cell Ontology terms, ~600):** enriched · mucous cell of stomach · melanocyte of skin · salivary gland glandular cell · 2.3× · τ=0.99
+- **Tissue (UBERON terms, ~56):** not detected · τ=0.98
+
+**Top 5 cell types (leaf CL, pooled across tissues):**
+
+| Cell type | CL ID | Mean log1p(CP10K) | % expressing | n_expressing / n_total |
+|---|---|---|---|---|
+| mucous cell of stomach | CL:0002180 | 2.371 | 36.29% | 499 / 1,375 |
+| melanocyte of skin | CL:1000458 | 1.882 | 27.74% | 745 / 2,686 |
+| salivary gland glandular cell | CL:1001596 | 2.328 | 14.29% | 153 / 1,071 |
+| megakaryocyte | CL:0000556 | 1.970 | 8.88% | 3,198 / 36,020 |
+| basal epithelial cell of tracheobronchial tree | CL:0002329 | 2.085 | 5.68% | 463 / 8,145 |
+
+**Top 5 tissues (UBERON, pooled across cell types):**
+
+| Tissue | UBERON ID | Mean log1p(CP10K) | % expressing | n_expressing / n_total |
+|---|---|---|---|---|
+| eye | UBERON:0000970 | 1.728 | 78.65% | 63,059 / 80,173 |
+| heart | UBERON:0000948 | 1.789 | 35.45% | 6,116 / 17,251 |
+| adipose tissue | UBERON:0001013 | 1.775 | 28.93% | 2,165 / 7,484 |
+| skin of body | UBERON:0002097 | 1.980 | 15.05% | 3,221 / 21,399 |
+| embryo | UBERON:0000922 | 2.097 | 10.94% | 1,722 / 15,746 |
+
+<!-- /cellxgene -->

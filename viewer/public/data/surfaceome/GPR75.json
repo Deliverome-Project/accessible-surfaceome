@@ -5009,5 +5009,274 @@
   "confidence": "moderate",
   "confidence_reasoning": "Confidence is moderate for two reasons. First, the surface-accessibility evidence is indirect: the strongest data come from endogenous N-terminal 3xFlag-knockin immunofluorescence (validated by the L144P loss-of-localization control) and membrane-fraction photoaffinity crosslinking \u2014 robust but not a clean non-permeabilized live-cell flow or surface biotinylation experiment with a knockout comparator. Second, the 2025 cryo-EM structure (PMID:41545757) reveals a constitutively collapsed orthosteric ECD pocket, a moderate epitope-masking risk that could defeat conventional GPCR-targeting antibody strategies. Lifting confidence would require non-permeabilized live-cell surface staining or surface biotinylation in primary human cells with a GPR75-knockout control, plus structural mapping of ECL2/3 loop accessibility.",
   "model_path": "claude-sonnet-4-6",
-  "record_generated_at": "2026-06-07T02:42:21.474347Z"
+  "record_generated_at": "2026-06-07T02:42:21.474347Z",
+  "cellxgene": {
+    "schema_version": "2.1.12",
+    "census_version": "2025-11-08",
+    "cell_class_enrichment": {
+      "class": "not_detected",
+      "class_ids": [],
+      "class_labels": [],
+      "fold_change": null,
+      "fold_change_infinite": false,
+      "tau": null,
+      "top_entity_contribs": []
+    },
+    "cell_family_enrichment": {
+      "class": "not_detected",
+      "family_ids": [],
+      "family_labels": [],
+      "top_cl_labels": [],
+      "fold_change": null,
+      "fold_change_infinite": false,
+      "tau": 0.9891136335320059,
+      "top_entity_contribs": []
+    },
+    "cell_type_enrichment": {
+      "class": "not_detected",
+      "cl_ids": [],
+      "fold_change": null,
+      "fold_change_infinite": false,
+      "tau": 0.9891136335320144,
+      "top_entity_contribs": []
+    },
+    "tissue_enrichment": {
+      "class": "not_detected",
+      "uberon_ids": [],
+      "tissue_labels": [],
+      "fold_change": null,
+      "fold_change_infinite": false,
+      "tau": 0.9936143662008744,
+      "top_entity_contribs": []
+    },
+    "tissue_category_enrichment": {
+      "class": "not_detected",
+      "category_ids": [],
+      "category_labels": [],
+      "top_tissues": [],
+      "fold_change": null,
+      "fold_change_infinite": false,
+      "tau": 0.9936143662008786,
+      "top_entity_contribs": []
+    },
+    "tissue_organ_enrichment": {
+      "class": "not_detected",
+      "organ_ids": [],
+      "organ_labels": [],
+      "top_uberon_labels": [],
+      "fold_change": null,
+      "fold_change_infinite": false,
+      "tau": 0.9936143662008803,
+      "top_entity_contribs": []
+    },
+    "enrichment_class": "not_detected",
+    "enrichment_cl_ids": [],
+    "fold_change": null,
+    "fold_change_infinite": false,
+    "top_cell_types": [
+      {
+        "cell_type": "kidney loop of Henle ascending limb epithelial cell",
+        "cl_id": "CL:1001016",
+        "mean_log1p_cp10k": 1.7559,
+        "n_expressing": 202,
+        "n_total": 10531,
+        "pct_expressing": 0.0192,
+        "is_rare": false,
+        "is_trace": false,
+        "tissues": [
+          {
+            "tissue": "kidney",
+            "uberon_id": "UBERON:0002113",
+            "mean_log1p_cp10k": 1.7559,
+            "n_expressing": 202,
+            "n_total": 10530,
+            "pct_expressing": 0.0192
+          }
+        ]
+      },
+      {
+        "cell_type": "visceromotor neuron",
+        "cl_id": "CL:0005025",
+        "mean_log1p_cp10k": 2.3431,
+        "n_expressing": 3,
+        "n_total": 610,
+        "pct_expressing": 0.0049,
+        "is_rare": true,
+        "is_trace": true,
+        "tissues": [
+          {
+            "tissue": "heart",
+            "uberon_id": "UBERON:0000948",
+            "mean_log1p_cp10k": 2.3431,
+            "n_expressing": 3,
+            "n_total": 348,
+            "pct_expressing": 0.0086
+          }
+        ]
+      },
+      {
+        "cell_type": "dermis microvascular lymphatic vessel endothelial cell",
+        "cl_id": "CL:2000041",
+        "mean_log1p_cp10k": 2.0776,
+        "n_expressing": 2,
+        "n_total": 603,
+        "pct_expressing": 0.0033,
+        "is_rare": true,
+        "is_trace": true,
+        "tissues": [
+          {
+            "tissue": "heart",
+            "uberon_id": "UBERON:0000948",
+            "mean_log1p_cp10k": 2.0776,
+            "n_expressing": 2,
+            "n_total": 603,
+            "pct_expressing": 0.0033
+          }
+        ]
+      },
+      {
+        "cell_type": "mature neutrophil",
+        "cl_id": "CL:0000096",
+        "mean_log1p_cp10k": 2.2725,
+        "n_expressing": 1,
+        "n_total": 906,
+        "pct_expressing": 0.0011,
+        "is_rare": true,
+        "is_trace": true,
+        "tissues": []
+      },
+      {
+        "cell_type": "IgA plasmablast",
+        "cl_id": "CL:0000984",
+        "mean_log1p_cp10k": 2.1409,
+        "n_expressing": 1,
+        "n_total": 956,
+        "pct_expressing": 0.001,
+        "is_rare": true,
+        "is_trace": true,
+        "tissues": [
+          {
+            "tissue": "blood",
+            "uberon_id": "UBERON:0000178",
+            "mean_log1p_cp10k": 2.1409,
+            "n_expressing": 1,
+            "n_total": 956,
+            "pct_expressing": 0.001
+          }
+        ]
+      }
+    ],
+    "top_tissues": [
+      {
+        "tissue": "eye",
+        "uberon_id": "UBERON:0000970",
+        "mean_log1p_cp10k": 1.6705,
+        "n_expressing": 3455,
+        "n_total": 22576,
+        "pct_expressing": 0.153,
+        "score": 0.6604,
+        "is_trace": false,
+        "is_stale_denominator": true
+      },
+      {
+        "tissue": "brain",
+        "uberon_id": "UBERON:0000955",
+        "mean_log1p_cp10k": 1.8778,
+        "n_expressing": 5393,
+        "n_total": 254285,
+        "pct_expressing": 0.0212,
+        "score": 0.1175,
+        "is_trace": false,
+        "is_stale_denominator": true
+      },
+      {
+        "tissue": "heart",
+        "uberon_id": "UBERON:0000948",
+        "mean_log1p_cp10k": 1.7668,
+        "n_expressing": 70,
+        "n_total": 9037,
+        "pct_expressing": 0.0077,
+        "score": 0.0376,
+        "is_trace": true,
+        "is_stale_denominator": false
+      },
+      {
+        "tissue": "adipose tissue",
+        "uberon_id": "UBERON:0001013",
+        "mean_log1p_cp10k": 1.7586,
+        "n_expressing": 39,
+        "n_total": 6041,
+        "pct_expressing": 0.0065,
+        "score": 0.031,
+        "is_trace": true,
+        "is_stale_denominator": true
+      },
+      {
+        "tissue": "small intestine",
+        "uberon_id": "UBERON:0002108",
+        "mean_log1p_cp10k": 1.6244,
+        "n_expressing": 19,
+        "n_total": 4915,
+        "pct_expressing": 0.0039,
+        "score": 0.0158,
+        "is_trace": true,
+        "is_stale_denominator": false
+      },
+      {
+        "tissue": "nose",
+        "uberon_id": "UBERON:0000004",
+        "mean_log1p_cp10k": 1.8875,
+        "n_expressing": 160,
+        "n_total": 69481,
+        "pct_expressing": 0.0023,
+        "score": 0.0129,
+        "is_trace": true,
+        "is_stale_denominator": true
+      },
+      {
+        "tissue": "adrenal gland",
+        "uberon_id": "UBERON:0002369",
+        "mean_log1p_cp10k": 2.2118,
+        "n_expressing": 437,
+        "n_total": 349970,
+        "pct_expressing": 0.0012,
+        "score": 0.0102,
+        "is_trace": true,
+        "is_stale_denominator": false
+      },
+      {
+        "tissue": "skin of body",
+        "uberon_id": "UBERON:0002097",
+        "mean_log1p_cp10k": 1.6338,
+        "n_expressing": 48,
+        "n_total": 20022,
+        "pct_expressing": 0.0024,
+        "score": 0.0099,
+        "is_trace": true,
+        "is_stale_denominator": true
+      },
+      {
+        "tissue": "large intestine",
+        "uberon_id": "UBERON:0000059",
+        "mean_log1p_cp10k": 1.9596,
+        "n_expressing": 10,
+        "n_total": 6128,
+        "pct_expressing": 0.0016,
+        "score": 0.0099,
+        "is_trace": true,
+        "is_stale_denominator": false
+      },
+      {
+        "tissue": "abdomen",
+        "uberon_id": "UBERON:0000916",
+        "mean_log1p_cp10k": 1.8158,
+        "n_expressing": 11,
+        "n_total": 11555,
+        "pct_expressing": 0.001,
+        "score": 0.0049,
+        "is_trace": true,
+        "is_stale_denominator": false
+      }
+    ]
+  }
 }

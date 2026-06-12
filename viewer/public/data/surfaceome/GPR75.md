@@ -524,3 +524,35 @@ This Markdown is generated from the canonical JSON record at `/data/surfaceome/G
 - UniProt — CC BY 4.0 (UniProt Consortium)
 
 *Confidence moderate — Confidence is moderate because direct surface-localization evidence is limited to a single BRET proximity assay using an overexpression construct with an exogenous signal peptide (PMC:PMC8062009) — no live-cell flow cytometry, surface biotinylation, or non-permeabilized antibody staining with an endogenous construct is in the literature. The functional assays in pancreatic beta cells and vascular smooth muscle (PMID:23979485) provide strong indirect support but do not directly image or quantify surface GPR75. Lifting confidence to high would require at least one direct surface-localization experiment on endogenous GPR75 — for example, live-cell immunostaining with a validated extracellular-epitope antibody, or surface biotinylation mass spectrometry in a GPR75-expressing primary cell type.*
+
+## CellxGene RNA enrichment (CZI Census)
+
+*Schema v2.1.12 · CZI Census 2025-11-08 · τ-cutoff classification (Yanai 2005, PMID 15388519) on linear population mean (mean × pct, ≈ nTPM) over the full measured universe with a 1e-3 noise floor: τ≥0.85 enriched, 0.5–0.85 enhanced, <0.5 low specificity, no eligibles not detected. Cutoffs from Kryuchkova-Mostacci & Robinson-Rechavi 2017 (PMID 26891983) + Lüleci & Yılmaz 2022. Cell ontology graph (cl-basic.obo) walked to ~150 cell-family terms; UBERON ontology walked to ~150 organ-level tissues. CC-BY 4.0 (CZI Census).*
+
+**Classification:**
+
+- **Cell class (CL ontology graph, ~10 compartments):** not detected
+- **Cell type (leaf Cell Ontology terms, ~600):** not detected · τ=0.99
+- **Tissue (UBERON terms, ~56):** not detected · τ=0.99
+
+**Top 5 cell types (leaf CL, pooled across tissues):**
+
+| Cell type | CL ID | Mean log1p(CP10K) | % expressing | n_expressing / n_total |
+|---|---|---|---|---|
+| kidney loop of Henle ascending limb epithelial cell | CL:1001016 | 1.756 | 1.92% | 202 / 10,531 |
+| visceromotor neuron | CL:0005025 | 2.343 | 0.49% | 3 / 610 | (trace)
+| dermis microvascular lymphatic vessel endothelial cell | CL:2000041 | 2.078 | 0.33% | 2 / 603 | (trace)
+| mature neutrophil | CL:0000096 | 2.272 | 0.11% | 1 / 906 | (trace)
+| IgA plasmablast | CL:0000984 | 2.141 | 0.10% | 1 / 956 | (trace)
+
+**Top 5 tissues (UBERON, pooled across cell types):**
+
+| Tissue | UBERON ID | Mean log1p(CP10K) | % expressing | n_expressing / n_total |
+|---|---|---|---|---|
+| eye | UBERON:0000970 | 1.671 | 15.30% | 3,455 / 22,576 |
+| brain | UBERON:0000955 | 1.878 | 2.12% | 5,393 / 254,285 |
+| heart | UBERON:0000948 | 1.767 | 0.77% | 70 / 9,037 | (trace)
+| adipose tissue | UBERON:0001013 | 1.759 | 0.65% | 39 / 6,041 | (trace)
+| small intestine | UBERON:0002108 | 1.624 | 0.39% | 19 / 4,915 | (trace)
+
+<!-- /cellxgene -->

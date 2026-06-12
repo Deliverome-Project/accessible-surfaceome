@@ -532,3 +532,35 @@ This Markdown is generated from the canonical JSON record at `/data/surfaceome/H
 - UniProt — CC BY 4.0 (UniProt Consortium)
 
 *Confidence moderate — Confidence is moderate rather than low because the biology of HMGB1 as a secreted DAMP is well established across independent sources, making the 'secreted_only' call robust. However, the triage agent called this 'contextual / cell_state_induced,' noting that surface biotinylation on intact cells and flow cytometry data have been interpreted as showing HMGB1 on the outer PM leaflet bound to surface RAGE — evidence the triage cited but which is not present as a qualifying direct surface assay in the compiled ledger. The specific gap is that no live-cell non-permeabilized flow, non-perm IF, or surface biotinylation with HMGB1 confirmed as a hit appears in the evidence set reviewed here. Confidence would rise to high only with a published, replicated live-cell surface staining result (non-permeabilized flow cytometry or surface biotinylation with HMGB1 explicitly listed as a detected surface hit) from an independent laboratory.*
+
+## CellxGene RNA enrichment (CZI Census)
+
+*Schema v2.1.12 · CZI Census 2025-11-08 · τ-cutoff classification (Yanai 2005, PMID 15388519) on linear population mean (mean × pct, ≈ nTPM) over the full measured universe with a 1e-3 noise floor: τ≥0.85 enriched, 0.5–0.85 enhanced, <0.5 low specificity, no eligibles not detected. Cutoffs from Kryuchkova-Mostacci & Robinson-Rechavi 2017 (PMID 26891983) + Lüleci & Yılmaz 2022. Cell ontology graph (cl-basic.obo) walked to ~150 cell-family terms; UBERON ontology walked to ~150 organ-level tissues. CC-BY 4.0 (CZI Census).*
+
+**Classification:**
+
+- **Cell class (CL ontology graph, ~10 compartments):** enhanced · Immune · Stem · Neural · 1.7× · τ=0.69
+- **Cell type (leaf Cell Ontology terms, ~600):** enriched · large pre-B-II cell · fraction A pre-pro B cell · proerythroblast · 1.1× · τ=0.91
+- **Tissue (UBERON terms, ~56):** enriched · cortex · forelimb · hindlimb · 2.0× · τ=0.98
+
+**Top 5 cell types (leaf CL, pooled across tissues):**
+
+| Cell type | CL ID | Mean log1p(CP10K) | % expressing | n_expressing / n_total |
+|---|---|---|---|---|
+| large pre-B-II cell | CL:0000957 | 4.051 | 99.94% | 8,449 / 8,454 |
+| fraction A pre-pro B cell | CL:0002045 | 4.017 | 94.54% | 7,724 / 8,170 |
+| proerythroblast | CL:0000547 | 3.783 | 96.87% | 1,576 / 1,627 |
+| migratory enteric neural crest cell | CL:0002607 | 3.505 | 100.00% | 520 / 520 |
+| basophilic erythroblast | CL:0000549 | 3.395 | 99.94% | 5,250 / 5,253 |
+
+**Top 5 tissues (UBERON, pooled across cell types):**
+
+| Tissue | UBERON ID | Mean log1p(CP10K) | % expressing | n_expressing / n_total |
+|---|---|---|---|---|
+| cortex | UBERON:0001851 | 3.337 | 99.18% | 12,951 / 13,058 |
+| endocrine gland | UBERON:0002368 | 2.981 | 100.00% | 244,017 / 244,017 |
+| embryo | UBERON:0000922 | 2.741 | 100.00% | 86,108 / 86,108 |
+| forelimb | UBERON:0002102 | 2.739 | 93.70% | 12,334 / 13,163 |
+| hindlimb | UBERON:0002103 | 2.666 | 89.41% | 25,719 / 28,766 |
+
+<!-- /cellxgene -->

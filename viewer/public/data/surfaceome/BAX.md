@@ -460,3 +460,35 @@ This Markdown is generated from the canonical JSON record at `/data/surfaceome/B
 - UniProt — CC BY 4.0 (UniProt Consortium)
 
 *Confidence high — Confidence is high and aligned with the first-pass classifier. Multiple independent lines of evidence — FLIP-based live-cell microscopy, functional retrotranslocation assays, permeabilized immunofluorescence with MitoTracker co-localization, and absence from cell-surface capture proteomics (Bausch-Fluck 2018 surfaceome database) — all consistently place BAX in the cytosol and mitochondrial outer membrane, never on the extracellular leaflet of the plasma membrane. No credible counter-evidence for PM surface exposure exists in the literature or this ledger. Nothing in the reviewed evidence would change this call; BAX is not a surface target by any current experimental standard.*
+
+## CellxGene RNA enrichment (CZI Census)
+
+*Schema v2.1.12 · CZI Census 2025-11-08 · τ-cutoff classification (Yanai 2005, PMID 15388519) on linear population mean (mean × pct, ≈ nTPM) over the full measured universe with a 1e-3 noise floor: τ≥0.85 enriched, 0.5–0.85 enhanced, <0.5 low specificity, no eligibles not detected. Cutoffs from Kryuchkova-Mostacci & Robinson-Rechavi 2017 (PMID 26891983) + Lüleci & Yılmaz 2022. Cell ontology graph (cl-basic.obo) walked to ~150 cell-family terms; UBERON ontology walked to ~150 organ-level tissues. CC-BY 4.0 (CZI Census).*
+
+**Classification:**
+
+- **Cell class (CL ontology graph, ~10 compartments):** low specificity · 1.1× · τ=0.45
+- **Cell type (leaf Cell Ontology terms, ~600):** enriched · M cell of gut · CL:0000956 · CL:0007004 · 1.1× · τ=0.86
+- **Tissue (UBERON terms, ~56):** enriched · embryo · heart · eye · 1.1× · τ=0.97
+
+**Top 5 cell types (leaf CL, pooled across tissues):**
+
+| Cell type | CL ID | Mean log1p(CP10K) | % expressing | n_expressing / n_total |
+|---|---|---|---|---|
+| M cell of gut | CL:0000682 | 1.893 | 40.10% | 3,897 / 9,719 |
+| CD8-alpha-beta-positive, alpha-beta intraepithelial T cell | CL:0000796 | 2.018 | 26.72% | 284 / 1,063 |
+| CD8-positive, alpha-beta thymocyte | CL:0000811 | 1.951 | 27.77% | 2,259 / 8,135 |
+| immature alpha-beta T cell | CL:0000790 | 1.973 | 26.92% | 6,160 / 22,883 |
+| neuroendocrine cell | CL:0000165 | 1.830 | 30.51% | 4,805 / 15,747 |
+
+**Top 5 tissues (UBERON, pooled across cell types):**
+
+| Tissue | UBERON ID | Mean log1p(CP10K) | % expressing | n_expressing / n_total |
+|---|---|---|---|---|
+| endocrine gland | UBERON:0002368 | 1.987 | 100.00% | 54,766 / 54,766 |
+| exocrine gland | UBERON:0002365 | 1.912 | 100.00% | 3,501 / 3,501 |
+| musculature | UBERON:0001015 | 1.838 | 100.00% | 5,917 / 5,917 |
+| vasculature | UBERON:0002049 | 1.711 | 100.00% | 1,940 / 1,940 |
+| pleural fluid | UBERON:0001087 | 1.702 | 100.00% | 1,865 / 1,865 |
+
+<!-- /cellxgene -->
