@@ -3637,49 +3637,63 @@
   "model_path": "claude-sonnet-4-6",
   "record_generated_at": "2026-05-31T20:15:43.094500Z",
   "cellxgene": {
-    "schema_version": "2.1.4",
+    "schema_version": "2.1.5",
     "census_version": "2025-11-08",
     "cell_class_enrichment": {
-      "class": "low_specificity",
-      "class_ids": [],
-      "class_labels": [],
-      "fold_change": null,
+      "class": "enhanced",
+      "class_ids": [
+        "Immune"
+      ],
+      "class_labels": [
+        "Immune"
+      ],
+      "fold_change": 1.748,
       "fold_change_infinite": false,
       "tau": 0.6919376170980474
     },
     "cell_family_enrichment": {
-      "class": "enhanced",
+      "class": "enriched",
       "family_ids": [
-        "CL:0000817"
+        "CL:0000817",
+        "CL:0000838",
+        "CL:0000764"
       ],
       "family_labels": [
-        "precursor B cell"
+        "precursor B cell",
+        "lymphoid lineage restricted progenitor cell",
+        "erythroid lineage cell"
       ],
       "top_cl_labels": [
-        "large pre-B-II cell"
+        "large pre-B-II cell",
+        "fraction A pre-pro B cell",
+        "proerythroblast"
       ],
-      "fold_change": 6.989,
+      "fold_change": 1.095,
       "fold_change_infinite": false,
-      "tau": 0.8569078844546152
+      "tau": 0.8562368346361225
     },
     "cell_type_enrichment": {
-      "class": "enhanced",
+      "class": "enriched",
       "cl_ids": [
-        "CL:0000957"
+        "CL:0000957",
+        "CL:0002045",
+        "CL:0000547"
       ],
-      "fold_change": 11.327,
+      "fold_change": 1.095,
       "fold_change_infinite": false,
       "tau": 0.9117128559670249
     },
     "tissue_enrichment": {
-      "class": "enhanced",
+      "class": "enriched",
       "uberon_ids": [
-        "UBERON:0002049"
+        "UBERON:0002049",
+        "UBERON:0001723"
       ],
       "tissue_labels": [
-        "vasculature"
+        "vasculature",
+        "tongue"
       ],
-      "fold_change": 20.656,
+      "fold_change": 1.071,
       "fold_change_infinite": false,
       "tau": 0.9515888681594203
     },
@@ -3694,28 +3708,33 @@
       "top_tissues": [
         "vasculature"
       ],
-      "fold_change": 6.525,
+      "fold_change": 1.071,
       "fold_change_infinite": false,
       "tau": 0.846736458664935
     },
     "tissue_organ_enrichment": {
-      "class": "enhanced",
+      "class": "enriched",
       "organ_ids": [
-        "UBERON:0002049"
+        "UBERON:0002049",
+        "UBERON:0001723"
       ],
       "organ_labels": [
-        "vasculature"
+        "vasculature",
+        "tongue"
       ],
       "top_uberon_labels": [
-        "vasculature"
+        "vasculature",
+        "tongue"
       ],
-      "fold_change": 19.638,
+      "fold_change": 1.071,
       "fold_change_infinite": false,
       "tau": 0.9490791159367806
     },
-    "enrichment_class": "low_specificity",
-    "enrichment_cl_ids": [],
-    "fold_change": null,
+    "enrichment_class": "enhanced",
+    "enrichment_cl_ids": [
+      "Immune"
+    ],
+    "fold_change": 1.748,
     "fold_change_infinite": false,
     "top_cell_types": [
       {

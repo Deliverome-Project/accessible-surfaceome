@@ -5886,79 +5886,93 @@
   "model_path": "claude-sonnet-4-6",
   "record_generated_at": "2026-06-08T20:49:59.438647Z",
   "cellxgene": {
-    "schema_version": "2.1.4",
+    "schema_version": "2.1.5",
     "census_version": "2025-11-08",
     "cell_class_enrichment": {
       "class": "low_specificity",
       "class_ids": [],
       "class_labels": [],
-      "fold_change": null,
+      "fold_change": 1.102,
       "fold_change_infinite": false,
       "tau": 0.39243798347420117
     },
     "cell_family_enrichment": {
-      "class": "low_specificity",
-      "family_ids": [],
-      "family_labels": [],
-      "top_cl_labels": [],
-      "fold_change": null,
+      "class": "enhanced",
+      "family_ids": [
+        "Stromal"
+      ],
+      "family_labels": [
+        "Stromal"
+      ],
+      "top_cl_labels": [
+        "prostate stromal cell"
+      ],
+      "fold_change": 1.09,
       "fold_change_infinite": false,
-      "tau": 0.7356731830554656
+      "tau": 0.7317154242511185
     },
     "cell_type_enrichment": {
       "class": "enhanced",
       "cl_ids": [
         "CL:0002622"
       ],
-      "fold_change": 6.167,
+      "fold_change": 1.09,
       "fold_change_infinite": false,
       "tau": 0.8378464021127779
     },
     "tissue_enrichment": {
-      "class": "enhanced",
+      "class": "enriched",
       "uberon_ids": [
-        "UBERON:0002049"
+        "UBERON:0002049",
+        "UBERON:0000995"
       ],
       "tissue_labels": [
-        "vasculature"
+        "vasculature",
+        "uterus"
       ],
-      "fold_change": 30.606,
+      "fold_change": 1.889,
       "fold_change_infinite": false,
       "tau": 0.9673268743582459
     },
     "tissue_category_enrichment": {
-      "class": "enhanced",
+      "class": "enriched",
       "category_ids": [
-        "cardiovascular"
+        "cardiovascular",
+        "reproductive"
       ],
       "category_labels": [
-        "cardiovascular"
+        "cardiovascular",
+        "reproductive"
       ],
       "top_tissues": [
-        "vasculature"
+        "vasculature",
+        "uterus"
       ],
-      "fold_change": 10.382,
+      "fold_change": 1.889,
       "fold_change_infinite": false,
       "tau": 0.9036801082839195
     },
     "tissue_organ_enrichment": {
-      "class": "enhanced",
+      "class": "enriched",
       "organ_ids": [
-        "UBERON:0002049"
+        "UBERON:0002049",
+        "UBERON:0000995"
       ],
       "organ_labels": [
-        "vasculature"
+        "vasculature",
+        "uterus"
       ],
       "top_uberon_labels": [
-        "vasculature"
+        "vasculature",
+        "uterus"
       ],
-      "fold_change": 29.234,
+      "fold_change": 1.889,
       "fold_change_infinite": false,
       "tau": 0.9657927048745865
     },
     "enrichment_class": "low_specificity",
     "enrichment_cl_ids": [],
-    "fold_change": null,
+    "fold_change": 1.102,
     "fold_change_infinite": false,
     "top_cell_types": [
       {

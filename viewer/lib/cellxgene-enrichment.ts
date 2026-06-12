@@ -88,16 +88,18 @@ export interface CellTypeRow {
  */
 export type EnrichmentClass =
   | "enriched"
-  | "group_enriched"
   | "enhanced"
   | "low_specificity"
   | "not_detected"
-  // v2.0/v2.1 legacy strings still present in older D1 rows; the
-  // viewer accepts them so the page doesn't crash mid-rebuild. The
-  // labels map below normalizes them onto the same chip text as the
-  // renamed values.
+  // Legacy strings still present in older D1 rows; the viewer
+  // accepts them so the page doesn't crash mid-rebuild. The labels
+  // map normalizes them onto the same chip text. group_enriched was
+  // dropped in v2.1.5 when we switched to τ cutoffs — τ doesn't
+  // distinguish single vs. few enriched entities, so we collapsed
+  // it into "enriched."
   | "tissue_enriched"
-  | "tissue_enhanced";
+  | "tissue_enhanced"
+  | "group_enriched";
 
 export interface CellTypeEnrichment {
   class: EnrichmentClass;

@@ -4390,37 +4390,49 @@
   "model_path": "claude-sonnet-4-6",
   "record_generated_at": "2026-05-31T15:21:51.367224Z",
   "cellxgene": {
-    "schema_version": "2.1.4",
+    "schema_version": "2.1.5",
     "census_version": "2025-11-08",
     "cell_class_enrichment": {
-      "class": "low_specificity",
-      "class_ids": [],
-      "class_labels": [],
-      "fold_change": null,
+      "class": "enhanced",
+      "class_ids": [
+        "Stromal"
+      ],
+      "class_labels": [
+        "Stromal"
+      ],
+      "fold_change": 1.003,
       "fold_change_infinite": false,
       "tau": 0.5489123214641908
     },
     "cell_family_enrichment": {
-      "class": "enhanced",
+      "class": "enriched",
       "family_ids": [
-        "Stromal"
+        "Stromal",
+        "Other",
+        "CL:0000057"
       ],
       "family_labels": [
-        "Stromal"
+        "Stromal",
+        "Other",
+        "fibroblast"
       ],
       "top_cl_labels": [
-        "cycling stromal cell"
+        "cycling stromal cell",
+        "cell",
+        "embryonic fibroblast"
       ],
-      "fold_change": 8.934,
+      "fold_change": 1.003,
       "fold_change_infinite": false,
-      "tau": 0.8880636924302455
+      "tau": 0.8812312205087193
     },
     "cell_type_enrichment": {
-      "class": "enhanced",
+      "class": "enriched",
       "cl_ids": [
-        "CL:4047001"
+        "CL:4047001",
+        "CL:0000000",
+        "CL:2000042"
       ],
-      "fold_change": 13.099,
+      "fold_change": 1.003,
       "fold_change_infinite": false,
       "tau": 0.9236566917085438
     },
@@ -4466,9 +4478,11 @@
       "fold_change_infinite": false,
       "tau": 0.9834223492872188
     },
-    "enrichment_class": "low_specificity",
-    "enrichment_cl_ids": [],
-    "fold_change": null,
+    "enrichment_class": "enhanced",
+    "enrichment_cl_ids": [
+      "Stromal"
+    ],
+    "fold_change": 1.003,
     "fold_change_infinite": false,
     "top_cell_types": [
       {

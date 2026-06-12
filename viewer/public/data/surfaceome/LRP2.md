@@ -1059,12 +1059,12 @@ This Markdown is generated from the canonical JSON record at `/data/surfaceome/L
 
 ## CellxGene RNA enrichment (CZI Census)
 
-*Schema v2.1.4 · CZI Census 2025-11-08 · HPA-style 4× fold-change classification on log1p(CP10K) → linear means, plus Yanai et al. 2005 τ (specificity score ∈ [0, 1], computed over the eligible-entity set). Cell-class rollup walks the Cell Ontology graph (cl-basic.obo, OBO Foundry) — leaf CL → nearest compartment ancestor. CC-BY 4.0 (CZI Census).*
+*Schema v2.1.5 · CZI Census 2025-11-08 · HPA-style 4× fold-change classification on log1p(CP10K) → linear means, plus Yanai et al. 2005 τ (specificity score ∈ [0, 1], computed over the eligible-entity set). Cell-class rollup walks the Cell Ontology graph (cl-basic.obo, OBO Foundry) — leaf CL → nearest compartment ancestor. CC-BY 4.0 (CZI Census).*
 
 **Classification:**
 
 - **Cell class (CL ontology graph, ~10 compartments):** enriched · Epithelial · 5.8× · τ=0.92
-- **Cell type (leaf Cell Ontology terms, ~600):** enhanced · kidney proximal convoluted tubule epithelial cell · 24.6× · τ=0.96
+- **Cell type (leaf Cell Ontology terms, ~600):** enriched · kidney proximal convoluted tubule epithelial cell · epithelial cell of proximal tubule segment 3 · 1.1× · τ=0.96
 - **Tissue (UBERON terms, ~56):** enriched · eye · 5.2× · τ=0.98
 
 **Top 5 cell types (leaf CL, pooled across tissues):**

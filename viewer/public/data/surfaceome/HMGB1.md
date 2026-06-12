@@ -535,13 +535,13 @@ This Markdown is generated from the canonical JSON record at `/data/surfaceome/H
 
 ## CellxGene RNA enrichment (CZI Census)
 
-*Schema v2.1.4 · CZI Census 2025-11-08 · HPA-style 4× fold-change classification on log1p(CP10K) → linear means, plus Yanai et al. 2005 τ (specificity score ∈ [0, 1], computed over the eligible-entity set). Cell-class rollup walks the Cell Ontology graph (cl-basic.obo, OBO Foundry) — leaf CL → nearest compartment ancestor. CC-BY 4.0 (CZI Census).*
+*Schema v2.1.5 · CZI Census 2025-11-08 · HPA-style 4× fold-change classification on log1p(CP10K) → linear means, plus Yanai et al. 2005 τ (specificity score ∈ [0, 1], computed over the eligible-entity set). Cell-class rollup walks the Cell Ontology graph (cl-basic.obo, OBO Foundry) — leaf CL → nearest compartment ancestor. CC-BY 4.0 (CZI Census).*
 
 **Classification:**
 
-- **Cell class (CL ontology graph, ~10 compartments):** low specificity · τ=0.69
-- **Cell type (leaf Cell Ontology terms, ~600):** enhanced · large pre-B-II cell · 11.3× · τ=0.91
-- **Tissue (UBERON terms, ~56):** enhanced · vasculature · 20.7× · τ=0.95
+- **Cell class (CL ontology graph, ~10 compartments):** enhanced · Immune · 1.7× · τ=0.69
+- **Cell type (leaf Cell Ontology terms, ~600):** enriched · large pre-B-II cell · fraction A pre-pro B cell · proerythroblast · 1.1× · τ=0.91
+- **Tissue (UBERON terms, ~56):** enriched · vasculature · tongue · 1.1× · τ=0.95
 
 **Top 5 cell types (leaf CL, pooled across tissues):**
 

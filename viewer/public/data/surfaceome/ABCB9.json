@@ -3031,20 +3031,18 @@
   "model_path": "claude-sonnet-4-6",
   "record_generated_at": "2026-06-08T21:22:09.672189Z",
   "cellxgene": {
-    "schema_version": "2.1.4",
+    "schema_version": "2.1.5",
     "census_version": "2025-11-08",
     "cell_class_enrichment": {
-      "class": "group_enriched",
+      "class": "enhanced",
       "class_ids": [
-        "Immune",
-        "Neural"
+        "Immune"
       ],
       "class_labels": [
-        "Immune",
-        "Neural"
+        "Immune"
       ],
-      "fold_change": null,
-      "fold_change_infinite": true,
+      "fold_change": 2.444,
+      "fold_change_infinite": false,
       "tau": 0.5908489205700999
     },
     "cell_family_enrichment": {
@@ -3058,33 +3056,33 @@
       "top_cl_labels": [
         "antibody secreting cell"
       ],
-      "fold_change": 5.758,
+      "fold_change": 2.021,
       "fold_change_infinite": false,
-      "tau": 0.8263301870352163
+      "tau": 0.8318002968311888
     },
     "cell_type_enrichment": {
-      "class": "enhanced",
+      "class": "enriched",
       "cl_ids": [
         "CL:0000946"
       ],
-      "fold_change": 7.066,
+      "fold_change": 2.021,
       "fold_change_infinite": false,
       "tau": 0.858479694762326
     },
     "tissue_enrichment": {
-      "class": "enhanced",
+      "class": "enriched",
       "uberon_ids": [
         "UBERON:0000970"
       ],
       "tissue_labels": [
         "eye"
       ],
-      "fold_change": 22.711,
+      "fold_change": 3.809,
       "fold_change_infinite": false,
       "tau": 0.9559685826999672
     },
     "tissue_category_enrichment": {
-      "class": "enhanced",
+      "class": "enriched",
       "category_ids": [
         "head_sensory"
       ],
@@ -3094,12 +3092,12 @@
       "top_tissues": [
         "eye"
       ],
-      "fold_change": 13.061,
+      "fold_change": 3.809,
       "fold_change_infinite": false,
       "tau": 0.9234389145802793
     },
     "tissue_organ_enrichment": {
-      "class": "enhanced",
+      "class": "enriched",
       "organ_ids": [
         "UBERON:0000970"
       ],
@@ -3109,17 +3107,16 @@
       "top_uberon_labels": [
         "eye"
       ],
-      "fold_change": 22.711,
+      "fold_change": 3.809,
       "fold_change_infinite": false,
       "tau": 0.9559685826999672
     },
-    "enrichment_class": "group_enriched",
+    "enrichment_class": "enhanced",
     "enrichment_cl_ids": [
-      "Immune",
-      "Neural"
+      "Immune"
     ],
-    "fold_change": null,
-    "fold_change_infinite": true,
+    "fold_change": 2.444,
+    "fold_change_infinite": false,
     "top_cell_types": [
       {
         "cell_type": "pre-B-I cell",

@@ -3704,47 +3704,41 @@
   "record_generated_at": "2026-06-09T01:43:58.622412Z",
   "prompt_corpus_version": "2.50.1",
   "cellxgene": {
-    "schema_version": "2.1.4",
+    "schema_version": "2.1.5",
     "census_version": "2025-11-08",
     "cell_class_enrichment": {
-      "class": "group_enriched",
+      "class": "enhanced",
       "class_ids": [
-        "Epithelial",
-        "Other",
-        "Immune",
-        "Neural"
+        "Epithelial"
       ],
       "class_labels": [
-        "Epithelial",
-        "Other",
-        "Immune",
-        "Neural"
+        "Epithelial"
       ],
-      "fold_change": null,
-      "fold_change_infinite": true,
+      "fold_change": 2.283,
+      "fold_change_infinite": false,
       "tau": 0.7669737993520632
     },
     "cell_family_enrichment": {
-      "class": "enhanced",
+      "class": "enriched",
       "family_ids": [
-        "CL:0000319"
+        "CL:0002178"
       ],
       "family_labels": [
-        "mucus secreting cell"
+        "epithelial cell of stomach"
       ],
       "top_cl_labels": [
         "mucous cell of stomach"
       ],
-      "fold_change": 19.341,
+      "fold_change": 2.283,
       "fold_change_infinite": false,
-      "tau": 0.9482956266287277
+      "tau": 0.9497795048165895
     },
     "cell_type_enrichment": {
-      "class": "enhanced",
+      "class": "enriched",
       "cl_ids": [
         "CL:0002180"
       ],
-      "fold_change": 27.907,
+      "fold_change": 2.283,
       "fold_change_infinite": false,
       "tau": 0.9641671518036142
     },
@@ -3790,15 +3784,12 @@
       "fold_change_infinite": false,
       "tau": 0.955011710453989
     },
-    "enrichment_class": "group_enriched",
+    "enrichment_class": "enhanced",
     "enrichment_cl_ids": [
-      "Epithelial",
-      "Other",
-      "Immune",
-      "Neural"
+      "Epithelial"
     ],
-    "fold_change": null,
-    "fold_change_infinite": true,
+    "fold_change": 2.283,
+    "fold_change_infinite": false,
     "top_cell_types": [
       {
         "cell_type": "epithelial cell of thymus",

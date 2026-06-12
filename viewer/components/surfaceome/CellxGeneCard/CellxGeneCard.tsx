@@ -16,39 +16,42 @@ interface Props {
 
 const ENRICHMENT_LABELS: Record<EnrichmentClass, string> = {
   enriched: "Enriched",
-  group_enriched: "Group enriched",
   enhanced: "Enhanced",
   low_specificity: "Low specificity",
   not_detected: "Below detection",
-  // Legacy v2.0/v2.1 strings, mapped onto the renamed labels so older
-  // D1 rows render the right chip during the schema transition.
+  // Legacy strings, mapped onto the renamed labels so older D1 rows
+  // render correctly during the schema transition. group_enriched
+  // collapses to "Enriched" under v2.1.5's τ cutoffs (τ doesn't
+  // distinguish single vs. few enriched).
   tissue_enriched: "Enriched",
   tissue_enhanced: "Enhanced",
+  group_enriched: "Enriched",
 };
 
 const ENRICHMENT_BLURB: Record<EnrichmentClass, string> = {
   enriched:
-    "≥ 4× higher mRNA in one entity than the next-ranked. The strongest specificity class.",
-  group_enriched:
-    "A small group (2-5) of entities all express at ≥ 4× the next-ranked. Class-restricted but not strictly single-entity.",
+    "τ ≥ 0.85 — concentrated in one or a few entities relative to the others where the gene is expressed.",
   enhanced:
-    "≥ 4× higher mRNA in one entity than the average of the rest. Selective but with non-trivial background.",
+    "0.5 ≤ τ < 0.85 — selectively elevated in some entities but with non-trivial background expression elsewhere.",
   low_specificity:
-    "No entity stands out at ≥ 4× over the rest. Broadly expressed.",
+    "τ < 0.5 — broadly expressed; no entity dominates the others.",
   not_detected:
     "No entity meets the CZI Census noise threshold (≥ 10 expressing cells AND ≥ 1% of cells of that type). Distinct from low specificity — the gene's expression couldn't be measured above background at this Census coverage, not that it's expressed everywhere.",
-  // Legacy aliases.
+  // Legacy aliases collapse to their τ-cutoff equivalents.
   tissue_enriched:
-    "≥ 4× higher mRNA in one entity than the next-ranked. The strongest specificity class.",
+    "τ ≥ 0.85 — concentrated in one or a few entities relative to the others where the gene is expressed.",
   tissue_enhanced:
-    "≥ 4× higher mRNA in one entity than the average of the rest. Selective but with non-trivial background.",
+    "0.5 ≤ τ < 0.85 — selectively elevated in some entities but with non-trivial background expression elsewhere.",
+  group_enriched:
+    "τ ≥ 0.85 — concentrated in a small group of entities relative to the rest.",
 };
 
-/** Normalize the legacy `tissue_*` strings onto the renamed ones so the
+/** Normalize the legacy strings onto the renamed ones so the
  *  data-class CSS selector picks the right styling. */
 function normalizeClass(c: EnrichmentClass): EnrichmentClass {
   if (c === "tissue_enriched") return "enriched";
   if (c === "tissue_enhanced") return "enhanced";
+  if (c === "group_enriched") return "enriched";
   return c;
 }
 
@@ -65,7 +68,7 @@ function EnrichmentChip({
   entityNames,
   tau,
 }: {
-  axis: "cell class" | "cell type" | "tissue" | "tissue category";
+  axis: "cell class" | "cell type" | "cell family" | "tissue" | "tissue category" | "tissue organ";
   klass: EnrichmentClass;
   foldChange: number | null;
   entityNames: string[];
@@ -92,18 +95,17 @@ function EnrichmentChip({
       )}
       <InfoTip label="What this classification means" wide>
         <strong>{ENRICHMENT_LABELS[klass]}</strong> at the {axis} level.{" "}
-        {ENRICHMENT_BLURB[klass]} Follows{" "}
+        {ENRICHMENT_BLURB[klass]} τ (Yanai 2005) ∈ [0, 1] is the
+        continuous specificity score over the eligible distribution
+        on population mean (mean × pct, ≈ nTPM). Cutoffs follow{" "}
         <a
-          href="https://www.proteinatlas.org/humanproteome/single+cell/single+cell+type/method#ce_enriched"
+          href="https://www.proteinatlas.org/humanproteome/tissue/tissue+specific"
           target="_blank"
           rel="noopener noreferrer"
         >
-          the HPA elevation taxonomy
-        </a>{" "}
-        on population mean (mean × pct, ≈ nTPM).{" "}
-        <strong>τ</strong> (Yanai 2005) ∈ [0, 1] is the continuous
-        specificity score over eligible entities — 0 uniform, 1
-        single-entity.
+          HPA&apos;s tissue-specificity convention
+        </a>
+        .
       </InfoTip>
     </div>
   );
@@ -140,49 +142,54 @@ export function CellxGeneCard({ data }: Props) {
     data.gene_symbol,
   )}`;
 
-  // v2.1.1 prefers the broad-class rollup (cell_class_enrichment) for
-  // the chip — HPA's 4× rule works at the broad-class granularity
-  // (10 compartments) where it doesn't at the leaf-CL granularity
-  // (600+ terms). v2.1 still ships cell_type_enrichment at the leaf
-  // level. v2.0 collapsed everything onto the top-level fields. Read
-  // newest first, fall back through the chain so older D1 rows still
-  // render their chip during the schema transition.
-  const cellEnr = data.cell_class_enrichment
-    ? {
-        class: data.cell_class_enrichment.class,
-        // class_labels are already human-readable names for the chip.
-        ids: data.cell_class_enrichment.class_labels,
-        fold_change: data.cell_class_enrichment.fold_change,
-        tau: data.cell_class_enrichment.tau,
-      }
-    : data.cell_type_enrichment
-    ? {
-        class: data.cell_type_enrichment.class,
-        ids: data.cell_type_enrichment.cl_ids,
-        fold_change: data.cell_type_enrichment.fold_change,
-        tau: data.cell_type_enrichment.tau,
-      }
-    : data.enrichment_class
-    ? {
-        class: data.enrichment_class,
-        ids: data.enrichment_cl_ids ?? [],
-        fold_change: data.fold_change ?? null,
-        tau: undefined as number | null | undefined,
-      }
-    : null;
-  const cellAxisLabel: "cell class" | "cell type" =
-    data.cell_class_enrichment ? "cell class" : "cell type";
-  // v2.1.3 prefers the tissue-CATEGORY rollup (14 organ systems via
-  // UBERON ontology walk) over the fine-grained 410-UBERON axis. The
-  // category chip reads "Group enriched · CNS · Developmental ·
-  // Head & sensory (via brain, embryo, eye)" — cleaner anatomical
-  // grouping than the raw UBERON axis where brain gets fragmented
-  // across 96 subregions. Falls through to tissue_enrichment for
-  // older records.
+  // v2.1.5 prefers the middle-granularity rollups for the chip — cell
+  // FAMILY (~150 terms: B cell, T cell, macrophage, hepatocyte, ...)
+  // and tissue ORGAN (~150 terms: brain, prostate gland, eye, ...).
+  // These read more biologically specific than the 10/13 broad
+  // class/category and more reliable than the 600/410 leaf axes.
+  // Falls through to class/category/leaf for older records.
+  const cellEnr =
+    (data as any).cell_family_enrichment
+      ? {
+          class: (data as any).cell_family_enrichment.class as EnrichmentClass,
+          ids: ((data as any).cell_family_enrichment.family_labels ?? []) as string[],
+          fold_change:
+            ((data as any).cell_family_enrichment.fold_change ?? null) as number | null,
+          tau: ((data as any).cell_family_enrichment.tau ?? null) as number | null,
+        }
+      : data.cell_class_enrichment
+      ? {
+          class: data.cell_class_enrichment.class,
+          ids: data.cell_class_enrichment.class_labels,
+          fold_change: data.cell_class_enrichment.fold_change,
+          tau: data.cell_class_enrichment.tau ?? null,
+        }
+      : data.cell_type_enrichment
+      ? {
+          class: data.cell_type_enrichment.class,
+          ids: data.cell_type_enrichment.cl_ids,
+          fold_change: data.cell_type_enrichment.fold_change,
+          tau: data.cell_type_enrichment.tau ?? null,
+        }
+      : data.enrichment_class
+      ? {
+          class: data.enrichment_class,
+          ids: data.enrichment_cl_ids ?? [],
+          fold_change: data.fold_change ?? null,
+          tau: null as number | null,
+        }
+      : null;
+  const cellAxisLabel: "cell family" | "cell class" | "cell type" =
+    (data as any).cell_family_enrichment
+      ? "cell family"
+      : data.cell_class_enrichment
+      ? "cell class"
+      : "cell type";
+  const tissueOrganEnr = (data as any).tissue_organ_enrichment ?? null;
   const tissueCatEnr = data.tissue_category_enrichment ?? null;
   const tissueEnr = data.tissue_enrichment ?? null;
-  const tissueAxisLabel: "tissue category" | "tissue" =
-    tissueCatEnr ? "tissue category" : "tissue";
+  const tissueAxisLabel: "tissue organ" | "tissue category" | "tissue" =
+    tissueOrganEnr ? "tissue organ" : tissueCatEnr ? "tissue category" : "tissue";
 
   const clToName = new Map(
     data.top_cell_types.map((r) => [r.cl_id, r.cell_type]),
@@ -286,7 +293,7 @@ export function CellxGeneCard({ data }: Props) {
         </>
       }
     >
-      {(cellEnr || tissueCatEnr || tissueEnr) && (
+      {(cellEnr || tissueOrganEnr || tissueCatEnr || tissueEnr) && (
         <div className={styles.chipRow}>
           {cellEnr && (
             <EnrichmentChip
@@ -299,7 +306,15 @@ export function CellxGeneCard({ data }: Props) {
               tau={cellEnr.tau}
             />
           )}
-          {tissueCatEnr ? (
+          {tissueOrganEnr ? (
+            <EnrichmentChip
+              axis={tissueAxisLabel}
+              klass={tissueOrganEnr.class}
+              foldChange={tissueOrganEnr.fold_change}
+              entityNames={(tissueOrganEnr.organ_labels ?? []).slice(0, 3)}
+              tau={tissueOrganEnr.tau}
+            />
+          ) : tissueCatEnr ? (
             <EnrichmentChip
               axis={tissueAxisLabel}
               klass={tissueCatEnr.class}

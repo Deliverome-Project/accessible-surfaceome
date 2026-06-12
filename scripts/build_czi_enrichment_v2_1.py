@@ -90,7 +90,7 @@ ENS_MAP = Path(
 OUT_DIR = Path(os.environ.get("CZI_OUT_DIR", "/tmp/czi_enrichment_v2_1"))
 MANIFEST = OUT_DIR.parent / (OUT_DIR.name + "_manifest.tsv")
 CENSUS_VERSION = "2025-11-08"
-SCHEMA_VERSION = "2.1.4"
+SCHEMA_VERSION = "2.1.5"
 
 # Classifier eligibility (lenient — captures whatever has signal).
 MIN_N_TOTAL_FOR_CLASS = 50
@@ -198,33 +198,35 @@ def classify_hpa(
     entities: dict[str, float],          # entity_id -> LINEAR population mean (mean × pct, ≈ nTPM)
     n_totals: dict[str, int],            # entity_id -> n_total (full universe)
 ) -> tuple[str, list[str], float | None]:
-    """HPA-style classification on whichever axis you pass in.
+    """Classify by τ cutoffs on linear population mean.
 
     Returns (class, entity_ids, fold_change). `class` is one of
-    `not_detected | enriched | group_enriched | enhanced |
-    low_specificity`. `entity_ids` is empty for not_detected /
-    low_specificity, one element for enriched / enhanced, 2-5 elements
-    for group_enriched. `fold_change` is None for not_detected /
-    low_specificity, ``inf`` when the next-ranked entity is zero (the
-    JSON encoder converts to null + a sibling `*_infinite: true` flag).
+    `not_detected | enriched | enhanced | low_specificity`. `entity_ids`
+    carries the top-ranked entities by linear pop mean (1-3 entries,
+    used for the chip's "in {entities}" line). `fold_change` is the
+    top-vs-next-ranked ratio (informational, not class-determining
+    under τ cutoffs).
+
+    **Why τ instead of HPA's 4× rule.** HPA's discrete classes
+    (enriched / group_enriched / enhanced / low_specificity) are
+    derived from a binary 4× fold-change test that's sensitive to
+    where you draw the eligible set and the next-ranked entity. τ
+    (Yanai 2005) is a continuous specificity score over the eligible
+    distribution. Cutoffs:
+
+        τ ≥ 0.85   → enriched
+        0.5 ≤ τ < 0.85 → enhanced
+        τ < 0.5    → low_specificity
+
+    These cutoffs follow HPA's own tissue-specificity score
+    convention for nTPM (https://www.proteinatlas.org/humanproteome/
+    tissue/tissue+specific). The single-eligible edge case is
+    "enriched" by definition (no other entity to spread expression
+    over). Zero eligibles → not_detected.
 
     **Input scale.** ``entities`` carries LINEAR population mean per
-    entity (mean among expressors × pct_expressing). This is the
-    nTPM-equivalent metric — HPA / GTEx / Bgee / Tabula Sapiens /
-    Karbalaei 2024 all run their τ + elevation classifiers on the
-    population-mean scale, not on mean-among-expressors. CZI's WMG
-    emits `mean_log1p(CP10K)` among expressors; upstream of this call
-    we multiply by `pct_expressing` and `expm1` to land at the right
-    scale.
-
-    **Below-noise baseline.** Every entity with ``n_total ≥
-    MIN_N_TOTAL_FOR_CLASS`` exists in ``n_totals`` but might not be in
-    ``entities`` (didn't clear the noise gate); those are treated as
-    linear mean = 0 for the HPA 4× test. Without this baseline, a
-    gene like GPR75 (signal in 4 of 56 tissues at similar levels)
-    compares brain vs embryo (~1.1×) and falls into low_specificity.
-    With the baseline, brain vs the first ineligible tissue (= 0)
-    gives infinite fold → group_enriched.
+    entity (≈ nTPM). HPA / GTEx / Bgee / Tabula Sapiens / Karbalaei
+    2024 all use this scale for τ.
     """
     # Eligible entities (above noise) ranked by linear pop mean.
     eligible = sorted(
@@ -236,75 +238,44 @@ def classify_hpa(
         key=lambda kv: kv[1],
         reverse=True,
     )
-    # Count of ineligible-but-valid entities — they sit at linear = 0
-    # in the ranked list, after the eligibles. We don't need their
-    # ids, just how many "zeros" tail the ranked array.
-    n_universe = sum(1 for k, t in n_totals.items() if t >= MIN_N_TOTAL_FOR_CLASS)
-    n_below = max(0, n_universe - len(eligible))
 
     if len(eligible) == 0:
         return "not_detected", [], None
     if len(eligible) == 1:
-        # One entity meets noise + total thresholds; everything else
-        # is below detection. Strongest possible enrichment signal.
+        # One entity above noise; everything else below detection.
+        # Definitionally enriched. fold is infinite over the implicit
+        # zero baseline.
         return "enriched", [eligible[0][0]], float("inf")
 
-    linear = [v for _, v in eligible] + [0.0] * n_below
+    linear = [v for _, v in eligible]
     ids = [k for k, _ in eligible]
 
-    # enriched: top >= 4× next-ranked (works against either the 2nd
-    # eligible or an implicit 0 baseline if only one is eligible).
-    if linear[1] > 0 and linear[0] >= HPA_FOLD * linear[1]:
-        return "enriched", [ids[0]], linear[0] / linear[1]
-    if linear[1] == 0 and linear[0] > 0:
-        return "enriched", [ids[0]], float("inf")
+    # τ over the eligible distribution (Yanai 2005).
+    x_max = linear[0]
+    if x_max <= 0:
+        return "not_detected", [], None
+    tau = sum(1.0 - x / x_max for x in linear) / (len(linear) - 1)
 
-    # group_enriched: largest group of 2-5 from top whose min >= 4×
-    # next-after-group. The "next-after-group" can now be 0 (the
-    # implicit ineligible baseline), in which case any group whose
-    # min > 0 qualifies with infinite fold.
-    best_group_size = 0
-    best_group_fold: float | None = None
-    for g in range(5, 1, -1):
-        if g >= len(linear):
-            continue
-        group_min = linear[g - 1]
-        next_val = linear[g]
-        if next_val > 0 and group_min >= HPA_FOLD * next_val:
-            best_group_size = g
-            best_group_fold = group_min / next_val
-            break
-        if next_val == 0 and group_min > 0:
-            best_group_size = g
-            best_group_fold = float("inf")
-            break
-    if best_group_size >= 2:
-        return ("group_enriched", ids[:best_group_size], best_group_fold)
+    # Fold change of top vs next-ranked — kept as the "how
+    # concentrated" companion number to τ. Not class-determining
+    # under τ cutoffs.
+    fold: float | None
+    if linear[1] > 0:
+        fold = linear[0] / linear[1]
+    else:
+        fold = float("inf")
 
-    # enhanced: top >= 4× mean of rest.
-    #
-    # **Rest = OTHER ELIGIBLES, NOT the full universe.** This is
-    # asymmetric with the enriched / group_enriched tests above,
-    # which DO use the zero-baseline universe. The reason: enhanced
-    # asks "does the top stand out vs the typical entity that
-    # expresses the gene?" — a question about the shape of the
-    # expressed distribution, not the share-of-universe. Including
-    # ~50 zeros in the denominator drags the average down to ~0.5
-    # and EVERY broadly-expressed gene's top entity reads as 4×
-    # over the average. EGFR's tendon (linear ~11) becomes
-    # "enhanced over avg ~1" not because tendon is special but
-    # because most tissues are at zero in the broader universe.
-    # Compare only among eligibles — if no eligible dominates the
-    # mean of the rest, it's broadly expressed (low_specificity).
-    rest_eligibles = [v for _, v in eligible[1:]]
-    if rest_eligibles:
-        avg_rest = sum(rest_eligibles) / len(rest_eligibles)
-        if avg_rest > 0 and linear[0] >= HPA_FOLD * avg_rest:
-            return "enhanced", [ids[0]], linear[0] / avg_rest
-        if avg_rest == 0 and linear[0] > 0:
-            return "enhanced", [ids[0]], float("inf")
-
-    return "low_specificity", [], None
+    # τ cutoffs (HPA's tissue-specificity nTPM convention).
+    if tau >= 0.85:
+        # Concentrated in one or a small group of entities — report
+        # the top by pop mean (up to 3) as the "in {entities}" list.
+        top_ids = [k for k, v in eligible if v >= 0.5 * x_max][:3]
+        if not top_ids:
+            top_ids = [ids[0]]
+        return "enriched", top_ids, fold
+    if tau >= 0.5:
+        return "enhanced", [ids[0]], fold
+    return "low_specificity", [], fold
 
 
 def compute_tau(

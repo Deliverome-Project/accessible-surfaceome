@@ -2256,7 +2256,7 @@
   "model_path": "claude-sonnet-4-6",
   "record_generated_at": "2026-05-31T15:31:28.680125Z",
   "cellxgene": {
-    "schema_version": "2.1.4",
+    "schema_version": "2.1.5",
     "census_version": "2025-11-08",
     "cell_class_enrichment": {
       "class": "enhanced",
@@ -2266,73 +2266,94 @@
       "class_labels": [
         "Immune"
       ],
-      "fold_change": 4.594,
+      "fold_change": 2.158,
       "fold_change_infinite": false,
       "tau": 0.7823102501356887
     },
     "cell_family_enrichment": {
-      "class": "enhanced",
+      "class": "enriched",
       "family_ids": [
-        "CL:0000094"
+        "CL:0000094",
+        "CL:0000576",
+        "CL:0000878"
       ],
       "family_labels": [
-        "granulocyte"
+        "granulocyte",
+        "monocyte",
+        "central nervous system macrophage"
       ],
       "top_cl_labels": [
-        "neutrophil"
+        "neutrophil",
+        "CD14-low, CD16-positive monocyte",
+        "central nervous system macrophage"
       ],
-      "fold_change": 9.931,
+      "fold_change": 1.074,
       "fold_change_infinite": false,
-      "tau": 0.8993006538771284
+      "tau": 0.9016318970529973
     },
     "cell_type_enrichment": {
-      "class": "enhanced",
+      "class": "enriched",
       "cl_ids": [
-        "CL:0000775"
+        "CL:0000775",
+        "CL:0002396",
+        "CL:0000096"
       ],
-      "fold_change": 14.484,
+      "fold_change": 1.074,
       "fold_change_infinite": false,
       "tau": 0.930960583589454
     },
     "tissue_enrichment": {
-      "class": "enhanced",
+      "class": "enriched",
       "uberon_ids": [
-        "UBERON:0001723"
+        "UBERON:0001723",
+        "UBERON:0002049",
+        "UBERON:0000970"
       ],
       "tissue_labels": [
-        "tongue"
+        "tongue",
+        "vasculature",
+        "eye"
       ],
-      "fold_change": 20.241,
+      "fold_change": 1.707,
       "fold_change_infinite": false,
       "tau": 0.9505947140012176
     },
     "tissue_category_enrichment": {
-      "class": "enhanced",
+      "class": "enriched",
       "category_ids": [
-        "head_sensory"
+        "head_sensory",
+        "cardiovascular"
       ],
       "category_labels": [
-        "head_sensory"
+        "head_sensory",
+        "cardiovascular"
       ],
       "top_tissues": [
-        "tongue"
+        "tongue",
+        "vasculature"
       ],
-      "fold_change": 8.981,
+      "fold_change": 1.707,
       "fold_change_infinite": false,
       "tau": 0.8886572841648012
     },
     "tissue_organ_enrichment": {
-      "class": "enhanced",
+      "class": "enriched",
       "organ_ids": [
-        "UBERON:0001723"
+        "UBERON:0001723",
+        "UBERON:0002049",
+        "UBERON:0000970"
       ],
       "organ_labels": [
-        "tongue"
+        "tongue",
+        "vasculature",
+        "eye"
       ],
       "top_uberon_labels": [
-        "tongue"
+        "tongue",
+        "vasculature",
+        "eye"
       ],
-      "fold_change": 19.458,
+      "fold_change": 1.707,
       "fold_change_infinite": false,
       "tau": 0.9486074225290726
     },
@@ -2340,7 +2361,7 @@
     "enrichment_cl_ids": [
       "Immune"
     ],
-    "fold_change": 4.594,
+    "fold_change": 2.158,
     "fold_change_infinite": false,
     "top_cell_types": [
       {

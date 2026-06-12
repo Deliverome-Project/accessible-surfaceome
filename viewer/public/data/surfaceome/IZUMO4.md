@@ -250,13 +250,13 @@ This Markdown is generated from the canonical JSON record at `/data/surfaceome/I
 
 ## CellxGene RNA enrichment (CZI Census)
 
-*Schema v2.1.4 · CZI Census 2025-11-08 · HPA-style 4× fold-change classification on log1p(CP10K) → linear means, plus Yanai et al. 2005 τ (specificity score ∈ [0, 1], computed over the eligible-entity set). Cell-class rollup walks the Cell Ontology graph (cl-basic.obo, OBO Foundry) — leaf CL → nearest compartment ancestor. CC-BY 4.0 (CZI Census).*
+*Schema v2.1.5 · CZI Census 2025-11-08 · HPA-style 4× fold-change classification on log1p(CP10K) → linear means, plus Yanai et al. 2005 τ (specificity score ∈ [0, 1], computed over the eligible-entity set). Cell-class rollup walks the Cell Ontology graph (cl-basic.obo, OBO Foundry) — leaf CL → nearest compartment ancestor. CC-BY 4.0 (CZI Census).*
 
 **Classification:**
 
 - **Cell class (CL ontology graph, ~10 compartments):** enriched · Reproductive · 23.9× · τ=0.97
-- **Cell type (leaf Cell Ontology terms, ~600):** group enriched · spermatocyte · spermatid · 9.0× · τ=0.98
-- **Tissue (UBERON terms, ~56):** enhanced · eye · 7.3× · τ=0.86
+- **Cell type (leaf Cell Ontology terms, ~600):** enriched · spermatocyte · 2.1× · τ=0.98
+- **Tissue (UBERON terms, ~56):** enriched · eye · testis · 1.5× · τ=0.86
 
 **Top 5 cell types (leaf CL, pooled across tissues):**
 

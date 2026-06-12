@@ -5011,7 +5011,7 @@
   "model_path": "claude-sonnet-4-6",
   "record_generated_at": "2026-06-07T02:42:21.474347Z",
   "cellxgene": {
-    "schema_version": "2.1.4",
+    "schema_version": "2.1.5",
     "census_version": "2025-11-08",
     "cell_class_enrichment": {
       "class": "not_detected",
@@ -5046,69 +5046,45 @@
       "tau": null
     },
     "tissue_enrichment": {
-      "class": "group_enriched",
+      "class": "enhanced",
       "uberon_ids": [
-        "UBERON:0000970",
-        "UBERON:0000922",
-        "UBERON:0000955",
-        "UBERON:0002049"
+        "UBERON:0000970"
       ],
       "tissue_labels": [
-        "eye",
-        "embryo",
-        "brain",
-        "vasculature"
+        "eye"
       ],
-      "fold_change": null,
-      "fold_change_infinite": true,
+      "fold_change": 1.691,
+      "fold_change_infinite": false,
       "tau": 0.5829862190252092
     },
     "tissue_category_enrichment": {
-      "class": "group_enriched",
+      "class": "enhanced",
       "category_ids": [
-        "head_sensory",
-        "developmental",
-        "cns",
-        "cardiovascular"
+        "head_sensory"
       ],
       "category_labels": [
-        "head_sensory",
-        "developmental",
-        "cns",
-        "cardiovascular"
+        "head_sensory"
       ],
       "top_tissues": [
-        "eye",
-        "embryo",
-        "brain",
-        "vasculature"
+        "eye"
       ],
-      "fold_change": null,
-      "fold_change_infinite": true,
+      "fold_change": 1.691,
+      "fold_change_infinite": false,
       "tau": 0.5829862190252092
     },
     "tissue_organ_enrichment": {
-      "class": "group_enriched",
+      "class": "enhanced",
       "organ_ids": [
-        "UBERON:0000970",
-        "UBERON:0000922",
-        "UBERON:0000955",
-        "UBERON:0002049"
+        "UBERON:0000970"
       ],
       "organ_labels": [
-        "eye",
-        "embryo",
-        "brain",
-        "vasculature"
+        "eye"
       ],
       "top_uberon_labels": [
-        "eye",
-        "embryo",
-        "brain",
-        "vasculature"
+        "eye"
       ],
-      "fold_change": null,
-      "fold_change_infinite": true,
+      "fold_change": 1.691,
+      "fold_change_infinite": false,
       "tau": 0.5829862190252092
     },
     "enrichment_class": "not_detected",

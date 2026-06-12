@@ -476,12 +476,12 @@ This Markdown is generated from the canonical JSON record at `/data/surfaceome/K
 
 ## CellxGene RNA enrichment (CZI Census)
 
-*Schema v2.1.4 · CZI Census 2025-11-08 · HPA-style 4× fold-change classification on log1p(CP10K) → linear means, plus Yanai et al. 2005 τ (specificity score ∈ [0, 1], computed over the eligible-entity set). Cell-class rollup walks the Cell Ontology graph (cl-basic.obo, OBO Foundry) — leaf CL → nearest compartment ancestor. CC-BY 4.0 (CZI Census).*
+*Schema v2.1.5 · CZI Census 2025-11-08 · HPA-style 4× fold-change classification on log1p(CP10K) → linear means, plus Yanai et al. 2005 τ (specificity score ∈ [0, 1], computed over the eligible-entity set). Cell-class rollup walks the Cell Ontology graph (cl-basic.obo, OBO Foundry) — leaf CL → nearest compartment ancestor. CC-BY 4.0 (CZI Census).*
 
 **Classification:**
 
 - **Cell class (CL ontology graph, ~10 compartments):** enriched · Epithelial · 47.4× · τ=0.98
-- **Cell type (leaf Cell Ontology terms, ~600):** enhanced · luminal cell of prostate epithelium · 14.9× · τ=0.93
+- **Cell type (leaf Cell Ontology terms, ~600):** enriched · luminal cell of prostate epithelium · 3.1× · τ=0.93
 - **Tissue (UBERON terms, ~56):** enriched · prostate gland · ∞×
 
 **Top 5 cell types (leaf CL, pooled across tissues):**

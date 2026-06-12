@@ -1754,48 +1754,54 @@
   "model_path": "claude-sonnet-4-6",
   "record_generated_at": "2026-05-31T15:14:10.992681Z",
   "cellxgene": {
-    "schema_version": "2.1.4",
+    "schema_version": "2.1.5",
     "census_version": "2025-11-08",
     "cell_class_enrichment": {
       "class": "low_specificity",
       "class_ids": [],
       "class_labels": [],
-      "fold_change": null,
+      "fold_change": 1.087,
       "fold_change_infinite": false,
       "tau": 0.44776232729537063
     },
     "cell_family_enrichment": {
-      "class": "low_specificity",
-      "family_ids": [],
-      "family_labels": [],
-      "top_cl_labels": [],
-      "fold_change": null,
+      "class": "enhanced",
+      "family_ids": [
+        "CL:0002563"
+      ],
+      "family_labels": [
+        "intestinal epithelial cell"
+      ],
+      "top_cl_labels": [
+        "M cell of gut"
+      ],
+      "fold_change": 1.087,
       "fold_change_infinite": false,
-      "tau": 0.7319739904906918
+      "tau": 0.7402941444646112
     },
     "cell_type_enrichment": {
       "class": "enhanced",
       "cl_ids": [
         "CL:0000682"
       ],
-      "fold_change": 5.433,
+      "fold_change": 1.087,
       "fold_change_infinite": false,
       "tau": 0.8159260382862126
     },
     "tissue_enrichment": {
-      "class": "enhanced",
+      "class": "enriched",
       "uberon_ids": [
         "UBERON:0002049"
       ],
       "tissue_labels": [
         "vasculature"
       ],
-      "fold_change": 36.701,
+      "fold_change": 2.859,
       "fold_change_infinite": false,
       "tau": 0.9727524538436925
     },
     "tissue_category_enrichment": {
-      "class": "enhanced",
+      "class": "enriched",
       "category_ids": [
         "cardiovascular"
       ],
@@ -1805,12 +1811,12 @@
       "top_tissues": [
         "vasculature"
       ],
-      "fold_change": 13.794,
+      "fold_change": 2.859,
       "fold_change_infinite": false,
       "tau": 0.9275023141253572
     },
     "tissue_organ_enrichment": {
-      "class": "enhanced",
+      "class": "enriched",
       "organ_ids": [
         "UBERON:0002049"
       ],
@@ -1820,13 +1826,13 @@
       "top_uberon_labels": [
         "vasculature"
       ],
-      "fold_change": 34.736,
+      "fold_change": 2.859,
       "fold_change_infinite": false,
       "tau": 0.9712117367365194
     },
     "enrichment_class": "low_specificity",
     "enrichment_cl_ids": [],
-    "fold_change": null,
+    "fold_change": 1.087,
     "fold_change_infinite": false,
     "top_cell_types": [
       {

@@ -6375,7 +6375,7 @@
   "model_path": "claude-sonnet-4-6",
   "record_generated_at": "2026-06-08T20:51:36.090195Z",
   "cellxgene": {
-    "schema_version": "2.1.4",
+    "schema_version": "2.1.5",
     "census_version": "2025-11-08",
     "cell_class_enrichment": {
       "class": "enhanced",
@@ -6385,72 +6385,71 @@
       "class_labels": [
         "Epithelial"
       ],
-      "fold_change": 5.779,
+      "fold_change": 1.575,
       "fold_change_infinite": false,
       "tau": 0.8269545713151734
     },
     "cell_family_enrichment": {
-      "class": "enhanced",
+      "class": "enriched",
       "family_ids": [
-        "CL:0000077"
+        "CL:0000077",
+        "Epithelial",
+        "CL:0000057"
       ],
       "family_labels": [
-        "mesothelial cell"
+        "mesothelial cell",
+        "Epithelial",
+        "fibroblast"
       ],
       "top_cl_labels": [
-        "mesothelial cell of pleura"
+        "mesothelial cell of pleura",
+        "periportal region hepatocyte",
+        "adventitial fibroblast"
       ],
-      "fold_change": 17.856,
+      "fold_change": 1.444,
       "fold_change_infinite": false,
-      "tau": 0.9439959676512398
+      "tau": 0.9476268505543487
     },
     "cell_type_enrichment": {
-      "class": "enhanced",
+      "class": "enriched",
       "cl_ids": [
-        "CL:1000491"
+        "CL:1000491",
+        "CL:0019026",
+        "CL:0019028"
       ],
-      "fold_change": 20.429,
+      "fold_change": 1.444,
       "fold_change_infinite": false,
       "tau": 0.9510496704306701
     },
     "tissue_enrichment": {
-      "class": "enhanced",
+      "class": "enriched",
       "uberon_ids": [
         "UBERON:0002049"
       ],
       "tissue_labels": [
         "vasculature"
       ],
-      "fold_change": 20.002,
+      "fold_change": 2.268,
       "fold_change_infinite": false,
       "tau": 0.9500052020160585
     },
     "tissue_category_enrichment": {
-      "class": "group_enriched",
+      "class": "enriched",
       "category_ids": [
-        "cardiovascular",
-        "head_sensory",
-        "reproductive",
-        "skin_adipose"
+        "cardiovascular"
       ],
       "category_labels": [
-        "cardiovascular",
-        "head_sensory",
-        "reproductive",
-        "skin_adipose"
+        "cardiovascular"
       ],
       "top_tissues": [
-        "vasculature",
-        "tongue",
-        "uterus",
-        "adipose tissue"
+        "vasculature"
       ],
-      "fold_change": 4.11,
+      "fold_change": 2.268,
       "fold_change_infinite": false,
       "tau": 0.871505838959977
     },
     "tissue_organ_enrichment": {
-      "class": "enhanced",
+      "class": "enriched",
       "organ_ids": [
         "UBERON:0002049"
       ],
@@ -6460,7 +6459,7 @@
       "top_uberon_labels": [
         "vasculature"
       ],
-      "fold_change": 18.84,
+      "fold_change": 2.268,
       "fold_change_infinite": false,
       "tau": 0.9469205673608236
     },
@@ -6468,7 +6467,7 @@
     "enrichment_cl_ids": [
       "Epithelial"
     ],
-    "fold_change": 5.779,
+    "fold_change": 1.575,
     "fold_change_infinite": false,
     "top_cell_types": [
       {

@@ -595,12 +595,12 @@ This Markdown is generated from the canonical JSON record at `/data/surfaceome/S
 
 ## CellxGene RNA enrichment (CZI Census)
 
-*Schema v2.1.4 · CZI Census 2025-11-08 · HPA-style 4× fold-change classification on log1p(CP10K) → linear means, plus Yanai et al. 2005 τ (specificity score ∈ [0, 1], computed over the eligible-entity set). Cell-class rollup walks the Cell Ontology graph (cl-basic.obo, OBO Foundry) — leaf CL → nearest compartment ancestor. CC-BY 4.0 (CZI Census).*
+*Schema v2.1.5 · CZI Census 2025-11-08 · HPA-style 4× fold-change classification on log1p(CP10K) → linear means, plus Yanai et al. 2005 τ (specificity score ∈ [0, 1], computed over the eligible-entity set). Cell-class rollup walks the Cell Ontology graph (cl-basic.obo, OBO Foundry) — leaf CL → nearest compartment ancestor. CC-BY 4.0 (CZI Census).*
 
 **Classification:**
 
-- **Cell class (CL ontology graph, ~10 compartments):** group enriched · Epithelial · Other · Immune · ∞× · τ=0.77
-- **Cell type (leaf Cell Ontology terms, ~600):** enhanced · mucous cell of stomach · 27.9× · τ=0.96
+- **Cell class (CL ontology graph, ~10 compartments):** enhanced · Epithelial · 2.3× · τ=0.77
+- **Cell type (leaf Cell Ontology terms, ~600):** enriched · mucous cell of stomach · 2.3× · τ=0.96
 - **Tissue (UBERON terms, ~56):** enriched · eye · 4.3× · τ=0.96
 
 **Top 5 cell types (leaf CL, pooled across tissues):**

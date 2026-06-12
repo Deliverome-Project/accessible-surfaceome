@@ -7250,13 +7250,13 @@
   "model_path": "claude-sonnet-4-6",
   "record_generated_at": "2026-06-01T00:28:03.567292Z",
   "cellxgene": {
-    "schema_version": "2.1.4",
+    "schema_version": "2.1.5",
     "census_version": "2025-11-08",
     "cell_class_enrichment": {
       "class": "low_specificity",
       "class_ids": [],
       "class_labels": [],
-      "fold_change": null,
+      "fold_change": 1.14,
       "fold_change_infinite": false,
       "tau": 0.4919611802504194
     },
@@ -7271,28 +7271,30 @@
       "top_cl_labels": [
         "basal epithelial cell of prostatic duct"
       ],
-      "fold_change": 5.56,
+      "fold_change": 1.14,
       "fold_change_infinite": false,
-      "tau": 0.8201347223088367
+      "tau": 0.8194402748130521
     },
     "cell_type_enrichment": {
-      "class": "enhanced",
+      "class": "enriched",
       "cl_ids": [
-        "CL:0002236"
+        "CL:0002236",
+        "CL:2000060",
+        "CL:0011027"
       ],
-      "fold_change": 9.032,
+      "fold_change": 1.14,
       "fold_change_infinite": false,
       "tau": 0.8892873244207329
     },
     "tissue_enrichment": {
-      "class": "enhanced",
+      "class": "enriched",
       "uberon_ids": [
         "UBERON:0001723"
       ],
       "tissue_labels": [
         "tongue"
       ],
-      "fold_change": 59.22,
+      "fold_change": 3.146,
       "fold_change_infinite": false,
       "tau": 0.9831138644738263
     },
@@ -7312,7 +7314,7 @@
       "tau": 0.9707687044191102
     },
     "tissue_organ_enrichment": {
-      "class": "enhanced",
+      "class": "enriched",
       "organ_ids": [
         "UBERON:0001723"
       ],
@@ -7322,13 +7324,13 @@
       "top_uberon_labels": [
         "tongue"
       ],
-      "fold_change": 55.557,
+      "fold_change": 3.146,
       "fold_change_infinite": false,
       "tau": 0.9820004280453283
     },
     "enrichment_class": "low_specificity",
     "enrichment_cl_ids": [],
-    "fold_change": null,
+    "fold_change": 1.14,
     "fold_change_infinite": false,
     "top_cell_types": [
       {
