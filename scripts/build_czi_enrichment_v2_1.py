@@ -90,7 +90,7 @@ ENS_MAP = Path(
 OUT_DIR = Path(os.environ.get("CZI_OUT_DIR", "/tmp/czi_enrichment_v2_1"))
 MANIFEST = OUT_DIR.parent / (OUT_DIR.name + "_manifest.tsv")
 CENSUS_VERSION = "2025-11-08"
-SCHEMA_VERSION = "2.1.8"
+SCHEMA_VERSION = "2.1.9"
 
 # Classifier eligibility (lenient — captures whatever has signal).
 MIN_N_TOTAL_FOR_CLASS = 50
@@ -142,6 +142,16 @@ def load_cl_labels() -> dict[str, str]:
 
 
 def load_uberon_labels() -> dict[str, str]:
+    """Load UBERON labels from the CZI cohort cache, with OBO fallback.
+
+    The cohort cache (``/tmp/uberon_to_label.tsv``) only covers the
+    409 leaf UBERONs CZI samples. WMG annotates some cells at parent
+    UBERONs (mucosa, alveolus, musculature, endocrine gland, nervous
+    system, pleural fluid) which aren't in the leaf cache. Falling
+    back to raw IDs like ``UBERON:0001015`` in the chart x-axis was
+    the v2.1.8 bug; v2.1.9+ extends the cache with OBO names so every
+    UBERON the build sees has a human label.
+    """
     out: dict[str, str] = {}
     with UBERON_LABELS.open() as f:
         next(f)
@@ -149,6 +159,20 @@ def load_uberon_labels() -> dict[str, str]:
             parts = line.rstrip("\n").split("\t")
             if len(parts) >= 2:
                 out[parts[0]] = parts[1]
+    # OBO extension — pull names for parent UBERONs not in the cohort
+    # cache. We don't union ALL of UBERON (~10k terms); we lazy-extend
+    # by reading the OBO and adding every term not already in the cache.
+    try:
+        from accessible_surfaceome.audit.uberon_organ import (
+            DEFAULT_OBO_PATH,
+            _parse_obo,
+        )
+        terms = _parse_obo(str(DEFAULT_OBO_PATH))
+        for ub_id, rec in terms.items():
+            if ub_id not in out and rec.get("name"):
+                out[ub_id] = rec["name"]
+    except Exception as e:  # pragma: no cover
+        print(f"  WARN: UBERON OBO label fallback failed ({e})", file=sys.stderr)
     return out
 
 
@@ -676,10 +700,37 @@ def build_record(
     # Equivalent to SUM(nnz_leaf) / SUM(n_total_leaf_with_fallback) —
     # avoids the previous all-CL sum that overcounted via parent CL
     # hierarchy and required clamping to 100%.
+    # **v2.1.9+ clean-only per-UBERON aggregation.**
+    # The cell-count cache (``/tmp/czi_cell_tissue_counts.tsv``) is
+    # dramatically stale for some (cl, ub) pairs vs the 2025-11-08
+    # WMG (cardiac fibroblast in heart: cache=466, WMG nnz=127,804).
+    # Previous versions clipped stale-pair pct to 100% via WMG-nnz
+    # fallback, which over-inflated per-UBERON pct (EGFR-heart hit
+    # 97.5% via the ceiling artifact). v2.1.9 drops stale pairs from
+    # the per-UBERON aggregation entirely — keep only (cl, ub) where
+    # the cache n_total ≥ WMG nnz. Per-UBERON pop_mean is computed
+    # purely from clean pairs.
+    #
+    # Consequences:
+    #   * Tissues whose top-coverage cells (cardiac fibroblast in
+    #     heart, alveolar T2 in lung, hepatocyte in liver) are all
+    #     stale lose their dominant signal in the aggregate. The
+    #     remaining clean pairs (smaller cell types) drive the
+    #     per-UBERON pop_mean.
+    #   * Tissues where the gene's true signal is in cells that the
+    #     cache covers cleanly (placenta-trophoblast, gonad-germ
+    #     cell, prostate-basal) keep their full signal.
+    #   * Some canonical tissues will drop from the chip ranking
+    #     (LRP2-kidney if proximal tubule is the only clean pair
+    #     and pct-fail the noise gate). Documented as a known
+    #     limitation pending cache regeneration.
     cohort_leaves = _cohort_leaf_cls()
     ub_means_log: dict[str, float] = {}
-    ub_pop_linear: dict[str, float] = {}  # LINEAR population mean per UBERON
+    ub_pop_linear: dict[str, float] = {}
     ub_pooled: dict[str, dict[str, float]] = {}
+    # Track stale-fraction for the is_stale_denominator display flag.
+    ub_stale_observed_nnz: dict[str, float] = {}
+    ub_total_observed_nnz: dict[str, float] = {}
     for cl, ub_to_stats in cl_to_uberon.items():
         if cohort_leaves and cl not in cohort_leaves:
             continue
@@ -687,42 +738,50 @@ def build_record(
             nnz, ssum = vals
             if nnz <= 0:
                 continue
-            # WMG-nnz fallback per (cl, ub) — guarantees per-pair pct
-            # ≤ 1.0 by treating cache as stale when it's clearly so.
-            n_total_pair = pair_counts.get((cl, ub), 0)
-            if n_total_pair < int(nnz):
-                n_total_pair = int(nnz)
-            if n_total_pair <= 0:
+            cache_n = pair_counts.get((cl, ub), 0)
+            is_stale_pair = cache_n < int(nnz)
+            # Track stale fraction across ALL observed pairs (clean
+            # + stale) so the display flag reflects what the cache
+            # is missing for this tissue.
+            ub_total_observed_nnz[ub] = ub_total_observed_nnz.get(ub, 0.0) + nnz
+            if is_stale_pair:
+                ub_stale_observed_nnz[ub] = ub_stale_observed_nnz.get(ub, 0.0) + nnz
+                continue  # drop from aggregation
+            if cache_n <= 0:
                 continue
-            slot = ub_pooled.setdefault(
-                ub, {"nnz": 0.0, "sum": 0.0, "n_total_leaf": 0.0}
-            )
+            slot = ub_pooled.setdefault(ub, {
+                "nnz": 0.0, "sum": 0.0, "n_total_leaf": 0.0,
+            })
             slot["nnz"] += nnz
             slot["sum"] += ssum
-            # Sum of per-pair n_totals (after the WMG-nnz fallback) =
-            # the proper per-UBERON denominator that pairs with nnz.
-            slot["n_total_leaf"] += n_total_pair
+            slot["n_total_leaf"] += cache_n
     ub_n_total_for_class: dict[str, int] = {}
     ub_n_expressing: dict[str, int] = {}
     ub_n_total_display: dict[str, int] = {}
+    ub_stale_fraction: dict[str, float] = {}
+    STALE_FLAG_THRESHOLD = 0.5
     for ub, st in ub_pooled.items():
         nnz = st["nnz"]
         n_total_leaf = st["n_total_leaf"]
         if nnz <= 0 or n_total_leaf <= 0:
             continue
-        # Universe-level n_total (for the zero-baseline classifier).
-        # Use the leaf-CL-summed denominator from above (consistent
-        # with nnz), not the all-CL ub_total_counts (which can be the
-        # stale parent-inclusive value).
         n_total = int(n_total_leaf)
         mean_log = st["sum"] / nnz
         ub_n_expressing[ub] = int(nnz)
         ub_n_total_display[ub] = n_total
-        pct = nnz / n_total  # ≤ 1.0 by construction now
-        if nnz >= MIN_NNZ_FOR_CLASS and pct >= MIN_PCT_FOR_CLASS:
-            ub_means_log[ub] = mean_log
-            ub_pop_linear[ub] = math.expm1(mean_log) * pct
-            ub_n_total_for_class[ub] = n_total
+        pct = nnz / n_total
+        # stale-fraction is computed across all observed pairs (clean
+        # + stale) so the display flag reflects how much of the
+        # tissue's WMG signal the clean-only aggregate is missing.
+        total_obs = ub_total_observed_nnz.get(ub, 0.0)
+        ub_stale_fraction[ub] = (
+            ub_stale_observed_nnz.get(ub, 0.0) / total_obs if total_obs > 0 else 0.0
+        )
+        if nnz < MIN_NNZ_FOR_CLASS or pct < MIN_PCT_FOR_CLASS:
+            continue
+        ub_means_log[ub] = mean_log
+        ub_pop_linear[ub] = math.expm1(mean_log) * pct
+        ub_n_total_for_class[ub] = n_total
 
     # Pass the full UBERON universe (every tissue with n_total >=
     # MIN_N_TOTAL_FOR_CLASS) so the zero-baseline kicks in for
@@ -846,25 +905,24 @@ def build_record(
         for ub, (nnz, ssum) in ub_to_stats.items():
             if nnz <= 0:
                 continue
-            n_total_pair = pair_counts.get((cl, ub), 0)
-            is_uncertain = False
-            if n_total_pair < int(nnz):
-                n_total_pair = int(nnz)
-                is_uncertain = True
-            if n_total_pair <= 0:
+            cache_n = pair_counts.get((cl, ub), 0)
+            # v2.1.9: drop stale pairs from display entirely (same as
+            # per-UBERON aggregation). Showing a 100% pct ceiling for
+            # a stale pair misleads — the cache simply doesn't know
+            # the real n_total.
+            if cache_n < int(nnz) or cache_n <= 0:
                 continue
-            cell_pct = min(1.0, nnz / n_total_pair)
+            cell_pct = nnz / cache_n
             cells_by_tissue.setdefault(ub, []).append({
                 "cl_id": cl,
                 "cell_type": cl_labels.get(cl, cl),
                 "mean_log1p_cp10k": round(ssum / nnz, 4),
                 "n_expressing": int(nnz),
-                "n_total": int(n_total_pair),
+                "n_total": int(cache_n),
                 "pct_expressing": round(cell_pct, 4),
                 "is_trace": bool(
                     nnz < MIN_NNZ_FOR_CLASS or cell_pct < MIN_PCT_FOR_CLASS
                 ),
-                "is_uncertain": is_uncertain,
             })
     for ub in cells_by_tissue:
         cells_by_tissue[ub].sort(key=lambda c: -c["n_expressing"])
@@ -943,19 +1001,11 @@ def build_record(
             nnz, ssum = vals
             if nnz <= 0:
                 continue
-            n_total_pair = pair_counts.get((cl, ub), 0)
-            # WMG nnz fallback (per 4f4a51a05): when the cell-count
-            # cache says fewer cells than WMG actually observed, the
-            # cache is stale relative to the WMG export. EGFR-embryo
-            # canonical case: cache says 4 CL terms profiled, WMG sees
-            # 36 with 28k expressing cells. Use WMG nnz as the
-            # denominator (pct→1.0, conservative ceiling) and flag
-            # the row is_uncertain so the viewer can render distinctly.
-            is_uncertain = False
-            if n_total_pair < int(nnz):
-                n_total_pair = int(nnz)
-                is_uncertain = True
-            if n_total_pair <= 0:
+            cache_n = pair_counts.get((cl, ub), 0)
+            # v2.1.9: drop stale pairs entirely from per-cell-type
+            # nested tissue rows. Showing a 100% pct ceiling row
+            # misleads — clean-only display.
+            if cache_n < int(nnz) or cache_n <= 0:
                 continue
             mean_t = ssum / nnz
             tissues.append(
@@ -964,9 +1014,8 @@ def build_record(
                     "uberon_id": ub,
                     "mean_log1p_cp10k": round(mean_t, 4),
                     "n_expressing": int(nnz),
-                    "n_total": int(n_total_pair),
-                    "pct_expressing": round(min(1.0, nnz / n_total_pair), 4),
-                    "is_uncertain": is_uncertain,
+                    "n_total": int(cache_n),
+                    "pct_expressing": round(nnz / cache_n, 4),
                 }
             )
         tissues.sort(key=lambda t: t["n_expressing"], reverse=True)
@@ -988,12 +1037,15 @@ def build_record(
         )
 
     # ---- Build top_tissues display list ----
-    # Tissue display uses the leaf-CL-summed denominator (same one the
-    # classifier saw) — `ub_n_total_display[ub]` is now the consistent
-    # per-UBERON leaf-CL sum, so pct is sane without clipping.
-    # v2.1.7+: dropped the min(1.0, ...) clip; per-(cl, ub) WMG-nnz
-    # fallback at aggregation time guarantees per-pair pct ≤ 1.0,
-    # which sums to per-UBERON pct ≤ 1.0.
+    # v2.1.8+ sort by SCORE (≈ nTPM = mean × pct), not mean — same
+    # rationale as the top_cell_types display fix. Mean-sorting
+    # surfaced high-mean-low-pct noise tissues (saliva at pct=0.0%
+    # ranked above heart at pct=97%); score-sorting puts the
+    # high-coverage tissues where the gene actually has signal first.
+    # v2.1.9+ adds ``is_stale_denominator`` flag: when >50% of the
+    # tissue's nnz is from (cl, ub) pairs where the cell-count cache
+    # is stale, the displayed pct hits 100% by ceiling artifact, not
+    # by biology. The viewer reads this flag to caveat the row.
     tissue_rows: list[dict] = []
     for ub, n_exp in ub_n_expressing.items():
         n_total = ub_n_total_display[ub]
@@ -1001,6 +1053,7 @@ def build_record(
             continue
         mean_log = ub_pooled[ub]["sum"] / ub_pooled[ub]["nnz"]
         pct = n_exp / n_total
+        score = math.expm1(mean_log) * pct
         tissue_rows.append(
             {
                 "tissue": uberon_labels.get(ub, ub),
@@ -1009,10 +1062,14 @@ def build_record(
                 "n_expressing": n_exp,
                 "n_total": n_total,
                 "pct_expressing": round(pct, 4),
+                "score": round(score, 4),
                 "is_trace": bool(n_exp < MIN_NNZ_FOR_CLASS or pct < MIN_PCT_FOR_CLASS),
+                "is_stale_denominator": bool(
+                    ub_stale_fraction.get(ub, 0.0) > STALE_FLAG_THRESHOLD
+                ),
             }
         )
-    tissue_rows.sort(key=lambda r: r["mean_log1p_cp10k"], reverse=True)
+    tissue_rows.sort(key=lambda r: r["score"], reverse=True)
     tissue_rows = tissue_rows[:MAX_TISSUES]
 
     # ---- Assemble record ----

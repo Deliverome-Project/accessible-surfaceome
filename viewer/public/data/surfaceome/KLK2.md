@@ -476,13 +476,13 @@ This Markdown is generated from the canonical JSON record at `/data/surfaceome/K
 
 ## CellxGene RNA enrichment (CZI Census)
 
-*Schema v2.1.8 · CZI Census 2025-11-08 · τ-cutoff classification (Yanai 2005, PMID 15388519) on linear population mean (mean × pct, ≈ nTPM) over the full measured universe with a 1e-3 noise floor: τ≥0.85 enriched, 0.5–0.85 enhanced, <0.5 low specificity, no eligibles not detected. Cutoffs from Kryuchkova-Mostacci & Robinson-Rechavi 2017 (PMID 26891983) + Lüleci & Yılmaz 2022. Cell ontology graph (cl-basic.obo) walked to ~150 cell-family terms; UBERON ontology walked to ~150 organ-level tissues. CC-BY 4.0 (CZI Census).*
+*Schema v2.1.9 · CZI Census 2025-11-08 · τ-cutoff classification (Yanai 2005, PMID 15388519) on linear population mean (mean × pct, ≈ nTPM) over the full measured universe with a 1e-3 noise floor: τ≥0.85 enriched, 0.5–0.85 enhanced, <0.5 low specificity, no eligibles not detected. Cutoffs from Kryuchkova-Mostacci & Robinson-Rechavi 2017 (PMID 26891983) + Lüleci & Yılmaz 2022. Cell ontology graph (cl-basic.obo) walked to ~150 cell-family terms; UBERON ontology walked to ~150 organ-level tissues. CC-BY 4.0 (CZI Census).*
 
 **Classification:**
 
 - **Cell class (CL ontology graph, ~10 compartments):** enriched · Epithelial · 47.4× · τ=1.00
 - **Cell type (leaf Cell Ontology terms, ~600):** enriched · luminal cell of prostate epithelium · 3.1× · τ=1.00
-- **Tissue (UBERON terms, ~56):** enriched · prostate gland · 118× · τ=1.00
+- **Tissue (UBERON terms, ~56):** enriched · prostate gland · ∞× · τ=1.00
 
 **Top 5 cell types (leaf CL, pooled across tissues):**
 
@@ -498,10 +498,10 @@ This Markdown is generated from the canonical JSON record at `/data/surfaceome/K
 
 | Tissue | UBERON ID | Mean log1p(CP10K) | % expressing | n_expressing / n_total |
 |---|---|---|---|---|
-| UBERON:0002365 | UBERON:0002365 | 3.729 | 100.00% | 2,093 / 2,093 |
-| prostate gland | UBERON:0002367 | 3.454 | 36.88% | 19,925 / 54,027 |
-| urinary bladder | UBERON:0001255 | 2.577 | 0.06% | 6 / 9,597 | (trace)
-| adrenal gland | UBERON:0002369 | 2.103 | 0.00% | 11 / 349,970 | (trace)
-| pancreas | UBERON:0001264 | 2.071 | 0.01% | 20 / 159,745 | (trace)
+| prostate gland | UBERON:0002367 | 3.477 | 36.56% | 19,653 / 53,755 |
+| small intestine | UBERON:0002108 | 1.710 | 0.54% | 36 / 6,609 | (trace)
+| eye | UBERON:0000970 | 1.870 | 0.43% | 69 / 16,084 | (trace)
+| heart | UBERON:0000948 | 1.855 | 0.42% | 34 / 8,065 | (trace)
+| saliva | UBERON:0001836 | 1.778 | 0.34% | 24 / 7,162 | (trace)
 
 <!-- /cellxgene -->

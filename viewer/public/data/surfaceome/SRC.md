@@ -595,13 +595,13 @@ This Markdown is generated from the canonical JSON record at `/data/surfaceome/S
 
 ## CellxGene RNA enrichment (CZI Census)
 
-*Schema v2.1.8 · CZI Census 2025-11-08 · τ-cutoff classification (Yanai 2005, PMID 15388519) on linear population mean (mean × pct, ≈ nTPM) over the full measured universe with a 1e-3 noise floor: τ≥0.85 enriched, 0.5–0.85 enhanced, <0.5 low specificity, no eligibles not detected. Cutoffs from Kryuchkova-Mostacci & Robinson-Rechavi 2017 (PMID 26891983) + Lüleci & Yılmaz 2022. Cell ontology graph (cl-basic.obo) walked to ~150 cell-family terms; UBERON ontology walked to ~150 organ-level tissues. CC-BY 4.0 (CZI Census).*
+*Schema v2.1.9 · CZI Census 2025-11-08 · τ-cutoff classification (Yanai 2005, PMID 15388519) on linear population mean (mean × pct, ≈ nTPM) over the full measured universe with a 1e-3 noise floor: τ≥0.85 enriched, 0.5–0.85 enhanced, <0.5 low specificity, no eligibles not detected. Cutoffs from Kryuchkova-Mostacci & Robinson-Rechavi 2017 (PMID 26891983) + Lüleci & Yılmaz 2022. Cell ontology graph (cl-basic.obo) walked to ~150 cell-family terms; UBERON ontology walked to ~150 organ-level tissues. CC-BY 4.0 (CZI Census).*
 
 **Classification:**
 
 - **Cell class (CL ontology graph, ~10 compartments):** enriched · Epithelial · 2.3× · τ=0.92
 - **Cell type (leaf Cell Ontology terms, ~600):** enriched · mucous cell of stomach · 2.3× · τ=0.99
-- **Tissue (UBERON terms, ~56):** enriched · eye · uterus · 1.3× · τ=0.99
+- **Tissue (UBERON terms, ~56):** enriched · skin of body · eye · adipose tissue · 1.0× · τ=0.98
 
 **Top 5 cell types (leaf CL, pooled across tissues):**
 
@@ -617,10 +617,10 @@ This Markdown is generated from the canonical JSON record at `/data/surfaceome/S
 
 | Tissue | UBERON ID | Mean log1p(CP10K) | % expressing | n_expressing / n_total |
 |---|---|---|---|---|
-| testis | UBERON:0000473 | 2.259 | 0.67% | 69 / 10,267 | (trace)
-| adrenal gland | UBERON:0002369 | 2.118 | 0.58% | 2,030 / 350,523 | (trace)
-| embryo | UBERON:0000922 | 2.097 | 10.94% | 1,722 / 15,746 |
-| esophagus | UBERON:0001043 | 2.064 | 8.07% | 264 / 3,272 |
-| skin of body | UBERON:0002097 | 1.980 | 15.05% | 3,221 / 21,399 |
+| skin of body | UBERON:0002097 | 2.071 | 8.35% | 1,656 / 19,834 |
+| eye | UBERON:0000970 | 1.635 | 13.49% | 2,668 / 19,782 |
+| adipose tissue | UBERON:0001013 | 1.720 | 11.51% | 692 / 6,011 |
+| mucosa | UBERON:0000344 | 1.899 | 6.50% | 76 / 1,169 |
+| brain | UBERON:0000955 | 1.699 | 7.86% | 21,388 / 272,008 |
 
 <!-- /cellxgene -->

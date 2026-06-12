@@ -185,10 +185,14 @@ def _build_organ_map(
 def uberon_organ(uberon_id: str) -> str:
     """Return the organ-level UBERON term for a CZI tissue.
 
-    Falls back to the organ-system category (from
-    ``uberon_categories.uberon_category``) when no ancestor in
-    ``[MIN_DESC, MAX_DESC]`` is found — fluid / extraembryonic /
-    anatomical-region terms that don't have a "real organ" parent.
+    **v2.1.9+:** when the UBERON isn't in the precomputed CZI cohort
+    map (it's a WMG parent term like alveolus, mucosa, musculature),
+    walk the OBO is_a/part_of graph upward and return the first
+    cohort ancestor. Falls through to ``uberon_category`` only when
+    no cohort ancestor exists. Previously WMG parent terms went
+    straight to ``uberon_category`` which sent alveolar / bronchial
+    signal into ``fluids_other`` even though alveolus's lung
+    ancestor is in the cohort.
     """
     if not uberon_id:
         return uberon_category(uberon_id)
@@ -198,6 +202,25 @@ def uberon_organ(uberon_id: str) -> str:
     organ = organ_map.get(uberon_id)
     if organ is not None:
         return organ
+    # OBO ancestor walk for orphan UBERONs (alveolus, mucosa, etc.).
+    terms = _parse_obo(str(DEFAULT_OBO_PATH))
+    if uberon_id in terms:
+        seen = {uberon_id}
+        queue = [uberon_id]
+        while queue:
+            t = queue.pop(0)
+            rec = terms.get(t)
+            if not rec:
+                continue
+            for parent in (rec.get("is_a", []) + rec.get("part_of", [])):
+                if parent in seen:
+                    continue
+                seen.add(parent)
+                # Return the first cohort ancestor's organ rollup —
+                # alveolus → lung → lung itself.
+                if parent in organ_map:
+                    return organ_map[parent]
+                queue.append(parent)
     return uberon_category(uberon_id)
 
 

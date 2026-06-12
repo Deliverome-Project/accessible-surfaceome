@@ -2086,13 +2086,13 @@ This Markdown is generated from the canonical JSON record at `/data/surfaceome/F
 
 ## CellxGene RNA enrichment (CZI Census)
 
-*Schema v2.1.8 · CZI Census 2025-11-08 · τ-cutoff classification (Yanai 2005, PMID 15388519) on linear population mean (mean × pct, ≈ nTPM) over the full measured universe with a 1e-3 noise floor: τ≥0.85 enriched, 0.5–0.85 enhanced, <0.5 low specificity, no eligibles not detected. Cutoffs from Kryuchkova-Mostacci & Robinson-Rechavi 2017 (PMID 26891983) + Lüleci & Yılmaz 2022. Cell ontology graph (cl-basic.obo) walked to ~150 cell-family terms; UBERON ontology walked to ~150 organ-level tissues. CC-BY 4.0 (CZI Census).*
+*Schema v2.1.9 · CZI Census 2025-11-08 · τ-cutoff classification (Yanai 2005, PMID 15388519) on linear population mean (mean × pct, ≈ nTPM) over the full measured universe with a 1e-3 noise floor: τ≥0.85 enriched, 0.5–0.85 enhanced, <0.5 low specificity, no eligibles not detected. Cutoffs from Kryuchkova-Mostacci & Robinson-Rechavi 2017 (PMID 26891983) + Lüleci & Yılmaz 2022. Cell ontology graph (cl-basic.obo) walked to ~150 cell-family terms; UBERON ontology walked to ~150 organ-level tissues. CC-BY 4.0 (CZI Census).*
 
 **Classification:**
 
 - **Cell class (CL ontology graph, ~10 compartments):** enhanced · Stromal · 1.0× · τ=0.55
 - **Cell type (leaf Cell Ontology terms, ~600):** enriched · cycling stromal cell · cell · embryonic fibroblast · 1.0× · τ=0.96
-- **Tissue (UBERON terms, ~56):** enriched · esophagus · embryo · heart · 1.5× · τ=0.98
+- **Tissue (UBERON terms, ~56):** enriched · mucosa · placenta · skin of body · 1.3× · τ=0.99
 
 **Top 5 cell types (leaf CL, pooled across tissues):**
 
@@ -2108,10 +2108,10 @@ This Markdown is generated from the canonical JSON record at `/data/surfaceome/F
 
 | Tissue | UBERON ID | Mean log1p(CP10K) | % expressing | n_expressing / n_total |
 |---|---|---|---|---|
-| esophagus | UBERON:0001043 | 3.104 | 67.70% | 6,019 / 8,891 |
-| placenta | UBERON:0001987 | 2.795 | 45.16% | 102,596 / 227,177 |
-| embryo | UBERON:0000922 | 2.561 | 80.98% | 30,315 / 37,436 |
-| lung | UBERON:0002048 | 2.518 | 24.86% | 134,020 / 539,069 |
-| pancreas | UBERON:0001264 | 2.501 | 9.83% | 16,473 / 167,602 |
+| mucosa | UBERON:0000344 | 2.765 | 50.88% | 575 / 1,130 |
+| placenta | UBERON:0001987 | 2.777 | 39.14% | 80,108 / 204,689 |
+| skin of body | UBERON:0002097 | 2.569 | 32.36% | 7,840 / 24,228 |
+| embryo | UBERON:0000922 | 2.048 | 49.65% | 7,021 / 14,142 |
+| ovary | UBERON:0000992 | 2.543 | 21.17% | 5,816 / 27,479 |
 
 <!-- /cellxgene -->

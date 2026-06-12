@@ -463,13 +463,13 @@ This Markdown is generated from the canonical JSON record at `/data/surfaceome/B
 
 ## CellxGene RNA enrichment (CZI Census)
 
-*Schema v2.1.8 · CZI Census 2025-11-08 · τ-cutoff classification (Yanai 2005, PMID 15388519) on linear population mean (mean × pct, ≈ nTPM) over the full measured universe with a 1e-3 noise floor: τ≥0.85 enriched, 0.5–0.85 enhanced, <0.5 low specificity, no eligibles not detected. Cutoffs from Kryuchkova-Mostacci & Robinson-Rechavi 2017 (PMID 26891983) + Lüleci & Yılmaz 2022. Cell ontology graph (cl-basic.obo) walked to ~150 cell-family terms; UBERON ontology walked to ~150 organ-level tissues. CC-BY 4.0 (CZI Census).*
+*Schema v2.1.9 · CZI Census 2025-11-08 · τ-cutoff classification (Yanai 2005, PMID 15388519) on linear population mean (mean × pct, ≈ nTPM) over the full measured universe with a 1e-3 noise floor: τ≥0.85 enriched, 0.5–0.85 enhanced, <0.5 low specificity, no eligibles not detected. Cutoffs from Kryuchkova-Mostacci & Robinson-Rechavi 2017 (PMID 26891983) + Lüleci & Yılmaz 2022. Cell ontology graph (cl-basic.obo) walked to ~150 cell-family terms; UBERON ontology walked to ~150 organ-level tissues. CC-BY 4.0 (CZI Census).*
 
 **Classification:**
 
 - **Cell class (CL ontology graph, ~10 compartments):** low specificity · 1.1× · τ=0.45
 - **Cell type (leaf Cell Ontology terms, ~600):** enriched · M cell of gut · CL:0000956 · CL:0007004 · 1.1× · τ=0.86
-- **Tissue (UBERON terms, ~56):** enriched · uterus · mucosa · large intestine · 1.0× · τ=0.97
+- **Tissue (UBERON terms, ~56):** enriched · embryo · heart · eye · 1.1× · τ=0.97
 
 **Top 5 cell types (leaf CL, pooled across tissues):**
 
@@ -485,10 +485,10 @@ This Markdown is generated from the canonical JSON record at `/data/surfaceome/B
 
 | Tissue | UBERON ID | Mean log1p(CP10K) | % expressing | n_expressing / n_total |
 |---|---|---|---|---|
-| testis | UBERON:0000473 | 2.091 | 3.78% | 391 / 10,342 |
-| adrenal gland | UBERON:0002369 | 2.042 | 0.81% | 2,846 / 351,482 | (trace)
-| UBERON:0002368 | UBERON:0002368 | 1.987 | 100.00% | 54,766 / 54,766 |
-| esophagus | UBERON:0001043 | 1.915 | 27.15% | 1,075 / 3,960 |
-| UBERON:0002365 | UBERON:0002365 | 1.912 | 100.00% | 3,501 / 3,501 |
+| embryo | UBERON:0000922 | 1.782 | 57.23% | 8,093 / 14,142 |
+| heart | UBERON:0000948 | 1.824 | 50.52% | 5,997 / 11,870 |
+| eye | UBERON:0000970 | 1.691 | 41.58% | 7,723 / 18,575 |
+| brain | UBERON:0000955 | 1.748 | 33.61% | 83,126 / 247,324 |
+| skin of body | UBERON:0002097 | 1.941 | 24.69% | 6,638 / 26,888 |
 
 <!-- /cellxgene -->

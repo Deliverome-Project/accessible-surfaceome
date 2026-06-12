@@ -3637,7 +3637,7 @@
   "model_path": "claude-sonnet-4-6",
   "record_generated_at": "2026-05-31T20:15:43.094500Z",
   "cellxgene": {
-    "schema_version": "2.1.8",
+    "schema_version": "2.1.9",
     "census_version": "2025-11-08",
     "cell_class_enrichment": {
       "class": "enhanced",
@@ -3678,7 +3678,7 @@
       ],
       "fold_change": 1.095,
       "fold_change_infinite": false,
-      "tau": 0.8783999703932732,
+      "tau": 0.8775956149505814,
       "top_entity_contribs": [
         {
           "id": "CL:0000817",
@@ -3738,29 +3738,21 @@
       "class": "enriched",
       "uberon_ids": [
         "UBERON:0001851",
-        "UBERON:0000922",
         "UBERON:0002102"
       ],
       "tissue_labels": [
         "cortex",
-        "embryo",
         "forelimb"
       ],
-      "fold_change": 1.855,
+      "fold_change": 1.984,
       "fold_change_infinite": false,
-      "tau": 0.9697538393821926,
+      "tau": 0.9763724655404705,
       "top_entity_contribs": [
         {
           "id": "UBERON:0001851",
           "label": "cortex",
           "pop_mean": 26.9127,
           "tau_contrib": 0.0
-        },
-        {
-          "id": "UBERON:0000922",
-          "label": "embryo",
-          "pop_mean": 14.5052,
-          "tau_contrib": 0.461
         },
         {
           "id": "UBERON:0002102",
@@ -3781,9 +3773,9 @@
       "top_tissues": [
         "cortex"
       ],
-      "fold_change": 1.855,
+      "fold_change": 2.732,
       "fold_change_infinite": false,
-      "tau": 0.7130804080774342,
+      "tau": 0.7546991407067908,
       "top_entity_contribs": [
         {
           "id": "fluids_other",
@@ -3798,34 +3790,25 @@
       "class": "enriched",
       "organ_ids": [
         "UBERON:0001851",
-        "UBERON:0000922",
         "UBERON:0002102"
       ],
       "organ_labels": [
         "cortex",
-        "embryo",
         "forelimb"
       ],
       "top_uberon_labels": [
         "cortex",
-        "embryo",
         "forelimb"
       ],
-      "fold_change": 1.855,
+      "fold_change": 1.984,
       "fold_change_infinite": false,
-      "tau": 0.9577709992889555,
+      "tau": 0.9681812276868581,
       "top_entity_contribs": [
         {
           "id": "UBERON:0001851",
           "label": "cortex",
           "pop_mean": 26.9127,
           "tau_contrib": 0.0
-        },
-        {
-          "id": "UBERON:0000922",
-          "label": "embryo",
-          "pop_mean": 14.5052,
-          "tau_contrib": 0.461
         },
         {
           "id": "UBERON:0002102",
@@ -3858,8 +3841,7 @@
             "mean_log1p_cp10k": 4.123,
             "n_expressing": 3487,
             "n_total": 3488,
-            "pct_expressing": 0.9997,
-            "is_uncertain": false
+            "pct_expressing": 0.9997
           },
           {
             "tissue": "liver",
@@ -3867,8 +3849,7 @@
             "mean_log1p_cp10k": 4.0585,
             "n_expressing": 3105,
             "n_total": 3105,
-            "pct_expressing": 1.0,
-            "is_uncertain": false
+            "pct_expressing": 1.0
           },
           {
             "tissue": "lung",
@@ -3876,8 +3857,7 @@
             "mean_log1p_cp10k": 3.897,
             "n_expressing": 1587,
             "n_total": 1591,
-            "pct_expressing": 0.9975,
-            "is_uncertain": false
+            "pct_expressing": 0.9975
           }
         ]
       },
@@ -3897,8 +3877,7 @@
             "mean_log1p_cp10k": 4.3214,
             "n_expressing": 5692,
             "n_total": 5715,
-            "pct_expressing": 0.996,
-            "is_uncertain": false
+            "pct_expressing": 0.996
           },
           {
             "tissue": "liver",
@@ -3906,8 +3885,7 @@
             "mean_log1p_cp10k": 3.3525,
             "n_expressing": 1078,
             "n_total": 1083,
-            "pct_expressing": 0.9954,
-            "is_uncertain": false
+            "pct_expressing": 0.9954
           },
           {
             "tissue": "lung",
@@ -3915,8 +3893,7 @@
             "mean_log1p_cp10k": 2.7373,
             "n_expressing": 512,
             "n_total": 566,
-            "pct_expressing": 0.9046,
-            "is_uncertain": false
+            "pct_expressing": 0.9046
           }
         ]
       },
@@ -3936,17 +3913,7 @@
             "mean_log1p_cp10k": 3.8564,
             "n_expressing": 1364,
             "n_total": 1400,
-            "pct_expressing": 0.9743,
-            "is_uncertain": false
-          },
-          {
-            "tissue": "blood",
-            "uberon_id": "UBERON:0000178",
-            "mean_log1p_cp10k": 3.0686,
-            "n_expressing": 158,
-            "n_total": 158,
-            "pct_expressing": 1.0,
-            "is_uncertain": true
+            "pct_expressing": 0.9743
           },
           {
             "tissue": "bone marrow",
@@ -3954,8 +3921,7 @@
             "mean_log1p_cp10k": 4.0187,
             "n_expressing": 54,
             "n_total": 69,
-            "pct_expressing": 0.7826,
-            "is_uncertain": false
+            "pct_expressing": 0.7826
           }
         ]
       },
@@ -3970,22 +3936,12 @@
         "is_trace": false,
         "tissues": [
           {
-            "tissue": "small intestine",
-            "uberon_id": "UBERON:0002108",
-            "mean_log1p_cp10k": 3.4944,
-            "n_expressing": 398,
-            "n_total": 398,
-            "pct_expressing": 1.0,
-            "is_uncertain": true
-          },
-          {
             "tissue": "colon",
             "uberon_id": "UBERON:0001155",
             "mean_log1p_cp10k": 3.5403,
             "n_expressing": 122,
             "n_total": 122,
-            "pct_expressing": 1.0,
-            "is_uncertain": false
+            "pct_expressing": 1.0
           }
         ]
       },
@@ -4005,8 +3961,7 @@
             "mean_log1p_cp10k": 3.3954,
             "n_expressing": 5250,
             "n_total": 5253,
-            "pct_expressing": 0.9994,
-            "is_uncertain": false
+            "pct_expressing": 0.9994
           }
         ]
       },
@@ -4021,22 +3976,12 @@
         "is_trace": false,
         "tissues": [
           {
-            "tissue": "blood",
-            "uberon_id": "UBERON:0000178",
-            "mean_log1p_cp10k": 3.4889,
-            "n_expressing": 13855,
-            "n_total": 13855,
-            "pct_expressing": 1.0,
-            "is_uncertain": true
-          },
-          {
             "tissue": "bone marrow",
             "uberon_id": "UBERON:0002371",
             "mean_log1p_cp10k": 3.0626,
             "n_expressing": 9984,
             "n_total": 11076,
-            "pct_expressing": 0.9014,
-            "is_uncertain": false
+            "pct_expressing": 0.9014
           },
           {
             "tissue": "liver",
@@ -4044,8 +3989,15 @@
             "mean_log1p_cp10k": 3.9449,
             "n_expressing": 1985,
             "n_total": 2019,
-            "pct_expressing": 0.9832,
-            "is_uncertain": false
+            "pct_expressing": 0.9832
+          },
+          {
+            "tissue": "lung",
+            "uberon_id": "UBERON:0002048",
+            "mean_log1p_cp10k": 4.0237,
+            "n_expressing": 740,
+            "n_total": 750,
+            "pct_expressing": 0.9867
           }
         ]
       },
@@ -4060,22 +4012,12 @@
         "is_trace": false,
         "tissues": [
           {
-            "tissue": "brain",
-            "uberon_id": "UBERON:0000955",
-            "mean_log1p_cp10k": 3.2842,
-            "n_expressing": 97039,
-            "n_total": 97039,
-            "pct_expressing": 1.0,
-            "is_uncertain": true
-          },
-          {
             "tissue": "cortex",
             "uberon_id": "UBERON:0001851",
             "mean_log1p_cp10k": 3.3457,
             "n_expressing": 12815,
             "n_total": 12902,
-            "pct_expressing": 0.9933,
-            "is_uncertain": false
+            "pct_expressing": 0.9933
           },
           {
             "tissue": "head",
@@ -4083,8 +4025,7 @@
             "mean_log1p_cp10k": 2.6302,
             "n_expressing": 4,
             "n_total": 5,
-            "pct_expressing": 0.8,
-            "is_uncertain": false
+            "pct_expressing": 0.8
           }
         ]
       },
@@ -4104,8 +4045,7 @@
             "mean_log1p_cp10k": 3.2732,
             "n_expressing": 10208,
             "n_total": 10227,
-            "pct_expressing": 0.9981,
-            "is_uncertain": false
+            "pct_expressing": 0.9981
           }
         ]
       },
@@ -4125,8 +4065,7 @@
             "mean_log1p_cp10k": 3.2228,
             "n_expressing": 3488,
             "n_total": 3513,
-            "pct_expressing": 0.9929,
-            "is_uncertain": false
+            "pct_expressing": 0.9929
           }
         ]
       },
@@ -4141,22 +4080,12 @@
         "is_trace": false,
         "tissues": [
           {
-            "tissue": "blood",
-            "uberon_id": "UBERON:0000178",
-            "mean_log1p_cp10k": 3.0086,
-            "n_expressing": 22968,
-            "n_total": 22968,
-            "pct_expressing": 1.0,
-            "is_uncertain": true
-          },
-          {
             "tissue": "bone marrow",
             "uberon_id": "UBERON:0002371",
             "mean_log1p_cp10k": 3.5182,
             "n_expressing": 17237,
             "n_total": 18318,
-            "pct_expressing": 0.941,
-            "is_uncertain": false
+            "pct_expressing": 0.941
           },
           {
             "tissue": "lung",
@@ -4164,8 +4093,15 @@
             "mean_log1p_cp10k": 2.4603,
             "n_expressing": 765,
             "n_total": 858,
-            "pct_expressing": 0.8916,
-            "is_uncertain": false
+            "pct_expressing": 0.8916
+          },
+          {
+            "tissue": "liver",
+            "uberon_id": "UBERON:0002107",
+            "mean_log1p_cp10k": 3.2066,
+            "n_expressing": 521,
+            "n_total": 575,
+            "pct_expressing": 0.9061
           }
         ]
       }
@@ -4178,25 +4114,9 @@
         "n_expressing": 12951,
         "n_total": 13058,
         "pct_expressing": 0.9918,
-        "is_trace": false
-      },
-      {
-        "tissue": "UBERON:0002368",
-        "uberon_id": "UBERON:0002368",
-        "mean_log1p_cp10k": 2.9809,
-        "n_expressing": 244017,
-        "n_total": 244017,
-        "pct_expressing": 1.0,
-        "is_trace": false
-      },
-      {
-        "tissue": "embryo",
-        "uberon_id": "UBERON:0000922",
-        "mean_log1p_cp10k": 2.7412,
-        "n_expressing": 86108,
-        "n_total": 86108,
-        "pct_expressing": 1.0,
-        "is_trace": false
+        "score": 26.9127,
+        "is_trace": false,
+        "is_stale_denominator": false
       },
       {
         "tissue": "forelimb",
@@ -4205,7 +4125,9 @@
         "n_expressing": 12334,
         "n_total": 13163,
         "pct_expressing": 0.937,
-        "is_trace": false
+        "score": 13.5665,
+        "is_trace": false,
+        "is_stale_denominator": false
       },
       {
         "tissue": "hindlimb",
@@ -4214,16 +4136,9 @@
         "n_expressing": 25719,
         "n_total": 28766,
         "pct_expressing": 0.8941,
-        "is_trace": false
-      },
-      {
-        "tissue": "bone marrow",
-        "uberon_id": "UBERON:0002371",
-        "mean_log1p_cp10k": 2.5264,
-        "n_expressing": 271730,
-        "n_total": 378989,
-        "pct_expressing": 0.717,
-        "is_trace": false
+        "score": 11.9682,
+        "is_trace": false,
+        "is_stale_denominator": false
       },
       {
         "tissue": "scalp",
@@ -4232,16 +4147,20 @@
         "n_expressing": 2756,
         "n_total": 3029,
         "pct_expressing": 0.9099,
-        "is_trace": false
+        "score": 9.8523,
+        "is_trace": false,
+        "is_stale_denominator": false
       },
       {
-        "tissue": "yolk sac",
-        "uberon_id": "UBERON:0001040",
-        "mean_log1p_cp10k": 2.4124,
-        "n_expressing": 1072,
-        "n_total": 1239,
-        "pct_expressing": 0.8652,
-        "is_trace": false
+        "tissue": "brain",
+        "uberon_id": "UBERON:0000955",
+        "mean_log1p_cp10k": 2.5996,
+        "n_expressing": 10344,
+        "n_total": 13591,
+        "pct_expressing": 0.7611,
+        "score": 9.4822,
+        "is_trace": false,
+        "is_stale_denominator": true
       },
       {
         "tissue": "paracolic gutter",
@@ -4250,16 +4169,53 @@
         "n_expressing": 1429,
         "n_total": 1572,
         "pct_expressing": 0.909,
-        "is_trace": false
+        "score": 9.0813,
+        "is_trace": false,
+        "is_stale_denominator": false
       },
       {
-        "tissue": "mucosa",
-        "uberon_id": "UBERON:0000344",
-        "mean_log1p_cp10k": 2.3747,
-        "n_expressing": 24420,
-        "n_total": 25163,
-        "pct_expressing": 0.9705,
-        "is_trace": false
+        "tissue": "yolk sac",
+        "uberon_id": "UBERON:0001040",
+        "mean_log1p_cp10k": 2.4124,
+        "n_expressing": 1072,
+        "n_total": 1239,
+        "pct_expressing": 0.8652,
+        "score": 8.7912,
+        "is_trace": false,
+        "is_stale_denominator": false
+      },
+      {
+        "tissue": "small intestine",
+        "uberon_id": "UBERON:0002108",
+        "mean_log1p_cp10k": 2.2816,
+        "n_expressing": 4249,
+        "n_total": 4453,
+        "pct_expressing": 0.9542,
+        "score": 8.3899,
+        "is_trace": false,
+        "is_stale_denominator": true
+      },
+      {
+        "tissue": "bone marrow",
+        "uberon_id": "UBERON:0002371",
+        "mean_log1p_cp10k": 2.5264,
+        "n_expressing": 271730,
+        "n_total": 378989,
+        "pct_expressing": 0.717,
+        "score": 8.2514,
+        "is_trace": false,
+        "is_stale_denominator": false
+      },
+      {
+        "tissue": "intestine",
+        "uberon_id": "UBERON:0000160",
+        "mean_log1p_cp10k": 2.2837,
+        "n_expressing": 40961,
+        "n_total": 48928,
+        "pct_expressing": 0.8372,
+        "score": 7.3781,
+        "is_trace": false,
+        "is_stale_denominator": false
       }
     ]
   }

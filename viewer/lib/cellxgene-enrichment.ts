@@ -263,12 +263,25 @@ export interface TissueAggregateRow {
   n_expressing: number;
   n_total: number;
   pct_expressing: number;
+  /** Linear population mean (≈ nTPM) = expm1(mean_log1p_cp10k) × pct.
+   *  v2.1.9+. The chart's default Y-axis matches this. */
+  score?: number;
   /** True when the tissue passes n_total ≥ 1000 but fails the noise
    *  filter (n_expressing < 10 OR pct < 1%). Trace rows render muted
    *  with a "trace" badge — useful for low-expression genes whose
    *  qualified tissues alone don't tell the story (GPR75: only brain
    *  and embryo qualify, but pleura/forelimb/intestine carry signal). */
   is_trace?: boolean;
+  /** True when >50% of the tissue's per-(cl, ub) WMG counts came from
+   *  pairs where the cell-count cache was clearly stale (cache n_total
+   *  < WMG nnz). For those pairs the WMG-nnz fallback clips pct to
+   *  100% by construction, making the displayed pct a ceiling artifact
+   *  rather than biology. The τ classifier on the tissue axis excludes
+   *  these tissues from ranking so heart/lung/liver/brain (the
+   *  large-CZI-cohort tissues most affected by cache staleness) don't
+   *  spuriously dominate. The chart still shows them with a caveat
+   *  badge so readers can see them. v2.1.9+. */
+  is_stale_denominator?: boolean;
 }
 
 export interface CellxGeneEnrichment {

@@ -79,15 +79,52 @@ def _load_map(path_str: str) -> dict[str, str]:
 def uberon_category(uberon_id: str, ts_map_path: Path | None = None) -> str:
     """Return the 14-category organ-system label for a UBERON term.
 
-    Falls back to ``fluids_other`` when the UBERON isn't in the
-    generated map (the build script's ontology walk handles 409/409
-    CZI UBERONs as of the current cl-basic + uberon-2024-10 cuts, so
-    fall-through is rare and reserved for truly orphan terms).
+    The generated map covers the 409 CZI cohort leaf UBERONs, but
+    WMG outputs cells annotated at PARENT UBERONs too (mucosa,
+    alveolus, musculature, endocrine gland, nervous system, etc.)
+    that aren't sampled directly as leaves. **v2.1.9+:** before
+    falling through to ``fluids_other`` we walk the UBERON OBO graph
+    upward via ``uberon_organ._parse_obo`` and return the first
+    ancestor's category. This recovers respiratory for alveolus and
+    mucosa-of-bronchus, CNS for nervous system, etc., so EGFR's
+    tracheobronchial-basal + alveolar-T2 signal lands in respiratory
+    instead of leaking to fluids_other.
     """
     if not uberon_id:
         return "fluids_other"
     path = ts_map_path or DEFAULT_TS_MAP_PATH
-    return _load_map(str(path)).get(uberon_id, "fluids_other")
+    cat_map = _load_map(str(path))
+    direct = cat_map.get(uberon_id)
+    if direct is not None:
+        return direct
+    # OBO ancestor walk for orphan UBERONs.
+    try:
+        from accessible_surfaceome.audit.uberon_organ import (
+            DEFAULT_OBO_PATH,
+            _parse_obo,
+        )
+        terms = _parse_obo(str(DEFAULT_OBO_PATH))
+    except Exception:  # pragma: no cover
+        return "fluids_other"
+    if uberon_id not in terms:
+        return "fluids_other"
+    # BFS upward through is_a + part_of; first ancestor in the map wins.
+    seen = {uberon_id}
+    queue = [uberon_id]
+    while queue:
+        t = queue.pop(0)
+        rec = terms.get(t)
+        if not rec:
+            continue
+        for parent in (rec.get("is_a", []) + rec.get("part_of", [])):
+            if parent in seen:
+                continue
+            seen.add(parent)
+            mapped = cat_map.get(parent)
+            if mapped is not None:
+                return mapped
+            queue.append(parent)
+    return "fluids_other"
 
 
 def all_categories_and_uberons(ts_map_path: Path | None = None) -> dict[str, list[str]]:

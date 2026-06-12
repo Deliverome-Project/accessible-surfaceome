@@ -585,7 +585,9 @@ function TopTissues({
             const barColor = isSelected
               ? SELECTED_TISSUE_COLOR
               : categoryColor;
-            const hoverTitle = r.is_trace
+            const hoverTitle = r.is_stale_denominator
+              ? `Cache stale for this tissue's per-cell-type counts — % expressing is a ceiling, not biology. Mean and absolute counts are still real. Tissue excluded from the τ classifier.`
+              : r.is_trace
               ? `Trace: only ${r.n_expressing} of ${r.n_total.toLocaleString()} cells expressing (${(r.pct_expressing * 100).toFixed(2)}%). Mean is real but small-n.`
               : `Click to filter to ${r.tissue} cell types`;
             return (
