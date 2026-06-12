@@ -17,9 +17,31 @@ import { SectionCard } from "../SectionCard/SectionCard";
 import { StatusPill } from "../StatusPill/StatusPill";
 import styles from "./FiltersCard.module.css";
 
+import type { CellxGeneEnrichment } from "../../../lib/cellxgene-enrichment";
+
 interface Props {
   rec: SurfaceomeRecord;
+  cellxgene?: CellxGeneEnrichment | null;
   n: number;
+}
+
+/** Compact text for a CellxGene chip — class + top entities + τ. */
+function cellxgeneChipText(
+  klass: string | undefined,
+  ids: readonly string[] | undefined,
+  tau: number | null | undefined,
+): { label: string; value: string } {
+  const klassPretty =
+    klass === "enriched"
+      ? "enriched"
+      : klass === "enhanced"
+      ? "enhanced"
+      : klass === "not_detected"
+      ? "below detection"
+      : "low specificity";
+  const ents = (ids ?? []).slice(0, 2).join(" · ");
+  const tauPart = tau != null && Number.isFinite(tau) ? ` · τ=${tau.toFixed(2)}` : "";
+  return { label: klassPretty, value: ents ? `${ents}${tauPart}` : `—${tauPart}` };
 }
 
 // ---------------------------------------------------------------------------
@@ -255,7 +277,7 @@ const TT_HGNC_GROUP =
 // ---------------------------------------------------------------------------
 
 
-export function FiltersCard({ rec, n }: Props) {
+export function FiltersCard({ rec, cellxgene, n }: Props) {
   const f = rec.filters;
   const topo = rec.deterministic_features.canonical_topology;
   const orthos = rec.deterministic_features.orthologs;
@@ -767,6 +789,54 @@ export function FiltersCard({ rec, n }: Props) {
         ];
       })(),
     },
+    // v2.1.5+: CellxGene RNA enrichment summary — cell-family + tissue-
+    // organ chips with τ values. Only shown when cellxgene data was
+    // available for this gene (loaded by the gene page; null for genes
+    // outside CZI's Census coverage).
+    ...(cellxgene
+      ? [(() => {
+          // Read the middle-granularity axes preferentially (v2.1.4+);
+          // fall back to class/category for older records.
+          const cf =
+            (cellxgene as any).cell_family_enrichment ??
+            (cellxgene as any).cell_class_enrichment ??
+            null;
+          const to =
+            (cellxgene as any).tissue_organ_enrichment ??
+            (cellxgene as any).tissue_category_enrichment ??
+            null;
+          const cfIds =
+            cf?.family_labels ?? cf?.class_labels ?? cf?.cl_ids ?? [];
+          const toIds =
+            to?.organ_labels ??
+            to?.category_labels ??
+            to?.tissue_labels ??
+            [];
+          const cfChip = cellxgeneChipText(cf?.class, cfIds, cf?.tau);
+          const toChip = cellxgeneChipText(to?.class, toIds, to?.tau);
+          const pills: React.ReactNode[] = [];
+          if (cf) {
+            pills.push(
+              <StatusPill key="cxg-cell" tone="teal" size="sm" title={`Cell-family axis · τ-cutoff classification (τ≥0.85 enriched, 0.5–0.85 enhanced, <0.5 low specificity).`}>
+                <ChipLabelValue label={`cell ${cfChip.label}`} value={cfChip.value} />
+              </StatusPill>,
+            );
+          }
+          if (to) {
+            pills.push(
+              <StatusPill key="cxg-tissue" tone="teal" size="sm" title={`Tissue-organ axis · τ-cutoff classification.`}>
+                <ChipLabelValue label={`tissue ${toChip.label}`} value={toChip.value} />
+              </StatusPill>,
+            );
+          }
+          return {
+            label: "CellxGene RNA",
+            provenance: "deterministic" as const,
+            linkTo: "#section-cellxgene",
+            pills,
+          };
+        })()]
+      : []),
   ];
 
   // ------------------------------------------------------------

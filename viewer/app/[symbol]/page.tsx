@@ -172,7 +172,7 @@ export default async function GenePage({ params }: PageProps) {
     {
       kind: "metrics",
       label: "Summary metrics",
-      render: (n) => <FiltersCard rec={rec} n={n} />,
+      render: (n) => <FiltersCard rec={rec} cellxgene={cellxgene} n={n} />,
     },
     {
       kind: "evidence",
