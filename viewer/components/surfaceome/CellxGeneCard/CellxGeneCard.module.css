@@ -844,7 +844,10 @@ button.colBarHit:focus-visible {
    doesn't conflate it with low_specificity at first glance. */
 .classChip[data-class="not_detected"] {
   border-style: dashed;
-  opacity: 0.85;
+  /* Mute the text instead of `opacity: 0.85` on the chip — opacity
+     cascades to children including the InfoTip popover, making the
+     tooltip appear translucent. */
+  color: var(--muted, #6f5d5a);
 }
 .classChip[data-class="not_detected"] .classDot {
   background: transparent;

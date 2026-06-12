@@ -94,7 +94,7 @@ function EnrichmentChip({
         <strong>{ENRICHMENT_LABELS[klass]}</strong> at the {axis} level.{" "}
         {ENRICHMENT_BLURB[klass]} Definition follows{" "}
         <a
-          href="https://www.proteinatlas.org/about/assays+annotation#singlecell_rna"
+          href="https://www.proteinatlas.org/humanproteome/single+cell/single+cell+type/method#ce_enriched"
           target="_blank"
           rel="noopener noreferrer"
         >
