@@ -371,10 +371,10 @@ button.colBarHit:focus-visible {
      toward the bar's right edge. */
   right: calc(50% + 6px);
   font-family: var(--font-sans);
-  /* Bumped ~15% from 0.6 rem so labels read more legibly at the
-     -65° rotation. max-width grew proportionally so 14-char terms
-     still fit in 2 lines without wrapping mid-word. */
-  font-size: 0.69rem;
+  /* Bumped ~7% from 0.6 rem so labels read more legibly at the
+     -65° rotation without growing as much vertical reserve as the
+     full 15% step would. */
+  font-size: 0.64rem;
   color: var(--ink-soft);
   /* Allow wrapping on whitespace, but cap at 2 LINES via
      -webkit-line-clamp — long CL terms like "kidney loop of Henle
