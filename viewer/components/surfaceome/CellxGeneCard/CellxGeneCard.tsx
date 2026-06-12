@@ -150,25 +150,16 @@ function EnrichmentChip({
                     <span style={{ opacity: 0.78 }}> ({c.sub_label})</span>
                   )}
                   {" — pop mean "}
-                  {c.pop_mean.toFixed(2)} · τ distance{" "}
-                  {c.tau_contrib.toFixed(2)}
+                  {c.pop_mean.toFixed(2)}
                 </li>
               ))}
             </ul>
             <span style={{ opacity: 0.78, fontSize: "0.9em", display: "block", marginTop: "6px" }}>
-              <strong>τ distance vs. axis τ.</strong> Each entity&apos;s
-              τ distance = 1 − x/x<sub>max</sub> is its own gap from
-              the top entity. The top is mechanically 0 (it IS the
-              reference); runners-up at 0 are tied with the top.{" "}
-              The chip&apos;s axis τ is the AVERAGE of every entity&apos;s
-              τ distance across the full universe (~150 for cell
-              family / tissue organ; ~13 for tissue category; ~10 for
-              cell class). Only entities within 50% of the peak get
-              listed above — the remaining 100+ entities that drive
-              the axis τ up are all close to the noise floor (each
-              contributing distances ≈ 1). So &ldquo;axis τ = 0.98
-              with one visible entity&rdquo; literally means
-              &ldquo;that one entity dominates the entire universe.&rdquo;
+              Only entities within 50% of the peak pop mean appear
+              here; the rest of the ~150 axis entries (or ~10/13 for
+              the broad-class / tissue-category axes) sit closer to
+              the noise floor — they&apos;re what push the axis τ
+              high when only one entity stands out.
             </span>
           </>
         )}
