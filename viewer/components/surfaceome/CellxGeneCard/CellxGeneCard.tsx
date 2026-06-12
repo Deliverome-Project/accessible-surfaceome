@@ -115,7 +115,8 @@ function EnrichmentChip({
             matches what you see in the chart.
           </>
         )}
-        {" "}τ (Yanai 2005, PMID{" "}
+        {" "}<strong>Axis τ</strong> (the number on the chip header — Yanai 2005,
+        PMID{" "}
         <a
           href="https://pubmed.ncbi.nlm.nih.gov/15388519/"
           target="_blank"
@@ -140,7 +141,7 @@ function EnrichmentChip({
           <>
             <br />
             <br />
-            <strong>Top {topContribs.length}:</strong>
+            <strong>Top {topContribs.length} (within 50% of the peak):</strong>
             <ul style={{ margin: "4px 0 0 16px", paddingLeft: 0 }}>
               {topContribs.map((c) => (
                 <li key={c.id}>
@@ -154,11 +155,20 @@ function EnrichmentChip({
                 </li>
               ))}
             </ul>
-            <span style={{ opacity: 0.78, fontSize: "0.9em" }}>
-              τ distance = 1 − x/x_max — how far below the top
-              entity this one sits, on a 0-to-1 scale. The top entity
-              is mechanically 0 (it IS the reference point); 0 for
-              runners-up means &ldquo;essentially tied with the top.&rdquo;
+            <span style={{ opacity: 0.78, fontSize: "0.9em", display: "block", marginTop: "6px" }}>
+              <strong>τ distance vs. axis τ.</strong> Each entity&apos;s
+              τ distance = 1 − x/x<sub>max</sub> is its own gap from
+              the top entity. The top is mechanically 0 (it IS the
+              reference); runners-up at 0 are tied with the top.{" "}
+              The chip&apos;s axis τ is the AVERAGE of every entity&apos;s
+              τ distance across the full universe (~150 for cell
+              family / tissue organ; ~13 for tissue category; ~10 for
+              cell class). Only entities within 50% of the peak get
+              listed above — the remaining 100+ entities that drive
+              the axis τ up are all close to the noise floor (each
+              contributing distances ≈ 1). So &ldquo;axis τ = 0.98
+              with one visible entity&rdquo; literally means
+              &ldquo;that one entity dominates the entire universe.&rdquo;
             </span>
           </>
         )}
