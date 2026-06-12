@@ -13,6 +13,11 @@ interface SectionCardProps {
   title?: ReactNode;
   meta?: ReactNode;
   lede?: ReactNode;
+  /** Extra className appended to the lede paragraph. Used by sections
+   *  whose lede needs to break out of the global 75 ch reading-width
+   *  cap (e.g. CellxGeneCard — dense intro with InfoTip + the chart
+   *  toolbars below). Leave undefined to keep the default cap. */
+  ledeClassName?: string;
   children: ReactNode;
 }
 
@@ -26,14 +31,18 @@ export function SectionCard({
   title,
   meta,
   lede,
+  ledeClassName,
   children,
 }: SectionCardProps) {
+  const ledeClasses = ["lede", styles.lede, ledeClassName]
+    .filter(Boolean)
+    .join(" ");
   return (
     <section className={styles.section}>
       <header className={styles.head}>
         {title ? <h2 className={`h-section ${styles.title}`}>{title}</h2> : null}
         {meta ? <p className={styles.meta}>{meta}</p> : null}
-        {lede ? <p className={`lede ${styles.lede}`}>{lede}</p> : null}
+        {lede ? <p className={ledeClasses}>{lede}</p> : null}
       </header>
       <div className={styles.body}>{children}</div>
     </section>

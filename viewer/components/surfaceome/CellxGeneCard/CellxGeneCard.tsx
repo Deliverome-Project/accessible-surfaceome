@@ -136,6 +136,7 @@ export function CellxGeneCard({ data }: Props) {
   return (
     <SectionCard
       title="CellxGene RNA enrichment"
+      ledeClassName={styles.fullWidthLede}
       meta={
         <>
           CZI Census {data.census_version} ·{" "}

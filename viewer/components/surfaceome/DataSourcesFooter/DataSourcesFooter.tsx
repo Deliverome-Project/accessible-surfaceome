@@ -74,6 +74,27 @@ export function DataSourcesFooter({ rec }: Props) {
           </a>
         </li>
         <li>UniProt — CC BY 4.0 (UniProt Consortium)</li>
+        <li>
+          CZI CELLxGENE Census single-cell expression — per-gene
+          tissue + cell-type enrichment summaries (Census release{" "}
+          <code>2025-11-08</code>; WMG / Where&apos;s My Gene condensed
+          export) ·{" "}
+          <a
+            href={pubmedUrl(CITATIONS.czCellxgene.pmid)}
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            {CITATIONS.czCellxgene.authorYear}
+          </a>{" "}
+          · CC BY 4.0 (CZI Cell Science Program) ·{" "}
+          <a
+            href="https://cellxgene.cziscience.com/"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            cellxgene.cziscience.com
+          </a>
+        </li>
       </ul>
     </aside>
   );

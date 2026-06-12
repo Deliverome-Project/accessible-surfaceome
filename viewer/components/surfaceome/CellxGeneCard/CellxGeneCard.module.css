@@ -6,6 +6,14 @@
   font-family: var(--font-sans);
 }
 
+/* The CellxGene card's lede is denser than most (3 charts to introduce
+   + an InfoTip) and the global 75 ch cap on .lede forces aggressive
+   wrapping. Free it to the section width so the description sits in
+   one or two clean paragraphs instead of a tall narrow column. */
+.fullWidthLede {
+  max-width: none;
+}
+
 .empty {
   font-family: var(--font-sans);
   font-size: 0.95rem;
