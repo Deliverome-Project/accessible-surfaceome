@@ -533,7 +533,7 @@ This Markdown is generated from the canonical JSON record at `/data/surfaceome/G
 
 - **Cell class (CL ontology graph, ~10 compartments):** not detected
 - **Cell type (leaf Cell Ontology terms, ~600):** enriched · kidney loop of Henle ascending limb epithelial cell · ∞×
-- **Tissue (UBERON terms, ~56):** group enriched · brain · embryo · vasculature · ∞× · τ=0.20
+- **Tissue (UBERON terms, ~56):** group enriched · eye · embryo · brain · ∞× · τ=0.58
 
 **Top 5 cell types (leaf CL, pooled across tissues):**
 

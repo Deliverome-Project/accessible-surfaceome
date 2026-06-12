@@ -6378,31 +6378,43 @@
     "schema_version": "2.1.2",
     "census_version": "2025-11-08",
     "cell_class_enrichment": {
-      "class": "low_specificity",
-      "class_ids": [],
-      "class_labels": [],
-      "fold_change": null,
+      "class": "enhanced",
+      "class_ids": [
+        "Epithelial"
+      ],
+      "class_labels": [
+        "Epithelial"
+      ],
+      "fold_change": 5.779,
       "fold_change_infinite": false,
-      "tau": 0.6352383607299253
+      "tau": 0.8269545713151734
     },
     "cell_type_enrichment": {
-      "class": "low_specificity",
-      "cl_ids": [],
-      "fold_change": null,
+      "class": "enhanced",
+      "cl_ids": [
+        "CL:1000491"
+      ],
+      "fold_change": 20.429,
       "fold_change_infinite": false,
-      "tau": 0.7463955927491579
+      "tau": 0.9510496704306701
     },
     "tissue_enrichment": {
-      "class": "low_specificity",
-      "uberon_ids": [],
-      "tissue_labels": [],
-      "fold_change": null,
+      "class": "enhanced",
+      "uberon_ids": [
+        "UBERON:0002049"
+      ],
+      "tissue_labels": [
+        "vasculature"
+      ],
+      "fold_change": 20.002,
       "fold_change_infinite": false,
-      "tau": 0.7266146304280365
+      "tau": 0.9500052020160585
     },
-    "enrichment_class": "low_specificity",
-    "enrichment_cl_ids": [],
-    "fold_change": null,
+    "enrichment_class": "enhanced",
+    "enrichment_cl_ids": [
+      "Epithelial"
+    ],
+    "fold_change": 5.779,
     "fold_change_infinite": false,
     "top_cell_types": [
       {

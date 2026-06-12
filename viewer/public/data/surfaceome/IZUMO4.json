@@ -968,47 +968,45 @@
     "schema_version": "2.1.2",
     "census_version": "2025-11-08",
     "cell_class_enrichment": {
-      "class": "group_enriched",
+      "class": "enriched",
       "class_ids": [
-        "Reproductive",
-        "Neural",
-        "Epithelial",
-        "Immune"
+        "Reproductive"
       ],
       "class_labels": [
-        "Reproductive",
-        "Neural",
-        "Epithelial",
-        "Immune"
+        "Reproductive"
       ],
-      "fold_change": null,
-      "fold_change_infinite": true,
-      "tau": 0.5963957962575145
+      "fold_change": 23.864,
+      "fold_change_infinite": false,
+      "tau": 0.9676533804877971
     },
     "cell_type_enrichment": {
-      "class": "low_specificity",
-      "cl_ids": [],
-      "fold_change": null,
+      "class": "group_enriched",
+      "cl_ids": [
+        "CL:0000017",
+        "CL:0000018"
+      ],
+      "fold_change": 9.023,
       "fold_change_infinite": false,
-      "tau": 0.5789252669951037
+      "tau": 0.9818105651177158
     },
     "tissue_enrichment": {
-      "class": "low_specificity",
-      "uberon_ids": [],
-      "tissue_labels": [],
-      "fold_change": null,
+      "class": "enhanced",
+      "uberon_ids": [
+        "UBERON:0000970"
+      ],
+      "tissue_labels": [
+        "eye"
+      ],
+      "fold_change": 7.264,
       "fold_change_infinite": false,
-      "tau": 0.41783277387966794
+      "tau": 0.8623429570271615
     },
-    "enrichment_class": "group_enriched",
+    "enrichment_class": "enriched",
     "enrichment_cl_ids": [
-      "Reproductive",
-      "Neural",
-      "Epithelial",
-      "Immune"
+      "Reproductive"
     ],
-    "fold_change": null,
-    "fold_change_infinite": true,
+    "fold_change": 23.864,
+    "fold_change_infinite": false,
     "top_cell_types": [
       {
         "cell_type": "spermatocyte",

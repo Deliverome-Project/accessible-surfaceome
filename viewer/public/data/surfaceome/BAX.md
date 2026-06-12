@@ -467,9 +467,9 @@ This Markdown is generated from the canonical JSON record at `/data/surfaceome/B
 
 **Classification:**
 
-- **Cell class (CL ontology graph, ~10 compartments):** low specificity · τ=0.29
-- **Cell type (leaf Cell Ontology terms, ~600):** low specificity · τ=0.51
-- **Tissue (UBERON terms, ~56):** low specificity · τ=0.48
+- **Cell class (CL ontology graph, ~10 compartments):** low specificity · τ=0.45
+- **Cell type (leaf Cell Ontology terms, ~600):** enhanced · CL:0000682 · 5.4× · τ=0.82
+- **Tissue (UBERON terms, ~56):** enhanced · vasculature · 36.7× · τ=0.97
 
 **Top 5 cell types (leaf CL, pooled across tissues):**
 

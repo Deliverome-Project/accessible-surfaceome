@@ -480,8 +480,8 @@ This Markdown is generated from the canonical JSON record at `/data/surfaceome/K
 
 **Classification:**
 
-- **Cell class (CL ontology graph, ~10 compartments):** enriched · Epithelial · 7.8× · τ=0.87
-- **Cell type (leaf Cell Ontology terms, ~600):** low specificity · τ=0.67
+- **Cell class (CL ontology graph, ~10 compartments):** enriched · Epithelial · 47.4× · τ=0.98
+- **Cell type (leaf Cell Ontology terms, ~600):** enhanced · luminal cell of prostate epithelium · 14.9× · τ=0.93
 - **Tissue (UBERON terms, ~56):** enriched · prostate gland · ∞×
 
 **Top 5 cell types (leaf CL, pooled across tissues):**

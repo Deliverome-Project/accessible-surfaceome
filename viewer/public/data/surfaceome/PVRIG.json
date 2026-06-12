@@ -5620,15 +5620,19 @@
       "cl_ids": [],
       "fold_change": null,
       "fold_change_infinite": false,
-      "tau": 0.19254189324539575
+      "tau": 0.6397523071191931
     },
     "tissue_enrichment": {
-      "class": "low_specificity",
-      "uberon_ids": [],
-      "tissue_labels": [],
-      "fold_change": null,
+      "class": "enriched",
+      "uberon_ids": [
+        "UBERON:0000922"
+      ],
+      "tissue_labels": [
+        "embryo"
+      ],
+      "fold_change": 4.086,
       "fold_change_infinite": false,
-      "tau": 0.49110195918944344
+      "tau": 0.9355212044720521
     },
     "enrichment_class": "enriched",
     "enrichment_cl_ids": [

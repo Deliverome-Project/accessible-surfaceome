@@ -7258,22 +7258,28 @@
       "class_labels": [],
       "fold_change": null,
       "fold_change_infinite": false,
-      "tau": 0.2770302724108887
+      "tau": 0.4919611802504194
     },
     "cell_type_enrichment": {
-      "class": "low_specificity",
-      "cl_ids": [],
-      "fold_change": null,
+      "class": "enhanced",
+      "cl_ids": [
+        "CL:0002236"
+      ],
+      "fold_change": 9.032,
       "fold_change_infinite": false,
-      "tau": 0.6268327516075242
+      "tau": 0.8892873244207329
     },
     "tissue_enrichment": {
-      "class": "low_specificity",
-      "uberon_ids": [],
-      "tissue_labels": [],
-      "fold_change": null,
+      "class": "enhanced",
+      "uberon_ids": [
+        "UBERON:0001723"
+      ],
+      "tissue_labels": [
+        "tongue"
+      ],
+      "fold_change": 59.22,
       "fold_change_infinite": false,
-      "tau": 0.441718954442614
+      "tau": 0.9831138644738263
     },
     "enrichment_class": "low_specificity",
     "enrichment_cl_ids": [],

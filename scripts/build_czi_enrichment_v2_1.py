@@ -182,7 +182,7 @@ def load_ens_map() -> dict[str, tuple[str, str]]:
 
 
 def classify_hpa(
-    entities: dict[str, float],          # entity_id -> mean_log1p_cp10k (eligible only)
+    entities: dict[str, float],          # entity_id -> LINEAR population mean (mean × pct, ≈ nTPM)
     n_totals: dict[str, int],            # entity_id -> n_total (full universe)
 ) -> tuple[str, list[str], float | None]:
     """HPA-style classification on whichever axis you pass in.
@@ -195,21 +195,29 @@ def classify_hpa(
     low_specificity, ``inf`` when the next-ranked entity is zero (the
     JSON encoder converts to null + a sibling `*_infinite: true` flag).
 
-    **Below-noise baseline.** ``entities`` only contains entities that
-    cleared the upstream noise gate (nnz ≥ 10, pct ≥ 1%). Every other
-    entity with ``n_total ≥ MIN_N_TOTAL_FOR_CLASS`` exists in
-    ``n_totals`` but not ``entities`` — those are treated as linear
-    mean = 0 for the HPA 4× test. Without this baseline, a gene like
-    GPR75 (signal in 4 of 56 tissues at similar levels) compares brain
-    vs embryo (~1.1×) and falls into low_specificity even though the
-    other 52 tissues are at zero. With the baseline, brain vs the
-    first ineligible tissue (= 0) gives infinite fold → group_enriched.
+    **Input scale.** ``entities`` carries LINEAR population mean per
+    entity (mean among expressors × pct_expressing). This is the
+    nTPM-equivalent metric — HPA / GTEx / Bgee / Tabula Sapiens /
+    Karbalaei 2024 all run their τ + elevation classifiers on the
+    population-mean scale, not on mean-among-expressors. CZI's WMG
+    emits `mean_log1p(CP10K)` among expressors; upstream of this call
+    we multiply by `pct_expressing` and `expm1` to land at the right
+    scale.
+
+    **Below-noise baseline.** Every entity with ``n_total ≥
+    MIN_N_TOTAL_FOR_CLASS`` exists in ``n_totals`` but might not be in
+    ``entities`` (didn't clear the noise gate); those are treated as
+    linear mean = 0 for the HPA 4× test. Without this baseline, a
+    gene like GPR75 (signal in 4 of 56 tissues at similar levels)
+    compares brain vs embryo (~1.1×) and falls into low_specificity.
+    With the baseline, brain vs the first ineligible tissue (= 0)
+    gives infinite fold → group_enriched.
     """
-    # Eligible entities (above noise) ranked by linear mean.
+    # Eligible entities (above noise) ranked by linear pop mean.
     eligible = sorted(
         (
-            (k, math.expm1(m))
-            for k, m in entities.items()
+            (k, v)
+            for k, v in entities.items()
             if n_totals.get(k, 0) >= MIN_N_TOTAL_FOR_CLASS
         ),
         key=lambda kv: kv[1],
@@ -292,14 +300,17 @@ def compute_tau(
 ) -> float | None:
     """Yanai et al. 2005 tissue-specificity τ over the eligible set.
 
-    τ = Σ (1 − x_i / x_max) / (N − 1), where x_i is the linear
-    population-mean expression of entity i ∈ eligibles.
+    τ = Σ (1 − x_i / x_max) / (N − 1), where x_i is the LINEAR
+    population-mean expression of entity i (mean among expressors ×
+    pct_expressing — the nTPM-equivalent).
 
-    Input ``entities`` carries the *log1p(CP10K)* means for above-noise
-    entities (the eligible set). Convert to linear (expm1) here so the
-    (1 − x_i/x_max) ratio is on the right scale — τ on log-space
-    values doesn't match field convention (HPA / GTEx run τ on linear
-    nTPM / TPM).
+    Input ``entities`` carries the linear population mean per entity
+    (already on the right scale; the caller has multiplied
+    mean-among-expressors by pct and applied expm1 upstream). The
+    field convention (HPA / GTEx / Bgee / Karbalaei 2024) runs τ on
+    population mean, NOT on mean-among-expressors — pct must be
+    folded in or low-prevalence high-intensity single-cell artifacts
+    inflate τ.
 
     **Why over eligibles, not the full universe.** HPA's original τ
     treats each of ~40 broad tissues as a measured value (no zeros —
@@ -308,29 +319,28 @@ def compute_tau(
     genes. Including those zeros makes τ converge to "fraction of
     universe with no signal" — a sparsity metric, not a specificity
     metric. Computing τ over the eligible (above-noise) entities
-    answers the question HPA's τ was designed to answer: "given the
-    gene is expressed, how concentrated is the expression?"
+    answers the question HPA's τ was designed to answer.
 
     Returns:
-        τ ∈ [0, 1], or ``None`` when fewer than 2 eligible entities
-        or x_max == 0. 0 → uniform across eligibles. 1 → concentrated
-        in one eligible (rest at zero among eligibles, which only
-        happens with the single-eligible carve-out).
+        τ ∈ [0, 1], or ``None`` when fewer than 2 eligibles or
+        x_max == 0. 0 → uniform across eligibles. 1 → concentrated
+        in one eligible.
 
     Field references:
         * Yanai et al. 2005, *Bioinformatics* — original τ.
         * Kryuchkova-Mostacci & Robinson-Rechavi 2017, *Brief.
-          Bioinformatics* — benchmark naming τ the most robust
-          specificity metric.
-        * Bgee, HPA, Tabula Sapiens — τ-derived rankings.
+          Bioinformatics* — benchmark naming τ most robust.
+        * Karbalaei et al. 2024, *Brief. Bioinformatics* — single-cell
+          extension benchmark; confirms pseudobulk / population-mean
+          input is the right choice for single-cell data.
+        * HPA's "Tissue distribution" tags, Tabula Sapiens cell-type
+          enrichment — both run τ on population-mean nTPM-equivalents.
     """
-    # ``n_totals`` is the full universe but we only sum over eligibles
-    # (entities that survived the noise gate upstream of this call).
     linear: list[float] = []
-    for k, m in entities.items():
+    for k, v in entities.items():
         if n_totals.get(k, 0) < MIN_N_TOTAL_FOR_CLASS:
             continue
-        linear.append(math.expm1(m))
+        linear.append(v)
     n = len(linear)
     if n < 2:
         return None
@@ -365,7 +375,13 @@ def build_record(
     ub_total_counts: dict[str, int],
 ) -> dict:
     # ---- Per-CL pooled across all tissues ----
+    # Two parallel dicts: ``cl_means_log`` keeps the among-expressors
+    # log1p mean (kept on the record's display rows so a reader can
+    # cross-check against cellxgene viewer values). ``cl_pop_linear``
+    # is the LINEAR population mean (≈ nTPM) — what the classifier and
+    # τ consume.
     cl_means_log: dict[str, float] = {}
+    cl_pop_linear: dict[str, float] = {}
     cl_n_total_for_class: dict[str, int] = {}
     cl_n_expressing: dict[str, int] = {}
     cl_n_total_display: dict[str, int] = {}
@@ -385,12 +401,13 @@ def build_record(
         # Classifier-eligible: passes noise gate.
         if tot_nnz >= MIN_NNZ_FOR_CLASS and pct >= MIN_PCT_FOR_CLASS:
             cl_means_log[cl] = mean_log
+            cl_pop_linear[cl] = math.expm1(mean_log) * pct
             cl_n_total_for_class[cl] = n_total
 
     # Pass cl_total_counts (the full leaf-CL universe) so ineligible
     # leaf CL terms contribute zeros in the HPA fold-change test.
-    cl_class, cl_ids, cl_fold = classify_hpa(cl_means_log, cl_total_counts)
-    cl_tau = compute_tau(cl_means_log, cl_total_counts)
+    cl_class, cl_ids, cl_fold = classify_hpa(cl_pop_linear, cl_total_counts)
+    cl_tau = compute_tau(cl_pop_linear, cl_total_counts)
 
     # ---- Broad cell class rollup ----
     # HPA's 4× test was designed for ~40 broad tissues. cellxgene has
@@ -418,7 +435,7 @@ def build_record(
     # Epithelial is luminal prostate (mean=3.7); IZUMO4's
     # Reproductive is spermatocyte (mean=2.6); each gene's enrichment
     # signal stays grounded in its real CL biology.
-    class_max_leaf_mean: dict[str, float] = {}
+    class_max_leaf_mean: dict[str, float] = {}  # LINEAR pop mean per broad class
     for cl, ub_to_stats in cl_to_uberon.items():
         bc = cl_compartment(cl)
         tot_nnz = sum(v[0] for v in ub_to_stats.values())
@@ -430,9 +447,11 @@ def build_record(
         if tot_nnz < MIN_NNZ_FOR_CLASS or pct_leaf < MIN_PCT_FOR_BROAD_CLASS:
             continue
         mean_log = tot_sum / tot_nnz
+        # Linear population mean for this leaf (≈ nTPM).
+        leaf_pop_linear = math.expm1(mean_log) * pct_leaf
         prev = class_max_leaf_mean.get(bc, -math.inf)
-        if mean_log > prev:
-            class_max_leaf_mean[bc] = mean_log
+        if leaf_pop_linear > prev:
+            class_max_leaf_mean[bc] = leaf_pop_linear
 
     # n_total per broad class = sum of leaf n_totals (for the
     # zero-baseline universe count). Walks every CL so the universe
@@ -452,6 +471,7 @@ def build_record(
     # Build it once across the gene's WMG entries — every (cl, ub) pair
     # in cl_to_uberon contributes to the UBERON axis.
     ub_means_log: dict[str, float] = {}
+    ub_pop_linear: dict[str, float] = {}  # LINEAR population mean per UBERON
     ub_pooled: dict[str, dict[str, float]] = {}
     for cl, ub_to_stats in cl_to_uberon.items():
         for ub, vals in ub_to_stats.items():
@@ -477,13 +497,15 @@ def build_record(
         pct = nnz / n_total
         if nnz >= MIN_NNZ_FOR_CLASS and pct >= MIN_PCT_FOR_CLASS:
             ub_means_log[ub] = mean_log
+            ub_pop_linear[ub] = math.expm1(mean_log) * pct
             ub_n_total_for_class[ub] = n_total
 
     # Pass the full UBERON universe (every tissue with n_total >=
     # MIN_N_TOTAL_FOR_CLASS) so the zero-baseline kicks in for
-    # tissues without this gene's signal.
-    ub_class, ub_ids, ub_fold = classify_hpa(ub_means_log, ub_total_counts)
-    ub_tau = compute_tau(ub_means_log, ub_total_counts)
+    # tissues without this gene's signal. Classifier + τ both
+    # operate on LINEAR population mean (≈ nTPM).
+    ub_class, ub_ids, ub_fold = classify_hpa(ub_pop_linear, ub_total_counts)
+    ub_tau = compute_tau(ub_pop_linear, ub_total_counts)
 
     # ---- Build display lists ----
     # v2.0 displayed entries solely by mean rank, which let

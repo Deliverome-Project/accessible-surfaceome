@@ -1063,9 +1063,9 @@ This Markdown is generated from the canonical JSON record at `/data/surfaceome/L
 
 **Classification:**
 
-- **Cell class (CL ontology graph, ~10 compartments):** low specificity · τ=0.68
-- **Cell type (leaf Cell Ontology terms, ~600):** low specificity · τ=0.74
-- **Tissue (UBERON terms, ~56):** low specificity · τ=0.50
+- **Cell class (CL ontology graph, ~10 compartments):** enriched · Epithelial · 5.8× · τ=0.92
+- **Cell type (leaf Cell Ontology terms, ~600):** enhanced · kidney proximal convoluted tubule epithelial cell · 24.6× · τ=0.96
+- **Tissue (UBERON terms, ~56):** enriched · eye · 5.2× · τ=0.98
 
 **Top 5 cell types (leaf CL, pooled across tissues):**
 

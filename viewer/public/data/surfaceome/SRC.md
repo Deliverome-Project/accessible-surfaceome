@@ -599,9 +599,9 @@ This Markdown is generated from the canonical JSON record at `/data/surfaceome/S
 
 **Classification:**
 
-- **Cell class (CL ontology graph, ~10 compartments):** group enriched · Epithelial · Neural · Immune · ∞× · τ=0.38
-- **Cell type (leaf Cell Ontology terms, ~600):** low specificity · τ=0.46
-- **Tissue (UBERON terms, ~56):** low specificity · τ=0.29
+- **Cell class (CL ontology graph, ~10 compartments):** group enriched · Epithelial · Other · Immune · ∞× · τ=0.77
+- **Cell type (leaf Cell Ontology terms, ~600):** enhanced · mucous cell of stomach · 27.9× · τ=0.96
+- **Tissue (UBERON terms, ~56):** enriched · eye · 4.3× · τ=0.96
 
 **Top 5 cell types (leaf CL, pooled across tissues):**
 

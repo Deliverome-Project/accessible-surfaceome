@@ -3045,22 +3045,28 @@
       ],
       "fold_change": null,
       "fold_change_infinite": true,
-      "tau": 0.14135755887258183
+      "tau": 0.5908489205700999
     },
     "cell_type_enrichment": {
-      "class": "low_specificity",
-      "cl_ids": [],
-      "fold_change": null,
+      "class": "enhanced",
+      "cl_ids": [
+        "CL:0000946"
+      ],
+      "fold_change": 7.066,
       "fold_change_infinite": false,
-      "tau": 0.4762015415249973
+      "tau": 0.858479694762326
     },
     "tissue_enrichment": {
-      "class": "low_specificity",
-      "uberon_ids": [],
-      "tissue_labels": [],
-      "fold_change": null,
+      "class": "enhanced",
+      "uberon_ids": [
+        "UBERON:0000970"
+      ],
+      "tissue_labels": [
+        "eye"
+      ],
+      "fold_change": 22.711,
       "fold_change_infinite": false,
-      "tau": 0.34510066190200966
+      "tau": 0.9559685826999672
     },
     "enrichment_class": "group_enriched",
     "enrichment_cl_ids": [

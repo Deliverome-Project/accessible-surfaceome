@@ -3104,16 +3104,18 @@
       "class_labels": [
         "Epithelial"
       ],
-      "fold_change": 7.787,
+      "fold_change": 47.397,
       "fold_change_infinite": false,
-      "tau": 0.8715849230524957
+      "tau": 0.9789017074478045
     },
     "cell_type_enrichment": {
-      "class": "low_specificity",
-      "cl_ids": [],
-      "fold_change": null,
+      "class": "enhanced",
+      "cl_ids": [
+        "CL:0002340"
+      ],
+      "fold_change": 14.874,
       "fold_change_infinite": false,
-      "tau": 0.6703070055415832
+      "tau": 0.9327703947916695
     },
     "tissue_enrichment": {
       "class": "enriched",
@@ -3131,7 +3133,7 @@
     "enrichment_cl_ids": [
       "Epithelial"
     ],
-    "fold_change": 7.787,
+    "fold_change": 47.397,
     "fold_change_infinite": false,
     "top_cell_types": [
       {

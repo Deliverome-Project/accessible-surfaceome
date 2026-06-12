@@ -5894,22 +5894,28 @@
       "class_labels": [],
       "fold_change": null,
       "fold_change_infinite": false,
-      "tau": 0.3407446734479915
+      "tau": 0.39243798347420117
     },
     "cell_type_enrichment": {
-      "class": "low_specificity",
-      "cl_ids": [],
-      "fold_change": null,
+      "class": "enhanced",
+      "cl_ids": [
+        "CL:0002622"
+      ],
+      "fold_change": 6.167,
       "fold_change_infinite": false,
-      "tau": 0.6771563935857012
+      "tau": 0.8378464021127779
     },
     "tissue_enrichment": {
-      "class": "low_specificity",
-      "uberon_ids": [],
-      "tissue_labels": [],
-      "fold_change": null,
+      "class": "enhanced",
+      "uberon_ids": [
+        "UBERON:0002049"
+      ],
+      "tissue_labels": [
+        "vasculature"
+      ],
+      "fold_change": 30.606,
       "fold_change_infinite": false,
-      "tau": 0.5933534580117225
+      "tau": 0.9673268743582459
     },
     "enrichment_class": "low_specificity",
     "enrichment_cl_ids": [],

@@ -4190,31 +4190,43 @@
     "schema_version": "2.1.2",
     "census_version": "2025-11-08",
     "cell_class_enrichment": {
-      "class": "low_specificity",
-      "class_ids": [],
-      "class_labels": [],
-      "fold_change": null,
+      "class": "enriched",
+      "class_ids": [
+        "Epithelial"
+      ],
+      "class_labels": [
+        "Epithelial"
+      ],
+      "fold_change": 5.798,
       "fold_change_infinite": false,
-      "tau": 0.6797450971616689
+      "tau": 0.9211888455923598
     },
     "cell_type_enrichment": {
-      "class": "low_specificity",
-      "cl_ids": [],
-      "fold_change": null,
+      "class": "enhanced",
+      "cl_ids": [
+        "CL:1000838"
+      ],
+      "fold_change": 24.597,
       "fold_change_infinite": false,
-      "tau": 0.7374925614944782
+      "tau": 0.9593442788421567
     },
     "tissue_enrichment": {
-      "class": "low_specificity",
-      "uberon_ids": [],
-      "tissue_labels": [],
-      "fold_change": null,
+      "class": "enriched",
+      "uberon_ids": [
+        "UBERON:0000970"
+      ],
+      "tissue_labels": [
+        "eye"
+      ],
+      "fold_change": 5.226,
       "fold_change_infinite": false,
-      "tau": 0.4962435920385094
+      "tau": 0.9786190052449969
     },
-    "enrichment_class": "low_specificity",
-    "enrichment_cl_ids": [],
-    "fold_change": null,
+    "enrichment_class": "enriched",
+    "enrichment_cl_ids": [
+      "Epithelial"
+    ],
+    "fold_change": 5.798,
     "fold_change_infinite": false,
     "top_cell_types": [
       {

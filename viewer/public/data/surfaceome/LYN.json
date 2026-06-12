@@ -2259,31 +2259,43 @@
     "schema_version": "2.1.2",
     "census_version": "2025-11-08",
     "cell_class_enrichment": {
-      "class": "low_specificity",
-      "class_ids": [],
-      "class_labels": [],
-      "fold_change": null,
+      "class": "enhanced",
+      "class_ids": [
+        "Immune"
+      ],
+      "class_labels": [
+        "Immune"
+      ],
+      "fold_change": 4.594,
       "fold_change_infinite": false,
-      "tau": 0.44283606426199973
+      "tau": 0.7823102501356887
     },
     "cell_type_enrichment": {
-      "class": "low_specificity",
-      "cl_ids": [],
-      "fold_change": null,
+      "class": "enhanced",
+      "cl_ids": [
+        "CL:0000775"
+      ],
+      "fold_change": 14.484,
       "fold_change_infinite": false,
-      "tau": 0.6443110638225953
+      "tau": 0.930960583589454
     },
     "tissue_enrichment": {
-      "class": "low_specificity",
-      "uberon_ids": [],
-      "tissue_labels": [],
-      "fold_change": null,
+      "class": "enhanced",
+      "uberon_ids": [
+        "UBERON:0001723"
+      ],
+      "tissue_labels": [
+        "tongue"
+      ],
+      "fold_change": 20.241,
       "fold_change_infinite": false,
-      "tau": 0.40818646188383145
+      "tau": 0.9505947140012176
     },
-    "enrichment_class": "low_specificity",
-    "enrichment_cl_ids": [],
-    "fold_change": null,
+    "enrichment_class": "enhanced",
+    "enrichment_cl_ids": [
+      "Immune"
+    ],
+    "fold_change": 4.594,
     "fold_change_infinite": false,
     "top_cell_types": [
       {

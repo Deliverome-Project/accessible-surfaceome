@@ -254,9 +254,9 @@ This Markdown is generated from the canonical JSON record at `/data/surfaceome/I
 
 **Classification:**
 
-- **Cell class (CL ontology graph, ~10 compartments):** group enriched · Reproductive · Neural · Epithelial · ∞× · τ=0.60
-- **Cell type (leaf Cell Ontology terms, ~600):** low specificity · τ=0.58
-- **Tissue (UBERON terms, ~56):** low specificity · τ=0.42
+- **Cell class (CL ontology graph, ~10 compartments):** enriched · Reproductive · 23.9× · τ=0.97
+- **Cell type (leaf Cell Ontology terms, ~600):** group enriched · spermatocyte · spermatid · 9.0× · τ=0.98
+- **Tissue (UBERON terms, ~56):** enhanced · eye · 7.3× · τ=0.86
 
 **Top 5 cell types (leaf CL, pooled across tissues):**
 

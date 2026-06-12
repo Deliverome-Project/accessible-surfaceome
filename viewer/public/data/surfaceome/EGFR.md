@@ -1126,9 +1126,9 @@ This Markdown is generated from the canonical JSON record at `/data/surfaceome/E
 
 **Classification:**
 
-- **Cell class (CL ontology graph, ~10 compartments):** low specificity · τ=0.28
-- **Cell type (leaf Cell Ontology terms, ~600):** low specificity · τ=0.63
-- **Tissue (UBERON terms, ~56):** low specificity · τ=0.44
+- **Cell class (CL ontology graph, ~10 compartments):** low specificity · τ=0.49
+- **Cell type (leaf Cell Ontology terms, ~600):** enhanced · basal epithelial cell of prostatic duct · 9.0× · τ=0.89
+- **Tissue (UBERON terms, ~56):** enhanced · tongue · 59.2× · τ=0.98
 
 **Top 5 cell types (leaf CL, pooled across tissues):**
 

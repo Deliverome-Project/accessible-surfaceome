@@ -3710,41 +3710,47 @@
       "class": "group_enriched",
       "class_ids": [
         "Epithelial",
-        "Neural",
+        "Other",
         "Immune",
-        "Other"
+        "Neural"
       ],
       "class_labels": [
         "Epithelial",
-        "Neural",
+        "Other",
         "Immune",
-        "Other"
+        "Neural"
       ],
       "fold_change": null,
       "fold_change_infinite": true,
-      "tau": 0.38134588314715384
+      "tau": 0.7669737993520632
     },
     "cell_type_enrichment": {
-      "class": "low_specificity",
-      "cl_ids": [],
-      "fold_change": null,
+      "class": "enhanced",
+      "cl_ids": [
+        "CL:0002180"
+      ],
+      "fold_change": 27.907,
       "fold_change_infinite": false,
-      "tau": 0.45785947672094196
+      "tau": 0.9641671518036142
     },
     "tissue_enrichment": {
-      "class": "low_specificity",
-      "uberon_ids": [],
-      "tissue_labels": [],
-      "fold_change": null,
+      "class": "enriched",
+      "uberon_ids": [
+        "UBERON:0000970"
+      ],
+      "tissue_labels": [
+        "eye"
+      ],
+      "fold_change": 4.297,
       "fold_change_infinite": false,
-      "tau": 0.2940137313734406
+      "tau": 0.9562214574970427
     },
     "enrichment_class": "group_enriched",
     "enrichment_cl_ids": [
       "Epithelial",
-      "Neural",
+      "Other",
       "Immune",
-      "Other"
+      "Neural"
     ],
     "fold_change": null,
     "fold_change_infinite": true,

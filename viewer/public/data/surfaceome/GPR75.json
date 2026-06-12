@@ -5033,20 +5033,20 @@
     "tissue_enrichment": {
       "class": "group_enriched",
       "uberon_ids": [
-        "UBERON:0000955",
+        "UBERON:0000970",
         "UBERON:0000922",
-        "UBERON:0002049",
-        "UBERON:0000970"
+        "UBERON:0000955",
+        "UBERON:0002049"
       ],
       "tissue_labels": [
-        "brain",
+        "eye",
         "embryo",
-        "vasculature",
-        "eye"
+        "brain",
+        "vasculature"
       ],
       "fold_change": null,
       "fold_change_infinite": true,
-      "tau": 0.19621726511860885
+      "tau": 0.5829862190252092
     },
     "enrichment_class": "not_detected",
     "enrichment_cl_ids": [],
