@@ -67,9 +67,6 @@ function fmtMean(v: number): string {
 function fmtValue(v: number, yMetric: YMetric): string {
   return yMetric === "pct" ? fmtPct(v) : fmtMean(v);
 }
-function truncate(s: string, n: number): string {
-  return s.length > n ? `${s.slice(0, n - 1)}…` : s;
-}
 
 // Lookup via the reverse `cells_by_tissue` map (v2.1.2+). The build
 // emits this so the tissue cross-filter doesn't have to walk each
@@ -233,12 +230,7 @@ function ColumnBar({
         />
       </div>
       <span className={styles.colLabel} title={label} aria-label={label}>
-        {truncate(label, 14)}
-        {isTrace && (
-          <span className={styles.traceBadge} aria-label="trace expression">
-            trace
-          </span>
-        )}
+        {label}
       </span>
     </>
   );

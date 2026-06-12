@@ -358,9 +358,11 @@ button.colBarHit:focus-visible {
    lower-left (first char) → bar's bottom-center (last char), the
    conventional bar-chart label layout.
 
-   Previous attempt used CW `+65deg` rotation which actually
-   projected the label UP-LEFT (above the bar) — wrong direction.
-   The image the user shared made the inversion obvious. */
+   `white-space: normal` allows wrapping on whitespace within the
+   140 px max-width, so "pulmonary alveolar type 2 cell" reads on
+   2-3 wrapped lines instead of being truncated with an ellipsis.
+   `text-align: right` keeps each wrapped line right-aligned at the
+   pivot, so the visual edge of the label stays under the bar. */
 .colLabel {
   position: absolute;
   top: calc(100% + 6px);
@@ -368,14 +370,15 @@ button.colBarHit:focus-visible {
   font-family: var(--font-sans);
   font-size: 0.6rem;
   color: var(--ink-soft);
-  white-space: nowrap;
+  white-space: normal;
+  word-break: normal;
+  overflow-wrap: break-word;
+  text-align: right;
   transform: rotate(-65deg);
   transform-origin: top right;
   pointer-events: none;
-  max-width: 110px;
-  text-overflow: ellipsis;
-  overflow: hidden;
-  line-height: 1;
+  max-width: 140px;
+  line-height: 1.15;
 }
 
 .colBar:hover .colLabel,
@@ -555,13 +558,12 @@ button.colBarHit:focus-visible {
 
 /* --- chart blocks (common vs rare) ----------------------------------- */
 
-/* Smaller margin between adjacent chart blocks — the previous
-   `--space-5` (~24 px) compounded with the 80 px chart-bottom label
-   reserve to leave a huge gap between Tissues and Cell types
-   charts. `--space-2` (~8 px) keeps the structure visible without
-   the dead space. */
+/* Margin between adjacent chart blocks. First-of-type sits close
+   to the lede. All later blocks get a bit more breathing room so
+   the chart titles aren't cramped against the previous chart's
+   rotated labels. */
 .chartBlock {
-  margin-top: var(--space-2);
+  margin-top: var(--space-4);
 }
 .chartBlock:first-of-type {
   margin-top: var(--space-3);
