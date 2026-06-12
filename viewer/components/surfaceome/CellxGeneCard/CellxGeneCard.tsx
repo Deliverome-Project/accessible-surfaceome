@@ -15,25 +15,42 @@ interface Props {
 }
 
 const ENRICHMENT_LABELS: Record<EnrichmentClass, string> = {
-  tissue_enriched: "Tissue enriched",
+  enriched: "Enriched",
   group_enriched: "Group enriched",
-  tissue_enhanced: "Tissue enhanced",
+  enhanced: "Enhanced",
   low_specificity: "Low specificity",
   not_detected: "Below detection",
+  // Legacy v2.0/v2.1 strings, mapped onto the renamed labels so older
+  // D1 rows render the right chip during the schema transition.
+  tissue_enriched: "Enriched",
+  tissue_enhanced: "Enhanced",
 };
 
 const ENRICHMENT_BLURB: Record<EnrichmentClass, string> = {
-  tissue_enriched:
-    "≥ 4× higher mRNA in one cell type than in any other cell type. The strongest specificity class.",
+  enriched:
+    "≥ 4× higher mRNA in one entity than the next-ranked. The strongest specificity class.",
   group_enriched:
-    "≥ 4× higher average mRNA across 2-5 cell types than in any other cell type. Cell-class-restricted but not strictly single-type.",
-  tissue_enhanced:
-    "≥ 4× higher mRNA in one cell type than the average of all others. Selective but with non-trivial background.",
+    "A small group (2-5) of entities all express at ≥ 4× the next-ranked. Class-restricted but not strictly single-entity.",
+  enhanced:
+    "≥ 4× higher mRNA in one entity than the average of the rest. Selective but with non-trivial background.",
   low_specificity:
-    "No cell type stands out at ≥ 4× over the rest. Broadly expressed.",
+    "No entity stands out at ≥ 4× over the rest. Broadly expressed.",
   not_detected:
-    "No cell type meets the CZI Census noise threshold (≥ 10 expressing cells AND ≥ 1% of cells of that type). Distinct from low specificity — the gene's expression couldn't be measured above background at this Census coverage, not that it's expressed everywhere.",
+    "No entity meets the CZI Census noise threshold (≥ 10 expressing cells AND ≥ 1% of cells of that type). Distinct from low specificity — the gene's expression couldn't be measured above background at this Census coverage, not that it's expressed everywhere.",
+  // Legacy aliases.
+  tissue_enriched:
+    "≥ 4× higher mRNA in one entity than the next-ranked. The strongest specificity class.",
+  tissue_enhanced:
+    "≥ 4× higher mRNA in one entity than the average of the rest. Selective but with non-trivial background.",
 };
+
+/** Normalize the legacy `tissue_*` strings onto the renamed ones so the
+ *  data-class CSS selector picks the right styling. */
+function normalizeClass(c: EnrichmentClass): EnrichmentClass {
+  if (c === "tissue_enriched") return "enriched";
+  if (c === "tissue_enhanced") return "enhanced";
+  return c;
+}
 
 function fmtFold(v: number | null | undefined): string {
   if (v == null || !Number.isFinite(v)) return "";
@@ -47,13 +64,14 @@ function EnrichmentChip({
   foldChange,
   entityNames,
 }: {
-  axis: "cell type" | "tissue";
+  axis: "cell class" | "cell type" | "tissue";
   klass: EnrichmentClass;
   foldChange: number | null;
   entityNames: string[];
 }) {
+  const norm = normalizeClass(klass);
   return (
-    <div className={styles.classChip} data-class={klass}>
+    <div className={styles.classChip} data-class={norm}>
       <span className={styles.classAxis}>{axis}</span>
       <span className={styles.classLabel}>
         <span className={styles.classDot} aria-hidden />
@@ -79,6 +97,16 @@ function EnrichmentChip({
         </a>
         , applied to CZI Census mean log1p(CP10K) after expm1 so the 4×
         rule is on the linear CP10K scale.{" "}
+        {axis === "cell class" && (
+          <>
+            The cell-class axis rolls every leaf Cell Ontology term up to
+            one of ~10 broad compartments (Epithelial, Immune, Neural,
+            Endothelial, Stromal, Muscle, Reproductive, Stem, Tumor,
+            Other) before applying the 4× rule. The leaf-CL axis has
+            600+ entities and rarely produces a 4× winner; the broad-
+            class axis is what HPA&apos;s rule was sized for.
+          </>
+        )}
         {axis === "tissue" && (
           <>
             Reported at the tissue axis because a gene like SLC34A2 has 6+
@@ -123,13 +151,35 @@ export function CellxGeneCard({ data }: Props) {
     data.gene_symbol,
   )}`;
 
-  // v2.1 ships cell_type_enrichment + tissue_enrichment as separate
-  // objects; v2.0 collapsed them onto the top-level (enrichment_class /
-  // enrichment_cl_ids / fold_change). Read v2.1 first, fall back to the
-  // v2.0 surface so older D1 rows still render their chip.
-  const cellTypeEnr = data.cell_type_enrichment ?? (data.enrichment_class
-    ? { class: data.enrichment_class, cl_ids: data.enrichment_cl_ids ?? [], fold_change: data.fold_change ?? null }
-    : null);
+  // v2.1.1 prefers the broad-class rollup (cell_class_enrichment) for
+  // the chip — HPA's 4× rule works at the broad-class granularity
+  // (10 compartments) where it doesn't at the leaf-CL granularity
+  // (600+ terms). v2.1 still ships cell_type_enrichment at the leaf
+  // level. v2.0 collapsed everything onto the top-level fields. Read
+  // newest first, fall back through the chain so older D1 rows still
+  // render their chip during the schema transition.
+  const cellEnr = data.cell_class_enrichment
+    ? {
+        class: data.cell_class_enrichment.class,
+        // class_labels are already human-readable names for the chip.
+        ids: data.cell_class_enrichment.class_labels,
+        fold_change: data.cell_class_enrichment.fold_change,
+      }
+    : data.cell_type_enrichment
+    ? {
+        class: data.cell_type_enrichment.class,
+        ids: data.cell_type_enrichment.cl_ids,
+        fold_change: data.cell_type_enrichment.fold_change,
+      }
+    : data.enrichment_class
+    ? {
+        class: data.enrichment_class,
+        ids: data.enrichment_cl_ids ?? [],
+        fold_change: data.fold_change ?? null,
+      }
+    : null;
+  const cellAxisLabel: "cell class" | "cell type" =
+    data.cell_class_enrichment ? "cell class" : "cell type";
   const tissueEnr = data.tissue_enrichment ?? null;
 
   const clToName = new Map(
@@ -196,14 +246,14 @@ export function CellxGeneCard({ data }: Props) {
         </>
       }
     >
-      {(cellTypeEnr || tissueEnr) && (
+      {(cellEnr || tissueEnr) && (
         <div className={styles.chipRow}>
-          {cellTypeEnr && (
+          {cellEnr && (
             <EnrichmentChip
-              axis="cell type"
-              klass={cellTypeEnr.class}
-              foldChange={cellTypeEnr.fold_change}
-              entityNames={cellTypeEnr.cl_ids
+              axis={cellAxisLabel}
+              klass={cellEnr.class}
+              foldChange={cellEnr.fold_change}
+              entityNames={cellEnr.ids
                 .map((id) => clToName.get(id) ?? id)
                 .slice(0, 3)}
             />

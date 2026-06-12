@@ -58,6 +58,11 @@ import time
 from collections import Counter, defaultdict
 from pathlib import Path
 
+from accessible_surfaceome.audit.cl_broad_classes import (
+    BROAD_CLASSES,
+    cl_broad_class,
+)
+
 WMG = Path(os.environ.get(
     "CZI_WMG_GZ",
     "/Users/rebeccacarlson/Git/tess/scripts/tool-validation/.cache/expression-summary-condensed-11-09-25.csv.gz",
@@ -72,12 +77,21 @@ ENS_MAP = Path(
 OUT_DIR = Path(os.environ.get("CZI_OUT_DIR", "/tmp/czi_enrichment_v2_1"))
 MANIFEST = OUT_DIR.parent / (OUT_DIR.name + "_manifest.tsv")
 CENSUS_VERSION = "2025-11-08"
-SCHEMA_VERSION = "2.1"
+SCHEMA_VERSION = "2.1.1"
 
 # Classifier eligibility (lenient — captures whatever has signal).
 MIN_N_TOTAL_FOR_CLASS = 50
 MIN_NNZ_FOR_CLASS = 10
 MIN_PCT_FOR_CLASS = 0.01
+
+# Broad-class axis uses a STRICTER per-leaf qualifier than the
+# leaf-CL axis. A 1% pct threshold lets dozens of weakly-expressing
+# leaf CL terms scatter across every broad class, swamping real
+# enrichment (IZUMO4 → spermatocyte at 85% loses to a low-pct
+# salivary epithelium hit because both have eligible leaves in
+# different broad classes). Raising to 5% pct picks out the
+# representative leaves that carry real signal.
+MIN_PCT_FOR_BROAD_CLASS = 0.05
 
 # Display thresholds (strict — only show what's worth eyeballing).
 COMMON_THRESHOLD = 1000
@@ -168,45 +182,66 @@ def load_ens_map() -> dict[str, tuple[str, str]]:
 
 
 def classify_hpa(
-    entities: dict[str, float],          # entity_id -> mean_log1p_cp10k
-    n_totals: dict[str, int],            # entity_id -> n_total
+    entities: dict[str, float],          # entity_id -> mean_log1p_cp10k (eligible only)
+    n_totals: dict[str, int],            # entity_id -> n_total (full universe)
 ) -> tuple[str, list[str], float | None]:
     """HPA-style classification on whichever axis you pass in.
 
     Returns (class, entity_ids, fold_change). `class` is one of
-    `not_detected | tissue_enriched | group_enriched | tissue_enhanced
-    | low_specificity`. `entity_ids` is empty for not_detected /
-    low_specificity, one element for tissue_enriched / tissue_enhanced,
-    2-5 elements for group_enriched. `fold_change` is None for
-    not_detected / low_specificity, ``inf`` when the next-ranked entity
-    is zero (the JSON encoder converts to null + a sibling
-    `*_infinite: true` flag).
+    `not_detected | enriched | group_enriched | enhanced |
+    low_specificity`. `entity_ids` is empty for not_detected /
+    low_specificity, one element for enriched / enhanced, 2-5 elements
+    for group_enriched. `fold_change` is None for not_detected /
+    low_specificity, ``inf`` when the next-ranked entity is zero (the
+    JSON encoder converts to null + a sibling `*_infinite: true` flag).
+
+    **Below-noise baseline.** ``entities`` only contains entities that
+    cleared the upstream noise gate (nnz ≥ 10, pct ≥ 1%). Every other
+    entity with ``n_total ≥ MIN_N_TOTAL_FOR_CLASS`` exists in
+    ``n_totals`` but not ``entities`` — those are treated as linear
+    mean = 0 for the HPA 4× test. Without this baseline, a gene like
+    GPR75 (signal in 4 of 56 tissues at similar levels) compares brain
+    vs embryo (~1.1×) and falls into low_specificity even though the
+    other 52 tissues are at zero. With the baseline, brain vs the
+    first ineligible tissue (= 0) gives infinite fold → group_enriched.
     """
-    eligible = [
-        (k, math.expm1(m))
-        for k, m in entities.items()
-        if n_totals.get(k, 0) >= MIN_N_TOTAL_FOR_CLASS
-    ]
-    # The killer split — v2.0 lumped both cases as low_specificity.
+    # Eligible entities (above noise) ranked by linear mean.
+    eligible = sorted(
+        (
+            (k, math.expm1(m))
+            for k, m in entities.items()
+            if n_totals.get(k, 0) >= MIN_N_TOTAL_FOR_CLASS
+        ),
+        key=lambda kv: kv[1],
+        reverse=True,
+    )
+    # Count of ineligible-but-valid entities — they sit at linear = 0
+    # in the ranked list, after the eligibles. We don't need their
+    # ids, just how many "zeros" tail the ranked array.
+    n_universe = sum(1 for k, t in n_totals.items() if t >= MIN_N_TOTAL_FOR_CLASS)
+    n_below = max(0, n_universe - len(eligible))
+
     if len(eligible) == 0:
         return "not_detected", [], None
     if len(eligible) == 1:
         # One entity meets noise + total thresholds; everything else
-        # is below detection. That's the strongest possible
-        # enrichment signal.
-        return "tissue_enriched", [eligible[0][0]], float("inf")
+        # is below detection. Strongest possible enrichment signal.
+        return "enriched", [eligible[0][0]], float("inf")
 
-    eligible.sort(key=lambda kv: kv[1], reverse=True)
-    linear = [v for _, v in eligible]
+    linear = [v for _, v in eligible] + [0.0] * n_below
     ids = [k for k, _ in eligible]
 
-    # tissue_enriched: top >= 4× next-ranked
+    # enriched: top >= 4× next-ranked (works against either the 2nd
+    # eligible or an implicit 0 baseline if only one is eligible).
     if linear[1] > 0 and linear[0] >= HPA_FOLD * linear[1]:
-        return "tissue_enriched", [ids[0]], linear[0] / linear[1]
+        return "enriched", [ids[0]], linear[0] / linear[1]
     if linear[1] == 0 and linear[0] > 0:
-        return "tissue_enriched", [ids[0]], float("inf")
+        return "enriched", [ids[0]], float("inf")
 
-    # group_enriched: largest group of 2-5 from top whose min >= 4× next-after-group
+    # group_enriched: largest group of 2-5 from top whose min >= 4×
+    # next-after-group. The "next-after-group" can now be 0 (the
+    # implicit ineligible baseline), in which case any group whose
+    # min > 0 qualifies with infinite fold.
     best_group_size = 0
     best_group_fold: float | None = None
     for g in range(5, 1, -1):
@@ -225,14 +260,15 @@ def classify_hpa(
     if best_group_size >= 2:
         return ("group_enriched", ids[:best_group_size], best_group_fold)
 
-    # tissue_enhanced: top >= 4× mean of rest
+    # enhanced: top >= 4× mean of rest (rest = all other entities in
+    # the universe, including the implicit zeros).
     rest = linear[1:]
     if rest:
         avg_rest = sum(rest) / len(rest)
         if avg_rest > 0 and linear[0] >= HPA_FOLD * avg_rest:
-            return "tissue_enhanced", [ids[0]], linear[0] / avg_rest
+            return "enhanced", [ids[0]], linear[0] / avg_rest
         if avg_rest == 0 and linear[0] > 0:
-            return "tissue_enhanced", [ids[0]], float("inf")
+            return "enhanced", [ids[0]], float("inf")
 
     return "low_specificity", [], None
 
@@ -284,7 +320,64 @@ def build_record(
             cl_means_log[cl] = mean_log
             cl_n_total_for_class[cl] = n_total
 
-    cl_class, cl_ids, cl_fold = classify_hpa(cl_means_log, cl_n_total_for_class)
+    # Pass cl_total_counts (the full leaf-CL universe) so ineligible
+    # leaf CL terms contribute zeros in the HPA fold-change test.
+    cl_class, cl_ids, cl_fold = classify_hpa(cl_means_log, cl_total_counts)
+
+    # ---- Broad cell class rollup ----
+    # HPA's 4× test was designed for ~40 broad tissues. cellxgene has
+    # 600+ leaf CL terms; well-known markers (CD19 across B-cell
+    # subtypes, KLK2 in 2 prostate luminal subtypes) end up
+    # low_specificity because no single CL term dominates the
+    # next-ranked sibling 4×. Roll each leaf CL up to one of ~10
+    # compartments (Epithelial / Immune / Neural / Endothelial /
+    # Stromal / Muscle / Reproductive / Stem / Tumor / Other) via the
+    # keyword rules in accessible_surfaceome.audit.cl_broad_classes.
+    #
+    # **Signal = max-qualified-leaf, not aggregate.** Two failure
+    # modes ruled-out earlier:
+    #   - **Aggregate by sum** dilutes tissue-restricted signal — KLK2
+    #     expressing in 17k prostate luminal cells gets numerator 17k,
+    #     denominator millions of Epithelial cells across the genome,
+    #     pct → ~1%. KLK2 falsely reads not_detected.
+    #   - **Any-leaf passes, mean by nnz-weighted average** brings KLK2
+    #     back but adds noise — every broad class with any weak leaf
+    #     qualifier becomes eligible, IZUMO4 (testis-Reproductive)
+    #     gets shadowed by Immune-because-some-thymocyte-passes.
+    #
+    # The fix: broad-class signal = mean of its STRONGEST qualified
+    # leaf. Each class competes via its best representative. KLK2's
+    # Epithelial is luminal prostate (mean=3.7); IZUMO4's
+    # Reproductive is spermatocyte (mean=2.6); each gene's enrichment
+    # signal stays grounded in its real CL biology.
+    class_max_leaf_mean: dict[str, float] = {}
+    for cl, ub_to_stats in cl_to_uberon.items():
+        bc = cl_broad_class(cl_labels.get(cl, ""))
+        tot_nnz = sum(v[0] for v in ub_to_stats.values())
+        tot_sum = sum(v[1] for v in ub_to_stats.values())
+        n_total_cl = cl_total_counts.get(cl, 0)
+        if tot_nnz <= 0 or n_total_cl <= 0:
+            continue
+        pct_leaf = tot_nnz / n_total_cl
+        if tot_nnz < MIN_NNZ_FOR_CLASS or pct_leaf < MIN_PCT_FOR_BROAD_CLASS:
+            continue
+        mean_log = tot_sum / tot_nnz
+        prev = class_max_leaf_mean.get(bc, -math.inf)
+        if mean_log > prev:
+            class_max_leaf_mean[bc] = mean_log
+
+    # n_total per broad class = sum of leaf n_totals (for the
+    # zero-baseline universe count). Walks every CL so the universe
+    # is the FULL broad-class set, even classes this gene has no
+    # signal in.
+    class_n_total_summed: dict[str, int] = defaultdict(int)
+    for cl, n_total in cl_total_counts.items():
+        bc = cl_broad_class(cl_labels.get(cl, ""))
+        class_n_total_summed[bc] += n_total
+
+    class_class, class_ids, class_fold = classify_hpa(
+        class_max_leaf_mean, class_n_total_summed
+    )
 
     # ---- Per-UBERON pooled across all cell types ----
     # Build it once across the gene's WMG entries — every (cl, ub) pair
@@ -317,7 +410,10 @@ def build_record(
             ub_means_log[ub] = mean_log
             ub_n_total_for_class[ub] = n_total
 
-    ub_class, ub_ids, ub_fold = classify_hpa(ub_means_log, ub_n_total_for_class)
+    # Pass the full UBERON universe (every tissue with n_total >=
+    # MIN_N_TOTAL_FOR_CLASS) so the zero-baseline kicks in for
+    # tissues without this gene's signal.
+    ub_class, ub_ids, ub_fold = classify_hpa(ub_means_log, ub_total_counts)
 
     # ---- Build display lists ----
     # v2.0 displayed entries solely by mean rank, which let
@@ -450,13 +546,26 @@ def build_record(
     # ---- Assemble record ----
     cl_fold_val, cl_fold_inf = fold_change_payload(cl_fold)
     ub_fold_val, ub_fold_inf = fold_change_payload(ub_fold)
+    class_fold_val, class_fold_inf = fold_change_payload(class_fold)
     record = {
         "schema_version": SCHEMA_VERSION,
         "census_version": CENSUS_VERSION,
         "gene_symbol": symbol,
         "hgnc_id": hgnc or None,
         "ensembl_gene": ensembl_gene,
-        # v2.1 dual-axis classification
+        # v2.1.1 broad-class rollup — the chip-facing classification.
+        # CL leaf terms (cell_type_enrichment) are still emitted, but
+        # this is what the viewer chip reads first.
+        "cell_class_enrichment": {
+            "class": class_class,
+            "class_ids": class_ids,
+            "class_labels": list(class_ids),  # broad classes are already labels
+            "fold_change": class_fold_val,
+            "fold_change_infinite": class_fold_inf,
+        },
+        # v2.1 leaf-CL classification — kept for debugging / power
+        # users. With the zero-baseline fix these are more meaningful
+        # than v2.0 but still noisy at the leaf-CL granularity.
         "cell_type_enrichment": {
             "class": cl_class,
             "cl_ids": cl_ids,
@@ -470,12 +579,13 @@ def build_record(
             "fold_change": ub_fold_val,
             "fold_change_infinite": ub_fold_inf,
         },
-        # v2.0 legacy mirror so old readers don't break during the
-        # transition. cell_type_enrichment is the source of truth.
-        "enrichment_class": cl_class,
-        "enrichment_cl_ids": cl_ids,
-        "fold_change": cl_fold_val,
-        "fold_change_infinite": cl_fold_inf,
+        # v2.0 legacy mirror so older readers don't break during the
+        # transition. Points at the broad-class rollup (v2.1.1's
+        # primary surface).
+        "enrichment_class": class_class,
+        "enrichment_cl_ids": class_ids,
+        "fold_change": class_fold_val,
+        "fold_change_infinite": class_fold_inf,
         # Display lists
         "top_cell_types": top_cell_types,
         "top_tissues": tissue_rows,
@@ -567,6 +677,7 @@ def main() -> int:
 
     # ---- Build per-gene records ----
     t1 = time.time()
+    cl_counts: Counter[str] = Counter()
     class_counts: Counter[str] = Counter()
     tissue_class_counts: Counter[str] = Counter()
     written = 0
@@ -591,7 +702,8 @@ def main() -> int:
             cl_total_counts,
             ub_total_counts,
         )
-        class_counts[record["cell_type_enrichment"]["class"]] += 1
+        cl_counts[record["cell_type_enrichment"]["class"]] += 1
+        class_counts[record["cell_class_enrichment"]["class"]] += 1
         tissue_class_counts[record["tissue_enrichment"]["class"]] += 1
         (out_dir / f"{symbol}.json").write_text(json.dumps(record, separators=(",", ":")))
         written += 1
@@ -599,8 +711,8 @@ def main() -> int:
             symbol,
             hgnc,
             ensembl_gene,
-            record["cell_type_enrichment"]["class"],
-            ";".join(record["cell_type_enrichment"]["cl_ids"]),
+            record["cell_class_enrichment"]["class"],
+            ";".join(record["cell_class_enrichment"]["class_ids"]),
             record["tissue_enrichment"]["class"],
             ";".join(record["tissue_enrichment"]["uberon_ids"]),
             str(len(record["top_cell_types"])),
@@ -614,7 +726,7 @@ def main() -> int:
         w = csv.writer(f, delimiter="\t")
         w.writerow([
             "gene_symbol", "hgnc_id", "ensembl_gene",
-            "cell_type_class", "cell_type_ids",
+            "cell_class", "cell_class_ids",
             "tissue_class", "tissue_ids",
             "n_top_cell_types", "n_top_tissues",
         ])
@@ -622,11 +734,14 @@ def main() -> int:
 
     # ---- Report ----
     print("\n=== STATS ===", file=sys.stderr)
-    print("Cell-type axis classes:", file=sys.stderr)
-    for c in ("tissue_enriched", "group_enriched", "tissue_enhanced", "low_specificity", "not_detected"):
+    print("Cell-class axis (broad rollup):", file=sys.stderr)
+    for c in ("enriched", "group_enriched", "enhanced", "low_specificity", "not_detected"):
         print(f"  {c}: {class_counts.get(c, 0)}", file=sys.stderr)
+    print("Leaf-CL axis (fine-grained, for debugging):", file=sys.stderr)
+    for c in ("enriched", "group_enriched", "enhanced", "low_specificity", "not_detected"):
+        print(f"  {c}: {cl_counts.get(c, 0)}", file=sys.stderr)
     print("Tissue axis classes:", file=sys.stderr)
-    for c in ("tissue_enriched", "group_enriched", "tissue_enhanced", "low_specificity", "not_detected"):
+    for c in ("enriched", "group_enriched", "enhanced", "low_specificity", "not_detected"):
         print(f"  {c}: {tissue_class_counts.get(c, 0)}", file=sys.stderr)
 
     return 0

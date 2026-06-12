@@ -87,11 +87,17 @@ export interface CellTypeRow {
  * tissue_enriched at lung.
  */
 export type EnrichmentClass =
-  | "tissue_enriched"
+  | "enriched"
   | "group_enriched"
-  | "tissue_enhanced"
+  | "enhanced"
   | "low_specificity"
-  | "not_detected";
+  | "not_detected"
+  // v2.0/v2.1 legacy strings still present in older D1 rows; the
+  // viewer accepts them so the page doesn't crash mid-rebuild. The
+  // labels map below normalizes them onto the same chip text as the
+  // renamed values.
+  | "tissue_enriched"
+  | "tissue_enhanced";
 
 export interface CellTypeEnrichment {
   class: EnrichmentClass;
@@ -100,6 +106,26 @@ export interface CellTypeEnrichment {
   cl_ids: string[];
   /** Linear fold change at the elevation boundary. Null for low_specificity. */
   fold_change: number | null;
+}
+
+/**
+ * v2.1.1+ broad-class rollup of leaf CL terms (Epithelial / Immune /
+ * Neural / Endothelial / Stromal / Muscle / Reproductive / Stem /
+ * Tumor / Other). HPA's 4× test works at this granularity —
+ * `cell_type_enrichment` at the leaf CL level often returns
+ * low_specificity because sibling CL terms expressing at similar
+ * levels can't dominate each other 4×. The chip on the gene page
+ * reads from THIS field first.
+ */
+export interface CellClassEnrichment {
+  class: EnrichmentClass;
+  /** Broad-class names ("Epithelial", "Immune", …) the elevation
+   *  applies to. Same shape as `class_labels` — both arrays are
+   *  populated with the human-readable class names. */
+  class_ids: string[];
+  class_labels: string[];
+  fold_change: number | null;
+  fold_change_infinite?: boolean;
 }
 
 export interface TissueEnrichment {
@@ -133,7 +159,11 @@ export interface CellxGeneEnrichment {
   hgnc_id: string | null;
   ensembl_gene: string | null;
 
-  /** Per-cell-type HPA elevation class. v2.1+. */
+  /** Per-broad-class HPA elevation. v2.1.1+. The chip on the gene
+   *  page reads from this field first, falling back to
+   *  cell_type_enrichment for older records. */
+  cell_class_enrichment?: CellClassEnrichment;
+  /** Per-leaf-CL HPA elevation class. v2.1+. */
   cell_type_enrichment?: CellTypeEnrichment;
   /** Per-tissue HPA elevation class. v2.1+. */
   tissue_enrichment?: TissueEnrichment;
