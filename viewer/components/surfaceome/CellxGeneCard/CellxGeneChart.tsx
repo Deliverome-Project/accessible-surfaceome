@@ -242,9 +242,16 @@ function ColumnBar({
       </span>
     </>
   );
+  // Expose the bar's fill % as a CSS var so the popover can anchor
+  // its bottom edge to the fill's top (vs the colBar's top, which
+  // is the canvas height — far above the visible fill for low bars).
+  const barStyle = {
+    ["--bar-height" as string]: `${height}%`,
+  } as React.CSSProperties;
   return (
     <li
       className={styles.colBar}
+      style={barStyle}
       data-trace={isTrace || undefined}
       data-selected={isSelected || undefined}
     >

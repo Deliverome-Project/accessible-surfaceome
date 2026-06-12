@@ -333,22 +333,24 @@ button.colBarHit:focus-visible {
   outline-offset: 1px;
 }
 
-/* Label below each bar, rotated -65° so they stack close to
-   vertical. Pivot at top-left positioned at the bar's center
-   (`left: 50%`) — the label's START is below the bar's center and
-   the text reads down-left. Previous top-right pivot put the
-   label's END below the bar's right edge, making the visual flow
-   look right-shifted across the chart. */
+/* Label below each bar — conventional bar-chart layout: the label's
+   END (right edge) anchors at the bar's CENTER, pivot at the
+   label's top-right corner = at bar's bottom-center, CW rotation
+   65° so the text projects DOWN-LEFT from the pivot. Reading order
+   goes lower-left → bar-center.
+   The previous attempt (`transform-origin: top left` + `rotate
+   (-65deg)`) actually projected text DOWN-RIGHT into the next bar,
+   which was the misalignment. */
 .colLabel {
   position: absolute;
   top: calc(100% + 6px);
-  left: 50%;
+  right: 50%;
   font-family: var(--font-sans);
   font-size: 0.6rem;
   color: var(--ink-soft);
   white-space: nowrap;
-  transform: rotate(-65deg);
-  transform-origin: top left;
+  transform: rotate(65deg);
+  transform-origin: top right;
   pointer-events: none;
   max-width: 110px;
   text-overflow: ellipsis;
@@ -361,10 +363,12 @@ button.colBarHit:focus-visible {
   color: var(--ink);
 }
 
-/* Pad the chart bottom enough that rotated labels don't overlap the
-   next block. ~140 px covers a 24-char label at 0.7 rem rotated 45°. */
+/* Reserve space below the chart canvas for the rotated labels. At
+   0.6 rem font, 14-char truncation, 65° CW rotation, label projects
+   ~70 px vertically. 80 px padding-bottom gives a small clean gap
+   without the previous huge vertical hole. */
 .colChart {
-  padding-bottom: 140px;
+  padding-bottom: 80px;
 }
 
 /* --- per-category summary bars (horizontal) -------------------------- */
@@ -531,8 +535,13 @@ button.colBarHit:focus-visible {
 
 /* --- chart blocks (common vs rare) ----------------------------------- */
 
+/* Smaller margin between adjacent chart blocks — the previous
+   `--space-5` (~24 px) compounded with the 80 px chart-bottom label
+   reserve to leave a huge gap between Tissues and Cell types
+   charts. `--space-2` (~8 px) keeps the structure visible without
+   the dead space. */
 .chartBlock {
-  margin-top: var(--space-5);
+  margin-top: var(--space-2);
 }
 .chartBlock:first-of-type {
   margin-top: var(--space-3);
@@ -572,7 +581,14 @@ button.colBarHit:focus-visible {
 
 .popover {
   position: absolute;
-  bottom: calc(100% + 6px);
+  /* Anchor the popover's bottom edge to the bar fill's TOP
+     (--bar-height is the fill's height % set per-row inline). For a
+     short bar where the fill is only 20% of the canvas, the popover
+     now sits at 20% + 6px from the colBar's bottom — directly above
+     the visible fill. Without this it was hard-coded at `bottom:
+     calc(100% + 6px)`, which put the popover above the whole 240 px
+     canvas slot, hundreds of px above where the user is looking. */
+  bottom: calc(var(--bar-height, 100%) + 6px);
   left: 50%;
   transform: translateX(-50%);
   width: 320px;
