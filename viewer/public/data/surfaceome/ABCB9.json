@@ -3031,10 +3031,10 @@
   "model_path": "claude-sonnet-4-6",
   "record_generated_at": "2026-06-08T21:22:09.672189Z",
   "cellxgene": {
-    "schema_version": "2.1.6",
+    "schema_version": "2.1.7",
     "census_version": "2025-11-08",
     "cell_class_enrichment": {
-      "class": "enhanced",
+      "class": "enriched",
       "class_ids": [
         "Immune"
       ],
@@ -3043,10 +3043,18 @@
       ],
       "fold_change": 2.444,
       "fold_change_infinite": false,
-      "tau": 0.5908489205700999
+      "tau": 0.9535176386019819,
+      "top_entity_contribs": [
+        {
+          "id": "Immune",
+          "label": "Immune",
+          "pop_mean": 0.8705,
+          "tau_contrib": 0.0
+        }
+      ]
     },
     "cell_family_enrichment": {
-      "class": "enhanced",
+      "class": "enriched",
       "family_ids": [
         "CL:0000946"
       ],
@@ -3058,7 +3066,15 @@
       ],
       "fold_change": 2.021,
       "fold_change_infinite": false,
-      "tau": 0.832565835634031
+      "tau": 0.9396056354392122,
+      "top_entity_contribs": [
+        {
+          "id": "CL:0000946",
+          "label": "antibody secreting cell",
+          "pop_mean": 0.8705,
+          "tau_contrib": 0.0
+        }
+      ]
     },
     "cell_type_enrichment": {
       "class": "enriched",
@@ -3067,51 +3083,117 @@
       ],
       "fold_change": 2.021,
       "fold_change_infinite": false,
-      "tau": 0.858479694762326
+      "tau": 0.9668279352311872,
+      "top_entity_contribs": [
+        {
+          "id": "CL:0000946",
+          "label": "antibody secreting cell",
+          "pop_mean": 0.8705,
+          "tau_contrib": 0.0
+        }
+      ]
     },
     "tissue_enrichment": {
       "class": "enriched",
       "uberon_ids": [
-        "UBERON:0000970"
+        "UBERON:0000970",
+        "UBERON:0000948",
+        "UBERON:0000955"
       ],
       "tissue_labels": [
-        "eye"
+        "eye",
+        "heart",
+        "brain"
       ],
-      "fold_change": 3.701,
+      "fold_change": 1.388,
       "fold_change_infinite": false,
-      "tau": 0.9605197853003724
+      "tau": 0.992139082945748,
+      "top_entity_contribs": [
+        {
+          "id": "UBERON:0000970",
+          "label": "eye",
+          "pop_mean": 4.0446,
+          "tau_contrib": 0.0
+        },
+        {
+          "id": "UBERON:0000948",
+          "label": "heart",
+          "pop_mean": 2.9133,
+          "tau_contrib": 0.2797
+        },
+        {
+          "id": "UBERON:0000955",
+          "label": "brain",
+          "pop_mean": 2.0309,
+          "tau_contrib": 0.4979
+        }
+      ]
     },
     "tissue_category_enrichment": {
-      "class": "enriched",
+      "class": "enhanced",
       "category_ids": [
-        "head_sensory"
+        "fluids_other"
       ],
       "category_labels": [
-        "head_sensory"
+        "fluids_other"
       ],
       "top_tissues": [
-        "eye"
+        ""
       ],
-      "fold_change": 3.701,
+      "fold_change": 1.371,
       "fold_change_infinite": false,
-      "tau": 0.92865162564692
+      "tau": 0.8075981754397152,
+      "top_entity_contribs": [
+        {
+          "id": "fluids_other",
+          "label": "fluids_other",
+          "pop_mean": 5.745,
+          "tau_contrib": 0.0
+        }
+      ]
     },
     "tissue_organ_enrichment": {
       "class": "enriched",
       "organ_ids": [
-        "UBERON:0000970"
+        "UBERON:0000970",
+        "UBERON:0000948",
+        "UBERON:0000955"
       ],
       "organ_labels": [
-        "eye"
+        "eye",
+        "heart",
+        "brain"
       ],
       "top_uberon_labels": [
-        "eye"
+        "eye",
+        "heart",
+        "brain"
       ],
-      "fold_change": 3.701,
+      "fold_change": 1.388,
       "fold_change_infinite": false,
-      "tau": 0.957628944200534
+      "tau": 0.9877804092684941,
+      "top_entity_contribs": [
+        {
+          "id": "UBERON:0000970",
+          "label": "eye",
+          "pop_mean": 4.0446,
+          "tau_contrib": 0.0
+        },
+        {
+          "id": "UBERON:0000948",
+          "label": "heart",
+          "pop_mean": 2.9133,
+          "tau_contrib": 0.2797
+        },
+        {
+          "id": "UBERON:0000955",
+          "label": "brain",
+          "pop_mean": 2.0309,
+          "tau_contrib": 0.4979
+        }
+      ]
     },
-    "enrichment_class": "enhanced",
+    "enrichment_class": "enriched",
     "enrichment_cl_ids": [
       "Immune"
     ],
@@ -3353,7 +3435,7 @@
         "uberon_id": "UBERON:0002369",
         "mean_log1p_cp10k": 2.2476,
         "n_expressing": 3281,
-        "n_total": 350623,
+        "n_total": 350370,
         "pct_expressing": 0.0094,
         "is_trace": true
       },
@@ -3362,7 +3444,7 @@
         "uberon_id": "UBERON:0035210",
         "mean_log1p_cp10k": 2.1275,
         "n_expressing": 2,
-        "n_total": 1572,
+        "n_total": 1513,
         "pct_expressing": 0.0013,
         "is_trace": true
       },
@@ -3371,8 +3453,8 @@
         "uberon_id": "UBERON:0001043",
         "mean_log1p_cp10k": 2.0703,
         "n_expressing": 162,
-        "n_total": 3182,
-        "pct_expressing": 0.0509,
+        "n_total": 3121,
+        "pct_expressing": 0.0519,
         "is_trace": false
       },
       {
@@ -3380,7 +3462,7 @@
         "uberon_id": "UBERON:0001264",
         "mean_log1p_cp10k": 2.0369,
         "n_expressing": 1398,
-        "n_total": 162373,
+        "n_total": 162200,
         "pct_expressing": 0.0086,
         "is_trace": true
       },
@@ -3389,8 +3471,8 @@
         "uberon_id": "UBERON:0000922",
         "mean_log1p_cp10k": 1.9933,
         "n_expressing": 705,
-        "n_total": 14142,
-        "pct_expressing": 0.0499,
+        "n_total": 14836,
+        "pct_expressing": 0.0475,
         "is_trace": false
       },
       {
@@ -3398,7 +3480,7 @@
         "uberon_id": "UBERON:0002367",
         "mean_log1p_cp10k": 1.9421,
         "n_expressing": 448,
-        "n_total": 53756,
+        "n_total": 53749,
         "pct_expressing": 0.0083,
         "is_trace": true
       },
@@ -3407,8 +3489,8 @@
         "uberon_id": "UBERON:0002108",
         "mean_log1p_cp10k": 1.9371,
         "n_expressing": 2127,
-        "n_total": 18358,
-        "pct_expressing": 0.1159,
+        "n_total": 14279,
+        "pct_expressing": 0.149,
         "is_trace": false
       },
       {
@@ -3416,8 +3498,8 @@
         "uberon_id": "UBERON:0000473",
         "mean_log1p_cp10k": 1.9296,
         "n_expressing": 46,
-        "n_total": 10344,
-        "pct_expressing": 0.0044,
+        "n_total": 10177,
+        "pct_expressing": 0.0045,
         "is_trace": true
       },
       {
@@ -3425,8 +3507,8 @@
         "uberon_id": "UBERON:0000945",
         "mean_log1p_cp10k": 1.9097,
         "n_expressing": 2587,
-        "n_total": 87006,
-        "pct_expressing": 0.0297,
+        "n_total": 84643,
+        "pct_expressing": 0.0306,
         "is_trace": false
       },
       {
@@ -3434,8 +3516,8 @@
         "uberon_id": "UBERON:0001155",
         "mean_log1p_cp10k": 1.8963,
         "n_expressing": 2942,
-        "n_total": 76767,
-        "pct_expressing": 0.0383,
+        "n_total": 74572,
+        "pct_expressing": 0.0395,
         "is_trace": false
       }
     ]

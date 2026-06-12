@@ -463,13 +463,13 @@ This Markdown is generated from the canonical JSON record at `/data/surfaceome/B
 
 ## CellxGene RNA enrichment (CZI Census)
 
-*Schema v2.1.6 · CZI Census 2025-11-08 · τ-cutoff classification (Yanai 2005) on linear population mean (mean × pct, ≈ nTPM): τ≥0.85 enriched, 0.5–0.85 enhanced, <0.5 low specificity, no eligibles not detected. Cell ontology graph (cl-basic.obo) walked to ~150 cell-family terms; UBERON ontology walked to ~150 organ-level tissues. Cutoffs follow HPA's tissue-specificity nTPM convention. CC-BY 4.0 (CZI Census).*
+*Schema v2.1.7 · CZI Census 2025-11-08 · τ-cutoff classification (Yanai 2005, PMID 15388519) on linear population mean (mean × pct, ≈ nTPM) over the full measured universe with a 1e-3 noise floor: τ≥0.85 enriched, 0.5–0.85 enhanced, <0.5 low specificity, no eligibles not detected. Cutoffs from Kryuchkova-Mostacci & Robinson-Rechavi 2017 (PMID 26891983) + Lüleci & Yılmaz 2022. Cell ontology graph (cl-basic.obo) walked to ~150 cell-family terms; UBERON ontology walked to ~150 organ-level tissues. CC-BY 4.0 (CZI Census).*
 
 **Classification:**
 
 - **Cell class (CL ontology graph, ~10 compartments):** low specificity · 1.1× · τ=0.45
-- **Cell type (leaf Cell Ontology terms, ~600):** enhanced · CL:0000682 · 1.1× · τ=0.82
-- **Tissue (UBERON terms, ~56):** enriched · uterus · 43.1× · τ=1.00
+- **Cell type (leaf Cell Ontology terms, ~600):** enriched · CL:0000682 · CL:0000956 · CL:0007004 · 1.1× · τ=0.86
+- **Tissue (UBERON terms, ~56):** enriched · uterus · mucosa · large intestine · 1.0× · τ=0.97
 
 **Top 5 cell types (leaf CL, pooled across tissues):**
 
@@ -485,10 +485,10 @@ This Markdown is generated from the canonical JSON record at `/data/surfaceome/B
 
 | Tissue | UBERON ID | Mean log1p(CP10K) | % expressing | n_expressing / n_total |
 |---|---|---|---|---|
-| testis | UBERON:0000473 | 2.091 | 3.78% | 391 / 10,344 |
-| adrenal gland | UBERON:0002369 | 2.042 | 0.81% | 2,846 / 350,623 | (trace)
-| esophagus | UBERON:0001043 | 1.915 | 33.78% | 1,075 / 3,182 |
-| kidney | UBERON:0002113 | 1.901 | 21.65% | 51,528 / 238,056 |
-| large intestine | UBERON:0000059 | 1.896 | 100.00% | 10,822 / 10,101 |
+| testis | UBERON:0000473 | 2.091 | 3.78% | 391 / 10,342 |
+| adrenal gland | UBERON:0002369 | 2.042 | 0.81% | 2,846 / 351,482 | (trace)
+| UBERON:0002368 | UBERON:0002368 | 1.987 | 100.00% | 54,766 / 54,766 |
+| esophagus | UBERON:0001043 | 1.915 | 27.15% | 1,075 / 3,960 |
+| UBERON:0002365 | UBERON:0002365 | 1.912 | 100.00% | 3,501 / 3,501 |
 
 <!-- /cellxgene -->

@@ -2256,7 +2256,7 @@
   "model_path": "claude-sonnet-4-6",
   "record_generated_at": "2026-05-31T15:31:28.680125Z",
   "cellxgene": {
-    "schema_version": "2.1.6",
+    "schema_version": "2.1.7",
     "census_version": "2025-11-08",
     "cell_class_enrichment": {
       "class": "enhanced",
@@ -2268,7 +2268,15 @@
       ],
       "fold_change": 2.158,
       "fold_change_infinite": false,
-      "tau": 0.7823102501356887
+      "tau": 0.8064848265515644,
+      "top_entity_contribs": [
+        {
+          "id": "Immune",
+          "label": "Immune",
+          "pop_mean": 8.4344,
+          "tau_contrib": 0.0
+        }
+      ]
     },
     "cell_family_enrichment": {
       "class": "enriched",
@@ -2289,7 +2297,27 @@
       ],
       "fold_change": 1.074,
       "fold_change_infinite": false,
-      "tau": 0.9022054225536598
+      "tau": 0.9419175576706005,
+      "top_entity_contribs": [
+        {
+          "id": "CL:0000094",
+          "label": "granulocyte",
+          "pop_mean": 8.4344,
+          "tau_contrib": 0.0
+        },
+        {
+          "id": "CL:0000576",
+          "label": "monocyte",
+          "pop_mean": 7.85,
+          "tau_contrib": 0.0693
+        },
+        {
+          "id": "CL:0000878",
+          "label": "central nervous system macrophage",
+          "pop_mean": 5.1312,
+          "tau_contrib": 0.3916
+        }
+      ]
     },
     "cell_type_enrichment": {
       "class": "enriched",
@@ -2300,51 +2328,127 @@
       ],
       "fold_change": 1.074,
       "fold_change_infinite": false,
-      "tau": 0.930960583589454
+      "tau": 0.9617550078462945,
+      "top_entity_contribs": [
+        {
+          "id": "CL:0000775",
+          "label": "neutrophil",
+          "pop_mean": 8.4344,
+          "tau_contrib": 0.0
+        },
+        {
+          "id": "CL:0002396",
+          "label": "CD14-low, CD16-positive monocyte",
+          "pop_mean": 7.85,
+          "tau_contrib": 0.0693
+        },
+        {
+          "id": "CL:0000096",
+          "label": "mature neutrophil",
+          "pop_mean": 5.4978,
+          "tau_contrib": 0.3482
+        }
+      ]
     },
     "tissue_enrichment": {
       "class": "enriched",
       "uberon_ids": [
-        "UBERON:0000995",
+        "UBERON:0001013",
+        "UBERON:0001913",
         "UBERON:0000970"
       ],
       "tissue_labels": [
-        "uterus",
+        "adipose tissue",
+        "milk",
         "eye"
       ],
-      "fold_change": 1.326,
+      "fold_change": 1.335,
       "fold_change_infinite": false,
-      "tau": 0.9443256269648344
+      "tau": 0.9817564532245496,
+      "top_entity_contribs": [
+        {
+          "id": "UBERON:0001013",
+          "label": "adipose tissue",
+          "pop_mean": 8.481,
+          "tau_contrib": 0.0
+        },
+        {
+          "id": "UBERON:0001913",
+          "label": "milk",
+          "pop_mean": 6.3533,
+          "tau_contrib": 0.2509
+        },
+        {
+          "id": "UBERON:0000970",
+          "label": "eye",
+          "pop_mean": 5.4271,
+          "tau_contrib": 0.3601
+        }
+      ]
     },
     "tissue_category_enrichment": {
-      "class": "enriched",
+      "class": "enhanced",
       "category_ids": [
-        "head_sensory"
+        "skin_adipose"
       ],
       "category_labels": [
-        "head_sensory"
+        "skin_adipose"
       ],
       "top_tissues": [
-        "tongue"
+        "adipose tissue"
       ],
-      "fold_change": 3.53,
+      "fold_change": 1.084,
       "fold_change_infinite": false,
-      "tau": 0.9675958865104785
+      "tau": 0.6537989757588027,
+      "top_entity_contribs": [
+        {
+          "id": "skin_adipose",
+          "label": "skin_adipose",
+          "pop_mean": 8.481,
+          "tau_contrib": 0.0
+        }
+      ]
     },
     "tissue_organ_enrichment": {
       "class": "enriched",
       "organ_ids": [
-        "UBERON:0002049"
+        "UBERON:0001013",
+        "UBERON:0001913",
+        "UBERON:0000970"
       ],
       "organ_labels": [
-        "vasculature"
+        "adipose tissue",
+        "milk",
+        "eye"
       ],
       "top_uberon_labels": [
-        "vasculature"
+        "adipose tissue",
+        "milk",
+        "eye"
       ],
-      "fold_change": 7.002,
+      "fold_change": 1.335,
       "fold_change_infinite": false,
-      "tau": 0.9884051327709228
+      "tau": 0.97296611579676,
+      "top_entity_contribs": [
+        {
+          "id": "UBERON:0001013",
+          "label": "adipose tissue",
+          "pop_mean": 8.481,
+          "tau_contrib": 0.0
+        },
+        {
+          "id": "UBERON:0001913",
+          "label": "milk",
+          "pop_mean": 6.3533,
+          "tau_contrib": 0.2509
+        },
+        {
+          "id": "UBERON:0000970",
+          "label": "eye",
+          "pop_mean": 5.4271,
+          "tau_contrib": 0.3601
+        }
+      ]
     },
     "enrichment_class": "enhanced",
     "enrichment_cl_ids": [
@@ -2633,7 +2737,7 @@
         "uberon_id": "UBERON:0001013",
         "mean_log1p_cp10k": 2.2493,
         "n_expressing": 19161,
-        "n_total": 6028,
+        "n_total": 19161,
         "pct_expressing": 1.0,
         "is_trace": false
       },
@@ -2642,7 +2746,7 @@
         "uberon_id": "UBERON:0000974",
         "mean_log1p_cp10k": 2.195,
         "n_expressing": 601,
-        "n_total": 11378,
+        "n_total": 11377,
         "pct_expressing": 0.0528,
         "is_trace": false
       },
@@ -2651,8 +2755,26 @@
         "uberon_id": "UBERON:0001264",
         "mean_log1p_cp10k": 2.183,
         "n_expressing": 4422,
-        "n_total": 162373,
+        "n_total": 162377,
         "pct_expressing": 0.0272,
+        "is_trace": false
+      },
+      {
+        "tissue": "UBERON:0002368",
+        "uberon_id": "UBERON:0002368",
+        "mean_log1p_cp10k": 2.1776,
+        "n_expressing": 5148,
+        "n_total": 5148,
+        "pct_expressing": 1.0,
+        "is_trace": false
+      },
+      {
+        "tissue": "UBERON:0002365",
+        "uberon_id": "UBERON:0002365",
+        "mean_log1p_cp10k": 2.1505,
+        "n_expressing": 6078,
+        "n_total": 6078,
+        "pct_expressing": 1.0,
         "is_trace": false
       },
       {
@@ -2660,8 +2782,8 @@
         "uberon_id": "UBERON:0001043",
         "mean_log1p_cp10k": 2.145,
         "n_expressing": 1257,
-        "n_total": 3182,
-        "pct_expressing": 0.395,
+        "n_total": 4056,
+        "pct_expressing": 0.3099,
         "is_trace": false
       },
       {
@@ -2669,8 +2791,8 @@
         "uberon_id": "UBERON:0002097",
         "mean_log1p_cp10k": 2.0445,
         "n_expressing": 3808,
-        "n_total": 26932,
-        "pct_expressing": 0.1414,
+        "n_total": 27767,
+        "pct_expressing": 0.1371,
         "is_trace": false
       },
       {
@@ -2678,8 +2800,8 @@
         "uberon_id": "UBERON:0001987",
         "mean_log1p_cp10k": 2.0255,
         "n_expressing": 62762,
-        "n_total": 215057,
-        "pct_expressing": 0.2918,
+        "n_total": 218562,
+        "pct_expressing": 0.2872,
         "is_trace": false
       },
       {
@@ -2687,26 +2809,8 @@
         "uberon_id": "UBERON:0000029",
         "mean_log1p_cp10k": 2.0253,
         "n_expressing": 94253,
-        "n_total": 210360,
-        "pct_expressing": 0.4481,
-        "is_trace": false
-      },
-      {
-        "tissue": "embryo",
-        "uberon_id": "UBERON:0000922",
-        "mean_log1p_cp10k": 2.0087,
-        "n_expressing": 4933,
-        "n_total": 14142,
-        "pct_expressing": 0.3488,
-        "is_trace": false
-      },
-      {
-        "tissue": "kidney",
-        "uberon_id": "UBERON:0002113",
-        "mean_log1p_cp10k": 2.0033,
-        "n_expressing": 20585,
-        "n_total": 238056,
-        "pct_expressing": 0.0865,
+        "n_total": 243730,
+        "pct_expressing": 0.3867,
         "is_trace": false
       }
     ]

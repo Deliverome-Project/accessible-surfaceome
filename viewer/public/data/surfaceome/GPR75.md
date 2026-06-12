@@ -527,13 +527,13 @@ This Markdown is generated from the canonical JSON record at `/data/surfaceome/G
 
 ## CellxGene RNA enrichment (CZI Census)
 
-*Schema v2.1.6 · CZI Census 2025-11-08 · τ-cutoff classification (Yanai 2005) on linear population mean (mean × pct, ≈ nTPM): τ≥0.85 enriched, 0.5–0.85 enhanced, <0.5 low specificity, no eligibles not detected. Cell ontology graph (cl-basic.obo) walked to ~150 cell-family terms; UBERON ontology walked to ~150 organ-level tissues. Cutoffs follow HPA's tissue-specificity nTPM convention. CC-BY 4.0 (CZI Census).*
+*Schema v2.1.7 · CZI Census 2025-11-08 · τ-cutoff classification (Yanai 2005, PMID 15388519) on linear population mean (mean × pct, ≈ nTPM) over the full measured universe with a 1e-3 noise floor: τ≥0.85 enriched, 0.5–0.85 enhanced, <0.5 low specificity, no eligibles not detected. Cutoffs from Kryuchkova-Mostacci & Robinson-Rechavi 2017 (PMID 26891983) + Lüleci & Yılmaz 2022. Cell ontology graph (cl-basic.obo) walked to ~150 cell-family terms; UBERON ontology walked to ~150 organ-level tissues. CC-BY 4.0 (CZI Census).*
 
 **Classification:**
 
 - **Cell class (CL ontology graph, ~10 compartments):** not detected
-- **Cell type (leaf Cell Ontology terms, ~600):** enriched · kidney loop of Henle ascending limb epithelial cell · ∞×
-- **Tissue (UBERON terms, ~56):** enriched · eye · 6.4× · τ=0.85
+- **Cell type (leaf Cell Ontology terms, ~600):** enriched · kidney loop of Henle ascending limb epithelial cell · ∞× · τ=0.99
+- **Tissue (UBERON terms, ~56):** enriched · embryo · 7.0× · τ=1.00
 
 **Top 5 cell types (leaf CL, pooled across tissues):**
 
@@ -549,10 +549,10 @@ This Markdown is generated from the canonical JSON record at `/data/surfaceome/G
 
 | Tissue | UBERON ID | Mean log1p(CP10K) | % expressing | n_expressing / n_total |
 |---|---|---|---|---|
-| adrenal gland | UBERON:0002369 | 2.212 | 0.12% | 437 / 350,623 | (trace)
-| mucosa | UBERON:0000344 | 2.091 | 0.17% | 2 / 1,169 | (trace)
-| placenta | UBERON:0001987 | 2.054 | 0.01% | 19 / 215,057 | (trace)
-| large intestine | UBERON:0000059 | 1.960 | 0.10% | 10 / 10,101 | (trace)
-| liver | UBERON:0002107 | 1.948 | 0.05% | 166 / 357,751 | (trace)
+| adrenal gland | UBERON:0002369 | 2.212 | 0.12% | 437 / 349,970 | (trace)
+| placenta | UBERON:0001987 | 2.054 | 0.03% | 19 / 63,156 | (trace)
+| large intestine | UBERON:0000059 | 1.960 | 0.16% | 10 / 6,128 | (trace)
+| liver | UBERON:0002107 | 1.948 | 0.05% | 166 / 327,097 | (trace)
+| pancreas | UBERON:0001264 | 1.919 | 0.02% | 19 / 95,885 | (trace)
 
 <!-- /cellxgene -->

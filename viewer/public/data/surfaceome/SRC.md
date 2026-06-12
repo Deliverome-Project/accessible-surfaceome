@@ -595,13 +595,13 @@ This Markdown is generated from the canonical JSON record at `/data/surfaceome/S
 
 ## CellxGene RNA enrichment (CZI Census)
 
-*Schema v2.1.6 · CZI Census 2025-11-08 · τ-cutoff classification (Yanai 2005) on linear population mean (mean × pct, ≈ nTPM): τ≥0.85 enriched, 0.5–0.85 enhanced, <0.5 low specificity, no eligibles not detected. Cell ontology graph (cl-basic.obo) walked to ~150 cell-family terms; UBERON ontology walked to ~150 organ-level tissues. Cutoffs follow HPA's tissue-specificity nTPM convention. CC-BY 4.0 (CZI Census).*
+*Schema v2.1.7 · CZI Census 2025-11-08 · τ-cutoff classification (Yanai 2005, PMID 15388519) on linear population mean (mean × pct, ≈ nTPM) over the full measured universe with a 1e-3 noise floor: τ≥0.85 enriched, 0.5–0.85 enhanced, <0.5 low specificity, no eligibles not detected. Cutoffs from Kryuchkova-Mostacci & Robinson-Rechavi 2017 (PMID 26891983) + Lüleci & Yılmaz 2022. Cell ontology graph (cl-basic.obo) walked to ~150 cell-family terms; UBERON ontology walked to ~150 organ-level tissues. CC-BY 4.0 (CZI Census).*
 
 **Classification:**
 
-- **Cell class (CL ontology graph, ~10 compartments):** enhanced · Epithelial · 2.3× · τ=0.77
-- **Cell type (leaf Cell Ontology terms, ~600):** enriched · mucous cell of stomach · 2.3× · τ=0.96
-- **Tissue (UBERON terms, ~56):** enriched · eye · uterus · 1.7× · τ=0.94
+- **Cell class (CL ontology graph, ~10 compartments):** enriched · Epithelial · 2.3× · τ=0.92
+- **Cell type (leaf Cell Ontology terms, ~600):** enriched · mucous cell of stomach · 2.3× · τ=0.99
+- **Tissue (UBERON terms, ~56):** enriched · eye · uterus · 1.3× · τ=0.99
 
 **Top 5 cell types (leaf CL, pooled across tissues):**
 
@@ -617,10 +617,10 @@ This Markdown is generated from the canonical JSON record at `/data/surfaceome/S
 
 | Tissue | UBERON ID | Mean log1p(CP10K) | % expressing | n_expressing / n_total |
 |---|---|---|---|---|
-| testis | UBERON:0000473 | 2.259 | 0.67% | 69 / 10,344 | (trace)
-| adrenal gland | UBERON:0002369 | 2.118 | 0.58% | 2,030 / 350,623 | (trace)
-| embryo | UBERON:0000922 | 2.097 | 12.18% | 1,722 / 14,142 |
-| esophagus | UBERON:0001043 | 2.064 | 8.30% | 264 / 3,182 |
-| skin of body | UBERON:0002097 | 1.980 | 11.96% | 3,221 / 26,932 |
+| testis | UBERON:0000473 | 2.259 | 0.67% | 69 / 10,267 | (trace)
+| adrenal gland | UBERON:0002369 | 2.118 | 0.58% | 2,030 / 350,523 | (trace)
+| embryo | UBERON:0000922 | 2.097 | 10.94% | 1,722 / 15,746 |
+| esophagus | UBERON:0001043 | 2.064 | 8.07% | 264 / 3,272 |
+| skin of body | UBERON:0002097 | 1.980 | 15.05% | 3,221 / 21,399 |
 
 <!-- /cellxgene -->

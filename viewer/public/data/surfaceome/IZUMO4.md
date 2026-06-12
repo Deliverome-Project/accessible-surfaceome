@@ -250,13 +250,13 @@ This Markdown is generated from the canonical JSON record at `/data/surfaceome/I
 
 ## CellxGene RNA enrichment (CZI Census)
 
-*Schema v2.1.6 · CZI Census 2025-11-08 · τ-cutoff classification (Yanai 2005) on linear population mean (mean × pct, ≈ nTPM): τ≥0.85 enriched, 0.5–0.85 enhanced, <0.5 low specificity, no eligibles not detected. Cell ontology graph (cl-basic.obo) walked to ~150 cell-family terms; UBERON ontology walked to ~150 organ-level tissues. Cutoffs follow HPA's tissue-specificity nTPM convention. CC-BY 4.0 (CZI Census).*
+*Schema v2.1.7 · CZI Census 2025-11-08 · τ-cutoff classification (Yanai 2005, PMID 15388519) on linear population mean (mean × pct, ≈ nTPM) over the full measured universe with a 1e-3 noise floor: τ≥0.85 enriched, 0.5–0.85 enhanced, <0.5 low specificity, no eligibles not detected. Cutoffs from Kryuchkova-Mostacci & Robinson-Rechavi 2017 (PMID 26891983) + Lüleci & Yılmaz 2022. Cell ontology graph (cl-basic.obo) walked to ~150 cell-family terms; UBERON ontology walked to ~150 organ-level tissues. CC-BY 4.0 (CZI Census).*
 
 **Classification:**
 
-- **Cell class (CL ontology graph, ~10 compartments):** enriched · Reproductive · 23.9× · τ=0.97
-- **Cell type (leaf Cell Ontology terms, ~600):** enriched · spermatocyte · 2.1× · τ=0.98
-- **Tissue (UBERON terms, ~56):** enriched · uterus · 5.7× · τ=0.97
+- **Cell class (CL ontology graph, ~10 compartments):** enriched · Reproductive · 23.9× · τ=0.99
+- **Cell type (leaf Cell Ontology terms, ~600):** enriched · spermatocyte · 2.1× · τ=1.00
+- **Tissue (UBERON terms, ~56):** enriched · testis · uterus · eye · 1.2× · τ=0.99
 
 **Top 5 cell types (leaf CL, pooled across tissues):**
 
@@ -272,10 +272,10 @@ This Markdown is generated from the canonical JSON record at `/data/surfaceome/I
 
 | Tissue | UBERON ID | Mean log1p(CP10K) | % expressing | n_expressing / n_total |
 |---|---|---|---|---|
-| testis | UBERON:0000473 | 2.259 | 56.40% | 5,834 / 10,344 |
-| scalp | UBERON:0000403 | 2.221 | 0.10% | 3 / 3,029 | (trace)
-| pancreas | UBERON:0001264 | 2.190 | 0.82% | 1,335 / 162,373 | (trace)
-| urinary bladder | UBERON:0001255 | 2.179 | 0.01% | 1 / 15,201 | (trace)
-| esophagus | UBERON:0001043 | 2.135 | 5.34% | 170 / 3,182 |
+| testis | UBERON:0000473 | 2.259 | 56.53% | 5,834 / 10,321 |
+| scalp | UBERON:0000403 | 2.221 | 0.11% | 3 / 2,688 | (trace)
+| pancreas | UBERON:0001264 | 2.190 | 0.82% | 1,335 / 162,200 | (trace)
+| esophagus | UBERON:0001043 | 2.135 | 5.45% | 170 / 3,121 |
+| saliva | UBERON:0001836 | 2.033 | 0.12% | 9 / 7,293 | (trace)
 
 <!-- /cellxgene -->

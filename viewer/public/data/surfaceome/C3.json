@@ -6375,7 +6375,7 @@
   "model_path": "claude-sonnet-4-6",
   "record_generated_at": "2026-06-08T20:51:36.090195Z",
   "cellxgene": {
-    "schema_version": "2.1.6",
+    "schema_version": "2.1.7",
     "census_version": "2025-11-08",
     "cell_class_enrichment": {
       "class": "enhanced",
@@ -6387,28 +6387,56 @@
       ],
       "fold_change": 1.575,
       "fold_change_infinite": false,
-      "tau": 0.8269545713151734
+      "tau": 0.8269545713151732,
+      "top_entity_contribs": [
+        {
+          "id": "Epithelial",
+          "label": "Epithelial",
+          "pop_mean": 30.427,
+          "tau_contrib": 0.0
+        }
+      ]
     },
     "cell_family_enrichment": {
       "class": "enriched",
       "family_ids": [
         "CL:0000077",
-        "Epithelial",
-        "CL:0000057"
+        "CL:0019026",
+        "CL:0019028"
       ],
       "family_labels": [
         "mesothelial cell",
-        "Epithelial",
-        "fibroblast"
+        "periportal region hepatocyte",
+        "midzonal region hepatocyte"
       ],
       "top_cl_labels": [
         "mesothelial cell of pleura",
         "periportal region hepatocyte",
-        "adventitial fibroblast"
+        "midzonal region hepatocyte"
       ],
       "fold_change": 1.444,
       "fold_change_infinite": false,
-      "tau": 0.9430925514392963
+      "tau": 0.9715053340705145,
+      "top_entity_contribs": [
+        {
+          "id": "CL:0000077",
+          "label": "mesothelial cell",
+          "pop_mean": 30.427,
+          "tau_contrib": 0.0
+        },
+        {
+          "id": "CL:0019026",
+          "label": "periportal region hepatocyte",
+          "pop_mean": 21.0746,
+          "tau_contrib": 0.3074
+        },
+        {
+          "id": "CL:0019028",
+          "label": "midzonal region hepatocyte",
+          "pop_mean": 19.7819,
+          "tau_contrib": 0.3499
+        }
+      ]
     },
     "cell_type_enrichment": {
       "class": "enriched",
@@ -6419,49 +6447,127 @@
       ],
       "fold_change": 1.444,
       "fold_change_infinite": false,
-      "tau": 0.9510496704306701
+      "tau": 0.9837191351600225,
+      "top_entity_contribs": [
+        {
+          "id": "CL:1000491",
+          "label": "mesothelial cell of pleura",
+          "pop_mean": 30.427,
+          "tau_contrib": 0.0
+        },
+        {
+          "id": "CL:0019026",
+          "label": "periportal region hepatocyte",
+          "pop_mean": 21.0746,
+          "tau_contrib": 0.3074
+        },
+        {
+          "id": "CL:0019028",
+          "label": "midzonal region hepatocyte",
+          "pop_mean": 19.7819,
+          "tau_contrib": 0.3499
+        }
+      ]
     },
     "tissue_enrichment": {
       "class": "enriched",
       "uberon_ids": [
+        "UBERON:0001013",
+        "UBERON:0002107",
         "UBERON:0000995"
       ],
       "tissue_labels": [
+        "adipose tissue",
+        "liver",
         "uterus"
       ],
-      "fold_change": 15.672,
+      "fold_change": 1.256,
       "fold_change_infinite": false,
-      "tau": 0.9959331296867449
+      "tau": 0.9829842908520492,
+      "top_entity_contribs": [
+        {
+          "id": "UBERON:0001013",
+          "label": "adipose tissue",
+          "pop_mean": 8.6143,
+          "tau_contrib": 0.0
+        },
+        {
+          "id": "UBERON:0002107",
+          "label": "liver",
+          "pop_mean": 6.8597,
+          "tau_contrib": 0.2037
+        },
+        {
+          "id": "UBERON:0000995",
+          "label": "uterus",
+          "pop_mean": 6.4387,
+          "tau_contrib": 0.2526
+        }
+      ]
     },
     "tissue_category_enrichment": {
-      "class": "enriched",
+      "class": "enhanced",
       "category_ids": [
-        "reproductive"
+        "fluids_other"
       ],
       "category_labels": [
-        "reproductive"
+        "fluids_other"
       ],
       "top_tissues": [
-        "uterus"
+        ""
       ],
-      "fold_change": 15.672,
+      "fold_change": 1.072,
       "fold_change_infinite": false,
-      "tau": 0.9878152886106658
+      "tau": 0.6455501573576757,
+      "top_entity_contribs": [
+        {
+          "id": "fluids_other",
+          "label": "fluids_other",
+          "pop_mean": 9.2345,
+          "tau_contrib": 0.0
+        }
+      ]
     },
     "tissue_organ_enrichment": {
       "class": "enriched",
       "organ_ids": [
+        "UBERON:0001013",
+        "UBERON:0002107",
         "UBERON:0000995"
       ],
       "organ_labels": [
+        "adipose tissue",
+        "liver",
         "uterus"
       ],
       "top_uberon_labels": [
+        "adipose tissue",
+        "liver",
         "uterus"
       ],
-      "fold_change": 15.672,
+      "fold_change": 1.256,
       "fold_change_infinite": false,
-      "tau": 0.9954596131405801
+      "tau": 0.9747341071550428,
+      "top_entity_contribs": [
+        {
+          "id": "UBERON:0001013",
+          "label": "adipose tissue",
+          "pop_mean": 8.6143,
+          "tau_contrib": 0.0
+        },
+        {
+          "id": "UBERON:0002107",
+          "label": "liver",
+          "pop_mean": 6.8597,
+          "tau_contrib": 0.2037
+        },
+        {
+          "id": "UBERON:0000995",
+          "label": "uterus",
+          "pop_mean": 6.4387,
+          "tau_contrib": 0.2526
+        }
+      ]
     },
     "enrichment_class": "enhanced",
     "enrichment_cl_ids": [
@@ -6705,8 +6811,8 @@
         "uberon_id": "UBERON:0002107",
         "mean_log1p_cp10k": 2.9619,
         "n_expressing": 185520,
-        "n_total": 357751,
-        "pct_expressing": 0.5186,
+        "n_total": 495883,
+        "pct_expressing": 0.3741,
         "is_trace": false
       },
       {
@@ -6714,7 +6820,7 @@
         "uberon_id": "UBERON:0002369",
         "mean_log1p_cp10k": 2.5074,
         "n_expressing": 1496,
-        "n_total": 350623,
+        "n_total": 350365,
         "pct_expressing": 0.0043,
         "is_trace": true
       },
@@ -6723,8 +6829,8 @@
         "uberon_id": "UBERON:0001013",
         "mean_log1p_cp10k": 2.3437,
         "n_expressing": 53884,
-        "n_total": 6028,
-        "pct_expressing": 1.0,
+        "n_total": 58921,
+        "pct_expressing": 0.9145,
         "is_trace": false
       },
       {
@@ -6732,8 +6838,35 @@
         "uberon_id": "UBERON:0001043",
         "mean_log1p_cp10k": 2.3298,
         "n_expressing": 364,
-        "n_total": 3182,
-        "pct_expressing": 0.1144,
+        "n_total": 3310,
+        "pct_expressing": 0.11,
+        "is_trace": false
+      },
+      {
+        "tissue": "UBERON:0002368",
+        "uberon_id": "UBERON:0002368",
+        "mean_log1p_cp10k": 2.3258,
+        "n_expressing": 10782,
+        "n_total": 10782,
+        "pct_expressing": 1.0,
+        "is_trace": false
+      },
+      {
+        "tissue": "UBERON:0001087",
+        "uberon_id": "UBERON:0001087",
+        "mean_log1p_cp10k": 2.3248,
+        "n_expressing": 2578,
+        "n_total": 2578,
+        "pct_expressing": 1.0,
+        "is_trace": false
+      },
+      {
+        "tissue": "UBERON:0001015",
+        "uberon_id": "UBERON:0001015",
+        "mean_log1p_cp10k": 2.2652,
+        "n_expressing": 5869,
+        "n_total": 5869,
+        "pct_expressing": 1.0,
         "is_trace": false
       },
       {
@@ -6741,8 +6874,8 @@
         "uberon_id": "UBERON:0000992",
         "mean_log1p_cp10k": 2.241,
         "n_expressing": 16811,
-        "n_total": 27488,
-        "pct_expressing": 0.6116,
+        "n_total": 40574,
+        "pct_expressing": 0.4143,
         "is_trace": false
       },
       {
@@ -6750,8 +6883,8 @@
         "uberon_id": "UBERON:0001155",
         "mean_log1p_cp10k": 2.2392,
         "n_expressing": 2184,
-        "n_total": 76767,
-        "pct_expressing": 0.0284,
+        "n_total": 72725,
+        "pct_expressing": 0.03,
         "is_trace": false
       },
       {
@@ -6759,35 +6892,8 @@
         "uberon_id": "UBERON:0002048",
         "mean_log1p_cp10k": 2.2251,
         "n_expressing": 88986,
-        "n_total": 528476,
-        "pct_expressing": 0.1684,
-        "is_trace": false
-      },
-      {
-        "tissue": "lymph node",
-        "uberon_id": "UBERON:0000029",
-        "mean_log1p_cp10k": 2.2115,
-        "n_expressing": 6446,
-        "n_total": 210360,
-        "pct_expressing": 0.0306,
-        "is_trace": false
-      },
-      {
-        "tissue": "large intestine",
-        "uberon_id": "UBERON:0000059",
-        "mean_log1p_cp10k": 2.2076,
-        "n_expressing": 1292,
-        "n_total": 10101,
-        "pct_expressing": 0.1279,
-        "is_trace": false
-      },
-      {
-        "tissue": "small intestine",
-        "uberon_id": "UBERON:0002108",
-        "mean_log1p_cp10k": 2.1884,
-        "n_expressing": 718,
-        "n_total": 18358,
-        "pct_expressing": 0.0391,
+        "n_total": 518601,
+        "pct_expressing": 0.1716,
         "is_trace": false
       }
     ]

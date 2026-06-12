@@ -459,13 +459,13 @@ This Markdown is generated from the canonical JSON record at `/data/surfaceome/L
 
 ## CellxGene RNA enrichment (CZI Census)
 
-*Schema v2.1.6 · CZI Census 2025-11-08 · τ-cutoff classification (Yanai 2005) on linear population mean (mean × pct, ≈ nTPM): τ≥0.85 enriched, 0.5–0.85 enhanced, <0.5 low specificity, no eligibles not detected. Cell ontology graph (cl-basic.obo) walked to ~150 cell-family terms; UBERON ontology walked to ~150 organ-level tissues. Cutoffs follow HPA's tissue-specificity nTPM convention. CC-BY 4.0 (CZI Census).*
+*Schema v2.1.7 · CZI Census 2025-11-08 · τ-cutoff classification (Yanai 2005, PMID 15388519) on linear population mean (mean × pct, ≈ nTPM) over the full measured universe with a 1e-3 noise floor: τ≥0.85 enriched, 0.5–0.85 enhanced, <0.5 low specificity, no eligibles not detected. Cutoffs from Kryuchkova-Mostacci & Robinson-Rechavi 2017 (PMID 26891983) + Lüleci & Yılmaz 2022. Cell ontology graph (cl-basic.obo) walked to ~150 cell-family terms; UBERON ontology walked to ~150 organ-level tissues. CC-BY 4.0 (CZI Census).*
 
 **Classification:**
 
-- **Cell class (CL ontology graph, ~10 compartments):** enhanced · Immune · 2.2× · τ=0.78
-- **Cell type (leaf Cell Ontology terms, ~600):** enriched · neutrophil · CL:0002396 · mature neutrophil · 1.1× · τ=0.93
-- **Tissue (UBERON terms, ~56):** enriched · uterus · eye · 1.3× · τ=0.94
+- **Cell class (CL ontology graph, ~10 compartments):** enhanced · Immune · 2.2× · τ=0.81
+- **Cell type (leaf Cell Ontology terms, ~600):** enriched · neutrophil · CL:0002396 · mature neutrophil · 1.1× · τ=0.96
+- **Tissue (UBERON terms, ~56):** enriched · adipose tissue · milk · eye · 1.3× · τ=0.98
 
 **Top 5 cell types (leaf CL, pooled across tissues):**
 
@@ -482,9 +482,9 @@ This Markdown is generated from the canonical JSON record at `/data/surfaceome/L
 | Tissue | UBERON ID | Mean log1p(CP10K) | % expressing | n_expressing / n_total |
 |---|---|---|---|---|
 | saliva | UBERON:0001836 | 2.306 | 55.93% | 4,079 / 7,293 |
-| adipose tissue | UBERON:0001013 | 2.249 | 100.00% | 19,161 / 6,028 |
-| neck | UBERON:0000974 | 2.195 | 5.28% | 601 / 11,378 |
-| pancreas | UBERON:0001264 | 2.183 | 2.72% | 4,422 / 162,373 |
-| esophagus | UBERON:0001043 | 2.145 | 39.50% | 1,257 / 3,182 |
+| adipose tissue | UBERON:0001013 | 2.249 | 100.00% | 19,161 / 19,161 |
+| neck | UBERON:0000974 | 2.195 | 5.28% | 601 / 11,377 |
+| pancreas | UBERON:0001264 | 2.183 | 2.72% | 4,422 / 162,377 |
+| UBERON:0002368 | UBERON:0002368 | 2.178 | 100.00% | 5,148 / 5,148 |
 
 <!-- /cellxgene -->

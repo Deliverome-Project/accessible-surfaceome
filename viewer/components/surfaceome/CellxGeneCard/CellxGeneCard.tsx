@@ -2,6 +2,7 @@ import type {
   CellxGeneEnrichment,
   EnrichmentClass,
   TissueAggregateRow,
+  TopEntityContrib,
 } from "../../../lib/cellxgene-enrichment";
 import { CITATIONS, pubmedUrl } from "../../../lib/citations";
 import { InfoTip } from "../../InfoTip/InfoTip";
@@ -67,12 +68,14 @@ function EnrichmentChip({
   foldChange,
   entityNames,
   tau,
+  topContribs,
 }: {
   axis: "cell class" | "cell type" | "cell family" | "tissue" | "tissue category" | "tissue organ";
   klass: EnrichmentClass;
   foldChange: number | null;
   entityNames: string[];
   tau?: number | null;
+  topContribs?: TopEntityContrib[];
 }) {
   const norm = normalizeClass(klass);
   return (
@@ -95,17 +98,42 @@ function EnrichmentChip({
       )}
       <InfoTip label="What this classification means" wide>
         <strong>{ENRICHMENT_LABELS[klass]}</strong> at the {axis} level.{" "}
-        {ENRICHMENT_BLURB[klass]} τ (Yanai 2005) ∈ [0, 1] is the
-        continuous specificity score over the eligible distribution
-        on population mean (mean × pct, ≈ nTPM). Cutoffs follow{" "}
+        {ENRICHMENT_BLURB[klass]} τ (Yanai 2005, PMID{" "}
         <a
-          href="https://www.proteinatlas.org/humanproteome/tissue/tissue+specific"
+          href="https://pubmed.ncbi.nlm.nih.gov/15388519/"
           target="_blank"
           rel="noopener noreferrer"
         >
-          HPA&apos;s tissue-specificity convention
+          15388519
         </a>
-        .
+        ) ∈ [0, 1] is the continuous specificity score over the full
+        measured universe (ineligibles floored at 1e-3 ≈ noise) on
+        linear population mean (mean × pct, ≈ nTPM). Cutoffs τ ≥ 0.85
+        / 0.5 / &lt; 0.5 follow Kryuchkova-Mostacci &amp; Robinson-Rechavi
+        2017 (PMID{" "}
+        <a
+          href="https://pubmed.ncbi.nlm.nih.gov/26891983/"
+          target="_blank"
+          rel="noopener noreferrer"
+        >
+          26891983
+        </a>
+        ) + Lüleci &amp; Yılmaz 2022.
+        {topContribs && topContribs.length > 0 && (
+          <>
+            <br />
+            <br />
+            <strong>Top {topContribs.length}:</strong>
+            <ul style={{ margin: "4px 0 0 16px", paddingLeft: 0 }}>
+              {topContribs.map((c) => (
+                <li key={c.id}>
+                  {c.label} — pop mean {c.pop_mean.toFixed(2)} · τ
+                  contribution {c.tau_contrib.toFixed(2)}
+                </li>
+              ))}
+            </ul>
+          </>
+        )}
       </InfoTip>
     </div>
   );
@@ -114,9 +142,9 @@ function EnrichmentChip({
 /**
  * CellxGene tab — CZI WMG gene-expression enrichment, presented as
  * two interactive HPA-style barplots (common vs rare cell types) +
- * the gene's τ-cutoff elevation classification (Yanai 2005 on linear
- * population mean — cutoffs follow HPA's tissue-specificity nTPM
- * convention).
+ * the gene's τ-cutoff elevation classification (Yanai 2005 τ on
+ * linear population mean; cutoffs τ ≥ 0.85 / 0.5 follow
+ * Kryuchkova-Mostacci 2017 + Lüleci & Yılmaz 2022).
  *
  * The chart components are client components (Y-axis + sort + hover
  * are reactive); this wrapper stays a server component so the
@@ -151,13 +179,13 @@ export function CellxGeneCard({ data }: Props) {
   // class/category and more reliable than the 600/410 leaf axes.
   // Falls through to class/category/leaf for older records.
   const cellEnr =
-    (data as any).cell_family_enrichment
+    data.cell_family_enrichment
       ? {
-          class: (data as any).cell_family_enrichment.class as EnrichmentClass,
-          ids: ((data as any).cell_family_enrichment.family_labels ?? []) as string[],
-          fold_change:
-            ((data as any).cell_family_enrichment.fold_change ?? null) as number | null,
-          tau: ((data as any).cell_family_enrichment.tau ?? null) as number | null,
+          class: data.cell_family_enrichment.class,
+          ids: data.cell_family_enrichment.family_labels ?? [],
+          fold_change: data.cell_family_enrichment.fold_change,
+          tau: data.cell_family_enrichment.tau ?? null,
+          contribs: data.cell_family_enrichment.top_entity_contribs ?? null,
         }
       : data.cell_class_enrichment
       ? {
@@ -165,6 +193,7 @@ export function CellxGeneCard({ data }: Props) {
           ids: data.cell_class_enrichment.class_labels,
           fold_change: data.cell_class_enrichment.fold_change,
           tau: data.cell_class_enrichment.tau ?? null,
+          contribs: data.cell_class_enrichment.top_entity_contribs ?? null,
         }
       : data.cell_type_enrichment
       ? {
@@ -172,6 +201,7 @@ export function CellxGeneCard({ data }: Props) {
           ids: data.cell_type_enrichment.cl_ids,
           fold_change: data.cell_type_enrichment.fold_change,
           tau: data.cell_type_enrichment.tau ?? null,
+          contribs: data.cell_type_enrichment.top_entity_contribs ?? null,
         }
       : data.enrichment_class
       ? {
@@ -179,15 +209,16 @@ export function CellxGeneCard({ data }: Props) {
           ids: data.enrichment_cl_ids ?? [],
           fold_change: data.fold_change ?? null,
           tau: null as number | null,
+          contribs: null,
         }
       : null;
   const cellAxisLabel: "cell family" | "cell class" | "cell type" =
-    (data as any).cell_family_enrichment
+    data.cell_family_enrichment
       ? "cell family"
       : data.cell_class_enrichment
       ? "cell class"
       : "cell type";
-  const tissueOrganEnr = (data as any).tissue_organ_enrichment ?? null;
+  const tissueOrganEnr = data.tissue_organ_enrichment ?? null;
   const tissueCatEnr = data.tissue_category_enrichment ?? null;
   const tissueEnr = data.tissue_enrichment ?? null;
   const tissueAxisLabel: "tissue organ" | "tissue category" | "tissue" =
@@ -306,6 +337,7 @@ export function CellxGeneCard({ data }: Props) {
                 .map((id) => clToName.get(id) ?? id)
                 .slice(0, 3)}
               tau={cellEnr.tau}
+              topContribs={cellEnr.contribs ?? undefined}
             />
           )}
           {tissueOrganEnr ? (
@@ -315,6 +347,7 @@ export function CellxGeneCard({ data }: Props) {
               foldChange={tissueOrganEnr.fold_change}
               entityNames={(tissueOrganEnr.organ_labels ?? []).slice(0, 3)}
               tau={tissueOrganEnr.tau}
+              topContribs={tissueOrganEnr.top_entity_contribs ?? undefined}
             />
           ) : tissueCatEnr ? (
             <EnrichmentChip
@@ -323,6 +356,7 @@ export function CellxGeneCard({ data }: Props) {
               foldChange={tissueCatEnr.fold_change}
               entityNames={(tissueCatEnr.category_labels ?? []).slice(0, 3)}
               tau={tissueCatEnr.tau}
+              topContribs={tissueCatEnr.top_entity_contribs ?? undefined}
             />
           ) : (
             tissueEnr && (
@@ -332,6 +366,7 @@ export function CellxGeneCard({ data }: Props) {
                 foldChange={tissueEnr.fold_change}
                 entityNames={tissueEnr.tissue_labels.slice(0, 3)}
                 tau={tissueEnr.tau}
+                topContribs={tissueEnr.top_entity_contribs ?? undefined}
               />
             )
           )}

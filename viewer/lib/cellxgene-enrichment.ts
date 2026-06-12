@@ -81,8 +81,13 @@ export interface CellTypeRow {
  *                   low_specificity — "couldn't measure above
  *                   background" vs "broadly expressed."
  *
- * Cutoffs follow HPA's tissue-specificity nTPM convention:
- * https://www.proteinatlas.org/humanproteome/tissue/tissue+specific
+ * Cutoffs follow the Yanai 2005 τ + Kryuchkova-Mostacci 2017 benchmark
+ * (PMID 26891983, τ best-in-class with τ ≥ 0.8) and the τ ≥ 0.85
+ * idiom (Lüleci & Yılmaz 2022, *BioData Mining*). HPA's discrete
+ * classification uses a 4× fold-change rule on nTPM and is NOT what
+ * we follow — too sensitive to the next-ranked tissue for genome-wide
+ * cell-type axes. τ summarizes shape across the full universe so a
+ * single dominant entity with a similar runner-up still reads enriched.
  *
  * group_enriched dropped from the active set — under τ cutoffs a
  * 1-tissue and a 3-tissue concentration both register as enriched;
@@ -105,6 +110,22 @@ export type EnrichmentClass =
   | "tissue_enhanced"
   | "group_enriched";
 
+/**
+ * Per-entity contribution to a class's τ, surfaced in the chip
+ * tooltip. v2.1.7+. The label is resolved server-side per axis:
+ * CL labels for cell type, CL family label for cell family, UBERON
+ * label for tissue, etc. ``pop_mean`` is the linear population mean
+ * (≈ nTPM); ``tau_contrib`` is the entity's contribution to the Yanai
+ * τ sum: ``1 − pop_mean / pop_mean_max``. 0 for the top entity, →1
+ * for entities near the noise floor.
+ */
+export interface TopEntityContrib {
+  id: string;
+  label: string;
+  pop_mean: number;
+  tau_contrib: number;
+}
+
 export interface CellTypeEnrichment {
   class: EnrichmentClass;
   /** CL IDs the elevation applies to (1 for enriched/enhanced,
@@ -115,16 +136,18 @@ export interface CellTypeEnrichment {
   /** Yanai et al. 2005 specificity τ over the eligible set ∈ [0, 1].
    *  Null when fewer than 2 entities clear the noise gate. v2.1.2+. */
   tau?: number | null;
+  /** Top 1–3 entities with per-entity τ contributions for the chip
+   *  tooltip. v2.1.7+. */
+  top_entity_contribs?: TopEntityContrib[];
 }
 
 /**
  * v2.1.1+ broad-class rollup of leaf CL terms (Epithelial / Immune /
  * Neural / Endothelial / Stromal / Muscle / Reproductive / Stem /
- * Tumor / Other). HPA's 4× test works at this granularity —
- * `cell_type_enrichment` at the leaf CL level often returns
- * low_specificity because sibling CL terms expressing at similar
- * levels can't dominate each other 4×. The chip on the gene page
- * reads from THIS field first.
+ * Tumor / Other). Coarsest cell axis. Useful when many leaf CL terms
+ * sit at similar pop means and no single sibling stands out — τ on
+ * the rollup compresses the noise into ~10 buckets that compete on
+ * shape, not on ranked-pair fold change.
  */
 export interface CellClassEnrichment {
   class: EnrichmentClass;
@@ -139,6 +162,31 @@ export interface CellClassEnrichment {
    *  set ∈ [0, 1]. Null when fewer than 2 compartments are above
    *  noise. v2.1.2+. */
   tau?: number | null;
+  top_entity_contribs?: TopEntityContrib[];
+}
+
+/**
+ * v2.1.4+ middle-granularity cell axis (~150 terms). The "family" of
+ * each leaf CL is the nearest ancestor in the CL graph with 6-40
+ * cohort descendants — programmatic walk via
+ * src/accessible_surfaceome/audit/cl_family.py. Sits between the
+ * ~600-term leaf-CL axis (too noisy for τ) and the 10-term broad
+ * compartment axis (too coarse to differentiate genes). v2.1.7+
+ * fallback: when no graph ancestor in [6,40] exists, the leaf IS its
+ * own family — preserves "luminal cell of prostate epithelium" instead
+ * of dropping to "Epithelial."
+ */
+export interface CellFamilyEnrichment {
+  class: EnrichmentClass;
+  family_ids: string[];
+  family_labels: string[];
+  /** Per-family, the strongest leaf CL within the family — what the
+   *  family's signal actually rests on. */
+  top_cl_labels?: string[];
+  fold_change: number | null;
+  fold_change_infinite?: boolean;
+  tau?: number | null;
+  top_entity_contribs?: TopEntityContrib[];
 }
 
 export interface TissueEnrichment {
@@ -152,6 +200,7 @@ export interface TissueEnrichment {
    *  ∈ [0, 1]. Null when fewer than 2 tissues are above noise.
    *  v2.1.2+. */
   tau?: number | null;
+  top_entity_contribs?: TopEntityContrib[];
 }
 
 /**
@@ -175,6 +224,26 @@ export interface TissueCategoryEnrichment {
   fold_change: number | null;
   fold_change_infinite?: boolean;
   tau?: number | null;
+  top_entity_contribs?: TopEntityContrib[];
+}
+
+/**
+ * v2.1.4+ middle-granularity tissue axis (~150 terms). The "organ" of
+ * each leaf UBERON is the nearest ancestor in the UBERON graph with
+ * 4-30 cohort descendants — programmatic walk via
+ * src/accessible_surfaceome/audit/uberon_organ.py. Sits between the
+ * ~410-term leaf-UBERON axis (brain fragmented across 96 subregions)
+ * and the 13-category organ-system axis.
+ */
+export interface TissueOrganEnrichment {
+  class: EnrichmentClass;
+  organ_ids: string[];
+  organ_labels: string[];
+  top_uberon_labels?: string[];
+  fold_change: number | null;
+  fold_change_infinite?: boolean;
+  tau?: number | null;
+  top_entity_contribs?: TopEntityContrib[];
 }
 
 export interface TissueAggregateRow {
@@ -199,18 +268,23 @@ export interface CellxGeneEnrichment {
   hgnc_id: string | null;
   ensembl_gene: string | null;
 
-  /** Per-broad-class HPA elevation. v2.1.1+. The chip on the gene
-   *  page reads from this field first, falling back to
-   *  cell_type_enrichment for older records. */
+  /** Per-broad-class τ-cutoff classification. v2.1.1+. */
   cell_class_enrichment?: CellClassEnrichment;
-  /** Per-leaf-CL HPA elevation class. v2.1+. */
+  /** Per-cell-family τ-cutoff classification (~150 mid-granularity
+   *  terms). v2.1.4+. The chip on the gene page reads from this
+   *  field first — most biologically interpretable axis. */
+  cell_family_enrichment?: CellFamilyEnrichment;
+  /** Per-leaf-CL τ-cutoff classification. v2.1+. Noisy at ~600
+   *  terms — power users only. */
   cell_type_enrichment?: CellTypeEnrichment;
-  /** Per-tissue HPA elevation class. v2.1+. */
+  /** Per-leaf-UBERON τ-cutoff classification. v2.1+. */
   tissue_enrichment?: TissueEnrichment;
-  /** Per-tissue-category HPA elevation. v2.1.3+. Same role for the
-   *  tissue axis that cell_class_enrichment plays for cells — 14
-   *  organ-system rollup vs the fine-grained UBERON axis. */
+  /** Per-organ-system (~13 categories) τ-cutoff classification. v2.1.3+. */
   tissue_category_enrichment?: TissueCategoryEnrichment;
+  /** Per-tissue-organ (~150 mid-granularity terms) τ-cutoff
+   *  classification. v2.1.4+. The chip on the gene page reads from
+   *  this field first for the tissue axis. */
+  tissue_organ_enrichment?: TissueOrganEnrichment;
 
   /** Legacy back-compat fields. In v2.0 these were the only classification
    *  surface; v2.1 keeps them populated mirroring cell_type_enrichment.* so

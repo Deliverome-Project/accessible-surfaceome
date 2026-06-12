@@ -1122,13 +1122,13 @@ This Markdown is generated from the canonical JSON record at `/data/surfaceome/E
 
 ## CellxGene RNA enrichment (CZI Census)
 
-*Schema v2.1.6 · CZI Census 2025-11-08 · τ-cutoff classification (Yanai 2005) on linear population mean (mean × pct, ≈ nTPM): τ≥0.85 enriched, 0.5–0.85 enhanced, <0.5 low specificity, no eligibles not detected. Cell ontology graph (cl-basic.obo) walked to ~150 cell-family terms; UBERON ontology walked to ~150 organ-level tissues. Cutoffs follow HPA's tissue-specificity nTPM convention. CC-BY 4.0 (CZI Census).*
+*Schema v2.1.7 · CZI Census 2025-11-08 · τ-cutoff classification (Yanai 2005, PMID 15388519) on linear population mean (mean × pct, ≈ nTPM) over the full measured universe with a 1e-3 noise floor: τ≥0.85 enriched, 0.5–0.85 enhanced, <0.5 low specificity, no eligibles not detected. Cutoffs from Kryuchkova-Mostacci & Robinson-Rechavi 2017 (PMID 26891983) + Lüleci & Yılmaz 2022. Cell ontology graph (cl-basic.obo) walked to ~150 cell-family terms; UBERON ontology walked to ~150 organ-level tissues. CC-BY 4.0 (CZI Census).*
 
 **Classification:**
 
 - **Cell class (CL ontology graph, ~10 compartments):** low specificity · 1.1× · τ=0.49
-- **Cell type (leaf Cell Ontology terms, ~600):** enriched · basal epithelial cell of prostatic duct · placental villous trophoblast · skeletal muscle fibroblast · 1.1× · τ=0.89
-- **Tissue (UBERON terms, ~56):** enriched · eye · heart · adipose tissue · 1.2× · τ=0.93
+- **Cell type (leaf Cell Ontology terms, ~600):** enriched · basal epithelial cell of prostatic duct · placental villous trophoblast · skeletal muscle fibroblast · 1.1× · τ=0.94
+- **Tissue (UBERON terms, ~56):** enriched · heart · adipose tissue · brain · 1.1× · τ=0.98
 
 **Top 5 cell types (leaf CL, pooled across tissues):**
 
@@ -1144,10 +1144,10 @@ This Markdown is generated from the canonical JSON record at `/data/surfaceome/E
 
 | Tissue | UBERON ID | Mean log1p(CP10K) | % expressing | n_expressing / n_total |
 |---|---|---|---|---|
-| placenta | UBERON:0001987 | 2.496 | 46.52% | 100,039 / 215,057 |
-| prostate gland | UBERON:0002367 | 2.386 | 17.37% | 9,335 / 53,756 |
-| heart | UBERON:0000948 | 2.297 | 100.00% | 172,236 / 12,546 |
-| pancreas | UBERON:0001264 | 2.272 | 8.24% | 13,375 / 162,373 |
-| adipose tissue | UBERON:0001013 | 2.234 | 100.00% | 71,220 / 6,028 |
+| placenta | UBERON:0001987 | 2.496 | 45.32% | 100,039 / 220,762 |
+| prostate gland | UBERON:0002367 | 2.386 | 17.33% | 9,335 / 53,866 |
+| heart | UBERON:0000948 | 2.297 | 97.49% | 172,236 / 176,677 |
+| pancreas | UBERON:0001264 | 2.272 | 8.29% | 13,375 / 161,420 |
+| adipose tissue | UBERON:0001013 | 2.234 | 93.32% | 71,220 / 76,316 |
 
 <!-- /cellxgene -->

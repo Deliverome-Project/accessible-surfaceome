@@ -3704,10 +3704,10 @@
   "record_generated_at": "2026-06-09T01:43:58.622412Z",
   "prompt_corpus_version": "2.50.1",
   "cellxgene": {
-    "schema_version": "2.1.6",
+    "schema_version": "2.1.7",
     "census_version": "2025-11-08",
     "cell_class_enrichment": {
-      "class": "enhanced",
+      "class": "enriched",
       "class_ids": [
         "Epithelial"
       ],
@@ -3716,22 +3716,38 @@
       ],
       "fold_change": 2.283,
       "fold_change_infinite": false,
-      "tau": 0.7669737993520632
+      "tau": 0.9221353562874399,
+      "top_entity_contribs": [
+        {
+          "id": "Epithelial",
+          "label": "Epithelial",
+          "pop_mean": 3.5228,
+          "tau_contrib": 0.0
+        }
+      ]
     },
     "cell_family_enrichment": {
       "class": "enriched",
       "family_ids": [
-        "CL:0002178"
+        "CL:0000319"
       ],
       "family_labels": [
-        "epithelial cell of stomach"
+        "mucus secreting cell"
       ],
       "top_cl_labels": [
         "mucous cell of stomach"
       ],
       "fold_change": 2.283,
       "fold_change_infinite": false,
-      "tau": 0.948727127382846
+      "tau": 0.9801140945202602,
+      "top_entity_contribs": [
+        {
+          "id": "CL:0000319",
+          "label": "mucus secreting cell",
+          "pop_mean": 3.5228,
+          "tau_contrib": 0.0
+        }
+      ]
     },
     "cell_type_enrichment": {
       "class": "enriched",
@@ -3740,7 +3756,15 @@
       ],
       "fold_change": 2.283,
       "fold_change_infinite": false,
-      "tau": 0.9641671518036142
+      "tau": 0.990219597938285,
+      "top_entity_contribs": [
+        {
+          "id": "CL:0002180",
+          "label": "mucous cell of stomach",
+          "pop_mean": 3.5228,
+          "tau_contrib": 0.0
+        }
+      ]
     },
     "tissue_enrichment": {
       "class": "enriched",
@@ -3752,44 +3776,89 @@
         "eye",
         "uterus"
       ],
-      "fold_change": 1.671,
+      "fold_change": 1.307,
       "fold_change_infinite": false,
-      "tau": 0.940721605921718
+      "tau": 0.9914323267464088,
+      "top_entity_contribs": [
+        {
+          "id": "UBERON:0000970",
+          "label": "eye",
+          "pop_mean": 3.6416,
+          "tau_contrib": 0.0
+        },
+        {
+          "id": "UBERON:0000995",
+          "label": "uterus",
+          "pop_mean": 2.7858,
+          "tau_contrib": 0.235
+        }
+      ]
     },
     "tissue_category_enrichment": {
-      "class": "enriched",
+      "class": "enhanced",
       "category_ids": [
-        "head_sensory"
+        "fluids_other"
       ],
       "category_labels": [
-        "head_sensory"
+        "fluids_other"
       ],
       "top_tissues": [
-        "tongue"
+        ""
       ],
-      "fold_change": 2.967,
+      "fold_change": 1.571,
       "fold_change_infinite": false,
-      "tau": 0.9297852090211915
+      "tau": 0.8135038938509077,
+      "top_entity_contribs": [
+        {
+          "id": "fluids_other",
+          "label": "fluids_other",
+          "pop_mean": 5.7227,
+          "tau_contrib": 0.0
+        }
+      ]
     },
     "tissue_organ_enrichment": {
       "class": "enriched",
       "organ_ids": [
         "UBERON:0000970",
-        "UBERON:0000995"
+        "UBERON:0000995",
+        "UBERON:0002049"
       ],
       "organ_labels": [
         "eye",
-        "uterus"
+        "uterus",
+        "vasculature"
       ],
       "top_uberon_labels": [
         "eye",
-        "uterus"
+        "uterus",
+        "vasculature"
       ],
-      "fold_change": 1.671,
+      "fold_change": 1.307,
       "fold_change_infinite": false,
-      "tau": 0.9306969125506647
+      "tau": 0.9857921537595801,
+      "top_entity_contribs": [
+        {
+          "id": "UBERON:0000970",
+          "label": "eye",
+          "pop_mean": 3.6416,
+          "tau_contrib": 0.0
+        },
+        {
+          "id": "UBERON:0000995",
+          "label": "uterus",
+          "pop_mean": 2.7858,
+          "tau_contrib": 0.235
+        },
+        {
+          "id": "UBERON:0002049",
+          "label": "vasculature",
+          "pop_mean": 2.5097,
+          "tau_contrib": 0.3108
+        }
+      ]
     },
-    "enrichment_class": "enhanced",
+    "enrichment_class": "enriched",
     "enrichment_cl_ids": [
       "Epithelial"
     ],
@@ -4058,7 +4127,7 @@
         "uberon_id": "UBERON:0000473",
         "mean_log1p_cp10k": 2.2589,
         "n_expressing": 69,
-        "n_total": 10344,
+        "n_total": 10267,
         "pct_expressing": 0.0067,
         "is_trace": true
       },
@@ -4067,7 +4136,7 @@
         "uberon_id": "UBERON:0002369",
         "mean_log1p_cp10k": 2.118,
         "n_expressing": 2030,
-        "n_total": 350623,
+        "n_total": 350523,
         "pct_expressing": 0.0058,
         "is_trace": true
       },
@@ -4076,8 +4145,8 @@
         "uberon_id": "UBERON:0000922",
         "mean_log1p_cp10k": 2.0969,
         "n_expressing": 1722,
-        "n_total": 14142,
-        "pct_expressing": 0.1218,
+        "n_total": 15746,
+        "pct_expressing": 0.1094,
         "is_trace": false
       },
       {
@@ -4085,8 +4154,8 @@
         "uberon_id": "UBERON:0001043",
         "mean_log1p_cp10k": 2.0643,
         "n_expressing": 264,
-        "n_total": 3182,
-        "pct_expressing": 0.083,
+        "n_total": 3272,
+        "pct_expressing": 0.0807,
         "is_trace": false
       },
       {
@@ -4094,8 +4163,8 @@
         "uberon_id": "UBERON:0002097",
         "mean_log1p_cp10k": 1.9796,
         "n_expressing": 3221,
-        "n_total": 26932,
-        "pct_expressing": 0.1196,
+        "n_total": 21399,
+        "pct_expressing": 0.1505,
         "is_trace": false
       },
       {
@@ -4103,7 +4172,7 @@
         "uberon_id": "UBERON:0002367",
         "mean_log1p_cp10k": 1.9415,
         "n_expressing": 1275,
-        "n_total": 53756,
+        "n_total": 53766,
         "pct_expressing": 0.0237,
         "is_trace": false
       },
@@ -4112,8 +4181,8 @@
         "uberon_id": "UBERON:0001836",
         "mean_log1p_cp10k": 1.8978,
         "n_expressing": 40,
-        "n_total": 7293,
-        "pct_expressing": 0.0055,
+        "n_total": 7162,
+        "pct_expressing": 0.0056,
         "is_trace": true
       },
       {
@@ -4121,8 +4190,8 @@
         "uberon_id": "UBERON:0000344",
         "mean_log1p_cp10k": 1.8694,
         "n_expressing": 121,
-        "n_total": 1169,
-        "pct_expressing": 0.1035,
+        "n_total": 1214,
+        "pct_expressing": 0.0997,
         "is_trace": false
       },
       {
@@ -4130,8 +4199,8 @@
         "uberon_id": "UBERON:0002113",
         "mean_log1p_cp10k": 1.8314,
         "n_expressing": 9253,
-        "n_total": 238056,
-        "pct_expressing": 0.0389,
+        "n_total": 231006,
+        "pct_expressing": 0.0401,
         "is_trace": false
       },
       {
@@ -4139,8 +4208,8 @@
         "uberon_id": "UBERON:0000059",
         "mean_log1p_cp10k": 1.8298,
         "n_expressing": 700,
-        "n_total": 10101,
-        "pct_expressing": 0.0693,
+        "n_total": 10069,
+        "pct_expressing": 0.0695,
         "is_trace": false
       }
     ]

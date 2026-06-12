@@ -1059,13 +1059,13 @@ This Markdown is generated from the canonical JSON record at `/data/surfaceome/L
 
 ## CellxGene RNA enrichment (CZI Census)
 
-*Schema v2.1.6 · CZI Census 2025-11-08 · τ-cutoff classification (Yanai 2005) on linear population mean (mean × pct, ≈ nTPM): τ≥0.85 enriched, 0.5–0.85 enhanced, <0.5 low specificity, no eligibles not detected. Cell ontology graph (cl-basic.obo) walked to ~150 cell-family terms; UBERON ontology walked to ~150 organ-level tissues. Cutoffs follow HPA's tissue-specificity nTPM convention. CC-BY 4.0 (CZI Census).*
+*Schema v2.1.7 · CZI Census 2025-11-08 · τ-cutoff classification (Yanai 2005, PMID 15388519) on linear population mean (mean × pct, ≈ nTPM) over the full measured universe with a 1e-3 noise floor: τ≥0.85 enriched, 0.5–0.85 enhanced, <0.5 low specificity, no eligibles not detected. Cutoffs from Kryuchkova-Mostacci & Robinson-Rechavi 2017 (PMID 26891983) + Lüleci & Yılmaz 2022. Cell ontology graph (cl-basic.obo) walked to ~150 cell-family terms; UBERON ontology walked to ~150 organ-level tissues. CC-BY 4.0 (CZI Census).*
 
 **Classification:**
 
-- **Cell class (CL ontology graph, ~10 compartments):** enriched · Epithelial · 5.8× · τ=0.92
-- **Cell type (leaf Cell Ontology terms, ~600):** enriched · kidney proximal convoluted tubule epithelial cell · epithelial cell of proximal tubule segment 3 · 1.1× · τ=0.96
-- **Tissue (UBERON terms, ~56):** enriched · eye · 3.7× · τ=0.97
+- **Cell class (CL ontology graph, ~10 compartments):** enriched · Epithelial · 5.8× · τ=0.94
+- **Cell type (leaf Cell Ontology terms, ~600):** enriched · kidney proximal convoluted tubule epithelial cell · epithelial cell of proximal tubule segment 3 · 1.1× · τ=0.99
+- **Tissue (UBERON terms, ~56):** enriched · esophagus · kidney · eye · 1.1× · τ=0.99
 
 **Top 5 cell types (leaf CL, pooled across tissues):**
 
@@ -1081,10 +1081,10 @@ This Markdown is generated from the canonical JSON record at `/data/surfaceome/L
 
 | Tissue | UBERON ID | Mean log1p(CP10K) | % expressing | n_expressing / n_total |
 |---|---|---|---|---|
-| kidney | UBERON:0002113 | 2.643 | 69.62% | 165,733 / 238,056 |
-| lamina propria | UBERON:0000030 | 2.342 | 0.04% | 1 / 2,593 | (trace)
-| mucosa | UBERON:0000344 | 2.255 | 0.26% | 3 / 1,169 | (trace)
-| esophagus | UBERON:0001043 | 2.199 | 0.63% | 20 / 3,182 | (trace)
-| testis | UBERON:0000473 | 2.193 | 0.51% | 53 / 10,344 | (trace)
+| kidney | UBERON:0002113 | 2.643 | 53.47% | 165,733 / 309,976 |
+| testis | UBERON:0000473 | 2.193 | 0.52% | 53 / 10,198 | (trace)
+| adrenal gland | UBERON:0002369 | 2.163 | 0.03% | 96 / 346,185 | (trace)
+| eye | UBERON:0000970 | 2.066 | 99.32% | 738,674 / 743,729 |
+| pancreas | UBERON:0001264 | 2.053 | 0.33% | 534 / 161,128 | (trace)
 
 <!-- /cellxgene -->

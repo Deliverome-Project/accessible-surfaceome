@@ -62,16 +62,20 @@ cells genome-wide).
 ## τ-cutoff classification
 
 Per axis we compute Yanai 2005's specificity score on the **linear
-population mean** of eligible entities:
+population mean** over the **full measured universe** (eligibles plus
+ineligibles floored at a 1e-3 noise level):
 
 ```
 τ = Σ (1 − x_i / x_max) / (N − 1)
-x_i = expm1(mean_log1p_cp10k) × pct_expressing per entity
+x_i = expm1(mean_log1p_cp10k) × pct_expressing per eligible entity
+x_i = 1e-3                             per ineligible entity (universe-stable floor)
 ```
 
-τ ∈ [0, 1]: **0** = uniformly expressed across eligibles, **1** =
-concentrated in one entity. The discrete class then follows HPA's
-tissue-specificity nTPM convention:
+τ ∈ [0, 1]: **0** = uniformly expressed across the universe, **1** =
+concentrated in one entity. The class follows τ cutoffs from
+Kryuchkova-Mostacci & Robinson-Rechavi 2017 (PMID 26891983, τ
+best-in-class benchmark with τ ≥ 0.8 as "specific") and Lüleci &
+Yılmaz 2022 (the τ ≥ 0.85 idiom):
 
 | τ | Class |
 |---|---|
@@ -87,13 +91,27 @@ class-determining under τ cutoffs).
 ### Why τ cutoffs, not HPA's 4× rule
 
 HPA's 4× rule was sized for their ~40 broad tissues. Reapplied to
-cellxgene's 410 UBERONs or 600 leaf CLs, it reads `low_specificity` for
-genes that are clearly elevated in a small set — none of the eligible
-siblings dominates each other 4×. τ doesn't care about pair-wise
-ratios; it asks "how concentrated is the overall distribution?" which
-scales gracefully across axis sizes. Karbalaei 2024 (single-cell
-benchmark) reaffirms τ as the most robust specificity metric in
-single-cell contexts.
+cellxgene's 410 UBERONs or ~600 leaf CLs, it reads `low_specificity`
+for genes that are clearly elevated in a small set — none of the
+eligible siblings dominates each other 4×. τ doesn't care about
+pair-wise ratios; it asks "how concentrated is the overall
+distribution?" which scales gracefully across axis sizes.
+Kryuchkova-Mostacci 2017 and Karbalaei 2024 (single-cell benchmark)
+both crown τ as the most robust specificity metric for high-dimension
+tissue/cell-type axes.
+
+### Why the τ universe is the full measured set (not eligibles-only)
+
+Yanai 2005, Kryuchkova-Mostacci 2017, HPA's published tissue-specific
+proteome (37-tissue universe, nTPM ≥ 1 floor), and Tabula Sapiens 2.0
+(fixed N = 175 cell types) all keep `N` fixed by **flooring** low
+values rather than dropping below-threshold entities. Eligibles-only τ
+collapses to "concentration among entities that express the gene" —
+not the same question as specificity, and not cross-gene comparable.
+Our floor of 1e-3 linear pop mean is at the noise level (≈ a gene at
+mean log1p(CP10K)≈0.1 in 1% of cells); below the eligibility gate but
+not zero, so τ stays in a meaningful range when many entities sit at
+sub-noise levels.
 
 ### Why population mean, not mean-among-expressors
 
@@ -105,14 +123,32 @@ GTEx / Tabula Sapiens / Karbalaei 2024 all run on the population mean
 including non-expressors). Multiplying by `pct_expressing` collapses
 both axes into one number.
 
-### Why "enhanced" doesn't include zero baseline
+### Why DE / Wilcoxon backstop isn't required
 
-The enriched / not_detected tests count below-noise entities as 0 in
-the universe (so GPR75 signal in 4 of 56 tissues classifies as
-enriched, not low_specificity). The `enhanced` test *doesn't* include
-the zero baseline — including 50+ zeros drags `mean(rest)` to ~0.5 and
-EVERY moderately-expressed gene reads as enhanced over its
-most-prevalent tissue. The cutoff is asymmetric by design.
+A common question: shouldn't an "enriched" call carry a per-call
+significance test? Field practice on τ-based specificity work doesn't
+do this — τ is itself the discriminator, and the cutoffs (0.5 / 0.85)
+already encode an effect-size threshold. Kryuchkova-Mostacci 2017's
+benchmark and the τ-using HPA / Tabula Sapiens publications all
+classify by τ cutoffs without an accompanying Wilcoxon. We *could*
+layer a DE backstop on the chip-displayed entity (per-call p-value
+that the top entity is statistically higher than the rest), and might
+do so eventually for the leaf-CL axis where N=600+ inflates the
+false-discovery surface — but it's not required to ship the current
+τ-cutoff calls.
+
+### Per-entity τ contributions (v2.1.7+)
+
+Every axis's emitted record carries `top_entity_contribs` — the top
+1–3 entities by linear pop mean, each with its own per-entity τ
+contribution `1 − x / x_max`. The chip tooltip renders them so a
+reader can see *which* entities the call rests on and how strongly
+each one carries the τ score. The top entity always contributes 0
+(it's `x_max`); runners-up contribute proportionally to how far below
+the top they sit. For an `enriched` call where 3 entities are close
+in pop mean, the second and third contributions stay near 0 — the
+gene is concentrated in a small group. For `enriched · {one entity}`
+where only one stands out, the second contribution is large.
 
 ## Why eye / tongue / vasculature appear high for many genes
 
@@ -128,34 +164,39 @@ gate) but NOT `pct_expressing` — `pct` is a normalized fraction.
 
 ## Known weaknesses
 
-1. **`pct_expressing` overcount on the tissue axis.** Per-UBERON
-   `n_total` comes from summing `pair_counts[(cl, ub)]` over CL. When
-   CZI's WMG has parent + child CL annotations for the same cells
-   ("naive T cell" and "T cell" both annotated), the cell is counted
-   in both pairs, inflating both numerator and denominator. Usually
-   they cancel, but for tissues with deep CL hierarchies it doesn't —
-   CD63 pancreas yielded raw pct=154%. Clamp to ≤100% so the chart
-   doesn't render nonsense; long-term fix is a per-UBERON cell-union
-   count from `cellxgene_census.obs.value_counts(['tissue_ontology_term_id'])`
-   instead of summed pair counts.
+The "fixed in v2.1.7" entries below were live concerns through v2.1.6
+and are noted here so a reader catching the doc pre-rebuild knows
+they're addressed; they'll move to a changelog section after the next
+doc pass.
 
-2. **Stale cell-count cache vs WMG export.** The cell-count cache at
-   `/tmp/czi_cell_tissue_counts.tsv` was generated by an older
-   `obs.value_counts()` snapshot than the 2025-11-08 WMG it's joined
-   against. EGFR-embryo: cache has 4 CL terms profiled, WMG sees 36
-   with 28k expressing cells. Mitigation: WMG-nnz fallback (set
-   `n_total = max(cache_n_total, nnz)` and flag `is_uncertain=True`).
-   Long-term fix: regenerate the cell-count cache from the same Census
-   snapshot.
+1. **`pct_expressing` overcount on the tissue axis — FIXED in v2.1.7.**
+   Per-UBERON `n_total` previously summed `pair_counts[(cl, ub)]` over
+   all CL terms. When CZI's WMG annotates the same cells under
+   parent + child CL (`naive T cell` AND `T cell`), the cell was
+   counted in both pairs, inflating both numerator and denominator
+   (CD63 pancreas → raw pct=154%). Fix: aggregate only over **cohort-
+   leaf CL terms** (CL terms in the cohort with no cohort descendants)
+   plus a **per-(cl, ub) WMG-nnz fallback** at aggregation time
+   (`n_total_pair = max(cache_n_total, nnz)`), so per-pair pct is ≤
+   1.0 by construction and the per-UBERON weighted sum stays ≤ 1.0.
+   No clipping needed.
 
-3. **Cell-family fallback to compartment.** When a leaf CL has no CL
-   graph ancestor with 6–40 cohort descendants (KLK2's prostate
-   luminal CL has very few CZI siblings), the family axis falls back
-   to the broad compartment ("Epithelial"). The chip then reads
-   `enriched · Epithelial` instead of `enriched · luminal prostate
-   epithelial cell`. Fine for ranking but loses precision in the
-   label. Could be improved by widening the descendant range or by a
-   secondary fallback to the leaf CL itself.
+2. **Stale cell-count cache vs WMG export — MITIGATED in v2.1.7.** The
+   cache at `/tmp/czi_cell_tissue_counts.tsv` was generated from an
+   earlier `obs.value_counts()` snapshot than the 2025-11-08 WMG it
+   joins against. EGFR-embryo: cache has 4 CL terms profiled, WMG
+   sees 36 with 28k expressing cells. The per-(cl, ub) WMG-nnz
+   fallback handles the gap (cells dropped from the cache float
+   back in via WMG). Long-term fix: regenerate the cell-count cache
+   from the 2025-11-08 Census snapshot.
+
+3. **Cell-family fallback — FIXED in v2.1.7.** Previously: when a
+   leaf CL had no graph ancestor with 6–40 cohort descendants (KLK2's
+   prostate luminal CL has few CZI siblings), the family axis fell
+   back to the broad compartment ("Epithelial"), losing precision in
+   the chip label. Fix: the leaf IS its own family — the chip now
+   reads `enriched · luminal cell of prostate epithelium` instead of
+   `enriched · Epithelial`. See [src/accessible_surfaceome/audit/cl_family.py:113](src/accessible_surfaceome/audit/cl_family.py:113).
 
 4. **Tissue-organ "single leaf is its own organ" heuristic.** Each
    UBERON's organ is the most-ancestral cohort UBERON above it (per
@@ -172,40 +213,50 @@ gate) but NOT `pct_expressing` — `pct` is a normalized fraction.
    others (T cell — 24 descendants, millions of cells) have universe
    ~10M. The τ math is universe-insensitive (it normalizes by N) but
    the noise gate compares pct against MIN_PCT_FOR_CLASS, so a leaf
-   passing the gate doesn't always promote its family. Mitigation:
-   the family-axis classifier uses leaf-pct eligibility (any-leaf
-   pass at MIN_PCT_FOR_BROAD_CLASS) the same way the broad-class axis
-   does, but the universe size still affects τ.
+   passing the gate doesn't always promote its family.
 
 6. **No multiple-testing correction.** When the classifier picks
-   "enriched" at the leaf-CL axis (600+ entities) for a gene, that
+   "enriched" at the leaf-CL axis (~600 entities) for a gene, that
    choice has 600× the false-discovery surface of an HPA call on 40
-   tissues. We don't BH-correct. Field-standard would.
+   tissues. We don't BH-correct. Field-standard would, especially at
+   the leaf-CL granularity. Lower priority for the middle-granularity
+   axes (~150 each) where false-discovery surface is closer to HPA's
+   scale.
 
-7. **No statistical-significance gate.** We use noise thresholds
-   (nnz ≥ 10, pct ≥ 1%) but no Wilcoxon / permutation test. A
-   marker-style test (like `rank_genes_groups` in scanpy) would give
-   per-call p-values.
+7. **No statistical-significance gate.** Noise thresholds (nnz ≥ 10,
+   pct ≥ 1%) but no Wilcoxon / permutation test. Per the "Why DE
+   backstop isn't required" section above, field practice on τ-based
+   specificity doesn't require one; the τ cutoff (0.5/0.85) IS the
+   effect-size threshold. Optional layer for a later pass on the
+   leaf-CL axis where the multiple-testing surface is highest.
 
-8. **No Wilcoxon / DE backstop on the chip-displayed entity.** When
-   `enriched · kidney loop of Henle` shows for GPR75, we report the
-   max-pop-mean leaf. Field-standard would be a Wilcoxon test "is
-   this gene significantly higher in this CL term than the rest?"
-   The chip just claims the rank.
+8. **The leaf-CL classification is published but mostly returns
+   `enriched` (because τ on ~600 noisy entities almost always finds
+   one peak).** Power users can read it from the JSON for inspection,
+   but exposing it in the chip would be noise. The viewer chip
+   defaults to `cell_family_enrichment` for this reason. Worth
+   deciding pre-6500-rollout: drop `cell_type_enrichment` from the
+   emitted record (saves ~1KB per gene), or keep as a power-user
+   debug field?
 
-9. **The leaf-CL classification is published but mostly returns
-   low_specificity.** Power users can read it from the JSON, but
-   exposing it in the chip would be noise. Worth deciding: drop
-   `cell_type_enrichment` from the emitted record, or keep as a
-   power-user field?
+9. **Eye / tongue / vasculature dominance isn't a bug, but it IS
+   counterintuitive.** A reader expecting "tissue specificity" might
+   be surprised KLK2's tissue-organ axis says `enriched · prostate
+   gland` (right) but EGFR's says `enriched · heart` or `enriched ·
+   tongue` (right per the population-mean metric, but EGFR is
+   biologically broadly epithelial). The cell-family axis is more
+   interpretable for broadly-expressed genes. Worth documenting in a
+   per-gene help bubble or surfacing the top-3 contributors so the
+   reader sees the runner-up tissues are close.
 
-10. **Eye / tongue / vasculature dominance isn't a bug, but it IS
-    counterintuitive.** A reader expecting "tissue specificity" might
-    be surprised KLK2's tissue-organ axis says `enriched · prostate
-    gland` (right) but EGFR's says `enriched · tongue` (right per the
-    metric, but EGFR is biologically broadly epithelial). The
-    cell-family axis is more interpretable for broadly-expressed
-    genes. Worth documenting in a per-gene help bubble.
+10. **No per-axis effect-size lower bound.** A gene can register
+    `enriched` at the cell-family axis with a top entity at pop_mean
+    = 0.05 (just above the 1e-3 noise floor — its τ shape is still
+    concentrated) if every other family is below noise. This reads
+    correctly under τ semantics ("concentrated where it's detected at
+    all"), but a reader might expect "enriched" to imply an
+    absolute-magnitude floor too. Could add a `confidence` field that
+    flags when the top entity's pop_mean is below e.g. 1.0.
 
 ## TODOs (next pass)
 
@@ -221,10 +272,25 @@ gate) but NOT `pct_expressing` — `pct` is a normalized fraction.
 
 ## Scalability plan for the full 6500+ gene cohort
 
-This isn't yet run — it's the next deliberate decision. The
-build-script side scales linearly with the gene set (the WMG stream is
-the constant cost, ~60s; per-gene per-axis math is microseconds). The
-question is **how D1 serves the result**:
+**Key design decision: the cellxgene layer is independent of the
+deep-dive layer.** The 6500-gene catalog will first be built and
+served WITHOUT cellxgene enrichment (just `candidate_universe_public`
++ `surface_annotation` deep-dive records as they're written). Once
+the catalog is live, we layer cellxgene on top via a D1 LEFT JOIN —
+the Worker query becomes "give me the catalog row plus its cellxgene
+chip columns if present." This decoupling means:
+
+1. The cellxgene build runs on its own schedule (rebuild whenever the
+   CZI Census refreshes; the WMG stream is the constant cost).
+2. The cellxgene build doesn't have to wait for deep-dives, and a
+   gene without a deep-dive still gets a cellxgene chip in the
+   catalog table.
+3. Schema migrations on `czi_cellxgene_enrichment` don't touch the
+   deep-dive tables.
+
+The build-script side scales linearly with the gene set (the WMG
+stream is the constant cost, ~60s; per-gene per-axis math is
+microseconds). The question is **how D1 serves the result**:
 
 ### D1 schema options
 
@@ -242,7 +308,7 @@ Cons:
 - The `surface_annotation` endpoint can't easily JOIN — the cellxgene
   data isn't column-indexed.
 
-#### Option B: denormalize chip-facing columns into `czi_cellxgene_enrichment`
+#### Option B (DONE in v2.1.7): denormalize chip-facing columns into `czi_cellxgene_enrichment`
 
 Add columns:
 
@@ -316,26 +382,58 @@ round-trip × 16-way parallelism = ~3-5 minutes. Already handled by
 
 ### Pre-flight checklist before the 6500-gene run
 
+- [x] Land the Option B schema migration in `cloudflare/d1_schema.sql`
+      and `cloudflare/d1_public_schema.sql`. *(v2.1.7)*
+- [x] Add the column-write path to `sync_czi_enrichment_to_d1.py`.
+      *(v2.1.7)*
+- [x] Update the Worker's `/v1/catalog` to LEFT JOIN
+      `czi_cellxgene_enrichment` and emit the compact `cxg_cf` / `cxg_to`
+      short-key fields. *(deployed)*
+- [x] Wire viewer `CatalogTable` to render the chips + filter chips +
+      entity-dropdown for cell_family + tissue_organ. *(v2.1.7)*
 - [ ] Decide: keep leaf-CL classification (currently mostly
-      low_specificity, JSON only) or drop it from the emitted record?
+      `enriched` because τ on ~600 noisy entities almost always finds
+      one peak — see weakness #8) or drop it from the emitted record?
+      Saves ~1KB per gene.
 - [ ] Regenerate `/tmp/czi_cell_tissue_counts.tsv` from the 2025-11-08
-      Census so WMG-nnz fallback isn't needed (or keep the fallback if
-      cache regeneration is expensive).
-- [ ] Land the Option B schema migration in `cloudflare/d1_schema.sql`
-      and `cloudflare/d1_public_schema.sql`.
-- [ ] Add the column-write path to `sync_czi_enrichment_to_d1.py`.
-- [ ] Update the Worker's `/v1/catalog` to JOIN + accept the new
-      query params.
+      Census so the WMG-nnz fallback isn't needed (mitigation is in
+      place; this is a clean-up, not a blocker).
 - [ ] Smoke-test the join with a subset first (run for 100 genes,
       verify viewer chip + catalog filter work end-to-end).
 - [ ] Full 6500-gene rebuild + sync.
 
+### What the 6500-gene rollout looks like operationally
+
+The deep-dive cohort grows independently — at 14 genes today,
+targeting 6500 once `surface_annotator` is running at full cohort
+scale. The cellxgene layer doesn't need to wait. Concretely:
+
+1. Run `build_czi_enrichment_v2_1.py` over the full ~19k
+   protein-coding cohort (no `--genes-file`; the WMG stream is
+   read once for everything). ETA ~5–10 minutes for the WMG + per-gene
+   record build; D1 push dominates at ~3–5 minutes via
+   `ThreadPoolExecutor` parallelism.
+2. The catalog page already serves `cxg_cf` / `cxg_to` via the
+   Worker's LEFT JOIN — every gene with a cellxgene row gets its
+   chip, every gene without (≈ 0 at full coverage) gets a blank chip
+   gracefully.
+3. The catalog filter chips (cell_family enriched/enhanced + entity
+   dropdown, same for tissue_organ) work over the full 6500 without
+   schema changes — the indexes on `cell_family_class` and
+   `tissue_organ_class` are pre-existing from the v2.1.7 migration.
+4. Per-gene pages without a deep-dive will still get the chart +
+   classification chips, because `loadCellxGeneEnrichment` is a
+   separate fetch from `loadSurfaceomeRecord` and gracefully reads
+   from `/v1/genes/{symbol}/cellxgene` directly.
+
 ## References
 
-- Yanai et al. 2005, *Bioinformatics* — original τ definition.
-- Kryuchkova-Mostacci & Robinson-Rechavi 2017, *Brief. Bioinformatics* — τ benchmarked most robust.
+- Yanai et al. 2005, *Bioinformatics* (PMID [15388519](https://pubmed.ncbi.nlm.nih.gov/15388519/)) — original τ definition; uses fixed N with noise floor.
+- Kryuchkova-Mostacci & Robinson-Rechavi 2017, *Brief. Bioinformatics* (PMID [26891983](https://pubmed.ncbi.nlm.nih.gov/26891983/)) — τ benchmarked most robust across specificity metrics; < 1 RPKM floor.
+- Lüleci & Yılmaz 2022, *BioData Mining* — τ ≥ 0.85 cutoff for "specific" expression.
 - Karbalaei et al. 2024, *Brief. Bioinformatics* — single-cell extension benchmark; pseudobulk / population-mean input.
-- HPA tissue-specificity definitions: https://www.proteinatlas.org/humanproteome/tissue/tissue+specific
+- Tabula Sapiens 2.0, bioRxiv 2024.12.03.626516 — fixed N = 175 cell types + τ > 0.85 cutoff.
+- HPA tissue-specificity definitions (4× nTPM rule — context, not what we use): https://www.proteinatlas.org/humanproteome/tissue/tissue+specific
 - CZI Census: https://chanzuckerberg.github.io/cellxgene-census/ (CC-BY 4.0).
 - Cell Ontology (cl-basic.obo): https://purl.obolibrary.org/obo/cl/cl-basic.obo
 - UBERON ontology: https://purl.obolibrary.org/obo/uberon.obo

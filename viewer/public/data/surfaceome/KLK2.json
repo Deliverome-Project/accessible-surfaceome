@@ -3094,7 +3094,7 @@
   "model_path": "claude-sonnet-4-6",
   "record_generated_at": "2026-05-31T15:33:42.417728Z",
   "cellxgene": {
-    "schema_version": "2.1.6",
+    "schema_version": "2.1.7",
     "census_version": "2025-11-08",
     "cell_class_enrichment": {
       "class": "enriched",
@@ -3106,22 +3106,38 @@
       ],
       "fold_change": 47.397,
       "fold_change_infinite": false,
-      "tau": 0.9789017074478045
+      "tau": 0.9976126566413321,
+      "top_entity_contribs": [
+        {
+          "id": "Epithelial",
+          "label": "Epithelial",
+          "pop_mean": 20.6293,
+          "tau_contrib": 0.0
+        }
+      ]
     },
     "cell_family_enrichment": {
       "class": "enriched",
       "family_ids": [
-        "Epithelial"
+        "CL:0002340"
       ],
       "family_labels": [
-        "Epithelial"
+        "luminal cell of prostate epithelium"
       ],
       "top_cl_labels": [
         "luminal cell of prostate epithelium"
       ],
-      "fold_change": 16.645,
+      "fold_change": 3.137,
       "fold_change_infinite": false,
-      "tau": 0.9763882921302134
+      "tau": 0.9980524120608733,
+      "top_entity_contribs": [
+        {
+          "id": "CL:0002340",
+          "label": "luminal cell of prostate epithelium",
+          "pop_mean": 20.6293,
+          "tau_contrib": 0.0
+        }
+      ]
     },
     "cell_type_enrichment": {
       "class": "enriched",
@@ -3130,7 +3146,15 @@
       ],
       "fold_change": 3.137,
       "fold_change_infinite": false,
-      "tau": 0.9327703947916695
+      "tau": 0.999316242732598,
+      "top_entity_contribs": [
+        {
+          "id": "CL:0002340",
+          "label": "luminal cell of prostate epithelium",
+          "pop_mean": 20.6293,
+          "tau_contrib": 0.0
+        }
+      ]
     },
     "tissue_enrichment": {
       "class": "enriched",
@@ -3140,24 +3164,40 @@
       "tissue_labels": [
         "prostate gland"
       ],
-      "fold_change": null,
-      "fold_change_infinite": true,
-      "tau": null
+      "fold_change": 118.35,
+      "fold_change_infinite": false,
+      "tau": 0.999861987099193,
+      "top_entity_contribs": [
+        {
+          "id": "UBERON:0002367",
+          "label": "prostate gland",
+          "pop_mean": 11.2973,
+          "tau_contrib": 0.0
+        }
+      ]
     },
     "tissue_category_enrichment": {
       "class": "enriched",
       "category_ids": [
-        "reproductive"
+        "fluids_other"
       ],
       "category_labels": [
-        "reproductive"
+        "fluids_other"
       ],
       "top_tissues": [
-        "prostate gland"
+        ""
       ],
-      "fold_change": null,
-      "fold_change_infinite": true,
-      "tau": null
+      "fold_change": 3.598,
+      "fold_change_infinite": false,
+      "tau": 0.9765130724696217,
+      "top_entity_contribs": [
+        {
+          "id": "fluids_other",
+          "label": "fluids_other",
+          "pop_mean": 40.6502,
+          "tau_contrib": 0.0
+        }
+      ]
     },
     "tissue_organ_enrichment": {
       "class": "enriched",
@@ -3170,9 +3210,17 @@
       "top_uberon_labels": [
         "prostate gland"
       ],
-      "fold_change": null,
-      "fold_change_infinite": true,
-      "tau": null
+      "fold_change": 118.35,
+      "fold_change_infinite": false,
+      "tau": 0.9998431144748633,
+      "top_entity_contribs": [
+        {
+          "id": "UBERON:0002367",
+          "label": "prostate gland",
+          "pop_mean": 11.2973,
+          "tau_contrib": 0.0
+        }
+      ]
     },
     "enrichment_class": "enriched",
     "enrichment_cl_ids": [
@@ -3403,12 +3451,21 @@
     ],
     "top_tissues": [
       {
+        "tissue": "UBERON:0002365",
+        "uberon_id": "UBERON:0002365",
+        "mean_log1p_cp10k": 3.7293,
+        "n_expressing": 2093,
+        "n_total": 2093,
+        "pct_expressing": 1.0,
+        "is_trace": false
+      },
+      {
         "tissue": "prostate gland",
         "uberon_id": "UBERON:0002367",
         "mean_log1p_cp10k": 3.4542,
         "n_expressing": 19925,
-        "n_total": 53756,
-        "pct_expressing": 0.3707,
+        "n_total": 54027,
+        "pct_expressing": 0.3688,
         "is_trace": false
       },
       {
@@ -3416,17 +3473,8 @@
         "uberon_id": "UBERON:0001255",
         "mean_log1p_cp10k": 2.5772,
         "n_expressing": 6,
-        "n_total": 15201,
-        "pct_expressing": 0.0004,
-        "is_trace": true
-      },
-      {
-        "tissue": "intestine",
-        "uberon_id": "UBERON:0000160",
-        "mean_log1p_cp10k": 2.1873,
-        "n_expressing": 1,
-        "n_total": 49900,
-        "pct_expressing": 0.0,
+        "n_total": 9597,
+        "pct_expressing": 0.0006,
         "is_trace": true
       },
       {
@@ -3434,7 +3482,7 @@
         "uberon_id": "UBERON:0002369",
         "mean_log1p_cp10k": 2.1031,
         "n_expressing": 11,
-        "n_total": 350623,
+        "n_total": 349970,
         "pct_expressing": 0.0,
         "is_trace": true
       },
@@ -3443,7 +3491,7 @@
         "uberon_id": "UBERON:0001264",
         "mean_log1p_cp10k": 2.0711,
         "n_expressing": 20,
-        "n_total": 162373,
+        "n_total": 159745,
         "pct_expressing": 0.0001,
         "is_trace": true
       },
@@ -3452,17 +3500,8 @@
         "uberon_id": "UBERON:0000310",
         "mean_log1p_cp10k": 2.0513,
         "n_expressing": 754,
-        "n_total": 1579266,
+        "n_total": 1473211,
         "pct_expressing": 0.0005,
-        "is_trace": true
-      },
-      {
-        "tissue": "mucosa",
-        "uberon_id": "UBERON:0000344",
-        "mean_log1p_cp10k": 1.9654,
-        "n_expressing": 4,
-        "n_total": 1169,
-        "pct_expressing": 0.0034,
         "is_trace": true
       },
       {
@@ -3470,9 +3509,9 @@
         "uberon_id": "UBERON:0002097",
         "mean_log1p_cp10k": 1.9079,
         "n_expressing": 234,
-        "n_total": 26932,
-        "pct_expressing": 0.0087,
-        "is_trace": true
+        "n_total": 20032,
+        "pct_expressing": 0.0117,
+        "is_trace": false
       },
       {
         "tissue": "chest wall",
@@ -3488,8 +3527,17 @@
         "uberon_id": "UBERON:0001987",
         "mean_log1p_cp10k": 1.8942,
         "n_expressing": 10,
-        "n_total": 215057,
-        "pct_expressing": 0.0,
+        "n_total": 189317,
+        "pct_expressing": 0.0001,
+        "is_trace": true
+      },
+      {
+        "tissue": "kidney",
+        "uberon_id": "UBERON:0002113",
+        "mean_log1p_cp10k": 1.8842,
+        "n_expressing": 27,
+        "n_total": 126391,
+        "pct_expressing": 0.0002,
         "is_trace": true
       }
     ]

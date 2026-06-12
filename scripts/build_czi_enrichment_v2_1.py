@@ -90,7 +90,7 @@ ENS_MAP = Path(
 OUT_DIR = Path(os.environ.get("CZI_OUT_DIR", "/tmp/czi_enrichment_v2_1"))
 MANIFEST = OUT_DIR.parent / (OUT_DIR.name + "_manifest.tsv")
 CENSUS_VERSION = "2025-11-08"
-SCHEMA_VERSION = "2.1.6"
+SCHEMA_VERSION = "2.1.7"
 
 # Classifier eligibility (lenient — captures whatever has signal).
 MIN_N_TOTAL_FOR_CLASS = 50
@@ -263,36 +263,39 @@ def load_ens_map() -> dict[str, tuple[str, str]]:
 def classify_hpa(
     entities: dict[str, float],          # entity_id -> LINEAR population mean (mean × pct, ≈ nTPM)
     n_totals: dict[str, int],            # entity_id -> n_total (full universe)
-) -> tuple[str, list[str], float | None]:
+) -> tuple[str, list[str], float | None, list[tuple[str, float, float]]]:
     """Classify by τ cutoffs on linear population mean.
 
-    Returns (class, entity_ids, fold_change). `class` is one of
-    `not_detected | enriched | enhanced | low_specificity`. `entity_ids`
-    carries the top-ranked entities by linear pop mean (1-3 entries,
-    used for the chip's "in {entities}" line). `fold_change` is the
-    top-vs-next-ranked ratio (informational, not class-determining
-    under τ cutoffs).
+    Returns ``(class, entity_ids, fold_change, top_entity_contribs)``.
+    ``class`` is one of ``not_detected | enriched | enhanced |
+    low_specificity``. ``entity_ids`` carries the top-ranked entities
+    by linear pop mean (1-3 entries — the chip's "in {entities}"
+    list). ``fold_change`` is top-vs-next-ranked ratio
+    (informational). ``top_entity_contribs`` is a list of
+    ``(entity_id, pop_mean, per_entity_tau_contribution)`` tuples
+    for the top 3 — used to render the multi-entity tooltip with
+    per-entity numbers.
 
-    **Why τ instead of HPA's 4× rule.** HPA's discrete classes
-    (enriched / group_enriched / enhanced / low_specificity) are
-    derived from a binary 4× fold-change test that's sensitive to
-    where you draw the eligible set and the next-ranked entity. τ
-    (Yanai 2005) is a continuous specificity score over the eligible
-    distribution. Cutoffs:
+    **τ cutoffs (NOT HPA).** HPA's discrete tissue-specificity
+    classification uses a 4× fold-change rule on nTPM
+    (https://www.proteinatlas.org/humanproteome/tissue/tissue+specific).
+    We do NOT follow HPA's discrete scheme — we use Yanai 2005 τ
+    cutoffs derived from the Kryuchkova-Mostacci & Robinson-Rechavi
+    2017 benchmark (which crowned τ best-in-class with τ ≥ 0.8) and
+    the τ ≥ 0.85 idiom (Lüleci & Yılmaz 2022):
 
         τ ≥ 0.85   → enriched
         0.5 ≤ τ < 0.85 → enhanced
         τ < 0.5    → low_specificity
 
-    These cutoffs follow HPA's own tissue-specificity score
-    convention for nTPM (https://www.proteinatlas.org/humanproteome/
-    tissue/tissue+specific). The single-eligible edge case is
-    "enriched" by definition (no other entity to spread expression
-    over). Zero eligibles → not_detected.
+    Single-eligible edge case is enriched by definition. Zero
+    eligibles → not_detected.
 
-    **Input scale.** ``entities`` carries LINEAR population mean per
-    entity (≈ nTPM). HPA / GTEx / Bgee / Tabula Sapiens / Karbalaei
-    2024 all use this scale for τ.
+    **τ universe = full measured set + noise floor.** Yanai 2005 and
+    Kryuchkova-Mostacci 2017 always floor low intensities rather
+    than dropping entities; HPA likewise uses a fixed 37-tissue
+    universe with nTPM ≥ 1 floor; Tabula Sapiens 2.0 fixes N = 175
+    cell types. See compute_tau docstring.
     """
     # Eligible entities (above noise) ranked by linear pop mean.
     eligible = sorted(
@@ -305,97 +308,129 @@ def classify_hpa(
         reverse=True,
     )
 
+    def _top_contribs(
+        top_ids: list[str], x_max: float
+    ) -> list[tuple[str, float, float]]:
+        """Per-entity (id, pop_mean, tau_contribution) for the chip
+        tooltip. tau_contribution = (1 − x/x_max) — the entity's own
+        contribution to the τ sum, intuitive as "how much this entity
+        adds to the specificity score." For the top entity it's 0
+        (x = x_max), for entities at the floor it's near 1."""
+        out: list[tuple[str, float, float]] = []
+        emap = dict(eligible)
+        for k in top_ids:
+            v = emap.get(k, TAU_NOISE_FLOOR)
+            contrib = 1.0 - (v / x_max) if x_max > 0 else 0.0
+            out.append((k, v, contrib))
+        return out
+
     if len(eligible) == 0:
-        return "not_detected", [], None
+        return "not_detected", [], None, []
     if len(eligible) == 1:
-        # One entity above noise; everything else below detection.
-        # Definitionally enriched. fold is infinite over the implicit
-        # zero baseline.
-        return "enriched", [eligible[0][0]], float("inf")
+        return "enriched", [eligible[0][0]], float("inf"), _top_contribs(
+            [eligible[0][0]], eligible[0][1]
+        )
 
     linear = [v for _, v in eligible]
     ids = [k for k, _ in eligible]
-
-    # τ over the eligible distribution (Yanai 2005).
     x_max = linear[0]
-    if x_max <= 0:
-        return "not_detected", [], None
-    tau = sum(1.0 - x / x_max for x in linear) / (len(linear) - 1)
 
-    # Fold change of top vs next-ranked — kept as the "how
-    # concentrated" companion number to τ. Not class-determining
-    # under τ cutoffs.
+    # τ over the full universe with noise floor — see compute_tau.
+    tau = compute_tau(entities, n_totals)
+    if tau is None:
+        return "not_detected", [], None, []
+
+    # Fold = top vs next-ranked (companion to τ, not class-determining).
     fold: float | None
     if linear[1] > 0:
         fold = linear[0] / linear[1]
     else:
         fold = float("inf")
 
-    # τ cutoffs (HPA's tissue-specificity nTPM convention).
+    # τ cutoffs: Yanai 2005 + Kryuchkova-Mostacci 2017; 0.85 idiom
+    # from Lüleci & Yılmaz 2022.
     if tau >= 0.85:
-        # Concentrated in one or a small group of entities — report
-        # the top by pop mean (up to 3) as the "in {entities}" list.
+        # Up to 3 top entities by pop mean for the chip's "in {ents}"
+        # line + the per-entity tooltip — restrict to entities within
+        # 50% of the top so we don't list weakly-contributing ones.
         top_ids = [k for k, v in eligible if v >= 0.5 * x_max][:3]
         if not top_ids:
             top_ids = [ids[0]]
-        return "enriched", top_ids, fold
+        return "enriched", top_ids, fold, _top_contribs(top_ids, x_max)
     if tau >= 0.5:
-        return "enhanced", [ids[0]], fold
-    return "low_specificity", [], fold
+        top_ids = [ids[0]]
+        return "enhanced", top_ids, fold, _top_contribs(top_ids, x_max)
+    return "low_specificity", [], fold, []
+
+
+TAU_NOISE_FLOOR = 0.001
+"""Linear pop-mean floor for ineligible entities in τ.
+
+Yanai 2005 explicitly noise-floored low intensities (`set log10(30) for
+all intensities below log10(30)`); Kryuchkova-Mostacci 2017 likewise
+floored expression at 1 RPKM. The floor — not removal of ineligibles
+— is the canonical universe choice for τ in tissue-specificity work.
+
+Our floor: 0.001 linear pop mean ≈ a gene expressed at mean log1p(CP10K)
+≈ 0.1 in 1% of cells. Below the noise gate, but not zero — keeps τ
+in a meaningful range when many entities sit at sub-noise levels."""
 
 
 def compute_tau(
     entities: dict[str, float],
     n_totals: dict[str, int],
 ) -> float | None:
-    """Yanai et al. 2005 tissue-specificity τ over the eligible set.
+    """Yanai 2005 τ over the FULL measured universe with a noise floor.
 
-    τ = Σ (1 − x_i / x_max) / (N − 1), where x_i is the LINEAR
-    population-mean expression of entity i (mean among expressors ×
-    pct_expressing — the nTPM-equivalent).
+    τ = Σ (1 − x_i / x_max) / (N − 1), where x_i is the linear
+    population-mean expression of entity i ∈ universe.
 
-    Input ``entities`` carries the linear population mean per entity
-    (already on the right scale; the caller has multiplied
-    mean-among-expressors by pct and applied expm1 upstream). The
-    field convention (HPA / GTEx / Bgee / Karbalaei 2024) runs τ on
-    population mean, NOT on mean-among-expressors — pct must be
-    folded in or low-prevalence high-intensity single-cell artifacts
-    inflate τ.
+    ``entities`` carries the linear population mean per ELIGIBLE
+    entity (above the noise gate). ``n_totals`` carries n_total for
+    every entity in the universe — including ineligibles. Ineligibles
+    contribute ``TAU_NOISE_FLOOR`` to the τ sum (Yanai 2005 floor,
+    Kryuchkova-Mostacci 2017 confirmation — they always floor low
+    intensities rather than dropping entities, so a fixed N keeps τ
+    cross-gene comparable).
 
-    **Why over eligibles, not the full universe.** HPA's original τ
-    treats each of ~40 broad tissues as a measured value (no zeros —
-    nTPM has a noise floor, not actual zeros). cellxgene single-cell
-    data has hard dropout: 50+ of 56 tissues sit at exactly 0 for most
-    genes. Including those zeros makes τ converge to "fraction of
-    universe with no signal" — a sparsity metric, not a specificity
-    metric. Computing τ over the eligible (above-noise) entities
-    answers the question HPA's τ was designed to answer.
+    Why over the full universe (not eligibles-only): Yanai 2005,
+    Kryuchkova-Mostacci 2017, HPA's tissue-specificity proteome, and
+    Tabula Sapiens 2.0 all keep N fixed by flooring low values rather
+    than removing entities below detection. Eligibles-only τ collapses
+    to "concentration among entities that express the gene" which is a
+    different question and isn't cross-gene comparable.
 
     Returns:
-        τ ∈ [0, 1], or ``None`` when fewer than 2 eligibles or
-        x_max == 0. 0 → uniform across eligibles. 1 → concentrated
-        in one eligible.
+        τ ∈ [0, 1], or ``None`` when fewer than 2 universe entities
+        or x_max <= floor (gene effectively unmeasured everywhere).
 
     Field references:
-        * Yanai et al. 2005, *Bioinformatics* — original τ.
+        * Yanai et al. 2005, *Bioinformatics* (PMID 15388519) —
+          original τ; uses fixed N with noise floor.
         * Kryuchkova-Mostacci & Robinson-Rechavi 2017, *Brief.
-          Bioinformatics* — benchmark naming τ most robust.
-        * Karbalaei et al. 2024, *Brief. Bioinformatics* — single-cell
-          extension benchmark; confirms pseudobulk / population-mean
-          input is the right choice for single-cell data.
-        * HPA's "Tissue distribution" tags, Tabula Sapiens cell-type
-          enrichment — both run τ on population-mean nTPM-equivalents.
+          Bioinformatics* (PMID 26891983) — τ best-in-class
+          benchmark; <1 RPKM floor.
+        * Lüleci & Yılmaz 2022, *BioData Mining* — τ ≥ 0.85 cutoff
+          for "specific" expression.
+        * HPA tissue-specific page (37-tissue universe + nTPM ≥ 1
+          floor).
+        * Tabula Sapiens 2.0 (bioRxiv 2024.12.03.626516) — τ > 0.85
+          over fixed 175-cell-type universe.
     """
     linear: list[float] = []
-    for k, v in entities.items():
-        if n_totals.get(k, 0) < MIN_N_TOTAL_FOR_CLASS:
+    for k, n_total in n_totals.items():
+        if n_total < MIN_N_TOTAL_FOR_CLASS:
             continue
-        linear.append(v)
+        v = entities.get(k)
+        if v is None or v < TAU_NOISE_FLOOR:
+            linear.append(TAU_NOISE_FLOOR)
+        else:
+            linear.append(v)
     n = len(linear)
     if n < 2:
         return None
     x_max = max(linear)
-    if x_max <= 0:
+    if x_max <= TAU_NOISE_FLOOR:
         return None
     return sum(1.0 - x / x_max for x in linear) / (n - 1)
 
@@ -408,6 +443,51 @@ def fold_change_payload(fold: float | None) -> tuple[float | None, bool]:
     if math.isinf(fold):
         return None, True
     return round(fold, 3), False
+
+
+def serialize_contribs(
+    contribs: list[tuple[str, float, float]],
+    label_fn,
+) -> list[dict]:
+    """Convert classify_hpa's top_entity_contribs to JSON-friendly dicts.
+
+    Each tuple ``(entity_id, pop_mean, tau_contribution)`` becomes
+    ``{"id", "label", "pop_mean", "tau_contrib"}``. ``label_fn`` is a
+    per-axis resolver (e.g. ``cl_labels.get`` for leaf CL, ``cl_family_label``
+    for the family axis). The viewer reads these to render the
+    multi-entity tooltip with per-entity τ contributions.
+    """
+    out: list[dict] = []
+    for entity_id, pop_mean, tau_contrib in contribs:
+        out.append({
+            "id": entity_id,
+            "label": label_fn(entity_id) if entity_id else "",
+            "pop_mean": round(pop_mean, 4),
+            "tau_contrib": round(tau_contrib, 4),
+        })
+    return out
+
+
+def classify_and_score(
+    pop_linear: dict[str, float],
+    n_total_universe: dict[str, int],
+    label_fn,
+):
+    """Run classify_hpa + compute_tau + fold_change_payload + serialize_contribs
+    in one call.
+
+    Returns ``(class, ids, fold_val, fold_inf, tau, contribs)``.
+    Collapses the four-line per-axis dance at each emit site (cell
+    class, cell family, leaf CL, leaf UBERON, tissue category, tissue
+    organ) into one call. ``label_fn`` is the per-axis label resolver
+    threaded to ``serialize_contribs``.
+    """
+    klass, ids, fold, contribs = classify_hpa(pop_linear, n_total_universe)
+    tau = compute_tau(pop_linear, n_total_universe)
+    fold_val, fold_inf = fold_change_payload(fold)
+    return klass, ids, fold_val, fold_inf, tau, serialize_contribs(
+        contribs, label_fn
+    )
 
 
 # ---------- per-gene build ----------
@@ -454,10 +534,15 @@ def build_record(
             cl_pop_linear[cl] = math.expm1(mean_log) * pct
             cl_n_total_for_class[cl] = n_total
 
-    # Pass cl_total_counts (the full leaf-CL universe) so ineligible
-    # leaf CL terms contribute zeros in the HPA fold-change test.
-    cl_class, cl_ids, cl_fold = classify_hpa(cl_pop_linear, cl_total_counts)
-    cl_tau = compute_tau(cl_pop_linear, cl_total_counts)
+    # Full leaf-CL universe: ineligibles floor at 1e-3 inside τ via
+    # the universe-stable noise floor (Yanai 2005 convention).
+    cl_class, cl_ids, cl_fold_val, cl_fold_inf, cl_tau, cl_contribs = (
+        classify_and_score(
+            cl_pop_linear,
+            cl_total_counts,
+            lambda i: cl_labels.get(i, i),
+        )
+    )
 
     # ---- Broad cell class rollup ----
     # HPA's 4× test was designed for ~40 broad tissues. cellxgene has
@@ -512,10 +597,13 @@ def build_record(
         bc = cl_compartment(cl)
         class_n_total_summed[bc] += n_total
 
-    class_class, class_ids, class_fold = classify_hpa(
-        class_max_leaf_mean, class_n_total_summed
+    class_class, class_ids, class_fold_val, class_fold_inf, class_tau, class_contribs = (
+        classify_and_score(
+            class_max_leaf_mean,
+            class_n_total_summed,
+            lambda i: i,  # broad classes are already labels
+        )
     )
-    class_tau = compute_tau(class_max_leaf_mean, class_n_total_summed)
 
     # ---- Cell-FAMILY axis (middle granularity, ~150 terms) ----
     # Between leaf CL (~600, where the 4× rule rarely fires) and the
@@ -539,10 +627,13 @@ def build_record(
             family_max_leaf_mean[fam] = pop
             family_top_cl[fam] = cl
 
-    family_class, family_ids, family_fold = classify_hpa(
-        family_max_leaf_mean, family_n_total_universe
+    family_class, family_ids, family_fold_val, family_fold_inf, family_tau, family_contribs = (
+        classify_and_score(
+            family_max_leaf_mean,
+            family_n_total_universe,
+            cl_family_label,
+        )
     )
-    family_tau = compute_tau(family_max_leaf_mean, family_n_total_universe)
     family_labels = [cl_family_label(fid) for fid in family_ids]
     family_top_cl_labels = [
         cl_labels.get(family_top_cl.get(fid, ""), "") for fid in family_ids
@@ -556,36 +647,57 @@ def build_record(
     # both numerator (nnz) and denominator (n_total). CD63-pancreas raw
     # pct was 154% under the old all-CL sum; the leaf-CL filter brings
     # numerator and denominator to a consistent count.
+    # **pct via weighted-mean-of-per-(cl, ub) pcts (v2.1.7+).** Each
+    # per-(cl, ub) pct is sane by construction: nnz / n_total_pair with
+    # the WMG-nnz fallback ensuring pct ≤ 1.0 at the pair level. Take
+    # the weighted mean across leaf CLs in each UBERON (weights =
+    # n_total_pair) to get a per-UBERON pct that never needs clipping.
+    # Equivalent to SUM(nnz_leaf) / SUM(n_total_leaf_with_fallback) —
+    # avoids the previous all-CL sum that overcounted via parent CL
+    # hierarchy and required clamping to 100%.
     cohort_leaves = _cohort_leaf_cls()
     ub_means_log: dict[str, float] = {}
     ub_pop_linear: dict[str, float] = {}  # LINEAR population mean per UBERON
     ub_pooled: dict[str, dict[str, float]] = {}
     for cl, ub_to_stats in cl_to_uberon.items():
-        # Skip non-leaf CLs — their cells are already counted under
-        # their leaf descendants in WMG.
         if cohort_leaves and cl not in cohort_leaves:
             continue
         for ub, vals in ub_to_stats.items():
             nnz, ssum = vals
             if nnz <= 0:
                 continue
-            slot = ub_pooled.setdefault(ub, {"nnz": 0.0, "sum": 0.0})
+            # WMG-nnz fallback per (cl, ub) — guarantees per-pair pct
+            # ≤ 1.0 by treating cache as stale when it's clearly so.
+            n_total_pair = pair_counts.get((cl, ub), 0)
+            if n_total_pair < int(nnz):
+                n_total_pair = int(nnz)
+            if n_total_pair <= 0:
+                continue
+            slot = ub_pooled.setdefault(
+                ub, {"nnz": 0.0, "sum": 0.0, "n_total_leaf": 0.0}
+            )
             slot["nnz"] += nnz
             slot["sum"] += ssum
+            # Sum of per-pair n_totals (after the WMG-nnz fallback) =
+            # the proper per-UBERON denominator that pairs with nnz.
+            slot["n_total_leaf"] += n_total_pair
     ub_n_total_for_class: dict[str, int] = {}
     ub_n_expressing: dict[str, int] = {}
     ub_n_total_display: dict[str, int] = {}
     for ub, st in ub_pooled.items():
         nnz = st["nnz"]
-        if nnz <= 0:
+        n_total_leaf = st["n_total_leaf"]
+        if nnz <= 0 or n_total_leaf <= 0:
             continue
-        n_total = ub_total_counts.get(ub, 0)
-        if n_total <= 0:
-            continue
+        # Universe-level n_total (for the zero-baseline classifier).
+        # Use the leaf-CL-summed denominator from above (consistent
+        # with nnz), not the all-CL ub_total_counts (which can be the
+        # stale parent-inclusive value).
+        n_total = int(n_total_leaf)
         mean_log = st["sum"] / nnz
         ub_n_expressing[ub] = int(nnz)
         ub_n_total_display[ub] = n_total
-        pct = nnz / n_total
+        pct = nnz / n_total  # ≤ 1.0 by construction now
         if nnz >= MIN_NNZ_FOR_CLASS and pct >= MIN_PCT_FOR_CLASS:
             ub_means_log[ub] = mean_log
             ub_pop_linear[ub] = math.expm1(mean_log) * pct
@@ -595,8 +707,13 @@ def build_record(
     # MIN_N_TOTAL_FOR_CLASS) so the zero-baseline kicks in for
     # tissues without this gene's signal. Classifier + τ both
     # operate on LINEAR population mean (≈ nTPM).
-    ub_class, ub_ids, ub_fold = classify_hpa(ub_pop_linear, ub_total_counts)
-    ub_tau = compute_tau(ub_pop_linear, ub_total_counts)
+    ub_class, ub_ids, ub_fold_val, ub_fold_inf, ub_tau, ub_contribs = (
+        classify_and_score(
+            ub_pop_linear,
+            ub_total_counts,
+            lambda u: uberon_labels.get(u, u),
+        )
+    )
 
     # ---- Tissue-CATEGORY axis (14 organ-system rollup) ----
     # HPA's 4× rule was designed for ~40 broad tissues. CZI emits 410
@@ -636,8 +753,13 @@ def build_record(
             cat_pop_linear[cat] = pop
             cat_top_ub[cat] = ub
 
-    cat_class, cat_ids, cat_fold = classify_hpa(cat_pop_linear, cat_n_total_universe)
-    cat_tau = compute_tau(cat_pop_linear, cat_n_total_universe)
+    cat_class, cat_ids, cat_fold_val, cat_fold_inf, cat_tau, cat_contribs = (
+        classify_and_score(
+            cat_pop_linear,
+            cat_n_total_universe,
+            lambda c: c,  # categories are already labels
+        )
+    )
     # Resolve category IDs to the underlying winning tissue label —
     # e.g. CNS → brain — so the chip shows the tissue the category
     # signal rests on.
@@ -664,10 +786,13 @@ def build_record(
             organ_max_leaf_mean[organ] = pop
             organ_top_ub[organ] = ub
 
-    organ_class, organ_ids, organ_fold = classify_hpa(
-        organ_max_leaf_mean, organ_n_total_universe
+    organ_class, organ_ids, organ_fold_val, organ_fold_inf, organ_tau, organ_contribs = (
+        classify_and_score(
+            organ_max_leaf_mean,
+            organ_n_total_universe,
+            uberon_organ_label,
+        )
     )
-    organ_tau = compute_tau(organ_max_leaf_mean, organ_n_total_universe)
     organ_labels = [uberon_organ_label(oid) for oid in organ_ids]
     organ_top_ub_labels = [
         uberon_labels.get(organ_top_ub.get(oid, ""), "") for oid in organ_ids
@@ -822,29 +947,19 @@ def build_record(
         )
 
     # ---- Build top_tissues display list ----
-    # Tissue display threshold is the same noise gate the classifier
-    # uses (pct >= 1%, nnz >= 10), with n_total >= 1000 so we only
-    # show well-sampled tissues. Tissues that don't clear the gate get
-    # is_trace=True so the chart can render them muted rather than
-    # drop them entirely.
-    #
-    # **Known overcount in pct_expressing.** The denominator is
-    # `sum(pair_counts[(cl, ub)] for cl)` — when CZI's WMG has parent
-    # and child CL terms for the same cells (e.g. "T cell" + "naive T
-    # cell"), the same cell is counted in both pairs, inflating both
-    # numerator and denominator. Usually they cancel, but for tissues
-    # with deep CL hierarchies it doesn't — CD63 in pancreas yields
-    # pct=154% (numerator overcounted more than denominator). Clamp
-    # to ≤ 100% so the chart doesn't render nonsensical values;
-    # tracked as a follow-up to use a per-UBERON cell-union count
-    # instead of summed pair counts.
+    # Tissue display uses the leaf-CL-summed denominator (same one the
+    # classifier saw) — `ub_n_total_display[ub]` is now the consistent
+    # per-UBERON leaf-CL sum, so pct is sane without clipping.
+    # v2.1.7+: dropped the min(1.0, ...) clip; per-(cl, ub) WMG-nnz
+    # fallback at aggregation time guarantees per-pair pct ≤ 1.0,
+    # which sums to per-UBERON pct ≤ 1.0.
     tissue_rows: list[dict] = []
     for ub, n_exp in ub_n_expressing.items():
         n_total = ub_n_total_display[ub]
         if n_total < COMMON_THRESHOLD:
             continue
         mean_log = ub_pooled[ub]["sum"] / ub_pooled[ub]["nnz"]
-        pct = min(1.0, n_exp / n_total)
+        pct = n_exp / n_total
         tissue_rows.append(
             {
                 "tissue": uberon_labels.get(ub, ub),
@@ -860,12 +975,6 @@ def build_record(
     tissue_rows = tissue_rows[:MAX_TISSUES]
 
     # ---- Assemble record ----
-    cl_fold_val, cl_fold_inf = fold_change_payload(cl_fold)
-    ub_fold_val, ub_fold_inf = fold_change_payload(ub_fold)
-    class_fold_val, class_fold_inf = fold_change_payload(class_fold)
-    cat_fold_val, cat_fold_inf = fold_change_payload(cat_fold)
-    family_fold_val, family_fold_inf = fold_change_payload(family_fold)
-    organ_fold_val, organ_fold_inf = fold_change_payload(organ_fold)
     record = {
         "schema_version": SCHEMA_VERSION,
         "census_version": CENSUS_VERSION,
@@ -884,6 +993,7 @@ def build_record(
             "fold_change": class_fold_val,
             "fold_change_infinite": class_fold_inf,
             "tau": class_tau,
+            "top_entity_contribs": class_contribs,
         },
         # v2.1.4+ cell-FAMILY axis — middle granularity (~150 terms).
         # Walks each leaf CL to its nearest ancestor with 6-40 CZI
@@ -899,6 +1009,7 @@ def build_record(
             "fold_change": family_fold_val,
             "fold_change_infinite": family_fold_inf,
             "tau": family_tau,
+            "top_entity_contribs": family_contribs,
         },
         # Leaf-CL classification — debugging / power users. Noisy at
         # the leaf-CL granularity (600+ entities) but τ is still
@@ -909,6 +1020,7 @@ def build_record(
             "fold_change": cl_fold_val,
             "fold_change_infinite": cl_fold_inf,
             "tau": cl_tau,
+            "top_entity_contribs": cl_contribs,
         },
         "tissue_enrichment": {
             "class": ub_class,
@@ -917,6 +1029,7 @@ def build_record(
             "fold_change": ub_fold_val,
             "fold_change_infinite": ub_fold_inf,
             "tau": ub_tau,
+            "top_entity_contribs": ub_contribs,
         },
         # v2.1.3+ organ-system category axis. Aggregates the 410
         # fine-grained UBERONs into 14 organ systems via the
@@ -937,6 +1050,7 @@ def build_record(
             "fold_change": cat_fold_val,
             "fold_change_infinite": cat_fold_inf,
             "tau": cat_tau,
+            "top_entity_contribs": cat_contribs,
         },
         # v2.1.4+ tissue-ORGAN axis — middle granularity (~150
         # terms). Between leaf UBERON (~410) and the 13 organ-system
@@ -952,6 +1066,7 @@ def build_record(
             "fold_change": organ_fold_val,
             "fold_change_infinite": organ_fold_inf,
             "tau": organ_tau,
+            "top_entity_contribs": organ_contribs,
         },
         # v2.0 legacy mirror so older readers don't break during the
         # transition. Points at the broad-class rollup (v2.1.1's

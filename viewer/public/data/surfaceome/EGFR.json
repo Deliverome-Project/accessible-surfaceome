@@ -7250,7 +7250,7 @@
   "model_path": "claude-sonnet-4-6",
   "record_generated_at": "2026-06-01T00:28:03.567292Z",
   "cellxgene": {
-    "schema_version": "2.1.6",
+    "schema_version": "2.1.7",
     "census_version": "2025-11-08",
     "cell_class_enrichment": {
       "class": "low_specificity",
@@ -7258,22 +7258,49 @@
       "class_labels": [],
       "fold_change": 1.14,
       "fold_change_infinite": false,
-      "tau": 0.4919611802504194
+      "tau": 0.4919611802504194,
+      "top_entity_contribs": []
     },
     "cell_family_enrichment": {
-      "class": "enhanced",
+      "class": "enriched",
       "family_ids": [
-        "CL:0000068"
+        "CL:0000068",
+        "CL:0000349",
+        "CL:0000188"
       ],
       "family_labels": [
-        "duct epithelial cell"
+        "duct epithelial cell",
+        "extraembryonic cell",
+        "cell of skeletal muscle"
       ],
       "top_cl_labels": [
-        "basal epithelial cell of prostatic duct"
+        "basal epithelial cell of prostatic duct",
+        "placental villous trophoblast",
+        "skeletal muscle fibroblast"
       ],
       "fold_change": 1.14,
       "fold_change_infinite": false,
-      "tau": 0.8172654851882608
+      "tau": 0.8941277172830184,
+      "top_entity_contribs": [
+        {
+          "id": "CL:0000068",
+          "label": "duct epithelial cell",
+          "pop_mean": 9.3391,
+          "tau_contrib": 0.0
+        },
+        {
+          "id": "CL:0000349",
+          "label": "extraembryonic cell",
+          "pop_mean": 8.189,
+          "tau_contrib": 0.1232
+        },
+        {
+          "id": "CL:0000188",
+          "label": "cell of skeletal muscle",
+          "pop_mean": 7.5305,
+          "tau_contrib": 0.1937
+        }
+      ]
     },
     "cell_type_enrichment": {
       "class": "enriched",
@@ -7284,59 +7311,127 @@
       ],
       "fold_change": 1.14,
       "fold_change_infinite": false,
-      "tau": 0.8892873244207329
+      "tau": 0.9434134685814953,
+      "top_entity_contribs": [
+        {
+          "id": "CL:0002236",
+          "label": "basal epithelial cell of prostatic duct",
+          "pop_mean": 9.3391,
+          "tau_contrib": 0.0
+        },
+        {
+          "id": "CL:2000060",
+          "label": "placental villous trophoblast",
+          "pop_mean": 8.189,
+          "tau_contrib": 0.1232
+        },
+        {
+          "id": "CL:0011027",
+          "label": "skeletal muscle fibroblast",
+          "pop_mean": 7.5305,
+          "tau_contrib": 0.1937
+        }
+      ]
     },
     "tissue_enrichment": {
       "class": "enriched",
       "uberon_ids": [
-        "UBERON:0000970",
         "UBERON:0000948",
-        "UBERON:0001013"
+        "UBERON:0001013",
+        "UBERON:0000955"
       ],
       "tissue_labels": [
-        "eye",
         "heart",
-        "adipose tissue"
+        "adipose tissue",
+        "brain"
       ],
-      "fold_change": 1.214,
+      "fold_change": 1.121,
       "fold_change_infinite": false,
-      "tau": 0.925605627576352
+      "tau": 0.9807139423562602,
+      "top_entity_contribs": [
+        {
+          "id": "UBERON:0000948",
+          "label": "heart",
+          "pop_mean": 8.7214,
+          "tau_contrib": 0.0
+        },
+        {
+          "id": "UBERON:0001013",
+          "label": "adipose tissue",
+          "pop_mean": 7.7812,
+          "tau_contrib": 0.1078
+        },
+        {
+          "id": "UBERON:0000955",
+          "label": "brain",
+          "pop_mean": 6.5948,
+          "tau_contrib": 0.2438
+        }
+      ]
     },
     "tissue_category_enrichment": {
-      "class": "enriched",
+      "class": "enhanced",
       "category_ids": [
-        "head_sensory"
+        "cardiovascular"
       ],
       "category_labels": [
-        "head_sensory"
+        "cardiovascular"
       ],
       "top_tissues": [
-        "tongue"
+        "heart"
       ],
-      "fold_change": 27.755,
+      "fold_change": 1.116,
       "fold_change_infinite": false,
-      "tau": 0.9915794936400335
+      "tau": 0.5446074824838295,
+      "top_entity_contribs": [
+        {
+          "id": "cardiovascular",
+          "label": "cardiovascular",
+          "pop_mean": 8.7214,
+          "tau_contrib": 0.0
+        }
+      ]
     },
     "tissue_organ_enrichment": {
       "class": "enriched",
       "organ_ids": [
-        "UBERON:0000970",
         "UBERON:0000948",
-        "UBERON:0001013"
+        "UBERON:0001013",
+        "UBERON:0000955"
       ],
       "organ_labels": [
-        "eye",
         "heart",
-        "adipose tissue"
+        "adipose tissue",
+        "brain"
       ],
       "top_uberon_labels": [
-        "eye",
         "heart",
-        "adipose tissue"
+        "adipose tissue",
+        "brain"
       ],
-      "fold_change": 1.214,
+      "fold_change": 1.121,
       "fold_change_infinite": false,
-      "tau": 0.9231973772851872
+      "tau": 0.9724270308607161,
+      "top_entity_contribs": [
+        {
+          "id": "UBERON:0000948",
+          "label": "heart",
+          "pop_mean": 8.7214,
+          "tau_contrib": 0.0
+        },
+        {
+          "id": "UBERON:0001013",
+          "label": "adipose tissue",
+          "pop_mean": 7.7812,
+          "tau_contrib": 0.1078
+        },
+        {
+          "id": "UBERON:0000955",
+          "label": "brain",
+          "pop_mean": 6.5948,
+          "tau_contrib": 0.2438
+        }
+      ]
     },
     "enrichment_class": "low_specificity",
     "enrichment_cl_ids": [],
@@ -7596,8 +7691,8 @@
         "uberon_id": "UBERON:0001987",
         "mean_log1p_cp10k": 2.4962,
         "n_expressing": 100039,
-        "n_total": 215057,
-        "pct_expressing": 0.4652,
+        "n_total": 220762,
+        "pct_expressing": 0.4532,
         "is_trace": false
       },
       {
@@ -7605,8 +7700,8 @@
         "uberon_id": "UBERON:0002367",
         "mean_log1p_cp10k": 2.3858,
         "n_expressing": 9335,
-        "n_total": 53756,
-        "pct_expressing": 0.1737,
+        "n_total": 53866,
+        "pct_expressing": 0.1733,
         "is_trace": false
       },
       {
@@ -7614,8 +7709,8 @@
         "uberon_id": "UBERON:0000948",
         "mean_log1p_cp10k": 2.2972,
         "n_expressing": 172236,
-        "n_total": 12546,
-        "pct_expressing": 1.0,
+        "n_total": 176677,
+        "pct_expressing": 0.9749,
         "is_trace": false
       },
       {
@@ -7623,8 +7718,8 @@
         "uberon_id": "UBERON:0001264",
         "mean_log1p_cp10k": 2.2718,
         "n_expressing": 13375,
-        "n_total": 162373,
-        "pct_expressing": 0.0824,
+        "n_total": 161420,
+        "pct_expressing": 0.0829,
         "is_trace": false
       },
       {
@@ -7632,8 +7727,8 @@
         "uberon_id": "UBERON:0001013",
         "mean_log1p_cp10k": 2.2341,
         "n_expressing": 71220,
-        "n_total": 6028,
-        "pct_expressing": 1.0,
+        "n_total": 76316,
+        "pct_expressing": 0.9332,
         "is_trace": false
       },
       {
@@ -7641,7 +7736,7 @@
         "uberon_id": "UBERON:0001836",
         "mean_log1p_cp10k": 2.2329,
         "n_expressing": 2,
-        "n_total": 7293,
+        "n_total": 7162,
         "pct_expressing": 0.0003,
         "is_trace": true
       },
@@ -7650,8 +7745,8 @@
         "uberon_id": "UBERON:0002107",
         "mean_log1p_cp10k": 2.2227,
         "n_expressing": 94152,
-        "n_total": 357751,
-        "pct_expressing": 0.2632,
+        "n_total": 404830,
+        "pct_expressing": 0.2326,
         "is_trace": false
       },
       {
@@ -7659,8 +7754,17 @@
         "uberon_id": "UBERON:0001043",
         "mean_log1p_cp10k": 2.2071,
         "n_expressing": 2023,
-        "n_total": 3182,
-        "pct_expressing": 0.6358,
+        "n_total": 4884,
+        "pct_expressing": 0.4142,
+        "is_trace": false
+      },
+      {
+        "tissue": "UBERON:0001015",
+        "uberon_id": "UBERON:0001015",
+        "mean_log1p_cp10k": 2.1768,
+        "n_expressing": 26282,
+        "n_total": 26282,
+        "pct_expressing": 1.0,
         "is_trace": false
       },
       {
@@ -7668,17 +7772,8 @@
         "uberon_id": "UBERON:0000922",
         "mean_log1p_cp10k": 2.1724,
         "n_expressing": 21945,
-        "n_total": 14142,
-        "pct_expressing": 1.0,
-        "is_trace": false
-      },
-      {
-        "tissue": "lung",
-        "uberon_id": "UBERON:0002048",
-        "mean_log1p_cp10k": 2.1715,
-        "n_expressing": 107522,
-        "n_total": 528476,
-        "pct_expressing": 0.2035,
+        "n_total": 36054,
+        "pct_expressing": 0.6087,
         "is_trace": false
       }
     ]

@@ -5601,7 +5601,7 @@
   "model_path": "claude-sonnet-4-6",
   "record_generated_at": "2026-06-08T20:48:27.517803Z",
   "cellxgene": {
-    "schema_version": "2.1.6",
+    "schema_version": "2.1.7",
     "census_version": "2025-11-08",
     "cell_class_enrichment": {
       "class": "enriched",
@@ -5613,67 +5613,180 @@
       ],
       "fold_change": null,
       "fold_change_infinite": true,
-      "tau": null
+      "tau": 0.9965122742340063,
+      "top_entity_contribs": [
+        {
+          "id": "Immune",
+          "label": "Immune",
+          "pop_mean": 0.2867,
+          "tau_contrib": 0.0
+        }
+      ]
     },
     "cell_family_enrichment": {
-      "class": "low_specificity",
-      "family_ids": [],
-      "family_labels": [],
-      "top_cl_labels": [],
-      "fold_change": 1.006,
-      "fold_change_infinite": false,
-      "tau": 0.4694142578814567
-    },
-    "cell_type_enrichment": {
-      "class": "enhanced",
-      "cl_ids": [
-        "CL:0011024"
+      "class": "enriched",
+      "family_ids": [
+        "CL:0000893",
+        "CL:0000935",
+        "CL:0000625"
+      ],
+      "family_labels": [
+        "thymocyte",
+        "CD4-negative, CD8-negative, alpha-beta intraepithelial T cell",
+        "CD8-positive, alpha-beta T cell"
+      ],
+      "top_cl_labels": [
+        "double negative T regulatory cell",
+        "CD4-negative, CD8-negative, alpha-beta intraepithelial T cell",
+        "CD8-positive, alpha-beta cytotoxic T cell"
       ],
       "fold_change": 1.006,
       "fold_change_infinite": false,
-      "tau": 0.6397523071191931
+      "tau": 0.9752258015043253,
+      "top_entity_contribs": [
+        {
+          "id": "CL:0000893",
+          "label": "thymocyte",
+          "pop_mean": 0.2867,
+          "tau_contrib": 0.0
+        },
+        {
+          "id": "CL:0000935",
+          "label": "CD4-negative, CD8-negative, alpha-beta intraepithelial T cell",
+          "pop_mean": 0.2851,
+          "tau_contrib": 0.0058
+        },
+        {
+          "id": "CL:0000625",
+          "label": "CD8-positive, alpha-beta T cell",
+          "pop_mean": 0.2539,
+          "tau_contrib": 0.1145
+        }
+      ]
+    },
+    "cell_type_enrichment": {
+      "class": "enriched",
+      "cl_ids": [
+        "CL:0011024",
+        "CL:0000935",
+        "CL:0000794"
+      ],
+      "fold_change": 1.006,
+      "fold_change_infinite": false,
+      "tau": 0.9863914241030763,
+      "top_entity_contribs": [
+        {
+          "id": "CL:0011024",
+          "label": "double negative T regulatory cell",
+          "pop_mean": 0.2867,
+          "tau_contrib": 0.0
+        },
+        {
+          "id": "CL:0000935",
+          "label": "CD4-negative, CD8-negative, alpha-beta intraepithelial T cell",
+          "pop_mean": 0.2851,
+          "tau_contrib": 0.0058
+        },
+        {
+          "id": "CL:0000794",
+          "label": "CD8-positive, alpha-beta cytotoxic T cell",
+          "pop_mean": 0.2539,
+          "tau_contrib": 0.1145
+        }
+      ]
     },
     "tissue_enrichment": {
-      "class": "enhanced",
+      "class": "enriched",
       "uberon_ids": [
         "UBERON:0000922"
       ],
       "tissue_labels": [
         "embryo"
       ],
-      "fold_change": 1.562,
+      "fold_change": 15.224,
       "fold_change_infinite": false,
-      "tau": 0.6136317438450155
+      "tau": 0.9993771929219601,
+      "top_entity_contribs": [
+        {
+          "id": "UBERON:0000922",
+          "label": "embryo",
+          "pop_mean": 6.9002,
+          "tau_contrib": 0.0
+        }
+      ]
     },
     "tissue_category_enrichment": {
       "class": "enriched",
       "category_ids": [
+        "developmental",
+        "fluids_other",
         "cardiovascular"
       ],
       "category_labels": [
+        "developmental",
+        "fluids_other",
         "cardiovascular"
       ],
       "top_tissues": [
+        "embryo",
+        "",
         "vasculature"
       ],
-      "fold_change": 16.58,
+      "fold_change": 1.412,
       "fold_change_infinite": false,
-      "tau": 0.9693354103713165
+      "tau": 0.8829577269570743,
+      "top_entity_contribs": [
+        {
+          "id": "developmental",
+          "label": "developmental",
+          "pop_mean": 6.9002,
+          "tau_contrib": 0.0
+        },
+        {
+          "id": "fluids_other",
+          "label": "fluids_other",
+          "pop_mean": 4.8856,
+          "tau_contrib": 0.292
+        },
+        {
+          "id": "cardiovascular",
+          "label": "cardiovascular",
+          "pop_mean": 4.224,
+          "tau_contrib": 0.3878
+        }
+      ]
     },
     "tissue_organ_enrichment": {
       "class": "enriched",
       "organ_ids": [
+        "UBERON:0000922",
         "UBERON:0002049"
       ],
       "organ_labels": [
+        "embryo",
         "vasculature"
       ],
       "top_uberon_labels": [
+        "embryo",
         "vasculature"
       ],
-      "fold_change": 16.58,
+      "fold_change": 1.634,
       "fold_change_infinite": false,
-      "tau": 0.9714095240678186
+      "tau": 0.9969934957540919,
+      "top_entity_contribs": [
+        {
+          "id": "UBERON:0000922",
+          "label": "embryo",
+          "pop_mean": 6.9002,
+          "tau_contrib": 0.0
+        },
+        {
+          "id": "UBERON:0002049",
+          "label": "vasculature",
+          "pop_mean": 4.224,
+          "tau_contrib": 0.3878
+        }
+      ]
     },
     "enrichment_class": "enriched",
     "enrichment_cl_ids": [
@@ -5976,30 +6089,12 @@
     ],
     "top_tissues": [
       {
-        "tissue": "fallopian tube",
-        "uberon_id": "UBERON:0003889",
-        "mean_log1p_cp10k": 2.5653,
-        "n_expressing": 1,
-        "n_total": 14530,
-        "pct_expressing": 0.0001,
-        "is_trace": true
-      },
-      {
-        "tissue": "embryo",
-        "uberon_id": "UBERON:0000922",
-        "mean_log1p_cp10k": 2.0669,
-        "n_expressing": 430,
-        "n_total": 14142,
-        "pct_expressing": 0.0304,
-        "is_trace": false
-      },
-      {
         "tissue": "axilla",
         "uberon_id": "UBERON:0009472",
         "mean_log1p_cp10k": 1.9574,
         "n_expressing": 4,
-        "n_total": 44201,
-        "pct_expressing": 0.0001,
+        "n_total": 3315,
+        "pct_expressing": 0.0012,
         "is_trace": true
       },
       {
@@ -6007,8 +6102,8 @@
         "uberon_id": "UBERON:0001264",
         "mean_log1p_cp10k": 1.9079,
         "n_expressing": 4,
-        "n_total": 162373,
-        "pct_expressing": 0.0,
+        "n_total": 66875,
+        "pct_expressing": 0.0001,
         "is_trace": true
       },
       {
@@ -6016,8 +6111,8 @@
         "uberon_id": "UBERON:0000059",
         "mean_log1p_cp10k": 1.8662,
         "n_expressing": 50,
-        "n_total": 10101,
-        "pct_expressing": 0.005,
+        "n_total": 8829,
+        "pct_expressing": 0.0057,
         "is_trace": true
       },
       {
@@ -6025,8 +6120,8 @@
         "uberon_id": "UBERON:0000004",
         "mean_log1p_cp10k": 1.8243,
         "n_expressing": 65,
-        "n_total": 71410,
-        "pct_expressing": 0.0009,
+        "n_total": 66469,
+        "pct_expressing": 0.001,
         "is_trace": true
       },
       {
@@ -6034,8 +6129,8 @@
         "uberon_id": "UBERON:0002107",
         "mean_log1p_cp10k": 1.816,
         "n_expressing": 976,
-        "n_total": 357751,
-        "pct_expressing": 0.0027,
+        "n_total": 261340,
+        "pct_expressing": 0.0037,
         "is_trace": true
       },
       {
@@ -6043,26 +6138,44 @@
         "uberon_id": "UBERON:0000955",
         "mean_log1p_cp10k": 1.7876,
         "n_expressing": 1333,
-        "n_total": 273927,
-        "pct_expressing": 0.0049,
+        "n_total": 242226,
+        "pct_expressing": 0.0055,
         "is_trace": true
       },
       {
-        "tissue": "mucosa",
-        "uberon_id": "UBERON:0000344",
-        "mean_log1p_cp10k": 1.78,
-        "n_expressing": 5,
-        "n_total": 1169,
-        "pct_expressing": 0.0043,
-        "is_trace": true
+        "tissue": "UBERON:0002368",
+        "uberon_id": "UBERON:0002368",
+        "mean_log1p_cp10k": 1.7725,
+        "n_expressing": 4603,
+        "n_total": 4603,
+        "pct_expressing": 1.0,
+        "is_trace": false
       },
       {
         "tissue": "abdomen",
         "uberon_id": "UBERON:0000916",
         "mean_log1p_cp10k": 1.7704,
         "n_expressing": 6,
-        "n_total": 11922,
+        "n_total": 11555,
         "pct_expressing": 0.0005,
+        "is_trace": true
+      },
+      {
+        "tissue": "kidney",
+        "uberon_id": "UBERON:0002113",
+        "mean_log1p_cp10k": 1.7695,
+        "n_expressing": 2914,
+        "n_total": 206532,
+        "pct_expressing": 0.0141,
+        "is_trace": false
+      },
+      {
+        "tissue": "stomach",
+        "uberon_id": "UBERON:0000945",
+        "mean_log1p_cp10k": 1.7596,
+        "n_expressing": 155,
+        "n_total": 52435,
+        "pct_expressing": 0.003,
         "is_trace": true
       }
     ]

@@ -26,8 +26,6 @@ from functools import lru_cache
 from pathlib import Path
 from typing import Final
 
-from accessible_surfaceome.audit.cl_graph import cl_compartment
-
 REPO = Path(__file__).resolve().parents[3]
 DEFAULT_OBO_PATH = REPO / "data" / "external" / "ontologies" / "cl-basic.obo"
 DEFAULT_CL_LABELS = Path("/tmp/cl_id_to_label.tsv")
@@ -116,31 +114,31 @@ def cl_family(cl_id: str, cl_label: str | None = None) -> str:
     """Return the family CL term for a leaf CL — typically a name like
     "B cell", "T cell", "macrophage", "hepatocyte", etc.
 
-    Falls back to the broad compartment (from cl_graph.cl_compartment)
-    when no ancestor in [MIN_DESC, MAX_DESC] is found.
-
-    The fallback is what the caller actually wants — every leaf gets
-    SOME family-or-compartment label so the classifier never drops
-    cells from the universe.
-
-    Returns the family's CL ID (or compartment name) — caller can look
-    up the human label via the CL labels file or the goatools DAG.
+    **Fallback (v2.1.7+).** When no graph ancestor with [MIN_DESC,
+    MAX_DESC] cohort descendants exists for this leaf CL, the leaf
+    IS its own family — return the leaf CL ID. Previously fell back
+    to the broad compartment (Epithelial / Immune / etc.), which lost
+    information for rare lineages (KLK2's prostate-luminal CL has no
+    natural family ancestor; "Epithelial" is too coarse). Returning
+    the leaf preserves "enriched · luminal cell of prostate
+    epithelium" instead of dropping to "enriched · Epithelial."
     """
     if not cl_id:
-        return cl_compartment(cl_id)
+        return ""
     fam_map = _build_family_map(str(DEFAULT_OBO_PATH), str(DEFAULT_CL_LABELS), MIN_DESC, MAX_DESC)
     fam = fam_map.get(cl_id)
     if fam is not None:
         return fam
-    return cl_compartment(cl_id)
+    # Leaf is its own family — preserves the specific label.
+    return cl_id
 
 
-def cl_family_label(family_id_or_compartment: str) -> str:
-    """Resolve a family CL ID to its human label. Pass-through for
-    compartment names (which are already labels)."""
-    if not family_id_or_compartment.startswith("CL:"):
-        return family_id_or_compartment
+def cl_family_label(family_id: str) -> str:
+    """Resolve a family CL ID to its human label. Pass-through for any
+    non-CL strings (legacy compartment labels from older builds)."""
+    if not family_id.startswith("CL:"):
+        return family_id
     dag = _load_dag(str(DEFAULT_OBO_PATH))
-    if family_id_or_compartment in dag:
-        return dag[family_id_or_compartment].name or family_id_or_compartment
-    return family_id_or_compartment
+    if family_id in dag:
+        return dag[family_id].name or family_id
+    return family_id
