@@ -26,6 +26,11 @@ export type DdEnumKey =
   | "surface_call_reason"
   | "subcategory"
   | "llm_family"
+  | "primary_compartment"
+  | "restricted_subdomain_kind"
+  | "secreted_form_source"
+  | "surface_bind_targetability"
+  | "surface_bind_main_class"
   | "evidence_grade"
   | "evidence_density"
   | "ecd_accessibility_class"
@@ -51,18 +56,31 @@ export type DdBoolKey =
   | "n_term_extracellular"
   | "c_term_extracellular"
   | "tumor_associated"
-  | "has_live_cell_surface_evidence";
+  | "has_live_cell_surface_evidence"
+  | "is_homo_oligomer";
 
 /**
  * Provenance bucket used by the catalog filter panel to partition
- * deep-dive fields under the Deep Dive group:
+ * deep-dive fields under the Deep Dive group.
  *
- * - `llm` — rollups the deep-dive *synthesizer* emits as its own
- *   classification (re-derived from the merged A1+A2 evidence ledger
- *   but still an LLM judgement).
- * - `deterministic` — tool-derived readouts (DeepTMHMM topology,
- *   ledger-count buckets, SURFACE-Bind MaSIF patch scoring). No LLM
- *   involvement; values are reproducible by re-running the tool.
+ * **The contract — what makes a field `deterministic`:** the value is
+ * derived purely from tool output on the protein sequence (DeepTMHMM
+ * topology, AlphaFold pLDDT, Compara %-identity, SURFACE-Bind MaSIF
+ * patch scoring). Re-running the same tool on the same sequence gives
+ * the same value, regardless of which deep-dive agent ran. No LLM
+ * inclusion judgement enters the chain.
+ *
+ * **What is NOT `deterministic`, even when the final transform is
+ * mechanical:** a field whose input depends on what the LLM chose to
+ * include. Example: `evidence_density` buckets `len(evidence_rows)`
+ * with fixed thresholds, but the agent's pick of which rows to include
+ * is LLM-driven, so the bucket value reflects that judgement. That's
+ * `llm` provenance even though the bucketing itself is a one-liner.
+ *
+ * - `llm` — synthesizer rollups (re-derived from the merged A1+A2
+ *   evidence ledger but still an LLM judgement), and any mechanical
+ *   downstream transforms of LLM-pulled inputs.
+ * - `deterministic` — tool-derived readouts on the sequence only.
  *
  * The catalog filter panel renders three collapsible subsections:
  * "Surface call" (`provenance === "llm" && !isRisk`), "Risks"
@@ -109,8 +127,16 @@ export interface DdBoolSpec {
 
 export const DD_ENUM_FIELDS: readonly DdEnumSpec[] = [
   {
+    // Wire/storage name stays `surface_accessibility` everywhere (Pydantic,
+    // records on disk, D1, Worker, /v1/* API consumers). Only the DISPLAY
+    // LABEL changes — the field reads as a verdict graded by evidence
+    // strength (best-case-state, capped by THE BRACKET in
+    // surfaceome_synthesizer/prompts/system.md), not a steady-state
+    // magnitude. "Accessibility" misled readers into expecting % surface;
+    // "Surface verdict" is what it actually is. Pair with
+    // `surface_specificity` for the proportion axis.
     key: "surface_accessibility",
-    label: "Accessibility",
+    label: "Surface verdict",
     values: ["high", "moderate", "low", "uncertain", "no"],
     tooltipKey: "surface_accessibility",
     provenance: "llm",
@@ -214,6 +240,144 @@ export const DD_ENUM_FIELDS: readonly DdEnumSpec[] = [
     provenance: "llm",
   },
   {
+    // Mirrors `biological_context.subcellular_localization.primary_compartment`
+    // (the `Compartment` enum in `viewer/lib/surfaceome-types.ts`, sourced from
+    // `PrimaryCompartment` in `src/accessible_surfaceome/tools/_shared/models.py`).
+    // Note: sourced from the biological-context block, NOT the top-level
+    // `filters` block — see `pickDeepDiveFilters` in this file + the Worker's
+    // `projectDeepDiveFilters`.
+    key: "primary_compartment",
+    label: "Primary localization",
+    values: [
+      "plasma_membrane",
+      "endosome",
+      "lysosome",
+      "ER",
+      "Golgi",
+      "mitochondrion",
+      "nucleus",
+      "cytosol",
+      "secreted",
+      "other",
+    ],
+    valueLabels: {
+      plasma_membrane: "Plasma membrane",
+      endosome: "Endosome",
+      lysosome: "Lysosome",
+      ER: "ER",
+      Golgi: "Golgi",
+      mitochondrion: "Mitochondrion",
+      nucleus: "Nucleus",
+      cytosol: "Cytosol",
+      secreted: "Secreted",
+      other: "Other",
+    },
+    tooltipKey: "catalog_primary_compartment",
+    provenance: "llm",
+  },
+  {
+    // Sourced from `accessibility_risks.restricted_subdomain.domain`
+    // ONLY when `restricted_subdomain.present === true`. The schema
+    // requires `domain` to always be set (with "unknown" as the
+    // not-applicable sentinel); projecting unconditionally would pile
+    // every non-restricted gene into "unknown" and drown the signal.
+    // The bool `has_restricted_subdomain` says whether the protein has
+    // a polarized localization at all; this enum says what kind of
+    // domain.
+    key: "restricted_subdomain_kind",
+    label: "Restricted subdomain",
+    values: [
+      "apical",
+      "junctional",
+      "ciliary",
+      "synaptic",
+      "raft",
+      "basolateral",
+      "other",
+      "unknown",
+    ],
+    valueLabels: {
+      apical: "Apical",
+      junctional: "Junctional",
+      ciliary: "Ciliary",
+      synaptic: "Synaptic",
+      raft: "Lipid raft",
+      basolateral: "Basolateral",
+      other: "Other",
+      unknown: "Unknown",
+    },
+    tooltipKey: "catalog_restricted_subdomain_kind",
+    provenance: "llm",
+    isRisk: true,
+  },
+  {
+    // Sourced from `deterministic_features.surface_bind.{has_data,n_sites}`
+    // (Balbi et al. 2026, PMID 41604262). 4-way bucketing of the
+    // existing catalog quick-filter so it surfaces in the registry +
+    // compare TSV too:
+    //   • `high`        — has_data && n_sites >= 3 (multiple MaSIF patches)
+    //   • `moderate`    — has_data && 1 <= n_sites < 3 (a few patches)
+    //   • `none`        — has_data && n_sites == 0 (in SURFACE-Bind dataset
+    //                     but no scored sites — rare; e.g. GPR75)
+    //   • `not_scored`  — !has_data (not in SURFACE-Bind's results_no_TM
+    //                     table — ~12% of surfaceome proteins)
+    // Pure structural prior; truly deterministic — same MaSIF run on
+    // the same AF2 model gives the same n_sites.
+    key: "surface_bind_targetability",
+    label: "SURFACE-Bind targetability",
+    values: ["high", "moderate", "none", "not_scored"],
+    valueLabels: {
+      high: "High (≥3 patches)",
+      moderate: "Moderate (1-2 patches)",
+      none: "None (0 patches scored)",
+      not_scored: "Not in SURFACE-Bind",
+    },
+    tooltipKey: "catalog_surface_bind_targetability",
+    provenance: "deterministic",
+  },
+  {
+    // SURFACE-Bind's native family axis — cross-check against the LLM's
+    // `llm_family` (which is curated against the same 4 categories per
+    // tooltips.tsx). When the two diverge, the LLM saw cell-biology
+    // evidence that overrode the structural prior — useful filter for
+    // auditing model disagreement. Only populated when has_data=true.
+    key: "surface_bind_main_class",
+    label: "SURFACE-Bind family",
+    values: ["Receptors", "Enzymes", "Transporters", "Miscellaneous"],
+    valueLabels: {
+      Receptors: "Receptors",
+      Enzymes: "Enzymes",
+      Transporters: "Transporters",
+      Miscellaneous: "Miscellaneous",
+    },
+    tooltipKey: "catalog_surface_bind_main_class",
+    provenance: "deterministic",
+  },
+  {
+    // Sourced from `accessibility_risks.secreted_form.source` ONLY when
+    // `secreted_form.present === true` — same project-when-present
+    // pattern as restricted_subdomain_kind. The bool
+    // `has_secreted_form` says whether a non-membrane-anchored form
+    // exists; this enum says how it's made. `alternative_splicing`
+    // covers soluble splice isoforms (per the Pydantic SecretedForm
+    // rationale field's own docstring: "alternative splicing producing
+    // a TM-less isoform"). Useful to find decoys with a specific
+    // sheddability profile (e.g. proteolytic-only shed targets that
+    // antibody campaigns must compete with).
+    key: "secreted_form_source",
+    label: "Secreted-form source",
+    values: ["alternative_splicing", "proteolytic", "both", "unknown"],
+    valueLabels: {
+      alternative_splicing: "Alt. splicing (incl. soluble isoform)",
+      proteolytic: "Proteolytic shedding",
+      both: "Both (splicing + proteolysis)",
+      unknown: "Unknown",
+    },
+    tooltipKey: "catalog_secreted_form_source",
+    provenance: "llm",
+    isRisk: true,
+  },
+  {
     key: "evidence_grade",
     label: "Evidence grade",
     values: [
@@ -227,11 +391,20 @@ export const DD_ENUM_FIELDS: readonly DdEnumSpec[] = [
     provenance: "llm",
   },
   {
+    // Provenance is `llm`, NOT `deterministic`: the buckets (≥30 / ≥10
+    // / else) are mechanical, but the INPUT count is the number of
+    // evidence rows the synthesizer chose to include from the merged
+    // A1+A2 ledger. That inclusion judgement is an LLM rollup, so the
+    // final value depends on the LLM. The `deterministic` bucket is
+    // reserved for fields derived purely from tool output on the
+    // protein sequence — DeepTMHMM topology, AlphaFold pLDDT, Compara
+    // identity — where rerunning the same tool on the same sequence
+    // gives the same value regardless of the agent.
     key: "evidence_density",
     label: "Evidence density",
     values: ["low", "moderate", "high"],
     tooltipKey: "catalog_evidence_density",
-    provenance: "deterministic",
+    provenance: "llm",
   },
   {
     key: "ecd_accessibility_class",
@@ -414,6 +587,22 @@ export const DD_BOOL_FIELDS: readonly DdBoolSpec[] = [
     tooltipKey: "catalog_live_cell_evidence",
     provenance: "llm",
   },
+  {
+    // Schweke 2024 AF2 homo-oligomer prediction (PMID 38325366) —
+    // sourced from `deterministic_features.homo_oligomerization.is_homo_oligomer`.
+    // Schweke's atlas is POSITIVES-ONLY: a `false` (or absent) value
+    // means "not in the predicted homomer refset", NOT "AF2 explicitly
+    // disagrees" — this is a lower bound (the docstring on
+    // `HomoOligomerizationFeatures` explicitly calls out EGFR + INSR
+    // as known dimers Schweke under-calls). Useful as a structural
+    // prior for filtering homo-oligomerization epitope-masking risk —
+    // a `true` is a strong AF2-derived signal.
+    key: "is_homo_oligomer",
+    label: "Schweke homomer (AF2)",
+    tooltipKey: "catalog_is_homo_oligomer",
+    provenance: "deterministic",
+    isRisk: true,
+  },
 ];
 
 /**
@@ -454,8 +643,25 @@ const ECD_BAND_SOURCES: readonly {
   { key: "max_paralog_ecd", source: "max_paralog_ecd_pct_identity", hi: 70, mid: 40 },
 ];
 
+/** Bucket a SURFACE-Bind n_sites count into the catalog's targetability
+ *  enum. Mirrors the 4-way logic from the existing catalog quick-filter
+ *  but as a forward enum value rather than a filter state. Keep in sync
+ *  with the Worker's `projectDeepDiveFilters`. */
+function surfaceBindTargetability(
+  hasData: boolean,
+  nSites: number,
+): "high" | "moderate" | "none" | "not_scored" {
+  if (!hasData) return "not_scored";
+  if (nSites >= 3) return "high";
+  if (nSites >= 1) return "moderate";
+  return "none";
+}
+
 export function pickDeepDiveFilters(
   filters: Record<string, unknown> | null | undefined,
+  biologicalContext?: Record<string, unknown> | null,
+  accessibilityRisks?: Record<string, unknown> | null,
+  deterministicFeatures?: Record<string, unknown> | null,
 ): Record<string, unknown> | undefined {
   if (!filters) return undefined;
   const out: Record<string, unknown> = {};
@@ -472,5 +678,76 @@ export function pickDeepDiveFilters(
       out[b.key] = ecdBand(filters[b.source] as number | null, b.hi, b.mid);
     }
   }
+  // Sourced from biological_context, not filters — the record schema
+  // keeps the localization in the biology block. MUST stay in sync with
+  // the Worker's `projectDeepDiveFilters` (which performs the same
+  // pull on the server side).
+  const sl =
+    (biologicalContext?.subcellular_localization as
+      | { primary_compartment?: unknown }
+      | undefined) ?? undefined;
+  if (sl && typeof sl.primary_compartment === "string") {
+    out.primary_compartment = sl.primary_compartment;
+  }
+  // Sourced from accessibility_risks.restricted_subdomain.domain ONLY
+  // when present === true. The schema requires `domain` to always be
+  // set (with "unknown" as the not-applicable sentinel); projecting it
+  // unconditionally would pile every non-restricted gene into the
+  // "unknown" bucket and drown the signal. MUST stay in sync with the
+  // Worker's `projectDeepDiveFilters`.
+  const rs =
+    (accessibilityRisks?.restricted_subdomain as
+      | { present?: unknown; domain?: unknown }
+      | undefined) ?? undefined;
+  if (rs && rs.present === true && typeof rs.domain === "string") {
+    out.restricted_subdomain_kind = rs.domain;
+  }
+  // Same project-when-present pattern for secreted_form.source — only
+  // surface the source when there's a secreted form to attribute it to.
+  // Empty/null source on a present-true secreted form is allowed by the
+  // schema (`source: SecretedFormSource | None`); skip silently.
+  const sf =
+    (accessibilityRisks?.secreted_form as
+      | { present?: unknown; source?: unknown }
+      | undefined) ?? undefined;
+  if (sf && sf.present === true && typeof sf.source === "string") {
+    out.secreted_form_source = sf.source;
+  }
+  // SURFACE-Bind facets (Balbi 2026, PMID 41604262) — sourced from
+  // `deterministic_features.surface_bind`. MUST stay in sync with the
+  // Worker's `projectDeepDiveFilters`. Bucket `n_sites` into the same
+  // 4-way targetability enum the existing catalog quick-filter uses.
+  const sb =
+    (deterministicFeatures?.surface_bind as
+      | { has_data?: unknown; n_sites?: unknown; main_class?: unknown }
+      | undefined) ?? undefined;
+  if (sb) {
+    const hasData = sb.has_data === true;
+    const nSites = typeof sb.n_sites === "number" ? sb.n_sites : 0;
+    out.surface_bind_targetability = surfaceBindTargetability(hasData, nSites);
+    // `main_class` is only meaningful when has_data=true (it's the
+    // family axis from SURFACE-Bind's reference table). Skip when
+    // unscored so the filter UI doesn't show every not-in-SURFACE-Bind
+    // gene as a single bucket.
+    if (hasData && typeof sb.main_class === "string") {
+      out.surface_bind_main_class = sb.main_class;
+    }
+  }
+  // Schweke 2024 homo-oligomer prediction (PMID 38325366) — sourced
+  // from `deterministic_features.homo_oligomerization.is_homo_oligomer`.
+  // Schweke is POSITIVES-ONLY: an absent/empty block (pre-Schweke
+  // annotation, ~16% of in-tree snapshots) means "not in the predicted
+  // homomer refset" — coerce to `false` so the filter has a value to
+  // match against. The live Worker LEFT JOINs `schweke_homomer_public`
+  // and patches the record at serve-time for these legacy snapshots
+  // (see handleGene in cloudflare/workers/surfaceome_api/src/index.js,
+  // commit e14a2feb4) — the SSG-fallback path here mirrors the same
+  // "absent = false" semantics so the filter behaves consistently
+  // whether the record arrived via Worker or local snapshot.
+  const ho =
+    (deterministicFeatures?.homo_oligomerization as
+      | { is_homo_oligomer?: unknown }
+      | undefined) ?? undefined;
+  out.is_homo_oligomer = ho?.is_homo_oligomer === true;
   return Object.keys(out).length > 0 ? out : undefined;
 }

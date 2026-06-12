@@ -995,6 +995,67 @@ function projectDeepDiveFilters(annotationJson) {
       any = true;
     }
   }
+  // Primary subcellular compartment lives in biological_context, not the
+  // top-level `filters` block. Keep in sync with viewer/lib/deep-dive-fields.ts
+  // `pickDeepDiveFilters`. Powers the "Primary localization" facet on the
+  // catalog filter panel + compare tool.
+  const pc =
+    rec?.biological_context?.subcellular_localization?.primary_compartment;
+  if (typeof pc === "string") {
+    out.primary_compartment = pc;
+    any = true;
+  }
+  // Restricted subdomain kind — sourced from accessibility_risks, but
+  // ONLY when present === true. The schema requires `domain` to always
+  // be set with "unknown" as the not-applicable sentinel; projecting
+  // unconditionally would pile every non-restricted gene into the
+  // "unknown" bucket and drown the signal. Keep in sync with the
+  // viewer's `pickDeepDiveFilters`.
+  const rs = rec?.accessibility_risks?.restricted_subdomain;
+  if (rs && rs.present === true && typeof rs.domain === "string") {
+    out.restricted_subdomain_kind = rs.domain;
+    any = true;
+  }
+  // Same project-when-present contract for secreted_form.source — only
+  // surface the source when a secreted form actually exists.
+  const sf = rec?.accessibility_risks?.secreted_form;
+  if (sf && sf.present === true && typeof sf.source === "string") {
+    out.secreted_form_source = sf.source;
+    any = true;
+  }
+  // SURFACE-Bind facets (Balbi 2026, PMID 41604262) — sourced from
+  // deterministic_features.surface_bind. Keep in sync with the
+  // viewer's pickDeepDiveFilters. The 4-way bucket mirrors the
+  // existing catalog quick-filter (any / ≥1 / ≥3 / not_in).
+  const sb = rec?.deterministic_features?.surface_bind;
+  if (sb) {
+    const hasData = sb.has_data === true;
+    const nSites = typeof sb.n_sites === "number" ? sb.n_sites : 0;
+    let bucket = "not_scored";
+    if (hasData) {
+      if (nSites >= 3) bucket = "high";
+      else if (nSites >= 1) bucket = "moderate";
+      else bucket = "none";
+    }
+    out.surface_bind_targetability = bucket;
+    any = true;
+    if (hasData && typeof sb.main_class === "string") {
+      out.surface_bind_main_class = sb.main_class;
+      // `any` already set above.
+    }
+  }
+  // Schweke 2024 (PMID 38325366) — sourced from
+  // deterministic_features.homo_oligomerization.is_homo_oligomer.
+  // Schweke is positives-only; an absent/empty block (pre-Schweke
+  // annotation) means "not in the predicted homomer refset". This
+  // function runs AFTER handleGene's LEFT-JOIN enrichment from
+  // schweke_homomer_public, so by the time we read it here the block
+  // is already populated for records that match the positive set.
+  // Coerce to `false` for absent/false so the catalog has a
+  // consistent value to filter on.
+  const ho = rec?.deterministic_features?.homo_oligomerization;
+  out.is_homo_oligomer = ho?.is_homo_oligomer === true;
+  any = true;
   return any ? out : null;
 }
 
