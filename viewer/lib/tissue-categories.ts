@@ -48,41 +48,75 @@ export interface TissueCategory {
  * head-to-toe with fluids/dev at the end as "everything else."
  */
 /**
- * Palette notes:
- *  - Two near-white slots removed: `developmental` was `lavender-tint`
- *    (#e4e0f8) which read as blank-bar against the white card; `fluids_
- *    other` was `line-soft` (rgba ~6% black) which was likewise invisible.
- *  - Yellow added for developmental (#e9b62a — saturated mustard so it
- *    sits distinctly between amber and lavender on the color wheel).
- *  - Purple-heavy distribution: CNS, head/sensory, musculoskeletal, and
- *    fluids/other all draw from the lavender family, giving the
- *    palette an editorial purple identity matching the rest of the
- *    deliverome system.
+ * Palette notes — high-contrast version. Each category gets a hue at
+ * least one stop away from its neighbors on the color wheel so 14
+ * categories read clearly side-by-side in a bar chart.
+ *
+ *  - Anchors: deep purple (CNS), saturated teal (respiratory),
+ *    crimson (cardiovascular), tangerine (lymphoid), grass (digestive),
+ *    rust-brown (hepatobiliary), royal blue (urinary), olive
+ *    (endocrine), magenta (reproductive), bronze (skin), bright
+ *    purple (musculoskeletal), mustard (developmental), slate (fluids).
+ *  - Reds split: cardiovascular is the saturated maroon; reproductive
+ *    moves to magenta so two warm reds don't sit next to each other.
+ *  - Greens split: digestive is grass green; endocrine is olive; no
+ *    more "two teals + a dark teal" cluster.
+ *  - Purples: CNS deep, head-and-sensory near-black, musculoskeletal
+ *    mid-bright, fluids slate-violet — four distinct purples that
+ *    still read as a family.
+ */
+/**
+ * Max-contrast palette. Each color targets ≥ 30° hue separation from
+ * its neighbors and ≥ 0.6 saturation so adjacent bars read as
+ * obviously distinct categories rather than "similar teal-ish thing."
+ * Mixes lightness on the warm side (cardiac dark, lymphoid bright)
+ * and on the cool side (CNS deep, musculoskeletal light) to
+ * distinguish hue-pairs by brightness as well.
  */
 export const TISSUE_CATEGORIES: readonly TissueCategory[] = [
-  { id: "cns", label: "CNS", colorVar: "--lavender-mid", colorFallback: "#5848a8" },
-  { id: "head_sensory", label: "Head & sensory", colorVar: "--lavender-deepest", colorFallback: "#1e1450" },
-  { id: "respiratory", label: "Respiratory", colorVar: "--teal-mid", colorFallback: "#3d6b60" },
-  { id: "cardiovascular", label: "Cardiovascular", colorVar: "--maroon-mid", colorFallback: "#922038" },
-  { id: "lymphoid", label: "Lymphoid & blood", colorVar: "--amber-mid", colorFallback: "#c07830" },
-  { id: "digestive", label: "Digestive (GI)", colorVar: "--teal-mid-lt", colorFallback: "#4d8a80" },
-  { id: "hepatobiliary_pancreas", label: "Hepatobiliary & pancreas", colorVar: "--amber-deepest", colorFallback: "#5a2608" },
-  { id: "urinary", label: "Urinary", colorVar: "--teal-deepest", colorFallback: "#152e28" },
-  { id: "endocrine", label: "Endocrine", colorVar: "--endocrine-mid", colorFallback: "#6b8e4e" },
-  { id: "reproductive", label: "Reproductive", colorVar: "--maroon-deepest", colorFallback: "#3e0a18" },
-  { id: "skin_adipose", label: "Skin & adipose", colorVar: "--skin-mid", colorFallback: "#b8704a" },
-  // Musculoskeletal: bumped from `muted-soft` (warm gray) to a mid
-  // lavender so the purple identity carries through to the
-  // motor-system bars without colliding with CNS (deeper purple).
-  { id: "musculoskeletal", label: "Musculoskeletal", colorVar: "--lavender-bright", colorFallback: "#8878c8" },
-  // Developmental: yellow (mustard) — distinct hue from amber, picked
-  // because trophoblast / embryo / placenta read as a separate axis
-  // from "warm" GI / hepatobiliary tones nearby.
-  { id: "developmental", label: "Developmental", colorVar: "--mustard", colorFallback: "#e9b62a" },
-  // Fluids / other: an overall neutral, but bumped to a real dusty
-  // lavender so it shows up against the card background instead of
-  // disappearing.
-  { id: "fluids_other", label: "Fluids / other", colorVar: "--lavender-dusty", colorFallback: "#9a8fb8" },
+  // Vivid purple. Deepest purple in the palette by design — the CNS
+  // tier feels heavy / weighted.
+  { id: "cns", label: "CNS", colorVar: "--vivid-purple", colorFallback: "#6a1bd9" },
+  // Near-black indigo — distinct from CNS purple by brightness,
+  // not hue (sensory feels weighted by saturation, not color).
+  { id: "head_sensory", label: "Head & sensory", colorVar: "--indigo-night", colorFallback: "#0d1457" },
+  // Cyan teal — brighter / more saturated than the original muted
+  // teal-mid so it doesn't blend into the digestive green next door.
+  { id: "respiratory", label: "Respiratory", colorVar: "--cyan-teal", colorFallback: "#1f9e9e" },
+  // Crimson red — sharp and saturated. Adjacent to lymphoid orange
+  // but distinct by hue+brightness.
+  { id: "cardiovascular", label: "Cardiovascular", colorVar: "--crimson", colorFallback: "#d8203e" },
+  // Vivid orange — brighter than the previous tangerine so it
+  // separates clearly from the crimson on its left.
+  { id: "lymphoid", label: "Lymphoid & blood", colorVar: "--vivid-orange", colorFallback: "#f57e1c" },
+  // Saturated green — was grass (#4a9a4a), bumped to a brighter
+  // chlorophyll green so digestive doesn't mute against respiratory
+  // cyan or endocrine olive.
+  { id: "digestive", label: "Digestive (GI)", colorVar: "--bright-green", colorFallback: "#2ec044" },
+  // Chocolate brown — much darker than skin (peach), creating a
+  // brightness contrast between the two warm-earth slots.
+  { id: "hepatobiliary_pancreas", label: "Hepatobiliary & pancreas", colorVar: "--chocolate", colorFallback: "#5d2914" },
+  // Sapphire blue — deep + saturated, distinct from the head/sensory
+  // indigo by hue (more blue, less violet).
+  { id: "urinary", label: "Urinary", colorVar: "--sapphire", colorFallback: "#1f3a8a" },
+  // Yellow-olive — pushed toward yellow so it's clearly distinct
+  // from digestive's bright green and developmental's mustard.
+  { id: "endocrine", label: "Endocrine", colorVar: "--yellow-olive", colorFallback: "#9b9a16" },
+  // Hot pink — saturated magenta-pink. Distinct from cardiovascular
+  // crimson by being magenta-side of red.
+  { id: "reproductive", label: "Reproductive", colorVar: "--hot-pink", colorFallback: "#d83a78" },
+  // Peach coral — brighter / pinker than the original bronze so it
+  // doesn't blend into hepatobiliary's chocolate brown.
+  { id: "skin_adipose", label: "Skin & adipose", colorVar: "--peach", colorFallback: "#e89b4a" },
+  // Lilac — much lighter than CNS purple, so adjacent purples read
+  // as different brightnesses.
+  { id: "musculoskeletal", label: "Musculoskeletal", colorVar: "--lilac", colorFallback: "#b69cea" },
+  // Bright yellow — pure, saturated, no orange tint. Distinct from
+  // endocrine olive and lymphoid orange.
+  { id: "developmental", label: "Developmental", colorVar: "--bright-yellow", colorFallback: "#f5c213" },
+  // Warm gray-violet — intentionally desaturated so "everything else"
+  // doesn't compete with the categorical colors above it.
+  { id: "fluids_other", label: "Fluids / other", colorVar: "--warm-gray", colorFallback: "#8a7e8a" },
 ] as const;
 
 /**

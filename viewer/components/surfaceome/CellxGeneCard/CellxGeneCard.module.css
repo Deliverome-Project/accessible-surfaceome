@@ -368,16 +368,20 @@ button.colBarHit:focus-visible {
   top: calc(100% + 6px);
   /* Anchor pivot 6 px LEFT of the bar's center so the rotated label
      visually sits flush under the bar instead of trailing off
-     toward the bar's right edge. `right: 50%` (pivot AT center)
-     put the label visibly right-shifted because the CCW rotation
-     swings the bulk of the text leftward but leaves the anchor
-     dot at the pivot point. Nudging the pivot left by `+ 6 px` of
-     `right:` recenters the visual mass under the bar. */
+     toward the bar's right edge. */
   right: calc(50% + 6px);
   font-family: var(--font-sans);
   font-size: 0.6rem;
   color: var(--ink-soft);
-  white-space: normal;
+  /* Allow wrapping on whitespace, but cap at 2 LINES via
+     -webkit-line-clamp — long CL terms like "kidney loop of Henle
+     ascending limb epithelial cell" don't sprawl into 4 lines
+     when they're rotated and overlap their neighbors. Hover
+     popover stays the canonical full-label channel. */
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+  -webkit-box-orient: vertical;
   word-break: normal;
   overflow-wrap: break-word;
   text-align: right;
@@ -386,6 +390,7 @@ button.colBarHit:focus-visible {
   pointer-events: none;
   max-width: 140px;
   line-height: 1.15;
+  overflow: hidden;
 }
 
 .colBar:hover .colLabel,

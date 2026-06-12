@@ -52,18 +52,24 @@ ENS_MAP = Path(
 OUT_DIR = Path(os.environ.get("CZI_OUT_DIR", "/tmp/czi_enrichment"))
 MANIFEST = OUT_DIR.parent / (OUT_DIR.name + "_manifest.tsv")
 CENSUS_VERSION = "2025-11-08"
-SCHEMA_VERSION = "2.0"
+SCHEMA_VERSION = "2.1"
 
 # Classification + selection thresholds
 MIN_N_TOTAL_FOR_CLASS = 50
-COMMON_THRESHOLD = 1000
-COMMON_TOP_N = 20
-RARE_TOP_N = 10
-RARE_MIN_MEAN = 2.0
-COMMON_MIN_MEAN = 1.0  # backfill condition
+MIN_N_EXPRESSING = 10
+MIN_PCT = 0.01
+COMMON_THRESHOLD = 10_000  # v2.1: was 1000 — tighter common bucket
+COMMON_TOP_N = 50  # v2.1.1: was 20 — show the long tail
+RARE_TOP_N = 50  # v2.1.1: was 10
+RARE_MIN_MEAN = 1.0  # v2.1.1: was 2.0
+COMMON_MIN_MEAN = 1.0
+TRACE_MIN_N = 1
+TRACE_MIN_PCT = 0.0001
 HPA_FOLD = 4.0
-TOP_K_TISSUES = 3
-MAX_CELL_TYPES = 30
+TOP_K_TISSUES = 20  # v2.1.2: was 3 — per-cell-type tissues list
+MAX_CELL_TYPES = 100  # v2.1.1: was 30
+TISSUE_MIN_TOTAL = 1_000  # v2.1.2: tissue universe filter
+CELLS_BY_TISSUE_PER_TISSUE_CAP = 20  # v2.1.2: top cells per tissue
 
 
 def load_tsv(path: Path) -> list[dict[str, str]]:
@@ -382,14 +388,22 @@ def main() -> int:
 
             n_exp = int(e["n_expressing"])
             n_tot = int(e["n_total"])
+            pct = (n_exp / n_tot) if n_tot > 0 else 0.0
+            # v2.1.1+ is_trace flag: cell type passes the universe
+            # filter (n_total>=50) but fails the noise floor
+            # (n_expressing >= 10 AND pct >= 1%). Viewer renders these
+            # muted so the reader sees the long-tail without confusing
+            # it with the qualified ranking.
+            is_trace = bool(n_exp < MIN_N_EXPRESSING or pct < MIN_PCT)
             entry_out = {
                 "cell_type": cl_labels.get(cl, cl),
                 "cl_id": cl,
                 "mean_log1p_cp10k": round(e["mean_log"], 4),
                 "n_expressing": n_exp,
                 "n_total": n_tot,
-                "pct_expressing": round(n_exp / n_tot, 4) if n_tot > 0 else None,
+                "pct_expressing": round(pct, 4) if n_tot > 0 else None,
                 "is_rare": bool(e["is_rare"]),
+                "is_trace": is_trace,
                 "tissues": tissues,
             }
             top_cell_types_out.append(entry_out)
@@ -404,6 +418,74 @@ def main() -> int:
                             n_tot,
                         )
                     )
+
+        # v2.1.2: build per-tissue aggregation + reverse cells_by_tissue
+        # map. This is the same data structure the single-gene script
+        # produces; viewer's tissue cross-filter relies on it to find
+        # cell types whose pooled mean is too low to make the global
+        # top_cell_types cap (e.g. fibroblast in GPR75's vasculature).
+        ub_pooled: dict[str, dict[str, float]] = {}  # ub -> {nnz, sum, n_total}
+        cells_by_tissue: dict[str, list[dict]] = {}
+        ub_total_counts: dict[str, int] = {}
+        for (cl_pair, ub_pair), n_pair in pair_counts.items():
+            ub_total_counts[ub_pair] = ub_total_counts.get(ub_pair, 0) + n_pair
+
+        for cl, ub_to_stats in cl_to_uberon.items():
+            for ub, (nnz, ssum) in ub_to_stats.items():
+                if nnz <= 0:
+                    continue
+                # Pool for top_tissues
+                slot = ub_pooled.setdefault(ub, {"nnz": 0, "sum": 0.0})
+                slot["nnz"] += nnz
+                slot["sum"] += ssum
+                # Reverse map: cells_by_tissue[ub] = [cells expressing here]
+                n_total_pair = pair_counts.get((cl, ub), 0)
+                if n_total_pair < 50:
+                    continue
+                cell_pct = nnz / n_total_pair if n_total_pair else 0.0
+                cells_by_tissue.setdefault(ub, []).append({
+                    "cl_id": cl,
+                    "cell_type": cl_labels.get(cl, cl),
+                    "mean_log1p_cp10k": round(ssum / nnz, 4),
+                    "n_expressing": int(nnz),
+                    "n_total": int(n_total_pair),
+                    "pct_expressing": round(min(1.0, cell_pct), 4),
+                    "is_trace": bool(
+                        nnz < MIN_N_EXPRESSING or cell_pct < MIN_PCT
+                    ),
+                })
+
+        # Sort + cap each tissue's cell list
+        for ub in cells_by_tissue:
+            cells_by_tissue[ub].sort(key=lambda c: -c["n_expressing"])
+            cells_by_tissue[ub] = cells_by_tissue[ub][:CELLS_BY_TISSUE_PER_TISSUE_CAP]
+
+        # Build top_tissues rows
+        top_tissues_out: list[dict] = []
+        for ub, slot in ub_pooled.items():
+            nnz_ub = slot["nnz"]
+            ssum_ub = slot["sum"]
+            n_total_ub = ub_total_counts.get(ub, 0)
+            if n_total_ub < TISSUE_MIN_TOTAL:
+                continue
+            mean_ub = ssum_ub / nnz_ub if nnz_ub else 0.0
+            pct_ub = nnz_ub / n_total_ub if n_total_ub else 0.0
+            is_trace_ub = bool(
+                nnz_ub < MIN_N_EXPRESSING or pct_ub < MIN_PCT
+            )
+            top_tissues_out.append({
+                "tissue": uberon_labels.get(ub, ub),
+                "uberon_id": ub,
+                "mean_log1p_cp10k": round(mean_ub, 4),
+                "n_expressing": int(nnz_ub),
+                "n_total": int(n_total_ub),
+                "pct_expressing": round(min(1.0, pct_ub), 4),
+                "is_trace": is_trace_ub,
+            })
+        # Qualified first, then trace, each by mean DESC.
+        top_tissues_out.sort(
+            key=lambda t: (t["is_trace"], -t["mean_log1p_cp10k"]),
+        )
 
         # fold_change JSON encoding (inf -> None marker)
         if fold is None:
@@ -424,6 +506,8 @@ def main() -> int:
             "fold_change": fold_out,
             "fold_change_infinite": bool(fold is not None and math.isinf(fold)),
             "top_cell_types": top_cell_types_out,
+            "top_tissues": top_tissues_out,
+            "cells_by_tissue": cells_by_tissue,
         }
 
         out_path = OUT_DIR / f"{symbol}.json"
