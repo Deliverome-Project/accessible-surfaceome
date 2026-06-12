@@ -6,16 +6,21 @@
   font-family: var(--font-sans);
 }
 
-/* The CellxGene card's lede is denser than most (3 charts to
-   introduce + an InfoTip). Two earlier caps fight us:
-   - app/globals.css `.lede { max-width: 38rem }` (the editorial cap)
-   - SectionCard.module.css `.lede { max-width: 75ch }` (the section
-     reading-width cap)
-   Both apply at specificity (0,1,0); CSS-module load order is
-   unpredictable, so a plain `max-width: none` here loses the cascade
-   roughly half the time. `!important` is the correct hammer for a
-   per-card opt-out from a global guard. */
+/* The CellxGene card's lede needs to span the full section width
+   (the description is dense and the charts below are wide). THREE
+   caps fight us:
+   - app/globals.css `.lede { max-width: 38rem }` (editorial cap)
+   - SectionCard.module.css `.lede { max-width: 75ch }` (section
+     reading cap)
+   - SectionCard.module.css `.head { max-width: 64ch }` (the PARENT,
+     which clips its children regardless of their own rules — this
+     was why the first override silently failed)
+   Both classes override with !important to win the cascade against
+   the global rules at the same specificity. */
 .fullWidthLede {
+  max-width: none !important;
+}
+.fullWidthHead {
   max-width: none !important;
 }
 

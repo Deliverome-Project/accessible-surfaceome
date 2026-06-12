@@ -136,6 +136,7 @@ export function CellxGeneCard({ data }: Props) {
   return (
     <SectionCard
       title="CellxGene RNA enrichment"
+      headClassName={styles.fullWidthHead}
       ledeClassName={styles.fullWidthLede}
       meta={
         <>
