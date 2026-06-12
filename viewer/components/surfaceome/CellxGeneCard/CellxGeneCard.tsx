@@ -92,94 +92,18 @@ function EnrichmentChip({
       )}
       <InfoTip label="What this classification means" wide>
         <strong>{ENRICHMENT_LABELS[klass]}</strong> at the {axis} level.{" "}
-        {ENRICHMENT_BLURB[klass]}
-        <br />
-        <br />
-        <strong>Method.</strong> Each entity (cell type / tissue) carries
-        a linear population-mean expression — <code>expm1(mean
-        log1p(CP10K))</code> among expressing cells <code>×
-        pct_expressing</code> — the nTPM-equivalent used by HPA / GTEx /
-        Bgee / Tabula Sapiens. The discrete class follows{" "}
+        {ENRICHMENT_BLURB[klass]} Follows{" "}
         <a
           href="https://www.proteinatlas.org/humanproteome/single+cell/single+cell+type/method#ce_enriched"
           target="_blank"
           rel="noopener noreferrer"
         >
-          the HPA single-cell elevation taxonomy
-        </a>
-        : <em>enriched</em> = top entity ≥ 4× the next-ranked;{" "}
-        <em>group_enriched</em> = a group of 2–5 entities all ≥ 4× the
-        next; <em>enhanced</em> = top ≥ 4× the mean of other eligible
-        entities; otherwise <em>low_specificity</em>. The{" "}
-        <em>enriched</em> / <em>group_enriched</em> tests include a
-        zero baseline for below-noise entities; <em>enhanced</em> uses
-        only above-noise entities so broadly-expressed genes don&apos;t
-        falsely fire on the most-sampled tissue.
-        <br />
-        <br />
-        <strong>τ (Yanai et al. 2005).</strong> Continuous specificity
-        score ∈ [0, 1] computed alongside the discrete class.{" "}
-        <code>τ = Σ(1 − x_i/x_max) / (N − 1)</code> over the linear
-        population means of eligible entities. <em>0</em> = uniformly
-        expressed; <em>1</em> = concentrated in one entity. Adds
-        resolution where the 4× rule reads as a binary cutoff —
-        Karbalaei 2024 benchmark names τ the most robust single-cell
-        specificity metric.{" "}
-        {axis === "cell class" && (
-          <>
-            <br />
-            <br />
-            <strong>This axis.</strong> Cell-class rolls every leaf
-            Cell Ontology term up to one of ~10 compartments
-            (Epithelial, Immune, Neural, Endothelial, Stromal, Muscle,
-            Reproductive, Stem, Tumor, Other) via a graph walk of
-            cl-basic.obo&apos;s <code>is_a</code> edges. Each
-            compartment&apos;s signal is its max-pop-mean leaf — KLK2
-            Epithelial = the prostate luminal subtype&apos;s pop mean,
-            not a diluted average across every epithelial CL term.
-          </>
-        )}
-        {axis === "cell type" && (
-          <>
-            <br />
-            <br />
-            <strong>This axis.</strong> Leaf Cell Ontology terms (~600
-            entities — naive B cell, plasma cell, kidney loop of Henle
-            ascending limb epithelial cell, etc.). At this granularity
-            HPA&apos;s 4× rule rarely fires because sibling subtypes
-            expressing at similar levels can&apos;t dominate each
-            other — most genes show <em>low_specificity</em> here.
-            Useful for genes with one clearly-restricted leaf (GPR75
-            → kidney loop of Henle); for everything else the cell-
-            class or tissue axes carry more signal.
-          </>
-        )}
-        {axis === "tissue category" && (
-          <>
-            <br />
-            <br />
-            <strong>This axis.</strong> Aggregates CZI&apos;s 410
-            fine-grained UBERON terms into 13 organ-system categories
-            (CNS, Head &amp; sensory, Respiratory, ...) via a
-            programmatic walk of uberon.obo&apos;s <code>is_a + part_of</code>{" "}
-            edges. Each category&apos;s signal is its max-pop-mean
-            UBERON — GPR75 CNS = the brain UBERON&apos;s pop mean.
-            HPA&apos;s 4× test was sized for ~40 broad tissues; the
-            14-category axis is the closest match.
-          </>
-        )}
-        {axis === "tissue" && (
-          <>
-            <br />
-            <br />
-            <strong>This axis.</strong> Leaf UBERON terms (~410
-            entities — includes whole organs like &ldquo;brain&rdquo;
-            and &ldquo;lung&rdquo; alongside Brodmann areas, cortical
-            subregions, anatomical zones). Fine-grained enough that
-            brain signal can scatter across 96 subregions; the
-            tissue-category axis solves that scatter by rolling up.
-          </>
-        )}
+          the HPA elevation taxonomy
+        </a>{" "}
+        on population mean (mean × pct, ≈ nTPM).{" "}
+        <strong>τ</strong> (Yanai 2005) ∈ [0, 1] is the continuous
+        specificity score over eligible entities — 0 uniform, 1
+        single-entity.
       </InfoTip>
     </div>
   );
@@ -320,8 +244,7 @@ export function CellxGeneCard({ data }: Props) {
             has no signal there) so &ldquo;is this gene in
             liver?&rdquo; is one glance away. Capped at 50 tissues
             per gene; anchors always make the cut. Click a bar to
-            filter the cell-type chart; the bar color flips to
-            maroon to mark the selection.{" "}
+            filter the cell-type chart.{" "}
             <strong>Top 20 cell types / Cell types in {"{tissue}"}</strong>{" "}
             — one chart, two modes. Bars are colored by each cell
             type&apos;s DOMINANT tissue&apos;s organ-system category
