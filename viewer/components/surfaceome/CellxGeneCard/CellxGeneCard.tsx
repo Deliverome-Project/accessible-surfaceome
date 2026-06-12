@@ -215,33 +215,51 @@ export function CellxGeneCard({ data }: Props) {
       }
       lede={
         <>
-          Top cell types and tissues ranked by mean log1p(CP10K)
-          expression in expressing cells — the same scale
-          cellxgene.cziscience.com&apos;s gene-expression viewer shows.
-          Switch the Y-axis to % expressing for the dot-size channel
-          of the WMG dot plot.{" "}
-          <InfoTip label="What each block shows">
+          Where CZI Census detects this gene — every UBERON tissue
+          (top), then the top 20 cell types (bottom). Default
+          ranking is <strong>Score</strong> (mean log1p(CP10K) × %
+          expressing, the population-mean metric most analogous to
+          HPA&apos;s nTPM). Click any tissue bar to filter the
+          cell-type chart to that tissue; the bar color flips from
+          lavender (overall) to maroon (filtered).{" "}
+          <InfoTip label="How to read these charts">
             <strong>Tissues</strong> — every UBERON tissue with
             detectable signal (n_total ≥ 1k), pooled across every
-            cell type sampled from that tissue. CLICK a tissue bar
-            to filter the cell-type chart below to that tissue.{" "}
+            cell type sampled from that tissue. Bars are colored by
+            organ-system category (CNS lavender, respiratory teal,
+            cardiovascular maroon, lymphoid amber, …) so the reader
+            can scan by anatomy. Click a bar to filter the cell-
+            type chart below.{" "}
             <strong>Top 20 cell types / Cell types in {"{tissue}"}</strong>{" "}
-            — one chart that shows the global top-20 by default and
-            swaps to the selected tissue&apos;s cell types when a
-            tissue is clicked. Stats are re-keyed to the
-            tissue&apos;s row inside each cell type&apos;s top-3
-            tissue list. A reset chip in the chart subhead returns
-            to the Top 20 view.
+            — one chart, two modes: global top 20 by score when
+            nothing is selected, swapping to the selected
+            tissue&apos;s cells (with tissue-specific mean / pct /
+            n) when a tissue is clicked. A &ldquo;Show top 20
+            overall&rdquo; chip in the subhead returns to the
+            unfiltered view.
             <br />
             <br />
-            <strong>Y-axis options</strong> — Score (mean × pct,
-            population-mean), Mean log1p(CP10K) of expressing cells,
-            or % expressing. Each chart has its own toggle.{" "}
-            <strong>Mean log1p</strong> values: 1 ≈ detected, 2 =
-            moderate, 4+ = high, 6+ = among the strongest.{" "}
-            <strong>% expressing</strong> is{" "}
-            <code>n_expressing / n_total</code> in the Census-primary
-            cohort.
+            <strong>Y-axis</strong> — each chart has its own toggle.
+            {" "}
+            <strong>Score</strong> (default) = mean × % expressing,
+            answers &ldquo;if I pick a random cell of this type,
+            what total signal?&rdquo;{" "}
+            <strong>Mean log1p(CP10K)</strong> = average among
+            expressing cells (the y-axis on CZI&apos;s WMG dot plot);
+            1 ≈ detected, 2 = moderate, 4+ = high, 6+ = among the
+            strongest.{" "}
+            <strong>% expressing</strong> = <code>n_expressing /
+            n_total</code> in the Census-primary cohort (the
+            dot-size channel of the WMG dot plot).
+            <br />
+            <br />
+            <strong>Sort</strong> — by value (DESC by active metric),
+            by category (group tissues by organ system), by tissue
+            (group cell types by their dominant tissue), or A → Z.
+            Trace (small-n) bars sink to the bottom under value- or
+            category-based sort, render muted, and carry a small-n
+            caveat in their hover popover. Hover any bar for full
+            label + per-tissue detail.
           </InfoTip>
         </>
       }
