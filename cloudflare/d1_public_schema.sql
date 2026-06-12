@@ -755,3 +755,30 @@ CREATE TABLE IF NOT EXISTS schweke_homomer_release (
     loaded_at                   TEXT NOT NULL DEFAULT (datetime('now')),
     notes                       TEXT
 );
+
+-- ---------------------------------------------------------------------------
+-- czi_cellxgene_enrichment — per-gene CZI CELLxGENE Census single-cell
+-- expression enrichment payload (atlas-scale per-cell-type expression
+-- summary). One row per (gene_symbol, schema_version, census_version);
+-- `enrichment_json` is the structured payload the viewer renders in the
+-- Biology card's expression cell-type strip. Backfilled to this schema
+-- file from live D1 (2026-06-11) — table + indexes pre-existed but were
+-- missing from the committed schema, which the `test_d1_schema_in_sync`
+-- guard flagged.
+-- ---------------------------------------------------------------------------
+
+CREATE TABLE IF NOT EXISTS czi_cellxgene_enrichment (
+    gene_symbol         TEXT NOT NULL,
+    hgnc_id             TEXT,
+    ensembl_gene        TEXT,
+    schema_version      TEXT NOT NULL,
+    census_version      TEXT NOT NULL,
+    enrichment_json     TEXT NOT NULL,
+    computed_at         TEXT NOT NULL,
+    synced_at           TEXT NOT NULL DEFAULT (datetime('now')),
+    PRIMARY KEY (gene_symbol, schema_version, census_version)
+);
+
+CREATE INDEX IF NOT EXISTS idx_czi_cellxgene_enrichment_census  ON czi_cellxgene_enrichment (census_version);
+CREATE INDEX IF NOT EXISTS idx_czi_cellxgene_enrichment_ensembl ON czi_cellxgene_enrichment (ensembl_gene);
+CREATE INDEX IF NOT EXISTS idx_czi_cellxgene_enrichment_hgnc    ON czi_cellxgene_enrichment (hgnc_id);

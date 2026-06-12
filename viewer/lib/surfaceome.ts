@@ -59,6 +59,7 @@ import { renumberEvidenceIds } from "./evidenceRenumber";
 import type {
   BenchmarkMatrix,
   BenchmarkRow,
+  Compartment,
   Confidence,
   CoreceptorDependency,
   EcdAccessibilityClass,
@@ -67,6 +68,8 @@ import type {
   ExpressionBreadth,
   ExpressionLevel,
   ProteinFamily,
+  RestrictedSubdomainKind,
+  SecretedSource,
   StateDependence,
   Subcategory,
   SurfaceAccessibility,
@@ -179,6 +182,40 @@ export interface DeepDiveFilters {
   tumor_associated?: boolean;
   induction_trigger?: InductionTrigger;
   has_live_cell_surface_evidence?: boolean;
+  /** Sourced from `biological_context.subcellular_localization.primary_compartment`,
+   *  not the top-level `filters` block. Optional so older catalog payloads
+   *  (pre-rollup) still type. */
+  primary_compartment?: Compartment;
+  /** Sourced from `accessibility_risks.restricted_subdomain.domain`, but
+   *  ONLY when `restricted_subdomain.present === true`. Tells you the
+   *  *kind* of polarized localization (apical / ciliary / junctional /
+   *  …); use alongside `has_restricted_subdomain` which is the bool
+   *  presence flag. Optional so non-restricted genes simply omit it. */
+  restricted_subdomain_kind?: RestrictedSubdomainKind;
+  /** Sourced from `accessibility_risks.secreted_form.source`, but ONLY
+   *  when `secreted_form.present === true`. Tells you how the soluble
+   *  form is generated (alternative splicing / proteolytic / both /
+   *  unknown). `alternative_splicing` covers soluble splice isoforms.
+   *  Use alongside `has_secreted_form` which is the bool presence flag. */
+  secreted_form_source?: SecretedSource;
+  /** Sourced from `deterministic_features.surface_bind` (Balbi 2026,
+   *  PMID 41604262). 4-way bucket of `n_sites` × `has_data`. */
+  surface_bind_targetability?:
+    | "high"
+    | "moderate"
+    | "none"
+    | "not_scored";
+  /** SURFACE-Bind's native family axis. Only set when `has_data=true`. */
+  surface_bind_main_class?:
+    | "Receptors"
+    | "Enzymes"
+    | "Transporters"
+    | "Miscellaneous";
+  /** Schweke 2024 AF2 homo-oligomer prediction (PMID 38325366). Schweke
+   *  is positives-only — `false` (or absent in the record) means "not
+   *  in the predicted homomer refset", NOT "AF2 disagrees". Use as a
+   *  lower-bound structural prior on homo-oligomerization risk. */
+  is_homo_oligomer?: boolean;
 }
 
 export interface CatalogRow {
@@ -1029,6 +1066,9 @@ export async function withDeepDiveFilters(
   ddSymbols.forEach((sym, i) => {
     const ddf = pickDeepDiveFilters(
       records[i]?.filters as Record<string, unknown> | undefined,
+      records[i]?.biological_context as Record<string, unknown> | undefined,
+      records[i]?.accessibility_risks as Record<string, unknown> | undefined,
+      records[i]?.deterministic_features as Record<string, unknown> | undefined,
     );
     // Partial DeepDiveFilters (older records omit newer fields); every
     // reader accesses fields optionally, so route the cast through unknown.
