@@ -434,29 +434,6 @@ export const GENERATED_UBERON_TO_CATEGORY: Readonly<
   "UBERON:0035210": "fluids_other",  // paracolic gutter (n=8,012)
   "UBERON:0003697": "fluids_other",  // abdominal wall (n=5,154)
   "UBERON:0000044": "fluids_other",  // dorsal root ganglion (n=1,837)
-  // Fluids / other — catch-all for unmapped
-  "UBERON:0003688": "fluids_other",  // omentum (n=222,303)
-  "UBERON:0000916": "fluids_other",  // abdomen (n=219,032)
-  "UBERON:0001851": "fluids_other",  // cortex (n=149,766)
-  "UBERON:0007795": "fluids_other",  // ascitic fluid (n=108,287)
-  "UBERON:0009472": "fluids_other",  // axilla (n=94,151)
-  "UBERON:0000175": "fluids_other",  // pleural effusion (n=90,989)
-  "UBERON:0002103": "fluids_other",  // hindlimb (n=86,972)
-  "UBERON:0002358": "fluids_other",  // peritoneum (n=86,750)
-  "UBERON:0018707": "fluids_other",  // bladder organ (n=75,433)
-  "UBERON:0001359": "fluids_other",  // cerebrospinal fluid (n=72,695)
-  "UBERON:0001913": "fluids_other",  // milk (n=48,478)
-  "UBERON:0002102": "fluids_other",  // forelimb (n=38,983)
-  "UBERON:0000344": "fluids_other",  // mucosa (n=26,060)
-  "UBERON:0000030": "fluids_other",  // lamina propria (n=23,687)
-  "UBERON:0016435": "fluids_other",  // chest wall (n=20,144)
-  "UBERON:0001443": "fluids_other",  // chest (n=15,413)
-  "UBERON:0001836": "fluids_other",  // saliva (n=14,502)
-  "UBERON:0007650": "fluids_other",  // esophagogastric junction (n=12,771)
-  "UBERON:0001366": "fluids_other",  // parietal peritoneum (n=10,546)
-  "UBERON:0035210": "fluids_other",  // paracolic gutter (n=8,012)
-  "UBERON:0003697": "fluids_other",  // abdominal wall (n=5,154)
-  "UBERON:0000044": "fluids_other",  // dorsal root ganglion (n=1,837)
 } as const;
 
 /** One representative UBERON per category — highest-n_total in CZI. */
@@ -476,6 +453,5 @@ export const GENERATED_CATEGORY_ANCHORS: Readonly<
   "skin_adipose": "UBERON:0002097",  // skin of body (n=245,931)
   "musculoskeletal": "UBERON:0001134",  // skeletal muscle tissue (n=835)
   "developmental": "UBERON:0000922",  // embryo (n=14,244)
-  "fluids_other": "UBERON:0003688",  // omentum (n=222,303)
   "fluids_other": "UBERON:0003688",  // omentum (n=222,303)
 } as const;

@@ -378,22 +378,35 @@ def main() -> int:
         "  Record<string, TissueCategoryId>",
         "> = {",
     ]
-    # Group by category for readability
+    # Group by category for readability. Dedup with `emitted` because
+    # fluids_other is BOTH a category in CATEGORY_ROOTS (it now has
+    # explicit roots for fluid terms) AND the catch-all for unmapped
+    # UBERONs — without dedup, the same key gets emitted twice and the
+    # TS file fails to typecheck on duplicate object keys.
+    emitted: set[str] = set()
     for cat_id, label, _roots in CATEGORY_ROOTS:
         ubs = sorted(by_cat.get(cat_id, []), key=lambda u: -czi_totals.get(u, 0))
         if not ubs:
             continue
         ts_lines.append(f"  // {label} — {len(ubs)} tissues")
         for ub in ubs:
+            if ub in emitted:
+                continue
+            emitted.add(ub)
             name = obo_names.get(ub) or local_labels.get(ub) or ""
             n = czi_totals.get(ub, 0)
             comment = f"  // {name} (n={n:,})" if name else f"  // n={n:,}"
             ts_lines.append(f'  "{ub}": "{cat_id}",{comment}')
-    # Catch-all
-    catchall = sorted(by_cat.get("fluids_other", []), key=lambda u: -czi_totals.get(u, 0))
+    # Catch-all: only UBERONs not already emitted by an explicit
+    # category walk. After dedup, this is just the truly unmapped set.
+    catchall = sorted(
+        (ub for ub in by_cat.get("fluids_other", []) if ub not in emitted),
+        key=lambda u: -czi_totals.get(u, 0),
+    )
     if catchall:
         ts_lines.append("  // Fluids / other — catch-all for unmapped")
         for ub in catchall:
+            emitted.add(ub)
             name = obo_names.get(ub) or local_labels.get(ub) or ""
             n = czi_totals.get(ub, 0)
             comment = f"  // {name} (n={n:,})" if name else f"  // n={n:,}"
@@ -412,13 +425,10 @@ def main() -> int:
         name = obo_names.get(ub) or local_labels.get(ub) or ""
         n = czi_totals.get(ub, 0)
         ts_lines.append(f'  "{cat_id}": "{ub}",  // {name} (n={n:,})')
-    # fluids_other anchor (might be empty)
-    fcat = sorted(by_cat.get("fluids_other", []), key=lambda u: -czi_totals.get(u, 0))
-    if fcat:
-        ub = fcat[0]
-        name = obo_names.get(ub) or local_labels.get(ub) or ""
-        n = czi_totals.get(ub, 0)
-        ts_lines.append(f'  "fluids_other": "{ub}",  // {name} (n={n:,})')
+    # Removed the separate fluids_other tail block — fluids_other is
+    # already a row in the CATEGORY_ROOTS loop above, so re-emitting
+    # it here was producing a duplicate object key that broke
+    # tsc --noEmit.
     ts_lines.append("} as const;")
     ts_lines.append("")
     TS_OUT.write_text("\n".join(ts_lines))
