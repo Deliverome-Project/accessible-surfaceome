@@ -17,7 +17,6 @@ CATEGORY_ANCHORS = {
     "UBERON:0002369": "endocrine",  # Endocrine → adrenal gland (n=543,830)
     "UBERON:0000473": "reproductive",  # Reproductive → testis (n=20,724)
     "UBERON:0002097": "skin_adipose",  # Skin & adipose → skin of body (n=245,931)
-    "UBERON:0001134": "musculoskeletal",  # Musculoskeletal → skeletal muscle tissue (n=835)
     "UBERON:0000922": "developmental",  # Developmental → embryo (n=14,244)
     "UBERON:0003688": "fluids_other",  # Fluids / other → omentum (n=222,303)
 }

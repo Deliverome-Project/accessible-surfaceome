@@ -3,7 +3,7 @@
  *
  * Source: http://purl.obolibrary.org/obo/uberon.obo
  * CZI tissue universe: 409 UBERON IDs
- * Category roots walked: 14 categories
+ * Category roots walked: 13 categories
  */
 
 import type { TissueCategoryId } from "./tissue-categories";
@@ -386,19 +386,6 @@ export const GENERATED_UBERON_TO_CATEGORY: Readonly<
   "UBERON:0004264": "skin_adipose",  // lower leg skin (n=1,475)
   "UBERON:0001510": "skin_adipose",  // skin of knee (n=1,389)
   "UBERON:0001483": "skin_adipose",  // skin of shoulder (n=37)
-  // Musculoskeletal — 12 tissues
-  "UBERON:0001111": "musculoskeletal",  // intercostal muscle (n=183,161)
-  "UBERON:0014892": "musculoskeletal",  // skeletal muscle organ, vertebrate (n=165,109)
-  "UBERON:0014848": "musculoskeletal",  // tendon of quadriceps femoris (n=64,632)
-  "UBERON:0001630": "musculoskeletal",  // muscle organ (n=56,992)
-  "UBERON:0003701": "musculoskeletal",  // calcaneal tendon (n=40,035)
-  "UBERON:0002378": "musculoskeletal",  // muscle of abdomen (n=35,371)
-  "UBERON:0001388": "musculoskeletal",  // gastrocnemius (n=30,877)
-  "UBERON:0013706": "musculoskeletal",  // bone spine (n=11,929)
-  "UBERON:0008612": "musculoskeletal",  // muscle of pelvic diaphragm (n=11,401)
-  "UBERON:8480009": "musculoskeletal",  // tendon of semitendinosus (n=10,533)
-  "UBERON:0002228": "musculoskeletal",  // rib (n=5,992)
-  "UBERON:0001134": "musculoskeletal",  // skeletal muscle tissue (n=835)
   // Developmental — 11 tissues
   "UBERON:0014374": "developmental",  // embryoid body (n=174,442)
   "UBERON:0001040": "developmental",  // yolk sac (n=56,706)
@@ -411,9 +398,11 @@ export const GENERATED_UBERON_TO_CATEGORY: Readonly<
   "UBERON:0000922": "developmental",  // embryo (n=14,244)
   "UBERON:0007106": "developmental",  // chorionic villus (n=9,898)
   "UBERON:0004025": "developmental",  // lateral ganglionic eminence (n=6,448)
-  // Fluids / other — 22 tissues
+  // Fluids / other — 34 tissues
   "UBERON:0003688": "fluids_other",  // omentum (n=222,303)
   "UBERON:0000916": "fluids_other",  // abdomen (n=219,032)
+  "UBERON:0001111": "fluids_other",  // intercostal muscle (n=183,161)
+  "UBERON:0014892": "fluids_other",  // skeletal muscle organ, vertebrate (n=165,109)
   "UBERON:0001851": "fluids_other",  // cortex (n=149,766)
   "UBERON:0007795": "fluids_other",  // ascitic fluid (n=108,287)
   "UBERON:0009472": "fluids_other",  // axilla (n=94,151)
@@ -422,18 +411,28 @@ export const GENERATED_UBERON_TO_CATEGORY: Readonly<
   "UBERON:0002358": "fluids_other",  // peritoneum (n=86,750)
   "UBERON:0018707": "fluids_other",  // bladder organ (n=75,433)
   "UBERON:0001359": "fluids_other",  // cerebrospinal fluid (n=72,695)
+  "UBERON:0014848": "fluids_other",  // tendon of quadriceps femoris (n=64,632)
+  "UBERON:0001630": "fluids_other",  // muscle organ (n=56,992)
   "UBERON:0001913": "fluids_other",  // milk (n=48,478)
+  "UBERON:0003701": "fluids_other",  // calcaneal tendon (n=40,035)
   "UBERON:0002102": "fluids_other",  // forelimb (n=38,983)
+  "UBERON:0002378": "fluids_other",  // muscle of abdomen (n=35,371)
+  "UBERON:0001388": "fluids_other",  // gastrocnemius (n=30,877)
   "UBERON:0000344": "fluids_other",  // mucosa (n=26,060)
   "UBERON:0000030": "fluids_other",  // lamina propria (n=23,687)
   "UBERON:0016435": "fluids_other",  // chest wall (n=20,144)
   "UBERON:0001443": "fluids_other",  // chest (n=15,413)
   "UBERON:0001836": "fluids_other",  // saliva (n=14,502)
   "UBERON:0007650": "fluids_other",  // esophagogastric junction (n=12,771)
+  "UBERON:0013706": "fluids_other",  // bone spine (n=11,929)
+  "UBERON:0008612": "fluids_other",  // muscle of pelvic diaphragm (n=11,401)
   "UBERON:0001366": "fluids_other",  // parietal peritoneum (n=10,546)
+  "UBERON:8480009": "fluids_other",  // tendon of semitendinosus (n=10,533)
   "UBERON:0035210": "fluids_other",  // paracolic gutter (n=8,012)
+  "UBERON:0002228": "fluids_other",  // rib (n=5,992)
   "UBERON:0003697": "fluids_other",  // abdominal wall (n=5,154)
   "UBERON:0000044": "fluids_other",  // dorsal root ganglion (n=1,837)
+  "UBERON:0001134": "fluids_other",  // skeletal muscle tissue (n=835)
 } as const;
 
 /** One representative UBERON per category — highest-n_total in CZI. */
@@ -451,7 +450,6 @@ export const GENERATED_CATEGORY_ANCHORS: Readonly<
   "endocrine": "UBERON:0002369",  // adrenal gland (n=543,830)
   "reproductive": "UBERON:0000473",  // testis (n=20,724)
   "skin_adipose": "UBERON:0002097",  // skin of body (n=245,931)
-  "musculoskeletal": "UBERON:0001134",  // skeletal muscle tissue (n=835)
   "developmental": "UBERON:0000922",  // embryo (n=14,244)
   "fluids_other": "UBERON:0003688",  // omentum (n=222,303)
 } as const;

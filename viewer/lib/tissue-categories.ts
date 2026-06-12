@@ -30,7 +30,6 @@ export type TissueCategoryId =
   | "endocrine"
   | "reproductive"
   | "skin_adipose"
-  | "musculoskeletal"
   | "developmental"
   | "fluids_other";
 
@@ -105,9 +104,10 @@ export const TISSUE_CATEGORIES: readonly TissueCategory[] = [
   // family.
   { id: "reproductive", label: "Reproductive", colorVar: "--maroon-light", colorFallback: "#bc3c4c" },
   { id: "skin_adipose", label: "Skin & adipose", colorVar: "--skin-mid", colorFallback: "#b8704a" },
-  // Musculoskeletal: lavender-bright — distinct from CNS (mid) by
-  // brightness; carries the purple identity into the motor system.
-  { id: "musculoskeletal", label: "Musculoskeletal", colorVar: "--lavender-bright", colorFallback: "#8878c8" },
+  // Musculoskeletal: removed. CZI's primary cohort has only ~835
+  // cells annotated to UBERON:0001134 (skeletal muscle tissue), too
+  // sparse to draw a meaningful category from. The 12 UBERON terms
+  // previously here fall to fluids_other.
   // Developmental: amber-light — pale yellow, distinct from lymphoid's
   // amber-bright (more orange-leaning) by hue.
   { id: "developmental", label: "Developmental", colorVar: "--amber-light", colorFallback: "#f4c070" },
@@ -179,10 +179,8 @@ export const UBERON_TO_CATEGORY: Readonly<Record<string, TissueCategoryId>> = {
   "UBERON:0001013": "skin_adipose",   // adipose tissue
   "UBERON:0009472": "skin_adipose",   // axilla
   "UBERON:0002097": "skin_adipose",   // skin of body
-  // 12. Musculoskeletal
-  "UBERON:0002102": "musculoskeletal", // forelimb
-  "UBERON:0002103": "musculoskeletal", // hindlimb
-  "UBERON:8480009": "musculoskeletal", // tendon of semitendinosus
+  // 12. (Musculoskeletal removed — see note above.) Previous
+  // forelimb / hindlimb / tendon UBERONs fall to fluids_other now.
   // 13. Developmental
   "UBERON:0000922": "developmental",   // embryo
   "UBERON:0001040": "developmental",   // yolk sac

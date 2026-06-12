@@ -56,6 +56,11 @@ PY_OUT = REPO_ROOT / "scripts/_tissue_category_anchors.py"
 # "brain" reads more clearly than "dorsolateral prefrontal cortex"
 # (which CZI happens to oversample), and the always-show panel needs
 # the anatomically-default term, not the most-sampled subregion.
+# musculoskeletal was removed — CZI's primary cohort has only ~835
+# cells annotated to UBERON:0001134 (skeletal muscle tissue), well
+# below the threshold where any gene's expression in muscle reads as
+# meaningful. The 12 UBERON terms previously mapped to musculoskeletal
+# fall to fluids_other.
 PREFERRED_ANCHOR_OVERRIDE: dict[str, str] = {
     "cns": "UBERON:0000955",                   # brain
     "head_sensory": "UBERON:0000970",          # eye
@@ -68,9 +73,10 @@ PREFERRED_ANCHOR_OVERRIDE: dict[str, str] = {
     "endocrine": "UBERON:0002369",             # adrenal gland
     "reproductive": "UBERON:0000473",          # testis (paired anchor; could be ovary too)
     "skin_adipose": "UBERON:0002097",          # skin of body
-    "musculoskeletal": "UBERON:0001134",       # skeletal muscle tissue
+    # musculoskeletal: removed — CZI sparse-samples skeletal muscle.
     "developmental": "UBERON:0000922",         # embryo
-    "fluids_other": "UBERON:0000178",          # blood again — keep something recognizable
+    # fluids_other: no preferred anchor — let it pick the highest-n
+    # descendant from its catch-all (typically omentum or similar).
 }
 
 
@@ -129,17 +135,9 @@ CATEGORY_ROOTS: list[tuple[str, str, list[str]]] = [
         "UBERON:0001013",   # adipose tissue
         "UBERON:0000310",   # breast (mammary gland tissue, often colocated)
     ]),
-    ("musculoskeletal", "Musculoskeletal", [
-        "UBERON:0002204",   # musculoskeletal system
-        "UBERON:0001630",   # muscle organ — catch muscle subtypes
-        "UBERON:0002385",   # muscle tissue
-        "UBERON:0001134",   # skeletal muscle tissue
-        # NOTE: limb / chest / abdomen are NOT included as roots even
-        # though it'd catch a few more terms — they're body regions
-        # and they'd sweep in unrelated structures (e.g. abdomen
-        # would pull in omentum, peritoneum, and most viscera). Let
-        # those regional terms fall to fluids_other.
-    ]),
+    # musculoskeletal: removed. The 12 UBERON terms that previously
+    # mapped here fall to fluids_other now (the catch-all column for
+    # tissues without a dedicated category).
     ("developmental", "Developmental", [
         "UBERON:0000922",   # embryo
         "UBERON:0001987",   # placenta
