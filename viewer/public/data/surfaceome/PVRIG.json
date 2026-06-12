@@ -5601,38 +5601,38 @@
   "model_path": "claude-sonnet-4-6",
   "record_generated_at": "2026-06-08T20:48:27.517803Z",
   "cellxgene": {
-    "schema_version": "2.1.1",
+    "schema_version": "2.1.2",
     "census_version": "2025-11-08",
     "cell_class_enrichment": {
-      "class": "group_enriched",
+      "class": "enriched",
       "class_ids": [
-        "Immune",
-        "Other"
+        "Immune"
       ],
       "class_labels": [
-        "Immune",
-        "Other"
+        "Immune"
       ],
       "fold_change": null,
-      "fold_change_infinite": true
+      "fold_change_infinite": true,
+      "tau": null
     },
     "cell_type_enrichment": {
       "class": "low_specificity",
       "cl_ids": [],
       "fold_change": null,
-      "fold_change_infinite": false
+      "fold_change_infinite": false,
+      "tau": 0.19254189324539575
     },
     "tissue_enrichment": {
       "class": "low_specificity",
       "uberon_ids": [],
       "tissue_labels": [],
       "fold_change": null,
-      "fold_change_infinite": false
+      "fold_change_infinite": false,
+      "tau": 0.49110195918944344
     },
-    "enrichment_class": "group_enriched",
+    "enrichment_class": "enriched",
     "enrichment_cl_ids": [
-      "Immune",
-      "Other"
+      "Immune"
     ],
     "fold_change": null,
     "fold_change_infinite": true,

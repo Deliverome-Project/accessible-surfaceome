@@ -7250,27 +7250,30 @@
   "model_path": "claude-sonnet-4-6",
   "record_generated_at": "2026-06-01T00:28:03.567292Z",
   "cellxgene": {
-    "schema_version": "2.1.1",
+    "schema_version": "2.1.2",
     "census_version": "2025-11-08",
     "cell_class_enrichment": {
       "class": "low_specificity",
       "class_ids": [],
       "class_labels": [],
       "fold_change": null,
-      "fold_change_infinite": false
+      "fold_change_infinite": false,
+      "tau": 0.2770302724108887
     },
     "cell_type_enrichment": {
       "class": "low_specificity",
       "cl_ids": [],
       "fold_change": null,
-      "fold_change_infinite": false
+      "fold_change_infinite": false,
+      "tau": 0.6268327516075242
     },
     "tissue_enrichment": {
       "class": "low_specificity",
       "uberon_ids": [],
       "tissue_labels": [],
       "fold_change": null,
-      "fold_change_infinite": false
+      "fold_change_infinite": false,
+      "tau": 0.441718954442614
     },
     "enrichment_class": "low_specificity",
     "enrichment_cl_ids": [],

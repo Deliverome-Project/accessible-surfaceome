@@ -58,9 +58,9 @@ import time
 from collections import Counter, defaultdict
 from pathlib import Path
 
-from accessible_surfaceome.audit.cl_broad_classes import (
+from accessible_surfaceome.audit.cl_graph import (
     BROAD_CLASSES,
-    cl_broad_class,
+    cl_compartment,
 )
 
 WMG = Path(os.environ.get(
@@ -77,7 +77,7 @@ ENS_MAP = Path(
 OUT_DIR = Path(os.environ.get("CZI_OUT_DIR", "/tmp/czi_enrichment_v2_1"))
 MANIFEST = OUT_DIR.parent / (OUT_DIR.name + "_manifest.tsv")
 CENSUS_VERSION = "2025-11-08"
-SCHEMA_VERSION = "2.1.1"
+SCHEMA_VERSION = "2.1.2"
 
 # Classifier eligibility (lenient — captures whatever has signal).
 MIN_N_TOTAL_FOR_CLASS = 50
@@ -286,6 +286,60 @@ def classify_hpa(
     return "low_specificity", [], None
 
 
+def compute_tau(
+    entities: dict[str, float],
+    n_totals: dict[str, int],
+) -> float | None:
+    """Yanai et al. 2005 tissue-specificity τ over the eligible set.
+
+    τ = Σ (1 − x_i / x_max) / (N − 1), where x_i is the linear
+    population-mean expression of entity i ∈ eligibles.
+
+    Input ``entities`` carries the *log1p(CP10K)* means for above-noise
+    entities (the eligible set). Convert to linear (expm1) here so the
+    (1 − x_i/x_max) ratio is on the right scale — τ on log-space
+    values doesn't match field convention (HPA / GTEx run τ on linear
+    nTPM / TPM).
+
+    **Why over eligibles, not the full universe.** HPA's original τ
+    treats each of ~40 broad tissues as a measured value (no zeros —
+    nTPM has a noise floor, not actual zeros). cellxgene single-cell
+    data has hard dropout: 50+ of 56 tissues sit at exactly 0 for most
+    genes. Including those zeros makes τ converge to "fraction of
+    universe with no signal" — a sparsity metric, not a specificity
+    metric. Computing τ over the eligible (above-noise) entities
+    answers the question HPA's τ was designed to answer: "given the
+    gene is expressed, how concentrated is the expression?"
+
+    Returns:
+        τ ∈ [0, 1], or ``None`` when fewer than 2 eligible entities
+        or x_max == 0. 0 → uniform across eligibles. 1 → concentrated
+        in one eligible (rest at zero among eligibles, which only
+        happens with the single-eligible carve-out).
+
+    Field references:
+        * Yanai et al. 2005, *Bioinformatics* — original τ.
+        * Kryuchkova-Mostacci & Robinson-Rechavi 2017, *Brief.
+          Bioinformatics* — benchmark naming τ the most robust
+          specificity metric.
+        * Bgee, HPA, Tabula Sapiens — τ-derived rankings.
+    """
+    # ``n_totals`` is the full universe but we only sum over eligibles
+    # (entities that survived the noise gate upstream of this call).
+    linear: list[float] = []
+    for k, m in entities.items():
+        if n_totals.get(k, 0) < MIN_N_TOTAL_FOR_CLASS:
+            continue
+        linear.append(math.expm1(m))
+    n = len(linear)
+    if n < 2:
+        return None
+    x_max = max(linear)
+    if x_max <= 0:
+        return None
+    return sum(1.0 - x / x_max for x in linear) / (n - 1)
+
+
 def fold_change_payload(fold: float | None) -> tuple[float | None, bool]:
     """Serialize fold_change to (value, infinite_flag) for JSON encoding.
     JSON doesn't support inf — we write null + a sibling boolean."""
@@ -336,6 +390,7 @@ def build_record(
     # Pass cl_total_counts (the full leaf-CL universe) so ineligible
     # leaf CL terms contribute zeros in the HPA fold-change test.
     cl_class, cl_ids, cl_fold = classify_hpa(cl_means_log, cl_total_counts)
+    cl_tau = compute_tau(cl_means_log, cl_total_counts)
 
     # ---- Broad cell class rollup ----
     # HPA's 4× test was designed for ~40 broad tissues. cellxgene has
@@ -365,7 +420,7 @@ def build_record(
     # signal stays grounded in its real CL biology.
     class_max_leaf_mean: dict[str, float] = {}
     for cl, ub_to_stats in cl_to_uberon.items():
-        bc = cl_broad_class(cl_labels.get(cl, ""))
+        bc = cl_compartment(cl)
         tot_nnz = sum(v[0] for v in ub_to_stats.values())
         tot_sum = sum(v[1] for v in ub_to_stats.values())
         n_total_cl = cl_total_counts.get(cl, 0)
@@ -385,12 +440,13 @@ def build_record(
     # signal in.
     class_n_total_summed: dict[str, int] = defaultdict(int)
     for cl, n_total in cl_total_counts.items():
-        bc = cl_broad_class(cl_labels.get(cl, ""))
+        bc = cl_compartment(cl)
         class_n_total_summed[bc] += n_total
 
     class_class, class_ids, class_fold = classify_hpa(
         class_max_leaf_mean, class_n_total_summed
     )
+    class_tau = compute_tau(class_max_leaf_mean, class_n_total_summed)
 
     # ---- Per-UBERON pooled across all cell types ----
     # Build it once across the gene's WMG entries — every (cl, ub) pair
@@ -427,6 +483,7 @@ def build_record(
     # MIN_N_TOTAL_FOR_CLASS) so the zero-baseline kicks in for
     # tissues without this gene's signal.
     ub_class, ub_ids, ub_fold = classify_hpa(ub_means_log, ub_total_counts)
+    ub_tau = compute_tau(ub_means_log, ub_total_counts)
 
     # ---- Build display lists ----
     # v2.0 displayed entries solely by mean rank, which let
@@ -566,24 +623,28 @@ def build_record(
         "gene_symbol": symbol,
         "hgnc_id": hgnc or None,
         "ensembl_gene": ensembl_gene,
-        # v2.1.1 broad-class rollup — the chip-facing classification.
-        # CL leaf terms (cell_type_enrichment) are still emitted, but
-        # this is what the viewer chip reads first.
+        # v2.1.2 broad-class rollup — the chip-facing classification.
+        # Cell ontology compartments via cl-basic.obo graph walk (not
+        # keyword rules). CL leaf terms still emitted under
+        # cell_type_enrichment. Each axis carries τ (Yanai 2005
+        # specificity) alongside the HPA discrete class.
         "cell_class_enrichment": {
             "class": class_class,
             "class_ids": class_ids,
             "class_labels": list(class_ids),  # broad classes are already labels
             "fold_change": class_fold_val,
             "fold_change_infinite": class_fold_inf,
+            "tau": class_tau,
         },
-        # v2.1 leaf-CL classification — kept for debugging / power
-        # users. With the zero-baseline fix these are more meaningful
-        # than v2.0 but still noisy at the leaf-CL granularity.
+        # Leaf-CL classification — debugging / power users. Noisy at
+        # the leaf-CL granularity (600+ entities) but τ is still
+        # informative.
         "cell_type_enrichment": {
             "class": cl_class,
             "cl_ids": cl_ids,
             "fold_change": cl_fold_val,
             "fold_change_infinite": cl_fold_inf,
+            "tau": cl_tau,
         },
         "tissue_enrichment": {
             "class": ub_class,
@@ -591,6 +652,7 @@ def build_record(
             "tissue_labels": [uberon_labels.get(u, u) for u in ub_ids],
             "fold_change": ub_fold_val,
             "fold_change_infinite": ub_fold_inf,
+            "tau": ub_tau,
         },
         # v2.0 legacy mirror so older readers don't break during the
         # transition. Points at the broad-class rollup (v2.1.1's

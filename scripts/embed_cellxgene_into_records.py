@@ -66,13 +66,15 @@ def _fmt_fold(fold: float | None, infinite: bool) -> str:
     return f"{fold:.1f}×"
 
 
-def _fmt_class_chip(klass: str, entities: list[str], fold: str) -> str:
-    """`enriched · Prostate gland 12.3×` — human-readable chip text."""
+def _fmt_class_chip(klass: str, entities: list[str], fold: str, tau: float | None = None) -> str:
+    """`enriched · Prostate gland · 12.3× · τ=0.97` — chip text."""
     parts = [klass.replace("_", " ")]
     if entities:
         parts.append(" · ".join(entities[:3]))
     if fold:
         parts.append(fold)
+    if tau is not None:
+        parts.append(f"τ={tau:.2f}")
     return " · ".join(parts)
 
 
@@ -98,20 +100,20 @@ def build_cellxgene_md_section(cx: dict) -> str:
     if cc.get("class"):
         labels = cc.get("class_labels") or cc.get("class_ids") or []
         chip_lines.append(
-            f"- **Cell class (broad rollup, ~10 compartments):** "
-            f"{_fmt_class_chip(cc['class'], labels, _fmt_fold(cc.get('fold_change'), cc.get('fold_change_infinite', False)))}"
+            f"- **Cell class (CL ontology graph, ~10 compartments):** "
+            f"{_fmt_class_chip(cc['class'], labels, _fmt_fold(cc.get('fold_change'), cc.get('fold_change_infinite', False)), cc.get('tau'))}"
         )
     if ct.get("class"):
         ents = _ent_strings(ct["class"], ct.get("cl_ids", []), cl_to_name)
         chip_lines.append(
             f"- **Cell type (leaf Cell Ontology terms, ~600):** "
-            f"{_fmt_class_chip(ct['class'], ents, _fmt_fold(ct.get('fold_change'), ct.get('fold_change_infinite', False)))}"
+            f"{_fmt_class_chip(ct['class'], ents, _fmt_fold(ct.get('fold_change'), ct.get('fold_change_infinite', False)), ct.get('tau'))}"
         )
     if ti.get("class"):
         labels = ti.get("tissue_labels") or ti.get("uberon_ids", []) or []
         chip_lines.append(
             f"- **Tissue (UBERON terms, ~56):** "
-            f"{_fmt_class_chip(ti['class'], labels, _fmt_fold(ti.get('fold_change'), ti.get('fold_change_infinite', False)))}"
+            f"{_fmt_class_chip(ti['class'], labels, _fmt_fold(ti.get('fold_change'), ti.get('fold_change_infinite', False)), ti.get('tau'))}"
         )
 
     def _row(r: dict, label_key: str, id_key: str) -> str:
@@ -133,8 +135,10 @@ def build_cellxgene_md_section(cx: dict) -> str:
         "",
         f"*Schema v{schema} · CZI Census {census} · "
         "HPA-style 4× fold-change classification on log1p(CP10K) → linear means, "
-        "with a zero-baseline universe for `enriched` / `group_enriched` and an "
-        "eligibles-only denominator for `enhanced`. CC-BY 4.0 (CZI).*",
+        "plus Yanai et al. 2005 τ (specificity score ∈ [0, 1], computed over "
+        "the eligible-entity set). Cell-class rollup walks the Cell Ontology graph "
+        "(cl-basic.obo, OBO Foundry) — leaf CL → nearest compartment ancestor. "
+        "CC-BY 4.0 (CZI Census).*",
         "",
         "**Classification:**",
         "",

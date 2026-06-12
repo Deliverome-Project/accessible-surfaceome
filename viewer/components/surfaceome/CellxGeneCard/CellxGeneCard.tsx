@@ -63,11 +63,13 @@ function EnrichmentChip({
   klass,
   foldChange,
   entityNames,
+  tau,
 }: {
   axis: "cell class" | "cell type" | "tissue";
   klass: EnrichmentClass;
   foldChange: number | null;
   entityNames: string[];
+  tau?: number | null;
 }) {
   const norm = normalizeClass(klass);
   return (
@@ -78,6 +80,9 @@ function EnrichmentChip({
         {ENRICHMENT_LABELS[klass]}
         {foldChange != null && Number.isFinite(foldChange) && (
           <span className={styles.classFold}> · {fmtFold(foldChange)}</span>
+        )}
+        {tau != null && Number.isFinite(tau) && (
+          <span className={styles.classFold}> · τ={tau.toFixed(2)}</span>
         )}
       </span>
       {entityNames.length > 0 && (
@@ -164,18 +169,21 @@ export function CellxGeneCard({ data }: Props) {
         // class_labels are already human-readable names for the chip.
         ids: data.cell_class_enrichment.class_labels,
         fold_change: data.cell_class_enrichment.fold_change,
+        tau: data.cell_class_enrichment.tau,
       }
     : data.cell_type_enrichment
     ? {
         class: data.cell_type_enrichment.class,
         ids: data.cell_type_enrichment.cl_ids,
         fold_change: data.cell_type_enrichment.fold_change,
+        tau: data.cell_type_enrichment.tau,
       }
     : data.enrichment_class
     ? {
         class: data.enrichment_class,
         ids: data.enrichment_cl_ids ?? [],
         fold_change: data.fold_change ?? null,
+        tau: undefined as number | null | undefined,
       }
     : null;
   const cellAxisLabel: "cell class" | "cell type" =
@@ -274,6 +282,7 @@ export function CellxGeneCard({ data }: Props) {
               entityNames={cellEnr.ids
                 .map((id) => clToName.get(id) ?? id)
                 .slice(0, 3)}
+              tau={cellEnr.tau}
             />
           )}
           {tissueEnr && (
@@ -282,6 +291,7 @@ export function CellxGeneCard({ data }: Props) {
               klass={tissueEnr.class}
               foldChange={tissueEnr.fold_change}
               entityNames={tissueEnr.tissue_labels.slice(0, 3)}
+              tau={tissueEnr.tau}
             />
           )}
         </div>

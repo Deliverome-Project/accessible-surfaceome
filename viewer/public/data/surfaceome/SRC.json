@@ -3704,7 +3704,7 @@
   "record_generated_at": "2026-06-09T01:43:58.622412Z",
   "prompt_corpus_version": "2.50.1",
   "cellxgene": {
-    "schema_version": "2.1.1",
+    "schema_version": "2.1.2",
     "census_version": "2025-11-08",
     "cell_class_enrichment": {
       "class": "group_enriched",
@@ -3721,20 +3721,23 @@
         "Other"
       ],
       "fold_change": null,
-      "fold_change_infinite": true
+      "fold_change_infinite": true,
+      "tau": 0.38134588314715384
     },
     "cell_type_enrichment": {
       "class": "low_specificity",
       "cl_ids": [],
       "fold_change": null,
-      "fold_change_infinite": false
+      "fold_change_infinite": false,
+      "tau": 0.45785947672094196
     },
     "tissue_enrichment": {
       "class": "low_specificity",
       "uberon_ids": [],
       "tissue_labels": [],
       "fold_change": null,
-      "fold_change_infinite": false
+      "fold_change_infinite": false,
+      "tau": 0.2940137313734406
     },
     "enrichment_class": "group_enriched",
     "enrichment_cl_ids": [

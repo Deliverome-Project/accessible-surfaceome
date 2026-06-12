@@ -106,6 +106,9 @@ export interface CellTypeEnrichment {
   cl_ids: string[];
   /** Linear fold change at the elevation boundary. Null for low_specificity. */
   fold_change: number | null;
+  /** Yanai et al. 2005 specificity τ over the eligible set ∈ [0, 1].
+   *  Null when fewer than 2 entities clear the noise gate. v2.1.2+. */
+  tau?: number | null;
 }
 
 /**
@@ -126,6 +129,10 @@ export interface CellClassEnrichment {
   class_labels: string[];
   fold_change: number | null;
   fold_change_infinite?: boolean;
+  /** Yanai et al. 2005 specificity τ over the eligible compartment
+   *  set ∈ [0, 1]. Null when fewer than 2 compartments are above
+   *  noise. v2.1.2+. */
+  tau?: number | null;
 }
 
 export interface TissueEnrichment {
@@ -135,6 +142,10 @@ export interface TissueEnrichment {
   /** Human labels parallel to uberon_ids ("lung", "brain", …). */
   tissue_labels: string[];
   fold_change: number | null;
+  /** Yanai et al. 2005 specificity τ over the eligible tissue set
+   *  ∈ [0, 1]. Null when fewer than 2 tissues are above noise.
+   *  v2.1.2+. */
+  tau?: number | null;
 }
 
 export interface TissueAggregateRow {

@@ -5011,14 +5011,15 @@
   "model_path": "claude-sonnet-4-6",
   "record_generated_at": "2026-06-07T02:42:21.474347Z",
   "cellxgene": {
-    "schema_version": "2.1.1",
+    "schema_version": "2.1.2",
     "census_version": "2025-11-08",
     "cell_class_enrichment": {
       "class": "not_detected",
       "class_ids": [],
       "class_labels": [],
       "fold_change": null,
-      "fold_change_infinite": false
+      "fold_change_infinite": false,
+      "tau": null
     },
     "cell_type_enrichment": {
       "class": "enriched",
@@ -5026,7 +5027,8 @@
         "CL:1001016"
       ],
       "fold_change": null,
-      "fold_change_infinite": true
+      "fold_change_infinite": true,
+      "tau": null
     },
     "tissue_enrichment": {
       "class": "group_enriched",
@@ -5043,7 +5045,8 @@
         "eye"
       ],
       "fold_change": null,
-      "fold_change_infinite": true
+      "fold_change_infinite": true,
+      "tau": 0.19621726511860885
     },
     "enrichment_class": "not_detected",
     "enrichment_cl_ids": [],
