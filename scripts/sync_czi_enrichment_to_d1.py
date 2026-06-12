@@ -200,6 +200,18 @@ def _apply_ddl(client: D1Client, *, label: str) -> None:
 
 def _push_one(client: D1Client, row: Row) -> tuple[str, bool, str | None]:
     try:
+        # Delete any older schema_version rows for this gene FIRST. The
+        # table's primary key is (gene_symbol, schema_version, census_version),
+        # so a schema bump on the build script inserts a new row instead
+        # of replacing — leaving 11 rows per gene after 11 schema bumps.
+        # The Worker's catalog endpoint LEFT JOIN then fans out N×11 rows.
+        # Cleaning up stale schemas at push time prevents this drift from
+        # accumulating again.
+        client.query(
+            "DELETE FROM czi_cellxgene_enrichment "
+            "WHERE gene_symbol = ? AND schema_version != ?;",
+            [row.gene_symbol, row.schema_version],
+        )
         client.query(UPSERT_SQL, row.params())
         return row.gene_symbol, True, None
     except D1Error as e:
