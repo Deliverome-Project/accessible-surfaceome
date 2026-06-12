@@ -340,7 +340,23 @@ def main():
         if d["nnz"] < 1:
             continue
         n_total_pair = pair_counts.get((cl, ub), 0)
-        if n_total_pair < 50:  # too few cells to give meaningful pct
+        # v2.1.4: when the cell-count cache says 0 cells for this
+        # (cl, tissue) pair but WMG sees nnz expressing cells, the
+        # cache is stale relative to WMG. EGFR in embryo is the
+        # canonical case: cache has 4 CL terms profiled in embryo,
+        # WMG has 36 with 28k expressing cells. Falling back to the
+        # WMG nnz as the denominator gives pct=1.0 (every observed
+        # cell is expressing), which is the conservative estimate
+        # when we don't know the true denominator. The is_uncertain
+        # flag tells the viewer to render these distinctly.
+        is_uncertain = False
+        if n_total_pair < int(d["nnz"]):
+            n_total_pair = int(d["nnz"])
+            is_uncertain = True
+        # Reject only when we truly have no usable signal (cache says
+        # zero AND WMG says zero — shouldn't happen given the nnz >= 1
+        # guard above, but defensive).
+        if n_total_pair < 1:
             continue
         mean = d["sum"] / d["nnz"]
         pct = min(1.0, d["nnz"] / n_total_pair)
@@ -352,6 +368,7 @@ def main():
             "n_total": int(n_total_pair),
             "pct_expressing": round(pct, 4),
             "is_trace": int(d["nnz"]) < MIN_N_EXPRESSING or pct < MIN_PCT,
+            "is_uncertain": is_uncertain,
         })
     # Sort each tissue's cell list by n_expressing DESC (the "who
     # most expresses this in this tissue" question); cap at 20.
