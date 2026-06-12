@@ -4411,9 +4411,9 @@
       "top_cl_labels": [
         "cycling stromal cell"
       ],
-      "fold_change": 7.955,
+      "fold_change": 8.934,
       "fold_change_infinite": false,
-      "tau": 0.8742853329610367
+      "tau": 0.8880636924302455
     },
     "cell_type_enrichment": {
       "class": "enhanced",

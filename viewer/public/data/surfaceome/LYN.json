@@ -2281,9 +2281,9 @@
       "top_cl_labels": [
         "neutrophil"
       ],
-      "fold_change": 10.164,
+      "fold_change": 9.931,
       "fold_change_infinite": false,
-      "tau": 0.9016157740645699
+      "tau": 0.8993006538771284
     },
     "cell_type_enrichment": {
       "class": "enhanced",

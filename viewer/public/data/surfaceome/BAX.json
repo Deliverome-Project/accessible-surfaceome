@@ -1771,7 +1771,7 @@
       "top_cl_labels": [],
       "fold_change": null,
       "fold_change_infinite": false,
-      "tau": 0.7374871837547465
+      "tau": 0.7319739904906918
     },
     "cell_type_enrichment": {
       "class": "enhanced",

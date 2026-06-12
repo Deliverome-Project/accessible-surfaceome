@@ -3658,9 +3658,9 @@
       "top_cl_labels": [
         "large pre-B-II cell"
       ],
-      "fold_change": 6.881,
+      "fold_change": 6.989,
       "fold_change_infinite": false,
-      "tau": 0.8546647656255836
+      "tau": 0.8569078844546152
     },
     "cell_type_enrichment": {
       "class": "enhanced",

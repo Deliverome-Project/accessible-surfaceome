@@ -4212,9 +4212,9 @@
       "top_cl_labels": [
         "kidney proximal convoluted tubule epithelial cell"
       ],
-      "fold_change": 17.914,
+      "fold_change": 17.959,
       "fold_change_infinite": false,
-      "tau": 0.9441770665063721
+      "tau": 0.9443168135700809
     },
     "cell_type_enrichment": {
       "class": "enhanced",

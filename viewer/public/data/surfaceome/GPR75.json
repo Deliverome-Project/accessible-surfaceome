@@ -5024,10 +5024,10 @@
     "cell_family_enrichment": {
       "class": "enriched",
       "family_ids": [
-        "CL:1000909"
+        "CL:0002305"
       ],
       "family_labels": [
-        "kidney loop of Henle epithelial cell"
+        "epithelial cell of distal tubule"
       ],
       "top_cl_labels": [
         "kidney loop of Henle ascending limb epithelial cell"

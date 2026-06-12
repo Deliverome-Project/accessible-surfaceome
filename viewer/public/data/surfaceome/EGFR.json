@@ -7271,9 +7271,9 @@
       "top_cl_labels": [
         "basal epithelial cell of prostatic duct"
       ],
-      "fold_change": 5.484,
+      "fold_change": 5.56,
       "fold_change_infinite": false,
-      "tau": 0.8176663797972656
+      "tau": 0.8201347223088367
     },
     "cell_type_enrichment": {
       "class": "enhanced",

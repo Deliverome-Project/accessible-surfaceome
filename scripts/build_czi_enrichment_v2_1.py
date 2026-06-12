@@ -626,6 +626,52 @@ def build_record(
         uberon_labels.get(organ_top_ub.get(oid, ""), "") for oid in organ_ids
     ]
 
+    # ---- Reverse cells_by_tissue map ----
+    # The viewer's tissue cross-filter clicks a tissue bar and shows
+    # "cell types in {tissue}". Without this reverse map, the viewer
+    # falls back to walking each cell type's truncated top-3 tissues
+    # array, which misses cell types whose pooled mean is too low to
+    # make the top_cell_types cap (e.g. embryo signal sits in many
+    # cell types each at moderate pop mean — none lands in top 30
+    # globally but many show up if you ask "what's in embryo?").
+    #
+    # **WMG nnz fallback** (per 4f4a51a05): when the cell-count cache
+    # says fewer cells than WMG saw, the cache is stale; use WMG nnz
+    # as the denominator and flag is_uncertain so the viewer can
+    # render distinctly. This is what fixes "No cell types in embryo"
+    # — embryo has 28k EGFR-expressing cells in WMG that the cache
+    # didn't see, so they were getting dropped at the n_total_pair < 50
+    # gate.
+    CELLS_BY_TISSUE_PER_TISSUE_CAP = 20
+    cells_by_tissue: dict[str, list[dict]] = {}
+    for cl, ub_to_stats in cl_to_uberon.items():
+        for ub, (nnz, ssum) in ub_to_stats.items():
+            if nnz <= 0:
+                continue
+            n_total_pair = pair_counts.get((cl, ub), 0)
+            is_uncertain = False
+            if n_total_pair < int(nnz):
+                n_total_pair = int(nnz)
+                is_uncertain = True
+            if n_total_pair <= 0:
+                continue
+            cell_pct = min(1.0, nnz / n_total_pair)
+            cells_by_tissue.setdefault(ub, []).append({
+                "cl_id": cl,
+                "cell_type": cl_labels.get(cl, cl),
+                "mean_log1p_cp10k": round(ssum / nnz, 4),
+                "n_expressing": int(nnz),
+                "n_total": int(n_total_pair),
+                "pct_expressing": round(cell_pct, 4),
+                "is_trace": bool(
+                    nnz < MIN_NNZ_FOR_CLASS or cell_pct < MIN_PCT_FOR_CLASS
+                ),
+                "is_uncertain": is_uncertain,
+            })
+    for ub in cells_by_tissue:
+        cells_by_tissue[ub].sort(key=lambda c: -c["n_expressing"])
+        cells_by_tissue[ub] = cells_by_tissue[ub][:CELLS_BY_TISSUE_PER_TISSUE_CAP]
+
     # ---- Build display lists ----
     # v2.0 displayed entries solely by mean rank, which let
     # pct=0.01% noise rows (n=1 of 17,571) dominate low-expression
@@ -870,6 +916,12 @@ def build_record(
         # Display lists
         "top_cell_types": top_cell_types,
         "top_tissues": tissue_rows,
+        # Reverse map: tissue UBERON → cells expressing in it (capped
+        # at 20 per tissue). Powers the viewer's tissue cross-filter
+        # ("show cell types in {tissue}"). Without this, clicking a
+        # tissue with no top-30 cell-type bars shows "No cell types
+        # in {tissue}" even when WMG has signal there.
+        "cells_by_tissue": cells_by_tissue,
     }
     return record
 

@@ -3727,17 +3727,17 @@
     "cell_family_enrichment": {
       "class": "enhanced",
       "family_ids": [
-        "CL:0002178"
+        "CL:0000319"
       ],
       "family_labels": [
-        "epithelial cell of stomach"
+        "mucus secreting cell"
       ],
       "top_cl_labels": [
         "mucous cell of stomach"
       ],
-      "fold_change": 20.05,
+      "fold_change": 19.341,
       "fold_change_infinite": false,
-      "tau": 0.9501241456150017
+      "tau": 0.9482956266287277
     },
     "cell_type_enrichment": {
       "class": "enhanced",

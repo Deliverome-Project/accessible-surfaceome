@@ -6400,9 +6400,9 @@
       "top_cl_labels": [
         "mesothelial cell of pleura"
       ],
-      "fold_change": 17.482,
+      "fold_change": 17.856,
       "fold_change_infinite": false,
-      "tau": 0.9427982303149685
+      "tau": 0.9439959676512398
     },
     "cell_type_enrichment": {
       "class": "enhanced",
