@@ -1080,12 +1080,9 @@ def _annotate(
                 "builders": 0.0,
                 "synthesizer": 0.0,
             },
-<<<<<<< Updated upstream
             # Mirror per-step timing into the persisted blob — Modal
             # tears down ``.runs/`` on container shutdown, D1 is durable.
             "timing": [t.as_dict() for t in list(timing.entries)],
-=======
->>>>>>> Stashed changes
         }
         return AnnotateResultV2(
             gene=gene_id.hgnc_symbol,
@@ -1098,10 +1095,7 @@ def _annotate(
                 f"PTS-level cost ceiling exceeded: "
                 f"${pts_cost:.2f} > ${MAX_PTS_COST_USD:.2f}"
             ),
-<<<<<<< Updated upstream
             failure_mode="cost_ceiling_pts",
-=======
->>>>>>> Stashed changes
             timing=list(timing.entries),
             intermediates=pts_only_intermediates,
         )
