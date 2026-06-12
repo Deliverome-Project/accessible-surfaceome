@@ -6,6 +6,13 @@ import type {
   CellTypeRow,
   TissueAggregateRow,
 } from "../../../lib/cellxgene-enrichment";
+import {
+  TISSUE_CATEGORIES,
+  type TissueCategory,
+  type TissueCategoryId,
+  tissueCategoryColorFor,
+  tissueCategoryForUberonId,
+} from "../../../lib/tissue-categories";
 import styles from "./CellxGeneCard.module.css";
 
 interface Props {
@@ -27,7 +34,10 @@ type SortMode = "value" | "type" | "tissue";
      title — the bar color shifts when you click a tissue. */
 const CELL_BAR_COLOR_FILTERED = "var(--maroon-mid, #922038)";
 const CELL_BAR_COLOR_OVERALL = "var(--lavender-bright, #8878c8)";
-const TISSUE_BAR_COLOR = "var(--teal-mid, #3d6b60)";
+// Tissue bars are now colored per-row by their organ-system category
+// (see lib/tissue-categories.ts). SELECTED_TISSUE_COLOR is the override
+// for the currently-clicked tissue so it pops against the category
+// rainbow.
 const SELECTED_TISSUE_COLOR = "var(--maroon-mid, #922038)";
 
 /**
@@ -333,7 +343,11 @@ function cellPopover(
   );
 }
 
-function tissuePopover(t: TissueAggregateRow): React.ReactNode {
+function tissuePopover(
+  t: TissueAggregateRow,
+  swatchColor: string,
+  categoryLabel: string,
+): React.ReactNode {
   const meanVal = t.mean_log1p_cp10k ?? 0;
   const pctVal = t.pct_expressing ?? 0;
   return (
@@ -341,11 +355,13 @@ function tissuePopover(t: TissueAggregateRow): React.ReactNode {
       <div className={styles.popHeader}>
         <span
           className={styles.swatch}
-          style={{ background: TISSUE_BAR_COLOR }}
+          style={{ background: swatchColor }}
           aria-hidden
         />
         <strong>{t.tissue}</strong>
-        <span className={styles.popMeta}>{t.uberon_id}</span>
+        <span className={styles.popMeta}>
+          {t.uberon_id} · {categoryLabel}
+        </span>
       </div>
       <dl className={styles.popStats}>
         <div>
@@ -448,9 +464,13 @@ function TopTissues({
               Math.min(100, (value / scaleMax) * 100),
             );
             const isSelected = r.uberon_id === selectedUberonId;
+            const category = tissueCategoryForUberonId(r.uberon_id);
+            const categoryColor = tissueCategoryColorFor(r.uberon_id);
+            // Selected bar reverts to maroon so the click target reads
+            // distinctly against the rainbow of category colors.
             const barColor = isSelected
               ? SELECTED_TISSUE_COLOR
-              : TISSUE_BAR_COLOR;
+              : categoryColor;
             const hoverTitle = r.is_trace
               ? `Trace: only ${r.n_expressing} of ${r.n_total.toLocaleString()} cells expressing (${(r.pct_expressing * 100).toFixed(2)}%). Mean is real but small-n.`
               : `Click to filter to ${r.tissue} cell types`;
@@ -462,7 +482,7 @@ function TopTissues({
                 label={r.tissue}
                 isTrace={r.is_trace}
                 isSelected={isSelected}
-                popover={tissuePopover(r)}
+                popover={tissuePopover(r, categoryColor, category.label)}
                 hoverTitle={hoverTitle}
                 onClick={() => onSelect(r.uberon_id)}
               />
@@ -470,7 +490,45 @@ function TopTissues({
           })}
         </ul>
       </div>
+      <TissueCategoryLegend rows={sorted} />
     </section>
+  );
+}
+
+/**
+ * Below-chart legend strip listing the tissue organ-system categories
+ * present in this gene's tissue rows. Skipped when only one category
+ * shows up — at that point the legend is just the chart's caption
+ * repeated. Categories appear in canonical (head-to-toe) order, not
+ * in alphabetical or by-frequency, so the legend reads the same way
+ * across genes.
+ */
+function TissueCategoryLegend({
+  rows,
+}: {
+  rows: ReadonlyArray<{ uberon_id: string }>;
+}) {
+  const present = new Set<TissueCategoryId>();
+  for (const r of rows) {
+    present.add(tissueCategoryForUberonId(r.uberon_id).id);
+  }
+  if (present.size < 2) return null;
+  const items: TissueCategory[] = TISSUE_CATEGORIES.filter((c) =>
+    present.has(c.id),
+  );
+  return (
+    <ul className={styles.tissueCatLegend} aria-label="Tissue categories">
+      {items.map((c) => (
+        <li key={c.id} className={styles.tissueCatLegendItem}>
+          <span
+            className={styles.tissueCatSwatch}
+            style={{ background: `var(${c.colorVar}, ${c.colorFallback})` }}
+            aria-hidden
+          />
+          {c.label}
+        </li>
+      ))}
+    </ul>
   );
 }
 

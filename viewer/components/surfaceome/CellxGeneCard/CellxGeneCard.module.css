@@ -847,3 +847,37 @@ button.colBarHit:focus-visible {
   font-weight: 500;
   letter-spacing: 0.02em;
 }
+
+/* --- tissue category legend ----------------------------------------- *
+ * Per-gene legend strip beneath the tissue-axis chart. Lists the
+ * organ-system categories present in this gene's tissue rows so the
+ * bar colors decode without a global key. Hidden when only one
+ * category is present (the chart's caption already says the same
+ * thing). */
+.tissueCatLegend {
+  list-style: none;
+  margin: 8px 0 0;
+  padding: 8px 0 0;
+  border-top: 1px solid var(--line-soft);
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 14px;
+}
+
+.tissueCatLegendItem {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.72rem;
+  color: var(--ink-soft);
+  font-weight: 500;
+  letter-spacing: 0.01em;
+}
+
+.tissueCatSwatch {
+  display: inline-block;
+  width: 10px;
+  height: 10px;
+  border-radius: 2px;
+  flex-shrink: 0;
+}
