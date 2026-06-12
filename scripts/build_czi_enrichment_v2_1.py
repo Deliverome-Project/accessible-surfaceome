@@ -90,7 +90,7 @@ ENS_MAP = Path(
 OUT_DIR = Path(os.environ.get("CZI_OUT_DIR", "/tmp/czi_enrichment_v2_1"))
 MANIFEST = OUT_DIR.parent / (OUT_DIR.name + "_manifest.tsv")
 CENSUS_VERSION = "2025-11-08"
-SCHEMA_VERSION = "2.1.7"
+SCHEMA_VERSION = "2.1.8"
 
 # Classifier eligibility (lenient — captures whatever has signal).
 MIN_N_TOTAL_FOR_CLASS = 50
@@ -448,6 +448,7 @@ def fold_change_payload(fold: float | None) -> tuple[float | None, bool]:
 def serialize_contribs(
     contribs: list[tuple[str, float, float]],
     label_fn,
+    sub_label_fn=None,
 ) -> list[dict]:
     """Convert classify_hpa's top_entity_contribs to JSON-friendly dicts.
 
@@ -456,15 +457,30 @@ def serialize_contribs(
     per-axis resolver (e.g. ``cl_labels.get`` for leaf CL, ``cl_family_label``
     for the family axis). The viewer reads these to render the
     multi-entity tooltip with per-entity τ contributions.
+
+    ``sub_label_fn`` is optional and resolves the entity id to the
+    label of the leaf that the rollup signal actually rests on. The
+    cell-family axis sets it to ``cl_labels.get(family_top_cl[fid])``
+    so the chip can read "extraembryonic cell (placental villous
+    trophoblast)" instead of just "extraembryonic cell". The
+    tissue-organ axis does the same for the underlying top UBERON.
+    Skipped when None or when the sub-label matches the label
+    (so single-leaf families don't render "X (X)").
     """
     out: list[dict] = []
     for entity_id, pop_mean, tau_contrib in contribs:
-        out.append({
+        label = label_fn(entity_id) if entity_id else ""
+        row = {
             "id": entity_id,
-            "label": label_fn(entity_id) if entity_id else "",
+            "label": label,
             "pop_mean": round(pop_mean, 4),
             "tau_contrib": round(tau_contrib, 4),
-        })
+        }
+        if sub_label_fn is not None and entity_id:
+            sub = sub_label_fn(entity_id) or ""
+            if sub and sub != label:
+                row["sub_label"] = sub
+        out.append(row)
     return out
 
 
@@ -472,21 +488,21 @@ def classify_and_score(
     pop_linear: dict[str, float],
     n_total_universe: dict[str, int],
     label_fn,
+    sub_label_fn=None,
 ):
-    """Run classify_hpa + compute_tau + fold_change_payload + serialize_contribs
-    in one call.
+    """Run classify_hpa + compute_tau + fold_change_payload +
+    serialize_contribs in one call.
 
     Returns ``(class, ids, fold_val, fold_inf, tau, contribs)``.
-    Collapses the four-line per-axis dance at each emit site (cell
-    class, cell family, leaf CL, leaf UBERON, tissue category, tissue
-    organ) into one call. ``label_fn`` is the per-axis label resolver
-    threaded to ``serialize_contribs``.
+    Threads ``sub_label_fn`` through to ``serialize_contribs`` so a
+    rollup axis (cell_family, tissue_organ) can render the underlying
+    leaf the signal rests on in the chip tooltip.
     """
     klass, ids, fold, contribs = classify_hpa(pop_linear, n_total_universe)
     tau = compute_tau(pop_linear, n_total_universe)
     fold_val, fold_inf = fold_change_payload(fold)
     return klass, ids, fold_val, fold_inf, tau, serialize_contribs(
-        contribs, label_fn
+        contribs, label_fn, sub_label_fn
     )
 
 
@@ -632,6 +648,11 @@ def build_record(
             family_max_leaf_mean,
             family_n_total_universe,
             cl_family_label,
+            # Underlying leaf CL the family signal rests on — the chip
+            # tooltip surfaces this so a reader sees "extraembryonic
+            # cell (placental villous trophoblast)" not just the
+            # family label.
+            lambda fid: cl_labels.get(family_top_cl.get(fid, ""), ""),
         )
     )
     family_labels = [cl_family_label(fid) for fid in family_ids]
@@ -758,6 +779,9 @@ def build_record(
             cat_pop_linear,
             cat_n_total_universe,
             lambda c: c,  # categories are already labels
+            # Underlying winning UBERON within the category — GPR75
+            # CNS → "brain", KLK2 reproductive → "prostate gland".
+            lambda c: uberon_labels.get(cat_top_ub.get(c, ""), ""),
         )
     )
     # Resolve category IDs to the underlying winning tissue label —
@@ -791,6 +815,8 @@ def build_record(
             organ_max_leaf_mean,
             organ_n_total_universe,
             uberon_organ_label,
+            # Underlying leaf UBERON the organ signal rests on.
+            lambda oid: uberon_labels.get(organ_top_ub.get(oid, ""), ""),
         )
     )
     organ_labels = [uberon_organ_label(oid) for oid in organ_ids]
@@ -853,6 +879,16 @@ def build_record(
     # bright outlier. The rare bucket keeps its mean-only rule
     # because small-n cell types can't meet a pct gate without
     # losing meaningful signal.
+    # v2.1.8+: sort COMMON by score (≈ nTPM = mean × pct), not by mean.
+    # Pre-v2.1.8 sorted by mean, which let a high-mean cell with low
+    # pct (e.g. trophoblast giant cell at mean=2.90, pct=10.7%, score
+    # 1.8) rank ABOVE the gene's canonical high-prevalence cells (e.g.
+    # placental villous trophoblast at mean=2.56, pct=68.8%, score 8.2)
+    # and crowd them out of the display. Score matches the chart's
+    # default Y-axis ("Score") AND the classifier's ranking — the chip
+    # and chart are now showing the same data. RARE bucket keeps the
+    # mean-based rank because pct is unreliable at small-n (n_total <
+    # 1000); a rare high-mean cell is the right signal there.
     common: list[dict] = []
     rare: list[dict] = []
     for cl in cl_n_expressing:
@@ -864,22 +900,24 @@ def build_record(
         mean_log = cl_means_log.get(cl) or sum(
             v[1] for v in cl_to_uberon[cl].values()
         ) / max(1, sum(v[0] for v in cl_to_uberon[cl].values()))
+        pct_cl = n_exp / n_total if n_total > 0 else 0.0
+        score_cl = math.expm1(mean_log) * pct_cl  # ≈ nTPM
         entry = {
             "cl_id": cl,
             "mean_log": mean_log,
+            "score": score_cl,
             "n_expressing": n_exp,
             "n_total": n_total,
         }
         if n_total < MIN_N_TOTAL_FOR_CLASS:
             continue
         if n_total >= COMMON_THRESHOLD:
-            pct = n_exp / n_total
-            if pct < MIN_PCT_FOR_CLASS or n_exp < MIN_NNZ_FOR_CLASS:
+            if pct_cl < MIN_PCT_FOR_CLASS or n_exp < MIN_NNZ_FOR_CLASS:
                 continue
             common.append(entry)
         elif mean_log >= RARE_MIN_MEAN:
             rare.append(entry)
-    common.sort(key=lambda e: e["mean_log"], reverse=True)
+    common.sort(key=lambda e: e["score"], reverse=True)
     rare.sort(key=lambda e: e["mean_log"], reverse=True)
     common_qual = [e for e in common if e["mean_log"] >= COMMON_MIN_MEAN]
     chosen_common = common_qual[:COMMON_TOP_N]
@@ -890,7 +928,10 @@ def build_record(
     merged: list[dict] = [{**e, "is_rare": False} for e in chosen_common] + [
         {**e, "is_rare": True} for e in chosen_rare
     ]
-    merged.sort(key=lambda e: e["mean_log"], reverse=True)
+    # Final merged sort by score so the chart shows the high-coverage
+    # canonical cells first; chart's "Sort by mean" UI option still
+    # works at render time.
+    merged.sort(key=lambda e: e["score"], reverse=True)
     merged = merged[:MAX_CELL_TYPES]
 
     top_cell_types: list[dict] = []

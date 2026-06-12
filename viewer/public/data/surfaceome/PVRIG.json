@@ -5601,7 +5601,7 @@
   "model_path": "claude-sonnet-4-6",
   "record_generated_at": "2026-06-08T20:48:27.517803Z",
   "cellxgene": {
-    "schema_version": "2.1.7",
+    "schema_version": "2.1.8",
     "census_version": "2025-11-08",
     "cell_class_enrichment": {
       "class": "enriched",
@@ -5642,13 +5642,14 @@
       ],
       "fold_change": 1.006,
       "fold_change_infinite": false,
-      "tau": 0.9752258015043253,
+      "tau": 0.9754561172473931,
       "top_entity_contribs": [
         {
           "id": "CL:0000893",
           "label": "thymocyte",
           "pop_mean": 0.2867,
-          "tau_contrib": 0.0
+          "tau_contrib": 0.0,
+          "sub_label": "double negative T regulatory cell"
         },
         {
           "id": "CL:0000935",
@@ -5660,7 +5661,8 @@
           "id": "CL:0000625",
           "label": "CD8-positive, alpha-beta T cell",
           "pop_mean": 0.2539,
-          "tau_contrib": 0.1145
+          "tau_contrib": 0.1145,
+          "sub_label": "CD8-positive, alpha-beta cytotoxic T cell"
         }
       ]
     },
@@ -5740,7 +5742,8 @@
           "id": "developmental",
           "label": "developmental",
           "pop_mean": 6.9002,
-          "tau_contrib": 0.0
+          "tau_contrib": 0.0,
+          "sub_label": "embryo"
         },
         {
           "id": "fluids_other",
@@ -5752,7 +5755,8 @@
           "id": "cardiovascular",
           "label": "cardiovascular",
           "pop_mean": 4.224,
-          "tau_contrib": 0.3878
+          "tau_contrib": 0.3878,
+          "sub_label": "vasculature"
         }
       ]
     },
@@ -5796,63 +5800,177 @@
     "fold_change_infinite": true,
     "top_cell_types": [
       {
-        "cell_type": "peritubular capillary endothelial cell",
-        "cl_id": "CL:1001033",
-        "mean_log1p_cp10k": 2.475,
-        "n_expressing": 1,
-        "n_total": 970,
-        "pct_expressing": 0.001,
-        "is_rare": true,
-        "is_trace": true,
+        "cell_type": "double negative T regulatory cell",
+        "cl_id": "CL:0011024",
+        "mean_log1p_cp10k": 1.8252,
+        "n_expressing": 278,
+        "n_total": 5046,
+        "pct_expressing": 0.0551,
+        "is_rare": false,
+        "is_trace": false,
+        "tissues": [
+          {
+            "tissue": "blood",
+            "uberon_id": "UBERON:0000178",
+            "mean_log1p_cp10k": 1.8252,
+            "n_expressing": 278,
+            "n_total": 5046,
+            "pct_expressing": 0.0551,
+            "is_uncertain": false
+          }
+        ]
+      },
+      {
+        "cell_type": "CD8-positive, alpha-beta cytotoxic T cell",
+        "cl_id": "CL:0000794",
+        "mean_log1p_cp10k": 1.6594,
+        "n_expressing": 6332,
+        "n_total": 106143,
+        "pct_expressing": 0.0597,
+        "is_rare": false,
+        "is_trace": false,
+        "tissues": [
+          {
+            "tissue": "blood",
+            "uberon_id": "UBERON:0000178",
+            "mean_log1p_cp10k": 1.6613,
+            "n_expressing": 5918,
+            "n_total": 76622,
+            "pct_expressing": 0.0772,
+            "is_uncertain": false
+          },
+          {
+            "tissue": "lung",
+            "uberon_id": "UBERON:0002048",
+            "mean_log1p_cp10k": 1.6112,
+            "n_expressing": 321,
+            "n_total": 13008,
+            "pct_expressing": 0.0247,
+            "is_uncertain": false
+          },
+          {
+            "tissue": "UBERON:0002365",
+            "uberon_id": "UBERON:0002365",
+            "mean_log1p_cp10k": 1.7199,
+            "n_expressing": 58,
+            "n_total": 58,
+            "pct_expressing": 1.0,
+            "is_uncertain": true
+          }
+        ]
+      },
+      {
+        "cell_type": "gamma-delta T cell",
+        "cl_id": "CL:0000798",
+        "mean_log1p_cp10k": 1.6853,
+        "n_expressing": 7130,
+        "n_total": 194781,
+        "pct_expressing": 0.0366,
+        "is_rare": false,
+        "is_trace": false,
+        "tissues": [
+          {
+            "tissue": "blood",
+            "uberon_id": "UBERON:0000178",
+            "mean_log1p_cp10k": 1.6896,
+            "n_expressing": 6440,
+            "n_total": 119137,
+            "pct_expressing": 0.0541,
+            "is_uncertain": false
+          },
+          {
+            "tissue": "colon",
+            "uberon_id": "UBERON:0001155",
+            "mean_log1p_cp10k": 1.6772,
+            "n_expressing": 159,
+            "n_total": 6312,
+            "pct_expressing": 0.0252,
+            "is_uncertain": false
+          },
+          {
+            "tissue": "small intestine",
+            "uberon_id": "UBERON:0002108",
+            "mean_log1p_cp10k": 1.5842,
+            "n_expressing": 100,
+            "n_total": 246,
+            "pct_expressing": 0.4065,
+            "is_uncertain": false
+          }
+        ]
+      },
+      {
+        "cell_type": "activated type II NK T cell",
+        "cl_id": "CL:0000931",
+        "mean_log1p_cp10k": 1.6745,
+        "n_expressing": 419,
+        "n_total": 11568,
+        "pct_expressing": 0.0362,
+        "is_rare": false,
+        "is_trace": false,
         "tissues": [
           {
             "tissue": "kidney",
             "uberon_id": "UBERON:0002113",
-            "mean_log1p_cp10k": 2.475,
-            "n_expressing": 1,
-            "n_total": 1,
+            "mean_log1p_cp10k": 1.6837,
+            "n_expressing": 365,
+            "n_total": 10257,
+            "pct_expressing": 0.0356,
+            "is_uncertain": false
+          },
+          {
+            "tissue": "adrenal gland",
+            "uberon_id": "UBERON:0002369",
+            "mean_log1p_cp10k": 1.4759,
+            "n_expressing": 19,
+            "n_total": 19,
+            "pct_expressing": 1.0,
+            "is_uncertain": true
+          },
+          {
+            "tissue": "adipose tissue",
+            "uberon_id": "UBERON:0001013",
+            "mean_log1p_cp10k": 1.6314,
+            "n_expressing": 18,
+            "n_total": 18,
             "pct_expressing": 1.0,
             "is_uncertain": true
           }
         ]
       },
       {
-        "cell_type": "NKp44-negative group 3 innate lymphoid cell, human",
-        "cl_id": "CL:0001080",
-        "mean_log1p_cp10k": 2.0461,
-        "n_expressing": 5,
-        "n_total": 685,
-        "pct_expressing": 0.0073,
-        "is_rare": true,
-        "is_trace": true,
+        "cell_type": "CD4-positive, alpha-beta cytotoxic T cell",
+        "cl_id": "CL:0000934",
+        "mean_log1p_cp10k": 1.6736,
+        "n_expressing": 1519,
+        "n_total": 46415,
+        "pct_expressing": 0.0327,
+        "is_rare": false,
+        "is_trace": false,
         "tissues": [
           {
-            "tissue": "small intestine",
-            "uberon_id": "UBERON:0002108",
-            "mean_log1p_cp10k": 2.0461,
-            "n_expressing": 5,
-            "n_total": 5,
-            "pct_expressing": 1.0,
-            "is_uncertain": true
-          }
-        ]
-      },
-      {
-        "cell_type": "PP cell",
-        "cl_id": "CL:0000696",
-        "mean_log1p_cp10k": 2.0357,
-        "n_expressing": 1,
-        "n_total": 761,
-        "pct_expressing": 0.0013,
-        "is_rare": true,
-        "is_trace": true,
-        "tissues": [
+            "tissue": "blood",
+            "uberon_id": "UBERON:0000178",
+            "mean_log1p_cp10k": 1.6695,
+            "n_expressing": 1481,
+            "n_total": 41441,
+            "pct_expressing": 0.0357,
+            "is_uncertain": false
+          },
           {
-            "tissue": "pancreas",
-            "uberon_id": "UBERON:0001264",
-            "mean_log1p_cp10k": 2.0357,
-            "n_expressing": 1,
-            "n_total": 1,
+            "tissue": "lymph node",
+            "uberon_id": "UBERON:0000029",
+            "mean_log1p_cp10k": 1.8257,
+            "n_expressing": 32,
+            "n_total": 1263,
+            "pct_expressing": 0.0253,
+            "is_uncertain": false
+          },
+          {
+            "tissue": "heart",
+            "uberon_id": "UBERON:0000948",
+            "mean_log1p_cp10k": 1.8635,
+            "n_expressing": 6,
+            "n_total": 6,
             "pct_expressing": 1.0,
             "is_uncertain": true
           }
@@ -5898,82 +6016,40 @@
         ]
       },
       {
-        "cell_type": "immature alpha-beta T cell",
-        "cl_id": "CL:0000790",
-        "mean_log1p_cp10k": 1.8504,
-        "n_expressing": 294,
-        "n_total": 22883,
-        "pct_expressing": 0.0128,
-        "is_rare": false,
-        "is_trace": false,
-        "tissues": [
-          {
-            "tissue": "UBERON:0002368",
-            "uberon_id": "UBERON:0002368",
-            "mean_log1p_cp10k": 1.8504,
-            "n_expressing": 294,
-            "n_total": 294,
-            "pct_expressing": 1.0,
-            "is_uncertain": true
-          }
-        ]
-      },
-      {
-        "cell_type": "activated CD4-positive, alpha-beta T cell, human",
-        "cl_id": "CL:0001043",
-        "mean_log1p_cp10k": 1.8285,
-        "n_expressing": 111,
-        "n_total": 9266,
-        "pct_expressing": 0.012,
-        "is_rare": false,
-        "is_trace": false,
-        "tissues": [
-          {
-            "tissue": "kidney",
-            "uberon_id": "UBERON:0002113",
-            "mean_log1p_cp10k": 1.8236,
-            "n_expressing": 108,
-            "n_total": 7895,
-            "pct_expressing": 0.0137,
-            "is_uncertain": false
-          },
-          {
-            "tissue": "blood",
-            "uberon_id": "UBERON:0000178",
-            "mean_log1p_cp10k": 2.2287,
-            "n_expressing": 2,
-            "n_total": 1064,
-            "pct_expressing": 0.0019,
-            "is_uncertain": false
-          },
-          {
-            "tissue": "small intestine",
-            "uberon_id": "UBERON:0002108",
-            "mean_log1p_cp10k": 1.5489,
-            "n_expressing": 1,
-            "n_total": 1,
-            "pct_expressing": 1.0,
-            "is_uncertain": true
-          }
-        ]
-      },
-      {
-        "cell_type": "double negative T regulatory cell",
-        "cl_id": "CL:0011024",
-        "mean_log1p_cp10k": 1.8252,
-        "n_expressing": 278,
-        "n_total": 5046,
-        "pct_expressing": 0.0551,
+        "cell_type": "CD16-positive, CD56-dim natural killer cell, human",
+        "cl_id": "CL:0000939",
+        "mean_log1p_cp10k": 1.7336,
+        "n_expressing": 38226,
+        "n_total": 1450191,
+        "pct_expressing": 0.0264,
         "is_rare": false,
         "is_trace": false,
         "tissues": [
           {
             "tissue": "blood",
             "uberon_id": "UBERON:0000178",
-            "mean_log1p_cp10k": 1.8252,
-            "n_expressing": 278,
-            "n_total": 5046,
-            "pct_expressing": 0.0551,
+            "mean_log1p_cp10k": 1.7391,
+            "n_expressing": 36421,
+            "n_total": 1342028,
+            "pct_expressing": 0.0271,
+            "is_uncertain": false
+          },
+          {
+            "tissue": "bone marrow",
+            "uberon_id": "UBERON:0002371",
+            "mean_log1p_cp10k": 1.6175,
+            "n_expressing": 819,
+            "n_total": 48035,
+            "pct_expressing": 0.0171,
+            "is_uncertain": false
+          },
+          {
+            "tissue": "lung",
+            "uberon_id": "UBERON:0002048",
+            "mean_log1p_cp10k": 1.6251,
+            "n_expressing": 500,
+            "n_total": 23635,
+            "pct_expressing": 0.0212,
             "is_uncertain": false
           }
         ]
@@ -6018,6 +6094,45 @@
         ]
       },
       {
+        "cell_type": "CD8-positive, alpha-beta memory T cell",
+        "cl_id": "CL:0000909",
+        "mean_log1p_cp10k": 1.7026,
+        "n_expressing": 7080,
+        "n_total": 317298,
+        "pct_expressing": 0.0223,
+        "is_rare": false,
+        "is_trace": false,
+        "tissues": [
+          {
+            "tissue": "blood",
+            "uberon_id": "UBERON:0000178",
+            "mean_log1p_cp10k": 1.72,
+            "n_expressing": 5569,
+            "n_total": 102150,
+            "pct_expressing": 0.0545,
+            "is_uncertain": false
+          },
+          {
+            "tissue": "small intestine",
+            "uberon_id": "UBERON:0002108",
+            "mean_log1p_cp10k": 1.6099,
+            "n_expressing": 806,
+            "n_total": 806,
+            "pct_expressing": 1.0,
+            "is_uncertain": true
+          },
+          {
+            "tissue": "lymph node",
+            "uberon_id": "UBERON:0000029",
+            "mean_log1p_cp10k": 1.6313,
+            "n_expressing": 198,
+            "n_total": 198,
+            "pct_expressing": 1.0,
+            "is_uncertain": true
+          }
+        ]
+      },
+      {
         "cell_type": "exhausted T cell",
         "cl_id": "CL:0011025",
         "mean_log1p_cp10k": 1.7391,
@@ -6043,45 +6158,6 @@
             "n_expressing": 116,
             "n_total": 2347,
             "pct_expressing": 0.0494,
-            "is_uncertain": false
-          }
-        ]
-      },
-      {
-        "cell_type": "natural killer cell",
-        "cl_id": "CL:0000623",
-        "mean_log1p_cp10k": 1.734,
-        "n_expressing": 17766,
-        "n_total": 1218003,
-        "pct_expressing": 0.0146,
-        "is_rare": false,
-        "is_trace": false,
-        "tissues": [
-          {
-            "tissue": "blood",
-            "uberon_id": "UBERON:0000178",
-            "mean_log1p_cp10k": 1.721,
-            "n_expressing": 13364,
-            "n_total": 739121,
-            "pct_expressing": 0.0181,
-            "is_uncertain": false
-          },
-          {
-            "tissue": "lung",
-            "uberon_id": "UBERON:0002048",
-            "mean_log1p_cp10k": 1.815,
-            "n_expressing": 2389,
-            "n_total": 99472,
-            "pct_expressing": 0.024,
-            "is_uncertain": false
-          },
-          {
-            "tissue": "liver",
-            "uberon_id": "UBERON:0002107",
-            "mean_log1p_cp10k": 1.761,
-            "n_expressing": 547,
-            "n_total": 53557,
-            "pct_expressing": 0.0102,
             "is_uncertain": false
           }
         ]

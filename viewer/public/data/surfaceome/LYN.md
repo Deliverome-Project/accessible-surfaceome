@@ -459,12 +459,12 @@ This Markdown is generated from the canonical JSON record at `/data/surfaceome/L
 
 ## CellxGene RNA enrichment (CZI Census)
 
-*Schema v2.1.7 · CZI Census 2025-11-08 · τ-cutoff classification (Yanai 2005, PMID 15388519) on linear population mean (mean × pct, ≈ nTPM) over the full measured universe with a 1e-3 noise floor: τ≥0.85 enriched, 0.5–0.85 enhanced, <0.5 low specificity, no eligibles not detected. Cutoffs from Kryuchkova-Mostacci & Robinson-Rechavi 2017 (PMID 26891983) + Lüleci & Yılmaz 2022. Cell ontology graph (cl-basic.obo) walked to ~150 cell-family terms; UBERON ontology walked to ~150 organ-level tissues. CC-BY 4.0 (CZI Census).*
+*Schema v2.1.8 · CZI Census 2025-11-08 · τ-cutoff classification (Yanai 2005, PMID 15388519) on linear population mean (mean × pct, ≈ nTPM) over the full measured universe with a 1e-3 noise floor: τ≥0.85 enriched, 0.5–0.85 enhanced, <0.5 low specificity, no eligibles not detected. Cutoffs from Kryuchkova-Mostacci & Robinson-Rechavi 2017 (PMID 26891983) + Lüleci & Yılmaz 2022. Cell ontology graph (cl-basic.obo) walked to ~150 cell-family terms; UBERON ontology walked to ~150 organ-level tissues. CC-BY 4.0 (CZI Census).*
 
 **Classification:**
 
 - **Cell class (CL ontology graph, ~10 compartments):** enhanced · Immune · 2.2× · τ=0.81
-- **Cell type (leaf Cell Ontology terms, ~600):** enriched · neutrophil · CL:0002396 · mature neutrophil · 1.1× · τ=0.96
+- **Cell type (leaf Cell Ontology terms, ~600):** enriched · neutrophil · CD14-low, CD16-positive monocyte · mature neutrophil · 1.1× · τ=0.96
 - **Tissue (UBERON terms, ~56):** enriched · adipose tissue · milk · eye · 1.3× · τ=0.98
 
 **Top 5 cell types (leaf CL, pooled across tissues):**
@@ -472,10 +472,10 @@ This Markdown is generated from the canonical JSON record at `/data/surfaceome/L
 | Cell type | CL ID | Mean log1p(CP10K) | % expressing | n_expressing / n_total |
 |---|---|---|---|---|
 | neutrophil | CL:0000775 | 2.829 | 52.98% | 97,180 / 183,432 |
-| mucus secreting cell of tracheobronchial tree submucosal gland | CL:4033037 | 2.668 | 29.13% | 386 / 1,325 |
-| chondrocyte | CL:0000138 | 2.638 | 3.98% | 1,276 / 32,083 |
-| noradrenergic cell | CL:0000459 | 2.621 | 0.72% | 1 / 138 | (trace)
-| dermis microvascular lymphatic vessel endothelial cell | CL:2000041 | 2.573 | 11.28% | 68 / 603 |
+| CD14-low, CD16-positive monocyte | CL:0002396 | 2.301 | 87.35% | 396,859 / 454,338 |
+| mature neutrophil | CL:0000096 | 2.347 | 58.17% | 527 / 906 |
+| central nervous system macrophage | CL:0000878 | 2.159 | 66.96% | 140,403 / 209,669 |
+| CD14-positive monocyte | CL:0001054 | 2.304 | 48.31% | 341,536 / 706,897 |
 
 **Top 5 tissues (UBERON, pooled across cell types):**
 

@@ -595,7 +595,7 @@ This Markdown is generated from the canonical JSON record at `/data/surfaceome/S
 
 ## CellxGene RNA enrichment (CZI Census)
 
-*Schema v2.1.7 · CZI Census 2025-11-08 · τ-cutoff classification (Yanai 2005, PMID 15388519) on linear population mean (mean × pct, ≈ nTPM) over the full measured universe with a 1e-3 noise floor: τ≥0.85 enriched, 0.5–0.85 enhanced, <0.5 low specificity, no eligibles not detected. Cutoffs from Kryuchkova-Mostacci & Robinson-Rechavi 2017 (PMID 26891983) + Lüleci & Yılmaz 2022. Cell ontology graph (cl-basic.obo) walked to ~150 cell-family terms; UBERON ontology walked to ~150 organ-level tissues. CC-BY 4.0 (CZI Census).*
+*Schema v2.1.8 · CZI Census 2025-11-08 · τ-cutoff classification (Yanai 2005, PMID 15388519) on linear population mean (mean × pct, ≈ nTPM) over the full measured universe with a 1e-3 noise floor: τ≥0.85 enriched, 0.5–0.85 enhanced, <0.5 low specificity, no eligibles not detected. Cutoffs from Kryuchkova-Mostacci & Robinson-Rechavi 2017 (PMID 26891983) + Lüleci & Yılmaz 2022. Cell ontology graph (cl-basic.obo) walked to ~150 cell-family terms; UBERON ontology walked to ~150 organ-level tissues. CC-BY 4.0 (CZI Census).*
 
 **Classification:**
 
@@ -607,11 +607,11 @@ This Markdown is generated from the canonical JSON record at `/data/surfaceome/S
 
 | Cell type | CL ID | Mean log1p(CP10K) | % expressing | n_expressing / n_total |
 |---|---|---|---|---|
-| epithelial cell of thymus | CL:0002293 | 2.782 | 0.12% | 1 / 813 | (trace)
-| dermis microvascular lymphatic vessel endothelial cell | CL:2000041 | 2.453 | 0.50% | 3 / 603 | (trace)
-| basal cell of epithelium of lobular bronchiole | CL:1000352 | 2.413 | 2.48% | 3 / 121 | (trace)
-| epithelial cell of distal tubule | CL:0002305 | 2.383 | 1.82% | 1 / 55 | (trace)
 | mucous cell of stomach | CL:0002180 | 2.371 | 36.29% | 499 / 1,375 |
+| melanocyte of skin | CL:1000458 | 1.882 | 27.74% | 745 / 2,686 |
+| salivary gland glandular cell | CL:1001596 | 2.328 | 14.29% | 153 / 1,071 |
+| megakaryocyte | CL:0000556 | 1.970 | 8.88% | 3,198 / 36,020 |
+| basal epithelial cell of tracheobronchial tree | CL:0002329 | 2.085 | 5.68% | 463 / 8,145 |
 
 **Top 5 tissues (UBERON, pooled across cell types):**
 

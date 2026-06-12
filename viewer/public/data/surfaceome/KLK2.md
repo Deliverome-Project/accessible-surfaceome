@@ -476,7 +476,7 @@ This Markdown is generated from the canonical JSON record at `/data/surfaceome/K
 
 ## CellxGene RNA enrichment (CZI Census)
 
-*Schema v2.1.7 · CZI Census 2025-11-08 · τ-cutoff classification (Yanai 2005, PMID 15388519) on linear population mean (mean × pct, ≈ nTPM) over the full measured universe with a 1e-3 noise floor: τ≥0.85 enriched, 0.5–0.85 enhanced, <0.5 low specificity, no eligibles not detected. Cutoffs from Kryuchkova-Mostacci & Robinson-Rechavi 2017 (PMID 26891983) + Lüleci & Yılmaz 2022. Cell ontology graph (cl-basic.obo) walked to ~150 cell-family terms; UBERON ontology walked to ~150 organ-level tissues. CC-BY 4.0 (CZI Census).*
+*Schema v2.1.8 · CZI Census 2025-11-08 · τ-cutoff classification (Yanai 2005, PMID 15388519) on linear population mean (mean × pct, ≈ nTPM) over the full measured universe with a 1e-3 noise floor: τ≥0.85 enriched, 0.5–0.85 enhanced, <0.5 low specificity, no eligibles not detected. Cutoffs from Kryuchkova-Mostacci & Robinson-Rechavi 2017 (PMID 26891983) + Lüleci & Yılmaz 2022. Cell ontology graph (cl-basic.obo) walked to ~150 cell-family terms; UBERON ontology walked to ~150 organ-level tissues. CC-BY 4.0 (CZI Census).*
 
 **Classification:**
 
@@ -489,10 +489,10 @@ This Markdown is generated from the canonical JSON record at `/data/surfaceome/K
 | Cell type | CL ID | Mean log1p(CP10K) | % expressing | n_expressing / n_total |
 |---|---|---|---|---|
 | luminal cell of prostate epithelium | CL:0002340 | 3.684 | 53.19% | 17,072 / 32,099 |
-| endocrine cell | CL:0000163 | 3.320 | 4.65% | 390 / 8,385 |
 | epithelial cell of prostate | CL:0002231 | 3.261 | 26.21% | 2,032 / 7,752 |
-| mesothelial fibroblast | CL:4023054 | 2.915 | 0.43% | 1 / 232 | (trace)
-| prostate stromal cell | CL:0002622 | 2.900 | 1.59% | 1 / 63 | (trace)
+| club-like cell of the urethral epithelium | CL:4032000 | 2.534 | 16.71% | 830 / 4,966 |
+| endocrine cell | CL:0000163 | 3.320 | 4.65% | 390 / 8,385 |
+| fibroblast of connective tissue of prostate | CL:1000299 | 1.789 | 8.74% | 223 / 2,552 |
 
 **Top 5 tissues (UBERON, pooled across cell types):**
 

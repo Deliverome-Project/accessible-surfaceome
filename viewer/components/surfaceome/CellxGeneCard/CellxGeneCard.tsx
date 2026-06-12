@@ -127,8 +127,13 @@ function EnrichmentChip({
             <ul style={{ margin: "4px 0 0 16px", paddingLeft: 0 }}>
               {topContribs.map((c) => (
                 <li key={c.id}>
-                  {c.label} — pop mean {c.pop_mean.toFixed(2)} · τ
-                  contribution {c.tau_contrib.toFixed(2)}
+                  {c.label}
+                  {c.sub_label && (
+                    <span style={{ opacity: 0.78 }}> ({c.sub_label})</span>
+                  )}
+                  {" — pop mean "}
+                  {c.pop_mean.toFixed(2)} · τ contribution{" "}
+                  {c.tau_contrib.toFixed(2)}
                 </li>
               ))}
             </ul>

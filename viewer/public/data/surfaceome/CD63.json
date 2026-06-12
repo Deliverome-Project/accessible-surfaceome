@@ -5886,7 +5886,7 @@
   "model_path": "claude-sonnet-4-6",
   "record_generated_at": "2026-06-08T20:49:59.438647Z",
   "cellxgene": {
-    "schema_version": "2.1.7",
+    "schema_version": "2.1.8",
     "census_version": "2025-11-08",
     "cell_class_enrichment": {
       "class": "low_specificity",
@@ -5910,7 +5910,7 @@
       ],
       "fold_change": 1.09,
       "fold_change_infinite": false,
-      "tau": 0.7925131904836336,
+      "tau": 0.7862425195130458,
       "top_entity_contribs": [
         {
           "id": "CL:0002622",
@@ -6034,7 +6034,8 @@
           "id": "UBERON:0018707",
           "label": "bladder organ",
           "pop_mean": 12.0204,
-          "tau_contrib": 0.1028
+          "tau_contrib": 0.1028,
+          "sub_label": "gallbladder"
         }
       ]
     },
@@ -6043,27 +6044,6 @@
     "fold_change": 1.102,
     "fold_change_infinite": false,
     "top_cell_types": [
-      {
-        "cell_type": "pancreatic stellate cell",
-        "cl_id": "CL:0002410",
-        "mean_log1p_cp10k": 3.2674,
-        "n_expressing": 14306,
-        "n_total": 16143,
-        "pct_expressing": 0.8862,
-        "is_rare": false,
-        "is_trace": false,
-        "tissues": [
-          {
-            "tissue": "pancreas",
-            "uberon_id": "UBERON:0001264",
-            "mean_log1p_cp10k": 3.2674,
-            "n_expressing": 14306,
-            "n_total": 14306,
-            "pct_expressing": 1.0,
-            "is_uncertain": true
-          }
-        ]
-      },
       {
         "cell_type": "prostate stromal cell",
         "cl_id": "CL:0002622",
@@ -6080,6 +6060,27 @@
             "mean_log1p_cp10k": 3.2339,
             "n_expressing": 63,
             "n_total": 63,
+            "pct_expressing": 1.0,
+            "is_uncertain": true
+          }
+        ]
+      },
+      {
+        "cell_type": "pancreatic stellate cell",
+        "cl_id": "CL:0002410",
+        "mean_log1p_cp10k": 3.2674,
+        "n_expressing": 14306,
+        "n_total": 16143,
+        "pct_expressing": 0.8862,
+        "is_rare": false,
+        "is_trace": false,
+        "tissues": [
+          {
+            "tissue": "pancreas",
+            "uberon_id": "UBERON:0001264",
+            "mean_log1p_cp10k": 3.2674,
+            "n_expressing": 14306,
+            "n_total": 14306,
             "pct_expressing": 1.0,
             "is_uncertain": true
           }
@@ -6103,6 +6104,27 @@
             "n_total": 54,
             "pct_expressing": 1.0,
             "is_uncertain": false
+          }
+        ]
+      },
+      {
+        "cell_type": "fibroblast of connective tissue of glandular part of prostate",
+        "cl_id": "CL:1000305",
+        "mean_log1p_cp10k": 3.0719,
+        "n_expressing": 1534,
+        "n_total": 1553,
+        "pct_expressing": 0.9878,
+        "is_rare": false,
+        "is_trace": false,
+        "tissues": [
+          {
+            "tissue": "prostate gland",
+            "uberon_id": "UBERON:0002367",
+            "mean_log1p_cp10k": 3.0719,
+            "n_expressing": 1534,
+            "n_total": 1534,
+            "pct_expressing": 1.0,
+            "is_uncertain": true
           }
         ]
       },
@@ -6146,23 +6168,23 @@
         ]
       },
       {
-        "cell_type": "fibroblast of connective tissue of glandular part of prostate",
-        "cl_id": "CL:1000305",
-        "mean_log1p_cp10k": 3.0719,
-        "n_expressing": 1534,
-        "n_total": 1553,
-        "pct_expressing": 0.9878,
+        "cell_type": "extracellular matrix secreting cell",
+        "cl_id": "CL:0000327",
+        "mean_log1p_cp10k": 3.053,
+        "n_expressing": 1939,
+        "n_total": 1971,
+        "pct_expressing": 0.9838,
         "is_rare": false,
         "is_trace": false,
         "tissues": [
           {
-            "tissue": "prostate gland",
-            "uberon_id": "UBERON:0002367",
-            "mean_log1p_cp10k": 3.0719,
-            "n_expressing": 1534,
-            "n_total": 1534,
-            "pct_expressing": 1.0,
-            "is_uncertain": true
+            "tissue": "brain",
+            "uberon_id": "UBERON:0000955",
+            "mean_log1p_cp10k": 3.053,
+            "n_expressing": 1939,
+            "n_total": 1971,
+            "pct_expressing": 0.9838,
+            "is_uncertain": false
           }
         ]
       },
@@ -6206,27 +6228,6 @@
         ]
       },
       {
-        "cell_type": "extracellular matrix secreting cell",
-        "cl_id": "CL:0000327",
-        "mean_log1p_cp10k": 3.053,
-        "n_expressing": 1939,
-        "n_total": 1971,
-        "pct_expressing": 0.9838,
-        "is_rare": false,
-        "is_trace": false,
-        "tissues": [
-          {
-            "tissue": "brain",
-            "uberon_id": "UBERON:0000955",
-            "mean_log1p_cp10k": 3.053,
-            "n_expressing": 1939,
-            "n_total": 1971,
-            "pct_expressing": 0.9838,
-            "is_uncertain": false
-          }
-        ]
-      },
-      {
         "cell_type": "neuroendocrine cell of epithelium of lobar bronchus",
         "cl_id": "CL:4033010",
         "mean_log1p_cp10k": 3.032,
@@ -6248,44 +6249,44 @@
         ]
       },
       {
-        "cell_type": "lung interstitial macrophage",
-        "cl_id": "CL:4033043",
-        "mean_log1p_cp10k": 3.0294,
-        "n_expressing": 10014,
-        "n_total": 14458,
-        "pct_expressing": 0.6926,
+        "cell_type": "cycling pulmonary alveolar type 2 cell",
+        "cl_id": "CL:4033080",
+        "mean_log1p_cp10k": 3.0127,
+        "n_expressing": 1949,
+        "n_total": 1968,
+        "pct_expressing": 0.9903,
         "is_rare": false,
         "is_trace": false,
         "tissues": [
           {
             "tissue": "lung",
             "uberon_id": "UBERON:0002048",
-            "mean_log1p_cp10k": 3.0294,
-            "n_expressing": 10014,
-            "n_total": 10014,
+            "mean_log1p_cp10k": 3.0127,
+            "n_expressing": 1949,
+            "n_total": 1949,
             "pct_expressing": 1.0,
             "is_uncertain": true
           }
         ]
       },
       {
-        "cell_type": "mucus secreting cell of tracheobronchial tree submucosal gland",
-        "cl_id": "CL:4033037",
-        "mean_log1p_cp10k": 3.0284,
-        "n_expressing": 862,
-        "n_total": 1325,
-        "pct_expressing": 0.6506,
-        "is_rare": false,
+        "cell_type": "stromal cell of bone marrow",
+        "cl_id": "CL:0010001",
+        "mean_log1p_cp10k": 2.9814,
+        "n_expressing": 211,
+        "n_total": 213,
+        "pct_expressing": 0.9906,
+        "is_rare": true,
         "is_trace": false,
         "tissues": [
           {
-            "tissue": "lung",
-            "uberon_id": "UBERON:0002048",
-            "mean_log1p_cp10k": 3.0284,
-            "n_expressing": 862,
-            "n_total": 862,
-            "pct_expressing": 1.0,
-            "is_uncertain": true
+            "tissue": "bone marrow",
+            "uberon_id": "UBERON:0002371",
+            "mean_log1p_cp10k": 2.9814,
+            "n_expressing": 211,
+            "n_total": 213,
+            "pct_expressing": 0.9906,
+            "is_uncertain": false
           }
         ]
       }

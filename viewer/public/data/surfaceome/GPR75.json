@@ -5011,7 +5011,7 @@
   "model_path": "claude-sonnet-4-6",
   "record_generated_at": "2026-06-07T02:42:21.474347Z",
   "cellxgene": {
-    "schema_version": "2.1.7",
+    "schema_version": "2.1.8",
     "census_version": "2025-11-08",
     "cell_class_enrichment": {
       "class": "not_detected",
@@ -5035,13 +5035,14 @@
       ],
       "fold_change": null,
       "fold_change_infinite": true,
-      "tau": 0.9891136335320055,
+      "tau": 0.9891136335320058,
       "top_entity_contribs": [
         {
           "id": "CL:1000909",
           "label": "kidney loop of Henle epithelial cell",
           "pop_mean": 0.0919,
-          "tau_contrib": 0.0
+          "tau_contrib": 0.0,
+          "sub_label": "kidney loop of Henle ascending limb epithelial cell"
         }
       ]
     },
@@ -5110,7 +5111,8 @@
           "id": "developmental",
           "label": "developmental",
           "pop_mean": 4.6206,
-          "tau_contrib": 0.2979
+          "tau_contrib": 0.2979,
+          "sub_label": "embryo"
         }
       ]
     },
@@ -5143,6 +5145,27 @@
     "fold_change_infinite": false,
     "top_cell_types": [
       {
+        "cell_type": "kidney loop of Henle ascending limb epithelial cell",
+        "cl_id": "CL:1001016",
+        "mean_log1p_cp10k": 1.7559,
+        "n_expressing": 202,
+        "n_total": 10531,
+        "pct_expressing": 0.0192,
+        "is_rare": false,
+        "is_trace": false,
+        "tissues": [
+          {
+            "tissue": "kidney",
+            "uberon_id": "UBERON:0002113",
+            "mean_log1p_cp10k": 1.7559,
+            "n_expressing": 202,
+            "n_total": 10530,
+            "pct_expressing": 0.0192,
+            "is_uncertain": false
+          }
+        ]
+      },
+      {
         "cell_type": "visceromotor neuron",
         "cl_id": "CL:0005025",
         "mean_log1p_cp10k": 2.3431,
@@ -5159,6 +5182,27 @@
             "n_expressing": 3,
             "n_total": 348,
             "pct_expressing": 0.0086,
+            "is_uncertain": false
+          }
+        ]
+      },
+      {
+        "cell_type": "dermis microvascular lymphatic vessel endothelial cell",
+        "cl_id": "CL:2000041",
+        "mean_log1p_cp10k": 2.0776,
+        "n_expressing": 2,
+        "n_total": 603,
+        "pct_expressing": 0.0033,
+        "is_rare": true,
+        "is_trace": true,
+        "tissues": [
+          {
+            "tissue": "heart",
+            "uberon_id": "UBERON:0000948",
+            "mean_log1p_cp10k": 2.0776,
+            "n_expressing": 2,
+            "n_total": 603,
+            "pct_expressing": 0.0033,
             "is_uncertain": false
           }
         ]
@@ -5201,48 +5245,6 @@
             "n_expressing": 1,
             "n_total": 956,
             "pct_expressing": 0.001,
-            "is_uncertain": false
-          }
-        ]
-      },
-      {
-        "cell_type": "dermis microvascular lymphatic vessel endothelial cell",
-        "cl_id": "CL:2000041",
-        "mean_log1p_cp10k": 2.0776,
-        "n_expressing": 2,
-        "n_total": 603,
-        "pct_expressing": 0.0033,
-        "is_rare": true,
-        "is_trace": true,
-        "tissues": [
-          {
-            "tissue": "heart",
-            "uberon_id": "UBERON:0000948",
-            "mean_log1p_cp10k": 2.0776,
-            "n_expressing": 2,
-            "n_total": 603,
-            "pct_expressing": 0.0033,
-            "is_uncertain": false
-          }
-        ]
-      },
-      {
-        "cell_type": "kidney loop of Henle ascending limb epithelial cell",
-        "cl_id": "CL:1001016",
-        "mean_log1p_cp10k": 1.7559,
-        "n_expressing": 202,
-        "n_total": 10531,
-        "pct_expressing": 0.0192,
-        "is_rare": false,
-        "is_trace": false,
-        "tissues": [
-          {
-            "tissue": "kidney",
-            "uberon_id": "UBERON:0002113",
-            "mean_log1p_cp10k": 1.7559,
-            "n_expressing": 202,
-            "n_total": 10530,
-            "pct_expressing": 0.0192,
             "is_uncertain": false
           }
         ]

@@ -250,7 +250,7 @@ This Markdown is generated from the canonical JSON record at `/data/surfaceome/I
 
 ## CellxGene RNA enrichment (CZI Census)
 
-*Schema v2.1.7 · CZI Census 2025-11-08 · τ-cutoff classification (Yanai 2005, PMID 15388519) on linear population mean (mean × pct, ≈ nTPM) over the full measured universe with a 1e-3 noise floor: τ≥0.85 enriched, 0.5–0.85 enhanced, <0.5 low specificity, no eligibles not detected. Cutoffs from Kryuchkova-Mostacci & Robinson-Rechavi 2017 (PMID 26891983) + Lüleci & Yılmaz 2022. Cell ontology graph (cl-basic.obo) walked to ~150 cell-family terms; UBERON ontology walked to ~150 organ-level tissues. CC-BY 4.0 (CZI Census).*
+*Schema v2.1.8 · CZI Census 2025-11-08 · τ-cutoff classification (Yanai 2005, PMID 15388519) on linear population mean (mean × pct, ≈ nTPM) over the full measured universe with a 1e-3 noise floor: τ≥0.85 enriched, 0.5–0.85 enhanced, <0.5 low specificity, no eligibles not detected. Cutoffs from Kryuchkova-Mostacci & Robinson-Rechavi 2017 (PMID 26891983) + Lüleci & Yılmaz 2022. Cell ontology graph (cl-basic.obo) walked to ~150 cell-family terms; UBERON ontology walked to ~150 organ-level tissues. CC-BY 4.0 (CZI Census).*
 
 **Classification:**
 
@@ -263,10 +263,10 @@ This Markdown is generated from the canonical JSON record at `/data/surfaceome/I
 | Cell type | CL ID | Mean log1p(CP10K) | % expressing | n_expressing / n_total |
 |---|---|---|---|---|
 | spermatocyte | CL:0000017 | 2.599 | 85.21% | 2,616 / 3,070 |
-| epithelial cell of sweat gland | CL:1000448 | 2.555 | 0.33% | 1 / 301 | (trace)
-| inhibitory motor neuron | CL:0008015 | 2.537 | 0.13% | 1 / 745 | (trace)
-| visceromotor neuron | CL:0005025 | 2.437 | 0.16% | 1 / 610 | (trace)
-| natural T-regulatory cell | CL:0000903 | 2.281 | 1.60% | 114 / 7,117 |
+| spermatid | CL:0000018 | 1.984 | 79.47% | 3,186 / 4,009 |
+| sensory neuron of dorsal root ganglion | CL:1001451 | 1.871 | 8.09% | 185 / 2,286 |
+| mature astrocyte | CL:0002627 | 2.087 | 4.74% | 723 / 15,250 |
+| type EC enteroendocrine cell | CL:0000577 | 1.905 | 5.72% | 220 / 3,847 |
 
 **Top 5 tissues (UBERON, pooled across cell types):**
 

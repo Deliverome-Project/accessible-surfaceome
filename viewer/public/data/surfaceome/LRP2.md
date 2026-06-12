@@ -1059,7 +1059,7 @@ This Markdown is generated from the canonical JSON record at `/data/surfaceome/L
 
 ## CellxGene RNA enrichment (CZI Census)
 
-*Schema v2.1.7 · CZI Census 2025-11-08 · τ-cutoff classification (Yanai 2005, PMID 15388519) on linear population mean (mean × pct, ≈ nTPM) over the full measured universe with a 1e-3 noise floor: τ≥0.85 enriched, 0.5–0.85 enhanced, <0.5 low specificity, no eligibles not detected. Cutoffs from Kryuchkova-Mostacci & Robinson-Rechavi 2017 (PMID 26891983) + Lüleci & Yılmaz 2022. Cell ontology graph (cl-basic.obo) walked to ~150 cell-family terms; UBERON ontology walked to ~150 organ-level tissues. CC-BY 4.0 (CZI Census).*
+*Schema v2.1.8 · CZI Census 2025-11-08 · τ-cutoff classification (Yanai 2005, PMID 15388519) on linear population mean (mean × pct, ≈ nTPM) over the full measured universe with a 1e-3 noise floor: τ≥0.85 enriched, 0.5–0.85 enhanced, <0.5 low specificity, no eligibles not detected. Cutoffs from Kryuchkova-Mostacci & Robinson-Rechavi 2017 (PMID 26891983) + Lüleci & Yılmaz 2022. Cell ontology graph (cl-basic.obo) walked to ~150 cell-family terms; UBERON ontology walked to ~150 organ-level tissues. CC-BY 4.0 (CZI Census).*
 
 **Classification:**
 
@@ -1071,11 +1071,11 @@ This Markdown is generated from the canonical JSON record at `/data/surfaceome/L
 
 | Cell type | CL ID | Mean log1p(CP10K) | % expressing | n_expressing / n_total |
 |---|---|---|---|---|
-| epithelial cell of proximal tubule segment 3 | CL:4030011 | 3.289 | 62.75% | 2,296 / 3,659 |
 | kidney proximal convoluted tubule epithelial cell | CL:1000838 | 3.206 | 76.10% | 15,755 / 20,704 |
-| supporting cell of vestibular epithelium | CL:0002316 | 3.153 | 0.37% | 1 / 270 | (trace)
+| epithelial cell of proximal tubule segment 3 | CL:4030011 | 3.289 | 62.75% | 2,296 / 3,659 |
 | epithelial cell of proximal tubule | CL:0002306 | 2.707 | 60.53% | 141,865 / 234,384 |
-| pigmented epithelial cell | CL:0000529 | 2.681 | 31.18% | 9,349 / 29,987 |
+| non-pigmented ciliary epithelial cell | CL:0002304 | 2.460 | 71.09% | 118,663 / 166,913 |
+| parietal epithelial cell | CL:1000452 | 2.419 | 63.71% | 4,174 / 6,552 |
 
 **Top 5 tissues (UBERON, pooled across cell types):**
 

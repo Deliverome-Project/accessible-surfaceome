@@ -1122,7 +1122,7 @@ This Markdown is generated from the canonical JSON record at `/data/surfaceome/E
 
 ## CellxGene RNA enrichment (CZI Census)
 
-*Schema v2.1.7 · CZI Census 2025-11-08 · τ-cutoff classification (Yanai 2005, PMID 15388519) on linear population mean (mean × pct, ≈ nTPM) over the full measured universe with a 1e-3 noise floor: τ≥0.85 enriched, 0.5–0.85 enhanced, <0.5 low specificity, no eligibles not detected. Cutoffs from Kryuchkova-Mostacci & Robinson-Rechavi 2017 (PMID 26891983) + Lüleci & Yılmaz 2022. Cell ontology graph (cl-basic.obo) walked to ~150 cell-family terms; UBERON ontology walked to ~150 organ-level tissues. CC-BY 4.0 (CZI Census).*
+*Schema v2.1.8 · CZI Census 2025-11-08 · τ-cutoff classification (Yanai 2005, PMID 15388519) on linear population mean (mean × pct, ≈ nTPM) over the full measured universe with a 1e-3 noise floor: τ≥0.85 enriched, 0.5–0.85 enhanced, <0.5 low specificity, no eligibles not detected. Cutoffs from Kryuchkova-Mostacci & Robinson-Rechavi 2017 (PMID 26891983) + Lüleci & Yılmaz 2022. Cell ontology graph (cl-basic.obo) walked to ~150 cell-family terms; UBERON ontology walked to ~150 organ-level tissues. CC-BY 4.0 (CZI Census).*
 
 **Classification:**
 
@@ -1134,11 +1134,11 @@ This Markdown is generated from the canonical JSON record at `/data/surfaceome/E
 
 | Cell type | CL ID | Mean log1p(CP10K) | % expressing | n_expressing / n_total |
 |---|---|---|---|---|
-| trophoblast giant cell | CL:0002488 | 2.898 | 10.73% | 124 / 1,156 |
-| malignant cell | CL:0001064 | 2.862 | 15.14% | 209,677 / 1,384,794 |
-| chorionic trophoblast cell | CL:0011101 | 2.854 | 4.53% | 13 / 287 |
 | basal epithelial cell of prostatic duct | CL:0002236 | 2.845 | 57.61% | 4,203 / 7,295 |
+| placental villous trophoblast | CL:2000060 | 2.557 | 68.84% | 69,568 / 101,062 |
 | skeletal muscle fibroblast | CL:0011027 | 2.795 | 49.01% | 2,898 / 5,913 |
+| fibroblast of cardiac tissue | CL:0002548 | 2.426 | 65.99% | 127,804 / 193,676 |
+| lens epithelial cell | CL:0002224 | 2.291 | 76.36% | 4,029 / 5,276 |
 
 **Top 5 tissues (UBERON, pooled across cell types):**
 

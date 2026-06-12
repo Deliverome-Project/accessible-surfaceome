@@ -6375,7 +6375,7 @@
   "model_path": "claude-sonnet-4-6",
   "record_generated_at": "2026-06-08T20:51:36.090195Z",
   "cellxgene": {
-    "schema_version": "2.1.7",
+    "schema_version": "2.1.8",
     "census_version": "2025-11-08",
     "cell_class_enrichment": {
       "class": "enhanced",
@@ -6416,13 +6416,14 @@
       ],
       "fold_change": 1.444,
       "fold_change_infinite": false,
-      "tau": 0.9715053340705145,
+      "tau": 0.9711107717079447,
       "top_entity_contribs": [
         {
           "id": "CL:0000077",
           "label": "mesothelial cell",
           "pop_mean": 30.427,
-          "tau_contrib": 0.0
+          "tau_contrib": 0.0,
+          "sub_label": "mesothelial cell of pleura"
         },
         {
           "id": "CL:0019026",
@@ -6577,27 +6578,6 @@
     "fold_change_infinite": false,
     "top_cell_types": [
       {
-        "cell_type": "type A enteroendocrine cell",
-        "cl_id": "CL:0002067",
-        "mean_log1p_cp10k": 3.7294,
-        "n_expressing": 7,
-        "n_total": 998,
-        "pct_expressing": 0.007,
-        "is_rare": true,
-        "is_trace": true,
-        "tissues": [
-          {
-            "tissue": "pancreas",
-            "uberon_id": "UBERON:0001264",
-            "mean_log1p_cp10k": 3.7294,
-            "n_expressing": 7,
-            "n_total": 7,
-            "pct_expressing": 1.0,
-            "is_uncertain": true
-          }
-        ]
-      },
-      {
         "cell_type": "mesothelial cell of pleura",
         "cl_id": "CL:1000491",
         "mean_log1p_cp10k": 3.4694,
@@ -6615,45 +6595,6 @@
             "n_total": 2783,
             "pct_expressing": 0.9813,
             "is_uncertain": false
-          }
-        ]
-      },
-      {
-        "cell_type": "muscle fibroblast",
-        "cl_id": "CL:1001609",
-        "mean_log1p_cp10k": 3.2673,
-        "n_expressing": 1318,
-        "n_total": 9964,
-        "pct_expressing": 0.1323,
-        "is_rare": false,
-        "is_trace": false,
-        "tissues": [
-          {
-            "tissue": "lymph node",
-            "uberon_id": "UBERON:0000029",
-            "mean_log1p_cp10k": 3.3399,
-            "n_expressing": 1145,
-            "n_total": 1145,
-            "pct_expressing": 1.0,
-            "is_uncertain": true
-          },
-          {
-            "tissue": "skin of body",
-            "uberon_id": "UBERON:0002097",
-            "mean_log1p_cp10k": 2.9024,
-            "n_expressing": 102,
-            "n_total": 102,
-            "pct_expressing": 1.0,
-            "is_uncertain": true
-          },
-          {
-            "tissue": "small intestine",
-            "uberon_id": "UBERON:0002108",
-            "mean_log1p_cp10k": 2.6484,
-            "n_expressing": 66,
-            "n_total": 66,
-            "pct_expressing": 1.0,
-            "is_uncertain": true
           }
         ]
       },
@@ -6721,44 +6662,161 @@
         ]
       },
       {
-        "cell_type": "epicardial adipocyte",
-        "cl_id": "CL:1000309",
-        "mean_log1p_cp10k": 3.0905,
-        "n_expressing": 838,
-        "n_total": 5690,
-        "pct_expressing": 0.1473,
-        "is_rare": false,
+        "cell_type": "fibroblastic reticular cell",
+        "cl_id": "CL:0009101",
+        "mean_log1p_cp10k": 2.9551,
+        "n_expressing": 431,
+        "n_total": 468,
+        "pct_expressing": 0.9209,
+        "is_rare": true,
         "is_trace": false,
         "tissues": [
           {
-            "tissue": "heart",
-            "uberon_id": "UBERON:0000948",
-            "mean_log1p_cp10k": 3.0905,
-            "n_expressing": 838,
-            "n_total": 1891,
-            "pct_expressing": 0.4432,
+            "tissue": "colon",
+            "uberon_id": "UBERON:0001155",
+            "mean_log1p_cp10k": 2.8583,
+            "n_expressing": 279,
+            "n_total": 279,
+            "pct_expressing": 1.0,
+            "is_uncertain": true
+          },
+          {
+            "tissue": "small intestine",
+            "uberon_id": "UBERON:0002108",
+            "mean_log1p_cp10k": 3.1984,
+            "n_expressing": 105,
+            "n_total": 106,
+            "pct_expressing": 0.9906,
+            "is_uncertain": false
+          },
+          {
+            "tissue": "stomach",
+            "uberon_id": "UBERON:0000945",
+            "mean_log1p_cp10k": 3.1986,
+            "n_expressing": 34,
+            "n_total": 37,
+            "pct_expressing": 0.9189,
             "is_uncertain": false
           }
         ]
       },
       {
-        "cell_type": "chorionic trophoblast cell",
-        "cl_id": "CL:0011101",
-        "mean_log1p_cp10k": 3.0124,
-        "n_expressing": 11,
-        "n_total": 287,
-        "pct_expressing": 0.0383,
-        "is_rare": true,
+        "cell_type": "centrilobular region hepatocyte",
+        "cl_id": "CL:0019029",
+        "mean_log1p_cp10k": 2.8911,
+        "n_expressing": 42444,
+        "n_total": 47737,
+        "pct_expressing": 0.8891,
+        "is_rare": false,
         "is_trace": false,
         "tissues": [
           {
-            "tissue": "placenta",
-            "uberon_id": "UBERON:0001987",
-            "mean_log1p_cp10k": 3.0124,
-            "n_expressing": 11,
-            "n_total": 287,
-            "pct_expressing": 0.0383,
+            "tissue": "liver",
+            "uberon_id": "UBERON:0002107",
+            "mean_log1p_cp10k": 2.8911,
+            "n_expressing": 42444,
+            "n_total": 42444,
+            "pct_expressing": 1.0,
+            "is_uncertain": true
+          }
+        ]
+      },
+      {
+        "cell_type": "hepatocyte",
+        "cl_id": "CL:0000182",
+        "mean_log1p_cp10k": 2.7785,
+        "n_expressing": 105461,
+        "n_total": 122143,
+        "pct_expressing": 0.8634,
+        "is_rare": false,
+        "is_trace": false,
+        "tissues": [
+          {
+            "tissue": "liver",
+            "uberon_id": "UBERON:0002107",
+            "mean_log1p_cp10k": 2.7574,
+            "n_expressing": 97516,
+            "n_total": 105216,
+            "pct_expressing": 0.9268,
             "is_uncertain": false
+          },
+          {
+            "tissue": "adrenal gland",
+            "uberon_id": "UBERON:0002369",
+            "mean_log1p_cp10k": 3.0421,
+            "n_expressing": 7917,
+            "n_total": 8330,
+            "pct_expressing": 0.9504,
+            "is_uncertain": false
+          },
+          {
+            "tissue": "abdomen",
+            "uberon_id": "UBERON:0000916",
+            "mean_log1p_cp10k": 1.6319,
+            "n_expressing": 22,
+            "n_total": 650,
+            "pct_expressing": 0.0338,
+            "is_uncertain": false
+          }
+        ]
+      },
+      {
+        "cell_type": "mesothelial cell",
+        "cl_id": "CL:0000077",
+        "mean_log1p_cp10k": 2.7227,
+        "n_expressing": 103912,
+        "n_total": 152401,
+        "pct_expressing": 0.6818,
+        "is_rare": false,
+        "is_trace": false,
+        "tissues": [
+          {
+            "tissue": "adipose tissue",
+            "uberon_id": "UBERON:0001013",
+            "mean_log1p_cp10k": 2.4079,
+            "n_expressing": 47350,
+            "n_total": 47350,
+            "pct_expressing": 1.0,
+            "is_uncertain": true
+          },
+          {
+            "tissue": "heart",
+            "uberon_id": "UBERON:0000948",
+            "mean_log1p_cp10k": 2.9168,
+            "n_expressing": 44775,
+            "n_total": 44775,
+            "pct_expressing": 1.0,
+            "is_uncertain": true
+          },
+          {
+            "tissue": "UBERON:0001087",
+            "uberon_id": "UBERON:0001087",
+            "mean_log1p_cp10k": 3.4264,
+            "n_expressing": 5850,
+            "n_total": 5850,
+            "pct_expressing": 1.0,
+            "is_uncertain": true
+          }
+        ]
+      },
+      {
+        "cell_type": "cholangiocyte",
+        "cl_id": "CL:1000488",
+        "mean_log1p_cp10k": 2.6482,
+        "n_expressing": 4074,
+        "n_total": 5816,
+        "pct_expressing": 0.7005,
+        "is_rare": false,
+        "is_trace": false,
+        "tissues": [
+          {
+            "tissue": "liver",
+            "uberon_id": "UBERON:0002107",
+            "mean_log1p_cp10k": 2.6482,
+            "n_expressing": 4074,
+            "n_total": 4074,
+            "pct_expressing": 1.0,
+            "is_uncertain": true
           }
         ]
       },
@@ -6779,27 +6837,6 @@
             "n_expressing": 111,
             "n_total": 232,
             "pct_expressing": 0.4784,
-            "is_uncertain": false
-          }
-        ]
-      },
-      {
-        "cell_type": "lung goblet cell",
-        "cl_id": "CL:1000143",
-        "mean_log1p_cp10k": 2.979,
-        "n_expressing": 507,
-        "n_total": 2664,
-        "pct_expressing": 0.1903,
-        "is_rare": false,
-        "is_trace": false,
-        "tissues": [
-          {
-            "tissue": "lung",
-            "uberon_id": "UBERON:0002048",
-            "mean_log1p_cp10k": 2.979,
-            "n_expressing": 507,
-            "n_total": 2149,
-            "pct_expressing": 0.2359,
             "is_uncertain": false
           }
         ]

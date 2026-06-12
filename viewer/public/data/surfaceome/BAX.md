@@ -463,23 +463,23 @@ This Markdown is generated from the canonical JSON record at `/data/surfaceome/B
 
 ## CellxGene RNA enrichment (CZI Census)
 
-*Schema v2.1.7 · CZI Census 2025-11-08 · τ-cutoff classification (Yanai 2005, PMID 15388519) on linear population mean (mean × pct, ≈ nTPM) over the full measured universe with a 1e-3 noise floor: τ≥0.85 enriched, 0.5–0.85 enhanced, <0.5 low specificity, no eligibles not detected. Cutoffs from Kryuchkova-Mostacci & Robinson-Rechavi 2017 (PMID 26891983) + Lüleci & Yılmaz 2022. Cell ontology graph (cl-basic.obo) walked to ~150 cell-family terms; UBERON ontology walked to ~150 organ-level tissues. CC-BY 4.0 (CZI Census).*
+*Schema v2.1.8 · CZI Census 2025-11-08 · τ-cutoff classification (Yanai 2005, PMID 15388519) on linear population mean (mean × pct, ≈ nTPM) over the full measured universe with a 1e-3 noise floor: τ≥0.85 enriched, 0.5–0.85 enhanced, <0.5 low specificity, no eligibles not detected. Cutoffs from Kryuchkova-Mostacci & Robinson-Rechavi 2017 (PMID 26891983) + Lüleci & Yılmaz 2022. Cell ontology graph (cl-basic.obo) walked to ~150 cell-family terms; UBERON ontology walked to ~150 organ-level tissues. CC-BY 4.0 (CZI Census).*
 
 **Classification:**
 
 - **Cell class (CL ontology graph, ~10 compartments):** low specificity · 1.1× · τ=0.45
-- **Cell type (leaf Cell Ontology terms, ~600):** enriched · CL:0000682 · CL:0000956 · CL:0007004 · 1.1× · τ=0.86
+- **Cell type (leaf Cell Ontology terms, ~600):** enriched · M cell of gut · CL:0000956 · CL:0007004 · 1.1× · τ=0.86
 - **Tissue (UBERON terms, ~56):** enriched · uterus · mucosa · large intestine · 1.0× · τ=0.97
 
 **Top 5 cell types (leaf CL, pooled across tissues):**
 
 | Cell type | CL ID | Mean log1p(CP10K) | % expressing | n_expressing / n_total |
 |---|---|---|---|---|
-| lung perichondrial fibroblast | CL:4033026 | 2.560 | 0.24% | 1 / 411 | (trace)
-| dermis microvascular lymphatic vessel endothelial cell | CL:2000041 | 2.523 | 0.83% | 5 / 603 | (trace)
-| cord blood hematopoietic stem cell | CL:2000095 | 2.388 | 1.94% | 176 / 9,056 |
-| secondary lymphoid organ macrophage | CL:0000867 | 2.299 | 3.69% | 168 / 4,554 |
-| endocrine cell | CL:0000163 | 2.277 | 3.38% | 283 / 8,385 |
+| M cell of gut | CL:0000682 | 1.893 | 40.10% | 3,897 / 9,719 |
+| CD8-alpha-beta-positive, alpha-beta intraepithelial T cell | CL:0000796 | 2.018 | 26.72% | 284 / 1,063 |
+| CD8-positive, alpha-beta thymocyte | CL:0000811 | 1.951 | 27.77% | 2,259 / 8,135 |
+| immature alpha-beta T cell | CL:0000790 | 1.973 | 26.92% | 6,160 / 22,883 |
+| neuroendocrine cell | CL:0000165 | 1.830 | 30.51% | 4,805 / 15,747 |
 
 **Top 5 tissues (UBERON, pooled across cell types):**
 

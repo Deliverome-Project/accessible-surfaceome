@@ -3094,7 +3094,7 @@
   "model_path": "claude-sonnet-4-6",
   "record_generated_at": "2026-05-31T15:33:42.417728Z",
   "cellxgene": {
-    "schema_version": "2.1.7",
+    "schema_version": "2.1.8",
     "census_version": "2025-11-08",
     "cell_class_enrichment": {
       "class": "enriched",
@@ -3129,7 +3129,7 @@
       ],
       "fold_change": 3.137,
       "fold_change_infinite": false,
-      "tau": 0.9980524120608733,
+      "tau": 0.9980320644191273,
       "top_entity_contribs": [
         {
           "id": "CL:0002340",
@@ -3251,6 +3251,48 @@
         ]
       },
       {
+        "cell_type": "epithelial cell of prostate",
+        "cl_id": "CL:0002231",
+        "mean_log1p_cp10k": 3.2615,
+        "n_expressing": 2032,
+        "n_total": 7752,
+        "pct_expressing": 0.2621,
+        "is_rare": false,
+        "is_trace": false,
+        "tissues": [
+          {
+            "tissue": "prostate gland",
+            "uberon_id": "UBERON:0002367",
+            "mean_log1p_cp10k": 3.2615,
+            "n_expressing": 2032,
+            "n_total": 7752,
+            "pct_expressing": 0.2621,
+            "is_uncertain": false
+          }
+        ]
+      },
+      {
+        "cell_type": "club-like cell of the urethral epithelium",
+        "cl_id": "CL:4032000",
+        "mean_log1p_cp10k": 2.5338,
+        "n_expressing": 830,
+        "n_total": 4966,
+        "pct_expressing": 0.1671,
+        "is_rare": false,
+        "is_trace": false,
+        "tissues": [
+          {
+            "tissue": "prostate gland",
+            "uberon_id": "UBERON:0002367",
+            "mean_log1p_cp10k": 2.5338,
+            "n_expressing": 830,
+            "n_total": 4966,
+            "pct_expressing": 0.1671,
+            "is_uncertain": false
+          }
+        ]
+      },
+      {
         "cell_type": "endocrine cell",
         "cl_id": "CL:0000163",
         "mean_log1p_cp10k": 3.3195,
@@ -3281,43 +3323,43 @@
         ]
       },
       {
-        "cell_type": "epithelial cell of prostate",
-        "cl_id": "CL:0002231",
-        "mean_log1p_cp10k": 3.2615,
-        "n_expressing": 2032,
-        "n_total": 7752,
-        "pct_expressing": 0.2621,
+        "cell_type": "fibroblast of connective tissue of prostate",
+        "cl_id": "CL:1000299",
+        "mean_log1p_cp10k": 1.7886,
+        "n_expressing": 223,
+        "n_total": 2552,
+        "pct_expressing": 0.0874,
         "is_rare": false,
         "is_trace": false,
         "tissues": [
           {
             "tissue": "prostate gland",
             "uberon_id": "UBERON:0002367",
-            "mean_log1p_cp10k": 3.2615,
-            "n_expressing": 2032,
-            "n_total": 7752,
-            "pct_expressing": 0.2621,
+            "mean_log1p_cp10k": 1.7886,
+            "n_expressing": 223,
+            "n_total": 2552,
+            "pct_expressing": 0.0874,
             "is_uncertain": false
           }
         ]
       },
       {
-        "cell_type": "mesothelial fibroblast",
-        "cl_id": "CL:4023054",
-        "mean_log1p_cp10k": 2.9152,
-        "n_expressing": 1,
-        "n_total": 232,
-        "pct_expressing": 0.0043,
-        "is_rare": true,
-        "is_trace": true,
+        "cell_type": "smooth muscle cell of prostate",
+        "cl_id": "CL:1000487",
+        "mean_log1p_cp10k": 2.5516,
+        "n_expressing": 103,
+        "n_total": 3938,
+        "pct_expressing": 0.0262,
+        "is_rare": false,
+        "is_trace": false,
         "tissues": [
           {
-            "tissue": "lung",
-            "uberon_id": "UBERON:0002048",
-            "mean_log1p_cp10k": 2.9152,
-            "n_expressing": 1,
-            "n_total": 232,
-            "pct_expressing": 0.0043,
+            "tissue": "prostate gland",
+            "uberon_id": "UBERON:0002367",
+            "mean_log1p_cp10k": 2.5516,
+            "n_expressing": 103,
+            "n_total": 2060,
+            "pct_expressing": 0.05,
             "is_uncertain": false
           }
         ]
@@ -3344,48 +3386,6 @@
         ]
       },
       {
-        "cell_type": "smooth muscle cell of prostate",
-        "cl_id": "CL:1000487",
-        "mean_log1p_cp10k": 2.5516,
-        "n_expressing": 103,
-        "n_total": 3938,
-        "pct_expressing": 0.0262,
-        "is_rare": false,
-        "is_trace": false,
-        "tissues": [
-          {
-            "tissue": "prostate gland",
-            "uberon_id": "UBERON:0002367",
-            "mean_log1p_cp10k": 2.5516,
-            "n_expressing": 103,
-            "n_total": 2060,
-            "pct_expressing": 0.05,
-            "is_uncertain": false
-          }
-        ]
-      },
-      {
-        "cell_type": "club-like cell of the urethral epithelium",
-        "cl_id": "CL:4032000",
-        "mean_log1p_cp10k": 2.5338,
-        "n_expressing": 830,
-        "n_total": 4966,
-        "pct_expressing": 0.1671,
-        "is_rare": false,
-        "is_trace": false,
-        "tissues": [
-          {
-            "tissue": "prostate gland",
-            "uberon_id": "UBERON:0002367",
-            "mean_log1p_cp10k": 2.5338,
-            "n_expressing": 830,
-            "n_total": 4966,
-            "pct_expressing": 0.1671,
-            "is_uncertain": false
-          }
-        ]
-      },
-      {
         "cell_type": "basal epithelial cell of prostatic duct",
         "cl_id": "CL:0002236",
         "mean_log1p_cp10k": 2.5044,
@@ -3407,44 +3407,62 @@
         ]
       },
       {
-        "cell_type": "sebaceous gland cell",
-        "cl_id": "CL:2000021",
-        "mean_log1p_cp10k": 2.1291,
-        "n_expressing": 1,
-        "n_total": 233,
-        "pct_expressing": 0.0043,
-        "is_rare": true,
-        "is_trace": true,
+        "cell_type": "cytotoxic T cell",
+        "cl_id": "CL:0000910",
+        "mean_log1p_cp10k": 1.826,
+        "n_expressing": 1192,
+        "n_total": 34123,
+        "pct_expressing": 0.0349,
+        "is_rare": false,
+        "is_trace": false,
         "tissues": [
+          {
+            "tissue": "prostate gland",
+            "uberon_id": "UBERON:0002367",
+            "mean_log1p_cp10k": 1.8001,
+            "n_expressing": 1082,
+            "n_total": 7314,
+            "pct_expressing": 0.1479,
+            "is_uncertain": false
+          },
           {
             "tissue": "skin of body",
             "uberon_id": "UBERON:0002097",
-            "mean_log1p_cp10k": 2.1291,
-            "n_expressing": 1,
-            "n_total": 1,
+            "mean_log1p_cp10k": 2.0699,
+            "n_expressing": 105,
+            "n_total": 105,
             "pct_expressing": 1.0,
             "is_uncertain": true
+          },
+          {
+            "tissue": "blood",
+            "uberon_id": "UBERON:0000178",
+            "mean_log1p_cp10k": 1.8181,
+            "n_expressing": 3,
+            "n_total": 3296,
+            "pct_expressing": 0.0009,
+            "is_uncertain": false
           }
         ]
       },
       {
-        "cell_type": "eosinophil",
-        "cl_id": "CL:0000771",
-        "mean_log1p_cp10k": 2.058,
-        "n_expressing": 1,
-        "n_total": 502,
-        "pct_expressing": 0.002,
-        "is_rare": true,
-        "is_trace": true,
+        "cell_type": "basal cell of prostate epithelium",
+        "cl_id": "CL:0002341",
+        "mean_log1p_cp10k": 1.904,
+        "n_expressing": 1046,
+        "n_total": 41474,
+        "pct_expressing": 0.0252,
+        "is_rare": false,
+        "is_trace": false,
         "tissues": [
           {
-            "tissue": "UBERON:0001015",
-            "uberon_id": "UBERON:0001015",
-            "mean_log1p_cp10k": 2.058,
-            "n_expressing": 1,
-            "n_total": 1,
-            "pct_expressing": 1.0,
-            "is_uncertain": true
+            "tissue": "prostate gland",
+            "uberon_id": "UBERON:0002367",
+            "mean_log1p_cp10k": 1.904,
+            "n_expressing": 1046,
+            "n_total": 11715,
+            "pct_expressing": 0.0893,
+            "is_uncertain": false
           }
         ]
       }

@@ -124,6 +124,16 @@ export interface TopEntityContrib {
   label: string;
   pop_mean: number;
   tau_contrib: number;
+  /** Optional — for rollup axes (cell_family, tissue_organ,
+   *  tissue_category), the label of the underlying leaf the rollup
+   *  signal rests on. The chip renders this in parentheses next to
+   *  the rollup label so a reader sees
+   *  "cell of skeletal muscle (skeletal muscle fibroblast)" rather
+   *  than just "cell of skeletal muscle" (which misleadingly suggests
+   *  myocytes when the actual leaf is a fibroblast). Omitted when the
+   *  rollup IS the leaf (e.g. tissue_organ axis where the organ
+   *  itself is a leaf UBERON). v2.1.8+. */
+  sub_label?: string;
 }
 
 export interface CellTypeEnrichment {
