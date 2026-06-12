@@ -1122,13 +1122,13 @@ This Markdown is generated from the canonical JSON record at `/data/surfaceome/E
 
 ## CellxGene RNA enrichment (CZI Census)
 
-*Schema v2.1.5 · CZI Census 2025-11-08 · HPA-style 4× fold-change classification on log1p(CP10K) → linear means, plus Yanai et al. 2005 τ (specificity score ∈ [0, 1], computed over the eligible-entity set). Cell-class rollup walks the Cell Ontology graph (cl-basic.obo, OBO Foundry) — leaf CL → nearest compartment ancestor. CC-BY 4.0 (CZI Census).*
+*Schema v2.1.6 · CZI Census 2025-11-08 · τ-cutoff classification (Yanai 2005) on linear population mean (mean × pct, ≈ nTPM): τ≥0.85 enriched, 0.5–0.85 enhanced, <0.5 low specificity, no eligibles not detected. Cell ontology graph (cl-basic.obo) walked to ~150 cell-family terms; UBERON ontology walked to ~150 organ-level tissues. Cutoffs follow HPA's tissue-specificity nTPM convention. CC-BY 4.0 (CZI Census).*
 
 **Classification:**
 
 - **Cell class (CL ontology graph, ~10 compartments):** low specificity · 1.1× · τ=0.49
 - **Cell type (leaf Cell Ontology terms, ~600):** enriched · basal epithelial cell of prostatic duct · placental villous trophoblast · skeletal muscle fibroblast · 1.1× · τ=0.89
-- **Tissue (UBERON terms, ~56):** enriched · tongue · 3.1× · τ=0.98
+- **Tissue (UBERON terms, ~56):** enriched · eye · heart · adipose tissue · 1.2× · τ=0.93
 
 **Top 5 cell types (leaf CL, pooled across tissues):**
 
@@ -1144,10 +1144,10 @@ This Markdown is generated from the canonical JSON record at `/data/surfaceome/E
 
 | Tissue | UBERON ID | Mean log1p(CP10K) | % expressing | n_expressing / n_total |
 |---|---|---|---|---|
-| tendon of semitendinosus | UBERON:8480009 | 2.520 | 39.28% | 4,137 / 10,533 |
-| pleura | UBERON:0000977 | 2.498 | 9.82% | 1,935 / 19,695 |
-| placenta | UBERON:0001987 | 2.334 | 45.75% | 144,803 / 316,501 |
-| mucosa | UBERON:0000344 | 2.333 | 37.26% | 9,710 / 26,060 |
-| testis | UBERON:0000473 | 2.270 | 1.97% | 408 / 20,724 |
+| placenta | UBERON:0001987 | 2.496 | 46.52% | 100,039 / 215,057 |
+| prostate gland | UBERON:0002367 | 2.386 | 17.37% | 9,335 / 53,756 |
+| heart | UBERON:0000948 | 2.297 | 100.00% | 172,236 / 12,546 |
+| pancreas | UBERON:0001264 | 2.272 | 8.24% | 13,375 / 162,373 |
+| adipose tissue | UBERON:0001013 | 2.234 | 100.00% | 71,220 / 6,028 |
 
 <!-- /cellxgene -->

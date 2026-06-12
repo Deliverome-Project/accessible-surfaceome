@@ -476,7 +476,7 @@ This Markdown is generated from the canonical JSON record at `/data/surfaceome/K
 
 ## CellxGene RNA enrichment (CZI Census)
 
-*Schema v2.1.5 · CZI Census 2025-11-08 · HPA-style 4× fold-change classification on log1p(CP10K) → linear means, plus Yanai et al. 2005 τ (specificity score ∈ [0, 1], computed over the eligible-entity set). Cell-class rollup walks the Cell Ontology graph (cl-basic.obo, OBO Foundry) — leaf CL → nearest compartment ancestor. CC-BY 4.0 (CZI Census).*
+*Schema v2.1.6 · CZI Census 2025-11-08 · τ-cutoff classification (Yanai 2005) on linear population mean (mean × pct, ≈ nTPM): τ≥0.85 enriched, 0.5–0.85 enhanced, <0.5 low specificity, no eligibles not detected. Cell ontology graph (cl-basic.obo) walked to ~150 cell-family terms; UBERON ontology walked to ~150 organ-level tissues. Cutoffs follow HPA's tissue-specificity nTPM convention. CC-BY 4.0 (CZI Census).*
 
 **Classification:**
 
@@ -498,10 +498,10 @@ This Markdown is generated from the canonical JSON record at `/data/surfaceome/K
 
 | Tissue | UBERON ID | Mean log1p(CP10K) | % expressing | n_expressing / n_total |
 |---|---|---|---|---|
-| prostate gland | UBERON:0002367 | 3.144 | 21.35% | 27,381 / 128,233 |
-| urinary bladder | UBERON:0001255 | 2.728 | 0.02% | 7 / 36,100 | (trace)
-| pancreas | UBERON:0001264 | 2.099 | 0.01% | 23 / 246,237 | (trace)
-| ureter | UBERON:0000056 | 2.028 | 0.00% | 1 / 43,728 | (trace)
-| breast | UBERON:0000310 | 2.007 | 0.04% | 1,242 / 3,306,070 | (trace)
+| prostate gland | UBERON:0002367 | 3.454 | 37.07% | 19,925 / 53,756 |
+| urinary bladder | UBERON:0001255 | 2.577 | 0.04% | 6 / 15,201 | (trace)
+| intestine | UBERON:0000160 | 2.187 | 0.00% | 1 / 49,900 | (trace)
+| adrenal gland | UBERON:0002369 | 2.103 | 0.00% | 11 / 350,623 | (trace)
+| pancreas | UBERON:0001264 | 2.071 | 0.01% | 20 / 162,373 | (trace)
 
 <!-- /cellxgene -->

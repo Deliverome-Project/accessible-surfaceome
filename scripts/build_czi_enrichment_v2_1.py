@@ -90,7 +90,7 @@ ENS_MAP = Path(
 OUT_DIR = Path(os.environ.get("CZI_OUT_DIR", "/tmp/czi_enrichment_v2_1"))
 MANIFEST = OUT_DIR.parent / (OUT_DIR.name + "_manifest.tsv")
 CENSUS_VERSION = "2025-11-08"
-SCHEMA_VERSION = "2.1.5"
+SCHEMA_VERSION = "2.1.6"
 
 # Classifier eligibility (lenient — captures whatever has signal).
 MIN_N_TOTAL_FOR_CLASS = 50
@@ -152,15 +152,66 @@ def load_uberon_labels() -> dict[str, str]:
     return out
 
 
+def _cohort_leaf_cls() -> frozenset[str]:
+    """Return the set of CL terms in CZI's cell-count cache that have
+    no DESCENDANTS that are also in the cohort. Each cell in CZI is
+    annotated at its leaf CL plus every ancestor in the WMG output;
+    counting/aggregating only over cohort-leaves recovers each cell
+    exactly once (no parent+child double-count)."""
+    cohort: set[str] = set()
+    with TISSUE_COUNTS.open() as f:
+        next(f)
+        for line in f:
+            parts = line.rstrip("\n").split("\t")
+            if len(parts) >= 1 and parts[0].startswith("CL:"):
+                cohort.add(parts[0])
+    try:
+        from accessible_surfaceome.audit.cl_graph import _load_dag, DEFAULT_OBO_PATH
+        dag = _load_dag(str(DEFAULT_OBO_PATH))
+        has_cohort_descendant: set[str] = set()
+        for cl in cohort:
+            if cl not in dag:
+                continue
+            for child in dag[cl].children:
+                if child.id in cohort:
+                    has_cohort_descendant.add(cl)
+                    break
+        return frozenset(cohort - has_cohort_descendant)
+    except Exception as e:  # pragma: no cover
+        print(f"  WARN: cohort-leaf detection failed ({e})", file=sys.stderr)
+        return frozenset(cohort)
+
+
 def load_tissue_counts() -> tuple[dict[tuple[str, str], int], dict[str, int], dict[str, int]]:
     """Return (cl,uberon)->n, cl->n_total_across_tissues, uberon->n_total_across_celltypes.
 
-    v2.1 adds the per-UBERON total so we can compute pct_expressing at
-    the tissue axis (denominator = all cells of any type in that tissue).
+    **Per-UBERON cell-union count via leaf-CL filter (v2.1.6).**
+
+    The previous v2.1.x ``ub_total = sum(pair_counts[(cl, ub)] for cl)``
+    double-counted cells when CZI's WMG annotates the same cells
+    under multiple CL terms (parent + child). CD63-pancreas was the
+    canonical case: raw pct landed at 154% and the chart had to clamp
+    to 100%.
+
+    Fix: identify the **leaf CL terms** in the CZI cohort (CL terms
+    with no descendants that are also in the cohort) and sum
+    ``pair_counts[(cl, ub)]`` only over those. The CZI Census tags
+    every cell at its leaf CL annotation plus every CL ancestor in
+    the WMG output; counting only the leaf level recovers each cell
+    exactly once.
+
+    Note: ``cl_total`` (sum across tissues per CL) stays as-is —
+    that's the right denominator for the per-CL axis (the leaf-CL
+    axis classifier uses it for the same gene's pct on a CL term).
+
+    Falls back gracefully if the CL ontology can't be loaded — uses
+    the old sum-across-all-CL behavior and logs a warning. Older
+    builds without the cohort-leaf filter clamp pct at 100%, which
+    the chart still does as a defensive measure.
     """
     pair: dict[tuple[str, str], int] = {}
     cl_total: dict[str, int] = defaultdict(int)
-    ub_total: dict[str, int] = defaultdict(int)
+    ub_per_cl: dict[str, dict[str, int]] = defaultdict(dict)
     with TISSUE_COUNTS.open() as f:
         next(f)
         for line in f:
@@ -170,8 +221,23 @@ def load_tissue_counts() -> tuple[dict[tuple[str, str], int], dict[str, int], di
             cl, ub, n = parts[0], parts[1], int(parts[2])
             pair[(cl, ub)] = n
             cl_total[cl] += n
-            ub_total[ub] += n
-    return pair, dict(cl_total), dict(ub_total)
+            ub_per_cl[ub][cl] = n
+    # Sum only over cohort-leaf CL pairs to count each cell once.
+    cohort_leaves = _cohort_leaf_cls()
+    if cohort_leaves:
+        ub_total: dict[str, int] = {}
+        for ub, cls_dict in ub_per_cl.items():
+            ub_total[ub] = sum(
+                n for cl, n in cls_dict.items() if cl in cohort_leaves
+            )
+        # Empty cohort-leaf sum (no leaves in this UBERON) → fall back
+        # to max-CL count (lower bound).
+        for ub, total in list(ub_total.items()):
+            if total == 0 and ub in ub_per_cl:
+                ub_total[ub] = max(ub_per_cl[ub].values())
+    else:
+        ub_total = {ub: sum(d.values()) for ub, d in ub_per_cl.items()}
+    return pair, dict(cl_total), ub_total
 
 
 def load_ens_map() -> dict[str, tuple[str, str]]:
@@ -483,12 +549,22 @@ def build_record(
     ]
 
     # ---- Per-UBERON pooled across all cell types ----
-    # Build it once across the gene's WMG entries — every (cl, ub) pair
-    # in cl_to_uberon contributes to the UBERON axis.
+    # Aggregate ONLY across cohort-leaf CL terms so each cell is counted
+    # exactly once. CZI's WMG annotates every cell at its leaf CL plus
+    # each CL ancestor; summing without the leaf filter double-counts
+    # cells under their parent + grandparent annotations and inflates
+    # both numerator (nnz) and denominator (n_total). CD63-pancreas raw
+    # pct was 154% under the old all-CL sum; the leaf-CL filter brings
+    # numerator and denominator to a consistent count.
+    cohort_leaves = _cohort_leaf_cls()
     ub_means_log: dict[str, float] = {}
     ub_pop_linear: dict[str, float] = {}  # LINEAR population mean per UBERON
     ub_pooled: dict[str, dict[str, float]] = {}
     for cl, ub_to_stats in cl_to_uberon.items():
+        # Skip non-leaf CLs — their cells are already counted under
+        # their leaf descendants in WMG.
+        if cohort_leaves and cl not in cohort_leaves:
+            continue
         for ub, vals in ub_to_stats.items():
             nnz, ssum = vals
             if nnz <= 0:

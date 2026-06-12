@@ -5011,7 +5011,7 @@
   "model_path": "claude-sonnet-4-6",
   "record_generated_at": "2026-06-07T02:42:21.474347Z",
   "cellxgene": {
-    "schema_version": "2.1.5",
+    "schema_version": "2.1.6",
     "census_version": "2025-11-08",
     "cell_class_enrichment": {
       "class": "not_detected",
@@ -5046,19 +5046,19 @@
       "tau": null
     },
     "tissue_enrichment": {
-      "class": "enhanced",
+      "class": "enriched",
       "uberon_ids": [
         "UBERON:0000970"
       ],
       "tissue_labels": [
         "eye"
       ],
-      "fold_change": 1.691,
+      "fold_change": 6.439,
       "fold_change_infinite": false,
-      "tau": 0.5829862190252092
+      "tau": 0.8525586637471201
     },
     "tissue_category_enrichment": {
-      "class": "enhanced",
+      "class": "enriched",
       "category_ids": [
         "head_sensory"
       ],
@@ -5068,12 +5068,12 @@
       "top_tissues": [
         "eye"
       ],
-      "fold_change": 1.691,
+      "fold_change": 6.439,
       "fold_change_infinite": false,
-      "tau": 0.5829862190252092
+      "tau": 0.8525586637471201
     },
     "tissue_organ_enrichment": {
-      "class": "enhanced",
+      "class": "enriched",
       "organ_ids": [
         "UBERON:0000970"
       ],
@@ -5083,9 +5083,9 @@
       "top_uberon_labels": [
         "eye"
       ],
-      "fold_change": 1.691,
+      "fold_change": 6.439,
       "fold_change_infinite": false,
-      "tau": 0.5829862190252092
+      "tau": 0.8525586637471201
     },
     "enrichment_class": "not_detected",
     "enrichment_cl_ids": [],
@@ -5200,93 +5200,93 @@
     ],
     "top_tissues": [
       {
-        "tissue": "pleura",
-        "uberon_id": "UBERON:0000977",
-        "mean_log1p_cp10k": 2.3188,
-        "n_expressing": 4,
-        "n_total": 19695,
-        "pct_expressing": 0.0002,
-        "is_trace": true
-      },
-      {
         "tissue": "adrenal gland",
         "uberon_id": "UBERON:0002369",
-        "mean_log1p_cp10k": 2.2328,
-        "n_expressing": 495,
-        "n_total": 543830,
-        "pct_expressing": 0.0009,
+        "mean_log1p_cp10k": 2.2118,
+        "n_expressing": 437,
+        "n_total": 350623,
+        "pct_expressing": 0.0012,
         "is_trace": true
       },
       {
-        "tissue": "forelimb",
-        "uberon_id": "UBERON:0002102",
-        "mean_log1p_cp10k": 2.2094,
-        "n_expressing": 1,
-        "n_total": 38983,
-        "pct_expressing": 0.0,
-        "is_trace": true
-      },
-      {
-        "tissue": "axilla",
-        "uberon_id": "UBERON:0009472",
-        "mean_log1p_cp10k": 2.0404,
-        "n_expressing": 4,
-        "n_total": 94151,
-        "pct_expressing": 0.0,
-        "is_trace": true
-      },
-      {
-        "tissue": "intestine",
-        "uberon_id": "UBERON:0000160",
-        "mean_log1p_cp10k": 2.0298,
-        "n_expressing": 91,
-        "n_total": 327410,
-        "pct_expressing": 0.0003,
-        "is_trace": true
-      },
-      {
-        "tissue": "pancreas",
-        "uberon_id": "UBERON:0001264",
-        "mean_log1p_cp10k": 2.0227,
-        "n_expressing": 73,
-        "n_total": 246237,
-        "pct_expressing": 0.0003,
-        "is_trace": true
-      },
-      {
-        "tissue": "neck",
-        "uberon_id": "UBERON:0000974",
-        "mean_log1p_cp10k": 1.9756,
+        "tissue": "mucosa",
+        "uberon_id": "UBERON:0000344",
+        "mean_log1p_cp10k": 2.0911,
         "n_expressing": 2,
-        "n_total": 20201,
-        "pct_expressing": 0.0001,
-        "is_trace": true
-      },
-      {
-        "tissue": "brain",
-        "uberon_id": "UBERON:0000955",
-        "mean_log1p_cp10k": 1.9746,
-        "n_expressing": 20264,
-        "n_total": 941245,
-        "pct_expressing": 0.0215,
-        "is_trace": false
-      },
-      {
-        "tissue": "liver",
-        "uberon_id": "UBERON:0002107",
-        "mean_log1p_cp10k": 1.9742,
-        "n_expressing": 418,
-        "n_total": 1236918,
-        "pct_expressing": 0.0003,
+        "n_total": 1169,
+        "pct_expressing": 0.0017,
         "is_trace": true
       },
       {
         "tissue": "placenta",
         "uberon_id": "UBERON:0001987",
-        "mean_log1p_cp10k": 1.9127,
-        "n_expressing": 44,
-        "n_total": 316501,
+        "mean_log1p_cp10k": 2.0543,
+        "n_expressing": 19,
+        "n_total": 215057,
         "pct_expressing": 0.0001,
+        "is_trace": true
+      },
+      {
+        "tissue": "large intestine",
+        "uberon_id": "UBERON:0000059",
+        "mean_log1p_cp10k": 1.9596,
+        "n_expressing": 10,
+        "n_total": 10101,
+        "pct_expressing": 0.001,
+        "is_trace": true
+      },
+      {
+        "tissue": "liver",
+        "uberon_id": "UBERON:0002107",
+        "mean_log1p_cp10k": 1.9475,
+        "n_expressing": 166,
+        "n_total": 357751,
+        "pct_expressing": 0.0005,
+        "is_trace": true
+      },
+      {
+        "tissue": "pancreas",
+        "uberon_id": "UBERON:0001264",
+        "mean_log1p_cp10k": 1.9189,
+        "n_expressing": 19,
+        "n_total": 162373,
+        "pct_expressing": 0.0001,
+        "is_trace": true
+      },
+      {
+        "tissue": "nose",
+        "uberon_id": "UBERON:0000004",
+        "mean_log1p_cp10k": 1.8875,
+        "n_expressing": 160,
+        "n_total": 71410,
+        "pct_expressing": 0.0022,
+        "is_trace": true
+      },
+      {
+        "tissue": "brain",
+        "uberon_id": "UBERON:0000955",
+        "mean_log1p_cp10k": 1.8778,
+        "n_expressing": 5393,
+        "n_total": 273927,
+        "pct_expressing": 0.0197,
+        "is_trace": false
+      },
+      {
+        "tissue": "kidney",
+        "uberon_id": "UBERON:0002113",
+        "mean_log1p_cp10k": 1.859,
+        "n_expressing": 121,
+        "n_total": 238056,
+        "pct_expressing": 0.0005,
+        "is_trace": true
+      },
+      {
+        "tissue": "abdomen",
+        "uberon_id": "UBERON:0000916",
+        "mean_log1p_cp10k": 1.8158,
+        "n_expressing": 11,
+        "n_total": 11922,
+        "pct_expressing": 0.0009,
         "is_trace": true
       }
     ]

@@ -3094,7 +3094,7 @@
   "model_path": "claude-sonnet-4-6",
   "record_generated_at": "2026-05-31T15:33:42.417728Z",
   "cellxgene": {
-    "schema_version": "2.1.5",
+    "schema_version": "2.1.6",
     "census_version": "2025-11-08",
     "cell_class_enrichment": {
       "class": "enriched",
@@ -3405,73 +3405,73 @@
       {
         "tissue": "prostate gland",
         "uberon_id": "UBERON:0002367",
-        "mean_log1p_cp10k": 3.1441,
-        "n_expressing": 27381,
-        "n_total": 128233,
-        "pct_expressing": 0.2135,
+        "mean_log1p_cp10k": 3.4542,
+        "n_expressing": 19925,
+        "n_total": 53756,
+        "pct_expressing": 0.3707,
         "is_trace": false
       },
       {
         "tissue": "urinary bladder",
         "uberon_id": "UBERON:0001255",
-        "mean_log1p_cp10k": 2.7276,
-        "n_expressing": 7,
-        "n_total": 36100,
-        "pct_expressing": 0.0002,
+        "mean_log1p_cp10k": 2.5772,
+        "n_expressing": 6,
+        "n_total": 15201,
+        "pct_expressing": 0.0004,
+        "is_trace": true
+      },
+      {
+        "tissue": "intestine",
+        "uberon_id": "UBERON:0000160",
+        "mean_log1p_cp10k": 2.1873,
+        "n_expressing": 1,
+        "n_total": 49900,
+        "pct_expressing": 0.0,
+        "is_trace": true
+      },
+      {
+        "tissue": "adrenal gland",
+        "uberon_id": "UBERON:0002369",
+        "mean_log1p_cp10k": 2.1031,
+        "n_expressing": 11,
+        "n_total": 350623,
+        "pct_expressing": 0.0,
         "is_trace": true
       },
       {
         "tissue": "pancreas",
         "uberon_id": "UBERON:0001264",
-        "mean_log1p_cp10k": 2.0994,
-        "n_expressing": 23,
-        "n_total": 246237,
+        "mean_log1p_cp10k": 2.0711,
+        "n_expressing": 20,
+        "n_total": 162373,
         "pct_expressing": 0.0001,
-        "is_trace": true
-      },
-      {
-        "tissue": "ureter",
-        "uberon_id": "UBERON:0000056",
-        "mean_log1p_cp10k": 2.0277,
-        "n_expressing": 1,
-        "n_total": 43728,
-        "pct_expressing": 0.0,
         "is_trace": true
       },
       {
         "tissue": "breast",
         "uberon_id": "UBERON:0000310",
-        "mean_log1p_cp10k": 2.0067,
-        "n_expressing": 1242,
-        "n_total": 3306070,
-        "pct_expressing": 0.0004,
+        "mean_log1p_cp10k": 2.0513,
+        "n_expressing": 754,
+        "n_total": 1579266,
+        "pct_expressing": 0.0005,
         "is_trace": true
       },
       {
-        "tissue": "axilla",
-        "uberon_id": "UBERON:0009472",
-        "mean_log1p_cp10k": 1.9754,
-        "n_expressing": 5,
-        "n_total": 94151,
-        "pct_expressing": 0.0001,
+        "tissue": "mucosa",
+        "uberon_id": "UBERON:0000344",
+        "mean_log1p_cp10k": 1.9654,
+        "n_expressing": 4,
+        "n_total": 1169,
+        "pct_expressing": 0.0034,
         "is_trace": true
       },
       {
-        "tissue": "testis",
-        "uberon_id": "UBERON:0000473",
-        "mean_log1p_cp10k": 1.9467,
-        "n_expressing": 7,
-        "n_total": 20724,
-        "pct_expressing": 0.0003,
-        "is_trace": true
-      },
-      {
-        "tissue": "kidney",
-        "uberon_id": "UBERON:0002113",
-        "mean_log1p_cp10k": 1.9312,
-        "n_expressing": 62,
-        "n_total": 943536,
-        "pct_expressing": 0.0001,
+        "tissue": "skin of body",
+        "uberon_id": "UBERON:0002097",
+        "mean_log1p_cp10k": 1.9079,
+        "n_expressing": 234,
+        "n_total": 26932,
+        "pct_expressing": 0.0087,
         "is_trace": true
       },
       {
@@ -3479,17 +3479,17 @@
         "uberon_id": "UBERON:0016435",
         "mean_log1p_cp10k": 1.9062,
         "n_expressing": 2,
-        "n_total": 20144,
-        "pct_expressing": 0.0001,
+        "n_total": 10255,
+        "pct_expressing": 0.0002,
         "is_trace": true
       },
       {
-        "tissue": "heart",
-        "uberon_id": "UBERON:0000948",
-        "mean_log1p_cp10k": 1.8963,
-        "n_expressing": 206,
-        "n_total": 120581,
-        "pct_expressing": 0.0017,
+        "tissue": "placenta",
+        "uberon_id": "UBERON:0001987",
+        "mean_log1p_cp10k": 1.8942,
+        "n_expressing": 10,
+        "n_total": 215057,
+        "pct_expressing": 0.0,
         "is_trace": true
       }
     ]

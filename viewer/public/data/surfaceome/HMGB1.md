@@ -535,13 +535,13 @@ This Markdown is generated from the canonical JSON record at `/data/surfaceome/H
 
 ## CellxGene RNA enrichment (CZI Census)
 
-*Schema v2.1.5 · CZI Census 2025-11-08 · HPA-style 4× fold-change classification on log1p(CP10K) → linear means, plus Yanai et al. 2005 τ (specificity score ∈ [0, 1], computed over the eligible-entity set). Cell-class rollup walks the Cell Ontology graph (cl-basic.obo, OBO Foundry) — leaf CL → nearest compartment ancestor. CC-BY 4.0 (CZI Census).*
+*Schema v2.1.6 · CZI Census 2025-11-08 · τ-cutoff classification (Yanai 2005) on linear population mean (mean × pct, ≈ nTPM): τ≥0.85 enriched, 0.5–0.85 enhanced, <0.5 low specificity, no eligibles not detected. Cell ontology graph (cl-basic.obo) walked to ~150 cell-family terms; UBERON ontology walked to ~150 organ-level tissues. Cutoffs follow HPA's tissue-specificity nTPM convention. CC-BY 4.0 (CZI Census).*
 
 **Classification:**
 
 - **Cell class (CL ontology graph, ~10 compartments):** enhanced · Immune · 1.7× · τ=0.69
 - **Cell type (leaf Cell Ontology terms, ~600):** enriched · large pre-B-II cell · fraction A pre-pro B cell · proerythroblast · 1.1× · τ=0.91
-- **Tissue (UBERON terms, ~56):** enriched · vasculature · tongue · 1.1× · τ=0.95
+- **Tissue (UBERON terms, ~56):** enriched · uterus · 19.3× · τ=1.00
 
 **Top 5 cell types (leaf CL, pooled across tissues):**
 
@@ -557,10 +557,10 @@ This Markdown is generated from the canonical JSON record at `/data/surfaceome/H
 
 | Tissue | UBERON ID | Mean log1p(CP10K) | % expressing | n_expressing / n_total |
 |---|---|---|---|---|
-| cortex | UBERON:0001851 | 2.843 | 97.43% | 145,911 / 149,766 |
-| forelimb | UBERON:0002102 | 2.829 | 96.55% | 37,640 / 38,983 |
-| hindlimb | UBERON:0002103 | 2.730 | 92.07% | 80,076 / 86,972 |
-| embryo | UBERON:0000922 | 2.729 | 100.00% | 168,978 / 14,244 |
-| pleura | UBERON:0000977 | 2.659 | 26.17% | 5,155 / 19,695 |
+| cortex | UBERON:0001851 | 3.337 | 99.18% | 12,951 / 13,058 |
+| embryo | UBERON:0000922 | 2.741 | 100.00% | 86,108 / 14,142 |
+| forelimb | UBERON:0002102 | 2.739 | 93.70% | 12,334 / 13,163 |
+| hindlimb | UBERON:0002103 | 2.666 | 89.41% | 25,719 / 28,766 |
+| bone marrow | UBERON:0002371 | 2.526 | 71.59% | 271,730 / 379,588 |
 
 <!-- /cellxgene -->

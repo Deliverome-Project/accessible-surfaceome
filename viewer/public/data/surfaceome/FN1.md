@@ -2086,13 +2086,13 @@ This Markdown is generated from the canonical JSON record at `/data/surfaceome/F
 
 ## CellxGene RNA enrichment (CZI Census)
 
-*Schema v2.1.5 · CZI Census 2025-11-08 · HPA-style 4× fold-change classification on log1p(CP10K) → linear means, plus Yanai et al. 2005 τ (specificity score ∈ [0, 1], computed over the eligible-entity set). Cell-class rollup walks the Cell Ontology graph (cl-basic.obo, OBO Foundry) — leaf CL → nearest compartment ancestor. CC-BY 4.0 (CZI Census).*
+*Schema v2.1.6 · CZI Census 2025-11-08 · τ-cutoff classification (Yanai 2005) on linear population mean (mean × pct, ≈ nTPM): τ≥0.85 enriched, 0.5–0.85 enhanced, <0.5 low specificity, no eligibles not detected. Cell ontology graph (cl-basic.obo) walked to ~150 cell-family terms; UBERON ontology walked to ~150 organ-level tissues. Cutoffs follow HPA's tissue-specificity nTPM convention. CC-BY 4.0 (CZI Census).*
 
 **Classification:**
 
 - **Cell class (CL ontology graph, ~10 compartments):** enhanced · Stromal · 1.0× · τ=0.55
 - **Cell type (leaf Cell Ontology terms, ~600):** enriched · cycling stromal cell · cell · embryonic fibroblast · 1.0× · τ=0.92
-- **Tissue (UBERON terms, ~56):** enriched · vasculature · 4.4× · τ=0.98
+- **Tissue (UBERON terms, ~56):** enriched · uterus · heart · 1.4× · τ=0.95
 
 **Top 5 cell types (leaf CL, pooled across tissues):**
 
@@ -2108,10 +2108,10 @@ This Markdown is generated from the canonical JSON record at `/data/surfaceome/F
 
 | Tissue | UBERON ID | Mean log1p(CP10K) | % expressing | n_expressing / n_total |
 |---|---|---|---|---|
-| paracolic gutter | UBERON:0035210 | 3.363 | 31.88% | 2,554 / 8,012 |
-| pleura | UBERON:0000977 | 3.090 | 20.18% | 3,975 / 19,695 |
-| omentum | UBERON:0003688 | 2.999 | 26.32% | 58,500 / 222,303 |
-| chest wall | UBERON:0016435 | 2.990 | 25.84% | 5,205 / 20,144 |
-| esophagus | UBERON:0001043 | 2.855 | 71.90% | 16,961 / 23,590 |
+| esophagus | UBERON:0001043 | 3.104 | 100.00% | 6,019 / 3,182 |
+| placenta | UBERON:0001987 | 2.795 | 47.71% | 102,596 / 215,057 |
+| embryo | UBERON:0000922 | 2.561 | 100.00% | 30,315 / 14,142 |
+| lung | UBERON:0002048 | 2.518 | 25.36% | 134,020 / 528,476 |
+| pancreas | UBERON:0001264 | 2.501 | 10.15% | 16,473 / 162,373 |
 
 <!-- /cellxgene -->

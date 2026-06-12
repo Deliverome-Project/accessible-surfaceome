@@ -459,13 +459,13 @@ This Markdown is generated from the canonical JSON record at `/data/surfaceome/L
 
 ## CellxGene RNA enrichment (CZI Census)
 
-*Schema v2.1.5 · CZI Census 2025-11-08 · HPA-style 4× fold-change classification on log1p(CP10K) → linear means, plus Yanai et al. 2005 τ (specificity score ∈ [0, 1], computed over the eligible-entity set). Cell-class rollup walks the Cell Ontology graph (cl-basic.obo, OBO Foundry) — leaf CL → nearest compartment ancestor. CC-BY 4.0 (CZI Census).*
+*Schema v2.1.6 · CZI Census 2025-11-08 · τ-cutoff classification (Yanai 2005) on linear population mean (mean × pct, ≈ nTPM): τ≥0.85 enriched, 0.5–0.85 enhanced, <0.5 low specificity, no eligibles not detected. Cell ontology graph (cl-basic.obo) walked to ~150 cell-family terms; UBERON ontology walked to ~150 organ-level tissues. Cutoffs follow HPA's tissue-specificity nTPM convention. CC-BY 4.0 (CZI Census).*
 
 **Classification:**
 
 - **Cell class (CL ontology graph, ~10 compartments):** enhanced · Immune · 2.2× · τ=0.78
 - **Cell type (leaf Cell Ontology terms, ~600):** enriched · neutrophil · CL:0002396 · mature neutrophil · 1.1× · τ=0.93
-- **Tissue (UBERON terms, ~56):** enriched · tongue · vasculature · eye · 1.7× · τ=0.95
+- **Tissue (UBERON terms, ~56):** enriched · uterus · eye · 1.3× · τ=0.94
 
 **Top 5 cell types (leaf CL, pooled across tissues):**
 
@@ -481,10 +481,10 @@ This Markdown is generated from the canonical JSON record at `/data/surfaceome/L
 
 | Tissue | UBERON ID | Mean log1p(CP10K) | % expressing | n_expressing / n_total |
 |---|---|---|---|---|
-| pleura | UBERON:0000977 | 2.438 | 2.17% | 428 / 19,695 |
-| saliva | UBERON:0001836 | 2.260 | 45.16% | 6,549 / 14,502 |
-| esophagus | UBERON:0001043 | 2.216 | 14.86% | 3,506 / 23,590 |
-| chest | UBERON:0001443 | 2.200 | 11.32% | 1,745 / 15,413 |
-| embryo | UBERON:0000922 | 2.200 | 86.18% | 12,276 / 14,244 |
+| saliva | UBERON:0001836 | 2.306 | 55.93% | 4,079 / 7,293 |
+| adipose tissue | UBERON:0001013 | 2.249 | 100.00% | 19,161 / 6,028 |
+| neck | UBERON:0000974 | 2.195 | 5.28% | 601 / 11,378 |
+| pancreas | UBERON:0001264 | 2.183 | 2.72% | 4,422 / 162,373 |
+| esophagus | UBERON:0001043 | 2.145 | 39.50% | 1,257 / 3,182 |
 
 <!-- /cellxgene -->

@@ -1059,13 +1059,13 @@ This Markdown is generated from the canonical JSON record at `/data/surfaceome/L
 
 ## CellxGene RNA enrichment (CZI Census)
 
-*Schema v2.1.5 · CZI Census 2025-11-08 · HPA-style 4× fold-change classification on log1p(CP10K) → linear means, plus Yanai et al. 2005 τ (specificity score ∈ [0, 1], computed over the eligible-entity set). Cell-class rollup walks the Cell Ontology graph (cl-basic.obo, OBO Foundry) — leaf CL → nearest compartment ancestor. CC-BY 4.0 (CZI Census).*
+*Schema v2.1.6 · CZI Census 2025-11-08 · τ-cutoff classification (Yanai 2005) on linear population mean (mean × pct, ≈ nTPM): τ≥0.85 enriched, 0.5–0.85 enhanced, <0.5 low specificity, no eligibles not detected. Cell ontology graph (cl-basic.obo) walked to ~150 cell-family terms; UBERON ontology walked to ~150 organ-level tissues. Cutoffs follow HPA's tissue-specificity nTPM convention. CC-BY 4.0 (CZI Census).*
 
 **Classification:**
 
 - **Cell class (CL ontology graph, ~10 compartments):** enriched · Epithelial · 5.8× · τ=0.92
 - **Cell type (leaf Cell Ontology terms, ~600):** enriched · kidney proximal convoluted tubule epithelial cell · epithelial cell of proximal tubule segment 3 · 1.1× · τ=0.96
-- **Tissue (UBERON terms, ~56):** enriched · eye · 5.2× · τ=0.98
+- **Tissue (UBERON terms, ~56):** enriched · eye · 3.7× · τ=0.97
 
 **Top 5 cell types (leaf CL, pooled across tissues):**
 
@@ -1081,10 +1081,10 @@ This Markdown is generated from the canonical JSON record at `/data/surfaceome/L
 
 | Tissue | UBERON ID | Mean log1p(CP10K) | % expressing | n_expressing / n_total |
 |---|---|---|---|---|
-| kidney | UBERON:0002113 | 2.585 | 23.17% | 218,605 / 943,536 |
-| lamina propria | UBERON:0000030 | 2.342 | 0.00% | 1 / 23,687 | (trace)
-| pleura | UBERON:0000977 | 2.279 | 1.51% | 297 / 19,695 |
-| testis | UBERON:0000473 | 2.248 | 0.39% | 80 / 20,724 | (trace)
-| embryo | UBERON:0000922 | 2.226 | 65.23% | 9,291 / 14,244 |
+| kidney | UBERON:0002113 | 2.643 | 69.62% | 165,733 / 238,056 |
+| lamina propria | UBERON:0000030 | 2.342 | 0.04% | 1 / 2,593 | (trace)
+| mucosa | UBERON:0000344 | 2.255 | 0.26% | 3 / 1,169 | (trace)
+| esophagus | UBERON:0001043 | 2.199 | 0.63% | 20 / 3,182 | (trace)
+| testis | UBERON:0000473 | 2.193 | 0.51% | 53 / 10,344 | (trace)
 
 <!-- /cellxgene -->

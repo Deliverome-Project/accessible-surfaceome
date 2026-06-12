@@ -2256,7 +2256,7 @@
   "model_path": "claude-sonnet-4-6",
   "record_generated_at": "2026-05-31T15:31:28.680125Z",
   "cellxgene": {
-    "schema_version": "2.1.5",
+    "schema_version": "2.1.6",
     "census_version": "2025-11-08",
     "cell_class_enrichment": {
       "class": "enhanced",
@@ -2289,7 +2289,7 @@
       ],
       "fold_change": 1.074,
       "fold_change_infinite": false,
-      "tau": 0.8984286556712099
+      "tau": 0.9022054225536598
     },
     "cell_type_enrichment": {
       "class": "enriched",
@@ -2305,57 +2305,46 @@
     "tissue_enrichment": {
       "class": "enriched",
       "uberon_ids": [
-        "UBERON:0001723",
-        "UBERON:0002049",
+        "UBERON:0000995",
         "UBERON:0000970"
       ],
       "tissue_labels": [
-        "tongue",
-        "vasculature",
+        "uterus",
         "eye"
       ],
-      "fold_change": 1.707,
+      "fold_change": 1.326,
       "fold_change_infinite": false,
-      "tau": 0.9505947140012176
+      "tau": 0.9443256269648344
     },
     "tissue_category_enrichment": {
       "class": "enriched",
       "category_ids": [
-        "head_sensory",
-        "cardiovascular"
+        "head_sensory"
       ],
       "category_labels": [
-        "head_sensory",
-        "cardiovascular"
+        "head_sensory"
       ],
       "top_tissues": [
-        "tongue",
-        "vasculature"
+        "tongue"
       ],
-      "fold_change": 1.707,
+      "fold_change": 3.53,
       "fold_change_infinite": false,
-      "tau": 0.8886572841648012
+      "tau": 0.9675958865104785
     },
     "tissue_organ_enrichment": {
       "class": "enriched",
       "organ_ids": [
-        "UBERON:0001723",
-        "UBERON:0002049",
-        "UBERON:0000970"
+        "UBERON:0002049"
       ],
       "organ_labels": [
-        "tongue",
-        "vasculature",
-        "eye"
+        "vasculature"
       ],
       "top_uberon_labels": [
-        "tongue",
-        "vasculature",
-        "eye"
+        "vasculature"
       ],
-      "fold_change": 1.707,
+      "fold_change": 7.002,
       "fold_change_infinite": false,
-      "tau": 0.9486074225290726
+      "tau": 0.9884051327709228
     },
     "enrichment_class": "enhanced",
     "enrichment_cl_ids": [
@@ -2631,93 +2620,93 @@
     ],
     "top_tissues": [
       {
-        "tissue": "pleura",
-        "uberon_id": "UBERON:0000977",
-        "mean_log1p_cp10k": 2.4377,
-        "n_expressing": 428,
-        "n_total": 19695,
-        "pct_expressing": 0.0217,
-        "is_trace": false
-      },
-      {
         "tissue": "saliva",
         "uberon_id": "UBERON:0001836",
-        "mean_log1p_cp10k": 2.2601,
-        "n_expressing": 6549,
-        "n_total": 14502,
-        "pct_expressing": 0.4516,
-        "is_trace": false
-      },
-      {
-        "tissue": "esophagus",
-        "uberon_id": "UBERON:0001043",
-        "mean_log1p_cp10k": 2.2162,
-        "n_expressing": 3506,
-        "n_total": 23590,
-        "pct_expressing": 0.1486,
-        "is_trace": false
-      },
-      {
-        "tissue": "chest",
-        "uberon_id": "UBERON:0001443",
-        "mean_log1p_cp10k": 2.2004,
-        "n_expressing": 1745,
-        "n_total": 15413,
-        "pct_expressing": 0.1132,
-        "is_trace": false
-      },
-      {
-        "tissue": "embryo",
-        "uberon_id": "UBERON:0000922",
-        "mean_log1p_cp10k": 2.1996,
-        "n_expressing": 12276,
-        "n_total": 14244,
-        "pct_expressing": 0.8618,
-        "is_trace": false
-      },
-      {
-        "tissue": "skin of body",
-        "uberon_id": "UBERON:0002097",
-        "mean_log1p_cp10k": 2.166,
-        "n_expressing": 28674,
-        "n_total": 245931,
-        "pct_expressing": 0.1166,
-        "is_trace": false
-      },
-      {
-        "tissue": "spinal cord",
-        "uberon_id": "UBERON:0002240",
-        "mean_log1p_cp10k": 2.1612,
-        "n_expressing": 2575,
-        "n_total": 30106,
-        "pct_expressing": 0.0855,
+        "mean_log1p_cp10k": 2.3062,
+        "n_expressing": 4079,
+        "n_total": 7293,
+        "pct_expressing": 0.5593,
         "is_trace": false
       },
       {
         "tissue": "adipose tissue",
         "uberon_id": "UBERON:0001013",
-        "mean_log1p_cp10k": 2.1558,
-        "n_expressing": 64001,
-        "n_total": 31950,
+        "mean_log1p_cp10k": 2.2493,
+        "n_expressing": 19161,
+        "n_total": 6028,
         "pct_expressing": 1.0,
+        "is_trace": false
+      },
+      {
+        "tissue": "neck",
+        "uberon_id": "UBERON:0000974",
+        "mean_log1p_cp10k": 2.195,
+        "n_expressing": 601,
+        "n_total": 11378,
+        "pct_expressing": 0.0528,
         "is_trace": false
       },
       {
         "tissue": "pancreas",
         "uberon_id": "UBERON:0001264",
-        "mean_log1p_cp10k": 2.1264,
-        "n_expressing": 7976,
-        "n_total": 246237,
-        "pct_expressing": 0.0324,
+        "mean_log1p_cp10k": 2.183,
+        "n_expressing": 4422,
+        "n_total": 162373,
+        "pct_expressing": 0.0272,
         "is_trace": false
       },
       {
-        "tissue": "axilla",
-        "uberon_id": "UBERON:0009472",
-        "mean_log1p_cp10k": 2.1164,
-        "n_expressing": 13221,
-        "n_total": 94151,
-        "pct_expressing": 0.1404,
+        "tissue": "esophagus",
+        "uberon_id": "UBERON:0001043",
+        "mean_log1p_cp10k": 2.145,
+        "n_expressing": 1257,
+        "n_total": 3182,
+        "pct_expressing": 0.395,
+        "is_trace": false
+      },
+      {
+        "tissue": "skin of body",
+        "uberon_id": "UBERON:0002097",
+        "mean_log1p_cp10k": 2.0445,
+        "n_expressing": 3808,
+        "n_total": 26932,
+        "pct_expressing": 0.1414,
+        "is_trace": false
+      },
+      {
+        "tissue": "placenta",
+        "uberon_id": "UBERON:0001987",
+        "mean_log1p_cp10k": 2.0255,
+        "n_expressing": 62762,
+        "n_total": 215057,
+        "pct_expressing": 0.2918,
+        "is_trace": false
+      },
+      {
+        "tissue": "lymph node",
+        "uberon_id": "UBERON:0000029",
+        "mean_log1p_cp10k": 2.0253,
+        "n_expressing": 94253,
+        "n_total": 210360,
+        "pct_expressing": 0.4481,
+        "is_trace": false
+      },
+      {
+        "tissue": "embryo",
+        "uberon_id": "UBERON:0000922",
+        "mean_log1p_cp10k": 2.0087,
+        "n_expressing": 4933,
+        "n_total": 14142,
+        "pct_expressing": 0.3488,
+        "is_trace": false
+      },
+      {
+        "tissue": "kidney",
+        "uberon_id": "UBERON:0002113",
+        "mean_log1p_cp10k": 2.0033,
+        "n_expressing": 20585,
+        "n_total": 238056,
+        "pct_expressing": 0.0865,
         "is_trace": false
       }
     ]
