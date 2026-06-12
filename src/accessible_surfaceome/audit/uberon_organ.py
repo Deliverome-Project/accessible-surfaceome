@@ -49,12 +49,19 @@ def _parse_obo(obo_path_str: str) -> dict[str, dict]:
         return {}
     terms: dict[str, dict] = {}
     current: dict | None = None
+
+    def _flush(rec: dict | None) -> None:
+        if not rec:
+            return
+        cid = rec.get("id")
+        if isinstance(cid, str) and cid:
+            terms[cid] = rec
+
     with path.open() as f:
         for raw in f:
             line = raw.rstrip()
             if line == "[Term]":
-                if current and current.get("id"):
-                    terms[current["id"]] = current
+                _flush(current)
                 current = {"id": None, "name": None, "is_a": [], "part_of": []}
             elif line.startswith("id: UBERON:"):
                 if current is not None:
@@ -70,11 +77,9 @@ def _parse_obo(obo_path_str: str) -> dict[str, dict]:
                 if m:
                     current["part_of"].append(m.group(1))
             elif line == "":
-                if current and current.get("id"):
-                    terms[current["id"]] = current
+                _flush(current)
                 current = None
-    if current and current.get("id"):
-        terms[current["id"]] = current
+    _flush(current)
     return terms
 
 
