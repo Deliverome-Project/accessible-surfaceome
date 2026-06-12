@@ -86,14 +86,27 @@ Yılmaz 2022 (the τ ≥ 0.85 idiom):
 | no eligibles | **not_detected** |
 | 1 eligible AND max ≥ 1.0 | **enriched** (definitionally) |
 
-The **magnitude gate** (`MIN_TOP_POP_MEAN = 1.0`, ≈ HPA's
-nTPM ≥ 1 detection floor) is applied before the τ test. Without it
-the τ cutoff fires for genes whose top eligible sits at sub-noise
-magnitudes (GPR75 cell_family top entity = 0.09; PVRIG tissue_organ
-top entity = 0.19) — "enriched · X" reads as a positive call when X is
-barely expressed at all. HPA, Tabula Sapiens, and Karbalaei 2024 all
-gate tissue-specificity claims on a magnitude floor for the same
-reason.
+The **magnitude gate** `MIN_TOP_POP_MEAN = 1.0` is applied before
+the τ test. Without it the τ cutoff fires for genes whose top
+eligible sits at sub-noise magnitudes (GPR75 cell_family top entity =
+0.09; PVRIG tissue_organ top entity = 0.19) — "enriched · X" reads as
+a positive call when X is barely expressed at all.
+
+**Calibration note: NOT a direct port of HPA's bulk nTPM ≥ 1.** Our
+`pop_mean` is CP10K-derived (`expm1(mean_log1p_cp10k) × pct_expressing`);
+HPA's nTPM is bulk-tissue per-million normalization. The two scales
+differ by roughly ×100 — a `pop_mean` of 1.0 is closer to ~100 nTPM
+in pseudo-bulk equivalent than to 1 nTPM. The 1.0 threshold was
+calibrated empirically against the 14-gene deep-dive cohort: it
+sits cleanly between the highest demoted false positive
+(ABCB9 cell_family = 0.87) and the lowest kept canonical
+(BAX M cell of gut = 2.3). Single-cell noise per cell is much
+higher than bulk RNA-seq, so a stricter floor than the
+bulk-equivalent is required to avoid noise concentrating into
+spurious τ peaks. The threshold is tunable in
+`scripts/build_czi_enrichment_v2_1.py`; HPA, Tabula Sapiens, and
+Karbalaei 2024 all gate tissue-specificity claims on some
+analogous magnitude floor.
 
 Companion: `fold_change` = top-vs-next-ranked ratio (informational; not
 class-determining under τ cutoffs).

@@ -37,7 +37,7 @@ const ENRICHMENT_BLURB: Record<EnrichmentClass, string> = {
   low_specificity:
     "τ < 0.5 — broadly expressed; no entity dominates the others.",
   not_detected:
-    "Either no entity meets the CZI Census noise threshold (≥ 10 expressing cells AND ≥ 1% of cells of that type), OR the top entity's linear pop mean is below the magnitude floor (≈ HPA's nTPM ≥ 1 detection threshold). Distinct from low specificity — the gene isn't strongly expressed anywhere worth flagging, even if τ alone would have fired enriched on a low-magnitude signal.",
+    "Either no entity meets the CZI Census noise threshold (≥ 10 expressing cells AND ≥ 1% of cells of that type), OR the top entity's linear pop mean (CP10K × pct ≈ pseudo-bulk) is below 1.0 — a magnitude floor calibrated to the deep-dive cohort, not a direct port of HPA's bulk nTPM ≥ 1. Distinct from low specificity — the gene isn't strongly expressed anywhere worth flagging, even if τ alone would have fired enriched on a low-magnitude signal.",
   // Legacy aliases collapse to their τ-cutoff equivalents.
   tissue_enriched:
     "τ ≥ 0.85 — concentrated in one or a few entities relative to the others where the gene is expressed.",

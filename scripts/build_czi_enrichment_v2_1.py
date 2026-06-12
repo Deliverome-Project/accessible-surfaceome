@@ -98,13 +98,29 @@ MIN_NNZ_FOR_CLASS = 10
 MIN_PCT_FOR_CLASS = 0.01
 
 # v2.1.10+ magnitude gate: even when eligibles exist, refuse to call
-# enriched/enhanced if the top entity's linear pop mean (≈ nTPM) is
-# below this floor. τ alone is a concentration shape metric and can
-# fire 0.85+ for genes whose top entity is at sub-noise magnitudes
-# (GPR75 at 0.1, PVRIG at 0.3) — making "enriched · X" misleading
-# when X is barely expressed. HPA uses nTPM ≥ 1 as its detection
-# floor for tissue-specificity claims; we adopt the same threshold.
+# enriched/enhanced if the top entity's linear pop mean is below this
+# floor. τ alone is a concentration shape metric and fires 0.85+ for
+# genes whose top entity is at sub-noise magnitudes (GPR75 top = 0.09,
+# PVRIG = 0.29) — "enriched · X" misleads when X is barely expressed.
+#
+# **Calibration note: this is CP10K-derived, NOT HPA's nTPM ≥ 1.**
+# Our pop_mean = expm1(mean_log1p_cp10k) × pct_expressing. CP10K is
+# single-cell per-10K normalization (CZI WMG convention); HPA's nTPM
+# is bulk-tissue per-million. The two scales differ by roughly ×100
+# (a pop_mean of 1.0 ≈ 100 nTPM in pseudo-bulk equivalent).
+#
+# 1.0 was chosen empirically from the 14-gene deep-dive cohort: the
+# magnitude gap between the highest demoted false positive
+# (ABCB9 cell_family = 0.87) and the lowest kept canonical
+# (BAX M cell of gut = 2.3) sits cleanly across this threshold.
+# Single-cell noise per cell is much higher than bulk, so a stricter
+# floor than the bulk-equivalent ~0.01 is required to avoid noise
+# concentrating into spurious τ peaks.
+#
 # Below this, the classifier returns `not_detected` regardless of τ.
+# Treat the value as tunable: a stricter 2.0 would demote BAX too;
+# a more permissive 0.5 would re-admit SRC's tissue_organ false
+# positive.
 MIN_TOP_POP_MEAN = 1.0
 
 # Broad-class axis uses a STRICTER per-leaf qualifier than the
@@ -325,12 +341,14 @@ def classify_hpa(
     Single-eligible edge case is enriched by definition. Zero
     eligibles → not_detected.
 
-    **v2.1.10+ magnitude gate.** ``MIN_TOP_POP_MEAN`` ≈ HPA's
-    nTPM ≥ 1 detection floor. A gene whose top eligible has
-    pop_mean below this floor falls to ``not_detected`` regardless
-    of τ — "enriched at concentration zero" is misleading. Fixes
-    ABCB9 / GPR75 / PVRIG false-positive `enriched` calls where the
-    top entity sits at sub-noise magnitudes.
+    **v2.1.10+ magnitude gate.** ``MIN_TOP_POP_MEAN`` is a CP10K-
+    derived floor calibrated to the 14-gene deep-dive cohort (NOT
+    a direct port of HPA's bulk nTPM ≥ 1; the scales differ by
+    ~100×). A gene whose top eligible has pop_mean below this floor
+    falls to ``not_detected`` regardless of τ — "enriched at
+    concentration zero" is misleading. Fixes ABCB9 / GPR75 / PVRIG
+    false-positive `enriched` calls where the top entity sits at
+    sub-noise magnitudes.
 
     **τ universe = full measured set + noise floor.** Yanai 2005 and
     Kryuchkova-Mostacci 2017 always floor low intensities rather
