@@ -763,8 +763,12 @@ export function CatalogTable({
       if (cxgCellFamilyTop) {
         const cf = r.cellxgene_cell_family;
         const top = cf?.top ?? "";
-        // Pipe-separated top entities; row passes if any matches.
-        if (!top.split("|").map((s) => s.trim()).includes(cxgCellFamilyTop)) {
+        // Pipe-separated top entities; row passes if any of them
+        // contains the search query (case-insensitive substring) so
+        // partial typing in the search input still matches.
+        const q = cxgCellFamilyTop.toLowerCase();
+        const entities = top.split("|").map((s) => s.trim().toLowerCase());
+        if (!entities.some((e) => e.includes(q))) {
           return false;
         }
       }
@@ -775,7 +779,9 @@ export function CatalogTable({
       if (cxgTissueOrganTop) {
         const to = r.cellxgene_tissue_organ;
         const top = to?.top ?? "";
-        if (!top.split("|").map((s) => s.trim()).includes(cxgTissueOrganTop)) {
+        const q = cxgTissueOrganTop.toLowerCase();
+        const entities = top.split("|").map((s) => s.trim().toLowerCase());
+        if (!entities.some((e) => e.includes(q))) {
           return false;
         }
       }
@@ -1447,24 +1453,64 @@ export function CatalogTable({
                                   </button>
                                 );
                               })}
-                              <select
-                                aria-label={`${ariaLabel} top entity`}
-                                value={topValue}
-                                onChange={(e) => setTopValue(e.target.value)}
-                                style={{
-                                  marginLeft: "8px",
-                                  fontFamily: "var(--font-sans)",
-                                  fontSize: "0.78rem",
-                                  padding: "4px 6px",
-                                }}
-                              >
-                                <option value="">any entity</option>
-                                {options.map((o) => (
-                                  <option key={o} value={o}>
-                                    {o}
-                                  </option>
-                                ))}
-                              </select>
+                              {(() => {
+                                const datalistId = `cxg-options-${ariaLabel.replace(/\s+/g, "-")}`;
+                                return (
+                                  <span
+                                    style={{
+                                      marginLeft: "8px",
+                                      display: "inline-flex",
+                                      alignItems: "center",
+                                      gap: "4px",
+                                    }}
+                                  >
+                                    <input
+                                      type="text"
+                                      list={datalistId}
+                                      aria-label={`${ariaLabel} top entity — search ${options.length} options`}
+                                      value={topValue}
+                                      placeholder={
+                                        options.length
+                                          ? `search ${options.length} entities…`
+                                          : "any entity"
+                                      }
+                                      onChange={(e) =>
+                                        setTopValue(e.target.value)
+                                      }
+                                      style={{
+                                        fontFamily: "var(--font-sans)",
+                                        fontSize: "0.78rem",
+                                        padding: "4px 6px",
+                                        minWidth: "180px",
+                                      }}
+                                    />
+                                    {topValue && (
+                                      <button
+                                        type="button"
+                                        onClick={() => setTopValue("")}
+                                        aria-label={`Clear ${ariaLabel} entity filter`}
+                                        title="Clear"
+                                        style={{
+                                          fontFamily: "var(--font-sans)",
+                                          fontSize: "0.78rem",
+                                          padding: "2px 6px",
+                                          background: "transparent",
+                                          border: "1px solid var(--border-color, #ccc)",
+                                          borderRadius: "3px",
+                                          cursor: "pointer",
+                                        }}
+                                      >
+                                        ×
+                                      </button>
+                                    )}
+                                    <datalist id={datalistId}>
+                                      {options.map((o) => (
+                                        <option key={o} value={o} />
+                                      ))}
+                                    </datalist>
+                                  </span>
+                                );
+                              })()}
                             </div>
                             <span className={styles.filterHint}>
                               τ-cutoff classification on CZI Census linear
