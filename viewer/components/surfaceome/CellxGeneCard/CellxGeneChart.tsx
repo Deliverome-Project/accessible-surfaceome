@@ -897,6 +897,23 @@ function CellTypeChart({
           </ul>
         </div>
       )}
+      {/* Cell-type chart legend — derives the set of organ-system
+          categories present from each cell type's DOMINANT tissue
+          (tissues[0].uberon_id). Adapts to the current view: in the
+          unfiltered Top-20 mode it'll typically show 4-8 categories;
+          in a tissue-filtered view it usually collapses to 1-2
+          because all the rows are in the selected tissue. The legend
+          auto-hides when only 1 category is present (per
+          TissueCategoryLegend's `present.size < 2` check). */}
+      {sorted.length > 0 && (
+        <TissueCategoryLegend
+          rows={sorted
+            .map((r) => ({
+              uberon_id: r.base?.tissues?.[0]?.uberon_id ?? "",
+            }))
+            .filter((r) => r.uberon_id)}
+        />
+      )}
     </section>
   );
 }
