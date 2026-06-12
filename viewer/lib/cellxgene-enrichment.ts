@@ -148,6 +148,29 @@ export interface TissueEnrichment {
   tau?: number | null;
 }
 
+/**
+ * v2.1.3+ organ-system category rollup of the 410 fine-grained UBERON
+ * terms via the programmatic ontology walk (see
+ * viewer/lib/tissue-categories-uberon-map.generated.ts and
+ * scripts/build_tissue_category_mapping.py). 14 categories (CNS,
+ * Head & sensory, Respiratory, ...). Per-category signal is the
+ * max-UBERON pop mean within the category (same approach as
+ * CellClassEnrichment for cells). GPR75 → CNS via brain;
+ * KLK2 → Reproductive via prostate gland.
+ */
+export interface TissueCategoryEnrichment {
+  class: EnrichmentClass;
+  category_ids: string[];
+  category_labels: string[];
+  /** The UBERON tissue each category's signal rests on (the
+   *  max-pop-mean UBERON within that category). Parallel to
+   *  category_ids. */
+  top_tissues?: string[];
+  fold_change: number | null;
+  fold_change_infinite?: boolean;
+  tau?: number | null;
+}
+
 export interface TissueAggregateRow {
   tissue: string;
   uberon_id: string;
@@ -178,6 +201,10 @@ export interface CellxGeneEnrichment {
   cell_type_enrichment?: CellTypeEnrichment;
   /** Per-tissue HPA elevation class. v2.1+. */
   tissue_enrichment?: TissueEnrichment;
+  /** Per-tissue-category HPA elevation. v2.1.3+. Same role for the
+   *  tissue axis that cell_class_enrichment plays for cells — 14
+   *  organ-system rollup vs the fine-grained UBERON axis. */
+  tissue_category_enrichment?: TissueCategoryEnrichment;
 
   /** Legacy back-compat fields. In v2.0 these were the only classification
    *  surface; v2.1 keeps them populated mirroring cell_type_enrichment.* so

@@ -5886,7 +5886,7 @@
   "model_path": "claude-sonnet-4-6",
   "record_generated_at": "2026-06-08T20:49:59.438647Z",
   "cellxgene": {
-    "schema_version": "2.1.2",
+    "schema_version": "2.1.3",
     "census_version": "2025-11-08",
     "cell_class_enrichment": {
       "class": "low_specificity",
@@ -5916,6 +5916,21 @@
       "fold_change": 30.606,
       "fold_change_infinite": false,
       "tau": 0.9673268743582459
+    },
+    "tissue_category_enrichment": {
+      "class": "enhanced",
+      "category_ids": [
+        "cardiovascular"
+      ],
+      "category_labels": [
+        "cardiovascular"
+      ],
+      "top_tissues": [
+        "vasculature"
+      ],
+      "fold_change": 10.382,
+      "fold_change_infinite": false,
+      "tau": 0.9036801082839195
     },
     "enrichment_class": "low_specificity",
     "enrichment_cl_ids": [],

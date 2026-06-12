@@ -62,6 +62,11 @@ from accessible_surfaceome.audit.cl_graph import (
     BROAD_CLASSES,
     cl_compartment,
 )
+from accessible_surfaceome.audit.uberon_categories import (
+    TISSUE_CATEGORIES,
+    all_categories_and_uberons,
+    uberon_category,
+)
 
 WMG = Path(os.environ.get(
     "CZI_WMG_GZ",
@@ -77,7 +82,7 @@ ENS_MAP = Path(
 OUT_DIR = Path(os.environ.get("CZI_OUT_DIR", "/tmp/czi_enrichment_v2_1"))
 MANIFEST = OUT_DIR.parent / (OUT_DIR.name + "_manifest.tsv")
 CENSUS_VERSION = "2025-11-08"
-SCHEMA_VERSION = "2.1.2"
+SCHEMA_VERSION = "2.1.3"
 
 # Classifier eligibility (lenient — captures whatever has signal).
 MIN_N_TOTAL_FOR_CLASS = 50
@@ -507,6 +512,53 @@ def build_record(
     ub_class, ub_ids, ub_fold = classify_hpa(ub_pop_linear, ub_total_counts)
     ub_tau = compute_tau(ub_pop_linear, ub_total_counts)
 
+    # ---- Tissue-CATEGORY axis (14 organ-system rollup) ----
+    # HPA's 4× rule was designed for ~40 broad tissues. CZI emits 410
+    # fine-grained UBERONs (96 brain subregions alone — Brodmann areas,
+    # cortical layers, etc.). Aggregating to 14 organ-system categories
+    # collapses GPR75's brain signal scattered across many subregions
+    # back into a single CNS bucket, matches HPA's original ~40-tissue
+    # design, and lets τ run on a sensibly-sized axis. UBERON →
+    # category map is the programmatic ontology-walk output at
+    # viewer/lib/tissue-categories-uberon-map.generated.ts
+    # (build script: scripts/build_tissue_category_mapping.py).
+    #
+    # **Signal = max UBERON pop mean within category, NOT sum.** Two
+    # failure modes ruled out:
+    #   - Sum-across-category dilutes: aggregate nnz across the
+    #     category's UBERONs vs aggregate n_total (which grows much
+    #     faster — CNS sums to 25M cells across 96 subregions).
+    #     GPR75's 20k brain cells over 25M denominator → 0.08% pct,
+    #     fails the noise gate. False-negative.
+    #   - Sum-of-pop-means double-counts: each UBERON's pop_mean is
+    #     already a per-cell-of-tissue average; summing isn't a
+    #     meaningful aggregate.
+    # Max-UBERON-per-category matches the broad-CL approach: each
+    # category competes via its strongest tissue. GPR75's CNS =
+    # brain's pop mean (0.13). Cleanly above the noise gate.
+    cat_to_ubs = all_categories_and_uberons()
+    cat_pop_linear: dict[str, float] = {}    # category -> max linear pop mean
+    cat_n_total_universe: dict[str, int] = {}  # category -> sum of UBERON n_totals
+    cat_top_ub: dict[str, str] = {}          # category -> UBERON ID of the winning leaf
+    for cat in TISSUE_CATEGORIES:
+        cat_n_total_universe[cat] = sum(
+            ub_total_counts.get(u, 0) for u in cat_to_ubs.get(cat, [])
+        )
+    for ub, pop in ub_pop_linear.items():
+        cat = uberon_category(ub)
+        if pop > cat_pop_linear.get(cat, -math.inf):
+            cat_pop_linear[cat] = pop
+            cat_top_ub[cat] = ub
+
+    cat_class, cat_ids, cat_fold = classify_hpa(cat_pop_linear, cat_n_total_universe)
+    cat_tau = compute_tau(cat_pop_linear, cat_n_total_universe)
+    # Resolve category IDs to the underlying winning tissue label —
+    # e.g. CNS → brain — so the chip shows the tissue the category
+    # signal rests on.
+    cat_top_tissues = [
+        uberon_labels.get(cat_top_ub.get(c, ""), "") for c in cat_ids
+    ]
+
     # ---- Build display lists ----
     # v2.0 displayed entries solely by mean rank, which let
     # pct=0.01% noise rows (n=1 of 17,571) dominate low-expression
@@ -639,6 +691,7 @@ def build_record(
     cl_fold_val, cl_fold_inf = fold_change_payload(cl_fold)
     ub_fold_val, ub_fold_inf = fold_change_payload(ub_fold)
     class_fold_val, class_fold_inf = fold_change_payload(class_fold)
+    cat_fold_val, cat_fold_inf = fold_change_payload(cat_fold)
     record = {
         "schema_version": SCHEMA_VERSION,
         "census_version": CENSUS_VERSION,
@@ -675,6 +728,26 @@ def build_record(
             "fold_change": ub_fold_val,
             "fold_change_infinite": ub_fold_inf,
             "tau": ub_tau,
+        },
+        # v2.1.3+ organ-system category axis. Aggregates the 410
+        # fine-grained UBERONs into 14 organ systems via the
+        # ontology-derived map (viewer/lib/tissue-categories-uberon-
+        # map.generated.ts). Solves the brain-fragmentation problem —
+        # GPR75 signal across 96 brain subregions collapses into a
+        # single CNS bucket, where it can compete with eye/embryo on
+        # the 4× test.
+        "tissue_category_enrichment": {
+            "class": cat_class,
+            "category_ids": cat_ids,
+            "category_labels": list(cat_ids),
+            # The UBERON tissue each category's signal rests on (the
+            # max-pop-mean UBERON within the category). GPR75 CNS →
+            # "brain", KLK2 reproductive → "prostate gland", LRP2
+            # urinary → "kidney".
+            "top_tissues": cat_top_tissues,
+            "fold_change": cat_fold_val,
+            "fold_change_infinite": cat_fold_inf,
+            "tau": cat_tau,
         },
         # v2.0 legacy mirror so older readers don't break during the
         # transition. Points at the broad-class rollup (v2.1.1's

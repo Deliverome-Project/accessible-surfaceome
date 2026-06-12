@@ -3031,7 +3031,7 @@
   "model_path": "claude-sonnet-4-6",
   "record_generated_at": "2026-06-08T21:22:09.672189Z",
   "cellxgene": {
-    "schema_version": "2.1.2",
+    "schema_version": "2.1.3",
     "census_version": "2025-11-08",
     "cell_class_enrichment": {
       "class": "group_enriched",
@@ -3067,6 +3067,21 @@
       "fold_change": 22.711,
       "fold_change_infinite": false,
       "tau": 0.9559685826999672
+    },
+    "tissue_category_enrichment": {
+      "class": "enhanced",
+      "category_ids": [
+        "head_sensory"
+      ],
+      "category_labels": [
+        "head_sensory"
+      ],
+      "top_tissues": [
+        "eye"
+      ],
+      "fold_change": 13.061,
+      "fold_change_infinite": false,
+      "tau": 0.9234389145802793
     },
     "enrichment_class": "group_enriched",
     "enrichment_cl_ids": [

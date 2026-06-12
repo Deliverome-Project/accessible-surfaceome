@@ -65,7 +65,7 @@ function EnrichmentChip({
   entityNames,
   tau,
 }: {
-  axis: "cell class" | "cell type" | "tissue";
+  axis: "cell class" | "cell type" | "tissue" | "tissue category";
   klass: EnrichmentClass;
   foldChange: number | null;
   entityNames: string[];
@@ -188,7 +188,17 @@ export function CellxGeneCard({ data }: Props) {
     : null;
   const cellAxisLabel: "cell class" | "cell type" =
     data.cell_class_enrichment ? "cell class" : "cell type";
+  // v2.1.3 prefers the tissue-CATEGORY rollup (14 organ systems via
+  // UBERON ontology walk) over the fine-grained 410-UBERON axis. The
+  // category chip reads "Group enriched · CNS · Developmental ·
+  // Head & sensory (via brain, embryo, eye)" — cleaner anatomical
+  // grouping than the raw UBERON axis where brain gets fragmented
+  // across 96 subregions. Falls through to tissue_enrichment for
+  // older records.
+  const tissueCatEnr = data.tissue_category_enrichment ?? null;
   const tissueEnr = data.tissue_enrichment ?? null;
+  const tissueAxisLabel: "tissue category" | "tissue" =
+    tissueCatEnr ? "tissue category" : "tissue";
 
   const clToName = new Map(
     data.top_cell_types.map((r) => [r.cl_id, r.cell_type]),
@@ -272,7 +282,7 @@ export function CellxGeneCard({ data }: Props) {
         </>
       }
     >
-      {(cellEnr || tissueEnr) && (
+      {(cellEnr || tissueCatEnr || tissueEnr) && (
         <div className={styles.chipRow}>
           {cellEnr && (
             <EnrichmentChip
@@ -285,14 +295,24 @@ export function CellxGeneCard({ data }: Props) {
               tau={cellEnr.tau}
             />
           )}
-          {tissueEnr && (
+          {tissueCatEnr ? (
             <EnrichmentChip
-              axis="tissue"
-              klass={tissueEnr.class}
-              foldChange={tissueEnr.fold_change}
-              entityNames={tissueEnr.tissue_labels.slice(0, 3)}
-              tau={tissueEnr.tau}
+              axis={tissueAxisLabel}
+              klass={tissueCatEnr.class}
+              foldChange={tissueCatEnr.fold_change}
+              entityNames={(tissueCatEnr.category_labels ?? []).slice(0, 3)}
+              tau={tissueCatEnr.tau}
             />
+          ) : (
+            tissueEnr && (
+              <EnrichmentChip
+                axis="tissue"
+                klass={tissueEnr.class}
+                foldChange={tissueEnr.fold_change}
+                entityNames={tissueEnr.tissue_labels.slice(0, 3)}
+                tau={tissueEnr.tau}
+              />
+            )
           )}
         </div>
       )}

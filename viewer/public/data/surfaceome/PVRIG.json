@@ -5601,7 +5601,7 @@
   "model_path": "claude-sonnet-4-6",
   "record_generated_at": "2026-06-08T20:48:27.517803Z",
   "cellxgene": {
-    "schema_version": "2.1.2",
+    "schema_version": "2.1.3",
     "census_version": "2025-11-08",
     "cell_class_enrichment": {
       "class": "enriched",
@@ -5633,6 +5633,21 @@
       "fold_change": 4.086,
       "fold_change_infinite": false,
       "tau": 0.9355212044720521
+    },
+    "tissue_category_enrichment": {
+      "class": "enriched",
+      "category_ids": [
+        "developmental"
+      ],
+      "category_labels": [
+        "developmental"
+      ],
+      "top_tissues": [
+        "embryo"
+      ],
+      "fold_change": 4.086,
+      "fold_change_infinite": false,
+      "tau": 0.9271026020463078
     },
     "enrichment_class": "enriched",
     "enrichment_cl_ids": [
