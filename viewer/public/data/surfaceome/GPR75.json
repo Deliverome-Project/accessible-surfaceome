@@ -5011,7 +5011,7 @@
   "model_path": "claude-sonnet-4-6",
   "record_generated_at": "2026-06-07T02:42:21.474347Z",
   "cellxgene": {
-    "schema_version": "2.1.9",
+    "schema_version": "2.1.10",
     "census_version": "2025-11-08",
     "cell_class_enrichment": {
       "class": "not_detected",
@@ -5023,112 +5023,51 @@
       "top_entity_contribs": []
     },
     "cell_family_enrichment": {
-      "class": "enriched",
-      "family_ids": [
-        "CL:1000909"
-      ],
-      "family_labels": [
-        "kidney loop of Henle epithelial cell"
-      ],
-      "top_cl_labels": [
-        "kidney loop of Henle ascending limb epithelial cell"
-      ],
+      "class": "not_detected",
+      "family_ids": [],
+      "family_labels": [],
+      "top_cl_labels": [],
       "fold_change": null,
-      "fold_change_infinite": true,
-      "tau": 0.9891136335320058,
-      "top_entity_contribs": [
-        {
-          "id": "CL:1000909",
-          "label": "kidney loop of Henle epithelial cell",
-          "pop_mean": 0.0919,
-          "tau_contrib": 0.0,
-          "sub_label": "kidney loop of Henle ascending limb epithelial cell"
-        }
-      ]
+      "fold_change_infinite": false,
+      "tau": 0.9891136335320059,
+      "top_entity_contribs": []
     },
     "cell_type_enrichment": {
-      "class": "enriched",
-      "cl_ids": [
-        "CL:1001016"
-      ],
+      "class": "not_detected",
+      "cl_ids": [],
       "fold_change": null,
-      "fold_change_infinite": true,
+      "fold_change_infinite": false,
       "tau": 0.9891136335320144,
-      "top_entity_contribs": [
-        {
-          "id": "CL:1001016",
-          "label": "kidney loop of Henle ascending limb epithelial cell",
-          "pop_mean": 0.0919,
-          "tau_contrib": 0.0
-        }
-      ]
+      "top_entity_contribs": []
     },
     "tissue_enrichment": {
-      "class": "enriched",
-      "uberon_ids": [
-        "UBERON:0000970"
-      ],
-      "tissue_labels": [
-        "eye"
-      ],
+      "class": "not_detected",
+      "uberon_ids": [],
+      "tissue_labels": [],
       "fold_change": null,
-      "fold_change_infinite": true,
+      "fold_change_infinite": false,
       "tau": 0.9936143662008744,
-      "top_entity_contribs": [
-        {
-          "id": "UBERON:0000970",
-          "label": "eye",
-          "pop_mean": 0.1566,
-          "tau_contrib": 0.0
-        }
-      ]
+      "top_entity_contribs": []
     },
     "tissue_category_enrichment": {
-      "class": "enriched",
-      "category_ids": [
-        "head_sensory"
-      ],
-      "category_labels": [
-        "head_sensory"
-      ],
-      "top_tissues": [
-        "eye"
-      ],
+      "class": "not_detected",
+      "category_ids": [],
+      "category_labels": [],
+      "top_tissues": [],
       "fold_change": null,
-      "fold_change_infinite": true,
+      "fold_change_infinite": false,
       "tau": 0.9936143662008786,
-      "top_entity_contribs": [
-        {
-          "id": "head_sensory",
-          "label": "head_sensory",
-          "pop_mean": 0.1566,
-          "tau_contrib": 0.0,
-          "sub_label": "eye"
-        }
-      ]
+      "top_entity_contribs": []
     },
     "tissue_organ_enrichment": {
-      "class": "enriched",
-      "organ_ids": [
-        "UBERON:0000970"
-      ],
-      "organ_labels": [
-        "eye"
-      ],
-      "top_uberon_labels": [
-        "eye"
-      ],
+      "class": "not_detected",
+      "organ_ids": [],
+      "organ_labels": [],
+      "top_uberon_labels": [],
       "fold_change": null,
-      "fold_change_infinite": true,
+      "fold_change_infinite": false,
       "tau": 0.9936143662008803,
-      "top_entity_contribs": [
-        {
-          "id": "UBERON:0000970",
-          "label": "eye",
-          "pop_mean": 0.1566,
-          "tau_contrib": 0.0
-        }
-      ]
+      "top_entity_contribs": []
     },
     "enrichment_class": "not_detected",
     "enrichment_cl_ids": [],

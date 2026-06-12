@@ -3031,67 +3031,34 @@
   "model_path": "claude-sonnet-4-6",
   "record_generated_at": "2026-06-08T21:22:09.672189Z",
   "cellxgene": {
-    "schema_version": "2.1.9",
+    "schema_version": "2.1.10",
     "census_version": "2025-11-08",
     "cell_class_enrichment": {
-      "class": "enriched",
-      "class_ids": [
-        "Immune"
-      ],
-      "class_labels": [
-        "Immune"
-      ],
-      "fold_change": 2.444,
+      "class": "not_detected",
+      "class_ids": [],
+      "class_labels": [],
+      "fold_change": null,
       "fold_change_infinite": false,
       "tau": 0.9535176386019819,
-      "top_entity_contribs": [
-        {
-          "id": "Immune",
-          "label": "Immune",
-          "pop_mean": 0.8705,
-          "tau_contrib": 0.0
-        }
-      ]
+      "top_entity_contribs": []
     },
     "cell_family_enrichment": {
-      "class": "enriched",
-      "family_ids": [
-        "CL:0000946"
-      ],
-      "family_labels": [
-        "antibody secreting cell"
-      ],
-      "top_cl_labels": [
-        "antibody secreting cell"
-      ],
-      "fold_change": 2.021,
+      "class": "not_detected",
+      "family_ids": [],
+      "family_labels": [],
+      "top_cl_labels": [],
+      "fold_change": null,
       "fold_change_infinite": false,
-      "tau": 0.9388042828544693,
-      "top_entity_contribs": [
-        {
-          "id": "CL:0000946",
-          "label": "antibody secreting cell",
-          "pop_mean": 0.8705,
-          "tau_contrib": 0.0
-        }
-      ]
+      "tau": 0.9417941292566626,
+      "top_entity_contribs": []
     },
     "cell_type_enrichment": {
-      "class": "enriched",
-      "cl_ids": [
-        "CL:0000946"
-      ],
-      "fold_change": 2.021,
+      "class": "not_detected",
+      "cl_ids": [],
+      "fold_change": null,
       "fold_change_infinite": false,
       "tau": 0.9668279352311872,
-      "top_entity_contribs": [
-        {
-          "id": "CL:0000946",
-          "label": "antibody secreting cell",
-          "pop_mean": 0.8705,
-          "tau_contrib": 0.0
-        }
-      ]
+      "top_entity_contribs": []
     },
     "tissue_enrichment": {
       "class": "enriched",
@@ -3160,11 +3127,9 @@
         }
       ]
     },
-    "enrichment_class": "enriched",
-    "enrichment_cl_ids": [
-      "Immune"
-    ],
-    "fold_change": 2.444,
+    "enrichment_class": "not_detected",
+    "enrichment_cl_ids": [],
+    "fold_change": null,
     "fold_change_infinite": false,
     "top_cell_types": [
       {

@@ -3704,7 +3704,7 @@
   "record_generated_at": "2026-06-09T01:43:58.622412Z",
   "prompt_corpus_version": "2.50.1",
   "cellxgene": {
-    "schema_version": "2.1.9",
+    "schema_version": "2.1.10",
     "census_version": "2025-11-08",
     "cell_class_enrichment": {
       "class": "enriched",
@@ -3729,21 +3729,21 @@
     "cell_family_enrichment": {
       "class": "enriched",
       "family_ids": [
-        "CL:0002178"
+        "CL:0000319"
       ],
       "family_labels": [
-        "epithelial cell of stomach"
+        "mucus secreting cell"
       ],
       "top_cl_labels": [
         "mucous cell of stomach"
       ],
       "fold_change": 2.283,
       "fold_change_infinite": false,
-      "tau": 0.9797724984835197,
+      "tau": 0.9798464374552206,
       "top_entity_contribs": [
         {
-          "id": "CL:0002178",
-          "label": "epithelial cell of stomach",
+          "id": "CL:0000319",
+          "label": "mucus secreting cell",
           "pop_mean": 3.5228,
           "tau_contrib": 0.0,
           "sub_label": "mucous cell of stomach"
@@ -3768,105 +3768,33 @@
       ]
     },
     "tissue_enrichment": {
-      "class": "enriched",
-      "uberon_ids": [
-        "UBERON:0002097",
-        "UBERON:0000970",
-        "UBERON:0001013"
-      ],
-      "tissue_labels": [
-        "skin of body",
-        "eye",
-        "adipose tissue"
-      ],
-      "fold_change": 1.039,
+      "class": "not_detected",
+      "uberon_ids": [],
+      "tissue_labels": [],
+      "fold_change": null,
       "fold_change_infinite": false,
       "tau": 0.9795490585818171,
-      "top_entity_contribs": [
-        {
-          "id": "UBERON:0002097",
-          "label": "skin of body",
-          "pop_mean": 0.5786,
-          "tau_contrib": 0.0
-        },
-        {
-          "id": "UBERON:0000970",
-          "label": "eye",
-          "pop_mean": 0.557,
-          "tau_contrib": 0.0374
-        },
-        {
-          "id": "UBERON:0001013",
-          "label": "adipose tissue",
-          "pop_mean": 0.5278,
-          "tau_contrib": 0.0878
-        }
-      ]
+      "top_entity_contribs": []
     },
     "tissue_category_enrichment": {
-      "class": "enhanced",
-      "category_ids": [
-        "skin_adipose"
-      ],
-      "category_labels": [
-        "skin_adipose"
-      ],
-      "top_tissues": [
-        "skin of body"
-      ],
-      "fold_change": 1.039,
+      "class": "not_detected",
+      "category_ids": [],
+      "category_labels": [],
+      "top_tissues": [],
+      "fold_change": null,
       "fold_change_infinite": false,
       "tau": 0.623587997014317,
-      "top_entity_contribs": [
-        {
-          "id": "skin_adipose",
-          "label": "skin_adipose",
-          "pop_mean": 0.5786,
-          "tau_contrib": 0.0,
-          "sub_label": "skin of body"
-        }
-      ]
+      "top_entity_contribs": []
     },
     "tissue_organ_enrichment": {
-      "class": "enriched",
-      "organ_ids": [
-        "UBERON:0002097",
-        "UBERON:0000970",
-        "UBERON:0001013"
-      ],
-      "organ_labels": [
-        "skin of body",
-        "eye",
-        "adipose tissue"
-      ],
-      "top_uberon_labels": [
-        "skin of body",
-        "eye",
-        "adipose tissue"
-      ],
-      "fold_change": 1.039,
+      "class": "not_detected",
+      "organ_ids": [],
+      "organ_labels": [],
+      "top_uberon_labels": [],
+      "fold_change": null,
       "fold_change_infinite": false,
       "tau": 0.9724102361217842,
-      "top_entity_contribs": [
-        {
-          "id": "UBERON:0002097",
-          "label": "skin of body",
-          "pop_mean": 0.5786,
-          "tau_contrib": 0.0
-        },
-        {
-          "id": "UBERON:0000970",
-          "label": "eye",
-          "pop_mean": 0.557,
-          "tau_contrib": 0.0374
-        },
-        {
-          "id": "UBERON:0001013",
-          "label": "adipose tissue",
-          "pop_mean": 0.5278,
-          "tau_contrib": 0.0878
-        }
-      ]
+      "top_entity_contribs": []
     },
     "enrichment_class": "enriched",
     "enrichment_cl_ids": [

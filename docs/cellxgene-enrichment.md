@@ -77,13 +77,23 @@ Kryuchkova-Mostacci & Robinson-Rechavi 2017 (PMID 26891983, τ
 best-in-class benchmark with τ ≥ 0.8 as "specific") and Lüleci &
 Yılmaz 2022 (the τ ≥ 0.85 idiom):
 
-| τ | Class |
+| τ + magnitude | Class |
 |---|---|
-| ≥ 0.85 | **enriched** |
-| 0.5 ≤ τ < 0.85 | **enhanced** |
-| < 0.5 | **low_specificity** |
+| max eligible pop_mean < 1.0 | **not_detected** (v2.1.10+ magnitude gate) |
+| τ ≥ 0.85 AND max ≥ 1.0 | **enriched** |
+| 0.5 ≤ τ < 0.85 AND max ≥ 1.0 | **enhanced** |
+| τ < 0.5 AND max ≥ 1.0 | **low_specificity** |
 | no eligibles | **not_detected** |
-| 1 eligible | **enriched** (definitionally) |
+| 1 eligible AND max ≥ 1.0 | **enriched** (definitionally) |
+
+The **magnitude gate** (`MIN_TOP_POP_MEAN = 1.0`, ≈ HPA's
+nTPM ≥ 1 detection floor) is applied before the τ test. Without it
+the τ cutoff fires for genes whose top eligible sits at sub-noise
+magnitudes (GPR75 cell_family top entity = 0.09; PVRIG tissue_organ
+top entity = 0.19) — "enriched · X" reads as a positive call when X is
+barely expressed at all. HPA, Tabula Sapiens, and Karbalaei 2024 all
+gate tissue-specificity claims on a magnitude floor for the same
+reason.
 
 Companion: `fold_change` = top-vs-next-ranked ratio (informational; not
 class-determining under τ cutoffs).
@@ -130,12 +140,17 @@ significance test? Field practice on τ-based specificity work doesn't
 do this — τ is itself the discriminator, and the cutoffs (0.5 / 0.85)
 already encode an effect-size threshold. Kryuchkova-Mostacci 2017's
 benchmark and the τ-using HPA / Tabula Sapiens publications all
-classify by τ cutoffs without an accompanying Wilcoxon. We *could*
-layer a DE backstop on the chip-displayed entity (per-call p-value
-that the top entity is statistically higher than the rest), and might
-do so eventually for the leaf-CL axis where N=600+ inflates the
-false-discovery surface — but it's not required to ship the current
-τ-cutoff calls.
+classify by τ cutoffs without an accompanying Wilcoxon.
+
+The **magnitude gate** (v2.1.10+) substitutes for part of what a DE
+backstop would catch: it refuses to call any concentrated/elevated
+class when the top eligible's `pop_mean` is below the HPA-style
+detection floor (`MIN_TOP_POP_MEAN = 1.0`). That filters out the
+"τ ≥ 0.85 but top entity is barely expressed anywhere" failure mode
+without needing a per-call p-value computation. A real Wilcoxon
+layer could still be added for the leaf-CL axis (N≈600 inflates the
+false-discovery surface), but the magnitude gate covers the
+practically-encountered noise pattern.
 
 ### Per-entity τ contributions (v2.1.7+)
 
@@ -164,41 +179,23 @@ gate) but NOT `pct_expressing` — `pct` is a normalized fraction.
 
 ## Known weaknesses
 
-The "fixed in v2.1.7" entries below were live concerns through v2.1.6
-and are noted here so a reader catching the doc pre-rebuild knows
-they're addressed; they'll move to a changelog section after the next
-doc pass.
+Most weaknesses through v2.1.6 have been addressed by v2.1.7–v2.1.10.
+Remaining open items:
 
-1. **`pct_expressing` overcount on the tissue axis — FIXED in v2.1.7.**
-   Per-UBERON `n_total` previously summed `pair_counts[(cl, ub)]` over
-   all CL terms. When CZI's WMG annotates the same cells under
-   parent + child CL (`naive T cell` AND `T cell`), the cell was
-   counted in both pairs, inflating both numerator and denominator
-   (CD63 pancreas → raw pct=154%). Fix: aggregate only over **cohort-
-   leaf CL terms** (CL terms in the cohort with no cohort descendants)
-   plus a **per-(cl, ub) WMG-nnz fallback** at aggregation time
-   (`n_total_pair = max(cache_n_total, nnz)`), so per-pair pct is ≤
-   1.0 by construction and the per-UBERON weighted sum stays ≤ 1.0.
-   No clipping needed.
+1. **WMG nnz can exceed `obs` cell counts for some (CL, UBERON) pairs.**
+   CZI's WMG aggregates cells at a granularity beyond what the public
+   Census `obs.cell_type_ontology_term_id` exposes (cardiac fibroblast
+   in heart: obs.value_counts says 466 cells, WMG nnz says 127,804 for
+   EGFR). Not staleness — regenerating the cache (`scripts/regen_cellxgene_cache.py`)
+   gives bit-for-bit identical results. **Mitigation (v2.1.9):**
+   clean-only-pairs filter — drop `(cl, ub)` pairs where cache n_total
+   < WMG nnz from the per-UBERON aggregation entirely. Some canonical
+   tissues fall out of the chip when their dominant cell type is on
+   the mismatched side (LRP2-kidney → spinal cord because proximal
+   tubule's `(cl, ub)` is mismatched). Documented; long-term fix is
+   reverse-engineering WMG's annotation rollup.
 
-2. **Stale cell-count cache vs WMG export — MITIGATED in v2.1.7.** The
-   cache at `/tmp/czi_cell_tissue_counts.tsv` was generated from an
-   earlier `obs.value_counts()` snapshot than the 2025-11-08 WMG it
-   joins against. EGFR-embryo: cache has 4 CL terms profiled, WMG
-   sees 36 with 28k expressing cells. The per-(cl, ub) WMG-nnz
-   fallback handles the gap (cells dropped from the cache float
-   back in via WMG). Long-term fix: regenerate the cell-count cache
-   from the 2025-11-08 Census snapshot.
-
-3. **Cell-family fallback — FIXED in v2.1.7.** Previously: when a
-   leaf CL had no graph ancestor with 6–40 cohort descendants (KLK2's
-   prostate luminal CL has few CZI siblings), the family axis fell
-   back to the broad compartment ("Epithelial"), losing precision in
-   the chip label. Fix: the leaf IS its own family — the chip now
-   reads `enriched · luminal cell of prostate epithelium` instead of
-   `enriched · Epithelial`. See [src/accessible_surfaceome/audit/cl_family.py:113](src/accessible_surfaceome/audit/cl_family.py:113).
-
-4. **Tissue-organ "single leaf is its own organ" heuristic.** Each
+2. **Tissue-organ "single leaf is its own organ" heuristic.** Each
    UBERON's organ is the most-ancestral cohort UBERON above it (per
    `uberon_organ._build_organ_map`). For UBERONs without any cohort
    ancestor (prostate gland — no finer prostate subdivisions in CZI),
@@ -206,7 +203,7 @@ doc pass.
    surprising results when CZI starts sampling finer subdivisions of
    other organs.
 
-5. **Cell-family universe inflation.** The cell-family axis's
+3. **Cell-family universe inflation.** The cell-family axis's
    zero-baseline universe sums `n_total` across all leaf CLs assigned
    to each family. Some families (e.g. "ON-bipolar cell" — 10
    descendants in the cohort, each ~10k cells) have universe ~100k;
@@ -215,7 +212,7 @@ doc pass.
    the noise gate compares pct against MIN_PCT_FOR_CLASS, so a leaf
    passing the gate doesn't always promote its family.
 
-6. **No multiple-testing correction.** When the classifier picks
+4. **No multiple-testing correction.** When the classifier picks
    "enriched" at the leaf-CL axis (~600 entities) for a gene, that
    choice has 600× the false-discovery surface of an HPA call on 40
    tissues. We don't BH-correct. Field-standard would, especially at
@@ -223,14 +220,7 @@ doc pass.
    axes (~150 each) where false-discovery surface is closer to HPA's
    scale.
 
-7. **No statistical-significance gate.** Noise thresholds (nnz ≥ 10,
-   pct ≥ 1%) but no Wilcoxon / permutation test. Per the "Why DE
-   backstop isn't required" section above, field practice on τ-based
-   specificity doesn't require one; the τ cutoff (0.5/0.85) IS the
-   effect-size threshold. Optional layer for a later pass on the
-   leaf-CL axis where the multiple-testing surface is highest.
-
-8. **The leaf-CL classification is published but mostly returns
+5. **The leaf-CL classification is published but mostly returns
    `enriched` (because τ on ~600 noisy entities almost always finds
    one peak).** Power users can read it from the JSON for inspection,
    but exposing it in the chip would be noise. The viewer chip
@@ -239,7 +229,7 @@ doc pass.
    emitted record (saves ~1KB per gene), or keep as a power-user
    debug field?
 
-9. **Eye / tongue / vasculature dominance isn't a bug, but it IS
+6. **Eye / tongue / vasculature dominance isn't a bug, but it IS
    counterintuitive.** A reader expecting "tissue specificity" might
    be surprised KLK2's tissue-organ axis says `enriched · prostate
    gland` (right) but EGFR's says `enriched · heart` or `enriched ·
@@ -249,14 +239,28 @@ doc pass.
    per-gene help bubble or surfacing the top-3 contributors so the
    reader sees the runner-up tissues are close.
 
-10. **No per-axis effect-size lower bound.** A gene can register
-    `enriched` at the cell-family axis with a top entity at pop_mean
-    = 0.05 (just above the 1e-3 noise floor — its τ shape is still
-    concentrated) if every other family is below noise. This reads
-    correctly under τ semantics ("concentrated where it's detected at
-    all"), but a reader might expect "enriched" to imply an
-    absolute-magnitude floor too. Could add a `confidence` field that
-    flags when the top entity's pop_mean is below e.g. 1.0.
+## Resolved (v2.1.7 → v2.1.10) — for the changelog
+
+* **v2.1.7:** Per-UBERON pct overcount via cohort-leaf-CL filter +
+  WMG-nnz fallback at the pair level. CD63 pancreas (raw pct=154%)
+  collapses to ≤ 100% by construction. Cell-family fallback uses the
+  leaf CL itself (not the broad compartment) so KLK2's chip reads
+  `luminal cell of prostate epithelium` instead of `Epithelial`.
+* **v2.1.8:** `top_cell_types` and `top_tissues` display lists sort
+  by score (≈ nTPM) not by mean. Chip tooltip exposes the underlying
+  leaf in parentheses for rollup axes (`cell of skeletal muscle
+  (skeletal muscle fibroblast)`).
+* **v2.1.9:** Tissue axis switched from WMG-nnz ceiling fallback to
+  clean-only-pairs (drop `(cl, ub)` when cache < WMG nnz). UBERON
+  label cache extended via OBO fallback so the chart x-axis no longer
+  prints raw `UBERON:0001015`. `uberon_organ` / `uberon_category` walk
+  OBO ancestors when an UBERON isn't in the precomputed cohort map
+  (alveolus → lung instead of fluids_other). `is_stale_denominator`
+  display flag added per tissue.
+* **v2.1.10:** Magnitude gate `MIN_TOP_POP_MEAN = 1.0` — gene falls
+  to `not_detected` when the top eligible's pop_mean is below the
+  HPA-style detection floor, regardless of τ. Fixes ABCB9 / GPR75 /
+  PVRIG / SRC false-positive `enriched` calls at sub-noise magnitudes.
 
 ## TODOs (next pass)
 

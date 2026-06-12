@@ -90,12 +90,22 @@ ENS_MAP = Path(
 OUT_DIR = Path(os.environ.get("CZI_OUT_DIR", "/tmp/czi_enrichment_v2_1"))
 MANIFEST = OUT_DIR.parent / (OUT_DIR.name + "_manifest.tsv")
 CENSUS_VERSION = "2025-11-08"
-SCHEMA_VERSION = "2.1.9"
+SCHEMA_VERSION = "2.1.10"
 
 # Classifier eligibility (lenient — captures whatever has signal).
 MIN_N_TOTAL_FOR_CLASS = 50
 MIN_NNZ_FOR_CLASS = 10
 MIN_PCT_FOR_CLASS = 0.01
+
+# v2.1.10+ magnitude gate: even when eligibles exist, refuse to call
+# enriched/enhanced if the top entity's linear pop mean (≈ nTPM) is
+# below this floor. τ alone is a concentration shape metric and can
+# fire 0.85+ for genes whose top entity is at sub-noise magnitudes
+# (GPR75 at 0.1, PVRIG at 0.3) — making "enriched · X" misleading
+# when X is barely expressed. HPA uses nTPM ≥ 1 as its detection
+# floor for tissue-specificity claims; we adopt the same threshold.
+# Below this, the classifier returns `not_detected` regardless of τ.
+MIN_TOP_POP_MEAN = 1.0
 
 # Broad-class axis uses a STRICTER per-leaf qualifier than the
 # leaf-CL axis. A 1% pct threshold lets dozens of weakly-expressing
@@ -315,6 +325,13 @@ def classify_hpa(
     Single-eligible edge case is enriched by definition. Zero
     eligibles → not_detected.
 
+    **v2.1.10+ magnitude gate.** ``MIN_TOP_POP_MEAN`` ≈ HPA's
+    nTPM ≥ 1 detection floor. A gene whose top eligible has
+    pop_mean below this floor falls to ``not_detected`` regardless
+    of τ — "enriched at concentration zero" is misleading. Fixes
+    ABCB9 / GPR75 / PVRIG false-positive `enriched` calls where the
+    top entity sits at sub-noise magnitudes.
+
     **τ universe = full measured set + noise floor.** Yanai 2005 and
     Kryuchkova-Mostacci 2017 always floor low intensities rather
     than dropping entities; HPA likewise uses a fixed 37-tissue
@@ -350,6 +367,15 @@ def classify_hpa(
 
     if len(eligible) == 0:
         return "not_detected", [], None, []
+
+    # Magnitude gate: top eligible must clear MIN_TOP_POP_MEAN
+    # (≈ HPA's nTPM ≥ 1 detection floor) for any concentrated/elevated
+    # call. Otherwise the gene is essentially not detected at an
+    # interesting level anywhere — τ-based concentration is misleading.
+    x_max_check = eligible[0][1]
+    if x_max_check < MIN_TOP_POP_MEAN:
+        return "not_detected", [], None, []
+
     if len(eligible) == 1:
         return "enriched", [eligible[0][0]], float("inf"), _top_contribs(
             [eligible[0][0]], eligible[0][1]

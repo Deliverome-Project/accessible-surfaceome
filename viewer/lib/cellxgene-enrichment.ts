@@ -70,16 +70,17 @@ export interface CellTypeRow {
  * eligible-entity distribution's Yanai 2005 τ score on linear
  * population mean (mean × pct, ≈ HPA nTPM):
  *
- * - enriched      → τ ≥ 0.85 (or single eligible — definitionally
- *                   enriched since there's no other entity to spread
- *                   expression over)
- * - enhanced      → 0.5 ≤ τ < 0.85
- * - low_specificity → τ < 0.5
+ * - enriched      → τ ≥ 0.85 AND top-eligible pop_mean ≥ 1.0
+ *                   (or single eligible — definitionally enriched)
+ * - enhanced      → 0.5 ≤ τ < 0.85 AND top-eligible pop_mean ≥ 1.0
+ * - low_specificity → τ < 0.5 AND top-eligible pop_mean ≥ 1.0
  * - not_detected  → zero eligibles (no entity meets the CZI noise
  *                   threshold: n_expressing ≥ 10 AND pct ≥ 1%, or
- *                   ≥ 5% for the broad-class axis). Distinct from
- *                   low_specificity — "couldn't measure above
- *                   background" vs "broadly expressed."
+ *                   ≥ 5% for the broad-class axis), OR top-eligible
+ *                   pop_mean < 1.0 (v2.1.10+ magnitude gate ≈ HPA's
+ *                   nTPM ≥ 1 detection floor). Distinct from
+ *                   low_specificity — "not strongly expressed
+ *                   anywhere" vs "broadly expressed."
  *
  * Cutoffs follow the Yanai 2005 τ + Kryuchkova-Mostacci 2017 benchmark
  * (PMID 26891983, τ best-in-class with τ ≥ 0.8) and the τ ≥ 0.85

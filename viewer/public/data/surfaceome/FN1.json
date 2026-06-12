@@ -4390,7 +4390,7 @@
   "model_path": "claude-sonnet-4-6",
   "record_generated_at": "2026-05-31T15:21:51.367224Z",
   "cellxgene": {
-    "schema_version": "2.1.9",
+    "schema_version": "2.1.10",
     "census_version": "2025-11-08",
     "cell_class_enrichment": {
       "class": "enhanced",
@@ -4431,7 +4431,7 @@
       ],
       "fold_change": 1.003,
       "fold_change_infinite": false,
-      "tau": 0.9332762048600052,
+      "tau": 0.9364727792253279,
       "top_entity_contribs": [
         {
           "id": "CL:4047001",

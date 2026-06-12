@@ -5601,192 +5601,68 @@
   "model_path": "claude-sonnet-4-6",
   "record_generated_at": "2026-06-08T20:48:27.517803Z",
   "cellxgene": {
-    "schema_version": "2.1.9",
+    "schema_version": "2.1.10",
     "census_version": "2025-11-08",
     "cell_class_enrichment": {
-      "class": "enriched",
-      "class_ids": [
-        "Immune"
-      ],
-      "class_labels": [
-        "Immune"
-      ],
+      "class": "not_detected",
+      "class_ids": [],
+      "class_labels": [],
       "fold_change": null,
-      "fold_change_infinite": true,
+      "fold_change_infinite": false,
       "tau": 0.9965122742340063,
-      "top_entity_contribs": [
-        {
-          "id": "Immune",
-          "label": "Immune",
-          "pop_mean": 0.2867,
-          "tau_contrib": 0.0
-        }
-      ]
+      "top_entity_contribs": []
     },
     "cell_family_enrichment": {
-      "class": "enriched",
-      "family_ids": [
-        "CL:0000893",
-        "CL:0000935",
-        "CL:0000625"
-      ],
-      "family_labels": [
-        "thymocyte",
-        "CD4-negative, CD8-negative, alpha-beta intraepithelial T cell",
-        "CD8-positive, alpha-beta T cell"
-      ],
-      "top_cl_labels": [
-        "double negative T regulatory cell",
-        "CD4-negative, CD8-negative, alpha-beta intraepithelial T cell",
-        "CD8-positive, alpha-beta cytotoxic T cell"
-      ],
-      "fold_change": 1.006,
+      "class": "not_detected",
+      "family_ids": [],
+      "family_labels": [],
+      "top_cl_labels": [],
+      "fold_change": null,
       "fold_change_infinite": false,
-      "tau": 0.9754561172473931,
-      "top_entity_contribs": [
-        {
-          "id": "CL:0000893",
-          "label": "thymocyte",
-          "pop_mean": 0.2867,
-          "tau_contrib": 0.0,
-          "sub_label": "double negative T regulatory cell"
-        },
-        {
-          "id": "CL:0000935",
-          "label": "CD4-negative, CD8-negative, alpha-beta intraepithelial T cell",
-          "pop_mean": 0.2851,
-          "tau_contrib": 0.0058
-        },
-        {
-          "id": "CL:0000625",
-          "label": "CD8-positive, alpha-beta T cell",
-          "pop_mean": 0.2539,
-          "tau_contrib": 0.1145,
-          "sub_label": "CD8-positive, alpha-beta cytotoxic T cell"
-        }
-      ]
+      "tau": 0.9753806471506669,
+      "top_entity_contribs": []
     },
     "cell_type_enrichment": {
-      "class": "enriched",
-      "cl_ids": [
-        "CL:0011024",
-        "CL:0000935",
-        "CL:0000794"
-      ],
-      "fold_change": 1.006,
+      "class": "not_detected",
+      "cl_ids": [],
+      "fold_change": null,
       "fold_change_infinite": false,
       "tau": 0.9863914241030763,
-      "top_entity_contribs": [
-        {
-          "id": "CL:0011024",
-          "label": "double negative T regulatory cell",
-          "pop_mean": 0.2867,
-          "tau_contrib": 0.0
-        },
-        {
-          "id": "CL:0000935",
-          "label": "CD4-negative, CD8-negative, alpha-beta intraepithelial T cell",
-          "pop_mean": 0.2851,
-          "tau_contrib": 0.0058
-        },
-        {
-          "id": "CL:0000794",
-          "label": "CD8-positive, alpha-beta cytotoxic T cell",
-          "pop_mean": 0.2539,
-          "tau_contrib": 0.1145
-        }
-      ]
+      "top_entity_contribs": []
     },
     "tissue_enrichment": {
-      "class": "enriched",
-      "uberon_ids": [
-        "UBERON:0000160",
-        "UBERON:0002108"
-      ],
-      "tissue_labels": [
-        "intestine",
-        "small intestine"
-      ],
-      "fold_change": 1.373,
+      "class": "not_detected",
+      "uberon_ids": [],
+      "tissue_labels": [],
+      "fold_change": null,
       "fold_change_infinite": false,
       "tau": 0.9910763194487219,
-      "top_entity_contribs": [
-        {
-          "id": "UBERON:0000160",
-          "label": "intestine",
-          "pop_mean": 0.1883,
-          "tau_contrib": 0.0
-        },
-        {
-          "id": "UBERON:0002108",
-          "label": "small intestine",
-          "pop_mean": 0.1371,
-          "tau_contrib": 0.2716
-        }
-      ]
+      "top_entity_contribs": []
     },
     "tissue_category_enrichment": {
-      "class": "enriched",
-      "category_ids": [
-        "digestive"
-      ],
-      "category_labels": [
-        "digestive"
-      ],
-      "top_tissues": [
-        "intestine"
-      ],
-      "fold_change": 2.743,
+      "class": "not_detected",
+      "category_ids": [],
+      "category_labels": [],
+      "top_tissues": [],
+      "fold_change": null,
       "fold_change_infinite": false,
       "tau": 0.9393507531509252,
-      "top_entity_contribs": [
-        {
-          "id": "digestive",
-          "label": "digestive",
-          "pop_mean": 0.1883,
-          "tau_contrib": 0.0,
-          "sub_label": "intestine"
-        }
-      ]
+      "top_entity_contribs": []
     },
     "tissue_organ_enrichment": {
-      "class": "enriched",
-      "organ_ids": [
-        "UBERON:0000160",
-        "UBERON:0002108"
-      ],
-      "organ_labels": [
-        "intestine",
-        "small intestine"
-      ],
-      "top_uberon_labels": [
-        "intestine",
-        "small intestine"
-      ],
-      "fold_change": 1.373,
+      "class": "not_detected",
+      "organ_ids": [],
+      "organ_labels": [],
+      "top_uberon_labels": [],
+      "fold_change": null,
       "fold_change_infinite": false,
       "tau": 0.9896989787816414,
-      "top_entity_contribs": [
-        {
-          "id": "UBERON:0000160",
-          "label": "intestine",
-          "pop_mean": 0.1883,
-          "tau_contrib": 0.0
-        },
-        {
-          "id": "UBERON:0002108",
-          "label": "small intestine",
-          "pop_mean": 0.1371,
-          "tau_contrib": 0.2716
-        }
-      ]
+      "top_entity_contribs": []
     },
-    "enrichment_class": "enriched",
-    "enrichment_cl_ids": [
-      "Immune"
-    ],
+    "enrichment_class": "not_detected",
+    "enrichment_cl_ids": [],
     "fold_change": null,
-    "fold_change_infinite": true,
+    "fold_change_infinite": false,
     "top_cell_types": [
       {
         "cell_type": "double negative T regulatory cell",
