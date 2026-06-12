@@ -22,7 +22,7 @@ interface Props {
 }
 
 type YMetric = "score" | "mean" | "pct";
-type SortMode = "value" | "type" | "tissue";
+type SortMode = "value" | "type" | "tissue" | "category";
 
 /* Cell-type bars carry the "mode" signal:
    - Overall Top-20 view: lavender (the same purple used in design
@@ -413,6 +413,28 @@ function TopTissues({
     const m = (r: TissueAggregateRow): number => readMetric(r, yMetric);
     if (sortMode === "type") {
       arr.sort((a, b) => a.tissue.localeCompare(b.tissue));
+    } else if (sortMode === "category") {
+      // Group tissues by their organ-system category. The
+      // TISSUE_CATEGORIES list defines a canonical order (CNS first,
+      // head/sensory, respiratory, ..., fluids/other last); within
+      // each group, rank DESC by the active metric so the strongest
+      // tissue per organ system is leftmost. Trace tissues sink to
+      // the BOTTOM regardless of category, matching the qualified-
+      // first rule on the value-sort.
+      const order = new Map(
+        TISSUE_CATEGORIES.map((c, i) => [c.id, i] as const),
+      );
+      const cat = (r: TissueAggregateRow): TissueCategoryId =>
+        tissueCategoryForUberonId(r.uberon_id).id;
+      arr.sort((a, b) => {
+        const ta = a.is_trace ? 1 : 0;
+        const tb = b.is_trace ? 1 : 0;
+        if (ta !== tb) return ta - tb;
+        const oa = order.get(cat(a)) ?? 99;
+        const ob = order.get(cat(b)) ?? 99;
+        if (oa !== ob) return oa - ob;
+        return m(b) - m(a);
+      });
     } else {
       arr.sort((a, b) => {
         const ta = a.is_trace ? 1 : 0;
@@ -451,6 +473,12 @@ function TopTissues({
         setSortMode={setSortMode}
         sortOptions={[
           { value: "value", label: "By value" },
+          {
+            value: "category",
+            label: "By category",
+            title:
+              "Group bars by organ-system category (CNS, respiratory, lymphoid, …); rank DESC within each group",
+          },
           { value: "type", label: "A → Z" },
         ]}
       />
