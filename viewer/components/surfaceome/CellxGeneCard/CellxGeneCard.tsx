@@ -98,7 +98,24 @@ function EnrichmentChip({
       )}
       <InfoTip label="What this classification means" wide>
         <strong>{ENRICHMENT_LABELS[klass]}</strong> at the {axis} level.{" "}
-        {ENRICHMENT_BLURB[klass]} τ (Yanai 2005, PMID{" "}
+        {ENRICHMENT_BLURB[klass]}
+        {(axis === "cell family" ||
+          axis === "tissue organ" ||
+          axis === "tissue category" ||
+          axis === "cell class") && (
+          <>
+            {" "}
+            Note: this axis groups CZI&apos;s ~600 leaf cell types (or
+            ~410 UBERON tissues) into broader rollups (~150 cell
+            families / ~150 tissue organs / 13 categories / 10
+            compartments), so the entities here are coarser than the
+            specific cell types in the chart below. Each rollup&apos;s
+            signal is its strongest underlying leaf — that leaf
+            appears in parentheses next to each rollup name, and
+            matches what you see in the chart.
+          </>
+        )}
+        {" "}τ (Yanai 2005, PMID{" "}
         <a
           href="https://pubmed.ncbi.nlm.nih.gov/15388519/"
           target="_blank"
@@ -132,11 +149,17 @@ function EnrichmentChip({
                     <span style={{ opacity: 0.78 }}> ({c.sub_label})</span>
                   )}
                   {" — pop mean "}
-                  {c.pop_mean.toFixed(2)} · τ contribution{" "}
+                  {c.pop_mean.toFixed(2)} · τ distance{" "}
                   {c.tau_contrib.toFixed(2)}
                 </li>
               ))}
             </ul>
+            <span style={{ opacity: 0.78, fontSize: "0.9em" }}>
+              τ distance = 1 − x/x_max — how far below the top
+              entity this one sits, on a 0-to-1 scale. The top entity
+              is mechanically 0 (it IS the reference point); 0 for
+              runners-up means &ldquo;essentially tied with the top.&rdquo;
+            </span>
           </>
         )}
       </InfoTip>
