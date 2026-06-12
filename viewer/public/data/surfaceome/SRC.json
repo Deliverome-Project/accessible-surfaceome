@@ -3702,5 +3702,314 @@
   "confidence_reasoning": "Confidence is low for two compounding reasons. First, the only direct evidence for outer-surface SRC accessibility comes from a single research paper (PMID:41818370) reporting the ALE-mediated topological inversion mechanism; no independent group has yet replicated this finding with a different methodology or in a different cancer model. Second, the canonical literature \u2014 spanning decades of independent biochemical, imaging, and pharmacological work \u2014 firmly establishes SRC as an inner-leaflet peripheral kinase with no extracellular domain, constituting a high-severity contradicting baseline. Lifting confidence to moderate would require at least one independent group to confirm eSrc outer-surface exposure (e.g., via non-permeabilized flow cytometry or surface biotinylation specifically detecting SRC) in additional cancer types, ideally without reliance on the same functional antibody-killing readout used in the original report.",
   "model_path": "claude-sonnet-4-6",
   "record_generated_at": "2026-06-09T01:43:58.622412Z",
-  "prompt_corpus_version": "2.50.1"
+  "prompt_corpus_version": "2.50.1",
+  "cellxgene": {
+    "schema_version": "2.1.1",
+    "census_version": "2025-11-08",
+    "cell_class_enrichment": {
+      "class": "group_enriched",
+      "class_ids": [
+        "Epithelial",
+        "Neural",
+        "Immune",
+        "Other"
+      ],
+      "class_labels": [
+        "Epithelial",
+        "Neural",
+        "Immune",
+        "Other"
+      ],
+      "fold_change": null,
+      "fold_change_infinite": true
+    },
+    "cell_type_enrichment": {
+      "class": "low_specificity",
+      "cl_ids": [],
+      "fold_change": null,
+      "fold_change_infinite": false
+    },
+    "tissue_enrichment": {
+      "class": "low_specificity",
+      "uberon_ids": [],
+      "tissue_labels": [],
+      "fold_change": null,
+      "fold_change_infinite": false
+    },
+    "enrichment_class": "group_enriched",
+    "enrichment_cl_ids": [
+      "Epithelial",
+      "Neural",
+      "Immune",
+      "Other"
+    ],
+    "fold_change": null,
+    "fold_change_infinite": true,
+    "top_cell_types": [
+      {
+        "cell_type": "epithelial cell of thymus",
+        "cl_id": "CL:0002293",
+        "mean_log1p_cp10k": 2.782,
+        "n_expressing": 1,
+        "n_total": 813,
+        "pct_expressing": 0.0012,
+        "is_rare": true,
+        "is_trace": true,
+        "tissues": []
+      },
+      {
+        "cell_type": "dermis microvascular lymphatic vessel endothelial cell",
+        "cl_id": "CL:2000041",
+        "mean_log1p_cp10k": 2.4532,
+        "n_expressing": 3,
+        "n_total": 603,
+        "pct_expressing": 0.005,
+        "is_rare": true,
+        "is_trace": true,
+        "tissues": [
+          {
+            "tissue": "heart",
+            "uberon_id": "UBERON:0000948",
+            "mean_log1p_cp10k": 2.4532,
+            "n_expressing": 3,
+            "n_total": 603,
+            "pct_expressing": 0.005
+          }
+        ]
+      },
+      {
+        "cell_type": "basal cell of epithelium of lobular bronchiole",
+        "cl_id": "CL:1000352",
+        "mean_log1p_cp10k": 2.4129,
+        "n_expressing": 3,
+        "n_total": 121,
+        "pct_expressing": 0.0248,
+        "is_rare": true,
+        "is_trace": true,
+        "tissues": []
+      },
+      {
+        "cell_type": "epithelial cell of distal tubule",
+        "cl_id": "CL:0002305",
+        "mean_log1p_cp10k": 2.3826,
+        "n_expressing": 1,
+        "n_total": 55,
+        "pct_expressing": 0.0182,
+        "is_rare": true,
+        "is_trace": true,
+        "tissues": [
+          {
+            "tissue": "lung",
+            "uberon_id": "UBERON:0002048",
+            "mean_log1p_cp10k": 2.3826,
+            "n_expressing": 1,
+            "n_total": 55,
+            "pct_expressing": 0.0182
+          }
+        ]
+      },
+      {
+        "cell_type": "mucous cell of stomach",
+        "cl_id": "CL:0002180",
+        "mean_log1p_cp10k": 2.3709,
+        "n_expressing": 499,
+        "n_total": 1375,
+        "pct_expressing": 0.3629,
+        "is_rare": false,
+        "is_trace": false,
+        "tissues": [
+          {
+            "tissue": "stomach",
+            "uberon_id": "UBERON:0000945",
+            "mean_log1p_cp10k": 2.2536,
+            "n_expressing": 45,
+            "n_total": 123,
+            "pct_expressing": 0.3659
+          }
+        ]
+      },
+      {
+        "cell_type": "glomerular capillary endothelial cell",
+        "cl_id": "CL:1001005",
+        "mean_log1p_cp10k": 2.3476,
+        "n_expressing": 3,
+        "n_total": 920,
+        "pct_expressing": 0.0033,
+        "is_rare": true,
+        "is_trace": true,
+        "tissues": [
+          {
+            "tissue": "kidney",
+            "uberon_id": "UBERON:0002113",
+            "mean_log1p_cp10k": 2.3476,
+            "n_expressing": 3,
+            "n_total": 235,
+            "pct_expressing": 0.0128
+          }
+        ]
+      },
+      {
+        "cell_type": "mucus secreting cell",
+        "cl_id": "CL:0000319",
+        "mean_log1p_cp10k": 2.3436,
+        "n_expressing": 83,
+        "n_total": 3398,
+        "pct_expressing": 0.0244,
+        "is_rare": false,
+        "is_trace": false,
+        "tissues": [
+          {
+            "tissue": "lung",
+            "uberon_id": "UBERON:0002048",
+            "mean_log1p_cp10k": 2.3582,
+            "n_expressing": 81,
+            "n_total": 2155,
+            "pct_expressing": 0.0376
+          },
+          {
+            "tissue": "nose",
+            "uberon_id": "UBERON:0000004",
+            "mean_log1p_cp10k": 1.7078,
+            "n_expressing": 1,
+            "n_total": 301,
+            "pct_expressing": 0.0033
+          }
+        ]
+      },
+      {
+        "cell_type": "salivary gland glandular cell",
+        "cl_id": "CL:1001596",
+        "mean_log1p_cp10k": 2.3276,
+        "n_expressing": 153,
+        "n_total": 1071,
+        "pct_expressing": 0.1429,
+        "is_rare": false,
+        "is_trace": false,
+        "tissues": [
+          {
+            "tissue": "stomach",
+            "uberon_id": "UBERON:0000945",
+            "mean_log1p_cp10k": 2.2146,
+            "n_expressing": 23,
+            "n_total": 102,
+            "pct_expressing": 0.2255
+          }
+        ]
+      },
+      {
+        "cell_type": "immature microglial cell",
+        "cl_id": "CL:0002628",
+        "mean_log1p_cp10k": 2.3231,
+        "n_expressing": 2,
+        "n_total": 63,
+        "pct_expressing": 0.0317,
+        "is_rare": true,
+        "is_trace": true,
+        "tissues": []
+      },
+      {
+        "cell_type": "splanchnic mesodermal cell",
+        "cl_id": "CL:0017001",
+        "mean_log1p_cp10k": 2.3147,
+        "n_expressing": 685,
+        "n_total": 19921,
+        "pct_expressing": 0.0344,
+        "is_rare": false,
+        "is_trace": false,
+        "tissues": []
+      }
+    ],
+    "top_tissues": [
+      {
+        "tissue": "pleura",
+        "uberon_id": "UBERON:0000977",
+        "mean_log1p_cp10k": 2.3877,
+        "n_expressing": 173,
+        "n_total": 19695,
+        "pct_expressing": 0.0088,
+        "is_trace": true
+      },
+      {
+        "tissue": "testis",
+        "uberon_id": "UBERON:0000473",
+        "mean_log1p_cp10k": 2.3414,
+        "n_expressing": 199,
+        "n_total": 20724,
+        "pct_expressing": 0.0096,
+        "is_trace": true
+      },
+      {
+        "tissue": "embryo",
+        "uberon_id": "UBERON:0000922",
+        "mean_log1p_cp10k": 2.0931,
+        "n_expressing": 4217,
+        "n_total": 14244,
+        "pct_expressing": 0.2961,
+        "is_trace": false
+      },
+      {
+        "tissue": "gallbladder",
+        "uberon_id": "UBERON:0002110",
+        "mean_log1p_cp10k": 2.0669,
+        "n_expressing": 378,
+        "n_total": 19800,
+        "pct_expressing": 0.0191,
+        "is_trace": false
+      },
+      {
+        "tissue": "esophagus",
+        "uberon_id": "UBERON:0001043",
+        "mean_log1p_cp10k": 2.0021,
+        "n_expressing": 1187,
+        "n_total": 23590,
+        "pct_expressing": 0.0503,
+        "is_trace": false
+      },
+      {
+        "tissue": "mucosa",
+        "uberon_id": "UBERON:0000344",
+        "mean_log1p_cp10k": 1.9655,
+        "n_expressing": 1735,
+        "n_total": 26060,
+        "pct_expressing": 0.0666,
+        "is_trace": false
+      },
+      {
+        "tissue": "adrenal gland",
+        "uberon_id": "UBERON:0002369",
+        "mean_log1p_cp10k": 1.9224,
+        "n_expressing": 4987,
+        "n_total": 543830,
+        "pct_expressing": 0.0092,
+        "is_trace": true
+      },
+      {
+        "tissue": "vasculature",
+        "uberon_id": "UBERON:0002049",
+        "mean_log1p_cp10k": 1.9201,
+        "n_expressing": 845,
+        "n_total": 2915,
+        "pct_expressing": 0.2899,
+        "is_trace": false
+      },
+      {
+        "tissue": "saliva",
+        "uberon_id": "UBERON:0001836",
+        "mean_log1p_cp10k": 1.9005,
+        "n_expressing": 146,
+        "n_total": 14502,
+        "pct_expressing": 0.0101,
+        "is_trace": false
+      },
+      {
+        "tissue": "prostate gland",
+        "uberon_id": "UBERON:0002367",
+        "mean_log1p_cp10k": 1.8744,
+        "n_expressing": 2249,
+        "n_total": 128233,
+        "pct_expressing": 0.0175,
+        "is_trace": false
+      }
+    ]
+  }
 }

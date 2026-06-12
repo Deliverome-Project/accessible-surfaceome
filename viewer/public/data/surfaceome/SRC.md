@@ -592,3 +592,35 @@ This Markdown is generated from the canonical JSON record at `/data/surfaceome/S
 - UniProt — CC BY 4.0 (UniProt Consortium)
 
 *Confidence moderate — Confidence is moderate because the cancer-cell outer-surface SRC story derives from a single recent research cluster — two 2025 publications (PMID:41818370 and PMID:41818382) that appear to originate from the same group. The canonical SRC topology — myristoylated, inner-leaflet-anchored, no extracellular domain — is well-established across decades of independent work from multiple labs and cell contexts, and the triage prior correctly identified this as the baseline. Lifting confidence to high would require an independent group to confirm eSrc surface exposure using orthogonal methodology (e.g., non-permeabilized flow cytometry with validated anti-eSrc antibody + KO control, or cell-surface biotinylation with direct SRC WB confirmation) in a published primary study.*
+
+## CellxGene RNA enrichment (CZI Census)
+
+*Schema v2.1.1 · CZI Census 2025-11-08 · HPA-style 4× fold-change classification on log1p(CP10K) → linear means, with a zero-baseline universe for `enriched` / `group_enriched` and an eligibles-only denominator for `enhanced`. CC-BY 4.0 (CZI).*
+
+**Classification:**
+
+- **Cell class (broad rollup, ~10 compartments):** group enriched · Epithelial · Neural · Immune · ∞×
+- **Cell type (leaf Cell Ontology terms, ~600):** low specificity
+- **Tissue (UBERON terms, ~56):** low specificity
+
+**Top 5 cell types (leaf CL, pooled across tissues):**
+
+| Cell type | CL ID | Mean log1p(CP10K) | % expressing | n_expressing / n_total |
+|---|---|---|---|---|
+| epithelial cell of thymus | CL:0002293 | 2.782 | 0.12% | 1 / 813 | (trace)
+| dermis microvascular lymphatic vessel endothelial cell | CL:2000041 | 2.453 | 0.50% | 3 / 603 | (trace)
+| basal cell of epithelium of lobular bronchiole | CL:1000352 | 2.413 | 2.48% | 3 / 121 | (trace)
+| epithelial cell of distal tubule | CL:0002305 | 2.383 | 1.82% | 1 / 55 | (trace)
+| mucous cell of stomach | CL:0002180 | 2.371 | 36.29% | 499 / 1,375 |
+
+**Top 5 tissues (UBERON, pooled across cell types):**
+
+| Tissue | UBERON ID | Mean log1p(CP10K) | % expressing | n_expressing / n_total |
+|---|---|---|---|---|
+| pleura | UBERON:0000977 | 2.388 | 0.88% | 173 / 19,695 | (trace)
+| testis | UBERON:0000473 | 2.341 | 0.96% | 199 / 20,724 | (trace)
+| embryo | UBERON:0000922 | 2.093 | 29.61% | 4,217 / 14,244 |
+| gallbladder | UBERON:0002110 | 2.067 | 1.91% | 378 / 19,800 |
+| esophagus | UBERON:0001043 | 2.002 | 5.03% | 1,187 / 23,590 |
+
+<!-- /cellxgene -->

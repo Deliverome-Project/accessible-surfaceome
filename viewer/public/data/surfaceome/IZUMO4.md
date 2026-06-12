@@ -247,3 +247,35 @@ This Markdown is generated from the canonical JSON record at `/data/surfaceome/I
 - UniProt — CC BY 4.0 (UniProt Consortium)
 
 *Confidence moderate — Confidence is moderate rather than low because multiple independent sources converge on the same conclusion — IZUMO4 lacks a transmembrane domain and is constitutively secreted — but these sources are all review assertions or computational predictions rather than direct experimental assays (e.g. western blot of conditioned medium, live-cell surface biotinylation, or flow cytometry). The triage verdict of 'nuclear' is partially at odds with the ledger, which describes secreted rather than nuclear localization; both agree there is no plasma membrane surface display. Confidence would rise to high if a direct surface-proteomics or conditioned-medium mass spectrometry study confirmed the secreted topology and ruled out any membrane-anchored isoform, particularly in sperm or testicular cell lines.*
+
+## CellxGene RNA enrichment (CZI Census)
+
+*Schema v2.1.1 · CZI Census 2025-11-08 · HPA-style 4× fold-change classification on log1p(CP10K) → linear means, with a zero-baseline universe for `enriched` / `group_enriched` and an eligibles-only denominator for `enhanced`. CC-BY 4.0 (CZI).*
+
+**Classification:**
+
+- **Cell class (broad rollup, ~10 compartments):** group enriched · Reproductive · Epithelial · Neural · ∞×
+- **Cell type (leaf Cell Ontology terms, ~600):** low specificity
+- **Tissue (UBERON terms, ~56):** low specificity
+
+**Top 5 cell types (leaf CL, pooled across tissues):**
+
+| Cell type | CL ID | Mean log1p(CP10K) | % expressing | n_expressing / n_total |
+|---|---|---|---|---|
+| spermatocyte | CL:0000017 | 2.599 | 85.21% | 2,616 / 3,070 |
+| epithelial cell of sweat gland | CL:1000448 | 2.555 | 0.33% | 1 / 301 | (trace)
+| inhibitory motor neuron | CL:0008015 | 2.537 | 0.13% | 1 / 745 | (trace)
+| visceromotor neuron | CL:0005025 | 2.437 | 0.16% | 1 / 610 | (trace)
+| natural T-regulatory cell | CL:0000903 | 2.281 | 1.60% | 114 / 7,117 |
+
+**Top 5 tissues (UBERON, pooled across cell types):**
+
+| Tissue | UBERON ID | Mean log1p(CP10K) | % expressing | n_expressing / n_total |
+|---|---|---|---|---|
+| pleura | UBERON:0000977 | 2.319 | 0.13% | 26 / 19,695 | (trace)
+| testis | UBERON:0000473 | 2.257 | 28.41% | 5,888 / 20,724 |
+| scalp | UBERON:0000403 | 2.221 | 0.10% | 3 / 3,029 | (trace)
+| esophagus | UBERON:0001043 | 2.201 | 3.71% | 875 / 23,590 |
+| pancreas | UBERON:0001264 | 2.162 | 0.61% | 1,506 / 246,237 | (trace)
+
+<!-- /cellxgene -->

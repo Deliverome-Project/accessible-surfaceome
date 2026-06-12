@@ -456,3 +456,35 @@ This Markdown is generated from the canonical JSON record at `/data/surfaceome/L
 - UniProt — CC BY 4.0 (UniProt Consortium)
 
 *Confidence high — Confidence is high because the canonical inner-leaflet topology of LYN is corroborated by multiple independent lines of evidence: review-level consensus on Src-family myristoylation, palmitoylation biochemistry at Gly2/Cys3, use as a validated inner-leaflet PM reference sensor in published BRET assays, and E3-ligase regulation of its N-terminally processed cytoplasmic form. No deep-dive evidence surfaced any ectopic outer-leaflet exposure, cancer-state topological inversion, or surface-proteomics detection of LYN on intact cells. The triage call of inner-leaflet-anchored is fully consistent with A1 and A2 findings; no override is required.*
+
+## CellxGene RNA enrichment (CZI Census)
+
+*Schema v2.1.1 · CZI Census 2025-11-08 · HPA-style 4× fold-change classification on log1p(CP10K) → linear means, with a zero-baseline universe for `enriched` / `group_enriched` and an eligibles-only denominator for `enhanced`. CC-BY 4.0 (CZI).*
+
+**Classification:**
+
+- **Cell class (broad rollup, ~10 compartments):** low specificity
+- **Cell type (leaf Cell Ontology terms, ~600):** low specificity
+- **Tissue (UBERON terms, ~56):** low specificity
+
+**Top 5 cell types (leaf CL, pooled across tissues):**
+
+| Cell type | CL ID | Mean log1p(CP10K) | % expressing | n_expressing / n_total |
+|---|---|---|---|---|
+| neutrophil | CL:0000775 | 2.829 | 52.98% | 97,180 / 183,432 |
+| mucus secreting cell of tracheobronchial tree submucosal gland | CL:4033037 | 2.668 | 29.13% | 386 / 1,325 |
+| chondrocyte | CL:0000138 | 2.638 | 3.98% | 1,276 / 32,083 |
+| noradrenergic cell | CL:0000459 | 2.621 | 0.72% | 1 / 138 | (trace)
+| dermis microvascular lymphatic vessel endothelial cell | CL:2000041 | 2.573 | 11.28% | 68 / 603 |
+
+**Top 5 tissues (UBERON, pooled across cell types):**
+
+| Tissue | UBERON ID | Mean log1p(CP10K) | % expressing | n_expressing / n_total |
+|---|---|---|---|---|
+| pleura | UBERON:0000977 | 2.438 | 2.17% | 428 / 19,695 |
+| saliva | UBERON:0001836 | 2.260 | 45.16% | 6,549 / 14,502 |
+| esophagus | UBERON:0001043 | 2.216 | 14.86% | 3,506 / 23,590 |
+| chest | UBERON:0001443 | 2.200 | 11.32% | 1,745 / 15,413 |
+| embryo | UBERON:0000922 | 2.200 | 86.18% | 12,276 / 14,244 |
+
+<!-- /cellxgene -->

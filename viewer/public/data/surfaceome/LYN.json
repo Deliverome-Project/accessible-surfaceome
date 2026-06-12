@@ -2254,5 +2254,348 @@
   "confidence": "high",
   "confidence_reasoning": "Confidence is high because the canonical inner-leaflet topology of LYN is corroborated by multiple independent lines of evidence: review-level consensus on Src-family myristoylation, palmitoylation biochemistry at Gly2/Cys3, use as a validated inner-leaflet PM reference sensor in published BRET assays, and E3-ligase regulation of its N-terminally processed cytoplasmic form. No deep-dive evidence surfaced any ectopic outer-leaflet exposure, cancer-state topological inversion, or surface-proteomics detection of LYN on intact cells. The triage call of inner-leaflet-anchored is fully consistent with A1 and A2 findings; no override is required.",
   "model_path": "claude-sonnet-4-6",
-  "record_generated_at": "2026-05-31T15:31:28.680125Z"
+  "record_generated_at": "2026-05-31T15:31:28.680125Z",
+  "cellxgene": {
+    "schema_version": "2.1.1",
+    "census_version": "2025-11-08",
+    "cell_class_enrichment": {
+      "class": "low_specificity",
+      "class_ids": [],
+      "class_labels": [],
+      "fold_change": null,
+      "fold_change_infinite": false
+    },
+    "cell_type_enrichment": {
+      "class": "low_specificity",
+      "cl_ids": [],
+      "fold_change": null,
+      "fold_change_infinite": false
+    },
+    "tissue_enrichment": {
+      "class": "low_specificity",
+      "uberon_ids": [],
+      "tissue_labels": [],
+      "fold_change": null,
+      "fold_change_infinite": false
+    },
+    "enrichment_class": "low_specificity",
+    "enrichment_cl_ids": [],
+    "fold_change": null,
+    "fold_change_infinite": false,
+    "top_cell_types": [
+      {
+        "cell_type": "neutrophil",
+        "cl_id": "CL:0000775",
+        "mean_log1p_cp10k": 2.8285,
+        "n_expressing": 97180,
+        "n_total": 183432,
+        "pct_expressing": 0.5298,
+        "is_rare": false,
+        "is_trace": false,
+        "tissues": [
+          {
+            "tissue": "blood",
+            "uberon_id": "UBERON:0000178",
+            "mean_log1p_cp10k": 3.1388,
+            "n_expressing": 32679,
+            "n_total": 36089,
+            "pct_expressing": 0.9055
+          },
+          {
+            "tissue": "liver",
+            "uberon_id": "UBERON:0002107",
+            "mean_log1p_cp10k": 2.5733,
+            "n_expressing": 16043,
+            "n_total": 24285,
+            "pct_expressing": 0.6606
+          },
+          {
+            "tissue": "spleen",
+            "uberon_id": "UBERON:0002106",
+            "mean_log1p_cp10k": 2.9917,
+            "n_expressing": 14146,
+            "n_total": 16610,
+            "pct_expressing": 0.8517
+          }
+        ]
+      },
+      {
+        "cell_type": "mucus secreting cell of tracheobronchial tree submucosal gland",
+        "cl_id": "CL:4033037",
+        "mean_log1p_cp10k": 2.6683,
+        "n_expressing": 386,
+        "n_total": 1325,
+        "pct_expressing": 0.2913,
+        "is_rare": false,
+        "is_trace": false,
+        "tissues": [
+          {
+            "tissue": "lung",
+            "uberon_id": "UBERON:0002048",
+            "mean_log1p_cp10k": 2.6683,
+            "n_expressing": 386,
+            "n_total": 859,
+            "pct_expressing": 0.4494
+          }
+        ]
+      },
+      {
+        "cell_type": "chondrocyte",
+        "cl_id": "CL:0000138",
+        "mean_log1p_cp10k": 2.6384,
+        "n_expressing": 1276,
+        "n_total": 32083,
+        "pct_expressing": 0.0398,
+        "is_rare": false,
+        "is_trace": false,
+        "tissues": [
+          {
+            "tissue": "skin of body",
+            "uberon_id": "UBERON:0002097",
+            "mean_log1p_cp10k": 2.7171,
+            "n_expressing": 1142,
+            "n_total": 18,
+            "pct_expressing": 63.4444
+          },
+          {
+            "tissue": "lung",
+            "uberon_id": "UBERON:0002048",
+            "mean_log1p_cp10k": 1.954,
+            "n_expressing": 82,
+            "n_total": 3884,
+            "pct_expressing": 0.0211
+          },
+          {
+            "tissue": "hindlimb",
+            "uberon_id": "UBERON:0002103",
+            "mean_log1p_cp10k": 1.7755,
+            "n_expressing": 11,
+            "n_total": 8028,
+            "pct_expressing": 0.0014
+          }
+        ]
+      },
+      {
+        "cell_type": "noradrenergic cell",
+        "cl_id": "CL:0000459",
+        "mean_log1p_cp10k": 2.6214,
+        "n_expressing": 1,
+        "n_total": 138,
+        "pct_expressing": 0.0072,
+        "is_rare": true,
+        "is_trace": true,
+        "tissues": []
+      },
+      {
+        "cell_type": "dermis microvascular lymphatic vessel endothelial cell",
+        "cl_id": "CL:2000041",
+        "mean_log1p_cp10k": 2.5734,
+        "n_expressing": 68,
+        "n_total": 603,
+        "pct_expressing": 0.1128,
+        "is_rare": true,
+        "is_trace": false,
+        "tissues": [
+          {
+            "tissue": "heart",
+            "uberon_id": "UBERON:0000948",
+            "mean_log1p_cp10k": 2.5734,
+            "n_expressing": 68,
+            "n_total": 603,
+            "pct_expressing": 0.1128
+          }
+        ]
+      },
+      {
+        "cell_type": "chorionic trophoblast cell",
+        "cl_id": "CL:0011101",
+        "mean_log1p_cp10k": 2.5227,
+        "n_expressing": 2,
+        "n_total": 287,
+        "pct_expressing": 0.007,
+        "is_rare": true,
+        "is_trace": true,
+        "tissues": [
+          {
+            "tissue": "placenta",
+            "uberon_id": "UBERON:0001987",
+            "mean_log1p_cp10k": 2.5227,
+            "n_expressing": 2,
+            "n_total": 287,
+            "pct_expressing": 0.007
+          }
+        ]
+      },
+      {
+        "cell_type": "immature microglial cell",
+        "cl_id": "CL:0002628",
+        "mean_log1p_cp10k": 2.5009,
+        "n_expressing": 20,
+        "n_total": 63,
+        "pct_expressing": 0.3175,
+        "is_rare": true,
+        "is_trace": false,
+        "tissues": []
+      },
+      {
+        "cell_type": "professional antigen presenting cell",
+        "cl_id": "CL:0000145",
+        "mean_log1p_cp10k": 2.4954,
+        "n_expressing": 1225,
+        "n_total": 10130,
+        "pct_expressing": 0.1209,
+        "is_rare": false,
+        "is_trace": false,
+        "tissues": [
+          {
+            "tissue": "heart",
+            "uberon_id": "UBERON:0000948",
+            "mean_log1p_cp10k": 2.529,
+            "n_expressing": 973,
+            "n_total": 15,
+            "pct_expressing": 64.8667
+          },
+          {
+            "tissue": "blood",
+            "uberon_id": "UBERON:0000178",
+            "mean_log1p_cp10k": 2.4918,
+            "n_expressing": 91,
+            "n_total": 3635,
+            "pct_expressing": 0.025
+          },
+          {
+            "tissue": "bone marrow",
+            "uberon_id": "UBERON:0002371",
+            "mean_log1p_cp10k": 2.2854,
+            "n_expressing": 28,
+            "n_total": 821,
+            "pct_expressing": 0.0341
+          }
+        ]
+      },
+      {
+        "cell_type": "suprabasal keratinocyte",
+        "cl_id": "CL:4033013",
+        "mean_log1p_cp10k": 2.4925,
+        "n_expressing": 82,
+        "n_total": 1901,
+        "pct_expressing": 0.0431,
+        "is_rare": false,
+        "is_trace": false,
+        "tissues": []
+      },
+      {
+        "cell_type": "sympathetic neuron",
+        "cl_id": "CL:0011103",
+        "mean_log1p_cp10k": 2.4887,
+        "n_expressing": 112,
+        "n_total": 3805,
+        "pct_expressing": 0.0294,
+        "is_rare": false,
+        "is_trace": false,
+        "tissues": [
+          {
+            "tissue": "adrenal gland",
+            "uberon_id": "UBERON:0002369",
+            "mean_log1p_cp10k": 2.4887,
+            "n_expressing": 112,
+            "n_total": 3805,
+            "pct_expressing": 0.0294
+          }
+        ]
+      }
+    ],
+    "top_tissues": [
+      {
+        "tissue": "pleura",
+        "uberon_id": "UBERON:0000977",
+        "mean_log1p_cp10k": 2.4377,
+        "n_expressing": 428,
+        "n_total": 19695,
+        "pct_expressing": 0.0217,
+        "is_trace": false
+      },
+      {
+        "tissue": "saliva",
+        "uberon_id": "UBERON:0001836",
+        "mean_log1p_cp10k": 2.2601,
+        "n_expressing": 6549,
+        "n_total": 14502,
+        "pct_expressing": 0.4516,
+        "is_trace": false
+      },
+      {
+        "tissue": "esophagus",
+        "uberon_id": "UBERON:0001043",
+        "mean_log1p_cp10k": 2.2162,
+        "n_expressing": 3506,
+        "n_total": 23590,
+        "pct_expressing": 0.1486,
+        "is_trace": false
+      },
+      {
+        "tissue": "chest",
+        "uberon_id": "UBERON:0001443",
+        "mean_log1p_cp10k": 2.2004,
+        "n_expressing": 1745,
+        "n_total": 15413,
+        "pct_expressing": 0.1132,
+        "is_trace": false
+      },
+      {
+        "tissue": "embryo",
+        "uberon_id": "UBERON:0000922",
+        "mean_log1p_cp10k": 2.1996,
+        "n_expressing": 12276,
+        "n_total": 14244,
+        "pct_expressing": 0.8618,
+        "is_trace": false
+      },
+      {
+        "tissue": "skin of body",
+        "uberon_id": "UBERON:0002097",
+        "mean_log1p_cp10k": 2.166,
+        "n_expressing": 28674,
+        "n_total": 245931,
+        "pct_expressing": 0.1166,
+        "is_trace": false
+      },
+      {
+        "tissue": "spinal cord",
+        "uberon_id": "UBERON:0002240",
+        "mean_log1p_cp10k": 2.1612,
+        "n_expressing": 2575,
+        "n_total": 30106,
+        "pct_expressing": 0.0855,
+        "is_trace": false
+      },
+      {
+        "tissue": "adipose tissue",
+        "uberon_id": "UBERON:0001013",
+        "mean_log1p_cp10k": 2.1558,
+        "n_expressing": 64001,
+        "n_total": 31950,
+        "pct_expressing": 1.0,
+        "is_trace": false
+      },
+      {
+        "tissue": "pancreas",
+        "uberon_id": "UBERON:0001264",
+        "mean_log1p_cp10k": 2.1264,
+        "n_expressing": 7976,
+        "n_total": 246237,
+        "pct_expressing": 0.0324,
+        "is_trace": false
+      },
+      {
+        "tissue": "axilla",
+        "uberon_id": "UBERON:0009472",
+        "mean_log1p_cp10k": 2.1164,
+        "n_expressing": 13221,
+        "n_total": 94151,
+        "pct_expressing": 0.1404,
+        "is_trace": false
+      }
+    ]
+  }
 }

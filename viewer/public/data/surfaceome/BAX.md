@@ -460,3 +460,35 @@ This Markdown is generated from the canonical JSON record at `/data/surfaceome/B
 - UniProt — CC BY 4.0 (UniProt Consortium)
 
 *Confidence high — Confidence is high and aligned with the first-pass classifier. Multiple independent lines of evidence — FLIP-based live-cell microscopy, functional retrotranslocation assays, permeabilized immunofluorescence with MitoTracker co-localization, and absence from cell-surface capture proteomics (Bausch-Fluck 2018 surfaceome database) — all consistently place BAX in the cytosol and mitochondrial outer membrane, never on the extracellular leaflet of the plasma membrane. No credible counter-evidence for PM surface exposure exists in the literature or this ledger. Nothing in the reviewed evidence would change this call; BAX is not a surface target by any current experimental standard.*
+
+## CellxGene RNA enrichment (CZI Census)
+
+*Schema v2.1.1 · CZI Census 2025-11-08 · HPA-style 4× fold-change classification on log1p(CP10K) → linear means, with a zero-baseline universe for `enriched` / `group_enriched` and an eligibles-only denominator for `enhanced`. CC-BY 4.0 (CZI).*
+
+**Classification:**
+
+- **Cell class (broad rollup, ~10 compartments):** low specificity
+- **Cell type (leaf Cell Ontology terms, ~600):** low specificity
+- **Tissue (UBERON terms, ~56):** low specificity
+
+**Top 5 cell types (leaf CL, pooled across tissues):**
+
+| Cell type | CL ID | Mean log1p(CP10K) | % expressing | n_expressing / n_total |
+|---|---|---|---|---|
+| lung perichondrial fibroblast | CL:4033026 | 2.560 | 0.24% | 1 / 411 | (trace)
+| dermis microvascular lymphatic vessel endothelial cell | CL:2000041 | 2.523 | 0.83% | 5 / 603 | (trace)
+| cord blood hematopoietic stem cell | CL:2000095 | 2.388 | 1.94% | 176 / 9,056 |
+| secondary lymphoid organ macrophage | CL:0000867 | 2.299 | 3.69% | 168 / 4,554 |
+| endocrine cell | CL:0000163 | 2.277 | 3.38% | 283 / 8,385 |
+
+**Top 5 tissues (UBERON, pooled across cell types):**
+
+| Tissue | UBERON ID | Mean log1p(CP10K) | % expressing | n_expressing / n_total |
+|---|---|---|---|---|
+| pleura | UBERON:0000977 | 2.371 | 2.63% | 517 / 19,695 |
+| testis | UBERON:0000473 | 2.259 | 3.85% | 798 / 20,724 |
+| gallbladder | UBERON:0002110 | 1.999 | 30.44% | 6,027 / 19,800 |
+| adrenal gland | UBERON:0002369 | 1.892 | 2.02% | 10,965 / 543,830 |
+| heart | UBERON:0000948 | 1.885 | 80.11% | 96,602 / 120,581 |
+
+<!-- /cellxgene -->

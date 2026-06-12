@@ -532,3 +532,35 @@ This Markdown is generated from the canonical JSON record at `/data/surfaceome/H
 - UniProt — CC BY 4.0 (UniProt Consortium)
 
 *Confidence moderate — Confidence is moderate rather than low because the biology of HMGB1 as a secreted DAMP is well established across independent sources, making the 'secreted_only' call robust. However, the triage agent called this 'contextual / cell_state_induced,' noting that surface biotinylation on intact cells and flow cytometry data have been interpreted as showing HMGB1 on the outer PM leaflet bound to surface RAGE — evidence the triage cited but which is not present as a qualifying direct surface assay in the compiled ledger. The specific gap is that no live-cell non-permeabilized flow, non-perm IF, or surface biotinylation with HMGB1 confirmed as a hit appears in the evidence set reviewed here. Confidence would rise to high only with a published, replicated live-cell surface staining result (non-permeabilized flow cytometry or surface biotinylation with HMGB1 explicitly listed as a detected surface hit) from an independent laboratory.*
+
+## CellxGene RNA enrichment (CZI Census)
+
+*Schema v2.1.1 · CZI Census 2025-11-08 · HPA-style 4× fold-change classification on log1p(CP10K) → linear means, with a zero-baseline universe for `enriched` / `group_enriched` and an eligibles-only denominator for `enhanced`. CC-BY 4.0 (CZI).*
+
+**Classification:**
+
+- **Cell class (broad rollup, ~10 compartments):** low specificity
+- **Cell type (leaf Cell Ontology terms, ~600):** enhanced · large pre-B-II cell · 6.7×
+- **Tissue (UBERON terms, ~56):** low specificity
+
+**Top 5 cell types (leaf CL, pooled across tissues):**
+
+| Cell type | CL ID | Mean log1p(CP10K) | % expressing | n_expressing / n_total |
+|---|---|---|---|---|
+| large pre-B-II cell | CL:0000957 | 4.051 | 99.94% | 8,449 / 8,454 |
+| fraction A pre-pro B cell | CL:0002045 | 4.017 | 94.54% | 7,724 / 8,170 |
+| proerythroblast | CL:0000547 | 3.783 | 96.87% | 1,576 / 1,627 |
+| migratory enteric neural crest cell | CL:0002607 | 3.505 | 100.00% | 520 / 520 |
+| basophilic erythroblast | CL:0000549 | 3.395 | 99.94% | 5,250 / 5,253 |
+
+**Top 5 tissues (UBERON, pooled across cell types):**
+
+| Tissue | UBERON ID | Mean log1p(CP10K) | % expressing | n_expressing / n_total |
+|---|---|---|---|---|
+| cortex | UBERON:0001851 | 2.843 | 97.43% | 145,911 / 149,766 |
+| forelimb | UBERON:0002102 | 2.829 | 96.55% | 37,640 / 38,983 |
+| hindlimb | UBERON:0002103 | 2.730 | 92.07% | 80,076 / 86,972 |
+| embryo | UBERON:0000922 | 2.729 | 100.00% | 168,978 / 14,244 |
+| pleura | UBERON:0000977 | 2.659 | 26.17% | 5,155 / 19,695 |
+
+<!-- /cellxgene -->

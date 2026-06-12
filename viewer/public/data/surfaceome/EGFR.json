@@ -7248,5 +7248,341 @@
   "confidence": "high",
   "confidence_reasoning": "EGFR surface accessibility is supported by multiple independent direct assay types across dozens of cell lines and primary patient tissue, fully concordant with the triage verdict. The evidence grade is direct multi-method with no meaningful contradictions to surface expression. The triage prior assigned high confidence for a classical surface receptor, which the experimental evidence fully corroborates.",
   "model_path": "claude-sonnet-4-6",
-  "record_generated_at": "2026-06-01T00:28:03.567292Z"
+  "record_generated_at": "2026-06-01T00:28:03.567292Z",
+  "cellxgene": {
+    "schema_version": "2.1.1",
+    "census_version": "2025-11-08",
+    "cell_class_enrichment": {
+      "class": "low_specificity",
+      "class_ids": [],
+      "class_labels": [],
+      "fold_change": null,
+      "fold_change_infinite": false
+    },
+    "cell_type_enrichment": {
+      "class": "low_specificity",
+      "cl_ids": [],
+      "fold_change": null,
+      "fold_change_infinite": false
+    },
+    "tissue_enrichment": {
+      "class": "low_specificity",
+      "uberon_ids": [],
+      "tissue_labels": [],
+      "fold_change": null,
+      "fold_change_infinite": false
+    },
+    "enrichment_class": "low_specificity",
+    "enrichment_cl_ids": [],
+    "fold_change": null,
+    "fold_change_infinite": false,
+    "top_cell_types": [
+      {
+        "cell_type": "trophoblast giant cell",
+        "cl_id": "CL:0002488",
+        "mean_log1p_cp10k": 2.8981,
+        "n_expressing": 124,
+        "n_total": 1156,
+        "pct_expressing": 0.1073,
+        "is_rare": false,
+        "is_trace": false,
+        "tissues": [
+          {
+            "tissue": "placenta",
+            "uberon_id": "UBERON:0001987",
+            "mean_log1p_cp10k": 2.8981,
+            "n_expressing": 124,
+            "n_total": 1137,
+            "pct_expressing": 0.1091
+          }
+        ]
+      },
+      {
+        "cell_type": "malignant cell",
+        "cl_id": "CL:0001064",
+        "mean_log1p_cp10k": 2.8622,
+        "n_expressing": 209677,
+        "n_total": 1384794,
+        "pct_expressing": 0.1514,
+        "is_rare": false,
+        "is_trace": false,
+        "tissues": [
+          {
+            "tissue": "brain",
+            "uberon_id": "UBERON:0000955",
+            "mean_log1p_cp10k": 3.0778,
+            "n_expressing": 172687,
+            "n_total": 138673,
+            "pct_expressing": 1.2453
+          },
+          {
+            "tissue": "lung",
+            "uberon_id": "UBERON:0002048",
+            "mean_log1p_cp10k": 1.9706,
+            "n_expressing": 8120,
+            "n_total": 76341,
+            "pct_expressing": 0.1064
+          },
+          {
+            "tissue": "axilla",
+            "uberon_id": "UBERON:0009472",
+            "mean_log1p_cp10k": 1.688,
+            "n_expressing": 7925,
+            "n_total": 40778,
+            "pct_expressing": 0.1943
+          }
+        ]
+      },
+      {
+        "cell_type": "chorionic trophoblast cell",
+        "cl_id": "CL:0011101",
+        "mean_log1p_cp10k": 2.8543,
+        "n_expressing": 13,
+        "n_total": 287,
+        "pct_expressing": 0.0453,
+        "is_rare": true,
+        "is_trace": false,
+        "tissues": [
+          {
+            "tissue": "placenta",
+            "uberon_id": "UBERON:0001987",
+            "mean_log1p_cp10k": 2.8543,
+            "n_expressing": 13,
+            "n_total": 287,
+            "pct_expressing": 0.0453
+          }
+        ]
+      },
+      {
+        "cell_type": "basal epithelial cell of prostatic duct",
+        "cl_id": "CL:0002236",
+        "mean_log1p_cp10k": 2.8455,
+        "n_expressing": 4203,
+        "n_total": 7295,
+        "pct_expressing": 0.5761,
+        "is_rare": false,
+        "is_trace": false,
+        "tissues": [
+          {
+            "tissue": "prostate gland",
+            "uberon_id": "UBERON:0002367",
+            "mean_log1p_cp10k": 2.8455,
+            "n_expressing": 4203,
+            "n_total": 7295,
+            "pct_expressing": 0.5761
+          }
+        ]
+      },
+      {
+        "cell_type": "skeletal muscle fibroblast",
+        "cl_id": "CL:0011027",
+        "mean_log1p_cp10k": 2.7951,
+        "n_expressing": 2898,
+        "n_total": 5913,
+        "pct_expressing": 0.4901,
+        "is_rare": false,
+        "is_trace": false,
+        "tissues": []
+      },
+      {
+        "cell_type": "neuroendocrine cell",
+        "cl_id": "CL:0000165",
+        "mean_log1p_cp10k": 2.7733,
+        "n_expressing": 160,
+        "n_total": 15747,
+        "pct_expressing": 0.0102,
+        "is_rare": false,
+        "is_trace": false,
+        "tissues": [
+          {
+            "tissue": "lung",
+            "uberon_id": "UBERON:0002048",
+            "mean_log1p_cp10k": 2.8182,
+            "n_expressing": 152,
+            "n_total": 14905,
+            "pct_expressing": 0.0102
+          },
+          {
+            "tissue": "prostate gland",
+            "uberon_id": "UBERON:0002367",
+            "mean_log1p_cp10k": 2.0457,
+            "n_expressing": 6,
+            "n_total": 79,
+            "pct_expressing": 0.0759
+          },
+          {
+            "tissue": "intestine",
+            "uberon_id": "UBERON:0000160",
+            "mean_log1p_cp10k": 1.5447,
+            "n_expressing": 2,
+            "n_total": 216,
+            "pct_expressing": 0.0093
+          }
+        ]
+      },
+      {
+        "cell_type": "cycling stromal cell",
+        "cl_id": "CL:4047001",
+        "mean_log1p_cp10k": 2.7554,
+        "n_expressing": 1,
+        "n_total": 260,
+        "pct_expressing": 0.0038,
+        "is_rare": true,
+        "is_trace": true,
+        "tissues": [
+          {
+            "tissue": "breast",
+            "uberon_id": "UBERON:0000310",
+            "mean_log1p_cp10k": 2.7554,
+            "n_expressing": 1,
+            "n_total": 260,
+            "pct_expressing": 0.0038
+          }
+        ]
+      },
+      {
+        "cell_type": "endodermal cell",
+        "cl_id": "CL:0000223",
+        "mean_log1p_cp10k": 2.6059,
+        "n_expressing": 2490,
+        "n_total": 8571,
+        "pct_expressing": 0.2905,
+        "is_rare": false,
+        "is_trace": false,
+        "tissues": []
+      },
+      {
+        "cell_type": "basal epithelial cell of tracheobronchial tree",
+        "cl_id": "CL:0002329",
+        "mean_log1p_cp10k": 2.5803,
+        "n_expressing": 4250,
+        "n_total": 8145,
+        "pct_expressing": 0.5218,
+        "is_rare": false,
+        "is_trace": false,
+        "tissues": [
+          {
+            "tissue": "mucosa",
+            "uberon_id": "UBERON:0000344",
+            "mean_log1p_cp10k": 2.5803,
+            "n_expressing": 4250,
+            "n_total": 8145,
+            "pct_expressing": 0.5218
+          }
+        ]
+      },
+      {
+        "cell_type": "lung megakaryocyte",
+        "cl_id": "CL:4033018",
+        "mean_log1p_cp10k": 2.5702,
+        "n_expressing": 259,
+        "n_total": 2316,
+        "pct_expressing": 0.1118,
+        "is_rare": false,
+        "is_trace": false,
+        "tissues": [
+          {
+            "tissue": "lung",
+            "uberon_id": "UBERON:0002048",
+            "mean_log1p_cp10k": 2.5702,
+            "n_expressing": 259,
+            "n_total": 14,
+            "pct_expressing": 18.5
+          }
+        ]
+      }
+    ],
+    "top_tissues": [
+      {
+        "tissue": "tendon of semitendinosus",
+        "uberon_id": "UBERON:8480009",
+        "mean_log1p_cp10k": 2.5202,
+        "n_expressing": 4137,
+        "n_total": 10533,
+        "pct_expressing": 0.3928,
+        "is_trace": false
+      },
+      {
+        "tissue": "pleura",
+        "uberon_id": "UBERON:0000977",
+        "mean_log1p_cp10k": 2.4982,
+        "n_expressing": 1935,
+        "n_total": 19695,
+        "pct_expressing": 0.0982,
+        "is_trace": false
+      },
+      {
+        "tissue": "placenta",
+        "uberon_id": "UBERON:0001987",
+        "mean_log1p_cp10k": 2.3337,
+        "n_expressing": 144803,
+        "n_total": 316501,
+        "pct_expressing": 0.4575,
+        "is_trace": false
+      },
+      {
+        "tissue": "mucosa",
+        "uberon_id": "UBERON:0000344",
+        "mean_log1p_cp10k": 2.3333,
+        "n_expressing": 9710,
+        "n_total": 26060,
+        "pct_expressing": 0.3726,
+        "is_trace": false
+      },
+      {
+        "tissue": "testis",
+        "uberon_id": "UBERON:0000473",
+        "mean_log1p_cp10k": 2.2697,
+        "n_expressing": 408,
+        "n_total": 20724,
+        "pct_expressing": 0.0197,
+        "is_trace": false
+      },
+      {
+        "tissue": "heart",
+        "uberon_id": "UBERON:0000948",
+        "mean_log1p_cp10k": 2.2491,
+        "n_expressing": 533728,
+        "n_total": 120581,
+        "pct_expressing": 1.0,
+        "is_trace": false
+      },
+      {
+        "tissue": "pancreas",
+        "uberon_id": "UBERON:0001264",
+        "mean_log1p_cp10k": 2.2417,
+        "n_expressing": 16026,
+        "n_total": 246237,
+        "pct_expressing": 0.0651,
+        "is_trace": false
+      },
+      {
+        "tissue": "esophagus",
+        "uberon_id": "UBERON:0001043",
+        "mean_log1p_cp10k": 2.2379,
+        "n_expressing": 8640,
+        "n_total": 23590,
+        "pct_expressing": 0.3663,
+        "is_trace": false
+      },
+      {
+        "tissue": "abdomen",
+        "uberon_id": "UBERON:0000916",
+        "mean_log1p_cp10k": 2.2158,
+        "n_expressing": 21086,
+        "n_total": 219032,
+        "pct_expressing": 0.0963,
+        "is_trace": false
+      },
+      {
+        "tissue": "embryo",
+        "uberon_id": "UBERON:0000922",
+        "mean_log1p_cp10k": 2.1868,
+        "n_expressing": 28603,
+        "n_total": 14244,
+        "pct_expressing": 1.0,
+        "is_trace": false
+      }
+    ]
+  }
 }

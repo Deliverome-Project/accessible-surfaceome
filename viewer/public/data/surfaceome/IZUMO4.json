@@ -963,5 +963,288 @@
   "confidence": "moderate",
   "confidence_reasoning": "Confidence is moderate rather than low because multiple independent sources converge on the same conclusion \u2014 IZUMO4 lacks a transmembrane domain and is constitutively secreted \u2014 but these sources are all review assertions or computational predictions rather than direct experimental assays (e.g. western blot of conditioned medium, live-cell surface biotinylation, or flow cytometry). The triage verdict of 'nuclear' is partially at odds with the ledger, which describes secreted rather than nuclear localization; both agree there is no plasma membrane surface display. Confidence would rise to high if a direct surface-proteomics or conditioned-medium mass spectrometry study confirmed the secreted topology and ruled out any membrane-anchored isoform, particularly in sperm or testicular cell lines.",
   "model_path": "claude-sonnet-4-6",
-  "record_generated_at": "2026-05-31T15:24:58.797948Z"
+  "record_generated_at": "2026-05-31T15:24:58.797948Z",
+  "cellxgene": {
+    "schema_version": "2.1.1",
+    "census_version": "2025-11-08",
+    "cell_class_enrichment": {
+      "class": "group_enriched",
+      "class_ids": [
+        "Reproductive",
+        "Epithelial",
+        "Neural",
+        "Immune"
+      ],
+      "class_labels": [
+        "Reproductive",
+        "Epithelial",
+        "Neural",
+        "Immune"
+      ],
+      "fold_change": null,
+      "fold_change_infinite": true
+    },
+    "cell_type_enrichment": {
+      "class": "low_specificity",
+      "cl_ids": [],
+      "fold_change": null,
+      "fold_change_infinite": false
+    },
+    "tissue_enrichment": {
+      "class": "low_specificity",
+      "uberon_ids": [],
+      "tissue_labels": [],
+      "fold_change": null,
+      "fold_change_infinite": false
+    },
+    "enrichment_class": "group_enriched",
+    "enrichment_cl_ids": [
+      "Reproductive",
+      "Epithelial",
+      "Neural",
+      "Immune"
+    ],
+    "fold_change": null,
+    "fold_change_infinite": true,
+    "top_cell_types": [
+      {
+        "cell_type": "spermatocyte",
+        "cl_id": "CL:0000017",
+        "mean_log1p_cp10k": 2.5987,
+        "n_expressing": 2616,
+        "n_total": 3070,
+        "pct_expressing": 0.8521,
+        "is_rare": false,
+        "is_trace": false,
+        "tissues": [
+          {
+            "tissue": "testis",
+            "uberon_id": "UBERON:0000473",
+            "mean_log1p_cp10k": 2.5987,
+            "n_expressing": 2616,
+            "n_total": 3070,
+            "pct_expressing": 0.8521
+          }
+        ]
+      },
+      {
+        "cell_type": "epithelial cell of sweat gland",
+        "cl_id": "CL:1000448",
+        "mean_log1p_cp10k": 2.5554,
+        "n_expressing": 1,
+        "n_total": 301,
+        "pct_expressing": 0.0033,
+        "is_rare": true,
+        "is_trace": true,
+        "tissues": []
+      },
+      {
+        "cell_type": "inhibitory motor neuron",
+        "cl_id": "CL:0008015",
+        "mean_log1p_cp10k": 2.537,
+        "n_expressing": 1,
+        "n_total": 745,
+        "pct_expressing": 0.0013,
+        "is_rare": true,
+        "is_trace": true,
+        "tissues": []
+      },
+      {
+        "cell_type": "visceromotor neuron",
+        "cl_id": "CL:0005025",
+        "mean_log1p_cp10k": 2.437,
+        "n_expressing": 1,
+        "n_total": 610,
+        "pct_expressing": 0.0016,
+        "is_rare": true,
+        "is_trace": true,
+        "tissues": [
+          {
+            "tissue": "heart",
+            "uberon_id": "UBERON:0000948",
+            "mean_log1p_cp10k": 2.437,
+            "n_expressing": 1,
+            "n_total": 348,
+            "pct_expressing": 0.0029
+          }
+        ]
+      },
+      {
+        "cell_type": "natural T-regulatory cell",
+        "cl_id": "CL:0000903",
+        "mean_log1p_cp10k": 2.2807,
+        "n_expressing": 114,
+        "n_total": 7117,
+        "pct_expressing": 0.016,
+        "is_rare": false,
+        "is_trace": false,
+        "tissues": []
+      },
+      {
+        "cell_type": "CD34-positive, CD56-positive, CD117-positive common innate lymphoid precursor, human",
+        "cl_id": "CL:0001074",
+        "mean_log1p_cp10k": 2.2445,
+        "n_expressing": 2,
+        "n_total": 417,
+        "pct_expressing": 0.0048,
+        "is_rare": true,
+        "is_trace": true,
+        "tissues": []
+      },
+      {
+        "cell_type": "salivary gland glandular cell",
+        "cl_id": "CL:1001596",
+        "mean_log1p_cp10k": 2.2384,
+        "n_expressing": 16,
+        "n_total": 1071,
+        "pct_expressing": 0.0149,
+        "is_rare": false,
+        "is_trace": false,
+        "tissues": [
+          {
+            "tissue": "stomach",
+            "uberon_id": "UBERON:0000945",
+            "mean_log1p_cp10k": 2.1707,
+            "n_expressing": 2,
+            "n_total": 102,
+            "pct_expressing": 0.0196
+          }
+        ]
+      },
+      {
+        "cell_type": "pancreatic acinar cell",
+        "cl_id": "CL:0002064",
+        "mean_log1p_cp10k": 2.2195,
+        "n_expressing": 1074,
+        "n_total": 99936,
+        "pct_expressing": 0.0107,
+        "is_rare": false,
+        "is_trace": false,
+        "tissues": [
+          {
+            "tissue": "pancreas",
+            "uberon_id": "UBERON:0001264",
+            "mean_log1p_cp10k": 2.2205,
+            "n_expressing": 1071,
+            "n_total": 56645,
+            "pct_expressing": 0.0189
+          }
+        ]
+      },
+      {
+        "cell_type": "L3 intratelencephalic projecting glutamatergic neuron",
+        "cl_id": "CL:4030061",
+        "mean_log1p_cp10k": 2.2172,
+        "n_expressing": 1,
+        "n_total": 912,
+        "pct_expressing": 0.0011,
+        "is_rare": true,
+        "is_trace": true,
+        "tissues": []
+      },
+      {
+        "cell_type": "embryonic blood vessel endothelial progenitor cell",
+        "cl_id": "CL:0002546",
+        "mean_log1p_cp10k": 2.1679,
+        "n_expressing": 1,
+        "n_total": 977,
+        "pct_expressing": 0.001,
+        "is_rare": true,
+        "is_trace": true,
+        "tissues": []
+      }
+    ],
+    "top_tissues": [
+      {
+        "tissue": "pleura",
+        "uberon_id": "UBERON:0000977",
+        "mean_log1p_cp10k": 2.3187,
+        "n_expressing": 26,
+        "n_total": 19695,
+        "pct_expressing": 0.0013,
+        "is_trace": true
+      },
+      {
+        "tissue": "testis",
+        "uberon_id": "UBERON:0000473",
+        "mean_log1p_cp10k": 2.2568,
+        "n_expressing": 5888,
+        "n_total": 20724,
+        "pct_expressing": 0.2841,
+        "is_trace": false
+      },
+      {
+        "tissue": "scalp",
+        "uberon_id": "UBERON:0000403",
+        "mean_log1p_cp10k": 2.2209,
+        "n_expressing": 3,
+        "n_total": 3029,
+        "pct_expressing": 0.001,
+        "is_trace": true
+      },
+      {
+        "tissue": "esophagus",
+        "uberon_id": "UBERON:0001043",
+        "mean_log1p_cp10k": 2.2015,
+        "n_expressing": 875,
+        "n_total": 23590,
+        "pct_expressing": 0.0371,
+        "is_trace": false
+      },
+      {
+        "tissue": "pancreas",
+        "uberon_id": "UBERON:0001264",
+        "mean_log1p_cp10k": 2.1621,
+        "n_expressing": 1506,
+        "n_total": 246237,
+        "pct_expressing": 0.0061,
+        "is_trace": true
+      },
+      {
+        "tissue": "saliva",
+        "uberon_id": "UBERON:0001836",
+        "mean_log1p_cp10k": 2.0368,
+        "n_expressing": 27,
+        "n_total": 14502,
+        "pct_expressing": 0.0019,
+        "is_trace": true
+      },
+      {
+        "tissue": "mucosa",
+        "uberon_id": "UBERON:0000344",
+        "mean_log1p_cp10k": 1.9052,
+        "n_expressing": 527,
+        "n_total": 26060,
+        "pct_expressing": 0.0202,
+        "is_trace": false
+      },
+      {
+        "tissue": "heart",
+        "uberon_id": "UBERON:0000948",
+        "mean_log1p_cp10k": 1.8807,
+        "n_expressing": 11214,
+        "n_total": 120581,
+        "pct_expressing": 0.093,
+        "is_trace": false
+      },
+      {
+        "tissue": "gallbladder",
+        "uberon_id": "UBERON:0002110",
+        "mean_log1p_cp10k": 1.8583,
+        "n_expressing": 14,
+        "n_total": 19800,
+        "pct_expressing": 0.0007,
+        "is_trace": true
+      },
+      {
+        "tissue": "axilla",
+        "uberon_id": "UBERON:0009472",
+        "mean_log1p_cp10k": 1.8548,
+        "n_expressing": 246,
+        "n_total": 94151,
+        "pct_expressing": 0.0026,
+        "is_trace": true
+      }
+    ]
+  }
 }

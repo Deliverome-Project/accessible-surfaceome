@@ -1056,3 +1056,35 @@ This Markdown is generated from the canonical JSON record at `/data/surfaceome/L
 - UniProt — CC BY 4.0 (UniProt Consortium)
 
 *Confidence high — *
+
+## CellxGene RNA enrichment (CZI Census)
+
+*Schema v2.1.1 · CZI Census 2025-11-08 · HPA-style 4× fold-change classification on log1p(CP10K) → linear means, with a zero-baseline universe for `enriched` / `group_enriched` and an eligibles-only denominator for `enhanced`. CC-BY 4.0 (CZI).*
+
+**Classification:**
+
+- **Cell class (broad rollup, ~10 compartments):** low specificity
+- **Cell type (leaf Cell Ontology terms, ~600):** low specificity
+- **Tissue (UBERON terms, ~56):** low specificity
+
+**Top 5 cell types (leaf CL, pooled across tissues):**
+
+| Cell type | CL ID | Mean log1p(CP10K) | % expressing | n_expressing / n_total |
+|---|---|---|---|---|
+| epithelial cell of proximal tubule segment 3 | CL:4030011 | 3.289 | 62.75% | 2,296 / 3,659 |
+| kidney proximal convoluted tubule epithelial cell | CL:1000838 | 3.206 | 76.10% | 15,755 / 20,704 |
+| supporting cell of vestibular epithelium | CL:0002316 | 3.153 | 0.37% | 1 / 270 | (trace)
+| epithelial cell of proximal tubule | CL:0002306 | 2.707 | 60.53% | 141,865 / 234,384 |
+| pigmented epithelial cell | CL:0000529 | 2.681 | 31.18% | 9,349 / 29,987 |
+
+**Top 5 tissues (UBERON, pooled across cell types):**
+
+| Tissue | UBERON ID | Mean log1p(CP10K) | % expressing | n_expressing / n_total |
+|---|---|---|---|---|
+| kidney | UBERON:0002113 | 2.585 | 23.17% | 218,605 / 943,536 |
+| lamina propria | UBERON:0000030 | 2.342 | 0.00% | 1 / 23,687 | (trace)
+| pleura | UBERON:0000977 | 2.279 | 1.51% | 297 / 19,695 |
+| testis | UBERON:0000473 | 2.248 | 0.39% | 80 / 20,724 | (trace)
+| embryo | UBERON:0000922 | 2.226 | 65.23% | 9,291 / 14,244 |
+
+<!-- /cellxgene -->

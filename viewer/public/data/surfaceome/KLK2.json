@@ -3092,5 +3092,318 @@
   "confidence": "moderate",
   "confidence_reasoning": "Confidence is moderate for two reasons. First, the surface-expression evidence originates predominantly from a single 2025 research publication (PMC12580770); while that study used rigorous live-cell FACS on both VCaP cells and fresh patient mCRPC tumor specimens, and the surface activity is corroborated by three therapeutic modalities, independent replication by a second research group is not yet documented. Second, the molecular mechanism by which a signal-peptide-only secreted protease is retained at the plasma membrane remains uncharacterized \u2014 the docking partner is unknown \u2014 introducing uncertainty about the robustness and prevalence of the surface pool relative to the dominant secreted form. Confidence would increase with an independent group confirming live-cell surface staining in a different prostate cancer model, or with biochemical identification of the surface-retention partner.",
   "model_path": "claude-sonnet-4-6",
-  "record_generated_at": "2026-05-31T15:33:42.417728Z"
+  "record_generated_at": "2026-05-31T15:33:42.417728Z",
+  "cellxgene": {
+    "schema_version": "2.1.1",
+    "census_version": "2025-11-08",
+    "cell_class_enrichment": {
+      "class": "enriched",
+      "class_ids": [
+        "Epithelial"
+      ],
+      "class_labels": [
+        "Epithelial"
+      ],
+      "fold_change": 7.787,
+      "fold_change_infinite": false
+    },
+    "cell_type_enrichment": {
+      "class": "low_specificity",
+      "cl_ids": [],
+      "fold_change": null,
+      "fold_change_infinite": false
+    },
+    "tissue_enrichment": {
+      "class": "enriched",
+      "uberon_ids": [
+        "UBERON:0002367"
+      ],
+      "tissue_labels": [
+        "prostate gland"
+      ],
+      "fold_change": null,
+      "fold_change_infinite": true
+    },
+    "enrichment_class": "enriched",
+    "enrichment_cl_ids": [
+      "Epithelial"
+    ],
+    "fold_change": 7.787,
+    "fold_change_infinite": false,
+    "top_cell_types": [
+      {
+        "cell_type": "luminal cell of prostate epithelium",
+        "cl_id": "CL:0002340",
+        "mean_log1p_cp10k": 3.6836,
+        "n_expressing": 17072,
+        "n_total": 32099,
+        "pct_expressing": 0.5319,
+        "is_rare": false,
+        "is_trace": false,
+        "tissues": [
+          {
+            "tissue": "prostate gland",
+            "uberon_id": "UBERON:0002367",
+            "mean_log1p_cp10k": 3.6836,
+            "n_expressing": 17072,
+            "n_total": 28518,
+            "pct_expressing": 0.5986
+          }
+        ]
+      },
+      {
+        "cell_type": "endocrine cell",
+        "cl_id": "CL:0000163",
+        "mean_log1p_cp10k": 3.3195,
+        "n_expressing": 390,
+        "n_total": 8385,
+        "pct_expressing": 0.0465,
+        "is_rare": false,
+        "is_trace": false,
+        "tissues": [
+          {
+            "tissue": "prostate gland",
+            "uberon_id": "UBERON:0002367",
+            "mean_log1p_cp10k": 3.3223,
+            "n_expressing": 389,
+            "n_total": 1939,
+            "pct_expressing": 0.2006
+          },
+          {
+            "tissue": "pancreas",
+            "uberon_id": "UBERON:0001264",
+            "mean_log1p_cp10k": 2.2277,
+            "n_expressing": 1,
+            "n_total": 5424,
+            "pct_expressing": 0.0002
+          }
+        ]
+      },
+      {
+        "cell_type": "epithelial cell of prostate",
+        "cl_id": "CL:0002231",
+        "mean_log1p_cp10k": 3.2615,
+        "n_expressing": 2032,
+        "n_total": 7752,
+        "pct_expressing": 0.2621,
+        "is_rare": false,
+        "is_trace": false,
+        "tissues": [
+          {
+            "tissue": "prostate gland",
+            "uberon_id": "UBERON:0002367",
+            "mean_log1p_cp10k": 3.2615,
+            "n_expressing": 2032,
+            "n_total": 7752,
+            "pct_expressing": 0.2621
+          }
+        ]
+      },
+      {
+        "cell_type": "mesothelial fibroblast",
+        "cl_id": "CL:4023054",
+        "mean_log1p_cp10k": 2.9152,
+        "n_expressing": 1,
+        "n_total": 232,
+        "pct_expressing": 0.0043,
+        "is_rare": true,
+        "is_trace": true,
+        "tissues": [
+          {
+            "tissue": "lung",
+            "uberon_id": "UBERON:0002048",
+            "mean_log1p_cp10k": 2.9152,
+            "n_expressing": 1,
+            "n_total": 232,
+            "pct_expressing": 0.0043
+          }
+        ]
+      },
+      {
+        "cell_type": "prostate stromal cell",
+        "cl_id": "CL:0002622",
+        "mean_log1p_cp10k": 2.8998,
+        "n_expressing": 1,
+        "n_total": 63,
+        "pct_expressing": 0.0159,
+        "is_rare": true,
+        "is_trace": true,
+        "tissues": []
+      },
+      {
+        "cell_type": "smooth muscle cell of prostate",
+        "cl_id": "CL:1000487",
+        "mean_log1p_cp10k": 2.5516,
+        "n_expressing": 103,
+        "n_total": 3938,
+        "pct_expressing": 0.0262,
+        "is_rare": false,
+        "is_trace": false,
+        "tissues": [
+          {
+            "tissue": "prostate gland",
+            "uberon_id": "UBERON:0002367",
+            "mean_log1p_cp10k": 2.5516,
+            "n_expressing": 103,
+            "n_total": 2060,
+            "pct_expressing": 0.05
+          }
+        ]
+      },
+      {
+        "cell_type": "club-like cell of the urethral epithelium",
+        "cl_id": "CL:4032000",
+        "mean_log1p_cp10k": 2.5338,
+        "n_expressing": 830,
+        "n_total": 4966,
+        "pct_expressing": 0.1671,
+        "is_rare": false,
+        "is_trace": false,
+        "tissues": [
+          {
+            "tissue": "prostate gland",
+            "uberon_id": "UBERON:0002367",
+            "mean_log1p_cp10k": 2.5338,
+            "n_expressing": 830,
+            "n_total": 4966,
+            "pct_expressing": 0.1671
+          }
+        ]
+      },
+      {
+        "cell_type": "basal epithelial cell of prostatic duct",
+        "cl_id": "CL:0002236",
+        "mean_log1p_cp10k": 2.5044,
+        "n_expressing": 175,
+        "n_total": 7295,
+        "pct_expressing": 0.024,
+        "is_rare": false,
+        "is_trace": false,
+        "tissues": [
+          {
+            "tissue": "prostate gland",
+            "uberon_id": "UBERON:0002367",
+            "mean_log1p_cp10k": 2.5044,
+            "n_expressing": 175,
+            "n_total": 7295,
+            "pct_expressing": 0.024
+          }
+        ]
+      },
+      {
+        "cell_type": "sebaceous gland cell",
+        "cl_id": "CL:2000021",
+        "mean_log1p_cp10k": 2.1291,
+        "n_expressing": 1,
+        "n_total": 233,
+        "pct_expressing": 0.0043,
+        "is_rare": true,
+        "is_trace": true,
+        "tissues": []
+      },
+      {
+        "cell_type": "eosinophil",
+        "cl_id": "CL:0000771",
+        "mean_log1p_cp10k": 2.058,
+        "n_expressing": 1,
+        "n_total": 502,
+        "pct_expressing": 0.002,
+        "is_rare": true,
+        "is_trace": true,
+        "tissues": []
+      }
+    ],
+    "top_tissues": [
+      {
+        "tissue": "prostate gland",
+        "uberon_id": "UBERON:0002367",
+        "mean_log1p_cp10k": 3.1441,
+        "n_expressing": 27381,
+        "n_total": 128233,
+        "pct_expressing": 0.2135,
+        "is_trace": false
+      },
+      {
+        "tissue": "urinary bladder",
+        "uberon_id": "UBERON:0001255",
+        "mean_log1p_cp10k": 2.7276,
+        "n_expressing": 7,
+        "n_total": 36100,
+        "pct_expressing": 0.0002,
+        "is_trace": true
+      },
+      {
+        "tissue": "pancreas",
+        "uberon_id": "UBERON:0001264",
+        "mean_log1p_cp10k": 2.0994,
+        "n_expressing": 23,
+        "n_total": 246237,
+        "pct_expressing": 0.0001,
+        "is_trace": true
+      },
+      {
+        "tissue": "ureter",
+        "uberon_id": "UBERON:0000056",
+        "mean_log1p_cp10k": 2.0277,
+        "n_expressing": 1,
+        "n_total": 43728,
+        "pct_expressing": 0.0,
+        "is_trace": true
+      },
+      {
+        "tissue": "breast",
+        "uberon_id": "UBERON:0000310",
+        "mean_log1p_cp10k": 2.0067,
+        "n_expressing": 1242,
+        "n_total": 3306070,
+        "pct_expressing": 0.0004,
+        "is_trace": true
+      },
+      {
+        "tissue": "axilla",
+        "uberon_id": "UBERON:0009472",
+        "mean_log1p_cp10k": 1.9754,
+        "n_expressing": 5,
+        "n_total": 94151,
+        "pct_expressing": 0.0001,
+        "is_trace": true
+      },
+      {
+        "tissue": "testis",
+        "uberon_id": "UBERON:0000473",
+        "mean_log1p_cp10k": 1.9467,
+        "n_expressing": 7,
+        "n_total": 20724,
+        "pct_expressing": 0.0003,
+        "is_trace": true
+      },
+      {
+        "tissue": "kidney",
+        "uberon_id": "UBERON:0002113",
+        "mean_log1p_cp10k": 1.9312,
+        "n_expressing": 62,
+        "n_total": 943536,
+        "pct_expressing": 0.0001,
+        "is_trace": true
+      },
+      {
+        "tissue": "chest wall",
+        "uberon_id": "UBERON:0016435",
+        "mean_log1p_cp10k": 1.9062,
+        "n_expressing": 2,
+        "n_total": 20144,
+        "pct_expressing": 0.0001,
+        "is_trace": true
+      },
+      {
+        "tissue": "heart",
+        "uberon_id": "UBERON:0000948",
+        "mean_log1p_cp10k": 1.8963,
+        "n_expressing": 206,
+        "n_total": 120581,
+        "pct_expressing": 0.0017,
+        "is_trace": true
+      }
+    ]
+  }
 }

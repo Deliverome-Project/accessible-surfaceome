@@ -473,3 +473,35 @@ This Markdown is generated from the canonical JSON record at `/data/surfaceome/K
 - UniProt — CC BY 4.0 (UniProt Consortium)
 
 *Confidence moderate — Confidence is moderate for two reasons. First, the surface-expression evidence originates predominantly from a single 2025 research publication (PMC12580770); while that study used rigorous live-cell FACS on both VCaP cells and fresh patient mCRPC tumor specimens, and the surface activity is corroborated by three therapeutic modalities, independent replication by a second research group is not yet documented. Second, the molecular mechanism by which a signal-peptide-only secreted protease is retained at the plasma membrane remains uncharacterized — the docking partner is unknown — introducing uncertainty about the robustness and prevalence of the surface pool relative to the dominant secreted form. Confidence would increase with an independent group confirming live-cell surface staining in a different prostate cancer model, or with biochemical identification of the surface-retention partner.*
+
+## CellxGene RNA enrichment (CZI Census)
+
+*Schema v2.1.1 · CZI Census 2025-11-08 · HPA-style 4× fold-change classification on log1p(CP10K) → linear means, with a zero-baseline universe for `enriched` / `group_enriched` and an eligibles-only denominator for `enhanced`. CC-BY 4.0 (CZI).*
+
+**Classification:**
+
+- **Cell class (broad rollup, ~10 compartments):** enriched · Epithelial · 7.8×
+- **Cell type (leaf Cell Ontology terms, ~600):** low specificity
+- **Tissue (UBERON terms, ~56):** enriched · prostate gland · ∞×
+
+**Top 5 cell types (leaf CL, pooled across tissues):**
+
+| Cell type | CL ID | Mean log1p(CP10K) | % expressing | n_expressing / n_total |
+|---|---|---|---|---|
+| luminal cell of prostate epithelium | CL:0002340 | 3.684 | 53.19% | 17,072 / 32,099 |
+| endocrine cell | CL:0000163 | 3.320 | 4.65% | 390 / 8,385 |
+| epithelial cell of prostate | CL:0002231 | 3.261 | 26.21% | 2,032 / 7,752 |
+| mesothelial fibroblast | CL:4023054 | 2.915 | 0.43% | 1 / 232 | (trace)
+| prostate stromal cell | CL:0002622 | 2.900 | 1.59% | 1 / 63 | (trace)
+
+**Top 5 tissues (UBERON, pooled across cell types):**
+
+| Tissue | UBERON ID | Mean log1p(CP10K) | % expressing | n_expressing / n_total |
+|---|---|---|---|---|
+| prostate gland | UBERON:0002367 | 3.144 | 21.35% | 27,381 / 128,233 |
+| urinary bladder | UBERON:0001255 | 2.728 | 0.02% | 7 / 36,100 | (trace)
+| pancreas | UBERON:0001264 | 2.099 | 0.01% | 23 / 246,237 | (trace)
+| ureter | UBERON:0000056 | 2.028 | 0.00% | 1 / 43,728 | (trace)
+| breast | UBERON:0000310 | 2.007 | 0.04% | 1,242 / 3,306,070 | (trace)
+
+<!-- /cellxgene -->

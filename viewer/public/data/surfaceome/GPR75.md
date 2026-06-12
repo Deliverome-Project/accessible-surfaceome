@@ -524,3 +524,35 @@ This Markdown is generated from the canonical JSON record at `/data/surfaceome/G
 - UniProt — CC BY 4.0 (UniProt Consortium)
 
 *Confidence moderate — Confidence is moderate because direct surface-localization evidence is limited to a single BRET proximity assay using an overexpression construct with an exogenous signal peptide (PMC:PMC8062009) — no live-cell flow cytometry, surface biotinylation, or non-permeabilized antibody staining with an endogenous construct is in the literature. The functional assays in pancreatic beta cells and vascular smooth muscle (PMID:23979485) provide strong indirect support but do not directly image or quantify surface GPR75. Lifting confidence to high would require at least one direct surface-localization experiment on endogenous GPR75 — for example, live-cell immunostaining with a validated extracellular-epitope antibody, or surface biotinylation mass spectrometry in a GPR75-expressing primary cell type.*
+
+## CellxGene RNA enrichment (CZI Census)
+
+*Schema v2.1.1 · CZI Census 2025-11-08 · HPA-style 4× fold-change classification on log1p(CP10K) → linear means, with a zero-baseline universe for `enriched` / `group_enriched` and an eligibles-only denominator for `enhanced`. CC-BY 4.0 (CZI).*
+
+**Classification:**
+
+- **Cell class (broad rollup, ~10 compartments):** not detected
+- **Cell type (leaf Cell Ontology terms, ~600):** enriched · kidney loop of Henle ascending limb epithelial cell · ∞×
+- **Tissue (UBERON terms, ~56):** group enriched · brain · embryo · vasculature · ∞×
+
+**Top 5 cell types (leaf CL, pooled across tissues):**
+
+| Cell type | CL ID | Mean log1p(CP10K) | % expressing | n_expressing / n_total |
+|---|---|---|---|---|
+| visceromotor neuron | CL:0005025 | 2.343 | 0.49% | 3 / 610 | (trace)
+| mature neutrophil | CL:0000096 | 2.272 | 0.11% | 1 / 906 | (trace)
+| IgA plasmablast | CL:0000984 | 2.141 | 0.10% | 1 / 956 | (trace)
+| dermis microvascular lymphatic vessel endothelial cell | CL:2000041 | 2.078 | 0.33% | 2 / 603 | (trace)
+| kidney loop of Henle ascending limb epithelial cell | CL:1001016 | 1.756 | 1.92% | 202 / 10,531 |
+
+**Top 5 tissues (UBERON, pooled across cell types):**
+
+| Tissue | UBERON ID | Mean log1p(CP10K) | % expressing | n_expressing / n_total |
+|---|---|---|---|---|
+| pleura | UBERON:0000977 | 2.319 | 0.02% | 4 / 19,695 | (trace)
+| adrenal gland | UBERON:0002369 | 2.233 | 0.09% | 495 / 543,830 | (trace)
+| forelimb | UBERON:0002102 | 2.209 | 0.00% | 1 / 38,983 | (trace)
+| axilla | UBERON:0009472 | 2.040 | 0.00% | 4 / 94,151 | (trace)
+| intestine | UBERON:0000160 | 2.030 | 0.03% | 91 / 327,410 | (trace)
+
+<!-- /cellxgene -->

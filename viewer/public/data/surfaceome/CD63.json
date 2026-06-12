@@ -10,7 +10,7 @@
   "triage_signal": "possibly_accessible",
   "triage_reasoning": "CD63 is a four-pass tetraspanin (TM4SF) that is predominantly resident in late endosomes/lysosomes and intracellular vesicles under steady-state conditions, with well-documented surface exposure via lysosomal exocytosis (e.g., in platelets upon activation, in mast cells after degranulation, and in various cancer cell lines). Flow cytometry on non-permeabilized cells confirms a PM pool, but the dominant compartment is lysosomal/endosomal. This fits the 'lysosomal_exocytosis' contextual bucket: lysosomal exocytosis drives CD63 to the cell surface transiently upon cellular activation or secretion. There is also a constitutive partial PM pool detected by surface biotinylation and flow, so dual_localization is plausible, but the classical story is lysosomal exocytosis bringing it to the surface. Multiple antibody-based and diagnostic tools target cell-surface CD63. No stable GPI or exclusive PM localization; inner leaflet anchoring is not the mechanism. The 'yes' verdict is disfavored because the dominant steady-state localization is intracellular (lysosomal).",
   "executive_summary": {
-    "one_paragraph": "CD63 is state-dependently surface-accessible as a pan-tissue tetraspanin whose dominant steady-state localization is lysosomal/endosomal but whose surface pool expands markedly upon cellular activation. Direct multi-method support: KO-validated live-cell flow cytometry on HEK293T cells (a1_evi_06, a1_evi_07), and primary human granulocytes — basophils (a1_evi_15, a1_evi_16) and eosinophils (a1_evi_19) — across multiple independent studies. Surface levels are highly state-modulated: absent-to-low on resting granulocytes and stromal cells, rising sharply after IgE-mediated degranulation, platelet activation, TCR stimulation, and in disease states including HES, NPC, and the CRC tumor microenvironment (a2_evi_01, a2_evi_02, a2_evi_09, a2_evi_16). Moderate epitope masking via glycan shielding of the EC2 loop and TEM partner occlusion is the principal binder-engineering caveat (a2_evi_30, a1_evi_04); shed and secreted forms are absent, ruling out soluble decoy concerns.",
+    "one_paragraph": "CD63 is state-dependently surface-accessible as a pan-tissue tetraspanin whose dominant steady-state localization is lysosomal/endosomal but whose surface pool expands markedly upon cellular activation. Direct multi-method support: KO-validated live-cell flow cytometry on HEK293T cells (a1_evi_06, a1_evi_07), and primary human granulocytes \u2014 basophils (a1_evi_15, a1_evi_16) and eosinophils (a1_evi_19) \u2014 across multiple independent studies. Surface levels are highly state-modulated: absent-to-low on resting granulocytes and stromal cells, rising sharply after IgE-mediated degranulation, platelet activation, TCR stimulation, and in disease states including HES, NPC, and the CRC tumor microenvironment (a2_evi_01, a2_evi_02, a2_evi_09, a2_evi_16). Moderate epitope masking via glycan shielding of the EC2 loop and TEM partner occlusion is the principal binder-engineering caveat (a2_evi_30, a1_evi_04); shed and secreted forms are absent, ruling out soluble decoy concerns.",
     "accessibility_context_summary": "Surface-accessible on activated granulocytes (basophils, eosinophils, mast cells), platelets, T cells, and macrophages upon degranulation or antigen stimulation; predominantly intracellular (lysosomal/MVB) at rest across pan-tissue expression.",
     "surface_accessibility": "high",
     "evidence_grade_summary": "direct_multi_method",
@@ -76,19 +76,19 @@
     "expression_level_rationale": "Pan-tissue transcript screen placed CD63 in the top 50 surface genes (a2_evi_24); live-cell flow shows moderate surface signal on HEK293T and primary granulocytes (a1_evi_06, a1_evi_19), with dominant intracellular pool confirming moderate rather than high surface-level expression at steady state.",
     "expression_breadth_rationale": "Transcriptomic screen excluded CD63 specifically for non-tissue-specific ubiquitous expression (a2_evi_24); protein detected in granulocytes, platelets, T cells, macrophages, MSCs, astrocytes, corneal epithelium, and lung alveoli across multiple independent studies (a1_evi_06, a1_evi_15, a1_evi_17, a1_evi_19, a2_evi_11, a2_evi_25).",
     "surface_specificity_rationale": "Dominant steady-state localization is lysosomal/MVB (a1_evi_23, a2_evi_27); surface pool is activation-gated via lysosomal exocytosis across all major cell types examined (a2_evi_01, a2_evi_02). A constitutive minor PM pool is present in HEK293T (a1_evi_06) but the overall distribution is predominantly intracellular.",
-    "has_known_ligand_rationale": "TIMP1 is a validated endogenous binding partner that engages CD63 (together with β1-integrin) on macrophage surfaces to activate AKT/mTOR signaling in the CRC pre-metastatic niche (a2_evi_16); CD63 also serves as an entry receptor for SARS-CoV-2 on T cells (a2_evi_17).",
+    "has_known_ligand_rationale": "TIMP1 is a validated endogenous binding partner that engages CD63 (together with \u03b21-integrin) on macrophage surfaces to activate AKT/mTOR signaling in the CRC pre-metastatic niche (a2_evi_16); CD63 also serves as an entry receptor for SARS-CoV-2 on T cells (a2_evi_17).",
     "low_endogenous_expression_rationale": "Pan-tissue transcript screen placed CD63 in the top 50 surface genes (a2_evi_24); live-cell flow shows moderate surface signal on HEK293T and primary granulocytes (a1_evi_06, a1_evi_19), with dominant intracellular pool confirming moderate rather than high surface-level expression at steady state.",
     "overexpression_surface_localization_observed_rationale": "No method observation pairs an overexpression/mixed expression system with a direct or supportive surface-accessibility readout."
   },
   "surface_evidence": {
     "evidence_grade": "direct_multi_method",
-    "grade_rationale": "CD63 surface accessibility is supported by multiple direct method types across independent sources, warranting `direct_multi_method`. Method type 1 — live-cell flow cytometry: CD63 positivity on intact WT HEK293T cells with CRISPR PanKO negative controls confirming antibody specificity (a1_evi_06, a1_evi_07); surface CD63 on primary human eosinophils by whole-blood flow (a1_evi_19); surface CD63 on primary human basophils (a1_evi_15, a1_evi_16); surface CD63 on platelets (a1_evi_17); primary human eosinophils in severe asthma (a1_evi_14). Method type 2 — IHC of human corneal/limbal tissue (a1_evi_20, a1_evi_21), perm status unspecified but consistent with membranous localization. The dominant steady-state localization is intracellular (lysosomes/MVBs, a1_evi_23, a1_evi_30), confirming the state-conditional (activation/degranulation-driven) character of surface exposure (a1_evi_12, a1_evi_13). This is not a contradiction — it is state-dependent dual localization. Several EV-surface observations (a1_evi_09, a1_evi_25–27) are excluded as EV-particle display, not live-cell PM. Grade: `direct_multi_method`.",
+    "grade_rationale": "CD63 surface accessibility is supported by multiple direct method types across independent sources, warranting `direct_multi_method`. Method type 1 \u2014 live-cell flow cytometry: CD63 positivity on intact WT HEK293T cells with CRISPR PanKO negative controls confirming antibody specificity (a1_evi_06, a1_evi_07); surface CD63 on primary human eosinophils by whole-blood flow (a1_evi_19); surface CD63 on primary human basophils (a1_evi_15, a1_evi_16); surface CD63 on platelets (a1_evi_17); primary human eosinophils in severe asthma (a1_evi_14). Method type 2 \u2014 IHC of human corneal/limbal tissue (a1_evi_20, a1_evi_21), perm status unspecified but consistent with membranous localization. The dominant steady-state localization is intracellular (lysosomes/MVBs, a1_evi_23, a1_evi_30), confirming the state-conditional (activation/degranulation-driven) character of surface exposure (a1_evi_12, a1_evi_13). This is not a contradiction \u2014 it is state-dependent dual localization. Several EV-surface observations (a1_evi_09, a1_evi_25\u201327) are excluded as EV-particle display, not live-cell PM. Grade: `direct_multi_method`.",
     "claim_stances": [
       {
         "claim_id": "a1_evi_01",
         "stance": "tangential",
         "weight": "moderate",
-        "note": "Canonical tetraspanin topology (4TM, EC1, EC2, intracellular termini) — baseline topology reference, not a surface-accessibility measurement."
+        "note": "Canonical tetraspanin topology (4TM, EC1, EC2, intracellular termini) \u2014 baseline topology reference, not a surface-accessibility measurement."
       },
       {
         "claim_id": "a1_evi_02",
@@ -106,7 +106,7 @@
         "claim_id": "a1_evi_04",
         "stance": "tangential",
         "weight": "low",
-        "note": "TEM complex formation may occlude ECD epitopes — ambiguous contextual note, not a direct surface claim."
+        "note": "TEM complex formation may occlude ECD epitopes \u2014 ambiguous contextual note, not a direct surface claim."
       },
       {
         "claim_id": "a1_evi_05",
@@ -136,7 +136,7 @@
         "claim_id": "a1_evi_09",
         "stance": "tangential",
         "weight": "moderate",
-        "note": "CD63 surface detection on EVs from MDA-MB-231/HeLa/A549 — EV surface, not live-cell PM; excluded as EV."
+        "note": "CD63 surface detection on EVs from MDA-MB-231/HeLa/A549 \u2014 EV surface, not live-cell PM; excluded as EV."
       },
       {
         "claim_id": "a1_evi_10",
@@ -178,7 +178,7 @@
         "claim_id": "a1_evi_16",
         "stance": "supports_surface",
         "weight": "moderate",
-        "note": "Live-cell flow cytometry on primary human basophils; CD63 upregulation after fMLP/anti-FcεRI/mastoparan/compound 48/80."
+        "note": "Live-cell flow cytometry on primary human basophils; CD63 upregulation after fMLP/anti-Fc\u03b5RI/mastoparan/compound 48/80."
       },
       {
         "claim_id": "a1_evi_17",
@@ -202,7 +202,7 @@
         "claim_id": "a1_evi_20",
         "stance": "supports_surface",
         "weight": "moderate",
-        "note": "IHC of human corneal tissue; CD63 protein detection — permeabilization unspecified, supports surface/membrane localization."
+        "note": "IHC of human corneal tissue; CD63 protein detection \u2014 permeabilization unspecified, supports surface/membrane localization."
       },
       {
         "claim_id": "a1_evi_21",
@@ -226,13 +226,13 @@
         "claim_id": "a1_evi_24",
         "stance": "tangential",
         "weight": "low",
-        "note": "IF on MSCs (perm status unspecified); vesicular compartment pattern — intracellular pool visible, not a surface-accessibility claim."
+        "note": "IF on MSCs (perm status unspecified); vesicular compartment pattern \u2014 intracellular pool visible, not a surface-accessibility claim."
       },
       {
         "claim_id": "a1_evi_25",
         "stance": "tangential",
         "weight": "low",
-        "note": "SP-IRIS on bovine colostrum-derived EVs; EV surface — excluded as EV display, not live-cell PM."
+        "note": "SP-IRIS on bovine colostrum-derived EVs; EV surface \u2014 excluded as EV display, not live-cell PM."
       },
       {
         "claim_id": "a1_evi_26",
@@ -289,7 +289,7 @@
         "surface_claim_type": "surface_accessible",
         "expression_observations": [
           {
-            "context": "HEK293T wild-type cells — CD63 positive on cell surface by live-cell flow cytometry",
+            "context": "HEK293T wild-type cells \u2014 CD63 positive on cell surface by live-cell flow cytometry",
             "sample_type": "established_cell_line",
             "level": "moderate",
             "species": "human",
@@ -299,7 +299,7 @@
             ]
           },
           {
-            "context": "HEK293T PanKO cells (CRISPR/Cas9 triple KO for CD9, CD63, CD81) — no detectable CD63 surface staining, confirming antibody specificity",
+            "context": "HEK293T PanKO cells (CRISPR/Cas9 triple KO for CD9, CD63, CD81) \u2014 no detectable CD63 surface staining, confirming antibody specificity",
             "sample_type": "established_cell_line",
             "level": "absent",
             "species": "human",
@@ -339,7 +339,7 @@
         "surface_claim_type": "surface_accessible",
         "expression_observations": [
           {
-            "context": "Alpha-gal knockout RBL SX-38 cells sensitized with AGS sera, stimulated with alpha-gal antigen — CD63+ cells increased ~3-fold vs. control serum-sensitized cells upon degranulation",
+            "context": "Alpha-gal knockout RBL SX-38 cells sensitized with AGS sera, stimulated with alpha-gal antigen \u2014 CD63+ cells increased ~3-fold vs. control serum-sensitized cells upon degranulation",
             "sample_type": "established_cell_line",
             "level": "moderate",
             "species": "other",
@@ -377,7 +377,7 @@
         "surface_claim_type": "surface_accessible",
         "expression_observations": [
           {
-            "context": "Circulating eosinophils from severe asthma patients — CD63 surface expression assessed by flow cytometry alongside HLA-DR",
+            "context": "Circulating eosinophils from severe asthma patients \u2014 CD63 surface expression assessed by flow cytometry alongside HLA-DR",
             "sample_type": "patient_sample",
             "level": "moderate",
             "species": "human",
@@ -415,7 +415,7 @@
         "surface_claim_type": "surface_accessible",
         "expression_observations": [
           {
-            "context": "Blood basophils from allergic rhinitis patients — FcεRI, CD63, and CD203c surface expression measured at baseline and after 12 weeks of omalizumab treatment",
+            "context": "Blood basophils from allergic rhinitis patients \u2014 Fc\u03b5RI, CD63, and CD203c surface expression measured at baseline and after 12 weeks of omalizumab treatment",
             "sample_type": "patient_sample",
             "level": "moderate",
             "species": "human",
@@ -453,7 +453,7 @@
         "surface_claim_type": "surface_accessible",
         "expression_observations": [
           {
-            "context": "Human basophils — CD63 surface upregulation measured as %CD63+ cells after stimulation with fMLP, anti-FcεRI antibody, mastoparan, and compound 48/80 (degranulation marker)",
+            "context": "Human basophils \u2014 CD63 surface upregulation measured as %CD63+ cells after stimulation with fMLP, anti-Fc\u03b5RI antibody, mastoparan, and compound 48/80 (degranulation marker)",
             "sample_type": "primary_human_cell",
             "level": "moderate",
             "species": "human",
@@ -491,7 +491,7 @@
         "surface_claim_type": "surface_accessible",
         "expression_observations": [
           {
-            "context": "Platelets — CD63 surface expression detected by flow cytometry; dihydromyricetin (DHM) significantly reduced surface CD63 alongside CD62P and CD40L",
+            "context": "Platelets \u2014 CD63 surface expression detected by flow cytometry; dihydromyricetin (DHM) significantly reduced surface CD63 alongside CD62P and CD40L",
             "sample_type": "primary_human_cell",
             "level": "moderate",
             "species": "unspecified",
@@ -530,7 +530,7 @@
         "surface_claim_type": "surface_accessible",
         "expression_observations": [
           {
-            "context": "Whole blood eosinophils from hypereosinophilic syndrome (HES) patients — CD63 surface expression quantified in a panel including CD69, CD62L, CD66b, CD107a/b, CCR3, CXCR4, CD101, CD274",
+            "context": "Whole blood eosinophils from hypereosinophilic syndrome (HES) patients \u2014 CD63 surface expression quantified in a panel including CD69, CD62L, CD66b, CD107a/b, CCR3, CXCR4, CD101, CD274",
             "sample_type": "patient_sample",
             "level": "moderate",
             "species": "human",
@@ -568,7 +568,7 @@
         "surface_claim_type": "plasma_membrane_localized",
         "expression_observations": [
           {
-            "context": "Human corneal limbal epithelial cells — strong CD63 expression localized to the limbal region by immunostaining; permeabilization status unspecified",
+            "context": "Human corneal limbal epithelial cells \u2014 strong CD63 expression localized to the limbal region by immunostaining; permeabilization status unspecified",
             "sample_type": "primary_human_tissue",
             "level": "high",
             "species": "human",
@@ -607,7 +607,7 @@
         "surface_claim_type": "intracellular_pool",
         "expression_observations": [
           {
-            "context": "Human umbilical cord mesenchymal stem cells (hUCMSCs) — CD63 predominantly localized to multivesicular bodies (MVBs), the primary precursors of EVs; dominant intracellular pool",
+            "context": "Human umbilical cord mesenchymal stem cells (hUCMSCs) \u2014 CD63 predominantly localized to multivesicular bodies (MVBs), the primary precursors of EVs; dominant intracellular pool",
             "sample_type": "primary_human_cell",
             "level": "moderate",
             "species": "human",
@@ -657,7 +657,7 @@
         "surface_claim_type": "intracellular_pool",
         "expression_observations": [
           {
-            "context": "Mesenchymal stem cells (MSCs) — CD63-positive compartments (green) with vesicular pattern; SMase-treated MSCs retained comparable CD63 expression levels; permeabilization status not specified",
+            "context": "Mesenchymal stem cells (MSCs) \u2014 CD63-positive compartments (green) with vesicular pattern; SMase-treated MSCs retained comparable CD63 expression levels; permeabilization status not specified",
             "sample_type": "primary_human_cell",
             "level": "moderate",
             "species": "human",
@@ -735,7 +735,7 @@
         "surface_claim_type": "unclear",
         "expression_observations": [
           {
-            "context": "MCF10DCIS cells transduced with CD63-NLuc fusion under CMV promoter — WB showed characteristic broad glycosylated CD63 band (30-60 kDa); 2.01-fold increase over parental control",
+            "context": "MCF10DCIS cells transduced with CD63-NLuc fusion under CMV promoter \u2014 WB showed characteristic broad glycosylated CD63 band (30-60 kDa); 2.01-fold increase over parental control",
             "sample_type": "established_cell_line",
             "level": "high",
             "species": "human",
@@ -768,7 +768,7 @@
         "surface_claim_type": "surface_accessible",
         "expression_observations": [
           {
-            "context": "Primary human T cells — CD63 identified as a conserved T-cell host factor supporting ACE2-independent SARS-CoV-2 entry, implying surface accessibility on intact T cells",
+            "context": "Primary human T cells \u2014 CD63 identified as a conserved T-cell host factor supporting ACE2-independent SARS-CoV-2 entry, implying surface accessibility on intact T cells",
             "sample_type": "primary_human_cell",
             "level": "low",
             "species": "human",
@@ -793,7 +793,7 @@
         "surface_claim_type": "intracellular_pool",
         "expression_observations": [
           {
-            "context": "Cancer cell lines — CD63 protein levels reduced by ANXA2 loss; restored by bafilomycin A1 (lysosomal acidification blockade) but not ubiquitination inhibition, demonstrating dominant lysosomal-dependent turnover",
+            "context": "Cancer cell lines \u2014 CD63 protein levels reduced by ANXA2 loss; restored by bafilomycin A1 (lysosomal acidification blockade) but not ubiquitination inhibition, demonstrating dominant lysosomal-dependent turnover",
             "sample_type": "established_cell_line",
             "level": "moderate",
             "species": "human",
@@ -820,7 +820,7 @@
         ]
       },
       {
-        "context": "MCF10DCIS cancer cell line — Western blot of overexpressed CD63-NLuc",
+        "context": "MCF10DCIS cancer cell line \u2014 Western blot of overexpressed CD63-NLuc",
         "sample_type": "established_cell_line",
         "measurement_type": "bulk_protein",
         "level": "moderate",
@@ -852,19 +852,19 @@
     "excluded_as_ligand_engagement": [
       {
         "evidence_id": "a1_evi_09",
-        "reason": "CD63 detected on EV surfaces from MDA-MB-231/HeLa/A549 by single-EV flow — EV/exosome surface display, not live-cell plasma membrane."
+        "reason": "CD63 detected on EV surfaces from MDA-MB-231/HeLa/A549 by single-EV flow \u2014 EV/exosome surface display, not live-cell plasma membrane."
       },
       {
         "evidence_id": "a1_evi_25",
-        "reason": "CD63 detected on bovine colostrum-derived EV surfaces by SP-IRIS — extracellular vesicle display, not live-cell PM."
+        "reason": "CD63 detected on bovine colostrum-derived EV surfaces by SP-IRIS \u2014 extracellular vesicle display, not live-cell PM."
       },
       {
         "evidence_id": "a1_evi_26",
-        "reason": "FIDA characterization of anti-CD63 binding to HEK293/ciMSC-derived EVs — EV surface antibody engagement, not live-cell PM."
+        "reason": "FIDA characterization of anti-CD63 binding to HEK293/ciMSC-derived EVs \u2014 EV surface antibody engagement, not live-cell PM."
       },
       {
         "evidence_id": "a1_evi_27",
-        "reason": "CD63 EC50 quantification on engineered HEK/ciMSC EV surfaces — EV particle surface, not live-cell plasma membrane."
+        "reason": "CD63 EC50 quantification on engineered HEK/ciMSC EV surfaces \u2014 EV particle surface, not live-cell plasma membrane."
       }
     ]
   },
@@ -1232,10 +1232,10 @@
         "restricted_lineage": null,
         "dual_loc_partner_compartment": null,
         "baseline_context": "blood basophils from healthy controls",
-        "modulating_state": "blood basophils from hypertryptasemia (HαT) or idiopathic systemic mastocytosis (ISM) patients",
+        "modulating_state": "blood basophils from hypertryptasemia (H\u03b1T) or idiopathic systemic mastocytosis (ISM) patients",
         "direction": "bidirectional",
-        "change": "CD63 surface upregulation in response to multiple stimuli (fMLP, anti-FcεRI, mastoparan, compound 48/80) differs between HαT, ISM, and healthy controls, revealing disease-state-dependent modulation of the degranulation surface CD63 response.",
-        "accessibility_implication": "Disease state (HαT vs ISM) alters the magnitude of activation-induced surface CD63, meaning binder accessibility differs across these disease contexts.",
+        "change": "CD63 surface upregulation in response to multiple stimuli (fMLP, anti-Fc\u03b5RI, mastoparan, compound 48/80) differs between H\u03b1T, ISM, and healthy controls, revealing disease-state-dependent modulation of the degranulation surface CD63 response.",
+        "accessibility_implication": "Disease state (H\u03b1T vs ISM) alters the magnitude of activation-induced surface CD63, meaning binder accessibility differs across these disease contexts.",
         "species": "human",
         "species_inferred": false,
         "cited_evidence_ids": [
@@ -1388,7 +1388,7 @@
         "baseline_context": "normal liver macrophages",
         "modulating_state": "M2-polarized liver macrophages in colorectal cancer pre-metastatic niche",
         "direction": "unclear",
-        "change": "In the CRC pre-metastatic niche, TIMP1 secreted by tumor cells engages surface CD63 (with β1-integrin) on liver macrophages to activate AKT/mTOR and stabilize M2 phenotype; CD63 surface engagement is functionally relevant in the tumor microenvironment.",
+        "change": "In the CRC pre-metastatic niche, TIMP1 secreted by tumor cells engages surface CD63 (with \u03b21-integrin) on liver macrophages to activate AKT/mTOR and stabilize M2 phenotype; CD63 surface engagement is functionally relevant in the tumor microenvironment.",
         "accessibility_implication": "Surface CD63 on liver macrophages is functionally accessible to tumor-secreted TIMP1 in the CRC microenvironment, supporting a role for CD63-targeted approaches in the tumor-associated macrophage context.",
         "species": "human",
         "species_inferred": false,
@@ -1434,7 +1434,7 @@
       }
     ],
     "biological_context_grade": "rich",
-    "grade_rationale": "All four A2 axes are well-populated from independent sources. Expression is mapped across ≥8 cell types/tissues (granulocytes, T cells, macrophages, LSCs, astrocytes, platelets, lung, cornea). Subcellular localization is pinned (late endosomes/lysosomes/MVBs basally; plasma membrane upon degranulation). Anatomical accessibility spans blood, CNS, ocular surface, lung, liver. Modulation evidence covers IgE activation, TCR stimulation, disease states (COPD, HES, AGS, NPC, stroke), and pharmacological interventions. Picture is internally coherent — activation-dependent surface delivery is the unifying mechanism across all cell types.",
+    "grade_rationale": "All four A2 axes are well-populated from independent sources. Expression is mapped across \u22658 cell types/tissues (granulocytes, T cells, macrophages, LSCs, astrocytes, platelets, lung, cornea). Subcellular localization is pinned (late endosomes/lysosomes/MVBs basally; plasma membrane upon degranulation). Anatomical accessibility spans blood, CNS, ocular surface, lung, liver. Modulation evidence covers IgE activation, TCR stimulation, disease states (COPD, HES, AGS, NPC, stroke), and pharmacological interventions. Picture is internally coherent \u2014 activation-dependent surface delivery is the unifying mechanism across all cell types.",
     "grade_cited_evidence_ids": [
       "a2_evi_01",
       "a2_evi_02",
@@ -1968,7 +1968,7 @@
       "ecd_disordered_fraction": 0.08771929824561403,
       "source": "AlphaFold DB (ECD-restricted pLDDT, n=114)",
       "license": "CC BY 4.0",
-      "attribution": "© DeepMind / EMBL-EBI",
+      "attribution": "\u00a9 DeepMind / EMBL-EBI",
       "citations": [
         "10.1038/s41586-021-03819-2",
         "10.1093/nar/gkad1011"
@@ -2000,7 +2000,7 @@
       "pdbs": [],
       "representative_structure": null,
       "source": "SURFACE-Bind v1 (Balbi 2026 PNAS)",
-      "attribution": "© Balbi et al., Correia lab — EPFL / Inria / Novo Nordisk",
+      "attribution": "\u00a9 Balbi et al., Correia lab \u2014 EPFL / Inria / Novo Nordisk",
       "citation": "10.1073/pnas.2506269123"
     },
     "homo_oligomerization": {
@@ -2120,7 +2120,7 @@
           },
           "section": "introduction",
           "figure_or_table_id": null,
-          "quote": "Tetraspanins are a superfamily of transmembrane proteins, consisting of 33 members in humans, that are classically characterised by four transmembrane domains (TM1‐TM4), a small extracellular loop (EC1), a large extracellular loop (EC2), along with short intracellular N‐ and C‐termini [ 1 ].",
+          "quote": "Tetraspanins are a superfamily of transmembrane proteins, consisting of 33 members in humans, that are classically characterised by four transmembrane domains (TM1\u2010TM4), a small extracellular loop (EC1), a large extracellular loop (EC2), along with short intracellular N\u2010 and C\u2010termini [ 1 ].",
           "quote_sha256": "5435b9dd09fcbea3bfea08c298aecfc886da0deadfd33b657e355cebfbd75f07",
           "char_offset": 0,
           "normalized_source_sha256": "c5f6ecdfbab032af3e90297bf6f66f5ebff7eb19e825ab2a651ae9374b12954e"
@@ -2173,7 +2173,7 @@
           },
           "section": "results",
           "figure_or_table_id": null,
-          "quote": "To establish a CD3 targeting EV platform for CAR transgene delivery, we developed a CD3ε Nb‐CD63 chimeric construct, which consists of the EV tetraspanin protein CD63, with a CD3ε Nb inserted into the extracellular loop between the third and fourth transmembrane domains (Figure 1A ).",
+          "quote": "To establish a CD3 targeting EV platform for CAR transgene delivery, we developed a CD3\u03b5 Nb\u2010CD63 chimeric construct, which consists of the EV tetraspanin protein CD63, with a CD3\u03b5 Nb inserted into the extracellular loop between the third and fourth transmembrane domains (Figure 1A ).",
           "quote_sha256": "43a4da98ec19dee9001c6551b28e04f62d157d3f317ab7ddc5fdb8ca5bb1a518",
           "char_offset": 0,
           "normalized_source_sha256": "82bcc2f677a3483363889fca2ea0a705d37ef7f4a10ab664d8043830ee831f51"
@@ -2270,7 +2270,7 @@
           },
           "section": "introduction",
           "figure_or_table_id": null,
-          "quote": "A key characteristic of tetraspanins is their ability to associate with various membrane proteins, including integrins, proteoglycans and immunoglobulin superfamily members [ 3 , 4 ], to form molecular complexes known as tetraspanin‐enriched microdomains (TEMs) [ 5 ].",
+          "quote": "A key characteristic of tetraspanins is their ability to associate with various membrane proteins, including integrins, proteoglycans and immunoglobulin superfamily members [ 3 , 4 ], to form molecular complexes known as tetraspanin\u2010enriched microdomains (TEMs) [ 5 ].",
           "quote_sha256": "1a00af9bf8f89f934cc53515893bcffc2318ee650fb4cde91067b54b4f3344fe",
           "char_offset": 293,
           "normalized_source_sha256": "c5f6ecdfbab032af3e90297bf6f66f5ebff7eb19e825ab2a651ae9374b12954e"
@@ -2323,7 +2323,7 @@
           },
           "section": "results",
           "figure_or_table_id": null,
-          "quote": "To confirm the successful generation of single‐cell KO models for these tetraspanins, we stained both the cells and their corresponding EVs with APC‐conjugated antibodies.",
+          "quote": "To confirm the successful generation of single\u2010cell KO models for these tetraspanins, we stained both the cells and their corresponding EVs with APC\u2010conjugated antibodies.",
           "quote_sha256": "9a4948b090e50332f190ccb1e147e280539d3e6b157d2a49d6615860c8843891",
           "char_offset": 0,
           "normalized_source_sha256": "eec3d6a0ac987ba8e651823b10153dc07adc76534e428b8ab0d5534eb1d84a58"
@@ -2376,7 +2376,7 @@
           },
           "section": "results",
           "figure_or_table_id": null,
-          "quote": "Flow cytometric analysis showed that HEK293T WT cells and WT‐EVs were positive for CD9, CD63, and CD81 on their surface (Figure 2B,C ).",
+          "quote": "Flow cytometric analysis showed that HEK293T WT cells and WT\u2010EVs were positive for CD9, CD63, and CD81 on their surface (Figure 2B,C ).",
           "quote_sha256": "fab40a84176fa0d210005fcaa576eb67f34dfb78aa37c3cc1ec4cf61f5b5a2cf",
           "char_offset": 172,
           "normalized_source_sha256": "eec3d6a0ac987ba8e651823b10153dc07adc76534e428b8ab0d5534eb1d84a58"
@@ -2429,7 +2429,7 @@
           },
           "section": "results",
           "figure_or_table_id": null,
-          "quote": "In contrast, PanKO cells (lacking the tetraspanins CD9, CD63, and CD81) showed no detectable staining for CD9, CD63, or CD81, confirming the knockout efficiency; this absence of tetraspanin expression was also observed in PanKO‐derived EVs, which lacked detectable levels of these markers (Figures 2B,C and S1D).",
+          "quote": "In contrast, PanKO cells (lacking the tetraspanins CD9, CD63, and CD81) showed no detectable staining for CD9, CD63, or CD81, confirming the knockout efficiency; this absence of tetraspanin expression was also observed in PanKO\u2010derived EVs, which lacked detectable levels of these markers (Figures 2B,C and S1D).",
           "quote_sha256": "1fa3ac6774363bad148095eb999b82e61a6a4aeb3a881036e3065da47d01f21d",
           "char_offset": 308,
           "normalized_source_sha256": "eec3d6a0ac987ba8e651823b10153dc07adc76534e428b8ab0d5534eb1d84a58"
@@ -2482,7 +2482,7 @@
           },
           "section": "methods",
           "figure_or_table_id": null,
-          "quote": "HeLa cells KO for CD9 or CD63 generated by CRISPR/Cas9 method, and used as a pool of 5 clones obtained after two rounds of sorting (CD9, (Mathieu et al. 2021 )) or as one sub‐clone from the bulk population after 2 rounds of sorting (CD63 (Palmulli et al. 2024 )) have been previously described.",
+          "quote": "HeLa cells KO for CD9 or CD63 generated by CRISPR/Cas9 method, and used as a pool of 5 clones obtained after two rounds of sorting (CD9, (Mathieu et al. 2021 )) or as one sub\u2010clone from the bulk population after 2 rounds of sorting (CD63 (Palmulli et al. 2024 )) have been previously described.",
           "quote_sha256": "5810dbc83bb1af4e16eb0f03780b72396fec55cfbb75248d59ed8c97a71bf23d",
           "char_offset": 0,
           "normalized_source_sha256": "6062c35c910ae136b1b83435596e60fe067afaae79a1f15d61b4c17b93c655de"
@@ -2579,7 +2579,7 @@
           },
           "section": "methods",
           "figure_or_table_id": null,
-          "quote": "REAGENT or RESOURCE SOURCE IDENTIFIER Antibodies CD63 Brilliant Violet 421 BioLegend 353029; RRID: AB_2687003 CD9 Alexa Flour™ 647 Invitrogen™ MA5-18154; RRID: AB_2539528 CD81 PE BioLegend 349506; RRID: AB_10645519 CD63 Alexa Fluor™ 488 Invitrogen™ MA5-18149; RRID: AB_2539523 CD45 PerCp Cy5.5 BioLegend 103131; RRID: AB_893344 CD11b BUV563 BD Biosciences 741242; RRID: AB_2870793 CD11c BUV805 BD Biosciences 749090; RRID: AB_2873482 CD64 PE/Cyanine7 BioLegend 139313; RRID: AB_2563903 Ly6C BV421 BioLegend 128031; RRID: AB_2562177 MerTK BB700 BD Biosciences 747898",
+          "quote": "REAGENT or RESOURCE SOURCE IDENTIFIER Antibodies CD63 Brilliant Violet 421 BioLegend 353029; RRID: AB_2687003 CD9 Alexa Flour\u2122 647 Invitrogen\u2122 MA5-18154; RRID: AB_2539528 CD81 PE BioLegend 349506; RRID: AB_10645519 CD63 Alexa Fluor\u2122 488 Invitrogen\u2122 MA5-18149; RRID: AB_2539523 CD45 PerCp Cy5.5 BioLegend 103131; RRID: AB_893344 CD11b BUV563 BD Biosciences 741242; RRID: AB_2870793 CD11c BUV805 BD Biosciences 749090; RRID: AB_2873482 CD64 PE/Cyanine7 BioLegend 139313; RRID: AB_2563903 Ly6C BV421 BioLegend 128031; RRID: AB_2562177 MerTK BB700 BD Biosciences 747898",
           "quote_sha256": "0e0ad489fdd35e3f06357b2c06e2709db63319a4f47fe7444de4d72a1ccc4806",
           "char_offset": 0,
           "normalized_source_sha256": "a3c9b05771ee0946b157ffe47aab214d2aecebe3c95ca3214688db86b806db18"
@@ -2676,7 +2676,7 @@
           },
           "section": "abstract",
           "figure_or_table_id": null,
-          "quote": "To assess effector cell activation, we measured cell surface expression of activation marker CD63 by flow cytometry and mediator release through β-hexosaminidase release assays.<h4>Results</h4>After alpha-gal antigen stimulation, the percentage of CD63<sup>+</sup> alpha-gal knockout RBL SX-38 cells sensitized with AGS sera increased 3-fold compared with cells sensitized with control serum.",
+          "quote": "To assess effector cell activation, we measured cell surface expression of activation marker CD63 by flow cytometry and mediator release through \u03b2-hexosaminidase release assays.<h4>Results</h4>After alpha-gal antigen stimulation, the percentage of CD63<sup>+</sup> alpha-gal knockout RBL SX-38 cells sensitized with AGS sera increased 3-fold compared with cells sensitized with control serum.",
           "quote_sha256": "4862640f86b706bf9e75289cda4e9058a314eb4398b4e21fdba1f65c988394c5",
           "char_offset": 0,
           "normalized_source_sha256": "fe3fab5796916f6a3380a41dbacdce420d5d6bc98b985cb120ecb951df68c9fb"
@@ -2835,7 +2835,7 @@
           },
           "section": "abstract",
           "figure_or_table_id": null,
-          "quote": "FcεRI, CD63, and CD203c expression on blood basophils induced by stimulant were measured at baseline and at 12 weeks after omalizumab treatment using flow cytometry.<h4>Results</h4>The RQLQ score in OMA-AR/NB decreased from 33.0 ± 11.0 at baseline to 5.2 ± 4.2 at 12 weeks, while in OMA-AR/B, the score decreased from 33.8 ± 7.6 at baseline to 19.4 ± 5.9 at 12 weeks.",
+          "quote": "Fc\u03b5RI, CD63, and CD203c expression on blood basophils induced by stimulant were measured at baseline and at 12 weeks after omalizumab treatment using flow cytometry.<h4>Results</h4>The RQLQ score in OMA-AR/NB decreased from 33.0 \u00b1 11.0 at baseline to 5.2 \u00b1 4.2 at 12 weeks, while in OMA-AR/B, the score decreased from 33.8 \u00b1 7.6 at baseline to 19.4 \u00b1 5.9 at 12 weeks.",
           "quote_sha256": "dd9ffcffdbfe0b2f0c9298ee34bbc7cbd1415ddbfdb500ea846c2f173cf8ed4e",
           "char_offset": 0,
           "normalized_source_sha256": "d4053f3b95c4d928e29eb99887be36696d6d9faaa02d533229f5918e91f24199"
@@ -2848,7 +2848,7 @@
     },
     {
       "evidence_id": "a1_evi_16",
-      "claim": "Basophil activation was evaluated by CD63 upregulation measured as percentage CD63+ cells by flow cytometry on live intact basophils following stimulation with fMLP, anti-FcεRI antibody, mastoparan, and compound 48/80. This measures CD63 surface expression as a degranulation marker.",
+      "claim": "Basophil activation was evaluated by CD63 upregulation measured as percentage CD63+ cells by flow cytometry on live intact basophils following stimulation with fMLP, anti-Fc\u03b5RI antibody, mastoparan, and compound 48/80. This measures CD63 surface expression as a degranulation marker.",
       "claim_type": "surface_expression",
       "direction": "supports",
       "evidence_type": "flow_cytometry",
@@ -2868,7 +2868,7 @@
           "cellosaurus_id": null,
           "tissue": null,
           "disease_state": null,
-          "activation_state": "stimulated (fMLP, anti-FcεRI, mastoparan, compound 48/80)"
+          "activation_state": "stimulated (fMLP, anti-Fc\u03b5RI, mastoparan, compound 48/80)"
         }
       },
       "spans": [
@@ -2888,7 +2888,7 @@
           },
           "section": "abstract",
           "figure_or_table_id": null,
-          "quote": "Basophil activation was evaluated by CD63 upregulation following stimulation with <i>N</i>-formylmethionyl-leucyl-phenylalanine, anti-FcεRI antibody, mastoparan, and compound 48/80.<h4>Results</h4>Relative basophil proportions were higher in subjects with HαT than in subjects with ISM.",
+          "quote": "Basophil activation was evaluated by CD63 upregulation following stimulation with <i>N</i>-formylmethionyl-leucyl-phenylalanine, anti-Fc\u03b5RI antibody, mastoparan, and compound 48/80.<h4>Results</h4>Relative basophil proportions were higher in subjects with H\u03b1T than in subjects with ISM.",
           "quote_sha256": "891df0dfa42872d5a6e5f6ee95bb80b1b3f0c23437a4f03ff630a427ba5c3244",
           "char_offset": 0,
           "normalized_source_sha256": "e1a97951fba2833c906b2a751334625f0dc638d116abc3f7b1cd85620839e7bd"
@@ -2941,7 +2941,7 @@
           },
           "section": "abstract",
           "figure_or_table_id": null,
-          "quote": "Flow cytometric analysis revealed that DHM significantly reduced platelet surface expression of CD62P, CD63, and CD40 ligands, decreased integrin αIIbβ3 activation, and suppressed intraplatelet reactive oxygen species (ROS) production.",
+          "quote": "Flow cytometric analysis revealed that DHM significantly reduced platelet surface expression of CD62P, CD63, and CD40 ligands, decreased integrin \u03b1IIb\u03b23 activation, and suppressed intraplatelet reactive oxygen species (ROS) production.",
           "quote_sha256": "0d300cb0fc9565cbcc22d9f4fb288b416bc6a8d8b9d5fc536ebf6b6dee4ccf8c",
           "char_offset": 0,
           "normalized_source_sha256": "6b81731e7856f64fd92c092c67bf7faf0f792035bde2cb5c46898ba2efab7b4a"
@@ -3365,7 +3365,7 @@
           },
           "section": "abstract",
           "figure_or_table_id": null,
-          "quote": "Dynamic light scattering indicated an average BCEV diameter of 127.3 ± 9.5 nm, whereas single-particle interferometric reflectance imaging sensing revealed a smaller population of 40- to 45-nm vesicles expressing CD9 and CD63.",
+          "quote": "Dynamic light scattering indicated an average BCEV diameter of 127.3 \u00b1 9.5 nm, whereas single-particle interferometric reflectance imaging sensing revealed a smaller population of 40- to 45-nm vesicles expressing CD9 and CD63.",
           "quote_sha256": "d13671633d9256cfd2d568108b4753a845895c7eb37a06ea81c82903ccd22391",
           "char_offset": 0,
           "normalized_source_sha256": "926e90340b234dc4a86a8da19e801ce345ae2823f799c080c63daef668fd0085"
@@ -3431,7 +3431,7 @@
     },
     {
       "evidence_id": "a1_evi_27",
-      "claim": "CD63-binding EC50 values were quantified on EV surfaces: 1.9×10^8 particles/mL for CD63-eGFP EVs and 8.4×10^8 to 2.4×10^9 particles/mL for ciMSC EVs. This demonstrates dose-dependent antibody engagement of CD63 epitopes on the outer EV membrane, providing quantitative surface accessibility evidence.",
+      "claim": "CD63-binding EC50 values were quantified on EV surfaces: 1.9\u00d710^8 particles/mL for CD63-eGFP EVs and 8.4\u00d710^8 to 2.4\u00d710^9 particles/mL for ciMSC EVs. This demonstrates dose-dependent antibody engagement of CD63 epitopes on the outer EV membrane, providing quantitative surface accessibility evidence.",
       "claim_type": "surface_expression",
       "direction": "supports",
       "evidence_type": "flow_cytometry",
@@ -3471,7 +3471,7 @@
           },
           "section": "abstract",
           "figure_or_table_id": null,
-          "quote": "CD63-binding EC<sub>50 </sub>values were 1.9 × 10<sup>8</sup> particles/mL for CD63-eGFP EVs and 8.4 × 10<sup>8</sup> to 2.4 × 10<sup>9</sup> particles/mL for ciMSC EVs, indicating higher epitope abundance in engineered vesicles.",
+          "quote": "CD63-binding EC<sub>50\u00a0</sub>values were 1.9 \u00d7 10<sup>8</sup>\u00a0particles/mL for CD63-eGFP EVs and 8.4 \u00d7 10<sup>8</sup> to 2.4 \u00d7 10<sup>9</sup>\u00a0particles/mL for ciMSC EVs, indicating higher epitope abundance in engineered vesicles.",
           "quote_sha256": "1b354938e784bd4639010427a7b592a75d093fc5cf9c4717b00f745c2a85afad",
           "char_offset": 301,
           "normalized_source_sha256": "caed12e1e157950555715c5910660eff464bedaed0fda3d01f19e2a00e0d9adf"
@@ -3524,7 +3524,7 @@
           },
           "section": "results",
           "figure_or_table_id": null,
-          "quote": "As shown in Fig. 1 B, both parental MCF10DCIS and transduced MCF10DCIS CD63-NLuc (+CD63-NLuc) cells displayed the characteristic broad migration pattern associated with glycosylated CD63 (30–60 kDa), with densitometric analysis confirming a 2.01-fold increase in total CD63 abundance in + CD63-NLuc relative to the parental MCF10DCIS control.",
+          "quote": "As shown in Fig. 1 B, both parental MCF10DCIS and transduced MCF10DCIS CD63-NLuc (+CD63-NLuc) cells displayed the characteristic broad migration pattern associated with glycosylated CD63 (30\u201360 kDa), with densitometric analysis confirming a 2.01-fold increase in total CD63 abundance in + CD63-NLuc relative to the parental MCF10DCIS control.",
           "quote_sha256": "a032f9a4944d13e246172691bbc576706f9df8e6eae926c303ddfcd07d9b7d84",
           "char_offset": 0,
           "normalized_source_sha256": "0798a82e524a1866f99d71eb49f73e5821e9ec44dde430494fdc697e7aeb5453"
@@ -3789,7 +3789,7 @@
           },
           "section": "abstract",
           "figure_or_table_id": null,
-          "quote": "To assess effector cell activation, we measured cell surface expression of activation marker CD63 by flow cytometry and mediator release through β-hexosaminidase release assays.<h4>Results</h4>After alpha-gal antigen stimulation, the percentage of CD63<sup>+</sup> alpha-gal knockout RBL SX-38 cells sensitized with AGS sera increased 3-fold compared with cells sensitized with control serum.",
+          "quote": "To assess effector cell activation, we measured cell surface expression of activation marker CD63 by flow cytometry and mediator release through \u03b2-hexosaminidase release assays.<h4>Results</h4>After alpha-gal antigen stimulation, the percentage of CD63<sup>+</sup> alpha-gal knockout RBL SX-38 cells sensitized with AGS sera increased 3-fold compared with cells sensitized with control serum.",
           "quote_sha256": "4862640f86b706bf9e75289cda4e9058a314eb4398b4e21fdba1f65c988394c5",
           "char_offset": 0,
           "normalized_source_sha256": "fe3fab5796916f6a3380a41dbacdce420d5d6bc98b985cb120ecb951df68c9fb"
@@ -4001,7 +4001,7 @@
           },
           "section": "abstract",
           "figure_or_table_id": null,
-          "quote": "FcεRI, CD63, and CD203c expression on blood basophils induced by stimulant were measured at baseline and at 12 weeks after omalizumab treatment using flow cytometry.<h4>Results</h4>The RQLQ score in OMA-AR/NB decreased from 33.0 ± 11.0 at baseline to 5.2 ± 4.2 at 12 weeks, while in OMA-AR/B, the score decreased from 33.8 ± 7.6 at baseline to 19.4 ± 5.9 at 12 weeks.",
+          "quote": "Fc\u03b5RI, CD63, and CD203c expression on blood basophils induced by stimulant were measured at baseline and at 12 weeks after omalizumab treatment using flow cytometry.<h4>Results</h4>The RQLQ score in OMA-AR/NB decreased from 33.0 \u00b1 11.0 at baseline to 5.2 \u00b1 4.2 at 12 weeks, while in OMA-AR/B, the score decreased from 33.8 \u00b1 7.6 at baseline to 19.4 \u00b1 5.9 at 12 weeks.",
           "quote_sha256": "dd9ffcffdbfe0b2f0c9298ee34bbc7cbd1415ddbfdb500ea846c2f173cf8ed4e",
           "char_offset": 0,
           "normalized_source_sha256": "d4053f3b95c4d928e29eb99887be36696d6d9faaa02d533229f5918e91f24199"
@@ -4014,7 +4014,7 @@
     },
     {
       "evidence_id": "a2_evi_08",
-      "claim": "In basophil activation testing, surface CD63 upregulation (flow cytometry on non-permeabilized cells) is used to quantify degranulation in response to multiple stimuli (fMLP, anti-FcεRI, mastoparan, compound 48/80). In hypertryptasemia (HαT) vs idiopathic systemic mastocytosis (ISM) vs healthy controls, differential CD63 responses reveal disease-state-dependent changes in surface accessibility.",
+      "claim": "In basophil activation testing, surface CD63 upregulation (flow cytometry on non-permeabilized cells) is used to quantify degranulation in response to multiple stimuli (fMLP, anti-Fc\u03b5RI, mastoparan, compound 48/80). In hypertryptasemia (H\u03b1T) vs idiopathic systemic mastocytosis (ISM) vs healthy controls, differential CD63 responses reveal disease-state-dependent changes in surface accessibility.",
       "claim_type": "surface_expression",
       "direction": "supports",
       "evidence_type": "flow_cytometry",
@@ -4033,7 +4033,7 @@
           "cell_line_name": null,
           "cellosaurus_id": null,
           "tissue": "peripheral blood",
-          "disease_state": "hypertryptasemia (HαT) / idiopathic systemic mastocytosis (ISM)",
+          "disease_state": "hypertryptasemia (H\u03b1T) / idiopathic systemic mastocytosis (ISM)",
           "activation_state": null
         }
       },
@@ -4054,7 +4054,7 @@
           },
           "section": "abstract",
           "figure_or_table_id": null,
-          "quote": "Basophil activation was evaluated by CD63 upregulation following stimulation with <i>N</i>-formylmethionyl-leucyl-phenylalanine, anti-FcεRI antibody, mastoparan, and compound 48/80.<h4>Results</h4>Relative basophil proportions were higher in subjects with HαT than in subjects with ISM.",
+          "quote": "Basophil activation was evaluated by CD63 upregulation following stimulation with <i>N</i>-formylmethionyl-leucyl-phenylalanine, anti-Fc\u03b5RI antibody, mastoparan, and compound 48/80.<h4>Results</h4>Relative basophil proportions were higher in subjects with H\u03b1T than in subjects with ISM.",
           "quote_sha256": "891df0dfa42872d5a6e5f6ee95bb80b1b3f0c23437a4f03ff630a427ba5c3244",
           "char_offset": 0,
           "normalized_source_sha256": "e1a97951fba2833c906b2a751334625f0dc638d116abc3f7b1cd85620839e7bd"
@@ -4160,7 +4160,7 @@
           },
           "section": "abstract",
           "figure_or_table_id": null,
-          "quote": "Flow cytometric analysis revealed that DHM significantly reduced platelet surface expression of CD62P, CD63, and CD40 ligands, decreased integrin αIIbβ3 activation, and suppressed intraplatelet reactive oxygen species (ROS) production.",
+          "quote": "Flow cytometric analysis revealed that DHM significantly reduced platelet surface expression of CD62P, CD63, and CD40 ligands, decreased integrin \u03b1IIb\u03b23 activation, and suppressed intraplatelet reactive oxygen species (ROS) production.",
           "quote_sha256": "0d300cb0fc9565cbcc22d9f4fb288b416bc6a8d8b9d5fc536ebf6b6dee4ccf8c",
           "char_offset": 0,
           "normalized_source_sha256": "6b81731e7856f64fd92c092c67bf7faf0f792035bde2cb5c46898ba2efab7b4a"
@@ -4438,7 +4438,7 @@
     },
     {
       "evidence_id": "a2_evi_16",
-      "claim": "TIMP1 engages CD63 (alongside β1-integrin) on liver macrophages to activate AKT/mTOR signaling and stabilize the M2 (pro-tumorigenic) phenotype, establishing a hepatic pre-metastatic niche in colorectal cancer (CRC). CD63 surface expression on macrophages is functionally engaged by a tumor-secreted ligand in a disease context.",
+      "claim": "TIMP1 engages CD63 (alongside \u03b21-integrin) on liver macrophages to activate AKT/mTOR signaling and stabilize the M2 (pro-tumorigenic) phenotype, establishing a hepatic pre-metastatic niche in colorectal cancer (CRC). CD63 surface expression on macrophages is functionally engaged by a tumor-secreted ligand in a disease context.",
       "claim_type": "tissue_expression",
       "direction": "supports",
       "evidence_type": "functional_assay",
@@ -4478,7 +4478,7 @@
           },
           "section": "abstract",
           "figure_or_table_id": null,
-          "quote": "Mechanistically, TIMP1 engaged CD63/β1-integrin on macrophages, activating AKT/mTOR signaling and stabilizing the M2 phenotype.<h4>Conclusions</h4>CRC-derived TIMP1 remodels liver macrophages via the CD63/β1-integrin-AKT/mTOR pathway to promote a hepatic pre-metastatic niche.",
+          "quote": "Mechanistically, TIMP1 engaged CD63/\u03b21-integrin on macrophages, activating AKT/mTOR signaling and stabilizing the M2 phenotype.<h4>Conclusions</h4>CRC-derived TIMP1 remodels liver macrophages via the CD63/\u03b21-integrin-AKT/mTOR pathway to promote a hepatic pre-metastatic niche.",
           "quote_sha256": "6e5609252a2ffd6438a28fcc40d37129918437828e97dd101554ef643471c915",
           "char_offset": 0,
           "normalized_source_sha256": "79d29fc46c0615c290aaaadb368837f2db094fa049e29df0b5652e1f6b7df570"
@@ -4544,7 +4544,7 @@
     },
     {
       "evidence_id": "a2_evi_18",
-      "claim": "In cytotoxic T lymphocytes (CTLs), CD63 (and CD81) tetraspanins are found not only on multivesicular bodies but also on cytotoxic granules (CGs), indicating that CD63 marks specialized secretory lysosomes in CTLs — a cell-type-specific compartmental distribution distinct from other cell types where CD63 is primarily an MVB/late endosome marker.",
+      "claim": "In cytotoxic T lymphocytes (CTLs), CD63 (and CD81) tetraspanins are found not only on multivesicular bodies but also on cytotoxic granules (CGs), indicating that CD63 marks specialized secretory lysosomes in CTLs \u2014 a cell-type-specific compartmental distribution distinct from other cell types where CD63 is primarily an MVB/late endosome marker.",
       "claim_type": "surface_expression",
       "direction": "supports",
       "evidence_type": "review_assertion",
@@ -4637,7 +4637,7 @@
           },
           "section": "results",
           "figure_or_table_id": null,
-          "quote": "SIM imaging revealed robust co‐localization of CD63 with GzmB, whereas the degree of co‐localization between CD81 and GzmB was comparatively low, as quantified by Manders’ overlap and the Pearson's correlation coefficient (Figure 1b ).",
+          "quote": "SIM imaging revealed robust co\u2010localization of CD63 with GzmB, whereas the degree of co\u2010localization between CD81 and GzmB was comparatively low, as quantified by Manders\u2019 overlap and the Pearson's correlation coefficient (Figure 1b ).",
           "quote_sha256": "424505db6fb5e91b6d90e59e2dd2739f470840d0ad08ca32f129acf75a7c6559",
           "char_offset": 179,
           "normalized_source_sha256": "3f03d934ce9bafc2375dba9428120b78f63134769ffcfe72164f1fa298861543"
@@ -4902,7 +4902,7 @@
           },
           "section": "results",
           "figure_or_table_id": null,
-          "quote": "Among the top 50 genes, 8 encode cell surface molecules. 3 out of the 8 genes ( B2M , CD63 , and CD99 ) were excluded due to their non‐tissue specific expression pattern.",
+          "quote": "Among the top 50 genes, 8 encode cell surface molecules. 3 out of the 8 genes ( B2M , CD63 , and CD99 ) were excluded due to their non\u2010tissue specific expression pattern.",
           "quote_sha256": "f45c51e753d8f71aee6743c2527492eae0d723ae1bab11e1b0d6cd9d3ad4eaa1",
           "char_offset": 0,
           "normalized_source_sha256": "7fa4d2faf215b4f824765df33e86ca3041592326a8c91f6f98743c49094f6a5a"
@@ -5114,7 +5114,7 @@
           },
           "section": "results",
           "figure_or_table_id": null,
-          "quote": "Flow cytometric analysis showed that HEK293T WT cells and WT‐EVs were positive for CD9, CD63, and CD81 on their surface (Figure 2B,C ).",
+          "quote": "Flow cytometric analysis showed that HEK293T WT cells and WT\u2010EVs were positive for CD9, CD63, and CD81 on their surface (Figure 2B,C ).",
           "quote_sha256": "fab40a84176fa0d210005fcaa576eb67f34dfb78aa37c3cc1ec4cf61f5b5a2cf",
           "char_offset": 172,
           "normalized_source_sha256": "eec3d6a0ac987ba8e651823b10153dc07adc76534e428b8ab0d5534eb1d84a58"
@@ -5167,7 +5167,7 @@
           },
           "section": "results",
           "figure_or_table_id": null,
-          "quote": "In contrast, PanKO cells (lacking the tetraspanins CD9, CD63, and CD81) showed no detectable staining for CD9, CD63, or CD81, confirming the knockout efficiency; this absence of tetraspanin expression was also observed in PanKO‐derived EVs, which lacked detectable levels of these markers (Figures 2B,C and S1D).",
+          "quote": "In contrast, PanKO cells (lacking the tetraspanins CD9, CD63, and CD81) showed no detectable staining for CD9, CD63, or CD81, confirming the knockout efficiency; this absence of tetraspanin expression was also observed in PanKO\u2010derived EVs, which lacked detectable levels of these markers (Figures 2B,C and S1D).",
           "quote_sha256": "1fa3ac6774363bad148095eb999b82e61a6a4aeb3a881036e3065da47d01f21d",
           "char_offset": 308,
           "normalized_source_sha256": "eec3d6a0ac987ba8e651823b10153dc07adc76534e428b8ab0d5534eb1d84a58"
@@ -5233,7 +5233,7 @@
     },
     {
       "evidence_id": "a2_evi_31",
-      "claim": "Mast cell secretory granules originate from the trans-Golgi region and undergo maturation by fusing with endosomes to form mature granules — the compartment in which CD63 (a tetraspanin enriched in late endosomes/LROs) resides prior to stimulus-induced surface delivery. This establishes the subcellular itinerary of CD63 in mast cells before degranulation.",
+      "claim": "Mast cell secretory granules originate from the trans-Golgi region and undergo maturation by fusing with endosomes to form mature granules \u2014 the compartment in which CD63 (a tetraspanin enriched in late endosomes/LROs) resides prior to stimulus-induced surface delivery. This establishes the subcellular itinerary of CD63 in mast cells before degranulation.",
       "claim_type": "surface_expression",
       "direction": "refutes",
       "evidence_type": "review_assertion",
@@ -5273,7 +5273,7 @@
           },
           "section": "introduction",
           "figure_or_table_id": null,
-          "quote": "Secretory granules originate from the trans‐Golgi region as immature granules and undergo maturation [ 4 ], during which they fuse with endosomes to form mature granules.",
+          "quote": "Secretory granules originate from the trans\u2010Golgi region as immature granules and undergo maturation [ 4 ], during which they fuse with endosomes to form mature granules.",
           "quote_sha256": "52ea06541fa5158ea5edfba1c01b9b79fee46987833475bfa267e0c211293e52",
           "char_offset": 0,
           "normalized_source_sha256": "65762fd1831bf7b5cf565c83e5ae4cb196c7ff6f3495bba66369b907824bbc3b"
@@ -5326,7 +5326,7 @@
           },
           "section": "abstract",
           "figure_or_table_id": null,
-          "quote": "Samples were stained with antibodies against degranulation markers (CD66b, CD63), adhesion markers (CD11b, CD54), eosinophil marker (CD193), and aging marker (CD184), and analysed by flow cytometry.<h4>Results</h4>Significantly more tear leukocytes were collected after a night of sleep from participants with ocular allergy compared to healthy participants (<i>p</i> = 0.024), while there was no difference in late afternoon collections.",
+          "quote": "Samples were stained with antibodies against degranulation markers (CD66b, CD63), adhesion markers (CD11b, CD54), eosinophil marker (CD193), and aging marker (CD184), and analysed by flow cytometry.<h4>Results</h4>Significantly more tear leukocytes were collected after a night of sleep from participants with ocular allergy compared to healthy participants (<i>p</i>\u2009=\u20090.024), while there was no difference in late afternoon collections.",
           "quote_sha256": "ac6682b83b4b99954b7dffc6ed50e4e1d3739e5c5701909710cf10da1090fd18",
           "char_offset": 0,
           "normalized_source_sha256": "ccde4c94432e7596772bc1e0566a50b2110d8a71d7b4310ce9936be9fdbcd165"
@@ -5634,7 +5634,7 @@
       "mode": "topic_search",
       "query": {
         "agent_focus": "a1",
-        "intent": "standing: state-conditional surface biology (activation / stress / disease / EMT / senescence / differentiation) — feeds accessibility_modulation",
+        "intent": "standing: state-conditional surface biology (activation / stress / disease / EMT / senescence / differentiation) \u2014 feeds accessibility_modulation",
         "anchors": [
           "cell_state_modulation"
         ]
@@ -5867,7 +5867,7 @@
       "mode": "topic_search",
       "query": {
         "agent_focus": "a2",
-        "intent": "standing: state-conditional surface biology (activation / stress / disease / EMT / senescence / differentiation) — feeds accessibility_modulation",
+        "intent": "standing: state-conditional surface biology (activation / stress / disease / EMT / senescence / differentiation) \u2014 feeds accessibility_modulation",
         "anchors": [
           "cell_state_modulation"
         ]
@@ -5884,5 +5884,332 @@
   "confidence": "high",
   "confidence_reasoning": "",
   "model_path": "claude-sonnet-4-6",
-  "record_generated_at": "2026-06-08T20:49:59.438647Z"
+  "record_generated_at": "2026-06-08T20:49:59.438647Z",
+  "cellxgene": {
+    "schema_version": "2.1.1",
+    "census_version": "2025-11-08",
+    "cell_class_enrichment": {
+      "class": "low_specificity",
+      "class_ids": [],
+      "class_labels": [],
+      "fold_change": null,
+      "fold_change_infinite": false
+    },
+    "cell_type_enrichment": {
+      "class": "low_specificity",
+      "cl_ids": [],
+      "fold_change": null,
+      "fold_change_infinite": false
+    },
+    "tissue_enrichment": {
+      "class": "low_specificity",
+      "uberon_ids": [],
+      "tissue_labels": [],
+      "fold_change": null,
+      "fold_change_infinite": false
+    },
+    "enrichment_class": "low_specificity",
+    "enrichment_cl_ids": [],
+    "fold_change": null,
+    "fold_change_infinite": false,
+    "top_cell_types": [
+      {
+        "cell_type": "pancreatic stellate cell",
+        "cl_id": "CL:0002410",
+        "mean_log1p_cp10k": 3.2674,
+        "n_expressing": 14306,
+        "n_total": 16143,
+        "pct_expressing": 0.8862,
+        "is_rare": false,
+        "is_trace": false,
+        "tissues": [
+          {
+            "tissue": "pancreas",
+            "uberon_id": "UBERON:0001264",
+            "mean_log1p_cp10k": 3.2674,
+            "n_expressing": 14306,
+            "n_total": 1764,
+            "pct_expressing": 8.11
+          }
+        ]
+      },
+      {
+        "cell_type": "prostate stromal cell",
+        "cl_id": "CL:0002622",
+        "mean_log1p_cp10k": 3.2339,
+        "n_expressing": 63,
+        "n_total": 63,
+        "pct_expressing": 1.0,
+        "is_rare": true,
+        "is_trace": false,
+        "tissues": []
+      },
+      {
+        "cell_type": "endosteal cell",
+        "cl_id": "CL:0002157",
+        "mean_log1p_cp10k": 3.1406,
+        "n_expressing": 54,
+        "n_total": 54,
+        "pct_expressing": 1.0,
+        "is_rare": true,
+        "is_trace": false,
+        "tissues": [
+          {
+            "tissue": "bone marrow",
+            "uberon_id": "UBERON:0002371",
+            "mean_log1p_cp10k": 3.1406,
+            "n_expressing": 54,
+            "n_total": 54,
+            "pct_expressing": 1.0
+          }
+        ]
+      },
+      {
+        "cell_type": "fibroblast of gingiva",
+        "cl_id": "CL:0002552",
+        "mean_log1p_cp10k": 3.1163,
+        "n_expressing": 2521,
+        "n_total": 2689,
+        "pct_expressing": 0.9375,
+        "is_rare": false,
+        "is_trace": false,
+        "tissues": [
+          {
+            "tissue": "colon",
+            "uberon_id": "UBERON:0001155",
+            "mean_log1p_cp10k": 3.0799,
+            "n_expressing": 1614,
+            "n_total": 957,
+            "pct_expressing": 1.6865
+          },
+          {
+            "tissue": "stomach",
+            "uberon_id": "UBERON:0000945",
+            "mean_log1p_cp10k": 3.1607,
+            "n_expressing": 374,
+            "n_total": 346,
+            "pct_expressing": 1.0809
+          },
+          {
+            "tissue": "esophagus",
+            "uberon_id": "UBERON:0001043",
+            "mean_log1p_cp10k": 3.0434,
+            "n_expressing": 11,
+            "n_total": 11,
+            "pct_expressing": 1.0
+          }
+        ]
+      },
+      {
+        "cell_type": "fibroblast of connective tissue of glandular part of prostate",
+        "cl_id": "CL:1000305",
+        "mean_log1p_cp10k": 3.0719,
+        "n_expressing": 1534,
+        "n_total": 1553,
+        "pct_expressing": 0.9878,
+        "is_rare": false,
+        "is_trace": false,
+        "tissues": []
+      },
+      {
+        "cell_type": "fibroblastic reticular cell",
+        "cl_id": "CL:0009101",
+        "mean_log1p_cp10k": 3.0607,
+        "n_expressing": 451,
+        "n_total": 468,
+        "pct_expressing": 0.9637,
+        "is_rare": true,
+        "is_trace": false,
+        "tissues": [
+          {
+            "tissue": "colon",
+            "uberon_id": "UBERON:0001155",
+            "mean_log1p_cp10k": 3.1508,
+            "n_expressing": 290,
+            "n_total": 261,
+            "pct_expressing": 1.1111
+          },
+          {
+            "tissue": "small intestine",
+            "uberon_id": "UBERON:0002108",
+            "mean_log1p_cp10k": 2.7868,
+            "n_expressing": 105,
+            "n_total": 106,
+            "pct_expressing": 0.9906
+          },
+          {
+            "tissue": "stomach",
+            "uberon_id": "UBERON:0000945",
+            "mean_log1p_cp10k": 3.2769,
+            "n_expressing": 37,
+            "n_total": 37,
+            "pct_expressing": 1.0
+          }
+        ]
+      },
+      {
+        "cell_type": "extracellular matrix secreting cell",
+        "cl_id": "CL:0000327",
+        "mean_log1p_cp10k": 3.053,
+        "n_expressing": 1939,
+        "n_total": 1971,
+        "pct_expressing": 0.9838,
+        "is_rare": false,
+        "is_trace": false,
+        "tissues": [
+          {
+            "tissue": "brain",
+            "uberon_id": "UBERON:0000955",
+            "mean_log1p_cp10k": 3.053,
+            "n_expressing": 1939,
+            "n_total": 1971,
+            "pct_expressing": 0.9838
+          }
+        ]
+      },
+      {
+        "cell_type": "neuroendocrine cell of epithelium of lobar bronchus",
+        "cl_id": "CL:4033010",
+        "mean_log1p_cp10k": 3.032,
+        "n_expressing": 1382,
+        "n_total": 1407,
+        "pct_expressing": 0.9822,
+        "is_rare": false,
+        "is_trace": false,
+        "tissues": []
+      },
+      {
+        "cell_type": "lung interstitial macrophage",
+        "cl_id": "CL:4033043",
+        "mean_log1p_cp10k": 3.0294,
+        "n_expressing": 10014,
+        "n_total": 14458,
+        "pct_expressing": 0.6926,
+        "is_rare": false,
+        "is_trace": false,
+        "tissues": [
+          {
+            "tissue": "lung",
+            "uberon_id": "UBERON:0002048",
+            "mean_log1p_cp10k": 3.0294,
+            "n_expressing": 10014,
+            "n_total": 9173,
+            "pct_expressing": 1.0917
+          }
+        ]
+      },
+      {
+        "cell_type": "mucus secreting cell of tracheobronchial tree submucosal gland",
+        "cl_id": "CL:4033037",
+        "mean_log1p_cp10k": 3.0284,
+        "n_expressing": 862,
+        "n_total": 1325,
+        "pct_expressing": 0.6506,
+        "is_rare": false,
+        "is_trace": false,
+        "tissues": [
+          {
+            "tissue": "lung",
+            "uberon_id": "UBERON:0002048",
+            "mean_log1p_cp10k": 3.0284,
+            "n_expressing": 862,
+            "n_total": 859,
+            "pct_expressing": 1.0035
+          }
+        ]
+      }
+    ],
+    "top_tissues": [
+      {
+        "tissue": "pleura",
+        "uberon_id": "UBERON:0000977",
+        "mean_log1p_cp10k": 3.1477,
+        "n_expressing": 8922,
+        "n_total": 19695,
+        "pct_expressing": 0.453,
+        "is_trace": false
+      },
+      {
+        "tissue": "gallbladder",
+        "uberon_id": "UBERON:0002110",
+        "mean_log1p_cp10k": 3.0474,
+        "n_expressing": 12927,
+        "n_total": 19800,
+        "pct_expressing": 0.6529,
+        "is_trace": false
+      },
+      {
+        "tissue": "paracolic gutter",
+        "uberon_id": "UBERON:0035210",
+        "mean_log1p_cp10k": 2.7332,
+        "n_expressing": 6245,
+        "n_total": 8012,
+        "pct_expressing": 0.7795,
+        "is_trace": false
+      },
+      {
+        "tissue": "pancreas",
+        "uberon_id": "UBERON:0001264",
+        "mean_log1p_cp10k": 2.7219,
+        "n_expressing": 380369,
+        "n_total": 246237,
+        "pct_expressing": 1.0,
+        "is_trace": false
+      },
+      {
+        "tissue": "saliva",
+        "uberon_id": "UBERON:0001836",
+        "mean_log1p_cp10k": 2.688,
+        "n_expressing": 8755,
+        "n_total": 14502,
+        "pct_expressing": 0.6037,
+        "is_trace": false
+      },
+      {
+        "tissue": "intestine",
+        "uberon_id": "UBERON:0000160",
+        "mean_log1p_cp10k": 2.641,
+        "n_expressing": 272157,
+        "n_total": 327410,
+        "pct_expressing": 0.8312,
+        "is_trace": false
+      },
+      {
+        "tissue": "omentum",
+        "uberon_id": "UBERON:0003688",
+        "mean_log1p_cp10k": 2.6096,
+        "n_expressing": 158343,
+        "n_total": 222303,
+        "pct_expressing": 0.7123,
+        "is_trace": false
+      },
+      {
+        "tissue": "placenta",
+        "uberon_id": "UBERON:0001987",
+        "mean_log1p_cp10k": 2.5534,
+        "n_expressing": 430501,
+        "n_total": 316501,
+        "pct_expressing": 1.0,
+        "is_trace": false
+      },
+      {
+        "tissue": "mucosa",
+        "uberon_id": "UBERON:0000344",
+        "mean_log1p_cp10k": 2.5335,
+        "n_expressing": 63575,
+        "n_total": 26060,
+        "pct_expressing": 1.0,
+        "is_trace": false
+      },
+      {
+        "tissue": "vasculature",
+        "uberon_id": "UBERON:0002049",
+        "mean_log1p_cp10k": 2.5244,
+        "n_expressing": 240348,
+        "n_total": 2915,
+        "pct_expressing": 1.0,
+        "is_trace": false
+      }
+    ]
+  }
 }

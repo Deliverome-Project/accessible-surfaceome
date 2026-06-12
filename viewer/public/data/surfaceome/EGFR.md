@@ -1119,3 +1119,35 @@ This Markdown is generated from the canonical JSON record at `/data/surfaceome/E
 - UniProt — CC BY 4.0 (UniProt Consortium)
 
 *Confidence high — EGFR surface accessibility is supported by multiple independent direct assay types across dozens of cell lines and primary patient tissue, fully concordant with the triage verdict. The evidence grade is direct multi-method with no meaningful contradictions to surface expression. The triage prior assigned high confidence for a classical surface receptor, which the experimental evidence fully corroborates.*
+
+## CellxGene RNA enrichment (CZI Census)
+
+*Schema v2.1.1 · CZI Census 2025-11-08 · HPA-style 4× fold-change classification on log1p(CP10K) → linear means, with a zero-baseline universe for `enriched` / `group_enriched` and an eligibles-only denominator for `enhanced`. CC-BY 4.0 (CZI).*
+
+**Classification:**
+
+- **Cell class (broad rollup, ~10 compartments):** low specificity
+- **Cell type (leaf Cell Ontology terms, ~600):** low specificity
+- **Tissue (UBERON terms, ~56):** low specificity
+
+**Top 5 cell types (leaf CL, pooled across tissues):**
+
+| Cell type | CL ID | Mean log1p(CP10K) | % expressing | n_expressing / n_total |
+|---|---|---|---|---|
+| trophoblast giant cell | CL:0002488 | 2.898 | 10.73% | 124 / 1,156 |
+| malignant cell | CL:0001064 | 2.862 | 15.14% | 209,677 / 1,384,794 |
+| chorionic trophoblast cell | CL:0011101 | 2.854 | 4.53% | 13 / 287 |
+| basal epithelial cell of prostatic duct | CL:0002236 | 2.845 | 57.61% | 4,203 / 7,295 |
+| skeletal muscle fibroblast | CL:0011027 | 2.795 | 49.01% | 2,898 / 5,913 |
+
+**Top 5 tissues (UBERON, pooled across cell types):**
+
+| Tissue | UBERON ID | Mean log1p(CP10K) | % expressing | n_expressing / n_total |
+|---|---|---|---|---|
+| tendon of semitendinosus | UBERON:8480009 | 2.520 | 39.28% | 4,137 / 10,533 |
+| pleura | UBERON:0000977 | 2.498 | 9.82% | 1,935 / 19,695 |
+| placenta | UBERON:0001987 | 2.334 | 45.75% | 144,803 / 316,501 |
+| mucosa | UBERON:0000344 | 2.333 | 37.26% | 9,710 / 26,060 |
+| testis | UBERON:0000473 | 2.270 | 1.97% | 408 / 20,724 |
+
+<!-- /cellxgene -->

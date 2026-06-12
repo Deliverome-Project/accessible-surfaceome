@@ -8,9 +8,9 @@
     "ensembl_gene": "ENSG00000150967"
   },
   "triage_signal": "possibly_accessible",
-  "triage_reasoning": "ABCB9 (TAPL) is a multi-pass ABC transporter that resides primarily on lysosomal/late-endosomal membranes, where it translocates peptides from the cytosol into the lysosomal lumen. Its dominant steady-state localization is lysosomal, not the plasma membrane. However, lysosomal membrane proteins can reach the plasma membrane transiently via lysosomal exocytosis — a documented pathway for LAMP1, LAMP2, and other lysosomal TM proteins. No strong gene-specific flow cytometry or surface biotinylation data confirm a stable PM pool for ABCB9 itself. Checking contextual buckets: cell_state_induced — not specifically documented; tissue_restricted — ubiquitous expression, not tissue-restricted; lysosomal_exocytosis — plausible given lysosomal TM topology; dual_localization — possible minor PM cycling; stable_surface_attachment — not applicable (no evidence of secreted form). Given the lysosomal_exocytosis pathway applies to this class of proteins and 'contextual beats no', lysosomal_exocytosis is the best fit.",
+  "triage_reasoning": "ABCB9 (TAPL) is a multi-pass ABC transporter that resides primarily on lysosomal/late-endosomal membranes, where it translocates peptides from the cytosol into the lysosomal lumen. Its dominant steady-state localization is lysosomal, not the plasma membrane. However, lysosomal membrane proteins can reach the plasma membrane transiently via lysosomal exocytosis \u2014 a documented pathway for LAMP1, LAMP2, and other lysosomal TM proteins. No strong gene-specific flow cytometry or surface biotinylation data confirm a stable PM pool for ABCB9 itself. Checking contextual buckets: cell_state_induced \u2014 not specifically documented; tissue_restricted \u2014 ubiquitous expression, not tissue-restricted; lysosomal_exocytosis \u2014 plausible given lysosomal TM topology; dual_localization \u2014 possible minor PM cycling; stable_surface_attachment \u2014 not applicable (no evidence of secreted form). Given the lysosomal_exocytosis pathway applies to this class of proteins and 'contextual beats no', lysosomal_exocytosis is the best fit.",
   "executive_summary": {
-    "one_paragraph": "ABCB9 (TAPL) has low surface accessibility as a canonical lysosomal multi-pass ABC transporter; its full-length form is not meaningfully present at the plasma membrane under any documented normal or disease state. The evidence is consistent and multi-method: permeabilized fluorescence microscopy showed TAPL-GFP co-localizing exclusively with LysoTracker in CHO-K1 cells (a1_evi_13), Percoll-gradient fractionation co-sedimented TAPL-GFP with cathepsin D rather than PM markers (a1_evi_14), and stable-expression studies in mammalian cells confirmed lysosomal sorting with no PM signal for the full-length protein (a1_evi_17). Surface presence is constitutively intracellular — state-modulation (DC differentiation, TME Tregs) upregulates ABCB9 expression within the lysosomal compartment, not at the cell surface (a2_evi_01, a2_evi_06). The principal binder-engineering caveat is the lysosomal subdomain restriction (high severity); moderate homodimer-mediated epitope masking at the TMD0 interface is an additional concern, while the absence of a shed or secreted form rules out decoy competition.",
+    "one_paragraph": "ABCB9 (TAPL) has low surface accessibility as a canonical lysosomal multi-pass ABC transporter; its full-length form is not meaningfully present at the plasma membrane under any documented normal or disease state. The evidence is consistent and multi-method: permeabilized fluorescence microscopy showed TAPL-GFP co-localizing exclusively with LysoTracker in CHO-K1 cells (a1_evi_13), Percoll-gradient fractionation co-sedimented TAPL-GFP with cathepsin D rather than PM markers (a1_evi_14), and stable-expression studies in mammalian cells confirmed lysosomal sorting with no PM signal for the full-length protein (a1_evi_17). Surface presence is constitutively intracellular \u2014 state-modulation (DC differentiation, TME Tregs) upregulates ABCB9 expression within the lysosomal compartment, not at the cell surface (a2_evi_01, a2_evi_06). The principal binder-engineering caveat is the lysosomal subdomain restriction (high severity); moderate homodimer-mediated epitope masking at the TMD0 interface is an additional concern, while the absence of a shed or secreted form rules out decoy competition.",
     "accessibility_context_summary": "ABCB9 localizes constitutively to the lysosomal limiting membrane across all documented cell types and states; no plasma membrane pool has been demonstrated for the full-length protein.",
     "surface_accessibility": "no",
     "evidence_grade_summary": "weak",
@@ -73,7 +73,7 @@
     "expression_level_rationale": "High expression in monocyte-derived DCs, macrophages, and testicular Sertoli cells (a2_evi_01, a2_evi_02); moderate in TME Tregs and tumor cells (a2_evi_06); low in brain microvessels (a2_evi_05). Overall: moderate across relevant cell types.",
     "expression_breadth_rationale": "Expressed across immune (DCs, macrophages, Tregs), reproductive (testis), vascular (brain microvessels), and tumor compartments (a2_evi_01, a2_evi_02, a2_evi_04, a2_evi_05, a2_evi_06); not pan-tissue but spans multiple distinct lineages.",
     "surface_specificity_rationale": "All direct localization studies place full-length ABCB9 on the lysosomal limiting membrane; no PM pool documented (a1_evi_13, a1_evi_14, a1_evi_17, a2_evi_08, a2_evi_09). Only TMD0-deleted truncations reach the PM.",
-    "has_known_ligand_rationale": "ABCB9/TAPL translocates oligo- and polypeptides (6–59 amino acids) from the cytosol into the lysosomal lumen in an ATP-dependent manner; cytosolic peptides are its validated endogenous substrates/cargo (a1_evi_08).",
+    "has_known_ligand_rationale": "ABCB9/TAPL translocates oligo- and polypeptides (6\u201359 amino acids) from the cytosol into the lysosomal lumen in an ATP-dependent manner; cytosolic peptides are its validated endogenous substrates/cargo (a1_evi_08).",
     "low_endogenous_expression_rationale": "High expression in monocyte-derived DCs, macrophages, and testicular Sertoli cells (a2_evi_01, a2_evi_02); moderate in TME Tregs and tumor cells (a2_evi_06); low in brain microvessels (a2_evi_05). Overall: moderate across relevant cell types.",
     "overexpression_surface_localization_observed_rationale": "1 method observation(s) pair an overexpression/mixed expression system with a surface-localization readout (cites a1_evi_16)."
   },
@@ -175,7 +175,7 @@
         "claim_id": "a1_evi_16",
         "stance": "tangential",
         "weight": "moderate",
-        "note": "Core-TAPL (TMD0-deleted) reaches PM in OE; full-length protein does NOT — confirms full-length is lysosomal"
+        "note": "Core-TAPL (TMD0-deleted) reaches PM in OE; full-length protein does NOT \u2014 confirms full-length is lysosomal"
       },
       {
         "claim_id": "a1_evi_17",
@@ -495,7 +495,7 @@
     ],
     "contradicting_evidence": [
       {
-        "claim": "Multiple structural and functional studies establish that ABCB9/TAPL is a lysosomal membrane protein, not a plasma membrane protein. The TMD0 domain is solely responsible for lysosomal targeting via interaction with LAMP-1 and LAMP-2, and NMR analysis confirms a four-transmembrane helix topology with a lysosomal loop. The nucleotide-binding domain (NBD) is cytoplasmic, and there is no large extracellular domain — making surface accessibility at the plasma membrane structurally implausible.",
+        "claim": "Multiple structural and functional studies establish that ABCB9/TAPL is a lysosomal membrane protein, not a plasma membrane protein. The TMD0 domain is solely responsible for lysosomal targeting via interaction with LAMP-1 and LAMP-2, and NMR analysis confirms a four-transmembrane helix topology with a lysosomal loop. The nucleotide-binding domain (NBD) is cytoplasmic, and there is no large extracellular domain \u2014 making surface accessibility at the plasma membrane structurally implausible.",
         "contradiction_type": "alternative_localization",
         "severity_for_surface_accessibility": "high",
         "likely_explanation": "ABCB9/TAPL is a canonical lysosomal ABC half-transporter; its TMD0 contains a lysosomal targeting signal that directs the entire protein to the lysosomal membrane. Any plasma membrane detection would likely represent a minor mistargeted fraction or an artifact of overexpression systems.",
@@ -556,7 +556,7 @@
         "disease_context": "normal",
         "disease_label": null,
         "cell_states": [
-          "differentiated (monocyte→DC)"
+          "differentiated (monocyte\u2192DC)"
         ],
         "species": "human",
         "species_inferred": false,
@@ -572,7 +572,7 @@
         "disease_context": "normal",
         "disease_label": null,
         "cell_states": [
-          "differentiated (monocyte→macrophage)"
+          "differentiated (monocyte\u2192macrophage)"
         ],
         "species": "human",
         "species_inferred": false,
@@ -742,7 +742,7 @@
         "modulating_state": "monocyte-derived dendritic cells or macrophages",
         "direction": "increases",
         "change": "ABCB9 (TAPL) expression is absent/low in resting monocytes and is strongly induced upon differentiation to dendritic cells or macrophages, where it localizes to the lysosomal compartment (co-localizes with LAMP-2).",
-        "accessibility_implication": "ABCB9 is not surface-accessible in resting monocytes; upon DC/macrophage differentiation it becomes present on lysosomal membranes — not the plasma membrane — so it remains inaccessible to extracellular binders even in the induced state.",
+        "accessibility_implication": "ABCB9 is not surface-accessible in resting monocytes; upon DC/macrophage differentiation it becomes present on lysosomal membranes \u2014 not the plasma membrane \u2014 so it remains inaccessible to extracellular binders even in the induced state.",
         "species": "human",
         "species_inferred": false,
         "cited_evidence_ids": [
@@ -795,7 +795,7 @@
         "baseline_context": null,
         "modulating_state": null,
         "direction": "unclear",
-        "change": "In the tumor microenvironment, ABCB9 participates in lysosomal metabolic programs in both tumor cells and human Tregs; suppression of ABCB9 impairs GARP/TGF-β1 production and Treg immunosuppression, indicating functional relevance of ABCB9 lysosomal expression in this state.",
+        "change": "In the tumor microenvironment, ABCB9 participates in lysosomal metabolic programs in both tumor cells and human Tregs; suppression of ABCB9 impairs GARP/TGF-\u03b21 production and Treg immunosuppression, indicating functional relevance of ABCB9 lysosomal expression in this state.",
         "accessibility_implication": "ABCB9 operates on the lysosomal membrane of Tregs in the tumor microenvironment. This intracellular localization means it is not accessible to conventional extracellular binders, though its functional importance in TME Tregs is noted.",
         "species": "human",
         "species_inferred": false,
@@ -806,7 +806,7 @@
       }
     ],
     "biological_context_grade": "rich",
-    "grade_rationale": "All four A2 axes are well-populated: expression mapped across ≥5 tissues/cell types (monocytes/DCs/macrophages, testis, placenta, brain microvessels, Tregs) from multiple independent sources; subcellular localization to lysosomal limiting membrane is pinned by multiple primary IF/biochemical studies; anatomical context spans immune, reproductive, vascular, and CNS compartments; modulation evidence covers DC differentiation-state induction, disease-state downregulation (malaria/placenta), and pharmacological upregulation (NPt/Tregs). Picture is internally consistent—all roads lead to lysosomal membrane.",
+    "grade_rationale": "All four A2 axes are well-populated: expression mapped across \u22655 tissues/cell types (monocytes/DCs/macrophages, testis, placenta, brain microvessels, Tregs) from multiple independent sources; subcellular localization to lysosomal limiting membrane is pinned by multiple primary IF/biochemical studies; anatomical context spans immune, reproductive, vascular, and CNS compartments; modulation evidence covers DC differentiation-state induction, disease-state downregulation (malaria/placenta), and pharmacological upregulation (NPt/Tregs). Picture is internally consistent\u2014all roads lead to lysosomal membrane.",
     "grade_cited_evidence_ids": [
       "a2_evi_01",
       "a2_evi_02",
@@ -1110,7 +1110,7 @@
       "ecd_disordered_fraction": 0.13095238095238096,
       "source": "AlphaFold DB (ECD-restricted pLDDT, n=84)",
       "license": "CC BY 4.0",
-      "attribution": "© DeepMind / EMBL-EBI",
+      "attribution": "\u00a9 DeepMind / EMBL-EBI",
       "citations": [
         "10.1038/s41586-021-03819-2",
         "10.1093/nar/gkad1011"
@@ -1150,7 +1150,7 @@
       "pdbs": [],
       "representative_structure": null,
       "source": "SURFACE-Bind v1 (Balbi 2026 PNAS)",
-      "attribution": "© Balbi et al., Correia lab — EPFL / Inria / Novo Nordisk",
+      "attribution": "\u00a9 Balbi et al., Correia lab \u2014 EPFL / Inria / Novo Nordisk",
       "citation": "10.1073/pnas.2506269123"
     },
     "homo_oligomerization": {
@@ -1271,7 +1271,7 @@
           },
           "section": "abstract",
           "figure_or_table_id": null,
-          "quote": "TAPL can be divided into two functional units: coreTAPL, active in ATP-dependent peptide translocation, and the N-terminal membrane spanning domain, TMD0, responsible for cellular localization and interaction with the lysosomal associated membrane proteins LAMP-1 and LAMP-2.",
+          "quote": "TAPL can be divided into two functional units: coreTAPL, active in ATP-dependent peptide translocation, and the N-terminal membrane spanning domain, TMD0, responsible for cellular localization and interaction with the\u00a0lysosomal associated membrane proteins LAMP-1 and LAMP-2.",
           "quote_sha256": "2903e2723f30271bff2fccfef85a4eb4b69b86819adb45a720ed9563d749ce29",
           "char_offset": 0,
           "normalized_source_sha256": "69c992fb08616db5e363a5c24b08833b023c30fb41529c34010968137bb82b1a"
@@ -1328,7 +1328,7 @@
     },
     {
       "evidence_id": "a1_evi_03",
-      "claim": "The four-TM topology of ABCB9/TAPL TMD0 was confirmed by paramagnetic relaxation enhancement using paramagnetic stearic acid and nuclear Overhauser effects with c6-DHPC and water cross-peaks — direct NMR structural validation of the membrane orientation of the lysosomal-targeting domain.",
+      "claim": "The four-TM topology of ABCB9/TAPL TMD0 was confirmed by paramagnetic relaxation enhancement using paramagnetic stearic acid and nuclear Overhauser effects with c6-DHPC and water cross-peaks \u2014 direct NMR structural validation of the membrane orientation of the lysosomal-targeting domain.",
       "claim_type": "topology",
       "direction": "refutes",
       "evidence_type": "crystal_structure",
@@ -1416,7 +1416,7 @@
     },
     {
       "evidence_id": "a1_evi_05",
-      "claim": "ABCB9/TAPL is a homodimeric half-transporter composed of one transmembrane domain (TMD), one cytoplasmic nucleotide-binding domain (NBD), and an N-terminal TMD0 — confirming the multi-pass membrane topology with cytosolic NBD orientation and the absence of a large extracellular domain.",
+      "claim": "ABCB9/TAPL is a homodimeric half-transporter composed of one transmembrane domain (TMD), one cytoplasmic nucleotide-binding domain (NBD), and an N-terminal TMD0 \u2014 confirming the multi-pass membrane topology with cytosolic NBD orientation and the absence of a large extracellular domain.",
       "claim_type": "topology",
       "direction": "refutes",
       "evidence_type": "review_assertion",
@@ -1491,7 +1491,7 @@
           },
           "section": "introduction",
           "figure_or_table_id": null,
-          "quote": "TMD0 is made up of four transmembrane α-helices; it is dispensable for peptide transport but is essential for lysosomal targeting and long-term stabilization by interacting with the lysosome-associated membrane proteins, LAMP-1 and LAMP-2B 5 , 6 .",
+          "quote": "TMD0 is made up of four transmembrane \u03b1-helices; it is dispensable for peptide transport but is essential for lysosomal targeting and long-term stabilization by interacting with the lysosome-associated membrane proteins, LAMP-1 and LAMP-2B 5 , 6 .",
           "quote_sha256": "bdbe50e191edfd335921cd41c0a2f968330345068b9bdb3ddcb933b66162fae5",
           "char_offset": 168,
           "normalized_source_sha256": "7d0f23a47ef059dd5d8b86400e4683759fad55b8c45f9b6da87dbfcb4e926ebd"
@@ -1645,7 +1645,7 @@
     },
     {
       "evidence_id": "a1_evi_10",
-      "claim": "Methodology detail for membrane/soluble fractionation of S2 cells overexpressing hTAPL and rTAPL: membranes prepared from expressing and mock-transfected cells, 20 µg protein aliquots analyzed by SDS-PAGE (7.5%) + Western blot with anti-His6 antibodies. This is the paired method detail for the membrane-fraction result clip.",
+      "claim": "Methodology detail for membrane/soluble fractionation of S2 cells overexpressing hTAPL and rTAPL: membranes prepared from expressing and mock-transfected cells, 20 \u00b5g protein aliquots analyzed by SDS-PAGE (7.5%) + Western blot with anti-His6 antibodies. This is the paired method detail for the membrane-fraction result clip.",
       "claim_type": "methodological",
       "direction": "supports",
       "evidence_type": "western_blot",
@@ -1685,7 +1685,7 @@
           },
           "section": "results",
           "figure_or_table_id": null,
-          "quote": "Membrane (lanes 1—3) and soluble (lanes 4—6) fractions were prepared from hTAPL-expressing (lanes 1, 4), rTAPLexpressing (lanes 2, 5), and mock-transfected (lanes 3, 6) cells, and then aliquots (20 m g protein) were analyzed by means of Western blotting using anti-His6 antibodies after SDS-polyacrylamide gel (7.5%) electrophoresis. [B] Membranes were prepared from S2 cells expressing rTAPL.",
+          "quote": "Membrane (lanes 1\u20143) and soluble (lanes 4\u20146) fractions were prepared from hTAPL-expressing (lanes 1, 4), rTAPLexpressing (lanes 2, 5), and mock-transfected (lanes 3, 6) cells, and then aliquots (20 m g protein) were analyzed by means of Western blotting using anti-His6 antibodies after SDS-polyacrylamide gel (7.5%) electrophoresis. [B] Membranes were prepared from S2 cells expressing rTAPL.",
           "quote_sha256": "3ca187dc1fb5e816d7d59da72bf11790a2ffdb0bde0b50fa98bc1fc7f40ef2f8",
           "char_offset": 114,
           "normalized_source_sha256": "2dbcf693148bbd1a1c000df2877feaed1a2d1adb7888f7bdabb1c665c313dcec"
@@ -1698,7 +1698,7 @@
     },
     {
       "evidence_id": "a1_evi_11",
-      "claim": "The study notes that significant amounts of both TAPL proteins were expressed on intracellular membranes in the S2 overexpression system — establishing that even under OE conditions the protein distributes primarily to intracellular membranes rather than the cell surface.",
+      "claim": "The study notes that significant amounts of both TAPL proteins were expressed on intracellular membranes in the S2 overexpression system \u2014 establishing that even under OE conditions the protein distributes primarily to intracellular membranes rather than the cell surface.",
       "claim_type": "surface_expression",
       "direction": "refutes",
       "evidence_type": "western_blot",
@@ -1910,7 +1910,7 @@
     },
     {
       "evidence_id": "a1_evi_15",
-      "claim": "TAPL-GFP in CHO-K1 cells was not completely solubilized by non-ionic detergent under ice-cold conditions and co-sedimented with flotillin-1 on sucrose density gradient, indicating association with lipid raft microdomains of lysosomal membranes — consistent with intracellular (lysosomal) membrane residency.",
+      "claim": "TAPL-GFP in CHO-K1 cells was not completely solubilized by non-ionic detergent under ice-cold conditions and co-sedimented with flotillin-1 on sucrose density gradient, indicating association with lipid raft microdomains of lysosomal membranes \u2014 consistent with intracellular (lysosomal) membrane residency.",
       "claim_type": "surface_expression",
       "direction": "refutes",
       "evidence_type": "western_blot",
@@ -1963,7 +1963,7 @@
     },
     {
       "evidence_id": "a1_evi_16",
-      "claim": "OE surface-localization precedent: core-TAPL construct (six predicted TM helices + NBD, lacking TMD0) overexpressed in mammalian cells is sufficient for peptide transport AND is preferentially targeted to the plasma membrane, in striking contrast to full-length TAPL which goes to lysosomes. TMD0 alone traffics to lysosomes. This is direct evidence that the core translocon domain CAN reach the PM when the lysosomal-targeting TMD0 is removed — but the full-length protein does not. SP source: full-length and truncated constructs, native sequence implied; no heterologous leader mentioned.",
+      "claim": "OE surface-localization precedent: core-TAPL construct (six predicted TM helices + NBD, lacking TMD0) overexpressed in mammalian cells is sufficient for peptide transport AND is preferentially targeted to the plasma membrane, in striking contrast to full-length TAPL which goes to lysosomes. TMD0 alone traffics to lysosomes. This is direct evidence that the core translocon domain CAN reach the PM when the lysosomal-targeting TMD0 is removed \u2014 but the full-length protein does not. SP source: full-length and truncated constructs, native sequence implied; no heterologous leader mentioned.",
       "claim_type": "surface_expression",
       "direction": "ambiguous",
       "evidence_type": "immunofluorescence",
@@ -2109,7 +2109,7 @@
           },
           "section": "methods",
           "figure_or_table_id": null,
-          "quote": "Four hours later, transfection with jetPRIME (Polyplus transfection) was carried out following the manufacturer’s instructions.\nshRNAs constructs for the stable knockdown of human ABCB6 (sc-94721-SH) and ABCB9 (sc-60115-SH) were obtained from Santa Cruz Biotechnology.",
+          "quote": "Four hours later, transfection with jetPRIME (Polyplus transfection) was carried out following the manufacturer\u2019s instructions.\nshRNAs constructs for the stable knockdown of human ABCB6 (sc-94721-SH) and ABCB9 (sc-60115-SH) were obtained from Santa Cruz Biotechnology.",
           "quote_sha256": "15ac0d07189830e75e8e8874be58ed2ba522fd4bcd788016643390a1dfa2abdc",
           "char_offset": 0,
           "normalized_source_sha256": "b5c4ed3867b9fa02341bdd873791d35527cc96a86eaa0938e0ffccadcb45ef69"
@@ -2248,7 +2248,7 @@
           "cellosaurus_id": null,
           "tissue": null,
           "disease_state": null,
-          "activation_state": "differentiated (monocyte→DC or macrophage)"
+          "activation_state": "differentiated (monocyte\u2192DC or macrophage)"
         }
       },
       "spans": [
@@ -2493,7 +2493,7 @@
     },
     {
       "evidence_id": "a2_evi_06",
-      "claim": "ABCB9 is expressed in regulatory T cells (Tregs) and localizes to the lysosomal membrane within these cells. In the tumor microenvironment, ABCB9 participates in lysosomal metabolic programs in both tumor cells and human Tregs. Suppression of ABCB9 impairs GARP/TGF-β1 production, indicating a functional role in Treg immunosuppression.",
+      "claim": "ABCB9 is expressed in regulatory T cells (Tregs) and localizes to the lysosomal membrane within these cells. In the tumor microenvironment, ABCB9 participates in lysosomal metabolic programs in both tumor cells and human Tregs. Suppression of ABCB9 impairs GARP/TGF-\u03b21 production, indicating a functional role in Treg immunosuppression.",
       "claim_type": "tissue_expression",
       "direction": "supports",
       "evidence_type": "functional_assay",
@@ -2533,7 +2533,7 @@
           },
           "section": "abstract",
           "figure_or_table_id": null,
-          "quote": "Here, we demonstrated that tumour necrosis factor receptor-associated factor 3 interacting protein 3 (TRAF3IP3) in the Treg lysosome is involved in this activation mechanism. Using a novel naphthalenelactam-platinum-based anticancer drug (NPt), we developed a new synergistic effect by suppressing ATP-binding cassette subfamily B member 9 (ABCB9) and TRAF3IP3-mediated divergent lysosomal metabolic programs in tumors and human Tregs to block the production of active GARP/TGF-β1 for remodeling the tumor microenvironment.",
+          "quote": "Here, we demonstrated that tumour necrosis factor receptor-associated factor 3 interacting protein 3 (TRAF3IP3) in the Treg lysosome is involved in this activation mechanism. Using a novel naphthalenelactam-platinum-based anticancer drug (NPt), we developed a new synergistic effect by suppressing ATP-binding cassette subfamily B member 9 (ABCB9) and TRAF3IP3-mediated divergent lysosomal metabolic programs in tumors and human Tregs to block the production of active GARP/TGF-\u03b21 for remodeling the tumor microenvironment.",
           "quote_sha256": "5fb18c58eae100c00a4471f1f034fdc025e1ba7627e2fafea95f57398e73733c",
           "char_offset": 0,
           "normalized_source_sha256": "414b5a90699d110cdf4a8f8a5072d7e20e3326aeffc0927d6c513e1adb52bd87"
@@ -3010,7 +3010,7 @@
           },
           "section": "abstract",
           "figure_or_table_id": null,
-          "quote": "Mechanistically, NPt is stored in Treg lysosome to inhibit TRAF3IP3-meditated GARP/TGF-β1 complex activation to specifically deplete Tregs. In addition, by promoting the expression of ABCB9 in lysosome membrane, NPt inhibits SARA/p-SMAD2/3 through CHRD-induced TGF-β1 signaling pathway.",
+          "quote": "Mechanistically, NPt is stored in Treg lysosome to inhibit TRAF3IP3-meditated GARP/TGF-\u03b21 complex activation to specifically deplete Tregs. In addition, by promoting the expression of ABCB9 in lysosome membrane, NPt inhibits SARA/p-SMAD2/3 through CHRD-induced TGF-\u03b21 signaling pathway.",
           "quote_sha256": "3e25c0bdf197dec74e14c99e5df283134d050b34e7e99a7c03f6a6e223c67fb4",
           "char_offset": 527,
           "normalized_source_sha256": "414b5a90699d110cdf4a8f8a5072d7e20e3326aeffc0927d6c513e1adb52bd87"
@@ -3027,7 +3027,330 @@
   "primary_evidence_count": 22,
   "secondary_evidence_count": 13,
   "confidence": "high",
-  "confidence_reasoning": "Confidence is high for the low/endomembrane call because the evidence is internally consistent, multi-method, and from multiple independent groups: NMR structural analysis, LysoTracker co-localization, Percoll-gradient fractionation, and stable-expression fluorescence microscopy all converge on strict lysosomal localization with no plasma membrane signal for the full-length protein. The triage verdict (contextual via lysosomal exocytosis) is overridden here because no gene-specific evidence for a PM pool via lysosomal exocytosis exists — this is class-level extrapolation, not ABCB9-specific data. The restricted_subdomain risk (high severity, strong evidence) further reinforces that the lysosomal compartment is inaccessible to extracellular binders. No contradictions exist; state-modulation (DC differentiation, TME) increases lysosomal expression, not PM exposure.",
+  "confidence_reasoning": "Confidence is high for the low/endomembrane call because the evidence is internally consistent, multi-method, and from multiple independent groups: NMR structural analysis, LysoTracker co-localization, Percoll-gradient fractionation, and stable-expression fluorescence microscopy all converge on strict lysosomal localization with no plasma membrane signal for the full-length protein. The triage verdict (contextual via lysosomal exocytosis) is overridden here because no gene-specific evidence for a PM pool via lysosomal exocytosis exists \u2014 this is class-level extrapolation, not ABCB9-specific data. The restricted_subdomain risk (high severity, strong evidence) further reinforces that the lysosomal compartment is inaccessible to extracellular binders. No contradictions exist; state-modulation (DC differentiation, TME) increases lysosomal expression, not PM exposure.",
   "model_path": "claude-sonnet-4-6",
-  "record_generated_at": "2026-06-08T21:22:09.672189Z"
+  "record_generated_at": "2026-06-08T21:22:09.672189Z",
+  "cellxgene": {
+    "schema_version": "2.1.1",
+    "census_version": "2025-11-08",
+    "cell_class_enrichment": {
+      "class": "group_enriched",
+      "class_ids": [
+        "Immune",
+        "Neural",
+        "Other"
+      ],
+      "class_labels": [
+        "Immune",
+        "Neural",
+        "Other"
+      ],
+      "fold_change": null,
+      "fold_change_infinite": true
+    },
+    "cell_type_enrichment": {
+      "class": "low_specificity",
+      "cl_ids": [],
+      "fold_change": null,
+      "fold_change_infinite": false
+    },
+    "tissue_enrichment": {
+      "class": "low_specificity",
+      "uberon_ids": [],
+      "tissue_labels": [],
+      "fold_change": null,
+      "fold_change_infinite": false
+    },
+    "enrichment_class": "group_enriched",
+    "enrichment_cl_ids": [
+      "Immune",
+      "Neural",
+      "Other"
+    ],
+    "fold_change": null,
+    "fold_change_infinite": true,
+    "top_cell_types": [
+      {
+        "cell_type": "pre-B-I cell",
+        "cl_id": "CL:0000956",
+        "mean_log1p_cp10k": 2.8576,
+        "n_expressing": 1,
+        "n_total": 542,
+        "pct_expressing": 0.0018,
+        "is_rare": true,
+        "is_trace": true,
+        "tissues": [
+          {
+            "tissue": "lung",
+            "uberon_id": "UBERON:0002048",
+            "mean_log1p_cp10k": 2.8576,
+            "n_expressing": 1,
+            "n_total": 542,
+            "pct_expressing": 0.0018
+          }
+        ]
+      },
+      {
+        "cell_type": "peritubular capillary endothelial cell",
+        "cl_id": "CL:1001033",
+        "mean_log1p_cp10k": 2.7527,
+        "n_expressing": 2,
+        "n_total": 970,
+        "pct_expressing": 0.0021,
+        "is_rare": true,
+        "is_trace": true,
+        "tissues": []
+      },
+      {
+        "cell_type": "dermis microvascular lymphatic vessel endothelial cell",
+        "cl_id": "CL:2000041",
+        "mean_log1p_cp10k": 2.6589,
+        "n_expressing": 1,
+        "n_total": 603,
+        "pct_expressing": 0.0017,
+        "is_rare": true,
+        "is_trace": true,
+        "tissues": [
+          {
+            "tissue": "heart",
+            "uberon_id": "UBERON:0000948",
+            "mean_log1p_cp10k": 2.6589,
+            "n_expressing": 1,
+            "n_total": 603,
+            "pct_expressing": 0.0017
+          }
+        ]
+      },
+      {
+        "cell_type": "chorionic trophoblast cell",
+        "cl_id": "CL:0011101",
+        "mean_log1p_cp10k": 2.5827,
+        "n_expressing": 2,
+        "n_total": 287,
+        "pct_expressing": 0.007,
+        "is_rare": true,
+        "is_trace": true,
+        "tissues": [
+          {
+            "tissue": "placenta",
+            "uberon_id": "UBERON:0001987",
+            "mean_log1p_cp10k": 2.5827,
+            "n_expressing": 2,
+            "n_total": 287,
+            "pct_expressing": 0.007
+          }
+        ]
+      },
+      {
+        "cell_type": "perineurial cell",
+        "cl_id": "CL:0002576",
+        "mean_log1p_cp10k": 2.42,
+        "n_expressing": 1,
+        "n_total": 934,
+        "pct_expressing": 0.0011,
+        "is_rare": true,
+        "is_trace": true,
+        "tissues": []
+      },
+      {
+        "cell_type": "ganglion interneuron",
+        "cl_id": "CL:0000397",
+        "mean_log1p_cp10k": 2.3657,
+        "n_expressing": 43,
+        "n_total": 1398,
+        "pct_expressing": 0.0308,
+        "is_rare": false,
+        "is_trace": false,
+        "tissues": [
+          {
+            "tissue": "eye",
+            "uberon_id": "UBERON:0000970",
+            "mean_log1p_cp10k": 2.3657,
+            "n_expressing": 43,
+            "n_total": 1398,
+            "pct_expressing": 0.0308
+          }
+        ]
+      },
+      {
+        "cell_type": "mesangial cell",
+        "cl_id": "CL:0000650",
+        "mean_log1p_cp10k": 2.2752,
+        "n_expressing": 1190,
+        "n_total": 45009,
+        "pct_expressing": 0.0264,
+        "is_rare": false,
+        "is_trace": false,
+        "tissues": [
+          {
+            "tissue": "kidney",
+            "uberon_id": "UBERON:0002113",
+            "mean_log1p_cp10k": 2.2752,
+            "n_expressing": 1190,
+            "n_total": 44196,
+            "pct_expressing": 0.0269
+          }
+        ]
+      },
+      {
+        "cell_type": "glomerular endothelial cell",
+        "cl_id": "CL:0002188",
+        "mean_log1p_cp10k": 2.2709,
+        "n_expressing": 1,
+        "n_total": 622,
+        "pct_expressing": 0.0016,
+        "is_rare": true,
+        "is_trace": true,
+        "tissues": [
+          {
+            "tissue": "kidney",
+            "uberon_id": "UBERON:0002113",
+            "mean_log1p_cp10k": 2.2709,
+            "n_expressing": 1,
+            "n_total": 561,
+            "pct_expressing": 0.0018
+          }
+        ]
+      },
+      {
+        "cell_type": "contractile cell",
+        "cl_id": "CL:0000183",
+        "mean_log1p_cp10k": 2.2402,
+        "n_expressing": 76,
+        "n_total": 5078,
+        "pct_expressing": 0.015,
+        "is_rare": false,
+        "is_trace": false,
+        "tissues": [
+          {
+            "tissue": "mucosa",
+            "uberon_id": "UBERON:0000344",
+            "mean_log1p_cp10k": 2.2632,
+            "n_expressing": 9,
+            "n_total": 504,
+            "pct_expressing": 0.0179
+          },
+          {
+            "tissue": "breast",
+            "uberon_id": "UBERON:0000310",
+            "mean_log1p_cp10k": 2.413,
+            "n_expressing": 6,
+            "n_total": 130,
+            "pct_expressing": 0.0462
+          },
+          {
+            "tissue": "prostate gland",
+            "uberon_id": "UBERON:0002367",
+            "mean_log1p_cp10k": 1.9336,
+            "n_expressing": 3,
+            "n_total": 224,
+            "pct_expressing": 0.0134
+          }
+        ]
+      },
+      {
+        "cell_type": "epithelial cell of thymus",
+        "cl_id": "CL:0002293",
+        "mean_log1p_cp10k": 2.2245,
+        "n_expressing": 5,
+        "n_total": 813,
+        "pct_expressing": 0.0062,
+        "is_rare": true,
+        "is_trace": true,
+        "tissues": []
+      }
+    ],
+    "top_tissues": [
+      {
+        "tissue": "pleura",
+        "uberon_id": "UBERON:0000977",
+        "mean_log1p_cp10k": 2.1788,
+        "n_expressing": 6,
+        "n_total": 19695,
+        "pct_expressing": 0.0003,
+        "is_trace": true
+      },
+      {
+        "tissue": "esophagus",
+        "uberon_id": "UBERON:0001043",
+        "mean_log1p_cp10k": 2.1538,
+        "n_expressing": 512,
+        "n_total": 23590,
+        "pct_expressing": 0.0217,
+        "is_trace": false
+      },
+      {
+        "tissue": "testis",
+        "uberon_id": "UBERON:0000473",
+        "mean_log1p_cp10k": 2.1284,
+        "n_expressing": 76,
+        "n_total": 20724,
+        "pct_expressing": 0.0037,
+        "is_trace": true
+      },
+      {
+        "tissue": "pancreas",
+        "uberon_id": "UBERON:0001264",
+        "mean_log1p_cp10k": 2.0628,
+        "n_expressing": 1924,
+        "n_total": 246237,
+        "pct_expressing": 0.0078,
+        "is_trace": true
+      },
+      {
+        "tissue": "embryo",
+        "uberon_id": "UBERON:0000922",
+        "mean_log1p_cp10k": 2.0562,
+        "n_expressing": 2987,
+        "n_total": 14244,
+        "pct_expressing": 0.2097,
+        "is_trace": false
+      },
+      {
+        "tissue": "gallbladder",
+        "uberon_id": "UBERON:0002110",
+        "mean_log1p_cp10k": 1.9997,
+        "n_expressing": 36,
+        "n_total": 19800,
+        "pct_expressing": 0.0018,
+        "is_trace": true
+      },
+      {
+        "tissue": "adrenal gland",
+        "uberon_id": "UBERON:0002369",
+        "mean_log1p_cp10k": 1.9839,
+        "n_expressing": 6447,
+        "n_total": 543830,
+        "pct_expressing": 0.0119,
+        "is_trace": false
+      },
+      {
+        "tissue": "mucosa",
+        "uberon_id": "UBERON:0000344",
+        "mean_log1p_cp10k": 1.9834,
+        "n_expressing": 893,
+        "n_total": 26060,
+        "pct_expressing": 0.0343,
+        "is_trace": false
+      },
+      {
+        "tissue": "intestine",
+        "uberon_id": "UBERON:0000160",
+        "mean_log1p_cp10k": 1.9546,
+        "n_expressing": 984,
+        "n_total": 327410,
+        "pct_expressing": 0.003,
+        "is_trace": true
+      },
+      {
+        "tissue": "heart",
+        "uberon_id": "UBERON:0000948",
+        "mean_log1p_cp10k": 1.9106,
+        "n_expressing": 40766,
+        "n_total": 120581,
+        "pct_expressing": 0.3381,
+        "is_trace": false
+      }
+    ]
+  }
 }

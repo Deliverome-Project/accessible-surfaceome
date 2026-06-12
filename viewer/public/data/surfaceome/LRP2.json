@@ -4185,5 +4185,324 @@
   "confidence": "high",
   "confidence_reasoning": "",
   "model_path": "claude-sonnet-4-6",
-  "record_generated_at": "2026-05-30T20:29:01.447637Z"
+  "record_generated_at": "2026-05-30T20:29:01.447637Z",
+  "cellxgene": {
+    "schema_version": "2.1.1",
+    "census_version": "2025-11-08",
+    "cell_class_enrichment": {
+      "class": "low_specificity",
+      "class_ids": [],
+      "class_labels": [],
+      "fold_change": null,
+      "fold_change_infinite": false
+    },
+    "cell_type_enrichment": {
+      "class": "low_specificity",
+      "cl_ids": [],
+      "fold_change": null,
+      "fold_change_infinite": false
+    },
+    "tissue_enrichment": {
+      "class": "low_specificity",
+      "uberon_ids": [],
+      "tissue_labels": [],
+      "fold_change": null,
+      "fold_change_infinite": false
+    },
+    "enrichment_class": "low_specificity",
+    "enrichment_cl_ids": [],
+    "fold_change": null,
+    "fold_change_infinite": false,
+    "top_cell_types": [
+      {
+        "cell_type": "epithelial cell of proximal tubule segment 3",
+        "cl_id": "CL:4030011",
+        "mean_log1p_cp10k": 3.289,
+        "n_expressing": 2296,
+        "n_total": 3659,
+        "pct_expressing": 0.6275,
+        "is_rare": false,
+        "is_trace": false,
+        "tissues": [
+          {
+            "tissue": "kidney",
+            "uberon_id": "UBERON:0002113",
+            "mean_log1p_cp10k": 3.289,
+            "n_expressing": 2296,
+            "n_total": 989,
+            "pct_expressing": 2.3215
+          }
+        ]
+      },
+      {
+        "cell_type": "kidney proximal convoluted tubule epithelial cell",
+        "cl_id": "CL:1000838",
+        "mean_log1p_cp10k": 3.2061,
+        "n_expressing": 15755,
+        "n_total": 20704,
+        "pct_expressing": 0.761,
+        "is_rare": false,
+        "is_trace": false,
+        "tissues": [
+          {
+            "tissue": "kidney",
+            "uberon_id": "UBERON:0002113",
+            "mean_log1p_cp10k": 3.2061,
+            "n_expressing": 15755,
+            "n_total": 6609,
+            "pct_expressing": 2.3839
+          }
+        ]
+      },
+      {
+        "cell_type": "supporting cell of vestibular epithelium",
+        "cl_id": "CL:0002316",
+        "mean_log1p_cp10k": 3.1529,
+        "n_expressing": 1,
+        "n_total": 270,
+        "pct_expressing": 0.0037,
+        "is_rare": true,
+        "is_trace": true,
+        "tissues": []
+      },
+      {
+        "cell_type": "epithelial cell of proximal tubule",
+        "cl_id": "CL:0002306",
+        "mean_log1p_cp10k": 2.707,
+        "n_expressing": 141865,
+        "n_total": 234384,
+        "pct_expressing": 0.6053,
+        "is_rare": false,
+        "is_trace": false,
+        "tissues": [
+          {
+            "tissue": "kidney",
+            "uberon_id": "UBERON:0002113",
+            "mean_log1p_cp10k": 2.7072,
+            "n_expressing": 141793,
+            "n_total": 74541,
+            "pct_expressing": 1.9022
+          },
+          {
+            "tissue": "adrenal gland",
+            "uberon_id": "UBERON:0002369",
+            "mean_log1p_cp10k": 2.6279,
+            "n_expressing": 11,
+            "n_total": 19,
+            "pct_expressing": 0.5789
+          },
+          {
+            "tissue": "testis",
+            "uberon_id": "UBERON:0000473",
+            "mean_log1p_cp10k": 2.5192,
+            "n_expressing": 4,
+            "n_total": 21,
+            "pct_expressing": 0.1905
+          }
+        ]
+      },
+      {
+        "cell_type": "pigmented epithelial cell",
+        "cl_id": "CL:0000529",
+        "mean_log1p_cp10k": 2.6813,
+        "n_expressing": 9349,
+        "n_total": 29987,
+        "pct_expressing": 0.3118,
+        "is_rare": false,
+        "is_trace": false,
+        "tissues": []
+      },
+      {
+        "cell_type": "epicardial adipocyte",
+        "cl_id": "CL:1000309",
+        "mean_log1p_cp10k": 2.6641,
+        "n_expressing": 234,
+        "n_total": 5690,
+        "pct_expressing": 0.0411,
+        "is_rare": false,
+        "is_trace": false,
+        "tissues": [
+          {
+            "tissue": "heart",
+            "uberon_id": "UBERON:0000948",
+            "mean_log1p_cp10k": 2.6641,
+            "n_expressing": 234,
+            "n_total": 1891,
+            "pct_expressing": 0.1237
+          }
+        ]
+      },
+      {
+        "cell_type": "syncytiotrophoblast cell",
+        "cl_id": "CL:0000525",
+        "mean_log1p_cp10k": 2.5152,
+        "n_expressing": 924,
+        "n_total": 48152,
+        "pct_expressing": 0.0192,
+        "is_rare": false,
+        "is_trace": false,
+        "tissues": [
+          {
+            "tissue": "placenta",
+            "uberon_id": "UBERON:0001987",
+            "mean_log1p_cp10k": 2.5201,
+            "n_expressing": 919,
+            "n_total": 19578,
+            "pct_expressing": 0.0469
+          }
+        ]
+      },
+      {
+        "cell_type": "Mueller cell",
+        "cl_id": "CL:0000636",
+        "mean_log1p_cp10k": 2.4662,
+        "n_expressing": 61254,
+        "n_total": 309349,
+        "pct_expressing": 0.198,
+        "is_rare": false,
+        "is_trace": false,
+        "tissues": [
+          {
+            "tissue": "eye",
+            "uberon_id": "UBERON:0000970",
+            "mean_log1p_cp10k": 2.4664,
+            "n_expressing": 61238,
+            "n_total": 14930,
+            "pct_expressing": 4.1017
+          },
+          {
+            "tissue": "brain",
+            "uberon_id": "UBERON:0000955",
+            "mean_log1p_cp10k": 1.6586,
+            "n_expressing": 16,
+            "n_total": 1238,
+            "pct_expressing": 0.0129
+          }
+        ]
+      },
+      {
+        "cell_type": "non-pigmented ciliary epithelial cell",
+        "cl_id": "CL:0002304",
+        "mean_log1p_cp10k": 2.4604,
+        "n_expressing": 118663,
+        "n_total": 166913,
+        "pct_expressing": 0.7109,
+        "is_rare": false,
+        "is_trace": false,
+        "tissues": []
+      },
+      {
+        "cell_type": "photoreceptor cell",
+        "cl_id": "CL:0000210",
+        "mean_log1p_cp10k": 2.4501,
+        "n_expressing": 243,
+        "n_total": 12398,
+        "pct_expressing": 0.0196,
+        "is_rare": false,
+        "is_trace": false,
+        "tissues": [
+          {
+            "tissue": "eye",
+            "uberon_id": "UBERON:0000970",
+            "mean_log1p_cp10k": 2.4501,
+            "n_expressing": 243,
+            "n_total": 12398,
+            "pct_expressing": 0.0196
+          }
+        ]
+      }
+    ],
+    "top_tissues": [
+      {
+        "tissue": "kidney",
+        "uberon_id": "UBERON:0002113",
+        "mean_log1p_cp10k": 2.5847,
+        "n_expressing": 218605,
+        "n_total": 943536,
+        "pct_expressing": 0.2317,
+        "is_trace": false
+      },
+      {
+        "tissue": "lamina propria",
+        "uberon_id": "UBERON:0000030",
+        "mean_log1p_cp10k": 2.3425,
+        "n_expressing": 1,
+        "n_total": 23687,
+        "pct_expressing": 0.0,
+        "is_trace": true
+      },
+      {
+        "tissue": "pleura",
+        "uberon_id": "UBERON:0000977",
+        "mean_log1p_cp10k": 2.2791,
+        "n_expressing": 297,
+        "n_total": 19695,
+        "pct_expressing": 0.0151,
+        "is_trace": false
+      },
+      {
+        "tissue": "testis",
+        "uberon_id": "UBERON:0000473",
+        "mean_log1p_cp10k": 2.2483,
+        "n_expressing": 80,
+        "n_total": 20724,
+        "pct_expressing": 0.0039,
+        "is_trace": true
+      },
+      {
+        "tissue": "embryo",
+        "uberon_id": "UBERON:0000922",
+        "mean_log1p_cp10k": 2.2256,
+        "n_expressing": 9291,
+        "n_total": 14244,
+        "pct_expressing": 0.6523,
+        "is_trace": false
+      },
+      {
+        "tissue": "heart",
+        "uberon_id": "UBERON:0000948",
+        "mean_log1p_cp10k": 2.2053,
+        "n_expressing": 35737,
+        "n_total": 120581,
+        "pct_expressing": 0.2964,
+        "is_trace": false
+      },
+      {
+        "tissue": "esophagus",
+        "uberon_id": "UBERON:0001043",
+        "mean_log1p_cp10k": 2.1775,
+        "n_expressing": 62,
+        "n_total": 23590,
+        "pct_expressing": 0.0026,
+        "is_trace": true
+      },
+      {
+        "tissue": "cerebrospinal fluid",
+        "uberon_id": "UBERON:0001359",
+        "mean_log1p_cp10k": 2.1387,
+        "n_expressing": 43,
+        "n_total": 72695,
+        "pct_expressing": 0.0006,
+        "is_trace": true
+      },
+      {
+        "tissue": "adipose tissue",
+        "uberon_id": "UBERON:0001013",
+        "mean_log1p_cp10k": 2.1017,
+        "n_expressing": 29464,
+        "n_total": 31950,
+        "pct_expressing": 0.9222,
+        "is_trace": false
+      },
+      {
+        "tissue": "vasculature",
+        "uberon_id": "UBERON:0002049",
+        "mean_log1p_cp10k": 2.0646,
+        "n_expressing": 137,
+        "n_total": 2915,
+        "pct_expressing": 0.047,
+        "is_trace": false
+      }
+    ]
+  }
 }

@@ -5009,5 +5009,230 @@
   "confidence": "moderate",
   "confidence_reasoning": "Confidence is moderate for two reasons. First, the surface-accessibility evidence is indirect: the strongest data come from endogenous N-terminal 3xFlag-knockin immunofluorescence (validated by the L144P loss-of-localization control) and membrane-fraction photoaffinity crosslinking \u2014 robust but not a clean non-permeabilized live-cell flow or surface biotinylation experiment with a knockout comparator. Second, the 2025 cryo-EM structure (PMID:41545757) reveals a constitutively collapsed orthosteric ECD pocket, a moderate epitope-masking risk that could defeat conventional GPCR-targeting antibody strategies. Lifting confidence would require non-permeabilized live-cell surface staining or surface biotinylation in primary human cells with a GPR75-knockout control, plus structural mapping of ECL2/3 loop accessibility.",
   "model_path": "claude-sonnet-4-6",
-  "record_generated_at": "2026-06-07T02:42:21.474347Z"
+  "record_generated_at": "2026-06-07T02:42:21.474347Z",
+  "cellxgene": {
+    "schema_version": "2.1.1",
+    "census_version": "2025-11-08",
+    "cell_class_enrichment": {
+      "class": "not_detected",
+      "class_ids": [],
+      "class_labels": [],
+      "fold_change": null,
+      "fold_change_infinite": false
+    },
+    "cell_type_enrichment": {
+      "class": "enriched",
+      "cl_ids": [
+        "CL:1001016"
+      ],
+      "fold_change": null,
+      "fold_change_infinite": true
+    },
+    "tissue_enrichment": {
+      "class": "group_enriched",
+      "uberon_ids": [
+        "UBERON:0000955",
+        "UBERON:0000922",
+        "UBERON:0002049",
+        "UBERON:0000970"
+      ],
+      "tissue_labels": [
+        "brain",
+        "embryo",
+        "vasculature",
+        "eye"
+      ],
+      "fold_change": null,
+      "fold_change_infinite": true
+    },
+    "enrichment_class": "not_detected",
+    "enrichment_cl_ids": [],
+    "fold_change": null,
+    "fold_change_infinite": false,
+    "top_cell_types": [
+      {
+        "cell_type": "visceromotor neuron",
+        "cl_id": "CL:0005025",
+        "mean_log1p_cp10k": 2.3431,
+        "n_expressing": 3,
+        "n_total": 610,
+        "pct_expressing": 0.0049,
+        "is_rare": true,
+        "is_trace": true,
+        "tissues": [
+          {
+            "tissue": "heart",
+            "uberon_id": "UBERON:0000948",
+            "mean_log1p_cp10k": 2.3431,
+            "n_expressing": 3,
+            "n_total": 348,
+            "pct_expressing": 0.0086
+          }
+        ]
+      },
+      {
+        "cell_type": "mature neutrophil",
+        "cl_id": "CL:0000096",
+        "mean_log1p_cp10k": 2.2725,
+        "n_expressing": 1,
+        "n_total": 906,
+        "pct_expressing": 0.0011,
+        "is_rare": true,
+        "is_trace": true,
+        "tissues": []
+      },
+      {
+        "cell_type": "IgA plasmablast",
+        "cl_id": "CL:0000984",
+        "mean_log1p_cp10k": 2.1409,
+        "n_expressing": 1,
+        "n_total": 956,
+        "pct_expressing": 0.001,
+        "is_rare": true,
+        "is_trace": true,
+        "tissues": [
+          {
+            "tissue": "blood",
+            "uberon_id": "UBERON:0000178",
+            "mean_log1p_cp10k": 2.1409,
+            "n_expressing": 1,
+            "n_total": 956,
+            "pct_expressing": 0.001
+          }
+        ]
+      },
+      {
+        "cell_type": "dermis microvascular lymphatic vessel endothelial cell",
+        "cl_id": "CL:2000041",
+        "mean_log1p_cp10k": 2.0776,
+        "n_expressing": 2,
+        "n_total": 603,
+        "pct_expressing": 0.0033,
+        "is_rare": true,
+        "is_trace": true,
+        "tissues": [
+          {
+            "tissue": "heart",
+            "uberon_id": "UBERON:0000948",
+            "mean_log1p_cp10k": 2.0776,
+            "n_expressing": 2,
+            "n_total": 603,
+            "pct_expressing": 0.0033
+          }
+        ]
+      },
+      {
+        "cell_type": "kidney loop of Henle ascending limb epithelial cell",
+        "cl_id": "CL:1001016",
+        "mean_log1p_cp10k": 1.7559,
+        "n_expressing": 202,
+        "n_total": 10531,
+        "pct_expressing": 0.0192,
+        "is_rare": false,
+        "is_trace": false,
+        "tissues": [
+          {
+            "tissue": "kidney",
+            "uberon_id": "UBERON:0002113",
+            "mean_log1p_cp10k": 1.7559,
+            "n_expressing": 202,
+            "n_total": 10530,
+            "pct_expressing": 0.0192
+          }
+        ]
+      }
+    ],
+    "top_tissues": [
+      {
+        "tissue": "pleura",
+        "uberon_id": "UBERON:0000977",
+        "mean_log1p_cp10k": 2.3188,
+        "n_expressing": 4,
+        "n_total": 19695,
+        "pct_expressing": 0.0002,
+        "is_trace": true
+      },
+      {
+        "tissue": "adrenal gland",
+        "uberon_id": "UBERON:0002369",
+        "mean_log1p_cp10k": 2.2328,
+        "n_expressing": 495,
+        "n_total": 543830,
+        "pct_expressing": 0.0009,
+        "is_trace": true
+      },
+      {
+        "tissue": "forelimb",
+        "uberon_id": "UBERON:0002102",
+        "mean_log1p_cp10k": 2.2094,
+        "n_expressing": 1,
+        "n_total": 38983,
+        "pct_expressing": 0.0,
+        "is_trace": true
+      },
+      {
+        "tissue": "axilla",
+        "uberon_id": "UBERON:0009472",
+        "mean_log1p_cp10k": 2.0404,
+        "n_expressing": 4,
+        "n_total": 94151,
+        "pct_expressing": 0.0,
+        "is_trace": true
+      },
+      {
+        "tissue": "intestine",
+        "uberon_id": "UBERON:0000160",
+        "mean_log1p_cp10k": 2.0298,
+        "n_expressing": 91,
+        "n_total": 327410,
+        "pct_expressing": 0.0003,
+        "is_trace": true
+      },
+      {
+        "tissue": "pancreas",
+        "uberon_id": "UBERON:0001264",
+        "mean_log1p_cp10k": 2.0227,
+        "n_expressing": 73,
+        "n_total": 246237,
+        "pct_expressing": 0.0003,
+        "is_trace": true
+      },
+      {
+        "tissue": "neck",
+        "uberon_id": "UBERON:0000974",
+        "mean_log1p_cp10k": 1.9756,
+        "n_expressing": 2,
+        "n_total": 20201,
+        "pct_expressing": 0.0001,
+        "is_trace": true
+      },
+      {
+        "tissue": "brain",
+        "uberon_id": "UBERON:0000955",
+        "mean_log1p_cp10k": 1.9746,
+        "n_expressing": 20264,
+        "n_total": 941245,
+        "pct_expressing": 0.0215,
+        "is_trace": false
+      },
+      {
+        "tissue": "liver",
+        "uberon_id": "UBERON:0002107",
+        "mean_log1p_cp10k": 1.9742,
+        "n_expressing": 418,
+        "n_total": 1236918,
+        "pct_expressing": 0.0003,
+        "is_trace": true
+      },
+      {
+        "tissue": "placenta",
+        "uberon_id": "UBERON:0001987",
+        "mean_log1p_cp10k": 1.9127,
+        "n_expressing": 44,
+        "n_total": 316501,
+        "pct_expressing": 0.0001,
+        "is_trace": true
+      }
+    ]
+  }
 }

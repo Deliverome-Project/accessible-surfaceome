@@ -2083,3 +2083,35 @@ This Markdown is generated from the canonical JSON record at `/data/surfaceome/F
 - UniProt — CC BY 4.0 (UniProt Consortium)
 
 *Confidence moderate — Confidence is moderate for two reasons. First, the direct surface-accessibility evidence comes from a single primary method (cell-surface capture mass spectrometry on chondrogenic cells, PMC12777226, and µCSC in cardiac tissue, PMC10030153); IHC data are from permeabilized/fixed tissue and cannot distinguish surface from intracellular FN1. Second, the dominant biological pool is the hepatocyte-secreted plasma fibronectin, which circulates freely in blood — a genuine high-severity decoy that complicates antibody-based targeting. Surface membranous FN1 is disease-state-enriched (tumor, fibrosis, cardiac failure) and absent in normal liver (PMC11907257), so confidence in a constitutive surface call is low; confidence in the disease-state surface call is moderate. To lift confidence, non-permeabilized live-cell flow cytometry or surface-capture MS in human tumor cell lines, combined with direct plasma/serum competition experiments, would be needed.*
+
+## CellxGene RNA enrichment (CZI Census)
+
+*Schema v2.1.1 · CZI Census 2025-11-08 · HPA-style 4× fold-change classification on log1p(CP10K) → linear means, with a zero-baseline universe for `enriched` / `group_enriched` and an eligibles-only denominator for `enhanced`. CC-BY 4.0 (CZI).*
+
+**Classification:**
+
+- **Cell class (broad rollup, ~10 compartments):** low specificity
+- **Cell type (leaf Cell Ontology terms, ~600):** enhanced · precursor cell · 5.1×
+- **Tissue (UBERON terms, ~56):** low specificity
+
+**Top 5 cell types (leaf CL, pooled across tissues):**
+
+| Cell type | CL ID | Mean log1p(CP10K) | % expressing | n_expressing / n_total |
+|---|---|---|---|---|
+| precursor cell | CL:0011115 | 3.793 | 31.57% | 179 / 567 |
+| alternatively activated macrophage | CL:0000890 | 3.770 | 19.90% | 3,772 / 18,954 |
+| trophoblast giant cell | CL:0002488 | 3.722 | 3.46% | 40 / 1,156 |
+| endodermal cell | CL:0000223 | 3.546 | 49.85% | 4,273 / 8,571 |
+| respiratory tract hillock cell | CL:4030023 | 3.347 | 1.96% | 108 / 5,515 |
+
+**Top 5 tissues (UBERON, pooled across cell types):**
+
+| Tissue | UBERON ID | Mean log1p(CP10K) | % expressing | n_expressing / n_total |
+|---|---|---|---|---|
+| paracolic gutter | UBERON:0035210 | 3.363 | 31.88% | 2,554 / 8,012 |
+| pleura | UBERON:0000977 | 3.090 | 20.18% | 3,975 / 19,695 |
+| omentum | UBERON:0003688 | 2.999 | 26.32% | 58,500 / 222,303 |
+| chest wall | UBERON:0016435 | 2.990 | 25.84% | 5,205 / 20,144 |
+| esophagus | UBERON:0001043 | 2.855 | 71.90% | 16,961 / 23,590 |
+
+<!-- /cellxgene -->
