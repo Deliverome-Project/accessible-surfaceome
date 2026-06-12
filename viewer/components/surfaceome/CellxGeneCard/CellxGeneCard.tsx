@@ -237,22 +237,39 @@ export function CellxGeneCard({ data }: Props) {
           (top), then the top 20 cell types (bottom). Default
           ranking is <strong>Score</strong> (mean log1p(CP10K) × %
           expressing, the population-mean metric most analogous to
-          HPA&apos;s nTPM). Click any tissue bar to filter the
-          cell-type chart to that tissue; the bar color flips from
-          lavender (overall) to maroon (filtered).{" "}
+          HPA&apos;s nTPM). Bars are colored by organ-system
+          category (tissues by their own UBERON walk, cell types by
+          their dominant tissue&apos;s category). Click any tissue
+          to filter the cell-type chart to that tissue; the
+          selected tissue bar turns maroon to mark the click target.
+          {" "}
           <InfoTip label="How to read these charts">
             <strong>Tissues</strong> — every UBERON tissue with
             detectable signal (n_total ≥ 1k), pooled across every
             cell type sampled from that tissue. Bars are colored by
-            organ-system category (CNS lavender, respiratory teal,
-            cardiovascular maroon, lymphoid amber, …) so the reader
-            can scan by anatomy. Click a bar to filter the cell-
-            type chart below.{" "}
+            organ-system category from a UBERON ontology walk (CNS
+            lavender, head/sensory deep lavender, respiratory teal,
+            cardiovascular amber, lymphoid bright amber, digestive
+            light teal, hepatobiliary dark amber, urinary deep teal,
+            endocrine olive, reproductive lavender-bright,
+            skin/adipose warm brown, developmental light amber,
+            fluids/other muted) so the reader can scan by anatomy.
+            13 anchor tissues — brain, eye, lung, heart, blood,
+            liver, intestine, kidney, adrenal gland, testis, ovary,
+            skin, embryo — always appear (at low opacity if the gene
+            has no signal there) so &ldquo;is this gene in
+            liver?&rdquo; is one glance away. Capped at 50 tissues
+            per gene; anchors always make the cut. Click a bar to
+            filter the cell-type chart; the bar color flips to
+            maroon to mark the selection.{" "}
             <strong>Top 20 cell types / Cell types in {"{tissue}"}</strong>{" "}
-            — one chart, two modes: global top 20 by score when
-            nothing is selected, swapping to the selected
-            tissue&apos;s cells (with tissue-specific mean / pct /
-            n) when a tissue is clicked. A &ldquo;Show top 20
+            — one chart, two modes. Bars are colored by each cell
+            type&apos;s DOMINANT tissue&apos;s organ-system category
+            in the unfiltered Top 20 view (so the reader sees the
+            organ-system mix at a glance); in the tissue-filtered
+            view every bar gets the selected tissue&apos;s category
+            color and stats are re-keyed to the cell type&apos;s
+            row inside that tissue. A &ldquo;Show top 20
             overall&rdquo; chip in the subhead returns to the
             unfiltered view.
             <br />
@@ -276,8 +293,12 @@ export function CellxGeneCard({ data }: Props) {
             (group cell types by their dominant tissue), or A → Z.
             Trace (small-n) bars sink to the bottom under value- or
             category-based sort, render muted, and carry a small-n
-            caveat in their hover popover. Hover any bar for full
-            label + per-tissue detail.
+            caveat in their hover popover. No-signal anchor tissues
+            render at the bottom of the Tissues chart with reduced
+            opacity (not clickable since the gene has zero
+            expression there). Hover any bar for full label +
+            per-tissue detail; popovers near the viewport edge auto-
+            shift inward to stay readable.
           </InfoTip>
         </>
       }
