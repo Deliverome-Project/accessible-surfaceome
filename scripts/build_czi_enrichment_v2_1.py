@@ -59,7 +59,6 @@ from collections import Counter, defaultdict
 from pathlib import Path
 
 from accessible_surfaceome.audit.cl_graph import (
-    BROAD_CLASSES,
     cl_compartment,
 )
 from accessible_surfaceome.audit.cl_family import (

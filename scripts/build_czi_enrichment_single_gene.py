@@ -5,7 +5,13 @@ one page without re-streaming the full WMG file for 19k genes.
 The full-cohort build will follow once the shape is validated by eye.
 """
 from __future__ import annotations
-import csv, gzip, json, math, os, sys, time
+import csv
+import gzip
+import json
+import math
+import os
+import sys
+import time
 from collections import defaultdict
 
 # Anchor list — UBERON IDs that always appear in every gene's

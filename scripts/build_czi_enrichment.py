@@ -240,8 +240,7 @@ def main() -> int:
     n_rows = 0
     with gzip.open(WMG, "rt") as f:
         reader = csv.reader(f)
-        header = next(reader)
-        # header: gene, tissue, organism, cell_type, nnz, sum, sqsum
+        next(reader)  # header: gene, tissue, organism, cell_type, nnz, sum, sqsum
         for row in reader:
             n_rows += 1
             if n_rows % 5_000_000 == 0:
@@ -339,10 +338,6 @@ def main() -> int:
         # Backfill from rare if fewer than COMMON_TOP_N qualified common
         if len(chosen_common) < COMMON_TOP_N:
             need = COMMON_TOP_N - len(chosen_common)
-            # take more from rare beyond the first RARE_TOP_N (but those still must satisfy mean>=2)
-            backfill = rare[RARE_TOP_N : RARE_TOP_N + need]
-            # actually: spec says "backfill from rare" — simplest: extend chosen_rare to cover
-            # We'll keep rare list at chosen_rare and let total cap handle it
             chosen_rare = rare[: RARE_TOP_N + need]
 
         # Compose, cap at MAX_CELL_TYPES, mark is_rare

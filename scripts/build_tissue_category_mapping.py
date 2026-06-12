@@ -32,7 +32,6 @@ Run: uv run python scripts/build_tissue_category_mapping.py
 """
 from __future__ import annotations
 
-import os
 import re
 import sys
 import time
