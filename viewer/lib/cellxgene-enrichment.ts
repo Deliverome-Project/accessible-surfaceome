@@ -74,6 +74,11 @@ export interface CellTypeRow {
  *   minimum mean >= 4× the next-ranked entity after the group
  * - tissue_enhanced: top entity's mean >= 4× the average of all others
  * - low_specificity: none of the above
+ * - not_detected (v2.1+): no entity meets the CZI noise threshold
+ *   (n_expressing >= 10 AND pct >= 1%) on this axis. Distinct from
+ *   low_specificity, which means "expressed in many entities, none
+ *   stands out" — not_detected means "couldn't find expression at
+ *   Census coverage."
  *
  * Priority on tie: enriched > group > enhanced > low. HPA reports this
  * on both the cell-type axis AND the tissue axis because a gene like
@@ -85,7 +90,8 @@ export type EnrichmentClass =
   | "tissue_enriched"
   | "group_enriched"
   | "tissue_enhanced"
-  | "low_specificity";
+  | "low_specificity"
+  | "not_detected";
 
 export interface CellTypeEnrichment {
   class: EnrichmentClass;

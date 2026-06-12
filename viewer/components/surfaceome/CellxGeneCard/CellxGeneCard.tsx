@@ -19,6 +19,7 @@ const ENRICHMENT_LABELS: Record<EnrichmentClass, string> = {
   group_enriched: "Group enriched",
   tissue_enhanced: "Tissue enhanced",
   low_specificity: "Low specificity",
+  not_detected: "Below detection",
 };
 
 const ENRICHMENT_BLURB: Record<EnrichmentClass, string> = {
@@ -30,6 +31,8 @@ const ENRICHMENT_BLURB: Record<EnrichmentClass, string> = {
     "≥ 4× higher mRNA in one cell type than the average of all others. Selective but with non-trivial background.",
   low_specificity:
     "No cell type stands out at ≥ 4× over the rest. Broadly expressed.",
+  not_detected:
+    "No cell type meets the CZI Census noise threshold (≥ 10 expressing cells AND ≥ 1% of cells of that type). Distinct from low specificity — the gene's expression couldn't be measured above background at this Census coverage, not that it's expressed everywhere.",
 };
 
 function fmtFold(v: number | null | undefined): string {

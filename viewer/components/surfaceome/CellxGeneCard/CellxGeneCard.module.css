@@ -825,6 +825,19 @@ button.colBarHit:focus-visible {
 .classChip[data-class="low_specificity"] .classDot {
   background: var(--ink-faded);
 }
+/* not_detected reads "we couldn't measure" rather than "broadly expressed"
+   — a separate visual treatment (dashed outline + light fill) so a reader
+   doesn't conflate it with low_specificity at first glance. */
+.classChip[data-class="not_detected"] {
+  border-style: dashed;
+  opacity: 0.85;
+}
+.classChip[data-class="not_detected"] .classDot {
+  background: transparent;
+  border: 1.5px dashed var(--muted-soft, #80706a);
+  width: 9px;
+  height: 9px;
+}
 
 /* --- legend ---------------------------------------------------------- */
 
