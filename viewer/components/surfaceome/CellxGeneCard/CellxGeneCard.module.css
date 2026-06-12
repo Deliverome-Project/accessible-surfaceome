@@ -371,7 +371,10 @@ button.colBarHit:focus-visible {
      toward the bar's right edge. */
   right: calc(50% + 6px);
   font-family: var(--font-sans);
-  font-size: 0.6rem;
+  /* Bumped ~15% from 0.6 rem so labels read more legibly at the
+     -65° rotation. max-width grew proportionally so 14-char terms
+     still fit in 2 lines without wrapping mid-word. */
+  font-size: 0.69rem;
   color: var(--ink-soft);
   /* Allow wrapping on whitespace, but cap at 2 LINES via
      -webkit-line-clamp — long CL terms like "kidney loop of Henle
@@ -388,7 +391,7 @@ button.colBarHit:focus-visible {
   transform: rotate(-65deg);
   transform-origin: top right;
   pointer-events: none;
-  max-width: 140px;
+  max-width: 160px;
   line-height: 1.15;
   overflow: hidden;
 }
@@ -398,12 +401,11 @@ button.colBarHit:focus-visible {
   color: var(--ink);
 }
 
-/* Reserve space below the chart canvas for the rotated labels. At
-   0.6 rem font, 14-char truncation, 65° CW rotation, label projects
-   ~70 px vertically. 80 px padding-bottom gives a small clean gap
-   without the previous huge vertical hole. */
+/* Reserve space below the chart canvas for the rotated labels.
+   Bumped to 100 px to accommodate the ~15% larger label font
+   (0.69 rem vs 0.6 rem) on 2 wrapped lines at -65° rotation. */
 .colChart {
-  padding-bottom: 80px;
+  padding-bottom: 100px;
 }
 
 /* --- per-category summary bars (horizontal) -------------------------- */
