@@ -333,14 +333,16 @@ button.colBarHit:focus-visible {
   outline-offset: 1px;
 }
 
-/* Label below each bar — conventional bar-chart layout: the label's
-   END (right edge) anchors at the bar's CENTER, pivot at the
-   label's top-right corner = at bar's bottom-center, CW rotation
-   65° so the text projects DOWN-LEFT from the pivot. Reading order
-   goes lower-left → bar-center.
-   The previous attempt (`transform-origin: top left` + `rotate
-   (-65deg)`) actually projected text DOWN-RIGHT into the next bar,
-   which was the misalignment. */
+/* Label below each bar. Pivot at top-right of the label,
+   positioned at the bar's bottom-CENTER (`right: 50%`). CCW
+   rotation `-65deg` so the label projects DOWN-LEFT from the
+   pivot, like a / slash sitting under the bar. Reading order:
+   lower-left (first char) → bar's bottom-center (last char), the
+   conventional bar-chart label layout.
+
+   Previous attempt used CW `+65deg` rotation which actually
+   projected the label UP-LEFT (above the bar) — wrong direction.
+   The image the user shared made the inversion obvious. */
 .colLabel {
   position: absolute;
   top: calc(100% + 6px);
@@ -349,7 +351,7 @@ button.colBarHit:focus-visible {
   font-size: 0.6rem;
   color: var(--ink-soft);
   white-space: nowrap;
-  transform: rotate(65deg);
+  transform: rotate(-65deg);
   transform-origin: top right;
   pointer-events: none;
   max-width: 110px;
