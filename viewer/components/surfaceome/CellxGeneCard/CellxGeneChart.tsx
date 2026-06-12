@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import type {
   CellInTissue,
   CellTypeRow,
@@ -205,6 +205,60 @@ function YAxis({ scaleMax, yMetric }: { scaleMax: number; yMetric: YMetric }) {
   );
 }
 
+/**
+ * Center a popover relative to its bar, clamped to the viewport so it
+ * never spills off-screen. The popover is centered via
+ * `transform: translateX(-50%)` by default; when the bar is near the
+ * right or left edge of the window, this nudges the transform value
+ * to keep the popover edge inside `EDGE_MARGIN` px of the viewport.
+ *
+ * Fires on mouseenter / focus AND on window resize, so the
+ * positioning survives both initial hover and any browser-window
+ * change while a popover is open.
+ *
+ * See viewer/components/surfaceome/CellxGeneCard/__tests__/
+ * popover-overflow.test.tsx for the assertion that the popover never
+ * extends past `window.innerWidth`.
+ */
+/**
+ * Pure logic: given a popover's current rect and the viewport width,
+ * compute the CSS `transform` string that keeps it inside
+ * `[edgeMargin, viewportWidth - edgeMargin]`. Returns the unshifted
+ * centered value when no clamp is needed.
+ *
+ * Extracted from the DOM wrapper below so tests can exercise the
+ * branching without a real browser. See
+ * `tests/cellxgene_popover_overflow.test.tsx`.
+ */
+export const EDGE_MARGIN = 8;
+export function computePopoverTransform(
+  rect: { left: number; right: number },
+  viewportWidth: number,
+  edgeMargin: number = EDGE_MARGIN,
+): string {
+  if (rect.right > viewportWidth - edgeMargin) {
+    const overflow = rect.right - (viewportWidth - edgeMargin);
+    return `translateX(calc(-50% - ${overflow}px))`;
+  }
+  if (rect.left < edgeMargin) {
+    const underflow = edgeMargin - rect.left;
+    return `translateX(calc(-50% + ${underflow}px))`;
+  }
+  return "translateX(-50%)";
+}
+
+function clampPopoverToViewport(popover: HTMLElement | null) {
+  if (!popover) return;
+  // Reset to centered before measuring so consecutive opens don't
+  // compound prior shifts.
+  popover.style.transform = "translateX(-50%)";
+  const rect = popover.getBoundingClientRect();
+  popover.style.transform = computePopoverTransform(
+    rect,
+    window.innerWidth,
+  );
+}
+
 function ColumnBar({
   height,
   color,
@@ -224,6 +278,35 @@ function ColumnBar({
   hoverTitle?: string;
   onClick?: () => void;
 }) {
+  const liRef = useRef<HTMLLIElement>(null);
+
+  // Position the popover ONLY when the bar is being hovered/focused.
+  // Measuring while display:none returns 0,0,0,0 so we need to wait
+  // for the popover to render visible — rAF fires after layout in
+  // the same frame the display:block kicks in.
+  const handleOpen = () => {
+    requestAnimationFrame(() => {
+      const popoverEl = liRef.current?.querySelector(
+        `.${styles.popover}`,
+      ) as HTMLElement | null;
+      clampPopoverToViewport(popoverEl);
+    });
+  };
+  // On resize, re-clamp any currently-visible popover under this bar.
+  useEffect(() => {
+    const handler = () => {
+      const popoverEl = liRef.current?.querySelector(
+        `.${styles.popover}`,
+      ) as HTMLElement | null;
+      if (!popoverEl) return;
+      // Only adjust when actually open (display !== none).
+      if (window.getComputedStyle(popoverEl).display === "none") return;
+      clampPopoverToViewport(popoverEl);
+    };
+    window.addEventListener("resize", handler);
+    return () => window.removeEventListener("resize", handler);
+  }, []);
+
   const fill = isTrace
     ? `color-mix(in srgb, ${color} 35%, transparent)`
     : color;
@@ -252,10 +335,13 @@ function ColumnBar({
   } as React.CSSProperties;
   return (
     <li
+      ref={liRef}
       className={styles.colBar}
       style={barStyle}
       data-trace={isTrace || undefined}
       data-selected={isSelected || undefined}
+      onMouseEnter={handleOpen}
+      onFocus={handleOpen}
     >
       {onClick ? (
         <button
@@ -785,14 +871,25 @@ function CellTypeChart({
                       ]
                     : [],
               };
+              // Color each cell-type bar by its dominant tissue's
+              // organ-system category (e.g. CD20 in a B cell whose
+              // top tissue is spleen → lymphoid amber). Falls back
+              // to the mode-default color (lavender for global Top
+              // 20, maroon for tissue-filtered) when the cell type
+              // has no tissue data (synthetic rows in the filtered
+              // view).
+              const dominantUberon = popoverRow.tissues?.[0]?.uberon_id;
+              const barColor = dominantUberon
+                ? tissueCategoryColorFor(dominantUberon)
+                : cellBarColor;
               return (
                 <ColumnBar
                   key={r.cl_id}
                   height={height}
-                  color={cellBarColor}
+                  color={barColor}
                   label={r.cell_type}
                   isTrace={r.is_trace}
-                  popover={cellPopover(popoverRow, value, cellBarColor)}
+                  popover={cellPopover(popoverRow, value, barColor)}
                   hoverTitle={hoverTitle}
                 />
               );

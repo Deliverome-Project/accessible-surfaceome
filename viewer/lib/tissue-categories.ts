@@ -87,7 +87,11 @@ export const TISSUE_CATEGORIES: readonly TissueCategory[] = [
   { id: "cns", label: "CNS", colorVar: "--lavender-mid", colorFallback: "#5848a8" },
   { id: "head_sensory", label: "Head & sensory", colorVar: "--lavender-deepest", colorFallback: "#1e1450" },
   { id: "respiratory", label: "Respiratory", colorVar: "--teal-mid", colorFallback: "#3d6b60" },
-  { id: "cardiovascular", label: "Cardiovascular", colorVar: "--maroon-mid", colorFallback: "#922038" },
+  // Cardiovascular: was maroon-mid (#922038). Swapped to amber-mid
+  // because the user reserves the deliverome red for the "selected
+  // bar" highlight state — having an always-red category competed
+  // with that affordance.
+  { id: "cardiovascular", label: "Cardiovascular", colorVar: "--amber-mid", colorFallback: "#c07830" },
   { id: "lymphoid", label: "Lymphoid & blood", colorVar: "--amber-bright", colorFallback: "#f4aa28" },
   // Digestive: teal-lt — same family as respiratory but two stops
   // lighter, so they're clearly distinct.
@@ -99,10 +103,12 @@ export const TISSUE_CATEGORIES: readonly TissueCategory[] = [
   // respiratory's teal-mid even though same family.
   { id: "urinary", label: "Urinary", colorVar: "--teal-deepest", colorFallback: "#152e28" },
   { id: "endocrine", label: "Endocrine", colorVar: "--endocrine-mid", colorFallback: "#6b8e4e" },
-  // Reproductive: maroon-light — rose, distinct from cardiovascular
-  // (maroon-mid, deeper). Two slots' brightness apart in the maroon
-  // family.
-  { id: "reproductive", label: "Reproductive", colorVar: "--maroon-light", colorFallback: "#bc3c4c" },
+  // Reproductive: was maroon-light. Swapped to lavender-bright since
+  // maroon is reserved for the highlighting state. lavender-bright
+  // sits in the freed-up slot left by the removed musculoskeletal
+  // category, so the purple family is now (CNS, head_sensory,
+  // reproductive) instead of (CNS, head_sensory, musculoskeletal).
+  { id: "reproductive", label: "Reproductive", colorVar: "--lavender-bright", colorFallback: "#8878c8" },
   { id: "skin_adipose", label: "Skin & adipose", colorVar: "--skin-mid", colorFallback: "#b8704a" },
   // Musculoskeletal: removed. CZI's primary cohort has only ~835
   // cells annotated to UBERON:0001134 (skeletal muscle tissue), too
