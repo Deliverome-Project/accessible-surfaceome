@@ -167,6 +167,30 @@
   white-space: nowrap;
 }
 
+/* Small "v1.0" mark beside the Surfaceome wordmark — mono so it reads
+   as metadata next to the display-font wordmark, muted color so it
+   doesn't compete with the sub-brand itself. Hover state stays muted —
+   the link affordance is on the wordmark, not the version. */
+.brandVersion {
+  font-family: var(--font-mono);
+  font-size: 0.62rem;
+  font-weight: var(--fw-regular);
+  letter-spacing: 0.04em;
+  color: var(--muted);
+  margin-left: 0.4rem;
+  padding: 0.05rem 0.35rem;
+  border: 1px solid var(--line-soft);
+  border-radius: var(--radius-sm);
+  line-height: 1.4;
+  white-space: nowrap;
+  user-select: none;
+}
+
+.brandLocal:hover .brandVersion,
+.brandLocal:focus-visible .brandVersion {
+  color: var(--muted);
+}
+
 /* ---------- primary nav ---------- */
 /* Mirrors PR24's nav grammar:
  *   • small uppercased sans, 0.76rem, fw=350, letter-spacing 0.18em
