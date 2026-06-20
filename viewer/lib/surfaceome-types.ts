@@ -1374,6 +1374,18 @@ export interface SurfaceomeRecord {
    *  the gene-header Triage row's "Reasoning" drawer. ``null`` when no
    *  triage record exists for the gene. */
   triage_reasoning: string | null;
+  /** Closed-vocabulary reason code the triage agent chose (e.g.
+   *  ``"classical_surface_receptor"``). Mirrors the same reason field
+   *  the catalog rationale drawer surfaces, so the Triage drawer on the
+   *  deep-dive page can show "Reason code · …" without a second fetch.
+   *  Optional + backfilled from ``/v1/triage/{symbol}`` for records that
+   *  pre-date the field — keep optional so older snapshots typecheck. */
+  triage_reason?: string | null;
+  /** Triage agent's self-reported confidence ("high" / "moderate" /
+   *  "low"). Surfaced in the deep-dive Triage drawer's metadata block;
+   *  same field the catalog drawer renders. Optional + backfilled — see
+   *  ``triage_reason`` above. */
+  triage_confidence?: string | null;
   executive_summary: ExecutiveSummary;
   filters: Filters;
   deterministic_features: DeterministicFeatures;

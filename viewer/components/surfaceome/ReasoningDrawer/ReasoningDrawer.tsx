@@ -42,6 +42,17 @@ interface Props {
    *  emptiness (don't render the component when there's nothing to
    *  show). */
   children?: ReactNode;
+  /** Optional closed-vocabulary reason code shown between the title and
+   *  the body as a "Reason code · {value}" line. Mirrors the catalog
+   *  rationale drawer's reason row; underscores are displayed as
+   *  spaces. Null / empty self-hides. */
+  reasonCode?: string | null;
+  /** Optional metadata pairs (label / value) rendered as a small ``<dl>``
+   *  after the body and cited evidence. Mirrors the catalog drawer's
+   *  Confidence / Latency block — the Triage drawer uses this for the
+   *  agent's self-reported confidence. Empty / omitted hides the
+   *  block. */
+  meta?: ReadonlyArray<{ label: string; value: string }>;
 }
 
 /**
@@ -73,6 +84,8 @@ export function ReasoningDrawer({
   citedEvidenceIds,
   reasoning,
   children,
+  reasonCode,
+  meta,
 }: Props) {
   const [isOpen, setIsOpen] = useState(false);
   // Track client mount so `createPortal(..., document.body)` is safe.
@@ -173,7 +186,23 @@ export function ReasoningDrawer({
           </button>
           <p className={`label-mono ${styles.drawerEyebrow}`}>{eyebrow}</p>
           <h2 className={styles.drawerTitle}>{title}</h2>
+          {reasonCode ? (
+            <p className={styles.drawerReason}>
+              <span className="label-mono">Reason code · </span>
+              {reasonCode.replace(/_/g, " ")}
+            </p>
+          ) : null}
           {body}
+          {meta && meta.length > 0 ? (
+            <dl className={styles.drawerMeta}>
+              {meta.map((m) => (
+                <div key={m.label} className={styles.drawerMetaItem}>
+                  <dt className="label-mono">{m.label}</dt>
+                  <dd>{m.value}</dd>
+                </div>
+              ))}
+            </dl>
+          ) : null}
           {citedEvidenceIds && citedEvidenceIds.length > 0 ? (
             <div className={styles.drawerEvidence}>
               <p className={`label-mono ${styles.drawerEvidenceLabel}`}>
