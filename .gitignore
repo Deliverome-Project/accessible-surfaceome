@@ -39,6 +39,8 @@ data/external/tool_cache.sqlite*
 # Binary HTTP cache (CachedHTTP.get_bytes) — downloaded OA publisher PDFs for the
 # triage Unpaywall fallback. Local cache only; never commit (copyright + bloat).
 data/external/blob_cache/
+# DOI Foundation RA lookup cache (audit._doi_ra). Rebuilds in ~2 min from cold.
+data/external/doi_ra_cache.json
 
 # Per-gene annotations are agent-generated; commit a curated snapshot once
 # we have a stable set, not every smoke-test output.

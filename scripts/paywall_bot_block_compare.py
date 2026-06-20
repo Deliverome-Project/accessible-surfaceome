@@ -37,6 +37,10 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 from matplotlib.patches import Patch
 
+from accessible_surfaceome.audit._doi_ra import (
+    is_non_crossref_oa_agency,
+    resolve_registration_agencies,
+)
 from accessible_surfaceome.audit._plotting_config import (
     CATEGORICAL_PALETTE,
     save_figure,
@@ -62,18 +66,28 @@ OAX_TSV_SNAPSHOT = PROBE_DIR / "cohort100x10_openalex_10axis.tsv"
 
 GIST_URL = "https://gist.github.com/beccajcarlson/cbc950dad1c3a6595fd5018cdb6b030d"
 
-BUCKET_ORDER = ["pmc", "unpaywall", "bot_blocked", "no_oa"]
+BUCKET_ORDER = ["pmc", "unpaywall", "bot_blocked", "datacite_oa_repo", "no_oa"]
 BUCKET_LABEL = {
     "pmc": "Full body via PMC",
     "unpaywall": "Full body via Unpaywall",
     "bot_blocked": "Bot-blocked publisher",
+    # DOI registered with a non-Crossref agency (DataCite, JaLC, ISTIC)
+    # — arXiv, Zenodo, figshare, institutional theses. The cherry-picked
+    # DataCite landing-page resolver in abstract_triage.py reaches some
+    # of these (arXiv + Zenodo verified), but figshare / HeiDOK / many
+    # institutional repos still miss because their landing pages don't
+    # emit the Highwire ``<meta name="citation_pdf_url">`` tag the
+    # resolver scrapes.
+    "datacite_oa_repo": "OA repo, DataCite",
     "no_oa": "No open access",
 }
 BUCKET_COLOR = {
-    "pmc": CATEGORICAL_PALETTE[1],          # teal
-    "unpaywall": CATEGORICAL_PALETTE[2],    # amber
-    "bot_blocked": CATEGORICAL_PALETTE[0],  # maroon-light
-    "no_oa": CATEGORICAL_PALETTE[4],        # maroon-dark
+    "pmc": CATEGORICAL_PALETTE[1],                      # teal
+    "unpaywall": CATEGORICAL_PALETTE[2],                # amber
+    "bot_blocked": CATEGORICAL_PALETTE[0],              # maroon-light
+    "datacite_oa_repo": CATEGORICAL_PALETTE[3],  # lavender — "info" tone,
+                                                        # not a paywall-style warning
+    "no_oa": CATEGORICAL_PALETTE[4],                    # maroon-dark
 }
 
 # Production = 21 axes (mirrors build_a1_kickoff exactly). OpenAlex =
@@ -144,6 +158,34 @@ def load_openalex_tsv_snapshot(path: Path) -> tuple[list[dict], list[dict]]:
         })
         paper_rows.extend(papers)
     return gene_rows, paper_rows
+
+
+def reclassify_oa_repo_misses(papers: list[dict]) -> int:
+    """Mutate ``papers`` in place: any ``no_oa`` row whose DOI is registered
+    with a non-Crossref RA (DataCite, JaLC, ISTIC, ...) gets re-labeled to
+    ``datacite_oa_repo``. Those DOIs typically point at OA repositories
+    (arXiv, Zenodo, figshare, institutional theses, regional aggregators).
+
+    The DataCite landing-page resolver in
+    ``abstract_triage._fetch_body_via_datacite_landing`` reaches a subset of
+    these — arXiv and Zenodo are verified end-to-end (8 drafts each); figshare,
+    HeiDOK, and many institutional repos still miss because their landing
+    pages don't emit the Highwire ``citation_pdf_url`` meta tag. Returns the
+    number of rows reclassified.
+    """
+    dois = [p.get("doi") for p in papers if p.get("doi") and p.get("bucket") == "no_oa"]
+    if not dois:
+        return 0
+    ra_by_doi = resolve_registration_agencies(dois)
+    n = 0
+    for p in papers:
+        doi = (p.get("doi") or "").lower().strip()
+        if p.get("bucket") != "no_oa" or not doi:
+            continue
+        if is_non_crossref_oa_agency(ra_by_doi.get(doi, "unknown")):
+            p["bucket"] = "datacite_oa_repo"
+            n += 1
+    return n
 
 
 def write_tsv(prod_papers, oax_papers, out_path: Path) -> None:
@@ -238,7 +280,7 @@ def make_figure(prod_genes, prod_papers, oax_genes, oax_papers, out_dir: Path) -
     ]
     ax.legend(
         handles=handles, loc="upper center", bbox_to_anchor=(0.45, -0.18),
-        ncol=4, frameon=False,
+        ncol=3, frameon=False,
     )
     sns.despine(ax=ax, top=True, right=True, left=True, bottom=False)
 
@@ -263,6 +305,13 @@ def main() -> None:
         oax_note = "live 21-axis JSONL"
     print(f"production: {len(prod_genes)} genes / {len(prod_papers)} papers (live JSONL)")
     print(f"openalex:   {len(oax_genes)} genes / {len(oax_papers)} papers ({oax_note})")
+
+    n_prod_reclass = reclassify_oa_repo_misses(prod_papers)
+    n_oax_reclass = reclassify_oa_repo_misses(oax_papers)
+    print(
+        f"reclassified no_oa→datacite_oa_repo: "
+        f"production={n_prod_reclass}, openalex={n_oax_reclass}"
+    )
 
     TSV_OUT.parent.mkdir(parents=True, exist_ok=True)
     write_tsv(prod_papers, oax_papers, TSV_OUT)

@@ -112,17 +112,23 @@ def _apply_brand_style() -> None:
     })
 
 
-BUCKET_ORDER = ["pmc", "unpaywall", "bot_blocked", "no_oa"]
+BUCKET_ORDER = ["pmc", "unpaywall", "bot_blocked", "datacite_oa_repo", "no_oa"]
 BUCKET_LABEL = {
     "pmc": "Full body via PMC",
     "unpaywall": "Full body via Unpaywall",
     "bot_blocked": "Bot-blocked publisher",
+    # DOI registered with a non-Crossref agency — arXiv, Zenodo, figshare,
+    # institutional theses, regional aggregators. The DataCite landing
+    # resolver reaches arXiv + Zenodo; figshare / HeiDOK / many inst-repos
+    # still miss (no Highwire citation_pdf_url meta tag on the landing).
+    "datacite_oa_repo": "OA repo, DataCite",
     "no_oa": "No open access",
 }
 BUCKET_COLOR = {
     "pmc": BRAND_PALETTE[1],
     "unpaywall": BRAND_PALETTE[2],
     "bot_blocked": BRAND_PALETTE[0],
+    "datacite_oa_repo": BRAND_PALETTE[3],  # lavender
     "no_oa": BRAND_PALETTE[4],
 }
 
@@ -201,7 +207,7 @@ def main() -> None:
         for b in BUCKET_ORDER
     ]
     ax.legend(handles=handles, loc="upper center", bbox_to_anchor=(0.45, -0.18),
-              ncol=4, frameon=False)
+              ncol=3, frameon=False)
     sns.despine(ax=ax, top=True, right=True, left=True, bottom=False)
     fig.tight_layout()
     out_pdf = Path.cwd() / "paywall_bot_block_compare.pdf"
