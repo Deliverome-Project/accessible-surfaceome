@@ -64,9 +64,13 @@ data/processed/candidate_universe/candidate_universe_v2.tsv -filter -diff -merge
 # fetch it via raw.githubusercontent.com, so it stays non-LFS (LFS
 # pointers don't resolve over the raw URL). The Worker also serves
 # the same shape at `/v1/triage/export.tsv` for live consumers.
-data/processed/triage_bench/mainbench_canonical_v1.tsv -filter -diff -merge text
 data/processed/triage_bench/mainbench_canonical_v2.tsv -filter -diff -merge text
 data/processed/triage_bench/mainbench_replicates_v2.tsv -filter -diff -merge text
+
+# Re-confirm sweep gene list (~94 KB plaintext) — input to
+# `scripts/triage_runner.py --gene-list`; small enough to diff
+# inline and there's no reason to LFS it.
+data/processed/reconfirm_sonnet_no_zero_db_v1/gene_list.tsv -filter -diff -merge text
 
 # 147-gene triage benchmark with ground-truth verdicts. Stays non-LFS
 # because (a) `scripts/upload_benchmark_to_d1.py` reads it as the

@@ -1142,44 +1142,79 @@ async function handleCatalog(env, request) {
       ORDER BY u.gene_symbol`
   ).bind(universe).all();
 
-  // Latest per-model NCBI-variant verdict for each gene. The page
-  // renders three columns (Haiku / Sonnet / Opus); each cell shows
-  // that model's ncbi-variant call. Only `prompt_variant='ncbi'`
-  // because that's the variant with cross-model coverage and the one
-  // the published figures use as headline.
+  // Per-model NCBI-variant verdict for each gene. The page renders
+  // three columns (Haiku / Sonnet / Opus); each cell shows that
+  // model's ncbi-variant call. Only `prompt_variant='ncbi'` because
+  // that's the variant with cross-model coverage and the one the
+  // published figures use as headline.
+  //
+  // Aggregation: majority verdict across replicates per (gene, model),
+  // then most common reason within the winning verdict. Tiebreak on
+  // most recent `created_at` (matches the single-replicate behavior
+  // when there's only one row). For 1-rep cells the majority degenerates
+  // to that single verdict — backward-compatible with the pre-2/3-rep
+  // catalog. The matching per-cell majority logic for the benchmark
+  // drawer lives in `handleTriageCell` below; this is the catalog-tier
+  // mirror so the genome-wide summary surfaces consensus the same way.
   //
   // Coverage today:
-  //   - Sonnet/ncbi: full ~19k genome (genome_full_sonnet_ncbi_v1)
+  //   - Sonnet/ncbi: full ~19k genome (genome_full_sonnet_ncbi_v2,
+  //                  with multi-rep on the ambiguous-no zero-DB slice
+  //                  to expose 2/3 consensus).
   //   - Haiku/ncbi: 147 SurfaceBench genes only (mainbench_canonical_v2)
   //   - Opus/ncbi: 147 SurfaceBench genes only (mainbench_canonical_v2)
   // So most rows will show only the Sonnet column populated.
   const CATALOG_MODELS = ["claude-haiku-4-5", "claude-sonnet-4-6", "claude-opus-4-8"];
   const triageByGene = new Map();
   const triageRows = await env.DB.prepare(
-    `WITH ranked AS (
-       SELECT gene_symbol, model, predicted_verdict, predicted_reason,
-              created_at,
-              ROW_NUMBER() OVER (
-                PARTITION BY gene_symbol, model
-                ORDER BY created_at DESC
-              ) AS rn
-         FROM triage_run_public
-        WHERE prompt_variant = 'ncbi'
-          AND model IN ('claude-haiku-4-5','claude-sonnet-4-6','claude-opus-4-8')
-     )
-     SELECT gene_symbol, model, predicted_verdict, predicted_reason, created_at
-       FROM ranked WHERE rn = 1`
+    `SELECT gene_symbol, model, predicted_verdict, predicted_reason, created_at
+       FROM triage_run_public
+      WHERE prompt_variant = 'ncbi'
+        AND model IN ('claude-haiku-4-5','claude-sonnet-4-6','claude-opus-4-8')
+        AND predicted_verdict IS NOT NULL`
   ).all();
+  // Group replicates by (gene, model).
+  const triageReplicates = new Map();
   for (const r of triageRows.results) {
-    let perModel = triageByGene.get(r.gene_symbol);
-    if (!perModel) {
-      perModel = {};
-      triageByGene.set(r.gene_symbol, perModel);
+    const key = `${r.gene_symbol}\t${r.model}`;
+    let lst = triageReplicates.get(key);
+    if (!lst) { lst = []; triageReplicates.set(key, lst); }
+    lst.push(r);
+  }
+  // For each cell, take the most common verdict, then the most common
+  // reason within that verdict. Both tiebreak on max(created_at).
+  for (const [key, reps] of triageReplicates) {
+    const [gene_symbol, model] = key.split("\t");
+    const vTally = new Map();
+    const vMax = new Map();
+    for (const r of reps) {
+      vTally.set(r.predicted_verdict, (vTally.get(r.predicted_verdict) || 0) + 1);
+      const prev = vMax.get(r.predicted_verdict);
+      if (prev == null || r.created_at > prev) vMax.set(r.predicted_verdict, r.created_at);
     }
-    perModel[r.model] = {
-      verdict: r.predicted_verdict,
-      reason: r.predicted_reason,
-    };
+    const winVerdict = [...vTally.entries()].sort((a, b) => {
+      if (b[1] !== a[1]) return b[1] - a[1];
+      const ma = vMax.get(a[0]) || "";
+      const mb = vMax.get(b[0]) || "";
+      return mb < ma ? -1 : (mb > ma ? 1 : 0);
+    })[0][0];
+    const rTally = new Map();
+    const rMax = new Map();
+    for (const r of reps) {
+      if (r.predicted_verdict !== winVerdict) continue;
+      rTally.set(r.predicted_reason, (rTally.get(r.predicted_reason) || 0) + 1);
+      const prev = rMax.get(r.predicted_reason);
+      if (prev == null || r.created_at > prev) rMax.set(r.predicted_reason, r.created_at);
+    }
+    const winReason = [...rTally.entries()].sort((a, b) => {
+      if (b[1] !== a[1]) return b[1] - a[1];
+      const ma = rMax.get(a[0]) || "";
+      const mb = rMax.get(b[0]) || "";
+      return mb < ma ? -1 : (mb > ma ? 1 : 0);
+    })[0][0];
+    let perModel = triageByGene.get(gene_symbol);
+    if (!perModel) { perModel = {}; triageByGene.set(gene_symbol, perModel); }
+    perModel[model] = { verdict: winVerdict, reason: winReason };
   }
 
   // Track which genes we've emitted so we can append deep-dive-only

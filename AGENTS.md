@@ -221,7 +221,7 @@ Every plot in this repo uses `src/accessible_surfaceome/audit/_plotting_config.p
     │                              ├─Worker /v1/genes/{SYMBOL}
     │                              └─Worker /v1/triage/{SYMBOL}
     │
-    └─export_mainbench_to_tsv.py──▶ data/processed/triage_bench/mainbench_canonical_v1.tsv
+    └─export_mainbench_to_tsv.py──▶ data/processed/triage_bench/mainbench_canonical_v2.tsv
                                       │ (re-reads from PUBLIC D1, not private — so the public
                                       │  mirror is the citable source. LFS-exempted in
                                       │  .gitattributes so raw.githubusercontent.com serves
@@ -236,14 +236,14 @@ Every plot in this repo uses `src/accessible_surfaceome/audit/_plotting_config.p
 
 **Final figures read from `raw.githubusercontent.com/{REPO}/{BRANCH}/…`** — not the Worker, not the local file system. Reasons:
 - **Citation stability.** Pinning `BRANCH` to a commit SHA at publication time freezes the file forever; the API endpoint could move or change shape.
-- **Two clean halves of the contract.** Predictions live in `data/processed/triage_bench/mainbench_canonical_v1.tsv` (refreshed from public D1 by `scripts/export_mainbench_to_tsv.py`); truth labels live in `data/eval/triage_benchmark_v1.tsv` (the curated input). The Worker is a convenience surface for non-figure consumers — agents, notebooks, the viewer.
+- **Two clean halves of the contract.** Predictions live in `data/processed/triage_bench/mainbench_canonical_v2.tsv` (refreshed from public D1 by `scripts/export_mainbench_to_tsv.py`); truth labels live in `data/eval/triage_benchmark_v1.tsv` (the curated input). The Worker is a convenience surface for non-figure consumers — agents, notebooks, the viewer.
 - **Pre-pub flexibility.** Today the gists' `BRANCH = "main"` so a re-run picks up fresh data. At publication, `BRANCH` becomes a commit SHA and the gist URL pins to a Zenodo DOI.
 
 **Refresh procedure** (after any sweep that updates predictions in public D1):
 
 ```bash
 # Pulls the latest mainbench_canonical_v1 rows from public D1 and writes
-# data/processed/triage_bench/mainbench_canonical_v1.tsv. Identical shape
+# data/processed/triage_bench/mainbench_canonical_v2.tsv. Identical shape
 # to /v1/triage/export.tsv?run_id=mainbench_canonical_v1&replicate=1.
 uv run python scripts/export_mainbench_to_tsv.py
 
@@ -252,7 +252,7 @@ uv run python scripts/export_mainbench_to_tsv.py
 # after ANY of the four figure TSVs are regenerated; idempotent.
 uv run python scripts/augment_figure_tsvs_with_stable_ids.py
 
-git add data/processed/triage_bench/mainbench_canonical_v1.tsv \
+git add data/processed/triage_bench/mainbench_canonical_v2.tsv \
         data/processed/candidate_universe/candidate_universe.tsv \
         data/eval/triage_benchmark_v1.tsv \
         data/processed/triage_bench/db_optimized_cutoffs.tsv
@@ -268,7 +268,7 @@ Any TSV that drives a published figure must follow these conventions so external
 **2. Denormalize common reanalysis questions** — a reader should answer typical questions in one filter, not a 3-way join. The augment script already denormalizes:
 - `candidate_universe.tsv` ← Sonnet verdict, deep-dive + bench-membership flags
 - `triage_benchmark_v1.tsv` ← `n_db_votes`, Sonnet verdict
-- `mainbench_canonical_v1.tsv` ← ground truth, `is_match`, 5 per-DB flags, `has_deep_dive`
+- `mainbench_canonical_v2.tsv` ← ground truth, `is_match`, 5 per-DB flags, `has_deep_dive`
 - `db_optimized_cutoffs.tsv` ← all 5 canonical surface_flags + cutoff variants + summary counts
 
 Decide by asking "is this a join a typical reanalyst needs for an obvious question?" — yes → add it.
