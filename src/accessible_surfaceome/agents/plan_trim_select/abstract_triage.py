@@ -819,6 +819,30 @@ _CITATION_PDF_URL_CONTENT_FIRST = re.compile(
 )
 
 
+# arXiv DOIs follow a deterministic, registry-spec pattern: prefix
+# ``10.48550/arxiv.`` followed by the arXiv identifier (``{YYMM.NNNN}``
+# or legacy ``{archive}/{nnnnnnn}``). The PDF URL is always
+# ``arxiv.org/pdf/{id}`` — no version suffix needed (arXiv serves the
+# latest version when none is requested). Skipping DataCite for arXiv
+# saves the metadata + landing-page hops (2 HTTP round-trips) on the
+# common case.
+_ARXIV_DOI_PREFIX = "10.48550/arxiv."
+
+
+def _arxiv_pdf_url_from_doi(doi: str | None) -> str | None:
+    """Return the deterministic arXiv PDF URL for a DataCite arXiv DOI,
+    or ``None`` if the DOI doesn't match the arXiv pattern."""
+    if not doi:
+        return None
+    lower = doi.lower().strip().lstrip("/")
+    if not lower.startswith(_ARXIV_DOI_PREFIX):
+        return None
+    arxiv_id = lower.removeprefix(_ARXIV_DOI_PREFIX)
+    if not arxiv_id:
+        return None
+    return f"https://arxiv.org/pdf/{arxiv_id}"
+
+
 def _extract_citation_pdf_url(html: str) -> str | None:
     """Return the ``citation_pdf_url`` from a Highwire-style HTML <head>, or None.
 
@@ -926,6 +950,52 @@ def _fetch_body_via_datacite_landing(
     if source_id == "UNKNOWN":
         return [], None
 
+    def _try_pdf(pdf_url: str) -> list[EvidenceClaimDraft] | None:
+        """Fetch + magic-check + section-parse a single PDF URL. Returns
+        drafts on success, None on any of: HTTP fail, non-PDF response,
+        empty section parse. Centralizes the try/log/skip pattern so both
+        the arXiv shortcut and the standard DataCite path share it."""
+        try:
+            pdf_bytes = http.get_bytes(
+                pdf_url,
+                source="datacite_pdf",
+                ttl_days=180,
+                headers={"Accept": "application/pdf"},
+                max_bytes=_DATACITE_PDF_MAX_BYTES,
+                min_interval_ms=_PDF_COURTESY_INTERVAL_MS,
+            )
+        except Exception as exc:  # noqa: BLE001 — 403 / paywall / timeout / too large
+            logger.info(
+                "DataCite PDF fetch failed for %s at %s: %s",
+                source_id, pdf_url, exc,
+            )
+            return None
+        if b"%PDF" not in pdf_bytes[:1024]:
+            logger.info(
+                "DataCite URL for %s was not a PDF: %s", source_id, pdf_url
+            )
+            return None
+        sections = parse_pdf_to_sections(pdf_bytes)
+        if not sections:
+            return None
+        return extract_paper_drafts(
+            source_id=source_id, abstract=paper.abstract, sections=sections
+        )
+
+    # Fast path: arXiv DOIs have a deterministic PDF URL pattern
+    # (10.48550/arxiv.{id} → arxiv.org/pdf/{id}). Try it first to skip
+    # the DataCite metadata + landing-page hops entirely — saves 2 HTTP
+    # calls on the common success case. Falls through to the standard
+    # path if arxiv.org is down / the PDF doesn't parse.
+    arxiv_url = _arxiv_pdf_url_from_doi(paper.doi)
+    if arxiv_url is not None:
+        drafts = _try_pdf(arxiv_url)
+        if drafts:
+            # arXiv DataCite records don't carry rightsList — license is
+            # always CC-BY / CC-0 / arXiv-perpetual depending on the paper,
+            # but we don't fetch the metadata so we can't capture which.
+            return drafts, None
+
     meta = _lookup_datacite_metadata(paper.doi, http=http)
     if meta is None:
         return [], None
@@ -954,8 +1024,10 @@ def _fetch_body_via_datacite_landing(
             # urljoin handles relative paths against the landing URL.
             candidates.append(urljoin(meta.landing_url, meta_pdf))
 
-    # Dedupe, preserve order.
+    # Dedupe, preserve order; drop the arXiv URL we already tried above.
     seen: set[str] = set()
+    if arxiv_url:
+        seen.add(arxiv_url)
     unique: list[str] = []
     for u in candidates:
         if u and u not in seen:
@@ -963,35 +1035,9 @@ def _fetch_body_via_datacite_landing(
             unique.append(u)
 
     for pdf_url in unique[:_MAX_PDF_LOCATIONS]:
-        try:
-            pdf_bytes = http.get_bytes(
-                pdf_url,
-                source="datacite_pdf",
-                ttl_days=180,
-                headers={"Accept": "application/pdf"},
-                max_bytes=_DATACITE_PDF_MAX_BYTES,
-                min_interval_ms=_PDF_COURTESY_INTERVAL_MS,
-            )
-        except Exception as exc:  # noqa: BLE001 — 403 / paywall / timeout / too large
-            logger.info(
-                "DataCite PDF fetch failed for %s at %s: %s",
-                source_id, pdf_url, exc,
-            )
-            continue
-        if b"%PDF" not in pdf_bytes[:1024]:
-            logger.info(
-                "DataCite URL for %s was not a PDF: %s", source_id, pdf_url
-            )
-            continue
-        sections = parse_pdf_to_sections(pdf_bytes)
-        if not sections:
-            continue
-        return (
-            extract_paper_drafts(
-                source_id=source_id, abstract=paper.abstract, sections=sections
-            ),
-            meta.license,
-        )
+        drafts = _try_pdf(pdf_url)
+        if drafts:
+            return drafts, meta.license
     return [], None
 
 
