@@ -330,16 +330,23 @@ def _format_synonyms(bundle: IdentifierBundle | None) -> str:
 
 
 def paper_source_id(paper: Paper) -> str:
-    """Canonical pool/source key for a paper: ``PMC:<id>`` > ``PMID:<id>``.
+    """Canonical pool/source key for a paper: ``PMC:<id>`` > ``PMID:<id>``
+    > ``DOI:<doi>``.
 
     This is the key both the clip pool's ``source_id`` and the triage
     outcome's ``paper_id`` agree on, so the runner can join triage
-    outcomes back to discovered papers and to the body pool.
+    outcomes back to discovered papers and to the body pool. DOI is the
+    third-tier fallback so DataCite-routed preprints (no PMID / PMC ID)
+    still get a stable distinct key — otherwise they all collide on
+    ``UNKNOWN`` and downstream resolvers that guard on
+    ``source_id != "UNKNOWN"`` short-circuit.
     """
     if paper.pmc_id:
         return f"PMC:{paper.pmc_id}"
     if paper.pmid:
         return f"PMID:{paper.pmid}"
+    if paper.doi:
+        return f"DOI:{paper.doi}"
     return "UNKNOWN"
 
 
@@ -492,11 +499,14 @@ _DATACITE_API = "https://api.datacite.org/dois"
 # fallback works out of the box without per-worktree .env edits.
 _DEFAULT_UNPAYWALL_EMAIL = "michael.smallegan@gmail.com"
 # Skip absurdly large downloads before parsing — DoS guard for untrusted
-# publisher PDFs. A paper + supplement is well under this.
-_MAX_PDF_BYTES = 40 * 1024 * 1024
+# publisher PDFs. A paper + supplement is well under this; the headroom
+# accommodates the occasional huge supplement (figure-heavy structural
+# papers, multi-omics supp tables, atlas-style preprints).
+_MAX_PDF_BYTES = 80 * 1024 * 1024
 # Preprint platforms (Astera Stacks, institutional repos) ship full-resolution
-# figures inline, so PDFs routinely run 40-80 MB. A separate cap keeps the
-# Unpaywall path tight while letting DataCite-routed fetches breathe.
+# figures inline, so PDFs routinely run 40-80 MB. Kept as a separate constant
+# so the DataCite call site stays semantically explicit about its tolerance,
+# even though the value currently matches ``_MAX_PDF_BYTES``.
 _DATACITE_PDF_MAX_BYTES = 80 * 1024 * 1024
 # At most this many OA locations are attempted per paper, bounding download
 # load/latency when Unpaywall lists many copies (most list 1–3).
@@ -929,9 +939,10 @@ def _fetch_body_via_datacite_landing(
     DOI, no stable source key, the DOI isn't in DataCite, the landing page
     can't be fetched, no ``citation_pdf_url`` meta tag is present, or every
     candidate URL is blocked / non-PDF / unparseable — all "fall through to
-    the abstract" signals. Uses a higher per-fetch cap than Unpaywall
-    (:data:`_DATACITE_PDF_MAX_BYTES`) because preprint-platform PDFs ship
-    full-resolution figures inline (Stacks routinely 40-80 MB).
+    the abstract" signals. Uses :data:`_DATACITE_PDF_MAX_BYTES` as the
+    per-fetch cap to give preprint-platform PDFs headroom (Stacks /
+    institutional repos routinely ship 40-80 MB PDFs with full-resolution
+    figures inline).
     """
 
     if not paper.doi:
