@@ -31,7 +31,7 @@ from __future__ import annotations
 import logging
 from dataclasses import dataclass
 from datetime import UTC, datetime
-from typing import Any, Iterable
+from typing import Iterable
 
 from accessible_surfaceome.cloud.d1_client import D1Client
 
