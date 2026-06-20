@@ -669,3 +669,63 @@ CREATE INDEX IF NOT EXISTS idx_agent_run_intermediates_cohort
 -- sweep" should be a single SELECT, not a per-row JSON parse.
 CREATE INDEX IF NOT EXISTS idx_agent_run_intermediates_failure_mode
     ON agent_run_intermediates (failure_mode, created_at DESC);
+
+
+-- ---------------------------------------------------------------------------
+-- harvested_paper — flat per-paper discovery log
+-- ---------------------------------------------------------------------------
+-- One row per (run_id, gene_symbol, paper_id) for each paper any
+-- discovery axis surfaces. Pre-this-table the per-gene paper pool only
+-- lived as embedded JSON inside ``agent_run_intermediates.intermediates_json``
+-- — readable but not joinable, not indexable, not diff-able across
+-- sweeps without per-row JSON parse.
+--
+-- ``paper_id`` is the canonical source key the rest of the chain uses
+-- (``PMC:<id>`` > ``PMID:<id>`` > ``DOI:<doi>``) — joins cleanly to
+-- ``triage_run.paper_id`` for per-paper triage outcome roll-ups.
+--
+-- Cheap analytics this unlocks:
+--   * "Which papers landed in CD20's pool for the first time when we
+--     widened SRC:PPR?" — single SQL diff between two run_ids
+--   * "Per-source recall" — single GROUP BY source
+--   * "Per-axis precision" — JOIN to triage_run on paper_id, GROUP BY
+--     axis_label, MEAN(predicted_verdict)
+--
+-- At cohort scale (6,521 genes × ~50 new papers/year = ~325k rows/year
+-- × ~200 B = ~65 MB/year), storage costs under $1/year on D1.
+
+CREATE TABLE IF NOT EXISTS harvested_paper (
+    run_id        TEXT NOT NULL,                  -- sweep tag (matches triage_run.run_id / deep_dive_run.run_id)
+    gene_symbol   TEXT NOT NULL,
+    paper_id      TEXT NOT NULL,                  -- canonical key: PMC:<id> > PMID:<id> > DOI:<doi>
+    source        TEXT NOT NULL,                  -- 'europepmc_med' | 'europepmc_ppr' | 'pubtator' | 'gene2pubmed' | 'openalex' | 'datacite' | ...
+    axis_label    TEXT,                           -- per-axis tag (evidence_retrieval category, topic anchor, etc.)
+    bucket        TEXT,                           -- triage outcome: 'pmc' | 'unpaywall' | 'bot_blocked' | 'datacite_oa_repo' | 'no_oa'; null pre-triage
+    body_source   TEXT,                           -- which fetch chain returned a body: 'pmc_xml' | 'unpaywall_pdf' | 'datacite_pdf'; null
+    doi           TEXT,                           -- denormalized for fast filtering
+    pmid          INTEGER,
+    pmc_id        TEXT,
+    year          INTEGER,
+    title         TEXT,
+    created_at    TEXT NOT NULL DEFAULT (datetime('now')),
+    PRIMARY KEY (run_id, gene_symbol, paper_id)
+);
+
+-- Per-gene history across sweeps: "show me every paper we've ever
+-- discovered for CD20" — one query, no JSON parse.
+CREATE INDEX IF NOT EXISTS idx_harvested_paper_gene
+    ON harvested_paper (gene_symbol, created_at DESC);
+
+-- Per-sweep scope: "all papers from sweep X" — diff is
+-- ``WHERE run_id IN (X, Y) GROUP BY gene_symbol, paper_id``.
+CREATE INDEX IF NOT EXISTS idx_harvested_paper_run
+    ON harvested_paper (run_id);
+
+-- Per-source analytics: "how much did SRC:PPR add when we widened?"
+CREATE INDEX IF NOT EXISTS idx_harvested_paper_source
+    ON harvested_paper (source, run_id);
+
+-- Bucket analytics: "what fraction of discovered papers got
+-- `worth_fetching` triage" — useful for tuning the triage prompt.
+CREATE INDEX IF NOT EXISTS idx_harvested_paper_bucket
+    ON harvested_paper (bucket, run_id);
