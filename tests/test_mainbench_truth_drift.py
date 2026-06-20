@@ -31,8 +31,16 @@ from accessible_surfaceome.paths import REPO_ROOT
 
 EVAL_TSV = REPO_ROOT / "data/eval/triage_benchmark_v1.tsv"
 MAINBENCH_TSV = REPO_ROOT / "data/processed/triage_bench/mainbench_canonical_v2.tsv"
+MAINBENCH_REPLICATES_TSV = REPO_ROOT / "data/processed/triage_bench/mainbench_replicates_v2.tsv"
 CANDIDATE_UNIVERSE_TSV = REPO_ROOT / "data/processed/candidate_universe/candidate_universe.tsv"
 DB_CUTOFFS_TSV = REPO_ROOT / "data/processed/triage_bench/db_optimized_cutoffs.tsv"
+
+# Bench prediction TSVs share the same denormalized columns (truth,
+# 5 surface flags, n_db_votes, stable IDs) — the only difference is
+# canonical_v2 carries one row per (gene, model, variant) cell with
+# majority-aggregated verdicts, while replicates_v2 carries every
+# individual replicate. Both must clear the same drift guards.
+BENCH_PREDICTION_TSVS = (MAINBENCH_TSV, MAINBENCH_REPLICATES_TSV)
 
 # Stable-ID columns checked for cross-TSV consistency. Per CLAUDE.md
 # "Gene identifier resolution", ``hgnc_id`` is the canonical key; the
@@ -55,30 +63,34 @@ def _read_tsv(path: Path) -> list[dict[str, str]]:
         return list(csv.DictReader(fh, delimiter="\t"))
 
 
-@pytest.mark.skipif(
-    not (EVAL_TSV.exists() and MAINBENCH_TSV.exists()),
-    reason="figure-input TSVs not present (probably a partial checkout)",
+@pytest.mark.parametrize(
+    "tsv_path",
+    BENCH_PREDICTION_TSVS,
+    ids=lambda p: p.name,
 )
-def test_mainbench_truth_matches_curated_eval() -> None:
-    """For every gene in the mainbench TSV, the denormalized
+def test_bench_truth_matches_curated_eval(tsv_path: Path) -> None:
+    """For every gene in a bench prediction TSV, the denormalized
     ``ground_truth_verdict`` / ``ground_truth_class`` must equal the
     curated eval TSV's ``ground_truth_verdict`` / ``class``.
 
-    Failure means the curated truth was edited without re-running
-    ``augment_figure_tsvs_with_stable_ids.py`` (or the export wasn't
-    refreshed via ``export_mainbench_to_tsv.py`` after a D1 truth
-    update). Fix: re-run augment and commit the regenerated TSV in
-    the same change that updated the curated source.
+    Covers both the canonical (per-cell majority) and replicates
+    (per-replicate) bench files. Failure means the curated truth was
+    edited without re-running ``augment_figure_tsvs_with_stable_ids.py``
+    (or the export wasn't refreshed via ``export_mainbench_to_tsv.py``
+    after a D1 truth update). Fix: re-run augment and commit the
+    regenerated TSV in the same change.
     """
+    if not (EVAL_TSV.exists() and tsv_path.exists()):
+        pytest.skip(f"{tsv_path.name} or eval TSV not present (partial checkout)")
     curated = {
         r["gene_symbol"]: (r["ground_truth_verdict"], r["class"])
         for r in _read_tsv(EVAL_TSV)
     }
-    mainbench_rows = _read_tsv(MAINBENCH_TSV)
+    bench_rows = _read_tsv(tsv_path)
 
     mismatches: list[str] = []
     seen: set[str] = set()
-    for r in mainbench_rows:
+    for r in bench_rows:
         gene = r["gene_symbol"]
         if gene in seen:
             continue
@@ -88,19 +100,19 @@ def test_mainbench_truth_matches_curated_eval() -> None:
         expected = curated.get(gene)
         if expected is None:
             mismatches.append(
-                f"{gene}: in mainbench TSV but NOT in eval TSV — "
+                f"{gene}: in {tsv_path.name} but NOT in eval TSV — "
                 "curated source is missing this gene"
             )
             continue
         actual = (r["ground_truth_verdict"], r["ground_truth_class"])
         if actual != expected:
             mismatches.append(
-                f"{gene}: mainbench={actual!r} vs curated={expected!r}"
+                f"{gene}: {tsv_path.name}={actual!r} vs curated={expected!r}"
             )
 
     assert not mismatches, (
         "Denormalized truth drift detected in "
-        f"{MAINBENCH_TSV.relative_to(REPO_ROOT)}. "
+        f"{tsv_path.relative_to(REPO_ROOT)}. "
         "Re-run scripts/augment_figure_tsvs_with_stable_ids.py and commit "
         f"the regenerated TSV.\nMismatches ({len(mismatches)}):\n"
         + "\n".join(f"  • {m}" for m in mismatches[:20])
@@ -108,24 +120,28 @@ def test_mainbench_truth_matches_curated_eval() -> None:
     )
 
 
-@pytest.mark.skipif(
-    not MAINBENCH_TSV.exists(),
-    reason="mainbench TSV not present (partial checkout)",
+@pytest.mark.parametrize(
+    "tsv_path",
+    BENCH_PREDICTION_TSVS,
+    ids=lambda p: p.name,
 )
-def test_mainbench_truth_is_internally_consistent() -> None:
+def test_bench_truth_is_internally_consistent(tsv_path: Path) -> None:
     """All prediction rows for the same gene must carry the same
     denormalized truth. A within-gene mismatch would mean the augment
     step ran inconsistently (different rows joined against different
-    snapshots of the curated source)."""
+    snapshots of the curated source).
+    """
+    if not tsv_path.exists():
+        pytest.skip(f"{tsv_path.name} not present (partial checkout)")
     per_gene_truths: dict[str, set[tuple[str, str]]] = {}
-    for r in _read_tsv(MAINBENCH_TSV):
+    for r in _read_tsv(tsv_path):
         per_gene_truths.setdefault(r["gene_symbol"], set()).add(
             (r["ground_truth_verdict"], r["ground_truth_class"])
         )
     inconsistent = {g: ts for g, ts in per_gene_truths.items() if len(ts) > 1}
     assert not inconsistent, (
         "Within-gene truth inconsistency in "
-        f"{MAINBENCH_TSV.relative_to(REPO_ROOT)}: "
+        f"{tsv_path.relative_to(REPO_ROOT)}: "
         f"{len(inconsistent)} genes carry conflicting denormalized truths. "
         f"Sample: {dict(list(inconsistent.items())[:3])!r}"
     )
@@ -236,20 +252,23 @@ def test_eval_sonnet_verdict_matches_candidate_universe() -> None:
     )
 
 
-@pytest.mark.skipif(
-    not (MAINBENCH_TSV.exists() and CANDIDATE_UNIVERSE_TSV.exists()),
-    reason="figure-input TSVs not present (partial checkout)",
+@pytest.mark.parametrize(
+    "tsv_path",
+    BENCH_PREDICTION_TSVS,
+    ids=lambda p: p.name,
 )
-def test_mainbench_db_flags_match_candidate_universe() -> None:
-    """The mainbench TSV's 5 ``*_surface_flag`` columns + ``n_db_votes``
+def test_bench_db_flags_match_candidate_universe(tsv_path: Path) -> None:
+    """The bench TSV's 5 ``*_surface_flag`` columns + ``n_db_votes``
     are denormalized from candidate_universe.tsv per ``uniprot_acc``.
     A bench gene without a candidate_universe row is legitimately
     zero-DB (see ``test_eval_n_db_votes_matches_candidate_universe``).
     """
+    if not (tsv_path.exists() and CANDIDATE_UNIVERSE_TSV.exists()):
+        pytest.skip(f"{tsv_path.name} or candidate_universe not present")
     cu_by_acc = _index_candidate_universe_by_acc()
     mismatches: list[str] = []
     seen: set[str] = set()
-    for r in _read_tsv(MAINBENCH_TSV):
+    for r in _read_tsv(tsv_path):
         gene = r["gene_symbol"]
         if gene in seen:
             continue
@@ -263,14 +282,14 @@ def test_mainbench_db_flags_match_candidate_universe() -> None:
             for col in SURFACE_FLAG_COLS:
                 if r.get(col, "0") not in ("0", ""):
                     mismatches.append(
-                        f"{gene} ({acc})/{col}: mainbench={r.get(col)!r} "
+                        f"{gene} ({acc})/{col}: {tsv_path.name}={r.get(col)!r} "
                         f"but gene is absent from candidate_universe "
                         f"(would imply 0)"
                     )
             n_votes = (r.get("n_db_votes") or "").strip()
             if n_votes and n_votes != "0":
                 mismatches.append(
-                    f"{gene} ({acc})/n_db_votes: mainbench={n_votes!r} "
+                    f"{gene} ({acc})/n_db_votes: {tsv_path.name}={n_votes!r} "
                     f"but absent from candidate_universe"
                 )
             continue
@@ -279,19 +298,20 @@ def test_mainbench_db_flags_match_candidate_universe() -> None:
             cu_val = ref.get(col, "")
             if mb_val != cu_val:
                 mismatches.append(
-                    f"{gene} ({acc})/{col}: mainbench={mb_val!r} vs "
+                    f"{gene} ({acc})/{col}: {tsv_path.name}={mb_val!r} vs "
                     f"candidate_universe={cu_val!r}"
                 )
         mb_count = r.get("n_db_votes", "")
         cu_count = ref.get("n_sources_surface", "")
         if mb_count != cu_count:
             mismatches.append(
-                f"{gene} ({acc})/n_db_votes: mainbench={mb_count!r} vs "
+                f"{gene} ({acc})/n_db_votes: {tsv_path.name}={mb_count!r} vs "
                 f"candidate_universe n_sources_surface={cu_count!r}"
             )
     assert not mismatches, (
-        f"Mainbench DB columns drifted from candidate_universe.tsv "
-        f"({len(mismatches)} mismatches). Re-run augment_figure_tsvs_with_stable_ids.py.\n"
+        f"Bench DB columns drifted from candidate_universe.tsv in "
+        f"{tsv_path.relative_to(REPO_ROOT)} ({len(mismatches)} mismatches). "
+        f"Re-run augment_figure_tsvs_with_stable_ids.py.\n"
         + "\n".join(f"  • {m}" for m in mismatches[:20])
     )
 
@@ -326,6 +346,7 @@ def test_db_cutoffs_n_sources_matches_flag_sum() -> None:
 
 @pytest.mark.skipif(
     not (EVAL_TSV.exists() and MAINBENCH_TSV.exists()
+         and MAINBENCH_REPLICATES_TSV.exists()
          and CANDIDATE_UNIVERSE_TSV.exists() and DB_CUTOFFS_TSV.exists()),
     reason="figure-input TSVs not present (partial checkout)",
 )
@@ -347,7 +368,8 @@ def test_stable_ids_consistent_across_figure_tsvs() -> None:
     canonical: dict[str, tuple[str, ...]] = {}
     mismatches: list[str] = []
 
-    for tsv_path in (CANDIDATE_UNIVERSE_TSV, EVAL_TSV, MAINBENCH_TSV, DB_CUTOFFS_TSV):
+    for tsv_path in (CANDIDATE_UNIVERSE_TSV, EVAL_TSV, MAINBENCH_TSV,
+                     MAINBENCH_REPLICATES_TSV, DB_CUTOFFS_TSV):
         seen_in_tsv: set[str] = set()
         for r in _read_tsv(tsv_path):
             gene = r.get("gene_symbol")
@@ -374,5 +396,75 @@ def test_stable_ids_consistent_across_figure_tsvs() -> None:
         f"Stable-ID drift across figure TSVs ({len(mismatches)} rows). "
         "Re-run augment_figure_tsvs_with_stable_ids.py to re-pin every "
         f"figure TSV against gene_identifier_public.\n"
+        + "\n".join(f"  • {m}" for m in mismatches[:15])
+    )
+
+
+@pytest.mark.skipif(
+    not (MAINBENCH_TSV.exists() and MAINBENCH_REPLICATES_TSV.exists()),
+    reason="bench TSVs not present (partial checkout)",
+)
+def test_canonical_verdict_matches_replicate_majority() -> None:
+    """``mainbench_canonical_v2.tsv`` carries the per-cell majority
+    verdict across replicates (see ``_collapse_to_majority`` in
+    ``scripts/export_mainbench_to_tsv.py``); ``mainbench_replicates_v2.tsv``
+    carries the raw replicates. Recompute the surface-side majority
+    from the replicates and assert it matches canonical_v2's recorded
+    verdict — otherwise one TSV was regenerated and the other wasn't.
+
+    The export script collapses verdicts to {surface, not_surface} via
+    ``_surface_vote`` (yes/contextual → surface; no → not_surface), then
+    picks the within-winning-side verdict by simple majority. The
+    *reason* canonical_v2 records is a "representative" from the first
+    matching rep — we don't pin reason here (its tiebreak depends on
+    rep-iteration order and isn't a clean invariant), only the verdict.
+    """
+    from collections import Counter
+
+    def _surface_side(v: str) -> str | None:
+        if v in ("yes", "contextual"):
+            return "surface"
+        if v == "no":
+            return "not_surface"
+        return None
+
+    cells: dict[tuple[str, str, str], list[dict[str, str]]] = {}
+    for r in _read_tsv(MAINBENCH_REPLICATES_TSV):
+        key = (r["gene_symbol"], r["model"], r["prompt_variant"])
+        cells.setdefault(key, []).append(r)
+
+    majority_verdict_by_cell: dict[tuple[str, str, str], str] = {}
+    win_verdicts_by_cell: dict[tuple[str, str, str], set[str]] = {}
+    for key, reps in cells.items():
+        valid = [r for r in reps if _surface_side(r.get("predicted_verdict", "")) is not None]
+        if not valid:
+            continue
+        side_counts = Counter(_surface_side(r["predicted_verdict"]) for r in valid)
+        winning_side = side_counts.most_common(1)[0][0]
+        win_reps = [r for r in valid if _surface_side(r["predicted_verdict"]) == winning_side]
+        verdict_counts = Counter(r["predicted_verdict"] for r in win_reps)
+        majority_verdict_by_cell[key] = verdict_counts.most_common(1)[0][0]
+        # The recorded reason must come from a rep with this verdict
+        # (the export script picks one such rep as "representative").
+        win_verdicts_by_cell[key] = {r["predicted_verdict"] for r in win_reps}
+
+    mismatches: list[str] = []
+    for r in _read_tsv(MAINBENCH_TSV):
+        key = (r["gene_symbol"], r["model"], r["prompt_variant"])
+        expected_verdict = majority_verdict_by_cell.get(key)
+        if expected_verdict is None:
+            mismatches.append(f"{key}: in canonical_v2 but absent from replicates_v2")
+            continue
+        actual = r.get("predicted_verdict", "")
+        if actual != expected_verdict:
+            mismatches.append(
+                f"{key}: canonical_v2 verdict={actual!r} vs "
+                f"majority-from-replicates={expected_verdict!r}"
+            )
+
+    assert not mismatches, (
+        f"Canonical-v2 verdict drifted from replicates-v2 raw replicates "
+        f"({len(mismatches)} cells). One TSV was regenerated and the "
+        f"other wasn't. Re-run scripts/export_mainbench_to_tsv.py.\n"
         + "\n".join(f"  • {m}" for m in mismatches[:15])
     )
