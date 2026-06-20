@@ -27,9 +27,10 @@ import re
 import time
 from collections import Counter
 from concurrent.futures import ThreadPoolExecutor, as_completed
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any, cast
+from urllib.parse import urljoin
 
 from anthropic import Anthropic
 from anthropic.types import TextBlock
@@ -480,6 +481,12 @@ def _abstract_clips(paper: Paper) -> list[EvidenceClaimDraft]:
 
 _NCBI_ELINK = "https://eutils.ncbi.nlm.nih.gov/entrez/eutils/elink.fcgi"
 _UNPAYWALL_API = "https://api.unpaywall.org/v2"
+# DataCite's REST API resolves DOIs that aren't in Crossref / Unpaywall (preprint
+# platforms like Astera's Stacks, institutional repos, Zenodo records). The
+# response carries the landing-page URL but rarely the direct PDF — we scrape
+# the landing for ``<meta name="citation_pdf_url">`` (Google Scholar /
+# Highwire convention) to recover the file.
+_DATACITE_API = "https://api.datacite.org/dois"
 # Unpaywall requires an email as a polite-pool identifier (free, no signup).
 # Overridable via UNPAYWALL_EMAIL; defaults to the project contact so the
 # fallback works out of the box without per-worktree .env edits.
@@ -487,6 +494,10 @@ _DEFAULT_UNPAYWALL_EMAIL = "michael.smallegan@gmail.com"
 # Skip absurdly large downloads before parsing — DoS guard for untrusted
 # publisher PDFs. A paper + supplement is well under this.
 _MAX_PDF_BYTES = 40 * 1024 * 1024
+# Preprint platforms (Astera Stacks, institutional repos) ship full-resolution
+# figures inline, so PDFs routinely run 40-80 MB. A separate cap keeps the
+# Unpaywall path tight while letting DataCite-routed fetches breathe.
+_DATACITE_PDF_MAX_BYTES = 80 * 1024 * 1024
 # At most this many OA locations are attempted per paper, bounding download
 # load/latency when Unpaywall lists many copies (most list 1–3).
 _MAX_PDF_LOCATIONS = 4
@@ -688,6 +699,10 @@ def _fetch_body_drafts(
     2. **Unpaywall OA PDF**: DOI → best OA PDF → pdfplumber section parse.
        Recovers landmark publisher-PDF papers (and the PMC-PDF-only case
        where JATS XML comes back empty).
+    3. **DataCite landing**: DOI → DataCite ``attributes.url`` → scrape
+       ``<meta name="citation_pdf_url">`` from the landing page → PDF.
+       Recovers DataCite-registered DOIs invisible to Unpaywall (preprint
+       platforms like Astera's Stacks, institutional repos, some Zenodo).
 
     Raises if every step fails (caller falls back to keep_abstract). Uses the
     same no-filter ``extract_paper_drafts`` as ``gene_literature(mode=
@@ -723,9 +738,16 @@ def _fetch_body_drafts(
             drafts=pdf_drafts, source="unpaywall_pdf", oa_license=oa_license
         )
 
+    # Step 3: DataCite landing → citation_pdf_url.
+    dc_drafts, dc_license = _fetch_body_via_datacite_landing(paper, http=http)
+    if dc_drafts:
+        return _BodyFetch(
+            drafts=dc_drafts, source="datacite_pdf", oa_license=dc_license
+        )
+
     raise ValueError(
-        f"no body for {_paper_source_id(paper)}: no PMC JATS and no "
-        f"Unpaywall OA PDF (DOI:{paper.doi or '—'})"
+        f"no body for {_paper_source_id(paper)}: no PMC JATS, no Unpaywall "
+        f"OA PDF, and no DataCite landing (DOI:{paper.doi or '—'})"
     )
 
 
@@ -794,6 +816,195 @@ def _fetch_body_via_unpaywall_pdf(
                 source_id=source_id, abstract=paper.abstract, sections=sections
             ),
             oa_license,
+        )
+    return [], None
+
+
+# Google-Scholar / Highwire-Press convention for "PDF for this landing page".
+# Two patterns because real-world templates emit name/content in either order.
+_CITATION_PDF_URL_NAME_FIRST = re.compile(
+    r"""<meta\s+[^>]*?\bname\s*=\s*["']citation_pdf_url["']"""
+    r"""[^>]*?\bcontent\s*=\s*["']([^"']+)["']""",
+    re.IGNORECASE,
+)
+_CITATION_PDF_URL_CONTENT_FIRST = re.compile(
+    r"""<meta\s+[^>]*?\bcontent\s*=\s*["']([^"']+)["']"""
+    r"""[^>]*?\bname\s*=\s*["']citation_pdf_url["']""",
+    re.IGNORECASE,
+)
+
+
+def _extract_citation_pdf_url(html: str) -> str | None:
+    """Return the ``citation_pdf_url`` from a Highwire-style HTML <head>, or None.
+
+    The Google Scholar / Highwire Press metadata convention is the cross-repo
+    standard for "the PDF for this article" — Stacks, bioRxiv/medRxiv, PubPub,
+    most OJS/Janeway instances, and most institutional repos emit it. DataCite
+    rarely fills ``attributes.contentUrl`` for articles, so this is the workable
+    signal once we're on the landing page.
+    """
+    for pattern in (_CITATION_PDF_URL_NAME_FIRST, _CITATION_PDF_URL_CONTENT_FIRST):
+        m = pattern.search(html)
+        if m:
+            return m.group(1)
+    return None
+
+
+@dataclass
+class DataCiteMetadata:
+    """Subset of DataCite ``data.attributes`` we use to route a PDF fetch.
+
+    ``landing_url`` is always populated (we drop the record otherwise).
+    ``content_urls`` is opportunistic: DataCite rarely fills it for articles,
+    but datasets and some repository deposits do. ``license`` is the raw
+    rightsIdentifier (e.g. ``"cc-by-4.0"``), captured for redistribution
+    provenance (not gated — snippet redistribution rests on fair use).
+    """
+
+    landing_url: str
+    content_urls: list[str] = field(default_factory=list)
+    license: str | None = None
+
+
+def _lookup_datacite_metadata(
+    doi: str, *, http: CachedHTTP
+) -> DataCiteMetadata | None:
+    """Resolve DOI → DataCite metadata or ``None`` if the DOI isn't in DataCite.
+
+    Returns ``None`` on 404 (Crossref-only DOI), on any HTTP error, or when the
+    payload doesn't carry ``data.attributes.url`` (we have nothing to fetch
+    without a landing URL). Tolerates accidentally-Unpaywall-shaped JSON for
+    cleanliness when callers reuse one HTTP fixture across test paths.
+    """
+
+    if not doi:
+        return None
+    try:
+        payload = http.get_json(
+            f"{_DATACITE_API}/{doi.lstrip('/')}",
+            source="datacite",
+            ttl_days=90,
+        )
+    except Exception:  # noqa: BLE001
+        return None
+    if not isinstance(payload, dict):
+        return None
+    data = payload.get("data")
+    if not isinstance(data, dict):
+        return None
+    attrs = data.get("attributes") or {}
+    landing = attrs.get("url")
+    if not isinstance(landing, str) or not landing:
+        return None
+
+    # contentUrl is spec'd as Sequence[String] but is sometimes serialized as a
+    # bare string or null — accept both shapes.
+    raw_content = attrs.get("contentUrl")
+    content_urls: list[str] = []
+    if isinstance(raw_content, str):
+        content_urls = [raw_content]
+    elif isinstance(raw_content, list):
+        content_urls = [c for c in raw_content if isinstance(c, str) and c]
+
+    rights_list = attrs.get("rightsList") or []
+    license_str: str | None = None
+    if isinstance(rights_list, list) and rights_list:
+        first = rights_list[0]
+        if isinstance(first, dict):
+            ident = first.get("rightsIdentifier")
+            if isinstance(ident, str) and ident:
+                license_str = ident
+
+    return DataCiteMetadata(
+        landing_url=landing, content_urls=content_urls, license=license_str
+    )
+
+
+def _fetch_body_via_datacite_landing(
+    paper: Paper, *, http: CachedHTTP
+) -> tuple[list[EvidenceClaimDraft], str | None]:
+    """Tier-3 body recovery: DataCite landing → ``citation_pdf_url`` → PDF.
+
+    Returns ``(drafts, license)``. Empty list (never raises) when there's no
+    DOI, no stable source key, the DOI isn't in DataCite, the landing page
+    can't be fetched, no ``citation_pdf_url`` meta tag is present, or every
+    candidate URL is blocked / non-PDF / unparseable — all "fall through to
+    the abstract" signals. Uses a higher per-fetch cap than Unpaywall
+    (:data:`_DATACITE_PDF_MAX_BYTES`) because preprint-platform PDFs ship
+    full-resolution figures inline (Stacks routinely 40-80 MB).
+    """
+
+    if not paper.doi:
+        return [], None
+    source_id = _paper_source_id(paper)
+    if source_id == "UNKNOWN":
+        return [], None
+
+    meta = _lookup_datacite_metadata(paper.doi, http=http)
+    if meta is None:
+        return [], None
+
+    candidates: list[str] = []
+    # Opportunistic: if DataCite gave us a direct content URL that looks like a
+    # PDF, try it first — it saves the landing-page hop.
+    for u in meta.content_urls:
+        if ".pdf" in u.lower():
+            candidates.append(u)
+
+    try:
+        landing_html = http.get_text(
+            meta.landing_url, source="datacite_landing", ttl_days=7
+        )
+    except Exception as exc:  # noqa: BLE001
+        logger.info(
+            "DataCite landing fetch failed for %s at %s: %s",
+            source_id, meta.landing_url, exc,
+        )
+        landing_html = None
+
+    if landing_html:
+        meta_pdf = _extract_citation_pdf_url(landing_html)
+        if meta_pdf:
+            # urljoin handles relative paths against the landing URL.
+            candidates.append(urljoin(meta.landing_url, meta_pdf))
+
+    # Dedupe, preserve order.
+    seen: set[str] = set()
+    unique: list[str] = []
+    for u in candidates:
+        if u and u not in seen:
+            seen.add(u)
+            unique.append(u)
+
+    for pdf_url in unique[:_MAX_PDF_LOCATIONS]:
+        try:
+            pdf_bytes = http.get_bytes(
+                pdf_url,
+                source="datacite_pdf",
+                ttl_days=180,
+                headers={"Accept": "application/pdf"},
+                max_bytes=_DATACITE_PDF_MAX_BYTES,
+                min_interval_ms=_PDF_COURTESY_INTERVAL_MS,
+            )
+        except Exception as exc:  # noqa: BLE001 — 403 / paywall / timeout / too large
+            logger.info(
+                "DataCite PDF fetch failed for %s at %s: %s",
+                source_id, pdf_url, exc,
+            )
+            continue
+        if b"%PDF" not in pdf_bytes[:1024]:
+            logger.info(
+                "DataCite URL for %s was not a PDF: %s", source_id, pdf_url
+            )
+            continue
+        sections = parse_pdf_to_sections(pdf_bytes)
+        if not sections:
+            continue
+        return (
+            extract_paper_drafts(
+                source_id=source_id, abstract=paper.abstract, sections=sections
+            ),
+            meta.license,
         )
     return [], None
 
@@ -971,8 +1182,13 @@ def apply_triage_outcomes(
         by_src = Counter(a.fetch_source for a in wf if a.fetched_body)
         fell_back = sum(1 for a in wf if not a.fetched_body)
         logger.info(
-            "triage body fetch: %d worth_fetching → pmc_xml=%d unpaywall_pdf=%d fell_back=%d",
-            len(wf), by_src.get("pmc_xml", 0), by_src.get("unpaywall_pdf", 0), fell_back,
+            "triage body fetch: %d worth_fetching → pmc_xml=%d unpaywall_pdf=%d "
+            "datacite_pdf=%d fell_back=%d",
+            len(wf),
+            by_src.get("pmc_xml", 0),
+            by_src.get("unpaywall_pdf", 0),
+            by_src.get("datacite_pdf", 0),
+            fell_back,
         )
 
     return actions
