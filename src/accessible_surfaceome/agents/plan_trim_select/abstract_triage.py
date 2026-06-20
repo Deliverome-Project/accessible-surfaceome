@@ -56,6 +56,7 @@ from accessible_surfaceome.tools._shared.models import (
     EvidenceClaimDraft,
     IdentifierBundle,
     Paper,
+    PaperSection,
 )
 from accessible_surfaceome.tools._shared.ncbi import add_ncbi_api_key_param
 from accessible_surfaceome.tools._shared.retraction_watch import RetractionIndex
@@ -868,6 +869,107 @@ def _arxiv_pdf_url_from_doi(doi: str | None) -> str | None:
     return f"https://arxiv.org/pdf/{arxiv_id}"
 
 
+def _arxiv_id_from_doi(doi: str | None) -> str | None:
+    """Return just the arXiv identifier (e.g. ``2510.17752``) from a DataCite
+    arXiv DOI, or ``None`` for non-arxiv DOIs. Used by the ar5iv HTML path."""
+    if not doi:
+        return None
+    lower = doi.lower().strip().lstrip("/")
+    if not lower.startswith(_ARXIV_DOI_PREFIX):
+        return None
+    arxiv_id = lower.removeprefix(_ARXIV_DOI_PREFIX)
+    return arxiv_id or None
+
+
+# ar5iv (https://ar5iv.org) is the canonical LaTeX→HTML conversion of
+# arXiv papers, hosted at ``ar5iv.org/html/{arxiv_id}``. Coverage is
+# *partial*: well-structured LaTeX papers convert with clean semantic
+# tagging (``<section class="ltx_section">`` blocks, ``<h2 class="ltx_title">``
+# titles, ``<div class="ltx_para">`` paragraphs); papers ar5iv hasn't or
+# couldn't convert return the page template with an essentially-empty body
+# (1 stub paragraph, 0 sections). We detect the stub case by the absence
+# of ``ltx_section`` markers and fall back to the PDF shortcut.
+_AR5IV_HTML_BASE = "https://ar5iv.org/html"
+# Regex extractors over the well-defined LaTeXML-generated HTML — using
+# stdlib regex instead of bs4 to keep deps lean. The structure is
+# stable enough that this is more reliable than a full HTML parse.
+_AR5IV_SECTION_RE = re.compile(
+    r'<section\b[^>]*\bclass="[^"]*\bltx_section\b[^"]*"[^>]*>(.*?)</section>',
+    re.DOTALL | re.IGNORECASE,
+)
+_AR5IV_TITLE_RE = re.compile(
+    r'<h[1-6]\b[^>]*\bclass="[^"]*\bltx_title\b[^"]*"[^>]*>(.*?)</h[1-6]>',
+    re.DOTALL | re.IGNORECASE,
+)
+_AR5IV_TAG_STRIP_RE = re.compile(r"<[^>]+>")
+_AR5IV_WHITESPACE_RE = re.compile(r"\s+")
+# Strip a leading section number ("1 Introduction", "2.1 Methods") before
+# looking the title up in the heading map.
+_AR5IV_LEADING_NUMBER_RE = re.compile(r"^\s*\d+(\.\d+)*\.?\s+")
+
+
+def _normalize_ar5iv_heading(title: str) -> str:
+    """Lowercase + drop leading section number so we can look the title up
+    in the same ``_HEADING_TO_SECTION`` map pdf_parse uses."""
+    return _AR5IV_LEADING_NUMBER_RE.sub("", (title or "").strip()).strip().lower()
+
+
+def _ar5iv_strip(html: str) -> str:
+    """Strip tags + collapse whitespace from an ar5iv HTML fragment."""
+    return _AR5IV_WHITESPACE_RE.sub(" ", _AR5IV_TAG_STRIP_RE.sub(" ", html)).strip()
+
+
+def _fetch_arxiv_html_sections(
+    arxiv_id: str, *, http: CachedHTTP
+) -> list[PaperSection] | None:
+    """Fetch the ar5iv HTML rendition of an arXiv paper and parse it into
+    sections, or return ``None`` if ar5iv hasn't converted this paper
+    (the stub page) or if the fetch fails.
+
+    Returns a clean section list when ar5iv has a real conversion —
+    typically better structured than what pdfplumber recovers from the
+    PDF, especially for math-heavy or figure-heavy papers where PDF
+    section detection drops headings. Callers fall back to the PDF
+    shortcut on ``None``.
+    """
+    url = f"{_AR5IV_HTML_BASE}/{arxiv_id}"
+    try:
+        html = http.get_text(url, source="arxiv_html", ttl_days=30)
+    except Exception as exc:  # noqa: BLE001
+        logger.info("ar5iv fetch failed for arXiv:%s: %s", arxiv_id, exc)
+        return None
+    if not html:
+        return None
+    section_blocks = _AR5IV_SECTION_RE.findall(html)
+    if not section_blocks:
+        # Stub page — ar5iv didn't convert this paper. Common for very
+        # new papers + papers with LaTeX templates LaTeXML chokes on.
+        logger.info("ar5iv has no ltx_section blocks for arXiv:%s (stub page)", arxiv_id)
+        return None
+    # Reuse pdf_parse's heading→SectionName map so the section taxonomy
+    # is identical between PDF-parsed and HTML-parsed bodies. Unknown
+    # headings (review article taxonomies, paper-specific section names)
+    # default to "results" — the broad body bucket, consistent with how
+    # the rest of the chain treats untagged body content.
+    from accessible_surfaceome.agents.plan_trim_select.pdf_parse import (
+        _HEADING_TO_SECTION,
+    )
+    sections: list[PaperSection] = []
+    for block in section_blocks:
+        title_match = _AR5IV_TITLE_RE.search(block)
+        raw_title = _ar5iv_strip(title_match.group(1)) if title_match else ""
+        # Drop the title element from the text body to avoid duplication.
+        body_html = _AR5IV_TITLE_RE.sub("", block, count=1) if title_match else block
+        body = _ar5iv_strip(body_html)
+        if not body:
+            continue
+        section_name = _HEADING_TO_SECTION.get(
+            _normalize_ar5iv_heading(raw_title), "results"
+        )
+        sections.append(PaperSection(name=section_name, text=body))
+    return sections or None
+
+
 def _extract_citation_pdf_url(html: str) -> str | None:
     """Return the ``citation_pdf_url`` from a Highwire-style HTML <head>, or None.
 
@@ -1007,13 +1109,24 @@ def _fetch_body_via_datacite_landing(
             source_id=source_id, abstract=paper.abstract, sections=sections
         )
 
-    # Fast path: arXiv DOIs have a deterministic PDF URL pattern
-    # (10.48550/arxiv.{id} → arxiv.org/pdf/{id}). Try it first to skip
-    # the DataCite metadata + landing-page hops entirely — saves 2 HTTP
-    # calls on the common success case. Falls through to the standard
-    # path if arxiv.org is down / the PDF doesn't parse.
-    arxiv_url = _arxiv_pdf_url_from_doi(paper.doi)
-    if arxiv_url is not None:
+    # Fast path: arXiv DOIs have a deterministic URL pattern and (often)
+    # an ar5iv HTML rendition. Skips DataCite metadata + landing-page hops
+    # entirely on the common success case. Strategy:
+    #   1. Try ar5iv HTML (cleaner sections, better for math-heavy papers
+    #      where pdfplumber's heading detection drops headings).
+    #   2. Fall back to arxiv.org/pdf/{id} (the deterministic PDF URL).
+    #   3. Fall through to the standard DataCite path if both fail.
+    arxiv_id = _arxiv_id_from_doi(paper.doi)
+    arxiv_url: str | None = None
+    if arxiv_id is not None:
+        html_sections = _fetch_arxiv_html_sections(arxiv_id, http=http)
+        if html_sections:
+            drafts = extract_paper_drafts(
+                source_id=source_id, abstract=paper.abstract, sections=html_sections
+            )
+            if drafts:
+                return drafts, None
+        arxiv_url = f"https://arxiv.org/pdf/{arxiv_id}"
         drafts = _try_pdf(arxiv_url)
         if drafts:
             # arXiv DataCite records don't carry rightsList — license is
