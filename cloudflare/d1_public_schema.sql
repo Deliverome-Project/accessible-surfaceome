@@ -776,9 +776,22 @@ CREATE TABLE IF NOT EXISTS czi_cellxgene_enrichment (
     enrichment_json     TEXT NOT NULL,
     computed_at         TEXT NOT NULL,
     synced_at           TEXT NOT NULL DEFAULT (datetime('now')),
+    -- Cell-family / tissue-organ rollup columns added by ALTER TABLE
+    -- after initial provisioning; backfilled here so re-provisioning
+    -- from this file matches live. `*_class` is the top assigned
+    -- class for the gene, `*_top` is the runner-up, `*_tau` is the
+    -- Kendall-tau-style concentration score.
+    cell_family_class   TEXT,
+    cell_family_top     TEXT,
+    cell_family_tau     REAL,
+    tissue_organ_class  TEXT,
+    tissue_organ_top    TEXT,
+    tissue_organ_tau    REAL,
     PRIMARY KEY (gene_symbol, schema_version, census_version)
 );
 
 CREATE INDEX IF NOT EXISTS idx_czi_cellxgene_enrichment_census  ON czi_cellxgene_enrichment (census_version);
 CREATE INDEX IF NOT EXISTS idx_czi_cellxgene_enrichment_ensembl ON czi_cellxgene_enrichment (ensembl_gene);
 CREATE INDEX IF NOT EXISTS idx_czi_cellxgene_enrichment_hgnc    ON czi_cellxgene_enrichment (hgnc_id);
+CREATE INDEX IF NOT EXISTS idx_czi_cellxgene_cell_family_class  ON czi_cellxgene_enrichment (cell_family_class);
+CREATE INDEX IF NOT EXISTS idx_czi_cellxgene_tissue_organ_class ON czi_cellxgene_enrichment (tissue_organ_class);
