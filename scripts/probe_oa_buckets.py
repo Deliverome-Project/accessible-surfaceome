@@ -37,6 +37,11 @@ import httpx
 from accessible_surfaceome.agents.plan_trim_select.abstract_triage import (
     _fetch_body_drafts,
 )
+from accessible_surfaceome.cloud.harvested_paper import (
+    HarvestedPaper,
+    ensure_schema as ensure_harvested_paper_schema,
+    publish_harvested_papers,
+)
 from accessible_surfaceome.env import load_env
 from accessible_surfaceome.tools._shared.http import open_default_client
 from accessible_surfaceome.tools._shared.models import Paper
@@ -363,6 +368,51 @@ def load_existing_genes(out_path):
     return seen
 
 
+def _paper_id_from_row(row: dict) -> str | None:
+    """Canonical source key for a per-paper row from the probe JSONL.
+
+    Matches ``paper_source_id`` in ``abstract_triage`` so D1 rows in
+    ``harvested_paper`` join cleanly to ``triage_run.paper_id``. Returns
+    ``None`` if the row has no usable identifier (rare — most probe rows
+    carry at least a DOI from OpenAlex / Europe PMC).
+    """
+    if row.get("pmc_id"):
+        return f"PMC:{row['pmc_id']}"
+    if row.get("pmid"):
+        return f"PMID:{row['pmid']}"
+    if row.get("doi"):
+        return f"DOI:{row['doi']}"
+    return None
+
+
+def _harvested_papers_from_gene_row(
+    gene_row: dict, *, run_id: str, source: str
+) -> list[HarvestedPaper]:
+    """Convert one probe JSONL gene row into HarvestedPaper instances."""
+    out: list[HarvestedPaper] = []
+    for p in gene_row.get("papers", []):
+        paper_id = _paper_id_from_row(p)
+        if paper_id is None:
+            continue
+        out.append(
+            HarvestedPaper(
+                run_id=run_id,
+                gene_symbol=gene_row["gene"],
+                paper_id=paper_id,
+                source=source,
+                axis_label=None,  # probe doesn't track per-paper axis attribution
+                bucket=p.get("bucket"),
+                body_source=None,  # probe's classify() collapses to bucket; full body_source TBD
+                doi=p.get("doi"),
+                pmid=p.get("pmid") or None,
+                pmc_id=p.get("pmc_id"),
+                year=p.get("year"),
+                title=p.get("title"),
+            )
+        )
+    return out
+
+
 def _process_one_gene(sym, acc, source, papers_per_gene, http, retraction_index,
                       oa_client, unpaywall_client, rng):
     """Single-gene worker: harvest + sample + classify. Returns the JSONL row dict.
@@ -414,6 +464,14 @@ def main():
              "but per-axis OpenAlex rate-shaping doesn't like burstiness — "
              "5-8 stays comfortably under the limit while ~5x'ing throughput).",
     )
+    ap.add_argument(
+        "--d1-run-id", default=None,
+        help="Opt-in: publish per-paper rows to the private D1 "
+             "`harvested_paper` table under this run id. Resume-safe — "
+             "re-running with the same run id INSERT OR REPLACEs per row. "
+             "Requires CLOUDFLARE_* env vars; if missing, falls through "
+             "with a warning so JSONL output still works.",
+    )
     args = ap.parse_args()
 
     # Sample N random genes (same seed across sources → same gene set for comparable runs)
@@ -439,6 +497,44 @@ def main():
     )
     out_dir.mkdir(parents=True, exist_ok=True)
     out_path = out_dir / f"cohort{args.n_genes}x{args.papers_per_gene}_{args.source}.jsonl"
+
+    # Opt-in D1 publish: bring up the harvested_paper table once at start,
+    # then per-gene push happens after each JSONL write below. If creds
+    # aren't set we soft-skip rather than failing — JSONL output is the
+    # canonical artifact; D1 is an analytics convenience.
+    d1_publish_enabled = bool(args.d1_run_id)
+    if d1_publish_enabled:
+        try:
+            ensure_harvested_paper_schema()
+            print(f"D1 publish: enabled, run_id={args.d1_run_id}", flush=True)
+        except Exception as exc:  # noqa: BLE001
+            import sys
+            print(
+                f"D1 publish: DISABLED — schema bring-up failed ({type(exc).__name__}: {exc}). "
+                f"Probe will continue, JSONL output unaffected.",
+                file=sys.stderr, flush=True,
+            )
+            d1_publish_enabled = False
+
+    def _push_to_d1(row: dict) -> None:
+        """Best-effort: convert one gene row → HarvestedPaper × N, push to D1.
+        Never raises — D1 mishaps are logged and swallowed so the probe
+        keeps progressing."""
+        if not d1_publish_enabled:
+            return
+        papers = _harvested_papers_from_gene_row(
+            row, run_id=args.d1_run_id, source=f"probe_{args.source}",
+        )
+        if not papers:
+            return
+        try:
+            publish_harvested_papers(papers)
+        except Exception as exc:  # noqa: BLE001
+            import sys
+            print(
+                f"  D1 publish failed for {row.get('gene')}: {type(exc).__name__}: {exc}",
+                file=sys.stderr, flush=True,
+            )
 
     # Resume: skip genes already in the output file
     done = load_existing_genes(out_path)
@@ -499,6 +595,7 @@ def main():
                     row.pop("_status", None)
                     out_f.write(json.dumps(row) + "\n")
                     out_f.flush()
+                    _push_to_d1(row)
                     if status == "ok":
                         c = Counter(p["bucket"] for p in row["papers"])
                         print(f"  [{i+1:3d}/{total}] {sym}: {row['n_avail']} avail, "
@@ -519,6 +616,7 @@ def main():
                                 row.pop("_status", None)
                                 out_f.write(json.dumps(row) + "\n")
                                 out_f.flush()
+                                _push_to_d1(row)
                             if row is None:
                                 print(f"  [{completed:3d}/{total}] {sym}: {status}", flush=True)
                             elif status == "ok":
