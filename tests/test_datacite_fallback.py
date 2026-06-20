@@ -324,6 +324,108 @@ def test_arxiv_pdf_url_from_doi_non_arxiv_returns_none() -> None:
     assert _arxiv_pdf_url_from_doi("") is None
 
 
+# ---------------------------------------------------------------------------
+# ar5iv HTML resolver (preferred over PDF when ar5iv has converted the paper)
+# ---------------------------------------------------------------------------
+
+
+_AR5IV_REAL = (
+    '<!DOCTYPE html><html><body>'
+    '<article class="ltx_document">'
+    '<section class="ltx_section" id="S1">'
+    '<h2 class="ltx_title ltx_title_section">1 Introduction</h2>'
+    '<div class="ltx_para"><p class="ltx_p">Surfaceome biology has expanded.</p></div>'
+    '</section>'
+    '<section class="ltx_section" id="S2">'
+    '<h2 class="ltx_title ltx_title_section">2 Results</h2>'
+    '<div class="ltx_para"><p class="ltx_p">CD20 was biotinylated at the surface.</p></div>'
+    '</section>'
+    '</article>'
+    '</body></html>'
+)
+_AR5IV_STUB = (
+    '<!DOCTYPE html><html><body>'
+    '<article class="ltx_document">'
+    '<div class="ltx_para">Paper not converted.</div>'
+    '</article>'
+    '</body></html>'
+)
+
+
+def test_ar5iv_parser_returns_sections_for_well_formed_html() -> None:
+    from accessible_surfaceome.agents.plan_trim_select.abstract_triage import (
+        _fetch_arxiv_html_sections,
+    )
+    class _FakeHTTP:
+        def __init__(self, body: str) -> None:
+            self._body = body
+            self.calls = 0
+        def get_text(self, url: str, **_: Any) -> str:
+            self.calls += 1
+            return self._body
+    http = _FakeHTTP(_AR5IV_REAL)
+    sections = _fetch_arxiv_html_sections("2510.17752", http=cast(Any, http))
+    assert sections is not None
+    assert len(sections) == 2
+    # Heading→SectionName normalization shares pdf_parse's _HEADING_TO_SECTION
+    # so "1 Introduction" → "intro" and "2 Results" → "results".
+    assert sections[0].name == "intro"
+    assert "Surfaceome" in sections[0].text
+    assert sections[1].name == "results"
+    assert "biotinylated" in sections[1].text
+
+
+def test_ar5iv_parser_returns_none_for_stub_page() -> None:
+    from accessible_surfaceome.agents.plan_trim_select.abstract_triage import (
+        _fetch_arxiv_html_sections,
+    )
+    class _FakeHTTP:
+        def get_text(self, url: str, **_: Any) -> str:
+            return _AR5IV_STUB
+    sections = _fetch_arxiv_html_sections("2510.17752", http=cast(Any, _FakeHTTP()))
+    assert sections is None, "stub page (no ltx_section) must return None"
+
+
+def test_ar5iv_parser_returns_none_on_fetch_failure() -> None:
+    from accessible_surfaceome.agents.plan_trim_select.abstract_triage import (
+        _fetch_arxiv_html_sections,
+    )
+    class _FakeHTTP:
+        def get_text(self, url: str, **_: Any) -> str:
+            raise RuntimeError("ar5iv 404")
+    sections = _fetch_arxiv_html_sections("2510.17752", http=cast(Any, _FakeHTTP()))
+    assert sections is None
+
+
+def test_arxiv_html_short_circuits_before_pdf(monkeypatch) -> None:
+    """When ar5iv returns clean sections, the chain returns immediately
+    without fetching the PDF (cheaper and cleaner sections)."""
+    # parse_pdf_to_sections wouldn't be called on the HTML path, but
+    # monkeypatch it anyway to a flag we can assert.
+    pdf_called = {"n": 0}
+    def _parse_pdf(_b: bytes):
+        pdf_called["n"] += 1
+        return [_BODY_SECTION]
+    monkeypatch.setattr(abstract_triage, "parse_pdf_to_sections", _parse_pdf)
+    monkeypatch.setattr(abstract_triage, "_lookup_pmcid_for_pmid", lambda *_a, **_k: None)
+    http = _RoutedHTTP(
+        datacite_json=None,
+        unpaywall_json=None,
+        landing_html=_AR5IV_REAL,   # served for any get_text — ar5iv URL hits this
+        pdf_bytes=b"%PDF-1.4 should not be fetched",
+    )
+    paper = _paper(doi="10.48550/arxiv.2510.17752", pmid=0, pmc_id=None)
+    result = _fetch_body_drafts(paper, http=cast(Any, http), retraction_index=cast(Any, None))
+    assert isinstance(result, _BodyFetch)
+    assert result.source == "datacite_pdf"
+    assert result.drafts
+    bytes_calls = [u for kind, u in http.calls if kind == "bytes"]
+    assert bytes_calls == [], (
+        f"PDF must NOT be fetched when ar5iv HTML succeeds, got: {bytes_calls}"
+    )
+    assert pdf_called["n"] == 0
+
+
 def test_arxiv_shortcut_skips_datacite_on_success(monkeypatch) -> None:
     """The arXiv shortcut must short-circuit before DataCite metadata
     + landing-page fetches when the deterministic URL works. Measured
@@ -348,8 +450,12 @@ def test_arxiv_shortcut_skips_datacite_on_success(monkeypatch) -> None:
     assert not any("api.datacite.org" in u for u in json_calls), (
         f"DataCite should be skipped on arXiv success, got json calls: {json_calls}"
     )
-    assert text_calls == [], (
-        f"landing page should be skipped on arXiv success, got: {text_calls}"
+    # ar5iv text call is allowed (the HTML resolver tries it first) — the
+    # important assert is that no DataCite landing call (thestacks.org etc.)
+    # happened. ar5iv returns nothing here (landing_html=None) so we fall
+    # through to the PDF.
+    assert all("ar5iv" in u for u in text_calls), (
+        f"only ar5iv text calls allowed on arXiv path, got: {text_calls}"
     )
     assert bytes_calls == ["https://arxiv.org/pdf/2510.17752"], (
         f"expected single arxiv PDF call, got: {bytes_calls}"
