@@ -280,6 +280,48 @@ def test_chain_falls_through_to_datacite_when_unpaywall_misses(monkeypatch) -> N
     assert result.drafts
 
 
+def test_chain_resolves_arxiv_doi_with_no_pmid_no_pmcid(monkeypatch) -> None:
+    """Regression for the ``source_id == "UNKNOWN"`` bail-out.
+
+    A DataCite-routed arXiv preprint typically arrives as ``Paper(pmid=0,
+    pmc_id=None, doi="10.48550/arxiv.X")``. Before the ``paper_source_id``
+    DOI fallback, the resolver bailed out at its ``source_id !=
+    "UNKNOWN"`` guard and the chain raised, silently masking arXiv as
+    unreachable. Lock that in: a DOI-only paper now reaches the DataCite
+    tier and returns ``source="datacite_pdf"``.
+    """
+    monkeypatch.setattr(abstract_triage, "parse_pdf_to_sections", lambda _b: [_BODY_SECTION])
+    monkeypatch.setattr(abstract_triage, "_lookup_pmcid_for_pmid", lambda *_a, **_k: None)
+    arxiv_doi = "10.48550/arxiv.2510.17752"
+    arxiv_datacite = {
+        "data": {
+            "attributes": {
+                "url": f"https://arxiv.org/abs/{arxiv_doi.removeprefix('10.48550/arxiv.')}",
+                "contentUrl": None,
+                "rightsList": [],
+            }
+        }
+    }
+    arxiv_landing = (
+        '<html><head>'
+        '<meta name="citation_pdf_url" '
+        'content="https://arxiv.org/pdf/2510.17752"/>'
+        '</head><body>...</body></html>'
+    )
+    http = _RoutedHTTP(
+        datacite_json=arxiv_datacite,
+        unpaywall_json=None,  # arXiv DOIs 404 in Unpaywall
+        landing_html=arxiv_landing,
+        pdf_bytes=b"%PDF-1.4 arxiv body",
+    )
+    paper = _paper(doi=arxiv_doi, pmid=0, pmc_id=None)
+    assert abstract_triage.paper_source_id(paper) == f"DOI:{arxiv_doi}"
+    result = _fetch_body_drafts(paper, http=cast(Any, http), retraction_index=cast(Any, None))
+    assert isinstance(result, _BodyFetch)
+    assert result.source == "datacite_pdf"
+    assert result.drafts
+
+
 def test_unpaywall_success_does_not_reach_datacite(monkeypatch) -> None:
     # When Unpaywall returns a workable PDF we must not also query DataCite
     # — order matters for both latency and DataCite politeness.
