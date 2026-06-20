@@ -564,7 +564,7 @@ production	ZNF783	38590435	PMC10999490	10.1016/j.ncrna.2024.02.017	2024	pmc	Prof
 production	ZNF783	31856708	PMC6923878	10.1186/s12860-019-0243-y	2019	pmc	"DUF3669, a ""domain of unknown function"" within ZNF746 and ZNF777, oligomerizes and contributes to tr"
 production	ZNF783	32196466	PMC8687405	10.1049/iet-syb.2019.0074	2020	pmc	Network-based computational approach to identify genetic links between cardiomyopathy and its risk f
 production	ZNF783	40216826	PMC11992089	10.1038/s41598-025-95663-x	2025	pmc	TLR4 identified as a major depressive disorder gene signature mediating effects through multiple imm
-production	ZNF783	24653623	PMC3937760	10.3978/j.issn.1000-9604.2014.01.01	2014	no_oa	MiR-182 is up-regulated and targeting Cebpa in hepatocellular carcinoma
+production	ZNF783	24653623	PMC3937760	10.3978/j.issn.1000-9604.2014.01.01	2014	datacite_oa_repo	MiR-182 is up-regulated and targeting Cebpa in hepatocellular carcinoma
 production	ZNF783	11181995		10.1126/science.1058040	2001	no_oa	The sequence of the human genome
 production	ZNF783	19413330		10.1021/ac9004309	2009	no_oa	Lys-N and trypsin cover complementary parts of the phosphoproteome in a refined SCX-based approach
 production	ZNF783	41663970	PMC12983607	10.1186/s12872-026-05533-1	2026	pmc	Unraveling key genes and mitochondrial-related mechanisms of atherosclerosis severity: explorations 
@@ -1015,7 +1015,7 @@ openalex	TMEM218			10.1183/13993003.congress-2024.pa358	2024	no_oa	Blood neutrop
 openalex	TMEM218			10.1183/13993003.congress-2023.pa2344	2023	no_oa	Plasma inflammatory proteins and transcriptome profiles of neutrophils in COPD patients with PiMM an
 openalex	OR4F16	24587374		10.1371/journal.pone.0090482	2014	pmc	Transcriptomic Profile Reveals Gender-Specific Molecular Mechanisms Driving Multiple Sclerosis Progr
 openalex	OR4F16	37686047		10.3390/ijms241713242	2023	pmc	Multi-Omics Analysis of NCI-60 Cell Line Data Reveals Novel Metabolic Processes Linked with Resistan
-openalex	OR4F16			10.15083/0002009503	2022	no_oa	人類集団における嗅覚受容体多重遺伝子族の遺伝的多様性
+openalex	OR4F16			10.15083/0002009503	2022	datacite_oa_repo	人類集団における嗅覚受容体多重遺伝子族の遺伝的多様性
 openalex	OR4F16			10.1101/771261	2019	bot_blocked	Seeing cells smell: Dynamic optical measurements of Ca <sup>2+</sup> and cAMP signaling from Olfacto
 openalex	OR4F16	23417401		10.1387/ijdb.120230ja	2012	unpaywall	Comparative molecular portraits of human unfertilized oocytes and primordial germ cells at 10 weeks 
 openalex	OR4F16	34660269		10.3389/fonc.2021.699401	2021	pmc	Biliary Strictures and Cholangiocarcinoma – Untangling a Diagnostic Conundrum
@@ -1029,7 +1029,7 @@ openalex	TMEM163			10.1007/s44371-026-00674-w	2026	no_oa	Computational design an
 openalex	TMEM163	38022316		10.7759/cureus.47225	2023	pmc	Early Mortality in Paroxysmal Nocturnal Hemoglobinuria
 openalex	TMEM163			10.15292/geodetski-vestnik.2015.04.789-808	2015	no_oa	Uporaba kode L2C za določitev uporabnikovega položaja
 openalex	TMEM163	1206631		10.1530/jrf.0.0450349	1975	no_oa	EFFECTS OF MATERNAL BLOOD LOSS ON EMBRYONIC AND PLACENTAL DEVELOPMENT IN THE RAT
-openalex	TMEM163			10.26190/unsworks/706	2007	no_oa	Cross correlation mitigation techniques for software GPS C/A code receivers
+openalex	TMEM163			10.26190/unsworks/706	2007	datacite_oa_repo	Cross correlation mitigation techniques for software GPS C/A code receivers
 openalex	TMEM163			10.20944/preprints202012.0501.v1	2020	no_oa	Transmembrane 163 (TMEM163) Protein: A New Member of the Zinc Efflux Transporter Family
 openalex	TMEM163			10.1016/j.jaci.2008.12.543	2009	no_oa	Bacterial Biofilms Induce Neutrophil and B Cell Recruitment As Well As Up-regulation of IL-8 In Pati
 openalex	TMEM163			10.53555/ajbr.v27i3.4952	2024	no_oa	Antibiotic resistance pattern and characterisation of Campylobacter species among stool samples in d
@@ -1038,7 +1038,7 @@ openalex	GPR15LG			10.3386/w5053	1995	no_oa	The Incidence of Payroll Taxation: E
 openalex	GPR15LG			10.1002/app.45058	2017	no_oa	Preparation and properties of cotton stalk bark fibers using combined steam explosion and laccase tr
 openalex	GPR15LG	38011564		10.1073/pnas.2315096120	2023	pmc	Epigenetic switch reshapes epithelial progenitor cell signatures and drives inflammatory pathogenesi
 openalex	GPR15LG	38149752		10.1111/iwj.14447	2023	pmc	Molecular characterization of chronic cutaneous wounds reveals subregion‐ and wound type‐specific di
-openalex	GPR15LG			10.5281/zenodo.6451649	1970	no_oa	Fluoborates : Part II. Trihydroxymonofluoborates
+openalex	GPR15LG			10.5281/zenodo.6451649	1970	datacite_oa_repo	Fluoborates : Part II. Trihydroxymonofluoborates
 openalex	GPR15LG			10.1080/21663831.2023.2294882	2023	no_oa	MXene-based nanomaterials for antibacterial and wound healing
 openalex	GPR15LG			10.5327/jbg-0368-1416-2022132s1054	2022	no_oa	Análise dos fatores de risco para Apgar &lt;7 no 5º minuto nos últimos 20 anos
 openalex	GPR15LG			10.1016/j.nima.2017.12.058	2017	no_oa	Measurements and FLUKA simulations of bismuth and aluminium activation at the CERN Shielding Benchma
@@ -1075,7 +1075,7 @@ openalex	TRPV2	33793360		10.1080/09273948.2021.1873394	2021	no_oa	More Accurate 
 openalex	TRPV2	35875096		10.3389/fonc.2022.941283	2022	pmc	Comprehensive Analysis of TRP Channel–Related Genes in Patients With Triple-Negative Breast Cancer f
 openalex	TM9SF1	40792368		10.17085/apm.25207	2025	pmc	Enhanced accuracy in gravity-based intravenous infusion using pulse oximeter drop counting and measu
 openalex	TM9SF1	10375448		10.1006/exer.1999.0670	1999	no_oa	Gap Junctions Containing α8-Connexin (MP70) in the Adult Mammalian Lens Epithelium Suggests a Re-eva
-openalex	TM9SF1			10.48550/arxiv.2510.17752	2025	no_oa	Pattern Matching under Weighted Edit Distance
+openalex	TM9SF1			10.48550/arxiv.2510.17752	2025	datacite_oa_repo	Pattern Matching under Weighted Edit Distance
 openalex	TM9SF1	38474655		10.3390/molecules29051143	2024	pmc	A Comparative Study of New Fluorescent Anthraquinone and Benzanthrone α-Aminophosphonates: Synthesis
 openalex	TM9SF1	15171789		10.1186/1478-811x-2-2	2004	pmc	7-Ketocholesterol modulates intercellular communication through gap-junction in bovine lens epitheli
 openalex	TM9SF1	16183816		10.1203/01.pdr.0000182579.52820.c3	2005	no_oa	Development of Cerebral Blood Flow Volume in Preterm Neonates during the First Two Weeks of Life
@@ -1090,7 +1090,7 @@ openalex	DRC4			10.7554/elife.105321.1.sa3	2025	no_oa	eLife Assessment: ANKRD5: 
 openalex	DRC4	39844999		10.1016/j.heliyon.2024.e41564	2024	pmc	Glypican-3 is a key tuner of the Hedgehog pathway in COPD
 openalex	DRC4			10.21203/rs.3.rs-153940/v1	2021	bot_blocked	Bioinformatic analysis and identification of potential hallmarks in poorly differentiated thyroid ca
 openalex	DRC4	31897174		10.3892/ol.2019.11141	2019	unpaywall	Genome‑wide analysis reveals the emerging roles of long non‑coding RNAs in cancer (Review)
-openalex	DRC4			10.18910/103169		no_oa	タンパクシツハイレツジョウホウヲカツヨウシタシアノバクテリアSynechocystis sp. PCC 6803ノタイシャカイヘンニカンスルケンキュウ
+openalex	DRC4			10.18910/103169		datacite_oa_repo	タンパクシツハイレツジョウホウヲカツヨウシタシアノバクテリアSynechocystis sp. PCC 6803ノタイシャカイヘンニカンスルケンキュウ
 openalex	DRC4	33442262		10.2147/ott.s280912	2021	pmc	Long Noncoding RNA CCDC144NL-AS1 Promotes the Oncogenicity of Osteosarcoma by Acting as a Molecular 
 openalex	DRC4	36873931		10.3389/fgene.2023.1117821	2023	pmc	Pathogenic gene variants in CCDC39, CCDC40, RSPH1, RSPH9, HYDIN, and SPEF2 cause defects of sperm fl
 openalex	TSPAN10	39459548		10.3390/life14101247	2024	pmc	Current Trends in Stroke Biomarkers: The Prognostic Role of S100 Calcium-Binding Protein B and Glial
@@ -1136,7 +1136,7 @@ openalex	GDPD4	26818676		10.1128/jcm.03022-15	2016	no_oa	Detecting Staphylococcu
 openalex	TMEM74	26648189		10.3892/ijo.2015.3186	2015	pmc	Inhibition of caspase-9 by oridonin, a diterpenoid isolated from Rabdosia rubescens, augments apopto
 openalex	TMEM74	31156698		10.3389/fgene.2019.00431	2019	pmc	Analyses of a Panel of Transcripts Identified From a Small Sample Size and Construction of RNA Netwo
 openalex	TMEM74			10.1158/0008-5472.22388415.v1	2023	no_oa	Supplementary Methods and Materials, Table 1 and Figures 1-3 from Autophagic Survival in Resistance 
-openalex	TMEM74			10.11588/heidok.00020506	2016	no_oa	High-confidence fusion gene detection in different tumor entities &amp; biomarker discovery in breas
+openalex	TMEM74			10.11588/heidok.00020506	2016	datacite_oa_repo	High-confidence fusion gene detection in different tumor entities &amp; biomarker discovery in breas
 openalex	TMEM74			10.21203/rs.3.rs-42552/v2	2021	bot_blocked	Identification of a novel six autophagy-related genes signature for the prognostic and a miRNA-relat
 openalex	TMEM74			10.32604/cmc.2023.038625	2023	no_oa	A New Hybrid Model for Segmentation of the Skin Lesion Based on Residual Attention U-Net
 openalex	TMEM74	34691238		10.1155/2021/5770228	2021	pmc	An Autophagy-Related Gene-Based Prognostic Risk Signature for Hepatocellular Carcinoma: Construction
@@ -1149,7 +1149,7 @@ openalex	PICALM	25538019		10.1002/cncr.29161	2014	pmc	Phase 2 multi‐institutio
 openalex	PICALM			10.1115/1.3445400	1971	no_oa	Acceleration Performance Analysis of a Gas Turbine Destroyer Escort
 openalex	PICALM	10985965		10.1053/plac.2000.0564	2000	no_oa	Immunoaffinity Purification and Characterization of Native Placental Leucine Aminopeptidase/oxytocin
 openalex	PICALM	19017375		10.1186/1477-7827-6-53	2008	pmc	Toll-like receptor and antimicrobial peptide expression in the bovine endometrium
-openalex	PICALM			10.5281/zenodo.20550491	2026	no_oa	தயன பலமறநத சலலமன | Like a Weaned Child | Album 34 Song 1
+openalex	PICALM			10.5281/zenodo.20550491	2026	datacite_oa_repo	தயன பலமறநத சலலமன | Like a Weaned Child | Album 34 Song 1
 openalex	PICALM	31149046		10.7150/thno.30254	2019	pmc	Human LAP<sup>+</sup>GARP<sup>+</sup>FOXP3<sup>+</sup> regulatory T cells attenuate xenogeneic graft
 openalex	PICALM	22181049		10.1021/pr201030m	2011	no_oa	Low Plasma Albumin Levels Are Associated with Increased Plasma Protein Glycation and HbA1c in Diabet
 openalex	PICALM			10.1016/j.ijadhadh.2015.12.023	2015	no_oa	Effect of surface treatment on the shear strength of aluminium adhesive single-lap joints for automo
@@ -1233,13 +1233,13 @@ openalex	IL1R2	24665164		10.1155/2014/472625	2014	pmc	Interleukin-1 Receptors Ar
 openalex	IL1R2	38605970		10.3389/fimmu.2024.1331846	2024	pmc	Deciphering the developmental trajectory of tissue-resident Foxp3+ regulatory T cells
 openalex	IL1R2			10.1002/ejhf.1482	2019	no_oa	The Clinical Significance of Interleukin-6 in Heart Failure: Results from the BIOSTAT-CHF Study
 openalex	IL1R2	33403810		10.1002/ehf2.13184	2021	pmc	Plasma Proteoglycan Prolargin in Diagnosis and Differentiation of Pulmonary Arterial Hypertension
-openalex	C19orf38			10.1594/essr2013/p-0136	2013	no_oa	Percutaneous CT guided RF ablation of Osteoid osteomas: our nine-year experience.
+openalex	C19orf38			10.1594/essr2013/p-0136	2013	datacite_oa_repo	Percutaneous CT guided RF ablation of Osteoid osteomas: our nine-year experience.
 openalex	C19orf38			10.1007/978-3-030-92124-8_14	2021	no_oa	Translation of CCS into CSP, Correct up to Strong Bisimulation
 openalex	C19orf38			10.21236/ada196047	1988	no_oa	I/O Automata: A Model for Discrete Event Systems
 openalex	C19orf38	25741722		10.1016/j.neuron.2015.02.022	2015	pmc	Transgenic Mice for Intersectional Targeting of Neural Sensors and Effectors with High Specificity a
 openalex	C19orf38			10.55753/aev.v39e56.287	2024	no_oa	HBK 2255 con Building Acoustics Partner
 openalex	C19orf38			10.55753/aev.v39e56.282	2024	no_oa	HBK 2255 with Building Acoustics Partner
-openalex	C19orf38			10.48550/arxiv.2510.07162	2025	no_oa	MIPco=coRE
+openalex	C19orf38			10.48550/arxiv.2510.07162	2025	datacite_oa_repo	MIPco=coRE
 openalex	C19orf38			10.1201/9781420011746.ch31	2007	no_oa	Process-Algebraic Analysis of Timing and Schedulability Properties
 openalex	C19orf38			10.54844/ep.2025.0969	2025	no_oa	Typical cases and implications of enhanced publishing on chemistry publishing platforms
 openalex	C19orf38			10.21463/shima.133	2021	no_oa	“Distinct Characters of Their Own”: Mermaids in late 19th-mid 20th Century Australian children’s fic
@@ -1265,7 +1265,7 @@ openalex	PMP22	25954931		10.1371/journal.pone.0120447	2015	pmc	Mechanisms of Int
 openalex	PMP22	27431093		10.1016/j.nbd.2016.07.017	2016	no_oa	Tolerability and efficacy study of P2X7 inhibition in experimental Charcot-Marie-Tooth type 1A (CMT1
 openalex	ERVK-6	36428242		10.1002/jmv.28350	2022	pmc	Human endogenous retroviruses in cancer: Oncogenesis mechanisms and clinical implications
 openalex	ERVK-6	34830279		10.3390/ijms222212398	2021	pmc	A Comprehensive Analysis of Human Endogenous Retroviruses HERV-K (HML.2) from Teratocarcinoma Cell L
-openalex	ERVK-6			10.22028/d291-21025	2008	no_oa	Verbreitung der humanan endogenen Retroviren HERV-K113 und HERV-K115 in der menschlichen Population
+openalex	ERVK-6			10.22028/d291-21025	2008	datacite_oa_repo	Verbreitung der humanan endogenen Retroviren HERV-K113 und HERV-K115 in der menschlichen Population
 openalex	ERVK-6	38677181		10.1016/j.ebiom.2024.105133	2024	pmc	Endogenous retroelement expression in the gut microenvironment of people living with HIV-1
 openalex	ERVK-6	34778024		10.3389/fonc.2021.687631	2021	pmc	Viral Causality of Human Cancer and Potential Roles of Human Endogenous Retroviruses in the Multi-Om
 openalex	ERVK-6	28088235		10.1186/s12985-016-0667-3	2017	pmc	The sense behind retroviral anti-sense transcription
@@ -1407,7 +1407,7 @@ openalex	OR2W6P	37988718		10.1080/07853890.2023.2281658	2023	pmc	Integrated anal
 openalex	OR2W6P	23974053		10.1016/j.humimm.2013.08.005	2013	no_oa	Absence of strong linkage disequilibrium between odorant receptor alleles and the major histocompati
 openalex	OR2W6P	37391117		10.1016/j.biopsych.2023.06.022	2023	pmc	The Genetic Architecture of Amygdala Nuclei
 openalex	OR2W6P	34008756		10.1590/1414-431x2020e10612	2021	pmc	Prognostic implications of immune-related eight-gene signature in pediatric brain tumors
-openalex	OR2W6P			10.6084/m9.figshare.19962676	2022	no_oa	Prognostic implications of immune-related eight-gene signature in pediatric brain tumors
+openalex	OR2W6P			10.6084/m9.figshare.19962676	2022	datacite_oa_repo	Prognostic implications of immune-related eight-gene signature in pediatric brain tumors
 openalex	ATP7B	18390594		10.1105/tpc.107.056507	2008	no_oa	β-AMYLASE4, a Noncatalytic Protein Required for Starch Breakdown, Acts Upstream of Three Active β-Am
 openalex	ATP7B	19296535		10.1002/ijc.24273	2009	bot_blocked	Increased levels of copper efflux transporter ATP7B are associated with poor outcome in colorectal c
 openalex	ATP7B	37027943		10.1016/j.ecoenv.2023.114861	2023	no_oa	Lead exposure disturbs ATP7B-mediated copper export from brain barrier cells by inhibiting XIAP-regu
@@ -1419,7 +1419,7 @@ openalex	ATP7B	20103563		10.1124/pr.109.002014	2010	no_oa	Xenobiotic, Bile Acid,
 openalex	ATP7B	38599595		10.1002/biof.2052	2024	bot_blocked	<scp>SP1/CTR1</scp> ‐mediated oxidative stress‐induced cuproptosis in intervertebral disc degenerati
 openalex	ATP7B	10416363		10.1111/j.1439-0450.1999.tb01234.x	1999	bot_blocked	The Effect of Experimental Infectious Mastitis on Leukocyte Subpopulations and Cytokine Production i
 openalex	SLC16A6			10.1016/j.lwt.2024.116255	2024	no_oa	Novel milk fat fractions for health and functionality obtained by short-path distillation
-openalex	SLC16A6			10.7302/7346	2023	no_oa	The 20 Kilodalton Isoform of Connexin 43: A Multifaceted Contributor to Cerebral Cavernous Malformat
+openalex	SLC16A6			10.7302/7346	2023	datacite_oa_repo	The 20 Kilodalton Isoform of Connexin 43: A Multifaceted Contributor to Cerebral Cavernous Malformat
 openalex	SLC16A6	28283079		10.1016/j.tvjl.2017.02.001	2017	no_oa	Molecular investigation of the direct anti-tumour effects of nonsteroidal anti-inflammatory drugs in
 openalex	SLC16A6	40401642		10.1242/dmm.052307	2025	pmc	Functional characterization of a human epilepsy-associated gene network reveals metabolic regulation
 openalex	SLC16A6	39221175		10.1177/11795972241277081	2024	pmc	Deep Learning Prediction of Inflammatory Inducing Protein Coding mRNA in P. gingivalis Released Oute
@@ -1429,7 +1429,7 @@ openalex	SLC16A6	39975097		10.1101/2025.01.30.635593	2025	pmc	Uncovering causal 
 openalex	SLC16A6			10.21203/rs.3.rs-7513060/v1	2025	bot_blocked	Investigating the Mechanisms of Lactulose on Gut Health and Uric Acid Metabolism in Geese via Transc
 openalex	SLC16A6			10.30970/sbi.1701.703	2023	no_oa	Lactic acid as a systemic product and biomarker of physical load
 openalex	NCKAP5			10.1101/2022.03.22.485367	2022	bot_blocked	Marked regional glial heterogeneity in the human white matter of the central nervous system
-openalex	NCKAP5			10.11588/heidok.00014645	2013	no_oa	Impact of drought stress on the sulfur assimilation pathway in Zea mays
+openalex	NCKAP5			10.11588/heidok.00014645	2013	datacite_oa_repo	Impact of drought stress on the sulfur assimilation pathway in Zea mays
 openalex	NCKAP5	35116056		10.3389/fgene.2021.805656	2022	pmc	Computational Prediction of the Pathogenic Status of Cancer-Specific Somatic Variants
 openalex	NCKAP5			10.30574/wjarr.2023.17.2.20200335	2023	no_oa	Advances in the pathogenesis of Alzheimer’s disease: A re-evaluation of the Amyloid cascade hypothes
 openalex	NCKAP5	30390299		10.1111/anae.14456	2018	bot_blocked	Taking on <scp>TIVA</scp> . Why we need guidelines on total intravenous anaesthesia
@@ -1487,7 +1487,7 @@ openalex	TUB	18081423		10.1371/journal.pgen.0030199	2007	pmc	Lessons from “Low
 openalex	TUB	42237000		10.1007/s10815-026-03925-y	2026	unpaywall	Metabolomic alterations in follicular fluid across female infertility conditions in IVF: a systemati
 openalex	TUB	35264151		10.1186/s12915-022-01245-y	2022	pmc	Ubiquitylation is required for the incorporation of the Notch receptor into intraluminal vesicles to
 openalex	TUB	8543926		10.1677/joe.0.1470553	1995	no_oa	Menstrual cycle specific expression of epidermal growth factor receptors in human fallopian tube epi
-openalex	TUB			10.5281/zenodo.20531133	2026	no_oa	BO'LAJAK BOSHLANG'ICH SINF O'QITUVCHILARINING BILIMINI BAHOLASHNING DIDAKTIK IMKONIYATLARI
+openalex	TUB			10.5281/zenodo.20531133	2026	datacite_oa_repo	BO'LAJAK BOSHLANG'ICH SINF O'QITUVCHILARINING BILIMINI BAHOLASHNING DIDAKTIK IMKONIYATLARI
 openalex	KCNC2	26879527		10.1038/srep21198	2016	pmc	Detecting signatures of positive selection associated with musical aptitude in the human genome
 openalex	KCNC2	41707784		10.1016/j.neuropharm.2026.110883	2026	pmc	Mediodorsal thalamus of alcohol-dependent mice shows genetic and physiological adaptations and alcoh
 openalex	KCNC2	11281123		10.1111/j.1469-7793.2001.0345k.x	2001	no_oa	Modulation of Kv3 potassium channels expressed in CHO cells by a nitric oxide‐activated phosphatase
@@ -1529,7 +1529,7 @@ openalex	KCNJ12	22363290		10.3389/fphys.2012.00009	2012	pmc	Experimental Mapping
 openalex	KCNJ12	37863105		10.1146/annurev-physiol-042022-030946	2023	pmc	Mechanosensing by Vascular Endothelium
 openalex	KCNJ12	31726970		10.1186/s12864-019-6244-6	2019	pmc	Transcriptomic analysis of α-synuclein knockdown after T3 spinal cord injury in rats
 openalex	KLRK1	37086273		10.1007/s00259-023-06211-6	2023	pmc	Fibroblast activation protein targeted radiotherapy induces an immunogenic tumor microenvironment an
-openalex	KLRK1			10.48550/arxiv.1209.2463	2012	no_oa	Weighted Khovanov-Lauda-Rouquier algebras
+openalex	KLRK1			10.48550/arxiv.1209.2463	2012	datacite_oa_repo	Weighted Khovanov-Lauda-Rouquier algebras
 openalex	KLRK1			10.1371/journal.pone.0020740	2011	no_oa	Clinical-Grade Generation of Active NK Cells from Cord Blood Hematopoietic Progenitor Cells for Immu
 openalex	KLRK1	40098719		10.2147/ijn.s497510	2025	pmc	Overcoming Biological Barriers in Cancer Therapy: Cell Membrane-Based Nanocarrier Strategies for Pre
 openalex	KLRK1	30539650		10.1152/ajprenal.00130.2018	2018	no_oa	“I don’t get no respect”: the role of chloride in acute kidney injury
@@ -1539,7 +1539,7 @@ openalex	KLRK1	22194210		10.4238/2011.december.14.10	2011	no_oa	Key pathways inv
 openalex	KLRK1	29380244		10.1007/s11010-018-3297-9	2018	no_oa	Immunological impact of Wharton’s Jelly mesenchymal stromal cells and natural killer cell co-culture
 openalex	KLRK1	32762681		10.1186/s12943-020-01238-x	2020	pmc	Natural killer cells in cancer biology and therapy
 openalex	ZNF783	27599611		10.1186/s12885-016-2755-6	2016	pmc	Genome-wide analyses of long noncoding RNA expression profiles correlated with radioresistance in na
-openalex	ZNF783			10.5283/epub.28629	2014	no_oa	Datenbank-gestützte molekularbiologische Analyse melanomrelevanter Gene
+openalex	ZNF783			10.5283/epub.28629	2014	datacite_oa_repo	Datenbank-gestützte molekularbiologische Analyse melanomrelevanter Gene
 openalex	ZNF783	37308980		10.1186/s13148-023-01508-7	2023	pmc	HepaClear, a blood-based panel combining novel methylated CpG sites and protein markers, for the det
 openalex	ZNF783	41663970		10.1186/s12872-026-05533-1	2026	pmc	Unraveling key genes and mitochondrial-related mechanisms of atherosclerosis severity: explorations 
 openalex	ZNF783	27459995		10.1186/s13256-016-0988-2	2016	pmc	Deletion 21q22.3 and duplication 7q35q36.3 in a Colombian girl: a case report
@@ -1566,7 +1566,7 @@ openalex	KCNA10	26988146		10.1038/srep23363	2016	pmc	Exploring regulatory networ
 openalex	KCNA10	29245898		10.18632/oncotarget.22104	2017	pmc	A novel small-molecule arylsulfonamide causes energetic stress and suppresses breast and lung tumor 
 openalex	KCNA10			10.1158/1538-7445.am2013-2743	2013	no_oa	Abstract 2743: Targeting Ewing sarcoma with a new small molecule binding to the EWS-FLI1 oncoprotein
 openalex	KCNA10	27760045		10.1172/jci85647	2016	unpaywall	Deficiency of base excision repair enzyme NEIL3 drives increased predisposition to autoimmunity
-openalex	KCNA10			10.13140/rg.2.2.36478.41283	2019	no_oa	Assessment of Utricular Nerve, Hair cell and Mechanical function, in vivo.
+openalex	KCNA10			10.13140/rg.2.2.36478.41283	2019	datacite_oa_repo	Assessment of Utricular Nerve, Hair cell and Mechanical function, in vivo.
 openalex	KCNA10	29307142		10.5808/gi.2017.15.4.156	2017	pmc	Classification of Genes Based on Age-Related Differential Expression in Breast Cancer
 openalex	NMUR1			10.1111/j.1467-8322.2007.00511.x	2007	no_oa	Towards mercenary anthropology? The new US Army counterinsurgency manual <i>FM 3–24</i> and the mili
 openalex	NMUR1	32731549		10.3390/molecules25153424	2020	pmc	The Secret Lives of Fluorescent Membrane Probes as Revealed by Molecular Dynamics Simulations
@@ -1740,7 +1740,7 @@ openalex	ITGAM	9590256		10.4049/jimmunol.160.10.5058	1998	no_oa	Functional Mappi
 openalex	ITGAM	10946284		10.4049/jimmunol.165.5.2574	2000	no_oa	Effect of Integrin β2 Subunit Truncations on LFA-1 (CD11a/CD18) and Mac-1 (CD11b/CD18) Assembly, Sur
 openalex	UTRN	30030364		10.1042/ebc20170104	2018	pmc	Mitochondrial dynamics: overview of molecular mechanisms
 openalex	UTRN	37873150		10.1101/2023.10.03.560745	2023	pmc	A DRP-like pseudoenzyme coordinates with MICOS to promote cristae architecture
-openalex	UTRN			10.48550/arxiv.2606.05798	2026	no_oa	Beyond Critical Minerals Targets: Digital Rock Physics as Infrastructure for Secure and Circular Sup
+openalex	UTRN			10.48550/arxiv.2606.05798	2026	datacite_oa_repo	Beyond Critical Minerals Targets: Digital Rock Physics as Infrastructure for Secure and Circular Sup
 openalex	UTRN	28117823		10.3791/54971	2017	no_oa	Using Scaffold Liposomes to Reconstitute Lipid-proximal Protein-protein Interactions &lt;em&gt;In Vi
 openalex	UTRN	31732717		10.1038/s41580-019-0180-9	2019	pmc	The functional universe of membrane contact sites
 openalex	UTRN	32108342		10.1002/jcp.29646	2020	no_oa	AKAP1 mediates high glucose‐induced mitochondrial fission through the phosphorylation of Drp1 in pod
@@ -1796,7 +1796,7 @@ openalex	KCNJ14			10.1002/j.2040-4603.2012.tb00406.x	2012	bot_blocked	Regulation
 openalex	KCNJ14	15958527		10.1152/ajpcell.00077.2005	2005	no_oa	Functional expression of Kir2.x in human aortic endothelial cells: the dominant role of Kir2.2
 openalex	KCNJ14			10.5772/intechopen.1009515	2025	no_oa	Potassium and the Digestion System: From Nutritional Requirements to Ion Channels
 openalex	KCNJ14	41601372		10.1113/jp289445	2026	pmc	Functional expression of inwardly rectifying and ATP‐sensitive potassium channels in human pulmonary
-openalex	KCNJ14			10.48550/arxiv.1508.04335	2015	no_oa	Conservation of Hamiltonian using Continuous Galerkin Petrov time discretization scheme
+openalex	KCNJ14			10.48550/arxiv.1508.04335	2015	datacite_oa_repo	Conservation of Hamiltonian using Continuous Galerkin Petrov time discretization scheme
 openalex	KCNJ14	31726970		10.1186/s12864-019-6244-6	2019	pmc	Transcriptomic analysis of α-synuclein knockdown after T3 spinal cord injury in rats
 openalex	SDIM1	38960140		10.1016/j.joca.2024.06.011	2024	unpaywall	Immunomodulation and fibroblast dynamics driving nociceptive joint pain within inflammatory synovium
 openalex	SDIM1			10.3390/genes9070338	2018	no_oa	Pain-Associated Transcriptome Changes in Synovium of Knee Osteoarthritis Patients
@@ -1820,7 +1820,7 @@ openalex	SLC61A1			10.11606/t.41.2019.tde-04022019-092804	2019	no_oa	Molecular d
 openalex	SLC61A1	22693426		10.1155/2012/475731	2012	pmc	Before It Gets Started: Regulating Translation at the 5′ UTR
 openalex	EREG	29227500		10.1039/c7nr04480a	2017	no_oa	Enhanced topical delivery of dexamethasone by β-cyclodextrin decorated thermoresponsive nanogels
 openalex	EREG	38862427		10.1093/gpbjnl/qzae001	2024	pmc	Q-BioLiP: A Comprehensive Resource for Quaternary Structure-based Protein–ligand Interactions
-openalex	EREG			10.5281/zenodo.20571795	2026	no_oa	The Yang Kai-Yuan Holographic Cosmic Awakening Hypothesis
+openalex	EREG			10.5281/zenodo.20571795	2026	datacite_oa_repo	The Yang Kai-Yuan Holographic Cosmic Awakening Hypothesis
 openalex	EREG	14695281		10.1016/s0006-3495(04)74115-6	2004	no_oa	Phosphorylation-Dependent Changes in Structure and Dynamics in ERK2 Detected by SDSL and EPR
 openalex	EREG	28654745		10.1021/acs.biomac.7b00464	2017	no_oa	Efficient Cancer Regression by a Thermosensitive Liposome for Photoacoustic Imaging-Guided Photother
 openalex	EREG	15280379		10.1074/jbc.m400086200	2004	bot_blocked	ADAM Binding Protein Eve-1 Is Required for Ectodomain Shedding of Epidermal Growth Factor Receptor L
@@ -1829,7 +1829,7 @@ openalex	EREG	10037719		10.1074/jbc.274.10.6305	1999	bot_blocked	Site-directed S
 openalex	EREG	22496362		10.1152/ajpregu.00054.2012	2012	no_oa	Exercise training prevents skeletal muscle afferent sensitization in rats with chronic heart failure
 openalex	EREG	11073863		10.1161/01.atv.20.11.e107	2000	bot_blocked	Factor Xa Activates Endothelial Cells by a Receptor Cascade Between EPR-1 and PAR-2
 openalex	OR2T3			10.1101/266981	2018	bot_blocked	Spatial Chromatin Architecture Alteration by Structural Variations in Human Genomes at Population Sc
-openalex	OR2T3	27122457		10.3760/cma.j.issn.0376-2491.2016.16.007	2016	no_oa	[Association between OR2T3 gene and pulmonary arterial hypertension].
+openalex	OR2T3	27122457		10.3760/cma.j.issn.0376-2491.2016.16.007	2016	datacite_oa_repo	[Association between OR2T3 gene and pulmonary arterial hypertension].
 openalex	OR2T3			10.1101/2022.10.10.511483	2022	bot_blocked	7q11.23 CNV alters protein synthesis and REST-mediated neuronal intrinsic excitability
 openalex	OR2T3	22373536		10.1186/1753-6561-5-s9-s106	2011	pmc	Association screening for genes with multiple potentially rare variants: an inverse-probability weig
 openalex	OR2T3	34580642		10.1155/2021/9991726	2021	pmc	Identification of Vital Hub Genes and Potential Molecular Pathways of Dermatomyositis by Bioinformat
@@ -1840,20 +1840,20 @@ openalex	OR2T3	29307142		10.5808/gi.2017.15.4.156	2017	pmc	Classification of Gen
 openalex	OR2T3			10.1158/1078-0432.22440147	2023	no_oa	Supplementary Data from Tiling Path Genomic Profiling of Grade 3 Invasive Ductal Breast Cancers
 openalex	VWCE	27505168		10.1371/journal.pone.0160791	2016	pmc	Natural Cubic Spline Regression Modeling Followed by Dynamic Network Reconstruction for the Identifi
 openalex	VWCE	26998037		10.3892/etm.2016.2998	2016	unpaywall	β-catenin knockdown inhibits the proliferation of human glioma cells in vitro and in vivo
-openalex	VWCE			10.5282/edoc.20526	2017	no_oa	Identification of gene association networks of the cellular radiation response from time-course tran
+openalex	VWCE			10.5282/edoc.20526	2017	datacite_oa_repo	Identification of gene association networks of the cellular radiation response from time-course tran
 openalex	VWCE			10.53846/goediss-5671	2016	no_oa	Analyse der differentiellen Genexpression von humanen Stro1-positiven Zellen aus pulpalem Zahnkeimge
 openalex	VWCE	37864185		10.1186/s10020-023-00734-2	2023	pmc	Mechanism of RhoA regulating benign prostatic hyperplasia: RhoA-ROCK-β-catenin signaling axis and st
 openalex	VWCE			10.21203/rs.3.rs-3572261/v1	2023	bot_blocked	Identification of somatic mutational landscape across Indian breast cancer cases by whole exome sequ
 openalex	VWCE	30864678		10.3892/ijmm.2019.4121	2019	pmc	URG11 promotes proliferation and induced apoptosis of LNCaP cells
 openalex	VWCE	41476084		10.1038/s41467-025-68037-0	2025	pmc	EatA mediated degradation of intestinal mucus is species-specific and driven by MUC2 structural feat
 openalex	VWCE	18694555		10.1016/j.devcel.2008.07.012	2008	no_oa	Intriguing Extracellular Regulation of BMP Signaling
-openalex	VWCE			10.5445/ir/1000098542	2011	no_oa	Nukleare Sicherheitsforschung. BMBF geförderte FuE-Vorhaben. Berichtszeitraum: 1. Januar - 30. Juni 
+openalex	VWCE			10.5445/ir/1000098542	2011	datacite_oa_repo	Nukleare Sicherheitsforschung. BMBF geförderte FuE-Vorhaben. Berichtszeitraum: 1. Januar - 30. Juni 
 openalex	FOLH1			10.1158/1538-7445.am2026-2855	2026	no_oa	Abstract 2855: Evaluation of 212Pb-PSMA radioligand therapy in an immunocompetent prostate cancer mo
 openalex	FOLH1	36499623		10.3390/ijms232315296	2022	pmc	Therapeutic Targeting of Glutaminolysis as a Novel Strategy to Combat Cancer Stem Cells
 openalex	FOLH1	24704079		10.1016/j.cub.2014.03.006	2014	pmc	Activation of the γ-Tubulin Complex by the Mto1/2 Complex
 openalex	FOLH1	23300168		10.1104/pp.112.204057	2013	unpaywall	Cortical Microtubule Arrays Are Initiated from a Nonrandom Prepattern Driven by Atypical Microtubule
 openalex	FOLH1	39521603		10.1016/bs.apha.2024.10.001	2024	pmc	Targeting glutamate carboxypeptidase II in IBD
-openalex	FOLH1			10.5281/zenodo.20101458	2026	no_oa	Quantifying Denervation Severity In Partially Denervated Muscles Using Glutamate Carboxypeptidase Ii
+openalex	FOLH1			10.5281/zenodo.20101458	2026	datacite_oa_repo	Quantifying Denervation Severity In Partially Denervated Muscles Using Glutamate Carboxypeptidase Ii
 openalex	FOLH1	32825017		10.3390/cancers12092335	2020	pmc	Proteomic Analysis of Exosomes for Discovery of Protein Biomarkers for Prostate and Bladder Cancer
 openalex	FOLH1			10.1007/bf00366274	1986	no_oa	A weighted occupation time for a class of measured-valued branching processes
 openalex	FOLH1	34668150		10.1007/s12031-021-01919-2	2021	pmc	Revelation of Pivotal Genes Pertinent to Alzheimer’s Pathogenesis: A Methodical Evaluation of 32 GEO
@@ -1889,7 +1889,7 @@ openalex	LRG1	23295687		10.1159/000342588	2012	no_oa	Inflammatory Bowel Disease:
 openalex	LRG1	40108892		10.1021/acs.jproteome.5c00010	2025	pmc	Metabolomics- and Proteomics-Based Disease Diagnostic Classifier Model for the Prediction and Diagno
 openalex	LRG1	38805257		10.7554/elife.91930	2023	pmc	ESAT-6 undergoes self-association at phagosomal pH and an ESAT-6-specific nanobody restricts M. tube
 openalex	LRRC32	36512226		10.1007/978-1-0716-2639-9_22	2022	pmc	Generation and Analysis of hTERT-RPE1 VPS54 Knock-Out and Rescued Cell Lines
-openalex	LRRC32			10.22024/unikent/01.02.90836	2021	no_oa	Biochemical Regulation of the Tim-3-Galectin-9 Immunosuppressive Pathway under Normal Conditions and
+openalex	LRRC32			10.22024/unikent/01.02.90836	2021	datacite_oa_repo	Biochemical Regulation of the Tim-3-Galectin-9 Immunosuppressive Pathway under Normal Conditions and
 openalex	LRRC32	27471721		10.2147/itt.s55415	2015	pmc	The role of regulatory T cells in cancer immunology
 openalex	LRRC32	36154923		10.1186/s40779-022-00414-y	2022	pmc	Recent developments in application of single-cell RNA sequencing in the tumour immune microenvironme
 openalex	LRRC32	32383480		10.1002/eji.201948270	2020	unpaywall	Harnessing proteases for T regulatory cell immunotherapy
@@ -1898,7 +1898,7 @@ openalex	LRRC32			10.1093/hmg/ddx400	2017	bot_blocked	Localization and functiona
 openalex	LRRC32	18790654		10.1016/j.joca.2008.07.012	2008	no_oa	Association of a nsSNP in ADAMTS14 to some osteoarthritis phenotypes
 openalex	LRRC32			10.1101/2020.09.14.297192	2020	bot_blocked	GP96 drives exacerbation of secondary bacterial pneumonia following influenza A virus infection
 openalex	LRRC32	25904740		10.1126/scitranslmed.aaa1983	2015	no_oa	Monoclonal antibodies against GARP/TGF-β1 complexes inhibit the immunosuppressive activity of human 
-openalex	CLEC5A			10.13130/petiti-luca_phd2015-07-01	2015	no_oa	NEXT-GENERATION SEQUENCING APPROACH FOR TRANSCRIPTOME AND EPIGENOME DEFINITION OF HUMAN HEMATOPOIETI
+openalex	CLEC5A			10.13130/petiti-luca_phd2015-07-01	2015	datacite_oa_repo	NEXT-GENERATION SEQUENCING APPROACH FOR TRANSCRIPTOME AND EPIGENOME DEFINITION OF HUMAN HEMATOPOIETI
 openalex	CLEC5A	35252461		10.1155/2022/9926305	2022	pmc	Activation of the Innate Immune Checkpoint CLEC5A on Myeloid Cells in the Absence of Danger Signals 
 openalex	CLEC5A	20137066		10.1186/1471-2164-11-90	2010	pmc	Transcriptional response of Burkholderia cenocepacia J2315 sessile cells to treatments with high dos
 openalex	CLEC5A	40896540		10.2147/jir.s523019	2025	pmc	Dysregulated Immune Responses in Sepsis: Insights From Treg-Related Gene Expression
@@ -1973,7 +1973,7 @@ openalex	SLC16A14	38166823		10.1186/s12876-023-03096-5	2024	pmc	Bile ductal muco
 openalex	SLC16A14			10.1158/1535-7163.22522599	2023	no_oa	Supplementary information from Durvalumab Combined with Immunomodulatory Drugs (IMiD) Overcomes Supp
 openalex	SLC16A14			10.1101/2020.03.06.980219	2020	bot_blocked	Establishment of a marine nematode model for animal functional genomics, environmental adaptation an
 openalex	SLC16A14	39611477		10.3892/ijmm.2024.5465	2024	pmc	Role of solute carrier transporters in ovarian cancer (Review)
-openalex	SLC16A14			10.17615/hnzk-nq19	2020	no_oa	Comprehensive analysis of The Cancer Genome Atlas reveals a unique gene and non-coding RNA signature
+openalex	SLC16A14			10.17615/hnzk-nq19	2020	datacite_oa_repo	Comprehensive analysis of The Cancer Genome Atlas reveals a unique gene and non-coding RNA signature
 openalex	SLC16A14	27189201		10.1177/1933719116648217	2016	no_oa	Differential Gene Expression in Menstrual Endometrium From Women With Self-Reported Heavy Menstrual 
 openalex	SLC16A14			10.4236/abb.2015.612071	2015	no_oa	MicroRNA-21, 204 and 125b Play Potential Roles in Tumorigenesis of Melanoma
 openalex	SLC16A14	30658649		10.1186/s12931-018-0968-8	2019	pmc	Modulation of blood inflammatory markers by benralizumab in patients with eosinophilic airway diseas
