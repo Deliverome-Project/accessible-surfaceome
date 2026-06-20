@@ -280,6 +280,117 @@ def test_chain_falls_through_to_datacite_when_unpaywall_misses(monkeypatch) -> N
     assert result.drafts
 
 
+# ---------------------------------------------------------------------------
+# arXiv DOI shortcut
+# ---------------------------------------------------------------------------
+
+
+def test_arxiv_pdf_url_from_doi_canonical() -> None:
+    from accessible_surfaceome.agents.plan_trim_select.abstract_triage import (
+        _arxiv_pdf_url_from_doi,
+    )
+    assert _arxiv_pdf_url_from_doi(
+        "10.48550/arxiv.2510.17752"
+    ) == "https://arxiv.org/pdf/2510.17752"
+
+
+def test_arxiv_pdf_url_from_doi_legacy_archive_format() -> None:
+    from accessible_surfaceome.agents.plan_trim_select.abstract_triage import (
+        _arxiv_pdf_url_from_doi,
+    )
+    # arXiv's pre-2015 IDs look like ``{archive}/{nnnnnnn}`` (e.g.
+    # ``cs/0501001``) — the DOI keeps the slash; arxiv.org/pdf accepts it.
+    assert _arxiv_pdf_url_from_doi(
+        "10.48550/arxiv.cs/0501001"
+    ) == "https://arxiv.org/pdf/cs/0501001"
+
+
+def test_arxiv_pdf_url_from_doi_uppercase_normalizes() -> None:
+    from accessible_surfaceome.agents.plan_trim_select.abstract_triage import (
+        _arxiv_pdf_url_from_doi,
+    )
+    assert _arxiv_pdf_url_from_doi(
+        "10.48550/ARXIV.2510.17752"
+    ) == "https://arxiv.org/pdf/2510.17752"
+
+
+def test_arxiv_pdf_url_from_doi_non_arxiv_returns_none() -> None:
+    from accessible_surfaceome.agents.plan_trim_select.abstract_triage import (
+        _arxiv_pdf_url_from_doi,
+    )
+    assert _arxiv_pdf_url_from_doi("10.5281/zenodo.6451649") is None
+    assert _arxiv_pdf_url_from_doi("10.1038/nature12373") is None
+    assert _arxiv_pdf_url_from_doi(None) is None
+    assert _arxiv_pdf_url_from_doi("") is None
+
+
+def test_arxiv_shortcut_skips_datacite_on_success(monkeypatch) -> None:
+    """The arXiv shortcut must short-circuit before DataCite metadata
+    + landing-page fetches when the deterministic URL works. Measured
+    by ``_RoutedHTTP.calls``: only the PDF call, no datacite.org / no
+    landing GET."""
+    monkeypatch.setattr(abstract_triage, "parse_pdf_to_sections", lambda _b: [_BODY_SECTION])
+    monkeypatch.setattr(abstract_triage, "_lookup_pmcid_for_pmid", lambda *_a, **_k: None)
+    http = _RoutedHTTP(
+        datacite_json=None,
+        unpaywall_json=None,
+        landing_html=None,
+        pdf_bytes=b"%PDF-1.4 arxiv body",
+    )
+    paper = _paper(doi="10.48550/arxiv.2510.17752", pmid=0, pmc_id=None)
+    result = _fetch_body_drafts(paper, http=cast(Any, http), retraction_index=cast(Any, None))
+    assert isinstance(result, _BodyFetch)
+    assert result.source == "datacite_pdf"
+    assert result.drafts
+    json_calls = [u for kind, u in http.calls if kind == "json"]
+    text_calls = [u for kind, u in http.calls if kind == "text"]
+    bytes_calls = [u for kind, u in http.calls if kind == "bytes"]
+    assert not any("api.datacite.org" in u for u in json_calls), (
+        f"DataCite should be skipped on arXiv success, got json calls: {json_calls}"
+    )
+    assert text_calls == [], (
+        f"landing page should be skipped on arXiv success, got: {text_calls}"
+    )
+    assert bytes_calls == ["https://arxiv.org/pdf/2510.17752"], (
+        f"expected single arxiv PDF call, got: {bytes_calls}"
+    )
+
+
+def test_arxiv_shortcut_falls_back_to_datacite_when_pdf_fails(monkeypatch) -> None:
+    """If arxiv.org returns no usable PDF (404, transient outage, parser
+    returns 0 sections), the chain must still try the standard DataCite
+    path. Otherwise an arxiv.org hiccup would mask a perfectly-fetchable
+    DataCite-routed copy."""
+    call_count = {"n": 0}
+    def _parse(_b: bytes) -> list[PaperSection]:
+        call_count["n"] += 1
+        # First parse (arxiv URL): pretend parse failed.
+        # Second parse (DataCite-derived URL): success.
+        return [] if call_count["n"] == 1 else [_BODY_SECTION]
+    monkeypatch.setattr(abstract_triage, "parse_pdf_to_sections", _parse)
+    monkeypatch.setattr(abstract_triage, "_lookup_pmcid_for_pmid", lambda *_a, **_k: None)
+    http = _RoutedHTTP(
+        datacite_json=_DATACITE_PAYLOAD,
+        unpaywall_json=None,
+        landing_html=_LANDING_HTML,
+        pdf_bytes=b"%PDF-1.4 some body",
+    )
+    paper = _paper(doi="10.48550/arxiv.2510.17752", pmid=0, pmc_id=None)
+    result = _fetch_body_drafts(paper, http=cast(Any, http), retraction_index=cast(Any, None))
+    assert isinstance(result, _BodyFetch)
+    assert result.source == "datacite_pdf"
+    assert result.drafts
+    json_calls = [u for kind, u in http.calls if kind == "json"]
+    text_calls = [u for kind, u in http.calls if kind == "text"]
+    bytes_calls = [u for kind, u in http.calls if kind == "bytes"]
+    assert any("api.datacite.org" in u for u in json_calls), (
+        f"DataCite must be tried as fallback when arXiv shortcut fails, got: {json_calls}"
+    )
+    assert text_calls, f"landing HTML must be fetched as fallback, got: {text_calls}"
+    assert "https://arxiv.org/pdf/2510.17752" in bytes_calls
+    assert len(bytes_calls) >= 2
+
+
 def test_chain_resolves_arxiv_doi_with_no_pmid_no_pmcid(monkeypatch) -> None:
     """Regression for the ``source_id == "UNKNOWN"`` bail-out.
 
