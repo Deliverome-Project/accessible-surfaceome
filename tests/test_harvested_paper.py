@@ -11,10 +11,7 @@ Covers:
 
 from __future__ import annotations
 
-from typing import Any
-
 import httpx
-import pytest
 
 from accessible_surfaceome.cloud.d1_client import D1Client, D1Config
 from accessible_surfaceome.cloud.harvested_paper import (
