@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import { useVirtualizer } from "@tanstack/react-virtual";
 import type {
   BenchmarkMatrix,
@@ -253,6 +253,34 @@ export function BenchmarkTable({
   });
   const virtualItems = virtualizer.getVirtualItems();
   const totalSize = virtualizer.getTotalSize();
+
+  // After expand/collapse, force the virtualizer's offsets to track the
+  // current DOM heights. react-virtual's built-in ResizeObserver should
+  // catch the row growing from one resting row (~42 px) to its expanded
+  // height (~220-335 px) and shift the subsequent rows' transformY
+  // down — but under React 19's concurrent commit, the notification
+  // sometimes lands a tick AFTER the expanded row has already painted,
+  // leaving the next row's transformY at the pre-expand offset. The
+  // visual effect: the expanded row's grid extends below the next row's
+  // position, and the next row paints ON TOP of the expanded content
+  // (later-in-source-order absolutely-positioned siblings win the
+  // stacking order). Reading offsetHeight here is the synchronous-layout
+  // checkpoint that forces the offset recompute before paint. Iterating
+  // every rendered row (not just the expanded one) also fixes the
+  // mirror-image bug where collapsing left a stale tall offset and the
+  // virtualizer never recovered the gap.
+  useLayoutEffect(() => {
+    const scrollEl = scrollRef.current;
+    if (!scrollEl) return;
+    const rows = scrollEl.querySelectorAll<HTMLElement>(
+      '[role="row"][data-index]',
+    );
+    rows.forEach((node) => {
+      const idx = Number(node.dataset.index);
+      if (Number.isNaN(idx)) return;
+      virtualizer.resizeItem(idx, node.offsetHeight);
+    });
+  }, [expandedRow, virtualizer]);
 
   const gridStyle: React.CSSProperties = {
     ["--bench-cols" as string]: GRID_TEMPLATE,
