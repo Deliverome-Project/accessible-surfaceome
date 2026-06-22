@@ -21,7 +21,6 @@ category-specific term lists should ship their own).
 from __future__ import annotations
 
 import logging
-import os
 import re
 import xml.etree.ElementTree as ET
 from collections.abc import Callable, Sequence
@@ -32,6 +31,7 @@ import httpx
 
 from .http import CachedHTTP
 from .models import Paper, PaperSection, PublicationType, TopicAnchor
+from .ncbi import add_ncbi_api_key_param
 from .retraction_watch import RetractionIndex
 
 logger = logging.getLogger(__name__)
@@ -248,11 +248,9 @@ def _fetch_fulltext_xml_ncbi(http: CachedHTTP, pmcid: str) -> str | None:
         "id": numeric,
         "rettype": "xml",
     }
-    api_key = os.environ.get("NCBI_API_KEY")
-    if api_key:
-        # NCBI lifts per-IP rate limit 3 -> 10 req/sec when an api_key is
-        # presented. Same convention as pubmed_lookup._with_ncbi_api_key.
-        params["api_key"] = api_key
+    # NCBI lifts the request cap when an api_key is presented. The helper
+    # rotates through NCBI_API_KEYS when a collaborator key pool is configured.
+    add_ncbi_api_key_param(params)
     try:
         xml_text = http.get_text(
             NCBI_PMC_EFETCH,

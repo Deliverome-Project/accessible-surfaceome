@@ -1,8 +1,8 @@
 """Load environment variables from the repo's ``.env`` at CLI entry.
 
 Why this exists: the CLI and the orchestrator both need access to secrets
-(``ANTHROPIC_API_KEY``, optional ``NCBI_API_KEY``) without baking them into the
-shell profile. We load ``.env`` from the repo root once, at the top of
+(``ANTHROPIC_API_KEY``, optional ``NCBI_API_KEYS`` / ``NCBI_API_KEY``)
+without baking them into the shell profile. We load ``.env`` from the repo root once, at the top of
 ``main()`` — never at module import time, per the project's coding-style rule
 ("Imports at the top; no side effects on import").
 

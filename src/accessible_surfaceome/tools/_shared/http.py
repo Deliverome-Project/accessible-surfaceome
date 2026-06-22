@@ -14,6 +14,7 @@ import threading
 import time
 from pathlib import Path
 from typing import Any
+from urllib.parse import urlencode, urlparse
 
 import httpx
 
@@ -26,6 +27,8 @@ DEFAULT_TIMEOUT = httpx.Timeout(connect=5.0, read=20.0, write=10.0, pool=5.0)
 # so the binary path (``get_bytes``) gets a longer read budget than DEFAULT_TIMEOUT.
 PDF_TIMEOUT = httpx.Timeout(connect=5.0, read=30.0, write=10.0, pool=5.0)
 RETRYABLE_STATUS = {408, 409, 425, 429, 500, 502, 503, 504}
+NCBI_EUTILS_HOST = "eutils.ncbi.nlm.nih.gov"
+NCBI_KEYED_INTERVAL_MS = 110.0  # ~9 qps/key, leaves headroom under NCBI's 10 qps/key cap
 
 
 class CachedHTTP:
@@ -128,10 +131,7 @@ class CachedHTTP:
         ``%PDF`` magic-byte check), since a 200 can still be an HTML paywall.
         """
 
-        canonical_url = url
-        if params:
-            qs = "&".join(f"{k}={v}" for k, v in sorted(params.items()))
-            canonical_url = f"{url}?{qs}"
+        canonical_url = self._canonical_url_for_cache(url, params)
         key = cache_key("GET", canonical_url)
         blob_path = self._blob_dir() / source / f"{key}.bin"
         if blob_path.is_file():
@@ -179,7 +179,7 @@ class CachedHTTP:
 
         last_exc: Exception | None = None
         for attempt in range(self._max_retries + 1):
-            self._limiter.wait(url, min_interval_ms)
+            self._wait_for_request(url, params=params, min_interval_ms=min_interval_ms)
             try:
                 with self._client.stream(
                     "GET", url, params=params, headers=headers, timeout=timeout
@@ -238,7 +238,7 @@ class CachedHTTP:
         extra: dict[str, Any] = {} if timeout is None else {"timeout": timeout}
         last_exc: Exception | None = None
         for attempt in range(self._max_retries + 1):
-            self._limiter.wait(url)
+            self._wait_for_request(url, params=params)
             try:
                 if method == "GET":
                     resp = self._client.get(url, params=params, headers=headers, **extra)
@@ -261,6 +261,48 @@ class CachedHTTP:
         assert last_exc is not None  # unreachable: loop exits via return or raise
         raise last_exc
 
+    def _wait_for_request(
+        self,
+        url: str,
+        *,
+        params: dict[str, Any] | None,
+        min_interval_ms: float = 0.0,
+    ) -> None:
+        """Apply source-specific limiter policy before one live request."""
+
+        host = urlparse(url).netloc
+        if host == NCBI_EUTILS_HOST:
+            key = str((params or {}).get("api_key") or "").strip()
+            if key:
+                self._limiter.wait(
+                    url,
+                    min_interval_ms,
+                    bucket=f"api_key:{key}",
+                    interval_ms=NCBI_KEYED_INTERVAL_MS,
+                )
+                return
+        self._limiter.wait(url, min_interval_ms)
+
+    def _canonical_url_for_cache(
+        self, url: str, params: dict[str, Any] | None
+    ) -> str:
+        """Build the request identity used for the response cache.
+
+        NCBI ``api_key`` changes rate-limit accounting, not response content.
+        Strip it from the cache key so rotating collaborator keys doesn't
+        duplicate otherwise-identical E-utilities cache entries.
+        """
+
+        if not params:
+            return url
+        cache_params = dict(params)
+        if urlparse(url).netloc == NCBI_EUTILS_HOST:
+            cache_params.pop("api_key", None)
+        if not cache_params:
+            return url
+        qs = urlencode(sorted(cache_params.items()))
+        return f"{url}?{qs}"
+
     def _fetch(
         self,
         method: str,
@@ -273,10 +315,7 @@ class CachedHTTP:
         body_for_key: bytes | None = None,
         headers: dict[str, str] | None = None,
     ) -> str:
-        canonical_url = url
-        if params:
-            qs = "&".join(f"{k}={v}" for k, v in sorted(params.items()))
-            canonical_url = f"{url}?{qs}"
+        canonical_url = self._canonical_url_for_cache(url, params)
         key = cache_key(method, canonical_url, body_for_key)
         cached = self._cache.get(source, key, ttl_days=ttl_days)
         if cached is not None:
