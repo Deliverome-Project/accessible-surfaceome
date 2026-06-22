@@ -40,6 +40,11 @@ data/external/tool_cache.sqlite*
 # triage Unpaywall fallback. Local cache only; never commit (copyright + bloat).
 data/external/blob_cache/
 
+# PubTator3 FTP dumps and derived local indexes. Reproducible from
+# ftp.ncbi.nlm.nih.gov/pub/lu/PubTator3/; keep out of git to avoid committing
+# multi-GB literature-index artifacts.
+data/external/pubtator3/
+
 # Per-gene annotations are agent-generated; commit a curated snapshot once
 # we have a stable set, not every smoke-test output.
 data/annotations/
