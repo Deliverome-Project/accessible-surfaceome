@@ -56,6 +56,7 @@ from accessible_surfaceome.tools._shared.models import (
     IdentifierBundle,
     Paper,
 )
+from accessible_surfaceome.tools._shared.ncbi import add_ncbi_api_key_param
 from accessible_surfaceome.tools._shared.retraction_watch import RetractionIndex
 from accessible_surfaceome.tools.evidence_retrieval import (
     _split_sentences,
@@ -600,16 +601,29 @@ def _lookup_pmcid_for_pmid(pmid: int, *, http: CachedHTTP) -> str | None:
     ``None``. Cached aggressively — the link is stable once published.
     """
 
+    return _lookup_pmcids_for_pmids([pmid], http=http).get(pmid)
+
+
+def _lookup_pmcids_for_pmids(pmids: list[int], *, http: CachedHTTP) -> dict[int, str]:
+    """Resolve multiple PMID → PMCID links via one NCBI eLink request.
+
+    Used before the parallel body-fetch phase so a batch of
+    ``worth_fetching`` papers does not issue one NCBI request per paper. Direct
+    ``_fetch_body_drafts`` callers still route through
+    :func:`_lookup_pmcid_for_pmid`, which delegates here with a singleton list.
+    """
+
+    unique_pmids = sorted({int(p) for p in pmids if p})
+    if not unique_pmids:
+        return {}
     params: dict[str, Any] = {
         "dbfrom": "pubmed",
         "db": "pmc",
-        "id": str(pmid),
+        "id": ",".join(str(p) for p in unique_pmids),
         "linkname": "pubmed_pmc",
         "retmode": "json",
     }
-    api_key = os.environ.get("NCBI_API_KEY")
-    if api_key:
-        params["api_key"] = api_key
+    add_ncbi_api_key_param(params)
     try:
         payload = http.get_json(
             _NCBI_ELINK,
@@ -618,17 +632,26 @@ def _lookup_pmcid_for_pmid(pmid: int, *, http: CachedHTTP) -> str | None:
             params=params,
         )
     except Exception:  # noqa: BLE001
-        return None
+        return {}
 
+    out: dict[int, str] = {}
     linksets = payload.get("linksets") or []
     for ls in linksets:
+        ids = ls.get("ids") or []
+        try:
+            src_pmid = int(ids[0]) if ids else None
+        except (TypeError, ValueError):
+            src_pmid = None
+        if src_pmid is None:
+            continue
         for ldb in ls.get("linksetdbs") or []:
             if ldb.get("dbto") != "pmc":
                 continue
             links = ldb.get("links") or []
             if links:
-                return f"PMC{links[0]}"
-    return None
+                out[src_pmid] = f"PMC{links[0]}"
+                break
+    return out
 
 
 @dataclass
@@ -652,6 +675,8 @@ def _fetch_body_drafts(
     *,
     http: CachedHTTP,
     retraction_index: RetractionIndex,
+    pmcid_override: str | None = None,
+    pmcid_lookup_done: bool = False,
 ) -> _BodyFetch:
     """Pull the full body for ``paper`` and convert to drafts.
 
@@ -671,8 +696,8 @@ def _fetch_body_drafts(
     """
 
     # Step 1: PMC JATS.
-    pmcid = paper.pmc_id
-    if not pmcid and paper.pmid:
+    pmcid = paper.pmc_id or pmcid_override
+    if not pmcid and paper.pmid and not pmcid_lookup_done:
         pmcid = _lookup_pmcid_for_pmid(paper.pmid, http=http)
     if pmcid:
         try:
@@ -831,6 +856,10 @@ def apply_triage_outcomes(
 
     fetched: dict[str, _BodyFetch | Exception] = {}
     if to_fetch:
+        pmids_needing_pmcid = [
+            p.pmid for _, p in to_fetch if p.pmid and not p.pmc_id
+        ]
+        pmcid_by_pmid = _lookup_pmcids_for_pmids(pmids_needing_pmcid, http=http)
         with ThreadPoolExecutor(max_workers=fetch_concurrency) as ex:
             futures = {
                 ex.submit(
@@ -838,6 +867,8 @@ def apply_triage_outcomes(
                     p,
                     http=http,
                     retraction_index=retraction_index,
+                    pmcid_override=pmcid_by_pmid.get(p.pmid),
+                    pmcid_lookup_done=bool(p.pmid and not p.pmc_id),
                 ): o.paper_id
                 for o, p in to_fetch
             }

@@ -20,7 +20,6 @@ surface-proteome-annotation.md`` for the surrounding annotation pipeline.
 
 from __future__ import annotations
 
-import os
 import re
 from pathlib import Path
 from typing import Any, Literal
@@ -49,6 +48,7 @@ from ._shared.models import (
     UniProtStatus,
     UniProtSummary,
 )
+from ._shared.ncbi import add_ncbi_api_key_param
 
 Mode = Literal["resolve", "db_panel", "uniprot_summary", "miss_diagnosis"]
 
@@ -1272,9 +1272,7 @@ def _hgnc_record(symbol: str, *, http: CachedHTTP) -> dict[str, Any] | None:
 def _ncbi_gene_summary(gene_id: int, *, http: CachedHTTP) -> dict[str, Any] | None:
     url = "https://eutils.ncbi.nlm.nih.gov/entrez/eutils/esummary.fcgi"
     params: dict[str, str] = {"db": "gene", "id": str(gene_id), "retmode": "json"}
-    api_key = os.environ.get("NCBI_API_KEY")
-    if api_key:
-        params["api_key"] = api_key
+    add_ncbi_api_key_param(params)
     payload = http.get_json(url, source="ncbi", ttl_days=_TTL["ncbi"], params=params)
     result = (payload or {}).get("result") or {}
     record = result.get(str(gene_id))

@@ -25,25 +25,41 @@ class RateLimiter:
         self._last_call: dict[str, float] = {}
         self._lock = Lock()
 
-    def wait(self, url: str, min_interval_ms: float = 0.0) -> None:
+    def wait(
+        self,
+        url: str,
+        min_interval_ms: float = 0.0,
+        *,
+        bucket: str | None = None,
+        interval_ms: float | None = None,
+    ) -> None:
         """Block until ``min_interval_ms`` (or the per-host cap, whichever is
         larger) has elapsed since the last call to this host.
 
         ``min_interval_ms`` lets a caller impose a courtesy floor on hosts not
         in the table — used by the PDF-download path to avoid hammering
         publisher servers that have no configured per-host cap.
+
+        ``bucket`` splits the throttle state within a host. NCBI E-utilities
+        rate-limits keyed requests per API key rather than per IP, so the HTTP
+        client uses one bucket per ``api_key``. ``interval_ms`` lets that
+        caller override the unauthenticated host interval with the keyed limit.
         """
         host = urlparse(url).netloc
-        interval_s = max(self._intervals_ms.get(host, 0.0), min_interval_ms) / 1000.0
+        base_interval_ms = (
+            self._intervals_ms.get(host, 0.0) if interval_ms is None else interval_ms
+        )
+        interval_s = max(base_interval_ms, min_interval_ms) / 1000.0
         if interval_s <= 0:
             return
+        state_key = f"{host}\0{bucket}" if bucket else host
         with self._lock:
             now = time.monotonic()
-            last = self._last_call.get(host, 0.0)
+            last = self._last_call.get(state_key, 0.0)
             wait_for = interval_s - (now - last)
             if wait_for > 0:
                 time.sleep(wait_for)
-            self._last_call[host] = time.monotonic()
+            self._last_call[state_key] = time.monotonic()
 
 
 def default_limiter() -> RateLimiter:
@@ -55,7 +71,8 @@ def default_limiter() -> RateLimiter:
 
     return RateLimiter(
         {
-            "eutils.ncbi.nlm.nih.gov": 110,  # ~9 qps, leaves headroom under 10 qps cap
+            "eutils.ncbi.nlm.nih.gov": 350,  # no key: <3 qps; keyed calls override to 110ms/key
+            "www.ncbi.nlm.nih.gov": 350,  # PubTator3 asks clients to stay under 3 qps
             "rest.uniprot.org": 200,
             "rest.genenames.org": 200,
             "api.platform.opentargets.org": 250,

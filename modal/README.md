@@ -22,10 +22,14 @@ annotator out across the 5,680-gene candidate universe.
    ```bash
    uv run modal secret create surfaceome-env \
        ANTHROPIC_API_KEY=... \
-       NCBI_API_KEY=... \
+       NCBI_API_KEYS=key1,key2,key3 \
        CLOUDFLARE_API_TOKEN=... \
        CLOUDFLARE_ACCOUNT_ID=... \
-       CLOUDFLARE_D1_AGENTS_DB=...
+       CLOUDFLARE_D1_SURFACEOME_AGENTS_ID=... \
+       CLOUDFLARE_D1_SURFACEOME_PUBLIC_ID=... \
+       CLOUDFLARE_ZONE_ID=... \
+       UNPAYWALL_EMAIL=... \
+       ACCESSIBLE_SURFACEOME_REQUIRE_D1=1
    ```
 
    (Mirror whatever keys `accessible_surfaceome.cloud.d1_client.D1Client`

@@ -934,7 +934,8 @@ def main() -> None:
             OUT_ROOT = Path(args.out_root)
 
     logging.basicConfig(level=logging.INFO, format="%(asctime)s %(message)s")
-    # Pull ANTHROPIC_API_KEY (and NCBI_API_KEY if present) from repo-root
+    # Pull ANTHROPIC_API_KEY (and NCBI_API_KEYS / NCBI_API_KEY if present)
+    # from repo-root
     # .env so a freshly-bootstrapped worktree picks them up without a shell
     # export. Same precedence rules as the main CLI — see env.py.
     load_env()

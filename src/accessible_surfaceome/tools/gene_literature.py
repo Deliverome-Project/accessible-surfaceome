@@ -32,7 +32,6 @@ The Europe PMC HTTP plumbing (search, full-text, JATS parsing) is in
 from __future__ import annotations
 
 import logging
-import os
 import re
 from typing import Any
 
@@ -50,6 +49,7 @@ from ._shared.models import (
     Paper,
     TopicAnchor,
 )
+from ._shared.ncbi import add_ncbi_api_key_param
 from ._shared.pubtator import build_gene_entity_query, pubtator_search
 from ._shared.retraction_watch import RetractionIndex, empty as _empty_retraction_index
 from .evidence_retrieval import extract_paper_drafts
@@ -760,9 +760,7 @@ def _ncbi_elink_gene_pubmed(*, http: CachedHTTP, ncbi_gene_id: int) -> list[str]
         "linkname": "gene_pubmed",
         "retmode": "json",
     }
-    api_key = os.environ.get("NCBI_API_KEY")
-    if api_key:
-        params["api_key"] = api_key
+    add_ncbi_api_key_param(params)
     payload = http.get_json(_NCBI_ELINK, source="ncbi", ttl_days=_NCBI_TTL, params=params)
     linksets = payload.get("linksets") or []
     if not linksets:
