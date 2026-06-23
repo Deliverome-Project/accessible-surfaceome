@@ -174,19 +174,34 @@ GIST_ORIGINS = [
 # for the deploy step.
 EXTRA_FILES: list[str | dict[str, Any]] = [
     {
-        "url": "https://api.deliverome.org/surfaceome/v1/triage/export.tsv?run_id=genome_full_sonnet_ncbi_v1",
-        "filename": "triage-runs-with-reasoning.tsv",
+        # Canonical genome-wide Sonnet+ncbi sweep (~19k cells).
+        "url": "https://api.deliverome.org/surfaceome/v1/triage/export.tsv?run_id=genome_full_sonnet_ncbi_v2",
+        "filename": "triage-runs-genome-ncbi-with-reasoning.tsv",
     },
     {
+        # Sonnet+pubmed_ncbi rescue sweep on the ambiguous-reason
+        # zero-DB Sonnet-no slice (~2,626 cells). Flips 177 ncbi-no
+        # to yes/contextual (KLK2 et al). Read-side reconciliation
+        # rule: prefer pubmed when verdict is more inclusive.
+        "url": "https://api.deliverome.org/surfaceome/v1/triage/export.tsv?run_id=genome_full_sonnet_pubmed_ncbi_v1",
+        "filename": "triage-runs-genome-pubmed-rescue-with-reasoning.tsv",
+    },
+    {
+        # 147-gene mainbench: Haiku/Sonnet/Opus × 4 prompt variants,
+        # joined with curated truth labels + 5-DB votes.
         "url": "https://api.deliverome.org/surfaceome/v1/benchmark/export.tsv",
         "filename": "triage-benchmark-with-reasoning.tsv",
     },
-    {
-        "deep_dives_bundle": True,
-        "filename": "deep_dives_all.tar.gz",
-        "index_url": "https://api.deliverome.org/surfaceome/v1/genes",
-        "gene_url_template": "https://api.deliverome.org/surfaceome/v1/genes/{symbol}",
-    },
+    # ── Deep dives — OFF UNTIL THE DEEP-DIVE WORK IS COMPLETE ──────────
+    # Uncomment to bundle every published SurfaceomeRecord. Held back
+    # so this draft Zenodo record reflects benchmark + triage only;
+    # deep-dive evidence chains are still in active iteration.
+    # {
+    #     "deep_dives_bundle": True,
+    #     "filename": "deep_dives_all.tar.gz",
+    #     "index_url": "https://api.deliverome.org/surfaceome/v1/genes",
+    #     "gene_url_template": "https://api.deliverome.org/surfaceome/v1/genes/{symbol}",
+    # },
     {
         # In-deposit README — documents every column of every file
         # above and the live-API endpoint that produces them.
@@ -257,24 +272,29 @@ EXTRA_FILES: list[str | dict[str, Any]] = [
 SEED_METADATA = {
     "metadata": {
         "upload_type": "dataset",
-        "title": "accessible-surfaceome — auxiliary data outputs",
+        "title": "accessible-surfaceome — benchmark + triage data outputs",
         "description": (
-            "Auxiliary data outputs for the accessible-surfaceome "
-            "project — files too large or too operational to live in "
-            "the repository directly. Three data files plus an in-"
-            "deposit README that documents every column and the source-"
-            "join recipe used to construct each file:<br><br>"
-            "<b>triage-runs-with-reasoning.tsv</b> — Sonnet 4.6 verdicts "
-            "with full reasoning across the ~19k-gene M1 candidate "
-            "universe, joined with per-source DB votes (UniProt / GO / "
-            "SURFY / CSPA / HPA) from the catalog.<br><br>"
+            "Triage + benchmark data outputs for the accessible-surfaceome "
+            "project. Three data files plus an in-deposit README that "
+            "documents every column and the source-join recipe used to "
+            "construct each file. Deep-dive SurfaceomeRecords are NOT "
+            "included in this deposit — they remain in active iteration "
+            "and will be added in a subsequent record.<br><br>"
+            "<b>triage-runs-genome-ncbi-with-reasoning.tsv</b> — Sonnet "
+            "4.6 verdicts with full reasoning across the ~19k-gene M1 "
+            "candidate universe under the canonical NCBI-context prompt, "
+            "joined with per-source DB votes (UniProt / GO / SURFY / "
+            "CSPA / HPA) from the catalog.<br><br>"
+            "<b>triage-runs-genome-pubmed-rescue-with-reasoning.tsv</b> — "
+            "Sonnet 4.6 verdicts under the PubMed-augmented prompt for "
+            "the 2,626-gene ambiguous-reason zero-DB Sonnet-no slice (the "
+            "rescue lane). Flips 177 ncbi-no calls to yes/contextual; the "
+            "read-side reconciliation rule prefers the PubMed verdict when "
+            "it is more inclusive than the NCBI verdict.<br><br>"
             "<b>triage-benchmark-with-reasoning.tsv</b> — Haiku 4.5 / "
             "Sonnet 4.6 / Opus 4.7 verdicts (4 prompt variants each) on "
             "the 147-gene curated benchmark, joined with the same DB "
             "votes plus curated truth labels.<br><br>"
-            "<b>deep_dives_all.tar.gz</b> — every published per-gene "
-            "SurfaceomeRecord with full evidence chain and per-claim "
-            "verbatim quotes.<br><br>"
             "All files are reproducible end-to-end from the public read-"
             "only API at https://api.deliverome.org/surfaceome/v1/ ; "
             "the included README.md documents the exact endpoint joins. "
@@ -525,25 +545,26 @@ def _build_deposit_readme(
 
     body = f"""# accessible-surfaceome — Zenodo deposit
 
-This deposit contains the auxiliary data outputs for the
+This deposit contains the benchmark + triage data outputs for the
 [accessible-surfaceome](https://github.com/Deliverome-Project/accessible-surfaceome)
-project — files too large or too operational to live in the
-repository directly. The repository code itself is archived separately
-(GitHub-Zenodo auto-archive + Software Heritage continuous crawl).
+project. The repository code itself is archived separately (GitHub-
+Zenodo auto-archive + Software Heritage continuous crawl). Per-gene
+deep-dive `SurfaceomeRecord` JSONs are NOT in this deposit — they
+remain in active iteration and will appear in a subsequent record.
 
-All three data files were assembled at deposit time by the
+All data files were assembled at deposit time by the
 [`scripts/release/publish-archive.py`](https://github.com/Deliverome-Project/accessible-surfaceome/blob/{head_sha}/scripts/release/publish-archive.py)
 script in the repo at commit `{head_sha[:12]}`. Anyone can regenerate
 them from the public read-only API documented below.
 
 ## Files
 
-### 1. `triage-runs-with-reasoning.tsv`
+### 1. `triage-runs-genome-ncbi-with-reasoning.tsv`
 
 Long-format TSV, one row per (gene × prompt variant × replicate),
-covering Sonnet 4.6 inference across the **~19k-gene M1 candidate
-universe**. The single source of truth for the cost-vs-accuracy and
-db-correctness figures in the project.
+covering Sonnet 4.6 inference under the canonical NCBI-context prompt
+across the **~19k-gene M1 candidate universe**. The single source of
+truth for the cost-vs-accuracy and db-correctness figures in the project.
 
 | Column | Meaning |
 |---|---|
@@ -566,8 +587,8 @@ db-correctness figures in the project.
 single SQL round-trip, so the bytes are an atomic snapshot:
 
 ```bash
-curl 'https://api.deliverome.org/surfaceome/v1/triage/export.tsv?run_id=genome_full_sonnet_ncbi_v1' \\
-    > triage-runs-with-reasoning.tsv
+curl 'https://api.deliverome.org/surfaceome/v1/triage/export.tsv?run_id=genome_full_sonnet_ncbi_v2' \\
+    > triage-runs-genome-ncbi-with-reasoning.tsv
 ```
 
 Source tables behind that endpoint: `triage_run_public` (the model
@@ -575,7 +596,30 @@ output) `LEFT JOIN candidate_universe_public` (DB votes +
 `uniprot_acc`) on `gene_symbol`, filtered to the latest
 `universe_version`.
 
-### 2. `triage-benchmark-with-reasoning.tsv`
+### 2. `triage-runs-genome-pubmed-rescue-with-reasoning.tsv`
+
+Long-format TSV, same column layout as file 1, covering the **2,626-
+gene pubmed-augmented rescue lane**: every gene where file 1's
+Sonnet+NCBI verdict was `no` AND no surface DB flagged the gene AND
+the `no`-reason fell into an ambiguous bucket (`secreted_only`,
+`endomembrane_resident`, `inner_leaflet_anchored`,
+`pmhc_only_intracellular`, `nuclear_envelope`, `other`). PubMed
+evidence rescued 177 of these calls (158 → contextual, 19 → yes),
+including KLK2 (prostate kallikrein with documented tumor-cell
+surface display).
+
+The **read-side reconciliation rule** used in downstream analyses:
+when this file's verdict is yes/contextual and file 1's is no,
+prefer this file's verdict. PubMed never overrides a `yes`/
+`contextual` from file 1 — `no` from this file doesn't constitute
+evidence of absence.
+
+```bash
+curl 'https://api.deliverome.org/surfaceome/v1/triage/export.tsv?run_id=genome_full_sonnet_pubmed_ncbi_v1' \\
+    > triage-runs-genome-pubmed-rescue-with-reasoning.tsv
+```
+
+### 3. `triage-benchmark-with-reasoning.tsv`
 
 Long-format TSV, one row per (bench gene × model × prompt variant ×
 replicate), covering the **147-gene curated benchmark** across all 3
@@ -606,31 +650,6 @@ to the canonical curated `bench_version`) `LEFT JOIN
 candidate_universe_public` (DB votes), with the bench restriction
 filtering to ~1.7k rows before the join — well inside the Worker's
 CPU budget.
-
-### 3. `deep_dives_all.tar.gz`
-
-Gzipped tarball, one `<SYMBOL>.json` member per published deep-dive
-`SurfaceomeRecord`. Members are flat (no parent directory); `tar -tf`
-doubles as the index.
-
-Each per-gene JSON is the full `SurfaceomeRecord` v0.5.0+ as described
-in
-[`src/accessible_surfaceome/tools/_shared/models.py`](https://github.com/Deliverome-Project/accessible-surfaceome/blob/{head_sha}/src/accessible_surfaceome/tools/_shared/models.py)
-— surface_evidence, biological_context, accessibility_risks, evidence
-chain with verbatim quotes + char offsets, search_log, confidence
-reasoning.
-
-**Construction:**
-
-```bash
-# 1. List published deep-dives:
-curl 'https://api.deliverome.org/surfaceome/v1/genes' | jq -r '.genes[].gene_symbol'
-
-# 2. For each symbol, fetch the full record:
-curl 'https://api.deliverome.org/surfaceome/v1/genes/<SYMBOL>' > <SYMBOL>.json
-
-# 3. tar -czf deep_dives_all.tar.gz *.json   (flat layout)
-```
 
 ## Repository, code archive, related identifiers
 
