@@ -151,12 +151,48 @@
   color: var(--ink);
 }
 
+/* "Reason code · …" line — same tone + size as the catalog rationale
+   drawer's `.drawerReason`. Sits between the title and the reasoning
+   prose; the label-mono prefix is provided by the caller's element. */
+.drawerReason {
+  margin: var(--space-2) 0 0;
+  font-size: 0.82rem;
+  color: var(--ink-soft);
+}
+
 .drawerReasoning {
   margin: var(--space-2) 0 0;
   font-size: 0.98rem;
   line-height: 1.6;
   color: var(--ink);
   max-width: 70ch;
+}
+
+/* Optional metadata pairs (e.g. triage Confidence) shown after the body.
+   Mirrors the catalog drawer's `.drawerMeta` / `.drawerMetaItem`. */
+.drawerMeta {
+  margin: var(--space-3) 0 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-3);
+}
+
+.drawerMetaItem {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+}
+
+.drawerMetaItem dt {
+  margin: 0;
+  color: var(--muted);
+}
+
+.drawerMetaItem dd {
+  margin: 0;
+  font-family: var(--font-mono);
+  font-size: 0.82rem;
+  color: var(--ink);
 }
 
 /* Evidence-chip strip rendered at the bottom of the drawer. The eyebrow

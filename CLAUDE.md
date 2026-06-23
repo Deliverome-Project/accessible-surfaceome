@@ -110,7 +110,7 @@ Operational notes:
 
 - Claude Code and Codex App may create their own worktrees; after entering one, run `scripts/bootstrap-worktree.sh none` unless the task needs data.
 - Use `scripts/bootstrap-worktree.sh candidate` for candidate-universe data, or `scripts/bootstrap-worktree.sh all` only when all data artifacts are needed.
-- `.env` is gitignored and should be symlinked from the canonical local checkout or `ACCESSIBLE_SURFACEOME_ENV_SOURCE`; never commit `.env`. The CLI loads it from the repo root at startup with shell-env precedence; see `.env.example` for documented keys (`ANTHROPIC_API_KEY`, `NCBI_API_KEY`).
+- `.env` is gitignored and should be symlinked from the canonical local checkout or `ACCESSIBLE_SURFACEOME_ENV_SOURCE`; never commit `.env`. The CLI loads it from the repo root at startup with shell-env precedence; see `.env.example` for documented keys (`ANTHROPIC_API_KEY`, `NCBI_API_KEYS` / `NCBI_API_KEY` fallback). For production deep-dive runs, put collaborator NCBI keys in `NCBI_API_KEYS` as a comma/space/semicolon-separated pool; the code rotates requests across the pool and throttles each key separately at ~9 qps/key.
 - Run `git lfs fsck` only after full data hydration.
 
 ## Git Hooks

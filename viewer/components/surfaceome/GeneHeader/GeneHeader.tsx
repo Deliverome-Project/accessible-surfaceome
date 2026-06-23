@@ -582,6 +582,12 @@ export function GeneHeader({
                   ariaLabel="Why the initial triage pass called it this way"
                   triggerClassName={styles.triageReasoningTrigger}
                   reasoning={rec.triage_reasoning ?? ""}
+                  reasonCode={rec.triage_reason ?? null}
+                  meta={
+                    rec.triage_confidence
+                      ? [{ label: "Confidence", value: rec.triage_confidence }]
+                      : undefined
+                  }
                 />
               </p>
             );

@@ -28,6 +28,8 @@ import urllib.request
 import xml.etree.ElementTree as ET
 from dataclasses import dataclass
 
+from accessible_surfaceome.tools._shared.ncbi import with_ncbi_api_key_url
+
 logger = logging.getLogger(__name__)
 
 NCBI_ESEARCH = "https://eutils.ncbi.nlm.nih.gov/entrez/eutils/esearch.fcgi"
@@ -74,20 +76,12 @@ class EvidenceRecord:
 
 
 def _with_ncbi_api_key(url: str) -> str:
-    """Append ``api_key=$NCBI_API_KEY`` to the URL when the env var is set.
+    """Append a rotated NCBI ``api_key`` to the URL when configured.
 
-    NCBI lifts the per-IP rate limit from 3 → 10 req/sec when an API
-    key is presented. The key is free to get from
-    https://www.ncbi.nlm.nih.gov/account/settings/ (API Key Management
-    section). The runner loads `.env` at startup so adding
-    ``NCBI_API_KEY=...`` to the repo-root `.env` is enough.
+    ``NCBI_API_KEYS`` is the preferred multi-key setting; ``NCBI_API_KEY``
+    remains supported for single-key environments.
     """
-    import os
-    key = os.environ.get("NCBI_API_KEY")
-    if not key:
-        return url
-    sep = "&" if "?" in url else "?"
-    return f"{url}{sep}api_key={urllib.parse.quote(key)}"
+    return with_ncbi_api_key_url(url)
 
 
 def _fetch(url: str, *, timeout: float = 20.0, max_retries: int = 5) -> bytes:
@@ -95,7 +89,7 @@ def _fetch(url: str, *, timeout: float = 20.0, max_retries: int = 5) -> bytes:
 
     Also honors ``Retry-After`` if the server sends one. Raises any
     other 4xx immediately. Transparently appends the NCBI API key
-    when ``NCBI_API_KEY`` is set in the environment.
+    when ``NCBI_API_KEYS`` or ``NCBI_API_KEY`` is set in the environment.
     """
     import time
 

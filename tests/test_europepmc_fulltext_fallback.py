@@ -183,6 +183,7 @@ def test_layer1_ncbi_call_shape() -> None:
 def test_layer1_ncbi_api_key_in_params_when_env_set(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
+    monkeypatch.delenv("NCBI_API_KEYS", raising=False)
     monkeypatch.setenv("NCBI_API_KEY", "test-key-abc")
     http = _make_http(ncbi_fulltext=_GOOD_JATS_XML)
     fetch_fulltext(http=http, pmcid="PMC12462478", retraction_index=rw.empty())
@@ -196,6 +197,7 @@ def test_layer1_ncbi_api_key_in_params_when_env_set(
 def test_layer1_no_api_key_param_when_env_unset(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
+    monkeypatch.delenv("NCBI_API_KEYS", raising=False)
     monkeypatch.delenv("NCBI_API_KEY", raising=False)
     http = _make_http(ncbi_fulltext=_GOOD_JATS_XML)
     fetch_fulltext(http=http, pmcid="PMC12462478", retraction_index=rw.empty())
