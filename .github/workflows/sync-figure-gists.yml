@@ -1,0 +1,30 @@
+name: sync figure gists
+
+# Auto-sync in-repo figure mirrors to their GitHub gists whenever
+# data/analysis/figures/make_*.py or 01_*.md change on main.
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "data/analysis/figures/make_*.py"
+      - "data/analysis/figures/01_*.md"
+      - "data/analysis/figures/gist_map.json"
+      - ".github/workflows/sync-figure-gists.yml"
+  workflow_dispatch: {}
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Sync changed gists
+        env:
+          GH_TOKEN: ${{ secrets.GIST_SYNC_TOKEN }}
+        run: |
+          if [[ -z "$GH_TOKEN" ]]; then
+            echo "::warning::GIST_SYNC_TOKEN secret not set — skipping gist sync"
+            exit 0
+          fi
+          bash scripts/sync_figure_gists.sh
