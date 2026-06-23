@@ -172,7 +172,26 @@ GIST_ORIGINS = [
 # IMPORTANT: the enriched endpoints used by #1 and #2 must be deployed
 # to the Worker BEFORE running this script. See scripts/release/README.md
 # for the deploy step.
+# Reserved DOI for the current data record on Zenodo. This is the
+# RESERVED DOI — preserved across draft updates, activated on publish.
+# Used to pre-populate FIGURE_PROVENANCE entries + cross-link
+# downstream artifacts (gist READMEs, embedded figure metadata) BEFORE
+# the record goes live. Update only on a fresh draft, not on edit.
+ZENODO_DATA_DOI = "10.5281/zenodo.20805384"
+
+# The CODE record DOI is minted by GitHub-Zenodo auto-archive on the
+# next tagged release; until that happens, the related-identifiers
+# link is a placeholder.
+ZENODO_CODE_CONCEPT_DOI: str | None = None  # TODO populate after first release
+
 EXTRA_FILES: list[str | dict[str, Any]] = [
+    # The active path today uses build_consolidated_deposit_tsvs.py +
+    # update_zenodo_draft.py to produce a single consolidated genome-wide
+    # TSV (ncbi + pubmed merged with a run_id column) and a multi-rep
+    # benchmark TSV with truth labels joined. The entries below describe
+    # the SAME files at the URL-per-file granularity for fresh-draft
+    # creation; the consolidator builds the consolidated shape from
+    # these two URLs + the benchmark endpoint. Keep both paths in sync.
     {
         # Canonical genome-wide Sonnet+ncbi sweep (~19k cells).
         "url": "https://api.deliverome.org/surfaceome/v1/triage/export.tsv?run_id=genome_full_sonnet_ncbi_v2",
@@ -192,15 +211,30 @@ EXTRA_FILES: list[str | dict[str, Any]] = [
         "url": "https://api.deliverome.org/surfaceome/v1/benchmark/export.tsv",
         "filename": "triage-benchmark-with-reasoning.tsv",
     },
-    # ── Deep dives — OFF UNTIL THE DEEP-DIVE WORK IS COMPLETE ──────────
-    # Uncomment to bundle every published SurfaceomeRecord. Held back
-    # so this draft Zenodo record reflects benchmark + triage only;
-    # deep-dive evidence chains are still in active iteration.
+    # ── PUBLICATION-WORKFLOW PLACEHOLDERS (per scripts/release/README.md) ──
+    # Each is a known artifact that the publication ritual expects in
+    # this Zenodo data record but isn't ready yet. Uncomment the
+    # corresponding entry when its source is ready and re-run
+    # update_zenodo_draft.py to push to the existing reserved DOI.
+    #
+    # 1. Deep dives bundle — every published SurfaceomeRecord, gzipped.
+    #    Held back until deep-dive prompt + schema iteration converges.
     # {
     #     "deep_dives_bundle": True,
     #     "filename": "deep_dives_all.tar.gz",
     #     "index_url": "https://api.deliverome.org/surfaceome/v1/genes",
     #     "gene_url_template": "https://api.deliverome.org/surfaceome/v1/genes/{symbol}",
+    # },
+    #
+    # 2. Manuscript bundle — pre-built PDF + pandoc-generated JATS XML.
+    #    Held back until manuscript is ready; see publish-archive.py's
+    #    inline docs above EXTRA_FILES for the full pandoc recipe.
+    # {
+    #     "manuscript": True,
+    #     "source": "paper/manuscript.docx",  # or .tex / .md
+    #     "pdf_path": "paper/build/manuscript.pdf",
+    #     "jats_filename": "manuscript.xml",
+    #     "extra_pandoc_args": [],
     # },
     {
         # In-deposit README — documents every column of every file
@@ -317,12 +351,17 @@ SEED_METADATA = {
             "open data",
         ],
         # Link this data record to the auto-archived code record(s).
-        # Fill in concept DOI(s) once the auto-archive has produced its
-        # first release; the link makes the relationship explicit in
-        # CrossRef/DataCite and Zenodo's UI.
+        # The code-record concept DOI is minted by the GitHub-Zenodo
+        # auto-archive on the FIRST tagged release (none exists yet —
+        # see ZENODO_CODE_CONCEPT_DOI at the top of this file). When
+        # that DOI is known, set ZENODO_CODE_CONCEPT_DOI and uncomment
+        # the placeholder below; the link makes the relationship
+        # explicit in CrossRef/DataCite and Zenodo's UI.
         "related_identifiers": [
+            # PUBLICATION-WORKFLOW PLACEHOLDER — populate after the
+            # first code-record release. See ZENODO_CODE_CONCEPT_DOI.
             # {
-            #     "identifier": "10.5281/zenodo.<CODE-CONCEPT-DOI>",
+            #     "identifier": f"10.5281/zenodo.{ZENODO_CODE_CONCEPT_DOI}",
             #     "relation": "isSupplementTo",
             #     "scheme": "doi",
             # },

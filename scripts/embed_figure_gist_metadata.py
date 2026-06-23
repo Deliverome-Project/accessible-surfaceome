@@ -32,16 +32,27 @@ from accessible_surfaceome.paths import REPO_ROOT
 FIGURES_DIR = REPO_ROOT / "data/analysis/figures"
 REPO_URL = "https://github.com/Deliverome-Project/accessible-surfaceome"
 
+# Reserved DOI of the Zenodo data record this project ships. Preserved
+# across draft updates; activates on publish. Single source of truth so
+# we don't have to fan it out across every figure's ``doi`` field.
+# Defined here so the embedded figure metadata, the publish script, and
+# the gist READMEs can all reference the same identifier.
+ZENODO_DATA_DOI = "10.5281/zenodo.20805384"
+
 # Per-figure provenance. Keep keys in slug order. Fill ``swhid`` once
 # Software Heritage has archived a given gist (see ``docs/figure-
-# reproducibility-schema.md`` § Save Code Now).
+# reproducibility-schema.md`` § Save Code Now). The top-level ``doi``
+# is the data-supplement DOI a reader would cite for the figure — i.e.
+# ZENODO_DATA_DOI when the figure ships as part of this paper.
+# ``data[].doi`` is the per-file DOI, only set when that specific file
+# is bundled in the deposit.
 FIGURE_PROVENANCE: dict[str, dict[str, Any]] = {
     "db_overlap_venn": {
         "title": "M1 surface DB overlap — 5-way Venn",
         "gist_url": "https://gist.github.com/beccajcarlson/d655abfc9c7deeaff1cfbe584de96ffa",
         "gist_sha": "c1253926045bfd5aad70cc5cce7598b0024fcd31",
         "swhid": "swh:1:snp:ab608a15f4ee00e602cbb317b3f43313214cec08",
-        "doi": None,
+        "doi": ZENODO_DATA_DOI,  # reserved; activates on publish
         "repo": "Deliverome-Project/accessible-surfaceome",
         "repo_path": "scripts/triage_bench_db_venn.py",
         "repo_ref": "898c743d9df4ec7497e7424b80d3408e5ad07c41",
@@ -58,10 +69,19 @@ FIGURE_PROVENANCE: dict[str, dict[str, Any]] = {
                 # Resolves via Software Heritage once the repo archive
                 # request 2332998 completes its initial crawl.
                 "swhid": "swh:1:cnt:e7a29bb9ab3b4a1746ac25726e818377ecac3392",
+                # data[].doi stays None — candidate_universe.tsv is NOT
+                # yet a deposited artifact in the Zenodo data record.
+                # Becomes ZENODO_DATA_DOI if added to EXTRA_FILES.
                 "doi": None,
             }
         ],
     },
+    # FUTURE: enter the other 7 figures from MEMORY.md figure_gists.md.
+    # For figures whose underlying data IS in the Zenodo deposit
+    # (triage runs, benchmark) — set the matching ``data[].url`` to
+    # the Zenodo file URL and ``data[].doi`` to ZENODO_DATA_DOI. The
+    # top-level ``doi`` should be ZENODO_DATA_DOI for every figure
+    # shipping as part of this paper.
 }
 
 # Legacy slug → secret gist URL. Preserved for back-compat with the

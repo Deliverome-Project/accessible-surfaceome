@@ -53,19 +53,52 @@ def _head_sha() -> str:
 
 def _build_readme() -> str:
     sha = _head_sha()
-    return f"""# accessible-surfaceome — Zenodo deposit (benchmark + triage)
+    return f"""# accessible-surfaceome — Zenodo deposit (benchmark, triage + deep-dive data outputs)
 
-This deposit contains the benchmark + triage data outputs for the
+This deposit contains the data outputs for the
 [accessible-surfaceome](https://github.com/Deliverome-Project/accessible-surfaceome)
 project. The repository code itself is archived separately (GitHub-
-Zenodo auto-archive + Software Heritage continuous crawl). Per-gene
-deep-dive `SurfaceomeRecord` JSONs are NOT in this deposit — they
-remain in active iteration and will appear in a subsequent record.
+Zenodo auto-archive + Software Heritage continuous crawl).
+
+**Reserved DOI:** `10.5281/zenodo.20805384` — preserved across draft
+updates; activates on publish.
+
+**Scope of this record snapshot:** the **triage** (genome-wide Sonnet
+sweep + PubMed-augmented rescue lane) and **benchmark** (147-gene
+multi-replicate) data files below. Additional content listed in the
+"Coming in subsequent draft updates" section will be added in
+place — the reserved DOI does not change.
 
 All data files were assembled at deposit time by
 [`scripts/release/build_consolidated_deposit_tsvs.py`](https://github.com/Deliverome-Project/accessible-surfaceome/blob/{sha}/scripts/release/build_consolidated_deposit_tsvs.py)
 in the repo at commit `{sha[:12]}`. Anyone can regenerate them from the
 public read-only API documented below.
+
+## Coming in subsequent draft updates (before publish)
+
+These are the publication-workflow items that the
+[`scripts/release/`](https://github.com/Deliverome-Project/accessible-surfaceome/tree/{sha}/scripts/release/)
+pipeline expects to ship alongside the data — placeholders are wired
+in the source script but the artifacts themselves are still in
+iteration:
+
+* `deep_dives_all.tar.gz` — gzipped tarball, one `<SYMBOL>.json` per
+  published `SurfaceomeRecord` (full evidence chain + per-claim
+  verbatim quotes). Held back until the deep-dive prompt + schema
+  iteration converges; corresponds to the commented-out
+  `{{"deep_dives_bundle": True, ...}}` entry in
+  [`publish-archive.py`](https://github.com/Deliverome-Project/accessible-surfaceome/blob/{sha}/scripts/release/publish-archive.py)'s
+  `EXTRA_FILES`.
+* `manuscript.pdf` + `manuscript.xml` — the publication PDF (built
+  upstream from `.docx`/`.tex`/`.md`) and a pandoc-generated JATS
+  XML representation for PMC indexing + downstream text-mining. Held
+  back until the manuscript is ready; corresponds to the commented-
+  out `{{"manuscript": True, ...}}` entry in `EXTRA_FILES`.
+* `related_identifiers` linking this record to the **code-record
+  concept DOI** (auto-archived from the next tagged GitHub Release).
+  The link will be added by editing
+  `publish-archive.py`'s `SEED_METADATA.related_identifiers` once the
+  first code release ships.
 
 ## Files
 
@@ -178,11 +211,16 @@ respective terms; see the upstream papers.
 
 
 _DESCRIPTION_HTML = (
-    "Benchmark + triage data outputs for the accessible-surfaceome "
-    "project. Two consolidated data files plus an in-deposit README "
-    "that documents every column and the source-join recipe. Deep-dive "
-    "SurfaceomeRecords are NOT included in this deposit — they remain "
-    "in active iteration and will appear in a subsequent record.<br><br>"
+    "Benchmark, triage, and deep-dive data outputs for the "
+    "accessible-surfaceome project. The current draft snapshot ships "
+    "two consolidated data files (triage + benchmark) plus an "
+    "in-deposit README documenting every column and the source-join "
+    "recipe. <b>Deep-dive `SurfaceomeRecord` JSONs and the manuscript "
+    "bundle (PDF + JATS XML) are placeholder slots</b> — they'll be "
+    "added in subsequent draft updates as that work finishes, against "
+    "the same reserved DOI (10.5281/zenodo.20805384). See the in-"
+    "deposit README's \"Coming in subsequent draft updates\" section "
+    "for the full list and provenance of items pending.<br><br>"
     "<b>triage-runs-genome-with-reasoning.tsv</b> — 21,950-row "
     "long-format TSV consolidating the canonical NCBI-context sweep "
     "(19,324 genes × 1 rep, ~19k-gene M1 candidate universe) AND the "
@@ -279,7 +317,10 @@ def main() -> int:
 
         # 4. Update description.
         metadata = dep["metadata"]
-        metadata["title"] = "accessible-surfaceome — benchmark + triage data outputs"
+        metadata["title"] = (
+            "accessible-surfaceome — benchmark, triage, and deep-dive "
+            "data outputs"
+        )
         metadata["description"] = _DESCRIPTION_HTML
         mr = client.put(
             f"{ZENODO_BASE}/deposit/depositions/{DEPOSIT_ID}",
