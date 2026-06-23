@@ -57,6 +57,8 @@ data/external/ncbi_gene_info/Homo_sapiens.protein_coding.with_hgnc.triageable.ts
 # content directly (LFS pointers don't resolve over the raw URL).
 data/processed/candidate_universe/candidate_universe.tsv -filter -diff -merge text
 data/processed/candidate_universe/candidate_universe_v2.tsv -filter -diff -merge text
+data/processed/candidate_universe/candidate_universe_v3.tsv -filter -diff -merge text
+data/processed/candidate_universe/candidate_universe_v3_dropped.tsv -filter -diff -merge text
 
 # Canonical SurfaceBench predictions TSV — refreshed from public D1
 # by `scripts/export_mainbench_to_tsv.py` and pinned to a commit SHA
