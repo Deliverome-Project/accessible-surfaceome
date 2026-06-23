@@ -308,8 +308,13 @@ export const PRESETS: ReadonlyArray<{
     label: "Canonical",
     description:
       "Strictest tier — direct evidence (single or multi-method), " +
-      "high/moderate confidence, surface-dominant or mixed, low/moderate " +
-      "state-dependence, real ECD. The high-confidence surface shortlist.",
+      "high/moderate confidence, surface-dominant or mixed, low / " +
+      "moderate / unclear state-dependence, high/moderate surface " +
+      "accessibility, high/moderate evidence density. The high-" +
+      "confidence surface shortlist. ECD-size is intentionally NOT " +
+      "filtered — that's an antibody-design refinement, not a " +
+      "surface-membership signal (Claudin-18.2 has tiny ECD loops " +
+      "and a landed therapeutic anyway).",
     predicate: passesCanonical,
   },
   {
