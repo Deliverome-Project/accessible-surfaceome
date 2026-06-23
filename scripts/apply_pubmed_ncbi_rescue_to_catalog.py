@@ -31,7 +31,6 @@ from __future__ import annotations
 import csv
 import sys
 from collections import Counter
-from pathlib import Path
 
 from accessible_surfaceome.cloud.d1_client import D1Client, D1Config
 from accessible_surfaceome.env import load_env
