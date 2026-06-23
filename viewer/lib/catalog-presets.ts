@@ -121,18 +121,26 @@ export function passesLikely(f: DeepDiveFilters): boolean {
  * Cell-state induced = surface presentation depends on cell state
  * (stress, activation, oncogenic transformation, etc.). Matches via
  * EITHER `surface_call_reason ∈ {cell_state_induced,
- * lysosomal_exocytosis, dual_localization}` (the v2 schema's explicit
- * signal — dual_localization captures TGOLN2-class "found on the
- * surface AND inside, with the surface fraction conditional on
- * infection / immune state") OR `induction_trigger != "none"` (the
- * field schema-1.1.0 records like HSPA5 actually populate — the
- * surface_call_reason field is null on the older schema).
+ * lysosomal_exocytosis}` (the v2 schema's explicit induced-surface
+ * signals) OR `induction_trigger != "none"` (the field schema-1.1.0
+ * records like HSPA5 actually populate — the surface_call_reason
+ * field is null on the older schema).
  *
- * State-dep accepts `moderate` (was high-only): moderate state-
+ * State-dep accepts `moderate` (not high-only): moderate state-
  * dependence still indicates state-modulation; the TROP2-class
  * cancer-overexpression records that the synthesizer rates "moderate"
  * legitimately belong here. Accepts null + unclear too so older
  * records / undecided calls don't drop out.
+ *
+ * `dual_localization` is intentionally NOT in the reason set — it
+ * just means "found in two compartments concurrently," not "the
+ * surface fraction is state-induced." A constitutively dual-
+ * localized protein (cell-surface AND Golgi at steady state, no
+ * state-driven shuttle) would false-positive into Induced. The
+ * induced semantic comes from state_dep + induction_trigger; if a
+ * dual-localized record IS state-driven, those two gates already
+ * catch it (TGOLN2 lands via `induction_trigger=infection`, not
+ * via its `dual_localization` reason).
  */
 export function passesInduced(f: DeepDiveFilters): boolean {
   if (!passesLikely(f)) return false;
@@ -148,8 +156,7 @@ export function passesInduced(f: DeepDiveFilters): boolean {
   }
   if (
     f.surface_call_reason === "cell_state_induced" ||
-    f.surface_call_reason === "lysosomal_exocytosis" ||
-    f.surface_call_reason === "dual_localization"
+    f.surface_call_reason === "lysosomal_exocytosis"
   ) {
     return true;
   }
@@ -276,7 +283,6 @@ export const PRESET_IMPLIED_FILTERS: Record<
     surface_call_reason: new Set([
       "cell_state_induced",
       "lysosomal_exocytosis",
-      "dual_localization",
     ]),
   },
   cell_type_restricted: {

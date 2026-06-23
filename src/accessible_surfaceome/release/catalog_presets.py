@@ -90,7 +90,7 @@ def passes_induced(f: dict[str, Any]) -> bool:
     if sd is not None and sd not in ("moderate", "high", "unclear"):
         return False
     if f.get("surface_call_reason") in (
-        "cell_state_induced", "lysosomal_exocytosis", "dual_localization"
+        "cell_state_induced", "lysosomal_exocytosis"
     ):
         return True
     if f.get("induction_trigger") in INDUCTION_NON_NONE:

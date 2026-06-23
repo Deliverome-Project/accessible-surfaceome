@@ -24,8 +24,7 @@ AND state_dependence ∈ {low, moderate, high, unclear, null}`,
   induced: `passesLikely(f)
 AND state_dependence ∈ {moderate, high, unclear, null}
 AND (
-  surface_call_reason ∈ {cell_state_induced, lysosomal_exocytosis,
-                         dual_localization}
+  surface_call_reason ∈ {cell_state_induced, lysosomal_exocytosis}
   OR induction_trigger ∈ {oncogenic, immune, stress_hypoxia,
                           cell_death, infection}
 )`,
