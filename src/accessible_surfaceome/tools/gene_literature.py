@@ -599,7 +599,10 @@ def _topic_search(
     if not topic_terms:
         raise ValueError(f"no known terms for topic_anchors={topic_anchors!r}")
     topic_disjunction = " OR ".join(f'"{t}"' for t in topic_terms)
-    query = f"({name_disjunction}) AND ({topic_disjunction}) AND SRC:MED"
+    # SRC:(MED OR PPR) widens to PubMed-indexed journals + Europe PMC-
+    # partnered preprint servers. See evidence_retrieval._europepmc_discovery
+    # for the same expansion (kept in sync — both are discovery searches).
+    query = f"({name_disjunction}) AND ({topic_disjunction}) AND SRC:(MED OR PPR)"
 
     payload = europepmc_search(http=http, query=query, page_size=max_results)
     hits = (payload.get("resultList") or {}).get("result") or []

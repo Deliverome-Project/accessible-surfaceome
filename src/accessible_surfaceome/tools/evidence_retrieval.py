@@ -792,10 +792,16 @@ def _europepmc_discovery(
     """
     name_terms = [bundle.hgnc_symbol, *bundle.aliases]
     name_disjunction = " OR ".join(f'"{n}"' for n in name_terms if n)
+    # SRC:(MED OR PPR) widens to PubMed-indexed journals + Europe PMC-
+    # partnered preprint servers (bioRxiv, medRxiv, ChemRxiv, ResearchSquare,
+    # Preprints.org, SSRN-Health, arXiv-q-bio). PPR records carry full
+    # text in the same JATS shape as MED, so they flow through the rest
+    # of the chain unchanged. PMID-keyed lookups elsewhere stay SRC:MED
+    # because PPR records don't have numeric PMIDs.
     query = (
         f"({name_disjunction}) AND "
         + " AND ".join(spec.query_clauses)
-        + " AND SRC:MED"
+        + " AND SRC:(MED OR PPR)"
     )
     payload = europepmc_search(http=http, query=query, page_size=max_papers * 3)
     hits = (payload.get("resultList") or {}).get("result") or []
