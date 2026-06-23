@@ -111,24 +111,11 @@ interface GeneHeaderProps {
   triageHeadline?: TriageHeadline | null;
 }
 
-/** Headline-triage payload — the single most-positive triage call
- *  across model × variant runs for this gene, picked the same way
- *  the catalog drawer picks (yes > contextual > unclear > no, with
- *  latest as tiebreak). Field shape mirrors the ``rec.triage_*``
- *  fields on SurfaceomeRecord so the GeneHeader render path can
- *  fall back to either source uniformly. */
-export interface TriageHeadline {
-  /** Triage signal (likely_accessible | possibly_accessible |
-   *  unlikely), the same enum carried on ``rec.triage_signal``. */
-  signal: TriageSignal;
-  /** Triage reason code (TriageReason enum). Null when the picked
-   *  run didn't emit one. */
-  reason: string | null;
-  /** Free-text triage reasoning. Empty string when absent. */
-  reasoning: string;
-  /** Triage confidence (low | medium | high). Null when absent. */
-  confidence: string | null;
-}
+/** Re-export of the loader's TriageHeadlinePayload — see
+ *  ``viewer/lib/surfaceome.ts:loadTriageHeadline``. Carries the
+ *  picked headline (verdict + reason + reasoning + confidence +
+ *  provenance) plus the dissenting-variants secondary list. */
+export type TriageHeadline = import("../../../lib/surfaceome").TriageHeadlinePayload;
 
 function tierCounts(rec: SurfaceomeRecord) {
   let primary = 0;
@@ -631,11 +618,33 @@ export function GeneHeader({
                   triggerClassName={styles.triageReasoningTrigger}
                   reasoning={headlineReasoning}
                   reasonCode={headlineReason}
-                  meta={
-                    headlineConfidence
-                      ? [{ label: "Confidence", value: headlineConfidence }]
-                      : undefined
-                  }
+                  meta={(() => {
+                    // Same provenance the catalog drawer shows inline
+                    // (Variant + Date), plus Confidence — pass through
+                    // the existing meta slot so the deep-dive's triage
+                    // drawer carries the same info at a glance.
+                    const out: Array<{ label: string; value: string }> = [];
+                    if (triageHeadline?.promptVariant) {
+                      out.push({
+                        label: "Variant",
+                        value: triageHeadline.promptVariant.replace(/_/g, " "),
+                      });
+                    }
+                    if (triageHeadline?.createdAt) {
+                      out.push({
+                        label: "Date",
+                        value: new Date(triageHeadline.createdAt).toLocaleDateString(
+                          "en-US",
+                          { year: "numeric", month: "short", day: "numeric" },
+                        ),
+                      });
+                    }
+                    if (headlineConfidence) {
+                      out.push({ label: "Confidence", value: headlineConfidence });
+                    }
+                    return out.length > 0 ? out : undefined;
+                  })()}
+                  secondary={triageHeadline?.secondary}
                 />
               </p>
             );

@@ -53,6 +53,24 @@ interface Props {
    *  agent's self-reported confidence. Empty / omitted hides the
    *  block. */
   meta?: ReadonlyArray<{ label: string; value: string }>;
+  /** Optional "dissenting variants" block — same shape and visual
+   *  language as the catalog rationale drawer's "Other triage
+   *  variants disagree" list. Each entry renders as a
+   *  verdict-toned chip + variant slug + date + optional reason
+   *  code. The deep-dive page's Triage drawer passes this so the
+   *  reader sees the same disagreement context they get from the
+   *  catalog drawer (parity with CatalogRationaleDrawer). Empty /
+   *  omitted hides the block. The `headingLabel` overrides the
+   *  default heading copy. */
+  secondaryHeading?: string;
+  secondary?: ReadonlyArray<{
+    /** Verdict tone key (yes | contextual | unclear | no | …) — feeds
+     *  the same verdictToneClass colorway the catalog drawer uses. */
+    verdict: string;
+    promptVariant: string | null;
+    createdAt: string;
+    reason: string | null;
+  }>;
 }
 
 /**
@@ -86,6 +104,8 @@ export function ReasoningDrawer({
   children,
   reasonCode,
   meta,
+  secondaryHeading = "Other triage variants disagree",
+  secondary,
 }: Props) {
   const [isOpen, setIsOpen] = useState(false);
   // Track client mount so `createPortal(..., document.body)` is safe.
@@ -203,6 +223,35 @@ export function ReasoningDrawer({
               ))}
             </dl>
           ) : null}
+          {secondary && secondary.length > 0 ? (
+            <div className={styles.drawerSecondary}>
+              <p className={`label-mono ${styles.drawerSecondaryLabel}`}>
+                {secondaryHeading}
+              </p>
+              <ul className={styles.drawerSecondaryList}>
+                {secondary.map((s, i) => (
+                  <li key={i} className={styles.drawerSecondaryItem}>
+                    <span
+                      className={`${styles.drawerSecondaryVerdict} ${verdictToneClass(s.verdict)}`}
+                    >
+                      {s.verdict}
+                    </span>
+                    <span className={styles.drawerSecondaryVariant}>
+                      {(s.promptVariant ?? "—").replace(/_/g, " ")}
+                    </span>
+                    <span className={styles.drawerSecondaryDate}>
+                      {formatDate(s.createdAt)}
+                    </span>
+                    {s.reason ? (
+                      <span className={styles.drawerSecondaryReason}>
+                        · {s.reason.replace(/_/g, " ")}
+                      </span>
+                    ) : null}
+                  </li>
+                ))}
+              </ul>
+            </div>
+          ) : null}
           {citedEvidenceIds && citedEvidenceIds.length > 0 ? (
             <div className={styles.drawerEvidence}>
               <p className={`label-mono ${styles.drawerEvidenceLabel}`}>
@@ -231,4 +280,29 @@ export function ReasoningDrawer({
       {mounted ? createPortal(overlay, document.body) : null}
     </>
   );
+}
+
+/** ISO timestamp → "Jun 23, 2026" (locale-stable en-US). Mirrors
+ *  CatalogRationaleDrawer.formatDate so the two surfaces format the
+ *  same. */
+function formatDate(iso: string | null | undefined): string {
+  if (!iso) return "—";
+  const d = new Date(iso);
+  if (Number.isNaN(d.getTime())) return iso.slice(0, 10);
+  return d.toLocaleDateString("en-US", {
+    year: "numeric",
+    month: "short",
+    day: "numeric",
+  });
+}
+
+/** Verdict-tone class lookup — mirrors
+ *  CatalogRationaleDrawer.verdictToneClass so the secondary block's
+ *  chips tone identically across both surfaces (yes=green,
+ *  contextual=amber, no=red). */
+function verdictToneClass(v: string | null | undefined): string {
+  if (v === "yes") return styles.verdictYes;
+  if (v === "no") return styles.verdictNo;
+  if (v === "contextual") return styles.verdictContextual;
+  return styles.verdictUnknown;
 }

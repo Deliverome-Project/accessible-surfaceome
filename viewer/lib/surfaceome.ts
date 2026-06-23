@@ -993,6 +993,30 @@ export interface TriageHeadlinePayload {
   reason: string | null;
   reasoning: string;
   confidence: string | null;
+  /** ISO timestamp of the picked run (newest with the most-positive
+   *  verdict). Surfaced on the gene page so a reader can spot a
+   *  stale 3-week-old "no" being overridden by a fresh "contextual". */
+  createdAt: string | null;
+  /** prompt_variant of the picked run (e.g. "pubmed_ncbi"). Surfaced
+   *  alongside the verdict so the reader knows which triage variant
+   *  the headline call came from. */
+  promptVariant: string | null;
+  /** Other variants' latest runs that disagree with the headline,
+   *  sorted positive→negative, capped at 3. Same shape the catalog
+   *  drawer surfaces under "Other triage variants disagree". Empty
+   *  when all variants agree. */
+  secondary: ReadonlyArray<TriageHeadlineSecondaryEntry>;
+}
+
+export interface TriageHeadlineSecondaryEntry {
+  signal: TriageSignal;
+  /** Raw verdict ("yes" | "contextual" | "no" | …) for the
+   *  verdict-tone class lookup; mirrors what the catalog drawer
+   *  renders so the two surfaces tone the same chip. */
+  verdict: string;
+  reason: string | null;
+  createdAt: string;
+  promptVariant: string | null;
 }
 
 const _VERDICT_RANK: Record<string, number> = {
@@ -1055,11 +1079,25 @@ export async function loadTriageHeadline(
     });
     if (ranked.length === 0) return null;
     const headline = ranked[0];
+    const secondary: TriageHeadlineSecondaryEntry[] = ranked
+      .slice(1)
+      .filter((r) => r.predicted_verdict !== headline.predicted_verdict)
+      .slice(0, 3)
+      .map((r) => ({
+        signal: _verdictToSignal(r.predicted_verdict),
+        verdict: r.predicted_verdict,
+        reason: r.predicted_reason?.trim() || null,
+        createdAt: r.created_at,
+        promptVariant: r.prompt_variant ?? null,
+      }));
     return {
       signal: _verdictToSignal(headline.predicted_verdict),
       reason: headline.predicted_reason?.trim() || null,
       reasoning: headline.verdict_reasoning?.trim() ?? "",
       confidence: headline.predicted_confidence?.trim() || null,
+      createdAt: headline.created_at,
+      promptVariant: headline.prompt_variant ?? null,
+      secondary,
     };
   } catch {
     return null;
