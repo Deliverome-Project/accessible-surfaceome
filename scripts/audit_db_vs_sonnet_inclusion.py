@@ -147,7 +147,10 @@ CONTINUOUS_FEATURES: list[str] = [
     "up_glyc_count",
     "up_lipidation_count",
     "up_topo_extracellular_count",
-    "m1_n_db_votes",
+    # m1_n_db_votes (cohort meta — # of M1 DBs that voted "surface")
+    # intentionally excluded: it's not biology, it's the cohort's own
+    # consensus state. Including it would tautologically inflate each
+    # source's effect because in-source membership ↔ vote ≥ 1.
 ]
 
 INCLUSION_SOURCES: list[tuple[str, str]] = [
@@ -175,7 +178,6 @@ PROVENANCE_COLORS: dict[str, str] = {
     "DeepTMHMM (predicted topology)": "#F4AA28",  # amber-bright
     "HGNC (curated gene group)": "#8878C8",      # lavender-bright
     "Schweke 2024 (homomer atlas)": "#BC3C4C",   # maroon-light
-    "Cohort meta": "#6E1428",                    # maroon-dark
 }
 FEATURE_PROVENANCE: dict[str, str] = {
     # UniProt feature-count columns from
@@ -225,8 +227,6 @@ FEATURE_PROVENANCE: dict[str, str] = {
     **{name: "HGNC (curated gene group)" for name, _ in HGNC_FAMILY_PATTERNS},
     # Schweke 2024 homomer-prediction atlas.
     "schweke_homomer": "Schweke 2024 (homomer atlas)",
-    # Cohort meta — number of M1 DBs that voted "surface" for this gene.
-    "m1_n_db_votes": "Cohort meta",
 }
 
 
@@ -733,6 +733,148 @@ def make_heatmap(enrichment: pd.DataFrame, out_dir: Path) -> None:
     plt.close(fig)
 
 
+def make_clustered_heatmap(enrichment: pd.DataFrame, out_dir: Path) -> None:
+    """Hierarchically-clustered heatmap of the same signed effects.
+
+    Both axes are clustered (average linkage on correlation distance);
+    features and sources are reordered so blocks with similar inclusion
+    patterns sit together. Loses the manually-curated section grouping
+    that the un-clustered heatmap has, but surfaces patterns the manual
+    order can't (e.g. "GO clusters with HPA's bias", "sonnet is closest
+    to UniProt").
+    """
+    setup_plotting_style(font_scale=0.85)
+    feature_order = BINARY_FEATURES + CONTINUOUS_FEATURES
+    source_order = [name for name, _ in INCLUSION_SOURCES]
+
+    effect = (
+        enrichment.pivot(index="feature", columns="source", values="effect")
+        .reindex(index=feature_order, columns=source_order)
+    )
+    qvals = (
+        enrichment.pivot(index="feature", columns="source", values="q_value")
+        .reindex(index=feature_order, columns=source_order)
+    )
+
+    # NaN handling: scipy's linkage refuses NaNs. Fill with 0 (no
+    # effect) for the linkage step only; pass the original (with NaNs)
+    # to the heatmap so empty cells stay visually missing.
+    effect_for_link = effect.fillna(0.0)
+
+    # Drop zero-variance rows — features that have effect ≈ 0 across
+    # every source (e.g. a pattern that matches no genes in v2). Their
+    # pairwise correlation distance is undefined, which crashes
+    # scipy.linkage. They carry no clustering signal anyway.
+    keep_rows = effect_for_link.var(axis=1) > 1e-12
+    dropped = effect_for_link.index[~keep_rows].tolist()
+    if dropped:
+        print(f"      Dropping {len(dropped)} zero-variance feature(s) "
+              f"from clustermap: {dropped}")
+    effect_for_link = effect_for_link.loc[keep_rows]
+    effect_for_plot = effect.loc[keep_rows]
+    feature_order_kept = effect_for_link.index.tolist()
+
+    # Provenance row colors (one cell per row, same palette as the
+    # main heatmap's left strip).
+    row_colors = pd.Series(
+        {f: PROVENANCE_COLORS[FEATURE_PROVENANCE[f]] for f in feature_order_kept},
+        name="Source",
+    )
+    # Column colors: M1 DB sources vs Sonnet. Five DBs share a teal
+    # tone; Sonnet stands out in maroon so the eye can spot where it
+    # lands in the dendrogram.
+    col_colors = pd.Series(
+        {
+            name: ("#BC3C4C" if name == "sonnet" else "#3D6B60")
+            for name, _ in INCLUSION_SOURCES
+        },
+        name="Layer",
+    )
+
+    g = sns.clustermap(
+        effect_for_link,
+        cmap=DIVERGING_PALETTE,
+        center=0.0,
+        vmin=-0.6,
+        vmax=0.6,
+        method="average",
+        metric="correlation",
+        row_colors=row_colors,
+        col_colors=col_colors,
+        linewidths=0.4,
+        linecolor="white",
+        figsize=(12, 16),
+        cbar_pos=(0.02, 0.86, 0.02, 0.10),
+        cbar_kws={"label": "Signed effect [−1, +1]"},
+        dendrogram_ratio=(0.10, 0.13),
+        colors_ratio=0.018,
+        xticklabels=True,
+        yticklabels=True,
+    )
+
+    # Star annotation on the reordered grid (clustermap.ax_heatmap is
+    # the actual data axes, with rows/cols permuted to dendrogram order).
+    row_order = g.dendrogram_row.reordered_ind
+    col_order = g.dendrogram_col.reordered_ind
+    feat_reordered = [feature_order_kept[i] for i in row_order]
+    src_reordered = [source_order[i] for i in col_order]
+    for ri, feat in enumerate(feat_reordered):
+        for ci, src in enumerate(src_reordered):
+            star = _star(float(qvals.loc[feat, src]))
+            if star and not np.isnan(effect_for_plot.loc[feat, src]):
+                g.ax_heatmap.text(
+                    ci + 0.5,
+                    ri + 0.5,
+                    star,
+                    ha="center",
+                    va="center",
+                    fontsize=9,
+                    weight="bold",
+                    color="black",
+                )
+
+    g.ax_heatmap.set_xlabel("Inclusion source")
+    g.ax_heatmap.set_ylabel("")
+    g.ax_heatmap.tick_params(axis="x", rotation=35)
+    for tick in g.ax_heatmap.get_xticklabels():
+        tick.set_horizontalalignment("right")
+
+    # Legends for the two color strips, placed below the figure.
+    from matplotlib.patches import Patch
+
+    prov_handles = [
+        Patch(facecolor=color, label=name)
+        for name, color in PROVENANCE_COLORS.items()
+    ]
+    layer_handles = [
+        Patch(facecolor="#3D6B60", label="M1 source DB"),
+        Patch(facecolor="#BC3C4C", label="Sonnet (LLM)"),
+    ]
+    g.fig.legend(
+        handles=prov_handles,
+        loc="lower left",
+        bbox_to_anchor=(0.08, -0.005),
+        ncol=2,
+        fontsize=8,
+        frameon=False,
+        title="Row strip — feature provenance",
+        title_fontsize=9,
+    )
+    g.fig.legend(
+        handles=layer_handles,
+        loc="lower right",
+        bbox_to_anchor=(0.92, -0.005),
+        ncol=2,
+        fontsize=8,
+        frameon=False,
+        title="Col strip — inclusion layer",
+        title_fontsize=9,
+    )
+
+    save_figure(g.fig, "inclusion_heatmap_clustered", output_dir=out_dir, formats=("pdf", "png"))
+    plt.close(g.fig)
+
+
 def make_per_source_bars(enrichment: pd.DataFrame, out_dir: Path) -> None:
     """Per-source top-feature bar plot (signed effect, sorted by |effect|).
 
@@ -924,6 +1066,7 @@ def main() -> None:
 
     print("[4/4] Rendering figures")
     make_heatmap(enrichment, out_dir)
+    make_clustered_heatmap(enrichment, out_dir)
     make_per_source_bars(enrichment, out_dir)
     make_surfy_topology_coverage(df, out_dir)
     print("Done.")
