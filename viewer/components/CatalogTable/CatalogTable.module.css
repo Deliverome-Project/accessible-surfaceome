@@ -1341,3 +1341,16 @@
 .filterChipPresetImplied:hover {
   background: rgba(188, 60, 76, 0.14);
 }
+
+/* Inline link inside a wide InfoTip body — reads as "see more" not as
+ * a chip / button. Sits next to surrounding prose; underline-on-hover
+ * follows the same affordance as other in-prose links. */
+.tooltipLink {
+  color: var(--accent);
+  text-decoration: underline;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 0.15em;
+}
+.tooltipLink:hover {
+  text-decoration-thickness: 2px;
+}

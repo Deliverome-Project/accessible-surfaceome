@@ -954,20 +954,21 @@ export function CatalogTable({
           <InfoTip label="About catalog preset lists" wide>
             <p>
               <strong>Curated shortlists</strong> over the deep-dive
-              cohort. Each preset is a pure predicate over a record&apos;s
-              <code> filters </code> block — Canonical is the strictest
-              tier, Likely is broader, Cell-state induced and Cell-type
-              restricted are sub-buckets of Likely.
+              cohort. Canonical is the strictest tier, Likely is
+              broader, Cell-state induced and Cell-type restricted are
+              sub-buckets of Likely.
             </p>
             <p>
               <em>{DEEP_DIVE_ONLY_NOTE}</em> The count badge on each
-              chip is the population that survives the predicate (no
-              other filters applied) — refine further with the existing
-              search / DB / facet chips.
+              chip is the population that survives the predicate
+              alone — refine further with the existing search and
+              facet chips below.
             </p>
             <p>
-              Full predicates live at <code>/api#presets</code> and at{" "}
-              <code>viewer/lib/catalog-presets.ts</code>.
+              See the{" "}
+              <a href="/api#presets" className={styles.tooltipLink}>
+                full filter definitions on the API page →
+              </a>
             </p>
           </InfoTip>
         </div>
