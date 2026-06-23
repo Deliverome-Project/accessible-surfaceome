@@ -113,6 +113,7 @@ YES_CALLOUTS = [
 ]
 CONTEXTUAL_CALLOUTS = [
     ("IL15",    "Surface trans-presentation via IL-15Rα", "dual_localization"),
+    ("KLK2",    "Prostate kallikrein; ADC-relevant rescue", "tissue_restricted_surface"),
     ("TIMP2",   "MT1-MMP ternary complex",             "stable_surface_attachment"),
     ("GSDMD",   "Gasdermin D/E/C — pyroptosis pores",  "cell_state_induced"),
     ("HSPA1A",  "Surface Hsp70; cmHsp70.1 mAb",        "cell_state_induced"),
