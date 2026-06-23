@@ -33,6 +33,6 @@
     "@types/react": "^19.2.2",
     "@types/react-dom": "^19.2.2",
     "typescript": "^5.8.2",
-    "wrangler": "^4.6.0"
+    "wrangler": "^4.102.0"
   }
 }

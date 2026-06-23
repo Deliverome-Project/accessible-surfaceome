@@ -958,22 +958,30 @@ async function _fetchRecordFromWorker(
   }
 }
 
+interface TriageMeta {
+  reasoning: string | null;
+  reason: string | null;
+  confidence: string | null;
+}
+
 /**
- * Pull the triage agent's free-text reasoning from `/v1/triage/{symbol}`
- * (the `triage_run` store), picking the latest headline run — Sonnet 4.6
- * with the `ncbi` context variant — that carries a non-empty
- * `verdict_reasoning`. Returns `null` on any miss.
+ * Pull the triage agent's headline call (reasoning + reason code +
+ * confidence) from `/v1/triage/{symbol}` (the `triage_run` store),
+ * picking the latest Sonnet 4.6 + `ncbi` variant run — the same (model,
+ * variant) the catalog rationale drawer surfaces.
  *
- * Used to backfill a deep-dive record whose own `triage_reasoning` is
- * empty. The catalog's rationale drawer already reads this endpoint (see
- * `CatalogRationaleDrawer`); sourcing the gene-page triage drawer from
- * the same place keeps the two surfaces in sync without re-publishing
- * the record into D1.
+ * Used to backfill deep-dive records that pre-date one or more of these
+ * fields. `verdict_reasoning` is selected from the latest run that has
+ * non-empty prose (older runs sometimes have an empty body); the reason
+ * + confidence come from that same latest-with-reasoning run so the
+ * three fields stay consistent. Returns ``{null, null, null}`` on any
+ * miss so the caller can do a single shallow merge.
  */
-async function _fetchTriageReasoningFromWorker(
+async function _fetchTriageMetaFromWorker(
   symbol: string,
   base: string,
-): Promise<string | null> {
+): Promise<TriageMeta> {
+  const empty: TriageMeta = { reasoning: null, reason: null, confidence: null };
   const controller = new AbortController();
   const timer = setTimeout(() => controller.abort(), FETCH_TIMEOUT_MS);
   try {
@@ -981,30 +989,47 @@ async function _fetchTriageReasoningFromWorker(
       cache: RECORD_FETCH_CACHE,
       signal: controller.signal,
     });
-    if (!res.ok) return null;
+    if (!res.ok) return empty;
     const data = (await res.json()) as {
       runs?: Array<{
         created_at: string;
         model: string;
         prompt_variant: string | null;
         verdict_reasoning: string | null;
+        predicted_reason?: string | null;
+        predicted_confidence?: string | null;
       }>;
     };
-    let latest: { created_at: string; verdict_reasoning: string } | null = null;
+    let latest:
+      | {
+          created_at: string;
+          verdict_reasoning: string;
+          predicted_reason: string | null;
+          predicted_confidence: string | null;
+        }
+      | null = null;
     for (const r of data.runs ?? []) {
-      // Headline triage cell = Sonnet 4.6 + the NCBI context block — the
-      // same (model, variant) the catalog rationale drawer surfaces.
       if (r.model !== "claude-sonnet-4-6") continue;
       if (r.prompt_variant !== "ncbi") continue;
       const reasoning = r.verdict_reasoning?.trim();
       if (!reasoning) continue;
       if (!latest || latest.created_at < r.created_at) {
-        latest = { created_at: r.created_at, verdict_reasoning: reasoning };
+        latest = {
+          created_at: r.created_at,
+          verdict_reasoning: reasoning,
+          predicted_reason: r.predicted_reason?.trim() || null,
+          predicted_confidence: r.predicted_confidence?.trim() || null,
+        };
       }
     }
-    return latest?.verdict_reasoning ?? null;
+    if (!latest) return empty;
+    return {
+      reasoning: latest.verdict_reasoning,
+      reason: latest.predicted_reason,
+      confidence: latest.predicted_confidence,
+    };
   } catch {
-    return null;
+    return empty;
   } finally {
     clearTimeout(timer);
   }
@@ -1017,13 +1042,15 @@ async function _fetchTriageReasoningFromWorker(
  * `SURFACEOME_API_BASE=local` (or empty), which the offline CI smoke
  * build uses, and on any Worker error.
  *
- * Triage-reasoning backfill: when the resolved record's own
- * `triage_reasoning` field is empty, pull it from the `triage_run` store
- * via `/v1/triage/{symbol}`. Older D1 records (published before the field
- * existed) serve it as `null` even though the triage prose lives in
- * `triage_run` and renders in the catalog drawer — so the gene-page
- * triage drawer would otherwise self-hide. Sourcing from the same place
- * keeps both surfaces in sync without re-publishing the record.
+ * Triage-meta backfill: when any of ``triage_reasoning`` /
+ * ``triage_reason`` / ``triage_confidence`` is missing on the resolved
+ * record, pull the headline (Sonnet 4.6 + NCBI variant) run from
+ * ``/v1/triage/{symbol}`` and overlay each field that the record itself
+ * doesn't carry. Records published before these fields existed serve
+ * them as ``null`` / ``undefined`` even though the values live in
+ * ``triage_run`` and render in the catalog drawer — sourcing from the
+ * same place keeps the two surfaces in sync without re-publishing the
+ * record into D1.
  */
 export async function loadSurfaceomeRecord(
   symbol: string,
@@ -1033,9 +1060,20 @@ export async function loadSurfaceomeRecord(
     return null;
   }
   let record = await _fetchRecordFromWorker(symbol, base);
-  if (record && !record.triage_reasoning?.trim()) {
-    const reasoning = await _fetchTriageReasoningFromWorker(symbol, base);
-    if (reasoning) record = { ...record, triage_reasoning: reasoning };
+  if (
+    record &&
+    (!record.triage_reasoning?.trim() ||
+      !record.triage_reason ||
+      !record.triage_confidence)
+  ) {
+    const meta = await _fetchTriageMetaFromWorker(symbol, base);
+    record = {
+      ...record,
+      triage_reasoning:
+        record.triage_reasoning?.trim() ? record.triage_reasoning : meta.reasoning,
+      triage_reason: record.triage_reason ?? meta.reason,
+      triage_confidence: record.triage_confidence ?? meta.confidence,
+    };
   }
   // Renumber the `aN_evi_NN` ids into a single per-record `evi_N`
   // sequence so chip labels are unambiguous across the merged ledger.
