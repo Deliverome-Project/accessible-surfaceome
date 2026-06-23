@@ -24,6 +24,7 @@ from pathlib import Path
 
 from accessible_surfaceome.agents.surfaceome_v2 import annotate
 from accessible_surfaceome.agents.surfaceome_v2.orchestrator import write_summary_meta
+from accessible_surfaceome.cloud.deep_dive_upload import D1DeepDiveSink
 from accessible_surfaceome.cloud.harvested_paper import (
     ensure_schema as ensure_harvested_paper_schema,
     harvested_papers_from_dual,
@@ -192,6 +193,32 @@ def main(argv: list[str] | None = None) -> int:
         except Exception as exc:  # noqa: BLE001
             logging.warning(
                 "harvested_paper publish failed (gene=%s): %s — continuing",
+                result.gene, exc,
+            )
+
+    # Per-gene deep_dive_run row with cost + headline call fields. Opt-in
+    # via --cohort-run-id (since the table's natural key includes run_id).
+    # Today only the cohort sweep driver writes here — single-gene
+    # ad-hoc runs left the table empty, which is why D1 only had 4 cost
+    # rows (smoke tests) when we tried to project cohort cost from real
+    # data. Wiring this in means every --cohort-run-id-tagged annotate
+    # invocation accumulates a real cost+latency+evidence_count row.
+    if args.publish and args.cohort_run_id and result.record is not None:
+        try:
+            sink = D1DeepDiveSink(run_id=args.cohort_run_id)
+            sink.insert(
+                result.record,
+                cost_usd=float(result.total_cost_usd),
+                latency_s=float(total_elapsed),
+            )
+            logging.info(
+                "deep_dive_run: wrote cost=$%.4f latency=%.1fs for %s (run_id=%s)",
+                result.total_cost_usd, total_elapsed,
+                result.gene, args.cohort_run_id,
+            )
+        except Exception as exc:  # noqa: BLE001
+            logging.warning(
+                "deep_dive_run insert failed (gene=%s): %s — continuing",
                 result.gene, exc,
             )
 
