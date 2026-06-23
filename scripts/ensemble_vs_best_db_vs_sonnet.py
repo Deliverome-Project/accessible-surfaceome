@@ -115,6 +115,12 @@ def main() -> None:
               f"{row['accuracy']*100:5.1f}%  ({row['n_correct']}/{row['n_total']})")
 
     setup_plotting_style(style="whitegrid", context="notebook", font_scale=1.0)
+    # Brand-style-v3 font sizes — matches the gist mirror.
+    # See CLAUDE.md "Canonical generator vs gist mirror".
+    plt.rcParams.update({
+        "font.size": 20, "axes.labelsize": 20, "axes.titlesize": 0,
+        "xtick.labelsize": 20, "ytick.labelsize": 20, "legend.fontsize": 20,
+    })
     fig, ax = plt.subplots(figsize=(10, 5.5))
     bars = ax.bar(
         df["caller"], df["accuracy"] * 100,
@@ -136,12 +142,13 @@ def main() -> None:
             fontsize=12, color="white", fontweight="bold",
         )
 
-    ax.set_ylabel("Overall accuracy on 147-gene bench (%)", fontsize=14)
+    ax.set_ylabel("Overall accuracy on\n147-gene bench (%)", fontsize=19)
     ax.set_ylim(0, 105)
     ax.tick_params(axis="x", labelsize=13)
     ax.tick_params(axis="y", labelsize=13)
 
     sns.despine(ax=ax, top=True, right=True)
+    fig.tight_layout()
     save_figure(
         fig, filename="ensemble_vs_best_db_vs_sonnet",
         output_dir=str(OUT_DIR), formats=["pdf", "png"],

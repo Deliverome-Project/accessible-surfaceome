@@ -357,6 +357,23 @@ Every plot in this repo uses `src/accessible_surfaceome/audit/_plotting_config.p
 - **Output to `data/analysis/<area>/`.** Don't write figures into source dirs or repo root.
 - **LFS-track raster outputs ≥10 MB** per the standard rule; check `.gitattributes` if you're producing a large PNG.
 
+### Canonical generator (`scripts/`) vs gist mirror (`data/analysis/figures/`)
+
+A published figure has **two source files** by convention — and they drift if you only touch one:
+
+- **`scripts/<slug>.py`** — **canonical generator.** Uses the project's `_plotting_config` import (centralized styling), reads from in-repo TSVs or D1. This is what the gist's `01_<slug>.md` README cites as the canonical generator (per `figure_gists_canonical_in_scripts.md` memory).
+- **`data/analysis/figures/make_<slug>.py`** — **standalone gist mirror.** PEP 723 inline metadata, inline brand styling, reads from `raw.githubusercontent.com` URLs. Synced to the published gist via `gh gist edit`. Readers run this with `uv run make_<slug>.py`.
+
+**The drift trap.** Many figure-style commits (font caps, layout bumps, ylabel wrap, brand-style version bumps) historically touched only `data/analysis/figures/make_<slug>.py` because the author edited the gist + synced the mirror. The canonical `scripts/<slug>.py` then silently fell behind, so re-running it produced a figure with the OLD layout — exactly what happened to `zero_db_rescues_by_triage.py` (subpanel a/b labels + hspace bump landed only in the mirror) and `db_vs_sonnet_whole_proteome.py` (figsize 17→22, fontsize 8/11→14/20, ylabel wrap, `tight_layout()` missing).
+
+**The rule when you edit either side**:
+
+1. Edit the layout / fontsize / annotation in **both files** in the same commit. Yes, this is duplicate work — the gist mirror needs inline styling to stay PEP-723 standalone, so a shared module isn't a clean fix.
+2. Regenerate the figure (`uv run python scripts/<slug>.py` — always run the canonical, since the rendered `.pdf`/`.png` outputs are committed and that's what readers + the Zenodo deposit see).
+3. Sync the gist with `gh gist edit <GIST_ID> data/analysis/figures/make_<slug>.py` only after both source files agree.
+
+The drift guard at [tests/test_figure_canonical_mirror_sync.py](tests/test_figure_canonical_mirror_sync.py) compares a layout fingerprint (`figsize`, `axes.labelsize`, `xtick.labelsize`, `ytick.labelsize`, `legend.fontsize`, ylabel-wrap presence, `tight_layout` presence) between every `scripts/<slug>.py` ↔ `data/analysis/figures/make_<slug>.py` pair and fails the build if they disagree. Re-run + commit fixes both sides.
+
 ## Final-figure data flow (pre-publication)
 
 **The work is pre-publication.** Figures and tables that ship to readers today are draft artifacts — at submission time they'll be re-pinned to immutable Zenodo DOIs and the figure scripts + gists will swap their source URLs over. Until then, the lineage is:

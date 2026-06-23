@@ -176,6 +176,15 @@ def write_tsv(prod_papers, oax_papers, out_path: Path) -> None:
 
 def make_figure(prod_genes, prod_papers, oax_genes, oax_papers, out_dir: Path) -> None:
     setup_plotting_style()
+    # Paywall-figure-specific rcParams — smaller than the v3 cohort
+    # because the figure has lots of inline label text. Mirror parity
+    # with data/analysis/figures/make_paywall_bot_block_compare.py;
+    # see CLAUDE.md "Canonical generator vs gist mirror".
+    plt.rcParams.update({
+        "font.size": 16, "axes.labelsize": 18, "axes.titlesize": 0,
+        "xtick.labelsize": 15, "ytick.labelsize": 14,
+        "legend.fontsize": 13,
+    })
 
     sources = [
         ("openalex",   oax_genes,  oax_papers),

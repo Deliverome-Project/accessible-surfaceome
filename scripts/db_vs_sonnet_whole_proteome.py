@@ -179,6 +179,12 @@ def main() -> None:
 
     # ─── Figure ───
     setup_plotting_style(style="whitegrid", context="notebook", font_scale=1.0)
+    # Brand-style-v3 font sizes — matches the gist mirror.
+    # See CLAUDE.md "Canonical generator vs gist mirror".
+    plt.rcParams.update({
+        "font.size": 20, "axes.labelsize": 20, "axes.titlesize": 0,
+        "xtick.labelsize": 20, "ytick.labelsize": 20, "legend.fontsize": 20,
+    })
 
     caller_order = [c[0] for c in callers]
     palette = [
@@ -187,7 +193,7 @@ def main() -> None:
         for c in callers
     ]
 
-    fig, ax = plt.subplots(figsize=(17, 6.5))
+    fig, ax = plt.subplots(figsize=(22, 6.5))
     sns.barplot(
         data=plot_df,
         x="bucket_label", y="fraction",
@@ -229,7 +235,7 @@ def main() -> None:
             )
 
     ax.set_xlabel("")
-    ax.set_ylabel("Fraction agreeing with Sonnet (+ NCBI) verdict")
+    ax.set_ylabel("Fraction agreeing with\nSonnet (+ NCBI) verdict")
     ax.set_ylim(0, 1.14)
 
     handles, _ = ax.get_legend_handles_labels()
@@ -260,6 +266,7 @@ def main() -> None:
     )
 
     sns.despine(ax=ax, top=True, right=True)
+    fig.tight_layout()
 
     save_figure(
         fig, filename="db_vs_sonnet_whole_proteome",

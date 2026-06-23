@@ -296,6 +296,15 @@ def main() -> None:
     # ─── Figure ─── 2×2: top row = per-reason bar panels (shared y-axis);
     # bottom row = callout columns.
     setup_plotting_style(style="whitegrid", context="notebook", font_scale=1.0)
+    # Brand-style-v3 font sizes (mirror parity). The gist mirror at
+    # data/analysis/figures/make_zero_db_rescues_by_triage.py sets these
+    # inline; this canonical script applies them via rcParams so its
+    # render matches the published gist. See CLAUDE.md "Canonical
+    # generator vs gist mirror".
+    plt.rcParams.update({
+        "font.size": 20, "axes.labelsize": 20, "axes.titlesize": 0,
+        "xtick.labelsize": 20, "ytick.labelsize": 20, "legend.fontsize": 20,
+    })
     # Layout numbers match the gist-mirror at
     # data/analysis/figures/make_zero_db_rescues_by_triage.py (single
     # source of truth for the published figure shape). Brought into the
@@ -347,7 +356,7 @@ def main() -> None:
         header_color=CONTEXTUAL_HEADER_COLOR, y_max=y_max,
     )
 
-    ax_yes.set_ylabel("Genes rescued from zero-DB universe", fontsize=20)
+    ax_yes.set_ylabel("Genes rescued from\nzero-DB universe", fontsize=20)
     ax_yes.tick_params(axis="y", labelsize=16)
     plt.setp(ax_ctx.get_yticklabels(), visible=False)
 
