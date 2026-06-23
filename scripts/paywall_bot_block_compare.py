@@ -37,6 +37,10 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 from matplotlib.patches import Patch
 
+from accessible_surfaceome.audit._doi_ra import (
+    is_non_crossref_oa_agency,
+    resolve_registration_agencies,
+)
 from accessible_surfaceome.audit._plotting_config import (
     CATEGORICAL_PALETTE,
     save_figure,
@@ -62,18 +66,36 @@ OAX_TSV_SNAPSHOT = PROBE_DIR / "cohort100x10_openalex_10axis.tsv"
 
 GIST_URL = "https://gist.github.com/beccajcarlson/cbc950dad1c3a6595fd5018cdb6b030d"
 
-BUCKET_ORDER = ["pmc", "unpaywall", "bot_blocked", "no_oa"]
+BUCKET_ORDER = [
+    "pmc", "unpaywall", "datacite_pdf",
+    "bot_blocked", "datacite_oa_repo", "no_oa",
+]
 BUCKET_LABEL = {
     "pmc": "Full body via PMC",
     "unpaywall": "Full body via Unpaywall",
+    # New tier (PR #81): the DataCite landing-page resolver in
+    # abstract_triage._fetch_body_via_datacite_landing fetched the body.
+    # Reachable just like PMC / Unpaywall — kept separate so we can
+    # measure the new tier's per-paper contribution.
+    "datacite_pdf": "Full body via DataCite",
     "bot_blocked": "Bot-blocked publisher",
+    # DOI registered with a non-Crossref agency (DataCite, JaLC, ISTIC)
+    # — figshare, HeiDOK, LMU edoc, UNSW, ResearchGate, ESSR, etc. —
+    # where the landing page doesn't emit the Highwire
+    # ``<meta name="citation_pdf_url">`` tag the DataCite resolver
+    # scrapes. arXiv + Zenodo + Stacks land in ``datacite_pdf`` instead.
+    "datacite_oa_repo": "OA repo, DataCite (still missed)",
     "no_oa": "No open access",
 }
 BUCKET_COLOR = {
-    "pmc": CATEGORICAL_PALETTE[1],          # teal
-    "unpaywall": CATEGORICAL_PALETTE[2],    # amber
-    "bot_blocked": CATEGORICAL_PALETTE[0],  # maroon-light
-    "no_oa": CATEGORICAL_PALETTE[4],        # maroon-dark
+    "pmc": CATEGORICAL_PALETTE[1],                  # teal-mid
+    "unpaywall": CATEGORICAL_PALETTE[2],            # amber
+    "datacite_pdf": CATEGORICAL_PALETTE[5],         # teal-light — adjacent to
+                                                    # PMC/Unpaywall (reachable group)
+    "bot_blocked": CATEGORICAL_PALETTE[0],          # maroon-light
+    "datacite_oa_repo": CATEGORICAL_PALETTE[3],     # lavender — "info" tone,
+                                                    # not a paywall-style warning
+    "no_oa": CATEGORICAL_PALETTE[4],                # maroon-dark
 }
 
 # Production = 21 axes (mirrors build_a1_kickoff exactly). OpenAlex =
@@ -146,26 +168,155 @@ def load_openalex_tsv_snapshot(path: Path) -> tuple[list[dict], list[dict]]:
     return gene_rows, paper_rows
 
 
+_FETCH_OUTCOME_CACHE = (
+    ROOT / "data/external/probe_body_fetch_outcomes.json"
+)
+
+
+def _load_fetch_outcome_cache() -> dict[str, str]:
+    if _FETCH_OUTCOME_CACHE.exists():
+        try:
+            return json.loads(_FETCH_OUTCOME_CACHE.read_text())
+        except json.JSONDecodeError:
+            return {}
+    return {}
+
+
+def _save_fetch_outcome_cache(cache: dict[str, str]) -> None:
+    _FETCH_OUTCOME_CACHE.parent.mkdir(parents=True, exist_ok=True)
+    _FETCH_OUTCOME_CACHE.write_text(json.dumps(cache, indent=2, sort_keys=True))
+
+
+def upgrade_datacite_pdf_bucket(papers: list[dict]) -> int:
+    """For rows currently bucketed ``datacite_oa_repo``, try the new
+    DataCite tier (added in PR #81). If ``_fetch_body_drafts`` returns
+    ``source="datacite_pdf"``, promote the bucket to ``datacite_pdf``.
+
+    Cached per-DOI in ``data/external/probe_body_fetch_outcomes.json``
+    (gitignored). Idempotent: re-running the compare-builder hits the
+    cache, no network. Returns the number of rows promoted.
+
+    Why this is post-hoc instead of in the probe: the existing probe
+    JSONL was produced before PR #81's DataCite tier landed; the rows
+    fell through to ``no_oa`` and got RA-reclassified to
+    ``datacite_oa_repo``. Re-running the probe would be expensive
+    (cohort × API rate limits); re-fetching just the ~28 candidate rows
+    here is cheap (with cache) and produces the same end result.
+    """
+    candidates = [
+        p for p in papers
+        if p.get("bucket") == "datacite_oa_repo" and p.get("doi")
+    ]
+    if not candidates:
+        return 0
+    from accessible_surfaceome.agents.plan_trim_select.abstract_triage import (
+        _fetch_body_drafts,
+    )
+    from accessible_surfaceome.tools._shared.http import open_default_client
+    from accessible_surfaceome.tools._shared.models import Paper
+    from accessible_surfaceome.tools._shared.retraction_watch import RetractionIndex
+
+    cache = _load_fetch_outcome_cache()
+    http = None
+    ri = None
+    n_promoted = 0
+    for p in candidates:
+        doi = (p.get("doi") or "").lower().strip()
+        if not doi:
+            continue
+        outcome = cache.get(doi)
+        if outcome is None:
+            # Lazy-init the network clients only when we actually need them.
+            if http is None:
+                http = open_default_client()
+                ri = RetractionIndex()
+            paper_obj = Paper(
+                pmid=p.get("pmid") or 0,
+                pmc_id=p.get("pmc_id"),
+                doi=doi,
+                title=p.get("title") or "",
+                year=p.get("year"),
+            )
+            try:
+                result = _fetch_body_drafts(paper_obj, http=http, retraction_index=ri)
+                outcome = (
+                    result.source if (result and result.drafts) else "none"
+                )
+            except Exception:
+                outcome = "none"
+            cache[doi] = outcome
+            _save_fetch_outcome_cache(cache)  # incremental — survive interrupts
+        if outcome == "datacite_pdf":
+            p["bucket"] = "datacite_pdf"
+            n_promoted += 1
+    return n_promoted
+
+
+def reclassify_oa_repo_misses(papers: list[dict]) -> int:
+    """Mutate ``papers`` in place: any ``no_oa`` row whose DOI is registered
+    with a non-Crossref RA (DataCite, JaLC, ISTIC, ...) gets re-labeled to
+    ``datacite_oa_repo``. Those DOIs typically point at OA repositories
+    (arXiv, Zenodo, figshare, institutional theses, regional aggregators).
+
+    The DataCite landing-page resolver in
+    ``abstract_triage._fetch_body_via_datacite_landing`` reaches a subset of
+    these — arXiv and Zenodo are verified end-to-end (8 drafts each); figshare,
+    HeiDOK, and many institutional repos still miss because their landing
+    pages don't emit the Highwire ``citation_pdf_url`` meta tag. Returns the
+    number of rows reclassified.
+    """
+    dois = [p.get("doi") for p in papers if p.get("doi") and p.get("bucket") == "no_oa"]
+    if not dois:
+        return 0
+    ra_by_doi = resolve_registration_agencies(dois)
+    n = 0
+    for p in papers:
+        doi = (p.get("doi") or "").lower().strip()
+        if p.get("bucket") != "no_oa" or not doi:
+            continue
+        if is_non_crossref_oa_agency(ra_by_doi.get(doi, "unknown")):
+            p["bucket"] = "datacite_oa_repo"
+            n += 1
+    return n
+
+
 def write_tsv(prod_papers, oax_papers, out_path: Path) -> None:
     """Tidy long-form: one row per (source, gene, paper).
 
     Refresh the canonical TSV — prod rows are live from JSONL, openalex
     rows are passed through from the snapshot. Idempotent on repeat runs.
+
+    URL columns are denormalized from the IDs so a reader can click
+    through to any paper without constructing URLs themselves:
+    ``pubmed_url`` / ``pmc_url`` / ``doi_url``. Empty when the
+    underlying ID is missing.
     """
     rows = []
     for src, papers in [("production", prod_papers), ("openalex", oax_papers)]:
         for p in papers:
+            pmid = p.get("pmid") or ""
+            pmc_id = p.get("pmc_id") or ""
+            doi = p.get("doi") or ""
             rows.append({
                 "source": src,
                 "gene": p["gene"],
-                "pmid": p.get("pmid") or "",
-                "pmc_id": p.get("pmc_id") or "",
-                "doi": p.get("doi") or "",
+                "pmid": pmid,
+                "pmc_id": pmc_id,
+                "doi": doi,
                 "year": p.get("year") or "",
                 "bucket": p["bucket"],
                 "title": (p.get("title") or "").replace("\t", " ").replace("\n", " ")[:200],
+                # Click-through URLs — pubmed for the PMID-keyed primary record,
+                # PMC for the open-access full text when available, DOI for the
+                # publisher landing. Empty when the corresponding id is missing.
+                "pubmed_url": f"https://pubmed.ncbi.nlm.nih.gov/{pmid}/" if pmid else "",
+                "pmc_url": f"https://www.ncbi.nlm.nih.gov/pmc/articles/{pmc_id}/" if pmc_id else "",
+                "doi_url": f"https://doi.org/{doi}" if doi else "",
             })
-    cols = ["source", "gene", "pmid", "pmc_id", "doi", "year", "bucket", "title"]
+    cols = [
+        "source", "gene", "pmid", "pmc_id", "doi", "year",
+        "bucket", "title", "pubmed_url", "pmc_url", "doi_url",
+    ]
     with out_path.open("w") as f:
         w = csv.DictWriter(f, fieldnames=cols, delimiter="\t")
         w.writeheader()
@@ -238,7 +389,7 @@ def make_figure(prod_genes, prod_papers, oax_genes, oax_papers, out_dir: Path) -
     ]
     ax.legend(
         handles=handles, loc="upper center", bbox_to_anchor=(0.45, -0.18),
-        ncol=4, frameon=False,
+        ncol=3, frameon=False,
     )
     sns.despine(ax=ax, top=True, right=True, left=True, bottom=False)
 
@@ -263,6 +414,19 @@ def main() -> None:
         oax_note = "live 21-axis JSONL"
     print(f"production: {len(prod_genes)} genes / {len(prod_papers)} papers (live JSONL)")
     print(f"openalex:   {len(oax_genes)} genes / {len(oax_papers)} papers ({oax_note})")
+
+    n_prod_reclass = reclassify_oa_repo_misses(prod_papers)
+    n_oax_reclass = reclassify_oa_repo_misses(oax_papers)
+    print(
+        f"reclassified no_oa→datacite_oa_repo: "
+        f"production={n_prod_reclass}, openalex={n_oax_reclass}"
+    )
+    n_prod_promo = upgrade_datacite_pdf_bucket(prod_papers)
+    n_oax_promo = upgrade_datacite_pdf_bucket(oax_papers)
+    print(
+        f"promoted datacite_oa_repo→datacite_pdf (PR #81 new tier): "
+        f"production={n_prod_promo}, openalex={n_oax_promo}"
+    )
 
     TSV_OUT.parent.mkdir(parents=True, exist_ok=True)
     write_tsv(prod_papers, oax_papers, TSV_OUT)

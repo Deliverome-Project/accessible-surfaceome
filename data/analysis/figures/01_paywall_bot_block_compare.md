@@ -45,15 +45,27 @@ When the prod fetch fails, the secondary Unpaywall lookup distinguishes:
 |---|---|
 | **PMC** | Production fetched the full body via PMC JATS |
 | **Unpaywall** | Production fetched via Unpaywall's OA PDF |
+| **DataCite** | Production fetched via the DataCite landing → `<meta name="citation_pdf_url">` tier (PR #81). Reaches DataCite-registered DOIs Unpaywall doesn't index — empirically: arXiv (`10.48550/arxiv.*`) and Zenodo (`10.5281/zenodo.*`) records that emit Highwire metadata. |
 | **Bot-blocked** | Unpaywall says is_oa=true, but the only OA paths route through publishers that 403 our polite UA (Wiley, Elsevier ScienceDirect, ASH/Blood, MDPI, OUP/Academic Oxford, bioRxiv, medRxiv, JBC, Cell Press, AHA, JCS, IIAR — empirically HEAD-tested 2026-06-07) |
-| **No OA** | Unpaywall returns is_oa=false (paywalled) OR has no record |
+| **OA repo, DataCite (still missed)** | DOI is registered with a non-Crossref agency (DataCite, JaLC, ISTIC), but EVEN the DataCite tier can't reach it — typically figshare (JS-rendered landing), HeiDOK / LMU edoc / UNSW Sydney institutional repos, ESSR conference posters, ResearchGate (no Highwire `citation_pdf_url` meta tag on the landing). Detection: free `doi.org/doiRA` registration-agency endpoint + a body-fetch attempt that returns nothing. |
+| **No OA** | Unpaywall returns is_oa=false (paywalled) OR has no record, and the DOI is Crossref-registered (so we'd have expected Unpaywall to surface an OA copy if one existed). |
 
 ## Headline results
 
-| Strategy | Sample size | Avg pre-sample papers/gene | PMC | Unpaywall | Bot-blocked | No OA | Reachable |
-|---|---|---|---|---|---|---|---|
-| **Production** (21 axes) | 1,000 papers / 100 genes | 228 | 88% | 0.5% | 0.6% | 10% | **88%** |
-| **OpenAlex** (21 axes) | 989 papers / 100 genes | 829 | 44% | 4% | 11% | 41% | **48%** |
+| Strategy | Sample size | Avg pre-sample papers/gene | PMC | Unpaywall | DataCite | Bot-blocked | OA repo missed | No OA | Reachable |
+|---|---|---|---|---|---|---|---|---|---|
+| **Production** (21 axes) | 1,000 papers / 100 genes | 228 | 88% | 0.5% | 0% | 0.6% | 0.1% | 10% | **88.9%** |
+| **OpenAlex** (21 axes) | 989 papers / 100 genes | 829 | 44% | 4% | 0.5% | 11% | 2.2% | 38% | **48.4%** |
+
+*Reachable* = PMC + Unpaywall + DataCite (everything the production fetch
+chain actually retrieves). The DataCite tier is new in PR #81 — it
+recovers arXiv + Zenodo records that Unpaywall doesn't index. *OA repo
+missed* is the residual lavender bucket: DataCite-registered DOIs whose
+landing pages don't emit Highwire `citation_pdf_url` metadata, so even
+the new tier can't get the PDF (figshare, HeiDOK, LMU edoc, UNSW, ESSR,
+ResearchGate, similar). Production sees almost none of these because its
+PubMed/EuropePMC-keyed discovery rarely surfaces non-Crossref DOIs in
+the first place.
 
 **The story.** With matched 21-axis search complexity, production
 surfaces a smaller pool per gene (~228 papers) but **88% are
@@ -63,6 +75,11 @@ additional pool is dominated by:
 - Preprints whose only OA path bot-blocks (bioRxiv/medRxiv/Research Square)
 - Paywalled non-PMC-archived journal articles (Cell/Nature non-OA, Wiley journals)
 - Grey literature (conference proceedings, dissertations)
+- **OA repository content registered with DataCite** (arXiv, Zenodo,
+  figshare, institutional theses) — these are *not* paywalled, they're
+  just outside Unpaywall's Crossref-indexed world. The lavender bucket
+  carves them out by registration agency; the DataCite landing →
+  `citation_pdf_url` resolver fetches the arXiv + Zenodo subset.
 
 **Net reachable papers per gene**: production ~200 (228 × 88%),
 OpenAlex ~398 (829 × 48%). OpenAlex genuinely surfaces about 2× the

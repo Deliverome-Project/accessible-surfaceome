@@ -27,9 +27,10 @@ import re
 import time
 from collections import Counter
 from concurrent.futures import ThreadPoolExecutor, as_completed
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any, cast
+from urllib.parse import urljoin
 
 from anthropic import Anthropic
 from anthropic.types import TextBlock
@@ -55,6 +56,7 @@ from accessible_surfaceome.tools._shared.models import (
     EvidenceClaimDraft,
     IdentifierBundle,
     Paper,
+    PaperSection,
 )
 from accessible_surfaceome.tools._shared.ncbi import add_ncbi_api_key_param
 from accessible_surfaceome.tools._shared.retraction_watch import RetractionIndex
@@ -329,16 +331,23 @@ def _format_synonyms(bundle: IdentifierBundle | None) -> str:
 
 
 def paper_source_id(paper: Paper) -> str:
-    """Canonical pool/source key for a paper: ``PMC:<id>`` > ``PMID:<id>``.
+    """Canonical pool/source key for a paper: ``PMC:<id>`` > ``PMID:<id>``
+    > ``DOI:<doi>``.
 
     This is the key both the clip pool's ``source_id`` and the triage
     outcome's ``paper_id`` agree on, so the runner can join triage
-    outcomes back to discovered papers and to the body pool.
+    outcomes back to discovered papers and to the body pool. DOI is the
+    third-tier fallback so DataCite-routed preprints (no PMID / PMC ID)
+    still get a stable distinct key — otherwise they all collide on
+    ``UNKNOWN`` and downstream resolvers that guard on
+    ``source_id != "UNKNOWN"`` short-circuit.
     """
     if paper.pmc_id:
         return f"PMC:{paper.pmc_id}"
     if paper.pmid:
         return f"PMID:{paper.pmid}"
+    if paper.doi:
+        return f"DOI:{paper.doi}"
     return "UNKNOWN"
 
 
@@ -480,13 +489,26 @@ def _abstract_clips(paper: Paper) -> list[EvidenceClaimDraft]:
 
 _NCBI_ELINK = "https://eutils.ncbi.nlm.nih.gov/entrez/eutils/elink.fcgi"
 _UNPAYWALL_API = "https://api.unpaywall.org/v2"
+# DataCite's REST API resolves DOIs that aren't in Crossref / Unpaywall (preprint
+# platforms like Astera's Stacks, institutional repos, Zenodo records). The
+# response carries the landing-page URL but rarely the direct PDF — we scrape
+# the landing for ``<meta name="citation_pdf_url">`` (Google Scholar /
+# Highwire convention) to recover the file.
+_DATACITE_API = "https://api.datacite.org/dois"
 # Unpaywall requires an email as a polite-pool identifier (free, no signup).
 # Overridable via UNPAYWALL_EMAIL; defaults to the project contact so the
 # fallback works out of the box without per-worktree .env edits.
 _DEFAULT_UNPAYWALL_EMAIL = "michael.smallegan@gmail.com"
 # Skip absurdly large downloads before parsing — DoS guard for untrusted
-# publisher PDFs. A paper + supplement is well under this.
-_MAX_PDF_BYTES = 40 * 1024 * 1024
+# publisher PDFs. A paper + supplement is well under this; the headroom
+# accommodates the occasional huge supplement (figure-heavy structural
+# papers, multi-omics supp tables, atlas-style preprints).
+_MAX_PDF_BYTES = 80 * 1024 * 1024
+# Preprint platforms (Astera Stacks, institutional repos) ship full-resolution
+# figures inline, so PDFs routinely run 40-80 MB. Kept as a separate constant
+# so the DataCite call site stays semantically explicit about its tolerance,
+# even though the value currently matches ``_MAX_PDF_BYTES``.
+_DATACITE_PDF_MAX_BYTES = 80 * 1024 * 1024
 # At most this many OA locations are attempted per paper, bounding download
 # load/latency when Unpaywall lists many copies (most list 1–3).
 _MAX_PDF_LOCATIONS = 4
@@ -688,6 +710,10 @@ def _fetch_body_drafts(
     2. **Unpaywall OA PDF**: DOI → best OA PDF → pdfplumber section parse.
        Recovers landmark publisher-PDF papers (and the PMC-PDF-only case
        where JATS XML comes back empty).
+    3. **DataCite landing**: DOI → DataCite ``attributes.url`` → scrape
+       ``<meta name="citation_pdf_url">`` from the landing page → PDF.
+       Recovers DataCite-registered DOIs invisible to Unpaywall (preprint
+       platforms like Astera's Stacks, institutional repos, some Zenodo).
 
     Raises if every step fails (caller falls back to keep_abstract). Uses the
     same no-filter ``extract_paper_drafts`` as ``gene_literature(mode=
@@ -723,9 +749,16 @@ def _fetch_body_drafts(
             drafts=pdf_drafts, source="unpaywall_pdf", oa_license=oa_license
         )
 
+    # Step 3: DataCite landing → citation_pdf_url.
+    dc_drafts, dc_license = _fetch_body_via_datacite_landing(paper, http=http)
+    if dc_drafts:
+        return _BodyFetch(
+            drafts=dc_drafts, source="datacite_pdf", oa_license=dc_license
+        )
+
     raise ValueError(
-        f"no body for {_paper_source_id(paper)}: no PMC JATS and no "
-        f"Unpaywall OA PDF (DOI:{paper.doi or '—'})"
+        f"no body for {_paper_source_id(paper)}: no PMC JATS, no Unpaywall "
+        f"OA PDF, and no DataCite landing (DOI:{paper.doi or '—'})"
     )
 
 
@@ -795,6 +828,354 @@ def _fetch_body_via_unpaywall_pdf(
             ),
             oa_license,
         )
+    return [], None
+
+
+# Google-Scholar / Highwire-Press convention for "PDF for this landing page".
+# Two patterns because real-world templates emit name/content in either order.
+_CITATION_PDF_URL_NAME_FIRST = re.compile(
+    r"""<meta\s+[^>]*?\bname\s*=\s*["']citation_pdf_url["']"""
+    r"""[^>]*?\bcontent\s*=\s*["']([^"']+)["']""",
+    re.IGNORECASE,
+)
+_CITATION_PDF_URL_CONTENT_FIRST = re.compile(
+    r"""<meta\s+[^>]*?\bcontent\s*=\s*["']([^"']+)["']"""
+    r"""[^>]*?\bname\s*=\s*["']citation_pdf_url["']""",
+    re.IGNORECASE,
+)
+
+
+# arXiv DOIs follow a deterministic, registry-spec pattern: prefix
+# ``10.48550/arxiv.`` followed by the arXiv identifier (``{YYMM.NNNN}``
+# or legacy ``{archive}/{nnnnnnn}``). The PDF URL is always
+# ``arxiv.org/pdf/{id}`` — no version suffix needed (arXiv serves the
+# latest version when none is requested). Skipping DataCite for arXiv
+# saves the metadata + landing-page hops (2 HTTP round-trips) on the
+# common case.
+_ARXIV_DOI_PREFIX = "10.48550/arxiv."
+
+
+def _arxiv_pdf_url_from_doi(doi: str | None) -> str | None:
+    """Return the deterministic arXiv PDF URL for a DataCite arXiv DOI,
+    or ``None`` if the DOI doesn't match the arXiv pattern."""
+    if not doi:
+        return None
+    lower = doi.lower().strip().lstrip("/")
+    if not lower.startswith(_ARXIV_DOI_PREFIX):
+        return None
+    arxiv_id = lower.removeprefix(_ARXIV_DOI_PREFIX)
+    if not arxiv_id:
+        return None
+    return f"https://arxiv.org/pdf/{arxiv_id}"
+
+
+def _arxiv_id_from_doi(doi: str | None) -> str | None:
+    """Return just the arXiv identifier (e.g. ``2510.17752``) from a DataCite
+    arXiv DOI, or ``None`` for non-arxiv DOIs. Used by the ar5iv HTML path."""
+    if not doi:
+        return None
+    lower = doi.lower().strip().lstrip("/")
+    if not lower.startswith(_ARXIV_DOI_PREFIX):
+        return None
+    arxiv_id = lower.removeprefix(_ARXIV_DOI_PREFIX)
+    return arxiv_id or None
+
+
+# ar5iv (https://ar5iv.org) is the canonical LaTeX→HTML conversion of
+# arXiv papers, hosted at ``ar5iv.org/html/{arxiv_id}``. Coverage is
+# *partial*: well-structured LaTeX papers convert with clean semantic
+# tagging (``<section class="ltx_section">`` blocks, ``<h2 class="ltx_title">``
+# titles, ``<div class="ltx_para">`` paragraphs); papers ar5iv hasn't or
+# couldn't convert return the page template with an essentially-empty body
+# (1 stub paragraph, 0 sections). We detect the stub case by the absence
+# of ``ltx_section`` markers and fall back to the PDF shortcut.
+_AR5IV_HTML_BASE = "https://ar5iv.org/html"
+# Regex extractors over the well-defined LaTeXML-generated HTML — using
+# stdlib regex instead of bs4 to keep deps lean. The structure is
+# stable enough that this is more reliable than a full HTML parse.
+_AR5IV_SECTION_RE = re.compile(
+    r'<section\b[^>]*\bclass="[^"]*\bltx_section\b[^"]*"[^>]*>(.*?)</section>',
+    re.DOTALL | re.IGNORECASE,
+)
+_AR5IV_TITLE_RE = re.compile(
+    r'<h[1-6]\b[^>]*\bclass="[^"]*\bltx_title\b[^"]*"[^>]*>(.*?)</h[1-6]>',
+    re.DOTALL | re.IGNORECASE,
+)
+_AR5IV_TAG_STRIP_RE = re.compile(r"<[^>]+>")
+_AR5IV_WHITESPACE_RE = re.compile(r"\s+")
+# Strip a leading section number ("1 Introduction", "2.1 Methods") before
+# looking the title up in the heading map.
+_AR5IV_LEADING_NUMBER_RE = re.compile(r"^\s*\d+(\.\d+)*\.?\s+")
+
+
+def _normalize_ar5iv_heading(title: str) -> str:
+    """Lowercase + drop leading section number so we can look the title up
+    in the same ``_HEADING_TO_SECTION`` map pdf_parse uses."""
+    return _AR5IV_LEADING_NUMBER_RE.sub("", (title or "").strip()).strip().lower()
+
+
+def _ar5iv_strip(html: str) -> str:
+    """Strip tags + collapse whitespace from an ar5iv HTML fragment."""
+    return _AR5IV_WHITESPACE_RE.sub(" ", _AR5IV_TAG_STRIP_RE.sub(" ", html)).strip()
+
+
+def _fetch_arxiv_html_sections(
+    arxiv_id: str, *, http: CachedHTTP
+) -> list[PaperSection] | None:
+    """Fetch the ar5iv HTML rendition of an arXiv paper and parse it into
+    sections, or return ``None`` if ar5iv hasn't converted this paper
+    (the stub page) or if the fetch fails.
+
+    Returns a clean section list when ar5iv has a real conversion —
+    typically better structured than what pdfplumber recovers from the
+    PDF, especially for math-heavy or figure-heavy papers where PDF
+    section detection drops headings. Callers fall back to the PDF
+    shortcut on ``None``.
+    """
+    url = f"{_AR5IV_HTML_BASE}/{arxiv_id}"
+    try:
+        html = http.get_text(url, source="arxiv_html", ttl_days=30)
+    except Exception as exc:  # noqa: BLE001
+        logger.info("ar5iv fetch failed for arXiv:%s: %s", arxiv_id, exc)
+        return None
+    if not html:
+        return None
+    section_blocks = _AR5IV_SECTION_RE.findall(html)
+    if not section_blocks:
+        # Stub page — ar5iv didn't convert this paper. Common for very
+        # new papers + papers with LaTeX templates LaTeXML chokes on.
+        logger.info("ar5iv has no ltx_section blocks for arXiv:%s (stub page)", arxiv_id)
+        return None
+    # Reuse pdf_parse's heading→SectionName map so the section taxonomy
+    # is identical between PDF-parsed and HTML-parsed bodies. Unknown
+    # headings (review article taxonomies, paper-specific section names)
+    # default to "results" — the broad body bucket, consistent with how
+    # the rest of the chain treats untagged body content.
+    from accessible_surfaceome.agents.plan_trim_select.pdf_parse import (
+        _HEADING_TO_SECTION,
+    )
+    sections: list[PaperSection] = []
+    for block in section_blocks:
+        title_match = _AR5IV_TITLE_RE.search(block)
+        raw_title = _ar5iv_strip(title_match.group(1)) if title_match else ""
+        # Drop the title element from the text body to avoid duplication.
+        body_html = _AR5IV_TITLE_RE.sub("", block, count=1) if title_match else block
+        body = _ar5iv_strip(body_html)
+        if not body:
+            continue
+        section_name = _HEADING_TO_SECTION.get(
+            _normalize_ar5iv_heading(raw_title), "results"
+        )
+        sections.append(PaperSection(name=section_name, text=body))
+    return sections or None
+
+
+def _extract_citation_pdf_url(html: str) -> str | None:
+    """Return the ``citation_pdf_url`` from a Highwire-style HTML <head>, or None.
+
+    The Google Scholar / Highwire Press metadata convention is the cross-repo
+    standard for "the PDF for this article" — Stacks, bioRxiv/medRxiv, PubPub,
+    most OJS/Janeway instances, and most institutional repos emit it. DataCite
+    rarely fills ``attributes.contentUrl`` for articles, so this is the workable
+    signal once we're on the landing page.
+    """
+    for pattern in (_CITATION_PDF_URL_NAME_FIRST, _CITATION_PDF_URL_CONTENT_FIRST):
+        m = pattern.search(html)
+        if m:
+            return m.group(1)
+    return None
+
+
+@dataclass
+class DataCiteMetadata:
+    """Subset of DataCite ``data.attributes`` we use to route a PDF fetch.
+
+    ``landing_url`` is always populated (we drop the record otherwise).
+    ``content_urls`` is opportunistic: DataCite rarely fills it for articles,
+    but datasets and some repository deposits do. ``license`` is the raw
+    rightsIdentifier (e.g. ``"cc-by-4.0"``), captured for redistribution
+    provenance (not gated — snippet redistribution rests on fair use).
+    """
+
+    landing_url: str
+    content_urls: list[str] = field(default_factory=list)
+    license: str | None = None
+
+
+def _lookup_datacite_metadata(
+    doi: str, *, http: CachedHTTP
+) -> DataCiteMetadata | None:
+    """Resolve DOI → DataCite metadata or ``None`` if the DOI isn't in DataCite.
+
+    Returns ``None`` on 404 (Crossref-only DOI), on any HTTP error, or when the
+    payload doesn't carry ``data.attributes.url`` (we have nothing to fetch
+    without a landing URL). Tolerates accidentally-Unpaywall-shaped JSON for
+    cleanliness when callers reuse one HTTP fixture across test paths.
+    """
+
+    if not doi:
+        return None
+    try:
+        payload = http.get_json(
+            f"{_DATACITE_API}/{doi.lstrip('/')}",
+            source="datacite",
+            ttl_days=90,
+        )
+    except Exception:  # noqa: BLE001
+        return None
+    if not isinstance(payload, dict):
+        return None
+    data = payload.get("data")
+    if not isinstance(data, dict):
+        return None
+    attrs = data.get("attributes") or {}
+    landing = attrs.get("url")
+    if not isinstance(landing, str) or not landing:
+        return None
+
+    # contentUrl is spec'd as Sequence[String] but is sometimes serialized as a
+    # bare string or null — accept both shapes.
+    raw_content = attrs.get("contentUrl")
+    content_urls: list[str] = []
+    if isinstance(raw_content, str):
+        content_urls = [raw_content]
+    elif isinstance(raw_content, list):
+        content_urls = [c for c in raw_content if isinstance(c, str) and c]
+
+    rights_list = attrs.get("rightsList") or []
+    license_str: str | None = None
+    if isinstance(rights_list, list) and rights_list:
+        first = rights_list[0]
+        if isinstance(first, dict):
+            ident = first.get("rightsIdentifier")
+            if isinstance(ident, str) and ident:
+                license_str = ident
+
+    return DataCiteMetadata(
+        landing_url=landing, content_urls=content_urls, license=license_str
+    )
+
+
+def _fetch_body_via_datacite_landing(
+    paper: Paper, *, http: CachedHTTP
+) -> tuple[list[EvidenceClaimDraft], str | None]:
+    """Tier-3 body recovery: DataCite landing → ``citation_pdf_url`` → PDF.
+
+    Returns ``(drafts, license)``. Empty list (never raises) when there's no
+    DOI, no stable source key, the DOI isn't in DataCite, the landing page
+    can't be fetched, no ``citation_pdf_url`` meta tag is present, or every
+    candidate URL is blocked / non-PDF / unparseable — all "fall through to
+    the abstract" signals. Uses :data:`_DATACITE_PDF_MAX_BYTES` as the
+    per-fetch cap to give preprint-platform PDFs headroom (Stacks /
+    institutional repos routinely ship 40-80 MB PDFs with full-resolution
+    figures inline).
+    """
+
+    if not paper.doi:
+        return [], None
+    source_id = _paper_source_id(paper)
+    if source_id == "UNKNOWN":
+        return [], None
+
+    def _try_pdf(pdf_url: str) -> list[EvidenceClaimDraft] | None:
+        """Fetch + magic-check + section-parse a single PDF URL. Returns
+        drafts on success, None on any of: HTTP fail, non-PDF response,
+        empty section parse. Centralizes the try/log/skip pattern so both
+        the arXiv shortcut and the standard DataCite path share it."""
+        try:
+            pdf_bytes = http.get_bytes(
+                pdf_url,
+                source="datacite_pdf",
+                ttl_days=180,
+                headers={"Accept": "application/pdf"},
+                max_bytes=_DATACITE_PDF_MAX_BYTES,
+                min_interval_ms=_PDF_COURTESY_INTERVAL_MS,
+            )
+        except Exception as exc:  # noqa: BLE001 — 403 / paywall / timeout / too large
+            logger.info(
+                "DataCite PDF fetch failed for %s at %s: %s",
+                source_id, pdf_url, exc,
+            )
+            return None
+        if b"%PDF" not in pdf_bytes[:1024]:
+            logger.info(
+                "DataCite URL for %s was not a PDF: %s", source_id, pdf_url
+            )
+            return None
+        sections = parse_pdf_to_sections(pdf_bytes)
+        if not sections:
+            return None
+        return extract_paper_drafts(
+            source_id=source_id, abstract=paper.abstract, sections=sections
+        )
+
+    # Fast path: arXiv DOIs have a deterministic URL pattern and (often)
+    # an ar5iv HTML rendition. Skips DataCite metadata + landing-page hops
+    # entirely on the common success case. Strategy:
+    #   1. Try ar5iv HTML (cleaner sections, better for math-heavy papers
+    #      where pdfplumber's heading detection drops headings).
+    #   2. Fall back to arxiv.org/pdf/{id} (the deterministic PDF URL).
+    #   3. Fall through to the standard DataCite path if both fail.
+    arxiv_id = _arxiv_id_from_doi(paper.doi)
+    arxiv_url: str | None = None
+    if arxiv_id is not None:
+        html_sections = _fetch_arxiv_html_sections(arxiv_id, http=http)
+        if html_sections:
+            drafts = extract_paper_drafts(
+                source_id=source_id, abstract=paper.abstract, sections=html_sections
+            )
+            if drafts:
+                return drafts, None
+        arxiv_url = f"https://arxiv.org/pdf/{arxiv_id}"
+        drafts = _try_pdf(arxiv_url)
+        if drafts:
+            # arXiv DataCite records don't carry rightsList — license is
+            # always CC-BY / CC-0 / arXiv-perpetual depending on the paper,
+            # but we don't fetch the metadata so we can't capture which.
+            return drafts, None
+
+    meta = _lookup_datacite_metadata(paper.doi, http=http)
+    if meta is None:
+        return [], None
+
+    candidates: list[str] = []
+    # Opportunistic: if DataCite gave us a direct content URL that looks like a
+    # PDF, try it first — it saves the landing-page hop.
+    for u in meta.content_urls:
+        if ".pdf" in u.lower():
+            candidates.append(u)
+
+    try:
+        landing_html = http.get_text(
+            meta.landing_url, source="datacite_landing", ttl_days=7
+        )
+    except Exception as exc:  # noqa: BLE001
+        logger.info(
+            "DataCite landing fetch failed for %s at %s: %s",
+            source_id, meta.landing_url, exc,
+        )
+        landing_html = None
+
+    if landing_html:
+        meta_pdf = _extract_citation_pdf_url(landing_html)
+        if meta_pdf:
+            # urljoin handles relative paths against the landing URL.
+            candidates.append(urljoin(meta.landing_url, meta_pdf))
+
+    # Dedupe, preserve order; drop the arXiv URL we already tried above.
+    seen: set[str] = set()
+    if arxiv_url:
+        seen.add(arxiv_url)
+    unique: list[str] = []
+    for u in candidates:
+        if u and u not in seen:
+            seen.add(u)
+            unique.append(u)
+
+    for pdf_url in unique[:_MAX_PDF_LOCATIONS]:
+        drafts = _try_pdf(pdf_url)
+        if drafts:
+            return drafts, meta.license
     return [], None
 
 
@@ -971,8 +1352,13 @@ def apply_triage_outcomes(
         by_src = Counter(a.fetch_source for a in wf if a.fetched_body)
         fell_back = sum(1 for a in wf if not a.fetched_body)
         logger.info(
-            "triage body fetch: %d worth_fetching → pmc_xml=%d unpaywall_pdf=%d fell_back=%d",
-            len(wf), by_src.get("pmc_xml", 0), by_src.get("unpaywall_pdf", 0), fell_back,
+            "triage body fetch: %d worth_fetching → pmc_xml=%d unpaywall_pdf=%d "
+            "datacite_pdf=%d fell_back=%d",
+            len(wf),
+            by_src.get("pmc_xml", 0),
+            by_src.get("unpaywall_pdf", 0),
+            by_src.get("datacite_pdf", 0),
+            fell_back,
         )
 
     return actions
