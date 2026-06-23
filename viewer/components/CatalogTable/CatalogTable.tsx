@@ -1394,6 +1394,10 @@ export function CatalogTable({
             <Link href="/api/#triage" className={styles.apiHintLink}>
               <code>GET /v1/triage/&#123;SYMBOL&#125;</code>
             </Link>
+            ; the full deep-dive SurfaceomeRecord is on{" "}
+            <Link href="/api/#genes" className={styles.apiHintLink}>
+              <code>GET /v1/genes/&#123;SYMBOL&#125;</code>
+            </Link>
             .
           </span>
         </p>

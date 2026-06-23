@@ -189,6 +189,7 @@ const ENDPOINT_GROUPS: EndpointGroup[] = [
       {
         method: "GET",
         path: "/v1/genes/{SYMBOL}",
+        anchor: "genes",
         sizeKey: "/v1/genes/{SYMBOL}",
         summary:
           "Full SurfaceomeRecord JSON for one gene. Contains the executive summary, evidence-grade rationale, per-method observations, deterministic features, accessibility risks, and the full evidence ledger with citations.",
