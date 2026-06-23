@@ -80,25 +80,34 @@ These are the publication-workflow items that the
 [`scripts/release/`](https://github.com/Deliverome-Project/accessible-surfaceome/tree/{sha}/scripts/release/)
 pipeline expects to ship alongside the data — placeholders are wired
 in the source script but the artifacts themselves are still in
-iteration:
+iteration. Marked as checkboxes for tracking:
 
-* `deep_dives_all.tar.gz` — gzipped tarball, one `<SYMBOL>.json` per
-  published `SurfaceomeRecord` (full evidence chain + per-claim
+- [ ] **`deep_dives_all.tar.gz`** — gzipped tarball, one `<SYMBOL>.json`
+  per published `SurfaceomeRecord` (full evidence chain + per-claim
   verbatim quotes). Held back until the deep-dive prompt + schema
   iteration converges; corresponds to the commented-out
   `{{"deep_dives_bundle": True, ...}}` entry in
   [`publish-archive.py`](https://github.com/Deliverome-Project/accessible-surfaceome/blob/{sha}/scripts/release/publish-archive.py)'s
   `EXTRA_FILES`.
-* `manuscript.pdf` + `manuscript.xml` — the publication PDF (built
-  upstream from `.docx`/`.tex`/`.md`) and a pandoc-generated JATS
-  XML representation for PMC indexing + downstream text-mining. Held
-  back until the manuscript is ready; corresponds to the commented-
-  out `{{"manuscript": True, ...}}` entry in `EXTRA_FILES`.
-* `related_identifiers` linking this record to the **code-record
-  concept DOI** (auto-archived from the next tagged GitHub Release).
-  The link will be added by editing
+- [ ] **`manuscript.pdf`** + **`manuscript.xml`** — the publication
+  PDF (built upstream from `.docx` / `.tex` / `.md`) and a
+  pandoc-generated JATS XML representation for PMC indexing +
+  downstream text-mining. Held back until the manuscript is ready;
+  corresponds to the commented-out `{{"manuscript": True, ...}}`
+  entry in `EXTRA_FILES`.
+- [ ] **`related_identifiers`** linking this record to the
+  **code-record concept DOI** (auto-archived from the next tagged
+  GitHub Release). The link will be added by editing
   `publish-archive.py`'s `SEED_METADATA.related_identifiers` once the
   first code release ships.
+
+Already shipping in this draft:
+
+- [x] `triage-runs-genome-with-reasoning.tsv` (consolidated ncbi + pubmed)
+- [x] `triage-benchmark-with-reasoning.tsv` (multi-replicate, truth-joined)
+- [x] In-deposit `README.md` (this file)
+- [x] Reserved DOI wired into [`scripts/embed_figure_gist_metadata.py`](https://github.com/Deliverome-Project/accessible-surfaceome/blob/{sha}/scripts/embed_figure_gist_metadata.py)'s
+  `ZENODO_DATA_DOI` so figure PDF/PNG metadata can pre-bake the citation.
 
 ## Files
 

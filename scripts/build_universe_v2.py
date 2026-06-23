@@ -14,11 +14,15 @@ from ``triage_run`` for ``sonnet_only`` symbols.
 
 Source data:
   * candidate_universe.tsv (M1 universe; ≥1 of 5 classical surface DBs)
-  * D1 ``triage_run`` rows under ``run_id='genome_full_sonnet_ncbi_v1'``
-    (the 2026-05-12 Sonnet/ncbi sweep over 19,464 NCBI protein-coding
-    genes with the slim-canonical prompt).
-
-Total output rows: 6,521 (3,381 in both + 2,288 M1-only + 852 Sonnet-only).
+  * D1 ``triage_run`` rows under ``run_id='genome_full_sonnet_ncbi_v2'``
+    (the canonical 2026-06 Sonnet/ncbi sweep over the M1 candidate
+    universe with the canonical prompt — superseded v1).
+  * D1 ``triage_run`` rows under
+    ``run_id='genome_full_sonnet_pubmed_ncbi_v1'`` — the PubMed-
+    augmented rescue lane over the 2,626-gene ambiguous-reason
+    zero-DB Sonnet-no slice. The same read-side rule the catalog
+    applies is used here: if PubMed says yes/contextual and NCBI
+    says no, the PubMed verdict wins.
 
 Re-run after any genome-wide Sonnet sweep refresh; outputs to
 ``data/processed/candidate_universe/candidate_universe_v2.tsv``.
@@ -36,7 +40,8 @@ load_env()
 
 CAND_IN = REPO_ROOT / "data/processed/candidate_universe/candidate_universe.tsv"
 CAND_OUT = REPO_ROOT / "data/processed/candidate_universe/candidate_universe_v2.tsv"
-SONNET_RUN_ID = "genome_full_sonnet_ncbi_v1"
+SONNET_NCBI_RUN_ID = "genome_full_sonnet_ncbi_v2"
+SONNET_PUBMED_RUN_ID = "genome_full_sonnet_pubmed_ncbi_v1"
 
 DB_FLAGS = [
     ("uniprot_surface_flag", "m1_uniprot_flag"),
@@ -65,17 +70,52 @@ def _load_m1() -> dict[str, dict]:
 
 
 def _load_sonnet() -> dict[str, dict]:
+    """Return all gene_symbols where the reconciled Sonnet verdict is
+    yes/contextual.
+
+    Reconciliation rule (matches the catalog Worker):
+      reconciled = pubmed_verdict if pubmed in {yes, contextual} and
+                                    ncbi   == 'no'
+                   else ncbi_verdict
+
+    Equivalent to: a gene lands in the universe if EITHER its ncbi
+    verdict or its pubmed_ncbi verdict is yes/contextual. PubMed
+    never overrides an ncbi yes/contextual since the rescue is
+    additive — pubmed-no is not evidence of absence.
+    """
     with D1Client() as d1:
-        rows = d1.query(
+        ncbi_rows = d1.query(
             "SELECT gene_symbol, uniprot_acc, hgnc_id, ensembl_gene, "
             "       predicted_verdict, predicted_reason, "
             "       predicted_confidence "
             "FROM triage_run "
             "WHERE run_id = ? "
             "  AND predicted_verdict IN ('yes', 'contextual');",
-            [SONNET_RUN_ID],
+            [SONNET_NCBI_RUN_ID],
         )
-    return {r["gene_symbol"]: r for r in rows}
+        # PubMed rescue run_id only contains pubmed_ncbi cells, so a
+        # single run_id filter is enough.
+        pubmed_rows = d1.query(
+            "SELECT gene_symbol, uniprot_acc, hgnc_id, ensembl_gene, "
+            "       predicted_verdict, predicted_reason, "
+            "       predicted_confidence "
+            "FROM triage_run "
+            "WHERE run_id = ? "
+            "  AND predicted_verdict IN ('yes', 'contextual');",
+            [SONNET_PUBMED_RUN_ID],
+        )
+    out: dict[str, dict] = {r["gene_symbol"]: r for r in ncbi_rows}
+    # PubMed rescues — add genes the ncbi pass didn't already cover.
+    # The reason field captures the more-inclusive verdict for the
+    # added rows; existing ncbi-yes/contextual rows stay as-is.
+    rescued = 0
+    for r in pubmed_rows:
+        if r["gene_symbol"] not in out:
+            out[r["gene_symbol"]] = r
+            rescued += 1
+    print(f"  ncbi yes/contextual: {len(ncbi_rows):,}")
+    print(f"  pubmed rescues (new): {rescued:,}")
+    return out
 
 
 def main() -> int:
