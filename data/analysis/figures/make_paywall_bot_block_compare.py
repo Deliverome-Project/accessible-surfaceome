@@ -112,21 +112,27 @@ def _apply_brand_style() -> None:
     })
 
 
-BUCKET_ORDER = ["pmc", "unpaywall", "bot_blocked", "datacite_oa_repo", "no_oa"]
+BUCKET_ORDER = [
+    "pmc", "unpaywall", "datacite_pdf",
+    "bot_blocked", "datacite_oa_repo", "no_oa",
+]
 BUCKET_LABEL = {
     "pmc": "Full body via PMC",
     "unpaywall": "Full body via Unpaywall",
+    # New tier: DataCite landing → citation_pdf_url → PDF. Reaches arXiv,
+    # Zenodo, Stacks. Reachable just like PMC / Unpaywall.
+    "datacite_pdf": "Full body via DataCite",
     "bot_blocked": "Bot-blocked publisher",
-    # DOI registered with a non-Crossref agency — arXiv, Zenodo, figshare,
-    # institutional theses, regional aggregators. The DataCite landing
-    # resolver reaches arXiv + Zenodo; figshare / HeiDOK / many inst-repos
-    # still miss (no Highwire citation_pdf_url meta tag on the landing).
-    "datacite_oa_repo": "OA repo, DataCite",
+    # DOI on a non-Crossref repo where the DataCite tier ALSO can't reach
+    # — figshare, HeiDOK, LMU edoc, UNSW, ResearchGate, etc. (no Highwire
+    # citation_pdf_url meta tag on the landing).
+    "datacite_oa_repo": "OA repo, DataCite (still missed)",
     "no_oa": "No open access",
 }
 BUCKET_COLOR = {
     "pmc": BRAND_PALETTE[1],
     "unpaywall": BRAND_PALETTE[2],
+    "datacite_pdf": BRAND_PALETTE[5],   # teal-light — reachable group
     "bot_blocked": BRAND_PALETTE[0],
     "datacite_oa_repo": BRAND_PALETTE[3],  # lavender
     "no_oa": BRAND_PALETTE[4],

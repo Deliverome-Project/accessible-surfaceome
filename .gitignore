@@ -41,6 +41,9 @@ data/external/tool_cache.sqlite*
 data/external/blob_cache/
 # DOI Foundation RA lookup cache (audit._doi_ra). Rebuilds in ~2 min from cold.
 data/external/doi_ra_cache.json
+# Per-DOI body-fetch outcome cache populated by scripts/paywall_bot_block_compare.py's
+# ``upgrade_datacite_pdf_bucket`` step. Idempotent; safe to delete.
+data/external/probe_body_fetch_outcomes.json
 
 # Per-gene annotations are agent-generated; commit a curated snapshot once
 # we have a stable set, not every smoke-test output.

@@ -45,23 +45,27 @@ When the prod fetch fails, the secondary Unpaywall lookup distinguishes:
 |---|---|
 | **PMC** | Production fetched the full body via PMC JATS |
 | **Unpaywall** | Production fetched via Unpaywall's OA PDF |
+| **DataCite** | Production fetched via the DataCite landing → `<meta name="citation_pdf_url">` tier (PR #81). Reaches DataCite-registered DOIs Unpaywall doesn't index — empirically: arXiv (`10.48550/arxiv.*`) and Zenodo (`10.5281/zenodo.*`) records that emit Highwire metadata. |
 | **Bot-blocked** | Unpaywall says is_oa=true, but the only OA paths route through publishers that 403 our polite UA (Wiley, Elsevier ScienceDirect, ASH/Blood, MDPI, OUP/Academic Oxford, bioRxiv, medRxiv, JBC, Cell Press, AHA, JCS, IIAR — empirically HEAD-tested 2026-06-07) |
-| **OA repo, DataCite** | The DOI is registered with a non-Crossref agency (DataCite, JaLC, ISTIC) — typically arXiv (`10.48550`), Zenodo (`10.5281`), figshare (`10.6084`), or an institutional thesis repo. Sliced out of the "No OA" pile via the free `doi.org/doiRA` registration-agency endpoint. **Partial fetch-chain coverage:** the production chain now adds a DataCite landing → `<meta name="citation_pdf_url">` step that recovers arXiv + Zenodo (verified end-to-end, 8 drafts each). figshare, HeiDOK, LMU edoc, UNSW Sydney, ESSR, ResearchGate, and similar institutional / society repos still miss because their landing pages don't emit the Highwire `citation_pdf_url` meta tag the resolver scrapes. |
+| **OA repo, DataCite (still missed)** | DOI is registered with a non-Crossref agency (DataCite, JaLC, ISTIC), but EVEN the DataCite tier can't reach it — typically figshare (JS-rendered landing), HeiDOK / LMU edoc / UNSW Sydney institutional repos, ESSR conference posters, ResearchGate (no Highwire `citation_pdf_url` meta tag on the landing). Detection: free `doi.org/doiRA` registration-agency endpoint + a body-fetch attempt that returns nothing. |
 | **No OA** | Unpaywall returns is_oa=false (paywalled) OR has no record, and the DOI is Crossref-registered (so we'd have expected Unpaywall to surface an OA copy if one existed). |
 
 ## Headline results
 
-| Strategy | Sample size | Avg pre-sample papers/gene | PMC | Unpaywall | Bot-blocked | OA repo, DataCite | No OA | Reachable (Crossref) | Functionally OA |
+| Strategy | Sample size | Avg pre-sample papers/gene | PMC | Unpaywall | DataCite | Bot-blocked | OA repo missed | No OA | Reachable |
 |---|---|---|---|---|---|---|---|---|---|
-| **Production** (21 axes) | 1,000 papers / 100 genes | 228 | 88% | 0.5% | 0.6% | 0.1% | 10% | **88%** | **89%** |
-| **OpenAlex** (21 axes) | 989 papers / 100 genes | 829 | 44% | 4% | 11% | 2.7% | 38% | **48%** | **51%** |
+| **Production** (21 axes) | 1,000 papers / 100 genes | 228 | 88% | 0.5% | 0% | 0.6% | 0.1% | 10% | **88.9%** |
+| **OpenAlex** (21 axes) | 989 papers / 100 genes | 829 | 44% | 4% | 0.5% | 11% | 2.2% | 38% | **48.4%** |
 
-*Reachable (Crossref)* = PMC + Unpaywall (what the original chain fetches).
-*Functionally OA* = Reachable + OA repo, DataCite (everything that's
-freely available — the DataCite landing-page resolver in
-`abstract_triage._fetch_body_via_datacite_landing` now reaches the arXiv
-+ Zenodo subset; the rest of the OA-repo bucket sits behind landing
-pages that don't emit `citation_pdf_url`).
+*Reachable* = PMC + Unpaywall + DataCite (everything the production fetch
+chain actually retrieves). The DataCite tier is new in PR #81 — it
+recovers arXiv + Zenodo records that Unpaywall doesn't index. *OA repo
+missed* is the residual lavender bucket: DataCite-registered DOIs whose
+landing pages don't emit Highwire `citation_pdf_url` metadata, so even
+the new tier can't get the PDF (figshare, HeiDOK, LMU edoc, UNSW, ESSR,
+ResearchGate, similar). Production sees almost none of these because its
+PubMed/EuropePMC-keyed discovery rarely surfaces non-Crossref DOIs in
+the first place.
 
 **The story.** With matched 21-axis search complexity, production
 surfaces a smaller pool per gene (~228 papers) but **88% are

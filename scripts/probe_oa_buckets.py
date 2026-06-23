@@ -327,6 +327,13 @@ def classify(paper, http, retraction_index, unpaywall_client):
         return "pmc"
     if fetched_via == "unpaywall_pdf":
         return "unpaywall"
+    if fetched_via == "datacite_pdf":
+        # New tier-3 from abstract_triage._fetch_body_via_datacite_landing —
+        # covers DataCite-registered DOIs (arXiv, Zenodo, Stacks, some
+        # institutional repos) that Unpaywall doesn't index. A successful
+        # fetch here is functionally equivalent to PMC/Unpaywall but
+        # categorized separately so we can measure the per-tier contribution.
+        return "datacite_pdf"
     # 2. Prod didn't fetch — distinguish bot_blocked vs no_oa via Unpaywall
     d = fetch_unpaywall(paper.doi, unpaywall_client)
     if d is None or not d.get("is_oa", False):
