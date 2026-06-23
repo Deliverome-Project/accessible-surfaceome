@@ -535,63 +535,14 @@ export function GeneHeader({
               })()
             : null}
 
-          {/* Triage row — Sonnet first-pass surface verdict, sitting
-              under the DB-presence strip for transparency. Tagged with
-              "initial pass · no web search" so the reader knows this
-              isn't the deep-dive call. When the triage disagrees with
-              the deep-dive `surface_accessibility`, the row carries a
-              warn pill that links the eye to the conflict (e.g. for
-              SRC: triage=Unlikely vs deep-dive=High — the eSrc
-              cancer-specific surface that the initial triage missed). */}
-          {(() => {
-            const verdict = triageVsDeepDive(
-              rec.triage_signal,
-              exec.surface_accessibility,
-              exec.surface_call_reason,
-            );
-            return (
-              <p className={styles.triageRow}>
-                <span className={`label-mono ${styles.triageLabel}`}>
-                  Triage
-                  <InfoTip wide>{tooltips.triage_signal}</InfoTip>
-                </span>
-                <span className={styles.triageValue}>
-                  {triageVerdictLabel(rec.triage_signal)}
-                </span>
-                <span className={styles.triageQualifier}>
-                  <ChipLabelValue label="initial pass" value="no web search" />
-                </span>
-                {verdict === "conflict" ? (
-                  <span className={styles.triageConflict}>
-                    conflicts with deep dive
-                  </span>
-                ) : verdict === "agree" ? (
-                  <span className={styles.triageAgree}>
-                    agrees with deep dive
-                  </span>
-                ) : null}
-                {/* The triage agent's own verdict justification, surfaced
-                 *  in a slide-in drawer. Self-hides when the record
-                 *  carries no triage_reasoning (older records / genes with
-                 *  no persisted triage). Distinct from the deep-dive
-                 *  confidence reasoning below — this is the first-pass,
-                 *  no-web-search rationale. */}
-                <ReasoningDrawer
-                  eyebrow={`Triage · ${triageVerdictLabel(rec.triage_signal)}`}
-                  title="Why this triage call?"
-                  ariaLabel="Why the initial triage pass called it this way"
-                  triggerClassName={styles.triageReasoningTrigger}
-                  reasoning={rec.triage_reasoning ?? ""}
-                  reasonCode={rec.triage_reason ?? null}
-                  meta={
-                    rec.triage_confidence
-                      ? [{ label: "Confidence", value: rec.triage_confidence }]
-                      : undefined
-                  }
-                />
-              </p>
-            );
-          })()}
+          {/* Triage row used to sit here. Moved to AFTER the executive
+              prose + vitals grid so the deep-dive's own Surface verdict
+              leads the page; the first-pass triage prior (no web
+              search) renders as context BELOW the deep-dive verdict.
+              For genes like KLK2 — where triage='unlikely' (secreted-
+              only prior) but deep-dive='moderate · tissue_restricted_
+              surface' (positive call) — the previous ordering buried
+              the positive verdict and made the page read as "No". */}
 
           {/* Executive summary one-paragraph. Headline risks + cited
               evidence chips were dropped from the header per user
@@ -790,6 +741,59 @@ export function GeneHeader({
               );
             })()}
           </dl>
+
+          {/* Triage row — Sonnet first-pass surface verdict. Moved
+              below the vitals so the deep-dive's own verdict reads
+              first; the triage prior renders as context. Tagged
+              "initial pass · no web search" so the reader knows this
+              isn't the deep-dive call. When the triage disagrees with
+              the deep-dive `surface_accessibility`, the row carries a
+              pill linking the eye to the conflict (e.g. SRC:
+              triage=Unlikely vs deep-dive=High — the eSrc cancer-
+              specific surface that the initial triage missed). */}
+          {(() => {
+            const verdict = triageVsDeepDive(
+              rec.triage_signal,
+              exec.surface_accessibility,
+              exec.surface_call_reason,
+            );
+            return (
+              <p className={styles.triageRow}>
+                <span className={`label-mono ${styles.triageLabel}`}>
+                  Triage
+                  <InfoTip wide>{tooltips.triage_signal}</InfoTip>
+                </span>
+                <span className={styles.triageValue}>
+                  {triageVerdictLabel(rec.triage_signal)}
+                </span>
+                <span className={styles.triageQualifier}>
+                  <ChipLabelValue label="initial pass" value="no web search" />
+                </span>
+                {verdict === "conflict" ? (
+                  <span className={styles.triageConflict}>
+                    conflicts with deep dive
+                  </span>
+                ) : verdict === "agree" ? (
+                  <span className={styles.triageAgree}>
+                    agrees with deep dive
+                  </span>
+                ) : null}
+                <ReasoningDrawer
+                  eyebrow={`Triage · ${triageVerdictLabel(rec.triage_signal)}`}
+                  title="Why this triage call?"
+                  ariaLabel="Why the initial triage pass called it this way"
+                  triggerClassName={styles.triageReasoningTrigger}
+                  reasoning={rec.triage_reasoning ?? ""}
+                  reasonCode={rec.triage_reason ?? null}
+                  meta={
+                    rec.triage_confidence
+                      ? [{ label: "Confidence", value: rec.triage_confidence }]
+                      : undefined
+                  }
+                />
+              </p>
+            );
+          })()}
 
           {/* Deterministic-tools row was here. Removed per user
               request — deterministic data (topology, pLDDT,

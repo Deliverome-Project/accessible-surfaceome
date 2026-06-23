@@ -643,6 +643,32 @@ export function CatalogTable({
     return () => window.removeEventListener("keydown", onKey);
   }, [selectedSymbol]);
 
+  // Click-outside-to-close. The drawer is non-modal (no backdrop
+  // overlay — keeps the catalog table scannable beside it), so a
+  // global mousedown listener handles outside clicks. The dependency
+  // chain (selectedSymbol → drawerRef.current) skips installation
+  // when the drawer is closed.
+  const drawerRef = useRef<HTMLElement | null>(null);
+  useEffect(() => {
+    if (!selectedSymbol) return;
+    const onDocMouseDown = (e: MouseEvent) => {
+      const target = e.target as Node | null;
+      if (!target) return;
+      if (drawerRef.current && drawerRef.current.contains(target)) return;
+      // Clicking another catalog row should reselect (handled by the
+      // row's own click handler) rather than just close. The row's
+      // handler runs first because we attach mousedown at the document
+      // level; React's click runs after. To avoid closing-then-
+      // reopening, ignore clicks on elements inside the catalog table
+      // body — the row handler will toggle selection itself.
+      const tableEl = document.querySelector(`.${styles.tableScroll}`);
+      if (tableEl && tableEl.contains(target)) return;
+      setSelectedSymbol(null);
+    };
+    document.addEventListener("mousedown", onDocMouseDown);
+    return () => document.removeEventListener("mousedown", onDocMouseDown);
+  }, [selectedSymbol]);
+
   // `mounted` gates the virtualized body so the SSR pass renders an
   // empty body — the header, toolbar, and footnotes still hydrate
   // from server HTML for snappy first paint, and the rows appear on
@@ -1533,6 +1559,7 @@ export function CatalogTable({
             : false
         }
         onClose={() => setSelectedSymbol(null)}
+        drawerRef={drawerRef}
       />
     </div>
   );
