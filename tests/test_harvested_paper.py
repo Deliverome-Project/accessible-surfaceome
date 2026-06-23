@@ -17,7 +17,10 @@ from accessible_surfaceome.cloud.d1_client import D1Client, D1Config
 from accessible_surfaceome.cloud.harvested_paper import (
     HarvestedPaper,
     _SCHEMA_SQL,
+    _bucket_from_triage_action,
+    _split_paper_id,
     ensure_schema,
+    harvested_papers_from_dual,
     publish_harvested_papers,
 )
 
@@ -150,3 +153,116 @@ def test_schema_sql_matches_canonical_d1_schema() -> None:
         "idx_harvested_paper_source", "idx_harvested_paper_bucket",
     ):
         assert idx_name in text, f"index {idx_name} missing from canonical schema"
+
+
+# ---------------------------------------------------------------------------
+# _split_paper_id
+# ---------------------------------------------------------------------------
+
+def test_split_paper_id_recognizes_pmc_pmid_doi() -> None:
+    assert _split_paper_id("PMC:PMC123") == (None, None, "PMC123")
+    assert _split_paper_id("PMID:7") == (None, 7, None)
+    assert _split_paper_id("DOI:10.48550/arxiv.X") == ("10.48550/arxiv.X", None, None)
+
+
+def test_split_paper_id_handles_unknown_prefix_and_bad_pmid() -> None:
+    # Unknown prefix → all None (still inserts with bare paper_id).
+    assert _split_paper_id("FOO:bar") == (None, None, None)
+    # PMID prefix but non-integer body → all None (don't crash).
+    assert _split_paper_id("PMID:not-a-number") == (None, None, None)
+    assert _split_paper_id("UNKNOWN") == (None, None, None)
+
+
+# ---------------------------------------------------------------------------
+# _bucket_from_triage_action
+# ---------------------------------------------------------------------------
+
+class _FakeAction:
+    """Minimal stand-in for TriageAction so we don't pull the agent module
+    in just to construct fixtures."""
+    def __init__(self, decision: str, fetched_body: bool = False,
+                 fetch_source: str | None = None) -> None:
+        self.decision = decision
+        self.fetched_body = fetched_body
+        self.fetch_source = fetch_source
+
+
+def test_bucket_from_triage_action_decision_outcomes() -> None:
+    assert _bucket_from_triage_action(_FakeAction("discard")) == "discarded"
+    assert _bucket_from_triage_action(_FakeAction("keep_abstract")) == "abstract_only"
+    # worth_fetching but fetch fell back → fetch_failed (separate from no_oa)
+    assert _bucket_from_triage_action(_FakeAction("worth_fetching", fetched_body=False)) == "fetch_failed"
+    # worth_fetching + body → bucket reflects which tier produced it
+    assert _bucket_from_triage_action(_FakeAction("worth_fetching", fetched_body=True, fetch_source="pmc_xml")) == "pmc"
+    assert _bucket_from_triage_action(_FakeAction("worth_fetching", fetched_body=True, fetch_source="unpaywall_pdf")) == "unpaywall"
+    assert _bucket_from_triage_action(_FakeAction("worth_fetching", fetched_body=True, fetch_source="datacite_pdf")) == "datacite_pdf"
+    # Unknown source on a fetched body → still record success.
+    assert _bucket_from_triage_action(_FakeAction("worth_fetching", fetched_body=True, fetch_source="future_tier")) == "fetched"
+    # Unknown decision → None (caller writes NULL).
+    assert _bucket_from_triage_action(_FakeAction("???")) is None
+
+
+# ---------------------------------------------------------------------------
+# harvested_papers_from_dual
+# ---------------------------------------------------------------------------
+
+class _FakeAct:
+    def __init__(self, paper_id: str, decision: str, fetched_body: bool = False,
+                 fetch_source: str | None = None, paper_year: int | None = None,
+                 paper_title: str | None = None) -> None:
+        self.paper_id = paper_id
+        self.decision = decision
+        self.fetched_body = fetched_body
+        self.fetch_source = fetch_source
+        self.paper_year = paper_year
+        self.paper_title = paper_title
+
+
+class _FakeFocus:
+    def __init__(self, actions: list[_FakeAct]) -> None:
+        self.triage_actions = actions
+
+
+class _FakeDual:
+    def __init__(self, a1: list[_FakeAct], a2: list[_FakeAct]) -> None:
+        self.a1 = _FakeFocus(a1)
+        self.a2 = _FakeFocus(a2)
+
+
+def test_harvested_papers_from_dual_dedupes_a1_a2_overlap() -> None:
+    """A2 re-sees most papers A1 fetched (shared HTTP cache). The
+    converter must dedupe by paper_id, keeping the A1 row when present."""
+    shared = _FakeAct("PMID:1", "worth_fetching", fetched_body=True,
+                     fetch_source="pmc_xml", paper_year=2024,
+                     paper_title="shared paper")
+    a1_only = _FakeAct("PMID:2", "keep_abstract", paper_title="a1 only")
+    a2_only = _FakeAct("DOI:10.48550/arxiv.X", "worth_fetching",
+                      fetched_body=True, fetch_source="datacite_pdf",
+                      paper_title="a2 only arxiv")
+    dual = _FakeDual(a1=[shared, a1_only], a2=[shared, a2_only])
+
+    rows = harvested_papers_from_dual(dual, run_id="r1", gene_symbol="GENE")
+    assert len(rows) == 3
+    by_id = {r.paper_id: r for r in rows}
+    # Shared paper keeps its A1 source label
+    assert by_id["PMID:1"].source == "deep_dive_v2_a1"
+    assert by_id["PMID:1"].bucket == "pmc"
+    assert by_id["PMID:1"].body_source == "pmc_xml"
+    assert by_id["PMID:1"].pmid == 1
+    # A1-only kept-abstract
+    assert by_id["PMID:2"].source == "deep_dive_v2_a1"
+    assert by_id["PMID:2"].bucket == "abstract_only"
+    # A2-only DataCite arXiv flows through with paper_id parsing
+    assert by_id["DOI:10.48550/arxiv.X"].source == "deep_dive_v2_a2"
+    assert by_id["DOI:10.48550/arxiv.X"].bucket == "datacite_pdf"
+    assert by_id["DOI:10.48550/arxiv.X"].doi == "10.48550/arxiv.X"
+
+
+def test_harvested_papers_from_dual_empty_and_unknown() -> None:
+    assert harvested_papers_from_dual(None, run_id="r", gene_symbol="G") == []
+    # Dual present but no actions → empty.
+    assert harvested_papers_from_dual(_FakeDual(a1=[], a2=[]), run_id="r", gene_symbol="G") == []
+    # ``UNKNOWN`` paper_id (rare; shouldn't happen post the source_id fix
+    # but guard anyway so a stale row doesn't poison the table).
+    dual = _FakeDual(a1=[_FakeAct("UNKNOWN", "discard")], a2=[])
+    assert harvested_papers_from_dual(dual, run_id="r", gene_symbol="G") == []

@@ -31,7 +31,7 @@ from __future__ import annotations
 import logging
 from dataclasses import dataclass
 from datetime import UTC, datetime
-from typing import Iterable
+from typing import Any, Iterable
 
 from accessible_surfaceome.cloud.d1_client import D1Client
 
@@ -160,6 +160,111 @@ def ensure_schema(d1: D1Client | None = None) -> None:
     finally:
         if owns_client:
             client.close()
+
+
+def _split_paper_id(paper_id: str) -> tuple[str | None, int | None, str | None]:
+    """Parse a canonical ``paper_id`` (``"PMC:xxx"`` / ``"PMID:xxx"`` /
+    ``"DOI:xxx"``) into ``(doi, pmid, pmc_id)``. Returns ``(None, None, None)``
+    when the prefix isn't recognized — caller handles the row by inserting
+    just ``paper_id`` without per-id columns."""
+    if ":" not in paper_id:
+        return None, None, None
+    prefix, _, value = paper_id.partition(":")
+    prefix = prefix.upper()
+    if prefix == "PMC":
+        return None, None, value
+    if prefix == "PMID":
+        try:
+            return None, int(value), None
+        except ValueError:
+            return None, None, None
+    if prefix == "DOI":
+        return value, None, None
+    return None, None, None
+
+
+def _bucket_from_triage_action(action: Any) -> str | None:
+    """Derive the ``harvested_paper.bucket`` value from a
+    :class:`accessible_surfaceome.agents.plan_trim_select.abstract_triage.TriageAction`.
+
+    Mirrors the probe bucket vocabulary where the fetch chain reached the
+    body (``pmc`` / ``unpaywall`` / ``datacite_pdf``) and adds two
+    production-specific outcomes (``abstract_only`` for kept-without-fetch,
+    ``discarded`` for triage-discarded, ``fetch_failed`` for
+    worth_fetching that fell back). The probe's ``bot_blocked`` /
+    ``datacite_oa_repo`` distinctions aren't reconstructible from
+    TriageAction alone — they're sample-time analytics layered on top of
+    the raw ``no_oa`` outcome — so production rows use the coarser set.
+    """
+    decision = getattr(action, "decision", None)
+    if decision == "discard":
+        return "discarded"
+    if decision == "keep_abstract":
+        return "abstract_only"
+    if decision == "worth_fetching":
+        if not getattr(action, "fetched_body", False):
+            return "fetch_failed"
+        source = getattr(action, "fetch_source", None)
+        if source == "pmc_xml":
+            return "pmc"
+        if source == "unpaywall_pdf":
+            return "unpaywall"
+        if source == "datacite_pdf":
+            return "datacite_pdf"
+        return "fetched"  # unknown source; record fetched_body True regardless
+    return None
+
+
+def harvested_papers_from_dual(
+    dual: Any,
+    *,
+    run_id: str,
+    gene_symbol: str,
+) -> list[HarvestedPaper]:
+    """Convert a :class:`DualPlanTrimSelectResult`'s per-paper triage
+    audit into rows for the ``harvested_paper`` table.
+
+    Iterates ``dual.a1.triage_actions`` + ``dual.a2.triage_actions``,
+    dedupes by ``paper_id`` (A1 and A2 typically overlap heavily — the
+    shared HTTP cache means A2 sees the same papers A1 fetched). Source
+    label is ``"deep_dive_v2_a1"`` / ``"deep_dive_v2_a2"`` for whichever
+    focus first saw the paper, so analysts can ``WHERE source LIKE
+    'deep_dive_v2%'`` for production rows vs ``WHERE source LIKE 'probe%'``
+    for sampler rows.
+
+    Returns an empty list when ``dual`` is None or has no triage actions.
+    Caller is responsible for the actual D1 push via
+    :func:`publish_harvested_papers`.
+    """
+    if dual is None:
+        return []
+    seen: dict[str, HarvestedPaper] = {}
+    for focus_label, focus_obj in (
+        ("deep_dive_v2_a1", getattr(dual, "a1", None)),
+        ("deep_dive_v2_a2", getattr(dual, "a2", None)),
+    ):
+        if focus_obj is None:
+            continue
+        for action in getattr(focus_obj, "triage_actions", ()) or ():
+            paper_id = getattr(action, "paper_id", None)
+            if not paper_id or paper_id == "UNKNOWN" or paper_id in seen:
+                continue
+            doi, pmid, pmc_id = _split_paper_id(paper_id)
+            seen[paper_id] = HarvestedPaper(
+                run_id=run_id,
+                gene_symbol=gene_symbol,
+                paper_id=paper_id,
+                source=focus_label,
+                axis_label=None,  # not tracked at TriageAction level
+                bucket=_bucket_from_triage_action(action),
+                body_source=getattr(action, "fetch_source", None),
+                doi=doi,
+                pmid=pmid,
+                pmc_id=pmc_id,
+                year=getattr(action, "paper_year", None),
+                title=getattr(action, "paper_title", None),
+            )
+    return list(seen.values())
 
 
 def publish_harvested_papers(
