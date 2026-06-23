@@ -121,18 +121,35 @@ export function passesLikely(f: DeepDiveFilters): boolean {
  * Cell-state induced = surface presentation depends on cell state
  * (stress, activation, oncogenic transformation, etc.). Matches via
  * EITHER `surface_call_reason ∈ {cell_state_induced,
- * lysosomal_exocytosis}` (the v2 schema's explicit signal) OR
- * `induction_trigger != "none"` (the field schema-1.1.0 records like
- * HSPA5 actually populate — `surface_call_reason` is null there).
- * Requires state_dep=high (or unknown, for older records).
+ * lysosomal_exocytosis, dual_localization}` (the v2 schema's explicit
+ * signal — dual_localization captures TGOLN2-class "found on the
+ * surface AND inside, with the surface fraction conditional on
+ * infection / immune state") OR `induction_trigger != "none"` (the
+ * field schema-1.1.0 records like HSPA5 actually populate — the
+ * surface_call_reason field is null on the older schema).
+ *
+ * State-dep accepts `moderate` (was high-only): moderate state-
+ * dependence still indicates state-modulation; the TROP2-class
+ * cancer-overexpression records that the synthesizer rates "moderate"
+ * legitimately belong here. Accepts null + unclear too so older
+ * records / undecided calls don't drop out.
  */
 export function passesInduced(f: DeepDiveFilters): boolean {
   if (!passesLikely(f)) return false;
   const sd = f.state_dependence;
-  if (sd !== null && sd !== undefined && sd !== "high") return false;
+  if (
+    sd !== null &&
+    sd !== undefined &&
+    sd !== "moderate" &&
+    sd !== "high" &&
+    sd !== "unclear"
+  ) {
+    return false;
+  }
   if (
     f.surface_call_reason === "cell_state_induced" ||
-    f.surface_call_reason === "lysosomal_exocytosis"
+    f.surface_call_reason === "lysosomal_exocytosis" ||
+    f.surface_call_reason === "dual_localization"
   ) {
     return true;
   }
@@ -248,8 +265,19 @@ export const PRESET_IMPLIED_FILTERS: Record<
       "mixed",
       "mostly_intracellular",
     ]),
-    state_dependence: new Set(["high"]),
+    state_dependence: new Set(["moderate", "high", "unclear"]),
     surface_accessibility: new Set(["high", "moderate", "low"]),
+    // surface_call_reason values implied by the predicate's OR clause.
+    // Not strictly required (the predicate also matches on
+    // induction_trigger), but worth highlighting in More filters so
+    // the reader sees which reasons land here. The induction_trigger
+    // chip set is computed dynamically from the active sub-axes — see
+    // resolveImpliedTriggerSet() in CatalogTable.tsx.
+    surface_call_reason: new Set([
+      "cell_state_induced",
+      "lysosomal_exocytosis",
+      "dual_localization",
+    ]),
   },
   cell_type_restricted: {
     evidence_grade: new Set([
@@ -290,10 +318,7 @@ export const PRESETS: ReadonlyArray<{
       "high/moderate confidence, surface-dominant or mixed, low / " +
       "moderate / unclear state-dependence, high/moderate surface " +
       "accessibility, high/moderate evidence density. The high-" +
-      "confidence surface shortlist. ECD-size is intentionally NOT " +
-      "filtered — that's an antibody-design refinement, not a " +
-      "surface-membership signal (Claudin-18.2 has tiny ECD loops " +
-      "and a landed therapeutic anyway).",
+      "confidence surface shortlist.",
     predicate: passesCanonical,
   },
   {
@@ -303,10 +328,7 @@ export const PRESETS: ReadonlyArray<{
       "Broader shortlist — adds supportive-but-indirect evidence, " +
       "mostly-intracellular surface fractions (e.g. SRC via lysosomal " +
       "exocytosis, HMGB1 via DAMP release), and high / unclear / null " +
-      "state-dependence. ECD-size is intentionally NOT filtered for " +
-      "the same reason as Canonical; inner-leaflet false positives " +
-      "(LYN, BAX) are still excluded because they fail on evidence_" +
-      "grade=weak + surface_accessibility=no.",
+      "state-dependence.",
     predicate: passesLikely,
   },
   {

@@ -205,6 +205,29 @@ function reasonGroupLabelToneClass(v: VerdictKey): string {
 // catalog filter panel and the /compare tool share one source of truth.
 type DdBoolFilter = "any" | "yes" | "no";
 
+/** Map the multi-select Induced sub-axes to the concrete
+ *  `induction_trigger` enum values they each represent. Lets the
+ *  More-filters `induction_trigger` chip row light up dynamically
+ *  when the user picks Cancer / Disease / Stress / Immune in the
+ *  preset toolbar — single source of truth so the chip highlights
+ *  and the row-pass predicate stay aligned. Cancer = oncogenic,
+ *  Disease = {cell_death, infection} (non-oncogenic only — Cancer
+ *  is split off), Stress = stress_hypoxia, Immune = immune. */
+function resolveImpliedTriggerSet(
+  subs: ReadonlySet<InductionSubKey>,
+): Set<string> {
+  const out = new Set<string>();
+  for (const s of subs) {
+    if (s === "cancer") out.add("oncogenic");
+    else if (s === "disease") {
+      out.add("cell_death");
+      out.add("infection");
+    } else if (s === "stress") out.add("stress_hypoxia");
+    else if (s === "immune") out.add("immune");
+  }
+  return out;
+}
+
 function verdictTone(v: string | null | undefined): string {
   if (v === "yes") return styles.verdictYes;
   if (v === "no") return styles.verdictNo;
@@ -508,10 +531,22 @@ export function CatalogTable({
     // this field. A chip in this set wears a soft "preset" tone so
     // the reader sees what the preset is already filtering for,
     // and knows checking a non-implied chip would AND-narrow further.
-    // PRESET_IMPLIED_FILTERS is the single source of truth — keyed
-    // by PresetKey to a Partial<Record<fieldKey, Set<value>>>.
-    const implied =
+    // PRESET_IMPLIED_FILTERS is the static source of truth; the
+    // induction_trigger field gets dynamic augmentation when the
+    // user has selected one or more Induced sub-axes (Cancer /
+    // Disease / Stress / Immune) — those map directly onto trigger
+    // values, so the chip row should light up to reflect the
+    // narrowing. resolveImpliedTriggerSet returns the union of the
+    // selected sub-axes' trigger values; otherwise we fall back to
+    // the static preset map.
+    const staticImplied =
       PRESET_IMPLIED_FILTERS[presetKey][field.key] ?? null;
+    const implied =
+      field.key === "induction_trigger" &&
+      presetKey === "induced" &&
+      inductionSubs.size > 0
+        ? resolveImpliedTriggerSet(inductionSubs)
+        : staticImplied;
     return (
       <div key={`dd-enum-${field.key}`} className={styles.filterRowDd}>
         <span className={styles.filterLabelWithTip}>

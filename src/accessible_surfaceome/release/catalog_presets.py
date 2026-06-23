@@ -74,16 +74,24 @@ def passes_likely(f: dict[str, Any]) -> bool:
 
 def passes_induced(f: dict[str, Any]) -> bool:
     """Cell-state induced — surface presentation depends on cell state.
+
     Matches via EITHER ``surface_call_reason`` in {cell_state_induced,
-    lysosomal_exocytosis} OR ``induction_trigger`` in INDUCTION_NON_NONE.
-    The latter is the field that schema-1.1.0 records (HSPA5) actually
-    populate when surface_call_reason is null."""
+    lysosomal_exocytosis, dual_localization} OR ``induction_trigger``
+    in INDUCTION_NON_NONE. The latter is the field that schema-1.1.0
+    records (HSPA5) actually populate when surface_call_reason is null.
+
+    Accepts state_dep ∈ {moderate, high, unclear, null} — moderate
+    state-dependence still indicates state-modulation (TROP2-class
+    cancer-overexpression records the synthesizer rates "moderate"
+    legitimately belong here)."""
     if not passes_likely(f):
         return False
     sd = f.get("state_dependence")
-    if sd is not None and sd != "high":
+    if sd is not None and sd not in ("moderate", "high", "unclear"):
         return False
-    if f.get("surface_call_reason") in ("cell_state_induced", "lysosomal_exocytosis"):
+    if f.get("surface_call_reason") in (
+        "cell_state_induced", "lysosomal_exocytosis", "dual_localization"
+    ):
         return True
     if f.get("induction_trigger") in INDUCTION_NON_NONE:
         return True

@@ -16,27 +16,16 @@ AND confidence ∈ {high, moderate}
 AND surface_specificity ∈ {surface_dominant, mixed}
 AND state_dependence ∈ {low, moderate, unclear}
 AND surface_accessibility ∈ {high, moderate}
-AND evidence_density ∈ {high, moderate}
-
-# Intentionally NOT filtered: ecd_accessibility_class.
-# ECD-size is a downstream antibody-design refinement, not a
-# surface-membership signal — Claudin-18.2 has small loops and a
-# landed therapeutic (zolbetuximab) anyway.`,
+AND evidence_density ∈ {high, moderate}`,
   likely: `evidence_grade ∈ {direct_multi_method, direct_single_method, supportive_but_indirect}
 AND surface_specificity ∈ {surface_dominant, mixed, mostly_intracellular}
 AND surface_accessibility ∈ {high, moderate, low}
-AND state_dependence ∈ {low, moderate, high, unclear, null}
-
-# Intentionally NOT filtered: ecd_accessibility_class.
-# Same rationale as Canonical — ECD-size is an antibody-design
-# refinement, not a surface-membership signal. Inner-leaflet false
-# positives (LYN, BAX) are excluded by their other field values
-# (evidence_grade=weak + surface_accessibility=no), so the ECD
-# gate was never load-bearing against the cytoplasmic bucket.`,
+AND state_dependence ∈ {low, moderate, high, unclear, null}`,
   induced: `passesLikely(f)
-AND state_dependence ∈ {high, null}
+AND state_dependence ∈ {moderate, high, unclear, null}
 AND (
-  surface_call_reason ∈ {cell_state_induced, lysosomal_exocytosis}
+  surface_call_reason ∈ {cell_state_induced, lysosomal_exocytosis,
+                         dual_localization}
   OR induction_trigger ∈ {oncogenic, immune, stress_hypoxia,
                           cell_death, infection}
 )
