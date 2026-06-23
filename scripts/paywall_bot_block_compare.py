@@ -285,21 +285,38 @@ def write_tsv(prod_papers, oax_papers, out_path: Path) -> None:
 
     Refresh the canonical TSV — prod rows are live from JSONL, openalex
     rows are passed through from the snapshot. Idempotent on repeat runs.
+
+    URL columns are denormalized from the IDs so a reader can click
+    through to any paper without constructing URLs themselves:
+    ``pubmed_url`` / ``pmc_url`` / ``doi_url``. Empty when the
+    underlying ID is missing.
     """
     rows = []
     for src, papers in [("production", prod_papers), ("openalex", oax_papers)]:
         for p in papers:
+            pmid = p.get("pmid") or ""
+            pmc_id = p.get("pmc_id") or ""
+            doi = p.get("doi") or ""
             rows.append({
                 "source": src,
                 "gene": p["gene"],
-                "pmid": p.get("pmid") or "",
-                "pmc_id": p.get("pmc_id") or "",
-                "doi": p.get("doi") or "",
+                "pmid": pmid,
+                "pmc_id": pmc_id,
+                "doi": doi,
                 "year": p.get("year") or "",
                 "bucket": p["bucket"],
                 "title": (p.get("title") or "").replace("\t", " ").replace("\n", " ")[:200],
+                # Click-through URLs — pubmed for the PMID-keyed primary record,
+                # PMC for the open-access full text when available, DOI for the
+                # publisher landing. Empty when the corresponding id is missing.
+                "pubmed_url": f"https://pubmed.ncbi.nlm.nih.gov/{pmid}/" if pmid else "",
+                "pmc_url": f"https://www.ncbi.nlm.nih.gov/pmc/articles/{pmc_id}/" if pmc_id else "",
+                "doi_url": f"https://doi.org/{doi}" if doi else "",
             })
-    cols = ["source", "gene", "pmid", "pmc_id", "doi", "year", "bucket", "title"]
+    cols = [
+        "source", "gene", "pmid", "pmc_id", "doi", "year",
+        "bucket", "title", "pubmed_url", "pmc_url", "doi_url",
+    ]
     with out_path.open("w") as f:
         w = csv.DictWriter(f, fieldnames=cols, delimiter="\t")
         w.writeheader()
