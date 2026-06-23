@@ -836,6 +836,16 @@ export function CatalogTable({
     getScrollElement: () => scrollRef.current,
     estimateSize: () => ROW_ESTIMATE_PX,
     overscan: ROW_OVERSCAN,
+    // Without a stable key the virtualizer caches measured heights by
+    // INDEX. When the search query narrows or the sort flips, indices
+    // shift and a previously-measured tall row (e.g. multi-line gene
+    // name) at index N is reused for whatever row now lives at N,
+    // leaving the next row's translateY mis-positioned and bleeding
+    // into it visually. Keying by gene symbol ties each measurement
+    // to the actual row identity, so re-sorts / filters re-use the
+    // right cached height. Symptom that surfaced this: searching
+    // "KLK2" caused the KLK2 row to partially overlap the one below.
+    getItemKey: (index) => sorted[index]?.symbol ?? index,
   });
 
   const virtualItems = virtualizer.getVirtualItems();

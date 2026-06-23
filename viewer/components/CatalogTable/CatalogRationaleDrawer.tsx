@@ -134,6 +134,16 @@ export function CatalogRationaleDrawer({
               >
                 {verdict}
               </span>
+              {headline ? (
+                <span className={styles.drawerHeadlineProv}>
+                  <span className="label-mono">
+                    {(headline.prompt_variant ?? "—").replace(/_/g, " ")}
+                  </span>
+                  <span className={styles.drawerHeadlineDate}>
+                    · {formatDate(headline.created_at)}
+                  </span>
+                </span>
+              ) : null}
             </div>
           ) : null}
           {reason ? (
@@ -182,6 +192,9 @@ export function CatalogRationaleDrawer({
                     </span>
                     <span className={styles.drawerSecondaryVariant}>
                       {(r.prompt_variant ?? "—").replace(/_/g, " ")}
+                    </span>
+                    <span className={styles.drawerSecondaryDate}>
+                      {formatDate(r.created_at)}
                     </span>
                     {r.predicted_reason ? (
                       <span className={styles.drawerSecondaryReason}>
@@ -266,6 +279,21 @@ function pickSonnetHeadlineAndSecondary(
     .filter((r) => r.predicted_verdict !== headline.predicted_verdict)
     .slice(0, 3);
   return { headline, secondary };
+}
+
+/** ISO timestamp → "Jun 23, 2026" (always en-US so the catalog reads
+ *  the same regardless of locale). Same shape on every variant /
+ *  secondary row so a reader can spot a stale 2026-06-01 ncbi vs a
+ *  fresh 2026-06-23 pubmed_ncbi at a glance. */
+function formatDate(iso: string | null | undefined): string {
+  if (!iso) return "—";
+  const d = new Date(iso);
+  if (Number.isNaN(d.getTime())) return iso.slice(0, 10);
+  return d.toLocaleDateString("en-US", {
+    year: "numeric",
+    month: "short",
+    day: "numeric",
+  });
 }
 
 function verdictToneClass(v: string | null | undefined): string {

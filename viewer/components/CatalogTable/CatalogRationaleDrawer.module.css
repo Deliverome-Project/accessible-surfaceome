@@ -276,3 +276,33 @@
 .drawerSecondaryReason {
   color: var(--ink-soft, var(--ink));
 }
+
+/* Headline variant + date strip — sits inline next to the headline
+ * verdict pill so the reader can see WHICH triage variant + WHEN
+ * gave the most-positive call (the catalog headline can otherwise
+ * look like a single canonical verdict when it's actually one of
+ * several variants). */
+.drawerHeadlineProv {
+  display: inline-flex;
+  gap: 0.35rem;
+  align-items: baseline;
+  margin-left: 0.5rem;
+  font-size: 0.78rem;
+  color: var(--muted);
+  letter-spacing: 0.02em;
+}
+
+.drawerHeadlineDate {
+  color: var(--muted);
+  font-family: var(--font-mono);
+  font-size: 0.74rem;
+}
+
+/* Date column for secondary disagreement rows — matches the eyeline
+ * of the headline date so the reader can scan vertically and spot
+ * stale runs (e.g. ncbi:2026-06-01 vs pubmed_ncbi:2026-06-23). */
+.drawerSecondaryDate {
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  color: var(--muted);
+}
