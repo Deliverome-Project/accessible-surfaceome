@@ -345,6 +345,27 @@ export function CatalogTable({
   const [inductionSubs, setInductionSubs] = useState<Set<InductionSubKey>>(
     () => new Set(),
   );
+
+  // When the user opens "More filters" with a curated preset active,
+  // auto-expand the Deep Dive section AND auto-collapse Risks +
+  // Deterministic so the chips the preset is implying (Surface call
+  // enums — evidence_grade, confidence, surface_specificity,
+  // state_dependence, surface_accessibility) are immediately visible.
+  // Without this the user has to expand Deep Dive manually before
+  // they can see which chips the preset pre-engaged. We only run
+  // on the showFilters-flip-to-true edge so we don't fight the
+  // user's manual subsection toggles afterward.
+  const prevShowFiltersRef = useRef(showFilters);
+  useEffect(() => {
+    const wasOpen = prevShowFiltersRef.current;
+    prevShowFiltersRef.current = showFilters;
+    if (!wasOpen && showFilters && presetKey !== "all") {
+      setDeepDiveGroupOpen(true);
+      setDdRisksOpen(false);
+      setDdDetOpen(false);
+    }
+  }, [showFilters, presetKey]);
+
   const [dbFilter, setDbFilter] = useState<Set<DbKey>>(new Set());
   const [verdictFilter, setVerdictFilter] = useState<Set<VerdictKey>>(
     new Set(),

@@ -397,14 +397,18 @@
  * (i) glyph. */
 .groupHeaderRow {
   display: inline-flex;
-  /* `baseline` (was `center`) so the (i) glyph sits on the same
-   * text baseline as the group-header word — the InfoTip trigger's
-   * 0.85em glyph against the .groupHeader's 0.78rem mono-uppercase
-   * text rendered center-aligned looked subtly low because the
-   * glyph's optical center sits below the baseline. Baseline-
-   * aligning lands the glyph exactly where a reader's eye expects
-   * a footnote-style annotation to sit. */
-  align-items: baseline;
+  /* Center-aligned: the (i) glyph circle and the uppercase mono
+   * label have their geometric midlines coincide. Combined with
+   * the explicit `line-height: 1` on .groupHeader below so the
+   * line-box matches the visible glyph height — without that, the
+   * inherited line-height (~1.5) made the label's box much taller
+   * than the (i) trigger's box, and centering aligned the boxes
+   * (correct vertically) but the visible text within the taller
+   * box sat lower than the trigger's visible glyph (wrong-
+   * looking). Tried `baseline` first — that landed the trigger's
+   * circle BELOW the label because the circle extends past the
+   * (i) glyph's baseline. center + line-height: 1 is the fix. */
+  align-items: center;
   gap: 0.4rem;
   align-self: flex-start;
 }
@@ -419,6 +423,9 @@
   font-weight: var(--fw-medium);
   letter-spacing: 0.05em;
   text-transform: uppercase;
+  /* Line-box = font-size so the visible label center matches the
+   * sibling InfoTip trigger's center. See .groupHeaderRow rule. */
+  line-height: 1;
   color: var(--ink);
   background: none;
   border: 0;

@@ -48,15 +48,19 @@ INDUCTION_NON_NONE: frozenset[str] = frozenset({
 
 
 def passes_canonical(f: dict[str, Any]) -> bool:
-    """Strictest tier — antibody/ADC gold-standard."""
+    """Strictest tier — antibody/ADC gold-standard.
+
+    Drops the ECD filter (ECD-size is a design refinement, not a
+    surface-membership signal — Claudin-18.2 has small loops and a
+    landed therapeutic). Accepts ``state_dependence='unclear'`` so a
+    deep-dive that can't call low vs high doesn't drop out."""
     return (
         f.get("evidence_grade") in ("direct_multi_method", "direct_single_method")
         and f.get("confidence") in ("high", "moderate")
         and f.get("surface_specificity") in ("surface_dominant", "mixed")
-        and f.get("state_dependence") in ("low", "moderate")
+        and f.get("state_dependence") in ("low", "moderate", "unclear")
         and f.get("surface_accessibility") in ("high", "moderate")
         and f.get("evidence_density") in ("high", "moderate")
-        and f.get("ecd_accessibility_class") in ("large", "moderate", "small")
     )
 
 

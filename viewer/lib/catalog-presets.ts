@@ -52,8 +52,17 @@ const INDUCTION_NON_NONE = new Set([
 /**
  * Canonical = strictest tier. Direct evidence, high or moderate
  * confidence, surface-dominant or mixed (not mostly intracellular),
- * low or moderate state-dependence, real ECD. The reader's "default
+ * low / moderate / unclear state-dependence. The reader's "default
  * shortlist of high-confidence surface targets."
+ *
+ * Drops the ECD filter that earlier versions imposed — the small-vs-
+ * large-ECD distinction is an antibody-design refinement, not a
+ * surface-membership signal, and was burying claudins-class proteins
+ * (CLDN18.2) whose small ECD loops are legitimately surface and
+ * legitimately targetable (zolbetuximab is approved against
+ * Claudin-18.2). State-dependence accepts `unclear` because the
+ * synthesizer's contract is "unclear ≠ excluded"; the value lands
+ * when the deep-dive can't confidently call low vs high.
  */
 export function passesCanonical(f: DeepDiveFilters): boolean {
   return (
@@ -62,13 +71,12 @@ export function passesCanonical(f: DeepDiveFilters): boolean {
     (f.confidence === "high" || f.confidence === "moderate") &&
     (f.surface_specificity === "surface_dominant" ||
       f.surface_specificity === "mixed") &&
-    (f.state_dependence === "low" || f.state_dependence === "moderate") &&
+    (f.state_dependence === "low" ||
+      f.state_dependence === "moderate" ||
+      f.state_dependence === "unclear") &&
     (f.surface_accessibility === "high" ||
       f.surface_accessibility === "moderate") &&
-    (f.evidence_density === "high" || f.evidence_density === "moderate") &&
-    (f.ecd_accessibility_class === "large" ||
-      f.ecd_accessibility_class === "moderate" ||
-      f.ecd_accessibility_class === "small")
+    (f.evidence_density === "high" || f.evidence_density === "moderate")
   );
 }
 
@@ -227,10 +235,11 @@ export const PRESET_IMPLIED_FILTERS: Record<
     evidence_grade: new Set(["direct_multi_method", "direct_single_method"]),
     confidence: new Set(["high", "moderate"]),
     surface_specificity: new Set(["surface_dominant", "mixed"]),
-    state_dependence: new Set(["low", "moderate"]),
+    state_dependence: new Set(["low", "moderate", "unclear"]),
     surface_accessibility: new Set(["high", "moderate"]),
     evidence_density: new Set(["high", "moderate"]),
-    ecd_accessibility_class: new Set(["large", "moderate", "small"]),
+    // ecd_accessibility_class intentionally dropped — see
+    // passesCanonical docstring.
   },
   likely: {
     evidence_grade: new Set([

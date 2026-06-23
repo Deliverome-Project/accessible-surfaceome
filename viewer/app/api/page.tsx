@@ -14,10 +14,14 @@ const PRESET_PSEUDOCODE: Record<string, string> = {
   canonical: `evidence_grade ∈ {direct_multi_method, direct_single_method}
 AND confidence ∈ {high, moderate}
 AND surface_specificity ∈ {surface_dominant, mixed}
-AND state_dependence ∈ {low, moderate}
+AND state_dependence ∈ {low, moderate, unclear}
 AND surface_accessibility ∈ {high, moderate}
 AND evidence_density ∈ {high, moderate}
-AND ecd_accessibility_class ∈ {large, moderate, small}`,
+
+# Intentionally NOT filtered: ecd_accessibility_class.
+# ECD-size is a downstream antibody-design refinement, not a
+# surface-membership signal — Claudin-18.2 has small loops and a
+# landed therapeutic (zolbetuximab) anyway.`,
   likely: `evidence_grade ∈ {direct_multi_method, direct_single_method, supportive_but_indirect}
 AND surface_specificity ∈ {surface_dominant, mixed, mostly_intracellular}
 AND surface_accessibility ∈ {high, moderate, low}
