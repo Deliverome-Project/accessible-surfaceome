@@ -20,6 +20,12 @@ import {
 } from "../../lib/deep-dive-fields";
 import { buildTsv, downloadTextFile, type TsvCell } from "../../lib/tsv";
 import { isQueuedDeepDive } from "../../lib/queued-deep-dives";
+import {
+  PRESETS,
+  INDUCTION_SUBS,
+  type PresetKey,
+  type InductionSubKey,
+} from "../../lib/catalog-presets";
 import { InfoTip } from "../InfoTip/InfoTip";
 import { tooltips } from "../../lib/tooltips";
 import {
@@ -323,6 +329,18 @@ export function CatalogTable({
   const [ddLlmOpen, setDdLlmOpen] = useState(true);
   const [ddRisksOpen, setDdRisksOpen] = useState(true);
   const [ddDetOpen, setDdDetOpen] = useState(true);
+  // Saved-preset selector. "all" = filter off; any other key narrows to
+  // deep-dive rows whose `deep_dive_filters` payload passes the
+  // preset's predicate (see lib/catalog-presets.ts). Non-deep-dive
+  // rows are auto-excluded when a non-"all" preset is active because
+  // they have no `deep_dive_filters` to evaluate.
+  const [presetKey, setPresetKey] = useState<PresetKey>("all");
+  // When Induced is active, optional sub-axis filter on
+  // `induction_trigger`. Single-select (not multi) — these are
+  // mutually-exclusive label buckets, not orthogonal facets.
+  const [inductionSub, setInductionSub] = useState<InductionSubKey | null>(
+    null,
+  );
   const [dbFilter, setDbFilter] = useState<Set<DbKey>>(new Set());
   const [verdictFilter, setVerdictFilter] = useState<Set<VerdictKey>>(
     new Set(),
@@ -732,6 +750,23 @@ export function CatalogTable({
             break;
         }
       }
+      // Preset filter — runs the chosen preset's predicate against
+      // the row's `deep_dive_filters`. Rows without a deep-dive
+      // payload auto-drop because no preset evaluates true on null.
+      // Same contract as the deep-dive filter group below — the
+      // payload is only emitted by the Worker for deep-dive rows.
+      if (presetKey !== "all") {
+        const ddf = r.deep_dive_filters;
+        if (!ddf) return false;
+        const preset = PRESETS.find((p) => p.key === presetKey);
+        if (preset && !preset.predicate(ddf)) return false;
+        // Induction sub-axis only applies when "induced" preset is
+        // active (the sub buckets read `induction_trigger`).
+        if (presetKey === "induced" && inductionSub) {
+          const sub = INDUCTION_SUBS.find((s) => s.key === inductionSub);
+          if (sub && !sub.predicate(ddf)) return false;
+        }
+      }
       // Deep-dive filter group. Any active filter here implies
       // deep_dive=true — rows without a deep_dive_filters payload
       // drop out entirely, because we can't evaluate the predicate.
@@ -769,6 +804,8 @@ export function CatalogTable({
     ddActive,
     ddEnumFilters,
     ddBoolFilters,
+    presetKey,
+    inductionSub,
   ]);
 
   const sorted = useMemo(() => {
@@ -869,6 +906,88 @@ export function CatalogTable({
 
   return (
     <div className={styles.wrap} style={gridStyle}>
+      {/* Saved-preset selector row. Sits above the search +
+       *  quick-filters because the preset is the coarsest filter on
+       *  the page — picking one narrows the table to a curated
+       *  shortlist (Canonical / Likely / Cell-state induced / Cell-
+       *  type restricted) before any of the existing facet chips
+       *  apply. Counts are computed over the FULL row set (pre-
+       *  filter) so the badges read as "preset population", not
+       *  "preset ∩ current other filters" — the reader can see how
+       *  many rows the preset would yield before they narrow with
+       *  search / DB chips.
+       *
+       *  Non-"all" presets evaluate against `r.deep_dive_filters`,
+       *  so the 19k non-deep-dive rows always exclude themselves.
+       *  This makes Canonical = "3" not "19,000 + 3"; the
+       *  badge tells the reader what's actually clickable. */}
+      <div className={styles.presetBar} role="tablist" aria-label="Catalog presets">
+        {PRESETS.map((p) => {
+          const count = p.key === "all"
+            ? rows.length
+            : rows.reduce(
+                (n, r) => (r.deep_dive_filters && p.predicate(r.deep_dive_filters) ? n + 1 : n),
+                0,
+              );
+          const on = presetKey === p.key;
+          return (
+            <button
+              key={p.key}
+              type="button"
+              role="tab"
+              aria-selected={on}
+              className={`${styles.presetChip} ${on ? styles.presetChipOn : ""}`}
+              onClick={() => {
+                setPresetKey(p.key);
+                // Reset the induction sub-axis whenever the parent
+                // preset changes — otherwise stale sub-selections
+                // would silently narrow the new preset.
+                if (p.key !== "induced") setInductionSub(null);
+              }}
+              title={p.description}
+            >
+              {p.label}
+              <span className={styles.presetCount}>{count.toLocaleString()}</span>
+            </button>
+          );
+        })}
+        {/* Induction sub-chips — only meaningful when Induced is
+         *  active. Hidden otherwise to avoid visual clutter. */}
+        {presetKey === "induced" ? (
+          <div className={styles.presetSubBar}>
+            <span className={`label-mono ${styles.presetSubLabel}`}>
+              by trigger:
+            </span>
+            {INDUCTION_SUBS.map((s) => {
+              const count = rows.reduce(
+                (n, r) =>
+                  r.deep_dive_filters &&
+                  PRESETS.find((p) => p.key === "induced")!.predicate(r.deep_dive_filters) &&
+                  s.predicate(r.deep_dive_filters)
+                    ? n + 1
+                    : n,
+                0,
+              );
+              const on = inductionSub === s.key;
+              return (
+                <button
+                  key={s.key}
+                  type="button"
+                  role="tab"
+                  aria-selected={on}
+                  className={`${styles.presetChip} ${styles.presetSubChip} ${on ? styles.presetChipOn : ""}`}
+                  onClick={() => setInductionSub((cur) => (cur === s.key ? null : s.key))}
+                  title={s.description}
+                >
+                  {s.label}
+                  <span className={styles.presetCount}>{count.toLocaleString()}</span>
+                </button>
+              );
+            })}
+          </div>
+        ) : null}
+      </div>
+
       <div className={styles.toolbar}>
         <div className={styles.search}>
           <label htmlFor="catalog-search" className="sr-only">

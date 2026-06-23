@@ -1218,3 +1218,81 @@
   background: var(--bg-warm);
   color: var(--muted);
 }
+
+/* === Catalog preset bar ============================================
+ * Sits ABOVE the existing toolbar so the preset feels structural,
+ * not a quick filter. Uses a slightly different chip color (maroon-
+ * tinted on, vs. teal on the quick-filter chips) so the reader's
+ * eye distinguishes "preset" from "facet". */
+.presetBar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.5rem 0.75rem 0.6rem;
+  border-bottom: 1px solid var(--line-soft);
+  margin-bottom: 0.25rem;
+}
+
+.presetChip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.3rem 0.65rem;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--line);
+  background: var(--bg);
+  color: var(--ink-soft);
+  font-family: var(--font-sans);
+  font-size: 0.84rem;
+  font-weight: var(--fw-medium);
+  cursor: pointer;
+  transition: background 0.12s ease, border-color 0.12s ease, color 0.12s ease;
+}
+.presetChip:hover {
+  background: var(--surface-soft);
+  border-color: var(--line);
+  color: var(--ink);
+}
+.presetChipOn {
+  background: var(--accent-soft, #f5e6e8);
+  border-color: var(--accent, #BC3C4C);
+  color: var(--accent, #BC3C4C);
+}
+.presetChipOn:hover {
+  background: var(--accent-soft, #f5e6e8);
+  color: var(--accent, #BC3C4C);
+}
+
+.presetCount {
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  padding: 0.05rem 0.35rem;
+  border-radius: var(--radius-sm);
+  background: var(--surface-soft, rgba(0, 0, 0, 0.04));
+  color: var(--muted);
+}
+.presetChipOn .presetCount {
+  background: rgba(188, 60, 76, 0.12);
+  color: var(--accent, #BC3C4C);
+}
+
+/* Sub-axis chip row for induction trigger — sits inline after the
+ * parent presets, separated by a small vertical divider. */
+.presetSubBar {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  margin-left: 0.4rem;
+  padding-left: 0.6rem;
+  border-left: 1px solid var(--line-soft);
+}
+.presetSubLabel {
+  color: var(--muted);
+  font-size: 0.75rem;
+  letter-spacing: 0.04em;
+}
+.presetSubChip {
+  font-size: 0.78rem;
+  padding: 0.22rem 0.55rem;
+}
