@@ -105,6 +105,20 @@ Already shipping in this draft:
 
 - [x] `triage-runs-genome-with-reasoning.tsv` (consolidated ncbi + pubmed)
 - [x] `triage-benchmark-with-reasoning.tsv` (multi-replicate, truth-joined)
+- [x] `deep-dive-preset-membership.tsv` — per-gene boolean membership
+  in each of the four catalog presets (Canonical / Likely / Cell-
+  state induced / Cell-type restricted) plus the three induction sub-
+  axes (Disease / Stress / Immune). Predicates mirror the viewer
+  toolbar at [`viewer/lib/catalog-presets.ts`](https://github.com/Deliverome-Project/accessible-surfaceome/blob/{sha}/viewer/lib/catalog-presets.ts);
+  the Python mirror at [`src/accessible_surfaceome/release/catalog_presets.py`](https://github.com/Deliverome-Project/accessible-surfaceome/blob/{sha}/src/accessible_surfaceome/release/catalog_presets.py)
+  is the deposit's source of truth. Drift between the two surfaces
+  is caught by a test (`tests/test_catalog_presets_mirror.py`).
+  Audit columns (`induction_trigger`, `surface_call_reason`,
+  `state_dependence`, `evidence_grade`, `surface_specificity`,
+  `ecd_accessibility_class`, `confidence`, `evidence_density`,
+  `surface_accessibility`) carry the raw input fields the predicates
+  read so a reader can re-derive any preset locally without re-
+  fetching the full `annotation_json`.
 - [x] In-deposit `README.md` (this file)
 - [x] Reserved DOI wired into [`scripts/embed_figure_gist_metadata.py`](https://github.com/Deliverome-Project/accessible-surfaceome/blob/{sha}/scripts/embed_figure_gist_metadata.py)'s
   `ZENODO_DATA_DOI` so figure PDF/PNG metadata can pre-bake the citation.

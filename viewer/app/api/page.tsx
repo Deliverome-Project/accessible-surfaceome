@@ -2,7 +2,46 @@ import path from "node:path";
 import { readFileSync, statSync } from "node:fs";
 import type { Metadata } from "next";
 import { Shell } from "../../components/Shell/Shell";
+import { PRESETS, INDUCTION_SUBS } from "../../lib/catalog-presets";
 import styles from "./page.module.css";
+
+/** Plain-language pseudocode for each preset's predicate, rendered in
+ *  the API page's "Catalog presets" section. Keyed by PresetKey so a
+ *  new preset added to lib/catalog-presets.ts has to come here too
+ *  (the JSX iteration over PRESETS would render `undefined` for a
+ *  missing key — visible in the rendered page). */
+const PRESET_PSEUDOCODE: Record<string, string> = {
+  canonical: `evidence_grade ∈ {direct_multi_method, direct_single_method}
+AND confidence ∈ {high, moderate}
+AND surface_specificity ∈ {surface_dominant, mixed}
+AND state_dependence ∈ {low, moderate}
+AND surface_accessibility ∈ {high, moderate}
+AND evidence_density ∈ {high, moderate}
+AND ecd_accessibility_class ∈ {large, moderate, small}`,
+  likely: `evidence_grade ∈ {direct_multi_method, direct_single_method, supportive_but_indirect}
+AND surface_specificity ∈ {surface_dominant, mixed, mostly_intracellular}
+AND surface_accessibility ∈ {high, moderate, low}
+AND state_dependence ∈ {low, moderate, high, unclear, null}
+AND (
+  ecd_accessibility_class ∈ {large, moderate, small}
+  OR (ecd ∈ {minimal, none} AND surface_call_reason ∈ POSITIVE_REASONS)
+)
+# POSITIVE_REASONS = {classical_surface_receptor, gpi_anchored,
+#   multipass_with_exposed_loops, extracellular_face_protein,
+#   stable_complex_partner, cell_state_induced,
+#   tissue_restricted_surface, lysosomal_exocytosis,
+#   dual_localization, stable_surface_attachment}`,
+  induced: `passesLikely(f)
+AND state_dependence ∈ {high, null}
+AND (
+  surface_call_reason ∈ {cell_state_induced, lysosomal_exocytosis}
+  OR induction_trigger ∈ {oncogenic, immune, stress_hypoxia,
+                          cell_death, infection}
+)`,
+  cell_type_restricted: `passesLikely(f)
+AND state_dependence ∈ {moderate, high}
+AND surface_call_reason == tissue_restricted_surface`,
+};
 
 export const metadata: Metadata = {
   title: "API — Surfaceome",
@@ -364,6 +403,67 @@ export default async function ApiPage() {
               </ul>
             </div>
           ))}
+        </section>
+
+        {/* Catalog presets — the saved-filter shortlists the catalog
+         *  toolbar ships (Canonical / Likely / Cell-state induced /
+         *  Cell-type restricted). Documented here because they
+         *  represent a stable contract for downstream consumers
+         *  (Zenodo deposit, partner pipelines) — the predicates are
+         *  versioned in source and the membership is rebuildable
+         *  from a record's `filters` block alone. The chip-level UI
+         *  in the catalog is one consumer; the deposit's
+         *  deep-dive-preset-membership.tsv is another. */}
+        <section className={styles.presets} id="presets">
+          <h2 className="h-data-section">Catalog presets</h2>
+          <p className={styles.presetsLede}>
+            Pure predicates over a record&apos;s{" "}
+            <code className={styles.code}>filters</code> block (the
+            shortlist the toolbar at <code className={styles.code}>/</code>{" "}
+            uses). Source of truth lives at{" "}
+            <a
+              className={styles.extLink}
+              href="https://github.com/Deliverome-Project/accessible-surfaceome/blob/main/viewer/lib/catalog-presets.ts"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              <code className={styles.code}>viewer/lib/catalog-presets.ts</code>
+            </a>
+            ; the same predicates back the{" "}
+            <code className={styles.code}>
+              deep-dive-preset-membership.tsv
+            </code>{" "}
+            export in the Zenodo deposit so a reanalyst can verify
+            membership without re-implementing the rule.
+          </p>
+          <dl className={styles.presetList}>
+            {PRESETS.filter((p) => p.key !== "all").map((p) => (
+              <div key={p.key} className={styles.presetCard}>
+                <dt className={styles.presetLabel}>{p.label}</dt>
+                <dd className={styles.presetBody}>
+                  <p className={styles.presetDesc}>{p.description}</p>
+                  <pre className={styles.presetCode}>
+                    <code>{PRESET_PSEUDOCODE[p.key]}</code>
+                  </pre>
+                </dd>
+              </div>
+            ))}
+            <div className={styles.presetSubSection}>
+              <p className={`label-mono ${styles.presetSubHead}`}>
+                When &ldquo;Cell-state induced&rdquo; is active, the
+                catalog reveals sub-axes by{" "}
+                <code className={styles.code}>induction_trigger</code>:
+              </p>
+              {INDUCTION_SUBS.map((s) => (
+                <div key={s.key} className={styles.presetCardSmall}>
+                  <dt className={styles.presetLabel}>{s.label}</dt>
+                  <dd className={styles.presetBody}>
+                    <p className={styles.presetDesc}>{s.description}</p>
+                  </dd>
+                </div>
+              ))}
+            </div>
+          </dl>
         </section>
 
         <footer className={styles.footnotes}>
