@@ -24,6 +24,11 @@ from pathlib import Path
 
 from accessible_surfaceome.agents.surfaceome_v2 import annotate
 from accessible_surfaceome.agents.surfaceome_v2.orchestrator import write_summary_meta
+from accessible_surfaceome.cloud.harvested_paper import (
+    ensure_schema as ensure_harvested_paper_schema,
+    harvested_papers_from_dual,
+    publish_harvested_papers,
+)
 from accessible_surfaceome.cloud.intermediates import publish_intermediates
 from accessible_surfaceome.cloud.surface_annotation import publish_record
 from accessible_surfaceome.env import load_env
@@ -164,6 +169,32 @@ def main(argv: list[str] | None = None) -> int:
     # captured (in fact, that's the highest-value case). Skips with a
     # warning on a missing CLOUDFLARE_* env or a >900KB blob; never
     # raises and never blocks the publish path.
+    # Per-paper harvested_paper rows for analytics (which papers did this
+    # deep-dive consider, what bucket each landed in, which fetch tier
+    # produced the body). Opt-in via --cohort-run-id — ad-hoc single-gene
+    # runs without a sweep tag stay out of the table. Soft-skips when
+    # CLOUDFLARE_* env vars are missing (same pattern as publish_record /
+    # publish_intermediates) so offline runs still succeed.
+    if args.publish and args.cohort_run_id and result.dual is not None:
+        try:
+            ensure_harvested_paper_schema()
+            harvested = harvested_papers_from_dual(
+                result.dual,
+                run_id=args.cohort_run_id,
+                gene_symbol=result.gene,
+            )
+            if harvested:
+                n = publish_harvested_papers(harvested)
+                logging.info(
+                    "harvested_paper: wrote %d rows (run_id=%s gene=%s)",
+                    n, args.cohort_run_id, result.gene,
+                )
+        except Exception as exc:  # noqa: BLE001
+            logging.warning(
+                "harvested_paper publish failed (gene=%s): %s — continuing",
+                result.gene, exc,
+            )
+
     intermediates_result = None
     if args.publish and result.intermediates:
         # Use the schema_version from the record if it validated, else
