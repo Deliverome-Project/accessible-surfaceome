@@ -32,7 +32,11 @@ from accessible_surfaceome.tools._shared import retraction_watch as rw
 from accessible_surfaceome.tools._shared.europepmc import (
     EUROPEPMC_FULLTEXT,
     NCBI_PMC_EFETCH,
+    NCBI_PUBMED_ESEARCH,
+    NCBI_PUBMED_EFETCH,
+    europepmc_bulk_by_pmid,
     fetch_fulltext,
+    ncbi_pubmed_search,
 )
 
 
@@ -74,6 +78,66 @@ _GOOD_JATS_XML = """<?xml version="1.0"?>
     </sec>
   </body>
 </article>"""
+
+
+_GOOD_NCBI_PMC_JATS_XML = """<?xml version="1.0"?>
+<article article-type="research-article">
+  <front>
+    <journal-meta>
+      <journal-title-group><journal-title>J. NCBI</journal-title></journal-title-group>
+    </journal-meta>
+    <article-meta>
+      <article-id pub-id-type="pmid">22222</article-id>
+      <article-id pub-id-type="pmc">12462478</article-id>
+      <article-id pub-id-type="doi">10.1000/ncbi</article-id>
+      <title-group><article-title>NCBI metadata article.</article-title></title-group>
+      <contrib-group>
+        <contrib contrib-type="author">
+          <name><surname>Roe</surname><given-names>Jane</given-names></name>
+        </contrib>
+      </contrib-group>
+      <pub-date><year>2024</year></pub-date>
+      <abstract><p>NCBI supplied this abstract.</p></abstract>
+    </article-meta>
+  </front>
+  <body>
+    <sec sec-type="results">
+      <title>Results</title>
+      <p>NCBI supplied the full text section.</p>
+    </sec>
+  </body>
+</article>"""
+
+
+_GOOD_NCBI_PUBMED_XML = """<?xml version="1.0"?>
+<PubmedArticleSet>
+  <PubmedArticle>
+    <MedlineCitation>
+      <PMID>222</PMID>
+      <Article>
+        <Journal>
+          <JournalIssue><PubDate><Year>2024</Year></PubDate></JournalIssue>
+          <Title>J. PubMed</Title>
+        </Journal>
+        <ArticleTitle>NCBI PubMed fallback article.</ArticleTitle>
+        <Abstract><AbstractText>NCBI PubMed supplied this abstract.</AbstractText></Abstract>
+        <AuthorList>
+          <Author><LastName>Roe</LastName><ForeName>Jane</ForeName></Author>
+        </AuthorList>
+        <PublicationTypeList>
+          <PublicationType>Journal Article</PublicationType>
+        </PublicationTypeList>
+      </Article>
+    </MedlineCitation>
+    <PubmedData>
+      <ArticleIdList>
+        <ArticleId IdType="pubmed">222</ArticleId>
+        <ArticleId IdType="pmc">PMC222</ArticleId>
+        <ArticleId IdType="doi">10.1000/pubmed</ArticleId>
+      </ArticleIdList>
+    </PubmedData>
+  </PubmedArticle>
+</PubmedArticleSet>"""
 
 
 _EMPTY_NCBI_ARTICLESET = "<?xml version=\"1.0\"?><pmc-articleset/>"
@@ -156,6 +220,26 @@ def test_layer1_ncbi_success_sets_source_ncbi() -> None:
         if c.kwargs.get("source") == "europepmc_fulltext"
     ]
     assert not epmc_calls
+
+
+def test_metadata_falls_back_to_ncbi_pmc_xml_when_europepmc_search_fails() -> None:
+    http = _make_http(ncbi_fulltext=_GOOD_NCBI_PMC_JATS_XML)
+    http.get_json.side_effect = httpx.ConnectError("simulated Europe PMC outage")
+
+    paper = fetch_fulltext(
+        http=http,
+        pmcid="PMC12462478",
+        retraction_index=rw.empty(),
+    )
+
+    assert paper.fulltext_fetch_source == "ncbi"
+    assert paper.pmid == 22222
+    assert paper.pmc_id == "PMC12462478"
+    assert paper.title == "NCBI metadata article"
+    assert paper.abstract == "NCBI supplied this abstract."
+    assert paper.journal == "J. NCBI"
+    assert paper.authors == ["Jane Roe"]
+    assert paper.sections
 
 
 def test_layer1_ncbi_call_shape() -> None:
@@ -344,12 +428,11 @@ def test_layer3_abstract_only_when_europepmc_request_error() -> None:
 
 
 def test_metadata_lookup_failure_still_raises() -> None:
-    """If the EuropePMC SEARCH layer can't find the PMCID at all, we
-    don't have abstract metadata to degrade to — keep the historical
-    ``LookupError``. The metadata-search endpoint is independent of the
-    fulltext-mirror promotion and remains EuropePMC-backed."""
+    """If neither Europe PMC metadata nor NCBI PMC efetch can find the PMCID,
+    we don't have abstract metadata to degrade to."""
     http = MagicMock()
     http.get_json.return_value = {"resultList": {"result": []}}
+    http.get_text.return_value = _EMPTY_NCBI_ARTICLESET
 
     with pytest.raises(LookupError):
         fetch_fulltext(
@@ -379,3 +462,90 @@ def test_url_normalization_lowercase_input() -> None:
     ][0]
     # NCBI sees the numeric PMCID (PMC prefix stripped).
     assert ncbi_call.kwargs["params"]["id"] == "12462478"
+
+
+# ---------------------------------------------------------------------------
+# PMID batch hydration: Europe PMC convenience path with NCBI fallback
+# ---------------------------------------------------------------------------
+
+
+def test_bulk_by_pmid_falls_back_to_ncbi_pubmed_when_europepmc_fails() -> None:
+    http = MagicMock()
+    http.get_json.side_effect = httpx.ConnectError("simulated Europe PMC outage")
+    http.get_text.return_value = _GOOD_NCBI_PUBMED_XML
+
+    papers = europepmc_bulk_by_pmid(
+        http=http,
+        pmids=[222],
+        retraction_index=rw.empty(),
+    )
+
+    assert len(papers) == 1
+    paper = papers[0]
+    assert paper.pmid == 222
+    assert paper.pmc_id == "PMC222"
+    assert paper.doi == "10.1000/pubmed"
+    assert paper.title == "NCBI PubMed fallback article"
+    assert paper.abstract == "NCBI PubMed supplied this abstract."
+    assert paper.journal == "J. PubMed"
+    assert paper.authors == ["Jane Roe"]
+    assert paper.is_pmc_oa is True
+    ncbi_call = http.get_text.call_args
+    assert ncbi_call.args[0] == NCBI_PUBMED_EFETCH
+    assert ncbi_call.kwargs["source"] == "ncbi_pubmed_efetch"
+    assert ncbi_call.kwargs["params"]["db"] == "pubmed"
+    assert ncbi_call.kwargs["params"]["id"] == "222"
+    assert ncbi_call.kwargs["params"]["retmode"] == "xml"
+
+
+def test_bulk_by_pmid_backfills_missing_pmids_from_ncbi() -> None:
+    http = MagicMock()
+    http.get_json.return_value = {
+        "resultList": {
+            "result": [
+                {
+                    "pmid": "111",
+                    "pmcid": "PMC111",
+                    "pubYear": "2023",
+                    "journalTitle": "J. Europe PMC",
+                    "title": "Europe PMC article.",
+                    "abstractText": "Europe PMC supplied this abstract.",
+                    "isOpenAccess": "Y",
+                    "pubTypeList": {"pubType": ["research-article"]},
+                }
+            ]
+        }
+    }
+    http.get_text.return_value = _GOOD_NCBI_PUBMED_XML
+
+    papers = europepmc_bulk_by_pmid(
+        http=http,
+        pmids=[111, 222],
+        retraction_index=rw.empty(),
+    )
+
+    assert [p.pmid for p in papers] == [111, 222]
+    assert papers[0].title == "Europe PMC article"
+    assert papers[1].title == "NCBI PubMed fallback article"
+    ncbi_call = http.get_text.call_args
+    assert ncbi_call.kwargs["params"]["id"] == "222"
+
+
+def test_ncbi_pubmed_search_strips_europepmc_src_med_clause() -> None:
+    http = MagicMock()
+    http.get_json.return_value = {"esearchresult": {"idlist": ["222"]}}
+    http.get_text.return_value = _GOOD_NCBI_PUBMED_XML
+
+    papers = ncbi_pubmed_search(
+        http=http,
+        query='("GPR75") AND ("surface") AND SRC:MED',
+        page_size=3,
+        retraction_index=rw.empty(),
+    )
+
+    assert [p.pmid for p in papers] == [222]
+    search_call = http.get_json.call_args
+    assert search_call.args[0] == NCBI_PUBMED_ESEARCH
+    assert search_call.kwargs["source"] == "ncbi_pubmed_esearch"
+    assert search_call.kwargs["params"]["term"] == '("GPR75") AND ("surface")'
+    assert search_call.kwargs["params"]["retmax"] == "3"

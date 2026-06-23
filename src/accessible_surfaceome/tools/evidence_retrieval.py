@@ -58,6 +58,7 @@ from ._shared.europepmc import (
     europepmc_bulk_by_pmid,
     europepmc_search,
     fetch_fulltext,
+    ncbi_pubmed_search,
     paper_from_europepmc,
 )
 from ._shared.gene_gazetteer import (
@@ -601,6 +602,20 @@ def evidence_retrieval(
 _BACKFILL_FETCH_MULTIPLIER = 3
 _BACKFILL_MIN_FETCHES = 8
 
+# These categories have highly specific method/structure vocabulary and a
+# strong downstream full-text hallmark filter. For them, Europe PMC's
+# alias-aware keyword search is usually good enough to seed the candidate
+# pool, so live PubTator is a fallback rather than a default fan-out call.
+_EPMC_FIRST_CATEGORIES: frozenset[EvidenceCategory] = frozenset(
+    {
+        "ihc",
+        "surface_biotinylation",
+        "mass_spec_surfaceome",
+        "western_blot_paired",
+        "structure_with_ecd",
+    }
+)
+
 
 def _pmc_retrieval(
     *,
@@ -624,35 +639,20 @@ def _pmc_retrieval(
     )
     gazetteer = load_gazetteer()
 
-    # Two discovery sources, unioned. PubTator is entity-anchored
-    # (subject-grounded — a hit means NER tagged this gene, not that the
-    # string appears somewhere) so its papers rank first; Europe PMC's
-    # keyword search backfills recall. Dedup is by PMID.
-    pubtator_papers = _pubtator_discovery(
+    papers = _discover_category_papers(
         bundle=bundle,
+        category=category,
         spec=spec,
         max_papers=max_papers,
         http=http,
         retraction_index=retraction_index,
     )
-    epmc_papers = _europepmc_discovery(
-        bundle=bundle,
-        spec=spec,
-        max_papers=max_papers,
-        http=http,
-        retraction_index=retraction_index,
-    )
-    papers = _union_by_pmid(pubtator_papers, epmc_papers)
 
-    # Full PMC-OA, non-retracted candidate pool, ranked PubTator-first
-    # via the union order. We walk this pool fetching + extracting; the
-    # gene-proximity filter inside _extract_snippets can leave a
-    # top-ranked paper with zero on-subject snippets, so we keep going
-    # rather than stopping at a fixed slice.
-    candidate_pool = [
-        p for p in papers
-        if p.is_pmc_oa and p.pmc_id and not p.is_retracted
-    ]
+    # Full PMC-OA, non-retracted candidate pool. Source ordering is set by
+    # _discover_category_papers: PubTator-first for noisy/entity-sensitive
+    # categories, Europe-PMC-first for high-specificity categories where
+    # PubTator is now a fallback.
+    candidate_pool = _pmc_oa_candidate_pool(papers)
 
     if not candidate_pool:
         return EvidenceRetrievalPack(
@@ -775,6 +775,72 @@ def _pmc_retrieval(
 # ---------------------------------------------------------------------------
 
 
+def _pmc_oa_candidate_pool(papers: list[Paper]) -> list[Paper]:
+    """Papers eligible for downstream full-text/snippet extraction."""
+
+    return [
+        p for p in papers
+        if p.is_pmc_oa and p.pmc_id and not p.is_retracted
+    ]
+
+
+def _discover_category_papers(
+    *,
+    bundle: IdentifierBundle,
+    category: EvidenceCategory,
+    spec: _CategorySpec,
+    max_papers: int,
+    http: CachedHTTP,
+    retraction_index: RetractionIndex,
+) -> list[Paper]:
+    """Run category discovery with the appropriate source policy.
+
+    PubTator remains first-line for broad/noisy categories where entity
+    grounding and PubTator's relevance score are doing real precision work.
+    For high-specificity categories, Europe PMC runs first; PubTator is called
+    only when Europe PMC fails to produce enough PMC-OA candidates for the
+    requested paper budget.
+    """
+
+    if category in _EPMC_FIRST_CATEGORIES:
+        epmc_papers = _europepmc_discovery(
+            bundle=bundle,
+            spec=spec,
+            max_papers=max_papers,
+            http=http,
+            retraction_index=retraction_index,
+        )
+        if len(_pmc_oa_candidate_pool(epmc_papers)) >= max_papers:
+            return epmc_papers
+        pubtator_papers = _pubtator_discovery(
+            bundle=bundle,
+            spec=spec,
+            max_papers=max_papers,
+            http=http,
+            retraction_index=retraction_index,
+        )
+        return _union_by_pmid(epmc_papers, pubtator_papers)
+
+    # Noisy/entity-grounding-sensitive categories keep PubTator first:
+    # a hit means PubTator tagged the gene as an entity, not just that an
+    # alias string appeared near broad terms like "surface" or "soluble".
+    pubtator_papers = _pubtator_discovery(
+        bundle=bundle,
+        spec=spec,
+        max_papers=max_papers,
+        http=http,
+        retraction_index=retraction_index,
+    )
+    epmc_papers = _europepmc_discovery(
+        bundle=bundle,
+        spec=spec,
+        max_papers=max_papers,
+        http=http,
+        retraction_index=retraction_index,
+    )
+    return _union_by_pmid(pubtator_papers, epmc_papers)
+
+
 def _europepmc_discovery(
     *,
     bundle: IdentifierBundle,
@@ -797,12 +863,25 @@ def _europepmc_discovery(
         + " AND ".join(spec.query_clauses)
         + " AND SRC:MED"
     )
-    payload = europepmc_search(http=http, query=query, page_size=max_papers * 3)
-    hits = (payload.get("resultList") or {}).get("result") or []
-    return [
-        paper_from_europepmc(record, retraction_index=retraction_index)
-        for record in hits
-    ]
+    try:
+        payload = europepmc_search(http=http, query=query, page_size=max_papers * 3)
+        hits = (payload.get("resultList") or {}).get("result") or []
+        return [
+            paper_from_europepmc(record, retraction_index=retraction_index)
+            for record in hits
+        ]
+    except Exception as exc:  # noqa: BLE001
+        logger.warning(
+            "Europe PMC category discovery failed for %s; falling back to NCBI PubMed: %s",
+            bundle.hgnc_symbol,
+            exc,
+        )
+        return ncbi_pubmed_search(
+            http=http,
+            query=query,
+            page_size=max_papers * 3,
+            retraction_index=retraction_index,
+        )
 
 
 def _pubtator_discovery(
