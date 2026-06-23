@@ -319,7 +319,7 @@ def main() -> None:
         2, 2, figure=fig,
         height_ratios=[2.2, 1.55],
         width_ratios=[1.0, 1.5],
-        hspace=0.55, wspace=0.28,
+        hspace=0.30, wspace=0.28,
         top=0.93, bottom=0.04, left=0.06, right=0.97,
     )
     ax_yes = fig.add_subplot(gs[0, 0])
