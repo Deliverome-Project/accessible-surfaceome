@@ -26,15 +26,13 @@ AND evidence_density ∈ {high, moderate}
 AND surface_specificity ∈ {surface_dominant, mixed, mostly_intracellular}
 AND surface_accessibility ∈ {high, moderate, low}
 AND state_dependence ∈ {low, moderate, high, unclear, null}
-AND (
-  ecd_accessibility_class ∈ {large, moderate, small}
-  OR (ecd ∈ {minimal, none} AND surface_call_reason ∈ POSITIVE_REASONS)
-)
-# POSITIVE_REASONS = {classical_surface_receptor, gpi_anchored,
-#   multipass_with_exposed_loops, extracellular_face_protein,
-#   stable_complex_partner, cell_state_induced,
-#   tissue_restricted_surface, lysosomal_exocytosis,
-#   dual_localization, stable_surface_attachment}`,
+
+# Intentionally NOT filtered: ecd_accessibility_class.
+# Same rationale as Canonical — ECD-size is an antibody-design
+# refinement, not a surface-membership signal. Inner-leaflet false
+# positives (LYN, BAX) are excluded by their other field values
+# (evidence_grade=weak + surface_accessibility=no), so the ECD
+# gate was never load-bearing against the cytoplasmic bucket.`,
   induced: `passesLikely(f)
 AND state_dependence ∈ {high, null}
 AND (

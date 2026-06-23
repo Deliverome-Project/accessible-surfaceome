@@ -18,26 +18,6 @@ from __future__ import annotations
 
 from typing import Any, Callable
 
-# Reasons in the YES + CONTEXTUAL buckets (real surface call). Used by
-# the ECD-bypass in ``passes_likely`` so e.g. HMGB1 (ecd=none + reason=
-# cell_state_induced) and SRC (ecd=none + reason=lysosomal_exocytosis)
-# are admitted while LYN (ecd=none + reason=inner_leaflet_anchored) is
-# excluded.
-POSITIVE_REASONS: frozenset[str] = frozenset({
-    # YES bucket
-    "classical_surface_receptor",
-    "gpi_anchored",
-    "multipass_with_exposed_loops",
-    "extracellular_face_protein",
-    "stable_complex_partner",
-    # CONTEXTUAL bucket
-    "cell_state_induced",
-    "tissue_restricted_surface",
-    "lysosomal_exocytosis",
-    "dual_localization",
-    "stable_surface_attachment",
-})
-
 INDUCTION_NON_NONE: frozenset[str] = frozenset({
     "oncogenic",
     "immune",
@@ -67,8 +47,15 @@ def passes_canonical(f: dict[str, Any]) -> bool:
 def passes_likely(f: dict[str, Any]) -> bool:
     """Broader shortlist — adds supportive_but_indirect evidence,
     mostly_intracellular specificity (SRC-class lysosomal-exocytosis
-    surface), high/unclear/null state-dep, and relaxes ecd=none/minimal
-    IFF surface_call_reason is in POSITIVE_REASONS."""
+    surface, HMGB1-class DAMP release), and high/unclear/null
+    state-dep.
+
+    Drops the ECD filter for the same reason Canonical did. Inner-
+    leaflet false positives (LYN, BAX) are still excluded here
+    because they fail on ``evidence_grade=weak`` AND
+    ``surface_accessibility=no``; IZUMO4 (secreted-only) fails the
+    same way. The ECD gate was load-bearing only for biology, never
+    for defending against the inner-leaflet bucket."""
     if f.get("evidence_grade") not in (
         "direct_multi_method", "direct_single_method", "supportive_but_indirect"
     ):
@@ -82,12 +69,7 @@ def passes_likely(f: dict[str, Any]) -> bool:
     sd = f.get("state_dependence")
     if sd is not None and sd not in ("low", "moderate", "high", "unclear"):
         return False
-    ecd = f.get("ecd_accessibility_class")
-    if ecd in ("large", "moderate", "small"):
-        return True
-    if ecd in ("minimal", "none") and f.get("surface_call_reason") in POSITIVE_REASONS:
-        return True
-    return False
+    return True
 
 
 def passes_induced(f: dict[str, Any]) -> bool:

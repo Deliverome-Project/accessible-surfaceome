@@ -23,23 +23,6 @@
  * with `induction_trigger=oncogenic` lands in `disease` only.
  */
 import type { DeepDiveFilters } from "./surfaceome";
-import type { TriageReason } from "./surfaceome-types";
-
-/** Reasons in the YES + CONTEXTUAL buckets (real surface call). */
-const POSITIVE_REASONS = new Set<TriageReason>([
-  // YES bucket
-  "classical_surface_receptor",
-  "gpi_anchored",
-  "multipass_with_exposed_loops",
-  "extracellular_face_protein",
-  "stable_complex_partner",
-  // CONTEXTUAL bucket
-  "cell_state_induced",
-  "tissue_restricted_surface",
-  "lysosomal_exocytosis",
-  "dual_localization",
-  "stable_surface_attachment",
-]);
 
 const INDUCTION_NON_NONE = new Set([
   "oncogenic",
@@ -83,12 +66,18 @@ export function passesCanonical(f: DeepDiveFilters): boolean {
 /**
  * Likely = broader shortlist. Adds `supportive_but_indirect` evidence,
  * `mostly_intracellular` specificity (proteins like SRC that surface
- * via lysosomal-exocytosis), `high` / `unclear` / null state-dep, and
- * relaxes ECD=none/minimal IFF the synthesizer's `surface_call_reason`
- * is a positive (yes / contextual) call. The ECD bypass lets HMGB1
- * (cell_state_induced, ecd=none) and SRC (lysosomal_exocytosis,
- * ecd=none) through while still excluding LYN (inner_leaflet_anchored,
- * a NEGATIVE reason) and IZUMO4 (secreted_only).
+ * via lysosomal-exocytosis or HMGB1 via DAMP-release), and
+ * `high` / `unclear` / null state-dep.
+ *
+ * Drops the ECD filter for the same reason Canonical did — ECD-size is
+ * a downstream antibody-design refinement, not a surface-membership
+ * signal. Inner-leaflet false positives (LYN, BAX) are still excluded
+ * here because they fail OTHER filters: LYN has `evidence_grade=weak`
+ * AND `surface_accessibility=no`; BAX has `evidence_grade=weak` AND
+ * `surface_accessibility=no`. IZUMO4 (secreted-only) fails the same
+ * way. So the ECD gate was load-bearing only for biology, never for
+ * defending against the inner-leaflet bucket — removing it doesn't
+ * leak SRC-class-but-actually-intracellular calls.
  */
 export function passesLikely(f: DeepDiveFilters): boolean {
   if (
@@ -125,14 +114,7 @@ export function passesLikely(f: DeepDiveFilters): boolean {
   ) {
     return false;
   }
-  // ECD gate with bypass.
-  const ecd = f.ecd_accessibility_class;
-  const ecdOk =
-    ecd === "large" || ecd === "moderate" || ecd === "small"
-      ? true
-      : (ecd === "minimal" || ecd === "none") &&
-        POSITIVE_REASONS.has(f.surface_call_reason);
-  return Boolean(ecdOk);
+  return true;
 }
 
 /**
@@ -254,7 +236,6 @@ export const PRESET_IMPLIED_FILTERS: Record<
     ]),
     state_dependence: new Set(["low", "moderate", "high", "unclear"]),
     surface_accessibility: new Set(["high", "moderate", "low"]),
-    ecd_accessibility_class: new Set(["large", "moderate", "small"]),
   },
   induced: {
     evidence_grade: new Set([
@@ -269,7 +250,6 @@ export const PRESET_IMPLIED_FILTERS: Record<
     ]),
     state_dependence: new Set(["high"]),
     surface_accessibility: new Set(["high", "moderate", "low"]),
-    ecd_accessibility_class: new Set(["large", "moderate", "small"]),
   },
   cell_type_restricted: {
     evidence_grade: new Set([
@@ -284,7 +264,6 @@ export const PRESET_IMPLIED_FILTERS: Record<
     ]),
     state_dependence: new Set(["moderate", "high"]),
     surface_accessibility: new Set(["high", "moderate", "low"]),
-    ecd_accessibility_class: new Set(["large", "moderate", "small"]),
     surface_call_reason: new Set(["tissue_restricted_surface"]),
   },
 };
@@ -321,10 +300,13 @@ export const PRESETS: ReadonlyArray<{
     key: "likely",
     label: "Likely",
     description:
-      "Broader shortlist — adds supportive-but-indirect evidence, mostly-" +
-      "intracellular surface fractions (e.g. SRC via lysosomal exocytosis), " +
-      "and ECD=none for proteins whose surface call rests on a positive " +
-      "surface_call_reason rather than a TM-anchored ECD (HMGB1).",
+      "Broader shortlist — adds supportive-but-indirect evidence, " +
+      "mostly-intracellular surface fractions (e.g. SRC via lysosomal " +
+      "exocytosis, HMGB1 via DAMP release), and high / unclear / null " +
+      "state-dependence. ECD-size is intentionally NOT filtered for " +
+      "the same reason as Canonical; inner-leaflet false positives " +
+      "(LYN, BAX) are still excluded because they fail on evidence_" +
+      "grade=weak + surface_accessibility=no.",
     predicate: passesLikely,
   },
   {
