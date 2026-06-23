@@ -37,7 +37,16 @@ AND (
   surface_call_reason ∈ {cell_state_induced, lysosomal_exocytosis}
   OR induction_trigger ∈ {oncogenic, immune, stress_hypoxia,
                           cell_death, infection}
-)`,
+)
+
+# When Induced is active, the toolbar reveals four MULTI-SELECT
+# sub-axes on induction_trigger (OR semantics — pick any combination):
+#   Cancer        = induction_trigger == oncogenic
+#   Other disease = induction_trigger ∈ {cell_death, infection}
+#   Stress        = induction_trigger == stress_hypoxia
+#   Immune        = induction_trigger == immune
+# Cancer is split off from Disease because oncogenic is the largest
+# single trigger in the cohort; conflating buries the smaller buckets.`,
   cell_type_restricted: `passesLikely(f)
 AND state_dependence ∈ {moderate, high}
 AND surface_call_reason == tissue_restricted_surface`,

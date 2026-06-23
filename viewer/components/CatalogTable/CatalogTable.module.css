@@ -397,7 +397,14 @@
  * (i) glyph. */
 .groupHeaderRow {
   display: inline-flex;
-  align-items: center;
+  /* `baseline` (was `center`) so the (i) glyph sits on the same
+   * text baseline as the group-header word — the InfoTip trigger's
+   * 0.85em glyph against the .groupHeader's 0.78rem mono-uppercase
+   * text rendered center-aligned looked subtly low because the
+   * glyph's optical center sits below the baseline. Baseline-
+   * aligning lands the glyph exactly where a reader's eye expects
+   * a footnote-style annotation to sit. */
+  align-items: baseline;
   gap: 0.4rem;
   align-self: flex-start;
 }
@@ -1295,4 +1302,42 @@
 .presetSubChip {
   font-size: 0.78rem;
   padding: 0.22rem 0.55rem;
+}
+
+/* === Preset bar (v2 additions) ====================================
+ * Wraps each chip + its InfoTip so the (i) glyph sits adjacent
+ * without breaking the flex row. */
+.presetChipWrap {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.2rem;
+}
+
+.presetLabelGroup {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 0.3rem;
+  margin-right: 0.4rem;
+}
+.presetBarLabel {
+  color: var(--muted);
+  font-size: 0.75rem;
+  letter-spacing: 0.04em;
+}
+
+/* "Preset-implied" filter chip — the chip's VALUE is already in
+ * the active preset's predicate (e.g. when Canonical is on,
+ * `evidence_grade=direct_multi_method` is implied). Shows the chip
+ * with a soft maroon outline + tinted background so the reader can
+ * see what the preset is doing without having to read the API page.
+ * Distinct from `.filterChipOn` (the user-selected state, solid
+ * fill) so a chip that's BOTH user-selected AND preset-implied
+ * still reads as user-selected — the brighter state wins. */
+.filterChipPresetImplied {
+  border-color: rgba(188, 60, 76, 0.5);
+  background: rgba(188, 60, 76, 0.08);
+  color: var(--accent, #BC3C4C);
+}
+.filterChipPresetImplied:hover {
+  background: rgba(188, 60, 76, 0.14);
 }

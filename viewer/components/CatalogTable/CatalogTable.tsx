@@ -23,6 +23,8 @@ import { isQueuedDeepDive } from "../../lib/queued-deep-dives";
 import {
   PRESETS,
   INDUCTION_SUBS,
+  PRESET_IMPLIED_FILTERS,
+  DEEP_DIVE_ONLY_NOTE,
   type PresetKey,
   type InductionSubKey,
 } from "../../lib/catalog-presets";
@@ -336,10 +338,12 @@ export function CatalogTable({
   // they have no `deep_dive_filters` to evaluate.
   const [presetKey, setPresetKey] = useState<PresetKey>("all");
   // When Induced is active, optional sub-axis filter on
-  // `induction_trigger`. Single-select (not multi) — these are
-  // mutually-exclusive label buckets, not orthogonal facets.
-  const [inductionSub, setInductionSub] = useState<InductionSubKey | null>(
-    null,
+  // `induction_trigger`. MULTI-select (a single gene's trigger is
+  // one value, but a reader scanning "what's induced by Cancer OR
+  // Immune signaling" wants the OR-union; a single-select buries
+  // that). Empty set = no sub-filter, all induced rows pass.
+  const [inductionSubs, setInductionSubs] = useState<Set<InductionSubKey>>(
+    () => new Set(),
   );
   const [dbFilter, setDbFilter] = useState<Set<DbKey>>(new Set());
   const [verdictFilter, setVerdictFilter] = useState<Set<VerdictKey>>(
@@ -479,6 +483,14 @@ export function CatalogTable({
   // above; called via `.map(renderDdEnumRow)` / `.map(renderDdBoolRow)`.
   function renderDdEnumRow(field: DdEnumSpec) {
     const sel = ddEnumFilters[field.key];
+    // Implied set: values the ACTIVE preset's predicate accepts on
+    // this field. A chip in this set wears a soft "preset" tone so
+    // the reader sees what the preset is already filtering for,
+    // and knows checking a non-implied chip would AND-narrow further.
+    // PRESET_IMPLIED_FILTERS is the single source of truth — keyed
+    // by PresetKey to a Partial<Record<fieldKey, Set<value>>>.
+    const implied =
+      PRESET_IMPLIED_FILTERS[presetKey][field.key] ?? null;
     return (
       <div key={`dd-enum-${field.key}`} className={styles.filterRowDd}>
         <span className={styles.filterLabelWithTip}>
@@ -490,17 +502,26 @@ export function CatalogTable({
         <div className={styles.filterChips}>
           {field.values.map((v) => {
             const on = sel.has(v);
+            const isImplied = implied?.has(v) ?? false;
             // Prefer the field's explicit display label (caps acronyms
             // like GPI / GPCR / pMHC that prettyEnum would mangle).
             const label = field.valueLabels?.[v] ?? prettyEnum(v);
+            const titleHint = on
+              ? `Require ${field.label} = ${label}`
+              : isImplied
+              ? `${field.label} = ${label} — already in the active "${PRESETS.find((p) => p.key === presetKey)?.label}" preset; click to narrow further by user choice`
+              : `Require ${field.label} = ${label}`;
             return (
               <button
                 key={`dd-${field.key}-${v}`}
                 type="button"
-                className={`${styles.filterChip} ${on ? styles.filterChipOn : ""}`}
+                className={`${styles.filterChip} ${
+                  on ? styles.filterChipOn : ""
+                } ${isImplied && !on ? styles.filterChipPresetImplied : ""}`}
                 onClick={() => toggleDdEnumFilter(field.key, v)}
                 aria-pressed={on}
-                title={`Require ${field.label} = ${label}`}
+                data-preset-implied={isImplied ? "true" : undefined}
+                title={titleHint}
               >
                 {label}
               </button>
@@ -761,10 +782,14 @@ export function CatalogTable({
         const preset = PRESETS.find((p) => p.key === presetKey);
         if (preset && !preset.predicate(ddf)) return false;
         // Induction sub-axis only applies when "induced" preset is
-        // active (the sub buckets read `induction_trigger`).
-        if (presetKey === "induced" && inductionSub) {
-          const sub = INDUCTION_SUBS.find((s) => s.key === inductionSub);
-          if (sub && !sub.predicate(ddf)) return false;
+        // active (the sub buckets read `induction_trigger`). Multi-
+        // select with OR semantics: a row passes if ANY selected
+        // sub-axis matches. Empty set = no sub-filter.
+        if (presetKey === "induced" && inductionSubs.size > 0) {
+          const matchAny = INDUCTION_SUBS.some(
+            (s) => inductionSubs.has(s.key) && s.predicate(ddf),
+          );
+          if (!matchAny) return false;
         }
       }
       // Deep-dive filter group. Any active filter here implies
@@ -805,7 +830,7 @@ export function CatalogTable({
     ddEnumFilters,
     ddBoolFilters,
     presetKey,
-    inductionSub,
+    inductionSubs,
   ]);
 
   const sorted = useMemo(() => {
@@ -922,6 +947,30 @@ export function CatalogTable({
        *  This makes Canonical = "3" not "19,000 + 3"; the
        *  badge tells the reader what's actually clickable. */}
       <div className={styles.presetBar} role="tablist" aria-label="Catalog presets">
+        <div className={styles.presetLabelGroup}>
+          <span className={`label-mono ${styles.presetBarLabel}`}>
+            Curated lists
+          </span>
+          <InfoTip label="About catalog preset lists" wide>
+            <p>
+              <strong>Curated shortlists</strong> over the deep-dive
+              cohort. Each preset is a pure predicate over a record&apos;s
+              <code> filters </code> block — Canonical is the strictest
+              tier, Likely is broader, Cell-state induced and Cell-type
+              restricted are sub-buckets of Likely.
+            </p>
+            <p>
+              <em>{DEEP_DIVE_ONLY_NOTE}</em> The count badge on each
+              chip is the population that survives the predicate (no
+              other filters applied) — refine further with the existing
+              search / DB / facet chips.
+            </p>
+            <p>
+              Full predicates live at <code>/api#presets</code> and at{" "}
+              <code>viewer/lib/catalog-presets.ts</code>.
+            </p>
+          </InfoTip>
+        </div>
         {PRESETS.map((p) => {
           const count = p.key === "all"
             ? rows.length
@@ -931,28 +980,38 @@ export function CatalogTable({
               );
           const on = presetKey === p.key;
           return (
-            <button
-              key={p.key}
-              type="button"
-              role="tab"
-              aria-selected={on}
-              className={`${styles.presetChip} ${on ? styles.presetChipOn : ""}`}
-              onClick={() => {
-                setPresetKey(p.key);
-                // Reset the induction sub-axis whenever the parent
-                // preset changes — otherwise stale sub-selections
-                // would silently narrow the new preset.
-                if (p.key !== "induced") setInductionSub(null);
-              }}
-              title={p.description}
-            >
-              {p.label}
-              <span className={styles.presetCount}>{count.toLocaleString()}</span>
-            </button>
+            <span key={p.key} className={styles.presetChipWrap}>
+              <button
+                type="button"
+                role="tab"
+                aria-selected={on}
+                className={`${styles.presetChip} ${on ? styles.presetChipOn : ""}`}
+                onClick={() => {
+                  setPresetKey(p.key);
+                  // Reset the induction sub-axis whenever the parent
+                  // preset changes — otherwise stale sub-selections
+                  // would silently narrow the new preset.
+                  if (p.key !== "induced") setInductionSubs(new Set());
+                }}
+              >
+                {p.label}
+                <span className={styles.presetCount}>{count.toLocaleString()}</span>
+              </button>
+              {p.key !== "all" ? (
+                <InfoTip label={`About the ${p.label} preset`} wide>
+                  <p>{p.description}</p>
+                  <p>
+                    <em>{DEEP_DIVE_ONLY_NOTE}</em>
+                  </p>
+                </InfoTip>
+              ) : null}
+            </span>
           );
         })}
         {/* Induction sub-chips — only meaningful when Induced is
-         *  active. Hidden otherwise to avoid visual clutter. */}
+         *  active. Hidden otherwise to avoid visual clutter.
+         *  Multi-select: clicking a chip toggles it in/out of the
+         *  active set; a row passes if ANY active sub matches. */}
         {presetKey === "induced" ? (
           <div className={styles.presetSubBar}>
             <span className={`label-mono ${styles.presetSubLabel}`}>
@@ -968,20 +1027,29 @@ export function CatalogTable({
                     : n,
                 0,
               );
-              const on = inductionSub === s.key;
+              const on = inductionSubs.has(s.key);
               return (
-                <button
-                  key={s.key}
-                  type="button"
-                  role="tab"
-                  aria-selected={on}
-                  className={`${styles.presetChip} ${styles.presetSubChip} ${on ? styles.presetChipOn : ""}`}
-                  onClick={() => setInductionSub((cur) => (cur === s.key ? null : s.key))}
-                  title={s.description}
-                >
-                  {s.label}
-                  <span className={styles.presetCount}>{count.toLocaleString()}</span>
-                </button>
+                <span key={s.key} className={styles.presetChipWrap}>
+                  <button
+                    type="button"
+                    role="tab"
+                    aria-selected={on}
+                    aria-pressed={on}
+                    className={`${styles.presetChip} ${styles.presetSubChip} ${on ? styles.presetChipOn : ""}`}
+                    onClick={() => setInductionSubs((cur) => {
+                      const next = new Set(cur);
+                      if (next.has(s.key)) next.delete(s.key);
+                      else next.add(s.key);
+                      return next;
+                    })}
+                  >
+                    {s.label}
+                    <span className={styles.presetCount}>{count.toLocaleString()}</span>
+                  </button>
+                  <InfoTip label={`About the ${s.label} trigger sub-bucket`} wide>
+                    <p>{s.description}</p>
+                  </InfoTip>
+                </span>
               );
             })}
           </div>

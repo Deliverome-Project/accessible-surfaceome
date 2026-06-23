@@ -115,9 +115,16 @@ def passes_cell_type_restricted(f: dict[str, Any]) -> bool:
 
 # Induction sub-axes — only meaningful when the induced predicate is
 # already true; surfaced as standalone bools in the deposit TSV so a
-# reanalyst can re-bucket without recomputing.
+# reanalyst can re-bucket without recomputing. Cancer is split out
+# from Disease so the oncogenic bucket (the largest in the cohort)
+# doesn't drown the non-oncogenic disease bucket (cell_death,
+# infection — HMGB1-class DAMP biology).
+def passes_induction_cancer(f: dict[str, Any]) -> bool:
+    return f.get("induction_trigger") == "oncogenic"
+
+
 def passes_induction_disease(f: dict[str, Any]) -> bool:
-    return f.get("induction_trigger") in ("oncogenic", "cell_death", "infection")
+    return f.get("induction_trigger") in ("cell_death", "infection")
 
 
 def passes_induction_stress(f: dict[str, Any]) -> bool:
@@ -137,7 +144,8 @@ PRESETS: tuple[tuple[str, str, Callable[[dict[str, Any]], bool]], ...] = (
 )
 
 INDUCTION_SUBS: tuple[tuple[str, str, Callable[[dict[str, Any]], bool]], ...] = (
-    ("disease", "Disease (oncogenic / cell-death / infection)", passes_induction_disease),
+    ("cancer", "Cancer (oncogenic)", passes_induction_cancer),
+    ("disease", "Other disease (cell-death / infection)", passes_induction_disease),
     ("stress", "Stress / hypoxia", passes_induction_stress),
     ("immune", "Immune", passes_induction_immune),
 )

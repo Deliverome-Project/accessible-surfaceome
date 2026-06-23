@@ -166,10 +166,15 @@ export function passesCellTypeRestricted(f: DeepDiveFilters): boolean {
   return f.surface_call_reason === "tissue_restricted_surface";
 }
 
-/** Induction sub-axes — only meaningful when Induced is active. */
+/** Induction sub-axes — only meaningful when Induced is active.
+ *  Cancer is its own bucket (induction_trigger=oncogenic) so it
+ *  doesn't drown the Disease bucket; Disease is non-oncogenic
+ *  disease state (cell death / infection). */
+export function passesInductionCancer(f: DeepDiveFilters): boolean {
+  return f.induction_trigger === "oncogenic";
+}
 export function passesInductionDisease(f: DeepDiveFilters): boolean {
   return (
-    f.induction_trigger === "oncogenic" ||
     f.induction_trigger === "cell_death" ||
     f.induction_trigger === "infection"
   );
@@ -187,7 +192,93 @@ export type PresetKey =
   | "likely"
   | "induced"
   | "cell_type_restricted";
-export type InductionSubKey = "disease" | "stress" | "immune";
+export type InductionSubKey = "cancer" | "disease" | "stress" | "immune";
+
+/** Standard advisory line appended (visually, via the InfoTip) to
+ *  every preset description so the reader sees, without scrolling
+ *  to the API page, that these shortlists only apply to genes that
+ *  carry a deep-dive record. Non-deep-dive rows auto-drop on any
+ *  non-"All" preset because there's no `deep_dive_filters` to
+ *  evaluate — the count badge on a preset chip is therefore the
+ *  population of (deep-dive ∩ predicate), never a subset of the
+ *  full 6.5k-row universe. */
+export const DEEP_DIVE_ONLY_NOTE =
+  "Applies only to genes with a deep-dive record. " +
+  "Non-deep-dive rows auto-exclude because the predicate reads " +
+  "fields the catalog row doesn't carry.";
+
+/** Per-preset map of deep-dive filter chips the preset's predicate
+ *  REQUIRES to be set. Drives the "preset-implied" visual state on
+ *  the More-filters chips so the reader can see which facet values
+ *  are already in play before they refine. Keyed by the enum field
+ *  key on `DeepDiveFilters`; the value is the set of allowed values.
+ *
+ *  Conditional rules (Likely's `ecd=none + positive reason` bypass)
+ *  surface as the dominant set only — the bypass is documented in
+ *  the preset description rather than visualized as an implied chip.
+ *  Trying to encode it visually would require an OR-pill, which
+ *  would clutter the row for marginal payoff. */
+export const PRESET_IMPLIED_FILTERS: Record<
+  PresetKey,
+  Partial<Record<string, ReadonlySet<string>>>
+> = {
+  all: {},
+  canonical: {
+    evidence_grade: new Set(["direct_multi_method", "direct_single_method"]),
+    confidence: new Set(["high", "moderate"]),
+    surface_specificity: new Set(["surface_dominant", "mixed"]),
+    state_dependence: new Set(["low", "moderate"]),
+    surface_accessibility: new Set(["high", "moderate"]),
+    evidence_density: new Set(["high", "moderate"]),
+    ecd_accessibility_class: new Set(["large", "moderate", "small"]),
+  },
+  likely: {
+    evidence_grade: new Set([
+      "direct_multi_method",
+      "direct_single_method",
+      "supportive_but_indirect",
+    ]),
+    surface_specificity: new Set([
+      "surface_dominant",
+      "mixed",
+      "mostly_intracellular",
+    ]),
+    state_dependence: new Set(["low", "moderate", "high", "unclear"]),
+    surface_accessibility: new Set(["high", "moderate", "low"]),
+    ecd_accessibility_class: new Set(["large", "moderate", "small"]),
+  },
+  induced: {
+    evidence_grade: new Set([
+      "direct_multi_method",
+      "direct_single_method",
+      "supportive_but_indirect",
+    ]),
+    surface_specificity: new Set([
+      "surface_dominant",
+      "mixed",
+      "mostly_intracellular",
+    ]),
+    state_dependence: new Set(["high"]),
+    surface_accessibility: new Set(["high", "moderate", "low"]),
+    ecd_accessibility_class: new Set(["large", "moderate", "small"]),
+  },
+  cell_type_restricted: {
+    evidence_grade: new Set([
+      "direct_multi_method",
+      "direct_single_method",
+      "supportive_but_indirect",
+    ]),
+    surface_specificity: new Set([
+      "surface_dominant",
+      "mixed",
+      "mostly_intracellular",
+    ]),
+    state_dependence: new Set(["moderate", "high"]),
+    surface_accessibility: new Set(["high", "moderate", "low"]),
+    ecd_accessibility_class: new Set(["large", "moderate", "small"]),
+    surface_call_reason: new Set(["tissue_restricted_surface"]),
+  },
+};
 
 /** Single-source-of-truth registry consumed by the toolbar. Ordered the
  *  way the chips render — strictest tier first. */
@@ -249,12 +340,25 @@ export const INDUCTION_SUBS: ReadonlyArray<{
   predicate: (f: DeepDiveFilters) => boolean;
 }> = [
   {
-    key: "disease",
-    label: "Disease",
+    key: "cancer",
+    label: "Cancer",
     description:
-      "induction_trigger ∈ {oncogenic, cell_death, infection} — the " +
-      "surface form goes up under disease state. Most of the cohort's " +
-      "induced hits land here (TROP2-class cancer overexpression).",
+      "induction_trigger = oncogenic — surface form is induced by " +
+      "oncogenic transformation specifically (TROP2-class cancer " +
+      "overexpression, eSrc-class lysosomal-exocytosis pool). Split " +
+      "off from Disease because oncogenic is the largest single " +
+      "trigger in the cohort and conflating it with infection / cell-" +
+      "death buries those rarer buckets.",
+    predicate: passesInductionCancer,
+  },
+  {
+    key: "disease",
+    label: "Other disease",
+    description:
+      "induction_trigger ∈ {cell_death, infection} — non-oncogenic " +
+      "disease state (pyroptosis / necroptosis / immune-cell-death; " +
+      "viral or bacterial infection). HMGB1-class DAMP release lives " +
+      "here rather than under Cancer.",
     predicate: passesInductionDisease,
   },
   {
@@ -262,7 +366,8 @@ export const INDUCTION_SUBS: ReadonlyArray<{
     label: "Stress",
     description:
       "induction_trigger = stress_hypoxia — surface form responds to " +
-      "hypoxia / ER stress / metabolic stress.",
+      "hypoxia / ER stress / metabolic stress. Independent of " +
+      "tumor / inflammation context.",
     predicate: passesInductionStress,
   },
   {
@@ -270,7 +375,9 @@ export const INDUCTION_SUBS: ReadonlyArray<{
     label: "Immune",
     description:
       "induction_trigger = immune — surface form responds to immune " +
-      "activation / TME modulation.",
+      "activation. Coarse umbrella for both constitutive-surface-with-" +
+      "immune-modulation (KIR2DL1-class) and release-by-immune-" +
+      "activation (HMGB1 DAMP-release pool); the prose distinguishes.",
     predicate: passesInductionImmune,
   },
 ];
