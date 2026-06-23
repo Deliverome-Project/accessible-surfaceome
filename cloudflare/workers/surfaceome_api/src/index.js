@@ -1217,6 +1217,65 @@ async function handleCatalog(env, request) {
     perModel[model] = { verdict: winVerdict, reason: winReason };
   }
 
+  // Pubmed_ncbi rescue lane: if Sonnet's pubmed_ncbi call is more
+  // inclusive than its ncbi call (pubmed says yes/contextual, ncbi
+  // says no), prefer pubmed for the catalog's Sonnet slot. Justified
+  // by mainbench: pubmed_ncbi catches the KLK2/SRC class of FNs that
+  // ncbi misses; never overrides ncbi-yes/contextual since pubmed-no
+  // doesn't add evidence-of-absence.
+  //
+  // Pulls all pubmed_ncbi sonnet replicates, computes the same
+  // majority-verdict + within-verdict-majority-reason aggregate as
+  // the ncbi loop above, then applies the prefer-positive rule.
+  const pubmedRows = await env.DB.prepare(
+    `SELECT gene_symbol, predicted_verdict, predicted_reason, created_at
+       FROM triage_run_public
+      WHERE prompt_variant = 'pubmed_ncbi'
+        AND model = 'claude-sonnet-4-6'
+        AND predicted_verdict IS NOT NULL`
+  ).all();
+  const pubmedReps = new Map();
+  for (const r of pubmedRows.results) {
+    let lst = pubmedReps.get(r.gene_symbol);
+    if (!lst) { lst = []; pubmedReps.set(r.gene_symbol, lst); }
+    lst.push(r);
+  }
+  for (const [gene_symbol, reps] of pubmedReps) {
+    const vTally = new Map();
+    const vMax = new Map();
+    for (const r of reps) {
+      vTally.set(r.predicted_verdict, (vTally.get(r.predicted_verdict) || 0) + 1);
+      const prev = vMax.get(r.predicted_verdict);
+      if (prev == null || r.created_at > prev) vMax.set(r.predicted_verdict, r.created_at);
+    }
+    const winVerdict = [...vTally.entries()].sort((a, b) => {
+      if (b[1] !== a[1]) return b[1] - a[1];
+      const ma = vMax.get(a[0]) || ""; const mb = vMax.get(b[0]) || "";
+      return mb < ma ? -1 : (mb > ma ? 1 : 0);
+    })[0][0];
+    const rTally = new Map();
+    const rMax = new Map();
+    for (const r of reps) {
+      if (r.predicted_verdict !== winVerdict) continue;
+      rTally.set(r.predicted_reason, (rTally.get(r.predicted_reason) || 0) + 1);
+      const prev = rMax.get(r.predicted_reason);
+      if (prev == null || r.created_at > prev) rMax.set(r.predicted_reason, r.created_at);
+    }
+    const winReason = [...rTally.entries()].sort((a, b) => {
+      if (b[1] !== a[1]) return b[1] - a[1];
+      const ma = rMax.get(a[0]) || ""; const mb = rMax.get(b[0]) || "";
+      return mb < ma ? -1 : (mb > ma ? 1 : 0);
+    })[0][0];
+    // Apply the rescue rule.
+    const perModel = triageByGene.get(gene_symbol);
+    if (!perModel) continue;
+    const ncbi = perModel["claude-sonnet-4-6"];
+    if (!ncbi) continue;
+    if (ncbi.verdict === "no" && (winVerdict === "yes" || winVerdict === "contextual")) {
+      perModel["claude-sonnet-4-6"] = { verdict: winVerdict, reason: winReason };
+    }
+  }
+
   // Track which genes we've emitted so we can append deep-dive-only
   // genes (e.g. HSPA1A — conditional surface, doesn't pass the
   // universe gate) at the bottom. Also collect the deep-dive gene set
