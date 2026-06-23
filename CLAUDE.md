@@ -357,6 +357,23 @@ Every plot in this repo uses `src/accessible_surfaceome/audit/_plotting_config.p
 - **Output to `data/analysis/<area>/`.** Don't write figures into source dirs or repo root.
 - **LFS-track raster outputs ≥10 MB** per the standard rule; check `.gitattributes` if you're producing a large PNG.
 
+### Canonical generator (`scripts/`) vs gist mirror (`data/analysis/figures/`)
+
+A published figure has **two source files** by convention — and they drift if you only touch one:
+
+- **`scripts/<slug>.py`** — **canonical generator.** Uses the project's `_plotting_config` import (centralized styling), reads from in-repo TSVs or D1. This is what the gist's `01_<slug>.md` README cites as the canonical generator (per `figure_gists_canonical_in_scripts.md` memory).
+- **`data/analysis/figures/make_<slug>.py`** — **standalone gist mirror.** PEP 723 inline metadata, inline brand styling, reads from `raw.githubusercontent.com` URLs. Synced to the published gist via `gh gist edit`. Readers run this with `uv run make_<slug>.py`.
+
+**The drift trap.** Many figure-style commits (font caps, layout bumps, ylabel wrap, brand-style version bumps) historically touched only `data/analysis/figures/make_<slug>.py` because the author edited the gist + synced the mirror. The canonical `scripts/<slug>.py` then silently fell behind, so re-running it produced a figure with the OLD layout — exactly what happened to `zero_db_rescues_by_triage.py` (subpanel a/b labels + hspace bump landed only in the mirror) and `db_vs_sonnet_whole_proteome.py` (figsize 17→22, fontsize 8/11→14/20, ylabel wrap, `tight_layout()` missing).
+
+**The rule when you edit either side**:
+
+1. Edit the layout / fontsize / annotation in **both files** in the same commit. Yes, this is duplicate work — the gist mirror needs inline styling to stay PEP-723 standalone, so a shared module isn't a clean fix.
+2. Regenerate the figure (`uv run python scripts/<slug>.py` — always run the canonical, since the rendered `.pdf`/`.png` outputs are committed and that's what readers + the Zenodo deposit see).
+3. Sync the gist with `gh gist edit <GIST_ID> data/analysis/figures/make_<slug>.py` only after both source files agree.
+
+The drift guard at [tests/test_figure_canonical_mirror_sync.py](tests/test_figure_canonical_mirror_sync.py) compares a layout fingerprint (`figsize`, `axes.labelsize`, `xtick.labelsize`, `ytick.labelsize`, `legend.fontsize`, ylabel-wrap presence, `tight_layout` presence) between every `scripts/<slug>.py` ↔ `data/analysis/figures/make_<slug>.py` pair and fails the build if they disagree. Re-run + commit fixes both sides.
+
 ## Final-figure data flow (pre-publication)
 
 **The work is pre-publication.** Figures and tables that ship to readers today are draft artifacts — at submission time they'll be re-pinned to immutable Zenodo DOIs and the figure scripts + gists will swap their source URLs over. Until then, the lineage is:
@@ -373,11 +390,12 @@ Every plot in this repo uses `src/accessible_surfaceome/audit/_plotting_config.p
     │                              ├─Worker /v1/genes/{SYMBOL}
     │                              └─Worker /v1/triage/{SYMBOL}
     │
-    └─export_mainbench_to_tsv.py──▶ data/processed/triage_bench/mainbench_canonical_v1.tsv
+    └─export_mainbench_to_tsv.py──▶ data/processed/triage_bench/mainbench_canonical_v2.tsv
                                       │ (re-reads from PUBLIC D1, not private — so the public
-                                      │  mirror is the citable source. LFS-exempted in
-                                      │  .gitattributes so raw.githubusercontent.com serves
-                                      │  text, not a pointer.)
+                                      │  mirror is the citable source. v2 is per-cell
+                                      │  majority-aggregated across replicates; v1 was retired
+                                      │  2026-06-19. LFS-exempted in .gitattributes so
+                                      │  raw.githubusercontent.com serves text, not a pointer.)
                                       │
                                       └─raw.githubusercontent.com/{REPO}/{BRANCH}/…
                                           │
@@ -388,28 +406,29 @@ Every plot in this repo uses `src/accessible_surfaceome/audit/_plotting_config.p
 
 **Final figures read from `raw.githubusercontent.com/{REPO}/{BRANCH}/…`** — not the Worker, not the local file system. Reasons:
 - **Citation stability.** Pinning `BRANCH` to a commit SHA at publication time freezes the file forever; the API endpoint could move or change shape.
-- **Two clean halves of the contract.** Predictions live in `data/processed/triage_bench/mainbench_canonical_v1.tsv` (refreshed from public D1 by `scripts/export_mainbench_to_tsv.py`); truth labels live in `data/eval/triage_benchmark_v1.tsv` (the curated input). The Worker is a convenience surface for non-figure consumers — agents, notebooks, the viewer.
+- **Two clean halves of the contract.** Predictions live in `data/processed/triage_bench/mainbench_canonical_v2.tsv` (refreshed from public D1 by `scripts/export_mainbench_to_tsv.py`; per-cell majority across replicates); truth labels live in `data/eval/triage_benchmark_v1.tsv` (the curated input). The Worker is a convenience surface for non-figure consumers — agents, notebooks, the viewer. The denormalized truth columns in the mainbench TSV are guarded against drift by [tests/test_mainbench_truth_drift.py](tests/test_mainbench_truth_drift.py) — re-run `augment_figure_tsvs_with_stable_ids.py` in the same commit that edits the curated TSV or the test fails CI.
 - **Pre-pub flexibility.** Today the gists' `BRANCH = "main"` so a re-run picks up fresh data. At publication, `BRANCH` becomes a commit SHA and the gist URL pins to a Zenodo DOI.
 
 **Refresh procedure** (after any sweep that updates predictions in public D1):
 
 ```bash
-# Pulls the latest mainbench_canonical_v1 rows from public D1 and writes
-# data/processed/triage_bench/mainbench_canonical_v1.tsv. Identical shape
-# to /v1/triage/export.tsv?run_id=mainbench_canonical_v1&replicate=1.
+# Pulls the latest mainbench_canonical_v2 rows from public D1 (per-cell
+# majority across replicates) and writes
+# data/processed/triage_bench/mainbench_canonical_v2.tsv.
 uv run python scripts/export_mainbench_to_tsv.py
 
-# Backfill stable IDs (hgnc_id, ensembl_gene, ncbi_gene_id, uniprot_acc) into
-# the figure TSVs by joining each row against gene_identifier_public. Run
-# after ANY of the four figure TSVs are regenerated; the script is
-# idempotent and only touches columns it owns:
+# Backfill stable IDs (hgnc_id, ensembl_gene, ncbi_gene_id, uniprot_acc) +
+# denormalized truth columns into the figure TSVs by joining each row
+# against gene_identifier_public + benchmark_version. Run after ANY of
+# the four figure TSVs are regenerated AND after editing the curated
+# eval TSV; the script is idempotent and only touches columns it owns:
 #   • data/processed/candidate_universe/candidate_universe.tsv
 #   • data/eval/triage_benchmark_v1.tsv
-#   • data/processed/triage_bench/mainbench_canonical_v1.tsv
+#   • data/processed/triage_bench/mainbench_canonical_v2.tsv
 #   • data/processed/triage_bench/db_optimized_cutoffs.tsv
 uv run python scripts/augment_figure_tsvs_with_stable_ids.py
 
-git add data/processed/triage_bench/mainbench_canonical_v1.tsv \
+git add data/processed/triage_bench/mainbench_canonical_v2.tsv \
         data/processed/candidate_universe/candidate_universe.tsv \
         data/eval/triage_benchmark_v1.tsv \
         data/processed/triage_bench/db_optimized_cutoffs.tsv
@@ -443,7 +462,7 @@ A reader should be able to answer common questions in one filter, not a 3-way jo
 |---|---|---|
 | `candidate_universe.tsv` | `sonnet_verdict`, `sonnet_reason`, `has_deep_dive`, `is_bench_member` | catalog API / `surface_annotation` / bench TSV |
 | `triage_benchmark_v1.tsv` | `n_db_votes`, `sonnet_verdict`, `sonnet_reason` | candidate_universe / catalog API |
-| `mainbench_canonical_v1.tsv` | `ground_truth_verdict`, `ground_truth_class`, `is_match` (soft-credit), 5 per-DB `*_surface_flag`, `n_db_votes`, `has_deep_dive` | bench TSV / candidate_universe / `surface_annotation` |
+| `mainbench_canonical_v2.tsv` | `ground_truth_verdict`, `ground_truth_class`, `is_match` (soft-credit), 5 per-DB `*_surface_flag`, `n_db_votes`, `has_deep_dive` | bench TSV / candidate_universe / `surface_annotation` |
 | `db_optimized_cutoffs.tsv` | All 5 canonical `*_surface_flag` columns + cutoff-variant flags (SURFY thresholds, HPA tiers, CSPA-with-unspecific, GO-experimental+curated) + `n_sources_surface`, `n_sources_optimized` | candidate_universe |
 
 Decide what to denormalize by asking: "Is this a join a typical reanalyst needs for an obvious question?" — if yes, add it. Don't denormalize speculatively.

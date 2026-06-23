@@ -104,7 +104,7 @@ CONTEXTUAL_HEADER_COLOR = "#8C4210"
 # (YES_REASONS / CONTEXTUAL_REASONS), so callouts read top-to-bottom in
 # the same sequence as the bars left-to-right.
 YES_CALLOUTS = [
-    ("PVRIG",   "NK/T checkpoint; COM701 = anti-PVRIG surface mAb", "classical_surface_receptor"),
+    ("PVRIG",   "NK/T checkpoint; COM701 = anti-PVRIG mAb", "classical_surface_receptor"),
     ("ECEL1",   "Type-II TM; neprilysin/M13 family",   "classical_surface_receptor"),
     ("STEAP1",  "Prostate ADC + BiTE target",          "multipass_with_exposed_loops"),
     ("ORAI2",   "Store-operated Ca2+ channel",         "multipass_with_exposed_loops"),
@@ -113,6 +113,7 @@ YES_CALLOUTS = [
 ]
 CONTEXTUAL_CALLOUTS = [
     ("IL15",    "Surface trans-presentation via IL-15Rα", "dual_localization"),
+    ("KLK2",    "Prostate kallikrein; ADC-relevant rescue", "tissue_restricted_surface"),
     ("TIMP2",   "MT1-MMP ternary complex",             "stable_surface_attachment"),
     ("GSDMD",   "Gasdermin D/E/C — pyroptosis pores",  "cell_state_induced"),
     ("HSPA1A",  "Surface Hsp70; cmHsp70.1 mAb",        "cell_state_induced"),
@@ -295,18 +296,47 @@ def main() -> None:
     # ─── Figure ─── 2×2: top row = per-reason bar panels (shared y-axis);
     # bottom row = callout columns.
     setup_plotting_style(style="whitegrid", context="notebook", font_scale=1.0)
-    fig = plt.figure(figsize=(19, 11))
+    # Brand-style-v3 font sizes (mirror parity). The gist mirror at
+    # data/analysis/figures/make_zero_db_rescues_by_triage.py sets these
+    # inline; this canonical script applies them via rcParams so its
+    # render matches the published gist. See CLAUDE.md "Canonical
+    # generator vs gist mirror".
+    plt.rcParams.update({
+        "font.size": 20, "axes.labelsize": 20, "axes.titlesize": 0,
+        "xtick.labelsize": 20, "ytick.labelsize": 20, "legend.fontsize": 20,
+    })
+    # Layout numbers match the gist-mirror at
+    # data/analysis/figures/make_zero_db_rescues_by_triage.py (single
+    # source of truth for the published figure shape). Brought into the
+    # canonical script via commit 44d8ae5cf's subpanel-a/b layout bump:
+    #   - figsize 11 → 13 (taller)
+    #   - height_ratios [2.2, 1.05] → [2.2, 1.55] (more bottom-row room)
+    #   - hspace 0.20 → 0.55, wspace 0.10 → 0.28 (clear x-labels +
+    #                                              callout headers)
+    #   - top 0.92 → 0.93 (headroom for subpanel labels)
+    fig = plt.figure(figsize=(19, 13))
     gs = gridspec.GridSpec(
         2, 2, figure=fig,
-        height_ratios=[2.2, 1.05],
+        height_ratios=[2.2, 1.55],
         width_ratios=[1.0, 1.5],
-        hspace=0.20, wspace=0.10,
-        top=0.92, bottom=0.04, left=0.06, right=0.97,
+        hspace=0.30, wspace=0.28,
+        top=0.93, bottom=0.04, left=0.06, right=0.97,
     )
     ax_yes = fig.add_subplot(gs[0, 0])
     ax_ctx = fig.add_subplot(gs[0, 1], sharey=ax_yes)
     ax_callouts_yes = fig.add_subplot(gs[1, 0])
     ax_callouts_ctx = fig.add_subplot(gs[1, 1])
+
+    # Subpanel labels — Manrope ExtraBold (weight 800), upper-left of
+    # each bar panel. Project-wide convention from
+    # ``MEMORY.md figure_subpanel_labels`` — any multi-data-panel
+    # figure marks each panel with a lowercase letter.
+    for ax, letter in ((ax_yes, "a"), (ax_ctx, "b")):
+        ax.text(
+            -0.06, 1.08, letter,
+            transform=ax.transAxes, ha="left", va="bottom",
+            fontsize=32, fontweight=800, color=COLORS["dark"],
+        )
 
     max_count = max(
         max(yes_counts.values(), default=0),
@@ -326,7 +356,7 @@ def main() -> None:
         header_color=CONTEXTUAL_HEADER_COLOR, y_max=y_max,
     )
 
-    ax_yes.set_ylabel("Genes rescued from zero-DB universe", fontsize=20)
+    ax_yes.set_ylabel("Genes rescued from\nzero-DB universe", fontsize=20)
     ax_yes.tick_params(axis="y", labelsize=16)
     plt.setp(ax_ctx.get_yticklabels(), visible=False)
 
