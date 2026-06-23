@@ -129,7 +129,7 @@ const ENDPOINT_GROUPS: EndpointGroup[] = [
         path: "/v1/catalog",
         sizeKey: "/v1/catalog",
         summary:
-          "Per-gene-per-source surface-vote matrix (5 gating DBs: UniProt / GO / SURFY / CSPA / HPA) plus the latest triage verdict, short reason code, and deep-dive flag. One row per protein-coding gene (~19k). Free-text reasoning is omitted at this scale — fetch it per-gene from /v1/triage/{SYMBOL}.",
+          "Per-gene-per-source surface-vote matrix (5 gating DBs: UniProt / GO / SURFY / CSPA / HPA) plus the latest triage verdict, short reason code, and deep-dive flag. One row per protein-coding gene (~19k). Free-text reasoning per run is on GET /v1/triage/{SYMBOL}; the full deep-dive SurfaceomeRecord is on GET /v1/genes/{SYMBOL}.",
         curl:
           "curl -s https://api.deliverome.org/surfaceome/v1/catalog | jq '.universe_version, .n_rows, .n_with_triage'",
       },
