@@ -30,6 +30,7 @@ import {
   loadCatalogRow,
   loadGeneName,
   loadSurfaceomeRecord,
+  loadTriageHeadline,
 } from "../../lib/surfaceome";
 import {
   loadSchwekeHomomer,
@@ -125,6 +126,18 @@ export default async function GenePage({ params }: PageProps) {
   // `null` for the ~19k non-benchmark genes (the common case), and under
   // SURFACEOME_API_BASE=local (empty matrix) — the row simply doesn't show.
   const benchmarkRow = await loadBenchmarkRow(rec.gene.hgnc_symbol);
+
+  // Latest most-positive triage call from /v1/triage/{symbol}, picked
+  // the same way the catalog drawer picks (yes > contextual > unclear >
+  // no, latest as tiebreak). Overrides the record's bundled
+  // `triage_signal` — which is the SPECIFIC triage call that triggered
+  // this deep-dive (a single model × variant × point-in-time snapshot)
+  // and can lag behind a later re-triage that flipped the verdict.
+  // KLK2 was the smoking gun: bundled='unlikely' (2026-06-01 sonnet-
+  // ncbi), headline='possibly_accessible' (2026-06-23 sonnet-pubmed_
+  // ncbi). `null` is fine under SURFACEOME_API_BASE=local or on fetch
+  // error — GeneHeader then falls back to rec.triage_signal.
+  const triageHeadline = await loadTriageHeadline(rec.gene.hgnc_symbol);
 
   // Deep-dive genes (symbol + freshness flag) for the toolbar's <GeneJump>
   // typeahead — the SAME set generateStaticParams emits, so every
@@ -314,6 +327,7 @@ export default async function GenePage({ params }: PageProps) {
             schwekeHomomer={schwekeHomomerRow}
             catalogRow={catalogRow}
             benchmarkRow={benchmarkRow}
+            triageHeadline={triageHeadline}
           />
         </Reveal>
 

@@ -76,6 +76,7 @@ import type {
   SurfaceomeRecord,
   SurfaceSpecificity,
   TriageReason,
+  TriageSignal,
 } from "./surfaceome-types";
 
 // Gene-name lookup is sourced directly from the NCBI triageable TSV
@@ -977,6 +978,96 @@ interface TriageMeta {
  * three fields stay consistent. Returns ``{null, null, null}`` on any
  * miss so the caller can do a single shallow merge.
  */
+/** Most-positive triage call (yes > contextual > unclear > no) from
+ *  /v1/triage/{symbol}, with latest `created_at` as the tiebreak.
+ *  Matches the picker the catalog drawer uses — see
+ *  CatalogRationaleDrawer.pickSonnetHeadlineAndSecondary. The
+ *  bundled `rec.triage_signal` on a SurfaceomeRecord is a SPECIFIC
+ *  triage call (the one that triggered the deep-dive); this helper
+ *  surfaces the latest positive consensus, which the catalog row
+ *  also shows. KLK2 is the smoking gun: bundled signal='unlikely'
+ *  (2026-06-01 sonnet-ncbi), headline='possibly_accessible'
+ *  (2026-06-23 sonnet-pubmed_ncbi). */
+export interface TriageHeadlinePayload {
+  signal: TriageSignal;
+  reason: string | null;
+  reasoning: string;
+  confidence: string | null;
+}
+
+const _VERDICT_RANK: Record<string, number> = {
+  yes: 3,
+  contextual: 2,
+  unclear: 1,
+  no: 0,
+};
+
+function _verdictToSignal(v: string | null | undefined): TriageSignal {
+  if (v === "yes") return "likely_accessible";
+  if (v === "contextual") return "possibly_accessible";
+  if (v === "no") return "unlikely";
+  return "unknown";
+}
+
+export async function loadTriageHeadline(
+  symbol: string,
+): Promise<TriageHeadlinePayload | null> {
+  const base = (process.env.SURFACEOME_API_BASE ?? DEFAULT_API_BASE).trim();
+  if (!base || base === "local") return null;
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), FETCH_TIMEOUT_MS);
+  try {
+    const res = await fetch(`${base}/v1/triage/${symbol}`, {
+      cache: RECORD_FETCH_CACHE,
+      signal: controller.signal,
+    });
+    if (!res.ok) return null;
+    const data = (await res.json()) as {
+      runs?: Array<{
+        created_at: string;
+        model: string;
+        prompt_variant: string | null;
+        predicted_verdict: string;
+        predicted_reason: string | null;
+        predicted_confidence: string | null;
+        verdict_reasoning: string | null;
+      }>;
+    };
+    // Collapse to one row per (model × variant), keeping the latest.
+    // Scoped to Sonnet 4.6 to match the drawer (the catalog's
+    // canonical headline model); cross-model runs are useful in the
+    // benchmark page but would noise the deep-dive's triage row.
+    const latestByVariant = new Map<string, NonNullable<typeof data.runs>[number]>();
+    for (const r of data.runs ?? []) {
+      if (r.model !== "claude-sonnet-4-6") continue;
+      const key = r.prompt_variant ?? "";
+      const prev = latestByVariant.get(key);
+      if (!prev || prev.created_at < r.created_at) {
+        latestByVariant.set(key, r);
+      }
+    }
+    const ranked = [...latestByVariant.values()].sort((a, b) => {
+      const dr =
+        (_VERDICT_RANK[b.predicted_verdict] ?? -1) -
+        (_VERDICT_RANK[a.predicted_verdict] ?? -1);
+      if (dr !== 0) return dr;
+      return a.created_at < b.created_at ? 1 : -1;
+    });
+    if (ranked.length === 0) return null;
+    const headline = ranked[0];
+    return {
+      signal: _verdictToSignal(headline.predicted_verdict),
+      reason: headline.predicted_reason?.trim() || null,
+      reasoning: headline.verdict_reasoning?.trim() ?? "",
+      confidence: headline.predicted_confidence?.trim() || null,
+    };
+  } catch {
+    return null;
+  } finally {
+    clearTimeout(timer);
+  }
+}
+
 async function _fetchTriageMetaFromWorker(
   symbol: string,
   base: string,

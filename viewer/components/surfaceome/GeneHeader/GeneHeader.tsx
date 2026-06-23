@@ -4,6 +4,7 @@ import type {
   AccessibilityModulationObservation,
   BenchmarkRow,
   SurfaceomeRecord,
+  TriageSignal,
 } from "../../../lib/surfaceome-types";
 import type { SchwekeHomomerLoaderRow } from "../../../lib/structure-viewer";
 import type { StructureViewerData } from "../../../lib/structure-viewer-types";
@@ -98,6 +99,35 @@ interface GeneHeaderProps {
    *  reference point on the page). ``null`` for the ~19k non-benchmark
    *  genes, where the row is omitted. */
   benchmarkRow?: BenchmarkRow | null;
+  /** Most-positive triage call across all model × variant runs for
+   *  this gene (from /v1/triage/{symbol}, picked by the same
+   *  positivity ordering the catalog drawer uses). Falls back to the
+   *  record's bundled ``triage_signal`` when no headline could be
+   *  computed (offline builds, no triage runs in D1, fetch error).
+   *  Distinct from the bundled value because that one records the
+   *  specific triage call that *triggered* this deep-dive — a single
+   *  model × variant × point-in-time snapshot — and can lag behind a
+   *  later re-triage that flipped the verdict. */
+  triageHeadline?: TriageHeadline | null;
+}
+
+/** Headline-triage payload — the single most-positive triage call
+ *  across model × variant runs for this gene, picked the same way
+ *  the catalog drawer picks (yes > contextual > unclear > no, with
+ *  latest as tiebreak). Field shape mirrors the ``rec.triage_*``
+ *  fields on SurfaceomeRecord so the GeneHeader render path can
+ *  fall back to either source uniformly. */
+export interface TriageHeadline {
+  /** Triage signal (likely_accessible | possibly_accessible |
+   *  unlikely), the same enum carried on ``rec.triage_signal``. */
+  signal: TriageSignal;
+  /** Triage reason code (TriageReason enum). Null when the picked
+   *  run didn't emit one. */
+  reason: string | null;
+  /** Free-text triage reasoning. Empty string when absent. */
+  reasoning: string;
+  /** Triage confidence (low | medium | high). Null when absent. */
+  confidence: string | null;
 }
 
 function tierCounts(rec: SurfaceomeRecord) {
@@ -379,6 +409,7 @@ export function GeneHeader({
   schwekeHomomer,
   catalogRow,
   benchmarkRow,
+  triageHeadline,
 }: GeneHeaderProps) {
   const g = rec.gene;
   const exec = rec.executive_summary;
@@ -535,14 +566,80 @@ export function GeneHeader({
               })()
             : null}
 
-          {/* Triage row used to sit here. Moved to AFTER the executive
-              prose + vitals grid so the deep-dive's own Surface verdict
-              leads the page; the first-pass triage prior (no web
-              search) renders as context BELOW the deep-dive verdict.
-              For genes like KLK2 — where triage='unlikely' (secreted-
-              only prior) but deep-dive='moderate · tissue_restricted_
-              surface' (positive call) — the previous ordering buried
-              the positive verdict and made the page read as "No". */}
+          {/* Triage row — Sonnet first-pass surface verdict, sitting
+              under the DB-presence strip for transparency. Tagged with
+              "initial pass · no web search" so the reader knows this
+              isn't the deep-dive call. When the triage disagrees with
+              the deep-dive `surface_accessibility`, the row carries a
+              warn pill that links the eye to the conflict (e.g. for
+              SRC: triage=Unlikely vs deep-dive=High — the eSrc
+              cancer-specific surface that the initial triage missed). */}
+          {(() => {
+            // Prefer the latest most-positive triage verdict across all
+            // model × variant runs (from /v1/triage/{symbol}) over the
+            // record's bundled `triage_signal` — the bundled value is
+            // the triage call that *triggered* this deep-dive (a single
+            // model × variant × point-in-time snapshot) and can lag
+            // behind a later re-triage that flipped the verdict.
+            // KLK2 is the smoking gun: bundled signal='unlikely' (the
+            // 2026-06-01 sonnet-ncbi call) but the latest+most-positive
+            // call (2026-06-23 sonnet-pubmed_ncbi) is 'contextual'.
+            const headlineSignal =
+              triageHeadline?.signal ?? rec.triage_signal;
+            const headlineReason =
+              triageHeadline?.reason ?? rec.triage_reason ?? null;
+            const headlineReasoning =
+              triageHeadline?.reasoning ?? rec.triage_reasoning ?? "";
+            const headlineConfidence =
+              triageHeadline?.confidence ?? rec.triage_confidence ?? null;
+            const verdict = triageVsDeepDive(
+              headlineSignal,
+              exec.surface_accessibility,
+              exec.surface_call_reason,
+            );
+            return (
+              <p className={styles.triageRow}>
+                <span className={`label-mono ${styles.triageLabel}`}>
+                  Triage
+                  <InfoTip wide>{tooltips.triage_signal}</InfoTip>
+                </span>
+                <span className={styles.triageValue}>
+                  {triageVerdictLabel(headlineSignal)}
+                </span>
+                <span className={styles.triageQualifier}>
+                  <ChipLabelValue label="initial pass" value="no web search" />
+                </span>
+                {verdict === "conflict" ? (
+                  <span className={styles.triageConflict}>
+                    conflicts with deep dive
+                  </span>
+                ) : verdict === "agree" ? (
+                  <span className={styles.triageAgree}>
+                    agrees with deep dive
+                  </span>
+                ) : null}
+                {/* The triage agent's own verdict justification, surfaced
+                 *  in a slide-in drawer. Self-hides when the record
+                 *  carries no triage_reasoning (older records / genes with
+                 *  no persisted triage). Distinct from the deep-dive
+                 *  confidence reasoning below — this is the first-pass,
+                 *  no-web-search rationale. */}
+                <ReasoningDrawer
+                  eyebrow={`Triage · ${triageVerdictLabel(headlineSignal)}`}
+                  title="Why this triage call?"
+                  ariaLabel="Why the initial triage pass called it this way"
+                  triggerClassName={styles.triageReasoningTrigger}
+                  reasoning={headlineReasoning}
+                  reasonCode={headlineReason}
+                  meta={
+                    headlineConfidence
+                      ? [{ label: "Confidence", value: headlineConfidence }]
+                      : undefined
+                  }
+                />
+              </p>
+            );
+          })()}
 
           {/* Executive summary one-paragraph. Headline risks + cited
               evidence chips were dropped from the header per user
@@ -741,59 +838,6 @@ export function GeneHeader({
               );
             })()}
           </dl>
-
-          {/* Triage row — Sonnet first-pass surface verdict. Moved
-              below the vitals so the deep-dive's own verdict reads
-              first; the triage prior renders as context. Tagged
-              "initial pass · no web search" so the reader knows this
-              isn't the deep-dive call. When the triage disagrees with
-              the deep-dive `surface_accessibility`, the row carries a
-              pill linking the eye to the conflict (e.g. SRC:
-              triage=Unlikely vs deep-dive=High — the eSrc cancer-
-              specific surface that the initial triage missed). */}
-          {(() => {
-            const verdict = triageVsDeepDive(
-              rec.triage_signal,
-              exec.surface_accessibility,
-              exec.surface_call_reason,
-            );
-            return (
-              <p className={styles.triageRow}>
-                <span className={`label-mono ${styles.triageLabel}`}>
-                  Triage
-                  <InfoTip wide>{tooltips.triage_signal}</InfoTip>
-                </span>
-                <span className={styles.triageValue}>
-                  {triageVerdictLabel(rec.triage_signal)}
-                </span>
-                <span className={styles.triageQualifier}>
-                  <ChipLabelValue label="initial pass" value="no web search" />
-                </span>
-                {verdict === "conflict" ? (
-                  <span className={styles.triageConflict}>
-                    conflicts with deep dive
-                  </span>
-                ) : verdict === "agree" ? (
-                  <span className={styles.triageAgree}>
-                    agrees with deep dive
-                  </span>
-                ) : null}
-                <ReasoningDrawer
-                  eyebrow={`Triage · ${triageVerdictLabel(rec.triage_signal)}`}
-                  title="Why this triage call?"
-                  ariaLabel="Why the initial triage pass called it this way"
-                  triggerClassName={styles.triageReasoningTrigger}
-                  reasoning={rec.triage_reasoning ?? ""}
-                  reasonCode={rec.triage_reason ?? null}
-                  meta={
-                    rec.triage_confidence
-                      ? [{ label: "Confidence", value: rec.triage_confidence }]
-                      : undefined
-                  }
-                />
-              </p>
-            );
-          })()}
 
           {/* Deterministic-tools row was here. Removed per user
               request — deterministic data (topology, pLDDT,
