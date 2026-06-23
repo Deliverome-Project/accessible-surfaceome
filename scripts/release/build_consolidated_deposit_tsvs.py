@@ -63,8 +63,10 @@ def build_genome_consolidated() -> Path:
                          "endpoint shape changed; re-check before deposit")
 
     out_header = ["run_id", *ncbi_header]
-    for r in ncbi_rows: r.insert(0, GENOME_NCBI_RUN_ID)
-    for r in pubmed_rows: r.insert(0, GENOME_PUBMED_RUN_ID)
+    for r in ncbi_rows:
+        r.insert(0, GENOME_NCBI_RUN_ID)
+    for r in pubmed_rows:
+        r.insert(0, GENOME_PUBMED_RUN_ID)
     # Sort by gene_symbol (col 1 after run_id insertion), then prompt_variant
     # so paired ncbi/pubmed rows for the same gene sit adjacent.
     gene_col = out_header.index("gene_symbol")
@@ -176,7 +178,7 @@ def main() -> int:
     for cells in klk2_bench:
         key = (cells[header.index("model")], cells[header.index("prompt_variant")])
         by_cell.setdefault(key, []).append(cells[header.index("predicted_verdict")])
-    print(f"  KLK2 per-cell verdict spread:")
+    print("  KLK2 per-cell verdict spread:")
     for (m, v), verdicts in sorted(by_cell.items()):
         short_m = m.replace("claude-", "").replace("-4-", "4")
         print(f"    {short_m:10s}/{v:12s}  {'/'.join(verdicts)}")
