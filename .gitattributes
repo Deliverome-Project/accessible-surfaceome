@@ -30,6 +30,13 @@ data/analysis/figures/*.md -filter -diff -merge text
 data/analysis/**/*.pdf  -filter -diff -merge
 data/analysis/**/*.png  -filter -diff -merge
 data/analysis/**/*.jpeg -filter -diff -merge
+# SVG visual artifacts (designer-authored flow diagrams, UI mockups,
+# vector reproductions of generated figures) ship as plain git so PR
+# diffs surface real vector changes (LFS pointers render as text
+# blobs) and raw.githubusercontent.com URLs serve the bytes directly
+# (LFS pointers don't resolve over raw). Same rationale as the
+# PDF/PNG/JPEG exemptions above. Files are typically <1.5 MB.
+data/analysis/**/*.svg  -filter -diff -merge
 
 # Build / run metadata JSONs ship as plain git so PR diffs surface
 # changes to provenance + summary stats (LFS-pointer renders as a
