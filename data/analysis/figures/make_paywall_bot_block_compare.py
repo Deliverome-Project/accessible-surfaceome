@@ -86,7 +86,7 @@ def _apply_brand_style() -> None:
     sns.set_style("whitegrid")
     sns.set_context("notebook", font_scale=1.0)
     plt.rcParams.update({
-        "savefig.dpi": 300, "savefig.bbox": "tight",
+        "savefig.dpi": 600, "savefig.bbox": "tight",
         "figure.facecolor": "none", "savefig.facecolor": "none",
         "font.family": "sans-serif",
         "font.sans-serif": ["Manrope", "Outfit", "DejaVu Sans", "Liberation Sans", "Arial"],
@@ -218,8 +218,8 @@ def main() -> None:
     fig.tight_layout()
     out_pdf = Path.cwd() / "paywall_bot_block_compare.pdf"
     out_png = Path.cwd() / "paywall_bot_block_compare.png"
-    fig.savefig(out_pdf, format="pdf", dpi=300, bbox_inches="tight", metadata={"Subject": GIST_URL})
-    fig.savefig(out_png, format="png", dpi=300, bbox_inches="tight", metadata={"Source": GIST_URL})
+    fig.savefig(out_pdf, format="pdf", dpi=600, bbox_inches="tight", metadata={"Subject": GIST_URL})
+    fig.savefig(out_png, format="png", dpi=600, bbox_inches="tight", metadata={"Source": GIST_URL})
     plt.close(fig)
     print(f"wrote {out_pdf}, {out_png}")
 

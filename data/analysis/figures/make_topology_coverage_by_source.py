@@ -141,7 +141,7 @@ def _apply_brand_style() -> None:
     sns.set_style("whitegrid")
     sns.set_context("notebook", font_scale=1.0)
     plt.rcParams.update({
-        "savefig.dpi": 300,
+        "savefig.dpi": 600,
         "savefig.bbox": "tight",
         "figure.facecolor": "none",
         "savefig.facecolor": "none",
@@ -266,10 +266,10 @@ def main() -> None:
     # `metadata={"Source": GIST_URL}` and `metadata={"Subject": GIST_URL}`
     # verbatim — that's its drift-guard against gist files losing the
     # metadata embed.
-    fig.savefig(png_path, format="png", dpi=300, bbox_inches="tight",
+    fig.savefig(png_path, format="png", dpi=600, bbox_inches="tight",
                 metadata={"Source": GIST_URL})
     print(f"  saved {png_path}")
-    fig.savefig(pdf_path, format="pdf", dpi=300, bbox_inches="tight",
+    fig.savefig(pdf_path, format="pdf", dpi=600, bbox_inches="tight",
                 metadata={"Subject": GIST_URL})
     print(f"  saved {pdf_path}")
 

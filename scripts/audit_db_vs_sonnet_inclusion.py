@@ -982,7 +982,7 @@ def make_clustered_heatmap(enrichment: pd.DataFrame, out_dir: Path) -> None:
         path = out_dir / f"inclusion_heatmap_clustered.{ext}"
         g.fig.savefig(
             path,
-            dpi=300,
+            dpi=600,
             bbox_inches="tight",
             bbox_extra_artists=[prov_legend, src_legend],
         )

@@ -90,7 +90,7 @@ def _apply_brand_style() -> None:
     sns.set_style("whitegrid")
     sns.set_context("notebook", font_scale=1.0)
     plt.rcParams.update({
-        "savefig.dpi": 300,
+        "savefig.dpi": 600,
         "savefig.bbox": "tight",
         "figure.facecolor": "none",
         "savefig.facecolor": "none",
@@ -199,7 +199,7 @@ def main() -> None:
     out_pdf = Path("db_overlap_venn.pdf")
     out_png = Path("db_overlap_venn.png")
     fig.savefig(out_pdf, bbox_inches="tight", metadata={"Subject": GIST_URL})
-    fig.savefig(out_png, bbox_inches="tight", dpi=300, metadata={"Source": GIST_URL})
+    fig.savefig(out_png, bbox_inches="tight", dpi=600, metadata={"Source": GIST_URL})
     print(f"Wrote {out_pdf} + {out_png}  ({sum(len(s) for s in sets.values()):,} "
           f"per-DB votes across {len(set().union(*sets.values())):,} unique proteins)")
 
