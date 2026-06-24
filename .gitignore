@@ -45,6 +45,11 @@ data/external/doi_ra_cache.json
 # ``upgrade_datacite_pdf_bucket`` step. Idempotent; safe to delete.
 data/external/probe_body_fetch_outcomes.json
 
+# PubTator3 FTP dumps and derived local indexes. Reproducible from
+# ftp.ncbi.nlm.nih.gov/pub/lu/PubTator3/; keep out of git to avoid committing
+# multi-GB literature-index artifacts.
+data/external/pubtator3/
+
 # Per-gene annotations are agent-generated; commit a curated snapshot once
 # we have a stable set, not every smoke-test output.
 data/annotations/

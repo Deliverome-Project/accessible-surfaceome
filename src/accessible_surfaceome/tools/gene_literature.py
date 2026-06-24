@@ -40,6 +40,7 @@ from ._shared.europepmc import (
     europepmc_bulk_by_pmid,
     europepmc_search,
     fetch_fulltext,
+    ncbi_pubmed_search,
     paper_from_europepmc,
 )
 from ._shared.http import CachedHTTP, open_default_client
@@ -604,14 +605,28 @@ def _topic_search(
     # for the same expansion (kept in sync — both are discovery searches).
     query = f"({name_disjunction}) AND ({topic_disjunction}) AND SRC:(MED OR PPR)"
 
-    payload = europepmc_search(http=http, query=query, page_size=max_results)
-    hits = (payload.get("resultList") or {}).get("result") or []
-    papers = [
-        paper_from_europepmc(
-            record, retraction_index=retraction_index, topic_tagger=_detect_topic_tags
+    try:
+        payload = europepmc_search(http=http, query=query, page_size=max_results)
+        hits = (payload.get("resultList") or {}).get("result") or []
+        papers = [
+            paper_from_europepmc(
+                record, retraction_index=retraction_index, topic_tagger=_detect_topic_tags
+            )
+            for record in hits
+        ]
+    except Exception as exc:  # noqa: BLE001
+        logger.warning(
+            "topic_search: Europe PMC failed for %s; falling back to NCBI PubMed: %s",
+            hgnc_symbol,
+            exc,
         )
-        for record in hits
-    ]
+        papers = ncbi_pubmed_search(
+            http=http,
+            query=query,
+            page_size=max_results,
+            retraction_index=retraction_index,
+            topic_tagger=_detect_topic_tags,
+        )
     return LiteraturePack(
         hgnc_symbol=hgnc_symbol,
         mode="topic_search",

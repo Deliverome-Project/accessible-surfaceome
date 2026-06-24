@@ -532,8 +532,143 @@ def _patch_pmc_retrieval(
     return fetch_calls
 
 
+def _patch_discovery_policy(
+    monkeypatch: pytest.MonkeyPatch,
+    *,
+    epmc_pool: list[Paper],
+    pubtator_pool: list[Paper],
+    target_symbol: str = "GPRC5D",
+) -> dict[str, int]:
+    bundle = IdentifierBundle(
+        uniprot_acc="Q9NZD1", hgnc_id="HGNC:1", hgnc_symbol=target_symbol
+    )
+    calls = {"epmc": 0, "pubtator": 0}
+    monkeypatch.setattr(er, "_resolve", lambda acc, *, http: bundle)
+    monkeypatch.setattr(er, "load_gazetteer", lambda: frozenset({target_symbol}))
+
+    def _fake_epmc(**_kwargs: Any) -> list[Paper]:
+        calls["epmc"] += 1
+        return list(epmc_pool)
+
+    def _fake_pubtator(**_kwargs: Any) -> list[Paper]:
+        calls["pubtator"] += 1
+        return list(pubtator_pool)
+
+    monkeypatch.setattr(er, "_europepmc_discovery", _fake_epmc)
+    monkeypatch.setattr(er, "_pubtator_discovery", _fake_pubtator)
+    return calls
+
+
 _COMPETING = "BCMA surface expression was confirmed by flow cytometry on intact cells."
 _ON_SUBJECT = "GPRC5D surface expression was confirmed by flow cytometry on intact cells."
+
+
+def test_high_specificity_category_skips_pubtator_when_epmc_has_oa_candidates(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    calls = _patch_discovery_policy(
+        monkeypatch,
+        epmc_pool=[
+            _candidate_paper(1, "PMC1"),
+            _candidate_paper(2, "PMC2"),
+        ],
+        pubtator_pool=[_candidate_paper(3, "PMC3")],
+    )
+
+    pack = er.evidence_retrieval(
+        uniprot_acc="Q9NZD1",
+        category="mass_spec_surfaceome",
+        max_papers=2,
+        http=cast(CachedHTTP, object()),
+        retraction_index=rw.empty(),
+        discover_only=True,
+    )
+
+    assert calls == {"epmc": 1, "pubtator": 0}
+    assert [p.pmc_id for p in pack.papers] == ["PMC1", "PMC2"]
+
+
+def test_high_specificity_category_falls_back_to_pubtator_when_epmc_is_thin(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    calls = _patch_discovery_policy(
+        monkeypatch,
+        epmc_pool=[_candidate_paper(1, "PMC1")],
+        pubtator_pool=[_candidate_paper(2, "PMC2")],
+    )
+
+    pack = er.evidence_retrieval(
+        uniprot_acc="Q9NZD1",
+        category="surface_biotinylation",
+        max_papers=2,
+        http=cast(CachedHTTP, object()),
+        retraction_index=rw.empty(),
+        discover_only=True,
+    )
+
+    assert calls == {"epmc": 1, "pubtator": 1}
+    assert [p.pmc_id for p in pack.papers] == ["PMC1", "PMC2"]
+
+
+def test_noisy_category_keeps_pubtator_first_even_when_epmc_has_candidates(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    calls = _patch_discovery_policy(
+        monkeypatch,
+        epmc_pool=[
+            _candidate_paper(1, "PMC1"),
+            _candidate_paper(2, "PMC2"),
+        ],
+        pubtator_pool=[_candidate_paper(3, "PMC3")],
+    )
+
+    pack = er.evidence_retrieval(
+        uniprot_acc="Q9NZD1",
+        category="flow_cytometry",
+        max_papers=2,
+        http=cast(CachedHTTP, object()),
+        retraction_index=rw.empty(),
+        discover_only=True,
+    )
+
+    assert calls == {"epmc": 1, "pubtator": 1}
+    assert [p.pmc_id for p in pack.papers] == ["PMC3", "PMC1", "PMC2"]
+
+
+def test_europepmc_discovery_falls_back_to_ncbi_search(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    bundle = IdentifierBundle(
+        uniprot_acc="Q9NZD1",
+        hgnc_id="HGNC:1",
+        hgnc_symbol="GPRC5D",
+        aliases=["alias-a"],
+    )
+    fallback = [_candidate_paper(9, "PMC9")]
+    seen: dict[str, object] = {}
+
+    def _boom(**_kwargs: Any) -> object:
+        raise RuntimeError("simulated Europe PMC outage")
+
+    def _fake_ncbi(**kwargs: Any) -> list[Paper]:
+        seen.update(kwargs)
+        return fallback
+
+    monkeypatch.setattr(er, "europepmc_search", _boom)
+    monkeypatch.setattr(er, "ncbi_pubmed_search", _fake_ncbi)
+
+    got = er._europepmc_discovery(
+        bundle=bundle,
+        spec=er._CATEGORY_SPECS["surface_biotinylation"],
+        max_papers=2,
+        http=cast(CachedHTTP, object()),
+        retraction_index=rw.empty(),
+    )
+
+    assert got == fallback
+    assert seen["page_size"] == 6
+    assert '("GPRC5D" OR "alias-a")' in cast(str, seen["query"])
+    assert "surface biotinylation" in cast(str, seen["query"])
 
 
 def test_backfill_reaches_deeper_paper_when_top_filtered(
