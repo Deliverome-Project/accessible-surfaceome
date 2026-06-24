@@ -1,6 +1,7 @@
 """Per-source inclusion-bias audit for the v2 candidate universe.
 
-Answers: for the 6,521 proteins in candidate_universe_v2, what features
+Answers: for the 6,588 proteins in the v3 cohort-cleaned candidate
+universe (v3-kept + v3-dropped), what features
 distinguish inclusion in each of the 5 M1 source DBs (UniProt, GO, HPA,
 SURFY, CSPA) vs. inclusion via Sonnet (the LLM triage layer)?
 
@@ -52,7 +53,12 @@ from accessible_surfaceome.audit._plotting_config import (
 )
 
 REPO = Path(__file__).resolve().parents[1]
-V2 = REPO / "data/processed/candidate_universe/candidate_universe_v2.tsv"
+V3 = REPO / "data/processed/candidate_universe/candidate_universe_v3.tsv"
+# Final-figure output dir — every promoted figure lands here so the
+# Zenodo deposit, the published gists, and the readers' figure
+# folder are all the same path.
+FIGURES_DIR = REPO / "data/analysis/figures"
+V3_DROPPED = REPO / "data/processed/candidate_universe/candidate_universe_v3_dropped.tsv"
 V1 = REPO / "data/processed/candidate_universe/candidate_universe.tsv"
 UNIPROT = REPO / "data/external/uniprot_human_surface_candidates/uniprot_human_surface_candidates.tsv"
 SCHWEKE = REPO / "data/external/schweke_homomer_atlas/surfaceome_x_schweke_homomers_full.tsv"
@@ -131,7 +137,7 @@ BINARY_FEATURES: list[str] = [
     "up_has_extracellular_topo",
     "up_has_glyc",
     "up_has_lipidation",
-    "deeptm_TM",
+    "deeptm_TM_NO_SP",
     "deeptm_SP_plus_TM",
     "deeptm_SP_only",
     "deeptm_BETA",
@@ -197,7 +203,7 @@ FEATURE_PROVENANCE: dict[str, str] = {
     # DeepTMHMM predicted-topology one-hots (canonical isoform, from
     # data/external/deeptmhmm_surfaceome_predictions/human_canonical_non_hla/
     # via the v1 candidate-universe TSV).
-    "deeptm_TM": "DeepTMHMM (predicted topology)",
+    "deeptm_TM_NO_SP": "DeepTMHMM (predicted topology)",
     "deeptm_SP_plus_TM": "DeepTMHMM (predicted topology)",
     "deeptm_SP_only": "DeepTMHMM (predicted topology)",
     "deeptm_BETA": "DeepTMHMM (predicted topology)",
@@ -230,26 +236,48 @@ FEATURE_PROVENANCE: dict[str, str] = {
 }
 
 
-def _load_v2() -> pd.DataFrame:
-    df = pd.read_csv(V2, sep="\t", dtype=str).fillna("")
-    for c in [
-        "m1_uniprot_flag",
-        "m1_go_flag",
-        "m1_hpa_flag",
-        "m1_surfy_flag",
-        "m1_cspa_flag",
-        "m1_n_db_votes",
-    ]:
+def _load_v3() -> pd.DataFrame:
+    """Load v3-kept (5,105) + v3-dropped (1,483) = 6,588-row cohort-
+    cleaned candidate universe.
+
+    Why 6,588 and not 5,105: the dropped rows are still legitimate
+    candidate-universe members — they just didn't survive the
+    Sonnet=no/high-conf/1-DB rule. For the source-inclusion analysis
+    we WANT them in the universe so the per-DB inclusion sets reflect
+    each DB's actual contribution. Sonnet's inclusion set excludes
+    them by construction (their sonnet_verdict is 'no'), which is the
+    correct semantic.
+
+    v2 (6,711) → v3-input (6,588): v3 builder also tightens the
+    cohort via gene_identifier_public, pruning 117-ish pseudogene /
+    ERV / Ig-V-segment / isoform-collision rows that v2 had absorbed
+    without intersecting the 19,464-row protein-coding cohort. The
+    6,588 is exactly v2 ∩ Homo_sapiens.protein_coding.with_hgnc.
+
+    v3 schema changes vs v2 the loader projects across:
+      * `uniprot_acc`        <-  `uniprot_accession`
+      * `<db>_flag`          <-  `m1_<db>_flag`
+      * `n_db_votes`         <-  `m1_n_db_votes`
+      * new cols: `ncbi_gene_id`, `deeptmhmm_flag`, `compartments_flag`,
+                  `pubmed_verdict`, `pubmed_confidence`
+    """
+    df_kept = pd.read_csv(V3, sep="\t", dtype=str).fillna("")
+    df_dropped = pd.read_csv(V3_DROPPED, sep="\t", dtype=str).fillna("")
+    df = pd.concat([df_kept, df_dropped], ignore_index=True)
+    # Normalize the column the rest of the script joins on.
+    if "uniprot_acc" in df.columns and "uniprot_accession" not in df.columns:
+        df = df.rename(columns={"uniprot_acc": "uniprot_accession"})
+    for c in ["uniprot_flag", "go_flag", "hpa_flag", "surfy_flag", "cspa_flag",
+              "n_db_votes"]:
         df[c] = pd.to_numeric(df[c], errors="coerce").fillna(0).astype(int)
-    df["src_uniprot"] = (df["m1_uniprot_flag"] == 1).astype(int)
-    df["src_go"] = (df["m1_go_flag"] == 1).astype(int)
-    df["src_hpa"] = (df["m1_hpa_flag"] == 1).astype(int)
-    df["src_surfy"] = (df["m1_surfy_flag"] == 1).astype(int)
-    df["src_cspa"] = (df["m1_cspa_flag"] == 1).astype(int)
-    # One Sonnet column: verdict in {"yes", "contextual"} (4,233 rows).
-    # The strict "yes"-only variant correlated heavily with M1 consensus
-    # (Cliff's δ vs m1_n_db_votes ≈ +0.70) — dropped because that's a
-    # corroboration signal, not a biology signal.
+    df["src_uniprot"] = (df["uniprot_flag"] == 1).astype(int)
+    df["src_go"] = (df["go_flag"] == 1).astype(int)
+    df["src_hpa"] = (df["hpa_flag"] == 1).astype(int)
+    df["src_surfy"] = (df["surfy_flag"] == 1).astype(int)
+    df["src_cspa"] = (df["cspa_flag"] == 1).astype(int)
+    # Sonnet inclusion: verdict in {"yes", "contextual"}. v3 has already
+    # trimmed Sonnet=no/high-conf rows that were in v2, so the "sonnet"
+    # set is smaller here by construction.
     df["src_sonnet"] = df["sonnet_verdict"].isin(["yes", "contextual"]).astype(int)
     return df
 
@@ -382,7 +410,12 @@ def _join_deeptmhmm(df: pd.DataFrame) -> pd.DataFrame:
     )
     df = df.merge(v1_subset, on="uniprot_accession", how="left")
     for label, slug in [
-        ("TM", "deeptm_TM"),
+        # DeepTMHMM "TM" class = TM without signal peptide. Renamed
+        # to `deeptm_TM_NO_SP` so the feature label is unambiguous —
+        # earlier `deeptm_TM` read as "any TM" which conflated with
+        # `up_has_tm` (the broader UniProt-annotation flag that
+        # covers BOTH TM-only and SP+TM proteins).
+        ("TM", "deeptm_TM_NO_SP"),
         ("SP+TM", "deeptm_SP_plus_TM"),
         ("SP", "deeptm_SP_only"),
         ("BETA", "deeptm_BETA"),
@@ -426,7 +459,7 @@ def _join_schweke(df: pd.DataFrame) -> pd.DataFrame:
 
 
 def build_features() -> pd.DataFrame:
-    df = _load_v2()
+    df = _load_v3()
     df = _join_uniprot_features(df)
     df = _derive_topology_class(df)
     df = _join_deeptmhmm(df)
@@ -600,20 +633,45 @@ def _star(qval: float) -> str:
 
 
 def make_heatmap(enrichment: pd.DataFrame, out_dir: Path) -> None:
-    """Signed-effect heatmap: rows=features, cols=sources, cell=effect."""
+    """Signed-effect heatmap: rows=features, cols=sources, cell=effect.
+
+    Drops feature rows where max |effect| across sources < 0.20 — uninformative
+    rows (every DB scores near zero) crowded the figure without contributing
+    signal. The full 49-row matrix is still in the enrichment TSV; we trim
+    only at the rendering step.
+    """
     setup_plotting_style(font_scale=1.0)
-    feature_order = BINARY_FEATURES + CONTINUOUS_FEATURES
+    full_order = BINARY_FEATURES + CONTINUOUS_FEATURES
     source_order = [name for name, _ in INCLUSION_SOURCES]
 
     effect = (
         enrichment.pivot(index="feature", columns="source", values="effect")
-        .reindex(index=feature_order, columns=source_order)
+        .reindex(index=full_order, columns=source_order)
     )
     qvals = (
         enrichment.pivot(index="feature", columns="source", values="q_value")
-        .reindex(index=feature_order, columns=source_order)
+        .reindex(index=full_order, columns=source_order)
     )
     annot = qvals.map(_star)
+
+    # Filter: keep only rows that move SOMEWHERE in the heatmap. A row
+    # whose largest absolute effect across all 6 sources is below 0.20
+    # is, by construction, a row of near-white cells — visually dead
+    # space. We keep the BINARY vs CONTINUOUS split intact so the
+    # post-filter dividers + provenance grouping still read correctly.
+    max_abs = effect.abs().max(axis=1).fillna(0)
+    keep = max_abs >= 0.20
+    binary_kept = [f for f in BINARY_FEATURES if bool(keep.get(f, False))]
+    continuous_kept = [f for f in CONTINUOUS_FEATURES if bool(keep.get(f, False))]
+    feature_order = binary_kept + continuous_kept
+    effect = effect.reindex(index=feature_order)
+    qvals = qvals.reindex(index=feature_order)
+    annot = annot.reindex(index=feature_order)
+    n_dropped = len(full_order) - len(feature_order)
+    print(
+        f"      Heatmap: kept {len(feature_order)}/{len(full_order)} rows "
+        f"(dropped {n_dropped} with max |effect| < 0.20)"
+    )
 
     # Two-panel layout: a thin left strip colored by feature provenance
     # (UniProt / DeepTMHMM / HGNC / Schweke / cohort meta) + the main
@@ -646,7 +704,7 @@ def make_heatmap(enrichment: pd.DataFrame, out_dir: Path) -> None:
     prov_ax.set_ylim(len(feature_order), 0)
     prov_ax.set_xticks([])
     prov_ax.set_yticks([])
-    prov_ax.set_xlabel("Source", labelpad=8, fontsize=10)
+    prov_ax.set_xlabel("Source", labelpad=8, fontsize=13)
     for spine in prov_ax.spines.values():
         spine.set_visible(False)
 
@@ -658,7 +716,9 @@ def make_heatmap(enrichment: pd.DataFrame, out_dir: Path) -> None:
         vmax=0.6,
         annot=annot,
         fmt="",
-        annot_kws={"size": 11, "weight": "bold"},
+        # Project min font size = 13 (matches xtick/ytick.labelsize
+        # in _plotting_config). Star annotations were 11; bumped.
+        annot_kws={"size": 13, "weight": "bold"},
         cbar_kws={
             "label": (
                 "Signed effect, range [−1, +1]\n"
@@ -667,7 +727,12 @@ def make_heatmap(enrichment: pd.DataFrame, out_dir: Path) -> None:
                 "stars: BH q-value tiers"
             ),
             "shrink": 0.55,
-            "pad": 0.02,
+            # Pad bumped 0.06 → 0.14 so the colorbar steps fully
+            # outside the heatmap's right edge — including its
+            # rightmost source column's x-tick text — instead of
+            # crowding the sonnet column. Tradeoff: ~8% wider canvas
+            # for the heatmap+cbar pair.
+            "pad": 0.14,
         },
         linewidths=0.5,
         linecolor="white",
@@ -682,34 +747,15 @@ def make_heatmap(enrichment: pd.DataFrame, out_dir: Path) -> None:
     # the provenance strip.
     ax.tick_params(axis="y", labelleft=False, labelright=False)
     prov_ax.set_yticks([i + 0.5 for i in prov_index])
-    prov_ax.set_yticklabels(feature_order, fontsize=9)
+    prov_ax.set_yticklabels(feature_order, fontsize=13)
     prov_ax.tick_params(axis="y", left=False, pad=2)
 
-    # Section dividers. Binary topology / inner-leaflet / family /
-    # orthogonal / continuous — visible reading aid for what the
-    # heatmap shows top-to-bottom.
-    def _idx(feat: str) -> int:
-        return feature_order.index(feat)
-
-    dividers = [
-        ("TM topology", 0, _idx("topo_gpi_anchored") - 0.5),
-        ("Cell-surface topology classes", _idx("topo_gpi_anchored") - 0.5,
-         _idx("topo_inner_leaflet_lipidated") - 0.5),
-        ("INNER-LEAFLET (not cell-surface)",
-         _idx("topo_inner_leaflet_lipidated") - 0.5,
-         _idx("topo_no_tm_no_signal") - 0.5),
-        ("Other peripheral", _idx("topo_no_tm_no_signal") - 0.5,
-         _idx("fam_gpcr") - 0.5),
-        ("HGNC families (surface)", _idx("fam_gpcr") - 0.5,
-         _idx("fam_ras_gtpase") - 0.5),
-        ("HGNC families (INNER-LEAFLET)", _idx("fam_ras_gtpase") - 0.5,
-         _idx("schweke_homomer") - 0.5),
-        ("Orthogonal / cohort", _idx("schweke_homomer") - 0.5,
-         len(feature_order)),
-    ]
-    for _, _, y in dividers[1:]:
-        ax.axhline(y, color="black", linewidth=0.8)
-    ax.axhline(len(BINARY_FEATURES), color="black", linewidth=1.5)
+    # Section divider between binary and continuous blocks — the only
+    # divider that survives once we filter rows to max |effect| ≥ 0.20
+    # (the per-theme anchor features like `topo_gpi_anchored` get
+    # dropped at the filter step, breaking the per-section dividers
+    # that used them as anchors).
+    ax.axhline(len(binary_kept), color="black", linewidth=1.5)
 
     # Build a provenance legend below the figure.
     from matplotlib.patches import Patch
@@ -718,16 +764,21 @@ def make_heatmap(enrichment: pd.DataFrame, out_dir: Path) -> None:
         Patch(facecolor=color, label=name)
         for name, color in PROVENANCE_COLORS.items()
     ]
+    # Legend below the heatmap. -0.09 lands just below the rotated
+    # x-tick labels without leaving a wasteful gap (earlier -0.12 was
+    # visibly disconnected). subplots_adjust(bottom=0.10) reserves
+    # exactly enough vertical space for the two-line legend block.
     ax.legend(
         handles=legend_handles,
         loc="upper center",
-        bbox_to_anchor=(0.5, -0.07),
+        bbox_to_anchor=(0.5, -0.09),
         ncol=3,
-        fontsize=9,
+        fontsize=13,
         frameon=False,
         title="Feature provenance (all deterministic)",
-        title_fontsize=10,
+        title_fontsize=14,
     )
+    fig.subplots_adjust(bottom=0.10)
 
     save_figure(fig, "inclusion_heatmap", output_dir=out_dir, formats=("pdf", "png"))
     plt.close(fig)
@@ -743,7 +794,10 @@ def make_clustered_heatmap(enrichment: pd.DataFrame, out_dir: Path) -> None:
     order can't (e.g. "GO clusters with HPA's bias", "sonnet is closest
     to UniProt").
     """
-    setup_plotting_style(font_scale=0.85)
+    # font_scale=1.0 so per-element fontsizes are read literally from
+    # the project min (13) — earlier 0.85 was shrinking everything
+    # below the floor.
+    setup_plotting_style(font_scale=1.0)
     feature_order = BINARY_FEATURES + CONTINUOUS_FEATURES
     source_order = [name for name, _ in INCLUSION_SOURCES]
 
@@ -756,39 +810,58 @@ def make_clustered_heatmap(enrichment: pd.DataFrame, out_dir: Path) -> None:
         .reindex(index=feature_order, columns=source_order)
     )
 
+    # Same row filter as the unclustered main heatmap (now retired):
+    # drop features whose max |effect| across all sources < 0.20.
+    # Uninformative rows crowd the dendrogram + slow the linkage step
+    # without contributing meaningful clusters.
+    max_abs = effect.abs().max(axis=1).fillna(0)
+    keep_threshold = max_abs >= 0.20
+    n_below_threshold = int((~keep_threshold).sum())
+    if n_below_threshold:
+        print(
+            f"      Clustermap: dropping {n_below_threshold} feature(s) "
+            f"with max |effect| < 0.20"
+        )
+
     # NaN handling: scipy's linkage refuses NaNs. Fill with 0 (no
     # effect) for the linkage step only; pass the original (with NaNs)
     # to the heatmap so empty cells stay visually missing.
     effect_for_link = effect.fillna(0.0)
 
-    # Drop zero-variance rows — features that have effect ≈ 0 across
-    # every source (e.g. a pattern that matches no genes in v2). Their
-    # pairwise correlation distance is undefined, which crashes
-    # scipy.linkage. They carry no clustering signal anyway.
-    keep_rows = effect_for_link.var(axis=1) > 1e-12
-    dropped = effect_for_link.index[~keep_rows].tolist()
-    if dropped:
-        print(f"      Dropping {len(dropped)} zero-variance feature(s) "
-              f"from clustermap: {dropped}")
+    # Also drop zero-variance rows — features whose effect is ≈ 0
+    # across every source. Their pairwise correlation distance is
+    # undefined, which crashes scipy.linkage.
+    keep_variance = effect_for_link.var(axis=1) > 1e-12
+
+    keep_rows = keep_threshold & keep_variance
     effect_for_link = effect_for_link.loc[keep_rows]
     effect_for_plot = effect.loc[keep_rows]
     feature_order_kept = effect_for_link.index.tolist()
 
     # Provenance row colors (one cell per row, same palette as the
-    # main heatmap's left strip).
+    # retired main heatmap's left strip). Strip name is "Provenance"
+    # so it doesn't collide with the column strip below (both used
+    # to be "Source", which was visually confusing).
     row_colors = pd.Series(
         {f: PROVENANCE_COLORS[FEATURE_PROVENANCE[f]] for f in feature_order_kept},
-        name="Source",
+        name="Provenance",
     )
-    # Column colors: M1 DB sources vs Sonnet. Five DBs share a teal
-    # tone; Sonnet stands out in maroon so the eye can spot where it
-    # lands in the dendrogram.
+    # Column colors: one distinct color per source, matching the
+    # palette used in `make_surfy_topology_coverage` (the per-DB
+    # bar chart) so a reader scanning between the heatmap and the
+    # bars gets the SAME color for the SAME source. Was: 2-tone
+    # M1-DB-teal vs Sonnet-maroon, which obscured per-DB identity.
+    col_color_map = {
+        "sonnet":  "#d87851",   # Claude-orange (BRAND_CLAUDE_ORANGE)
+        "uniprot": "#BC3C4C",   # maroon-light
+        "go":      "#3D6B60",   # teal-mid
+        "hpa":     "#F4AA28",   # amber-bright
+        "surfy":   "#8878C8",   # lavender-bright
+        "cspa":    "#6E1428",   # maroon-dark
+    }
     col_colors = pd.Series(
-        {
-            name: ("#BC3C4C" if name == "sonnet" else "#3D6B60")
-            for name, _ in INCLUSION_SOURCES
-        },
-        name="Layer",
+        {name: col_color_map[name] for name, _ in INCLUSION_SOURCES},
+        name="Source",
     )
 
     g = sns.clustermap(
@@ -803,11 +876,22 @@ def make_clustered_heatmap(enrichment: pd.DataFrame, out_dir: Path) -> None:
         col_colors=col_colors,
         linewidths=0.4,
         linecolor="white",
-        figsize=(12, 16),
-        cbar_pos=(0.02, 0.86, 0.02, 0.10),
+        # Narrower canvas (was 14 × 8 → 9 × 8). With 6 columns the
+        # 14"-wide heatmap was rendering each column ~2" wide;
+        # squeezing to 9" gives ~1.2" per column — thinner data cells
+        # AND room on the right for the colorbar without overlap.
+        figsize=(9, 8),
+        # Colorbar at x=0.93 — clear of the heatmap which now ends
+        # around x=0.88 because the narrower canvas forces the
+        # clustermap layout to leave the rightmost ~12% as margin.
+        # Height 0.55, in the y-middle of the heatmap area.
+        cbar_pos=(0.93, 0.18, 0.020, 0.55),
         cbar_kws={"label": "Signed effect [−1, +1]"},
         dendrogram_ratio=(0.10, 0.13),
-        colors_ratio=0.018,
+        # Thicker color strips (was 0.018; now 0.035) so the per-row
+        # provenance and per-column source-coloring bands actually
+        # read at a glance instead of being hairline annotations.
+        colors_ratio=0.035,
         xticklabels=True,
         yticklabels=True,
     )
@@ -828,7 +912,7 @@ def make_clustered_heatmap(enrichment: pd.DataFrame, out_dir: Path) -> None:
                     star,
                     ha="center",
                     va="center",
-                    fontsize=9,
+                    fontsize=13,
                     weight="bold",
                     color="black",
                 )
@@ -846,56 +930,185 @@ def make_clustered_heatmap(enrichment: pd.DataFrame, out_dir: Path) -> None:
         Patch(facecolor=color, label=name)
         for name, color in PROVENANCE_COLORS.items()
     ]
-    layer_handles = [
-        Patch(facecolor="#3D6B60", label="M1 source DB"),
-        Patch(facecolor="#BC3C4C", label="Sonnet (LLM)"),
+    # Per-source legend handles, in the same order the topology
+    # coverage bars render (sonnet first as reference, then DBs).
+    source_handles = [
+        Patch(facecolor=col_color_map[k], label=k)
+        for k in ("sonnet", "uniprot", "surfy", "cspa", "go", "hpa")
     ]
-    g.fig.legend(
+    # Both legends sit BELOW the x-tick labels (which include the
+    # 35°-rotated source names). Earlier placement at y=-0.005 was
+    # colliding with the tick text; -0.06 leaves room.
+    # Legends right under the x-tick labels — pulled from y=−0.06 →
+    # y=0.02 (closer to the heatmap, not orphaned below). With
+    # subplots_adjust(bottom=0.13) reserving room AND figure-relative
+    # coords on the legend, the labels sit ~half an inch from the
+    # x-tick text rather than floating mid-page.
+    # Legends pulled further down (y was 0.02; now −0.08) so they
+    # sit well below the x-tick labels of the heatmap with breathing
+    # room. subplots_adjust(bottom=0.20) reserves more vertical space
+    # than the previous 0.13 to absorb the negative-y legend coords.
+    prov_legend = g.fig.legend(
         handles=prov_handles,
         loc="lower left",
-        bbox_to_anchor=(0.08, -0.005),
+        bbox_to_anchor=(0.08, -0.08),
         ncol=2,
-        fontsize=8,
+        fontsize=13,
         frameon=False,
         title="Row strip — feature provenance",
-        title_fontsize=9,
+        title_fontsize=14,
     )
-    g.fig.legend(
-        handles=layer_handles,
+    src_legend = g.fig.legend(
+        handles=source_handles,
         loc="lower right",
-        bbox_to_anchor=(0.92, -0.005),
+        bbox_to_anchor=(0.92, -0.08),
         ncol=2,
-        fontsize=8,
+        fontsize=13,
         frameon=False,
-        title="Col strip — inclusion layer",
-        title_fontsize=9,
+        title="Col strip — inclusion source",
+        title_fontsize=14,
     )
+    g.fig.subplots_adjust(bottom=0.20)
 
-    save_figure(g.fig, "inclusion_heatmap_clustered", output_dir=out_dir, formats=("pdf", "png"))
+    # Force matplotlib's tight-bbox calculation to INCLUDE the
+    # figure-level legends. The default save_figure helper passes
+    # bbox_inches='tight' but the auto-discovered extra-artists
+    # list misses figure.legend() output because it isn't attached
+    # to an axes — so the legends were getting CLIPPED below the
+    # figure boundary on the saved PNG/PDF even though they
+    # rendered correctly on screen. Passing them explicitly via
+    # bbox_extra_artists is the matplotlib-blessed fix.
+    for ext in ("pdf", "png"):
+        path = out_dir / f"inclusion_heatmap_clustered.{ext}"
+        g.fig.savefig(
+            path,
+            dpi=300,
+            bbox_inches="tight",
+            bbox_extra_artists=[prov_legend, src_legend],
+        )
+        print(f"  Saved: {path}")
     plt.close(g.fig)
 
 
-def make_per_source_bars(enrichment: pd.DataFrame, out_dir: Path) -> None:
-    """Per-source top-feature bar plot (signed effect, sorted by |effect|).
+def _db_vs_sonnet_enrichment(df: pd.DataFrame) -> pd.DataFrame:
+    """For each (DB source, feature) pair, compute the signed effect with
+    SONNET'S INCLUDED SET as the comparator instead of the universe
+    complement.
 
-    One small-multiples panel per inclusion source; the top 12 features
-    by |effect| within each source are shown, colored by sign.
+      - in  group = rows where the DB source's flag is 1 (e.g. uniprot's
+                    3,015)
+      - out group = rows where src_sonnet == 1 (Sonnet's 4,249)
+
+    The two groups overlap on genes both DB and Sonnet include — that's
+    expected; what we're asking is "is feature X distributed differently
+    across DB's call set than Sonnet's call set?", which is a valid
+    two-sample test even with overlap (Fisher's exact on the 2×2 sample
+    counts, Mann-Whitney U on the continuous values).
+
+    Sonnet itself is excluded as an "in" source — comparing Sonnet to
+    Sonnet would produce a row of zeros and clutter the figure.
     """
-    setup_plotting_style(font_scale=0.9)
-    source_order = [name for name, _ in INCLUSION_SOURCES]
+    out_rows: list[dict] = []
+    sonnet_mask = df["src_sonnet"] == 1
+    for source_name, source_col in INCLUSION_SOURCES:
+        if source_name == "sonnet":
+            continue
+        in_mask = df[source_col] == 1
+        for feat in BINARY_FEATURES:
+            stats = _binary_enrichment(
+                feat, df.loc[in_mask, feat], df.loc[sonnet_mask, feat]
+            )
+            out_rows.append(
+                {"source": source_name, "feature": feat,
+                 "feature_type": "binary", **stats}
+            )
+        for feat in CONTINUOUS_FEATURES:
+            stats = _continuous_enrichment(
+                feat, df.loc[in_mask, feat], df.loc[sonnet_mask, feat]
+            )
+            out_rows.append(
+                {"source": source_name, "feature": feat,
+                 "feature_type": "continuous", **stats}
+            )
+    out = pd.DataFrame(out_rows)
+    out["q_value"] = _bh_qvalue(out["p_value"])
+    return out
+
+
+def make_per_source_bars(enrichment: pd.DataFrame, out_dir: Path) -> None:
+    """Per-DB top-feature bar plot vs Sonnet.
+
+    NOT the same enrichment as the heatmap. Each DB panel renders the
+    top-12 features by |signed effect| where the effect is
+    p(feature | DB-included) - p(feature | Sonnet-included)
+    (continuous: Cliff's δ on DB's distribution vs Sonnet's). Sonnet
+    itself isn't a panel — it IS the reference.
+
+    Positive bar = feature is over-represented in the DB's call set
+    relative to Sonnet's (e.g. CSPA's strong positive on `up_has_glyc`
+    reflects CSPA's cell-surface-capture chemistry biasing toward
+    glycoproteins more than Sonnet does). Negative bar = under-
+    represented relative to Sonnet (e.g. CSPA's negative on `topo_
+    gpcr_7tm` reflects the GPCR-glycosylation blind spot).
+
+    Feature pool is the same as the heatmap (BINARY_FEATURES +
+    CONTINUOUS_FEATURES). The selection rule within each panel is
+    top-12 by |effect| with the q-value star surfaced on the bar tip,
+    so a reader's eye lands on the LARGEST and CONFIDENT
+    differentiators rather than the full ~50-feature row.
+    """
+    # font_scale=1.0 (was 0.9) so rcParams-derived tick labels meet
+    # project floor 13pt.
+    setup_plotting_style(font_scale=1.0)
+    # `enrichment` here is the DB-vs-Sonnet table, which omits a
+    # Sonnet-vs-Sonnet row by construction — derive the source order
+    # from what's actually in the table so the layout stays in sync
+    # if INCLUSION_SOURCES ever grows.
+    source_order = list(dict.fromkeys(enrichment["source"].tolist()))
+
+    # Pick a GLOBAL top-N feature set, ranked by the spread of effects
+    # across DBs+Sonnet on the main (vs-universe) enrichment table —
+    # i.e. the features that most strongly differentiate sources.
+    # Using the same features in every panel means rows align across
+    # panels and the reader can scan a feature horizontally to compare
+    # DBs directly. Was: top-12 by |effect| WITHIN each panel — easier
+    # for a per-DB story but impossible to compare across panels.
+    universe_enrichment = pd.read_csv(
+        OUT_DIR / "inclusion_enrichment.tsv", sep="\t"
+    )
+    piv = universe_enrichment.pivot(
+        index="feature", columns="source", values="effect"
+    )
+    discriminator_rank = (
+        piv.max(axis=1) - piv.min(axis=1)
+    ).sort_values(ascending=False)
+    # Global top-8 by range. The per-DB-top-2 gate is intentionally
+    # gone — verified that today's top-8 already covers every DB's
+    # top-2 except CSPA's secondary `up_has_signal`. Skipping the gate
+    # keeps the panel symmetric (every DB renders the SAME 8 rows)
+    # and lets the topology-coverage figure absorb CSPA's signal-
+    # peptide signal via `up_has_signal` being part of its 12-row
+    # binary set instead.
+    feature_row_order = list(discriminator_rank.head(8).index)
+
     n_src = len(source_order)
-    ncols = 2
+    # 3-column layout so the 5 DBs land 3 + 2 across two rows. Was
+    # 2 cols × 3 rows; the extra column ratio gives each panel a
+    # squatter aspect that makes the 12-row bar chart less stretched.
+    ncols = 3
     nrows = (n_src + ncols - 1) // ncols
-    fig, axes = plt.subplots(nrows, ncols, figsize=(13, 4 * nrows))
+    fig, axes = plt.subplots(nrows, ncols, figsize=(16, 4.2 * nrows))
     axes = np.array(axes).reshape(-1)
     for ax, source in zip(axes, source_order):
         sub = (
-            enrichment[(enrichment["source"] == source) & enrichment["effect"].notna()]
-            .assign(abs_effect=lambda d: d["effect"].abs())
-            .sort_values("abs_effect", ascending=False)
-            .head(12)
-            .sort_values("effect")
-            .reset_index(drop=True)
+            enrichment[
+                (enrichment["source"] == source)
+                & enrichment["feature"].isin(feature_row_order)
+                & enrichment["effect"].notna()
+            ]
+            .set_index("feature")
+            .reindex(feature_row_order)
+            .reset_index()
         )
         features = sub["feature"].tolist()
         effects = sub["effect"].astype(float).tolist()
@@ -907,7 +1120,7 @@ def make_per_source_bars(enrichment: pd.DataFrame, out_dir: Path) -> None:
         ax.set_yticklabels(features)
         ax.axvline(0, color="black", linewidth=0.8)
         ax.set_xlim(-0.7, 0.7)
-        ax.set_xlabel(f"{source}: effect (in − out)")
+        ax.set_xlabel(f"{source}: effect ({source} − Sonnet)")
         sns.despine(ax=ax, top=True, right=True)
         for i, (effect, qval) in enumerate(zip(effects, qvals)):
             star = _star(qval)
@@ -919,7 +1132,7 @@ def make_per_source_bars(enrichment: pd.DataFrame, out_dir: Path) -> None:
                     star,
                     va="center",
                     ha="left" if effect > 0 else "right",
-                    fontsize=10,
+                    fontsize=13,
                     weight="bold",
                 )
     for ax in axes[n_src:]:
@@ -930,14 +1143,48 @@ def make_per_source_bars(enrichment: pd.DataFrame, out_dir: Path) -> None:
 
 
 SURFY_FOCUS_FEATURES: list[tuple[str, str]] = [
+    # 12 binary features → 4 rows × 3 cols. Dropped from the previous
+    # set:
+    #   - `up_has_tm` — redundant with single-pass + multi-pass + 7TM
+    #     panels (it's just their disjunction).
+    #   - `up_multi_pass` — redundant with multi-pass-TM + 7TM (same).
+    # Added in their place:
+    #   - `up_has_signal` — any UniProt signal peptide annotation.
+    #     Independent of TM presence, so distinct from
+    #     topo_signal_only_secreted (which requires no TM).
+    #   - `deeptm_SP_only` — DeepTMHMM secreted classification.
+    #     Pairs visually with deeptm_TM_NO_SP so the reader sees
+    #     parallel "no SP, TM only" vs "SP only, no TM" calls.
+    # `up_has_extracellular_topo` survives despite being a subset of
+    # `up_has_tm` because it requires curator-resolved orientation
+    # (UniProt "Topological domain — Extracellular" annotation), which
+    # the architecture-class panels don't directly assert.
+    # Schweke-predicted homomer remains dropped (no DB filters on it,
+    # panel was always flat). The flag still lives in the main heatmap.
+    ("topo_gpi_anchored", "GPI-anchored\n(outer leaflet)"),
     ("topo_gpcr_7tm", "7TM GPCR"),
     ("topo_multi_pass_tm", "Multi-pass TM\n(non-GPCR)"),
     ("topo_single_pass_tm", "Single-pass TM\n(Type I/II/III)"),
-    ("topo_gpi_anchored", "GPI-anchored\n(outer leaflet)"),
-    ("topo_signal_only_secreted", "Signal-peptide only\n(secreted-likely)"),
-    ("topo_inner_leaflet_lipidated", "Inner-leaflet lipidated\n(KRAS, SRC, RhoA — NOT surface)"),
+    ("topo_signal_only_secreted",
+     "Likely secreted\n(SP + no TM + no anchor)"),
+    ("topo_inner_leaflet_lipidated", "Inner-leaflet lipidated\n(prenyl/myristoyl + no TM/SP)"),
     ("topo_no_tm_no_signal", "No TM, no signal\n(peripheral / cytosolic)"),
-    ("schweke_homomer", "Schweke-predicted homomer"),
+    # `up_has_extracellular_topo` removed — single-pass and multi-pass
+    # TM proteins by definition have extracellular topology, so the
+    # signal it carried was already in those architecture panels.
+    # `up_has_signal` removed — its signal is split across
+    # `topo_signal_only_secreted` (SP only, no TM) and
+    # `topo_single_pass_tm` (most Type I receptors carry SP), and it
+    # was the lowest-range discriminator of the surviving set.
+    ("up_has_glyc", "Glycosylation site\n(UniProt feature)"),
+    ("deeptm_TM_NO_SP", "TM without signal peptide\n(DeepTMHMM class)"),
+    # `deeptm_SP_only` was here to balance `deeptm_TM_NO_SP` as
+    # parallel DeepTMHMM classes — but in this surface-candidate
+    # universe almost every DeepTMHMM "SP-only" call is actually a
+    # GPI-anchored protein (ACHE, ALPL, BST1, CA4 — the C-terminal
+    # GPI signal gets cleaved and replaced by the anchor, so
+    # DeepTMHMM sees just the N-terminal SP and no TM). The panel
+    # was therefore redundant with the GPI-anchored panel above.
 ]
 
 
@@ -952,45 +1199,86 @@ def make_surfy_topology_coverage(df: pd.DataFrame, out_dir: Path) -> None:
     (UniProt / SURFY / CSPA / Sonnet), and where the surface-DB
     coverage gaps are (e.g. CSPA's GPCR blind spot).
     """
-    setup_plotting_style(font_scale=0.9)
-    source_order = [name for name, _ in INCLUSION_SOURCES]
+    # font_scale=1.0 (was 0.9) so rcParams-derived tick labels stay
+    # at the project floor of 13pt; 0.9 scaled them to 11.7pt below
+    # the min. Per-element overrides further down already at 13/14.
+    setup_plotting_style(font_scale=1.0)
+    # Explicit source order for this panel — Sonnet first as the
+    # implicit reference, then the 5 DBs in
+    # uniprot / surfy / cspa / go / hpa order so the figure renders
+    # the same source-axis as `data/analysis/figures/
+    # make_db_correctness_by_class.py`. Colors come from the
+    # BRAND_PALETTE used there so a reader scanning back and forth
+    # between the two figures gets the SAME color for the SAME source.
+    source_order = ["sonnet", "uniprot", "surfy", "cspa", "go", "hpa"]
     source_colors = {
-        "uniprot": "#3D6B60",
-        "go": "#BC3C4C",
-        "hpa": "#F4AA28",
-        "surfy": "#8878C8",
-        "cspa": "#6E1428",
-        "sonnet": "#244840",
+        # Sonnet = Claude-orange (BRAND_CLAUDE_ORANGE = "#d87851") —
+        # same color used for Sonnet in
+        # data/analysis/figures/make_db_correctness_by_class.py so
+        # a reader gets the SAME color for Sonnet across both
+        # figures. Earlier teal-dark choice was wrong.
+        "sonnet":  "#d87851",
+        # 5 DB colors, indexed identically to BRAND_PALETTE[0..4] in
+        # make_db_correctness_by_class.py (UniProt, GO CC, HPA,
+        # SURFY, CSPA — by ORIGINAL palette assignment, not panel
+        # order).
+        "uniprot": "#BC3C4C",  # maroon-light
+        "go":      "#3D6B60",  # teal-mid
+        "hpa":     "#F4AA28",  # amber-bright
+        "surfy":   "#8878C8",  # lavender-bright
+        "cspa":    "#6E1428",  # maroon-dark
     }
 
     n_feat = len(SURFY_FOCUS_FEATURES)
-    ncols = 2
+    # 9 features → clean 3×3 grid. Was 4×3 with 12 features; the
+    # redundant trim (drop has_signal, has_extracellular_topo,
+    # deeptm_SP_only) takes us to 9 which fits a perfect square.
+    ncols = 3
     nrows = (n_feat + ncols - 1) // ncols
-    fig, axes = plt.subplots(nrows, ncols, figsize=(14, 3.0 * nrows))
+    fig, axes = plt.subplots(nrows, ncols, figsize=(16, 3.6 * nrows))
     axes = np.array(axes).reshape(-1)
 
     for ax, (feat_col, pretty) in zip(axes, SURFY_FOCUS_FEATURES):
-        # Universe rate = fraction of v2 (with feature data) that carries
-        # this feature.
-        universe_rate = float(df[feat_col].dropna().mean())
+        # Denominator = the full v3-input universe (= ANY positive
+        # vote across uniprot, go, hpa, surfy, cspa, OR sonnet).
+        # The bar height for source S on feature F reads:
+        #   (# proteins where S-included AND F-positive)
+        #   / |universe|  (= 6,588)
+        #
+        # The v3 universe was BUILT from "any DB yes OR Sonnet
+        # yes/contextual", so every member already has at least one
+        # positive vote — "% of any yes vote across all sources" is
+        # the same as "% of universe". Was: 5,546 = strict-DB union
+        # only (the 5-DB-yes intersection of the universe).
+        any_yes_size = int(len(df))
+        # Walk source_order (the panel order) explicitly — the
+        # iteration order has to match `source_order` so the bar
+        # rate-list lines up with the color list and the x-tick
+        # labels below. Previous version iterated INCLUSION_SOURCES
+        # and silently mis-paired bars with colors when the two
+        # orders diverged.
+        src_col_by_name = dict(INCLUSION_SOURCES)
         rates_pct = []
-        for src_name, src_col in INCLUSION_SOURCES:
+        for src_name in source_order:
+            src_col = src_col_by_name[src_name]
             mask = df[src_col] == 1
-            vals = df.loc[mask, feat_col].dropna()
-            rate = float(vals.mean()) if vals.size else float("nan")
-            rates_pct.append(rate * 100)
+            feat = pd.to_numeric(df.loc[mask, feat_col], errors="coerce")
+            n_pos = int((feat == 1).sum())
+            rates_pct.append(100.0 * n_pos / any_yes_size)
         colors = [source_colors[s] for s in source_order]
         ax.bar(range(len(source_order)), rates_pct, color=colors, edgecolor="white")
-        ax.axhline(
-            universe_rate * 100,
-            color="black",
-            linestyle="--",
-            linewidth=1.0,
-            label=f"v2 universe ({universe_rate * 100:.1f}%)",
-        )
+        # Cohort-average reference line removed — the bars are
+        # already comparable to each other within a panel, and the
+        # dashed average line was crowding the top of the canvas on
+        # high-prevalence features (e.g. up_has_tm where bars hit ~95%
+        # and the line sat squashed against the panel ceiling).
         ax.set_xticks(range(len(source_order)))
         ax.set_xticklabels(source_order, rotation=35, ha="right")
-        ax.set_ylabel("% of source's included set")
+        # Y-axis label = denominator. The full v3-input universe
+        # (6,588 proteins) is the reference — every universe member
+        # has ≥1 yes vote across the 6 sources by construction, so
+        # "% of any yes vote" reads cleanly as "% of universe."
+        ax.set_ylabel("% of any-yes-vote\nuniverse")
         ax.set_xlabel("")
         ax.text(
             0.0,
@@ -999,25 +1287,29 @@ def make_surfy_topology_coverage(df: pd.DataFrame, out_dir: Path) -> None:
             transform=ax.transAxes,
             ha="left",
             va="bottom",
-            fontsize=11,
+            fontsize=14,
             weight="bold",
         )
-        plt.setp(ax.get_yticklabels(), fontsize=9)
-        ax.legend(fontsize=8, loc="upper right", frameon=False)
+        plt.setp(ax.get_yticklabels(), fontsize=13)
         sns.despine(ax=ax, top=True, right=True)
     for ax in axes[n_feat:]:
         ax.axis("off")
-    fig.text(
-        0.5,
-        1.005,
-        "What each source includes, by topology class",
-        ha="center",
-        va="bottom",
-        fontsize=14,
-        weight="bold",
+    fig.tight_layout()
+    # Embed the published reproduction-gist URL into the figure
+    # metadata (PNG Source tEXt chunk, PDF Subject info field) so
+    # the citation travels with the file across slide decks /
+    # blog posts. Reader extracts with `exiftool figure.png | grep
+    # Source` or PIL's Image.open(p).info["Source"].
+    # Published figure → data/analysis/figures/ (not the audit's
+    # OUT_DIR). Convention: only PROMOTED figures live in the
+    # figures folder; audit intermediates stay in their analysis
+    # subdir.
+    save_figure(
+        fig, "topology_coverage_by_source",
+        output_dir=FIGURES_DIR,
+        formats=("pdf", "png"),
+        gist_url="https://gist.github.com/beccajcarlson/95b0f4cdcaf6a6b91f57539cd1515a25",
     )
-    fig.tight_layout(rect=(0, 0, 1, 0.99))
-    save_figure(fig, "topology_coverage_by_source", output_dir=out_dir, formats=("pdf", "png"))
     plt.close(fig)
 
 
@@ -1038,7 +1330,7 @@ def main() -> None:
     out_dir: Path = args.out_dir
     out_dir.mkdir(parents=True, exist_ok=True)
 
-    print(f"[1/4] Building per-protein feature table from {V2.name}")
+    print(f"[1/4] Building per-protein feature table from {V3.name}")
     df = build_features()
     feat_path = out_dir / "per_protein_features.tsv"
     df.to_csv(feat_path, sep="\t", index=False)
@@ -1065,9 +1357,19 @@ def main() -> None:
     print(f"      Wrote -> {out_dir / 'inclusion_summary.json'}")
 
     print("[4/4] Rendering figures")
-    make_heatmap(enrichment, out_dir)
-    make_clustered_heatmap(enrichment, out_dir)
-    make_per_source_bars(enrichment, out_dir)
+    # Both heatmap variants (un-clustered and clustered) retired per
+    # user — the per-source bars + topology coverage figures
+    # carry the analytical story more directly. The function bodies
+    # stay in source for reference but are no longer called.
+    # Per-DB bars use a SEPARATE enrichment table where the comparator
+    # is Sonnet's included set instead of the universe complement.
+    # Saved alongside the canonical vs-universe table so a reanalyst
+    # can pull either comparison.
+    db_vs_sonnet = _db_vs_sonnet_enrichment(df)
+    dbs_path = out_dir / "inclusion_per_db_vs_sonnet.tsv"
+    db_vs_sonnet.to_csv(dbs_path, sep="\t", index=False)
+    print(f"      Wrote {len(db_vs_sonnet):,} (DB × feature) vs-Sonnet rows -> {dbs_path}")
+    make_per_source_bars(db_vs_sonnet, out_dir)
     make_surfy_topology_coverage(df, out_dir)
     print("Done.")
 

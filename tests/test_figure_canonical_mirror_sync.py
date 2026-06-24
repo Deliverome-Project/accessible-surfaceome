@@ -7,7 +7,7 @@ Every published figure has two source files by convention:
     ``_plotting_config`` import (centralized styling), reads from
     in-repo TSVs / D1.
   • ``data/analysis/figures/make_<slug>.py`` — standalone gist mirror,
-    PEP-723 + inline brand styling, reads from raw.githubusercontent.
+    PyPA inline script metadata + inline brand styling, reads from raw.githubusercontent.
 
 Historically font-cap / layout-bump commits touched only the gist
 mirror (the author edited the gist + synced the mirror file via

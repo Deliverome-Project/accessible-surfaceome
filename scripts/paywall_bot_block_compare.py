@@ -18,7 +18,7 @@ distribution under each retrieval strategy, plus a refreshed
 and the salvaged openalex snapshot).
 
 # Reproduction:
-#   Public gist (reader-side standalone, PEP 723 deps):
+#   Public gist (reader-side standalone, PyPA inline-script-metadata deps):
 #   https://gist.github.com/beccajcarlson/cbc950dad1c3a6595fd5018cdb6b030d
 #   Reader-side mirror script:
 #   data/analysis/paywall_bot_block/make_paywall_bot_block_compare.py.

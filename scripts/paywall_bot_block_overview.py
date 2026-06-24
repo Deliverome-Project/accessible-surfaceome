@@ -23,7 +23,7 @@ preferentially picks PMC papers when both PMC and non-PMC options
 exist — the figure shows what we'd face on a random walk.
 
 # Reproduction:
-#   Public gist (reader-side standalone, PEP 723 deps):
+#   Public gist (reader-side standalone, PyPA inline-script-metadata deps):
 #   https://gist.github.com/beccajcarlson/76242a980c18d98ee3a2fc759a756422
 #   Reader-side mirror script:
 #   data/analysis/paywall_bot_block/make_paywall_bot_block_overview.py.

@@ -71,7 +71,7 @@ the optimistic end of the cohort distribution.
 uv run https://gist.githubusercontent.com/beccajcarlson/76242a980c18d98ee3a2fc759a756422/raw/make_paywall_bot_block_overview.py
 ```
 
-PEP 723 inline-deps script — `uv` installs matplotlib / seaborn / httpx
+PyPA inline-script-metadata script — `uv` installs matplotlib / seaborn / httpx
 on first run, then reads the cohort bucket data from the public repo at
 `raw.githubusercontent.com/Deliverome-Project/accessible-surfaceome/main/data/analysis/paywall_bot_block/cohort_150_4bucket.json`.
 

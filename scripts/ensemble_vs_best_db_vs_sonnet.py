@@ -11,7 +11,7 @@ Overall correctness only — per-bucket breakdown lives in the sibling
 `db_correctness_by_class` canonical figure.
 
 # Reproduction:
-#   Public gist (reader-side standalone, PEP 723 deps):
+#   Public gist (reader-side standalone, PyPA inline-script-metadata deps):
 #   https://gist.github.com/beccajcarlson/0104308c239fe49d91d82a1007632b27
 #   Reader-side mirror script:
 #   data/analysis/figures/make_ensemble_vs_best_db_vs_sonnet.py.

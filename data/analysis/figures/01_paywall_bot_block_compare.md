@@ -105,7 +105,7 @@ adding OpenAlex would dilute precision more than it adds signal.
 uv run https://gist.githubusercontent.com/beccajcarlson/cbc950dad1c3a6595fd5018cdb6b030d/raw/make_paywall_bot_block_compare.py
 ```
 
-PEP 723 inline-deps script reads the per-paper TSV from
+PyPA inline-script-metadata script reads the per-paper TSV from
 `raw.githubusercontent.com/Deliverome-Project/accessible-surfaceome/main/data/processed/paywall_bot_block/paywall_bot_block_compare.tsv`
 (one row per source × gene × paper).
 
