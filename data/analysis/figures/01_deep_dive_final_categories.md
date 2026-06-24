@@ -14,9 +14,9 @@ five final-classification buckets the v2 deep-dive emits:
   stress_hypoxia / cell_death / infection / other)
 - **cell-type restricted** — `surface_call_reason ==
   'tissue_restricted_surface'`
-- **below threshold** — *cytoplasmic* / *nuclear* /
-  *mitochondrial_internal* / *endomembrane_resident* / *secreted_only* /
-  *nuclear_envelope* / *pmhc_only_intracellular*
+- **no** — *cytoplasmic* / *nuclear* / *mitochondrial_internal* /
+  *endomembrane_resident* / *secreted_only* / *nuclear_envelope* /
+  *pmhc_only_intracellular*
 
 Counts are placeholder estimates eyeballed from the 14 committed
 deep-dive records under `viewer/public/data/surfaceome/` plus typical

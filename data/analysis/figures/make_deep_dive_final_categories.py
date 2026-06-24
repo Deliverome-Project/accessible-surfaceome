@@ -8,8 +8,8 @@
 """Reproduce ``deep_dive_final_categories.{pdf,png}`` from the public repo.
 
 **MOCK figure** — distribution of the ~5k surface candidates across
-canonical / likely / cell-state-induced / cell-type-restricted /
-below-threshold buckets after the v2 deep-dive sweep. Counts are
+canonical / likely / cell-state-induced / cell-type-restricted / no
+buckets after the v2 deep-dive sweep. Counts are
 placeholder estimates pending the full sweep
 (``scripts/surfaceome_v2_annotate.py`` over the ~5k Sonnet-triage YES
 cohort). Bucket boundaries follow the closed-enum families in
@@ -121,12 +121,12 @@ _PLACEHOLDER_CELL_STATE_BY_TRIGGER = {
     "other":           10,
 }
 _PLACEHOLDER_CELL_TYPE_RESTRICTED = 450
-_PLACEHOLDER_BELOW_THRESHOLD = 400
+_PLACEHOLDER_NO = 400
 
 _COLOR_CANONICAL = "#2E7A55"
 _COLOR_LIKELY = "#3D6B60"
 _COLOR_CELL_TYPE = "#BC3C4C"
-_COLOR_BELOW = "#9C8C88"
+_COLOR_NO = "#9C8C88"
 _CELL_STATE_STACK_ORDER = [
     "oncogenic",
     "immune",
@@ -149,7 +149,7 @@ _CATEGORY_LABELS = {
     "likely":               "likely\nsurface",
     "cell_state":           "cell-state\ninduced",
     "cell_type_restricted": "cell-type\nrestricted",
-    "below_threshold":      "below\nthreshold",
+    "no":                   "no",
 }
 
 
@@ -161,7 +161,7 @@ def main() -> None:
         "likely":               _PLACEHOLDER_LIKELY,
         "cell_state":           dict(_PLACEHOLDER_CELL_STATE_BY_TRIGGER),
         "cell_type_restricted": _PLACEHOLDER_CELL_TYPE_RESTRICTED,
-        "below_threshold":      _PLACEHOLDER_BELOW_THRESHOLD,
+        "no":      _PLACEHOLDER_NO,
     }
     categories = list(_CATEGORY_LABELS.keys())
 
@@ -180,7 +180,7 @@ def main() -> None:
         "canonical":            _COLOR_CANONICAL,
         "likely":               _COLOR_LIKELY,
         "cell_type_restricted": _COLOR_CELL_TYPE,
-        "below_threshold":      _COLOR_BELOW,
+        "no":      _COLOR_NO,
     }
     for i, key in enumerate(categories):
         if key == "cell_state":

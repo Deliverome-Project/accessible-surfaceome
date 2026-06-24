@@ -1,6 +1,6 @@
 """Deep-dive final categorization — distribution of the ~5k surface candidates
 across canonical / likely / cell-state-induced / cell-type-restricted /
-below-threshold buckets after the v2 deep-dive sweep.
+no buckets after the v2 deep-dive sweep.
 
 **MOCK — counts are placeholder estimates** pending the full sweep
 (``scripts/surfaceome_v2_annotate.py`` over the ~5k Sonnet-triage YES
@@ -16,7 +16,7 @@ cohort). Bucket boundaries follow the closed-enum families in
     by ``filters.induction_trigger`` ∈ ``InductionTrigger``
     (oncogenic / immune / stress_hypoxia / cell_death / infection / other)
   • cell_type_restricted = ``surface_call_reason == 'tissue_restricted_surface'``
-  • below_threshold = ``_NO_REASONS``
+  • no = ``_NO_REASONS``
     (cytoplasmic / nuclear / mitochondrial_internal / endomembrane_resident /
     secreted_only / nuclear_envelope / pmhc_only_intracellular)
 
@@ -66,7 +66,7 @@ _PLACEHOLDER_CELL_STATE_BY_TRIGGER = {
     "other":           10,
 }
 _PLACEHOLDER_CELL_TYPE_RESTRICTED = 450
-_PLACEHOLDER_BELOW_THRESHOLD = 400   # _NO_REASONS bucket
+_PLACEHOLDER_NO = 400   # _NO_REASONS bucket
 
 # Brand palette — follow the existing convention from
 # scripts/zero_db_rescues_by_triage.py:
@@ -77,7 +77,7 @@ _PLACEHOLDER_BELOW_THRESHOLD = 400   # _NO_REASONS bucket
 _COLOR_CANONICAL = "#2E7A55"   # success green
 _COLOR_LIKELY = "#3D6B60"      # teal-mid
 _COLOR_CELL_TYPE = "#BC3C4C"   # maroon-light
-_COLOR_BELOW = "#9C8C88"       # lifted neutral (more readable than ink-grey)
+_COLOR_NO = "#9C8C88"       # lifted neutral (more readable than ink-grey)
 # Amber sequential ramp for the cell-state stack — dark → light = most → least
 # common trigger. Matches the SEQUENTIAL_PALETTES["amber"] family.
 _CELL_STATE_STACK_ORDER = [
@@ -102,7 +102,7 @@ _CATEGORY_LABELS = {
     "likely":               "likely\nsurface",
     "cell_state":           "cell-state\ninduced",
     "cell_type_restricted": "cell-type\nrestricted",
-    "below_threshold":      "below\nthreshold",
+    "no":                   "no",
 }
 
 
@@ -112,7 +112,7 @@ def _make_counts() -> dict[str, int | dict[str, int]]:
         "likely":               _PLACEHOLDER_LIKELY,
         "cell_state":           dict(_PLACEHOLDER_CELL_STATE_BY_TRIGGER),
         "cell_type_restricted": _PLACEHOLDER_CELL_TYPE_RESTRICTED,
-        "below_threshold":      _PLACEHOLDER_BELOW_THRESHOLD,
+        "no":      _PLACEHOLDER_NO,
     }
 
 
@@ -144,12 +144,12 @@ def make_plot() -> tuple[plt.Figure, plt.Axes]:
     x = list(range(len(categories)))
     bar_width = 0.72
 
-    # 1) Solid bars for canonical / likely / cell-type-restricted / below-threshold
+    # 1) Solid bars for canonical / likely / cell-type-restricted / no
     solid_color = {
         "canonical":            _COLOR_CANONICAL,
         "likely":               _COLOR_LIKELY,
         "cell_type_restricted": _COLOR_CELL_TYPE,
-        "below_threshold":      _COLOR_BELOW,
+        "no":      _COLOR_NO,
     }
     for i, key in enumerate(categories):
         if key == "cell_state":
