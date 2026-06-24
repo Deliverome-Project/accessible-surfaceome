@@ -11,7 +11,7 @@ counts on a shared y-axis, plus translational / surface-recognizable
 gene callouts beneath each panel.
 
 # Reproduction:
-#   Public gist (reader-side standalone, PEP 723 deps):
+#   Public gist (reader-side standalone, PyPA inline-script-metadata deps):
 #   https://gist.github.com/beccajcarlson/a4526c9e6de5e958826bf1d764744c1b
 #   Reader-side mirror script:
 #   data/analysis/figures/make_zero_db_rescues_by_triage.py.

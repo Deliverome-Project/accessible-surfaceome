@@ -31,6 +31,11 @@ from pathlib import Path
 
 import httpx
 
+from accessible_surfaceome.release.catalog_presets import (
+    INDUCTION_SUBS,
+    PRESETS,
+)
+
 OUT_DIR = Path("/tmp/zenodo_deposit_consolidated")
 API_BASE = "https://api.deliverome.org/surfaceome/v1"
 
@@ -149,10 +154,121 @@ def build_bench_multirep() -> Path:
     return out_path
 
 
+def build_deep_dive_presets() -> Path:
+    """Materialize per-gene preset membership for every deep-dive record.
+
+    One row per gene with a ``surface_annotation`` record. Columns:
+
+    - gene_symbol, uniprot_acc, hgnc_id, schema_version
+    - in_canonical, in_likely, in_induced, in_cell_type_restricted
+      (the four preset predicates from
+      ``accessible_surfaceome.release.catalog_presets``)
+    - induction_disease, induction_stress, induction_immune (the
+      ``induction_trigger`` sub-axes — only meaningful when
+      ``in_induced=1``; emitted standalone so a reanalyst can re-bucket)
+    - induction_trigger (raw value)
+    - surface_call_reason, state_dependence, evidence_grade,
+      surface_specificity, ecd_accessibility_class, confidence — the
+      input fields the predicates read, included for auditability so a
+      reader can re-derive any preset locally without re-fetching the
+      full annotation_json
+
+    Reads ``/v1/genes`` (which carries ``deep_dive_filters`` and other
+    catalog metadata per deep-dive gene) and applies the predicates
+    in pure Python. Drift between this file and the viewer's
+    ``lib/catalog-presets.ts`` is caught by
+    ``tests/test_catalog_presets_mirror.py``.
+    """
+    print("→ Building deep-dive preset membership TSV")
+    print(f"  fetching {API_BASE}/genes …")
+    r = httpx.get(f"{API_BASE}/genes", timeout=60.0)
+    r.raise_for_status()
+    payload = r.json()
+    # The catalog endpoint returns rich per-gene metadata including the
+    # ``filters`` block needed by the predicates. Endpoint shape:
+    # {"entries": [{"gene_symbol": ..., "deep_dive_filters": {...}, ...}]}
+    entries = payload.get("entries") or payload.get("genes") or []
+    if not entries:
+        raise SystemExit("/v1/genes returned no entries — endpoint shape "
+                         "changed; cannot build preset membership")
+
+    # Fields surfaced for auditability — same ones the predicates read.
+    AUDIT_FIELDS = (
+        "induction_trigger",
+        "surface_call_reason",
+        "state_dependence",
+        "evidence_grade",
+        "surface_specificity",
+        "ecd_accessibility_class",
+        "confidence",
+        "evidence_density",
+        "surface_accessibility",
+    )
+
+    header = [
+        "gene_symbol",
+        "uniprot_acc",
+        "hgnc_id",
+        "schema_version",
+        # Preset columns (1/0). Names mirror catalog-presets.ts keys.
+        *[f"in_{key}" for key, _label, _pred in PRESETS],
+        # Induction sub-axes — emit alongside preset columns so a
+        # reanalyst doesn't have to walk the predicate registry to
+        # re-bucket. Each is 1/0 against `induction_trigger` alone.
+        *[f"induction_{key}" for key, _label, _pred in INDUCTION_SUBS],
+        # Raw input fields the predicates read.
+        *AUDIT_FIELDS,
+    ]
+
+    out_rows: list[list[str]] = []
+    n_with_filters = 0
+    for entry in entries:
+        sym = entry.get("gene_symbol")
+        if not sym:
+            continue
+        ddf = entry.get("deep_dive_filters")
+        if not ddf:
+            # No deep-dive record (the bulk of the genome). The
+            # deposit only carries genes with a deep-dive — skip.
+            continue
+        n_with_filters += 1
+        preset_flags = ["1" if pred(ddf) else "0" for _key, _label, pred in PRESETS]
+        induction_flags = [
+            "1" if pred(ddf) else "0" for _key, _label, pred in INDUCTION_SUBS
+        ]
+        audit_values = [str(ddf.get(field) or "") for field in AUDIT_FIELDS]
+        out_rows.append([
+            sym,
+            str(entry.get("uniprot_acc") or ""),
+            str(entry.get("hgnc_id") or ""),
+            str(entry.get("schema_version") or ""),
+            *preset_flags,
+            *induction_flags,
+            *audit_values,
+        ])
+    out_rows.sort(key=lambda r: r[0])
+
+    out_path = OUT_DIR / "deep-dive-preset-membership.tsv"
+    with out_path.open("w", newline="") as fh:
+        w = csv.writer(fh, delimiter="\t", lineterminator="\n")
+        w.writerow(header)
+        w.writerows(out_rows)
+    print(f"  wrote {out_path.name}: {len(out_rows):,} rows, "
+          f"{len(header)} cols ({out_path.stat().st_size / 1024:.1f} KB) — "
+          f"{n_with_filters} of {len(entries)} entries had deep_dive_filters")
+    # Print per-preset counts for eyeball sanity.
+    for i, (key, _label, _pred) in enumerate(PRESETS):
+        col = 4 + i  # gene_symbol, uniprot, hgnc, schema, then preset flags
+        n = sum(1 for r in out_rows if r[col] == "1")
+        print(f"    {key:24s} {n}/{len(out_rows)}")
+    return out_path
+
+
 def main() -> int:
     OUT_DIR.mkdir(parents=True, exist_ok=True)
     genome_path = build_genome_consolidated()
     bench_path = build_bench_multirep()
+    presets_path = build_deep_dive_presets()
 
     # Sanity checks.
     print("\n→ Sanity-checking KLK2 in both files")
@@ -182,6 +298,11 @@ def main() -> int:
     for (m, v), verdicts in sorted(by_cell.items()):
         short_m = m.replace("claude-", "").replace("-4-", "4")
         print(f"    {short_m:10s}/{v:12s}  {'/'.join(verdicts)}")
+
+    # Reference presets_path so static-analysis doesn't flag it unused.
+    # The file is the deposit artifact; the variable just keeps the
+    # build's contract explicit in the main() return-flow.
+    assert presets_path.exists(), f"presets file vanished: {presets_path}"
 
     print(f"\n  Output: {OUT_DIR}/")
     return 0

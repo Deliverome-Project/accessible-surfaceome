@@ -20,7 +20,7 @@ Sonnet is the reference and does not appear as a bar — it would be 100%
 by construction.
 
 # Reproduction:
-#   Public gist (reader-side standalone, PEP 723 deps):
+#   Public gist (reader-side standalone, PyPA inline-script-metadata deps):
 #   https://gist.github.com/beccajcarlson/1265c867a3bbb08efd81262789e1f013
 #   Reader-side mirror script:
 #   data/analysis/figures/make_db_vs_sonnet_whole_proteome.py.

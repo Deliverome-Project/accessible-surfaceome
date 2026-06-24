@@ -345,3 +345,79 @@
   line-height: 1.55;
   color: var(--muted);
 }
+
+/* === Catalog presets section =======================================
+ * Renders below Endpoints. Cards mirror the Endpoints visual rhythm
+ * but with prose+pseudocode rather than method+path. The pseudocode
+ * pre uses the same monospace + ink as endpoint curl examples so a
+ * reader scanning the page reads "rule definition" the same way they
+ * read a curl. */
+.presets {
+  margin-top: 2.5rem;
+}
+.presetsLede {
+  color: var(--ink-soft);
+  margin-top: 0.4rem;
+  margin-bottom: 1rem;
+  font-size: 0.92rem;
+  line-height: 1.55;
+}
+.presetList {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  margin: 0;
+}
+.presetCard {
+  border: 1px solid var(--line-soft);
+  border-radius: var(--radius-md);
+  padding: 0.85rem 1rem;
+  background: var(--bg);
+}
+.presetLabel {
+  font-family: var(--font-display);
+  font-weight: var(--fw-semibold);
+  font-size: 1.02rem;
+  color: var(--ink);
+  margin: 0 0 0.4rem;
+}
+.presetBody {
+  margin: 0;
+}
+.presetDesc {
+  color: var(--ink-soft);
+  font-size: 0.88rem;
+  line-height: 1.55;
+  margin: 0 0 0.5rem;
+}
+.presetCode {
+  background: var(--surface-soft, rgba(0, 0, 0, 0.03));
+  border: 1px solid var(--line-soft);
+  border-radius: var(--radius-sm);
+  padding: 0.6rem 0.75rem;
+  font-family: var(--font-mono);
+  font-size: 0.78rem;
+  color: var(--ink);
+  line-height: 1.45;
+  overflow-x: auto;
+  margin: 0;
+}
+
+.presetSubSection {
+  border-top: 1px dashed var(--line-soft);
+  padding-top: 0.85rem;
+  margin-top: 0.35rem;
+}
+.presetSubHead {
+  color: var(--muted);
+  font-size: 0.78rem;
+  letter-spacing: 0.03em;
+  margin: 0 0 0.6rem;
+}
+.presetCardSmall {
+  padding: 0.5rem 0 0.75rem;
+  border-bottom: 1px solid var(--line-soft);
+}
+.presetCardSmall:last-child {
+  border-bottom: none;
+}

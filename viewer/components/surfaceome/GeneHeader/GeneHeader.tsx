@@ -4,6 +4,7 @@ import type {
   AccessibilityModulationObservation,
   BenchmarkRow,
   SurfaceomeRecord,
+  TriageSignal,
 } from "../../../lib/surfaceome-types";
 import type { SchwekeHomomerLoaderRow } from "../../../lib/structure-viewer";
 import type { StructureViewerData } from "../../../lib/structure-viewer-types";
@@ -98,7 +99,23 @@ interface GeneHeaderProps {
    *  reference point on the page). ``null`` for the ~19k non-benchmark
    *  genes, where the row is omitted. */
   benchmarkRow?: BenchmarkRow | null;
+  /** Most-positive triage call across all model × variant runs for
+   *  this gene (from /v1/triage/{symbol}, picked by the same
+   *  positivity ordering the catalog drawer uses). Falls back to the
+   *  record's bundled ``triage_signal`` when no headline could be
+   *  computed (offline builds, no triage runs in D1, fetch error).
+   *  Distinct from the bundled value because that one records the
+   *  specific triage call that *triggered* this deep-dive — a single
+   *  model × variant × point-in-time snapshot — and can lag behind a
+   *  later re-triage that flipped the verdict. */
+  triageHeadline?: TriageHeadline | null;
 }
+
+/** Re-export of the loader's TriageHeadlinePayload — see
+ *  ``viewer/lib/surfaceome.ts:loadTriageHeadline``. Carries the
+ *  picked headline (verdict + reason + reasoning + confidence +
+ *  provenance) plus the dissenting-variants secondary list. */
+export type TriageHeadline = import("../../../lib/surfaceome").TriageHeadlinePayload;
 
 function tierCounts(rec: SurfaceomeRecord) {
   let primary = 0;
@@ -379,6 +396,7 @@ export function GeneHeader({
   schwekeHomomer,
   catalogRow,
   benchmarkRow,
+  triageHeadline,
 }: GeneHeaderProps) {
   const g = rec.gene;
   const exec = rec.executive_summary;
@@ -544,8 +562,25 @@ export function GeneHeader({
               SRC: triage=Unlikely vs deep-dive=High — the eSrc
               cancer-specific surface that the initial triage missed). */}
           {(() => {
+            // Prefer the latest most-positive triage verdict across all
+            // model × variant runs (from /v1/triage/{symbol}) over the
+            // record's bundled `triage_signal` — the bundled value is
+            // the triage call that *triggered* this deep-dive (a single
+            // model × variant × point-in-time snapshot) and can lag
+            // behind a later re-triage that flipped the verdict.
+            // KLK2 is the smoking gun: bundled signal='unlikely' (the
+            // 2026-06-01 sonnet-ncbi call) but the latest+most-positive
+            // call (2026-06-23 sonnet-pubmed_ncbi) is 'contextual'.
+            const headlineSignal =
+              triageHeadline?.signal ?? rec.triage_signal;
+            const headlineReason =
+              triageHeadline?.reason ?? rec.triage_reason ?? null;
+            const headlineReasoning =
+              triageHeadline?.reasoning ?? rec.triage_reasoning ?? "";
+            const headlineConfidence =
+              triageHeadline?.confidence ?? rec.triage_confidence ?? null;
             const verdict = triageVsDeepDive(
-              rec.triage_signal,
+              headlineSignal,
               exec.surface_accessibility,
               exec.surface_call_reason,
             );
@@ -556,7 +591,7 @@ export function GeneHeader({
                   <InfoTip wide>{tooltips.triage_signal}</InfoTip>
                 </span>
                 <span className={styles.triageValue}>
-                  {triageVerdictLabel(rec.triage_signal)}
+                  {triageVerdictLabel(headlineSignal)}
                 </span>
                 <span className={styles.triageQualifier}>
                   <ChipLabelValue label="initial pass" value="no web search" />
@@ -577,17 +612,39 @@ export function GeneHeader({
                  *  confidence reasoning below — this is the first-pass,
                  *  no-web-search rationale. */}
                 <ReasoningDrawer
-                  eyebrow={`Triage · ${triageVerdictLabel(rec.triage_signal)}`}
+                  eyebrow={`Triage · ${triageVerdictLabel(headlineSignal)}`}
                   title="Why this triage call?"
                   ariaLabel="Why the initial triage pass called it this way"
                   triggerClassName={styles.triageReasoningTrigger}
-                  reasoning={rec.triage_reasoning ?? ""}
-                  reasonCode={rec.triage_reason ?? null}
-                  meta={
-                    rec.triage_confidence
-                      ? [{ label: "Confidence", value: rec.triage_confidence }]
-                      : undefined
-                  }
+                  reasoning={headlineReasoning}
+                  reasonCode={headlineReason}
+                  meta={(() => {
+                    // Same provenance the catalog drawer shows inline
+                    // (Variant + Date), plus Confidence — pass through
+                    // the existing meta slot so the deep-dive's triage
+                    // drawer carries the same info at a glance.
+                    const out: Array<{ label: string; value: string }> = [];
+                    if (triageHeadline?.promptVariant) {
+                      out.push({
+                        label: "Variant",
+                        value: triageHeadline.promptVariant.replace(/_/g, " "),
+                      });
+                    }
+                    if (triageHeadline?.createdAt) {
+                      out.push({
+                        label: "Date",
+                        value: new Date(triageHeadline.createdAt).toLocaleDateString(
+                          "en-US",
+                          { year: "numeric", month: "short", day: "numeric" },
+                        ),
+                      });
+                    }
+                    if (headlineConfidence) {
+                      out.push({ label: "Confidence", value: headlineConfidence });
+                    }
+                    return out.length > 0 ? out : undefined;
+                  })()}
+                  secondary={triageHeadline?.secondary}
                 />
               </p>
             );

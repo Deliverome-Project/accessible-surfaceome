@@ -20,7 +20,7 @@ Outputs (PDF + PNG):
   data/analysis/triage_bench/{db_overlap_venn,db_overlap_upset}.{pdf,png}
 
 # Reproduction: https://gist.github.com/beccajcarlson/d655abfc9c7deeaff1cfbe584de96ffa
-#   db_overlap_venn — minimal PEP 723 standalone fetching the universe
+#   db_overlap_venn — minimal PyPA inline-script-metadata standalone fetching the universe
 #   TSV via raw.githubusercontent.com. Mirror lives at
 #   data/analysis/figures/make_db_overlap_venn.py (canonical
 #   source-of-truth; the gist is the readers' minimal-dep mirror).

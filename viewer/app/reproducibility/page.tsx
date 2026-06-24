@@ -113,19 +113,53 @@ export default function ReproducibilityPage() {
           <dl className={styles.handleCard}>
             <dt className={styles.handleLabel}>Concept DOI</dt>
             <dd className={styles.handleValue}>
+              <a
+                href="https://doi.org/10.5281/zenodo.20805384"
+                target="_blank"
+                rel="noopener noreferrer"
+                className={styles.extLink}
+              >
+                10.5281/zenodo.20805384
+              </a>{" "}
               <span className={styles.handlePending}>
-                to be assigned at publication
+                (reserved draft; populates at publication)
               </span>
             </dd>
             <dt className={styles.handleLabel}>Version DOI (v1)</dt>
             <dd className={styles.handleValue}>
               <span className={styles.handlePending}>
-                to be assigned at publication
+                minted from the concept DOI at publication
               </span>
             </dd>
             <dt className={styles.handleLabel}>License</dt>
             <dd className={styles.handleValue}>CC BY 4.0</dd>
           </dl>
+          <p className={styles.body}>
+            The reserved Zenodo concept DOI is wired into the figure
+            generator (<code>scripts/embed_figure_gist_metadata.py</code>)
+            so every figure PDF/PNG carries the dataset citation in its
+            metadata as soon as it&apos;s rendered. Currently in the
+            draft deposit:
+          </p>
+          <ul className={styles.list}>
+            <li>
+              <code>triage-runs-genome-with-reasoning.tsv</code> — every
+              triage agent call across the protein-coding genome
+              (verdict, reason, confidence, free-text reasoning).
+            </li>
+            <li>
+              <code>triage-benchmark-with-reasoning.tsv</code> — the
+              147-protein SurfaceBench with truth labels joined to every
+              per-model triage call.
+            </li>
+          </ul>
+          <p className={styles.body}>
+            Coming in subsequent draft updates ahead of publication:
+            per-gene deep-dive JSON + Markdown bundle, the consolidated
+            evidence ledger, and a pinned code-release version DOI that
+            resolves to the exact commit a given figure was rendered
+            against.
+          </p>
         </section>
 
         <section className={styles.section}>
@@ -153,7 +187,7 @@ export default function ReproducibilityPage() {
             Each gist is permanently archived via Software Heritage as
             a{" "}
             <a
-              href="https://www.softwareheritage.org/2020/07/09/intrinsic-vs-extrinsic-identifiers/"
+              href="https://www.softwareheritage.org/"
               target="_blank"
               rel="noopener noreferrer"
               className={styles.extLink}
@@ -166,12 +200,14 @@ export default function ReproducibilityPage() {
             GitHub outages, or repository renames.
           </p>
           <p className={styles.body}>
-            For convenience, every figure file also carries the live
-            gist URL in its metadata: PNG outputs embed the URL in the{" "}
-            <code>Source</code> tEXt chunk, PDF outputs embed it in
-            the <code>Subject</code> info field, so the link travels
-            with the file across downstream contexts. Read it with{" "}
-            <code>exiftool figure.png | grep Source</code>.
+            For convenience, every figure file also carries citation
+            handles in its metadata: PNG outputs embed the gist URL in
+            the <code>Source</code> tEXt chunk and the dataset Zenodo
+            DOI in <code>Subject</code>; PDF outputs use the analogous{" "}
+            <code>Subject</code> + <code>Keywords</code> fields. The
+            handles travel with the file across downstream contexts —
+            slide decks, blog posts, supplementary uploads. Read with{" "}
+            <code>exiftool figure.png</code>.
           </p>
         </section>
       </section>

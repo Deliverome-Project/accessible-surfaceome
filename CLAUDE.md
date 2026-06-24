@@ -362,13 +362,13 @@ Every plot in this repo uses `src/accessible_surfaceome/audit/_plotting_config.p
 A published figure has **two source files** by convention — and they drift if you only touch one:
 
 - **`scripts/<slug>.py`** — **canonical generator.** Uses the project's `_plotting_config` import (centralized styling), reads from in-repo TSVs or D1. This is what the gist's `01_<slug>.md` README cites as the canonical generator (per `figure_gists_canonical_in_scripts.md` memory).
-- **`data/analysis/figures/make_<slug>.py`** — **standalone gist mirror.** PEP 723 inline metadata, inline brand styling, reads from `raw.githubusercontent.com` URLs. Synced to the published gist via `gh gist edit`. Readers run this with `uv run make_<slug>.py`.
+- **`data/analysis/figures/make_<slug>.py`** — **standalone gist mirror.** PyPA inline script metadata, inline brand styling, reads from `raw.githubusercontent.com` URLs. Synced to the published gist via `gh gist edit`. Readers run this with `uv run make_<slug>.py`.
 
 **The drift trap.** Many figure-style commits (font caps, layout bumps, ylabel wrap, brand-style version bumps) historically touched only `data/analysis/figures/make_<slug>.py` because the author edited the gist + synced the mirror. The canonical `scripts/<slug>.py` then silently fell behind, so re-running it produced a figure with the OLD layout — exactly what happened to `zero_db_rescues_by_triage.py` (subpanel a/b labels + hspace bump landed only in the mirror) and `db_vs_sonnet_whole_proteome.py` (figsize 17→22, fontsize 8/11→14/20, ylabel wrap, `tight_layout()` missing).
 
 **The rule when you edit either side**:
 
-1. Edit the layout / fontsize / annotation in **both files** in the same commit. Yes, this is duplicate work — the gist mirror needs inline styling to stay PEP-723 standalone, so a shared module isn't a clean fix.
+1. Edit the layout / fontsize / annotation in **both files** in the same commit. Yes, this is duplicate work — the gist mirror needs inline styling to stay PyPA-inline-metadata standalone, so a shared module isn't a clean fix.
 2. Regenerate the figure (`uv run python scripts/<slug>.py` — always run the canonical, since the rendered `.pdf`/`.png` outputs are committed and that's what readers + the Zenodo deposit see).
 3. Sync the gist with `gh gist edit <GIST_ID> data/analysis/figures/make_<slug>.py` only after both source files agree.
 
@@ -496,6 +496,8 @@ When a figure is **promoted** to `data/analysis/triage_bench_final/` (or any oth
 Each gist contains exactly two files:
 - `01_<figure_slug>.md` — one-paragraph context, run command, hyperlinks to the canonical data source and the canonical figure generator in the repo. The `01_` prefix forces this file to the top of the gist's alphabetical file list so it acts as a README.
 - `make_<figure_slug>.py` — standalone Python reproduction script. Uses [**PyPA inline script metadata**](https://packaging.python.org/en/latest/specifications/inline-script-metadata/) — `# /// script ... # ///` header to declare dependencies so readers run it with `uv run make_<figure_slug>.py` — no `pip install` step.
+
+**Co-location rule.** Both gist files (`01_<slug>.md` and `make_<slug>.py`) AND the rendered figure outputs (`<slug>.pdf`, `<slug>.png`) live in `data/analysis/figures/`. The canonical generator under `scripts/<slug>.py` must save its outputs there too — NOT to a per-analysis subdir like `data/analysis/<some-area>/<slug>.pdf`. This is the single folder a reader points to when they want the figure, the script that made it, and the gist's reader-side mirror. Drift between "gist mirror in figures/" and "rendered output in audit-subdir" has happened (`topology_coverage_by_source` originally rendered into `data/analysis/db_vs_sonnet_inclusion/` before being relocated) — enforced by [tests/test_published_figures_have_outputs.py](tests/test_published_figures_have_outputs.py), which fails CI if any `make_<slug>.py` is missing its sibling `<slug>.pdf`, `<slug>.png`, or `01_<slug>.md`.
 
 **Data fetching** — script reads from whichever source is canonical:
 - **D1 (preferred when the canonical source is D1)** — script queries the public read-only D1 endpoint via HTTP. Used for figures driven by `triage_run`, `deep_dive_run`, `resolver_context_version`, etc.

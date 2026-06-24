@@ -146,7 +146,12 @@
  * to match PR24. */
 .brandLocal {
   display: inline-flex;
-  align-items: baseline;
+  /* `flex-end` (was `baseline`) so the v1.0 pill sits at the bottom
+   * of the wordmark line — its lower edge aligns with the base of the
+   * "Surfaceome" letters rather than floating mid-cap-height. The
+   * version mark reads as metadata clipped onto the bottom of the
+   * word, not as inline text following it. */
+  align-items: flex-end;
   text-decoration: none;
   font-family: var(--font-display);
   font-weight: var(--fw-semibold);

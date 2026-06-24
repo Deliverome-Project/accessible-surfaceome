@@ -221,3 +221,88 @@
 .drawerDeepDiveLink:focus-visible {
   border-bottom-color: var(--accent);
 }
+
+/* "Other triage variants disagree" block. Renders below the headline
+ * verdict + prose so the reader sees the positive call first and
+ * scrolls down for the dissenting variants. The dissenting runs
+ * are de-emphasized (smaller, muted) so they read as context, not
+ * as a competing headline. */
+.drawerSecondary {
+  margin: var(--space-3) 0 0;
+  padding-top: var(--space-2);
+  border-top: 1px dashed var(--rule-soft, rgba(0,0,0,0.12));
+}
+
+.drawerSecondaryLabel {
+  color: var(--muted);
+  font-size: 0.72rem;
+  letter-spacing: 0.06em;
+  margin: 0 0 var(--space-1);
+}
+
+.drawerSecondaryList {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+}
+
+.drawerSecondaryItem {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  align-items: baseline;
+  font-size: 0.85rem;
+  color: var(--ink-soft, var(--ink));
+}
+
+.drawerSecondaryVerdict {
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  text-transform: lowercase;
+  padding: 0.05rem 0.35rem;
+  border-radius: 3px;
+  letter-spacing: 0.02em;
+}
+
+.drawerSecondaryVariant {
+  font-family: var(--font-mono);
+  font-size: 0.74rem;
+  color: var(--muted);
+}
+
+.drawerSecondaryReason {
+  color: var(--ink-soft, var(--ink));
+}
+
+/* Headline variant + date strip — sits inline next to the headline
+ * verdict pill so the reader can see WHICH triage variant + WHEN
+ * gave the most-positive call (the catalog headline can otherwise
+ * look like a single canonical verdict when it's actually one of
+ * several variants). */
+.drawerHeadlineProv {
+  display: inline-flex;
+  gap: 0.35rem;
+  align-items: baseline;
+  margin-left: 0.5rem;
+  font-size: 0.78rem;
+  color: var(--muted);
+  letter-spacing: 0.02em;
+}
+
+.drawerHeadlineDate {
+  color: var(--muted);
+  font-family: var(--font-mono);
+  font-size: 0.74rem;
+}
+
+/* Date column for secondary disagreement rows — matches the eyeline
+ * of the headline date so the reader can scan vertically and spot
+ * stale runs (e.g. ncbi:2026-06-01 vs pubmed_ncbi:2026-06-23). */
+.drawerSecondaryDate {
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  color: var(--muted);
+}

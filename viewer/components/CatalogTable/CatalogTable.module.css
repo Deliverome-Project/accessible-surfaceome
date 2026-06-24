@@ -397,6 +397,17 @@
  * (i) glyph. */
 .groupHeaderRow {
   display: inline-flex;
+  /* Center-aligned: the (i) glyph circle and the uppercase mono
+   * label have their geometric midlines coincide. Combined with
+   * the explicit `line-height: 1` on .groupHeader below so the
+   * line-box matches the visible glyph height — without that, the
+   * inherited line-height (~1.5) made the label's box much taller
+   * than the (i) trigger's box, and centering aligned the boxes
+   * (correct vertically) but the visible text within the taller
+   * box sat lower than the trigger's visible glyph (wrong-
+   * looking). Tried `baseline` first — that landed the trigger's
+   * circle BELOW the label because the circle extends past the
+   * (i) glyph's baseline. center + line-height: 1 is the fix. */
   align-items: center;
   gap: 0.4rem;
   align-self: flex-start;
@@ -412,6 +423,9 @@
   font-weight: var(--fw-medium);
   letter-spacing: 0.05em;
   text-transform: uppercase;
+  /* Line-box = font-size so the visible label center matches the
+   * sibling InfoTip trigger's center. See .groupHeaderRow rule. */
+  line-height: 1;
   color: var(--ink);
   background: none;
   border: 0;
@@ -1217,4 +1231,133 @@
 .ddToneNeutral {
   background: var(--bg-warm);
   color: var(--muted);
+}
+
+/* === Catalog preset bar ============================================
+ * Sits ABOVE the existing toolbar so the preset feels structural,
+ * not a quick filter. Uses a slightly different chip color (maroon-
+ * tinted on, vs. teal on the quick-filter chips) so the reader's
+ * eye distinguishes "preset" from "facet". */
+.presetBar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.5rem 0.75rem 0.6rem;
+  border-bottom: 1px solid var(--line-soft);
+  margin-bottom: 0.25rem;
+}
+
+.presetChip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.3rem 0.65rem;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--line);
+  background: var(--bg);
+  color: var(--ink-soft);
+  font-family: var(--font-sans);
+  font-size: 0.84rem;
+  font-weight: var(--fw-medium);
+  cursor: pointer;
+  transition: background 0.12s ease, border-color 0.12s ease, color 0.12s ease;
+}
+.presetChip:hover {
+  background: var(--surface-soft);
+  border-color: var(--line);
+  color: var(--ink);
+}
+.presetChipOn {
+  background: var(--accent-soft, #f5e6e8);
+  border-color: var(--accent, #BC3C4C);
+  color: var(--accent, #BC3C4C);
+}
+.presetChipOn:hover {
+  background: var(--accent-soft, #f5e6e8);
+  color: var(--accent, #BC3C4C);
+}
+
+.presetCount {
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  padding: 0.05rem 0.35rem;
+  border-radius: var(--radius-sm);
+  background: var(--surface-soft, rgba(0, 0, 0, 0.04));
+  color: var(--muted);
+}
+.presetChipOn .presetCount {
+  background: rgba(188, 60, 76, 0.12);
+  color: var(--accent, #BC3C4C);
+}
+
+/* Sub-axis chip row for induction trigger — sits inline after the
+ * parent presets, separated by a small vertical divider. */
+.presetSubBar {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  margin-left: 0.4rem;
+  padding-left: 0.6rem;
+  border-left: 1px solid var(--line-soft);
+}
+.presetSubLabel {
+  color: var(--muted);
+  font-size: 0.75rem;
+  letter-spacing: 0.04em;
+}
+.presetSubChip {
+  font-size: 0.78rem;
+  padding: 0.22rem 0.55rem;
+}
+
+/* === Preset bar (v2 additions) ====================================
+ * Wraps each chip + its InfoTip so the (i) glyph sits adjacent
+ * without breaking the flex row. */
+.presetChipWrap {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.2rem;
+}
+
+.presetLabelGroup {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 0.3rem;
+  margin-right: 0.4rem;
+}
+.presetBarLabel {
+  color: var(--muted);
+  font-size: 0.75rem;
+  letter-spacing: 0.04em;
+}
+
+/* "Preset-implied" filter chip — the chip's VALUE is already in
+ * the active preset's predicate (e.g. when Canonical is on,
+ * `evidence_grade=direct_multi_method` is implied). Shows the chip
+ * with a soft maroon outline + tinted background so the reader can
+ * see what the preset is doing without having to read the API page.
+ * Distinct from `.filterChipOn` (the user-selected state, solid
+ * fill) so a chip that's BOTH user-selected AND preset-implied
+ * still reads as user-selected — the brighter state wins. */
+.filterChipPresetImplied {
+  border-color: rgba(188, 60, 76, 0.5);
+  background: rgba(188, 60, 76, 0.08);
+  color: var(--accent, #BC3C4C);
+}
+.filterChipPresetImplied:hover {
+  background: rgba(188, 60, 76, 0.14);
+}
+
+/* Inline link inside a wide InfoTip body — reads as "see more" not as
+ * a chip / button. Sits next to surrounding prose; underline-on-hover
+ * follows the same affordance as other in-prose links. */
+.tooltipLink {
+  color: var(--accent);
+  text-decoration: underline;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 0.15em;
+}
+.tooltipLink:hover {
+  text-decoration-thickness: 2px;
 }

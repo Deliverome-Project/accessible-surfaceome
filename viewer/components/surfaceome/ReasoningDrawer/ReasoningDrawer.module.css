@@ -208,3 +208,85 @@
   margin: 0 0 var(--space-2);
   color: var(--muted);
 }
+
+/* ============================================================
+ * Secondary "Other triage variants disagree" block — mirrors the
+ * same block in CatalogRationaleDrawer.module.css so the two
+ * surfaces look identical. Used by the gene-page Triage drawer.
+ * ============================================================ */
+.drawerSecondary {
+  margin: var(--space-3) 0 0;
+  padding-top: var(--space-2);
+  border-top: 1px dashed var(--rule-soft, rgba(0, 0, 0, 0.12));
+}
+
+.drawerSecondaryLabel {
+  color: var(--muted);
+  font-size: 0.72rem;
+  letter-spacing: 0.06em;
+  margin: 0 0 var(--space-1);
+}
+
+.drawerSecondaryList {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+}
+
+.drawerSecondaryItem {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  align-items: baseline;
+  font-size: 0.85rem;
+  color: var(--ink-soft, var(--ink));
+}
+
+.drawerSecondaryVerdict {
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  text-transform: lowercase;
+  padding: 0.05rem 0.35rem;
+  border-radius: 3px;
+  letter-spacing: 0.02em;
+}
+
+.drawerSecondaryVariant {
+  font-family: var(--font-mono);
+  font-size: 0.74rem;
+  color: var(--muted);
+}
+
+.drawerSecondaryDate {
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  color: var(--muted);
+}
+
+.drawerSecondaryReason {
+  color: var(--ink-soft, var(--ink));
+}
+
+/* Verdict tone classes — mirror the same names CatalogRationaleDrawer
+ * uses so the chip color reads the same on both surfaces. Pulls from
+ * shared design tokens; falls back to the maroon / teal / amber /
+ * neutral surfaces if a token isn't defined. */
+.verdictYes {
+  background: var(--tone-success-soft, #cfe5dc);
+  color: var(--tone-success-strong, #244840);
+}
+.verdictNo {
+  background: var(--tone-danger-soft, #f0c8c8);
+  color: var(--tone-danger-strong, #6e1428);
+}
+.verdictContextual {
+  background: var(--tone-amber-soft, #fae0b8);
+  color: var(--tone-amber-strong, #6a3a08);
+}
+.verdictUnknown {
+  background: var(--bg-soft, #ececec);
+  color: var(--muted, #555);
+}

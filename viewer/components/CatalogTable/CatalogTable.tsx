@@ -20,6 +20,14 @@ import {
 } from "../../lib/deep-dive-fields";
 import { buildTsv, downloadTextFile, type TsvCell } from "../../lib/tsv";
 import { isQueuedDeepDive } from "../../lib/queued-deep-dives";
+import {
+  PRESETS,
+  INDUCTION_SUBS,
+  PRESET_IMPLIED_FILTERS,
+  DEEP_DIVE_ONLY_NOTE,
+  type PresetKey,
+  type InductionSubKey,
+} from "../../lib/catalog-presets";
 import { InfoTip } from "../InfoTip/InfoTip";
 import { tooltips } from "../../lib/tooltips";
 import {
@@ -197,6 +205,29 @@ function reasonGroupLabelToneClass(v: VerdictKey): string {
 // catalog filter panel and the /compare tool share one source of truth.
 type DdBoolFilter = "any" | "yes" | "no";
 
+/** Map the multi-select Induced sub-axes to the concrete
+ *  `induction_trigger` enum values they each represent. Lets the
+ *  More-filters `induction_trigger` chip row light up dynamically
+ *  when the user picks Cancer / Disease / Stress / Immune in the
+ *  preset toolbar — single source of truth so the chip highlights
+ *  and the row-pass predicate stay aligned. Cancer = oncogenic,
+ *  Disease = {cell_death, infection} (non-oncogenic only — Cancer
+ *  is split off), Stress = stress_hypoxia, Immune = immune. */
+function resolveImpliedTriggerSet(
+  subs: ReadonlySet<InductionSubKey>,
+): Set<string> {
+  const out = new Set<string>();
+  for (const s of subs) {
+    if (s === "cancer") out.add("oncogenic");
+    else if (s === "disease") {
+      out.add("cell_death");
+      out.add("infection");
+    } else if (s === "stress") out.add("stress_hypoxia");
+    else if (s === "immune") out.add("immune");
+  }
+  return out;
+}
+
 function verdictTone(v: string | null | undefined): string {
   if (v === "yes") return styles.verdictYes;
   if (v === "no") return styles.verdictNo;
@@ -323,6 +354,41 @@ export function CatalogTable({
   const [ddLlmOpen, setDdLlmOpen] = useState(true);
   const [ddRisksOpen, setDdRisksOpen] = useState(true);
   const [ddDetOpen, setDdDetOpen] = useState(true);
+  // Saved-preset selector. "all" = filter off; any other key narrows to
+  // deep-dive rows whose `deep_dive_filters` payload passes the
+  // preset's predicate (see lib/catalog-presets.ts). Non-deep-dive
+  // rows are auto-excluded when a non-"all" preset is active because
+  // they have no `deep_dive_filters` to evaluate.
+  const [presetKey, setPresetKey] = useState<PresetKey>("all");
+  // When Induced is active, optional sub-axis filter on
+  // `induction_trigger`. MULTI-select (a single gene's trigger is
+  // one value, but a reader scanning "what's induced by Cancer OR
+  // Immune signaling" wants the OR-union; a single-select buries
+  // that). Empty set = no sub-filter, all induced rows pass.
+  const [inductionSubs, setInductionSubs] = useState<Set<InductionSubKey>>(
+    () => new Set(),
+  );
+
+  // When the user opens "More filters" with a curated preset active,
+  // auto-expand the Deep Dive section AND auto-collapse Risks +
+  // Deterministic so the chips the preset is implying (Surface call
+  // enums — evidence_grade, confidence, surface_specificity,
+  // state_dependence, surface_accessibility) are immediately visible.
+  // Without this the user has to expand Deep Dive manually before
+  // they can see which chips the preset pre-engaged. We only run
+  // on the showFilters-flip-to-true edge so we don't fight the
+  // user's manual subsection toggles afterward.
+  const prevShowFiltersRef = useRef(showFilters);
+  useEffect(() => {
+    const wasOpen = prevShowFiltersRef.current;
+    prevShowFiltersRef.current = showFilters;
+    if (!wasOpen && showFilters && presetKey !== "all") {
+      setDeepDiveGroupOpen(true);
+      setDdRisksOpen(false);
+      setDdDetOpen(false);
+    }
+  }, [showFilters, presetKey]);
+
   const [dbFilter, setDbFilter] = useState<Set<DbKey>>(new Set());
   const [verdictFilter, setVerdictFilter] = useState<Set<VerdictKey>>(
     new Set(),
@@ -461,6 +527,26 @@ export function CatalogTable({
   // above; called via `.map(renderDdEnumRow)` / `.map(renderDdBoolRow)`.
   function renderDdEnumRow(field: DdEnumSpec) {
     const sel = ddEnumFilters[field.key];
+    // Implied set: values the ACTIVE preset's predicate accepts on
+    // this field. A chip in this set wears a soft "preset" tone so
+    // the reader sees what the preset is already filtering for,
+    // and knows checking a non-implied chip would AND-narrow further.
+    // PRESET_IMPLIED_FILTERS is the static source of truth; the
+    // induction_trigger field gets dynamic augmentation when the
+    // user has selected one or more Induced sub-axes (Cancer /
+    // Disease / Stress / Immune) — those map directly onto trigger
+    // values, so the chip row should light up to reflect the
+    // narrowing. resolveImpliedTriggerSet returns the union of the
+    // selected sub-axes' trigger values; otherwise we fall back to
+    // the static preset map.
+    const staticImplied =
+      PRESET_IMPLIED_FILTERS[presetKey][field.key] ?? null;
+    const implied =
+      field.key === "induction_trigger" &&
+      presetKey === "induced" &&
+      inductionSubs.size > 0
+        ? resolveImpliedTriggerSet(inductionSubs)
+        : staticImplied;
     return (
       <div key={`dd-enum-${field.key}`} className={styles.filterRowDd}>
         <span className={styles.filterLabelWithTip}>
@@ -472,17 +558,26 @@ export function CatalogTable({
         <div className={styles.filterChips}>
           {field.values.map((v) => {
             const on = sel.has(v);
+            const isImplied = implied?.has(v) ?? false;
             // Prefer the field's explicit display label (caps acronyms
             // like GPI / GPCR / pMHC that prettyEnum would mangle).
             const label = field.valueLabels?.[v] ?? prettyEnum(v);
+            const titleHint = on
+              ? `Require ${field.label} = ${label}`
+              : isImplied
+              ? `${field.label} = ${label} — already in the active "${PRESETS.find((p) => p.key === presetKey)?.label}" preset; click to narrow further by user choice`
+              : `Require ${field.label} = ${label}`;
             return (
               <button
                 key={`dd-${field.key}-${v}`}
                 type="button"
-                className={`${styles.filterChip} ${on ? styles.filterChipOn : ""}`}
+                className={`${styles.filterChip} ${
+                  on ? styles.filterChipOn : ""
+                } ${isImplied && !on ? styles.filterChipPresetImplied : ""}`}
                 onClick={() => toggleDdEnumFilter(field.key, v)}
                 aria-pressed={on}
-                title={`Require ${field.label} = ${label}`}
+                data-preset-implied={isImplied ? "true" : undefined}
+                title={titleHint}
               >
                 {label}
               </button>
@@ -643,6 +738,32 @@ export function CatalogTable({
     return () => window.removeEventListener("keydown", onKey);
   }, [selectedSymbol]);
 
+  // Click-outside-to-close. The drawer is non-modal (no backdrop
+  // overlay — keeps the catalog table scannable beside it), so a
+  // global mousedown listener handles outside clicks. The dependency
+  // chain (selectedSymbol → drawerRef.current) skips installation
+  // when the drawer is closed.
+  const drawerRef = useRef<HTMLElement | null>(null);
+  useEffect(() => {
+    if (!selectedSymbol) return;
+    const onDocMouseDown = (e: MouseEvent) => {
+      const target = e.target as Node | null;
+      if (!target) return;
+      if (drawerRef.current && drawerRef.current.contains(target)) return;
+      // Clicking another catalog row should reselect (handled by the
+      // row's own click handler) rather than just close. The row's
+      // handler runs first because we attach mousedown at the document
+      // level; React's click runs after. To avoid closing-then-
+      // reopening, ignore clicks on elements inside the catalog table
+      // body — the row handler will toggle selection itself.
+      const tableEl = document.querySelector(`.${styles.tableScroll}`);
+      if (tableEl && tableEl.contains(target)) return;
+      setSelectedSymbol(null);
+    };
+    document.addEventListener("mousedown", onDocMouseDown);
+    return () => document.removeEventListener("mousedown", onDocMouseDown);
+  }, [selectedSymbol]);
+
   // `mounted` gates the virtualized body so the SSR pass renders an
   // empty body — the header, toolbar, and footnotes still hydrate
   // from server HTML for snappy first paint, and the rows appear on
@@ -706,6 +827,27 @@ export function CatalogTable({
             break;
         }
       }
+      // Preset filter — runs the chosen preset's predicate against
+      // the row's `deep_dive_filters`. Rows without a deep-dive
+      // payload auto-drop because no preset evaluates true on null.
+      // Same contract as the deep-dive filter group below — the
+      // payload is only emitted by the Worker for deep-dive rows.
+      if (presetKey !== "all") {
+        const ddf = r.deep_dive_filters;
+        if (!ddf) return false;
+        const preset = PRESETS.find((p) => p.key === presetKey);
+        if (preset && !preset.predicate(ddf)) return false;
+        // Induction sub-axis only applies when "induced" preset is
+        // active (the sub buckets read `induction_trigger`). Multi-
+        // select with OR semantics: a row passes if ANY selected
+        // sub-axis matches. Empty set = no sub-filter.
+        if (presetKey === "induced" && inductionSubs.size > 0) {
+          const matchAny = INDUCTION_SUBS.some(
+            (s) => inductionSubs.has(s.key) && s.predicate(ddf),
+          );
+          if (!matchAny) return false;
+        }
+      }
       // Deep-dive filter group. Any active filter here implies
       // deep_dive=true — rows without a deep_dive_filters payload
       // drop out entirely, because we can't evaluate the predicate.
@@ -743,6 +885,8 @@ export function CatalogTable({
     ddActive,
     ddEnumFilters,
     ddBoolFilters,
+    presetKey,
+    inductionSubs,
   ]);
 
   const sorted = useMemo(() => {
@@ -810,6 +954,16 @@ export function CatalogTable({
     getScrollElement: () => scrollRef.current,
     estimateSize: () => ROW_ESTIMATE_PX,
     overscan: ROW_OVERSCAN,
+    // Without a stable key the virtualizer caches measured heights by
+    // INDEX. When the search query narrows or the sort flips, indices
+    // shift and a previously-measured tall row (e.g. multi-line gene
+    // name) at index N is reused for whatever row now lives at N,
+    // leaving the next row's translateY mis-positioned and bleeding
+    // into it visually. Keying by gene symbol ties each measurement
+    // to the actual row identity, so re-sorts / filters re-use the
+    // right cached height. Symptom that surfaced this: searching
+    // "KLK2" caused the KLK2 row to partially overlap the one below.
+    getItemKey: (index) => sorted[index]?.symbol ?? index,
   });
 
   const virtualItems = virtualizer.getVirtualItems();
@@ -833,6 +987,132 @@ export function CatalogTable({
 
   return (
     <div className={styles.wrap} style={gridStyle}>
+      {/* Saved-preset selector row. Sits above the search +
+       *  quick-filters because the preset is the coarsest filter on
+       *  the page — picking one narrows the table to a curated
+       *  shortlist (Canonical / Likely / Cell-state induced / Cell-
+       *  type restricted) before any of the existing facet chips
+       *  apply. Counts are computed over the FULL row set (pre-
+       *  filter) so the badges read as "preset population", not
+       *  "preset ∩ current other filters" — the reader can see how
+       *  many rows the preset would yield before they narrow with
+       *  search / DB chips.
+       *
+       *  Non-"all" presets evaluate against `r.deep_dive_filters`,
+       *  so the 19k non-deep-dive rows always exclude themselves.
+       *  This makes Canonical = "3" not "19,000 + 3"; the
+       *  badge tells the reader what's actually clickable. */}
+      <div className={styles.presetBar} role="tablist" aria-label="Catalog presets">
+        <div className={styles.presetLabelGroup}>
+          <span className={`label-mono ${styles.presetBarLabel}`}>
+            Curated lists
+          </span>
+          <InfoTip label="About catalog preset lists" wide>
+            <p>
+              <strong>Curated shortlists</strong> over the deep-dive
+              cohort. Canonical is the strictest tier, Likely is
+              broader, Cell-state induced and Cell-type restricted are
+              sub-buckets of Likely.
+            </p>
+            <p>
+              <em>{DEEP_DIVE_ONLY_NOTE}</em> The count badge on each
+              chip is the population that survives the predicate
+              alone — refine further with the existing search and
+              facet chips below.
+            </p>
+            <p>
+              See the{" "}
+              <a href="/api#presets" className={styles.tooltipLink}>
+                full filter definitions on the API page →
+              </a>
+            </p>
+          </InfoTip>
+        </div>
+        {PRESETS.map((p) => {
+          const count = p.key === "all"
+            ? rows.length
+            : rows.reduce(
+                (n, r) => (r.deep_dive_filters && p.predicate(r.deep_dive_filters) ? n + 1 : n),
+                0,
+              );
+          const on = presetKey === p.key;
+          return (
+            <span key={p.key} className={styles.presetChipWrap}>
+              <button
+                type="button"
+                role="tab"
+                aria-selected={on}
+                className={`${styles.presetChip} ${on ? styles.presetChipOn : ""}`}
+                onClick={() => {
+                  setPresetKey(p.key);
+                  // Reset the induction sub-axis whenever the parent
+                  // preset changes — otherwise stale sub-selections
+                  // would silently narrow the new preset.
+                  if (p.key !== "induced") setInductionSubs(new Set());
+                }}
+              >
+                {p.label}
+                <span className={styles.presetCount}>{count.toLocaleString()}</span>
+              </button>
+              {p.key !== "all" ? (
+                <InfoTip label={`About the ${p.label} preset`} wide>
+                  <p>{p.description}</p>
+                  <p>
+                    <em>{DEEP_DIVE_ONLY_NOTE}</em>
+                  </p>
+                </InfoTip>
+              ) : null}
+            </span>
+          );
+        })}
+        {/* Induction sub-chips — only meaningful when Induced is
+         *  active. Hidden otherwise to avoid visual clutter.
+         *  Multi-select: clicking a chip toggles it in/out of the
+         *  active set; a row passes if ANY active sub matches. */}
+        {presetKey === "induced" ? (
+          <div className={styles.presetSubBar}>
+            <span className={`label-mono ${styles.presetSubLabel}`}>
+              by trigger:
+            </span>
+            {INDUCTION_SUBS.map((s) => {
+              const count = rows.reduce(
+                (n, r) =>
+                  r.deep_dive_filters &&
+                  PRESETS.find((p) => p.key === "induced")!.predicate(r.deep_dive_filters) &&
+                  s.predicate(r.deep_dive_filters)
+                    ? n + 1
+                    : n,
+                0,
+              );
+              const on = inductionSubs.has(s.key);
+              return (
+                <span key={s.key} className={styles.presetChipWrap}>
+                  <button
+                    type="button"
+                    role="tab"
+                    aria-selected={on}
+                    aria-pressed={on}
+                    className={`${styles.presetChip} ${styles.presetSubChip} ${on ? styles.presetChipOn : ""}`}
+                    onClick={() => setInductionSubs((cur) => {
+                      const next = new Set(cur);
+                      if (next.has(s.key)) next.delete(s.key);
+                      else next.add(s.key);
+                      return next;
+                    })}
+                  >
+                    {s.label}
+                    <span className={styles.presetCount}>{count.toLocaleString()}</span>
+                  </button>
+                  <InfoTip label={`About the ${s.label} trigger sub-bucket`} wide>
+                    <p>{s.description}</p>
+                  </InfoTip>
+                </span>
+              );
+            })}
+          </div>
+        ) : null}
+      </div>
+
       <div className={styles.toolbar}>
         <div className={styles.search}>
           <label htmlFor="catalog-search" className="sr-only">
@@ -1358,6 +1638,10 @@ export function CatalogTable({
             <Link href="/api/#triage" className={styles.apiHintLink}>
               <code>GET /v1/triage/&#123;SYMBOL&#125;</code>
             </Link>
+            ; the full deep-dive SurfaceomeRecord is on{" "}
+            <Link href="/api/#genes" className={styles.apiHintLink}>
+              <code>GET /v1/genes/&#123;SYMBOL&#125;</code>
+            </Link>
             .
           </span>
         </p>
@@ -1533,6 +1817,7 @@ export function CatalogTable({
             : false
         }
         onClose={() => setSelectedSymbol(null)}
+        drawerRef={drawerRef}
       />
     </div>
   );

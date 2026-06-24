@@ -28,8 +28,9 @@ Outputs (PDF + PNG via the brand plotting config):
 * ``data/analysis/triage_bench/db_correctness_by_class.{pdf,png}``
 * ``data/analysis/triage_bench/db_correctness_overall.{pdf,png}``
 
-# Reproduction: per-figure standalone gists (secret; minimal PEP 723
-# scripts fetching canonical TSVs via raw.githubusercontent.com).
+# Reproduction: per-figure standalone gists (secret; minimal PyPA
+# inline-script-metadata scripts fetching canonical TSVs via
+# raw.githubusercontent.com).
 # Mirrors live in data/analysis/figures/make_*.py (canonical
 # source-of-truth; the gists are the readers' minimal-dep mirror).
 #
