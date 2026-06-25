@@ -516,6 +516,8 @@ Do not bundle a CSV in the gist unless the canonical source is unreachable (priv
 
 Record the gist URL in the canonical generator's module docstring under a `# Reproduction:` line so readers can find it from the source script. The on-repo plotting script remains the source of truth; the gist is the readers' minimal-dependency mirror.
 
+**Also register the gist in [data/analysis/figures/gist_map.json](data/analysis/figures/gist_map.json)** — the slug → gist-ID lookup that `scripts/embed_figure_gist_metadata.py` and similar tooling read. The mirror's `GIST_URL` constant is the on-figure surface; `gist_map.json` is the programmatic registry. These two **must** agree, and [tests/test_figure_gist_map_sync.py](tests/test_figure_gist_map_sync.py) enforces both directions of the contract — a `make_<slug>.py` with `GIST_URL` and no registry entry fails CI, and an orphan registry entry with no backing mirror fails CI. When you create a new gist, edit both surfaces in the same commit. `topology_coverage_by_source` is the cautionary tale: its mirror had the URL embedded for months while the registry sat at 9 entries.
+
 **Also embed the gist URL in the artifact itself** via `save_figure(..., gist_url=...)` (in `src/accessible_surfaceome/audit/_plotting_config.py`). The helper writes the URL into the PNG's `Source` tEXt chunk and the PDF's `Subject` info field, so the URL travels with the file when it gets dragged into a Substack draft, copied to Slack, or sent in email. Reading the metadata back:
 
 | Audience | How to read it |
