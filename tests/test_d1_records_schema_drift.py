@@ -182,42 +182,26 @@ def test_every_published_record_carries_renderer_required_fields() -> None:
 #
 # `viewer/scripts/build-markdown-exports.mjs` renders every committed
 # `viewer/public/data/surfaceome/{symbol}.json` snapshot to a matching
-# `.md` deliverable (the downloadable brief on each gene page). It hard-
-# gates on `schema_major == "1"` — every v2.x snapshot SILENTLY skips
-# with just a `! GPR75.json: schema_version=2.6.0, skipping` warning in
-# the build log. Net effect: GPR75's downloadable brief stalls at
-# whatever it was when the snapshot was still v1.x; v2.x-only archetypes
-# (TACSTD2, TGOLN2, CD81, SLC7A5) have no .md at all.
+# `.md` deliverable (the downloadable brief on each gene page). The
+# exporter handles schema v1.x and v2.x snapshots; committed JSON without
+# a matching non-empty `.md` is drift.
 #
-# This test makes that gap loud. Until the markdown exporter is updated
-# for v2.x (or the schema-skip is made a hard error in the build),
-# `KNOWN_NO_MARKDOWN_EXPORT` carries the symbols we accept as
-# temporarily broken. Shrink it as you close gaps.
+# This test makes both halves loud: every committed snapshot must render,
+# and every D1-published row should eventually have a committed snapshot.
+# `KNOWN_NO_MARKDOWN_EXPORT` carries only the D1 rows still missing from
+# the tree. Shrink it as those snapshots land.
 
 # Repo root is two levels up from tests/ — same heuristic as
 # scripts/check_viewer_types_sync.py.
 _REPO_ROOT = Path(__file__).resolve().parent.parent
 _VIEWER_DATA_DIR = _REPO_ROOT / "viewer" / "public" / "data" / "surfaceome"
 
-# Genes that we accept as currently lacking a non-empty .md export.
-# Two reasons a gene lands here:
-#   1) v2.x record whose schema the exporter doesn't yet handle (so even
-#      if we committed the JSON, the exporter would skip it).
-#   2) No in-tree snapshot exists yet for this D1-published gene, so the
-#      exporter never gets a chance to render it.
-#
-# Path to remediation (followup PR):
-#   1. Update build-markdown-exports.mjs to handle v2.x records
-#      (extend the schema_major == "1" gate to cover 2.x block builders'
-#      output shape).
-#   2. Snapshot every D1-published record to
-#      viewer/public/data/surfaceome/{symbol}.json (write a refresh
-#      script that reads from /v1/genes/{symbol}).
-#   3. Run `cd viewer && npm run build:exports` to regenerate the .md
-#      files.
-#   4. Commit the JSON+MD additions; shrink this allowlist accordingly.
+# Published genes that we temporarily accept as lacking both an in-tree
+# snapshot and markdown export. The markdown exporter handles schema v1.x
+# and v2.x records; remaining entries need snapshots from /v1/genes/{sym}
+# plus `cd viewer && npm run build:exports`.
 KNOWN_NO_MARKDOWN_EXPORT: frozenset[str] = frozenset({
-    # v2.x archetypes — no in-tree snapshot at all.
+    # D1-published records with no in-tree snapshot yet.
     "TACSTD2",
     "TGOLN2",
     "CD81",
@@ -225,23 +209,6 @@ KNOWN_NO_MARKDOWN_EXPORT: frozenset[str] = frozenset({
     "CLDN18",
     "HSPA5",
     "KIR2DL1",
-    # v2.9.0 records published from the cohort rerun on PR54 — JSON
-    # snapshots committed (this commit), but the markdown exporter at
-    # viewer/scripts/build-markdown-exports.mjs only handles schema
-    # ``v1.x`` and skips them. Move out of this allowlist once the
-    # exporter learns the v2.x block-builder output shape.
-    "ABCB9",
-    "C3",
-    "CD63",
-    "PVRIG",
-    # v2.13.0 Modal canary deep-dive records — JSON snapshots committed,
-    # but the markdown exporter still only handles schema ``v1.x``.
-    "GABBR2",
-    "RYK",
-    "TMDD1",
-    "TMED10",
-    "VOPP1",
-    "VSIG10L",
 })
 
 
