@@ -44,6 +44,11 @@ Always run the canary first. It exits without launching the full sweep
 so you can review the projected cost.
 
 ```bash
+# No-model smoke for the centralized Modal rate gate.
+uv run modal run modal/deep_dive_app.py::rate_limit_smoke \
+    --n 4 \
+    --interval-s 0.2
+
 # 50-gene canary, stratified by sonnet_verdict
 uv run modal run modal/deep_dive_app.py::canary \
     --gene-list data/processed/candidate_universe/candidate_universe.tsv \
@@ -74,15 +79,49 @@ uv run modal volume get surfaceome-annotations / data/annotations/
 Use `modal volume ls surfaceome-annotations` to inspect what's there
 without downloading.
 
+## Recovery from JSON
+
+If JSON landed on the Volume but the private D1 parent row did not, resume
+will not see that gene and a rerun can re-spend. Pull the Volume snapshot,
+then backfill missing private rows from JSON:
+
+```bash
+uv run modal volume get surfaceome-annotations / data/annotations/
+
+# Dry-run report.
+uv run python scripts/backfill_deep_dive_from_json.py \
+    --run-id candidate_universe_v1_sonnet_2026_05
+
+# Execute D1 inserts for missing parent rows.
+uv run python scripts/backfill_deep_dive_from_json.py \
+    --run-id candidate_universe_v1_sonnet_2026_05 \
+    --execute
+
+# Then verify existing parent rows have complete children.
+uv run python scripts/audit_deep_dive_orphans.py \
+    --run-id candidate_universe_v1_sonnet_2026_05
+```
+
+The JSON record does not carry original cost/latency. Backfilled rows use
+zero for `cost_usd`, `latency_s`, and `n_tool_calls` unless you pass
+`--metadata-tsv` with those fields. The private D1 row also records the
+current checkout's composite prompt SHA, so run this recovery before
+changing prompts, or from the same commit/image used for the sweep.
+
 ## Tuning
 
 - `cpu=0.5`, `memory=2048`, `timeout=20*60` — fine for most genes; the
   v2 pipeline is I/O-bound on UniProt/NCBI/Anthropic calls.
 - `@modal.concurrent(max_inputs=4)` — 4 genes per worker amortizes
   cold-start + uses the same vCPU during HTTP waits.
-- `max_containers=200` — caps fan-out so NCBI (10 req/s per key) and
-  Anthropic (tier-dependent RPM) don't get hammered. Raise once
-  observed-RPM headroom is confirmed.
+- `rate_limit_gate` — a single-container Modal function that all workers
+  call before live HTTP requests. It centralizes per-host/per-NCBI-key
+  courtesy limits across Modal fan-out; raw NCBI keys are hashed before
+  they leave the worker process. Run `rate_limit_smoke` after changing
+  Modal plumbing.
+- `max_containers=200` — caps Modal fan-out and Anthropic concurrency.
+  External API courtesy limits are enforced by `rate_limit_gate`, not by
+  per-container sleeps.
 - `--chunk-size 200` (full sweep only) — genes are dispatched in
   chunks of this size; each chunk is drained fully before the next
   launches. Smaller chunks → tighter cost-cap enforcement (bounded

@@ -38,7 +38,7 @@ import modal
 image = (
     modal.Image.debian_slim(python_version="3.12")
     .apt_install("git", "ca-certificates")
-    .pip_install("uv>=0.5")
+    .pip_install("uv>=0.5", "modal==1.4.2")
     # copy=True bakes the source into the image layer (instead of
     # runtime-mounting), which lets subsequent `run_commands` see the
     # files. Required because `uv sync --frozen` needs pyproject.toml +
@@ -49,7 +49,10 @@ image = (
         copy=True,
         ignore=[
             ".venv",
+            ".claude",
             ".runs",
+            ".pytest_cache",
+            ".ruff_cache",
             "data/raw",
             # Exclude all of data/external EXCEPT the HGNC gazetteer
             # — the competing-gene snippet filter in evidence_retrieval.py
@@ -59,6 +62,7 @@ image = (
             "!data/external/hgnc",
             "!data/external/hgnc/**",
             "data/processed",
+            "node_modules",
             "viewer/node_modules",
             "viewer/.next",
             ".git",
@@ -98,6 +102,61 @@ secret = modal.Secret.from_name("surfaceome-env")
 
 ANNOTATIONS_MOUNT = "/annotations"
 
+_RATE_LIMIT_LAST_CALL: dict[str, float] = {}
+
+
+@app.function(
+    image=image,
+    cpu=0.25,
+    memory=256,
+    timeout=60,
+    max_containers=1,
+)
+@modal.concurrent(max_inputs=1)
+def rate_limit_gate(state_key: str, interval_s: float) -> float:
+    """Single-container lease gate for external API courtesy limits.
+
+    Every worker has its own process-local HTTP limiter, which is not enough
+    under Modal fan-out. This function is deliberately capped at one container
+    and one in-flight input so all workers serialize through one in-memory
+    ``last_call`` table. ``state_key`` is built by the shared RateLimiter and
+    hashes sensitive buckets such as NCBI API keys before they leave a worker.
+    """
+    now = time.monotonic()
+    last = _RATE_LIMIT_LAST_CALL.get(state_key, 0.0)
+    wait_for = max(0.0, float(interval_s) - (now - last))
+    if wait_for > 0:
+        time.sleep(wait_for)
+    _RATE_LIMIT_LAST_CALL[state_key] = time.monotonic()
+    return wait_for
+
+
+@app.function(
+    image=image,
+    cpu=0.25,
+    memory=256,
+    timeout=120,
+    max_containers=2,
+)
+def rate_limit_worker_smoke(n: int = 3, interval_s: float = 0.2) -> dict:
+    """Verify remote workers can call the central rate gate."""
+    import sys
+
+    sys.path.insert(0, "/repo/src")
+    from accessible_surfaceome.tools._shared.ratelimit import (
+        RateLimiter,
+        set_external_rate_limit_gate,
+    )
+
+    set_external_rate_limit_gate(
+        lambda state_key, interval_s: rate_limit_gate.remote(state_key, interval_s)
+    )
+    limiter = RateLimiter({"example.org": interval_s * 1000.0})
+    t0 = time.monotonic()
+    for _ in range(n):
+        limiter.wait("https://example.org/resource")
+    return {"n": n, "interval_s": interval_s, "elapsed_s": time.monotonic() - t0}
+
 
 # ---------------------------------------------------------------------------
 # per-gene worker
@@ -127,10 +186,16 @@ def annotate_one(payload: dict) -> dict:
     from accessible_surfaceome.cloud.d1_client import D1Client
     from accessible_surfaceome.cloud.deep_dive_upload import D1DeepDiveSink
     from accessible_surfaceome.env import load_env
+    from accessible_surfaceome.tools._shared.ratelimit import (
+        set_external_rate_limit_gate,
+    )
 
     # Driver passes the file via Modal Secret; load_env still wires
     # NCBI_API_KEY etc. into the resolver.
     load_env()
+    set_external_rate_limit_gate(
+        lambda state_key, interval_s: rate_limit_gate.remote(state_key, interval_s)
+    )
 
     run_id: str = payload["run_id"]
     max_cost = float(payload.get("max_cost_per_gene_usd", 10.0))
@@ -258,6 +323,17 @@ def canary(
     if err is not None:
         # Raising rather than sys.exit so Modal surfaces this in the run UI.
         raise RuntimeError(err)
+
+
+@app.local_entrypoint()
+def rate_limit_smoke(n: int = 5, interval_s: float = 0.2, worker: bool = True):
+    """Exercise the centralized Modal rate gate without running annotations."""
+    if worker:
+        result = rate_limit_worker_smoke.remote(n, interval_s)
+    else:
+        waits = [rate_limit_gate.remote("smoke", interval_s) for _ in range(n)]
+        result = {"n": n, "interval_s": interval_s, "waits": waits}
+    print(json.dumps(result, indent=2))
 
 
 @app.local_entrypoint()

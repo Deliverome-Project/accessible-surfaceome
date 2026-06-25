@@ -42,6 +42,7 @@ from ._shared.europepmc import (
     fetch_fulltext,
     ncbi_pubmed_search,
     paper_from_europepmc,
+    papers_from_europepmc_records,
 )
 from ._shared.http import CachedHTTP, open_default_client
 from ._shared.models import (
@@ -601,19 +602,20 @@ def _topic_search(
         raise ValueError(f"no known terms for topic_anchors={topic_anchors!r}")
     topic_disjunction = " OR ".join(f'"{t}"' for t in topic_terms)
     # SRC:(MED OR PPR) widens to PubMed-indexed journals + Europe PMC-
-    # partnered preprint servers. See evidence_retrieval._europepmc_discovery
-    # for the same expansion (kept in sync — both are discovery searches).
+    # partnered preprint servers. PPR records are skipped by the shared
+    # converter until the downstream Paper contract supports DOI/preprint
+    # IDs end-to-end.
     query = f"({name_disjunction}) AND ({topic_disjunction}) AND SRC:(MED OR PPR)"
 
     try:
         payload = europepmc_search(http=http, query=query, page_size=max_results)
         hits = (payload.get("resultList") or {}).get("result") or []
-        papers = [
-            paper_from_europepmc(
-                record, retraction_index=retraction_index, topic_tagger=_detect_topic_tags
-            )
-            for record in hits
-        ]
+        papers = papers_from_europepmc_records(
+            hits,
+            retraction_index=retraction_index,
+            topic_tagger=_detect_topic_tags,
+            context=f"topic_search:{hgnc_symbol}",
+        )
     except Exception as exc:  # noqa: BLE001
         logger.warning(
             "topic_search: Europe PMC failed for %s; falling back to NCBI PubMed: %s",

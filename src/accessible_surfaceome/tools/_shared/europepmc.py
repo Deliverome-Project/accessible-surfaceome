@@ -538,6 +538,43 @@ def paper_from_europepmc(
     )
 
 
+def papers_from_europepmc_records(
+    records: Sequence[dict[str, Any]],
+    *,
+    retraction_index: RetractionIndex,
+    topic_tagger: "TopicTagger | None" = None,
+    context: str,
+) -> list[Paper]:
+    """Convert a Europe PMC result page, skipping records without PMIDs.
+
+    Discovery searches intentionally include ``SRC:PPR`` for recall, but PPR
+    records use Europe PMC preprint IDs such as ``PPR123`` rather than numeric
+    PMIDs. The current downstream ``Paper`` contract is PMID-keyed, so one PPR
+    hit must not poison the whole result page and force NCBI fallback.
+    """
+    papers: list[Paper] = []
+    skipped = 0
+    for record in records:
+        try:
+            papers.append(
+                paper_from_europepmc(
+                    record,
+                    retraction_index=retraction_index,
+                    topic_tagger=topic_tagger,
+                )
+            )
+        except LookupError as exc:
+            skipped += 1
+            logger.debug("Skipping Europe PMC record in %s: %s", context, exc)
+    if skipped:
+        logger.info(
+            "Skipped %d Europe PMC records without numeric PMIDs in %s",
+            skipped,
+            context,
+        )
+    return papers
+
+
 def paper_from_ncbi_pubmed_article(
     article: ET.Element,
     *,
@@ -957,6 +994,7 @@ __all__ = [
     "ncbi_pubmed_search",
     "fetch_fulltext",
     "paper_from_europepmc",
+    "papers_from_europepmc_records",
     "paper_from_ncbi_pubmed_article",
     "paper_from_ncbi_pmc_xml",
     "classify_publication_type",

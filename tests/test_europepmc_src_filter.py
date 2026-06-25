@@ -6,8 +6,9 @@ papers were invisible to the discovery layer until they got published-to-
 journal + PubMed-mirrored (a 6-12 month lag). The expansion to
 ``AND SRC:(MED OR PPR)`` widens the search to Europe PMC-partnered
 preprint servers (bioRxiv, medRxiv, ChemRxiv, ResearchSquare,
-Preprints.org, SSRN-Health, arXiv-q-bio) while keeping the rest of the
-chain unchanged — PPR records carry the same JATS-shaped full text.
+Preprints.org, SSRN-Health, arXiv-q-bio). Until the downstream ``Paper``
+contract supports DOI/preprint IDs end-to-end, PPR records are skipped
+at conversion time so one ``PPR...`` hit does not poison the whole page.
 
 PMID-keyed Europe PMC lookups elsewhere intentionally stay ``SRC:MED``
 because PPR records don't have numeric PMIDs — adding PPR there would
@@ -24,6 +25,7 @@ from accessible_surfaceome.tools import gene_literature as gl
 from accessible_surfaceome.tools._shared import europepmc as epmc
 from accessible_surfaceome.tools._shared.http import CachedHTTP
 from accessible_surfaceome.tools._shared.models import IdentifierBundle
+from accessible_surfaceome.tools._shared.retraction_watch import empty as empty_retractions
 
 
 def _capture_query(monkeypatch: pytest.MonkeyPatch, target_module: Any) -> list[str]:
@@ -108,3 +110,88 @@ def test_pmid_keyed_lookup_stays_med_only() -> None:
         "europepmc_bulk_by_pmid was widened to PPR — PPR records have no "
         "numeric PMID so this would be a silent no-op. Keep this call SRC:MED."
     )
+
+
+def _mixed_med_ppr_payload() -> dict[str, Any]:
+    return {
+        "hitCount": 2,
+        "resultList": {
+            "result": [
+                {
+                    "id": "PPR630816",
+                    "source": "PPR",
+                    "doi": "10.1101/2026.01.01.123456",
+                    "pubYear": "2026",
+                    "title": "Preprint without PMID",
+                    "abstractText": "A preprint record.",
+                    "isOpenAccess": "Y",
+                },
+                {
+                    "id": "41818370",
+                    "pmid": "41818370",
+                    "source": "MED",
+                    "pubYear": "2026",
+                    "title": "PubMed indexed paper.",
+                    "abstractText": "A surface expression abstract.",
+                    "journalTitle": "J Test",
+                    "pubTypeList": {"pubType": ["research-article"]},
+                    "isOpenAccess": "N",
+                },
+            ]
+        },
+    }
+
+
+def test_europepmc_discovery_skips_ppr_without_fallback(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """A mixed Europe PMC page should keep PMID-backed records and skip PPR.
+
+    The previous behavior raised from ``paper_from_europepmc`` on the PPR ID,
+    caught that at the whole-search level, and discarded the valid MED hit by
+    falling back to NCBI PubMed.
+    """
+
+    def _fake_search(*_: Any, **__: Any) -> dict[str, Any]:
+        return _mixed_med_ppr_payload()
+
+    def _boom_fallback(*_: Any, **__: Any) -> list[Any]:
+        raise AssertionError("NCBI fallback should not be used for PPR-only parse errors")
+
+    monkeypatch.setattr(er, "europepmc_search", _fake_search)
+    monkeypatch.setattr(er, "ncbi_pubmed_search", _boom_fallback)
+    bundle = IdentifierBundle(
+        uniprot_acc="Q9NZD1", hgnc_id="HGNC:1", hgnc_symbol="GPRC5D"
+    )
+    papers = er._europepmc_discovery(
+        bundle=bundle,
+        spec=er._CATEGORY_SPECS["flow_cytometry"],
+        max_papers=5,
+        http=cast(CachedHTTP, object()),
+        retraction_index=empty_retractions(),
+    )
+    assert [p.pmid for p in papers] == [41818370]
+
+
+def test_topic_search_skips_ppr_without_fallback(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    def _fake_search(*_: Any, **__: Any) -> dict[str, Any]:
+        return _mixed_med_ppr_payload()
+
+    def _boom_fallback(*_: Any, **__: Any) -> list[Any]:
+        raise AssertionError("NCBI fallback should not be used for PPR-only parse errors")
+
+    monkeypatch.setattr(gl, "europepmc_search", _fake_search)
+    monkeypatch.setattr(gl, "ncbi_pubmed_search", _boom_fallback)
+    pack = gl._topic_search(
+        http=cast(CachedHTTP, object()),
+        uniprot_acc=None,
+        hgnc_symbol="GPRC5D",
+        aliases=[],
+        previous_symbols=[],
+        topic_anchors=["surface_expression"],
+        max_results=5,
+        retraction_index=empty_retractions(),
+    )
+    assert [p.pmid for p in pack.papers] == [41818370]
