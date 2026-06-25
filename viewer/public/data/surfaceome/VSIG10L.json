@@ -1,0 +1,2571 @@
+{
+  "schema_version": "2.13.0",
+  "prompt_corpus_version": "2.50.2",
+  "gene": {
+    "hgnc_symbol": "VSIG10L",
+    "hgnc_id": "HGNC:27111",
+    "uniprot_acc": "Q86VR7",
+    "ncbi_gene_id": 147645,
+    "ensembl_gene": "ENSG00000186806"
+  },
+  "triage_signal": "unlikely",
+  "triage_reasoning": "VSIG10L (Q86VR7) is annotated as nucleoplasmic by Alliance of Genome Resources. Despite the 'V-set and immunoglobulin domain containing' name suggesting potential surface biology, the actual localization evidence points to nuclear/nucleoplasmic residence. Checking contextual buckets: (1) cell_state_induced — no published evidence of stress/activation-induced PM display; (2) tissue_restricted_surface — no flow cytometry or surface proteomics data showing surface display in any lineage; (3) lysosomal_exocytosis — no lysosomal TM topology reported; (4) dual_localization — no documented PM pool; (5) stable_surface_attachment — secreted/extracellular anchoring not reported. No therapeutic antibody/ADC/CAR-T program engaging cell-surface VSIG10L is known. The Ig-like domain naming reflects domain architecture not necessarily surface localization. Best classification: nuclear.",
+  "executive_summary": {
+    "one_paragraph": "VSIG10L has weak surface evidence as a tissue-restricted single-pass type I membrane protein in normal esophageal squamous epithelium. Supportive but indirect evidence: computational topology prediction of a signal peptide, large Ig-domain ECD, and single TM helix (a1_evi_01), corroborated by RNA-level expression in suprabasal squamous cells via RNAscope ISH (a1_evi_04) and qRT-PCR across 238 clinical samples (a1_evi_05); no live-cell flow, surface biotinylation, or non-permeabilized IF has been performed, and validated antibody reagents are absent (a1_evi_03). Surface presence is strictly tissue-restricted to suprabasal squamous esophageal epithelium and is markedly lost in Barrett esophagus-associated lesions, GERD-affected mucosa, and all neoplastic states (a2_evi_01, a2_evi_03, a2_evi_07). Moderate apical subdomain restriction in a stratified epithelium limits systemic binder access; no shed or secreted form is documented, ruling out decoy concerns.",
+    "accessibility_context_summary": "Surface-accessible only on suprabasal squamous epithelial cells of the normal esophagus; expression and inferred surface presence are lost in Barrett esophagus, GERD-affected mucosa, and esophageal adenocarcinoma.",
+    "surface_accessibility": "low",
+    "evidence_grade_summary": "weak",
+    "confidence": "low",
+    "state_dependence": "high",
+    "subcategory": "single_pass_T1",
+    "llm_family": "miscellaneous",
+    "hgnc_gene_groups": [
+      "Immunoglobulin like domain containing"
+    ],
+    "uniprot_family": null,
+    "surface_call_reason": "tissue_restricted_surface",
+    "headline_risks": [],
+    "cited_evidence_ids": [
+      "a1_evi_01",
+      "a1_evi_03",
+      "a1_evi_04",
+      "a1_evi_05",
+      "a2_evi_01",
+      "a2_evi_03",
+      "a2_evi_07"
+    ]
+  },
+  "filters": {
+    "surface_accessibility": "low",
+    "confidence": "low",
+    "subcategory": "single_pass_T1",
+    "state_dependence": "high",
+    "surface_call_reason": "tissue_restricted_surface",
+    "llm_family": "miscellaneous",
+    "evidence_grade": "weak",
+    "ecd_accessibility_class": "large",
+    "evidence_density": "moderate",
+    "expression_level": "high",
+    "expression_breadth": "rare",
+    "surface_specificity": "mixed",
+    "has_shed_form": false,
+    "has_secreted_form": false,
+    "requires_coreceptor_for_expression": false,
+    "co_receptor_dependency": "none",
+    "max_paralog_ecd_pct_identity": 46.49006622516556,
+    "has_epitope_masking": false,
+    "has_restricted_subdomain": true,
+    "mouse_ortholog_ecd_pct_identity": 73.45013477088949,
+    "cyno_ortholog_ecd_pct_identity": null,
+    "n_term_extracellular": true,
+    "c_term_extracellular": false,
+    "low_endogenous_expression": false,
+    "has_known_ligand": false,
+    "n_supporting_claims_high_weight": 0,
+    "n_contradicting_claims_high_weight": 0,
+    "overexpression_surface_localization_observed": false,
+    "tumor_associated": false,
+    "induction_trigger": "none",
+    "has_live_cell_surface_evidence": false,
+    "expression_level_rationale": "High RNA expression in normal esophageal suprabasal squamous cells by RNAscope ISH (a1_evi_04) and qRT-PCR across 238 clinical samples (a2_evi_03, a2_evi_04); expression is absent in Barrett lesions and reduced in GERD (a2_evi_06, a2_evi_07).",
+    "expression_breadth_rationale": "Expression is confined to suprabasal squamous epithelial cells of the esophagus; absent in basal cells (a2_evi_01) and lost in all non-squamous esophageal disease states (a2_evi_03, a2_evi_06); no evidence of expression in other tissues.",
+    "surface_specificity_rationale": "Canonical topology predicts a type I single-pass membrane protein with a large extracellular Ig-domain ECD (a1_evi_01), but no protein-level surface assay has been performed; surface vs. intracellular distribution is inferred from topology alone.",
+    "has_known_ligand_rationale": "No validated endogenous ligand or binding partner for VSIG10L is reported in the literature. The protein is functionally implicated in epithelial maturation and desmosome integrity (a2_evi_08), but no cognate receptor or natural agonist has been identified.",
+    "low_endogenous_expression_rationale": "High RNA expression in normal esophageal suprabasal squamous cells by RNAscope ISH (a1_evi_04) and qRT-PCR across 238 clinical samples (a2_evi_03, a2_evi_04); expression is absent in Barrett lesions and reduced in GERD (a2_evi_06, a2_evi_07).",
+    "overexpression_surface_localization_observed_rationale": "No method observation pairs an overexpression/mixed expression system with a direct or supportive surface-accessibility readout."
+  },
+  "surface_evidence": {
+    "evidence_grade": "weak",
+    "grade_rationale": "The entire VSIG10L ledger contains zero direct surface-accessibility observations. The strongest topology claim is a computational prediction of a single-pass type I TM architecture with a large ECD (a1_evi_01), corroborated by a review-level assertion (a1_evi_02) — both are tangential to surface accessibility because neither uses a live-cell or nonperm assay. All remaining claims are RNA-level: RNAscope ISH in suprabasal squamous esophageal cells (a1_evi_04, a1_evi_07) and qRT-PCR across n=238 normal vs Barrett esophagus samples (a1_evi_05, a1_evi_06). A critical methodological note (a1_evi_03) explicitly documents the absence of validated VSIG10L antibodies, explaining why no protein-level or surface assay was attempted. No live-cell flow, nonperm IF, surface biotinylation, IHC membranous, or functional surface assay is present. With zero direct or indirect surface-method observations and only RNA-level expression data plus a computational topology prediction, the grade is weak.",
+    "claim_stances": [
+      {
+        "claim_id": "a1_evi_01",
+        "stance": "tangential",
+        "weight": "low",
+        "note": "Computational topology prediction (single-pass type I TM); no experimental surface localization data."
+      },
+      {
+        "claim_id": "a1_evi_02",
+        "stance": "tangential",
+        "weight": "low",
+        "note": "Review-level assertion of membrane-bound topology; no primary experimental surface evidence cited."
+      },
+      {
+        "claim_id": "a1_evi_03",
+        "stance": "expression_only",
+        "weight": "low",
+        "note": "Methodological note: absence of validated VSIG10L antibodies; ISH used instead; no surface assay possible."
+      },
+      {
+        "claim_id": "a1_evi_04",
+        "stance": "expression_only",
+        "weight": "moderate",
+        "note": "RNAscope ISH RNA-level only; suprabasal SQ esophagus; no protein or surface localization assessed."
+      },
+      {
+        "claim_id": "a1_evi_05",
+        "stance": "expression_only",
+        "weight": "moderate",
+        "note": "RT-qPCR RNA expression in normal squamous esophagus vs Barrett lesions; no surface assay."
+      },
+      {
+        "claim_id": "a1_evi_06",
+        "stance": "expression_only",
+        "weight": "moderate",
+        "note": "qRT-PCR quantification in n=238 samples; RNA-level only; no protein or surface assay performed."
+      },
+      {
+        "claim_id": "a1_evi_07",
+        "stance": "expression_only",
+        "weight": "moderate",
+        "note": "ISH spatial RNA localization in normal esophageal squamous tissue; no protein surface localization assessed."
+      }
+    ],
+    "methods": [],
+    "non_surface_expression": [
+      {
+        "context": "Suprabasal squamous epithelial cells, human esophagus (normal tissue); RNAscope ISH showing selective suprabasal expression",
+        "sample_type": "primary_human_tissue",
+        "measurement_type": "single_cell_RNA",
+        "level": "high",
+        "cited_evidence_ids": [
+          "a1_evi_04",
+          "a1_evi_07"
+        ]
+      },
+      {
+        "context": "Normal squamous esophagus vs Barrett esophagus-associated lesions (metaplasia, dysplasia, adenocarcinoma); n=238 clinical samples; high in normal SQ, markedly lost in Barrett lesions",
+        "sample_type": "patient_sample",
+        "measurement_type": "RNA",
+        "level": "high",
+        "cited_evidence_ids": [
+          "a1_evi_05",
+          "a1_evi_06"
+        ]
+      },
+      {
+        "context": "EPC2 human esophageal squamous epithelial cell line grown as 3D-organotypes; ISH used due to lack of validated antibodies",
+        "sample_type": "established_cell_line",
+        "measurement_type": "single_cell_RNA",
+        "level": "moderate",
+        "cited_evidence_ids": [
+          "a1_evi_03"
+        ]
+      }
+    ],
+    "contradicting_evidence": [],
+    "excluded_as_ligand_engagement": []
+  },
+  "biological_context": {
+    "expression": [
+      {
+        "tissue": "esophagus",
+        "cell_type": "suprabasal squamous epithelial cells",
+        "present": "high",
+        "disease_context": "normal",
+        "disease_label": null,
+        "cell_states": [],
+        "species": "human",
+        "species_inferred": false,
+        "cited_evidence_ids": [
+          "a2_evi_01",
+          "a2_evi_02",
+          "a2_evi_12"
+        ]
+      },
+      {
+        "tissue": "esophagus",
+        "cell_type": "squamous epithelium",
+        "present": "high",
+        "disease_context": "normal",
+        "disease_label": null,
+        "cell_states": [],
+        "species": "human",
+        "species_inferred": false,
+        "cited_evidence_ids": [
+          "a2_evi_03",
+          "a2_evi_04",
+          "a2_evi_05",
+          "a2_evi_11"
+        ]
+      },
+      {
+        "tissue": "esophagus",
+        "cell_type": "squamous epithelium",
+        "present": "absent",
+        "disease_context": "other_disease",
+        "disease_label": "Barrett esophagus-associated lesions (metaplasia, dysplasia, adenocarcinoma)",
+        "cell_states": [],
+        "species": "human",
+        "species_inferred": false,
+        "cited_evidence_ids": [
+          "a2_evi_03",
+          "a2_evi_04",
+          "a2_evi_06"
+        ]
+      },
+      {
+        "tissue": "esophagus",
+        "cell_type": "squamous epithelium",
+        "present": "low",
+        "disease_context": "other_disease",
+        "disease_label": "chronic gastroesophageal reflux disease (GERD)",
+        "cell_states": [],
+        "species": "human",
+        "species_inferred": false,
+        "cited_evidence_ids": [
+          "a2_evi_07"
+        ]
+      },
+      {
+        "tissue": "esophagus",
+        "cell_type": "squamous epithelial cells",
+        "present": "absent",
+        "disease_context": "other_disease",
+        "disease_label": "familial Barrett esophagus / esophageal adenocarcinoma predisposition (inherited VSIG10L mutation)",
+        "cell_states": [],
+        "species": "human",
+        "species_inferred": false,
+        "cited_evidence_ids": [
+          "a2_evi_10"
+        ]
+      },
+      {
+        "tissue": "squamous mucosa (forestomach equivalent)",
+        "cell_type": "squamous epithelial cells",
+        "present": "unknown",
+        "disease_context": "other_disease",
+        "disease_label": "Vsig10l germline mutation — loss of desmosomes and disrupted epithelial differentiation",
+        "cell_states": [],
+        "species": "mouse",
+        "species_inferred": false,
+        "cited_evidence_ids": [
+          "a2_evi_08"
+        ]
+      },
+      {
+        "tissue": "forestomach",
+        "cell_type": "squamous epithelium",
+        "present": "absent",
+        "disease_context": "other_disease",
+        "disease_label": "Barrett esophagus-like metaplasia (Vsig10l-mutant mice on bile acid diet)",
+        "cell_states": [],
+        "species": "mouse",
+        "species_inferred": false,
+        "cited_evidence_ids": [
+          "a2_evi_09"
+        ]
+      }
+    ],
+    "tissues": [],
+    "cell_types": [],
+    "subcellular_localization": {
+      "primary_compartment": "plasma_membrane",
+      "rationale": "VSIG10L is described as a membrane-bound protein with extracellular Ig-like domains and a small cytoplasmic domain by computational prediction (a2_evi_13), and RNA-seq confirms it is predominantly expressed in squamous epithelial cells of the esophagus (a2_evi_12). No direct protein localization assay (IF, fractionation, flow) is present in the ledger; plasma_membrane is assigned as the default for a surfaceome candidate with a predicted type-I transmembrane topology.",
+      "dual_localization": [],
+      "membrane_subdomains": []
+    },
+    "anatomical_accessibility": [],
+    "accessibility_modulation": [
+      {
+        "category": "tissue_restricted_surface",
+        "category_other_label": null,
+        "cell_state_trigger": null,
+        "restricted_lineage": "epithelial",
+        "dual_loc_partner_compartment": null,
+        "baseline_context": null,
+        "modulating_state": null,
+        "direction": "unclear",
+        "change": "VSIG10L is a membrane-bound protein with extracellular Ig-like domains expressed selectively in suprabasal squamous epithelial cells of the esophagus, with no detectable expression in basal squamous cells, restricting surface presence to the suprabasal compartment.",
+        "accessibility_implication": "Surface accessibility of VSIG10L is confined to suprabasal squamous epithelial cells of the esophagus; basal cells and non-squamous lineages lack surface-accessible VSIG10L, limiting binder access to the suprabasal epithelial layer.",
+        "species": "human",
+        "species_inferred": false,
+        "cited_evidence_ids": [
+          "a2_evi_01",
+          "a2_evi_02",
+          "a2_evi_12",
+          "a2_evi_13"
+        ]
+      },
+      {
+        "category": "disease_state_induced",
+        "category_other_label": null,
+        "cell_state_trigger": null,
+        "restricted_lineage": null,
+        "dual_loc_partner_compartment": null,
+        "baseline_context": "normal squamous esophageal epithelium",
+        "modulating_state": "Barrett esophagus-associated lesions (metaplasia, dysplasia, adenocarcinoma)",
+        "direction": "decreases",
+        "change": "VSIG10L expression is high in normal squamous esophagus but is markedly lost in Barrett esophagus-associated lesions including metaplasia, dysplasia, and adenocarcinoma, as shown by RT-qPCR across 238 samples and in situ hybridization.",
+        "accessibility_implication": "Loss of VSIG10L surface expression in Barrett esophagus and associated neoplastic lesions means the protein is not accessible to extracellular binders in these disease states; therapeutic or diagnostic targeting would be limited to residual normal squamous epithelium.",
+        "species": "human",
+        "species_inferred": false,
+        "cited_evidence_ids": [
+          "a2_evi_03",
+          "a2_evi_04",
+          "a2_evi_05",
+          "a2_evi_06",
+          "a2_evi_11"
+        ]
+      },
+      {
+        "category": "disease_state_induced",
+        "category_other_label": null,
+        "cell_state_trigger": null,
+        "restricted_lineage": null,
+        "dual_loc_partner_compartment": null,
+        "baseline_context": "normal esophageal squamous epithelium",
+        "modulating_state": "chronic gastroesophageal reflux disease (GERD)-affected esophageal epithelium",
+        "direction": "decreases",
+        "change": "VSIG10L expression is frequently lost in esophageal epithelium of patients with chronic GERD, a precursor state to Barrett esophagus, indicating disease-state-driven reduction of surface-expressed VSIG10L.",
+        "accessibility_implication": "Reduced VSIG10L surface expression in GERD-affected epithelium diminishes the accessible target pool in this at-risk patient population, potentially before overt metaplastic transformation occurs.",
+        "species": "human",
+        "species_inferred": false,
+        "cited_evidence_ids": [
+          "a2_evi_07"
+        ]
+      }
+    ],
+    "biological_context_grade": "rich",
+    "grade_rationale": "Expression is mapped across multiple tissues/cell states (normal esophageal suprabasal vs basal, GERD, Barrett metaplasia/dysplasia/adenocarcinoma) via scRNA-seq, RT-qPCR, ISH, and RNA-seq from two independent sources. Subcellular localization is supported by sequence-predicted membrane topology with Ig-like ectodomain. Anatomical context is pinned to esophageal squamous epithelium. Modulation across disease states (GERD, Barrett, bile-acid stress in mouse) is well-documented. All axes cohere consistently.",
+    "grade_cited_evidence_ids": [
+      "a2_evi_01",
+      "a2_evi_02",
+      "a2_evi_03",
+      "a2_evi_04",
+      "a2_evi_05",
+      "a2_evi_06",
+      "a2_evi_07",
+      "a2_evi_08",
+      "a2_evi_09",
+      "a2_evi_10",
+      "a2_evi_11",
+      "a2_evi_12",
+      "a2_evi_13"
+    ]
+  },
+  "deterministic_features": {
+    "canonical_topology": {
+      "isoform_id": "Q86VR7",
+      "uniprot_acc": "Q86VR7",
+      "tm_helix_count": 1,
+      "n_terminal_orientation": "extracellular",
+      "c_terminal_orientation": "cytoplasmic",
+      "signal_peptide_length": 21,
+      "ecd_length_residues": 755,
+      "icd_length_residues": 70,
+      "per_residue_topology": "SSSSSSSSSSSSSSSSSSSSSOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOMMMMMMMMMMMMMMMMMMMMMIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIII",
+      "sequence": "MDNPQALPLFLLLASLVGILTLRASSGLQQTNFSSAFSSDSKSSSQGLGVEVPSIKPPSWKVPDQFLDSKASAGISDSSWFPEALSSNMSGSFWSNVSAEGQDLSPVSPFSETPGSEVFPDISDPQVPAKDPKPSFTVKTPASNISTQVSHTKLSVEAPDSKFSPDDMDLKLSAQSPESKFSAETHSAASFPQQVGGPLAVLVGTTIRLPLVPIPNPGPPTSLVVWRRGSKVLAAGGLGPGAPLISLDPAHRDHLRFDQARGVLELASAQLDDAGVYTAEVIRAGVSQQTHEFTVGVYEPLPQLSVQPKAPETEEGAAELRLRCLGWGPGRGELSWSRDGRALEAAESEGAETPRMRSEGDQLLIVRPVRSDHARYTCRVRSPFGHREAAADVSVFYGPDPPTITVSSDRDAAPARFVTAGSNVTLRCAAASRPPADITWSLADPAEAAVPAGSRLLLPAVGPGHAGTYACLAANPRTGRRRRSLLNLTVADLPPGAPQCSVEGGPGDRSLRFRCSWPGGAPAASLQFQGLPEGIRAGPVSSVLLAAVPAHPRLSGVPITCLARHLVATRTCTVTPEAPREVLLHPLVAETRLGEAEVALEASGCPPPSRASWAREGRPLAPGGGSRLRLSQDGRKLHIGNFSLDWDLGNYSVLCSGALGAGGDQITLIGPSISSWRLQRARDAAVLTWDVERGALISSFEIQAWPDGPALGRTSTYRDWVSLLILGPQERSAVVPLPPRNPGTWTFRILPILGGQPGTPSQSRVYRAGPTLSHGAIAGIVLGSLLGLALLAVLLLLCICCLCRFRGKTPEKKKHPSTLVPVVTPSEKKMHSVTPVEISWPLDLKVPLEDHSSTRAYQAQTPVQLSL",
+      "tool_version": "deeptmhmm-1.0.24",
+      "retrieved_at": "2026-05-17T00:56:01Z",
+      "full_length_pct_identity_to_canonical": null,
+      "ecd_pct_identity_to_canonical": null,
+      "ecd_pct_similarity_to_canonical": null
+    },
+    "isoform_topologies": [
+      {
+        "isoform_id": "Q86VR7-2",
+        "uniprot_acc": "Q86VR7-2",
+        "tm_helix_count": 1,
+        "n_terminal_orientation": "extracellular",
+        "c_terminal_orientation": "cytoplasmic",
+        "signal_peptide_length": 21,
+        "ecd_length_residues": 755,
+        "icd_length_residues": 84,
+        "per_residue_topology": "SSSSSSSSSSSSSSSSSSSSSOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOMMMMMMMMMMMMMMMMMMMMMIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIII",
+        "sequence": "MDNPQALPLFLLLASLVGILTLRASSGLQQTNFSSAFSSDSKSSSQGLGVEVPSIKPPSWKVPDQFLDSKASAGISDSSWFPEALSSNMSGSFWSNVSAEGQDLSPVSPFSETPGSEVFPDISDPQVPAKDPKPSFTVKTPASNISTQVSHTKLSVEAPDSKFSPDDMDLKLSAQSPESKFSAETHSAASFPQQVGGPLAVLVGTTIRLPLVPIPNPGPPTSLVVWRRGSKVLAAGGLGPGAPLISLDPAHRDHLRFDQARGVLELASAQLDDAGVYTAEVIRAGVSQQTHEFTVGVYEPLPQLSVQPKAPETEEGAAELRLRCLGWGPGRGELSWSRDGRALEAAESEGAETPRMRSEGDQLLIVRPVRSDHARYTCRVRSPFGHREAAADVSVFYGPDPPTITVSSDRDAAPARFVTAGSNVTLRCAAASRPPADITWSLADPAEAAVPAGSRLLLPAVGPGHAGTYACLAANPRTGRRRRSLLNLTVADLPPGAPQCSVEGGPGDRSLRFRCSWPGGAPAASLQFQGLPEGIRAGPVSSVLLAAVPAHPRLSGVPITCLARHLVATRTCTVTPEAPREVLLHPLVAETRLGEAEVALEASGCPPPSRASWAREGRPLAPGGGSRLRLSQDGRKLHIGNFSLDWDLGNYSVLCSGALGAGGDQITLIGPSISSWRLQRARDAAVLTWDVERGALISSFEIQAWPDGPALGRTSTYRDWVSLLILGPQERSAVVPLPPRNPGTWTFRILPILGGQPGTPSQSRVYRAGPTLSHGAIAGIVLGSLLGLALLAVLLLLCICCLCRFRGKTPEKKKHPSTLVPVVTPSEKKMHSVTPVEISWPLDLKVPLEDHSSTRAYQATDPSSVVSVGGGSKTVRAATQV",
+        "tool_version": "deeptmhmm-1.0.24",
+        "retrieved_at": "2026-05-27T02:01:01Z",
+        "full_length_pct_identity_to_canonical": 97.61634506242906,
+        "ecd_pct_identity_to_canonical": 100,
+        "ecd_pct_similarity_to_canonical": 100
+      }
+    ],
+    "orthologs": {
+      "mouse": [
+        {
+          "is_canonical": true,
+          "isoform_id": "D3YZF7",
+          "ensembl_id": "ENSMUSG00000070604",
+          "ortholog_uniprot_acc": "D3YZF7",
+          "ortholog_symbol": "Vsig10l",
+          "type": "one2one",
+          "ecd_pct_identity_to_human_canonical": 73.45013477088949,
+          "ecd_pct_similarity_to_human_canonical": 73.45013477088949,
+          "full_length_pct_identity_to_human_canonical": 69.2042,
+          "ecd_length_residues": 742,
+          "tm_helix_count": 1,
+          "compara_version": "ensembl_compara_2026_05_12",
+          "retrieved_at": "2026-06-24T16:21:38.695188Z",
+          "per_residue_topology": "SSSSSSSSSSSSSSSSSSSSSOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOMMMMMMMMMMMMMMMMMMMMMIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIII",
+          "deeptmhmm_label": "SP+TM",
+          "topology_projection_source": "projected_from_human_canonical",
+          "tm_absent_from_model": false,
+          "n_tm_regions_absent": 0,
+          "sequence": "MGLSWALLPFLLLAFRAELLALQPALGSQPPSASSSHSMGSSRDFVSNVSSSQHPQPPGSEASAGIPDSNRFPQGLNSSHVPGLFRTNVSAEEQYLSPDVTSSETPPSRVSLDGLDSQDPDKDSGLPFLVKTPASQISVQTPDTKVPTKASGSKLSLEHHNLEPGSKISSEIYQAASFPQQVGGPLAVLVGTTIRLPLTPVPSSSPPAPLVVWRRGSKVLAAGGLGSQAPLISLDPMHQARLRFDQIRGGLELTSARLDDAGVYTVEVIRGGVSQQIREFVVGVFEPLPQLSVQPRAPETEEGAAELRLSCVGWNPGSGKLSWSRDGRALGTSDPEGAEPPRIRTERDQLLISRPVRSDHARYTCQVRSPFGHTEAAADVSVFYGPDAPVIRVSSDRDASPALYVTAGSNVTLHCSAPSRPPADIAWSLADPTEAAVPAGPRLLLPAVGPGHGGAYACIAANPRTGHRRRSVFNLTVADLPPGAPQCSVEGGPVDRSLRFRCSWPGGVPAASLQFQGLPEGVRAGPVPSTLLVTVPARPELSGVAVTCLARHLVATRTCTIIPEAPQEVLLQPIVEETQPGDVVVALEVTGCPPPSRASWARQGRPLAPGGGGRLQLSQDGRKLLINNFSLDWDLGNYSVLCSSALGAGGNQITLTGPSISSWRLQRAQEAAVLTWDVERGTLLTGFHIQAWTDSSEVDRVTMSRDWVSLLILGPQERSAIVPLPPRNPGTWAFRILPILGSLPGTPSQSRVYQAGSDLSPGAIAGIVLGSLLGLALLAGLLILCICCLRRYPGRASVKKQHSLTLAPVLTPPAKKIQSLTPVQTPRPLPIKTKMQSPHPAKAQQVISPSPTLCPGGSPWTVRAATQV"
+        }
+      ],
+      "cynomolgus": [],
+      "checked": true
+    },
+    "paralogs": [
+      {
+        "paralog_symbol": "HMCN2",
+        "paralog_uniprot_acc": "Q8NDA2",
+        "ecd_pct_identity": 46.49006622516556,
+        "full_length_pct_identity": 17.8777,
+        "family_id": "Bilateria",
+        "compara_version": "Compara r112",
+        "per_residue_topology": null,
+        "tm_helix_count": null,
+        "ecd_length_residues": null,
+        "sequence": null
+      },
+      {
+        "paralog_symbol": "MXRA5",
+        "paralog_uniprot_acc": "Q9NR99",
+        "ecd_pct_identity": 38.80794701986755,
+        "full_length_pct_identity": 19.9539,
+        "family_id": "Bilateria",
+        "compara_version": "Compara r112",
+        "per_residue_topology": null,
+        "tm_helix_count": null,
+        "ecd_length_residues": null,
+        "sequence": null
+      },
+      {
+        "paralog_symbol": "ROBO4",
+        "paralog_uniprot_acc": "Q8WZ75",
+        "ecd_pct_identity": 34.24036281179138,
+        "full_length_pct_identity": 15.917,
+        "family_id": "Bilateria",
+        "compara_version": "Compara r112",
+        "per_residue_topology": null,
+        "tm_helix_count": null,
+        "ecd_length_residues": null,
+        "sequence": null
+      },
+      {
+        "paralog_symbol": "IGSF10",
+        "paralog_uniprot_acc": "Q6WRI0",
+        "ecd_pct_identity": 33.11258278145696,
+        "full_length_pct_identity": 20.2999,
+        "family_id": "Bilateria",
+        "compara_version": "Compara r112",
+        "per_residue_topology": null,
+        "tm_helix_count": null,
+        "ecd_length_residues": null,
+        "sequence": null
+      },
+      {
+        "paralog_symbol": "SDK2",
+        "paralog_uniprot_acc": "Q58EX2",
+        "ecd_pct_identity": 32.317880794701985,
+        "full_length_pct_identity": 16.955,
+        "family_id": "Bilateria",
+        "compara_version": "Compara r112",
+        "per_residue_topology": null,
+        "tm_helix_count": null,
+        "ecd_length_residues": null,
+        "sequence": null
+      },
+      {
+        "paralog_symbol": "PTPRQ",
+        "paralog_uniprot_acc": "Q9UMZ3",
+        "ecd_pct_identity": 31.65562913907285,
+        "full_length_pct_identity": 13.8408,
+        "family_id": "Bilateria",
+        "compara_version": "Compara r112",
+        "per_residue_topology": null,
+        "tm_helix_count": null,
+        "ecd_length_residues": null,
+        "sequence": null
+      },
+      {
+        "paralog_symbol": "VSIG10",
+        "paralog_uniprot_acc": "Q8N0Z9",
+        "ecd_pct_identity": 30.548302872062667,
+        "full_length_pct_identity": 8.18916,
+        "family_id": "Bilateria",
+        "compara_version": "Compara r112",
+        "per_residue_topology": null,
+        "tm_helix_count": null,
+        "ecd_length_residues": null,
+        "sequence": null
+      },
+      {
+        "paralog_symbol": "CNTN5",
+        "paralog_uniprot_acc": "O94779",
+        "ecd_pct_identity": 30.4635761589404,
+        "full_length_pct_identity": 16.8397,
+        "family_id": "Bilateria",
+        "compara_version": "Compara r112",
+        "per_residue_topology": null,
+        "tm_helix_count": null,
+        "ecd_length_residues": null,
+        "sequence": null
+      },
+      {
+        "paralog_symbol": "DSCAML1",
+        "paralog_uniprot_acc": "Q8TD84",
+        "ecd_pct_identity": 30.4635761589404,
+        "full_length_pct_identity": 14.6482,
+        "family_id": "Bilateria",
+        "compara_version": "Compara r112",
+        "per_residue_topology": null,
+        "tm_helix_count": null,
+        "ecd_length_residues": null,
+        "sequence": null
+      },
+      {
+        "paralog_symbol": "SDK1",
+        "paralog_uniprot_acc": "Q7Z5N4",
+        "ecd_pct_identity": 28.741721854304636,
+        "full_length_pct_identity": 16.7243,
+        "family_id": "Bilateria",
+        "compara_version": "Compara r112",
+        "per_residue_topology": null,
+        "tm_helix_count": null,
+        "ecd_length_residues": null,
+        "sequence": null
+      },
+      {
+        "paralog_symbol": "IGSF21",
+        "paralog_uniprot_acc": "Q96ID5",
+        "ecd_pct_identity": 28.66817155756208,
+        "full_length_pct_identity": 7.38178,
+        "family_id": "Bilateria",
+        "compara_version": "Compara r112",
+        "per_residue_topology": null,
+        "tm_helix_count": null,
+        "ecd_length_residues": null,
+        "sequence": null
+      },
+      {
+        "paralog_symbol": "IGDCC3",
+        "paralog_uniprot_acc": "Q8IVU1",
+        "ecd_pct_identity": 28.595041322314053,
+        "full_length_pct_identity": 13.4948,
+        "family_id": "Bilateria",
+        "compara_version": "Compara r112",
+        "per_residue_topology": null,
+        "tm_helix_count": null,
+        "ecd_length_residues": null,
+        "sequence": null
+      },
+      {
+        "paralog_symbol": "CNTN2",
+        "paralog_uniprot_acc": "Q02246",
+        "ecd_pct_identity": 28.47682119205298,
+        "full_length_pct_identity": 17.1857,
+        "family_id": "Bilateria",
+        "compara_version": "Compara r112",
+        "per_residue_topology": null,
+        "tm_helix_count": null,
+        "ecd_length_residues": null,
+        "sequence": null
+      },
+      {
+        "paralog_symbol": "DSCAM",
+        "paralog_uniprot_acc": "O60469",
+        "ecd_pct_identity": 28.47682119205298,
+        "full_length_pct_identity": 14.3022,
+        "family_id": "Bilateria",
+        "compara_version": "Compara r112",
+        "per_residue_topology": null,
+        "tm_helix_count": null,
+        "ecd_length_residues": null,
+        "sequence": null
+      },
+      {
+        "paralog_symbol": "CHL1",
+        "paralog_uniprot_acc": "O00533",
+        "ecd_pct_identity": 28.211920529801326,
+        "full_length_pct_identity": 13.9562,
+        "family_id": "Bilateria",
+        "compara_version": "Compara r112",
+        "per_residue_topology": null,
+        "tm_helix_count": null,
+        "ecd_length_residues": null,
+        "sequence": null
+      },
+      {
+        "paralog_symbol": "CNTN4",
+        "paralog_uniprot_acc": "Q8IWV2",
+        "ecd_pct_identity": 27.68211920529801,
+        "full_length_pct_identity": 16.1476,
+        "family_id": "Bilateria",
+        "compara_version": "Compara r112",
+        "per_residue_topology": null,
+        "tm_helix_count": null,
+        "ecd_length_residues": null,
+        "sequence": null
+      },
+      {
+        "paralog_symbol": "ROBO3",
+        "paralog_uniprot_acc": "Q96MS0",
+        "ecd_pct_identity": 27.28476821192053,
+        "full_length_pct_identity": 17.0704,
+        "family_id": "Bilateria",
+        "compara_version": "Compara r112",
+        "per_residue_topology": null,
+        "tm_helix_count": null,
+        "ecd_length_residues": null,
+        "sequence": null
+      },
+      {
+        "paralog_symbol": "NFASC",
+        "paralog_uniprot_acc": "O94856",
+        "ecd_pct_identity": 26.75496688741722,
+        "full_length_pct_identity": 16.1476,
+        "family_id": "Bilateria",
+        "compara_version": "Compara r112",
+        "per_residue_topology": null,
+        "tm_helix_count": null,
+        "ecd_length_residues": null,
+        "sequence": null
+      },
+      {
+        "paralog_symbol": "IGSF9",
+        "paralog_uniprot_acc": "Q9P2J2",
+        "ecd_pct_identity": 26.70375521557719,
+        "full_length_pct_identity": 14.7636,
+        "family_id": "Bilateria",
+        "compara_version": "Compara r112",
+        "per_residue_topology": null,
+        "tm_helix_count": null,
+        "ecd_length_residues": null,
+        "sequence": null
+      },
+      {
+        "paralog_symbol": "NEO1",
+        "paralog_uniprot_acc": "Q92859",
+        "ecd_pct_identity": 26.225165562913904,
+        "full_length_pct_identity": 15.2249,
+        "family_id": "Bilateria",
+        "compara_version": "Compara r112",
+        "per_residue_topology": null,
+        "tm_helix_count": null,
+        "ecd_length_residues": null,
+        "sequence": null
+      },
+      {
+        "paralog_symbol": "L1CAM",
+        "paralog_uniprot_acc": "P32004",
+        "ecd_pct_identity": 26.092715231788077,
+        "full_length_pct_identity": 16.1476,
+        "family_id": "Bilateria",
+        "compara_version": "Compara r112",
+        "per_residue_topology": null,
+        "tm_helix_count": null,
+        "ecd_length_residues": null,
+        "sequence": null
+      },
+      {
+        "paralog_symbol": "CDON",
+        "paralog_uniprot_acc": "Q4KMG0",
+        "ecd_pct_identity": 25.96026490066225,
+        "full_length_pct_identity": 13.3795,
+        "family_id": "Bilateria",
+        "compara_version": "Compara r112",
+        "per_residue_topology": null,
+        "tm_helix_count": null,
+        "ecd_length_residues": null,
+        "sequence": null
+      },
+      {
+        "paralog_symbol": "NRCAM",
+        "paralog_uniprot_acc": "Q92823",
+        "ecd_pct_identity": 25.82781456953642,
+        "full_length_pct_identity": 16.8397,
+        "family_id": "Bilateria",
+        "compara_version": "Compara r112",
+        "per_residue_topology": null,
+        "tm_helix_count": null,
+        "ecd_length_residues": null,
+        "sequence": null
+      },
+      {
+        "paralog_symbol": "CNTN1",
+        "paralog_uniprot_acc": "Q12860",
+        "ecd_pct_identity": 25.562913907284766,
+        "full_length_pct_identity": 15.2249,
+        "family_id": "Bilateria",
+        "compara_version": "Compara r112",
+        "per_residue_topology": null,
+        "tm_helix_count": null,
+        "ecd_length_residues": null,
+        "sequence": null
+      },
+      {
+        "paralog_symbol": "ROBO1",
+        "paralog_uniprot_acc": "Q9Y6N7",
+        "ecd_pct_identity": 25.03311258278146,
+        "full_length_pct_identity": 16.8397,
+        "family_id": "Bilateria",
+        "compara_version": "Compara r112",
+        "per_residue_topology": null,
+        "tm_helix_count": null,
+        "ecd_length_residues": null,
+        "sequence": null
+      },
+      {
+        "paralog_symbol": "CNTN6",
+        "paralog_uniprot_acc": "Q9UQ52",
+        "ecd_pct_identity": 24.90066225165563,
+        "full_length_pct_identity": 16.4937,
+        "family_id": "Bilateria",
+        "compara_version": "Compara r112",
+        "per_residue_topology": null,
+        "tm_helix_count": null,
+        "ecd_length_residues": null,
+        "sequence": null
+      },
+      {
+        "paralog_symbol": "ROBO2",
+        "paralog_uniprot_acc": "Q9HCK4",
+        "ecd_pct_identity": 24.90066225165563,
+        "full_length_pct_identity": 16.4937,
+        "family_id": "Bilateria",
+        "compara_version": "Compara r112",
+        "per_residue_topology": null,
+        "tm_helix_count": null,
+        "ecd_length_residues": null,
+        "sequence": null
+      },
+      {
+        "paralog_symbol": "PRTG",
+        "paralog_uniprot_acc": "Q2VWP7",
+        "ecd_pct_identity": 24.7682119205298,
+        "full_length_pct_identity": 14.8789,
+        "family_id": "Bilateria",
+        "compara_version": "Compara r112",
+        "per_residue_topology": null,
+        "tm_helix_count": null,
+        "ecd_length_residues": null,
+        "sequence": null
+      },
+      {
+        "paralog_symbol": "DCC",
+        "paralog_uniprot_acc": "P43146",
+        "ecd_pct_identity": 24.635761589403973,
+        "full_length_pct_identity": 15.4556,
+        "family_id": "Bilateria",
+        "compara_version": "Compara r112",
+        "per_residue_topology": null,
+        "tm_helix_count": null,
+        "ecd_length_residues": null,
+        "sequence": null
+      },
+      {
+        "paralog_symbol": "CNTN3",
+        "paralog_uniprot_acc": "Q9P232",
+        "ecd_pct_identity": 24.10596026490066,
+        "full_length_pct_identity": 17.6471,
+        "family_id": "Bilateria",
+        "compara_version": "Compara r112",
+        "per_residue_topology": null,
+        "tm_helix_count": null,
+        "ecd_length_residues": null,
+        "sequence": null
+      },
+      {
+        "paralog_symbol": "VCAM1",
+        "paralog_uniprot_acc": "P19320",
+        "ecd_pct_identity": 24.03560830860534,
+        "full_length_pct_identity": 9.4579,
+        "family_id": "Bilateria",
+        "compara_version": "Compara r112",
+        "per_residue_topology": null,
+        "tm_helix_count": null,
+        "ecd_length_residues": null,
+        "sequence": null
+      },
+      {
+        "paralog_symbol": "NCAM1",
+        "paralog_uniprot_acc": "P13591",
+        "ecd_pct_identity": 23.72159090909091,
+        "full_length_pct_identity": 14.7636,
+        "family_id": "Bilateria",
+        "compara_version": "Compara r112",
+        "per_residue_topology": null,
+        "tm_helix_count": null,
+        "ecd_length_residues": null,
+        "sequence": null
+      },
+      {
+        "paralog_symbol": "IGSF9B",
+        "paralog_uniprot_acc": "Q9UPX0",
+        "ecd_pct_identity": 22.946175637393768,
+        "full_length_pct_identity": 14.1869,
+        "family_id": "Bilateria",
+        "compara_version": "Compara r112",
+        "per_residue_topology": null,
+        "tm_helix_count": null,
+        "ecd_length_residues": null,
+        "sequence": null
+      },
+      {
+        "paralog_symbol": "IGDCC4",
+        "paralog_uniprot_acc": "Q8TDY8",
+        "ecd_pct_identity": 22.781456953642383,
+        "full_length_pct_identity": 14.1869,
+        "family_id": "Bilateria",
+        "compara_version": "Compara r112",
+        "per_residue_topology": null,
+        "tm_helix_count": null,
+        "ecd_length_residues": null,
+        "sequence": null
+      },
+      {
+        "paralog_symbol": "NCAM2",
+        "paralog_uniprot_acc": "O15394",
+        "ecd_pct_identity": 22.043795620437955,
+        "full_length_pct_identity": 15.1096,
+        "family_id": "Bilateria",
+        "compara_version": "Compara r112",
+        "per_residue_topology": null,
+        "tm_helix_count": null,
+        "ecd_length_residues": null,
+        "sequence": null
+      },
+      {
+        "paralog_symbol": "BOC",
+        "paralog_uniprot_acc": "Q9BWV1",
+        "ecd_pct_identity": 21.85430463576159,
+        "full_length_pct_identity": 13.8408,
+        "family_id": "Bilateria",
+        "compara_version": "Compara r112",
+        "per_residue_topology": null,
+        "tm_helix_count": null,
+        "ecd_length_residues": null,
+        "sequence": null
+      }
+    ],
+    "paralogs_checked": true,
+    "isoform_topologies_checked": true,
+    "structure": {
+      "afdb_id": "AF-Q86VR7-F1",
+      "afdb_version": "v6",
+      "ecd_mean_plddt": 73.19337748344371,
+      "ecd_disordered_fraction": 0.31920529801324504,
+      "source": "AlphaFold DB (ECD-restricted pLDDT, n=755)",
+      "license": "CC BY 4.0",
+      "attribution": "© DeepMind / EMBL-EBI",
+      "citations": [
+        "10.1038/s41586-021-03819-2",
+        "10.1093/nar/gkad1011"
+      ],
+      "model_cif_url": "https://alphafold.ebi.ac.uk/files/AF-Q86VR7-F1-model_v6.cif",
+      "model_pdb_url": "https://alphafold.ebi.ac.uk/files/AF-Q86VR7-F1-model_v6.pdb",
+      "model_pae_url": "https://alphafold.ebi.ac.uk/files/AF-Q86VR7-F1-predicted_aligned_error_v6.json"
+    },
+    "surface_bind": {
+      "has_data": true,
+      "n_sites": 3,
+      "n_seeds_alpha": 2277,
+      "n_seeds_beta": 4187,
+      "n_seeds_total": 6464,
+      "chain": "A",
+      "sites": [
+        {
+          "site_id": 0,
+          "anchor_residue": 223,
+          "area_a2": 1158.1729542063501,
+          "n_seeds_alpha": 1479,
+          "n_seeds_beta": 1955,
+          "hydrophobicity": 10.3
+        },
+        {
+          "site_id": 1,
+          "anchor_residue": 199,
+          "area_a2": 1767.0231128202013,
+          "n_seeds_alpha": 45,
+          "n_seeds_beta": 168,
+          "hydrophobicity": 30
+        },
+        {
+          "site_id": 2,
+          "anchor_residue": 735,
+          "area_a2": 2443.0118213978817,
+          "n_seeds_alpha": 753,
+          "n_seeds_beta": 2064,
+          "hydrophobicity": 5.8
+        }
+      ],
+      "main_class": "Miscellaneous",
+      "sub_class": "StructuralAndAdhesion",
+      "protein_name": "V-set and immunoglobulin domain-containing protein 10-like",
+      "pdbs": [],
+      "representative_structure": null,
+      "source": "SURFACE-Bind v1 (Balbi 2026 PNAS)",
+      "attribution": "© Balbi et al., Correia lab — EPFL / Inria / Novo Nordisk",
+      "citation": "10.1073/pnas.2506269123"
+    },
+    "homo_oligomerization": {
+      "is_homo_oligomer": false,
+      "stoichiometry": null,
+      "af_model_num": null,
+      "is_ecd_only": false,
+      "has_higher_order_complex": false,
+      "dimer_pdb_filename": null,
+      "complex_pdb_filename": null,
+      "source": "Schweke 2024 (PMID 38325366)",
+      "citation": "10.1016/j.cell.2024.01.022"
+    }
+  },
+  "accessibility_risks": {
+    "co_receptor_requirements": {
+      "surface_expression_dependency": "none",
+      "partners": [],
+      "evidence_basis": "co_expression_only",
+      "rationale": "VSIG10L is annotated as a single-pass type I membrane protein with a signal peptide and large ECD (a1_evi_01). No ledger entry documents a chaperone, escort, or obligate trafficking partner required for surface expression. The membrane association is entirely topology-driven (signal peptide + TM helix); no co-receptor dependency is described.",
+      "cited_evidence_ids": [
+        "a1_evi_01"
+      ]
+    },
+    "shed_form": {
+      "present": false,
+      "severity": "low",
+      "evidence_strength": "weak",
+      "mechanism": null,
+      "sheddase_if_known": null,
+      "rationale": "No relevant data in the ledger. No ledger entry documents proteolytic release of the VSIG10L ectodomain, identification of a sheddase, or detection of soluble VSIG10L in supernatant or serum.",
+      "cited_evidence_ids": []
+    },
+    "secreted_form": {
+      "present": false,
+      "severity": "low",
+      "evidence_strength": "weak",
+      "ratio_to_membrane": null,
+      "source": null,
+      "rationale": "No relevant data in the ledger. No ledger entry documents a soluble splice isoform lacking the TM domain, nor any free soluble VSIG10L protein in serum or plasma. All expression evidence is RNA-level or topology-prediction; no secreted/soluble protein form is described.",
+      "cited_evidence_ids": []
+    },
+    "restricted_subdomain": {
+      "present": true,
+      "domain": "apical",
+      "severity": "moderate",
+      "evidence_strength": "moderate",
+      "rationale": "VSIG10L RNA is selectively expressed in suprabasal squamous epithelial cells of the esophagus (a1_evi_04, a2_evi_01, a2_evi_02), a stratified epithelium where suprabasal cells face the luminal/apical surface. Expression is absent in basal cells (a2_evi_01). This cell-layer restriction implies the protein resides on the apical/luminal face of a polarized epithelium, potentially limiting systemic binder access.",
+      "cited_evidence_ids": [
+        "a1_evi_04",
+        "a2_evi_01",
+        "a2_evi_02"
+      ]
+    },
+    "ecd_size_assessment": {
+      "ecd_accessibility_class": "large",
+      "rationale": "ECD length 755 residues (>=200) -> large; computed deterministically from DeepTMHMM topology.",
+      "cited_evidence_ids": []
+    },
+    "epitope_masking": {
+      "mechanism": [
+        "none"
+      ],
+      "severity": "none",
+      "evidence_strength": "weak",
+      "rationale": "No ledger entry documents homo-oligomerization burying extracellular epitopes, a hetero-complex partner covering the ECD, glycan shielding, or proteolytic removal of the ectodomain. The deterministic AF2 prior indicates is_homo_oligomer=false. With a large, Ig-domain-containing ECD and no documented masking, no epitope masking risk is supported by the ledger.",
+      "cited_evidence_ids": []
+    },
+    "homo_oligomerization_prediction": {
+      "present": false,
+      "stoichiometry": null,
+      "severity": "unknown",
+      "is_ecd_only": false,
+      "source": "Schweke 2024 (PMID 38325366)",
+      "cited_evidence_ids": []
+    }
+  },
+  "evidence": [
+    {
+      "evidence_id": "a1_evi_01",
+      "claim": "VSIG10L gene product is predicted to be a single-pass type I membrane-bound protein with 2 immunoglobulin (Ig)-like domains, 2 Ig-like folds, and a small cytoplasmic domain. This is the most detailed topology description available and is consistent with UniProt annotation (signal peptide aa1-27, large ECD aa28-776, single TM helix aa777-797, cytoplasmic tail aa798-867).",
+      "claim_type": "topology",
+      "direction": "supports",
+      "evidence_type": "computational_prediction",
+      "evidence_tier": "secondary",
+      "confidence": "moderate",
+      "assay_context": {
+        "species": "human",
+        "cell_type_or_line": null,
+        "permeabilized": null,
+        "fixation": null,
+        "isoform": null,
+        "cell_context": null
+      },
+      "spans": [
+        {
+          "source": {
+            "source_type": "pmc",
+            "source_id": "PMC:PMC5063702",
+            "pmc_id": "PMC5063702",
+            "url": "https://www.ncbi.nlm.nih.gov/pmc/articles/PMC5063702/",
+            "title": "PMC:PMC5063702",
+            "retrieved_at": "2026-06-24T16:22:42.254017Z",
+            "content_sha256": "f42225cf85df8213417bea0b7c79ad210a95940134f9d707d70c0218238d9d48",
+            "publication_type": "other",
+            "is_retracted": false,
+            "retraction_checked_at": "2026-06-24T16:22:42.254017Z",
+            "license": "unknown"
+          },
+          "section": "results",
+          "figure_or_table_id": null,
+          "quote": "The predicted VSIG10L gene product is a membrane-bound protein with 2 immunoglobulin (Ig)-like domains, 2 Ig-like folds, and a small cytoplasmic domain ( Figure 4 ).",
+          "quote_sha256": "3fd1813763586ab511e12f8112df6b9464ce39f6bb451bd9aa846758466e40dd",
+          "char_offset": 0,
+          "normalized_source_sha256": "4dcd96f6865606f901aa8b7b0df861f3a59eca79245624aa1f09aa313ff31879"
+        }
+      ],
+      "entailment_verified": true,
+      "entailment_audit_passed": null,
+      "validation_warnings": [],
+      "duplicate_of": null
+    },
+    {
+      "evidence_id": "a1_evi_02",
+      "claim": "VSIG10L is described as a membrane-bound protein with immunoglobulin (Ig)-like domains, predominantly expressed in squamous (SQ) cells. This review-level assertion corroborates the single-pass TM topology but adds no new experimental surface localization data.",
+      "claim_type": "topology",
+      "direction": "supports",
+      "evidence_type": "review_assertion",
+      "evidence_tier": "secondary",
+      "confidence": "weak",
+      "assay_context": {
+        "species": "human",
+        "cell_type_or_line": null,
+        "permeabilized": null,
+        "fixation": null,
+        "isoform": null,
+        "cell_context": null
+      },
+      "spans": [
+        {
+          "source": {
+            "source_type": "pmc",
+            "source_id": "PMC:PMC12960849",
+            "pmc_id": "PMC12960849",
+            "url": "https://www.ncbi.nlm.nih.gov/pmc/articles/PMC12960849/",
+            "title": "PMC:PMC12960849",
+            "retrieved_at": "2026-06-24T16:22:42.254017Z",
+            "content_sha256": "9937a7c88ab4ebf22e17881241572eb1db35e18d7a7e6192078966ab2e870d1f",
+            "publication_type": "other",
+            "is_retracted": false,
+            "retraction_checked_at": "2026-06-24T16:22:42.254017Z",
+            "license": "unknown"
+          },
+          "section": "results",
+          "figure_or_table_id": null,
+          "quote": "VSIG10L is predominantly expressed in SQ cells, and its gene product encodes a membrane-bound protein with immunoglobulin (Ig)-like domains 14 .",
+          "quote_sha256": "57112d5f74d4f6629794d6d7dcd20fe720ebce0362899302cd5f379d9f6b87a0",
+          "char_offset": 0,
+          "normalized_source_sha256": "412a73af76c7f7ed98cca8f22ab1d602b1b9273fd3b75cf6232ce7002e463229"
+        }
+      ],
+      "entailment_verified": true,
+      "entailment_audit_passed": null,
+      "validation_warnings": [],
+      "duplicate_of": null
+    },
+    {
+      "evidence_id": "a1_evi_03",
+      "claim": "Due to the lack of optimized VSIG10L antibodies, the authors developed custom RNAscope in situ hybridization probes to assess VSIG10L expression in human and porcine esophagus and in human SQ epithelial cells (EPC2) grown as 3D-organotypes. This methodological note documents the absence of validated antibody reagents for VSIG10L, which is a critical gap for surface protein validation.",
+      "claim_type": "methodological",
+      "direction": "ambiguous",
+      "evidence_type": "in_situ_hybridization",
+      "evidence_tier": "secondary",
+      "confidence": "moderate",
+      "assay_context": {
+        "species": "human",
+        "cell_type_or_line": "EPC2 / human esophagus tissue",
+        "permeabilized": null,
+        "fixation": "fixed",
+        "isoform": null,
+        "cell_context": {
+          "material_kind": "cell_line",
+          "material_kind_other_label": null,
+          "cell_type": "squamous epithelial",
+          "cell_line_name": "EPC2",
+          "cellosaurus_id": null,
+          "tissue": "esophagus",
+          "disease_state": null,
+          "activation_state": null
+        }
+      },
+      "spans": [
+        {
+          "source": {
+            "source_type": "pmc",
+            "source_id": "PMC:PMC12960849",
+            "pmc_id": "PMC12960849",
+            "url": "https://www.ncbi.nlm.nih.gov/pmc/articles/PMC12960849/",
+            "title": "PMC:PMC12960849",
+            "retrieved_at": "2026-06-24T16:22:42.254017Z",
+            "content_sha256": "9937a7c88ab4ebf22e17881241572eb1db35e18d7a7e6192078966ab2e870d1f",
+            "publication_type": "other",
+            "is_retracted": false,
+            "retraction_checked_at": "2026-06-24T16:22:42.254017Z",
+            "license": "unknown"
+          },
+          "section": "results",
+          "figure_or_table_id": null,
+          "quote": "Given the lack of optimized VSIG10L antibodies, we developed custom RNAscope-in situ hybridization probes and subsequently assessed its expression in representative human and porcine esophagus, as well as in human SQ epithelial cells (EPC2) grown as 3D-organotypes 17 , 18 .",
+          "quote_sha256": "cdecd20425dd985e8ac02046ee5168eb022155f44730e0bba10c9406c68ce285",
+          "char_offset": 145,
+          "normalized_source_sha256": "412a73af76c7f7ed98cca8f22ab1d602b1b9273fd3b75cf6232ce7002e463229"
+        }
+      ],
+      "entailment_verified": true,
+      "entailment_audit_passed": null,
+      "validation_warnings": [],
+      "duplicate_of": null
+    },
+    {
+      "evidence_id": "a1_evi_04",
+      "claim": "RNAscope in situ hybridization shows VSIG10L RNA is selectively and consistently expressed in suprabasal squamous cells of the esophagus, with no detectable expression in basal squamous cells. This is RNA-level evidence only; no protein surface localization was assessed. Feeds non_surface_expression as RNA-high with no surface validation.",
+      "claim_type": "tissue_expression",
+      "direction": "ambiguous",
+      "evidence_type": "in_situ_hybridization",
+      "evidence_tier": "secondary",
+      "confidence": "moderate",
+      "assay_context": {
+        "species": "human",
+        "cell_type_or_line": "suprabasal SQ cells, human esophagus",
+        "permeabilized": null,
+        "fixation": "fixed",
+        "isoform": null,
+        "cell_context": {
+          "material_kind": "primary_tissue",
+          "material_kind_other_label": null,
+          "cell_type": "suprabasal squamous epithelial cells",
+          "cell_line_name": null,
+          "cellosaurus_id": null,
+          "tissue": "esophagus",
+          "disease_state": null,
+          "activation_state": null
+        }
+      },
+      "spans": [
+        {
+          "source": {
+            "source_type": "pmc",
+            "source_id": "PMC:PMC12960849",
+            "pmc_id": "PMC12960849",
+            "url": "https://www.ncbi.nlm.nih.gov/pmc/articles/PMC12960849/",
+            "title": "PMC:PMC12960849",
+            "retrieved_at": "2026-06-24T16:22:42.254017Z",
+            "content_sha256": "9937a7c88ab4ebf22e17881241572eb1db35e18d7a7e6192078966ab2e870d1f",
+            "publication_type": "other",
+            "is_retracted": false,
+            "retraction_checked_at": "2026-06-24T16:22:42.254017Z",
+            "license": "unknown"
+          },
+          "section": "results",
+          "figure_or_table_id": null,
+          "quote": "As shown in Fig. 1 , we found VSIG10L RNA to be selectively and consistently expressed in suprabasal SQ cells, with no detectable expression in basal squamous cells, suggesting a possible role of VSIG10L in epithelial maturation.",
+          "quote_sha256": "755e23e936d85e3f02c46a47a9dcc715ed4430eb9e18f08566c443a3f4bde3d8",
+          "char_offset": 420,
+          "normalized_source_sha256": "412a73af76c7f7ed98cca8f22ab1d602b1b9273fd3b75cf6232ce7002e463229"
+        }
+      ],
+      "entailment_verified": true,
+      "entailment_audit_passed": null,
+      "validation_warnings": [],
+      "duplicate_of": null
+    },
+    {
+      "evidence_id": "a1_evi_05",
+      "claim": "VSIG10L exhibits high mRNA/RNA expression in normal squamous esophagus with marked loss of expression in Barrett-associated lesions (metaplasia, dysplasia, adenocarcinoma). This is RNA-level evidence from a clinical cohort study; no protein surface localization was assessed. Feeds non_surface_expression.",
+      "claim_type": "tissue_expression",
+      "direction": "ambiguous",
+      "evidence_type": "rt_qpcr",
+      "evidence_tier": "secondary",
+      "confidence": "moderate",
+      "assay_context": {
+        "species": "human",
+        "cell_type_or_line": "normal squamous esophagus and Barrett lesions",
+        "permeabilized": null,
+        "fixation": null,
+        "isoform": null,
+        "cell_context": {
+          "material_kind": "primary_tissue",
+          "material_kind_other_label": null,
+          "cell_type": "squamous epithelium",
+          "cell_line_name": null,
+          "cellosaurus_id": null,
+          "tissue": "esophagus",
+          "disease_state": "normal vs Barrett-associated lesions",
+          "activation_state": null
+        }
+      },
+      "spans": [
+        {
+          "source": {
+            "source_type": "pmc",
+            "source_id": "PMC:PMC5063702",
+            "pmc_id": "PMC5063702",
+            "url": "https://www.ncbi.nlm.nih.gov/pmc/articles/PMC5063702/",
+            "title": "PMC:PMC5063702",
+            "retrieved_at": "2026-06-24T16:22:42.254017Z",
+            "content_sha256": "f42225cf85df8213417bea0b7c79ad210a95940134f9d707d70c0218238d9d48",
+            "publication_type": "other",
+            "is_retracted": false,
+            "retraction_checked_at": "2026-06-24T16:22:42.254017Z",
+            "license": "unknown"
+          },
+          "section": "abstract",
+          "figure_or_table_id": null,
+          "quote": "VSIG10L exhibited high expression in normal squamous esophagus with marked loss of expression in Barrett-associated lesions.",
+          "quote_sha256": "3252398abdc1d7fbccdb3ea1a362148ac3839dcd5ef8d2fece7dc19999e0e944",
+          "char_offset": 166,
+          "normalized_source_sha256": "4dcd96f6865606f901aa8b7b0df861f3a59eca79245624aa1f09aa313ff31879"
+        }
+      ],
+      "entailment_verified": true,
+      "entailment_audit_passed": null,
+      "validation_warnings": [],
+      "duplicate_of": null
+    },
+    {
+      "evidence_id": "a1_evi_06",
+      "claim": "qRT-PCR was used to quantify VSIG10L expression in n=238 normal squamous esophagus samples and stage-specific Barrett esophagus-associated lesions. This is the primary RNA quantification method for VSIG10L expression data in this study; no protein or surface assay was performed.",
+      "claim_type": "tissue_expression",
+      "direction": "ambiguous",
+      "evidence_type": "rt_qpcr",
+      "evidence_tier": "secondary",
+      "confidence": "moderate",
+      "assay_context": {
+        "species": "human",
+        "cell_type_or_line": "normal squamous esophagus and BE lesions (n=238)",
+        "permeabilized": null,
+        "fixation": null,
+        "isoform": null,
+        "cell_context": {
+          "material_kind": "primary_tissue",
+          "material_kind_other_label": null,
+          "cell_type": "squamous epithelium",
+          "cell_line_name": null,
+          "cellosaurus_id": null,
+          "tissue": "esophagus",
+          "disease_state": "normal and Barrett esophagus-associated lesions",
+          "activation_state": null
+        }
+      },
+      "spans": [
+        {
+          "source": {
+            "source_type": "pmc",
+            "source_id": "PMC:PMC5063702",
+            "pmc_id": "PMC5063702",
+            "url": "https://www.ncbi.nlm.nih.gov/pmc/articles/PMC5063702/",
+            "title": "PMC:PMC5063702",
+            "retrieved_at": "2026-06-24T16:22:42.254017Z",
+            "content_sha256": "f42225cf85df8213417bea0b7c79ad210a95940134f9d707d70c0218238d9d48",
+            "publication_type": "other",
+            "is_retracted": false,
+            "retraction_checked_at": "2026-06-24T16:22:42.254017Z",
+            "license": "unknown"
+          },
+          "section": "methods",
+          "figure_or_table_id": null,
+          "quote": "We performed quantitative real-time polymerase chain reaction to determine VSIG10L expression in a random set of (n = 238) normal squamous esophagus and stage-specific BE-associated lesions ( Figure 3 ).",
+          "quote_sha256": "98541dada040f24ff206fc2fa1db682e5dd5dcdbbe16da8e290b53aa65f8510c",
+          "char_offset": 291,
+          "normalized_source_sha256": "4dcd96f6865606f901aa8b7b0df861f3a59eca79245624aa1f09aa313ff31879"
+        }
+      ],
+      "entailment_verified": true,
+      "entailment_audit_passed": null,
+      "validation_warnings": [],
+      "duplicate_of": null
+    },
+    {
+      "evidence_id": "a1_evi_07",
+      "claim": "In situ hybridization of VSIG10L transcript in normal esophageal squamous tissue confirmed and spatially localized mRNA expression. This is RNA-level spatial evidence only; no protein surface localization was assessed. Feeds non_surface_expression.",
+      "claim_type": "tissue_expression",
+      "direction": "ambiguous",
+      "evidence_type": "in_situ_hybridization",
+      "evidence_tier": "secondary",
+      "confidence": "moderate",
+      "assay_context": {
+        "species": "human",
+        "cell_type_or_line": "normal esophageal squamous tissue",
+        "permeabilized": null,
+        "fixation": "fixed",
+        "isoform": null,
+        "cell_context": {
+          "material_kind": "primary_tissue",
+          "material_kind_other_label": null,
+          "cell_type": "squamous epithelium",
+          "cell_line_name": null,
+          "cellosaurus_id": null,
+          "tissue": "esophagus",
+          "disease_state": "normal",
+          "activation_state": null
+        }
+      },
+      "spans": [
+        {
+          "source": {
+            "source_type": "pmc",
+            "source_id": "PMC:PMC5063702",
+            "pmc_id": "PMC5063702",
+            "url": "https://www.ncbi.nlm.nih.gov/pmc/articles/PMC5063702/",
+            "title": "PMC:PMC5063702",
+            "retrieved_at": "2026-06-24T16:22:42.254017Z",
+            "content_sha256": "f42225cf85df8213417bea0b7c79ad210a95940134f9d707d70c0218238d9d48",
+            "publication_type": "other",
+            "is_retracted": false,
+            "retraction_checked_at": "2026-06-24T16:22:42.254017Z",
+            "license": "unknown"
+          },
+          "section": "methods",
+          "figure_or_table_id": null,
+          "quote": "In situ hybridization of VSIG10L transcript of normal esophagus squamous tissue confirmed and localized expression (see eFigure 3 in the Supplement ).",
+          "quote_sha256": "219c787202699e636da1b278437e3510561d210ef687a19ff6c9f5b633e92746",
+          "char_offset": 495,
+          "normalized_source_sha256": "4dcd96f6865606f901aa8b7b0df861f3a59eca79245624aa1f09aa313ff31879"
+        }
+      ],
+      "entailment_verified": true,
+      "entailment_audit_passed": null,
+      "validation_warnings": [],
+      "duplicate_of": null
+    },
+    {
+      "evidence_id": "a2_evi_01",
+      "claim": "VSIG10L RNA is selectively and consistently expressed in suprabasal squamous (SQ) cells of the esophageal epithelium, with no detectable expression in basal squamous cells, suggesting a role in epithelial maturation. This cell-state distinction (suprabasal vs basal) is a key expression boundary.",
+      "claim_type": "tissue_expression",
+      "direction": "supports",
+      "evidence_type": "single_cell_rna_seq",
+      "evidence_tier": "primary",
+      "confidence": "strong",
+      "assay_context": {
+        "species": "human",
+        "cell_type_or_line": "suprabasal squamous epithelial cells, esophageal mucosa",
+        "permeabilized": null,
+        "fixation": "unspecified",
+        "isoform": null,
+        "cell_context": {
+          "material_kind": "primary_tissue",
+          "material_kind_other_label": null,
+          "cell_type": "suprabasal squamous epithelial cells",
+          "cell_line_name": null,
+          "cellosaurus_id": null,
+          "tissue": "esophagus",
+          "disease_state": "normal",
+          "activation_state": null
+        }
+      },
+      "spans": [
+        {
+          "source": {
+            "source_type": "pmc",
+            "source_id": "PMC:PMC12960849",
+            "pmc_id": "PMC12960849",
+            "url": "https://www.ncbi.nlm.nih.gov/pmc/articles/PMC12960849/",
+            "title": "PMC:PMC12960849",
+            "retrieved_at": "2026-06-24T16:22:42.254017Z",
+            "content_sha256": "9937a7c88ab4ebf22e17881241572eb1db35e18d7a7e6192078966ab2e870d1f",
+            "publication_type": "other",
+            "is_retracted": false,
+            "retraction_checked_at": "2026-06-24T16:22:42.254017Z",
+            "license": "unknown"
+          },
+          "section": "results",
+          "figure_or_table_id": null,
+          "quote": "As shown in Fig. 1 , we found VSIG10L RNA to be selectively and consistently expressed in suprabasal SQ cells, with no detectable expression in basal squamous cells, suggesting a possible role of VSIG10L in epithelial maturation.",
+          "quote_sha256": "755e23e936d85e3f02c46a47a9dcc715ed4430eb9e18f08566c443a3f4bde3d8",
+          "char_offset": 420,
+          "normalized_source_sha256": "412a73af76c7f7ed98cca8f22ab1d602b1b9273fd3b75cf6232ce7002e463229"
+        }
+      ],
+      "entailment_verified": true,
+      "entailment_audit_passed": null,
+      "validation_warnings": [],
+      "duplicate_of": "a1_evi_04"
+    },
+    {
+      "evidence_id": "a2_evi_02",
+      "claim": "Using mammalian tissues and patient-derived organoids, VSIG10L is selectively expressed in suprabasal squamous cells of the esophageal mucosa and is essential for epithelial maturation and homeostasis. This confirms cell-type-restricted expression in normal esophageal squamous epithelium.",
+      "claim_type": "tissue_expression",
+      "direction": "supports",
+      "evidence_type": "single_cell_rna_seq",
+      "evidence_tier": "primary",
+      "confidence": "strong",
+      "assay_context": {
+        "species": "human",
+        "cell_type_or_line": "suprabasal squamous epithelial cells, esophageal mucosa; patient-derived organoids",
+        "permeabilized": null,
+        "fixation": "unspecified",
+        "isoform": null,
+        "cell_context": {
+          "material_kind": "primary_tissue",
+          "material_kind_other_label": null,
+          "cell_type": "suprabasal squamous epithelial cells",
+          "cell_line_name": null,
+          "cellosaurus_id": null,
+          "tissue": "esophagus",
+          "disease_state": "normal",
+          "activation_state": null
+        }
+      },
+      "spans": [
+        {
+          "source": {
+            "source_type": "pmc",
+            "source_id": "PMC:PMC12960849",
+            "pmc_id": "PMC12960849",
+            "url": "https://www.ncbi.nlm.nih.gov/pmc/articles/PMC12960849/",
+            "title": "PMC:PMC12960849",
+            "retrieved_at": "2026-06-24T16:22:42.254017Z",
+            "content_sha256": "9937a7c88ab4ebf22e17881241572eb1db35e18d7a7e6192078966ab2e870d1f",
+            "publication_type": "other",
+            "is_retracted": false,
+            "retraction_checked_at": "2026-06-24T16:22:42.254017Z",
+            "license": "unknown"
+          },
+          "section": "abstract",
+          "figure_or_table_id": null,
+          "quote": "Using mammalian tissues and patient-derived organoids, we show VSIG10L is selectively expressed in the suprabasal squamous cells of the esophageal mucosa and is essential for epithelial maturation and homeostasis.",
+          "quote_sha256": "9f52e99444baf68ebdac289e53b9557f92a34ae047535162dfb8c2bbce2f5cd6",
+          "char_offset": 650,
+          "normalized_source_sha256": "412a73af76c7f7ed98cca8f22ab1d602b1b9273fd3b75cf6232ce7002e463229"
+        }
+      ],
+      "entailment_verified": true,
+      "entailment_audit_passed": null,
+      "validation_warnings": [],
+      "duplicate_of": null
+    },
+    {
+      "evidence_id": "a2_evi_03",
+      "claim": "VSIG10L exhibits high expression in normal squamous esophagus with marked loss of expression in Barrett esophagus-associated lesions (metaplasia, dysplasia, adenocarcinoma). This is the core disease-context expression contrast for VSIG10L.",
+      "claim_type": "tissue_expression",
+      "direction": "supports",
+      "evidence_type": "rt_qpcr",
+      "evidence_tier": "primary",
+      "confidence": "strong",
+      "assay_context": {
+        "species": "human",
+        "cell_type_or_line": "normal squamous esophagus and Barrett esophagus-associated lesions (n=238)",
+        "permeabilized": null,
+        "fixation": "unspecified",
+        "isoform": null,
+        "cell_context": {
+          "material_kind": "primary_tissue",
+          "material_kind_other_label": null,
+          "cell_type": "squamous epithelium",
+          "cell_line_name": null,
+          "cellosaurus_id": null,
+          "tissue": "esophagus",
+          "disease_state": "normal vs Barrett esophagus-associated lesions",
+          "activation_state": null
+        }
+      },
+      "spans": [
+        {
+          "source": {
+            "source_type": "pmc",
+            "source_id": "PMC:PMC5063702",
+            "pmc_id": "PMC5063702",
+            "url": "https://www.ncbi.nlm.nih.gov/pmc/articles/PMC5063702/",
+            "title": "PMC:PMC5063702",
+            "retrieved_at": "2026-06-24T16:22:42.254017Z",
+            "content_sha256": "f42225cf85df8213417bea0b7c79ad210a95940134f9d707d70c0218238d9d48",
+            "publication_type": "other",
+            "is_retracted": false,
+            "retraction_checked_at": "2026-06-24T16:22:42.254017Z",
+            "license": "unknown"
+          },
+          "section": "abstract",
+          "figure_or_table_id": null,
+          "quote": "VSIG10L exhibited high expression in normal squamous esophagus with marked loss of expression in Barrett-associated lesions.",
+          "quote_sha256": "3252398abdc1d7fbccdb3ea1a362148ac3839dcd5ef8d2fece7dc19999e0e944",
+          "char_offset": 166,
+          "normalized_source_sha256": "4dcd96f6865606f901aa8b7b0df861f3a59eca79245624aa1f09aa313ff31879"
+        }
+      ],
+      "entailment_verified": true,
+      "entailment_audit_passed": null,
+      "validation_warnings": [],
+      "duplicate_of": "a1_evi_05"
+    },
+    {
+      "evidence_id": "a2_evi_04",
+      "claim": "Quantitative real-time PCR was used to measure VSIG10L expression across n=238 normal squamous esophagus samples and stage-specific Barrett esophagus-associated lesions, providing the quantitative basis for the high-normal / low-disease expression contrast.",
+      "claim_type": "tissue_expression",
+      "direction": "supports",
+      "evidence_type": "rt_qpcr",
+      "evidence_tier": "primary",
+      "confidence": "strong",
+      "assay_context": {
+        "species": "human",
+        "cell_type_or_line": "normal squamous esophagus and stage-specific BE-associated lesions (n=238)",
+        "permeabilized": null,
+        "fixation": "unspecified",
+        "isoform": null,
+        "cell_context": {
+          "material_kind": "primary_tissue",
+          "material_kind_other_label": null,
+          "cell_type": "squamous epithelium",
+          "cell_line_name": null,
+          "cellosaurus_id": null,
+          "tissue": "esophagus",
+          "disease_state": "normal and Barrett esophagus stages",
+          "activation_state": null
+        }
+      },
+      "spans": [
+        {
+          "source": {
+            "source_type": "pmc",
+            "source_id": "PMC:PMC5063702",
+            "pmc_id": "PMC5063702",
+            "url": "https://www.ncbi.nlm.nih.gov/pmc/articles/PMC5063702/",
+            "title": "PMC:PMC5063702",
+            "retrieved_at": "2026-06-24T16:22:42.254017Z",
+            "content_sha256": "f42225cf85df8213417bea0b7c79ad210a95940134f9d707d70c0218238d9d48",
+            "publication_type": "other",
+            "is_retracted": false,
+            "retraction_checked_at": "2026-06-24T16:22:42.254017Z",
+            "license": "unknown"
+          },
+          "section": "methods",
+          "figure_or_table_id": null,
+          "quote": "We performed quantitative real-time polymerase chain reaction to determine VSIG10L expression in a random set of (n = 238) normal squamous esophagus and stage-specific BE-associated lesions ( Figure 3 ).",
+          "quote_sha256": "98541dada040f24ff206fc2fa1db682e5dd5dcdbbe16da8e290b53aa65f8510c",
+          "char_offset": 291,
+          "normalized_source_sha256": "4dcd96f6865606f901aa8b7b0df861f3a59eca79245624aa1f09aa313ff31879"
+        }
+      ],
+      "entailment_verified": true,
+      "entailment_audit_passed": null,
+      "validation_warnings": [],
+      "duplicate_of": "a1_evi_06"
+    },
+    {
+      "evidence_id": "a2_evi_05",
+      "claim": "In situ hybridization of VSIG10L transcript in normal esophageal squamous tissue confirmed and localized expression to the squamous epithelium, providing spatial transcript-level evidence for esophageal expression.",
+      "claim_type": "tissue_expression",
+      "direction": "supports",
+      "evidence_type": "in_situ_hybridization",
+      "evidence_tier": "primary",
+      "confidence": "strong",
+      "assay_context": {
+        "species": "human",
+        "cell_type_or_line": "normal esophageal squamous tissue",
+        "permeabilized": true,
+        "fixation": "fixed",
+        "isoform": null,
+        "cell_context": {
+          "material_kind": "primary_tissue",
+          "material_kind_other_label": null,
+          "cell_type": "squamous epithelium",
+          "cell_line_name": null,
+          "cellosaurus_id": null,
+          "tissue": "esophagus",
+          "disease_state": "normal",
+          "activation_state": null
+        }
+      },
+      "spans": [
+        {
+          "source": {
+            "source_type": "pmc",
+            "source_id": "PMC:PMC5063702",
+            "pmc_id": "PMC5063702",
+            "url": "https://www.ncbi.nlm.nih.gov/pmc/articles/PMC5063702/",
+            "title": "PMC:PMC5063702",
+            "retrieved_at": "2026-06-24T16:22:42.254017Z",
+            "content_sha256": "f42225cf85df8213417bea0b7c79ad210a95940134f9d707d70c0218238d9d48",
+            "publication_type": "other",
+            "is_retracted": false,
+            "retraction_checked_at": "2026-06-24T16:22:42.254017Z",
+            "license": "unknown"
+          },
+          "section": "methods",
+          "figure_or_table_id": null,
+          "quote": "In situ hybridization of VSIG10L transcript of normal esophagus squamous tissue confirmed and localized expression (see eFigure 3 in the Supplement ).",
+          "quote_sha256": "219c787202699e636da1b278437e3510561d210ef687a19ff6c9f5b633e92746",
+          "char_offset": 495,
+          "normalized_source_sha256": "4dcd96f6865606f901aa8b7b0df861f3a59eca79245624aa1f09aa313ff31879"
+        }
+      ],
+      "entailment_verified": true,
+      "entailment_audit_passed": null,
+      "validation_warnings": [],
+      "duplicate_of": "a1_evi_07"
+    },
+    {
+      "evidence_id": "a2_evi_06",
+      "claim": "Loss of VSIG10L expression was found in sporadic Barrett esophagus-associated lesions, supporting a functional role for VSIG10L in disease beyond the familial context. Expression is absent or markedly reduced in BE metaplasia, dysplasia, and adenocarcinoma.",
+      "claim_type": "tissue_expression",
+      "direction": "supports",
+      "evidence_type": "rt_qpcr",
+      "evidence_tier": "primary",
+      "confidence": "strong",
+      "assay_context": {
+        "species": "human",
+        "cell_type_or_line": "Barrett esophagus-associated lesions (sporadic)",
+        "permeabilized": null,
+        "fixation": "unspecified",
+        "isoform": null,
+        "cell_context": {
+          "material_kind": "primary_tissue",
+          "material_kind_other_label": null,
+          "cell_type": "Barrett metaplasia / dysplasia / adenocarcinoma",
+          "cell_line_name": null,
+          "cellosaurus_id": null,
+          "tissue": "esophagus",
+          "disease_state": "Barrett esophagus",
+          "activation_state": null
+        }
+      },
+      "spans": [
+        {
+          "source": {
+            "source_type": "pmc",
+            "source_id": "PMC:PMC5063702",
+            "pmc_id": "PMC5063702",
+            "url": "https://www.ncbi.nlm.nih.gov/pmc/articles/PMC5063702/",
+            "title": "PMC:PMC5063702",
+            "retrieved_at": "2026-06-24T16:22:42.254017Z",
+            "content_sha256": "f42225cf85df8213417bea0b7c79ad210a95940134f9d707d70c0218238d9d48",
+            "publication_type": "other",
+            "is_retracted": false,
+            "retraction_checked_at": "2026-06-24T16:22:42.254017Z",
+            "license": "unknown"
+          },
+          "section": "discussion",
+          "figure_or_table_id": null,
+          "quote": "Moreover, we found loss of VSIG10L expression in BE-associated lesions supporting a functional role for this gene in sporadic disease.",
+          "quote_sha256": "20cd36dfd06639c8e2b6ce76a7854a9119c280f346169cc1d218c7838e9ed4c9",
+          "char_offset": 646,
+          "normalized_source_sha256": "4dcd96f6865606f901aa8b7b0df861f3a59eca79245624aa1f09aa313ff31879"
+        }
+      ],
+      "entailment_verified": true,
+      "entailment_audit_passed": null,
+      "validation_warnings": [],
+      "duplicate_of": null
+    },
+    {
+      "evidence_id": "a2_evi_07",
+      "claim": "Loss of esophageal VSIG10L expression is observed frequently in patients with chronic gastroesophageal reflux disease (GERD), a known risk factor for Barrett esophagus. This represents a disease-state modulation: VSIG10L expression is reduced in GERD-affected esophageal epithelium relative to normal.",
+      "claim_type": "tissue_expression",
+      "direction": "supports",
+      "evidence_type": "rna_seq",
+      "evidence_tier": "primary",
+      "confidence": "moderate",
+      "assay_context": {
+        "species": "human",
+        "cell_type_or_line": "esophageal mucosa from chronic GERD patients",
+        "permeabilized": null,
+        "fixation": "unspecified",
+        "isoform": null,
+        "cell_context": {
+          "material_kind": "primary_tissue",
+          "material_kind_other_label": null,
+          "cell_type": "squamous epithelium",
+          "cell_line_name": null,
+          "cellosaurus_id": null,
+          "tissue": "esophagus",
+          "disease_state": "chronic GERD",
+          "activation_state": null
+        }
+      },
+      "spans": [
+        {
+          "source": {
+            "source_type": "pmc",
+            "source_id": "PMC:PMC12960849",
+            "pmc_id": "PMC12960849",
+            "url": "https://www.ncbi.nlm.nih.gov/pmc/articles/PMC12960849/",
+            "title": "PMC:PMC12960849",
+            "retrieved_at": "2026-06-24T16:22:42.254017Z",
+            "content_sha256": "9937a7c88ab4ebf22e17881241572eb1db35e18d7a7e6192078966ab2e870d1f",
+            "publication_type": "other",
+            "is_retracted": false,
+            "retraction_checked_at": "2026-06-24T16:22:42.254017Z",
+            "license": "unknown"
+          },
+          "section": "abstract",
+          "figure_or_table_id": null,
+          "quote": "Furthermore, loss of esophageal VSIG10L expression is observed frequently in patients with chronic gastroesophageal reflux disease, a known risk factor for BE.",
+          "quote_sha256": "15e976efd13ed07de18dadbecc720f021b6d69a30aa26f9a6b152813f7141c89",
+          "char_offset": 864,
+          "normalized_source_sha256": "412a73af76c7f7ed98cca8f22ab1d602b1b9273fd3b75cf6232ce7002e463229"
+        }
+      ],
+      "entailment_verified": true,
+      "entailment_audit_passed": null,
+      "validation_warnings": [],
+      "duplicate_of": null
+    },
+    {
+      "evidence_id": "a2_evi_08",
+      "claim": "Mice carrying human-orthologous germline mutations in Vsig10l exhibit loss of desmosomes and disrupted epithelial differentiation in the squamous mucosa, demonstrating that VSIG10L function is required for normal squamous epithelial cell maturation in vivo.",
+      "claim_type": "tissue_expression",
+      "direction": "supports",
+      "evidence_type": "loss_of_function_phenotype",
+      "evidence_tier": "primary",
+      "confidence": "strong",
+      "assay_context": {
+        "species": "mouse",
+        "cell_type_or_line": "squamous mucosa, germline Vsig10l mutant mice",
+        "permeabilized": null,
+        "fixation": "unspecified",
+        "isoform": null,
+        "cell_context": {
+          "material_kind": "primary_tissue",
+          "material_kind_other_label": null,
+          "cell_type": "squamous epithelial cells",
+          "cell_line_name": null,
+          "cellosaurus_id": null,
+          "tissue": "squamous mucosa (forestomach equivalent)",
+          "disease_state": "Vsig10l germline mutation",
+          "activation_state": null
+        }
+      },
+      "spans": [
+        {
+          "source": {
+            "source_type": "pmc",
+            "source_id": "PMC:PMC12960849",
+            "pmc_id": "PMC12960849",
+            "url": "https://www.ncbi.nlm.nih.gov/pmc/articles/PMC12960849/",
+            "title": "PMC:PMC12960849",
+            "retrieved_at": "2026-06-24T16:22:42.254017Z",
+            "content_sha256": "9937a7c88ab4ebf22e17881241572eb1db35e18d7a7e6192078966ab2e870d1f",
+            "publication_type": "other",
+            "is_retracted": false,
+            "retraction_checked_at": "2026-06-24T16:22:42.254017Z",
+            "license": "unknown"
+          },
+          "section": "abstract",
+          "figure_or_table_id": null,
+          "quote": "Mice carrying human-orthologous germline mutations in Vsig10l exhibit loss of desmosomes, concomitant with disrupted epithelial differentiation programs, in the squamous mucosa.",
+          "quote_sha256": "d65fe99e38a38a19a24472a7e0acc016df41b8dd19df0395508ab6c483d159a5",
+          "char_offset": 1024,
+          "normalized_source_sha256": "412a73af76c7f7ed98cca8f22ab1d602b1b9273fd3b75cf6232ce7002e463229"
+        }
+      ],
+      "entailment_verified": true,
+      "entailment_audit_passed": null,
+      "validation_warnings": [],
+      "duplicate_of": null
+    },
+    {
+      "evidence_id": "a2_evi_09",
+      "claim": "Upon long-term exposure to a bile acid (deoxycholate)-supplemented diet, Vsig10l-mutant mice develop overt Barrett esophagus-like lesions in the forestomach, indicating that loss of VSIG10L combined with bile acid stress drives metaplastic transformation of squamous epithelium.",
+      "claim_type": "tissue_expression",
+      "direction": "supports",
+      "evidence_type": "loss_of_function_phenotype",
+      "evidence_tier": "primary",
+      "confidence": "moderate",
+      "assay_context": {
+        "species": "mouse",
+        "cell_type_or_line": "forestomach squamous epithelium, Vsig10l-mutant mice on bile acid diet",
+        "permeabilized": null,
+        "fixation": "unspecified",
+        "isoform": null,
+        "cell_context": {
+          "material_kind": "primary_tissue",
+          "material_kind_other_label": null,
+          "cell_type": "squamous epithelium",
+          "cell_line_name": null,
+          "cellosaurus_id": null,
+          "tissue": "forestomach",
+          "disease_state": "Barrett esophagus-like metaplasia (bile acid diet)",
+          "activation_state": null
+        }
+      },
+      "spans": [
+        {
+          "source": {
+            "source_type": "pmc",
+            "source_id": "PMC:PMC12960849",
+            "pmc_id": "PMC12960849",
+            "url": "https://www.ncbi.nlm.nih.gov/pmc/articles/PMC12960849/",
+            "title": "PMC:PMC12960849",
+            "retrieved_at": "2026-06-24T16:22:42.254017Z",
+            "content_sha256": "9937a7c88ab4ebf22e17881241572eb1db35e18d7a7e6192078966ab2e870d1f",
+            "publication_type": "other",
+            "is_retracted": false,
+            "retraction_checked_at": "2026-06-24T16:22:42.254017Z",
+            "license": "unknown"
+          },
+          "section": "abstract",
+          "figure_or_table_id": null,
+          "quote": "Upon long-term exposure to a bile acid (deoxycholate) supplemented diet, Vsig10l-mutant mice develop overt BE-like lesions in the forestomach.",
+          "quote_sha256": "6adfa0f8f3104adacc2270fcbe5f854c15325ad525bc8b69fbfaba5e4061a3a8",
+          "char_offset": 1202,
+          "normalized_source_sha256": "412a73af76c7f7ed98cca8f22ab1d602b1b9273fd3b75cf6232ce7002e463229"
+        }
+      ],
+      "entailment_verified": true,
+      "entailment_audit_passed": null,
+      "validation_warnings": [],
+      "duplicate_of": null
+    },
+    {
+      "evidence_id": "a2_evi_10",
+      "claim": "Mutant VSIG10L impaired squamous cell maturation in an organotypic model and was associated with proton-pump inhibitor-refractory dilated intercellular spaces and reduced desmosome formation in an affected family member, supporting that inherited VSIG10L defects predispose to Barrett esophagus and/or esophageal adenocarcinoma.",
+      "claim_type": "tissue_expression",
+      "direction": "supports",
+      "evidence_type": "loss_of_function_phenotype",
+      "evidence_tier": "primary",
+      "confidence": "moderate",
+      "assay_context": {
+        "species": "human",
+        "cell_type_or_line": "organotypic squamous epithelial model; affected family member esophageal biopsy",
+        "permeabilized": null,
+        "fixation": "unspecified",
+        "isoform": null,
+        "cell_context": {
+          "material_kind": "organoid",
+          "material_kind_other_label": null,
+          "cell_type": "squamous epithelial cells",
+          "cell_line_name": null,
+          "cellosaurus_id": null,
+          "tissue": "esophagus",
+          "disease_state": "familial Barrett esophagus / EAC predisposition",
+          "activation_state": null
+        }
+      },
+      "spans": [
+        {
+          "source": {
+            "source_type": "pmc",
+            "source_id": "PMC:PMC5063702",
+            "pmc_id": "PMC5063702",
+            "url": "https://www.ncbi.nlm.nih.gov/pmc/articles/PMC5063702/",
+            "title": "PMC:PMC5063702",
+            "retrieved_at": "2026-06-24T16:22:42.254017Z",
+            "content_sha256": "f42225cf85df8213417bea0b7c79ad210a95940134f9d707d70c0218238d9d48",
+            "publication_type": "other",
+            "is_retracted": false,
+            "retraction_checked_at": "2026-06-24T16:22:42.254017Z",
+            "license": "unknown"
+          },
+          "section": "discussion",
+          "figure_or_table_id": null,
+          "quote": "Mutant VSIG10L impaired squamous cell maturation in an organotypic model and was associated with proton-pump inhibitor refractory dilated intercellular spaces (DIS) and reduced desmosome formation in affected family member III-4, strongly supporting that the inherited defect in VSIG10L predisposes to BE and/or EAC in this family.",
+          "quote_sha256": "2a264a453f5efcafbd04b15db8bcbd9495dd292d2ed0035bbc741c6333ec65a8",
+          "char_offset": 781,
+          "normalized_source_sha256": "4dcd96f6865606f901aa8b7b0df861f3a59eca79245624aa1f09aa313ff31879"
+        }
+      ],
+      "entailment_verified": true,
+      "entailment_audit_passed": null,
+      "validation_warnings": [],
+      "duplicate_of": null
+    },
+    {
+      "evidence_id": "a2_evi_11",
+      "claim": "VSIG10L is highly expressed in normal esophagus and appears to play a role in epithelial maturation, as identified through genetic analysis of a large family with familial Barrett esophagus (FBE). This is a review-level summary of the primary expression finding.",
+      "claim_type": "tissue_expression",
+      "direction": "supports",
+      "evidence_type": "review_assertion",
+      "evidence_tier": "secondary",
+      "confidence": "moderate",
+      "assay_context": {
+        "species": "human",
+        "cell_type_or_line": "normal esophagus",
+        "permeabilized": null,
+        "fixation": "unspecified",
+        "isoform": null,
+        "cell_context": {
+          "material_kind": "primary_tissue",
+          "material_kind_other_label": null,
+          "cell_type": "squamous epithelium",
+          "cell_line_name": null,
+          "cellosaurus_id": null,
+          "tissue": "esophagus",
+          "disease_state": "normal",
+          "activation_state": null
+        }
+      },
+      "spans": [
+        {
+          "source": {
+            "source_type": "pmc",
+            "source_id": "PMC:PMC5063702",
+            "pmc_id": "PMC5063702",
+            "url": "https://www.ncbi.nlm.nih.gov/pmc/articles/PMC5063702/",
+            "title": "PMC:PMC5063702",
+            "retrieved_at": "2026-06-24T16:22:42.254017Z",
+            "content_sha256": "f42225cf85df8213417bea0b7c79ad210a95940134f9d707d70c0218238d9d48",
+            "publication_type": "other",
+            "is_retracted": false,
+            "retraction_checked_at": "2026-06-24T16:22:42.254017Z",
+            "license": "unknown"
+          },
+          "section": "discussion",
+          "figure_or_table_id": null,
+          "quote": "Genetic analysis of a large family with FBE uncovered the previously uncharacterized gene VSIG10L that is highly expressed in normal esophagus and appears to play a role in epithelial maturation.",
+          "quote_sha256": "1599f810c2587bac8c26a4257baac32b9a1bc0b092542f8ac97223010e3b7c5c",
+          "char_offset": 1113,
+          "normalized_source_sha256": "4dcd96f6865606f901aa8b7b0df861f3a59eca79245624aa1f09aa313ff31879"
+        }
+      ],
+      "entailment_verified": true,
+      "entailment_audit_passed": null,
+      "validation_warnings": [],
+      "duplicate_of": null
+    },
+    {
+      "evidence_id": "a2_evi_12",
+      "claim": "VSIG10L is predominantly expressed in squamous (SQ) cells of the esophagus, and its gene product encodes a membrane-bound protein with immunoglobulin (Ig)-like domains. The membrane-bound topology is consistent with potential surface accessibility in squamous epithelial cells.",
+      "claim_type": "tissue_expression",
+      "direction": "supports",
+      "evidence_type": "rna_seq",
+      "evidence_tier": "primary",
+      "confidence": "moderate",
+      "assay_context": {
+        "species": "human",
+        "cell_type_or_line": "squamous cells, esophageal epithelium",
+        "permeabilized": null,
+        "fixation": "unspecified",
+        "isoform": null,
+        "cell_context": {
+          "material_kind": "primary_tissue",
+          "material_kind_other_label": null,
+          "cell_type": "squamous epithelial cells",
+          "cell_line_name": null,
+          "cellosaurus_id": null,
+          "tissue": "esophagus",
+          "disease_state": "normal",
+          "activation_state": null
+        }
+      },
+      "spans": [
+        {
+          "source": {
+            "source_type": "pmc",
+            "source_id": "PMC:PMC12960849",
+            "pmc_id": "PMC12960849",
+            "url": "https://www.ncbi.nlm.nih.gov/pmc/articles/PMC12960849/",
+            "title": "PMC:PMC12960849",
+            "retrieved_at": "2026-06-24T16:22:42.254017Z",
+            "content_sha256": "9937a7c88ab4ebf22e17881241572eb1db35e18d7a7e6192078966ab2e870d1f",
+            "publication_type": "other",
+            "is_retracted": false,
+            "retraction_checked_at": "2026-06-24T16:22:42.254017Z",
+            "license": "unknown"
+          },
+          "section": "results",
+          "figure_or_table_id": null,
+          "quote": "VSIG10L is predominantly expressed in SQ cells, and its gene product encodes a membrane-bound protein with immunoglobulin (Ig)-like domains 14 .",
+          "quote_sha256": "57112d5f74d4f6629794d6d7dcd20fe720ebce0362899302cd5f379d9f6b87a0",
+          "char_offset": 0,
+          "normalized_source_sha256": "412a73af76c7f7ed98cca8f22ab1d602b1b9273fd3b75cf6232ce7002e463229"
+        }
+      ],
+      "entailment_verified": true,
+      "entailment_audit_passed": null,
+      "validation_warnings": [],
+      "duplicate_of": "a1_evi_02"
+    },
+    {
+      "evidence_id": "a2_evi_13",
+      "claim": "The predicted VSIG10L gene product is a membrane-bound protein with 2 immunoglobulin (Ig)-like domains, 2 Ig-like folds, and a small cytoplasmic domain. This computational/structural prediction places VSIG10L at the membrane with an extracellular Ig-domain-containing ectodomain, consistent with potential surface accessibility in esophageal squamous cells.",
+      "claim_type": "surface_expression",
+      "direction": "supports",
+      "evidence_type": "computational_prediction",
+      "evidence_tier": "secondary",
+      "confidence": "weak",
+      "assay_context": {
+        "species": "human",
+        "cell_type_or_line": "predicted from sequence",
+        "permeabilized": null,
+        "fixation": null,
+        "isoform": null,
+        "cell_context": {
+          "material_kind": "unspecified",
+          "material_kind_other_label": null,
+          "cell_type": null,
+          "cell_line_name": null,
+          "cellosaurus_id": null,
+          "tissue": "esophagus",
+          "disease_state": null,
+          "activation_state": null
+        }
+      },
+      "spans": [
+        {
+          "source": {
+            "source_type": "pmc",
+            "source_id": "PMC:PMC5063702",
+            "pmc_id": "PMC5063702",
+            "url": "https://www.ncbi.nlm.nih.gov/pmc/articles/PMC5063702/",
+            "title": "PMC:PMC5063702",
+            "retrieved_at": "2026-06-24T16:22:42.254017Z",
+            "content_sha256": "f42225cf85df8213417bea0b7c79ad210a95940134f9d707d70c0218238d9d48",
+            "publication_type": "other",
+            "is_retracted": false,
+            "retraction_checked_at": "2026-06-24T16:22:42.254017Z",
+            "license": "unknown"
+          },
+          "section": "results",
+          "figure_or_table_id": null,
+          "quote": "The predicted VSIG10L gene product is a membrane-bound protein with 2 immunoglobulin (Ig)-like domains, 2 Ig-like folds, and a small cytoplasmic domain ( Figure 4 ).",
+          "quote_sha256": "3fd1813763586ab511e12f8112df6b9464ce39f6bb451bd9aa846758466e40dd",
+          "char_offset": 0,
+          "normalized_source_sha256": "4dcd96f6865606f901aa8b7b0df861f3a59eca79245624aa1f09aa313ff31879"
+        }
+      ],
+      "entailment_verified": true,
+      "entailment_audit_passed": null,
+      "validation_warnings": [],
+      "duplicate_of": "a1_evi_01"
+    }
+  ],
+  "search_log": [
+    {
+      "tool": "evidence_retrieval",
+      "mode": "ihc",
+      "query": {
+        "agent_focus": "a1",
+        "intent": "A1 default sweep: ihc",
+        "category": "ihc",
+        "uniprot_acc": "Q86VR7"
+      },
+      "n_results": 5,
+      "sources_seen": [],
+      "retrieved_at": "2026-06-24T16:22:42.268736Z",
+      "contributed_evidence_ids": []
+    },
+    {
+      "tool": "evidence_retrieval",
+      "mode": "if",
+      "query": {
+        "agent_focus": "a1",
+        "intent": "A1 default sweep: if",
+        "category": "if",
+        "uniprot_acc": "Q86VR7"
+      },
+      "n_results": 4,
+      "sources_seen": [],
+      "retrieved_at": "2026-06-24T16:22:42.268736Z",
+      "contributed_evidence_ids": []
+    },
+    {
+      "tool": "evidence_retrieval",
+      "mode": "flow_cytometry",
+      "query": {
+        "agent_focus": "a1",
+        "intent": "A1 default sweep: flow_cytometry",
+        "category": "flow_cytometry",
+        "uniprot_acc": "Q86VR7"
+      },
+      "n_results": 3,
+      "sources_seen": [],
+      "retrieved_at": "2026-06-24T16:22:42.268736Z",
+      "contributed_evidence_ids": []
+    },
+    {
+      "tool": "evidence_retrieval",
+      "mode": "surface_biotinylation",
+      "query": {
+        "agent_focus": "a1",
+        "intent": "A1 default sweep: surface_biotinylation",
+        "category": "surface_biotinylation",
+        "uniprot_acc": "Q86VR7"
+      },
+      "n_results": 1,
+      "sources_seen": [],
+      "retrieved_at": "2026-06-24T16:22:42.268736Z",
+      "contributed_evidence_ids": []
+    },
+    {
+      "tool": "evidence_retrieval",
+      "mode": "mass_spec_surfaceome",
+      "query": {
+        "agent_focus": "a1",
+        "intent": "A1 default sweep: mass_spec_surfaceome",
+        "category": "mass_spec_surfaceome",
+        "uniprot_acc": "Q86VR7"
+      },
+      "n_results": 1,
+      "sources_seen": [],
+      "retrieved_at": "2026-06-24T16:22:42.268736Z",
+      "contributed_evidence_ids": []
+    },
+    {
+      "tool": "evidence_retrieval",
+      "mode": "shedding",
+      "query": {
+        "agent_focus": "a1",
+        "intent": "A1 default sweep: shedding",
+        "category": "shedding",
+        "uniprot_acc": "Q86VR7"
+      },
+      "n_results": 2,
+      "sources_seen": [],
+      "retrieved_at": "2026-06-24T16:22:42.268736Z",
+      "contributed_evidence_ids": []
+    },
+    {
+      "tool": "evidence_retrieval",
+      "mode": "overexpression",
+      "query": {
+        "agent_focus": "a1",
+        "intent": "A1 default sweep: overexpression",
+        "category": "overexpression",
+        "uniprot_acc": "Q86VR7"
+      },
+      "n_results": 1,
+      "sources_seen": [],
+      "retrieved_at": "2026-06-24T16:22:42.268736Z",
+      "contributed_evidence_ids": []
+    },
+    {
+      "tool": "evidence_retrieval",
+      "mode": "western_blot_paired",
+      "query": {
+        "agent_focus": "a1",
+        "intent": "A1 default sweep: western_blot_paired",
+        "category": "western_blot_paired",
+        "uniprot_acc": "Q86VR7"
+      },
+      "n_results": 0,
+      "sources_seen": [],
+      "retrieved_at": "2026-06-24T16:22:42.268736Z",
+      "contributed_evidence_ids": []
+    },
+    {
+      "tool": "evidence_retrieval",
+      "mode": "structure_with_ecd",
+      "query": {
+        "agent_focus": "a1",
+        "intent": "A1 default sweep: structure_with_ecd",
+        "category": "structure_with_ecd",
+        "uniprot_acc": "Q86VR7"
+      },
+      "n_results": 2,
+      "sources_seen": [],
+      "retrieved_at": "2026-06-24T16:22:42.268736Z",
+      "contributed_evidence_ids": []
+    },
+    {
+      "tool": "evidence_retrieval",
+      "mode": "other",
+      "query": {
+        "agent_focus": "a1",
+        "intent": "A1 default sweep: other",
+        "category": "other",
+        "uniprot_acc": "Q86VR7"
+      },
+      "n_results": 3,
+      "sources_seen": [],
+      "retrieved_at": "2026-06-24T16:22:42.268736Z",
+      "contributed_evidence_ids": []
+    },
+    {
+      "tool": "gene_literature",
+      "mode": "gene2pubmed",
+      "query": {
+        "agent_focus": "a1",
+        "intent": "A1 default: NCBI gene2pubmed baseline"
+      },
+      "n_results": 4,
+      "sources_seen": [],
+      "retrieved_at": "2026-06-24T16:22:42.268736Z",
+      "contributed_evidence_ids": []
+    },
+    {
+      "tool": "gene_literature",
+      "mode": "recent_corpus",
+      "query": {
+        "agent_focus": "a1",
+        "intent": "A1 default: recent_corpus sweep"
+      },
+      "n_results": 3,
+      "sources_seen": [],
+      "retrieved_at": "2026-06-24T16:22:42.268736Z",
+      "contributed_evidence_ids": []
+    },
+    {
+      "tool": "gene_literature",
+      "mode": "topic_search",
+      "query": {
+        "agent_focus": "a1",
+        "intent": "A1/A2 shared: surface-expression + surface-method topic_search",
+        "anchors": [
+          "surface_expression",
+          "flow_cytometry",
+          "surface_biotinylation",
+          "mass_spec_surfaceome",
+          "ihc"
+        ]
+      },
+      "n_results": 25,
+      "sources_seen": [],
+      "retrieved_at": "2026-06-24T16:22:42.268736Z",
+      "contributed_evidence_ids": []
+    },
+    {
+      "tool": "gene_literature",
+      "mode": "topic_search",
+      "query": {
+        "agent_focus": "a1",
+        "intent": "A1 default: structure / topology topic_search",
+        "anchors": [
+          "topology",
+          "structure"
+        ]
+      },
+      "n_results": 25,
+      "sources_seen": [],
+      "retrieved_at": "2026-06-24T16:22:42.268736Z",
+      "contributed_evidence_ids": []
+    },
+    {
+      "tool": "gene_literature",
+      "mode": "topic_search",
+      "query": {
+        "agent_focus": "a1",
+        "intent": "A1/A2 shared: shedding + PTM topic_search",
+        "anchors": [
+          "shedding",
+          "ptm"
+        ]
+      },
+      "n_results": 25,
+      "sources_seen": [],
+      "retrieved_at": "2026-06-24T16:22:42.268736Z",
+      "contributed_evidence_ids": []
+    },
+    {
+      "tool": "gene_literature",
+      "mode": "topic_search",
+      "query": {
+        "agent_focus": "a1",
+        "intent": "standing: normal-tissue surface expression (six high-consequence tox organs)",
+        "anchors": [
+          "normal_tissue_expression"
+        ]
+      },
+      "n_results": 25,
+      "sources_seen": [],
+      "retrieved_at": "2026-06-24T16:22:42.268736Z",
+      "contributed_evidence_ids": []
+    },
+    {
+      "tool": "gene_literature",
+      "mode": "topic_search",
+      "query": {
+        "agent_focus": "a1",
+        "intent": "standing: surface-reachability barriers (BBB / tumor penetration / luminal / accessibility)",
+        "anchors": [
+          "surface_reachability"
+        ]
+      },
+      "n_results": 6,
+      "sources_seen": [],
+      "retrieved_at": "2026-06-24T16:22:42.268736Z",
+      "contributed_evidence_ids": []
+    },
+    {
+      "tool": "gene_literature",
+      "mode": "topic_search",
+      "query": {
+        "agent_focus": "a1",
+        "intent": "standing: co-receptor / partner-dependency for surface trafficking",
+        "anchors": [
+          "partner_dependency"
+        ]
+      },
+      "n_results": 3,
+      "sources_seen": [],
+      "retrieved_at": "2026-06-24T16:22:42.268736Z",
+      "contributed_evidence_ids": []
+    },
+    {
+      "tool": "gene_literature",
+      "mode": "topic_search",
+      "query": {
+        "agent_focus": "a1",
+        "intent": "standing: plasma-membrane subdomain / polarity distribution",
+        "anchors": [
+          "membrane_subdomain"
+        ]
+      },
+      "n_results": 22,
+      "sources_seen": [],
+      "retrieved_at": "2026-06-24T16:22:42.268736Z",
+      "contributed_evidence_ids": []
+    },
+    {
+      "tool": "gene_literature",
+      "mode": "topic_search",
+      "query": {
+        "agent_focus": "a1",
+        "intent": "standing: epitope-masking evidence (homo / hetero / other)",
+        "anchors": [
+          "epitope_masking"
+        ]
+      },
+      "n_results": 3,
+      "sources_seen": [],
+      "retrieved_at": "2026-06-24T16:22:42.268736Z",
+      "contributed_evidence_ids": []
+    },
+    {
+      "tool": "gene_literature",
+      "mode": "topic_search",
+      "query": {
+        "agent_focus": "a1",
+        "intent": "standing: state-conditional surface biology (activation / stress / disease / EMT / senescence / differentiation) — feeds accessibility_modulation",
+        "anchors": [
+          "cell_state_modulation"
+        ]
+      },
+      "n_results": 25,
+      "sources_seen": [],
+      "retrieved_at": "2026-06-24T16:22:42.268736Z",
+      "contributed_evidence_ids": []
+    },
+    {
+      "tool": "evidence_retrieval",
+      "mode": "ihc",
+      "query": {
+        "agent_focus": "a2",
+        "intent": "A2 default sweep: ihc",
+        "category": "ihc",
+        "uniprot_acc": "Q86VR7"
+      },
+      "n_results": 5,
+      "sources_seen": [],
+      "retrieved_at": "2026-06-24T16:22:42.268736Z",
+      "contributed_evidence_ids": []
+    },
+    {
+      "tool": "evidence_retrieval",
+      "mode": "if",
+      "query": {
+        "agent_focus": "a2",
+        "intent": "A2 default sweep: if",
+        "category": "if",
+        "uniprot_acc": "Q86VR7"
+      },
+      "n_results": 4,
+      "sources_seen": [],
+      "retrieved_at": "2026-06-24T16:22:42.268736Z",
+      "contributed_evidence_ids": []
+    },
+    {
+      "tool": "evidence_retrieval",
+      "mode": "flow_cytometry",
+      "query": {
+        "agent_focus": "a2",
+        "intent": "A2 default sweep: flow_cytometry",
+        "category": "flow_cytometry",
+        "uniprot_acc": "Q86VR7"
+      },
+      "n_results": 3,
+      "sources_seen": [],
+      "retrieved_at": "2026-06-24T16:22:42.268736Z",
+      "contributed_evidence_ids": []
+    },
+    {
+      "tool": "evidence_retrieval",
+      "mode": "mass_spec_surfaceome",
+      "query": {
+        "agent_focus": "a2",
+        "intent": "A2 default sweep: mass_spec_surfaceome",
+        "category": "mass_spec_surfaceome",
+        "uniprot_acc": "Q86VR7"
+      },
+      "n_results": 1,
+      "sources_seen": [],
+      "retrieved_at": "2026-06-24T16:22:42.268736Z",
+      "contributed_evidence_ids": []
+    },
+    {
+      "tool": "evidence_retrieval",
+      "mode": "shedding",
+      "query": {
+        "agent_focus": "a2",
+        "intent": "A2 default sweep: shedding",
+        "category": "shedding",
+        "uniprot_acc": "Q86VR7"
+      },
+      "n_results": 2,
+      "sources_seen": [],
+      "retrieved_at": "2026-06-24T16:22:42.268736Z",
+      "contributed_evidence_ids": []
+    },
+    {
+      "tool": "evidence_retrieval",
+      "mode": "surface_expression",
+      "query": {
+        "agent_focus": "a2",
+        "intent": "A2 default sweep: surface_expression",
+        "category": "surface_expression",
+        "uniprot_acc": "Q86VR7"
+      },
+      "n_results": 17,
+      "sources_seen": [],
+      "retrieved_at": "2026-06-24T16:22:42.268736Z",
+      "contributed_evidence_ids": []
+    },
+    {
+      "tool": "gene_literature",
+      "mode": "gene2pubmed",
+      "query": {
+        "agent_focus": "a2",
+        "intent": "A2 default: NCBI gene2pubmed baseline"
+      },
+      "n_results": 4,
+      "sources_seen": [],
+      "retrieved_at": "2026-06-24T16:22:42.268736Z",
+      "contributed_evidence_ids": []
+    },
+    {
+      "tool": "gene_literature",
+      "mode": "recent_corpus",
+      "query": {
+        "agent_focus": "a2",
+        "intent": "A2 default: recent_corpus sweep"
+      },
+      "n_results": 3,
+      "sources_seen": [],
+      "retrieved_at": "2026-06-24T16:22:42.268736Z",
+      "contributed_evidence_ids": []
+    },
+    {
+      "tool": "gene_literature",
+      "mode": "topic_search",
+      "query": {
+        "agent_focus": "a2",
+        "intent": "A1/A2 shared: surface-expression + surface-method topic_search",
+        "anchors": [
+          "surface_expression",
+          "flow_cytometry",
+          "surface_biotinylation",
+          "mass_spec_surfaceome",
+          "ihc"
+        ]
+      },
+      "n_results": 25,
+      "sources_seen": [],
+      "retrieved_at": "2026-06-24T16:22:42.268736Z",
+      "contributed_evidence_ids": []
+    },
+    {
+      "tool": "gene_literature",
+      "mode": "topic_search",
+      "query": {
+        "agent_focus": "a2",
+        "intent": "A1/A2 shared: shedding + PTM topic_search",
+        "anchors": [
+          "shedding",
+          "ptm"
+        ]
+      },
+      "n_results": 25,
+      "sources_seen": [],
+      "retrieved_at": "2026-06-24T16:22:42.268736Z",
+      "contributed_evidence_ids": []
+    },
+    {
+      "tool": "gene_literature",
+      "mode": "topic_search",
+      "query": {
+        "agent_focus": "a2",
+        "intent": "standing: normal-tissue surface expression (six high-consequence tox organs)",
+        "anchors": [
+          "normal_tissue_expression"
+        ]
+      },
+      "n_results": 25,
+      "sources_seen": [],
+      "retrieved_at": "2026-06-24T16:22:42.268736Z",
+      "contributed_evidence_ids": []
+    },
+    {
+      "tool": "gene_literature",
+      "mode": "topic_search",
+      "query": {
+        "agent_focus": "a2",
+        "intent": "standing: surface-reachability barriers (BBB / tumor penetration / luminal / accessibility)",
+        "anchors": [
+          "surface_reachability"
+        ]
+      },
+      "n_results": 6,
+      "sources_seen": [],
+      "retrieved_at": "2026-06-24T16:22:42.268736Z",
+      "contributed_evidence_ids": []
+    },
+    {
+      "tool": "gene_literature",
+      "mode": "topic_search",
+      "query": {
+        "agent_focus": "a2",
+        "intent": "standing: co-receptor / partner-dependency for surface trafficking",
+        "anchors": [
+          "partner_dependency"
+        ]
+      },
+      "n_results": 3,
+      "sources_seen": [],
+      "retrieved_at": "2026-06-24T16:22:42.268736Z",
+      "contributed_evidence_ids": []
+    },
+    {
+      "tool": "gene_literature",
+      "mode": "topic_search",
+      "query": {
+        "agent_focus": "a2",
+        "intent": "standing: plasma-membrane subdomain / polarity distribution",
+        "anchors": [
+          "membrane_subdomain"
+        ]
+      },
+      "n_results": 22,
+      "sources_seen": [],
+      "retrieved_at": "2026-06-24T16:22:42.268736Z",
+      "contributed_evidence_ids": []
+    },
+    {
+      "tool": "gene_literature",
+      "mode": "topic_search",
+      "query": {
+        "agent_focus": "a2",
+        "intent": "standing: epitope-masking evidence (homo / hetero / other)",
+        "anchors": [
+          "epitope_masking"
+        ]
+      },
+      "n_results": 3,
+      "sources_seen": [],
+      "retrieved_at": "2026-06-24T16:22:42.268736Z",
+      "contributed_evidence_ids": []
+    },
+    {
+      "tool": "gene_literature",
+      "mode": "topic_search",
+      "query": {
+        "agent_focus": "a2",
+        "intent": "standing: state-conditional surface biology (activation / stress / disease / EMT / senescence / differentiation) — feeds accessibility_modulation",
+        "anchors": [
+          "cell_state_modulation"
+        ]
+      },
+      "n_results": 25,
+      "sources_seen": [],
+      "retrieved_at": "2026-06-24T16:22:42.268736Z",
+      "contributed_evidence_ids": []
+    }
+  ],
+  "evidence_count": 20,
+  "primary_evidence_count": 11,
+  "secondary_evidence_count": 9,
+  "confidence": "low",
+  "confidence_reasoning": "Confidence is low because the entire evidence base is RNA-level: no live-cell flow cytometry, surface biotinylation, non-permeabilized immunofluorescence, or any direct protein surface assay has been performed for VSIG10L, and the authors explicitly note the absence of validated antibody reagents (PMC:PMC12960849). The surface call rests entirely on a computational single-pass type I topology prediction plus RNA expression in suprabasal esophageal squamous cells. The first-pass classifier flagged this as nuclear/intracellular — a reasonable call given the absence of experimental surface data; the present call of low surface accessibility with high state-dependence is justified by the predicted membrane topology and tissue-restricted RNA expression, but diverges from that initial assessment. Lifting confidence would require protein-level evidence: non-permeabilized immunofluorescence or flow cytometry on intact esophageal organoids or primary suprabasal cells, ideally with an orthogonally validated antibody or epitope-tagged construct.",
+  "model_path": "claude-sonnet-4-6",
+  "record_generated_at": "2026-06-24T16:22:42.269025Z"
+}

@@ -1,0 +1,1445 @@
+{
+  "schema_version": "2.13.0",
+  "prompt_corpus_version": "2.50.2",
+  "gene": {
+    "hgnc_symbol": "VOPP1",
+    "hgnc_id": "HGNC:34518",
+    "uniprot_acc": "Q96AW1",
+    "ncbi_gene_id": 81552,
+    "ensembl_gene": "ENSG00000154978"
+  },
+  "triage_signal": "unlikely",
+  "triage_reasoning": "VOPP1 (ECop/GASP) is annotated as resident in cytoplasmic vesicle membranes, late endosomes, and lysosomes — all intracellular endomembrane compartments. No isoform has a documented extracellular domain or GPI anchor; it is an intracellular membrane protein. Checking contextual buckets: (1) cell_state_induced — no reported stress/activation-induced PM translocation; (2) tissue_restricted_surface — no tissue-specific surface display documented; (3) lysosomal_exocytosis — lysosomal exocytosis of VOPP1 to the PM surface has not been reported; (4) dual_localization — no evidence of a stable PM pool alongside the endolysosomal pool; (5) stable_surface_attachment — it is not a secreted protein and no wash-resistant PM anchoring has been described. No antibody/ADC/CAR-T therapeutic program targeting VOPP1 at the cell surface is known. The protein functions intracellularly in vesicular trafficking/ubiquitin pathway; endomembrane compartment localization is well-supported.",
+  "executive_summary": {
+    "one_paragraph": "VOPP1 has weak surface evidence; topology suggests a type I single-pass architecture but direct surface readouts are absent. The sole experimental primary evidence (a1_evi_04) is a permeabilized immunofluorescence study showing an intracellular vesicular localization pattern with partial co-localization with perinuclear lysosomes, and a conditioned-media immunoblot confirming the protein is not secreted. Computational topology predictions (a1_evi_01, a1_evi_02) establish a type I TM architecture with an extracellular N-terminus, but no live-cell, non-permeabilized, or surface-biotinylation assay has been reported. Surface presence is not documented in any state; no accessibility modulation data exist, and the protein is consistently described as endomembrane-resident across all cancer contexts examined (a2_evi_03). The principal binder-engineering caveat is intracellular sequestration in endolysosomal vesicles (high-severity restricted subdomain); no shed or secreted form is present, and the absence of paralogs rules out cross-reactivity concerns.",
+    "accessibility_context_summary": "VOPP1 is not surface-accessible in any documented state; it resides in intracellular endolysosomal vesicles across all cancer cell contexts examined, with no plasma membrane trafficking reported.",
+    "surface_accessibility": "no",
+    "evidence_grade_summary": "weak",
+    "confidence": "moderate",
+    "state_dependence": "unclear",
+    "subcategory": "single_pass_T1",
+    "llm_family": "miscellaneous",
+    "hgnc_gene_groups": [
+      "WBP1/VOPP1 family"
+    ],
+    "uniprot_family": "VOPP1/ECOP family",
+    "surface_call_reason": "endomembrane_resident",
+    "headline_risks": [],
+    "cited_evidence_ids": [
+      "a1_evi_01",
+      "a1_evi_02",
+      "a1_evi_04",
+      "a2_evi_03"
+    ]
+  },
+  "filters": {
+    "surface_accessibility": "no",
+    "confidence": "moderate",
+    "subcategory": "single_pass_T1",
+    "state_dependence": "unclear",
+    "surface_call_reason": "endomembrane_resident",
+    "llm_family": "miscellaneous",
+    "evidence_grade": "weak",
+    "ecd_accessibility_class": "small",
+    "evidence_density": "low",
+    "expression_level": "high",
+    "expression_breadth": "restricted",
+    "surface_specificity": "mostly_intracellular",
+    "has_shed_form": false,
+    "has_secreted_form": false,
+    "requires_coreceptor_for_expression": false,
+    "co_receptor_dependency": "none",
+    "max_paralog_ecd_pct_identity": null,
+    "has_epitope_masking": false,
+    "has_restricted_subdomain": true,
+    "mouse_ortholog_ecd_pct_identity": 100,
+    "cyno_ortholog_ecd_pct_identity": null,
+    "n_term_extracellular": true,
+    "c_term_extracellular": false,
+    "low_endogenous_expression": false,
+    "has_known_ligand": false,
+    "n_supporting_claims_high_weight": 0,
+    "n_contradicting_claims_high_weight": 1,
+    "overexpression_surface_localization_observed": false,
+    "tumor_associated": true,
+    "induction_trigger": "none",
+    "has_live_cell_surface_evidence": false,
+    "expression_level_rationale": "VOPP1 transcript is highly expressed across multiple cancer types including GBM, HNSCC, breast carcinoma, pancreatic carcinoma, and lymphoma by microarray profiling (a2_evi_01, a2_evi_02).",
+    "expression_breadth_rationale": "Expression data are confined to tumor contexts (GBM, HNSCC, breast, pancreatic, lymphoma); no normal-tissue breadth data are available in the evidence (a2_evi_01, a2_evi_02).",
+    "surface_specificity_rationale": "Permeabilized IF and conditioned-media immunoblot consistently place VOPP1 in intracellular endolysosomal vesicles with no plasma membrane signal detected (a1_evi_04, a2_evi_03).",
+    "has_known_ligand_rationale": "No validated endogenous binding partner or ligand is reported for VOPP1. The protein functions in vesicular trafficking/ubiquitin pathways intracellularly; no cognate receptor or natural agonist has been characterized.",
+    "low_endogenous_expression_rationale": "VOPP1 transcript is highly expressed across multiple cancer types including GBM, HNSCC, breast carcinoma, pancreatic carcinoma, and lymphoma by microarray profiling (a2_evi_01, a2_evi_02).",
+    "overexpression_surface_localization_observed_rationale": "No method observation pairs an overexpression/mixed expression system with a direct or supportive surface-accessibility readout."
+  },
+  "surface_evidence": {
+    "evidence_grade": "weak",
+    "grade_rationale": "The ledger contains zero direct surface-accessibility observations. The only experimental primary evidence (a1_evi_04) is a permeabilized immunofluorescence study in human cell lines showing VOPP1 in an intracellular vesicular pattern with partial co-localization with perinuclear lysosomes; a conditioned-media immunoblot confirmed the protein is not secreted. This directly contradicts plasma membrane surface accessibility. The remaining three claims (a1_evi_01, a1_evi_02, a1_evi_03) are computational topology predictions and ER-bound mRNA microarray data — they establish a type I TM architecture synthesized into the ER but provide no evidence of PM delivery. No live-cell flow, non-permeabilized IF, surface biotinylation, or functional surface assay is present. The methods builder emitted only one row (permeabilized IF, expression_only). Grade: weak.",
+    "claim_stances": [
+      {
+        "claim_id": "a1_evi_01",
+        "stance": "tangential",
+        "weight": "low",
+        "note": "Computational topology prediction (type I TM, extracellular N-terminus) — no experimental surface assay."
+      },
+      {
+        "claim_id": "a1_evi_02",
+        "stance": "tangential",
+        "weight": "low",
+        "note": "Computational prediction of cytoplasmic C-terminus / extracellular N-terminus — no experimental surface assay."
+      },
+      {
+        "claim_id": "a1_evi_03",
+        "stance": "tangential",
+        "weight": "low",
+        "note": "Sequence-based topology + ER-bound mRNA microarray; supports ER synthesis but not PM residence."
+      },
+      {
+        "claim_id": "a1_evi_04",
+        "stance": "contradicts_surface",
+        "weight": "high",
+        "note": "Permeabilized IF + conditioned-media immunoblot: intracellular vesicular/lysosomal localization, not secreted, not PM."
+      }
+    ],
+    "methods": [
+      {
+        "method_family": "immunofluorescence",
+        "method_subclass": "permeabilized_IF",
+        "permeabilization": "permeabilized",
+        "expression_system": "mixed",
+        "antibodies": [
+          {
+            "name": "anti-VOPP1",
+            "clone": null,
+            "vendor": null,
+            "catalog": null,
+            "rrid": null,
+            "monoclonal_or_polyclonal": "unknown",
+            "antibody_epitope_region": "unknown",
+            "validation_strategy": "none",
+            "validation_strength": "none",
+            "cross_reactivity_notes": null
+          }
+        ],
+        "accessibility_relevance": "expression_only",
+        "surface_claim_type": "intracellular_pool",
+        "expression_observations": [
+          {
+            "context": "Human cell lines expressing recombinant and native VOPP1; intracellular vesicular localization with partial co-localization with perinuclear lysosomes; not secreted into conditioned media",
+            "sample_type": "established_cell_line",
+            "level": "moderate",
+            "species": "human",
+            "species_inferred": false,
+            "cited_evidence_ids": [
+              "a1_evi_04"
+            ]
+          }
+        ],
+        "overexpression": {
+          "signal_peptide_source": "unspecified",
+          "signal_peptide_detail": null,
+          "construct_tag": "fluorescence reporter",
+          "cell_line": null,
+          "cited_evidence_ids": [
+            "a1_evi_04"
+          ]
+        },
+        "cited_evidence_ids": [
+          "a1_evi_04"
+        ]
+      }
+    ],
+    "non_surface_expression": [
+      {
+        "context": "Human cancer cell lines — VOPP1 mRNA highly expressed in breast carcinoma, pancreatic carcinoma, lymphoma (Oncomine microarray); ER-bound mRNA microarray consistent with ER synthesis",
+        "sample_type": "established_cell_line",
+        "measurement_type": "RNA",
+        "level": "high",
+        "cited_evidence_ids": [
+          "a1_evi_03"
+        ]
+      },
+      {
+        "context": "Human cell lines — permeabilized IF showing intracellular vesicular/lysosomal localization; conditioned-media immunoblot confirming no secretion",
+        "sample_type": "established_cell_line",
+        "measurement_type": "bulk_protein",
+        "level": "moderate",
+        "cited_evidence_ids": [
+          "a1_evi_04"
+        ]
+      }
+    ],
+    "contradicting_evidence": [
+      {
+        "claim": "Immunoblot of conditioned media confirms VOPP1 is not secreted and is retained intracellularly. Fluorescence reporter-tagged and antibody-visualized VOPP1 (both recombinant and native) display an intracellular vesicular localization pattern with partial co-localization with perinuclear lysosomes but not mitochondria or peroxisomes. This directly contradicts plasma membrane surface accessibility, placing the protein in an intracellular vesicular compartment.",
+        "contradiction_type": "alternative_localization",
+        "severity_for_surface_accessibility": "high",
+        "likely_explanation": "VOPP1 appears to reside predominantly in intracellular vesicles (partially lysosomal), with no evidence of plasma membrane trafficking. The permeabilized fixation used in the IF assay would detect all intracellular pools; the absence of any surface signal and the confirmed non-secreted status together strongly argue against meaningful surface accessibility under basal conditions.",
+        "cited_evidence_ids": [
+          "a1_evi_04"
+        ]
+      }
+    ],
+    "excluded_as_ligand_engagement": []
+  },
+  "biological_context": {
+    "expression": [
+      {
+        "tissue": "brain",
+        "cell_type": null,
+        "present": "high",
+        "disease_context": "tumor",
+        "disease_label": "glioblastoma multiforme",
+        "cell_states": [],
+        "species": "human",
+        "species_inferred": false,
+        "cited_evidence_ids": [
+          "a2_evi_01"
+        ]
+      },
+      {
+        "tissue": "head and neck",
+        "cell_type": null,
+        "present": "high",
+        "disease_context": "tumor",
+        "disease_label": "squamous cell carcinoma",
+        "cell_states": [],
+        "species": "human",
+        "species_inferred": false,
+        "cited_evidence_ids": [
+          "a2_evi_01"
+        ]
+      },
+      {
+        "tissue": "breast",
+        "cell_type": null,
+        "present": "high",
+        "disease_context": "tumor",
+        "disease_label": "breast carcinoma",
+        "cell_states": [],
+        "species": "human",
+        "species_inferred": false,
+        "cited_evidence_ids": [
+          "a2_evi_02"
+        ]
+      },
+      {
+        "tissue": "pancreas",
+        "cell_type": null,
+        "present": "high",
+        "disease_context": "tumor",
+        "disease_label": "pancreatic carcinoma",
+        "cell_states": [],
+        "species": "human",
+        "species_inferred": false,
+        "cited_evidence_ids": [
+          "a2_evi_02"
+        ]
+      },
+      {
+        "tissue": "lymphoid tissue",
+        "cell_type": null,
+        "present": "high",
+        "disease_context": "tumor",
+        "disease_label": "lymphoma",
+        "cell_states": [],
+        "species": "human",
+        "species_inferred": false,
+        "cited_evidence_ids": [
+          "a2_evi_02"
+        ]
+      }
+    ],
+    "tissues": [],
+    "cell_types": [],
+    "subcellular_localization": {
+      "primary_compartment": "endosome",
+      "rationale": "Permeabilized IF on cancer cell lines using fluorescence reporter and antibody-based visualization shows an intracellular vesicular localization pattern with partial co-localization with perinuclear lysosomes but not mitochondria or peroxisomes (a2_evi_03). Immunoblot of conditioned media confirms the protein is not secreted (a2_evi_03). Sequence analysis indicates ER-bound synthesis consistent with entry into the secretory/endomembrane pathway (a2_evi_02).",
+      "dual_localization": [
+        {
+          "compartment": "lysosome",
+          "fraction_estimate": null,
+          "condition": "partial co-localization, perinuclear pool",
+          "rationale": "Permeabilized IF with fluorescence reporter and antibody visualization in cancer cell lines shows partial co-localization of VOPP1 vesicles with perinuclear lysosomes (a2_evi_03). Co-localization is partial, not complete, so lysosome is a secondary pool.",
+          "cited_evidence_ids": [
+            "a2_evi_03"
+          ]
+        },
+        {
+          "compartment": "ER",
+          "fraction_estimate": null,
+          "condition": "during biosynthesis / transit",
+          "rationale": "Sequence analysis and public ER-bound mRNA microarray data indicate VOPP1 is synthesized into the ER as part of the secretory pathway (a2_evi_02). This represents a biosynthetic transit pool rather than a stable residence.",
+          "cited_evidence_ids": [
+            "a2_evi_02"
+          ]
+        }
+      ],
+      "membrane_subdomains": []
+    },
+    "anatomical_accessibility": [],
+    "accessibility_modulation": [],
+    "biological_context_grade": "moderate",
+    "grade_rationale": "Expression mapped across ≥5 cancer types (GBM, HNSCC, breast, pancreatic, lymphoma) from two sources. Subcellular localization is well-pinned (intracellular vesicular/endolysosomal, not PM) by IF and immunoblot. Topology prediction adds structural support. Anatomical/modulation axes are absent. Single publication dominates; no normal-tissue or state-modulation data.",
+    "grade_cited_evidence_ids": [
+      "a2_evi_01",
+      "a2_evi_02",
+      "a2_evi_03",
+      "a2_evi_04"
+    ]
+  },
+  "deterministic_features": {
+    "canonical_topology": {
+      "isoform_id": "Q96AW1",
+      "uniprot_acc": "Q96AW1",
+      "tm_helix_count": 1,
+      "n_terminal_orientation": "extracellular",
+      "c_terminal_orientation": "cytoplasmic",
+      "signal_peptide_length": 22,
+      "ecd_length_residues": 38,
+      "icd_length_residues": 91,
+      "per_residue_topology": "SSSSSSSSSSSSSSSSSSSSSSOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOMMMMMMMMMMMMMMMMMMMMMIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIII",
+      "sequence": "MRRQPAKVAALLLGLLLECTEAKKHCWYFEGLYPTYYICRSYEDCCGSRCCVRALSIQRLWYFWFLLMMGVLFCCGAGFFIRRRMYPPPLIEEPAFNVSYTRQPPNPGPGAQQPGPPYYTDPGGPGMNPVGNSMAMAFQVPPNSPQGSVACPPPPAYCNTPPPPYEQVVKAK",
+      "tool_version": "deeptmhmm-1.0.24",
+      "retrieved_at": "2026-05-17T00:56:01Z",
+      "full_length_pct_identity_to_canonical": null,
+      "ecd_pct_identity_to_canonical": null,
+      "ecd_pct_similarity_to_canonical": null
+    },
+    "isoform_topologies": [
+      {
+        "isoform_id": "Q96AW1-2",
+        "uniprot_acc": "Q96AW1-2",
+        "tm_helix_count": 1,
+        "n_terminal_orientation": "extracellular",
+        "c_terminal_orientation": "cytoplasmic",
+        "signal_peptide_length": 0,
+        "ecd_length_residues": 50,
+        "icd_length_residues": 99,
+        "per_residue_topology": "OOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOMMMMMMMMMMMMMMIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIII",
+        "sequence": "MRRTGSHAQCTEAKKHCWYFEGLYPTYYICRSYEDCCGSRCCVRALSIQRLWYFWFLLMMGVLFCCGAGFFIRRRMYPPPLIEEPAFNVSYTRQPPNPGPGAQQPGPPYYTDPGGPGMNPVGNSMAMAFQVPPNSPQGSVACPPPPAYCNTPPPPYEQVVKAK",
+        "tool_version": "deeptmhmm-1.0.24",
+        "retrieved_at": "2026-05-27T02:01:01Z",
+        "full_length_pct_identity_to_canonical": 91.86046511627907,
+        "ecd_pct_identity_to_canonical": 74,
+        "ecd_pct_similarity_to_canonical": 74
+      },
+      {
+        "isoform_id": "Q96AW1-3",
+        "uniprot_acc": "Q96AW1-3",
+        "tm_helix_count": 1,
+        "n_terminal_orientation": "extracellular",
+        "c_terminal_orientation": "cytoplasmic",
+        "signal_peptide_length": 19,
+        "ecd_length_residues": 37,
+        "icd_length_residues": 99,
+        "per_residue_topology": "SSSSSSSSSSSSSSSSSSSOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOMMMMMMMMMMMMMMIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIII",
+        "sequence": "MLSETLGYLSSVLLQCTEAKKHCWYFEGLYPTYYICRSYEDCCGSRCCVRALSIQRLWYFWFLLMMGVLFCCGAGFFIRRRMYPPPLIEEPAFNVSYTRQPPNPGPGAQQPGPPYYTDPGGPGMNPVGNSMAMAFQVPPNSPQGSVACPPPPAYCNTPPPPYEQVVKAK",
+        "tool_version": "deeptmhmm-1.0.24",
+        "retrieved_at": "2026-05-27T02:01:01Z",
+        "full_length_pct_identity_to_canonical": 91.86046511627907,
+        "ecd_pct_identity_to_canonical": 97.36842105263158,
+        "ecd_pct_similarity_to_canonical": 97.36842105263158
+      },
+      {
+        "isoform_id": "Q96AW1-4",
+        "uniprot_acc": "Q96AW1-4",
+        "tm_helix_count": 1,
+        "n_terminal_orientation": "extracellular",
+        "c_terminal_orientation": "cytoplasmic",
+        "signal_peptide_length": 0,
+        "ecd_length_residues": 42,
+        "icd_length_residues": 99,
+        "per_residue_topology": "OOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOMMMMMMMMMMMMMMIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIII",
+        "sequence": "MCTEAKKHCWYFEGLYPTYYICRSYEDCCGSRCCVRALSIQRLWYFWFLLMMGVLFCCGAGFFIRRRMYPPPLIEEPAFNVSYTRQPPNPGPGAQQPGPPYYTDPGGPGMNPVGNSMAMAFQVPPNSPQGSVACPPPPAYCNTPPPPYEQVVKAK",
+        "tool_version": "deeptmhmm-1.0.24",
+        "retrieved_at": "2026-05-27T02:01:01Z",
+        "full_length_pct_identity_to_canonical": 90.11627906976744,
+        "ecd_pct_identity_to_canonical": 88.09523809523809,
+        "ecd_pct_similarity_to_canonical": 88.09523809523809
+      }
+    ],
+    "orthologs": {
+      "mouse": [
+        {
+          "is_canonical": true,
+          "isoform_id": "Q8R1C3",
+          "ensembl_id": "ENSMUSG00000037788",
+          "ortholog_uniprot_acc": "Q8R1C3",
+          "ortholog_symbol": "Vopp1",
+          "type": "one2one",
+          "ecd_pct_identity_to_human_canonical": 100,
+          "ecd_pct_similarity_to_human_canonical": 100,
+          "full_length_pct_identity_to_human_canonical": 89.5349,
+          "ecd_length_residues": 38,
+          "tm_helix_count": 1,
+          "compara_version": "ensembl_compara_2026_05_12",
+          "retrieved_at": "2026-06-24T17:17:51.462983Z",
+          "per_residue_topology": "SSSSSSSSSSSSSSSSSSSSSSOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOMMMMMMMMMMMMMMMMMMMMMIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIII",
+          "deeptmhmm_label": "SP+TM",
+          "topology_projection_source": "projected_from_human_canonical",
+          "tm_absent_from_model": false,
+          "n_tm_regions_absent": 0,
+          "sequence": "MGRRLGRVAALLLGLLVECTEAKKHCWYFEGLYPTYYICRSYEDCCGSRCCVRALSIQRLWYFWFLLMMGVLFCCGAGFFIRRRMYPPPLIEEPTFNVSYTRQPPNPAPGAQQMGPPYYTDPGGPGMNPVGNTMAMAFQVQPNSPHGGTTYPPPPSYCNTPPPPYEQVVKDK"
+        }
+      ],
+      "cynomolgus": [],
+      "checked": true
+    },
+    "paralogs": [],
+    "paralogs_checked": true,
+    "isoform_topologies_checked": true,
+    "structure": {
+      "afdb_id": "AF-Q96AW1-F1",
+      "afdb_version": "v6",
+      "ecd_mean_plddt": 81.98315789473685,
+      "ecd_disordered_fraction": 0.10526315789473684,
+      "source": "AlphaFold DB (ECD-restricted pLDDT, n=38)",
+      "license": "CC BY 4.0",
+      "attribution": "© DeepMind / EMBL-EBI",
+      "citations": [
+        "10.1038/s41586-021-03819-2",
+        "10.1093/nar/gkad1011"
+      ],
+      "model_cif_url": "https://alphafold.ebi.ac.uk/files/AF-Q96AW1-F1-model_v6.cif",
+      "model_pdb_url": "https://alphafold.ebi.ac.uk/files/AF-Q96AW1-F1-model_v6.pdb",
+      "model_pae_url": "https://alphafold.ebi.ac.uk/files/AF-Q96AW1-F1-predicted_aligned_error_v6.json"
+    },
+    "surface_bind": {
+      "has_data": false,
+      "n_sites": 0,
+      "n_seeds_alpha": 0,
+      "n_seeds_beta": 0,
+      "n_seeds_total": 0,
+      "chain": null,
+      "sites": [],
+      "main_class": null,
+      "sub_class": null,
+      "protein_name": null,
+      "pdbs": [],
+      "representative_structure": null,
+      "source": "SURFACE-Bind v1 (Balbi 2026 PNAS)",
+      "attribution": "© Balbi et al., Correia lab — EPFL / Inria / Novo Nordisk",
+      "citation": "10.1073/pnas.2506269123"
+    },
+    "homo_oligomerization": {
+      "is_homo_oligomer": false,
+      "stoichiometry": null,
+      "af_model_num": null,
+      "is_ecd_only": false,
+      "has_higher_order_complex": false,
+      "dimer_pdb_filename": null,
+      "complex_pdb_filename": null,
+      "source": "Schweke 2024 (PMID 38325366)",
+      "citation": "10.1016/j.cell.2024.01.022"
+    }
+  },
+  "accessibility_risks": {
+    "co_receptor_requirements": {
+      "surface_expression_dependency": "none",
+      "partners": [],
+      "evidence_basis": "trafficking",
+      "rationale": "VOPP1 is a single-pass type I TM protein that traffics independently through the ER secretory pathway (a1_evi_03, a2_evi_02). No obligate escort or chaperone partner is documented. The protein reaches endomembranes without a named co-receptor (a1_evi_04, a2_evi_03).",
+      "cited_evidence_ids": [
+        "a1_evi_03",
+        "a1_evi_04",
+        "a2_evi_02",
+        "a2_evi_03"
+      ]
+    },
+    "shed_form": {
+      "present": false,
+      "severity": "low",
+      "evidence_strength": "weak",
+      "mechanism": null,
+      "sheddase_if_known": null,
+      "rationale": "No relevant data in the ledger. Immunoblot of conditioned media confirms VOPP1 is not secreted (a1_evi_04, a2_evi_03); no sheddase cleavage of the VOPP1 ectodomain is documented.",
+      "cited_evidence_ids": [
+        "a1_evi_04",
+        "a2_evi_03"
+      ]
+    },
+    "secreted_form": {
+      "present": false,
+      "severity": "low",
+      "evidence_strength": "strong",
+      "ratio_to_membrane": null,
+      "source": null,
+      "rationale": "Immunoblot of cell culture conditioned media explicitly confirms VOPP1 protein is not secreted and is retained intracellularly (a1_evi_04, a2_evi_03). No soluble splice isoform or shed ectodomain is documented in the ledger.",
+      "cited_evidence_ids": [
+        "a1_evi_04",
+        "a2_evi_03"
+      ]
+    },
+    "restricted_subdomain": {
+      "present": true,
+      "domain": "other",
+      "severity": "high",
+      "evidence_strength": "strong",
+      "rationale": "VOPP1 localizes to intracellular vesicles (endolysosomal compartment) with partial co-localization with perinuclear lysosomes, not the plasma membrane (a1_evi_04, a2_evi_03). Topology predictions confirm endomembrane orientation (a2_evi_04). Surface accessibility to a systemic binder is severely compromised.",
+      "cited_evidence_ids": [
+        "a1_evi_04",
+        "a2_evi_03",
+        "a2_evi_04"
+      ]
+    },
+    "ecd_size_assessment": {
+      "ecd_accessibility_class": "small",
+      "rationale": "ECD length 38 residues (30-59) -> small; computed deterministically from DeepTMHMM topology.",
+      "cited_evidence_ids": []
+    },
+    "epitope_masking": {
+      "mechanism": [
+        "none"
+      ],
+      "severity": "none",
+      "evidence_strength": "weak",
+      "rationale": "No epitope masking by partner, glycan, or oligomerization is documented in the ledger. The deterministic AF2 prior indicates no homo-oligomer (is_homo_oligomer=false). The primary accessibility concern is intracellular sequestration (a1_evi_04, a2_evi_03), not epitope masking per se. The small ECD (38 aa) limits epitope surface but no masking mechanism is evidenced.",
+      "cited_evidence_ids": []
+    },
+    "homo_oligomerization_prediction": {
+      "present": false,
+      "stoichiometry": null,
+      "severity": "unknown",
+      "is_ecd_only": false,
+      "source": "Schweke 2024 (PMID 38325366)",
+      "cited_evidence_ids": []
+    }
+  },
+  "evidence": [
+    {
+      "evidence_id": "a1_evi_01",
+      "claim": "The GASP/WBP1/VOPP1 family proteins share a domain architecture comprising a predicted signal peptide, an N-terminal cysteine-rich domain with eight conserved cysteines, a single predicted transmembrane segment, and a proline-rich C-terminal cytosolic region — establishing VOPP1 as a single-pass type I transmembrane protein with a short extracellular N-terminus.",
+      "claim_type": "topology",
+      "direction": "supports",
+      "evidence_type": "computational_prediction",
+      "evidence_tier": "secondary",
+      "confidence": "moderate",
+      "assay_context": {
+        "species": "human",
+        "cell_type_or_line": null,
+        "permeabilized": null,
+        "fixation": null,
+        "isoform": null,
+        "cell_context": null
+      },
+      "spans": [
+        {
+          "source": {
+            "source_type": "pmc",
+            "source_id": "PMC:PMC3295595",
+            "pmc_id": "PMC3295595",
+            "url": "https://www.ncbi.nlm.nih.gov/pmc/articles/PMC3295595/",
+            "title": "PMC:PMC3295595",
+            "retrieved_at": "2026-06-24T17:18:50.225626Z",
+            "content_sha256": "1981dbab30d9f75393b0fbce12bbeaa9bf85b89ff9fa76f2a0ee06eabbe9c8cc",
+            "publication_type": "other",
+            "is_retracted": false,
+            "retraction_checked_at": "2026-06-24T17:18:50.225626Z",
+            "license": "unknown"
+          },
+          "section": "results",
+          "figure_or_table_id": null,
+          "quote": "For Shisa proteins from subfamilies 1–5, several cysteines residues are present near the C-termini of their predicted TMs ( Figure 2 ), possibly providing sites for lipid modifications such as palmitoylation to facilitate their localization to specific membrane microdomains [ 41 ].",
+          "quote_sha256": "7371f27d5d6bb5c393833dc487945d30df8116b42c6f4a8c729122a454ddecb6",
+          "char_offset": 0,
+          "normalized_source_sha256": "53ac069bf0a2453a350358e727542cfd83c1d08afa9e263a5abb4fec83719428"
+        }
+      ],
+      "entailment_verified": true,
+      "entailment_audit_passed": null,
+      "validation_warnings": [],
+      "duplicate_of": null
+    },
+    {
+      "evidence_id": "a1_evi_02",
+      "claim": "VOPP1 family members are predicted to be type I transmembrane proteins with their proline-rich, mostly disordered C-terminal regions residing in the cytosol, confirming cytoplasmic C-terminus and extracellular N-terminus orientation.",
+      "claim_type": "topology",
+      "direction": "supports",
+      "evidence_type": "computational_prediction",
+      "evidence_tier": "secondary",
+      "confidence": "moderate",
+      "assay_context": {
+        "species": "human",
+        "cell_type_or_line": null,
+        "permeabilized": null,
+        "fixation": null,
+        "isoform": null,
+        "cell_context": null
+      },
+      "spans": [
+        {
+          "source": {
+            "source_type": "pmc",
+            "source_id": "PMC:PMC3295595",
+            "pmc_id": "PMC3295595",
+            "url": "https://www.ncbi.nlm.nih.gov/pmc/articles/PMC3295595/",
+            "title": "PMC:PMC3295595",
+            "retrieved_at": "2026-06-24T17:18:50.225626Z",
+            "content_sha256": "1981dbab30d9f75393b0fbce12bbeaa9bf85b89ff9fa76f2a0ee06eabbe9c8cc",
+            "publication_type": "other",
+            "is_retracted": false,
+            "retraction_checked_at": "2026-06-24T17:18:50.225626Z",
+            "license": "unknown"
+          },
+          "section": "results",
+          "figure_or_table_id": null,
+          "quote": "They are predicted to be type I transmembrane proteins with their proline-rich, mostly disordered C-terminal regions residing in the cytosol.",
+          "quote_sha256": "bab223cfea6f0945682c43ae7ae526a87c96b42371334a3cb3a947c5d1109a6c",
+          "char_offset": 283,
+          "normalized_source_sha256": "53ac069bf0a2453a350358e727542cfd83c1d08afa9e263a5abb4fec83719428"
+        }
+      ],
+      "entailment_verified": true,
+      "entailment_audit_passed": null,
+      "validation_warnings": [],
+      "duplicate_of": null
+    },
+    {
+      "evidence_id": "a1_evi_03",
+      "claim": "Sequence analysis of VOPP1 identifies both a signal sequence and a transmembrane domain; microarray data for ER-bound mRNA transcripts is consistent with VOPP1 being synthesized into the ER, supporting a type I TM topology but not plasma membrane residence.",
+      "claim_type": "topology",
+      "direction": "supports",
+      "evidence_type": "computational_prediction",
+      "evidence_tier": "secondary",
+      "confidence": "moderate",
+      "assay_context": {
+        "species": "human",
+        "cell_type_or_line": null,
+        "permeabilized": null,
+        "fixation": null,
+        "isoform": null,
+        "cell_context": null
+      },
+      "spans": [
+        {
+          "source": {
+            "source_type": "pubmed",
+            "source_id": "PMID:20571887",
+            "pmc_id": null,
+            "url": "https://pubmed.ncbi.nlm.nih.gov/20571887/",
+            "title": "PMID:20571887",
+            "retrieved_at": "2026-06-24T17:18:50.225626Z",
+            "content_sha256": "145b74ca6ee4b5d37b4ee1f0da4ded9d16241557dbbc2b05e73582eb65d36cfe",
+            "publication_type": "other",
+            "is_retracted": false,
+            "retraction_checked_at": "2026-06-24T17:18:50.225626Z",
+            "license": "unknown"
+          },
+          "section": "abstract",
+          "figure_or_table_id": null,
+          "quote": "A query of a public database of gene expression profiling data (Oncomine) shows that the VOPP1 transcript is also highly expressed in several other common human cancers, including breast carcinoma, pancreatic carcinoma, and lymphoma. Analysis of VOPP1 sequence structure shows both a signal sequence and a transmembrane domain, and examination of a public microarray dataset for endoplasmic reticulum (ER)-bound mRNA transcripts is consistent with the VOPP1 protein product being synthesized into the ER.",
+          "quote_sha256": "9d662cda03ae96adfe4784e553d77b8dd83c1454ed6b57ae06d6a8d4775473f0",
+          "char_offset": 0,
+          "normalized_source_sha256": "98293f30a4c56fc2a174ebdccaacd4c9a3c7ab067f4a804417ebaa1a2a0ea8e6"
+        }
+      ],
+      "entailment_verified": true,
+      "entailment_audit_passed": null,
+      "validation_warnings": [],
+      "duplicate_of": null
+    },
+    {
+      "evidence_id": "a1_evi_04",
+      "claim": "Immunoblot analysis of cell culture conditioned media confirms VOPP1 protein is NOT secreted and is retained intracellularly. Fluorescence reporter-tagged VOPP1 and antibody-mediated visualization of both recombinant and native VOPP1 reveal an intracellular vesicular localization pattern with partial co-localization with perinuclear lysosomes but not mitochondria or peroxisomes — directly contradicting plasma membrane surface accessibility.",
+      "claim_type": "contradictory",
+      "direction": "refutes",
+      "evidence_type": "immunofluorescence",
+      "evidence_tier": "primary",
+      "confidence": "strong",
+      "assay_context": {
+        "species": "human",
+        "cell_type_or_line": null,
+        "permeabilized": true,
+        "fixation": "fixed",
+        "isoform": null,
+        "cell_context": {
+          "material_kind": "cell_line",
+          "material_kind_other_label": null,
+          "cell_type": null,
+          "cell_line_name": null,
+          "cellosaurus_id": null,
+          "tissue": null,
+          "disease_state": null,
+          "activation_state": null
+        }
+      },
+      "spans": [
+        {
+          "source": {
+            "source_type": "pubmed",
+            "source_id": "PMID:20571887",
+            "pmc_id": null,
+            "url": "https://pubmed.ncbi.nlm.nih.gov/20571887/",
+            "title": "PMID:20571887",
+            "retrieved_at": "2026-06-24T17:18:50.225626Z",
+            "content_sha256": "145b74ca6ee4b5d37b4ee1f0da4ded9d16241557dbbc2b05e73582eb65d36cfe",
+            "publication_type": "other",
+            "is_retracted": false,
+            "retraction_checked_at": "2026-06-24T17:18:50.225626Z",
+            "license": "unknown"
+          },
+          "section": "abstract",
+          "figure_or_table_id": null,
+          "quote": "Immunoblot analysis of cell culture and conditioned media confirms that the protein product is not secreted and is retained intracellularly. VOPP1 protein tagged with a fluorescence reporter, as well as antibody-mediated visualization of recombinant and native forms of the protein reveals an intracellular vesicular pattern of localization. Co-localization experiments reveal that VOPP1 vesicles do not co-localize with mitochondria or peroxisomes, but show partial co-localization with perinuclear lysosomes.",
+          "quote_sha256": "4a4b743225d6ae49a7419057997447fca3957971975b0416800f73e448e38b83",
+          "char_offset": 505,
+          "normalized_source_sha256": "98293f30a4c56fc2a174ebdccaacd4c9a3c7ab067f4a804417ebaa1a2a0ea8e6"
+        }
+      ],
+      "entailment_verified": true,
+      "entailment_audit_passed": null,
+      "validation_warnings": [],
+      "duplicate_of": null
+    },
+    {
+      "evidence_id": "a2_evi_01",
+      "claim": "VOPP1 mRNA/protein is overexpressed in human glioblastoma multiforme and squamous cell carcinoma relative to normal tissue, conferring a prosurvival phenotype. Disease context: high-grade brain tumor and head/neck squamous carcinoma.",
+      "claim_type": "tissue_expression",
+      "direction": "supports",
+      "evidence_type": "review_assertion",
+      "evidence_tier": "secondary",
+      "confidence": "moderate",
+      "assay_context": {
+        "species": "human",
+        "cell_type_or_line": "glioblastoma multiforme tumor tissue; squamous cell carcinoma tumor tissue",
+        "permeabilized": null,
+        "fixation": null,
+        "isoform": null,
+        "cell_context": {
+          "material_kind": "primary_tissue",
+          "material_kind_other_label": null,
+          "cell_type": null,
+          "cell_line_name": null,
+          "cellosaurus_id": null,
+          "tissue": "brain / head-neck",
+          "disease_state": "glioblastoma multiforme; squamous cell carcinoma",
+          "activation_state": null
+        }
+      },
+      "spans": [
+        {
+          "source": {
+            "source_type": "pubmed",
+            "source_id": "PMID:20571887",
+            "pmc_id": null,
+            "url": "https://pubmed.ncbi.nlm.nih.gov/20571887/",
+            "title": "PMID:20571887",
+            "retrieved_at": "2026-06-24T17:18:50.225626Z",
+            "content_sha256": "145b74ca6ee4b5d37b4ee1f0da4ded9d16241557dbbc2b05e73582eb65d36cfe",
+            "publication_type": "other",
+            "is_retracted": false,
+            "retraction_checked_at": "2026-06-24T17:18:50.225626Z",
+            "license": "unknown"
+          },
+          "section": "abstract",
+          "figure_or_table_id": null,
+          "quote": "Vesicular Over-expressed in cancer Prosurvival Protein 1 (VOPP1), also known as Glioblastoma Amplified and Secreted Protein and EGFR-Coamplified and Over-expressed Protein has been previously shown to be over-expressed in human glioblastoma multiforme and squamous cell carcinoma. Additionally, previous experimental work suggests that it confers a prosurvival cellular phenotype.",
+          "quote_sha256": "fcb71b4de8c639f3ef1a56e3e4a84a746b706db5f8bf06df73f0c8ddb1493b5a",
+          "char_offset": 1016,
+          "normalized_source_sha256": "98293f30a4c56fc2a174ebdccaacd4c9a3c7ab067f4a804417ebaa1a2a0ea8e6"
+        }
+      ],
+      "entailment_verified": true,
+      "entailment_audit_passed": null,
+      "validation_warnings": [],
+      "duplicate_of": null
+    },
+    {
+      "evidence_id": "a2_evi_02",
+      "claim": "VOPP1 transcript is highly expressed in breast carcinoma, pancreatic carcinoma, and lymphoma based on public gene expression profiling data (Oncomine microarray). The protein has a signal sequence and transmembrane domain and is consistent with ER-bound synthesis, suggesting it enters the secretory pathway but is retained intracellularly rather than reaching the plasma membrane.",
+      "claim_type": "tissue_expression",
+      "direction": "supports",
+      "evidence_type": "microarray",
+      "evidence_tier": "secondary",
+      "confidence": "moderate",
+      "assay_context": {
+        "species": "human",
+        "cell_type_or_line": "breast carcinoma; pancreatic carcinoma; lymphoma tumor samples",
+        "permeabilized": null,
+        "fixation": null,
+        "isoform": null,
+        "cell_context": {
+          "material_kind": "primary_tissue",
+          "material_kind_other_label": null,
+          "cell_type": null,
+          "cell_line_name": null,
+          "cellosaurus_id": null,
+          "tissue": "breast / pancreas / lymphoid tissue",
+          "disease_state": "breast carcinoma; pancreatic carcinoma; lymphoma",
+          "activation_state": null
+        }
+      },
+      "spans": [
+        {
+          "source": {
+            "source_type": "pubmed",
+            "source_id": "PMID:20571887",
+            "pmc_id": null,
+            "url": "https://pubmed.ncbi.nlm.nih.gov/20571887/",
+            "title": "PMID:20571887",
+            "retrieved_at": "2026-06-24T17:18:50.225626Z",
+            "content_sha256": "145b74ca6ee4b5d37b4ee1f0da4ded9d16241557dbbc2b05e73582eb65d36cfe",
+            "publication_type": "other",
+            "is_retracted": false,
+            "retraction_checked_at": "2026-06-24T17:18:50.225626Z",
+            "license": "unknown"
+          },
+          "section": "abstract",
+          "figure_or_table_id": null,
+          "quote": "A query of a public database of gene expression profiling data (Oncomine) shows that the VOPP1 transcript is also highly expressed in several other common human cancers, including breast carcinoma, pancreatic carcinoma, and lymphoma. Analysis of VOPP1 sequence structure shows both a signal sequence and a transmembrane domain, and examination of a public microarray dataset for endoplasmic reticulum (ER)-bound mRNA transcripts is consistent with the VOPP1 protein product being synthesized into the ER.",
+          "quote_sha256": "9d662cda03ae96adfe4784e553d77b8dd83c1454ed6b57ae06d6a8d4775473f0",
+          "char_offset": 0,
+          "normalized_source_sha256": "98293f30a4c56fc2a174ebdccaacd4c9a3c7ab067f4a804417ebaa1a2a0ea8e6"
+        }
+      ],
+      "entailment_verified": true,
+      "entailment_audit_passed": null,
+      "validation_warnings": [],
+      "duplicate_of": "a1_evi_03"
+    },
+    {
+      "evidence_id": "a2_evi_03",
+      "claim": "VOPP1 protein is not secreted and is retained intracellularly; fluorescence reporter and antibody-based visualization reveal an intracellular vesicular localization pattern with partial co-localization with perinuclear lysosomes but not mitochondria or peroxisomes. This directly refutes plasma membrane surface presence: the protein localizes to endolysosomal vesicles, not the cell surface.",
+      "claim_type": "surface_expression",
+      "direction": "refutes",
+      "evidence_type": "immunofluorescence",
+      "evidence_tier": "primary",
+      "confidence": "strong",
+      "assay_context": {
+        "species": "human",
+        "cell_type_or_line": "cell culture (cancer cell lines, unspecified)",
+        "permeabilized": true,
+        "fixation": "fixed",
+        "isoform": null,
+        "cell_context": {
+          "material_kind": "cell_line",
+          "material_kind_other_label": null,
+          "cell_type": null,
+          "cell_line_name": null,
+          "cellosaurus_id": null,
+          "tissue": null,
+          "disease_state": "cancer cell lines",
+          "activation_state": null
+        }
+      },
+      "spans": [
+        {
+          "source": {
+            "source_type": "pubmed",
+            "source_id": "PMID:20571887",
+            "pmc_id": null,
+            "url": "https://pubmed.ncbi.nlm.nih.gov/20571887/",
+            "title": "PMID:20571887",
+            "retrieved_at": "2026-06-24T17:18:50.225626Z",
+            "content_sha256": "145b74ca6ee4b5d37b4ee1f0da4ded9d16241557dbbc2b05e73582eb65d36cfe",
+            "publication_type": "other",
+            "is_retracted": false,
+            "retraction_checked_at": "2026-06-24T17:18:50.225626Z",
+            "license": "unknown"
+          },
+          "section": "abstract",
+          "figure_or_table_id": null,
+          "quote": "Immunoblot analysis of cell culture and conditioned media confirms that the protein product is not secreted and is retained intracellularly. VOPP1 protein tagged with a fluorescence reporter, as well as antibody-mediated visualization of recombinant and native forms of the protein reveals an intracellular vesicular pattern of localization. Co-localization experiments reveal that VOPP1 vesicles do not co-localize with mitochondria or peroxisomes, but show partial co-localization with perinuclear lysosomes.",
+          "quote_sha256": "4a4b743225d6ae49a7419057997447fca3957971975b0416800f73e448e38b83",
+          "char_offset": 505,
+          "normalized_source_sha256": "98293f30a4c56fc2a174ebdccaacd4c9a3c7ab067f4a804417ebaa1a2a0ea8e6"
+        }
+      ],
+      "entailment_verified": true,
+      "entailment_audit_passed": null,
+      "validation_warnings": [],
+      "duplicate_of": "a1_evi_04"
+    },
+    {
+      "evidence_id": "a2_evi_04",
+      "claim": "VOPP1 family members (WBP1/VOPP1 superfamily) are predicted to be type I transmembrane proteins with their proline-rich C-terminal regions residing in the cytosol, placing the short N-terminal domain extracellularly. This topology is consistent with endomembrane (endosomal/lysosomal) orientation rather than plasma membrane surface display.",
+      "claim_type": "surface_expression",
+      "direction": "ambiguous",
+      "evidence_type": "computational_prediction",
+      "evidence_tier": "secondary",
+      "confidence": "moderate",
+      "assay_context": {
+        "species": "human",
+        "cell_type_or_line": null,
+        "permeabilized": null,
+        "fixation": null,
+        "isoform": null,
+        "cell_context": null
+      },
+      "spans": [
+        {
+          "source": {
+            "source_type": "pmc",
+            "source_id": "PMC:PMC3295595",
+            "pmc_id": "PMC3295595",
+            "url": "https://www.ncbi.nlm.nih.gov/pmc/articles/PMC3295595/",
+            "title": "PMC:PMC3295595",
+            "retrieved_at": "2026-06-24T17:18:50.225626Z",
+            "content_sha256": "1981dbab30d9f75393b0fbce12bbeaa9bf85b89ff9fa76f2a0ee06eabbe9c8cc",
+            "publication_type": "other",
+            "is_retracted": false,
+            "retraction_checked_at": "2026-06-24T17:18:50.225626Z",
+            "license": "unknown"
+          },
+          "section": "results",
+          "figure_or_table_id": null,
+          "quote": "They are predicted to be type I transmembrane proteins with their proline-rich, mostly disordered C-terminal regions residing in the cytosol.",
+          "quote_sha256": "bab223cfea6f0945682c43ae7ae526a87c96b42371334a3cb3a947c5d1109a6c",
+          "char_offset": 283,
+          "normalized_source_sha256": "53ac069bf0a2453a350358e727542cfd83c1d08afa9e263a5abb4fec83719428"
+        }
+      ],
+      "entailment_verified": true,
+      "entailment_audit_passed": null,
+      "validation_warnings": [],
+      "duplicate_of": "a1_evi_02"
+    }
+  ],
+  "search_log": [
+    {
+      "tool": "evidence_retrieval",
+      "mode": "ihc",
+      "query": {
+        "agent_focus": "a1",
+        "intent": "A1 default sweep: ihc",
+        "category": "ihc",
+        "uniprot_acc": "Q96AW1"
+      },
+      "n_results": 15,
+      "sources_seen": [],
+      "retrieved_at": "2026-06-24T17:18:50.226769Z",
+      "contributed_evidence_ids": []
+    },
+    {
+      "tool": "evidence_retrieval",
+      "mode": "if",
+      "query": {
+        "agent_focus": "a1",
+        "intent": "A1 default sweep: if",
+        "category": "if",
+        "uniprot_acc": "Q96AW1"
+      },
+      "n_results": 21,
+      "sources_seen": [],
+      "retrieved_at": "2026-06-24T17:18:50.226769Z",
+      "contributed_evidence_ids": []
+    },
+    {
+      "tool": "evidence_retrieval",
+      "mode": "flow_cytometry",
+      "query": {
+        "agent_focus": "a1",
+        "intent": "A1 default sweep: flow_cytometry",
+        "category": "flow_cytometry",
+        "uniprot_acc": "Q96AW1"
+      },
+      "n_results": 18,
+      "sources_seen": [],
+      "retrieved_at": "2026-06-24T17:18:50.226769Z",
+      "contributed_evidence_ids": []
+    },
+    {
+      "tool": "evidence_retrieval",
+      "mode": "surface_biotinylation",
+      "query": {
+        "agent_focus": "a1",
+        "intent": "A1 default sweep: surface_biotinylation",
+        "category": "surface_biotinylation",
+        "uniprot_acc": "Q96AW1"
+      },
+      "n_results": 8,
+      "sources_seen": [],
+      "retrieved_at": "2026-06-24T17:18:50.226769Z",
+      "contributed_evidence_ids": []
+    },
+    {
+      "tool": "evidence_retrieval",
+      "mode": "mass_spec_surfaceome",
+      "query": {
+        "agent_focus": "a1",
+        "intent": "A1 default sweep: mass_spec_surfaceome",
+        "category": "mass_spec_surfaceome",
+        "uniprot_acc": "Q96AW1"
+      },
+      "n_results": 1,
+      "sources_seen": [],
+      "retrieved_at": "2026-06-24T17:18:50.226769Z",
+      "contributed_evidence_ids": []
+    },
+    {
+      "tool": "evidence_retrieval",
+      "mode": "shedding",
+      "query": {
+        "agent_focus": "a1",
+        "intent": "A1 default sweep: shedding",
+        "category": "shedding",
+        "uniprot_acc": "Q96AW1"
+      },
+      "n_results": 9,
+      "sources_seen": [],
+      "retrieved_at": "2026-06-24T17:18:50.226769Z",
+      "contributed_evidence_ids": []
+    },
+    {
+      "tool": "evidence_retrieval",
+      "mode": "overexpression",
+      "query": {
+        "agent_focus": "a1",
+        "intent": "A1 default sweep: overexpression",
+        "category": "overexpression",
+        "uniprot_acc": "Q96AW1"
+      },
+      "n_results": 19,
+      "sources_seen": [],
+      "retrieved_at": "2026-06-24T17:18:50.226769Z",
+      "contributed_evidence_ids": []
+    },
+    {
+      "tool": "evidence_retrieval",
+      "mode": "western_blot_paired",
+      "query": {
+        "agent_focus": "a1",
+        "intent": "A1 default sweep: western_blot_paired",
+        "category": "western_blot_paired",
+        "uniprot_acc": "Q96AW1"
+      },
+      "n_results": 5,
+      "sources_seen": [],
+      "retrieved_at": "2026-06-24T17:18:50.226769Z",
+      "contributed_evidence_ids": []
+    },
+    {
+      "tool": "evidence_retrieval",
+      "mode": "structure_with_ecd",
+      "query": {
+        "agent_focus": "a1",
+        "intent": "A1 default sweep: structure_with_ecd",
+        "category": "structure_with_ecd",
+        "uniprot_acc": "Q96AW1"
+      },
+      "n_results": 10,
+      "sources_seen": [],
+      "retrieved_at": "2026-06-24T17:18:50.226769Z",
+      "contributed_evidence_ids": []
+    },
+    {
+      "tool": "evidence_retrieval",
+      "mode": "other",
+      "query": {
+        "agent_focus": "a1",
+        "intent": "A1 default sweep: other",
+        "category": "other",
+        "uniprot_acc": "Q96AW1"
+      },
+      "n_results": 22,
+      "sources_seen": [],
+      "retrieved_at": "2026-06-24T17:18:50.226769Z",
+      "contributed_evidence_ids": []
+    },
+    {
+      "tool": "gene_literature",
+      "mode": "gene2pubmed",
+      "query": {
+        "agent_focus": "a1",
+        "intent": "A1 default: NCBI gene2pubmed baseline"
+      },
+      "n_results": 25,
+      "sources_seen": [],
+      "retrieved_at": "2026-06-24T17:18:50.226769Z",
+      "contributed_evidence_ids": []
+    },
+    {
+      "tool": "gene_literature",
+      "mode": "recent_corpus",
+      "query": {
+        "agent_focus": "a1",
+        "intent": "A1 default: recent_corpus sweep"
+      },
+      "n_results": 7,
+      "sources_seen": [],
+      "retrieved_at": "2026-06-24T17:18:50.226769Z",
+      "contributed_evidence_ids": []
+    },
+    {
+      "tool": "gene_literature",
+      "mode": "topic_search",
+      "query": {
+        "agent_focus": "a1",
+        "intent": "A1/A2 shared: surface-expression + surface-method topic_search",
+        "anchors": [
+          "surface_expression",
+          "flow_cytometry",
+          "surface_biotinylation",
+          "mass_spec_surfaceome",
+          "ihc"
+        ]
+      },
+      "n_results": 25,
+      "sources_seen": [],
+      "retrieved_at": "2026-06-24T17:18:50.226769Z",
+      "contributed_evidence_ids": []
+    },
+    {
+      "tool": "gene_literature",
+      "mode": "topic_search",
+      "query": {
+        "agent_focus": "a1",
+        "intent": "A1 default: structure / topology topic_search",
+        "anchors": [
+          "topology",
+          "structure"
+        ]
+      },
+      "n_results": 25,
+      "sources_seen": [],
+      "retrieved_at": "2026-06-24T17:18:50.226769Z",
+      "contributed_evidence_ids": []
+    },
+    {
+      "tool": "gene_literature",
+      "mode": "topic_search",
+      "query": {
+        "agent_focus": "a1",
+        "intent": "A1/A2 shared: shedding + PTM topic_search",
+        "anchors": [
+          "shedding",
+          "ptm"
+        ]
+      },
+      "n_results": 25,
+      "sources_seen": [],
+      "retrieved_at": "2026-06-24T17:18:50.226769Z",
+      "contributed_evidence_ids": []
+    },
+    {
+      "tool": "gene_literature",
+      "mode": "topic_search",
+      "query": {
+        "agent_focus": "a1",
+        "intent": "standing: normal-tissue surface expression (six high-consequence tox organs)",
+        "anchors": [
+          "normal_tissue_expression"
+        ]
+      },
+      "n_results": 24,
+      "sources_seen": [],
+      "retrieved_at": "2026-06-24T17:18:50.226769Z",
+      "contributed_evidence_ids": []
+    },
+    {
+      "tool": "gene_literature",
+      "mode": "topic_search",
+      "query": {
+        "agent_focus": "a1",
+        "intent": "standing: surface-reachability barriers (BBB / tumor penetration / luminal / accessibility)",
+        "anchors": [
+          "surface_reachability"
+        ]
+      },
+      "n_results": 23,
+      "sources_seen": [],
+      "retrieved_at": "2026-06-24T17:18:50.226769Z",
+      "contributed_evidence_ids": []
+    },
+    {
+      "tool": "gene_literature",
+      "mode": "topic_search",
+      "query": {
+        "agent_focus": "a1",
+        "intent": "standing: co-receptor / partner-dependency for surface trafficking",
+        "anchors": [
+          "partner_dependency"
+        ]
+      },
+      "n_results": 25,
+      "sources_seen": [],
+      "retrieved_at": "2026-06-24T17:18:50.226769Z",
+      "contributed_evidence_ids": []
+    },
+    {
+      "tool": "gene_literature",
+      "mode": "topic_search",
+      "query": {
+        "agent_focus": "a1",
+        "intent": "standing: plasma-membrane subdomain / polarity distribution",
+        "anchors": [
+          "membrane_subdomain"
+        ]
+      },
+      "n_results": 23,
+      "sources_seen": [],
+      "retrieved_at": "2026-06-24T17:18:50.226769Z",
+      "contributed_evidence_ids": []
+    },
+    {
+      "tool": "gene_literature",
+      "mode": "topic_search",
+      "query": {
+        "agent_focus": "a1",
+        "intent": "standing: epitope-masking evidence (homo / hetero / other)",
+        "anchors": [
+          "epitope_masking"
+        ]
+      },
+      "n_results": 23,
+      "sources_seen": [],
+      "retrieved_at": "2026-06-24T17:18:50.226769Z",
+      "contributed_evidence_ids": []
+    },
+    {
+      "tool": "gene_literature",
+      "mode": "topic_search",
+      "query": {
+        "agent_focus": "a1",
+        "intent": "standing: state-conditional surface biology (activation / stress / disease / EMT / senescence / differentiation) — feeds accessibility_modulation",
+        "anchors": [
+          "cell_state_modulation"
+        ]
+      },
+      "n_results": 24,
+      "sources_seen": [],
+      "retrieved_at": "2026-06-24T17:18:50.226769Z",
+      "contributed_evidence_ids": []
+    },
+    {
+      "tool": "evidence_retrieval",
+      "mode": "ihc",
+      "query": {
+        "agent_focus": "a2",
+        "intent": "A2 default sweep: ihc",
+        "category": "ihc",
+        "uniprot_acc": "Q96AW1"
+      },
+      "n_results": 15,
+      "sources_seen": [],
+      "retrieved_at": "2026-06-24T17:18:50.226769Z",
+      "contributed_evidence_ids": []
+    },
+    {
+      "tool": "evidence_retrieval",
+      "mode": "if",
+      "query": {
+        "agent_focus": "a2",
+        "intent": "A2 default sweep: if",
+        "category": "if",
+        "uniprot_acc": "Q96AW1"
+      },
+      "n_results": 21,
+      "sources_seen": [],
+      "retrieved_at": "2026-06-24T17:18:50.226769Z",
+      "contributed_evidence_ids": []
+    },
+    {
+      "tool": "evidence_retrieval",
+      "mode": "flow_cytometry",
+      "query": {
+        "agent_focus": "a2",
+        "intent": "A2 default sweep: flow_cytometry",
+        "category": "flow_cytometry",
+        "uniprot_acc": "Q96AW1"
+      },
+      "n_results": 18,
+      "sources_seen": [],
+      "retrieved_at": "2026-06-24T17:18:50.226769Z",
+      "contributed_evidence_ids": []
+    },
+    {
+      "tool": "evidence_retrieval",
+      "mode": "mass_spec_surfaceome",
+      "query": {
+        "agent_focus": "a2",
+        "intent": "A2 default sweep: mass_spec_surfaceome",
+        "category": "mass_spec_surfaceome",
+        "uniprot_acc": "Q96AW1"
+      },
+      "n_results": 1,
+      "sources_seen": [],
+      "retrieved_at": "2026-06-24T17:18:50.226769Z",
+      "contributed_evidence_ids": []
+    },
+    {
+      "tool": "evidence_retrieval",
+      "mode": "shedding",
+      "query": {
+        "agent_focus": "a2",
+        "intent": "A2 default sweep: shedding",
+        "category": "shedding",
+        "uniprot_acc": "Q96AW1"
+      },
+      "n_results": 9,
+      "sources_seen": [],
+      "retrieved_at": "2026-06-24T17:18:50.226769Z",
+      "contributed_evidence_ids": []
+    },
+    {
+      "tool": "evidence_retrieval",
+      "mode": "surface_expression",
+      "query": {
+        "agent_focus": "a2",
+        "intent": "A2 default sweep: surface_expression",
+        "category": "surface_expression",
+        "uniprot_acc": "Q96AW1"
+      },
+      "n_results": 21,
+      "sources_seen": [],
+      "retrieved_at": "2026-06-24T17:18:50.226769Z",
+      "contributed_evidence_ids": []
+    },
+    {
+      "tool": "gene_literature",
+      "mode": "gene2pubmed",
+      "query": {
+        "agent_focus": "a2",
+        "intent": "A2 default: NCBI gene2pubmed baseline"
+      },
+      "n_results": 25,
+      "sources_seen": [],
+      "retrieved_at": "2026-06-24T17:18:50.226769Z",
+      "contributed_evidence_ids": []
+    },
+    {
+      "tool": "gene_literature",
+      "mode": "recent_corpus",
+      "query": {
+        "agent_focus": "a2",
+        "intent": "A2 default: recent_corpus sweep"
+      },
+      "n_results": 7,
+      "sources_seen": [],
+      "retrieved_at": "2026-06-24T17:18:50.226769Z",
+      "contributed_evidence_ids": []
+    },
+    {
+      "tool": "gene_literature",
+      "mode": "topic_search",
+      "query": {
+        "agent_focus": "a2",
+        "intent": "A1/A2 shared: surface-expression + surface-method topic_search",
+        "anchors": [
+          "surface_expression",
+          "flow_cytometry",
+          "surface_biotinylation",
+          "mass_spec_surfaceome",
+          "ihc"
+        ]
+      },
+      "n_results": 25,
+      "sources_seen": [],
+      "retrieved_at": "2026-06-24T17:18:50.226769Z",
+      "contributed_evidence_ids": []
+    },
+    {
+      "tool": "gene_literature",
+      "mode": "topic_search",
+      "query": {
+        "agent_focus": "a2",
+        "intent": "A1/A2 shared: shedding + PTM topic_search",
+        "anchors": [
+          "shedding",
+          "ptm"
+        ]
+      },
+      "n_results": 25,
+      "sources_seen": [],
+      "retrieved_at": "2026-06-24T17:18:50.226769Z",
+      "contributed_evidence_ids": []
+    },
+    {
+      "tool": "gene_literature",
+      "mode": "topic_search",
+      "query": {
+        "agent_focus": "a2",
+        "intent": "standing: normal-tissue surface expression (six high-consequence tox organs)",
+        "anchors": [
+          "normal_tissue_expression"
+        ]
+      },
+      "n_results": 24,
+      "sources_seen": [],
+      "retrieved_at": "2026-06-24T17:18:50.226769Z",
+      "contributed_evidence_ids": []
+    },
+    {
+      "tool": "gene_literature",
+      "mode": "topic_search",
+      "query": {
+        "agent_focus": "a2",
+        "intent": "standing: surface-reachability barriers (BBB / tumor penetration / luminal / accessibility)",
+        "anchors": [
+          "surface_reachability"
+        ]
+      },
+      "n_results": 23,
+      "sources_seen": [],
+      "retrieved_at": "2026-06-24T17:18:50.226769Z",
+      "contributed_evidence_ids": []
+    },
+    {
+      "tool": "gene_literature",
+      "mode": "topic_search",
+      "query": {
+        "agent_focus": "a2",
+        "intent": "standing: co-receptor / partner-dependency for surface trafficking",
+        "anchors": [
+          "partner_dependency"
+        ]
+      },
+      "n_results": 25,
+      "sources_seen": [],
+      "retrieved_at": "2026-06-24T17:18:50.226769Z",
+      "contributed_evidence_ids": []
+    },
+    {
+      "tool": "gene_literature",
+      "mode": "topic_search",
+      "query": {
+        "agent_focus": "a2",
+        "intent": "standing: plasma-membrane subdomain / polarity distribution",
+        "anchors": [
+          "membrane_subdomain"
+        ]
+      },
+      "n_results": 23,
+      "sources_seen": [],
+      "retrieved_at": "2026-06-24T17:18:50.226769Z",
+      "contributed_evidence_ids": []
+    },
+    {
+      "tool": "gene_literature",
+      "mode": "topic_search",
+      "query": {
+        "agent_focus": "a2",
+        "intent": "standing: epitope-masking evidence (homo / hetero / other)",
+        "anchors": [
+          "epitope_masking"
+        ]
+      },
+      "n_results": 23,
+      "sources_seen": [],
+      "retrieved_at": "2026-06-24T17:18:50.226769Z",
+      "contributed_evidence_ids": []
+    },
+    {
+      "tool": "gene_literature",
+      "mode": "topic_search",
+      "query": {
+        "agent_focus": "a2",
+        "intent": "standing: state-conditional surface biology (activation / stress / disease / EMT / senescence / differentiation) — feeds accessibility_modulation",
+        "anchors": [
+          "cell_state_modulation"
+        ]
+      },
+      "n_results": 24,
+      "sources_seen": [],
+      "retrieved_at": "2026-06-24T17:18:50.226769Z",
+      "contributed_evidence_ids": []
+    }
+  ],
+  "evidence_count": 8,
+  "primary_evidence_count": 2,
+  "secondary_evidence_count": 6,
+  "confidence": "moderate",
+  "confidence_reasoning": "Confidence is moderate rather than low because the intracellular localization call is well-supported by direct experimental evidence — permeabilized immunofluorescence and conditioned-media immunoblot from PMID:20571887 consistently place VOPP1 in endolysosomal vesicles with no plasma membrane signal. However, the entire experimental record derives from a single publication and research group; independent corroboration using orthogonal methods (live-cell non-permeabilized staining, surface biotinylation, or cell-surface proteomics) has not been reported. The first-pass classifier's endomembrane-resident verdict aligns with this conclusion. Lifting confidence to high would require a second independent group to confirm the intracellular-only localization, ideally with a non-permeabilized assay that explicitly rules out any plasma membrane pool.",
+  "model_path": "claude-sonnet-4-6",
+  "record_generated_at": "2026-06-24T17:18:50.227048Z"
+}

@@ -234,6 +234,14 @@ KNOWN_NO_MARKDOWN_EXPORT: frozenset[str] = frozenset({
     "C3",
     "CD63",
     "PVRIG",
+    # v2.13.0 Modal canary deep-dive records — JSON snapshots committed,
+    # but the markdown exporter still only handles schema ``v1.x``.
+    "GABBR2",
+    "RYK",
+    "TMDD1",
+    "TMED10",
+    "VOPP1",
+    "VSIG10L",
 })
 
 
