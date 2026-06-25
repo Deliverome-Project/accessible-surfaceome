@@ -1210,14 +1210,25 @@ def make_surfy_topology_coverage(df: pd.DataFrame, out_dir: Path) -> None:
     # make_db_correctness_by_class.py`. Colors come from the
     # BRAND_PALETTE used there so a reader scanning back and forth
     # between the two figures gets the SAME color for the SAME source.
-    source_order = ["sonnet", "uniprot", "surfy", "cspa", "go", "hpa"]
+    # ``sonnet_only`` = the n=1,042 zero-DB rescue subset — genes
+    # Sonnet flagged yes/contextual where NO classical surface DB
+    # agreed. Computed inline as (src_sonnet == 1 AND all DB src_*
+    # == 0), separate from the regular INCLUSION_SOURCES mapping
+    # because its mask is a conjunction across all sources rather
+    # than a single column lookup. Sits right after ``sonnet`` so
+    # the rescue subset reads as a visible delta off the full Sonnet
+    # bar; uses success-green to signal "rescue surfacing the DBs
+    # missed" (same hue family as the zero_db_rescues_by_triage
+    # figure's YES-bucket palette).
+    source_order = ["sonnet", "sonnet_only", "uniprot", "surfy", "cspa", "go", "hpa"]
     source_colors = {
         # Sonnet = Claude-orange (BRAND_CLAUDE_ORANGE = "#d87851") —
         # same color used for Sonnet in
         # data/analysis/figures/make_db_correctness_by_class.py so
         # a reader gets the SAME color for Sonnet across both
         # figures. Earlier teal-dark choice was wrong.
-        "sonnet":  "#d87851",
+        "sonnet":      "#d87851",
+        "sonnet_only": "#2E7A55",  # success green — zero-DB rescue subset
         # 5 DB colors, indexed identically to BRAND_PALETTE[0..4] in
         # make_db_correctness_by_class.py (UniProt, GO CC, HPA,
         # SURFY, CSPA — by ORIGINAL palette assignment, not panel
@@ -1258,10 +1269,21 @@ def make_surfy_topology_coverage(df: pd.DataFrame, out_dir: Path) -> None:
         # and silently mis-paired bars with colors when the two
         # orders diverged.
         src_col_by_name = dict(INCLUSION_SOURCES)
+        # Special mask for ``sonnet_only``: Sonnet positive AND no DB
+        # voted yes. Computed once per panel since the mask doesn't
+        # depend on the feature column.
+        db_src_cols = [
+            src_col_by_name[s] for s in ("uniprot", "surfy", "cspa", "go", "hpa")
+        ]
+        sonnet_only_mask = (df[src_col_by_name["sonnet"]] == 1) & (
+            df[db_src_cols].sum(axis=1) == 0
+        )
         rates_pct = []
         for src_name in source_order:
-            src_col = src_col_by_name[src_name]
-            mask = df[src_col] == 1
+            if src_name == "sonnet_only":
+                mask = sonnet_only_mask
+            else:
+                mask = df[src_col_by_name[src_name]] == 1
             feat = pd.to_numeric(df.loc[mask, feat_col], errors="coerce")
             n_pos = int((feat == 1).sum())
             rates_pct.append(100.0 * n_pos / any_yes_size)

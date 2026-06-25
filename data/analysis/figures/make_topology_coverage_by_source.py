@@ -193,9 +193,15 @@ FEATURES: list[tuple[str, str]] = [
 # Panel x-axis order: Sonnet first (implicit reference), then DBs
 # in the order matching make_db_correctness_by_class.py for cross-
 # figure visual consistency.
-SOURCE_ORDER = ["sonnet", "uniprot", "surfy", "cspa", "go", "hpa"]
+# ``sonnet_only`` = the n=1,042 zero-DB rescue subset; computed inline
+# as (src_sonnet == 1 AND all DB src_* == 0). Sits right after sonnet
+# so the rescue subset reads as a visible delta off the full Sonnet
+# bar. Uses success-green to signal "rescue" (matches the zero_db_rescues_by_triage
+# figure's YES-bucket palette).
+SOURCE_ORDER = ["sonnet", "sonnet_only", "uniprot", "surfy", "cspa", "go", "hpa"]
 SOURCE_COLORS = {
-    "sonnet":  BRAND_CLAUDE_ORANGE,
+    "sonnet":      BRAND_CLAUDE_ORANGE,
+    "sonnet_only": "#2E7A55",  # success green — zero-DB rescue subset
     "uniprot": BRAND_PALETTE[0],  # maroon-light
     "surfy":   BRAND_PALETTE[3],  # lavender-bright
     "cspa":    BRAND_PALETTE[4],  # maroon-dark
@@ -232,11 +238,18 @@ def main() -> None:
     fig, axes = plt.subplots(nrows, ncols, figsize=(16, 3.6 * nrows))
     axes = axes.reshape(-1)
 
+    # Pre-compute the sonnet_only mask once (per-panel iteration would
+    # recompute it 9× for no benefit).
+    db_cols = [SOURCE_COL[s] for s in ("uniprot", "surfy", "cspa", "go", "hpa")]
+    sonnet_only_mask = (df[SOURCE_COL["sonnet"]] == 1) & (df[db_cols].sum(axis=1) == 0)
+
     for ax, (feat_col, label) in zip(axes, FEATURES):
         rates_pct = []
         for src_name in SOURCE_ORDER:
-            src_col = SOURCE_COL[src_name]
-            mask = df[src_col] == 1
+            if src_name == "sonnet_only":
+                mask = sonnet_only_mask
+            else:
+                mask = df[SOURCE_COL[src_name]] == 1
             feat = pd.to_numeric(df.loc[mask, feat_col], errors="coerce")
             n_pos = int((feat == 1).sum())
             rates_pct.append(100.0 * n_pos / universe_size)
