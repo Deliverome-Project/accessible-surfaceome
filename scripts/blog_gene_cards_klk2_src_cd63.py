@@ -1,104 +1,384 @@
-"""Blog gene cards for KLK2, SRC, CD63 — three deep-dive contribution modes.
+"""Blog gene-card figure for KLK2 / SRC / CD63 — three deep-dive
+contribution modes — rendered as a single HTML page with the viewer's
+exact CSS + 3Dmol.js structures, then screenshotted via Playwright at
+devicePixelRatio=3 (~480 DPI effective).
 
-Visual design matches the viewer (https://surfaceome.deliverome.org/{SYMBOL}):
+Why HTML+headless-Chrome instead of pure matplotlib: matplotlib can't
+render the viewer's React typography (italic Playfair Display .h-vital-
+display values, soft-fill StatusPill chips, .vitalK eyebrows), and it
+can't render the actual 3Dmol.js cartoon ribbons. By generating the
+page in the viewer's CSS + JS, the screenshot is pixel-faithful to
+surfaceome.deliverome.org by construction.
 
-  * editorial register — no boxy card backgrounds, just clean columns
-    with hairline separators between sections
-  * Playfair Display for the gene symbols (maroon-deepest), Manrope
-    for everything else (sourced via _plotting_config.register_bundled_fonts)
-  * outlined StatusPill-style chips — transparent fill, tone-colored
-    border + UPPERCASE text. Tones reach into the design-token palette
-    (var(--maroon-light), --teal-mid, etc.); no per-pill hex codes
-  * ChipLabelValue format for vitals — dim label, bold UPPERCASE value
-    at the SAME font size (emphasis by weight/case, not size)
-  * brand DB-source colors that match make_db_correctness_by_class.py
-    so a reader scanning between figures gets the SAME color for the
-    SAME source
-
-Structure rendering: each gene's AlphaFold canonical PDB is fetched
-from AFDB (cached under data/external/alphafold_db_structures/),
-parsed for Cα coordinates with Bio.PDB, and rendered as a 3D backbone
-trace colored by DeepTMHMM per-residue topology (the same palette the
-viewer's 3Dmol renderer uses — TM=#FFD579, OUT=#8878C8, IN=#A9CFA8,
-SP=#DD5955).
-
-Three contrasting topologies illustrate three contrasting deep-dive
-contribution modes:
-
-  * KLK2 (P20151) — secreted serine protease, all extracellular after
-    signal cleavage. 0/5 DBs flagged it; Sonnet+rescue caught the
-    tissue-restricted prostate-surface display.
-  * SRC (P12931) — N-terminal myristoyl anchor, otherwise cytoplasmic
-    (all "I" in DeepTMHMM). 2/5 DBs over-called surface; deep-dive
-    nuanced the call to lysosomal_exocytosis.
-  * CD63 (P08962) — 4-TM tetraspanin (LAMP-3). 4/5 DBs flagged as
-    canonical surface; deep-dive refined to lysosomal_exocytosis with
-    high state-dependence.
+Stages:
+  1. Build a self-contained HTML file at ``scratchpad/blog_cards.html``
+     with three columns. Each column uses class names borrowed from
+     ``viewer/components/surfaceome/GeneHeader/GeneHeader.module.css``
+     and design tokens from ``viewer/app/design-tokens.css``.
+  2. Launch Playwright Chromium at ``viewport=1600x1200``,
+     ``device_scale_factor=3``. Open the file:// URL, wait for 3Dmol
+     to finish rendering each structure (signaled by a window-level
+     flag the per-card init sets), then ``page.screenshot()``.
+  3. Save the screenshot to ``data/analysis/figures/blog_gene_cards_
+     klk2_src_cd63.png`` and write a companion PDF rendering of the
+     same HTML for the vector deposit.
 
 Run:
     uv run python scripts/blog_gene_cards_klk2_src_cd63.py
 """
 from __future__ import annotations
 
+import csv
 import json
+import os
 import textwrap
-import urllib.request
 from pathlib import Path
-
-import matplotlib.pyplot as plt
-import numpy as np
-from matplotlib.patches import FancyBboxPatch
-from mpl_toolkits.mplot3d.art3d import Line3DCollection
-
-from accessible_surfaceome.audit._plotting_config import (
-    register_bundled_fonts,
-    save_figure,
-    setup_plotting_style,
-)
 
 ROOT = Path(__file__).resolve().parents[1]
 OUT_DIR = ROOT / "data/analysis/figures"
 SLUG = "blog_gene_cards_klk2_src_cd63"
-PDB_CACHE = ROOT / "data/external/alphafold_db_structures"
+SCRATCH = Path(os.environ.get("TMPDIR", "/tmp")) / "blog_cards"
+SCRATCH.mkdir(parents=True, exist_ok=True)
+HTML_PATH = SCRATCH / "blog_cards.html"
+PNG_PATH = OUT_DIR / f"{SLUG}.png"
+PDF_PATH = OUT_DIR / f"{SLUG}.pdf"
+
+# ── Per-gene data — pulled from the committed records + catalog ──────
+#
+# Each gene mirrors what the live surfaceome.deliverome.org/{SYMBOL}
+# page displays in the GeneHeader area: symbol + name + identifiers +
+# SOURCES row + BENCHMARK + TRIAGE + executive summary + 2×2 vitals
+# grid. The topology_str feeds the 3Dmol color-by-residue script.
+GENES = [
+    {
+        "symbol": "KLK2",
+        "name": "kallikrein related peptidase 2",
+        "synonyms": "KLK2A2, hGK-1, hK2",
+        "uniprot_acc": "P20151",
+        "hgnc_id": "HGNC:6363",
+        "ncbi_gene": "3817",
+        "ensembl_gene": "ENSG00000167751",
+        "n_db_votes": 0,
+        "db_flags": {"UniProt": 0, "GO": 0, "HPA": 0, "SURFY": 0, "CSPA": 0},
+        "benchmark_label": "CONTEXTUAL",
+        "benchmark_tone": "amber",
+        "benchmark_note": "agrees with deep dive",
+        "triage_label": "Contextual",
+        "triage_note": "initial pass · NO WEB SEARCH · agrees with deep dive",
+        "summary": (
+            "KLK2 (human kallikrein-2) is a canonical secreted serine protease with no "
+            "transmembrane domain, but a 2025 preclinical study (PMC12580770) "
+            "demonstrates surface accessibility on intact prostate cancer cells by "
+            "live-cell FACS on VCaP and fresh mCRPC patient tumor cells, confocal IF, "
+            "and functional engagement via three distinct therapeutic modalities. "
+            "Surface expression is strictly prostate-lineage- and AR-state-restricted, "
+            "absent in neuroendocrine/double-negative mCRPC variants. The primary risk "
+            "is a large competing secreted pool (KLK2 is constitutively secreted into "
+            "conditioned medium and seminal plasma), and the surface-docking mechanism "
+            "remains uncharacterized."
+        ),
+        # Vital cells: (eyebrow, display value, tone class, sub-line)
+        "vitals": [
+            ("SURFACE VERDICT",     "Moderate",            "amber",   "Architecture · Other"),
+            ("EXPERIMENTAL EVIDENCE", "Direct, multi-method", "success", "33 entries"),
+            ("CONFIDENCE",          "Moderate",            "amber",   "22 primary · 11 secondary"),
+            ("STATE DEPENDENCE",    "High",                "amber",   "tissue-restricted"),
+        ],
+        "topology_str": "S" * 17 + "O" * 244,  # SP + mature secreted
+        "structure_legend": [("Extracellular", "#8878C8"), ("Signal peptide", "#DD5955")],
+        "sonnet_verdict": "contextual",
+        "sonnet_reason":  "tissue_restricted_surface",
+        "extra_tags": ["✓ known ligand"],
+    },
+    {
+        "symbol": "SRC",
+        "name": "SRC proto-oncogene, non-receptor tyrosine kinase",
+        "synonyms": "ASV, SRC1, THC6",
+        "uniprot_acc": "P12931",
+        "hgnc_id": "HGNC:11283",
+        "ncbi_gene": "6714",
+        "ensembl_gene": "ENSG00000197122",
+        "n_db_votes": 2,
+        "db_flags": {"UniProt": 0, "GO": 1, "HPA": 1, "SURFY": 0, "CSPA": 0},
+        "benchmark_label": "CONTEXTUAL",
+        "benchmark_tone": "amber",
+        "benchmark_note": "agrees with deep dive",
+        "triage_label": "Contextual",
+        "triage_note": "initial pass · NO WEB SEARCH · agrees with deep dive",
+        "summary": (
+            "SRC is state-dependently surface-accessible in cancer cells — a canonical "
+            "inner-leaflet kinase with a cancer-specific outer-surface form. Direct "
+            "surface evidence is single-method: antibody-mediated tumor cell killing "
+            "against extracellular-facing eSrc in cancer cell lines and xenograft "
+            "models demonstrates outer-leaflet engagement. Surface presence is "
+            "strictly state-gated, requiring cancer-state autophagolysosomal "
+            "exocytosis (ALE) to invert the N-myristoylated kinase onto the outer "
+            "leaflet; normal cells retain exclusively inner-leaflet, cytoplasmic-face "
+            "localization."
+        ),
+        "vitals": [
+            ("SURFACE VERDICT",     "Moderate",             "amber",   "Architecture · Other"),
+            ("EXPERIMENTAL EVIDENCE", "Direct, single-method", "amber",  "36 entries"),
+            ("CONFIDENCE",          "Low",                  "danger",  ""),
+            ("STATE DEPENDENCE",    "High",                 "amber",   "lysosomal exocytosis"),
+        ],
+        # SRC = GLOB in DeepTMHMM (no TM helices). Live viewer paints
+        # the whole structure in the M-tone (golden) and labels the
+        # legend "Globular". Match that here.
+        "topology_str": "M" * 536,
+        "structure_legend": [("Globular", "#FFD579")],
+        "is_glob_no_slab": True,
+        "sonnet_verdict": "no",
+        "sonnet_reason":  "inner_leaflet_anchored",
+        "extra_tags": ["✓ tumor associated"],
+    },
+    {
+        "symbol": "CD63",
+        "name": "CD63 antigen",
+        "synonyms": "AD1, HOP-26, ME491",
+        "uniprot_acc": "P08962",
+        "hgnc_id": "HGNC:1692",
+        "ncbi_gene": "967",
+        "ensembl_gene": "ENSG00000135404",
+        "n_db_votes": 4,
+        "db_flags": {"UniProt": 1, "GO": 1, "HPA": 0, "SURFY": 1, "CSPA": 1},
+        "benchmark_label": "CONTEXTUAL",
+        "benchmark_tone": "amber",
+        "benchmark_note": "agrees with deep dive",
+        "triage_label": "Contextual",
+        "triage_note": "initial pass · NO WEB SEARCH · agrees with deep dive",
+        "summary": (
+            "CD63 is state-dependently surface-accessible as a pan-tissue tetraspanin "
+            "whose dominant steady-state localization is lysosomal/endosomal but whose "
+            "surface pool expands markedly upon cellular activation. Direct multi-"
+            "method support: KO-validated live-cell flow cytometry on HEK293T cells "
+            "and primary human granulocytes — basophils and eosinophils — across "
+            "multiple independent studies. Surface levels are highly state-modulated: "
+            "absent-to-low on resting granulocytes and stromal cells, rising sharply "
+            "after IgE-mediated degranulation, platelet activation, TCR stimulation, "
+            "and in disease states including HES, NPC, and the CRC tumor microenvironment."
+        ),
+        "vitals": [
+            ("SURFACE VERDICT",     "High",                "success", "Architecture · Tetraspanin"),
+            ("EXPERIMENTAL EVIDENCE", "Direct, multi-method", "success", "62 entries"),
+            ("CONFIDENCE",          "High",                "success", ""),
+            ("STATE DEPENDENCE",    "High",                "amber",   "lysosomal exocytosis"),
+        ],
+        # CD63 DeepTMHMM .3line topology — 4 TM helices through the
+        # plasma membrane, large extracellular loop between TM3+TM4.
+        "topology_str": (
+            "IIIIIIIIIIII"
+            "MMMMMMMMMMMMMMMMMMMMM"
+            "OOOOOOOOOOOOOOOOOO"
+            "MMMMMMMMMMMMMMMMMMMMMMM"
+            "IIIIIIIII"
+            "MMMMMMMMMMMMMMMMMMMMMMM"
+            "OOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOO"
+            "MMMMMMMMMMMMMMMMMMMMMMM"
+            "IIIIIIIIIIIII"
+        ),
+        "structure_legend": [
+            ("Extracellular", "#8878C8"),
+            ("TM helix",      "#FFD579"),
+            ("Intracellular", "#A9CFA8"),
+        ],
+        "sonnet_verdict": "contextual",
+        "sonnet_reason":  "lysosomal_exocytosis",
+        "extra_tags": ["✓ known ligand", "Primary · Lysosome"],
+    },
+]
 
 
-# ── Design-token mirror (viewer/app/design-tokens.css) ───────────────
-# Single source of truth in the viewer is `:root` in design-tokens.css.
-# We mirror only the tokens this figure reaches into; the canonical
-# pinning convention (no per-figure hex) is the SAME rule as the viewer's
-# component CSS.
-TOK = {
-    "maroon_deepest": "#3e0a18",
-    "maroon_dark":    "#6e1428",
-    "maroon_light":   "#bc3c4c",
-    "teal_mid":       "#3d6b60",
-    "teal_lt":        "#7aab9f",
-    "amber_mid":      "#c07830",
-    "amber_bright":   "#f4aa28",
-    "lavender_bright":"#8878c8",
-    "green_success":  "#2E7A55",
-    "ink":            "#1f1718",
-    "muted":          "#6f5d5a",
-    "line":           "#E6DAD4",
-    "bg_warm":        "#f3ece5",
+# ── Topology → 3Dmol color spec (per-residue cartoon coloring) ───────
+
+
+def _topology_to_3dmol_colors(topo: str) -> list[dict]:
+    """Build a list of 3Dmol setStyle invocations that color each
+    contiguous topology run with the viewer's TOPOLOGY_COLORS palette."""
+    palette = {
+        "M": "#FFD579", "O": "#8878C8", "I": "#A9CFA8",
+        "S": "#DD5955", "B": "#C7CED6",
+    }
+    out: list[dict] = []
+    if not topo:
+        return out
+    run_start = 1
+    run_char = topo[0]
+    for i in range(1, len(topo)):
+        if topo[i] != run_char:
+            out.append({
+                "resi_from": run_start, "resi_to": i,
+                "color": palette.get(run_char, "#A9CFA8"),
+            })
+            run_start = i + 1
+            run_char = topo[i]
+    out.append({
+        "resi_from": run_start, "resi_to": len(topo),
+        "color": palette.get(run_char, "#A9CFA8"),
+    })
+    return out
+
+
+# ── HTML generation ──────────────────────────────────────────────────
+
+
+_DESIGN_TOKENS_CSS = """
+:root {
+  --maroon-deepest: #3e0a18; --maroon-dark: #6e1428; --maroon-light: #bc3c4c;
+  --maroon-pale: #f0a098;   --maroon-blush: #fde8e6;
+  --teal-deepest: #152e28;  --teal-dark: #244840; --teal-mid: #3d6b60; --teal-lt: #7aab9f;
+  --amber-deepest: #5a2608; --amber-dark: #8c4210; --amber-mid: #c07830;
+  --amber-bright: #f4aa28;  --amber-light: #f4c070;
+  --lavender-deepest: #1e1450; --lavender-dark: #3a2888; --lavender-mid: #5848a8;
+  --lavender-bright: #8878c8;
+  --ink: #1f1718; --ink-soft: #2a2122; --muted: #6f5d5a; --muted-soft: #80706a;
+  --line: rgba(31,23,24,0.10); --line-soft: rgba(31,23,24,0.06);
+  --bg: #fefefe; --bg-soft: #ffffff; --bg-warm: #f3ece5;
+  --success: #2e7a55; --accent: var(--maroon-light); --accent-deep: var(--maroon-dark);
+  --radius-pill: 999px;
+  --space-1: 0.25rem; --space-2: 0.5rem; --space-3: 0.75rem;
+  --space-4: 1rem;    --space-5: 1.5rem; --space-6: 2rem;
+  --fw-medium: 500;   --fw-semibold: 600;
 }
+"""
 
-# Viewer's TOPOLOGY_COLORS (from viewer/lib/structure-viewer-types.ts).
-# Pinned to the exact hex — these are the same colors 3Dmol paints
-# residues with on the live viewer.
-TOPO_COLOR = {
-    "M": "#FFD579",  # TM helix
-    "O": "#8878C8",  # extracellular
-    "I": "#A9CFA8",  # intracellular
-    "S": "#DD5955",  # signal peptide
-    "B": "#C7CED6",  # beta-strand
+_PAGE_CSS = """
+* { box-sizing: border-box; }
+html, body {
+  margin: 0; padding: 0;
+  background: var(--bg);
+  font-family: 'Manrope', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  color: var(--ink);
+  -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale;
 }
-MEMBRANE_COLOR = "#A0A4AB"
+.cards {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1.75rem;
+  padding: 1.5rem;
+  align-items: start;
+}
+.card { min-width: 0; }
+.card .symbol {
+  font-family: 'Playfair Display', 'Georgia', serif;
+  font-weight: 700; font-size: 3.6rem; line-height: 1;
+  color: var(--maroon-deepest);
+  margin: 0 0 0.4rem;
+  letter-spacing: -0.01em;
+}
+.card .name {
+  font-style: italic; color: var(--ink-soft); font-size: 0.92rem;
+  font-weight: 400;
+  margin: 0 0 0.4rem;
+}
+.card .synonyms { color: var(--muted); font-size: 0.78rem; margin-left: 0.5rem; }
+.card .idRow {
+  display: flex; flex-wrap: wrap; gap: 0.9rem;
+  font-size: 0.72rem; font-family: 'Manrope', sans-serif;
+  color: var(--ink); margin: 0.5rem 0 0.7rem;
+}
+.card .idK { color: var(--muted); font-weight: 500; letter-spacing: 0.04em; text-transform: uppercase; font-size: 0.62rem; }
+.card .idV { color: var(--ink); font-weight: 500; }
+.card .sourcesRow {
+  display: flex; align-items: center; gap: 0.6rem; flex-wrap: wrap;
+  font-size: 0.72rem; margin-bottom: 0.45rem;
+}
+.card .sourcesK {
+  color: var(--muted); text-transform: uppercase; letter-spacing: 0.1em;
+  font-size: 0.62rem; font-weight: 500;
+}
+.card .dot {
+  width: 9px; height: 9px; border-radius: 50%;
+  display: inline-block; vertical-align: middle; margin-right: 4px;
+}
+.card .dotOff { background: rgba(31,23,24,0.18); }
+.card .src { display: inline-flex; align-items: center; gap: 0.3rem; font-size: 0.72rem; }
+.card .srcOff { color: var(--muted); }
+.card .miniRow {
+  display: flex; align-items: center; gap: 0.6rem;
+  font-size: 0.72rem; color: var(--ink); margin: 0.3rem 0;
+}
+.card .miniK {
+  color: var(--muted); text-transform: uppercase; letter-spacing: 0.1em;
+  font-size: 0.62rem; font-weight: 500;
+}
+.card .pill {
+  display: inline-flex; align-items: center;
+  font-family: 'Manrope', sans-serif; font-weight: 500;
+  text-transform: uppercase; letter-spacing: 0.05em;
+  line-height: 1; white-space: nowrap;
+  padding: 0.22rem 0.55rem; border-radius: var(--radius-pill);
+  font-size: 0.68rem; border: 1px solid transparent;
+}
+.pill.tone-amber { color: var(--amber-dark); background: rgba(192,120,48,0.10); }
+.pill.tone-success { color: #1b5e3f; background: rgba(46,122,85,0.10); }
+.pill.tone-maroon { color: var(--maroon-dark); background: rgba(146,32,56,0.10); }
+.pill.tone-teal { color: var(--teal-deepest); background: rgba(61,107,96,0.10); }
+.pill.tone-lavender { color: var(--lavender-dark); background: rgba(88,72,168,0.10); }
+.pill.tone-neutral { color: var(--ink-soft); background: transparent; border-color: var(--line); }
+.card .summary {
+  font-size: 0.78rem; line-height: 1.55; color: var(--ink);
+  margin: 0.8rem 0;
+}
+.card .vitals {
+  display: grid; grid-template-columns: 1fr 1fr;
+  gap: 0.9rem 1.4rem;
+  margin: 0.85rem 0 0.6rem;
+  padding-top: 0.7rem;
+  border-top: 1px solid var(--line);
+}
+.vital { min-width: 0; display: flex; flex-direction: column; gap: 0.25rem; }
+.vitalK {
+  color: var(--muted); font-size: 0.66rem; font-weight: 500; letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+.vitalV {
+  margin: 0;
+  font-family: 'Playfair Display', 'Georgia', serif;
+  font-style: italic; font-weight: 500; font-size: 1.45rem;
+  line-height: 1.05; letter-spacing: -0.015em;
+  color: var(--ink);
+}
+.vitalV.tone-success { color: var(--success); }
+.vitalV.tone-amber   { color: var(--amber-dark); }
+.vitalV.tone-danger  { color: var(--accent-deep); }
+.vitalV.tone-neutral { color: var(--muted); }
+.vitalSub { color: var(--muted); font-size: 0.68rem; line-height: 1.35; }
+.card .extraTags {
+  display: flex; flex-wrap: wrap; gap: 0.35rem;
+  margin: 0.5rem 0 0.6rem;
+}
+.card .structure {
+  margin-top: 0.6rem;
+  background: var(--bg-soft);
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  overflow: hidden;
+}
+.card .structureFrame { width: 100%; height: 280px; position: relative; }
+.card .structureFooter {
+  font-size: 0.66rem; color: var(--muted);
+  padding: 0.4rem 0.6rem; border-top: 1px solid var(--line);
+  display: flex; gap: 0.6rem; align-items: center; flex-wrap: wrap;
+}
+.card .legendSwatch {
+  display: inline-block; width: 10px; height: 10px; border-radius: 2px;
+  margin-right: 4px; vertical-align: middle;
+}
+.card .verdictBar {
+  margin-top: 0.7rem; padding: 0.5rem 0.8rem;
+  border-radius: var(--radius-pill); text-align: center;
+  font-size: 0.74rem; letter-spacing: 0.05em; font-weight: 600;
+  text-transform: uppercase;
+}
+.verdictBar.tone-amber   { background: rgba(192,120,48,0.10); color: var(--amber-dark); }
+.verdictBar.tone-neutral { background: rgba(31,23,24,0.04);   color: var(--ink-soft); border: 1px solid var(--line); }
+.verdictBar.tone-success { background: rgba(46,122,85,0.10); color: #1b5e3f; }
+"""
 
-# Brand source-color palette — must match make_db_correctness_by_class.py
-# + make_topology_coverage_by_source.py so a reader gets the same color
-# for the same source across the figure family.
-DB_COLOR = {
+
+# Brand DB colors — same source-to-color mapping as make_db_correctness_by_class.py
+_DB_COLOR = {
     "UniProt": "#BC3C4C",
     "GO":      "#3D6B60",
     "HPA":     "#F4AA28",
@@ -106,893 +386,205 @@ DB_COLOR = {
     "CSPA":    "#6E1428",
 }
 
-# Verdict tone — mirrors the viewer's StatusPill tone families.
-VERDICT_TONE = {
-    "yes":        TOK["green_success"],
-    "contextual": TOK["amber_mid"],
-    "no":         TOK["muted"],
-}
 
-# Mapping from filter value → outlined-pill tone color. Filtered
-# vocabulary mirrors the viewer's catalog preset toolbar.
-ACCESS_TONE = {
-    "high":     TOK["green_success"],
-    "moderate": TOK["amber_mid"],
-    "low":      TOK["muted"],
-    "no":       TOK["maroon_dark"],
-}
-CONF_TONE = {"high": TOK["green_success"], "moderate": TOK["amber_mid"], "low": TOK["muted"]}
-STATE_TONE = {
-    "high":     TOK["amber_mid"],
-    "moderate": TOK["amber_bright"],
-    "low":      TOK["green_success"],
-    "unclear":  TOK["muted"],
-}
-EXPR_TONE = {
-    "pan_tissue": TOK["green_success"],
-    "broad":      TOK["amber_bright"],
-    "restricted": TOK["amber_mid"],
-    "rare":       TOK["maroon_light"],
-}
-# Primary subcellular compartment (rec.biological_context
-# .subcellular_localization.primary_compartment) — where the protein
-# spends its time. Matches the viewer's FiltersCard.tsx "primary" chip
-# which uses tone="teal" uniformly; here we tone-shift by compartment
-# so the contrast is visible at a glance — plasma_membrane reads as
-# "clean surface" (success green), lysosome / endosome / golgi as
-# "intracellular trafficking" (lavender, matches the viewer's modulation
-# pills), and other intracellular as muted.
-PRIMARY_COMPARTMENT_TONE = {
-    "plasma_membrane":  TOK["green_success"],
-    "extracellular":    TOK["green_success"],
-    "lysosome":         TOK["lavender_bright"],
-    "endosome":         TOK["lavender_bright"],
-    "golgi":            TOK["lavender_bright"],
-    "endoplasmic_reticulum": TOK["amber_mid"],
-    "mitochondria":     TOK["muted"],
-    "nucleus":          TOK["muted"],
-    "cytosol":          TOK["muted"],
-}
-# Evidence grade — agent's coded assessment of the supporting literature.
-EVIDENCE_TONE = {
-    "direct_multi_method":     TOK["green_success"],
-    "direct_single_method":    TOK["amber_mid"],
-    "supportive_but_indirect": TOK["amber_mid"],
-    "weak":                    TOK["muted"],
-}
-# ECD accessibility class — large/moderate/small/minimal/none. Higher
-# extracellular-domain length = more binder real-estate.
-ECD_TONE = {
-    "large":    TOK["green_success"],
-    "moderate": TOK["amber_mid"],
-    "small":    TOK["amber_mid"],
-    "minimal":  TOK["maroon_light"],
-    "none":     TOK["muted"],
-}
-# Induction trigger — what condition surfaces the protein when
-# state_dependence is high. "none" = constitutive (not induced).
-INDUCTION_TONE = {
-    "none":            TOK["muted"],
-    "oncogenic":       TOK["maroon_light"],
-    "immune":          TOK["teal_mid"],
-    "stress_hypoxia":  TOK["amber_mid"],
-    "cell_death":      TOK["maroon_dark"],
-    "infection":       TOK["lavender_bright"],
-    "other":           TOK["muted"],
-}
-# Surface call reason (filters.surface_call_reason) — the agent's
-# coded justification. Color by the bucket the reason falls into,
-# mirroring the _YES_REASONS / _CONTEXTUAL_REASONS / _NO_REASONS
-# split in models.py.
-_YES_REASONS = {
-    "classical_surface_receptor", "gpi_anchored",
-    "multipass_with_exposed_loops", "extracellular_face_protein",
-    "stable_complex_partner",
-}
-_CONTEXTUAL_REASONS = {
-    "cell_state_induced", "tissue_restricted_surface",
-    "lysosomal_exocytosis", "dual_localization",
-    "stable_surface_attachment", "other",
-}
-_NO_REASONS = {
-    "cytoplasmic", "nuclear", "mitochondrial_internal",
-    "endomembrane_resident", "nuclear_envelope", "secreted_only",
-    "inner_leaflet_anchored", "pmhc_only_intracellular",
-}
-
-
-def _reason_tone(reason: str) -> str:
-    if reason in _YES_REASONS:
-        return TOK["green_success"]
-    if reason in _CONTEXTUAL_REASONS:
-        return TOK["amber_mid"]
-    if reason in _NO_REASONS:
-        return TOK["muted"]
-    return TOK["muted"]
-
-
-# ── RYG ramp colors for vital displays — mirrors viewer's
-# globals.css .h-vital-display.tone-{success, amber, danger, neutral}.
-# Viewer comment: "Vital tones form a single red→amber→green
-# traffic-light ramp (low→high), plus a gray neutral for unknown /
-# unclear values. No teal / lavender / light-green — every vital reads
-# on the same RYG+gray scale so the 2×2 grid feels uniform."
-_VITAL_TONE = {
-    "success": TOK["green_success"],   # green = strong yes
-    "amber":   TOK["amber_mid"],       # amber = moderate / contextual
-    "danger":  TOK["maroon_light"],    # red   = negative / weak
-    "neutral": TOK["muted"],           # gray  = unknown / unclear
-}
-
-
-def _ryg_tone_for_access(v: str) -> str:
-    return {
-        "high":     _VITAL_TONE["success"],
-        "moderate": _VITAL_TONE["amber"],
-        "low":      _VITAL_TONE["amber"],
-        "no":       _VITAL_TONE["danger"],
-    }.get(v, _VITAL_TONE["neutral"])
-
-
-def _ryg_tone_for_conf(v: str) -> str:
-    return {
-        "high":     _VITAL_TONE["success"],
-        "moderate": _VITAL_TONE["amber"],
-        "low":      _VITAL_TONE["danger"],
-    }.get(v, _VITAL_TONE["neutral"])
-
-
-def _ryg_tone_for_state(v: str) -> str:
-    # High state-dep = caution (amber / red). Low = "constitutive" =
-    # success. Matches the viewer's RYG semantic (higher state
-    # dependence = harder to target = warmer color).
-    return {
-        "low":      _VITAL_TONE["success"],
-        "moderate": _VITAL_TONE["amber"],
-        "high":     _VITAL_TONE["danger"],
-    }.get(v, _VITAL_TONE["neutral"])
-
-
-def _ryg_tone_for_expr(v: str) -> str:
-    return {
-        "pan_tissue": _VITAL_TONE["success"],
-        "broad":      _VITAL_TONE["success"],
-        "restricted": _VITAL_TONE["amber"],
-        "rare":       _VITAL_TONE["danger"],
-    }.get(v, _VITAL_TONE["neutral"])
-
-
-# ── Per-gene data ────────────────────────────────────────────────────
-#
-# Pulled from the committed records (viewer/public/data/surfaceome/*.json)
-# + the catalog (data/processed/catalog/whole_proteome_catalog.tsv).
-# `topology` is the DeepTMHMM per-residue string we'll feed into the
-# Cα-trace colorer. KLK2 isn't in the deeptmhmm_surfaceome_predictions
-# `.3line` (secreted proteins are filtered out at the cohort level) —
-# treated here as S for the signal peptide (residues 1-17 per UniProt
-# P20151 annotation) and O for the mature secreted protein.
-GENES = [
-    {
-        "symbol": "KLK2",
-        "name": "Kallikrein-2",
-        "uniprot": "P20151",
-        "lede": (
-            "Secreted serine protease; a 2025 study (PMC12580770) demonstrates "
-            "surface accessibility on prostate cancer cells via live-cell FACS, "
-            "confocal IF, and three distinct therapeutic modalities."
-        ),
-        "topology_str": "S" * 17 + "O" * 244,   # SP + mature secreted
-        "story": "0/5 DBs missed it — Sonnet+rescue caught it",
-        "surface_accessibility": "moderate",
-        "confidence":            "moderate",
-        "evidence_grade":        "direct_multi_method",
-        "ecd_class":             "large",
-        "state_dependence":      "high",
-        "expression_breadth":    "rare",
-        "primary_compartment":   "plasma_membrane",
-        "induction_trigger":     "none",
-        "surface_call_reason":   "tissue_restricted_surface",
-        "tumor_associated":      False,
-        "db_flags":      {"UniProt": 0, "GO": 0, "HPA": 0, "SURFY": 0, "CSPA": 0},
-        "sonnet_verdict": "contextual",
-        "sonnet_reason":  "tissue_restricted_surface",
-    },
-    {
-        "symbol": "SRC",
-        "name": "Proto-oncogene tyrosine kinase Src",
-        "uniprot": "P12931",
-        "lede": (
-            "N-terminal myristoyl anchor tethers SRC to the inner leaflet; "
-            "DBs read this as cytoplasmic. Deep-dive flagged context-dependent "
-            "lysosomal-exocytosis surface display."
-        ),
-        # On the live viewer (surfaceome.deliverome.org/SRC), SRC is
-        # painted UNIFORMLY GOLD — the viewer paints GLOB-type proteins
-        # with the M tone (#FFD579), NOT the I tone (#A9CFA8), with a
-        # "Globular" legend swatch. NO membrane slab (nothing for it
-        # to cross). Confirmed from a 2026-06-26 screenshot of the
-        # live page. Topology string is all "M" so my Cα colorer paints
-        # gold; the slab is suppressed below via _IS_GLOB.
-        "topology_str": "M" * 536,
-        "is_glob_no_slab": True,
-        "story": "2/5 DBs over-called — deep-dive nuanced",
-        "surface_accessibility": "moderate",
-        "confidence":            "low",
-        "evidence_grade":        "direct_single_method",
-        "ecd_class":             "none",
-        "state_dependence":      "high",
-        "expression_breadth":    "broad",
-        "primary_compartment":   "plasma_membrane",
-        "induction_trigger":     "oncogenic",
-        "surface_call_reason":   "lysosomal_exocytosis",
-        "tumor_associated":      True,
-        "db_flags":      {"UniProt": 0, "GO": 1, "HPA": 1, "SURFY": 0, "CSPA": 0},
-        "sonnet_verdict": "no",
-        "sonnet_reason":  "inner_leaflet_anchored",
-    },
-    {
-        "symbol": "CD63",
-        "name": "Tetraspanin-30 (LAMP-3)",
-        "uniprot": "P08962",
-        # From data/external/deeptmhmm_surfaceome_predictions/.../predicted_topologies.3line
-        "topology_str": (
-            "IIIIIIIIIIII"                                          # 1-12 I
-            "MMMMMMMMMMMMMMMMMMMMM"                                 # 13-33 TM1
-            "OOOOOOOOOOOOOOOOOO"                                    # 34-51 O
-            "MMMMMMMMMMMMMMMMMMMMMMM"                               # 52-74 TM2
-            "IIIIIIIII"                                              # 75-83 I
-            "MMMMMMMMMMMMMMMMMMMMMMM"                                # 84-106 TM3
-            "OOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOO"  # 107-204 LEL
-            "MMMMMMMMMMMMMMMMMMMMMMM"                                # 205-227 TM4
-            "IIIIIIIIIIIII"                                          # 228-240 I
-        ),
-        "lede": (
-            "4-TM tetraspanin, lysosomal in steady state but heavily "
-            "exocytosed to the cell surface during membrane trafficking. "
-            "DBs flagged classical surface; deep-dive added the context."
-        ),
-        "story": "4/5 DBs called surface — deep-dive added context",
-        "surface_accessibility": "high",
-        "confidence":            "high",
-        "evidence_grade":        "direct_multi_method",
-        "ecd_class":             "moderate",
-        "state_dependence":      "high",
-        "expression_breadth":    "pan_tissue",
-        "primary_compartment":   "lysosome",
-        "induction_trigger":     "oncogenic",
-        "surface_call_reason":   "lysosomal_exocytosis",
-        "tumor_associated":      False,
-        "db_flags":      {"UniProt": 1, "GO": 1, "HPA": 0, "SURFY": 1, "CSPA": 1},
-        "sonnet_verdict": "contextual",
-        "sonnet_reason":  "lysosomal_exocytosis",
-    },
-]
-
-
-# ── PDB fetch + Cα extraction ────────────────────────────────────────
-
-
-def _fetch_pdb(uniprot_acc: str) -> Path:
-    """Download AFDB PDB to ``data/external/alphafold_db_structures/`` if
-    not cached, return the local path. Pinned to ``v6`` to match
-    LATEST_KNOWN_AFDB_VERSION in viewer/lib/structure-viewer-types.ts —
-    the viewer fetches the same URL at view time via 3Dmol."""
-    PDB_CACHE.mkdir(parents=True, exist_ok=True)
-    local = PDB_CACHE / f"AF-{uniprot_acc}-F1-model_v6.pdb"
-    if local.is_file():
-        return local
-    url = f"https://alphafold.ebi.ac.uk/files/AF-{uniprot_acc}-F1-model_v6.pdb"
-    print(f"  fetching {url} …")
-    with urllib.request.urlopen(url, timeout=60) as r:
-        data = r.read()
-    local.write_bytes(data)
-    return local
-
-
-def _extract_ca(pdb_path: Path) -> np.ndarray:
-    """Parse the PDB file and return Cα coords as an (N, 3) array.
-    Uses Bio.PDB; quiet warnings about partial atoms."""
-    import warnings
-    from Bio.PDB import PDBParser
-    with warnings.catch_warnings():
-        warnings.simplefilter("ignore")
-        parser = PDBParser(QUIET=True)
-        struct = parser.get_structure("X", str(pdb_path))
-    coords: list[tuple[float, float, float]] = []
-    for atom in struct.get_atoms():
-        if atom.get_name() == "CA":
-            x, y, z = atom.get_coord()
-            coords.append((float(x), float(y), float(z)))
-    return np.asarray(coords)
-
-
-def _topology_colors(topology_str: str, n: int) -> list[str]:
-    """Per-residue color array, matching the structure to the topology
-    string. If the strings differ in length (rare — PDB sometimes drops
-    terminal residues), pad / truncate to match."""
-    s = topology_str
-    if len(s) < n:
-        s = s + "I" * (n - len(s))
-    elif len(s) > n:
-        s = s[:n]
-    return [TOPO_COLOR.get(ch, TOK["muted"]) for ch in s]
-
-
-def _orient_for_membrane(ca: np.ndarray, tm_mask: np.ndarray) -> np.ndarray:
-    """If the protein has TM-labelled residues, rotate so the average
-    per-helix direction (membrane normal) is vertical.
-
-    Earlier version PCA'd the full TM Cα cluster and used the first
-    principal axis — that picks the longest dimension of the bundle,
-    which for a multi-pass TM protein (CD63, GPCRs) is usually
-    PERPENDICULAR to the membrane normal (the bundle is wider than it
-    is tall). That left CD63 lying on its side.
-
-    Fix: identify each contiguous TM segment, compute (end - start)
-    Cα vector for each, sign-correct them to point the same way, then
-    average. That's the membrane normal regardless of how the helices
-    are arranged laterally."""
-    if not tm_mask.any():
-        return ca
-    # Find contiguous TM runs (their start/end indices in ca).
-    runs: list[tuple[int, int]] = []
-    in_run = False
-    s_idx = 0
-    for i, m in enumerate(tm_mask):
-        if m and not in_run:
-            s_idx = i
-            in_run = True
-        elif not m and in_run:
-            runs.append((s_idx, i - 1))
-            in_run = False
-    if in_run:
-        runs.append((s_idx, len(tm_mask) - 1))
-
-    # Per-helix direction vector (end - start), normalised.
-    helix_dirs: list[np.ndarray] = []
-    for s_i, e_i in runs:
-        v = ca[e_i] - ca[s_i]
-        norm = np.linalg.norm(v)
-        if norm > 1e-6:
-            helix_dirs.append(v / norm)
-    if not helix_dirs:
-        return ca
-
-    # Sign-correct each vector to point the same way as the first
-    # (TM helices in a bundle alternate direction; flip the ones that
-    # face the opposite way so they average constructively).
-    ref = helix_dirs[0]
-    aligned = [d if d @ ref >= 0 else -d for d in helix_dirs]
-    axis = np.mean(aligned, axis=0)
-    axis = axis / np.linalg.norm(axis)
-
-    z_hat = np.array([0.0, 0.0, 1.0])
-    v = np.cross(axis, z_hat)
-    s = np.linalg.norm(v)
-    c = float(np.dot(axis, z_hat))
-    if s < 1e-8:
-        return ca
-    vx = np.array([[ 0.0,   -v[2],  v[1]],
-                   [ v[2],   0.0,  -v[0]],
-                   [-v[1],  v[0],   0.0]])
-    R = np.eye(3) + vx + vx @ vx * ((1 - c) / (s * s))
-    return ca @ R.T
-
-
-def _render_structure(ax, gene: dict) -> None:
-    """Render the Cα trace as a 3D backbone colored by DeepTMHMM
-    topology, viewer-style. TM-containing structures are rotated so
-    the helix principal axis is vertical, the membrane slab sits
-    horizontally, and the helices visibly cross it.
-
-    Lines are drawn thinner (lw=1.2) than the prior pass — the viewer's
-    3Dmol cartoon ribbons read as crisp single-pixel-ish strokes; matching
-    that aesthetic means dropping the thick markers that were dominating
-    the image."""
-    try:
-        pdb = _fetch_pdb(gene["uniprot"])
-        ca = _extract_ca(pdb)
-    except Exception as exc:  # noqa: BLE001 — network / parse failures
-        ax.text2D(0.5, 0.5, f"({gene['uniprot']} structure unavailable: {exc})",
-                  ha="center", va="center", transform=ax.transAxes,
-                  fontsize=8, color=TOK["muted"])
-        ax.set_axis_off()
-        return
-
-    n = len(ca)
-    colors = _topology_colors(gene["topology_str"], n)
-    tm_mask = np.array([c == TOPO_COLOR["M"] for c in colors])
-
-    # Center, normalize scale, then orient so TM proteins render upright
-    ca = ca - ca.mean(axis=0)
-    ca = _orient_for_membrane(ca, tm_mask)
-    span = np.max(np.ptp(ca, axis=0))
-    if span > 0:
-        ca = ca * (40.0 / span)
-
-    # Thin backbone strokes — matches the viewer's crisp ribbon read.
-    segs = np.stack([ca[:-1], ca[1:]], axis=1)
-    seg_colors = colors[:-1]
-    lc = Line3DCollection(segs, colors=seg_colors, linewidths=1.2, alpha=0.95)
-    ax.add_collection3d(lc)
-
-    # Smaller Cα markers (was 22/10, now 6/3) so the line is the
-    # dominant visual element rather than the dot stipple.
-    sizes = [6 if c == TOPO_COLOR["M"] else 3 for c in colors]
-    ax.scatter(ca[:, 0], ca[:, 1], ca[:, 2], c=colors, s=sizes,
-               edgecolors="none", alpha=0.85, depthshade=False)
-
-    # Membrane slab for true TM proteins only — proteins flagged
-    # ``is_glob_no_slab`` (e.g. SRC, painted gold for visual emphasis
-    # but lacking real TM helices) skip the slab to match the live
-    # viewer's render.
-    if tm_mask.any() and not gene.get("is_glob_no_slab"):
-        # After upright rotation, TM extent is along Z; the slab sits
-        # at the median Z of TM residues with the standard ~14 Å
-        # bilayer half-thickness (in our normalized units, ~5).
-        tm_z = ca[tm_mask, 2]
-        z_mid = float(np.median(tm_z))
-        z_half = 5.0
-        x0, x1 = ca[:, 0].min() - 3, ca[:, 0].max() + 3
-        y0, y1 = ca[:, 1].min() - 3, ca[:, 1].max() + 3
-        xx, yy = np.meshgrid([x0, x1], [y0, y1])
-        for z in (z_mid - z_half, z_mid + z_half):
-            ax.plot_surface(xx, yy, np.full_like(xx, z),
-                            color=MEMBRANE_COLOR, alpha=0.10,
-                            shade=False, edgecolor="none")
-
-    # Camera + axis cleanup.
-    ax.set_xticks([]); ax.set_yticks([]); ax.set_zticks([])
-    ax.set_xlabel(""); ax.set_ylabel(""); ax.set_zlabel("")
-    for axis_obj in (ax.xaxis, ax.yaxis, ax.zaxis):
-        axis_obj.set_pane_color((1.0, 1.0, 1.0, 0.0))
-        axis_obj.line.set_color((1.0, 1.0, 1.0, 0.0))
-    ax.set_facecolor("none")
-    ax.grid(False)
-    lim = 24
-    ax.set_xlim(-lim, lim); ax.set_ylim(-lim, lim); ax.set_zlim(-lim, lim)
-    # View from the side: TM helices vertical + membrane horizontal
-    # for TM proteins (CD63). Same angle for the others — they're
-    # globular so the angle doesn't matter much, and consistent angle
-    # makes the three cards look like a series.
-    ax.view_init(elev=4, azim=-90)
-
-
-# ── StatusPill primitives — soft-filled, matching the viewer ─────────
-#
-# Per viewer/components/surfaceome/StatusPill/StatusPill.module.css:
-# Tones are SOFT-FILLED (10% alpha tint on the tone hue) with DEEPER
-# tone text — NO border (border is transparent on all colored tones;
-# only the neutral tone keeps a 1px line so a white chip still reads
-# as a chip). I had this wrong as outlined originally.
-#
-# tone string → (bg_hex, text_color). The viewer's StatusPill uses
-# rgba(<tone>, 0.10) over the page bg_warm. We pre-blend that to a
-# solid hex here so matplotlib's alpha-compositing quirks (different
-# answer in interactive vs savefig depending on figure facecolor
-# state) can't push the fill toward over-saturation. Verified visually:
-# this matches the level of subtlety the viewer's CSS produces on a
-# Chrome-rendered page.
-def _hex_to_rgb_unit(h: str) -> tuple[float, float, float]:
-    h = h.lstrip("#")
-    return tuple(int(h[i:i+2], 16) / 255 for i in (0, 2, 4))
-
-
-def _rgb_to_hex(r: float, g: float, b: float) -> str:
-    return "#{:02x}{:02x}{:02x}".format(
-        int(round(r * 255)), int(round(g * 255)), int(round(b * 255)),
-    )
-
-
-def _soft_blend(tone_hex: str, alpha: float = 0.10, bg_hex: str = "#f3ece5") -> str:
-    """Premultiplied blend: alpha * tone + (1-alpha) * bg. Returns a
-    solid hex, NOT an rgba tuple — keeps every downstream renderer
-    (FancyBboxPatch, Rectangle, set_facecolor) honest about the exact
-    pixel value the chip should show."""
-    tr, tg, tb = _hex_to_rgb_unit(tone_hex)
-    br, bg, bb = _hex_to_rgb_unit(bg_hex)
-    return _rgb_to_hex(
-        alpha * tr + (1 - alpha) * br,
-        alpha * tg + (1 - alpha) * bg,
-        alpha * tb + (1 - alpha) * bb,
-    )
-
-
-# Tone family → (fill, text). Pre-blended to solid hex so the chip
-# always renders at the same subtlety regardless of where it's drawn.
-_PILL_TONE = {
-    "maroon":   (_soft_blend("#922038"), TOK["maroon_dark"]),
-    "teal":     (_soft_blend("#3D6B60"), "#152e28"),     # teal-deepest
-    "amber":    (_soft_blend("#C07830"), "#8c4210"),     # amber-dark
-    "lavender": (_soft_blend("#5848A8"), "#3a2888"),     # lavender-dark
-    "success":  (_soft_blend("#2E7A55"), "#1b5e3f"),     # darker than --success
-    "neutral":  ("none",                 "#2a2122"),     # transparent fill + ink-soft
-}
-
-
-def _tone_for(value_color: str) -> str:
-    """Map a tone hex back to its CSS .tone_* family for soft-fill lookup.
-    Falls back to neutral. The function lets the rest of the code keep
-    passing brand hex values around without caring which CSS class
-    they'd render as in the viewer."""
-    m = {
-        TOK["green_success"]:  "success",
-        TOK["amber_mid"]:      "amber",
-        TOK["amber_bright"]:   "amber",
-        TOK["maroon_light"]:   "maroon",
-        TOK["maroon_dark"]:    "maroon",
-        TOK["teal_mid"]:       "teal",
-        TOK["teal_lt"]:        "teal",
-        TOK["lavender_bright"]:"lavender",
-        TOK["muted"]:          "neutral",
-    }
-    return m.get(value_color, "neutral")
-
-
-def _pill(ax, x, y, w, h, text, tone_hex, *, fs=8.5, transform=None):
-    """Single StatusPill — soft-filled + deeper-tone text. ``tone_hex``
-    is the brand hex the caller passes for the chip's *meaning* (e.g.
-    success green); the renderer looks up the .tone_* family and
-    applies the matching soft-fill bg + deeper text."""
-    if transform is None:
-        transform = ax.transAxes
-    fill, text_color = _PILL_TONE[_tone_for(tone_hex)]
-    is_neutral = fill == "none"
-    edge = TOK["line"] if is_neutral else "none"
-    lw = 0.9 if is_neutral else 0
-    fc = "none" if is_neutral else fill
-    box = FancyBboxPatch(
-        (x, y), w, h,
-        boxstyle=f"round,pad=0,rounding_size={h * 0.5}",  # makes rounding behave like a true pill
-        facecolor=fc, edgecolor=edge, lw=lw,
-        transform=transform, clip_on=False,
-    )
-    ax.add_patch(box)
-    ax.text(x + w / 2, y + h / 2, text.upper(),
-            ha="center", va="center", fontsize=fs,
-            color=text_color, fontweight="medium",
-            transform=transform, clip_on=False,
-            family="Manrope")
-
-
-def _label_value_chip(ax, x, y, w, h, label, value, tone_hex, fs=9):
-    """ChipLabelValue: "LABEL · VALUE" inside a single soft-filled
-    StatusPill. Label is dim (label color = text_color @ 72% opacity
-    per viewer's CSS); value is BOLD UPPERCASE at full opacity.
-    Same font size; emphasis comes from weight + opacity, not size."""
-    fill, text_color = _PILL_TONE[_tone_for(tone_hex)]
-    is_neutral = fill == "none"
-    edge = TOK["line"] if is_neutral else "none"
-    lw = 0.9 if is_neutral else 0
-    fc = "none" if is_neutral else fill
-    box = FancyBboxPatch(
-        (x, y), w, h,
-        boxstyle=f"round,pad=0,rounding_size={h * 0.5}",
-        facecolor=fc, edgecolor=edge, lw=lw,
-        transform=ax.transAxes, clip_on=False,
-    )
-    ax.add_patch(box)
-    # Label dim (opacity 0.72 per .label CSS rule). matplotlib doesn't
-    # let us set per-color opacity in the text() kwarg; emulate by
-    # taking the text_color's alpha down. Easier: just lower-saturation
-    # the label by using the muted token.
-    ax.text(x + 0.026, y + h / 2, label.upper(),
-            ha="left", va="center", fontsize=fs - 0.5, color=text_color,
-            fontweight="normal", alpha=0.72,
-            transform=ax.transAxes, clip_on=False, family="Manrope")
-    # Value: bold UPPERCASE, full opacity, same tone text color.
-    ax.text(x + w - 0.026, y + h / 2, value.upper().replace("_", " "),
-            ha="right", va="center", fontsize=fs, color=text_color,
-            fontweight="bold",
-            transform=ax.transAxes, clip_on=False, family="Manrope")
-
-
-# ── Column render ────────────────────────────────────────────────────
-
-
-def _render_column(fig, gene: dict, x_left: float, col_width: float) -> None:
-    """One vertical column for one gene. Layout (top → bottom):
-
-        symbol  (Playfair Display, large, maroon-deepest)
-        name + UniProt link  (Manrope, muted)
-        lede paragraph  (Manrope, ink, 3-line cap)
-        ─── hairline ───
-        structure  (3D Cα backbone trace, viewer-color topology)
-        ─── hairline ───
-        VITALS strip  (4 ChipLabelValue chips)
-        DB strip  (5 outlined source chips, filled if called)
-        Sonnet verdict pill  (one tone-filled pill)
-        story line  (italic muted)
-    """
-    # We use a vertical strip of "phantom" axes for each section to
-    # bypass gridspec's rigidity. Each phantom is positioned in
-    # figure coords; the inset 3D axes is attached to the structure
-    # phantom.
-    #
-    # Section y-positions in figure coords, top-aligned. Heights tuned
-    # so the figure exports at 15×11.
-    def axes_at(y_bottom, height):
-        return fig.add_axes((x_left, y_bottom, col_width, height))
-
-    # ── Symbol + name + UniProt + lede ───────────────────────────────
-    # Header gets less space than the previous layout (was 0.80-0.98 =
-    # 18%; now 0.84-0.98 = 14%) so the structure can take more, per
-    # user request.
-    text_ax = axes_at(0.84, 0.14)
-    text_ax.axis("off")
-    text_ax.set_xlim(0, 1); text_ax.set_ylim(0, 1)
-    text_ax.text(0.5, 0.85, gene["symbol"],
-                 transform=text_ax.transAxes,
-                 ha="center", va="center",
-                 fontsize=46, fontweight="bold",
-                 color=TOK["maroon_deepest"], family="Playfair Display")
-    text_ax.text(0.5, 0.42, gene["name"],
-                 transform=text_ax.transAxes,
-                 ha="center", va="center",
-                 fontsize=10.5, color=TOK["ink"],
-                 family="Manrope", fontweight="medium")
-    text_ax.text(0.5, 0.22, f"UniProt  {gene['uniprot']}",
-                 transform=text_ax.transAxes,
-                 ha="center", va="center",
-                 fontsize=8, color=TOK["muted"],
-                 family="Manrope", fontweight="normal")
-
-    # Lede — smaller (fs=7.5) so it doesn't dominate the column
-    lede_ax = axes_at(0.78, 0.05)
-    lede_ax.axis("off")
-    lede_ax.set_xlim(0, 1); lede_ax.set_ylim(0, 1)
-    wrapped = textwrap.fill(gene["lede"], width=58)
-    lede_ax.text(0.5, 0.5, wrapped,
-                 transform=lede_ax.transAxes,
-                 ha="center", va="center",
-                 fontsize=7.5, color=TOK["muted"],
-                 family="Manrope", style="italic",
-                 linespacing=1.35)
-
-    # Hairline separator
-    sep_ax = axes_at(0.775, 0.003)
-    sep_ax.axhline(0.5, color=TOK["line"], lw=0.8)
-    sep_ax.axis("off")
-
-    # ── 3D structure — real AFDB Cα trace ────────────────────────────
-    # Structure now takes 30% of figure height (was 22%) per user
-    # request — gives the topology trace room to breathe.
-    struct_ax = fig.add_axes((x_left + 0.005, 0.47, col_width - 0.01, 0.30),
-                             projection="3d")
-    _render_structure(struct_ax, gene)
-
-    # Hairline separator
-    sep_ax2 = axes_at(0.465, 0.003)
-    sep_ax2.axhline(0.5, color=TOK["line"], lw=0.8)
-    sep_ax2.axis("off")
-
-    # ── Vitals 2×2 grid + secondary chip strip ───────────────────────
-    # Matches the viewer's GeneHeader pattern (viewer/components/
-    # surfaceome/GeneHeader/GeneHeader.module.css `.vitals`):
-    #   * each cell is .vitalK eyebrow (UPPERCASE 0.78rem, muted,
-    #     letter-spacing 0.1em) over a .h-vital-display value (italic
-    #     Playfair Display, ~1.4rem, tone-colored via .tone-success /
-    #     .tone-amber / .tone-danger / .tone-neutral)
-    #   * 2-column grid, 4 cells total
-    # The viewer ships exactly 4 vitals: Accessibility, Confidence,
-    # State dependence, Expression. We match that set.
-    #
-    # Below the vital grid, a slim flex row of small StatusPills carries
-    # the secondary tags the user wants — Evidence, Primary loc.,
-    # Induced by, Reason, and ✓ tumor-associated (when true).
-    vital_ax = axes_at(0.265, 0.195)
-    vital_ax.axis("off")
-    vital_ax.set_xlim(0, 1); vital_ax.set_ylim(0, 1)
-    # Vitals = the EXACT 4 the live viewer's GeneHeader renders, in
-    # order:
-    #   SURFACE VERDICT (filters.surface_accessibility, RYG)
-    #   EXPERIMENTAL SURFACE EVIDENCE (filters.evidence_grade — uses
-    #     success green for direct_*, amber for supportive, neutral
-    #     for weak; viewer comment: "experimental evidence reads as
-    #     a quality grade")
-    #   CONFIDENCE (filters.confidence, RYG)
-    #   STATE DEPENDENCE (filters.state_dependence, RYG inverted —
-    #     high state-dep = warmer = harder to target)
-    # Shorten the evidence value so "Direct multi method" fits one line
-    # at column width — viewer renders this same field as "Direct,
-    # multi-method" with comma + hyphen.
-    _EVIDENCE_DISPLAY = {
-        "direct_multi_method":     "Direct, multi-method",
-        "direct_single_method":    "Direct, single method",
-        "supportive_but_indirect": "Supportive but indirect",
-        "weak":                    "Weak",
-    }
-    vital_cells = [
-        ("SURFACE VERDICT", gene["surface_accessibility"].title(),
-            _ryg_tone_for_access(gene["surface_accessibility"])),
-        ("EXPERIMENTAL EVIDENCE",
-            _EVIDENCE_DISPLAY.get(gene["evidence_grade"], gene["evidence_grade"]),
-            EVIDENCE_TONE.get(gene["evidence_grade"], TOK["muted"])),
-        ("CONFIDENCE",    gene["confidence"].title(),
-            _ryg_tone_for_conf(gene["confidence"])),
-        ("STATE DEPENDENCE", gene["state_dependence"].title(),
-            _ryg_tone_for_state(gene["state_dependence"])),
-    ]
-    cell_w, cell_h = 0.48, 0.42
-    cell_gap_x, cell_gap_y = 0.04, 0.08
-    grid_w = 2 * cell_w + cell_gap_x
-    grid_left = (1 - grid_w) / 2
-    grid_top = 0.96
-    for idx, (label, value, ryg_tone) in enumerate(vital_cells):
-        col, row = idx % 2, idx // 2
-        cx = grid_left + col * (cell_w + cell_gap_x)
-        cy = grid_top - (row + 1) * cell_h - row * cell_gap_y
-        # .vitalK eyebrow — small UPPERCASE muted label
-        vital_ax.text(cx, cy + cell_h, label,
-                      ha="left", va="top",
-                      fontsize=7.5, color=TOK["muted"], family="Manrope",
-                      fontweight="medium",
-                      transform=vital_ax.transAxes, clip_on=False)
-        # .h-vital-display value — italic Playfair, NOT uppercase
-        # (viewer renders "Moderate" / "Direct, multi-method" in
-        # sentence case). Sized to fit column width on one line.
-        vital_ax.text(cx, cy + cell_h * 0.35, value,
-                      ha="left", va="center",
-                      fontsize=14, color=ryg_tone,
-                      family="Playfair Display", style="italic",
-                      fontweight="medium",
-                      transform=vital_ax.transAxes, clip_on=False)
-
-    # ── Secondary chip strip — small StatusPills with the extra tags
-    chips_ax = axes_at(0.08, 0.115)
-    chips_ax.axis("off")
-    chips_ax.set_xlim(0, 1); chips_ax.set_ylim(0, 1)
-    # Build chip set (label, value, tone). Skip "Induced by" when none.
-    chip_set: list[tuple[str, str, str]] = [
-        ("evidence", gene["evidence_grade"].replace("_", " "),
-            EVIDENCE_TONE.get(gene["evidence_grade"], TOK["muted"])),
-        ("primary",  gene["primary_compartment"].replace("_", " "),
-            PRIMARY_COMPARTMENT_TONE.get(gene["primary_compartment"], TOK["muted"])),
-        ("reason",   gene["surface_call_reason"].replace("_", " "),
-            _reason_tone(gene["surface_call_reason"])),
-    ]
-    if gene["induction_trigger"] != "none":
-        chip_set.append((
-            "induced",
-            gene["induction_trigger"].replace("_", " "),
-            INDUCTION_TONE.get(gene["induction_trigger"], TOK["muted"]),
-        ))
-    if gene.get("tumor_associated"):
-        chip_set.append(("", "✓ tumor associated", TOK["maroon_light"]))
-
-    # Tight flex-row layout: chips flow left-to-right with wrap. Each
-    # chip's width is content-sized (label · value text length × char
-    # width estimate).
-    pad_x = 0.022
-    chip_h_pct = 0.20  # in transAxes coords
-    char_w = 0.0072    # approx text-width per char in transAxes at fs=7.5
-    gap = 0.01
-    y_cursor = 0.78    # top row
-    x_cursor = 0.0
-    for label, value, tone in chip_set:
-        full_text = (label + " · " + value).upper() if label else value.upper()
-        chip_w_pct = len(full_text) * char_w + pad_x * 2
-        # Wrap to next row if needed
-        if x_cursor + chip_w_pct > 1.0:
-            y_cursor -= chip_h_pct + 0.06
-            x_cursor = 0.0
-        if label:
-            _label_value_chip(chips_ax, x_cursor, y_cursor,
-                              chip_w_pct, chip_h_pct,
-                              label, value, tone, fs=7.5)
+def _render_sources_row(g: dict) -> str:
+    parts = [f'<span class="sourcesK">SOURCES · {g["n_db_votes"]}/5</span>']
+    for name, called in g["db_flags"].items():
+        color = _DB_COLOR[name]
+        if called:
+            parts.append(
+                f'<span class="src"><span class="dot" style="background:{color}"></span>'
+                f'<span style="color:var(--ink); font-weight:500">{name}</span></span>'
+            )
         else:
-            _pill(chips_ax, x_cursor, y_cursor,
-                  chip_w_pct, chip_h_pct, value, tone, fs=7.5)
-        x_cursor += chip_w_pct + gap
+            parts.append(
+                f'<span class="src srcOff"><span class="dot dotOff"></span>'
+                f'<span>{name}</span></span>'
+            )
+    return f'<div class="sourcesRow">{"".join(parts)}</div>'
 
-    # Hairline separator
-    sep_ax3 = axes_at(0.16, 0.003)
-    sep_ax3.axhline(0.5, color=TOK["line"], lw=0.8)
-    sep_ax3.axis("off")
 
-    # ── DB strip — swatch-dot pattern matching the viewer ────────────
-    # Per viewer/components/surfaceome/DatabasePresenceCard, every DB
-    # chip is the SAME white outlined pill regardless of called/not;
-    # what differs is the 10px colored swatch dot inside, which is
-    # the brand color when called and faded line-color when not. This
-    # reads as a quiet row, not five tone-tagged banners.
-    db_ax = axes_at(0.085, 0.075)
-    db_ax.axis("off")
-    db_ax.set_xlim(0, 1); db_ax.set_ylim(0, 1)
-    db_ax.text(0.5, 0.92, "DATABASE CALLS",
-               ha="center", va="top", fontsize=8, color=TOK["muted"],
-               family="Manrope", fontweight="medium",
-               transform=db_ax.transAxes)
-    n_db = 5
-    db_w, db_h = 0.17, 0.42
-    db_gap = 0.015
-    total_w = n_db * db_w + (n_db - 1) * db_gap
-    db_x0 = (1 - total_w) / 2
-    db_y = 0.18
-    for i, (db_name, called) in enumerate(gene["db_flags"].items()):
-        x = db_x0 + i * (db_w + db_gap)
-        # White outlined pill — same shape always
-        box = FancyBboxPatch(
-            (x, db_y), db_w, db_h,
-            boxstyle=f"round,pad=0,rounding_size={db_h * 0.5}",
-            facecolor="white" if called else "none",
-            edgecolor=TOK["line"], lw=0.9,
-            transform=db_ax.transAxes, clip_on=False,
+def _render_vitals(g: dict) -> str:
+    cells: list[str] = []
+    for eyebrow, value, tone, sub in g["vitals"]:
+        sub_html = f'<div class="vitalSub">{sub}</div>' if sub else ""
+        cells.append(textwrap.dedent(f"""\
+          <div class="vital">
+            <div class="vitalK">{eyebrow}</div>
+            <p class="vitalV tone-{tone}">{value}</p>
+            {sub_html}
+          </div>"""))
+    return f'<div class="vitals">{"".join(cells)}</div>'
+
+
+def _verdict_tone(verdict: str) -> str:
+    return {"yes": "success", "contextual": "amber", "no": "neutral"}.get(verdict, "neutral")
+
+
+def _render_card(g: dict) -> str:
+    color_specs = _topology_to_3dmol_colors(g["topology_str"])
+    color_specs_json = json.dumps(color_specs)
+    pdb_url = f"https://alphafold.ebi.ac.uk/files/AF-{g['uniprot_acc']}-F1-model_v6.pdb"
+    is_glob = bool(g.get("is_glob_no_slab"))
+    extra_tags_html = "".join(
+        f'<span class="pill tone-neutral">{t}</span>' for t in g.get("extra_tags", [])
+    )
+    legend_html = " · ".join(
+        f'<span><span class="legendSwatch" style="background:{c}"></span>{name}</span>'
+        for name, c in g["structure_legend"]
+    )
+    verdict_tone = _verdict_tone(g["sonnet_verdict"])
+    return f"""
+  <div class="card">
+    <h1 class="symbol">{g['symbol']}</h1>
+    <p class="name">{g['name']}<span class="synonyms">Synonyms: {g['synonyms']}</span></p>
+    <div class="idRow">
+      <span><span class="idK">HGNC</span> <span class="idV">{g['hgnc_id']}</span></span>
+      <span><span class="idK">UniProt</span> <span class="idV">{g['uniprot_acc']}</span></span>
+      <span><span class="idK">NCBI gene</span> <span class="idV">{g['ncbi_gene']}</span></span>
+      <span><span class="idK">Ensembl</span> <span class="idV">{g['ensembl_gene']}</span></span>
+    </div>
+    {_render_sources_row(g)}
+    <div class="miniRow">
+      <span class="miniK">Benchmark</span>
+      <span class="pill tone-{g['benchmark_tone']}">{g['benchmark_label']}</span>
+      <span class="vitalSub">{g['benchmark_note']}</span>
+    </div>
+    <div class="miniRow">
+      <span class="miniK">Triage</span>
+      <span class="vitalSub">{g['triage_label']} — {g['triage_note']}</span>
+    </div>
+    <p class="summary">{g['summary']}</p>
+    {_render_vitals(g)}
+    <div class="extraTags">{extra_tags_html}</div>
+    <div class="structure">
+      <div class="structureFrame" id="viewer-{g['symbol']}" data-pdb="{pdb_url}"
+           data-colorspecs='{color_specs_json}'
+           data-is-glob="{'1' if is_glob else '0'}"></div>
+      <div class="structureFooter">
+        <span style="color:var(--ink-soft); font-weight:500">AlphaFold</span>
+        <span>AFDB {g['uniprot_acc']} · v6</span>
+        <span style="flex:1"></span>
+        {legend_html}
+      </div>
+    </div>
+    <div class="verdictBar tone-{verdict_tone}">
+      Sonnet · {g['sonnet_verdict']} · {g['sonnet_reason'].replace('_', ' ')}
+    </div>
+  </div>
+"""
+
+
+_3DMOL_INIT_JS = """
+window.__viewersReady = 0;
+window.__expectedViewers = document.querySelectorAll('[id^="viewer-"]').length;
+
+function initViewers() {
+  document.querySelectorAll('[id^="viewer-"]').forEach(function(el) {
+    const pdbUrl = el.getAttribute('data-pdb');
+    const colorSpecs = JSON.parse(el.getAttribute('data-colorspecs'));
+    const isGlob = el.getAttribute('data-is-glob') === '1';
+    const viewer = $3Dmol.createViewer(el, {backgroundColor: 'white'});
+    fetch(pdbUrl).then(r => r.text()).then(function(pdb) {
+      viewer.addModel(pdb, 'pdb');
+      // Base cartoon style
+      viewer.setStyle({}, {cartoon: {color: '#A9CFA8'}});
+      // Per-topology coloring
+      colorSpecs.forEach(function(spec) {
+        viewer.setStyle({resi: spec.resi_from + '-' + spec.resi_to},
+                        {cartoon: {color: spec.color}});
+      });
+      // Membrane slab for true TM proteins (not GLOB-flagged ones).
+      // Slab drawn as a thin disk at the median z of TM residues.
+      const hasTM = colorSpecs.some(function(s) { return s.color === '#FFD579'; });
+      if (hasTM && !isGlob) {
+        const tmAtoms = viewer.selectedAtoms({chain: 'A'}).filter(function(a) {
+          return a.atom === 'CA' && a.resi && colorSpecs.some(function(s) {
+            return s.color === '#FFD579' && a.resi >= s.resi_from && a.resi <= s.resi_to;
+          });
+        });
+        if (tmAtoms.length) {
+          const zs = tmAtoms.map(function(a) { return a.z; }).sort(function(a,b){return a-b;});
+          const zMid = zs[Math.floor(zs.length/2)];
+          viewer.addBox({
+            corner: {x: -22, y: -22, z: zMid - 6},
+            dimensions: {w: 44, h: 44, d: 12},
+            color: '#A0A4AB', opacity: 0.12, wireframe: false,
+          });
+        }
+      }
+      viewer.zoomTo();
+      viewer.zoom(1.05);
+      viewer.render();
+      window.__viewersReady += 1;
+    });
+  });
+}
+"""
+
+
+def _render_html() -> str:
+    body = "\n".join(_render_card(g) for g in GENES)
+    return f"""<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Surfaceome blog cards · KLK2 · SRC · CD63</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700&family=Playfair+Display:ital,wght@0,400..900;1,400..900&display=swap" rel="stylesheet">
+<script src="https://3dmol.org/build/3Dmol-min.js"></script>
+<style>
+{_DESIGN_TOKENS_CSS}
+{_PAGE_CSS}
+</style>
+</head>
+<body>
+<div class="cards">
+{body}
+</div>
+<script>
+{_3DMOL_INIT_JS}
+window.addEventListener('load', initViewers);
+</script>
+</body>
+</html>
+"""
+
+
+def _render_and_screenshot() -> None:
+    HTML_PATH.write_text(_render_html())
+    print(f"  wrote {HTML_PATH}")
+
+    from playwright.sync_api import sync_playwright
+    with sync_playwright() as p:
+        browser = p.chromium.launch()
+        # 1600×1200 viewport at devicePixelRatio=3 → 4800×3600 screenshot.
+        # 16-inch print width → 300 DPI. Good for blog + Zenodo.
+        ctx = browser.new_context(
+            viewport={"width": 1600, "height": 1200},
+            device_scale_factor=3,
         )
-        db_ax.add_patch(box)
-        # Swatch dot — brand color when called, faded when not.
-        # Drawn as a small circle (FancyBboxPatch with high rounding) so
-        # we don't need matplotlib's Circle in transAxes coords.
-        swatch_size = 0.07
-        swatch_x = x + 0.030
-        swatch_y = db_y + db_h / 2 - swatch_size / 2
-        swatch_color = DB_COLOR.get(db_name, TOK["muted"]) if called else TOK["line"]
-        swatch = FancyBboxPatch(
-            (swatch_x, swatch_y), swatch_size, swatch_size,
-            boxstyle=f"round,pad=0,rounding_size={swatch_size * 0.5}",
-            facecolor=swatch_color, edgecolor="none",
-            transform=db_ax.transAxes, clip_on=False,
+        page = ctx.new_page()
+        page.goto(f"file://{HTML_PATH}")
+        # Wait for all 3Dmol viewers to finish rendering (window flag
+        # set by the init script).
+        page.wait_for_function(
+            "window.__viewersReady === window.__expectedViewers",
+            timeout=30_000,
         )
-        db_ax.add_patch(swatch)
-        # Label text — ink for called, muted for not (matches the
-        # viewer's .cellNo .link color: var(--muted) rule)
-        text_color = TOK["ink"] if called else TOK["muted"]
-        ax_text_x = swatch_x + swatch_size + 0.018
-        db_ax.text(ax_text_x, db_y + db_h / 2, db_name,
-                   ha="left", va="center", fontsize=7.5,
-                   color=text_color, fontweight="medium",
-                   transform=db_ax.transAxes, family="Manrope")
-
-    # ── Sonnet verdict — single filled pill ──────────────────────────
-    verd_ax = axes_at(0.025, 0.05)
-    verd_ax.axis("off")
-    verd_ax.set_xlim(0, 1); verd_ax.set_ylim(0, 1)
-    verd_w, verd_h = 0.84, 0.65
-    verd_x = (1 - verd_w) / 2
-    verd_y = 0.18
-    # Sonnet verdict — single soft-tinted pill matching the chip family
-    # above. Same rendering path as ``_pill`` so subtle-fill stays
-    # consistent.
-    tone = VERDICT_TONE.get(gene["sonnet_verdict"], TOK["muted"])
-    _pill(verd_ax, verd_x, verd_y, verd_w, verd_h,
-          f"SONNET  ·  {gene['sonnet_verdict'].upper()}  ·  "
-          f"{gene['sonnet_reason'].replace('_', ' ').upper()}",
-          tone, fs=9.5)
-
-
-def make_plot():
-    # Don't apply setup_plotting_style — that suppresses titles + sets
-    # axes spines off for chart-style plots. This is editorial.
-    register_bundled_fonts()
-    plt.rcParams.update({
-        "font.family": "Manrope",
-        "font.sans-serif": ["Manrope", "Outfit", "DejaVu Sans"],
-        "font.serif": ["Playfair Display", "Georgia"],
-        "savefig.dpi": 600,
-        "savefig.bbox": "tight",
-        "figure.facecolor": "none",
-        "savefig.facecolor": "none",
-        "axes.facecolor": "none",
-    })
-    fig = plt.figure(figsize=(15, 12))
-    fig.set_facecolor(TOK["bg_warm"])  # warm bg like the viewer
-
-    # 3 columns at fixed x positions in figure coords. Padding on the
-    # outside + a small inner gap between columns.
-    col_width = 0.30
-    gap = 0.015
-    total = 3 * col_width + 2 * gap
-    left = (1.0 - total) / 2
-    for i, gene in enumerate(GENES):
-        x_left = left + i * (col_width + gap)
-        _render_column(fig, gene, x_left, col_width)
-
-    return fig
+        # Extra beat for fonts + 3Dmol last-frame settle
+        page.wait_for_timeout(800)
+        OUT_DIR.mkdir(parents=True, exist_ok=True)
+        page.screenshot(path=str(PNG_PATH), full_page=True)
+        print(f"  Saved: {PNG_PATH}")
+        page.pdf(path=str(PDF_PATH), width="16in", height="11in", print_background=True)
+        print(f"  Saved: {PDF_PATH}")
+        browser.close()
 
 
 def main() -> None:
-    fig = make_plot()
-    save_figure(fig, SLUG, output_dir=OUT_DIR, formats=("pdf", "png"))
+    _render_and_screenshot()
 
 
 if __name__ == "__main__":
