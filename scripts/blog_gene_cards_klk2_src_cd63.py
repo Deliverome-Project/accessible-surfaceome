@@ -134,17 +134,40 @@ EXPR_TONE = {
     "restricted": TOK["amber_mid"],
     "rare":       TOK["maroon_light"],
 }
-# Primary localization (filters.surface_specificity) — where the protein
-# spends its time. surface_dominant is a clean YES; mixed is amber;
-# mostly_intracellular is the most common "lives elsewhere mostly" signal.
-LOCALIZATION_TONE = {
-    "surface_dominant":     TOK["green_success"],
-    "surface_specific":     TOK["green_success"],
-    "mixed":                TOK["amber_mid"],
-    "mostly_intracellular": TOK["muted"],
-    "intracellular":        TOK["muted"],
-    "secreted":             TOK["lavender_bright"],
-    "unknown":              TOK["muted"],
+# Primary subcellular compartment (rec.biological_context
+# .subcellular_localization.primary_compartment) — where the protein
+# spends its time. Matches the viewer's FiltersCard.tsx "primary" chip
+# which uses tone="teal" uniformly; here we tone-shift by compartment
+# so the contrast is visible at a glance — plasma_membrane reads as
+# "clean surface" (success green), lysosome / endosome / golgi as
+# "intracellular trafficking" (lavender, matches the viewer's modulation
+# pills), and other intracellular as muted.
+PRIMARY_COMPARTMENT_TONE = {
+    "plasma_membrane":  TOK["green_success"],
+    "extracellular":    TOK["green_success"],
+    "lysosome":         TOK["lavender_bright"],
+    "endosome":         TOK["lavender_bright"],
+    "golgi":            TOK["lavender_bright"],
+    "endoplasmic_reticulum": TOK["amber_mid"],
+    "mitochondria":     TOK["muted"],
+    "nucleus":          TOK["muted"],
+    "cytosol":          TOK["muted"],
+}
+# Evidence grade — agent's coded assessment of the supporting literature.
+EVIDENCE_TONE = {
+    "direct_multi_method":     TOK["green_success"],
+    "direct_single_method":    TOK["amber_mid"],
+    "supportive_but_indirect": TOK["amber_mid"],
+    "weak":                    TOK["muted"],
+}
+# ECD accessibility class — large/moderate/small/minimal/none. Higher
+# extracellular-domain length = more binder real-estate.
+ECD_TONE = {
+    "large":    TOK["green_success"],
+    "moderate": TOK["amber_mid"],
+    "small":    TOK["amber_mid"],
+    "minimal":  TOK["maroon_light"],
+    "none":     TOK["muted"],
 }
 # Induction trigger — what condition surfaces the protein when
 # state_dependence is high. "none" = constitutive (not induced).
@@ -211,9 +234,11 @@ GENES = [
         "story": "0/5 DBs missed it — Sonnet+rescue caught it",
         "surface_accessibility": "moderate",
         "confidence":            "moderate",
+        "evidence_grade":        "direct_multi_method",
+        "ecd_class":             "large",
         "state_dependence":      "high",
         "expression_breadth":    "rare",
-        "primary_localization":  "mixed",
+        "primary_compartment":   "plasma_membrane",
         "induction_trigger":     "none",
         "surface_call_reason":   "tissue_restricted_surface",
         "db_flags":      {"UniProt": 0, "GO": 0, "HPA": 0, "SURFY": 0, "CSPA": 0},
@@ -240,9 +265,11 @@ GENES = [
         "story": "2/5 DBs over-called — deep-dive nuanced",
         "surface_accessibility": "moderate",
         "confidence":            "low",
+        "evidence_grade":        "direct_single_method",
+        "ecd_class":             "none",
         "state_dependence":      "high",
         "expression_breadth":    "broad",
-        "primary_localization":  "mostly_intracellular",
+        "primary_compartment":   "plasma_membrane",
         "induction_trigger":     "oncogenic",
         "surface_call_reason":   "lysosomal_exocytosis",
         "db_flags":      {"UniProt": 0, "GO": 1, "HPA": 1, "SURFY": 0, "CSPA": 0},
@@ -273,9 +300,11 @@ GENES = [
         "story": "4/5 DBs called surface — deep-dive added context",
         "surface_accessibility": "high",
         "confidence":            "high",
+        "evidence_grade":        "direct_multi_method",
+        "ecd_class":             "moderate",
         "state_dependence":      "high",
         "expression_breadth":    "pan_tissue",
-        "primary_localization":  "mostly_intracellular",
+        "primary_compartment":   "lysosome",
         "induction_trigger":     "oncogenic",
         "surface_call_reason":   "lysosomal_exocytosis",
         "db_flags":      {"UniProt": 1, "GO": 1, "HPA": 0, "SURFY": 1, "CSPA": 1},
@@ -629,76 +658,91 @@ def _render_column(fig, gene: dict, x_left: float, col_width: float) -> None:
         return fig.add_axes((x_left, y_bottom, col_width, height))
 
     # ── Symbol + name + UniProt + lede ───────────────────────────────
-    text_ax = axes_at(0.80, 0.18)
+    # Header gets less space than the previous layout (was 0.80-0.98 =
+    # 18%; now 0.84-0.98 = 14%) so the structure can take more, per
+    # user request.
+    text_ax = axes_at(0.84, 0.14)
     text_ax.axis("off")
     text_ax.set_xlim(0, 1); text_ax.set_ylim(0, 1)
-    text_ax.text(0.5, 0.86, gene["symbol"],
+    text_ax.text(0.5, 0.85, gene["symbol"],
                  transform=text_ax.transAxes,
                  ha="center", va="center",
                  fontsize=46, fontweight="bold",
                  color=TOK["maroon_deepest"], family="Playfair Display")
-    text_ax.text(0.5, 0.52, gene["name"],
+    text_ax.text(0.5, 0.42, gene["name"],
                  transform=text_ax.transAxes,
                  ha="center", va="center",
-                 fontsize=11, color=TOK["ink"],
+                 fontsize=10.5, color=TOK["ink"],
                  family="Manrope", fontweight="medium")
-    text_ax.text(0.5, 0.36, f"UniProt  {gene['uniprot']}",
+    text_ax.text(0.5, 0.22, f"UniProt  {gene['uniprot']}",
                  transform=text_ax.transAxes,
                  ha="center", va="center",
-                 fontsize=8.5, color=TOK["muted"],
+                 fontsize=8, color=TOK["muted"],
                  family="Manrope", fontweight="normal")
 
-    # Lede — pre-wrapped so multi-line lays out reliably
-    lede_ax = axes_at(0.72, 0.08)
+    # Lede — smaller (fs=7.5) so it doesn't dominate the column
+    lede_ax = axes_at(0.78, 0.05)
     lede_ax.axis("off")
     lede_ax.set_xlim(0, 1); lede_ax.set_ylim(0, 1)
-    wrapped = textwrap.fill(gene["lede"], width=50)
+    wrapped = textwrap.fill(gene["lede"], width=58)
     lede_ax.text(0.5, 0.5, wrapped,
                  transform=lede_ax.transAxes,
                  ha="center", va="center",
-                 fontsize=8.5, color=TOK["ink"],
+                 fontsize=7.5, color=TOK["muted"],
                  family="Manrope", style="italic",
-                 linespacing=1.4)
+                 linespacing=1.35)
 
     # Hairline separator
-    sep_ax = axes_at(0.715, 0.003)
+    sep_ax = axes_at(0.775, 0.003)
     sep_ax.axhline(0.5, color=TOK["line"], lw=0.8)
     sep_ax.axis("off")
 
     # ── 3D structure — real AFDB Cα trace ────────────────────────────
-    struct_ax = fig.add_axes((x_left + 0.005, 0.49, col_width - 0.01, 0.22),
+    # Structure now takes 30% of figure height (was 22%) per user
+    # request — gives the topology trace room to breathe.
+    struct_ax = fig.add_axes((x_left + 0.005, 0.47, col_width - 0.01, 0.30),
                              projection="3d")
     _render_structure(struct_ax, gene)
 
     # Hairline separator
-    sep_ax2 = axes_at(0.485, 0.003)
+    sep_ax2 = axes_at(0.465, 0.003)
     sep_ax2.axhline(0.5, color=TOK["line"], lw=0.8)
     sep_ax2.axis("off")
 
-    # ── Vitals — 7 ChipLabelValue rows ───────────────────────────────
-    # The 7 axes (per user request): Surface verdict, Confidence, State
-    # dep., Expression, Localization, Induced by, Reason. Layout sized
-    # so each chip is ~5.6% of figure height (compressed from the
-    # earlier 4-chip layout's 16%).
-    chip_ax = axes_at(0.165, 0.318)
+    # ── Vitals — 8 ChipLabelValue rows ───────────────────────────────
+    # Per user request, added two more chips that strengthen the
+    # specific KLK2 / SRC / CD63 narratives:
+    #   • Evidence (filters.evidence_grade) — supports the SRC "direct
+    #     but single-method evidence" point in the blog text
+    #   • Primary (biological_context.subcellular_localization
+    #     .primary_compartment) — replaces the prior surface_specificity-
+    #     based "Localization" chip; uses the EXACT chip the viewer's
+    #     FiltersCard renders, with the lysosome value highlighting CD63's
+    #     "primary localization is lysosomal" point
+    # 8 chips total. Order:
+    #   verdict → confidence → evidence → state → expression →
+    #   primary → induced → reason.
+    chip_ax = axes_at(0.165, 0.295)
     chip_ax.axis("off")
     chip_ax.set_xlim(0, 1); chip_ax.set_ylim(0, 1)
     chip_w = 0.94
     chip_x = (1 - chip_w) / 2
-    # 7 chips inside the 1.0 y-range with small gaps
-    chip_h = 0.123
-    gap = 0.013
+    n_chips = 8
+    gap = 0.012
+    chip_h = (1.0 - (n_chips - 1) * gap) / n_chips
     rows = [
         ("Surface verdict", gene["surface_accessibility"],
             ACCESS_TONE.get(gene["surface_accessibility"], TOK["muted"])),
         ("Confidence", gene["confidence"],
             CONF_TONE.get(gene["confidence"], TOK["muted"])),
+        ("Evidence", gene["evidence_grade"].replace("_", " "),
+            EVIDENCE_TONE.get(gene["evidence_grade"], TOK["muted"])),
         ("State dep.", gene["state_dependence"],
             STATE_TONE.get(gene["state_dependence"], TOK["muted"])),
         ("Expression", gene["expression_breadth"].replace("_", " "),
             EXPR_TONE.get(gene["expression_breadth"], TOK["muted"])),
-        ("Localization", gene["primary_localization"].replace("_", " "),
-            LOCALIZATION_TONE.get(gene["primary_localization"], TOK["muted"])),
+        ("Primary loc.", gene["primary_compartment"].replace("_", " "),
+            PRIMARY_COMPARTMENT_TONE.get(gene["primary_compartment"], TOK["muted"])),
         ("Induced by", gene["induction_trigger"].replace("_", " "),
             INDUCTION_TONE.get(gene["induction_trigger"], TOK["muted"])),
         ("Reason", gene["surface_call_reason"].replace("_", " "),
@@ -707,14 +751,19 @@ def _render_column(fig, gene: dict, x_left: float, col_width: float) -> None:
     for i, (label, value, tone) in enumerate(rows):
         y = 1 - (i + 1) * chip_h - i * gap
         _label_value_chip(chip_ax, chip_x, y, chip_w, chip_h,
-                          label, value, tone, fs=8.5)
+                          label, value, tone, fs=8)
 
     # Hairline separator
     sep_ax3 = axes_at(0.16, 0.003)
     sep_ax3.axhline(0.5, color=TOK["line"], lw=0.8)
     sep_ax3.axis("off")
 
-    # ── DB strip — 5 outlined source chips, filled if called ─────────
+    # ── DB strip — swatch-dot pattern matching the viewer ────────────
+    # Per viewer/components/surfaceome/DatabasePresenceCard, every DB
+    # chip is the SAME white outlined pill regardless of called/not;
+    # what differs is the 10px colored swatch dot inside, which is
+    # the brand color when called and faded line-color when not. This
+    # reads as a quiet row, not five tone-tagged banners.
     db_ax = axes_at(0.085, 0.075)
     db_ax.axis("off")
     db_ax.set_xlim(0, 1); db_ax.set_ylim(0, 1)
@@ -723,24 +772,44 @@ def _render_column(fig, gene: dict, x_left: float, col_width: float) -> None:
                family="Manrope", fontweight="medium",
                transform=db_ax.transAxes)
     n_db = 5
-    db_w, db_h = 0.16, 0.42
-    db_gap = 0.02
+    db_w, db_h = 0.17, 0.42
+    db_gap = 0.015
     total_w = n_db * db_w + (n_db - 1) * db_gap
     db_x0 = (1 - total_w) / 2
-    db_y = 0.20
+    db_y = 0.18
     for i, (db_name, called) in enumerate(gene["db_flags"].items()):
         x = db_x0 + i * (db_w + db_gap)
-        if called:
-            # Called — soft-tinted bg in the source's brand color
-            # (uniprot=maroon, go=teal, hpa=amber, surfy=lavender,
-            # cspa=maroon-deep). Routed through _pill so the same
-            # subtle-fill spec governs every chip on the figure.
-            tone_hex = DB_COLOR.get(db_name, TOK["muted"])
-            _pill(db_ax, x, db_y, db_w, db_h, db_name, tone_hex, fs=8)
-        else:
-            # Not called — neutral outlined pill (transparent bg + line).
-            _pill(db_ax, x, db_y, db_w, db_h, db_name,
-                  TOK["muted"], fs=8)
+        # White outlined pill — same shape always
+        box = FancyBboxPatch(
+            (x, db_y), db_w, db_h,
+            boxstyle=f"round,pad=0,rounding_size={db_h * 0.5}",
+            facecolor="white" if called else "none",
+            edgecolor=TOK["line"], lw=0.9,
+            transform=db_ax.transAxes, clip_on=False,
+        )
+        db_ax.add_patch(box)
+        # Swatch dot — brand color when called, faded when not.
+        # Drawn as a small circle (FancyBboxPatch with high rounding) so
+        # we don't need matplotlib's Circle in transAxes coords.
+        swatch_size = 0.07
+        swatch_x = x + 0.030
+        swatch_y = db_y + db_h / 2 - swatch_size / 2
+        swatch_color = DB_COLOR.get(db_name, TOK["muted"]) if called else TOK["line"]
+        swatch = FancyBboxPatch(
+            (swatch_x, swatch_y), swatch_size, swatch_size,
+            boxstyle=f"round,pad=0,rounding_size={swatch_size * 0.5}",
+            facecolor=swatch_color, edgecolor="none",
+            transform=db_ax.transAxes, clip_on=False,
+        )
+        db_ax.add_patch(swatch)
+        # Label text — ink for called, muted for not (matches the
+        # viewer's .cellNo .link color: var(--muted) rule)
+        text_color = TOK["ink"] if called else TOK["muted"]
+        ax_text_x = swatch_x + swatch_size + 0.018
+        db_ax.text(ax_text_x, db_y + db_h / 2, db_name,
+                   ha="left", va="center", fontsize=7.5,
+                   color=text_color, fontweight="medium",
+                   transform=db_ax.transAxes, family="Manrope")
 
     # ── Sonnet verdict — single filled pill ──────────────────────────
     verd_ax = axes_at(0.025, 0.05)
