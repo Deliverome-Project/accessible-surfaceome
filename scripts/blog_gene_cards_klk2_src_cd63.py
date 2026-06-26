@@ -211,6 +211,57 @@ def _reason_tone(reason: str) -> str:
     return TOK["muted"]
 
 
+# ── RYG ramp colors for vital displays — mirrors viewer's
+# globals.css .h-vital-display.tone-{success, amber, danger, neutral}.
+# Viewer comment: "Vital tones form a single red→amber→green
+# traffic-light ramp (low→high), plus a gray neutral for unknown /
+# unclear values. No teal / lavender / light-green — every vital reads
+# on the same RYG+gray scale so the 2×2 grid feels uniform."
+_VITAL_TONE = {
+    "success": TOK["green_success"],   # green = strong yes
+    "amber":   TOK["amber_mid"],       # amber = moderate / contextual
+    "danger":  TOK["maroon_light"],    # red   = negative / weak
+    "neutral": TOK["muted"],           # gray  = unknown / unclear
+}
+
+
+def _ryg_tone_for_access(v: str) -> str:
+    return {
+        "high":     _VITAL_TONE["success"],
+        "moderate": _VITAL_TONE["amber"],
+        "low":      _VITAL_TONE["amber"],
+        "no":       _VITAL_TONE["danger"],
+    }.get(v, _VITAL_TONE["neutral"])
+
+
+def _ryg_tone_for_conf(v: str) -> str:
+    return {
+        "high":     _VITAL_TONE["success"],
+        "moderate": _VITAL_TONE["amber"],
+        "low":      _VITAL_TONE["danger"],
+    }.get(v, _VITAL_TONE["neutral"])
+
+
+def _ryg_tone_for_state(v: str) -> str:
+    # High state-dep = caution (amber / red). Low = "constitutive" =
+    # success. Matches the viewer's RYG semantic (higher state
+    # dependence = harder to target = warmer color).
+    return {
+        "low":      _VITAL_TONE["success"],
+        "moderate": _VITAL_TONE["amber"],
+        "high":     _VITAL_TONE["danger"],
+    }.get(v, _VITAL_TONE["neutral"])
+
+
+def _ryg_tone_for_expr(v: str) -> str:
+    return {
+        "pan_tissue": _VITAL_TONE["success"],
+        "broad":      _VITAL_TONE["success"],
+        "restricted": _VITAL_TONE["amber"],
+        "rare":       _VITAL_TONE["danger"],
+    }.get(v, _VITAL_TONE["neutral"])
+
+
 # ── Per-gene data ────────────────────────────────────────────────────
 #
 # Pulled from the committed records (viewer/public/data/surfaceome/*.json)
@@ -241,6 +292,7 @@ GENES = [
         "primary_compartment":   "plasma_membrane",
         "induction_trigger":     "none",
         "surface_call_reason":   "tissue_restricted_surface",
+        "tumor_associated":      False,
         "db_flags":      {"UniProt": 0, "GO": 0, "HPA": 0, "SURFY": 0, "CSPA": 0},
         "sonnet_verdict": "contextual",
         "sonnet_reason":  "tissue_restricted_surface",
@@ -254,14 +306,13 @@ GENES = [
             "DBs read this as cytoplasmic. Deep-dive flagged context-dependent "
             "lysosomal-exocytosis surface display."
         ),
-        # SRC has no formal TM helices (DeepTMHMM type GLOB), but its
-        # entire functional role is membrane-anchored at the inner
-        # leaflet via the N-terminal myristoyl. Painting the trace in
-        # the M tone (yellow) reads as "membrane-associated" the way the
-        # all-intracellular green would not — matches the user's
-        # editorial framing of SRC as "normally on the inner face of
-        # the cell membrane".
-        "topology_str": "M" * 536,
+        # SRC = DeepTMHMM GLOB (no TM helices), all "I" topology — the
+        # viewer renders SRC as uniformly intracellular green WITHOUT a
+        # membrane slab (it has nothing to cross). Matching the viewer
+        # here: all "I" residues → green Cα trace, no slab. Earlier
+        # "force-yellow + slab" override drifted from what the live
+        # surfaceome.deliverome.org/SRC page actually shows.
+        "topology_str": "I" * 536,
         "story": "2/5 DBs over-called — deep-dive nuanced",
         "surface_accessibility": "moderate",
         "confidence":            "low",
@@ -272,6 +323,7 @@ GENES = [
         "primary_compartment":   "plasma_membrane",
         "induction_trigger":     "oncogenic",
         "surface_call_reason":   "lysosomal_exocytosis",
+        "tumor_associated":      True,
         "db_flags":      {"UniProt": 0, "GO": 1, "HPA": 1, "SURFY": 0, "CSPA": 0},
         "sonnet_verdict": "no",
         "sonnet_reason":  "inner_leaflet_anchored",
@@ -307,6 +359,7 @@ GENES = [
         "primary_compartment":   "lysosome",
         "induction_trigger":     "oncogenic",
         "surface_call_reason":   "lysosomal_exocytosis",
+        "tumor_associated":      False,
         "db_flags":      {"UniProt": 1, "GO": 1, "HPA": 0, "SURFY": 1, "CSPA": 1},
         "sonnet_verdict": "contextual",
         "sonnet_reason":  "lysosomal_exocytosis",
@@ -709,49 +762,102 @@ def _render_column(fig, gene: dict, x_left: float, col_width: float) -> None:
     sep_ax2.axhline(0.5, color=TOK["line"], lw=0.8)
     sep_ax2.axis("off")
 
-    # ── Vitals — 8 ChipLabelValue rows ───────────────────────────────
-    # Per user request, added two more chips that strengthen the
-    # specific KLK2 / SRC / CD63 narratives:
-    #   • Evidence (filters.evidence_grade) — supports the SRC "direct
-    #     but single-method evidence" point in the blog text
-    #   • Primary (biological_context.subcellular_localization
-    #     .primary_compartment) — replaces the prior surface_specificity-
-    #     based "Localization" chip; uses the EXACT chip the viewer's
-    #     FiltersCard renders, with the lysosome value highlighting CD63's
-    #     "primary localization is lysosomal" point
-    # 8 chips total. Order:
-    #   verdict → confidence → evidence → state → expression →
-    #   primary → induced → reason.
-    chip_ax = axes_at(0.165, 0.295)
-    chip_ax.axis("off")
-    chip_ax.set_xlim(0, 1); chip_ax.set_ylim(0, 1)
-    chip_w = 0.94
-    chip_x = (1 - chip_w) / 2
-    n_chips = 8
-    gap = 0.012
-    chip_h = (1.0 - (n_chips - 1) * gap) / n_chips
-    rows = [
-        ("Surface verdict", gene["surface_accessibility"],
-            ACCESS_TONE.get(gene["surface_accessibility"], TOK["muted"])),
-        ("Confidence", gene["confidence"],
-            CONF_TONE.get(gene["confidence"], TOK["muted"])),
-        ("Evidence", gene["evidence_grade"].replace("_", " "),
+    # ── Vitals 2×2 grid + secondary chip strip ───────────────────────
+    # Matches the viewer's GeneHeader pattern (viewer/components/
+    # surfaceome/GeneHeader/GeneHeader.module.css `.vitals`):
+    #   * each cell is .vitalK eyebrow (UPPERCASE 0.78rem, muted,
+    #     letter-spacing 0.1em) over a .h-vital-display value (italic
+    #     Playfair Display, ~1.4rem, tone-colored via .tone-success /
+    #     .tone-amber / .tone-danger / .tone-neutral)
+    #   * 2-column grid, 4 cells total
+    # The viewer ships exactly 4 vitals: Accessibility, Confidence,
+    # State dependence, Expression. We match that set.
+    #
+    # Below the vital grid, a slim flex row of small StatusPills carries
+    # the secondary tags the user wants — Evidence, Primary loc.,
+    # Induced by, Reason, and ✓ tumor-associated (when true).
+    vital_ax = axes_at(0.265, 0.195)
+    vital_ax.axis("off")
+    vital_ax.set_xlim(0, 1); vital_ax.set_ylim(0, 1)
+    vital_cells = [
+        ("ACCESSIBILITY", gene["surface_accessibility"],
+            _ryg_tone_for_access(gene["surface_accessibility"])),
+        ("CONFIDENCE",    gene["confidence"],
+            _ryg_tone_for_conf(gene["confidence"])),
+        ("STATE DEP.",    gene["state_dependence"],
+            _ryg_tone_for_state(gene["state_dependence"])),
+        ("EXPRESSION",    gene["expression_breadth"].replace("_", " "),
+            _ryg_tone_for_expr(gene["expression_breadth"])),
+    ]
+    cell_w, cell_h = 0.48, 0.42
+    cell_gap_x, cell_gap_y = 0.04, 0.08
+    grid_w = 2 * cell_w + cell_gap_x
+    grid_left = (1 - grid_w) / 2
+    grid_top = 0.96
+    for idx, (label, value, ryg_tone) in enumerate(vital_cells):
+        col, row = idx % 2, idx // 2
+        cx = grid_left + col * (cell_w + cell_gap_x)
+        cy = grid_top - (row + 1) * cell_h - row * cell_gap_y
+        # .vitalK eyebrow
+        vital_ax.text(cx, cy + cell_h, label,
+                      ha="left", va="top",
+                      fontsize=8.5, color=TOK["muted"], family="Manrope",
+                      fontweight="medium",
+                      transform=vital_ax.transAxes, clip_on=False)
+        # .h-vital-display value — italic Playfair Display, tone color
+        vital_ax.text(cx, cy + cell_h * 0.35, value.upper(),
+                      ha="left", va="center",
+                      fontsize=20, color=ryg_tone,
+                      family="Playfair Display", style="italic",
+                      fontweight="medium",
+                      transform=vital_ax.transAxes, clip_on=False)
+
+    # ── Secondary chip strip — small StatusPills with the extra tags
+    chips_ax = axes_at(0.08, 0.115)
+    chips_ax.axis("off")
+    chips_ax.set_xlim(0, 1); chips_ax.set_ylim(0, 1)
+    # Build chip set (label, value, tone). Skip "Induced by" when none.
+    chip_set: list[tuple[str, str, str]] = [
+        ("evidence", gene["evidence_grade"].replace("_", " "),
             EVIDENCE_TONE.get(gene["evidence_grade"], TOK["muted"])),
-        ("State dep.", gene["state_dependence"],
-            STATE_TONE.get(gene["state_dependence"], TOK["muted"])),
-        ("Expression", gene["expression_breadth"].replace("_", " "),
-            EXPR_TONE.get(gene["expression_breadth"], TOK["muted"])),
-        ("Primary loc.", gene["primary_compartment"].replace("_", " "),
+        ("primary",  gene["primary_compartment"].replace("_", " "),
             PRIMARY_COMPARTMENT_TONE.get(gene["primary_compartment"], TOK["muted"])),
-        ("Induced by", gene["induction_trigger"].replace("_", " "),
-            INDUCTION_TONE.get(gene["induction_trigger"], TOK["muted"])),
-        ("Reason", gene["surface_call_reason"].replace("_", " "),
+        ("reason",   gene["surface_call_reason"].replace("_", " "),
             _reason_tone(gene["surface_call_reason"])),
     ]
-    for i, (label, value, tone) in enumerate(rows):
-        y = 1 - (i + 1) * chip_h - i * gap
-        _label_value_chip(chip_ax, chip_x, y, chip_w, chip_h,
-                          label, value, tone, fs=8)
+    if gene["induction_trigger"] != "none":
+        chip_set.append((
+            "induced",
+            gene["induction_trigger"].replace("_", " "),
+            INDUCTION_TONE.get(gene["induction_trigger"], TOK["muted"]),
+        ))
+    if gene.get("tumor_associated"):
+        chip_set.append(("", "✓ tumor associated", TOK["maroon_light"]))
+
+    # Tight flex-row layout: chips flow left-to-right with wrap. Each
+    # chip's width is content-sized (label · value text length × char
+    # width estimate).
+    pad_x = 0.022
+    chip_h_pct = 0.20  # in transAxes coords
+    char_w = 0.0072    # approx text-width per char in transAxes at fs=7.5
+    gap = 0.01
+    y_cursor = 0.78    # top row
+    x_cursor = 0.0
+    for label, value, tone in chip_set:
+        full_text = (label + " · " + value).upper() if label else value.upper()
+        chip_w_pct = len(full_text) * char_w + pad_x * 2
+        # Wrap to next row if needed
+        if x_cursor + chip_w_pct > 1.0:
+            y_cursor -= chip_h_pct + 0.06
+            x_cursor = 0.0
+        if label:
+            _label_value_chip(chips_ax, x_cursor, y_cursor,
+                              chip_w_pct, chip_h_pct,
+                              label, value, tone, fs=7.5)
+        else:
+            _pill(chips_ax, x_cursor, y_cursor,
+                  chip_w_pct, chip_h_pct, value, tone, fs=7.5)
+        x_cursor += chip_w_pct + gap
 
     # Hairline separator
     sep_ax3 = axes_at(0.16, 0.003)
