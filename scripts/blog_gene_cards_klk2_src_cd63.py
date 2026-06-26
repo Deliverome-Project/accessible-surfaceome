@@ -306,13 +306,15 @@ GENES = [
             "DBs read this as cytoplasmic. Deep-dive flagged context-dependent "
             "lysosomal-exocytosis surface display."
         ),
-        # SRC = DeepTMHMM GLOB (no TM helices), all "I" topology — the
-        # viewer renders SRC as uniformly intracellular green WITHOUT a
-        # membrane slab (it has nothing to cross). Matching the viewer
-        # here: all "I" residues → green Cα trace, no slab. Earlier
-        # "force-yellow + slab" override drifted from what the live
-        # surfaceome.deliverome.org/SRC page actually shows.
-        "topology_str": "I" * 536,
+        # On the live viewer (surfaceome.deliverome.org/SRC), SRC is
+        # painted UNIFORMLY GOLD — the viewer paints GLOB-type proteins
+        # with the M tone (#FFD579), NOT the I tone (#A9CFA8), with a
+        # "Globular" legend swatch. NO membrane slab (nothing for it
+        # to cross). Confirmed from a 2026-06-26 screenshot of the
+        # live page. Topology string is all "M" so my Cα colorer paints
+        # gold; the slab is suppressed below via _IS_GLOB.
+        "topology_str": "M" * 536,
+        "is_glob_no_slab": True,
         "story": "2/5 DBs over-called — deep-dive nuanced",
         "surface_accessibility": "moderate",
         "confidence":            "low",
@@ -520,9 +522,11 @@ def _render_structure(ax, gene: dict) -> None:
     ax.scatter(ca[:, 0], ca[:, 1], ca[:, 2], c=colors, s=sizes,
                edgecolors="none", alpha=0.85, depthshade=False)
 
-    # Membrane slab for TM proteins — horizontal at the TM-median Z
-    # after the upright rotation, so it reads as a true bilayer.
-    if tm_mask.any():
+    # Membrane slab for true TM proteins only — proteins flagged
+    # ``is_glob_no_slab`` (e.g. SRC, painted gold for visual emphasis
+    # but lacking real TM helices) skip the slab to match the live
+    # viewer's render.
+    if tm_mask.any() and not gene.get("is_glob_no_slab"):
         # After upright rotation, TM extent is along Z; the slab sits
         # at the median Z of TM residues with the standard ~14 Å
         # bilayer half-thickness (in our normalized units, ~5).
@@ -779,15 +783,35 @@ def _render_column(fig, gene: dict, x_left: float, col_width: float) -> None:
     vital_ax = axes_at(0.265, 0.195)
     vital_ax.axis("off")
     vital_ax.set_xlim(0, 1); vital_ax.set_ylim(0, 1)
+    # Vitals = the EXACT 4 the live viewer's GeneHeader renders, in
+    # order:
+    #   SURFACE VERDICT (filters.surface_accessibility, RYG)
+    #   EXPERIMENTAL SURFACE EVIDENCE (filters.evidence_grade — uses
+    #     success green for direct_*, amber for supportive, neutral
+    #     for weak; viewer comment: "experimental evidence reads as
+    #     a quality grade")
+    #   CONFIDENCE (filters.confidence, RYG)
+    #   STATE DEPENDENCE (filters.state_dependence, RYG inverted —
+    #     high state-dep = warmer = harder to target)
+    # Shorten the evidence value so "Direct multi method" fits one line
+    # at column width — viewer renders this same field as "Direct,
+    # multi-method" with comma + hyphen.
+    _EVIDENCE_DISPLAY = {
+        "direct_multi_method":     "Direct, multi-method",
+        "direct_single_method":    "Direct, single method",
+        "supportive_but_indirect": "Supportive but indirect",
+        "weak":                    "Weak",
+    }
     vital_cells = [
-        ("ACCESSIBILITY", gene["surface_accessibility"],
+        ("SURFACE VERDICT", gene["surface_accessibility"].title(),
             _ryg_tone_for_access(gene["surface_accessibility"])),
-        ("CONFIDENCE",    gene["confidence"],
+        ("EXPERIMENTAL EVIDENCE",
+            _EVIDENCE_DISPLAY.get(gene["evidence_grade"], gene["evidence_grade"]),
+            EVIDENCE_TONE.get(gene["evidence_grade"], TOK["muted"])),
+        ("CONFIDENCE",    gene["confidence"].title(),
             _ryg_tone_for_conf(gene["confidence"])),
-        ("STATE DEP.",    gene["state_dependence"],
+        ("STATE DEPENDENCE", gene["state_dependence"].title(),
             _ryg_tone_for_state(gene["state_dependence"])),
-        ("EXPRESSION",    gene["expression_breadth"].replace("_", " "),
-            _ryg_tone_for_expr(gene["expression_breadth"])),
     ]
     cell_w, cell_h = 0.48, 0.42
     cell_gap_x, cell_gap_y = 0.04, 0.08
@@ -798,16 +822,18 @@ def _render_column(fig, gene: dict, x_left: float, col_width: float) -> None:
         col, row = idx % 2, idx // 2
         cx = grid_left + col * (cell_w + cell_gap_x)
         cy = grid_top - (row + 1) * cell_h - row * cell_gap_y
-        # .vitalK eyebrow
+        # .vitalK eyebrow — small UPPERCASE muted label
         vital_ax.text(cx, cy + cell_h, label,
                       ha="left", va="top",
-                      fontsize=8.5, color=TOK["muted"], family="Manrope",
+                      fontsize=7.5, color=TOK["muted"], family="Manrope",
                       fontweight="medium",
                       transform=vital_ax.transAxes, clip_on=False)
-        # .h-vital-display value — italic Playfair Display, tone color
-        vital_ax.text(cx, cy + cell_h * 0.35, value.upper(),
+        # .h-vital-display value — italic Playfair, NOT uppercase
+        # (viewer renders "Moderate" / "Direct, multi-method" in
+        # sentence case). Sized to fit column width on one line.
+        vital_ax.text(cx, cy + cell_h * 0.35, value,
                       ha="left", va="center",
-                      fontsize=20, color=ryg_tone,
+                      fontsize=14, color=ryg_tone,
                       family="Playfair Display", style="italic",
                       fontweight="medium",
                       transform=vital_ax.transAxes, clip_on=False)
