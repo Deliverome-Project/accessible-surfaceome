@@ -153,12 +153,20 @@ ours adjudication) is curated. Per the Lambert et al. analogue, the
 **resource is the site, not the table** — the per-gene viewer (see
 below) is the citable artifact.
 
-Citation infrastructure: each release mints a **Software Heritage
-SWHID** for the repo + every figure-reproduction gist (free, content-
-addressed, append-only), plus a **Zenodo DOI** for the heavy-data
-bundle (triage benchmark with reasoning, per-gene deep-dive JSONs).
-The release ritual is one command — see
-[scripts/release/README.md](scripts/release/README.md).
+Citation infrastructure splits across four parallel channels, each
+optimized for a different reader/bot:
+
+| Channel | Citable as | What's in it |
+|---|---|---|
+| **Software Heritage** | `swh:1:rev:<sha>` per gist | Each figure's bundled data + script + README (content-addressed, append-only, free; see `data/analysis/figures/swhid_map.json`) |
+| **Zenodo — code series** (auto via GitHub-Zenodo integration) | One DOI per GitHub Release | The repo tarball at the tagged commit |
+| **Zenodo — data series** (manual via `scripts/release/publish-archive.py`) | `10.5281/zenodo.20805384` (reserved) | Triage runs with reasoning, benchmark runs with reasoning, deep-dive bundle |
+| **Zenodo — manuscript record** (manual via Zenodo UI, registered under bioRxiv DOI as external) | bioRxiv DOI | Manuscript PDF + JATS XML; **Unpaywall OAI-PMH harvest picks it up and adds the Zenodo PDF as a bot-accessible `oa_location` under the bioRxiv DOI** — the bot-reach motivation for the dual-deposit pattern |
+
+The release ritual is one command for the data record — see
+[scripts/release/README.md](scripts/release/README.md). The manuscript
+record is a one-time manual UI step (also documented in
+`scripts/release/README.md` under "Manuscript deposit").
 
 ## Architecture
 
