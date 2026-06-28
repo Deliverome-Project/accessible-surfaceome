@@ -14,6 +14,27 @@ delivery-target selection alike.
 MIT-licensed; copyright Michael Smallegan and Rebecca Carlson. Full
 design notes:
 [docs/plans/2026-04-16-surface-proteome-annotation.md](docs/plans/2026-04-16-surface-proteome-annotation.md).
+See [NOTICE.md](NOTICE.md) for upstream-data attribution and
+[LICENSING.md](LICENSING.md) for redistribution guidance.
+
+## Quick start
+
+**Access the data without setup:**
+- Web viewer: https://surfaceome.deliverome.org/genes/GPR75
+- JSON API: `curl https://api.deliverome.org/surfaceome/v1/genes/GPR75`
+- Citable snapshot: Zenodo DOI [10.5281/zenodo.20805384](https://doi.org/10.5281/zenodo.20805384)
+
+**Reproduce a figure from the paper:**
+Every published figure has a standalone gist script in [`data/analysis/figures/`](data/analysis/figures/). Run with `uv run make_<slug>.py` — no `pip install` needed (PyPA inline script metadata).
+
+**Run locally:**
+```bash
+uv sync
+uv run accessible-surfaceome agents annotate GPR75            # single gene, ~5 min, ~$0.50
+uv run python scripts/triage_runner.py --replicates 1 --d1    # cohort triage sweep, ~2 h, ~$30
+```
+
+See [`scripts/README.md`](scripts/README.md) for a tour of the script subdirs.
 
 ## Why this exists
 
