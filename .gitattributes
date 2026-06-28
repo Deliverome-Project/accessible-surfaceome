@@ -111,6 +111,19 @@ data/processed/triage_bench/uniprot_tm_signal_accs.tsv -filter -diff -merge text
 data/processed/triage_bench/cspa_hc_only_accs.tsv       -filter -diff -merge text
 data/processed/catalog/whole_proteome_catalog.tsv -filter -diff -merge text
 
+# Positive-control augmented indicator TSVs (ADC / TCE / ViralZone) — three
+# small files (~5-10 KB each) raw-fetched by the figures-folder gist for the
+# positive-control DB-coverage bars. Each row carries hgnc_id + denormalized
+# stable IDs + 5-DB flags + Sonnet (NCBI dual-pass) flag.
+data/processed/positive_controls/positive_control_ADC.tsv -filter -diff -merge text
+data/processed/positive_controls/positive_control_TCE.tsv -filter -diff -merge text
+data/processed/positive_controls/positive_control_VZ.tsv  -filter -diff -merge text
+
+# ViralZone source CSV — mirrored from deliverome-internal:data/raw/ so the
+# public reproduction does not depend on private-repo auth. Plain text;
+# small (~33 KB).
+data/external/viralzone/viralzone_human_entry_receptors.csv -filter -diff -merge text
+
 # Paywall/bot-block reachability figure input — per-paper buckets for the
 # production-vs-OpenAlex comparison figure. ~310KB, raw-fetched by the
 # figures-folder gist (cbc950dad1c3a6595fd5018cdb6b030d).
