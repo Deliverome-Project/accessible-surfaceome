@@ -96,6 +96,49 @@ def _wilson_95_ci(n_pos: int, n: int) -> tuple[float, float]:
     return (100 * (p - low), 100 * (high - p))
 
 
+def _binomial_p_two_sided(n_pos: int, n: int, p_null: float) -> float:
+    """Exact 2-tailed binomial test: under H₀ n_pos ~ Binomial(n, p_null),
+    return P(|deviation| >= observed). The standard recipe summed by
+    SciPy: sum binomial PMF values whose mass <= the observed-point's
+    mass. Reliable at small n (vs the normal approximation z-test) and
+    no external dep — manual loop over n+1 outcomes."""
+    if n == 0 or not (0.0 <= p_null <= 1.0):
+        return 1.0
+    # Compute binomial PMF for k=0..n
+    # P(K=k) = C(n,k) * p^k * (1-p)^(n-k)
+    # Build PMF via log-space to avoid overflow at large n
+    from math import lgamma, log, exp
+    log_p = log(p_null) if p_null > 0 else float("-inf")
+    log_q = log(1 - p_null) if p_null < 1 else float("-inf")
+    pmfs = []
+    for k in range(n + 1):
+        log_binom = lgamma(n + 1) - lgamma(k + 1) - lgamma(n - k + 1)
+        # Edge cases: p_null in {0, 1}
+        if p_null == 0:
+            pmf = 1.0 if k == 0 else 0.0
+        elif p_null == 1:
+            pmf = 1.0 if k == n else 0.0
+        else:
+            pmf = exp(log_binom + k * log_p + (n - k) * log_q)
+        pmfs.append(pmf)
+    obs_pmf = pmfs[n_pos]
+    # Sum all PMFs <= observed (the standard "method of small p-values")
+    return sum(p for p in pmfs if p <= obs_pmf + 1e-12)
+
+
+def _star(p: float) -> str:
+    """APA-style p-value significance stars. Bonferroni-corrected
+    inline via the n_tests multiplier in the caller (each test is
+    one of 9 topology classes)."""
+    if p < 0.001:
+        return "***"
+    if p < 0.01:
+        return "**"
+    if p < 0.05:
+        return "*"
+    return "ns"
+
+
 def _fetch_universe() -> list[dict]:
     print(f"  fetching {FEATURES_URL} …")
     text = urllib.request.urlopen(FEATURES_URL, timeout=60).read().decode()
@@ -115,7 +158,7 @@ def _load_bench_accs() -> set[str]:
 
 def _compute_distribution() -> tuple[
     list[tuple[str, str]], list[float], list[float], list[tuple[float, float]],
-    int, int,
+    list[float], int, int,
 ]:
     rows = _fetch_universe()
     bench_accs = _load_bench_accs()
@@ -123,16 +166,27 @@ def _compute_distribution() -> tuple[
     n_universe = len(rows)
     n_bench = len(bench_rows)
 
+    n_tests = len(FEATURES)  # Bonferroni denominator for 9 classes
     universe_pct: list[float] = []
     bench_pct: list[float] = []
     bench_ci: list[tuple[float, float]] = []
+    bench_pvals_bonf: list[float] = []
     for col, _ in FEATURES:
         n_u = sum(1 for r in rows if _feature_positive(r, col))
         n_b = sum(1 for r in bench_rows if _feature_positive(r, col))
-        universe_pct.append(100.0 * n_u / n_universe)
+        p_universe = n_u / n_universe
+        universe_pct.append(100.0 * p_universe)
         bench_pct.append(100.0 * n_b / n_bench)
         bench_ci.append(_wilson_95_ci(n_b, n_bench))
-    return FEATURES, universe_pct, bench_pct, bench_ci, n_universe, n_bench
+        # H₀: bench n_pos ~ Binomial(n_bench, p_universe). 2-tailed
+        # exact binomial test. Bonferroni-correct across n_tests
+        # classes (cap at 1.0).
+        p_raw = _binomial_p_two_sided(n_b, n_bench, p_universe)
+        bench_pvals_bonf.append(min(1.0, p_raw * n_tests))
+    return (
+        FEATURES, universe_pct, bench_pct, bench_ci,
+        bench_pvals_bonf, n_universe, n_bench,
+    )
 
 
 def make_plot() -> tuple[plt.Figure, plt.Axes]:
@@ -141,7 +195,7 @@ def make_plot() -> tuple[plt.Figure, plt.Axes]:
         "font.size": 18, "axes.labelsize": 20, "axes.titlesize": 0,
         "xtick.labelsize": 14, "ytick.labelsize": 16, "legend.fontsize": 14,
     })
-    feats, univ, bench, ci, n_u, n_b = _compute_distribution()
+    feats, univ, bench, ci, pvals, n_u, n_b = _compute_distribution()
     n = len(feats)
 
     fig, ax = plt.subplots(figsize=(15, 8))
@@ -163,16 +217,21 @@ def make_plot() -> tuple[plt.Figure, plt.Axes]:
         zorder=3,
     )
 
-    # Δ-pp annotation above each pair (with bench bar's upper CI for
-    # vertical clearance).
-    for i, (u, b, (_, hi)) in enumerate(zip(univ, bench, ci, strict=True)):
+    # Δ-pp annotation + Bonferroni-corrected significance stars
+    # above each pair. Bonferroni divides α across the 9 classes —
+    # an honest correction since we're doing one test per class.
+    for i, (u, b, (_, hi), p) in enumerate(zip(univ, bench, ci, pvals, strict=True)):
         delta = b - u
         sign = "+" if delta >= 0 else "−"
         color = "#1F1718" if abs(delta) < 5 else COLOR_BENCH
         weight = "normal" if abs(delta) < 5 else "bold"
         y_text = max(u, b + hi) + 1.6
+        star = _star(p)
+        label = f"{sign}{abs(delta):.1f} pp"
+        if star != "ns":
+            label += f"  {star}"
         ax.text(
-            i, y_text, f"{sign}{abs(delta):.1f} pp",
+            i, y_text, label,
             ha="center", va="bottom",
             fontsize=12, color=color, fontweight=weight,
         )
@@ -194,7 +253,9 @@ def make_plot() -> tuple[plt.Figure, plt.Axes]:
         "GPI-anchored / lipidated / single-pass classes are over-represented (DBs disagree on these); "
         "multi-pass TM is under-represented (DBs agree on these). "
         "Bench-accuracy is therefore a lower bound on full-universe accuracy. "
-        "Error bars: Wilson 95% binomial CI.",
+        "Error bars: Wilson 95% binomial CI. "
+        "Significance: 2-tailed exact binomial test of bench vs universe proportion, "
+        "Bonferroni-corrected across 9 classes (* p<0.05, ** p<0.01, *** p<0.001).",
         ha="center", va="top", fontsize=11, style="italic", color=COLORS["neutral"],
         wrap=True,
     )
