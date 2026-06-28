@@ -69,15 +69,18 @@ GENES: list[dict[str, Any]] = [
             # over semantics so the 2×2 grid reads consistently.
             ("STATE DEPENDENCE",    "High",                  "success"),
         ],
+        # KLK2 chip set. dual_localization array has 1 entry (secreted
+        # in androgen-stimulated prostate cancer) → ✓; has_secreted_form
+        # is True → ✓. KLK2 has no trigger-carrying modulation rows so
+        # there's no "induced by" chip — the gene is tissue-restricted
+        # rather than cell-state-induced.
         "chips": [
             ("primary",      "Plasma membrane",        "teal"),
             ("reason",       "Tissue-restricted",      "amber"),
             ("surface vs intracellular",  "Mixed",   "amber"),
             ("n surface evidence", "2", "success"),
-            # has_secreted_form=True on KLK2 — directly supports the
-            # J&J narrative ("originally thought secreted-only"). Also
-            # a filterable DD bool field on the catalog.
-            (None, "✓ secreted form", "lavender"),
+            (None, "✓ dual localization", "success"),
+            (None, "✓ secreted form",     "success"),
         ],
         # Topology: no TM helices (it's a secreted protease, signal
         # peptide cleaved). Keep N-terminal residues 1-17 colored as
