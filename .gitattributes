@@ -118,6 +118,12 @@ data/processed/catalog/whole_proteome_catalog.tsv -filter -diff -merge text
 data/processed/positive_controls/positive_control_ADC.tsv -filter -diff -merge text
 data/processed/positive_controls/positive_control_TCE.tsv -filter -diff -merge text
 data/processed/positive_controls/positive_control_VZ.tsv  -filter -diff -merge text
+# Long-form combined TSV (one row per category × gene) + per-(category, source)
+# coverage summary. Both are small (~10 KB), grep-friendly, and the summary is
+# exactly the table the figure renders — checked in so a reviewer can verify
+# counts without re-running the build.
+data/processed/positive_controls/positive_control_long.tsv -filter -diff -merge text
+data/processed/positive_controls/positive_control_db_coverage_summary.tsv -filter -diff -merge text
 
 # ViralZone source CSV — mirrored from deliverome-internal:data/raw/ so the
 # public reproduction does not depend on private-repo auth. Plain text;

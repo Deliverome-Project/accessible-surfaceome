@@ -380,11 +380,51 @@ def main() -> None:
         vz_set = set()
     print(f"  ViralZone HGNCs: {len(vz_set)}")
 
+    per_set = {}
     for label, hgnc_set in [("ADC", adc_union), ("TCE", tce), ("VZ", vz_set)]:
         out = OUT_DIR / f"positive_control_{label}.tsv"
         df_out = build_indicator_df(hgnc_set, cu, cohort, sonnet_pos_hgnc)
         df_out.to_csv(out, sep="\t", index=False)
+        per_set[label] = df_out
         print(f"  Wrote {out} ({len(df_out)} rows)")
+
+    # Long-form combined TSV — one row per (category × gene) so the user can
+    # grep / filter / sort across all three positive-control sets without
+    # joining three files. Also useful for the figure's tidy seaborn pipeline.
+    combined = pd.concat(
+        [df.assign(category=label) for label, df in per_set.items()],
+        ignore_index=True,
+    )
+    col_order = (
+        ["category", "hgnc_id", "hgnc_symbol", "uniprot_acc", "ensembl_gene", "ncbi_gene_id"]
+        + ["uniprot_flag", "go_flag", "hpa_flag", "surfy_flag", "cspa_flag", "n_db_votes",
+           "sonnet_ncbi_dual_flag"]
+    )
+    combined = combined[[c for c in col_order if c in combined.columns]]
+    combined_path = OUT_DIR / "positive_control_long.tsv"
+    combined.to_csv(combined_path, sep="\t", index=False)
+    print(f"  Wrote {combined_path} ({len(combined)} rows across {combined['category'].nunique()} categories)")
+
+    # Per-(category, source) coverage summary — exactly the table the figure
+    # renders. Keeps the headline numbers checked-in alongside the per-gene
+    # data so a reviewer can verify counts without re-running anything.
+    sources = {
+        "UniProt": "uniprot_flag", "GO": "go_flag", "HPA": "hpa_flag",
+        "SURFY": "surfy_flag", "CSPA": "cspa_flag", "Sonnet": "sonnet_ncbi_dual_flag",
+    }
+    summary_rows = []
+    for label, df in per_set.items():
+        n_total = len(df)
+        for src, col in sources.items():
+            n = int(df[col].astype(int).sum())
+            summary_rows.append({
+                "category": label, "source": src,
+                "n_in_source": n, "n_total": n_total,
+                "pct_in_source": round(n / n_total * 100, 1) if n_total else 0.0,
+            })
+    summary_path = OUT_DIR / "positive_control_db_coverage_summary.tsv"
+    pd.DataFrame(summary_rows).to_csv(summary_path, sep="\t", index=False)
+    print(f"  Wrote {summary_path} ({len(summary_rows)} rows)")
 
 
 if __name__ == "__main__":
