@@ -439,18 +439,16 @@ html, body {
 /* Pill with embedded label: "LABEL · VALUE" */
 .pill .lbl { opacity: 0.72; font-weight: 400; margin-right: 0.2rem; }
 
-/* Structure card — NO border, no background. Per-gene height
-   override via inline style (KLK2 needs more vertical room since
-   its globular shape sits compactly). */
+/* Structure card — NO border, no background. Same height across all
+   3 cards so the card bottoms align. KLK2's globular shape gets
+   extra zoom (inside the same 240px box) so it fills the area —
+   see the per-gene zoom factor in the JS init below. */
 .structure {
   border: none;
   background: var(--bg);
   border-radius: 10px;
   height: 240px;
   position: relative;
-}
-.structure.tall {
-  height: 320px;
 }
 .structure-legend {
   font-family: var(--font-sans);
@@ -612,10 +610,6 @@ def _build_html(genes: list[dict]) -> str:
             if legend_items else ""
         )
 
-        # Per-gene structure height — KLK2's globular shape sits
-        # compactly and benefits from extra vertical room.
-        structure_class = "structure tall" if g["symbol"] == "KLK2" else "structure"
-
         card_html = textwrap.dedent(f"""
         <div class="card">
           <div class="header-row">
@@ -623,7 +617,7 @@ def _build_html(genes: list[dict]) -> str:
             <p class="name">{g["name"]}</p>
           </div>
           {src_strip}
-          <div class="{structure_class}" id="viewer-{g["symbol"]}"></div>
+          <div class="structure" id="viewer-{g["symbol"]}"></div>
           {legend_html}
           <div class="vitals">{vital_cells}</div>
           <div class="chips">{"".join(chips)}</div>
@@ -666,6 +660,13 @@ def _build_html(genes: list[dict]) -> str:
                 f'dimensions: {{w: {w:.2f}, h: {h:.2f}, d: {d:.2f}}}, '
                 f'color: "#FBE3A7", opacity: 0.32, wireframe: false}});'
             )
+        # Per-gene zoom factor. KLK2's globular shape was small inside
+        # the 240px structure box — zoom in more so it fills the area
+        # and the card bottom stays aligned with SRC/CD63 instead of
+        # extending the card. TM-containing structures (SRC, CD63)
+        # stay at the standard 1.15 so the helices + membrane slab
+        # have room to breathe.
+        zoom_factor = 1.75 if symbol == "KLK2" else 1.15
         js_parts.append(textwrap.dedent(f"""
         (function() {{
           var el = document.getElementById("viewer-{symbol}");
@@ -675,7 +676,7 @@ def _build_html(genes: list[dict]) -> str:
 {chr(10).join(segment_calls)}
 {slab_call}
           viewer.zoomTo();
-          viewer.zoom(1.15);
+          viewer.zoom({zoom_factor});
           viewer.render();
           window["__rendered_{symbol}"] = true;
         }})();
