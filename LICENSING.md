@@ -8,8 +8,9 @@ the license of its origin; see [NOTICE.md](NOTICE.md) for the full source list.
 
 UniProt, Gene Ontology, Human Protein Atlas, HGNC, AlphaFold DB are
 CC-BY-4.0. Downstream users must attribute the source per the license URL.
-Attribution is satisfied by the per-gene DataSourcesFooter in the viewer
-and the NOTICE.md file.
+Attribution is satisfied by the [NOTICE.md](NOTICE.md) source listing
+and, for the catalog vote + deterministic-features sources, by the
+per-gene DataSourcesFooter rendered in the viewer.
 
 ## Academic / non-commercial use sources
 

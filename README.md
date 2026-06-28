@@ -30,7 +30,7 @@ Every published figure has a standalone gist script in [`data/analysis/figures/`
 **Run locally:**
 ```bash
 uv sync
-uv run accessible-surfaceome agents annotate GPR75            # single gene, ~5 min, ~$0.50
+uv run python scripts/surfaceome_v2_annotate.py GPR75         # single gene, ~5 min, ~$0.50
 uv run python scripts/triage_runner.py --replicates 1 --d1    # cohort triage sweep, ~2 h, ~$30
 ```
 
@@ -163,8 +163,8 @@ set) is not yet executed — pending audit-gate sign-off on the corpus
 round-trip + Sonnet entailment validators. See `docs/evals/` for the
 gate criteria and current measurements.
 
-Code: `src/accessible_surfaceome/agents/surface_annotator/`. Runner:
-`uv run accessible-surfaceome agents annotate <SYMBOL>`.
+Code: `src/accessible_surfaceome/agents/surfaceome_v2/`. Runner:
+`uv run python scripts/surfaceome_v2_annotate.py <SYMBOL>`.
 
 ### Publication (planned)
 
@@ -187,7 +187,7 @@ The release ritual is one command — see
                      ┌──────────────────────────┐
                      │   M1 candidate universe   │
                      │  (SURFY+CSPA+UniProt+GO+  │
-                     │   HPA+DeepTMHMM+COMPART.) │
+                     │   HPA+DeepTMHMM)          │
                      └─────────────┬────────────┘
                                    │ candidate_universe.tsv
                                    ▼
@@ -296,7 +296,7 @@ for the embedder.
 | `src/accessible_surfaceome/sources/` | One module per M1 data source (`uniprot.py`, `go.py`, `surfy.py`, `cspa.py`, `deeptmhmm.py`, `hpa.py`, `ensembl_compara.py`); each exposes `download` / `build` subcommands. Shared helpers under `sources/_support/`. |
 | `src/accessible_surfaceome/merge/` | Candidate-universe orchestration; loaders, normalization, gene-symbol resolution. |
 | `src/accessible_surfaceome/agents/surface_triage/` | The triage agent (orchestrator + prompts + Pydantic models). |
-| `src/accessible_surfaceome/agents/surface_annotator/` | The deep-dive agent (orchestrator + tool registry + deep-dive pack loader + evidence-promotion pipeline + audit module). |
+| `src/accessible_surfaceome/agents/surfaceome_v2/` | The deep-dive agent (orchestrator + tool registry + deep-dive pack loader + evidence-promotion pipeline + audit module). |
 | `src/accessible_surfaceome/audit/` | Audit scripts and figure helpers. |
 | `src/accessible_surfaceome/controls.py` | Control-panel builder. |
 | `src/accessible_surfaceome/cloud/` | D1 HTTP client + triage-run uploader. |
@@ -334,11 +334,8 @@ positives, patent delivery-handle positives, negative controls).
 ## Agent commands
 
 ```bash
-# Sync the deep-dive agent to Anthropic (one-time per code change to agent.py / prompts)
-uv run accessible-surfaceome agents sync
-
 # Annotate one gene end-to-end (Sonnet 4.6, ~$0.30-0.50, ~5 min):
-uv run accessible-surfaceome agents annotate HSPA1A
+uv run python scripts/surfaceome_v2_annotate.py HSPA1A
 
 # Audit the corpus round-trip + Sonnet entailment on a record:
 uv run accessible-surfaceome agents audit-corpus HSPA1A

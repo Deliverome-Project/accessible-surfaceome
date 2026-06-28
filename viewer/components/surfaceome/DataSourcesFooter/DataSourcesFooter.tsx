@@ -33,9 +33,27 @@ export function DataSourcesFooter({ rec }: Props) {
           <ul className={styles.list}>
             <li>UniProt — CC BY 4.0 (UniProt Consortium)</li>
             <li>Gene Ontology — CC BY 4.0 (The Gene Ontology Consortium)</li>
-            <li>Human Protein Atlas — CC BY 4.0 (HPA, Uhlén et al. 2015)</li>
-            <li>SURFY — academic use (Bausch-Fluck et al. 2018)</li>
-            <li>CSPA — academic use (Bausch-Fluck et al. 2015, 2018)</li>
+            <li>
+              Human Protein Atlas — CC BY 4.0 ({CITATIONS.hpa.authorYear},{" "}
+              <a href={pubmedUrl(CITATIONS.hpa.pmid)} target="_blank" rel="noopener noreferrer">
+                PMID {CITATIONS.hpa.pmid}
+              </a>
+              )
+            </li>
+            <li>
+              SURFY — academic use ({CITATIONS.surfy.authorYear},{" "}
+              <a href={pubmedUrl(CITATIONS.surfy.pmid)} target="_blank" rel="noopener noreferrer">
+                PMID {CITATIONS.surfy.pmid}
+              </a>
+              )
+            </li>
+            <li>
+              CSPA — academic use ({CITATIONS.cspa.authorYear},{" "}
+              <a href={pubmedUrl(CITATIONS.cspa.pmid)} target="_blank" rel="noopener noreferrer">
+                PMID {CITATIONS.cspa.pmid}
+              </a>
+              )
+            </li>
           </ul>
         </div>
         <div>
@@ -45,12 +63,37 @@ export function DataSourcesFooter({ rec }: Props) {
               AlphaFold DB structures — {df.structure.license} ({df.structure.attribution})
             </li>
             <li>
-              DeepTMHMM topology — {deeptmhmm} · DTU Health Tech (Hallgren et al. 2022)
+              DeepTMHMM topology — {deeptmhmm} · DTU Health Tech (
+              {CITATIONS.deepTmhmm.authorYear},{" "}
+              <a
+                href={pubmedUrl(CITATIONS.deepTmhmm.pmid)}
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                PMID {CITATIONS.deepTmhmm.pmid}
+              </a>
+              )
             </li>
             <li>
               Ensembl Compara orthologs &amp; paralogs
               {comparaVersion ? ` — ${comparaVersion} ` : " — "}
-              EMBL-EBI (Howe et al. 2024 + Vilella et al. 2009)
+              EMBL-EBI ({CITATIONS.ensemblCompara2024.authorYear},{" "}
+              <a
+                href={pubmedUrl(CITATIONS.ensemblCompara2024.pmid)}
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                PMID {CITATIONS.ensemblCompara2024.pmid}
+              </a>
+              {" "}+ {CITATIONS.ensemblCompara2009.authorYear},{" "}
+              <a
+                href={pubmedUrl(CITATIONS.ensemblCompara2009.pmid)}
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                PMID {CITATIONS.ensemblCompara2009.pmid}
+              </a>
+              )
             </li>
             <li>
               Schweke homo-oligomer atlas ({CITATIONS.schwekeHomomer.authorYear},{" "}

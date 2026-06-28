@@ -703,7 +703,7 @@ CPU budget.
 ## License
 
 CC-BY-4.0 for the data in this deposit. Same as the upstream
-constituent sources (UniProt, GO, HPA — all CC-BY; HPA is CC-BY-SA).
+constituent sources (UniProt, GO, HPA — all CC-BY; HPA is CC-BY-4.0).
 SURFY and CSPA are published academic resources used under their
 respective terms; see the upstream papers.
 """
