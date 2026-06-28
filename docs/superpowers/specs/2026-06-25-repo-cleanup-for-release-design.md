@@ -388,9 +388,9 @@ PR body recaps each commit, lists what reviewers should verify (CI green, viewer
 | Risk | Mitigation |
 |---|---|
 | A "delete" target is silently referenced by a deleted-but-once-published doc URL | Subagents excluded refs from already-flagged-for-deletion files; deletions are still bisectable per commit |
-| `scripts/` move breaks a CLAUDE.md / AGENTS.md command path | Reference-update commit (#9) is in scope and gated by check-py |
-| Pre-commit hook references stale script paths | `.githooks/` + `.pre-commit-config.yaml` audited; refs updated in commit #9 |
-| The HPA license label was load-bearing somewhere I missed | grep for `"CC-BY-SA-3.0"` across the whole repo before commit #8 to find every occurrence |
+| `scripts/` move breaks a CLAUDE.md / AGENTS.md command path | Reference-update commit (#11) is in scope and gated by check-py |
+| Pre-commit hook references stale script paths | `.githooks/` + `.pre-commit-config.yaml` audited; refs updated in commit #11 |
+| The HPA license label was load-bearing somewhere I missed | grep for `"CC-BY-SA-3.0"` across the whole repo before commit #10 to find every occurrence |
 | Viewer build fails after homomer-demo removal | Commit #6 is gated on `cd viewer && npm run build` |
 | One reviewer wants the deletions split into multiple PRs | The commit structure makes it trivial to cherry-pick; not splitting up front |
 | JensenLab removal misses a hidden caller in `src/.../merge/` | Reference-update commit (#8) is preceded by a repo-wide grep for `compartments\|jensen`; CI must pass before commit lands |
