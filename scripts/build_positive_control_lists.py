@@ -54,11 +54,49 @@ VZ_SOURCE_NOTE = (
 )
 
 # ADCdb antigen list — checked-in TSV scraped from the IDRBlab ADCdb search
-# pages. 268 unique antigens; ~241 carry an inline HGNC symbol (the
-# parenthesized last token of the "Antigen Name" string). The remaining 27
+# pages. 333 unique antigens; ~302 carry an inline HGNC symbol (the
+# parenthesized last token of the "Antigen Name" string). The remaining ~31
 # are descriptive glycans / variants / undisclosed antigens that we treat as
 # unresolved.
 ADCDB_TSV = REPO_ROOT / "data/external/adcdb/adcdb_antigens.tsv"
+
+# ADCdb antigen-name regex filter. Drops entries whose `antigen_name` field
+# matches a payload-mechanism keyword or an explicit intracellular/nuclear
+# protein-name pattern. These are catalog noise — ADCdb attributing the
+# cytotoxic payload's mechanism target as the antibody's binding target
+# (TUBA1B for vedotin-class ADCs, PARP1 for olaparib payloads, etc.) — and
+# they aren't surface antigens that an antibody actually engages.
+#
+# Uses ADCdb's own text only — no external annotation DBs. The Sonnet
+# rescues (STEAP1, STEAP2, KLK3, GSDME, HSPA1A, MMP9, LRG1) and all
+# clinical ADC targets (ALK, BSG, CA9, ASGR1, etc.) survive this filter
+# because their antigen names don't match these patterns.
+_ADCDB_NOISE_PATTERNS = "|".join([
+    # Payload-mechanism (the cytotoxic drug's target, not the antibody's)
+    r"tubulin", r"topoisomerase", r"ribosom", r"RNA\s+polymerase",
+    r"DNA\s+polymerase", r"elongation\s+factor", r"kinesin",
+    r"microtubule", r"spliceosome", r"histone",
+    r"poly\s*\[ADP-ribose\]\s*polymerase",   # PARP1
+    r"glutathione\s+peroxidase",             # GPX4
+    # Specific intracellular / nuclear antigen names ADCdb attributes
+    r"cellular\s+tumor\s+antigen\s+p53",     # TP53
+    r"sequestosome",                          # SQSTM1
+    r"3-oxoacyl", r"formylglycine", r"myotubularin",   # OXSM, SUMF1, MTM1
+    r"metaxin",                               # MTX1, MTX2
+    r"translocator\s+protein",                # TSPO
+    r"Ras-related\s+protein",                 # RRAS
+    r"phosphatidylserine\s+synthase",         # PTDSS1
+    r"Tax1-binding",                          # TAX1BP3
+    r"melanoma-associated\s+antigen",         # MAGEA1
+    r"ribonuclease",                          # RPP25 / Lupus La
+    r"galactosyltransferase",                 # A4GALT
+    r"double\s+homeobox",                     # DUX4
+    r"sjogren", r"lupus\s+la",                # SSB
+    r"interferon-stimulated",                 # ISG20
+    # Compartment / location keywords in the antigen NAME itself
+    r"cytoplasm", r"cytosolic", r"nuclear\s+protein", r"mitochondrial\s+protein",
+])
+ADCDB_NAME_NOISE = re.compile(rf"\b({_ADCDB_NOISE_PATTERNS})\b", re.IGNORECASE)
 
 # Non-cytotoxic conjugates that TheraSAbDab tags "ADC" but aren't classic
 # cytotoxic ADCs (hydrogel half-life extension, IL-2 cytokine fusions,
@@ -286,6 +324,18 @@ def collect_adcdb_hgncs(sym_to_hgnc: dict) -> set[str]:
         return set()
     print(f"[adcdb] reading {ADCDB_TSV.relative_to(REPO_ROOT)}")
     df = pd.read_csv(ADCDB_TSV, sep="\t")
+    n_before = len(df)
+    # Tier-1 antigen-name regex filter — ADCdb-internal noise removal
+    noise_mask = df["antigen_name"].fillna("").apply(
+        lambda s: bool(ADCDB_NAME_NOISE.search(str(s)))
+    )
+    n_dropped_name = noise_mask.sum()
+    if n_dropped_name:
+        print(
+            f"[adcdb] name-regex noise filter: dropped {n_dropped_name} "
+            f"entries (e.g. {', '.join(df.loc[noise_mask, 'gene_symbol_inline'].dropna().head(5).tolist())})"
+        )
+    df = df[~noise_mask]
     out: set[str] = set()
     for sym in df["gene_symbol_inline"].dropna():
         h = _resolve_symbol(str(sym).strip(), sym_to_hgnc)
