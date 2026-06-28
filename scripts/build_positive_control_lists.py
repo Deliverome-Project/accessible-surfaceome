@@ -53,6 +53,13 @@ VZ_SOURCE_NOTE = (
     "(Expasy ViralZone scrape; CC BY 4.0 attribution to ViralZone)."
 )
 
+# ADCdb antigen list — checked-in TSV scraped from the IDRBlab ADCdb search
+# pages. 268 unique antigens; ~241 carry an inline HGNC symbol (the
+# parenthesized last token of the "Antigen Name" string). The remaining 27
+# are descriptive glycans / variants / undisclosed antigens that we treat as
+# unresolved.
+ADCDB_TSV = REPO_ROOT / "data/external/adcdb/adcdb_antigens.tsv"
+
 # Non-cytotoxic conjugates that TheraSAbDab tags "ADC" but aren't classic
 # cytotoxic ADCs (hydrogel half-life extension, IL-2 cytokine fusions,
 # peptide hormone conjugates). Filtered out of the ADC positive-control list.
@@ -266,6 +273,27 @@ def collect_open_targets_adc_hgncs(
     return hgncs
 
 
+def collect_adcdb_hgncs(sym_to_hgnc: dict) -> set[str]:
+    """Resolve ADCdb antigens to HGNC IDs via the inline gene symbol.
+
+    The ``adcdb_antigens.tsv`` file is the parsed letter-page dump (Antigen ID
+    + Antigen Name + inline gene symbol). 27 of 268 antigens are descriptive
+    glycans / variants / undisclosed and lack an inline HGNC symbol; those
+    are unresolved by design.
+    """
+    if not ADCDB_TSV.is_file():
+        print(f"[adcdb] {ADCDB_TSV.relative_to(REPO_ROOT)} not present; skipping")
+        return set()
+    print(f"[adcdb] reading {ADCDB_TSV.relative_to(REPO_ROOT)}")
+    df = pd.read_csv(ADCDB_TSV, sep="\t")
+    out: set[str] = set()
+    for sym in df["gene_symbol_inline"].dropna():
+        h = _resolve_symbol(str(sym).strip(), sym_to_hgnc)
+        if h:
+            out.add(h)
+    return out
+
+
 def collect_viralzone_hgncs(vz: pd.DataFrame, cu: pd.DataFrame) -> set[str]:
     """Parse the Receptor field's UniProt accessions and resolve via the universe."""
     uniprot_re = re.compile(r"([OPQ][0-9][A-Z0-9]{3}[0-9]|[A-NR-Z][0-9](?:[A-Z][A-Z0-9]{2}[0-9]){1,2})")
@@ -361,8 +389,13 @@ def main() -> None:
     adc_mask = _therasabdab_adc_mask(df_t)
     tdab_adc = collect_therasabdab_hgncs(df_t, adc_mask, sym_to_hgnc)
     ot_adc = collect_open_targets_adc_hgncs(mol, moa, ensg_to_hgnc, ensg_to_sym, cohort_desc)
-    adc_union = tdab_adc | ot_adc
-    print(f"  TheraSAbDab ADC HGNCs: {len(tdab_adc)};  Open Targets ADC HGNCs: {len(ot_adc)};  union: {len(adc_union)}")
+    adcdb_adc = collect_adcdb_hgncs(sym_to_hgnc)
+    adc_union = tdab_adc | ot_adc | adcdb_adc
+    print(
+        f"  TheraSAbDab ADC HGNCs: {len(tdab_adc)}; "
+        f"Open Targets ADC HGNCs: {len(ot_adc)}; "
+        f"ADCdb HGNCs: {len(adcdb_adc)};  union: {len(adc_union)}"
+    )
 
     print(f"=== TCE ===")
     tce_mask = _therasabdab_tce_mask(df_t)

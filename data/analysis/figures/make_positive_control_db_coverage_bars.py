@@ -119,6 +119,17 @@ DB_COLOR = {
     "CSPA":    "#6E1428",
 }
 
+# Spelled-out per-bar titles. Rendered above each bar so the column identity is
+# legible without leaning on the rotated x-tick alone.
+DB_TITLE = {
+    "Sonnet":  "Sonnet 4.6",
+    "UniProt": "UniProt",
+    "SURFY":   "SURFY",
+    "CSPA":    "CSPA",
+    "GO":      "GO CC",
+    "HPA":     "HPA",
+}
+
 DB_FLAG_COL = {
     "UniProt": "uniprot_flag",
     "GO":      "go_flag",
@@ -191,23 +202,26 @@ def render(df_tidy: pd.DataFrame, out_dir: Path) -> Path:
             order=DB_ORDER, hue="db", palette=bar_colors,
             legend=False, ax=ax, edgecolor="none",
         )
+        # Three-row stacked text above each bar: spelled-out DB title (in the
+        # bar's color) → count → percentage. Keeps the column identifiable
+        # when the figure is shrunk.
         for i, db in enumerate(DB_ORDER):
             n = int(sub[sub["db"] == db]["n"].iloc[0])
             pct = n / n_total * 100
+            label = f"{DB_TITLE[db]}\n{n}\n({pct:.0f}%)"
             ax.text(
-                i, n + n_total * 0.02, f"{n}\n({pct:.0f}%)",
-                ha="center", va="bottom", fontsize=11, weight="semibold",
-                color=DB_COLOR[db],
+                i, n + n_total * 0.025, label,
+                ha="center", va="bottom", fontsize=10,
+                color=DB_COLOR[db], weight="semibold", linespacing=1.25,
             )
 
         ax.set_title(f"{panel_title}\n(n = {n_total} targets)", fontsize=12, weight="bold", pad=14)
         ax.set_ylabel("Targets\nrepresented", fontsize=13, weight="medium")
         ax.set_xlabel("")
-        ax.set_ylim(0, n_total * 1.18)
+        # Extra headroom (1.32×) because each bar carries three lines of text.
+        ax.set_ylim(0, n_total * 1.32)
         sns.despine(ax=ax, top=True, right=True)
-        ax.tick_params(axis="x", rotation=20)
-        for label in ax.get_xticklabels():
-            label.set_horizontalalignment("right")
+        ax.set_xticks([])
 
     for ax, letter in zip(axes, "abc"):
         ax.text(

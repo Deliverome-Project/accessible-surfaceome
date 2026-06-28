@@ -130,6 +130,11 @@ data/processed/positive_controls/positive_control_db_coverage_summary.tsv -filte
 # small (~33 KB).
 data/external/viralzone/viralzone_human_entry_receptors.csv -filter -diff -merge text
 
+# ADCdb antigen list — parsed from the IDRBlab ADCdb search pages
+# (268 unique antigens, 241 with inline HGNC symbol). ~12 KB; read by
+# build_positive_control_lists.py to fold ADCdb into the ADC union.
+data/external/adcdb/adcdb_antigens.tsv -filter -diff -merge text
+
 # Paywall/bot-block reachability figure input — per-paper buckets for the
 # production-vs-OpenAlex comparison figure. ~310KB, raw-fetched by the
 # figures-folder gist (cbc950dad1c3a6595fd5018cdb6b030d).
