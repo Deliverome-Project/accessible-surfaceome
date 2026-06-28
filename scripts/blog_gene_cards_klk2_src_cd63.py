@@ -62,14 +62,17 @@ GENES: list[dict[str, Any]] = [
             ("SURFACE VERDICT",     "Moderate",              "amber"),
             ("EXPERIMENTAL EVIDENCE","Direct, multi-method", "success"),
             ("CONFIDENCE",          "Moderate",              "amber"),
-            ("STATE DEPENDENCE",    "High",                  "danger"),
+            # High state-dep = green per viewer's uniform RYG ramp
+            # (.h-vital-display.tone-success). Viewer treats HIGH as
+            # the "green" end of every vital, regardless of whether
+            # the field semantically means "good"/"bad" — uniformity
+            # over semantics so the 2×2 grid reads consistently.
+            ("STATE DEPENDENCE",    "High",                  "success"),
         ],
-        # Secondary chips — narrative-relevant tags
         "chips": [
-            ("primary",  "Plasma membrane", "teal"),
-            ("reason",   "Tissue-restricted surface", "amber"),
-            ("ecd",      "Large ECD", "success"),
-            (None,       "✓ known ligand", "neutral"),
+            ("primary",      "Plasma membrane",        "teal"),
+            ("reason",       "Tissue-restricted",      "amber"),
+            ("specificity",  "Mixed",                  "amber"),
         ],
         # Topology: no TM helices (it's a secreted protease, signal
         # peptide cleaved). Keep N-terminal residues 1-17 colored as
@@ -90,13 +93,14 @@ GENES: list[dict[str, Any]] = [
             ("SURFACE VERDICT",      "Moderate",              "amber"),
             ("EXPERIMENTAL EVIDENCE","Direct, single method", "amber"),
             ("CONFIDENCE",           "Low",                   "danger"),
-            ("STATE DEPENDENCE",     "High",                  "danger"),
+            ("STATE DEPENDENCE",     "High",                  "success"),
         ],
         "chips": [
-            ("primary",    "Plasma membrane",    "teal"),
-            ("reason",     "Lysosomal exocytosis", "amber"),
-            ("induced by", "Oncogenic",          "maroon"),
-            (None,         "✓ tumor associated", "maroon"),
+            ("primary",      "Plasma membrane",         "teal"),
+            ("reason",       "Lysosomal exocytosis",    "amber"),
+            ("specificity",  "Mostly intracellular",    "amber"),
+            ("induced by",   "Oncogenic",               "maroon"),
+            (None,           "✓ tumor associated",      "maroon"),
         ],
         # DeepTMHMM type GLOB → all "M" so 3Dmol paints the cartoon
         # gold (M tone) without a membrane slab, mirroring the live
@@ -117,13 +121,19 @@ GENES: list[dict[str, Any]] = [
             ("SURFACE VERDICT",      "High",                  "success"),
             ("EXPERIMENTAL EVIDENCE","Direct, multi-method",  "success"),
             ("CONFIDENCE",           "High",                  "success"),
-            ("STATE DEPENDENCE",     "High",                  "danger"),
+            ("STATE DEPENDENCE",     "High",                  "success"),
         ],
         "chips": [
-            ("primary",    "Lysosome",             "lavender"),
-            ("reason",     "Lysosomal exocytosis", "amber"),
-            ("induced by", "Oncogenic",            "maroon"),
-            (None,         "✓ known ligand",       "neutral"),
+            ("primary",      "Lysosome",               "lavender"),
+            ("reason",       "Lysosomal exocytosis",   "amber"),
+            ("specificity",  "Mostly intracellular",   "amber"),
+            # CD63 reaches surface during exocytosis + degranulation —
+            # additional dual-localization tag per user note. Note:
+            # surface_call_reason is mutually exclusive in the enum, so
+            # the model could only pick lysosomal_exocytosis OR
+            # dual_localization; both are functionally true for CD63.
+            (None,           "✓ dual localization",    "teal"),
+            ("induced by",   "Oncogenic",              "maroon"),
         ],
         # CD63 (P08962) DeepTMHMM topology — 4 TM bundle. Verified
         # against data/external/deeptmhmm_surfaceome_predictions/
@@ -368,19 +378,7 @@ html, body {
   margin: 0;
   line-height: 1.3;
 }
-.idrow {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 12px;
-  font-family: var(--font-sans);
-  font-size: 10px;
-  font-weight: 500;
-  letter-spacing: 0.04em;
-  text-transform: uppercase;
-  color: var(--muted);
-  margin-top: 6px;
-}
-.idrow b { color: var(--ink-soft); font-weight: 700; }
+/* .idrow removed — UniProt / NCBI / Ensembl identifier row dropped */
 
 .sources {
   display: flex;
@@ -441,13 +439,18 @@ html, body {
 /* Pill with embedded label: "LABEL · VALUE" */
 .pill .lbl { opacity: 0.72; font-weight: 400; margin-right: 0.2rem; }
 
-/* Structure card — NO border, just a soft tinted background */
+/* Structure card — NO border, no background. Per-gene height
+   override via inline style (KLK2 needs more vertical room since
+   its globular shape sits compactly). */
 .structure {
   border: none;
   background: var(--bg);
   border-radius: 10px;
   height: 240px;
   position: relative;
+}
+.structure.tall {
+  height: 320px;
 }
 .structure-legend {
   font-family: var(--font-sans);
@@ -467,14 +470,18 @@ html, body {
   margin-right: 4px;
 }
 
-/* Vitals 2×2 grid */
+/* Vitals 2×2 grid — pure typography, NO background fills. Eyebrow
+   label in muted Manrope; value in italic Playfair, tone-colored
+   via the .h-vital-display.tone-* convention from the viewer. The
+   tone classes set TEXT color only, no background. */
 .vitals {
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 12px 18px;
   margin: 4px 0;
+  background: transparent;
 }
-.vital { display: flex; flex-direction: column; gap: 4px; min-width: 0; }
+.vital { display: flex; flex-direction: column; gap: 4px; min-width: 0; background: transparent; }
 .vitalK {
   font-family: var(--font-sans);
   font-size: 9px;
@@ -482,6 +489,7 @@ html, body {
   letter-spacing: 0.10em;
   text-transform: uppercase;
   color: var(--muted);
+  background: transparent;
 }
 .vitalV {
   font-family: var(--font-display);
@@ -491,36 +499,28 @@ html, body {
   line-height: 1.1;
   letter-spacing: -0.015em;
   color: var(--ink);
+  background: transparent;
 }
 .vitalV.tone-success { color: var(--success); }
 .vitalV.tone-amber   { color: var(--amber-dark); }
 .vitalV.tone-danger  { color: var(--maroon-light); }
 .vitalV.tone-neutral { color: var(--muted); }
 
-/* Secondary chips strip */
+/* Secondary chips — 2 clean columns for readability. Pills keep
+   the viewer's soft-fill styling (10% tint + deeper text color)
+   because chips IS where the viewer puts colored tints. */
 .chips {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 6px;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  column-gap: 8px;
+  row-gap: 6px;
   margin-top: 2px;
 }
-
-/* Sonnet verdict bar */
-.verdict {
-  display: flex;
-  justify-content: center;
-  padding: 8px 12px;
-  border-radius: 8px;
-  margin-top: 8px;
-  font-family: var(--font-sans);
-  font-size: 11px;
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.08em;
+.chips .pill {
+  /* In a 2-column grid each chip is its own cell — start text from
+     the left so the column reads as an aligned list. */
+  justify-content: flex-start;
 }
-.verdict.tone-amber  { color: var(--amber-dark); background: rgba(192, 120, 48, 0.10); }
-.verdict.tone-success{ color: var(--success); background: rgba(46, 122, 85, 0.10); }
-.verdict.tone-neutral{ color: var(--ink-soft); background: var(--bg-warm); }
 """
 
 
@@ -612,32 +612,21 @@ def _build_html(genes: list[dict]) -> str:
             if legend_items else ""
         )
 
-        # Sonnet verdict bar
-        vtone = _verdict_tone(g["sonnet_verdict"])
-        verdict_html = (
-            f'<div class="verdict tone-{vtone}">'
-            f'Sonnet · {g["sonnet_verdict"].title()} · '
-            f'{g["sonnet_reason"].replace("_", " ").title()}'
-            f'</div>'
-        )
+        # Per-gene structure height — KLK2's globular shape sits
+        # compactly and benefits from extra vertical room.
+        structure_class = "structure tall" if g["symbol"] == "KLK2" else "structure"
 
         card_html = textwrap.dedent(f"""
         <div class="card">
           <div class="header-row">
             <h1 class="symbol">{g["symbol"]}</h1>
             <p class="name">{g["name"]}</p>
-            <div class="idrow">
-              <span><b>UniProt</b> {g["uniprot"]}</span>
-              <span><b>NCBI Gene</b> {g["ncbi"]}</span>
-              <span><b>Ensembl</b> {g["ensembl"]}</span>
-            </div>
           </div>
           {src_strip}
-          <div class="structure" id="viewer-{g["symbol"]}"></div>
+          <div class="{structure_class}" id="viewer-{g["symbol"]}"></div>
           {legend_html}
           <div class="vitals">{vital_cells}</div>
           <div class="chips">{"".join(chips)}</div>
-          {verdict_html}
         </div>
         """).strip()
         cards.append(card_html)
