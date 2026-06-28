@@ -8,7 +8,7 @@ Two subcommands::
 ``download`` fetches https://www.proteinatlas.org/download/tsv/subcellular_location.tsv.zip
 (v25.0, ~250 KB zipped, 13,604 rows) into
 ``data/external/hpa_subcellular_location/`` (raw zip + extracted TSV +
-download_traceability.json). License: CC-BY-SA-3.0.
+download_traceability.json). License: CC-BY-4.0 (per https://www.proteinatlas.org/about/licence).
 
 ``build`` normalizes that snapshot for the M1 candidate-universe merge.
 
@@ -403,7 +403,7 @@ def build_main(argv: list[str] | None = None) -> None:
             "local_path": str(input_path.relative_to(ROOT)),
             "sha256": sha256_file(input_path),
             "size_bytes": input_path.stat().st_size,
-            "license": "CC-BY-SA-3.0",
+            "license": "CC-BY-4.0",
         },
         "ensembl_xref_mapping": {
             "local_path": str((args.xref_dir / "ensg_to_uniprot.tsv").relative_to(ROOT)),
@@ -510,7 +510,7 @@ def download_main(argv: list[str] | None = None) -> None:
             species="Homo sapiens",
             status=status,
             response_headers=headers or None,
-            note="Raw HPA subcellular-location bulk file (CC-BY-SA-3.0).",
+            note="Raw HPA subcellular-location bulk file (CC-BY-4.0).",
         ),
         build_file_record(
             repo_root=ROOT,
@@ -531,7 +531,7 @@ def download_main(argv: list[str] | None = None) -> None:
         records=records,
         extras={
             "source_url": DOWNLOAD_URL,
-            "license": "CC-BY-SA-3.0",
+            "license": "CC-BY-4.0",
         },
     )
     print(f"wrote {manifest_path.relative_to(ROOT)}")

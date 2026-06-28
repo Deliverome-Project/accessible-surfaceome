@@ -1,33 +1,27 @@
 {
   "dataset": "hpa_subcellular_location",
   "extras": {
-    "license": "CC-BY-SA-3.0",
+    "license": "CC-BY-4.0",
     "source_url": "https://www.proteinatlas.org/download/tsv/subcellular_location.tsv.zip"
   },
-  "generated_at_utc": "2026-04-17T19:56:42.435247+00:00",
+  "generated_at_utc": "2026-06-28T20:51:18.401942+00:00",
   "n_files": 2,
   "records": [
     {
-      "captured_at_utc": "2026-04-17T19:56:42.433729+00:00",
+      "captured_at_utc": "2026-06-28T20:51:18.400518+00:00",
       "dataset": "hpa_subcellular_location",
       "file_name": "subcellular_location.tsv.zip",
       "local_path": "data/external/hpa_subcellular_location/subcellular_location.tsv.zip",
-      "note": "Raw HPA subcellular-location bulk file (CC-BY-SA-3.0).",
-      "response_headers": {
-        "content_length_header": "252331",
-        "content_type": "application/zip",
-        "etag": "\"3d9ab-642e4335d6780\"",
-        "last_modified": "Thu, 06 Nov 2025 02:55:42 GMT"
-      },
+      "note": "Raw HPA subcellular-location bulk file (CC-BY-4.0).",
       "sha256": "a9466882bd3328416bcde77c32a6bcb2a17d70183af90e98d032f6f5f781d504",
       "size_bytes": 252331,
       "source_url": "https://www.proteinatlas.org/download/tsv/subcellular_location.tsv.zip",
       "species": "Homo sapiens",
-      "status": "downloaded",
+      "status": "reused",
       "taxid": "9606"
     },
     {
-      "captured_at_utc": "2026-04-17T19:56:42.434915+00:00",
+      "captured_at_utc": "2026-06-28T20:51:18.401921+00:00",
       "dataset": "hpa_subcellular_location",
       "file_name": "subcellular_location.tsv",
       "local_path": "data/external/hpa_subcellular_location/subcellular_location.tsv",
@@ -40,5 +34,5 @@
       "taxid": "9606"
     }
   ],
-  "script": "scripts/data_collection/download_hpa_subcellular_location.py"
+  "script": "src/accessible_surfaceome/sources/hpa.py"
 }

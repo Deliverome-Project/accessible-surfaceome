@@ -63,7 +63,7 @@ Codex review flagged several issues that must be resolved **before** gene-univer
 3. **Batch API availability.** Confirm Sonnet 4.6 and Opus 4.7 are supported via Anthropic Batch API (asynchronous, 50% discount). Not all models are batch-eligible at all times. If eligible, batch is the default execution mode for the full run — this project is textbook batch work (latency-insensitive, high volume, structured outputs).
 4. **Licensing & redistribution review.** Before publishing any cached corpus:
    - **Unpaywall / OA full text**: verify OA-license scope per source; some CC-BY-NC papers can't be redistributed.
-   - **HPA**: Human Protein Atlas is CC-BY-SA-3.0; commercial redistribution of cached pages requires attribution + share-alike on downstream tables.
+   - **HPA**: Human Protein Atlas is CC-BY-4.0 (see https://www.proteinatlas.org/about/licence); commercial redistribution of derived tables requires attribution.
    - **Serper / Google results**: web-search snippets cannot be redistributed as a corpus. Use only as an internal retrieval signal; do not ship cached Serper payloads.
    - **PubMed abstracts**: NCBI permits redistribution with attribution; confirm for the specific use case.
    - **HGNC / UniProt / GO**: all CC-BY-4.0; clear.
@@ -662,12 +662,12 @@ Per-source policy (finalized at M6, started at M0):
 | PMC OA subset | CC-BY / CC-BY-NC / CC0 | **Per-article policy** | Filter NC before shipping |
 | Unpaywall | CC0 metadata | Metadata yes, OA content **per source license** | Must track per-item license |
 | bioRxiv / medRxiv | CC-BY / CC-BY-NC / CC-BY-ND | **Per-preprint policy** | Filter before shipping |
-| HPA | CC-BY-SA-3.0 | Yes with SA compliance | Downstream table inherits SA |
+| HPA | CC-BY-4.0 | Yes | Attribution required |
 | PDB | CC0 | Yes | Cite structures |
 | Retraction Watch | CC-BY-SA-4.0 | Derived only | Attribution |
 | Serper / Google | Terms of Service | **NO** | Internal use only; never ship |
 
-**Derived results table** (the final annotation CSV/parquet): released under **CC-BY-4.0**, modulo any SA-upstream (HPA) → must include CC-BY-SA-3.0 dual-license for that column set. Legal review confirms at M6.
+**Derived results table** (the final annotation CSV/parquet): released under **CC-BY-4.0**. HPA is CC-BY-4.0, so no share-alike encumbrance on HPA-derived columns. Legal review at M6.
 
 ---
 
