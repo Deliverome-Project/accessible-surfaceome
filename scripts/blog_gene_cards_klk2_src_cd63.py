@@ -73,12 +73,11 @@ GENES: list[dict[str, Any]] = [
             ("primary",      "Plasma membrane",        "teal"),
             ("reason",       "Tissue-restricted",      "amber"),
             ("surface vs intracellular",  "Mixed",   "amber"),
-            # Count of surface_evidence.methods rows where
-            # accessibility_relevance == "direct_surface_accessibility"
-            # (methods that probe the extracellular face directly,
-            # e.g. live-cell FACS, surface biotinylation, nonpermeabilized
-            # IF). For KLK2 there are 2 of these in the record.
-            ("extracellular methods", "2", "success"),
+            ("n surface evidence", "2", "success"),
+            # has_secreted_form=True on KLK2 — directly supports the
+            # J&J narrative ("originally thought secreted-only"). Also
+            # a filterable DD bool field on the catalog.
+            (None, "✓ secreted form", "lavender"),
         ],
         # Topology: no TM helices (it's a secreted protease, signal
         # peptide cleaved). Keep N-terminal residues 1-17 colored as
@@ -115,7 +114,7 @@ GENES: list[dict[str, Any]] = [
             ("primary",      "Plasma membrane",         "teal"),
             ("reason",       "Lysosomal exocytosis",    "amber"),
             ("surface vs intracellular",  "Mostly intracellular", "amber"),
-            ("extracellular methods", "1", "amber"),
+            ("n surface evidence", "1", "amber"),
             ("induced by",   "Oncogenic",               "maroon"),
             (None,           "✓ dual localization",     "teal"),
             (None,           "✓ tumor associated",      "maroon"),
@@ -155,8 +154,11 @@ GENES: list[dict[str, Any]] = [
             # CD63 has 7 direct_surface_accessibility methods — the
             # strongest extracellular-side evidence in this trio
             # (live-cell flow ×7, plus IHC + nonpermeabilized IF).
-            ("extracellular methods", "7", "success"),
+            ("n surface evidence", "7", "success"),
             (None,           "✓ dual localization",    "teal"),
+            # has_epitope_masking=True on CD63 — heavy LEL glycosylation
+            # restricts antibody access. Filterable DD bool on catalog.
+            (None,           "✓ epitope masking",      "amber"),
             ("induced by",   "Immune, antigen, infection, oncogenic, other", "maroon"),
         ],
         # CD63 (P08962) DeepTMHMM topology — 4 TM bundle. Verified
