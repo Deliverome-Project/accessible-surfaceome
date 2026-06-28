@@ -35,7 +35,6 @@ WITH base AS (
     MAX(c.cspa_surface_flag)    AS cspa_flag,
     MAX(c.hpa_surface_flag)     AS hpa_flag,
     MAX(c.deeptmhmm_surface_flag)    AS deeptmhmm_flag,
-    MAX(c.compartments_surface_flag) AS compartments_flag,
     MAX(c.uniprot_surface_flag + c.go_surface_flag + c.surfy_surface_flag
         + c.cspa_surface_flag + c.hpa_surface_flag) AS n_db_votes
   FROM candidate_universe_public c
@@ -58,7 +57,7 @@ SELECT
   i.hgnc_id, i.uniprot_acc, i.ensembl_gene, i.ncbi_gene_id,
   b.n_db_votes,
   b.uniprot_flag, b.go_flag, b.surfy_flag, b.cspa_flag, b.hpa_flag,
-  b.deeptmhmm_flag, b.compartments_flag,
+  b.deeptmhmm_flag,
   s.predicted_verdict   AS sonnet_verdict,
   s.predicted_confidence AS sonnet_confidence,
   s.predicted_reason    AS sonnet_reason,
@@ -102,7 +101,7 @@ def source_of(r):
 cols = [
     "gene_symbol", "hgnc_id", "uniprot_acc", "ensembl_gene", "ncbi_gene_id",
     "n_db_votes", "uniprot_flag", "go_flag", "surfy_flag", "cspa_flag", "hpa_flag",
-    "deeptmhmm_flag", "compartments_flag",
+    "deeptmhmm_flag",
     "sonnet_verdict", "sonnet_confidence", "sonnet_reason",
     "pubmed_verdict", "pubmed_confidence", "source",
 ]

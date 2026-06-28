@@ -1078,8 +1078,8 @@ async function handleCatalog(env, request) {
   // site count. Previously this was 3 separate D1 round-trips and 3 JS
   // Map builds; pushing the joins into SQLite drops ~20k Map ops and
   // 2 round-trips. n_sources_surface in the table is already the count
-  // over the 5 gating flags (uniprot/go/surfy/cspa/hpa); DeepTMHMM /
-  // COMPARTMENTS are auxiliary signals and not in the catalog response.
+  // over the 5 gating flags (uniprot/go/surfy/cspa/hpa); DeepTMHMM
+  // is an auxiliary signal and not in the catalog response.
   //
   // LEFT JOIN on surface_annotation via a DISTINCT subquery so a gene
   // with multiple schema_version rows in the table still emits one
@@ -1429,7 +1429,7 @@ const BENCH_MATRIX_MODELS = [
 const BENCH_MATRIX_VARIANTS = ["naive", "ncbi", "web_ncbi", "pubmed_ncbi"];
 const BENCH_MATRIX_HEADLINE_VARIANT = "ncbi";
 // Five gating DBs — same five the homepage CatalogTable renders. The
-// matrix used to expose two auxiliary signals (DeepTMHMM, COMPARTMENTS)
+// matrix used to expose auxiliary signals (DeepTMHMM)
 // but those were demoted from the M1 universe gate and only confused
 // the side-by-side, so we drop them here too (2026-05-15).
 const BENCH_MATRIX_SOURCES = [

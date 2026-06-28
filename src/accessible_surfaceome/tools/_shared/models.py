@@ -148,7 +148,6 @@ SourceName = Literal[
     "go",
     "hpa",
     "deeptmhmm",
-    "compartments",
     "patent_handle",
 ]
 
@@ -157,9 +156,9 @@ class SourceVote(BaseModel):
     """One source's vote on whether a gene is surface, with source-specific evidence.
 
     ``evidence`` is intentionally a free-form dict — each source's loader emits a
-    different shape (GO returns ``[{go_id, evidence_code, term}]``; COMPARTMENTS
-    returns ``top3_terms`` with stars; SURFY returns the ML class; etc.). Locking
-    these down before the loaders settle would be premature.
+    different shape (GO returns ``[{go_id, evidence_code, term}]``; SURFY returns
+    the ML class; etc.). Locking these down before the loaders settle would be
+    premature.
     """
 
     model_config = ConfigDict(extra="forbid")

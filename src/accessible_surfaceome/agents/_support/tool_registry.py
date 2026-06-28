@@ -59,7 +59,7 @@ GENE_LOOKUP_DESCRIPTION = (
     "canonicalize the identifiers before any other tool call. Use mode='db_panel' "
     "once per gene to get the structured per-source surface-vote panel from local "
     "processed data (SURFY, CSPA, UniProt query match, GO, HPA, DeepTMHMM, "
-    "JensenLab COMPARTMENTS, patent-handle lane). Use mode='uniprot_summary' to "
+    "patent-handle lane). Use mode='uniprot_summary' to "
     "get distilled subcellular-location, topology features, PTMs, tissue "
     "specificity, and cross-references — do not call web_fetch against UniProt "
     "directly; this tool is faster, cached, and Pydantic-validated. Use "

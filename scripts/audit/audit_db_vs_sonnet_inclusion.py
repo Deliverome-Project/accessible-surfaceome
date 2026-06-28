@@ -13,8 +13,8 @@ macro-collapsed HGNC gene-group families (GPCR, SLC, CD molecule,
 Ig-domain, RTK, Tetraspanin, Cadherin, Integrin, ABC transporter,
 Voltage/Ligand-gated channel, Connexin, Claudin, MHC/HLA, TNF-receptor,
 Chemokine ligand, Olfactory receptor). DB-specific evidence flags
-(HPA reliability, CSPA category, SURFY ML score, COMPARTMENTS stars,
-GO evidence) are intentionally excluded so each source's enrichment
+(HPA reliability, CSPA category, SURFY ML score, GO evidence) are
+intentionally excluded so each source's enrichment
 reflects biology, not self-membership.
 
 For each inclusion source, computes the enrichment of every feature in
@@ -258,8 +258,8 @@ def _load_v3() -> pd.DataFrame:
       * `uniprot_acc`        <-  `uniprot_accession`
       * `<db>_flag`          <-  `m1_<db>_flag`
       * `n_db_votes`         <-  `m1_n_db_votes`
-      * new cols: `ncbi_gene_id`, `deeptmhmm_flag`, `compartments_flag`,
-                  `pubmed_verdict`, `pubmed_confidence`
+      * new cols: `ncbi_gene_id`, `deeptmhmm_flag`, `pubmed_verdict`,
+                  `pubmed_confidence`
     """
     df_kept = pd.read_csv(V3, sep="\t", dtype=str).fillna("")
     df_dropped = pd.read_csv(V3_DROPPED, sep="\t", dtype=str).fillna("")

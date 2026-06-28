@@ -12,10 +12,9 @@ protein-coding genes for which no DB voted "surface".
 We then compute ``n_sources_surface`` as the count over the **5
 gating DBs only** (uniprot, go, surfy, cspa, hpa) — same definition
 the merge module uses for the M1 universe gate
-(``src/accessible_surfaceome/merge/__init__.py``). DeepTMHMM and
-COMPARTMENTS are still loaded into the table (preserves the full
-data), but their flags don't count toward the public-facing
-``n_sources``. The Worker's ``/v1/catalog`` endpoint mirrors that
+(``src/accessible_surfaceome/merge/__init__.py``). DeepTMHMM is still
+loaded into the table (preserves the full data), but its flag doesn't
+count toward the public-facing ``n_sources``. The Worker's ``/v1/catalog`` endpoint mirrors that
 choice — it returns only the 5 gating columns to the viewer.
 
 Resulting public table:
@@ -74,7 +73,6 @@ COLS = [
     "cspa_surface_flag",
     "hpa_surface_flag",
     "deeptmhmm_surface_flag",
-    "compartments_surface_flag",
 ]
 
 
@@ -175,8 +173,8 @@ def _build_rows(
     """One row per triageable gene. Flags come from candidate_universe
     when the gene is in it; otherwise all-zero. n_sources_surface is
     the count over the 5 gating DBs only (uniprot, go, surfy, cspa,
-    hpa) — DeepTMHMM and COMPARTMENTS are still stored but don't
-    contribute to the public-facing count."""
+    hpa) — DeepTMHMM is still stored but doesn't contribute to the
+    public-facing count."""
     cu_by_sym = _load_candidate_universe_index(candidate_universe_tsv)
     logger.info(
         "indexed %d genes from %s (one row each, max-n_sources wins)",
@@ -197,21 +195,20 @@ def _build_rows(
             seen_syms.add(sym)
             cu = cu_by_sym.get(sym)
             uni = ((cu or {}).get("uniprot_accession") or "").strip()
-            # 7 flags. Genes absent from candidate_universe default to all-zero.
-            f_uniprot     = _flag(cu, "uniprot_surface_flag")    if cu else 0
-            f_go          = _flag(cu, "go_surface_flag")          if cu else 0
-            f_surfy       = _flag(cu, "surfy_surface_flag")       if cu else 0
-            f_cspa        = _flag(cu, "cspa_surface_flag")        if cu else 0
-            f_hpa         = _flag(cu, "hpa_surface_flag")         if cu else 0
-            f_deeptmhmm   = _flag(cu, "deeptmhmm_surface_flag")   if cu else 0
-            f_compartmnts = _flag(cu, "compartments_surface_flag") if cu else 0
+            # 6 flags. Genes absent from candidate_universe default to all-zero.
+            f_uniprot   = _flag(cu, "uniprot_surface_flag")  if cu else 0
+            f_go        = _flag(cu, "go_surface_flag")        if cu else 0
+            f_surfy     = _flag(cu, "surfy_surface_flag")     if cu else 0
+            f_cspa      = _flag(cu, "cspa_surface_flag")      if cu else 0
+            f_hpa       = _flag(cu, "hpa_surface_flag")       if cu else 0
+            f_deeptmhmm = _flag(cu, "deeptmhmm_surface_flag") if cu else 0
             # n_sources counts the 5 gating DBs only — matches the M1
-            # universe gate in merge.__init__.gating_corroborator.
+            # universe gate in merge.__init__.
             n_sources = f_uniprot + f_go + f_surfy + f_cspa + f_hpa
             out.append([
                 version, sym, uni, n_sources,
                 f_uniprot, f_go, f_surfy, f_cspa, f_hpa,
-                f_deeptmhmm, f_compartmnts,
+                f_deeptmhmm,
             ])
     if skipped:
         logger.warning("skipped %d duplicate / empty-symbol rows", skipped)

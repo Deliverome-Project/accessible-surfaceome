@@ -61,7 +61,6 @@ def consolidate_gene_symbol(row: pd.Series) -> str:
         "cspa_gene_symbol",
         "go_gene_symbol",
         "hpa_gene_symbol",
-        "compartments_gene_symbol",
     ):
         val = row.get(col)
         if isinstance(val, str) and val.strip():

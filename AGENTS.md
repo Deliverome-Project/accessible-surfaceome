@@ -4,7 +4,7 @@ Concise contributor guide for `accessible-surfaceome`.
 
 ## Project Structure & Organization
 - `src/accessible_surfaceome/` core package.
-- `src/accessible_surfaceome/sources/` per-source download + build modules (`uniprot.py`, `go.py`, `surfy.py`, `cspa.py`, `deeptmhmm.py`, `hpa.py`, `compartments.py`); shared infra in `sources/_support/`.
+- `src/accessible_surfaceome/sources/` per-source download + build modules (`uniprot.py`, `go.py`, `surfy.py`, `cspa.py`, `deeptmhmm.py`, `hpa.py`); shared infra in `sources/_support/`.
 - `src/accessible_surfaceome/merge/` candidate-universe orchestration (loaders, normalization, gene-symbol resolution).
 - `src/accessible_surfaceome/audit/` audit + figure scripts.
 - `src/accessible_surfaceome/tools/` per-machine install plumbing (not part of the data pipeline).

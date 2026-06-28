@@ -281,10 +281,6 @@ _DB_SOURCES: dict[SourceName, tuple[str, list[str]]] = {
     "go": ("go_surface_flag", ["go_evidence_codes", "go_terms"]),
     "hpa": ("hpa_surface_flag", ["hpa_main_location", "hpa_reliability_subcell"]),
     "deeptmhmm": ("deeptmhmm_surface_flag", ["deeptmhmm_topology"]),
-    "compartments": (
-        "compartments_surface_flag",
-        ["compartments_predictions_stars_max", "compartments_knowledge_stars_max"],
-    ),
 }
 
 
@@ -521,10 +517,6 @@ _MISS_RULE_EXPLANATIONS: dict[SourceName, str] = {
     "deeptmhmm": (
         "DeepTMHMM rule fires when the predicted topology has ≥1 transmembrane helix and "
         "an extracellular segment. Note: DeepTMHMM was run on a 22.8% subset; absence ≠ negative."
-    ),
-    "compartments": (
-        "JensenLab COMPARTMENTS rule fires when max(experiments_stars, textmining_stars) ≥ 3 "
-        "for any term in the surface-term set."
     ),
     "patent_handle": "Patent-handle lane fires when the gene is cited as a delivery target in our patent corpus.",
 }

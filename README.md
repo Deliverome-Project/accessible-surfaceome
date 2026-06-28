@@ -94,8 +94,8 @@ cached artifacts ship publicly vs which stay local.
 
 ### M1 — Candidate universe (complete)
 
-Recall-first union of seven sources (SURFY, CSPA, UniProt, GO, HPA,
-DeepTMHMM, COMPARTMENTS) into a per-protein vote panel. The merged
+Recall-first union of six sources (SURFY, CSPA, UniProt, GO, HPA,
+DeepTMHMM) into a per-protein vote panel. The merged
 universe is the input to triage; every protein with **any one** credible
 DB or ML vote enters, even when sources disagree. Disagreement is the
 signal the downstream pipeline is designed to consume, not noise to
@@ -272,7 +272,7 @@ for the embedder.
 
 | Path | What lives here |
 |---|---|
-| `src/accessible_surfaceome/sources/` | One module per M1 data source (`uniprot.py`, `go.py`, `surfy.py`, `cspa.py`, `deeptmhmm.py`, `hpa.py`, `compartments.py`, `ensembl_compara.py`); each exposes `download` / `build` subcommands. Shared helpers under `sources/_support/`. |
+| `src/accessible_surfaceome/sources/` | One module per M1 data source (`uniprot.py`, `go.py`, `surfy.py`, `cspa.py`, `deeptmhmm.py`, `hpa.py`, `ensembl_compara.py`); each exposes `download` / `build` subcommands. Shared helpers under `sources/_support/`. |
 | `src/accessible_surfaceome/merge/` | Candidate-universe orchestration; loaders, normalization, gene-symbol resolution. |
 | `src/accessible_surfaceome/agents/surface_triage/` | The triage agent (orchestrator + prompts + Pydantic models). |
 | `src/accessible_surfaceome/agents/surface_annotator/` | The deep-dive agent (orchestrator + tool registry + deep-dive pack loader + evidence-promotion pipeline + audit module). |

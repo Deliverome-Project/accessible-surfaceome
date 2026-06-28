@@ -67,10 +67,7 @@ data/triage/
 #   * DeepTMHMM academic-license zip — install via
 #     `accessible-surfaceome tools deeptmhmm install` (signup-gated by
 #     the upstream project; the install handler walks you through it).
-#   * JensenLab COMPARTMENTS source TSVs — download via
-#     `python -m accessible_surfaceome.sources.compartments download`.
 data/external/deeptmhmm/
-data/external/jensenlab_compartments/
 
 # Triage-bench per-run records (one JSON per protein per cell). Reproducible
 # from `accessible-surfaceome triage-bench run`. The benchmark TSV input

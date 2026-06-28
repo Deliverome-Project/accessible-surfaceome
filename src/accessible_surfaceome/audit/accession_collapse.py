@@ -29,7 +29,6 @@ import pandas as pd
 from accessible_surfaceome.merge.loaders import (
     best_cspa_category,
     first_nonempty_symbol,
-    load_compartments,
     load_cspa,
     load_deeptmhmm,
     load_go,
@@ -50,7 +49,6 @@ SOURCES = {
     "cspa": load_cspa,
     "deeptmhmm": load_deeptmhmm,
     "hpa": load_hpa,
-    "compartments": load_compartments,
 }
 
 # Mirror of the per-source overrides in build_candidate_universe.main().

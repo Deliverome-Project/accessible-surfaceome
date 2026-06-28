@@ -22,8 +22,8 @@ Inputs (canonical, same as the uploader):
        — deep-dive SurfaceomeRecord set.
 
 For each gene the catalog row carries the **5 gating DB flags only**
-(uniprot, go, surfy, cspa, hpa) — DeepTMHMM and COMPARTMENTS are
-auxiliary signals upstream and are filtered out of the public catalog
+(uniprot, go, surfy, cspa, hpa) — DeepTMHMM is an auxiliary signal
+upstream and is filtered out of the public catalog
 (see src/accessible_surfaceome/merge/__init__.py for the gate).
 
 Output:
