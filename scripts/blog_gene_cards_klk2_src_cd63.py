@@ -74,17 +74,21 @@ GENES: list[dict[str, Any]] = [
         # is True → ✓. KLK2 has no trigger-carrying modulation rows so
         # there's no "induced by" chip — the gene is tissue-restricted
         # rather than cell-state-induced.
-        # "also in" chips replace the prior ✓ dual_localization
-        # rollup — sourced from biological_context.subcellular_
-        # localization.dual_localization[*].compartment, matching the
-        # viewer's BiologicalContextCard.tsx:47 pattern exactly.
+        # Uniform 9-chip schema across all 3 genes — every chip slot
+        # exists on every card so the 2-column grid stays the same
+        # height. "Also in" condensed to one comma-separated chip
+        # (matching the "induced by" pattern). "induced by" is "—" on
+        # KLK2 since the gene has no trigger-carrying modulation rows.
         "chips": [
             ("primary",      "Plasma membrane",        "teal"),
             ("reason",       "Tissue-restricted",      "amber"),
             ("surface vs intracellular",  "Mixed",   "amber"),
-            ("n surface evidence", "2", "success"),
+            ("n surface evidence", "2",                "success"),
             ("also in",      "Secreted",               "lavender"),
-            (None, "✓ secreted form",                 "success"),
+            ("expression level",   "High",             "success"),
+            ("expression breadth", "Rare",             "danger"),
+            (None,           "✓ secreted form",        "success"),
+            ("induced by",   "—",                      "neutral"),
         ],
         # Topology: no TM helices (it's a secreted protease, signal
         # peptide cleaved). Keep N-terminal residues 1-17 colored as
@@ -122,20 +126,14 @@ GENES: list[dict[str, Any]] = [
         # has_secreted_form=False → ✗. tumor-associated chip dropped
         # per user request. "induced by" moved last so the boolean
         # ✓/✗ chips group together visually.
-        # SRC's 4 dual_localization entries become 4 "also in" chips,
-        # replacing the prior ✓ dual_localization rollup. Each shows
-        # a distinct secondary compartment the record cites; the
-        # "Outer PM" one is the cancer-ALE surface display that
-        # underlies the therapeutic interest.
         "chips": [
             ("primary",      "Plasma membrane",         "teal"),
             ("reason",       "Lysosomal exocytosis",    "amber"),
             ("surface vs intracellular",  "Mostly intracellular", "amber"),
-            ("n surface evidence", "1", "amber"),
-            ("also in",      "Late endo / lyso",       "lavender"),
-            ("also in",      "Outer PM",               "lavender"),
-            ("also in",      "Cytoplasm",              "lavender"),
-            ("also in",      "Peri-nuclear",           "lavender"),
+            ("n surface evidence", "1",                "amber"),
+            ("also in",      "Late endo/lyso, outer PM, cytoplasm, peri-nuclear", "lavender"),
+            ("expression level",   "Moderate",         "amber"),
+            ("expression breadth", "Broad",            "success"),
             (None,           "✗ secreted form",        "danger"),
             ("induced by",   "Oncogenic",              "maroon"),
         ],
@@ -167,20 +165,14 @@ GENES: list[dict[str, Any]] = [
         # roll-up under-represents the immune component — immune is
         # actually the dominant trigger. Listing all 5 makes the
         # multi-trigger picture explicit.
-        # CD63's 5 dual_localization entries become 5 "also in" chips.
-        # PM is the activation-induced surface pool; the others are
-        # the steady-state intracellular compartments CD63 cycles
-        # between. ✓ epitope_masking chip removed per user.
         "chips": [
             ("primary",      "Lysosome",               "lavender"),
             ("reason",       "Lysosomal exocytosis",   "amber"),
             ("surface vs intracellular",  "Mostly intracellular", "amber"),
-            ("n surface evidence", "7", "success"),
-            ("also in",      "Plasma membrane",        "lavender"),
-            ("also in",      "Endosome",               "lavender"),
-            ("also in",      "MVB",                    "lavender"),
-            ("also in",      "Secretory granule",      "lavender"),
-            ("also in",      "EV",                     "lavender"),
+            ("n surface evidence", "7",                "success"),
+            ("also in",      "Plasma membrane, endosome, MVB, secretory granule, EV", "lavender"),
+            ("expression level",   "Moderate",         "amber"),
+            ("expression breadth", "Pan-tissue",       "success"),
             (None,           "✗ secreted form",        "danger"),
             ("induced by",   "Immune, antigen, infection, oncogenic, other", "maroon"),
         ],
