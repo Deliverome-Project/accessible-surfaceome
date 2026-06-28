@@ -57,22 +57,33 @@
 - `cloudflare/d1_schema.sql` — drop `compartments_*` columns (if any)
 - `src/accessible_surfaceome/sources/hpa.py` — three `"CC-BY-SA-3.0"` → `"CC-BY-4.0"`
 - `src/accessible_surfaceome/merge/loaders.py` — drop `COMPARTMENTS_TSV`, `load_compartments`
-- `src/accessible_surfaceome/merge/__init__.py` — drop compartments exports/joins
-- `src/accessible_surfaceome/merge/gene_symbols.py` — drop compartments-keyed code paths
-- `src/accessible_surfaceome/tools/gene_lookup.py` — drop compartments references
-- `src/accessible_surfaceome/tools/_shared/models.py` — drop compartments fields if present (bump `schema_version`)
-- `src/accessible_surfaceome/agents/plan_trim_select/prompts/a2_select_system.md` — remove JensenLab mention
-- `src/accessible_surfaceome/agents/surfaceome_v2/prompts/subcellular_localization_builder_system.md` — same
-- `src/accessible_surfaceome/agents/surfaceome_synthesizer/prompts/system.md` — same
-- `src/accessible_surfaceome/agents/_support/tool_registry.py` — drop compartments tools
-- `src/accessible_surfaceome/audit/audit.py`, `accession_collapse.py`, `blog_figures.py` — drop compartments columns
-- `src/accessible_surfaceome/agents/_eval/database_baselines.py` — drop compartments baseline
-- `src/accessible_surfaceome/sources/_support/ensembl_mapping.py` — drop compartments-keyed paths
-- `scripts/build_candidate_universe_v3.py` — drop `compartments_*` SELECT + JOIN
-- `scripts/build_universe_v2.py` — same (if present)
-- `scripts/augment_figure_tsvs_with_stable_ids.py` — verify no compartments refs
-- `tests/test_cross_block_validators.py` — drop compartments-keyed assertions
-- `tests/version_fingerprints.json` — regenerated after schema bump
+- `src/accessible_surfaceome/merge/__init__.py` — drop imports + dict + iteration loops + docstring `7. **JensenLab COMPARTMENTS**` bullet
+- `src/accessible_surfaceome/merge/gene_symbols.py` — drop `compartments_gene_symbol` entry
+- `src/accessible_surfaceome/tools/gene_lookup.py` — drop `"compartments"` xref entries (lines 284, 525)
+- `src/accessible_surfaceome/tools/_shared/models.py` — drop `"compartments"` from sources tuple (lines 151, 160 ONLY; biological compartment constants stay)
+- `src/accessible_surfaceome/agents/_support/tool_registry.py` — drop JensenLab COMPARTMENTS mention (line 62)
+- `src/accessible_surfaceome/audit/audit.py` — drop `COMPARTMENTS_TSV` block + processing (lines 8, 90–137)
+- `src/accessible_surfaceome/audit/accession_collapse.py` — drop `load_compartments` import + dict entry
+- `src/accessible_surfaceome/audit/blog_figures.py` — drop COMPARTMENTS docstring mentions
+- `src/accessible_surfaceome/agents/_eval/database_baselines.py` — drop `compartments_surface_flag` baseline (line 53)
+- `src/accessible_surfaceome/sources/_support/ensembl_mapping.py` — drop JensenLab COMPARTMENTS docstring/comment mentions
+- `scripts/build/build_candidate_universe_v3.py` — drop `compartments_*` SELECT + output columns
+- `scripts/upload/upload_candidate_universe_to_d1.py` — drop `compartments_*` columns
+- `scripts/audit/audit_db_vs_sonnet_inclusion.py` — drop `compartments_surface_flag` baseline
+- `LICENSING.md` — drop JensenLab COMPARTMENTS from the data-source list
+- `data/processed/candidate_universe/candidate_universe_traceability.json` — auto-regenerates on build
+
+**Not touched** (every match is the biological word, not the database):
+- Three agent prompts under `src/.../agents/*/prompts/`
+- `tests/test_cross_block_validators.py` (`dual_compartments` is biological)
+- `src/.../sources/hpa.py` line 439 (biological compartments)
+- `src/.../tools/_shared/models.py` lines 3609, 3613, 3660, 4341 (biological `_SECRETORY_PRIMARY_COMPARTMENTS` etc.)
+
+**Not touched** (historical/archived content stays accurate as a point-in-time snapshot):
+- `docs/reports/2026-04-17-jensenlab-compartments-integration.md`
+- `docs/reports/2026-04-17-m1-candidate-universe-onepager.md`
+- `docs/worked-examples/kaag1.md`
+- `docs/plans/archive/2026-04-17-hpa-jensenlab-compartments-integration.md` (after Task 1 move)
 - `data/external/hpa_subcellular_location/download_traceability.json` — regenerated
 - `data/processed/hpa/hpa_build_traceability.json` — regenerated
 - `viewer/components/surfaceome/DataSourcesFooter/DataSourcesFooter.tsx` — extend to 10 entries, 2-column
@@ -979,194 +990,160 @@ so future readers don't try to apply this directly to D1."
 
 **Spec:** Section 7 (JensenLab removal).
 
-**Files:** Big. The spec lists 11 removal sites; the pre-execution grep showed JensenLab references in even more places. Enumerate first, then remove.
+**Verified ref scope** (precise grep already run during planning):
+- True JensenLab refs are limited to `JensenLab`, `jensenlab_compartments`, `COMPARTMENTS_TSV`, and `compartments_<field>` patterns (`_surface_flag`, `_gene_symbol`, `_stars`, etc.). Generic "compartments" in agent prompts and tests is the biological term and is **left alone**.
+- Touch sites enumerated in the Files block above.
 
-- [ ] **Step 1: Enumerate every JensenLab / COMPARTMENTS reference**
-
-```bash
-grep -rln "compartments\|jensen\|JensenLab\|COMPARTMENTS" --exclude-dir=.git --exclude-dir=node_modules --exclude-dir=.next --exclude-dir=.venv --exclude-dir=archive --exclude-dir=superpowers . 2>/dev/null | sort -u | tee /tmp/jensen-sites.txt
-```
-
-Expected: ~20–25 files. Write down this list — every file must be either edited (to remove the refs) or deleted (whole-file).
-
-Note: skip files in `data/archive/`, `scripts/archive/`, `docs/superpowers/` for the GREP scope (those are historical). They may still mention JensenLab but that's expected for archived content.
-
-- [ ] **Step 2: Whole-file deletes**
+- [ ] **Step 1: Whole-file deletes**
 
 ```bash
 git rm src/accessible_surfaceome/sources/compartments.py
 git rm -rf data/processed/jensenlab_compartments/
 ```
 
-- [ ] **Step 3: Patch the merge layer**
+- [ ] **Step 2: Patch the merge layer**
 
 Edit `src/accessible_surfaceome/merge/loaders.py`:
-- Remove the `COMPARTMENTS_TSV` constant (around line 37).
-- Remove the entire `load_compartments()` function (around line 390).
+- Remove the `COMPARTMENTS_TSV` constant.
+- Remove the entire `load_compartments()` function.
 
 Edit `src/accessible_surfaceome/merge/__init__.py`:
-- Remove any `load_compartments` export.
+- Drop the `load_compartments` and `COMPARTMENTS_TSV` imports.
+- Drop the `"compartments"` entry from the loaders dict (line ~149).
+- Drop `"compartments"` from the source-iteration loops (lines ~228, ~244).
+- Drop `"compartments_surface_flag"` from the column list (line ~117).
+- Edit the module docstring: remove the `7. **JensenLab COMPARTMENTS**` bullet and the note "COMPARTMENTS do not contribute to universe membership but their columns…".
 
 Edit `src/accessible_surfaceome/merge/gene_symbols.py`:
-- Remove any `compartments_*` column references in the symbol-resolution path.
+- Remove the `compartments_gene_symbol` entry (line 64).
 
-- [ ] **Step 4: Patch agent prompts**
+- [ ] **Step 3: Patch tools/ + audit/ + agents/ refs**
 
-This is the highest-risk part — prompts go to the LLM. Edit each prompt to remove JensenLab/COMPARTMENTS mentions. Re-state the catalog DBs as the 5-DB consensus:
+For each file below, open it, find the JensenLab/COMPARTMENTS refs at the line numbers listed, and remove the data-pipeline plumbing (preserving any docstring that has historical context — adjust to past tense where helpful). Run `bash scripts/check-py.sh` after each file is done to confirm no immediate breakage.
 
-- `src/accessible_surfaceome/agents/plan_trim_select/prompts/a2_select_system.md`
-- `src/accessible_surfaceome/agents/surfaceome_v2/prompts/subcellular_localization_builder_system.md`
-- `src/accessible_surfaceome/agents/surfaceome_synthesizer/prompts/system.md`
+- `src/accessible_surfaceome/tools/gene_lookup.py` (lines 284–286, 525–526) — drop the `"compartments"` xref entries.
+- `src/accessible_surfaceome/tools/_shared/models.py` (lines 151, 160 only) — drop `"compartments"` from the sources tuple and update the comment to reflect the 5-DB set. **Do NOT touch** lines 3609, 3613, 3660, 4341 — those are biological compartment constants.
+- `src/accessible_surfaceome/agents/_support/tool_registry.py` (line 62) — drop the JensenLab COMPARTMENTS lane mention from the prose.
+- `src/accessible_surfaceome/audit/audit.py` (lines 8, 90–137) — drop the JensenLab COMPARTMENTS opener comment and the `COMPARTMENTS_TSV` block + the `sources["compartments"] = …` assignment.
+- `src/accessible_surfaceome/audit/accession_collapse.py` (lines 32, 53) — drop the `load_compartments` import and the `"compartments": load_compartments` dict entry.
+- `src/accessible_surfaceome/audit/blog_figures.py` (lines 29, 32, 89) — drop the COMPARTMENTS docstring mentions; the file already excludes them from the published figures.
+- `src/accessible_surfaceome/agents/_eval/database_baselines.py` (line 53) — drop the `compartments_surface_flag` baseline row from the eval baseline list.
+- `src/accessible_surfaceome/sources/_support/ensembl_mapping.py` (lines 7, 16, 101) — drop JensenLab COMPARTMENTS docstring/comment mentions; no executing code references it.
 
-For each: read the file, find the JensenLab/COMPARTMENTS mention, remove that bullet/sentence. Don't add a substitution — just delete the reference. Re-run the prompt-leak tests after every edit:
-
-```bash
-uv run pytest -q tests/test_prompts_no_gene_names.py tests/test_prompt_no_specific_proteins.py
-```
-
-- [ ] **Step 5: Patch tool registry + audit code**
-
-- `src/accessible_surfaceome/agents/_support/tool_registry.py` — drop any `compartments`-keyed tool entry.
-- `src/accessible_surfaceome/audit/audit.py` — drop `compartments_*` column processing.
-- `src/accessible_surfaceome/audit/accession_collapse.py` — same.
-- `src/accessible_surfaceome/audit/blog_figures.py` — drop compartments-specific figures or refactor to only emit the 5-DB set.
-- `src/accessible_surfaceome/agents/_eval/database_baselines.py` — drop the COMPARTMENTS baseline row.
-- `src/accessible_surfaceome/sources/_support/ensembl_mapping.py` — drop compartments-keyed mappings.
-- `src/accessible_surfaceome/tools/gene_lookup.py` — drop compartments xref refs.
-- `src/accessible_surfaceome/tools/_shared/models.py` — drop any compartments fields from the Pydantic record. If `SurfaceomeRecord.schema_version` is exposed, bump it.
-
-- [ ] **Step 6: Patch HPA source for the now-irrelevant comment**
-
-`src/accessible_surfaceome/sources/hpa.py` may reference COMPARTMENTS only in a comment ("HPA rows excluded from COMPARTMENTS experiments_stars"). Either remove the comment or leave it — the comment is harmless documentation of past behavior. Pick: remove for cleanliness.
-
-- [ ] **Step 7: Patch the candidate-universe builders**
+- [ ] **Step 4: Patch the candidate-universe + upload + audit scripts**
 
 `scripts/build/build_candidate_universe_v3.py`:
-- Drop `MAX(c.compartments_surface_flag) AS compartments_flag` from the SELECT
-- Drop `b.compartments_flag` from any downstream SELECTs
-- Drop `"compartments_flag"` from the output column list
+- Drop `MAX(c.compartments_surface_flag) AS compartments_flag` from the SELECT (line ~38).
+- Drop `b.compartments_flag` from any downstream SELECTs (line ~61).
+- Drop `"compartments_flag"` from the output column list (line ~105).
+- Confirm `n_db_votes = uniprot+go+surfy+cspa+hpa` is unchanged (it never included compartments).
 
-Re-verify the `n_db_votes` formula is unchanged (it doesn't include compartments anyway, per the canonical 5-DB vote).
+`scripts/upload/upload_candidate_universe_to_d1.py`:
+- Drop `compartments_*` column references.
 
-`scripts/build/build_universe_v2.py`:
-- Same removals if present.
+`scripts/audit/audit_db_vs_sonnet_inclusion.py`:
+- Drop the `compartments_surface_flag` baseline.
 
-- [ ] **Step 8: Patch D1 schemas**
+- [ ] **Step 5: Patch D1 schemas + worker**
 
 `cloudflare/d1_public_schema.sql`:
-- Remove any `compartments_*` column definitions (likely on the `candidate_universe_public` table).
-- This is a schema change. Document in a comment that the column was dropped in this cleanup, since downstream Worker queries reading the public mirror must also be updated.
+- Remove any `compartments_*` column definitions on `candidate_universe_public`.
 
 `cloudflare/d1_schema.sql`:
-- Same removal if present in the private schema.
+- Same removal if present.
 
-Check the Worker source for any `compartments_*` SELECTs:
+Worker check:
 
 ```bash
 grep -rln "compartments" cloudflare/workers/ 2>/dev/null
 ```
 
-If matches, edit the Worker SQL to drop those columns from any catalog SELECTs.
+If any match, edit those SQL fragments to drop the columns from the SELECTs.
 
-- [ ] **Step 9: Patch tests**
+- [ ] **Step 6: Remove JensenLab from .gitignore**
 
-`tests/test_cross_block_validators.py` — drop assertions that depend on a compartments field. If the test is a pure regression for the old behavior, drop the assertion; if it's a structural test, refactor to use the 5-DB list.
+Edit `.gitignore`: remove the `JensenLab COMPARTMENTS` comment block and the `data/external/jensenlab_compartments/` line. Keep the surrounding DeepTMHMM block intact.
 
-Search for any other test files:
+- [ ] **Step 7: Remove JensenLab from CLAUDE.md, AGENTS.md, README.md, LICENSING.md**
 
-```bash
-grep -rln "compartments" tests/ 2>/dev/null
-```
-
-For each match, decide: drop the assertion, refactor, or delete the file.
-
-- [ ] **Step 10: Remove JensenLab from .gitignore**
-
-Edit `.gitignore`: remove the block:
-
-```
-#   * JensenLab COMPARTMENTS source TSVs — download via
-#     `python -m accessible_surfaceome.sources.compartments download`.
-data/external/jensenlab_compartments/
-```
-
-(Keep the surrounding DeepTMHMM block intact.)
-
-- [ ] **Step 11: Remove JensenLab from CLAUDE.md, AGENTS.md, README.md**
-
-- `CLAUDE.md` — drop the COMPARTMENTS bullet under the gitignored-bulk-data section (since we just removed the gitignore line).
+- `CLAUDE.md` — drop the COMPARTMENTS bullet under the gitignored-bulk-data section.
 - `AGENTS.md` — drop `compartments.py` from the per-source module list.
 - `README.md` — replace `"DeepTMHMM, COMPARTMENTS"` with `"DeepTMHMM"`; drop the `compartments.py` row in the `src/.../sources/` table.
+- `LICENSING.md` — drop the JensenLab COMPARTMENTS entry from the data-source list.
 
-- [ ] **Step 12: Regenerate the prompt review HTML**
+Leave `docs/reports/2026-04-17-jensenlab-compartments-integration.md` and `docs/reports/2026-04-17-m1-candidate-universe-onepager.md` untouched — those are **historical M1 integration reports**; the references are correct as a snapshot of what M1 included.
 
-```bash
-uv run python scripts/audit/gen_prompt_review.py
-```
-
-Expected: completes and the diff in `docs/prompt_review.html` shows JensenLab/COMPARTMENTS removed from prompts.
-
-- [ ] **Step 13: Bump tests/version_fingerprints.json if SurfaceomeRecord.schema_version moved**
-
-If you bumped the schema in Step 5, regenerate fingerprints:
+- [ ] **Step 8: Regenerate the candidate-universe TSV + traceability**
 
 ```bash
-uv run python scripts/audit/update_version_fingerprints.py
+uv run python scripts/build/build_candidate_universe_v3.py
 ```
 
-- [ ] **Step 14: Run full test suite + smoke build**
-
-```bash
-bash scripts/check-py.sh
-uv run pytest -q tests/test_prompts_no_gene_names.py tests/test_prompt_no_specific_proteins.py
-uv run python scripts/build/build_candidate_universe_v3.py 2>&1 | tail -10
-```
-
-Expected: PASS for first two. The build script should complete and write a TSV without any `compartments_*` columns:
+Expected: completes; output TSV has no `compartments_*` columns. Confirm:
 
 ```bash
 head -1 data/processed/candidate_universe/candidate_universe.tsv | tr '\t' '\n' | grep compartments
 ```
 
-Expected: empty (no compartments columns).
+Expected: empty.
 
-- [ ] **Step 15: Re-verify zero residual refs**
+The traceability JSON at `data/processed/candidate_universe/candidate_universe_traceability.json` should auto-update during the build. Verify it no longer mentions JensenLab:
 
 ```bash
-grep -rln "compartments\|jensen\|JensenLab\|COMPARTMENTS" --exclude-dir=.git --exclude-dir=node_modules --exclude-dir=.next --exclude-dir=.venv --exclude-dir=archive --exclude-dir=superpowers . 2>/dev/null
+grep -i "jensen\|compartments" data/processed/candidate_universe/candidate_universe_traceability.json
 ```
 
-Expected: empty (or only data/archive/ + docs/plans/archive/ paths that were intentionally preserved). If any active code file still matches, repeat step covering that file.
+Expected: empty.
 
-- [ ] **Step 16: Viewer build smoke**
+- [ ] **Step 9: Re-verify zero residual refs (precise pattern, biological "compartments" allowed)**
 
 ```bash
+grep -rn "JensenLab\|jensenlab_compartments\|COMPARTMENTS_TSV\|compartments_surface_flag\|compartments_gene_symbol\|compartments_stars\|compartments_predictions\|compartments_knowledge\|compartments_experiments\|compartments_textmining\|compartments_integrated\|compartments_flag" --exclude-dir=.git --exclude-dir=node_modules --exclude-dir=.next --exclude-dir=.venv --exclude-dir=archive --exclude-dir=superpowers .
+```
+
+Expected: only `docs/reports/2026-04-17-*` historical files + `docs/worked-examples/kaag1.md` (also historical). Any active code file matching → fix.
+
+- [ ] **Step 10: Run full Python check + viewer build**
+
+```bash
+bash scripts/check-py.sh
 cd viewer && npm run build && cd ..
 ```
 
-Expected: PASS. (The viewer doesn't reference compartments, but the D1 schema change in step 8 could ripple if the viewer's TypeScript types are generated from it — confirm `viewer/lib/surfaceome-types.ts` doesn't reference compartments either.)
+Expected: PASS, PASS.
 
-- [ ] **Step 17: Commit**
+The prompt-leak tests live inside `scripts/check-py.sh`'s pytest, so they're already run. Because we did NOT touch any prompt files, `docs/prompt_review.html` does NOT need regeneration in this commit.
+
+- [ ] **Step 11: Commit**
 
 ```bash
 git commit -m "refactor(sources): remove JensenLab COMPARTMENTS (not in 5-DB vote)
 
-COMPARTMENTS was carried as a side column but was NEVER in the canonical
+COMPARTMENTS was carried as a side column but was never in the canonical
 n_db_votes (UniProt + GO + SURFY + CSPA + HPA). Full removal here:
 
 - src/.../sources/compartments.py: deleted
-- merge layer: COMPARTMENTS_TSV, load_compartments() removed
-- agent prompts: JensenLab mentions stripped (3 files); prompt_review.html
-  regenerated
-- candidate-universe builders: compartments_flag column dropped from
-  SELECT/output
-- D1 schemas: compartments_* columns dropped from public + private
-- tests: cross-block validator refactored to 5-DB list
+- merge layer: COMPARTMENTS_TSV, load_compartments() removed; dict and
+  iteration loops cleaned in __init__.py; gene_symbols map trimmed
+- tools/gene_lookup.py + tools/_shared/models.py: sources tuple and xrefs
+  drop 'compartments' (biological compartment constants in models.py
+  untouched)
+- audit/audit.py, accession_collapse.py, blog_figures.py: drop COMPARTMENTS
+  refs (loader, dict entry, docstring mentions)
+- agents/_support/tool_registry.py + agents/_eval/database_baselines.py:
+  drop COMPARTMENTS lane + baseline row
+- sources/_support/ensembl_mapping.py: drop docstring mentions
+- candidate-universe builder + upload + db_vs_sonnet inclusion audit:
+  drop compartments_flag SELECT/output
+- D1 public + private schemas: drop compartments_* columns
 - data/processed/jensenlab_compartments/: snapshot removed
-- README/AGENTS.md/CLAUDE.md: source list updated
+- README/AGENTS.md/CLAUDE.md/LICENSING.md: source list updated
 - .gitignore: COMPARTMENTS bulk-data line removed (no longer downloaded)
-- SurfaceomeRecord schema bumped (if compartments fields existed)
-- version_fingerprints.json refreshed
+- candidate-universe TSV + traceability regenerated
+
+Agent prompts and tests are NOT touched — every 'compartments' match in
+those files is the biological word (vesicular/subcellular compartments),
+not the JensenLab database.
 
 If COMPARTMENTS ever needs to come back, recover from git history."
 ```
