@@ -8,9 +8,42 @@ batch) respect upstream qps caps — particularly NCBI's 10 qps with API key.
 
 from __future__ import annotations
 
+import hashlib
 import time
+from collections.abc import Callable
 from threading import Lock
 from urllib.parse import urlparse
+
+ExternalRateLimitGate = Callable[[str, float], None]
+
+_EXTERNAL_GATE: ExternalRateLimitGate | None = None
+_EXTERNAL_GATE_LOCK = Lock()
+
+
+def set_external_rate_limit_gate(gate: ExternalRateLimitGate | None) -> None:
+    """Install a process-local hook for cross-process rate limiting.
+
+    ``RateLimiter`` is intentionally in-process by default. Modal fan-out needs
+    one additional coordination layer so 100+ containers do not each obey a
+    polite local limit while collectively overwhelming PubTator / Europe PMC /
+    NCBI. The Modal app installs a hook that calls a single-container gate
+    function; local scripts leave this unset.
+
+    The ``state_key`` passed to the hook never contains raw API keys. Bucket
+    labels such as ``api_key:<secret>`` are hashed before they leave the
+    process.
+    """
+
+    global _EXTERNAL_GATE
+    with _EXTERNAL_GATE_LOCK:
+        _EXTERNAL_GATE = gate
+
+
+def _external_state_key(host: str, bucket: str | None) -> str:
+    if not bucket:
+        return host
+    digest = hashlib.sha256(bucket.encode("utf-8")).hexdigest()[:24]
+    return f"{host}\0bucket:{digest}"
 
 
 class RateLimiter:
@@ -51,6 +84,11 @@ class RateLimiter:
         )
         interval_s = max(base_interval_ms, min_interval_ms) / 1000.0
         if interval_s <= 0:
+            return
+        with _EXTERNAL_GATE_LOCK:
+            gate = _EXTERNAL_GATE
+        if gate is not None:
+            gate(_external_state_key(host, bucket), interval_s)
             return
         state_key = f"{host}\0{bucket}" if bucket else host
         with self._lock:

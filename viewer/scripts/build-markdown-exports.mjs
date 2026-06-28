@@ -1269,15 +1269,15 @@ async function main() {
   for (const name of jsonFiles) {
     const recordPath = path.join(DATA_DIR, name);
     const rec = JSON.parse(readFileSync(recordPath, "utf-8"));
-    // Accept any schema v1.x. Pinning this to an exact "1.0.0" silently
-    // skipped every record once the schema bumped to 1.1.0 — which is
-    // what blanked the .md downloads (no file written → 404). Gate on the
-    // MAJOR version only, so a future 1.2.0 minor bump can't re-break it;
-    // a true breaking change (2.x) still skips loudly.
+    // Accept schema v1.x and v2.x. Pinning this to an exact "1.0.0"
+    // silently skipped every record once the schema bumped to 1.1.0 —
+    // which is what blanked the .md downloads (no file written → 404).
+    // Gate on known-compatible MAJOR versions so minor bumps can't
+    // re-break it while a true future breaking change still skips loudly.
     const schemaMajor = String(rec.schema_version ?? "").split(".")[0];
-    if (schemaMajor !== "1") {
+    if (!["1", "2"].includes(schemaMajor)) {
       console.warn(
-        `  ! ${name}: schema_version=${rec.schema_version}, skipping (only schema v1.x supported)`,
+        `  ! ${name}: schema_version=${rec.schema_version}, skipping (only schema v1.x/v2.x supported)`,
       );
       continue;
     }

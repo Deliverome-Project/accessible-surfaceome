@@ -59,7 +59,7 @@ from ._shared.europepmc import (
     europepmc_search,
     fetch_fulltext,
     ncbi_pubmed_search,
-    paper_from_europepmc,
+    papers_from_europepmc_records,
 )
 from ._shared.gene_gazetteer import (
     build_target_names,
@@ -860,10 +860,9 @@ def _europepmc_discovery(
     name_disjunction = " OR ".join(f'"{n}"' for n in name_terms if n)
     # SRC:(MED OR PPR) widens to PubMed-indexed journals + Europe PMC-
     # partnered preprint servers (bioRxiv, medRxiv, ChemRxiv, ResearchSquare,
-    # Preprints.org, SSRN-Health, arXiv-q-bio). PPR records carry full
-    # text in the same JATS shape as MED, so they flow through the rest
-    # of the chain unchanged. PMID-keyed lookups elsewhere stay SRC:MED
-    # because PPR records don't have numeric PMIDs.
+    # Preprints.org, SSRN-Health, arXiv-q-bio). PPR records do not carry
+    # numeric PMIDs, so the converter skips them for now rather than
+    # aborting the whole Europe PMC page and forcing NCBI fallback.
     query = (
         f"({name_disjunction}) AND "
         + " AND ".join(spec.query_clauses)
@@ -872,10 +871,11 @@ def _europepmc_discovery(
     try:
         payload = europepmc_search(http=http, query=query, page_size=max_papers * 3)
         hits = (payload.get("resultList") or {}).get("result") or []
-        return [
-            paper_from_europepmc(record, retraction_index=retraction_index)
-            for record in hits
-        ]
+        return papers_from_europepmc_records(
+            hits,
+            retraction_index=retraction_index,
+            context=f"evidence_retrieval:{bundle.hgnc_symbol}",
+        )
     except Exception as exc:  # noqa: BLE001
         logger.warning(
             "Europe PMC category discovery failed for %s; falling back to NCBI PubMed: %s",

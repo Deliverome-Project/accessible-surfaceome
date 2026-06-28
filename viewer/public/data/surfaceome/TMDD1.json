@@ -1,0 +1,905 @@
+{
+  "schema_version": "2.13.0",
+  "prompt_corpus_version": "2.50.2",
+  "gene": {
+    "hgnc_symbol": "TMDD1",
+    "hgnc_id": "HGNC:53646",
+    "uniprot_acc": "P0DPE3",
+    "ncbi_gene_id": 112163659,
+    "ensembl_gene": "ENSG00000284730"
+  },
+  "triage_signal": "possibly_accessible",
+  "triage_reasoning": "TMDD1 (C12orf81) encodes a protein named 'transmembrane and death domain 1,' implying a single-pass or multi-pass TM domain plus an intracellular death domain. UniProt P0DPE3 is annotated as membrane-located. With a TM domain, the protein would be inserted into the PM with at least short extracellular loops or an ectodomain accessible from outside. However, experimental surface evidence (flow cytometry, surface biotinylation) is absent from the literature for this poorly characterized gene. Checking contextual buckets: cell_state_induced — possible but no specific data; tissue_restricted_surface — expression pattern unknown; lysosomal_exocytosis — no evidence; dual_localization — plausible if predominantly intracellular membrane; stable_surface_attachment — no data. Given the TM annotation and 'death domain' motif (typically cytoplasmic signaling), the extracellular-facing portion may be minimal or absent, but a TM protein does present loops at the outer face. Calling contextual/dual_localization given uncertainty about whether PM pool is dominant vs. endomembrane resident.",
+  "executive_summary": {
+    "one_paragraph": "TMDD1 has weak surface evidence; topology suggests a single-pass Type I membrane protein with a 194-residue extracellular domain, but direct surface readouts are absent. The sole evidence (a1_evi_01) is an abstract-level assertion from a functional study in LUAD cells describing TMDD1 as a membrane protein whose cytoplasmic domain mediates intracellular signaling — no live-cell flow, surface biotinylation, or non-permeabilized IF was reported. State-dependence is unclear: expression context is limited to LUAD tumor cells (a2_evi_01), with no modulation data across other cell states or tissues. No binder-engineering caveats emerged — no shed or secreted form, no co-receptor requirement, no epitope masking, and no paralogs rule out decoy and cross-reactivity concerns.",
+    "accessibility_context_summary": "Topology predicts extracellular exposure in membrane-expressing cells, but surface accessibility has not been experimentally confirmed; the only documented context is LUAD tumor cells (a2_evi_01).",
+    "surface_accessibility": "low",
+    "evidence_grade_summary": "weak",
+    "confidence": "low",
+    "state_dependence": "unclear",
+    "subcategory": "single_pass_T1",
+    "llm_family": "miscellaneous",
+    "hgnc_gene_groups": [],
+    "uniprot_family": null,
+    "surface_call_reason": "other",
+    "headline_risks": [],
+    "cited_evidence_ids": [
+      "a1_evi_01",
+      "a2_evi_01"
+    ]
+  },
+  "filters": {
+    "surface_accessibility": "low",
+    "confidence": "low",
+    "subcategory": "single_pass_T1",
+    "state_dependence": "unclear",
+    "surface_call_reason": "other",
+    "llm_family": "miscellaneous",
+    "evidence_grade": "weak",
+    "ecd_accessibility_class": "moderate",
+    "evidence_density": "low",
+    "expression_level": "low",
+    "expression_breadth": "rare",
+    "surface_specificity": "mixed",
+    "has_shed_form": false,
+    "has_secreted_form": false,
+    "requires_coreceptor_for_expression": false,
+    "co_receptor_dependency": "none",
+    "max_paralog_ecd_pct_identity": null,
+    "has_epitope_masking": false,
+    "has_restricted_subdomain": false,
+    "mouse_ortholog_ecd_pct_identity": null,
+    "cyno_ortholog_ecd_pct_identity": null,
+    "n_term_extracellular": true,
+    "c_term_extracellular": false,
+    "low_endogenous_expression": true,
+    "has_known_ligand": false,
+    "n_supporting_claims_high_weight": 0,
+    "n_contradicting_claims_high_weight": 0,
+    "overexpression_surface_localization_observed": false,
+    "tumor_associated": true,
+    "induction_trigger": "none",
+    "has_live_cell_surface_evidence": false,
+    "expression_level_rationale": "Only a single abstract-level report places TMDD1 in LUAD tumor cells (a2_evi_01); no quantitative expression data (RNA-seq, proteomics) are available in the ledger.",
+    "expression_breadth_rationale": "Expression context is limited to lung adenocarcinoma tumor cells in one study (a2_evi_01); no pan-tissue or multi-tissue expression data are present in the ledger.",
+    "surface_specificity_rationale": "Canonical topology predicts a plasma membrane single-pass protein, but the only functional evidence highlights cytoplasmic-domain intracellular signaling (a1_evi_01), leaving the surface vs. intracellular distribution unresolved.",
+    "has_known_ligand_rationale": "No validated endogenous binding partner is reported in the ledger. TMDD1 is a poorly characterized protein with no deorphanized ligand; the sole evidence (a1_evi_01) describes intracellular cytoplasmic-domain interactions, not an extracellular receptor-ligand pairing.",
+    "low_endogenous_expression_rationale": "Only a single abstract-level report places TMDD1 in LUAD tumor cells (a2_evi_01); no quantitative expression data (RNA-seq, proteomics) are available in the ledger.",
+    "overexpression_surface_localization_observed_rationale": "No method observation pairs an overexpression/mixed expression system with a direct or supportive surface-accessibility readout."
+  },
+  "surface_evidence": {
+    "evidence_grade": "weak",
+    "grade_rationale": "The single ledger claim (a1_evi_01) is an abstract-level review assertion from a functional study of Hinokitiol in LUAD cells. It describes TMDD1 as a membrane protein with a functionally important cytoplasmic domain mediating intracellular EP300-KLF15/ZNF384 interactions, but reports no direct surface-localization assay (no live-cell flow, nonperm IF, surface biotinylation, or IHC membranous staining). The claim is classified as `review_assertion` at secondary evidence tier with weak confidence. There are zero direct-surface-methodology observations in the ledger. The topology description is consistent with a single-pass TM protein but does not establish extracellular exposure or PM surface accessibility. Graded `weak` — assertion-only, no surface method evidence.",
+    "claim_stances": [
+      {
+        "claim_id": "a1_evi_01",
+        "stance": "tangential",
+        "weight": "low",
+        "note": "Abstract-level assertion of membrane protein topology; no surface assay; cytoplasmic domain focus; review_assertion tier."
+      }
+    ],
+    "methods": [],
+    "non_surface_expression": [],
+    "contradicting_evidence": [],
+    "excluded_as_ligand_engagement": []
+  },
+  "biological_context": {
+    "expression": [
+      {
+        "tissue": "lung",
+        "cell_type": "lung adenocarcinoma cells",
+        "present": "unknown",
+        "disease_context": "tumor",
+        "disease_label": "lung adenocarcinoma (LUAD), including metastatic stage IV",
+        "cell_states": [],
+        "species": "human",
+        "species_inferred": false,
+        "cited_evidence_ids": [
+          "a2_evi_01"
+        ]
+      }
+    ],
+    "tissues": [],
+    "cell_types": [],
+    "subcellular_localization": {
+      "primary_compartment": "plasma_membrane",
+      "rationale": "The sole ledger claim describes TMDD1 as a 'membrane protein' in LUAD tumor cells, with its cytoplasmic domain mediating intracellular signaling (a2_evi_01). This is an abstract-level assertion with no direct surface localization assay (no IF, fractionation, or flow cytometry). Defaulting to plasma_membrane as the most parsimonious assignment for a named membrane protein, but confidence is weak.",
+      "dual_localization": [],
+      "membrane_subdomains": []
+    },
+    "anatomical_accessibility": [],
+    "accessibility_modulation": [],
+    "biological_context_grade": "sparse",
+    "grade_rationale": "Single secondary source, abstract-level only. One axis (tissue expression in LUAD) is partially covered; subcellular localization, anatomical accessibility, and modulation axes are absent. No quantitative data or direct surface localization evidence.",
+    "grade_cited_evidence_ids": [
+      "a2_evi_01"
+    ]
+  },
+  "deterministic_features": {
+    "canonical_topology": {
+      "isoform_id": "P0DPE3",
+      "uniprot_acc": "P0DPE3",
+      "tm_helix_count": 1,
+      "n_terminal_orientation": "extracellular",
+      "c_terminal_orientation": "cytoplasmic",
+      "signal_peptide_length": 24,
+      "ecd_length_residues": 194,
+      "icd_length_residues": 73,
+      "per_residue_topology": "SSSSSSSSSSSSSSSSSSSSSSSSOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOMMMMMMMMMMMMMMMMMMMMMMMMMMIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIII",
+      "sequence": "MAARTLASALVLTLWVWALAPAGAVDAMGPHAAVRLAELLTPEECGHFRSLLEAPEPDVEAELSRLSEDRLARPEPLNTTSGSPSRRRRREAAEDPAGRVAGPGEVSDGCREALAAWLAPQAASLSWDRLARALRRSGRPDVARELGKNLHQQATLQLRKFGQRFLPRPGAAARVPFAPAPRPRRAAVPAPDWDALQLIVERLPQPLYERSPMGWAGPLALGLLTGFVGALGTGALVVLLTLWITGGDGDRASPGSPGPLATVQGWWETKLLLPKERRAPPGAWAADGPDSPSPHSALALSCKMGAQSWGSGALDGL",
+      "tool_version": "deeptmhmm-1.0.24",
+      "retrieved_at": "2026-05-17T00:56:01Z",
+      "full_length_pct_identity_to_canonical": null,
+      "ecd_pct_identity_to_canonical": null,
+      "ecd_pct_similarity_to_canonical": null
+    },
+    "isoform_topologies": [],
+    "orthologs": {
+      "mouse": [],
+      "cynomolgus": [],
+      "checked": true
+    },
+    "paralogs": [],
+    "paralogs_checked": true,
+    "isoform_topologies_checked": true,
+    "structure": {
+      "afdb_id": "AF-P0DPE3-F1",
+      "afdb_version": "v6",
+      "ecd_mean_plddt": 69.8053092783505,
+      "ecd_disordered_fraction": 0.4639175257731959,
+      "source": "AlphaFold DB (ECD-restricted pLDDT, n=194)",
+      "license": "CC BY 4.0",
+      "attribution": "© DeepMind / EMBL-EBI",
+      "citations": [
+        "10.1038/s41586-021-03819-2",
+        "10.1093/nar/gkad1011"
+      ],
+      "model_cif_url": "https://alphafold.ebi.ac.uk/files/AF-P0DPE3-F1-model_v6.cif",
+      "model_pdb_url": "https://alphafold.ebi.ac.uk/files/AF-P0DPE3-F1-model_v6.pdb",
+      "model_pae_url": "https://alphafold.ebi.ac.uk/files/AF-P0DPE3-F1-predicted_aligned_error_v6.json"
+    },
+    "surface_bind": {
+      "has_data": false,
+      "n_sites": 0,
+      "n_seeds_alpha": 0,
+      "n_seeds_beta": 0,
+      "n_seeds_total": 0,
+      "chain": null,
+      "sites": [],
+      "main_class": null,
+      "sub_class": null,
+      "protein_name": null,
+      "pdbs": [],
+      "representative_structure": null,
+      "source": "SURFACE-Bind v1 (Balbi 2026 PNAS)",
+      "attribution": "© Balbi et al., Correia lab — EPFL / Inria / Novo Nordisk",
+      "citation": "10.1073/pnas.2506269123"
+    },
+    "homo_oligomerization": {
+      "is_homo_oligomer": false,
+      "stoichiometry": null,
+      "af_model_num": null,
+      "is_ecd_only": false,
+      "has_higher_order_complex": false,
+      "dimer_pdb_filename": null,
+      "complex_pdb_filename": null,
+      "source": "Schweke 2024 (PMID 38325366)",
+      "citation": "10.1016/j.cell.2024.01.022"
+    }
+  },
+  "accessibility_risks": {
+    "co_receptor_requirements": {
+      "surface_expression_dependency": "none",
+      "partners": [],
+      "evidence_basis": "co_expression_only",
+      "rationale": "The ledger describes TMDD1 as a single-pass membrane protein whose cytoplasmic domain mediates intracellular interactions (a1_evi_01, a2_evi_01). No co-receptor or trafficking partner requirement for surface expression is mentioned. Single-pass transmembrane proteins typically traffic independently; no obligate escort is documented.",
+      "cited_evidence_ids": [
+        "a1_evi_01",
+        "a2_evi_01"
+      ]
+    },
+    "shed_form": {
+      "present": false,
+      "severity": "low",
+      "evidence_strength": "weak",
+      "mechanism": null,
+      "sheddase_if_known": null,
+      "rationale": "No relevant data in the ledger. Neither ledger entry (a1_evi_01, a2_evi_01) documents proteolytic shedding of the TMDD1 ectodomain, identifies a sheddase, or reports a soluble TMDD1 form in supernatant or serum.",
+      "cited_evidence_ids": []
+    },
+    "secreted_form": {
+      "present": false,
+      "severity": "low",
+      "evidence_strength": "weak",
+      "ratio_to_membrane": null,
+      "source": null,
+      "rationale": "No relevant data in the ledger. The ledger contains no evidence of a soluble splice isoform or free circulating TMDD1 ectodomain. Both entries describe TMDD1 solely as a membrane-anchored protein acting via its cytoplasmic domain (a1_evi_01, a2_evi_01).",
+      "cited_evidence_ids": []
+    },
+    "restricted_subdomain": {
+      "present": false,
+      "domain": "unknown",
+      "severity": "unknown",
+      "evidence_strength": "weak",
+      "rationale": "No relevant data in the ledger. Neither a1_evi_01 nor a2_evi_01 reports subcellular membrane localization (apical/basolateral/junctional/ciliary staining or polarized-epithelium fractionation) for TMDD1. Domain restriction cannot be assessed.",
+      "cited_evidence_ids": []
+    },
+    "ecd_size_assessment": {
+      "ecd_accessibility_class": "moderate",
+      "rationale": "ECD length 194 residues (60-199) -> moderate; computed deterministically from DeepTMHMM topology.",
+      "cited_evidence_ids": []
+    },
+    "epitope_masking": {
+      "mechanism": [
+        "none"
+      ],
+      "severity": "none",
+      "evidence_strength": "weak",
+      "rationale": "No masking mechanism is documented in the ledger. The ledger entries (a1_evi_01, a2_evi_01) focus on the cytoplasmic domain's intracellular interactions; no extracellular complex, glycan shielding, or conformational occlusion of the ECD is described. Deterministic prior shows is_homo_oligomer=false, providing no corroborating oligomerization signal.",
+      "cited_evidence_ids": []
+    },
+    "homo_oligomerization_prediction": {
+      "present": false,
+      "stoichiometry": null,
+      "severity": "unknown",
+      "is_ecd_only": false,
+      "source": "Schweke 2024 (PMID 38325366)",
+      "cited_evidence_ids": []
+    }
+  },
+  "evidence": [
+    {
+      "evidence_id": "a1_evi_01",
+      "claim": "TMDD1 is described as a membrane protein with a functionally important cytoplasmic domain, consistent with a single-pass transmembrane topology where the C-terminus is intracellular. The cytoplasmic domain mediates interaction with EP300-KLF15/ZNF384 complexes in the context of Hinokitiol anti-tumor activity. No direct surface-localization assay is reported; this is an abstract-level assertion from a functional study.",
+      "claim_type": "topology",
+      "direction": "supports",
+      "evidence_type": "review_assertion",
+      "evidence_tier": "secondary",
+      "confidence": "weak",
+      "assay_context": {
+        "species": "human",
+        "cell_type_or_line": "LUAD cell lines",
+        "permeabilized": null,
+        "fixation": null,
+        "isoform": null,
+        "cell_context": {
+          "material_kind": "cell_line",
+          "material_kind_other_label": null,
+          "cell_type": "lung adenocarcinoma cells",
+          "cell_line_name": null,
+          "cellosaurus_id": null,
+          "tissue": null,
+          "disease_state": "lung adenocarcinoma (LUAD)",
+          "activation_state": null
+        }
+      },
+      "spans": [
+        {
+          "source": {
+            "source_type": "pubmed",
+            "source_id": "PMID:40975161",
+            "pmc_id": null,
+            "url": "https://pubmed.ncbi.nlm.nih.gov/40975161/",
+            "title": "PMID:40975161",
+            "retrieved_at": "2026-06-24T17:17:41.611955Z",
+            "content_sha256": "78be7a62d5d8e91ca8691ecac611841d43405f7e3d056dc832b1a2567c8ea588",
+            "publication_type": "other",
+            "is_retracted": false,
+            "retraction_checked_at": "2026-06-24T17:17:41.611955Z",
+            "license": "unknown"
+          },
+          "section": "abstract",
+          "figure_or_table_id": null,
+          "quote": "The natural monoterpenoid Hinokitiol inhibits LUAD growth by disrupting EP300-KLF15/ZNF384 interactions, suppressing ISC biogenesis gene expression and inducing ferroptosis. Mechanistically, the membrane protein TMDD1, particularly its cytoplasmic domain, promotes Hinokitiol's anti-tumor effects by facilitating EP300-KLF15/ZNF384 dissociation and inhibiting ISC biogenesis. Remarkably, Hinokitiol exhibits stage-dependent efficacy, with superior suppression of metastatic (stage IV) tumors linked to heightened ferroptosis sensitivity.",
+          "quote_sha256": "78be7a62d5d8e91ca8691ecac611841d43405f7e3d056dc832b1a2567c8ea588",
+          "char_offset": 0,
+          "normalized_source_sha256": "9bdeed94990b14ea199a19a828e2e7ed81c9ea2105fe6cc6e1acd6e07ba8c271"
+        }
+      ],
+      "entailment_verified": true,
+      "entailment_audit_passed": null,
+      "validation_warnings": [],
+      "duplicate_of": null
+    },
+    {
+      "evidence_id": "a2_evi_01",
+      "claim": "TMDD1 is described as a membrane protein expressed in lung adenocarcinoma (LUAD) tumor cells, where its cytoplasmic domain facilitates EP300-KLF15/ZNF384 dissociation and promotes ferroptosis sensitivity, particularly in metastatic (stage IV) LUAD. This abstract-level assertion places TMDD1 in the LUAD tumor context but does not provide quantitative expression data or direct surface localization evidence.",
+      "claim_type": "tissue_expression",
+      "direction": "supports",
+      "evidence_type": "functional_assay",
+      "evidence_tier": "secondary",
+      "confidence": "weak",
+      "assay_context": {
+        "species": "human",
+        "cell_type_or_line": "lung adenocarcinoma (LUAD) tumor cells",
+        "permeabilized": null,
+        "fixation": null,
+        "isoform": null,
+        "cell_context": {
+          "material_kind": "primary_tissue",
+          "material_kind_other_label": null,
+          "cell_type": "lung adenocarcinoma cells",
+          "cell_line_name": null,
+          "cellosaurus_id": null,
+          "tissue": "lung",
+          "disease_state": "lung adenocarcinoma (LUAD), including metastatic stage IV",
+          "activation_state": null
+        }
+      },
+      "spans": [
+        {
+          "source": {
+            "source_type": "pubmed",
+            "source_id": "PMID:40975161",
+            "pmc_id": null,
+            "url": "https://pubmed.ncbi.nlm.nih.gov/40975161/",
+            "title": "PMID:40975161",
+            "retrieved_at": "2026-06-24T17:17:41.611955Z",
+            "content_sha256": "78be7a62d5d8e91ca8691ecac611841d43405f7e3d056dc832b1a2567c8ea588",
+            "publication_type": "other",
+            "is_retracted": false,
+            "retraction_checked_at": "2026-06-24T17:17:41.611955Z",
+            "license": "unknown"
+          },
+          "section": "abstract",
+          "figure_or_table_id": null,
+          "quote": "The natural monoterpenoid Hinokitiol inhibits LUAD growth by disrupting EP300-KLF15/ZNF384 interactions, suppressing ISC biogenesis gene expression and inducing ferroptosis. Mechanistically, the membrane protein TMDD1, particularly its cytoplasmic domain, promotes Hinokitiol's anti-tumor effects by facilitating EP300-KLF15/ZNF384 dissociation and inhibiting ISC biogenesis. Remarkably, Hinokitiol exhibits stage-dependent efficacy, with superior suppression of metastatic (stage IV) tumors linked to heightened ferroptosis sensitivity.",
+          "quote_sha256": "78be7a62d5d8e91ca8691ecac611841d43405f7e3d056dc832b1a2567c8ea588",
+          "char_offset": 0,
+          "normalized_source_sha256": "9bdeed94990b14ea199a19a828e2e7ed81c9ea2105fe6cc6e1acd6e07ba8c271"
+        }
+      ],
+      "entailment_verified": true,
+      "entailment_audit_passed": null,
+      "validation_warnings": [],
+      "duplicate_of": "a1_evi_01"
+    }
+  ],
+  "search_log": [
+    {
+      "tool": "evidence_retrieval",
+      "mode": "ihc",
+      "query": {
+        "agent_focus": "a1",
+        "intent": "A1 default sweep: ihc",
+        "category": "ihc",
+        "uniprot_acc": "P0DPE3"
+      },
+      "n_results": 1,
+      "sources_seen": [],
+      "retrieved_at": "2026-06-24T17:17:41.620896Z",
+      "contributed_evidence_ids": []
+    },
+    {
+      "tool": "evidence_retrieval",
+      "mode": "if",
+      "query": {
+        "agent_focus": "a1",
+        "intent": "A1 default sweep: if",
+        "category": "if",
+        "uniprot_acc": "P0DPE3"
+      },
+      "n_results": 0,
+      "sources_seen": [],
+      "retrieved_at": "2026-06-24T17:17:41.620896Z",
+      "contributed_evidence_ids": []
+    },
+    {
+      "tool": "evidence_retrieval",
+      "mode": "flow_cytometry",
+      "query": {
+        "agent_focus": "a1",
+        "intent": "A1 default sweep: flow_cytometry",
+        "category": "flow_cytometry",
+        "uniprot_acc": "P0DPE3"
+      },
+      "n_results": 1,
+      "sources_seen": [],
+      "retrieved_at": "2026-06-24T17:17:41.620896Z",
+      "contributed_evidence_ids": []
+    },
+    {
+      "tool": "evidence_retrieval",
+      "mode": "surface_biotinylation",
+      "query": {
+        "agent_focus": "a1",
+        "intent": "A1 default sweep: surface_biotinylation",
+        "category": "surface_biotinylation",
+        "uniprot_acc": "P0DPE3"
+      },
+      "n_results": 0,
+      "sources_seen": [],
+      "retrieved_at": "2026-06-24T17:17:41.620896Z",
+      "contributed_evidence_ids": []
+    },
+    {
+      "tool": "evidence_retrieval",
+      "mode": "mass_spec_surfaceome",
+      "query": {
+        "agent_focus": "a1",
+        "intent": "A1 default sweep: mass_spec_surfaceome",
+        "category": "mass_spec_surfaceome",
+        "uniprot_acc": "P0DPE3"
+      },
+      "n_results": 0,
+      "sources_seen": [],
+      "retrieved_at": "2026-06-24T17:17:41.620896Z",
+      "contributed_evidence_ids": []
+    },
+    {
+      "tool": "evidence_retrieval",
+      "mode": "shedding",
+      "query": {
+        "agent_focus": "a1",
+        "intent": "A1 default sweep: shedding",
+        "category": "shedding",
+        "uniprot_acc": "P0DPE3"
+      },
+      "n_results": 0,
+      "sources_seen": [],
+      "retrieved_at": "2026-06-24T17:17:41.620896Z",
+      "contributed_evidence_ids": []
+    },
+    {
+      "tool": "evidence_retrieval",
+      "mode": "overexpression",
+      "query": {
+        "agent_focus": "a1",
+        "intent": "A1 default sweep: overexpression",
+        "category": "overexpression",
+        "uniprot_acc": "P0DPE3"
+      },
+      "n_results": 1,
+      "sources_seen": [],
+      "retrieved_at": "2026-06-24T17:17:41.620896Z",
+      "contributed_evidence_ids": []
+    },
+    {
+      "tool": "evidence_retrieval",
+      "mode": "western_blot_paired",
+      "query": {
+        "agent_focus": "a1",
+        "intent": "A1 default sweep: western_blot_paired",
+        "category": "western_blot_paired",
+        "uniprot_acc": "P0DPE3"
+      },
+      "n_results": 0,
+      "sources_seen": [],
+      "retrieved_at": "2026-06-24T17:17:41.620896Z",
+      "contributed_evidence_ids": []
+    },
+    {
+      "tool": "evidence_retrieval",
+      "mode": "structure_with_ecd",
+      "query": {
+        "agent_focus": "a1",
+        "intent": "A1 default sweep: structure_with_ecd",
+        "category": "structure_with_ecd",
+        "uniprot_acc": "P0DPE3"
+      },
+      "n_results": 0,
+      "sources_seen": [],
+      "retrieved_at": "2026-06-24T17:17:41.620896Z",
+      "contributed_evidence_ids": []
+    },
+    {
+      "tool": "evidence_retrieval",
+      "mode": "other",
+      "query": {
+        "agent_focus": "a1",
+        "intent": "A1 default sweep: other",
+        "category": "other",
+        "uniprot_acc": "P0DPE3"
+      },
+      "n_results": 1,
+      "sources_seen": [],
+      "retrieved_at": "2026-06-24T17:17:41.620896Z",
+      "contributed_evidence_ids": []
+    },
+    {
+      "tool": "gene_literature",
+      "mode": "gene2pubmed",
+      "query": {
+        "agent_focus": "a1",
+        "intent": "A1 default: NCBI gene2pubmed baseline"
+      },
+      "n_results": 0,
+      "sources_seen": [],
+      "retrieved_at": "2026-06-24T17:17:41.620896Z",
+      "contributed_evidence_ids": []
+    },
+    {
+      "tool": "gene_literature",
+      "mode": "recent_corpus",
+      "query": {
+        "agent_focus": "a1",
+        "intent": "A1 default: recent_corpus sweep"
+      },
+      "n_results": 0,
+      "sources_seen": [],
+      "retrieved_at": "2026-06-24T17:17:41.620896Z",
+      "contributed_evidence_ids": []
+    },
+    {
+      "tool": "gene_literature",
+      "mode": "topic_search",
+      "query": {
+        "agent_focus": "a1",
+        "intent": "A1/A2 shared: surface-expression + surface-method topic_search",
+        "anchors": [
+          "surface_expression",
+          "flow_cytometry",
+          "surface_biotinylation",
+          "mass_spec_surfaceome",
+          "ihc"
+        ]
+      },
+      "n_results": 24,
+      "sources_seen": [],
+      "retrieved_at": "2026-06-24T17:17:41.620896Z",
+      "contributed_evidence_ids": []
+    },
+    {
+      "tool": "gene_literature",
+      "mode": "topic_search",
+      "query": {
+        "agent_focus": "a1",
+        "intent": "A1 default: structure / topology topic_search",
+        "anchors": [
+          "topology",
+          "structure"
+        ]
+      },
+      "n_results": 16,
+      "sources_seen": [],
+      "retrieved_at": "2026-06-24T17:17:41.620896Z",
+      "contributed_evidence_ids": []
+    },
+    {
+      "tool": "gene_literature",
+      "mode": "topic_search",
+      "query": {
+        "agent_focus": "a1",
+        "intent": "A1/A2 shared: shedding + PTM topic_search",
+        "anchors": [
+          "shedding",
+          "ptm"
+        ]
+      },
+      "n_results": 25,
+      "sources_seen": [],
+      "retrieved_at": "2026-06-24T17:17:41.620896Z",
+      "contributed_evidence_ids": []
+    },
+    {
+      "tool": "gene_literature",
+      "mode": "topic_search",
+      "query": {
+        "agent_focus": "a1",
+        "intent": "standing: normal-tissue surface expression (six high-consequence tox organs)",
+        "anchors": [
+          "normal_tissue_expression"
+        ]
+      },
+      "n_results": 24,
+      "sources_seen": [],
+      "retrieved_at": "2026-06-24T17:17:41.620896Z",
+      "contributed_evidence_ids": []
+    },
+    {
+      "tool": "gene_literature",
+      "mode": "topic_search",
+      "query": {
+        "agent_focus": "a1",
+        "intent": "standing: surface-reachability barriers (BBB / tumor penetration / luminal / accessibility)",
+        "anchors": [
+          "surface_reachability"
+        ]
+      },
+      "n_results": 6,
+      "sources_seen": [],
+      "retrieved_at": "2026-06-24T17:17:41.620896Z",
+      "contributed_evidence_ids": []
+    },
+    {
+      "tool": "gene_literature",
+      "mode": "topic_search",
+      "query": {
+        "agent_focus": "a1",
+        "intent": "standing: co-receptor / partner-dependency for surface trafficking",
+        "anchors": [
+          "partner_dependency"
+        ]
+      },
+      "n_results": 1,
+      "sources_seen": [],
+      "retrieved_at": "2026-06-24T17:17:41.620896Z",
+      "contributed_evidence_ids": []
+    },
+    {
+      "tool": "gene_literature",
+      "mode": "topic_search",
+      "query": {
+        "agent_focus": "a1",
+        "intent": "standing: plasma-membrane subdomain / polarity distribution",
+        "anchors": [
+          "membrane_subdomain"
+        ]
+      },
+      "n_results": 9,
+      "sources_seen": [],
+      "retrieved_at": "2026-06-24T17:17:41.620896Z",
+      "contributed_evidence_ids": []
+    },
+    {
+      "tool": "gene_literature",
+      "mode": "topic_search",
+      "query": {
+        "agent_focus": "a1",
+        "intent": "standing: epitope-masking evidence (homo / hetero / other)",
+        "anchors": [
+          "epitope_masking"
+        ]
+      },
+      "n_results": 8,
+      "sources_seen": [],
+      "retrieved_at": "2026-06-24T17:17:41.620896Z",
+      "contributed_evidence_ids": []
+    },
+    {
+      "tool": "gene_literature",
+      "mode": "topic_search",
+      "query": {
+        "agent_focus": "a1",
+        "intent": "standing: state-conditional surface biology (activation / stress / disease / EMT / senescence / differentiation) — feeds accessibility_modulation",
+        "anchors": [
+          "cell_state_modulation"
+        ]
+      },
+      "n_results": 24,
+      "sources_seen": [],
+      "retrieved_at": "2026-06-24T17:17:41.620896Z",
+      "contributed_evidence_ids": []
+    },
+    {
+      "tool": "evidence_retrieval",
+      "mode": "ihc",
+      "query": {
+        "agent_focus": "a2",
+        "intent": "A2 default sweep: ihc",
+        "category": "ihc",
+        "uniprot_acc": "P0DPE3"
+      },
+      "n_results": 1,
+      "sources_seen": [],
+      "retrieved_at": "2026-06-24T17:17:41.620896Z",
+      "contributed_evidence_ids": []
+    },
+    {
+      "tool": "evidence_retrieval",
+      "mode": "if",
+      "query": {
+        "agent_focus": "a2",
+        "intent": "A2 default sweep: if",
+        "category": "if",
+        "uniprot_acc": "P0DPE3"
+      },
+      "n_results": 0,
+      "sources_seen": [],
+      "retrieved_at": "2026-06-24T17:17:41.620896Z",
+      "contributed_evidence_ids": []
+    },
+    {
+      "tool": "evidence_retrieval",
+      "mode": "flow_cytometry",
+      "query": {
+        "agent_focus": "a2",
+        "intent": "A2 default sweep: flow_cytometry",
+        "category": "flow_cytometry",
+        "uniprot_acc": "P0DPE3"
+      },
+      "n_results": 1,
+      "sources_seen": [],
+      "retrieved_at": "2026-06-24T17:17:41.620896Z",
+      "contributed_evidence_ids": []
+    },
+    {
+      "tool": "evidence_retrieval",
+      "mode": "mass_spec_surfaceome",
+      "query": {
+        "agent_focus": "a2",
+        "intent": "A2 default sweep: mass_spec_surfaceome",
+        "category": "mass_spec_surfaceome",
+        "uniprot_acc": "P0DPE3"
+      },
+      "n_results": 0,
+      "sources_seen": [],
+      "retrieved_at": "2026-06-24T17:17:41.620896Z",
+      "contributed_evidence_ids": []
+    },
+    {
+      "tool": "evidence_retrieval",
+      "mode": "shedding",
+      "query": {
+        "agent_focus": "a2",
+        "intent": "A2 default sweep: shedding",
+        "category": "shedding",
+        "uniprot_acc": "P0DPE3"
+      },
+      "n_results": 0,
+      "sources_seen": [],
+      "retrieved_at": "2026-06-24T17:17:41.620896Z",
+      "contributed_evidence_ids": []
+    },
+    {
+      "tool": "evidence_retrieval",
+      "mode": "surface_expression",
+      "query": {
+        "agent_focus": "a2",
+        "intent": "A2 default sweep: surface_expression",
+        "category": "surface_expression",
+        "uniprot_acc": "P0DPE3"
+      },
+      "n_results": 2,
+      "sources_seen": [],
+      "retrieved_at": "2026-06-24T17:17:41.620896Z",
+      "contributed_evidence_ids": []
+    },
+    {
+      "tool": "gene_literature",
+      "mode": "gene2pubmed",
+      "query": {
+        "agent_focus": "a2",
+        "intent": "A2 default: NCBI gene2pubmed baseline"
+      },
+      "n_results": 0,
+      "sources_seen": [],
+      "retrieved_at": "2026-06-24T17:17:41.620896Z",
+      "contributed_evidence_ids": []
+    },
+    {
+      "tool": "gene_literature",
+      "mode": "recent_corpus",
+      "query": {
+        "agent_focus": "a2",
+        "intent": "A2 default: recent_corpus sweep"
+      },
+      "n_results": 0,
+      "sources_seen": [],
+      "retrieved_at": "2026-06-24T17:17:41.620896Z",
+      "contributed_evidence_ids": []
+    },
+    {
+      "tool": "gene_literature",
+      "mode": "topic_search",
+      "query": {
+        "agent_focus": "a2",
+        "intent": "A1/A2 shared: surface-expression + surface-method topic_search",
+        "anchors": [
+          "surface_expression",
+          "flow_cytometry",
+          "surface_biotinylation",
+          "mass_spec_surfaceome",
+          "ihc"
+        ]
+      },
+      "n_results": 24,
+      "sources_seen": [],
+      "retrieved_at": "2026-06-24T17:17:41.620896Z",
+      "contributed_evidence_ids": []
+    },
+    {
+      "tool": "gene_literature",
+      "mode": "topic_search",
+      "query": {
+        "agent_focus": "a2",
+        "intent": "A1/A2 shared: shedding + PTM topic_search",
+        "anchors": [
+          "shedding",
+          "ptm"
+        ]
+      },
+      "n_results": 25,
+      "sources_seen": [],
+      "retrieved_at": "2026-06-24T17:17:41.620896Z",
+      "contributed_evidence_ids": []
+    },
+    {
+      "tool": "gene_literature",
+      "mode": "topic_search",
+      "query": {
+        "agent_focus": "a2",
+        "intent": "standing: normal-tissue surface expression (six high-consequence tox organs)",
+        "anchors": [
+          "normal_tissue_expression"
+        ]
+      },
+      "n_results": 24,
+      "sources_seen": [],
+      "retrieved_at": "2026-06-24T17:17:41.620896Z",
+      "contributed_evidence_ids": []
+    },
+    {
+      "tool": "gene_literature",
+      "mode": "topic_search",
+      "query": {
+        "agent_focus": "a2",
+        "intent": "standing: surface-reachability barriers (BBB / tumor penetration / luminal / accessibility)",
+        "anchors": [
+          "surface_reachability"
+        ]
+      },
+      "n_results": 6,
+      "sources_seen": [],
+      "retrieved_at": "2026-06-24T17:17:41.620896Z",
+      "contributed_evidence_ids": []
+    },
+    {
+      "tool": "gene_literature",
+      "mode": "topic_search",
+      "query": {
+        "agent_focus": "a2",
+        "intent": "standing: co-receptor / partner-dependency for surface trafficking",
+        "anchors": [
+          "partner_dependency"
+        ]
+      },
+      "n_results": 1,
+      "sources_seen": [],
+      "retrieved_at": "2026-06-24T17:17:41.620896Z",
+      "contributed_evidence_ids": []
+    },
+    {
+      "tool": "gene_literature",
+      "mode": "topic_search",
+      "query": {
+        "agent_focus": "a2",
+        "intent": "standing: plasma-membrane subdomain / polarity distribution",
+        "anchors": [
+          "membrane_subdomain"
+        ]
+      },
+      "n_results": 9,
+      "sources_seen": [],
+      "retrieved_at": "2026-06-24T17:17:41.620896Z",
+      "contributed_evidence_ids": []
+    },
+    {
+      "tool": "gene_literature",
+      "mode": "topic_search",
+      "query": {
+        "agent_focus": "a2",
+        "intent": "standing: epitope-masking evidence (homo / hetero / other)",
+        "anchors": [
+          "epitope_masking"
+        ]
+      },
+      "n_results": 8,
+      "sources_seen": [],
+      "retrieved_at": "2026-06-24T17:17:41.620896Z",
+      "contributed_evidence_ids": []
+    },
+    {
+      "tool": "gene_literature",
+      "mode": "topic_search",
+      "query": {
+        "agent_focus": "a2",
+        "intent": "standing: state-conditional surface biology (activation / stress / disease / EMT / senescence / differentiation) — feeds accessibility_modulation",
+        "anchors": [
+          "cell_state_modulation"
+        ]
+      },
+      "n_results": 24,
+      "sources_seen": [],
+      "retrieved_at": "2026-06-24T17:17:41.620896Z",
+      "contributed_evidence_ids": []
+    }
+  ],
+  "evidence_count": 2,
+  "primary_evidence_count": 0,
+  "secondary_evidence_count": 2,
+  "confidence": "low",
+  "confidence_reasoning": "Confidence is low because the entire evidence base for TMDD1 surface accessibility rests on a single abstract-level assertion from one study (PMID:40975161) describing the protein as a membrane protein in LUAD cells — no direct surface-localization method (live-cell flow cytometry, surface biotinylation, non-permeabilized immunofluorescence) has been reported by any group. The canonical single-pass Type I topology predicts an extracellular domain of 194 residues, but topology prediction alone does not establish plasma membrane accessibility. No mouse or cynomolgus ortholog data exist, and no paralogs are present to triangulate function. Lifting confidence would require at least one independent study using a direct surface-detection method — ideally live-cell flow cytometry or surface biotinylation in a defined cell line — to confirm that the predicted extracellular domain is accessible at the plasma membrane.",
+  "model_path": "claude-sonnet-4-6",
+  "record_generated_at": "2026-06-24T17:17:41.621156Z"
+}
