@@ -22,6 +22,9 @@ __pycache__/
 # OS
 .DS_Store
 
+# Zed editor settings — local-only, not for the repo.
+.zed/
+
 # Local secrets/runtime
 .env
 *.log
