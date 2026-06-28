@@ -8,7 +8,9 @@ Why not matplotlib: the viewer's GeneHeader / StructureViewer styling
 soft-fill StatusPills with the exact design tokens) is far cleaner to
 replicate by writing actual HTML/CSS than by re-implementing it patch
 by patch in matplotlib. The temp HTML lives under scratchpad/; only
-the final PNG/PDF ships under data/analysis/figures/.
+the final PNG/PDF ships under data/analysis/blog/ — separate from
+the paper-figures folder since this card is blog-only, not a paper
+figure.
 
 CD63's membrane orientation is computed in Python (numpy) ported from
 viewer/lib/structure-orientation.ts — I→O axis aligned to +Y, TM mean
@@ -39,7 +41,7 @@ SCRATCH = Path(os.environ.get(
     "/tmp/blog_gene_cards_klk2_src_cd63",
 ))
 SCRATCH.mkdir(parents=True, exist_ok=True)
-OUT_DIR = ROOT / "data/analysis/figures"
+OUT_DIR = ROOT / "data/analysis/blog"
 SLUG = "blog_gene_cards_klk2_src_cd63"
 
 # Per-gene data drawn from viewer/public/data/surfaceome/*.json plus

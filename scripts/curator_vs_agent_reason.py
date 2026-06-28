@@ -171,7 +171,10 @@ def make_plot() -> tuple[plt.Figure, plt.Axes]:
         m, ax=ax, cmap=cmap, square=True, linewidths=0.5, linecolor="#FFFFFF",
         annot=True, fmt="d", annot_kws={"fontsize": 11, "color": "#1F1718"},
         cbar_kws={"label": "genes", "shrink": 0.55, "pad": 0.02, "aspect": 25},
-        xticklabels=[LABEL_SHORT[r] for r in REASONS_ORDERED],
+        # X-tick labels go to single-line (no internal "\n") since
+        # we're rotating them to 40° below — wrapped + rotated reads
+        # as a stair-step and overlaps with cells.
+        xticklabels=[LABEL_SHORT[r].replace("\n", " ") for r in REASONS_ORDERED],
         yticklabels=[LABEL_SHORT[r] for r in REASONS_ORDERED],
     )
     # Hide zero cells so the eye lands on real agreement / disagreement.
@@ -185,7 +188,14 @@ def make_plot() -> tuple[plt.Figure, plt.Axes]:
     for tick, reason in zip(ax.get_yticklabels(), REASONS_ORDERED, strict=True):
         tick.set_color(BUCKET_COLOR[BUCKET[reason]])
         tick.set_fontweight("semibold")
-    ax.tick_params(axis="x", rotation=0, pad=4)
+    # X labels at 40° (slanted) so the wider single-line strings
+    # don't collide with each other at column boundaries. Align
+    # right-anchored so the rotation pivots on the tick line.
+    for tick in ax.get_xticklabels():
+        tick.set_rotation(40)
+        tick.set_ha("right")
+        tick.set_rotation_mode("anchor")
+    ax.tick_params(axis="x", pad=4)
     ax.tick_params(axis="y", rotation=0, pad=4)
 
     for b in _bucket_boundaries():
