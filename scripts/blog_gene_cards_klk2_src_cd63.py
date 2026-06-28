@@ -74,13 +74,17 @@ GENES: list[dict[str, Any]] = [
         # is True → ✓. KLK2 has no trigger-carrying modulation rows so
         # there's no "induced by" chip — the gene is tissue-restricted
         # rather than cell-state-induced.
+        # "also in" chips replace the prior ✓ dual_localization
+        # rollup — sourced from biological_context.subcellular_
+        # localization.dual_localization[*].compartment, matching the
+        # viewer's BiologicalContextCard.tsx:47 pattern exactly.
         "chips": [
             ("primary",      "Plasma membrane",        "teal"),
             ("reason",       "Tissue-restricted",      "amber"),
             ("surface vs intracellular",  "Mixed",   "amber"),
             ("n surface evidence", "2", "success"),
-            (None, "✓ dual localization", "success"),
-            (None, "✓ secreted form",     "success"),
+            ("also in",      "Secreted",               "lavender"),
+            (None, "✓ secreted form",                 "success"),
         ],
         # Topology: no TM helices (it's a secreted protease, signal
         # peptide cleaved). Keep N-terminal residues 1-17 colored as
@@ -118,12 +122,20 @@ GENES: list[dict[str, Any]] = [
         # has_secreted_form=False → ✗. tumor-associated chip dropped
         # per user request. "induced by" moved last so the boolean
         # ✓/✗ chips group together visually.
+        # SRC's 4 dual_localization entries become 4 "also in" chips,
+        # replacing the prior ✓ dual_localization rollup. Each shows
+        # a distinct secondary compartment the record cites; the
+        # "Outer PM" one is the cancer-ALE surface display that
+        # underlies the therapeutic interest.
         "chips": [
             ("primary",      "Plasma membrane",         "teal"),
             ("reason",       "Lysosomal exocytosis",    "amber"),
             ("surface vs intracellular",  "Mostly intracellular", "amber"),
             ("n surface evidence", "1", "amber"),
-            (None,           "✓ dual localization",    "success"),
+            ("also in",      "Late endo / lyso",       "lavender"),
+            ("also in",      "Outer PM",               "lavender"),
+            ("also in",      "Cytoplasm",              "lavender"),
+            ("also in",      "Peri-nuclear",           "lavender"),
             (None,           "✗ secreted form",        "danger"),
             ("induced by",   "Oncogenic",              "maroon"),
         ],
@@ -155,14 +167,21 @@ GENES: list[dict[str, Any]] = [
         # roll-up under-represents the immune component — immune is
         # actually the dominant trigger. Listing all 5 makes the
         # multi-trigger picture explicit.
+        # CD63's 5 dual_localization entries become 5 "also in" chips.
+        # PM is the activation-induced surface pool; the others are
+        # the steady-state intracellular compartments CD63 cycles
+        # between. ✓ epitope_masking chip removed per user.
         "chips": [
             ("primary",      "Lysosome",               "lavender"),
             ("reason",       "Lysosomal exocytosis",   "amber"),
             ("surface vs intracellular",  "Mostly intracellular", "amber"),
             ("n surface evidence", "7", "success"),
-            (None,           "✓ dual localization",    "success"),
+            ("also in",      "Plasma membrane",        "lavender"),
+            ("also in",      "Endosome",               "lavender"),
+            ("also in",      "MVB",                    "lavender"),
+            ("also in",      "Secretory granule",      "lavender"),
+            ("also in",      "EV",                     "lavender"),
             (None,           "✗ secreted form",        "danger"),
-            (None,           "✓ epitope masking",      "amber"),
             ("induced by",   "Immune, antigen, infection, oncogenic, other", "maroon"),
         ],
         # CD63 (P08962) DeepTMHMM topology — 4 TM bundle. Verified
