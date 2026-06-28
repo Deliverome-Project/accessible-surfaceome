@@ -79,15 +79,22 @@ GENES: list[dict[str, Any]] = [
         # height. "Also in" condensed to one comma-separated chip
         # (matching the "induced by" pattern). "induced by" is "—" on
         # KLK2 since the gene has no trigger-carrying modulation rows.
+        # Chip order — uniform 9-slot schema across all genes. 2-col
+        # grid layout:
+        #   Row 1: primary           | reason
+        #   Row 2: surface vs intra  | n surface evidence
+        #   Row 3: also in           | ✓/✗ secreted form
+        #   Row 4: expression level  | expression breadth
+        #   Row 5: induced by        | (empty cell)
         "chips": [
             ("primary",      "Plasma membrane",        "teal"),
             ("reason",       "Tissue-restricted",      "amber"),
             ("surface vs intracellular",  "Mixed",   "amber"),
             ("n surface evidence", "2",                "success"),
             ("also in",      "Secreted",               "lavender"),
+            (None,           "✓ secreted form",        "success"),
             ("expression level",   "High",             "success"),
             ("expression breadth", "Rare",             "danger"),
-            (None,           "✓ secreted form",        "success"),
             ("induced by",   "—",                      "neutral"),
         ],
         # Topology: no TM helices (it's a secreted protease, signal
@@ -132,9 +139,9 @@ GENES: list[dict[str, Any]] = [
             ("surface vs intracellular",  "Mostly intracellular", "amber"),
             ("n surface evidence", "1",                "amber"),
             ("also in",      "Late endo/lyso, outer PM, cytoplasm, peri-nuclear", "lavender"),
+            (None,           "✗ secreted form",        "danger"),
             ("expression level",   "Moderate",         "amber"),
             ("expression breadth", "Broad",            "success"),
-            (None,           "✗ secreted form",        "danger"),
             ("induced by",   "Oncogenic",              "maroon"),
         ],
         # DeepTMHMM type GLOB → all "M" so 3Dmol paints the cartoon
@@ -171,9 +178,9 @@ GENES: list[dict[str, Any]] = [
             ("surface vs intracellular",  "Mostly intracellular", "amber"),
             ("n surface evidence", "7",                "success"),
             ("also in",      "Plasma membrane, endosome, MVB, secretory granule, EV", "lavender"),
+            (None,           "✗ secreted form",        "danger"),
             ("expression level",   "Moderate",         "amber"),
             ("expression breadth", "Pan-tissue",       "success"),
-            (None,           "✗ secreted form",        "danger"),
             ("induced by",   "Immune, antigen, infection, oncogenic, other", "maroon"),
         ],
         # CD63 (P08962) DeepTMHMM topology — 4 TM bundle. Verified
@@ -551,6 +558,13 @@ html, body {
 .chips {
   display: grid;
   grid-template-columns: 1fr 1fr;
+  /* Pin each chip row to a minimum height so corresponding rows
+     line up across the 3-card strip — without this, a card with a
+     short chip on row N renders at a different y-coord than a card
+     whose row-N chip wraps to 2+ lines. Min covers a 1-line chip
+     comfortably; rows grow taller naturally when content wraps. */
+  grid-auto-rows: minmax(2.4rem, auto);
+  align-items: stretch;
   column-gap: 8px;
   row-gap: 6px;
   margin-top: 2px;
@@ -559,6 +573,11 @@ html, body {
   /* In a 2-column grid each chip is its own cell — start text from
      the left so the column reads as an aligned list. */
   justify-content: flex-start;
+  /* Vertical fill within the cell so all chips in a row share the
+     same height — pairs with grid-auto-rows minmax for cross-card
+     row alignment. */
+  align-self: stretch;
+  align-items: center;
 }
 """
 
