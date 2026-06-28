@@ -95,11 +95,17 @@ GENES: list[dict[str, Any]] = [
             ("CONFIDENCE",           "Low",                   "danger"),
             ("STATE DEPENDENCE",     "High",                  "success"),
         ],
+        # Triggers below are the distinct cell_state_trigger values
+        # across the gene's accessibility_modulation rows (not the
+        # filters.induction_trigger coarse roll-up). SRC's rows
+        # collectively show oncogenic_transformation (×2),
+        # mechanical_stress (×1), immune_activation (×1),
+        # infection_bacterial (×1) — so "induced by" carries all 4.
         "chips": [
             ("primary",      "Plasma membrane",         "teal"),
             ("reason",       "Lysosomal exocytosis",    "amber"),
             ("specificity",  "Mostly intracellular",    "amber"),
-            ("induced by",   "Oncogenic",               "maroon"),
+            ("induced by",   "Oncogenic, immune, infection, stress", "maroon"),
             (None,           "✓ tumor associated",      "maroon"),
         ],
         # DeepTMHMM type GLOB → all "M" so 3Dmol paints the cartoon
@@ -123,17 +129,19 @@ GENES: list[dict[str, Any]] = [
             ("CONFIDENCE",           "High",                  "success"),
             ("STATE DEPENDENCE",     "High",                  "success"),
         ],
+        # CD63's 9 trigger-carrying modulation rows span
+        # immune_activation (×3), antigen_stimulation (×3),
+        # infection_viral (×1), oncogenic_transformation (×1),
+        # other (×1). The single filters.induction_trigger="oncogenic"
+        # roll-up under-represents the immune component — immune is
+        # actually the dominant trigger. Listing all 5 makes the
+        # multi-trigger picture explicit.
         "chips": [
             ("primary",      "Lysosome",               "lavender"),
             ("reason",       "Lysosomal exocytosis",   "amber"),
             ("specificity",  "Mostly intracellular",   "amber"),
-            # CD63 reaches surface during exocytosis + degranulation —
-            # additional dual-localization tag per user note. Note:
-            # surface_call_reason is mutually exclusive in the enum, so
-            # the model could only pick lysosomal_exocytosis OR
-            # dual_localization; both are functionally true for CD63.
             (None,           "✓ dual localization",    "teal"),
-            ("induced by",   "Oncogenic",              "maroon"),
+            ("induced by",   "Immune, antigen, infection, oncogenic, other", "maroon"),
         ],
         # CD63 (P08962) DeepTMHMM topology — 4 TM bundle. Verified
         # against data/external/deeptmhmm_surfaceome_predictions/
