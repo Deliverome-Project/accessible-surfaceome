@@ -113,14 +113,19 @@ GENES: list[dict[str, Any]] = [
         # actually causes surface accessibility. Also adding the
         # ✓ dual_localization chip because modulation row [2] has
         # dual_loc_partner_compartment='lysosome'.
+        # SRC chip set. dual_localization array has 4 entries (LE/lyso,
+        # outer PM in cancer, cytoplasm, peri-nuclear) → ✓;
+        # has_secreted_form=False → ✗. tumor-associated chip dropped
+        # per user request. "induced by" moved last so the boolean
+        # ✓/✗ chips group together visually.
         "chips": [
             ("primary",      "Plasma membrane",         "teal"),
             ("reason",       "Lysosomal exocytosis",    "amber"),
             ("surface vs intracellular",  "Mostly intracellular", "amber"),
             ("n surface evidence", "1", "amber"),
-            ("induced by",   "Oncogenic",               "maroon"),
-            (None,           "✓ dual localization",     "teal"),
-            (None,           "✓ tumor associated",      "maroon"),
+            (None,           "✓ dual localization",    "success"),
+            (None,           "✗ secreted form",        "danger"),
+            ("induced by",   "Oncogenic",              "maroon"),
         ],
         # DeepTMHMM type GLOB → all "M" so 3Dmol paints the cartoon
         # gold (M tone) without a membrane slab, mirroring the live
@@ -154,13 +159,9 @@ GENES: list[dict[str, Any]] = [
             ("primary",      "Lysosome",               "lavender"),
             ("reason",       "Lysosomal exocytosis",   "amber"),
             ("surface vs intracellular",  "Mostly intracellular", "amber"),
-            # CD63 has 7 direct_surface_accessibility methods — the
-            # strongest extracellular-side evidence in this trio
-            # (live-cell flow ×7, plus IHC + nonpermeabilized IF).
             ("n surface evidence", "7", "success"),
-            (None,           "✓ dual localization",    "teal"),
-            # has_epitope_masking=True on CD63 — heavy LEL glycosylation
-            # restricts antibody access. Filterable DD bool on catalog.
+            (None,           "✓ dual localization",    "success"),
+            (None,           "✗ secreted form",        "danger"),
             (None,           "✓ epitope masking",      "amber"),
             ("induced by",   "Immune, antigen, infection, oncogenic, other", "maroon"),
         ],
