@@ -14,9 +14,9 @@ into both private + public D1 with ``cohort='human_isoforms'``.
 
 Run::
 
-    uv run python scripts/upload_human_isoforms_topology_to_d1.py
-    uv run python scripts/upload_human_isoforms_topology_to_d1.py --dry-run
-    uv run python scripts/upload_human_isoforms_topology_to_d1.py --public-only
+    uv run python scripts/upload/upload_human_isoforms_topology_to_d1.py
+    uv run python scripts/upload/upload_human_isoforms_topology_to_d1.py --dry-run
+    uv run python scripts/upload/upload_human_isoforms_topology_to_d1.py --public-only
 
 Idempotent on (topology_version, cohort, uniprot_acc_full) via
 INSERT OR IGNORE. Safe to re-run after a partial failure.
@@ -60,7 +60,7 @@ TOPOLOGY_VERSION = "topo_2026_05_16"  # matches the canonical / mouse / cyno coh
 TOOL_VERSION = "deeptmhmm-1.0.24"
 SPECIES = "human"
 
-# Column order matches `scripts/upload_topology_to_d1.py` so the SQL
+# Column order matches `scripts/upload/upload_topology_to_d1.py` so the SQL
 # statement template is identical between the two sync scripts.
 COLS = [
     "topology_version",

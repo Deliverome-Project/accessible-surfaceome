@@ -23,8 +23,8 @@ a reanalyst has to do today.
 
 Run::
 
-    uv run python scripts/augment_figure_tsvs_with_stable_ids.py
-    uv run python scripts/augment_figure_tsvs_with_stable_ids.py --dry-run
+    uv run python scripts/tsv-export/augment_figure_tsvs_with_stable_ids.py
+    uv run python scripts/tsv-export/augment_figure_tsvs_with_stable_ids.py --dry-run
 
 Idempotent: re-running drops any pre-existing augment-owned columns and
 re-derives them. Output is byte-stable apart from the added columns

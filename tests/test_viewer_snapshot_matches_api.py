@@ -80,7 +80,7 @@ def test_snapshot_equals_public_api(snapshot: Path) -> None:
         pytest.fail(
             f"{symbol}: public API returned HTTP {exc.code} — the snapshot "
             f"exists in-tree but the Worker won't serve it. Publish it "
-            f"(scripts/upload_viewer_snapshots_to_d1.py --execute) or re-run "
+            f"(scripts/upload/upload_viewer_snapshots_to_d1.py --execute) or re-run "
             f"the annotator so D1 carries the record."
         )
     except (urllib.error.URLError, TimeoutError) as exc:
@@ -89,6 +89,6 @@ def test_snapshot_equals_public_api(snapshot: Path) -> None:
     assert served == record, (
         f"{symbol}: committed snapshot differs from what the public API "
         f"(api.deliverome.org) serves from D1. Re-sync D1 — run "
-        f"scripts/upload_viewer_snapshots_to_d1.py --execute, or re-run the "
+        f"scripts/upload/upload_viewer_snapshots_to_d1.py --execute, or re-run the "
         f"annotator — so the Worker and the in-tree snapshot stop drifting."
     )

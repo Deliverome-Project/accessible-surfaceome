@@ -156,7 +156,7 @@ def resolve(symbol_or_acc: str, *, http: CachedHTTP) -> IdentifierBundle:
     ~0.2% of human genes (45 of 19k cohort symbols — COX1 → cyclo-
     oxygenase instead of mitochondrial cytochrome c oxidase, WAS →
     an rRNA instead of the Wiskott-Aldrich protein, etc. — see
-    ``scripts/audit_resolver_hgnc_id_v3.py`` for the documented
+    ``scripts/audit/audit_resolver_hgnc_id_v3.py`` for the documented
     failure modes).
 
     What to call instead, by input shape:

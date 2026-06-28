@@ -3,7 +3,7 @@
 Pins a content fingerprint of each versioned artifact to its declared
 version. The committed golden lives at ``tests/version_fingerprints.json``;
 ``tests/test_version_fingerprints.py`` asserts the current artifacts still
-match it, and ``scripts/update_version_fingerprints.py`` regenerates it but
+match it, and ``scripts/audit/update_version_fingerprints.py`` regenerates it but
 *refuses to record a new fingerprint under an unchanged version* — which is
 what forces the bump.
 
@@ -35,7 +35,7 @@ from accessible_surfaceome.tools._shared.models import (
 )
 
 # Bump this whenever any agents/*/prompts/*.md file changes, then run
-# scripts/update_version_fingerprints.py. One global version covers the whole
+# scripts/audit/update_version_fingerprints.py. One global version covers the whole
 # prompt corpus (the chosen granularity).
 PROMPT_CORPUS_VERSION = "2.50.2"
 
@@ -139,7 +139,7 @@ def reconcile(
             errors.append(
                 f"{name} changed but its version is still {cur['version']!r}. "
                 f"Bump {name}'s version, then rerun "
-                f"scripts/update_version_fingerprints.py."
+                f"scripts/audit/update_version_fingerprints.py."
             )
             # leave new_golden[name] as the old (refused) entry
             continue

@@ -17,7 +17,7 @@ Overall correctness only — per-bucket breakdown lives in the sibling
 #   data/analysis/figures/make_ensemble_vs_best_db_vs_sonnet.py.
 
 Run:
-    uv run python scripts/ensemble_vs_best_db_vs_sonnet.py
+    uv run python scripts/figures/ensemble_vs_best_db_vs_sonnet.py
 """
 from __future__ import annotations
 

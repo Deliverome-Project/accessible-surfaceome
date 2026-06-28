@@ -30,8 +30,8 @@ helper this script delegates to). Run it explicitly when:
 
 Run from the repo root:
 
-    uv run python scripts/upload_viewer_snapshots_to_d1.py            # dry-run
-    uv run python scripts/upload_viewer_snapshots_to_d1.py --execute  # write
+    uv run python scripts/upload/upload_viewer_snapshots_to_d1.py            # dry-run
+    uv run python scripts/upload/upload_viewer_snapshots_to_d1.py --execute  # write
 """
 
 from __future__ import annotations

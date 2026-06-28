@@ -39,7 +39,7 @@ N_ROWS=$(($(wc -l < "$JOIN_CSV") - 1))
 echo "==> Refreshed CSV has ${N_ROWS} ortholog rows (release_version=${RELEASE_VERSION})"
 
 echo "==> Uploading to Cloudflare D1…"
-uv run python scripts/upload_compara_to_d1.py \
+uv run python scripts/upload/upload_compara_to_d1.py \
   --release "$RELEASE_VERSION" \
   --csv "$JOIN_CSV" \
   --notes "refresh_compara.sh on $(date -u +%Y-%m-%dT%H:%M:%SZ)"

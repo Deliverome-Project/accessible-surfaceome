@@ -14,7 +14,7 @@ Idempotent on (topology_version, cohort, uniprot_acc_full) via INSERT OR IGNORE.
 
 Usage::
 
-    uv run python scripts/upload_topology_to_d1.py \\
+    uv run python scripts/upload/upload_topology_to_d1.py \\
         --topology-version topo_2026_05_16 \\
         --jsonl data/processed/topology_run_topo_2026_05_16/human_canonical/topology_records.jsonl \\
         --cohorts-present human_canonical

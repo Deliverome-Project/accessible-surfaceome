@@ -7,11 +7,11 @@ CURRENT latest version, classifies each (gene × feature), and writes a manifest
 TSV that sizes the backfill.
 
     # prerequisite (Task 7 Step 1): build the candidate set first
-    uv run python scripts/build_topology_candidate_set.py \
+    uv run python scripts/build/build_topology_candidate_set.py \
         --topology-version topo_2026_05_16 \
         --triage-run-id genome_full_sonnet_ncbi_v2
 
-    uv run python scripts/audit_v2_deterministic_coverage.py
+    uv run python scripts/audit/audit_v2_deterministic_coverage.py
 
 Output: data/analysis/v2_deterministic_coverage/manifest.tsv
 

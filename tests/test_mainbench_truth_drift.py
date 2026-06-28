@@ -17,7 +17,7 @@ off it was off by ~5 genes. v1 has since been deleted; these tests
 exist so a future re-incarnation doesn't reproduce the failure mode.
 
 Each test below pins one cross-file invariant. If any fail, the fix is
-the same: re-run ``scripts/augment_figure_tsvs_with_stable_ids.py``
+the same: re-run ``scripts/tsv-export/augment_figure_tsvs_with_stable_ids.py``
 and commit the regenerated TSVs in the same change.
 """
 from __future__ import annotations
@@ -113,7 +113,7 @@ def test_bench_truth_matches_curated_eval(tsv_path: Path) -> None:
     assert not mismatches, (
         "Denormalized truth drift detected in "
         f"{tsv_path.relative_to(REPO_ROOT)}. "
-        "Re-run scripts/augment_figure_tsvs_with_stable_ids.py and commit "
+        "Re-run scripts/tsv-export/augment_figure_tsvs_with_stable_ids.py and commit "
         f"the regenerated TSV.\nMismatches ({len(mismatches)}):\n"
         + "\n".join(f"  • {m}" for m in mismatches[:20])
         + (f"\n  … and {len(mismatches) - 20} more" if len(mismatches) > 20 else "")
@@ -152,7 +152,7 @@ def _index_candidate_universe_by_acc() -> dict[str, dict[str, str]]:
     gene_symbol)`` — a gene with multiple reviewed UniProt entries
     appears in multiple rows. Per the augment script
     (``n_db_votes_by_acc`` in
-    ``scripts/augment_figure_tsvs_with_stable_ids.py``), denormalized
+    ``scripts/tsv-export/augment_figure_tsvs_with_stable_ids.py``), denormalized
     DB columns are joined by ``uniprot_accession``. The bench TSV
     pins a specific accession per gene, so the per-accession join is
     the authoritative one — gene-symbol indexing would miss the
@@ -407,7 +407,7 @@ def test_stable_ids_consistent_across_figure_tsvs() -> None:
 def test_canonical_verdict_matches_replicate_majority() -> None:
     """``mainbench_canonical_v2.tsv`` carries the per-cell majority
     verdict across replicates (see ``_collapse_to_majority`` in
-    ``scripts/export_mainbench_to_tsv.py``); ``mainbench_replicates_v2.tsv``
+    ``scripts/cloud/export_mainbench_to_tsv.py``); ``mainbench_replicates_v2.tsv``
     carries the raw replicates. Recompute the surface-side majority
     from the replicates and assert it matches canonical_v2's recorded
     verdict — otherwise one TSV was regenerated and the other wasn't.
@@ -465,6 +465,6 @@ def test_canonical_verdict_matches_replicate_majority() -> None:
     assert not mismatches, (
         f"Canonical-v2 verdict drifted from replicates-v2 raw replicates "
         f"({len(mismatches)} cells). One TSV was regenerated and the "
-        f"other wasn't. Re-run scripts/export_mainbench_to_tsv.py.\n"
+        f"other wasn't. Re-run scripts/cloud/export_mainbench_to_tsv.py.\n"
         + "\n".join(f"  • {m}" for m in mismatches[:15])
     )

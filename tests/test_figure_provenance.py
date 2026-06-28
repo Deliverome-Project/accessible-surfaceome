@@ -2,7 +2,7 @@
 
 Companion to ``tests/test_figure_gists_styling.py`` (which enforces
 the inline brand-style sentinel in the gists themselves). This test
-enforces that, after running ``scripts/embed_figure_gist_metadata.py``,
+enforces that, after running ``scripts/figures/embed_figure_gist_metadata.py``,
 each canonical PNG and PDF carries a JSON-valid, schema-v1 provenance
 blob.
 

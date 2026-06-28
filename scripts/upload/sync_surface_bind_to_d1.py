@@ -1,7 +1,7 @@
 """Sync SURFACE-Bind summary JSON → public D1.
 
 Reads ``data/external/surface_bind/surface_bind_summary.json``
-(built by ``scripts/build_surface_bind_summary.py``) and UPSERTs
+(built by ``scripts/build/build_surface_bind_summary.py``) and UPSERTs
 two tables in the ``surfaceome_public`` D1 database:
 
 * ``surface_bind_protein`` — one row per UniProt acc with
@@ -11,9 +11,9 @@ two tables in the ``surfaceome_public`` D1 database:
 
 Run::
 
-    uv run python scripts/sync_surface_bind_to_d1.py
-    uv run python scripts/sync_surface_bind_to_d1.py --dry-run
-    uv run python scripts/sync_surface_bind_to_d1.py --apply-schema  # one-shot
+    uv run python scripts/upload/sync_surface_bind_to_d1.py
+    uv run python scripts/upload/sync_surface_bind_to_d1.py --dry-run
+    uv run python scripts/upload/sync_surface_bind_to_d1.py --apply-schema  # one-shot
 
 Idempotent on the primary keys: re-runs UPSERT in place.
 

@@ -7,8 +7,8 @@ runs lookup -> best-PDF -> download -> pdfplumber parse and prints a per-paper
 quality report.
 
 Usage:
-    uv run python scripts/probe_pdf_fallback.py "CD20 MS4A1 rituximab" --max 25
-    uv run python scripts/probe_pdf_fallback.py --doi 10.1182/blood-2010-09-305847
+    uv run python scripts/probes/probe_pdf_fallback.py "CD20 MS4A1 rituximab" --max 25
+    uv run python scripts/probes/probe_pdf_fallback.py --doi 10.1182/blood-2010-09-305847
 """
 
 from __future__ import annotations

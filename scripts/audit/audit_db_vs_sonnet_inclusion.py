@@ -31,7 +31,7 @@ Outputs to data/analysis/db_vs_sonnet_inclusion/:
 
 Run from the repo root::
 
-    uv run python scripts/audit_db_vs_sonnet_inclusion.py
+    uv run python scripts/audit/audit_db_vs_sonnet_inclusion.py
 """
 
 from __future__ import annotations

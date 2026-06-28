@@ -29,7 +29,7 @@ data, pass a fresh ``--version`` (the Worker always picks the latest
 
 Usage::
 
-    uv run python scripts/upload_candidate_universe_to_d1.py \\
+    uv run python scripts/upload/upload_candidate_universe_to_d1.py \\
         --version "cu_$(date -u +%Y_%m_%d)"
 
 Requires the standard Cloudflare env vars (CLOUDFLARE_ACCOUNT_ID,

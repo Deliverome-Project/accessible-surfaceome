@@ -29,14 +29,14 @@ to pick up where it left off.
 
 Usage::
 
-    uv run python scripts/run_topology_sweep.py \\
+    uv run python scripts/build/run_topology_sweep.py \\
         --topology-version topo_2026_05_16 \\
         --cohorts human_canonical,human_isoforms,mouse_ortholog,cyno_ortholog \\
         --max-workers 6
 
 For a 3-protein dry run::
 
-    uv run python scripts/run_topology_sweep.py \\
+    uv run python scripts/build/run_topology_sweep.py \\
         --topology-version topo_test \\
         --candidate-set data/processed/topology_run_topo_test/candidate_accessions.tsv \\
         --cohorts human_canonical \\
@@ -149,7 +149,7 @@ class IsoformSpec:
 
 def load_candidate_set(path: Path) -> list[Candidate]:
     """Read the HGNC-keyed candidate accessions TSV emitted by
-    ``scripts/build_topology_candidate_set.py``.
+    ``scripts/build/build_topology_candidate_set.py``.
 
     Hard-fails on rows that are missing ``hgnc_id`` or ``uniprot_acc`` —
     the symbol-fallback codepath was deliberately removed after PR #30
@@ -159,7 +159,7 @@ def load_candidate_set(path: Path) -> list[Candidate]:
     if not path.exists():
         raise SystemExit(
             f"candidate set not found at {path}; "
-            f"run scripts/build_topology_candidate_set.py first"
+            f"run scripts/build/build_topology_candidate_set.py first"
         )
     rows: list[Candidate] = []
     with path.open() as f:
@@ -170,7 +170,7 @@ def load_candidate_set(path: Path) -> list[Candidate]:
             if not hgnc_id:
                 raise SystemExit(
                     f"candidate row missing hgnc_id in {path}; rebuild with "
-                    f"the HGNC-first scripts/build_topology_candidate_set.py"
+                    f"the HGNC-first scripts/build/build_topology_candidate_set.py"
                 )
             if not acc:
                 continue  # gene_identifier didn't resolve a uniprot_acc — drop, not a bug
@@ -2086,7 +2086,7 @@ def main() -> int:
         for j in cohort_jsonl_paths.values():
             jsonl_args.extend(["--jsonl", str(j)])
         cmd = [
-            "uv", "run", "python", "scripts/upload_topology_to_d1.py",
+            "uv", "run", "python", "scripts/upload/upload_topology_to_d1.py",
             "--topology-version", args.topology_version,
             "--cohorts-present", ",".join(cohort_jsonl_paths.keys()),
             "--source-run-dir", str(run_dir.relative_to(REPO_ROOT)),
@@ -2100,7 +2100,7 @@ def main() -> int:
         if paralog_jsonl is not None:
             paralog_version = args.paralog_version or f"paralog_{args.topology_version}"
             cmd = [
-                "uv", "run", "python", "scripts/upload_paralogs_to_d1.py",
+                "uv", "run", "python", "scripts/upload/upload_paralogs_to_d1.py",
                 "--paralog-version", paralog_version,
                 "--compara-release", args.compara_version,
                 "--jsonl", str(paralog_jsonl),
@@ -2113,7 +2113,7 @@ def main() -> int:
         if ortholog_ecd_jsonl is not None:
             ortholog_ecd_version = f"orthologecd_{args.topology_version}"
             cmd = [
-                "uv", "run", "python", "scripts/upload_ortholog_ecd_to_d1.py",
+                "uv", "run", "python", "scripts/upload/upload_ortholog_ecd_to_d1.py",
                 "--ortholog-ecd-version", ortholog_ecd_version,
                 "--compara-release", args.compara_version,
                 "--jsonl", str(ortholog_ecd_jsonl),

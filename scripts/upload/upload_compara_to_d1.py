@@ -13,7 +13,7 @@ or DELETE the existing rows.
 
 Usage::
 
-    uv run python scripts/upload_compara_to_d1.py \\
+    uv run python scripts/upload/upload_compara_to_d1.py \\
         --release ensembl_compara_2026_05_11 \\
         --csv data/external/ensembl_compara_surfaceome_expressed/compara_mouse_cyno_one2one_highconf_by_ensembl_query.csv
 """

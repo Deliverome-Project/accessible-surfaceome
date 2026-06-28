@@ -24,8 +24,8 @@ pointer).
 
 Usage::
 
-    uv run python scripts/export_mainbench_to_tsv.py
-    uv run python scripts/export_mainbench_to_tsv.py --run-id genome_full_sonnet_ncbi_v1
+    uv run python scripts/cloud/export_mainbench_to_tsv.py
+    uv run python scripts/cloud/export_mainbench_to_tsv.py --run-id genome_full_sonnet_ncbi_v1
 
 Requires CLOUDFLARE_API_TOKEN + CLOUDFLARE_ACCOUNT_ID +
 CLOUDFLARE_D1_SURFACEOME_PUBLIC_ID in the environment.

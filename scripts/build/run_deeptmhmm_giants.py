@@ -1,6 +1,6 @@
 """Run DeepTMHMM on length-skipped giants one at a time, bypassing the filter.
 
-The main sweep (`scripts/run_topology_sweep.py`) skips proteins over
+The main sweep (`scripts/build/run_topology_sweep.py`) skips proteins over
 ``DEEPTMHMM_MAX_SEQUENCE_LENGTH`` (8,000 aa) because DeepTMHMM 1.0.24's
 ESM-2 inference OOMs on 16 GB machines when several giants run in
 parallel. Run them serially here so each gets the full memory budget.
@@ -14,7 +14,7 @@ Workflow per acc:
      topology_version + cohort + hgnc_id + gene_symbol fields the upload
      script expects.
   5. Append to a giants JSONL the caller can hand to
-     ``scripts/upload_topology_to_d1.py``.
+     ``scripts/upload/upload_topology_to_d1.py``.
 
 Memory + time estimates (Apple M2, 16 GB):
   Q7Z5P9 MUC19 (8,384 aa)  → ~5 min,   peak RSS ~10 GB
@@ -24,13 +24,13 @@ Memory + time estimates (Apple M2, 16 GB):
 Run::
 
     DEEPTMHMM_ROOT=/path/to/deeptmhmm DEEPTMHMM_THREADS=2 \
-        uv run python scripts/run_deeptmhmm_giants.py \
+        uv run python scripts/build/run_deeptmhmm_giants.py \
         --accessions Q7Z5P9,Q8NF91,Q9H195 \
         --topology-version topo_2026_05_16
 
 Then upload (idempotent INSERT OR IGNORE so safe to re-run)::
 
-    uv run python scripts/upload_topology_to_d1.py \
+    uv run python scripts/upload/upload_topology_to_d1.py \
         --jsonl data/processed/topology_run_topo_2026_05_16/giants_topology_records.jsonl \
         --cohorts-present human_canonical
 """

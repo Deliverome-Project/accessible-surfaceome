@@ -33,13 +33,13 @@ Tables synced:
 Usage::
 
     # Full sync (every table)
-    uv run python scripts/sync_public_d1.py
+    uv run python scripts/upload/sync_public_d1.py
 
     # Only the triage_run table (incremental — only rows newer than last sync)
-    uv run python scripts/sync_public_d1.py --only triage_run --since 2026-05-01
+    uv run python scripts/upload/sync_public_d1.py --only triage_run --since 2026-05-01
 
     # Dry-run: print what would be written but don't write
-    uv run python scripts/sync_public_d1.py --dry-run
+    uv run python scripts/upload/sync_public_d1.py --dry-run
 
 Requires the standard Cloudflare env vars (CLOUDFLARE_ACCOUNT_ID,
 CLOUDFLARE_API_TOKEN) plus CLOUDFLARE_D1_SURFACEOME_AGENTS_ID
@@ -291,7 +291,7 @@ def sync_triage_runs(*, priv: D1, pub: D1, dry_run: bool, since: str | None, cli
 # which would silently clobber the direct-to-public writes with whatever
 # stale copies happened to be on disk (and we no longer keep on-disk
 # fallbacks for deep dives at all). If you need to (re)publish a record,
-# use `scripts/upload_viewer_snapshots_to_d1.py` or the agent's own publish
+# use `scripts/upload/upload_viewer_snapshots_to_d1.py` or the agent's own publish
 # path — never a private→public / disk→public sync.
 
 

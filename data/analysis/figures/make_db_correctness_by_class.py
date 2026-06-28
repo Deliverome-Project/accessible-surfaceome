@@ -14,7 +14,7 @@ overall accuracy + per-verdict-bucket accuracy (yes / contextual /
 no) on the 147-gene bench.
 
 DB cutoffs are the **trade-off-audit optimized** versions (see
-``scripts/triage_bench_db_barplot.py::_optimized_uniprot_accs`` /
+``scripts/figures/triage_bench_db_barplot.py::_optimized_uniprot_accs`` /
 ``_optimized_cspa_accs`` and the ``db_cutoff_tradeoff`` figure):
 
   * **UniProt — TM+signal**: admit any accession with a transmembrane
@@ -320,7 +320,7 @@ def main() -> None:
 
     # Insert a small visible gap between the single LLM bar and the
     # 5-DB cluster within each column group. Mirrors the canonical
-    # generator's layout (scripts/triage_bench_db_barplot.py).
+    # generator's layout (scripts/figures/triage_bench_db_barplot.py).
     n_col = len(COLUMNS)
     n_callers = len(callers_in_plot)
     bar_width = ax.patches[0].get_width()

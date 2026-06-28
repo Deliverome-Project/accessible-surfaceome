@@ -53,7 +53,7 @@ A separate top-level ``__meta__`` carries source provenance.
 
 Run::
 
-    uv run python scripts/build_surface_bind_summary.py
+    uv run python scripts/build/build_surface_bind_summary.py
 """
 
 from __future__ import annotations

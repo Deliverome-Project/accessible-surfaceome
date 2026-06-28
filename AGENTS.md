@@ -33,7 +33,7 @@ Concise contributor guide for `accessible-surfaceome`.
 
 **Editing a prompt takes effect on the very next local invocation — nothing to push.** Edit the `prompts/*.md` (or the `SurfaceomeRecord` / `SynthesizerLLMFilters` schema in `src/accessible_surfaceome/tools/_shared/models.py`, read locally to build the structured-output tool) and re-run. No `.runs/agents-registry.json` is read at run time; there is no `sync_agent_and_environment` and no `accessible-surfaceome agents sync` command (`agents` just runs the v1 deep-dive).
 
-**Regenerate the prompt-review HTML in the same commit when you touch a prompt.** [docs/prompt_review.html](docs/prompt_review.html) is a committed, generated render of the live deep-dive prompts (each prompt's full text, the diff vs `main`, and a closed-enum reference for the structured-output options — e.g. `epitope_masking.mechanism` with its homo/hetero/other axis). It goes stale the instant a `prompts/*.md` or a review-rendered closed enum (in `src/accessible_surfaceome/tools/_shared/models.py`) changes, so regenerate it in the same commit with `uv run python scripts/gen_prompt_review.py`. No CI gate by design — it is on the committer (agent or human) to re-run it.
+**Regenerate the prompt-review HTML in the same commit when you touch a prompt.** [docs/prompt_review.html](docs/prompt_review.html) is a committed, generated render of the live deep-dive prompts (each prompt's full text, the diff vs `main`, and a closed-enum reference for the structured-output options — e.g. `epitope_masking.mechanism` with its homo/hetero/other axis). It goes stale the instant a `prompts/*.md` or a review-rendered closed enum (in `src/accessible_surfaceome/tools/_shared/models.py`) changes, so regenerate it in the same commit with `uv run python scripts/audit/gen_prompt_review.py`. No CI gate by design — it is on the committer (agent or human) to re-run it.
 
 **Run the prompt-leak tests locally before committing any prompt change.** `tests/test_prompts_no_gene_names.py` + `tests/test_prompt_no_specific_proteins.py` scan every in-process prompt for specific human gene symbols and named proteins and fail if any leak in — naming a real gene in a worked example biases the model toward that gene's biology on every other gene in the cohort. CI catches it, but only after you've pushed; run `uv run pytest -q tests/test_prompts_no_gene_names.py tests/test_prompt_no_specific_proteins.py` first. Use "gene X" / "gene Y" placeholders or categorical descriptors instead. If a real name is structurally load-bearing, add it to `ALLOWED_TOKENS` in the test file with a tight surrounding-context regex.
 
@@ -47,7 +47,7 @@ Concise contributor guide for `accessible-surfaceome`.
 - **Binary cache**: `CachedHTTP.get_bytes` → `data/external/blob_cache/` (gitignored — copyrighted PDFs, never commit); streamed size+page caps; per-host courtesy interval.
 - **Config**: `UNPAYWALL_EMAIL` (optional). Keep the polite, identifiable User-Agent — no browser impersonation; ASH/Wiley 403 us regardless and fall back to abstract.
 - **Provenance/licensing**: `TriageAction.fetch_source` (`pmc_xml`|`unpaywall_pdf`) + `TriageAction.fetch_license` (raw Unpaywall OA license — "must track per-item license"). Redistribution **not gated** — short substring-anchored snippets only (fair use); license captured for a future gate. Clips key on `PMID:`/`PMC:` ids, not `DOI:`.
-- **Validate**: `scripts/probe_triage_fetch.py` / `scripts/probe_pdf_fallback.py` ($0, no model calls).
+- **Validate**: `scripts/probes/probe_triage_fetch.py` / `scripts/probes/probe_pdf_fallback.py` ($0, no model calls).
 
 ## Agent Command Allowlist
 - Codex and Claude agents may run `uv run python <module-or-script> [args...]` for repo analyses and processing.
@@ -69,7 +69,7 @@ resolve to the wrong protein for ~0.2% of human genes (~45 of 19k),
 including COX1 (cyclooxygenase vs the mitochondrial cytochrome c
 oxidase the cohort actually meant) and WAS (Wiskott-Aldrich protein vs
 the MT-RNR1 rRNA gene). See
-[`scripts/audit_resolver_hgnc_id_v3.py`](scripts/audit_resolver_hgnc_id_v3.py)
+[`scripts/audit/audit_resolver_hgnc_id_v3.py`](scripts/audit/audit_resolver_hgnc_id_v3.py)
 for the audit pattern + the per-symbol divergence list at
 `data/analysis/resolver_definitive_audit_v3.tsv`.
 
@@ -91,7 +91,7 @@ tools query this directly:
     FROM gene_identifier_public WHERE hgnc_id = ?;
 
 so they don't re-resolve from symbol. Rebuilt with
-`scripts/build_gene_identifier_table.py` after resolver or cohort
+`scripts/build/build_gene_identifier_table.py` after resolver or cohort
 changes; `resolver_version` column lets consumers detect staleness.
 
 ### Downstream-identifier-per-source rule
@@ -128,7 +128,7 @@ row — e.g. the `protein_family` → `llm_family` rename that blanked the
 Family chip). So: don't hand-edit a snapshot and stop. Land the change
 in D1 — re-run `scripts/surfaceome_v2_annotate.py` (publishes via
 `publish_record`) or push hand-edits with
-`uv run python scripts/upload_viewer_snapshots_to_d1.py --execute`, in
+`uv run python scripts/upload/upload_viewer_snapshots_to_d1.py --execute`, in
 the **same** change as the JSON edit. Don't paper over JSON ↔ D1 schema
 drift with defensive shims in `viewer/lib/surfaceome.ts` — fix the
 records and re-sync D1.
@@ -139,7 +139,7 @@ After the D1 write, `publish_record` purges the Worker's edge cache for
 immediately instead of on the `Cache-Control` TTL (up to 1 day per gene).
 Needs `CLOUDFLARE_ZONE_ID` + a Zone → Cache Purge token scope; missing
 either soft-skips with a warning. The zone **cache rule** (ignore query
-strings) is applied by `scripts/apply_cf_edge_rules.py` (dry-run by
+strings) is applied by `scripts/cloud/apply_cf_edge_rules.py` (dry-run by
 default, `--execute`; Cache Rules are on every plan). **Per-IP rate
 limiting is in the Worker** (native Rate Limiting binding `env.RATE_LIMITER`
 / `RATE_LIMITER_HEAVY` in `wrangler.toml` — in-colo, free, not KV), since
@@ -236,7 +236,7 @@ Every plot in this repo uses `src/accessible_surfaceome/audit/_plotting_config.p
 
 **Final figures read from `raw.githubusercontent.com/{REPO}/{BRANCH}/…`** — not the Worker, not the local file system. Reasons:
 - **Citation stability.** Pinning `BRANCH` to a commit SHA at publication time freezes the file forever; the API endpoint could move or change shape.
-- **Two clean halves of the contract.** Predictions live in `data/processed/triage_bench/mainbench_canonical_v2.tsv` (refreshed from public D1 by `scripts/export_mainbench_to_tsv.py`); truth labels live in `data/eval/triage_benchmark_v1.tsv` (the curated input). The Worker is a convenience surface for non-figure consumers — agents, notebooks, the viewer.
+- **Two clean halves of the contract.** Predictions live in `data/processed/triage_bench/mainbench_canonical_v2.tsv` (refreshed from public D1 by `scripts/cloud/export_mainbench_to_tsv.py`); truth labels live in `data/eval/triage_benchmark_v1.tsv` (the curated input). The Worker is a convenience surface for non-figure consumers — agents, notebooks, the viewer.
 - **Pre-pub flexibility.** Today the gists' `BRANCH = "main"` so a re-run picks up fresh data. At publication, `BRANCH` becomes a commit SHA and the gist URL pins to a Zenodo DOI.
 
 **Refresh procedure** (after any sweep that updates predictions in public D1):
@@ -245,12 +245,12 @@ Every plot in this repo uses `src/accessible_surfaceome/audit/_plotting_config.p
 # Pulls the latest mainbench_canonical_v1 rows from public D1 and writes
 # data/processed/triage_bench/mainbench_canonical_v2.tsv. Identical shape
 # to /v1/triage/export.tsv?run_id=mainbench_canonical_v1&replicate=1.
-uv run python scripts/export_mainbench_to_tsv.py
+uv run python scripts/cloud/export_mainbench_to_tsv.py
 
 # Backfill stable IDs (hgnc_id, ensembl_gene, ncbi_gene_id, uniprot_acc) into
 # the figure TSVs by joining each row against gene_identifier_public. Run
 # after ANY of the four figure TSVs are regenerated; idempotent.
-uv run python scripts/augment_figure_tsvs_with_stable_ids.py
+uv run python scripts/tsv-export/augment_figure_tsvs_with_stable_ids.py
 
 git add data/processed/triage_bench/mainbench_canonical_v2.tsv \
         data/processed/candidate_universe/candidate_universe.tsv \
@@ -277,7 +277,7 @@ Decide by asking "is this a join a typical reanalyst needs for an obvious questi
 
 **4. Never include full reasoning prose** — short coded reasons only (`predicted_reason`, `sonnet_reason`). Full `verdict_reasoning` stays in private D1.
 
-**5. New figure → fit data into existing TSVs first.** Only add a 6th TSV if the data is genuinely orthogonal, and if you do, immediately extend `scripts/augment_figure_tsvs_with_stable_ids.py` to cover it.
+**5. New figure → fit data into existing TSVs first.** Only add a 6th TSV if the data is genuinely orthogonal, and if you do, immediately extend `scripts/tsv-export/augment_figure_tsvs_with_stable_ids.py` to cover it.
 
 CI doesn't enforce that figure scripts only read from `BASE` (raw GitHub) — flag any new `make_*.py` that reaches into the API or a private path during review.
 

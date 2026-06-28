@@ -44,7 +44,7 @@ Four layers:
 1. **Aggressive edge caching** carries the load (the TTLs above). Don't
    shorten them to chase freshness — see purge below.
 2. **Cache rule** (apply once / after a TTL change with
-   [`scripts/apply_cf_edge_rules.py`](../../../scripts/apply_cf_edge_rules.py)
+   [`scripts/cloud/apply_cf_edge_rules.py`](../../../scripts/cloud/apply_cf_edge_rules.py)
    — dry-run by default, `--execute` to apply) that makes the cache key
    **ignore the query string**, so `?_=<random>` can't bust the cache and
    amplify D1 load. Cache Rules are available on every plan.
@@ -111,7 +111,7 @@ npx wrangler dev
 This Worker reads what the **sync script** writes. The Worker doesn't pull from private D1 directly — it only reads `surfaceome_public`. To refresh data:
 
 ```bash
-uv run python scripts/sync_public_d1.py
+uv run python scripts/upload/sync_public_d1.py
 ```
 
 That script reads `surfaceome_agents` (private, contains costs/tokens/prompt text) and writes the column-whitelisted subset to `surfaceome_public`.

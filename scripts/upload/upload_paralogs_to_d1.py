@@ -9,7 +9,7 @@ via INSERT OR IGNORE.
 
 Usage::
 
-    uv run python scripts/upload_paralogs_to_d1.py \\
+    uv run python scripts/upload/upload_paralogs_to_d1.py \\
         --paralog-version paralog_2026_05_16 \\
         --compara-release "Compara r112" \\
         --jsonl data/processed/topology_run_topo_2026_05_16/paralog_records.jsonl

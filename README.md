@@ -214,7 +214,7 @@ Two Cloudflare D1 databases on the same account:
   the private DB: Ensembl Compara orthologs, benchmark truth labels,
   triage verdicts (sans cost/token data), and per-gene
   `SurfaceomeRecord` JSONs. Schema in `cloudflare/d1_public_schema.sql`.
-  Synced one-way from private via `scripts/sync_public_d1.py`.
+  Synced one-way from private via `scripts/upload/sync_public_d1.py`.
 
 A read-only **Cloudflare Worker** at
 `cloudflare/workers/surfaceome_api/` exposes `surfaceome_public` as a
@@ -265,7 +265,7 @@ field-agnostic — the same shape works for any computational figure
 with cited inputs. See
 [`docs/figure-reproducibility-schema.md`](docs/figure-reproducibility-schema.md)
 for the spec and
-[`scripts/embed_figure_gist_metadata.py`](scripts/embed_figure_gist_metadata.py)
+[`scripts/figures/embed_figure_gist_metadata.py`](scripts/figures/embed_figure_gist_metadata.py)
 for the embedder.
 
 ## Layout
@@ -281,7 +281,7 @@ for the embedder.
 | `src/accessible_surfaceome/cloud/` | D1 HTTP client + triage-run uploader. |
 | `src/accessible_surfaceome/tools/` | Shared per-tool helpers + Pydantic models. |
 | `cloudflare/` | D1 schemas + Worker code for the public API. |
-| `scripts/` | One-shot data refreshers (`refresh_compara.sh`, `upload_compara_to_d1.py`, `sync_public_d1.py`), the triage runner (`triage_runner.py`), per-eval render scripts, and the release ritual (`scripts/release/`). |
+| `scripts/` | Production scripts organized by function: `build/` (data refreshers including `refresh_compara.sh`), `upload/` (D1 pushers including `sync_public_d1.py`), `figures/`, `audit/`, `cloud/`, `tsv-export/`, `probes/`; plus top-level runners (`triage_runner.py`, `surfaceome_v2_annotate.py`) and the release ritual (`scripts/release/`). |
 | `viewer/` | Next.js 16 app, deployed at `surfaceome.deliverome.org`. |
 | `data/raw/`, `data/external/`, `data/processed/`, `data/annotations/`, `data/analysis/` | Source snapshots, normalized tables, agent outputs, and final figures. Annotations dir is gitignored; `viewer/public/data/genes/` holds the published snapshot. |
 | `docs/` | Project plans, eval reports, decisions. |
@@ -330,10 +330,10 @@ uv run python scripts/triage_runner.py --model claude-sonnet-4-6 --replicates 1 
 
 ```bash
 # Refresh Ensembl Compara CSV + upload to D1:
-bash scripts/refresh_compara.sh
+bash scripts/build/refresh_compara.sh
 
 # One-way push from private surfaceome_agents → public surfaceome_public:
-uv run python scripts/sync_public_d1.py
+uv run python scripts/upload/sync_public_d1.py
 
 # Deploy the public API Worker:
 cd cloudflare/workers/surfaceome_api && npx wrangler deploy

@@ -137,7 +137,7 @@ A2_SELECT_PROMPT_PATH = PROMPTS_DIR / "a2_select_system.md"
 # processes the request without caching — no error, no cache_read, no
 # refund of the 1.25× write premium (per Anthropic docs as of 2026-06-08).
 # The a1 / a2 trim prefixes were measured at 2,654 / 2,083 tokens by the
-# 2026-06-08 cache-engagement probe (``scripts/probe_cache_engagement.py``),
+# 2026-06-08 cache-engagement probe (``scripts/probes/probe_cache_engagement.py``),
 # i.e. both fell silently below the floor. ``_TRIM_CACHE_PAD`` is the
 # fixed, byte-identical, semantically-neutral block we append to the
 # cached rules to push the prefix above the floor (a1 lands at ~4,770
@@ -172,7 +172,7 @@ the prompt, so a future edit to the rules section can be reasoned
 about with the cache constraint visible. If you are editing the rules
 above and the cached prefix shrinks substantially, the cache may fall
 silently below the floor again; the probe script
-``scripts/probe_cache_engagement.py`` is the way to verify this.
+``scripts/probes/probe_cache_engagement.py`` is the way to verify this.
 
 ### What stays byte-identical across calls
 
@@ -679,7 +679,7 @@ def _build_gene_context(
                 f"unknown gene symbol {raw!r}: not found in D1 "
                 "gene_identifier.hgnc_symbol or cohort_symbol. If this is "
                 "a recently-added gene, rerun "
-                "scripts/build_gene_identifier_table.py to refresh the "
+                "scripts/build/build_gene_identifier_table.py to refresh the "
                 "cache; if it's a typo or non-human gene, pass a UniProt "
                 "accession or HGNC ID directly."
             )
@@ -692,7 +692,7 @@ def _build_gene_context(
 
     # DeepTMHMM topology + Compara paralog + cross-species ortholog ECD
     # identity from public D1 (uploaded by PR #29's
-    # ``scripts/run_topology_sweep.py``). Folded into a compact summary
+    # ``scripts/build/run_topology_sweep.py``). Folded into a compact summary
     # the A1/A2 planners can scan inline. Failures here are non-fatal —
     # log a warning and continue with UniProt-only planning (the
     # planner prompts treat the missing block as "no deterministic data

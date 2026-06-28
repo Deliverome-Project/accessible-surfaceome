@@ -4,8 +4,8 @@ or prompt version bump.
 Run this when ``tests/test_version_fingerprints.py`` fails because you changed
 a record schema or a prompt on purpose:
 
-    uv run python scripts/update_version_fingerprints.py          # write
-    uv run python scripts/update_version_fingerprints.py --check  # verify only
+    uv run python scripts/audit/update_version_fingerprints.py          # write
+    uv run python scripts/audit/update_version_fingerprints.py --check  # verify only
 
 It **refuses** to record a new fingerprint for any artifact whose content
 changed while its version stayed the same — bump the version first

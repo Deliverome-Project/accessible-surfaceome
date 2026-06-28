@@ -186,7 +186,7 @@ def main() -> None:
     _apply_brand_style()
 
     # Catalog now comes from a static TSV (sourced from D1 by
-    # scripts/export_whole_proteome_catalog_to_tsv.py) instead of the
+    # scripts/tsv-export/export_whole_proteome_catalog_to_tsv.py) instead of the
     # live Worker — keeps the gist self-contained and snapshot-pinned
     # to whatever branch/SHA this script is fetched from. Each row
     # carries the v1-style ``*_surface_flag`` columns AND the

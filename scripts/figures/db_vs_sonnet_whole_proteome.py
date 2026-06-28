@@ -26,7 +26,7 @@ by construction.
 #   data/analysis/figures/make_db_vs_sonnet_whole_proteome.py.
 
 Run:
-    uv run python scripts/db_vs_sonnet_whole_proteome.py
+    uv run python scripts/figures/db_vs_sonnet_whole_proteome.py
 """
 from __future__ import annotations
 
@@ -81,7 +81,7 @@ def _vote_match(db_vote: str, sonnet: str) -> bool:
 def main() -> None:
     # As of 2026-06 the canonical source for the whole-proteome catalog
     # is a static TSV regenerated from D1 by
-    # scripts/export_whole_proteome_catalog_to_tsv.py. Each row carries
+    # scripts/tsv-export/export_whole_proteome_catalog_to_tsv.py. Each row carries
     # the expanded v1-style ``*_surface_flag`` columns AND the
     # canonical Sonnet+NCBI verdict, so we no longer need the Worker
     # ``/v1/catalog`` round-trip nor the v1 candidate_universe TSV

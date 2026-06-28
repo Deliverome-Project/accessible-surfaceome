@@ -1,5 +1,5 @@
 """Tests for the UniProt-driven human-isoform resolution helpers in
-``scripts/run_topology_sweep.py``.
+``scripts/build/run_topology_sweep.py``.
 
 Covers ``_resolve_isoforms_for_candidates`` (happy path, no-isoforms,
 error, cache hit) and ``_write_isoform_fastas_to_cache`` (write +
@@ -27,7 +27,7 @@ SCRIPT_PATH = REPO_ROOT / "scripts" / "build" / "run_topology_sweep.py"
 
 @pytest.fixture(scope="module")
 def sweep():
-    """Import scripts/run_topology_sweep.py as a module."""
+    """Import scripts/build/run_topology_sweep.py as a module."""
     spec = importlib.util.spec_from_file_location("run_topology_sweep", SCRIPT_PATH)
     assert spec is not None and spec.loader is not None
     mod = importlib.util.module_from_spec(spec)

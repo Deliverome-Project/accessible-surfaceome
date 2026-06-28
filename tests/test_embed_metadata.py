@@ -1,4 +1,4 @@
-"""Verifies that ``scripts/embed_figure_gist_metadata.py`` writes a
+"""Verifies that ``scripts/figures/embed_figure_gist_metadata.py`` writes a
 schema-valid ``provenance`` blob into each managed figure's PNG/PDF
 metadata, in addition to the existing back-compat ``Source`` field.
 """

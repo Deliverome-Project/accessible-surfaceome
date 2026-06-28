@@ -7,7 +7,7 @@ agent tool) can look up the canonical (uniprot_acc, ensembl_gene,
 ncbi_gene_id) for a gene via a sub-millisecond D1 SELECT instead of
 re-resolving from symbol — which is where the resolver bugs entered
 the pipeline historically (see
-``scripts/audit_resolver_hgnc_id_v3.py``).
+``scripts/audit/audit_resolver_hgnc_id_v3.py``).
 
 Input:
   * ``data/external/ncbi_gene_info/Homo_sapiens.protein_coding.with_hgnc.tsv``
@@ -34,8 +34,8 @@ changes within a single SHA).
 
 Usage::
 
-    uv run python scripts/build_gene_identifier_table.py            # dry-run
-    uv run python scripts/build_gene_identifier_table.py --execute  # do it
+    uv run python scripts/build/build_gene_identifier_table.py            # dry-run
+    uv run python scripts/build/build_gene_identifier_table.py --execute  # do it
 """
 from __future__ import annotations
 

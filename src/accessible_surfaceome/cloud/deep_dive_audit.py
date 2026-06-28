@@ -16,7 +16,7 @@ This module:
   repair: deletes the current (incomplete) children, re-inserts every
   row from the canonical ``SurfaceomeRecord`` on disk. Idempotent.
 
-Use via ``scripts/audit_deep_dive_orphans.py`` — that CLI does the
+Use via ``scripts/audit/audit_deep_dive_orphans.py`` — that CLI does the
 disk-loading + reporting.
 """
 

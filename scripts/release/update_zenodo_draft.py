@@ -120,7 +120,7 @@ Already shipping in this draft:
   read so a reader can re-derive any preset locally without re-
   fetching the full `annotation_json`.
 - [x] In-deposit `README.md` (this file)
-- [x] Reserved DOI wired into [`scripts/embed_figure_gist_metadata.py`](https://github.com/Deliverome-Project/accessible-surfaceome/blob/{sha}/scripts/embed_figure_gist_metadata.py)'s
+- [x] Reserved DOI wired into [`scripts/figures/embed_figure_gist_metadata.py`](https://github.com/Deliverome-Project/accessible-surfaceome/blob/{sha}/scripts/figures/embed_figure_gist_metadata.py)'s
   `ZENODO_DATA_DOI` so figure PDF/PNG metadata can pre-bake the citation.
 
 ## Files

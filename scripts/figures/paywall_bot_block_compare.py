@@ -24,7 +24,7 @@ and the salvaged openalex snapshot).
 #   data/analysis/paywall_bot_block/make_paywall_bot_block_compare.py.
 
 Run:
-    uv run python scripts/paywall_bot_block_compare.py
+    uv run python scripts/figures/paywall_bot_block_compare.py
 """
 from __future__ import annotations
 

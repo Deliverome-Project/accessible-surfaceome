@@ -59,7 +59,7 @@ The **production deep-dive pipeline is `surfaceome_v2`** ([src/accessible_surfac
 **Regenerate the prompt-review HTML in the same commit when you touch a prompt.** [docs/prompt_review.html](docs/prompt_review.html) is a committed, human-readable render of the live deep-dive prompts — each prompt's full text, the diff vs `main`, and a closed-enum reference (the structured-output options the model must choose from, e.g. `epitope_masking.mechanism` annotated with its homo / hetero / other axis). It is a **generated artifact**, so it goes stale the instant a prompt changes. Whenever you edit any in-process prompt under [plan_trim_select/prompts/](src/accessible_surfaceome/agents/plan_trim_select/prompts/), [surfaceome_v2/prompts/](src/accessible_surfaceome/agents/surfaceome_v2/prompts/), or [surfaceome_synthesizer/prompts/](src/accessible_surfaceome/agents/surfaceome_synthesizer/prompts/) — or change a closed enum the review renders (in [models.py](src/accessible_surfaceome/tools/_shared/models.py)) — regenerate it in the **same commit**:
 
 ```bash
-uv run python scripts/gen_prompt_review.py
+uv run python scripts/audit/gen_prompt_review.py
 ```
 
 There is no CI gate on this by design, so it is on the committer (agent or human) to re-run it — a stale review misleads reviewers worse than no review does.
@@ -84,9 +84,9 @@ Items (2) and (3) happen via [`accessible_surfaceome.cloud.surface_annotation.pu
 
 **Why default-on:** previously a record could land on disk via `--persist` but never reach D1 — which meant the Worker kept serving a stale schema-incomplete row and the viewer crashed on missing fields (e.g. `rec.deterministic_features.surface_bind.has_data`). The fix is to add the field to the **records**, not defensive `?.` chains in the viewer. Publishing-by-default is the mechanism that enforces this.
 
-The same `publish_record` helper backs `scripts/upload_viewer_snapshots_to_d1.py` (the bulk-sync maintenance utility) via its `publish_record_dict` variant, so the agent-time and bulk-sync paths can't drift. When in doubt about whether D1 is in sync with the in-tree snapshots, run the maintenance script (dry-run) — it'll report any gaps.
+The same `publish_record` helper backs `scripts/upload/upload_viewer_snapshots_to_d1.py` (the bulk-sync maintenance utility) via its `publish_record_dict` variant, so the agent-time and bulk-sync paths can't drift. When in doubt about whether D1 is in sync with the in-tree snapshots, run the maintenance script (dry-run) — it'll report any gaps.
 
-**Edge-cache purge-on-publish.** After the D1 write, `publish_record` purges the Worker's edge cache for the affected URLs (`/v1/genes/{SYMBOL}` + `/v1/catalog` + `/v1/genes`) so a republished record goes live **immediately** rather than after the Worker's `Cache-Control` TTL (up to 1 day for per-gene records). The purge is targeted by-URL — never `purge_everything`, since the Worker shares the `deliverome.org` zone with the main site. It needs `CLOUDFLARE_ZONE_ID` plus a **Zone → Cache Purge** scope on `CLOUDFLARE_API_TOKEN`; missing either soft-skips with a warning (records then go live on TTL). This is the freshness half of the "never let D1 drift" rule — long TTLs stay safe *because* publish purges. The zone's **cache rule** (ignore query strings — kills `?_=random` cache-busting amplification) is applied by [`scripts/apply_cf_edge_rules.py`](scripts/apply_cf_edge_rules.py) (dry-run by default, `--execute`; Cache Rules are on every plan). **Per-IP rate limiting lives in the Worker** via the native Workers Rate Limiting binding (`env.RATE_LIMITER` / `RATE_LIMITER_HEAVY` in `cloudflare/workers/surfaceome_api/wrangler.toml` — in-colo, free, not KV; tighter on `/v1/catalog` + `*.tsv`), because Cloudflare's zone-level WAF Rate Limiting Rules need Pro+ (`apply_cf_edge_rules.py --only ratelimit` applies those if the zone has the feature).
+**Edge-cache purge-on-publish.** After the D1 write, `publish_record` purges the Worker's edge cache for the affected URLs (`/v1/genes/{SYMBOL}` + `/v1/catalog` + `/v1/genes`) so a republished record goes live **immediately** rather than after the Worker's `Cache-Control` TTL (up to 1 day for per-gene records). The purge is targeted by-URL — never `purge_everything`, since the Worker shares the `deliverome.org` zone with the main site. It needs `CLOUDFLARE_ZONE_ID` plus a **Zone → Cache Purge** scope on `CLOUDFLARE_API_TOKEN`; missing either soft-skips with a warning (records then go live on TTL). This is the freshness half of the "never let D1 drift" rule — long TTLs stay safe *because* publish purges. The zone's **cache rule** (ignore query strings — kills `?_=random` cache-busting amplification) is applied by [`scripts/cloud/apply_cf_edge_rules.py`](scripts/cloud/apply_cf_edge_rules.py) (dry-run by default, `--execute`; Cache Rules are on every plan). **Per-IP rate limiting lives in the Worker** via the native Workers Rate Limiting binding (`env.RATE_LIMITER` / `RATE_LIMITER_HEAVY` in `cloudflare/workers/surfaceome_api/wrangler.toml` — in-colo, free, not KV; tighter on `/v1/catalog` + `*.tsv`), because Cloudflare's zone-level WAF Rate Limiting Rules need Pro+ (`apply_cf_edge_rules.py --only ratelimit` applies those if the zone has the feature).
 
 ## Triage body-fetch: Unpaywall + PDF fallback
 
@@ -100,7 +100,7 @@ Operational notes:
 - **Binary cache**: `CachedHTTP.get_bytes` caches downloaded PDFs to `data/external/blob_cache/` (gitignored — copyrighted PDFs; never commit). Streamed with a size cap (`_MAX_PDF_BYTES`) + page cap; per-host courtesy interval so we don't hammer publishers at cohort scale.
 - **Config**: `UNPAYWALL_EMAIL` (optional; falls back to the project contact). Keep the **polite, identifiable User-Agent** — do not impersonate a browser. Several publishers (ASH/*Blood*, Wiley) 403 our UA regardless; those fall back to abstract by design.
 - **Provenance / licensing**: `TriageAction.fetch_source` records `pmc_xml` vs `unpaywall_pdf`; `TriageAction.fetch_license` records the raw Unpaywall OA license of the recovered copy ("must track per-item license"). Redistribution is **not gated** — we ship only short substring-anchored snippets (fair use), but the license is captured so a gate can be added later. PDF clips key on the clean `PMID:`/`PMC:` source id (not `DOI:`).
-- **Validate** with `scripts/probe_triage_fetch.py` / `scripts/probe_pdf_fallback.py` ($0, no model calls).
+- **Validate** with `scripts/probes/probe_triage_fetch.py` / `scripts/probes/probe_pdf_fallback.py` ($0, no model calls).
 
 ## Agent Command Allowlist
 
@@ -150,7 +150,7 @@ high-profile failures like **COX1** (cyclooxygenase-1 vs the
 mitochondrial cytochrome c oxidase the cohort actually meant) and
 **WAS** (Wiskott-Aldrich protein vs the MT-RNR1 rRNA gene). The audit
 that surfaced these lives at
-[`scripts/audit_resolver_hgnc_id_v3.py`](scripts/audit_resolver_hgnc_id_v3.py);
+[`scripts/audit/audit_resolver_hgnc_id_v3.py`](scripts/audit/audit_resolver_hgnc_id_v3.py);
 the documented divergence list is at
 `data/analysis/resolver_definitive_audit_v3.tsv`.
 
@@ -190,7 +190,7 @@ could read this table. Resolver upgrades change the `resolver_version`
 column; consumers detect staleness by comparing against the resolver
 SHA they expect.
 
-Rebuild with [`scripts/build_gene_identifier_table.py`](scripts/build_gene_identifier_table.py)
+Rebuild with [`scripts/build/build_gene_identifier_table.py`](scripts/build/build_gene_identifier_table.py)
 after any resolver patch or cohort refresh — `--execute` to write to
 D1, otherwise dry-run. Idempotent UPSERT on `hgnc_id`; sub-5-minute on
 a warm cache.
@@ -327,13 +327,13 @@ bug class one layer down — don't.
 After any cohort regeneration, any UniProt or HGNC API behavior
 change, or any picker logic change, re-run the audit:
 
-    uv run python scripts/audit_resolver_hgnc_id_v3.py
+    uv run python scripts/audit/audit_resolver_hgnc_id_v3.py
 
 Sub-minute on a warm cache, ~60-90 min on a cold cache. Outputs
 `data/analysis/resolver_definitive_audit_v3.tsv` (per-symbol
 divergences) and `_d1_rows.tsv` / `_d1_rows_full.tsv` (affected D1
 rows for Phase-4-style targeted reruns). The
-`scripts/audit_resolver_hgnc_id_v3_extend.py` companion scans
+`scripts/audit/audit_resolver_hgnc_id_v3_extend.py` companion scans
 `triage_run`, `deep_dive_run`, and `benchmark_version` in one pass.
 
 Pinned regression cases (BBC3, ND4, PRNP, TSPO, ABHD4, HSD17B8,
@@ -406,7 +406,7 @@ The drift guard at [tests/test_figure_canonical_mirror_sync.py](tests/test_figur
 
 **Final figures read from `raw.githubusercontent.com/{REPO}/{BRANCH}/…`** — not the Worker, not the local file system. Reasons:
 - **Citation stability.** Pinning `BRANCH` to a commit SHA at publication time freezes the file forever; the API endpoint could move or change shape.
-- **Two clean halves of the contract.** Predictions live in `data/processed/triage_bench/mainbench_canonical_v2.tsv` (refreshed from public D1 by `scripts/export_mainbench_to_tsv.py`; per-cell majority across replicates); truth labels live in `data/eval/triage_benchmark_v1.tsv` (the curated input). The Worker is a convenience surface for non-figure consumers — agents, notebooks, the viewer. The denormalized truth columns in the mainbench TSV are guarded against drift by [tests/test_mainbench_truth_drift.py](tests/test_mainbench_truth_drift.py) — re-run `augment_figure_tsvs_with_stable_ids.py` in the same commit that edits the curated TSV or the test fails CI.
+- **Two clean halves of the contract.** Predictions live in `data/processed/triage_bench/mainbench_canonical_v2.tsv` (refreshed from public D1 by `scripts/cloud/export_mainbench_to_tsv.py`; per-cell majority across replicates); truth labels live in `data/eval/triage_benchmark_v1.tsv` (the curated input). The Worker is a convenience surface for non-figure consumers — agents, notebooks, the viewer. The denormalized truth columns in the mainbench TSV are guarded against drift by [tests/test_mainbench_truth_drift.py](tests/test_mainbench_truth_drift.py) — re-run `augment_figure_tsvs_with_stable_ids.py` in the same commit that edits the curated TSV or the test fails CI.
 - **Pre-pub flexibility.** Today the gists' `BRANCH = "main"` so a re-run picks up fresh data. At publication, `BRANCH` becomes a commit SHA and the gist URL pins to a Zenodo DOI.
 
 **Refresh procedure** (after any sweep that updates predictions in public D1):
@@ -415,7 +415,7 @@ The drift guard at [tests/test_figure_canonical_mirror_sync.py](tests/test_figur
 # Pulls the latest mainbench_canonical_v2 rows from public D1 (per-cell
 # majority across replicates) and writes
 # data/processed/triage_bench/mainbench_canonical_v2.tsv.
-uv run python scripts/export_mainbench_to_tsv.py
+uv run python scripts/cloud/export_mainbench_to_tsv.py
 
 # Backfill stable IDs (hgnc_id, ensembl_gene, ncbi_gene_id, uniprot_acc) +
 # denormalized truth columns into the figure TSVs by joining each row
@@ -426,7 +426,7 @@ uv run python scripts/export_mainbench_to_tsv.py
 #   • data/eval/triage_benchmark_v1.tsv
 #   • data/processed/triage_bench/mainbench_canonical_v2.tsv
 #   • data/processed/triage_bench/db_optimized_cutoffs.tsv
-uv run python scripts/augment_figure_tsvs_with_stable_ids.py
+uv run python scripts/tsv-export/augment_figure_tsvs_with_stable_ids.py
 
 git add data/processed/triage_bench/mainbench_canonical_v2.tsv \
         data/processed/candidate_universe/candidate_universe.tsv \
@@ -452,7 +452,7 @@ Per the "Gene identifier resolution" section above, `hgnc_id` is the canonical s
 | `ncbi_gene_id` | Always |
 | `ensembl_canonical_protein` | When the row references a specific protein isoform |
 
-The `scripts/augment_figure_tsvs_with_stable_ids.py` script is the canonical place to backfill these by joining against `gene_identifier_public`. **Extend that script** (don't write a new one) when adding a new figure-input TSV — the join logic should live in one place.
+The `scripts/tsv-export/augment_figure_tsvs_with_stable_ids.py` script is the canonical place to backfill these by joining against `gene_identifier_public`. **Extend that script** (don't write a new one) when adding a new figure-input TSV — the join logic should live in one place.
 
 **2. Denormalize the most-common reanalysis questions.**
 
@@ -605,7 +605,7 @@ Rules for changing what a gene page renders:
   via `accessible_surfaceome.cloud.surface_annotation.publish_record`
   after every successful run. If you hand-edited the committed
   snapshots, push them with
-  `uv run python scripts/upload_viewer_snapshots_to_d1.py --execute`
+  `uv run python scripts/upload/upload_viewer_snapshots_to_d1.py --execute`
   (idempotent `INSERT OR REPLACE` on `(gene_symbol, schema_version)`;
   drops stale older-schema rows). Re-sync D1 in the **same** change as
   the JSON edit so the Worker and the in-tree snapshots never diverge.

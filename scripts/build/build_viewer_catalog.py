@@ -4,7 +4,7 @@ as an *offline snapshot* — the committed fallback used when the public
 Worker's ``/v1/catalog`` endpoint is unreachable.
 
 Same shape and same join logic as
-``scripts/upload_candidate_universe_to_d1.py``, so a build that
+``scripts/upload/upload_candidate_universe_to_d1.py``, so a build that
 short-circuits to the snapshot looks identical to one served by the
 Worker.
 

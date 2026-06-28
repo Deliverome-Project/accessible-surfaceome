@@ -1,6 +1,6 @@
 """Upload ortholog ECD identity records to the ``compara_ortholog_ecd`` table.
 
-Mirrors ``scripts/upload_paralogs_to_d1.py`` but for the cross-species
+Mirrors ``scripts/upload/upload_paralogs_to_d1.py`` but for the cross-species
 human-vs-mouse/cyno ECD comparisons computed in
 ``run_topology_sweep.compute_ortholog_ecd_records``. Writes to both
 ``surfaceome_agents`` and ``surfaceome_public``.
@@ -10,7 +10,7 @@ ortholog_uniprot_acc) via INSERT OR IGNORE.
 
 Usage::
 
-    uv run python scripts/upload_ortholog_ecd_to_d1.py \\
+    uv run python scripts/upload/upload_ortholog_ecd_to_d1.py \\
         --ortholog-ecd-version orthologecd_topo_2026_05_16 \\
         --compara-release "ensembl_compara_2026_05_12" \\
         --jsonl data/processed/topology_run_topo_2026_05_16/ortholog_ecd_records.jsonl

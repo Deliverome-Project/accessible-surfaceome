@@ -11,7 +11,7 @@ A manual, run-when-ready release ritual. Each invocation:
      durable, content-addressed; gives you a snapshot SWHID).
   2. Submits each per-figure gist to Software Heritage (one SWHID per
      figure, all populated from FIGURE_PROVENANCE in
-     scripts/embed_figure_gist_metadata.py).
+     scripts/figures/embed_figure_gist_metadata.py).
   3. Polls SWH until each archive succeeds, prints the resulting SWHIDs.
   4. Audits every managed figure's embedded provenance (defers to
      tests/test_figure_provenance.py).
@@ -22,7 +22,7 @@ A manual, run-when-ready release ritual. Each invocation:
      The deposit is private until you click "Publish" in the Zenodo UI.
 
 After publication in the Zenodo UI, you populate `doi` in
-scripts/embed_figure_gist_metadata.py's FIGURE_PROVENANCE, re-run that
+scripts/figures/embed_figure_gist_metadata.py's FIGURE_PROVENANCE, re-run that
 script to refresh embedded metadata, and commit. The figures then claim
 durability via BOTH SWHID (per-figure) and Zenodo DOI (per-bundle).
 
@@ -95,7 +95,7 @@ REPO_ROOT = Path(__file__).resolve().parents[2]
 REPO_ORIGIN = "https://github.com/Deliverome-Project/accessible-surfaceome"
 
 # Per-figure gists to archive on Software Heritage. Mirrors
-# FIGURE_PROVENANCE in scripts/embed_figure_gist_metadata.py — keep in
+# FIGURE_PROVENANCE in scripts/figures/embed_figure_gist_metadata.py — keep in
 # sync as new figure gists are minted.
 GIST_ORIGINS = [
     "https://gist.github.com/beccajcarlson/d655abfc9c7deeaff1cfbe584de96ffa",  # db_overlap_venn
@@ -1063,7 +1063,7 @@ def phase_audit_figures(*, dry_run: bool) -> bool:
         return True
     except subprocess.CalledProcessError:
         warn("figure provenance audit failed — see pytest output above")
-        warn("consider re-running scripts/embed_figure_gist_metadata.py before Zenodo")
+        warn("consider re-running scripts/figures/embed_figure_gist_metadata.py before Zenodo")
         return False
 
 
@@ -1072,7 +1072,7 @@ def phase_audit_data_inputs() -> None:
     provenance, so the operator can decide which to include in the
     Zenodo deposit.
 
-    Reads ``FIGURE_PROVENANCE`` from ``scripts/embed_figure_gist_metadata.py``
+    Reads ``FIGURE_PROVENANCE`` from ``scripts/figures/embed_figure_gist_metadata.py``
     (the source of truth for which data sources back which figures).
     For each ``data[]`` entry:
 
@@ -1263,7 +1263,7 @@ def phase_zenodo(*, dry_run: bool, token: str | None, include_repo_tarball: bool
     print("    3. When ready, click Publish")
     print(
         "    4. After publishing, populate `doi` in FIGURE_PROVENANCE "
-        "in scripts/embed_figure_gist_metadata.py and re-run that script"
+        "in scripts/figures/embed_figure_gist_metadata.py and re-run that script"
     )
     print()
 
@@ -1275,12 +1275,12 @@ def phase_update_figure_swhids(
 
     Two side effects:
 
-      1. Edits ``scripts/embed_figure_gist_metadata.py`` in place,
+      1. Edits ``scripts/figures/embed_figure_gist_metadata.py`` in place,
          replacing each managed figure's top-level ``"swhid"`` field
          in FIGURE_PROVENANCE with the SWHID just minted by SWH for
          that figure's gist. (Idempotent — same SWHID = no-op.)
 
-      2. Re-runs ``scripts/embed_figure_gist_metadata.py`` to refresh
+      2. Re-runs ``scripts/figures/embed_figure_gist_metadata.py`` to refresh
          the embedded ``provenance`` JSON in every managed figure's
          PNG/PDF. This DOES NOT regenerate the figure pixels — only
          the metadata chunks change (PIL/pikepdf opens, swaps the
@@ -1362,7 +1362,7 @@ def phase_update_figure_swhids(
     announce("Re-running embed_figure_gist_metadata.py to refresh PNG/PDF metadata")
     try:
         subprocess.run(
-            ["uv", "run", "python", "scripts/embed_figure_gist_metadata.py"],
+            ["uv", "run", "python", "scripts/figures/embed_figure_gist_metadata.py"],
             cwd=REPO_ROOT,
             check=True,
         )
@@ -1514,7 +1514,7 @@ def main() -> int:
         action="store_true",
         help=(
             "after Phase 1 mints SWHIDs, edit FIGURE_PROVENANCE in "
-            "scripts/embed_figure_gist_metadata.py to set the new "
+            "scripts/figures/embed_figure_gist_metadata.py to set the new "
             "swhid for each managed figure's gist, then re-run that "
             "script to refresh the PNG/PDF provenance metadata in "
             "place. No figure pixels are re-rendered. OFF by default "

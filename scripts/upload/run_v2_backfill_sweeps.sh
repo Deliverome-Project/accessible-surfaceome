@@ -26,7 +26,7 @@ sweep() {
   # $1 = scratch label ; rest = extra args
   local label="$1"; shift
   log "SWEEP ${label} (workers=${W})"
-  uv run python scripts/run_topology_sweep.py \
+  uv run python scripts/build/run_topology_sweep.py \
     --topology-version "${label}" \
     --max-workers "${W}" \
     --skip-upload \

@@ -2,8 +2,8 @@
 # Sync in-repo figure mirrors to their GitHub gists.
 #
 # Usage:
-#   bash scripts/sync_figure_gists.sh              # sync all
-#   bash scripts/sync_figure_gists.sh zero_db_rescues_by_triage  # sync one
+#   bash scripts/upload/sync_figure_gists.sh              # sync all
+#   bash scripts/upload/sync_figure_gists.sh zero_db_rescues_by_triage  # sync one
 #
 # Reads the slug→gist-ID map from data/analysis/figures/gist_map.json.
 # Each gist has two files: 01_<slug>.md (README) and make_<slug>.py.

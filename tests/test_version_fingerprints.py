@@ -6,7 +6,7 @@ prompt corpus — to its declared version in
 ``tests/version_fingerprints.json``. If an artifact's *content* changes but
 its version + recorded fingerprint weren't updated together, the guardrail
 fails. The fix is a deliberate version bump followed by
-``uv run python scripts/update_version_fingerprints.py``, which refuses to
+``uv run python scripts/audit/update_version_fingerprints.py``, which refuses to
 record a new fingerprint under an unchanged version — so the bump can't be
 skipped.
 
@@ -69,7 +69,7 @@ def test_reconcile_is_noop_when_unchanged() -> None:
 def test_committed_golden_matches_current_artifacts() -> None:
     """The actual guardrail. Fails when a schema/prompt drifted from its
     recorded version+fingerprint. Fix: bump the version, then run
-    ``uv run python scripts/update_version_fingerprints.py``."""
+    ``uv run python scripts/audit/update_version_fingerprints.py``."""
     current = vg.current_fingerprints()
     golden = vg.load_golden()
     new_golden, errors = vg.reconcile(golden, current)
@@ -77,5 +77,5 @@ def test_committed_golden_matches_current_artifacts() -> None:
     assert new_golden == golden, (
         "tests/version_fingerprints.json is out of date (a version moved or an "
         "artifact was added without regenerating the golden). Run "
-        "scripts/update_version_fingerprints.py."
+        "scripts/audit/update_version_fingerprints.py."
     )

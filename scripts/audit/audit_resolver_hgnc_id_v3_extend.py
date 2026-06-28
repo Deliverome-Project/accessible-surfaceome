@@ -20,7 +20,7 @@ re-running the per-symbol resolver pass:
 
 Inputs:
   * ``data/analysis/resolver_definitive_audit_v3.tsv`` — must exist
-    (produced by ``scripts/audit_resolver_hgnc_id_v3.py``).
+    (produced by ``scripts/audit/audit_resolver_hgnc_id_v3.py``).
 
 Outputs:
   * ``data/analysis/resolver_definitive_audit_v3_extended.tsv`` —

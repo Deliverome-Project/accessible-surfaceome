@@ -18,8 +18,8 @@ drift.
 
 Run manually::
 
-    uv run python scripts/check_viewer_types_sync.py
-    uv run python scripts/check_viewer_types_sync.py --verbose
+    uv run python scripts/audit/check_viewer_types_sync.py
+    uv run python scripts/audit/check_viewer_types_sync.py --verbose
 
 The companion task on schema drift (PR #38 follow-up list) hand-keeps
 the TS file synced; this script is the tripwire that fires when

@@ -11,7 +11,7 @@ Tests that:
   null-keyed D1 row.
 
 D1 actually-pushing is exercised manually via
-``scripts/upload_viewer_snapshots_to_d1.py --execute`` against the staging
+``scripts/upload/upload_viewer_snapshots_to_d1.py --execute`` against the staging
 DB; here we only test the in-process branches.
 """
 

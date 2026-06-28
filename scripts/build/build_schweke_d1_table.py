@@ -47,8 +47,8 @@ Writes:
 
 Usage:
 
-  uv run python scripts/build_schweke_d1_table.py             # dry-run
-  uv run python scripts/build_schweke_d1_table.py --execute   # push to D1
+  uv run python scripts/build/build_schweke_d1_table.py             # dry-run
+  uv run python scripts/build/build_schweke_d1_table.py --execute   # push to D1
 
 Reproducibility: ``--execute`` is idempotent (REPLACE INTO). The script
 prints the row counts for every step so a diff against a prior run
@@ -515,7 +515,7 @@ def _push_to_d1(entries: list[SchwekeEntry], universe_version: str) -> None:
             "  n_with_higher_order, max_stoichiometry,"
             "  attribution, license_url, loaded_at, notes"
             ") VALUES (?,?,?,?,?,?,?,?,?,?,?,?, datetime('now'),"
-            "  'Built by scripts/build_schweke_d1_table.py');",
+            "  'Built by scripts/build/build_schweke_d1_table.py');",
             [
                 SCHWEKE_VERSION,
                 universe_version,

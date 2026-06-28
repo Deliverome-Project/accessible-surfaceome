@@ -1,6 +1,6 @@
 """Drift guard: viewer/lib/search-catalog.json must match a fresh build.
 
-``search-catalog.json`` is a generated artifact (scripts/build_search_catalog.py)
+``search-catalog.json`` is a generated artifact (scripts/build/build_search_catalog.py)
 that the viewer /prompts page imports at build time. Its generator derives the
 per-agent searches from the LIVE deterministic kickoff
 (``build_a1_kickoff`` / ``build_a2_kickoff``) + ``_CATEGORY_SPECS``, so any change
@@ -11,7 +11,7 @@ This test rebuilds the catalog in-memory and asserts the committed JSON matches 
 so a kickoff/category change that forgets to regenerate fails CI (and local
 ``check-py``) instead of silently shipping a stale /prompts page. Fix by running::
 
-    uv run python scripts/build_search_catalog.py
+    uv run python scripts/build/build_search_catalog.py
 """
 
 from __future__ import annotations
@@ -39,5 +39,5 @@ def test_search_catalog_json_matches_fresh_build():
     assert committed == fresh, (
         "viewer/lib/search-catalog.json is STALE — it no longer matches the live "
         "deterministic kickoff / evidence_retrieval categories. Regenerate it:\n"
-        "    uv run python scripts/build_search_catalog.py"
+        "    uv run python scripts/build/build_search_catalog.py"
     )

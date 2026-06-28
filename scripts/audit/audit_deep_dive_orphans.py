@@ -11,16 +11,16 @@ children. This script detects those parents and repairs them.
 Usage::
 
     # Report only (default — no D1 mutations).
-    uv run python scripts/audit_deep_dive_orphans.py \\
+    uv run python scripts/audit/audit_deep_dive_orphans.py \\
         --run-id candidate_universe_v1_sonnet_2026_05
 
     # Backfill children from the on-disk JSON for every orphan.
-    uv run python scripts/audit_deep_dive_orphans.py \\
+    uv run python scripts/audit/audit_deep_dive_orphans.py \\
         --run-id candidate_universe_v1_sonnet_2026_05 \\
         --execute
 
     # Pull JSON from a Modal volume snapshot pulled to a custom path.
-    uv run python scripts/audit_deep_dive_orphans.py \\
+    uv run python scripts/audit/audit_deep_dive_orphans.py \\
         --run-id candidate_universe_v1_sonnet_2026_05 \\
         --annotations-dir /tmp/modal_snapshot \\
         --execute

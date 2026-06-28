@@ -4,7 +4,7 @@ HGNC is the authoritative naming registry for human genes; their
 "complete set" download is what most downstream pipelines treat as the
 official gene catalogue. This script is the second of the pair that
 populates ``data/external/<source>/`` — see also
-``scripts/fetch_ncbi_human_protein_coding.py``. Both feed
+``scripts/build/fetch_ncbi_human_protein_coding.py``. Both feed
 ``docs/data-sources/whole-genome-gene-catalogs.md`` and the
 ``WHOLE_GENOME_N`` constant in the triage bench cost projections.
 

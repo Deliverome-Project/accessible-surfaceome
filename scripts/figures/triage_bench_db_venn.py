@@ -68,7 +68,7 @@ PALETTE_BY_LABEL = {
 # Pin to an immutable commit SHA so the reproduction is traceable and
 # tamper-evident. Bump together with ``_EXPECTED_TSV_SHA256`` whenever
 # the upstream universe TSV is intentionally refreshed (and update the
-# matching ``data[0]`` entry in scripts/embed_figure_gist_metadata.py).
+# matching ``data[0]`` entry in scripts/figures/embed_figure_gist_metadata.py).
 _PINNED_COMMIT_SHA = "898c743d9df4ec7497e7424b80d3408e5ad07c41"
 _CAND_URL = (
     "https://raw.githubusercontent.com/Deliverome-Project/accessible-surfaceome/"

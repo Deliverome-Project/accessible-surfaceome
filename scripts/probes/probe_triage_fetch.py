@@ -7,7 +7,7 @@ metric without paying for LLM triage: it fetches every discovered paper rather
 than only the ones a Haiku call would route to ``worth_fetching``.
 
 Usage:
-    uv run python scripts/probe_triage_fetch.py "MS4A1 OR CD20 surface" --max 30
+    uv run python scripts/probes/probe_triage_fetch.py "MS4A1 OR CD20 surface" --max 30
 """
 
 from __future__ import annotations

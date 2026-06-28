@@ -24,12 +24,12 @@ columns.
 
 Usage::
 
-    uv run python scripts/build_topology_candidate_set.py \\
+    uv run python scripts/build/build_topology_candidate_set.py \\
         --topology-version topo_2026_05_16
 
 Verification override — by HGNC ID, not symbol::
 
-    uv run python scripts/build_topology_candidate_set.py \\
+    uv run python scripts/build/build_topology_candidate_set.py \\
         --topology-version topo_test \\
         --override-hgnc-ids HGNC:4526,HGNC:11850,HGNC:3236  # GPR75, TLR4, EGFR
 """
