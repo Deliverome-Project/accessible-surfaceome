@@ -1,591 +1,804 @@
-"""Blog gene-card figure for KLK2 / SRC / CD63 — three deep-dive
-contribution modes — rendered as a single HTML page with the viewer's
-exact CSS + 3Dmol.js structures, then screenshotted via Playwright at
-devicePixelRatio=3 (~480 DPI effective).
+"""Render the KLK2 / SRC / CD63 blog-card figure by writing a 3-column
+HTML page (viewer-styled, 3Dmol structures, no executive summary, no
+HGNC/aliases) and screenshotting it headlessly via Playwright at
+device_scale_factor=3 — net effective resolution ≥ 600 DPI.
 
-Why HTML+headless-Chrome instead of pure matplotlib: matplotlib can't
-render the viewer's React typography (italic Playfair Display .h-vital-
-display values, soft-fill StatusPill chips, .vitalK eyebrows), and it
-can't render the actual 3Dmol.js cartoon ribbons. By generating the
-page in the viewer's CSS + JS, the screenshot is pixel-faithful to
-surfaceome.deliverome.org by construction.
+Why not matplotlib: the viewer's GeneHeader / StructureViewer styling
+(italic Playfair display vitals, 3Dmol cartoon ribbons, membrane slabs,
+soft-fill StatusPills with the exact design tokens) is far cleaner to
+replicate by writing actual HTML/CSS than by re-implementing it patch
+by patch in matplotlib. The temp HTML lives under scratchpad/; only
+the final PNG/PDF ships under data/analysis/figures/.
 
-Stages:
-  1. Build a self-contained HTML file at ``scratchpad/blog_cards.html``
-     with three columns. Each column uses class names borrowed from
-     ``viewer/components/surfaceome/GeneHeader/GeneHeader.module.css``
-     and design tokens from ``viewer/app/design-tokens.css``.
-  2. Launch Playwright Chromium at ``viewport=1600x1200``,
-     ``device_scale_factor=3``. Open the file:// URL, wait for 3Dmol
-     to finish rendering each structure (signaled by a window-level
-     flag the per-card init sets), then ``page.screenshot()``.
-  3. Save the screenshot to ``data/analysis/figures/blog_gene_cards_
-     klk2_src_cd63.png`` and write a companion PDF rendering of the
-     same HTML for the vector deposit.
+CD63's membrane orientation is computed in Python (numpy) ported from
+viewer/lib/structure-orientation.ts — I→O axis aligned to +Y, TM mean
+shifted to Y=0 — so the structure renders upright with a horizontal
+membrane slab. SRC (DeepTMHMM GLOB type) renders gold with no slab to
+match the live viewer. KLK2 has no TM helices; rendered as ECF /
+signal-peptide colored without a slab.
 
 Run:
     uv run python scripts/blog_gene_cards_klk2_src_cd63.py
 """
 from __future__ import annotations
 
-import csv
-import json
+import asyncio
 import os
+import shutil
+import sys
 import textwrap
 from pathlib import Path
+from typing import Any
+
+import httpx
+import numpy as np
 
 ROOT = Path(__file__).resolve().parents[1]
+SCRATCH = Path(os.environ.get(
+    "BLOG_CARD_SCRATCH",
+    "/tmp/blog_gene_cards_klk2_src_cd63",
+))
+SCRATCH.mkdir(parents=True, exist_ok=True)
 OUT_DIR = ROOT / "data/analysis/figures"
 SLUG = "blog_gene_cards_klk2_src_cd63"
-SCRATCH = Path(os.environ.get("TMPDIR", "/tmp")) / "blog_cards"
-SCRATCH.mkdir(parents=True, exist_ok=True)
-HTML_PATH = SCRATCH / "blog_cards.html"
-PNG_PATH = OUT_DIR / f"{SLUG}.png"
-PDF_PATH = OUT_DIR / f"{SLUG}.pdf"
 
-# ── Per-gene data — pulled from the committed records + catalog ──────
-#
-# Each gene mirrors what the live surfaceome.deliverome.org/{SYMBOL}
-# page displays in the GeneHeader area: symbol + name + identifiers +
-# SOURCES row + BENCHMARK + TRIAGE + executive summary + 2×2 vitals
-# grid. The topology_str feeds the 3Dmol color-by-residue script.
-GENES = [
+# Per-gene data drawn from viewer/public/data/surfaceome/*.json plus
+# the public catalog. Only fields that actually render on the card
+# are stored; everything else is pruned to keep the figure tight.
+GENES: list[dict[str, Any]] = [
     {
         "symbol": "KLK2",
-        "name": "kallikrein related peptidase 2",
-        "synonyms": "KLK2A2, hGK-1, hK2",
-        "uniprot_acc": "P20151",
-        "hgnc_id": "HGNC:6363",
-        "ncbi_gene": "3817",
-        "ensembl_gene": "ENSG00000167751",
-        "n_db_votes": 0,
+        "name": "Kallikrein-2",
+        "uniprot": "P20151",
+        "ncbi": "3817",
+        "ensembl": "ENSG00000167751",
+        # 5-DB votes
         "db_flags": {"UniProt": 0, "GO": 0, "HPA": 0, "SURFY": 0, "CSPA": 0},
-        "benchmark_label": "CONTEXTUAL",
-        "benchmark_tone": "amber",
-        "benchmark_note": "agrees with deep dive",
-        "triage_label": "Contextual",
-        "triage_note": "initial pass · NO WEB SEARCH · agrees with deep dive",
-        "summary": (
-            "KLK2 (human kallikrein-2) is a canonical secreted serine protease with no "
-            "transmembrane domain, but a 2025 preclinical study (PMC12580770) "
-            "demonstrates surface accessibility on intact prostate cancer cells by "
-            "live-cell FACS on VCaP and fresh mCRPC patient tumor cells, confocal IF, "
-            "and functional engagement via three distinct therapeutic modalities. "
-            "Surface expression is strictly prostate-lineage- and AR-state-restricted, "
-            "absent in neuroendocrine/double-negative mCRPC variants. The primary risk "
-            "is a large competing secreted pool (KLK2 is constitutively secreted into "
-            "conditioned medium and seminal plasma), and the surface-docking mechanism "
-            "remains uncharacterized."
-        ),
-        # Vital cells: (eyebrow, display value, tone class, sub-line)
-        "vitals": [
-            ("SURFACE VERDICT",     "Moderate",            "amber",   "Architecture · Other"),
-            ("EXPERIMENTAL EVIDENCE", "Direct, multi-method", "success", "33 entries"),
-            ("CONFIDENCE",          "Moderate",            "amber",   "22 primary · 11 secondary"),
-            ("STATE DEPENDENCE",    "High",                "amber",   "tissue-restricted"),
-        ],
-        "topology_str": "S" * 17 + "O" * 244,  # SP + mature secreted
-        "structure_legend": [("Extracellular", "#8878C8"), ("Signal peptide", "#DD5955")],
+        # Triage / deep-dive
         "sonnet_verdict": "contextual",
         "sonnet_reason":  "tissue_restricted_surface",
-        "extra_tags": ["✓ known ligand"],
+        # Vitals (4 — viewer's GeneHeader pattern)
+        "vitals": [
+            ("SURFACE VERDICT",     "Moderate",              "amber"),
+            ("EXPERIMENTAL EVIDENCE","Direct, multi-method", "success"),
+            ("CONFIDENCE",          "Moderate",              "amber"),
+            ("STATE DEPENDENCE",    "High",                  "danger"),
+        ],
+        # Secondary chips — narrative-relevant tags
+        "chips": [
+            ("primary",  "Plasma membrane", "teal"),
+            ("reason",   "Tissue-restricted surface", "amber"),
+            ("ecd",      "Large ECD", "success"),
+            (None,       "✓ known ligand", "neutral"),
+        ],
+        # Topology: no TM helices (it's a secreted protease, signal
+        # peptide cleaved). Keep N-terminal residues 1-17 colored as
+        # signal peptide (S) before the cleavage site.
+        "topology_str": "S" * 17 + "O" * (261 - 17),  # secreted, no TM
+        "has_membrane_slab": False,
     },
     {
         "symbol": "SRC",
-        "name": "SRC proto-oncogene, non-receptor tyrosine kinase",
-        "synonyms": "ASV, SRC1, THC6",
-        "uniprot_acc": "P12931",
-        "hgnc_id": "HGNC:11283",
-        "ncbi_gene": "6714",
-        "ensembl_gene": "ENSG00000197122",
-        "n_db_votes": 2,
+        "name": "Proto-oncogene tyrosine kinase Src",
+        "uniprot": "P12931",
+        "ncbi": "6714",
+        "ensembl": "ENSG00000197122",
         "db_flags": {"UniProt": 0, "GO": 1, "HPA": 1, "SURFY": 0, "CSPA": 0},
-        "benchmark_label": "CONTEXTUAL",
-        "benchmark_tone": "amber",
-        "benchmark_note": "agrees with deep dive",
-        "triage_label": "Contextual",
-        "triage_note": "initial pass · NO WEB SEARCH · agrees with deep dive",
-        "summary": (
-            "SRC is state-dependently surface-accessible in cancer cells — a canonical "
-            "inner-leaflet kinase with a cancer-specific outer-surface form. Direct "
-            "surface evidence is single-method: antibody-mediated tumor cell killing "
-            "against extracellular-facing eSrc in cancer cell lines and xenograft "
-            "models demonstrates outer-leaflet engagement. Surface presence is "
-            "strictly state-gated, requiring cancer-state autophagolysosomal "
-            "exocytosis (ALE) to invert the N-myristoylated kinase onto the outer "
-            "leaflet; normal cells retain exclusively inner-leaflet, cytoplasmic-face "
-            "localization."
-        ),
-        "vitals": [
-            ("SURFACE VERDICT",     "Moderate",             "amber",   "Architecture · Other"),
-            ("EXPERIMENTAL EVIDENCE", "Direct, single-method", "amber",  "36 entries"),
-            ("CONFIDENCE",          "Low",                  "danger",  ""),
-            ("STATE DEPENDENCE",    "High",                 "amber",   "lysosomal exocytosis"),
-        ],
-        # SRC = GLOB in DeepTMHMM (no TM helices). Live viewer paints
-        # the whole structure in the M-tone (golden) and labels the
-        # legend "Globular". Match that here.
-        "topology_str": "M" * 536,
-        "structure_legend": [("Globular", "#FFD579")],
-        "is_glob_no_slab": True,
         "sonnet_verdict": "no",
         "sonnet_reason":  "inner_leaflet_anchored",
-        "extra_tags": ["✓ tumor associated"],
+        "vitals": [
+            ("SURFACE VERDICT",      "Moderate",              "amber"),
+            ("EXPERIMENTAL EVIDENCE","Direct, single method", "amber"),
+            ("CONFIDENCE",           "Low",                   "danger"),
+            ("STATE DEPENDENCE",     "High",                  "danger"),
+        ],
+        "chips": [
+            ("primary",    "Plasma membrane",    "teal"),
+            ("reason",     "Lysosomal exocytosis", "amber"),
+            ("induced by", "Oncogenic",          "maroon"),
+            (None,         "✓ tumor associated", "maroon"),
+        ],
+        # DeepTMHMM type GLOB → all "M" so 3Dmol paints the cartoon
+        # gold (M tone) without a membrane slab, mirroring the live
+        # viewer's "Globular" render.
+        "topology_str": "M" * 536,
+        "has_membrane_slab": False,
     },
     {
         "symbol": "CD63",
-        "name": "CD63 antigen",
-        "synonyms": "AD1, HOP-26, ME491",
-        "uniprot_acc": "P08962",
-        "hgnc_id": "HGNC:1692",
-        "ncbi_gene": "967",
-        "ensembl_gene": "ENSG00000135404",
-        "n_db_votes": 4,
+        "name": "Tetraspanin-30 (LAMP-3)",
+        "uniprot": "P08962",
+        "ncbi": "967",
+        "ensembl": "ENSG00000135404",
         "db_flags": {"UniProt": 1, "GO": 1, "HPA": 0, "SURFY": 1, "CSPA": 1},
-        "benchmark_label": "CONTEXTUAL",
-        "benchmark_tone": "amber",
-        "benchmark_note": "agrees with deep dive",
-        "triage_label": "Contextual",
-        "triage_note": "initial pass · NO WEB SEARCH · agrees with deep dive",
-        "summary": (
-            "CD63 is state-dependently surface-accessible as a pan-tissue tetraspanin "
-            "whose dominant steady-state localization is lysosomal/endosomal but whose "
-            "surface pool expands markedly upon cellular activation. Direct multi-"
-            "method support: KO-validated live-cell flow cytometry on HEK293T cells "
-            "and primary human granulocytes — basophils and eosinophils — across "
-            "multiple independent studies. Surface levels are highly state-modulated: "
-            "absent-to-low on resting granulocytes and stromal cells, rising sharply "
-            "after IgE-mediated degranulation, platelet activation, TCR stimulation, "
-            "and in disease states including HES, NPC, and the CRC tumor microenvironment."
-        ),
-        "vitals": [
-            ("SURFACE VERDICT",     "High",                "success", "Architecture · Tetraspanin"),
-            ("EXPERIMENTAL EVIDENCE", "Direct, multi-method", "success", "62 entries"),
-            ("CONFIDENCE",          "High",                "success", ""),
-            ("STATE DEPENDENCE",    "High",                "amber",   "lysosomal exocytosis"),
-        ],
-        # CD63 DeepTMHMM .3line topology — 4 TM helices through the
-        # plasma membrane, large extracellular loop between TM3+TM4.
-        "topology_str": (
-            "IIIIIIIIIIII"
-            "MMMMMMMMMMMMMMMMMMMMM"
-            "OOOOOOOOOOOOOOOOOO"
-            "MMMMMMMMMMMMMMMMMMMMMMM"
-            "IIIIIIIII"
-            "MMMMMMMMMMMMMMMMMMMMMMM"
-            "OOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOO"
-            "MMMMMMMMMMMMMMMMMMMMMMM"
-            "IIIIIIIIIIIII"
-        ),
-        "structure_legend": [
-            ("Extracellular", "#8878C8"),
-            ("TM helix",      "#FFD579"),
-            ("Intracellular", "#A9CFA8"),
-        ],
         "sonnet_verdict": "contextual",
         "sonnet_reason":  "lysosomal_exocytosis",
-        "extra_tags": ["✓ known ligand", "Primary · Lysosome"],
+        "vitals": [
+            ("SURFACE VERDICT",      "High",                  "success"),
+            ("EXPERIMENTAL EVIDENCE","Direct, multi-method",  "success"),
+            ("CONFIDENCE",           "High",                  "success"),
+            ("STATE DEPENDENCE",     "High",                  "danger"),
+        ],
+        "chips": [
+            ("primary",    "Lysosome",             "lavender"),
+            ("reason",     "Lysosomal exocytosis", "amber"),
+            ("induced by", "Oncogenic",            "maroon"),
+            (None,         "✓ known ligand",       "neutral"),
+        ],
+        # CD63 (P08962) DeepTMHMM topology — 4 TM bundle. Verified
+        # against data/external/deeptmhmm_surfaceome_predictions/
+        # human_canonical_non_hla/predicted_topologies.3line on
+        # 2026-06-26.
+        "topology_str": (
+            "I" * 12
+            + "M" * 21
+            + "O" * 18
+            + "M" * 23
+            + "I" * 9
+            + "M" * 23
+            + "O" * 93
+            + "M" * 23
+            + "I" * 13
+        ),
+        "has_membrane_slab": True,
     },
 ]
 
 
-# ── Topology → 3Dmol color spec (per-residue cartoon coloring) ───────
-
-
-def _topology_to_3dmol_colors(topo: str) -> list[dict]:
-    """Build a list of 3Dmol setStyle invocations that color each
-    contiguous topology run with the viewer's TOPOLOGY_COLORS palette."""
-    palette = {
-        "M": "#FFD579", "O": "#8878C8", "I": "#A9CFA8",
-        "S": "#DD5955", "B": "#C7CED6",
-    }
-    out: list[dict] = []
-    if not topo:
-        return out
-    run_start = 1
-    run_char = topo[0]
-    for i in range(1, len(topo)):
-        if topo[i] != run_char:
-            out.append({
-                "resi_from": run_start, "resi_to": i,
-                "color": palette.get(run_char, "#A9CFA8"),
-            })
-            run_start = i + 1
-            run_char = topo[i]
-    out.append({
-        "resi_from": run_start, "resi_to": len(topo),
-        "color": palette.get(run_char, "#A9CFA8"),
-    })
-    return out
-
-
-# ── HTML generation ──────────────────────────────────────────────────
-
-
-_DESIGN_TOKENS_CSS = """
-:root {
-  --maroon-deepest: #3e0a18; --maroon-dark: #6e1428; --maroon-light: #bc3c4c;
-  --maroon-pale: #f0a098;   --maroon-blush: #fde8e6;
-  --teal-deepest: #152e28;  --teal-dark: #244840; --teal-mid: #3d6b60; --teal-lt: #7aab9f;
-  --amber-deepest: #5a2608; --amber-dark: #8c4210; --amber-mid: #c07830;
-  --amber-bright: #f4aa28;  --amber-light: #f4c070;
-  --lavender-deepest: #1e1450; --lavender-dark: #3a2888; --lavender-mid: #5848a8;
-  --lavender-bright: #8878c8;
-  --ink: #1f1718; --ink-soft: #2a2122; --muted: #6f5d5a; --muted-soft: #80706a;
-  --line: rgba(31,23,24,0.10); --line-soft: rgba(31,23,24,0.06);
-  --bg: #fefefe; --bg-soft: #ffffff; --bg-warm: #f3ece5;
-  --success: #2e7a55; --accent: var(--maroon-light); --accent-deep: var(--maroon-dark);
-  --radius-pill: 999px;
-  --space-1: 0.25rem; --space-2: 0.5rem; --space-3: 0.75rem;
-  --space-4: 1rem;    --space-5: 1.5rem; --space-6: 2rem;
-  --fw-medium: 500;   --fw-semibold: 600;
+# ── Topology coloring (mirrors viewer's TOPOLOGY_COLORS) ─────────────
+TOPOLOGY_COLORS = {
+    "M": "#FFD579",  # TM helix / membrane-associated — gold
+    "O": "#8878C8",  # extracellular — lavender
+    "I": "#A9CFA8",  # intracellular — soft green
+    "S": "#DD5955",  # signal peptide — red
 }
-"""
 
-_PAGE_CSS = """
+
+# ── Pure-Python port of viewer/lib/structure-orientation.ts ─────────
+
+
+def _parse_ca(pdb_text: str) -> tuple[list[str], dict[int, np.ndarray]]:
+    """Return (lines, resi→CA-coord) for an AlphaFold PDB."""
+    lines = pdb_text.splitlines()
+    ca: dict[int, np.ndarray] = {}
+    for line in lines:
+        if not (line.startswith("ATOM") or line.startswith("HETATM")):
+            continue
+        if len(line) < 54:
+            continue
+        if line[12:16].strip() != "CA":
+            continue
+        try:
+            resi = int(line[22:26].strip())
+            x = float(line[30:38])
+            y = float(line[38:46])
+            z = float(line[46:54])
+        except ValueError:
+            continue
+        if resi <= 0 or resi in ca:
+            continue
+        ca[resi] = np.array([x, y, z])
+    return lines, ca
+
+
+def _orient_pdb_by_topology(
+    pdb_text: str, topology: str
+) -> tuple[str, dict | None]:
+    """Port of viewer/lib/structure-orientation.ts. Rotates PDB so
+    the I→O axis maps to +Y and the TM-helix mean Y sits at 0. Returns
+    the transformed PDB plus a membrane-slab spec (or ``None`` when
+    the protein has no TM residues)."""
+    lines, ca = _parse_ca(pdb_text)
+    states: dict[str, list[np.ndarray]] = {"M": [], "O": [], "I": []}
+    for resi, coord in ca.items():
+        if 1 <= resi <= len(topology):
+            s = topology[resi - 1]
+            if s in states:
+                states[s].append(coord)
+    if not states["M"]:
+        return pdb_text, None
+
+    m_centroid = np.mean(states["M"], axis=0)
+    o_centroid = (np.mean(states["O"], axis=0)
+                  if states["O"] else m_centroid + np.array([0.0, 1.0, 0.0]))
+    i_centroid = (np.mean(states["I"], axis=0)
+                  if states["I"] else m_centroid - np.array([0.0, 1.0, 0.0]))
+    axis = o_centroid - i_centroid
+    n = np.linalg.norm(axis)
+    if n < 1e-8:
+        return pdb_text, None
+    axis = axis / n
+
+    target = np.array([0.0, 1.0, 0.0])
+    v = np.cross(axis, target)
+    s = np.linalg.norm(v)
+    c = float(np.dot(axis, target))
+    if s < 1e-8:
+        R = np.eye(3) if c > 0 else np.diag([1.0, -1.0, -1.0])
+    else:
+        vx = np.array([
+            [0.0,  -v[2],  v[1]],
+            [v[2],  0.0,  -v[0]],
+            [-v[1], v[0],  0.0],
+        ])
+        R = np.eye(3) + vx + (vx @ vx) * ((1.0 - c) / (s * s))
+
+    # Translation so TM mean Y == 0
+    rotated_m = R @ m_centroid
+    y_shift = -rotated_m[1]
+
+    out_lines: list[str] = []
+    rotated_tm_y: list[float] = []
+    rotated_xz: list[tuple[float, float]] = []
+    for line in lines:
+        if (line.startswith("ATOM") or line.startswith("HETATM")) and len(line) >= 54:
+            try:
+                x = float(line[30:38])
+                y = float(line[38:46])
+                z = float(line[46:54])
+            except ValueError:
+                out_lines.append(line)
+                continue
+            new = R @ np.array([x, y, z])
+            new[1] += y_shift
+            new_line = (
+                line[:30]
+                + f"{new[0]:8.3f}{new[1]:8.3f}{new[2]:8.3f}"
+                + line[54:]
+            )
+            out_lines.append(new_line)
+            atom_name = line[12:16].strip()
+            try:
+                resi = int(line[22:26].strip())
+            except ValueError:
+                resi = 0
+            if atom_name == "CA" and 1 <= resi <= len(topology):
+                if topology[resi - 1] == "M":
+                    rotated_tm_y.append(float(new[1]))
+                rotated_xz.append((float(new[0]), float(new[2])))
+        else:
+            out_lines.append(line)
+
+    if not rotated_tm_y:
+        return "\n".join(out_lines), None
+
+    y_min = min(rotated_tm_y)
+    y_max = max(rotated_tm_y)
+    xs = [p[0] for p in rotated_xz]
+    zs = [p[1] for p in rotated_xz]
+    membrane = {
+        "y_min": y_min,
+        "y_max": y_max,
+        "x_min": min(xs) - 4,
+        "x_max": max(xs) + 4,
+        "z_min": min(zs) - 4,
+        "z_max": max(zs) + 4,
+    }
+    return "\n".join(out_lines), membrane
+
+
+# ── PDB fetch (with disk cache so re-renders are instant) ────────────
+
+
+def _fetch_pdb(uniprot: str) -> str:
+    cache = SCRATCH / f"AF-{uniprot}-F1-model_v6.pdb"
+    if cache.exists():
+        return cache.read_text()
+    url = f"https://alphafold.ebi.ac.uk/files/AF-{uniprot}-F1-model_v6.pdb"
+    print(f"  fetching {url}")
+    r = httpx.get(url, timeout=60, follow_redirects=True)
+    r.raise_for_status()
+    cache.write_text(r.text)
+    return r.text
+
+
+# ── HTML composition ────────────────────────────────────────────────
+
+
+_CSS = """
+:root {
+  --maroon-deepest: #3e0a18;
+  --maroon-dark: #6e1428;
+  --maroon-mid: #922038;
+  --maroon-light: #bc3c4c;
+  --teal-deepest: #152e28;
+  --teal-mid: #3d6b60;
+  --amber-dark: #8c4210;
+  --amber-mid: #c07830;
+  --amber-bright: #f4aa28;
+  --lavender-dark: #3a2888;
+  --lavender-bright: #8878c8;
+  --success: #1b5e3f;
+  --ink: #1f1718;
+  --ink-soft: #2a2122;
+  --muted: #6f5d5a;
+  --line: rgba(31, 23, 24, 0.10);
+  --line-soft: rgba(31, 23, 24, 0.06);
+  --bg: #fefefe;
+  --bg-warm: #f3ece5;
+  --surface-soft: #fbf7f2;
+  --font-display: "Playfair Display", Georgia, serif;
+  --font-sans: "Manrope", -apple-system, "Helvetica Neue", sans-serif;
+}
+
 * { box-sizing: border-box; }
 html, body {
-  margin: 0; padding: 0;
+  margin: 0;
+  padding: 24px;
   background: var(--bg);
-  font-family: 'Manrope', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  font-family: var(--font-sans);
   color: var(--ink);
-  -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
-.cards {
+
+.grid {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
-  gap: 1.75rem;
-  padding: 1.5rem;
-  align-items: start;
+  gap: 18px;
+  width: 100%;
 }
-.card { min-width: 0; }
-.card .symbol {
-  font-family: 'Playfair Display', 'Georgia', serif;
-  font-weight: 700; font-size: 3.6rem; line-height: 1;
+
+.card {
+  background: var(--bg);
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  padding: 22px 22px 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  min-width: 0;
+}
+
+.header-row { display: flex; flex-direction: column; gap: 4px; }
+.symbol {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 44px;
+  line-height: 1;
+  letter-spacing: -0.02em;
   color: var(--maroon-deepest);
-  margin: 0 0 0.4rem;
-  letter-spacing: -0.01em;
+  margin: 0 0 4px;
 }
-.card .name {
-  font-style: italic; color: var(--ink-soft); font-size: 0.92rem;
-  font-weight: 400;
-  margin: 0 0 0.4rem;
+.name {
+  font-family: var(--font-sans);
+  font-weight: 500;
+  font-size: 13px;
+  color: var(--ink);
+  margin: 0;
+  line-height: 1.3;
 }
-.card .synonyms { color: var(--muted); font-size: 0.78rem; margin-left: 0.5rem; }
-.card .idRow {
-  display: flex; flex-wrap: wrap; gap: 0.9rem;
-  font-size: 0.72rem; font-family: 'Manrope', sans-serif;
-  color: var(--ink); margin: 0.5rem 0 0.7rem;
+.idrow {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  font-family: var(--font-sans);
+  font-size: 10px;
+  font-weight: 500;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin-top: 6px;
 }
-.card .idK { color: var(--muted); font-weight: 500; letter-spacing: 0.04em; text-transform: uppercase; font-size: 0.62rem; }
-.card .idV { color: var(--ink); font-weight: 500; }
-.card .sourcesRow {
-  display: flex; align-items: center; gap: 0.6rem; flex-wrap: wrap;
-  font-size: 0.72rem; margin-bottom: 0.45rem;
-}
-.card .sourcesK {
-  color: var(--muted); text-transform: uppercase; letter-spacing: 0.1em;
-  font-size: 0.62rem; font-weight: 500;
-}
-.card .dot {
-  width: 9px; height: 9px; border-radius: 50%;
-  display: inline-block; vertical-align: middle; margin-right: 4px;
-}
-.card .dotOff { background: rgba(31,23,24,0.18); }
-.card .src { display: inline-flex; align-items: center; gap: 0.3rem; font-size: 0.72rem; }
-.card .srcOff { color: var(--muted); }
-.card .miniRow {
-  display: flex; align-items: center; gap: 0.6rem;
-  font-size: 0.72rem; color: var(--ink); margin: 0.3rem 0;
-}
-.card .miniK {
-  color: var(--muted); text-transform: uppercase; letter-spacing: 0.1em;
-  font-size: 0.62rem; font-weight: 500;
-}
-.card .pill {
-  display: inline-flex; align-items: center;
-  font-family: 'Manrope', sans-serif; font-weight: 500;
-  text-transform: uppercase; letter-spacing: 0.05em;
-  line-height: 1; white-space: nowrap;
-  padding: 0.22rem 0.55rem; border-radius: var(--radius-pill);
-  font-size: 0.68rem; border: 1px solid transparent;
-}
-.pill.tone-amber { color: var(--amber-dark); background: rgba(192,120,48,0.10); }
-.pill.tone-success { color: #1b5e3f; background: rgba(46,122,85,0.10); }
-.pill.tone-maroon { color: var(--maroon-dark); background: rgba(146,32,56,0.10); }
-.pill.tone-teal { color: var(--teal-deepest); background: rgba(61,107,96,0.10); }
-.pill.tone-lavender { color: var(--lavender-dark); background: rgba(88,72,168,0.10); }
-.pill.tone-neutral { color: var(--ink-soft); background: transparent; border-color: var(--line); }
-.card .summary {
-  font-size: 0.78rem; line-height: 1.55; color: var(--ink);
-  margin: 0.8rem 0;
-}
-.card .vitals {
-  display: grid; grid-template-columns: 1fr 1fr;
-  gap: 0.9rem 1.4rem;
-  margin: 0.85rem 0 0.6rem;
-  padding-top: 0.7rem;
-  border-top: 1px solid var(--line);
-}
-.vital { min-width: 0; display: flex; flex-direction: column; gap: 0.25rem; }
-.vitalK {
-  color: var(--muted); font-size: 0.66rem; font-weight: 500; letter-spacing: 0.1em;
+.idrow b { color: var(--ink-soft); font-weight: 700; }
+
+.sources {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-family: var(--font-sans);
+  font-size: 11px;
+  color: var(--muted);
+  letter-spacing: 0.04em;
   text-transform: uppercase;
 }
+.dot {
+  display: inline-block;
+  width: 10px; height: 10px;
+  border-radius: 50%;
+  vertical-align: -1px;
+  margin-right: 4px;
+}
+.src-label { font-weight: 500; }
+.benchmark-row {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 10px;
+  font-family: var(--font-sans);
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--muted);
+}
+
+/* StatusPill — soft-fill tinted bg + deeper-tone text, no border
+   (except neutral). Matches viewer's StatusPill.module.css */
+.pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.18rem 0.5rem;
+  border-radius: 999px;
+  font-family: var(--font-sans);
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  font-size: 10px;
+  line-height: 1;
+  background: transparent;
+  border: 1px solid transparent;
+}
+.pill.lg { padding: 0.22rem 0.6rem; font-size: 11px; }
+.tone-neutral  { color: var(--ink-soft); border-color: var(--line); }
+.tone-maroon   { color: var(--maroon-dark); background: rgba(146, 32, 56, 0.10); }
+.tone-teal     { color: var(--teal-deepest); background: rgba(61, 107, 96, 0.10); }
+.tone-amber    { color: var(--amber-dark); background: rgba(192, 120, 48, 0.10); }
+.tone-lavender { color: var(--lavender-dark); background: rgba(88, 72, 168, 0.10); }
+.tone-success  { color: var(--success); background: rgba(46, 122, 85, 0.10); }
+.tone-danger   { color: var(--maroon-dark); background: rgba(146, 32, 56, 0.10); }
+
+/* Pill with embedded label: "LABEL · VALUE" */
+.pill .lbl { opacity: 0.72; font-weight: 400; margin-right: 0.2rem; }
+
+/* Structure card — NO border, just a soft tinted background */
+.structure {
+  border: none;
+  background: var(--bg);
+  border-radius: 10px;
+  height: 240px;
+  position: relative;
+}
+.structure-legend {
+  font-family: var(--font-sans);
+  font-size: 9.5px;
+  color: var(--muted);
+  letter-spacing: 0.05em;
+  display: flex;
+  gap: 12px;
+  margin-top: 4px;
+  flex-wrap: wrap;
+}
+.legend-swatch {
+  display: inline-block;
+  width: 9px; height: 9px;
+  border-radius: 2px;
+  vertical-align: -1px;
+  margin-right: 4px;
+}
+
+/* Vitals 2×2 grid */
+.vitals {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px 18px;
+  margin: 4px 0;
+}
+.vital { display: flex; flex-direction: column; gap: 4px; min-width: 0; }
+.vitalK {
+  font-family: var(--font-sans);
+  font-size: 9px;
+  font-weight: 500;
+  letter-spacing: 0.10em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
 .vitalV {
-  margin: 0;
-  font-family: 'Playfair Display', 'Georgia', serif;
-  font-style: italic; font-weight: 500; font-size: 1.45rem;
-  line-height: 1.05; letter-spacing: -0.015em;
+  font-family: var(--font-display);
+  font-style: italic;
+  font-weight: 500;
+  font-size: 18px;
+  line-height: 1.1;
+  letter-spacing: -0.015em;
   color: var(--ink);
 }
 .vitalV.tone-success { color: var(--success); }
 .vitalV.tone-amber   { color: var(--amber-dark); }
-.vitalV.tone-danger  { color: var(--accent-deep); }
+.vitalV.tone-danger  { color: var(--maroon-light); }
 .vitalV.tone-neutral { color: var(--muted); }
-.vitalSub { color: var(--muted); font-size: 0.68rem; line-height: 1.35; }
-.card .extraTags {
-  display: flex; flex-wrap: wrap; gap: 0.35rem;
-  margin: 0.5rem 0 0.6rem;
+
+/* Secondary chips strip */
+.chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 2px;
 }
-.card .structure {
-  margin-top: 0.6rem;
-  background: var(--bg-soft);
-  border: 1px solid var(--line);
-  border-radius: 10px;
-  overflow: hidden;
-}
-.card .structureFrame { width: 100%; height: 280px; position: relative; }
-.card .structureFooter {
-  font-size: 0.66rem; color: var(--muted);
-  padding: 0.4rem 0.6rem; border-top: 1px solid var(--line);
-  display: flex; gap: 0.6rem; align-items: center; flex-wrap: wrap;
-}
-.card .legendSwatch {
-  display: inline-block; width: 10px; height: 10px; border-radius: 2px;
-  margin-right: 4px; vertical-align: middle;
-}
-.card .verdictBar {
-  margin-top: 0.7rem; padding: 0.5rem 0.8rem;
-  border-radius: var(--radius-pill); text-align: center;
-  font-size: 0.74rem; letter-spacing: 0.05em; font-weight: 600;
+
+/* Sonnet verdict bar */
+.verdict {
+  display: flex;
+  justify-content: center;
+  padding: 8px 12px;
+  border-radius: 8px;
+  margin-top: 8px;
+  font-family: var(--font-sans);
+  font-size: 11px;
+  font-weight: 600;
   text-transform: uppercase;
+  letter-spacing: 0.08em;
 }
-.verdictBar.tone-amber   { background: rgba(192,120,48,0.10); color: var(--amber-dark); }
-.verdictBar.tone-neutral { background: rgba(31,23,24,0.04);   color: var(--ink-soft); border: 1px solid var(--line); }
-.verdictBar.tone-success { background: rgba(46,122,85,0.10); color: #1b5e3f; }
+.verdict.tone-amber  { color: var(--amber-dark); background: rgba(192, 120, 48, 0.10); }
+.verdict.tone-success{ color: var(--success); background: rgba(46, 122, 85, 0.10); }
+.verdict.tone-neutral{ color: var(--ink-soft); background: var(--bg-warm); }
 """
 
 
-# Brand DB colors — same source-to-color mapping as make_db_correctness_by_class.py
-_DB_COLOR = {
-    "UniProt": "#BC3C4C",
-    "GO":      "#3D6B60",
-    "HPA":     "#F4AA28",
-    "SURFY":   "#8878C8",
-    "CSPA":    "#6E1428",
-}
-
-
-def _render_sources_row(g: dict) -> str:
-    parts = [f'<span class="sourcesK">SOURCES · {g["n_db_votes"]}/5</span>']
-    for name, called in g["db_flags"].items():
-        color = _DB_COLOR[name]
-        if called:
-            parts.append(
-                f'<span class="src"><span class="dot" style="background:{color}"></span>'
-                f'<span style="color:var(--ink); font-weight:500">{name}</span></span>'
-            )
-        else:
-            parts.append(
-                f'<span class="src srcOff"><span class="dot dotOff"></span>'
-                f'<span>{name}</span></span>'
-            )
-    return f'<div class="sourcesRow">{"".join(parts)}</div>'
-
-
-def _render_vitals(g: dict) -> str:
-    cells: list[str] = []
-    for eyebrow, value, tone, sub in g["vitals"]:
-        sub_html = f'<div class="vitalSub">{sub}</div>' if sub else ""
-        cells.append(textwrap.dedent(f"""\
-          <div class="vital">
-            <div class="vitalK">{eyebrow}</div>
-            <p class="vitalV tone-{tone}">{value}</p>
-            {sub_html}
-          </div>"""))
-    return f'<div class="vitals">{"".join(cells)}</div>'
+def _build_topology_segments(topology: str) -> list[tuple[int, int, str]]:
+    """Compress a topology string into (start_resi, end_resi, state) runs.
+    1-indexed residue numbers."""
+    if not topology:
+        return []
+    out: list[tuple[int, int, str]] = []
+    start = 1
+    cur = topology[0]
+    for i in range(1, len(topology)):
+        if topology[i] != cur:
+            out.append((start, i, cur))
+            start = i + 1
+            cur = topology[i]
+    out.append((start, len(topology), cur))
+    return out
 
 
 def _verdict_tone(verdict: str) -> str:
-    return {"yes": "success", "contextual": "amber", "no": "neutral"}.get(verdict, "neutral")
+    return {
+        "yes": "success",
+        "contextual": "amber",
+        "no": "neutral",
+    }.get(verdict, "neutral")
 
 
-def _render_card(g: dict) -> str:
-    color_specs = _topology_to_3dmol_colors(g["topology_str"])
-    color_specs_json = json.dumps(color_specs)
-    pdb_url = f"https://alphafold.ebi.ac.uk/files/AF-{g['uniprot_acc']}-F1-model_v6.pdb"
-    is_glob = bool(g.get("is_glob_no_slab"))
-    extra_tags_html = "".join(
-        f'<span class="pill tone-neutral">{t}</span>' for t in g.get("extra_tags", [])
-    )
-    legend_html = " · ".join(
-        f'<span><span class="legendSwatch" style="background:{c}"></span>{name}</span>'
-        for name, c in g["structure_legend"]
-    )
-    verdict_tone = _verdict_tone(g["sonnet_verdict"])
-    return f"""
-  <div class="card">
-    <h1 class="symbol">{g['symbol']}</h1>
-    <p class="name">{g['name']}<span class="synonyms">Synonyms: {g['synonyms']}</span></p>
-    <div class="idRow">
-      <span><span class="idK">HGNC</span> <span class="idV">{g['hgnc_id']}</span></span>
-      <span><span class="idK">UniProt</span> <span class="idV">{g['uniprot_acc']}</span></span>
-      <span><span class="idK">NCBI gene</span> <span class="idV">{g['ncbi_gene']}</span></span>
-      <span><span class="idK">Ensembl</span> <span class="idV">{g['ensembl_gene']}</span></span>
-    </div>
-    {_render_sources_row(g)}
-    <div class="miniRow">
-      <span class="miniK">Benchmark</span>
-      <span class="pill tone-{g['benchmark_tone']}">{g['benchmark_label']}</span>
-      <span class="vitalSub">{g['benchmark_note']}</span>
-    </div>
-    <div class="miniRow">
-      <span class="miniK">Triage</span>
-      <span class="vitalSub">{g['triage_label']} — {g['triage_note']}</span>
-    </div>
-    <p class="summary">{g['summary']}</p>
-    {_render_vitals(g)}
-    <div class="extraTags">{extra_tags_html}</div>
-    <div class="structure">
-      <div class="structureFrame" id="viewer-{g['symbol']}" data-pdb="{pdb_url}"
-           data-colorspecs='{color_specs_json}'
-           data-is-glob="{'1' if is_glob else '0'}"></div>
-      <div class="structureFooter">
-        <span style="color:var(--ink-soft); font-weight:500">AlphaFold</span>
-        <span>AFDB {g['uniprot_acc']} · v6</span>
-        <span style="flex:1"></span>
-        {legend_html}
-      </div>
-    </div>
-    <div class="verdictBar tone-{verdict_tone}">
-      Sonnet · {g['sonnet_verdict']} · {g['sonnet_reason'].replace('_', ' ')}
-    </div>
-  </div>
-"""
+def _build_html(genes: list[dict]) -> str:
+    cards: list[str] = []
+    for g in genes:
+        # Source dot row
+        db_dots = []
+        for db_name, called in g["db_flags"].items():
+            color = {
+                "UniProt": "#bc3c4c",  # maroon-light
+                "GO":      "#3d6b60",  # teal-mid
+                "HPA":     "#f4aa28",  # amber-bright
+                "SURFY":   "#8878c8",  # lavender-bright
+                "CSPA":    "#6e1428",  # maroon-dark
+            }[db_name]
+            dot_color = color if called else "rgba(31,23,24,0.15)"
+            db_dots.append(
+                f'<span class="src-label">'
+                f'<span class="dot" style="background:{dot_color}"></span>{db_name}</span>'
+            )
+        n_called = sum(g["db_flags"].values())
+        src_strip = (
+            f'<div class="sources">Sources · {n_called}/5 · '
+            + " ".join(db_dots) + "</div>"
+        )
 
+        # Vital cells (4)
+        vital_cells = "".join(
+            f'<div class="vital"><div class="vitalK">{k}</div>'
+            f'<div class="vitalV tone-{tone}">{v}</div></div>'
+            for k, v, tone in g["vitals"]
+        )
 
-_3DMOL_INIT_JS = """
-window.__viewersReady = 0;
-window.__expectedViewers = document.querySelectorAll('[id^="viewer-"]').length;
+        # Chips
+        chips = []
+        for entry in g["chips"]:
+            label, value, tone = entry
+            if label is None:
+                chips.append(f'<span class="pill tone-{tone}">{value}</span>')
+            else:
+                chips.append(
+                    f'<span class="pill tone-{tone}">'
+                    f'<span class="lbl">{label}</span>{value}</span>'
+                )
 
-function initViewers() {
-  document.querySelectorAll('[id^="viewer-"]').forEach(function(el) {
-    const pdbUrl = el.getAttribute('data-pdb');
-    const colorSpecs = JSON.parse(el.getAttribute('data-colorspecs'));
-    const isGlob = el.getAttribute('data-is-glob') === '1';
-    const viewer = $3Dmol.createViewer(el, {backgroundColor: 'white'});
-    fetch(pdbUrl).then(r => r.text()).then(function(pdb) {
-      viewer.addModel(pdb, 'pdb');
-      // Base cartoon style
-      viewer.setStyle({}, {cartoon: {color: '#A9CFA8'}});
-      // Per-topology coloring
-      colorSpecs.forEach(function(spec) {
-        viewer.setStyle({resi: spec.resi_from + '-' + spec.resi_to},
-                        {cartoon: {color: spec.color}});
-      });
-      // Membrane slab for true TM proteins (not GLOB-flagged ones).
-      // Slab drawn as a thin disk at the median z of TM residues.
-      const hasTM = colorSpecs.some(function(s) { return s.color === '#FFD579'; });
-      if (hasTM && !isGlob) {
-        const tmAtoms = viewer.selectedAtoms({chain: 'A'}).filter(function(a) {
-          return a.atom === 'CA' && a.resi && colorSpecs.some(function(s) {
-            return s.color === '#FFD579' && a.resi >= s.resi_from && a.resi <= s.resi_to;
-          });
-        });
-        if (tmAtoms.length) {
-          const zs = tmAtoms.map(function(a) { return a.z; }).sort(function(a,b){return a-b;});
-          const zMid = zs[Math.floor(zs.length/2)];
-          viewer.addBox({
-            corner: {x: -22, y: -22, z: zMid - 6},
-            dimensions: {w: 44, h: 44, d: 12},
-            color: '#A0A4AB', opacity: 0.12, wireframe: false,
-          });
-        }
-      }
-      viewer.zoomTo();
-      viewer.zoom(1.05);
-      viewer.render();
-      window.__viewersReady += 1;
-    });
-  });
-}
-"""
+        # Topology legend (only show states actually present in the protein)
+        states_present = set(g["topology_str"])
+        legend_items = []
+        legend_map = [
+            ("O", "Extracellular"),
+            ("M", "Membrane"),
+            ("I", "Intracellular"),
+            ("S", "Signal peptide"),
+        ]
+        for state, label in legend_map:
+            if state in states_present:
+                legend_items.append(
+                    f'<span><span class="legend-swatch" '
+                    f'style="background:{TOPOLOGY_COLORS[state]}"></span>{label}</span>'
+                )
+        legend_html = (
+            f'<div class="structure-legend">{"".join(legend_items)}</div>'
+            if legend_items else ""
+        )
 
+        # Sonnet verdict bar
+        vtone = _verdict_tone(g["sonnet_verdict"])
+        verdict_html = (
+            f'<div class="verdict tone-{vtone}">'
+            f'Sonnet · {g["sonnet_verdict"].title()} · '
+            f'{g["sonnet_reason"].replace("_", " ").title()}'
+            f'</div>'
+        )
 
-def _render_html() -> str:
-    body = "\n".join(_render_card(g) for g in GENES)
-    return f"""<!DOCTYPE html>
-<html lang="en">
+        card_html = textwrap.dedent(f"""
+        <div class="card">
+          <div class="header-row">
+            <h1 class="symbol">{g["symbol"]}</h1>
+            <p class="name">{g["name"]}</p>
+            <div class="idrow">
+              <span><b>UniProt</b> {g["uniprot"]}</span>
+              <span><b>NCBI Gene</b> {g["ncbi"]}</span>
+              <span><b>Ensembl</b> {g["ensembl"]}</span>
+            </div>
+          </div>
+          {src_strip}
+          <div class="structure" id="viewer-{g["symbol"]}"></div>
+          {legend_html}
+          <div class="vitals">{vital_cells}</div>
+          <div class="chips">{"".join(chips)}</div>
+          {verdict_html}
+        </div>
+        """).strip()
+        cards.append(card_html)
+
+    # 3Dmol initialization JS — one viewer per card, oriented PDB
+    # injected from Python, topology coloring applied per-segment.
+    js_parts: list[str] = []
+    for g in genes:
+        symbol = g["symbol"]
+        pdb_path = SCRATCH / f"oriented_{symbol}.pdb"
+        # JS expects the PDB content inline (not loaded over fetch);
+        # gives playwright a deterministic page that doesn't depend on
+        # AFDB being reachable at screenshot time.
+        pdb_js = pdb_path.read_text().replace("\\", "\\\\").replace("`", "\\`")
+        segments = _build_topology_segments(g["topology_str"])
+        segment_calls = []
+        for start, end, state in segments:
+            color = TOPOLOGY_COLORS.get(state, "#cccccc")
+            segment_calls.append(
+                f'  viewer.setStyle({{resi: "{start}-{end}"}}, '
+                f'{{cartoon: {{color: "{color}", opacity: 1.0}}}});'
+            )
+        slab_call = ""
+        if g.get("has_membrane_slab") and g.get("membrane"):
+            m = g["membrane"]
+            cx = (m["x_min"] + m["x_max"]) / 2
+            cz = (m["z_min"] + m["z_max"]) / 2
+            cy = (m["y_min"] + m["y_max"]) / 2
+            w = m["x_max"] - m["x_min"]
+            h = abs(m["y_max"] - m["y_min"])
+            d = m["z_max"] - m["z_min"]
+            # Thicken slab to ~28 Å so it reads as a true bilayer
+            h = max(h, 28.0)
+            slab_call = (
+                f'  viewer.addBox({{'
+                f'center: {{x: {cx:.2f}, y: {cy:.2f}, z: {cz:.2f}}}, '
+                f'dimensions: {{w: {w:.2f}, h: {h:.2f}, d: {d:.2f}}}, '
+                f'color: "#FBE3A7", opacity: 0.32, wireframe: false}});'
+            )
+        js_parts.append(textwrap.dedent(f"""
+        (function() {{
+          var el = document.getElementById("viewer-{symbol}");
+          var viewer = $3Dmol.createViewer(el, {{backgroundColor: "white"}});
+          var pdbText = `{pdb_js}`;
+          viewer.addModel(pdbText, "pdb");
+{chr(10).join(segment_calls)}
+{slab_call}
+          viewer.zoomTo();
+          viewer.zoom(1.15);
+          viewer.render();
+          window["__rendered_{symbol}"] = true;
+        }})();
+        """).strip())
+
+    html = f"""<!DOCTYPE html>
+<html>
 <head>
-<meta charset="utf-8">
-<title>Surfaceome blog cards · KLK2 · SRC · CD63</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700&family=Playfair+Display:ital,wght@0,400..900;1,400..900&display=swap" rel="stylesheet">
-<script src="https://3dmol.org/build/3Dmol-min.js"></script>
-<style>
-{_DESIGN_TOKENS_CSS}
-{_PAGE_CSS}
-</style>
+  <meta charset="utf-8">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Playfair+Display:ital,wght@0,400..900;1,400..900&display=swap" rel="stylesheet">
+  <script src="https://3Dmol.org/build/3Dmol-min.js"></script>
+  <style>{_CSS}</style>
 </head>
 <body>
-<div class="cards">
-{body}
-</div>
-<script>
-{_3DMOL_INIT_JS}
-window.addEventListener('load', initViewers);
-</script>
+  <div class="grid">
+    {chr(10).join(cards)}
+  </div>
+  <script>
+    document.fonts.ready.then(function() {{
+      {chr(10).join(js_parts)}
+    }});
+  </script>
 </body>
 </html>
 """
+    return html
 
 
-def _render_and_screenshot() -> None:
-    HTML_PATH.write_text(_render_html())
-    print(f"  wrote {HTML_PATH}")
+# ── Playwright driver ───────────────────────────────────────────────
 
-    from playwright.sync_api import sync_playwright
-    with sync_playwright() as p:
-        browser = p.chromium.launch()
-        # 1600×1200 viewport at devicePixelRatio=3 → 4800×3600 screenshot.
-        # 16-inch print width → 300 DPI. Good for blog + Zenodo.
-        ctx = browser.new_context(
-            viewport={"width": 1600, "height": 1200},
+
+async def _screenshot_html(html_path: Path, png_path: Path) -> None:
+    from playwright.async_api import async_playwright
+    async with async_playwright() as p:
+        browser = await p.chromium.launch()
+        # Viewport sized to comfortably fit 3 cards side-by-side; DPR=3
+        # so the final PNG is effectively 600+ DPI when displayed at
+        # ~16 inches wide in print.
+        context = await browser.new_context(
+            viewport={"width": 1640, "height": 1100},
             device_scale_factor=3,
         )
-        page = ctx.new_page()
-        page.goto(f"file://{HTML_PATH}")
-        # Wait for all 3Dmol viewers to finish rendering (window flag
-        # set by the init script).
-        page.wait_for_function(
-            "window.__viewersReady === window.__expectedViewers",
-            timeout=30_000,
-        )
-        # Extra beat for fonts + 3Dmol last-frame settle
-        page.wait_for_timeout(800)
-        OUT_DIR.mkdir(parents=True, exist_ok=True)
-        page.screenshot(path=str(PNG_PATH), full_page=True)
-        print(f"  Saved: {PNG_PATH}")
-        page.pdf(path=str(PDF_PATH), width="16in", height="11in", print_background=True)
-        print(f"  Saved: {PDF_PATH}")
-        browser.close()
+        page = await context.new_page()
+        await page.goto(html_path.as_uri())
+        # Wait for all three 3Dmol viewers to flag themselves rendered.
+        for sym in ("KLK2", "SRC", "CD63"):
+            await page.wait_for_function(
+                f"window['__rendered_{sym}'] === true",
+                timeout=30000,
+            )
+        # Extra settle so cartoon ribbons finish drawing
+        await page.wait_for_timeout(800)
+        # Full-page screenshot (cards content sets page height naturally)
+        await page.screenshot(path=str(png_path), full_page=True, omit_background=False)
+        await context.close()
+        await browser.close()
 
 
-def main() -> None:
-    _render_and_screenshot()
+def _open_folder(target: Path) -> None:
+    """Auto-open the figures folder per the auto_open_figures_folder
+    memory — user has asked us to do this by default."""
+    if shutil.which("open"):
+        os.system(f"open {target}")
+
+
+def main() -> int:
+    # 1) Fetch + orient each PDB
+    for g in GENES:
+        pdb = _fetch_pdb(g["uniprot"])
+        if g.get("has_membrane_slab"):
+            oriented, slab = _orient_pdb_by_topology(pdb, g["topology_str"])
+            g["membrane"] = slab
+        else:
+            oriented, _ = pdb, None
+            g["membrane"] = None
+        out = SCRATCH / f"oriented_{g['symbol']}.pdb"
+        out.write_text(oriented)
+
+    # 2) Build HTML
+    html = _build_html(GENES)
+    html_path = SCRATCH / "blog_cards.html"
+    html_path.write_text(html)
+    print(f"  wrote {html_path}")
+
+    # 3) Screenshot via playwright
+    png_path = OUT_DIR / f"{SLUG}.png"
+    OUT_DIR.mkdir(parents=True, exist_ok=True)
+    asyncio.run(_screenshot_html(html_path, png_path))
+    print(f"  Saved: {png_path}")
+
+    # PDF wrapping the PNG via matplotlib (Pillow's PDF writer needs
+    # JPEG support which this build doesn't have). Vector PDF would
+    # require a different render pipeline; PNG-in-PDF is fine for a
+    # blog figure where the PNG is the canonical artifact.
+    import matplotlib.pyplot as plt
+    from PIL import Image
+    pdf_path = OUT_DIR / f"{SLUG}.pdf"
+    img = Image.open(png_path)
+    w, h = img.size
+    fig, ax = plt.subplots(figsize=(w / 300, h / 300), dpi=300)
+    ax.imshow(img)
+    ax.axis("off")
+    fig.subplots_adjust(left=0, right=1, top=1, bottom=0)
+    fig.savefig(pdf_path, dpi=300, bbox_inches="tight", pad_inches=0)
+    plt.close(fig)
+    print(f"  Saved: {pdf_path}")
+
+    _open_folder(OUT_DIR)
+    return 0
 
 
 if __name__ == "__main__":
-    main()
+    sys.exit(main())
