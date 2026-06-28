@@ -1,5 +1,12 @@
 # accessible-surfaceome
 
+> **Draft cleanup — do not merge yet.** This branch (`claude/quizzical-darwin-8923eb`,
+> PR [#88](https://github.com/Deliverome-Project/accessible-surfaceome/pull/88))
+> is the v0 release cleanup. Hold the merge until the in-flight deep-dive
+> Modal sweep completes — merging earlier could collide with the records the
+> sweep is publishing. Remove this banner in the same commit that takes the
+> PR out of draft.
+
 An evidence-graded, per-claim-cited annotation of the **human cell-surface
 proteome** — surfaced as a database, a public JSON API, an interactive
 viewer, and (in v0) a blog with a stable DOI/SWHID-citable snapshot.
