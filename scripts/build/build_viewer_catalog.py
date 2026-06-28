@@ -49,7 +49,7 @@ import json
 from pathlib import Path
 from typing import Any
 
-REPO_ROOT = Path(__file__).resolve().parent.parent
+REPO_ROOT = Path(__file__).resolve().parent.parent.parent
 TRIAGEABLE_TSV = REPO_ROOT / (
     "data/external/ncbi_gene_info/Homo_sapiens.protein_coding.with_hgnc.triageable.tsv"
 )

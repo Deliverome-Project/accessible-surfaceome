@@ -37,7 +37,7 @@ from accessible_surfaceome.env import load_env
 
 logger = logging.getLogger(__name__)
 
-REPO_ROOT = Path(__file__).resolve().parent.parent
+REPO_ROOT = Path(__file__).resolve().parent.parent.parent
 SUMMARY_PATH = (
     REPO_ROOT / "data" / "external" / "surface_bind" / "surface_bind_summary.json"
 )

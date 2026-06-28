@@ -45,7 +45,7 @@ logger = logging.getLogger(__name__)
 BATCH_SIZE = 4
 API_ROOT = "https://api.cloudflare.com/client/v4"
 
-REPO_ROOT = Path(__file__).resolve().parent.parent
+REPO_ROOT = Path(__file__).resolve().parent.parent.parent
 THREE_LINE_PATH = (
     REPO_ROOT
     / "data"

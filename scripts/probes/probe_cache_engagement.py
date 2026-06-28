@@ -294,7 +294,7 @@ def main() -> int:
 
     # --- Haiku trim ---
     a1_trim_path = (
-        Path(__file__).resolve().parent.parent
+        Path(__file__).resolve().parent.parent.parent
         / "src"
         / "accessible_surfaceome"
         / "agents"

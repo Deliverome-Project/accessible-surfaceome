@@ -38,7 +38,7 @@ from pydantic import BaseModel
 
 from accessible_surfaceome.tools._shared.models import SurfaceomeRecord
 
-REPO_ROOT = Path(__file__).resolve().parent.parent
+REPO_ROOT = Path(__file__).resolve().parent.parent.parent
 TS_TYPES_PATH = REPO_ROOT / "viewer" / "lib" / "surfaceome-types.ts"
 
 # Pydantic class name → TS interface name when they differ. Keep small;

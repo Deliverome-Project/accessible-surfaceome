@@ -72,7 +72,7 @@ import httpx
 
 logger = logging.getLogger(__name__)
 
-REPO_ROOT = Path(__file__).resolve().parent.parent
+REPO_ROOT = Path(__file__).resolve().parent.parent.parent
 OUTPUT_PATH = (
     REPO_ROOT / "data" / "external" / "surface_bind" / "surface_bind_summary.json"
 )

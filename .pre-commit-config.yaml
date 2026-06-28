@@ -52,7 +52,7 @@ repos:
         # Pydantic field without updating TS fails the commit; renaming
         # a Pydantic class without updating TS fails. Pydantic is the
         # source of truth.
-        entry: uv run --frozen python scripts/check_viewer_types_sync.py
+        entry: uv run --frozen python scripts/audit/check_viewer_types_sync.py
         language: system
         pass_filenames: false
-        files: '^(src/accessible_surfaceome/tools/_shared/models\.py|viewer/lib/surfaceome-types\.ts|scripts/check_viewer_types_sync\.py)$'
+        files: '^(src/accessible_surfaceome/tools/_shared/models\.py|viewer/lib/surfaceome-types\.ts|scripts/audit/check_viewer_types_sync\.py)$'

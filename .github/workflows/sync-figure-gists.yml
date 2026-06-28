@@ -27,4 +27,4 @@ jobs:
             echo "::warning::GIST_SYNC_TOKEN secret not set — skipping gist sync"
             exit 0
           fi
-          bash scripts/sync_figure_gists.sh
+          bash scripts/upload/sync_figure_gists.sh
