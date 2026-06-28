@@ -73,6 +73,12 @@ GENES: list[dict[str, Any]] = [
             ("primary",      "Plasma membrane",        "teal"),
             ("reason",       "Tissue-restricted",      "amber"),
             ("surface vs intracellular",  "Mixed",   "amber"),
+            # Count of surface_evidence.methods rows where
+            # accessibility_relevance == "direct_surface_accessibility"
+            # (methods that probe the extracellular face directly,
+            # e.g. live-cell FACS, surface biotinylation, nonpermeabilized
+            # IF). For KLK2 there are 2 of these in the record.
+            ("extracellular methods", "2", "success"),
         ],
         # Topology: no TM helices (it's a secreted protease, signal
         # peptide cleaved). Keep N-terminal residues 1-17 colored as
@@ -105,6 +111,10 @@ GENES: list[dict[str, Any]] = [
             ("primary",      "Plasma membrane",         "teal"),
             ("reason",       "Lysosomal exocytosis",    "amber"),
             ("surface vs intracellular",  "Mostly intracellular", "amber"),
+            # SRC has exactly 1 direct_surface_accessibility method
+            # in surface_evidence.methods — explains the "single
+            # method" evidence_grade above.
+            ("extracellular methods", "1", "amber"),
             ("induced by",   "Oncogenic, immune, infection, stress", "maroon"),
             (None,           "✓ tumor associated",      "maroon"),
         ],
@@ -140,6 +150,10 @@ GENES: list[dict[str, Any]] = [
             ("primary",      "Lysosome",               "lavender"),
             ("reason",       "Lysosomal exocytosis",   "amber"),
             ("surface vs intracellular",  "Mostly intracellular", "amber"),
+            # CD63 has 7 direct_surface_accessibility methods — the
+            # strongest extracellular-side evidence in this trio
+            # (live-cell flow ×7, plus IHC + nonpermeabilized IF).
+            ("extracellular methods", "7", "success"),
             (None,           "✓ dual localization",    "teal"),
             ("induced by",   "Immune, antigen, infection, oncogenic, other", "maroon"),
         ],
