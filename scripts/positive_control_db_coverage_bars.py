@@ -73,6 +73,28 @@ CATEGORIES = [
 GIST_URL = "https://gist.github.com/beccajcarlson/PENDING-positive-control"
 
 
+def _smart_yticks(n_total: int) -> list[int]:
+    """Return 4-6 yticks ending exactly at ``n_total``.
+
+    Picks a 'nice' step (1, 2, 5, 10, 20, 25, 50, 100, 200, 500) such that
+    the axis carries at most ~5 intermediate ticks, then appends ``n_total``
+    as the topmost tick. If the second-to-last tick lands within half a step
+    of ``n_total`` (e.g. 60 next to 62), it's dropped to avoid crowding.
+
+    Why this exists: matplotlib's auto-tick locator selects ticks at round
+    numbers that can exceed ``n_total`` (e.g. an 80 tick for n_total=62),
+    which visually implies the bar count can exceed the universe size and
+    confuses readers. Capping the topmost tick at ``n_total`` removes the
+    ambiguity.
+    """
+    candidates = [1, 2, 5, 10, 20, 25, 50, 100, 200, 500]
+    step = next(s for s in candidates if n_total / s <= 5)
+    ticks = list(range(0, n_total, step)) + [n_total]
+    while len(ticks) >= 2 and (ticks[-1] - ticks[-2]) < step * 0.5:
+        ticks = ticks[:-2] + [n_total]
+    return sorted(set(ticks))
+
+
 def build_tidy() -> pd.DataFrame:
     records = []
     for slug, _ in CATEGORIES:
@@ -129,6 +151,8 @@ def render(df_tidy: pd.DataFrame) -> None:
         ax.set_xlabel("")
         # Extra headroom now (1.32×) because each bar carries three lines of text.
         ax.set_ylim(0, n_total * 1.32)
+        # Cap y-ticks at n_total so no displayed value exceeds the universe size.
+        ax.set_yticks(_smart_yticks(n_total))
         sns.despine(ax=ax, top=True, right=True)
         # X-ticks now redundant with the spelled-out titles — hide them.
         ax.set_xticks([])

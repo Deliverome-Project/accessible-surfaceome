@@ -157,6 +157,19 @@ def _fetch_tsv(url: str) -> pd.DataFrame:
     return pd.read_csv(io.StringIO(r.text), sep="\t")
 
 
+def _smart_yticks(n_total: int) -> list[int]:
+    """Cap y-ticks at ``n_total`` so no displayed tick value exceeds the
+    universe size. Picks a 'nice' step (1, 2, 5, 10, 20, 25, 50, 100, 200,
+    500) targeting ~5 intermediate ticks, then appends ``n_total``; drops
+    the second-to-last tick if it lands within half a step of ``n_total``."""
+    candidates = [1, 2, 5, 10, 20, 25, 50, 100, 200, 500]
+    step = next(s for s in candidates if n_total / s <= 5)
+    ticks = list(range(0, n_total, step)) + [n_total]
+    while len(ticks) >= 2 and (ticks[-1] - ticks[-2]) < step * 0.5:
+        ticks = ticks[:-2] + [n_total]
+    return sorted(set(ticks))
+
+
 def _embed_source_in_metadata(out_path: Path, url: str) -> None:
     """Write the gist URL into the PNG's Source tEXt chunk + PDF's
     Subject info field so the URL travels with the file."""
@@ -220,6 +233,8 @@ def render(df_tidy: pd.DataFrame, out_dir: Path) -> Path:
         ax.set_xlabel("")
         # Extra headroom (1.32×) because each bar carries three lines of text.
         ax.set_ylim(0, n_total * 1.32)
+        # Cap y-ticks at n_total so no displayed value exceeds the universe size.
+        ax.set_yticks(_smart_yticks(n_total))
         sns.despine(ax=ax, top=True, right=True)
         ax.set_xticks([])
 
