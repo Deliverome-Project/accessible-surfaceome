@@ -1,3 +1,9 @@
+-- NOTE: This file is a REFERENCE schema only.
+-- Production tables are named differently (e.g. compara_ortholog_ecd
+-- not compara_ortholog); see scripts/audit/audit_evidence_retrieval.py
+-- and the live D1 console for current names. Do not apply this file
+-- directly to production D1.
+--
 -- Ensembl Compara ortholog tables for the surfaceome_agents D1 database.
 --
 -- Layered on top of `cloudflare/d1_schema.sql`. The deep-dive agent's
