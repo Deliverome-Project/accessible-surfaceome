@@ -101,21 +101,23 @@ GENES: list[dict[str, Any]] = [
             ("CONFIDENCE",           "Low",                   "danger"),
             ("STATE DEPENDENCE",     "High",                  "success"),
         ],
-        # Triggers below are the distinct cell_state_trigger values
-        # across the gene's accessibility_modulation rows (not the
-        # filters.induction_trigger coarse roll-up). SRC's rows
-        # collectively show oncogenic_transformation (×2),
-        # mechanical_stress (×1), immune_activation (×1),
-        # infection_bacterial (×1) — so "induced by" carries all 4.
+        # SRC's modulation rows have 4 distinct cell_state_trigger
+        # values BUT only oncogenic_transformation (rows 0+1) actually
+        # exposes an extracellular epitope. The immune_activation /
+        # mechanical_stress / infection_bacterial rows all describe
+        # inner-leaflet effects that don't surface-induce — explicitly
+        # called out in their accessibility_implication text. Only
+        # listing oncogenic here so the chip honestly reflects what
+        # actually causes surface accessibility. Also adding the
+        # ✓ dual_localization chip because modulation row [2] has
+        # dual_loc_partner_compartment='lysosome'.
         "chips": [
             ("primary",      "Plasma membrane",         "teal"),
             ("reason",       "Lysosomal exocytosis",    "amber"),
             ("surface vs intracellular",  "Mostly intracellular", "amber"),
-            # SRC has exactly 1 direct_surface_accessibility method
-            # in surface_evidence.methods — explains the "single
-            # method" evidence_grade above.
             ("extracellular methods", "1", "amber"),
-            ("induced by",   "Oncogenic, immune, infection, stress", "maroon"),
+            ("induced by",   "Oncogenic",               "maroon"),
+            (None,           "✓ dual localization",     "teal"),
             (None,           "✓ tumor associated",      "maroon"),
         ],
         # DeepTMHMM type GLOB → all "M" so 3Dmol paints the cartoon
