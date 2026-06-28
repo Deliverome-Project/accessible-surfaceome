@@ -25,6 +25,7 @@ Constraints:
 - **`viewer/app/prompts/` and `viewer/app/reproducibility/` documentation expansion.** They're production routes; making them more discoverable in `viewer/README.md` is a separate doc task.
 - **Manuscript / paper content.** `paper/build.sh` chain stays as-is; the `.docx` is a personal artifact (gitignored).
 - **Rotating the contact emails (`rebeccacarlson95@gmail.com`, `michael.smallegan@gmail.com`).** Intentional API-courtesy contact headers; already public via git history.
+- **Adding a global `/sources` page on the viewer.** Decision: extend the per-gene `DataSourcesFooter` instead (Section 5).
 
 ## Section 1 — Deletions
 
@@ -214,11 +215,20 @@ See [`scripts/README.md`](scripts/README.md) for a tour of the script subdirs.
 - Add "see [NOTICE.md](NOTICE.md)" callout near the License section.
 - Trim the **major phases** section if any of the operational detail is now covered by subdir READMEs.
 
-## Section 5 — License hygiene
+## Section 5 — License hygiene + viewer license citation
+
+### Critical context: the **canonical catalog vote is 5 DBs**
+
+Per `scripts/build_candidate_universe_v3.py:40`, the catalog `n_db_votes` is the
+sum of `uniprot_surface_flag + go_surface_flag + surfy_surface_flag +
+cspa_surface_flag + hpa_surface_flag`. JensenLab COMPARTMENTS and DeepTMHMM are
+**collected as side columns but NOT in the vote**.
+
+The NOTICE and viewer-licensing surfaces in this section reflect that fact.
+JensenLab is removed entirely (Section 7). DeepTMHMM stays — it's the canonical
+topology call surfaced in `DataSourcesFooter`.
 
 ### `NOTICE.md` (new at repo root)
-
-Lists every upstream source and its license. Skeleton:
 
 ```markdown
 # NOTICE
@@ -229,21 +239,21 @@ Each retains the license of its origin.
 ## Code
 - Project code: MIT — Copyright Michael Smallegan and Rebecca Carlson
 
-## Public data sources
+## Catalog vote sources (the 5 DBs that contribute to n_db_votes)
 - UniProt — CC-BY-4.0 — https://www.uniprot.org/help/license
-- HGNC — CC-BY-4.0 — https://www.genenames.org/about/license/
 - Gene Ontology — CC-BY-4.0 — http://geneontology.org/page/use-and-license
 - Human Protein Atlas — CC-BY-4.0 — https://www.proteinatlas.org/about/licence
-- JensenLab COMPARTMENTS — CC-BY-4.0 — https://compartments.jensenlab.org/About
-- NCBI Gene — public domain (US Government work)
-
-## Academic / non-commercial use sources
 - CSPA (Bausch-Fluck et al. 2015, 2018) — academic research use; commercial use requires permission from authors
 - SURFY (Bausch-Fluck et al. 2018) — academic research use
-- DeepTMHMM (Hansen et al.) — academic research use; redistributed predictions only
 
-## Atlas data
-- Schweke et al. 2024 homo-oligomerization atlas — per-paper data availability statement
+## Deterministic-features sources (per-gene topology, structure, orthologs, complexes, binding)
+- HGNC — CC-BY-4.0 — https://www.genenames.org/about/license/
+- NCBI Gene — public domain (US Government work)
+- AlphaFold DB — CC-BY-4.0 — https://alphafold.ebi.ac.uk/faq
+- DeepTMHMM (Hansen et al.) — academic research use; redistributed predictions only
+- Ensembl Compara — Apache-2.0 — https://www.ensembl.org/info/about/legal/disclaimer.html
+- Schweke et al. 2024 homo-oligomerization atlas — per-paper data availability
+- SURFACE-Bind (Khakzad et al. 2024) — academic research use
 
 ## Fonts
 - Manrope — SIL Open Font License 1.1
@@ -259,13 +269,38 @@ annotation.
 
 Current file is a placeholder. Replace with a per-source redistribution clause that:
 
-- Repeats CC-BY-4.0 attribution requirements (UniProt, HGNC, GO, HPA, JensenLab).
-- States the academic-only constraint on CSPA, SURFY, DeepTMHMM.
+- Repeats CC-BY-4.0 attribution requirements (UniProt, HGNC, GO, HPA, AlphaFold DB).
+- States the academic-only constraint on CSPA, SURFY, DeepTMHMM, SURFACE-Bind.
 - Notes that the candidate-universe TSV is a derived composite governed by the most-restrictive included source (currently the academic-only sources).
 
 ### `src/accessible_surfaceome/sources/hpa.py` label fix
 
-Three occurrences of `"CC-BY-SA-3.0"` → `"CC-BY-4.0"`. Regenerate `data/external/hpa_subcellular_location/download_traceability.json` and `data/processed/hpa/hpa_build_traceability.json` after the source change.
+Three occurrences of `"CC-BY-SA-3.0"` → `"CC-BY-4.0"` (verified at https://www.proteinatlas.org/about/licence). Regenerate `data/external/hpa_subcellular_location/download_traceability.json` and `data/processed/hpa/hpa_build_traceability.json` after the source change.
+
+### Viewer license citation — extend `DataSourcesFooter` to cover catalog DBs
+
+Today the per-gene `DataSourcesFooter`
+([viewer/components/surfaceome/DataSourcesFooter/DataSourcesFooter.tsx](viewer/components/surfaceome/DataSourcesFooter/DataSourcesFooter.tsx))
+lists 6 deterministic-features sources only (AlphaFold DB, DeepTMHMM, Ensembl
+Compara, Schweke, SURFACE-Bind, UniProt). The 5 catalog-vote DBs that decide
+*whether the gene is in the catalog at all* (UniProt, GO, SURFY, CSPA, HPA) are
+not cited anywhere on the viewer.
+
+**Change:**
+
+1. Add 4 new lines (GO, SURFY, CSPA, HPA — UniProt is already there).
+2. Restructure the list as **two columns** with a smaller body font so it doesn't
+   dominate the gene page. Use CSS Grid `grid-template-columns: 1fr 1fr` with
+   `gap: 12px 24px`. Font drops from the current `var(--font-size-body)` to
+   `12px` (or whatever maps to `label-mono` in the design tokens).
+3. Group visually: first column = **catalog-vote DBs (5)**, second column =
+   **deterministic-features sources (~6, count after adding the new lines)**.
+4. Section heading bumps to `Data sources & licenses`.
+5. The new HPA + UniProt + GO + CSPA + SURFY lines render attribution similar to
+   the existing pattern (license + URL or author/year/PMID), with explicit
+   academic-only callouts for CSPA + SURFY.
+
+Mobile fallback: single column at narrow widths (`@media (max-width: 600px)`).
 
 ## Section 6 — Other small cleanups bundled in
 
@@ -273,9 +308,50 @@ Three occurrences of `"CC-BY-SA-3.0"` → `"CC-BY-4.0"`. Regenerate `data/extern
 - **Add `.zed/` to `.gitignore`** alongside the delete.
 - **`cloudflare/d1_compara_schema.sql`**: prepend a 2-line header comment noting it's a reference schema (production tables are `compara_ortholog_ecd`).
 
-## Section 7 — Execution sequencing
+## Section 7 — JensenLab COMPARTMENTS removal (full)
 
-Single PR off `claude/quizzical-darwin-8923eb` → `main`, 10 commits. Tests must pass on every commit.
+JensenLab COMPARTMENTS is not in the canonical catalog vote (Section 5) and is
+not surfaced in the viewer. Per the architectural call, strip it from the
+codebase entirely. The data is recoverable from git if it ever needs to come
+back.
+
+**Removal sites (one commit, mechanical):**
+
+1. **Source module** — `git rm src/accessible_surfaceome/sources/compartments.py`.
+2. **Merge loader** — delete `COMPARTMENTS_TSV` constant + `load_compartments()`
+   function from `src/accessible_surfaceome/merge/loaders.py`. Delete any
+   call-site in `src/accessible_surfaceome/merge/`.
+3. **Build script columns** — in `scripts/build_candidate_universe_v3.py`:
+   drop `compartments_surface_flag`, `compartments_flag`,
+   `MAX(c.compartments_surface_flag) AS compartments_flag`, and any JOIN clauses
+   onto the compartments snapshot. Same for `scripts/build_universe_v2.py` if it
+   references compartments.
+4. **Committed snapshot** — `git rm -r data/processed/jensenlab_compartments/`.
+5. **`.gitignore` entry** — remove the `data/external/jensenlab_compartments/`
+   line (and the surrounding comment block about the COMPARTMENTS downloader).
+6. **README.md** — remove JensenLab from the source list. Replace
+   `"DeepTMHMM, COMPARTMENTS"` with `"DeepTMHMM"`. Drop the `compartments.py`
+   mention from the `src/.../sources/` table row.
+7. **AGENTS.md** — drop `compartments.py` from the per-source module list.
+8. **CLAUDE.md** — drop any operational references (none expected).
+9. **Tests** — `tests/test_compartments*.py` (if any) — `git rm`.
+10. **Output schema** — verify the candidate-universe TSV column count drops the
+    `compartments_*` columns, then re-run `augment_figure_tsvs_with_stable_ids.py`
+    to refresh the figure-input TSVs.
+11. **D1 schema** — verify no `compartments_*` columns in
+    `cloudflare/d1_public_schema.sql` or `cloudflare/d1_schema.sql`; remove if
+    present.
+
+**Verification gates for the JensenLab removal commit:**
+
+- `bash scripts/check-py.sh` (the merge tests + universe builder must still pass without compartments)
+- `uv run pytest -q`
+- `uv run python scripts/build_candidate_universe_v3.py` runs to completion locally and the resulting TSV has no `compartments_*` columns
+- `cd viewer && npm run build` (viewer is unaffected, but build confirms no incidental breakage)
+
+## Section 8 — Execution sequencing
+
+Single PR off `claude/quizzical-darwin-8923eb` → `main`, 12 commits. Tests must pass on every commit.
 
 1. `chore: remove stale forensic audits + v1 plans + Cloudflare Pages marker`
 2. `chore: remove superseded data dumps and backups`
@@ -284,25 +360,28 @@ Single PR off `claude/quizzical-darwin-8923eb` → `main`, 10 commits. Tests mus
 5. `chore(scripts): regroup production scripts into build/upload/figures/audit/cloud/tsv-export/probes/`
 6. `chore(viewer): drop orphan homomer-demo routes; ignore .zed/`
 7. `chore(cloudflare): clarify d1_compara_schema.sql is reference-only`
-8. `chore(licenses): NOTICE.md, expanded LICENSING.md, HPA label fix, drop pypdfium2 cooldown`
-9. `chore: update CLAUDE.md / AGENTS.md / hooks / CI for new script paths`
-10. `docs(readme): scientist-facing quick-start + nav rework`
+8. `refactor(sources): remove JensenLab COMPARTMENTS (not in 5-DB vote)`
+9. `feat(viewer): extend DataSourcesFooter to cover catalog vote DBs (2-col, smaller font)`
+10. `chore(licenses): NOTICE.md, expanded LICENSING.md, HPA label fix, drop pypdfium2 cooldown`
+11. `chore: update CLAUDE.md / AGENTS.md / hooks / CI for new script paths`
+12. `docs(readme): scientist-facing quick-start + nav rework`
 
-After commit 10, push and:
+After commit 12, push and:
 
 ```bash
 gh pr create --base main --title "chore: repo cleanup for v0 release" --body "<HEREDOC>"
 ```
 
-PR body recaps each commit, lists what reviewers should verify (CI green, viewer loads, figure scripts still run, no broken links in CLAUDE.md/AGENTS.md), and links to this design doc.
+PR body recaps each commit, lists what reviewers should verify (CI green, viewer loads with the new 2-col footer, figure scripts still run, no broken links in CLAUDE.md/AGENTS.md, candidate-universe TSV has no compartments columns), and links to this design doc.
 
 ## Verification gates per commit
 
 - `bash scripts/check-py.sh` (ruff + ty + compile + pytest)
 - `uv run pytest -q`
-- After commits 4, 5, 9, 10: `uv run python scripts/gen_prompt_review.py` if any prompt or moved-script path is touched
-- After commit 10: `cd viewer && npm run lint && npm run build` to confirm the homomer-demo removal didn't break anything
-- After all commits: open `https://surfaceome.deliverome.org` locally (`cd viewer && npm run dev`) and spot-check the gene viewer + `/prompts` + `/reproducibility` + `/api` routes
+- After commits 4, 5, 8, 11, 12: `uv run python scripts/gen_prompt_review.py` if any prompt or moved-script path is touched
+- After commit 6, 9: `cd viewer && npm run lint && npm run build` to confirm the homomer-demo removal + DataSourcesFooter changes didn't break anything
+- After commit 8: `uv run python scripts/build_candidate_universe_v3.py` runs locally and the resulting TSV has no `compartments_*` columns
+- After all commits: open `https://surfaceome.deliverome.org` locally (`cd viewer && npm run dev`) and spot-check the gene viewer (2-column DataSourcesFooter renders) + `/prompts` + `/reproducibility` + `/api` routes
 
 ## Risk register
 
@@ -314,3 +393,5 @@ PR body recaps each commit, lists what reviewers should verify (CI green, viewer
 | The HPA license label was load-bearing somewhere I missed | grep for `"CC-BY-SA-3.0"` across the whole repo before commit #8 to find every occurrence |
 | Viewer build fails after homomer-demo removal | Commit #6 is gated on `cd viewer && npm run build` |
 | One reviewer wants the deletions split into multiple PRs | The commit structure makes it trivial to cherry-pick; not splitting up front |
+| JensenLab removal misses a hidden caller in `src/.../merge/` | Reference-update commit (#8) is preceded by a repo-wide grep for `compartments\|jensen`; CI must pass before commit lands |
+| DataSourcesFooter 2-col layout breaks on mobile | Mobile fallback to single column at `max-width: 600px`; manual viewer build + screenshot before merging |
