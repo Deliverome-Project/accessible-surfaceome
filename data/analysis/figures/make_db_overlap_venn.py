@@ -137,9 +137,17 @@ PALETTE_BY_LABEL = {label: BRAND_PALETTE[i] for i, (_, label) in enumerate(DB_FL
 
 
 def _fetch_csv_text(url: str) -> str:
+    # 1) Sibling-first: when run from a published gist, the TSV is
+    #    bundled next to this script. SWHID-of-the-gist then captures
+    #    data + script atomically.
+    sibling = Path(__file__).parent / Path(url).name
+    if sibling.is_file():
+        return sibling.read_text()
+    # 2) Repo dev mode: derive the in-repo path from the URL.
     local = Path(__file__).resolve().parents[3] / url[len(f"https://raw.githubusercontent.com/{REPO}/{BRANCH}/"):]
     if local.is_file():
         return local.read_text()
+    # 3) Network fetch fallback.
     r = httpx.get(url, timeout=30)
     r.raise_for_status()
     return r.text

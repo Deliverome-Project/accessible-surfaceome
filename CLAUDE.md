@@ -411,10 +411,10 @@ The drift guard at [tests/test_figure_canonical_mirror_sync.py](tests/test_figur
                                                gist.github.com/beccajcarlson/...)
 ```
 
-**Final figures read from `raw.githubusercontent.com/{REPO}/{BRANCH}/…`** — not the Worker, not the local file system. Reasons:
-- **Citation stability.** Pinning `BRANCH` to a commit SHA at publication time freezes the file forever; the API endpoint could move or change shape.
+**Final figures use sibling-first loaders: the bundled TSV in the gist takes precedence over `raw.githubusercontent.com/{REPO}/{BRANCH}/…`** — see the "Final-Figure Gist Convention" section below for details. The data-flow above describes how the canonical TSV gets to the gist via `scripts/sync_figure_gists_bundle_data.py`; the raw GH URL is the fallback when the script runs outside a gist (in-repo dev, or unbundled gist). Reasons for bundling:
+- **One atomic citation per figure.** The gist's HEAD commit SHA is the SWHID `swh:1:rev:<sha>` for the whole reproduction unit (script + data + README). No two-things-can-drift.
 - **Two clean halves of the contract.** Predictions live in `data/processed/triage_bench/mainbench_canonical_v2.tsv` (refreshed from public D1 by `scripts/export_mainbench_to_tsv.py`; per-cell majority across replicates); truth labels live in `data/eval/triage_benchmark_v1.tsv` (the curated input). The Worker is a convenience surface for non-figure consumers — agents, notebooks, the viewer. The denormalized truth columns in the mainbench TSV are guarded against drift by [tests/test_mainbench_truth_drift.py](tests/test_mainbench_truth_drift.py) — re-run `augment_figure_tsvs_with_stable_ids.py` in the same commit that edits the curated TSV or the test fails CI.
-- **Pre-pub flexibility.** Today the gists' `BRANCH = "main"` so a re-run picks up fresh data. At publication, `BRANCH` becomes a commit SHA and the gist URL pins to a Zenodo DOI.
+- **Survives GitHub.** Software Heritage archives gists. Even if the gist URL goes away, the SWHID resolves to the bundled bundle forever.
 
 **Refresh procedure** (after any sweep that updates predictions in public D1):
 
@@ -494,7 +494,12 @@ The current set is 4 augmented TSVs + 1 aggregate (`db_cutoff_tradeoff_points.ts
 
 CI doesn't enforce that figure scripts only read from `BASE` (raw GitHub) — flag any new `make_*.py` that reaches into the API or a private path during review.
 
-**At publication:** swap `BRANCH = "main"` for a pinned commit SHA in every figure script + gist, register the figure files on Zenodo, and update each gist's README to cite the Zenodo DOI alongside the raw GitHub URL.
+**At publication:**
+
+1. **Re-bundle every gist** (`uv run python scripts/sync_figure_gists_bundle_data.py`) so the gist HEAD captures the final TSV bytes.
+2. **Trigger Software Heritage archival** for each gist — POST to `https://archive.softwareheritage.org/save/git/url/<gist-clone-url>/` once per gist. Archival is usually <24h.
+3. **Capture per-gist SWHIDs** into [data/analysis/figures/swhid_map.json](data/analysis/figures/swhid_map.json) — the helper script does this on each sync run.
+4. **Cite each figure as `swh:1:rev:<sha>`** in the paper / Zenodo manuscript record / figure PNG metadata. Zenodo's per-figure data deposit is no longer needed — the SWHID is the citation. Zenodo retains: manuscript PDF + JATS, the 3 cohort-level triage-run dumps (`triage-runs-genome-ncbi-with-reasoning.tsv` etc., too large for gists and used for downstream analyses rather than figure reproduction), and the auto-generated code-release deposit from the GitHub-Zenodo integration. Do NOT extend `publish-archive.py` to also push figure-input TSVs into Zenodo — that was an earlier plan superseded by the bundle-and-SWHID architecture.
 
 ## Final-Figure Gist Convention
 
@@ -506,11 +511,14 @@ Each gist contains exactly two files:
 
 **Co-location rule.** Both gist files (`01_<slug>.md` and `make_<slug>.py`) AND the rendered figure outputs (`<slug>.pdf`, `<slug>.png`) live in `data/analysis/figures/`. The canonical generator under `scripts/<slug>.py` must save its outputs there too — NOT to a per-analysis subdir like `data/analysis/<some-area>/<slug>.pdf`. This is the single folder a reader points to when they want the figure, the script that made it, and the gist's reader-side mirror. Drift between "gist mirror in figures/" and "rendered output in audit-subdir" has happened (`topology_coverage_by_source` originally rendered into `data/analysis/db_vs_sonnet_inclusion/` before being relocated) — enforced by [tests/test_published_figures_have_outputs.py](tests/test_published_figures_have_outputs.py), which fails CI if any `make_<slug>.py` is missing its sibling `<slug>.pdf`, `<slug>.png`, or `01_<slug>.md`.
 
-**Data fetching** — script reads from whichever source is canonical:
-- **D1 (preferred when the canonical source is D1)** — script queries the public read-only D1 endpoint via HTTP. Used for figures driven by `triage_run`, `deep_dive_run`, `resolver_context_version`, etc.
-- **Canonical TSV at `raw.githubusercontent.com`** — when the figure's data lives in a `data/processed/**.tsv` in the public repo, fetch it directly via the raw URL pinned to `main` (or a commit SHA for stronger immutability). **The TSV must be non-LFS** (LFS pointers don't resolve over the raw URL) and the repo must be public — add a `-filter -diff -merge text` exemption in `.gitattributes` to un-LFS any small canonical TSV the gists depend on.
+**Data fetching — bundle the TSV into the gist** so the gist is a self-contained reproduction unit. Each `make_<slug>.py` uses a **sibling-first** loader: try `Path(__file__).parent / Path(url).name` first; if found (gist case), read it; otherwise fall back to in-repo-dev-mode path, then to `raw.githubusercontent.com` over the wire. This gives one atomic reproduction artifact:
 
-Do not bundle a CSV in the gist unless the canonical source is unreachable (private repo, D1 without a public endpoint). Keep the gist as a thin wrapper around the canonical data.
+- **The gist as a whole is cited as `swh:1:rev:<gist HEAD commit SHA>`** — Software Heritage archives gists. The git commit SHA *is* the `sha1_git` Software Heritage uses for rev SWHIDs, so the same identifier captures `01_<slug>.md` + `make_<slug>.py` + bundled TSV(s) + rendered figures together. No drift between script and data is possible — they're in the same commit.
+- **Bundling is automated** — `scripts/sync_figure_gists_bundle_data.py` reads `gist_map.json` + a per-slug TSV bundle list, pushes each canonical TSV into its gist via `gh gist edit -a`, then re-pushes the updated mirror via `gh gist edit -f`, then captures the new HEAD SHA into `data/analysis/figures/swhid_map.json` as `swh:1:rev:<sha>`.
+- **Drift guard** — [tests/test_figure_gist_data_sync.py](tests/test_figure_gist_data_sync.py) (marked `network`, gated by `--run-network`) fetches each gist's bundled TSV via `gist.githubusercontent.com/.../raw/<file>` and sha256-compares against the canonical repo TSV. Fails CI if any bundled copy is stale. When it fires, re-run the sync script.
+- **Gist size limits** — GitHub gist files larger than **1 MB** display a "too large to render" warning on the gist landing page but `raw` fetch still works. The hard limit is **10 MB per file**, **100 files per gist**. Three of our TSVs are over 1 MB (`whole_proteome_catalog.tsv` 2.3 MB, `per_protein_features.tsv` 2.9 MB, `mainbench_replicates_v2.tsv` 0.86 MB just under) — they bundle fine but show the warning. GitHub doesn't sell larger gist quotas; the workaround for >10 MB would be a real repo, but no figure TSV is near that ceiling.
+
+When the canonical TSV is too large or genuinely lives outside the repo (private D1, full annotation dump), fall through to fetching from `raw.githubusercontent.com` / D1 directly — bundling is the default, network fallback is the escape hatch.
 
 **Visibility:** create as **public** by default — `gh gist create --public 01_<slug>.md make_<slug>.py -d "<short desc>"`. Figure-reproduction gists are linked from Substack / blog posts, so they're meant to be discoverable; public is the right default for this category. **GitHub does NOT allow flipping visibility after creation** (neither secret → public nor the reverse) — only delete-and-recreate, which invalidates the URL and breaks every place it's embedded (PNG `Source` tEXt, PDF `Subject`, canonical generator's `# Reproduction:` line, and the gist mirror's `GIST_URL` constant under `data/analysis/figures/`). Pick the right visibility on first creation. Before creating a new gist for an existing figure, **check the slug → gist-ID map in the saved-memory `figure_gists.md` reference** — duplicates have happened (e.g. an outdated `make_venn.py` predates the conforming `make_db_overlap_venn.py`).
 

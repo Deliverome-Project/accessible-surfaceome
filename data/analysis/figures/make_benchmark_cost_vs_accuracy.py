@@ -189,6 +189,12 @@ CELL_LABEL_OFFSET = {
 
 
 def _fetch_tsv(url: str) -> pd.DataFrame:
+    # Sibling-first: when run from a published gist, the TSV is
+    # bundled next to this script. SWHID of the gist then captures
+    # data + script atomically.
+    sibling = Path(__file__).parent / Path(url).name
+    if sibling.is_file():
+        return pd.read_csv(sibling, sep="	")
     local = Path(__file__).resolve().parents[3] / url[len(BASE) + 1:]
     if local.is_file():
         return pd.read_csv(local, sep="\t")

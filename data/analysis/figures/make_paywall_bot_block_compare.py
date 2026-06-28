@@ -145,17 +145,24 @@ SOURCE_LABEL = {
 
 
 def fetch_tsv() -> list[dict]:
-    """Read the TSV — from the public repo over HTTP, or from a local checkout."""
-    local = (
-        Path(__file__).resolve().parents[3]
-        / "data/processed/paywall_bot_block/paywall_bot_block_compare.tsv"
-    )
-    if local.is_file():
-        text = local.read_text()
+    """Sibling-first → repo dev-mode → URL fetch. Sibling case wins
+    when this script runs from a published gist with the TSV bundled
+    next to it (SWHID-of-the-gist then captures data + script
+    atomically)."""
+    sibling = Path(__file__).parent / Path(TSV_URL).name
+    if sibling.is_file():
+        text = sibling.read_text()
     else:
-        r = httpx.get(TSV_URL, timeout=30)
-        r.raise_for_status()
-        text = r.text
+        local = (
+            Path(__file__).resolve().parents[3]
+            / "data/processed/paywall_bot_block/paywall_bot_block_compare.tsv"
+        )
+        if local.is_file():
+            text = local.read_text()
+        else:
+            r = httpx.get(TSV_URL, timeout=30)
+            r.raise_for_status()
+            text = r.text
     return list(csv.DictReader(io.StringIO(text), delimiter="\t"))
 
 

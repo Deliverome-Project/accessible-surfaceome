@@ -219,6 +219,12 @@ SOURCE_COL = {
 
 
 def _fetch_tsv(url: str) -> pd.DataFrame:
+    # Sibling-first: when run from a published gist, the TSV is
+    # bundled next to this script. SWHID of the gist then captures
+    # data + script atomically.
+    sibling = Path(__file__).parent / Path(url).name
+    if sibling.is_file():
+        return pd.read_csv(sibling, sep="	")
     print(f"  fetching {url} …")
     r = httpx.get(url, timeout=60.0, follow_redirects=True)
     r.raise_for_status()

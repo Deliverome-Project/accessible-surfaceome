@@ -216,19 +216,25 @@ def _load_catalog() -> list[dict]:
     plus stable IDs. Sourced from D1 via
     ``scripts/export_whole_proteome_catalog_to_tsv.py``.
     """
-    # Local-first: inside a repo checkout, prefer the on-disk TSV so the
-    # script renders against the working tree (matches the local-fallback
-    # pattern used by the other figure scripts in this folder).
-    local = Path(__file__).resolve().parents[3] / (
-        "data/processed/catalog/whole_proteome_catalog.tsv"
-    )
-    if local.is_file():
-        print(f"Reading {local} ...")
-        text = local.read_text(encoding="utf-8")
+    # Sibling-first: when run from a published gist with bundled TSV,
+    # the file sits next to this script. SWHID of the gist then
+    # captures data + script atomically.
+    sibling = Path(__file__).parent / Path(CATALOG_TSV_URL).name
+    if sibling.is_file():
+        print(f"Reading {sibling} ...")
+        text = sibling.read_text(encoding="utf-8")
     else:
-        print(f"Fetching {CATALOG_TSV_URL} ...")
-        with urllib.request.urlopen(CATALOG_TSV_URL, timeout=60) as resp:  # noqa: S310
-            text = resp.read().decode("utf-8")
+        # Repo dev mode: read on-disk TSV from the worktree.
+        local = Path(__file__).resolve().parents[3] / (
+            "data/processed/catalog/whole_proteome_catalog.tsv"
+        )
+        if local.is_file():
+            print(f"Reading {local} ...")
+            text = local.read_text(encoding="utf-8")
+        else:
+            print(f"Fetching {CATALOG_TSV_URL} ...")
+            with urllib.request.urlopen(CATALOG_TSV_URL, timeout=60) as resp:  # noqa: S310
+                text = resp.read().decode("utf-8")
     rows = list(csv.DictReader(io.StringIO(text), delimiter="\t"))
     for r in rows:
         r["n_sources_surface"] = int(r.get("n_sources_surface", 0) or 0)
