@@ -72,7 +72,7 @@ GENES: list[dict[str, Any]] = [
         "chips": [
             ("primary",      "Plasma membrane",        "teal"),
             ("reason",       "Tissue-restricted",      "amber"),
-            ("specificity",  "Mixed",                  "amber"),
+            ("surface specificity",  "Mixed",          "amber"),
         ],
         # Topology: no TM helices (it's a secreted protease, signal
         # peptide cleaved). Keep N-terminal residues 1-17 colored as
@@ -104,7 +104,7 @@ GENES: list[dict[str, Any]] = [
         "chips": [
             ("primary",      "Plasma membrane",         "teal"),
             ("reason",       "Lysosomal exocytosis",    "amber"),
-            ("specificity",  "Mostly intracellular",    "amber"),
+            ("surface specificity",  "Mostly intracellular", "amber"),
             ("induced by",   "Oncogenic, immune, infection, stress", "maroon"),
             (None,           "✓ tumor associated",      "maroon"),
         ],
@@ -139,7 +139,7 @@ GENES: list[dict[str, Any]] = [
         "chips": [
             ("primary",      "Lysosome",               "lavender"),
             ("reason",       "Lysosomal exocytosis",   "amber"),
-            ("specificity",  "Mostly intracellular",   "amber"),
+            ("surface specificity",  "Mostly intracellular", "amber"),
             (None,           "✓ dual localization",    "teal"),
             ("induced by",   "Immune, antigen, infection, oncogenic, other", "maroon"),
         ],
