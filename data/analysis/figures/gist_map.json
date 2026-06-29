@@ -1,5 +1,6 @@
 {
   "benchmark_cost_vs_accuracy": "d7f764d2de288ae31cf44173bc396d41",
+  "curator_vs_agent_reason": "c98fe6646ba8b967767d072657da31b7",
   "db_correctness_by_class": "2bb4f7aac629535982c142bc2032e04d",
   "db_correctness_overall": "9c765ed9673d7bd845c3ac091ad2204d",
   "db_cutoff_tradeoff": "f9319af882e372194bd30640c0cbf2ed",

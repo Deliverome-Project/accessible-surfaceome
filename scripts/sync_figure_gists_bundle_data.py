@@ -56,6 +56,9 @@ TSV_BUNDLE: dict[str, list[str]] = {
     "benchmark_cost_vs_accuracy": [
         "data/processed/figures/benchmark_cost_vs_accuracy.tsv",
     ],
+    "curator_vs_agent_reason": [
+        "data/processed/figures/curator_vs_agent_reason.tsv",
+    ],
     "db_correctness_by_class": [
         "data/processed/figures/db_correctness_by_class.tsv",
     ],

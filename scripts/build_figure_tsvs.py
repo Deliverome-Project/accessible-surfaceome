@@ -169,6 +169,36 @@ def build_deep_dive_final_categories(src: dict[str, pd.DataFrame]) -> pd.DataFra
     )
 
 
+def build_curator_vs_agent_reason(src: dict[str, pd.DataFrame]) -> pd.DataFrame:
+    """Per-gene curator-vs-agent reason comparison. The figure is a
+    3-panel composite (panel a: bucket-strict accuracy across 10 model
+    variants; panel b: per-reason accuracy across 4 frontier configs;
+    panel c: Sonnet/ncbi confusion matrix). Needs all (model, variant)
+    predictions, so we start from the per-rep TSV (10 model variants ×
+    147 genes × 3 reps + per-cell preds collapsed across reps for
+    panel c).
+
+    Per-rep TSV already has ground_truth_reason + ground_truth_verdict
+    denormalized; predicted_reason comes from the per-cell collapse
+    when we keep one row per (gene, model, variant, replicate).
+    Slim the columns we don't need (tokens, cost, latency) to keep
+    the TSV under the 5 MB practical cap."""
+    keep = [
+        "gene_symbol", "uniprot_acc", "hgnc_id",
+        "model", "prompt_variant", "replicate",
+        "predicted_verdict", "predicted_reason", "is_match",
+        "ground_truth_verdict", "ground_truth_reason",
+    ]
+    reps = src["reps"]
+    # ground_truth_reason isn't on mainbench_replicates_v2 — join from bench
+    if "ground_truth_reason" not in reps.columns:
+        reason_lookup = src["bench"].set_index("gene_symbol")["ground_truth_reason"]
+        reps = reps.assign(
+            ground_truth_reason=reps["gene_symbol"].map(reason_lookup)
+        )
+    return reps[keep]
+
+
 BUILDERS: dict[str, callable] = {
     "benchmark_cost_vs_accuracy":    build_cost_vs_accuracy,
     "db_correctness_by_class":       build_db_correctness_by_class,
@@ -176,6 +206,7 @@ BUILDERS: dict[str, callable] = {
     "db_vs_sonnet_whole_proteome":   build_db_vs_sonnet_whole_proteome,
     "ensemble_vs_best_db_vs_sonnet": build_ensemble,
     "deep_dive_final_categories":    build_deep_dive_final_categories,
+    "curator_vs_agent_reason":       build_curator_vs_agent_reason,
 }
 
 
