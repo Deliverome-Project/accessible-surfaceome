@@ -52,8 +52,12 @@ REPO = "Deliverome-Project/accessible-surfaceome"
 BRANCH = "main"
 BASE = f"https://raw.githubusercontent.com/{REPO}/{BRANCH}"
 
-CATALOG_TSV = f"{BASE}/data/processed/catalog/whole_proteome_catalog.tsv"
-OPT_CUTOFFS_TSV = f"{BASE}/data/processed/triage_bench/db_optimized_cutoffs.tsv"
+# Single per-figure TSV: full proteome catalog (~19k rows) with
+# uniprot_optimized + cspa_optimized recalibrated flags denormalized
+# in alongside the 5 per-DB flags + sonnet_verdict. Produced by
+# scripts/build_figure_tsvs.py. Gist bundles this TSV next to the
+# script; the figure reads only from the sibling — no other URLs.
+DATA_TSV = f"{BASE}/data/processed/figures/db_vs_sonnet_whole_proteome.tsv"
 
 # Published reproduction gist (embedded into output PNG Source / PDF
 # Subject metadata — mirrors save_figure in _plotting_config.py).
@@ -197,12 +201,15 @@ def main() -> None:
     # carries the v1-style ``*_surface_flag`` columns AND the
     # canonical Sonnet+NCBI verdict, so this single TSV replaces the
     # CATALOG_URL + CAND_TSV pair the figure used previously.
-    catalog = _fetch_tsv(CATALOG_TSV)
+    # Single bundled TSV: catalog rows with uniprot_optimized +
+    # cspa_optimized denormalized in. Both flag sets reduce to row-level
+    # boolean columns, so the set-construction below derives the same
+    # uniprot_opt / cspa_opt accession sets from the bundled rows.
+    catalog = _fetch_tsv(DATA_TSV)
     print(f"  loaded {len(catalog):,} catalog rows; sonnet = claude-sonnet-4-6")
 
-    opt = _fetch_tsv(OPT_CUTOFFS_TSV)
-    uniprot_opt = set(opt.loc[opt["uniprot_optimized"] == 1, "accession"].astype(str))
-    cspa_opt = set(opt.loc[opt["cspa_optimized"] == 1, "accession"].astype(str))
+    uniprot_opt = set(catalog.loc[catalog["uniprot_optimized"] == 1, "uniprot_acc"].astype(str))
+    cspa_opt    = set(catalog.loc[catalog["cspa_optimized"]    == 1, "uniprot_acc"].astype(str))
 
     records = []
     for row in catalog.itertuples(index=False):

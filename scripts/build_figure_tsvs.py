@@ -144,22 +144,24 @@ def build_deep_dive_final_categories(src: dict[str, pd.DataFrame]) -> pd.DataFra
     a hand-authored mock TSV with plausible counts so the gist's
     mirror script has SOMETHING to read.
 
-    The actual figure is also a mock (see scripts/deep_dive_final_categories.py
-    docstring). Replaces the gist's missing-TSV state."""
+    Category keys match the mirror script's `_CATEGORY_LABELS` keys
+    (``canonical``, ``likely``, ``cell_state``, ``cell_type_restricted``,
+    ``no``) so the script can derive its bar-totals + cell-state-stack
+    splits directly from the (category, subcategory, n_genes) rows.
+    The actual figure is also a mock; see scripts/deep_dive_final_categories.py
+    docstring."""
     return pd.DataFrame(
         [
-            {"category": "canonical_surface", "subcategory": "classical_receptor", "n_genes": 1820},
-            {"category": "canonical_surface", "subcategory": "gpi_anchored",        "n_genes":  340},
-            {"category": "canonical_surface", "subcategory": "multipass",           "n_genes":  610},
-            {"category": "canonical_surface", "subcategory": "ecf_protein",         "n_genes":  450},
-            {"category": "likely_surface",    "subcategory": "moderate_confidence", "n_genes":  920},
-            {"category": "cell_state_induced","subcategory": "oncogenic",           "n_genes":  220},
-            {"category": "cell_state_induced","subcategory": "immune",              "n_genes":  180},
-            {"category": "cell_state_induced","subcategory": "stress_hypoxia",      "n_genes":   95},
-            {"category": "cell_state_induced","subcategory": "cell_death",          "n_genes":   60},
-            {"category": "cell_state_induced","subcategory": "infection",           "n_genes":   45},
-            {"category": "cell_type_restricted","subcategory": "tissue_specific",   "n_genes":  410},
-            {"category": "no_surface",        "subcategory": "intracellular",       "n_genes":  300},
+            {"category": "canonical",            "subcategory": "all",             "n_genes": 2900},
+            {"category": "likely",               "subcategory": "all",             "n_genes":  700},
+            {"category": "cell_state",           "subcategory": "oncogenic",       "n_genes":  230},
+            {"category": "cell_state",           "subcategory": "immune",          "n_genes":  140},
+            {"category": "cell_state",           "subcategory": "stress_hypoxia",  "n_genes":   80},
+            {"category": "cell_state",           "subcategory": "cell_death",      "n_genes":   60},
+            {"category": "cell_state",           "subcategory": "infection",       "n_genes":   30},
+            {"category": "cell_state",           "subcategory": "other",           "n_genes":   10},
+            {"category": "cell_type_restricted", "subcategory": "all",             "n_genes":  450},
+            {"category": "no",                   "subcategory": "all",             "n_genes":  400},
         ]
     )
 

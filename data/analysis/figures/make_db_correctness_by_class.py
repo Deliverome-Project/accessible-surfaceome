@@ -54,17 +54,13 @@ BASE = f"https://raw.githubusercontent.com/{REPO}/{BRANCH}"
 # or in Python: `from PIL import Image; Image.open(p).info["Source"]`.
 GIST_URL = "https://gist.github.com/beccajcarlson/2bb4f7aac629535982c142bc2032e04d"
 
-BENCH_TSV   = f"{BASE}/data/eval/triage_benchmark_v1.tsv"
-CAND_TSV    = f"{BASE}/data/processed/catalog/whole_proteome_catalog.tsv"
-PREDS_TSV   = f"{BASE}/data/processed/triage_bench/mainbench_canonical_v2.tsv"
-# Per-replicate predictions — overlays the Sonnet bars' individual-rep
-# accuracy + SEM, per verdict bucket. DB bars are deterministic, no overlay.
-REPS_TSV    = f"{BASE}/data/processed/triage_bench/mainbench_replicates_v2.tsv"
-# Optimized DB-cutoff accession TSV (one row per accession admitted
-# by EITHER optimized rule; columns mark which). Dumped by the
-# canonical generator's _dump_db_optimized_cutoffs when the by_class
-# plot regenerates.
-OPT_CUTOFFS = f"{BASE}/data/processed/triage_bench/db_optimized_cutoffs.tsv"
+# Single per-figure TSV: one row per (gene × model × prompt_variant ×
+# replicate) with everything denormalized in (ground_truth_verdict,
+# uniprot_acc, 5 per-DB *_surface_flag columns, uniprot_optimized,
+# cspa_optimized, predicted_verdict, is_match). Produced by
+# scripts/build_figure_tsvs.py. Gist bundles this TSV next to the
+# script; the figure reads ONLY from the sibling — no other URLs.
+DATA_TSV = f"{BASE}/data/processed/figures/db_correctness_by_class.tsv"
 
 # ──── Inline brand styling — sentinel: brand-style-v3 ────
 # Mirrors src/accessible_surfaceome/audit/_plotting_config.py so the gist
@@ -199,39 +195,51 @@ def _vote_correct(vote: str, truth: str) -> bool:
 
 
 def main() -> None:
-    bench       = _fetch_tsv(BENCH_TSV)
-    cand        = _fetch_tsv(CAND_TSV).set_index("uniprot_acc")
-    preds       = _fetch_tsv(PREDS_TSV)
-    opt         = _fetch_tsv(OPT_CUTOFFS)
-    uniprot_opt = set(opt.loc[opt["uniprot_optimized"] == 1, "accession"].astype(str))
-    cspa_opt    = set(opt.loc[opt["cspa_optimized"]    == 1, "accession"].astype(str))
+    # Single bundled per-rep TSV with everything denormalized:
+    #   - per-gene truth + uniprot_acc
+    #   - 5 per-DB *_surface_flag columns (uniprot/go/surfy/cspa/hpa)
+    #   - uniprot_optimized + cspa_optimized recalibrated flags
+    #   - per-cell sonnet predicted_verdict + per-rep is_match
+    data = _fetch_tsv(DATA_TSV)
 
-    truth_by_gene = dict(zip(bench["gene_symbol"], bench["ground_truth_verdict"], strict=True))
-    acc_by_gene   = dict(zip(bench["gene_symbol"], bench["uniprot_acc"], strict=True))
+    # Derive per-gene tables by groupby(first) — the per-DB flags +
+    # truth + acc are identical across reps of the same gene, so any
+    # row works as a representative.
+    gene_first = data.groupby("gene_symbol", sort=False).first()
+    truth_by_gene = gene_first["ground_truth_verdict"].to_dict()
+    acc_by_gene   = gene_first["uniprot_acc"].to_dict()
+
+    # Per-gene per-DB flag lookup (deterministic across all (model,
+    # variant, rep) rows of the same gene).
+    db_flags = gene_first[[
+        "uniprot_optimized", "cspa_optimized",
+        "go_surface_flag", "hpa_surface_flag", "surfy_surface_flag",
+    ]]
 
     def _vote(gene: str, source: str) -> str:
-        acc = acc_by_gene.get(gene)
-        if not acc:
+        if gene not in db_flags.index:
             return "no"
+        row = db_flags.loc[gene]
         if source == "UniProt":
-            return "yes" if acc in uniprot_opt else "no"
+            return "yes" if row["uniprot_optimized"] == 1 else "no"
         if source == "CSPA":
-            return "yes" if acc in cspa_opt else "no"
+            return "yes" if row["cspa_optimized"] == 1 else "no"
         flag_col = {
             "GO CC":  "go_surface_flag",
             "HPA":    "hpa_surface_flag",
             "SURFY":  "surfy_surface_flag",
         }[source]
-        if acc not in cand.index:
-            return "no"
-        return "yes" if cand.loc[acc, flag_col] == 1 else "no"
+        return "yes" if row[flag_col] == 1 else "no"
 
     # Display order: LLM cell first, then DBs sorted by overall accuracy
     # (descending) — matches the canonical generator's convention so the
     # strongest source sits next to the LLM bar.
-    sonnet_ncbi = preds[
-        (preds["model"] == "claude-sonnet-4-6") & (preds["prompt_variant"] == "ncbi")
-    ].set_index("gene_symbol")["predicted_verdict"].to_dict()
+    # Sonnet/ncbi per-cell predicted_verdict: take the first row per gene
+    # (predicted_verdict is per-cell so identical across that cell's reps).
+    sonnet_ncbi = (
+        data[(data["model"] == "claude-sonnet-4-6") & (data["prompt_variant"] == "ncbi")]
+        .groupby("gene_symbol", sort=False)["predicted_verdict"].first().to_dict()
+    )
     sonnet_label = "Sonnet (+ IDs)"
 
     def _overall_acc(caller_label: str) -> float:
@@ -254,9 +262,8 @@ def main() -> None:
     # are deterministic and keep their exact majority fraction.
     sonnet_rep_frac: dict[str, float] = {}
     try:
-        _reps = _fetch_tsv(REPS_TSV)
-        _s = _reps[(_reps["model"] == "claude-sonnet-4-6")
-                   & (_reps["prompt_variant"] == "ncbi")].copy()
+        _s = data[(data["model"] == "claude-sonnet-4-6")
+                   & (data["prompt_variant"] == "ncbi")].copy()
         _s["is_match"] = _s["is_match"].astype(int)
         _s["truth"] = _s["gene_symbol"].map(truth_by_gene)
         _rep_ids = sorted(_s["replicate"].unique())
@@ -348,9 +355,8 @@ def main() -> None:
     # index 0, one patch per bucket). DB callers are deterministic — no
     # overlay. Per-bucket per-rep accuracy from the replicates TSV.
     try:
-        reps = _fetch_tsv(REPS_TSV)
-        srep = reps[(reps["model"] == "claude-sonnet-4-6")
-                    & (reps["prompt_variant"] == "ncbi")].copy()
+        srep = data[(data["model"] == "claude-sonnet-4-6")
+                    & (data["prompt_variant"] == "ncbi")].copy()
         srep["is_match"] = srep["is_match"].astype(int)
         srep["truth"] = srep["gene_symbol"].map(truth_by_gene)
         rep_ids = sorted(srep["replicate"].unique())
@@ -407,8 +413,10 @@ def main() -> None:
     out_png = Path("db_correctness_by_class.png")
     fig.savefig(out_pdf, bbox_inches="tight", metadata={"Subject": GIST_URL})
     fig.savefig(out_png, bbox_inches="tight", dpi=600, metadata={"Source": GIST_URL})
+    n_uniprot_opt = int(db_flags["uniprot_optimized"].sum())
+    n_cspa_opt    = int(db_flags["cspa_optimized"].sum())
     print(f"Wrote {out_pdf} + {out_png}  ({len(df)} (caller, bucket) cells; "
-          f"UniProt TM+signal n={len(uniprot_opt):,}, CSPA HC-only n={len(cspa_opt):,})")
+          f"UniProt TM+signal n={n_uniprot_opt:,}, CSPA HC-only n={n_cspa_opt:,})")
 
 
 if __name__ == "__main__":

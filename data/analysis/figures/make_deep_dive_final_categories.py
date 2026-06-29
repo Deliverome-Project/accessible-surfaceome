@@ -27,7 +27,36 @@ from pathlib import Path
 
 import matplotlib.font_manager as fm
 import matplotlib.pyplot as plt
+import pandas as pd
 import seaborn as sns
+
+REPO = "Deliverome-Project/accessible-surfaceome"
+BRANCH = "main"  # pin to a commit SHA at publication for immutable citation
+BASE = f"https://raw.githubusercontent.com/{REPO}/{BRANCH}"
+# Single per-figure TSV: (category, subcategory, n_genes) — the
+# distribution that drives the bar heights + the cell-state stack.
+# Hand-authored MOCK pending the v2 deep-dive sweep. Produced by
+# ``scripts/build_figure_tsvs.py``. Gist bundles this TSV next to
+# the script; the figure reads ONLY from the sibling — no other URLs.
+DATA_TSV = f"{BASE}/data/processed/figures/deep_dive_final_categories.tsv"
+
+
+def _fetch_tsv(url: str) -> pd.DataFrame:
+    """Bundled-only: the gist HEAD commit SHA is the SWHID for the
+    whole reproduction unit (script + data + README), so we must
+    never read a *different* TSV than what's bundled. Sibling-first
+    (gist case); fall back to the in-repo TSV path (dev case). No
+    network fetch — a missing sibling in a gist is a hard error."""
+    sibling = Path(__file__).parent / Path(url).name
+    if sibling.is_file():
+        return pd.read_csv(sibling, sep="\t")
+    local = Path(__file__).resolve().parents[3] / url[len(BASE) + 1:]
+    if local.is_file():
+        return pd.read_csv(local, sep="\t")
+    raise FileNotFoundError(
+        f"TSV not found at sibling ({sibling.name}) or local ({local}). "
+        f"In a gist, the bundled TSV must sit next to this script."
+    )
 
 # Published reproduction gist (embedded into output PNG Source / PDF
 # Subject metadata — mirrors save_figure in _plotting_config.py).
@@ -106,23 +135,6 @@ def _apply_brand_style() -> None:
     })
 
 
-# ── MOCK placeholder counts (sum ≈ 5,000) ────────────────────────────────
-# Proportions are eyeballed from the 14 committed deep-dive records under
-# viewer/public/data/surfaceome/ + typical surfaceome literature. SWAP for
-# real D1 counts when the v2 sweep completes.
-_PLACEHOLDER_CANONICAL = 2_900
-_PLACEHOLDER_LIKELY = 700
-_PLACEHOLDER_CELL_STATE_BY_TRIGGER = {
-    "oncogenic":      230,
-    "immune":         140,
-    "stress_hypoxia":  80,
-    "cell_death":      60,
-    "infection":       30,
-    "other":           10,
-}
-_PLACEHOLDER_CELL_TYPE_RESTRICTED = 450
-_PLACEHOLDER_NO = 400
-
 _COLOR_CANONICAL = "#2E7A55"
 _COLOR_LIKELY = "#3D6B60"
 _COLOR_CELL_TYPE = "#BC3C4C"
@@ -156,12 +168,23 @@ _CATEGORY_LABELS = {
 def main() -> None:
     _apply_brand_style()
 
+    # Single bundled TSV with (category, subcategory, n_genes) rows.
+    # cell_state gets multiple rows (one per induction trigger); the
+    # other categories use subcategory='all' as their single row.
+    data = _fetch_tsv(DATA_TSV)
+    cs_rows = data[data["category"] == "cell_state"]
+    cs_dict = dict(zip(cs_rows["subcategory"], cs_rows["n_genes"].astype(int)))
+
+    def _scalar(cat: str) -> int:
+        rows = data[data["category"] == cat]
+        return int(rows["n_genes"].sum())
+
     counts: dict[str, int | dict[str, int]] = {
-        "canonical":            _PLACEHOLDER_CANONICAL,
-        "likely":               _PLACEHOLDER_LIKELY,
-        "cell_state":           dict(_PLACEHOLDER_CELL_STATE_BY_TRIGGER),
-        "cell_type_restricted": _PLACEHOLDER_CELL_TYPE_RESTRICTED,
-        "no":      _PLACEHOLDER_NO,
+        "canonical":            _scalar("canonical"),
+        "likely":               _scalar("likely"),
+        "cell_state":           cs_dict,
+        "cell_type_restricted": _scalar("cell_type_restricted"),
+        "no":                   _scalar("no"),
     }
     categories = list(_CATEGORY_LABELS.keys())
 
