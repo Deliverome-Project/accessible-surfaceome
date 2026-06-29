@@ -260,8 +260,8 @@ def render(df_tidy: pd.DataFrame, out_dir: Path) -> Path:
         ax.set_title(f"{panel_title}\n(n = {n_total} targets)", fontsize=12, weight="bold", pad=14)
         ax.set_ylabel("Targets\nrepresented", fontsize=13, weight="medium")
         ax.set_xlabel("")
-        # Extra headroom (1.32×) because each bar carries three lines of text.
-        ax.set_ylim(0, n_total * 1.32)
+        # Modest headroom (1.18×) over n_total to fit the per-bar text block.
+        ax.set_ylim(0, n_total * 1.18)
         # Cap y-ticks at n_total so no displayed value exceeds the universe size.
         ax.set_yticks(_smart_yticks(n_total))
         sns.despine(ax=ax, top=True, right=True)
