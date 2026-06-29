@@ -83,6 +83,12 @@ TSV_BUNDLE: dict[str, list[str]] = {
     "paywall_bot_block_compare": [
         "data/processed/paywall_bot_block/paywall_bot_block_compare.tsv",
     ],
+    "positive_control_db_coverage_bars": [
+        "data/processed/positive_controls/positive_control_ADC.tsv",
+        "data/processed/positive_controls/positive_control_TCE.tsv",
+        "data/processed/positive_controls/positive_control_VZ.tsv",
+        "data/processed/positive_controls/positive_control_long.tsv",
+    ],
     "topology_coverage_by_source": [
         "data/analysis/db_vs_sonnet_inclusion/per_protein_features.tsv",
     ],
