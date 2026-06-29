@@ -1,0 +1,38 @@
+cff-version: 1.2.0
+title: >-
+  accessible-surfaceome: evidence-graded, per-claim-cited annotation
+  of the human cell-surface proteome
+message: >-
+  If you use this database, viewer, or API in your research, please cite it
+  via the Zenodo deposit below.
+type: software
+authors:
+  - family-names: Smallegan
+    given-names: Michael
+  - family-names: Carlson
+    given-names: Rebecca
+identifiers:
+  - type: doi
+    value: 10.5281/zenodo.20805384
+    description: Zenodo data record (v0)
+repository-code: https://github.com/Deliverome-Project/accessible-surfaceome
+url: https://surfaceome.deliverome.org
+license: MIT
+keywords:
+  - surfaceome
+  - cell-surface proteome
+  - plasma membrane
+  - extracellular accessibility
+  - bioinformatics
+  - drug discovery
+  - proteomics
+  - antibody-drug conjugates
+  - CAR-T
+  - LYTAC
+abstract: >-
+  An evidence-graded, per-claim-cited annotation of the human cell-surface
+  proteome. Reconciles UniProt, GO, the Human Protein Atlas, the Cell
+  Surface Protein Atlas, and SURFY into a graded surface_status call per
+  protein with topology and orthogonal accessibility evidence. Surfaced
+  as a JSON API (api.deliverome.org/surfaceome/v1), an interactive viewer
+  (surfaceome.deliverome.org), and a citable Zenodo snapshot.

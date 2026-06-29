@@ -246,7 +246,6 @@ CREATE TABLE IF NOT EXISTS candidate_universe_public (
     cspa_surface_flag           INTEGER NOT NULL,
     hpa_surface_flag            INTEGER NOT NULL,
     deeptmhmm_surface_flag      INTEGER NOT NULL,
-    compartments_surface_flag   INTEGER NOT NULL,
     synced_at                   TEXT NOT NULL DEFAULT (datetime('now')),
     PRIMARY KEY (universe_version, gene_symbol, uniprot_acc)
 );

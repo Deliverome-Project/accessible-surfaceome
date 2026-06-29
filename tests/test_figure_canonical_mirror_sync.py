@@ -44,20 +44,35 @@ import pytest
 from accessible_surfaceome.paths import REPO_ROOT
 
 SCRIPTS_DIR = REPO_ROOT / "scripts"
+FIGURES_SCRIPTS_DIR = REPO_ROOT / "scripts" / "figures"
 MIRROR_DIR = REPO_ROOT / "data/analysis/figures"
 
 # Slug → both files. A "pair" is a slug that has BOTH
-# ``scripts/<slug>.py`` AND ``data/analysis/figures/make_<slug>.py``.
+# ``scripts/figures/<slug>.py`` (canonical generator) AND
+# ``data/analysis/figures/make_<slug>.py`` (gist mirror).
 # Mirror-only figures (where the canonical generator lives inside a
-# multi-figure script in scripts/, e.g. ``triage_bench_db_barplot.py``)
+# multi-figure script, e.g. ``triage_bench_db_barplot.py``)
 # are out of scope for the per-file drift guard — they need a different
 # treatment.
+
+
+def _canonical_slug_map() -> dict[str, Path]:
+    """Map slug → canonical generator path, searching scripts/figures/ first
+    then scripts/ (for top-level entry points that double as figure scripts)."""
+    slugs: dict[str, Path] = {}
+    for p in SCRIPTS_DIR.glob("*.py"):
+        slugs[p.stem] = p
+    # figures/ takes priority — canonical generators live here after the
+    # scripts/build|figures|audit|… reorganisation
+    for p in FIGURES_SCRIPTS_DIR.glob("*.py"):
+        slugs[p.stem] = p
+    return slugs
 
 
 def _list_pairs() -> list[str]:
     if not SCRIPTS_DIR.exists() or not MIRROR_DIR.exists():
         return []
-    canonical_slugs = {p.stem for p in SCRIPTS_DIR.glob("*.py")}
+    canonical_slugs = set(_canonical_slug_map())
     mirror_slugs = {
         p.stem.removeprefix("make_")
         for p in MIRROR_DIR.glob("make_*.py")
@@ -116,9 +131,10 @@ def test_figure_canonical_mirror_layout_in_sync(slug: str) -> None:
     layout fingerprint. See CLAUDE.md "Canonical generator vs gist
     mirror" for the rule."""
     if slug == "<no-pairs>":
-        pytest.skip("no scripts/<slug>.py ↔ data/analysis/figures/make_<slug>.py "
+        pytest.skip("no scripts/figures/<slug>.py ↔ data/analysis/figures/make_<slug>.py "
                     "pairs found (partial checkout?)")
-    canonical = SCRIPTS_DIR / f"{slug}.py"
+    slug_map = _canonical_slug_map()
+    canonical = slug_map[slug]
     mirror = MIRROR_DIR / f"make_{slug}.py"
     assert canonical.exists() and mirror.exists()
 
@@ -134,9 +150,9 @@ def test_figure_canonical_mirror_layout_in_sync(slug: str) -> None:
 
     assert not diffs, (
         f"Figure layout drift between canonical generator and gist mirror "
-        f"for slug={slug!r}:\n  scripts/{slug}.py  ↔  "
+        f"for slug={slug!r}:\n  {canonical.relative_to(REPO_ROOT)}  ↔  "
         f"data/analysis/figures/make_{slug}.py\n" + "\n".join(diffs)
         + "\n\nFix: per CLAUDE.md \"Canonical generator vs gist mirror\", "
         "edit both files in the same commit, then regenerate the figure "
-        "with `uv run python scripts/" + slug + ".py`."
+        f"with `uv run python {canonical.relative_to(REPO_ROOT)}`."
     )

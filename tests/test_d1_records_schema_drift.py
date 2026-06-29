@@ -192,7 +192,7 @@ def test_every_published_record_carries_renderer_required_fields() -> None:
 # the tree. Shrink it as those snapshots land.
 
 # Repo root is two levels up from tests/ — same heuristic as
-# scripts/check_viewer_types_sync.py.
+# scripts/audit/check_viewer_types_sync.py.
 _REPO_ROOT = Path(__file__).resolve().parent.parent
 _VIEWER_DATA_DIR = _REPO_ROOT / "viewer" / "public" / "data" / "surfaceome"
 

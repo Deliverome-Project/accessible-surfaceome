@@ -1309,7 +1309,7 @@ def main(argv: list[str] | None = None) -> None:
 
 # ---------------------------------------------------------------------------
 # Sweep helpers — added for the topology + paralog pipeline.
-# These are used by scripts/run_topology_sweep.py to (a) fetch FASTAs into a
+# These are used by scripts/build/run_topology_sweep.py to (a) fetch FASTAs into a
 # disk cache, (b) invoke DeepTMHMM on a batch FASTA, and (c) parse the
 # resulting .3line into rich JSONL records.
 # ---------------------------------------------------------------------------
@@ -1339,7 +1339,7 @@ def resolve_deeptmhmm_paths(root_override: Path | None = None) -> tuple[Path, Pa
     installed there:
 
         DEEPTMHMM_ROOT=/Users/.../Git/deliverome-internal \\
-            uv run python scripts/run_topology_sweep.py ...
+            uv run python scripts/build/run_topology_sweep.py ...
     """
     import os as _os
 

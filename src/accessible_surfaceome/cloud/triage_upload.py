@@ -97,7 +97,7 @@ def _load_benchmark_rows(bench_tsv: Path) -> list[dict[str, str]]:
 # Columns that DEFINE the curated benchmark — the ground truth a run is
 # scored against. ``bench_version`` is the content hash of ONLY these
 # columns, so it's stable across re-runs of
-# ``scripts/augment_figure_tsvs_with_stable_ids.py`` (which rewrites the
+# ``scripts/tsv-export/augment_figure_tsvs_with_stable_ids.py`` (which rewrites the
 # DERIVED columns — ``sonnet_verdict``, ``n_db_votes``, stable-IDs — in the
 # same file from the genome sweep / candidate universe). Hashing the whole
 # file would drift the version every time those derived columns refresh,
@@ -353,7 +353,7 @@ def _insert_run_public(
 ) -> None:
     """Insert ONE record directly into the public mirror, whitelisted.
 
-    Mirrors what ``scripts/sync_public_d1.py`` would push, but live as the
+    Mirrors what ``scripts/upload/sync_public_d1.py`` would push, but live as the
     sweep runs — for sweeps that want public-direct writes (e.g. the
     genome rerun). Only ``_PUBLIC_TRIAGE_COLUMNS`` cross over; raw_text and
     other private-only fields are never sent. Idempotent via OR REPLACE on

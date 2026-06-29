@@ -154,9 +154,9 @@ After both records exist:
 2. **Click "Publish"** in the Zenodo UI when you're ready. The reserved
    DOI activates and the record is locked.
 3. **Update `FIGURE_PROVENANCE`** in
-   `scripts/embed_figure_gist_metadata.py`: set `doi` on the
+   `scripts/figures/embed_figure_gist_metadata.py`: set `doi` on the
    top-level entry for each figure that's covered by this deposit.
-4. **Re-run** `scripts/embed_figure_gist_metadata.py` to refresh the
+4. **Re-run** `scripts/figures/embed_figure_gist_metadata.py` to refresh the
    embedded metadata in `data/analysis/figures/*.{png,pdf}`.
 5. **Commit** the metadata bump.
 
@@ -210,8 +210,8 @@ gh release create v1.2.0 --generate-notes
 
 # 6. Update FIGURE_PROVENANCE with the new code-record's concept DOI
 #    so future figure renders pick it up:
-#    edit scripts/embed_figure_gist_metadata.py → set `doi` per figure
-#    → uv run python scripts/embed_figure_gist_metadata.py
+#    edit scripts/figures/embed_figure_gist_metadata.py → set `doi` per figure
+#    → uv run python scripts/figures/embed_figure_gist_metadata.py
 #    → git add data/analysis/figures/ && git commit
 ```
 

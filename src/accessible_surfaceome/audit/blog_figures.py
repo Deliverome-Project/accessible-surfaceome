@@ -26,13 +26,12 @@ Sources in the figure legend (the five gating sources only):
   (PM accessible OR junctional at per-tier Enhanced/Supported/Approved;
   secreted-only rows excluded)
 
-DeepTMHMM and JensenLab COMPARTMENTS are intentionally omitted from these
-figures. They are auxiliary per-row evidence in this milestone, not
-universe-gating sources, so including them would either skew the
-agreement count (DeepTMHMM is run on a partial cohort; COMPARTMENTS
-contributes 0 unique members by construction) or visually conflate
-auxiliary signals with gating votes. Their per-row calls are still
-emitted in the candidate-universe TSV for downstream agent assessment.
+DeepTMHMM is intentionally omitted from these figures. It is auxiliary
+per-row evidence in this milestone, not a universe-gating source, so
+including it would either skew the agreement count (DeepTMHMM is run on
+a partial cohort) or visually conflate auxiliary signals with gating
+votes. Its per-row calls are still emitted in the candidate-universe TSV
+for downstream agent assessment.
 """
 
 from __future__ import annotations
@@ -85,8 +84,8 @@ DEFAULT_INPUT = (
 DEFAULT_OUTPUT_DIR = ROOT / "data" / "analysis" / "candidate_universe_agreement"
 
 # Gating sources only — must mirror GATING_FLAG_COLUMNS in
-# ``accessible_surfaceome.merge.__init__``. Auxiliary sources (DeepTMHMM,
-# COMPARTMENTS) are omitted; see module docstring for rationale.
+# ``accessible_surfaceome.merge.__init__``. Auxiliary source (DeepTMHMM)
+# is omitted; see module docstring for rationale.
 SOURCE_FLAGS = [
     "uniprot_surface_flag",
     "go_surface_flag",

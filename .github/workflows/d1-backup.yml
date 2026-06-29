@@ -35,7 +35,7 @@ on:
       - "data/processed/candidate_universe/**"
       # Uploaders / backup / public-sync scripts.
       - "src/accessible_surfaceome/cloud/**"
-      - "scripts/sync_public_d1.py"
+      - "scripts/upload/sync_public_d1.py"
       - "scripts/d1_export_to_r2.sh"
       - "scripts/d1_triage_backup.sh"
       - ".github/workflows/d1-backup.yml"

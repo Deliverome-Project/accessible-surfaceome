@@ -20,7 +20,7 @@ it into their default path without breaking those environments.
 
 This module is the canonical "publish a record" path — both the v2
 annotate driver and the maintenance script
-(``scripts/upload_viewer_snapshots_to_d1.py``) call into it so the two
+(``scripts/upload/upload_viewer_snapshots_to_d1.py``) call into it so the two
 surfaces never drift.
 """
 
@@ -53,7 +53,7 @@ DEFAULT_SNAPSHOT_DIR = REPO_ROOT / "viewer" / "public" / "data" / "surfaceome"
 PUBLIC_API_BASE = "https://api.deliverome.org/surfaceome"
 
 # Mirrors ``cloudflare/d1_public_schema.sql::surface_annotation``. Keep in
-# sync with ``scripts/sync_public_d1.py::sync_surface_annotations``.
+# sync with ``scripts/upload/sync_public_d1.py::sync_surface_annotations``.
 #
 # ``prompt_corpus_version`` is denormalized from the record so two records
 # at the same ``schema_version`` but different prompt-corpus versions
@@ -151,7 +151,7 @@ def _purge_urls_for(sym: str) -> list[str]:
     zone cache.
 
     The catalog cache key is query-string-insensitive (the Cloudflare
-    cache rule applied by ``scripts/apply_cf_edge_rules.py``), so purging
+    cache rule applied by ``scripts/cloud/apply_cf_edge_rules.py``), so purging
     the bare URL is sufficient — there are no ``?x=`` variants to chase.
     """
     base = PUBLIC_API_BASE
@@ -747,7 +747,7 @@ def publish_record(
     used to be a Worker-down fallback — a stale local copy could mask the
     authoritative D1 row, so the fallback was removed and ``write_snapshot``
     now defaults to ``False``. Pass ``write_snapshot=True`` to opt in to an
-    ad-hoc operator dump (used by ``scripts/upload_viewer_snapshots_to_d1.py``
+    ad-hoc operator dump (used by ``scripts/upload/upload_viewer_snapshots_to_d1.py``
     for the reverse-sync maintenance path); nothing else should set it.
 
     Agent-side disk artifacts live at ``data/annotations/{symbol}.json``;
@@ -796,7 +796,7 @@ def publish_record_dict(
     """Push a raw record dict — no Pydantic validation.
 
     Companion to :func:`publish_record` for the bulk-sync path
-    (``scripts/upload_viewer_snapshots_to_d1.py``) where on-disk
+    (``scripts/upload/upload_viewer_snapshots_to_d1.py``) where on-disk
     snapshots may predate field additions in the current Pydantic model.
     The validation contract is: "if it's on disk under
     ``viewer/public/data/surfaceome``, the viewer's allowed to render

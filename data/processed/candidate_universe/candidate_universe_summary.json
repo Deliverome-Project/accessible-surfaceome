@@ -47,14 +47,6 @@
       "secondary_rows_rewritten": 0,
       "source": "hpa",
       "split_duplications": 0
-    },
-    {
-      "deleted_rows_dropped": 0,
-      "input_rows": 1963,
-      "output_rows": 1963,
-      "secondary_rows_rewritten": 0,
-      "source": "compartments",
-      "split_duplications": 0
     }
   ],
   "agreement_counts": {
@@ -66,8 +58,7 @@
     "5_of_5": 188
   },
   "auxiliary_sources": [
-    "deeptmhmm",
-    "compartments"
+    "deeptmhmm"
   ],
   "gating_sources": [
     "uniprot",
@@ -78,29 +69,20 @@
   ],
   "gene_symbol_resolution": {
     "n_ambiguous": 5,
-    "n_exact": 7261,
-    "n_normalized_alias": 96,
+    "n_exact": 6589,
+    "n_normalized_alias": 97,
     "n_normalized_previous": 0,
-    "n_not_found": 4,
-    "n_query_symbols": 7366
+    "n_not_found": 3,
+    "n_query_symbols": 6694
   },
-  "generated_at_utc": "2026-05-07T14:41:26.358032+00:00",
-  "n_compartments_supported": 148,
-  "n_compartments_unique": 0,
+  "generated_at_utc": "2026-06-28T20:35:18.696362+00:00",
   "n_gating_sources": 5,
   "n_in_db_union": 5680,
   "n_ml_only_edge_cases": 0,
   "n_rows_total": 5680,
   "n_with_all_5_gating_sources": 188,
-  "n_zero_support_rows_excluded": 1704,
+  "n_zero_support_rows_excluded": 1032,
   "pairwise_overlap": {
-    "cspa__compartments": {
-      "jaccard": 0.07010785824345146,
-      "n_a": 1241,
-      "n_b": 148,
-      "n_intersect": 91,
-      "n_union": 1298
-    },
     "cspa__deeptmhmm": {
       "jaccard": 0.32427258805513015,
       "n_a": 1241,
@@ -114,20 +96,6 @@
       "n_b": 2077,
       "n_intersect": 350,
       "n_union": 2968
-    },
-    "deeptmhmm__compartments": {
-      "jaccard": 0.045053003533568906,
-      "n_a": 2218,
-      "n_b": 148,
-      "n_intersect": 102,
-      "n_union": 2264
-    },
-    "go__compartments": {
-      "jaccard": 0.0595703125,
-      "n_a": 2022,
-      "n_b": 148,
-      "n_intersect": 122,
-      "n_union": 2048
     },
     "go__cspa": {
       "jaccard": 0.1779783393501805,
@@ -157,26 +125,12 @@
       "n_intersect": 997,
       "n_union": 3825
     },
-    "hpa__compartments": {
-      "jaccard": 0.02581834946980175,
-      "n_a": 2077,
-      "n_b": 148,
-      "n_intersect": 56,
-      "n_union": 2169
-    },
     "hpa__deeptmhmm": {
       "jaccard": 0.16902558519324987,
       "n_a": 2077,
       "n_b": 2218,
       "n_intersect": 621,
       "n_union": 3674
-    },
-    "surfy__compartments": {
-      "jaccard": 0.038393800634026067,
-      "n_a": 2800,
-      "n_b": 148,
-      "n_intersect": 109,
-      "n_union": 2839
     },
     "surfy__cspa": {
       "jaccard": 0.28653295128939826,
@@ -198,13 +152,6 @@
       "n_b": 2077,
       "n_intersect": 663,
       "n_union": 4214
-    },
-    "uniprot__compartments": {
-      "jaccard": 0.03584788029925187,
-      "n_a": 3175,
-      "n_b": 148,
-      "n_intersect": 115,
-      "n_union": 3208
     },
     "uniprot__cspa": {
       "jaccard": 0.2229299363057325,
@@ -243,7 +190,6 @@
     }
   },
   "per_source_counts": {
-    "compartments": 148,
     "cspa": 1241,
     "deeptmhmm": 2218,
     "go": 2022,

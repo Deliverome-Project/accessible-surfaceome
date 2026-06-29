@@ -8,7 +8,7 @@
  * To run a queued gene's deep dive::
  *
  *     uv run accessible-surfaceome agents annotate IGF2R
- *     uv run python scripts/sync_public_d1.py --only surface_annotation
+ *     uv run python scripts/upload/sync_public_d1.py --only surface_annotation
  *
  * Then remove the gene from QUEUED_DEEP_DIVES below (or leave it —
  * the orange marker only fires when the gene is in this list AND has

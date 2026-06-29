@@ -1,15 +1,15 @@
 """Audit UniProt-accession consistency across the M1 candidate-universe sources.
 
-The candidate-universe merge (``build_candidate_universe.py``) joins seven
+The candidate-universe merge (``build_candidate_universe.py``) joins six
 sources on base UniProt primary accession. That join assumes every source is
 using the *current* UniProt primary accession for the same protein. In
 practice old snapshots (SURFY 2018, CSPA 2015) may contain accessions that
 UniProt has since merged into another entry (now *secondary* accessions), or
-entries that UniProt has since deleted. HPA and JensenLab COMPARTMENTS key
-on Ensembl IDs and are pre-mapped to UniProt primary via the
-``uniprot_ensembl_xrefs`` snapshot before reaching the merge — the audit
-therefore classifies their *mapped* primaries. Either situation would
-silently create two merge rows for the same protein.
+entries that UniProt has since deleted. HPA keys on Ensembl IDs and is
+pre-mapped to UniProt primary via the ``uniprot_ensembl_xrefs`` snapshot
+before reaching the merge — the audit therefore classifies the *mapped*
+primaries. Either situation would silently create two merge rows for the same
+protein.
 
 This audit cross-checks every source accession against the canonical
 UniProt accession-history reference files:
@@ -87,10 +87,6 @@ DEEPTMHMM_ISO_TSV = (
     ROOT / "data" / "processed" / "deeptmhmm" / "deeptmhmm_human_isoforms.tsv"
 )
 HPA_TSV = ROOT / "data" / "processed" / "hpa" / "hpa_human_snapshot.tsv"
-COMPARTMENTS_TSV = (
-    ROOT / "data" / "processed" / "jensenlab_compartments"
-    / "jensenlab_compartments_human_snapshot.tsv"
-)
 CANDIDATE_UNIVERSE_TSV = (
     ROOT / "data" / "processed" / "candidate_universe" / "candidate_universe.tsv"
 )
@@ -131,12 +127,6 @@ def load_source_accessions() -> dict[str, set[str]]:
     if HPA_TSV.exists():
         hpa = pd.read_csv(HPA_TSV, sep="\t", dtype=str, usecols=["uniprot_accession"])  # ty:ignore[no-matching-overload]
         sources["hpa"] = {_strip_isoform(a.strip()) for a in hpa["uniprot_accession"].dropna()}
-
-    if COMPARTMENTS_TSV.exists():
-        cmp_df = pd.read_csv(COMPARTMENTS_TSV, sep="\t", dtype=str, usecols=["uniprot_accession"])  # ty:ignore[no-matching-overload]
-        sources["compartments"] = {
-            _strip_isoform(a.strip()) for a in cmp_df["uniprot_accession"].dropna()
-        }
 
     return sources
 

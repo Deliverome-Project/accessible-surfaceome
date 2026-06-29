@@ -33,7 +33,7 @@ import seaborn as sns
 
 # Final-figure data sources — pinned to the public repo at raw.githubusercontent.com
 # for citation stability. The predictions TSV is refreshed from public D1
-# by `scripts/export_mainbench_to_tsv.py`; truth labels come from the
+# by `scripts/cloud/export_mainbench_to_tsv.py`; truth labels come from the
 # curated benchmark TSV in `data/eval/`. (Live consumers wanting the same
 # shape can hit `api.deliverome.org/surfaceome/v1/{triage,benchmark}/
 # export.tsv` instead — see the API page on the viewer.)
@@ -170,7 +170,7 @@ CELL_COLOR = {
 }
 
 # Per-cell label offsets (pixels) to deconflict dense clusters — mirrors
-# scripts/triage_bench_db_barplot.py::make_cost_vs_accuracy_plot. Without
+# scripts/figures/triage_bench_db_barplot.py::make_cost_vs_accuracy_plot. Without
 # these, Opus(naive) and Sonnet(+NCBI+web) land at similar (cost, acc.) and
 # their labels stack. When abs(dy) >= 16 a short leader line is drawn so
 # the label → point mapping stays unambiguous. Re-tune if cells move.

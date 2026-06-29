@@ -2,7 +2,7 @@
 
 Companion to ``tests/test_figure_gists_styling.py`` (which enforces
 the inline brand-style sentinel in the gists themselves). This test
-enforces that, after running ``scripts/embed_figure_gist_metadata.py``,
+enforces that, after running ``scripts/figures/embed_figure_gist_metadata.py``,
 each canonical PNG and PDF carries a JSON-valid, schema-v1 provenance
 blob.
 
@@ -28,8 +28,8 @@ from accessible_surfaceome._provenance import (
 )
 
 # Import the registry from the embed script. The script lives in
-# ``scripts/`` so add it to the path.
-SCRIPTS_DIR = Path(__file__).resolve().parents[1] / "scripts"
+# ``scripts/figures/`` so add it to the path.
+SCRIPTS_DIR = Path(__file__).resolve().parents[1] / "scripts" / "figures"
 sys.path.insert(0, str(SCRIPTS_DIR))
 from embed_figure_gist_metadata import FIGURE_PROVENANCE, FIGURES_DIR  # noqa: E402  # ty: ignore[unresolved-import]
 

@@ -106,7 +106,7 @@ discovery: PubTator N papers + EuropePMC M papers → union K
      ✗ PMC789012 sections=[...] → 0 snippets (after gene-proximity filter)
 ```
 
-See `scripts/audit_evidence_retrieval.py`. It tells you *exactly*
+See `scripts/audit/audit_evidence_retrieval.py`. It tells you *exactly*
 where papers drop out — retrieval, filter, fetch, hallmark match,
 proximity. That tells you which stage's code to fix.
 
@@ -206,7 +206,7 @@ calibrate. Surprises do.
 - Worked example: `docs/eval/v1-cost-stress-test.md`
 - Per-call cost capture: `src/accessible_surfaceome/agents/_support/pricing.py`
 - Caching + compaction: `src/accessible_surfaceome/agents/_support/payload.py`
-- Retrieval diagnostic: `scripts/audit_evidence_retrieval.py`
+- Retrieval diagnostic: `scripts/audit/audit_evidence_retrieval.py`
 - Eval driver: `scripts/v1_cost_stress_test.py`
 - Pre-built claim drafts: `EvidenceClaimDraft` in
   `src/accessible_surfaceome/tools/_shared/models.py`

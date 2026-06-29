@@ -26,6 +26,18 @@ export const CITATIONS = {
    *  four proteomes, 8,195 predicted homomers including ~3,946 human.
    *  Cited by the StructureViewer's "Homo-oligomer" tab. */
   schwekeHomomer: { authorYear: "Schweke et al. 2024", pmid: "38325366" },
+  /** Uhlén et al. 2015 — Human Protein Atlas (HPA) landmark paper. */
+  hpa: { authorYear: "Uhlén et al. 2015", pmid: "25613900" },
+  /** Bausch-Fluck et al. 2018 — SURFY surfaceome predictor. */
+  surfy: { authorYear: "Bausch-Fluck et al. 2018", pmid: "29605868" },
+  /** Bausch-Fluck et al. 2015 — Cell Surface Protein Atlas (CSPA). */
+  cspa: { authorYear: "Bausch-Fluck et al. 2015", pmid: "25894527" },
+  /** Hallgren et al. 2022 — DeepTMHMM topology predictor. */
+  deepTmhmm: { authorYear: "Hallgren et al. 2022", pmid: "36323986" },
+  /** Howe et al. 2024 — Ensembl 2024 (Compara included). */
+  ensemblCompara2024: { authorYear: "Howe et al. 2024", pmid: "38680976" },
+  /** Vilella et al. 2009 — EnsemblCompara GeneTrees original paper. */
+  ensemblCompara2009: { authorYear: "Vilella et al. 2009", pmid: "19029536" },
 } as const;
 
 /**

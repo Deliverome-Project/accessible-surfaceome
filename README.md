@@ -1,5 +1,12 @@
 # accessible-surfaceome
 
+> **Draft cleanup — do not merge yet.** This branch (`claude/quizzical-darwin-8923eb`,
+> PR [#88](https://github.com/Deliverome-Project/accessible-surfaceome/pull/88))
+> is the v0 release cleanup. Hold the merge until the in-flight deep-dive
+> Modal sweep completes — merging earlier could collide with the records the
+> sweep is publishing. Remove this banner in the same commit that takes the
+> PR out of draft.
+
 An evidence-graded, per-claim-cited annotation of the **human cell-surface
 proteome** — surfaced as a database, a public JSON API, an interactive
 viewer, and (in v0) a blog with a stable DOI/SWHID-citable snapshot.
@@ -14,6 +21,27 @@ delivery-target selection alike.
 MIT-licensed; copyright Michael Smallegan and Rebecca Carlson. Full
 design notes:
 [docs/plans/2026-04-16-surface-proteome-annotation.md](docs/plans/2026-04-16-surface-proteome-annotation.md).
+See [NOTICE.md](NOTICE.md) for upstream-data attribution and
+[LICENSING.md](LICENSING.md) for redistribution guidance.
+
+## Quick start
+
+**Access the data without setup:**
+- Web viewer: https://surfaceome.deliverome.org/genes/GPR75
+- JSON API: `curl https://api.deliverome.org/surfaceome/v1/genes/GPR75`
+- Citable snapshot: Zenodo DOI [10.5281/zenodo.20805384](https://doi.org/10.5281/zenodo.20805384)
+
+**Reproduce a figure from the paper:**
+Every published figure has a standalone gist script in [`data/analysis/figures/`](data/analysis/figures/). Run with `uv run make_<slug>.py` — no `pip install` needed (PyPA inline script metadata).
+
+**Run locally:**
+```bash
+uv sync
+uv run python scripts/surfaceome_v2_annotate.py GPR75         # single gene, ~5 min, ~$0.50
+uv run python scripts/triage_runner.py --replicates 1 --d1    # cohort triage sweep, ~2 h, ~$30
+```
+
+See [`scripts/README.md`](scripts/README.md) for a tour of the script subdirs.
 
 ## Why this exists
 
@@ -94,8 +122,8 @@ cached artifacts ship publicly vs which stay local.
 
 ### M1 — Candidate universe (complete)
 
-Recall-first union of seven sources (SURFY, CSPA, UniProt, GO, HPA,
-DeepTMHMM, COMPARTMENTS) into a per-protein vote panel. The merged
+Recall-first union of six sources (SURFY, CSPA, UniProt, GO, HPA,
+DeepTMHMM) into a per-protein vote panel. The merged
 universe is the input to triage; every protein with **any one** credible
 DB or ML vote enters, even when sources disagree. Disagreement is the
 signal the downstream pipeline is designed to consume, not noise to
@@ -142,8 +170,8 @@ set) is not yet executed — pending audit-gate sign-off on the corpus
 round-trip + Sonnet entailment validators. See `docs/evals/` for the
 gate criteria and current measurements.
 
-Code: `src/accessible_surfaceome/agents/surface_annotator/`. Runner:
-`uv run accessible-surfaceome agents annotate <SYMBOL>`.
+Code: `src/accessible_surfaceome/agents/surfaceome_v2/`. Runner:
+`uv run python scripts/surfaceome_v2_annotate.py <SYMBOL>`.
 
 ### Publication (planned)
 
@@ -166,7 +194,7 @@ The release ritual is one command — see
                      ┌──────────────────────────┐
                      │   M1 candidate universe   │
                      │  (SURFY+CSPA+UniProt+GO+  │
-                     │   HPA+DeepTMHMM+COMPART.) │
+                     │   HPA+DeepTMHMM)          │
                      └─────────────┬────────────┘
                                    │ candidate_universe.tsv
                                    ▼
@@ -214,7 +242,7 @@ Two Cloudflare D1 databases on the same account:
   the private DB: Ensembl Compara orthologs, benchmark truth labels,
   triage verdicts (sans cost/token data), and per-gene
   `SurfaceomeRecord` JSONs. Schema in `cloudflare/d1_public_schema.sql`.
-  Synced one-way from private via `scripts/sync_public_d1.py`.
+  Synced one-way from private via `scripts/upload/sync_public_d1.py`.
 
 A read-only **Cloudflare Worker** at
 `cloudflare/workers/surfaceome_api/` exposes `surfaceome_public` as a
@@ -265,23 +293,23 @@ field-agnostic — the same shape works for any computational figure
 with cited inputs. See
 [`docs/figure-reproducibility-schema.md`](docs/figure-reproducibility-schema.md)
 for the spec and
-[`scripts/embed_figure_gist_metadata.py`](scripts/embed_figure_gist_metadata.py)
+[`scripts/figures/embed_figure_gist_metadata.py`](scripts/figures/embed_figure_gist_metadata.py)
 for the embedder.
 
 ## Layout
 
 | Path | What lives here |
 |---|---|
-| `src/accessible_surfaceome/sources/` | One module per M1 data source (`uniprot.py`, `go.py`, `surfy.py`, `cspa.py`, `deeptmhmm.py`, `hpa.py`, `compartments.py`, `ensembl_compara.py`); each exposes `download` / `build` subcommands. Shared helpers under `sources/_support/`. |
+| `src/accessible_surfaceome/sources/` | One module per M1 data source (`uniprot.py`, `go.py`, `surfy.py`, `cspa.py`, `deeptmhmm.py`, `hpa.py`, `ensembl_compara.py`); each exposes `download` / `build` subcommands. Shared helpers under `sources/_support/`. |
 | `src/accessible_surfaceome/merge/` | Candidate-universe orchestration; loaders, normalization, gene-symbol resolution. |
 | `src/accessible_surfaceome/agents/surface_triage/` | The triage agent (orchestrator + prompts + Pydantic models). |
-| `src/accessible_surfaceome/agents/surface_annotator/` | The deep-dive agent (orchestrator + tool registry + deep-dive pack loader + evidence-promotion pipeline + audit module). |
+| `src/accessible_surfaceome/agents/surfaceome_v2/` | The deep-dive agent (orchestrator + tool registry + deep-dive pack loader + evidence-promotion pipeline + audit module). |
 | `src/accessible_surfaceome/audit/` | Audit scripts and figure helpers. |
 | `src/accessible_surfaceome/controls.py` | Control-panel builder. |
 | `src/accessible_surfaceome/cloud/` | D1 HTTP client + triage-run uploader. |
 | `src/accessible_surfaceome/tools/` | Shared per-tool helpers + Pydantic models. |
 | `cloudflare/` | D1 schemas + Worker code for the public API. |
-| `scripts/` | One-shot data refreshers (`refresh_compara.sh`, `upload_compara_to_d1.py`, `sync_public_d1.py`), the triage runner (`triage_runner.py`), per-eval render scripts, and the release ritual (`scripts/release/`). |
+| `scripts/` | Production scripts organized by function: `build/` (data refreshers including `refresh_compara.sh`), `upload/` (D1 pushers including `sync_public_d1.py`), `figures/`, `audit/`, `cloud/`, `tsv-export/`, `probes/`; plus top-level runners (`triage_runner.py`, `surfaceome_v2_annotate.py`) and the release ritual (`scripts/release/`). |
 | `viewer/` | Next.js 16 app, deployed at `surfaceome.deliverome.org`. |
 | `data/raw/`, `data/external/`, `data/processed/`, `data/annotations/`, `data/analysis/` | Source snapshots, normalized tables, agent outputs, and final figures. Annotations dir is gitignored; `viewer/public/data/genes/` holds the published snapshot. |
 | `docs/` | Project plans, eval reports, decisions. |
@@ -313,11 +341,8 @@ positives, patent delivery-handle positives, negative controls).
 ## Agent commands
 
 ```bash
-# Sync the deep-dive agent to Anthropic (one-time per code change to agent.py / prompts)
-uv run accessible-surfaceome agents sync
-
 # Annotate one gene end-to-end (Sonnet 4.6, ~$0.30-0.50, ~5 min):
-uv run accessible-surfaceome agents annotate HSPA1A
+uv run python scripts/surfaceome_v2_annotate.py HSPA1A
 
 # Audit the corpus round-trip + Sonnet entailment on a record:
 uv run accessible-surfaceome agents audit-corpus HSPA1A
@@ -330,10 +355,10 @@ uv run python scripts/triage_runner.py --model claude-sonnet-4-6 --replicates 1 
 
 ```bash
 # Refresh Ensembl Compara CSV + upload to D1:
-bash scripts/refresh_compara.sh
+bash scripts/build/refresh_compara.sh
 
 # One-way push from private surfaceome_agents → public surfaceome_public:
-uv run python scripts/sync_public_d1.py
+uv run python scripts/upload/sync_public_d1.py
 
 # Deploy the public API Worker:
 cd cloudflare/workers/surfaceome_api && npx wrangler deploy

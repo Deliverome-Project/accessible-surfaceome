@@ -3,20 +3,17 @@
 Two surfaces:
 
 - ``load_ensembl_mapping`` / ``map_to_uniprot``: lookup helpers used by
-  ``accessible_surfaceome.sources.hpa`` (ENSG keys) and
-  ``accessible_surfaceome.sources.compartments`` (ENSP keys). Lists (rather
-  than scalars) handle the rare case where one Ensembl ID legitimately
-  maps to multiple UniProt primaries (alternative-isoform UniProt entries
-  pointing at the same Ensembl gene).
+  ``accessible_surfaceome.sources.hpa`` (ENSG keys). Lists (rather than
+  scalars) handle the rare case where one Ensembl ID legitimately maps to
+  multiple UniProt primaries (alternative-isoform UniProt entries pointing
+  at the same Ensembl gene).
 - ``download_main`` / CLI: fetch the cross-reference tables from UniProt
   for every reviewed human entry (~20,400 rows). Two output TSVs are
   emitted: ``ensg_to_uniprot.tsv`` and ``ensp_to_uniprot.tsv``.
 
 The full-proteome coverage (rather than the surface-only query used by
-``sources.uniprot``) matters: COMPARTMENTS annotates ENSPs that aren't in
-the surface-candidate query output, so we must be able to map *any*
-reviewed human ENSP to a UniProt primary to avoid silently dropping
-evidence.
+``sources.uniprot``) matters for mapping any reviewed human ENSG to a
+UniProt primary without silently dropping evidence.
 """
 
 from __future__ import annotations
@@ -98,10 +95,10 @@ QUERY = "organism_id:9606 AND reviewed:true"
 def _strip_version(ensembl_id: str) -> str:
     """Drop the trailing ``.<N>`` Ensembl version suffix, if present.
 
-    HPA and JensenLab COMPARTMENTS emit unversioned Ensembl IDs (e.g.
-    ``ENSG00000000003``). UniProt's ``xref_ensembl`` payload carries
-    versioned IDs (e.g. ``ENSG00000000003.17``). Strip so the mapping
-    tables key on the unversioned form that downstream consumers use.
+    HPA emits unversioned Ensembl IDs (e.g. ``ENSG00000000003``). UniProt's
+    ``xref_ensembl`` payload carries versioned IDs (e.g.
+    ``ENSG00000000003.17``). Strip so the mapping tables key on the
+    unversioned form that downstream consumers use.
     """
     if not ensembl_id:
         return ensembl_id

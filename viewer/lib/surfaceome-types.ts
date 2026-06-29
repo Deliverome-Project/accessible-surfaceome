@@ -463,7 +463,7 @@ export interface ParalogEntry {
 /**
  * AFDB-derived structure metrics. Renamed from ``StructureBlock`` to
  * mirror the Pydantic ``StructureFeatures`` class name so the
- * TS↔Pydantic drift checker (``scripts/check_viewer_types_sync.py``)
+ * TS↔Pydantic drift checker (``scripts/audit/check_viewer_types_sync.py``)
  * doesn't trip on the rename.
  */
 export interface StructureFeatures {

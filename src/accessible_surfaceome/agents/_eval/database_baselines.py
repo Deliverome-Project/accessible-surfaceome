@@ -43,14 +43,13 @@ CANDIDATE_UNIVERSE_TSV = (
     DATA_DIR / "processed" / "candidate_universe" / "candidate_universe.tsv"
 )
 
-# 6 databases (DeepTMHMM excluded — see docs/superpowers/specs/2026-05-06-...).
+# 5 databases (DeepTMHMM excluded — see docs/superpowers/specs/2026-05-06-...).
 DB_FLAG_COLUMNS: tuple[str, ...] = (
     "surfy_surface_flag",
     "cspa_surface_flag",
     "uniprot_surface_flag",
     "go_surface_flag",
     "hpa_surface_flag",
-    "compartments_surface_flag",
 )
 
 

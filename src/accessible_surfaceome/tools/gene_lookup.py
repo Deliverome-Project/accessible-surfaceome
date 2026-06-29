@@ -156,7 +156,7 @@ def resolve(symbol_or_acc: str, *, http: CachedHTTP) -> IdentifierBundle:
     ~0.2% of human genes (45 of 19k cohort symbols — COX1 → cyclo-
     oxygenase instead of mitochondrial cytochrome c oxidase, WAS →
     an rRNA instead of the Wiskott-Aldrich protein, etc. — see
-    ``scripts/audit_resolver_hgnc_id_v3.py`` for the documented
+    ``scripts/audit/audit_resolver_hgnc_id_v3.py`` for the documented
     failure modes).
 
     What to call instead, by input shape:
@@ -281,10 +281,6 @@ _DB_SOURCES: dict[SourceName, tuple[str, list[str]]] = {
     "go": ("go_surface_flag", ["go_evidence_codes", "go_terms"]),
     "hpa": ("hpa_surface_flag", ["hpa_main_location", "hpa_reliability_subcell"]),
     "deeptmhmm": ("deeptmhmm_surface_flag", ["deeptmhmm_topology"]),
-    "compartments": (
-        "compartments_surface_flag",
-        ["compartments_predictions_stars_max", "compartments_knowledge_stars_max"],
-    ),
 }
 
 
@@ -521,10 +517,6 @@ _MISS_RULE_EXPLANATIONS: dict[SourceName, str] = {
     "deeptmhmm": (
         "DeepTMHMM rule fires when the predicted topology has ≥1 transmembrane helix and "
         "an extracellular segment. Note: DeepTMHMM was run on a 22.8% subset; absence ≠ negative."
-    ),
-    "compartments": (
-        "JensenLab COMPARTMENTS rule fires when max(experiments_stars, textmining_stars) ≥ 3 "
-        "for any term in the surface-term set."
     ),
     "patent_handle": "Patent-handle lane fires when the gene is cited as a delivery target in our patent corpus.",
 }

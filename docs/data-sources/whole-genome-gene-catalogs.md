@@ -1,7 +1,7 @@
 # Whole-genome gene catalogs (NCBI + HGNC)
 
 Genome-wide cost projections for the triage agent (e.g.
-[`scripts/build_triageable_catalog.py`](../../scripts/build_triageable_catalog.py))
+[`scripts/build/build_triageable_catalog.py`](../../scripts/build/build_triageable_catalog.py))
 need a single denominator — the count of protein-coding human genes the
 agent could be asked about. That number depends on which authority you
 ask, and on how aggressively you trim. This doc records what we use,
@@ -13,8 +13,8 @@ Two independent catalogs, fetched 2026-05-11:
 
 | Source | URL | Fetch script | Counts file |
 |---|---|---|---|
-| NCBI Gene (`Homo_sapiens.gene_info.gz`) | <https://ftp.ncbi.nlm.nih.gov/gene/DATA/GENE_INFO/Mammalia/Homo_sapiens.gene_info.gz> | [`scripts/fetch_ncbi_human_protein_coding.py`](../../scripts/fetch_ncbi_human_protein_coding.py) | [`data/external/ncbi_gene_info/Homo_sapiens.gene_info.summary.json`](../../data/external/ncbi_gene_info/Homo_sapiens.gene_info.summary.json) |
-| HGNC complete set | <https://storage.googleapis.com/public-download-files/hgnc/tsv/tsv/hgnc_complete_set.txt> | [`scripts/fetch_hgnc_complete_set.py`](../../scripts/fetch_hgnc_complete_set.py) | [`data/external/hgnc/hgnc_complete_set.summary.json`](../../data/external/hgnc/hgnc_complete_set.summary.json) |
+| NCBI Gene (`Homo_sapiens.gene_info.gz`) | <https://ftp.ncbi.nlm.nih.gov/gene/DATA/GENE_INFO/Mammalia/Homo_sapiens.gene_info.gz> | [`scripts/build/fetch_ncbi_human_protein_coding.py`](../../scripts/build/fetch_ncbi_human_protein_coding.py) | [`data/external/ncbi_gene_info/Homo_sapiens.gene_info.summary.json`](../../data/external/ncbi_gene_info/Homo_sapiens.gene_info.summary.json) |
+| HGNC complete set | <https://storage.googleapis.com/public-download-files/hgnc/tsv/tsv/hgnc_complete_set.txt> | [`scripts/build/fetch_hgnc_complete_set.py`](../../scripts/build/fetch_hgnc_complete_set.py) | [`data/external/hgnc/hgnc_complete_set.summary.json`](../../data/external/hgnc/hgnc_complete_set.summary.json) |
 
 The HGNC TSV used to live on `ftp.ebi.ac.uk`; that path returns 404 as of
 2026-05. The Google Cloud Storage path above is what HGNC currently
@@ -127,8 +127,8 @@ but the protein-coding counts change by tens of genes per quarter, not
 hundreds. To refresh:
 
 ```bash
-uv run python scripts/fetch_ncbi_human_protein_coding.py
-uv run python scripts/fetch_hgnc_complete_set.py
+uv run python scripts/build/fetch_ncbi_human_protein_coding.py
+uv run python scripts/build/fetch_hgnc_complete_set.py
 uv run pytest tests/test_benchmark_in_whole_genome.py
 ```
 

@@ -6,7 +6,7 @@ boolean derived from the source's evidence rule. The merge orchestrator
 in ``__init__.py`` runs these, reconciles each result against the current
 UniProt accession history, and outer-merges them on ``uniprot_accession``.
 
-The seven loaders are deliberately one-per-source (not abstracted via a
+The six loaders are deliberately one-per-source (not abstracted via a
 common interface): each source's evidence semantics is different enough
 that a shared base would obscure the per-source rules rather than make
 them clearer.
@@ -34,10 +34,6 @@ CSPA_TSV = DATA_PROCESSED_DIR / "cspa" / "cspa_human_snapshot.tsv"
 DEEPTMHMM_CAN_TSV = DATA_PROCESSED_DIR / "deeptmhmm" / "deeptmhmm_human_canonical.tsv"
 DEEPTMHMM_ISO_TSV = DATA_PROCESSED_DIR / "deeptmhmm" / "deeptmhmm_human_isoforms.tsv"
 HPA_TSV = DATA_PROCESSED_DIR / "hpa" / "hpa_human_snapshot.tsv"
-COMPARTMENTS_TSV = (
-    DATA_PROCESSED_DIR / "jensenlab_compartments"
-    / "jensenlab_compartments_human_snapshot.tsv"
-)
 
 
 # CSPA Table_B category labels, in descending confidence order.
@@ -384,66 +380,4 @@ def load_hpa() -> pd.DataFrame:
     )
     grouped["hpa_low_confidence_only"] = (grouped["hpa_surface_flag"] == 0).astype(int)
 
-    return grouped
-
-
-def load_compartments() -> pd.DataFrame:
-    """Load JensenLab COMPARTMENTS snapshot keyed on UniProt primary.
-
-    Same collapse semantics as HPA: one row per UniProt primary, max on
-    per-channel stars and on the surface flag, min on the split-
-    ambiguity flag.
-    """
-    df = pd.read_csv(
-        COMPARTMENTS_TSV,
-        sep="\t",
-        dtype={"uniprot_accession": str, "ensembl_protein_id": str,
-               "compartments_gene_symbol": str, "compartments_surface_terms": str},
-    ).fillna("")
-    for col in (
-        "compartments_integrated_stars_max",
-        "compartments_knowledge_stars_max",
-        "compartments_experiments_stars_max",
-        "compartments_textmining_stars_max",
-        "compartments_predictions_stars_max",
-    ):
-        df[col] = pd.to_numeric(df[col], errors="coerce").fillna(0.0).astype(float)
-    for col in (
-        "compartments_low_confidence_only",
-        "compartments_surface_flag",
-        "compartments_split_mapping_ambiguous",
-    ):
-        df[col] = pd.to_numeric(df[col], errors="coerce").fillna(0).astype(int)
-
-    def _join_terms(values: pd.Series) -> str:
-        seen: set[str] = set()
-        parts: list[str] = []
-        for v in values:
-            if not isinstance(v, str) or not v:
-                continue
-            for p in v.split(","):
-                p = p.strip()
-                if p and p not in seen:
-                    seen.add(p)
-                    parts.append(p)
-        return ",".join(parts)
-
-    grouped = df.groupby("uniprot_accession", as_index=False).agg(
-        compartments_gene_symbol=("compartments_gene_symbol", "first"),
-        compartments_ensembl_protein_id=("ensembl_protein_id", lambda s: "|".join(sorted(set(
-            str(v) for v in s if isinstance(v, str) and v
-        )))),
-        compartments_integrated_stars_max=("compartments_integrated_stars_max", "max"),
-        compartments_knowledge_stars_max=("compartments_knowledge_stars_max", "max"),
-        compartments_experiments_stars_max=("compartments_experiments_stars_max", "max"),
-        compartments_textmining_stars_max=("compartments_textmining_stars_max", "max"),
-        compartments_predictions_stars_max=("compartments_predictions_stars_max", "max"),
-        compartments_surface_terms=("compartments_surface_terms", _join_terms),
-        compartments_low_confidence_only=("compartments_low_confidence_only", "min"),
-        compartments_surface_flag=("compartments_surface_flag", "max"),
-        # Upstream ENSP-level split-ambiguity flag carried through the
-        # normalizer's generic ``split_mapping_ambiguous`` column; see
-        # comment in load_hpa.
-        split_mapping_ambiguous=("compartments_split_mapping_ambiguous", "min"),
-    )
     return grouped

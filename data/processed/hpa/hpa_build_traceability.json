@@ -65,7 +65,7 @@
       "signal": "Focal adhesion sites"
     }
   ],
-  "generated_at_utc": "2026-04-17T20:54:58.384810+00:00",
+  "generated_at_utc": "2026-06-28T20:51:22.560897+00:00",
   "outputs": {
     "hpa_human_snapshot.tsv": {
       "local_path": "data/processed/hpa/hpa_human_snapshot.tsv",
@@ -75,9 +75,9 @@
       "size_bytes": 438926
     }
   },
-  "script": "scripts/data_processing/build_hpa.py",
+  "script": "src/accessible_surfaceome/sources/hpa.py",
   "source": {
-    "license": "CC-BY-SA-3.0",
+    "license": "CC-BY-4.0",
     "local_path": "data/external/hpa_subcellular_location/subcellular_location.tsv",
     "sha256": "19ee031772375318e75556e43a5103cd8d919f7757094ef3fd134fba134fc095",
     "size_bytes": 2046017

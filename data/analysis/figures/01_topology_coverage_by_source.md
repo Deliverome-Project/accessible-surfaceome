@@ -41,7 +41,7 @@ seaborn / httpx in a one-shot env, and emits
   classification, and HGNC family flags.
 - **Canonical generator** (uses the in-repo `_plotting_config` and
   builds the feature table from D1 + bundled raw sources):
-  [`scripts/audit_db_vs_sonnet_inclusion.py`](https://github.com/Deliverome-Project/accessible-surfaceome/blob/main/scripts/audit_db_vs_sonnet_inclusion.py).
+  [`scripts/audit/audit_db_vs_sonnet_inclusion.py`](https://github.com/Deliverome-Project/accessible-surfaceome/blob/main/scripts/audit/audit_db_vs_sonnet_inclusion.py).
   The standalone script in this gist is a thin reproduction that
   fetches the pre-computed feature table and renders the figure
   without depending on the project's plotting module.
@@ -72,5 +72,5 @@ follows:
 - `deeptm_TM_NO_SP`: DeepTMHMM predicted-topology class `TM` (TM
   helix present, signal peptide absent).
 
-See `scripts/audit_db_vs_sonnet_inclusion.py` for the full topology-
+See `scripts/audit/audit_db_vs_sonnet_inclusion.py` for the full topology-
 class derivation rules and the feature-build pipeline.

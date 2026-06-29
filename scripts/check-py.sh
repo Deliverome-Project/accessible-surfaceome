@@ -19,4 +19,4 @@ uv run --frozen pytest -q
 # surfaceome-types.ts, otherwise the viewer silently drops the
 # data. Pydantic is the source of truth — see the script's
 # module docstring for the full intent + the per-class skip lists.
-uv run --frozen python scripts/check_viewer_types_sync.py
+uv run --frozen python scripts/audit/check_viewer_types_sync.py

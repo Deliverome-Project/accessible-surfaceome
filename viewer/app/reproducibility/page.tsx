@@ -136,7 +136,7 @@ export default function ReproducibilityPage() {
           </dl>
           <p className={styles.body}>
             The reserved Zenodo concept DOI is wired into the figure
-            generator (<code>scripts/embed_figure_gist_metadata.py</code>)
+            generator (<code>scripts/figures/embed_figure_gist_metadata.py</code>)
             so every figure PDF/PNG carries the dataset citation in its
             metadata as soon as it&apos;s rendered. Currently in the
             draft deposit:

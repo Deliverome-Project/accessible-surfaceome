@@ -96,7 +96,7 @@ data/processed/triage_bench/db_optimized_cutoffs.tsv -filter -diff -merge text
 # scripts/triage_bench_db_barplot.py::_dump_optimized_db_accs.
 # Tiny single-column TSVs (~30/10 KB); raw-fetched by the
 # figures-folder gist for db_correctness_by_class.
-data/processed/triage_bench/uniprot_tm_signal_accs.tsv -filter -diff -merge text
+data/archive/uniprot_tm_signal_accs.tsv -filter -diff -merge text
 data/processed/triage_bench/cspa_hc_only_accs.tsv       -filter -diff -merge text
 data/processed/catalog/whole_proteome_catalog.tsv -filter -diff -merge text
 

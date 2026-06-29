@@ -1,7 +1,7 @@
 """Fetch DeterministicFeatures for the v1 orchestrator from public D1.
 
 The DeepTMHMM / Compara / Compara-ortholog-ECD sweep
-(``scripts/run_topology_sweep.py``) lands the three deterministic-side
+(``scripts/build/run_topology_sweep.py``) lands the three deterministic-side
 tables in D1:
 
 * ``topology_public`` — per-isoform topology (per-residue string,
@@ -52,14 +52,14 @@ logger = logging.getLogger(__name__)
 # Cap how many paralogs we materialize per gene — Compara families like
 # IG / olfactory receptors have hundreds; the agent doesn't need them all
 # and the rendered record would explode. Matches the per-gene cap in
-# scripts/upload_paralogs_to_d1.py.
+# scripts/upload/upload_paralogs_to_d1.py.
 PARALOG_TOP_N = 50
 
 
 def _query_public(sql: str, params: list[Any]) -> list[dict[str, Any]]:
     """Single-statement query against the public D1.
 
-    Mirrors the helper used by ``scripts/export_mainbench_to_tsv.py`` —
+    Mirrors the helper used by ``scripts/cloud/export_mainbench_to_tsv.py`` —
     pulls credentials from the environment so the orchestrator doesn't
     need a D1Config object passed in.
     """
@@ -308,7 +308,7 @@ def _fetch_isoform_topologies(
 
 
 # Full-length identity floor above which a paralog is "close" — it gets its
-# ECD similarity (computed by scripts/compute_paralog_ecd_similarity.py) and
+# ECD similarity (computed by scripts/build/compute_paralog_ecd_similarity.py) and
 # its real DeepTMHMM topology threaded on so the viewer can render a full
 # topology row, like the ortholog rows.
 CLOSE_PARALOG_THRESHOLD = 80.0
@@ -413,7 +413,7 @@ def _fetch_orthologs(uniprot_acc: str, *, topology_version: str,
     # Full-length BioMart % identity lives in compara_ortholog.percent_identity,
     # not in compara_ortholog_ecd.biomart_percent_identity (the latter is
     # intentionally NULL — see compute_ortholog_ecd_records in
-    # scripts/run_topology_sweep.py). Join on the proper composite FK:
+    # scripts/build/run_topology_sweep.py). Join on the proper composite FK:
     # (release_version, human_ensembl_gene, species, ortholog_ensembl_gene).
     rows = _query_public(
         "SELECT eo.species, eo.ortholog_uniprot_acc, eo.ortholog_ensembl_gene, "

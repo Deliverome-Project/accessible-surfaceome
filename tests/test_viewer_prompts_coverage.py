@@ -48,7 +48,7 @@ from pathlib import Path
 import pytest
 
 # Repo root is two levels up from ``tests/`` — same heuristic as
-# ``test_d1_records_schema_drift.py`` and ``scripts/check_viewer_types_sync.py``.
+# ``test_d1_records_schema_drift.py`` and ``scripts/audit/check_viewer_types_sync.py``.
 _REPO_ROOT = Path(__file__).resolve().parent.parent
 _AGENTS_DIR = _REPO_ROOT / "src" / "accessible_surfaceome" / "agents"
 _PAGE_TSX = _REPO_ROOT / "viewer" / "app" / "prompts" / "page.tsx"
