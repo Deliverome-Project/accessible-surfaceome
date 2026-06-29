@@ -45,7 +45,6 @@ from __future__ import annotations
 from collections import Counter
 from pathlib import Path
 
-import matplotlib.patches as mpatches
 import matplotlib.pyplot as plt
 import numpy as np
 import seaborn as sns

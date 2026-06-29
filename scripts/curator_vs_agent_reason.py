@@ -503,7 +503,9 @@ def make_plot() -> tuple[plt.Figure, list[plt.Axes]]:
                        "no":  BUCKET_COLOR["no"]}
     for tick, b in zip(ax_perreason.get_xticklabels(),
                        pb_tick_buckets, strict=True):
-        tick.set_rotation(35); tick.set_ha("right"); tick.set_rotation_mode("anchor")
+        tick.set_rotation(35)
+        tick.set_ha("right")
+        tick.set_rotation_mode("anchor")
         tick.set_fontsize(9)
         if b in bucket_to_color:
             tick.set_color(bucket_to_color[b])

@@ -309,7 +309,7 @@ def make_plot() -> tuple[plt.Figure, list[plt.Axes]]:
             if not len(real_clean):
                 ax.text(
                     0.5, 0.02,
-                    f"no real records yet —\nn_papers_found pending backfill",
+                    "no real records yet —\nn_papers_found pending backfill",
                     transform=ax.transAxes, ha="center", va="bottom",
                     fontsize=9, color=COLORS["neutral"], style="italic",
                 )
