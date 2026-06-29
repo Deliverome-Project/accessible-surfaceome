@@ -164,16 +164,35 @@ def _bucket_boundaries() -> list[int]:
     return bounds
 
 
-CONFIGS = [
-    ("claude-haiku-4-5",   "ncbi",        "Haiku 4.5"),
-    ("claude-sonnet-4-6",  "ncbi",        "Sonnet 4.6 (NCBI)"),
-    ("claude-sonnet-4-6",  "pubmed_ncbi", "Sonnet 4.6 (PubMed)"),
-    ("claude-opus-4-8",    "ncbi",        "Opus 4.8"),
+# Panel-a configs — every (model, variant) cell available on
+# mainbench. 10 total: Haiku×4 + Sonnet×4 + Opus×2.
+CONFIGS_A = [
+    ("claude-haiku-4-5",  "naive",        "Haiku 4.5 (naive)"),
+    ("claude-haiku-4-5",  "ncbi",         "Haiku 4.5 (NCBI)"),
+    ("claude-haiku-4-5",  "pubmed_ncbi",  "Haiku 4.5 (PubMed)"),
+    ("claude-haiku-4-5",  "web_ncbi",     "Haiku 4.5 (web)"),
+    ("claude-sonnet-4-6", "naive",        "Sonnet 4.6 (naive)"),
+    ("claude-sonnet-4-6", "ncbi",         "Sonnet 4.6 (NCBI)"),
+    ("claude-sonnet-4-6", "pubmed_ncbi",  "Sonnet 4.6 (PubMed)"),
+    ("claude-sonnet-4-6", "web_ncbi",     "Sonnet 4.6 (web)"),
+    ("claude-opus-4-8",   "naive",        "Opus 4.8 (naive)"),
+    ("claude-opus-4-8",   "ncbi",         "Opus 4.8 (NCBI)"),
+]
+# Panel-b configs — 2 Sonnet variants + best Haiku + best Opus.
+# Best Haiku = web_ncbi (73.5% reason; verified by inspecting all 4
+# Haiku variants). Best Opus = ncbi (only naive + ncbi available for
+# Opus).
+CONFIGS_B = [
+    ("claude-haiku-4-5",  "web_ncbi",     "Haiku 4.5 (web — best)"),
+    ("claude-sonnet-4-6", "ncbi",         "Sonnet 4.6 (NCBI)"),
+    ("claude-sonnet-4-6", "pubmed_ncbi",  "Sonnet 4.6 (PubMed)"),
+    ("claude-opus-4-8",   "ncbi",         "Opus 4.8 (NCBI)"),
 ]
 
 
 def _all_preds() -> dict[tuple[str, str], dict[str, str]]:
-    out: dict[tuple[str, str], dict[str, str]] = {(m, v): {} for (m, v, _) in CONFIGS}
+    needed = {(m, v) for (m, v, _) in CONFIGS_A} | {(m, v) for (m, v, _) in CONFIGS_B}
+    out: dict[tuple[str, str], dict[str, str]] = {k: {} for k in needed}
     with open(PRED_TSV) as f:
         for r in csv.DictReader(f, delimiter="\t"):
             key = (r["model"], r["prompt_variant"])
@@ -196,10 +215,30 @@ def _bucket(reason: str) -> str:
     return "?"
 
 
-def _config_color(i: int) -> str:
-    """Distinct color per config in the bar charts. Haiku gets the
-    light/neutral end, Opus the darker end of the brand palette."""
-    return ["#9C8C88", "#3D6B60", "#2E7A55", "#5848A8"][i]
+_HAIKU_RAMP = ["#D4C4BC", "#B59E96", "#9C8C88", "#7C6661"]  # 4 grey-warm steps
+_SONNET_RAMP = ["#8AC0B3", "#5D9285", "#3D6B60", "#244840"]   # 4 teal steps
+_OPUS_RAMP   = ["#A090D4", "#5848A8"]                          # 2 lavender steps
+
+
+def _config_color_for(model: str, variant: str, panel: str = "a") -> str:
+    """Brand-family color per config: Haiku → warm-grey ramp,
+    Sonnet → teal ramp, Opus → lavender ramp. Each variant gets a
+    darker step within its model family (naive → ncbi → pubmed → web).
+    Panel b uses fewer variants so colors are picked from canonical
+    positions in each ramp."""
+    if model == "claude-haiku-4-5":
+        ramp = _HAIKU_RAMP
+        idx = {"naive": 0, "ncbi": 1, "pubmed_ncbi": 2, "web_ncbi": 3}.get(variant, 1)
+        return ramp[idx]
+    if model == "claude-sonnet-4-6":
+        ramp = _SONNET_RAMP
+        idx = {"naive": 0, "ncbi": 1, "pubmed_ncbi": 2, "web_ncbi": 3}.get(variant, 1)
+        return ramp[idx]
+    if model == "claude-opus-4-8":
+        ramp = _OPUS_RAMP
+        idx = {"naive": 0, "ncbi": 1}.get(variant, 1)
+        return ramp[idx]
+    return "#999999"
 
 
 def make_plot() -> tuple[plt.Figure, list[plt.Axes]]:
@@ -221,95 +260,144 @@ def make_plot() -> tuple[plt.Figure, list[plt.Axes]]:
     curator = _load_curator_reasons()
     all_preds = _all_preds()
 
-    # Build a 2-row figure: row 1 = (a) + (b) side-by-side; row 2 = (c)
+    # 3-row layout: (a) bucket-strict accuracy, (b) per-reason
+    # accuracy, (c) Sonnet/ncbi confusion matrix. Each row is its own
+    # full-width axes so the per-bucket and per-reason bar groups have
+    # room to breathe.
     import matplotlib.gridspec as gridspec
-    fig = plt.figure(figsize=(17, 22))
+    fig = plt.figure(figsize=(18, 28))
     gs = gridspec.GridSpec(
-        nrows=2, ncols=2, height_ratios=[0.9, 2.1], width_ratios=[1.0, 1.6],
-        hspace=0.32, wspace=0.22,
+        nrows=3, ncols=1, height_ratios=[0.7, 1.0, 2.1],
+        hspace=0.35,
     )
     ax_bucket = fig.add_subplot(gs[0, 0])
-    ax_perreason = fig.add_subplot(gs[0, 1])
-    ax_matrix = fig.add_subplot(gs[1, :])
+    ax_perreason = fig.add_subplot(gs[1, 0])
+    ax_matrix = fig.add_subplot(gs[2, 0])
+
+    # ─────── Helpers ───────
+    def _strict_bucket_match(pred_r: str, gt_r: str) -> bool:
+        return _bucket(pred_r) == _bucket(gt_r)
+
+    def _draw_grouped(ax, configs, x_groups, group_acc, *, bar_w=None,
+                       overall_idx=0, label="(%)", show_legend=True):
+        """Render one config-grouped bar chart.
+
+        ``configs``: list of (model, variant, label) tuples — one bar
+            per config per group.
+        ``x_groups``: list of group labels (x-tick labels). The first
+            element (index = overall_idx) is the "Overall" group; a
+            dotted vertical separator gets drawn right after it.
+        ``group_acc``: {config_key: {group_label: (n_match, n_total)}}.
+        """
+        n_cfg = len(configs)
+        if bar_w is None:
+            bar_w = 0.85 / n_cfg  # group width = 0.85 to leave room
+        x = np.arange(len(x_groups))
+        for i, (mod, var, lab) in enumerate(configs):
+            vals = []
+            for g in x_groups:
+                m_, t_ = group_acc[(mod, var)].get(g, (0, 0))
+                vals.append(100 * m_ / t_ if t_ else 0)
+            ax.bar(x + (i - (n_cfg - 1) / 2) * bar_w, vals, width=bar_w,
+                   label=lab, color=_config_color_for(mod, var),
+                   edgecolor="none")
+        ax.set_xticks(x)
+        ax.set_xticklabels(x_groups, fontsize=10)
+        ax.set_ylim(0, 109)
+        ax.set_ylabel(label)
+        # Dotted separator between the Overall group and the per-
+        # category bars — matches the pattern in
+        # make_db_correctness_by_class.py.
+        if 0 <= overall_idx < len(x_groups):
+            sep_x = x[overall_idx] + 0.5
+            ax.axvline(sep_x, color=COLORS["neutral"], lw=1.2, ls=":",
+                       alpha=0.8, zorder=0)
+        sns.despine(ax=ax, top=True, right=True)
+        if show_legend:
+            ax.legend(loc="lower center", bbox_to_anchor=(0.5, -0.35),
+                      ncols=min(5, n_cfg), frameon=False, fontsize=9)
 
     # ─────── (a) per-bucket strict accuracy ───────
-    # Local var names use _PA suffix to avoid shadowing the module-
-    # level BUCKET / BUCKET_COLOR (which panel c reads via tick-label
-    # coloring; those use the long "contextual" key not "ctx").
     BUCKETS_PA = ["yes", "ctx", "no"]
     BUCKET_LABEL_PA = {"yes": "Yes", "ctx": "Contextual", "no": "No"}
-    BUCKET_COLOR_PA = {"yes": "#2E7A55", "ctx": "#C07830", "no": "#6F5D5A"}
-    bucket_acc: dict[tuple[str,str], dict[str, list[int]]] = {}  # config → bucket → [match, total]
-    for (mod, var, _label) in CONFIGS:
-        acc = {b: [0, 0] for b in BUCKETS_PA}
+    # Compute overall + per-bucket accuracy for ALL 10 configs.
+    bucket_acc: dict[tuple[str, str], dict[str, tuple[int, int]]] = {}
+    for (mod, var, _label) in CONFIGS_A:
+        acc = {"Overall": [0, 0]} | {BUCKET_LABEL_PA[b]: [0, 0] for b in BUCKETS_PA}
         for gene, gt_r in curator.items():
             if gene not in all_preds[(mod, var)]:
                 continue
             pred_r = all_preds[(mod, var)][gene]
-            gt_b = _bucket(gt_r); pred_b = _bucket(pred_r)
-            if gt_b in acc:
-                acc[gt_b][1] += 1
-                if pred_b == gt_b:
-                    acc[gt_b][0] += 1
-        bucket_acc[(mod, var)] = acc
-
-    n_cfg = len(CONFIGS)
-    bar_w = 0.20
-    x_b = np.arange(len(BUCKETS_PA))
-    for i, (mod, var, label) in enumerate(CONFIGS):
-        vals = []
-        for b in BUCKETS_PA:
-            mtch, tot = bucket_acc[(mod, var)][b]
-            vals.append(100 * mtch / tot if tot else 0)
-        ax_bucket.bar(x_b + (i - (n_cfg - 1) / 2) * bar_w, vals, width=bar_w,
-                      label=label, color=_config_color(i), edgecolor="none")
-    ax_bucket.set_xticks(x_b)
-    ax_bucket.set_xticklabels([BUCKET_LABEL_PA[b] for b in BUCKETS_PA])
-    ax_bucket.set_ylim(0, 105)
-    ax_bucket.set_ylabel("Bucket-strict accuracy (%)")
-    ax_bucket.legend(loc="lower center", bbox_to_anchor=(0.5, -0.32),
-                     ncols=2, frameon=False, fontsize=10)
-    ax_bucket.text(0.02, 1.02, "a", transform=ax_bucket.transAxes,
+            gt_b = _bucket(gt_r)
+            if gt_b not in ("yes", "ctx", "no"):
+                continue
+            ok = _strict_bucket_match(pred_r, gt_r)
+            acc["Overall"][1] += 1
+            if ok:
+                acc["Overall"][0] += 1
+            label = BUCKET_LABEL_PA[gt_b]
+            acc[label][1] += 1
+            if ok:
+                acc[label][0] += 1
+        bucket_acc[(mod, var)] = {k: tuple(v) for k, v in acc.items()}
+    groups_a = ["Overall", "Yes", "Contextual", "No"]
+    _draw_grouped(ax_bucket, CONFIGS_A, groups_a, bucket_acc,
+                   bar_w=0.08, overall_idx=0,
+                   label="Bucket-strict accuracy (%)",
+                   show_legend=True)
+    ax_bucket.text(0.0, 1.05, "a", transform=ax_bucket.transAxes,
                    fontsize=22, fontweight="bold", va="bottom")
-    sns.despine(ax=ax_bucket, top=True, right=True)
 
-    # ─────── (b) per-reason accuracy across configs ───────
-    # Per-reason: which reasons curator used at least 2 times (n≥2).
+    # ─────── (b) per-reason exact-match accuracy ───────
+    # Compute reason frequencies + per-config per-reason accuracy
+    # across CONFIGS_B (4 configs — 2 Sonnet + best Haiku + best
+    # Opus).
     reason_n: dict[str, int] = {}
-    reason_acc: dict[str, dict[tuple[str,str], list[int]]] = {}
+    reason_acc: dict[tuple[str, str], dict[str, tuple[int, int]]] = {
+        (m, v): {} for (m, v, _) in CONFIGS_B
+    }
+    overall_b: dict[tuple[str, str], list[int]] = {
+        (m, v): [0, 0] for (m, v, _) in CONFIGS_B
+    }
     for gene, gt_r in curator.items():
         reason_n[gt_r] = reason_n.get(gt_r, 0) + 1
-        reason_acc.setdefault(gt_r, {(m,v): [0,0] for (m,v,_) in CONFIGS})
-        for (mod, var, _label) in CONFIGS:
-            if gene in all_preds[(mod, var)]:
-                pred_r = all_preds[(mod, var)][gene]
-                reason_acc[gt_r][(mod, var)][1] += 1
-                if pred_r == gt_r:
-                    reason_acc[gt_r][(mod, var)][0] += 1
-    # Filter to reasons with n≥2, sort by n descending (most frequent
-    # reasons leftmost so the eye reads "common cases first").
+        for (mod, var, _label) in CONFIGS_B:
+            if gene not in all_preds[(mod, var)]:
+                continue
+            pred_r = all_preds[(mod, var)][gene]
+            overall_b[(mod, var)][1] += 1
+            if pred_r == gt_r:
+                overall_b[(mod, var)][0] += 1
+            row = reason_acc[(mod, var)].setdefault(gt_r, [0, 0])
+            row[1] += 1
+            if pred_r == gt_r:
+                row[0] += 1
+    # Filter to reasons with n ≥ 2, sort by n descending
     reasons = [r for r in reason_n if reason_n[r] >= 2]
     reasons.sort(key=lambda r: -reason_n[r])
-    n_r = len(reasons)
-    x_r = np.arange(n_r)
-    for i, (mod, var, label) in enumerate(CONFIGS):
-        vals = []
-        for r in reasons:
-            mtch, tot = reason_acc[r][(mod, var)]
-            vals.append(100 * mtch / tot if tot else 0)
-        ax_perreason.bar(x_r + (i - (n_cfg - 1) / 2) * bar_w, vals, width=bar_w,
-                          label=label, color=_config_color(i), edgecolor="none")
+    # Build group_acc for the renderer — "Overall" first, then one
+    # entry per reason (label = short name + n).
     short = {r: LABEL_SHORT.get(r, r).replace("\n", " ") for r in reasons}
-    n_labels = [f"{short[r]}\n(n={reason_n[r]})" for r in reasons]
-    ax_perreason.set_xticks(x_r)
-    ax_perreason.set_xticklabels(n_labels, fontsize=8.5)
+    reason_labels = [f"{short[r]}\n(n={reason_n[r]})" for r in reasons]
+    groups_b = ["Overall\n(n=147)"] + reason_labels
+    group_acc_b: dict[tuple[str, str], dict[str, tuple[int, int]]] = {}
+    for (mod, var, _label) in CONFIGS_B:
+        m_, t_ = overall_b[(mod, var)]
+        gb: dict[str, tuple[int, int]] = {"Overall\n(n=147)": (m_, t_)}
+        for r, label in zip(reasons, reason_labels, strict=True):
+            row = reason_acc[(mod, var)].get(r, [0, 0])
+            gb[label] = tuple(row)
+        group_acc_b[(mod, var)] = gb
+    _draw_grouped(ax_perreason, CONFIGS_B, groups_b, group_acc_b,
+                   bar_w=0.18, overall_idx=0,
+                   label="Exact-reason accuracy (%)",
+                   show_legend=True)
+    # Re-rotate x-labels (per-reason labels are too long horizontally)
     for tick in ax_perreason.get_xticklabels():
         tick.set_rotation(35); tick.set_ha("right"); tick.set_rotation_mode("anchor")
-    ax_perreason.set_ylim(0, 105)
-    ax_perreason.set_ylabel("Exact-reason accuracy (%)")
-    ax_perreason.text(0.02, 1.02, "b", transform=ax_perreason.transAxes,
+        tick.set_fontsize(9)
+    ax_perreason.text(0.0, 1.05, "b", transform=ax_perreason.transAxes,
                       fontsize=22, fontweight="bold", va="bottom")
-    sns.despine(ax=ax_perreason, top=True, right=True)
 
     # ─────── (c) confusion matrix (Sonnet/ncbi) ───────
     ax = ax_matrix
