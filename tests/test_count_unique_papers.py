@@ -18,10 +18,12 @@ depends on getting right.
 from __future__ import annotations
 
 from types import SimpleNamespace
+from typing import Any, cast
 
 from accessible_surfaceome.agents.surfaceome_v1.orchestrator import (
     _count_unique_papers,
 )
+from accessible_surfaceome.tools._shared.models import Evidence
 
 
 def _span(source_id: str | None) -> SimpleNamespace:
@@ -33,11 +35,18 @@ def _span(source_id: str | None) -> SimpleNamespace:
     return SimpleNamespace(source=SimpleNamespace(source_id=source_id))
 
 
-def _ev(*source_ids: str | None) -> SimpleNamespace:
+def _ev(*source_ids: str | None) -> Evidence:
     """Build an Evidence-shaped object with the given source_ids on
     successive spans. Pass no args for an empty-spans row
-    (entailment_verified=False shape)."""
-    return SimpleNamespace(spans=[_span(s) for s in source_ids])
+    (entailment_verified=False shape).
+
+    Cast to ``Evidence`` so ``ty`` accepts these duck-typed mocks as
+    valid args to ``_count_unique_papers(list[Evidence] | None)`` —
+    the helper only does ``getattr`` reads on ``span.source.source_id``
+    and never invokes a pydantic method, so the cast is structurally
+    sound at runtime."""
+    obj: Any = SimpleNamespace(spans=[_span(s) for s in source_ids])
+    return cast(Evidence, obj)
 
 
 def test_none_evidence_returns_none() -> None:
