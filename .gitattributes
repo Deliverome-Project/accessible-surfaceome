@@ -12,10 +12,10 @@ data/analysis/** filter=lfs diff=lfs merge=lfs -text
 # data/analysis/<area>/make_*.py is also exempted — earlier
 # `data/analysis/figures/*.py` rule didn't recurse, and the paywall
 # figure ended up in LFS by accident.
-data/analysis/**/make_*.py -filter -diff -merge text
-data/analysis/**/01_*.md -filter -diff -merge text
-data/analysis/figures/*.py -filter -diff -merge text
-data/analysis/figures/*.md -filter -diff -merge text
+data/analysis/**/make_*.py -filter text
+data/analysis/**/01_*.md -filter text
+data/analysis/figures/*.py -filter text
+data/analysis/figures/*.md -filter text
 # Gist registry + SWHID map are small JSON read by Python test code
 # at collection time — LFS pointer reads as text that fails json.loads.
 data/analysis/figures/gist_map.json -filter -diff -merge text

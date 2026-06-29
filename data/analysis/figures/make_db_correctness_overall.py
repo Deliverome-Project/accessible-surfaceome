@@ -32,11 +32,12 @@ import seaborn as sns
 REPO = "Deliverome-Project/accessible-surfaceome"
 BRANCH = "main"
 BASE = f"https://raw.githubusercontent.com/{REPO}/{BRANCH}"
-BENCH_TSV = f"{BASE}/data/eval/triage_benchmark_v1.tsv"
-PREDS_TSV = f"{BASE}/data/processed/triage_bench/mainbench_canonical_v2.tsv"
-# Per-replicate predictions (3 reps/cell) — drives the individual-replicate
-# accuracy points + SEM error bars overlaid on each bar.
-REPS_TSV = f"{BASE}/data/processed/triage_bench/mainbench_replicates_v2.tsv"
+# Single per-figure TSV: one row per (gene × model × prompt_variant ×
+# replicate) with ``is_match`` (soft-credit) + ``ground_truth_verdict``
+# denormalized in. Produced by ``scripts/build_figure_tsvs.py``. Gist
+# bundles this TSV next to the script; the figure reads only from the
+# sibling. No other data sources.
+DATA_TSV = f"{BASE}/data/processed/figures/db_correctness_overall.tsv"
 
 # Published reproduction gist (embedded into output PNG Source / PDF
 # Subject metadata — mirrors save_figure in _plotting_config.py).
@@ -158,14 +159,6 @@ def _fetch_tsv(url: str) -> pd.DataFrame:
     )
 
 
-def _verdict_match(pred: str | None, truth: str | None) -> bool:
-    if pred is None or truth is None:
-        return False
-    if pred == truth:
-        return True
-    return pred in ("yes", "contextual") and truth in ("yes", "contextual")
-
-
 def _per_rep_accuracy(reps_df):
     """Return {(model, variant): [acc_rep1, acc_rep2, ...]} — one overall
     bench-accuracy value per replicate. The per-rep TSV already carries
@@ -186,17 +179,13 @@ def _per_rep_accuracy(reps_df):
 
 def main() -> None:
     _apply_brand_style()
-    preds = _fetch_tsv(PREDS_TSV)
-    truth = _fetch_tsv(BENCH_TSV).set_index("gene_symbol")["ground_truth_verdict"]
-    preds["truth_verdict"] = preds["gene_symbol"].map(truth)
-    preds = preds.dropna(subset=["truth_verdict"])
-    preds["correct"] = [
-        _verdict_match(p, t)
-        for p, t in zip(preds["predicted_verdict"], preds["truth_verdict"], strict=True)
-    ]
-
     # Per-replicate accuracies for the points + SEM overlay (3 reps/cell).
-    rep_acc = _per_rep_accuracy(_fetch_tsv(REPS_TSV))
+    # The figure plots ONLY the per-rep accuracy aggregates — there's no
+    # remaining use of per-cell pooled accuracy after the v3 rewrite that
+    # made the bar height = mean-of-reps so the overlay aligns. So the
+    # bundled per-figure TSV (per-rep with is_match denormalized) is
+    # everything the script needs.
+    rep_acc = _per_rep_accuracy(_fetch_tsv(DATA_TSV))
 
     # Wider figure (was 12) so the 4-bar Haiku / Sonnet / Opus clusters'
     # bar-top "9X.X%" labels (one per prompt variant) sit with breathing
