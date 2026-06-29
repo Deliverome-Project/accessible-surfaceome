@@ -4,7 +4,6 @@
 #   "matplotlib>=3.9",
 #   "pandas>=2.2",
 #   "seaborn>=0.13",
-#   "httpx>=0.27",
 # ]
 # ///
 """Reproduce ``positive_control_db_coverage_bars.{pdf,png}`` from the public repo.
@@ -21,10 +20,8 @@ Standalone — ``uv run make_positive_control_db_coverage_bars.py``.
 
 from __future__ import annotations
 
-import io
 from pathlib import Path
 
-import httpx
 import matplotlib.font_manager as fm
 import matplotlib.pyplot as plt
 import pandas as pd
@@ -159,14 +156,25 @@ LONG_TSV = f"{BASE}/data/processed/positive_controls/positive_control_long.tsv"
 
 
 def _fetch_tsv(url: str) -> pd.DataFrame:
-    """Sibling-first: when run from a published gist, the TSV is bundled
-    next to this script. Falls back to the raw URL otherwise."""
+    """Read the bundled sibling TSV next to this script.
+
+    Per the PR #86 bundled-only convention: each gist is a self-contained
+    reproduction unit (script + bundled TSVs) cited as ``swh:1:rev:<sha>``
+    of the gist HEAD commit. A missing sibling is a hard error — the
+    raw.githubusercontent.com fallback was removed so the gist can't
+    silently render against a different TSV than what it bundled.
+
+    Run from a clone of the gist (or with the bundled TSV next to this
+    script in the in-repo dev tree) and it Just Works.
+    """
     sibling = Path(__file__).parent / Path(url).name
-    if sibling.is_file():
-        return pd.read_csv(sibling, sep="\t")
-    r = httpx.get(url, timeout=30)
-    r.raise_for_status()
-    return pd.read_csv(io.StringIO(r.text), sep="\t")
+    if not sibling.is_file():
+        raise FileNotFoundError(
+            f"Bundled TSV not found next to script: {sibling}. "
+            f"This script reads only the bundled sibling — clone the gist "
+            f"or run the canonical generator from the repo's in-repo dev tree."
+        )
+    return pd.read_csv(sibling, sep="\t")
 
 
 def _smart_yticks(n_total: int) -> list[int]:
