@@ -65,10 +65,21 @@ DB_FLAG_COL = {
 }
 
 CATEGORIES = [
-    ("ADC", "ADC targets\n(TheraSAbDab ∪ Open Targets)"),
+    ("ADC", "ADC targets\n(TheraSAbDab ∪ Open Targets ∪ ADCdb)"),
     ("TCE", "TCE targets\n(TheraSAbDab CD3-bispecific + BiTE/DART)"),
     ("VZ",  "ViralZone\nhuman entry receptors"),
 ]
+
+# ADC panel only: each bar is stacked by which ADC source contributed the
+# target (priority TheraSAbDab > Open Targets > ADCdb). Colors are sequential
+# teal so the stacking reads as "darker = more rigorously curated source,
+# lighter = broader catalog."
+ADC_SOURCE_ORDER = ["TheraSAbDab", "Open Targets", "ADCdb"]
+ADC_SOURCE_COLOR = {
+    "TheraSAbDab":  "#244840",  # teal-darkest
+    "Open Targets": "#4D8A80",  # teal-medium
+    "ADCdb":        "#7AAB9F",  # teal-light
+}
 
 GIST_URL = "https://gist.github.com/beccajcarlson/PENDING-positive-control"
 
@@ -123,16 +134,37 @@ def render(df_tidy: pd.DataFrame) -> None:
     })
     fig, axes = plt.subplots(1, 3, figsize=(17, 6), sharey=False)
 
+    # Per-category long-form data once (we read it directly rather than re-
+    # aggregating from df_tidy, since the ADC panel needs the per-gene
+    # adc_source column to stack).
+    long_path = REPO_ROOT / "data/processed/positive_controls/positive_control_long.tsv"
+    long = pd.read_csv(long_path, sep="\t")
+
     for ax, (slug, panel_title) in zip(axes, CATEGORIES):
         sub = df_tidy[df_tidy["category"] == slug]
         n_total = int(sub["n_total"].iloc[0])
-        bar_colors = [DB_COLOR[db] for db in DB_ORDER]
 
-        sns.barplot(
-            data=sub, x="db", y="n",
-            order=DB_ORDER, hue="db", palette=bar_colors,
-            legend=False, ax=ax, edgecolor="none",
-        )
+        if slug == "ADC":
+            # Stack each DB bar by ADC source (TheraSAbDab > Open Targets > ADCdb).
+            adc = long[long["category"] == "ADC"]
+            for i, db in enumerate(DB_ORDER):
+                col = DB_FLAG_COL[db]
+                in_db = adc[adc[col].astype(int) == 1]
+                bottom = 0
+                for src in ADC_SOURCE_ORDER:
+                    n_seg = int((in_db["adc_source"] == src).sum())
+                    if n_seg == 0:
+                        continue
+                    ax.bar(i, n_seg, bottom=bottom, color=ADC_SOURCE_COLOR[src],
+                           edgecolor="none", width=0.8)
+                    bottom += n_seg
+        else:
+            bar_colors = [DB_COLOR[db] for db in DB_ORDER]
+            sns.barplot(
+                data=sub, x="db", y="n",
+                order=DB_ORDER, hue="db", palette=bar_colors,
+                legend=False, ax=ax, edgecolor="none",
+            )
         # Three-row stacked text above each bar: spelled-out DB title (bold,
         # in the bar's color) → count (semibold) → percentage (regular).
         # Keeps each column identifiable when the figure is shrunk.
@@ -163,6 +195,17 @@ def render(df_tidy: pd.DataFrame) -> None:
             fontsize=22, fontweight=800, family="Manrope",
             ha="left", va="bottom",
         )
+
+    # ADC panel legend — explain the 3-source teal stacking
+    adc_ax = axes[0]
+    legend_handles = [
+        plt.Rectangle((0, 0), 1, 1, color=ADC_SOURCE_COLOR[src], label=src)
+        for src in ADC_SOURCE_ORDER
+    ]
+    adc_ax.legend(
+        handles=legend_handles, loc="upper right", frameon=False,
+        fontsize=10, title="ADC source", title_fontsize=10,
+    )
 
     plt.tight_layout()
     save_figure(

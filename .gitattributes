@@ -131,9 +131,15 @@ data/processed/positive_controls/positive_control_db_coverage_summary.tsv -filte
 data/external/viralzone/viralzone_human_entry_receptors.csv -filter -diff -merge text
 
 # ADCdb antigen list — parsed from the IDRBlab ADCdb search pages
-# (268 unique antigens, 241 with inline HGNC symbol). ~12 KB; read by
+# (333 unique antigens, 302 with inline HGNC symbol). ~14 KB; read by
 # build_positive_control_lists.py to fold ADCdb into the ADC union.
 data/external/adcdb/adcdb_antigens.tsv -filter -diff -merge text
+# ADCdb per-ADC clinical phase scrape — 698 (ADC × Drug Status) rows
+# (TAR, DRG, drug_status, is_clinical). Scraped from IDRBlab ADC detail
+# pages. Captured for the record but NOT used as a positive-control
+# filter — applying it would drop 6 of 7 Sonnet rescues and many other
+# real preclinical-stage ADC targets (maturity-vs-realness confound).
+data/external/adcdb/adcdb_adc_phases.tsv -filter -diff -merge text
 
 # Paywall/bot-block reachability figure input — per-paper buckets for the
 # production-vs-OpenAlex comparison figure. ~310KB, raw-fetched by the

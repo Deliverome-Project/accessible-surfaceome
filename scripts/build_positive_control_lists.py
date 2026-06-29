@@ -446,6 +446,16 @@ def main() -> None:
         f"Open Targets ADC HGNCs: {len(ot_adc)}; "
         f"ADCdb HGNCs: {len(adcdb_adc)};  union: {len(adc_union)}"
     )
+    # Per-HGNC ADC-source provenance, priority TheraSAbDab > Open Targets > ADCdb.
+    # Used by the figure script to stack each ADC bar by source.
+    adc_source = {}
+    for h in adc_union:
+        if h in tdab_adc:
+            adc_source[h] = "TheraSAbDab"
+        elif h in ot_adc:
+            adc_source[h] = "Open Targets"
+        else:
+            adc_source[h] = "ADCdb"
 
     print(f"=== TCE ===")
     tce_mask = _therasabdab_tce_mask(df_t)
@@ -467,6 +477,8 @@ def main() -> None:
     for label, hgnc_set in [("ADC", adc_union), ("TCE", tce), ("VZ", vz_set)]:
         out = OUT_DIR / f"positive_control_{label}.tsv"
         df_out = build_indicator_df(hgnc_set, cu, cohort, sonnet_pos_hgnc)
+        if label == "ADC":
+            df_out["adc_source"] = df_out["hgnc_id"].map(adc_source)
         df_out.to_csv(out, sep="\t", index=False)
         per_set[label] = df_out
         print(f"  Wrote {out} ({len(df_out)} rows)")
@@ -481,7 +493,7 @@ def main() -> None:
     col_order = (
         ["category", "hgnc_id", "hgnc_symbol", "uniprot_acc", "ensembl_gene", "ncbi_gene_id"]
         + ["uniprot_flag", "go_flag", "hpa_flag", "surfy_flag", "cspa_flag", "n_db_votes",
-           "sonnet_ncbi_dual_flag"]
+           "sonnet_ncbi_dual_flag", "adc_source"]
     )
     combined = combined[[c for c in col_order if c in combined.columns]]
     combined_path = OUT_DIR / "positive_control_long.tsv"
