@@ -174,6 +174,14 @@ const ENDPOINT_GROUPS: EndpointGroup[] = [
       },
       {
         method: "GET",
+        path: "/v1/triage/{SYMBOL}/{model}/{variant}",
+        summary:
+          "Per-cell replicate detail for one (gene, model, prompt_variant) cell. Returns every replicate's verdict + verdict_reasoning + per-call token usage + latency, plus the agent's overall majority verdict computed across replicates.",
+        curl:
+          "curl -s https://api.deliverome.org/surfaceome/v1/triage/ERBB2/claude-sonnet-4-6/ncbi | jq '.majority_verdict, .replicates | length'",
+      },
+      {
+        method: "GET",
         path: "/v1/triage/export.tsv",
         sizeKey: "/v1/triage/export.tsv",
         summary:
