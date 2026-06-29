@@ -84,9 +84,9 @@ TSV_BUNDLE: dict[str, list[str]] = {
         "data/processed/paywall_bot_block/paywall_bot_block_compare.tsv",
     ],
     "positive_control_db_coverage_bars": [
-        "data/processed/positive_controls/positive_control_ADC.tsv",
-        "data/processed/positive_controls/positive_control_TCE.tsv",
-        "data/processed/positive_controls/positive_control_VZ.tsv",
+        # Single long-form TSV — one row per (category × gene) with all per-DB
+        # flags + sonnet_full_flag + adc_source. The script derives every
+        # per-(category, source) count from this one file.
         "data/processed/positive_controls/positive_control_long.tsv",
     ],
     "topology_coverage_by_source": [

@@ -65,9 +65,9 @@ DB_FLAG_COL = {
 }
 
 CATEGORIES = [
-    ("ADC", "ADC targets\n(TheraSAbDab ∪ Open Targets ∪ ADCdb)"),
-    ("TCE", "TCE targets\n(TheraSAbDab CD3-bispecific + BiTE/DART)"),
-    ("VZ",  "ViralZone\nhuman entry receptors"),
+    ("ADC", "ADC clinical/preclinical targets\n(TheraSAbDab ∪ Open Targets ∪ ADCdb)"),
+    ("TCE", "CD3-bispecific T-cell engager\ntargets (TheraSAbDab)"),
+    ("VZ",  "ViralZone human viral\nentry receptors"),
 ]
 
 # ADC panel only: each bar is stacked by which ADC source contributed the
@@ -107,13 +107,20 @@ def _smart_yticks(n_total: int) -> list[int]:
 
 
 def build_tidy() -> pd.DataFrame:
+    """Aggregate per-(category, source) counts from the single long-form TSV.
+
+    Single-file path: every row in positive_control_long.tsv carries the
+    category + per-DB flag + sonnet_full_flag, so we can group-by-category
+    and sum the flag columns without touching the per-category TSVs.
+    """
+    long = pd.read_csv(DATA_DIR / "positive_control_long.tsv", sep="\t")
     records = []
     for slug, _ in CATEGORIES:
-        df = pd.read_csv(DATA_DIR / f"positive_control_{slug}.tsv", sep="\t")
-        n_total = len(df)
+        sub = long[long["category"] == slug]
+        n_total = len(sub)
         for db in DB_ORDER:
             col = DB_FLAG_COL[db]
-            n = int(df[col].astype(int).sum())
+            n = int(sub[col].astype(int).sum())
             records.append(
                 {"category": slug, "db": db, "n": n, "pct": n / n_total * 100, "n_total": n_total}
             )
@@ -134,10 +141,8 @@ def render(df_tidy: pd.DataFrame) -> None:
     })
     fig, axes = plt.subplots(1, 3, figsize=(17, 6), sharey=False)
 
-    # Per-category long-form data once (we read it directly rather than re-
-    # aggregating from df_tidy, since the ADC panel needs the per-gene
-    # adc_source column to stack).
-    long_path = REPO_ROOT / "data/processed/positive_controls/positive_control_long.tsv"
+    # Single-file source — also read for the ADC source-stacking + miss list.
+    long_path = DATA_DIR / "positive_control_long.tsv"
     long = pd.read_csv(long_path, sep="\t")
 
     # Per-category set of Sonnet misses, used to annotate the Sonnet bar
@@ -205,7 +210,10 @@ def render(df_tidy: pd.DataFrame) -> None:
                 color="white", weight="semibold",
             )
 
-        ax.set_title(f"{panel_title}\n(n = {n_total} targets)", fontsize=12, weight="bold", pad=14)
+        # Panel title rendered via fig.text after the loop — set_title was
+        # being clipped by save_figure's bbox-tight cropping. Store the
+        # string on the axes for the post-loop label step to pick up.
+        ax._panel_title_text = f"{panel_title}\n(n = {n_total} targets)"
         ax.set_ylabel("Targets\nrepresented", fontsize=13, weight="medium")
         ax.set_xlabel("")
         # Modest headroom (1.18×) over n_total to fit the per-bar text block
@@ -217,11 +225,24 @@ def render(df_tidy: pd.DataFrame) -> None:
         # X-ticks now redundant with the spelled-out titles — hide them.
         ax.set_xticks([])
 
+    # Panel titles + subpanel labels rendered via fig.text in the reserved
+    # top margin (top=0.78). Using fig.text rather than ax.set_title because
+    # save_figure's bbox-tight cropping was clipping ax.set_title output.
+    fig.canvas.draw()  # resolve axes positions before reading them
     for ax, letter in zip(axes, "abc"):
-        ax.text(
-            -0.12, 1.07, letter, transform=ax.transAxes,
-            fontsize=22, fontweight=800, family="Manrope",
-            ha="left", va="bottom",
+        bbox = ax.get_position()
+        # Panel title — centered above the axes, bold
+        fig.text(
+            (bbox.x0 + bbox.x1) / 2, bbox.y1 + 0.04,
+            getattr(ax, "_panel_title_text", ""),
+            fontsize=13, weight="bold",
+            ha="center", va="bottom",
+        )
+        # Subpanel letter — top-left of the panel, in figure margin
+        fig.text(
+            bbox.x0 - 0.015, bbox.y1 + 0.04,
+            letter, fontsize=22, fontweight=800, family="Manrope",
+            ha="right", va="bottom",
         )
 
     # ADC panel legend — explain the 3-source teal stacking
@@ -235,7 +256,11 @@ def render(df_tidy: pd.DataFrame) -> None:
         fontsize=10, title="ADC source", title_fontsize=10,
     )
 
-    plt.tight_layout()
+    # Explicit margins instead of tight_layout — tight_layout was clipping
+    # the panel titles whenever the bar text annotations occupied the top
+    # 18% of the axes (panel a was the worst offender). Reserving 18% at
+    # the top guarantees the panel title fits.
+    plt.subplots_adjust(top=0.78, bottom=0.08, left=0.06, right=0.98, wspace=0.28)
     save_figure(
         fig, "positive_control_db_coverage_bars", OUT_DIR,
         formats=("pdf", "png"), gist_url=GIST_URL,

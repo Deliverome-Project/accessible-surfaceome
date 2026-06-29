@@ -41,10 +41,9 @@ BASE = f"https://raw.githubusercontent.com/{REPO}/{BRANCH}"
 # ``Image.open(p).info["Source"]``.
 GIST_URL = "https://gist.github.com/beccajcarlson/3ab5df749b576912959c75fe7013d78c"
 
-# Input TSVs — augmented indicator tables keyed on hgnc_id.
-ADC_TSV = f"{BASE}/data/processed/positive_controls/positive_control_ADC.tsv"
-TCE_TSV = f"{BASE}/data/processed/positive_controls/positive_control_TCE.tsv"
-VZ_TSV  = f"{BASE}/data/processed/positive_controls/positive_control_VZ.tsv"
+# Single long-form TSV — one row per (category × gene) with all per-DB flags
+# + sonnet_full_flag + adc_source. Replaces the previous 3 per-category TSVs.
+LONG_TSV = f"{BASE}/data/processed/positive_controls/positive_control_long.tsv"
 
 # ──── Inline brand styling — sentinel: brand-style-v3 ────
 # Mirrors src/accessible_surfaceome/audit/_plotting_config.py so the gist
@@ -140,9 +139,9 @@ DB_FLAG_COL = {
 }
 
 CATEGORIES = [
-    (ADC_TSV, "ADC", "ADC targets\n(TheraSAbDab ∪ Open Targets ∪ ADCdb)"),
-    (TCE_TSV, "TCE", "TCE targets\n(TheraSAbDab CD3-bispecific + BiTE/DART)"),
-    (VZ_TSV,  "VZ",  "ViralZone\nhuman entry receptors"),
+    ("ADC", "ADC clinical/preclinical targets\n(TheraSAbDab ∪ Open Targets ∪ ADCdb)"),
+    ("TCE", "CD3-bispecific T-cell engager\ntargets (TheraSAbDab)"),
+    ("VZ",  "ViralZone human viral\nentry receptors"),
 ]
 
 # ADC panel only: each bar is stacked by which ADC source contributed the
@@ -201,13 +200,15 @@ def _embed_source_in_metadata(out_path: Path, url: str) -> None:
 
 
 def build_tidy() -> pd.DataFrame:
+    """Aggregate per-(category, source) counts from the single long-form TSV."""
+    long = _fetch_tsv(LONG_TSV)
     records = []
-    for url, slug, _ in CATEGORIES:
-        df = _fetch_tsv(url)
-        n_total = len(df)
+    for slug, _ in CATEGORIES:
+        sub = long[long["category"] == slug]
+        n_total = len(sub)
         for db in DB_ORDER:
             col = DB_FLAG_COL[db]
-            n = int(df[col].astype(int).sum())
+            n = int(sub[col].astype(int).sum())
             records.append(
                 {"category": slug, "db": db, "n": n, "pct": n / n_total * 100, "n_total": n_total}
             )
@@ -229,7 +230,7 @@ def render(df_tidy: pd.DataFrame, out_dir: Path) -> Path:
         missed = sub[sub["sonnet_full_flag"] == 0]["hgnc_symbol"].tolist()
         misses_per_category[cat] = sorted(missed)
 
-    for ax, (_, slug, panel_title) in zip(axes, CATEGORIES):
+    for ax, (slug, panel_title) in zip(axes, CATEGORIES):
         sub = df_tidy[df_tidy["category"] == slug]
         n_total = int(sub["n_total"].iloc[0])
 
@@ -281,7 +282,7 @@ def render(df_tidy: pd.DataFrame, out_dir: Path) -> Path:
                 color="white", weight="semibold",
             )
 
-        ax.set_title(f"{panel_title}\n(n = {n_total} targets)", fontsize=12, weight="bold", pad=14)
+        ax._panel_title_text = f"{panel_title}\n(n = {n_total} targets)"
         ax.set_ylabel("Targets\nrepresented", fontsize=13, weight="medium")
         ax.set_xlabel("")
         # Modest headroom (1.18×) over n_total to fit the per-bar text block.
@@ -291,11 +292,21 @@ def render(df_tidy: pd.DataFrame, out_dir: Path) -> Path:
         sns.despine(ax=ax, top=True, right=True)
         ax.set_xticks([])
 
+    # Panel titles + subpanel letters via fig.text — set_title was being
+    # clipped by save_figure's bbox-tight cropping.
+    fig.canvas.draw()
     for ax, letter in zip(axes, "abc"):
-        ax.text(
-            -0.12, 1.07, letter, transform=ax.transAxes,
-            fontsize=22, fontweight=800, family="Manrope",
-            ha="left", va="bottom",
+        bbox = ax.get_position()
+        fig.text(
+            (bbox.x0 + bbox.x1) / 2, bbox.y1 + 0.04,
+            getattr(ax, "_panel_title_text", ""),
+            fontsize=13, weight="bold",
+            ha="center", va="bottom",
+        )
+        fig.text(
+            bbox.x0 - 0.015, bbox.y1 + 0.04,
+            letter, fontsize=22, fontweight=800, family="Manrope",
+            ha="right", va="bottom",
         )
 
     # ADC panel legend — explain the 3-source teal stacking
@@ -309,7 +320,8 @@ def render(df_tidy: pd.DataFrame, out_dir: Path) -> Path:
         fontsize=10, title="ADC source", title_fontsize=10,
     )
 
-    plt.tight_layout()
+    # Explicit margins instead of tight_layout — reserves headroom for titles.
+    plt.subplots_adjust(top=0.78, bottom=0.08, left=0.06, right=0.98, wspace=0.28)
     out_dir.mkdir(parents=True, exist_ok=True)
     pdf = out_dir / "positive_control_db_coverage_bars.pdf"
     png = out_dir / "positive_control_db_coverage_bars.png"
