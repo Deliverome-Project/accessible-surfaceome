@@ -71,7 +71,8 @@
     "has_known_ligand_rationale": "SRC is a non-receptor tyrosine kinase; it has no canonical extracellular ligand-binding domain. The validated interactions (NMDAR via ND2/PSD-95, focal adhesion substrates) are intracellular and substrate-level, not extracellular ligand-receptor pairs. All therapeutic programs are intracellular small-molecule inhibitors or antibodies targeting the unconventional eSrc form.",
     "low_endogenous_expression_rationale": "SRC protein is detected at moderate levels across skin keratinocytes (a2_evi_08), osteocytes (a2_evi_12), monocytes (a2_evi_17), and multiple cancer cell lines including MPM (a2_evi_10), OSCC (a2_evi_15), and NPC (a2_evi_19); no high-level pan-tissue baseline is documented.",
     "overexpression_surface_localization_observed_rationale": "No method observation pairs an overexpression/mixed expression system with a direct or supportive surface-accessibility readout.",
-    "n_papers_selected": 17
+    "n_papers_selected": 17,
+    "n_papers_found": null
   },
   "surface_evidence": {
     "evidence_grade": "direct_single_method",

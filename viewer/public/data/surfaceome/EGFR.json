@@ -81,7 +81,8 @@
     "has_known_ligand_rationale": "Multiple validated endogenous ligands: EGF (canonical agonist), TGF-α, amphiregulin, epiregulin, betacellulin, and HB-EGF. Ligand binding drives receptor-mediated internalization (a2_evi_15, a2_evi_16). Panitumumab and cetuximab block EGF binding site (a1_evi_44).",
     "low_endogenous_expression_rationale": "Derived from expression_level='high' (not low/absent → not flagged). High surface EGFR in glioma (99% GSC83, 98% U373vIII by flow; a1_evi_02), prostate cancer (19 biotinylation sites; a1_evi_28), SIP patient tissue 97% membranous IHC (a2_evi_03), and 84th percentile in normal glandular tissue proteomics (a2_evi_19).",
     "overexpression_surface_localization_observed_rationale": "3 method observation(s) pair an overexpression/mixed expression system with a surface-localization readout (cites a1_evi_01, a1_evi_12, a1_evi_21, a1_evi_22).",
-    "n_papers_selected": 29
+    "n_papers_selected": 29,
+    "n_papers_found": null
   },
   "surface_evidence": {
     "evidence_grade": "direct_multi_method",

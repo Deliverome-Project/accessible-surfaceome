@@ -79,7 +79,8 @@
     "tumor_associated": true,
     "induction_trigger": "oncogenic",
     "has_live_cell_surface_evidence": true,
-    "n_papers_selected": 17
+    "n_papers_selected": 17,
+    "n_papers_found": null
   },
   "surface_evidence": {
     "evidence_grade": "direct_single_method",

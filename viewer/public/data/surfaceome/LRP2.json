@@ -79,7 +79,8 @@
     "has_known_ligand_rationale": "LRP2 binds a large array of documented ligands including albumin, apolipoprotein B, vitamin D-binding protein, cubilin-amnionless complex, SARS-CoV-2 spike protein, and HDL/miR-223 (a2_evi_04, a1_evi_22, a2_evi_07). Not an orphan receptor.",
     "low_endogenous_expression_rationale": "Derived from expression_level='high' (not low/absent → not flagged). High expression in kidney proximal tubule epithelial cells, where LRP2 is a canonical segment marker (~70% of CKD atlas cells express it) (a2_evi_01, a2_evi_02); also high in human kidney brush-border by IHC (a1_evi_19).",
     "overexpression_surface_localization_observed_rationale": "No method observation pairs an overexpression/mixed expression system with a direct or supportive surface-accessibility readout.",
-    "n_papers_selected": 17
+    "n_papers_selected": 17,
+    "n_papers_found": null
   },
   "surface_evidence": {
     "evidence_grade": "direct_multi_method",

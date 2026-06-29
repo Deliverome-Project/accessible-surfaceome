@@ -65,7 +65,9 @@
     "surface_specificity_rationale": "Canonical topology predicts a plasma membrane single-pass protein, but the only functional evidence highlights cytoplasmic-domain intracellular signaling (a1_evi_01), leaving the surface vs. intracellular distribution unresolved.",
     "has_known_ligand_rationale": "No validated endogenous binding partner is reported in the ledger. TMDD1 is a poorly characterized protein with no deorphanized ligand; the sole evidence (a1_evi_01) describes intracellular cytoplasmic-domain interactions, not an extracellular receptor-ligand pairing.",
     "low_endogenous_expression_rationale": "Only a single abstract-level report places TMDD1 in LUAD tumor cells (a2_evi_01); no quantitative expression data (RNA-seq, proteomics) are available in the ledger.",
-    "overexpression_surface_localization_observed_rationale": "No method observation pairs an overexpression/mixed expression system with a direct or supportive surface-accessibility readout."
+    "overexpression_surface_localization_observed_rationale": "No method observation pairs an overexpression/mixed expression system with a direct or supportive surface-accessibility readout.",
+    "n_papers_selected": 1,
+    "n_papers_found": null
   },
   "surface_evidence": {
     "evidence_grade": "weak",

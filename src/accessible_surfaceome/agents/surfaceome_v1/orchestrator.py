@@ -464,7 +464,7 @@ def _evidence_density(n: int) -> EvidenceDensity:
     return "low"
 
 
-def _count_unique_papers(evidence: list[Evidence] | None) -> int:
+def _count_unique_papers(evidence: list[Evidence] | None) -> int | None:
     """Count distinct papers in an evidence list — one paper can back
     multiple ``Evidence`` entries when it supports several claims, so
     the row count overcounts. The viewer's "papers selected" filter
@@ -475,9 +475,15 @@ def _count_unique_papers(evidence: list[Evidence] | None) -> int:
     ``"PMID:12345678"`` or ``"DOI:10.xx/yy"``). An evidence row with
     no spans (``entailment_verified=False`` cases) contributes nothing
     — by construction those rows have no provenance to anchor.
+
+    Returns ``None`` only when ``evidence is None`` — i.e. the caller
+    genuinely doesn't know. An empty-list or all-spanless input
+    returns ``0`` (a real measurement: "the agent surfaced 0 unique
+    papers for this gene"). Filters.n_papers_selected uses the same
+    None-vs-0 distinction.
     """
-    if not evidence:
-        return 0
+    if evidence is None:
+        return None
     ids: set[str] = set()
     for ev in evidence:
         for span in getattr(ev, "spans", None) or []:
@@ -580,7 +586,7 @@ def _derive_filters(
     deterministic_features: DeterministicFeatures,
     n_evidence: int,
     evidence: list[Evidence] | None = None,
-    n_papers_found: int = 0,
+    n_papers_found: int | None = None,
 ) -> Filters:
     """Build the 17-field top-level ``Filters`` from B's blocks + the
     deterministic side. 14 fields are derived deterministically; 3 come from

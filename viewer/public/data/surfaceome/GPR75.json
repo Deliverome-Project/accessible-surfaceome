@@ -80,7 +80,8 @@
     "has_known_ligand_rationale": "",
     "low_endogenous_expression_rationale": "Derived from expression_level='moderate' (not low/absent → not flagged). High expression in brain neurons and cerebrovascular cells across multiple species (a2_evi_02, a2_evi_07, a2_evi_08); moderate in endothelial/vascular smooth muscle cells (a2_evi_11, a2_evi_13); absent in healthy liver and low in peripheral immune organs (a2_evi_09, a2_evi_22). Overall moderate given CNS-dominant but tissue-restricted profile.",
     "overexpression_surface_localization_observed_rationale": "No method observation pairs an overexpression/mixed expression system with a direct or supportive surface-accessibility readout.",
-    "n_papers_selected": 19
+    "n_papers_selected": 19,
+    "n_papers_found": null
   },
   "surface_evidence": {
     "evidence_grade": "supportive_but_indirect",

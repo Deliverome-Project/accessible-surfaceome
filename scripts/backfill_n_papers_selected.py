@@ -67,18 +67,31 @@ def main() -> int:
             continue
         n_papers = _count_unique_papers(raw)
         filters = raw.setdefault("filters", {})
-        existing = filters.get("n_papers_selected", 0)
-        if existing == n_papers:
+        existing_selected = filters.get("n_papers_selected")
+        # n_papers_found is genuinely None on these legacy records — the
+        # pre-trim discovery count was never persisted to the
+        # SurfaceomeRecord (it lives in the agent's runner state and is
+        # shed at publish time). Set explicitly so the JSON makes the
+        # "unknown" status visible rather than relying on Pydantic's
+        # default-fill on read. Honest backfill requires a
+        # discover-only rerun (~30 s/gene).
+        needs_found = "n_papers_found" not in filters
+        needs_selected = existing_selected != n_papers
+        if not needs_selected and not needs_found:
             n_unchanged += 1
             continue
-        filters["n_papers_selected"] = n_papers
+        if needs_selected:
+            filters["n_papers_selected"] = n_papers
+        if needs_found:
+            filters["n_papers_found"] = None
         n_updated += 1
         action = "→ would write" if not args.execute else "→ wrote"
-        print(
-            f"  {action} {path.name:<30}  "
-            f"n_papers_selected: {existing:>3} → {n_papers:>3}  "
-            f"(evidence rows: {len(evidence)})"
+        sel_str = (
+            f"n_papers_selected: {('None' if existing_selected is None else existing_selected):>4} → {n_papers:>3}"
+            if needs_selected else ""
         )
+        found_str = "+ n_papers_found: null" if needs_found else ""
+        print(f"  {action} {path.name:<30}  {sel_str}  {found_str}".rstrip())
         if args.execute:
             # Preserve key order; pad with trailing newline (matches existing snapshots).
             path.write_text(json.dumps(raw, indent=2, ensure_ascii=False) + "\n")

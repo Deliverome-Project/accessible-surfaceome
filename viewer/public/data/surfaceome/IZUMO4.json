@@ -71,7 +71,8 @@
     "tumor_associated": false,
     "induction_trigger": "none",
     "has_live_cell_surface_evidence": false,
-    "n_papers_selected": 4
+    "n_papers_selected": 4,
+    "n_papers_found": null
   },
   "surface_evidence": {
     "evidence_grade": "weak",
