@@ -136,7 +136,7 @@ DB_FLAG_COL = {
     "HPA":     "hpa_flag",
     "SURFY":   "surfy_flag",
     "CSPA":    "cspa_flag",
-    "Sonnet":  "sonnet_ncbi_dual_flag",
+    "Sonnet":  "sonnet_full_flag",
 }
 
 CATEGORIES = [

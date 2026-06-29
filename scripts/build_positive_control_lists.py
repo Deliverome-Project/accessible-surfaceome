@@ -360,18 +360,27 @@ def collect_viralzone_hgncs(vz: pd.DataFrame, cu: pd.DataFrame) -> set[str]:
 
 
 def fetch_sonnet_dual_positive() -> set[str]:
-    """Return the set of gene symbols positive in either NCBI v1 or v2.
+    """Return the set of gene symbols positive in any of the three full-genome
+    Sonnet runs: NCBI v1, NCBI v2, OR the PubMed-augmented rescue pass.
 
-    Positive = predicted_verdict in {yes, contextual}. PubMed-augmented
-    variant is excluded — it's a separate exploration, not part of the
-    paper's dual triage strategy.
+    Positive = predicted_verdict in {yes, contextual}. Matches the universe
+    v3 build's Sonnet inclusion rule exactly (see
+    ``scripts/build_candidate_universe_v3.py``): a gene appears in v3
+    as ``source='sonnet_only'`` whenever any of these three passes caught
+    it — so we count it as a Sonnet positive here too.
+
+    Earlier versions excluded the PubMed pass; that under-counted rescues
+    (e.g. KLK2, which only the PubMed pass caught, was systematically
+    omitted from the rescue list while still appearing in v3).
     """
     load_env()
     with D1Client() as d1:
         rows = d1.query(
             """
             SELECT DISTINCT gene_symbol FROM triage_run
-            WHERE run_id IN ('genome_full_sonnet_ncbi_v1', 'genome_full_sonnet_ncbi_v2')
+            WHERE run_id IN ('genome_full_sonnet_ncbi_v1',
+                             'genome_full_sonnet_ncbi_v2',
+                             'genome_full_sonnet_pubmed_ncbi_v1')
               AND predicted_verdict IN ('yes', 'contextual');
             """,
             [],
@@ -415,7 +424,7 @@ def build_indicator_df(
             for db in ("uniprot", "go", "hpa", "surfy", "cspa"):
                 rec[f"{db}_flag"] = 0
             rec["n_db_votes"] = 0
-        rec["sonnet_ncbi_dual_flag"] = int(h in sonnet_pos_hgnc)
+        rec["sonnet_full_flag"] = int(h in sonnet_pos_hgnc)
         rows.append(rec)
     return pd.DataFrame(rows)
 
@@ -493,7 +502,7 @@ def main() -> None:
     col_order = (
         ["category", "hgnc_id", "hgnc_symbol", "uniprot_acc", "ensembl_gene", "ncbi_gene_id"]
         + ["uniprot_flag", "go_flag", "hpa_flag", "surfy_flag", "cspa_flag", "n_db_votes",
-           "sonnet_ncbi_dual_flag", "adc_source"]
+           "sonnet_full_flag", "adc_source"]
     )
     combined = combined[[c for c in col_order if c in combined.columns]]
     combined_path = OUT_DIR / "positive_control_long.tsv"
@@ -505,7 +514,7 @@ def main() -> None:
     # data so a reviewer can verify counts without re-running anything.
     sources = {
         "UniProt": "uniprot_flag", "GO": "go_flag", "HPA": "hpa_flag",
-        "SURFY": "surfy_flag", "CSPA": "cspa_flag", "Sonnet": "sonnet_ncbi_dual_flag",
+        "SURFY": "surfy_flag", "CSPA": "cspa_flag", "Sonnet": "sonnet_full_flag",
     }
     summary_rows = []
     for label, df in per_set.items():
