@@ -1,10 +1,14 @@
-"""SurfaceBench topology distribution vs the full any-yes universe.
+"""SurfaceBench topology distribution vs Sonnet 2-tier yes/contextual.
 
 Side-by-side grouped barplot over the same 9 topology categories the
 ``topology_coverage_by_source`` 3×3 figure breaks out, with two hues:
 
-  • **any-yes universe** (n=6,588) — the full "≥1 source voted yes"
-    cohort the per-protein-features TSV materialises
+  • **Sonnet 2-tier yes/contextual universe** (n=4,426) — the genes
+    the production pipeline calls accessible after the
+    Sonnet+NCBI sweep plus the Sonnet+PubMed rescue lane
+    (NCBI=no → PubMed=yes/contextual flips, ~177 genes recovered).
+    This is what the catalog *actually ships*, NOT the full
+    "any-DB-voted-yes" union the topology figure also breaks out.
   • **SurfaceBench** (n=146 of 147 that join into the features TSV) —
     the 147-protein hand-curated benchmark deliberately enriched for
     cases where the five gating databases disagree
@@ -155,11 +159,29 @@ def _load_bench_accs() -> set[str]:
     return accs
 
 
+def _is_sonnet_2tier_yc(r: dict) -> bool:
+    """Sonnet 2-tier yes/contextual: NCBI sweep verdict ∈ {yes,
+    contextual} OR (NCBI=no AND PubMed-rescue verdict ∈ {yes,
+    contextual}). This is what the catalog actually ships as the
+    "accessible surfaceome" — the 177 PubMed-rescue flips that
+    promote NCBI's no-calls to yes/contextual when a second pass
+    with PubMed retrieval finds supporting evidence."""
+    ncbi = (r.get("sonnet_verdict") or "").strip().lower()
+    if ncbi in ("yes", "contextual"):
+        return True
+    pubmed = (r.get("pubmed_verdict") or "").strip().lower()
+    return pubmed in ("yes", "contextual")
+
+
 def _compute_distribution() -> tuple[
     list[tuple[str, str]], list[float], list[float], list[tuple[float, float]],
     list[float], int, int,
 ]:
-    rows = _fetch_universe()
+    all_rows = _fetch_universe()
+    # Filter to Sonnet 2-tier yes/contextual rather than the broader
+    # "any source voted yes" union the per-protein-features TSV
+    # materialises. This is the catalog's actual published set.
+    rows = [r for r in all_rows if _is_sonnet_2tier_yc(r)]
     bench_accs = _load_bench_accs()
     bench_rows = [r for r in rows if r.get("uniprot_accession") in bench_accs]
     n_universe = len(rows)
@@ -203,7 +225,8 @@ def make_plot() -> tuple[plt.Figure, plt.Axes]:
 
     ax.bar(
         x - width / 2, univ, width=width, color=COLOR_UNIVERSE,
-        edgecolor="none", label=f"any-yes universe  (n = {n_u:,})",
+        edgecolor="none",
+        label=f"Sonnet 2-tier yes/contextual  (n = {n_u:,})",
         zorder=3,
     )
     # CI on bench only — the universe is a population, not a sample,
@@ -246,27 +269,65 @@ def make_plot() -> tuple[plt.Figure, plt.Axes]:
         frameon=False, fontsize=14,
     )
 
-    fig.text(
-        0.5, -0.02,
-        "Bench is selected for DB disagreement and is NOT a random topological sample: "
-        "GPI-anchored / lipidated / single-pass classes are over-represented (DBs disagree on these); "
-        "multi-pass TM is under-represented (DBs agree on these). "
-        "Bench-accuracy is therefore a lower bound on full-universe accuracy. "
-        "Error bars: Wilson 95% binomial CI. "
-        "Significance: 2-tailed exact binomial test of bench vs universe proportion, "
-        "Bonferroni-corrected across 9 classes (* p<0.05, ** p<0.01, *** p<0.001).",
-        ha="center", va="top", fontsize=11, style="italic", color=COLORS["neutral"],
-        wrap=True,
-    )
-
     sns.despine(ax=ax, top=True, right=True)
     fig.tight_layout()
     return fig, ax
 
 
+def _write_caption(
+    n_universe: int, n_bench: int, pvals_bonf: list[float],
+    feats: list[tuple[str, str]], universe_pct: list[float], bench_pct: list[float],
+) -> str:
+    """Build the paper-side figure caption from the computed values
+    and write it to a sidecar .caption.md so the rendered figure
+    stays clean (no big italic block under the bars). The .caption.md
+    travels next to the PDF/PNG so a reader can paste it into the
+    manuscript verbatim."""
+    n_sig = sum(1 for p in pvals_bonf if p < 0.05)
+    # Top 3 over- and under-represented classes for the caption body
+    deltas = sorted(
+        ((name, b - u, p) for (_, name), u, b, p in zip(feats, universe_pct, bench_pct, pvals_bonf, strict=True)),
+        key=lambda t: t[1], reverse=True,
+    )
+    over = [f"{n.replace(chr(10), ' ')} (+{d:.1f} pp{'*' if p < 0.05 else ''})"
+            for n, d, p in deltas[:3] if d > 0]
+    under = [f"{n.replace(chr(10), ' ')} ({d:+.1f} pp{'*' if p < 0.05 else ''})"
+             for n, d, p in deltas[-3:] if d < 0]
+
+    caption = (
+        f"**Figure caption.** Topology composition of SurfaceBench "
+        f"(n = {n_bench} of 147 that join into the per-protein features TSV) "
+        f"compared against the Sonnet 2-tier yes/contextual universe "
+        f"(n = {n_universe:,}), the genes the production pipeline ships "
+        f"as accessible after the NCBI sweep + PubMed rescue lane. "
+        f"Bars show the % of each subset that carries the topological "
+        f"feature; error bars on SurfaceBench are Wilson 95% binomial "
+        f"confidence intervals (the universe is a population, not a "
+        f"sample, so no CI). Per-class p-values are computed by an "
+        f"exact 2-tailed binomial test of the bench count against the "
+        f"universe proportion under H₀, Bonferroni-corrected across "
+        f"the 9 topology classes (* p < 0.05, ** p < 0.01, *** p < 0.001); "
+        f"{n_sig} of 9 classes reach significance. "
+        f"The bench is enriched for {', '.join(over)} "
+        f"and depleted for {', '.join(under)}; this reflects its "
+        f"deliberate selection for DB-disagreement cases, so "
+        f"bench-derived accuracy estimates are a lower bound on "
+        f"expected full-universe accuracy."
+    )
+    return caption
+
+
 def main() -> None:
     fig, _ = make_plot()
     save_figure(fig, SLUG, output_dir=OUT_DIR, formats=("pdf", "png"))
+    # Sidecar caption — paste verbatim into the manuscript supplement.
+    feats, univ, bench, _ci, pvals, n_u, n_b = _compute_distribution()
+    caption = _write_caption(n_u, n_b, pvals, feats, univ, bench)
+    caption_path = OUT_DIR / f"{SLUG}.caption.md"
+    caption_path.write_text(caption + "\n")
+    print(f"  caption written to {caption_path.relative_to(ROOT)}")
+    print()
+    print(caption)
 
 
 if __name__ == "__main__":
