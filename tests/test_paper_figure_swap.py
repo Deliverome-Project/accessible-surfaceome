@@ -33,7 +33,7 @@ pytest.importorskip("lxml")
 import sys  # noqa: E402
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "paper"))
 
-from figure_swap import (  # noqa: E402
+from figure_swap import (  # noqa: E402  # ty: ignore[unresolved-import]
     FigureSpec,
     format_report,
     load_manifest,
@@ -269,6 +269,6 @@ def test_swap_skips_when_anchor_has_no_manifest_entry() -> None:
 
 
 def test_format_report_handles_empty_report() -> None:
-    from figure_swap import SwapReport
+    from figure_swap import SwapReport  # ty: ignore[unresolved-import]
     out = format_report(SwapReport())
     assert "manifest empty" in out or "no figures matched" in out

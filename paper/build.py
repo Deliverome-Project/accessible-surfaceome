@@ -202,7 +202,7 @@ def build(src: Path, strict_figures: bool = False) -> dict[str, Path]:
     #    the paper/ directory is what's on sys.path, not its parent.
     #    Static checkers (ty) walk from the repo root and can't see
     #    the sibling — silence the unresolved-import diagnostic.
-    from figure_swap import (  # type: ignore[unresolved-import]
+    from figure_swap import (  # ty: ignore[unresolved-import]
         format_report,
         load_manifest,
         swap_figures,
