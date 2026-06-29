@@ -23,10 +23,31 @@ back with ``modal volume get`` to commit them to the repo.
 from __future__ import annotations
 
 import json
+import threading
 import time
 from pathlib import Path
 
 import modal
+
+from accessible_surfaceome.agents._support.concurrency import (
+    SONNET_OTPM_LIMIT,
+    per_gene_otpm,
+    resolve_gene_concurrency,
+)
+from accessible_surfaceome.tools._shared.ratelimit import reserve_slot
+
+# Cap any single courtesy wait the gate hands back. Under extreme contention on
+# a slow (~1 qps) host — many queued reservations plus phantom slots from
+# crashed/retried workers — an uncapped reservation queue could push a worker's
+# wait past the 20-minute gene timeout. Capping degrades to a brief over-rate
+# instead. 120s is far above any healthy steady-state wait.
+GATE_MAX_WAIT_S = 120.0
+
+# Resolved on the driver at import time (env-tunable) and baked into the
+# ``annotate_one`` Function config Modal ships to the workers. Total concurrent
+# genes = MAX_CONTAINERS × MAX_INPUTS; the default is sized to keep expected
+# Anthropic OTPM under the 2M/min ceiling — see the concurrency module.
+MAX_CONTAINERS, MAX_INPUTS = resolve_gene_concurrency()
 
 # ---------------------------------------------------------------------------
 # image + volume + secret
@@ -102,32 +123,63 @@ secret = modal.Secret.from_name("surfaceome-env")
 
 ANNOTATIONS_MOUNT = "/annotations"
 
+# state_key -> monotonic time the most recently granted slot is scheduled to
+# fire. The next slot for a key must be >= that + interval. One authoritative
+# table, so the gate runs in exactly one container (max_containers=1).
 _RATE_LIMIT_LAST_CALL: dict[str, float] = {}
+_RATE_LIMIT_LOCK = threading.Lock()
 
 
 @app.function(
     image=image,
     cpu=0.25,
     memory=256,
-    timeout=60,
+    timeout=30,
     max_containers=1,
 )
-@modal.concurrent(max_inputs=1)
+@modal.concurrent(max_inputs=200)
 def rate_limit_gate(state_key: str, interval_s: float) -> float:
-    """Single-container lease gate for external API courtesy limits.
+    """Reservation gate for external-API courtesy limits under Modal fan-out.
 
     Every worker has its own process-local HTTP limiter, which is not enough
-    under Modal fan-out. This function is deliberately capped at one container
-    and one in-flight input so all workers serialize through one in-memory
-    ``last_call`` table. ``state_key`` is built by the shared RateLimiter and
-    hashes sensitive buckets such as NCBI API keys before they leave a worker.
+    when 100s of containers each independently obey a polite local limit while
+    collectively overwhelming an upstream. This gate is the one cross-process
+    coordination point. ``state_key`` is built by the shared RateLimiter and
+    hashes sensitive buckets (e.g. NCBI API keys) before they leave a worker.
+
+    It **reserves the next slot and returns the wait — it never sleeps** (via the
+    shared :func:`reserve_slot`, so the algorithm can't drift from the in-process
+    ``RateLimiter``). The caller (``RateLimiter.wait``) sleeps in its own worker
+    process. That is the whole point of the redesign: the previous version slept
+    *inside* this single ``max_inputs=1`` container, so one host's 350ms wait
+    blocked every other host's and key's gate call (head-of-line blocking) and
+    the gate became a hard throughput ceiling. Now each call is microseconds of
+    locked dict math, every ``state_key`` is an independent schedule line, and a
+    slow key never blocks a fast one. ``max_containers=1`` is still required
+    (single authoritative table); ``max_inputs`` is raised so concurrent
+    reservations are processed under the lock without serializing on input
+    dispatch.
+
+    The table lives only in container memory: a gate restart (deploy, crash,
+    cold replacement) forgets all reservations, after which the first call per
+    key gets a no-wait slot and spacing resumes. For courtesy limits this
+    self-healing reset is an accepted trade-off vs. the per-call latency of a
+    durable store.
     """
-    now = time.monotonic()
-    last = _RATE_LIMIT_LAST_CALL.get(state_key, 0.0)
-    wait_for = max(0.0, float(interval_s) - (now - last))
-    if wait_for > 0:
-        time.sleep(wait_for)
-    _RATE_LIMIT_LAST_CALL[state_key] = time.monotonic()
+    with _RATE_LIMIT_LOCK:
+        wait_for = reserve_slot(
+            _RATE_LIMIT_LAST_CALL,
+            state_key,
+            float(interval_s),
+            now=time.monotonic(),
+            max_wait_s=GATE_MAX_WAIT_S,
+        )
+    if wait_for >= GATE_MAX_WAIT_S:
+        print(
+            f"rate_limit_gate: wait capped at {GATE_MAX_WAIT_S}s for "
+            f"{state_key!r} — heavy contention, host is being over-rated",
+            flush=True,
+        )
     return wait_for
 
 
@@ -171,9 +223,12 @@ def rate_limit_worker_smoke(n: int = 3, interval_s: float = 0.2) -> dict:
     retries=modal.Retries(max_retries=2, backoff_coefficient=2.0),
     volumes={ANNOTATIONS_MOUNT: volume},
     secrets=[secret],
-    max_containers=200,  # cap fan-out so external APIs don't drown
+    # Sized to keep expected Anthropic OTPM under the 2M/min ceiling, not to
+    # max out raw fan-out (env-tunable; see concurrency module). Total
+    # concurrent genes = MAX_CONTAINERS × MAX_INPUTS.
+    max_containers=MAX_CONTAINERS,
 )
-@modal.concurrent(max_inputs=4)
+@modal.concurrent(max_inputs=MAX_INPUTS)
 def annotate_one(payload: dict) -> dict:
     """Annotate one gene. ``payload`` carries the GeneRow fields plus
     ``run_id`` and ``max_cost_per_gene_usd``. Always returns a dict so
@@ -239,6 +294,24 @@ def annotate_one(payload: dict) -> dict:
 # ---------------------------------------------------------------------------
 
 
+def _log_concurrency_plan() -> None:
+    """Print the resolved fan-out + projected Anthropic OTPM vs the ceiling.
+
+    Observability for the binding constraint: if projected OTPM is near 100%,
+    expect the backoff loop to engage; dial ``SURFACEOME_MAX_CONTAINERS`` down
+    (or refine ``SURFACEOME_PER_GENE_OTPM``) before a long run.
+    """
+    concurrency = MAX_CONTAINERS * MAX_INPUTS
+    projected = concurrency * per_gene_otpm()
+    print(
+        f"concurrency: {concurrency} genes in flight "
+        f"({MAX_CONTAINERS} containers × {MAX_INPUTS} inputs/container); "
+        f"projected OTPM ≈ {projected / 1e6:.2f}M / {SONNET_OTPM_LIMIT / 1e6:.0f}M "
+        f"({100 * projected / SONNET_OTPM_LIMIT:.0f}% — backoff absorbs bursts)",
+        flush=True,
+    )
+
+
 def _load_and_filter(
     gene_list: str, run_id: str, no_d1: bool
 ) -> tuple[list[dict], int]:
@@ -277,6 +350,7 @@ def canary(
     """Run a stratified canary and print the projected full-sweep cost."""
     from accessible_surfaceome.env import load_env
     load_env()  # driver-side: needed for D1 resume query
+    _log_concurrency_plan()
     from scripts.deep_dive_sweep import (
         check_search_log_populated,
         print_canary_report,
@@ -346,8 +420,9 @@ def full_sweep(
 ):
     """Launch the full sweep over genes not yet in D1 under run_id.
 
-    Genes are dispatched in chunks of ``chunk_size`` (default 200, sized
-    to saturate ``max_containers=200 × max_inputs=4``). Each chunk is
+    Genes are dispatched in chunks of ``chunk_size`` (default 200, which
+    comfortably covers the in-flight concurrency of
+    ``MAX_CONTAINERS × MAX_INPUTS``). Each chunk is
     drained fully before the next is submitted, with a running-cost
     check between chunks. This makes ``--max-total-cost-usd`` a real
     cap with bounded overshoot — at most ``chunk_size ×
@@ -359,6 +434,7 @@ def full_sweep(
     """
     from accessible_surfaceome.env import load_env
     load_env()
+    _log_concurrency_plan()
 
     payloads, total = _load_and_filter(gene_list, run_id, no_d1=False)
     print(
