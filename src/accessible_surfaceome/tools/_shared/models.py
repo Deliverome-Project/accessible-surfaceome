@@ -148,6 +148,10 @@ SourceName = Literal[
     "go",
     "hpa",
     "deeptmhmm",
+    # 'compartments' is no longer produced by any loader (JensenLab COMPARTMENTS
+    # was removed in the v0 cleanup), but the value is kept here so historical
+    # records that include SourceVote(name="compartments") still deserialize.
+    "compartments",
     "patent_handle",
 ]
 
@@ -3737,8 +3741,8 @@ class SurfaceomeRecord(BaseModel):
     schema_version: Literal[
         "1.0.0", "1.1.0", "2.0.0", "2.1.0", "2.2.0", "2.3.0", "2.4.0", "2.4.1",
         "2.5.0", "2.6.0", "2.7.0", "2.8.0", "2.9.0", "2.10.0", "2.11.0", "2.12.0",
-        "2.13.0", "2.14.0",
-    ] = "2.14.0"
+        "2.13.0",
+    ] = "2.13.0"
     # The prompt corpus version active when this record was synthesized.
     # Default ``""`` for backward-compat with legacy records loaded from D1
     # / on-disk snapshots that pre-date this field; new annotator runs stamp
@@ -3938,8 +3942,8 @@ class SurfaceomeRecordDraft(BaseModel):
     schema_version: Literal[
         "1.0.0", "1.1.0", "2.0.0", "2.1.0", "2.2.0", "2.3.0", "2.4.0", "2.4.1",
         "2.5.0", "2.6.0", "2.7.0", "2.8.0", "2.9.0", "2.10.0", "2.11.0", "2.12.0",
-        "2.13.0", "2.14.0",
-    ] = "2.14.0"
+        "2.13.0",
+    ] = "2.13.0"
     # The prompt corpus version active when this record was synthesized.
     # Default ``""`` for backward-compat with legacy records loaded from D1
     # / on-disk snapshots that pre-date this field; new annotator runs stamp
