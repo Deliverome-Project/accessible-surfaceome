@@ -72,7 +72,9 @@
     "surface_specificity_rationale": "Canonical topology predicts a type I single-pass membrane protein with a large extracellular Ig-domain ECD (a1_evi_01), but no protein-level surface assay has been performed; surface vs. intracellular distribution is inferred from topology alone.",
     "has_known_ligand_rationale": "No validated endogenous ligand or binding partner for VSIG10L is reported in the literature. The protein is functionally implicated in epithelial maturation and desmosome integrity (a2_evi_08), but no cognate receptor or natural agonist has been identified.",
     "low_endogenous_expression_rationale": "High RNA expression in normal esophageal suprabasal squamous cells by RNAscope ISH (a1_evi_04) and qRT-PCR across 238 clinical samples (a2_evi_03, a2_evi_04); expression is absent in Barrett lesions and reduced in GERD (a2_evi_06, a2_evi_07).",
-    "overexpression_surface_localization_observed_rationale": "No method observation pairs an overexpression/mixed expression system with a direct or supportive surface-accessibility readout."
+    "overexpression_surface_localization_observed_rationale": "No method observation pairs an overexpression/mixed expression system with a direct or supportive surface-accessibility readout.",
+    "n_papers_selected": 2,
+    "n_papers_found": null
   },
   "surface_evidence": {
     "evidence_grade": "weak",

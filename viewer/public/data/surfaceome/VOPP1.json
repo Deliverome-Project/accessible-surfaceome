@@ -69,7 +69,9 @@
     "surface_specificity_rationale": "Permeabilized IF and conditioned-media immunoblot consistently place VOPP1 in intracellular endolysosomal vesicles with no plasma membrane signal detected (a1_evi_04, a2_evi_03).",
     "has_known_ligand_rationale": "No validated endogenous binding partner or ligand is reported for VOPP1. The protein functions in vesicular trafficking/ubiquitin pathways intracellularly; no cognate receptor or natural agonist has been characterized.",
     "low_endogenous_expression_rationale": "VOPP1 transcript is highly expressed across multiple cancer types including GBM, HNSCC, breast carcinoma, pancreatic carcinoma, and lymphoma by microarray profiling (a2_evi_01, a2_evi_02).",
-    "overexpression_surface_localization_observed_rationale": "No method observation pairs an overexpression/mixed expression system with a direct or supportive surface-accessibility readout."
+    "overexpression_surface_localization_observed_rationale": "No method observation pairs an overexpression/mixed expression system with a direct or supportive surface-accessibility readout.",
+    "n_papers_selected": 2,
+    "n_papers_found": null
   },
   "surface_evidence": {
     "evidence_grade": "weak",

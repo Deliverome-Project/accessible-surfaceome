@@ -8,9 +8,9 @@
     "ensembl_gene": "ENSG00000197122"
   },
   "triage_signal": "unlikely",
-  "triage_reasoning": "SRC (p60-Src) is a non-receptor tyrosine kinase anchored to the cytoplasmic face of the plasma membrane via N-terminal myristoylation and palmitoylation. Its kinase domain, SH2, and SH3 domains all face the cytoplasm. No extracellular domain exists. Checking contextual buckets: (1) cell_state_induced \u2014 no evidence of stress-induced extracellular display; (2) tissue_restricted_surface \u2014 not applicable, inner-leaflet anchor throughout; (3) lysosomal_exocytosis \u2014 no lysosomal biology documented for SRC; (4) dual_localization \u2014 SRC cycles between cytoplasmic face of PM and endomembranes, but never the outer leaflet; (5) stable_surface_attachment \u2014 SRC is not secreted and not documented as wash-resistantly attached to any extracellular surface protein. No antibody/ADC/CAR-T programs target extracellular SRC; all therapeutic programs (dasatinib, bosutinib, etc.) are intracellular small-molecule inhibitors. Surface biotinylation and flow cytometry on intact cells do not detect SRC on the outer leaflet. Verdict: inner-leaflet-anchored, not accessible from extracellular face.",
+  "triage_reasoning": "SRC (p60-Src) is a non-receptor tyrosine kinase anchored to the cytoplasmic face of the plasma membrane via N-terminal myristoylation and palmitoylation. Its kinase domain, SH2, and SH3 domains all face the cytoplasm. No extracellular domain exists. Checking contextual buckets: (1) cell_state_induced — no evidence of stress-induced extracellular display; (2) tissue_restricted_surface — not applicable, inner-leaflet anchor throughout; (3) lysosomal_exocytosis — no lysosomal biology documented for SRC; (4) dual_localization — SRC cycles between cytoplasmic face of PM and endomembranes, but never the outer leaflet; (5) stable_surface_attachment — SRC is not secreted and not documented as wash-resistantly attached to any extracellular surface protein. No antibody/ADC/CAR-T programs target extracellular SRC; all therapeutic programs (dasatinib, bosutinib, etc.) are intracellular small-molecule inhibitors. Surface biotinylation and flow cytometry on intact cells do not detect SRC on the outer leaflet. Verdict: inner-leaflet-anchored, not accessible from extracellular face.",
   "executive_summary": {
-    "one_paragraph": "SRC is state-dependently surface-accessible in cancer cells \u2014 a canonical inner-leaflet kinase with a cancer-specific outer-surface form. Direct surface evidence is single-method: antibody-mediated tumor cell killing against extracellular-facing eSrc in cancer cell lines and xenograft models demonstrates outer-leaflet engagement (a1_evi_01, a1_evi_02). Surface presence is strictly state-gated, requiring cancer-state autophagolysosomal exocytosis (ALE) to invert the N-myristoylated kinase onto the outer leaflet; normal cells retain exclusively inner-leaflet, cytoplasmic-face localization cycling between plasma membrane and late endosomes (a2_evi_04). The principal binder-engineering caveat is moderate restricted-subdomain access \u2014 outer-surface SRC is absent in normal tissue and confined to cancer cells with active ALE (a2_evi_01, a2_evi_03); the absence of a shed or secreted form and no co-receptor requirement rule out decoy and escort concerns.",
+    "one_paragraph": "SRC is state-dependently surface-accessible in cancer cells — a canonical inner-leaflet kinase with a cancer-specific outer-surface form. Direct surface evidence is single-method: antibody-mediated tumor cell killing against extracellular-facing eSrc in cancer cell lines and xenograft models demonstrates outer-leaflet engagement (a1_evi_01, a1_evi_02). Surface presence is strictly state-gated, requiring cancer-state autophagolysosomal exocytosis (ALE) to invert the N-myristoylated kinase onto the outer leaflet; normal cells retain exclusively inner-leaflet, cytoplasmic-face localization cycling between plasma membrane and late endosomes (a2_evi_04). The principal binder-engineering caveat is moderate restricted-subdomain access — outer-surface SRC is absent in normal tissue and confined to cancer cells with active ALE (a2_evi_01, a2_evi_03); the absence of a shed or secreted form and no co-receptor requirement rule out decoy and escort concerns.",
     "accessibility_context_summary": "Surface-accessible only on cancer cells where ALE-driven topological inversion exposes the kinase domain on the outer plasma membrane face; absent on normal cells where SRC is exclusively inner-leaflet.",
     "surface_accessibility": "moderate",
     "evidence_grade_summary": "direct_single_method",
@@ -66,15 +66,17 @@
     "induction_trigger": "oncogenic",
     "has_live_cell_surface_evidence": false,
     "expression_level_rationale": "SRC protein is detected at moderate levels across skin keratinocytes (a2_evi_08), osteocytes (a2_evi_12), monocytes (a2_evi_17), and multiple cancer cell lines including MPM (a2_evi_10), OSCC (a2_evi_15), and NPC (a2_evi_19); no high-level pan-tissue baseline is documented.",
-    "expression_breadth_rationale": "SRC expression is documented in at least six tissue/cell contexts \u2014 skin, bone (osteocytes, osteoblasts), blood (monocytes), pleura (MPM), oral mucosa (OSCC), and nasopharynx (NPC) \u2014 spanning normal and tumor settings (a2_evi_08, a2_evi_12, a2_evi_10, a2_evi_14, a2_evi_17, a2_evi_19).",
+    "expression_breadth_rationale": "SRC expression is documented in at least six tissue/cell contexts — skin, bone (osteocytes, osteoblasts), blood (monocytes), pleura (MPM), oral mucosa (OSCC), and nasopharynx (NPC) — spanning normal and tumor settings (a2_evi_08, a2_evi_12, a2_evi_10, a2_evi_14, a2_evi_17, a2_evi_19).",
     "surface_specificity_rationale": "Under normal conditions SRC is exclusively inner-leaflet (cytoplasmic-face PM and late endosomes); outer-surface eSrc is documented only in cancer cells via ALE (a1_evi_01, a2_evi_01, a2_evi_04), making surface exposure a minority, state-restricted fraction.",
     "has_known_ligand_rationale": "SRC is a non-receptor tyrosine kinase; it has no canonical extracellular ligand-binding domain. The validated interactions (NMDAR via ND2/PSD-95, focal adhesion substrates) are intracellular and substrate-level, not extracellular ligand-receptor pairs. All therapeutic programs are intracellular small-molecule inhibitors or antibodies targeting the unconventional eSrc form.",
     "low_endogenous_expression_rationale": "SRC protein is detected at moderate levels across skin keratinocytes (a2_evi_08), osteocytes (a2_evi_12), monocytes (a2_evi_17), and multiple cancer cell lines including MPM (a2_evi_10), OSCC (a2_evi_15), and NPC (a2_evi_19); no high-level pan-tissue baseline is documented.",
-    "overexpression_surface_localization_observed_rationale": "No method observation pairs an overexpression/mixed expression system with a direct or supportive surface-accessibility readout."
+    "overexpression_surface_localization_observed_rationale": "No method observation pairs an overexpression/mixed expression system with a direct or supportive surface-accessibility readout.",
+    "n_papers_selected": 17,
+    "n_papers_found": null
   },
   "surface_evidence": {
     "evidence_grade": "direct_single_method",
-    "grade_rationale": "The key surface-positive evidence comes from a single source (PMID:41818370), which reports that SRC is non-canonically translocated to the outer cell surface in cancer cells via autophagolysosomal exocytosis (ALE), resulting in a topologically inverted extracellular membrane-associated form (eSrc) (a1_evi_01). The same source reports detection of eSrc in primary human tumors and demonstrates anti-Src antibody-mediated tumor cell killing in xenograft models \u2014 a functional surface assay classified as direct_surface_accessibility by the methods builder (a1_evi_02). Both claims are from a single paper with moderate confidence (no independent replication). The canonical inner-leaflet topology (a1_evi_03, a1_evi_04, a1_evi_16) describes the baseline biology and is not mechanistically incompatible with cancer-state ALE inversion \u2014 these are tangential (different state). The IHC membranous signal in human skin (a1_evi_07) and PSD fractionation in mouse brain (a1_evi_08) are expression-only. Antibody cross-reactivity with Fyn/Yes (a1_evi_09, a1_evi_10) is a caveat. One direct method class (functional surface assay / antibody-mediated tumor killing), single source \u2192 direct_single_method with low confidence and high state_dependence (cancer-state-only).",
+    "grade_rationale": "The key surface-positive evidence comes from a single source (PMID:41818370), which reports that SRC is non-canonically translocated to the outer cell surface in cancer cells via autophagolysosomal exocytosis (ALE), resulting in a topologically inverted extracellular membrane-associated form (eSrc) (a1_evi_01). The same source reports detection of eSrc in primary human tumors and demonstrates anti-Src antibody-mediated tumor cell killing in xenograft models — a functional surface assay classified as direct_surface_accessibility by the methods builder (a1_evi_02). Both claims are from a single paper with moderate confidence (no independent replication). The canonical inner-leaflet topology (a1_evi_03, a1_evi_04, a1_evi_16) describes the baseline biology and is not mechanistically incompatible with cancer-state ALE inversion — these are tangential (different state). The IHC membranous signal in human skin (a1_evi_07) and PSD fractionation in mouse brain (a1_evi_08) are expression-only. Antibody cross-reactivity with Fyn/Yes (a1_evi_09, a1_evi_10) is a caveat. One direct method class (functional surface assay / antibody-mediated tumor killing), single source → direct_single_method with low confidence and high state_dependence (cancer-state-only).",
     "claim_stances": [
       {
         "claim_id": "a1_evi_01",
@@ -92,25 +94,25 @@
         "claim_id": "a1_evi_03",
         "stance": "tangential",
         "weight": "high",
-        "note": "Canonical inner-leaflet topology \u2014 describes baseline state, not incompatible with cancer-state ALE inversion"
+        "note": "Canonical inner-leaflet topology — describes baseline state, not incompatible with cancer-state ALE inversion"
       },
       {
         "claim_id": "a1_evi_04",
         "stance": "tangential",
         "weight": "high",
-        "note": "N-myristoylation requirement for SFK function \u2014 canonical baseline biology, not a refutation of induced surface form"
+        "note": "N-myristoylation requirement for SFK function — canonical baseline biology, not a refutation of induced surface form"
       },
       {
         "claim_id": "a1_evi_05",
         "stance": "tangential",
         "weight": "moderate",
-        "note": "Fumagillin blocks Src membrane clustering in monocytes \u2014 cytoplasmic-face biology, describes baseline state"
+        "note": "Fumagillin blocks Src membrane clustering in monocytes — cytoplasmic-face biology, describes baseline state"
       },
       {
         "claim_id": "a1_evi_06",
         "stance": "tangential",
         "weight": "moderate",
-        "note": "NMT1 myristoylates Src in OSCC \u2014 biochemical anchoring mechanism, canonical topology context"
+        "note": "NMT1 myristoylates Src in OSCC — biochemical anchoring mechanism, canonical topology context"
       },
       {
         "claim_id": "a1_evi_07",
@@ -128,25 +130,25 @@
         "claim_id": "a1_evi_09",
         "stance": "tangential",
         "weight": "moderate",
-        "note": "Antibody cross-reactivity caveat (anti-pSrc cross-reacts with Fyn/Yes) \u2014 methodological note, not surface evidence"
+        "note": "Antibody cross-reactivity caveat (anti-pSrc cross-reacts with Fyn/Yes) — methodological note, not surface evidence"
       },
       {
         "claim_id": "a1_evi_10",
         "stance": "tangential",
         "weight": "moderate",
-        "note": "Paralog cross-reactivity confirmed for CST #2105/#6943 \u2014 specificity caveat for SRC surface claims using these clones"
+        "note": "Paralog cross-reactivity confirmed for CST #2105/#6943 — specificity caveat for SRC surface claims using these clones"
       },
       {
         "claim_id": "a1_evi_11",
         "stance": "tangential",
         "weight": "low",
-        "note": "Antibody catalog listing \u2014 methodological, no surface accessibility information"
+        "note": "Antibody catalog listing — methodological, no surface accessibility information"
       },
       {
         "claim_id": "a1_evi_12",
         "stance": "tangential",
         "weight": "low",
-        "note": "Antibody RRID listing for mouse fractionation study \u2014 methodological, no outer-leaflet accessibility claim"
+        "note": "Antibody RRID listing for mouse fractionation study — methodological, no outer-leaflet accessibility claim"
       },
       {
         "claim_id": "a1_evi_13",
@@ -158,19 +160,19 @@
         "claim_id": "a1_evi_14",
         "stance": "tangential",
         "weight": "low",
-        "note": "Antibody catalog listing in prostate cancer lines \u2014 methodological, no surface accessibility information"
+        "note": "Antibody catalog listing in prostate cancer lines — methodological, no surface accessibility information"
       },
       {
         "claim_id": "a1_evi_15",
         "stance": "tangential",
         "weight": "low",
-        "note": "Antibody catalog listing in endothelial cells \u2014 methodological, no surface accessibility information"
+        "note": "Antibody catalog listing in endothelial cells — methodological, no surface accessibility information"
       },
       {
         "claim_id": "a1_evi_16",
         "stance": "tangential",
         "weight": "moderate",
-        "note": "Fumagillin blocks cytoplasmic-face Src clustering in monocytes \u2014 describes baseline inner-leaflet biology, not incompatible with cancer-state ALE inversion (different state/context)"
+        "note": "Fumagillin blocks cytoplasmic-face Src clustering in monocytes — describes baseline inner-leaflet biology, not incompatible with cancer-state ALE inversion (different state/context)"
       }
     ],
     "methods": [
@@ -197,7 +199,7 @@
         "surface_claim_type": "intracellular_pool",
         "expression_observations": [
           {
-            "context": "c-Src pY419 plasma membrane-associated staining in basal and spinous keratinocytes of human skin epidermis by phospho-specific IHC; inner-leaflet anchored \u2014 not extracellularly accessible.",
+            "context": "c-Src pY419 plasma membrane-associated staining in basal and spinous keratinocytes of human skin epidermis by phospho-specific IHC; inner-leaflet anchored — not extracellularly accessible.",
             "sample_type": "primary_human_tissue",
             "level": "moderate",
             "species": "human",
@@ -235,7 +237,7 @@
         "surface_claim_type": "intracellular_pool",
         "expression_observations": [
           {
-            "context": "SRC levels in PSD-enriched fractions from mouse brain are reduced 38% \u00b1 5% in Posh-cKO mice versus controls; cytoplasmic/inner-leaflet localization at postsynaptic density \u2014 not extracellularly accessible.",
+            "context": "SRC levels in PSD-enriched fractions from mouse brain are reduced 38% ± 5% in Posh-cKO mice versus controls; cytoplasmic/inner-leaflet localization at postsynaptic density — not extracellularly accessible.",
             "sample_type": "ex_vivo",
             "level": "moderate",
             "species": "mouse",
@@ -303,7 +305,7 @@
     ],
     "non_surface_expression": [
       {
-        "context": "Human skin epidermis, basal and spinous keratinocytes \u2014 phospho-Src(pY419) plasma membrane-associated signal by IHC",
+        "context": "Human skin epidermis, basal and spinous keratinocytes — phospho-Src(pY419) plasma membrane-associated signal by IHC",
         "sample_type": "primary_human_tissue",
         "measurement_type": "IHC_protein",
         "level": "moderate",
@@ -312,7 +314,7 @@
         ]
       },
       {
-        "context": "Mouse brain postsynaptic density-enriched fractions from cortical neurons \u2014 SRC levels by subcellular fractionation Western blot",
+        "context": "Mouse brain postsynaptic density-enriched fractions from cortical neurons — SRC levels by subcellular fractionation Western blot",
         "sample_type": "ex_vivo",
         "measurement_type": "bulk_protein",
         "level": "moderate",
@@ -667,7 +669,7 @@
       }
     ],
     "biological_context_grade": "rich",
-    "grade_rationale": "All four A2 axes are well-populated across multiple independent sources. Expression is mapped in cancer cell lines, primary tumors (MPM, OSCC, NPC), skin, bone, and monocytes. Subcellular localization is pinned (inner-leaflet PM, focal adhesions, perinuclear, late endosomes). Anatomical context spans \u22656 tissue/cell types. Accessibility modulation is richly documented: cancer-specific ALE-driven outer-surface translocation (eSrc), mechano-stress redistribution in osteocytes/osteoblasts, chemical irritant activation in skin, and lipid-induced clustering in monocytes. The cancer vs. normal distinction is internally consistent, not contradictory. Picture is coherent and multi-axis.",
+    "grade_rationale": "All four A2 axes are well-populated across multiple independent sources. Expression is mapped in cancer cell lines, primary tumors (MPM, OSCC, NPC), skin, bone, and monocytes. Subcellular localization is pinned (inner-leaflet PM, focal adhesions, perinuclear, late endosomes). Anatomical context spans ≥6 tissue/cell types. Accessibility modulation is richly documented: cancer-specific ALE-driven outer-surface translocation (eSrc), mechano-stress redistribution in osteocytes/osteoblasts, chemical irritant activation in skin, and lipid-induced clustering in monocytes. The cancer vs. normal distinction is internally consistent, not contradictory. Picture is coherent and multi-axis.",
     "grade_cited_evidence_ids": [
       "a2_evi_01",
       "a2_evi_02",
@@ -1187,9 +1189,9 @@
       "afdb_version": "v6",
       "ecd_mean_plddt": 83.44,
       "ecd_disordered_fraction": 0.194,
-      "source": "AlphaFold DB (whole-protein pLDDT \u2014 no ECD residues in topology)",
+      "source": "AlphaFold DB (whole-protein pLDDT — no ECD residues in topology)",
       "license": "CC BY 4.0",
-      "attribution": "\u00a9 DeepMind / EMBL-EBI",
+      "attribution": "© DeepMind / EMBL-EBI",
       "citations": [
         "10.1038/s41586-021-03819-2",
         "10.1093/nar/gkad1011"
@@ -1212,7 +1214,7 @@
       "pdbs": [],
       "representative_structure": null,
       "source": "SURFACE-Bind v1 (Balbi 2026 PNAS)",
-      "attribution": "\u00a9 Balbi et al., Correia lab \u2014 EPFL / Inria / Novo Nordisk",
+      "attribution": "© Balbi et al., Correia lab — EPFL / Inria / Novo Nordisk",
       "citation": "10.1073/pnas.2506269123"
     },
     "homo_oligomerization": {
@@ -1232,7 +1234,7 @@
       "surface_expression_dependency": "none",
       "partners": [],
       "evidence_basis": "trafficking",
-      "rationale": "SRC is a cytoplasmic-face, N-myristoylated kinase that traffics to the inner leaflet of the plasma membrane independently via lipid modification, with no obligate escort or co-receptor required for membrane association (a1_evi_03, a1_evi_04, a2_evi_04). In cancer, ALE-mediated topological inversion places eSrc on the outer surface autonomously (a1_evi_01, a2_evi_01) \u2014 still no partner required for surface delivery.",
+      "rationale": "SRC is a cytoplasmic-face, N-myristoylated kinase that traffics to the inner leaflet of the plasma membrane independently via lipid modification, with no obligate escort or co-receptor required for membrane association (a1_evi_03, a1_evi_04, a2_evi_04). In cancer, ALE-mediated topological inversion places eSrc on the outer surface autonomously (a1_evi_01, a2_evi_01) — still no partner required for surface delivery.",
       "cited_evidence_ids": [
         "a1_evi_03",
         "a1_evi_04",
@@ -1264,7 +1266,7 @@
       "domain": "other",
       "severity": "moderate",
       "evidence_strength": "moderate",
-      "rationale": "Under normal conditions SRC is confined to the cytoplasmic face (inner leaflet) of the plasma membrane and focal adhesions \u2014 not the outer surface accessible to circulating binders (a2_evi_04, a2_evi_06). Cancer-specific ALE exocytosis is required to expose eSrc on the outer surface (a1_evi_01, a2_evi_01, a2_evi_03); this outer-surface form is absent in normal cells, restricting antibody-accessible SRC to cancer tissue.",
+      "rationale": "Under normal conditions SRC is confined to the cytoplasmic face (inner leaflet) of the plasma membrane and focal adhesions — not the outer surface accessible to circulating binders (a2_evi_04, a2_evi_06). Cancer-specific ALE exocytosis is required to expose eSrc on the outer surface (a1_evi_01, a2_evi_01, a2_evi_03); this outer-surface form is absent in normal cells, restricting antibody-accessible SRC to cancer tissue.",
       "cited_evidence_ids": [
         "a2_evi_04",
         "a2_evi_06",
@@ -1536,7 +1538,7 @@
           },
           "section": "introduction",
           "figure_or_table_id": null,
-          "quote": "To block the membrane clustering of key myristoylated innate sensors and kinases such as Src that may initiate and sustain low-grade inflammation, we tested the effects of fumagillin, a well-characterized myristoylation inhibitor originally developed as an antimicrobial agent against microsporidia and Nosema infections. 20\u201323 In addition, we tested the effects of Docosahexaenoic acid (DHA), a long-chain omega-3 polyunsaturated fatty acid with known beneficial effec\u2026",
+          "quote": "To block the membrane clustering of key myristoylated innate sensors and kinases such as Src that may initiate and sustain low-grade inflammation, we tested the effects of fumagillin, a well-characterized myristoylation inhibitor originally developed as an antimicrobial agent against microsporidia and Nosema infections. 20–23 In addition, we tested the effects of Docosahexaenoic acid (DHA), a long-chain omega-3 polyunsaturated fatty acid with known beneficial effec…",
           "quote_sha256": "d67f0c05e1f19136fb38444a6d230528c5b19de526033f181a6dc12ab0b6a9df",
           "char_offset": 0,
           "normalized_source_sha256": "7d6f176c5a0d42c29d893b6a0de36d85523845ae03ab62fe957d918289b14957"
@@ -1695,7 +1697,7 @@
           },
           "section": "results",
           "figure_or_table_id": null,
-          "quote": "Subcellular fractionation revealed a 38% \u00b1 5% reduction in SRC levels in PSD-enriched fractions from Posh -cKO mice, whereas minimal effects were observed in total homogenate lysates ( Figure 1 C).",
+          "quote": "Subcellular fractionation revealed a 38% ± 5% reduction in SRC levels in PSD-enriched fractions from Posh -cKO mice, whereas minimal effects were observed in total homogenate lysates ( Figure 1 C).",
           "quote_sha256": "7c8960f660ed5a44247455c39928b26b16c7254fb76755008702e66d057668ac",
           "char_offset": 542,
           "normalized_source_sha256": "023097f2d14605feb846b9da88ee9be8a56bb97974885ce29d0e54122fcfc4da"
@@ -1924,7 +1926,7 @@
           },
           "section": "methods",
           "figure_or_table_id": null,
-          "quote": "EZ-Link Sulfo-NHS\u2013Biotin was purchased from Thermo Fisher Scientific (21217).",
+          "quote": "EZ-Link Sulfo-NHS–Biotin was purchased from Thermo Fisher Scientific (21217).",
           "quote_sha256": "8501770da671dbf8dc24c393a496c6b48b90a5186a74802bf23d1995d547a711",
           "char_offset": 684,
           "normalized_source_sha256": "ded7b74880a00c2b9787b7c59cf0fef92890269ce59a47760509c66095997464"
@@ -2030,7 +2032,7 @@
           },
           "section": "methods",
           "figure_or_table_id": null,
-          "quote": "In this study, the following antibodies were used: mouse anti\u2013PAR1 WEDE (Beckman Coulter, #IM2584), anti-Cav1 (CST, #3267S and BD, #610060), anti-Cav1 Y14 phospho antibody (CST, #3251), anti-\u03b2arr2 (Abcam, #ab54790), GAPDH (GeneTex, #GT239), c-Src Y416 (CST, #2101), anti-c-Src (CST, #2109), GRK5 (Santa Cruz, #sc-518005), GRK5 polyclonal antibody (Invitrogen, #PA5-96262) anti-GRK4-6 (Millipore, #05-466), anti-HA (CST, #3724S), anti-rabbit IgG (CST, #2729), anti-\u03b2-Tubulin (CST, #86298), anti\u2013early endosome antigen-1 (BD Biosciences, #610457), anti-Vinculin (Sigma, #V9131)",
+          "quote": "In this study, the following antibodies were used: mouse anti–PAR1 WEDE (Beckman Coulter, #IM2584), anti-Cav1 (CST, #3267S and BD, #610060), anti-Cav1 Y14 phospho antibody (CST, #3251), anti-βarr2 (Abcam, #ab54790), GAPDH (GeneTex, #GT239), c-Src Y416 (CST, #2101), anti-c-Src (CST, #2109), GRK5 (Santa Cruz, #sc-518005), GRK5 polyclonal antibody (Invitrogen, #PA5-96262) anti-GRK4-6 (Millipore, #05-466), anti-HA (CST, #3724S), anti-rabbit IgG (CST, #2729), anti-β-Tubulin (CST, #86298), anti–early endosome antigen-1 (BD Biosciences, #610457), anti-Vinculin (Sigma, #V9131)",
           "quote_sha256": "cf0b40fc9be71de7d7c485369df9117ddd18eda6f8adbd657dd350dea8abc039",
           "char_offset": 0,
           "normalized_source_sha256": "45ec363a77d6d4ada71553cd5e438ecd30f6ea3cd5953b9f5f9a07fff39839f9"
@@ -2096,7 +2098,7 @@
     },
     {
       "evidence_id": "a2_evi_01",
-      "claim": "SRC undergoes noncanonical surface translocation onto the outer cell surface in cancer cells, mediated by autophagolysosomal exocytosis (ALE). This inverted 'eSrc' form exposes the N-myristoylated protein on the extracellular face \u2014 a cancer-specific accessibility modulation absent in normal cells. Baseline: normal cells show inner-leaflet SRC only. Modulating state: cancer overexpression + ALE pathway. Change: SRC appears on outer plasma membrane surface. Implication: extracellular Src is targetable by antibody therapeutics in cancer contexts.",
+      "claim": "SRC undergoes noncanonical surface translocation onto the outer cell surface in cancer cells, mediated by autophagolysosomal exocytosis (ALE). This inverted 'eSrc' form exposes the N-myristoylated protein on the extracellular face — a cancer-specific accessibility modulation absent in normal cells. Baseline: normal cells show inner-leaflet SRC only. Modulating state: cancer overexpression + ALE pathway. Change: SRC appears on outer plasma membrane surface. Implication: extracellular Src is targetable by antibody therapeutics in cancer contexts.",
       "claim_type": "surface_expression",
       "direction": "supports",
       "evidence_type": "functional_assay",
@@ -2255,7 +2257,7 @@
     },
     {
       "evidence_id": "a2_evi_04",
-      "claim": "c-Src is a non-palmitoylated SFK that rapidly exchanges between the plasma membrane (cytoplasmic face) and intracellular late endosomes/lysosomes via cytosolic release. Unlike palmitoylated Lyn which traffics via Golgi exocytosis, c-Src cycles between PM and late endosomal/lysosomal compartments. Under normal (non-cancer) conditions, c-Src is restricted to the inner leaflet of the plasma membrane and intracellular organelles \u2014 it is NOT on the outer cell surface.",
+      "claim": "c-Src is a non-palmitoylated SFK that rapidly exchanges between the plasma membrane (cytoplasmic face) and intracellular late endosomes/lysosomes via cytosolic release. Unlike palmitoylated Lyn which traffics via Golgi exocytosis, c-Src cycles between PM and late endosomal/lysosomal compartments. Under normal (non-cancer) conditions, c-Src is restricted to the inner leaflet of the plasma membrane and intracellular organelles — it is NOT on the outer cell surface.",
       "claim_type": "surface_expression",
       "direction": "refutes",
       "evidence_type": "immunofluorescence",
@@ -2361,7 +2363,7 @@
     },
     {
       "evidence_id": "a2_evi_06",
-      "claim": "The majority of activated Src molecules localize at focal adhesions (cytoplasmic face). Src is activated at the cell membrane (inner leaflet) and translocates to focal adhesions. Myristoylation is required for cell membrane targeting, which is essential for focal adhesion recruitment. This confirms SRC localization at the cytoplasmic face of the plasma membrane and focal adhesions \u2014 not at the extracellular surface under normal conditions.",
+      "claim": "The majority of activated Src molecules localize at focal adhesions (cytoplasmic face). Src is activated at the cell membrane (inner leaflet) and translocates to focal adhesions. Myristoylation is required for cell membrane targeting, which is essential for focal adhesion recruitment. This confirms SRC localization at the cytoplasmic face of the plasma membrane and focal adhesions — not at the extracellular surface under normal conditions.",
       "claim_type": "surface_expression",
       "direction": "refutes",
       "evidence_type": "immunofluorescence",
@@ -2560,7 +2562,7 @@
           },
           "section": "results",
           "figure_or_table_id": null,
-          "quote": "Phosphokinase array analysis of HSE protein extracts showed a dramatic and significant increased abundance of phospho\u2010c\u2010Src Y419 when the known skin irritant, lactic acid (LA), was topically applied to HSE for 15 minutes, in comparison to the non\u2010irritants methylparaben (MP) and cocamide diethanolamine (Co\u2010DEA), or water applied as carrier control (Figure 1 ).",
+          "quote": "Phosphokinase array analysis of HSE protein extracts showed a dramatic and significant increased abundance of phospho‐c‐Src Y419 when the known skin irritant, lactic acid (LA), was topically applied to HSE for 15 minutes, in comparison to the non‐irritants methylparaben (MP) and cocamide diethanolamine (Co‐DEA), or water applied as carrier control (Figure 1 ).",
           "quote_sha256": "b9991cd5d5d56bd547792720288fc5488ec681818a6706b2dda3f309fc8207e3",
           "char_offset": 181,
           "normalized_source_sha256": "6084d4c4adc974fe028c65f476ba9a745f9d56f1a1e61f78b1657ed6a1cf7d6d"
@@ -2732,7 +2734,7 @@
     },
     {
       "evidence_id": "a2_evi_13",
-      "claim": "Mechanical stimulation by fluid flow induces apparent accumulation of Src-Pyk2 protein complexes in the peri-nuclear/nuclear region in osteocytes, consistent with mechanosome behavior. This represents stress-induced redistribution of Src from focal adhesions toward the nucleus \u2014 a cell-state-induced subcellular relocalization away from the plasma membrane in osteocytes.",
+      "claim": "Mechanical stimulation by fluid flow induces apparent accumulation of Src-Pyk2 protein complexes in the peri-nuclear/nuclear region in osteocytes, consistent with mechanosome behavior. This represents stress-induced redistribution of Src from focal adhesions toward the nucleus — a cell-state-induced subcellular relocalization away from the plasma membrane in osteocytes.",
       "claim_type": "surface_expression",
       "direction": "refutes",
       "evidence_type": "immunofluorescence",
@@ -3451,7 +3453,7 @@
       "mode": "topic_search",
       "query": {
         "agent_focus": "a1",
-        "intent": "standing: state-conditional surface biology (activation / stress / disease / EMT / senescence / differentiation) \u2014 feeds accessibility_modulation",
+        "intent": "standing: state-conditional surface biology (activation / stress / disease / EMT / senescence / differentiation) — feeds accessibility_modulation",
         "anchors": [
           "cell_state_modulation"
         ]
@@ -3684,7 +3686,7 @@
       "mode": "topic_search",
       "query": {
         "agent_focus": "a2",
-        "intent": "standing: state-conditional surface biology (activation / stress / disease / EMT / senescence / differentiation) \u2014 feeds accessibility_modulation",
+        "intent": "standing: state-conditional surface biology (activation / stress / disease / EMT / senescence / differentiation) — feeds accessibility_modulation",
         "anchors": [
           "cell_state_modulation"
         ]
@@ -3699,7 +3701,7 @@
   "primary_evidence_count": 19,
   "secondary_evidence_count": 17,
   "confidence": "low",
-  "confidence_reasoning": "Confidence is low for two compounding reasons. First, the only direct evidence for outer-surface SRC accessibility comes from a single research paper (PMID:41818370) reporting the ALE-mediated topological inversion mechanism; no independent group has yet replicated this finding with a different methodology or in a different cancer model. Second, the canonical literature \u2014 spanning decades of independent biochemical, imaging, and pharmacological work \u2014 firmly establishes SRC as an inner-leaflet peripheral kinase with no extracellular domain, constituting a high-severity contradicting baseline. Lifting confidence to moderate would require at least one independent group to confirm eSrc outer-surface exposure (e.g., via non-permeabilized flow cytometry or surface biotinylation specifically detecting SRC) in additional cancer types, ideally without reliance on the same functional antibody-killing readout used in the original report.",
+  "confidence_reasoning": "Confidence is low for two compounding reasons. First, the only direct evidence for outer-surface SRC accessibility comes from a single research paper (PMID:41818370) reporting the ALE-mediated topological inversion mechanism; no independent group has yet replicated this finding with a different methodology or in a different cancer model. Second, the canonical literature — spanning decades of independent biochemical, imaging, and pharmacological work — firmly establishes SRC as an inner-leaflet peripheral kinase with no extracellular domain, constituting a high-severity contradicting baseline. Lifting confidence to moderate would require at least one independent group to confirm eSrc outer-surface exposure (e.g., via non-permeabilized flow cytometry or surface biotinylation specifically detecting SRC) in additional cancer types, ideally without reliance on the same functional antibody-killing readout used in the original report.",
   "model_path": "claude-sonnet-4-6",
   "record_generated_at": "2026-06-09T01:43:58.622412Z",
   "prompt_corpus_version": "2.50.1"

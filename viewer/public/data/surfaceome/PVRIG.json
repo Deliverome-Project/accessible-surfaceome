@@ -72,7 +72,9 @@
     "surface_specificity_rationale": "Live-cell flow confirms surface PVRIG on NK and T cells (a1_evi_10, a1_evi_17), but permeabilized staining shows cytoplasmic pool exceeds surface pool especially on CD56bright NK cells (a1_evi_18, a2_evi_26); constitutive ER/Golgi trafficking maintains the surface fraction (a1_evi_19).",
     "has_known_ligand_rationale": "PVRIG binds PVRL2 (Nectin-2/CD112) as its validated endogenous ligand; the 2.2 Å crystal structure of the PVRIG ECD–Nectin-2 complex defines the binding interface (a1_evi_21, a1_evi_22).",
     "low_endogenous_expression_rationale": "High expression on NK and CD8+ T cell subsets in peripheral blood and tumor-infiltrating contexts (a1_evi_10, a1_evi_15, a2_evi_06); low-to-moderate on CD4+ T cells and Tregs (a2_evi_06, a2_evi_04); absent on B cells, monocytes, neutrophils (a2_evi_03).",
-    "overexpression_surface_localization_observed_rationale": "1 method observation(s) pair an overexpression/mixed expression system with a surface-localization readout (cites a1_evi_01, a1_evi_03)."
+    "overexpression_surface_localization_observed_rationale": "1 method observation(s) pair an overexpression/mixed expression system with a surface-localization readout (cites a1_evi_01, a1_evi_03).",
+    "n_papers_selected": 19,
+    "n_papers_found": null
   },
   "surface_evidence": {
     "evidence_grade": "direct_multi_method",

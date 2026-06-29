@@ -895,6 +895,25 @@ const DDF_KEYS = [
   "llm_family",
   "evidence_grade",
   "evidence_density",
+  // schema 2.14.0 — unique-paper count behind the evidence list
+  // (= length of the distinct span.source.source_id set across the
+  // evidence rows). The filterable understudied-vs-well-studied
+  // signal; populated on records annotated under schema 2.14+ or
+  // backfilled via scripts/backfill_n_papers_selected.py. Banded
+  // into low/moderate/high below in handleCatalog using cohort
+  // percentile cutoffs (so the band auto-adjusts as the cohort
+  // grows).
+  "n_papers_selected",
+  // schema 2.14.0 — TRUE pre-trim discovery corpus size sourced from
+  // dual.a{1,2}.n_papers_discovered (= len of cumulative_discovered
+  // in the plan_trim_select runner, which is the EuropePMC +
+  // PubTator NER + gene2pubmed union before any clip selection).
+  // Display-only on the viewer; gives readers context for whether a
+  // low-n_papers_selected value reflects an understudied gene or
+  // aggressive agent filtering. Null on records annotated before
+  // the field existed; honest backfill requires a discover-only
+  // rerun (no LLM, around 30 seconds per gene).
+  "n_papers_found",
   "ecd_accessibility_class",
   "expression_level",
   "expression_breadth",
@@ -1368,6 +1387,45 @@ async function handleCatalog(env, request) {
     rows.push(row);
   }
 
+  // n_papers_selected band-baking — single forward pass over the catalog
+  // collects the populated values (deep-dive rows only); cohort
+  // percentile cutoffs p10 / p90 are computed once and attached as
+  // ddf.n_papers_selected_band (low / moderate / high) on each
+  // ddf-bearing row. Bands are mutually exclusive (low at-or-below p10,
+  // moderate p10–p90, high at-or-above p90), matching the viewer's
+  // filter UI. Cutoffs travel with the response so the viewer can
+  // render the tooltip with concrete numbers (e.g. low at-or-below 8
+  // papers · high at-or-above 47 papers). When fewer than 3 records
+  // carry the value the bands are skipped entirely — percentile
+  // estimates aren't meaningful yet, and the viewer falls back to
+  // showing only the "any" pill.
+  const psValues = [];
+  for (const r of rows) {
+    const v = r.ddf?.n_papers_selected;
+    if (typeof v === "number" && v >= 0) psValues.push(v);
+  }
+  let psCutoffs = null;
+  if (psValues.length >= 3) {
+    psValues.sort((a, b) => a - b);
+    const at = (q) => {
+      // Linear-interpolation percentile (R-7 / NumPy default).
+      const idx = (psValues.length - 1) * q;
+      const lo = Math.floor(idx);
+      const hi = Math.ceil(idx);
+      if (lo === hi) return psValues[lo];
+      return psValues[lo] + (psValues[hi] - psValues[lo]) * (idx - lo);
+    };
+    psCutoffs = { p10: Math.round(at(0.1)), p90: Math.round(at(0.9)), n: psValues.length };
+    for (const r of rows) {
+      const v = r.ddf?.n_papers_selected;
+      if (typeof v !== "number") continue;
+      r.ddf.n_papers_selected_band =
+        v <= psCutoffs.p10 ? "low"
+        : v >= psCutoffs.p90 ? "high"
+        : "moderate";
+    }
+  }
+
   // Stable sort: deep-dive first, then DB-vote desc, then symbol asc.
   // (deep_dive is now optional — undefined sorts AFTER true.)
   rows.sort((a, b) => {
@@ -1396,7 +1454,15 @@ async function handleCatalog(env, request) {
       //        record_json parsed. Carries the catalog-filterable
       //        subset of SurfaceomeRecord.filters; see
       //        projectDeepDiveFilters() above.
-      row_schema: 5,
+      //   v6 = adds `ddf.n_papers_selected`, `ddf.n_papers_found`
+      //        (raw counts), `ddf.n_papers_selected_band` (the
+      //        cohort-percentile-banded value the filter UI keys off,
+      //        when ≥3 records carry the count); the cutoffs that
+      //        produced the bands travel as the top-level
+      //        `n_papers_selected_cutoffs` field so the viewer can
+      //        display them in the filter tooltip.
+      row_schema: 6,
+      n_papers_selected_cutoffs: psCutoffs,
       // Names for the bits in each row's `db` 5-bit field (LSB → MSB).
       // Self-describing for external reanalysts: decode with
       //   const flags = db_keys.map((_, i) => (row.db >> i) & 1);

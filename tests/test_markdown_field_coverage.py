@@ -96,6 +96,9 @@ OMITTED: dict[str, str] = {
     "evidence_count": "shown as evidence[].length in the ledger header",
     "primary_evidence_count": "computed inline in the ledger header",
     "secondary_evidence_count": "computed inline in the ledger header",
+    # --- viewer-only filter signals (catalog-side, no markdown surface) ---
+    "n_papers_selected": "viewer filter: unique papers in evidence list; rendered as the bucketed pill on the catalog page, not in the per-gene markdown brief",
+    "n_papers_found": "viewer caption: discovery corpus size pre-selection; rendered alongside n_papers_selected on the catalog page, not in the per-gene markdown brief",
     # --- methods-builder inclusion-filter audit trail ---
     # The methods builder REJECTS receptor-engagement-as-soluble-ligand
     # claims at the inclusion stage (e.g. HMGB1 binding TREM-1 — the

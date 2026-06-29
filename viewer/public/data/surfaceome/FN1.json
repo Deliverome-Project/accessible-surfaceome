@@ -8,9 +8,9 @@
     "ensembl_gene": "ENSG00000115414"
   },
   "triage_signal": "possibly_accessible",
-  "triage_reasoning": "FN1 encodes fibronectin, which exists in two major pools: (1) a soluble plasma/secreted dimeric form circulating in blood, and (2) a cell-surface and extracellular matrix multimeric form that is wash-resistantly deposited and bound to integrins and heparan sulfate proteoglycans on the outer leaflet of the plasma membrane. The cell-surface and matrix-associated forms are genuine surface-accessible proteins targeted by antibody programs (e.g., anti-ED-B fibronectin antibodies in ADC/radioligand contexts targeting the EDB splice isoform enriched in tumor neovasculature). However, the dominant circulating form is secreted and soluble, and the surface pool is particularly prominent in tumor stroma/angiogenesis contexts, making the call contextual rather than a stable constitutive surface protein. Cell-state-induced: EDB isoform is enriched in tumors/wound healing. Tissue-restricted: not restricted to a single lineage but overexpressed in specific contexts. Lysosomal exocytosis: not relevant. Dual localization: yes\u2014secreted dominant pool plus a matrix/surface pool. Stable surface attachment: the ECM/integrin-bound fibronectin is wash-resistant, which fits stable_surface_attachment best.",
+  "triage_reasoning": "FN1 encodes fibronectin, which exists in two major pools: (1) a soluble plasma/secreted dimeric form circulating in blood, and (2) a cell-surface and extracellular matrix multimeric form that is wash-resistantly deposited and bound to integrins and heparan sulfate proteoglycans on the outer leaflet of the plasma membrane. The cell-surface and matrix-associated forms are genuine surface-accessible proteins targeted by antibody programs (e.g., anti-ED-B fibronectin antibodies in ADC/radioligand contexts targeting the EDB splice isoform enriched in tumor neovasculature). However, the dominant circulating form is secreted and soluble, and the surface pool is particularly prominent in tumor stroma/angiogenesis contexts, making the call contextual rather than a stable constitutive surface protein. Cell-state-induced: EDB isoform is enriched in tumors/wound healing. Tissue-restricted: not restricted to a single lineage but overexpressed in specific contexts. Lysosomal exocytosis: not relevant. Dual localization: yes—secreted dominant pool plus a matrix/surface pool. Stable surface attachment: the ECM/integrin-bound fibronectin is wash-resistant, which fits stable_surface_attachment best.",
   "executive_summary": {
-    "one_paragraph": "FN1/fibronectin is a large secreted ECM glycoprotein with a well-documented surface-accessible pool in disease contexts: HCC, fibrotic intestine, cardiac failure, tumor stroma, and chondrogenic differentiation all show elevated surface/ECM-deposited FN1 by mass spectrometry and IHC. The dominant plasma fibronectin pool (hepatocyte-secreted, soluble) is a genuine decoy risk. Surface accessibility is high in tumor/fibrotic/diseased states but near-absent in normal liver, making this a contextual target best suited for disease-selective ECM- or stroma-directed strategies (e.g., EDB- or EDA-isoform antibodies). ECD is large, with the RGD-containing FN10 domain confirmed in crystal structure with integrin \u03b1V\u03b23.",
+    "one_paragraph": "FN1/fibronectin is a large secreted ECM glycoprotein with a well-documented surface-accessible pool in disease contexts: HCC, fibrotic intestine, cardiac failure, tumor stroma, and chondrogenic differentiation all show elevated surface/ECM-deposited FN1 by mass spectrometry and IHC. The dominant plasma fibronectin pool (hepatocyte-secreted, soluble) is a genuine decoy risk. Surface accessibility is high in tumor/fibrotic/diseased states but near-absent in normal liver, making this a contextual target best suited for disease-selective ECM- or stroma-directed strategies (e.g., EDB- or EDA-isoform antibodies). ECD is large, with the RGD-containing FN10 domain confirmed in crystal structure with integrin αVβ3.",
     "surface_accessibility": "high",
     "evidence_grade_summary": "direct_single_method",
     "confidence": "moderate",
@@ -23,7 +23,7 @@
     ],
     "uniprot_family": null,
     "surface_call_reason": "stable_surface_attachment",
-    "accessibility_context_summary": "Surface-accessible predominantly in diseased/tumor/fibrotic states \u2014 HCC, fibrotic intestine (Crohn's), heart failure, tumor stroma \u2014 where FN1 is markedly deposited in integrin-bound ECM and cell membranes; absent from normal liver membrane.",
+    "accessibility_context_summary": "Surface-accessible predominantly in diseased/tumor/fibrotic states — HCC, fibrotic intestine (Crohn's), heart failure, tumor stroma — where FN1 is markedly deposited in integrin-bound ECM and cell membranes; absent from normal liver membrane.",
     "headline_risks": [
       "secreted_form"
     ],
@@ -70,15 +70,17 @@
     "n_supporting_claims_high_weight": 0,
     "n_contradicting_claims_high_weight": 0,
     "overexpression_surface_localization_observed": false,
-    "expression_level_rationale": "FN1 protein is highly expressed in HCC tumor tissue (membranous and sinusoidal staining in ~53\u201391.5% of tumors) (a1_evi_09, a2_evi_03), fibrotic intestine (a2_evi_07, a2_evi_08), cardiac tissue under stress (a2_evi_05), and tumor stroma broadly (a2_evi_21). Plasma fibronectin is also constitutively high in blood (a2_evi_01).",
+    "expression_level_rationale": "FN1 protein is highly expressed in HCC tumor tissue (membranous and sinusoidal staining in ~53–91.5% of tumors) (a1_evi_09, a2_evi_03), fibrotic intestine (a2_evi_07, a2_evi_08), cardiac tissue under stress (a2_evi_05), and tumor stroma broadly (a2_evi_21). Plasma fibronectin is also constitutively high in blood (a2_evi_01).",
     "expression_breadth_rationale": "FN1 is expressed across liver/blood (hepatocyte-secreted plasma form), intestinal stroma (fibrotic Crohn's), cardiac tissue, vascular tissue, tumor stroma across cancer types, and chondrogenic cells (a2_evi_01, a2_evi_07, a2_evi_04, a2_evi_11, a2_evi_21, a2_evi_19). Broad multi-tissue distribution, disease-enriched.",
     "surface_specificity_rationale": "FN1 is primarily a secreted/ECM protein; plasma fibronectin is fully soluble (a2_evi_01). In tumor cells, surface IHC shows dual membranous + cytoplasmic signal (a2_evi_16); normal liver shows no membranous FN1 (a2_evi_02). Surface-capture MS confirms ECM/surface pool in chondrogenic (a1_evi_03) and cardiac tissue (a2_evi_23). Mixed surface/secreted/intracellular split.",
-    "has_known_ligand_rationale": "FN1 binds integrins (\u03b1V\u03b23, \u03b15\u03b21 via RGD domain confirmed by crystal structure PDB:4MMX) (a1_evi_15), as well as heparan sulfate proteoglycans, collagen, and fibrin. Multiple well-validated endogenous binding partners are documented.",
-    "low_endogenous_expression_rationale": "Derived from expression_level='high' (not low/absent \u2192 not flagged). FN1 protein is highly expressed in HCC tumor tissue (membranous and sinusoidal staining in ~53\u201391.5% of tumors) (a1_evi_09, a2_evi_03), fibrotic intestine (a2_evi_07, a2_evi_08), cardiac tissue under stress (a2_evi_05), and tumor stroma broadly (a2_evi_21). Plasma fibronectin is also constitutively high in blood (a2_evi_01).",
+    "has_known_ligand_rationale": "FN1 binds integrins (αVβ3, α5β1 via RGD domain confirmed by crystal structure PDB:4MMX) (a1_evi_15), as well as heparan sulfate proteoglycans, collagen, and fibrin. Multiple well-validated endogenous binding partners are documented.",
+    "low_endogenous_expression_rationale": "Derived from expression_level='high' (not low/absent → not flagged). FN1 protein is highly expressed in HCC tumor tissue (membranous and sinusoidal staining in ~53–91.5% of tumors) (a1_evi_09, a2_evi_03), fibrotic intestine (a2_evi_07, a2_evi_08), cardiac tissue under stress (a2_evi_05), and tumor stroma broadly (a2_evi_21). Plasma fibronectin is also constitutively high in blood (a2_evi_01).",
     "overexpression_surface_localization_observed_rationale": "No method observation pairs an overexpression/mixed expression system with a direct or supportive surface-accessibility readout.",
     "tumor_associated": true,
     "induction_trigger": "oncogenic",
-    "has_live_cell_surface_evidence": true
+    "has_live_cell_surface_evidence": true,
+    "n_papers_selected": 17,
+    "n_papers_found": null
   },
   "surface_evidence": {
     "evidence_grade": "direct_single_method",
@@ -142,7 +144,7 @@
         "claim_id": "a1_evi_10",
         "stance": "tangential",
         "weight": "moderate",
-        "note": "Absence of membranous staining in normal liver IHC \u2014 state/disease-dependent variation vs tumor, not a logical contradiction"
+        "note": "Absence of membranous staining in normal liver IHC — state/disease-dependent variation vs tumor, not a logical contradiction"
       },
       {
         "claim_id": "a1_evi_11",
@@ -166,7 +168,7 @@
         "claim_id": "a1_evi_15",
         "stance": "supports_surface",
         "weight": "moderate",
-        "note": "Crystal structure of FN10-RGD domain bound to integrin \u03b1V\u03b23 ectodomain confirms extracellular domain accessibility"
+        "note": "Crystal structure of FN10-RGD domain bound to integrin αVβ3 ectodomain confirms extracellular domain accessibility"
       },
       {
         "claim_id": "a1_evi_16",
@@ -192,7 +194,7 @@
         "surface_claim_type": "surface_accessible",
         "expression_observations": [
           {
-            "context": "Human chondrogenic micromass culture (differentiating chondrogenic cells, days 1\u201315), sialoglycoprotein enrichment via aminooxy-biotin conjugation + LC-MS/MS, n=3 biological replicates",
+            "context": "Human chondrogenic micromass culture (differentiating chondrogenic cells, days 1–15), sialoglycoprotein enrichment via aminooxy-biotin conjugation + LC-MS/MS, n=3 biological replicates",
             "sample_type": "primary_human_cell",
             "level": "moderate",
             "species": "human",
@@ -378,7 +380,7 @@
     ],
     "non_surface_expression": [
       {
-        "context": "OSCC and breast cancer tumor tissue vs normal counterparts \u2014 elevated FN protein levels",
+        "context": "OSCC and breast cancer tumor tissue vs normal counterparts — elevated FN protein levels",
         "sample_type": "primary_human_tissue",
         "measurement_type": "bulk_protein",
         "level": "high",
@@ -387,7 +389,7 @@
         ]
       },
       {
-        "context": "Stromal marker profiling \u2014 FN1 detected by scRNA-seq in stromal cells",
+        "context": "Stromal marker profiling — FN1 detected by scRNA-seq in stromal cells",
         "sample_type": "unknown",
         "measurement_type": "single_cell_RNA",
         "level": "moderate",
@@ -628,7 +630,7 @@
       },
       {
         "state": "chondrogenic differentiation",
-        "descriptor": "FN1 is detected at the cell surface of embryonic chondrogenic progenitor cells by cell-surface capture mass spectrometry across key stages of chondrogenic differentiation (days 1\u201315).",
+        "descriptor": "FN1 is detected at the cell surface of embryonic chondrogenic progenitor cells by cell-surface capture mass spectrometry across key stages of chondrogenic differentiation (days 1–15).",
         "cited_evidence_ids": [
           "a2_evi_19",
           "a2_evi_20"
@@ -636,7 +638,7 @@
       },
       {
         "state": "heart failure",
-        "descriptor": "FN1 surface-accessible protein was directly profiled by \u00b5CSC mass spectrometry in failing vs. non-failing human heart tissue, establishing disease-state-dependent surface/ECM FN1 in cardiac failure.",
+        "descriptor": "FN1 surface-accessible protein was directly profiled by µCSC mass spectrometry in failing vs. non-failing human heart tissue, establishing disease-state-dependent surface/ECM FN1 in cardiac failure.",
         "cited_evidence_ids": [
           "a2_evi_23"
         ]
@@ -710,7 +712,7 @@
         ]
       },
       {
-        "context": "extracellular matrix \u2014 endothelial cells and fibroblasts (interstitial/stromal compartment)",
+        "context": "extracellular matrix — endothelial cells and fibroblasts (interstitial/stromal compartment)",
         "orientation": "matrix_facing",
         "accessibility_implication": "context_dependent",
         "rationale": "Cell-associated insoluble FN1 secreted into the ECM by endothelial cells and fibroblasts is embedded in the interstitial matrix. Systemic binders must extravasate and penetrate stromal tissue to reach it; accessibility depends on vascular permeability and tissue architecture.",
@@ -746,7 +748,7 @@
         "context": "arteriovenous fistula vascular wall (EDA-FN isoform, aneurysmal disease)",
         "orientation": "matrix_facing",
         "accessibility_implication": "context_dependent",
-        "rationale": "EDA-FN isoform is deposited in the vascular wall ECM of aneurysmal AVF. Systemic binders circulating in blood are adjacent to the luminal surface but must penetrate the vessel wall to reach the EDA-FN\u2013rich matrix; access is context-dependent on wall permeability.",
+        "rationale": "EDA-FN isoform is deposited in the vascular wall ECM of aneurysmal AVF. Systemic binders circulating in blood are adjacent to the luminal surface but must penetrate the vessel wall to reach the EDA-FN–rich matrix; access is context-dependent on wall permeability.",
         "cited_evidence_ids": [
           "a2_evi_11",
           "a2_evi_12",
@@ -758,7 +760,7 @@
         "context": "failing human heart tissue (surface-accessible cardiac ECM)",
         "orientation": "matrix_facing",
         "accessibility_implication": "context_dependent",
-        "rationale": "\u00b5CSC mass spectrometry directly detected surface-accessible FN1 in cardiac tissue. Myocardial ECM FN1 is reachable only after extravasation from coronary vasculature; accessibility depends on capillary permeability and degree of fibrotic remodeling in heart failure.",
+        "rationale": "µCSC mass spectrometry directly detected surface-accessible FN1 in cardiac tissue. Myocardial ECM FN1 is reachable only after extravasation from coronary vasculature; accessibility depends on capillary permeability and degree of fibrotic remodeling in heart failure.",
         "cited_evidence_ids": [
           "a2_evi_23",
           "a2_evi_04",
@@ -793,7 +795,7 @@
         "dual_loc_partner_compartment": null,
         "baseline_context": "Human left ventricular myocardium from traumatic (non-hypoxic) controls",
         "modulating_state": "Human left ventricular myocardium from asphyxial (hypoxic) deaths",
-        "change": "FN1-positive cardiomyocyte fraction increases significantly under hypoxic/asphyxial stress (mean 11.7\u00b13.6% overall; up to 46% in smothering/strangulation) compared to lower baseline in traumatic controls.",
+        "change": "FN1-positive cardiomyocyte fraction increases significantly under hypoxic/asphyxial stress (mean 11.7±3.6% overall; up to 46% in smothering/strangulation) compared to lower baseline in traumatic controls.",
         "accessibility_implication": "Hypoxia-driven upregulation of FN1 deposition in cardiomyocytes increases extracellular/surface-accessible FN1 in ischemic cardiac tissue, creating a stress-dependent accessible pool for binders targeting the myocardium.",
         "species": "human",
         "species_inferred": false,
@@ -865,7 +867,7 @@
         "restricted_lineage": null,
         "dual_loc_partner_compartment": null,
         "baseline_context": "Undifferentiated embryonic limb bud mesenchymal progenitor cells",
-        "modulating_state": "Chondrogenic cells at key differentiation stages (days 1\u201315 of chondrogenic differentiation)",
+        "modulating_state": "Chondrogenic cells at key differentiation stages (days 1–15 of chondrogenic differentiation)",
         "change": "FN1 is detected as a key surfaceome protein on the cell surface of embryonic chick limb bud chondrogenic cells during differentiation, as captured by cell-surface capture mass spectrometry on live, unpermeabilized cells.",
         "accessibility_implication": "FN1 surface accessibility is gated by chondrogenic differentiation stage; binders would find FN1 accessible on the surface of differentiating chondrogenic cells during specific developmental windows.",
         "species": "other",
@@ -883,7 +885,7 @@
         "dual_loc_partner_compartment": null,
         "baseline_context": "Non-failing human heart tissue",
         "modulating_state": "Failing human heart tissue",
-        "change": "Surface-accessible FN1 protein was directly profiled by cell-surface capture (\u00b5CSC) mass spectrometry in failing versus non-failing human cardiac tissue, establishing that the extracellular/surface-accessible FN1 pool is measurably present and differs between these disease states.",
+        "change": "Surface-accessible FN1 protein was directly profiled by cell-surface capture (µCSC) mass spectrometry in failing versus non-failing human cardiac tissue, establishing that the extracellular/surface-accessible FN1 pool is measurably present and differs between these disease states.",
         "accessibility_implication": "The surface-accessible FN1 pool in failing heart is directly quantifiable and distinct from non-failing heart, suggesting that heart failure creates a disease-state-specific surface accessibility profile for FN1-directed cardiac targeting.",
         "species": "human",
         "species_inferred": false,
@@ -1498,7 +1500,7 @@
       "ecd_disordered_fraction": 0.38514891880864954,
       "source": "AlphaFold DB (ECD-restricted pLDDT, n=2451)",
       "license": "CC BY 4.0",
-      "attribution": "\u00a9 DeepMind / EMBL-EBI",
+      "attribution": "© DeepMind / EMBL-EBI",
       "citations": [
         "10.1038/s41586-021-03819-2",
         "10.1093/nar/gkad1011"
@@ -1517,7 +1519,7 @@
       "protein_name": null,
       "pdbs": [],
       "source": "SURFACE-Bind v1 (Balbi et al. 2026 PNAS)",
-      "attribution": "\u00a9 Balbi et al., Correia lab \u2014 EPFL / Inria / Novo Nordisk",
+      "attribution": "© Balbi et al., Correia lab — EPFL / Inria / Novo Nordisk",
       "citation": "10.1073/pnas.2506269123"
     }
   },
@@ -1580,7 +1582,7 @@
       ],
       "severity": "moderate",
       "evidence_strength": "inferred",
-      "rationale": "FN1 is an extensively glycosylated ECM glycoprotein, and its RGD-containing cell-binding domain is occupied by integrin \u03b1V\u03b23 when surface-bound (PDB:4MMX). Glycan masking of epitopes and integrin-occupancy of the RGD site are expected but not directly measured as antibody-blocking events in this ledger. Moderate severity is inferred from ECM glycoprotein biology.",
+      "rationale": "FN1 is an extensively glycosylated ECM glycoprotein, and its RGD-containing cell-binding domain is occupied by integrin αVβ3 when surface-bound (PDB:4MMX). Glycan masking of epitopes and integrin-occupancy of the RGD site are expected but not directly measured as antibody-blocking events in this ledger. Moderate severity is inferred from ECM glycoprotein biology.",
       "cited_evidence_ids": [
         "a1_evi_15",
         "a1_evi_12"
@@ -1590,7 +1592,7 @@
   "evidence": [
     {
       "evidence_id": "a1_evi_01",
-      "claim": "FN1/fibronectin exists in two major pools: a soluble form found in liver and blood (secreted by hepatocytes), and an insoluble secreted form deposited by endothelial cells and fibroblasts into the extracellular matrix. This dual nature \u2014 dominant circulating soluble form plus a cell-surface/ECM-associated insoluble form \u2014 is the central shed/secreted-form caveat for FN1 surface accessibility. The soluble plasma form is shed/secreted and not cell-surface-anchored, while the ECM-deposited insoluble form is matrix-associated and surface-accessible. Downstream risk builder should populate risks.secreted_form / risks.shed_form noting the dominant circulating pool is soluble.",
+      "claim": "FN1/fibronectin exists in two major pools: a soluble form found in liver and blood (secreted by hepatocytes), and an insoluble secreted form deposited by endothelial cells and fibroblasts into the extracellular matrix. This dual nature — dominant circulating soluble form plus a cell-surface/ECM-associated insoluble form — is the central shed/secreted-form caveat for FN1 surface accessibility. The soluble plasma form is shed/secreted and not cell-surface-anchored, while the ECM-deposited insoluble form is matrix-associated and surface-accessible. Downstream risk builder should populate risks.secreted_form / risks.shed_form noting the dominant circulating pool is soluble.",
       "claim_type": "surface_expression",
       "direction": "ambiguous",
       "evidence_type": "review_assertion",
@@ -1674,7 +1676,7 @@
           },
           "section": "discussion",
           "figure_or_table_id": null,
-          "quote": "Several surface\u2010associated proteins have been documented to dictate EV function; whereas EV surface ANXA1 promotes microcalcification (Rogers et al., 2020 ), FN1 facilitates cellular migration through tissues (Sung et al., 2015 ), TGFB1 triggers fibroblast differentiation (Ringuette Goulet et al., 2018 ) and MIF establishes pre\u2010metastatic niche in the liver (Costa\u2010Silva et al., 2015 ).",
+          "quote": "Several surface‐associated proteins have been documented to dictate EV function; whereas EV surface ANXA1 promotes microcalcification (Rogers et al., 2020 ), FN1 facilitates cellular migration through tissues (Sung et al., 2015 ), TGFB1 triggers fibroblast differentiation (Ringuette Goulet et al., 2018 ) and MIF establishes pre‐metastatic niche in the liver (Costa‐Silva et al., 2015 ).",
           "quote_sha256": "e0b6c415b15ec0b2f7747897fc1572a1e7337836b769dbe9eb213c87c28e226d",
           "char_offset": 0,
           "normalized_source_sha256": "e09e06e3183d612c941b5a47d50e530b89a8b9b868c44324d26d8556a9b13c6d"
@@ -1793,7 +1795,7 @@
     },
     {
       "evidence_id": "a1_evi_05",
-      "claim": "Cell surface protein capture from live cells was performed (method described with modifications from prior protocols). This is a methodological description of a live-cell surface-capture assay \u2014 relevant to surface accessibility measurement of proteins including FN1.",
+      "claim": "Cell surface protein capture from live cells was performed (method described with modifications from prior protocols). This is a methodological description of a live-cell surface-capture assay — relevant to surface accessibility measurement of proteins including FN1.",
       "claim_type": "methodological",
       "direction": "supports",
       "evidence_type": "surface_biotinylation",
@@ -1837,7 +1839,7 @@
     },
     {
       "evidence_id": "a1_evi_06",
-      "claim": "Surface biotinylation protocol detail: cells washed with ice-cold PBS (pH 8.0), incubated with 0.5 mg/mL sulfo-NHS-SS-biotin (Thermo Fisher Scientific) in PBS (pH 8.0) for 1 hour at 4\u00b0C under gentle agitation. Sulfo-NHS-SS reagent is membrane-impermeant, labeling only extracellular lysines of surface-accessible proteins. This is the paired methodological description for a surface biotinylation assay with cleavable crosslinker.",
+      "claim": "Surface biotinylation protocol detail: cells washed with ice-cold PBS (pH 8.0), incubated with 0.5 mg/mL sulfo-NHS-SS-biotin (Thermo Fisher Scientific) in PBS (pH 8.0) for 1 hour at 4°C under gentle agitation. Sulfo-NHS-SS reagent is membrane-impermeant, labeling only extracellular lysines of surface-accessible proteins. This is the paired methodological description for a surface biotinylation assay with cleavable crosslinker.",
       "claim_type": "methodological",
       "direction": "supports",
       "evidence_type": "surface_biotinylation",
@@ -1868,7 +1870,7 @@
           },
           "section": "methods",
           "figure_or_table_id": null,
-          "quote": "Cells were washed twice with ice-cold PBS (pH 8.0) and incubated with 0.5 mg/mL sulfo-NHS-SS-biotin (Thermo Fisher Scientific) in PBS (pH 8.0) for 1 hour at 4\u00b0C under gentle agitation.",
+          "quote": "Cells were washed twice with ice-cold PBS (pH 8.0) and incubated with 0.5 mg/mL sulfo-NHS-SS-biotin (Thermo Fisher Scientific) in PBS (pH 8.0) for 1 hour at 4°C under gentle agitation.",
           "quote_sha256": "37d6965c3bc0d944d9bfe2159015c26cbe188ef738a14df89ffe1c186739c9ac",
           "char_offset": 0,
           "normalized_source_sha256": "0174672ff9fe6fe6628be04993a1568a71b4f31a4d025d20cfaa19b2326f9293"
@@ -1912,7 +1914,7 @@
           },
           "section": "methods",
           "figure_or_table_id": null,
-          "quote": "Briefly, surface biotinylated and avidin-bound proteins or total protein extracts were incubated with a denaturing buffer (0.5% SDS and 0.4 M DTT) in a total reaction volume of 20 \u03bcL and incubated at 37\u00b0C for 10 minutes.",
+          "quote": "Briefly, surface biotinylated and avidin-bound proteins or total protein extracts were incubated with a denaturing buffer (0.5% SDS and 0.4 M DTT) in a total reaction volume of 20 μL and incubated at 37°C for 10 minutes.",
           "quote_sha256": "2b0babccf9607e2838bec21bf46195fc58b826cd08a1fa28e90d5c10b491b921",
           "char_offset": 185,
           "normalized_source_sha256": "0174672ff9fe6fe6628be04993a1568a71b4f31a4d025d20cfaa19b2326f9293"
@@ -1925,7 +1927,7 @@
     },
     {
       "evidence_id": "a1_evi_08",
-      "claim": "Two orthogonal surface-proteomics methodologies \u2014 trypsin shaving and surface biotinylation \u2014 were applied and showed 72% overlap (116/160 proteins), cross-validating surface accessibility identifications. This methodological observation supports the validity of combined surface-capture approaches for proteins like FN1 identified in surfaceome datasets.",
+      "claim": "Two orthogonal surface-proteomics methodologies — trypsin shaving and surface biotinylation — were applied and showed 72% overlap (116/160 proteins), cross-validating surface accessibility identifications. This methodological observation supports the validity of combined surface-capture approaches for proteins like FN1 identified in surfaceome datasets.",
       "claim_type": "methodological",
       "direction": "supports",
       "evidence_type": "surface_biotinylation",
@@ -2115,7 +2117,7 @@
           },
           "section": "methods",
           "figure_or_table_id": null,
-          "quote": "flow cytometry, scRNA-seq, mRNA sequencing [ 9 ] Transmembrane receptor PDGFR\u03b1/\u03b2 Platelet-derived growth factor receptor IHC, flow cytometry, scRNA-seq [ 14 ] ECM glycoprotein Fibronectin 1(FN1) Fibronectin IHC, scRNA-seq [ 9 ] SPARC Secreted protein, acidic and rich in cysteine scRNA-seq, mRNA sequencing [ 27 ] THBS2 Platelet-derived growth factor receptor 2 mRNA sequencing [ 27 ] Cytoskeletal protein \u03b1-SMA \u03b1-smooth muscle actin IHC [ 9 ] Vimentin (VIM) Type III intermediate filament protein Immunofluorescence",
+          "quote": "flow cytometry, scRNA-seq, mRNA sequencing [ 9 ] Transmembrane receptor PDGFRα/β Platelet-derived growth factor receptor IHC, flow cytometry, scRNA-seq [ 14 ] ECM glycoprotein Fibronectin 1(FN1) Fibronectin IHC, scRNA-seq [ 9 ] SPARC Secreted protein, acidic and rich in cysteine scRNA-seq, mRNA sequencing [ 27 ] THBS2 Platelet-derived growth factor receptor 2 mRNA sequencing [ 27 ] Cytoskeletal protein α-SMA α-smooth muscle actin IHC [ 9 ] Vimentin (VIM) Type III intermediate filament protein Immunofluorescence",
           "quote_sha256": "bc44bee5a0427cd02c50bf27436ff2e64a1b37cda709bf55b3bbb86074cd4a1d",
           "char_offset": 0,
           "normalized_source_sha256": "8a4b9ef2496941a08114483338c3fbb935766113adf3fafea193a5ebe60cfbc5"
@@ -2128,7 +2130,7 @@
     },
     {
       "evidence_id": "a1_evi_12",
-      "claim": "FN1 gene encodes an extracellular matrix glycoprotein, fibronectin (FN), identified as a common EMT gene across oral squamous cell carcinoma (OSCC) and breast cancer (BC). This establishes FN1's identity as an ECM glycoprotein in cancer contexts \u2014 topology-relevant (secreted ECM protein, no TM helix).",
+      "claim": "FN1 gene encodes an extracellular matrix glycoprotein, fibronectin (FN), identified as a common EMT gene across oral squamous cell carcinoma (OSCC) and breast cancer (BC). This establishes FN1's identity as an ECM glycoprotein in cancer contexts — topology-relevant (secreted ECM protein, no TM helix).",
       "claim_type": "topology",
       "direction": "supports",
       "evidence_type": "review_assertion",
@@ -2172,7 +2174,7 @@
     },
     {
       "evidence_id": "a1_evi_13",
-      "claim": "FN protein levels were higher in OSCC and breast cancer tissues than in their normal counterparts, as assessed at the protein level in tumor tissue (method not specified in abstract \u2014 likely IHC or western blot of tissue lysate). This is a non-surface whole-tissue protein expression observation that qualifies but does not directly demonstrate surface accessibility.",
+      "claim": "FN protein levels were higher in OSCC and breast cancer tissues than in their normal counterparts, as assessed at the protein level in tumor tissue (method not specified in abstract — likely IHC or western blot of tissue lysate). This is a non-surface whole-tissue protein expression observation that qualifies but does not directly demonstrate surface accessibility.",
       "claim_type": "tissue_expression",
       "direction": "ambiguous",
       "evidence_type": "review_assertion",
@@ -2265,7 +2267,7 @@
           },
           "section": "results",
           "figure_or_table_id": null,
-          "quote": "We mapped experimentally verified cell\u2010surface proteins (CSPA) (Bausch\u2010Fluck et al., 2015 ) and surfaceome proteins based on cell surfaceome predictor SURFY (Bausch\u2010Fluck et al., 2018 ) onto global EV protein profiles.",
+          "quote": "We mapped experimentally verified cell‐surface proteins (CSPA) (Bausch‐Fluck et al., 2015 ) and surfaceome proteins based on cell surfaceome predictor SURFY (Bausch‐Fluck et al., 2018 ) onto global EV protein profiles.",
           "quote_sha256": "c190dd3eb1be579d287612e3f770216171b265e888aa16a5a9d490330c8236ef",
           "char_offset": 389,
           "normalized_source_sha256": "e09e06e3183d612c941b5a47d50e530b89a8b9b868c44324d26d8556a9b13c6d"
@@ -2278,7 +2280,7 @@
     },
     {
       "evidence_id": "a1_evi_15",
-      "claim": "Crystal structure of integrin \u03b1V\u03b23 ectodomain in complex with the FN type III 10th domain (FN10, the RGD-containing cell-binding domain of fibronectin) is available at PDB: 4MMX. This structure directly defines the extracellular domain interaction interface of FN1 with its integrin receptor, supporting the ECD accessibility of the fibronectin RGD-containing domain on the cell surface.",
+      "claim": "Crystal structure of integrin αVβ3 ectodomain in complex with the FN type III 10th domain (FN10, the RGD-containing cell-binding domain of fibronectin) is available at PDB: 4MMX. This structure directly defines the extracellular domain interaction interface of FN1 with its integrin receptor, supporting the ECD accessibility of the fibronectin RGD-containing domain on the cell surface.",
       "claim_type": "topology",
       "direction": "supports",
       "evidence_type": "crystal_structure",
@@ -2309,7 +2311,7 @@
           },
           "section": "results",
           "figure_or_table_id": null,
-          "quote": "The crystal structure of the integrin ectodomain \u03b1V/\u03b23 heterodimer in complex with FN10 (PDB: 4MMX) ( Figure 1 c), along with complexes involving other ectodomains ( Figure 1 d\u2013f), exhibits a high degree of conservation at the interaction interfaces.",
+          "quote": "The crystal structure of the integrin ectodomain αV/β3 heterodimer in complex with FN10 (PDB: 4MMX) ( Figure 1 c), along with complexes involving other ectodomains ( Figure 1 d–f), exhibits a high degree of conservation at the interaction interfaces.",
           "quote_sha256": "fc9dfc3eda3f5f7c876354bb0701067735b911e121d1cf777f76408015f457d0",
           "char_offset": 0,
           "normalized_source_sha256": "b6cce2b8cd444f42204661ce295e0778f1339c28caee78d8efe64a7d6b1f81ec"
@@ -2322,7 +2324,7 @@
     },
     {
       "evidence_id": "a1_evi_16",
-      "claim": "Crystal structure for integrin \u03b1V\u03b23 ectodomain bound to FN10 (PDB: 4MMX) was identified by sequence blasting, confirming structural data availability for the fibronectin cell-binding domain in complex with its integrin receptor. This methodological detail confirms the PDB entry for the FN1 ECD-integrin interaction structure.",
+      "claim": "Crystal structure for integrin αVβ3 ectodomain bound to FN10 (PDB: 4MMX) was identified by sequence blasting, confirming structural data availability for the fibronectin cell-binding domain in complex with its integrin receptor. This methodological detail confirms the PDB entry for the FN1 ECD-integrin interaction structure.",
       "claim_type": "topology",
       "direction": "supports",
       "evidence_type": "crystal_structure",
@@ -2353,7 +2355,7 @@
           },
           "section": "methods",
           "figure_or_table_id": null,
-          "quote": "Sequence blasting indicated that one crystal structure is available for integrin \u03b1V\u03b23 ectodomain bound to FN10 (ID: 4MMX) [ 35 ].",
+          "quote": "Sequence blasting indicated that one crystal structure is available for integrin αVβ3 ectodomain bound to FN10 (ID: 4MMX) [ 35 ].",
           "quote_sha256": "2b5f59dff1b7fb9d6f297eb11d178b75e45c5b1ff5608f0d5172ec374b1a9c08",
           "char_offset": 258,
           "normalized_source_sha256": "b6cce2b8cd444f42204661ce295e0778f1339c28caee78d8efe64a7d6b1f81ec"
@@ -2472,7 +2474,7 @@
     },
     {
       "evidence_id": "a2_evi_02",
-      "claim": "In nonneoplastic (normal) liver tissue, FN1 protein staining is largely absent: strong cytoplasmic/sinusoidal or moderate-to-strong membranous staining were not observed; only rare weak cytoplasmic or sinusoidal staining was seen (0.6\u20130.7% of cases). This indicates very low FN1 protein deposition in the parenchyma and membranes of normal liver.",
+      "claim": "In nonneoplastic (normal) liver tissue, FN1 protein staining is largely absent: strong cytoplasmic/sinusoidal or moderate-to-strong membranous staining were not observed; only rare weak cytoplasmic or sinusoidal staining was seen (0.6–0.7% of cases). This indicates very low FN1 protein deposition in the parenchyma and membranes of normal liver.",
       "claim_type": "tissue_expression",
       "direction": "supports",
       "evidence_type": "immunohistochemistry",
@@ -2631,7 +2633,7 @@
     },
     {
       "evidence_id": "a2_evi_05",
-      "claim": "FN1 protein expression is significantly higher in cardiomyocytes from asphyxial deaths compared to traumatic controls (mean 11.7 \u00b1 3.6% FN-positive cardiomyocytes in asphyxia group vs. lower baseline in controls), as quantified by IHC with a monoclonal antibody and dedicated image-analysis software. This represents disease-state-induced upregulation of FN1 in cardiac tissue under hypoxic stress.",
+      "claim": "FN1 protein expression is significantly higher in cardiomyocytes from asphyxial deaths compared to traumatic controls (mean 11.7 ± 3.6% FN-positive cardiomyocytes in asphyxia group vs. lower baseline in controls), as quantified by IHC with a monoclonal antibody and dedicated image-analysis software. This represents disease-state-induced upregulation of FN1 in cardiac tissue under hypoxic stress.",
       "claim_type": "tissue_expression",
       "direction": "supports",
       "evidence_type": "immunohistochemistry",
@@ -2671,7 +2673,7 @@
           },
           "section": "abstract",
           "figure_or_table_id": null,
-          "quote": "We performed FN immunohistochemistry (IHC) with a monoclonal antibody and quantified FN-positive cardiomyocytes using dedicated image-analysis software.<h4>Results</h4>We found significantly higher FN expression in all asphyxial deaths compared with controls (mean 11.7\u00a0\u00b1\u00a03.6%).",
+          "quote": "We performed FN immunohistochemistry (IHC) with a monoclonal antibody and quantified FN-positive cardiomyocytes using dedicated image-analysis software.<h4>Results</h4>We found significantly higher FN expression in all asphyxial deaths compared with controls (mean 11.7 ± 3.6%).",
           "quote_sha256": "4f1cd3d035abe49cb9ff56b564720e3c3622e463be702a09b1976bf7bce67fd3",
           "char_offset": 260,
           "normalized_source_sha256": "f8eed4fa03d841db90d0ff9cd3f6903ff9ae8ea978b316349e2d5fa5a5c628a0"
@@ -2684,7 +2686,7 @@
     },
     {
       "evidence_id": "a2_evi_06",
-      "claim": "FN1 protein upregulation in cardiac myocardium under hypoxia is graded by asphyxia subtype: smothering (46.1 \u00b1 7.2%) and strangulation (45.0 \u00b1 8%) showed highest FN1-positive cardiomyocyte fractions, followed by chemical asphyxia (35.1 \u00b1 9.8%), hanging (27.8 \u00b1 6.6%), and drowning (21.4 \u00b1 5.9%). Demonstrates FN1 is a hypoxia-sensitive ECM component in cardiac tissue with graded stress-dependent expression.",
+      "claim": "FN1 protein upregulation in cardiac myocardium under hypoxia is graded by asphyxia subtype: smothering (46.1 ± 7.2%) and strangulation (45.0 ± 8%) showed highest FN1-positive cardiomyocyte fractions, followed by chemical asphyxia (35.1 ± 9.8%), hanging (27.8 ± 6.6%), and drowning (21.4 ± 5.9%). Demonstrates FN1 is a hypoxia-sensitive ECM component in cardiac tissue with graded stress-dependent expression.",
       "claim_type": "tissue_expression",
       "direction": "supports",
       "evidence_type": "immunohistochemistry",
@@ -2724,7 +2726,7 @@
           },
           "section": "abstract",
           "figure_or_table_id": null,
-          "quote": "The highest intensities were observed in smothering (46.1\u00a0\u00b1\u00a07.2%) and strangulation (45.0\u00a0\u00b1\u00a08%), followed by chemical asphyxia (35.1\u00a0\u00b1\u00a09.8%), hanging (27.8\u00a0\u00b1\u00a06.6%), and drowning (21.4\u00a0\u00b1\u00a05.9%).",
+          "quote": "The highest intensities were observed in smothering (46.1 ± 7.2%) and strangulation (45.0 ± 8%), followed by chemical asphyxia (35.1 ± 9.8%), hanging (27.8 ± 6.6%), and drowning (21.4 ± 5.9%).",
           "quote_sha256": "0962eb42661ca9184e50f0d92183585bdcb7f6ab51505d0dbc9cfe41a9080f21",
           "char_offset": 539,
           "normalized_source_sha256": "f8eed4fa03d841db90d0ff9cd3f6903ff9ae8ea978b316349e2d5fa5a5c628a0"
@@ -2949,7 +2951,7 @@
     },
     {
       "evidence_id": "a2_evi_11",
-      "claim": "RNA-seq analysis of arteriovenous fistula (AVF) tissue detected a significant increase in EDA-containing FN1 transcript isoform in aneurysmal AVF (AVFA) compared to non-aneurysmal AVF (FDR < 0.05, |\u0394PSI| > 0.1). This establishes disease-state-dependent alternative splicing of FN1 in vascular tissue, with EDA isoform specifically upregulated in the aneurysmal/diseased state.",
+      "claim": "RNA-seq analysis of arteriovenous fistula (AVF) tissue detected a significant increase in EDA-containing FN1 transcript isoform in aneurysmal AVF (AVFA) compared to non-aneurysmal AVF (FDR < 0.05, |ΔPSI| > 0.1). This establishes disease-state-dependent alternative splicing of FN1 in vascular tissue, with EDA isoform specifically upregulated in the aneurysmal/diseased state.",
       "claim_type": "tissue_expression",
       "direction": "supports",
       "evidence_type": "rna_seq",
@@ -2989,7 +2991,7 @@
           },
           "section": "results",
           "figure_or_table_id": null,
-          "quote": "After filtering ASEs based on the criteria (FDR < 0.05, |\u0394PSI| > 0.1), we found the significant increase in the transcript isoform of EDA-FN in AVFA ( Figure 1A-B ).",
+          "quote": "After filtering ASEs based on the criteria (FDR < 0.05, |ΔPSI| > 0.1), we found the significant increase in the transcript isoform of EDA-FN in AVFA ( Figure 1A-B ).",
           "quote_sha256": "f3a52a7d1eeffe1ca497cc829a9507eeba7ebf9e9491bbcada7bbbf6deebed63",
           "char_offset": 0,
           "normalized_source_sha256": "289c552e443eb53e9d977563ea9f833440e734df24f22f3c2e6aa54a0abc844b"
@@ -3108,7 +3110,7 @@
     },
     {
       "evidence_id": "a2_evi_14",
-      "claim": "Increased EDA exon inclusion in FN1 triggers vascular smooth muscle cell (VSMC) phenotypic switching from contractile to synthetic state via the ITGB1/FAK/Src/RUNX2 signaling pathway in arteriovenous fistula tissue. Cell-state transition (contractile\u2192synthetic VSMC) is driven by EDA-FN isoform, establishing cell-state-induced modulation of FN1-integrin interactions in the vascular compartment.",
+      "claim": "Increased EDA exon inclusion in FN1 triggers vascular smooth muscle cell (VSMC) phenotypic switching from contractile to synthetic state via the ITGB1/FAK/Src/RUNX2 signaling pathway in arteriovenous fistula tissue. Cell-state transition (contractile→synthetic VSMC) is driven by EDA-FN isoform, establishing cell-state-induced modulation of FN1-integrin interactions in the vascular compartment.",
       "claim_type": "tissue_expression",
       "direction": "supports",
       "evidence_type": "functional_assay",
@@ -3320,7 +3322,7 @@
     },
     {
       "evidence_id": "a2_evi_18",
-      "claim": "Extracellular vesicle (EV)-associated FN1 is a surface-associated protein that facilitates cellular migration through tissues. This review assertion identifies FN1 as a functional surface component of EVs, establishing a distinct surface/accessible pool of FN1 beyond integrin-bound matrix fibronectin\u2014relevant to the biological context of FN1 surface accessibility in tumor/stromal settings.",
+      "claim": "Extracellular vesicle (EV)-associated FN1 is a surface-associated protein that facilitates cellular migration through tissues. This review assertion identifies FN1 as a functional surface component of EVs, establishing a distinct surface/accessible pool of FN1 beyond integrin-bound matrix fibronectin—relevant to the biological context of FN1 surface accessibility in tumor/stromal settings.",
       "claim_type": "surface_expression",
       "direction": "supports",
       "evidence_type": "review_assertion",
@@ -3360,7 +3362,7 @@
           },
           "section": "discussion",
           "figure_or_table_id": null,
-          "quote": "Several surface\u2010associated proteins have been documented to dictate EV function; whereas EV surface ANXA1 promotes microcalcification (Rogers et al., 2020 ), FN1 facilitates cellular migration through tissues (Sung et al., 2015 ), TGFB1 triggers fibroblast differentiation (Ringuette Goulet et al., 2018 ) and MIF establishes pre\u2010metastatic niche in the liver (Costa\u2010Silva et al., 2015 ).",
+          "quote": "Several surface‐associated proteins have been documented to dictate EV function; whereas EV surface ANXA1 promotes microcalcification (Rogers et al., 2020 ), FN1 facilitates cellular migration through tissues (Sung et al., 2015 ), TGFB1 triggers fibroblast differentiation (Ringuette Goulet et al., 2018 ) and MIF establishes pre‐metastatic niche in the liver (Costa‐Silva et al., 2015 ).",
           "quote_sha256": "e0b6c415b15ec0b2f7747897fc1572a1e7337836b769dbe9eb213c87c28e226d",
           "char_offset": 0,
           "normalized_source_sha256": "e09e06e3183d612c941b5a47d50e530b89a8b9b868c44324d26d8556a9b13c6d"
@@ -3393,7 +3395,7 @@
           "cellosaurus_id": null,
           "tissue": null,
           "disease_state": null,
-          "activation_state": "chondrogenic differentiation (days 1\u201315)"
+          "activation_state": "chondrogenic differentiation (days 1–15)"
         }
       },
       "spans": [
@@ -3479,7 +3481,7 @@
     },
     {
       "evidence_id": "a2_evi_21",
-      "claim": "FN1 is described as an ECM glycoprotein (fibronectin) detectable by IHC and scRNA-seq in the context of tumor stroma characterization, alongside stromal markers PDGFR\u03b1/\u03b2, SPARC, THBS2, \u03b1-SMA, and vimentin. This establishes FN1 as a routinely used marker for tumor stroma/CAF characterization by tissue-level and single-cell methods.",
+      "claim": "FN1 is described as an ECM glycoprotein (fibronectin) detectable by IHC and scRNA-seq in the context of tumor stroma characterization, alongside stromal markers PDGFRα/β, SPARC, THBS2, α-SMA, and vimentin. This establishes FN1 as a routinely used marker for tumor stroma/CAF characterization by tissue-level and single-cell methods.",
       "claim_type": "tissue_expression",
       "direction": "supports",
       "evidence_type": "immunohistochemistry",
@@ -3519,7 +3521,7 @@
           },
           "section": "methods",
           "figure_or_table_id": null,
-          "quote": "flow cytometry, scRNA-seq, mRNA sequencing [ 9 ] Transmembrane receptor PDGFR\u03b1/\u03b2 Platelet-derived growth factor receptor IHC, flow cytometry, scRNA-seq [ 14 ] ECM glycoprotein Fibronectin 1(FN1) Fibronectin IHC, scRNA-seq [ 9 ] SPARC Secreted protein, acidic and rich in cysteine scRNA-seq, mRNA sequencing [ 27 ] THBS2 Platelet-derived growth factor receptor 2 mRNA sequencing [ 27 ] Cytoskeletal protein \u03b1-SMA \u03b1-smooth muscle actin IHC [ 9 ] Vimentin (VIM) Type III intermediate filament protein Immunofluorescence",
+          "quote": "flow cytometry, scRNA-seq, mRNA sequencing [ 9 ] Transmembrane receptor PDGFRα/β Platelet-derived growth factor receptor IHC, flow cytometry, scRNA-seq [ 14 ] ECM glycoprotein Fibronectin 1(FN1) Fibronectin IHC, scRNA-seq [ 9 ] SPARC Secreted protein, acidic and rich in cysteine scRNA-seq, mRNA sequencing [ 27 ] THBS2 Platelet-derived growth factor receptor 2 mRNA sequencing [ 27 ] Cytoskeletal protein α-SMA α-smooth muscle actin IHC [ 9 ] Vimentin (VIM) Type III intermediate filament protein Immunofluorescence",
           "quote_sha256": "bc44bee5a0427cd02c50bf27436ff2e64a1b37cda709bf55b3bbb86074cd4a1d",
           "char_offset": 0,
           "normalized_source_sha256": "8a4b9ef2496941a08114483338c3fbb935766113adf3fafea193a5ebe60cfbc5"
@@ -3585,7 +3587,7 @@
     },
     {
       "evidence_id": "a2_evi_23",
-      "claim": "FN1 surface/ECM levels were measured by cell-surface capture (\u00b5CSC) mass spectrometry in failing versus non-failing human heart samples, alongside qRT-PCR and targeted MS analyses. This establishes that FN1 surface-accessible protein was directly profiled in human cardiac tissue in a disease-state comparison context (heart failure vs. normal).",
+      "claim": "FN1 surface/ECM levels were measured by cell-surface capture (µCSC) mass spectrometry in failing versus non-failing human heart samples, alongside qRT-PCR and targeted MS analyses. This establishes that FN1 surface-accessible protein was directly profiled in human cardiac tissue in a disease-state comparison context (heart failure vs. normal).",
       "claim_type": "surface_expression",
       "direction": "supports",
       "evidence_type": "mass_spec_surfaceome",
@@ -3625,7 +3627,7 @@
           },
           "section": "methods",
           "figure_or_table_id": null,
-          "quote": "Samples used for \u00b5CSC, qRT\u2013PCR and targeted MS analyses of failing and non-failing hearts are in Supplementary Table 13 .",
+          "quote": "Samples used for µCSC, qRT–PCR and targeted MS analyses of failing and non-failing hearts are in Supplementary Table 13 .",
           "quote_sha256": "1876289e33816bd80348d5fbfcb1092d30a03c914a6136970d754d71033fb582",
           "char_offset": 0,
           "normalized_source_sha256": "570c184869bb277b096f92f32b8b4f9c85e888a0364a7112ad5b50b5059599e1"
@@ -3779,7 +3781,7 @@
       "mode": "topic_search",
       "query": {
         "agent_focus": "a1",
-        "intent": "Surface expression and shedding topic sweep to surface contextual pool papers \u2014 EDB isoform in tumor neovasculature, plasma vs. matrix-bound pools.",
+        "intent": "Surface expression and shedding topic sweep to surface contextual pool papers — EDB isoform in tumor neovasculature, plasma vs. matrix-bound pools.",
         "anchors": [
           "surface_expression",
           "shedding"
@@ -3843,7 +3845,7 @@
       "mode": "topic_search",
       "query": {
         "agent_focus": "a1",
-        "intent": "EDB fibronectin isoform enrichment in tumor stroma and angiogenesis \u2014 the contextual state that upgrades surface call; also shedding to soluble form vs. retained matrix pool.",
+        "intent": "EDB fibronectin isoform enrichment in tumor stroma and angiogenesis — the contextual state that upgrades surface call; also shedding to soluble form vs. retained matrix pool.",
         "anchors": [
           "surface_expression",
           "shedding"
@@ -3859,7 +3861,7 @@
       "mode": "topic_search",
       "query": {
         "agent_focus": "a1",
-        "intent": "Paralog-family (fibronectin-domain superfamily) surface expression sweep to catch cross-reactive antibody papers \u2014 top paralogs FGL1, MFAP4, FCN1 share ~44% ECD identity, below the 50% cross-reactivity threshold but worth monitoring.",
+        "intent": "Paralog-family (fibronectin-domain superfamily) surface expression sweep to catch cross-reactive antibody papers — top paralogs FGL1, MFAP4, FCN1 share ~44% ECD identity, below the 50% cross-reactivity threshold but worth monitoring.",
         "anchors": [
           "surface_expression"
         ]
@@ -3967,7 +3969,7 @@
       "mode": "fetch_fulltext",
       "query": {
         "agent_focus": "a1",
-        "intent": "Fibronectin FN1 splicing and AVF aneurysm paper \u2014 may contain IHC or surface-expression data for FN1 isoforms (EDB/EDA splice variants) with antibody detail and surface-staining methods",
+        "intent": "Fibronectin FN1 splicing and AVF aneurysm paper — may contain IHC or surface-expression data for FN1 isoforms (EDB/EDA splice variants) with antibody detail and surface-staining methods",
         "pmcid": "PMC12833886"
       },
       "n_results": 1,
@@ -3980,7 +3982,7 @@
       "mode": "fetch_abstract",
       "query": {
         "agent_focus": "a1",
-        "intent": "FN1 as therapeutic target in oral and breast carcinomas \u2014 likely contains surface FN1 antibody program detail, therapeutic engagement context, and surface-detection methods",
+        "intent": "FN1 as therapeutic target in oral and breast carcinomas — likely contains surface FN1 antibody program detail, therapeutic engagement context, and surface-detection methods",
         "pmid": 41683575
       },
       "n_results": 1,
@@ -3993,7 +3995,7 @@
       "mode": "fetch_abstract",
       "query": {
         "agent_focus": "a1",
-        "intent": "Cancer immunotherapy via integrin \u03b1v\u03b23 and CD47 on cancer cell surface \u2014 may contain flow cytometry or surface detection of fibronectin/integrin complex on intact cells, supporting FN1 surface-accessibility in tumor context",
+        "intent": "Cancer immunotherapy via integrin αvβ3 and CD47 on cancer cell surface — may contain flow cytometry or surface detection of fibronectin/integrin complex on intact cells, supporting FN1 surface-accessibility in tumor context",
         "pmid": 41168993
       },
       "n_results": 1,
@@ -4006,7 +4008,7 @@
       "mode": "fetch_fulltext",
       "query": {
         "agent_focus": "a1",
-        "intent": "FN1 splicing and surface isoform (EDB) characterization in AVF aneurysm \u2014 expected to contain IHC/IF or surface expression data on fibronectin isoforms relevant to surface accessibility, including EDB splice isoform surface presence",
+        "intent": "FN1 splicing and surface isoform (EDB) characterization in AVF aneurysm — expected to contain IHC/IF or surface expression data on fibronectin isoforms relevant to surface accessibility, including EDB splice isoform surface presence",
         "pmcid": "PMC12833886"
       },
       "n_results": 1,
@@ -4019,7 +4021,7 @@
       "mode": "fetch_abstract",
       "query": {
         "agent_focus": "a1",
-        "intent": "Fibronectin as therapeutic target in oral and breast carcinoma \u2014 likely contains FN1 surface expression, IHC, or antibody-targeting evidence relevant to surface accessibility and therapeutic engagement",
+        "intent": "Fibronectin as therapeutic target in oral and breast carcinoma — likely contains FN1 surface expression, IHC, or antibody-targeting evidence relevant to surface accessibility and therapeutic engagement",
         "pmid": 41683575
       },
       "n_results": 1,
@@ -4049,7 +4051,7 @@
       "mode": "gene2pubmed",
       "query": {
         "agent_focus": "a2",
-        "intent": "Baseline curated PMID list for FN1 \u2014 captures all NCBI-linked publications as starting pool"
+        "intent": "Baseline curated PMID list for FN1 — captures all NCBI-linked publications as starting pool"
       },
       "n_results": 25,
       "sources_seen": [],
@@ -4073,7 +4075,7 @@
       "mode": "ihc",
       "query": {
         "agent_focus": "a2",
-        "intent": "IHC/HPA membranous staining of fibronectin in normal and tumor tissues \u2014 covers TissueContext rows and tox-panel organs",
+        "intent": "IHC/HPA membranous staining of fibronectin in normal and tumor tissues — covers TissueContext rows and tox-panel organs",
         "category": "ihc",
         "uniprot_acc": "P02751"
       },
@@ -4087,7 +4089,7 @@
       "mode": "if",
       "query": {
         "agent_focus": "a2",
-        "intent": "Immunofluorescence localization of fibronectin \u2014 matrix vs cell-surface vs intracellular pools, polarized epithelia, colocalization with organelle markers",
+        "intent": "Immunofluorescence localization of fibronectin — matrix vs cell-surface vs intracellular pools, polarized epithelia, colocalization with organelle markers",
         "category": "if",
         "uniprot_acc": "P02751"
       },
@@ -4101,7 +4103,7 @@
       "mode": "flow_cytometry",
       "query": {
         "agent_focus": "a2",
-        "intent": "Flow cytometry surface detection of fibronectin on sorted cell populations \u2014 integrin-bound vs secreted pool on specific cell types",
+        "intent": "Flow cytometry surface detection of fibronectin on sorted cell populations — integrin-bound vs secreted pool on specific cell types",
         "category": "flow_cytometry",
         "uniprot_acc": "P02751"
       },
@@ -4115,7 +4117,7 @@
       "mode": "surface_biotinylation",
       "query": {
         "agent_focus": "a2",
-        "intent": "Surface biotinylation quantifying cell-surface fibronectin fraction vs whole-cell \u2014 supports dual_localization fraction_estimate and AccessibilityModulationObservation",
+        "intent": "Surface biotinylation quantifying cell-surface fibronectin fraction vs whole-cell — supports dual_localization fraction_estimate and AccessibilityModulationObservation",
         "category": "surface_biotinylation",
         "uniprot_acc": "P02751"
       },
@@ -4129,7 +4131,7 @@
       "mode": "mass_spec_surfaceome",
       "query": {
         "agent_focus": "a2",
-        "intent": "Cell-surface proteomics detection of fibronectin on sorted populations \u2014 cell-type-specific surface presence, tumor stromal cells, fibroblasts, endothelial cells",
+        "intent": "Cell-surface proteomics detection of fibronectin on sorted populations — cell-type-specific surface presence, tumor stromal cells, fibroblasts, endothelial cells",
         "category": "mass_spec_surfaceome",
         "uniprot_acc": "P02751"
       },
@@ -4143,7 +4145,7 @@
       "mode": "other",
       "query": {
         "agent_focus": "a2",
-        "intent": "Proximity labeling, shedding assays, functional surface assays for fibronectin \u2014 EDB integrin-binding pharmacology, ADC/radioligand targeting, shed fibronectin fragments in serum",
+        "intent": "Proximity labeling, shedding assays, functional surface assays for fibronectin — EDB integrin-binding pharmacology, ADC/radioligand targeting, shed fibronectin fragments in serum",
         "category": "other",
         "uniprot_acc": "P02751"
       },
@@ -4157,7 +4159,7 @@
       "mode": "topic_search",
       "query": {
         "agent_focus": "a2",
-        "intent": "Tissue-level surface expression of fibronectin \u2014 normal tissue atlas (liver, lung, kidney, GI, heart, brain) and tumor stroma; TissueContext and tox-panel coverage",
+        "intent": "Tissue-level surface expression of fibronectin — normal tissue atlas (liver, lung, kidney, GI, heart, brain) and tumor stroma; TissueContext and tox-panel coverage",
         "anchors": [
           "surface_expression",
           "ihc"
@@ -4173,7 +4175,7 @@
       "mode": "topic_search",
       "query": {
         "agent_focus": "a2",
-        "intent": "Normal organ tox panel \u2014 fibronectin surface/membranous expression in liver, lung, kidney, GI tract, heart, brain normal tissue for on-target off-tumor risk assessment",
+        "intent": "Normal organ tox panel — fibronectin surface/membranous expression in liver, lung, kidney, GI tract, heart, brain normal tissue for on-target off-tumor risk assessment",
         "anchors": [
           "surface_expression",
           "ihc"
@@ -4189,7 +4191,7 @@
       "mode": "topic_search",
       "query": {
         "agent_focus": "a2",
-        "intent": "EDB fibronectin isoform in tumor neovasculature and wound healing \u2014 state-induced surface/matrix enrichment; AccessibilityModulationObservation disease-state rows",
+        "intent": "EDB fibronectin isoform in tumor neovasculature and wound healing — state-induced surface/matrix enrichment; AccessibilityModulationObservation disease-state rows",
         "anchors": [
           "surface_expression",
           "shedding"
@@ -4205,7 +4207,7 @@
       "mode": "topic_search",
       "query": {
         "agent_focus": "a2",
-        "intent": "Fibronectin shedding, proteolytic fragmentation, phosphorylation/sulfation PTMs gating matrix assembly or surface retention \u2014 AccessibilityModulationObservation PTM-gate rows",
+        "intent": "Fibronectin shedding, proteolytic fragmentation, phosphorylation/sulfation PTMs gating matrix assembly or surface retention — AccessibilityModulationObservation PTM-gate rows",
         "anchors": [
           "shedding",
           "ptm"
@@ -4221,7 +4223,7 @@
       "mode": "topic_search",
       "query": {
         "agent_focus": "a2",
-        "intent": "Fibronectin domain topology in ECM vs surface-attached form \u2014 integrin-binding RGD domain, heparin-binding domains accessible extracellularly; SubcellularLocalization ECD accessibility",
+        "intent": "Fibronectin domain topology in ECM vs surface-attached form — integrin-binding RGD domain, heparin-binding domains accessible extracellularly; SubcellularLocalization ECD accessibility",
         "anchors": [
           "topology",
           "structure"
@@ -4237,7 +4239,7 @@
       "mode": "topic_search",
       "query": {
         "agent_focus": "a2",
-        "intent": "Subcellular localization of fibronectin \u2014 fibrillogenesis, matrix pool vs plasma membrane pool, intracellular retention vs secretion; dual_localization block material",
+        "intent": "Subcellular localization of fibronectin — fibrillogenesis, matrix pool vs plasma membrane pool, intracellular retention vs secretion; dual_localization block material",
         "anchors": [
           "surface_expression",
           "ptm"
@@ -4253,7 +4255,7 @@
       "mode": "topic_search",
       "query": {
         "agent_focus": "a2",
-        "intent": "FN1 family context (fibronectin-domain superfamily: FGL1, MFAP4, FCN1) \u2014 tissue distribution breadth; paralogs have <50% ECD identity so cross-reactivity is lower risk but family patterns inform cell-type coverage",
+        "intent": "FN1 family context (fibronectin-domain superfamily: FGL1, MFAP4, FCN1) — tissue distribution breadth; paralogs have <50% ECD identity so cross-reactivity is lower risk but family patterns inform cell-type coverage",
         "anchors": [
           "surface_expression",
           "ihc"
@@ -4269,7 +4271,7 @@
       "mode": "topic_search",
       "query": {
         "agent_focus": "a2",
-        "intent": "Soluble plasma fibronectin circulating form \u2014 serum/plasma levels, decoy competition with matrix-bound or cell-surface forms, antibody neutralization by soluble FN1; circulating decoy assessment",
+        "intent": "Soluble plasma fibronectin circulating form — serum/plasma levels, decoy competition with matrix-bound or cell-surface forms, antibody neutralization by soluble FN1; circulating decoy assessment",
         "anchors": [
           "surface_expression",
           "shedding"
@@ -4285,7 +4287,7 @@
       "mode": "topic_search",
       "query": {
         "agent_focus": "a2",
-        "intent": "Fibronectin cell-type specific surface expression \u2014 fibroblasts, hepatocytes, endothelial cells, cancer-associated fibroblasts, immune cells; CellTypeContextV1 rows",
+        "intent": "Fibronectin cell-type specific surface expression — fibroblasts, hepatocytes, endothelial cells, cancer-associated fibroblasts, immune cells; CellTypeContextV1 rows",
         "anchors": [
           "surface_expression"
         ]
@@ -4300,7 +4302,7 @@
       "mode": "topic_search",
       "query": {
         "agent_focus": "a2",
-        "intent": "Tumor vascular accessibility of EDB fibronectin \u2014 perivascular vs tumor-core penetration, biodistribution of anti-FN1 therapeutics; AnatomicalAccessibilityObservation tumor vasculature row",
+        "intent": "Tumor vascular accessibility of EDB fibronectin — perivascular vs tumor-core penetration, biodistribution of anti-FN1 therapeutics; AnatomicalAccessibilityObservation tumor vasculature row",
         "anchors": [
           "surface_expression",
           "ihc"
@@ -4316,7 +4318,7 @@
       "mode": "topic_search",
       "query": {
         "agent_focus": "a2",
-        "intent": "Blood-brain barrier and CNS accessibility of fibronectin \u2014 basement membrane fibronectin in brain vasculature, glioma ECM, BBB permeability; AnatomicalAccessibilityObservation BBB row",
+        "intent": "Blood-brain barrier and CNS accessibility of fibronectin — basement membrane fibronectin in brain vasculature, glioma ECM, BBB permeability; AnatomicalAccessibilityObservation BBB row",
         "anchors": [
           "surface_expression"
         ]
@@ -4331,7 +4333,7 @@
       "mode": "topic_search",
       "query": {
         "agent_focus": "a2",
-        "intent": "Fibronectin in wound healing, fibrosis, and activated stroma \u2014 activation-induced surface/matrix upregulation in fibroblasts; AccessibilityModulationObservation activation rows",
+        "intent": "Fibronectin in wound healing, fibrosis, and activated stroma — activation-induced surface/matrix upregulation in fibroblasts; AccessibilityModulationObservation activation rows",
         "anchors": [
           "surface_expression",
           "ihc"
@@ -4347,7 +4349,7 @@
       "mode": "fetch_fulltext",
       "query": {
         "agent_focus": "a2",
-        "intent": "FN1 splicing and isoform expression in arteriovenous fistula \u2014 contains tissue-level FN1 isoform expression data (EDB/EDA splice variants) relevant to accessibility modulation in vascular tissue",
+        "intent": "FN1 splicing and isoform expression in arteriovenous fistula — contains tissue-level FN1 isoform expression data (EDB/EDA splice variants) relevant to accessibility modulation in vascular tissue",
         "pmcid": "PMC12833886"
       },
       "n_results": 1,
@@ -4360,7 +4362,7 @@
       "mode": "fetch_abstract",
       "query": {
         "agent_focus": "a2",
-        "intent": "FN1 expression as a marker of hypoxia in asphyxial deaths \u2014 forensic/tissue study that may have IHC or other protein-level FN1 tissue expression data across organs",
+        "intent": "FN1 expression as a marker of hypoxia in asphyxial deaths — forensic/tissue study that may have IHC or other protein-level FN1 tissue expression data across organs",
         "pmid": 41785781
       },
       "n_results": 1,
@@ -4373,7 +4375,7 @@
       "mode": "fetch_fulltext",
       "query": {
         "agent_focus": "a2",
-        "intent": "FN1-targeted approach to intestinal fibrosis \u2014 may contain cell-type-specific FN1 expression data in intestinal tissue (fibroblasts/myofibroblasts) and disease-state modulation",
+        "intent": "FN1-targeted approach to intestinal fibrosis — may contain cell-type-specific FN1 expression data in intestinal tissue (fibroblasts/myofibroblasts) and disease-state modulation",
         "pmcid": "PMC13067841"
       },
       "n_results": 1,
@@ -4386,7 +4388,7 @@
   "primary_evidence_count": 26,
   "secondary_evidence_count": 14,
   "confidence": "moderate",
-  "confidence_reasoning": "Confidence is moderate for two reasons. First, the direct surface-accessibility evidence comes from a single primary method (cell-surface capture mass spectrometry on chondrogenic cells, PMC12777226, and \u00b5CSC in cardiac tissue, PMC10030153); IHC data are from permeabilized/fixed tissue and cannot distinguish surface from intracellular FN1. Second, the dominant biological pool is the hepatocyte-secreted plasma fibronectin, which circulates freely in blood \u2014 a genuine high-severity decoy that complicates antibody-based targeting. Surface membranous FN1 is disease-state-enriched (tumor, fibrosis, cardiac failure) and absent in normal liver (PMC11907257), so confidence in a constitutive surface call is low; confidence in the disease-state surface call is moderate. To lift confidence, non-permeabilized live-cell flow cytometry or surface-capture MS in human tumor cell lines, combined with direct plasma/serum competition experiments, would be needed.",
+  "confidence_reasoning": "Confidence is moderate for two reasons. First, the direct surface-accessibility evidence comes from a single primary method (cell-surface capture mass spectrometry on chondrogenic cells, PMC12777226, and µCSC in cardiac tissue, PMC10030153); IHC data are from permeabilized/fixed tissue and cannot distinguish surface from intracellular FN1. Second, the dominant biological pool is the hepatocyte-secreted plasma fibronectin, which circulates freely in blood — a genuine high-severity decoy that complicates antibody-based targeting. Surface membranous FN1 is disease-state-enriched (tumor, fibrosis, cardiac failure) and absent in normal liver (PMC11907257), so confidence in a constitutive surface call is low; confidence in the disease-state surface call is moderate. To lift confidence, non-permeabilized live-cell flow cytometry or surface-capture MS in human tumor cell lines, combined with direct plasma/serum competition experiments, would be needed.",
   "model_path": "claude-sonnet-4-6",
   "record_generated_at": "2026-05-31T15:21:51.367224Z"
 }
