@@ -485,13 +485,10 @@ def make_plot() -> tuple[plt.Figure, list[plt.Axes]]:
         ncols=4, frameon=False, fontsize=14,
     )
 
-    pct = 100.0 * n_match / n_joined if n_joined else 0.0
-    fig.text(
-        0.5, -0.015,
-        f"Exact-reason agreement: {n_match}/{n_joined}  ({pct:.1f}%)   "
-        f"·   data: SurfaceBench v1 × mainbench_canonical_v2 (Sonnet 4.6 / NCBI variant)",
-        ha="center", va="top", fontsize=13, color=COLORS["neutral"],
-    )
+    # Agreement-stat subtitle dropped per user — the matrix + the
+    # legend already convey the data shape; the redundant text was
+    # noise. (Bar charts in panels a/b carry the same overall-
+    # accuracy number as their leftmost bar group.)
 
     sns.despine(ax=ax, top=False, right=False, left=False, bottom=False)
     return fig, [ax_bucket, ax_perreason, ax_matrix]
