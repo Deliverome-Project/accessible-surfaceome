@@ -215,14 +215,20 @@ def _therasabdab_adc_mask(df: pd.DataFrame) -> pd.Series:
 
 
 def _therasabdab_tce_mask(df: pd.DataFrame) -> pd.Series:
-    """TCE = bispecific+CD3E binding OR BiTE/DART platform.
+    """TCE = bispecific (or higher) AND CD3E in the target field.
 
-    TheraSAbDab has no TCE label — derived from Format + Target + Development Tech.
+    TheraSAbDab has no TCE label — derived from Format + Target. We require
+    CD3E in the target to avoid false positives: the BiTE/DART platform
+    regex used previously caught Faricimab (VEGFA × ANGPT2, eye disease,
+    not a TCE) and Lorigerlimab (PD-1 × CTLA-4, checkpoint bispecific,
+    not a TCE) because both use a "Dual-Affinity Re-Targeting" platform
+    despite not being T-cell engagers.
     """
-    is_bispec = df["Format"].fillna("").str.contains("Bispecific|Trispecific|Tetraspecific", case=False, regex=True)
+    is_bispec = df["Format"].fillna("").str.contains(
+        "Bispecific|Trispecific|Tetraspecific", case=False, regex=True
+    )
     binds_cd3 = df["Target"].fillna("").str.contains("CD3E", case=False, regex=False)
-    bite_tech = df["Development Tech"].fillna("").str.contains("BiTE|DART|Dual-Affinity", case=False, regex=True)
-    return (is_bispec & binds_cd3) | bite_tech
+    return is_bispec & binds_cd3
 
 
 def _target_clusters(targets_str) -> list[str]:
@@ -241,6 +247,13 @@ def _target_clusters(targets_str) -> list[str]:
     return slots
 
 
+# Half-life-extension binding partners that appear in bispecific Target lists
+# but aren't therapeutic targets (the antibody arm binds them to extend serum
+# half-life; the actual therapeutic target is the other arm). Drop wherever
+# seen in cluster extraction.
+HALF_LIFE_BINDERS = {"ALB"}
+
+
 def _cluster_to_hgnc(cluster: str, sym_to_hgnc: dict) -> str | None:
     for tok in cluster.split("/"):
         h = _resolve_symbol(tok.strip(), sym_to_hgnc)
@@ -250,10 +263,15 @@ def _cluster_to_hgnc(cluster: str, sym_to_hgnc: dict) -> str | None:
 
 
 def collect_therasabdab_hgncs(df: pd.DataFrame, mask: pd.Series, sym_to_hgnc: dict) -> set[str]:
-    """Extract unique HGNC IDs from the rows passing mask."""
+    """Extract unique HGNC IDs from the rows passing mask, dropping
+    half-life-extension binding partners (e.g. ALB)."""
     out: set[str] = set()
     for t in df.loc[mask, "Target"]:
         for cluster in _target_clusters(t):
+            # Skip half-life arms entirely (ALB on Gocatamig, etc.)
+            first_token = cluster.split("/")[0].strip().upper()
+            if first_token in HALF_LIFE_BINDERS:
+                continue
             h = _cluster_to_hgnc(cluster, sym_to_hgnc)
             if h:
                 out.add(h)
