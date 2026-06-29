@@ -12,6 +12,28 @@ We use only ``query`` for both reads and writes — that's the only endpoint
 that returns rows. Auth is via a bearer API token scoped to D1:Edit on the
 target account.
 
+Every request retries transient failures (HTTP 429 / 5xx and transport-level
+errors such as connection resets and read timeouts) with bounded exponential
+backoff + jitter — see :data:`RETRYABLE_STATUS` and ``_post_with_retry``. This
+matters at cohort scale: a multi-day sweep issues hundreds of thousands of D1
+calls across many concurrent workers, so transient blips are statistically
+inevitable, and an un-retried drop silently loses a row (a missing private
+parent → re-spend on resume, or a missing public ``surface_annotation`` row →
+viewer drift). Permanent errors (bad SQL, auth, validation) are *not* retried —
+those are signals about the request itself, not transient conditions.
+
+Caveat — writes are retried at-least-once. A 5xx/timeout almost always means the
+statement was not applied, but a response lost *after* a successful commit would
+be retried, double-applying a *non-idempotent* ``INSERT``. The deep-dive sink's
+writes are all idempotent on their natural keys (parent: ``ON CONFLICT (run_id,
+gene_symbol) DO NOTHING``; evidence / search-log children:
+``INSERT ... WHERE NOT EXISTS`` in ``deep_dive_upload.py``), so a retry can't
+duplicate a row there. **Any new high-volume write path must do the same** — a
+plain ``INSERT ... VALUES`` on this retrying client is an at-least-once
+duplicate hazard. (``cloud/triage_upload.py`` predates this client-level retry
+and still uses plain child inserts; lower-risk because the triage sweep runs
+separately, but worth the same treatment before it next scales.)
+
 Env vars consumed (loaded by :mod:`accessible_surfaceome.env`):
 
   * ``CLOUDFLARE_ACCOUNT_ID``      — 32-char hex from the dashboard URL
@@ -28,15 +50,46 @@ from dataclasses import dataclass
 from typing import Any
 
 import httpx
+from tenacity import (
+    before_sleep_log,
+    retry,
+    retry_if_exception_type,
+    stop_after_attempt,
+    wait_random_exponential,
+)
 
 logger = logging.getLogger(__name__)
 
 API_ROOT = "https://api.cloudflare.com/client/v4"
 DEFAULT_TIMEOUT_S = 30.0
 
+# HTTP statuses worth retrying: 429 (rate limited) plus the transient 5xx
+# family Cloudflare returns under load / gateway blips. 4xx other than 429
+# (400 bad SQL, 401/403 auth, 404) are request-level and never retried.
+RETRYABLE_STATUS = frozenset({429, 500, 502, 503, 504})
+
+# Bounded retry budget. 4 attempts with jittered exponential backoff
+# (multiplier 0.5, cap 20s) gives a worst-case added latency of well under
+# a minute before we surface the failure to the caller, while the random
+# jitter keeps many concurrent workers from retrying in lockstep (a
+# thundering herd against the same just-overloaded endpoint).
+DEFAULT_MAX_ATTEMPTS = 4
+_RETRY_WAIT_MULTIPLIER = 0.5
+_RETRY_WAIT_MAX_S = 20.0
+
 
 class D1Error(RuntimeError):
     """Raised on any non-success response from the D1 HTTP API."""
+
+
+class _TransientD1Error(D1Error):
+    """A retryable D1 failure (HTTP 429 / 5xx).
+
+    Subclasses :class:`D1Error` so callers that already catch ``D1Error`` keep
+    handling the exhausted-retries case unchanged. Raised inside the retry loop
+    to trigger a backoff; if retries are exhausted ``reraise=True`` propagates
+    this as the final exception.
+    """
 
 
 @dataclass(frozen=True)
@@ -89,7 +142,13 @@ class D1Client:
     ``batch`` for an atomic transaction of multiple parameterized statements.
     """
 
-    def __init__(self, config: D1Config | None = None, *, timeout_s: float = DEFAULT_TIMEOUT_S):
+    def __init__(
+        self,
+        config: D1Config | None = None,
+        *,
+        timeout_s: float = DEFAULT_TIMEOUT_S,
+        max_attempts: int = DEFAULT_MAX_ATTEMPTS,
+    ):
         self.config = config or D1Config.from_env()
         self._url = (
             f"{API_ROOT}/accounts/{self.config.account_id}/d1/database/"
@@ -99,6 +158,8 @@ class D1Client:
             "Authorization": f"Bearer {self.config.api_token}",
             "Content-Type": "application/json",
         }
+        # max_attempts=1 disables retry (used by tests to avoid backoff sleeps).
+        self._max_attempts = max(1, int(max_attempts))
         self._client = httpx.Client(timeout=timeout_s, headers=self._headers)
 
     @classmethod
@@ -124,12 +185,45 @@ class D1Client:
     # -- core operations ----------------------------------------------------
 
     def query(self, sql: str, params: list[Any] | None = None) -> list[dict[str, Any]]:
-        """Execute one SQL statement. Returns the result rows (empty for writes)."""
+        """Execute one SQL statement. Returns the result rows (empty for writes).
+
+        Transient transport errors and HTTP 429 / 5xx are retried with bounded
+        backoff (see the module docstring); permanent errors (bad SQL, auth) and
+        ``success: false`` envelopes propagate immediately as :class:`D1Error`.
+        """
         payload: dict[str, Any] = {"sql": sql}
         if params:
             payload["params"] = list(params)
-        resp = self._client.post(self._url, content=json.dumps(payload))
+        resp = self._post_with_retry(json.dumps(payload), sql)
         return _unwrap(resp)
+
+    def _post_with_retry(self, content: str, sql: str) -> httpx.Response:
+        """POST the query body, retrying transient failures.
+
+        The retry decorator is built per-call so each call gets a fresh retry
+        state (accurate per-attempt logging) and so ``self._max_attempts`` is
+        honored even when it's changed after construction.
+        """
+
+        @retry(
+            stop=stop_after_attempt(self._max_attempts),
+            wait=wait_random_exponential(
+                multiplier=_RETRY_WAIT_MULTIPLIER, max=_RETRY_WAIT_MAX_S
+            ),
+            retry=retry_if_exception_type((_TransientD1Error, httpx.TransportError)),
+            before_sleep=before_sleep_log(logger, logging.WARNING),
+            reraise=True,
+        )
+        def _do() -> httpx.Response:
+            resp = self._client.post(self._url, content=content)
+            if resp.status_code in RETRYABLE_STATUS:
+                raise _TransientD1Error(
+                    f"D1 HTTP {resp.status_code} (retryable) for "
+                    f"sql={sql[:80]!r}: {resp.text[:200]!r}"
+                )
+            return resp
+
+        return _do()
 
     def batch(self, statements: list[tuple[str, list[Any]]]) -> list[list[dict[str, Any]]]:
         """Execute several statements sequentially via the single-statement

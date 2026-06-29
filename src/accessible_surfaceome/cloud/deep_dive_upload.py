@@ -182,10 +182,23 @@ def _insert_run(
     return rows[0].get("id") if rows else None
 
 
+# Child inserts use an ``INSERT ... SELECT ... WHERE NOT EXISTS`` guard on the
+# row's natural key rather than a plain ``VALUES`` insert. ``D1Client.query``
+# retries transient failures, so every write is at-least-once: an ambiguous
+# commit (D1 applied the row but the response was lost) would otherwise let the
+# retry duplicate a child row — invisible to ``audit_deep_dive_orphans`` (it
+# only flags *missing* children, i.e. actual < expected). The natural keys are
+# ``(deep_dive_run_id, evidence_id)`` and ``(deep_dive_run_id, step_index)``;
+# both are unique within a parent (evidence_id is a cross-reference handle,
+# step_index is the enumerate order), so the guard skips only an exact re-insert
+# of a row that already landed. A single writer owns each parent's children
+# (the parent insert dedups on ``(run_id, gene_symbol)``), so there is no
+# concurrent-insert race for the guard to miss.
+
+
 def _insert_evidence_rows(
     d1: D1Client, deep_dive_run_id: int, record: SurfaceomeRecord
 ) -> None:
-    statements: list[tuple[str, list[Any]]] = []
     for ev in record.evidence:
         source_db: str | None = None
         source_url: str | None = None
@@ -195,11 +208,15 @@ def _insert_evidence_rows(
             source_db = first.source.source_type
             source_url = str(first.source.url) if first.source.url is not None else None
             span_text = first.quote
-        statements.append((
+        d1.query(
             "INSERT INTO deep_dive_evidence "
             "(deep_dive_run_id, evidence_id, source_db, source_url,"
             " span_text, claim_kind, is_primary) "
-            "VALUES (?, ?, ?, ?, ?, ?, ?);",
+            "SELECT ?, ?, ?, ?, ?, ?, ? "
+            "WHERE NOT EXISTS ("
+            " SELECT 1 FROM deep_dive_evidence"
+            " WHERE deep_dive_run_id = ? AND evidence_id = ?"
+            ");",
             [
                 deep_dive_run_id,
                 ev.evidence_id,
@@ -208,11 +225,10 @@ def _insert_evidence_rows(
                 span_text,
                 ev.claim_type,
                 1 if ev.evidence_tier == "primary" else 0,
+                deep_dive_run_id,
+                ev.evidence_id,
             ],
-        ))
-    if statements:
-        for sql, params in statements:
-            d1.query(sql, params)
+        )
 
 
 def _insert_search_log_rows(
@@ -222,7 +238,11 @@ def _insert_search_log_rows(
         d1.query(
             "INSERT INTO deep_dive_search_log "
             "(deep_dive_run_id, step_index, source, query, hit_count, yielded_citation) "
-            "VALUES (?, ?, ?, ?, ?, ?);",
+            "SELECT ?, ?, ?, ?, ?, ? "
+            "WHERE NOT EXISTS ("
+            " SELECT 1 FROM deep_dive_search_log"
+            " WHERE deep_dive_run_id = ? AND step_index = ?"
+            ");",
             [
                 deep_dive_run_id,
                 i,
@@ -230,6 +250,8 @@ def _insert_search_log_rows(
                 str(entry.query) if entry.query else None,
                 int(entry.n_results),
                 1 if entry.sources_seen else 0,
+                deep_dive_run_id,
+                i,
             ],
         )
 
