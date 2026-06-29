@@ -39,7 +39,7 @@ BASE = f"https://raw.githubusercontent.com/{REPO}/{BRANCH}"
 # chunk and PDF's Subject info field. Read back with
 # ``exiftool figure.png | grep Source`` or in Python with
 # ``Image.open(p).info["Source"]``.
-GIST_URL = "https://gist.github.com/beccajcarlson/PENDING-positive-control"
+GIST_URL = "https://gist.github.com/beccajcarlson/3ab5df749b576912959c75fe7013d78c"
 
 # Input TSVs — augmented indicator tables keyed on hgnc_id.
 ADC_TSV = f"{BASE}/data/processed/positive_controls/positive_control_ADC.tsv"
@@ -220,6 +220,15 @@ def render(df_tidy: pd.DataFrame, out_dir: Path) -> Path:
 
     long = _fetch_tsv(LONG_TSV)
 
+    # Per-category Sonnet misses (gene names where sonnet_full_flag=0). With
+    # Sonnet ≥98% per category there's 0-1 miss per panel — annotate inline
+    # to make the figure self-explanatory.
+    misses_per_category: dict[str, list[str]] = {}
+    for cat in long["category"].unique():
+        sub = long[long["category"] == cat]
+        missed = sub[sub["sonnet_full_flag"] == 0]["hgnc_symbol"].tolist()
+        misses_per_category[cat] = sorted(missed)
+
     for ax, (_, slug, panel_title) in zip(axes, CATEGORIES):
         sub = df_tidy[df_tidy["category"] == slug]
         n_total = int(sub["n_total"].iloc[0])
@@ -255,6 +264,21 @@ def render(df_tidy: pd.DataFrame, out_dir: Path) -> Path:
                 i, n + n_total * 0.025, label,
                 ha="center", va="bottom", fontsize=10,
                 color=DB_COLOR[db], weight="semibold", linespacing=1.25,
+            )
+
+        # Annotate the Sonnet bar with the gene name(s) Sonnet missed.
+        # Rotated 90° to fit the narrow column.
+        missed = misses_per_category.get(slug, [])
+        if missed:
+            sonnet_idx = DB_ORDER.index("Sonnet")
+            sonnet_n = int(sub[sub["db"] == "Sonnet"]["n"].iloc[0])
+            ax.text(
+                sonnet_idx, sonnet_n - n_total * 0.04,
+                f"missed: {', '.join(missed)}",
+                ha="center", va="top",
+                rotation=90,
+                fontsize=10, style="italic",
+                color="white", weight="semibold",
             )
 
         ax.set_title(f"{panel_title}\n(n = {n_total} targets)", fontsize=12, weight="bold", pad=14)

@@ -4,7 +4,7 @@ Three-panel bar chart: per-database coverage of the three positive-control
 target lists (ADC / TCE / ViralZone). One bar per source (Sonnet + 5 DBs),
 canonical performance-ranked axis order and project palette.
 
-# Reproduction: https://gist.github.com/beccajcarlson/PENDING-positive-control
+# Reproduction: https://gist.github.com/beccajcarlson/3ab5df749b576912959c75fe7013d78c
 
 Run:
 
@@ -81,7 +81,7 @@ ADC_SOURCE_COLOR = {
     "ADCdb":        "#7AAB9F",  # teal-light
 }
 
-GIST_URL = "https://gist.github.com/beccajcarlson/PENDING-positive-control"
+GIST_URL = "https://gist.github.com/beccajcarlson/3ab5df749b576912959c75fe7013d78c"
 
 
 def _smart_yticks(n_total: int) -> list[int]:
@@ -140,6 +140,16 @@ def render(df_tidy: pd.DataFrame) -> None:
     long_path = REPO_ROOT / "data/processed/positive_controls/positive_control_long.tsv"
     long = pd.read_csv(long_path, sep="\t")
 
+    # Per-category set of Sonnet misses, used to annotate the Sonnet bar
+    # with the actual missed gene name(s). With Sonnet ≥98% per category
+    # there's usually 0-1 miss per panel — annotating each one inline
+    # makes the figure self-explanatory without a separate caption.
+    misses_per_category: dict[str, list[str]] = {}
+    for cat in long["category"].unique():
+        sub = long[long["category"] == cat]
+        missed = sub[sub["sonnet_full_flag"] == 0]["hgnc_symbol"].tolist()
+        misses_per_category[cat] = sorted(missed)
+
     for ax, (slug, panel_title) in zip(axes, CATEGORIES):
         sub = df_tidy[df_tidy["category"] == slug]
         n_total = int(sub["n_total"].iloc[0])
@@ -176,6 +186,23 @@ def render(df_tidy: pd.DataFrame) -> None:
                 i, n + n_total * 0.025, label,
                 ha="center", va="bottom", fontsize=10,
                 color=DB_COLOR[db], weight="semibold", linespacing=1.25,
+            )
+
+        # Annotate the Sonnet bar with the gene name(s) Sonnet missed. Placed
+        # INSIDE the bar near the top, rotated 90° to fit the narrow column
+        # (white italic against the Sonnet orange). With ≥98% per panel
+        # there's 0-1 misses so the string fits within the bar height.
+        missed = misses_per_category.get(slug, [])
+        if missed:
+            sonnet_idx = DB_ORDER.index("Sonnet")
+            sonnet_n = int(sub[sub["db"] == "Sonnet"]["n"].iloc[0])
+            ax.text(
+                sonnet_idx, sonnet_n - n_total * 0.04,
+                f"missed: {', '.join(missed)}",
+                ha="center", va="top",
+                rotation=90,
+                fontsize=10, style="italic",
+                color="white", weight="semibold",
             )
 
         ax.set_title(f"{panel_title}\n(n = {n_total} targets)", fontsize=12, weight="bold", pad=14)

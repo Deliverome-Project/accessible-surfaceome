@@ -1,6 +1,6 @@
 {
+  "bench_topology_vs_universe": "676b9e5ab9112191a96560ca6fdb17d6",
   "benchmark_cost_vs_accuracy": "d7f764d2de288ae31cf44173bc396d41",
-  "curator_vs_agent_reason": "c98fe6646ba8b967767d072657da31b7",
   "db_correctness_by_class": "2bb4f7aac629535982c142bc2032e04d",
   "db_correctness_overall": "9c765ed9673d7bd845c3ac091ad2204d",
   "db_cutoff_tradeoff": "f9319af882e372194bd30640c0cbf2ed",
@@ -8,7 +8,10 @@
   "db_vs_sonnet_whole_proteome": "1265c867a3bbb08efd81262789e1f013",
   "deep_dive_final_categories": "c2441f8d0314c5524463bc85a3e86612",
   "ensemble_vs_best_db_vs_sonnet": "0104308c239fe49d91d82a1007632b27",
+  "evidence_corpus_vs_selected": "27acf83e5e0175fd0887777adf49497b",
   "paywall_bot_block_compare": "cbc950dad1c3a6595fd5018cdb6b030d",
+  "positive_control_db_coverage_bars": "3ab5df749b576912959c75fe7013d78c",
   "topology_coverage_by_source": "95b0f4cdcaf6a6b91f57539cd1515a25",
+  "triage_vs_deep_dive_reason": "d8763d79859db70ffef660251a9bb83e",
   "zero_db_rescues_by_triage": "a4526c9e6de5e958826bf1d764744c1b"
 }
