@@ -45,6 +45,7 @@ SLUG = "curator_vs_agent_reason"
 
 BENCH_TSV = ROOT / "data/eval/triage_benchmark_v1.tsv"
 PRED_TSV = ROOT / "data/processed/triage_bench/mainbench_canonical_v2.tsv"
+REPS_TSV = ROOT / "data/processed/triage_bench/mainbench_replicates_v2.tsv"
 PROD_MODEL = "claude-sonnet-4-6"
 PROD_VARIANT = "ncbi"
 
@@ -86,7 +87,7 @@ LABEL_SHORT = {
     "classical_surface_receptor":   "classical\nsurf rcptr",
     "multipass_with_exposed_loops": "multipass\nexp loops",
     "gpi_anchored":                 "GPI\nanchored",
-    "extracellular_face_protein":   "ECF\nprotein",
+    "extracellular_face_protein":   "extracell. face\n(other YES)",
     "stable_complex_partner":       "stable cplx\npartner",
     "stable_surface_attachment":    "stable surf\nattachment",
     "cell_state_induced":           "cell-state\ninduced",
@@ -201,6 +202,24 @@ def _all_preds() -> dict[tuple[str, str], dict[str, str]]:
     return out
 
 
+def _all_rep_preds() -> dict[tuple[str, str, int], dict[str, str]]:
+    """Per-replicate predictions: {(model, variant, replicate): {gene:
+    predicted_reason}}. Drives the per-bar replicate dots + SEM error
+    bars in panel a. mainbench_replicates_v2.tsv has 3 reps per cell
+    for every (model, variant) in CONFIGS_A; missing-cell guard below
+    just yields fewer dots."""
+    needed = {(m, v) for (m, v, _) in CONFIGS_A}
+    out: dict[tuple[str, str, int], dict[str, str]] = {}
+    with open(REPS_TSV) as f:
+        for r in csv.DictReader(f, delimiter="\t"):
+            key = (r["model"], r["prompt_variant"])
+            if key not in needed:
+                continue
+            rep = int(r["replicate"])
+            out.setdefault((*key, rep), {})[r["gene_symbol"]] = r["predicted_reason"]
+    return out
+
+
 def _bucket(reason: str) -> str:
     yes = {"classical_surface_receptor", "gpi_anchored", "multipass_with_exposed_loops",
            "extracellular_face_protein", "stable_complex_partner"}
@@ -279,7 +298,8 @@ def make_plot() -> tuple[plt.Figure, list[plt.Axes]]:
         return _bucket(pred_r) == _bucket(gt_r)
 
     def _draw_grouped(ax, configs, x_groups, group_acc, *, bar_w=None,
-                       overall_idx=0, label="(%)", show_legend=True):
+                       overall_idx=0, label="(%)", show_legend=True,
+                       rep_acc=None):
         """Render one config-grouped bar chart.
 
         ``configs``: list of (model, variant, label) tuples — one bar
@@ -288,6 +308,11 @@ def make_plot() -> tuple[plt.Figure, list[plt.Axes]]:
             element (index = overall_idx) is the "Overall" group; a
             dotted vertical separator gets drawn right after it.
         ``group_acc``: {config_key: {group_label: (n_match, n_total)}}.
+        ``rep_acc``: optional {(model, variant): {group_label:
+            [pct_rep1, pct_rep2, pct_rep3]}}. When supplied, each bar
+            gets per-replicate scatter dots + SEM error bar centred
+            on the bar's mean (which equals the bar height because
+            the bar is computed from the pooled-across-reps cell).
         """
         n_cfg = len(configs)
         if bar_w is None:
@@ -298,9 +323,32 @@ def make_plot() -> tuple[plt.Figure, list[plt.Axes]]:
             for g in x_groups:
                 m_, t_ = group_acc[(mod, var)].get(g, (0, 0))
                 vals.append(100 * m_ / t_ if t_ else 0)
-            ax.bar(x + (i - (n_cfg - 1) / 2) * bar_w, vals, width=bar_w,
+            bar_x = x + (i - (n_cfg - 1) / 2) * bar_w
+            ax.bar(bar_x, vals, width=bar_w,
                    label=lab, color=_config_color_for(mod, var),
-                   edgecolor="none")
+                   edgecolor="none", zorder=2)
+            if rep_acc is not None and (mod, var) in rep_acc:
+                # SEM error bar + per-rep dots overlaid on each bar.
+                # SEM = stdev / sqrt(n_reps). With n_reps=3 the bar
+                # is short; the dots themselves communicate the spread.
+                for k, g in enumerate(x_groups):
+                    rep_vals = rep_acc[(mod, var)].get(g, [])
+                    if len(rep_vals) < 2:
+                        continue
+                    arr = np.asarray(rep_vals, dtype=float)
+                    mean = float(arr.mean())
+                    sem = float(arr.std(ddof=1) / np.sqrt(len(arr)))
+                    bx = bar_x[k]
+                    ax.errorbar(
+                        bx, mean, yerr=sem, fmt="none", ecolor="#1F1718",
+                        elinewidth=0.9, capsize=2.0, capthick=0.9, zorder=4,
+                    )
+                    # Tiny horizontal jitter so 3 dots don't stack.
+                    jitter = np.linspace(-bar_w * 0.18, bar_w * 0.18, len(arr))
+                    ax.scatter(
+                        bx + jitter, arr, s=8, color="#1F1718",
+                        edgecolor="white", linewidth=0.4, zorder=5,
+                    )
         ax.set_xticks(x)
         ax.set_xticklabels(x_groups, fontsize=10)
         ax.set_ylim(0, 109)
@@ -320,14 +368,16 @@ def make_plot() -> tuple[plt.Figure, list[plt.Axes]]:
     # ─────── (a) per-bucket strict accuracy ───────
     BUCKETS_PA = ["yes", "ctx", "no"]
     BUCKET_LABEL_PA = {"yes": "Yes", "ctx": "Contextual", "no": "No"}
-    # Compute overall + per-bucket accuracy for ALL 10 configs.
-    bucket_acc: dict[tuple[str, str], dict[str, tuple[int, int]]] = {}
-    for (mod, var, _label) in CONFIGS_A:
+
+    def _bucket_acc_for_pred_map(pred_map: dict[str, str]) -> dict[str, tuple[int, int]]:
+        """One pass of bucket-strict accuracy bookkeeping for the
+        given gene→predicted_reason map (used both for the pooled bar
+        and for each individual replicate)."""
         acc = {"Overall": [0, 0]} | {BUCKET_LABEL_PA[b]: [0, 0] for b in BUCKETS_PA}
         for gene, gt_r in curator.items():
-            if gene not in all_preds[(mod, var)]:
+            if gene not in pred_map:
                 continue
-            pred_r = all_preds[(mod, var)][gene]
+            pred_r = pred_map[gene]
             gt_b = _bucket(gt_r)
             if gt_b not in ("yes", "ctx", "no"):
                 continue
@@ -335,16 +385,40 @@ def make_plot() -> tuple[plt.Figure, list[plt.Axes]]:
             acc["Overall"][1] += 1
             if ok:
                 acc["Overall"][0] += 1
-            label = BUCKET_LABEL_PA[gt_b]
-            acc[label][1] += 1
+            lab = BUCKET_LABEL_PA[gt_b]
+            acc[lab][1] += 1
             if ok:
-                acc[label][0] += 1
-        bucket_acc[(mod, var)] = {k: tuple(v) for k, v in acc.items()}
+                acc[lab][0] += 1
+        return {k: tuple(v) for k, v in acc.items()}
+
+    # Compute overall + per-bucket accuracy for ALL 10 configs (pooled
+    # across reps — same as the bar height).
+    bucket_acc: dict[tuple[str, str], dict[str, tuple[int, int]]] = {}
+    for (mod, var, _label) in CONFIGS_A:
+        bucket_acc[(mod, var)] = _bucket_acc_for_pred_map(all_preds[(mod, var)])
+
+    # Per-replicate bucket accuracy → drives the dot + SEM overlay
+    # in _draw_grouped. {(model, variant): {group_label: [pct1, ...]}}
+    rep_preds = _all_rep_preds()
+    rep_bucket_acc: dict[tuple[str, str], dict[str, list[float]]] = {}
+    for (mod, var, _label) in CONFIGS_A:
+        per_rep: dict[str, list[float]] = {}
+        for (m_, v_, rep), pmap in rep_preds.items():
+            if (m_, v_) != (mod, var):
+                continue
+            acc = _bucket_acc_for_pred_map(pmap)
+            for g, (n_match, n_total) in acc.items():
+                per_rep.setdefault(g, []).append(
+                    100.0 * n_match / n_total if n_total else 0.0
+                )
+        rep_bucket_acc[(mod, var)] = per_rep
+
     groups_a = ["Overall", "Yes", "Contextual", "No"]
     _draw_grouped(ax_bucket, CONFIGS_A, groups_a, bucket_acc,
                    bar_w=0.08, overall_idx=0,
                    label="Bucket-strict accuracy (%)",
-                   show_legend=True)
+                   show_legend=True,
+                   rep_acc=rep_bucket_acc)
     ax_bucket.text(0.0, 1.05, "a", transform=ax_bucket.transAxes,
                    fontsize=22, fontweight="bold", va="bottom")
 
@@ -372,9 +446,14 @@ def make_plot() -> tuple[plt.Figure, list[plt.Axes]]:
             row[1] += 1
             if pred_r == gt_r:
                 row[0] += 1
-    # Filter to reasons with n ≥ 2, sort by n descending
-    reasons = [r for r in reason_n if reason_n[r] >= 2]
-    reasons.sort(key=lambda r: -reason_n[r])
+    # Show ALL reasons present on the bench (n ≥ 1). The earlier n ≥ 2
+    # filter silently hid three single-instance reasons — surfacing them
+    # is more honest, but they read as 100%/0% by construction, so we
+    # mark them in the label. Reasons absent from the bench entirely
+    # are listed in the on-axes annotation below.
+    reasons = sorted(reason_n.keys(), key=lambda r: (-reason_n[r], r))
+    enum_reasons = set(REASONS_ORDERED)
+    absent_from_bench = sorted(enum_reasons - set(reason_n.keys()))
     # Build group_acc for the renderer — "Overall" first, then one
     # entry per reason (label = short name + n).
     short = {r: LABEL_SHORT.get(r, r).replace("\n", " ") for r in reasons}
@@ -389,13 +468,27 @@ def make_plot() -> tuple[plt.Figure, list[plt.Axes]]:
             gb[label] = tuple(row)
         group_acc_b[(mod, var)] = gb
     _draw_grouped(ax_perreason, CONFIGS_B, groups_b, group_acc_b,
-                   bar_w=0.18, overall_idx=0,
+                   bar_w=0.16, overall_idx=0,
                    label="Exact-reason accuracy (%)",
                    show_legend=True)
     # Re-rotate x-labels (per-reason labels are too long horizontally)
     for tick in ax_perreason.get_xticklabels():
         tick.set_rotation(35); tick.set_ha("right"); tick.set_rotation_mode("anchor")
         tick.set_fontsize(9)
+    # Annotation: explicit list of TriageReason enum values with no
+    # bench representative. Stops the reader from wondering "where are
+    # the missing 3?" — the closed enum has 19 values; this panel
+    # shows the {len(reasons)} bench-present ones.
+    n_present = len(reasons)
+    n_enum = len(enum_reasons)
+    absent_str = ", ".join(absent_from_bench) if absent_from_bench else "none"
+    ax_perreason.text(
+        0.5, -0.42,
+        f"Showing {n_present} of {n_enum} TriageReason enum values "
+        f"(present on bench, n ≥ 1). Absent from bench: {absent_str}.",
+        transform=ax_perreason.transAxes, ha="center", va="top",
+        fontsize=10, style="italic", color=COLORS["neutral"],
+    )
     ax_perreason.text(0.0, 1.05, "b", transform=ax_perreason.transAxes,
                       fontsize=22, fontweight="bold", va="bottom")
 
