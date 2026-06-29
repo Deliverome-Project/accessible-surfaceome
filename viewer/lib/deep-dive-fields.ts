@@ -409,19 +409,24 @@ export const DD_ENUM_FIELDS: readonly DdEnumSpec[] = [
   },
   {
     // Cohort-percentile-banded unique-paper count behind the evidence
-    // list (schema 2.14.0). Replaces evidence_density as the
-    // "understudied vs well-studied" filter signal — evidence_density
-    // counts rows, this counts unique papers. Cutoffs come from the
-    // catalog response's `n_papers_selected_cutoffs` (low ≤p10,
-    // moderate p10–p90, high ≥p90); the catalog handler computes them
-    // once over the deep-dive subset. Marked deterministic because
-    // the count is mechanically derived from the evidence-list shape,
-    // even though that shape was decided by the LLM.
+    // list (schema 2.14.0+). The viewer's understudied-vs-well-studied
+    // filter — distinct from evidence_density which buckets evidence
+    // ROWS (one paper can produce many rows). Cutoffs come from the
+    // catalog response's `n_papers_selected_cutoffs` (low at-or-below
+    // p10, moderate between p10 and p90, high at-or-above p90); the
+    // catalog handler recomputes them each build from the deep-dive
+    // subset's distribution.
+    //
+    // `llm` provenance per the DdProvenance contract: the underlying
+    // count (n_papers_selected) is derived from the agent's evidence
+    // list, which is an LLM judgement about which papers to select
+    // for full-text reading. Mechanical post-hoc bucketing doesn't
+    // change the provenance bucket — same call as evidence_density.
     key: "n_papers_selected_band",
     label: "Papers selected",
     values: ["low", "moderate", "high"],
     tooltipKey: "catalog_n_papers_selected",
-    provenance: "deterministic",
+    provenance: "llm",
   },
   {
     key: "ecd_accessibility_class",
