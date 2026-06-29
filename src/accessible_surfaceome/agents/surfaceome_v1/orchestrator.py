@@ -31,6 +31,7 @@ from accessible_surfaceome.tools._shared.models import (
     AccessibilityRisks,
     BiologicalContext,
     DeterministicFeatures,
+    Evidence,
     EvidenceDensity,
     ExecutiveSummary,
     Filters,
@@ -463,6 +464,30 @@ def _evidence_density(n: int) -> EvidenceDensity:
     return "low"
 
 
+def _count_unique_papers(evidence: list[Evidence] | None) -> int:
+    """Count distinct papers in an evidence list — one paper can back
+    multiple ``Evidence`` entries when it supports several claims, so
+    the row count overcounts. The viewer's "papers selected" filter
+    and its percentile bands key off the unique-paper count, not the
+    row count.
+
+    The paper ID lives on ``Evidence.spans[i].source.source_id`` (e.g.
+    ``"PMID:12345678"`` or ``"DOI:10.xx/yy"``). An evidence row with
+    no spans (``entailment_verified=False`` cases) contributes nothing
+    — by construction those rows have no provenance to anchor.
+    """
+    if not evidence:
+        return 0
+    ids: set[str] = set()
+    for ev in evidence:
+        for span in getattr(ev, "spans", None) or []:
+            src = getattr(span, "source", None)
+            sid = getattr(src, "source_id", None) if src else None
+            if sid:
+                ids.add(sid)
+    return len(ids)
+
+
 def scrub_headline_risks(
     executive_summary: "ExecutiveSummary",
     accessibility_risks: "AccessibilityRisks",
@@ -554,6 +579,8 @@ def _derive_filters(
     filters_llm: SynthesizerLLMFilters,
     deterministic_features: DeterministicFeatures,
     n_evidence: int,
+    evidence: list[Evidence] | None = None,
+    n_papers_found: int = 0,
 ) -> Filters:
     """Build the 17-field top-level ``Filters`` from B's blocks + the
     deterministic side. 14 fields are derived deterministically; 3 come from
@@ -781,8 +808,16 @@ def _derive_filters(
         evidence_grade=surface_evidence.evidence_grade,
         # D — from accessibility_risks (B)
         ecd_accessibility_class=accessibility_risks.ecd_size_assessment.ecd_accessibility_class,
-        # D — bucketed
+        # D — bucketed (legacy: counts evidence ROWS, not papers)
         evidence_density=_evidence_density(n_evidence),
+        # D — unique papers in the evidence list. Computable from the
+        # existing evidence rows; the orchestrator passes them in to
+        # avoid round-tripping through the SurfaceomeRecord.
+        n_papers_selected=_count_unique_papers(evidence),
+        # D — total candidate corpus size from discovery; defaults to 0
+        # for records annotated before this field existed (backfill via
+        # a discover-only rerun).
+        n_papers_found=n_papers_found,
         # L — from B's SynthesizerLLMFilters
         expression_level=filters_llm.expression_level,
         expression_breadth=filters_llm.expression_breadth,

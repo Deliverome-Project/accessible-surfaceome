@@ -1745,7 +1745,25 @@ class Filters(BaseModel):
     llm_family: ProteinFamily = "miscellaneous"
     evidence_grade: EvidenceGrade
     ecd_accessibility_class: ECDAccessibilityClass
+    # Legacy bucketed counter (≥30 → high, ≥10 → moderate, else low) over
+    # evidence ROWS (citation rows the agent pulled). One paper can produce
+    # multiple rows, so this conflates per-claim depth with paper count.
+    # Superseded by the two paper-count fields below for the viewer's
+    # "understudied / well-studied" filter; kept for back-compat.
     evidence_density: EvidenceDensity
+    # Unique papers in the evidence list — `len({e.pmid for e in evidence})`.
+    # The filterable signal for "how much surface-relevant literature
+    # did the agent actually surface for this gene?". Percentile bands
+    # (low ≤p10, moderate p10-p90, high ≥p90) computed at catalog-build
+    # time over the deep-dive cohort, not pinned on each record.
+    n_papers_selected: int = Field(default=0, ge=0)
+    # Total candidate corpus size from the discovery step (EuropePMC +
+    # PubTator NER + gene2pubmed union, deduplicated by pmid). Best signal
+    # for "is this gene generally understudied (regardless of selection)";
+    # display-only on the viewer, not a filterable today. Defaults to 0
+    # for records annotated before this field landed — backfill requires
+    # a discover-only rerun (no LLM, ~free).
+    n_papers_found: int = Field(default=0, ge=0)
     expression_level: ExpressionLevel
     expression_breadth: ExpressionBreadth
     surface_specificity: SurfaceSpecificity
@@ -3738,8 +3756,8 @@ class SurfaceomeRecord(BaseModel):
     schema_version: Literal[
         "1.0.0", "1.1.0", "2.0.0", "2.1.0", "2.2.0", "2.3.0", "2.4.0", "2.4.1",
         "2.5.0", "2.6.0", "2.7.0", "2.8.0", "2.9.0", "2.10.0", "2.11.0", "2.12.0",
-        "2.13.0",
-    ] = "2.13.0"
+        "2.13.0", "2.14.0",
+    ] = "2.14.0"
     # The prompt corpus version active when this record was synthesized.
     # Default ``""`` for backward-compat with legacy records loaded from D1
     # / on-disk snapshots that pre-date this field; new annotator runs stamp
@@ -3939,8 +3957,8 @@ class SurfaceomeRecordDraft(BaseModel):
     schema_version: Literal[
         "1.0.0", "1.1.0", "2.0.0", "2.1.0", "2.2.0", "2.3.0", "2.4.0", "2.4.1",
         "2.5.0", "2.6.0", "2.7.0", "2.8.0", "2.9.0", "2.10.0", "2.11.0", "2.12.0",
-        "2.13.0",
-    ] = "2.13.0"
+        "2.13.0", "2.14.0",
+    ] = "2.14.0"
     # The prompt corpus version active when this record was synthesized.
     # Default ``""`` for backward-compat with legacy records loaded from D1
     # / on-disk snapshots that pre-date this field; new annotator runs stamp

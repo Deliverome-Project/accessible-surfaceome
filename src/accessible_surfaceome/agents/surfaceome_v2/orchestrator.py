@@ -2152,6 +2152,21 @@ def _annotate(
                 filters_llm=synth_draft.filters_llm,
                 deterministic_features=det_features,
                 n_evidence=len(evidence),
+                evidence=evidence,
+                # Best available proxy for "discovery corpus size": each
+                # PTS side persists ``n_papers_total = len(clips_by_source)``
+                # — the count of papers that produced at least one selected
+                # clip. This is technically post-selection rather than
+                # raw-discovery (the EuropePMC + PubTator + gene2pubmed
+                # union upstream), so a TODO remains to bubble the true
+                # pre-trim corpus size up through the runner. Both sides
+                # see the same discovery, so max() is the right reducer.
+                # Falls back to 0 when the side blob is absent (resume
+                # from a pre-field checkpoint).
+                n_papers_found=max(
+                    getattr(dual.a1, "n_papers_total", 0) or 0,
+                    getattr(dual.a2, "n_papers_total", 0) or 0,
+                ),
             )
 
         # ---- step 9: assemble SurfaceomeRecord --------------------------------
