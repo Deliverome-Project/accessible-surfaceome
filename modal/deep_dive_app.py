@@ -313,10 +313,11 @@ def _log_concurrency_plan() -> None:
 
 
 def _load_and_filter(
-    gene_list: str, run_id: str, no_d1: bool
+    gene_list: str, run_id: str, no_d1: bool, include_quarantined: bool = False
 ) -> tuple[list[dict], int]:
-    """Driver-side helper: load the TSV, filter out genes already in D1
-    under this run_id. Returns (remaining_rows_as_payloads, total_loaded).
+    """Driver-side helper: load the TSV, filter out genes already done in D1
+    under this run_id AND genes quarantined for manual review (over-cap aborts).
+    Returns (remaining_rows_as_payloads, total_loaded).
     """
     from scripts.deep_dive_sweep import load_gene_list
     rows = load_gene_list(Path(gene_list))
@@ -328,6 +329,34 @@ def _load_and_filter(
             rows = [r for r in rows if not sink.already_done(r.hgnc_symbol)]
         finally:
             sink.close()
+        if not include_quarantined:
+            # Over-cap genes already burned their budget; never auto-resume
+            # them. They're surfaced for manual review (raise the ceiling
+            # deliberately, then re-run with --include-quarantined).
+            from accessible_surfaceome.cloud.d1_client import D1Client
+            from accessible_surfaceome.cloud.intermediates import (
+                fetch_quarantined_genes,
+            )
+            try:
+                with D1Client() as d1:
+                    quarantined = fetch_quarantined_genes(d1, cohort_run_id=run_id)
+            except Exception as exc:  # noqa: BLE001 — never block dispatch
+                print(
+                    f"warning: quarantine lookup failed ({exc}); proceeding "
+                    "without quarantine filter",
+                    flush=True,
+                )
+                quarantined = set()
+            if quarantined:
+                before = len(rows)
+                rows = [r for r in rows if r.hgnc_symbol not in quarantined]
+                preview = ", ".join(sorted(quarantined)[:20])
+                more = " …" if len(quarantined) > 20 else ""
+                print(
+                    f"quarantine: skipping {before - len(rows)} over-cap gene(s) "
+                    f"flagged for MANUAL REVIEW: {preview}{more}",
+                    flush=True,
+                )
     payloads = [
         {
             "hgnc_id": r.hgnc_id,
@@ -417,6 +446,7 @@ def full_sweep(
     max_cost_per_gene_usd: float = 10.0,
     max_total_cost_usd: float = 18000.0,
     chunk_size: int = 200,
+    include_quarantined: bool = False,
 ):
     """Launch the full sweep over genes not yet in D1 under run_id.
 
@@ -436,7 +466,9 @@ def full_sweep(
     load_env()
     _log_concurrency_plan()
 
-    payloads, total = _load_and_filter(gene_list, run_id, no_d1=False)
+    payloads, total = _load_and_filter(
+        gene_list, run_id, no_d1=False, include_quarantined=include_quarantined
+    )
     print(
         f"full sweep: {len(payloads)}/{total} genes remaining "
         f"(resumed from D1 run_id={run_id}); chunk_size={chunk_size}",

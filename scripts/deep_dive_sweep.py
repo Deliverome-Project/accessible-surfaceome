@@ -32,6 +32,10 @@ from dataclasses import dataclass
 from pathlib import Path
 
 from accessible_surfaceome.agents.surfaceome_v2 import annotate
+from accessible_surfaceome.agents.surfaceome_v2.orchestrator import (
+    load_resumable_dual,
+    set_pts_checkpoint_publisher,
+)
 from accessible_surfaceome.cloud.deep_dive_upload import D1DeepDiveSink
 from accessible_surfaceome.cloud.intermediates import publish_intermediates
 from accessible_surfaceome.cloud.surface_annotation import publish_record
@@ -132,6 +136,29 @@ class GeneResult:
     cost_capped: bool = False
 
 
+def _make_pts_checkpoint_publisher(cohort_id: str):
+    """Build the durable mid-run PTS checkpoint publisher for this cohort.
+
+    Installed into the orchestrator (gap-1) so a hard crash after plan-trim-
+    select still leaves the dual in D1. Gene-agnostic: takes ``(gene, blob)``
+    and writes a non-terminal ``pts_checkpoint`` intermediates row.
+    ``publish_intermediates`` is itself best-effort (never raises).
+    """
+    schema_version = SurfaceomeRecord.model_fields["schema_version"].default
+
+    def _publish(gene_symbol: str, blob: dict) -> None:
+        publish_intermediates(
+            gene_symbol=gene_symbol,
+            intermediates=blob,
+            schema_version=schema_version,
+            record_valid=False,
+            cohort_run_id=cohort_id,
+            failure_mode="pts_checkpoint",
+        )
+
+    return _publish
+
+
 def annotate_one(
     row: GeneRow,
     *,
@@ -169,6 +196,15 @@ def annotate_one(
     http = open_default_client()
     t0 = time.monotonic()
     cohort_id = cohort_run_id or run_id
+    # Install the durable mid-run PTS checkpoint publisher (gap-1) so a hard
+    # crash after plan-trim-select still leaves the dual in D1 for a cheap
+    # resume. Gene-agnostic + idempotent; cleared when intermediates publishing
+    # is disabled (offline smoke runs) so no stray D1 writes happen.
+    set_pts_checkpoint_publisher(
+        _make_pts_checkpoint_publisher(cohort_id)
+        if publish_intermediates_enabled
+        else None
+    )
     try:
         try:
             bundle = resolve_by_hgnc_id(row.hgnc_id, http=http)
@@ -179,7 +215,14 @@ def annotate_one(
                 blocks_used={}, error=f"resolve failed: {exc}", record_valid=False,
             )
 
-        result = annotate(bundle.hgnc_symbol, http=http, persist=False)
+        # Resume (gap-2): reuse a prior attempt's plan-trim-select dual from
+        # durable D1 intermediates when one exists for this gene at the current
+        # schema + prompt-corpus version (graceful failure / mid-run checkpoint,
+        # never an over-cap quarantine). Skips re-paying ~$1.35 of PTS spend.
+        cached_dual = load_resumable_dual(bundle.hgnc_symbol)
+        result = annotate(
+            bundle.hgnc_symbol, http=http, persist=False, cached_dual=cached_dual
+        )
         cost = float(result.total_cost_usd)
         latency = time.monotonic() - t0
 
@@ -477,6 +520,16 @@ def main(argv: list[str] | None = None) -> int:
             "isn't reachable."
         ),
     )
+    p.add_argument(
+        "--include-quarantined",
+        action="store_true",
+        help=(
+            "Re-run genes quarantined on a prior attempt for exceeding the "
+            "per-gene cost cap. Off by default — over-cap genes are skipped and "
+            "surfaced for manual review. Pass this only after deliberately "
+            "deciding to retry them (e.g. with a raised ceiling)."
+        ),
+    )
     args = p.parse_args(argv)
 
     if args.canary and args.confirm_full_sweep:
@@ -503,6 +556,32 @@ def main(argv: list[str] | None = None) -> int:
             f"run_id={args.run_id}; {len(all_rows)} remaining",
             flush=True,
         )
+        if not args.include_quarantined:
+            from accessible_surfaceome.cloud.d1_client import D1Client
+            from accessible_surfaceome.cloud.intermediates import (
+                fetch_quarantined_genes,
+            )
+            cohort = args.cohort_run_id or args.run_id
+            try:
+                with D1Client() as d1:
+                    quarantined = fetch_quarantined_genes(d1, cohort_run_id=cohort)
+            except Exception as exc:  # noqa: BLE001 — never block the sweep
+                print(
+                    f"warning: quarantine lookup failed ({exc}); proceeding "
+                    "without quarantine filter",
+                    flush=True,
+                )
+                quarantined = set()
+            if quarantined:
+                before_q = len(all_rows)
+                all_rows = [r for r in all_rows if r.hgnc_symbol not in quarantined]
+                preview = ", ".join(sorted(quarantined)[:20])
+                more = " …" if len(quarantined) > 20 else ""
+                print(
+                    f"quarantine: skipping {before_q - len(all_rows)} over-cap "
+                    f"gene(s) flagged for MANUAL REVIEW: {preview}{more}",
+                    flush=True,
+                )
 
     if args.canary:
         canary_rows = select_canary(all_rows, args.canary)

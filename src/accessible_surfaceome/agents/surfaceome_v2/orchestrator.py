@@ -118,6 +118,14 @@ from accessible_surfaceome.tools._shared.source_text import SourceText, SourceTe
 logger = logging.getLogger(__name__)
 
 AGENT_MODEL = "claude-sonnet-4-6"
+
+# PTS-level per-gene cost ceiling (USD). A plan-trim-select dual costlier than
+# this aborts BEFORE builders run (failure_mode=cost_ceiling_pts) and the gene
+# is quarantined for manual review — never auto-resumed. Module-level so the
+# resume path (``load_resumable_dual`` → ``resumable_pts_blob``) can reject any
+# checkpoint blob whose persisted PTS cost exceeds it, as defense-in-depth on
+# top of "never write a resumable checkpoint for an over-cap dual".
+MAX_PTS_COST_USD = 5.0
 # Read the current schema_version off the Pydantic model so the version
 # stamp on every emitted record stays in lock-step with the Literal's
 # declared default — no separate string constant to forget to bump. When
@@ -229,6 +237,122 @@ def _load_pts_checkpoint(gene: str) -> DualPlanTrimSelectResult | None:
             gene, exc,
         )
         return None
+
+
+# Optional durable mid-run PTS publisher (gap-1 crash durability). The cohort
+# sweep — whether run on Modal or locally via ``scripts/deep_dive_sweep.py`` —
+# installs this through ``run_one`` so a hard crash AFTER plan-trim-select but
+# BEFORE a terminal intermediates row is written still leaves the (expensive)
+# PTS dual in durable D1; the local ``.runs`` checkpoint above is per-container
+# and evaporates on a Modal retry / cold replacement. The single-gene CLI
+# driver (``scripts/surfaceome_v2_annotate.py``) calls ``annotate`` directly,
+# not through ``run_one``, so it never installs a publisher and keeps only the
+# on-disk checkpoint (no extra D1 write).
+# Signature: ``publisher(gene_symbol, pts_only_intermediates_blob)``.
+_PTS_CHECKPOINT_PUBLISHER: Callable[[str, dict[str, Any]], None] | None = None
+
+
+def set_pts_checkpoint_publisher(
+    fn: Callable[[str, dict[str, Any]], None] | None,
+) -> None:
+    """Install (or clear) the durable mid-run PTS checkpoint publisher."""
+    global _PTS_CHECKPOINT_PUBLISHER
+    _PTS_CHECKPOINT_PUBLISHER = fn
+
+
+def _pts_only_intermediates(
+    dual: DualPlanTrimSelectResult, timing: TimingRecorder
+) -> dict[str, Any]:
+    """Minimal intermediates blob carrying a reconstruct-able PTS dual.
+
+    Shared by the PTS-level cost-ceiling abort and the mid-run checkpoint
+    publish so both persist an identically-shaped payload that
+    :func:`load_resumable_dual` can rebuild.
+    """
+    return {
+        "plan_trim_select": _serialize_pts(dual),
+        "bundle": dual.bundle.model_dump(mode="json")
+        if dual.bundle is not None
+        else None,
+        "cost_total_usd": dual.total_cost_usd,
+        "cost_per_pipeline": {
+            "plan_trim_select": dual.total_cost_usd,
+            "builders": 0.0,
+            "synthesizer": 0.0,
+        },
+        "timing": [t.as_dict() for t in list(timing.entries)],
+    }
+
+
+def _publish_pts_checkpoint(
+    gene: str, dual: DualPlanTrimSelectResult, timing: TimingRecorder
+) -> None:
+    """Best-effort durable publish of the PTS checkpoint (gap-1).
+
+    No-op when no publisher is installed (the single-gene CLI driver, which
+    annotates directly rather than through the sweep's ``run_one``). Never
+    raises — a publish failure just means a crash before the terminal row
+    re-pays PTS, same as the pre-checkpoint behavior.
+    """
+    publisher = _PTS_CHECKPOINT_PUBLISHER
+    if publisher is None:
+        return
+    try:
+        publisher(gene, _pts_only_intermediates(dual, timing))
+    except Exception as exc:  # noqa: BLE001 — best-effort, never break a gene
+        logger.warning(
+            "v2 orchestrator: durable PTS checkpoint publish failed for %s: %s",
+            gene, exc,
+        )
+
+
+def load_resumable_dual(gene_symbol: str) -> DualPlanTrimSelectResult | None:
+    """Reconstruct a cached PTS dual from durable D1 intermediates, or ``None``.
+
+    The cohort resume path (gap-2): if the gene's latest intermediates row is a
+    graceful failure / mid-run checkpoint (NOT an over-cap quarantine) at the
+    current schema + prompt-corpus version, rebuild the dual so a re-run skips
+    re-paying plan-trim-select. Over-cap genes are deliberately never returned
+    — they are quarantined for manual review. Best-effort: any miss returns
+    ``None`` and the gene runs fresh.
+    """
+    try:
+        from accessible_surfaceome.cloud.d1_client import D1Client
+        from accessible_surfaceome.cloud.intermediates import (
+            fetch_latest_intermediates_row,
+            resumable_pts_blob,
+        )
+    except Exception:  # noqa: BLE001
+        return None
+    current_schema = SurfaceomeRecord.model_fields["schema_version"].default
+    try:
+        with D1Client() as d1:
+            row = fetch_latest_intermediates_row(d1, gene_symbol)
+    except Exception as exc:  # noqa: BLE001 — resume is an optimization
+        logger.debug("resume probe failed for %s: %s", gene_symbol, exc)
+        return None
+    blob = resumable_pts_blob(
+        row,
+        current_schema_version=current_schema,
+        current_model_id=AGENT_MODEL,
+        max_resumable_cost_usd=MAX_PTS_COST_USD,
+    )
+    if blob is None:
+        return None
+    try:
+        dual = _dual_from_serialized(gene_symbol, blob["plan_trim_select"])
+    except Exception as exc:  # noqa: BLE001
+        logger.warning(
+            "resume reconstruct failed for %s: %s; running fresh",
+            gene_symbol, exc,
+        )
+        return None
+    logger.info(
+        "v2 orchestrator: resuming %s from durable PTS intermediates "
+        "(skipping ~$1.35 of plan-trim-select spend)",
+        gene_symbol,
+    )
+    return dual
 
 
 def _delete_pts_checkpoint(gene: str) -> None:
@@ -1052,27 +1176,21 @@ def _annotate(
         dual.total_cost_usd,
     )
 
-    # Mid-gene PTS checkpoint: persist the dual so a restart after a
-    # builder/synth failure can short-circuit past the PTS spend. Only
-    # write a checkpoint for FRESH PTS dual runs — when cached_dual was
-    # already provided (replay or checkpoint resume), the on-disk file
-    # is either unchanged or being re-asserted with identical data.
-    # Modal note: ``.runs/_phase_checkpoint/`` is per-container; the
-    # Modal-side analog is a Modal volume mount at the same path. See
-    # the comment on ``_CHECKPOINT_DIR``.
-    if cached_dual is None:
-        _save_pts_checkpoint(gene_id.hgnc_symbol, dual)
-
-    # ---- PTS-level cost cap ----------------------------------------------
-    # Separate from the post-builders MAX_COST_USD ceiling. A pathological
-    # PTS dual (deep-iteration retrieval on a heavy-lit gene gone wrong)
-    # can rack up $5+ before the builders even start. Aborting here with
-    # a valid error result + intermediates publish path means we keep the
-    # diagnostic blob for post-mortem (which papers were fetched, which
-    # claims trimmed) without burning another $0.65+ on the builders.
-    # 5 USD chosen with ~3x headroom over the heaviest observed PTS run
-    # (TGOLN2 ~$1.65) — pathological runs jump well past this.
-    MAX_PTS_COST_USD = 5.0
+    # ---- PTS-level cost cap (checked BEFORE persisting any resumable
+    # checkpoint) -----------------------------------------------------------
+    # Separate from the post-builders MAX_COST_USD ceiling. A pathological PTS
+    # dual (deep-iteration retrieval on a heavy-lit gene gone wrong) can rack up
+    # $5+ before the builders even start. Aborting here keeps the diagnostic
+    # blob for post-mortem without burning another $0.65+ on the builders.
+    # ($5 ≈ 3× the heaviest observed PTS run, TGOLN2 ~$1.65.)
+    #
+    # ORDER MATTERS: this check runs before _save/_publish_pts_checkpoint below.
+    # An over-cap PTS dual must NEVER leave a resumable checkpoint — otherwise a
+    # crash between a (resumable) checkpoint write and the terminal
+    # ``cost_ceiling_pts`` publish would let the gene auto-resume past the cap
+    # on re-dispatch (the replayed zero-cost dual sails through this very
+    # check). Over-cap → return cost_ceiling_pts (quarantine), write nothing
+    # resumable.
     pts_cost = dual.total_cost_usd
     if pts_cost > MAX_PTS_COST_USD:
         logger.warning(
@@ -1082,21 +1200,7 @@ def _annotate(
             pts_cost,
             MAX_PTS_COST_USD,
         )
-        pts_only_intermediates: dict[str, Any] = {
-            "plan_trim_select": _serialize_pts(dual),
-            "bundle": dual.bundle.model_dump(mode="json")
-            if dual.bundle is not None
-            else None,
-            "cost_total_usd": pts_cost,
-            "cost_per_pipeline": {
-                "plan_trim_select": pts_cost,
-                "builders": 0.0,
-                "synthesizer": 0.0,
-            },
-            # Mirror per-step timing into the persisted blob — Modal
-            # tears down ``.runs/`` on container shutdown, D1 is durable.
-            "timing": [t.as_dict() for t in list(timing.entries)],
-        }
+        pts_only_intermediates: dict[str, Any] = _pts_only_intermediates(dual, timing)
         return AnnotateResultV2(
             gene=gene_id.hgnc_symbol,
             record=None,
@@ -1112,6 +1216,16 @@ def _annotate(
             timing=list(timing.entries),
             intermediates=pts_only_intermediates,
         )
+
+    # PTS passed the cap → now it's safe to persist a resumable checkpoint, so
+    # a restart after a builder/synth failure short-circuits past the PTS spend.
+    # Only for FRESH duals — a resumed run (cached_dual) already has the row.
+    # The on-disk file enables a same-machine restart; the durable D1 publish
+    # (installed by the cohort sweep, local or Modal; no-op for the single-gene
+    # CLI driver) survives a Modal container crash.
+    if cached_dual is None:
+        _save_pts_checkpoint(gene_id.hgnc_symbol, dual)
+        _publish_pts_checkpoint(gene_id.hgnc_symbol, dual, timing)
 
     intermediates: dict[str, Any] = {
         "plan_trim_select": _serialize_pts(dual),
