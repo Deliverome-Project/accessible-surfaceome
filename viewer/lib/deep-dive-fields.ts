@@ -33,6 +33,7 @@ export type DdEnumKey =
   | "surface_bind_main_class"
   | "evidence_grade"
   | "evidence_density"
+  | "n_papers_selected_band"
   | "ecd_accessibility_class"
   | "expression_level"
   | "expression_breadth"
@@ -405,6 +406,22 @@ export const DD_ENUM_FIELDS: readonly DdEnumSpec[] = [
     values: ["low", "moderate", "high"],
     tooltipKey: "catalog_evidence_density",
     provenance: "llm",
+  },
+  {
+    // Cohort-percentile-banded unique-paper count behind the evidence
+    // list (schema 2.14.0). Replaces evidence_density as the
+    // "understudied vs well-studied" filter signal — evidence_density
+    // counts rows, this counts unique papers. Cutoffs come from the
+    // catalog response's `n_papers_selected_cutoffs` (low ≤p10,
+    // moderate p10–p90, high ≥p90); the catalog handler computes them
+    // once over the deep-dive subset. Marked deterministic because
+    // the count is mechanically derived from the evidence-list shape,
+    // even though that shape was decided by the LLM.
+    key: "n_papers_selected_band",
+    label: "Papers selected",
+    values: ["low", "moderate", "high"],
+    tooltipKey: "catalog_n_papers_selected",
+    provenance: "deterministic",
   },
   {
     key: "ecd_accessibility_class",
