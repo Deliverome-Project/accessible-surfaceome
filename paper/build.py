@@ -200,7 +200,9 @@ def build(src: Path, strict_figures: bool = False) -> dict[str, Path]:
     #    full contract; manifest at paper/figure_manifest.json.
     #    Sibling import: when this file runs as ``python paper/build.py``
     #    the paper/ directory is what's on sys.path, not its parent.
-    from figure_swap import (
+    #    Static checkers (ty) walk from the repo root and can't see
+    #    the sibling — silence the unresolved-import diagnostic.
+    from figure_swap import (  # type: ignore[unresolved-import]
         format_report,
         load_manifest,
         swap_figures,
