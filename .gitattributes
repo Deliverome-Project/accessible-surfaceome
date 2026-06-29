@@ -16,6 +16,10 @@ data/analysis/**/make_*.py -filter -diff -merge text
 data/analysis/**/01_*.md -filter -diff -merge text
 data/analysis/figures/*.py -filter -diff -merge text
 data/analysis/figures/*.md -filter -diff -merge text
+# Gist registry + SWHID map are small JSON read by Python test code
+# at collection time — LFS pointer reads as text that fails json.loads.
+data/analysis/figures/gist_map.json -filter -diff -merge text
+data/analysis/figures/swhid_map.json -filter -diff -merge text
 
 # Figure outputs themselves ship as plain git too — each PDF is
 # 20–60 KB and each PNG is 130–500 KB, well under the CLAUDE.md
