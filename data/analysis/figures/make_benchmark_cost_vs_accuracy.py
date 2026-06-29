@@ -37,13 +37,12 @@ import seaborn as sns
 REPO = "Deliverome-Project/accessible-surfaceome"
 BRANCH = "main"  # pin to a commit SHA at publication for immutable citation
 BASE = f"https://raw.githubusercontent.com/{REPO}/{BRANCH}"
-BENCH_TSV = f"{BASE}/data/eval/triage_benchmark_v1.tsv"
-PREDS_TSV = f"{BASE}/data/processed/triage_bench/mainbench_canonical_v2.tsv"
-# Per-replicate predictions — the accuracy axis uses the MEAN of per-rep
-# accuracies (matching the 3 bar figures), not the majority-vote accuracy,
-# so all four figures report the same numbers. Cost is still computed from
-# the majority TSV's summed-then-normalized token counts.
-REPS_TSV = f"{BASE}/data/processed/triage_bench/mainbench_replicates_v2.tsv"
+# Single per-figure TSV: one row per (gene × model × prompt_variant ×
+# replicate) with per-rep tokens, ``is_match`` (soft-credit), and
+# ``ground_truth_verdict`` all denormalized in. Produced by
+# ``scripts/build_figure_tsvs.py``. Gist bundles this TSV next to the
+# script; the figure reads only from the sibling, no other URLs.
+DATA_TSV = f"{BASE}/data/processed/figures/benchmark_cost_vs_accuracy.tsv"
 
 # Published reproduction gist (embedded into output PNG Source / PDF
 # Subject metadata — mirrors save_figure in _plotting_config.py).
@@ -203,29 +202,22 @@ def _fetch_tsv(url: str) -> pd.DataFrame:
     )
 
 
-def _verdict_match(pred: str | None, truth: str | None) -> bool:
-    """yes ≡ contextual collapse — same rule the runner applies."""
-    if pred is None or truth is None:
-        return False
-    if pred == truth:
-        return True
-    return pred in ("yes", "contextual") and truth in ("yes", "contextual")
-
-
 def _whole_genome_cost(group: pd.DataFrame) -> float:
-    """Per-cell cost extrapolated to one pass over the 19,324-gene catalog."""
+    """Per-cell cost extrapolated to one pass over the 19,324-gene catalog.
+
+    Per-rep TSV: each row IS one replicate (gene × model × variant × rep),
+    so token columns already carry per-replicate counts. Cost is per single
+    triage pass — average the per-rep counts across the cell's
+    (gene, replicate) rows. ``n`` here is gene-count (rows ÷ reps per gene
+    ≈ unique genes), used only in the system-prompt amortization."""
     model = group["model"].iloc[0]
     pricing = _PRICE[model]
-    n = len(group)
-    # The v2 majority-collapsed TSV SUMS token/web columns across each cell's
-    # 2-3 replicates. Cost is per single triage pass (one replicate), so
-    # normalize each cell's totals by its own n_reps before averaging.
-    nreps = group["n_reps"].clip(lower=1)
-    pt = (group["prompt_tokens"] / nreps).mean()
-    cr = (group["cache_read_tokens"] / nreps).mean()
-    cw = (group["cache_creation_tokens"] / nreps).mean()
-    ot = (group["completion_tokens"] / nreps).mean()
-    ws = (group["n_web_searches"] / nreps).mean()
+    n = group["gene_symbol"].nunique()
+    pt = group["prompt_tokens"].mean()
+    cr = group["cache_read_tokens"].mean()
+    cw = group["cache_creation_tokens"].mean()
+    ot = group["completion_tokens"].mean()
+    ws = group["n_web_searches"].mean()
 
     if cr > 0 or cw > 0:
         sys_size = max(cr, cw)
@@ -245,19 +237,11 @@ def _whole_genome_cost(group: pd.DataFrame) -> float:
 
 def main() -> None:
     _apply_brand_style()
-    preds = _fetch_tsv(PREDS_TSV)
-    truth = _fetch_tsv(BENCH_TSV).set_index("gene_symbol")["ground_truth_verdict"]
-    preds["truth_verdict"] = preds["gene_symbol"].map(truth)
-    preds = preds.dropna(subset=["truth_verdict"])
-    preds["correct"] = [
-        _verdict_match(p, t)
-        for p, t in zip(preds["predicted_verdict"], preds["truth_verdict"], strict=True)
-    ]
-
-    # Mean-of-replicate accuracy per (model, variant) for the y-axis —
-    # matches the 3 bar figures. is_match is the per-rep soft-credit flag.
-    reps_df = _fetch_tsv(REPS_TSV)
+    # Single bundled per-rep TSV with truth + is_match denormalized.
+    reps_df = _fetch_tsv(DATA_TSV)
     reps_df["is_match"] = reps_df["is_match"].astype(int)
+    # Mean-of-replicate accuracy per (model, variant) — matches the 3
+    # bar figures. Equivalent to mean-of-cells-of-mean-of-reps.
     rep_mean_acc = (
         reps_df.groupby(["model", "prompt_variant", "replicate"])["is_match"]
         .mean().reset_index()
@@ -265,7 +249,7 @@ def main() -> None:
     )
 
     cells = []
-    for (model, variant), grp in preds.groupby(["model", "prompt_variant"], sort=False):
+    for (model, variant), grp in reps_df.groupby(["model", "prompt_variant"], sort=False):
         if (model, variant) not in CELL_LABEL:
             continue
         cells.append({
@@ -273,9 +257,7 @@ def main() -> None:
             "variant": variant,
             "label": CELL_LABEL[(model, variant)],
             "color": CELL_COLOR[(model, variant)],
-            # Mean-of-reps accuracy (fall back to majority if a cell is
-            # somehow absent from the per-rep TSV).
-            "accuracy": rep_mean_acc.get((model, variant), grp["correct"].mean()),
+            "accuracy": rep_mean_acc.get((model, variant), grp["is_match"].mean()),
             "cost_whole_genome_usd": _whole_genome_cost(grp),
         })
     df = pd.DataFrame(cells).sort_values("cost_whole_genome_usd").reset_index(drop=True)
