@@ -1,7 +1,15 @@
 # Modal deep-dive sweep
 
 This directory hosts the Modal app that fans the surfaceome_v2 deep-dive
-annotator out across the 5,680-gene candidate universe.
+annotator out across the candidate universe (v3 cohort: 5,105 genes,
+`data/processed/candidate_universe/candidate_universe_v3.tsv`).
+
+> **Driving an actual campaign?** Read the operator runbook —
+> [`docs/operations/deep-dive-modal-runbook.md`](../docs/operations/deep-dive-modal-runbook.md).
+> It covers the $0 preflight, the validation canary, the incremental
+> `--limit` rollout (25 → 100 → 1000 → full), progress tracking, cost
+> controls, resume/recovery, and post-run validation. This README is the
+> app-internals + one-time-setup reference.
 
 ## One-time setup
 
@@ -65,9 +73,12 @@ uv run modal run modal/deep_dive_app.py::full_sweep \
 
 Both entrypoints stream per-gene JSON to the `surfaceome-annotations`
 Volume (under `<run_id>/<symbol>.json`) and best-effort-mirror to the
-`deep_dive_run` table in `surfaceome_agents` D1. The full sweep is
-resume-aware — re-running with the same `--run-id` skips genes already
-in D1.
+`deep_dive_run` table in `surfaceome_agents` D1. Dispatch is
+**resume-aware and schema-aware, globally**: a gene is skipped if it
+already has a completed record at the current `schema_version` in *any*
+`run_id` (plus over-cap genes quarantined for manual review). So
+re-launching is always safe — bump `--limit` to walk through the cohort
+in batches. `--force` re-runs already-complete genes; see the runbook.
 
 ## Pulling JSON files back
 
@@ -112,16 +123,18 @@ changing prompts, or from the same commit/image used for the sweep.
 
 - `cpu=0.5`, `memory=2048`, `timeout=20*60` — fine for most genes; the
   v2 pipeline is I/O-bound on UniProt/NCBI/Anthropic calls.
-- `@modal.concurrent(max_inputs=4)` — 4 genes per worker amortizes
-  cold-start + uses the same vCPU during HTTP waits.
-- `rate_limit_gate` — a single-container Modal function that all workers
-  call before live HTTP requests. It centralizes per-host/per-NCBI-key
-  courtesy limits across Modal fan-out; raw NCBI keys are hashed before
-  they leave the worker process. Run `rate_limit_smoke` after changing
-  Modal plumbing.
-- `max_containers=200` — caps Modal fan-out and Anthropic concurrency.
-  External API courtesy limits are enforced by `rate_limit_gate`, not by
-  per-container sleeps.
+- **Concurrency is OTPM-derived, not a fixed fan-out.** `max_containers`
+  / `max_inputs` resolve from env at launch (default ~64 concurrent genes,
+  sized to keep Anthropic OTPM under 2M/min — see the runbook's
+  *Concurrency tuning*). Each launch prints the projected OTPM vs the
+  ceiling. Tune via `SURFACEOME_MAX_CONTAINERS` / `SURFACEOME_MAX_INPUTS`
+  / `SURFACEOME_PER_GENE_OUTPUT_TOKENS` / `SURFACEOME_GENE_WALL_S`.
+- `rate_limit_gate` — a single-container **reservation** gate all workers
+  call before live HTTP requests. It computes the next free slot per
+  host/NCBI-key and *returns* the wait (the worker sleeps locally — the
+  gate never blocks), so one slow host can't stall others. Raw NCBI keys
+  are hashed before they leave the worker. Run `rate_limit_smoke` after
+  changing Modal plumbing.
 - `--chunk-size 200` (full sweep only) — genes are dispatched in
   chunks of this size; each chunk is drained fully before the next
   launches. Smaller chunks → tighter cost-cap enforcement (bounded

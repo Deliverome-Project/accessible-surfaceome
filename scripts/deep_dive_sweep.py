@@ -497,7 +497,18 @@ def main(argv: list[str] | None = None) -> int:
     p.add_argument("--no-d1", action="store_true",
                    help="Skip the D1 sink (JSON only); useful for offline smoke tests")
     p.add_argument("--limit", type=int, default=None,
-                   help="Truncate the gene list to N rows after resume filtering (debug only)")
+                   help="Process at most N rows after resume filtering — the "
+                        "batch-size knob for an incremental rollout (re-run to continue)")
+    p.add_argument(
+        "--force",
+        action="store_true",
+        help=(
+            "Bypass the schema-aware global dedup: re-run genes even if they "
+            "already have a completed record at the current schema_version "
+            "(re-spends). Off by default — successful current-schema genes are "
+            "skipped across ALL run_ids so an incremental rollout never repeats."
+        ),
+    )
     p.add_argument(
         "--cohort-run-id",
         default=None,
@@ -549,13 +560,31 @@ def main(argv: list[str] | None = None) -> int:
     sink: D1DeepDiveSink | None = None
     if not args.no_d1:
         sink = D1DeepDiveSink(run_id=args.run_id)
-        before = len(all_rows)
-        all_rows = [r for r in all_rows if not sink.already_done(r.hgnc_symbol)]
-        print(
-            f"resume: {before - len(all_rows)} genes already in D1 under "
-            f"run_id={args.run_id}; {len(all_rows)} remaining",
-            flush=True,
-        )
+        if getattr(args, "force", False):
+            print(
+                "--force: skipping schema-aware dedup — already-complete genes "
+                "WILL be re-run (and re-spend).",
+                flush=True,
+            )
+        else:
+            # Global, schema-aware resume: skip genes already complete at the
+            # current schema in ANY run_id (a schema bump re-opens stale genes).
+            from accessible_surfaceome.cloud.d1_client import D1Client
+            from accessible_surfaceome.cloud.deep_dive_upload import (
+                genes_done_at_schema,
+            )
+            from accessible_surfaceome.tools._shared.models import SurfaceomeRecord
+
+            schema = SurfaceomeRecord.model_fields["schema_version"].default
+            before = len(all_rows)
+            with D1Client() as d1:
+                done = genes_done_at_schema(d1, schema)
+            all_rows = [r for r in all_rows if r.hgnc_symbol not in done]
+            print(
+                f"resume: {before - len(all_rows)} gene(s) already complete at "
+                f"schema {schema} (any run_id) — skipping; {len(all_rows)} remaining",
+                flush=True,
+            )
         if not args.include_quarantined:
             from accessible_surfaceome.cloud.d1_client import D1Client
             from accessible_surfaceome.cloud.intermediates import (

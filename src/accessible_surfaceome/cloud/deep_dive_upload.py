@@ -125,6 +125,25 @@ def _existing_genes(d1: D1Client, run_id: str) -> set[str]:
     return {r["gene_symbol"] for r in rows}
 
 
+def genes_done_at_schema(d1: D1Client, schema_version: str) -> set[str]:
+    """Gene symbols with a completed ``deep_dive_run`` record at
+    ``schema_version``, across **all** run_ids.
+
+    Backs the global, schema-aware dispatch dedup that organizes an incremental
+    rollout (run 25, then 100, then 1000 …): a gene is skipped iff it already
+    has a current-schema record *anywhere*, so re-launching — even under a
+    different run_id / batch tag — never re-spends on a successful gene, while a
+    schema bump re-opens every stale gene for a fresh run. A ``deep_dive_run``
+    row exists only for a gene whose record validated, so presence == success.
+    Caller bypasses this with ``--force``.
+    """
+    rows = d1.query(
+        "SELECT DISTINCT gene_symbol FROM deep_dive_run WHERE schema_version = ?;",
+        [schema_version],
+    )
+    return {str(r["gene_symbol"]) for r in rows}
+
+
 def _insert_run(
     d1: D1Client,
     *,
