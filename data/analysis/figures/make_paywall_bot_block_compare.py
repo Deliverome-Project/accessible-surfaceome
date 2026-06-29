@@ -3,7 +3,6 @@
 # dependencies = [
 #   "matplotlib>=3.9",
 #   "seaborn>=0.13",
-#   "httpx>=0.27",
 # ]
 # ///
 """Reproduce paywall_bot_block_compare.{pdf,png} from the public repo.
@@ -42,7 +41,6 @@ import json
 from collections import Counter
 from pathlib import Path
 
-import httpx
 import matplotlib.font_manager as fm
 import matplotlib.pyplot as plt
 import seaborn as sns
@@ -160,9 +158,10 @@ def fetch_tsv() -> list[dict]:
         if local.is_file():
             text = local.read_text()
         else:
-            r = httpx.get(TSV_URL, timeout=30)
-            r.raise_for_status()
-            text = r.text
+            raise FileNotFoundError(
+                f"TSV not found at sibling ({sibling.name}) or local ({local}). "
+                f"In a gist, the bundled TSV must sit next to this script."
+            )
     return list(csv.DictReader(io.StringIO(text), delimiter="\t"))
 
 

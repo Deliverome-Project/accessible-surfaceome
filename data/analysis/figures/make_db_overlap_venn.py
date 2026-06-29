@@ -4,7 +4,6 @@
 #   "matplotlib>=3.9",
 #   "seaborn>=0.13",
 #   "venn>=0.1.3",
-#   "httpx>=0.27",
 # ]
 # ///
 """Reproduce ``db_overlap_venn.{pdf,png}`` from the public repo.
@@ -25,7 +24,6 @@ import csv
 import io
 from pathlib import Path
 
-import httpx
 import matplotlib.font_manager as fm
 import matplotlib.pyplot as plt
 import seaborn as sns
@@ -137,20 +135,21 @@ PALETTE_BY_LABEL = {label: BRAND_PALETTE[i] for i, (_, label) in enumerate(DB_FL
 
 
 def _fetch_csv_text(url: str) -> str:
-    # 1) Sibling-first: when run from a published gist, the TSV is
-    #    bundled next to this script. SWHID-of-the-gist then captures
-    #    data + script atomically.
+    """Bundled-only: the gist HEAD commit SHA is the SWHID for the
+    whole reproduction unit (script + data + README), so we must
+    never read a *different* TSV than what's bundled. Sibling-first
+    (gist case); fall back to the in-repo TSV path (dev case). No
+    network fetch — a missing sibling in a gist is a hard error."""
     sibling = Path(__file__).parent / Path(url).name
     if sibling.is_file():
         return sibling.read_text()
-    # 2) Repo dev mode: derive the in-repo path from the URL.
     local = Path(__file__).resolve().parents[3] / url[len(f"https://raw.githubusercontent.com/{REPO}/{BRANCH}/"):]
     if local.is_file():
         return local.read_text()
-    # 3) Network fetch fallback.
-    r = httpx.get(url, timeout=30)
-    r.raise_for_status()
-    return r.text
+    raise FileNotFoundError(
+        f"TSV not found at sibling ({sibling.name}) or local ({local}). "
+        f"In a gist, the bundled TSV must sit next to this script."
+    )
 
 
 def main() -> None:

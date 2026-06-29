@@ -4,7 +4,6 @@
 #   "matplotlib>=3.9",
 #   "pandas>=2.2",
 #   "seaborn>=0.13",
-#   "httpx>=0.27",
 # ]
 # ///
 """Reproduce ``db_vs_sonnet_whole_proteome.{pdf,png}`` from the public repo.
@@ -33,20 +32,17 @@ Visual styling matches the in-repo ``_plotting_config`` (Deliverome
 categorical palette + Manrope-when-available). Inlined so the gist
 runs standalone.
 
-Data: catalog fetched live from
-``https://api.deliverome.org/surfaceome/v1/catalog`` (~19,324 genes
-with per-gene Sonnet+NCBI verdict); per-DB votes from
-candidate_universe.tsv + db_optimized_cutoffs.tsv via
-raw.githubusercontent.com.
+Data: catalog + per-DB votes from bundled TSVs (gist case) or the
+in-repo data/processed/catalog/ + data/processed/triage_bench/
+paths (dev case). The gist's HEAD commit SHA is the SWHID for the
+whole reproduction unit (script + data + README).
 
 Standalone — ``uv run make_db_vs_sonnet_whole_proteome.py``.
 """
 from __future__ import annotations
 
-import io
 from pathlib import Path
 
-import httpx
 import matplotlib.font_manager as fm
 import matplotlib.pyplot as plt
 import pandas as pd
@@ -167,18 +163,21 @@ BUCKET_LABEL = {
 
 
 def _fetch_tsv(url: str) -> pd.DataFrame:
-    # Sibling-first: when run from a published gist, the TSV is
-    # bundled next to this script. SWHID of the gist then captures
-    # data + script atomically.
+    """Bundled-only: the gist HEAD commit SHA is the SWHID for the
+    whole reproduction unit (script + data + README), so we must
+    never read a *different* TSV than what's bundled. Sibling-first
+    (gist case); fall back to the in-repo TSV path (dev case). No
+    network fetch — a missing sibling in a gist is a hard error."""
     sibling = Path(__file__).parent / Path(url).name
     if sibling.is_file():
-        return pd.read_csv(sibling, sep="	")
+        return pd.read_csv(sibling, sep="\t")
     local = Path(__file__).resolve().parents[3] / url[len(BASE) + 1:]
     if local.is_file():
         return pd.read_csv(local, sep="\t")
-    r = httpx.get(url, timeout=30)
-    r.raise_for_status()
-    return pd.read_csv(io.StringIO(r.text), sep="\t")
+    raise FileNotFoundError(
+        f"TSV not found at sibling ({sibling.name}) or local ({local}). "
+        f"In a gist, the bundled TSV must sit next to this script."
+    )
 
 
 def _vote_match(db_vote: str, sonnet: str) -> bool:

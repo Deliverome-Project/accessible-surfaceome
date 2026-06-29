@@ -4,7 +4,6 @@
 #   "matplotlib>=3.9",
 #   "pandas>=2.2",
 #   "seaborn>=0.13",
-#   "httpx>=0.27",
 # ]
 # ///
 """Reproduce ``topology_coverage_by_source.{pdf,png}`` from the public repo.
@@ -60,10 +59,8 @@ Standalone — ``uv run make_topology_coverage_by_source.py``.
 """
 from __future__ import annotations
 
-import io
 from pathlib import Path
 
-import httpx
 import matplotlib.font_manager as fm
 import matplotlib.pyplot as plt
 import pandas as pd
@@ -219,18 +216,22 @@ SOURCE_COL = {
 
 
 def _fetch_tsv(url: str) -> pd.DataFrame:
-    # Sibling-first: when run from a published gist, the TSV is
-    # bundled next to this script. SWHID of the gist then captures
-    # data + script atomically.
+    """Bundled-only: the gist HEAD commit SHA is the SWHID for the
+    whole reproduction unit (script + data + README), so we must
+    never read a *different* TSV than what's bundled. Sibling-first
+    (gist case); fall back to the in-repo TSV path (dev case). No
+    network fetch — a missing sibling in a gist is a hard error."""
     sibling = Path(__file__).parent / Path(url).name
     if sibling.is_file():
-        return pd.read_csv(sibling, sep="	")
-    print(f"  fetching {url} …")
-    r = httpx.get(url, timeout=60.0, follow_redirects=True)
-    r.raise_for_status()
-    df = pd.read_csv(io.StringIO(r.text), sep="\t")
-    print(f"    {len(df):,} rows × {len(df.columns)} cols")
-    return df
+        return pd.read_csv(sibling, sep="\t")
+    if url.startswith(BASE + "/"):
+        local = Path(__file__).resolve().parents[3] / url[len(BASE) + 1:]
+        if local.is_file():
+            return pd.read_csv(local, sep="\t")
+    raise FileNotFoundError(
+        f"TSV not found at sibling ({sibling.name}) or in-repo path. "
+        f"In a gist, the bundled TSV must sit next to this script."
+    )
 
 
 def main() -> None:

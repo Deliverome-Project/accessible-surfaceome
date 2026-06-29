@@ -33,7 +33,6 @@ from __future__ import annotations
 
 import csv
 import io
-import urllib.request
 from collections import Counter, defaultdict
 from pathlib import Path
 
@@ -216,15 +215,16 @@ def _load_catalog() -> list[dict]:
     plus stable IDs. Sourced from D1 via
     ``scripts/export_whole_proteome_catalog_to_tsv.py``.
     """
-    # Sibling-first: when run from a published gist with bundled TSV,
-    # the file sits next to this script. SWHID of the gist then
-    # captures data + script atomically.
+    # Bundled-only: the gist HEAD commit SHA is the SWHID for the
+    # whole reproduction unit (script + data + README), so we must
+    # never read a *different* TSV than what's bundled. Sibling-first
+    # (gist case); fall back to the in-repo TSV path (dev case). No
+    # network fetch — a missing sibling in a gist is a hard error.
     sibling = Path(__file__).parent / Path(CATALOG_TSV_URL).name
     if sibling.is_file():
         print(f"Reading {sibling} ...")
         text = sibling.read_text(encoding="utf-8")
     else:
-        # Repo dev mode: read on-disk TSV from the worktree.
         local = Path(__file__).resolve().parents[3] / (
             "data/processed/catalog/whole_proteome_catalog.tsv"
         )
@@ -232,9 +232,10 @@ def _load_catalog() -> list[dict]:
             print(f"Reading {local} ...")
             text = local.read_text(encoding="utf-8")
         else:
-            print(f"Fetching {CATALOG_TSV_URL} ...")
-            with urllib.request.urlopen(CATALOG_TSV_URL, timeout=60) as resp:  # noqa: S310
-                text = resp.read().decode("utf-8")
+            raise FileNotFoundError(
+                f"TSV not found at sibling ({sibling.name}) or local ({local}). "
+                f"In a gist, the bundled TSV must sit next to this script."
+            )
     rows = list(csv.DictReader(io.StringIO(text), delimiter="\t"))
     for r in rows:
         r["n_sources_surface"] = int(r.get("n_sources_surface", 0) or 0)
