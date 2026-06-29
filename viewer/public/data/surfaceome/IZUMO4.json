@@ -8,7 +8,7 @@
     "ensembl_gene": "ENSG00000099840"
   },
   "triage_signal": "unlikely",
-  "triage_reasoning": "IZUMO4 (Q1ZYL8) is an IZUMO family member but diverges sharply from its paralogs IZUMO1/2/3 in localization. The NCBI/Alliance annotation explicitly places it in the nucleus. Unlike IZUMO1, which is a classic single-pass TM protein on sperm, IZUMO4 lacks a predicted TM domain and signal peptide consistent with surface display; structural bioinformatics and the available literature describe it as a nuclear-localized protein. Checking contextual buckets: (1) cell_state_induced \u2014 no evidence of stress/ICD-induced surface translocation; (2) tissue_restricted_surface \u2014 no sperm-surface or other surface display documented even in restricted lineages; (3) lysosomal_exocytosis \u2014 no lysosomal/endosomal TM topology reported; (4) dual_localization \u2014 no PM pool described; (5) stable_surface_attachment \u2014 it is not a secreted protein captured at the surface. No antibody/ADC/CAR-T surface-targeting program is documented. The dominant evidence points to a nuclear-resident protein with no membrane anchor.",
+  "triage_reasoning": "IZUMO4 (Q1ZYL8) is an IZUMO family member but diverges sharply from its paralogs IZUMO1/2/3 in localization. The NCBI/Alliance annotation explicitly places it in the nucleus. Unlike IZUMO1, which is a classic single-pass TM protein on sperm, IZUMO4 lacks a predicted TM domain and signal peptide consistent with surface display; structural bioinformatics and the available literature describe it as a nuclear-localized protein. Checking contextual buckets: (1) cell_state_induced — no evidence of stress/ICD-induced surface translocation; (2) tissue_restricted_surface — no sperm-surface or other surface display documented even in restricted lineages; (3) lysosomal_exocytosis — no lysosomal/endosomal TM topology reported; (4) dual_localization — no PM pool described; (5) stable_surface_attachment — it is not a secreted protein captured at the surface. No antibody/ADC/CAR-T surface-targeting program is documented. The dominant evidence points to a nuclear-resident protein with no membrane anchor.",
   "executive_summary": {
     "one_paragraph": "IZUMO4 is a soluble, secreted member of the IZUMO immunoglobulin-like family that lacks a transmembrane domain, distinguishing it sharply from its paralogs IZUMO1/2/3. Multiple convergent review and computational sources (a1_evi_01, a1_evi_02, a1_evi_03) describe it as constitutively secreted rather than membrane-anchored, with expression detected in testis round spermatids at the RNA level (a1_evi_05). There is no experimental surface-display evidence and no documented plasma membrane anchor. IZUMO4 is not a viable surface-targeting candidate under current evidence.",
     "surface_accessibility": "no",
@@ -66,15 +66,16 @@
     "expression_breadth_rationale": "Ledger evidence localizes IZUMO4 expression to testis, specifically round spermatids (a1_evi_05); review text notes testis and other tissues broadly (a1_evi_03) but without quantitative data. Overall breadth appears rare/restricted.",
     "surface_specificity_rationale": "IZUMO4 is a secreted soluble protein with no TM domain (a1_evi_01, a1_evi_02, a1_evi_03); it is not plasma-membrane resident. The dominant compartment is extracellular/secreted, and no PM pool has been described.",
     "has_known_ligand_rationale": "IZUMO4 is a poorly characterized secreted IZUMO family member; no validated endogenous receptor or binding partner has been reported in the literature surveyed. Functional interaction context is limited to computational sperm-egg fusion network studies (a1_evi_04).",
-    "low_endogenous_expression_rationale": "Derived from expression_level='low' (\u2208 {low, absent} \u2192 flagged). Expression detected by scRNA-seq as a round spermatid marker in testis (a1_evi_05); no broad or high-level expression data in the ledger. Restricted germ-cell RNA signal; protein-level evidence absent.",
+    "low_endogenous_expression_rationale": "Derived from expression_level='low' (∈ {low, absent} → flagged). Expression detected by scRNA-seq as a round spermatid marker in testis (a1_evi_05); no broad or high-level expression data in the ledger. Restricted germ-cell RNA signal; protein-level evidence absent.",
     "overexpression_surface_localization_observed_rationale": "No method observation pairs an overexpression/mixed expression system with a direct or supportive surface-accessibility readout.",
     "tumor_associated": false,
     "induction_trigger": "none",
-    "has_live_cell_surface_evidence": false
+    "has_live_cell_surface_evidence": false,
+    "n_papers_selected": 4
   },
   "surface_evidence": {
     "evidence_grade": "weak",
-    "grade_rationale": "No direct surface assay (live flow cytometry, nonperm IF, surface biotinylation, or IHC-membranous) exists for IZUMO4 in this ledger. All topology claims are review-level or computational: three moderate-weight claims (a1_evi_01, 02, 03) consistently characterize IZUMO4 as a secreted/soluble protein lacking a transmembrane domain, directly contradicting stable plasma membrane surface display. One computational interaction study (a1_evi_04) is tangential, and one scRNA-seq observation (a1_evi_05) is expression-only. The absence of any direct surface methodology and the convergent evidence for a soluble topology yields a grade of 'weak' \u2014 the evidence is consistent but rests entirely on review assertions and computational predictions rather than experimental surface assays.",
+    "grade_rationale": "No direct surface assay (live flow cytometry, nonperm IF, surface biotinylation, or IHC-membranous) exists for IZUMO4 in this ledger. All topology claims are review-level or computational: three moderate-weight claims (a1_evi_01, 02, 03) consistently characterize IZUMO4 as a secreted/soluble protein lacking a transmembrane domain, directly contradicting stable plasma membrane surface display. One computational interaction study (a1_evi_04) is tangential, and one scRNA-seq observation (a1_evi_05) is expression-only. The absence of any direct surface methodology and the convergent evidence for a soluble topology yields a grade of 'weak' — the evidence is consistent but rests entirely on review assertions and computational predictions rather than experimental surface assays.",
     "claim_stances": [
       {
         "claim_id": "a1_evi_01",
@@ -199,9 +200,9 @@
       "afdb_version": "v6",
       "ecd_mean_plddt": 81.38,
       "ecd_disordered_fraction": 0.233,
-      "source": "AlphaFold DB (whole-protein pLDDT \u2014 no ECD residues in topology)",
+      "source": "AlphaFold DB (whole-protein pLDDT — no ECD residues in topology)",
       "license": "CC BY 4.0",
-      "attribution": "\u00a9 DeepMind / EMBL-EBI",
+      "attribution": "© DeepMind / EMBL-EBI",
       "citations": [
         "10.1038/s41586-021-03819-2",
         "10.1093/nar/gkad1011"
@@ -220,7 +221,7 @@
       "protein_name": null,
       "pdbs": [],
       "source": "SURFACE-Bind v1 (Balbi et al. 2026 PNAS)",
-      "attribution": "\u00a9 Balbi et al., Correia lab \u2014 EPFL / Inria / Novo Nordisk",
+      "attribution": "© Balbi et al., Correia lab — EPFL / Inria / Novo Nordisk",
       "citation": "10.1073/pnas.2506269123"
     }
   },
@@ -372,7 +373,7 @@
     },
     {
       "evidence_id": "a1_evi_03",
-      "claim": "IZUMO4 is described as a soluble protein expressed in the testis and other tissues, indicating it is not membrane-anchored. This refutes plasma membrane surface accessibility and flags IZUMO4 as a secreted/soluble form; the soluble form is the dominant species. No sheddase is implicated \u2014 the protein appears constitutively soluble by virtue of lacking a TM domain rather than being shed from a membrane-anchored precursor.",
+      "claim": "IZUMO4 is described as a soluble protein expressed in the testis and other tissues, indicating it is not membrane-anchored. This refutes plasma membrane surface accessibility and flags IZUMO4 as a secreted/soluble form; the soluble form is the dominant species. No sheddase is implicated — the protein appears constitutively soluble by virtue of lacking a TM domain rather than being shed from a membrane-anchored precursor.",
       "claim_type": "surface_expression",
       "direction": "refutes",
       "evidence_type": "review_assertion",
@@ -527,7 +528,7 @@
       "mode": "gene2pubmed",
       "query": {
         "agent_focus": "a1",
-        "intent": "Baseline curated PMID list for IZUMO4 \u2014 establishes the full publication corpus before any targeted retrieval."
+        "intent": "Baseline curated PMID list for IZUMO4 — establishes the full publication corpus before any targeted retrieval."
       },
       "n_results": 9,
       "sources_seen": [],
@@ -551,7 +552,7 @@
       "mode": "topic_search",
       "query": {
         "agent_focus": "a1",
-        "intent": "Hunt for any stress-induced, cell-state-induced, or shedding-related surface presentation of IZUMO4 \u2014 addresses the key_uncertainty that a sperm-surface pool cannot be fully excluded.",
+        "intent": "Hunt for any stress-induced, cell-state-induced, or shedding-related surface presentation of IZUMO4 — addresses the key_uncertainty that a sperm-surface pool cannot be fully excluded.",
         "anchors": [
           "surface_expression",
           "shedding"
@@ -599,7 +600,7 @@
       "mode": "topic_search",
       "query": {
         "agent_focus": "a1",
-        "intent": "IHC/IF evidence for IZUMO4 localization in testis/sperm tissue \u2014 tissue-restricted surface expression in sperm is the main contextual uncertainty to resolve.",
+        "intent": "IHC/IF evidence for IZUMO4 localization in testis/sperm tissue — tissue-restricted surface expression in sperm is the main contextual uncertainty to resolve.",
         "anchors": [
           "ihc",
           "surface_expression"
@@ -713,7 +714,7 @@
       "mode": "other",
       "query": {
         "agent_focus": "a1",
-        "intent": "Catch sperm-egg fusion assays, soluble IZUMO4 detection in seminal fluid, or proximity-labeling studies \u2014 the functional assay idiom for secreted/sperm-surface proteins that don't fit the 7 method buckets.",
+        "intent": "Catch sperm-egg fusion assays, soluble IZUMO4 detection in seminal fluid, or proximity-labeling studies — the functional assay idiom for secreted/sperm-surface proteins that don't fit the 7 method buckets.",
         "category": "other",
         "uniprot_acc": "Q1ZYL8"
       },
@@ -727,7 +728,7 @@
       "mode": "topic_search",
       "query": {
         "agent_focus": "a1",
-        "intent": "Host-agnostic OE query: IZUMO4 AND (overexpression OR transfected OR stable cell line) AND (cell surface OR flow cytometry) \u2014 catches any heterologous expression system surface-localization paper.",
+        "intent": "Host-agnostic OE query: IZUMO4 AND (overexpression OR transfected OR stable cell line) AND (cell surface OR flow cytometry) — catches any heterologous expression system surface-localization paper.",
         "anchors": [
           "surface_expression",
           "flow_cytometry"
@@ -758,7 +759,7 @@
       "mode": "topic_search",
       "query": {
         "agent_focus": "a1",
-        "intent": "IZUMO family context query \u2014 search for IZUMO family (IZUMO1/2/3/4) surface localization papers that may include IZUMO4 data or cross-reactivity context; family-level surface biology informs paralog-based inference.",
+        "intent": "IZUMO family context query — search for IZUMO family (IZUMO1/2/3/4) surface localization papers that may include IZUMO4 data or cross-reactivity context; family-level surface biology informs paralog-based inference.",
         "anchors": [
           "surface_expression",
           "shedding"
@@ -774,7 +775,7 @@
       "mode": "fetch_abstract",
       "query": {
         "agent_focus": "a1",
-        "intent": "Fetch the SPDI paper (UniProt top publication) \u2014 may contain bioinformatic surface/secreted classification data for IZUMO4 that informs topology debate.",
+        "intent": "Fetch the SPDI paper (UniProt top publication) — may contain bioinformatic surface/secreted classification data for IZUMO4 that informs topology debate.",
         "pmid": 12975309
       },
       "n_results": 1,
@@ -787,7 +788,7 @@
       "mode": "topic_search",
       "query": {
         "agent_focus": "a1",
-        "intent": "Nuclear vs. secreted localization debate for IZUMO4 \u2014 target papers that experimentally address whether IZUMO4 reaches the secretory pathway or remains nuclear/cytoplasmic, resolving the contradiction between UniProt signal peptide annotation and triage nuclear verdict.",
+        "intent": "Nuclear vs. secreted localization debate for IZUMO4 — target papers that experimentally address whether IZUMO4 reaches the secretory pathway or remains nuclear/cytoplasmic, resolving the contradiction between UniProt signal peptide annotation and triage nuclear verdict.",
         "anchors": [
           "topology",
           "surface_expression"
@@ -900,7 +901,7 @@
       "mode": "topic_search",
       "query": {
         "agent_focus": "a2",
-        "intent": "Normal tissue tox panel: surface expression of IZUMO4 in liver, lung, kidney, GI tract, heart, brain \u2014 establish negative surface reads for tox organs",
+        "intent": "Normal tissue tox panel: surface expression of IZUMO4 in liver, lung, kidney, GI tract, heart, brain — establish negative surface reads for tox organs",
         "anchors": [
           "surface_expression",
           "ihc"
@@ -916,7 +917,7 @@
       "mode": "topic_search",
       "query": {
         "agent_focus": "a2",
-        "intent": "IZUMO4 secreted/shed form characterization; UniProt lists it as Secreted \u2014 assess whether soluble form circulates or is detected in seminal plasma/serum",
+        "intent": "IZUMO4 secreted/shed form characterization; UniProt lists it as Secreted — assess whether soluble form circulates or is detected in seminal plasma/serum",
         "anchors": [
           "shedding",
           "ptm"
@@ -961,7 +962,7 @@
   "primary_evidence_count": 0,
   "secondary_evidence_count": 5,
   "confidence": "moderate",
-  "confidence_reasoning": "Confidence is moderate rather than low because multiple independent sources converge on the same conclusion \u2014 IZUMO4 lacks a transmembrane domain and is constitutively secreted \u2014 but these sources are all review assertions or computational predictions rather than direct experimental assays (e.g. western blot of conditioned medium, live-cell surface biotinylation, or flow cytometry). The triage verdict of 'nuclear' is partially at odds with the ledger, which describes secreted rather than nuclear localization; both agree there is no plasma membrane surface display. Confidence would rise to high if a direct surface-proteomics or conditioned-medium mass spectrometry study confirmed the secreted topology and ruled out any membrane-anchored isoform, particularly in sperm or testicular cell lines.",
+  "confidence_reasoning": "Confidence is moderate rather than low because multiple independent sources converge on the same conclusion — IZUMO4 lacks a transmembrane domain and is constitutively secreted — but these sources are all review assertions or computational predictions rather than direct experimental assays (e.g. western blot of conditioned medium, live-cell surface biotinylation, or flow cytometry). The triage verdict of 'nuclear' is partially at odds with the ledger, which describes secreted rather than nuclear localization; both agree there is no plasma membrane surface display. Confidence would rise to high if a direct surface-proteomics or conditioned-medium mass spectrometry study confirmed the secreted topology and ruled out any membrane-anchored isoform, particularly in sperm or testicular cell lines.",
   "model_path": "claude-sonnet-4-6",
   "record_generated_at": "2026-05-31T15:24:58.797948Z"
 }

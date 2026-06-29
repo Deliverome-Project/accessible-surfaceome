@@ -75,7 +75,8 @@
     "surface_specificity_rationale": "All direct localization studies place full-length ABCB9 on the lysosomal limiting membrane; no PM pool documented (a1_evi_13, a1_evi_14, a1_evi_17, a2_evi_08, a2_evi_09). Only TMD0-deleted truncations reach the PM.",
     "has_known_ligand_rationale": "ABCB9/TAPL translocates oligo- and polypeptides (6–59 amino acids) from the cytosol into the lysosomal lumen in an ATP-dependent manner; cytosolic peptides are its validated endogenous substrates/cargo (a1_evi_08).",
     "low_endogenous_expression_rationale": "High expression in monocyte-derived DCs, macrophages, and testicular Sertoli cells (a2_evi_01, a2_evi_02); moderate in TME Tregs and tumor cells (a2_evi_06); low in brain microvessels (a2_evi_05). Overall: moderate across relevant cell types.",
-    "overexpression_surface_localization_observed_rationale": "1 method observation(s) pair an overexpression/mixed expression system with a surface-localization readout (cites a1_evi_16)."
+    "overexpression_surface_localization_observed_rationale": "1 method observation(s) pair an overexpression/mixed expression system with a surface-localization readout (cites a1_evi_16).",
+    "n_papers_selected": 16
   },
   "surface_evidence": {
     "evidence_grade": "weak",

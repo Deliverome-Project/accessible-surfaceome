@@ -8,7 +8,7 @@
     "ensembl_gene": "ENSG00000189403"
   },
   "triage_signal": "possibly_accessible",
-  "triage_reasoning": "HMGB1 is primarily a nuclear chromatin-binding protein and also resides in the cytoplasm, but it is actively secreted extracellularly via two distinct pathways: (1) active, non-classical secretion from immune/activated cells (acetylation-triggered translocation to cytoplasm then secretion); and (2) passive release from necrotic/dying cells. Once extracellular, HMGB1 binds cell-surface receptors (RAGE, TLR2, TLR4) and this interaction has been exploited therapeutically \u2014 multiple anti-HMGB1 antibody programs and RAGE-targeting strategies exist. Surface biotinylation on intact cells and flow cytometry data show HMGB1 can associate with the outer leaflet of the PM bound to surface RAGE. This is cell-state-induced (inflammation, DAMPs, cell death), not constitutive. Checking contextual buckets: cell_state_induced \u2014 YES, display under inflammatory activation/necrosis; tissue_restricted \u2014 no, broad; lysosomal_exocytosis \u2014 no documented lysosomal route; dual_localization \u2014 nuclear dominant; stable_surface_attachment \u2014 binds RAGE wash-resistantly on surface. Best fit is cell_state_induced surface display.",
+  "triage_reasoning": "HMGB1 is primarily a nuclear chromatin-binding protein and also resides in the cytoplasm, but it is actively secreted extracellularly via two distinct pathways: (1) active, non-classical secretion from immune/activated cells (acetylation-triggered translocation to cytoplasm then secretion); and (2) passive release from necrotic/dying cells. Once extracellular, HMGB1 binds cell-surface receptors (RAGE, TLR2, TLR4) and this interaction has been exploited therapeutically — multiple anti-HMGB1 antibody programs and RAGE-targeting strategies exist. Surface biotinylation on intact cells and flow cytometry data show HMGB1 can associate with the outer leaflet of the PM bound to surface RAGE. This is cell-state-induced (inflammation, DAMPs, cell death), not constitutive. Checking contextual buckets: cell_state_induced — YES, display under inflammatory activation/necrosis; tissue_restricted — no, broad; lysosomal_exocytosis — no documented lysosomal route; dual_localization — nuclear dominant; stable_surface_attachment — binds RAGE wash-resistantly on surface. Best fit is cell_state_induced surface display.",
   "executive_summary": {
     "one_paragraph": "HMGB1 is a nuclear chromatin-binding protein with no transmembrane domain that becomes extracellularly accessible only upon cell activation, stress, or death. The entire ledger lacks a qualifying direct surface assay of HMGB1 on viable cells (live-cell flow, non-perm IF, or surface biotinylation with HMGB1 as a confirmed hit). Evidence shows HMGB1 in cell supernatants (pyroptosis, senescence SASP), on EV exteriors (proteinase-K confirmed, EV-shielded), and in solution binding TREM-1/RAGE, but none of these constitute plasma-membrane surface detection. Surface accessibility is therefore 'no' by the direct-assay gate.",
     "surface_accessibility": "no",
@@ -75,15 +75,16 @@
     "expression_breadth_rationale": "HMGB1 is a ubiquitous nuclear chromatin-binding protein expressed broadly across immune cells, epithelial tumors, neurons, and senescent cells (a2_evi_04, a2_evi_05, a2_evi_06, a2_evi_07, a2_evi_12); breadth is pan-tissue.",
     "surface_specificity_rationale": "Primary compartment is nucleus/cytoplasm (a1_evi_14, a2_evi_09); extracellular form is soluble/secreted or EV-associated (a1_evi_15, a1_evi_16, a2_evi_10, a2_evi_11), not plasma-membrane-anchored. No direct surface staining of HMGB1 on viable cells exists in the ledger.",
     "has_known_ligand_rationale": "HMGB1 binds RAGE and TLR4 on neutrophils and macrophages as a DAMP ligand (a2_evi_05), and also binds TREM-1 ectodomain in solution (a1_evi_18); multiple validated receptor interactions are documented.",
-    "low_endogenous_expression_rationale": "Derived from expression_level='high' (not low/absent \u2192 not flagged). IHC in primary gastric adenocarcinoma shows 81.76% positivity (a2_evi_01, a2_evi_02); intracellular HMGB1 is abundant in tumor cells by permeabilized flow (a1_evi_14); broad nuclear expression is well established across cell types.",
+    "low_endogenous_expression_rationale": "Derived from expression_level='high' (not low/absent → not flagged). IHC in primary gastric adenocarcinoma shows 81.76% positivity (a2_evi_01, a2_evi_02); intracellular HMGB1 is abundant in tumor cells by permeabilized flow (a1_evi_14); broad nuclear expression is well established across cell types.",
     "overexpression_surface_localization_observed_rationale": "No method observation pairs an overexpression/mixed expression system with a direct or supportive surface-accessibility readout.",
     "tumor_associated": false,
     "induction_trigger": "immune",
-    "has_live_cell_surface_evidence": false
+    "has_live_cell_surface_evidence": false,
+    "n_papers_selected": 16
   },
   "surface_evidence": {
     "evidence_grade": "weak",
-    "grade_rationale": "No claim in this ledger places HMGB1 on the viable-cell plasma membrane via a direct surface method (live/non-perm flow, non-perm IF, surface biotinylation with HMGB1 as a confirmed hit, or membranous IHC). The strongest surface-topology evidence (a1_evi_08, a1_evi_09) uses proteinase-K protection on exosome vesicles \u2014 this confirms HMGB1 on the EV exterior, not the plasma membrane of living cells (shed/secreted_or_EV form per the grading rules). Remaining claims are: methodology descriptions where HMGB1 is not a reported hit (a1_evi_01\u201305), receptor-surface flow assays where HMGB1 is the stimulus not the target (a1_evi_11\u201312), intracellular permeabilized flow (a1_evi_14), supernatant/ELISA soluble detection (a1_evi_15\u201317), and review/functional assertions (a1_evi_07, a1_evi_10, a1_evi_17\u201318). The overall grade is therefore `weak`.",
+    "grade_rationale": "No claim in this ledger places HMGB1 on the viable-cell plasma membrane via a direct surface method (live/non-perm flow, non-perm IF, surface biotinylation with HMGB1 as a confirmed hit, or membranous IHC). The strongest surface-topology evidence (a1_evi_08, a1_evi_09) uses proteinase-K protection on exosome vesicles — this confirms HMGB1 on the EV exterior, not the plasma membrane of living cells (shed/secreted_or_EV form per the grading rules). Remaining claims are: methodology descriptions where HMGB1 is not a reported hit (a1_evi_01–05), receptor-surface flow assays where HMGB1 is the stimulus not the target (a1_evi_11–12), intracellular permeabilized flow (a1_evi_14), supernatant/ELISA soluble detection (a1_evi_15–17), and review/functional assertions (a1_evi_07, a1_evi_10, a1_evi_17–18). The overall grade is therefore `weak`.",
     "claim_stances": [
       {
         "claim_id": "a1_evi_01",
@@ -131,7 +132,7 @@
         "claim_id": "a1_evi_08",
         "stance": "tangential",
         "weight": "moderate",
-        "note": "HMGB1 on exosome exterior \u2014 shed/EV form, not viable-cell plasma membrane surface."
+        "note": "HMGB1 on exosome exterior — shed/EV form, not viable-cell plasma membrane surface."
       },
       {
         "claim_id": "a1_evi_09",
@@ -365,14 +366,14 @@
             "antibody_epitope_region": "intracellular",
             "validation_strategy": "none",
             "validation_strength": "none",
-            "cross_reactivity_notes": "Mouse IgG2b; epitope = HMGB1 A-box aa 53\u201363 (nuclear/intracellular domain when cell-resident; exposed on surface of secreted/exosome-displayed form). Non-commercial; originally from Critical Therapeutics / Kevin Tracey lab."
+            "cross_reactivity_notes": "Mouse IgG2b; epitope = HMGB1 A-box aa 53–63 (nuclear/intracellular domain when cell-resident; exposed on surface of secreted/exosome-displayed form). Non-commercial; originally from Critical Therapeutics / Kevin Tracey lab."
           }
         ],
         "accessibility_relevance": "weak_or_ambiguous",
         "surface_claim_type": "secreted_or_shed",
         "expression_observations": [
           {
-            "context": "HMGB1 displayed on exterior of exosomes from MIA-injured mouse knee tissue; proteinase-K protection assay confirmed exterior localization; 2G7 neutralization abrogated exosome-induced neuronal NF-\u03baB/senescence effects",
+            "context": "HMGB1 displayed on exterior of exosomes from MIA-injured mouse knee tissue; proteinase-K protection assay confirmed exterior localization; 2G7 neutralization abrogated exosome-induced neuronal NF-κB/senescence effects",
             "sample_type": "ex_vivo",
             "level": "moderate",
             "species": "mouse",
@@ -439,7 +440,7 @@
         "surface_claim_type": "unclear",
         "expression_observations": [
           {
-            "context": "HMGB1 pulled down by sTREM-1-Sepharose resin, resolved by SDS-PAGE + WB; demonstrates extracellular HMGB1\u2013TREM-1 ectodomain binding in solution",
+            "context": "HMGB1 pulled down by sTREM-1-Sepharose resin, resolved by SDS-PAGE + WB; demonstrates extracellular HMGB1–TREM-1 ectodomain binding in solution",
             "sample_type": "unknown",
             "level": "moderate",
             "species": "unspecified",
@@ -478,7 +479,7 @@
         "surface_claim_type": "secreted_or_shed",
         "expression_observations": [
           {
-            "context": "HMGB1 quantified in supernatant of VSV-S-infected HN12 and CAL27 head-and-neck cancer cell lines by ELISA (n=6); elevated alongside LDH and IL-1\u03b2 indicating pyroptosis-associated release",
+            "context": "HMGB1 quantified in supernatant of VSV-S-infected HN12 and CAL27 head-and-neck cancer cell lines by ELISA (n=6); elevated alongside LDH and IL-1β indicating pyroptosis-associated release",
             "sample_type": "established_cell_line",
             "level": "high",
             "species": "human",
@@ -523,7 +524,7 @@
     ],
     "non_surface_expression": [
       {
-        "context": "Senescent cells \u2014 HMGB1 released as DAMP into extracellular milieu (SASP marker), review assertion",
+        "context": "Senescent cells — HMGB1 released as DAMP into extracellular milieu (SASP marker), review assertion",
         "sample_type": "unknown",
         "measurement_type": "bulk_protein",
         "level": "moderate",
@@ -532,7 +533,7 @@
         ]
       },
       {
-        "context": "HN12 and CAL27 head-and-neck cancer cells undergoing VSV-S-induced pyroptosis \u2014 HMGB1 detected in supernatant by ELISA",
+        "context": "HN12 and CAL27 head-and-neck cancer cells undergoing VSV-S-induced pyroptosis — HMGB1 detected in supernatant by ELISA",
         "sample_type": "established_cell_line",
         "measurement_type": "bulk_protein",
         "level": "high",
@@ -542,7 +543,7 @@
         ]
       },
       {
-        "context": "PyMT-B6 breast cancer cells 24h post-taxane \u2014 intracellular HMGB1 detected by permeabilized flow cytometry",
+        "context": "PyMT-B6 breast cancer cells 24h post-taxane — intracellular HMGB1 detected by permeabilized flow cytometry",
         "sample_type": "established_cell_line",
         "measurement_type": "bulk_protein",
         "level": "moderate",
@@ -729,7 +730,7 @@
       },
       {
         "state": "arthritis (joint injury)",
-        "descriptor": "MIA-induced joint injury drives surface display of HMGB1 on the exterior of joint-derived exosomes, enabling long-range DAMP signaling to the brain and inducing neuronal NF-\u03baB activation and senescence.",
+        "descriptor": "MIA-induced joint injury drives surface display of HMGB1 on the exterior of joint-derived exosomes, enabling long-range DAMP signaling to the brain and inducing neuronal NF-κB activation and senescence.",
         "cited_evidence_ids": [
           "a2_evi_10",
           "a2_evi_11"
@@ -795,7 +796,7 @@
     },
     "anatomical_accessibility": [
       {
-        "context": "extracellular/interstitial space \u2014 systemic DAMP release from immune cells, necrotic cells, and senescent cells",
+        "context": "extracellular/interstitial space — systemic DAMP release from immune cells, necrotic cells, and senescent cells",
         "orientation": "blood_interstitial_facing",
         "accessibility_implication": "favorable",
         "rationale": "HMGB1 is actively secreted or passively released into the extracellular milieu by macrophages, necrotic, and senescent cells during inflammation/sepsis. Once in interstitial fluid or circulation, it is directly accessible to systemically delivered binders.",
@@ -806,7 +807,7 @@
         ]
       },
       {
-        "context": "extracellular vesicle (exosome) surface \u2014 arthritic joint-derived circulating exosomes",
+        "context": "extracellular vesicle (exosome) surface — arthritic joint-derived circulating exosomes",
         "orientation": "blood_interstitial_facing",
         "accessibility_implication": "favorable",
         "rationale": "HMGB1 is displayed on the outer leaflet of circulating exosomes from injured joints, confirmed by proteinase-K protection assay. Exosomes travel in blood/interstitial fluid, making surface HMGB1 accessible to systemic antibodies or binders.",
@@ -816,7 +817,7 @@
         ]
       },
       {
-        "context": "neuronal/synaptic environment \u2014 stress-induced DAMP signaling in brain",
+        "context": "neuronal/synaptic environment — stress-induced DAMP signaling in brain",
         "orientation": "synaptic",
         "accessibility_implication": "context_dependent",
         "rationale": "HMGB1 is released under stress to stimulate neurotransmitter release and acts as a DAMP on neurons. Systemic access to the synaptic/CNS compartment is limited by the blood-brain barrier, making accessibility context-dependent for peripheral biologics.",
@@ -1166,9 +1167,9 @@
       "afdb_version": "v6",
       "ecd_mean_plddt": 76.81,
       "ecd_disordered_fraction": 0.288,
-      "source": "AlphaFold DB (whole-protein pLDDT \u2014 no ECD residues in topology)",
+      "source": "AlphaFold DB (whole-protein pLDDT — no ECD residues in topology)",
       "license": "CC BY 4.0",
-      "attribution": "\u00a9 DeepMind / EMBL-EBI",
+      "attribution": "© DeepMind / EMBL-EBI",
       "citations": [
         "10.1038/s41586-021-03819-2",
         "10.1093/nar/gkad1011"
@@ -1187,7 +1188,7 @@
       "protein_name": null,
       "pdbs": [],
       "source": "SURFACE-Bind v1 (Balbi et al. 2026 PNAS)",
-      "attribution": "\u00a9 Balbi et al., Correia lab \u2014 EPFL / Inria / Novo Nordisk",
+      "attribution": "© Balbi et al., Correia lab — EPFL / Inria / Novo Nordisk",
       "citation": "10.1073/pnas.2506269123"
     }
   },
@@ -1287,7 +1288,7 @@
           },
           "section": "methods",
           "figure_or_table_id": null,
-          "quote": "For streptavidin blot, lysates after Cell Surface Capture (CSC) were normalized to 2 mg/mL and separated on a 4\u201320% SDS-PAGE gel.",
+          "quote": "For streptavidin blot, lysates after Cell Surface Capture (CSC) were normalized to 2 mg/mL and separated on a 4–20% SDS-PAGE gel.",
           "quote_sha256": "288ed083961f12660c487ab00e129df5013e5f9d5d7415704c15642b8c78a5cd",
           "char_offset": 0,
           "normalized_source_sha256": "2fc7e47bf2a898ea6ef744c0d93f2c3710d072ad3b3bdff23297aabc1e16060f"
@@ -1300,7 +1301,7 @@
     },
     {
       "evidence_id": "a1_evi_02",
-      "claim": "Surface biotinylation methodology using biotin-phenol (BP) substrate with H2O2 oxidant (APEX2-proximity labeling variant); material from four conditions used for Western blot, with two conditions (BP+/H2O2+ and BP\u2212/H2O2+) proceeded to streptavidin pulldown and MS for surfaceome identification. This is the paired methodology clip for the surface-biotinylation + MS result.",
+      "claim": "Surface biotinylation methodology using biotin-phenol (BP) substrate with H2O2 oxidant (APEX2-proximity labeling variant); material from four conditions used for Western blot, with two conditions (BP+/H2O2+ and BP−/H2O2+) proceeded to streptavidin pulldown and MS for surfaceome identification. This is the paired methodology clip for the surface-biotinylation + MS result.",
       "claim_type": "methodological",
       "direction": "supports",
       "evidence_type": "surface_biotinylation",
@@ -1331,7 +1332,7 @@
           },
           "section": "methods",
           "figure_or_table_id": null,
-          "quote": "Material from all four conditions were used in Western Blots, but only two were then used for subsequent pull-down of biotinylated proteins and proteomic analysis: BP+/H 2 O 2 + and BP\u2212/H 2 O 2 +.",
+          "quote": "Material from all four conditions were used in Western Blots, but only two were then used for subsequent pull-down of biotinylated proteins and proteomic analysis: BP+/H 2 O 2 + and BP−/H 2 O 2 +.",
           "quote_sha256": "f21c482f1ddfdb74cf32a07027e37fe613f808f3cc2216bc34b6472cecb6cfc6",
           "char_offset": 0,
           "normalized_source_sha256": "2311e6eaeb65f9c0b8a51bc7a1557d1cfc4c3c577a8af9cc7c289f5a0db8275a"
@@ -1388,7 +1389,7 @@
     },
     {
       "evidence_id": "a1_evi_04",
-      "claim": "High non-specific background observed in streptavidin-bead enrichment + MS step of the APEX2 surface-biotinylation assay (KAHRP-FLAG-APEX2 transfectant), despite clean Western blot results. This is a methodological caveat \u2014 streptavidin-MS enrichment in this system has poor signal-to-noise, reducing confidence in any positive MS identification including HMGB1.",
+      "claim": "High non-specific background observed in streptavidin-bead enrichment + MS step of the APEX2 surface-biotinylation assay (KAHRP-FLAG-APEX2 transfectant), despite clean Western blot results. This is a methodological caveat — streptavidin-MS enrichment in this system has poor signal-to-noise, reducing confidence in any positive MS identification including HMGB1.",
       "claim_type": "methodological",
       "direction": "ambiguous",
       "evidence_type": "mass_spec_surfaceome",
@@ -1560,7 +1561,7 @@
           },
           "section": "introduction",
           "figure_or_table_id": null,
-          "quote": "48 \u2212 52 Multiple cell surface cysteines are reported to be redox active, including C53 of aquaporin-8 AQP8, persulfidation of which is known to gate H 2 O 2 to regulate cell stress, 53 and C23, C45, and C106 of high mobility group box 1 protein HMGB1, reduction of which are known to be crucial for anti-inflammatory processes. 54 , 55 Activation-induced changes to cysteine oxidation have been linked to enhanced T cell activitation, 56 \u2212 58 and cysteines on CD4 and GP120 have been implicated in the entry of HIV in T cells and in the regulation",
+          "quote": "48 − 52 Multiple cell surface cysteines are reported to be redox active, including C53 of aquaporin-8 AQP8, persulfidation of which is known to gate H 2 O 2 to regulate cell stress, 53 and C23, C45, and C106 of high mobility group box 1 protein HMGB1, reduction of which are known to be crucial for anti-inflammatory processes. 54 , 55 Activation-induced changes to cysteine oxidation have been linked to enhanced T cell activitation, 56 − 58 and cysteines on CD4 and GP120 have been implicated in the entry of HIV in T cells and in the regulation",
           "quote_sha256": "5e3f76b38365982e80124b7614e1e0cdc297fa230a2ef2b3c03c224185a5b29e",
           "char_offset": 130,
           "normalized_source_sha256": "2fc7e47bf2a898ea6ef744c0d93f2c3710d072ad3b3bdff23297aabc1e16060f"
@@ -1573,7 +1574,7 @@
     },
     {
       "evidence_id": "a1_evi_08",
-      "claim": "HMGB1 is displayed on the exterior surface of exosomes released from MIA-injured knee tissue; exosome-surface-displayed HMGB1 acts as a signaling DAMP transmitted to the brain to activate NF-\u03baB and neuronal senescence. This is a shed/surface-form evidence: HMGB1 is present on the outer leaflet of extracellular vesicles, representing a non-plasma-membrane surface-accessible form that retains receptor-engagement capacity.",
+      "claim": "HMGB1 is displayed on the exterior surface of exosomes released from MIA-injured knee tissue; exosome-surface-displayed HMGB1 acts as a signaling DAMP transmitted to the brain to activate NF-κB and neuronal senescence. This is a shed/surface-form evidence: HMGB1 is present on the outer leaflet of extracellular vesicles, representing a non-plasma-membrane surface-accessible form that retains receptor-engagement capacity.",
       "claim_type": "surface_expression",
       "direction": "supports",
       "evidence_type": "functional_assay",
@@ -1613,7 +1614,7 @@
           },
           "section": "abstract",
           "figure_or_table_id": null,
-          "quote": "Here we show that exosomes released from mono-iodoacetate (MIA)-injured knees transmit surface-displayed high mobility group box 1 (HMGB1) to the brain, where they activate neuronal NF-\u03baB and senescence programs that culminate in depressive-like behavior.",
+          "quote": "Here we show that exosomes released from mono-iodoacetate (MIA)-injured knees transmit surface-displayed high mobility group box 1 (HMGB1) to the brain, where they activate neuronal NF-κB and senescence programs that culminate in depressive-like behavior.",
           "quote_sha256": "599faf0dd2b3438f66a632e36ebaf38b8ed2542bd52d1ff247f4dbb058e51836",
           "char_offset": 0,
           "normalized_source_sha256": "35aa19382729a2e01f4efbba7360b532d795320bedc842cfee767304553dcd81"
@@ -1723,7 +1724,7 @@
     },
     {
       "evidence_id": "a1_evi_11",
-      "claim": "Flow cytometry on non-permeabilized cells measuring surface expression of pattern-recognition receptors (Dectin-1, Dectin-2, TLR2) following HMGB1 stimulation. This is a surface-method clip: the assay is intact-cell, non-permeabilized flow cytometry. HMGB1 serves as the stimulus here, not the measured target \u2014 important context that this clip evidences HMGB1 as a surface-engaging ligand rather than a membrane-resident protein in this context.",
+      "claim": "Flow cytometry on non-permeabilized cells measuring surface expression of pattern-recognition receptors (Dectin-1, Dectin-2, TLR2) following HMGB1 stimulation. This is a surface-method clip: the assay is intact-cell, non-permeabilized flow cytometry. HMGB1 serves as the stimulus here, not the measured target — important context that this clip evidences HMGB1 as a surface-engaging ligand rather than a membrane-resident protein in this context.",
       "claim_type": "methodological",
       "direction": "supports",
       "evidence_type": "flow_cytometry",
@@ -1873,7 +1874,7 @@
     },
     {
       "evidence_id": "a1_evi_14",
-      "claim": "Flow cytometric detection of intracellular HMGB1 within live PyMT-B6 cells 24 hours post-chemotherapy (taxane) treatment. Critically, the assay measures intracellular HMGB1 \u2014 not surface-localized \u2014 in live cells, indicating that intracellular HMGB1 pools are the predominant signal detected in this flow cytometry study. This is a contradictory clip: flow cytometry here detects intracellular HMGB1, not surface HMGB1, in the context of taxane-induced secretion.",
+      "claim": "Flow cytometric detection of intracellular HMGB1 within live PyMT-B6 cells 24 hours post-chemotherapy (taxane) treatment. Critically, the assay measures intracellular HMGB1 — not surface-localized — in live cells, indicating that intracellular HMGB1 pools are the predominant signal detected in this flow cytometry study. This is a contradictory clip: flow cytometry here detects intracellular HMGB1, not surface HMGB1, in the context of taxane-induced secretion.",
       "claim_type": "contradictory",
       "direction": "refutes",
       "evidence_type": "flow_cytometry",
@@ -1926,7 +1927,7 @@
     },
     {
       "evidence_id": "a1_evi_15",
-      "claim": "HMGB1 is detected in the supernatant of VSV-S-infected HN12 and CAL27 head-and-neck cancer cells alongside LDH and IL-1\u03b2 release, indicating active release/shedding from pyroptotic cells. This is shed-form evidence: HMGB1 is passively released from cells undergoing pyroptosis (membrane pore formation), representing the secreted/soluble form rather than stable surface attachment.",
+      "claim": "HMGB1 is detected in the supernatant of VSV-S-infected HN12 and CAL27 head-and-neck cancer cells alongside LDH and IL-1β release, indicating active release/shedding from pyroptotic cells. This is shed-form evidence: HMGB1 is passively released from cells undergoing pyroptosis (membrane pore formation), representing the secreted/soluble form rather than stable surface attachment.",
       "claim_type": "surface_expression",
       "direction": "refutes",
       "evidence_type": "functional_assay",
@@ -1966,7 +1967,7 @@
           },
           "section": "results",
           "figure_or_table_id": null,
-          "quote": "VSV-S induces HN12 and CAL27 cell pyroptosis more efficiently than wtVSV, as demonstrated by a greater number of cell membrane pores along with increased lactate dehydrogenase (LDH) release and elevated levels of IL-1\u03b2 and HMGB1 in the supernatant of infected cells (Fig. 3 A and D).",
+          "quote": "VSV-S induces HN12 and CAL27 cell pyroptosis more efficiently than wtVSV, as demonstrated by a greater number of cell membrane pores along with increased lactate dehydrogenase (LDH) release and elevated levels of IL-1β and HMGB1 in the supernatant of infected cells (Fig. 3 A and D).",
           "quote_sha256": "e151c307356dd0e9f16a8a3c96be26ecfa0e0a67a16a986f9bc57cf128d3c8f3",
           "char_offset": 0,
           "normalized_source_sha256": "a2e7a1637128549561377967a069bdea99f36a33cf70e02c78ea446e7c566958"
@@ -2019,7 +2020,7 @@
           },
           "section": "results",
           "figure_or_table_id": null,
-          "quote": "( D ) Levels of IL-1\u03b2 and HMGB1 in the supernatant of HN12 and CAL27 cells infected with wtVSV or VSV-S determined by ELISA ( n = 6 repeats).",
+          "quote": "( D ) Levels of IL-1β and HMGB1 in the supernatant of HN12 and CAL27 cells infected with wtVSV or VSV-S determined by ELISA ( n = 6 repeats).",
           "quote_sha256": "74d5be0965ad3a0a3357a3ea2ec699443c89fad683685eb3a2cc680e205753b6",
           "char_offset": 287,
           "normalized_source_sha256": "a2e7a1637128549561377967a069bdea99f36a33cf70e02c78ea446e7c566958"
@@ -2072,7 +2073,7 @@
           },
           "section": "discussion",
           "figure_or_table_id": null,
-          "quote": "Since then, several other markers have been used to identify SEN, including increased expression of the cell cycle checkpoint inhibitors p16 and p21, SASP factors such as IL\u20106, IL\u20108, and MMP9, and release of the DAMP signaling molecule HMGB1 into the extracellular milieu (Hernandez\u2010Segura et al. 2018 ).",
+          "quote": "Since then, several other markers have been used to identify SEN, including increased expression of the cell cycle checkpoint inhibitors p16 and p21, SASP factors such as IL‐6, IL‐8, and MMP9, and release of the DAMP signaling molecule HMGB1 into the extracellular milieu (Hernandez‐Segura et al. 2018 ).",
           "quote_sha256": "4a3c0abaf81a61d088131659b0419371a3aefb80db73a3e683d9c74c02e80449",
           "char_offset": 0,
           "normalized_source_sha256": "043e46ee92eeb5a3639a2e69ce72ad507b88f59a96d6ef654b0a5d82097f8532"
@@ -2213,7 +2214,7 @@
           },
           "section": "abstract",
           "figure_or_table_id": null,
-          "quote": "IHC analysis further confirmed high positivity rates for HMGB1 (81.76%) and NF-\u03baB (75%) in gastric adenocarcinoma, respectively.",
+          "quote": "IHC analysis further confirmed high positivity rates for HMGB1 (81.76%) and NF-κB (75%) in gastric adenocarcinoma, respectively.",
           "quote_sha256": "368c9ac064da636d30b8df3497aea597856fbed61cdff00208e51bce4b412229",
           "char_offset": 0,
           "normalized_source_sha256": "d4c5c60a6be732104fb457cf2acc3735ee6f1d6e88676c2d4ec716a43ff5eb4b"
@@ -2266,7 +2267,7 @@
           },
           "section": "abstract",
           "figure_or_table_id": null,
-          "quote": "All statistical analyses were conducted using GraphPad Prism 9.<h4>Result</h4>The results showed that HMGB1 and NF-\u03baB were significantly higher than normal tissues, which were significantly correlated with survival prognosis.",
+          "quote": "All statistical analyses were conducted using GraphPad Prism 9.<h4>Result</h4>The results showed that HMGB1 and NF-κB were significantly higher than normal tissues, which were significantly correlated with survival prognosis.",
           "quote_sha256": "570d49aed1faed627aa9752c7af034d21314bc237774c6d44f1618a559dad1fa",
           "char_offset": 133,
           "normalized_source_sha256": "d4c5c60a6be732104fb457cf2acc3735ee6f1d6e88676c2d4ec716a43ff5eb4b"
@@ -2319,7 +2320,7 @@
           },
           "section": "abstract",
           "figure_or_table_id": null,
-          "quote": "The expression level of HMGB1 or NF-\u03baB was correlated with tumor size, depth of invasion, and clinical stage.",
+          "quote": "The expression level of HMGB1 or NF-κB was correlated with tumor size, depth of invasion, and clinical stage.",
           "quote_sha256": "0c9a3b72c700928ba268347170cb8c19b0499bce7d03707c4c9cb3fdfd3d0cfd",
           "char_offset": 363,
           "normalized_source_sha256": "d4c5c60a6be732104fb457cf2acc3735ee6f1d6e88676c2d4ec716a43ff5eb4b"
@@ -2478,7 +2479,7 @@
           },
           "section": "discussion",
           "figure_or_table_id": null,
-          "quote": "Since then, several other markers have been used to identify SEN, including increased expression of the cell cycle checkpoint inhibitors p16 and p21, SASP factors such as IL\u20106, IL\u20108, and MMP9, and release of the DAMP signaling molecule HMGB1 into the extracellular milieu (Hernandez\u2010Segura et al. 2018 ).",
+          "quote": "Since then, several other markers have been used to identify SEN, including increased expression of the cell cycle checkpoint inhibitors p16 and p21, SASP factors such as IL‐6, IL‐8, and MMP9, and release of the DAMP signaling molecule HMGB1 into the extracellular milieu (Hernandez‐Segura et al. 2018 ).",
           "quote_sha256": "4a3c0abaf81a61d088131659b0419371a3aefb80db73a3e683d9c74c02e80449",
           "char_offset": 0,
           "normalized_source_sha256": "043e46ee92eeb5a3639a2e69ce72ad507b88f59a96d6ef654b0a5d82097f8532"
@@ -2544,7 +2545,7 @@
     },
     {
       "evidence_id": "a2_evi_08",
-      "claim": "Extracellular acetylated HMGB1 (Acetyl-HMGB1) is detectable in the conditioned medium of ferroptotic glioma cells by ELISA, indicating that the ferroptotic cell state drives HMGB1 secretion/release to the extracellular compartment; this represents a stress-state-induced accessibility modulation (ferroptosis \u2192 extracellular HMGB1 increase).",
+      "claim": "Extracellular acetylated HMGB1 (Acetyl-HMGB1) is detectable in the conditioned medium of ferroptotic glioma cells by ELISA, indicating that the ferroptotic cell state drives HMGB1 secretion/release to the extracellular compartment; this represents a stress-state-induced accessibility modulation (ferroptosis → extracellular HMGB1 increase).",
       "claim_type": "surface_expression",
       "direction": "supports",
       "evidence_type": "functional_assay",
@@ -2650,7 +2651,7 @@
     },
     {
       "evidence_id": "a2_evi_10",
-      "claim": "Surface-displayed HMGB1 is present on the exterior of exosomes released from mono-iodoacetate (MIA)-injured knee joints; these HMGB1-bearing exosomes reach the brain and activate neuronal NF-\u03baB and senescence programs. This demonstrates that joint injury (arthritis disease state) induces HMGB1 surface display on extracellular vesicles derived from the articular joint tissue, enabling long-range intercellular HMGB1 signaling to the brain.",
+      "claim": "Surface-displayed HMGB1 is present on the exterior of exosomes released from mono-iodoacetate (MIA)-injured knee joints; these HMGB1-bearing exosomes reach the brain and activate neuronal NF-κB and senescence programs. This demonstrates that joint injury (arthritis disease state) induces HMGB1 surface display on extracellular vesicles derived from the articular joint tissue, enabling long-range intercellular HMGB1 signaling to the brain.",
       "claim_type": "surface_expression",
       "direction": "supports",
       "evidence_type": "functional_assay",
@@ -2690,7 +2691,7 @@
           },
           "section": "abstract",
           "figure_or_table_id": null,
-          "quote": "Here we show that exosomes released from mono-iodoacetate (MIA)-injured knees transmit surface-displayed high mobility group box 1 (HMGB1) to the brain, where they activate neuronal NF-\u03baB and senescence programs that culminate in depressive-like behavior.",
+          "quote": "Here we show that exosomes released from mono-iodoacetate (MIA)-injured knees transmit surface-displayed high mobility group box 1 (HMGB1) to the brain, where they activate neuronal NF-κB and senescence programs that culminate in depressive-like behavior.",
           "quote_sha256": "599faf0dd2b3438f66a632e36ebaf38b8ed2542bd52d1ff247f4dbb058e51836",
           "char_offset": 0,
           "normalized_source_sha256": "35aa19382729a2e01f4efbba7360b532d795320bedc842cfee767304553dcd81"
@@ -2756,7 +2757,7 @@
     },
     {
       "evidence_id": "a2_evi_12",
-      "claim": "Primary neurons respond to joint-derived HMGB1-bearing exosomes with NF-\u03baB activation and senescence signatures in vitro, demonstrating that neurons are a cell type with functional HMGB1-responsive surface receptors; this positions the brain/neuronal compartment as an anatomical target tissue for extracellular HMGB1 signaling.",
+      "claim": "Primary neurons respond to joint-derived HMGB1-bearing exosomes with NF-κB activation and senescence signatures in vitro, demonstrating that neurons are a cell type with functional HMGB1-responsive surface receptors; this positions the brain/neuronal compartment as an anatomical target tissue for extracellular HMGB1 signaling.",
       "claim_type": "tissue_expression",
       "direction": "supports",
       "evidence_type": "functional_assay",
@@ -2796,7 +2797,7 @@
           },
           "section": "abstract",
           "figure_or_table_id": null,
-          "quote": "In vitro, joint-derived exosomes triggered HMGB1-dependent NF-\u03baB activation and senescence signatures in primary neurons, supporting neuron-intrinsic responsiveness to vesicular DAMP signaling.",
+          "quote": "In vitro, joint-derived exosomes triggered HMGB1-dependent NF-κB activation and senescence signatures in primary neurons, supporting neuron-intrinsic responsiveness to vesicular DAMP signaling.",
           "quote_sha256": "a74cfb6ffb04e9a3b2e57f632382be4a8012de205aea2fa12639529b6d3652b1",
           "char_offset": 492,
           "normalized_source_sha256": "35aa19382729a2e01f4efbba7360b532d795320bedc842cfee767304553dcd81"
@@ -2902,7 +2903,7 @@
           },
           "section": "introduction",
           "figure_or_table_id": null,
-          "quote": "48 \u2212 52 Multiple cell surface cysteines are reported to be redox active, including C53 of aquaporin-8 AQP8, persulfidation of which is known to gate H 2 O 2 to regulate cell stress, 53 and C23, C45, and C106 of high mobility group box 1 protein HMGB1, reduction of which are known to be crucial for anti-inflammatory processes. 54 , 55 Activation-induced changes to cysteine oxidation have been linked to enhanced T cell activitation, 56 \u2212 58 and cysteines on CD4 and GP120 have been implicated in the entry of HIV in T cells and in the regulation",
+          "quote": "48 − 52 Multiple cell surface cysteines are reported to be redox active, including C53 of aquaporin-8 AQP8, persulfidation of which is known to gate H 2 O 2 to regulate cell stress, 53 and C23, C45, and C106 of high mobility group box 1 protein HMGB1, reduction of which are known to be crucial for anti-inflammatory processes. 54 , 55 Activation-induced changes to cysteine oxidation have been linked to enhanced T cell activitation, 56 − 58 and cysteines on CD4 and GP120 have been implicated in the entry of HIV in T cells and in the regulation",
           "quote_sha256": "5e3f76b38365982e80124b7614e1e0cdc297fa230a2ef2b3c03c224185a5b29e",
           "char_offset": 130,
           "normalized_source_sha256": "2fc7e47bf2a898ea6ef744c0d93f2c3710d072ad3b3bdff23297aabc1e16060f"
@@ -3157,7 +3158,7 @@
       "mode": "topic_search",
       "query": {
         "agent_focus": "a1",
-        "intent": "PTM-gated surface expression search \u2014 acetylation drives HMGB1 cytoplasmic translocation and secretion; phosphorylation and cysteine oxidation state modulate extracellular HMGB1 bioactivity and surface binding.",
+        "intent": "PTM-gated surface expression search — acetylation drives HMGB1 cytoplasmic translocation and secretion; phosphorylation and cysteine oxidation state modulate extracellular HMGB1 bioactivity and surface binding.",
         "anchors": [
           "ptm",
           "surface_expression"
@@ -3267,7 +3268,7 @@
       "mode": "topic_search",
       "query": {
         "agent_focus": "a1",
-        "intent": "HMGB1 direct surface detection by flow cytometry on intact cells or surface biotinylation \u2014 seeking primary surface-assay clips showing HMGB1 on outer plasma membrane leaflet, including RAGE-binding evidence",
+        "intent": "HMGB1 direct surface detection by flow cytometry on intact cells or surface biotinylation — seeking primary surface-assay clips showing HMGB1 on outer plasma membrane leaflet, including RAGE-binding evidence",
         "anchors": [
           "surface_expression",
           "flow_cytometry",
@@ -3284,7 +3285,7 @@
       "mode": "fetch_abstract",
       "query": {
         "agent_focus": "a1",
-        "intent": "Exosomes from joints display surface HMGB1 \u2014 surface-displayed HMGB1 on exosomes/cell surface; potential direct surface-expression evidence",
+        "intent": "Exosomes from joints display surface HMGB1 — surface-displayed HMGB1 on exosomes/cell surface; potential direct surface-expression evidence",
         "pmid": 42107473
       },
       "n_results": 1,
@@ -3297,7 +3298,7 @@
       "mode": "fetch_abstract",
       "query": {
         "agent_focus": "a1",
-        "intent": "HMGB1 secretion in TIM-3 checkpoint blockade context \u2014 taxane-induced HMGB1 secretion and HMGB1-dependent DN pathway; shed-form and therapeutic engagement evidence",
+        "intent": "HMGB1 secretion in TIM-3 checkpoint blockade context — taxane-induced HMGB1 secretion and HMGB1-dependent DN pathway; shed-form and therapeutic engagement evidence",
         "pmid": 42097146
       },
       "n_results": 1,
@@ -3450,7 +3451,7 @@
       "mode": "topic_search",
       "query": {
         "agent_focus": "a2",
-        "intent": "HMGB1 surface/membranous expression in normal liver, lung, kidney, GI tract \u2014 tox-panel organs; identify normal-tissue on-target risk",
+        "intent": "HMGB1 surface/membranous expression in normal liver, lung, kidney, GI tract — tox-panel organs; identify normal-tissue on-target risk",
         "anchors": [
           "surface_expression",
           "ihc"
@@ -3482,7 +3483,7 @@
       "mode": "topic_search",
       "query": {
         "agent_focus": "a2",
-        "intent": "HMGB1 cell-state-induced surface display in inflammatory macrophages, neutrophils, dendritic cells, NK cells, T cells \u2014 immune subset cell-type context",
+        "intent": "HMGB1 cell-state-induced surface display in inflammatory macrophages, neutrophils, dendritic cells, NK cells, T cells — immune subset cell-type context",
         "anchors": [
           "surface_expression",
           "shedding"
@@ -3530,7 +3531,7 @@
       "mode": "topic_search",
       "query": {
         "agent_focus": "a2",
-        "intent": "Soluble circulating HMGB1 in serum/plasma \u2014 decoy assessment: does circulating HMGB1 compete with or neutralize therapeutic antibodies targeting surface-bound forms?",
+        "intent": "Soluble circulating HMGB1 in serum/plasma — decoy assessment: does circulating HMGB1 compete with or neutralize therapeutic antibodies targeting surface-bound forms?",
         "anchors": [
           "surface_expression",
           "shedding"
@@ -3546,7 +3547,7 @@
       "mode": "topic_search",
       "query": {
         "agent_focus": "a2",
-        "intent": "HMGB1 paralog family (HMGB2, HMGB3, HMGB4) surface expression context \u2014 cross-reactivity risk and family-wide vs gene-specific surface biology",
+        "intent": "HMGB1 paralog family (HMGB2, HMGB3, HMGB4) surface expression context — cross-reactivity risk and family-wide vs gene-specific surface biology",
         "anchors": [
           "ptm",
           "shedding"
@@ -3578,7 +3579,7 @@
       "mode": "topic_search",
       "query": {
         "agent_focus": "a2",
-        "intent": "HMGB1 in platelets, endothelial cells, and vascular accessibility \u2014 platelet surface HMGB1 as disease-state marker and vascular compartment expression",
+        "intent": "HMGB1 in platelets, endothelial cells, and vascular accessibility — platelet surface HMGB1 as disease-state marker and vascular compartment expression",
         "anchors": [
           "surface_expression",
           "ihc"
@@ -3594,7 +3595,7 @@
       "mode": "fetch_abstract",
       "query": {
         "agent_focus": "a2",
-        "intent": "HMGB1 surface-displayed on exosomes from arthritic joints transmitted to brain \u2014 cell-surface/extracellular association evidence in primary tissue context",
+        "intent": "HMGB1 surface-displayed on exosomes from arthritic joints transmitted to brain — cell-surface/extracellular association evidence in primary tissue context",
         "pmid": 42107473
       },
       "n_results": 1,
@@ -3607,7 +3608,7 @@
       "mode": "fetch_abstract",
       "query": {
         "agent_focus": "a2",
-        "intent": "HMGB1 and NF-kB expression in gastric adenocarcinoma \u2014 tissue expression data in cancer vs normal gastric tissue",
+        "intent": "HMGB1 and NF-kB expression in gastric adenocarcinoma — tissue expression data in cancer vs normal gastric tissue",
         "pmid": 41917528
       },
       "n_results": 1,
@@ -3620,7 +3621,7 @@
       "mode": "fetch_fulltext",
       "query": {
         "agent_focus": "a2",
-        "intent": "Ferroptosis/glioma paper with extracellular acetyl-HMGB1 \u2014 subcellular localization and cell-state-dependent surface/extracellular release in glioma cells",
+        "intent": "Ferroptosis/glioma paper with extracellular acetyl-HMGB1 — subcellular localization and cell-state-dependent surface/extracellular release in glioma cells",
         "pmcid": "PMC13039700"
       },
       "n_results": 1,
@@ -3633,7 +3634,7 @@
   "primary_evidence_count": 19,
   "secondary_evidence_count": 15,
   "confidence": "moderate",
-  "confidence_reasoning": "Confidence is moderate rather than low because the biology of HMGB1 as a secreted DAMP is well established across independent sources, making the 'secreted_only' call robust. However, the triage agent called this 'contextual / cell_state_induced,' noting that surface biotinylation on intact cells and flow cytometry data have been interpreted as showing HMGB1 on the outer PM leaflet bound to surface RAGE \u2014 evidence the triage cited but which is not present as a qualifying direct surface assay in the compiled ledger. The specific gap is that no live-cell non-permeabilized flow, non-perm IF, or surface biotinylation with HMGB1 confirmed as a hit appears in the evidence set reviewed here. Confidence would rise to high only with a published, replicated live-cell surface staining result (non-permeabilized flow cytometry or surface biotinylation with HMGB1 explicitly listed as a detected surface hit) from an independent laboratory.",
+  "confidence_reasoning": "Confidence is moderate rather than low because the biology of HMGB1 as a secreted DAMP is well established across independent sources, making the 'secreted_only' call robust. However, the triage agent called this 'contextual / cell_state_induced,' noting that surface biotinylation on intact cells and flow cytometry data have been interpreted as showing HMGB1 on the outer PM leaflet bound to surface RAGE — evidence the triage cited but which is not present as a qualifying direct surface assay in the compiled ledger. The specific gap is that no live-cell non-permeabilized flow, non-perm IF, or surface biotinylation with HMGB1 confirmed as a hit appears in the evidence set reviewed here. Confidence would rise to high only with a published, replicated live-cell surface staining result (non-permeabilized flow cytometry or surface biotinylation with HMGB1 explicitly listed as a detected surface hit) from an independent laboratory.",
   "model_path": "claude-sonnet-4-6",
   "record_generated_at": "2026-05-31T20:15:43.094500Z"
 }

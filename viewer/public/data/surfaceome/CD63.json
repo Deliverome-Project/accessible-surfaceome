@@ -78,7 +78,8 @@
     "surface_specificity_rationale": "Dominant steady-state localization is lysosomal/MVB (a1_evi_23, a2_evi_27); surface pool is activation-gated via lysosomal exocytosis across all major cell types examined (a2_evi_01, a2_evi_02). A constitutive minor PM pool is present in HEK293T (a1_evi_06) but the overall distribution is predominantly intracellular.",
     "has_known_ligand_rationale": "TIMP1 is a validated endogenous binding partner that engages CD63 (together with β1-integrin) on macrophage surfaces to activate AKT/mTOR signaling in the CRC pre-metastatic niche (a2_evi_16); CD63 also serves as an entry receptor for SARS-CoV-2 on T cells (a2_evi_17).",
     "low_endogenous_expression_rationale": "Pan-tissue transcript screen placed CD63 in the top 50 surface genes (a2_evi_24); live-cell flow shows moderate surface signal on HEK293T and primary granulocytes (a1_evi_06, a1_evi_19), with dominant intracellular pool confirming moderate rather than high surface-level expression at steady state.",
-    "overexpression_surface_localization_observed_rationale": "No method observation pairs an overexpression/mixed expression system with a direct or supportive surface-accessibility readout."
+    "overexpression_surface_localization_observed_rationale": "No method observation pairs an overexpression/mixed expression system with a direct or supportive surface-accessibility readout.",
+    "n_papers_selected": 27
   },
   "surface_evidence": {
     "evidence_grade": "direct_multi_method",

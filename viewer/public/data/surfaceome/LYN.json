@@ -8,9 +8,9 @@
     "ensembl_gene": "ENSG00000254087"
   },
   "triage_signal": "unlikely",
-  "triage_reasoning": "LYN is a Src-family non-receptor tyrosine kinase that resides on the cytoplasmic (inner) leaflet of the plasma membrane. It is anchored via dual N-terminal lipid modifications (myristoylation at Gly2 and palmitoylation at Cys3), placing it entirely on the cytosolic face of the PM. Its catalytic SH1, SH2, and SH3 domains are all cytoplasmic. There is no extracellular domain and no topology that would expose any part of the protein body to the extracellular space. Checking contextual buckets: (1) cell_state_induced \u2014 no documented stress/activation-induced surface flip; (2) tissue_restricted_surface \u2014 not applicable, no outer-leaflet display in any lineage; (3) lysosomal_exocytosis \u2014 LYN is not a lysosomal TM protein; (4) dual_localization \u2014 LYN cycles between inner PM leaflet and endomembranes, never the outer leaflet; (5) stable_surface_attachment \u2014 no documented wash-resistant anchoring to an extracellular-facing partner. No antibody, CAR-T, or surface-proteomics study targets LYN on the cell exterior. Verdict: cytoplasmic-face inner-leaflet anchored.",
+  "triage_reasoning": "LYN is a Src-family non-receptor tyrosine kinase that resides on the cytoplasmic (inner) leaflet of the plasma membrane. It is anchored via dual N-terminal lipid modifications (myristoylation at Gly2 and palmitoylation at Cys3), placing it entirely on the cytosolic face of the PM. Its catalytic SH1, SH2, and SH3 domains are all cytoplasmic. There is no extracellular domain and no topology that would expose any part of the protein body to the extracellular space. Checking contextual buckets: (1) cell_state_induced — no documented stress/activation-induced surface flip; (2) tissue_restricted_surface — not applicable, no outer-leaflet display in any lineage; (3) lysosomal_exocytosis — LYN is not a lysosomal TM protein; (4) dual_localization — LYN cycles between inner PM leaflet and endomembranes, never the outer leaflet; (5) stable_surface_attachment — no documented wash-resistant anchoring to an extracellular-facing partner. No antibody, CAR-T, or surface-proteomics study targets LYN on the cell exterior. Verdict: cytoplasmic-face inner-leaflet anchored.",
   "executive_summary": {
-    "one_paragraph": "LYN is a Src-family non-receptor tyrosine kinase anchored exclusively to the cytoplasmic (inner) leaflet of the plasma membrane via N-terminal myristoylation (Gly2) and palmitoylation (Cys3). It has zero transmembrane helices, no extracellular domain, and all catalytic domains (SH1/SH2/SH3) face the cytosol. The deep-dive evidence uniformly corroborates this topology: LYN-yPET serves as a standard inner-leaflet PM reference in BRET assays, and surface flow cytometry on LYN-deficient cells tested other antigens \u2014 not LYN itself. No ectopic-surface, cancer-state inversion, or outer-leaflet exposure has been documented for LYN in any lineage. Surface accessibility is absent.",
+    "one_paragraph": "LYN is a Src-family non-receptor tyrosine kinase anchored exclusively to the cytoplasmic (inner) leaflet of the plasma membrane via N-terminal myristoylation (Gly2) and palmitoylation (Cys3). It has zero transmembrane helices, no extracellular domain, and all catalytic domains (SH1/SH2/SH3) face the cytosol. The deep-dive evidence uniformly corroborates this topology: LYN-yPET serves as a standard inner-leaflet PM reference in BRET assays, and surface flow cytometry on LYN-deficient cells tested other antigens — not LYN itself. No ectopic-surface, cancer-state inversion, or outer-leaflet exposure has been documented for LYN in any lineage. Surface accessibility is absent.",
     "surface_accessibility": "no",
     "evidence_grade_summary": "weak",
     "confidence": "high",
@@ -65,22 +65,23 @@
     "expression_level_rationale": "LYN is expressed in B cells, myeloid cells, microglia, AML blasts, and breast cancer cell lines (a2_evi_01, a2_evi_04, a2_evi_06). Expression is functionally significant in immune lineages but not pan-tissue high; moderate is the best-supported call.",
     "expression_breadth_rationale": "Expression is concentrated in hematopoietic/immune lineages (B cells, myeloid cells, microglia) and select cancer contexts (AML, breast cancer) (a2_evi_01, a2_evi_03, a2_evi_04). Not detected broadly across non-immune tissues.",
     "surface_specificity_rationale": "LYN is anchored exclusively to the cytoplasmic face of the PM via dual lipid modifications. Multiple independent observations confirm inner-leaflet topology with no outer-leaflet or surface exposure (a1_evi_01, a1_evi_04, a1_evi_05, a2_evi_08).",
-    "has_known_ligand_rationale": "LYN is a Src-family kinase; its substrates/interactors include BCR components (Ig\u03b1/Ig\u03b2), CD22, Fc\u03b3RIIB, and mesothelin (MSLN) in AML (a2_evi_04). Ligand/substrate identity is well-established even though LYN is cytoplasmic.",
-    "low_endogenous_expression_rationale": "Derived from expression_level='moderate' (not low/absent \u2192 not flagged). LYN is expressed in B cells, myeloid cells, microglia, AML blasts, and breast cancer cell lines (a2_evi_01, a2_evi_04, a2_evi_06). Expression is functionally significant in immune lineages but not pan-tissue high; moderate is the best-supported call.",
+    "has_known_ligand_rationale": "LYN is a Src-family kinase; its substrates/interactors include BCR components (Igα/Igβ), CD22, FcγRIIB, and mesothelin (MSLN) in AML (a2_evi_04). Ligand/substrate identity is well-established even though LYN is cytoplasmic.",
+    "low_endogenous_expression_rationale": "Derived from expression_level='moderate' (not low/absent → not flagged). LYN is expressed in B cells, myeloid cells, microglia, AML blasts, and breast cancer cell lines (a2_evi_01, a2_evi_04, a2_evi_06). Expression is functionally significant in immune lineages but not pan-tissue high; moderate is the best-supported call.",
     "overexpression_surface_localization_observed_rationale": "No method observation pairs an overexpression/mixed expression system with a direct or supportive surface-accessibility readout.",
     "tumor_associated": false,
     "induction_trigger": "none",
-    "has_live_cell_surface_evidence": false
+    "has_live_cell_surface_evidence": false,
+    "n_papers_selected": 8
   },
   "surface_evidence": {
     "evidence_grade": "weak",
-    "grade_rationale": "All six claims are tangential to the question of surface accessibility. No claim uses a direct surface methodology (live-cell flow cytometry for LYN itself, non-permeabilized IF, surface biotinylation, or IHC membranous). The evidence uniformly describes LYN's canonical inner-leaflet, cytoplasmic-face topology via myristoylation/palmitoylation (a1_evi_01, a1_evi_02, a1_evi_06), its use as a cytoplasmic PM marker in BRET assays (a1_evi_04, a1_evi_05), and a surface flow experiment that measured other antigens on Lyn-KO microglia but never tested LYN surface exposure directly (a1_evi_03). The entirety of evidence is review-level, functional-assay-derived, or indirect topology inference \u2014 none constitutes a direct surface-accessibility assay for LYN. Grade: weak.",
+    "grade_rationale": "All six claims are tangential to the question of surface accessibility. No claim uses a direct surface methodology (live-cell flow cytometry for LYN itself, non-permeabilized IF, surface biotinylation, or IHC membranous). The evidence uniformly describes LYN's canonical inner-leaflet, cytoplasmic-face topology via myristoylation/palmitoylation (a1_evi_01, a1_evi_02, a1_evi_06), its use as a cytoplasmic PM marker in BRET assays (a1_evi_04, a1_evi_05), and a surface flow experiment that measured other antigens on Lyn-KO microglia but never tested LYN surface exposure directly (a1_evi_03). The entirety of evidence is review-level, functional-assay-derived, or indirect topology inference — none constitutes a direct surface-accessibility assay for LYN. Grade: weak.",
     "claim_stances": [
       {
         "claim_id": "a1_evi_01",
         "stance": "tangential",
         "weight": "high",
-        "note": "Review-level assertion: SFKs including LYN are myristoylated and inner-leaflet anchored \u2014 describes canonical baseline topology"
+        "note": "Review-level assertion: SFKs including LYN are myristoylated and inner-leaflet anchored — describes canonical baseline topology"
       },
       {
         "claim_id": "a1_evi_02",
@@ -124,7 +125,7 @@
         "surface_claim_type": "intracellular_pool",
         "expression_observations": [
           {
-            "context": "Lyn-deficient mouse microglia (dissociated whole brain tissue); surface phenotype panel \u2014 LYN itself not detected at surface, used as cytoplasmic kinase context",
+            "context": "Lyn-deficient mouse microglia (dissociated whole brain tissue); surface phenotype panel — LYN itself not detected at surface, used as cytoplasmic kinase context",
             "sample_type": "ex_vivo",
             "level": "absent",
             "species": "mouse",
@@ -211,7 +212,7 @@
         "claim": "Flow cytometry on intact (non-permeabilized) dissociated microglia from Lyn-deficient mice was used to examine 'microglial cell surface phenotype' without detecting LYN itself at the cell surface. The implicit assumption of this experimental design is that LYN is an intracellular kinase and would not appear in a live-cell surface staining panel.",
         "contradiction_type": "intracellular_pool",
         "severity_for_surface_accessibility": "low",
-        "likely_explanation": "The study used surface flow cytometry to characterize downstream phenotypic markers on LYN-deficient microglia, not to detect LYN itself at the surface \u2014 consistent with LYN being cytoplasmic and not surface-accessible.",
+        "likely_explanation": "The study used surface flow cytometry to characterize downstream phenotypic markers on LYN-deficient microglia, not to detect LYN itself at the surface — consistent with LYN being cytoplasmic and not surface-accessible.",
         "cited_evidence_ids": [
           "a1_evi_03"
         ]
@@ -347,7 +348,7 @@
         {
           "compartment": "cytoplasmic face of plasma membrane (inner leaflet)",
           "fraction_estimate": null,
-          "condition": "constitutive \u2014 LYN is myristoylated/palmitoylated and anchored to the cytoplasmic leaflet",
+          "condition": "constitutive — LYN is myristoylated/palmitoylated and anchored to the cytoplasmic leaflet",
           "cited_evidence_ids": [
             "a2_evi_08"
           ]
@@ -805,9 +806,9 @@
       "afdb_version": "v6",
       "ecd_mean_plddt": 83.12,
       "ecd_disordered_fraction": 0.178,
-      "source": "AlphaFold DB (whole-protein pLDDT \u2014 no ECD residues in topology)",
+      "source": "AlphaFold DB (whole-protein pLDDT — no ECD residues in topology)",
       "license": "CC BY 4.0",
-      "attribution": "\u00a9 DeepMind / EMBL-EBI",
+      "attribution": "© DeepMind / EMBL-EBI",
       "citations": [
         "10.1038/s41586-021-03819-2",
         "10.1093/nar/gkad1011"
@@ -826,7 +827,7 @@
       "protein_name": null,
       "pdbs": [],
       "source": "SURFACE-Bind v1 (Balbi et al. 2026 PNAS)",
-      "attribution": "\u00a9 Balbi et al., Correia lab \u2014 EPFL / Inria / Novo Nordisk",
+      "attribution": "© Balbi et al., Correia lab — EPFL / Inria / Novo Nordisk",
       "citation": "10.1073/pnas.2506269123"
     }
   },
@@ -1212,7 +1213,7 @@
     },
     {
       "evidence_id": "a2_evi_02",
-      "claim": "LYN is required in anergic (Ars/A1) B cells \u2014 a specific cell state of antigen-experienced unresponsive B cells \u2014 to establish and maintain B cell unresponsiveness by restricting PI3K-dependent signaling. This identifies a cell-state-specific role for LYN in anergic versus non-anergic B cells.",
+      "claim": "LYN is required in anergic (Ars/A1) B cells — a specific cell state of antigen-experienced unresponsive B cells — to establish and maintain B cell unresponsiveness by restricting PI3K-dependent signaling. This identifies a cell-state-specific role for LYN in anergic versus non-anergic B cells.",
       "claim_type": "tissue_expression",
       "direction": "supports",
       "evidence_type": "loss_of_function_phenotype",
@@ -1517,7 +1518,7 @@
           },
           "section": "results",
           "figure_or_table_id": null,
-          "quote": "In contrast, Protein cluster enriched specifically in ST(3D) were implicated in protein folding in endoplasmic reticulum (CALR, CANX, DNAJC3, PDIA3), female pregnancy (ENDOU, HSD11B2, PSG3, SLC38A2, ACSL4, CALR, SLC2A1, STS), hormone biosynthetic process (CYP11A1, CYP19A1, DAB2, FDX1, POR), homotypic cell\u2010cell adhesion (CSRP1, FN1, HSPB1, LYN, PLPP3, STXBP1), regulation of leukocyte migration (CYP19A1, HMOX1, MPP1, ST3GAL4, CALR, DPP4, LGMN, LYN) and coagulation (ST3GAL4, TFPI, TFPI2, CSRP1, FN1, HSPB1, LYN, STXBP1).",
+          "quote": "In contrast, Protein cluster enriched specifically in ST(3D) were implicated in protein folding in endoplasmic reticulum (CALR, CANX, DNAJC3, PDIA3), female pregnancy (ENDOU, HSD11B2, PSG3, SLC38A2, ACSL4, CALR, SLC2A1, STS), hormone biosynthetic process (CYP11A1, CYP19A1, DAB2, FDX1, POR), homotypic cell‐cell adhesion (CSRP1, FN1, HSPB1, LYN, PLPP3, STXBP1), regulation of leukocyte migration (CYP19A1, HMOX1, MPP1, ST3GAL4, CALR, DPP4, LGMN, LYN) and coagulation (ST3GAL4, TFPI, TFPI2, CSRP1, FN1, HSPB1, LYN, STXBP1).",
           "quote_sha256": "461d595170cf3359adb4a67a87c87371417192137c74f8a7cd22712e4abfbf14",
           "char_offset": 0,
           "normalized_source_sha256": "58dc5a4f2d272f3b27d25b494ef6b2c341600bf1c42ed292c592a55b5960f4ab"
@@ -1665,7 +1666,7 @@
       "mode": "flow_cytometry",
       "query": {
         "agent_focus": "a1",
-        "intent": "Find any flow cytometry surface staining of LYN on intact cells \u2014 the most direct evidence that would overturn the inner-leaflet-anchored prior",
+        "intent": "Find any flow cytometry surface staining of LYN on intact cells — the most direct evidence that would overturn the inner-leaflet-anchored prior",
         "category": "flow_cytometry",
         "uniprot_acc": "P07948"
       },
@@ -1779,7 +1780,7 @@
       "mode": "topic_search",
       "query": {
         "agent_focus": "a1",
-        "intent": "Search for palmitoylation/myristoylation-dependent surface localization of LYN \u2014 lipid anchor PTMs gate membrane targeting and potentially state-dependent exposure",
+        "intent": "Search for palmitoylation/myristoylation-dependent surface localization of LYN — lipid anchor PTMs gate membrane targeting and potentially state-dependent exposure",
         "anchors": [
           "ptm",
           "surface_expression"
@@ -1842,7 +1843,7 @@
       "mode": "topic_search",
       "query": {
         "agent_focus": "a1",
-        "intent": "Search for LYN family (Src-family kinase) topological inversion, lysosomal exocytosis, or ectopic surface translocation literature \u2014 the cancer-state eSrc-class mechanism",
+        "intent": "Search for LYN family (Src-family kinase) topological inversion, lysosomal exocytosis, or ectopic surface translocation literature — the cancer-state eSrc-class mechanism",
         "anchors": [
           "surface_expression",
           "shedding"
@@ -1888,7 +1889,7 @@
       "mode": "topic_search",
       "query": {
         "agent_focus": "a1",
-        "intent": "HEK293/293T overexpression surface evidence for LYN \u2014 heterologous host surface flow or staining",
+        "intent": "HEK293/293T overexpression surface evidence for LYN — heterologous host surface flow or staining",
         "anchors": [
           "flow_cytometry",
           "surface_biotinylation"
@@ -1904,7 +1905,7 @@
       "mode": "topic_search",
       "query": {
         "agent_focus": "a1",
-        "intent": "K562 / leukemia-line surface staining of LYN \u2014 relevant because K562 cells endogenously express LYN (PMID:2247464) and the hematopoietic context is primary",
+        "intent": "K562 / leukemia-line surface staining of LYN — relevant because K562 cells endogenously express LYN (PMID:2247464) and the hematopoietic context is primary",
         "anchors": [
           "surface_expression",
           "ihc"
@@ -1952,7 +1953,7 @@
       "mode": "fetch_abstract",
       "query": {
         "agent_focus": "a1",
-        "intent": "CUL4A-DDB1-DCAF10 N-recognin paper covers N-terminal myristoylation of Src kinases including LYN \u2014 may contain topology/membrane-anchor evidence clarifying inner-leaflet vs. surface accessibility",
+        "intent": "CUL4A-DDB1-DCAF10 N-recognin paper covers N-terminal myristoylation of Src kinases including LYN — may contain topology/membrane-anchor evidence clarifying inner-leaflet vs. surface accessibility",
         "pmid": 41484149
       },
       "n_results": 1,
@@ -1965,7 +1966,7 @@
       "mode": "fetch_abstract",
       "query": {
         "agent_focus": "a1",
-        "intent": "S-palmitoylation enrichment paper \u2014 may contain direct biochemical evidence for LYN palmitoylation at Cys3 anchoring it to inner leaflet, relevant to topology/surface-refutes claim",
+        "intent": "S-palmitoylation enrichment paper — may contain direct biochemical evidence for LYN palmitoylation at Cys3 anchoring it to inner leaflet, relevant to topology/surface-refutes claim",
         "pmid": 41109480
       },
       "n_results": 1,
@@ -1978,7 +1979,7 @@
       "mode": "gene2pubmed",
       "query": {
         "agent_focus": "a2",
-        "intent": "Baseline curated PMID list for LYN \u2014 hematopoietic / immune-cell biology anchor"
+        "intent": "Baseline curated PMID list for LYN — hematopoietic / immune-cell biology anchor"
       },
       "n_results": 25,
       "sources_seen": [],
@@ -2002,7 +2003,7 @@
       "mode": "ihc",
       "query": {
         "agent_focus": "a2",
-        "intent": "IHC tissue-distribution of LYN in normal and diseased tissues \u2014 membranous vs cytoplasmic staining, normal-tox-organ panel",
+        "intent": "IHC tissue-distribution of LYN in normal and diseased tissues — membranous vs cytoplasmic staining, normal-tox-organ panel",
         "category": "ihc",
         "uniprot_acc": "P07948"
       },
@@ -2016,7 +2017,7 @@
       "mode": "if",
       "query": {
         "agent_focus": "a2",
-        "intent": "Immunofluorescence localization of LYN \u2014 inner-leaflet PM vs endomembrane (Golgi, perinuclear) compartment calls; colocalization with organelle markers",
+        "intent": "Immunofluorescence localization of LYN — inner-leaflet PM vs endomembrane (Golgi, perinuclear) compartment calls; colocalization with organelle markers",
         "category": "if",
         "uniprot_acc": "P07948"
       },
@@ -2030,7 +2031,7 @@
       "mode": "flow_cytometry",
       "query": {
         "agent_focus": "a2",
-        "intent": "Flow cytometry on intact (non-permeabilized) cells reporting any outer-leaflet LYN signal \u2014 key test for inner-leaflet-anchored vs ectopic-surface story",
+        "intent": "Flow cytometry on intact (non-permeabilized) cells reporting any outer-leaflet LYN signal — key test for inner-leaflet-anchored vs ectopic-surface story",
         "category": "flow_cytometry",
         "uniprot_acc": "P07948"
       },
@@ -2044,7 +2045,7 @@
       "mode": "mass_spec_surfaceome",
       "query": {
         "agent_focus": "a2",
-        "intent": "Surface proteomics datasets \u2014 check whether LYN peptides appear in plasma-membrane-enriched or surface-biotinylation fractions of hematopoietic or cancer cells",
+        "intent": "Surface proteomics datasets — check whether LYN peptides appear in plasma-membrane-enriched or surface-biotinylation fractions of hematopoietic or cancer cells",
         "category": "mass_spec_surfaceome",
         "uniprot_acc": "P07948"
       },
@@ -2058,7 +2059,7 @@
       "mode": "surface_biotinylation",
       "query": {
         "agent_focus": "a2",
-        "intent": "Surface biotinylation fractionation papers \u2014 quantify any surface vs intracellular split of LYN under steady-state or stress conditions",
+        "intent": "Surface biotinylation fractionation papers — quantify any surface vs intracellular split of LYN under steady-state or stress conditions",
         "category": "surface_biotinylation",
         "uniprot_acc": "P07948"
       },
@@ -2072,7 +2073,7 @@
       "mode": "other",
       "query": {
         "agent_focus": "a2",
-        "intent": "Proximity labeling, shedding, or functional surface-assay papers for LYN \u2014 lipid raft association, detergent-resistant membrane fractionation, palmitoylation cycling",
+        "intent": "Proximity labeling, shedding, or functional surface-assay papers for LYN — lipid raft association, detergent-resistant membrane fractionation, palmitoylation cycling",
         "category": "other",
         "uniprot_acc": "P07948"
       },
@@ -2102,7 +2103,7 @@
       "mode": "topic_search",
       "query": {
         "agent_focus": "a2",
-        "intent": "LYN palmitoylation / myristoylation PTM literature \u2014 lipid-modification-dependent membrane targeting, depalmitoylation-driven redistribution to endomembrane",
+        "intent": "LYN palmitoylation / myristoylation PTM literature — lipid-modification-dependent membrane targeting, depalmitoylation-driven redistribution to endomembrane",
         "anchors": [
           "ptm",
           "topology"
@@ -2118,7 +2119,7 @@
       "mode": "topic_search",
       "query": {
         "agent_focus": "a2",
-        "intent": "LYN expression in hematopoietic cell types \u2014 B cells, mast cells, monocytes, NK cells; cell-surface-proximal vs cytoplasmic pool; sorted-population data",
+        "intent": "LYN expression in hematopoietic cell types — B cells, mast cells, monocytes, NK cells; cell-surface-proximal vs cytoplasmic pool; sorted-population data",
         "anchors": [
           "surface_expression",
           "ihc"
@@ -2134,7 +2135,7 @@
       "mode": "topic_search",
       "query": {
         "agent_focus": "a2",
-        "intent": "LYN tissue IHC in normal organs \u2014 liver, lung, kidney, heart, GI tract, brain \u2014 tox-panel membranous vs cytoplasmic staining; normal vs tumor tissue",
+        "intent": "LYN tissue IHC in normal organs — liver, lung, kidney, heart, GI tract, brain — tox-panel membranous vs cytoplasmic staining; normal vs tumor tissue",
         "anchors": [
           "ihc",
           "surface_expression"
@@ -2150,7 +2151,7 @@
       "mode": "topic_search",
       "query": {
         "agent_focus": "a2",
-        "intent": "LYN in cancer cells \u2014 potential cancer-state inner-leaflet to outer-face translocation (eSrc-class topological inversion), shedding, or extracellular vesicle association",
+        "intent": "LYN in cancer cells — potential cancer-state inner-leaflet to outer-face translocation (eSrc-class topological inversion), shedding, or extracellular vesicle association",
         "anchors": [
           "surface_expression",
           "shedding"
@@ -2166,7 +2167,7 @@
       "mode": "topic_search",
       "query": {
         "agent_focus": "a2",
-        "intent": "LYN on extracellular vesicles / exosomes \u2014 inner-leaflet kinase packaged in EVs; surface exposure on EV outer leaflet vs intraluminal cargo",
+        "intent": "LYN on extracellular vesicles / exosomes — inner-leaflet kinase packaged in EVs; surface exposure on EV outer leaflet vs intraluminal cargo",
         "anchors": [
           "shedding",
           "ptm"
@@ -2182,7 +2183,7 @@
       "mode": "topic_search",
       "query": {
         "agent_focus": "a2",
-        "intent": "LYN expression in neuronal / neuroblastoma context \u2014 brain cell types, peripheral nervous system; normal CNS surface-proximal pool behind BBB",
+        "intent": "LYN expression in neuronal / neuroblastoma context — brain cell types, peripheral nervous system; normal CNS surface-proximal pool behind BBB",
         "anchors": [
           "surface_expression",
           "ihc"
@@ -2198,7 +2199,7 @@
       "mode": "topic_search",
       "query": {
         "agent_focus": "a2",
-        "intent": "Src-family kinase (HCK, LCK, BLK, FYN, YES1) inner-leaflet membrane association \u2014 family-level lipid-raft / membrane-subdomain biology to contextualize LYN localization claims",
+        "intent": "Src-family kinase (HCK, LCK, BLK, FYN, YES1) inner-leaflet membrane association — family-level lipid-raft / membrane-subdomain biology to contextualize LYN localization claims",
         "anchors": [
           "surface_expression"
         ]
@@ -2213,7 +2214,7 @@
       "mode": "fetch_fulltext",
       "query": {
         "agent_focus": "a2",
-        "intent": "Mesothelin/LYN AML paper \u2014 LYN expression in acute myeloid leukemia, hematopoietic cell types, and potential surface/subcellular context in myeloid cells",
+        "intent": "Mesothelin/LYN AML paper — LYN expression in acute myeloid leukemia, hematopoietic cell types, and potential surface/subcellular context in myeloid cells",
         "pmcid": "PMC13098418"
       },
       "n_results": 1,
@@ -2226,7 +2227,7 @@
       "mode": "fetch_abstract",
       "query": {
         "agent_focus": "a2",
-        "intent": "Lyn B cell anergy paper \u2014 LYN expression context in B cells, peripheral tolerance, PI3K signaling; tissue/cell-type distribution in hematopoietic lineages",
+        "intent": "Lyn B cell anergy paper — LYN expression context in B cells, peripheral tolerance, PI3K signaling; tissue/cell-type distribution in hematopoietic lineages",
         "pmid": 41794864
       },
       "n_results": 1,
@@ -2239,7 +2240,7 @@
       "mode": "fetch_abstract",
       "query": {
         "agent_focus": "a2",
-        "intent": "LYN restricts influenza A virus \u2014 LYN expression context in lung/immune cells and subcellular/functional localization during viral infection",
+        "intent": "LYN restricts influenza A virus — LYN expression context in lung/immune cells and subcellular/functional localization during viral infection",
         "pmid": 41910156
       },
       "n_results": 1,

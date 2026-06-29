@@ -8,7 +8,7 @@
     "ensembl_gene": "ENSG00000081479"
   },
   "triage_signal": "likely_accessible",
-  "triage_reasoning": "LRP2/megalin is a single-pass type I transmembrane glycoprotein (large N-terminal extracellular domain, single TM helix, short cytoplasmic tail) belonging to the LDL receptor family. It functions as an endocytic multi-ligand receptor on the apical surface of absorptive epithelia \u2014 most prominently proximal tubule cells of the kidney, choroid plexus, intestine, and lung. Extensive experimental evidence (surface biotinylation, immunofluorescence on intact non-permeabilized cells, flow cytometry) confirms robust cell-surface expression at the apical plasma membrane. Its large ectodomain is the ligand-binding apparatus and is fully extracellular. Although it cycles through endosomes as part of its endocytic function, a substantial steady-state pool resides at the PM. Multiple therapeutic and diagnostic programs target its extracellular domain. This is an unambiguous classical single-pass TM receptor with dominant surface localization.",
+  "triage_reasoning": "LRP2/megalin is a single-pass type I transmembrane glycoprotein (large N-terminal extracellular domain, single TM helix, short cytoplasmic tail) belonging to the LDL receptor family. It functions as an endocytic multi-ligand receptor on the apical surface of absorptive epithelia — most prominently proximal tubule cells of the kidney, choroid plexus, intestine, and lung. Extensive experimental evidence (surface biotinylation, immunofluorescence on intact non-permeabilized cells, flow cytometry) confirms robust cell-surface expression at the apical plasma membrane. Its large ectodomain is the ligand-binding apparatus and is fully extracellular. Although it cycles through endosomes as part of its endocytic function, a substantial steady-state pool resides at the PM. Multiple therapeutic and diagnostic programs target its extracellular domain. This is an unambiguous classical single-pass TM receptor with dominant surface localization.",
   "executive_summary": {
     "one_paragraph": "LRP2/megalin is a canonical single-pass type I transmembrane endocytic receptor with a massive ~4400-residue extracellular domain, constitutively expressed at the apical plasma membrane of kidney proximal tubule epithelial cells, placental extravillous trophoblasts, and coronary endothelial cells. Surface accessibility is confirmed by multiple independent surface biotinylation studies (OK cells, MLE-12 cells) and orthogonal cell-surface capture MS in MDA-MB-231 cells. The dominant targeting risk is apical-membrane restriction: systemic binders cannot cross the tight epithelial barrier to reach LRP2 on the tubular luminal surface. A shed ectodomain is documented. The large ECD provides abundant epitope real estate.",
     "surface_accessibility": "high",
@@ -77,12 +77,13 @@
     "expression_breadth_rationale": "Restricted to kidney proximal tubule epithelium (dominant), placental extravillous trophoblasts (a2_evi_05), and coronary endothelial cells (a2_evi_07); not broadly expressed across tissue families.",
     "surface_specificity_rationale": "Steady-state surface fraction is modest (4.9% of total megalin at apical PM under static culture (a1_evi_06)); majority of protein cycles through endosomes constitutively (a2_evi_10, a2_evi_11, a2_evi_14). Surface-dominant during interphase, but endosomal pool is substantial.",
     "has_known_ligand_rationale": "LRP2 binds a large array of documented ligands including albumin, apolipoprotein B, vitamin D-binding protein, cubilin-amnionless complex, SARS-CoV-2 spike protein, and HDL/miR-223 (a2_evi_04, a1_evi_22, a2_evi_07). Not an orphan receptor.",
-    "low_endogenous_expression_rationale": "Derived from expression_level='high' (not low/absent \u2192 not flagged). High expression in kidney proximal tubule epithelial cells, where LRP2 is a canonical segment marker (~70% of CKD atlas cells express it) (a2_evi_01, a2_evi_02); also high in human kidney brush-border by IHC (a1_evi_19).",
-    "overexpression_surface_localization_observed_rationale": "No method observation pairs an overexpression/mixed expression system with a direct or supportive surface-accessibility readout."
+    "low_endogenous_expression_rationale": "Derived from expression_level='high' (not low/absent → not flagged). High expression in kidney proximal tubule epithelial cells, where LRP2 is a canonical segment marker (~70% of CKD atlas cells express it) (a2_evi_01, a2_evi_02); also high in human kidney brush-border by IHC (a1_evi_19).",
+    "overexpression_surface_localization_observed_rationale": "No method observation pairs an overexpression/mixed expression system with a direct or supportive surface-accessibility readout.",
+    "n_papers_selected": 17
   },
   "surface_evidence": {
     "evidence_grade": "direct_multi_method",
-    "grade_rationale": "LRP2 surface accessibility is supported by two distinct direct methods from independent sources. Surface biotinylation (sulfo-NHS-SS-biotin, non-permeabilized, live cells) was performed in OK proximal tubule cells by two independent groups (PMC11211581 and PMC9614980), both recovering biotinylated LRP2 via streptavidin pulldown and anti-megalin WB \u2014 high-weight direct evidence. Additionally, cell-surface capture (CSC) mass spectrometry via N-glycan oxidation and biocytin hydrazide enrichment identified LRP2 in MDA-MB-231 surfaceome (PMC12576823) \u2014 a second orthogonal direct surface method. Supporting evidence includes surface biotinylation in MLE-12 lung epithelial cells and structural/topology data (cryo-EM, canonical type I TM architecture). No mechanistically incompatible contradictions exist: endosomal accumulation under OCRL1 deficiency (a1_evi_23) is a pathological state variation, not a baseline refutation. Grade: direct_multi_method.",
+    "grade_rationale": "LRP2 surface accessibility is supported by two distinct direct methods from independent sources. Surface biotinylation (sulfo-NHS-SS-biotin, non-permeabilized, live cells) was performed in OK proximal tubule cells by two independent groups (PMC11211581 and PMC9614980), both recovering biotinylated LRP2 via streptavidin pulldown and anti-megalin WB — high-weight direct evidence. Additionally, cell-surface capture (CSC) mass spectrometry via N-glycan oxidation and biocytin hydrazide enrichment identified LRP2 in MDA-MB-231 surfaceome (PMC12576823) — a second orthogonal direct surface method. Supporting evidence includes surface biotinylation in MLE-12 lung epithelial cells and structural/topology data (cryo-EM, canonical type I TM architecture). No mechanistically incompatible contradictions exist: endosomal accumulation under OCRL1 deficiency (a1_evi_23) is a pathological state variation, not a baseline refutation. Grade: direct_multi_method.",
     "claim_stances": [
       {
         "claim_id": "a1_evi_01",
@@ -148,7 +149,7 @@
         "claim_id": "a1_evi_11",
         "stance": "supports_surface",
         "weight": "moderate",
-        "note": "Surface biotinylation in MLE-12 lung epithelial cells; moderate\u2014no KO control described"
+        "note": "Surface biotinylation in MLE-12 lung epithelial cells; moderate—no KO control described"
       },
       {
         "claim_id": "a1_evi_12",
@@ -253,7 +254,7 @@
         "surface_claim_type": "apical_or_luminal",
         "expression_observations": [
           {
-            "context": "OK cells (opossum kidney proximal tubule) under static culture conditions \u2014 4.9% of total megalin at apical plasma membrane",
+            "context": "OK cells (opossum kidney proximal tubule) under static culture conditions — 4.9% of total megalin at apical plasma membrane",
             "sample_type": "established_cell_line",
             "level": "low",
             "species": "other",
@@ -263,7 +264,7 @@
             ]
           },
           {
-            "context": "OK cells (opossum kidney proximal tubule) under fluid shear stress (FSS) conditions \u2014 2.8% of total megalin at apical plasma membrane (43% reduction vs static)",
+            "context": "OK cells (opossum kidney proximal tubule) under fluid shear stress (FSS) conditions — 2.8% of total megalin at apical plasma membrane (43% reduction vs static)",
             "sample_type": "established_cell_line",
             "level": "low",
             "species": "other",
@@ -303,7 +304,7 @@
         "surface_claim_type": "apical_or_luminal",
         "expression_observations": [
           {
-            "context": "OK cells (opossum kidney proximal tubule) under shear stress conditions \u2014 apical surface LRP2 detected by sulfo-NHS-SS-biotin labeling",
+            "context": "OK cells (opossum kidney proximal tubule) under shear stress conditions — apical surface LRP2 detected by sulfo-NHS-SS-biotin labeling",
             "sample_type": "established_cell_line",
             "level": "low",
             "species": "other",
@@ -330,7 +331,7 @@
         "surface_claim_type": "surface_accessible",
         "expression_observations": [
           {
-            "context": "Unspecified cell type \u2014 biotinylated surface protein fraction quantified by SDS-PAGE and western blot",
+            "context": "Unspecified cell type — biotinylated surface protein fraction quantified by SDS-PAGE and western blot",
             "sample_type": "unknown",
             "level": "moderate",
             "species": "unspecified",
@@ -355,7 +356,7 @@
         "surface_claim_type": "surface_accessible",
         "expression_observations": [
           {
-            "context": "MLE-12 (mouse lung epithelial) cells inoculated with influenza virus (MOI 1, 24 h) \u2014 LRP2 surface expression detected by cell-surface biotinylation",
+            "context": "MLE-12 (mouse lung epithelial) cells inoculated with influenza virus (MOI 1, 24 h) — LRP2 surface expression detected by cell-surface biotinylation",
             "sample_type": "established_cell_line",
             "level": "moderate",
             "species": "mouse",
@@ -407,7 +408,7 @@
         "surface_claim_type": "plasma_membrane_localized",
         "expression_observations": [
           {
-            "context": "Human cells (unspecified line) \u2014 surface biotinylation and pulldown indicated only a minor fraction of LDLR family members at the plasma membrane; same study employed FAB9578G flow cytometry antibody for LRP2",
+            "context": "Human cells (unspecified line) — surface biotinylation and pulldown indicated only a minor fraction of LDLR family members at the plasma membrane; same study employed FAB9578G flow cytometry antibody for LRP2",
             "sample_type": "unknown",
             "level": "low",
             "species": "human",
@@ -460,7 +461,7 @@
         "surface_claim_type": "surface_accessible",
         "expression_observations": [
           {
-            "context": "MDA-MB-231 (human breast cancer) cells \u2014 N-linked cell surface glycoproteins enriched by biocytin hydrazide CSC technology; LRP2 detected in surface-enriched lysates by quantitative MS following LIPTAC treatment",
+            "context": "MDA-MB-231 (human breast cancer) cells — N-linked cell surface glycoproteins enriched by biocytin hydrazide CSC technology; LRP2 detected in surface-enriched lysates by quantitative MS following LIPTAC treatment",
             "sample_type": "established_cell_line",
             "level": "moderate",
             "species": "human",
@@ -500,7 +501,7 @@
         "surface_claim_type": "apical_or_luminal",
         "expression_observations": [
           {
-            "context": "Human kidney tissue sections \u2014 LRP2/gp330 localized to brush-border epithelium of proximal tubules by immunocytochemical staining",
+            "context": "Human kidney tissue sections — LRP2/gp330 localized to brush-border epithelium of proximal tubules by immunocytochemical staining",
             "sample_type": "primary_human_tissue",
             "level": "high",
             "species": "human",
@@ -525,7 +526,7 @@
         "surface_claim_type": "apical_or_luminal",
         "expression_observations": [
           {
-            "context": "Human proximal tubule cells \u2014 mutant LRP2 localizes to the proximal tubule apical membrane, confirming apical surface targeting is retained",
+            "context": "Human proximal tubule cells — mutant LRP2 localizes to the proximal tubule apical membrane, confirming apical surface targeting is retained",
             "sample_type": "primary_human_cell",
             "level": "moderate",
             "species": "human",
@@ -550,7 +551,7 @@
         "surface_claim_type": "secreted_or_shed",
         "expression_observations": [
           {
-            "context": "Soluble LRP2 purified from rat kidneys \u2014 used in SPR assay to assess binding to SARS-CoV-2 spike protein; likely represents shed ectodomain",
+            "context": "Soluble LRP2 purified from rat kidneys — used in SPR assay to assess binding to SARS-CoV-2 spike protein; likely represents shed ectodomain",
             "sample_type": "ex_vivo",
             "level": "moderate",
             "species": "rat",
@@ -575,7 +576,7 @@
         "surface_claim_type": "surface_accessible",
         "expression_observations": [
           {
-            "context": "Proximal tubule epithelial cells (unspecified species) \u2014 mTORC1-induced phosphorylation of megalin (S4577) reduces endocytosis rate with only minor changes in surface vs intracellular distribution",
+            "context": "Proximal tubule epithelial cells (unspecified species) — mTORC1-induced phosphorylation of megalin (S4577) reduces endocytosis rate with only minor changes in surface vs intracellular distribution",
             "sample_type": "unknown",
             "level": "moderate",
             "species": "unspecified",
@@ -797,7 +798,7 @@
         "dual_loc_partner_compartment": null,
         "baseline_context": "Non-epithelial cell types; non-renal tissues",
         "modulating_state": "Kidney proximal tubule epithelial cells (PTECs) under normal or CKD conditions",
-        "change": "LRP2/megalin is a canonical apical surface receptor expressed specifically in kidney proximal tubule epithelial cells, with high prevalence (~70% of CKD atlas cells), and also in placental extravillous trophoblasts and coronary endothelial cells \u2014 not broadly expressed.",
+        "change": "LRP2/megalin is a canonical apical surface receptor expressed specifically in kidney proximal tubule epithelial cells, with high prevalence (~70% of CKD atlas cells), and also in placental extravillous trophoblasts and coronary endothelial cells — not broadly expressed.",
         "accessibility_implication": "Binder access to LRP2 ectodomain is substantially restricted to epithelial and select endothelial lineages; systemic targeting will concentrate on proximal tubule apical surfaces and placental EVTs, minimizing off-target exposure in non-expressing tissues.",
         "species": "human",
         "species_inferred": false,
@@ -1142,9 +1143,9 @@
       "afdb_version": "unknown",
       "ecd_mean_plddt": 0.0,
       "ecd_disordered_fraction": 0.0,
-      "source": "AlphaFold DB (placeholder \u2014 fetch failed: Client error '404 Not Found' for url 'https://alphafold.ebi.ac.uk/api/prediction/P98164'\nFor more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/404)",
+      "source": "AlphaFold DB (placeholder — fetch failed: Client error '404 Not Found' for url 'https://alphafold.ebi.ac.uk/api/prediction/P98164'\nFor more information check: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/404)",
       "license": "CC BY 4.0",
-      "attribution": "\u00a9 DeepMind / EMBL-EBI",
+      "attribution": "© DeepMind / EMBL-EBI",
       "citations": [
         "10.1038/s41586-021-03819-2",
         "10.1093/nar/gkad1011"
@@ -1222,7 +1223,7 @@
         "2M0P"
       ],
       "source": "SURFACE-Bind v1 (Marchand 2026 PNAS)",
-      "attribution": "\u00a9 Marchand, Khakzad, Correia et al. \u2014 EPFL / Inria / Novo Nordisk",
+      "attribution": "© Marchand, Khakzad, Correia et al. — EPFL / Inria / Novo Nordisk",
       "citation": "10.1073/pnas.2506269123"
     }
   },
@@ -1475,7 +1476,7 @@
     },
     {
       "evidence_id": "a1_evi_05",
-      "claim": "Sulfo-NHS-SS-biotin surface biotinylation protocol applied selectively to the apical membrane of OK (opossum kidney) cells cultured on permeable supports under static or fluid shear stress (FSS) conditions. Biotinylation performed with 1 mg/mL EZ-Link Sulfo-NHS-SS-biotin in TEA-buffered saline for 2\u00d715 min on ice, labeling only surface-exposed proteins. This is a non-permeabilized, intact-cell surface-accessibility assay for LRP2/megalin.",
+      "claim": "Sulfo-NHS-SS-biotin surface biotinylation protocol applied selectively to the apical membrane of OK (opossum kidney) cells cultured on permeable supports under static or fluid shear stress (FSS) conditions. Biotinylation performed with 1 mg/mL EZ-Link Sulfo-NHS-SS-biotin in TEA-buffered saline for 2×15 min on ice, labeling only surface-exposed proteins. This is a non-permeabilized, intact-cell surface-accessibility assay for LRP2/megalin.",
       "claim_type": "methodological",
       "direction": "supports",
       "evidence_type": "surface_biotinylation",
@@ -1515,7 +1516,7 @@
           },
           "section": "methods",
           "figure_or_table_id": null,
-          "quote": "OK cells cultured on permeable supports under static or FSS conditions were washed with cold PBS and the apical surface biotinylated with 1 mg/mL EZ-Link Sulfo-NHS-SS-biotin (Thermo Scientific, 21331) in 0.5 mL TEA-buffered saline (TBS; 10 mM triethanolamine-HCl, pH 7.6, 137 mM NaCl, 1 mM CaCl 2 ) for 2 \u00d7 15 min on ice.",
+          "quote": "OK cells cultured on permeable supports under static or FSS conditions were washed with cold PBS and the apical surface biotinylated with 1 mg/mL EZ-Link Sulfo-NHS-SS-biotin (Thermo Scientific, 21331) in 0.5 mL TEA-buffered saline (TBS; 10 mM triethanolamine-HCl, pH 7.6, 137 mM NaCl, 1 mM CaCl 2 ) for 2 × 15 min on ice.",
           "quote_sha256": "357b0c1b886d62941704214e8f3dd6658dff2e4595a7e477dec9987a62c15c23",
           "char_offset": 0,
           "normalized_source_sha256": "a4e0df9d5ffa23ebe031a8ee11bec3227c70a99df4bce42159dd2d20b8736702"
@@ -1528,7 +1529,7 @@
     },
     {
       "evidence_id": "a1_evi_06",
-      "claim": "Apical surface biotinylation of megalin (LRP2) in OK cells revealed that 4.9% of total megalin is present at the apical plasma membrane under static culture conditions, decreasing to 2.8% under fluid shear stress (FSS) \u2014 a 43% reduction. This directly quantifies LRP2 surface fraction at the apical membrane and confirms robust cell-surface presence of LRP2 in kidney proximal tubule cells.",
+      "claim": "Apical surface biotinylation of megalin (LRP2) in OK cells revealed that 4.9% of total megalin is present at the apical plasma membrane under static culture conditions, decreasing to 2.8% under fluid shear stress (FSS) — a 43% reduction. This directly quantifies LRP2 surface fraction at the apical membrane and confirms robust cell-surface presence of LRP2 in kidney proximal tubule cells.",
       "claim_type": "surface_expression",
       "direction": "supports",
       "evidence_type": "surface_biotinylation",
@@ -1634,7 +1635,7 @@
     },
     {
       "evidence_id": "a1_evi_08",
-      "claim": "Apical surface biotinylation of OK cells cultured on permeable supports under shear stress conditions using 1 mg/mL EZ-Link Sulfo-NHS-SS-biotin in TEA-buffered saline for 2\u00d715 min on ice following cold PBS wash. This non-permeabilized assay protocol selectively labels apical surface-exposed LRP2/megalin on intact polarized proximal tubule cells; method_family=surface_biotinylation, method_subclass=sulfo-NHS-SS, permeabilization=false.",
+      "claim": "Apical surface biotinylation of OK cells cultured on permeable supports under shear stress conditions using 1 mg/mL EZ-Link Sulfo-NHS-SS-biotin in TEA-buffered saline for 2×15 min on ice following cold PBS wash. This non-permeabilized assay protocol selectively labels apical surface-exposed LRP2/megalin on intact polarized proximal tubule cells; method_family=surface_biotinylation, method_subclass=sulfo-NHS-SS, permeabilization=false.",
       "claim_type": "methodological",
       "direction": "supports",
       "evidence_type": "surface_biotinylation",
@@ -1674,7 +1675,7 @@
           },
           "section": "methods",
           "figure_or_table_id": null,
-          "quote": "After washing with cold phosphate-buffered saline containing MgCl 2 and CaCl 2 (PBS; Sigma, D8662), the apical surface of OK cells cultured on permeable supports under shear stress was biotinylated with 1 mg/mL EZ-Link Sulfo-NHS-SS-biotin (Thermo Scientific, 21331) in 0.5 mL TEA-buffered saline (TBS; 10 m m triethanolamine-HCl, pH 7.6, 137 m m NaCl, 1 m m CaCl 2 ) for 2 \u00d7 15 min on ice.",
+          "quote": "After washing with cold phosphate-buffered saline containing MgCl 2 and CaCl 2 (PBS; Sigma, D8662), the apical surface of OK cells cultured on permeable supports under shear stress was biotinylated with 1 mg/mL EZ-Link Sulfo-NHS-SS-biotin (Thermo Scientific, 21331) in 0.5 mL TEA-buffered saline (TBS; 10 m m triethanolamine-HCl, pH 7.6, 137 m m NaCl, 1 m m CaCl 2 ) for 2 × 15 min on ice.",
           "quote_sha256": "7819a849027b8675017c804d38be0c09b2777757dd456d21bafc6f12e1c4a668",
           "char_offset": 0,
           "normalized_source_sha256": "9df15d81d27ad8837e6b17a93635c517cfbfa14d80b5ea953695d436d2c8ed34"
@@ -1771,7 +1772,7 @@
           },
           "section": "methods",
           "figure_or_table_id": null,
-          "quote": "Biotinylated proteins were recovered from the remaining fractions, and the fraction at the cell surface was quantified after SDS\u2013PAGE and western blotting.",
+          "quote": "Biotinylated proteins were recovered from the remaining fractions, and the fraction at the cell surface was quantified after SDS–PAGE and western blotting.",
           "quote_sha256": "6bbe34fed72fea66fcba4e20174c31bf8e8dc75009fcefa787886682e6fa1318",
           "char_offset": 0,
           "normalized_source_sha256": "a6130f56712fc2cb1a16b4174d4522d5da5be4950b14234a35247ba73fb39a3f"
@@ -1868,7 +1869,7 @@
           },
           "section": "methods",
           "figure_or_table_id": null,
-          "quote": "Na\u2010K ATPase (14418\u20101\u2010AP, RRID:AB_2227873), LC3 (14600\u20101\u2010AP, RRID:AB_2137737), Rab11 (20229\u20101\u2010AP, RRID:AB_10666202), GFP (50430\u20102\u2010AP, RRID:AB_11042881), GDI 1 (10249\u20101\u2010AP, RRID:AB_2111520), Rabenosyn\u20105 (22218\u20101\u2010AP, RRID:AB_11182179), p62/SQSTM1 (18420\u20101\u2010AP, RRID:AB_10694431), vinculin (66305\u20101\u2010Ig, RRID:AB_2810300), megalin/LDL receptor\u2010related protein 2 (LRP2) (19700\u20101\u2010AP, RRID:AB_10640428) (for immunofluorescence), \u03b2\u2010actin (66009\u20101\u2010Ig), GAPDH (60004\u20101\u2010Ig), and COMMD1 (11938\u20101\u2010AP, RRID:AB_2083542) were from Proteintech (Wuhan, Hubei Province, China).",
+          "quote": "Na‐K ATPase (14418‐1‐AP, RRID:AB_2227873), LC3 (14600‐1‐AP, RRID:AB_2137737), Rab11 (20229‐1‐AP, RRID:AB_10666202), GFP (50430‐2‐AP, RRID:AB_11042881), GDI 1 (10249‐1‐AP, RRID:AB_2111520), Rabenosyn‐5 (22218‐1‐AP, RRID:AB_11182179), p62/SQSTM1 (18420‐1‐AP, RRID:AB_10694431), vinculin (66305‐1‐Ig, RRID:AB_2810300), megalin/LDL receptor‐related protein 2 (LRP2) (19700‐1‐AP, RRID:AB_10640428) (for immunofluorescence), β‐actin (66009‐1‐Ig), GAPDH (60004‐1‐Ig), and COMMD1 (11938‐1‐AP, RRID:AB_2083542) were from Proteintech (Wuhan, Hubei Province, China).",
           "quote_sha256": "b623c6fdd590514ce9b9910cacae20ea9982a14cb57513ac8aaa8388108f60c9",
           "char_offset": 0,
           "normalized_source_sha256": "e49be6d7c786fd4559cc0643a8bec12cb983bcf2eac78bb80382d4c42f217524"
@@ -1912,7 +1913,7 @@
           },
           "section": "methods",
           "figure_or_table_id": null,
-          "quote": "LDLR (AF2148, RRID:AB_2135126) (unconjugated goat IgG, for double immunofluorescence labeling of endogenous LDLR), LDLR (FAB2148P, RRID:AB_10573833) (PE\u2010conjugated, for flow cytometry), megalin/LRP2 (FAB9578G) (for flow cytometry), and human apolipoprotein B (ApoB) (AF3556, RRID:AB_573025) were from R&D Systems (Minneapolis, MN, USA).",
+          "quote": "LDLR (AF2148, RRID:AB_2135126) (unconjugated goat IgG, for double immunofluorescence labeling of endogenous LDLR), LDLR (FAB2148P, RRID:AB_10573833) (PE‐conjugated, for flow cytometry), megalin/LRP2 (FAB9578G) (for flow cytometry), and human apolipoprotein B (ApoB) (AF3556, RRID:AB_573025) were from R&D Systems (Minneapolis, MN, USA).",
           "quote_sha256": "c4025be94c8741a376d4476c1383768aa0808a4a541f309daa8a6a505b5b5ff0",
           "char_offset": 559,
           "normalized_source_sha256": "e49be6d7c786fd4559cc0643a8bec12cb983bcf2eac78bb80382d4c42f217524"
@@ -1956,7 +1957,7 @@
           },
           "section": "results",
           "figure_or_table_id": null,
-          "quote": "Preliminary experiments using surface biotinylation and pull\u2010down indicated that only a minor fraction of LDLRs were located on PM (Fig 2A ).",
+          "quote": "Preliminary experiments using surface biotinylation and pull‐down indicated that only a minor fraction of LDLRs were located on PM (Fig 2A ).",
           "quote_sha256": "a4d5ad1d6344fceec2a971a7ad4a8d22df33fab7cbabcb7ddd215c753673c2fe",
           "char_offset": 896,
           "normalized_source_sha256": "e49be6d7c786fd4559cc0643a8bec12cb983bcf2eac78bb80382d4c42f217524"
@@ -2119,7 +2120,7 @@
     },
     {
       "evidence_id": "a1_evi_18",
-      "claim": "Gp330 (LRP2) is described as a high molecular weight glycoprotein structurally similar to the alpha2-macroglobulin receptor/LRP1 and LDL receptor \u2014 anchoring its classification as a large ECD-bearing transmembrane endocytic receptor.",
+      "claim": "Gp330 (LRP2) is described as a high molecular weight glycoprotein structurally similar to the alpha2-macroglobulin receptor/LRP1 and LDL receptor — anchoring its classification as a large ECD-bearing transmembrane endocytic receptor.",
       "claim_type": "topology",
       "direction": "supports",
       "evidence_type": "review_assertion",
@@ -2313,7 +2314,7 @@
     },
     {
       "evidence_id": "a1_evi_22",
-      "claim": "Soluble LRP2 purified from rat kidneys was used in surface plasmon resonance (SPR) binding assays to assess interaction with SARS-CoV-2 spike protein. The use of purified soluble/shed LRP2 in a cell-free SPR chip assay constitutes evidence for a shed/secreted form of LRP2 ectodomain. Note: this is a biochemical binding assay on immobilized recombinant/shed protein, NOT a cell-surface localization assay \u2014 it does NOT qualify as an OE-surface clip. The soluble form likely arises from ectodomain shedding of kidney-expressed LRP2. This feeds risks.shed_form.",
+      "claim": "Soluble LRP2 purified from rat kidneys was used in surface plasmon resonance (SPR) binding assays to assess interaction with SARS-CoV-2 spike protein. The use of purified soluble/shed LRP2 in a cell-free SPR chip assay constitutes evidence for a shed/secreted form of LRP2 ectodomain. Note: this is a biochemical binding assay on immobilized recombinant/shed protein, NOT a cell-surface localization assay — it does NOT qualify as an OE-surface clip. The soluble form likely arises from ectodomain shedding of kidney-expressed LRP2. This feeds risks.shed_form.",
       "claim_type": "surface_expression",
       "direction": "ambiguous",
       "evidence_type": "functional_assay",
@@ -2419,7 +2420,7 @@
     },
     {
       "evidence_id": "a1_evi_24",
-      "claim": "mTORC1-induced phosphorylation of megalin (LRP2) at S4577 reduces its endocytosis rate with only minor changes in overall distribution between surface and intracellular pools. This ambiguous finding suggests that under mTORC1-activated conditions, the surface-to-intracellular ratio of LRP2 is only minimally altered despite reduced endocytic flux \u2014 the protein remains substantially at the surface.",
+      "claim": "mTORC1-induced phosphorylation of megalin (LRP2) at S4577 reduces its endocytosis rate with only minor changes in overall distribution between surface and intracellular pools. This ambiguous finding suggests that under mTORC1-activated conditions, the surface-to-intracellular ratio of LRP2 is only minimally altered despite reduced endocytic flux — the protein remains substantially at the surface.",
       "claim_type": "surface_expression",
       "direction": "ambiguous",
       "evidence_type": "functional_assay",
@@ -2565,7 +2566,7 @@
           },
           "section": "abstract",
           "figure_or_table_id": null,
-          "quote": "Proximal tubule cells constituted \u223c70% of the profiled cells with different transcriptomic signatures.",
+          "quote": "Proximal tubule cells constituted ∼70% of the profiled cells with different transcriptomic signatures.",
           "quote_sha256": "077ebb2401da50734abaa337ed1fb4ca989455e221260bb6b1ecd20754eb489d",
           "char_offset": 367,
           "normalized_source_sha256": "454c09712cfa22e65d15e97f57d74334628e56f1700d2a7ba0f637ad45838d12"
@@ -2843,7 +2844,7 @@
     },
     {
       "evidence_id": "a2_evi_08",
-      "claim": "LRP2 mRNA expression shows a decreasing trend at 6 hours and significant downregulation at 24 hours post-inoculation in a disease/infection context, indicating that LRP2 transcript levels are modulated by disease state \u2014 specifically downregulated during acute infection/inoculation response.",
+      "claim": "LRP2 mRNA expression shows a decreasing trend at 6 hours and significant downregulation at 24 hours post-inoculation in a disease/infection context, indicating that LRP2 transcript levels are modulated by disease state — specifically downregulated during acute infection/inoculation response.",
       "claim_type": "tissue_expression",
       "direction": "supports",
       "evidence_type": "rt_qpcr",
@@ -2949,7 +2950,7 @@
     },
     {
       "evidence_id": "a2_evi_10",
-      "claim": "In LRP2 variant-expressing proximal tubule cells (Donnai-Barrow Syndrome model), immunofluorescence reveals aberrant endocytic recycling with mislocalized RAB11+ and TFR1+ compartments and enlarged lysosomes, indicating that disease-causing LRP2 variants disrupt normal apical surface recycling \u2014 the normal steady-state surface localization of LRP2 depends on intact endosomal recycling.",
+      "claim": "In LRP2 variant-expressing proximal tubule cells (Donnai-Barrow Syndrome model), immunofluorescence reveals aberrant endocytic recycling with mislocalized RAB11+ and TFR1+ compartments and enlarged lysosomes, indicating that disease-causing LRP2 variants disrupt normal apical surface recycling — the normal steady-state surface localization of LRP2 depends on intact endosomal recycling.",
       "claim_type": "surface_expression",
       "direction": "refutes",
       "evidence_type": "immunofluorescence",
@@ -3055,7 +3056,7 @@
     },
     {
       "evidence_id": "a2_evi_12",
-      "claim": "Surface biotinylation of megalin (LRP2) in OK (opossum kidney) proximal tubule cells under fluid shear stress (FSS) versus static culture reveals a 43% decrease in the fraction of total megalin present at the apical membrane under FSS conditions (2.8% of total) compared to static conditions (4.9% of total). This demonstrates that mechanical stimulation (FSS mimicking tubular flow) modulates LRP2 surface availability \u2014 baseline: static proximal tubule cells; modulating state: fluid shear stress; direction: decreased apical surface fraction.",
+      "claim": "Surface biotinylation of megalin (LRP2) in OK (opossum kidney) proximal tubule cells under fluid shear stress (FSS) versus static culture reveals a 43% decrease in the fraction of total megalin present at the apical membrane under FSS conditions (2.8% of total) compared to static conditions (4.9% of total). This demonstrates that mechanical stimulation (FSS mimicking tubular flow) modulates LRP2 surface availability — baseline: static proximal tubule cells; modulating state: fluid shear stress; direction: decreased apical surface fraction.",
       "claim_type": "surface_expression",
       "direction": "supports",
       "evidence_type": "surface_biotinylation",
@@ -3148,7 +3149,7 @@
           },
           "section": "methods",
           "figure_or_table_id": null,
-          "quote": "After washing with cold phosphate-buffered saline containing MgCl 2 and CaCl 2 (PBS; Sigma, D8662), the apical surface of OK cells cultured on permeable supports under shear stress was biotinylated with 1 mg/mL EZ-Link Sulfo-NHS-SS-biotin (Thermo Scientific, 21331) in 0.5 mL TEA-buffered saline (TBS; 10 m m triethanolamine-HCl, pH 7.6, 137 m m NaCl, 1 m m CaCl 2 ) for 2 \u00d7 15 min on ice.",
+          "quote": "After washing with cold phosphate-buffered saline containing MgCl 2 and CaCl 2 (PBS; Sigma, D8662), the apical surface of OK cells cultured on permeable supports under shear stress was biotinylated with 1 mg/mL EZ-Link Sulfo-NHS-SS-biotin (Thermo Scientific, 21331) in 0.5 mL TEA-buffered saline (TBS; 10 m m triethanolamine-HCl, pH 7.6, 137 m m NaCl, 1 m m CaCl 2 ) for 2 × 15 min on ice.",
           "quote_sha256": "7819a849027b8675017c804d38be0c09b2777757dd456d21bafc6f12e1c4a668",
           "char_offset": 0,
           "normalized_source_sha256": "9df15d81d27ad8837e6b17a93635c517cfbfa14d80b5ea953695d436d2c8ed34"
@@ -3161,7 +3162,7 @@
     },
     {
       "evidence_id": "a2_evi_14",
-      "claim": "mTORC1-induced phosphorylation of megalin (LRP2) reduces its endocytosis rate with only minor changes in overall distribution, indicating that mTORC1 activation in renal tubular cells modulates LRP2 surface dynamics \u2014 phosphorylated megalin is less rapidly internalized from the apical surface, effectively increasing its surface dwell time under mTORC1-active conditions.",
+      "claim": "mTORC1-induced phosphorylation of megalin (LRP2) reduces its endocytosis rate with only minor changes in overall distribution, indicating that mTORC1 activation in renal tubular cells modulates LRP2 surface dynamics — phosphorylated megalin is less rapidly internalized from the apical surface, effectively increasing its surface dwell time under mTORC1-active conditions.",
       "claim_type": "surface_expression",
       "direction": "supports",
       "evidence_type": "functional_assay",
@@ -3214,7 +3215,7 @@
     },
     {
       "evidence_id": "a2_evi_15",
-      "claim": "During cell mitosis, megalin (LRP2) relocalizes from the apical plasma membrane to the spindle pole in association with the adaptor protein ARH, indicating that LRP2 surface localization is cell-cycle-dependent \u2014 during mitosis LRP2 is redirected intracellularly (spindle pole), reducing its apical surface availability.",
+      "claim": "During cell mitosis, megalin (LRP2) relocalizes from the apical plasma membrane to the spindle pole in association with the adaptor protein ARH, indicating that LRP2 surface localization is cell-cycle-dependent — during mitosis LRP2 is redirected intracellularly (spindle pole), reducing its apical surface availability.",
       "claim_type": "surface_expression",
       "direction": "refutes",
       "evidence_type": "immunofluorescence",
@@ -3543,7 +3544,7 @@
       "mode": "gene2pubmed",
       "query": {
         "agent_focus": "a1",
-        "intent": "NCBI curated PMID list for LRP2 \u2014 baseline high-precision literature set"
+        "intent": "NCBI curated PMID list for LRP2 — baseline high-precision literature set"
       },
       "n_results": 25,
       "sources_seen": [],
@@ -3647,7 +3648,7 @@
       "mode": "topic_search",
       "query": {
         "agent_focus": "a1",
-        "intent": "Host-agnostic overexpression surface expression \u2014 LRP2 transfected/overexpressed cells detected by flow cytometry or cell-surface staining",
+        "intent": "Host-agnostic overexpression surface expression — LRP2 transfected/overexpressed cells detected by flow cytometry or cell-surface staining",
         "anchors": [
           "surface_expression",
           "flow_cytometry"
@@ -3694,7 +3695,7 @@
       "mode": "topic_search",
       "query": {
         "agent_focus": "a1",
-        "intent": "K562 overexpression of LRP2 with surface detection \u2014 covers hematopoietic OE host context",
+        "intent": "K562 overexpression of LRP2 with surface detection — covers hematopoietic OE host context",
         "anchors": [
           "surface_expression",
           "flow_cytometry"
@@ -3725,7 +3726,7 @@
       "mode": "topic_search",
       "query": {
         "agent_focus": "a1",
-        "intent": "Paralog family (LRP3, LRP12, LRP10, VLDLR, LRP8) cross-reactivity context \u2014 identify antibody specificity papers distinguishing LRP2 from ~50% ECD-identity paralogs",
+        "intent": "Paralog family (LRP3, LRP12, LRP10, VLDLR, LRP8) cross-reactivity context — identify antibody specificity papers distinguishing LRP2 from ~50% ECD-identity paralogs",
         "anchors": [
           "surface_expression",
           "ihc"
@@ -3741,7 +3742,7 @@
       "mode": "topic_search",
       "query": {
         "agent_focus": "a1",
-        "intent": "Therapeutic targeting of LRP2 ECD \u2014 antibody-drug conjugates, nanoparticle targeting, drug delivery via megalin surface binding",
+        "intent": "Therapeutic targeting of LRP2 ECD — antibody-drug conjugates, nanoparticle targeting, drug delivery via megalin surface binding",
         "anchors": [
           "surface_expression",
           "flow_cytometry"
@@ -3757,7 +3758,7 @@
       "mode": "fetch_fulltext",
       "query": {
         "agent_focus": "a1",
-        "intent": "Placeholder \u2014 see fetch_abstract for PDB 2M0P paper instead; NMR structure of LRP2 ECD fragment",
+        "intent": "Placeholder — see fetch_abstract for PDB 2M0P paper instead; NMR structure of LRP2 ECD fragment",
         "pmcid": "PMC2M0P",
         "error": "ValueError: unrecognized pmcid 'PMC2M0P'; expected 'PMC' + digits"
       },
@@ -3771,7 +3772,7 @@
       "mode": "fetch_abstract",
       "query": {
         "agent_focus": "a1",
-        "intent": "Cloning/sequencing of human LRP2/gp330 \u2014 original topology and Ca2+-binding domain characterization paper",
+        "intent": "Cloning/sequencing of human LRP2/gp330 — original topology and Ca2+-binding domain characterization paper",
         "pmid": 8706697
       },
       "n_results": 1,
@@ -3784,7 +3785,7 @@
       "mode": "fetch_abstract",
       "query": {
         "agent_focus": "a1",
-        "intent": "RAP interaction with LRP2 \u2014 receptor-associated protein binding to surface-expressed megalin; surface accessibility implied",
+        "intent": "RAP interaction with LRP2 — receptor-associated protein binding to surface-expressed megalin; surface accessibility implied",
         "pmid": 1400426
       },
       "n_results": 1,
@@ -3797,7 +3798,7 @@
       "mode": "fetch_abstract",
       "query": {
         "agent_focus": "a1",
-        "intent": "Donnai-Barrow Syndrome LRP2 LoF paper \u2014 likely contains direct surface/endocytic evidence for LRP2 at apical PM and flow/IF data validating surface localization",
+        "intent": "Donnai-Barrow Syndrome LRP2 LoF paper — likely contains direct surface/endocytic evidence for LRP2 at apical PM and flow/IF data validating surface localization",
         "pmid": 42024452
       },
       "n_results": 1,
@@ -3810,7 +3811,7 @@
       "mode": "fetch_abstract",
       "query": {
         "agent_focus": "a1",
-        "intent": "mTORC1 switches megalin from endocytosis to cell cycle \u2014 likely contains surface biotinylation or flow cytometry data on LRP2 surface expression levels",
+        "intent": "mTORC1 switches megalin from endocytosis to cell cycle — likely contains surface biotinylation or flow cytometry data on LRP2 surface expression levels",
         "pmid": 42174246
       },
       "n_results": 1,
@@ -3823,7 +3824,7 @@
       "mode": "flow_cytometry",
       "query": {
         "agent_focus": "a1",
-        "intent": "Retrieve flow cytometry clips for LRP2/megalin \u2014 FAB9578G antibody (R&D Systems) is in the pool for flow; want primary surface flow result clips",
+        "intent": "Retrieve flow cytometry clips for LRP2/megalin — FAB9578G antibody (R&D Systems) is in the pool for flow; want primary surface flow result clips",
         "category": "flow_cytometry",
         "uniprot_acc": "P98164"
       },
@@ -3849,7 +3850,7 @@
       "mode": "recent_corpus",
       "query": {
         "agent_focus": "a2",
-        "intent": "Recency sweep for LRP2 \u2014 surface biology, disease-state changes, shed ectodomain reports, and tissue-specific expression updates post-2022."
+        "intent": "Recency sweep for LRP2 — surface biology, disease-state changes, shed ectodomain reports, and tissue-specific expression updates post-2022."
       },
       "n_results": 13,
       "sources_seen": [],
@@ -3875,7 +3876,7 @@
       "mode": "if",
       "query": {
         "agent_focus": "a2",
-        "intent": "Immunofluorescence for LRP2 subcellular localization \u2014 apical vs basolateral membrane subdomain, colocalization with endosomal/lysosomal markers, dual-localization (PM + endosome cycling pool), and non-permeabilized surface confirmation.",
+        "intent": "Immunofluorescence for LRP2 subcellular localization — apical vs basolateral membrane subdomain, colocalization with endosomal/lysosomal markers, dual-localization (PM + endosome cycling pool), and non-permeabilized surface confirmation.",
         "category": "if",
         "uniprot_acc": "P98164"
       },
@@ -3889,7 +3890,7 @@
       "mode": "flow_cytometry",
       "query": {
         "agent_focus": "a2",
-        "intent": "Flow cytometry data for LRP2 surface expression on sorted cell populations \u2014 proximal tubule, choroid plexus, placenta trophoblasts, and any immune cell populations.",
+        "intent": "Flow cytometry data for LRP2 surface expression on sorted cell populations — proximal tubule, choroid plexus, placenta trophoblasts, and any immune cell populations.",
         "category": "flow_cytometry",
         "uniprot_acc": "P98164"
       },
@@ -3945,7 +3946,7 @@
       "mode": "topic_search",
       "query": {
         "agent_focus": "a2",
-        "intent": "LRP2/megalin apical surface expression in kidney proximal tubule, choroid plexus, intestine, placenta \u2014 tissue atlas and IHC literature for TissueContext and CellTypeContext rows.",
+        "intent": "LRP2/megalin apical surface expression in kidney proximal tubule, choroid plexus, intestine, placenta — tissue atlas and IHC literature for TissueContext and CellTypeContext rows.",
         "anchors": [
           "surface_expression",
           "ihc"
@@ -3961,7 +3962,7 @@
       "mode": "topic_search",
       "query": {
         "agent_focus": "a2",
-        "intent": "Normal-tissue tox panel: LRP2 surface expression in normal liver, lung, kidney, GI tract \u2014 on-target/off-tumor tox risk coverage.",
+        "intent": "Normal-tissue tox panel: LRP2 surface expression in normal liver, lung, kidney, GI tract — on-target/off-tumor tox risk coverage.",
         "anchors": [
           "surface_expression",
           "ihc"
@@ -3977,7 +3978,7 @@
       "mode": "topic_search",
       "query": {
         "agent_focus": "a2",
-        "intent": "Normal-tissue tox panel: LRP2 surface expression in normal heart, brain (BBB/choroid plexus), GI tract \u2014 on-target/off-tumor tox risk coverage.",
+        "intent": "Normal-tissue tox panel: LRP2 surface expression in normal heart, brain (BBB/choroid plexus), GI tract — on-target/off-tumor tox risk coverage.",
         "anchors": [
           "surface_expression",
           "ihc"
@@ -3993,7 +3994,7 @@
       "mode": "topic_search",
       "query": {
         "agent_focus": "a2",
-        "intent": "LRP2 subcellular localization depth \u2014 apical vs basolateral polarization, colocalization with endosomal/lysosomal markers, cytoplasmic tail phosphorylation controlling recycling vs degradation routing.",
+        "intent": "LRP2 subcellular localization depth — apical vs basolateral polarization, colocalization with endosomal/lysosomal markers, cytoplasmic tail phosphorylation controlling recycling vs degradation routing.",
         "anchors": [
           "topology",
           "ptm"
@@ -4025,7 +4026,7 @@
       "mode": "topic_search",
       "query": {
         "agent_focus": "a2",
-        "intent": "LRP2 expression in LDL receptor family context \u2014 tissue breadth across LRP family members; note top paralogs (LRP3, LRP12, LRP10, VLDLR) at ~47-50% ECD identity so gene-specific anchoring needed.",
+        "intent": "LRP2 expression in LDL receptor family context — tissue breadth across LRP family members; note top paralogs (LRP3, LRP12, LRP10, VLDLR) at ~47-50% ECD identity so gene-specific anchoring needed.",
         "anchors": [
           "surface_expression",
           "ihc"
@@ -4041,7 +4042,7 @@
       "mode": "topic_search",
       "query": {
         "agent_focus": "a2",
-        "intent": "LRP2 blood-brain barrier transport at choroid plexus epithelium \u2014 apical surface accessibility for AnatomicalAccessibilityObservation BBB block.",
+        "intent": "LRP2 blood-brain barrier transport at choroid plexus epithelium — apical surface accessibility for AnatomicalAccessibilityObservation BBB block.",
         "anchors": [
           "surface_expression",
           "topology"
@@ -4057,7 +4058,7 @@
       "mode": "topic_search",
       "query": {
         "agent_focus": "a2",
-        "intent": "LRP2 in single-cell atlases (Human Cell Atlas, Tabula Sapiens) and human kidney cell-type datasets \u2014 CellTypeContextV1 rows for proximal tubule S1/S2/S3 segments and podocyte/distal.",
+        "intent": "LRP2 in single-cell atlases (Human Cell Atlas, Tabula Sapiens) and human kidney cell-type datasets — CellTypeContextV1 rows for proximal tubule S1/S2/S3 segments and podocyte/distal.",
         "anchors": [
           "surface_expression",
           "ihc"
@@ -4073,7 +4074,7 @@
       "mode": "topic_search",
       "query": {
         "agent_focus": "a2",
-        "intent": "LRP2 disease-state surface modulation \u2014 diabetic nephropathy, proteinuric states, ischemia/reperfusion, cancer (ovarian, lung) \u2014 AccessibilityModulationObservation rows.",
+        "intent": "LRP2 disease-state surface modulation — diabetic nephropathy, proteinuric states, ischemia/reperfusion, cancer (ovarian, lung) — AccessibilityModulationObservation rows.",
         "anchors": [
           "surface_expression",
           "shedding"
@@ -4089,7 +4090,7 @@
       "mode": "topic_search",
       "query": {
         "agent_focus": "a2",
-        "intent": "LRP2 in mouse kidney/choroid plexus \u2014 mouse ortholog is 77% ECD identity (moderate translatability); mouse tissue/cell-type data supportive but should be paired with human evidence.",
+        "intent": "LRP2 in mouse kidney/choroid plexus — mouse ortholog is 77% ECD identity (moderate translatability); mouse tissue/cell-type data supportive but should be paired with human evidence.",
         "anchors": [
           "ihc",
           "surface_expression"
@@ -4118,7 +4119,7 @@
       "mode": "fetch_abstract",
       "query": {
         "agent_focus": "a2",
-        "intent": "Donnai-Barrow Syndrome / LRP2 loss-of-function paper \u2014 may contain tissue/cell-type expression data for renal proximal tubule and other LRP2-expressing tissues",
+        "intent": "Donnai-Barrow Syndrome / LRP2 loss-of-function paper — may contain tissue/cell-type expression data for renal proximal tubule and other LRP2-expressing tissues",
         "pmid": 42024452
       },
       "n_results": 1,
@@ -4131,7 +4132,7 @@
       "mode": "fetch_abstract",
       "query": {
         "agent_focus": "a2",
-        "intent": "Single-cell transcriptomic atlas of tubular epithelial cells in CKD \u2014 likely to contain cell-type-resolved LRP2 expression data in proximal tubule cells under normal and disease states",
+        "intent": "Single-cell transcriptomic atlas of tubular epithelial cells in CKD — likely to contain cell-type-resolved LRP2 expression data in proximal tubule cells under normal and disease states",
         "pmid": 42004979
       },
       "n_results": 1,
@@ -4144,7 +4145,7 @@
       "mode": "fetch_fulltext",
       "query": {
         "agent_focus": "a2",
-        "intent": "mTORC1-signaling switches megalin function paper \u2014 potential subcellular localization and cell-state modulation evidence for LRP2 in proximal tubule",
+        "intent": "mTORC1-signaling switches megalin function paper — potential subcellular localization and cell-state modulation evidence for LRP2 in proximal tubule",
         "pmcid": "PMC12827301"
       },
       "n_results": 1,
@@ -4157,7 +4158,7 @@
       "mode": "fetch_abstract",
       "query": {
         "agent_focus": "a2",
-        "intent": "mTORC1 signaling switches megalin from endocytosis to cell cycle \u2014 accessibility modulation by mTOR state in proximal tubule cells",
+        "intent": "mTORC1 signaling switches megalin from endocytosis to cell cycle — accessibility modulation by mTOR state in proximal tubule cells",
         "pmid": 42174246
       },
       "n_results": 1,
@@ -4170,7 +4171,7 @@
       "mode": "fetch_abstract",
       "query": {
         "agent_focus": "a2",
-        "intent": "ACE2 enhances megalin-mediated albumin endocytosis in proximal tubule \u2014 tissue expression and functional context for LRP2 in PTEC",
+        "intent": "ACE2 enhances megalin-mediated albumin endocytosis in proximal tubule — tissue expression and functional context for LRP2 in PTEC",
         "pmid": 41955164
       },
       "n_results": 1,
