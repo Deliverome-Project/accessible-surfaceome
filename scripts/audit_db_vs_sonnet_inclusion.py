@@ -1228,7 +1228,12 @@ def make_surfy_topology_coverage(df: pd.DataFrame, out_dir: Path) -> None:
         # a reader gets the SAME color for Sonnet across both
         # figures. Earlier teal-dark choice was wrong.
         "sonnet":      "#d87851",
-        "sonnet_only": "#2E7A55",  # success green — zero-DB rescue subset
+        # Darker tonal variant of the Claude orange — the zero-DB rescue
+        # subset reads cleaner as a darker shade of the same hue family
+        # than as success-green (which suggested a different source).
+        # Two adjacent bars in light + dark orange = "same source, full
+        # set vs rescue". Earlier #2E7A55 (green) was misleading.
+        "sonnet_only": "#a04020",
         # 5 DB colors, indexed identically to BRAND_PALETTE[0..4] in
         # make_db_correctness_by_class.py (UniProt, GO CC, HPA,
         # SURFY, CSPA — by ORIGINAL palette assignment, not panel
@@ -1250,28 +1255,20 @@ def make_surfy_topology_coverage(df: pd.DataFrame, out_dir: Path) -> None:
     axes = np.array(axes).reshape(-1)
 
     for ax, (feat_col, pretty) in zip(axes, SURFY_FOCUS_FEATURES):
-        # Denominator = the full v3-input universe (= ANY positive
-        # vote across uniprot, go, hpa, surfy, cspa, OR sonnet).
+        # Denominator = each source's own size (within-source frequency).
         # The bar height for source S on feature F reads:
-        #   (# proteins where S-included AND F-positive)
-        #   / |universe|  (= 6,588)
+        #   (# proteins where S-included AND F-positive) / |S|
+        # i.e. "of the proteins S calls surface, what fraction have F?"
         #
-        # The v3 universe was BUILT from "any DB yes OR Sonnet
-        # yes/contextual", so every member already has at least one
-        # positive vote — "% of any yes vote across all sources" is
-        # the same as "% of universe". Was: 5,546 = strict-DB union
-        # only (the 5-DB-yes intersection of the universe).
-        any_yes_size = int(len(df))
-        # Walk source_order (the panel order) explicitly — the
-        # iteration order has to match `source_order` so the bar
-        # rate-list lines up with the color list and the x-tick
-        # labels below. Previous version iterated INCLUSION_SOURCES
-        # and silently mis-paired bars with colors when the two
-        # orders diverged.
+        # Was: divided by full universe (6,588) — that made the sonnet_only
+        # bar look tiny just because the subset is small (865), not because
+        # the topology profile differed. Within-source normalisation is the
+        # right way to compare profiles: a sonnet_only bar at 5% means 5% of
+        # the 865 rescues have feature F, comparable directly to "X% of
+        # UniProt's 3,015 surface set has feature F".
         src_col_by_name = dict(INCLUSION_SOURCES)
         # Special mask for ``sonnet_only``: Sonnet positive AND no DB
-        # voted yes. Computed once per panel since the mask doesn't
-        # depend on the feature column.
+        # voted yes.
         db_src_cols = [
             src_col_by_name[s] for s in ("uniprot", "surfy", "cspa", "go", "hpa")
         ]
@@ -1284,9 +1281,10 @@ def make_surfy_topology_coverage(df: pd.DataFrame, out_dir: Path) -> None:
                 mask = sonnet_only_mask
             else:
                 mask = df[src_col_by_name[src_name]] == 1
+            src_size = int(mask.sum())
             feat = pd.to_numeric(df.loc[mask, feat_col], errors="coerce")
             n_pos = int((feat == 1).sum())
-            rates_pct.append(100.0 * n_pos / any_yes_size)
+            rates_pct.append(100.0 * n_pos / src_size if src_size else 0.0)
         colors = [source_colors[s] for s in source_order]
         ax.bar(range(len(source_order)), rates_pct, color=colors, edgecolor="white")
         # Cohort-average reference line removed — the bars are
@@ -1294,13 +1292,18 @@ def make_surfy_topology_coverage(df: pd.DataFrame, out_dir: Path) -> None:
         # dashed average line was crowding the top of the canvas on
         # high-prevalence features (e.g. up_has_tm where bars hit ~95%
         # and the line sat squashed against the panel ceiling).
+        # X-tick rename: ``sonnet_only`` displays as ``sonnet`` so the
+        # two adjacent bars (light + dark orange) read as "sonnet — full
+        # set" and "sonnet — rescue subset" without a separate suffix.
+        # The internal name in source_order stays "sonnet_only" so the
+        # mask-routing code above continues to work.
+        display_labels = ["sonnet" if s == "sonnet_only" else s for s in source_order]
         ax.set_xticks(range(len(source_order)))
-        ax.set_xticklabels(source_order, rotation=35, ha="right")
-        # Y-axis label = denominator. The full v3-input universe
-        # (6,588 proteins) is the reference — every universe member
-        # has ≥1 yes vote across the 6 sources by construction, so
-        # "% of any yes vote" reads cleanly as "% of universe."
-        ax.set_ylabel("% of any-yes-vote\nuniverse")
+        ax.set_xticklabels(display_labels, rotation=35, ha="right")
+        # Y-axis label = within-source frequency. Each bar is the fraction
+        # of THAT source's positive set that has the feature, so bars are
+        # directly comparable across sources independent of source size.
+        ax.set_ylabel("% within source")
         ax.set_xlabel("")
         ax.text(
             0.0,
