@@ -35,6 +35,7 @@ import seaborn as sns
 
 from accessible_surfaceome.audit._plotting_config import (
     COLORS,
+    SEQUENTIAL_PALETTES,
     save_figure,
     setup_plotting_style,
 )
@@ -234,30 +235,32 @@ def _bucket(reason: str) -> str:
     return "?"
 
 
-_HAIKU_RAMP = ["#D4C4BC", "#B59E96", "#9C8C88", "#7C6661"]  # 4 grey-warm steps
-_SONNET_RAMP = ["#8AC0B3", "#5D9285", "#3D6B60", "#244840"]   # 4 teal steps
-_OPUS_RAMP   = ["#A090D4", "#5848A8"]                          # 2 lavender steps
+# Brand-family ramps come from the project's plotting config
+# (SEQUENTIAL_PALETTES[hue], deep → light). For 4 prompt variants
+# (naive → ncbi → pubmed_ncbi → web_ncbi) we walk indices [4,3,2,1]
+# (light → dark, skipping the very-darkest [0] and very-lightest [5]
+# so contrast stays even across model groups). Opus has only 2
+# variants → indices [3,2].
+_HAIKU_RAMP  = [SEQUENTIAL_PALETTES["amber"][i]    for i in (4, 3, 2, 1)]
+_SONNET_RAMP = [SEQUENTIAL_PALETTES["teal"][i]     for i in (4, 3, 2, 1)]
+_OPUS_RAMP   = [SEQUENTIAL_PALETTES["lavender"][i] for i in (3, 2)]
 
 
 def _config_color_for(model: str, variant: str, panel: str = "a") -> str:
-    """Brand-family color per config: Haiku → warm-grey ramp,
-    Sonnet → teal ramp, Opus → lavender ramp. Each variant gets a
-    darker step within its model family (naive → ncbi → pubmed → web).
-    Panel b uses fewer variants so colors are picked from canonical
-    positions in each ramp."""
+    """Brand-family color per config: Haiku → amber ramp, Sonnet →
+    teal ramp, Opus → lavender ramp — all from
+    ``_plotting_config.SEQUENTIAL_PALETTES``. Each variant gets a
+    darker step within its model family (naive → ncbi → pubmed → web)."""
     if model == "claude-haiku-4-5":
-        ramp = _HAIKU_RAMP
         idx = {"naive": 0, "ncbi": 1, "pubmed_ncbi": 2, "web_ncbi": 3}.get(variant, 1)
-        return ramp[idx]
+        return _HAIKU_RAMP[idx]
     if model == "claude-sonnet-4-6":
-        ramp = _SONNET_RAMP
         idx = {"naive": 0, "ncbi": 1, "pubmed_ncbi": 2, "web_ncbi": 3}.get(variant, 1)
-        return ramp[idx]
+        return _SONNET_RAMP[idx]
     if model == "claude-opus-4-8":
-        ramp = _OPUS_RAMP
         idx = {"naive": 0, "ncbi": 1}.get(variant, 1)
-        return ramp[idx]
-    return "#999999"
+        return _OPUS_RAMP[idx]
+    return COLORS["neutral"]
 
 
 def make_plot() -> tuple[plt.Figure, list[plt.Axes]]:
@@ -287,7 +290,9 @@ def make_plot() -> tuple[plt.Figure, list[plt.Axes]]:
     fig = plt.figure(figsize=(18, 28))
     gs = gridspec.GridSpec(
         nrows=3, ncols=1, height_ratios=[0.7, 1.0, 2.1],
-        hspace=0.35,
+        # hspace bumped from 0.35 so the panel-b legend + "showing N of M"
+        # caption sit clear of panel c's top edge.
+        hspace=0.55,
     )
     ax_bucket = fig.add_subplot(gs[0, 0])
     ax_perreason = fig.add_subplot(gs[1, 0])
@@ -308,29 +313,41 @@ def make_plot() -> tuple[plt.Figure, list[plt.Axes]]:
             element (index = overall_idx) is the "Overall" group; a
             dotted vertical separator gets drawn right after it.
         ``group_acc``: {config_key: {group_label: (n_match, n_total)}}.
+            Pooled-across-reps fallback used when no per-rep data is
+            supplied (or the cell has no replicates).
         ``rep_acc``: optional {(model, variant): {group_label:
-            [pct_rep1, pct_rep2, pct_rep3]}}. When supplied, each bar
-            gets per-replicate scatter dots + SEM error bar centred
-            on the bar's mean (which equals the bar height because
-            the bar is computed from the pooled-across-reps cell).
+            [pct_rep1, pct_rep2, pct_rep3]}}. When supplied, the bar
+            HEIGHT is the mean of the per-rep accuracies (NOT the
+            pooled-across-reps cell) — so the SEM cap + dots sit
+            centred on the bar's top. Mirrors the recipe in
+            ``make_db_correctness_by_class.py``.
         """
         n_cfg = len(configs)
         if bar_w is None:
             bar_w = 0.85 / n_cfg  # group width = 0.85 to leave room
         x = np.arange(len(x_groups))
+        ink = COLORS["dark"]
         for i, (mod, var, lab) in enumerate(configs):
             vals = []
             for g in x_groups:
-                m_, t_ = group_acc[(mod, var)].get(g, (0, 0))
-                vals.append(100 * m_ / t_ if t_ else 0)
+                rep_vals = (
+                    rep_acc[(mod, var)].get(g, [])
+                    if rep_acc is not None and (mod, var) in rep_acc
+                    else []
+                )
+                if rep_vals:
+                    # Mean-of-reps bar height so dots+SEM align.
+                    vals.append(float(np.mean(rep_vals)))
+                else:
+                    m_, t_ = group_acc[(mod, var)].get(g, (0, 0))
+                    vals.append(100 * m_ / t_ if t_ else 0)
             bar_x = x + (i - (n_cfg - 1) / 2) * bar_w
             ax.bar(bar_x, vals, width=bar_w,
                    label=lab, color=_config_color_for(mod, var),
                    edgecolor="none", zorder=2)
             if rep_acc is not None and (mod, var) in rep_acc:
                 # SEM error bar + per-rep dots overlaid on each bar.
-                # SEM = stdev / sqrt(n_reps). With n_reps=3 the bar
-                # is short; the dots themselves communicate the spread.
+                # Same recipe as make_db_correctness_by_class.
                 for k, g in enumerate(x_groups):
                     rep_vals = rep_acc[(mod, var)].get(g, [])
                     if len(rep_vals) < 2:
@@ -340,15 +357,19 @@ def make_plot() -> tuple[plt.Figure, list[plt.Axes]]:
                     sem = float(arr.std(ddof=1) / np.sqrt(len(arr)))
                     bx = bar_x[k]
                     ax.errorbar(
-                        bx, mean, yerr=sem, fmt="none", ecolor="#1F1718",
-                        elinewidth=0.9, capsize=2.0, capthick=0.9, zorder=4,
+                        bx, mean, yerr=sem, fmt="none", ecolor=ink,
+                        elinewidth=1.0, capsize=2.5, capthick=1.0, zorder=5,
                     )
-                    # Tiny horizontal jitter so 3 dots don't stack.
-                    jitter = np.linspace(-bar_w * 0.18, bar_w * 0.18, len(arr))
-                    ax.scatter(
-                        bx + jitter, arr, s=8, color="#1F1718",
-                        edgecolor="white", linewidth=0.4, zorder=5,
-                    )
+                    # Symmetric jitter — matches canonical formula
+                    # in db_correctness_by_class.
+                    n_arr = len(arr)
+                    for kp, av in enumerate(arr):
+                        jitter = (kp - (n_arr - 1) / 2) * (bar_w * 0.22)
+                        ax.scatter(
+                            bx + jitter, av, s=14, color=ink,
+                            edgecolor="white", linewidth=0.4, zorder=6,
+                            alpha=0.9,
+                        )
         ax.set_xticks(x)
         ax.set_xticklabels(x_groups, fontsize=10)
         ax.set_ylim(0, 109)
@@ -472,9 +493,19 @@ def make_plot() -> tuple[plt.Figure, list[plt.Axes]]:
                    label="Exact-reason accuracy (%)",
                    show_legend=True)
     # Re-rotate x-labels (per-reason labels are too long horizontally)
-    for tick in ax_perreason.get_xticklabels():
+    # + color each label by its bucket (yes/contextual/no), matching
+    # the tick coloring on panel c's confusion matrix.
+    pb_tick_buckets = [None] + [_bucket(r) for r in reasons]
+    bucket_to_color = {"yes": BUCKET_COLOR["yes"],
+                       "ctx": BUCKET_COLOR["contextual"],
+                       "no":  BUCKET_COLOR["no"]}
+    for tick, b in zip(ax_perreason.get_xticklabels(),
+                       pb_tick_buckets, strict=True):
         tick.set_rotation(35); tick.set_ha("right"); tick.set_rotation_mode("anchor")
         tick.set_fontsize(9)
+        if b in bucket_to_color:
+            tick.set_color(bucket_to_color[b])
+            tick.set_fontweight("semibold")
     # Annotation: explicit list of TriageReason enum values with no
     # bench representative. Stops the reader from wondering "where are
     # the missing 3?" — the closed enum has 19 values; this panel
