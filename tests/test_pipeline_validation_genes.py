@@ -1,4 +1,4 @@
-"""Drift-detection harness for the deep-dive prompt corpus — 5 canonical
+"""Drift-detection harness for the deep-dive prompt corpus — 7 canonical
 validation genes covering structurally distinct surface-accessibility
 archetypes.
 
@@ -9,12 +9,12 @@ names the responsible prompt section so triage is fast.
 
 The harness AUTO-SKIPS when CLOUDFLARE_API_TOKEN is absent — CI smoke
 runs without API access aren't blocked. When the Worker is reachable,
-all 5 records are fetched once per session and cached in a
+all 7 records are fetched once per session and cached in a
 module-scoped fixture.
 
 **Discipline:** prompt edits don't auto-re-annotate. After bumping
 ``PROMPT_CORPUS_VERSION`` (or editing any prompt that could affect
-these 5 archetypes), re-run them via
+these 7 archetypes), re-run them via
 ``scripts/surfaceome_v2_annotate.py <SYMBOL>`` (~$2-3/gene) before
 running these tests. Otherwise the tests run against the pre-edit
 records and can't see new drift.
@@ -40,7 +40,7 @@ _VALIDATION_GENES = (
 
 @pytest.fixture(scope="module")
 def records() -> dict[str, dict[str, Any]]:
-    """Fetch all 5 validation records once per test session.
+    """Fetch all 7 validation records once per test session.
 
     Skipped when ``CLOUDFLARE_API_TOKEN`` is absent (offline CI smoke) —
     the Worker doesn't require auth but the env-var probe is a clean
@@ -462,7 +462,7 @@ def test_all_validation_genes_published(
 def test_schema_versions_match_each_other(
     records: dict[str, dict[str, Any]],
 ) -> None:
-    """All 5 records should be on the same schema_version — they're
+    """All 7 records should be on the same schema_version — they're
     validating the SAME prompt corpus. A mismatch means someone re-ran
     only some of them after a prompt bump."""
     versions = {g: r.get("schema_version") for g, r in records.items()}

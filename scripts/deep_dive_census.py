@@ -53,6 +53,17 @@ def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--run-id", required=True, help="deep_dive_run.run_id")
     parser.add_argument(
+        "--cohort-run-id",
+        default=None,
+        help=(
+            "Cohort tag for the quarantine lookup (agent_run_intermediates."
+            "cohort_run_id). Defaults to --run-id, matching the sweep's "
+            "cohort_run_id = (cohort_run_id or run_id). Set this only if the "
+            "sweep used a distinct --cohort-run-id, else quarantined genes "
+            "would be misreported as 'missing'."
+        ),
+    )
+    parser.add_argument(
         "--gene-list",
         required=True,
         type=Path,
@@ -85,10 +96,18 @@ def main(argv: list[str] | None = None) -> int:
     # Private D1 is the census's core surface — if we can't reach it there is
     # no audit to run. Fail with a clean, distinct code (3 = infra, vs the
     # 0/1/2 data verdicts) rather than dumping a traceback in a runbook.
+    from accessible_surfaceome.cloud.intermediates import fetch_quarantined_genes
+
     try:
         with D1Client() as d1:
             private = private_parents(d1, args.run_id)
             orphans = orphan_symbols(d1, args.run_id)
+            # Over-cap genes parked for manual review (same signal the sweep
+            # uses to skip them). Scope to the same cohort tag the sweep wrote
+            # under: cohort_run_id = (cohort_run_id or run_id).
+            quarantined = fetch_quarantined_genes(
+                d1, cohort_run_id=args.cohort_run_id or args.run_id
+            )
     except D1Error as exc:
         logger.error("cannot reach private D1 — census not run: %s", exc)
         return 3
@@ -112,6 +131,7 @@ def main(argv: list[str] | None = None) -> int:
         private=private,
         orphan_symbols=orphans,
         public=public,
+        quarantined=quarantined,
     )
 
     if args.json:

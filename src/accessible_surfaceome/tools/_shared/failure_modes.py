@@ -68,11 +68,45 @@ FailureMode = Literal[
     # draft schema and the canonical record schema — a high-priority
     # post-mortem signal.
     "schema_drift",
+    # Not a terminal result — a mid-run PTS checkpoint row written to
+    # ``agent_run_intermediates`` immediately after the (expensive) plan-trim-
+    # select dual completes, BEFORE the builders run. Its only purpose is
+    # crash-durability: if the gene then dies hard (Modal eviction / OOM /
+    # builder exception) before the driver publishes a terminal row, this row
+    # still carries the serialized PTS dual so a resume can reconstruct
+    # ``cached_dual`` and skip re-paying for plan-trim-select. Written ONLY
+    # after the PTS cost cap passes — an over-cap dual aborts to
+    # ``cost_ceiling_pts`` first and never leaves a resumable checkpoint, so
+    # resuming this mode can't smuggle an over-cap gene past the cap. Superseded
+    # by a later terminal row (``ok`` / a failure) for the same gene when the
+    # run finishes. See ``QUARANTINE_FAILURE_MODES`` / ``RESUMABLE_FAILURE_MODES``.
+    "pts_checkpoint",
     # Anything that didn't slot into the above. Default fallback so a
     # newly-introduced abort path that isn't yet wired here still
     # tags itself instead of staying empty.
     "unknown",
 ]
 
+# Over-cost-cap aborts. A gene whose latest intermediates row carries one of
+# these has already burned the per-gene budget; the sweep must NOT auto-resume
+# it — it is quarantined for manual review (raise the ceiling deliberately, or
+# investigate why it's pathological), per the operator's explicit choice.
+QUARANTINE_FAILURE_MODES: frozenset[str] = frozenset(
+    {"cost_ceiling_pts", "cost_ceiling_total"}
+)
 
-__all__ = ["FailureMode"]
+# Graceful, non-cap failures (and the mid-run checkpoint) whose intermediates
+# carry a usable plan-trim-select dual. A resume can reconstruct ``cached_dual``
+# from these and skip re-paying ~$1.35 of PTS spend. Deliberately excludes the
+# quarantine modes (we don't auto-resume over-cap genes) and ``pts_failure``
+# (no dual was produced) and ``ok`` (already complete).
+RESUMABLE_FAILURE_MODES: frozenset[str] = frozenset(
+    {"validation_failed", "synth_draft_missing", "schema_drift", "pts_checkpoint"}
+)
+
+
+__all__ = [
+    "QUARANTINE_FAILURE_MODES",
+    "RESUMABLE_FAILURE_MODES",
+    "FailureMode",
+]

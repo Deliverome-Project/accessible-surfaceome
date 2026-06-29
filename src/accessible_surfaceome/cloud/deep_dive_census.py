@@ -44,6 +44,7 @@ from accessible_surfaceome.cloud.deep_dive_audit import find_orphans
 # single highest-priority problem so the matrix stays one-line-per-gene.
 STATUS_OK = "ok"
 STATUS_MISSING = "missing"  # never completed anywhere — resume, not drift
+STATUS_QUARANTINED = "quarantined"  # over-cap abort — manual review, no auto-resume
 STATUS_ORPHAN_CHILDREN = "orphan_children"
 STATUS_PRIVATE_MISSING = "private_missing"
 STATUS_PUBLIC_MISSING = "public_missing"
@@ -70,6 +71,10 @@ REPAIR_HINT: dict[str, str] = {
     STATUS_PUBLIC_STALE: "scripts/upload_viewer_snapshots_to_d1.py --execute",
     STATUS_JSON_MISSING: "re-pull the Volume (modal volume get) — canonical JSON absent",
     STATUS_MISSING: "resume the sweep (full_sweep) — gene never completed",
+    STATUS_QUARANTINED: (
+        "MANUAL REVIEW — over per-gene cost cap; re-run deliberately with "
+        "--include-quarantined (e.g. raised ceiling), never auto-resumed"
+    ),
     STATUS_UNEXPECTED: "gene on a surface but not in --gene-list; check the cohort file",
 }
 
@@ -94,11 +99,17 @@ class GeneCensus:
     private_schema_version: str | None = None
     public_schema_version: str | None = None
     public_checked: bool = True
+    quarantined: bool = False
 
     @property
     def status(self) -> str:
         if not self.in_cohort:
             return STATUS_UNEXPECTED
+        # Quarantine wins over "missing": an over-cap gene has no record (so it
+        # would otherwise read as never-ran), but it is deliberately parked for
+        # manual review, not a coverage gap to auto-resume.
+        if self.quarantined and not self.in_private:
+            return STATUS_QUARANTINED
         if not (self.in_volume_json or self.in_private or self.in_public):
             return STATUS_MISSING
         # Present somewhere — walk the worst-first ladder. The first match is
@@ -133,6 +144,7 @@ def build_census(
     private: dict[str, str],
     orphan_symbols: set[str],
     public: dict[str, str] | None,
+    quarantined: set[str] | None = None,
 ) -> list[GeneCensus]:
     """Classify every gene across the cohort and the three surfaces.
 
@@ -155,6 +167,7 @@ def build_census(
     """
     public_checked = public is not None
     pub = public or {}
+    quarantined = quarantined or set()
     cohort = set(cohort_symbols)
     all_symbols = cohort | set(volume) | set(private) | set(pub)
 
@@ -184,6 +197,7 @@ def build_census(
                 private_schema_version=private.get(symbol),
                 public_schema_version=public_schema,
                 public_checked=public_checked,
+                quarantined=symbol in quarantined,
             )
         )
     return out
@@ -195,11 +209,15 @@ def summarize(rows: list[GeneCensus]) -> Counter[str]:
 
 
 def exit_code(rows: list[GeneCensus]) -> int:
-    """Gate exit code: 0 = all ok, 1 = any drift (must repair), 2 = only
-    missing/unexpected (coverage — resume the sweep, no drift)."""
+    """Gate exit code: 0 = all ok, 1 = any drift (must repair), 2 = needs
+    attention but no drift (missing → resume, quarantined → manual review,
+    or unexpected)."""
     if any(r.is_drift for r in rows):
         return 1
-    if any(r.status in (STATUS_MISSING, STATUS_UNEXPECTED) for r in rows):
+    if any(
+        r.status in (STATUS_MISSING, STATUS_QUARANTINED, STATUS_UNEXPECTED)
+        for r in rows
+    ):
         return 2
     return 0
 

@@ -215,12 +215,32 @@ def test_save_creates_directory(tmp_path: Path) -> None:
 
 def test_pts_cost_cap_constant_is_5_usd() -> None:
     """Sanity-check the PTS-level cap is set to $5 — separate from the
-    $7 total ceiling PR54 has post-builders. The constant is set inline
-    in the orchestrator's _annotate; this test would fail if a later
-    edit accidentally dropped it back into the no-cap state.
+    $7 total ceiling PR54 has post-builders. The constant was promoted to
+    module scope (so the resume path can reference it); this test would fail
+    if a later edit dropped the cap or changed its value.
+    """
+    import inspect
+
+    assert orchestrator.MAX_PTS_COST_USD == 5.0
+    source = inspect.getsource(orchestrator._annotate)
+    assert "PTS-level cost ceiling exceeded" in source
+
+
+def test_pts_cap_checked_before_any_checkpoint_write() -> None:
+    """Invariant (regression guard): the PTS cost-cap abort must run BEFORE
+    either checkpoint write, so an over-cap dual never leaves a *resumable*
+    checkpoint (on-disk or durable D1) that could auto-resume past the cap on
+    re-dispatch. Pinned by source order — cheap and catches a reorder.
     """
     import inspect
 
     source = inspect.getsource(orchestrator._annotate)
-    assert "MAX_PTS_COST_USD = 5.0" in source
-    assert "PTS-level cost ceiling exceeded" in source
+    cap_idx = source.index("PTS-level cost ceiling exceeded")
+    # Match the call sites (trailing "(") so a prose comment mentioning the
+    # function names can't satisfy the search.
+    assert cap_idx < source.index("_save_pts_checkpoint("), (
+        "PTS cap check must precede the on-disk checkpoint write"
+    )
+    assert cap_idx < source.index("_publish_pts_checkpoint("), (
+        "PTS cap check must precede the durable D1 checkpoint publish"
+    )

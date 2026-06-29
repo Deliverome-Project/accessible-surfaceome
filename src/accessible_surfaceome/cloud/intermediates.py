@@ -41,6 +41,10 @@ from typing import Any
 
 from accessible_surfaceome._version_guard import PROMPT_CORPUS_VERSION
 from accessible_surfaceome.cloud.d1_client import D1Client, D1Config
+from accessible_surfaceome.tools._shared.failure_modes import (
+    QUARANTINE_FAILURE_MODES,
+    RESUMABLE_FAILURE_MODES,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -474,8 +478,146 @@ def publish_intermediates(
     )
 
 
+# ---------------------------------------------------------------------------
+# Read side: resume + quarantine
+# ---------------------------------------------------------------------------
+
+
+def fetch_latest_intermediates_row(
+    d1: D1Client, gene_symbol: str
+) -> dict[str, Any] | None:
+    """Return the most-recent ``agent_run_intermediates`` row for a gene.
+
+    Returns the slim metadata + the full ``intermediates_json`` string for the
+    latest ``created_at``, or ``None`` if the gene has no row. The caller
+    decides whether the row is resumable / quarantined (see
+    :data:`RESUMABLE_FAILURE_MODES` / :data:`QUARANTINE_FAILURE_MODES`) and
+    parses ``intermediates_json`` only when it actually needs the dual — so a
+    dispatch-time quarantine scan never pays the JSON parse.
+    """
+    rows = d1.query(
+        "SELECT gene_symbol, schema_version, prompt_corpus_version, "
+        "record_valid, failure_mode, created_at, intermediates_json "
+        "FROM agent_run_intermediates WHERE gene_symbol = ? "
+        "ORDER BY created_at DESC LIMIT 1;",
+        [gene_symbol],
+    )
+    return rows[0] if rows else None
+
+
+def fetch_quarantined_genes(
+    d1: D1Client, *, cohort_run_id: str | None = None
+) -> set[str]:
+    """Genes whose *latest* intermediates row is an over-cap abort.
+
+    These are quarantined: the sweep must not auto-resume them (the budget is
+    already spent), so dispatch filters them out and the operator reviews them
+    manually. A gene that was over-cap once but later completed (a newer
+    terminal row exists) is NOT returned — only the latest row per gene counts,
+    so clearing a quarantine is just "re-run it and let it finish".
+
+    Scoped to ``cohort_run_id`` when given so one sweep's quarantine list
+    doesn't include genes parked by an unrelated run.
+    """
+    quarantine = tuple(sorted(QUARANTINE_FAILURE_MODES))
+    placeholders = ",".join("?" for _ in quarantine)
+    cohort_clause = "AND a.cohort_run_id = ?" if cohort_run_id else ""
+    sql = (
+        "SELECT a.gene_symbol AS gene_symbol, a.failure_mode AS failure_mode "
+        "FROM agent_run_intermediates a "
+        "WHERE a.created_at = ("
+        "  SELECT MAX(b.created_at) FROM agent_run_intermediates b "
+        "  WHERE b.gene_symbol = a.gene_symbol"
+        f"  {('AND b.cohort_run_id = ?' if cohort_run_id else '')}"
+        ") "
+        f"AND a.failure_mode IN ({placeholders}) "
+        "AND a.record_valid = 0 "
+        f"{cohort_clause};"
+    )
+    params: list[Any] = []
+    if cohort_run_id:
+        params.append(cohort_run_id)  # inner subquery
+    params.extend(quarantine)
+    if cohort_run_id:
+        params.append(cohort_run_id)  # outer clause
+    rows = d1.query(sql, params)
+    return {str(r["gene_symbol"]) for r in rows}
+
+
+def resumable_pts_blob(
+    row: dict[str, Any] | None,
+    *,
+    current_schema_version: str,
+    current_prompt_corpus_version: str = PROMPT_CORPUS_VERSION,
+    current_model_id: str | None = None,
+    max_resumable_cost_usd: float | None = None,
+) -> dict[str, Any] | None:
+    """Return the parsed ``plan_trim_select`` blob iff ``row`` is a safe resume.
+
+    Guards (all must hold):
+
+    * ``record_valid == 0`` — a completed gene is skipped elsewhere; only
+      failed/checkpoint rows are resume candidates.
+    * ``failure_mode`` is in :data:`RESUMABLE_FAILURE_MODES` — excludes the
+      over-cap quarantine modes (never auto-resume those) and ``pts_failure``
+      (no dual was produced).
+    * ``schema_version`` AND ``prompt_corpus_version`` match the current code.
+      Reusing a dual produced under different prompts/schema would silently mix
+      stale plan-trim-select output into a fresh build — the central
+      correctness trap of resume — so any version drift forces a fresh run.
+    * ``current_model_id`` (when given) matches the blob's stamped ``model_id``.
+      A model swap changes the dual's character even at the same prompt/schema,
+      so it must not be reused. (``code_sha`` is deliberately NOT gated on — it
+      bumps on every unrelated commit and would defeat cross-sweep resume;
+      claim-schema incompatibilities are caught downstream by
+      ``EvidenceClaim.model_validate`` during reconstruction.)
+    * the blob carries a ``plan_trim_select`` payload, and (when
+      ``max_resumable_cost_usd`` is given) its persisted ``cost_total_usd`` does
+      NOT exceed that ceiling. Defense-in-depth: an over-cap dual should never
+      reach a resumable row in the first place, but if one slips through (a
+      legacy row, or a future code path), refuse to resume it.
+
+    Returns the parsed full intermediates blob (caller reconstructs the dual
+    with ``_dual_from_serialized``), or ``None`` to run fresh.
+    """
+    if row is None:
+        return None
+    if int(row.get("record_valid") or 0) != 0:
+        return None
+    if str(row.get("failure_mode") or "") not in RESUMABLE_FAILURE_MODES:
+        return None
+    if row.get("schema_version") != current_schema_version:
+        return None
+    if row.get("prompt_corpus_version") != current_prompt_corpus_version:
+        return None
+    raw = row.get("intermediates_json")
+    if not raw:
+        return None
+    try:
+        blob = json.loads(raw)
+    except (json.JSONDecodeError, TypeError):
+        return None
+    if not isinstance(blob, dict) or not blob.get("plan_trim_select"):
+        return None
+    if current_model_id is not None and blob.get("model_id") != current_model_id:
+        return None
+    if max_resumable_cost_usd is not None:
+        try:
+            cost = float(blob.get("cost_total_usd") or 0.0)
+        except (TypeError, ValueError):
+            cost = 0.0
+        if cost > max_resumable_cost_usd:
+            return None
+    return blob
+
+
 __all__ = [
+    "QUARANTINE_FAILURE_MODES",
+    "RESUMABLE_FAILURE_MODES",
     "IntermediatesPushResult",
     "ensure_schema",
+    "fetch_latest_intermediates_row",
+    "fetch_quarantined_genes",
     "publish_intermediates",
+    "resumable_pts_blob",
 ]
