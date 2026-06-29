@@ -79,6 +79,11 @@ _FN_NOISE_PATTERNS = "|".join([
     # CD47, CD74, TNFSF10…) where "receptor for" / "ligand for" is mentioned.
     # The patterns below match only when the protein itself is functioning
     # as a secreted / intracellular factor.
+    # Cytokine pattern restricted to those described as "plays/stimulates roles
+    # in..." (true secreted cytokines like IL13). Excludes "Cytokine which is
+    # the ligand for" (CD70 — membrane-bound) and "Cytokine that binds to"
+    # (TNF, TNFSF10 — also membrane-bound family).
+    r"^\s*Cytokine\s+that\s+(?:plays|stimulates|induces)",
     r"growth\s+factor\s+active",                  # VEGFA: "Growth factor active in angiogenesis"
     r"transcription(?:al)?\s+(?:factor|elongation)",
     r"RNA\s+polymerase",                          # AFF4
@@ -135,6 +140,11 @@ _ADCDB_NOISE_PATTERNS = "|".join([
     r"interferon-stimulated",                 # ISG20
     # Compartment / location keywords in the antigen NAME itself
     r"cytoplasm", r"cytosolic", r"nuclear\s+protein", r"mitochondrial\s+protein",
+    # Apolipoprotein family — all secreted by definition (APOD's "surface"
+    # signal comes from HDL-particle binding, not a dedicated surface anchor)
+    r"apolipoprotein",
+    # Pregnancy-specific glycoproteins — all secreted into maternal serum
+    r"pregnancy-specific",
 ])
 ADCDB_NAME_NOISE = re.compile(rf"\b({_ADCDB_NOISE_PATTERNS})\b", re.IGNORECASE)
 
@@ -383,6 +393,28 @@ def collect_adcdb_hgncs(sym_to_hgnc: dict) -> set[str]:
     print(f"[adcdb] reading {ADCDB_TSV.relative_to(REPO_ROOT)}")
     df = pd.read_csv(ADCDB_TSV, sep="\t")
     n_before = len(df)
+    # Re-parse multi-target antigen names ("A (GENE_A); B (GENE_B)") to take
+    # the FIRST parenthesized symbol — the primary target. The scraped TSV's
+    # `gene_symbol_inline` was set from the LAST parenthesized token, which
+    # for dual-target ADCs like "PDGFRB; VEGFA" routes to the secondary
+    # binding partner rather than the primary therapeutic target.
+    #
+    # Multi-target delimiter is `";\s"` (semicolon + whitespace) — a bare
+    # `";"` test incorrectly catches HTML entities like `&#039;` (apostrophe)
+    # which contain `;`, e.g. ADCdb's "5'-nucleotidase (NT5E)" came through
+    # as "5&#039;-nucleotidase (NT5E)" and would have been mis-routed.
+    multi_re = re.compile(r";\s")
+    multi_mask = df["antigen_name"].fillna("").apply(lambda s: bool(multi_re.search(s)))
+    first_sym_re = re.compile(r"\(([A-Z0-9][A-Z0-9-]{1,12})\)")
+    def first_sym(s: str) -> str | None:
+        if not isinstance(s, str) or not multi_re.search(s):
+            return None
+        head = multi_re.split(s, maxsplit=1)[0]
+        m = first_sym_re.search(head)
+        return m.group(1) if m else None
+    df.loc[multi_mask, "gene_symbol_inline"] = (
+        df.loc[multi_mask, "antigen_name"].apply(first_sym)
+    )
     # Tier 1: antigen-name regex on the antigen NAME field (ADCdb-internal)
     name_mask = df["antigen_name"].fillna("").apply(
         lambda s: bool(ADCDB_NAME_NOISE.search(str(s)))
