@@ -143,6 +143,29 @@ export interface TriageCell {
  *  filtering (see deep-dive-fields.ts:ecdBand). */
 export type EcdBand = "high" | "moderate" | "low" | "none";
 
+/** Catalog-baked percentile band on `n_papers_selected` (unique-paper
+ *  count behind the evidence list). Cutoffs are recomputed from the
+ *  live deep-dive cohort at catalog-build time:
+ *    • `low`      — n_papers_selected ≤ p10
+ *    • `moderate` — p10 < n_papers_selected < p90
+ *    • `high`     — n_papers_selected ≥ p90
+ *  The viewer's filter UI presents these as a multi-select pill row;
+ *  the exact p10 / p90 cutoffs travel on the catalog response as
+ *  `n_papers_selected_cutoffs` so tooltips can render the concrete
+ *  thresholds. */
+export type PapersSelectedBand = "low" | "moderate" | "high";
+
+/** Cohort percentile cutoffs surfaced as catalog metadata so the
+ *  viewer can display "low ≤ 8 papers · high ≥ 47 papers" in the
+ *  filter tooltip rather than just band names. Null on cold catalogs
+ *  with fewer than 3 deep-dive records (cutoffs aren't meaningful). */
+export interface PapersSelectedCutoffs {
+  p10: number;
+  p90: number;
+  /** Population size the cutoffs were computed over. */
+  n: number;
+}
+
 /** Dominant induction-trigger bucket (mirrors models.py InductionTrigger). */
 export type InductionTrigger =
   | "none"
@@ -162,6 +185,18 @@ export interface DeepDiveFilters {
   llm_family: ProteinFamily;
   evidence_grade: EvidenceGrade;
   evidence_density: EvidenceDensity;
+  /** Raw unique-paper count behind the evidence list (schema 2.14.0).
+   *  Optional because records annotated before 2.14.0 lack the field. */
+  n_papers_selected?: number;
+  /** Pre-trim discovery corpus size — display-only context for the
+   *  filter. Optional + nullable: records annotated before 2.14.0
+   *  lack it AND the backfill for it requires a discover-only rerun
+   *  (not yet done for the 14 already-published genes). */
+  n_papers_found?: number | null;
+  /** Catalog-baked percentile band keyed off `n_papers_selected`.
+   *  Cohort cutoffs travel as the top-level
+   *  `n_papers_selected_cutoffs` field on the catalog response. */
+  n_papers_selected_band?: PapersSelectedBand;
   ecd_accessibility_class: EcdAccessibilityClass;
   expression_level: ExpressionLevel;
   expression_breadth: ExpressionBreadth;
@@ -270,6 +305,13 @@ export interface Catalog {
   n_rows: number;
   n_with_triage: number;
   n_with_deep_dive: number;
+  /** Cohort percentile cutoffs for `n_papers_selected`, baked at
+   *  catalog-build time by the Worker (`row_schema ≥ 6`). Null on
+   *  responses from older Workers OR when fewer than 3 deep-dive
+   *  records carry the count — in that case the per-row
+   *  `n_papers_selected_band` will be absent too and the filter UI
+   *  should fall back to "any" only. */
+  n_papers_selected_cutoffs?: PapersSelectedCutoffs | null;
   rows: CatalogRow[];
 }
 
