@@ -156,16 +156,155 @@ def _bucket_boundaries() -> list[int]:
     return bounds
 
 
-def make_plot() -> tuple[plt.Figure, plt.Axes]:
+CONFIGS = [
+    ("claude-haiku-4-5",   "ncbi",        "Haiku 4.5"),
+    ("claude-sonnet-4-6",  "ncbi",        "Sonnet 4.6 (NCBI)"),
+    ("claude-sonnet-4-6",  "pubmed_ncbi", "Sonnet 4.6 (PubMed)"),
+    ("claude-opus-4-8",    "ncbi",        "Opus 4.8"),
+]
+
+
+def _all_preds() -> dict[tuple[str, str], dict[str, str]]:
+    out: dict[tuple[str, str], dict[str, str]] = {(m, v): {} for (m, v, _) in CONFIGS}
+    with open(PRED_TSV) as f:
+        for r in csv.DictReader(f, delimiter="\t"):
+            key = (r["model"], r["prompt_variant"])
+            if key in out:
+                out[key][r["gene_symbol"]] = r["predicted_reason"]
+    return out
+
+
+def _bucket(reason: str) -> str:
+    yes = {"classical_surface_receptor", "gpi_anchored", "multipass_with_exposed_loops",
+           "extracellular_face_protein", "stable_complex_partner"}
+    ctx = {"cell_state_induced", "tissue_restricted_surface", "lysosomal_exocytosis",
+           "dual_localization", "stable_surface_attachment", "other"}
+    no  = {"cytoplasmic", "nuclear", "mitochondrial_internal", "endomembrane_resident",
+           "nuclear_envelope", "secreted_only", "inner_leaflet_anchored",
+           "pmhc_only_intracellular"}
+    if reason in yes: return "yes"
+    if reason in ctx: return "ctx"
+    if reason in no:  return "no"
+    return "?"
+
+
+def _config_color(i: int) -> str:
+    """Distinct color per config in the bar charts. Haiku gets the
+    light/neutral end, Opus the darker end of the brand palette."""
+    return ["#9C8C88", "#3D6B60", "#2E7A55", "#5848A8"][i]
+
+
+def make_plot() -> tuple[plt.Figure, list[plt.Axes]]:
+    """3-subplot composite:
+      (a) per-bucket strict accuracy across the 4 frontier configs
+      (b) per-reason accuracy across the same 4 configs
+      (c) the Sonnet/ncbi curator×agent confusion matrix (existing).
+
+    Bucket-strict means: predicted reason's bucket must equal curator
+    reason's bucket — no soft-credit for yes→contextual matches.
+    """
     setup_plotting_style(style="whitegrid", context="notebook", font_scale=1.0)
     plt.rcParams.update({
-        "font.size": 18, "axes.labelsize": 22, "axes.titlesize": 0,
-        "xtick.labelsize": 12, "ytick.labelsize": 12, "legend.fontsize": 14,
+        "font.size": 16, "axes.labelsize": 18, "axes.titlesize": 0,
+        "xtick.labelsize": 11, "ytick.labelsize": 11, "legend.fontsize": 12,
     })
     m, n_joined, n_match = _build_matrix()
     n = m.shape[0]
+    curator = _load_curator_reasons()
+    all_preds = _all_preds()
 
-    fig, ax = plt.subplots(figsize=(17, 15))
+    # Build a 2-row figure: row 1 = (a) + (b) side-by-side; row 2 = (c)
+    import matplotlib.gridspec as gridspec
+    fig = plt.figure(figsize=(17, 22))
+    gs = gridspec.GridSpec(
+        nrows=2, ncols=2, height_ratios=[0.9, 2.1], width_ratios=[1.0, 1.6],
+        hspace=0.32, wspace=0.22,
+    )
+    ax_bucket = fig.add_subplot(gs[0, 0])
+    ax_perreason = fig.add_subplot(gs[0, 1])
+    ax_matrix = fig.add_subplot(gs[1, :])
+
+    # ─────── (a) per-bucket strict accuracy ───────
+    # Local var names use _PA suffix to avoid shadowing the module-
+    # level BUCKET / BUCKET_COLOR (which panel c reads via tick-label
+    # coloring; those use the long "contextual" key not "ctx").
+    BUCKETS_PA = ["yes", "ctx", "no"]
+    BUCKET_LABEL_PA = {"yes": "Yes", "ctx": "Contextual", "no": "No"}
+    BUCKET_COLOR_PA = {"yes": "#2E7A55", "ctx": "#C07830", "no": "#6F5D5A"}
+    bucket_acc: dict[tuple[str,str], dict[str, list[int]]] = {}  # config → bucket → [match, total]
+    for (mod, var, _label) in CONFIGS:
+        acc = {b: [0, 0] for b in BUCKETS_PA}
+        for gene, gt_r in curator.items():
+            if gene not in all_preds[(mod, var)]:
+                continue
+            pred_r = all_preds[(mod, var)][gene]
+            gt_b = _bucket(gt_r); pred_b = _bucket(pred_r)
+            if gt_b in acc:
+                acc[gt_b][1] += 1
+                if pred_b == gt_b:
+                    acc[gt_b][0] += 1
+        bucket_acc[(mod, var)] = acc
+
+    n_cfg = len(CONFIGS)
+    bar_w = 0.20
+    x_b = np.arange(len(BUCKETS_PA))
+    for i, (mod, var, label) in enumerate(CONFIGS):
+        vals = []
+        for b in BUCKETS_PA:
+            mtch, tot = bucket_acc[(mod, var)][b]
+            vals.append(100 * mtch / tot if tot else 0)
+        ax_bucket.bar(x_b + (i - (n_cfg - 1) / 2) * bar_w, vals, width=bar_w,
+                      label=label, color=_config_color(i), edgecolor="none")
+    ax_bucket.set_xticks(x_b)
+    ax_bucket.set_xticklabels([BUCKET_LABEL_PA[b] for b in BUCKETS_PA])
+    ax_bucket.set_ylim(0, 105)
+    ax_bucket.set_ylabel("Bucket-strict accuracy (%)")
+    ax_bucket.legend(loc="lower center", bbox_to_anchor=(0.5, -0.32),
+                     ncols=2, frameon=False, fontsize=10)
+    ax_bucket.text(0.02, 1.02, "a", transform=ax_bucket.transAxes,
+                   fontsize=22, fontweight="bold", va="bottom")
+    sns.despine(ax=ax_bucket, top=True, right=True)
+
+    # ─────── (b) per-reason accuracy across configs ───────
+    # Per-reason: which reasons curator used at least 2 times (n≥2).
+    reason_n: dict[str, int] = {}
+    reason_acc: dict[str, dict[tuple[str,str], list[int]]] = {}
+    for gene, gt_r in curator.items():
+        reason_n[gt_r] = reason_n.get(gt_r, 0) + 1
+        reason_acc.setdefault(gt_r, {(m,v): [0,0] for (m,v,_) in CONFIGS})
+        for (mod, var, _label) in CONFIGS:
+            if gene in all_preds[(mod, var)]:
+                pred_r = all_preds[(mod, var)][gene]
+                reason_acc[gt_r][(mod, var)][1] += 1
+                if pred_r == gt_r:
+                    reason_acc[gt_r][(mod, var)][0] += 1
+    # Filter to reasons with n≥2, sort by n descending (most frequent
+    # reasons leftmost so the eye reads "common cases first").
+    reasons = [r for r in reason_n if reason_n[r] >= 2]
+    reasons.sort(key=lambda r: -reason_n[r])
+    n_r = len(reasons)
+    x_r = np.arange(n_r)
+    for i, (mod, var, label) in enumerate(CONFIGS):
+        vals = []
+        for r in reasons:
+            mtch, tot = reason_acc[r][(mod, var)]
+            vals.append(100 * mtch / tot if tot else 0)
+        ax_perreason.bar(x_r + (i - (n_cfg - 1) / 2) * bar_w, vals, width=bar_w,
+                          label=label, color=_config_color(i), edgecolor="none")
+    short = {r: LABEL_SHORT.get(r, r).replace("\n", " ") for r in reasons}
+    n_labels = [f"{short[r]}\n(n={reason_n[r]})" for r in reasons]
+    ax_perreason.set_xticks(x_r)
+    ax_perreason.set_xticklabels(n_labels, fontsize=8.5)
+    for tick in ax_perreason.get_xticklabels():
+        tick.set_rotation(35); tick.set_ha("right"); tick.set_rotation_mode("anchor")
+    ax_perreason.set_ylim(0, 105)
+    ax_perreason.set_ylabel("Exact-reason accuracy (%)")
+    ax_perreason.text(0.02, 1.02, "b", transform=ax_perreason.transAxes,
+                      fontsize=22, fontweight="bold", va="bottom")
+    sns.despine(ax=ax_perreason, top=True, right=True)
+
+    # ─────── (c) confusion matrix (Sonnet/ncbi) ───────
+    ax = ax_matrix
     cmap = sns.light_palette("#3D6B60", as_cmap=True)
     sns.heatmap(
         m, ax=ax, cmap=cmap, square=True, linewidths=0.5, linecolor="#FFFFFF",
@@ -211,6 +350,8 @@ def make_plot() -> tuple[plt.Figure, plt.Axes]:
 
     ax.set_xlabel("Agent predicted_reason  (Sonnet 4.6 + NCBI)", labelpad=12)
     ax.set_ylabel("Curator\nground_truth_reason", labelpad=12)
+    ax.text(-0.04, 1.02, "c", transform=ax.transAxes,
+            fontsize=22, fontweight="bold", va="bottom")
 
     handles = [
         mpatches.Patch(facecolor=BUCKET_COLOR[b], edgecolor="none",
@@ -236,8 +377,7 @@ def make_plot() -> tuple[plt.Figure, plt.Axes]:
     )
 
     sns.despine(ax=ax, top=False, right=False, left=False, bottom=False)
-    fig.tight_layout()
-    return fig, ax
+    return fig, [ax_bucket, ax_perreason, ax_matrix]
 
 
 def main() -> None:
