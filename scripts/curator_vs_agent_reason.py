@@ -124,11 +124,17 @@ def _load_agent_predictions() -> dict[str, str]:
     return out
 
 
-def _build_matrix() -> tuple[np.ndarray, int, int]:
+def _build_matrix() -> tuple[np.ndarray, int, int, dict[tuple[int, int], list[str]]]:
+    """Build the (curator_reason × agent_reason) count matrix AND
+    a {(i, j): [gene, gene, ...]} index of which specific bench
+    genes fell into each off-diagonal cell. Off-diagonal cells are
+    the disagreements worth surfacing by name on the figure;
+    diagonal cells often have 10+ genes and stay count-only."""
     curator = _load_curator_reasons()
     agent = _load_agent_predictions()
     n = len(REASONS_ORDERED)
     m = np.zeros((n, n), dtype=int)
+    cell_genes: dict[tuple[int, int], list[str]] = {}
     n_joined = 0
     n_match = 0
     idx_of = {r: i for i, r in enumerate(REASONS_ORDERED)}
@@ -138,11 +144,13 @@ def _build_matrix() -> tuple[np.ndarray, int, int]:
         a_reason = agent[gene]
         if c_reason not in idx_of or a_reason not in idx_of:
             continue
-        m[idx_of[c_reason], idx_of[a_reason]] += 1
+        i, j = idx_of[c_reason], idx_of[a_reason]
+        m[i, j] += 1
+        cell_genes.setdefault((i, j), []).append(gene)
         n_joined += 1
         if c_reason == a_reason:
             n_match += 1
-    return m, n_joined, n_match
+    return m, n_joined, n_match, cell_genes
 
 
 def _bucket_boundaries() -> list[int]:
@@ -208,7 +216,7 @@ def make_plot() -> tuple[plt.Figure, list[plt.Axes]]:
         "font.size": 16, "axes.labelsize": 18, "axes.titlesize": 0,
         "xtick.labelsize": 11, "ytick.labelsize": 11, "legend.fontsize": 12,
     })
-    m, n_joined, n_match = _build_matrix()
+    m, n_joined, n_match, cell_genes = _build_matrix()
     n = m.shape[0]
     curator = _load_curator_reasons()
     all_preds = _all_preds()
@@ -347,6 +355,27 @@ def make_plot() -> tuple[plt.Figure, list[plt.Axes]]:
             lw=2.5, zorder=10,
         )
         ax.add_patch(rect)
+
+    # Label OFF-DIAGONAL non-zero cells with the specific bench gene
+    # names that fell into each. The diagonal cells often have 10+
+    # genes (cytoplasmic n=11, classical_surface_receptor n=27) — too
+    # many to label legibly, so they stay count-only. The off-diagonal
+    # cells are the disagreements worth surfacing by name.
+    for (i, j), genes in cell_genes.items():
+        if i == j or not genes:
+            continue
+        # Gene-name strip below the count (offset y slightly downward
+        # from the cell centre). seaborn's count text sits at the
+        # cell's centre; we add a smaller second text right below.
+        name_str = ", ".join(genes)
+        if len(name_str) > 22:
+            # 22 chars fits 2-3 typical gene symbols at this fontsize;
+            # for longer lists, two-line wrap stays readable.
+            name_str = name_str.replace(", ", ",\n", 1) if len(genes) >= 2 else name_str
+        ax.text(j + 0.5, i + 0.78, name_str,
+                ha="center", va="top",
+                fontsize=6.5, color="#3a2122",
+                fontstyle="italic", zorder=11)
 
     ax.set_xlabel("Agent predicted_reason  (Sonnet 4.6 + NCBI)", labelpad=12)
     ax.set_ylabel("Curator\nground_truth_reason", labelpad=12)
