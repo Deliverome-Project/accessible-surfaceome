@@ -78,7 +78,9 @@
     "surface_specificity_rationale": "Multiple live-cell functional assays on intact human primary cells confirm plasma membrane dominance (a1_evi_14, a1_evi_15, a1_evi_16); ligand-induced endocytosis and disease-state gamma-secretase cleavage create minor intracellular pools but do not displace the constitutive surface-dominant localization (a2_evi_21, a2_evi_22).",
     "has_known_ligand_rationale": "Wnt5a is a validated endogenous ligand engaging the RYK WIF domain on intact cells (a1_evi_16, a2_evi_18); GDF15 ectodomain (G-ECD) is a second validated endogenous binding partner identified by cell-surface library screen (a1_evi_14).",
     "low_endogenous_expression_rationale": "Northern blot detects RYK mRNA in all adult human tissues examined (a2_evi_01, a2_evi_02); protein-level expression across endothelium, hepatocytes, astrocytes, and neurons is consistently moderate, with high-level induction in tumor and injury contexts (a2_evi_04, a2_evi_08).",
-    "overexpression_surface_localization_observed_rationale": "2 method observation(s) pair an overexpression/mixed expression system with a surface-localization readout (cites a1_evi_14, a1_evi_22)."
+    "overexpression_surface_localization_observed_rationale": "2 method observation(s) pair an overexpression/mixed expression system with a surface-localization readout (cites a1_evi_14, a1_evi_22).",
+    "n_papers_selected": 22,
+    "n_papers_found": null
   },
   "surface_evidence": {
     "evidence_grade": "direct_multi_method",

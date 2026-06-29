@@ -55,6 +55,23 @@ _DETERMINISTIC_FEATURE_DERIVED = {
     "is_homo_oligomer",
 }
 
+# Facets computed by the catalog Worker post-projection from a raw
+# Filters int field and attached to each ddf-bearing row. Distinct
+# from _ECD_BANDS (which the Worker computes per row from the
+# record's float-typed source): the n_papers_selected_band cutoffs
+# are COHORT-relative — recomputed each catalog build from the
+# deep-dive subset's distribution, so the same raw count can land in
+# different bands as the cohort grows. The raw count
+# (n_papers_selected) still ships on ddf for display, but only the
+# band is the filter axis (see _NUMERIC_DISPLAY_ONLY).
+_CATALOG_DERIVED_BANDS = {"n_papers_selected_band"}
+
+# Raw numeric Filters fields that ship on the ddf projection for
+# display-only purposes (rendered as captions / tooltip context) but
+# NOT exposed as filter pills — their banded sibling is the actual
+# filter axis (see _CATALOG_DERIVED_BANDS).
+_NUMERIC_DISPLAY_ONLY = {"n_papers_selected", "n_papers_found"}
+
 
 def _dd_facet_keys() -> set[str]:
     """Every catalog facet key — the `key: "..."` literals in the field
@@ -98,23 +115,35 @@ def _worker_band_specs() -> set[tuple[str, str, int, int]]:
 
 
 def test_registry_matches_interface() -> None:
-    """The TS field registry and the DeepDiveFilters type must list the
-    exact same keys."""
-    assert _dd_facet_keys() == _ddf_interface_fields()
+    """The TS field registry (DD_ENUM_FIELDS / DD_BOOL_FIELDS) must
+    enumerate exactly the same keys the DeepDiveFilters interface
+    types, **modulo** display-only raw counts. ``n_papers_selected``
+    + ``n_papers_found`` ship on the interface (the viewer renders
+    them as numeric captions on the gene page + filter tooltip) but
+    aren't filter pills themselves — the filter axis is the
+    cohort-banded ``n_papers_selected_band`` instead. Allowing
+    interface ⊃ registry by exactly this set keeps drift detection
+    intact while modeling the band pattern honestly."""
+    assert _dd_facet_keys() == _ddf_interface_fields() - _NUMERIC_DISPLAY_ONLY
 
 
 def test_facets_equal_worker_keys_plus_bands() -> None:
-    """Catalog facets = the flat fields the Worker ships + the derived ECD
-    bands + facets sourced from BiologicalContext + facets sourced from
-    AccessibilityRisks + facets sourced from DeterministicFeatures (these
-    are the ONLY ones not in DDF_KEYS)."""
+    """Catalog facets = the flat fields the Worker ships + the derived
+    bands (ECD per-row + catalog-cohort-relative) + facets sourced
+    from BiologicalContext + facets from AccessibilityRisks + facets
+    from DeterministicFeatures — **minus** the display-only raw
+    counts that ride on DDF_KEYS but aren't filter pills (their
+    banded sibling is, see _CATALOG_DERIVED_BANDS)."""
     assert (
         _dd_facet_keys()
-        == _worker_ddf_keys()
-        | _ECD_BANDS
-        | _BIOLOGY_DERIVED
-        | _ACCESSIBILITY_RISK_DERIVED
-        | _DETERMINISTIC_FEATURE_DERIVED
+        == (
+            _worker_ddf_keys()
+            | _ECD_BANDS
+            | _CATALOG_DERIVED_BANDS
+            | _BIOLOGY_DERIVED
+            | _ACCESSIBILITY_RISK_DERIVED
+            | _DETERMINISTIC_FEATURE_DERIVED
+        ) - _NUMERIC_DISPLAY_ONLY
     )
 
 

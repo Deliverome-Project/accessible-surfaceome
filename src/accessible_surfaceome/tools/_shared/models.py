@@ -1745,7 +1745,36 @@ class Filters(BaseModel):
     llm_family: ProteinFamily = "miscellaneous"
     evidence_grade: EvidenceGrade
     ecd_accessibility_class: ECDAccessibilityClass
+    # Legacy bucketed counter (≥30 → high, ≥10 → moderate, else low) over
+    # evidence ROWS (citation rows the agent pulled). One paper can produce
+    # multiple rows, so this conflates per-claim depth with paper count.
+    # Superseded by the two paper-count fields below for the viewer's
+    # "understudied / well-studied" filter; kept for back-compat.
     evidence_density: EvidenceDensity
+    # Unique papers in the evidence list — `len({source.source_id
+    # for ev in evidence for span in ev.spans})`. The filterable signal
+    # for "how much surface-relevant literature did the agent actually
+    # surface for this gene?". Percentile bands (low ≤p10, moderate
+    # p10–p90, high ≥p90) computed at catalog-build time over the
+    # deep-dive cohort, not pinned on each record.
+    #
+    # ``None`` on records annotated before this field landed (schema
+    # 2.14.0+) — the viewer's filter treats None as "unknown", a
+    # distinct band from "actually-zero", so a legacy record doesn't
+    # erroneously read as "understudied".
+    n_papers_selected: int | None = Field(default=None, ge=0)
+    # Pre-trim discovery corpus size — every pmid the literature
+    # pipeline surfaced from EuropePMC + PubTator NER + gene2pubmed
+    # BEFORE plan_trim_select picked any clips. Distinct from
+    # ``n_papers_selected`` (post-selection) — the right signal for
+    # "is this gene generally understudied, regardless of how
+    # aggressively the agent filtered". On the 100-gene methods
+    # audit: median 234.5, range ~50 (orphan genes) to ~400
+    # (well-studied receptors).
+    #
+    # ``None`` for records annotated before this field landed; honest
+    # backfill requires a discover-only rerun (no LLM, ~30 s/gene).
+    n_papers_found: int | None = Field(default=None, ge=0)
     expression_level: ExpressionLevel
     expression_breadth: ExpressionBreadth
     surface_specificity: SurfaceSpecificity
@@ -3738,8 +3767,8 @@ class SurfaceomeRecord(BaseModel):
     schema_version: Literal[
         "1.0.0", "1.1.0", "2.0.0", "2.1.0", "2.2.0", "2.3.0", "2.4.0", "2.4.1",
         "2.5.0", "2.6.0", "2.7.0", "2.8.0", "2.9.0", "2.10.0", "2.11.0", "2.12.0",
-        "2.13.0",
-    ] = "2.13.0"
+        "2.13.0", "2.14.0", "2.14.1",
+    ] = "2.14.1"
     # The prompt corpus version active when this record was synthesized.
     # Default ``""`` for backward-compat with legacy records loaded from D1
     # / on-disk snapshots that pre-date this field; new annotator runs stamp
@@ -3939,8 +3968,8 @@ class SurfaceomeRecordDraft(BaseModel):
     schema_version: Literal[
         "1.0.0", "1.1.0", "2.0.0", "2.1.0", "2.2.0", "2.3.0", "2.4.0", "2.4.1",
         "2.5.0", "2.6.0", "2.7.0", "2.8.0", "2.9.0", "2.10.0", "2.11.0", "2.12.0",
-        "2.13.0",
-    ] = "2.13.0"
+        "2.13.0", "2.14.0", "2.14.1",
+    ] = "2.14.1"
     # The prompt corpus version active when this record was synthesized.
     # Default ``""`` for backward-compat with legacy records loaded from D1
     # / on-disk snapshots that pre-date this field; new annotator runs stamp

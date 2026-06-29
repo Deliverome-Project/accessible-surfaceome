@@ -78,7 +78,9 @@
     "surface_specificity_rationale": "Dominant steady-state pool is cis-Golgi/ERGIC (~30% of total protein, ~12,500 copies/µm²) (a2_evi_01, a2_evi_02, a2_evi_22); minor PM pool documented only under stress or specific trafficking states (a2_evi_07, a2_evi_18).",
     "has_known_ligand_rationale": "TMED10 ECD directly binds TGF-β receptors ALK5 and TβRII (a1_evi_07, a2_evi_17); also interacts with PD-1 as a chaperone complex (a2_evi_09, a2_evi_12). Multiple independent biochemical characterizations confirm endogenous binding partners.",
     "low_endogenous_expression_rationale": "Ubiquitously expressed across mouse tissues (a2_evi_03); moderate levels in neurons, CD8+ T cells, and cancer lines (a2_evi_04, a2_evi_09, a2_evi_19); high in airway epithelium (a2_evi_06). Broadly present but not uniformly high.",
-    "overexpression_surface_localization_observed_rationale": "No method observation pairs an overexpression/mixed expression system with a direct or supportive surface-accessibility readout."
+    "overexpression_surface_localization_observed_rationale": "No method observation pairs an overexpression/mixed expression system with a direct or supportive surface-accessibility readout.",
+    "n_papers_selected": 19,
+    "n_papers_found": null
   },
   "surface_evidence": {
     "evidence_grade": "supportive_but_indirect",

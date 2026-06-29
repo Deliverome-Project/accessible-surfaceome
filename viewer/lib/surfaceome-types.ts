@@ -254,6 +254,22 @@ export interface Filters {
   evidence_grade: EvidenceGrade;
   ecd_accessibility_class: EcdAccessibilityClass;
   evidence_density: EvidenceDensity;
+  /** Unique-paper count behind the evidence list
+   *  (`len({span.source.source_id for ev in evidence for span in spans})`).
+   *  `null` on records annotated before schema 2.14.0 — the viewer's
+   *  filter treats null as "unknown" (distinct from a real-zero
+   *  measurement). The catalog endpoint surfaces a banded version
+   *  (`n_papers_selected_band ∈ {low, moderate, high}`) computed
+   *  from cohort percentiles. */
+  n_papers_selected: number | null;
+  /** TRUE pre-trim discovery corpus size — the EuropePMC + PubTator
+   *  + gene2pubmed union BEFORE plan_trim_select picks any clips.
+   *  Display-only on the viewer (no filter pill); gives readers
+   *  context for whether a low n_papers_selected reflects an
+   *  understudied gene or aggressive agent filtering. `null` for
+   *  records annotated before this field landed; honest backfill
+   *  needs a discover-only rerun. */
+  n_papers_found: number | null;
   expression_level: ExpressionLevel;
   expression_breadth: ExpressionBreadth;
   surface_specificity: SurfaceSpecificity;

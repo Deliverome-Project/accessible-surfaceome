@@ -79,7 +79,9 @@
     "surface_specificity_rationale": "C3 is a secreted glycoprotein with no TM domain; the dominant pool is freely circulating/secreted or intracellular (complosome), with surface presence only via state-dependent covalent deposition of activated fragments (a1_evi_01, a1_evi_03, a2_evi_28).",
     "has_known_ligand_rationale": "C3b binds complement receptors CR1 (CD35), CR2 (CD21), CR3 (CD11b/CD18), and CR4 (CD11c/CD18) as validated endogenous binding partners mediating opsonisation and immune cell engagement (a2_evi_28).",
     "low_endogenous_expression_rationale": "C3 is the most abundant complement component in circulation, synthesized at high levels by hepatocytes (a2_evi_01); also expressed at moderate levels in immune cells, epithelial cells, and multiple non-hepatic cell types (a2_evi_04, a2_evi_05).",
-    "overexpression_surface_localization_observed_rationale": "No method observation pairs an overexpression/mixed expression system with a direct or supportive surface-accessibility readout."
+    "overexpression_surface_localization_observed_rationale": "No method observation pairs an overexpression/mixed expression system with a direct or supportive surface-accessibility readout.",
+    "n_papers_selected": 31,
+    "n_papers_found": null
   },
   "surface_evidence": {
     "evidence_grade": "direct_single_method",

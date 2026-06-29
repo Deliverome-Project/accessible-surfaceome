@@ -751,7 +751,30 @@ export const tooltips: Record<string, ReactNode> = {
       <em>high</em> ≥ 30 supporting rows, <em>moderate</em> ≥ 10,{" "}
       <em>low</em> &lt; 10. Complements the evidence grade up top
       (which tells you how <em>strong</em> the evidence is, not how
-      much there is).
+      much there is). <em>Note:</em> for the "is this gene
+      understudied?" question, prefer the{" "}
+      <em>Papers selected</em> filter — it counts unique papers
+      rather than citation rows (one paper can produce many rows).
+    </>
+  ),
+
+  catalog_n_papers_selected: (
+    <>
+      Unique-paper count behind the gene's evidence list — the agent's
+      literature pipeline discovered a candidate corpus, then{" "}
+      <em>selected</em> a subset for full-text reading and claim
+      extraction. This count is{" "}
+      <code>len(unique pmids in evidence rows)</code>, banded against
+      the live deep-dive cohort:{" "}
+      <em>low</em> ≤ p10, <em>moderate</em> p10–p90, <em>high</em> ≥
+      p90. Best signal for "is this gene's surface biology
+      well-studied?" — a low value points to an understudied target
+      that may be worth deeper investigation. Cohort cutoffs are
+      recomputed at catalog-build time, so the bands shift as more
+      genes get deep-dived. <em>Note:</em> "low" can also mean the
+      agent's selection step was aggressive — check the{" "}
+      <em>Papers found</em> count alongside it for the pre-selection
+      corpus size.
     </>
   ),
 

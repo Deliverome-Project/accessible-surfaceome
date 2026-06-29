@@ -490,7 +490,18 @@ class PlanTrimSelectResult:
     )
     # Pool stats (final, after all iterations).
     n_drafts_total: int = 0
+    # Post-selection paper count — len(clips_by_source), i.e. papers
+    # that produced at least one clip the agent decided to keep.
     n_papers_total: int = 0
+    # Pre-trim discovery corpus size — len(discovered_papers), i.e. all
+    # unique papers the literature pipeline surfaced from EuropePMC +
+    # PubTator NER + gene2pubmed BEFORE the agent's plan_trim_select
+    # cutoff. This is the canonical "papers found" signal the viewer's
+    # understudied-genes filter keys off (via Filters.n_papers_found).
+    # On the 100-gene methods audit: median 234.5, range ~50 (orphan
+    # genes like REELD1) to ~400 (well-studied receptors like EREG /
+    # TRAF2).
+    n_papers_discovered: int = 0
     n_kept_after_trim: int = 0
     n_iterations_run: int = 0
     # Free-text errors that didn't abort the run.
@@ -1894,6 +1905,13 @@ def run_plan_trim_select(
         result.search_log = cumulative_search_log
         result.n_drafts_total = len(pool)
         result.n_papers_total = len(clips_by_source)
+        # Pre-trim discovery corpus size — every pmid the literature
+        # pipeline surfaced before plan_trim_select picked any clips.
+        # This is the canonical "papers found" signal that powers the
+        # viewer's understudied-genes filter; it's distinct from
+        # n_papers_total (which is post-selection — clips_by_source
+        # only contains papers with at least one kept clip).
+        result.n_papers_discovered = len(cumulative_discovered)
         if result.iteration_log:
             result.n_kept_after_trim = result.iteration_log[-1].n_kept_after_trim
         result.n_iterations_run = len(result.iteration_log)

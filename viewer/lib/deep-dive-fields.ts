@@ -33,6 +33,7 @@ export type DdEnumKey =
   | "surface_bind_main_class"
   | "evidence_grade"
   | "evidence_density"
+  | "n_papers_selected_band"
   | "ecd_accessibility_class"
   | "expression_level"
   | "expression_breadth"
@@ -404,6 +405,27 @@ export const DD_ENUM_FIELDS: readonly DdEnumSpec[] = [
     label: "Evidence density",
     values: ["low", "moderate", "high"],
     tooltipKey: "catalog_evidence_density",
+    provenance: "llm",
+  },
+  {
+    // Cohort-percentile-banded unique-paper count behind the evidence
+    // list (schema 2.14.0+). The viewer's understudied-vs-well-studied
+    // filter — distinct from evidence_density which buckets evidence
+    // ROWS (one paper can produce many rows). Cutoffs come from the
+    // catalog response's `n_papers_selected_cutoffs` (low at-or-below
+    // p10, moderate between p10 and p90, high at-or-above p90); the
+    // catalog handler recomputes them each build from the deep-dive
+    // subset's distribution.
+    //
+    // `llm` provenance per the DdProvenance contract: the underlying
+    // count (n_papers_selected) is derived from the agent's evidence
+    // list, which is an LLM judgement about which papers to select
+    // for full-text reading. Mechanical post-hoc bucketing doesn't
+    // change the provenance bucket — same call as evidence_density.
+    key: "n_papers_selected_band",
+    label: "Papers selected",
+    values: ["low", "moderate", "high"],
+    tooltipKey: "catalog_n_papers_selected",
     provenance: "llm",
   },
   {

@@ -158,6 +158,17 @@ RUNS_DIR = Path(".runs")
 _CHECKPOINT_DIR = RUNS_DIR / "_phase_checkpoint"
 
 
+def _max_or_none(*vals: int | None) -> int | None:
+    """``max`` over ints with explicit None semantics — returns None
+    only when *every* input is None / 0 (treats 0 + None as "missing
+    signal"). Used to reduce the per-side ``n_papers_discovered`` into
+    a single per-record value. Both A1 and A2 see the same upstream
+    discovery so the values agree in practice, but max() defends
+    against a legacy resume where one side's blob lacks the field."""
+    real = [v for v in vals if v is not None and v > 0]
+    return max(real) if real else None
+
+
 def _checkpoint_path(gene: str) -> Path:
     """Per-gene PTS checkpoint file under ``.runs/_phase_checkpoint/``.
 
@@ -421,6 +432,7 @@ def _dual_from_serialized(gene: str, blob: dict[str, Any]) -> DualPlanTrimSelect
             n_claims=len(claims),
             n_anchored=side_blob.get("n_anchored") or len(claims),
             n_papers_total=side_blob.get("n_papers_total") or 0,
+            n_papers_discovered=side_blob.get("n_papers_discovered") or 0,
             n_drafts_total=side_blob.get("n_drafts_total") or 0,
             n_kept_after_trim=side_blob.get("n_kept_after_trim") or 0,
             n_iterations_run=side_blob.get("n_iterations_run") or 0,
@@ -582,6 +594,7 @@ def _serialize_pts(dual: DualPlanTrimSelectResult) -> dict[str, Any]:
             "n_claims": pts.n_claims,
             "n_anchored": pts.n_anchored,
             "n_papers_total": pts.n_papers_total,
+            "n_papers_discovered": pts.n_papers_discovered,
             "n_drafts_total": pts.n_drafts_total,
             "n_kept_after_trim": pts.n_kept_after_trim,
             "n_iterations_run": pts.n_iterations_run,
@@ -2266,6 +2279,21 @@ def _annotate(
                 filters_llm=synth_draft.filters_llm,
                 deterministic_features=det_features,
                 n_evidence=len(evidence),
+                evidence=evidence,
+                # True pre-trim discovery corpus size — the EuropePMC +
+                # PubTator NER + gene2pubmed union, dedup by pmid, BEFORE
+                # plan_trim_select picks any clips. Both PTS sides see the
+                # same discovery (the search executes once per side, but
+                # the resulting paper set is the union both sides observe),
+                # so max() is the right reducer. None when neither side
+                # ran (resume from a pre-field checkpoint OR cached run
+                # from before the field landed); the viewer treats None
+                # as "unknown" — distinct from a real-zero discovery
+                # (which would still produce a 0 here).
+                n_papers_found=_max_or_none(
+                    getattr(dual.a1, "n_papers_discovered", None),
+                    getattr(dual.a2, "n_papers_discovered", None),
+                ),
             )
 
         # ---- step 9: assemble SurfaceomeRecord --------------------------------

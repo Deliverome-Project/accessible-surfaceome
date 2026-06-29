@@ -8,7 +8,7 @@
     "ensembl_gene": "ENSG00000167751"
   },
   "triage_signal": "unlikely",
-  "triage_reasoning": "KLK2 encodes human kallikrein-2 (hK2), a secreted serine protease. It is synthesized as a preproenzyme, signal peptide is cleaved cotranslationally, and the mature/pro form is secreted into extracellular fluid (seminal plasma, blood). There is no transmembrane domain, no GPI anchor signal, and no documented stable association with a surface-anchored complex. Surface biotinylation and flow cytometry studies have not identified a cell-surface pool on intact non-permeabilized cells. Checking all contextual buckets: (1) cell-state-induced surface display \u2014 not documented; (2) tissue-restricted surface \u2014 no evidence of membrane anchoring in any lineage; (3) lysosomal exocytosis \u2014 not reported; (4) dual localization / TM precursor \u2014 no TM isoform exists; (5) stable surface attachment to TM partner \u2014 not documented. Therapeutic programs (e.g., anti-hK2 antibody-drug conjugates such as PSMA/hK2 bispecifics) target the secreted/shed protein or use hK2 as a prodrug activator in the extracellular milieu, not the protein body on the cell surface per se. KLK2 is therefore secreted-only.",
+  "triage_reasoning": "KLK2 encodes human kallikrein-2 (hK2), a secreted serine protease. It is synthesized as a preproenzyme, signal peptide is cleaved cotranslationally, and the mature/pro form is secreted into extracellular fluid (seminal plasma, blood). There is no transmembrane domain, no GPI anchor signal, and no documented stable association with a surface-anchored complex. Surface biotinylation and flow cytometry studies have not identified a cell-surface pool on intact non-permeabilized cells. Checking all contextual buckets: (1) cell-state-induced surface display — not documented; (2) tissue-restricted surface — no evidence of membrane anchoring in any lineage; (3) lysosomal exocytosis — not reported; (4) dual localization / TM precursor — no TM isoform exists; (5) stable surface attachment to TM partner — not documented. Therapeutic programs (e.g., anti-hK2 antibody-drug conjugates such as PSMA/hK2 bispecifics) target the secreted/shed protein or use hK2 as a prodrug activator in the extracellular milieu, not the protein body on the cell surface per se. KLK2 is therefore secreted-only.",
   "executive_summary": {
     "one_paragraph": "KLK2 (human kallikrein-2) is a canonical secreted serine protease with no transmembrane domain, but a 2025 preclinical study (PMC12580770) demonstrates surface accessibility on intact prostate cancer cells by live-cell FACS on VCaP and fresh mCRPC patient tumor cells, confocal IF, and functional engagement via three distinct therapeutic modalities. Surface expression is strictly prostate-lineage- and AR-state-restricted, absent in neuroendocrine/double-negative mCRPC variants. The primary risk is a large competing secreted pool (KLK2 is constitutively secreted into conditioned medium and seminal plasma), and the surface-docking mechanism remains uncharacterized.",
     "surface_accessibility": "moderate",
@@ -77,15 +77,17 @@
     "expression_breadth_rationale": "Essentially prostate-restricted: RNA-seq panel shows little-to-no expression outside prostate/prostate adenocarcinoma (a2_evi_02, a2_evi_03). Among the most prostate-specific antigens surveyed, narrower than PSMA/PSCA/STEAP1.",
     "surface_specificity_rationale": "Live-cell FACS confirms surface pool on VCaP and patient mCRPC cells (a1_evi_02, a2_evi_14), but conditioned-medium WB documents a dominant secreted pool in LNCaP cells (a1_evi_14, a2_evi_11). Both pools coexist; surface fraction fraction unknown.",
     "has_known_ligand_rationale": "KLK2 is a serine protease (trypsin-like) with documented substrates including semenogelins and pro-PSA (KLK3 precursor); substrate/inhibitor interactions are well characterized. Protease inhibitor MDPK67b targets KLK2 active site (a1_evi_17).",
-    "low_endogenous_expression_rationale": "Derived from expression_level='high' (not low/absent \u2192 not flagged). High expression across localized PCa and mHSPC by IHC and RNA-seq; robustly and homogeneously expressed in AR+ prostate cancer (a2_evi_04, a2_evi_02). Expression becomes heterogeneous in visceral mCRPC lesions.",
+    "low_endogenous_expression_rationale": "Derived from expression_level='high' (not low/absent → not flagged). High expression across localized PCa and mHSPC by IHC and RNA-seq; robustly and homogeneously expressed in AR+ prostate cancer (a2_evi_04, a2_evi_02). Expression becomes heterogeneous in visceral mCRPC lesions.",
     "overexpression_surface_localization_observed_rationale": "No method observation pairs an overexpression/mixed expression system with a direct or supportive surface-accessibility readout.",
     "tumor_associated": false,
     "induction_trigger": "none",
-    "has_live_cell_surface_evidence": true
+    "has_live_cell_surface_evidence": true,
+    "n_papers_selected": 10,
+    "n_papers_found": null
   },
   "surface_evidence": {
     "evidence_grade": "direct_multi_method",
-    "grade_rationale": "KLK2 surface accessibility is supported by multiple direct methods from a single primary source (PMC12580770). High-weight support: (1) live/non-permeabilized FACS on VCaP cells AND fresh mCRPC patient tumor cells (a1_evi_02, a1_evi_04); (2) functional surface engagement via three mechanistically distinct therapeutic modalities \u2014 bispecific T-cell redirector, alpha-radioligand, CAR-T cells \u2014 all requiring surface-accessible KLK2 (a1_evi_07). Moderate support: confocal IF surface imaging (a1_evi_03), live-cell antibody kinetics (a1_evi_10), and independent surface proteome MS (a1_evi_12, different source). The canonical secreted-protein topology (a1_evi_15, a1_evi_16) and secretion evidence (a1_evi_13, a1_evi_14) are tangential \u2014 they describe baseline biology and do not mechanistically preclude surface retention in prostate cancer. Two distinct direct method families (flow cytometry + immunofluorescence) are present, qualifying for `direct_multi_method`.",
+    "grade_rationale": "KLK2 surface accessibility is supported by multiple direct methods from a single primary source (PMC12580770). High-weight support: (1) live/non-permeabilized FACS on VCaP cells AND fresh mCRPC patient tumor cells (a1_evi_02, a1_evi_04); (2) functional surface engagement via three mechanistically distinct therapeutic modalities — bispecific T-cell redirector, alpha-radioligand, CAR-T cells — all requiring surface-accessible KLK2 (a1_evi_07). Moderate support: confocal IF surface imaging (a1_evi_03), live-cell antibody kinetics (a1_evi_10), and independent surface proteome MS (a1_evi_12, different source). The canonical secreted-protein topology (a1_evi_15, a1_evi_16) and secretion evidence (a1_evi_13, a1_evi_14) are tangential — they describe baseline biology and do not mechanistically preclude surface retention in prostate cancer. Two distinct direct method families (flow cytometry + immunofluorescence) are present, qualifying for `direct_multi_method`.",
     "claim_stances": [
       {
         "claim_id": "a1_evi_02",
@@ -109,7 +111,7 @@
         "claim_id": "a1_evi_07",
         "stance": "supports_surface",
         "weight": "high",
-        "note": "Functional engagement at cell surface via bispecific T-cell redirector, alpha-radioligand, and CAR-T \u2014 three independent surface-targeting modalities"
+        "note": "Functional engagement at cell surface via bispecific T-cell redirector, alpha-radioligand, and CAR-T — three independent surface-targeting modalities"
       },
       {
         "claim_id": "a1_evi_10",
@@ -139,7 +141,7 @@
         "claim_id": "a1_evi_11",
         "stance": "tangential",
         "weight": "low",
-        "note": "Acknowledges prior 'limited evidence' for surface expression \u2014 contextualizes novelty but does not refute the new data"
+        "note": "Acknowledges prior 'limited evidence' for surface expression — contextualizes novelty but does not refute the new data"
       },
       {
         "claim_id": "a1_evi_13",
@@ -163,7 +165,7 @@
         "claim_id": "a1_evi_16",
         "stance": "tangential",
         "weight": "moderate",
-        "note": "No TM domain, signal peptide only \u2014 explains canonical secretion but not mechanistically incompatible with surface association/retention"
+        "note": "No TM domain, signal peptide only — explains canonical secretion but not mechanistically incompatible with surface association/retention"
       },
       {
         "claim_id": "a1_evi_17",
@@ -353,7 +355,7 @@
         "surface_claim_type": "surface_accessible",
         "expression_observations": [
           {
-            "context": "VCaP and mCRPC tumor cells; bispecific T-cell redirector (KLK2\u00d7CD3), targeted \u03b1-radioligand (225Ac-KLK2), and autologous CAR-T cells all engaging KLK2 at the cell surface; potent in vitro activity and robust in vivo tumor control in xenograft models",
+            "context": "VCaP and mCRPC tumor cells; bispecific T-cell redirector (KLK2×CD3), targeted α-radioligand (225Ac-KLK2), and autologous CAR-T cells all engaging KLK2 at the cell surface; potent in vitro activity and robust in vivo tumor control in xenograft models",
             "sample_type": "established_cell_line",
             "level": "high",
             "species": "human",
@@ -692,7 +694,7 @@
       "ecd_disordered_fraction": 0.03278688524590164,
       "source": "AlphaFold DB (ECD-restricted pLDDT, n=244)",
       "license": "CC BY 4.0",
-      "attribution": "\u00a9 DeepMind / EMBL-EBI",
+      "attribution": "© DeepMind / EMBL-EBI",
       "citations": [
         "10.1038/s41586-021-03819-2",
         "10.1093/nar/gkad1011"
@@ -711,7 +713,7 @@
       "protein_name": null,
       "pdbs": [],
       "source": "SURFACE-Bind v1 (Balbi et al. 2026 PNAS)",
-      "attribution": "\u00a9 Balbi et al., Correia lab \u2014 EPFL / Inria / Novo Nordisk",
+      "attribution": "© Balbi et al., Correia lab — EPFL / Inria / Novo Nordisk",
       "citation": "10.1073/pnas.2506269123"
     }
   },
@@ -762,7 +764,7 @@
     },
     "ecd_size_assessment": {
       "ecd_accessibility_class": "large",
-      "rationale": "KLK2 is a secreted protease of ~237 residues (signal peptide-cleaved mature protein; a1_evi_16). The entire mature protein constitutes the extracellular-facing domain when surface-retained. At \u2265200 aa this qualifies as 'large', accommodating numerous non-overlapping antibody footprints.",
+      "rationale": "KLK2 is a secreted protease of ~237 residues (signal peptide-cleaved mature protein; a1_evi_16). The entire mature protein constitutes the extracellular-facing domain when surface-retained. At ≥200 aa this qualifies as 'large', accommodating numerous non-overlapping antibody footprints.",
       "cited_evidence_ids": [
         "a1_evi_16"
       ]
@@ -1140,7 +1142,7 @@
           },
           "section": "abstract",
           "figure_or_table_id": null,
-          "quote": "Notably, targeting KLK2 with three different MoAs, including bispecific T-cell redirector, targeted \u03b1-radioligand, and autologous chimeric antigen receptor T cells, showed potent in vitro activity and robust in vivo tumor control.<h4>Conclusions</h4>Our study establishes KLK2 as a highly prostate-specific cell surface target.",
+          "quote": "Notably, targeting KLK2 with three different MoAs, including bispecific T-cell redirector, targeted α-radioligand, and autologous chimeric antigen receptor T cells, showed potent in vitro activity and robust in vivo tumor control.<h4>Conclusions</h4>Our study establishes KLK2 as a highly prostate-specific cell surface target.",
           "quote_sha256": "a0e72d2a921cba12931433ac78dc5f1f083529753860bb3241c8fcc6b87ff1cf",
           "char_offset": 1215,
           "normalized_source_sha256": "33be7175ecb18f7d9aabbc9a70df78fa53087db44febeb6e8eecebf2edf78dd9"
@@ -1299,7 +1301,7 @@
           },
           "section": "figure_legend",
           "figure_or_table_id": null,
-          "quote": "Cell surface binding of the anti-KLK2 antibody was detected at 60 minutes with intracellu\u2026",
+          "quote": "Cell surface binding of the anti-KLK2 antibody was detected at 60 minutes with intracellu…",
           "quote_sha256": "f348f32e6a6aa9484978a80351462e9b4f3e75a51e0de83ea47d55d41b5f2183",
           "char_offset": 1580,
           "normalized_source_sha256": "33be7175ecb18f7d9aabbc9a70df78fa53087db44febeb6e8eecebf2edf78dd9"
@@ -1418,7 +1420,7 @@
     },
     {
       "evidence_id": "a1_evi_13",
-      "claim": "KLK2 described as an androgen-driven AR target gene encoding a secreted protein, used as a marker for prostate cancer screening and prognosis. This is a non-surface expression observation (secretion context) \u2014 KLK2 is classified here as a secreted protein, qualifying surface claims as contested. Feeds non_surface_expression bucket.",
+      "claim": "KLK2 described as an androgen-driven AR target gene encoding a secreted protein, used as a marker for prostate cancer screening and prognosis. This is a non-surface expression observation (secretion context) — KLK2 is classified here as a secreted protein, qualifying surface claims as contested. Feeds non_surface_expression bucket.",
       "claim_type": "tissue_expression",
       "direction": "ambiguous",
       "evidence_type": "review_assertion",
@@ -1511,7 +1513,7 @@
           },
           "section": "results",
           "figure_or_table_id": null,
-          "quote": "LNCaP is an androgen-responsive human prostate adenocarcinoma cell line widely used to model key features of clinical disease, including secretion of KLK2 and KLK3 following androgen stimulation. 8 LNCaP CM was treated with different concentrations of 3 for 1 h, and proteins were separated by SDS\u2013PAGE.",
+          "quote": "LNCaP is an androgen-responsive human prostate adenocarcinoma cell line widely used to model key features of clinical disease, including secretion of KLK2 and KLK3 following androgen stimulation. 8 LNCaP CM was treated with different concentrations of 3 for 1 h, and proteins were separated by SDS–PAGE.",
           "quote_sha256": "128324c7c49b2cb82799f405a6b799f432ffbfc7010a80ef9187651442df3ec9",
           "char_offset": 0,
           "normalized_source_sha256": "8cab0761bcde5d0a8bc46907f61c305458f025e4fae9b19c813e24b1886772d6"
@@ -1524,7 +1526,7 @@
     },
     {
       "evidence_id": "a1_evi_15",
-      "claim": "KLK family members described as homologous secreted serine proteases with trypsin- or chymotrypsin-like activities and tissue-specific expression (15 members known). This is a topology/biology statement establishing that KLKs, including KLK2, are canonical secreted proteases without transmembrane domains \u2014 relevant context qualifying surface-expression claims.",
+      "claim": "KLK family members described as homologous secreted serine proteases with trypsin- or chymotrypsin-like activities and tissue-specific expression (15 members known). This is a topology/biology statement establishing that KLKs, including KLK2, are canonical secreted proteases without transmembrane domains — relevant context qualifying surface-expression claims.",
       "claim_type": "topology",
       "direction": "refutes",
       "evidence_type": "review_assertion",
@@ -1564,7 +1566,7 @@
           },
           "section": "introduction",
           "figure_or_table_id": null,
-          "quote": "To date, 15 KLKs that are homologous secreted serine proteases with trypsin\u2010 or chymotrypsin\u2010like activities with tissue\u2010specific expressions have been discovered [ 6 ].",
+          "quote": "To date, 15 KLKs that are homologous secreted serine proteases with trypsin‐ or chymotrypsin‐like activities with tissue‐specific expressions have been discovered [ 6 ].",
           "quote_sha256": "e876bb38d047319c547dd7698f21f1da1b98d8dce81828529f318e1c28d4a454",
           "char_offset": 0,
           "normalized_source_sha256": "5a33b378492c729930ee5b1a6f11d128cadd30fb257a31a4bdd934130644cca7"
@@ -1670,7 +1672,7 @@
           },
           "section": "abstract",
           "figure_or_table_id": null,
-          "quote": "By inhibition with the recombinant protease inhibitor MDPK67b targeting KLK2 and other trypsin-like KLKs including KLK4 and KLK14, we investigated the antitumor response and the influence on AR downstream target genes with MDPK67b in PCa cell lines in vitro.<h4>Methods</h4>Human PCa cells were cultured in a charcoal-stripped media and treated with MDPK67b (0.75\u2009mg/mL).",
+          "quote": "By inhibition with the recombinant protease inhibitor MDPK67b targeting KLK2 and other trypsin-like KLKs including KLK4 and KLK14, we investigated the antitumor response and the influence on AR downstream target genes with MDPK67b in PCa cell lines in vitro.<h4>Methods</h4>Human PCa cells were cultured in a charcoal-stripped media and treated with MDPK67b (0.75 mg/mL).",
           "quote_sha256": "a8eafa1bdc6bc7440f7ffdb545f90af13bf241a20ef7ba98d564911908823063",
           "char_offset": 170,
           "normalized_source_sha256": "5a33b378492c729930ee5b1a6f11d128cadd30fb257a31a4bdd934130644cca7"
@@ -2253,7 +2255,7 @@
           },
           "section": "results",
           "figure_or_table_id": null,
-          "quote": "LNCaP is an androgen-responsive human prostate adenocarcinoma cell line widely used to model key features of clinical disease, including secretion of KLK2 and KLK3 following androgen stimulation. 8 LNCaP CM was treated with different concentrations of 3 for 1 h, and proteins were separated by SDS\u2013PAGE.",
+          "quote": "LNCaP is an androgen-responsive human prostate adenocarcinoma cell line widely used to model key features of clinical disease, including secretion of KLK2 and KLK3 following androgen stimulation. 8 LNCaP CM was treated with different concentrations of 3 for 1 h, and proteins were separated by SDS–PAGE.",
           "quote_sha256": "128324c7c49b2cb82799f405a6b799f432ffbfc7010a80ef9187651442df3ec9",
           "char_offset": 0,
           "normalized_source_sha256": "8cab0761bcde5d0a8bc46907f61c305458f025e4fae9b19c813e24b1886772d6"
@@ -2782,7 +2784,7 @@
       "mode": "fetch_fulltext",
       "query": {
         "agent_focus": "a1",
-        "intent": "Placeholder \u2014 will rely on PDB cross-ref 4NFE abstract instead; structural detail of KLK2 ECD for epitope mapping",
+        "intent": "Placeholder — will rely on PDB cross-ref 4NFE abstract instead; structural detail of KLK2 ECD for epitope mapping",
         "pmcid": "PMC4NFE",
         "error": "ValueError: unrecognized pmcid 'PMC4NFE'; expected 'PMC' + digits"
       },
@@ -2971,7 +2973,7 @@
       "mode": "topic_search",
       "query": {
         "agent_focus": "a2",
-        "intent": "Tissue distribution of KLK2 by IHC across normal organs \u2014 prostate, seminal vesicle, breast, kidney, liver, lung, heart, brain \u2014 to build TissueContext and tox panel.",
+        "intent": "Tissue distribution of KLK2 by IHC across normal organs — prostate, seminal vesicle, breast, kidney, liver, lung, heart, brain — to build TissueContext and tox panel.",
         "anchors": [
           "ihc",
           "surface_expression"
@@ -3003,7 +3005,7 @@
       "mode": "topic_search",
       "query": {
         "agent_focus": "a2",
-        "intent": "Normal tox-panel organ surface expression: liver, lung, kidney, GI tract, heart, brain \u2014 does KLK2 appear on cell surfaces or luminal faces of normal tissues?",
+        "intent": "Normal tox-panel organ surface expression: liver, lung, kidney, GI tract, heart, brain — does KLK2 appear on cell surfaces or luminal faces of normal tissues?",
         "anchors": [
           "surface_expression",
           "ihc"
@@ -3051,7 +3053,7 @@
       "mode": "fetch_abstract",
       "query": {
         "agent_focus": "a2",
-        "intent": "Primary paper on integrative surface antigen profiling of KLK2 and STEAP1 in mCRPC \u2014 load-bearing for tissue/cell-type expression and surface accessibility in prostate cancer",
+        "intent": "Primary paper on integrative surface antigen profiling of KLK2 and STEAP1 in mCRPC — load-bearing for tissue/cell-type expression and surface accessibility in prostate cancer",
         "pmid": 42189191
       },
       "n_results": 1,
@@ -3064,7 +3066,7 @@
       "mode": "fetch_abstract",
       "query": {
         "agent_focus": "a2",
-        "intent": "Prostate cancer surface target paper including KLK2 \u2014 may provide RNA and protein expression data across prostate cancer subtypes",
+        "intent": "Prostate cancer surface target paper including KLK2 — may provide RNA and protein expression data across prostate cancer subtypes",
         "pmid": 42053993
       },
       "n_results": 1,
@@ -3077,7 +3079,7 @@
       "mode": "fetch_fulltext",
       "query": {
         "agent_focus": "a2",
-        "intent": "Full-text of mCRPC KLK2 surface expression paper \u2014 need complete results section for IHC tissue distribution and FACS quantification details",
+        "intent": "Full-text of mCRPC KLK2 surface expression paper — need complete results section for IHC tissue distribution and FACS quantification details",
         "pmcid": "PMC12580770"
       },
       "n_results": 1,
@@ -3090,7 +3092,7 @@
   "primary_evidence_count": 22,
   "secondary_evidence_count": 11,
   "confidence": "moderate",
-  "confidence_reasoning": "Confidence is moderate for two reasons. First, the surface-expression evidence originates predominantly from a single 2025 research publication (PMC12580770); while that study used rigorous live-cell FACS on both VCaP cells and fresh patient mCRPC tumor specimens, and the surface activity is corroborated by three therapeutic modalities, independent replication by a second research group is not yet documented. Second, the molecular mechanism by which a signal-peptide-only secreted protease is retained at the plasma membrane remains uncharacterized \u2014 the docking partner is unknown \u2014 introducing uncertainty about the robustness and prevalence of the surface pool relative to the dominant secreted form. Confidence would increase with an independent group confirming live-cell surface staining in a different prostate cancer model, or with biochemical identification of the surface-retention partner.",
+  "confidence_reasoning": "Confidence is moderate for two reasons. First, the surface-expression evidence originates predominantly from a single 2025 research publication (PMC12580770); while that study used rigorous live-cell FACS on both VCaP cells and fresh patient mCRPC tumor specimens, and the surface activity is corroborated by three therapeutic modalities, independent replication by a second research group is not yet documented. Second, the molecular mechanism by which a signal-peptide-only secreted protease is retained at the plasma membrane remains uncharacterized — the docking partner is unknown — introducing uncertainty about the robustness and prevalence of the surface pool relative to the dominant secreted form. Confidence would increase with an independent group confirming live-cell surface staining in a different prostate cancer model, or with biochemical identification of the surface-retention partner.",
   "model_path": "claude-sonnet-4-6",
   "record_generated_at": "2026-05-31T15:33:42.417728Z"
 }

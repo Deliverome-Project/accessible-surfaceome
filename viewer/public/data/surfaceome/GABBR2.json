@@ -78,7 +78,9 @@
     "surface_specificity_rationale": "Surface biotinylation shows ~50% of GABBR2 at the plasma membrane and ~50% intracellular in neurons (a1_evi_07, a1_evi_09); constitutive internalization cycle and ER/endosomal pools documented (a2_evi_18, a2_evi_19), placing GABBR2 in a mixed surface/intracellular distribution.",
     "has_known_ligand_rationale": "GABA is the validated endogenous agonist for the GABBR1/GABBR2 heterodimer; baclofen (GABA analog) activates the receptor with documented Gi coupling (a2_evi_21, a2_evi_25). GABBR1 carries the orthosteric binding site (a1_evi_03).",
     "low_endogenous_expression_rationale": "High expression across multiple CNS regions (cortex, hippocampus, thalamus, amygdala, cerebellum) by Northern blot and in situ hybridization (a2_evi_01), with surface biotinylation quantifying ~50% of total GABBR2 at the plasma membrane in cortical neurons (a1_evi_07).",
-    "overexpression_surface_localization_observed_rationale": "4 method observation(s) pair an overexpression/mixed expression system with a surface-localization readout (cites a1_evi_10, a1_evi_15, a1_evi_16, a1_evi_20, a1_evi_21)."
+    "overexpression_surface_localization_observed_rationale": "4 method observation(s) pair an overexpression/mixed expression system with a surface-localization readout (cites a1_evi_10, a1_evi_15, a1_evi_16, a1_evi_20, a1_evi_21).",
+    "n_papers_selected": 26,
+    "n_papers_found": null
   },
   "surface_evidence": {
     "evidence_grade": "direct_multi_method",

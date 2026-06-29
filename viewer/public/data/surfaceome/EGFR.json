@@ -8,7 +8,7 @@
     "ensembl_gene": "ENSG00000146648"
   },
   "triage_signal": "likely_accessible",
-  "triage_reasoning": "EGFR (ErbB1/HER1) is a single-pass type I transmembrane glycoprotein with a large extracellular ligand-binding domain (domains I-IV, ~620 aa) facing the extracellular space, a single TM helix, and an intracellular kinase domain. It is constitutively expressed on the plasma membrane of epithelial and many other cell types. The extracellular domain is the target of approved therapeutic antibodies (cetuximab, panitumumab), ADCs (e.g., ABT-414/depatuxizumab mafodotin), and bispecifics \u2014 all engaging the cell-surface ectodomain on intact, non-permeabilized cells. Surface biotinylation and flow cytometry on intact cells unambiguously confirm stable PM residence. Ectodomain shedding by ADAM10/17 does occur, but the transmembrane precursor is the dominant stable form at the cell surface; the shed ectodomain is a secondary product. This is a canonical surface receptor, fully accessible from the extracellular face.",
+  "triage_reasoning": "EGFR (ErbB1/HER1) is a single-pass type I transmembrane glycoprotein with a large extracellular ligand-binding domain (domains I-IV, ~620 aa) facing the extracellular space, a single TM helix, and an intracellular kinase domain. It is constitutively expressed on the plasma membrane of epithelial and many other cell types. The extracellular domain is the target of approved therapeutic antibodies (cetuximab, panitumumab), ADCs (e.g., ABT-414/depatuxizumab mafodotin), and bispecifics — all engaging the cell-surface ectodomain on intact, non-permeabilized cells. Surface biotinylation and flow cytometry on intact cells unambiguously confirm stable PM residence. Ectodomain shedding by ADAM10/17 does occur, but the transmembrane precursor is the dominant stable form at the cell surface; the shed ectodomain is a secondary product. This is a canonical surface receptor, fully accessible from the extracellular face.",
   "executive_summary": {
     "one_paragraph": "EGFR is a canonical single-pass Type I transmembrane receptor with a large (~620 aa) extracellular domain constitutively displayed at the plasma membrane of epithelial and many tumor cell types. Surface accessibility is confirmed by live-cell flow cytometry across glioma, pancreatic, lung, cervical, breast, and epidermoid carcinoma lines; non-permeabilized IF; surface biotinylation MS in keratinocytes, prostate cancer, iPSC neurons, and A549; and membranous IHC in 97% of SIP patient cases. Approved antibody therapeutics (cetuximab, panitumumab) and ADCs clinically validate ECD engagement. Ectodomain shedding by ADAM10/17 yields a soluble sEGFR decoy documented in circulation.",
     "surface_accessibility": "high",
@@ -76,11 +76,13 @@
     "induction_trigger": "other",
     "has_live_cell_surface_evidence": true,
     "expression_level_rationale": "High surface EGFR in glioma (99% GSC83, 98% U373vIII by flow; a1_evi_02), prostate cancer (19 biotinylation sites; a1_evi_28), SIP patient tissue 97% membranous IHC (a2_evi_03), and 84th percentile in normal glandular tissue proteomics (a2_evi_19).",
-    "expression_breadth_rationale": "Surface EGFR documented across epithelial (keratinocytes a1_evi_21, polarized MDCK a1_evi_30), neural (iPSC neurons a1_evi_26), glioma (a1_evi_02), pancreatic cancer (a2_evi_07), prostate cancer (a2_evi_10), lung cancer (a1_evi_51), and squamous carcinoma (a1_evi_45) \u2014 multiple tissue families.",
+    "expression_breadth_rationale": "Surface EGFR documented across epithelial (keratinocytes a1_evi_21, polarized MDCK a1_evi_30), neural (iPSC neurons a1_evi_26), glioma (a1_evi_02), pancreatic cancer (a2_evi_07), prostate cancer (a2_evi_10), lung cancer (a1_evi_51), and squamous carcinoma (a1_evi_45) — multiple tissue families.",
     "surface_specificity_rationale": "Non-permeabilized IF paired with permeabilized controls in GSC83 shows dominant surface signal with a visible intracellular pool (a1_evi_06); EGF-driven endocytosis to endosomal/lysosomal compartments further demonstrates a constitutive intracellular fraction (a2_evi_15, a2_evi_16). Surface-dominant in resting cells but notable intracellular recycling pool.",
-    "has_known_ligand_rationale": "Multiple validated endogenous ligands: EGF (canonical agonist), TGF-\u03b1, amphiregulin, epiregulin, betacellulin, and HB-EGF. Ligand binding drives receptor-mediated internalization (a2_evi_15, a2_evi_16). Panitumumab and cetuximab block EGF binding site (a1_evi_44).",
-    "low_endogenous_expression_rationale": "Derived from expression_level='high' (not low/absent \u2192 not flagged). High surface EGFR in glioma (99% GSC83, 98% U373vIII by flow; a1_evi_02), prostate cancer (19 biotinylation sites; a1_evi_28), SIP patient tissue 97% membranous IHC (a2_evi_03), and 84th percentile in normal glandular tissue proteomics (a2_evi_19).",
-    "overexpression_surface_localization_observed_rationale": "3 method observation(s) pair an overexpression/mixed expression system with a surface-localization readout (cites a1_evi_01, a1_evi_12, a1_evi_21, a1_evi_22)."
+    "has_known_ligand_rationale": "Multiple validated endogenous ligands: EGF (canonical agonist), TGF-α, amphiregulin, epiregulin, betacellulin, and HB-EGF. Ligand binding drives receptor-mediated internalization (a2_evi_15, a2_evi_16). Panitumumab and cetuximab block EGF binding site (a1_evi_44).",
+    "low_endogenous_expression_rationale": "Derived from expression_level='high' (not low/absent → not flagged). High surface EGFR in glioma (99% GSC83, 98% U373vIII by flow; a1_evi_02), prostate cancer (19 biotinylation sites; a1_evi_28), SIP patient tissue 97% membranous IHC (a2_evi_03), and 84th percentile in normal glandular tissue proteomics (a2_evi_19).",
+    "overexpression_surface_localization_observed_rationale": "3 method observation(s) pair an overexpression/mixed expression system with a surface-localization readout (cites a1_evi_01, a1_evi_12, a1_evi_21, a1_evi_22).",
+    "n_papers_selected": 29,
+    "n_papers_found": null
   },
   "surface_evidence": {
     "evidence_grade": "direct_multi_method",
@@ -260,14 +262,14 @@
             "antibody_epitope_region": "extracellular",
             "validation_strategy": "overexpression_reference",
             "validation_strength": "moderate",
-            "cross_reactivity_notes": "Mouse IgG1\u03ba clone AY13 targets human EGFR ECD; applied on live non-permeabilized cells confirming surface access."
+            "cross_reactivity_notes": "Mouse IgG1κ clone AY13 targets human EGFR ECD; applied on live non-permeabilized cells confirming surface access."
           }
         ],
         "accessibility_relevance": "direct_surface_accessibility",
         "surface_claim_type": "surface_accessible",
         "expression_observations": [
           {
-            "context": "U373 glioma cells (low endogenous WT EGFR) \u2014 12% surface-positive",
+            "context": "U373 glioma cells (low endogenous WT EGFR) — 12% surface-positive",
             "sample_type": "established_cell_line",
             "level": "low",
             "species": "human",
@@ -277,7 +279,7 @@
             ]
           },
           {
-            "context": "U373vIII glioma cells (engineered EGFRvIII overexpression) \u2014 98% surface-positive",
+            "context": "U373vIII glioma cells (engineered EGFRvIII overexpression) — 98% surface-positive",
             "sample_type": "established_cell_line",
             "level": "high",
             "species": "human",
@@ -287,7 +289,7 @@
             ]
           },
           {
-            "context": "GSC83 glioma cells (endogenous EGFR/EGFRvIII) \u2014 99% uniformly surface-positive",
+            "context": "GSC83 glioma cells (endogenous EGFR/EGFRvIII) — 99% uniformly surface-positive",
             "sample_type": "established_cell_line",
             "level": "high",
             "species": "human",
@@ -330,7 +332,7 @@
             "antibody_epitope_region": "extracellular",
             "validation_strategy": "overexpression_reference",
             "validation_strength": "moderate",
-            "cross_reactivity_notes": "Mouse IgG1\u03ba clone AY13; applied to fixed non-permeabilized cells for surface topology validation."
+            "cross_reactivity_notes": "Mouse IgG1κ clone AY13; applied to fixed non-permeabilized cells for surface topology validation."
           },
           {
             "name": "anti-CD9-FITC",
@@ -349,7 +351,7 @@
         "surface_claim_type": "plasma_membrane_localized",
         "expression_observations": [
           {
-            "context": "GSC83 glioma cells \u2014 intact (non-permeabilized) confocal IF shows EGFR at cell surface, evenly decorating plasma membrane; CD9 used as co-marker",
+            "context": "GSC83 glioma cells — intact (non-permeabilized) confocal IF shows EGFR at cell surface, evenly decorating plasma membrane; CD9 used as co-marker",
             "sample_type": "established_cell_line",
             "level": "high",
             "species": "human",
@@ -402,7 +404,7 @@
         "surface_claim_type": "intracellular_pool",
         "expression_observations": [
           {
-            "context": "GSC83 glioma cells \u2014 permeabilized (0.1% Triton X-100) confocal IF reveals intracellular EGFR distribution in paired comparison to surface staining",
+            "context": "GSC83 glioma cells — permeabilized (0.1% Triton X-100) confocal IF reveals intracellular EGFR distribution in paired comparison to surface staining",
             "sample_type": "established_cell_line",
             "level": "moderate",
             "species": "human",
@@ -429,7 +431,7 @@
         "surface_claim_type": "plasma_membrane_localized",
         "expression_observations": [
           {
-            "context": "Non-permeabilized cells (cell type not specified in ledger) \u2014 immunofluorescence shows cell surface EGFR; n=2 independent experiments, p<0.01 vs. permeabilized",
+            "context": "Non-permeabilized cells (cell type not specified in ledger) — immunofluorescence shows cell surface EGFR; n=2 independent experiments, p<0.01 vs. permeabilized",
             "sample_type": "unknown",
             "level": "moderate",
             "species": "human",
@@ -454,7 +456,7 @@
         "surface_claim_type": "intracellular_pool",
         "expression_observations": [
           {
-            "context": "Permeabilized cells \u2014 immunofluorescence shows intracellular EGFR; paired comparison to non-permeabilized surface signal; n=2 independent experiments",
+            "context": "Permeabilized cells — immunofluorescence shows intracellular EGFR; paired comparison to non-permeabilized surface signal; n=2 independent experiments",
             "sample_type": "unknown",
             "level": "moderate",
             "species": "human",
@@ -492,7 +494,7 @@
         "surface_claim_type": "surface_accessible",
         "expression_observations": [
           {
-            "context": "Pancreatic cancer cell lines (including BxPC-3) \u2014 surface EGFR detected by flow cytometry histograms",
+            "context": "Pancreatic cancer cell lines (including BxPC-3) — surface EGFR detected by flow cytometry histograms",
             "sample_type": "established_cell_line",
             "level": "high",
             "species": "human",
@@ -502,7 +504,7 @@
             ]
           },
           {
-            "context": "BxPC-3 pancreatic cancer cells \u2014 cell-surface EGFR binding confirmed by flow cytometry using panitumumab-derived bispecific antibody",
+            "context": "BxPC-3 pancreatic cancer cells — cell-surface EGFR binding confirmed by flow cytometry using panitumumab-derived bispecific antibody",
             "sample_type": "established_cell_line",
             "level": "high",
             "species": "human",
@@ -535,7 +537,7 @@
             "antibody_epitope_region": "extracellular",
             "validation_strategy": "overexpression_reference",
             "validation_strength": "moderate",
-            "cross_reactivity_notes": "Humanized IgG1 anti-EGFR (h-R3/nimotuzumab); CDR-grafted from murine mAb; binds EGFR ECD on cell surface at 3-5 \u00b5g/mL saturation."
+            "cross_reactivity_notes": "Humanized IgG1 anti-EGFR (h-R3/nimotuzumab); CDR-grafted from murine mAb; binds EGFR ECD on cell surface at 3-5 µg/mL saturation."
           },
           {
             "name": "FITC-conjugated rabbit anti-human IgG (secondary)",
@@ -554,7 +556,7 @@
         "surface_claim_type": "surface_accessible",
         "expression_observations": [
           {
-            "context": "EGFR-overexpressing epithelial cell lines \u2014 nimotuzumab binding reaches saturation at 3\u20135 \u00b5g/mL by flow cytometry; confirms surface EGFR ECD accessibility",
+            "context": "EGFR-overexpressing epithelial cell lines — nimotuzumab binding reaches saturation at 3–5 µg/mL by flow cytometry; confirms surface EGFR ECD accessibility",
             "sample_type": "established_cell_line",
             "level": "high",
             "species": "human",
@@ -592,7 +594,7 @@
         "surface_claim_type": "plasma_membrane_localized",
         "expression_observations": [
           {
-            "context": "Sinonasal inverted papilloma (SIP) primary patient tissue \u2014 EGFR plasma membrane staining positive in 31/32 cases (97%); moderate-to-strong membranous staining in >10% tumor cells",
+            "context": "Sinonasal inverted papilloma (SIP) primary patient tissue — EGFR plasma membrane staining positive in 31/32 cases (97%); moderate-to-strong membranous staining in >10% tumor cells",
             "sample_type": "patient_sample",
             "level": "high",
             "species": "human",
@@ -624,14 +626,14 @@
             "antibody_epitope_region": "unknown",
             "validation_strategy": "none",
             "validation_strength": "none",
-            "cross_reactivity_notes": "Mouse IgG2b\u03ba anti-phosphotyrosine; detects all pTyr proteins \u2014 not EGFR-specific; used to probe phosphorylated ErbB surface fraction after biotinylation capture."
+            "cross_reactivity_notes": "Mouse IgG2bκ anti-phosphotyrosine; detects all pTyr proteins — not EGFR-specific; used to probe phosphorylated ErbB surface fraction after biotinylation capture."
           }
         ],
         "accessibility_relevance": "direct_surface_accessibility",
         "surface_claim_type": "surface_accessible",
         "expression_observations": [
           {
-            "context": "DCDMLs (cancer cell line derivative expressing ErbB kinases including EGFR) \u2014 plasma membrane proteins biotinylated, captured by streptavidin, probed with anti-pTyr 4G10; phosphorylated EGFR/ErbB detected at cell surface",
+            "context": "DCDMLs (cancer cell line derivative expressing ErbB kinases including EGFR) — plasma membrane proteins biotinylated, captured by streptavidin, probed with anti-pTyr 4G10; phosphorylated EGFR/ErbB detected at cell surface",
             "sample_type": "established_cell_line",
             "level": "moderate",
             "species": "human",
@@ -656,7 +658,7 @@
         "surface_claim_type": "surface_accessible",
         "expression_observations": [
           {
-            "context": "NIKS keratinocytes (control) \u2014 surface EGFR detected by biotinylation + streptavidin bead + WB",
+            "context": "NIKS keratinocytes (control) — surface EGFR detected by biotinylation + streptavidin bead + WB",
             "sample_type": "established_cell_line",
             "level": "moderate",
             "species": "human",
@@ -666,7 +668,7 @@
             ]
           },
           {
-            "context": "HPV16 E7-expressing NIKS keratinocytes \u2014 modest upregulation of surface EGFR vs. control by biotinylation assay",
+            "context": "HPV16 E7-expressing NIKS keratinocytes — modest upregulation of surface EGFR vs. control by biotinylation assay",
             "sample_type": "established_cell_line",
             "level": "moderate",
             "species": "human",
@@ -676,7 +678,7 @@
             ]
           },
           {
-            "context": "SiHa (HPV-16+) cervical cancer cells \u2014 surface EGFR after E6/E7 knockdown assessed by biotinylation + WB",
+            "context": "SiHa (HPV-16+) cervical cancer cells — surface EGFR after E6/E7 knockdown assessed by biotinylation + WB",
             "sample_type": "established_cell_line",
             "level": "moderate",
             "species": "human",
@@ -687,7 +689,7 @@
             ]
           },
           {
-            "context": "HeLa (HPV-18+) cervical cancer cells \u2014 surface EGFR after E6/E7 knockdown assessed by biotinylation + WB",
+            "context": "HeLa (HPV-18+) cervical cancer cells — surface EGFR after E6/E7 knockdown assessed by biotinylation + WB",
             "sample_type": "established_cell_line",
             "level": "moderate",
             "species": "human",
@@ -725,7 +727,7 @@
         "surface_claim_type": "surface_accessible",
         "expression_observations": [
           {
-            "context": "iPSC-derived sensory-like neurons (FD patients and controls) \u2014 sulfo-NHS-SS-biotin surface labeling followed by mass spectrometry identified 1,508 surface proteins consistently across 3 independent experiments; EGFR among identified hits",
+            "context": "iPSC-derived sensory-like neurons (FD patients and controls) — sulfo-NHS-SS-biotin surface labeling followed by mass spectrometry identified 1,508 surface proteins consistently across 3 independent experiments; EGFR among identified hits",
             "sample_type": "iPSC_derived",
             "level": "moderate",
             "species": "human",
@@ -751,7 +753,7 @@
         "surface_claim_type": "surface_accessible",
         "expression_observations": [
           {
-            "context": "Prostate cancer cells \u2014 sBioSITe surface biotinylation detected EGFR with 19 biotinylation sites mapped; EGFR noted as marker of prostate cancer bone dissemination",
+            "context": "Prostate cancer cells — sBioSITe surface biotinylation detected EGFR with 19 biotinylation sites mapped; EGFR noted as marker of prostate cancer bone dissemination",
             "sample_type": "established_cell_line",
             "level": "high",
             "species": "human",
@@ -777,7 +779,7 @@
         "surface_claim_type": "plasma_membrane_localized",
         "expression_observations": [
           {
-            "context": "MDCK polarized epithelial cells (filter-grown) \u2014 SILAC chemoproteomics surfaceome mapping; EGFR apicobasal ratio ~40% apical / 60% basolateral; relatively even distribution across polarized membrane",
+            "context": "MDCK polarized epithelial cells (filter-grown) — SILAC chemoproteomics surfaceome mapping; EGFR apicobasal ratio ~40% apical / 60% basolateral; relatively even distribution across polarized membrane",
             "sample_type": "established_cell_line",
             "level": "moderate",
             "species": "dog",
@@ -857,7 +859,7 @@
         "surface_claim_type": "plasma_membrane_localized",
         "expression_observations": [
           {
-            "context": "MCF-7 breast cancer cells (live) \u2014 DNA-antibody conjugates bound to EGFR at the plasma membrane via streptavidin-decorated DNA origami nanoframes; demonstrates ECD surface accessibility",
+            "context": "MCF-7 breast cancer cells (live) — DNA-antibody conjugates bound to EGFR at the plasma membrane via streptavidin-decorated DNA origami nanoframes; demonstrates ECD surface accessibility",
             "sample_type": "established_cell_line",
             "level": "moderate",
             "species": "human",
@@ -883,7 +885,7 @@
         "surface_claim_type": "surface_accessible",
         "expression_observations": [
           {
-            "context": "A431 epidermoid carcinoma cells (live) \u2014 flow cytometry used to assess binding of MNT1 nanoparticles to EGFR receptors at cell surface",
+            "context": "A431 epidermoid carcinoma cells (live) — flow cytometry used to assess binding of MNT1 nanoparticles to EGFR receptors at cell surface",
             "sample_type": "established_cell_line",
             "level": "high",
             "species": "human",
@@ -908,7 +910,7 @@
         "surface_claim_type": "surface_accessible",
         "expression_observations": [
           {
-            "context": "A549 lung adenocarcinoma cells \u2014 surface biotinylation + streptavidin bead enrichment; eluants analyzed by Western blot and mass spectrometry to characterize EGFR surface interactome",
+            "context": "A549 lung adenocarcinoma cells — surface biotinylation + streptavidin bead enrichment; eluants analyzed by Western blot and mass spectrometry to characterize EGFR surface interactome",
             "sample_type": "established_cell_line",
             "level": "moderate",
             "species": "human",
@@ -935,7 +937,7 @@
         "surface_claim_type": "unclear",
         "expression_observations": [
           {
-            "context": "LUAD (lung adenocarcinoma) cell lines \u2014 surfaceome profiling by mass spectrometry comparing vehicle control vs. gefitinib (EGFR TKI) treatment; schematic presented but no explicit EGFR hit readout stated in ledger",
+            "context": "LUAD (lung adenocarcinoma) cell lines — surfaceome profiling by mass spectrometry comparing vehicle control vs. gefitinib (EGFR TKI) treatment; schematic presented but no explicit EGFR hit readout stated in ledger",
             "sample_type": "established_cell_line",
             "level": "moderate",
             "species": "human",
@@ -985,7 +987,7 @@
         "surface_claim_type": "plasma_membrane_localized",
         "expression_observations": [
           {
-            "context": "EGFR.Fc fusion protein exposed to Affibody.BirA* constructs \u2014 biotinylated proteins pulled down on protein G beads and confirmed by WB with anti-EGFR-HRP; demonstrates ECD proximal biotinylation",
+            "context": "EGFR.Fc fusion protein exposed to Affibody.BirA* constructs — biotinylated proteins pulled down on protein G beads and confirmed by WB with anti-EGFR-HRP; demonstrates ECD proximal biotinylation",
             "sample_type": "unknown",
             "level": "moderate",
             "species": "human",
@@ -1025,7 +1027,7 @@
         "surface_claim_type": "unclear",
         "expression_observations": [
           {
-            "context": "NIH-3T3 stable transfectants expressing human WT EGFR (retroviral pMXs-neo vector) \u2014 Western blot confirms EGFR protein expression; no surface fractionation performed",
+            "context": "NIH-3T3 stable transfectants expressing human WT EGFR (retroviral pMXs-neo vector) — Western blot confirms EGFR protein expression; no surface fractionation performed",
             "sample_type": "established_cell_line",
             "level": "high",
             "species": "mouse",
@@ -1060,7 +1062,7 @@
         "surface_claim_type": "surface_accessible",
         "expression_observations": [
           {
-            "context": "NCI-H1930 lung cancer cells \u2014 live-cell flow cytometry demonstrates cell surface EGFR expression despite granular/diffuse IHC pattern in clinical specimens",
+            "context": "NCI-H1930 lung cancer cells — live-cell flow cytometry demonstrates cell surface EGFR expression despite granular/diffuse IHC pattern in clinical specimens",
             "sample_type": "established_cell_line",
             "level": "moderate",
             "species": "human",
@@ -2253,7 +2255,7 @@
       "ecd_disordered_fraction": 0.0322061191626409,
       "source": "AlphaFold DB (ECD-restricted pLDDT, n=621)",
       "license": "CC BY 4.0",
-      "attribution": "\u00a9 DeepMind / EMBL-EBI",
+      "attribution": "© DeepMind / EMBL-EBI",
       "citations": [
         "10.1038/s41586-021-03819-2",
         "10.1093/nar/gkad1011"
@@ -2618,7 +2620,7 @@
         "8HGS"
       ],
       "source": "SURFACE-Bind v1 (Balbi et al. 2026 PNAS)",
-      "attribution": "\u00a9 Balbi et al., Correia lab \u2014 EPFL / Inria / Novo Nordisk",
+      "attribution": "© Balbi et al., Correia lab — EPFL / Inria / Novo Nordisk",
       "citation": "10.1073/pnas.2506269123"
     }
   },
@@ -2665,7 +2667,7 @@
     },
     "ecd_size_assessment": {
       "ecd_accessibility_class": "large",
-      "rationale": "EGFR ECD spans residues 25\u2013645 (~620 aa), well above the 200 aa threshold for 'large'. Cryo-EM and crystal structures (PDB: 7OM4, 1YY9, 3C09, 7SYD) confirm the four-domain extracellular architecture. Multiple approved antibodies (cetuximab domain III, matuzumab, panitumumab) and nanobodies engage non-overlapping epitopes, demonstrating ample surface for multi-epitope targeting.",
+      "rationale": "EGFR ECD spans residues 25–645 (~620 aa), well above the 200 aa threshold for 'large'. Cryo-EM and crystal structures (PDB: 7OM4, 1YY9, 3C09, 7SYD) confirm the four-domain extracellular architecture. Multiple approved antibodies (cetuximab domain III, matuzumab, panitumumab) and nanobodies engage non-overlapping epitopes, demonstrating ample surface for multi-epitope targeting.",
       "cited_evidence_ids": [
         "a1_evi_33",
         "a1_evi_34",
@@ -2786,7 +2788,7 @@
           },
           "section": "results",
           "figure_or_table_id": null,
-          "quote": "The representative dot plots and histograms depicted in Figure 1A illustrate the expected (Spinelli et al. 2024 ; Magnus et al. 2014 ; Al\u2010Nedawi et al. 2010 ) levels of EGFR/EGFRvIII expression by these respective cell lines and suggest that while few (12%) U373 cells harbour low levels of this receptor on their surfaces, both U373vIII and GSC83 cells are highly and uniformly positive for EGFR/EGFRvIII (98% and 99%, respectively).",
+          "quote": "The representative dot plots and histograms depicted in Figure 1A illustrate the expected (Spinelli et al. 2024 ; Magnus et al. 2014 ; Al‐Nedawi et al. 2010 ) levels of EGFR/EGFRvIII expression by these respective cell lines and suggest that while few (12%) U373 cells harbour low levels of this receptor on their surfaces, both U373vIII and GSC83 cells are highly and uniformly positive for EGFR/EGFRvIII (98% and 99%, respectively).",
           "quote_sha256": "faf53cdbaa48142d951a7f3adc3c38ae0f843051bbc75707d34fa2d41fd3b002",
           "char_offset": 305,
           "normalized_source_sha256": "9ef0701e0b75edb4abd189e6e06438cfb4a8456aa36d28c484f0a499638d3877"
@@ -2839,7 +2841,7 @@
           },
           "section": "methods",
           "figure_or_table_id": null,
-          "quote": "Indicated cells were seeded in 12\u2010well plates for 24 h, then trypsinized and stained with anti\u2010EGFR\u2010Alexa Fluor647\u2010conjugated antibodies (Biolegend, 352918) and analysed using a BD FACS Canto with FlowJo software version 10.7.1.",
+          "quote": "Indicated cells were seeded in 12‐well plates for 24 h, then trypsinized and stained with anti‐EGFR‐Alexa Fluor647‐conjugated antibodies (Biolegend, 352918) and analysed using a BD FACS Canto with FlowJo software version 10.7.1.",
           "quote_sha256": "1abea54e922368bfa8c331070e01930204da0ead3f83836aaf4e7008a92ba491",
           "char_offset": 740,
           "normalized_source_sha256": "9ef0701e0b75edb4abd189e6e06438cfb4a8456aa36d28c484f0a499638d3877"
@@ -2892,7 +2894,7 @@
           },
           "section": "methods",
           "figure_or_table_id": null,
-          "quote": "Both permeabilized and non\u2010permeabilized cells were then incubated with primary antibodies: anti\u2010EGFR\u2010Alexa Fluor647 (Biolegend 352918) and anti\u2010CD9\u2010FITC (Biolegend 312104).",
+          "quote": "Both permeabilized and non‐permeabilized cells were then incubated with primary antibodies: anti‐EGFR‐Alexa Fluor647 (Biolegend 352918) and anti‐CD9‐FITC (Biolegend 312104).",
           "quote_sha256": "996f892be819c96a686a988b381a7e29f85e2f494abcb5a1bad561aff9272f15",
           "char_offset": 969,
           "normalized_source_sha256": "9ef0701e0b75edb4abd189e6e06438cfb4a8456aa36d28c484f0a499638d3877"
@@ -2945,7 +2947,7 @@
           },
           "section": "methods",
           "figure_or_table_id": null,
-          "quote": "For confocal microscopy, the adherent cells were fixed with 4% paraformaldehyde in phosphate buffered saline (PBS) for 10 min and, when indicated, permeabilized with 0.1% Triton X\u2010100 in PBS for 5 min.",
+          "quote": "For confocal microscopy, the adherent cells were fixed with 4% paraformaldehyde in phosphate buffered saline (PBS) for 10 min and, when indicated, permeabilized with 0.1% Triton X‐100 in PBS for 5 min.",
           "quote_sha256": "650bd1a398f1374c99b08fb17d2fd306327bd9ef6ef29373271aa08417e54dcd",
           "char_offset": 1143,
           "normalized_source_sha256": "9ef0701e0b75edb4abd189e6e06438cfb4a8456aa36d28c484f0a499638d3877"
@@ -2998,7 +3000,7 @@
           },
           "section": "figure_legend",
           "figure_or_table_id": null,
-          "quote": "(A) Flow cytometry analysis illustrating the uniform presence of EGFR antigen on the surface of glioma cells with high (GSC83 and U373VIII) and low (U373) levels of EGFR/EGFRvIII expression (right panel\u2014dot plot; left panel\u2014histogram); (B) Confocal imaging of immunofluorescent staining for EGFR antigen (red) and CD9 (green) in adherent GSC83 cells either intact or permeabilized before antibody exposure.",
+          "quote": "(A) Flow cytometry analysis illustrating the uniform presence of EGFR antigen on the surface of glioma cells with high (GSC83 and U373VIII) and low (U373) levels of EGFR/EGFRvIII expression (right panel—dot plot; left panel—histogram); (B) Confocal imaging of immunofluorescent staining for EGFR antigen (red) and CD9 (green) in adherent GSC83 cells either intact or permeabilized before antibody exposure.",
           "quote_sha256": "52c508d14da2711dd85a0a7e89a8d2d263d44f4b7f35ac844f7a6245aea3af19",
           "char_offset": 1345,
           "normalized_source_sha256": "9ef0701e0b75edb4abd189e6e06438cfb4a8456aa36d28c484f0a499638d3877"
@@ -3104,7 +3106,7 @@
           },
           "section": "figure_legend",
           "figure_or_table_id": null,
-          "quote": "Representative immunofluorescence micrographs (A) show either cell surface EGFR in nonpermeabilized cells or intracellular EGFR in permeabilized cells as indicated and (B) quantified data from n = 2 independent experiments (mean \u00b1 SD; \u2217\u2217, p < 0.01 using multiple t tests; Prism).",
+          "quote": "Representative immunofluorescence micrographs (A) show either cell surface EGFR in nonpermeabilized cells or intracellular EGFR in permeabilized cells as indicated and (B) quantified data from n = 2 independent experiments (mean ± SD; ∗∗, p < 0.01 using multiple t tests; Prism).",
           "quote_sha256": "235e444a8f8927756d9a6a11da83a37a7228b076a6c809dfbdfbf7635dd506ee",
           "char_offset": 0,
           "normalized_source_sha256": "d5f8a34ccf599d3727b50e410ade97f4c4b872b11c7529cd1ceb43bfc88d2284"
@@ -3320,7 +3322,7 @@
     },
     {
       "evidence_id": "a1_evi_13",
-      "claim": "Nimotuzumab binding to EGFR-overexpressing cell lines reached saturation at 3\u20135 \u00b5g/mL (% binding metric) by flow cytometry; saturation binding confirms specific and quantifiable EGFR surface accessibility in intact overexpression cells.",
+      "claim": "Nimotuzumab binding to EGFR-overexpressing cell lines reached saturation at 3–5 µg/mL (% binding metric) by flow cytometry; saturation binding confirms specific and quantifiable EGFR surface accessibility in intact overexpression cells.",
       "claim_type": "surface_expression",
       "direction": "supports",
       "evidence_type": "flow_cytometry",
@@ -3360,7 +3362,7 @@
           },
           "section": "results",
           "figure_or_table_id": null,
-          "quote": "For the data shown in figure 1a , saturation of binding was achieved at a concentration of 3\u20135 \u03bcg/mL of nimotuzumab when % of binding was reported.",
+          "quote": "For the data shown in figure 1a , saturation of binding was achieved at a concentration of 3–5 μg/mL of nimotuzumab when % of binding was reported.",
           "quote_sha256": "b3c518e2599e380c8839d46c7a29f26d1421f7187de26bbcad40b8860e84eeb7",
           "char_offset": 158,
           "normalized_source_sha256": "c30dcab6212d04c1b9018ba9aff18795dc708a254035954d7b0b33de8356add5"
@@ -3373,7 +3375,7 @@
     },
     {
       "evidence_id": "a1_evi_14",
-      "claim": "Flow cytometry staining protocol for nimotuzumab surface-binding assay: mAb incubated with cells for 30 min at 2\u20138\u00b0C (cold, non-activating, non-permeabilizing conditions), ensuring surface-only detection of EGFR.",
+      "claim": "Flow cytometry staining protocol for nimotuzumab surface-binding assay: mAb incubated with cells for 30 min at 2–8°C (cold, non-activating, non-permeabilizing conditions), ensuring surface-only detection of EGFR.",
       "claim_type": "methodological",
       "direction": "supports",
       "evidence_type": "flow_cytometry",
@@ -3413,7 +3415,7 @@
           },
           "section": "methods",
           "figure_or_table_id": null,
-          "quote": "The mAbs were added according to the experimental plan, and cells were stained for 30 min at 2\u20138\u00b0C.",
+          "quote": "The mAbs were added according to the experimental plan, and cells were stained for 30 min at 2–8°C.",
           "quote_sha256": "d48e875a0a67bb630ff72e505aae3c3b6d7c53acaf28c5a64a0e1e147a1bc8c7",
           "char_offset": 307,
           "normalized_source_sha256": "c30dcab6212d04c1b9018ba9aff18795dc708a254035954d7b0b33de8356add5"
@@ -3466,7 +3468,7 @@
           },
           "section": "methods",
           "figure_or_table_id": null,
-          "quote": "FITC-conjugated rabbit anti human IgG (Dako F0056, Denmark, 1:60) was added and cells were stained for 30 min at 2\u20138\u00b0C.",
+          "quote": "FITC-conjugated rabbit anti human IgG (Dako F0056, Denmark, 1:60) was added and cells were stained for 30 min at 2–8°C.",
           "quote_sha256": "f2d914f562d920d71315eb0be9365233b487162573906b61c67f12536e78922c",
           "char_offset": 407,
           "normalized_source_sha256": "c30dcab6212d04c1b9018ba9aff18795dc708a254035954d7b0b33de8356add5"
@@ -3510,7 +3512,7 @@
           },
           "section": "introduction",
           "figure_or_table_id": null,
-          "quote": "Nimotuzumab (also known as h-R3) is an IgG1 humanized anti\u2013epidermal growth factor receptor (EGFR) mAb that was obtained by complementarity determining regions grafting of a murine mAb to a human framework [ 5 ].",
+          "quote": "Nimotuzumab (also known as h-R3) is an IgG1 humanized anti–epidermal growth factor receptor (EGFR) mAb that was obtained by complementarity determining regions grafting of a murine mAb to a human framework [ 5 ].",
           "quote_sha256": "0999fe2ebb3fbb37ae68b2d97eeca1751c25e44a31d82239835dc1a628da24d8",
           "char_offset": 527,
           "normalized_source_sha256": "c30dcab6212d04c1b9018ba9aff18795dc708a254035954d7b0b33de8356add5"
@@ -4296,7 +4298,7 @@
           },
           "section": "results",
           "figure_or_table_id": null,
-          "quote": "In order to map the apicobasal surfaceome quantitatively, we used filter-grown Madin\u2013Darby canine kidney (MDCK) cells as the best-established in vitro system for epithelial polarity [ 16 ] in combination with chemoproteomics and stable isotope labeling of amino acids in cell culture (SILAC) ( Figure 1 A) [ 17 , 18 ].",
+          "quote": "In order to map the apicobasal surfaceome quantitatively, we used filter-grown Madin–Darby canine kidney (MDCK) cells as the best-established in vitro system for epithelial polarity [ 16 ] in combination with chemoproteomics and stable isotope labeling of amino acids in cell culture (SILAC) ( Figure 1 A) [ 17 , 18 ].",
           "quote_sha256": "aa5fbf10d82a57c370eefe1b3f90e65953d3b66271540fa60ada86dfe0ceaf7a",
           "char_offset": 197,
           "normalized_source_sha256": "58033bcb39b6c122ccecffd502130d570e86e36af3c9c0afb145a77b1e1ddb28"
@@ -4384,7 +4386,7 @@
           },
           "section": "results",
           "figure_or_table_id": null,
-          "quote": "As reported in all previously published cryo-EM reconstructions of other RTKs ( Diwanji et al., 2021 ; Huang et al., 2021 ; Nielsen et al., 2022 ; Li et al., 2019 ; Uchikawa et al., 2019 ; Krimmer et al., 2023 ), the cryo-EM density was the strongest in the ectodomain region of the receptor complex and the weakest within the transmembrane and intracellular domains ( Figure 1b\u2013c , Figure 1\u2014figure supplement 2a, f , Figure 1\u2014figure supplement 3a, f ).",
+          "quote": "As reported in all previously published cryo-EM reconstructions of other RTKs ( Diwanji et al., 2021 ; Huang et al., 2021 ; Nielsen et al., 2022 ; Li et al., 2019 ; Uchikawa et al., 2019 ; Krimmer et al., 2023 ), the cryo-EM density was the strongest in the ectodomain region of the receptor complex and the weakest within the transmembrane and intracellular domains ( Figure 1b–c , Figure 1—figure supplement 2a, f , Figure 1—figure supplement 3a, f ).",
           "quote_sha256": "34d1951931d209fc968b9a48c8b202d4a3500d3b5f89623f6b85e8a55c413681",
           "char_offset": 0,
           "normalized_source_sha256": "24056d92deda2d442b144f75596c3a76763fa5895197f2906532f8c816935022"
@@ -4428,7 +4430,7 @@
           },
           "section": "results",
           "figure_or_table_id": null,
-          "quote": "In both structures, the ectodomains adopt a characteristic \u2018heart-shaped\u2019 arrangement observed in previously solved X-ray and cryo-EM structures of liganded HER receptor dimers ( Garrett et al., 2002 ; Liu et al., 2012 ; Ogiso et al., 2002 ; Diwanji et al., 2021 ; Bai et al., 2023 ; Freed et al., 2017 ; Huang et al., 2021 ; Lu et al., 2010 ).",
+          "quote": "In both structures, the ectodomains adopt a characteristic ‘heart-shaped’ arrangement observed in previously solved X-ray and cryo-EM structures of liganded HER receptor dimers ( Garrett et al., 2002 ; Liu et al., 2012 ; Ogiso et al., 2002 ; Diwanji et al., 2021 ; Bai et al., 2023 ; Freed et al., 2017 ; Huang et al., 2021 ; Lu et al., 2010 ).",
           "quote_sha256": "ec04d4c17832f9685d5f4c3d43847ade869515d71781db9163525e8c34773368",
           "char_offset": 454,
           "normalized_source_sha256": "24056d92deda2d442b144f75596c3a76763fa5895197f2906532f8c816935022"
@@ -4441,7 +4443,7 @@
     },
     {
       "evidence_id": "a1_evi_35",
-      "claim": "Crystal structure of full EGFR ectodomain in complex with nanobody EgB4 and EGF ligand determined at 6.0 \u00c5 (PDB: 7OM4). Structural definition of the extracellular domain accessible face and nanobody binding epitope on EGFR ECD.",
+      "claim": "Crystal structure of full EGFR ectodomain in complex with nanobody EgB4 and EGF ligand determined at 6.0 Å (PDB: 7OM4). Structural definition of the extracellular domain accessible face and nanobody binding epitope on EGFR ECD.",
       "claim_type": "topology",
       "direction": "supports",
       "evidence_type": "crystal_structure",
@@ -4472,7 +4474,7 @@
           },
           "section": "results",
           "figure_or_table_id": null,
-          "quote": "S 2\nTo study the mechanism by which the EgB4 nanobody interacts with EGFR, we then determined the structure of the full ectodomain EGFR-EgB4-EGF ternary complex from a crystal that diffracted to a maximum resolution of 6.0 \u00c5 (PDB: 7OM4; Table 1 and Fig.",
+          "quote": "S 2\nTo study the mechanism by which the EgB4 nanobody interacts with EGFR, we then determined the structure of the full ectodomain EGFR-EgB4-EGF ternary complex from a crystal that diffracted to a maximum resolution of 6.0 Å (PDB: 7OM4; Table 1 and Fig.",
           "quote_sha256": "08e51b879690c16c5e77882c015525f4b03a0465c4e88364f6546f1b2dd63fda",
           "char_offset": 0,
           "normalized_source_sha256": "61b8b130a401787aa5a195914d5125defe2e2d620fcda3406438c64ba5937b04"
@@ -4485,7 +4487,7 @@
     },
     {
       "evidence_id": "a1_evi_36",
-      "claim": "X-ray crystal structures of Cetuximab Fab\u2013EGFR ECD complex (PDB: 1YY9) and Matuzumab Fab\u2013EGFR ECD complex (PDB: 3C09) define therapeutic antibody epitopes on EGFR extracellular domain. Used for IgM antibody modeling. Anchors ECD topology and clinical antibody engagement interface.",
+      "claim": "X-ray crystal structures of Cetuximab Fab–EGFR ECD complex (PDB: 1YY9) and Matuzumab Fab–EGFR ECD complex (PDB: 3C09) define therapeutic antibody epitopes on EGFR extracellular domain. Used for IgM antibody modeling. Anchors ECD topology and clinical antibody engagement interface.",
       "claim_type": "topology",
       "direction": "supports",
       "evidence_type": "crystal_structure",
@@ -4516,7 +4518,7 @@
           },
           "section": "methods",
           "figure_or_table_id": null,
-          "quote": "The full-length IgM models for Cetuximab and Matuzumab were built using structural data available in the PDB: i) the X-ray crystal structures of Cetuximab and Matuzumab Fab bound to the human EGFR extracellular domains (ECDs) (PDB: 1YY9 ( 56 ) and 3C09 ( 22 ), respectively), ii) the cryogenic electron microscopy (cryo-EM) structure of the human IgM Fc pentamer (PDB: 6KXS) ( 25 ), and iii) the crystal structure of mouse C\u00b52 domain (PDB: 4JVU) ( 57 ).",
+          "quote": "The full-length IgM models for Cetuximab and Matuzumab were built using structural data available in the PDB: i) the X-ray crystal structures of Cetuximab and Matuzumab Fab bound to the human EGFR extracellular domains (ECDs) (PDB: 1YY9 ( 56 ) and 3C09 ( 22 ), respectively), ii) the cryogenic electron microscopy (cryo-EM) structure of the human IgM Fc pentamer (PDB: 6KXS) ( 25 ), and iii) the crystal structure of mouse Cµ2 domain (PDB: 4JVU) ( 57 ).",
           "quote_sha256": "48410025826c1d49a7f3bb62383da36ac83bc68b60e272d0132b8cba35e1ec6e",
           "char_offset": 0,
           "normalized_source_sha256": "570a32d8d24f94bb8ee286af87540c2aa342557dbc3b2aa325fcb2c7b065740a"
@@ -4573,7 +4575,7 @@
     },
     {
       "evidence_id": "a1_evi_38",
-      "claim": "Complete EGFR ECD structure from cryo-EM (PDB: 7SYD) used for IgM/IgG antibody\u2013EGFR ECD binding modeling. Represents full extracellular domain structure available for surface-engagement geometry calculations.",
+      "claim": "Complete EGFR ECD structure from cryo-EM (PDB: 7SYD) used for IgM/IgG antibody–EGFR ECD binding modeling. Represents full extracellular domain structure available for surface-engagement geometry calculations.",
       "claim_type": "topology",
       "direction": "supports",
       "evidence_type": "cryo_em",
@@ -4661,7 +4663,7 @@
     },
     {
       "evidence_id": "a1_evi_40",
-      "claim": "Full-length EGFR (residues 1\u20131210) and extracellular domain (residues 25\u2013645) cloned into CMV-FLAG expression vector. ECD boundaries confirm signal peptide (aa 1\u201324) with extracellular domain aa 25\u2013645, consistent with UniProt topology annotation.",
+      "claim": "Full-length EGFR (residues 1–1210) and extracellular domain (residues 25–645) cloned into CMV-FLAG expression vector. ECD boundaries confirm signal peptide (aa 1–24) with extracellular domain aa 25–645, consistent with UniProt topology annotation.",
       "claim_type": "topology",
       "direction": "supports",
       "evidence_type": "review_assertion",
@@ -4692,7 +4694,7 @@
           },
           "section": "methods",
           "figure_or_table_id": null,
-          "quote": "The full-length EGFR (residues 1\u20131210) and its extracellular domain (residues 25\u2013645) were cloned into a CMV-FLAG expression vector.",
+          "quote": "The full-length EGFR (residues 1–1210) and its extracellular domain (residues 25–645) were cloned into a CMV-FLAG expression vector.",
           "quote_sha256": "e2447bbe626758f546ef0cfc5a3d94c81ae90dcc8b1cdeb70598c517f5879805",
           "char_offset": 0,
           "normalized_source_sha256": "e893cec2cbed1168e5819133fc237026ce06b4c04fd8cb09d9239341054ec40a"
@@ -4846,7 +4848,7 @@
     },
     {
       "evidence_id": "a1_evi_44",
-      "claim": "Panitumumab (FDA-approved anti-EGFR IgG2 mAb, KD=5\u00d710\u207b\u00b9\u00b9 M) binds EGFR at the cell surface of MCF-7 cells with 4 orders of magnitude higher affinity than EGF (KD=1.77\u00d710\u207b\u2077 M), blocking EGF binding site. Therapeutic engagement of EGFR ECD at the cell surface by a clinical antibody; laterally clustering antibodies can also activate EGFR through surface receptor recruitment.",
+      "claim": "Panitumumab (FDA-approved anti-EGFR IgG2 mAb, KD=5×10⁻¹¹ M) binds EGFR at the cell surface of MCF-7 cells with 4 orders of magnitude higher affinity than EGF (KD=1.77×10⁻⁷ M), blocking EGF binding site. Therapeutic engagement of EGFR ECD at the cell surface by a clinical antibody; laterally clustering antibodies can also activate EGFR through surface receptor recruitment.",
       "claim_type": "surface_expression",
       "direction": "supports",
       "evidence_type": "functional_assay",
@@ -4886,7 +4888,7 @@
           },
           "section": "results",
           "figure_or_table_id": null,
-          "quote": "Panitumumab ( K D = 5 \u00d7 10 \u201311 M) 39 binds EGFR with an affinity 4 orders of magnitude higher than EGF ( K D = 1.77 \u00d7 10 \u20137 M), thus preventing EGF binding. 40 Previous studies have shown that antibodies that bind EGFR laterally (not on the EGF binding site) can induce EGFR activation through clustering when attached to a surface. 41 We speculated that Panitumumab might also induce EGFR activation by receptor recruitment, even though it blocks the EGF binding site.",
+          "quote": "Panitumumab ( K D = 5 × 10 –11 M) 39 binds EGFR with an affinity 4 orders of magnitude higher than EGF ( K D = 1.77 × 10 –7 M), thus preventing EGF binding. 40 Previous studies have shown that antibodies that bind EGFR laterally (not on the EGF binding site) can induce EGFR activation through clustering when attached to a surface. 41 We speculated that Panitumumab might also induce EGFR activation by receptor recruitment, even though it blocks the EGF binding site.",
           "quote_sha256": "6ffce59991b19546ffe9c4a3916f0800c5bd29513097539a2796704fdf2bf139",
           "char_offset": 183,
           "normalized_source_sha256": "8bc1029a7dfc4fde3571dd99ee74a3fc3d764e209c09415bd797fe2ee7af9801"
@@ -5239,7 +5241,7 @@
           },
           "section": "discussion",
           "figure_or_table_id": null,
-          "quote": "In addition, while clinical specimens often exhibited a granular and/or diffuse IHC pattern, rather than a sharp membranous staining, NCI\u2013H1930 cells showed a similar pattern yet demonstrated cell surface expression by flow cytometry.",
+          "quote": "In addition, while clinical specimens often exhibited a granular and/or diffuse IHC pattern, rather than a sharp membranous staining, NCI–H1930 cells showed a similar pattern yet demonstrated cell surface expression by flow cytometry.",
           "quote_sha256": "12f15b90503fd1e2db5c431fc3cb3f79f29575428ae981eb4986b1a661e77606",
           "char_offset": 0,
           "normalized_source_sha256": "6fa1eefbfcc54d9fbf5176b8f87f63ead4222454db5f3379ca40037083acbd60"
@@ -5305,7 +5307,7 @@
     },
     {
       "evidence_id": "a1_evi_53",
-      "claim": "Human wild-type EGFR gene (not mutant, not fusion) used for overexpression into retroviral vector pMXs-neo for stable transfection into NIH-3T3 cells. Native full-length WT EGFR construct \u2014 endogenous signal peptide; OE construct SP source is endogenous, not foreign leader.",
+      "claim": "Human wild-type EGFR gene (not mutant, not fusion) used for overexpression into retroviral vector pMXs-neo for stable transfection into NIH-3T3 cells. Native full-length WT EGFR construct — endogenous signal peptide; OE construct SP source is endogenous, not foreign leader.",
       "claim_type": "methodological",
       "direction": "supports",
       "evidence_type": "western_blot",
@@ -5610,7 +5612,7 @@
           },
           "section": "figure_legend",
           "figure_or_table_id": null,
-          "quote": "(A) Flow cytometry analysis illustrating the uniform presence of EGFR antigen on the surface of glioma cells with high (GSC83 and U373VIII) and low (U373) levels of EGFR/EGFRvIII expression (right panel\u2014dot plot; left panel\u2014histogram); (B) Confocal imaging of immunofluorescent staining for EGFR antigen (red) and CD9 (green) in adherent GSC83 cells either intact or permeabilized before antibody exposure.",
+          "quote": "(A) Flow cytometry analysis illustrating the uniform presence of EGFR antigen on the surface of glioma cells with high (GSC83 and U373VIII) and low (U373) levels of EGFR/EGFRvIII expression (right panel—dot plot; left panel—histogram); (B) Confocal imaging of immunofluorescent staining for EGFR antigen (red) and CD9 (green) in adherent GSC83 cells either intact or permeabilized before antibody exposure.",
           "quote_sha256": "52c508d14da2711dd85a0a7e89a8d2d263d44f4b7f35ac844f7a6245aea3af19",
           "char_offset": 1345,
           "normalized_source_sha256": "9ef0701e0b75edb4abd189e6e06438cfb4a8456aa36d28c484f0a499638d3877"
@@ -5729,7 +5731,7 @@
     },
     {
       "evidence_id": "a2_evi_08",
-      "claim": "HCT116 colon carcinoma cells, which have a CCLE log2[TPM+1] value of ~0 for EGFR, show minimal to absent surface EGFR staining by flow cytometry \u2014 confirming that low mRNA expression translates to absent cell-surface EGFR protein in this colorectal cancer cell line. This provides a negative-control data point supporting tissue/cell-type specificity of EGFR surface expression.",
+      "claim": "HCT116 colon carcinoma cells, which have a CCLE log2[TPM+1] value of ~0 for EGFR, show minimal to absent surface EGFR staining by flow cytometry — confirming that low mRNA expression translates to absent cell-surface EGFR protein in this colorectal cancer cell line. This provides a negative-control data point supporting tissue/cell-type specificity of EGFR surface expression.",
       "claim_type": "surface_expression",
       "direction": "refutes",
       "evidence_type": "flow_cytometry",
@@ -5822,7 +5824,7 @@
           },
           "section": "discussion",
           "figure_or_table_id": null,
-          "quote": "In addition, while clinical specimens often exhibited a granular and/or diffuse IHC pattern, rather than a sharp membranous staining, NCI\u2013H1930 cells showed a similar pattern yet demonstrated cell surface expression by flow cytometry.",
+          "quote": "In addition, while clinical specimens often exhibited a granular and/or diffuse IHC pattern, rather than a sharp membranous staining, NCI–H1930 cells showed a similar pattern yet demonstrated cell surface expression by flow cytometry.",
           "quote_sha256": "12f15b90503fd1e2db5c431fc3cb3f79f29575428ae981eb4986b1a661e77606",
           "char_offset": 0,
           "normalized_source_sha256": "6fa1eefbfcc54d9fbf5176b8f87f63ead4222454db5f3379ca40037083acbd60"
@@ -6153,7 +6155,7 @@
     },
     {
       "evidence_id": "a2_evi_16",
-      "claim": "EGFR internalization in A431 squamous carcinoma cells is confirmed to be EGFR-specific: pre-saturation with 1 \u00b5M EGF (competing endogenous ligand) blocks uptake of an EGFR-affibody conjugate, demonstrating receptor-mediated endocytosis as the mechanism of EGFR surface-to-intracellular transit upon ligand binding. This confirms that ligand (EGF) engagement drives EGFR surface downregulation in A431 cells.",
+      "claim": "EGFR internalization in A431 squamous carcinoma cells is confirmed to be EGFR-specific: pre-saturation with 1 µM EGF (competing endogenous ligand) blocks uptake of an EGFR-affibody conjugate, demonstrating receptor-mediated endocytosis as the mechanism of EGFR surface-to-intracellular transit upon ligand binding. This confirms that ligand (EGF) engagement drives EGFR surface downregulation in A431 cells.",
       "claim_type": "surface_expression",
       "direction": "supports",
       "evidence_type": "functional_assay",
@@ -6193,7 +6195,7 @@
           },
           "section": "results",
           "figure_or_table_id": null,
-          "quote": "To verify that the internalization of MNT 1 , containing an affibody to the epidermal growth factor receptor (EGFR), is EGFR-specific, a control experiment was performed in which A431 cells were first incubated for 1 h with 1 \u03bcM epidermal growth factor, EGF, and then these cells were incubated with 200 nM MNT 1 -AF488, to which EGF was added at a concentration of 2 \u03bcM.",
+          "quote": "To verify that the internalization of MNT 1 , containing an affibody to the epidermal growth factor receptor (EGFR), is EGFR-specific, a control experiment was performed in which A431 cells were first incubated for 1 h with 1 μM epidermal growth factor, EGF, and then these cells were incubated with 200 nM MNT 1 -AF488, to which EGF was added at a concentration of 2 μM.",
           "quote_sha256": "d4f131fcdb49b043499a1c4248d995d86550e1fca7f68c9dd8f1d059a2590fe8",
           "char_offset": 110,
           "normalized_source_sha256": "012c0cad0dca87a9a1e2566d6a2532542f3edc4c49d31bef84ee4684636e6c7f"
@@ -6529,7 +6531,7 @@
       "mode": "flow_cytometry",
       "query": {
         "agent_focus": "a1",
-        "intent": "Retrieve intact-cell flow cytometry surface staining papers for EGFR \u2014 primary direct evidence type for a classical single-pass RTK",
+        "intent": "Retrieve intact-cell flow cytometry surface staining papers for EGFR — primary direct evidence type for a classical single-pass RTK",
         "category": "flow_cytometry",
         "uniprot_acc": "P00533"
       },
@@ -6585,7 +6587,7 @@
       "mode": "if",
       "query": {
         "agent_focus": "a1",
-        "intent": "Retrieve immunofluorescence papers \u2014 non-permeabilized live-cell IF or permeabilized IF with PM-marker colocalization \u2014 for EGFR surface localization",
+        "intent": "Retrieve immunofluorescence papers — non-permeabilized live-cell IF or permeabilized IF with PM-marker colocalization — for EGFR surface localization",
         "category": "if",
         "uniprot_acc": "P00533"
       },
@@ -6641,7 +6643,7 @@
       "mode": "gene2pubmed",
       "query": {
         "agent_focus": "a1",
-        "intent": "NCBI curated PMID list for EGFR \u2014 high-precision baseline covering the full publication record"
+        "intent": "NCBI curated PMID list for EGFR — high-precision baseline covering the full publication record"
       },
       "n_results": 25,
       "sources_seen": [],
@@ -6653,7 +6655,7 @@
       "mode": "recent_corpus",
       "query": {
         "agent_focus": "a1",
-        "intent": "PubTator entity-anchored sweep for EGFR sorted by indexing date, pre-filtered for surface/membrane vocabulary \u2014 catches verdict-shifting recent papers using new vocabulary"
+        "intent": "PubTator entity-anchored sweep for EGFR sorted by indexing date, pre-filtered for surface/membrane vocabulary — catches verdict-shifting recent papers using new vocabulary"
       },
       "n_results": 19,
       "sources_seen": [],
@@ -6697,7 +6699,7 @@
       "mode": "topic_search",
       "query": {
         "agent_focus": "a1",
-        "intent": "EGFR ectodomain shedding (ADAM10/17) and topology anchor sweep \u2014 shedding produces soluble ECD while transmembrane precursor remains surface-resident",
+        "intent": "EGFR ectodomain shedding (ADAM10/17) and topology anchor sweep — shedding produces soluble ECD while transmembrane precursor remains surface-resident",
         "anchors": [
           "shedding",
           "topology"
@@ -6713,7 +6715,7 @@
       "mode": "topic_search",
       "query": {
         "agent_focus": "a1",
-        "intent": "Structural and PTM (glycosylation, phosphorylation) anchor sweep for EGFR ECD \u2014 large ECD with 12 N-glycosylation sites that may modulate antibody access",
+        "intent": "Structural and PTM (glycosylation, phosphorylation) anchor sweep for EGFR ECD — large ECD with 12 N-glycosylation sites that may modulate antibody access",
         "anchors": [
           "structure",
           "ptm"
@@ -6777,7 +6779,7 @@
       "mode": "topic_search",
       "query": {
         "agent_focus": "a1",
-        "intent": "NIH3T3/CHO OE surface query: EGFR AND (NIH3T3 OR CHO OR BaF3) AND (cell surface OR flow cytometry) \u2014 canonical transfectant hosts for WT-EGFR surface flow studies",
+        "intent": "NIH3T3/CHO OE surface query: EGFR AND (NIH3T3 OR CHO OR BaF3) AND (cell surface OR flow cytometry) — canonical transfectant hosts for WT-EGFR surface flow studies",
         "anchors": [
           "surface_expression",
           "flow_cytometry"
@@ -6808,7 +6810,7 @@
       "mode": "topic_search",
       "query": {
         "agent_focus": "a1",
-        "intent": "A431/A549/MCF7 endogenous surface expression query \u2014 high-EGFR-expressing tumor cell lines used as positive controls in surface assays",
+        "intent": "A431/A549/MCF7 endogenous surface expression query — high-EGFR-expressing tumor cell lines used as positive controls in surface assays",
         "anchors": [
           "surface_expression",
           "flow_cytometry"
@@ -6839,7 +6841,7 @@
       "mode": "fetch_fulltext",
       "query": {
         "agent_focus": "a1",
-        "intent": "Fetch fulltext of known WT-EGFR surface flow cytometry paper in NIH3T3 transfectants \u2014 high-density methodology source for OE-surface evidence",
+        "intent": "Fetch fulltext of known WT-EGFR surface flow cytometry paper in NIH3T3 transfectants — high-density methodology source for OE-surface evidence",
         "pmcid": "PMC4372364"
       },
       "n_results": 1,
@@ -6852,7 +6854,7 @@
       "mode": "fetch_fulltext",
       "query": {
         "agent_focus": "a1",
-        "intent": "Fetch fulltext of WT-EGFR CHO transfectant surface binding paper \u2014 direct OE-surface evidence in non-HEK host",
+        "intent": "Fetch fulltext of WT-EGFR CHO transfectant surface binding paper — direct OE-surface evidence in non-HEK host",
         "pmcid": "PMC3163362"
       },
       "n_results": 1,
@@ -6905,7 +6907,7 @@
       "mode": "gene2pubmed",
       "query": {
         "agent_focus": "a2",
-        "intent": "Baseline curated PMID list for EGFR \u2014 high-precision starting corpus."
+        "intent": "Baseline curated PMID list for EGFR — high-precision starting corpus."
       },
       "n_results": 25,
       "sources_seen": [],
@@ -6929,7 +6931,7 @@
       "mode": "ihc",
       "query": {
         "agent_focus": "a2",
-        "intent": "HPA antibody panels and broader IHC literature for EGFR tissue distribution \u2014 membranous staining in normal and tumor tissues; normal-tissue tox panel backbone.",
+        "intent": "HPA antibody panels and broader IHC literature for EGFR tissue distribution — membranous staining in normal and tumor tissues; normal-tissue tox panel backbone.",
         "category": "ihc",
         "uniprot_acc": "P00533"
       },
@@ -7013,7 +7015,7 @@
       "mode": "topic_search",
       "query": {
         "agent_focus": "a2",
-        "intent": "EGFR surface expression and IHC in normal tissues \u2014 liver, lung, kidney, GI tract, heart, brain for normal-tissue toxicity panel.",
+        "intent": "EGFR surface expression and IHC in normal tissues — liver, lung, kidney, GI tract, heart, brain for normal-tissue toxicity panel.",
         "anchors": [
           "surface_expression",
           "ihc"
@@ -7029,7 +7031,7 @@
       "mode": "topic_search",
       "query": {
         "agent_focus": "a2",
-        "intent": "EGFR membranous staining in normal heart, brain (BBB context), GI epithelium \u2014 completing normal-tissue tox panel; negatives as valuable as positives.",
+        "intent": "EGFR membranous staining in normal heart, brain (BBB context), GI epithelium — completing normal-tissue tox panel; negatives as valuable as positives.",
         "anchors": [
           "surface_expression",
           "ihc"
@@ -7045,7 +7047,7 @@
       "mode": "topic_search",
       "query": {
         "agent_focus": "a2",
-        "intent": "EGFR ectodomain shedding (sEGFR, soluble EGFR) in serum/plasma \u2014 circulating decoy risk vs cetuximab/panitumumab; palmitoylation gates on surface trafficking.",
+        "intent": "EGFR ectodomain shedding (sEGFR, soluble EGFR) in serum/plasma — circulating decoy risk vs cetuximab/panitumumab; palmitoylation gates on surface trafficking.",
         "anchors": [
           "shedding",
           "ptm"
@@ -7061,7 +7063,7 @@
       "mode": "topic_search",
       "query": {
         "agent_focus": "a2",
-        "intent": "Soluble/secreted EGFR isoform 2 (TEGFR/truncated) in circulation \u2014 decoy competition with therapeutic antibodies, serum levels in ovarian cancer.",
+        "intent": "Soluble/secreted EGFR isoform 2 (TEGFR/truncated) in circulation — decoy competition with therapeutic antibodies, serum levels in ovarian cancer.",
         "anchors": [
           "surface_expression",
           "shedding"
@@ -7077,7 +7079,7 @@
       "mode": "topic_search",
       "query": {
         "agent_focus": "a2",
-        "intent": "EGFR nuclear localization and nuclear membrane pool \u2014 dual-localization evidence for nuclear EGFR vs PM EGFR; fraction estimates and conditions.",
+        "intent": "EGFR nuclear localization and nuclear membrane pool — dual-localization evidence for nuclear EGFR vs PM EGFR; fraction estimates and conditions.",
         "anchors": [
           "surface_expression",
           "topology"
@@ -7093,7 +7095,7 @@
       "mode": "topic_search",
       "query": {
         "agent_focus": "a2",
-        "intent": "EGFR cell-type-specific surface expression in epithelial subtypes, keratinocytes, hepatocytes, pneumocytes, renal tubular cells \u2014 cell-type context rows.",
+        "intent": "EGFR cell-type-specific surface expression in epithelial subtypes, keratinocytes, hepatocytes, pneumocytes, renal tubular cells — cell-type context rows.",
         "anchors": [
           "surface_expression",
           "ihc"
@@ -7109,7 +7111,7 @@
       "mode": "topic_search",
       "query": {
         "agent_focus": "a2",
-        "intent": "ErbB family (ERBB2/ERBB3/ERBB4) tissue distribution comparison \u2014 family-wide vs EGFR-specific tissue context given ~45-48% ECD paralog identity; flag cross-reactivity risk for downstream builders.",
+        "intent": "ErbB family (ERBB2/ERBB3/ERBB4) tissue distribution comparison — family-wide vs EGFR-specific tissue context given ~45-48% ECD paralog identity; flag cross-reactivity risk for downstream builders.",
         "anchors": [
           "surface_expression",
           "ihc"
@@ -7125,7 +7127,7 @@
       "mode": "topic_search",
       "query": {
         "agent_focus": "a2",
-        "intent": "Receptor internalization, recycling, endocytosis after ligand activation \u2014 AccessibilityModulationObservation for activation-induced surface downregulation and recycling dynamics.",
+        "intent": "Receptor internalization, recycling, endocytosis after ligand activation — AccessibilityModulationObservation for activation-induced surface downregulation and recycling dynamics.",
         "anchors": [
           "surface_expression",
           "ptm"
@@ -7141,7 +7143,7 @@
       "mode": "topic_search",
       "query": {
         "agent_focus": "a2",
-        "intent": "EGFR tumor vasculature penetration, antibody biodistribution in solid tumors (perivascular rim vs tumor core) \u2014 AnatomicalAccessibilityObservation for systemic binder reach.",
+        "intent": "EGFR tumor vasculature penetration, antibody biodistribution in solid tumors (perivascular rim vs tumor core) — AnatomicalAccessibilityObservation for systemic binder reach.",
         "anchors": [
           "surface_expression"
         ]
@@ -7156,7 +7158,7 @@
       "mode": "topic_search",
       "query": {
         "agent_focus": "a2",
-        "intent": "EGFR surface expression behind blood-brain barrier \u2014 intact BBB vs glioblastoma/brain metastasis opened BBB; accessibility for CNS-directed EGFR therapeutics.",
+        "intent": "EGFR surface expression behind blood-brain barrier — intact BBB vs glioblastoma/brain metastasis opened BBB; accessibility for CNS-directed EGFR therapeutics.",
         "anchors": [
           "surface_expression",
           "ihc"
@@ -7172,7 +7174,7 @@
       "mode": "topic_search",
       "query": {
         "agent_focus": "a2",
-        "intent": "EGFR polarized epithelial localization \u2014 apical vs basolateral membrane subdomain in lung/intestinal/renal epithelia; accessibility from luminal vs vascular compartment.",
+        "intent": "EGFR polarized epithelial localization — apical vs basolateral membrane subdomain in lung/intestinal/renal epithelia; accessibility from luminal vs vascular compartment.",
         "anchors": [
           "surface_expression",
           "ihc"
@@ -7188,7 +7190,7 @@
       "mode": "topic_search",
       "query": {
         "agent_focus": "a2",
-        "intent": "EGFR lipid raft / caveolae association and membrane subdomain partitioning \u2014 membrane_subdomains evidence for raft vs non-raft surface pools.",
+        "intent": "EGFR lipid raft / caveolae association and membrane subdomain partitioning — membrane_subdomains evidence for raft vs non-raft surface pools.",
         "anchors": [
           "surface_expression",
           "ptm"
@@ -7217,7 +7219,7 @@
       "mode": "fetch_fulltext",
       "query": {
         "agent_focus": "a2",
-        "intent": "TBC1D23 PDAC paper on EGFR cell surface dynamics in pancreatic ductal adenocarcinoma \u2014 likely to contain primary cell-type surface expression and trafficking data",
+        "intent": "TBC1D23 PDAC paper on EGFR cell surface dynamics in pancreatic ductal adenocarcinoma — likely to contain primary cell-type surface expression and trafficking data",
         "pmcid": "PMC13043878"
       },
       "n_results": 1,

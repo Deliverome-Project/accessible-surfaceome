@@ -8,7 +8,7 @@
     "ensembl_gene": "ENSG00000119737"
   },
   "triage_signal": "likely_accessible",
-  "triage_reasoning": "GPR75 is a Class A orphan GPCR (UniProt O95800). GPCRs are seven-transmembrane proteins with extracellular loops and an extracellular N-terminus that are constitutively trafficked to the plasma membrane as their primary functional location. GPR75 has been detected at the cell surface in heterologous expression systems and is studied as a potential therapeutic target (notably linked to obesity protection in loss-of-function carriers). Its topology \u2014 multipass TM with exposed extracellular loops and N-terminus \u2014 places it firmly in the surface-accessible category without requiring any conditional stimulus.",
+  "triage_reasoning": "GPR75 is a Class A orphan GPCR (UniProt O95800). GPCRs are seven-transmembrane proteins with extracellular loops and an extracellular N-terminus that are constitutively trafficked to the plasma membrane as their primary functional location. GPR75 has been detected at the cell surface in heterologous expression systems and is studied as a potential therapeutic target (notably linked to obesity protection in loss-of-function carriers). Its topology — multipass TM with exposed extracellular loops and N-terminus — places it firmly in the surface-accessible category without requiring any conditional stimulus.",
   "executive_summary": {
     "one_paragraph": "GPR75 is a class A orphan GPCR with a canonical 7TM architecture and an extracellular N-terminus bearing N-glycosylation sites, conferring constitutive surface accessibility in neurons and vascular cells. Cryo-EM reveals a collapsed orthosteric pocket (moderate epitope-masking risk). Endogenous 3xFlag-knockin studies confirm ciliary plasma-membrane localization in hypothalamic neurons; VPS35-mediated retromer recycling supports hepatocyte surface residence in MASH. Surface accessibility is tissue- and disease-state-gated: absent in healthy liver, strongly upregulated in MASH hepatocytes, and ciliary-restricted in hypothalamic neurons. No shed or secreted decoy form identified.",
     "accessibility_context_summary": "Constitutively surface-accessible on neurons and cerebrovascular cells; disease-state-induced surface expression in MASH hepatocytes and activated microglia; ciliary-restricted in hypothalamic neurons, limiting systemic binder access to that compartment.",
@@ -78,12 +78,14 @@
     "expression_breadth_rationale": "GPR75 expression is concentrated in brain neurons and cerebrovascular cells, with disease-state induction in hepatocytes (MASH), renal macrophages (S-AKI), and microglia (TBI) (a2_evi_07, a2_evi_11, a2_evi_19, a2_evi_20, a2_evi_22); low in thymus/spleen and absent from astrocytes (a2_evi_09, a2_evi_12). Not pan-tissue.",
     "surface_specificity_rationale": "Canonical 7TM GPCR; endogenous knockin confirms ciliary PM localization in neurons (a1_evi_12, a1_evi_14); photoaffinity crosslinking confirms membrane engagement in endothelial cells (a1_evi_08, a1_evi_09); retromer recycling confirms hepatocyte PM residence (a1_evi_11). Agonist-induced internalization is transient (a2_evi_18).",
     "has_known_ligand_rationale": "",
-    "low_endogenous_expression_rationale": "Derived from expression_level='moderate' (not low/absent \u2192 not flagged). High expression in brain neurons and cerebrovascular cells across multiple species (a2_evi_02, a2_evi_07, a2_evi_08); moderate in endothelial/vascular smooth muscle cells (a2_evi_11, a2_evi_13); absent in healthy liver and low in peripheral immune organs (a2_evi_09, a2_evi_22). Overall moderate given CNS-dominant but tissue-restricted profile.",
-    "overexpression_surface_localization_observed_rationale": "No method observation pairs an overexpression/mixed expression system with a direct or supportive surface-accessibility readout."
+    "low_endogenous_expression_rationale": "Derived from expression_level='moderate' (not low/absent → not flagged). High expression in brain neurons and cerebrovascular cells across multiple species (a2_evi_02, a2_evi_07, a2_evi_08); moderate in endothelial/vascular smooth muscle cells (a2_evi_11, a2_evi_13); absent in healthy liver and low in peripheral immune organs (a2_evi_09, a2_evi_22). Overall moderate given CNS-dominant but tissue-restricted profile.",
+    "overexpression_surface_localization_observed_rationale": "No method observation pairs an overexpression/mixed expression system with a direct or supportive surface-accessibility readout.",
+    "n_papers_selected": 19,
+    "n_papers_found": null
   },
   "surface_evidence": {
     "evidence_grade": "supportive_but_indirect",
-    "grade_rationale": "GPR75 is a canonical class A GPCR with a well-established 7TM topology (extracellular N-terminus, 3 ECLs) confirmed by cryo-EM, computational prediction, and GPCRdb \u2014 topology itself is deterministic for surface ECD exposure. The strongest surface-supporting evidence comes from: (1) endogenous 3xFlag-GPR75 knockin mice showing ciliary PM localization in hypothalamic neurons by IF with an internal specificity control (L144P fails to localize); (2) photoaffinity crosslinking of a 20-HETE analogue on membrane fractions of human endothelial cells with competitive displacement control; (3) VPS35-mediated retromer recycling to the hepatocyte PM. However, none of these constitute a clean non-permeabilized surface staining or live-cell flow cytometry experiment with validated antibody and KO control. The IF studies do not specify permeabilization status, and the membrane-fraction photoaffinity assay is indirect fractionation-based. The sum is strong indirect evidence anchored by canonical topology \u2014 graded `supportive_but_indirect`.",
+    "grade_rationale": "GPR75 is a canonical class A GPCR with a well-established 7TM topology (extracellular N-terminus, 3 ECLs) confirmed by cryo-EM, computational prediction, and GPCRdb — topology itself is deterministic for surface ECD exposure. The strongest surface-supporting evidence comes from: (1) endogenous 3xFlag-GPR75 knockin mice showing ciliary PM localization in hypothalamic neurons by IF with an internal specificity control (L144P fails to localize); (2) photoaffinity crosslinking of a 20-HETE analogue on membrane fractions of human endothelial cells with competitive displacement control; (3) VPS35-mediated retromer recycling to the hepatocyte PM. However, none of these constitute a clean non-permeabilized surface staining or live-cell flow cytometry experiment with validated antibody and KO control. The IF studies do not specify permeabilization status, and the membrane-fraction photoaffinity assay is indirect fractionation-based. The sum is strong indirect evidence anchored by canonical topology — graded `supportive_but_indirect`.",
     "claim_stances": [
       {
         "claim_id": "a1_evi_01",
@@ -235,14 +237,14 @@
             "antibody_epitope_region": "intracellular",
             "validation_strategy": "none",
             "validation_strength": "none",
-            "cross_reactivity_notes": "Goat polyclonal raised against C-terminal peptide of human GPR75 (S-14); recognizes single band at 54\u201355 kDa. Discontinued product."
+            "cross_reactivity_notes": "Goat polyclonal raised against C-terminal peptide of human GPR75 (S-14); recognizes single band at 54–55 kDa. Discontinued product."
           }
         ],
         "accessibility_relevance": "weak_or_ambiguous",
         "surface_claim_type": "unclear",
         "expression_observations": [
           {
-            "context": "Human endothelial cells \u2014 pull-down and western blot yielding single specific band at 54\u201355 kDa",
+            "context": "Human endothelial cells — pull-down and western blot yielding single specific band at 54–55 kDa",
             "sample_type": "primary_human_cell",
             "level": "moderate",
             "species": "human",
@@ -267,7 +269,7 @@
         "surface_claim_type": "plasma_membrane_localized",
         "expression_observations": [
           {
-            "context": "Human endothelial cells \u2014 photoaffinity crosslinking with 20-APheDa on membrane fractions yielded dominant band at 47\u201349 kDa; labeling competed by 20-HETE (100 \u00b5M) but not 12-HETE, confirming specific GPR75\u2013ligand engagement at the plasma membrane",
+            "context": "Human endothelial cells — photoaffinity crosslinking with 20-APheDa on membrane fractions yielded dominant band at 47–49 kDa; labeling competed by 20-HETE (100 µM) but not 12-HETE, confirming specific GPR75–ligand engagement at the plasma membrane",
             "sample_type": "primary_human_cell",
             "level": "moderate",
             "species": "human",
@@ -307,7 +309,7 @@
         "surface_claim_type": "plasma_membrane_localized",
         "expression_observations": [
           {
-            "context": "Mouse hypothalamic neurons \u2014 wild-type 3xFlag-GPR75 localizes to primary cilia; L144P (Thinner) mutant fails to localize to cilia",
+            "context": "Mouse hypothalamic neurons — wild-type 3xFlag-GPR75 localizes to primary cilia; L144P (Thinner) mutant fails to localize to cilia",
             "sample_type": "ex_vivo",
             "level": "moderate",
             "species": "mouse",
@@ -347,7 +349,7 @@
         "surface_claim_type": "plasma_membrane_localized",
         "expression_observations": [
           {
-            "context": "Mouse hypothalamic cells \u2014 endogenous 3xFlag-GPR75 localizes to primary cilia; Thinner mutation L144P and human GPR75 obesity-protective variants fail to localize to cilia",
+            "context": "Mouse hypothalamic cells — endogenous 3xFlag-GPR75 localizes to primary cilia; Thinner mutation L144P and human GPR75 obesity-protective variants fail to localize to cilia",
             "sample_type": "ex_vivo",
             "level": "moderate",
             "species": "mouse",
@@ -386,7 +388,7 @@
         "surface_claim_type": "unclear",
         "expression_observations": [
           {
-            "context": "Mouse brain tissue \u2014 3xFlag-GPR75 knockin mice; endogenous protein exclusively expressed in brain with consistent expression across brain regions",
+            "context": "Mouse brain tissue — 3xFlag-GPR75 knockin mice; endogenous protein exclusively expressed in brain with consistent expression across brain regions",
             "sample_type": "ex_vivo",
             "level": "moderate",
             "species": "mouse",
@@ -425,7 +427,7 @@
         "surface_claim_type": "unclear",
         "expression_observations": [
           {
-            "context": "SH-SY5Y human neuroblastoma cells \u2014 flow cytometry confirms GPR75 expression; staining conditions (permeabilized vs non-permeabilized) not stated",
+            "context": "SH-SY5Y human neuroblastoma cells — flow cytometry confirms GPR75 expression; staining conditions (permeabilized vs non-permeabilized) not stated",
             "sample_type": "established_cell_line",
             "level": "moderate",
             "species": "human",
@@ -463,7 +465,7 @@
         "surface_claim_type": "unclear",
         "expression_observations": [
           {
-            "context": "Rat cortical neurons \u2014 western blot of total cell lysate; immunoreactive band at ~59 kDa",
+            "context": "Rat cortical neurons — western blot of total cell lysate; immunoreactive band at ~59 kDa",
             "sample_type": "primary_human_cell",
             "level": "moderate",
             "species": "rat",
@@ -473,7 +475,7 @@
             ]
           },
           {
-            "context": "Differentiated SH-SY5Y human neuroblastoma cells \u2014 western blot of total cell lysate; immunoreactive band at ~59 kDa",
+            "context": "Differentiated SH-SY5Y human neuroblastoma cells — western blot of total cell lysate; immunoreactive band at ~59 kDa",
             "sample_type": "established_cell_line",
             "level": "moderate",
             "species": "human",
@@ -511,7 +513,7 @@
         "surface_claim_type": "plasma_membrane_localized",
         "expression_observations": [
           {
-            "context": "Rat brain tissue slices (SD, Dahl SS, CYP4A1 transgenic) \u2014 fluorescent immunostaining; GPR75 expressed in endothelial cells, vascular smooth muscle cells, and glial limiting membrane of pial arteries and penetrating arterioles; absent from capillary endothelium",
+            "context": "Rat brain tissue slices (SD, Dahl SS, CYP4A1 transgenic) — fluorescent immunostaining; GPR75 expressed in endothelial cells, vascular smooth muscle cells, and glial limiting membrane of pial arteries and penetrating arterioles; absent from capillary endothelium",
             "sample_type": "ex_vivo",
             "level": "moderate",
             "species": "rat",
@@ -522,7 +524,7 @@
             ]
           },
           {
-            "context": "Cultured human cerebral pericytes and cerebral vascular smooth muscle cells \u2014 fluorescent immunostaining",
+            "context": "Cultured human cerebral pericytes and cerebral vascular smooth muscle cells — fluorescent immunostaining",
             "sample_type": "primary_human_cell",
             "level": "moderate",
             "species": "human",
@@ -561,7 +563,7 @@
         "surface_claim_type": "unclear",
         "expression_observations": [
           {
-            "context": "PC-3 human androgen-insensitive prostate cancer cells \u2014 protein distribution assessed by fluorescence microscopy; no surface-specific protocol described",
+            "context": "PC-3 human androgen-insensitive prostate cancer cells — protein distribution assessed by fluorescence microscopy; no surface-specific protocol described",
             "sample_type": "established_cell_line",
             "level": "moderate",
             "species": "human",
@@ -586,7 +588,7 @@
         "surface_claim_type": "unclear",
         "expression_observations": [
           {
-            "context": "Human chronic liver disease / MASLD patient samples \u2014 protein level evaluation by unspecified method; increased expression observed during MASLD progression",
+            "context": "Human chronic liver disease / MASLD patient samples — protein level evaluation by unspecified method; increased expression observed during MASLD progression",
             "sample_type": "patient_sample",
             "level": "moderate",
             "species": "human",
@@ -611,7 +613,7 @@
         "surface_claim_type": "plasma_membrane_localized",
         "expression_observations": [
           {
-            "context": "Human hepatocytes \u2014 VPS35-mediated retromer recycling returns GPR75 to the plasma membrane, reducing degradation during MASH progression; functional evidence of surface-resident receptor pool",
+            "context": "Human hepatocytes — VPS35-mediated retromer recycling returns GPR75 to the plasma membrane, reducing degradation during MASH progression; functional evidence of surface-resident receptor pool",
             "sample_type": "primary_human_cell",
             "level": "moderate",
             "species": "human",
@@ -651,7 +653,7 @@
     ],
     "non_surface_expression": [
       {
-        "context": "Human endothelial cells \u2014 C-terminal antibody WB of total cell lysate",
+        "context": "Human endothelial cells — C-terminal antibody WB of total cell lysate",
         "sample_type": "primary_human_cell",
         "measurement_type": "bulk_protein",
         "level": "moderate",
@@ -660,7 +662,7 @@
         ]
       },
       {
-        "context": "Mouse brain (multiple regions) \u2014 3xFlag knockin, WB of total brain tissue",
+        "context": "Mouse brain (multiple regions) — 3xFlag knockin, WB of total brain tissue",
         "sample_type": "ex_vivo",
         "measurement_type": "bulk_protein",
         "level": "moderate",
@@ -669,7 +671,7 @@
         ]
       },
       {
-        "context": "SH-SY5Y human neuroblastoma cells \u2014 flow cytometry (permeabilization unspecified) and qPCR",
+        "context": "SH-SY5Y human neuroblastoma cells — flow cytometry (permeabilization unspecified) and qPCR",
         "sample_type": "established_cell_line",
         "measurement_type": "bulk_protein",
         "level": "moderate",
@@ -678,7 +680,7 @@
         ]
       },
       {
-        "context": "Rat cortical neurons and differentiated SH-SY5Y \u2014 WB of total cell lysate",
+        "context": "Rat cortical neurons and differentiated SH-SY5Y — WB of total cell lysate",
         "sample_type": "primary_human_cell",
         "measurement_type": "bulk_protein",
         "level": "moderate",
@@ -687,7 +689,7 @@
         ]
       },
       {
-        "context": "Rat brain slices and cultured human cerebral pericytes / vascular smooth muscle cells \u2014 fluorescent immunostaining (permeabilization unspecified)",
+        "context": "Rat brain slices and cultured human cerebral pericytes / vascular smooth muscle cells — fluorescent immunostaining (permeabilization unspecified)",
         "sample_type": "ex_vivo",
         "measurement_type": "IHC_protein",
         "level": "moderate",
@@ -697,7 +699,7 @@
         ]
       },
       {
-        "context": "PC-3 androgen-insensitive prostate cancer cells \u2014 WB and fluorescence microscopy (surface specificity unspecified)",
+        "context": "PC-3 androgen-insensitive prostate cancer cells — WB and fluorescence microscopy (surface specificity unspecified)",
         "sample_type": "established_cell_line",
         "measurement_type": "IHC_protein",
         "level": "moderate",
@@ -706,7 +708,7 @@
         ]
       },
       {
-        "context": "Human chronic liver disease / MASLD patient samples \u2014 unspecified gene expression and protein level assays",
+        "context": "Human chronic liver disease / MASLD patient samples — unspecified gene expression and protein level assays",
         "sample_type": "patient_sample",
         "measurement_type": "unknown",
         "level": "moderate",
@@ -715,7 +717,7 @@
         ]
       },
       {
-        "context": "Hippocampal neurons \u2014 RNAscope in situ hybridization for GPR75 mRNA",
+        "context": "Hippocampal neurons — RNAscope in situ hybridization for GPR75 mRNA",
         "sample_type": "unknown",
         "measurement_type": "single_cell_RNA",
         "level": "moderate",
@@ -1171,7 +1173,7 @@
         "baseline_context": "resting microglia in healthy immature rat brain",
         "modulating_state": "activated microglia after traumatic brain injury (TBI) in immature rat brain",
         "direction": "increases",
-        "change": "GPR75 expression is upregulated in microglia following TBI in the immature brain, alongside elevated CYP4A and activation of Src/EGFR/NF-\u03baB signaling.",
+        "change": "GPR75 expression is upregulated in microglia following TBI in the immature brain, alongside elevated CYP4A and activation of Src/EGFR/NF-κB signaling.",
         "accessibility_implication": "Disease-induced upregulation of GPR75 in activated microglia after TBI increases receptor density at the microglial surface, potentially expanding binder accessibility in the TBI neuroinflammatory milieu.",
         "species": "rat",
         "species_inferred": false,
@@ -1802,7 +1804,7 @@
       "ecd_disordered_fraction": 0.5730337078651685,
       "source": "AlphaFold DB (ECD-restricted pLDDT, n=89)",
       "license": "CC BY 4.0",
-      "attribution": "\u00a9 DeepMind / EMBL-EBI",
+      "attribution": "© DeepMind / EMBL-EBI",
       "citations": [
         "10.1038/s41586-021-03819-2",
         "10.1093/nar/gkad1011"
@@ -1825,7 +1827,7 @@
       "pdbs": [],
       "representative_structure": null,
       "source": "SURFACE-Bind v1 (Balbi 2026 PNAS)",
-      "attribution": "\u00a9 Balbi et al., Correia lab \u2014 EPFL / Inria / Novo Nordisk",
+      "attribution": "© Balbi et al., Correia lab — EPFL / Inria / Novo Nordisk",
       "citation": "10.1073/pnas.2506269123"
     },
     "homo_oligomerization": {
@@ -1956,7 +1958,7 @@
     },
     {
       "evidence_id": "a1_evi_02",
-      "claim": "GPR75 has a structurally unique 7TM GPCR domain architecture: approximately 200 aa extracellular N-terminus, a third intracellular loop of 92 residues, and an unusually long C-terminal intracellular tail of 169 residues \u2014 defining accessible ECD surface area.",
+      "claim": "GPR75 has a structurally unique 7TM GPCR domain architecture: approximately 200 aa extracellular N-terminus, a third intracellular loop of 92 residues, and an unusually long C-terminal intracellular tail of 169 residues — defining accessible ECD surface area.",
       "claim_type": "topology",
       "direction": "supports",
       "evidence_type": "review_assertion",
@@ -2000,7 +2002,7 @@
     },
     {
       "evidence_id": "a1_evi_03",
-      "claim": "GPR75 is a 540 aa G\u03b1q-coupled 7TM GPCR with N-glycosylation sites in the N-terminus (extracellular) and serine/threonine phosphorylation sites in the C-terminus (intracellular), confirming N-terminal extracellular orientation with post-translational modifications on the surface face.",
+      "claim": "GPR75 is a 540 aa Gαq-coupled 7TM GPCR with N-glycosylation sites in the N-terminus (extracellular) and serine/threonine phosphorylation sites in the C-terminus (intracellular), confirming N-terminal extracellular orientation with post-translational modifications on the surface face.",
       "claim_type": "topology",
       "direction": "supports",
       "evidence_type": "review_assertion",
@@ -2031,7 +2033,7 @@
           },
           "section": "introduction",
           "figure_or_table_id": null,
-          "quote": "Originally listed in the orphan receptor family is the GPCR 75 (GPR75), a 540 amino acid member of the G \u03b1q class of GPCRs, which contains seven transmembrane spanning domains, N-glycosylation sites in the N-terminus, and numerous serine and threonine phosphorylation sites in the C-terminus.",
+          "quote": "Originally listed in the orphan receptor family is the GPCR 75 (GPR75), a 540 amino acid member of the G αq class of GPCRs, which contains seven transmembrane spanning domains, N-glycosylation sites in the N-terminus, and numerous serine and threonine phosphorylation sites in the C-terminus.",
           "quote_sha256": "b7687e3e53ed68588193ad62df7e2484a80522c51c33be8d3213a28e740f6f5c",
           "char_offset": 0,
           "normalized_source_sha256": "8865e7876b77a66c2484d6bacafb7ef54ede337549e2cb07ac34b3b5cb5549a7"
@@ -2044,7 +2046,7 @@
     },
     {
       "evidence_id": "a1_evi_04",
-      "claim": "GPR75 topology diagram from GPCRdb confirms 7TM architecture with 3 extracellular loops (ECL1-3) located outside the receptor and available for ligand binding, N-terminus extracellular, and C-terminus intracellular \u2014 anchoring the accessible surface face.",
+      "claim": "GPR75 topology diagram from GPCRdb confirms 7TM architecture with 3 extracellular loops (ECL1-3) located outside the receptor and available for ligand binding, N-terminus extracellular, and C-terminus intracellular — anchoring the accessible surface face.",
       "claim_type": "topology",
       "direction": "supports",
       "evidence_type": "db_annotation",
@@ -2172,7 +2174,7 @@
           },
           "section": "methods",
           "figure_or_table_id": null,
-          "quote": "Gpr75 -knockout ( Gpr75 \u2013/\u2013 ) mice and 3xFlag tag Gpr75-knockin ( 3xFlag-Gpr75 ) mice were generated in our laboratory using the CRISPR/Cas9 system as described previously ( 41 ), with Gpr75 (5\u2032-ATTGGGGACATTCTGAAGCG-3\u2032) small base-pairing guide RNA (sgRNA) and the oligo template with the 3xFlag tag and flanking sequence: 5\u2032-TGAGCTGAGATCCTGACTCTTTTCCTGCTGAATTTATTTTTTTGAGAACACAAGAAAGAGACACCTCTCTCTGAAGatggactacaaagaccatgacggtgattataaagat catgatatcgattacaaggatgacgatgacaagATGAACACAAGTGCCCCGCTTCAGAATGTCCCCAATGCCACCTTGCTAAACATGC-3\u2032.",
+          "quote": "Gpr75 -knockout ( Gpr75 –/– ) mice and 3xFlag tag Gpr75-knockin ( 3xFlag-Gpr75 ) mice were generated in our laboratory using the CRISPR/Cas9 system as described previously ( 41 ), with Gpr75 (5′-ATTGGGGACATTCTGAAGCG-3′) small base-pairing guide RNA (sgRNA) and the oligo template with the 3xFlag tag and flanking sequence: 5′-TGAGCTGAGATCCTGACTCTTTTCCTGCTGAATTTATTTTTTTGAGAACACAAGAAAGAGACACCTCTCTCTGAAGatggactacaaagaccatgacggtgattataaagat catgatatcgattacaaggatgacgatgacaagATGAACACAAGTGCCCCGCTTCAGAATGTCCCCAATGCCACCTTGCTAAACATGC-3′.",
           "quote_sha256": "257395a7f7d73d8fa4068f43a2a25e6bf8c3ba1b7d3b68f714f22880ef3106cd",
           "char_offset": 0,
           "normalized_source_sha256": "ce29c0e93d74db7454b2a3b9313a0e939e94e215e1ade1e1cba6d2591da8a0ed"
@@ -2185,7 +2187,7 @@
     },
     {
       "evidence_id": "a1_evi_07",
-      "claim": "GPR75 protein detected by polyclonal anti-C-terminal antibody sc-164538 (Santa Cruz Biotechnology) in pull-down and WB experiments, yielding a single specific band at 54\u201355 kDa. Antibody is C-terminal (intracellular) directed; requires permeabilization for IF applications but suitable for WB validation.",
+      "claim": "GPR75 protein detected by polyclonal anti-C-terminal antibody sc-164538 (Santa Cruz Biotechnology) in pull-down and WB experiments, yielding a single specific band at 54–55 kDa. Antibody is C-terminal (intracellular) directed; requires permeabilization for IF applications but suitable for WB validation.",
       "claim_type": "methodological",
       "direction": "supports",
       "evidence_type": "western_blot",
@@ -2238,7 +2240,7 @@
     },
     {
       "evidence_id": "a1_evi_08",
-      "claim": "Photoaffinity crosslinking with 20-APheDa (a 20-HETE analogue) on isolated membrane fractions from human endothelial cells, followed by click-chemistry fluorescent labeling, produced a dominant band at 47\u201349 kDa consistent with GPR75 molecular weight. This membrane-fraction assay demonstrates ligand engagement at the plasma membrane surface of intact endothelial cells.",
+      "claim": "Photoaffinity crosslinking with 20-APheDa (a 20-HETE analogue) on isolated membrane fractions from human endothelial cells, followed by click-chemistry fluorescent labeling, produced a dominant band at 47–49 kDa consistent with GPR75 molecular weight. This membrane-fraction assay demonstrates ligand engagement at the plasma membrane surface of intact endothelial cells.",
       "claim_type": "surface_expression",
       "direction": "supports",
       "evidence_type": "surface_biotinylation",
@@ -2278,7 +2280,7 @@
           },
           "section": "results",
           "figure_or_table_id": null,
-          "quote": "Incubation of 10 nmol/L of 20-APheDa with membrane fractions of human endothelial cells (EC) (20\u03bcg) followed by 15 min of UV (365 nm) crosslinking and 1h of incubation with the click reagent (DBCO-IRdye 800CW, LiCor) (50 \u03bcmol/L) yielded several bands, including a dominant band located at 47\u201349 kDa were detected ( Fig. 1C ).",
+          "quote": "Incubation of 10 nmol/L of 20-APheDa with membrane fractions of human endothelial cells (EC) (20μg) followed by 15 min of UV (365 nm) crosslinking and 1h of incubation with the click reagent (DBCO-IRdye 800CW, LiCor) (50 μmol/L) yielded several bands, including a dominant band located at 47–49 kDa were detected ( Fig. 1C ).",
           "quote_sha256": "2dab10e71496bb4798b5e1de079c0e8a067f559907de2f9d77d86a31f09490e9",
           "char_offset": 223,
           "normalized_source_sha256": "572b16730b3eec74123cea06966aae7a2ce28a4c77eaa1ee69a397b4d1b4fc44"
@@ -2291,7 +2293,7 @@
     },
     {
       "evidence_id": "a1_evi_09",
-      "claim": "Competition of 20-APheDa membrane-fraction labeling by excess 20-HETE (agonist, 100 \u00b5M) but not 12-HETE (inactive control, 100 \u00b5M) confirms that the 47\u201349 kDa band represents specific GPR75\u2013ligand engagement at the membrane. This selectivity control strengthens the surface-accessibility claim from the photoaffinity experiment.",
+      "claim": "Competition of 20-APheDa membrane-fraction labeling by excess 20-HETE (agonist, 100 µM) but not 12-HETE (inactive control, 100 µM) confirms that the 47–49 kDa band represents specific GPR75–ligand engagement at the membrane. This selectivity control strengthens the surface-accessibility claim from the photoaffinity experiment.",
       "claim_type": "methodological",
       "direction": "supports",
       "evidence_type": "functional_assay",
@@ -2331,7 +2333,7 @@
           },
           "section": "results",
           "figure_or_table_id": null,
-          "quote": "This labeling profile of several bands is characteristic of many click-chemistry interactions whereby multiple proteins in close proximity to the binding site of the compound, in this case 20-APheda, are labeled. 30 Nevertheless, the labeling of these bands by 20-APheDa (0.1 nmol/L) was competed by excess amounts of 20-HETE (100 \u03bcmol/L), but not 12-HETE (100 \u03bcmol/L) ( Fig. 1D\u2013E ).",
+          "quote": "This labeling profile of several bands is characteristic of many click-chemistry interactions whereby multiple proteins in close proximity to the binding site of the compound, in this case 20-APheda, are labeled. 30 Nevertheless, the labeling of these bands by 20-APheDa (0.1 nmol/L) was competed by excess amounts of 20-HETE (100 μmol/L), but not 12-HETE (100 μmol/L) ( Fig. 1D–E ).",
           "quote_sha256": "0a5d5ae65e2d8542e92561f5fa4ac69dfda0cf1c991d616e9729c3ec01a5e7fc",
           "char_offset": 551,
           "normalized_source_sha256": "572b16730b3eec74123cea06966aae7a2ce28a4c77eaa1ee69a397b4d1b4fc44"
@@ -2450,7 +2452,7 @@
     },
     {
       "evidence_id": "a1_evi_12",
-      "claim": "3xFlag-GPR75 (endogenous knockin tag) is expressed in the primary cilia of hypothalamic neurons in wild-type mice, as shown in a figure panel describing the construct and ciliary compartment localization. Primary cilia are plasma membrane extensions \u2014 this supports GPR75 surface accessibility in a specialized membrane subdomain.",
+      "claim": "3xFlag-GPR75 (endogenous knockin tag) is expressed in the primary cilia of hypothalamic neurons in wild-type mice, as shown in a figure panel describing the construct and ciliary compartment localization. Primary cilia are plasma membrane extensions — this supports GPR75 surface accessibility in a specialized membrane subdomain.",
       "claim_type": "surface_expression",
       "direction": "supports",
       "evidence_type": "immunofluorescence",
@@ -2556,7 +2558,7 @@
     },
     {
       "evidence_id": "a1_evi_14",
-      "claim": "Endogenous GPR75 (detected via 3xFlag knockin) localizes to primary cilia of hypothalamic cells; the Thinner mutation L144P and human GPR75 obesity-protective variants fail to localize to cilia. Ciliary localization represents a restricted plasma-membrane subdomain \u2014 GPR75 surface accessibility may be compartmentalized to primary cilia in hypothalamic neurons, which could limit access for conventional antibody-based staining on non-ciliated cell surfaces.",
+      "claim": "Endogenous GPR75 (detected via 3xFlag knockin) localizes to primary cilia of hypothalamic cells; the Thinner mutation L144P and human GPR75 obesity-protective variants fail to localize to cilia. Ciliary localization represents a restricted plasma-membrane subdomain — GPR75 surface accessibility may be compartmentalized to primary cilia in hypothalamic neurons, which could limit access for conventional antibody-based staining on non-ciliated cell surfaces.",
       "claim_type": "surface_expression",
       "direction": "ambiguous",
       "evidence_type": "immunofluorescence",
@@ -2609,7 +2611,7 @@
     },
     {
       "evidence_id": "a1_evi_15",
-      "claim": "Endogenous GPR75 protein (detected via 3xFlag knockin) is exclusively expressed in the brains of knockin mice with consistent expression across different brain regions, confirmed by western blot of total brain tissue \u2014 whole-cell protein expression without surface fractionation.",
+      "claim": "Endogenous GPR75 protein (detected via 3xFlag knockin) is exclusively expressed in the brains of knockin mice with consistent expression across different brain regions, confirmed by western blot of total brain tissue — whole-cell protein expression without surface fractionation.",
       "claim_type": "tissue_expression",
       "direction": "ambiguous",
       "evidence_type": "western_blot",
@@ -2662,7 +2664,7 @@
     },
     {
       "evidence_id": "a1_evi_16",
-      "claim": "Both qPCR and flow cytometry show GPR75 expression in SH-SY5Y neuroblastoma cells. The flow cytometry result is mentioned but staining conditions (permeabilized vs non-permeabilized, antibody clone, isotype controls) are not specified in this abstract \u2014 surface accessibility cannot be confirmed from this result alone.",
+      "claim": "Both qPCR and flow cytometry show GPR75 expression in SH-SY5Y neuroblastoma cells. The flow cytometry result is mentioned but staining conditions (permeabilized vs non-permeabilized, antibody clone, isotype controls) are not specified in this abstract — surface accessibility cannot be confirmed from this result alone.",
       "claim_type": "tissue_expression",
       "direction": "ambiguous",
       "evidence_type": "flow_cytometry",
@@ -2715,7 +2717,7 @@
     },
     {
       "evidence_id": "a1_evi_17",
-      "claim": "Anti-GPR75 antibody detects an immunoreactive band at ~59 kDa in rat cortical neurons and differentiated SH-SY5Y cells by western blot of total cell lysate \u2014 whole-cell protein expression without membrane fractionation; surface accessibility not addressed.",
+      "claim": "Anti-GPR75 antibody detects an immunoreactive band at ~59 kDa in rat cortical neurons and differentiated SH-SY5Y cells by western blot of total cell lysate — whole-cell protein expression without membrane fractionation; surface accessibility not addressed.",
       "claim_type": "tissue_expression",
       "direction": "ambiguous",
       "evidence_type": "western_blot",
@@ -2821,7 +2823,7 @@
     },
     {
       "evidence_id": "a1_evi_19",
-      "claim": "GPR75 detected by fluorescent immunostaining in endothelial cells, vascular smooth muscle cells, and the glial limiting membrane of pial arteries and penetrating arterioles, but absent from capillary endothelium in rat cerebral vasculature \u2014 establishes cell-type-specific expression pattern but permeabilization status unstated; surface accessibility not confirmed.",
+      "claim": "GPR75 detected by fluorescent immunostaining in endothelial cells, vascular smooth muscle cells, and the glial limiting membrane of pial arteries and penetrating arterioles, but absent from capillary endothelium in rat cerebral vasculature — establishes cell-type-specific expression pattern but permeabilization status unstated; surface accessibility not confirmed.",
       "claim_type": "tissue_expression",
       "direction": "ambiguous",
       "evidence_type": "immunofluorescence",
@@ -2874,7 +2876,7 @@
     },
     {
       "evidence_id": "a1_evi_20",
-      "claim": "GPR75 protein distribution assessed by western blot and/or fluorescence microscopy in androgen-insensitive prostate cancer cells (PC-3) \u2014 combined WB and microscopy methods described; no membrane fractionation or surface-specific staining protocol specified, so surface accessibility not directly confirmed.",
+      "claim": "GPR75 protein distribution assessed by western blot and/or fluorescence microscopy in androgen-insensitive prostate cancer cells (PC-3) — combined WB and microscopy methods described; no membrane fractionation or surface-specific staining protocol specified, so surface accessibility not directly confirmed.",
       "claim_type": "tissue_expression",
       "direction": "ambiguous",
       "evidence_type": "immunofluorescence",
@@ -2927,7 +2929,7 @@
     },
     {
       "evidence_id": "a1_evi_21",
-      "claim": "Gene expression and protein levels of GPR75 evaluated across chronic liver disease patient samples by unspecified methods (described as 'gene expression and protein levels'); no surface fractionation method described \u2014 expression evidence without surface accessibility confirmation.",
+      "claim": "Gene expression and protein levels of GPR75 evaluated across chronic liver disease patient samples by unspecified methods (described as 'gene expression and protein levels'); no surface fractionation method described — expression evidence without surface accessibility confirmation.",
       "claim_type": "tissue_expression",
       "direction": "ambiguous",
       "evidence_type": "western_blot",
@@ -2980,7 +2982,7 @@
     },
     {
       "evidence_id": "a1_evi_22",
-      "claim": "RNAscope in situ hybridization identified GPR75 mRNA puncta in NeuN-positive hippocampal neurons, indicating neuronal mRNA expression without surface protein accessibility data \u2014 RNA-level evidence qualifying surface claims for neurons.",
+      "claim": "RNAscope in situ hybridization identified GPR75 mRNA puncta in NeuN-positive hippocampal neurons, indicating neuronal mRNA expression without surface protein accessibility data — RNA-level evidence qualifying surface claims for neurons.",
       "claim_type": "tissue_expression",
       "direction": "ambiguous",
       "evidence_type": "in_situ_hybridization",
@@ -3020,7 +3022,7 @@
           },
           "section": "abstract",
           "figure_or_table_id": null,
-          "quote": "Using RNAscope\u00ae technology, we identified GPR75 puncta in several Rbfox3-/NeuN-positive cells in the hippocampus, suggesting that this receptor has a neuronal expression.",
+          "quote": "Using RNAscope® technology, we identified GPR75 puncta in several Rbfox3-/NeuN-positive cells in the hippocampus, suggesting that this receptor has a neuronal expression.",
           "quote_sha256": "de80d11e8226cc87a73a5a1f4b750e7a0d67d0b24e0ec8f85744988355f79163",
           "char_offset": 297,
           "normalized_source_sha256": "8865e7876b77a66c2484d6bacafb7ef54ede337549e2cb07ac34b3b5cb5549a7"
@@ -3338,7 +3340,7 @@
           },
           "section": "abstract",
           "figure_or_table_id": null,
-          "quote": "Using RNAscope\u00ae technology, we identified GPR75 puncta in several Rbfox3-/NeuN-positive cells in the hippocampus, suggesting that this receptor has a neuronal expression.",
+          "quote": "Using RNAscope® technology, we identified GPR75 puncta in several Rbfox3-/NeuN-positive cells in the hippocampus, suggesting that this receptor has a neuronal expression.",
           "quote_sha256": "de80d11e8226cc87a73a5a1f4b750e7a0d67d0b24e0ec8f85744988355f79163",
           "char_offset": 297,
           "normalized_source_sha256": "8865e7876b77a66c2484d6bacafb7ef54ede337549e2cb07ac34b3b5cb5549a7"
@@ -3669,7 +3671,7 @@
     },
     {
       "evidence_id": "a2_evi_13",
-      "claim": "GPR75 is functionally expressed in cultured primary human microvascular endothelial cells, where 20-HETE binding activates G\u03b1q/11 signaling, inositol phosphate accumulation, and downstream EGFR transactivation.",
+      "claim": "GPR75 is functionally expressed in cultured primary human microvascular endothelial cells, where 20-HETE binding activates Gαq/11 signaling, inositol phosphate accumulation, and downstream EGFR transactivation.",
       "claim_type": "tissue_expression",
       "direction": "supports",
       "evidence_type": "functional_assay",
@@ -3709,7 +3711,7 @@
           },
           "section": "abstract",
           "figure_or_table_id": null,
-          "quote": "In cultured human endothelial cells, 20-HETE binding to GPR75 stimulated G\u03b1<sub>q/11</sub> protein dissociation and increased inositol phosphate accumulation and GPCR-kinase interacting protein-1-GPR75 binding, which further facilitated the c-Src-mediated transactivation of epidermal growth factor receptor.",
+          "quote": "In cultured human endothelial cells, 20-HETE binding to GPR75 stimulated Gα<sub>q/11</sub> protein dissociation and increased inositol phosphate accumulation and GPCR-kinase interacting protein-1-GPR75 binding, which further facilitated the c-Src-mediated transactivation of epidermal growth factor receptor.",
           "quote_sha256": "f37d2b0241846b4887f010bb6cf7c0fefd8b8c05a97538fcef0207b0a6c43734",
           "char_offset": 937,
           "normalized_source_sha256": "572b16730b3eec74123cea06966aae7a2ce28a4c77eaa1ee69a397b4d1b4fc44"
@@ -3722,7 +3724,7 @@
     },
     {
       "evidence_id": "a2_evi_14",
-      "claim": "GPR75 is functionally expressed in vascular smooth muscle cells (VSMCs), where 20-HETE/GPR75 signaling through G\u03b1q/11 leads to protein kinase C-mediated phosphorylation of MaxiK\u03b2, linking receptor activation to vasoconstriction.",
+      "claim": "GPR75 is functionally expressed in vascular smooth muscle cells (VSMCs), where 20-HETE/GPR75 signaling through Gαq/11 leads to protein kinase C-mediated phosphorylation of MaxiKβ, linking receptor activation to vasoconstriction.",
       "claim_type": "tissue_expression",
       "direction": "supports",
       "evidence_type": "functional_assay",
@@ -3762,7 +3764,7 @@
           },
           "section": "abstract",
           "figure_or_table_id": null,
-          "quote": "In vascular smooth muscle cells, GPR75-20-HETE pairing is associated with G\u03b1<sub>q/11</sub>- and GPCR-kinase interacting protein-1-mediated protein kinase C-stimulated phosphorylation of MaxiK\u03b2, linking GPR75 activation to 20-HETE-mediated vasoconstriction.",
+          "quote": "In vascular smooth muscle cells, GPR75-20-HETE pairing is associated with Gα<sub>q/11</sub>- and GPCR-kinase interacting protein-1-mediated protein kinase C-stimulated phosphorylation of MaxiKβ, linking GPR75 activation to 20-HETE-mediated vasoconstriction.",
           "quote_sha256": "1efb85c8add71317550191af3381d986813c89819a4bd0f152c106605f564c2b",
           "char_offset": 1250,
           "normalized_source_sha256": "572b16730b3eec74123cea06966aae7a2ce28a4c77eaa1ee69a397b4d1b4fc44"
@@ -3974,7 +3976,7 @@
           },
           "section": "results",
           "figure_or_table_id": null,
-          "quote": "Incubation with 20-HETE (0.1 nM, 12 h) decreased GPR75 receptor abundance in cell homogenates by 78% (p<0.0001 vs. control), an effect that was reversed by the 20-HETE receptor antagonist AAA (5 \u03bcM) (p<0.01 vs. 20-HETE alone).",
+          "quote": "Incubation with 20-HETE (0.1 nM, 12 h) decreased GPR75 receptor abundance in cell homogenates by 78% (p<0.0001 vs. control), an effect that was reversed by the 20-HETE receptor antagonist AAA (5 μM) (p<0.01 vs. 20-HETE alone).",
           "quote_sha256": "6f36ca6ef7b5d158a8aad158521649ee4c3663970237d9a980d34b1dc59012fd",
           "char_offset": 696,
           "normalized_source_sha256": "8d477be82eb4dce381a27617ab5583a92f4a7881ba14c38bb58df1845d86fc1d"
@@ -3987,7 +3989,7 @@
     },
     {
       "evidence_id": "a2_evi_19",
-      "claim": "After traumatic brain injury (TBI) in the immature brain, GPR75 expression levels are upregulated in activated microglia, alongside elevated CYP4A (20-HETE synthase), with concomitant activation of the Src/EGFR/NF-\u03baB pathway. This establishes disease-state-induced upregulation of GPR75 specifically in microglial cells in the TBI context.",
+      "claim": "After traumatic brain injury (TBI) in the immature brain, GPR75 expression levels are upregulated in activated microglia, alongside elevated CYP4A (20-HETE synthase), with concomitant activation of the Src/EGFR/NF-κB pathway. This establishes disease-state-induced upregulation of GPR75 specifically in microglial cells in the TBI context.",
       "claim_type": "tissue_expression",
       "direction": "supports",
       "evidence_type": "immunofluorescence",
@@ -4027,7 +4029,7 @@
           },
           "section": "abstract",
           "figure_or_table_id": null,
-          "quote": "In contrast, overexpression of GPR75 had the opposite effect. In addition, after immature brain TBI, the 20-HETE and GPR75 expression levels were upregulated in microglia, with significant activation of the Src/EGFR/NF-\u03baB pathway. Inhibition of 20-HETE synthesis with N-hydroxy-N'-(4-n-butyl-2-methylphenyl) formamidine (HET0016) produced the opposite effect. 20-HETE regulates the Src/EGFR/NF-\u03baB signaling pathway via GPR75 to activate microglia, promoting immature brain TBI. These findings offer a novel target for promoting the brain injury effect of 20-HETE.",
+          "quote": "In contrast, overexpression of GPR75 had the opposite effect. In addition, after immature brain TBI, the 20-HETE and GPR75 expression levels were upregulated in microglia, with significant activation of the Src/EGFR/NF-κB pathway. Inhibition of 20-HETE synthesis with N-hydroxy-N'-(4-n-butyl-2-methylphenyl) formamidine (HET0016) produced the opposite effect. 20-HETE regulates the Src/EGFR/NF-κB signaling pathway via GPR75 to activate microglia, promoting immature brain TBI. These findings offer a novel target for promoting the brain injury effect of 20-HETE.",
           "quote_sha256": "14d39fd7807bd1513d95292fb3152a26c662925be6a3b0832e0404cfa0f13d2e",
           "char_offset": 0,
           "normalized_source_sha256": "9cec9d5eebdf47f398da73fe0dcf848b778c637fb0262a622a9207cd4f403593"
@@ -4080,7 +4082,7 @@
           },
           "section": "abstract",
           "figure_or_table_id": null,
-          "quote": "Transcriptomic analysis and further research revealed that WA promoted the expression of the antioxidant proteins HMOX1 and SOD2 and inhibited IL-1\u03b2, IL-6, and TNF-\u03b1 secretion. G protein-coupled receptor 75 (GPR75), which was highly expressed in the renal macrophages of S-AKI mice, was subsequently identified as the direct target of WA. In the RAW264.7/mTEC coculture system, siGPR75 inhibited macrophage oxidative stress and restrained IL-1\u03b2, IL-6, and TNF-\u03b1 secretion, thereby reducing mTEC injury, and overexpression of GPR75 resulted in the opposite effects.",
+          "quote": "Transcriptomic analysis and further research revealed that WA promoted the expression of the antioxidant proteins HMOX1 and SOD2 and inhibited IL-1β, IL-6, and TNF-α secretion. G protein-coupled receptor 75 (GPR75), which was highly expressed in the renal macrophages of S-AKI mice, was subsequently identified as the direct target of WA. In the RAW264.7/mTEC coculture system, siGPR75 inhibited macrophage oxidative stress and restrained IL-1β, IL-6, and TNF-α secretion, thereby reducing mTEC injury, and overexpression of GPR75 resulted in the opposite effects.",
           "quote_sha256": "0b559f189e4897674286039bae6b9e8a92b67e78c3be87b35cc36dc3b283f13a",
           "char_offset": 0,
           "normalized_source_sha256": "dc795ce7dff1a5a4dd148bb92c9f7586ec403f0e57dd7369aa06afd6971cf8de"
@@ -4305,7 +4307,7 @@
     },
     {
       "evidence_id": "a2_evi_25",
-      "claim": "GPR75 protein accumulates in the primary cilia of hypothalamic neurons in mice, representing a specific subcellular localization at the ciliary membrane surface domain \u2014 a membrane subdomain with restricted accessibility.",
+      "claim": "GPR75 protein accumulates in the primary cilia of hypothalamic neurons in mice, representing a specific subcellular localization at the ciliary membrane surface domain — a membrane subdomain with restricted accessibility.",
       "claim_type": "surface_expression",
       "direction": "supports",
       "evidence_type": "immunofluorescence",
@@ -4358,7 +4360,7 @@
     },
     {
       "evidence_id": "a2_evi_26",
-      "claim": "The Thinner allele (L144P missense mutation) of GPR75 shows defective ciliary localization in hypothalamic neurons: the mutant protein fails to traffic to the primary cilium surface, correlating with resistance to diet-induced fat accumulation. This represents an accessibility modulation \u2014 baseline: wild-type GPR75 at ciliary surface; modulating condition: L144P mutation abolishes ciliary surface targeting.",
+      "claim": "The Thinner allele (L144P missense mutation) of GPR75 shows defective ciliary localization in hypothalamic neurons: the mutant protein fails to traffic to the primary cilium surface, correlating with resistance to diet-induced fat accumulation. This represents an accessibility modulation — baseline: wild-type GPR75 at ciliary surface; modulating condition: L144P mutation abolishes ciliary surface targeting.",
       "claim_type": "surface_expression",
       "direction": "refutes",
       "evidence_type": "immunofluorescence",
@@ -4411,7 +4413,7 @@
     },
     {
       "evidence_id": "a2_evi_27",
-      "claim": "Prior literature reports that GPR75 was proposed to be activated by CCL5/RANTES as a chemokine receptor originally characterized in the human retina. However, the functional role of CCL5 as a bona fide GPR75 ligand remains contested in the field \u2014 the receptor was initially identified as an orphan GPCR and the CCL5 pairing has not been independently replicated by all groups.",
+      "claim": "Prior literature reports that GPR75 was proposed to be activated by CCL5/RANTES as a chemokine receptor originally characterized in the human retina. However, the functional role of CCL5 as a bona fide GPR75 ligand remains contested in the field — the receptor was initially identified as an orphan GPCR and the CCL5 pairing has not been independently replicated by all groups.",
       "claim_type": "contradictory",
       "direction": "ambiguous",
       "evidence_type": "review_assertion",
@@ -4451,7 +4453,7 @@
           },
           "section": "introduction",
           "figure_or_table_id": null,
-          "quote": "GPR75 has been considered an orphan receptor of the Gq\u03b1 family of G proteins, which was originally characterized for its expression in the human retina ( Tarttelin et al . 1999 , Sauer et al . 2001 ).",
+          "quote": "GPR75 has been considered an orphan receptor of the Gqα family of G proteins, which was originally characterized for its expression in the human retina ( Tarttelin et al . 1999 , Sauer et al . 2001 ).",
           "quote_sha256": "9cdaff32265bf3b5c437cf219378b4af5e10338d0cf211a83094b3428efb5749",
           "char_offset": 760,
           "normalized_source_sha256": "a246d73fdd123463f87c90c447878d133c0af15e1e5213f57bc1a88d566a1286"
@@ -4759,7 +4761,7 @@
       "mode": "topic_search",
       "query": {
         "agent_focus": "a1",
-        "intent": "standing: state-conditional surface biology (activation / stress / disease / EMT / senescence / differentiation) \u2014 feeds accessibility_modulation",
+        "intent": "standing: state-conditional surface biology (activation / stress / disease / EMT / senescence / differentiation) — feeds accessibility_modulation",
         "anchors": [
           "cell_state_modulation"
         ]
@@ -4992,7 +4994,7 @@
       "mode": "topic_search",
       "query": {
         "agent_focus": "a2",
-        "intent": "standing: state-conditional surface biology (activation / stress / disease / EMT / senescence / differentiation) \u2014 feeds accessibility_modulation",
+        "intent": "standing: state-conditional surface biology (activation / stress / disease / EMT / senescence / differentiation) — feeds accessibility_modulation",
         "anchors": [
           "cell_state_modulation"
         ]
@@ -5007,7 +5009,7 @@
   "primary_evidence_count": 34,
   "secondary_evidence_count": 15,
   "confidence": "moderate",
-  "confidence_reasoning": "Confidence is moderate for two reasons. First, the surface-accessibility evidence is indirect: the strongest data come from endogenous N-terminal 3xFlag-knockin immunofluorescence (validated by the L144P loss-of-localization control) and membrane-fraction photoaffinity crosslinking \u2014 robust but not a clean non-permeabilized live-cell flow or surface biotinylation experiment with a knockout comparator. Second, the 2025 cryo-EM structure (PMID:41545757) reveals a constitutively collapsed orthosteric ECD pocket, a moderate epitope-masking risk that could defeat conventional GPCR-targeting antibody strategies. Lifting confidence would require non-permeabilized live-cell surface staining or surface biotinylation in primary human cells with a GPR75-knockout control, plus structural mapping of ECL2/3 loop accessibility.",
+  "confidence_reasoning": "Confidence is moderate for two reasons. First, the surface-accessibility evidence is indirect: the strongest data come from endogenous N-terminal 3xFlag-knockin immunofluorescence (validated by the L144P loss-of-localization control) and membrane-fraction photoaffinity crosslinking — robust but not a clean non-permeabilized live-cell flow or surface biotinylation experiment with a knockout comparator. Second, the 2025 cryo-EM structure (PMID:41545757) reveals a constitutively collapsed orthosteric ECD pocket, a moderate epitope-masking risk that could defeat conventional GPCR-targeting antibody strategies. Lifting confidence would require non-permeabilized live-cell surface staining or surface biotinylation in primary human cells with a GPR75-knockout control, plus structural mapping of ECL2/3 loop accessibility.",
   "model_path": "claude-sonnet-4-6",
   "record_generated_at": "2026-06-07T02:42:21.474347Z"
 }
