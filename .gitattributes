@@ -153,3 +153,10 @@ data/processed/paywall_bot_block/paywall_bot_block_compare.tsv -filter -diff -me
 # practical cap.
 data/analysis/db_vs_sonnet_inclusion/per_protein_features.tsv -filter -diff -merge text
 data/analysis/db_vs_sonnet_inclusion/inclusion_enrichment.tsv  -filter -diff -merge text
+
+# ADCdb per-antigen Function-text scrape — curator-written descriptions from
+# the per-antigen detail pages. ~50 KB. Read by build_positive_control_lists.py
+# to apply a Function-text noise filter that targets canonical secreted /
+# intracellular function phrases (chemokine ligands, RNA polymerase
+# components, SNAREs, etc.) — all ADCdb-internal text, no external DBs.
+data/external/adcdb/adcdb_antigen_functions.tsv -filter -diff -merge text

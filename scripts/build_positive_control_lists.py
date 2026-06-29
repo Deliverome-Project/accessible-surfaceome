@@ -60,6 +60,46 @@ VZ_SOURCE_NOTE = (
 # unresolved.
 ADCDB_TSV = REPO_ROOT / "data/external/adcdb/adcdb_antigens.tsv"
 
+# Per-antigen curator-written Function descriptions scraped from ADCdb's
+# antigen detail pages. ADCdb-internal text — read by the Function-text noise
+# filter below.
+ADCDB_FUNCTIONS_TSV = REPO_ROOT / "data/external/adcdb/adcdb_antigen_functions.tsv"
+
+# Function-text patterns that match curator-written descriptions of canonical
+# secreted / nuclear / intracellular protein families. Catches 12 of 15
+# known-noise misses (the other 3 lack function text in ADCdb) and zero
+# rescues. All patterns are biological function keywords, not subcellular
+# location labels — so the filter is independent of UniProt's subcellular
+# annotation.
+_FN_NOISE_PATTERNS = "|".join([
+    # Each pattern is a biological-function phrase from ADCdb's curator-written
+    # text that distinguishes secreted / intracellular proteins. The bare
+    # word "cytokine" was tested but is too ambiguous — it appears in many
+    # surface-protein descriptions (TGFBR1, CD70, AXL, MERTK, FLT3, KIT,
+    # CD47, CD74, TNFSF10…) where "receptor for" / "ligand for" is mentioned.
+    # The patterns below match only when the protein itself is functioning
+    # as a secreted / intracellular factor.
+    r"growth\s+factor\s+active",                  # VEGFA: "Growth factor active in angiogenesis"
+    r"transcription(?:al)?\s+(?:factor|elongation)",
+    r"RNA\s+polymerase",                          # AFF4
+    r"elongation\s+complex",                      # AFF4 (super elongation)
+    r"histone\s+acetyltransferase",               # MSL1
+    r"\bSNARE\b",                                 # BET1, VAMP8 — Golgi/endosomal SNAREs
+    r"colloidal\s+osmotic",                       # ALB osmotic regulator
+    r"chemotactic\s+for",                         # CCL1 — secreted chemokine
+    r"in\s+saliva",                               # CA6 — secreted salivary protein
+    r"carbonic\s+anhydrase\b",
+    r"factor\s+\w+\s+cleaves",                    # CFD: "Factor D cleaves factor B"
+    r"C3\s+convertase",                           # CFD complement convertase
+    r"negative\s+regulator\s+of\s+skeletal",      # MSTN myostatin
+    r"calcium-signaling.*kinase",                 # DCLK1
+    r"kinase.*calcium-signaling",
+    r"phosphate\s+cotransporter",                 # SLC34A2-class transporter
+    r"\bplasma\s+protein\b",                      # ALB — NOT "plasma membrane"!
+    r"most\s+abundant\s+protein\s+in\s+(?:blood|serum)",  # ALB
+])
+ADCDB_FN_NOISE = re.compile(rf"\b({_FN_NOISE_PATTERNS})\b", re.IGNORECASE)
+
 # ADCdb antigen-name regex filter. Drops entries whose `antigen_name` field
 # matches a payload-mechanism keyword or an explicit intracellular/nuclear
 # protein-name pattern. These are catalog noise — ADCdb attributing the
@@ -343,17 +383,35 @@ def collect_adcdb_hgncs(sym_to_hgnc: dict) -> set[str]:
     print(f"[adcdb] reading {ADCDB_TSV.relative_to(REPO_ROOT)}")
     df = pd.read_csv(ADCDB_TSV, sep="\t")
     n_before = len(df)
-    # Tier-1 antigen-name regex filter — ADCdb-internal noise removal
-    noise_mask = df["antigen_name"].fillna("").apply(
+    # Tier 1: antigen-name regex on the antigen NAME field (ADCdb-internal)
+    name_mask = df["antigen_name"].fillna("").apply(
         lambda s: bool(ADCDB_NAME_NOISE.search(str(s)))
     )
-    n_dropped_name = noise_mask.sum()
+    n_dropped_name = name_mask.sum()
     if n_dropped_name:
         print(
             f"[adcdb] name-regex noise filter: dropped {n_dropped_name} "
-            f"entries (e.g. {', '.join(df.loc[noise_mask, 'gene_symbol_inline'].dropna().head(5).tolist())})"
+            f"entries (e.g. {', '.join(df.loc[name_mask, 'gene_symbol_inline'].dropna().head(5).tolist())})"
         )
-    df = df[~noise_mask]
+    df = df[~name_mask]
+
+    # Tier 2: function-text regex on the curator-written Function field
+    # (ADCdb-internal, scraped from per-antigen detail pages).
+    if ADCDB_FUNCTIONS_TSV.is_file():
+        funcs = pd.read_csv(ADCDB_FUNCTIONS_TSV, sep="\t")
+        df = df.merge(funcs, on="adcdb_tar_id", how="left")
+        fn_mask = df["function_text"].fillna("").apply(
+            lambda s: bool(ADCDB_FN_NOISE.search(str(s)))
+        )
+        n_dropped_fn = fn_mask.sum()
+        if n_dropped_fn:
+            print(
+                f"[adcdb] function-regex noise filter: dropped {n_dropped_fn} "
+                f"entries (e.g. {', '.join(df.loc[fn_mask, 'gene_symbol_inline'].dropna().head(5).tolist())})"
+            )
+        df = df[~fn_mask]
+    else:
+        print(f"[adcdb] function TSV not present at {ADCDB_FUNCTIONS_TSV} — skipping Tier 2 filter")
     out: set[str] = set()
     for sym in df["gene_symbol_inline"].dropna():
         h = _resolve_symbol(str(sym).strip(), sym_to_hgnc)
