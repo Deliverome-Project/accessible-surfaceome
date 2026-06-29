@@ -22,6 +22,7 @@ from accessible_surfaceome.cloud.d1_client import D1Client
 from accessible_surfaceome.cloud.deep_dive_upload import (
     _insert_evidence_rows,
     _insert_search_log_rows,
+    genes_done_at_schema,
 )
 from accessible_surfaceome.tools._shared.models import SurfaceomeRecord
 
@@ -156,3 +157,34 @@ def test_distinct_parents_do_not_collide() -> None:
     _ins_search_log(d1, 1, record)
     _ins_search_log(d1, 2, record)
     assert d1.count("deep_dive_search_log") == 4
+
+
+def test_genes_done_at_schema_is_global_and_schema_aware() -> None:
+    """The incremental-rollout dedup: 'done' = a deep_dive_run record at the
+    current schema, across ALL run_ids. Old-schema records don't count (a
+    schema bump re-opens them), and a gene done in any batch is deduped."""
+    d1 = _SqliteD1()
+    d1.query(
+        "CREATE TABLE deep_dive_run ("
+        " id INTEGER PRIMARY KEY AUTOINCREMENT,"
+        " run_id TEXT NOT NULL, gene_symbol TEXT NOT NULL,"
+        " schema_version TEXT NOT NULL);"
+    )
+    for run_id, gene, schema in [
+        ("batch_a", "AAA", "2.14.1"),
+        ("batch_b", "BBB", "2.14.1"),
+        ("batch_a", "CCC", "2.13.0"),  # old schema → NOT done at 2.14.1
+        ("batch_b", "AAA", "2.14.1"),  # same gene, different run_id → deduped
+    ]:
+        d1.query(
+            "INSERT INTO deep_dive_run (run_id, gene_symbol, schema_version) "
+            "VALUES (?, ?, ?);",
+            [run_id, gene, schema],
+        )
+
+    done = genes_done_at_schema(cast(D1Client, d1), "2.14.1")
+    assert done == {"AAA", "BBB"}  # global across run_ids; CCC excluded (stale schema)
+
+    # The stale-schema gene IS returned when we ask for its schema — i.e. a
+    # schema bump is the only thing that re-opens it.
+    assert genes_done_at_schema(cast(D1Client, d1), "2.13.0") == {"CCC"}
