@@ -85,6 +85,9 @@ def _join_optimized_cutoffs(catalog: pd.DataFrame, opt: pd.DataFrame) -> pd.Data
     cspa_opt    = set(opt.loc[opt["cspa_optimized"]    == 1, "accession"].astype(str))
     out["uniprot_optimized"] = out["uniprot_acc"].astype(str).isin(uniprot_opt).astype(int)
     out["cspa_optimized"]    = out["uniprot_acc"].astype(str).isin(cspa_opt).astype(int)
+    # Drop internal-only columns that leaked through from the catalog —
+    # `universe_version` is provenance bookkeeping, not figure-input data.
+    out = out.drop(columns=["universe_version"], errors="ignore")
     return out
 
 

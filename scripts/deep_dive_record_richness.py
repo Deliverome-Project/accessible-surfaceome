@@ -79,6 +79,7 @@ import pandas as pd
 import seaborn as sns
 
 from accessible_surfaceome.audit._plotting_config import (
+    _ORIGINAL_AXES_SET_TITLE,
     COLORS,
     SEQUENTIAL_PALETTES,
     save_figure,
@@ -225,8 +226,13 @@ def _synth_around_real(real: np.ndarray, *, lo: float, hi: float,
 def make_plot() -> tuple[plt.Figure, list[plt.Axes]]:
     setup_plotting_style(style="whitegrid", context="notebook", font_scale=1.0)
     plt.rcParams.update({
-        "font.size": 14, "axes.labelsize": 14, "axes.titlesize": 0,
-        "xtick.labelsize": 12, "ytick.labelsize": 13, "legend.fontsize": 12,
+        # Each subplot uses a TITLE (axes.titlesize) instead of an
+        # x-axis label so the per-panel description renders at a
+        # readable size; previously the x-tick label carried the
+        # description at 11pt and was hard to read in print.
+        "font.size": 18, "axes.labelsize": 20, "axes.titlesize": 20,
+        "axes.titleweight": "semibold", "axes.titlepad": 12,
+        "xtick.labelsize": 14, "ytick.labelsize": 18, "legend.fontsize": 14,
     })
 
     real_df = _load_real_values()
@@ -282,8 +288,19 @@ def make_plot() -> tuple[plt.Figure, list[plt.Axes]]:
                 label=f"real records (n={len(real_clean)})",
             )
 
-        ax.set_xticks([0])
-        ax.set_xticklabels([label], fontsize=11, linespacing=1.3)
+        # Per-panel label renders as a TITLE (larger, easier to read in
+        # print) rather than the x-axis label slot. The x-ticks
+        # themselves are hidden since each violin sits at x=0 and the
+        # axis carries no other categories. NOTE: ``setup_plotting_style``
+        # monkey-patches ``Axes.set_title`` to a no-op project-wide; we
+        # use the stashed ``_ORIGINAL_AXES_SET_TITLE`` to bypass that for
+        # this figure (per the docstring in _plotting_config).
+        # Title kept on 2 lines (use the existing \n splits in PANELS)
+        # so each panel's title fits within its column width — 1-line
+        # versions collided at fontsize 18 across the 5 narrow panels.
+        _ORIGINAL_AXES_SET_TITLE(ax, label, fontsize=16,
+                                  fontweight="semibold", pad=14, linespacing=1.2)
+        ax.set_xticks([])
         ax.set_ylim(lo, hi)
         ax.set_xlim(-0.6, 0.6)
 
