@@ -315,9 +315,12 @@ def make_plot() -> tuple[plt.Figure, list[plt.Axes]]:
                 )
 
         # Subpanel letter (lowercase, ExtraBold) at upper-left — paper
-        # convention from figure_subpanel_labels memory.
+        # convention from figure_subpanel_labels memory. Offset is
+        # axes-transform; -0.30 / 1.08 clears the top y-tick label
+        # comfortably on panel b (the 2-digit "50" tick previously
+        # collided with "b" at the earlier -0.18 / 1.05 position).
         ax.text(
-            -0.18, 1.05, panel_letters[idx],
+            -0.30, 1.08, panel_letters[idx],
             transform=ax.transAxes, ha="left", va="top",
             fontsize=22, fontweight=800, color=COLORS["dark"],
         )
