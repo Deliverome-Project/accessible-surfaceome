@@ -14,7 +14,13 @@ from collections.abc import Callable
 from threading import Lock
 from urllib.parse import urlparse
 
-ExternalRateLimitGate = Callable[[str, float], None]
+# A gate computes the courtesy wait for one (state_key, interval_s) request and
+# RETURNS the number of seconds the *caller* should sleep — it must NOT sleep
+# itself. This keeps the (single-container) Modal gate doing only microsecond
+# bookkeeping so one slow host/key never blocks another (no head-of-line
+# blocking) and the gate is never a throughput chokepoint. See
+# ``modal/deep_dive_app.py::rate_limit_gate``.
+ExternalRateLimitGate = Callable[[str, float], float]
 
 _EXTERNAL_GATE: ExternalRateLimitGate | None = None
 _EXTERNAL_GATE_LOCK = Lock()
@@ -44,6 +50,49 @@ def _external_state_key(host: str, bucket: str | None) -> str:
         return host
     digest = hashlib.sha256(bucket.encode("utf-8")).hexdigest()[:24]
     return f"{host}\0bucket:{digest}"
+
+
+def reserve_slot(
+    table: dict[str, float],
+    state_key: str,
+    interval_s: float,
+    *,
+    now: float,
+    max_wait_s: float | None = None,
+) -> float:
+    """Reserve the next courtesy slot for ``state_key``; return seconds to wait.
+
+    Pure given ``(table, now)`` — it only reads/writes ``table[state_key]``, so
+    it is directly unit-testable and is shared by both the in-process
+    :class:`RateLimiter` and the cross-process Modal gate
+    (``modal/deep_dive_app.py``) so the two paths can't diverge.
+
+    Each key is an independent schedule line: the first call for a key waits 0,
+    and N back-to-back calls get waits ``0, interval, 2·interval, …``. Different
+    keys never interact. **The caller sleeps the returned duration itself** —
+    never hold a lock across that sleep (that is the head-of-line-blocking bug
+    this design removes).
+
+    ``max_wait_s`` bounds both the returned wait and how far ahead the slot is
+    reserved, so pathological contention — hundreds of queued reservations on a
+    ~1 qps host, compounded by phantom slots left by crashed/retried workers —
+    degrades to a brief over-rate instead of an unbounded queue that could blow
+    a gene's wall-clock timeout. Non-positive intervals return 0 immediately.
+    """
+    if interval_s <= 0:
+        return 0.0
+    # First call for a key (prev defaults to now-interval) ⇒ no wait.
+    prev = table.get(state_key, now - interval_s)
+    scheduled = max(now, prev + interval_s)
+    wait_for = scheduled - now
+    if max_wait_s is not None and wait_for > max_wait_s:
+        # Cap the reservation horizon, not just the returned wait — otherwise
+        # the slot stays booked far in the future and every later caller piles
+        # on behind it. Capping both degrades gracefully to a slight over-rate.
+        scheduled = now + max_wait_s
+        wait_for = max_wait_s
+    table[state_key] = scheduled
+    return wait_for
 
 
 class RateLimiter:
@@ -88,23 +137,34 @@ class RateLimiter:
         with _EXTERNAL_GATE_LOCK:
             gate = _EXTERNAL_GATE
         if gate is not None:
-            gate(_external_state_key(host, bucket), interval_s)
+            # The gate reserves the next slot and returns how long to wait; we
+            # sleep here in the worker process, not inside the gate container.
+            wait_for = gate(_external_state_key(host, bucket), interval_s)
+            if wait_for and wait_for > 0:
+                time.sleep(wait_for)
             return
         state_key = f"{host}\0{bucket}" if bucket else host
+        # Reserve the slot under the lock, then sleep *outside* it: holding the
+        # lock across the sleep would serialize unrelated hosts/buckets in this
+        # process (head-of-line blocking) — the same flaw the Modal gate fixes.
         with self._lock:
-            now = time.monotonic()
-            last = self._last_call.get(state_key, 0.0)
-            wait_for = interval_s - (now - last)
-            if wait_for > 0:
-                time.sleep(wait_for)
-            self._last_call[state_key] = time.monotonic()
+            wait_for = reserve_slot(
+                self._last_call, state_key, interval_s, now=time.monotonic()
+            )
+        if wait_for > 0:
+            time.sleep(wait_for)
 
 
 def default_limiter() -> RateLimiter:
     """Default per-host caps for the upstreams gene_lookup uses today.
 
     NCBI's 10 qps with API key is the only documented hard cap; everything else
-    is a courteous self-throttle.
+    is a courteous self-throttle. The OA-recovery hosts (Unpaywall, DataCite,
+    Crossref Labs) were previously absent from this table, so under Modal
+    fan-out they were hit at full concurrency (``interval=0``). They ask for
+    polite, identifiable clients rather than publishing a hard qps, so we keep
+    them at a conservative ~1-2 qps; a brief OA lookup per paper is not the
+    sweep's bottleneck.
     """
 
     return RateLimiter(
@@ -115,5 +175,8 @@ def default_limiter() -> RateLimiter:
             "rest.genenames.org": 200,
             "api.platform.opentargets.org": 250,
             "www.ebi.ac.uk": 130,  # Europe PMC; ~7-8 qps courtesy ceiling
+            "api.unpaywall.org": 600,  # polite; daily-cap service, no hard qps published
+            "api.datacite.org": 1000,  # public REST API — keep to ~1 qps to be courteous
+            "api.labs.crossref.org": 1000,  # Retraction Watch feed host (Crossref Labs)
         }
     )

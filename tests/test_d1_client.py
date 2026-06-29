@@ -78,6 +78,101 @@ def test_query_raises_on_failure() -> None:
             client.query("BROKEN SQL;")
 
 
+def _status_transport(statuses: list[int | dict]) -> tuple[httpx.MockTransport, list[int]]:
+    """Transport that replays a fixed sequence of responses.
+
+    Each entry is either an int (return that HTTP status with a tiny body) or a
+    dict (return HTTP 200 with that JSON envelope). Returns the transport plus a
+    one-element call-counter list the test can assert on.
+    """
+    queue: list[int | dict] = list(statuses)
+    calls = [0]
+
+    def handler(request: httpx.Request) -> httpx.Response:
+        calls[0] += 1
+        item = queue.pop(0)
+        if isinstance(item, int):
+            return httpx.Response(item, text="upstream error")
+        return httpx.Response(200, json=item)
+
+    return httpx.MockTransport(handler), calls
+
+
+def _ok_envelope() -> dict:
+    return {
+        "success": True,
+        "result": [{"results": [{"a": 1}], "success": True}],
+        "errors": [],
+        "messages": [],
+    }
+
+
+@pytest.fixture(autouse=True)
+def _no_backoff_sleep(monkeypatch: pytest.MonkeyPatch) -> None:
+    """Skip tenacity's real backoff sleeps so retry tests run instantly."""
+    monkeypatch.setattr("tenacity.nap.time.sleep", lambda _s: None)
+
+
+def test_query_retries_transient_5xx_then_succeeds() -> None:
+    transport, calls = _status_transport([503, 503, _ok_envelope()])
+    with _make_client(transport) as client:
+        rows = client.query("SELECT a FROM t;")
+    assert rows == [{"a": 1}]
+    assert calls[0] == 3  # two retries, then success
+
+
+def test_query_retries_429() -> None:
+    transport, calls = _status_transport([429, _ok_envelope()])
+    with _make_client(transport) as client:
+        rows = client.query("SELECT a FROM t;")
+    assert rows == [{"a": 1}]
+    assert calls[0] == 2
+
+
+def test_query_gives_up_after_max_attempts() -> None:
+    transport, calls = _status_transport([503, 503, 503, 503, 503])
+    with _make_client(transport) as client:
+        with pytest.raises(D1Error, match="retryable"):
+            client.query("SELECT a FROM t;")
+    assert calls[0] == 4  # DEFAULT_MAX_ATTEMPTS
+
+
+def test_query_does_not_retry_4xx() -> None:
+    # A 400 (bad SQL) is a request-level error — surface it without retrying.
+    transport, calls = _status_transport([400])
+    with _make_client(transport) as client:
+        with pytest.raises(D1Error):
+            client.query("BROKEN SQL;")
+    assert calls[0] == 1
+
+
+def test_query_retries_transport_error_then_succeeds() -> None:
+    calls = [0]
+
+    def handler(request: httpx.Request) -> httpx.Response:
+        calls[0] += 1
+        if calls[0] == 1:
+            raise httpx.ConnectError("connection reset", request=request)
+        return httpx.Response(200, json=_ok_envelope())
+
+    with _make_client(httpx.MockTransport(handler)) as client:
+        rows = client.query("SELECT a FROM t;")
+    assert rows == [{"a": 1}]
+    assert calls[0] == 2
+
+
+def test_max_attempts_one_disables_retry() -> None:
+    transport, calls = _status_transport([503, _ok_envelope()])
+    cfg = D1Config(account_id="acct", database_id="db", api_token="tok")
+    client = D1Client(cfg, max_attempts=1)
+    client._client.close()
+    client._client = httpx.Client(transport=transport, headers=client._headers)
+    with client:
+        with pytest.raises(D1Error):
+            client.query("SELECT a FROM t;")
+    assert calls[0] == 1
+
+
 def test_batch_executes_multiple() -> None:
     # `D1Client.batch` was reshaped (see its docstring) to unroll into
     # N sequential `query` POSTs after Cloudflare's HTTP API tightened
