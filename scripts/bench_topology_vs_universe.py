@@ -32,7 +32,6 @@ import math
 import urllib.request
 from pathlib import Path
 
-import matplotlib.patches as mpatches
 import matplotlib.pyplot as plt
 import numpy as np
 import seaborn as sns

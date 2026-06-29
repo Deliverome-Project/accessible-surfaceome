@@ -181,7 +181,7 @@ def main() -> int:
     args = ap.parse_args()
 
     args.out.mkdir(parents=True, exist_ok=True)
-    print(f"  loading canonical sources …")
+    print("  loading canonical sources …")
     src = _load_sources()
     for slug, builder in BUILDERS.items():
         df = builder(src)

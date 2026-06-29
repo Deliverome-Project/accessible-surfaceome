@@ -25,7 +25,6 @@ Run:
 from __future__ import annotations
 
 import csv
-from collections import defaultdict
 from pathlib import Path
 
 import matplotlib.patches as mpatches
@@ -229,9 +228,12 @@ def _bucket(reason: str) -> str:
     no  = {"cytoplasmic", "nuclear", "mitochondrial_internal", "endomembrane_resident",
            "nuclear_envelope", "secreted_only", "inner_leaflet_anchored",
            "pmhc_only_intracellular"}
-    if reason in yes: return "yes"
-    if reason in ctx: return "ctx"
-    if reason in no:  return "no"
+    if reason in yes:
+        return "yes"
+    if reason in ctx:
+        return "ctx"
+    if reason in no:
+        return "no"
     return "?"
 
 

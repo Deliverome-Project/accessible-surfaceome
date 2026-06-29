@@ -151,7 +151,7 @@ def main() -> int:
         tsv_paths = TSV_BUNDLE.get(slug, [])
         print(f"\n=== {slug}  →  gist {gist_id}")
         if not tsv_paths:
-            print(f"  (no TSV fetches — MOCK figure, skip data bundle)")
+            print("  (no TSV fetches — MOCK figure, skip data bundle)")
             # Still push the script + capture SWHID
             _run(["gh", "gist", "edit", gist_id, "-f", mirror.name, str(mirror)],
                  args.dry_run, tolerate_409=True)
@@ -166,7 +166,7 @@ def main() -> int:
                 print(f"  bundling {path} ({size_mb:.2f} MB){tag}")
                 _run(["gh", "gist", "edit", gist_id, "-a", str(tsv_local)],
                      args.dry_run)
-            print(f"  pushing updated mirror")
+            print("  pushing updated mirror")
             _run(["gh", "gist", "edit", gist_id, "-f", mirror.name, str(mirror)],
                  args.dry_run, tolerate_409=True)
 
