@@ -115,7 +115,7 @@ YES_CALLOUTS = [
     ("LY96",    "MD-2 — TLR4 co-receptor",             "stable_complex_partner"),
 ]
 CONTEXTUAL_CALLOUTS = [
-    ("KLK3",    "PSA; secreted + cell-surface prostate kallikrein", "dual_localization"),
+    ("IL15",    "Secreted + surface trans-presentation via IL-15Rα", "dual_localization"),
     ("KLK2",    "hK2; prostate-restricted kallikrein", "tissue_restricted_surface"),
     ("MMP9",    "Gelatinase B; cell-surface zymogen",  "stable_surface_attachment"),
     ("GSDME",   "Gasdermin E — pyroptosis pores",      "cell_state_induced"),
