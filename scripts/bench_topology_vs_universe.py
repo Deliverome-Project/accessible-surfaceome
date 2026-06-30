@@ -41,7 +41,6 @@ import numpy as np
 import seaborn as sns
 
 from accessible_surfaceome.audit._plotting_config import (
-    COLORS,
     save_figure,
     setup_plotting_style,
 )
@@ -278,21 +277,26 @@ def _write_caption(
     n_universe: int, n_bench: int, pvals_bonf: list[float],
     feats: list[tuple[str, str]], universe_pct: list[float], bench_pct: list[float],
 ) -> str:
-    """Build the paper-side figure caption from the computed values
-    and write it to a sidecar .caption.md so the rendered figure
-    stays clean (no big italic block under the bars). The .caption.md
-    travels next to the PDF/PNG so a reader can paste it into the
-    manuscript verbatim."""
+    """Build a numbers-checked caption draft from the computed values
+    and return it as a string. ``main`` prints this to the console as
+    a convenience; it is NOT written to disk. The authoritative
+    manuscript caption is the hand-verified
+    ``bench_topology_vs_universe.caption.md`` (de-jargoned + accuracy-
+    checked), which a re-render must never overwrite."""
     n_sig = sum(1 for p in pvals_bonf if p < 0.05)
     # Top 3 over- and under-represented classes for the caption body
     deltas = sorted(
         ((name, b - u, p) for (_, name), u, b, p in zip(feats, universe_pct, bench_pct, pvals_bonf, strict=True)),
         key=lambda t: t[1], reverse=True,
     )
-    over = [f"{n.replace(chr(10), ' ')} (+{d:.1f} pp{'*' if p < 0.05 else ''})"
-            for n, d, p in deltas[:3] if d > 0]
-    under = [f"{n.replace(chr(10), ' ')} ({d:+.1f} pp{'*' if p < 0.05 else ''})"
-             for n, d, p in deltas[-3:] if d < 0]
+    # Use the full APA star ramp (_star), NOT a single '*' — a class at
+    # p < 0.001 must read '***'. And only surface classes that actually
+    # reach significance, so the auto-text doesn't headline a
+    # non-significant top-delta class.
+    over = [f"{n.replace(chr(10), ' ')} (+{d:.1f} pp {_star(p)})"
+            for n, d, p in deltas[:3] if d > 0 and p < 0.05]
+    under = [f"{n.replace(chr(10), ' ')} ({d:+.1f} pp {_star(p)})"
+             for n, d, p in deltas[-3:] if d < 0 and p < 0.05]
 
     caption = (
         f"**Figure caption.** Topology composition of SurfaceBench "
@@ -320,14 +324,16 @@ def _write_caption(
 def main() -> None:
     fig, _ = make_plot()
     save_figure(fig, SLUG, output_dir=OUT_DIR, formats=("pdf", "png"))
-    # Sidecar caption — paste verbatim into the manuscript supplement.
+    # NOTE: this script deliberately does NOT write a caption file.
+    # The manuscript caption lives at
+    # ``data/analysis/figures/bench_topology_vs_universe.caption.md``
+    # and is hand-maintained (accuracy-verified + de-jargoned), like
+    # every other figure's caption — re-rendering the figure must not
+    # touch it. ``_write_caption`` is retained as a helper for anyone
+    # who wants to print a numbers-checked draft to the console.
     feats, univ, bench, _ci, pvals, n_u, n_b = _compute_distribution()
-    caption = _write_caption(n_u, n_b, pvals, feats, univ, bench)
-    caption_path = OUT_DIR / f"{SLUG}.caption.md"
-    caption_path.write_text(caption + "\n")
-    print(f"  caption written to {caption_path.relative_to(ROOT)}")
     print()
-    print(caption)
+    print(_write_caption(n_u, n_b, pvals, feats, univ, bench))
 
 
 if __name__ == "__main__":
