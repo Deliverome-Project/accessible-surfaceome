@@ -119,15 +119,30 @@ YES_CALLOUTS = [
     ("LY96",    "MD-2 — TLR4 co-receptor",             "stable_complex_partner"),
 ]
 CONTEXTUAL_CALLOUTS = [
-    ("IL15",    "Surface trans-presentation via IL-15Rα", "dual_localization"),
-    ("KLK2",    "Prostate kallikrein; ADC-relevant rescue", "tissue_restricted_surface"),
-    ("TIMP2",   "MT1-MMP ternary complex",             "stable_surface_attachment"),
+    ("KLK2",    "Prostate kallikrein",                 "tissue_restricted_surface"),
+    ("KLK3",    "PSA; prostate kallikrein",            "dual_localization"),
     ("GSDME",   "Gasdermin E — pyroptosis pores",      "cell_state_induced"),
     ("HSPA1A",  "Surface Hsp70; cmHsp70.1 mAb",        "cell_state_induced"),
-    ("HSP90B1", "Surface GRP94 in tumor cells",        "cell_state_induced"),
+    ("MMP9",    "Gelatinase B; cell-surface zymogen",  "stable_surface_attachment"),
+    ("LRG1",    "Leucine-rich α2-glycoprotein",        "stable_surface_attachment"),
+    ("IL15",    "Surface trans-presentation via IL-15Rα", "dual_localization"),
     ("HPSE",    "Surface heparanase on activated platelets / tumor cells",
                                                        "lysosomal_exocytosis"),
 ]
+
+# Clinical-target overlay (manually curated; verified against the
+# ADCdb + T-cell-engager positive-control panels on the PR87 branch
+# `claude/positive-controls-on-86`, 2026-06). These optimized zero-DB
+# rescues are also approved/clinical ADC or TCE targets — the
+# strongest validation that the agent recovers real, actionable
+# surface biology the gating databases miss. NOTE: this is a hand
+# annotation, NOT a data join (per design decision — the ADC/TCE TSVs
+# live in PR87); reconcile into a proper join when PR87 merges. Of the
+# eight, all are ADCdb targets and KLK2 is additionally a TCE target.
+CLINICAL_TARGETS = {
+    "KLK2": "ADC + TCE", "KLK3": "ADC", "GSDME": "ADC", "HSPA1A": "ADC",
+    "MMP9": "ADC", "LRG1": "ADC", "ASPH": "ADC", "FMOD": "ADC",
+}
 
 
 def _load_catalog_rows() -> list[dict]:
@@ -250,6 +265,20 @@ def _draw_callouts(ax, callouts: list[tuple[str, str, str]], palette: dict, titl
             transform=ax.transAxes, ha="left", va="center",
             fontsize=16, color=COLORS["neutral"],
         )
+        # Clinical-target badge: mark callouts that are also approved/
+        # clinical ADC or TCE targets (ADCdb / TCE panel). KLK2 (ADC+TCE)
+        # gets the brand-primary maroon; ADC-only gets the teal accent.
+        modality = CLINICAL_TARGETS.get(symbol)
+        if modality:
+            badge_color = COLORS["primary"] if "TCE" in modality else COLORS["secondary"]
+            ax.text(
+                0.985, y, modality,
+                transform=ax.transAxes, ha="right", va="center",
+                fontsize=13, fontweight="bold", color="white",
+                bbox={"boxstyle": "round,pad=0.3", "facecolor": badge_color,
+                      "edgecolor": "none"},
+                zorder=11,
+            )
 
 
 def main() -> None:
