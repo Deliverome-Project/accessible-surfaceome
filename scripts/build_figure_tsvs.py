@@ -199,7 +199,43 @@ def build_curator_vs_agent_reason(src: dict[str, pd.DataFrame]) -> pd.DataFrame:
     return reps[keep]
 
 
+_DB_FLAG_COLS = [
+    "uniprot_surface_flag", "go_surface_flag", "hpa_surface_flag",
+    "surfy_surface_flag", "cspa_surface_flag",
+]
+
+
+def build_db_overlap_venn(src: dict[str, pd.DataFrame]) -> pd.DataFrame:
+    """Figure 1 — the five databases' surface-membership overlap under
+    each source's INITIAL (pre-recalibration) cutoff.
+
+    This is a databases-overlap figure, NOT a whole-proteome view, so it
+    gets its own minimal per-figure TSV rather than reusing the big
+    whole_proteome_catalog.tsv. Columns: stable identifiers + the five
+    initial ``*_surface_flag`` columns. Restricted to the union (rows
+    where at least one source flags surface), since proteins no source
+    calls aren't part of any Venn region. Deliberately DROPS:
+      • ``universe_version`` — internal provenance, too technical for a
+        figure-input TSV (per the figure-input-TSV conventions).
+      • the optimized-cutoff columns + ``n_sources_surface`` — Figure 1
+        is about the native/initial source definitions only.
+      • ``sonnet_verdict`` / ``sonnet_reason`` / ``verdict_source`` —
+        the triage agent isn't part of this DB-overlap figure.
+    """
+    cat = src["catalog"]
+    keep_ids = ["hgnc_id", "hgnc_symbol", "uniprot_acc", "ensembl_gene", "ncbi_gene_id"]
+    cols = [c for c in keep_ids if c in cat.columns] + _DB_FLAG_COLS
+    out = cat[cols].copy()
+    # Union members only: at least one source flags surface.
+    flag_any = out[_DB_FLAG_COLS].apply(
+        lambda s: s.astype(str).isin(["1", "1.0"]).astype(int)
+    ).sum(axis=1)
+    out = out[flag_any > 0].reset_index(drop=True)
+    return out
+
+
 BUILDERS: dict[str, callable] = {
+    "db_overlap_venn":               build_db_overlap_venn,
     "benchmark_cost_vs_accuracy":    build_cost_vs_accuracy,
     "db_correctness_by_class":       build_db_correctness_by_class,
     "db_correctness_overall":        build_db_correctness_overall,

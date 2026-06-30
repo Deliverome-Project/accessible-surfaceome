@@ -179,13 +179,15 @@ def test_deterministic_filters_are_tool_derived_from_sequence() -> None:
         "surface_bind_main_class",
         # Schweke 2024 AF2 homomer prior — also on the AF2 structure.
         "is_homo_oligomer",
-        # Mechanical record count (sub-case 2): unique papers behind the
-        # evidence list, then a cohort-percentile band. The papers were
-        # agent-selected, but the band the filter exposes is a pure
-        # function of a count — no LLM judgement is read at filter time
-        # and it is reproducible from the record alone. (Distinct from
-        # evidence_density, which stays `llm`.)
-        "n_papers_selected_band",
+        # Mechanical record counts (sub-case 2): a count over the
+        # record's own evidence, then a band. The underlying evidence
+        # was agent-selected, but each filter exposes a pure function of
+        # a count — no LLM judgement is read at filter time and the value
+        # is reproducible from the record alone. Both are classified the
+        # same way; the LLM-graded "how strong" counterpart is
+        # evidence_grade (which stays `llm`).
+        "n_papers_selected_band",   # unique papers behind the evidence list, percentile band
+        "evidence_density",         # evidence-row count, fixed-threshold band
     }
     # Re-parse the registry to harvest (key, provenance) pairs from
     # both ENUM and BOOL blocks.

@@ -31,9 +31,14 @@ from venn import venn
 
 REPO = "Deliverome-Project/accessible-surfaceome"
 BRANCH = "main"
+# Dedicated per-figure TSV: the five databases' INITIAL (pre-recalibration)
+# surface flags, union members only, with stable IDs — NOT the
+# whole-proteome catalog. Figure 1 is a databases-overlap figure, so it
+# ships its own minimal input (built by scripts/build_figure_tsvs.py),
+# free of the catalog's triage/optimized/universe_version columns.
 CAND_URL = (
     f"https://raw.githubusercontent.com/{REPO}/{BRANCH}"
-    f"/data/processed/catalog/whole_proteome_catalog.tsv"
+    f"/data/processed/figures/db_overlap_venn.tsv"
 )
 
 # Published reproduction gist (embedded into output PNG Source / PDF

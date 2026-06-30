@@ -92,7 +92,8 @@ def _gist_link(slug: str, gist_map: dict, swhid_map: dict) -> str:
 # that lives in its analysis-area folder, not the per-figure-folder.
 # Genuine SVG mockups (deep_dive_flow, web_preview) are absent here.
 _CANONICAL_TSV: dict[str, Path] = {
-    "db_overlap_venn":            ROOT / "data/processed/catalog/whole_proteome_catalog.tsv",
+    # db_overlap_venn now has its own per-figure TSV under
+    # data/processed/figures/, so it's resolved there (not here).
     "zero_db_rescues_by_triage":  ROOT / "data/processed/catalog/whole_proteome_catalog.tsv",
     "db_cutoff_tradeoff":         ROOT / "data/processed/triage_bench/db_cutoff_tradeoff_points.tsv",
     "topology_coverage_by_source": ROOT / "data/analysis/db_vs_sonnet_inclusion/per_protein_features.tsv",

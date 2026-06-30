@@ -55,7 +55,7 @@ TSV_BUNDLE: dict[str, list[str]] = {
         "data/processed/triage_bench/db_cutoff_tradeoff_points.tsv",
     ],
     "db_overlap_venn": [
-        "data/processed/catalog/whole_proteome_catalog.tsv",
+        "data/processed/figures/db_overlap_venn.tsv",
     ],
     "db_vs_sonnet_whole_proteome": [
         "data/processed/figures/db_vs_sonnet_whole_proteome.tsv",

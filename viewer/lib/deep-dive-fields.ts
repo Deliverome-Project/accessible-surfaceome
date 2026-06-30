@@ -392,20 +392,22 @@ export const DD_ENUM_FIELDS: readonly DdEnumSpec[] = [
     provenance: "llm",
   },
   {
-    // Provenance is `llm`, NOT `deterministic`: the buckets (≥30 / ≥10
-    // / else) are mechanical, but the INPUT count is the number of
-    // evidence rows the synthesizer chose to include from the merged
-    // A1+A2 ledger. That inclusion judgement is an LLM rollup, so the
-    // final value depends on the LLM. The `deterministic` bucket is
-    // reserved for fields derived purely from tool output on the
-    // protein sequence — DeepTMHMM topology, AlphaFold pLDDT, Compara
-    // identity — where rerunning the same tool on the same sequence
-    // gives the same value regardless of the agent.
+    // `deterministic` provenance (sub-case 2: mechanical record count):
+    // the filter exposes a bucketed count of evidence rows (≥30 / ≥10 /
+    // else) — a pure function of the persisted record, with no LLM
+    // judgement read at filter time. The underlying rows were
+    // agent-selected, but so were the papers behind n_papers_selected,
+    // and both filters are classified the same way: a count-then-band
+    // is a mechanical readout, not an LLM rollup. (The LLM-graded
+    // counterpart for "how strong is the evidence" is evidence_grade,
+    // which stays `llm`.) Keeping evidence_density and
+    // n_papers_selected_band both deterministic holds the LLM-graded
+    // filter count at the 24 the manuscript reports.
     key: "evidence_density",
     label: "Evidence density",
     values: ["low", "moderate", "high"],
     tooltipKey: "catalog_evidence_density",
-    provenance: "llm",
+    provenance: "deterministic",
   },
   {
     // Cohort-percentile-banded unique-paper count behind the evidence
