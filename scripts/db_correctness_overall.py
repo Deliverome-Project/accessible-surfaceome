@@ -36,6 +36,10 @@ INK = "#1F1718"
 MODEL_ORDER = [
     ("claude-haiku-4-5",  "Haiku 4.5",  "#f1c4ab"),
     ("claude-sonnet-4-6", "Sonnet 4.6", "#d87851"),
+    # Sonnet 5 added 2026-06-30 — only ncbi variant sampled (head-to-head
+    # model comparison vs Sonnet 4.6's canonical ncbi cell). Empty
+    # (model, variant) cells skip cleanly in the bar loop.
+    ("claude-sonnet-5",   "Sonnet 5",   "#b35238"),
     ("claude-opus-4-8",   "Opus 4.8",   "#a85b3f"),
 ]
 # Variant display order + matplotlib hatch pattern.
