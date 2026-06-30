@@ -60,11 +60,13 @@ FIGURE_ORDER: list[tuple[str, str]] = [
     ("Supp S4",   "curator_vs_agent_reason"),
     ("Supp S5",   "ensemble_vs_best_db_vs_sonnet"),
     ("Supp S6",   "db_vs_sonnet_whole_proteome"),
+    ("Supp S7",   "positive_control_db_coverage_bars"),
     ("Supp S8",   "bench_topology_vs_universe"),
     ("Supp S9",   "topology_coverage_by_source"),
     ("Supp S10",  "paywall_bot_block_compare"),
     ("Supp S11",  "evidence_corpus_vs_selected"),
     ("Supp S12",  "triage_vs_deep_dive_reason"),
+    ("Supp S13",  "surfaceome_deterministic_features_placeholder"),
 ]
 
 
