@@ -191,6 +191,39 @@ def build_topology_coverage_by_source(src: dict[str, pd.DataFrame]) -> pd.DataFr
     return feat
 
 
+def build_bench_topology_vs_universe(src: dict[str, pd.DataFrame]) -> pd.DataFrame:
+    """bench_topology_vs_universe — SurfaceBench topology composition vs the
+    Sonnet 2-tier yes/contextual universe. Mirrors the membership logic of
+    scripts/bench_topology_vs_universe.py (which only renders the figure and
+    never wrote a data TSV): filter per_protein_features to (sonnet OR pubmed)
+    yes/contextual, tag bench membership by uniprot accession, keep gene_symbol
+    + the 9 topology/feature flags. NOT cutoff-dependent — scores no DB
+    membership, so it carries no optimized/initial cutoff columns."""
+    yc = {"yes", "contextual"}
+    feat = src["features"]
+    in_universe = feat["sonnet_verdict"].isin(yc) | feat["pubmed_verdict"].isin(yc)
+    univ = feat[in_universe]
+    bench_accs = set(src["bench"]["uniprot_acc"].dropna().astype(str))
+    feature_cols = [
+        "topo_gpi_anchored", "topo_gpcr_7tm", "topo_multi_pass_tm",
+        "topo_single_pass_tm", "topo_signal_only_secreted",
+        "topo_inner_leaflet_lipidated", "topo_no_tm_no_signal",
+        "up_has_glyc", "deeptm_TM_NO_SP",
+    ]
+
+    def _int01(col: pd.Series) -> pd.Series:
+        return col.map(lambda v: 1 if str(v).strip() in ("1", "1.0") else 0)
+
+    out = pd.DataFrame({
+        "gene_symbol": univ["gene_symbol"].to_numpy(),
+        "uniprot_acc": univ["uniprot_accession"].to_numpy(),
+        "is_bench": univ["uniprot_accession"].astype(str).isin(bench_accs).to_numpy(),
+    })
+    for col in feature_cols:
+        out[col] = _int01(univ[col]).to_numpy()
+    return out.sort_values("gene_symbol", kind="stable", ignore_index=True)
+
+
 def build_ensemble(src: dict[str, pd.DataFrame]) -> pd.DataFrame:
     """Bench + 5-DB flags + Sonnet ncbi vote + per-rep is_match. Same
     shape as db_correctness_by_class — one consolidated TSV serves both
@@ -304,6 +337,7 @@ BUILDERS: dict[str, callable] = {
     "curator_vs_agent_reason":       build_curator_vs_agent_reason,
     "zero_db_rescues_by_triage":     build_zero_db_rescues,
     "topology_coverage_by_source":   build_topology_coverage_by_source,
+    "bench_topology_vs_universe":    build_bench_topology_vs_universe,
 }
 
 
