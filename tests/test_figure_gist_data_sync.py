@@ -31,23 +31,22 @@ import pytest
 
 # Mirror the sync helper's TSV bundle so this test doesn't depend on
 # importing the script (which lives outside the test path).
+# Mirrors scripts/sync_figure_gists_bundle_data.py::TSV_BUNDLE — kept in
+# sync manually because importing the script would drag in `gh` runtime
+# deps the test doesn't need. Tests/test_gist_single_tsv.py enforces the
+# single-TSV-per-gist invariant at the source side.
 TSV_BUNDLE: dict[str, list[str]] = {
     "benchmark_cost_vs_accuracy": [
-        "data/eval/triage_benchmark_v1.tsv",
-        "data/processed/triage_bench/mainbench_canonical_v2.tsv",
-        "data/processed/triage_bench/mainbench_replicates_v2.tsv",
+        "data/processed/figures/benchmark_cost_vs_accuracy.tsv",
+    ],
+    "curator_vs_agent_reason": [
+        "data/processed/figures/curator_vs_agent_reason.tsv",
     ],
     "db_correctness_by_class": [
-        "data/eval/triage_benchmark_v1.tsv",
-        "data/processed/catalog/whole_proteome_catalog.tsv",
-        "data/processed/triage_bench/mainbench_canonical_v2.tsv",
-        "data/processed/triage_bench/mainbench_replicates_v2.tsv",
-        "data/processed/triage_bench/db_optimized_cutoffs.tsv",
+        "data/processed/figures/db_correctness_by_class.tsv",
     ],
     "db_correctness_overall": [
-        "data/eval/triage_benchmark_v1.tsv",
-        "data/processed/triage_bench/mainbench_canonical_v2.tsv",
-        "data/processed/triage_bench/mainbench_replicates_v2.tsv",
+        "data/processed/figures/db_correctness_overall.tsv",
     ],
     "db_cutoff_tradeoff": [
         "data/processed/triage_bench/db_cutoff_tradeoff_points.tsv",
@@ -56,14 +55,13 @@ TSV_BUNDLE: dict[str, list[str]] = {
         "data/processed/catalog/whole_proteome_catalog.tsv",
     ],
     "db_vs_sonnet_whole_proteome": [
-        "data/processed/catalog/whole_proteome_catalog.tsv",
-        "data/processed/triage_bench/db_optimized_cutoffs.tsv",
+        "data/processed/figures/db_vs_sonnet_whole_proteome.tsv",
+    ],
+    "deep_dive_final_categories": [
+        "data/processed/figures/deep_dive_final_categories.tsv",
     ],
     "ensemble_vs_best_db_vs_sonnet": [
-        "data/eval/triage_benchmark_v1.tsv",
-        "data/processed/catalog/whole_proteome_catalog.tsv",
-        "data/processed/triage_bench/mainbench_canonical_v2.tsv",
-        "data/processed/triage_bench/mainbench_replicates_v2.tsv",
+        "data/processed/figures/ensemble_vs_best_db_vs_sonnet.tsv",
     ],
     "paywall_bot_block_compare": [
         "data/processed/paywall_bot_block/paywall_bot_block_compare.tsv",
