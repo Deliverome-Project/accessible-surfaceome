@@ -166,21 +166,32 @@ def _load_bench_index() -> dict[str, dict[str, str]]:
     canonical benchmark.
 
     Truth labels are sourced from public D1's ``benchmark_version`` — the
-    SAME version-pinned origin the live Worker serves (latest bench_version
-    wins, matching the Worker's ``ORDER BY bench_version DESC LIMIT 1``).
-    The working-tree ``triage_benchmark_v1.tsv`` is NOT the source of truth:
-    it is an uncommitted file that can silently revert (and did), which
-    would stamp stale labels into the figure TSVs. Reading D1 ties the
-    figure labels to the published benchmark instead.
+    SAME version-pinned origin the live Worker serves. Picks the version
+    with the most rows (tiebreaking on lex-newest), defending against
+    partial/sparse versions sneaking to the top of a pure lex sort —
+    a 3-row partial `fd0e4b03eaa2` did exactly this on 2026-06-30 and
+    silently NaN-joined every is_match column. The working-tree
+    ``triage_benchmark_v1.tsv`` is NOT the source of truth: it is an
+    uncommitted file that can silently revert (and did), which would
+    stamp stale labels into the figure TSVs. Reading D1 ties the figure
+    labels to the published benchmark instead.
 
     Falls back to the local TSV only if D1 is unreachable (offline / no
     credentials), with a loud warning — so an offline run still produces a
     file, but the operator knows the labels weren't origin-verified.
     """
     try:
+        # Filter to versions that actually carry labels — public D1's
+        # `benchmark_version` also stores unlabeled cohort registrations
+        # (truth_verdict='') used as a `(bench_version, gene_symbol,
+        # uniprot_acc)` pin without ground truth. Picking by row count
+        # without this filter snapped to a 19,464-row cohort dump (all
+        # truth_verdict='') on 2026-06-30.
         ver_rows = _query_public(
-            "SELECT bench_version FROM benchmark_version "
-            "ORDER BY bench_version DESC LIMIT 1"
+            "SELECT bench_version, COUNT(*) AS n FROM benchmark_version "
+            "WHERE truth_verdict != '' "
+            "GROUP BY bench_version "
+            "ORDER BY n DESC, bench_version DESC LIMIT 1"
         )
         if not ver_rows:
             raise RuntimeError("benchmark_version is empty in public D1")
