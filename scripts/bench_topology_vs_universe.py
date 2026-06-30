@@ -30,14 +30,12 @@ Run:
 """
 from __future__ import annotations
 
-import csv
-import io
 import math
-import urllib.request
 from pathlib import Path
 
 import matplotlib.pyplot as plt
 import numpy as np
+import pandas as pd
 import seaborn as sns
 
 from accessible_surfaceome.audit._plotting_config import (
@@ -45,15 +43,14 @@ from accessible_surfaceome.audit._plotting_config import (
     setup_plotting_style,
 )
 
-ROOT = Path(__file__).resolve().parents[1]
-OUT_DIR = ROOT / "data/analysis/figures"
+REPO = Path(__file__).resolve().parents[1]
+OUT_DIR = REPO / "data/analysis/figures"
 SLUG = "bench_topology_vs_universe"
 
-BENCH_TSV = ROOT / "data/eval/triage_benchmark_v1.tsv"
-FEATURES_URL = (
-    "https://raw.githubusercontent.com/Deliverome-Project/accessible-surfaceome/"
-    "main/data/analysis/db_vs_sonnet_inclusion/per_protein_features.tsv"
-)
+# Single per-figure TSV: one row per gene in the Sonnet 2-tier
+# yes/contextual universe with is_bench + 9 topology booleans
+# denormalized in. Produced by scripts/build_figure_tsvs.py.
+DATA_TSV = REPO / "data/processed/figures/bench_topology_vs_universe.tsv"
 
 # 9 categories — mirrors the topology_coverage_by_source 3×3 grid in
 # data/analysis/figures/make_topology_coverage_by_source.py.
@@ -71,15 +68,6 @@ FEATURES: list[tuple[str, str]] = [
 
 COLOR_UNIVERSE = "#3D6B60"   # teal-mid — neutral reference
 COLOR_BENCH = "#BC3C4C"      # maroon-light — highlighted subset
-
-
-def _feature_positive(row: dict, col: str) -> bool:
-    """The per_protein_features.tsv writes booleans as ``'1.0'`` /
-    ``'0.0'`` strings, with blanks for the ~2,578 rows that lack a
-    DeepTMHMM prediction. Match both string forms; treat blank as
-    negative for the % calculation (consistent with the existing
-    topology_coverage_by_source semantics)."""
-    return row.get(col, "") in {"1", "1.0"}
 
 
 def _wilson_95_ci(n_pos: int, n: int) -> tuple[float, float]:
@@ -141,50 +129,25 @@ def _star(p: float) -> str:
     return "ns"
 
 
-def _fetch_universe() -> list[dict]:
-    print(f"  fetching {FEATURES_URL} …")
-    text = urllib.request.urlopen(FEATURES_URL, timeout=60).read().decode()
-    rows = list(csv.DictReader(io.StringIO(text), delimiter="\t"))
-    print(f"    {len(rows):,} rows")
-    return rows
-
-
-def _load_bench_accs() -> set[str]:
-    accs: set[str] = set()
-    with open(BENCH_TSV) as f:
-        for r in csv.DictReader(f, delimiter="\t"):
-            if r.get("uniprot_acc"):
-                accs.add(r["uniprot_acc"])
-    return accs
-
-
-def _is_sonnet_2tier_yc(r: dict) -> bool:
-    """Sonnet 2-tier yes/contextual: NCBI sweep verdict ∈ {yes,
-    contextual} OR (NCBI=no AND PubMed-rescue verdict ∈ {yes,
-    contextual}). This is what the catalog actually ships as the
-    "accessible surfaceome" — the 177 PubMed-rescue flips that
-    promote NCBI's no-calls to yes/contextual when a second pass
-    with PubMed retrieval finds supporting evidence."""
-    ncbi = (r.get("sonnet_verdict") or "").strip().lower()
-    if ncbi in ("yes", "contextual"):
-        return True
-    pubmed = (r.get("pubmed_verdict") or "").strip().lower()
-    return pubmed in ("yes", "contextual")
-
-
 def _compute_distribution() -> tuple[
     list[tuple[str, str]], list[float], list[float], list[tuple[float, float]],
     list[float], int, int,
 ]:
-    all_rows = _fetch_universe()
-    # Filter to Sonnet 2-tier yes/contextual rather than the broader
-    # "any source voted yes" union the per-protein-features TSV
-    # materialises. This is the catalog's actual published set.
-    rows = [r for r in all_rows if _is_sonnet_2tier_yc(r)]
-    bench_accs = _load_bench_accs()
-    bench_rows = [r for r in rows if r.get("uniprot_accession") in bench_accs]
-    n_universe = len(rows)
-    n_bench = len(bench_rows)
+    """Read the committed per-figure TSV and compute topology distributions.
+
+    The TSV (built by ``scripts/build_figure_tsvs.py``) already contains
+    one row per gene in the Sonnet 2-tier yes/contextual universe, with
+    ``is_bench`` and the 9 topology flag columns denormalized in. No
+    network fetch or universe recomputation is needed."""
+    data = pd.read_csv(DATA_TSV, sep="\t")
+    # Two cohorts share one union TSV via in_universe + is_bench flags. Bench is
+    # the benchmark's GROUND-TRUTH yes/contextual genes (99, incl. 3 Sonnet
+    # miscalled that sit outside the universe); universe is the sonnet-2-tier
+    # set (4,426). The union carries the 3 bench-only genes' topology.
+    universe_data = data[data["in_universe"].astype(bool)]
+    bench_data = data[data["is_bench"].astype(bool)]
+    n_universe = len(universe_data)
+    n_bench = len(bench_data)
 
     n_tests = len(FEATURES)  # Bonferroni denominator for 9 classes
     universe_pct: list[float] = []
@@ -192,8 +155,13 @@ def _compute_distribution() -> tuple[
     bench_ci: list[tuple[float, float]] = []
     bench_pvals_bonf: list[float] = []
     for col, _ in FEATURES:
-        n_u = sum(1 for r in rows if _feature_positive(r, col))
-        n_b = sum(1 for r in bench_rows if _feature_positive(r, col))
+        # TSV stores topology flags as ints (1/0); blank/NaN treated as
+        # negative (consistent with the original _feature_positive
+        # semantics for missing DeepTMHMM predictions).
+        col_u = pd.to_numeric(universe_data[col], errors="coerce").fillna(0).astype(int)
+        col_b = pd.to_numeric(bench_data[col], errors="coerce").fillna(0).astype(int)
+        n_u = int(col_u.sum())
+        n_b = int(col_b.sum())
         p_universe = n_u / n_universe
         universe_pct.append(100.0 * p_universe)
         bench_pct.append(100.0 * n_b / n_bench)
@@ -300,7 +268,7 @@ def _write_caption(
 
     caption = (
         f"**Figure caption.** Topology composition of SurfaceBench "
-        f"(n = {n_bench} of 147 that join into the per-protein features TSV) "
+        f"(n = {n_bench} ground-truth yes/contextual benchmark genes) "
         f"compared against the Sonnet 2-tier yes/contextual universe "
         f"(n = {n_universe:,}), the genes the production pipeline ships "
         f"as accessible after the NCBI sweep + PubMed rescue lane. "

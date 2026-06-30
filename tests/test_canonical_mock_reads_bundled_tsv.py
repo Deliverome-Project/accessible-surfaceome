@@ -56,6 +56,9 @@ READS_BUNDLED_TSV = [
     # canonical now reads the figure TSV, so the model list comes from the data
     # — fixes the opus-4-7 hardcode that shipped empty bars on Supp Fig 1.
     "db_correctness_overall",
+    # Migrated 2026-06-30: canonical reads the union TSV (in_universe + is_bench
+    # flags); bench cohort is the benchmark's ground-truth yes/contextual genes.
+    "bench_topology_vs_universe",
 ]
 
 # Figures whose canonical recomputes from real upstream sources by
@@ -64,7 +67,6 @@ READS_BUNDLED_TSV = [
 # the upstream truth is correct. Byte-identity on the gist side is
 # covered by tests/test_figure_gist_data_sync.py.
 COMPUTES_FROM_UPSTREAM = {
-    "bench_topology_vs_universe",      # per-protein-features table
     "curator_vs_agent_reason",         # eval bench + mainbench predictions
     "db_vs_sonnet_whole_proteome",     # whole-proteome catalog + cutoffs
     "ensemble_vs_best_db_vs_sonnet",   # whole-proteome catalog + cutoffs

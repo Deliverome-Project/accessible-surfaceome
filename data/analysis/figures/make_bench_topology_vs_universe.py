@@ -212,7 +212,10 @@ def _compute_distribution(data: pd.DataFrame) -> tuple[
 ]:
     """Per-class universe % + bench % + bench Wilson 95% CI half-widths
     + Bonferroni-corrected bench-vs-universe binomial p-values."""
-    rows = data
+    # Union TSV: universe = in_universe rows (4,426); bench = is_bench rows
+    # (99 ground-truth yes/contextual benchmark genes, incl. 3 outside the
+    # universe). See the canonical scripts/bench_topology_vs_universe.py.
+    rows = data[data["in_universe"].astype(bool)]
     bench_rows = data[data["is_bench"].astype(bool)]
     n_universe = len(rows)
     n_bench = len(bench_rows)
