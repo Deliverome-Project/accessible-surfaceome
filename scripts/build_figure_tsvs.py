@@ -45,16 +45,35 @@ PREDS_TSV       = ROOT / "data/processed/triage_bench/mainbench_canonical_v2.tsv
 REPS_TSV        = ROOT / "data/processed/triage_bench/mainbench_replicates_v2.tsv"
 OPT_CUTOFFS_TSV = ROOT / "data/processed/triage_bench/db_optimized_cutoffs.tsv"
 CATALOG_TSV     = ROOT / "data/processed/catalog/whole_proteome_catalog.tsv"
+FEATURES_TSV    = ROOT / "data/analysis/db_vs_sonnet_inclusion/per_protein_features.tsv"
 
 
 def _load_sources() -> dict[str, pd.DataFrame]:
     return {
-        "bench":   pd.read_csv(BENCH_TSV, sep="\t"),
-        "preds":   pd.read_csv(PREDS_TSV, sep="\t"),
-        "reps":    pd.read_csv(REPS_TSV, sep="\t"),
-        "opt":     pd.read_csv(OPT_CUTOFFS_TSV, sep="\t"),
-        "catalog": pd.read_csv(CATALOG_TSV, sep="\t"),
+        "bench":    pd.read_csv(BENCH_TSV, sep="\t"),
+        "preds":    pd.read_csv(PREDS_TSV, sep="\t"),
+        "reps":     pd.read_csv(REPS_TSV, sep="\t"),
+        "opt":      pd.read_csv(OPT_CUTOFFS_TSV, sep="\t"),
+        "catalog":  pd.read_csv(CATALOG_TSV, sep="\t"),
+        "features": pd.read_csv(FEATURES_TSV, sep="\t"),
     }
+
+
+def _optimized_membership(df: pd.DataFrame, opt: pd.DataFrame, acc_col: str) -> pd.DataFrame:
+    """Return a copy of ``df`` with optimized-cutoff DB membership +
+    ``n_sources_optimized`` (the 5-DB vote under the SurfaceBench-tuned
+    cutoffs: UniProt and CSPA use their recalibrated rule; GO CC, HPA,
+    and SURFY use their unchanged ``*_surface_flag``). This is the
+    downstream-canonical DB membership the accuracy figures already use;
+    F3 (zero-DB rescues) and S9 (per-source coverage) join it so they
+    stop using the pre-recalibration initial flags."""
+    out = df.copy()
+    uniprot_opt = set(opt.loc[opt["uniprot_optimized"] == 1, "accession"].astype(str))
+    cspa_opt    = set(opt.loc[opt["cspa_optimized"]    == 1, "accession"].astype(str))
+    acc = out[acc_col].astype(str)
+    out["uniprot_optimized"] = acc.isin(uniprot_opt).astype(int)
+    out["cspa_optimized"]    = acc.isin(cspa_opt).astype(int)
+    return out
 
 
 def _join_truth_into_preds(preds: pd.DataFrame, bench: pd.DataFrame) -> pd.DataFrame:
@@ -130,6 +149,46 @@ def build_db_vs_sonnet_whole_proteome(src: dict[str, pd.DataFrame]) -> pd.DataFr
     the per-DB flags + sonnet_verdict denormalized; we just join in the
     two optimized-cutoff columns."""
     return _join_optimized_cutoffs(src["catalog"], src["opt"])
+
+
+def build_zero_db_rescues(src: dict[str, pd.DataFrame]) -> pd.DataFrame:
+    """Figure 3 — zero-DB rescues, defined under the OPTIMIZED cutoffs
+    (consistent with the accuracy figures). Per genome-wide gene: the
+    Sonnet verdict + reason, the 5 per-DB flags with UniProt/CSPA on
+    their recalibrated rule, and ``n_sources_optimized`` so the figure
+    selects the zero-DB slice as ``n_sources_optimized == 0`` rather
+    than the pre-recalibration ``n_sources_surface == 0``."""
+    df = _optimized_membership(src["catalog"], src["opt"], "uniprot_acc")
+    # n_sources_optimized = the 5-DB vote under optimized cutoffs:
+    # UniProt + CSPA recalibrated, GO/HPA/SURFY unchanged surface_flag.
+    df["n_sources_optimized"] = (
+        df["uniprot_optimized"].fillna(0).astype(int)
+        + df["cspa_optimized"].fillna(0).astype(int)
+        + df["go_surface_flag"].fillna(0).astype(int)
+        + df["hpa_surface_flag"].fillna(0).astype(int)
+        + df["surfy_surface_flag"].fillna(0).astype(int)
+    )
+    return df.drop(columns=["universe_version"], errors="ignore")
+
+
+def build_topology_coverage_by_source(src: dict[str, pd.DataFrame]) -> pd.DataFrame:
+    """Supp S9 — per-source topology coverage under the OPTIMIZED cutoffs.
+    Starts from the per-protein-features table (topology classes + the
+    initial ``src_*`` source flags) and joins UniProt/CSPA optimized
+    membership so the figure renders UniProt and CSPA at their
+    recalibrated cutoffs (GO/HPA/SURFY/Sonnet unchanged). Also carries
+    ``n_sources_optimized`` so the Sonnet-only (zero-DB) subset is
+    defined against the optimized DB vote, matching Figure 3."""
+    feat = _optimized_membership(src["features"], src["opt"], "uniprot_accession")
+    # GO/HPA/SURFY keep their initial src flags (not recalibrated).
+    feat["n_sources_optimized"] = (
+        feat["uniprot_optimized"].fillna(0).astype(int)
+        + feat["cspa_optimized"].fillna(0).astype(int)
+        + feat["src_go"].fillna(0).astype(int)
+        + feat["src_hpa"].fillna(0).astype(int)
+        + feat["src_surfy"].fillna(0).astype(int)
+    )
+    return feat
 
 
 def build_ensemble(src: dict[str, pd.DataFrame]) -> pd.DataFrame:
@@ -243,6 +302,8 @@ BUILDERS: dict[str, callable] = {
     "ensemble_vs_best_db_vs_sonnet": build_ensemble,
     "deep_dive_final_categories":    build_deep_dive_final_categories,
     "curator_vs_agent_reason":       build_curator_vs_agent_reason,
+    "zero_db_rescues_by_triage":     build_zero_db_rescues,
+    "topology_coverage_by_source":   build_topology_coverage_by_source,
 }
 
 

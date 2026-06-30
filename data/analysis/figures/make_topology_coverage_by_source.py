@@ -79,12 +79,14 @@ BASE = f"https://raw.githubusercontent.com/{REPO}/{BRANCH}"
 # the published URL.
 GIST_URL = "https://gist.github.com/beccajcarlson/95b0f4cdcaf6a6b91f57539cd1515a25"
 
-# Per-protein feature table built by the canonical audit script. One
-# row per universe protein with the 6 source-inclusion flags and the
-# 9 topology binary features used by this figure. ~2.8 MB plain TSV
-# (non-LFS so raw.githubusercontent.com serves text, not a pointer).
+# Dedicated per-figure TSV (built by scripts/build_figure_tsvs.py). One
+# row per universe protein with the src_* source-inclusion flags, the
+# bench-optimized cutoff columns (uniprot_optimized / cspa_optimized /
+# n_sources_optimized), and the 9 topology binary features used by this
+# figure. ~3 MB plain TSV (non-LFS so raw.githubusercontent.com serves
+# text, not a pointer).
 FEATURES_TSV = (
-    f"{BASE}/data/analysis/db_vs_sonnet_inclusion/per_protein_features.tsv"
+    f"{BASE}/data/processed/figures/topology_coverage_by_source.tsv"
 )
 
 # ──── Inline brand styling — sentinel: brand-style-v3 ────
@@ -190,11 +192,12 @@ FEATURES: list[tuple[str, str]] = [
 # Panel x-axis order: Sonnet first (implicit reference), then DBs
 # in the order matching make_db_correctness_by_class.py for cross-
 # figure visual consistency.
-# ``sonnet_only`` = the n=1,042 zero-DB rescue subset; computed inline
-# as (src_sonnet == 1 AND all DB src_* == 0). Sits right after sonnet
-# so the rescue subset reads as a visible delta off the full Sonnet
-# bar. Uses success-green to signal "rescue" (matches the zero_db_rescues_by_triage
-# figure's YES-bucket palette).
+# ``sonnet_only`` = the zero-DB rescue subset; computed inline as
+# (src_sonnet == 1 AND n_sources_optimized == 0) — i.e. no DB flags the
+# protein once the bench-optimized UniProt/CSPA cutoffs are applied.
+# Sits right after sonnet so the rescue subset reads as a visible delta
+# off the full Sonnet bar. Uses success-green to signal "rescue"
+# (matches the zero_db_rescues_by_triage figure's YES-bucket palette).
 SOURCE_ORDER = ["sonnet", "sonnet_only", "uniprot", "surfy", "cspa", "go", "hpa"]
 SOURCE_COLORS = {
     "sonnet":      BRAND_CLAUDE_ORANGE,
@@ -205,11 +208,14 @@ SOURCE_COLORS = {
     "go":      BRAND_PALETTE[1],  # teal-mid
     "hpa":     BRAND_PALETTE[2],  # amber-bright
 }
+# Per-source column mapping. UniProt + CSPA use the bench-OPTIMIZED
+# cutoffs (consistent with the accuracy figures); the other DBs and
+# Sonnet use their initial src_* flags unchanged.
 SOURCE_COL = {
     "sonnet":  "src_sonnet",
-    "uniprot": "src_uniprot",
+    "uniprot": "uniprot_optimized",
     "surfy":   "src_surfy",
-    "cspa":    "src_cspa",
+    "cspa":    "cspa_optimized",
     "go":      "src_go",
     "hpa":     "src_hpa",
 }
@@ -246,9 +252,10 @@ def main() -> None:
     axes = axes.reshape(-1)
 
     # Pre-compute the sonnet_only mask once (per-panel iteration would
-    # recompute it 9× for no benefit).
-    db_cols = [SOURCE_COL[s] for s in ("uniprot", "surfy", "cspa", "go", "hpa")]
-    sonnet_only_mask = (df[SOURCE_COL["sonnet"]] == 1) & (df[db_cols].sum(axis=1) == 0)
+    # recompute it 9× for no benefit). Zero-DB rescue under the OPTIMIZED
+    # cutoffs: Sonnet positive AND no DB voted yes once the
+    # bench-optimized UniProt/CSPA thresholds are applied.
+    sonnet_only_mask = (df[SOURCE_COL["sonnet"]] == 1) & (df["n_sources_optimized"] == 0)
 
     for ax, (feat_col, label) in zip(axes, FEATURES):
         rates_pct = []

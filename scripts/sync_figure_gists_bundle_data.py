@@ -93,13 +93,13 @@ TSV_BUNDLE: dict[str, list[str]] = {
         "data/processed/paywall_bot_block/paywall_bot_block_compare.tsv",
     ],
     "topology_coverage_by_source": [
-        "data/analysis/db_vs_sonnet_inclusion/per_protein_features.tsv",
+        "data/processed/figures/topology_coverage_by_source.tsv",
     ],
     "triage_vs_deep_dive_reason": [
         "data/processed/figures/triage_vs_deep_dive_reason.tsv",
     ],
     "zero_db_rescues_by_triage": [
-        "data/processed/catalog/whole_proteome_catalog.tsv",
+        "data/processed/figures/zero_db_rescues_by_triage.tsv",
     ],
 }
 

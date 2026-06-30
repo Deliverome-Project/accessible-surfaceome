@@ -35,19 +35,30 @@ import pytest
 REPO_ROOT = Path(__file__).resolve().parent.parent
 SCRIPTS = REPO_ROOT / "scripts"
 
-# MOCK / synthesized figures: the bundled per-figure TSV is the sole
-# source of truth, so the canonical generator MUST read it (never
-# hardcode or re-synthesize the dataset in-script).
-MOCK_SLUGS = [
+# Figures whose canonical generator reads its dedicated per-figure TSV
+# (``data/processed/figures/<slug>.tsv``) as the single source of truth,
+# so the committed figure can't drift from the gist mirror (which reads
+# the same TSV). Two kinds live here:
+#   • MOCK / synthesized figures (the TSV is the only data that exists)
+#   • real-data figures consolidated onto a dedicated TSV so the
+#     cutoff/membership definition lives in ONE place — zero_db_rescues
+#     and topology_coverage were moved here when they switched to the
+#     optimized-cutoff TSV (their old initial-flag reads from the raw
+#     catalog / per-protein-features were the drift hazard).
+READS_BUNDLED_TSV = [
     "deep_dive_final_categories",
     "deep_dive_record_richness",
     "evidence_corpus_vs_selected",
     "triage_vs_deep_dive_reason",
+    "zero_db_rescues_by_triage",
+    "topology_coverage_by_source",
 ]
 
-# Figures whose canonical computes from real upstream sources by design
-# (documented exemption — NOT covered by this guard). Listed so the
-# exemption is explicit and a reviewer can see the boundary.
+# Figures whose canonical recomputes from real upstream sources by
+# design (documented exemption — NOT covered by this guard). The
+# per-figure TSV is a downstream export; the canonical recomputing from
+# the upstream truth is correct. Byte-identity on the gist side is
+# covered by tests/test_figure_gist_data_sync.py.
 COMPUTES_FROM_UPSTREAM = {
     "bench_topology_vs_universe",      # per-protein-features table
     "curator_vs_agent_reason",         # eval bench + mainbench predictions
@@ -56,7 +67,7 @@ COMPUTES_FROM_UPSTREAM = {
 }
 
 
-@pytest.mark.parametrize("slug", MOCK_SLUGS)
+@pytest.mark.parametrize("slug", READS_BUNDLED_TSV)
 def test_mock_canonical_reads_bundled_tsv(slug: str) -> None:
     """The canonical generator for a mock figure must reference its
     bundled per-figure TSV path — i.e. read the single source of truth
@@ -74,7 +85,7 @@ def test_mock_canonical_reads_bundled_tsv(slug: str) -> None:
     )
 
 
-@pytest.mark.parametrize("slug", MOCK_SLUGS)
+@pytest.mark.parametrize("slug", READS_BUNDLED_TSV)
 def test_mock_canonical_has_no_hardcoded_dataset(slug: str) -> None:
     """Belt-and-suspenders: the in-script dataset constants/helpers that
     caused the original drift must not reappear ANYWHERE in the file —
@@ -96,16 +107,16 @@ def test_mock_canonical_has_no_hardcoded_dataset(slug: str) -> None:
 def test_mock_and_upstream_lists_are_disjoint_and_complete() -> None:
     """Keep the two lists honest: no slug in both, and every figure with
     a per-figure TSV + a canonical script is classified."""
-    overlap = set(MOCK_SLUGS) & COMPUTES_FROM_UPSTREAM
+    overlap = set(READS_BUNDLED_TSV) & COMPUTES_FROM_UPSTREAM
     assert not overlap, f"slug in both lists: {overlap}"
     tsv_dir = REPO_ROOT / "data/processed/figures"
-    classified = set(MOCK_SLUGS) | COMPUTES_FROM_UPSTREAM
+    classified = set(READS_BUNDLED_TSV) | COMPUTES_FROM_UPSTREAM
     for tsv in tsv_dir.glob("*.tsv"):
         slug = tsv.stem
         if (SCRIPTS / f"{slug}.py").is_file() and slug not in classified:
             pytest.fail(
                 f"{slug} has a per-figure TSV + a canonical scripts/{slug}.py "
-                f"but is in neither MOCK_SLUGS nor COMPUTES_FROM_UPSTREAM. "
-                f"Classify it: is the TSV its sole source (MOCK_SLUGS) or "
+                f"but is in neither READS_BUNDLED_TSV nor COMPUTES_FROM_UPSTREAM. "
+                f"Classify it: is the TSV its source (READS_BUNDLED_TSV) or "
                 f"does the canonical compute from upstream (COMPUTES_FROM_UPSTREAM)?"
             )
