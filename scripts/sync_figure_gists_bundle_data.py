@@ -84,10 +84,28 @@ TSV_BUNDLE: dict[str, list[str]] = {
         "data/processed/paywall_bot_block/paywall_bot_block_compare.tsv",
     ],
     "positive_control_db_coverage_bars": [
-        # Single long-form TSV — one row per (category × gene) with all per-DB
-        # flags + sonnet_full_flag + adc_source. The script derives every
-        # per-(category, source) count from this one file.
-        "data/processed/positive_controls/positive_control_long.tsv",
+        # Single per-figure consolidated TSV — pass-through copy of the
+        # canonical positive_control_long.tsv into data/processed/figures/
+        # so the slug matches the bundled basename per the invariant.
+        "data/processed/figures/positive_control_db_coverage_bars.tsv",
+    ],
+    "bench_topology_vs_universe": [
+        # Sonnet 2-tier yes/contextual universe + bench-membership flag.
+        # One row per universe protein with all 9 topology flags + is_bench.
+        # The figure derives both bars (universe + bench) from this single TSV.
+        "data/processed/figures/bench_topology_vs_universe.tsv",
+    ],
+    "triage_vs_deep_dive_reason": [
+        # MOCK long-form 10×10 confusion-matrix counts. Pivoted into a
+        # matrix at render time. Bundled rather than re-declared as a dict
+        # in the mirror so the gist stays single-source.
+        "data/processed/figures/triage_vs_deep_dive_reason.tsv",
+    ],
+    "evidence_corpus_vs_selected": [
+        # MOCK synthesized per-gene (papers_found, papers_selected,
+        # verdict) tuples. Bundled rather than synthesized at render time
+        # in the mirror so the gist stays single-source.
+        "data/processed/figures/evidence_corpus_vs_selected.tsv",
     ],
     "topology_coverage_by_source": [
         "data/analysis/db_vs_sonnet_inclusion/per_protein_features.tsv",

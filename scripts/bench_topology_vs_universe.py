@@ -25,15 +25,15 @@ Bench bars carry Wilson 95% binomial confidence intervals to make the
 small-n classes (Likely secreted n=4, No-TM/no-signal n=6) read as
 noisier than they would as bare bars.
 
+# Reproduction: https://gist.github.com/beccajcarlson/676b9e5ab9112191a96560ca6fdb17d6
+
 Run:
     uv run python scripts/bench_topology_vs_universe.py
 """
 from __future__ import annotations
 
 import csv
-import io
 import math
-import urllib.request
 from pathlib import Path
 
 import matplotlib.pyplot as plt
@@ -49,12 +49,14 @@ from accessible_surfaceome.audit._plotting_config import (
 ROOT = Path(__file__).resolve().parents[1]
 OUT_DIR = ROOT / "data/analysis/figures"
 SLUG = "bench_topology_vs_universe"
+GIST_URL = "https://gist.github.com/beccajcarlson/676b9e5ab9112191a96560ca6fdb17d6"
 
-BENCH_TSV = ROOT / "data/eval/triage_benchmark_v1.tsv"
-FEATURES_URL = (
-    "https://raw.githubusercontent.com/Deliverome-Project/accessible-surfaceome/"
-    "main/data/analysis/db_vs_sonnet_inclusion/per_protein_features.tsv"
-)
+# Single bundled per-figure TSV — Sonnet 2-tier yes/contextual universe
+# + bench-membership flag (is_bench=1 marks the 146 bench members that
+# join). Built by `scripts/build_figure_tsvs.py` per the
+# single-TSV-per-gist invariant. Both bars (universe + bench) derive
+# from this one TSV at render time.
+DATA_TSV = ROOT / "data/processed/figures/bench_topology_vs_universe.tsv"
 
 # 9 categories — mirrors the topology_coverage_by_source 3×3 grid in
 # data/analysis/figures/make_topology_coverage_by_source.py.
@@ -142,48 +144,28 @@ def _star(p: float) -> str:
     return "ns"
 
 
-def _fetch_universe() -> list[dict]:
-    print(f"  fetching {FEATURES_URL} …")
-    text = urllib.request.urlopen(FEATURES_URL, timeout=60).read().decode()
-    rows = list(csv.DictReader(io.StringIO(text), delimiter="\t"))
+def _load_universe() -> list[dict]:
+    """Read the bundled per-figure TSV. It already carries the Sonnet
+    2-tier yes/contextual universe + ``is_bench`` flag — the build step
+    (``scripts/build_figure_tsvs.py::build_bench_topology_vs_universe``)
+    applies the Sonnet 2-tier filter against the canonical
+    ``per_protein_features.tsv`` and denormalizes the 146 bench
+    members in by ``uniprot_accession``."""
+    print(f"  reading {DATA_TSV.relative_to(ROOT)} …")
+    with open(DATA_TSV) as f:
+        rows = list(csv.DictReader(f, delimiter="\t"))
     print(f"    {len(rows):,} rows")
     return rows
-
-
-def _load_bench_accs() -> set[str]:
-    accs: set[str] = set()
-    with open(BENCH_TSV) as f:
-        for r in csv.DictReader(f, delimiter="\t"):
-            if r.get("uniprot_acc"):
-                accs.add(r["uniprot_acc"])
-    return accs
-
-
-def _is_sonnet_2tier_yc(r: dict) -> bool:
-    """Sonnet 2-tier yes/contextual: NCBI sweep verdict ∈ {yes,
-    contextual} OR (NCBI=no AND PubMed-rescue verdict ∈ {yes,
-    contextual}). This is what the catalog actually ships as the
-    "accessible surfaceome" — the 177 PubMed-rescue flips that
-    promote NCBI's no-calls to yes/contextual when a second pass
-    with PubMed retrieval finds supporting evidence."""
-    ncbi = (r.get("sonnet_verdict") or "").strip().lower()
-    if ncbi in ("yes", "contextual"):
-        return True
-    pubmed = (r.get("pubmed_verdict") or "").strip().lower()
-    return pubmed in ("yes", "contextual")
 
 
 def _compute_distribution() -> tuple[
     list[tuple[str, str]], list[float], list[float], list[tuple[float, float]],
     list[float], int, int,
 ]:
-    all_rows = _fetch_universe()
-    # Filter to Sonnet 2-tier yes/contextual rather than the broader
-    # "any source voted yes" union the per-protein-features TSV
-    # materialises. This is the catalog's actual published set.
-    rows = [r for r in all_rows if _is_sonnet_2tier_yc(r)]
-    bench_accs = _load_bench_accs()
-    bench_rows = [r for r in rows if r.get("uniprot_accession") in bench_accs]
+    rows = _load_universe()
+    # Bench-membership flag is pre-joined into the TSV (is_bench=1 marks
+    # the 146 of 147 bench members that intersect the universe).
+    bench_rows = [r for r in rows if r.get("is_bench") in {"1", "1.0"}]
     n_universe = len(rows)
     n_bench = len(bench_rows)
 
@@ -319,7 +301,7 @@ def _write_caption(
 
 def main() -> None:
     fig, _ = make_plot()
-    save_figure(fig, SLUG, output_dir=OUT_DIR, formats=("pdf", "png"))
+    save_figure(fig, SLUG, output_dir=OUT_DIR, formats=("pdf", "png"), gist_url=GIST_URL)
     # Sidecar caption — paste verbatim into the manuscript supplement.
     feats, univ, bench, _ci, pvals, n_u, n_b = _compute_distribution()
     caption = _write_caption(n_u, n_b, pvals, feats, univ, bench)

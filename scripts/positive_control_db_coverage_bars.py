@@ -23,7 +23,11 @@ from accessible_surfaceome.audit._plotting_config import save_figure, setup_plot
 
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
-DATA_DIR = REPO_ROOT / "data/processed/positive_controls"
+# Single bundled per-figure TSV — pass-through copy of positive_control_long.tsv
+# (one row per (category × gene) with per-DB flags + sonnet_full_flag +
+# adc_source). Built by `scripts/build_figure_tsvs.py` per the
+# single-TSV-per-gist invariant.
+DATA_TSV = REPO_ROOT / "data/processed/figures/positive_control_db_coverage_bars.tsv"
 OUT_DIR = REPO_ROOT / "data/analysis/figures"
 OUT_DIR.mkdir(parents=True, exist_ok=True)
 
@@ -113,7 +117,7 @@ def build_tidy() -> pd.DataFrame:
     category + per-DB flag + sonnet_full_flag, so we can group-by-category
     and sum the flag columns without touching the per-category TSVs.
     """
-    long = pd.read_csv(DATA_DIR / "positive_control_long.tsv", sep="\t")
+    long = pd.read_csv(DATA_TSV, sep="\t")
     records = []
     for slug, _ in CATEGORIES:
         sub = long[long["category"] == slug]
@@ -142,8 +146,7 @@ def render(df_tidy: pd.DataFrame) -> None:
     fig, axes = plt.subplots(1, 3, figsize=(17, 6), sharey=False)
 
     # Single-file source — also read for the ADC source-stacking + miss list.
-    long_path = DATA_DIR / "positive_control_long.tsv"
-    long = pd.read_csv(long_path, sep="\t")
+    long = pd.read_csv(DATA_TSV, sep="\t")
 
     # Per-category set of Sonnet misses, used to annotate the Sonnet bar
     # with the actual missed gene name(s). With Sonnet ≥98% per category

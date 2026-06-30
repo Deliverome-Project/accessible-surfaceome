@@ -58,6 +58,7 @@ from accessible_surfaceome.audit._plotting_config import (
 ROOT = Path(__file__).resolve().parents[1]
 OUT_DIR = ROOT / "data/analysis/figures"
 SLUG = "evidence_corpus_vs_selected"
+GIST_URL = "https://gist.github.com/beccajcarlson/27acf83e5e0175fd0887777adf49497b"
 
 # Verdict ordering = best → worst evidence quality (used for legend
 # + plot z-order so weak dots don't occlude direct_multi dots).
@@ -213,7 +214,7 @@ def make_plot() -> tuple[plt.Figure, plt.Axes]:
 
 def main() -> None:
     fig, _ = make_plot()
-    save_figure(fig, SLUG, output_dir=OUT_DIR, formats=("pdf", "png"))
+    save_figure(fig, SLUG, output_dir=OUT_DIR, formats=("pdf", "png"), gist_url=GIST_URL)
 
 
 if __name__ == "__main__":

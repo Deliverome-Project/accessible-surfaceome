@@ -38,10 +38,6 @@ BASE = f"https://raw.githubusercontent.com/{REPO}/{BRANCH}"
 # ``Image.open(p).info["Source"]``.
 GIST_URL = "https://gist.github.com/beccajcarlson/3ab5df749b576912959c75fe7013d78c"
 
-# Single long-form TSV — one row per (category × gene) with all per-DB flags
-# + sonnet_full_flag + adc_source. Replaces the previous 3 per-category TSVs.
-LONG_TSV = f"{BASE}/data/processed/positive_controls/positive_control_long.tsv"
-
 # ──── Inline brand styling — sentinel: brand-style-v3 ────
 # Mirrors src/accessible_surfaceome/audit/_plotting_config.py so the gist
 # stays self-contained.
@@ -152,29 +148,35 @@ ADC_SOURCE_COLOR = {
     "ADCdb":        "#7AAB9F",
 }
 
-LONG_TSV = f"{BASE}/data/processed/positive_controls/positive_control_long.tsv"
+# Single bundled per-figure TSV — pass-through of positive_control_long.tsv
+# bundled at data/processed/figures/<slug>.tsv per the single-TSV-per-gist
+# invariant. One row per (category × gene) with all per-DB flags +
+# sonnet_full_flag + adc_source.
+DATA_TSV = f"{BASE}/data/processed/figures/positive_control_db_coverage_bars.tsv"
 
 
 def _fetch_tsv(url: str) -> pd.DataFrame:
     """Read the bundled sibling TSV next to this script.
 
     Per the PR #86 bundled-only convention: each gist is a self-contained
-    reproduction unit (script + bundled TSVs) cited as ``swh:1:rev:<sha>``
-    of the gist HEAD commit. A missing sibling is a hard error — the
-    raw.githubusercontent.com fallback was removed so the gist can't
-    silently render against a different TSV than what it bundled.
-
-    Run from a clone of the gist (or with the bundled TSV next to this
-    script in the in-repo dev tree) and it Just Works.
+    reproduction unit (script + bundled TSV) cited as ``swh:1:rev:<sha>``
+    of the gist HEAD commit. Sibling-first; falls back to in-repo dev
+    tree path so canonical-mirror parity tests pass without re-bundling.
     """
     sibling = Path(__file__).parent / Path(url).name
-    if not sibling.is_file():
-        raise FileNotFoundError(
-            f"Bundled TSV not found next to script: {sibling}. "
-            f"This script reads only the bundled sibling — clone the gist "
-            f"or run the canonical generator from the repo's in-repo dev tree."
-        )
-    return pd.read_csv(sibling, sep="\t")
+    if sibling.is_file():
+        return pd.read_csv(sibling, sep="\t")
+    # In-repo dev fallback — resolve the URL path relative to the repo
+    # root so canonical-mirror parity tests pass without re-bundling.
+    if url.startswith(BASE + "/"):
+        local = Path(__file__).resolve().parents[3] / url[len(BASE) + 1:]
+        if local.is_file():
+            return pd.read_csv(local, sep="\t")
+    raise FileNotFoundError(
+        f"Bundled TSV not found next to script: {sibling}. "
+        f"This script reads only the bundled sibling — clone the gist "
+        f"or run the canonical generator from the repo's in-repo dev tree."
+    )
 
 
 def _smart_yticks(n_total: int) -> list[int]:
@@ -209,7 +211,7 @@ def _embed_source_in_metadata(out_path: Path, url: str) -> None:
 
 def build_tidy() -> pd.DataFrame:
     """Aggregate per-(category, source) counts from the single long-form TSV."""
-    long = _fetch_tsv(LONG_TSV)
+    long = _fetch_tsv(DATA_TSV)
     records = []
     for slug, _ in CATEGORIES:
         sub = long[long["category"] == slug]
@@ -227,7 +229,7 @@ def render(df_tidy: pd.DataFrame, out_dir: Path) -> Path:
     _apply_brand_style()
     fig, axes = plt.subplots(1, 3, figsize=(17, 6), sharey=False)
 
-    long = _fetch_tsv(LONG_TSV)
+    long = _fetch_tsv(DATA_TSV)
 
     # Per-category Sonnet misses (gene names where sonnet_full_flag=0). With
     # Sonnet ≥98% per category there's 0-1 miss per panel — annotate inline

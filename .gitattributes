@@ -154,6 +154,19 @@ data/processed/paywall_bot_block/paywall_bot_block_compare.tsv -filter -diff -me
 data/analysis/db_vs_sonnet_inclusion/per_protein_features.tsv -filter -diff -merge text
 data/analysis/db_vs_sonnet_inclusion/inclusion_enrichment.tsv  -filter -diff -merge text
 
+# Per-figure consolidated TSVs built by `scripts/build_figure_tsvs.py`
+# — each is bundled into its slug's gist as the single source the
+# mirror script reads (single-TSV-per-gist invariant, enforced by
+# tests/test_gist_single_tsv.py). Exempted from LFS so the bundled
+# copy on the gist + the raw.githubusercontent.com fallback both
+# resolve to plain text. Sizes range from ~5 KB (mock placeholders)
+# to ~2.1 MB (the joined per-protein-features+bench universe), all
+# under the 5 MB practical cap for figure-input TSVs.
+data/processed/figures/positive_control_db_coverage_bars.tsv  -filter -diff -merge text
+data/processed/figures/bench_topology_vs_universe.tsv         -filter -diff -merge text
+data/processed/figures/triage_vs_deep_dive_reason.tsv         -filter -diff -merge text
+data/processed/figures/evidence_corpus_vs_selected.tsv        -filter -diff -merge text
+
 # ADCdb per-antigen Function-text scrape — curator-written descriptions from
 # the per-antigen detail pages. ~50 KB. Read by build_positive_control_lists.py
 # to apply a Function-text noise filter that targets canonical secreted /

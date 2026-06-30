@@ -11,6 +11,8 @@ Sources read (idempotent, no LLM, no D1):
   • ``data/processed/triage_bench/mainbench_replicates_v2.tsv`` — per-rep is_match + truth
   • ``data/processed/triage_bench/db_optimized_cutoffs.tsv`` — uniprot_optimized / cspa_optimized per UniProt
   • ``data/processed/catalog/whole_proteome_catalog.tsv`` — genome-wide DB-vote table
+  • ``data/processed/positive_controls/positive_control_long.tsv`` — positive-control combined long TSV
+  • ``data/analysis/db_vs_sonnet_inclusion/per_protein_features.tsv`` — per-protein topology + family flags
 
 Outputs (one per non-compliant figure today, written to
 ``data/processed/figures/<slug>.tsv``):
@@ -20,6 +22,10 @@ Outputs (one per non-compliant figure today, written to
   • ``db_vs_sonnet_whole_proteome.tsv``
   • ``ensemble_vs_best_db_vs_sonnet.tsv``
   • ``deep_dive_final_categories.tsv`` — MOCK placeholder
+  • ``positive_control_db_coverage_bars.tsv``
+  • ``bench_topology_vs_universe.tsv``
+  • ``triage_vs_deep_dive_reason.tsv`` — MOCK long-form counts
+  • ``evidence_corpus_vs_selected.tsv`` — MOCK per-gene synthesis
 
 The remaining 4 gists already use a single canonical TSV as-is
 (``db_cutoff_tradeoff``, ``db_overlap_venn``, ``paywall_bot_block_compare``,
@@ -35,6 +41,7 @@ from __future__ import annotations
 import argparse
 from pathlib import Path
 
+import numpy as np
 import pandas as pd
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -45,6 +52,8 @@ PREDS_TSV       = ROOT / "data/processed/triage_bench/mainbench_canonical_v2.tsv
 REPS_TSV        = ROOT / "data/processed/triage_bench/mainbench_replicates_v2.tsv"
 OPT_CUTOFFS_TSV = ROOT / "data/processed/triage_bench/db_optimized_cutoffs.tsv"
 CATALOG_TSV     = ROOT / "data/processed/catalog/whole_proteome_catalog.tsv"
+POS_LONG_TSV    = ROOT / "data/processed/positive_controls/positive_control_long.tsv"
+FEATURES_TSV    = ROOT / "data/analysis/db_vs_sonnet_inclusion/per_protein_features.tsv"
 
 
 def _load_sources() -> dict[str, pd.DataFrame]:
@@ -199,14 +208,205 @@ def build_curator_vs_agent_reason(src: dict[str, pd.DataFrame]) -> pd.DataFrame:
     return reps[keep]
 
 
+def build_positive_control_db_coverage_bars(src: dict[str, pd.DataFrame]) -> pd.DataFrame:
+    """Long-form positive-control coverage. Pass-through copy of the
+    canonical ``positive_control_long.tsv`` — one row per (category × gene)
+    with the per-DB flags + sonnet_full_flag + adc_source already
+    denormalized. The figure groups by (category, source) and sums the
+    flags from this single TSV without any joins."""
+    return pd.read_csv(POS_LONG_TSV, sep="\t")
+
+
+def _is_sonnet_2tier_yc(row: dict) -> bool:
+    """Sonnet 2-tier yes/contextual filter, matching
+    ``scripts/bench_topology_vs_universe.py``: NCBI sweep verdict ∈
+    {yes, contextual} OR (NCBI=no AND PubMed-rescue verdict ∈ {yes,
+    contextual}). This is what the catalog actually ships as the
+    "accessible surfaceome" universe."""
+    ncbi = (str(row.get("sonnet_verdict") or "")).strip().lower()
+    if ncbi in ("yes", "contextual"):
+        return True
+    pubmed = (str(row.get("pubmed_verdict") or "")).strip().lower()
+    return pubmed in ("yes", "contextual")
+
+
+def build_bench_topology_vs_universe(src: dict[str, pd.DataFrame]) -> pd.DataFrame:
+    """Sonnet 2-tier yes/contextual universe + bench-membership flag.
+    One row per protein in the Sonnet 2-tier universe (~4,426 of the
+    6,589-row per_protein_features TSV), carrying all 9 topology flags
+    + an ``is_bench`` boolean marking the 146 of 147 bench members that
+    join in by ``uniprot_accession``.
+
+    The figure derives both bars (universe + bench) from this single
+    TSV: bench = rows where is_bench=1, universe = all rows."""
+    features = pd.read_csv(FEATURES_TSV, sep="\t", low_memory=False)
+    bench = src["bench"]
+    bench_accs = set(bench["uniprot_acc"].dropna().astype(str).tolist())
+    # Filter to Sonnet 2-tier yes/contextual universe
+    mask = features.apply(_is_sonnet_2tier_yc, axis=1)
+    universe = features[mask].copy()
+    universe["is_bench"] = universe["uniprot_accession"].astype(str).isin(bench_accs).astype(int)
+    return universe
+
+
+# ── MOCK long-form for triage_vs_deep_dive_reason ───────────────────────────
+# Hand-tuned 10×10 confusion-matrix counts. Mirrors the dict in
+# scripts/triage_vs_deep_dive_reason.py — kept here as the canonical
+# source the figure bundles. Replace with a public-D1 SELECT once the
+# v2 deep-dive sweep lands and joins onto triage_run.
+_MOCK_TRIAGE_DD_COUNTS: dict[str, dict[str, int]] = {
+    "classical_surface_receptor": {
+        "classical_surface_receptor": 1380, "multipass_with_exposed_loops": 60,
+        "gpi_anchored":               18,   "stable_complex_partner":       42,
+        "stable_surface_attachment":  35,   "cell_state_induced":           28,
+        "tissue_restricted_surface":  55,   "dual_localization":            22,
+        "cytoplasmic":                14,   "endomembrane_resident":         8,
+    },
+    "multipass_with_exposed_loops": {
+        "classical_surface_receptor": 45,   "multipass_with_exposed_loops": 685,
+        "gpi_anchored":               5,    "stable_complex_partner":       18,
+        "stable_surface_attachment":  12,   "cell_state_induced":           15,
+        "tissue_restricted_surface":  22,   "dual_localization":             8,
+        "cytoplasmic":                 6,   "endomembrane_resident":         4,
+    },
+    "gpi_anchored": {
+        "classical_surface_receptor": 8,    "multipass_with_exposed_loops":  2,
+        "gpi_anchored":               265,  "stable_complex_partner":        4,
+        "stable_surface_attachment":  18,   "cell_state_induced":            3,
+        "tissue_restricted_surface":  10,   "dual_localization":             5,
+        "cytoplasmic":                 1,   "endomembrane_resident":         2,
+    },
+    "stable_complex_partner": {
+        "classical_surface_receptor": 28,   "multipass_with_exposed_loops":  6,
+        "gpi_anchored":               2,    "stable_complex_partner":       155,
+        "stable_surface_attachment":  20,   "cell_state_induced":            5,
+        "tissue_restricted_surface":  8,    "dual_localization":            10,
+        "cytoplasmic":                 4,   "endomembrane_resident":         3,
+    },
+    "stable_surface_attachment": {
+        "classical_surface_receptor": 12,   "multipass_with_exposed_loops":  4,
+        "gpi_anchored":               6,    "stable_complex_partner":       18,
+        "stable_surface_attachment":  295,  "cell_state_induced":           14,
+        "tissue_restricted_surface":  22,   "dual_localization":            25,
+        "cytoplasmic":                 5,   "endomembrane_resident":         8,
+    },
+    "cell_state_induced": {
+        "classical_surface_receptor": 8,    "multipass_with_exposed_loops":  3,
+        "gpi_anchored":               2,    "stable_complex_partner":        4,
+        "stable_surface_attachment":  18,   "cell_state_induced":           475,
+        "tissue_restricted_surface":  25,   "dual_localization":            32,
+        "cytoplasmic":                10,   "endomembrane_resident":         6,
+    },
+    "tissue_restricted_surface": {
+        "classical_surface_receptor": 25,   "multipass_with_exposed_loops":  8,
+        "gpi_anchored":               6,    "stable_complex_partner":        7,
+        "stable_surface_attachment":  20,   "cell_state_induced":           30,
+        "tissue_restricted_surface":  385,  "dual_localization":            15,
+        "cytoplasmic":                 5,   "endomembrane_resident":         4,
+    },
+    "dual_localization": {
+        "classical_surface_receptor": 10,   "multipass_with_exposed_loops":  3,
+        "gpi_anchored":               2,    "stable_complex_partner":        5,
+        "stable_surface_attachment":  18,   "cell_state_induced":           22,
+        "tissue_restricted_surface":  12,   "dual_localization":           175,
+        "cytoplasmic":                 8,   "endomembrane_resident":        10,
+    },
+    "cytoplasmic": {
+        "classical_surface_receptor":  5,   "multipass_with_exposed_loops":  2,
+        "gpi_anchored":                1,   "stable_complex_partner":        2,
+        "stable_surface_attachment":   8,   "cell_state_induced":           10,
+        "tissue_restricted_surface":   4,   "dual_localization":             6,
+        "cytoplasmic":               195,   "endomembrane_resident":        22,
+    },
+    "endomembrane_resident": {
+        "classical_surface_receptor":  3,   "multipass_with_exposed_loops":  1,
+        "gpi_anchored":                1,   "stable_complex_partner":        1,
+        "stable_surface_attachment":  15,   "cell_state_induced":            8,
+        "tissue_restricted_surface":   3,   "dual_localization":             5,
+        "cytoplasmic":                18,   "endomembrane_resident":       145,
+    },
+}
+
+
+def build_triage_vs_deep_dive_reason(src: dict[str, pd.DataFrame]) -> pd.DataFrame:
+    """MOCK PLACEHOLDER — long-form confusion-matrix counts for the
+    triage-reason × deep-dive-reason figure. One row per non-zero
+    cell with columns ``triage_reason``, ``deep_dive_reason``, ``count``.
+
+    The figure pivots this into a 10×10 matrix at render time. Bundled
+    as a TSV rather than re-declared as a dict in the mirror so the
+    gist stays single-source. Mirrors the matching constant in
+    ``scripts/triage_vs_deep_dive_reason.py``."""
+    records = []
+    for tr, row in _MOCK_TRIAGE_DD_COUNTS.items():
+        for dd, count in row.items():
+            records.append(
+                {"triage_reason": tr, "deep_dive_reason": dd, "count": int(count)}
+            )
+    return pd.DataFrame(records)
+
+
+# Synthesis parameters for evidence_corpus_vs_selected — duplicated
+# verbatim from scripts/evidence_corpus_vs_selected.py so a fresh build
+# regenerates the identical mock distribution.
+_N_MOCK_EVIDENCE_GENES = 220
+_EVIDENCE_RANDOM_SEED = 42
+
+
+def build_evidence_corpus_vs_selected(src: dict[str, pd.DataFrame]) -> pd.DataFrame:
+    """MOCK PLACEHOLDER — synthesized per-gene (papers_found,
+    papers_selected, verdict) tuples for the evidence-corpus figure.
+
+    Joint shape mirrors the canonical generator at
+    ``scripts/evidence_corpus_vs_selected.py``:
+
+      • papers_found ~ Lognormal(μ=ln 234, σ=0.6), clipped to [25, 550]
+      • selection rate decreases with log(found)
+      • verdict assigned probabilistically from a latent quality
+        score; bucketed into 4-grade evidence_grade enum
+    """
+    rng = np.random.default_rng(_EVIDENCE_RANDOM_SEED)
+    n = _N_MOCK_EVIDENCE_GENES
+
+    papers_found = np.clip(
+        rng.lognormal(mean=np.log(234), sigma=0.6, size=n),
+        25, 550,
+    )
+
+    base_rate = 0.12 * np.log(75) / np.log(papers_found)
+    noise = rng.normal(0.0, 0.025, size=n)
+    selection_rate = np.clip(base_rate + noise, 0.01, 0.30)
+    papers_selected = np.clip(np.round(papers_found * selection_rate), 2, 50).astype(int)
+    papers_found = np.round(papers_found).astype(int)
+
+    quality = np.log1p(papers_selected) + 1.5 * selection_rate
+    verdicts = np.empty(n, dtype=object)
+    q_noise = rng.normal(0.0, 0.22, size=n)
+    q = quality + q_noise
+    verdicts[q >= 3.45] = "direct_multi_method"
+    verdicts[(q >= 3.10) & (q < 3.45)] = "direct_single_method"
+    verdicts[(q >= 2.75) & (q < 3.10)] = "supportive_but_indirect"
+    verdicts[q < 2.75] = "weak"
+
+    return pd.DataFrame({
+        "papers_found": papers_found,
+        "papers_selected": papers_selected,
+        "verdict": verdicts,
+    })
+
+
 BUILDERS: dict[str, callable] = {
-    "benchmark_cost_vs_accuracy":    build_cost_vs_accuracy,
-    "db_correctness_by_class":       build_db_correctness_by_class,
-    "db_correctness_overall":        build_db_correctness_overall,
-    "db_vs_sonnet_whole_proteome":   build_db_vs_sonnet_whole_proteome,
-    "ensemble_vs_best_db_vs_sonnet": build_ensemble,
-    "deep_dive_final_categories":    build_deep_dive_final_categories,
-    "curator_vs_agent_reason":       build_curator_vs_agent_reason,
+    "benchmark_cost_vs_accuracy":         build_cost_vs_accuracy,
+    "db_correctness_by_class":            build_db_correctness_by_class,
+    "db_correctness_overall":             build_db_correctness_overall,
+    "db_vs_sonnet_whole_proteome":        build_db_vs_sonnet_whole_proteome,
+    "ensemble_vs_best_db_vs_sonnet":      build_ensemble,
+    "deep_dive_final_categories":         build_deep_dive_final_categories,
+    "curator_vs_agent_reason":            build_curator_vs_agent_reason,
+    "positive_control_db_coverage_bars":  build_positive_control_db_coverage_bars,
+    "bench_topology_vs_universe":         build_bench_topology_vs_universe,
+    "triage_vs_deep_dive_reason":         build_triage_vs_deep_dive_reason,
+    "evidence_corpus_vs_selected":        build_evidence_corpus_vs_selected,
 }
 
 

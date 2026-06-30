@@ -71,6 +71,7 @@ from accessible_surfaceome.audit._plotting_config import (
 ROOT = Path(__file__).resolve().parents[1]
 OUT_DIR = ROOT / "data/analysis/figures"
 SLUG = "triage_vs_deep_dive_reason"
+GIST_URL = "https://gist.github.com/beccajcarlson/d8763d79859db70ffef660251a9bb83e"
 
 # Top-10 reasons by display frequency in the existing deep-dive cohort.
 # Ordering = bucket-by-bucket, then by within-bucket frequency. Full
@@ -323,7 +324,7 @@ def make_plot() -> tuple[plt.Figure, plt.Axes]:
 
 def main() -> None:
     fig, _ = make_plot()
-    save_figure(fig, SLUG, output_dir=OUT_DIR, formats=("pdf", "png"))
+    save_figure(fig, SLUG, output_dir=OUT_DIR, formats=("pdf", "png"), gist_url=GIST_URL)
 
 
 if __name__ == "__main__":

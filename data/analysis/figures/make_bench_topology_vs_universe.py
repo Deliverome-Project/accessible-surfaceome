@@ -12,8 +12,10 @@
 Side-by-side grouped barplot over the same 9 topology categories the
 ``topology_coverage_by_source`` 3×3 figure breaks out, with two hues:
 
-  • **any-yes universe** (n=6,588) — the full "≥1 source voted yes"
-    cohort the per-protein-features TSV materialises
+  • **Sonnet 2-tier yes/contextual universe** (n=4,426) — the genes
+    the production pipeline calls accessible after the Sonnet+NCBI
+    sweep plus the Sonnet+PubMed rescue lane. This is what the catalog
+    *actually ships*, NOT the broader "any source voted yes" union.
   • **SurfaceBench** (n=146 of 147 that join into the features TSV) —
     the 147-protein hand-curated benchmark deliberately enriched for
     cases where the five gating databases disagree
@@ -50,10 +52,14 @@ BASE = f"https://raw.githubusercontent.com/{REPO}/{BRANCH}"
 # Subject metadata (mirrors save_figure in _plotting_config.py).
 GIST_URL = "https://gist.github.com/beccajcarlson/676b9e5ab9112191a96560ca6fdb17d6"
 
-# Bundled TSVs — sibling-first per PR #86; clone the gist or run from
-# the in-repo dev tree so these resolve next to this script.
-BENCH_TSV = f"{BASE}/data/eval/triage_benchmark_v1.tsv"
-FEATURES_TSV = f"{BASE}/data/analysis/db_vs_sonnet_inclusion/per_protein_features.tsv"
+# Single bundled per-figure TSV — sibling-first per PR #86; clone the gist
+# or run from the in-repo dev tree so this resolves next to this script.
+# One row per protein in the Sonnet 2-tier yes/contextual universe
+# (~4,426 of the 6,589-row per_protein_features TSV), carrying all 9
+# topology flags + an ``is_bench`` boolean marking the 146 of 147 bench
+# members that join in by uniprot_accession. The figure derives both
+# bars (universe + bench) from this single TSV.
+DATA_TSV = f"{BASE}/data/processed/figures/bench_topology_vs_universe.tsv"
 
 # ──── Inline brand styling — sentinel: brand-style-v3 ────
 # Mirrors src/accessible_surfaceome/audit/_plotting_config.py so the gist
@@ -232,11 +238,12 @@ def _compute_distribution() -> tuple[
     list[tuple[str, str]], list[float], list[float], list[tuple[float, float]],
     list[float], int, int,
 ]:
-    rows_df = _fetch_tsv(FEATURES_TSV)
-    bench_df = _fetch_tsv(BENCH_TSV)
-    bench_accs = set(bench_df["uniprot_acc"].dropna().astype(str).tolist())
+    rows_df = _fetch_tsv(DATA_TSV)
     rows = rows_df.to_dict(orient="records")
-    bench_rows = [r for r in rows if str(r.get("uniprot_accession", "")) in bench_accs]
+    # The pre-joined TSV already has is_bench=1 marking the 146 bench
+    # members; the universe is every row (pre-filtered to Sonnet 2-tier
+    # yes/contextual at build time).
+    bench_rows = [r for r in rows if str(r.get("is_bench", "0")) in {"1", "1.0"}]
     n_universe = len(rows)
     n_bench = len(bench_rows)
 
@@ -271,7 +278,8 @@ def main() -> None:
 
     ax.bar(
         x - width / 2, univ, width=width, color=COLOR_UNIVERSE,
-        edgecolor="none", label=f"any-yes universe  (n = {n_u:,})",
+        edgecolor="none",
+        label=f"Sonnet 2-tier yes/contextual  (n = {n_u:,})",
         zorder=3,
     )
     yerr = np.array(ci).T  # shape (2, n)

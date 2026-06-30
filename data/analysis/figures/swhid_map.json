@@ -1,3 +1,17 @@
-version https://git-lfs.github.com/spec/v1
-oid sha256:4500dcf42016d1a1d49ff28208129ad32c770cb00f6320bc85858c720437ba2b
-size 1361
+{
+  "bench_topology_vs_universe": "swh:1:rev:b689e26e2608dc12b4fe02e9d80eac59496f133c",
+  "benchmark_cost_vs_accuracy": "swh:1:rev:0546c637556b05f3cf05b8a01da60b2968ee149a",
+  "db_correctness_by_class": "swh:1:rev:34b1bff329af2e06104ba2e50df5d7e0a6ac394a",
+  "db_correctness_overall": "swh:1:rev:671ea36be49491b509b67b4a5e577971b545baa2",
+  "db_cutoff_tradeoff": "swh:1:rev:7dd8393e7f71d941ef3e3077106883442db27fc2",
+  "db_overlap_venn": "swh:1:rev:3e9385908e6a963ff82c0c3dd2163ec6c461661b",
+  "db_vs_sonnet_whole_proteome": "swh:1:rev:e199c2f5f76da57c0ad9d9611b6647e44f099d65",
+  "deep_dive_final_categories": "swh:1:rev:ac464ae2d2837eda2dbc32b64f07d479af50cf54",
+  "ensemble_vs_best_db_vs_sonnet": "swh:1:rev:05697acdef1c22b0152a82b02265dcf5fe22d355",
+  "evidence_corpus_vs_selected": "swh:1:rev:1cad0140b256226068ae81aa56cebecb31e01c26",
+  "paywall_bot_block_compare": "swh:1:rev:8ab41cc6ef790b01df229633fd35a6ef2a19e958",
+  "positive_control_db_coverage_bars": "swh:1:rev:98d46ca3c0b93cb0454cf9a293844dce4aa43370",
+  "topology_coverage_by_source": "swh:1:rev:609e15d5900bff0fda9c42dc55524d99871f1adc",
+  "triage_vs_deep_dive_reason": "swh:1:rev:afec4fb7b37a33be6aa34920f2dec9ce38c3729d",
+  "zero_db_rescues_by_triage": "swh:1:rev:fad84ac336a0ff94393ebc38b9af0339402a2037"
+}

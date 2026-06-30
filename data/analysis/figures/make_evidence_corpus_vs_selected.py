@@ -3,6 +3,7 @@
 # dependencies = [
 #   "matplotlib>=3.9",
 #   "numpy>=1.26",
+#   "pandas>=2.2",
 #   "seaborn>=0.13",
 # ]
 # ///
@@ -40,11 +41,21 @@ from pathlib import Path
 import matplotlib.font_manager as fm
 import matplotlib.pyplot as plt
 import numpy as np
+import pandas as pd
 import seaborn as sns
+
+REPO = "Deliverome-Project/accessible-surfaceome"
+BRANCH = "main"
+BASE = f"https://raw.githubusercontent.com/{REPO}/{BRANCH}"
 
 # Published reproduction gist — embedded into output PNG Source / PDF
 # Subject metadata (mirrors save_figure in _plotting_config.py).
 GIST_URL = "https://gist.github.com/beccajcarlson/27acf83e5e0175fd0887777adf49497b"
+
+# Single bundled per-figure TSV — synthesized per-gene (papers_found,
+# papers_selected, verdict) tuples. The mirror reads this rather than
+# regenerating the mock at render time so the gist stays single-source.
+DATA_TSV = f"{BASE}/data/processed/figures/evidence_corpus_vs_selected.tsv"
 
 # ──── Inline brand styling — sentinel: brand-style-v3 ────
 # Mirrors src/accessible_surfaceome/audit/_plotting_config.py so the gist
@@ -140,64 +151,44 @@ VERDICT_LABEL = {
     "weak":                    "weak / sparse",
 }
 
-# Mock target ~ deep-dive cohort scale; reproducible via fixed seed
-# so the placeholder figure doesn't drift between renders.
-_N_MOCK_GENES = 220
-_RANDOM_SEED = 42
+def _fetch_tsv(url: str) -> pd.DataFrame:
+    """Read the bundled sibling TSV next to this script.
 
-
-def _synthesize_mock_data() -> tuple[np.ndarray, np.ndarray, np.ndarray]:
-    """Generate per-gene (papers_found, papers_selected, verdict) tuples
-    with a plausible joint shape:
-
-      • papers_found ~ Lognormal(μ=ln 234, σ=0.6), clipped to [25, 550]
-        — anchored on the 234.5 median + ~50–400 range from the
-        methods-text 100-gene audit.
-      • selection rate decreases with log(found) — agents extract fewer
-        papers per gene as the corpus grows (more noise to filter).
-      • verdict assigned probabilistically as a function of
-        log(selected) so higher-evidence genes tilt toward
-        direct_multi_method; lower-evidence genes tilt toward weak.
-
-    Returns three same-length arrays."""
-    rng = np.random.default_rng(_RANDOM_SEED)
-    n = _N_MOCK_GENES
-
-    # Papers found: lognormal centred at 234 (audit median)
-    papers_found = np.clip(
-        rng.lognormal(mean=np.log(234), sigma=0.6, size=n),
-        25, 550,
+    Per the PR #86 single-TSV invariant: each gist is a self-contained
+    reproduction unit (script + bundled TSV) cited as ``swh:1:rev:<sha>``
+    of the gist HEAD commit. Sibling-first; falls back to in-repo dev
+    tree path so canonical-mirror parity tests pass without re-bundling.
+    """
+    sibling = Path(__file__).parent / Path(url).name
+    if sibling.is_file():
+        return pd.read_csv(sibling, sep="\t")
+    if url.startswith(BASE + "/"):
+        local = Path(__file__).resolve().parents[3] / url[len(BASE) + 1:]
+        if local.is_file():
+            return pd.read_csv(local, sep="\t")
+    raise FileNotFoundError(
+        f"Bundled TSV not found next to script: {sibling}. "
+        f"This script reads only the bundled sibling — clone the gist "
+        f"or run the canonical generator from the repo's in-repo dev tree."
     )
 
-    # Selection rate: shrinks with corpus size; baseline 12% scaled by
-    # ln(75)/ln(found) so a 75-paper gene keeps ~12%, a 400-paper gene
-    # selects ~6%. Add gaussian noise on top.
-    base_rate = 0.12 * np.log(75) / np.log(papers_found)
-    noise = rng.normal(0.0, 0.025, size=n)
-    selection_rate = np.clip(base_rate + noise, 0.01, 0.30)
-    papers_selected = np.clip(np.round(papers_found * selection_rate), 2, 50).astype(int)
-    papers_found = np.round(papers_found).astype(int)
 
-    # Verdict: cumulative thresholds on a latent quality score that
-    # is mostly papers_selected with a small contribution from
-    # selection rate.
-    quality = np.log1p(papers_selected) + 1.5 * selection_rate
-    verdicts = np.empty(n, dtype=object)
-    q_noise = rng.normal(0.0, 0.22, size=n)
-    q = quality + q_noise
-    # Thresholds chosen to land target shares ~ 30/25/25/20 across
-    # direct_multi / direct_single / supportive / weak.
-    verdicts[q >= 3.45] = "direct_multi_method"
-    verdicts[(q >= 3.10) & (q < 3.45)] = "direct_single_method"
-    verdicts[(q >= 2.75) & (q < 3.10)] = "supportive_but_indirect"
-    verdicts[q < 2.75] = "weak"
-
-    return papers_found, papers_selected, verdicts
+def _load_mock_data() -> tuple[np.ndarray, np.ndarray, np.ndarray]:
+    """Load the bundled per-gene (papers_found, papers_selected,
+    verdict) tuples. Synthesized into the TSV at build time
+    (``scripts/build_figure_tsvs.py::build_evidence_corpus_vs_selected``)
+    so the figure stays reproducible from a single bundled source."""
+    df = _fetch_tsv(DATA_TSV)
+    return (
+        df["papers_found"].to_numpy(dtype=int),
+        df["papers_selected"].to_numpy(dtype=int),
+        df["verdict"].to_numpy(dtype=object),
+    )
 
 
 def main() -> None:
     _apply_brand_style()
-    found, selected, verdicts = _synthesize_mock_data()
+    found, selected, verdicts = _load_mock_data()
 
     fig, ax = plt.subplots(figsize=(12, 8))
 
@@ -248,7 +239,7 @@ def main() -> None:
         0.5, -0.04,
         f"MOCK — synthesized from the 100-gene audit shape "
         f"(median {int(np.median(found))} papers/gene, "
-        f"median {int(np.median(selected))} selected); n={_N_MOCK_GENES} genes",
+        f"median {int(np.median(selected))} selected); n={len(found)} genes",
         ha="center", va="top", fontsize=12, style="italic", color=BRAND_NEUTRAL,
     )
 
@@ -259,7 +250,7 @@ def main() -> None:
     out_png = Path("evidence_corpus_vs_selected.png")
     fig.savefig(out_pdf, bbox_inches="tight", metadata={"Subject": GIST_URL})
     fig.savefig(out_png, bbox_inches="tight", dpi=600, metadata={"Source": GIST_URL})
-    print(f"Wrote {out_pdf} + {out_png}  (n = {_N_MOCK_GENES} genes)")
+    print(f"Wrote {out_pdf} + {out_png}  (n = {len(found)} genes)")
 
 
 if __name__ == "__main__":
