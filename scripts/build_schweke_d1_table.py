@@ -60,6 +60,7 @@ from __future__ import annotations
 import argparse
 import csv
 import json
+import re
 import sys
 import time
 import urllib.error
@@ -387,7 +388,18 @@ def _build_payload(
         if complex_entry:
             stoich = complex_entry["stoichiometry"]
             has_complex = 1
-            complex_fn = complex_entry["pdb_filename"]
+            # full_complex_index.tsv names the bigbang export verbatim
+            # (``{ACC}_V1_{N}_c{K}_model_0_rank_1.pdb``), but the canonical
+            # asset convention — used by the committed PDBs under
+            # viewer/public/data/structures/schweke/, structure-viewer.ts,
+            # and the schweke_homomer.py manifest fallback — is the short
+            # ``{ACC}_V1_{N}_c{K}.pdb``. Normalize here so the D1 row (and
+            # every record that bakes it) points at a resolvable asset.
+            complex_fn = re.sub(
+                r"_model_\d+_rank_\d+(?=\.pdb$)",
+                "",
+                complex_entry["pdb_filename"],
+            )
             # Use the complex's af_model_num when it differs from refset
             # (Schweke's bigbang reconstruction can be done on a non-rank-1
             # model). Keep the rank-1 model_num for the dimer filename.

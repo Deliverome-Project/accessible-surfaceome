@@ -1493,8 +1493,8 @@ export function StructureViewer({
         });
         if (!resp.ok) {
           // 404 = the record annotates this protein as a Schweke
-          // positive but the PDB file isn't committed under
-          // viewer/public/data/structures/schweke/ yet. The
+          // positive but its coordinate PDB hasn't been ingested into
+          // the public R2 bucket (surfaceome-structures) yet. The
           // ``loadSchwekeHomomer`` docstring already promises a
           // graceful fetch-failed state — render the
           // ``"unavailable"`` empty-state box instead of the generic
@@ -1507,7 +1507,7 @@ export function StructureViewer({
             `Schweke 2024 predicts ${schwekeVariant.uniprot_acc} is a ` +
               `homo-${schwekeVariant.stoichiometry}-mer, but the model ` +
               `PDB file (${schwekeVariant.pdb_url.split("/").pop()}) ` +
-              "isn't ingested locally yet. The homomer signal still " +
+              "hasn't been ingested yet. The homomer signal still " +
               "informs the accessibility-risks card; only the 3D view " +
               "is unavailable until the file is added.",
           );
