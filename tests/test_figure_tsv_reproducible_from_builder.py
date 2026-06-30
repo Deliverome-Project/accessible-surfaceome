@@ -33,6 +33,18 @@ sys.path.insert(0, str(REPO / "scripts"))
 import build_figure_tsvs as bft  # noqa: E402
 
 
+def _is_lfs_pointer(path: Path) -> bool:
+    """The per-figure TSVs are LFS-tracked (gist-bundled, not raw-served). On a
+    checkout without `git lfs pull` (e.g. CI's bare actions/checkout) they are
+    3-line pointer stubs, not data — comparing a builder against a pointer is a
+    false failure, so skip. The build_figure_tsvs SOURCES are LFS-exempt text,
+    so the builder itself still runs."""
+    try:
+        return path.read_bytes()[:40].startswith(b"version https://git-lfs")
+    except OSError:
+        return False
+
+
 @pytest.fixture(scope="module")
 def sources():
     try:
@@ -46,6 +58,9 @@ def test_figure_tsv_reproducible_from_builder(slug: str, sources) -> None:
     committed = FIG_TSV_DIR / f"{slug}.tsv"
     if not committed.is_file():
         pytest.skip(f"{slug}: no committed TSV at data/processed/figures/{slug}.tsv")
+    if _is_lfs_pointer(committed):
+        pytest.skip(f"{slug}: committed TSV is an unsmudged LFS pointer — run "
+                    f"`git lfs pull` to enable this guard (or check out with lfs:true)")
     regenerated = bft.BUILDERS[slug](sources).to_csv(sep="\t", index=False)
     assert regenerated == committed.read_text(), (
         f"{slug}: committed data/processed/figures/{slug}.tsv is NOT reproducible "
