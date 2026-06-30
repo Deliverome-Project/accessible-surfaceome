@@ -105,12 +105,27 @@ def _i(v) -> int:
     return 1 if str(v).strip() in ("1", "1.0") else 0
 
 
+def _opt_membership(acc: str) -> tuple[int, int]:
+    """Optimized ``(uniprot_optimized, cspa_optimized)`` membership for an acc.
+
+    ``db_optimized_cutoffs.tsv`` is a POSITIVE LIST — it carries a row only for
+    accessions that pass >=1 tightened cutoff (no row has both optimized flags
+    0). An accession absent from it therefore passed NEITHER cutoff and
+    contributes ``(0, 0)``. This matches the Methods: the optimized CSPA rule is
+    high-confidence-only and absence-from-source is a "not surface" vote — the
+    tightening is documented to drop the ~80 putative-CSPA-only proteins that no
+    other source picks up. Do NOT fall back to the initial flag here: that
+    resurrects exactly those proteins and inflates the universe with
+    low-confidence, cytoplasmic-facing hits (filamin, ryanodine receptors,
+    ER-resident proteins riding a putative CSPA hit)."""
+    return _opt.get(acc, (0, 0))
+
+
 def _opt_votes(r) -> int:
     """5-DB vote under the bench-optimized cutoffs: UniProt + CSPA from the
-    recalibrated set (fallback to the initial flag when the accession isn't
-    in the cutoff table); GO / HPA / SURFY unchanged."""
-    acc = (r.get("uniprot_acc") or "").strip()
-    up, cs = _opt.get(acc, (_i(r["uniprot_flag"]), _i(r["cspa_flag"])))
+    recalibrated positive set (absent -> 0, see ``_opt_membership``); GO / HPA /
+    SURFY use their unchanged initial flag."""
+    up, cs = _opt_membership((r.get("uniprot_acc") or "").strip())
     return up + cs + _i(r["go_flag"]) + _i(r["surfy_flag"]) + _i(r["hpa_flag"])
 
 
@@ -210,8 +225,7 @@ def main():
     # uniprot_flag/cspa_flag are overwritten with the optimized values so every
     # column in the row is on the same (optimized) cutoff as n_db_votes.
     for r in all_rows:
-        acc = (r.get("uniprot_acc") or "").strip()
-        up, cs = _opt.get(acc, (_i(r["uniprot_flag"]), _i(r["cspa_flag"])))
+        up, cs = _opt_membership((r.get("uniprot_acc") or "").strip())
         r["uniprot_flag"] = up
         r["cspa_flag"] = cs
         r["n_db_votes"] = _opt_votes(r)

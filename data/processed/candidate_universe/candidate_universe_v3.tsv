@@ -9,7 +9,7 @@ ABCA1	HGNC:29	O95477	ENSG00000165029	19	3	1	0	1	0	1	1	0	yes	high	multipass_with_
 ABCA10	HGNC:30	Q8WWZ4	ENSG00000154263	10349	0	0	0	0	0	0	0	0	yes	medium	multipass_with_exposed_loops			sonnet_only
 ABCA12	HGNC:14637	Q86UK0	ENSG00000144452	26154	2	0	0	1	0	1	1	0	no	medium	endomembrane_resident			m1_only
 ABCA13	HGNC:14638	Q86UQ4	ENSG00000179869	154664	1	0	0	1	0	0	1	0	yes	medium	multipass_with_exposed_loops			m1_and_sonnet
-ABCA2	HGNC:32	Q9BZC7	ENSG00000107331	20	3	0	1	1	1	0	1	0	no	medium	endomembrane_resident			m1_only
+ABCA2	HGNC:32	Q9BZC7	ENSG00000107331	20	2	0	1	1	0	0	1	0	no	medium	endomembrane_resident			m1_only
 ABCA3	HGNC:33	Q99758	ENSG00000167972	21	1	0	0	1	0	0	1	0	no	medium	endomembrane_resident			m1_only
 ABCA4	HGNC:34	P78363	ENSG00000198691	24	2	1	0	1	0	0	1	0	no	high	endomembrane_resident			m1_only
 ABCA5	HGNC:35	Q8WWZ7	ENSG00000154265	23461	2	1	0	1	0	0	1	0	yes	medium	multipass_with_exposed_loops			m1_and_sonnet
@@ -114,7 +114,7 @@ ADCY3	HGNC:234	O60266	ENSG00000138031	109	4	1	1	1	0	1	1	0	yes	high	multipass_wit
 ADCY4	HGNC:235	Q8NFM4	ENSG00000129467	196883	2	1	0	0	0	1	0	0	yes	high	multipass_with_exposed_loops			m1_and_sonnet
 ADCY5	HGNC:236	O95622	ENSG00000173175	111	3	1	0	1	0	1	1	0	yes	high	multipass_with_exposed_loops			m1_and_sonnet
 ADCY6	HGNC:237	O43306	ENSG00000174233	112	2	1	0	1	0	0	1	0	no	high	other			m1_only
-ADCY7	HGNC:238	P51828	ENSG00000121281	113	3	0	0	1	1	1	1	0	yes	high	multipass_with_exposed_loops			m1_and_sonnet
+ADCY7	HGNC:238	P51828	ENSG00000121281	113	2	0	0	1	0	1	1	0	yes	high	multipass_with_exposed_loops			m1_and_sonnet
 ADCY8	HGNC:239	P40145	ENSG00000155897	114	3	1	1	0	0	1	0	0	yes	high	multipass_with_exposed_loops			m1_and_sonnet
 ADCY9	HGNC:240	O60503	ENSG00000162104	115	3	1	0	1	0	1	1	0	yes	high	multipass_with_exposed_loops			m1_and_sonnet
 ADCYAP1R1	HGNC:242	P41586	ENSG00000078549	117	2	1	0	1	0	0	1	0	yes	high	multipass_with_exposed_loops			m1_and_sonnet
@@ -325,14 +325,13 @@ ASIC3	HGNC:101	Q9UHC3	ENSG00000213199	9311	1	1	0	0	0	0	0	0	yes	high	multipass_wi
 ASIC4	HGNC:21263	Q96FT7	ENSG00000072182	55515	2	1	0	1	0	0	1	0	yes	high	multipass_with_exposed_loops			m1_and_sonnet
 ASIC5	HGNC:17537	Q9NY37	ENSG00000256394	51802	3	1	1	1	0	0	0	0	yes	medium	multipass_with_exposed_loops			m1_and_sonnet
 ASIP	HGNC:745	P42127	ENSG00000101440	434	0	0	0	0	0	0	0	0	contextual	medium	stable_surface_attachment			sonnet_only
-ASPH	HGNC:757	Q12797	ENSG00000198363	444	1	0	0	0	1	0	0	0	contextual	medium	cell_state_induced			m1_and_sonnet
+ASPH	HGNC:757	Q12797	ENSG00000198363	444	0	0	0	0	0	0	0	0	contextual	medium	cell_state_induced			sonnet_only
 ASPHD1	HGNC:27380	Q5U4P2	ENSG00000174939	253982	0	0	0	0	0	0	0	0	no	low	endomembrane_resident	contextual	low	sonnet_only
 ASPHD2	HGNC:30437	Q6ICH7	ENSG00000128203	57168	0	0	0	0	0	0	0	0	no	low	endomembrane_resident	contextual	low	sonnet_only
 ASTL	HGNC:31704	Q6HA08	ENSG00000188886	431705	1	1	0	0	0	0	0	0	contextual	medium	tissue_restricted_surface			m1_and_sonnet
 ASTN1	HGNC:773	O14525	ENSG00000152092	460	2	1	0	1	0	0	1	0	yes	high	classical_surface_receptor			m1_and_sonnet
 ASTN2	HGNC:17021	O75129	ENSG00000148219	23245	1	0	0	1	0	0	1	0	yes	high	classical_surface_receptor			m1_and_sonnet
 ATAD1	HGNC:25903	Q8NBU5	ENSG00000138138	84896	2	1	1	0	0	0	0	0	no	high	cytoplasmic			m1_only
-ATG9A	HGNC:22408	Q7Z3C6	ENSG00000198925	79065	2	0	0	1	1	0	1	0	no	high	endomembrane_resident			m1_only
 ATP10D	HGNC:13549	Q9P241	ENSG00000145246	57205	2	1	0	0	0	1	0	0	contextual	medium	dual_localization			m1_and_sonnet
 ATP11A	HGNC:13552	P98196	ENSG00000068650	23250	1	1	0	0	0	0	0	0	no	medium	inner_leaflet_anchored			m1_only
 ATP11B	HGNC:13553	Q9Y2G3	ENSG00000058063	23200	1	1	0	0	0	0	0	0	no	medium	endomembrane_resident			m1_only
@@ -423,7 +422,6 @@ BPIFB2	HGNC:16177	Q8N4F0	ENSG00000078898	80341	0	0	0	0	0	0	0	0	contextual	low	du
 BPIFB6	HGNC:16504	Q8NFQ5	ENSG00000167104	128859	0	0	0	0	0	0	0	0	contextual	low	stable_surface_attachment			sonnet_only
 BPIFC	HGNC:16503	Q8NFQ6	ENSG00000184459	254240	0	0	0	0	0	0	0	0	contextual	low	other			sonnet_only
 BRI3	HGNC:1109	O95415	ENSG00000164713	25798	0	0	0	0	0	0	0	0	contextual	medium	dual_localization			sonnet_only
-BRI3BP	HGNC:14251	Q8WY22	ENSG00000184992	140707	1	0	0	0	1	0	0	0	no	medium	mitochondrial_internal			m1_only
 BRICD5	HGNC:28309	Q6PL45	ENSG00000182685	283870	1	1	0	0	0	0	0	0	contextual	low	dual_localization			m1_and_sonnet
 BRINP2	HGNC:13746	Q9C0B6	ENSG00000198797	57795	0	0	0	0	0	0	0	0	contextual	low	stable_surface_attachment			sonnet_only
 BRS3	HGNC:1113	P32247	ENSG00000102239	680	2	1	0	1	0	0	1	0	yes	high	multipass_with_exposed_loops			m1_and_sonnet
@@ -907,7 +905,7 @@ CLIC6	HGNC:2065	Q96NY7	ENSG00000159212	54102	1	1	0	0	0	0	0	0	contextual	medium	d
 CLMB	HGNC:23362	Q96GX8	ENSG00000154102	404550	1	0	0	0	0	1	0	0	no	medium	cytoplasmic			m1_only
 CLMP	HGNC:24039	Q9H6B4	ENSG00000166250	79827	4	1	1	1	1	0	1	0	yes	high	classical_surface_receptor			m1_and_sonnet
 CLN3	HGNC:2074	Q13286	ENSG00000188603	1201	3	1	1	1	0	0	1	0	contextual	medium	lysosomal_exocytosis			m1_and_sonnet
-CLN5	HGNC:2076	O75503	ENSG00000102805	1203	1	0	0	0	1	0	0	0	contextual	medium	lysosomal_exocytosis			m1_and_sonnet
+CLN5	HGNC:2076	O75503	ENSG00000102805	1203	0	0	0	0	0	0	0	0	contextual	medium	lysosomal_exocytosis			sonnet_only
 CLNS1A	HGNC:2080	P54105	ENSG00000074201	1207	0	0	0	0	0	0	0	0	contextual	medium	dual_localization			sonnet_only
 CLPSL2	HGNC:21250	Q6UWE3	ENSG00000196748	389383	0	0	0	0	0	0	0	0	contextual	low	tissue_restricted_surface			sonnet_only
 CLPTM1	HGNC:2087	O96005	ENSG00000104853	1209	2	1	1	0	0	0	0	0	yes	medium	multipass_with_exposed_loops			m1_and_sonnet
@@ -1104,7 +1102,6 @@ DAGLA	HGNC:1165	Q9Y4D2	ENSG00000134780	747	3	1	1	1	0	0	1	0	yes	high	multipass_wi
 DAGLB	HGNC:28923	Q8NCG7	ENSG00000164535	221955	3	1	0	1	0	1	1	0	no	medium	inner_leaflet_anchored			m1_only
 DAO	HGNC:2671	P14920	ENSG00000110887	1610	0	0	0	0	0	0	0	0	no	high	other	contextual	medium	sonnet_only
 DAPP1	HGNC:16500	Q9UN19	ENSG00000070190	27071	0	0	0	0	0	0	0	0	no	high	inner_leaflet_anchored	contextual	medium	sonnet_only
-DBH	HGNC:2689	P09172	ENSG00000123454	1621	1	0	0	0	1	0	0	0	no	medium	secreted_only			m1_only
 DBNL	HGNC:2696	Q9UJU6	ENSG00000136279	28988	1	0	0	0	0	1	0	0	no	medium	inner_leaflet_anchored			m1_only
 DCBLD1	HGNC:21479	Q8N8Z6	ENSG00000164465	285761	3	1	0	1	1	0	1	0	yes	medium	classical_surface_receptor			m1_and_sonnet
 DCBLD2	HGNC:24627	Q96PD2	ENSG00000057019	131566	5	1	1	1	1	1	1	0	yes	high	classical_surface_receptor			m1_and_sonnet
@@ -1156,7 +1153,7 @@ DIP2A	HGNC:17217	Q14689	ENSG00000160305	23181	2	0	1	0	0	1	0	0	no	high	cytoplasmi
 DIPK2A	HGNC:28490	Q8NDZ4	ENSG00000181744	205428	0	0	0	0	0	0	0	0	contextual	low	dual_localization			sonnet_only
 DIPK2B	HGNC:25866	Q9H7Y0	ENSG00000147113	79742	0	0	0	0	0	0	0	0	contextual	low	other			sonnet_only
 DISP1	HGNC:19711	Q96F81	ENSG00000154309	84976	3	0	1	1	0	1	1	0	yes	high	multipass_with_exposed_loops			m1_and_sonnet
-DISP2	HGNC:19712	A7MBM2	ENSG00000140323	85455	2	0	0	1	1	0	1	0	yes	medium	multipass_with_exposed_loops			m1_and_sonnet
+DISP2	HGNC:19712	A7MBM2	ENSG00000140323	85455	1	0	0	1	0	0	1	0	yes	medium	multipass_with_exposed_loops			m1_and_sonnet
 DISP3	HGNC:29251	Q9P2K9	ENSG00000204624	57540	1	0	0	1	0	0	1	0	no	medium	cytoplasmic			m1_only
 DKKL1	HGNC:16528	Q9UK85	ENSG00000104901	27120	0	0	0	0	0	0	0	0	no	medium	secreted_only	contextual	low	sonnet_only
 DLEU7	HGNC:17567	Q6UYE1	ENSG00000186047	220107	0	0	0	0	0	0	0	0	yes	medium	classical_surface_receptor			sonnet_only
@@ -1234,7 +1231,6 @@ EDNRB	HGNC:3180	P24530	ENSG00000136160	1910	3	1	0	1	0	1	1	0	yes	high	multipass_w
 EEF1A1	HGNC:3189	P68104	ENSG00000156508	1915	1	0	1	0	0	0	0	0	no	medium	cytoplasmic			m1_only
 EEF1AKMT4-ECE2	HGNC:53615	P0DPD8	ENSG00000284917	110599583	0	0	0	0	0	0	0	0	contextual	low	dual_localization			sonnet_only
 EEPD1	HGNC:22223	Q7L9B9	ENSG00000122547	80820	0	0	0	0	0	0	0	0	contextual	low	dual_localization			sonnet_only
-EFCAB14	HGNC:29051	O75071	ENSG00000159658	9813	1	0	0	0	1	0	0	0	no	medium	cytoplasmic			m1_only
 EFCAB7	HGNC:29379	A8K855	ENSG00000203965	84455	1	0	1	0	0	0	0	0	no	medium	inner_leaflet_anchored			m1_only
 EFNA1	HGNC:3221	P20827	ENSG00000169242	1942	3	1	0	1	1	0	0	0	yes	high	gpi_anchored			m1_and_sonnet
 EFNA2	HGNC:3222	O43921	ENSG00000099617	1943	2	1	0	1	0	0	0	0	yes	high	gpi_anchored			m1_and_sonnet
@@ -1267,9 +1263,9 @@ EMC10	HGNC:27609	Q5UCC4	ENSG00000161671	284361	0	0	0	0	0	0	0	0	contextual	medium
 EMCN	HGNC:16041	Q9ULC0	ENSG00000164035	51705	2	1	0	1	0	0	1	0	yes	high	classical_surface_receptor			m1_and_sonnet
 EMID1	HGNC:18036	Q96A84	ENSG00000186998	129080	0	0	0	0	0	0	0	0	contextual	low	stable_surface_attachment			sonnet_only
 EMILIN1	HGNC:19880	Q9Y6C2	ENSG00000138080	11117	2	0	1	0	1	0	0	0	no	high	secreted_only			m1_only
-EMP1	HGNC:3333	P54849	ENSG00000134531	2012	2	0	0	1	1	0	1	0	yes	high	multipass_with_exposed_loops			m1_and_sonnet
+EMP1	HGNC:3333	P54849	ENSG00000134531	2012	1	0	0	1	0	0	1	0	yes	high	multipass_with_exposed_loops			m1_and_sonnet
 EMP2	HGNC:3334	P54851	ENSG00000213853	2013	3	1	1	1	0	0	1	0	yes	high	multipass_with_exposed_loops			m1_and_sonnet
-EMP3	HGNC:3335	P54852	ENSG00000142227	2014	3	0	0	1	1	1	1	0	yes	high	multipass_with_exposed_loops			m1_and_sonnet
+EMP3	HGNC:3335	P54852	ENSG00000142227	2014	2	0	0	1	0	1	1	0	yes	high	multipass_with_exposed_loops			m1_and_sonnet
 ENDOD1	HGNC:29129	O94919	ENSG00000149218	23052	0	0	0	0	0	0	0	0	contextual	low	dual_localization			sonnet_only
 ENDOU	HGNC:14369	P21128	ENSG00000111405	8909	0	0	0	0	0	0	0	0	contextual	low	tissue_restricted_surface			sonnet_only
 ENG	HGNC:3349	P17813	ENSG00000106991	2022	5	1	1	1	1	1	1	1	yes	high	classical_surface_receptor			m1_and_sonnet
@@ -1290,10 +1286,9 @@ ENTPD2	HGNC:3364	Q9Y5L3	ENSG00000054179	954	1	1	0	0	0	0	0	0	yes	high	multipass_w
 ENTPD3	HGNC:3365	O75355	ENSG00000168032	956	2	1	0	1	0	0	1	0	yes	high	multipass_with_exposed_loops			m1_and_sonnet
 ENTPD5	HGNC:3367	O75356	ENSG00000187097	957	0	0	0	0	0	0	0	0	contextual	low	dual_localization			sonnet_only
 ENTPD6	HGNC:3368	O75354	ENSG00000197586	955	1	1	0	0	0	0	0	0	contextual	medium	dual_localization			m1_and_sonnet
-ENTPD7	HGNC:19745	Q9NQZ7	ENSG00000198018	57089	1	0	0	0	1	0	0	0	no	medium	endomembrane_resident			m1_only
 ENTPD8	HGNC:24860	Q5MY95	ENSG00000188833	377841	1	1	0	0	0	0	0	0	yes	high	multipass_with_exposed_loops			m1_and_sonnet
 ENTREP1	HGNC:24820	Q15884	ENSG00000135063	9413	1	1	0	0	0	0	0	0	contextual	medium	dual_localization			m1_and_sonnet
-ENTREP3	HGNC:1233	P81408	ENSG00000160767	10712	2	0	0	1	1	0	1	0	no	medium	endomembrane_resident			m1_only
+ENTREP3	HGNC:1233	P81408	ENSG00000160767	10712	1	0	0	1	0	0	1	0	no	medium	endomembrane_resident			m1_only
 EPB41	HGNC:3377	P11171	ENSG00000159023	2035	2	0	1	0	0	1	0	0	no	high	inner_leaflet_anchored			m1_only
 EPB41L3	HGNC:3380	Q9Y2J2	ENSG00000082397	23136	2	0	1	0	0	1	0	0	no	high	inner_leaflet_anchored			m1_only
 EPCAM	HGNC:11529	P16422	ENSG00000119888	4072	5	1	1	1	1	1	1	1	yes	high	classical_surface_receptor			m1_and_sonnet
@@ -1331,7 +1326,6 @@ EREG	HGNC:3443	O14944	ENSG00000124882	2069	2	1	0	1	0	0	1	0	contextual	medium	dua
 ERFE	HGNC:26727	Q4G0M1	ENSG00000178752	151176	0	0	0	0	0	0	0	0	no	high	secreted_only	contextual	medium	sonnet_only
 ERLIN2	HGNC:1356	O94905	ENSG00000147475	11160	0	0	0	0	0	0	0	0	no	high	endomembrane_resident	contextual	medium	sonnet_only
 ERMAP	HGNC:15743	Q96PL5	ENSG00000164010	114625	3	1	1	1	0	0	1	0	yes	high	classical_surface_receptor			m1_and_sonnet
-ERMP1	HGNC:23703	Q7Z2K6	ENSG00000099219	79956	2	0	0	1	1	0	1	0	no	high	endomembrane_resident			m1_only
 ERO1A	HGNC:13280	Q96HE7	ENSG00000197930	30001	0	0	0	0	0	0	0	0	contextual	low	dual_localization			sonnet_only
 ERV3-1	HGNC:3454	Q14264	ENSG00000213462	2086	0	0	0	0	0	0	0	0	contextual	medium	cell_state_induced			sonnet_only
 ERVFRD-1	HGNC:33823	P60508	ENSG00000244476	405754	2	1	0	1	0	0	1	1	contextual	high	tissue_restricted_surface			m1_and_sonnet
@@ -1383,7 +1377,6 @@ FAM209B	HGNC:16101	Q5JX69	ENSG00000213714	388799	1	1	0	0	0	0	0	0	contextual	medi
 FAM20A	HGNC:23015	Q96MK3	ENSG00000108950	54757	0	0	0	0	0	0	0	0	contextual	low	dual_localization			sonnet_only
 FAM222A	HGNC:25915	Q5U5X8	ENSG00000139438	84915	1	0	0	0	0	1	0	0	no	medium	nuclear			m1_only
 FAM234A	HGNC:14163	Q9H0X4	ENSG00000167930	83986	2	1	1	0	0	0	0	0	yes	medium	classical_surface_receptor			m1_and_sonnet
-FAM234B	HGNC:29288	A2RU67	ENSG00000084444	57613	1	0	0	0	1	0	0	0	no	medium	endomembrane_resident			m1_only
 FAM237B	HGNC:53217	A0A1B0GVD1	ENSG00000283267	107986818	0	0	0	0	0	0	0	0	contextual	low	dual_localization			sonnet_only
 FAM24A	HGNC:23470	A6NFZ4	ENSG00000203795	118670	0	0	0	0	0	0	0	0	contextual	low	dual_localization			sonnet_only
 FAM24B	HGNC:23475	Q8N5W8	ENSG00000213185	196792	0	0	0	0	0	0	0	0	contextual	low	tissue_restricted_surface			sonnet_only
@@ -1458,7 +1451,6 @@ FKBP8	HGNC:3724	Q14318	ENSG00000105701	23770	0	0	0	0	0	0	0	0	no	high	endomembran
 FKBPL	HGNC:13949	Q9UIM3	ENSG00000204315	63943	0	0	0	0	0	0	0	0	contextual	medium	dual_localization			sonnet_only
 FKRP	HGNC:17997	Q9H9S5	ENSG00000181027	79147	3	1	0	1	1	0	0	0	no	high	endomembrane_resident			m1_only
 FLACC1	HGNC:14439	Q96Q35	ENSG00000155749	130540	1	0	0	0	0	1	0	0	no	medium	cytoplasmic			m1_only
-FLNA	HGNC:3754	P21333	ENSG00000196924	2316	2	0	0	0	1	1	0	0	no	high	inner_leaflet_anchored			m1_only
 FLOT1	HGNC:3757	O75955	ENSG00000137312	10211	2	0	1	0	0	1	0	0	no	high	inner_leaflet_anchored			m1_only
 FLOT2	HGNC:3758	Q14254	ENSG00000132589	2319	2	0	1	0	0	1	0	0	no	high	inner_leaflet_anchored			m1_only
 FLRT1	HGNC:3760	Q9NZU1	ENSG00000126500	23769	4	1	1	1	1	0	1	0	yes	high	classical_surface_receptor			m1_and_sonnet
@@ -1524,7 +1516,7 @@ FZD7	HGNC:4045	O75084	ENSG00000155760	8324	2	1	0	1	0	0	1	0	yes	high	multipass_wi
 FZD8	HGNC:4046	Q9H461	ENSG00000177283	8325	2	1	0	1	0	0	1	0	yes	high	multipass_with_exposed_loops			m1_and_sonnet
 FZD9	HGNC:4047	O00144	ENSG00000188763	8326	3	1	1	1	0	0	1	0	yes	high	multipass_with_exposed_loops			m1_and_sonnet
 G6PC1	HGNC:4056	P35575	ENSG00000131482	2538	0	0	0	0	0	0	0	0	no	high	endomembrane_resident	contextual	medium	sonnet_only
-GAA	HGNC:4065	P10253	ENSG00000171298	2548	1	0	0	0	1	0	0	0	contextual	medium	lysosomal_exocytosis			m1_and_sonnet
+GAA	HGNC:4065	P10253	ENSG00000171298	2548	0	0	0	0	0	0	0	0	contextual	medium	lysosomal_exocytosis			sonnet_only
 GABBR1	HGNC:4070	Q9UBS5	ENSG00000204681	2550	4	1	1	1	0	1	1	0	yes	high	classical_surface_receptor			m1_and_sonnet
 GABBR2	HGNC:4507	O75899	ENSG00000136928	9568	3	1	1	1	0	0	1	0	yes	high	multipass_with_exposed_loops			m1_and_sonnet
 GABRA1	HGNC:4075	P14867	ENSG00000022355	2554	4	1	1	1	0	1	1	0	yes	high	multipass_with_exposed_loops			m1_and_sonnet
@@ -1617,13 +1609,12 @@ GLRA1	HGNC:4326	P23415	ENSG00000145888	2741	3	1	0	1	0	1	0	0	yes	high	multipass_w
 GLRA2	HGNC:4327	P23416	ENSG00000101958	2742	3	1	0	1	0	1	1	0	yes	high	multipass_with_exposed_loops			m1_and_sonnet
 GLRA3	HGNC:4328	O75311	ENSG00000145451	8001	4	1	1	1	0	1	1	0	yes	high	multipass_with_exposed_loops			m1_and_sonnet
 GLRB	HGNC:4329	P48167	ENSG00000109738	2743	3	1	1	1	0	0	1	0	yes	high	multipass_with_exposed_loops			m1_and_sonnet
-GLT8D2	HGNC:24890	Q9H1C3	ENSG00000120820	83468	1	0	0	0	1	0	0	0	no	medium	endomembrane_resident			m1_only
 GMFG	HGNC:4374	O60234	ENSG00000130755	9535	0	0	0	0	0	0	0	0	contextual	low	lysosomal_exocytosis			sonnet_only
 GML	HGNC:4375	Q99445	ENSG00000104499	2765	2	1	0	1	0	0	0	0	yes	high	gpi_anchored			m1_and_sonnet
 GNAI2	HGNC:4385	P04899	ENSG00000114353	2771	2	0	1	0	0	1	0	0	no	high	inner_leaflet_anchored			m1_only
 GNAL	HGNC:4388	P38405	ENSG00000141404	2774	2	0	1	0	0	1	0	0	no	high	inner_leaflet_anchored			m1_only
 GNAQ	HGNC:4390	P50148	ENSG00000156052	2776	2	0	1	0	0	1	0	0	no	high	inner_leaflet_anchored			m1_only
-GNAS	HGNC:4392	P63092	ENSG00000087460	2778	3	1	1	0	0	1	0	0	no	high	inner_leaflet_anchored			m1_only
+GNAS	HGNC:4392	P63092	ENSG00000087460	2778	2	0	1	0	0	1	0	0	no	high	inner_leaflet_anchored			m1_only
 GNB1	HGNC:4396	P62873	ENSG00000078369	2782	2	0	1	0	0	1	0	0	no	high	inner_leaflet_anchored			m1_only
 GNB2	HGNC:4398	P62879	ENSG00000172354	2783	2	0	1	0	0	1	0	0	no	high	inner_leaflet_anchored			m1_only
 GNB3	HGNC:4400	P16520	ENSG00000111664	2784	2	0	1	0	0	1	0	0	no	high	inner_leaflet_anchored			m1_only
@@ -1632,7 +1623,6 @@ GNG2	HGNC:4404	P59768	ENSG00000186469	54331	2	0	1	0	0	1	0	0	no	high	inner_leafle
 GNRHR	HGNC:4421	P30968	ENSG00000109163	2798	2	1	0	1	0	0	1	0	yes	high	multipass_with_exposed_loops			m1_and_sonnet
 GOLGA7B	HGNC:31668	Q2TAP0	ENSG00000155265	401647	0	0	0	0	0	0	0	0	no	medium	endomembrane_resident	contextual	medium	sonnet_only
 GOLM1	HGNC:15451	Q8NBJ4	ENSG00000135052	51280	0	0	0	0	0	0	0	0	contextual	medium	dual_localization			sonnet_only
-GOLM2	HGNC:24892	Q6P4E1	ENSG00000166734	113201	1	0	0	0	1	0	0	0	no	medium	endomembrane_resident			m1_only
 GP1BA	HGNC:4439	P07359	ENSG00000185245	2811	3	1	1	1	0	0	1	1	yes	high	classical_surface_receptor			m1_and_sonnet
 GP1BB	HGNC:4440	P13224	ENSG00000203618	2812	2	1	0	1	0	0	1	0	yes	high	classical_surface_receptor			m1_and_sonnet
 GP2	HGNC:4441	P55259	ENSG00000169347	2813	3	1	1	1	0	0	0	0	yes	high	gpi_anchored			m1_and_sonnet
@@ -1676,7 +1666,7 @@ GPR150	HGNC:23628	Q8NGU9	ENSG00000178015	285601	2	1	0	1	0	0	1	0	yes	high	multipa
 GPR151	HGNC:23624	Q8TDV0	ENSG00000173250	134391	2	1	0	1	0	0	1	0	yes	high	multipass_with_exposed_loops			m1_and_sonnet
 GPR152	HGNC:23622	Q8TDT2	ENSG00000175514	390212	2	1	0	1	0	0	0	0	yes	high	multipass_with_exposed_loops			m1_and_sonnet
 GPR153	HGNC:23618	Q6NV75	ENSG00000158292	387509	2	1	0	1	0	0	1	0	yes	high	multipass_with_exposed_loops			m1_and_sonnet
-GPR155	HGNC:22951	Q7Z3F1	ENSG00000163328	151556	2	0	0	1	1	0	1	0	no	medium	endomembrane_resident			m1_only
+GPR155	HGNC:22951	Q7Z3F1	ENSG00000163328	151556	1	0	0	1	0	0	1	0	no	medium	endomembrane_resident			m1_only
 GPR156	HGNC:20844	Q8NFN8	ENSG00000175697	165829	4	1	1	1	0	1	1	0	yes	high	multipass_with_exposed_loops			m1_and_sonnet
 GPR157	HGNC:23687	Q5UAW9	ENSG00000180758	80045	4	1	1	1	0	1	1	0	yes	high	multipass_with_exposed_loops			m1_and_sonnet
 GPR158	HGNC:23689	Q5T848	ENSG00000151025	57512	3	1	1	1	0	0	1	0	yes	high	multipass_with_exposed_loops			m1_and_sonnet
@@ -1819,7 +1809,7 @@ HEPH	HGNC:4866	Q9BQS7	ENSG00000089472	9843	3	1	1	1	0	0	1	0	yes	high	classical_su
 HEPHL1	HGNC:30477	Q6MZM0	ENSG00000181333	341208	2	1	0	1	0	0	1	0	contextual	medium	tissue_restricted_surface			m1_and_sonnet
 HEXD	HGNC:26307	Q8WVB3	ENSG00000169660	284004	0	0	0	0	0	0	0	0	contextual	low	dual_localization			sonnet_only
 HFE	HGNC:4886	Q30201	ENSG00000010704	3077	5	1	1	1	1	1	1	0	yes	high	classical_surface_receptor			m1_and_sonnet
-HGSNAT	HGNC:26527	Q68CP4	ENSG00000165102	138050	1	0	0	0	1	0	0	0	contextual	low	lysosomal_exocytosis			m1_and_sonnet
+HGSNAT	HGNC:26527	Q68CP4	ENSG00000165102	138050	0	0	0	0	0	0	0	0	contextual	low	lysosomal_exocytosis			sonnet_only
 HHIP	HGNC:14866	Q96QV1	ENSG00000164161	64399	3	1	1	0	1	0	0	0	yes	high	classical_surface_receptor			m1_and_sonnet
 HHIPL2	HGNC:25842	Q6UWX4	ENSG00000143512	79802	0	0	0	0	0	0	0	0	contextual	low	dual_localization			sonnet_only
 HHLA1	HGNC:4904	C9JL84	ENSG00000132297	10086	0	0	0	0	0	0	0	0	contextual	low	other			sonnet_only
@@ -2180,7 +2170,6 @@ KIAA0232	HGNC:28992	Q92628	ENSG00000170871	9778	1	0	0	0	0	1	0	0	no	medium	cytopl
 KIAA0319	HGNC:21580	Q5VV43	ENSG00000137261	9856	2	1	0	1	0	0	1	0	yes	high	classical_surface_receptor			m1_and_sonnet
 KIAA0319L	HGNC:30071	Q8IZA0	ENSG00000142687	79932	1	1	0	0	0	0	0	0	contextual	medium	dual_localization			m1_and_sonnet
 KIAA1328	HGNC:29248	Q86T90	ENSG00000150477	57536	1	0	0	0	0	1	0	0	no	low	cytoplasmic			m1_only
-KIAA1549	HGNC:22219	Q9HCM3	ENSG00000122778	57670	1	0	0	0	1	0	0	0	no	medium	cytoplasmic			m1_only
 KIAA1549L	HGNC:24836	Q6ZVL6	ENSG00000110427	25758	1	0	0	1	0	0	1	0	contextual	low	other			m1_and_sonnet
 KIAA1614	HGNC:29327	Q5VZ46	ENSG00000135835	57710	1	0	1	0	0	0	0	0	no	medium	cytoplasmic			m1_only
 KIAA1958	HGNC:23427	Q8N8K9	ENSG00000165185	158405	1	0	0	0	0	1	0	0	no	low	cytoplasmic			m1_only
@@ -2328,7 +2317,6 @@ LMBR1	HGNC:13243	Q8WVP7	ENSG00000105983	64327	2	1	0	1	0	0	1	0	yes	medium	multipa
 LMBR1L	HGNC:18268	Q6UX01	ENSG00000139636	55716	2	1	0	1	0	0	1	0	contextual	medium	dual_localization			m1_and_sonnet
 LMBRD1	HGNC:23038	Q9NUN5	ENSG00000168216	55788	2	1	0	1	0	0	1	0	no	high	endomembrane_resident			m1_only
 LMBRD2	HGNC:25287	Q68DH5	ENSG00000164187	92255	2	1	0	1	0	0	1	0	yes	medium	multipass_with_exposed_loops			m1_and_sonnet
-LMF2	HGNC:25096	Q9BU23	ENSG00000100258	91289	1	0	0	0	1	0	0	0	no	medium	endomembrane_resident			m1_only
 LMLN	HGNC:15991	Q96KR4	ENSG00000185621	89782	0	0	0	0	0	0	0	0	yes	medium	gpi_anchored			sonnet_only
 LMTK3	HGNC:19295	Q96Q04	ENSG00000142235	114783	0	0	0	0	0	0	0	0	contextual	medium	dual_localization			sonnet_only
 LNPEP	HGNC:6656	Q9UIQ6	ENSG00000113441	4012	3	1	0	1	1	0	1	0	yes	high	classical_surface_receptor			m1_and_sonnet
@@ -2657,7 +2645,7 @@ MYH9	HGNC:7579	P35579	ENSG00000100345	4627	2	0	1	0	0	1	0	0	contextual	medium	dua
 MYLK	HGNC:7590	Q15746	ENSG00000065534	4638	2	0	1	0	0	1	0	0	no	high	cytoplasmic			m1_only
 MYMK	HGNC:33778	A6NI61	ENSG00000187616	389827	1	1	0	0	0	0	0	0	contextual	medium	cell_state_induced			m1_and_sonnet
 MYMX	HGNC:52391	A0A1B0GTQ4	ENSG00000262179	101929726	1	1	0	0	0	0	0	0	yes	high	classical_surface_receptor			m1_and_sonnet
-MYO18A	HGNC:31104	O95411	ENSG00000196535	399687	1	1	0	0	0	0	0	0	contextual	medium	tissue_restricted_surface			m1_and_sonnet
+MYO18A	HGNC:31104	O95411	ENSG00000196535	399687	0	0	0	0	0	0	0	0	contextual	medium	tissue_restricted_surface			sonnet_only
 MYO1C	HGNC:7597	O00159	ENSG00000197879	4641	2	0	1	0	0	1	0	0	no	high	inner_leaflet_anchored			m1_only
 MYO1G	HGNC:13880	B0I1T2	ENSG00000136286	64005	2	0	1	0	0	1	0	0	no	high	pmhc_only_intracellular			m1_only
 MYOC	HGNC:7610	Q99972	ENSG00000034971	4653	0	0	0	0	0	0	0	0	contextual	medium	stable_surface_attachment			sonnet_only
@@ -2697,7 +2685,6 @@ NEDD9	HGNC:7733	Q14511	ENSG00000111859	4739	2	1	1	0	0	0	0	0	no	high	cytoplasmic	
 NEGR1	HGNC:17302	Q7Z3B1	ENSG00000172260	257194	3	1	0	1	1	0	0	0	yes	high	gpi_anchored			m1_and_sonnet
 NELL1	HGNC:7750	Q92832	ENSG00000165973	4745	1	0	0	0	1	0	0	0	contextual	medium	stable_surface_attachment			m1_and_sonnet
 NELL2	HGNC:7751	Q99435	ENSG00000184613	4753	0	0	0	0	0	0	0	0	contextual	medium	dual_localization			sonnet_only
-NEMP1	HGNC:29001	O14524	ENSG00000166881	23306	2	0	0	1	1	0	1	0	no	high	nuclear_envelope			m1_only
 NENF	HGNC:30384	Q9UMX5	ENSG00000117691	29937	0	0	0	0	0	0	0	0	yes	medium	other			sonnet_only
 NEO1	HGNC:7754	Q92859	ENSG00000067141	4756	5	1	1	1	1	1	1	0	yes	high	classical_surface_receptor			m1_and_sonnet
 NETO1	HGNC:13823	Q8TDF5	ENSG00000166342	81832	3	1	1	1	0	0	1	0	yes	high	classical_surface_receptor			m1_and_sonnet
@@ -3444,7 +3431,6 @@ PEBP4	HGNC:28319	Q96S96	ENSG00000134020	157310	0	0	0	0	0	0	0	0	contextual	medium
 PECAM1	HGNC:8823	P16284	ENSG00000261371	5175	5	1	1	1	1	1	1	1	yes	high	classical_surface_receptor			m1_and_sonnet
 PEG10	HGNC:14005	Q86TG7	ENSG00000242265	23089	0	0	0	0	0	0	0	0	contextual	low	dual_localization			sonnet_only
 PERP	HGNC:17637	Q96FX8	ENSG00000112378	64065	1	1	0	0	0	0	0	0	yes	high	multipass_with_exposed_loops			m1_and_sonnet
-PGAP1	HGNC:25712	Q75T13	ENSG00000197121	80055	2	0	0	1	1	0	1	0	no	high	endomembrane_resident			m1_only
 PGAP6	HGNC:17205	Q9HCN3	ENSG00000129925	58986	3	1	0	1	1	0	1	0	contextual	medium	lysosomal_exocytosis			m1_and_sonnet
 PGCKA1	HGNC:25618	Q8IY42	ENSG00000154274	55286	1	0	0	0	0	1	0	0	no	medium	cytoplasmic			m1_only
 PGK1	HGNC:8896	P00558	ENSG00000102144	5230	0	0	0	0	0	0	0	0	contextual	medium	cell_state_induced			sonnet_only
@@ -3463,7 +3449,6 @@ PI4K2A	HGNC:30031	Q9BTU6	ENSG00000155252	55361	2	0	1	0	0	1	0	0	no	high	inner_lea
 PIANP	HGNC:25338	Q8IYJ0	ENSG00000139200	196500	2	1	1	0	0	0	0	0	yes	high	classical_surface_receptor			m1_and_sonnet
 PIEZO1	HGNC:28993	Q92508	ENSG00000103335	9780	3	1	0	1	1	0	1	0	yes	high	multipass_with_exposed_loops			m1_and_sonnet
 PIEZO2	HGNC:26270	Q9H5I5	ENSG00000154864	63895	4	1	1	1	0	1	1	0	yes	high	multipass_with_exposed_loops			m1_and_sonnet
-PIGN	HGNC:8967	O95427	ENSG00000197563	23556	2	0	0	0	1	1	0	0	no	high	endomembrane_resident			m1_only
 PIGR	HGNC:8968	P01833	ENSG00000162896	5284	2	1	0	1	0	0	1	0	yes	high	classical_surface_receptor			m1_and_sonnet
 PIGT	HGNC:14938	Q969N2	ENSG00000124155	51604	2	0	0	1	1	0	1	0	no	high	endomembrane_resident			m1_only
 PIK3AP1	HGNC:30034	Q6ZUJ8	ENSG00000155629	118788	1	0	0	0	0	1	0	0	contextual	medium	tissue_restricted_surface			m1_and_sonnet
@@ -3526,8 +3511,8 @@ PLCD3	HGNC:9061	Q8N3E9	ENSG00000161714	113026	2	0	1	0	0	1	0	0	no	high	inner_leaf
 PLCG1	HGNC:9065	P19174	ENSG00000124181	5335	2	0	1	0	0	1	0	0	no	high	inner_leaflet_anchored			m1_only
 PLD1	HGNC:9067	Q13393	ENSG00000075651	5337	2	0	1	0	0	1	0	0	no	high	inner_leaflet_anchored			m1_only
 PLD2	HGNC:9068	O14939	ENSG00000129219	5338	0	0	0	0	0	0	0	0	contextual	low	dual_localization			sonnet_only
-PLD3	HGNC:17158	Q8IV08	ENSG00000105223	23646	1	0	0	0	1	0	0	0	contextual	medium	lysosomal_exocytosis			m1_and_sonnet
-PLD4	HGNC:23792	Q96BZ4	ENSG00000166428	122618	1	0	0	0	1	0	0	0	contextual	medium	lysosomal_exocytosis			m1_and_sonnet
+PLD3	HGNC:17158	Q8IV08	ENSG00000105223	23646	0	0	0	0	0	0	0	0	contextual	medium	lysosomal_exocytosis			sonnet_only
+PLD4	HGNC:23792	Q96BZ4	ENSG00000166428	122618	0	0	0	0	0	0	0	0	contextual	medium	lysosomal_exocytosis			sonnet_only
 PLD5	HGNC:26879	Q8N7P1	ENSG00000180287	200150	1	0	0	1	0	0	1	0	no	low	endomembrane_resident			m1_only
 PLEC	HGNC:9069	Q15149	ENSG00000178209	5339	1	0	1	0	0	0	0	0	contextual	medium	cell_state_induced			m1_and_sonnet
 PLEKHA4	HGNC:14339	Q9H4M7	ENSG00000105559	57664	2	0	1	0	0	1	0	0	no	high	inner_leaflet_anchored			m1_only
@@ -3538,7 +3523,7 @@ PLGLB2	HGNC:9073	Q02325	ENSG00000125551	5342	0	0	0	0	0	0	0	0	contextual	low	stab
 PLGRKT	HGNC:23633	Q9HBL7	ENSG00000107020	55848	1	1	0	0	0	0	0	0	contextual	medium	dual_localization			m1_and_sonnet
 PLLP	HGNC:18553	Q9Y342	ENSG00000102934	51090	1	1	0	0	0	0	0	0	yes	medium	multipass_with_exposed_loops			m1_and_sonnet
 PLP1	HGNC:9086	P60201	ENSG00000123560	5354	2	1	0	1	0	0	1	0	no	medium	other			m1_only
-PLP2	HGNC:9087	Q04941	ENSG00000102007	5355	1	0	0	0	1	0	0	0	contextual	medium	dual_localization			m1_and_sonnet
+PLP2	HGNC:9087	Q04941	ENSG00000102007	5355	0	0	0	0	0	0	0	0	contextual	medium	dual_localization			sonnet_only
 PLPP1	HGNC:9228	O14494	ENSG00000067113	8611	5	1	1	1	1	1	1	0	yes	high	multipass_with_exposed_loops			m1_and_sonnet
 PLPP2	HGNC:9230	O43688	ENSG00000141934	8612	4	1	1	1	0	1	1	0	yes	high	multipass_with_exposed_loops			m1_and_sonnet
 PLPP3	HGNC:9229	O14495	ENSG00000162407	8613	4	1	1	1	1	0	1	0	yes	high	multipass_with_exposed_loops			m1_and_sonnet
@@ -3851,7 +3836,6 @@ RXFP2	HGNC:17318	Q8WXD0	ENSG00000133105	122042	2	1	0	1	0	0	1	0	yes	high	multipas
 RXFP3	HGNC:24883	Q9NSD7	ENSG00000182631	51289	2	1	0	1	0	0	1	0	yes	high	multipass_with_exposed_loops			m1_and_sonnet
 RXFP4	HGNC:14666	Q8TDU9	ENSG00000173080	339403	2	1	0	1	0	0	1	0	yes	high	multipass_with_exposed_loops			m1_and_sonnet
 RYK	HGNC:10481	P34925	ENSG00000163785	6259	3	1	0	1	1	0	1	0	yes	high	classical_surface_receptor			m1_and_sonnet
-RYR3	HGNC:10485	Q15413	ENSG00000198838	6263	2	0	1	0	1	0	0	0	no	high	endomembrane_resident			m1_only
 S100A1	HGNC:10486	P23297	ENSG00000160678	6271	0	0	0	0	0	0	0	0	contextual	medium	dual_localization			sonnet_only
 S100A10	HGNC:10487	P60903	ENSG00000197747	6281	0	0	0	0	0	0	0	0	contextual	medium	dual_localization			sonnet_only
 S100A11	HGNC:10488	P31949	ENSG00000163191	6282	0	0	0	0	0	0	0	0	contextual	medium	cell_state_induced			sonnet_only
@@ -3885,11 +3869,10 @@ SCAMP2	HGNC:10564	O15127	ENSG00000140497	10066	0	0	0	0	0	0	0	0	no	medium	endomem
 SCAMP3	HGNC:10565	O14828	ENSG00000116521	10067	0	0	0	0	0	0	0	0	contextual	medium	dual_localization			sonnet_only
 SCAMP4	HGNC:30385	Q969E2	ENSG00000227500	113178	1	0	0	0	0	1	0	0	no	medium	endomembrane_resident			m1_only
 SCAMP5	HGNC:30386	Q8TAC9	ENSG00000198794	192683	1	1	0	0	0	0	0	0	contextual	medium	dual_localization			m1_and_sonnet
-SCAP	HGNC:30634	Q12770	ENSG00000114650	22937	2	0	0	1	1	0	1	0	no	high	endomembrane_resident			m1_only
 SCARA3	HGNC:19000	Q6AZY7	ENSG00000168077	51435	1	1	0	0	0	0	0	0	yes	medium	classical_surface_receptor			m1_and_sonnet
 SCARA5	HGNC:28701	Q6ZMJ2	ENSG00000168079	286133	3	1	0	1	1	0	1	0	yes	high	classical_surface_receptor			m1_and_sonnet
 SCARB1	HGNC:1664	Q8WTV0	ENSG00000073060	949	4	1	1	1	1	0	1	1	yes	high	multipass_with_exposed_loops			m1_and_sonnet
-SCARB2	HGNC:1665	Q14108	ENSG00000138760	950	2	0	0	1	1	0	1	1	contextual	high	lysosomal_exocytosis			m1_and_sonnet
+SCARB2	HGNC:1665	Q14108	ENSG00000138760	950	1	0	0	1	0	0	1	1	contextual	high	lysosomal_exocytosis			m1_and_sonnet
 SCARF1	HGNC:16820	Q14162	ENSG00000074660	8578	2	1	0	1	0	0	1	0	yes	high	classical_surface_receptor			m1_and_sonnet
 SCARF2	HGNC:19869	Q96GP6	ENSG00000244486	91179	3	1	0	1	1	0	1	0	yes	high	classical_surface_receptor			m1_and_sonnet
 SCART1	HGNC:32411	Q4G0T1	ENSG00000214279	619207	2	1	0	1	0	0	0	0	contextual	low	tissue_restricted_surface			m1_and_sonnet
@@ -3933,7 +3916,6 @@ SDK1	HGNC:19307	Q7Z5N4	ENSG00000146555	221935	3	1	0	1	1	0	1	0	yes	high	classical
 SDK2	HGNC:19308	Q58EX2	ENSG00000069188	54549	3	1	0	1	1	0	1	0	yes	high	classical_surface_receptor			m1_and_sonnet
 SECTM1	HGNC:10707	Q8WVN6	ENSG00000141574	6398	2	1	0	1	0	0	1	0	contextual	medium	dual_localization			m1_and_sonnet
 SEL1L2	HGNC:15897	Q5TEA6	ENSG00000101251	80343	1	1	0	0	0	0	0	0	no	medium	endomembrane_resident			m1_only
-SEL1L3	HGNC:29108	Q68CR1	ENSG00000091490	23231	1	0	0	0	1	0	0	0	no	medium	endomembrane_resident			m1_only
 SELE	HGNC:10718	P16581	ENSG00000007908	6401	3	1	1	1	0	0	1	1	contextual	high	cell_state_induced			m1_and_sonnet
 SELENOF	HGNC:17705	O60613	ENSG00000183291	9403	0	0	0	0	0	0	0	0	no	high	endomembrane_resident	contextual	low	sonnet_only
 SELENOP	HGNC:10751	P49908	ENSG00000250722	6414	0	0	0	0	0	0	0	0	contextual	medium	stable_surface_attachment			sonnet_only
@@ -3960,7 +3942,7 @@ SEMA6C	HGNC:10740	Q9H3T2	ENSG00000143434	10500	3	1	1	1	0	0	1	0	yes	high	classica
 SEMA6D	HGNC:16770	Q8NFY4	ENSG00000137872	80031	4	1	1	1	0	1	1	0	yes	high	classical_surface_receptor			m1_and_sonnet
 SEMA7A	HGNC:10741	O75326	ENSG00000138623	8482	4	1	1	1	1	0	0	0	yes	high	gpi_anchored			m1_and_sonnet
 SEMG1	HGNC:10742	P04279	ENSG00000124233	6406	0	0	0	0	0	0	0	0	contextual	medium	tissue_restricted_surface			sonnet_only
-SERINC1	HGNC:13464	Q9NRX5	ENSG00000111897	57515	2	0	0	1	1	0	1	0	contextual	low	dual_localization			m1_and_sonnet
+SERINC1	HGNC:13464	Q9NRX5	ENSG00000111897	57515	1	0	0	1	0	0	1	0	contextual	low	dual_localization			m1_and_sonnet
 SERINC2	HGNC:23231	Q96SA4	ENSG00000168528	347735	3	1	0	1	0	1	1	0	yes	high	multipass_with_exposed_loops			m1_and_sonnet
 SERINC3	HGNC:11699	Q13530	ENSG00000132824	10955	2	1	0	1	0	0	1	0	yes	high	multipass_with_exposed_loops			m1_and_sonnet
 SERINC4	HGNC:32237	A6NH21	ENSG00000184716	619189	1	0	0	1	0	0	1	0	yes	medium	multipass_with_exposed_loops			m1_and_sonnet
@@ -4117,7 +4099,7 @@ SLC22A15	HGNC:20301	Q8IZD6	ENSG00000163393	55356	2	1	0	1	0	0	1	0	yes	medium	mult
 SLC22A16	HGNC:20302	Q86VW1	ENSG00000004809	85413	4	1	0	1	1	1	1	0	yes	high	multipass_with_exposed_loops			m1_and_sonnet
 SLC22A17	HGNC:23095	Q8WUG5	ENSG00000092096	51310	2	1	0	1	0	0	1	0	yes	high	multipass_with_exposed_loops			m1_and_sonnet
 SLC22A2	HGNC:10966	O15244	ENSG00000112499	6582	3	1	1	1	0	0	1	0	yes	high	multipass_with_exposed_loops			m1_and_sonnet
-SLC22A23	HGNC:21106	A1A5C7	ENSG00000137266	63027	2	0	0	1	1	0	1	0	yes	medium	multipass_with_exposed_loops			m1_and_sonnet
+SLC22A23	HGNC:21106	A1A5C7	ENSG00000137266	63027	1	0	0	1	0	0	1	0	yes	medium	multipass_with_exposed_loops			m1_and_sonnet
 SLC22A24	HGNC:28542	Q8N4F4	ENSG00000197658	283238	1	1	0	0	0	0	0	0	yes	medium	multipass_with_exposed_loops			m1_and_sonnet
 SLC22A25	HGNC:32935	Q6T423	ENSG00000196600	387601	2	1	0	1	0	0	1	0	yes	medium	multipass_with_exposed_loops			m1_and_sonnet
 SLC22A3	HGNC:10967	O75751	ENSG00000146477	6581	3	1	1	1	0	0	1	0	yes	high	multipass_with_exposed_loops			m1_and_sonnet
@@ -4191,7 +4173,7 @@ SLC35H1	HGNC:17117	Q9NQQ7	ENSG00000080189	51006	0	0	0	0	0	0	0	0	no	medium	endome
 SLC36A1	HGNC:18761	Q7Z2H8	ENSG00000123643	206358	2	1	0	1	0	0	1	0	yes	medium	multipass_with_exposed_loops			m1_and_sonnet
 SLC36A2	HGNC:18762	Q495M3	ENSG00000186335	153201	2	1	0	1	0	0	1	0	yes	high	multipass_with_exposed_loops			m1_and_sonnet
 SLC36A3	HGNC:19659	Q495N2	ENSG00000186334	285641	2	1	0	1	0	0	1	0	no	medium	endomembrane_resident			m1_only
-SLC36A4	HGNC:19660	Q6YBV0	ENSG00000180773	120103	3	0	0	1	1	1	1	0	no	medium	endomembrane_resident			m1_only
+SLC36A4	HGNC:19660	Q6YBV0	ENSG00000180773	120103	2	0	0	1	0	1	1	0	no	medium	endomembrane_resident			m1_only
 SLC37A3	HGNC:20651	Q8NCC5	ENSG00000157800	84255	1	0	0	1	0	0	1	0	no	medium	endomembrane_resident			m1_only
 SLC38A1	HGNC:13447	Q9H2H9	ENSG00000111371	81539	4	1	1	1	1	0	1	0	yes	high	multipass_with_exposed_loops			m1_and_sonnet
 SLC38A11	HGNC:26836	Q08AI6	ENSG00000169507	151258	1	0	0	1	0	0	1	0	yes	medium	multipass_with_exposed_loops			m1_and_sonnet
@@ -4203,7 +4185,6 @@ SLC38A5	HGNC:18070	Q8WUX1	ENSG00000017483	92745	3	1	0	1	0	1	1	0	yes	high	multipa
 SLC38A6	HGNC:19863	Q8IZM9	ENSG00000139974	145389	2	1	0	0	0	1	0	0	yes	medium	multipass_with_exposed_loops			m1_and_sonnet
 SLC38A7	HGNC:25582	Q9NVC3	ENSG00000103042	55238	1	0	0	0	0	1	0	0	contextual	medium	lysosomal_exocytosis			m1_and_sonnet
 SLC38A8	HGNC:32434	A6NNN8	ENSG00000166558	146167	1	0	0	1	0	0	1	0	yes	high	multipass_with_exposed_loops			m1_and_sonnet
-SLC38A9	HGNC:26907	Q8NBW4	ENSG00000177058	153129	2	0	0	1	1	0	1	0	no	high	endomembrane_resident			m1_only
 SLC39A1	HGNC:12876	Q9NY26	ENSG00000143570	27173	1	1	0	0	0	0	0	0	yes	high	multipass_with_exposed_loops			m1_and_sonnet
 SLC39A10	HGNC:20861	Q9ULF5	ENSG00000196950	57181	5	1	1	1	1	1	1	0	yes	high	multipass_with_exposed_loops			m1_and_sonnet
 SLC39A11	HGNC:14463	Q8N1S5	ENSG00000133195	201266	1	1	0	0	0	0	0	0	contextual	low	dual_localization			m1_and_sonnet
@@ -4271,7 +4252,7 @@ SLC5A6	HGNC:11041	Q9Y289	ENSG00000138074	8884	4	1	1	1	0	1	1	0	yes	high	multipass
 SLC5A7	HGNC:14025	Q9GZV3	ENSG00000115665	60482	4	1	1	1	0	1	1	0	contextual	medium	cell_state_induced			m1_and_sonnet
 SLC5A8	HGNC:19119	Q8N695	ENSG00000256870	160728	3	1	1	1	0	0	1	0	yes	high	multipass_with_exposed_loops			m1_and_sonnet
 SLC5A9	HGNC:22146	Q2M3M2	ENSG00000117834	200010	2	1	0	1	0	0	1	0	yes	high	multipass_with_exposed_loops			m1_and_sonnet
-SLC60A1	HGNC:25433	Q8N468	ENSG00000174514	148808	2	0	0	1	1	0	1	0	no	low	endomembrane_resident			m1_only
+SLC60A1	HGNC:25433	Q8N468	ENSG00000174514	148808	1	0	0	1	0	0	1	0	no	low	endomembrane_resident			m1_only
 SLC60A2	HGNC:21053	Q5TF39	ENSG00000173214	91749	4	1	1	1	1	0	1	0	yes	medium	multipass_with_exposed_loops			m1_and_sonnet
 SLC61A1	HGNC:28156	Q6N075	ENSG00000182544	84975	2	1	0	1	0	0	1	0	contextual	low	dual_localization			m1_and_sonnet
 SLC66A1	HGNC:26001	Q6ZP29	ENSG00000040487	54896	1	0	0	1	0	0	1	0	contextual	medium	lysosomal_exocytosis			m1_and_sonnet
@@ -4389,7 +4370,7 @@ SMIM7	HGNC:28419	Q9BQ49	ENSG00000214046	79086	1	1	0	0	0	0	0	0	no	low	endomembran
 SMIM9	HGNC:41915	A6NGZ8	ENSG00000203870	100132963	1	1	0	0	0	0	0	0	yes	low	classical_surface_receptor			m1_and_sonnet
 SMLR1	HGNC:44670	H3BR10	ENSG00000256162	100507203	0	0	0	0	0	0	0	0	contextual	low	dual_localization			sonnet_only
 SMO	HGNC:11119	Q99835	ENSG00000128602	6608	5	1	1	1	1	1	1	0	yes	high	multipass_with_exposed_loops			m1_and_sonnet
-SMPD1	HGNC:11120	P17405	ENSG00000166311	6609	1	0	0	0	1	0	0	0	contextual	medium	lysosomal_exocytosis			m1_and_sonnet
+SMPD1	HGNC:11120	P17405	ENSG00000166311	6609	0	0	0	0	0	0	0	0	contextual	medium	lysosomal_exocytosis			sonnet_only
 SMPD2	HGNC:11121	O60906	ENSG00000135587	6610	3	1	1	0	0	1	0	0	no	high	endomembrane_resident			m1_only
 SMPD3	HGNC:14240	Q9NY59	ENSG00000103056	55512	0	0	0	0	0	0	0	0	contextual	low	cell_state_induced			sonnet_only
 SMPD4	HGNC:32949	Q9NXE4	ENSG00000136699	55627	2	1	1	0	0	0	0	0	no	high	endomembrane_resident			m1_only
@@ -4501,7 +4482,6 @@ STRA6	HGNC:30650	Q9BX79	ENSG00000137868	64220	1	1	0	0	0	0	0	0	yes	high	multipass
 STRC	HGNC:16035	Q7RTU9	ENSG00000242866	161497	2	1	1	0	0	0	0	0	contextual	medium	tissue_restricted_surface			m1_and_sonnet
 STRN3	HGNC:15720	Q13033	ENSG00000196792	29966	1	0	0	0	0	1	0	0	no	medium	inner_leaflet_anchored			m1_only
 STS	HGNC:11425	P08842	ENSG00000101846	412	2	0	0	1	1	0	1	0	contextual	medium	dual_localization			m1_and_sonnet
-STT3B	HGNC:30611	Q8TCJ2	ENSG00000163527	201595	2	0	0	1	1	0	1	0	no	high	endomembrane_resident			m1_only
 STUM	HGNC:30491	Q69YW2	ENSG00000203685	375057	0	0	0	0	0	0	0	0	contextual	low	tissue_restricted_surface			sonnet_only
 STX19	HGNC:19300	Q8N4C7	ENSG00000178750	415117	1	0	1	0	0	0	0	0	no	medium	cytoplasmic			m1_only
 STX1A	HGNC:11433	Q16623	ENSG00000106089	6804	2	1	1	0	0	0	0	0	no	high	inner_leaflet_anchored			m1_only
@@ -4533,7 +4513,7 @@ SYNC	HGNC:28897	Q9H7C4	ENSG00000162520	81493	2	0	1	0	0	1	0	0	no	high	cytoplasmic
 SYNDIG1	HGNC:15885	Q9H7V2	ENSG00000101463	79953	2	1	1	0	0	0	0	0	yes	medium	multipass_with_exposed_loops			m1_and_sonnet
 SYNDIG1L	HGNC:32388	A6NDD5	ENSG00000183379	646658	1	1	0	0	0	0	0	0	no	medium	endomembrane_resident			m1_only
 SYNE2	HGNC:17084	Q8WXH0	ENSG00000054654	23224	2	1	1	0	0	0	0	0	no	high	nuclear_envelope			m1_only
-SYPL1	HGNC:11507	Q16563	ENSG00000008282	6856	2	0	0	1	1	0	1	0	no	medium	endomembrane_resident			m1_only
+SYPL1	HGNC:11507	Q16563	ENSG00000008282	6856	1	0	0	1	0	0	1	0	no	medium	endomembrane_resident			m1_only
 SYPL2	HGNC:27638	Q5VXT5	ENSG00000143028	284612	1	0	0	0	0	1	0	0	no	medium	endomembrane_resident			m1_only
 SYT11	HGNC:19239	Q9BT88	ENSG00000132718	23208	1	0	1	0	0	0	0	0	no	medium	endomembrane_resident			m1_only
 SYT14	HGNC:23143	Q8NB59	ENSG00000143469	255928	1	1	0	0	0	0	0	0	no	medium	endomembrane_resident			m1_only
@@ -4696,7 +4676,6 @@ TMEM101	HGNC:28653	Q96IK0	ENSG00000091947	84336	1	0	0	0	0	1	0	0	contextual	low	d
 TMEM102	HGNC:26722	Q8N9M5	ENSG00000181284	284114	2	1	1	0	0	0	0	0	yes	medium	classical_surface_receptor			m1_and_sonnet
 TMEM106A	HGNC:28288	Q96A25	ENSG00000184988	113277	2	1	0	1	0	0	1	0	contextual	low	dual_localization			m1_and_sonnet
 TMEM106B	HGNC:22407	Q9NUM4	ENSG00000106460	54664	2	1	0	1	0	0	1	0	contextual	medium	lysosomal_exocytosis			m1_and_sonnet
-TMEM106C	HGNC:28775	Q9BVX2	ENSG00000134291	79022	1	0	0	0	1	0	0	0	no	medium	endomembrane_resident			m1_only
 TMEM108	HGNC:28451	Q6UXF1	ENSG00000144868	66000	2	0	0	1	0	1	1	0	no	low	endomembrane_resident			m1_only
 TMEM114	HGNC:33227	B3SHH9	ENSG00000232258	283953	3	1	1	1	0	0	1	0	yes	medium	multipass_with_exposed_loops			m1_and_sonnet
 TMEM116	HGNC:25084	Q8NCL8	ENSG00000198270	89894	1	0	0	1	0	0	1	0	contextual	low	other			m1_and_sonnet
@@ -4707,7 +4686,6 @@ TMEM121B	HGNC:1844	Q9BXQ6	ENSG00000183307	27439	1	0	0	0	0	1	0	0	no	low	endomembr
 TMEM123	HGNC:30138	Q8N131	ENSG00000152558	114908	3	1	1	1	0	0	1	0	yes	high	classical_surface_receptor			m1_and_sonnet
 TMEM125	HGNC:28275	Q96AQ2	ENSG00000179178	128218	0	0	0	0	0	0	0	0	no	low	endomembrane_resident	yes	low	sonnet_only
 TMEM130	HGNC:25429	Q8N3G9	ENSG00000166448	222865	1	1	0	0	0	0	0	0	no	medium	endomembrane_resident			m1_only
-TMEM131	HGNC:30366	Q92545	ENSG00000075568	23505	1	0	0	0	1	0	0	0	no	medium	endomembrane_resident			m1_only
 TMEM131L	HGNC:29146	A2VDJ0	ENSG00000121210	23240	3	1	0	1	1	0	1	0	contextual	low	dual_localization			m1_and_sonnet
 TMEM132A	HGNC:31092	Q24JP5	ENSG00000006118	54972	3	1	0	1	1	0	1	0	yes	medium	classical_surface_receptor			m1_and_sonnet
 TMEM132B	HGNC:29397	Q14DG7	ENSG00000139364	114795	2	1	0	1	0	0	1	0	yes	medium	classical_surface_receptor			m1_and_sonnet
@@ -4742,8 +4720,8 @@ TMEM176B	HGNC:29596	Q3YBM2	ENSG00000106565	28959	1	0	0	0	0	1	0	0	contextual	medi
 TMEM178A	HGNC:28517	Q8NBL3	ENSG00000152154	130733	2	1	0	1	0	0	1	0	no	medium	endomembrane_resident			m1_only
 TMEM178B	HGNC:44112	H3BS89	ENSG00000261115	100507421	1	0	0	1	0	0	1	0	contextual	low	dual_localization			m1_and_sonnet
 TMEM179	HGNC:20137	Q6ZVK1	ENSG00000258986	388021	0	0	0	0	0	0	0	0	contextual	low	dual_localization			sonnet_only
-TMEM179B	HGNC:33744	Q7Z7N9	ENSG00000185475	374395	2	0	0	1	1	0	1	0	no	medium	nuclear			m1_only
-TMEM181	HGNC:20958	Q9P2C4	ENSG00000146433	57583	1	0	0	0	1	0	0	0	yes	high	multipass_with_exposed_loops			m1_and_sonnet
+TMEM179B	HGNC:33744	Q7Z7N9	ENSG00000185475	374395	1	0	0	1	0	0	1	0	no	medium	nuclear			m1_only
+TMEM181	HGNC:20958	Q9P2C4	ENSG00000146433	57583	0	0	0	0	0	0	0	0	yes	high	multipass_with_exposed_loops			sonnet_only
 TMEM182	HGNC:26391	Q6ZP80	ENSG00000170417	130827	2	1	0	1	0	0	1	0	contextual	low	tissue_restricted_surface			m1_and_sonnet
 TMEM183A	HGNC:20173	Q8IXX5	ENSG00000163444	92703	1	0	0	0	0	1	0	0	no	low	endomembrane_resident			m1_only
 TMEM184A	HGNC:28797	Q6ZMB5	ENSG00000164855	202915	2	1	0	1	0	0	1	0	contextual	low	dual_localization			m1_and_sonnet
@@ -4755,7 +4733,7 @@ TMEM191C	HGNC:33601	A6NGB0	ENSG00000206140	645426	0	0	0	0	0	0	0	0	no	low	endomem
 TMEM192	HGNC:26775	Q8IY95	ENSG00000170088	201931	0	0	0	0	0	0	0	0	contextual	medium	lysosomal_exocytosis			sonnet_only
 TMEM198	HGNC:33704	Q66K66	ENSG00000188760	130612	1	1	0	0	0	0	0	0	contextual	medium	dual_localization			m1_and_sonnet
 TMEM200A	HGNC:21075	Q86VY9	ENSG00000164484	114801	1	1	0	0	0	0	0	0	contextual	low	tissue_restricted_surface			m1_and_sonnet
-TMEM200B	HGNC:33785	Q69YZ2	ENSG00000253304	399474	1	0	0	0	1	0	0	0	contextual	low	dual_localization			m1_and_sonnet
+TMEM200B	HGNC:33785	Q69YZ2	ENSG00000253304	399474	0	0	0	0	0	0	0	0	contextual	low	dual_localization			sonnet_only
 TMEM200C	HGNC:37208	A6NKL6	ENSG00000206432	645369	0	0	0	0	0	0	0	0	contextual	low	dual_localization			sonnet_only
 TMEM202	HGNC:33733	A6NGA9	ENSG00000187806	338949	0	0	0	0	0	0	0	0	contextual	low	dual_localization			sonnet_only
 TMEM204	HGNC:14158	Q9BSN7	ENSG00000131634	79652	2	1	0	1	0	0	1	0	contextual	medium	dual_localization			m1_and_sonnet
@@ -4787,15 +4765,15 @@ TMEM238	HGNC:40042	C9JI98	ENSG00000233493	388564	1	1	0	0	0	0	0	0	no	low	endomemb
 TMEM240	HGNC:25186	Q5SV17	ENSG00000205090	339453	2	1	1	0	0	0	0	0	no	low	endomembrane_resident			m1_only
 TMEM243	HGNC:21707	Q9BU79	ENSG00000135185	79161	0	0	0	0	0	0	0	0	contextual	low	cell_state_induced			sonnet_only
 TMEM244	HGNC:21571	Q5VVB8	ENSG00000203756	253582	0	0	0	0	0	0	0	0	no	low	endomembrane_resident	contextual	low	sonnet_only
-TMEM245	HGNC:1363	Q9H330	ENSG00000106771	23731	3	0	0	1	1	1	1	0	contextual	low	dual_localization			m1_and_sonnet
-TMEM248	HGNC:25476	Q9NWD8	ENSG00000106609	55069	1	0	0	0	1	0	0	0	contextual	low	dual_localization			m1_and_sonnet
+TMEM245	HGNC:1363	Q9H330	ENSG00000106771	23731	2	0	0	1	0	1	1	0	contextual	low	dual_localization			m1_and_sonnet
+TMEM248	HGNC:25476	Q9NWD8	ENSG00000106609	55069	0	0	0	0	0	0	0	0	contextual	low	dual_localization			sonnet_only
 TMEM25	HGNC:25890	Q86YD3	ENSG00000149582	84866	3	1	0	1	1	0	1	0	contextual	low	lysosomal_exocytosis			m1_and_sonnet
 TMEM252	HGNC:28537	Q8N6L7	ENSG00000181778	169693	1	0	0	0	0	1	0	0	no	low	endomembrane_resident			m1_only
 TMEM254	HGNC:25804	Q8TBM7	ENSG00000133678	80195	1	0	0	0	0	1	0	0	no	low	endomembrane_resident			m1_only
 TMEM255A	HGNC:26086	Q5JRV8	ENSG00000125355	55026	1	0	0	1	0	0	1	0	no	low	endomembrane_resident			m1_only
 TMEM255B	HGNC:28297	Q8WV15	ENSG00000184497	348013	1	0	0	1	0	0	1	0	no	low	endomembrane_resident			m1_only
 TMEM256	HGNC:28618	Q8N2U0	ENSG00000205544	254863	1	1	0	0	0	0	0	0	no	medium	mitochondrial_internal			m1_only
-TMEM26	HGNC:28550	Q6ZUK4	ENSG00000196932	219623	2	0	0	1	1	0	1	0	contextual	medium	tissue_restricted_surface			m1_and_sonnet
+TMEM26	HGNC:28550	Q6ZUK4	ENSG00000196932	219623	1	0	0	1	0	0	1	0	contextual	medium	tissue_restricted_surface			m1_and_sonnet
 TMEM260	HGNC:20185	Q9NX78	ENSG00000070269	54916	0	0	0	0	0	0	0	0	no	high	endomembrane_resident	contextual	medium	sonnet_only
 TMEM263	HGNC:28281	Q8WUH6	ENSG00000151135	90488	0	0	0	0	0	0	0	0	contextual	low	dual_localization			sonnet_only
 TMEM265	HGNC:51241	A0A087WTH1	ENSG00000281991	100862671	0	0	0	0	0	0	0	0	contextual	low	cell_state_induced			sonnet_only
@@ -4922,7 +4900,7 @@ TPSAB1	HGNC:12019	Q15661	ENSG00000172236	7177	0	0	0	0	0	0	0	0	contextual	medium	
 TPSB2	HGNC:14120	P20231	ENSG00000197253	64499	0	0	0	0	0	0	0	0	contextual	medium	cell_state_induced			sonnet_only
 TPSG1	HGNC:14134	Q9NRR2	ENSG00000116176	25823	1	0	0	1	0	0	1	0	yes	high	classical_surface_receptor			m1_and_sonnet
 TPT1	HGNC:12022	P13693	ENSG00000133112	7178	0	0	0	0	0	0	0	0	contextual	medium	dual_localization			sonnet_only
-TPTE	HGNC:12023	P56180	ENSG00000274391	7179	1	0	0	0	1	0	0	0	contextual	medium	tissue_restricted_surface			m1_and_sonnet
+TPTE	HGNC:12023	P56180	ENSG00000274391	7179	0	0	0	0	0	0	0	0	contextual	medium	tissue_restricted_surface			sonnet_only
 TPTE2	HGNC:17299	Q6XPS3	ENSG00000132958	93492	0	0	0	0	0	0	0	0	contextual	low	dual_localization			sonnet_only
 TRA	HGNC:12027	P0DSE1		6955	2	1	1	0	0	0	0	0	yes	high	classical_surface_receptor			m1_and_sonnet
 TRABD2A	HGNC:27013	Q86V40	ENSG00000186854	129293	3	1	1	1	0	0	0	0	contextual	medium	dual_localization			m1_and_sonnet

@@ -1,12 +1,10 @@
 gene_symbol	hgnc_id	uniprot_acc	ensembl_gene	ncbi_gene_id	n_db_votes	uniprot_flag	go_flag	surfy_flag	cspa_flag	hpa_flag	deeptmhmm_flag	compartments_flag	sonnet_verdict	sonnet_confidence	sonnet_reason	pubmed_verdict	pubmed_confidence	source
 A2M	HGNC:7	P01023	ENSG00000175899	2	1	0	0	0	1	0	0	0	no	high	secreted_only			m1_only
-A4GALT	HGNC:18149	Q9NPC4	ENSG00000128274	53947	1	0	0	0	1	0	0	0	no	high	endomembrane_resident			m1_only
 AADAT	HGNC:17929	Q8N5Z0	ENSG00000109576	51166	1	0	0	0	0	1	0	0	no	high	mitochondrial_internal			m1_only
 AAK1	HGNC:19679	Q2M2I8	ENSG00000115977	22848	1	0	0	0	0	1	0	0	no	high	inner_leaflet_anchored			m1_only
 ABCB8	HGNC:49	Q9NUT2	ENSG00000197150	11194	1	0	1	0	0	0	0	0	no	high	mitochondrial_internal			m1_only
 ABCD4	HGNC:68	O14678	ENSG00000119688	5826	1	0	1	0	0	0	0	0	no	high	endomembrane_resident			m1_only
 ABI1	HGNC:11320	Q8IZP0	ENSG00000136754	10006	1	0	0	0	0	1	0	0	no	high	cytoplasmic			m1_only
-ACAA1	HGNC:82	P09110	ENSG00000060971	30	1	0	0	0	1	0	0	0	no	high	other			m1_only
 ACOT13	HGNC:20999	Q9NPJ3	ENSG00000112304	55856	1	0	0	0	0	1	0	0	no	high	cytoplasmic			m1_only
 ACOT9	HGNC:17152	Q9Y305	ENSG00000123130	23597	1	0	0	0	0	1	0	0	no	high	mitochondrial_internal			m1_only
 ACP1	HGNC:122	P24666	ENSG00000143727	52	1	0	1	0	0	0	0	0	no	high	cytoplasmic			m1_only
@@ -110,7 +108,6 @@ ARL9	HGNC:23592	Q6T311	ENSG00000196503	132946	1	0	0	0	0	1	0	0	no	high	cytoplasmi
 ARPC1A	HGNC:703	Q92747	ENSG00000241685	10552	1	0	0	0	0	1	0	0	no	high	cytoplasmic			m1_only
 ARPC5	HGNC:708	O15511	ENSG00000162704	10092	1	0	0	0	0	1	0	0	no	high	cytoplasmic			m1_only
 ARRB2	HGNC:712	P32121	ENSG00000141480	409	1	0	0	0	0	1	0	0	no	high	cytoplasmic			m1_only
-ARSL	HGNC:719	P51690	ENSG00000157399	415	1	0	0	0	1	0	0	0	no	high	endomembrane_resident			m1_only
 ARVCF	HGNC:728	O00192	ENSG00000099889	421	1	0	0	0	0	1	0	0	no	high	cytoplasmic			m1_only
 ASAP2	HGNC:2721	O43150	ENSG00000151693	8853	1	0	0	0	0	1	0	0	no	high	inner_leaflet_anchored			m1_only
 ASB5	HGNC:17180	Q8WWX0	ENSG00000164122	140458	1	0	0	0	0	1	0	0	no	high	cytoplasmic			m1_only
@@ -118,16 +115,14 @@ ASH2L	HGNC:744	Q9UBL3	ENSG00000129691	9070	1	0	0	0	0	1	0	0	no	high	nuclear			m1_
 ASPM	HGNC:19048	Q8IZT6	ENSG00000066279	259266	1	0	0	0	0	1	0	0	no	high	cytoplasmic			m1_only
 ASPN	HGNC:14872	Q9BXN1	ENSG00000106819	54829	1	0	0	0	1	0	0	0	no	high	secreted_only			m1_only
 ASPRV1	HGNC:26321	Q53RT3	ENSG00000244617	151516	1	1	0	0	0	0	0	0	no	high	cytoplasmic			m1_only
-ATF6B	HGNC:2349	Q99941	ENSG00000213676	1388	1	0	0	0	1	0	0	0	no	high	endomembrane_resident			m1_only
 ATG3	HGNC:20962	Q9NT62	ENSG00000144848	64422	1	0	0	0	0	1	0	0	no	high	cytoplasmic			m1_only
 ATG7	HGNC:16935	O95352	ENSG00000197548	10533	1	0	0	0	0	1	0	0	no	high	cytoplasmic			m1_only
+ATG9A	HGNC:22408	Q7Z3C6	ENSG00000198925	79065	1	0	0	1	0	0	1	0	no	high	endomembrane_resident			m1_only
 ATIC	HGNC:794	P31939	ENSG00000138363	471	1	0	0	0	0	1	0	0	no	high	cytoplasmic			m1_only
-ATL1	HGNC:11231	Q8WXF7	ENSG00000198513	51062	1	0	0	0	1	0	0	0	no	high	endomembrane_resident			m1_only
 ATOX1	HGNC:798	O00244	ENSG00000177556	475	1	0	0	0	0	1	0	0	no	high	cytoplasmic			m1_only
 ATP10A	HGNC:13542	O60312	ENSG00000206190	57194	1	1	0	0	0	0	0	0	no	high	other	no	high	m1_only
 ATP13A2	HGNC:30213	Q9NQ11	ENSG00000159363	23400	1	0	0	1	0	0	1	0	no	high	endomembrane_resident			m1_only
 ATP23	HGNC:29452	Q9Y6H3	ENSG00000166896	91419	1	0	0	0	0	1	0	0	no	high	mitochondrial_internal			m1_only
-ATP6V0A1	HGNC:865	Q93050	ENSG00000033627	535	1	0	0	0	1	0	0	0	no	high	endomembrane_resident			m1_only
 ATP6V0D1	HGNC:13724	P61421	ENSG00000159720	9114	1	0	1	0	0	0	0	0	no	high	endomembrane_resident			m1_only
 ATP6V1D	HGNC:13527	Q9Y5K8	ENSG00000100554	51382	1	0	0	0	0	1	0	0	no	high	cytoplasmic			m1_only
 ATP6V1G1	HGNC:864	O75348	ENSG00000136888	9550	1	1	0	0	0	0	0	0	no	high	cytoplasmic			m1_only
@@ -139,7 +134,6 @@ ATXN3	HGNC:7106	P54252	ENSG00000066427	4287	1	0	0	0	0	1	0	0	no	high	cytoplasmic	
 ATXN7L3	HGNC:25416	Q14CW9	ENSG00000087152	56970	1	0	0	0	0	1	0	0	no	high	nuclear			m1_only
 AXIN1	HGNC:903	O15169	ENSG00000103126	8312	1	0	1	0	0	0	0	0	no	high	cytoplasmic			m1_only
 B3GALT2	HGNC:917	O43825	ENSG00000162630	8707	1	0	0	0	0	1	0	0	no	high	endomembrane_resident			m1_only
-B3GNT2	HGNC:15629	Q9NY97	ENSG00000170340	10678	1	0	0	0	1	0	0	0	no	high	endomembrane_resident			m1_only
 BAG5	HGNC:941	Q9UL15	ENSG00000166170	9529	1	0	0	0	0	1	0	0	no	high	cytoplasmic			m1_only
 BAIAP2L1	HGNC:21649	Q9UHR4	ENSG00000006453	55971	1	0	0	0	0	1	0	0	no	high	inner_leaflet_anchored			m1_only
 BANK1	HGNC:18233	Q8NDB2	ENSG00000153064	55024	1	0	0	0	0	1	0	0	no	high	cytoplasmic			m1_only
@@ -166,10 +160,8 @@ BIN1	HGNC:1052	O00499	ENSG00000136717	274	1	0	1	0	0	0	0	0	no	high	inner_leaflet_
 BIRC2	HGNC:590	Q13490	ENSG00000110330	329	1	0	1	0	0	0	0	0	no	high	cytoplasmic			m1_only
 BLNK	HGNC:14211	Q8WV28	ENSG00000095585	29760	1	0	0	0	0	1	0	0	no	high	cytoplasmic			m1_only
 BMP2	HGNC:1069	P12643	ENSG00000125845	650	1	0	1	0	0	0	0	0	no	high	secreted_only			m1_only
-BPNT2	HGNC:26019	Q9NX62	ENSG00000104331	54928	1	0	0	0	1	0	0	0	no	high	endomembrane_resident			m1_only
 BRAF	HGNC:1097	P15056	ENSG00000157764	673	1	0	0	0	0	1	0	0	no	high	cytoplasmic			m1_only
 BRK1	HGNC:23057	Q8WUW1	ENSG00000254999	55845	1	0	0	0	0	1	0	0	no	high	cytoplasmic			m1_only
-BSCL2	HGNC:15832	Q96G97	ENSG00000168000	26580	1	0	0	0	1	0	0	0	no	high	endomembrane_resident			m1_only
 BSDC1	HGNC:25501	Q9NW68	ENSG00000160058	55108	1	0	0	0	0	1	0	0	no	high	cytoplasmic			m1_only
 BTBD18	HGNC:37214	B2RXH4	ENSG00000233436	643376	1	0	0	0	0	1	0	0	no	high	nuclear			m1_only
 BTK	HGNC:1133	Q06187	ENSG00000010671	695	1	0	0	0	0	1	0	0	no	high	inner_leaflet_anchored			m1_only
@@ -231,8 +223,6 @@ CDKL5	HGNC:11411	O76039	ENSG00000008086	6792	1	0	1	0	0	0	0	0	no	high	cytoplasmic
 CEND1	HGNC:24153	Q8N111	ENSG00000184524	51286	1	1	0	0	0	0	0	0	no	high	cytoplasmic			m1_only
 CEP15	HGNC:25024	Q9HBI5	ENSG00000114405	57415	1	0	0	0	0	1	0	0	no	high	cytoplasmic			m1_only
 CEP68	HGNC:29076	Q76N32	ENSG00000011523	23177	1	0	0	0	0	1	0	0	no	high	cytoplasmic			m1_only
-CERS2	HGNC:14076	Q96G23	ENSG00000143418	29956	1	0	0	0	1	0	0	0	no	high	endomembrane_resident			m1_only
-CERS6	HGNC:23826	Q6ZMG9	ENSG00000172292	253782	1	0	0	0	1	0	0	0	no	high	endomembrane_resident			m1_only
 CFAP418	HGNC:27232	Q96NL8	ENSG00000156172	157657	1	0	0	0	0	1	0	0	no	high	cytoplasmic			m1_only
 CFAP97D1	HGNC:37241	B2RV13	ENSG00000231256	284067	1	0	0	0	0	1	0	0	no	high	cytoplasmic			m1_only
 CFH	HGNC:4883	P08603	ENSG00000000971	3075	1	0	0	0	1	0	0	0	no	high	secreted_only			m1_only
@@ -249,12 +239,9 @@ CHMP4C	HGNC:30599	Q96CF2	ENSG00000164695	92421	1	0	1	0	0	0	0	0	no	high	cytoplasm
 CHMP7	HGNC:28439	Q8WUX9	ENSG00000147457	91782	1	0	1	0	0	0	0	0	no	high	cytoplasmic			m1_only
 CHP1	HGNC:17433	Q99653	ENSG00000187446	11261	1	0	1	0	0	0	0	0	no	high	inner_leaflet_anchored			m1_only
 CHPT1	HGNC:17852	Q8WUD6	ENSG00000111666	56994	1	0	0	1	0	0	1	0	no	high	endomembrane_resident			m1_only
-CHST12	HGNC:17423	Q9NRB3	ENSG00000136213	55501	1	0	0	0	1	0	0	0	no	high	endomembrane_resident			m1_only
-CHST3	HGNC:1971	Q7LGC8	ENSG00000122863	9469	1	0	0	0	1	0	0	0	no	high	endomembrane_resident			m1_only
 CHUK	HGNC:1974	O15111	ENSG00000213341	1147	1	0	1	0	0	0	0	0	no	high	cytoplasmic			m1_only
 CIAO3	HGNC:14179	Q9H6Q4	ENSG00000103245	64428	1	0	0	0	0	1	0	0	no	high	cytoplasmic			m1_only
 CLASP2	HGNC:17078	O75122	ENSG00000163539	23122	1	0	1	0	0	0	0	0	no	high	cytoplasmic			m1_only
-CLCN6	HGNC:2024	P51797	ENSG00000011021	1185	1	0	0	0	1	0	0	0	no	high	endomembrane_resident			m1_only
 CLIP2	HGNC:2586	Q9UDT6	ENSG00000106665	7461	1	0	0	0	0	1	0	0	no	high	cytoplasmic			m1_only
 CLTA	HGNC:2090	P09496	ENSG00000122705	1211	1	0	0	0	0	1	0	0	no	high	inner_leaflet_anchored			m1_only
 CLTB	HGNC:2091	P09497	ENSG00000175416	1212	1	0	0	0	0	1	0	0	no	high	inner_leaflet_anchored			m1_only
@@ -363,7 +350,6 @@ DOCK4	HGNC:19192	Q8N1I0	ENSG00000128512	9732	1	0	0	0	0	1	0	0	no	high	cytoplasmic
 DOK2	HGNC:2991	O60496	ENSG00000147443	9046	1	0	0	0	0	1	0	0	no	high	inner_leaflet_anchored			m1_only
 DOK3	HGNC:24583	Q7L591	ENSG00000146094	79930	1	0	0	0	0	1	0	0	no	high	inner_leaflet_anchored			m1_only
 DONSON	HGNC:2993	Q9NYP3	ENSG00000159147	29980	1	0	0	0	0	1	0	0	no	high	nuclear			m1_only
-DPY19L4	HGNC:27829	Q7Z388	ENSG00000156162	286148	1	0	0	0	1	0	0	0	no	high	endomembrane_resident			m1_only
 DRC4	HGNC:4166	O95995	ENSG00000141013	2622	1	0	0	0	0	1	0	0	no	high	cytoplasmic			m1_only
 DRC8	HGNC:28166	Q5VUJ9	ENSG00000203666	84288	1	0	0	0	0	1	0	0	no	high	cytoplasmic			m1_only
 DRP2	HGNC:3032	Q13474	ENSG00000102385	1821	1	0	0	0	0	1	0	0	no	high	inner_leaflet_anchored			m1_only
@@ -395,8 +381,6 @@ EIF5B	HGNC:30793	O60841	ENSG00000158417	9669	1	0	0	0	0	1	0	0	no	high	cytoplasmic
 ELMO3	HGNC:17289	Q96BJ8	ENSG00000102890	79767	1	0	0	0	0	1	0	0	no	high	cytoplasmic			m1_only
 ELN	HGNC:3327	P15502	ENSG00000049540	2006	1	0	0	0	0	1	0	0	no	high	secreted_only			m1_only
 ELOC	HGNC:11617	Q15369	ENSG00000154582	6921	1	0	0	0	0	1	0	0	no	high	nuclear			m1_only
-ELOVL4	HGNC:14415	Q9GZR5	ENSG00000118402	6785	1	0	0	0	1	0	0	0	no	high	endomembrane_resident			m1_only
-ELOVL6	HGNC:15829	Q9H5J4	ENSG00000170522	79071	1	0	0	0	1	0	0	0	no	high	endomembrane_resident			m1_only
 EMC1	HGNC:28957	Q8N766	ENSG00000127463	23065	1	0	0	0	1	0	1	0	no	high	endomembrane_resident			m1_only
 EMILIN2	HGNC:19881	Q9BXX0	ENSG00000132205	84034	1	0	0	0	1	0	0	0	no	high	secreted_only			m1_only
 ENAH	HGNC:18271	Q8N8S7	ENSG00000154380	55740	1	0	0	0	0	1	0	0	no	high	cytoplasmic			m1_only
@@ -417,6 +401,7 @@ EPS8L2	HGNC:21296	Q9H6S3	ENSG00000177106	64787	1	0	1	0	0	0	0	0	no	high	cytoplasm
 ERAP1	HGNC:18173	Q9NZ08	ENSG00000164307	51752	1	0	0	0	0	1	0	0	no	high	endomembrane_resident			m1_only
 ERC2	HGNC:31922	O15083	ENSG00000187672	26059	1	0	1	0	0	0	0	0	no	high	cytoplasmic			m1_only
 ERMN	HGNC:29208	Q8TAM6	ENSG00000136541	57471	1	0	0	0	0	1	0	0	no	high	cytoplasmic			m1_only
+ERMP1	HGNC:23703	Q7Z2K6	ENSG00000099219	79956	1	0	0	1	0	0	1	0	no	high	endomembrane_resident			m1_only
 ERP29	HGNC:13799	P30040	ENSG00000089248	10961	1	0	1	0	0	0	0	0	no	high	endomembrane_resident			m1_only
 ERP44	HGNC:18311	Q9BS26	ENSG00000023318	23071	1	0	1	0	0	0	0	0	no	high	endomembrane_resident			m1_only
 ESCO2	HGNC:27230	Q56NI9	ENSG00000171320	157570	1	0	0	0	0	1	0	0	no	high	nuclear			m1_only
@@ -468,6 +453,7 @@ FKBP1A	HGNC:3711	P62942	ENSG00000088832	2280	1	0	1	0	0	0	0	0	no	high	cytoplasmic
 FKBP2	HGNC:3718	P26885	ENSG00000173486	2286	1	0	0	0	0	1	0	0	no	high	endomembrane_resident			m1_only
 FLG	HGNC:3748	P20930	ENSG00000143631	2312	1	0	1	0	0	0	0	0	no	high	cytoplasmic			m1_only
 FLG2	HGNC:33276	Q5D862	ENSG00000143520	388698	1	0	1	0	0	0	0	0	no	high	cytoplasmic			m1_only
+FLNA	HGNC:3754	P21333	ENSG00000196924	2316	1	0	0	0	0	1	0	0	no	high	inner_leaflet_anchored			m1_only
 FLNB	HGNC:3755	O75369	ENSG00000136068	2317	1	0	0	0	0	1	0	0	no	high	cytoplasmic			m1_only
 FLNC	HGNC:3756	Q14315	ENSG00000128591	2318	1	0	1	0	0	0	0	0	no	high	cytoplasmic			m1_only
 FMNL2	HGNC:18267	Q96PY5	ENSG00000157827	114793	1	0	0	0	0	1	0	0	no	high	cytoplasmic			m1_only
@@ -497,7 +483,6 @@ GAGE2A	HGNC:4099	Q6NT46	ENSG00000189064	729447	1	0	0	0	0	1	0	0	no	high	pmhc_only
 GAGE2E	HGNC:31960	Q4V326	ENSG00000275113	26749	1	0	0	0	0	1	0	0	no	high	pmhc_only_intracellular			m1_only
 GALNT1	HGNC:4123	Q10472	ENSG00000141429	2589	1	0	0	0	1	0	1	0	no	high	endomembrane_resident			m1_only
 GALNT10	HGNC:19873	Q86SR1	ENSG00000164574	55568	1	0	0	0	0	1	0	0	no	high	endomembrane_resident			m1_only
-GALNT11	HGNC:19875	Q8NCW6	ENSG00000178234	63917	1	0	0	0	1	0	0	0	no	high	endomembrane_resident			m1_only
 GALNT12	HGNC:19877	Q8IXK2	ENSG00000119514	79695	1	0	0	0	0	1	0	0	no	high	endomembrane_resident			m1_only
 GAS2	HGNC:4167	O43903	ENSG00000148935	2620	1	0	0	0	0	1	0	0	no	high	cytoplasmic			m1_only
 GAS2L1	HGNC:16955	Q99501	ENSG00000185340	10634	1	0	0	0	0	1	0	0	no	high	cytoplasmic			m1_only
@@ -511,7 +496,6 @@ GDF5	HGNC:4220	P43026	ENSG00000125965	8200	1	1	0	0	0	0	0	0	no	high	secreted_only
 GDPD1	HGNC:20883	Q8N9F7	ENSG00000153982	284161	1	1	0	0	0	0	0	0	no	high	cytoplasmic			m1_only
 GDPD3	HGNC:28638	Q7L5L3	ENSG00000102886	79153	1	1	0	0	0	0	0	0	no	high	endomembrane_resident			m1_only
 GEM	HGNC:4234	P55040	ENSG00000164949	2669	1	0	1	0	0	0	0	0	no	high	inner_leaflet_anchored			m1_only
-GGCX	HGNC:4247	P38435	ENSG00000115486	2677	1	0	0	0	1	0	0	0	no	high	endomembrane_resident			m1_only
 GID8	HGNC:15857	Q9NWU2	ENSG00000101193	54994	1	0	0	0	0	1	0	0	no	high	cytoplasmic			m1_only
 GIPC1	HGNC:1226	O14908	ENSG00000123159	10755	1	0	0	0	0	1	0	0	no	high	cytoplasmic			m1_only
 GLO1	HGNC:4323	Q04760	ENSG00000124767	2739	1	0	0	0	0	1	0	0	no	high	cytoplasmic			m1_only
@@ -545,9 +529,7 @@ GNG7	HGNC:4410	O60262	ENSG00000176533	2788	1	0	1	0	0	0	0	0	no	high	inner_leaflet
 GNG8	HGNC:19664	Q9UK08	ENSG00000167414	94235	1	0	1	0	0	0	0	0	no	high	inner_leaflet_anchored			m1_only
 GNGT1	HGNC:4411	P63211	ENSG00000127928	2792	1	0	1	0	0	0	0	0	no	high	inner_leaflet_anchored			m1_only
 GNGT2	HGNC:4412	O14610	ENSG00000167083	2793	1	0	1	0	0	0	0	0	no	high	inner_leaflet_anchored			m1_only
-GNPTAB	HGNC:29670	Q3T906	ENSG00000111670	79158	1	0	0	0	1	0	0	0	no	high	endomembrane_resident			m1_only
 GNPTG	HGNC:23026	Q9UJJ9	ENSG00000090581	84572	1	0	0	0	1	0	0	0	no	high	endomembrane_resident			m1_only
-GOLIM4	HGNC:15448	O00461	ENSG00000173905	27333	1	0	0	0	1	0	0	0	no	high	endomembrane_resident			m1_only
 GPBP1	HGNC:29520	Q86WP2	ENSG00000062194	65056	1	0	0	0	0	1	0	0	no	high	nuclear			m1_only
 GPBP1L1	HGNC:28843	Q9HC44	ENSG00000159592	60313	1	0	0	0	0	1	0	0	no	high	nuclear			m1_only
 GPHN	HGNC:15465	Q9NQX3	ENSG00000171723	10243	1	0	1	0	0	0	0	0	no	high	cytoplasmic			m1_only
@@ -589,8 +571,6 @@ HRNR	HGNC:20846	Q86YZ3	ENSG00000197915	388697	1	0	1	0	0	0	0	0	no	high	cytoplasmi
 HS6ST2	HGNC:19133	Q96MM7	ENSG00000171004	90161	1	0	0	0	0	1	0	0	no	high	endomembrane_resident			m1_only
 HS6ST3	HGNC:19134	Q8IZP7	ENSG00000185352	266722	1	0	0	0	0	1	0	0	no	high	endomembrane_resident			m1_only
 HSBP1	HGNC:5203	O75506	ENSG00000230989	3281	1	0	0	0	0	1	0	0	no	high	nuclear			m1_only
-HSD11B1	HGNC:5208	P28845	ENSG00000117594	3290	1	0	0	0	1	0	0	0	no	high	endomembrane_resident			m1_only
-HSD17B2	HGNC:5211	P37059	ENSG00000086696	3294	1	0	0	0	1	0	0	0	no	high	endomembrane_resident			m1_only
 HSD17B7	HGNC:5215	P56937	ENSG00000132196	51478	1	1	0	0	0	0	0	0	no	high	endomembrane_resident			m1_only
 HSH2D	HGNC:24920	Q96JZ2	ENSG00000196684	84941	1	0	0	0	0	1	0	0	no	high	cytoplasmic			m1_only
 HTRA2	HGNC:14348	O43464	ENSG00000115317	27429	1	0	1	0	0	0	0	0	no	high	mitochondrial_internal			m1_only
@@ -602,7 +582,6 @@ IFI30	HGNC:5398	P13284	ENSG00000216490	10437	1	0	0	0	1	0	0	0	no	high	endomembran
 IFNL1	HGNC:18363	Q8IU54	ENSG00000182393	282618	1	0	1	0	0	0	0	0	no	high	secreted_only			m1_only
 IFRD1	HGNC:5456	O00458	ENSG00000006652	3475	1	0	0	0	0	1	0	0	no	high	cytoplasmic			m1_only
 IGF1	HGNC:5464	P05019	ENSG00000017427	3479	1	0	1	0	0	0	0	1	no	high	secreted_only			m1_only
-IKBIP	HGNC:26430	Q70UQ0	ENSG00000166130	121457	1	0	0	0	1	0	0	0	no	high	cytoplasmic			m1_only
 IKBKB	HGNC:5960	O14920	ENSG00000104365	3551	1	0	1	0	0	0	0	0	no	high	cytoplasmic			m1_only
 IL17D	HGNC:5984	Q8TAD2	ENSG00000172458	53342	1	0	0	0	1	0	0	0	no	high	secreted_only			m1_only
 IL6	HGNC:6018	P05231	ENSG00000136244	3569	1	0	1	0	0	0	0	1	no	high	secreted_only			m1_only
@@ -621,7 +600,6 @@ IRAK4	HGNC:17967	Q9NWZ3	ENSG00000198001	51135	1	0	1	0	0	0	0	0	no	high	cytoplasmi
 IREB2	HGNC:6115	P48200	ENSG00000136381	3658	1	0	0	0	0	1	0	0	no	high	cytoplasmic			m1_only
 IRF2	HGNC:6117	P14316	ENSG00000168310	3660	1	0	0	0	0	1	0	0	no	high	nuclear			m1_only
 ITIH2	HGNC:6167	P19823	ENSG00000151655	3698	1	0	0	0	1	0	0	0	no	high	secreted_only			m1_only
-ITPR1	HGNC:6180	Q14643	ENSG00000150995	3708	1	0	0	0	1	0	0	0	no	high	endomembrane_resident			m1_only
 ITPR2	HGNC:6181	Q14571	ENSG00000123104	3709	1	1	0	0	0	0	0	0	no	high	endomembrane_resident			m1_only
 ITPR3	HGNC:6182	Q14573	ENSG00000096433	3710	1	1	0	0	0	0	0	0	no	high	endomembrane_resident			m1_only
 ITSN1	HGNC:6183	Q15811	ENSG00000205726	6453	1	0	0	0	0	1	0	0	no	high	inner_leaflet_anchored			m1_only
@@ -681,7 +659,6 @@ LCE1D	HGNC:29465	Q5T752	ENSG00000172155	353134	1	0	1	0	0	0	0	0	no	high	cytoplasm
 LCK	HGNC:6524	P06239	ENSG00000182866	3932	1	0	1	0	0	0	0	0	no	high	inner_leaflet_anchored			m1_only
 LCP2	HGNC:6529	Q13094	ENSG00000043462	3937	1	0	1	0	0	0	0	0	no	high	cytoplasmic			m1_only
 LDLRAP1	HGNC:18640	Q5SW96	ENSG00000157978	26119	1	0	1	0	0	0	0	0	no	high	cytoplasmic			m1_only
-LEMD2	HGNC:21244	Q8NC56	ENSG00000161904	221496	1	0	0	0	1	0	0	0	no	high	nuclear_envelope			m1_only
 LENG1	HGNC:15502	Q96BZ8	ENSG00000105617	79165	1	0	0	0	0	1	0	0	no	high	nuclear			m1_only
 LEP	HGNC:6553	P41159	ENSG00000174697	3952	1	0	0	0	0	1	0	0	no	high	secreted_only			m1_only
 LIMA1	HGNC:24636	Q9UHB6	ENSG00000050405	51474	1	0	1	0	0	0	0	0	no	high	cytoplasmic			m1_only
@@ -714,8 +691,6 @@ LYST	HGNC:1968	Q99698	ENSG00000143669	1130	1	0	0	0	0	1	0	0	no	high	cytoplasmic		
 LZTS1	HGNC:13861	Q9Y250	ENSG00000061337	11178	1	0	0	0	0	1	0	0	no	high	cytoplasmic			m1_only
 MAGEE1	HGNC:24934	Q9HCI5	ENSG00000198934	57692	1	0	1	0	0	0	0	0	no	high	nuclear			m1_only
 MAGI1	HGNC:946	Q96QZ7	ENSG00000151276	9223	1	0	0	0	0	1	0	0	no	high	inner_leaflet_anchored			m1_only
-MAN2A1	HGNC:6824	Q16706	ENSG00000112893	4124	1	0	0	0	1	0	0	0	no	high	endomembrane_resident			m1_only
-MAN2A2	HGNC:6825	P49641	ENSG00000196547	4122	1	0	0	0	1	0	0	0	no	high	endomembrane_resident			m1_only
 MAP2	HGNC:6839	P11137	ENSG00000078018	4133	1	0	0	0	0	1	0	0	no	high	cytoplasmic			m1_only
 MAP2K1	HGNC:6840	Q02750	ENSG00000169032	5604	1	0	0	0	0	1	0	0	no	high	cytoplasmic			m1_only
 MAP2K2	HGNC:6842	P36507	ENSG00000126934	5605	1	0	1	0	0	0	0	0	no	high	cytoplasmic			m1_only
@@ -738,7 +713,6 @@ MARCKSL1	HGNC:7142	P49006	ENSG00000175130	65108	1	0	0	0	0	1	0	0	no	high	inner_le
 MASTL	HGNC:19042	Q96GX5	ENSG00000120539	84930	1	0	1	0	0	0	0	0	no	high	cytoplasmic			m1_only
 MAT2B	HGNC:6905	Q9NZL9	ENSG00000038274	27430	1	0	0	0	0	1	0	0	no	high	cytoplasmic			m1_only
 MATCAP2	HGNC:22206	Q8NCT3	ENSG00000164542	23366	1	0	0	0	0	1	0	0	no	high	cytoplasmic			m1_only
-MBTPS2	HGNC:15455	O43462	ENSG00000012174	51360	1	0	0	0	1	0	0	0	no	high	endomembrane_resident			m1_only
 MCF2	HGNC:6940	P10911	ENSG00000101977	4168	1	0	0	0	0	1	0	0	no	high	cytoplasmic			m1_only
 MCF2L	HGNC:14576	O15068	ENSG00000126217	23263	1	0	1	0	0	0	0	0	no	high	cytoplasmic			m1_only
 MEF2B	HGNC:6995	Q02080	ENSG00000213999	100271849	1	0	0	0	0	1	0	0	no	high	nuclear			m1_only
@@ -751,8 +725,6 @@ METTL9	HGNC:24586	Q9H1A3	ENSG00000197006	51108	1	0	0	0	0	1	0	0	no	high	cytoplasm
 MFSD1	HGNC:25874	Q9H3U5	ENSG00000118855	64747	1	0	0	0	0	1	0	0	no	high	endomembrane_resident			m1_only
 MFSD12	HGNC:28299	Q6NUT3	ENSG00000161091	126321	1	0	0	1	0	0	1	0	no	high	endomembrane_resident			m1_only
 MGAT4C	HGNC:30871	Q9UBM8	ENSG00000182050	25834	1	0	0	0	0	1	0	0	no	high	endomembrane_resident			m1_only
-MGAT5	HGNC:7049	Q09328	ENSG00000152127	4249	1	0	0	0	1	0	0	0	no	high	endomembrane_resident			m1_only
-MGAT5B	HGNC:24140	Q3V5L5	ENSG00000167889	146664	1	0	0	0	1	0	0	0	no	high	endomembrane_resident			m1_only
 MIA3	HGNC:24008	Q5JRA6	ENSG00000154305	375056	1	0	0	0	1	0	1	0	no	high	endomembrane_resident			m1_only
 MICALL1	HGNC:29804	Q8N3F8	ENSG00000100139	85377	1	0	0	0	0	1	0	0	no	high	cytoplasmic			m1_only
 MIMS2	HGNC:16102	Q96KR6	ENSG00000124098	116151	1	0	0	0	0	1	0	0	no	high	mitochondrial_internal			m1_only
@@ -795,7 +767,6 @@ MYO1E	HGNC:7599	Q12965	ENSG00000157483	4643	1	0	0	0	0	1	0	0	no	high	inner_leafle
 MYO3A	HGNC:7601	Q8NEV4	ENSG00000095777	53904	1	0	0	0	0	1	0	0	no	high	cytoplasmic			m1_only
 MYO5B	HGNC:7603	Q9ULV0	ENSG00000167306	4645	1	0	0	0	0	1	0	0	no	high	cytoplasmic			m1_only
 MYO9A	HGNC:7608	B2RTY4	ENSG00000066933	4649	1	0	0	0	0	1	0	0	no	high	cytoplasmic			m1_only
-MYORG	HGNC:19918	Q6NSJ0	ENSG00000164976	57462	1	0	0	0	1	0	0	0	no	high	endomembrane_resident			m1_only
 N4BP2	HGNC:29851	Q86UW6	ENSG00000078177	55728	1	0	0	0	0	1	0	0	no	high	cytoplasmic			m1_only
 NAB1	HGNC:7626	Q13506	ENSG00000138386	4664	1	0	0	0	0	1	0	0	no	high	nuclear			m1_only
 NAIP	HGNC:7634	Q13075	ENSG00000249437	4671	1	0	1	0	0	0	0	0	no	high	cytoplasmic			m1_only
@@ -815,6 +786,7 @@ NDRG4	HGNC:14466	Q9ULP0	ENSG00000103034	65009	1	0	1	0	0	0	0	0	no	high	cytoplasmi
 NEDD4	HGNC:7727	P46934	ENSG00000069869	4734	1	0	1	0	0	0	0	0	no	high	cytoplasmic			m1_only
 NEDD4L	HGNC:7728	Q96PU5	ENSG00000049759	23327	1	0	1	0	0	0	0	0	no	high	cytoplasmic			m1_only
 NEK3	HGNC:7746	P51956	ENSG00000136098	4752	1	0	0	0	0	1	0	0	no	high	cytoplasmic			m1_only
+NEMP1	HGNC:29001	O14524	ENSG00000166881	23306	1	0	0	1	0	0	1	0	no	high	nuclear_envelope			m1_only
 NEXN	HGNC:29557	Q0ZGT2	ENSG00000162614	91624	1	0	0	0	0	1	0	0	no	high	cytoplasmic			m1_only
 NF1	HGNC:7765	P21359	ENSG00000196712	4763	1	0	0	0	0	1	0	0	no	high	inner_leaflet_anchored			m1_only
 NF2	HGNC:7773	P35240	ENSG00000186575	4771	1	0	0	0	0	1	0	0	no	high	inner_leaflet_anchored			m1_only
@@ -872,7 +844,6 @@ PAK1	HGNC:8590	Q13153	ENSG00000149269	5058	1	0	0	0	0	1	0	0	no	high	cytoplasmic		
 PAK4	HGNC:16059	O96013	ENSG00000130669	10298	1	0	0	0	0	1	0	0	no	high	cytoplasmic			m1_only
 PARP6	HGNC:26921	Q2NL67	ENSG00000137817	56965	1	0	0	0	0	1	0	0	no	high	endomembrane_resident			m1_only
 PARVB	HGNC:14653	Q9HBI1	ENSG00000188677	29780	1	0	0	0	0	1	0	0	no	high	cytoplasmic			m1_only
-PBXIP1	HGNC:21199	Q96AQ6	ENSG00000163346	57326	1	0	0	0	1	0	0	0	no	high	cytoplasmic			m1_only
 PCBD2	HGNC:24474	Q9H0N5	ENSG00000132570	84105	1	0	0	0	0	1	0	0	no	high	mitochondrial_internal			m1_only
 PCLO	HGNC:13406	Q9Y6V0	ENSG00000186472	27445	1	0	0	0	0	1	0	0	no	high	cytoplasmic			m1_only
 PCMTD1	HGNC:30483	Q96MG8	ENSG00000168300	115294	1	0	0	0	0	1	0	0	no	high	cytoplasmic			m1_only
@@ -895,6 +866,7 @@ PEBP1	HGNC:8630	P30086	ENSG00000089220	5037	1	0	0	0	0	1	0	0	no	high	cytoplasmic	
 PEX19	HGNC:9713	P40855	ENSG00000162735	5824	1	0	1	0	0	0	0	0	no	high	cytoplasmic			m1_only
 PFDN1	HGNC:8866	O60925	ENSG00000113068	5201	1	0	0	0	0	1	0	0	no	high	cytoplasmic			m1_only
 PFKM	HGNC:8877	P08237	ENSG00000152556	5213	1	0	1	0	0	0	0	0	no	high	cytoplasmic			m1_only
+PGAP1	HGNC:25712	Q75T13	ENSG00000197121	80055	1	0	0	1	0	0	1	0	no	high	endomembrane_resident			m1_only
 PGAP3	HGNC:23719	Q96FM1	ENSG00000161395	93210	1	0	0	0	0	1	0	0	no	high	endomembrane_resident			m1_only
 PGD	HGNC:8891	P52209	ENSG00000142657	5226	1	0	0	0	0	1	0	0	no	high	cytoplasmic			m1_only
 PGLYRP2	HGNC:30013	Q96PD5	ENSG00000161031	114770	1	0	0	0	0	1	0	0	no	high	secreted_only			m1_only
@@ -911,9 +883,8 @@ PHPT1	HGNC:30033	Q9NRX4	ENSG00000054148	29085	1	0	0	0	0	1	0	0	no	high	cytoplasmi
 PI4KA	HGNC:8983	P42356	ENSG00000241973	5297	1	0	0	0	0	1	0	0	no	high	inner_leaflet_anchored			m1_only
 PICALM	HGNC:15514	Q13492	ENSG00000073921	8301	1	0	1	0	0	0	0	0	no	high	inner_leaflet_anchored			m1_only
 PICK1	HGNC:9394	Q9NRD5	ENSG00000100151	9463	1	0	1	0	0	0	0	0	no	high	cytoplasmic			m1_only
-PIGG	HGNC:25985	Q5H8A4	ENSG00000174227	54872	1	0	0	0	1	0	0	0	no	high	endomembrane_resident			m1_only
+PIGN	HGNC:8967	O95427	ENSG00000197563	23556	1	0	0	0	0	1	0	0	no	high	endomembrane_resident			m1_only
 PIGO	HGNC:23215	Q8TEQ8	ENSG00000165282	84720	1	0	0	1	0	0	1	0	no	high	endomembrane_resident			m1_only
-PIGS	HGNC:14937	Q96S52	ENSG00000087111	94005	1	0	0	0	1	0	0	0	no	high	endomembrane_resident			m1_only
 PIGW	HGNC:23213	Q7Z7B1	ENSG00000277161	284098	1	0	0	0	0	1	0	0	no	high	endomembrane_resident			m1_only
 PIGX	HGNC:26046	Q8TBF5	ENSG00000163964	54965	1	0	0	0	0	1	0	0	no	high	endomembrane_resident			m1_only
 PIK3C2G	HGNC:8973	O75747	ENSG00000139144	5288	1	0	0	0	0	1	0	0	no	high	inner_leaflet_anchored			m1_only
@@ -949,11 +920,7 @@ PLTP	HGNC:9093	P55058	ENSG00000100979	5360	1	0	0	0	1	0	0	0	no	high	secreted_only
 PNCK	HGNC:13415	Q6P2M8	ENSG00000130822	139728	1	0	0	0	0	1	0	0	no	high	cytoplasmic			m1_only
 PNOC	HGNC:9163	Q13519	ENSG00000168081	5368	1	0	1	0	0	0	0	0	no	high	secreted_only			m1_only
 PNPLA2	HGNC:30802	Q96AD5	ENSG00000177666	57104	1	1	0	0	0	0	0	0	no	high	cytoplasmic			m1_only
-PNPLA6	HGNC:16268	Q8IY17	ENSG00000032444	10908	1	0	0	0	1	0	0	0	no	high	endomembrane_resident			m1_only
 POLE	HGNC:9177	Q07864	ENSG00000177084	5426	1	0	0	0	0	1	0	0	no	high	nuclear			m1_only
-POMK	HGNC:26267	Q9H5K3	ENSG00000185900	84197	1	0	0	0	1	0	0	0	no	high	endomembrane_resident			m1_only
-POMT1	HGNC:9202	Q9Y6A1	ENSG00000130714	10585	1	0	0	0	1	0	0	0	no	high	endomembrane_resident			m1_only
-POMT2	HGNC:19743	Q9UKY4	ENSG00000009830	29954	1	0	0	0	1	0	0	0	no	high	endomembrane_resident			m1_only
 PON1	HGNC:9204	P27169	ENSG00000005421	5444	1	0	0	0	1	0	0	0	no	high	secreted_only			m1_only
 PORCN	HGNC:17652	Q9H237	ENSG00000102312	64840	1	1	0	0	0	0	0	0	no	high	endomembrane_resident			m1_only
 POSTN	HGNC:16953	Q15063	ENSG00000133110	10631	1	0	0	0	1	0	0	0	no	high	secreted_only			m1_only
@@ -1113,6 +1080,7 @@ RSPH10B2	HGNC:34385	B2RC85	ENSG00000169402	728194	1	0	0	0	0	1	0	0	no	high	cytopl
 RXYLT1	HGNC:13530	Q9Y2B1	ENSG00000118600	10329	1	1	0	0	0	0	0	0	no	high	endomembrane_resident			m1_only
 RYR1	HGNC:10483	P21817	ENSG00000196218	6261	1	0	1	0	0	0	0	0	no	high	endomembrane_resident			m1_only
 RYR2	HGNC:10484	Q92736	ENSG00000198626	6262	1	0	1	0	0	0	0	0	no	high	endomembrane_resident			m1_only
+RYR3	HGNC:10485	Q15413	ENSG00000198838	6263	1	0	1	0	0	0	0	0	no	high	endomembrane_resident			m1_only
 S100A2	HGNC:10492	P29034	ENSG00000196754	6273	1	0	0	0	0	1	0	0	no	high	cytoplasmic			m1_only
 SAMD4A	HGNC:23023	Q9UPU9	ENSG00000020577	23034	1	0	0	0	0	1	0	0	no	high	cytoplasmic			m1_only
 SAMHD1	HGNC:15925	Q9Y3Z3	ENSG00000101347	25939	1	0	1	0	0	0	0	0	no	high	cytoplasmic			m1_only
@@ -1120,13 +1088,13 @@ SAMSN1	HGNC:10528	Q9NSI8	ENSG00000155307	64092	1	0	0	0	0	1	0	0	no	high	cytoplasm
 SASH3	HGNC:15975	O75995	ENSG00000122122	54440	1	0	0	0	0	1	0	0	no	high	cytoplasmic			m1_only
 SAXO4	HGNC:28869	Q7Z5V6	ENSG00000162148	220004	1	0	0	0	0	1	0	0	no	high	cytoplasmic			m1_only
 SC5D	HGNC:10547	O75845	ENSG00000109929	6309	1	0	0	0	0	1	0	0	no	high	endomembrane_resident			m1_only
+SCAP	HGNC:30634	Q12770	ENSG00000114650	22937	1	0	0	1	0	0	1	0	no	high	endomembrane_resident			m1_only
 SCHIP1	HGNC:15678	P0DPB3	ENSG00000151967	29970	1	0	0	0	0	1	0	0	no	high	cytoplasmic			m1_only
 SCIN	HGNC:21695	Q9Y6U3	ENSG00000006747	85477	1	0	0	0	0	1	0	0	no	high	inner_leaflet_anchored			m1_only
 SDCBP	HGNC:10662	O00560	ENSG00000137575	6386	1	0	1	0	0	0	0	0	no	high	inner_leaflet_anchored			m1_only
 SDE2	HGNC:26643	Q6IQ49	ENSG00000143751	163859	1	0	0	0	0	1	0	0	no	high	nuclear			m1_only
 SDF4	HGNC:24188	Q9BRK5	ENSG00000078808	51150	1	1	0	0	0	0	0	0	no	high	endomembrane_resident	no	high	m1_only
 SEC16B	HGNC:30301	Q96JE7	ENSG00000120341	89866	1	0	0	0	0	1	0	0	no	high	cytoplasmic			m1_only
-SEC22B	HGNC:10700	O75396	ENSG00000265808	9554	1	0	0	0	1	0	0	0	no	high	endomembrane_resident			m1_only
 SEC61G	HGNC:18277	P60059	ENSG00000132432	23480	1	1	0	0	0	0	0	0	no	high	endomembrane_resident			m1_only
 SEL1L	HGNC:10717	Q9UBV2	ENSG00000071537	6400	1	0	0	0	1	0	1	0	no	high	endomembrane_resident			m1_only
 SELENOK	HGNC:30394	Q9Y6D0	ENSG00000113811	58515	1	1	0	0	0	0	0	0	no	high	endomembrane_resident	no	high	m1_only
@@ -1170,6 +1138,7 @@ SLC35D2	HGNC:20799	Q76EJ3	ENSG00000130958	11046	1	1	0	0	0	0	0	0	no	high	endomemb
 SLC37A1	HGNC:11024	P57057	ENSG00000160190	54020	1	0	0	1	0	0	1	0	no	high	endomembrane_resident			m1_only
 SLC37A2	HGNC:20644	Q8TED4	ENSG00000134955	219855	1	0	0	1	0	0	1	0	no	high	endomembrane_resident			m1_only
 SLC37A4	HGNC:4061	O43826	ENSG00000137700	2542	1	0	0	1	0	0	1	0	no	high	endomembrane_resident			m1_only
+SLC38A9	HGNC:26907	Q8NBW4	ENSG00000177058	153129	1	0	0	1	0	0	1	0	no	high	endomembrane_resident			m1_only
 SLC9A9	HGNC:20653	Q8IVB4	ENSG00000181804	285195	1	1	0	0	0	0	0	0	no	high	endomembrane_resident			m1_only
 SLIT1	HGNC:11085	O75093	ENSG00000187122	6585	1	0	0	0	0	1	0	0	no	high	secreted_only			m1_only
 SLK	HGNC:11088	Q9H2G2	ENSG00000065613	9748	1	0	0	0	0	1	0	0	no	high	cytoplasmic			m1_only
@@ -1220,8 +1189,6 @@ SRPRB	HGNC:24085	Q9Y5M8	ENSG00000144867	58477	1	0	0	0	0	1	0	0	no	high	endomembra
 SSH3	HGNC:30581	Q8TE77	ENSG00000172830	54961	1	0	0	0	0	1	0	0	no	high	cytoplasmic			m1_only
 SSR2	HGNC:11324	P43308	ENSG00000163479	6746	1	0	0	0	1	0	1	0	no	high	endomembrane_resident			m1_only
 ST3GAL4	HGNC:10864	Q11206	ENSG00000110080	6484	1	0	0	0	1	0	1	0	no	high	endomembrane_resident			m1_only
-ST3GAL5	HGNC:10872	Q9UNP4	ENSG00000115525	8869	1	0	0	0	1	0	0	0	no	high	endomembrane_resident			m1_only
-ST3GAL6	HGNC:18080	Q9Y274	ENSG00000064225	10402	1	0	0	0	1	0	0	0	no	high	endomembrane_resident			m1_only
 ST8SIA2	HGNC:10870	Q92186	ENSG00000140557	8128	1	1	0	0	0	0	0	0	no	high	endomembrane_resident	no	high	m1_only
 ST8SIA5	HGNC:17827	O15466	ENSG00000101638	29906	1	0	0	0	0	1	0	0	no	high	endomembrane_resident			m1_only
 STAC	HGNC:11353	Q99469	ENSG00000144681	6769	1	0	1	0	0	0	0	0	no	high	inner_leaflet_anchored			m1_only
@@ -1239,7 +1206,7 @@ STK26	HGNC:18174	Q9P289	ENSG00000134602	51765	1	0	1	0	0	0	0	0	no	high	cytoplasmi
 STON1	HGNC:17003	Q9Y6Q2	ENSG00000243244	11037	1	0	1	0	0	0	0	0	no	high	cytoplasmic			m1_only
 STON2	HGNC:30652	Q8WXE9	ENSG00000140022	85439	1	0	1	0	0	0	0	0	no	high	cytoplasmic			m1_only
 STRN	HGNC:11424	O43815	ENSG00000115808	6801	1	0	1	0	0	0	0	0	no	high	cytoplasmic			m1_only
-STT3A	HGNC:6172	P46977	ENSG00000134910	3703	1	0	0	0	1	0	0	0	no	high	endomembrane_resident			m1_only
+STT3B	HGNC:30611	Q8TCJ2	ENSG00000163527	201595	1	0	0	1	0	0	1	0	no	high	endomembrane_resident			m1_only
 STX11	HGNC:11429	O75558	ENSG00000135604	8676	1	0	1	0	0	0	0	0	no	high	inner_leaflet_anchored			m1_only
 STX18	HGNC:15942	Q9P2W9	ENSG00000168818	53407	1	0	0	0	0	1	0	0	no	high	endomembrane_resident			m1_only
 STX1B	HGNC:18539	P61266	ENSG00000099365	112755	1	0	1	0	0	0	0	0	no	high	inner_leaflet_anchored			m1_only
@@ -1250,8 +1217,6 @@ STXBP4	HGNC:19694	Q6ZWJ1	ENSG00000166263	252983	1	0	0	0	0	1	0	0	no	high	cytoplas
 STXBP5	HGNC:19665	Q5T5C0	ENSG00000164506	134957	1	0	1	0	0	0	0	0	no	high	cytoplasmic			m1_only
 SUCLG1	HGNC:11449	P53597	ENSG00000163541	8802	1	0	0	0	0	1	0	0	no	high	mitochondrial_internal			m1_only
 SUCLG2	HGNC:11450	Q96I99	ENSG00000172340	8801	1	0	0	0	0	1	0	0	no	high	mitochondrial_internal			m1_only
-SUN1	HGNC:18587	O94901	ENSG00000164828	23353	1	0	0	0	1	0	0	0	no	high	nuclear_envelope			m1_only
-SUN2	HGNC:14210	Q9UH99	ENSG00000100242	25777	1	0	0	0	1	0	0	0	no	high	nuclear_envelope			m1_only
 SUN3	HGNC:22429	Q8TAQ9	ENSG00000164744	256979	1	0	0	0	0	1	0	0	no	high	nuclear_envelope			m1_only
 SUPT6H	HGNC:11470	Q7KZ85	ENSG00000109111	6830	1	0	0	0	0	1	0	0	no	high	nuclear			m1_only
 SWAP70	HGNC:17070	Q9UH65	ENSG00000133789	23075	1	0	0	0	0	1	0	0	no	high	inner_leaflet_anchored			m1_only
@@ -1310,9 +1275,7 @@ TMEM167A	HGNC:28330	Q8TBQ9	ENSG00000174695	153339	1	1	0	0	0	0	0	0	no	high	endome
 TMEM167B	HGNC:30187	Q9NRX6	ENSG00000215717	56900	1	1	0	0	0	0	0	0	no	high	endomembrane_resident			m1_only
 TMEM186	HGNC:24530	Q96B77	ENSG00000184857	25880	1	0	0	0	0	1	0	0	no	high	mitochondrial_internal			m1_only
 TMEM258	HGNC:1164	P61165	ENSG00000134825	746	1	0	0	0	0	1	0	0	no	high	endomembrane_resident			m1_only
-TMEM259	HGNC:17039	Q4ZIN3	ENSG00000182087	91304	1	0	0	0	1	0	0	0	no	high	endomembrane_resident			m1_only
 TMEM43	HGNC:28472	Q9BTV4	ENSG00000170876	79188	1	1	0	0	0	0	0	0	no	high	nuclear_envelope	no	high	m1_only
-TMEM94	HGNC:28983	Q12767	ENSG00000177728	9772	1	0	0	0	1	0	0	0	no	high	endomembrane_resident			m1_only
 TMTC1	HGNC:24099	Q8IUR5	ENSG00000133687	83857	1	1	0	0	0	0	0	0	no	high	endomembrane_resident			m1_only
 TMTC3	HGNC:26899	Q6ZXV5	ENSG00000139324	160418	1	1	0	0	0	0	0	0	no	high	endomembrane_resident			m1_only
 TMTC4	HGNC:25904	Q5T4D3	ENSG00000125247	84899	1	1	0	0	0	0	0	0	no	high	endomembrane_resident			m1_only
@@ -1328,8 +1291,6 @@ TNXB	HGNC:11976	P22105	ENSG00000168477	7148	1	0	0	0	1	0	0	0	no	high	secreted_onl
 TOGARAM2	HGNC:33715	Q6ZUX3	ENSG00000189350	165186	1	0	0	0	0	1	0	0	no	high	cytoplasmic			m1_only
 TOLLIP	HGNC:16476	Q9H0E2	ENSG00000078902	54472	1	0	1	0	0	0	0	0	no	high	cytoplasmic			m1_only
 TOPBP1	HGNC:17008	Q92547	ENSG00000163781	11073	1	0	0	0	0	1	0	0	no	high	nuclear			m1_only
-TOR1AIP1	HGNC:29456	Q5JTV8	ENSG00000143337	26092	1	0	0	0	1	0	0	0	no	high	nuclear_envelope			m1_only
-TOR1AIP2	HGNC:24055	Q8NFQ8	ENSG00000169905	163590	1	0	0	0	1	0	0	0	no	high	endomembrane_resident			m1_only
 TP53BP2	HGNC:12000	Q13625	ENSG00000143514	7159	1	0	0	0	0	1	0	0	no	high	cytoplasmic			m1_only
 TPD52L1	HGNC:12006	Q16890	ENSG00000111907	7164	1	0	0	0	0	1	0	0	no	high	cytoplasmic			m1_only
 TPM1	HGNC:12010	P09493	ENSG00000140416	7168	1	0	1	0	0	0	0	0	no	high	cytoplasmic			m1_only
@@ -1369,7 +1330,6 @@ TXK	HGNC:12434	P42681	ENSG00000074966	7294	1	0	0	0	0	1	0	0	no	high	inner_leaflet
 TXNIP	HGNC:16952	Q9H3M7	ENSG00000265972	10628	1	0	0	0	0	1	0	0	no	high	cytoplasmic			m1_only
 TYK2	HGNC:12440	P29597	ENSG00000105397	7297	1	0	1	0	0	0	0	0	no	high	cytoplasmic			m1_only
 TYW3	HGNC:24757	Q6IPR3	ENSG00000162623	127253	1	0	0	0	0	1	0	0	no	high	cytoplasmic			m1_only
-UBA1	HGNC:12469	P22314	ENSG00000130985	7317	1	0	0	0	1	0	0	0	no	high	cytoplasmic			m1_only
 UBA3	HGNC:12470	Q8TBC4	ENSG00000144744	9039	1	0	0	0	0	1	0	0	no	high	cytoplasmic			m1_only
 UBA52	HGNC:12458	P62987	ENSG00000221983	7311	1	0	0	0	0	1	0	0	no	high	cytoplasmic			m1_only
 UBAP1	HGNC:12461	Q9NZ09	ENSG00000165006	51271	1	0	0	0	0	1	0	0	no	high	cytoplasmic			m1_only
@@ -1386,7 +1346,6 @@ UBR2	HGNC:21289	Q8IWV8	ENSG00000024048	23304	1	0	0	0	0	1	0	0	no	high	cytoplasmic
 UBTD1	HGNC:25683	Q9HAC8	ENSG00000165886	80019	1	0	0	0	0	1	0	0	no	high	cytoplasmic			m1_only
 UCN	HGNC:12516	P55089	ENSG00000163794	7349	1	0	0	0	0	1	0	0	no	high	secreted_only			m1_only
 UCP3	HGNC:12519	P55916	ENSG00000175564	7352	1	0	0	0	0	1	0	0	no	high	mitochondrial_internal			m1_only
-UGGT1	HGNC:15663	Q9NYU2	ENSG00000136731	56886	1	0	0	0	1	0	0	0	no	high	endomembrane_resident			m1_only
 UGT1A9	HGNC:12541	O60656	ENSG00000241119	54600	1	0	0	0	1	0	0	0	no	high	endomembrane_resident			m1_only
 UGT2A3	HGNC:28528	Q6UWM9	ENSG00000135220	79799	1	1	0	0	0	0	0	0	no	high	endomembrane_resident			m1_only
 UGT3A1	HGNC:26625	Q6NUS8	ENSG00000145626	133688	1	1	0	0	0	0	0	0	no	high	endomembrane_resident			m1_only
@@ -1402,7 +1361,6 @@ UQCC6	HGNC:34450	Q69YU5	ENSG00000204954	728568	1	0	0	0	0	1	0	0	no	high	mitochond
 USP2	HGNC:12618	O75604	ENSG00000036672	9099	1	0	0	0	0	1	0	0	no	high	cytoplasmic			m1_only
 USP20	HGNC:12619	Q9Y2K6	ENSG00000136878	10868	1	0	0	0	0	1	0	0	no	high	cytoplasmic			m1_only
 USP29	HGNC:18563	Q9HBJ7	ENSG00000131864	57663	1	0	0	0	0	1	0	0	no	high	cytoplasmic			m1_only
-UST	HGNC:17223	Q9Y2C2	ENSG00000111962	10090	1	0	0	0	1	0	0	0	no	high	endomembrane_resident			m1_only
 UTP20	HGNC:17897	O75691	ENSG00000120800	27340	1	0	0	0	0	1	0	0	no	high	nuclear			m1_only
 VAMP1	HGNC:12642	P23763	ENSG00000139190	6843	1	0	1	0	0	0	0	0	no	high	inner_leaflet_anchored			m1_only
 VAMP4	HGNC:12645	O75379	ENSG00000117533	8674	1	0	1	0	0	0	0	0	no	high	endomembrane_resident			m1_only
@@ -1458,7 +1416,6 @@ ZDHHC17	HGNC:18412	Q8IUH5	ENSG00000186908	23390	1	1	0	0	0	0	0	0	no	high	endomemb
 ZDHHC19	HGNC:20713	Q8WVZ1	ENSG00000163958	131540	1	1	0	0	0	0	0	0	no	high	endomembrane_resident	no	high	m1_only
 ZDHHC21	HGNC:20750	Q8IVQ6	ENSG00000175893	340481	1	1	0	0	0	0	0	0	no	high	inner_leaflet_anchored			m1_only
 ZDHHC22	HGNC:20106	Q8N966	ENSG00000177108	283576	1	0	0	0	0	1	0	0	no	high	endomembrane_resident			m1_only
-ZDHHC23	HGNC:28654	Q8IYP9	ENSG00000184307	254887	1	0	0	0	1	0	0	0	no	high	endomembrane_resident			m1_only
 ZDHHC24	HGNC:27387	Q6UX98	ENSG00000174165	254359	1	1	0	0	0	0	0	0	no	high	endomembrane_resident			m1_only
 ZDHHC3	HGNC:18470	Q9NYG2	ENSG00000163812	51304	1	1	0	0	0	0	0	0	no	high	endomembrane_resident			m1_only
 ZDHHC4	HGNC:18471	Q9NPG8	ENSG00000136247	55146	1	1	0	0	0	0	0	0	no	high	endomembrane_resident	no	high	m1_only

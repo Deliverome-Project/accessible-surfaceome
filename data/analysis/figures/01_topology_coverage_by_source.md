@@ -1,13 +1,13 @@
 # `topology_coverage_by_source` — reproduction
 
 What each of the 6 surface-call sources (5 M1 databases + Sonnet 4.6 triage)
-preferentially captures by protein topology, across the 6,650-protein
+preferentially captures by protein topology, across the 6,585-protein
 cohort-tightened candidate-surfaceome universe (bench-optimized cutoffs).
 
 For every (source × topology class) pair, the bar height is the share
 of the universe that the source includes AND that has the topology
 feature — so the y-axis is `% of any-yes-vote universe`, denominator
-6,650. Sonnet sits leftmost as the implicit reference; the 5 DBs
+6,585. Sonnet sits leftmost as the implicit reference; the 5 DBs
 follow in the same color order as `make_db_correctness_by_class.py`.
 
 The 9 panels are 7 hand-picked architecture classes (GPI, 7TM GPCR,
@@ -56,7 +56,7 @@ seaborn / httpx in a one-shot env, and emits
 
 For each (source, topology feature) pair, the script counts proteins
 satisfying `(source-included) AND (feature-positive == 1)` and
-divides by the size of the universe (6,650 — every member of the
+divides by the size of the universe (6,585 — every member of the
 universe has ≥1 yes vote across the 6 sources by construction, so the
 denominator equals the any-yes-vote count).
 
