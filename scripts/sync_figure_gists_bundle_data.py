@@ -181,6 +181,16 @@ def main() -> int:
             _run(["gh", "gist", "edit", gist_id, "-f", mirror.name, str(mirror)],
                  args.dry_run, tolerate_409=True)
 
+        # README (``01_<slug>.md``) is the gist's top file — push it too so
+        # number / architecture edits to the README propagate to the live
+        # gist (otherwise it silently drifts from the in-repo copy). 409 =
+        # no diff to push (content already current), tolerated as a no-op.
+        readme = FIGURES_DIR / f"01_{slug}.md"
+        if readme.is_file():
+            print("  pushing updated README")
+            _run(["gh", "gist", "edit", gist_id, "-f", readme.name, str(readme)],
+                 args.dry_run, tolerate_409=True)
+
         if not args.dry_run:
             sha = _gist_head_sha(gist_id)
             swhid = f"swh:1:rev:{sha}"

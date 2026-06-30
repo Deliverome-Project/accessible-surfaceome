@@ -13,7 +13,7 @@
   "ensemble_vs_best_db_vs_sonnet": "swh:1:rev:3414dc0a26d0b78318245f596d0d71e14c2bf97d",
   "evidence_corpus_vs_selected": "swh:1:rev:d5bf02cdf13023ed4c7f4f06fe4749b365e0161e",
   "paywall_bot_block_compare": "swh:1:rev:8ab41cc6ef790b01df229633fd35a6ef2a19e958",
-  "topology_coverage_by_source": "swh:1:rev:c7032bad28767e9de63c0df71d890bafa092c888",
+  "topology_coverage_by_source": "swh:1:rev:bd77126e6bace291088404d3d836465f251d7883",
   "triage_vs_deep_dive_reason": "swh:1:rev:63180540e9cdd254a9491da4dbcfce5b0b046b0a",
   "web_preview": "swh:1:rev:3b0062e20f36c6dce22177c89d32803b2d553b81",
   "zero_db_rescues_by_triage": "swh:1:rev:2831a0a87140d059e68db42e9611ce5b7a5b2c0a"

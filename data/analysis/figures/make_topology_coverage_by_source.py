@@ -9,9 +9,9 @@
 """Reproduce ``topology_coverage_by_source.{pdf,png}`` from the public repo.
 
 For every protein in the cohort-tightened v3 candidate-surfaceome
-universe (6,588 proteins = candidate_universe_v3 + v3_dropped, the
-post-Sonnet-no-trim union intersected with the HGNC-anchored
-protein-coding cohort), 9 binary topology features are scored per
+universe (6,651 proteins = candidate_universe_v3 + v3_dropped on the
+bench-optimized cutoffs, the post-Sonnet-no-trim union intersected with
+the HGNC-anchored protein-coding cohort), 9 binary topology features are scored per
 inclusion source. Each panel shows what fraction of the universe is
 captured by `(source ∩ feature)` — DBs render as bars colored by the
 project's M1-DB palette plus Claude-orange for Sonnet.
@@ -26,7 +26,7 @@ Panels (3×3):
 Feature-coverage denominators are the v3 universe (= proteins with
 ≥1 yes vote across the 6 sources). Bar height for source S on
 feature F:
-    100 × |S-included ∩ F-positive| / 6,588
+    100 × |S-included ∩ F-positive| / 6,651
 
 The 9 features are a deliberate mix:
   • 7 hand-picked architecture classes (GPI / 7TM-GPCR / multi-pass
