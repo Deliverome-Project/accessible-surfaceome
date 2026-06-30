@@ -5,7 +5,7 @@ Pulls the most recent intermediates blob for one gene from public
 ``surfaceome_agents`` D1, reconstructs the synthesizer's inputs from
 it, and re-invokes the synthesizer. Skips the expensive
 plan-trim-select stage (~70% of per-gene cost), so a prompt-iteration
-loop on the synthesizer side costs ~\$0.15/iteration instead of ~\$2.
+loop on the synthesizer side costs ~$0.15/iteration instead of ~$2.
 
 Useful when you're iterating on:
 * The synthesizer's system prompt
