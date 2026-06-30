@@ -290,15 +290,19 @@ def make_plot() -> tuple[plt.Figure, list[plt.Axes]]:
     # room to breathe.
     import matplotlib.gridspec as gridspec
     fig = plt.figure(figsize=(18, 28))
-    gs = gridspec.GridSpec(
-        nrows=3, ncols=1, height_ratios=[0.7, 1.0, 2.1],
-        # hspace bumped from 0.35 so the panel-b legend + "showing N of M"
-        # caption sit clear of panel c's top edge.
-        hspace=0.55,
+    # Nested gridspec: outer separates the (a+b) cluster from c so we
+    # can give a↔b a tighter hspace than b↔c. Eliminates the wasted
+    # whitespace between panel a and panel b without crowding the
+    # confusion matrix below.
+    outer = fig.add_gridspec(
+        nrows=2, ncols=1, height_ratios=[1.7, 2.1], hspace=0.55,
     )
-    ax_bucket = fig.add_subplot(gs[0, 0])
-    ax_perreason = fig.add_subplot(gs[1, 0])
-    ax_matrix = fig.add_subplot(gs[2, 0])
+    top = outer[0].subgridspec(
+        nrows=2, ncols=1, height_ratios=[0.7, 1.0], hspace=0.20,
+    )
+    ax_bucket = fig.add_subplot(top[0])
+    ax_perreason = fig.add_subplot(top[1])
+    ax_matrix = fig.add_subplot(outer[1])
 
     # ─────── Helpers ───────
     def _strict_bucket_match(pred_r: str, gt_r: str) -> bool:
@@ -469,12 +473,13 @@ def make_plot() -> tuple[plt.Figure, list[plt.Axes]]:
             row[1] += 1
             if pred_r == gt_r:
                 row[0] += 1
-    # Show ALL reasons present on the bench (n ≥ 1). The earlier n ≥ 2
-    # filter silently hid three single-instance reasons — surfacing them
-    # is more honest, but they read as 100%/0% by construction, so we
-    # mark them in the label. Reasons absent from the bench entirely
-    # are listed in the on-axes annotation below.
-    reasons = sorted(reason_n.keys(), key=lambda r: (-reason_n[r], r))
+    # Show ALL reasons present on the bench (n ≥ 1). Order matches
+    # panel c's confusion matrix: REASONS_ORDERED is the canonical
+    # yes → contextual → no bucket order, so reading panel b
+    # left-to-right walks the same bucket sequence as panel c's
+    # rows/cols (and the panel-b x-tick labels are already colored by
+    # bucket below to reinforce that grouping).
+    reasons = [r for r in REASONS_ORDERED if r in reason_n]
     enum_reasons = set(REASONS_ORDERED)
     absent_from_bench = sorted(enum_reasons - set(reason_n.keys()))
     # Build group_acc for the renderer — "Overall" first, then one
@@ -494,6 +499,20 @@ def make_plot() -> tuple[plt.Figure, list[plt.Axes]]:
                    bar_w=0.16, overall_idx=0,
                    label="Exact-reason accuracy (%)",
                    show_legend=True)
+    # Annotate the Overall bar group with each config's exact-reason
+    # accuracy % so the headline 87% claim is readable on-figure.
+    # Bar layout: x positions sit at (i - (n-1)/2) * bar_w around x=0.
+    for i, (mod, var, _lab) in enumerate(CONFIGS_B):
+        m_, t_ = overall_b[(mod, var)]
+        if not t_:
+            continue
+        pct = 100 * m_ / t_
+        x_pos = (i - (len(CONFIGS_B) - 1) / 2) * 0.16
+        ax_perreason.text(
+            x_pos, pct + 1.4, f"{pct:.0f}%",
+            ha="center", va="bottom", fontsize=10,
+            color=COLORS["dark"], fontweight="semibold",
+        )
     # Re-rotate x-labels (per-reason labels are too long horizontally)
     # + color each label by its bucket (yes/contextual/no), matching
     # the tick coloring on panel c's confusion matrix.
