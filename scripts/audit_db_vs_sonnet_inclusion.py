@@ -1,6 +1,6 @@
 """Per-source inclusion-bias audit for the v2 candidate universe.
 
-Answers: for the 6,651 proteins in the v3 cohort-cleaned candidate
+Answers: for the 6,650 proteins in the v3 cohort-cleaned candidate
 universe (v3-kept + v3-dropped, bench-optimized cutoffs), what features
 distinguish inclusion in each of the 5 M1 source DBs (UniProt, GO, HPA,
 SURFY, CSPA) vs. inclusion via Sonnet (the LLM triage layer)?
@@ -24,7 +24,7 @@ For each inclusion source, computes the enrichment of every feature in
     Cliff's-delta equivalent (p_in - p_out).
 
 Outputs to data/analysis/db_vs_sonnet_inclusion/:
-  - per_protein_features.tsv  -- the joined feature table (6,651 rows)
+  - per_protein_features.tsv  -- the joined feature table (6,650 rows)
   - inclusion_enrichment.tsv  -- one row per (source, feature)
   - inclusion_heatmap.{pdf,png}  -- signed effect heatmap
   - inclusion_summary.json    -- universe sizes + per-source inclusion counts
@@ -237,10 +237,10 @@ FEATURE_PROVENANCE: dict[str, str] = {
 
 
 def _load_v3() -> pd.DataFrame:
-    """Load v3-kept (5,151) + v3-dropped (1,500) = 6,651-row cohort-
+    """Load v3-kept (5,150) + v3-dropped (1,500) = 6,650-row cohort-
     cleaned candidate universe (bench-optimized DB cutoffs).
 
-    Why 6,651 and not 5,151: the dropped rows are still legitimate
+    Why 6,650 and not 5,150: the dropped rows are still legitimate
     candidate-universe members — they just didn't survive the
     Sonnet=no/high-conf/1-DB rule. For the source-inclusion analysis
     we WANT them in the universe so the per-DB inclusion sets reflect
@@ -251,7 +251,7 @@ def _load_v3() -> pd.DataFrame:
     Base size depends on the DB cutoffs. Under the bench-optimized
     cutoffs (UniProt expanded to TM/signal, CSPA tightened to
     high-confidence) the gate (≥1-of-5-DB OR Sonnet-yc) ∩ the
-    19,464-row protein-coding cohort admits 6,651 — vs 6,588 under the
+    19,464-row protein-coding cohort admits 6,650 — vs 6,588 under the
     initial cutoffs. The optimized UniProt cutoff is what nets the +63
     (it admits TM/signal proteins the initial union missed), so the
     base is no longer exactly v2's union ∩ cohort.
@@ -1256,7 +1256,7 @@ def make_surfy_topology_coverage(df: pd.DataFrame, out_dir: Path) -> None:
         # vote across uniprot, go, hpa, surfy, cspa, OR sonnet).
         # The bar height for source S on feature F reads:
         #   (# proteins where S-included AND F-positive)
-        #   / |universe|  (= 6,651)
+        #   / |universe|  (= 6,650)
         #
         # The v3 universe was BUILT from "any DB yes OR Sonnet
         # yes/contextual", so every member already has at least one
@@ -1299,7 +1299,7 @@ def make_surfy_topology_coverage(df: pd.DataFrame, out_dir: Path) -> None:
         ax.set_xticks(range(len(source_order)))
         ax.set_xticklabels(source_order, rotation=35, ha="right")
         # Y-axis label = denominator. The full v3-input universe
-        # (6,651 proteins) is the reference — every universe member
+        # (6,650 proteins) is the reference — every universe member
         # has ≥1 yes vote across the 6 sources by construction, so
         # "% of any yes vote" reads cleanly as "% of universe."
         ax.set_ylabel("% of any-yes-vote\nuniverse")

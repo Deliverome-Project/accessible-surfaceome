@@ -4,7 +4,8 @@ that are present in only 1 of the 5 gating DBs (UniProt/GO/SURFY/CSPA/HPA).
 
 v3 = (Sonnet yes/contextual on canonical run UNION ≥1 of 5 gating DBs UNION
       Sonnet yes/contextual on pubmed_ncbi rescue run)
-     MINUS (Sonnet=no high-conf AND only 1 of 5 gating DBs).
+     MINUS (Sonnet=no high-conf AND only 1 of 5 gating DBs)
+     MINUS (dangling rows whose HGNC id fails to resolve to any stable id).
 
 DB membership uses the **bench-optimized cutoffs** (the same thresholds the
 DB-accuracy figures and the zero-DB-rescue figure use): UniProt is expanded
@@ -21,6 +22,13 @@ columns, the optimized flags are joined in locally. The full table (all
 that optimized-UniProt newly flags but Sonnet rejected are still admitted —
 they would be invisible to a query filtered on the initial vote.
 
+A withdrawn / reassigned HGNC id resolves to no live record, so the
+gene_identifier_public join leaves every stable id (uniprot_acc / ensembl_gene
+/ ncbi_gene_id) empty while still carrying hgnc_id. Such a row is a
+data-integrity hole that silently misroutes downstream symbol-keyed lookups,
+so it is dropped (and logged) before writing the universe — see
+``partition_unresolved`` / ``_resolves_to_stable_ids``.
+
 Bench check: re-confirmed 0 bench yes/contextual genes are removed.
 """
 import csv
@@ -29,8 +37,6 @@ from pathlib import Path
 
 from accessible_surfaceome.cloud.d1_client import D1Client, D1Config
 from accessible_surfaceome.env import load_env
-
-load_env()
 
 RUN = "genome_full_sonnet_ncbi_v2"
 RUN_PM = "genome_full_sonnet_pubmed_ncbi_v1"
@@ -89,18 +95,15 @@ LEFT JOIN ids    i ON i.hgnc_symbol = b.gene_symbol
 # genes that only the optimized UniProt cutoff flags.
 
 # Optimized cutoffs: accession -> (uniprot_optimized, cspa_optimized).
+# Populated from OPT_CUTOFFS inside main(); module-level so the vote helper
+# resolves it as a global. (Left empty at import so importing this module is
+# side-effect-free — no file read, no D1 query, no TSV write.)
 _opt: dict[str, tuple[int, int]] = {}
-with open(OPT_CUTOFFS) as f:
-    for r in csv.DictReader(f, delimiter="\t"):
-        acc = (r.get("accession") or "").strip()
-        if acc:
-            _opt[acc] = (
-                1 if str(r.get("uniprot_optimized", "")).strip() in ("1", "1.0") else 0,
-                1 if str(r.get("cspa_optimized", "")).strip() in ("1", "1.0") else 0,
-            )
+
 
 def _i(v) -> int:
     return 1 if str(v).strip() in ("1", "1.0") else 0
+
 
 def _opt_votes(r) -> int:
     """5-DB vote under the bench-optimized cutoffs: UniProt + CSPA from the
@@ -110,29 +113,37 @@ def _opt_votes(r) -> int:
     up, cs = _opt.get(acc, (_i(r["uniprot_flag"]), _i(r["cspa_flag"])))
     return up + cs + _i(r["go_flag"]) + _i(r["surfy_flag"]) + _i(r["hpa_flag"])
 
-with D1Client(config=D1Config.from_env_public()) as d1:
-    all_rows = d1.query(SQL, [RUN, RUN_PM])
 
-# Guard against a silently-truncated pull — the table is the full cohort.
-N_EXPECTED = 19_324
-assert len(all_rows) >= N_EXPECTED - 50, (
-    f"pulled only {len(all_rows):,} rows from candidate_universe_public "
-    f"(expected ~{N_EXPECTED:,}) — possible truncation; aborting before "
-    f"writing a short universe."
-)
-
-# Stamp the optimized vote + per-DB flags + apply the universe gate locally.
-# uniprot_flag/cspa_flag are overwritten with the optimized values so every
-# column in the row is on the same (optimized) cutoff as n_db_votes.
-for r in all_rows:
-    acc = (r.get("uniprot_acc") or "").strip()
-    up, cs = _opt.get(acc, (_i(r["uniprot_flag"]), _i(r["cspa_flag"])))
-    r["uniprot_flag"] = up
-    r["cspa_flag"] = cs
-    r["n_db_votes"] = _opt_votes(r)
 def _yc(r) -> bool:
     return r["sonnet_verdict"] in ("yes", "contextual") or r["pubmed_verdict"] in ("yes", "contextual")
-rows = [r for r in all_rows if r["n_db_votes"] >= 1 or _yc(r)]
+
+
+def _resolves_to_stable_ids(r) -> bool:
+    """True iff the gene resolved to ≥1 cross-DB stable identifier.
+
+    A withdrawn / reassigned HGNC id resolves to no live record, so the
+    gene_identifier_public join leaves uniprot_acc, ensembl_gene AND
+    ncbi_gene_id all empty (while hgnc_id is still carried). Such a row is a
+    dangling data-integrity hole — it would silently misroute every downstream
+    symbol-keyed lookup (the WAS→MT-RNR1 reassignment-drift class) — and is
+    dropped from the universe. A row that resolved to even one stable id is
+    kept; whether to additionally drop a resolved gene on biology grounds is a
+    separate policy decision, not this guard's job.
+    """
+    return bool(
+        (r.get("uniprot_acc") or "").strip()
+        or (r.get("ensembl_gene") or "").strip()
+        or (r.get("ncbi_gene_id") or "").strip()
+    )
+
+
+def partition_unresolved(rows):
+    """Split rows into (resolved, dropped) on stable-id resolvability."""
+    resolved, dropped = [], []
+    for r in rows:
+        (resolved if _resolves_to_stable_ids(r) else dropped).append(r)
+    return resolved, dropped
+
 
 def is_trim(r):
     return (
@@ -141,20 +152,17 @@ def is_trim(r):
         and r["n_db_votes"] == 1
     )
 
-keep = [r for r in rows if not is_trim(r)]
-drop = [r for r in rows if is_trim(r)]
 
 # Source label: 'sonnet_only' (DBs all zero, Sonnet/pubmed rescued)
 #               'm1_only' (Sonnet=no but in DBs)
 #               'm1_and_sonnet' (both vote yes-ish)
 def source_of(r):
-    sonnet_yes = r["sonnet_verdict"] in ("yes", "contextual") \
-              or r["pubmed_verdict"] in ("yes", "contextual")
-    if r["n_db_votes"] == 0 and sonnet_yes:
+    if r["n_db_votes"] == 0 and _yc(r):
         return "sonnet_only"
-    if sonnet_yes:
+    if _yc(r):
         return "m1_and_sonnet"
     return "m1_only"
+
 
 cols = [
     "gene_symbol", "hgnc_id", "uniprot_acc", "ensembl_gene", "ncbi_gene_id",
@@ -164,7 +172,6 @@ cols = [
     "pubmed_verdict", "pubmed_confidence", "source",
 ]
 
-OUT_DIR.mkdir(parents=True, exist_ok=True)
 
 def write_tsv(path, rs):
     with open(path, "w", newline="") as f:
@@ -174,19 +181,84 @@ def write_tsv(path, rs):
             r["source"] = source_of(r)
             w.writerow(r)
 
-write_tsv(OUT_KEEP, keep)
-write_tsv(OUT_DROP, drop)
 
-# Summary
-print(f"Base candidate set (live D1): {len(rows):,} genes")
-print(f"  Trimmed (Sonnet=no/high + 1-of-5-DB): {len(drop):,}")
-print(f"  Kept (v3 universe): {len(keep):,}")
-print()
-print("Source breakdown in v3:")
-src = Counter(source_of(r) for r in keep)
-for s, n in src.most_common():
-    print(f"  {s:<16s} {n:>6,d}")
-print()
-print("Wrote:")
-print(f"  {OUT_KEEP}   ({len(keep):,} rows)")
-print(f"  {OUT_DROP}   ({len(drop):,} rows)")
+def main():
+    load_env()
+
+    # Optimized cutoffs: accession -> (uniprot_optimized, cspa_optimized).
+    with open(OPT_CUTOFFS) as f:
+        for r in csv.DictReader(f, delimiter="\t"):
+            acc = (r.get("accession") or "").strip()
+            if acc:
+                _opt[acc] = (
+                    1 if str(r.get("uniprot_optimized", "")).strip() in ("1", "1.0") else 0,
+                    1 if str(r.get("cspa_optimized", "")).strip() in ("1", "1.0") else 0,
+                )
+
+    with D1Client(config=D1Config.from_env_public()) as d1:
+        all_rows = d1.query(SQL, [RUN, RUN_PM])
+
+    # Guard against a silently-truncated pull — the table is the full cohort.
+    N_EXPECTED = 19_324
+    assert len(all_rows) >= N_EXPECTED - 50, (
+        f"pulled only {len(all_rows):,} rows from candidate_universe_public "
+        f"(expected ~{N_EXPECTED:,}) — possible truncation; aborting before "
+        f"writing a short universe."
+    )
+
+    # Stamp the optimized vote + per-DB flags + apply the universe gate locally.
+    # uniprot_flag/cspa_flag are overwritten with the optimized values so every
+    # column in the row is on the same (optimized) cutoff as n_db_votes.
+    for r in all_rows:
+        acc = (r.get("uniprot_acc") or "").strip()
+        up, cs = _opt.get(acc, (_i(r["uniprot_flag"]), _i(r["cspa_flag"])))
+        r["uniprot_flag"] = up
+        r["cspa_flag"] = cs
+        r["n_db_votes"] = _opt_votes(r)
+
+    rows = [r for r in all_rows if r["n_db_votes"] >= 1 or _yc(r)]
+
+    # Drop dangling rows whose HGNC id failed to resolve to any stable id
+    # (withdrawn / reassigned symbol). A general data-integrity guard, not a
+    # one-off hand-delete — and logged below so the drop is never silent.
+    rows, dropped_unresolved = partition_unresolved(rows)
+
+    keep = [r for r in rows if not is_trim(r)]
+    drop = [r for r in rows if is_trim(r)]
+
+    OUT_DIR.mkdir(parents=True, exist_ok=True)
+    write_tsv(OUT_KEEP, keep)
+    write_tsv(OUT_DROP, drop)
+
+    # Summary
+    print(f"Base candidate set (live D1, post integrity guard): {len(rows):,} genes")
+    print(f"  Trimmed (Sonnet=no/high + 1-of-5-DB): {len(drop):,}")
+    print(f"  Kept (v3 universe): {len(keep):,}")
+    if dropped_unresolved:
+        print()
+        print(
+            f"  Dropped {len(dropped_unresolved)} dangling row(s) — HGNC id did not "
+            f"resolve to any stable id (empty uniprot_acc/ensembl_gene/ncbi_gene_id; "
+            f"withdrawn or reassigned symbol):"
+        )
+        for r in sorted(dropped_unresolved, key=lambda x: x["gene_symbol"]):
+            hgnc = r.get("hgnc_id") or "(no hgnc_id)"
+            print(
+                f"    - {r['gene_symbol']:<14s} {hgnc:<12s} "
+                f"n_db_votes={r['n_db_votes']} "
+                f"sonnet={r['sonnet_verdict']}/{r['sonnet_confidence']} "
+                f"reason={r.get('sonnet_reason') or '-'}"
+            )
+    print()
+    print("Source breakdown in v3:")
+    src = Counter(source_of(r) for r in keep)
+    for s, n in src.most_common():
+        print(f"  {s:<16s} {n:>6,d}")
+    print()
+    print("Wrote:")
+    print(f"  {OUT_KEEP}   ({len(keep):,} rows)")
+    print(f"  {OUT_DROP}   ({len(drop):,} rows)")
+
+
+if __name__ == "__main__":
+    main()

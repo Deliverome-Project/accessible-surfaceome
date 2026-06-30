@@ -3829,7 +3829,6 @@ RPSA2	HGNC:36809	A0A8I5KQE6	ENSG00000288920	388524	0	0	0	0	0	0	0	0	contextual	me
 RRH	HGNC:10450	O14718	ENSG00000180245	10692	2	1	0	1	0	0	1	0	yes	high	multipass_with_exposed_loops			m1_and_sonnet
 RRP12	HGNC:29100	Q5JTH9	ENSG00000052749	23223	1	0	0	0	0	1	0	0	contextual	low	dual_localization			m1_and_sonnet
 RS1	HGNC:10457	O15537	ENSG00000102104	6247	2	1	1	0	0	0	0	0	no	high	secreted_only			m1_only
-RSC1A1	HGNC:10458				1	0	0	0	0	1	0	0	no	medium	inner_leaflet_anchored			m1_only
 RSPO3	HGNC:20866	Q9BXY4	ENSG00000146374	84870	0	0	0	0	0	0	0	0	contextual	medium	dual_localization			sonnet_only
 RSPO4	HGNC:16175	Q2I0M5	ENSG00000101282	343637	0	0	0	0	0	0	0	0	contextual	medium	stable_surface_attachment			sonnet_only
 RSPRY1	HGNC:29420	Q96DX4	ENSG00000159579	89970	0	0	0	0	0	0	0	0	contextual	low	dual_localization			sonnet_only

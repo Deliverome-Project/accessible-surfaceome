@@ -2,7 +2,7 @@
 
 Supplementary Figure 9 — a per-source × per-topology-class coverage
 grid. For every protein in the cohort-tightened v3 candidate-surfaceome
-universe (6,651 proteins = candidate_universe_v3 + v3_dropped on the
+universe (6,650 proteins = candidate_universe_v3 + v3_dropped on the
 bench-optimized cutoffs, the post-Sonnet-no-trim union intersected with
 the HGNC-anchored protein-coding cohort), 9 binary topology features are scored per
 inclusion source. Each panel shows what fraction of the universe is
@@ -33,7 +33,7 @@ Panels (3×3):
          peptide (DeepTMHMM class)
 
 Bar height for source S on feature F:
-    100 × |S-included ∩ F-positive| / 6,651
+    100 × |S-included ∩ F-positive| / 6,650
 
 This is the **canonical generator** (centralized ``_plotting_config``
 styling, in-repo TSV path). The standalone reader-side mirror is
