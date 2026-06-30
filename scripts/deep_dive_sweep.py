@@ -559,7 +559,6 @@ def main(argv: list[str] | None = None) -> int:
 
     sink: D1DeepDiveSink | None = None
     if not args.no_d1:
-        sink = D1DeepDiveSink(run_id=args.run_id)
         if getattr(args, "force", False):
             print(
                 "--force: skipping schema-aware dedup — already-complete genes "
@@ -611,6 +610,11 @@ def main(argv: list[str] | None = None) -> int:
                     f"gene(s) flagged for MANUAL REVIEW: {preview}{more}",
                     flush=True,
                 )
+        # Construct the sink LAST — after dedup + quarantine filtering — so a
+        # fail-closed dedup query (genes_done_at_schema raising on a D1 outage)
+        # aborts dispatch WITHOUT leaking the sink's D1Client. The sink is only
+        # needed for the insert path below.
+        sink = D1DeepDiveSink(run_id=args.run_id)
 
     if args.canary:
         canary_rows = select_canary(all_rows, args.canary)

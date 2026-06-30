@@ -35,7 +35,7 @@ def test_rationales_default_empty():
 
 
 def test_rationale_with_inline_cite_does_not_warn(caplog):
-    with caplog.at_level(logging.WARNING):
+    with caplog.at_level(logging.DEBUG):
         _llm_filters(expression_level_rationale="broadly high (a2_evi_03)")
     assert "lacks an inline" not in caplog.text
 
@@ -43,7 +43,7 @@ def test_rationale_with_inline_cite_does_not_warn(caplog):
 def test_rationale_without_cite_warns_but_does_not_raise(caplog):
     # Warn-only: the value is accepted (synth is a Managed Agent with no
     # in-process repair loop), but the missing cite is logged.
-    with caplog.at_level(logging.WARNING):
+    with caplog.at_level(logging.DEBUG):
         f = _llm_filters(expression_breadth_rationale="broad across many tissues")
     assert f.expression_breadth_rationale == "broad across many tissues"
     assert "lacks an inline" in caplog.text

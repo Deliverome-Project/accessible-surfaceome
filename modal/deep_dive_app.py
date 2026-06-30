@@ -245,9 +245,27 @@ def secret_presence_check() -> dict:
     load_env()  # the secret is injected as env vars; load_env is a harmless no-op here
     present = {k: bool((os.environ.get(k) or "").strip()) for k in _REQUIRED_SECRET_KEYS}
     pool = (os.environ.get("NCBI_API_KEYS") or "").replace(";", ",").replace(" ", ",")
+
+    # Actually exercise R2 WRITE access — not just key presence. The token can
+    # carry CLOUDFLARE_API_TOKEN yet lack the "Workers R2 Storage: Edit" scope,
+    # which only surfaces as a 403 mid-run that silently drops heavy genes' full
+    # audit blob (the slim D1 record still publishes). A fixed probe key,
+    # overwritten each run, needs no cleanup.
+    try:
+        from accessible_surfaceome.cloud import r2_client
+
+        r2_write_ok = r2_client.put_object(
+            key="_preflight/check_secret_probe.txt",
+            body=b"ok",
+            content_type="text/plain",
+        )
+    except Exception:  # noqa: BLE001 — a preflight probe must never raise
+        r2_write_ok = False
+
     return {
         "present": present,
         "ncbi_pool_size": len([x for x in pool.split(",") if x.strip()]),
+        "r2_write_ok": bool(r2_write_ok),
     }
 
 
@@ -262,6 +280,17 @@ def check_secret():
         print(f"\n!! MISSING from the surfaceome-env secret: {', '.join(missing)}")
         raise RuntimeError(f"secret incomplete — missing {missing}")
     print("\n✓ all required keys present in the surfaceome-env secret")
+    if result.get("r2_write_ok"):
+        print("✓ R2 write OK (heavy-gene audit-blob spillover will land)")
+    else:
+        # Non-fatal: genes still succeed, but oversized intermediates can't spill
+        # to R2 → the full audit blob is lost for heavy genes.
+        print(
+            "!! R2 write FAILED — CLOUDFLARE_API_TOKEN likely lacks the "
+            "'Workers R2 Storage: Edit' scope (or the bucket is missing). "
+            "Non-blocking, but fix before a long run or heavy genes silently "
+            "drop their full audit blob."
+        )
 
 
 # ---------------------------------------------------------------------------
