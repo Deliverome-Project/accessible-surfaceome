@@ -1,13 +1,20 @@
 {
+  "bench_topology_vs_universe": "swh:1:rev:ec04307790b149bb77a64731e7ca9524ca153273",
   "benchmark_cost_vs_accuracy": "swh:1:rev:0546c637556b05f3cf05b8a01da60b2968ee149a",
+  "curator_vs_agent_reason": "swh:1:rev:8acda80e52ff339f74cf5a7b4da8840a37dc1627",
   "db_correctness_by_class": "swh:1:rev:34b1bff329af2e06104ba2e50df5d7e0a6ac394a",
   "db_correctness_overall": "swh:1:rev:671ea36be49491b509b67b4a5e577971b545baa2",
   "db_cutoff_tradeoff": "swh:1:rev:7dd8393e7f71d941ef3e3077106883442db27fc2",
   "db_overlap_venn": "swh:1:rev:3e9385908e6a963ff82c0c3dd2163ec6c461661b",
   "db_vs_sonnet_whole_proteome": "swh:1:rev:e199c2f5f76da57c0ad9d9611b6647e44f099d65",
   "deep_dive_final_categories": "swh:1:rev:ac464ae2d2837eda2dbc32b64f07d479af50cf54",
+  "deep_dive_flow": "swh:1:rev:506d29ab3052576e6db9b33782e55b5d975483de",
+  "deep_dive_record_richness": "swh:1:rev:1a3eb2cdf2523babea866a7d6016efb414d2aca2",
   "ensemble_vs_best_db_vs_sonnet": "swh:1:rev:05697acdef1c22b0152a82b02265dcf5fe22d355",
+  "evidence_corpus_vs_selected": "swh:1:rev:d5bf02cdf13023ed4c7f4f06fe4749b365e0161e",
   "paywall_bot_block_compare": "swh:1:rev:8ab41cc6ef790b01df229633fd35a6ef2a19e958",
   "topology_coverage_by_source": "swh:1:rev:609e15d5900bff0fda9c42dc55524d99871f1adc",
+  "triage_vs_deep_dive_reason": "swh:1:rev:63180540e9cdd254a9491da4dbcfce5b0b046b0a",
+  "web_preview": "swh:1:rev:3b0062e20f36c6dce22177c89d32803b2d553b81",
   "zero_db_rescues_by_triage": "swh:1:rev:fad84ac336a0ff94393ebc38b9af0339402a2037"
 }

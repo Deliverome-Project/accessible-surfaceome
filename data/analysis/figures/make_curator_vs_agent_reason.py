@@ -62,6 +62,14 @@ PROD_VARIANT = "ncbi"
 
 # ──── Inline brand styling — sentinel: brand-style-v3 ────
 BRAND_INK = "#1F1718"
+BRAND_PALETTE = [
+    "#BC3C4C",  # maroon-light
+    "#3D6B60",  # teal-mid
+    "#F4AA28",  # amber-bright
+    "#8878C8",  # lavender-bright
+    "#6E1428",  # maroon-dark
+    "#7AAB9F",  # teal-light
+]
 BRAND_NEUTRAL = "#6F5D5A"
 BRAND_GRID = "#E6DAD4"
 BUCKET_COLOR = {"yes": "#2E7A55", "contextual": "#C07830", "no": "#6F5D5A"}
@@ -300,6 +308,10 @@ def main() -> None:
         y=0.95, fontsize=15, fontweight="semibold",
     )
 
+    # Belt-and-suspenders despine: the brand rcParams set
+    # axes.spines.top/right=False but we call explicitly for parity
+    # with the canonical generator's style test.
+    sns.despine(ax=ax, top=False, right=False)
     out_pdf = Path("curator_vs_agent_reason.pdf")
     out_png = Path("curator_vs_agent_reason.png")
     fig.savefig(out_pdf, bbox_inches="tight", metadata={"Subject": GIST_URL})

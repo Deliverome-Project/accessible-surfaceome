@@ -53,6 +53,9 @@ TSV_BUNDLE: dict[str, list[str]] = {
     # that previously joined multiple sources now read pre-joined
     # per-figure TSVs produced by ``scripts/build_figure_tsvs.py``.
     # Tests in tests/test_gist_single_tsv.py enforce the invariant.
+    "bench_topology_vs_universe": [
+        "data/processed/figures/bench_topology_vs_universe.tsv",
+    ],
     "benchmark_cost_vs_accuracy": [
         "data/processed/figures/benchmark_cost_vs_accuracy.tsv",
     ],
@@ -77,14 +80,23 @@ TSV_BUNDLE: dict[str, list[str]] = {
     "deep_dive_final_categories": [
         "data/processed/figures/deep_dive_final_categories.tsv",
     ],
+    "deep_dive_record_richness": [
+        "data/processed/figures/deep_dive_record_richness.tsv",
+    ],
     "ensemble_vs_best_db_vs_sonnet": [
         "data/processed/figures/ensemble_vs_best_db_vs_sonnet.tsv",
+    ],
+    "evidence_corpus_vs_selected": [
+        "data/processed/figures/evidence_corpus_vs_selected.tsv",
     ],
     "paywall_bot_block_compare": [
         "data/processed/paywall_bot_block/paywall_bot_block_compare.tsv",
     ],
     "topology_coverage_by_source": [
         "data/analysis/db_vs_sonnet_inclusion/per_protein_features.tsv",
+    ],
+    "triage_vs_deep_dive_reason": [
+        "data/processed/figures/triage_vs_deep_dive_reason.tsv",
     ],
     "zero_db_rescues_by_triage": [
         "data/processed/catalog/whole_proteome_catalog.tsv",

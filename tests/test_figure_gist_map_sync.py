@@ -102,14 +102,23 @@ def test_every_mirror_with_gist_url_is_registered() -> None:
     )
 
 
+# Slugs whose gist bundles ONLY an author-drawn SVG mockup — no
+# reproduction script (so no make_<slug>.py) and no per-figure TSV.
+# These gists ship the SVG + README and that's it.
+_SVG_MOCKUP_SLUGS: set[str] = {"deep_dive_flow", "web_preview"}
+
+
 def test_every_registry_entry_has_a_mirror() -> None:
     """Reverse direction: every slug in ``gist_map.json`` must have a
     matching ``make_<slug>.py`` whose ``GIST_URL`` agrees. Catches
-    orphan registry entries from deleted/renamed figures."""
+    orphan registry entries from deleted/renamed figures. SVG-mockup
+    slugs are allowlisted (their gists ship the SVG + README only)."""
     registry = _load_registry()
     mirrors = _mirror_slugs_with_gist()
     orphans: list[str] = []
     for slug, gid in sorted(registry.items()):
+        if slug in _SVG_MOCKUP_SLUGS:
+            continue
         if slug not in mirrors:
             mirror_path = FIGURES_DIR / f"make_{slug}.py"
             if not mirror_path.is_file():
