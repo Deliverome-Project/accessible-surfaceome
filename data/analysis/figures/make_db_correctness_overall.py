@@ -126,9 +126,11 @@ def _apply_brand_style() -> None:
 
 
 # Model display order + Claude-orange palette (light → dark = larger model).
+# Sonnet 5 added 2026-06-30 — only ncbi variant sampled.
 MODEL_ORDER = [
     ("claude-haiku-4-5",  "Haiku 4.5",  "#f1c4ab"),
     ("claude-sonnet-4-6", "Sonnet 4.6", BRAND_CLAUDE_ORANGE),
+    ("claude-sonnet-5",   "Sonnet 5",   "#b35238"),
     ("claude-opus-4-8",   "Opus 4.8",   "#a85b3f"),
 ]
 

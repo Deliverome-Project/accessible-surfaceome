@@ -134,6 +134,7 @@ def _apply_brand_style() -> None:
 _PRICE = {
     "claude-haiku-4-5":  {"in": 1.00, "out": 5.00,  "cr": 0.10, "cw": 1.25},
     "claude-sonnet-4-6": {"in": 3.00, "out": 15.00, "cr": 0.30, "cw": 3.75},
+    "claude-sonnet-5":   {"in": 3.00, "out": 15.00, "cr": 0.30, "cw": 3.75},  # placeholder — confirm Anthropic list price
     "claude-opus-4-8":   {"in": 15.0, "out": 75.0,  "cr": 1.50, "cw": 18.75},
 }
 WEB_SEARCH_USD_PER_QUERY = 0.01
@@ -145,10 +146,11 @@ CELL_LABEL = {
     ("claude-haiku-4-5",  "ncbi"):        "Haiku (+ IDs)",
     ("claude-haiku-4-5",  "pubmed_ncbi"): "Haiku (+ IDs + PubMed)",
     ("claude-haiku-4-5",  "web_ncbi"):    "Haiku (+ IDs + web)",
-    ("claude-sonnet-4-6", "naive"):       "Sonnet (naive)",
-    ("claude-sonnet-4-6", "ncbi"):        "Sonnet (+ IDs)",
-    ("claude-sonnet-4-6", "pubmed_ncbi"): "Sonnet (+ IDs + PubMed)",
-    ("claude-sonnet-4-6", "web_ncbi"):    "Sonnet (+ IDs + web)",
+    ("claude-sonnet-4-6", "naive"):       "Sonnet 4.6 (naive)",
+    ("claude-sonnet-4-6", "ncbi"):        "Sonnet 4.6 (+ IDs)",
+    ("claude-sonnet-4-6", "pubmed_ncbi"): "Sonnet 4.6 (+ IDs + PubMed)",
+    ("claude-sonnet-4-6", "web_ncbi"):    "Sonnet 4.6 (+ IDs + web)",
+    ("claude-sonnet-5",   "ncbi"):        "Sonnet 5 (+ IDs)",
     ("claude-opus-4-8",   "naive"):       "Opus (naive)",
     ("claude-opus-4-8",   "ncbi"):        "Opus (+ IDs)",
 }
@@ -161,6 +163,7 @@ CELL_COLOR = {
     ("claude-sonnet-4-6", "ncbi"):        BRAND_CLAUDE_ORANGE,
     ("claude-sonnet-4-6", "pubmed_ncbi"): "#cb6f4a",
     ("claude-sonnet-4-6", "web_ncbi"):    "#c46139",
+    ("claude-sonnet-5",   "ncbi"):        "#b35238",
     ("claude-opus-4-8",   "naive"):       "#b66547",
     ("claude-opus-4-8",   "ncbi"):        "#a85b3f",
 }
@@ -179,6 +182,9 @@ CELL_LABEL_OFFSET = {
     ("claude-sonnet-4-6", "ncbi"):        (7,  10),
     ("claude-sonnet-4-6", "pubmed_ncbi"): (7, -20),
     ("claude-sonnet-4-6", "web_ncbi"):    (7,   6),
+    # Sonnet 5 (+ IDs) sits ~2pp below Sonnet 4.6 (+ IDs + PubMed) at a
+    # very similar cost; default (7, 10) would stack them, so push down.
+    ("claude-sonnet-5",   "ncbi"):        (7, -36),
     ("claude-opus-4-8",   "naive"):       (7, -18),
     ("claude-opus-4-8",   "ncbi"):        (7,  10),
 }
