@@ -68,6 +68,18 @@ TSV_BUNDLE: dict[str, list[str]] = {
     "paywall_bot_block_compare": [
         "data/processed/paywall_bot_block/paywall_bot_block_compare.tsv",
     ],
+    "positive_control_db_coverage_bars": [
+        "data/processed/figures/positive_control_db_coverage_bars.tsv",
+    ],
+    "bench_topology_vs_universe": [
+        "data/processed/figures/bench_topology_vs_universe.tsv",
+    ],
+    "triage_vs_deep_dive_reason": [
+        "data/processed/figures/triage_vs_deep_dive_reason.tsv",
+    ],
+    "evidence_corpus_vs_selected": [
+        "data/processed/figures/evidence_corpus_vs_selected.tsv",
+    ],
     "topology_coverage_by_source": [
         "data/analysis/db_vs_sonnet_inclusion/per_protein_features.tsv",
     ],
