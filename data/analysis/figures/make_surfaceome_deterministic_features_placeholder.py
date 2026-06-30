@@ -35,10 +35,8 @@ standalone — ``uv run make_surfaceome_deterministic_features_placeholder.py``.
 """
 from __future__ import annotations
 
-import io
 from pathlib import Path
 
-import httpx
 import matplotlib.font_manager as fm
 import matplotlib.pyplot as plt
 import pandas as pd
@@ -146,14 +144,18 @@ GROUP_COLOR = {
 
 
 def _fetch_tsv(url: str) -> pd.DataFrame:
-    """Sibling-first: when run from a published gist, the TSV is bundled
-    next to this script. Falls back to the raw URL otherwise."""
+    """Sibling-only: bundled TSV must sit next to this script. No
+    network fetch — the gist is the single citable reproduction unit."""
     sibling = Path(__file__).parent / Path(url).name
     if sibling.is_file():
         return pd.read_csv(sibling, sep="\t")
-    r = httpx.get(url, timeout=30)
-    r.raise_for_status()
-    return pd.read_csv(io.StringIO(r.text), sep="\t")
+    local = Path(__file__).resolve().parents[3] / url[len(BASE) + 1:]
+    if local.is_file():
+        return pd.read_csv(local, sep="\t")
+    raise FileNotFoundError(
+        f"TSV not found at sibling ({sibling.name}) or local ({local}). "
+        f"In a gist, the bundled TSV must sit next to this script."
+    )
 
 
 def _embed_source_in_metadata(out_path: Path, url: str) -> None:
@@ -199,7 +201,7 @@ def render(feats: pd.DataFrame, out_dir: Path) -> Path:
                 vals = feats.loc[feats["group"] == g, col].dropna().tolist()
                 data.append(vals)
             bp = ax.boxplot(
-                data, labels=[GROUP_LABEL[g] for g in GROUPS], patch_artist=True,
+                data, tick_labels=[GROUP_LABEL[g] for g in GROUPS], patch_artist=True,
                 medianprops=dict(color="white", linewidth=1.5),
                 showfliers=False,
             )
