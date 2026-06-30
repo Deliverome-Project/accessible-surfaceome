@@ -97,52 +97,31 @@ CONTEXTUAL_PALETTE = {
 YES_HEADER_COLOR = "#2E7A55"
 CONTEXTUAL_HEADER_COLOR = "#8C4210"
 
-# Callouts: db=0 rescues. The triage agent reports its own confidence
-# per call (low/medium/high). YES callouts are all HIGH-confidence;
-# CONTEXTUAL callouts mix HIGH (gasdermin pore-formers) with reputable
-# MEDIUM picks where the agent's MEDIUM rating reflects mechanism-detail
-# nuance (anchoring partner, state-dependence) rather than skepticism
-# about whether surface display occurs — each MEDIUM pick has direct
-# surface flow-cytometry / biotinylation evidence in the published
-# literature. Each `reason` is verified at runtime against
-# `triage.reason` in the catalog — the script raises RuntimeError if
-# any callout symbol is missing from the expected (verdict, reason) slot.
-# Ordered to match the per-reason bar order in the panel above
-# (YES_REASONS / CONTEXTUAL_REASONS), so callouts read top-to-bottom in
-# the same sequence as the bars left-to-right.
+# Callouts: db=0 rescues, ONE exemplar per reason. The triage agent
+# reports its own confidence per call (low/medium/high); the named picks
+# below have direct surface flow-cytometry / biotinylation evidence in
+# the published literature regardless of the agent's confidence rating.
+# Each `reason` is verified at runtime against `triage.reason` in the
+# catalog — the script raises RuntimeError if any callout symbol is
+# missing from the expected (verdict, reason) slot. Ordered to match the
+# per-reason bar order in the panel above (YES_REASONS /
+# CONTEXTUAL_REASONS), so callouts read top-to-bottom in the same
+# sequence as the bars left-to-right. The "other" bucket is a catch-all
+# and gets no named exemplar.
 YES_CALLOUTS = [
     ("LVRN",    "Laeverin/APQ — trophoblast surface peptidase", "classical_surface_receptor"),
-    ("ECEL1",   "Type-II TM; neprilysin/M13 family",   "classical_surface_receptor"),
     ("STEAP3",  "Six-TM metalloreductase; STEAP family", "multipass_with_exposed_loops"),
-    ("RHCE",    "Rh blood-group surface antigen",      "multipass_with_exposed_loops"),
     ("NYX",     "GPI-anchored nyctalopin (retinal SLRP)", "gpi_anchored"),
     ("LY96",    "MD-2 — TLR4 co-receptor",             "stable_complex_partner"),
 ]
 CONTEXTUAL_CALLOUTS = [
-    ("KLK2",    "Prostate kallikrein",                 "tissue_restricted_surface"),
-    ("KLK3",    "PSA; prostate kallikrein",            "dual_localization"),
-    ("GSDME",   "Gasdermin E — pyroptosis pores",      "cell_state_induced"),
-    ("HSPA1A",  "Surface Hsp70; cmHsp70.1 mAb",        "cell_state_induced"),
+    ("KLK3",    "PSA; secreted + cell-surface prostate kallikrein", "dual_localization"),
+    ("KLK2",    "hK2; prostate-restricted kallikrein", "tissue_restricted_surface"),
     ("MMP9",    "Gelatinase B; cell-surface zymogen",  "stable_surface_attachment"),
-    ("LRG1",    "Leucine-rich α2-glycoprotein",        "stable_surface_attachment"),
-    ("IL15",    "Surface trans-presentation via IL-15Rα", "dual_localization"),
-    ("HPSE",    "Surface heparanase on activated platelets / tumor cells",
+    ("GSDME",   "Gasdermin E — pyroptosis pores",      "cell_state_induced"),
+    ("HPSE",    "Heparanase; surface on activated platelets / tumor cells",
                                                        "lysosomal_exocytosis"),
 ]
-
-# Clinical-target overlay (manually curated; verified against the
-# ADCdb + T-cell-engager positive-control panels on the PR87 branch
-# `claude/positive-controls-on-86`, 2026-06). These optimized zero-DB
-# rescues are also approved/clinical ADC or TCE targets — the
-# strongest validation that the agent recovers real, actionable
-# surface biology the gating databases miss. NOTE: this is a hand
-# annotation, NOT a data join (per design decision — the ADC/TCE TSVs
-# live in PR87); reconcile into a proper join when PR87 merges. Of the
-# eight, all are ADCdb targets and KLK2 is additionally a TCE target.
-CLINICAL_TARGETS = {
-    "KLK2": "ADC + TCE", "KLK3": "ADC", "GSDME": "ADC", "HSPA1A": "ADC",
-    "MMP9": "ADC", "LRG1": "ADC", "ASPH": "ADC", "FMOD": "ADC",
-}
 
 
 def _load_catalog_rows() -> list[dict]:
@@ -265,20 +244,6 @@ def _draw_callouts(ax, callouts: list[tuple[str, str, str]], palette: dict, titl
             transform=ax.transAxes, ha="left", va="center",
             fontsize=16, color=COLORS["neutral"],
         )
-        # Clinical-target badge: mark callouts that are also approved/
-        # clinical ADC or TCE targets (ADCdb / TCE panel). KLK2 (ADC+TCE)
-        # gets the brand-primary maroon; ADC-only gets the teal accent.
-        modality = CLINICAL_TARGETS.get(symbol)
-        if modality:
-            badge_color = COLORS["primary"] if "TCE" in modality else COLORS["secondary"]
-            ax.text(
-                0.985, y, modality,
-                transform=ax.transAxes, ha="right", va="center",
-                fontsize=13, fontweight="bold", color="white",
-                bbox={"boxstyle": "round,pad=0.3", "facecolor": badge_color,
-                      "edgecolor": "none"},
-                zorder=11,
-            )
 
 
 def main() -> None:

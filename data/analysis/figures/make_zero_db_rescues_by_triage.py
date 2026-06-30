@@ -190,38 +190,26 @@ CONTEXTUAL_PALETTE = {
 YES_HEADER_COLOR = "#2E7A55"
 CONTEXTUAL_HEADER_COLOR = "#8C4210"
 
-# Ordered to match the per-reason bar order in the panel above
-# (YES_REASONS / CONTEXTUAL_REASONS), so callouts read top-to-bottom in
-# the same sequence as the bars left-to-right.
+# One callout per reason, in the same order as the per-reason bars
+# (YES_REASONS / CONTEXTUAL_REASONS), so the callout column reads
+# top-to-bottom in the same sequence as the bars left-to-right. The
+# "other" bucket is a catch-all and gets no named exemplar. Each picked
+# symbol is verified at runtime against the (verdict, reason) slot.
+# Keep in sync with scripts/zero_db_rescues_by_triage.py.
 YES_CALLOUTS = [
     ("LVRN",    "Laeverin/APQ — trophoblast surface peptidase", "classical_surface_receptor"),
-    ("ECEL1",   "Type-II TM; neprilysin/M13 family",   "classical_surface_receptor"),
     ("STEAP3",  "Six-TM metalloreductase; STEAP family", "multipass_with_exposed_loops"),
-    ("RHCE",    "Rh blood-group surface antigen",      "multipass_with_exposed_loops"),
     ("NYX",     "GPI-anchored nyctalopin (retinal SLRP)", "gpi_anchored"),
     ("LY96",    "MD-2 — TLR4 co-receptor",             "stable_complex_partner"),
 ]
 CONTEXTUAL_CALLOUTS = [
-    ("KLK2",    "Prostate kallikrein",                 "tissue_restricted_surface"),
-    ("KLK3",    "PSA; prostate kallikrein",            "dual_localization"),
-    ("GSDME",   "Gasdermin E — pyroptosis pores",      "cell_state_induced"),
-    ("HSPA1A",  "Surface Hsp70; cmHsp70.1 mAb",        "cell_state_induced"),
+    ("KLK3",    "PSA; secreted + cell-surface prostate kallikrein", "dual_localization"),
+    ("KLK2",    "hK2; prostate-restricted kallikrein", "tissue_restricted_surface"),
     ("MMP9",    "Gelatinase B; cell-surface zymogen",  "stable_surface_attachment"),
-    ("LRG1",    "Leucine-rich α2-glycoprotein",        "stable_surface_attachment"),
-    ("IL15",    "Surface trans-presentation via IL-15Rα", "dual_localization"),
-    ("HPSE",    "Surface heparanase on activated platelets / tumor cells",
+    ("GSDME",   "Gasdermin E — pyroptosis pores",      "cell_state_induced"),
+    ("HPSE",    "Heparanase; surface on activated platelets / tumor cells",
                                                        "lysosomal_exocytosis"),
 ]
-
-# Clinical-target overlay — manually curated, verified against the
-# ADCdb + T-cell-engager positive-control panels on the PR87 branch
-# `claude/positive-controls-on-86` (2026-06). Hand annotation, NOT a
-# data join (the ADC/TCE TSVs live in PR87); reconcile to a join when
-# PR87 merges. Keep in sync with scripts/zero_db_rescues_by_triage.py.
-CLINICAL_TARGETS = {
-    "KLK2": "ADC + TCE", "KLK3": "ADC", "GSDME": "ADC", "HSPA1A": "ADC",
-    "MMP9": "ADC", "LRG1": "ADC", "ASPH": "ADC", "FMOD": "ADC",
-}
 
 
 def _load_catalog() -> list[dict]:
@@ -334,20 +322,6 @@ def _draw_callouts(ax, callouts, palette, title):
             transform=ax.transAxes, ha="left", va="center",
             fontsize=15, color=BRAND_NEUTRAL,
         )
-        # Clinical-target badge — approved/clinical ADC or TCE targets
-        # (ADCdb / TCE panel). KLK2 (ADC+TCE) = brand maroon; ADC-only
-        # = teal. Keep in sync with scripts/zero_db_rescues_by_triage.py.
-        modality = CLINICAL_TARGETS.get(symbol)
-        if modality:
-            badge_color = "#BC3C4C" if "TCE" in modality else "#3D6B60"
-            ax.text(
-                0.985, y, modality,
-                transform=ax.transAxes, ha="right", va="center",
-                fontsize=13, fontweight="bold", color="white",
-                bbox={"boxstyle": "round,pad=0.3", "facecolor": badge_color,
-                      "edgecolor": "none"},
-                zorder=11,
-            )
 
 
 def main() -> None:
