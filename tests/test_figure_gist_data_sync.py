@@ -30,24 +30,26 @@ from pathlib import Path
 import pytest
 
 # Mirror the sync helper's TSV bundle so this test doesn't depend on
-# importing the script (which lives outside the test path).
+# importing the script (which lives outside the test path). Keep
+# strictly in sync with TSV_BUNDLE in
+# ``scripts/sync_figure_gists_bundle_data.py`` — every slug here maps
+# to exactly ONE bundled TSV (the single-TSV-per-gist invariant
+# enforced by ``tests/test_gist_single_tsv.py``).
 TSV_BUNDLE: dict[str, list[str]] = {
+    "bench_topology_vs_universe": [
+        "data/processed/figures/bench_topology_vs_universe.tsv",
+    ],
     "benchmark_cost_vs_accuracy": [
-        "data/eval/triage_benchmark_v1.tsv",
-        "data/processed/triage_bench/mainbench_canonical_v2.tsv",
-        "data/processed/triage_bench/mainbench_replicates_v2.tsv",
+        "data/processed/figures/benchmark_cost_vs_accuracy.tsv",
+    ],
+    "curator_vs_agent_reason": [
+        "data/processed/figures/curator_vs_agent_reason.tsv",
     ],
     "db_correctness_by_class": [
-        "data/eval/triage_benchmark_v1.tsv",
-        "data/processed/catalog/whole_proteome_catalog.tsv",
-        "data/processed/triage_bench/mainbench_canonical_v2.tsv",
-        "data/processed/triage_bench/mainbench_replicates_v2.tsv",
-        "data/processed/triage_bench/db_optimized_cutoffs.tsv",
+        "data/processed/figures/db_correctness_by_class.tsv",
     ],
     "db_correctness_overall": [
-        "data/eval/triage_benchmark_v1.tsv",
-        "data/processed/triage_bench/mainbench_canonical_v2.tsv",
-        "data/processed/triage_bench/mainbench_replicates_v2.tsv",
+        "data/processed/figures/db_correctness_overall.tsv",
     ],
     "db_cutoff_tradeoff": [
         "data/processed/triage_bench/db_cutoff_tradeoff_points.tsv",
@@ -56,20 +58,28 @@ TSV_BUNDLE: dict[str, list[str]] = {
         "data/processed/catalog/whole_proteome_catalog.tsv",
     ],
     "db_vs_sonnet_whole_proteome": [
-        "data/processed/catalog/whole_proteome_catalog.tsv",
-        "data/processed/triage_bench/db_optimized_cutoffs.tsv",
+        "data/processed/figures/db_vs_sonnet_whole_proteome.tsv",
+    ],
+    "deep_dive_final_categories": [
+        "data/processed/figures/deep_dive_final_categories.tsv",
+    ],
+    "deep_dive_record_richness": [
+        "data/processed/figures/deep_dive_record_richness.tsv",
     ],
     "ensemble_vs_best_db_vs_sonnet": [
-        "data/eval/triage_benchmark_v1.tsv",
-        "data/processed/catalog/whole_proteome_catalog.tsv",
-        "data/processed/triage_bench/mainbench_canonical_v2.tsv",
-        "data/processed/triage_bench/mainbench_replicates_v2.tsv",
+        "data/processed/figures/ensemble_vs_best_db_vs_sonnet.tsv",
+    ],
+    "evidence_corpus_vs_selected": [
+        "data/processed/figures/evidence_corpus_vs_selected.tsv",
     ],
     "paywall_bot_block_compare": [
         "data/processed/paywall_bot_block/paywall_bot_block_compare.tsv",
     ],
     "topology_coverage_by_source": [
         "data/analysis/db_vs_sonnet_inclusion/per_protein_features.tsv",
+    ],
+    "triage_vs_deep_dive_reason": [
+        "data/processed/figures/triage_vs_deep_dive_reason.tsv",
     ],
     "zero_db_rescues_by_triage": [
         "data/processed/catalog/whole_proteome_catalog.tsv",
