@@ -97,10 +97,12 @@ CONTEXTUAL_PALETTE = {
 YES_HEADER_COLOR = "#2E7A55"
 CONTEXTUAL_HEADER_COLOR = "#8C4210"
 
-# Callouts: db=0 rescues, ONE exemplar per reason. The triage agent
-# reports its own confidence per call (low/medium/high); the named picks
-# below have direct surface flow-cytometry / biotinylation evidence in
-# the published literature regardless of the agent's confidence rating.
+# Callouts: db=0 rescues, one exemplar per reason — plus a SECOND for the
+# two clinically-rich contextual reasons (stable-attachment: MMP9 + LRG1;
+# cell-state: GSDME + HSPA1A), each a clinical/clinical-stage target. The
+# triage agent reports its own confidence per call (low/medium/high); the
+# named picks below have direct surface flow-cytometry / biotinylation
+# evidence in the published literature regardless of the agent's rating.
 # Each `reason` is verified at runtime against `triage.reason` in the
 # catalog — the script raises RuntimeError if any callout symbol is
 # missing from the expected (verdict, reason) slot. Ordered to match the
@@ -118,7 +120,9 @@ CONTEXTUAL_CALLOUTS = [
     ("IL15",    "Secreted + surface trans-presentation via IL-15Rα", "dual_localization"),
     ("KLK2",    "hK2; prostate-restricted kallikrein", "tissue_restricted_surface"),
     ("MMP9",    "Gelatinase B; cell-surface zymogen",  "stable_surface_attachment"),
+    ("LRG1",    "Leucine-rich α2-glycoprotein; cell-surface/ECM-tethered", "stable_surface_attachment"),
     ("GSDME",   "Gasdermin E — pyroptosis pores",      "cell_state_induced"),
+    ("HSPA1A",  "Surface Hsp70; cmHsp70.1 mAb",        "cell_state_induced"),
     ("HPSE",    "Heparanase; surface on activated platelets / tumor cells",
                                                        "lysosomal_exocytosis"),
 ]
