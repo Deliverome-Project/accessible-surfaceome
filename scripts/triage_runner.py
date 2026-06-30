@@ -126,6 +126,7 @@ CANONICAL_TRIAGE_RUN_ID = "genome_full_sonnet_ncbi_v2"
 # a reader scanning the dict sees the right answer up top.
 MODEL_PRICING: dict[str, tuple[float, float]] = {
     "claude-sonnet-4-6": (3.0, 15.0),   # canonical production triage model
+    "claude-sonnet-5":   (3.0, 15.0),   # placeholder — confirm Anthropic list price
     "claude-haiku-4-5":  (1.0, 5.0),
     "claude-opus-4-7":   (15.0, 75.0),
     "claude-opus-4-8":   (15.0, 75.0),  # same list price as 4-7

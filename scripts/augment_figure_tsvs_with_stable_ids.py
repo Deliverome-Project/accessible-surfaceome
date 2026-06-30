@@ -165,58 +165,36 @@ def _load_bench_index() -> dict[str, dict[str, str]]:
     """Return ``{gene_symbol: {class, ground_truth_verdict}}`` for the
     canonical benchmark.
 
-    Truth labels are sourced from public D1's ``benchmark_version`` — the
-    SAME version-pinned origin the live Worker serves (latest bench_version
-    wins, matching the Worker's ``ORDER BY bench_version DESC LIMIT 1``).
-    The working-tree ``triage_benchmark_v1.tsv`` is NOT the source of truth:
-    it is an uncommitted file that can silently revert (and did), which
-    would stamp stale labels into the figure TSVs. Reading D1 ties the
-    figure labels to the published benchmark instead.
+    Truth labels are sourced from the **committed** working-tree TSV
+    ``data/eval/triage_benchmark_v1.tsv`` — the human-curated, code-
+    reviewed source of bench ground truth. Reading from D1's
+    ``benchmark_version`` (the previous behavior) was an anti-pattern:
+    D1 stores multiple historical versions of the bench, the picker
+    heuristic was brittle (lex sort, row-count, recency all picked
+    different winners at different times), and the figures' truth
+    labels could silently regress on a stale D1 read — exactly what
+    happened on 2026-06-30 when a heuristic picked an old
+    ``fc7ddee89155`` snapshot and downgraded HMGB1 / DLL3 truth
+    labels from the curator's intent. The committed TSV is git-
+    tracked, code-reviewed, drift-guarded by
+    ``tests/test_mainbench_truth_drift.py``, and is the canonical
+    source per PR #86's "builder → committed TSV → consumers" spine.
 
-    Falls back to the local TSV only if D1 is unreachable (offline / no
-    credentials), with a loud warning — so an offline run still produces a
-    file, but the operator knows the labels weren't origin-verified.
+    This function used to fall back to the local TSV only if D1
+    failed; that fallback is now the primary (and only) path.
     """
-    try:
-        ver_rows = _query_public(
-            "SELECT bench_version FROM benchmark_version "
-            "ORDER BY bench_version DESC LIMIT 1"
-        )
-        if not ver_rows:
-            raise RuntimeError("benchmark_version is empty in public D1")
-        bench_version = ver_rows[0]["bench_version"]
-        rows = _query_public(
-            "SELECT gene_symbol, class, truth_verdict FROM benchmark_version "
-            "WHERE bench_version = ?",
-            [bench_version],
-        )
-        out: dict[str, dict[str, str]] = {}
-        for r in rows:
-            sym = str(r.get("gene_symbol") or "").strip()
-            if not sym:
-                continue
-            out[sym] = {
-                "class": str(r.get("class") or ""),
-                "ground_truth_verdict": str(r.get("truth_verdict") or ""),
-            }
-        print(f"  bench truth from public D1 benchmark_version="
-              f"{bench_version} ({len(out)} genes)")
-        return out
-    except Exception as exc:  # noqa: BLE001
-        print(f"  WARNING: could not load bench truth from public D1 ({exc}); "
-              f"falling back to working-tree {BENCH_TSV.name} — labels are "
-              f"NOT origin-verified for this run.")
-        _, rows = _read_tsv(BENCH_TSV)
-        out = {}
-        for r in rows:
-            sym = (r.get("gene_symbol") or "").strip()
-            if not sym:
-                continue
-            out[sym] = {
-                "class": r.get("class") or "",
-                "ground_truth_verdict": r.get("ground_truth_verdict") or "",
-            }
-        return out
+    _, rows = _read_tsv(BENCH_TSV)
+    out: dict[str, dict[str, str]] = {}
+    for r in rows:
+        sym = (r.get("gene_symbol") or "").strip()
+        if not sym:
+            continue
+        out[sym] = {
+            "class": r.get("class") or "",
+            "ground_truth_verdict": r.get("ground_truth_verdict") or "",
+        }
+    print(f"  bench truth from committed {BENCH_TSV.name} ({len(out)} genes)")
+    return out
 
 
 def _is_soft_match(predicted: str, truth: str) -> int:
@@ -390,26 +368,14 @@ def augment_triage_benchmark(
         v, why = sonnet.get(sym, ("", ""))
         r["sonnet_verdict"] = v
         r["sonnet_reason"] = why
-    # Reconcile the TSV's own truth columns against the D1 origin. Corrects
-    # any working-tree drift (e.g. a revert that dropped a relabel) so the
-    # on-repo bench TSV matches the published benchmark_version.
-    corrected: list[str] = []
-    for r in rows:
-        sym = (r.get("gene_symbol") or "").strip()
-        b = bench.get(sym)
-        if not b:
-            continue
-        d1_verdict = b["ground_truth_verdict"]
-        d1_class = b["class"]
-        if d1_verdict and r.get("ground_truth_verdict") != d1_verdict:
-            corrected.append(f"{sym}: {r.get('ground_truth_verdict')!r}→{d1_verdict!r}")
-            r["ground_truth_verdict"] = d1_verdict
-        if d1_class and r.get("class") and r.get("class") != d1_class:
-            # class rarely drifts; reconcile but don't spam the verdict list
-            r["class"] = d1_class
-    if corrected:
-        print(f"  RECONCILED {len(corrected)} bench truth label(s) from D1 origin: "
-              + ", ".join(corrected))
+    # Truth-label reconciliation block removed 2026-06-30. It used to
+    # cross-check the TSV's ground_truth_verdict against a D1 origin
+    # and overwrite divergent rows — but D1's `benchmark_version` is
+    # now no longer the source. The committed TSV is. A "reconcile"
+    # against itself would be a no-op and the loop misleadingly
+    # implied D1 was authoritative. The truth-drift guard
+    # `tests/test_mainbench_truth_drift.py` is the right place to
+    # catch label regressions in the committed TSV.
     _write_tsv(BENCH_TSV, fields, rows)
     return len(rows), matched
 
@@ -571,7 +537,7 @@ def main() -> int:
     deep_dive = _load_deep_dive_index()
     print(f"  {len(deep_dive):,} genes with a published SurfaceomeRecord")
 
-    print("Loading bench truth from public D1 benchmark_version (origin) ...")
+    print("Loading bench truth ...")
     bench = _load_bench_index()
     print(f"  {len(bench):,} curated bench rows")
 

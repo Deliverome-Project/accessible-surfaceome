@@ -89,18 +89,23 @@ LLM_CELLS: list[tuple[str, str, str]] = [
     ("_llm_sonnet_ncbi",        "sonnet-4-6", "ncbi"),
     ("_llm_sonnet_pubmed_ncbi", "sonnet-4-6", "pubmed_ncbi"),
     ("_llm_sonnet_web_ncbi",    "sonnet-4-6", "web_ncbi"),
-    ("_llm_opus_naive",         "opus-4-7",   "naive"),
-    ("_llm_opus_ncbi",          "opus-4-7",   "ncbi"),
+    # Sonnet 5 added 2026-06-30 — ncbi only (head-to-head model compare
+    # with Sonnet 4.6's canonical ncbi cell). No naive/pubmed/web variants
+    # sampled yet.
+    ("_llm_sonnet5_ncbi",       "sonnet-5",   "ncbi"),
+    ("_llm_opus_naive",         "opus-4-8",   "naive"),
+    ("_llm_opus_ncbi",          "opus-4-8",   "ncbi"),
 ]
 LLM_LABEL = {
     "_llm_haiku_naive":        "Haiku (naive)",
     "_llm_haiku_ncbi":         "Haiku (+ IDs)",
     "_llm_haiku_pubmed_ncbi":  "Haiku (+ IDs + PubMed)",
     "_llm_haiku_web_ncbi":     "Haiku (+ IDs + web)",
-    "_llm_sonnet_naive":       "Sonnet (naive)",
-    "_llm_sonnet_ncbi":        "Sonnet (+ IDs)",
-    "_llm_sonnet_pubmed_ncbi": "Sonnet (+ IDs + PubMed)",
-    "_llm_sonnet_web_ncbi":    "Sonnet (+ IDs + web)",
+    "_llm_sonnet_naive":       "Sonnet 4.6 (naive)",
+    "_llm_sonnet_ncbi":        "Sonnet 4.6 (+ IDs)",
+    "_llm_sonnet_pubmed_ncbi": "Sonnet 4.6 (+ IDs + PubMed)",
+    "_llm_sonnet_web_ncbi":    "Sonnet 4.6 (+ IDs + web)",
+    "_llm_sonnet5_ncbi":       "Sonnet 5 (+ IDs)",
     "_llm_opus_naive":         "Opus (naive)",
     "_llm_opus_ncbi":          "Opus (+ IDs)",
     "_llm_combined":           "Combined (Haiku→Sonnet)",
@@ -128,6 +133,7 @@ LLM_PALETTE = {
     "_llm_sonnet_ncbi":        "#d87851",   # base Claude
     "_llm_sonnet_pubmed_ncbi": "#cb6f4a",   # base+, sits between ncbi and web
     "_llm_sonnet_web_ncbi":    "#c46139",   # shade 12%
+    "_llm_sonnet5_ncbi":       "#b35238",   # Sonnet 5 — between sonnet_web_ncbi and opus_naive
     "_llm_opus_naive":         "#b66547",   # shade 18% — sits before opus_ncbi
     "_llm_opus_ncbi":          "#a85b3f",   # shade 25%
     "_llm_combined":           "#7a3b25",   # shade 50%
@@ -222,10 +228,14 @@ def _dump_db_optimized_cutoffs() -> None:
 def _load_all_mainbench_records() -> list[dict]:
     """Pull every per-cell main-bench record from D1 in a single round-trip.
 
-    Lazy-cached via ``functools.cache`` so repeated calls within one
-    script run share one D1 query (we hit it from ``_load_llm_predictions``
-    once per LLM cell + ``_cell_cost_per_call`` once per cell, ~21 calls
-    total without the cache).
+    Returns ALL replicates (3 per cell). Callers that want a single-rep
+    view filter on ``replicate`` themselves (e.g. ``_load_llm_predictions``
+    keeps rep=1 for the legacy point-estimate accuracy path).
+    ``_per_rep_accuracy_by_cell`` sees the full set so the bar plot can
+    render mean ± SEM with all 3 dots.
+
+    Lazy-cached via ``_MAINBENCH_CACHE`` so repeated calls within one
+    script run share one D1 query.
     """
     from accessible_surfaceome.cloud.d1_client import D1Client
     from accessible_surfaceome.env import load_env
@@ -239,7 +249,7 @@ def _load_all_mainbench_records() -> list[dict]:
             "       prompt_tokens, completion_tokens, "
             "       cache_creation_tokens, cache_read_tokens, "
             "       n_web_searches, cost_usd, latency_s "
-            "FROM triage_run WHERE run_id = ? AND replicate = 1;",
+            "FROM triage_run WHERE run_id = ?;",
             [MAINBENCH_D1_RUN_ID],
         )
 
@@ -268,7 +278,9 @@ def _load_llm_predictions(model: str, variant: str) -> dict[str, dict]:
     return {
         r["gene_symbol"]: r
         for r in _mainbench_records()
-        if r["model"] == model_full and r["prompt_variant"] == variant
+        if r["model"] == model_full
+        and r["prompt_variant"] == variant
+        and r["replicate"] == 1
     }
 
 
@@ -641,17 +653,56 @@ def make_by_class_plot(out_dir: Path, *, filename: str = "db_correctness_by_clas
     plt.close(fig)
 
 
-def make_overall_plot(out_dir: Path, *, filename: str = "db_correctness_overall") -> None:
-    """LLM-only overall accuracy, grouped by model with hatched variants.
+def _per_rep_accuracy_by_cell() -> dict[tuple[str, str], list[float]]:
+    """Soft-credit accuracy per replicate for every D1 (model_full, variant) cell.
 
-    Drops the M1 DB rows (they're in the by-class plot for direct LLM
-    vs DB comparison). Within each model group (Haiku / Sonnet / Opus),
-    one bar per variant — color encodes the model, hatch pattern
-    encodes the variant.
+    Returns ``{(claude-<model>, variant): [acc_rep1, acc_rep2, ...]}``. Used by
+    ``make_overall_plot`` so each bar's height is the mean-across-reps with
+    a SEM error bar and individual rep dots — the canonical generator's
+    previous pooled ``overall_accuracy()`` collapsed this information.
+
+    Soft-credit rule (matches ``_is_soft_match`` in
+    ``scripts/augment_figure_tsvs_with_stable_ids.py``): predicted yes ↔
+    contextual interchangeable; everything else exact-match.
+    """
+    bench, _ = load_benchmark_with_votes()
+    # load_benchmark_with_votes yields records keyed on "gene" (the bench
+    # TSV's column name) — not "gene_symbol". Track that down here so the
+    # join below actually finds a truth label for every cell.
+    truth_by_gene = {p["gene"]: p["verdict"] for p in bench}
+
+    correct_total: dict[tuple[str, str, int], list[int]] = defaultdict(lambda: [0, 0])
+    for r in _mainbench_records():
+        truth = truth_by_gene.get(r["gene_symbol"])
+        if truth is None:
+            continue
+        pv = (r.get("predicted_verdict") or "").strip()
+        is_match = 0
+        if pv and truth:
+            if pv == truth or (pv in ("yes", "contextual") and truth in ("yes", "contextual")):
+                is_match = 1
+        key = (r["model"], r["prompt_variant"], r["replicate"])
+        correct_total[key][0] += is_match
+        correct_total[key][1] += 1
+
+    out: dict[tuple[str, str], list[float]] = defaultdict(list)
+    for (model_full, variant, _rep), (n_correct, n_total) in sorted(correct_total.items()):
+        if n_total > 0:
+            out[(model_full, variant)].append(n_correct / n_total)
+    return dict(out)
+
+
+def make_overall_plot(out_dir: Path, *, filename: str = "db_correctness_overall") -> None:
+    """LLM-only overall accuracy on the 147-gene bench.
+
+    Bar height = mean of per-replicate soft-credit accuracies. SEM error
+    bars + individual per-rep scatter points overlaid so the run-to-run
+    variability is visible (3 reps per cell). Color encodes the model;
+    hatch pattern encodes the prompt variant.
     """
 
     setup_plotting_style(style="whitegrid", context="notebook", font_scale=1.0)
-    overall = overall_accuracy()
+    rep_acc = _per_rep_accuracy_by_cell()
 
     # Group LLM cells by model. Variant order = light-to-dark context
     # walk so the hatch pattern reads as "amount of resolver / web /
@@ -672,16 +723,18 @@ def make_overall_plot(out_dir: Path, *, filename: str = "db_correctness_overall"
         "pubmed_ncbi":  "...",
     }
     # One base color per model, sequential Claude orange light → dark.
-    MODEL_ORDER = ["haiku-4-5", "sonnet-4-6", "opus-4-7"]
+    MODEL_ORDER = ["haiku-4-5", "sonnet-4-6", "sonnet-5", "opus-4-8"]
     MODEL_LABEL = {
         "haiku-4-5":  "Haiku 4.5",
         "sonnet-4-6": "Sonnet 4.6",
-        "opus-4-7":   "Opus 4.7",
+        "sonnet-5":   "Sonnet 5",
+        "opus-4-8":   "Opus 4.8",
     }
     MODEL_COLOR = {
         "haiku-4-5":  "#f1c4ab",
         "sonnet-4-6": "#d87851",
-        "opus-4-7":   "#a85b3f",
+        "sonnet-5":   "#b35238",
+        "opus-4-8":   "#a85b3f",
     }
     # Bucket: model → list of (variant, vote_key) actually run for that
     # model in this benchmark.
@@ -713,27 +766,50 @@ def make_overall_plot(out_dir: Path, *, filename: str = "db_correctness_overall"
             key=lambda vk: VARIANT_ORDER.index(vk[0]) if vk[0] in VARIANT_ORDER else 99,
         )
         model_block_start = x
+        model_full = f"claude-{model_slug}"
+        n_drawn = 0
         for variant, vote_key in cells_sorted:
-            label = LLM_LABEL[vote_key]
-            acc = overall[label]
+            reps = rep_acc.get((model_full, variant), [])
+            if not reps:
+                # No D1 rows for this cell — skip rather than draw an
+                # empty / 0-height bar. Was the failure mode that drew
+                # phantom 33.3% bars for `opus-4-7` when D1 only had
+                # `claude-opus-4-8`.
+                continue
+            mean_acc = sum(reps) / len(reps)
             color = MODEL_COLOR[model_slug]
             hatch = VARIANT_HATCH.get(variant, "")
             ax.bar(
-                x, acc, width=bar_width,
+                x, mean_acc, width=bar_width,
                 color=color,
                 edgecolor=COLORS["dark"],
                 linewidth=0.6,
                 hatch=hatch,
+                zorder=3,
             )
+            # SEM error bar — needs ≥ 2 reps.
+            if len(reps) >= 2:
+                sd = (sum((v - mean_acc) ** 2 for v in reps) / (len(reps) - 1)) ** 0.5
+                sem = sd / (len(reps) ** 0.5)
+                ax.errorbar(
+                    x, mean_acc, yerr=sem, fmt="none",
+                    ecolor=COLORS["dark"], elinewidth=1.0, capsize=3, capthick=1.0,
+                    zorder=4,
+                )
+            # Individual per-rep dots, jittered within the bar so coincident
+            # values don't fully overlap.
+            for j, rv in enumerate(reps):
+                jitter = (j - (len(reps) - 1) / 2) * (bar_width * 0.18)
+                ax.scatter(
+                    x + jitter, rv, s=18, color=COLORS["dark"],
+                    edgecolor="white", linewidth=0.5, zorder=5, alpha=0.85,
+                )
             ax.text(
-                x, acc + 0.012,
-                f"{acc:.1%}",
+                x, mean_acc + 0.018,
+                f"{mean_acc:.1%}",
                 ha="center", va="bottom",
                 fontsize=10, color=COLORS["dark"],
             )
-            # Collect legend entries once per variant (color-agnostic
-            # since hatch defines the variant; use neutral grey for
-            # the legend swatch).
             if variant not in legend_seen_variants:
                 legend_seen_variants.add(variant)
                 legend_handles.append(
@@ -747,16 +823,24 @@ def make_overall_plot(out_dir: Path, *, filename: str = "db_correctness_overall"
                 )
                 legend_labels.append(VARIANT_LABEL[variant])
             x += bar_width + inter_variant_gap
-        # Center the model label under the block of variant bars.
-        block_center = (model_block_start + (x - inter_variant_gap - bar_width)) / 2 + bar_width / 2
-        tick_positions.append(block_center)
-        tick_labels.append(MODEL_LABEL[model_slug])
+            n_drawn += 1
+        # Center the model label under the block of variant bars that
+        # we actually drew — using cells_sorted's count would mis-center
+        # when a cell is skipped for missing data.
+        if n_drawn > 0:
+            block_end = x - inter_variant_gap - bar_width
+            block_center = (model_block_start + block_end) / 2 + bar_width / 2
+            tick_positions.append(block_center)
+            tick_labels.append(MODEL_LABEL[model_slug])
         x += inter_model_gap
 
     ax.set_xticks(tick_positions)
     ax.set_xticklabels(tick_labels)
     ax.set_xlabel("")
-    ax.set_ylabel("Overall accuracy on 147-gene benchmark")
+    # Two-line ylabel so the bbox_inches="tight" save leaves enough margin
+    # for it; the single-line "Overall accuracy on 147-gene benchmark" was
+    # being clipped on the left edge.
+    ax.set_ylabel("Overall accuracy on\n147-gene benchmark")
     ax.set_ylim(0, 1.05)
     ax.yaxis.set_major_locator(plt.MaxNLocator(6))
 
@@ -787,6 +871,7 @@ WHOLE_GENOME_N = 19_464  # NCBI protein-coding ∩ has HGNC xref
 _PRICE: dict[str, dict[str, float]] = {
     "claude-haiku-4-5":  {"in":  1.0, "cw":  1.25, "cr": 0.10, "out":  5.0},
     "claude-sonnet-4-6": {"in":  3.0, "cw":  3.75, "cr": 0.30, "out": 15.0},
+    "claude-sonnet-5":   {"in":  3.0, "cw":  3.75, "cr": 0.30, "out": 15.0},   # placeholder — confirm Anthropic list price
     "claude-opus-4-7":   {"in": 15.0, "cw": 18.75, "cr": 1.50, "out": 75.0},
     "claude-opus-4-8":   {"in": 15.0, "cw": 18.75, "cr": 1.50, "out": 75.0},
 }
@@ -876,7 +961,10 @@ def make_cost_vs_accuracy_plot(out_dir: Path) -> None:
     no per-call cost (one-time download)."""
     setup_plotting_style(style="whitegrid", context="notebook", font_scale=1.0)
 
-    overall = overall_accuracy()
+    # Mean-of-replicates accuracy (matches the bar heights in
+    # db_correctness_overall — single-rep was the old shape and made
+    # the y-axis inconsistent between the two supp figs).
+    rep_acc = _per_rep_accuracy_by_cell()
     cost_per_call = _llm_cost_per_call()
 
     fig, ax = plt.subplots(figsize=(10.5, 5.5))
@@ -896,15 +984,23 @@ def make_cost_vs_accuracy_plot(out_dir: Path) -> None:
         "_llm_sonnet_ncbi":        (  7,  10),
         "_llm_sonnet_pubmed_ncbi": (  7, -20),
         "_llm_sonnet_web_ncbi":    (  7,   6),
+        # Sonnet 5 (+ IDs) sits ~2pp below Sonnet 4.6 (+ IDs + PubMed)
+        # at a very similar cost. Default (7, 10) would stack them; push
+        # Sonnet 5 well below its point with a leader so the labels
+        # don't overlap.
+        "_llm_sonnet5_ncbi":       (  7, -36),
         "_llm_opus_naive":         (  7, -18),
         "_llm_opus_ncbi":          (  7,  10),
     }
 
-    # LLM cells as scatter — x is $/whole-genome at 1 rep, y is overall accuracy.
-    for vote_key, _, _ in LLM_CELLS:
+    # LLM cells as scatter — x is $/whole-genome at 1 rep, y is mean-of-rep accuracy.
+    for vote_key, model_slug, variant in LLM_CELLS:
         label = LLM_LABEL[vote_key]
+        reps = rep_acc.get((f"claude-{model_slug}", variant), [])
+        if not reps:
+            continue
         x = cost_per_call[vote_key] * WHOLE_GENOME_N
-        y = overall[label] * 100
+        y = (sum(reps) / len(reps)) * 100
         color = LLM_PALETTE[vote_key]
         ax.scatter(x, y, s=180, c=color, edgecolor=COLORS["dark"],
                    linewidth=0.8, zorder=5)
@@ -933,8 +1029,12 @@ def make_cost_vs_accuracy_plot(out_dir: Path) -> None:
     # Zoom in on the LLM range — DB baselines (40-82%) are gone so we
     # no longer need to keep them in frame. Floor at min(LLM) - 2 to
     # leave a little headroom under the lowest cell.
-    llm_only_keys = [k for k in overall if k.startswith("_llm_")]
-    ymin = min(overall[k] for k in llm_only_keys) * 100 if llm_only_keys else 80.0
+    # Floor at min(LLM mean-of-rep accuracy) - 2pp.
+    llm_means = [
+        sum(reps) / len(reps) * 100
+        for (_, _), reps in rep_acc.items() if reps
+    ]
+    ymin = min(llm_means) if llm_means else 80.0
     ax.set_ylim(max(78, ymin - 2), 100)
 
     sns.despine(ax=ax, top=True, right=True)
