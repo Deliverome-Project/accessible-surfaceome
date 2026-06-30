@@ -39,10 +39,9 @@ OUT_MD = ROOT / "paper/figure_index.md"
 OUT_HTML = ROOT / "paper/figure_tsv_spotcheck.html"
 
 # Doc figure number → slug, in the order they appear in the manuscript.
-# Pulled from the Drive MCP read of the working doc. S3/S7/S13 are
-# placeholders in the doc (db_cutoff_tradeoff has no caption row but
-# is referenced; S7 ADCs/TCEs/ViralZone is being built in PR87; S13
-# not yet built).
+# Pulled from the Drive MCP read of the working doc. S7 (ADCs/TCEs/
+# ViralZone) and S13 (deterministic features triage vs deep dive) were
+# built in PR87 and are now wired in below.
 FIGURE_ORDER: list[tuple[str, str]] = [
     ("Figure 1",  "db_overlap_venn"),
     ("Figure 2",  "db_correctness_by_class"),
@@ -57,11 +56,13 @@ FIGURE_ORDER: list[tuple[str, str]] = [
     ("Supp S4",   "curator_vs_agent_reason"),
     ("Supp S5",   "ensemble_vs_best_db_vs_sonnet"),
     ("Supp S6",   "db_vs_sonnet_whole_proteome"),
+    ("Supp S7",   "positive_control_db_coverage_bars"),
     ("Supp S8",   "bench_topology_vs_universe"),
     ("Supp S9",   "topology_coverage_by_source"),
     ("Supp S10",  "paywall_bot_block_compare"),
     ("Supp S11",  "evidence_corpus_vs_selected"),
     ("Supp S12",  "triage_vs_deep_dive_reason"),
+    ("Supp S13",  "surfaceome_deterministic_features_placeholder"),
 ]
 
 
