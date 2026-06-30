@@ -1942,26 +1942,34 @@ def main() -> None:
         "DB_BARPLOT_OUT_DIR",
         str(ROOT / "data/analysis/triage_bench"),
     ))
-    make_by_class_plot(out_dir)
+    # db_correctness_by_class is Figure 2 and must ship on the benchmark-
+    # OPTIMIZED cutoffs (UniProt TM+signal, CSPA HC-only) — the same membership
+    # the figures/ gist and the accuracy claims use. Render that as the PRIMARY
+    # (unsuffixed) output; keep the native pre-recalibration variant alongside
+    # under a `_native_cutoffs` suffix for comparison. (Previously the primary
+    # was the native cutoff and optimized was the suffixed variant, so a naive
+    # re-render of db_correctness_by_class silently used the wrong cutoff.)
+    global _USE_OPTIMIZED_CUTOFFS
+    _USE_OPTIMIZED_CUTOFFS = True
+    try:
+        # Side-effect: dump the optimized accession sets so the figures/ gist
+        # for db_correctness_by_class can apply the same cutoffs without
+        # re-loading the raw UniProt + CSPA dumps.
+        _dump_optimized_db_accs()
+        make_by_class_plot(out_dir)  # db_correctness_by_class — OPTIMIZED (published)
+    finally:
+        _USE_OPTIMIZED_CUTOFFS = False
+    make_by_class_plot(out_dir, filename="db_correctness_by_class_native_cutoffs")
+
     make_overall_plot(out_dir)
     make_cost_vs_accuracy_plot(out_dir)
     make_db_variants_plot(out_dir)
     make_db_tradeoff_plot(out_dir)
 
-    # Re-render the per-class and overall plots under the audit's
-    # optimized cutoffs (UniProt TM+signal, CSPA HC-only — see
-    # _RECOMMENDED_VARIANT). Saved under `_optimized_cutoffs` suffix
-    # so the canonical versions stay alongside for comparison.
-    global _USE_OPTIMIZED_CUTOFFS
+    # Overall accuracy on the optimized cutoffs kept alongside (denominator
+    # variant; the overall plot is otherwise an LLM-only comparison).
     _USE_OPTIMIZED_CUTOFFS = True
     try:
-        # Side-effect: dump the optimized accession sets so the
-        # figures/ gist for db_correctness_by_class can apply the same
-        # cutoffs without re-loading the raw UniProt + CSPA dumps.
-        _dump_optimized_db_accs()
-        make_by_class_plot(
-            out_dir, filename="db_correctness_by_class_optimized_cutoffs",
-        )
         make_overall_plot(
             out_dir, filename="db_correctness_overall_optimized_cutoffs",
         )
