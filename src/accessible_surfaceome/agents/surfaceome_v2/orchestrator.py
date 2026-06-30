@@ -1008,7 +1008,7 @@ def annotate(
     :class:`AnnotateResultV2` (record=None, error='already_fresh') if
     public D1's ``surface_annotation`` already carries a row for this
     gene at the current ``SurfaceomeRecord.schema_version``. Used by
-    cohort resume — avoids re-paying ~\$2/gene to land an identical call.
+    cohort resume — avoids re-paying ~$2/gene to land an identical call.
     Modal's :class:`D1DeepDiveSink` filters the gene list at dispatch
     via :meth:`already_done`; this flag is the equivalent guard for
     direct-CLI re-runs and any non-Modal cohort dispatcher.
@@ -1018,7 +1018,7 @@ def annotate(
     the orchestrator SKIPS the expensive plan-trim-select step and runs
     only the builders + synth + assembly. Used by the
     ``surfaceome_v2_replay_builders`` driver for cheap prompt iteration
-    on builder / synth changes — ~\$0.65/iteration vs ~\$2 for a full
+    on builder / synth changes — ~$0.65/iteration vs ~$2 for a full
     pipeline run. The cached dual must have been produced under prompts
     compatible with the current builders' input contracts (typically
     same major prompt_corpus version).
@@ -1117,6 +1117,41 @@ def _existing_fresh_record(gene_symbol: str) -> dict[str, str] | None:
     if row.get("schema_version") != current_schema:
         return None
     return row
+
+
+def _demote_multimethod_if_unsupported(
+    grade: str, methods: list[MethodObservation]
+) -> str:
+    """Reconcile ``direct_multi_method`` against the methods that back it.
+
+    ``direct_multi_method`` requires BOTH ≥2 ``direct_surface_accessibility``
+    method rows AND those rows citing ≥2 distinct sources — the exact rule the
+    ``SurfaceEvidence`` cardinality validator enforces. When the grade is
+    ``direct_multi_method`` but either bar is unmet (1 direct row, or ≥2 rows
+    that all cite the same source), this returns ``direct_single_method`` so the
+    orchestrator can demote in-process. Otherwise the validator raises at
+    ``SurfaceEvidence`` construction, the ``ValidationError`` bubbles out of the
+    Modal worker, and the **whole gene is retried** (~$1.5 of re-spend) — or
+    hard-fails if the model keeps over-grading.
+
+    Returns the grade unchanged for any other grade, and (deliberately) does NOT
+    demote when there are **zero** direct rows — ``direct_single_method`` itself
+    requires ≥1, so that case is left to the re-LLM retry in ``_annotate``.
+    """
+    if grade != "direct_multi_method":
+        return grade
+    direct = [
+        m
+        for m in methods
+        if getattr(m, "accessibility_relevance", None)
+        == "direct_surface_accessibility"
+    ]
+    sources = {
+        eid for m in direct for eid in (getattr(m, "cited_evidence_ids", None) or [])
+    }
+    if direct and (len(direct) < 2 or len(sources) < 2):
+        return "direct_single_method"
+    return grade
 
 
 def _annotate(
@@ -1401,24 +1436,25 @@ def _annotate(
         )
         grade_block = retry_outputs["evidence_grade"]
 
-    # Deterministic grade demote: if grade is direct_multi_method but
-    # only 1 direct row exists, demote to direct_single_method (the
-    # cardinality validator on SurfaceEvidence would otherwise reject
-    # the record). Observed on GPR75 v2.24.0. Same shape as the
-    # n_direct=0 retry above, but resolved without a re-LLM call —
-    # the answer is mechanical (the cardinality permits direct_single).
-    if (
-        grade_block.evidence_grade == "direct_multi_method"
-        and n_direct == 1
-    ):
+    # Deterministic grade demote: direct_multi_method needs BOTH ≥2 direct
+    # method rows AND those rows citing ≥2 distinct sources. If either bar is
+    # unmet (1 direct row — observed on GPR75 v2.24.0 — OR ≥2 rows that all cite
+    # the same source — observed on a v2.50.2 canary gene), demote to
+    # direct_single_method in-process. The cardinality validator on
+    # SurfaceEvidence would otherwise raise, and that ValidationError bubbles out
+    # of the Modal worker, forcing a full-gene retry (~$1.5 re-spend). n_direct=0
+    # is handled by the re-LLM retry above (single still needs ≥1 direct row).
+    demoted = _demote_multimethod_if_unsupported(
+        grade_block.evidence_grade, methods_output
+    )
+    if demoted != grade_block.evidence_grade:
         logger.info(
-            "v2 orchestrator: demoting evidence_grade direct_multi_method → "
-            "direct_single_method (only 1 direct_surface_accessibility "
-            "method row, cardinality requires ≥2 for multi)"
+            "v2 orchestrator: demoting evidence_grade %s → %s (multi requires "
+            "≥2 direct method rows AND ≥2 distinct cited sources)",
+            grade_block.evidence_grade,
+            demoted,
         )
-        grade_block = grade_block.model_copy(
-            update={"evidence_grade": "direct_single_method"}
-        )
+        grade_block = grade_block.model_copy(update={"evidence_grade": demoted})
 
     # Capture per-builder raw outputs before they're assembled into blocks.
     all_builder_outputs = {**outputs, "evidence_grade": grade_block}

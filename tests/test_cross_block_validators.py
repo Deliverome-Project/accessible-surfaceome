@@ -337,3 +337,43 @@ class TestHeadlineRisksMatchPresentRisks:
         """Forward-compat: an unknown HeadlineRisk value falls through to
         True so a future enum addition doesn't break old records."""
         assert _is_headline_risk_backed("some_future_value", _risks()) is True
+
+
+def test_demote_multimethod_mirrors_cardinality_validator() -> None:
+    """The orchestrator's in-process demotion must catch exactly the cases the
+    SurfaceEvidence cardinality validator rejects. Otherwise the ValidationError
+    bubbles out of the Modal worker and forces a full-gene retry (~$1.5 re-spend)
+    — or a hard failure if the model keeps over-grading.
+    """
+    from accessible_surfaceome.agents.surfaceome_v2.orchestrator import (
+        _demote_multimethod_if_unsupported as demote,
+    )
+
+    # 1 direct method → demote (multi needs ≥2 rows). [GPR75 case]
+    assert (
+        demote("direct_multi_method", [_method(cited_evidence_ids=["a1_evi_01"])])
+        == "direct_single_method"
+    )
+
+    # 2 direct methods citing the SAME source → demote (multi needs ≥2 distinct
+    # sources). This is the exact case that hard-failed a canary gene.
+    two_same = [
+        _method(cited_evidence_ids=["a1_evi_13"]),
+        _method(cited_evidence_ids=["a1_evi_13"]),
+    ]
+    assert demote("direct_multi_method", two_same) == "direct_single_method"
+
+    # 2 direct methods, 2 distinct sources → valid multi, left unchanged.
+    two_diff = [
+        _method(cited_evidence_ids=["a1_evi_01"]),
+        _method(cited_evidence_ids=["a1_evi_02"]),
+    ]
+    assert demote("direct_multi_method", two_diff) == "direct_multi_method"
+
+    # No direct rows at all → NOT demoted (single requires ≥1; the n_direct==0
+    # case is handled by the re-LLM retry in _annotate, not by demotion).
+    assert demote("direct_multi_method", []) == "direct_multi_method"
+
+    # Any other grade passes through untouched.
+    assert demote("direct_single_method", two_same) == "direct_single_method"
+    assert demote("supportive_but_indirect", two_diff) == "supportive_but_indirect"
