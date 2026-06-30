@@ -103,7 +103,7 @@ def _apply_brand_style() -> None:
         "font.family": "sans-serif",
         "font.sans-serif": ["Manrope", "Outfit", "DejaVu Sans", "Liberation Sans", "Arial"],
         "font.weight": "medium",
-        "font.size": 14, "axes.labelsize": 16, "axes.titlesize": 0,
+        "font.size": 16, "axes.labelsize": 18, "axes.titlesize": 0,
         "axes.spines.top": False, "axes.spines.right": False,
         "axes.edgecolor": BRAND_GRID, "axes.labelcolor": BRAND_INK,
         "axes.facecolor": "none",
@@ -232,7 +232,7 @@ def main() -> None:
     m, n_joined, n_match, cell_genes = _build_matrix(data)
     n = m.shape[0]
 
-    fig, ax = plt.subplots(figsize=(12, 11))
+    fig, ax = plt.subplots(figsize=(18, 28))
     cmap = sns.light_palette("#3D6B60", as_cmap=True)
     sns.heatmap(
         m, cmap=cmap, vmin=0, vmax=max(m.max(), 1),
