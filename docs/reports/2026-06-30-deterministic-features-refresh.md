@@ -91,29 +91,58 @@ re-annotation required.
   - paralog ECD → `paralog_topo_2026_05_16` · ortholog ECD → `orthologecd_topo_2026_05_16_idfix`
 - ☑ Post-upload coverage: pubmed-177 canonical topology **177/177**, v3add-8 **8/8**
 
-Net topology coverage across v3: **5,150 / 5,151** (the one holdout, RSC1A1 / HGNC:10458, is a withdrawn HGNC ID with no resolvable protein — a cohort-hygiene item, not a features gap).
+Net topology coverage across v3: **5,135 / 5,135 resolvable proteins** (100%). 16 of the 5,151 v3 rows carry no UniProt accession (incl. RSC1A1 / withdrawn HGNC:10458) — no protein to predict on, a cohort-hygiene item rather than a features gap. See the verified final-coverage table below.
 
-## Whole-cohort re-audit — follow-up (NOT yet recomputed)
+## Whole-cohort re-audit — COMPLETED
 
-A re-audit of all 5,151 v3 genes (BioMart-checked every gene with no paralog/ortholog
-row in D1) found **bug-driven misses** from the May sweep — genes that *do* have
-paralogs/orthologs but show none in D1, mostly because the May `compara_ortholog`
-table predated the current v3 cohort:
+A re-audit of all 5,151 v3 genes flagged genes that have paralogs/orthologs but show
+none in D1. The first-pass counts were **over-stated** and were corrected through two
+rounds of verification (each cut the number substantially):
 
-| Feature | No data in D1 | True-absent | **Bug-driven miss** |
+| Feature | First-pass flag | After served-table + private/public check | After 1:1-high-confidence filter (**real**) |
 |---|---|---|---|
-| Paralog | 791 | 672 | **119** |
-| Ortholog (1:1) | 963 | 224 | **739** |
+| Paralog | 119 | 11 | **11** |
+| Ortholog | 739 | 731 | **372** |
 
-The 748 unique miss genes (119 paralog, 739 ortholog, 110 both) are listed in
-[`data/analysis/topology_reaudit/2026-06-30_paralog_ortholog_misses.tsv`](../../data/analysis/topology_reaudit/2026-06-30_paralog_ortholog_misses.tsv).
+Why the first pass was wrong:
+- **Paralog (119 → 11):** the re-audit snapshot ran *before* the new-gene upload; the
+  PubMed sweep's paralog-expansion had already computed pairs for 108 of them, which
+  the upload then landed. Only 11 were truly missing.
+- **Ortholog (739 → 372):** (a) the re-audit checked the *source* `compara_ortholog`
+  table, not the served `compara_ortholog_ecd`, and only the public mirror; (b) its
+  crude BioMart check counted *any* ortholog, but the served feature requires a
+  **one2one high-confidence** ortholog — only 372 qualify. The other ~360 correctly
+  have no qualifying ortholog.
 
-**Recompute plan (deferred, ~1.5–2.5 h at 1 worker):** build a candidate set for the
-~800 miss genes → pull + seed their orthologs into `compara_ortholog` (private +
-public, ~1,400 rows) → run the sweep (topology mostly cached; ~1,400 ortholog +
-paralog-expansion proteins predicted fresh) → append paralog + ortholog ECD to the
-existing D1 versions. After this, paralog/ortholog absence will exist only where
-BioMart confirms there genuinely are none.
+**Root cause (verified):** not flaky pulls but **cohort drift**. All 372 already had
+canonical topology, but the `compara_ortholog` *source* table (built May 2026 from an
+older, narrower input) never covered them — the v3 optimized-DB-cutoff rebuild
+(`ddb82202f`) admitted genes that topology re-ran over but the ortholog pull never saw.
 
-Also deferred to the same batch: seeding the 8 v3add genes' orthologs into the
-**public** `compara_ortholog` mirror (private was seeded to enable their ECD).
+**Recompute (done):** seeded the 372's orthologs into `compara_ortholog` (private +
+public, 647 rows) → swept (`--skip-paralogs` to avoid wasteful paralog re-expansion of
+genes that already had paralog data) → appended **633 ortholog-ECD rows** to
+`orthologecd_topo_2026_05_16_idfix`. The 11 paralog misses got a dedicated sweep → **81
+paralog pairs** appended to `paralog_topo_2026_05_16`. A final full-cohort verification
+then caught a **third** blind spot (genes with a source ortholog row but no computed
+ECD — private/public source drift); 7 of those 10 were closed by a follow-up seed+sweep.
+
+The original 748-row flag list is preserved at
+[`data/analysis/topology_reaudit/2026-06-30_paralog_ortholog_misses.tsv`](../../data/analysis/topology_reaudit/2026-06-30_paralog_ortholog_misses.tsv)
+(now superseded by the verified counts above).
+
+## Final coverage — verified across all 5,151 v3 genes (served public D1)
+
+| Feature | Coverage | Notes |
+|---|---|---|
+| **Topology (canonical)** | **5,135 / 5,135** | 100% of resolvable proteins. 16 v3 rows have no UniProt acc (incl. RSC1A1 / withdrawn HGNC:10458) → no protein → no features. |
+| **Ortholog ECD (1:1)** | **4,550 / 4,553** with a qualifying ortholog source | The 3 remaining (OR4X1, OR51L1, OR52N1) are olfactory receptors whose mouse ortholog has **no UniProt protein** → no sequence to run DeepTMHMM on → ECD genuinely uncomputable (data limit, not a bug). ~598 genes have no qualifying 1:1 ortholog (true-absent). |
+| **Paralog ECD** | 4,464 genes with ≥1 paralog | All re-audit-verified misses closed. |
+| **SURFACE-Bind** | 2,629 / 5,135 | Fixed published dataset — sparse by design. |
+| **Schweke homo-oligomer** | 907 / 5,135 | Owned separately; sparse by design (homomers only). |
+
+**Bottom line:** every v3 gene that *can* carry each deterministic feature now does.
+Remaining absences are exactly two kinds — (1) **true biology** (no paralog / no 1:1
+ortholog / not a homomer / not in SURFACE-Bind), and (2) **3 OR genes + RSC1A1** where
+the upstream protein/ortholog has no UniProt entry to compute on. No bug- or
+drift-driven gaps remain.
