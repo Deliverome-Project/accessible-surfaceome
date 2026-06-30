@@ -519,11 +519,14 @@ def make_by_class_plot(out_dir: Path, *, filename: str = "db_correctness_by_clas
       - no       : accuracy on ground_truth=no
     """
 
-    # Dump the optimized-cutoff accession sets to a small TSV so the
-    # figures-folder gist (data/analysis/figures/make_db_correctness_by_class.py)
-    # can reproduce the optimized-cutoffs view without re-loading the raw
-    # UniProt + CSPA dumps. Cheap; runs once per invocation.
-    _dump_db_optimized_cutoffs()
+    # NOTE: db_optimized_cutoffs.tsv is a COMMITTED canonical artifact — the
+    # 15-column augmented form (accession sets + stable IDs added by
+    # augment_figure_tsvs_with_stable_ids.py). Rendering must NOT rewrite it:
+    # _dump_db_optimized_cutoffs() emits only the raw 3-column form, which would
+    # silently regress the augmented committed file (an observed trap). The
+    # optimized accession sets used below come from _optimized_*_accs() in
+    # memory; the figures/ gist reads the committed TSV. Regenerate that file
+    # deliberately (dump + augment), never as a render side effect.
 
     setup_plotting_style(style="whitegrid", context="notebook", font_scale=1.0)
     overall = overall_accuracy()
@@ -1793,11 +1796,12 @@ def make_db_tradeoff_plot(out_dir: Path) -> None:
             "neg": n_neg_correct / max(n_neg_total, 1),
         })
 
-    # Dump the precomputed points to a flat TSV so the
-    # ``data/analysis/figures/`` gist script can reproduce the plot
-    # without re-loading the raw DB sources. Keep this side-effect
-    # local to the tradeoff plot — none of the other figures use it.
-    _dump_db_cutoff_tradeoff_points(points_by_group)
+    # NOTE: db_cutoff_tradeoff_points.tsv is a COMMITTED canonical artifact (the
+    # gist + the published figure read it). Rendering must NOT rewrite it — the
+    # in-render recompute can differ from the committed points and would silently
+    # overwrite them (same trap class as db_optimized_cutoffs.tsv). The plot below
+    # renders from points_by_group in memory; regenerate the committed TSV
+    # deliberately via _dump_db_cutoff_tradeoff_points, never as a render side effect.
 
     group_order = ["UniProt", "GO", "HPA", "SURFY", "CSPA"]
     fig, axes = plt.subplots(2, 3, figsize=(14, 8.5), sharey=True)
