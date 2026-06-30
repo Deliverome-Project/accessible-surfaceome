@@ -188,28 +188,19 @@ def test_every_published_record_carries_renderer_required_fields() -> None:
 #
 # This test makes both halves loud: every committed snapshot must render,
 # and every D1-published row should eventually have a committed snapshot.
-# `KNOWN_NO_MARKDOWN_EXPORT` carries only the D1 rows still missing from
-# the tree. Shrink it as those snapshots land.
-
 # Repo root is two levels up from tests/ — same heuristic as
 # scripts/check_viewer_types_sync.py.
 _REPO_ROOT = Path(__file__).resolve().parent.parent
 _VIEWER_DATA_DIR = _REPO_ROOT / "viewer" / "public" / "data" / "surfaceome"
 
-# Published genes that we temporarily accept as lacking both an in-tree
-# snapshot and markdown export. The markdown exporter handles schema v1.x
-# and v2.x records; remaining entries need snapshots from /v1/genes/{sym}
-# plus `cd viewer && npm run build:exports`.
-KNOWN_NO_MARKDOWN_EXPORT: frozenset[str] = frozenset({
-    # D1-published records with no in-tree snapshot yet.
-    "TACSTD2",
-    "TGOLN2",
-    "CD81",
-    "SLC7A5",
-    "CLDN18",
-    "HSPA5",
-    "KIR2DL1",
-})
+# Exemption list for ``test_every_in_tree_record_has_markdown_export``: committed
+# in-tree snapshots whose ``.md`` the exporter can't yet render (e.g. an
+# unsupported schema). Empty today — every committed snapshot has its brief.
+# (It previously also exempted D1-published genes that lacked a snapshot, but
+# the deep-dive rollout publishes thousands of genes to public D1 and no longer
+# requires a committed snapshot per D1 gene — see
+# ``test_committed_snapshots_have_live_d1_records``.)
+KNOWN_NO_MARKDOWN_EXPORT: frozenset[str] = frozenset()
 
 
 def test_every_in_tree_record_has_markdown_export() -> None:
@@ -279,75 +270,47 @@ def test_every_in_tree_record_has_markdown_export() -> None:
         pytest.fail("\n".join(problems))
 
 
-def test_every_published_record_has_in_tree_snapshot() -> None:
-    """Every D1-published gene should have a matching in-tree JSON
-    snapshot at ``viewer/public/data/surfaceome/{symbol}.json`` so the
-    markdown exporter can render its .md, AND so the viewer has an
-    offline fallback when the Worker is unreachable.
+def test_committed_snapshots_have_live_d1_records() -> None:
+    """Every committed in-tree snapshot must correspond to a published record in
+    public D1 — catches a stale / orphan snapshot (committed but never published,
+    or left behind after its D1 row was removed or replaced).
 
-    Skips when the public-D1 secrets aren't available (CI's current
-    state — only CLOUDFLARE_API_TOKEN + ACCOUNT_ID are wired, not the
-    DB UUID). Until the missing secret is added, this test runs only
-    locally / on machines with a full ``.env``.
+    The reverse — every D1-published gene having a committed snapshot — is
+    deliberately NOT enforced. The deep-dive rollout publishes thousands of genes
+    to public D1, which the viewer serves directly from D1 (its primary path);
+    committing a snapshot + ``.md`` for each would bloat the repo and doesn't
+    scale. Committed snapshots are a curated subset (showcase + validation genes)
+    kept for the viewer's offline fallback + downloadable briefs. The
+    snapshot → ``.md`` half is covered by
+    ``test_every_in_tree_record_has_markdown_export``.
+
+    Skips when the public-D1 secrets aren't available (need CLOUDFLARE_API_TOKEN
+    + _ACCOUNT_ID + _D1_SURFACEOME_PUBLIC_ID).
     """
     if not _public_d1_creds_available():
-        pytest.skip(
-            "Public-D1 creds absent (need CLOUDFLARE_API_TOKEN + "
-            "_ACCOUNT_ID + _D1_SURFACEOME_PUBLIC_ID). Add the missing "
-            "DB-UUID secret to the repo to enable this test in CI."
-        )
+        pytest.skip("Public-D1 creds absent.")
+    if not _VIEWER_DATA_DIR.is_dir():
+        pytest.skip(f"viewer snapshot dir not present at {_VIEWER_DATA_DIR}")
+
+    snapshots = sorted(
+        p.stem for p in _VIEWER_DATA_DIR.glob("*.json") if p.stat().st_size > 0
+    )
+    if not snapshots:
+        pytest.skip("No committed snapshots to check.")
 
     from accessible_surfaceome.cloud.d1_client import D1Client, D1Config
 
     with D1Client(D1Config.from_env_public()) as pub:
-        rows = pub.query(
-            "SELECT gene_symbol, schema_version FROM surface_annotation "
-            "ORDER BY gene_symbol;"
-        )
-    assert rows, "No published records in public-D1 surface_annotation."
+        d1_genes = {
+            r["gene_symbol"]
+            for r in pub.query("SELECT gene_symbol FROM surface_annotation;")
+        }
+    assert d1_genes, "No published records in public-D1 surface_annotation."
 
-    actually_missing: list[tuple[str, str]] = []
-    no_longer_missing: list[str] = []
-    for r in rows:
-        sym = r["gene_symbol"]
-        sv = r["schema_version"]
-        snapshot = _VIEWER_DATA_DIR / f"{sym}.json"
-        md = _VIEWER_DATA_DIR / f"{sym}.md"
-        present = (
-            snapshot.is_file() and snapshot.stat().st_size > 0
-            and md.is_file() and md.stat().st_size > 0
-        )
-        in_allowlist = sym in KNOWN_NO_MARKDOWN_EXPORT
-        if not present and not in_allowlist:
-            actually_missing.append((sym, sv))
-        elif present and in_allowlist:
-            no_longer_missing.append(sym)
-
-    problems: list[str] = []
-    if actually_missing:
-        problems.append(
-            "Published-to-D1 genes WITHOUT both an in-tree JSON snapshot "
-            "and rendered .md (so the viewer has no offline fallback + no "
-            "downloadable brief for them):"
-        )
-        for sym, sv in actually_missing:
-            problems.append(f"  • {sym}  (D1 schema_version={sv})")
-        problems.append("")
-        problems.append(
-            "Snapshot the live Worker record (`curl /v1/genes/{sym}` → "
-            "viewer/public/data/surfaceome/{sym}.json`), then run "
-            "`cd viewer && npm run build:exports` to generate the .md. "
-            "OR add the symbol to KNOWN_NO_MARKDOWN_EXPORT with a "
-            "tracking note (e.g. exporter doesn't yet handle that schema)."
-        )
-    if no_longer_missing:
-        if problems:
-            problems.append("")
-        problems.append(
-            "Allowlist has stale entries (snapshot+md exist now, remove "
-            "from KNOWN_NO_MARKDOWN_EXPORT):"
-        )
-        for sym in no_longer_missing:
-            problems.append(f"  • {sym}")
-    if problems:
-        pytest.fail("\n".join(problems))
+    orphan = [s for s in snapshots if s not in d1_genes]
+    assert not orphan, (
+        "Committed in-tree snapshots with NO public-D1 record (stale / orphan). "
+        "Either publish them — `uv run python "
+        "scripts/upload_viewer_snapshots_to_d1.py --execute` — or remove the "
+        f"snapshot + .md: {orphan}"
+    )
