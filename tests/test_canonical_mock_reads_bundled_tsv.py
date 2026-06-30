@@ -52,6 +52,10 @@ READS_BUNDLED_TSV = [
     "triage_vs_deep_dive_reason",
     "zero_db_rescues_by_triage",
     "topology_coverage_by_source",
+    # Migrated off the triage_bench_db_barplot monolith (2026-06-30): its own
+    # canonical now reads the figure TSV, so the model list comes from the data
+    # — fixes the opus-4-7 hardcode that shipped empty bars on Supp Fig 1.
+    "db_correctness_overall",
 ]
 
 # Figures whose canonical recomputes from real upstream sources by

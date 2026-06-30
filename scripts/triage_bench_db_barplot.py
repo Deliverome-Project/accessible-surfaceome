@@ -1965,20 +1965,14 @@ def main() -> None:
         _USE_OPTIMIZED_CUTOFFS = False
     make_by_class_plot(out_dir, filename="db_correctness_by_class_native_cutoffs")
 
-    make_overall_plot(out_dir)
+    # db_correctness_overall (Supp Fig 1) is now its own canonical generator,
+    # scripts/db_correctness_overall.py — it reads the figure TSV so its model
+    # list comes from the DATA, not a hardcode. The old make_overall_plot path
+    # here shipped empty bars when the data moved from opus-4-7 to opus-4-8;
+    # that figure is no longer rendered from this monolith.
     make_cost_vs_accuracy_plot(out_dir)
     make_db_variants_plot(out_dir)
     make_db_tradeoff_plot(out_dir)
-
-    # Overall accuracy on the optimized cutoffs kept alongside (denominator
-    # variant; the overall plot is otherwise an LLM-only comparison).
-    _USE_OPTIMIZED_CUTOFFS = True
-    try:
-        make_overall_plot(
-            out_dir, filename="db_correctness_overall_optimized_cutoffs",
-        )
-    finally:
-        _USE_OPTIMIZED_CUTOFFS = False
 
 
 if __name__ == "__main__":
