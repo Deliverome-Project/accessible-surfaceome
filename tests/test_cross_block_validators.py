@@ -377,3 +377,28 @@ def test_demote_multimethod_mirrors_cardinality_validator() -> None:
     # Any other grade passes through untouched.
     assert demote("direct_single_method", two_same) == "direct_single_method"
     assert demote("supportive_but_indirect", two_diff) == "supportive_but_indirect"
+
+
+def test_prose_overshoot_log_level(caplog: pytest.LogCaptureFixture) -> None:
+    """Soft-target overshoots log at DEBUG (kept off the operator's WARNING
+    stream at cohort scale); only an egregious ≥2× overshoot escalates to
+    WARNING."""
+    from pydantic import BaseModel
+
+    from accessible_surfaceome.tools._shared.models import _warn_prose_overshoot
+
+    class _Tiny(BaseModel):
+        f: str
+
+    # 30% over target → DEBUG, never WARNING.
+    with caplog.at_level("DEBUG"):
+        _warn_prose_overshoot(_Tiny(f="x" * 130), {"f": 100})
+    rows = [r for r in caplog.records if "soft-target overshoot" in r.getMessage()]
+    assert rows and all(r.levelname == "DEBUG" for r in rows)
+
+    caplog.clear()
+    # 150% over target (2.5× len) → WARNING.
+    with caplog.at_level("DEBUG"):
+        _warn_prose_overshoot(_Tiny(f="x" * 250), {"f": 100})
+    rows = [r for r in caplog.records if "soft-target overshoot" in r.getMessage()]
+    assert any(r.levelname == "WARNING" for r in rows)
