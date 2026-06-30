@@ -29,6 +29,7 @@ from pydantic import BaseModel, ValidationError
 from accessible_surfaceome.agents._support.api_retry import (
     messages_create_with_backoff,
 )
+from accessible_surfaceome.agents._support.model_config import deep_dive_model
 from accessible_surfaceome.agents._support.payload import cached_system
 from accessible_surfaceome.agents._support.pricing import (
     UsageRecord,
@@ -38,7 +39,7 @@ from accessible_surfaceome.tools._shared.models import EvidenceClaim
 
 logger = logging.getLogger(__name__)
 
-SONNET_MODEL = "claude-sonnet-4-6"
+SONNET_MODEL = deep_dive_model()  # SURFACEOME_DEEP_DIVE_MODEL override
 # Default per-builder output cap. Raised from 8k → 16k on 2026-05-16 after
 # the EGFR end-to-end run hit ``stop_reason="max_tokens"`` on
 # ``methods_builder`` (55 A1 claims → 19 MethodObservation rows with

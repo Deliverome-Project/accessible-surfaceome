@@ -36,6 +36,7 @@ from accessible_surfaceome.agents._support.api_retry import (
     messages_create_with_backoff,
 )
 from accessible_surfaceome.agents._support.client import get_client
+from accessible_surfaceome.agents._support.model_config import deep_dive_model
 from accessible_surfaceome.agents._support.payload import cached_system, cached_user_text
 from accessible_surfaceome.agents._support.pricing import (
     UsageRecord,
@@ -57,7 +58,7 @@ logger = logging.getLogger(__name__)
 PROMPTS_DIR = Path(__file__).parent / "prompts"
 SYSTEM_PROMPT_PATH = PROMPTS_DIR / "system.md"
 
-AGENT_MODEL = "claude-sonnet-4-6"
+AGENT_MODEL = deep_dive_model()  # SURFACEOME_DEEP_DIVE_MODEL override
 MAX_TOKENS = 16000
 # B has no tools, so the loop terminates on the first stop. We still bound
 # the loop in case of repeated bad-JSON repairs.

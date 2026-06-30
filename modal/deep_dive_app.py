@@ -23,6 +23,7 @@ back with ``modal volume get`` to commit them to the repo.
 from __future__ import annotations
 
 import json
+import os
 import threading
 import time
 from pathlib import Path
@@ -52,6 +53,18 @@ MAX_CONTAINERS, MAX_INPUTS = resolve_gene_concurrency()
 # ---------------------------------------------------------------------------
 # image + volume + secret
 # ---------------------------------------------------------------------------
+
+# Container env. Propagate a deep-dive model override (e.g.
+# claude-sonnet-5) from the launching shell into the container at build
+# time, so `SURFACEOME_DEEP_DIVE_MODEL=claude-sonnet-5 modal run …` flips
+# the model with no code edit. Unset → the in-code default
+# (claude-sonnet-4-6) and the key is omitted entirely, so the image hash
+# and behavior are identical to before for the main campaign. Changing the
+# value re-bakes the image layer (Modal hashes the env dict).
+_IMAGE_ENV = {"ACCESSIBLE_SURFACEOME_REPO_ROOT": "/repo"}
+_DEEP_DIVE_MODEL_OVERRIDE = os.environ.get("SURFACEOME_DEEP_DIVE_MODEL", "").strip()
+if _DEEP_DIVE_MODEL_OVERRIDE:
+    _IMAGE_ENV["SURFACEOME_DEEP_DIVE_MODEL"] = _DEEP_DIVE_MODEL_OVERRIDE
 
 # Build the image from the repo source. uv sync installs everything in
 # pyproject.toml's main dependency block (we don't need the modal extra
@@ -111,7 +124,7 @@ image = (
         "else sys.exit(f'HGNC gazetteer looks like LFS pointer (size={size}, "
         "head={head!r}). Hydrate LFS in the source worktree before building.')\""
     )
-    .env({"ACCESSIBLE_SURFACEOME_REPO_ROOT": "/repo"})
+    .env(_IMAGE_ENV)
 )
 
 app = modal.App("surfaceome-deep-dive")
