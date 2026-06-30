@@ -626,9 +626,14 @@ def make_plot() -> tuple[plt.Figure, list[plt.Axes]]:
         mpatches.Patch(facecolor="none", edgecolor=DIAGONAL_HIGHLIGHT,
                        lw=2.5, label="diagonal (reason agrees)")
     )
+    # Legend sits BELOW the "Agent predicted_reason" x-axis label —
+    # bbox_to_anchor y was -0.09 (clashed with rotated tick labels),
+    # then -0.18 (overlapped the x-axis label itself); now -0.26 so
+    # the legend has its own row underneath the entire x-axis stack:
+    # tick labels → axis label → legend, top-to-bottom.
     ax.legend(
         handles=handles,
-        loc="upper center", bbox_to_anchor=(0.5, -0.09),
+        loc="upper center", bbox_to_anchor=(0.5, -0.26),
         ncols=4, frameon=False, fontsize=14,
     )
 
