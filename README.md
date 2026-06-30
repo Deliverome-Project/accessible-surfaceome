@@ -1,4 +1,4 @@
-# accessible-surfaceome
+# The accessible human surfaceome
 
 An evidence-graded, per-claim-cited annotation of the **human cell-surface
 proteome** — surfaced as a database, a public JSON API, an interactive
