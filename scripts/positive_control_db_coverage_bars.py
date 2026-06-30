@@ -4,6 +4,14 @@ Three-panel bar chart: per-database coverage of the three positive-control
 target lists (ADC / TCE / ViralZone). One bar per source (Sonnet + 5 DBs),
 canonical performance-ranked axis order and project palette.
 
+The UniProt + CSPA bars use the SurfaceBench-OPTIMIZED cutoffs (UniProt
+expanded to admit TM/signal-peptide proteins; CSPA tightened to
+high-confidence only), matching the cutoffs the rest of the paper reports
+(Main Fig 2, the DB-correctness figures). GO / SURFY / HPA have no better
+cutoff than their initial rule, so those bars are unchanged. The optimized
+flags are baked into the bundled TSV by
+``scripts/build_positive_control_lists.py``.
+
 # Reproduction: https://gist.github.com/beccajcarlson/3ab5df749b576912959c75fe7013d78c
 
 Run:

@@ -5,21 +5,28 @@ Sonnet triage agent cover three orthogonal positive-control target lists.
 Each panel is one target list; each bar is one source. Y-axis ceiling is the
 panel's own n_total.
 
-* **Panel a — ADC targets** (n = 62). Union of TheraSAbDab antibody-drug
-  conjugates ([opig.stats.ox.ac.uk/webapps/sabdab-sabpred/therasabdab](https://opig.stats.ox.ac.uk/webapps/sabdab-sabpred/therasabdab/))
-  and Open Targets 26.06 antibody-drug-conjugate MoA targets, HGNC-resolved,
-  with non-cytotoxic conjugates (tedromer / celmoleukin / cafraglutide) and
-  Open Targets family-expansion attributions filtered out.
-* **Panel b — TCE targets** (n = 34). TheraSAbDab CD3-binding bispecifics +
-  BiTE/DART platform-tagged therapeutics, HGNC-resolved.
+* **Panel a — ADC targets** (n = 234). Union of TheraSAbDab antibody-drug
+  conjugates ([opig.stats.ox.ac.uk/webapps/sabdab-sabpred/therasabdab](https://opig.stats.ox.ac.uk/webapps/sabdab-sabpred/therasabdab/)),
+  Open Targets 26.06 antibody-drug-conjugate MoA targets, and ADCdb antigens,
+  HGNC-resolved, with non-cytotoxic conjugates (tedromer / celmoleukin /
+  cafraglutide), Open Targets family-expansion attributions, and ADCdb
+  secreted/intracellular antigens filtered out.
+* **Panel b — TCE targets** (n = 30). TheraSAbDab CD3-binding bispecifics,
+  HGNC-resolved.
 * **Panel c — ViralZone entry receptors** (n = 62). Human cell-surface viral
   entry receptors from [ViralZone](https://viralzone.expasy.org/5356) (Expasy),
   UniProt-resolved.
 
-Sonnet bar = positive in the combined dual NCBI triage (runs
-`genome_full_sonnet_ncbi_v1` ∪ `_v2`, verdict `yes` OR `contextual`).
-The PubMed-augmented variant is a separate exploration, not part of the
-combined axis.
+**DB cutoffs.** The UniProt and CSPA bars use the SurfaceBench-optimized
+cutoffs (UniProt expanded to admit TM/signal-peptide proteins; CSPA
+tightened to high-confidence only), matching the cutoffs the rest of the
+paper reports. GO / SURFY / HPA have no better cutoff than their initial
+rule, so those bars are unchanged.
+
+Sonnet bar = positive in the combined Sonnet triage (runs
+`genome_full_sonnet_ncbi_v1` ∪ `_v2` ∪ `genome_full_sonnet_pubmed_ncbi_v1`,
+verdict `yes` OR `contextual`) — the same inclusion rule the candidate
+universe uses.
 
 Run:
 

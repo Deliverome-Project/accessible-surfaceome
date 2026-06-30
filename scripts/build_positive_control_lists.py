@@ -37,6 +37,14 @@ from accessible_surfaceome.env import load_env
 REPO_ROOT = Path(__file__).resolve().parents[1]
 CU_PATH = REPO_ROOT / "data/processed/candidate_universe/candidate_universe_v3.tsv"
 COHORT_PATH = REPO_ROOT / "data/external/ncbi_gene_info/Homo_sapiens.protein_coding.with_hgnc.tsv"
+# SurfaceBench-optimized per-DB cutoffs. Carries uniprot_optimized (expanded
+# to admit TM/signal-peptide proteins; 3,894) + cspa_optimized (tightened to
+# high-confidence only; 1,039), keyed on UniProt accession. The figure uses
+# these so the DB-coverage bars match the optimized cutoffs the rest of the
+# paper reports (Main Fig 2, the DB-correctness figures) rather than the
+# initial cutoffs that candidate_universe_v3's *_flag columns carry. GO / SURFY
+# / HPA have no better cutoff than their initial rule, so those stay as-is.
+OPT_CUTOFFS_PATH = REPO_ROOT / "data/processed/triage_bench/db_optimized_cutoffs.tsv"
 OUT_DIR = REPO_ROOT / "data/processed/positive_controls"
 OUT_DIR.mkdir(parents=True, exist_ok=True)
 
@@ -505,8 +513,17 @@ def build_indicator_df(
     hgnc_set: set[str],
     cu: pd.DataFrame, cohort: pd.DataFrame,
     sonnet_pos_hgnc: set[str],
+    uniprot_opt_accs: set[str], cspa_opt_accs: set[str],
 ) -> pd.DataFrame:
-    """Build the augmented indicator TSV for one category."""
+    """Build the augmented indicator TSV for one category.
+
+    UniProt + CSPA flags use the SurfaceBench-OPTIMIZED cutoffs (keyed on
+    UniProt accession via ``uniprot_opt_accs`` / ``cspa_opt_accs``) so the
+    DB-coverage bars match the cutoffs the rest of the paper reports. GO /
+    SURFY / HPA keep their candidate-universe flags (no better cutoff than
+    the initial rule was found). ``n_db_votes`` is recomputed from the
+    optimized-where-applicable 5-flag set.
+    """
     cu_by_hgnc = cu.set_index("hgnc_id")
     cohort_by_hgnc = cohort.set_index("hgnc_id")
     rows = []
@@ -523,10 +540,27 @@ def build_indicator_df(
         if in_cu:
             cr = cu_by_hgnc.loc[h]
             cr = cr.iloc[0] if isinstance(cr, pd.DataFrame) else cr
-            rec["uniprot_acc"] = cr.get("uniprot_acc")
-            for db in ("uniprot", "go", "hpa", "surfy", "cspa"):
+            acc = cr.get("uniprot_acc")
+            rec["uniprot_acc"] = acc
+            # GO / SURFY / HPA from the candidate universe (initial == optimized)
+            for db in ("go", "hpa", "surfy"):
                 rec[f"{db}_flag"] = int(cr.get(f"{db}_flag", 0))
-            rec["n_db_votes"] = int(cr.get("n_db_votes", 0))
+            # UniProt + CSPA from the optimized-cutoff accession sets.
+            # UniProt optimized is a SUPERSET of the initial rule (it only
+            # ADMITS more proteins — TM/signal), so OR with the initial flag
+            # to stay robust against any primary/secondary-accession mismatch
+            # between candidate_universe_v3 and db_optimized_cutoffs (the
+            # superset property must hold). CSPA optimized is a strict subset
+            # (tightened to high-confidence only), and cspa_opt_accs is the
+            # complete genome-wide high-confidence set, so a plain membership
+            # test is correct.
+            init_uniprot = int(cr.get("uniprot_flag", 0))
+            rec["uniprot_flag"] = int(init_uniprot or str(acc) in uniprot_opt_accs)
+            rec["cspa_flag"] = int(str(acc) in cspa_opt_accs)
+            rec["n_db_votes"] = (
+                rec["uniprot_flag"] + rec["go_flag"] + rec["hpa_flag"]
+                + rec["surfy_flag"] + rec["cspa_flag"]
+            )
         else:
             rec.setdefault("uniprot_acc", None)
             for db in ("uniprot", "go", "hpa", "surfy", "cspa"):
@@ -543,6 +577,14 @@ def main() -> None:
     cohort_desc = dict(zip(cohort["ensembl_gene"].dropna(), cohort["description"]))
     cu = pd.read_csv(CU_PATH, sep="\t")
     sym_to_hgnc_cu = dict(zip(cu["gene_symbol"], cu["hgnc_id"]))
+
+    # SurfaceBench-optimized UniProt + CSPA accession sets (initial flags for
+    # those two DBs would understate UniProt / overstate CSPA vs the cutoffs
+    # the rest of the paper uses). GO / SURFY / HPA keep their initial flags.
+    opt = pd.read_csv(OPT_CUTOFFS_PATH, sep="\t")
+    uniprot_opt_accs = set(opt.loc[opt["uniprot_optimized"] == 1, "accession"].astype(str))
+    cspa_opt_accs = set(opt.loc[opt["cspa_optimized"] == 1, "accession"].astype(str))
+    print(f"  Optimized cutoffs: UniProt {len(uniprot_opt_accs)} accs, CSPA {len(cspa_opt_accs)} accs")
 
     print(f"=== Sonnet dual-pass positives from D1 ===")
     sonnet_pos = fetch_sonnet_dual_positive()
@@ -593,7 +635,10 @@ def main() -> None:
     per_set = {}
     for label, hgnc_set in [("ADC", adc_union), ("TCE", tce), ("VZ", vz_set)]:
         out = OUT_DIR / f"positive_control_{label}.tsv"
-        df_out = build_indicator_df(hgnc_set, cu, cohort, sonnet_pos_hgnc)
+        df_out = build_indicator_df(
+            hgnc_set, cu, cohort, sonnet_pos_hgnc,
+            uniprot_opt_accs, cspa_opt_accs,
+        )
         if label == "ADC":
             df_out["adc_source"] = df_out["hgnc_id"].map(adc_source)
         df_out.to_csv(out, sep="\t", index=False)
