@@ -166,6 +166,7 @@ data/processed/figures/positive_control_db_coverage_bars.tsv  -filter -diff -mer
 data/processed/figures/bench_topology_vs_universe.tsv         -filter -diff -merge text
 data/processed/figures/triage_vs_deep_dive_reason.tsv         -filter -diff -merge text
 data/processed/figures/evidence_corpus_vs_selected.tsv        -filter -diff -merge text
+data/processed/figures/surfaceome_deterministic_features_placeholder.tsv -filter -diff -merge text
 
 # ADCdb per-antigen Function-text scrape — curator-written descriptions from
 # the per-antigen detail pages. ~50 KB. Read by build_positive_control_lists.py

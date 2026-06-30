@@ -107,6 +107,11 @@ TSV_BUNDLE: dict[str, list[str]] = {
         # in the mirror so the gist stays single-source.
         "data/processed/figures/evidence_corpus_vs_selected.tsv",
     ],
+    "surfaceome_deterministic_features_placeholder": [
+        # MOCK-grouped per-gene deterministic features (Supp Fig 13).
+        # Single pre-joined TSV built by build_figure_tsvs.py.
+        "data/processed/figures/surfaceome_deterministic_features_placeholder.tsv",
+    ],
     "topology_coverage_by_source": [
         "data/analysis/db_vs_sonnet_inclusion/per_protein_features.tsv",
     ],

@@ -1,3 +1,4 @@
+# Reproduction: https://gist.github.com/beccajcarlson/57cf3cc3db903ab39bc0ba315ce5e4d5
 """Placeholder figure: deterministic feature distributions across the
 Sonnet-positive surfaceome, grouped by three hues — triage_yes,
 deep_dive_high_conf, deep_dive_likely_surface.
@@ -54,84 +55,22 @@ GROUP_COLOR = {
 OUT_DIR = REPO_ROOT / "data/analysis/figures"
 
 
+DATA_TSV = REPO_ROOT / "data/processed/figures/surfaceome_deterministic_features_placeholder.tsv"
+
+
 def load_data() -> pd.DataFrame:
-    """Load per_protein_features (sonnet-positive subset) + join orthologs
-    + isoform-topology-change flag."""
-    feats = pd.read_csv(
-        REPO_ROOT / "data/analysis/db_vs_sonnet_inclusion/per_protein_features.tsv",
-        sep="\t",
-    )
-    # Filter to Sonnet-positive (the surfaceome as defined by Sonnet)
-    feats = feats[feats["sonnet_verdict"].isin(["yes", "contextual"])].copy()
+    """Load the pre-joined single TSV the figure renders from.
 
-    # DeepTMHMM canonical — TM count, signal peptide, N/C-term ext, length
-    dt = pd.read_csv(
-        REPO_ROOT / "data/processed/deeptmhmm/deeptmhmm_human_canonical.tsv",
-        sep="\t",
-    )
-    dt_keep = ["uniprot_accession", "protein_length", "tm_helix_count",
-               "has_signal_peptide", "signal_peptide_length",
-               "n_term_extracellular", "c_term_extracellular"]
-    feats = feats.merge(
-        dt[dt_keep].rename(columns={"uniprot_accession": "uniprot_accession"}),
-        on="uniprot_accession", how="left",
-    )
-
-    # DeepTMHMM isoforms — flag genes with ≥1 isoform whose topology differs
-    # from the canonical (use TM count + label match as the simple proxy)
-    iso = pd.read_csv(
-        REPO_ROOT / "data/processed/deeptmhmm/deeptmhmm_human_isoforms.tsv",
-        sep="\t",
-    )
-    # Strip isoform suffix to get the canonical acc
-    iso["canonical_acc"] = iso["uniprot_accession"].str.split("-").str[0]
-    iso_by_canon = iso.groupby("canonical_acc").agg(
-        iso_n=("uniprot_accession", "count"),
-        iso_tm_counts=("tm_helix_count", lambda x: set(x.dropna().astype(int))),
-        iso_labels=("deeptmhmm_label", lambda x: set(x.dropna())),
-    ).reset_index()
-    iso_by_canon = iso_by_canon.rename(columns={"canonical_acc": "uniprot_accession"})
-    feats = feats.merge(iso_by_canon, on="uniprot_accession", how="left")
-
-    def alt_iso_diff_topology(row):
-        if pd.isna(row.get("iso_n")) or row.get("iso_n", 0) == 0:
-            return None
-        canon_tm = row.get("tm_helix_count")
-        if pd.isna(canon_tm):
-            return None
-        iso_tms = row.get("iso_tm_counts")
-        if iso_tms is None or not isinstance(iso_tms, set):
-            return 0
-        # Different TM count between any isoform and the canonical = topology change
-        return int(any(t != int(canon_tm) for t in iso_tms if not pd.isna(t)))
-
-    feats["alt_iso_diff_topo"] = feats.apply(alt_iso_diff_topology, axis=1)
-
-    # Ensembl Compara — mouse + cyno one-to-one high-confidence ortholog flags
-    cmp = pd.read_csv(
-        REPO_ROOT
-        / "data/external/ensembl_compara_surfaceome_expressed/compara_mouse_cyno_one2one_highconf_by_gene.csv"
-    )
-    cmp_keep = cmp[["resolver_resolved_gene_symbol",
-                    "mouse_has_one2one_high_confidence",
-                    "cyno_has_one2one_high_confidence"]].rename(
-        columns={"resolver_resolved_gene_symbol": "gene_symbol"}
-    )
-    feats = feats.merge(cmp_keep, on="gene_symbol", how="left")
-
-    # === Assign groups ===
-    def group_of(row):
-        if row["sonnet_verdict"] == "yes":
-            if str(row.get("sonnet_confidence", "")).lower() == "high":
-                return "deep_dive_high_conf"   # placeholder
-            return "triage_yes"
-        if row["sonnet_verdict"] == "contextual":
-            return "deep_dive_likely_surface"
-        return None
-
-    feats["group"] = feats.apply(group_of, axis=1)
-    feats = feats.dropna(subset=["group"])
-
+    The join (per_protein_features Sonnet-positive subset × DeepTMHMM
+    canonical × alt-isoform-topology flag × Schweke homo-oligomer ×
+    Ensembl-Compara mouse/cyno ortholog flags × bucket assignment) is
+    materialised once by
+    ``scripts/build_figure_tsvs.py::build_surfaceome_deterministic_features_placeholder``
+    into ``data/processed/figures/surfaceome_deterministic_features_placeholder.tsv``.
+    This keeps the gist a single-TSV reproduction unit per the
+    single-TSV-per-gist invariant (tests/test_gist_single_tsv.py).
+    """
+    feats = pd.read_csv(DATA_TSV, sep="\t")
     print(f"Sonnet-positive surfaceome: {len(feats)}")
     print(feats["group"].value_counts().to_string())
     return feats
@@ -142,8 +81,10 @@ def render(feats: pd.DataFrame) -> Path:
     plt.rcParams.update({
         "font.size":       12,
         "axes.labelsize":  12,
+        "axes.titlesize":  0,
         "xtick.labelsize": 11,
         "ytick.labelsize": 11,
+        "legend.fontsize": 11,
     })
 
     fig, axes = plt.subplots(3, 3, figsize=(15, 12))
@@ -220,7 +161,7 @@ def render(feats: pd.DataFrame) -> Path:
 
     plt.tight_layout(rect=(0, 0, 1, 0.97))
     save_figure(fig, "surfaceome_deterministic_features_placeholder", OUT_DIR,
-                formats=("pdf", "png"))
+                formats=("pdf", "png"), gist_url="https://gist.github.com/beccajcarlson/57cf3cc3db903ab39bc0ba315ce5e4d5")
     plt.close(fig)
     return OUT_DIR / "surfaceome_deterministic_features_placeholder.pdf"
 
