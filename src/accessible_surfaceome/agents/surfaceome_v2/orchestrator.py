@@ -46,6 +46,7 @@ from pydantic import ValidationError
 from accessible_surfaceome._version_guard import PROMPT_CORPUS_VERSION
 from accessible_surfaceome.agents._support.client import get_client
 from accessible_surfaceome.agents._support.evidence_promotion import promote_claim
+from accessible_surfaceome.agents._support.model_config import deep_dive_model
 from accessible_surfaceome.agents._support.pricing import UsageRecord, UsageSummary
 from accessible_surfaceome.agents._support.timing import StepTiming, TimingRecorder
 from accessible_surfaceome.agents.plan_trim_select import (
@@ -117,7 +118,9 @@ from accessible_surfaceome.tools._shared.source_text import SourceText, SourceTe
 
 logger = logging.getLogger(__name__)
 
-AGENT_MODEL = "claude-sonnet-4-6"
+# Env-overridable via SURFACEOME_DEEP_DIVE_MODEL (default claude-sonnet-4-6).
+# Single knob shared by plan_trim_select + builders + synthesizer.
+AGENT_MODEL = deep_dive_model()
 
 # PTS-level per-gene cost ceiling (USD). A plan-trim-select dual costlier than
 # this aborts BEFORE builders run (failure_mode=cost_ceiling_pts) and the gene

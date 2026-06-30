@@ -48,6 +48,7 @@ from accessible_surfaceome.agents._support.api_retry import (
     messages_create_with_backoff,
 )
 from accessible_surfaceome.agents._support.client import get_client
+from accessible_surfaceome.agents._support.model_config import deep_dive_model
 from accessible_surfaceome.agents._support.payload import cached_system
 from accessible_surfaceome.agents._support.pricing import (
     UsageRecord,
@@ -373,7 +374,7 @@ _EVIDENCE_ID_PREFIX: dict[str, str] = {
     "a2": "a2_evi_",
 }
 
-SONNET_MODEL = "claude-sonnet-4-6"
+SONNET_MODEL = deep_dive_model()  # SURFACEOME_DEEP_DIVE_MODEL override
 HAIKU_MODEL = "claude-haiku-4-5-20251001"
 HAIKU_PRICING_KEY = "claude-haiku-4-5"
 
