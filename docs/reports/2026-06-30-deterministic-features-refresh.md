@@ -82,11 +82,38 @@ Because the deterministic features are surfaced by the Worker LEFT JOINs, these
 genes' pages pick up the new topology/ECD automatically once the rows land — no
 re-annotation required.
 
-## Status
+## Status — new-gene work complete + published
 
-- ☐ PubMed-177 sweep — running
-- ☐ PR #86 8-gene sweep — queued (auto-launches when the first sweep frees RAM)
-- ☐ Validation of both runs' JSONL
-- ☐ Combined append-only D1 upload (after sign-off) + before/after coverage report
+- ☑ PubMed-177 sweep — topology (54/54 previously-missing now have it), 1,339 paralog pairs, 632 ortholog-ECD rows
+- ☑ PR #86 8-gene sweep — full parity: topology + isoforms + 22 paralog pairs + 14 ortholog-ECD rows (orthologs seeded into private `compara_ortholog` first)
+- ☑ Combined append-only D1 upload (private + public), `INSERT OR IGNORE` into existing versions:
+  - topology canonical+mouse+cyno → `topo_2026_05_16` · isoforms → `topo_2026_05_25`
+  - paralog ECD → `paralog_topo_2026_05_16` · ortholog ECD → `orthologecd_topo_2026_05_16_idfix`
+- ☑ Post-upload coverage: pubmed-177 canonical topology **177/177**, v3add-8 **8/8**
 
-This document will be updated with final row counts once the upload completes.
+Net topology coverage across v3: **5,150 / 5,151** (the one holdout, RSC1A1 / HGNC:10458, is a withdrawn HGNC ID with no resolvable protein — a cohort-hygiene item, not a features gap).
+
+## Whole-cohort re-audit — follow-up (NOT yet recomputed)
+
+A re-audit of all 5,151 v3 genes (BioMart-checked every gene with no paralog/ortholog
+row in D1) found **bug-driven misses** from the May sweep — genes that *do* have
+paralogs/orthologs but show none in D1, mostly because the May `compara_ortholog`
+table predated the current v3 cohort:
+
+| Feature | No data in D1 | True-absent | **Bug-driven miss** |
+|---|---|---|---|
+| Paralog | 791 | 672 | **119** |
+| Ortholog (1:1) | 963 | 224 | **739** |
+
+The 748 unique miss genes (119 paralog, 739 ortholog, 110 both) are listed in
+[`data/analysis/topology_reaudit/2026-06-30_paralog_ortholog_misses.tsv`](../../data/analysis/topology_reaudit/2026-06-30_paralog_ortholog_misses.tsv).
+
+**Recompute plan (deferred, ~1.5–2.5 h at 1 worker):** build a candidate set for the
+~800 miss genes → pull + seed their orthologs into `compara_ortholog` (private +
+public, ~1,400 rows) → run the sweep (topology mostly cached; ~1,400 ortholog +
+paralog-expansion proteins predicted fresh) → append paralog + ortholog ECD to the
+existing D1 versions. After this, paralog/ortholog absence will exist only where
+BioMart confirms there genuinely are none.
+
+Also deferred to the same batch: seeding the 8 v3add genes' orthologs into the
+**public** `compara_ortholog` mirror (private was seeded to enable their ECD).
