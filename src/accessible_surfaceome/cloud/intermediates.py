@@ -49,11 +49,27 @@ from accessible_surfaceome.tools._shared.failure_modes import (
 logger = logging.getLogger(__name__)
 
 
-# D1 row size soft limit. Cloudflare documents a hard 1 MB row limit;
+# D1 row size HARD cap. Cloudflare documents a hard 1 MB row limit;
 # 900 KB leaves headroom for the per-cell + per-column overhead the
-# REST layer adds. Blobs above this are skipped with a warning rather
-# than crashing the publish path.
+# REST layer adds. A blob still above this *after* slimming is skipped
+# with a warning rather than crashing the publish path.
 _MAX_INTERMEDIATES_BYTES = 900 * 1024
+
+# R2 spill TRIGGER. The full intermediates blob is the forensic audit
+# trail (per-iteration search_log + per-paper triage_actions +
+# pretrim_audits) — reproducibility data, never read on the dedup /
+# viewer / resume hot paths. Those audit fields are ~80% of a typical
+# blob (measured: full avg ~655 KB → slim avg ~158 KB), so leaving them
+# in D1 piles up ~1.8 MB/gene and blows past the D1 size cap at cohort
+# scale (~12.7 GB projected over 5k genes). Above this trigger we move
+# the FULL blob to R2 and keep only the slim resume-critical blob in D1
+# (claims, builder outputs, synthesizer raw_json, deterministic_features
+# — what the synth-retry / pts_checkpoint resume path reads), with the
+# R2 key stitched in as a pointer. Set well below the hard cap so the
+# spill is the DEFAULT, not the rare >900 KB exception; genuinely small
+# blobs (already near-slim) stay wholly in D1 to avoid a pointless R2
+# round-trip. Projected D1 footprint over 5k genes drops to ~3.3 GB.
+_SPILL_TO_R2_BYTES = 256 * 1024
 
 
 # Idempotent DDL — mirrors the block at the tail of
@@ -294,20 +310,20 @@ def publish_intermediates(
     n_bytes = len(blob.encode("utf-8"))
     stamp = created_at or datetime.now(UTC).isoformat()
 
-    # Slim-fallback when the full blob would exceed D1's row limit.
-    # Drop the bulkiest pieces (per-side plan-trim-select search_log +
-    # triage_actions + paper-metadata fields) and keep what the synth-
-    # only retry path actually needs: claims, builder outputs,
+    # R2 spill (the DEFAULT for any non-trivial blob). Move the bulkiest
+    # pieces (per-side plan-trim-select search_log + triage_actions +
+    # pretrim_audits) to R2 and keep what the synth-only / pts_checkpoint
+    # resume path actually needs in D1: claims, builder outputs,
     # deterministic_features, canonical_risks, synthesizer raw_json,
-    # bundle, triage_summary. Observed: TGOLN2 v2.32 at 897KB (99.7%
-    # of 900KB limit) — heavier genes WILL exceed.
-    if n_bytes > _MAX_INTERMEDIATES_BYTES:
-        logger.warning(
-            "intermediates for %s would exceed D1 row limit "
-            "(%d bytes > %d). Stripping bulky audit fields "
-            "(search_log + triage_actions + paper_metadata) so the "
-            "slim blob fits; full blob spilling to R2.",
-            gene_symbol, n_bytes, _MAX_INTERMEDIATES_BYTES,
+    # bundle, triage_summary. Triggers well below the D1 row cap so the
+    # audit bulk lives in R2 at cohort scale rather than piling up in D1.
+    if n_bytes > _SPILL_TO_R2_BYTES:
+        logger.info(
+            "intermediates for %s exceed the R2-spill trigger "
+            "(%d bytes > %d). Spilling the full audit blob "
+            "(search_log + triage_actions + pretrim_audits) to R2 and "
+            "keeping the slim resume blob in D1.",
+            gene_symbol, n_bytes, _SPILL_TO_R2_BYTES,
         )
         # R2 full-audit offload: upload the FULL pre-slim blob to R2
         # using the existing CLOUDFLARE_API_TOKEN (Option A — no new
