@@ -24,12 +24,13 @@ Run:
 """
 from __future__ import annotations
 
-import csv
+from collections import Counter
 from pathlib import Path
 
 import matplotlib.patches as mpatches
 import matplotlib.pyplot as plt
 import numpy as np
+import pandas as pd
 import seaborn as sns
 
 from accessible_surfaceome.audit._plotting_config import (
@@ -43,9 +44,10 @@ ROOT = Path(__file__).resolve().parents[1]
 OUT_DIR = ROOT / "data/analysis/figures"
 SLUG = "curator_vs_agent_reason"
 
-BENCH_TSV = ROOT / "data/eval/triage_benchmark_v1.tsv"
-PRED_TSV = ROOT / "data/processed/triage_bench/mainbench_canonical_v2.tsv"
-REPS_TSV = ROOT / "data/processed/triage_bench/mainbench_replicates_v2.tsv"
+# Single committed figure TSV — produced by scripts/build_figure_tsvs.py.
+# One row per (gene × model × prompt_variant × replicate) with
+# ground_truth_reason + predicted_reason denormalized.
+FIGURE_TSV = ROOT / "data/processed/figures/curator_vs_agent_reason.tsv"
 PROD_MODEL = "claude-sonnet-4-6"
 PROD_VARIANT = "ncbi"
 
@@ -106,43 +108,81 @@ LABEL_SHORT = {
 }
 
 
-def _load_curator_reasons() -> dict[str, str]:
-    out: dict[str, str] = {}
-    with open(BENCH_TSV) as f:
-        for r in csv.DictReader(f, delimiter="\t"):
-            out[r["gene_symbol"]] = r["ground_truth_reason"]
-    return out
+def _load_data() -> pd.DataFrame:
+    """Load the committed figure TSV once; callers slice as needed."""
+    return pd.read_csv(FIGURE_TSV, sep="\t", dtype=str)
 
 
-def _load_agent_predictions() -> dict[str, str]:
-    """Production Sonnet 4.6 + NCBI predictions only (one row per gene)."""
-    out: dict[str, str] = {}
-    with open(PRED_TSV) as f:
-        for r in csv.DictReader(f, delimiter="\t"):
-            if r["model"] != PROD_MODEL or r["prompt_variant"] != PROD_VARIANT:
-                continue
-            out[r["gene_symbol"]] = r["predicted_reason"]
-    return out
+def _surface_vote(verdict: str) -> bool | None:
+    """Map a verdict string to a surface-positive boolean, or None if invalid.
+    Mirrors the same function in scripts/export_mainbench_to_tsv.py — yes and
+    contextual both count as surface-positive for majority voting, no is
+    surface-negative."""
+    if verdict in ("yes", "contextual"):
+        return True
+    if verdict == "no":
+        return False
+    return None
 
 
-def _build_matrix() -> tuple[np.ndarray, int, int, dict[tuple[int, int], list[str]]]:
+def _representative_reason(group: pd.DataFrame) -> str:
+    """Collapse per-replicate rows to one representative predicted_reason,
+    replicating mainbench_canonical_v2's majority-collapse logic exactly:
+      1. Map each rep's predicted_verdict through _surface_vote (yes+contextual→True, no→False).
+      2. Pick the majority surface-vote side (True/False) via Counter.most_common.
+      3. Among reps in the winning side, pick the most-common predicted_verdict
+         (Counter.most_common breaks ties by insertion/encounter order).
+      4. Take the first rep (in original row order) whose verdict matches.
+    This diverges from a plain vote-on-reason approach for cells where the
+    verdict majority and the reason mode disagree (ATG9A/haiku/web_ncbi is the
+    known case: 1×no + 1×contextual + 1×yes; surface-vote majority = True, so
+    the no rep is excluded; reason = contextual/dual_localization wins)."""
+    valid = group[group["predicted_verdict"].map(_surface_vote).notna()]
+    if valid.empty:
+        return group.iloc[0]["predicted_reason"]
+    votes: Counter = Counter(valid["predicted_verdict"].map(_surface_vote).tolist())
+    win_side = votes.most_common(1)[0][0]
+    win_reps = valid[valid["predicted_verdict"].map(_surface_vote) == win_side]
+    rep_verdict = Counter(win_reps["predicted_verdict"].tolist()).most_common(1)[0][0]
+    representative = win_reps[win_reps["predicted_verdict"] == rep_verdict].iloc[0]
+    return representative["predicted_reason"]
+
+
+def _load_curator_reasons(data: pd.DataFrame) -> dict[str, str]:
+    """One ground_truth_reason per gene (same value on every row for a gene)."""
+    return (
+        data.drop_duplicates("gene_symbol")
+        .set_index("gene_symbol")["ground_truth_reason"]
+        .to_dict()
+    )
+
+
+def _build_matrix(data: pd.DataFrame) -> tuple[np.ndarray, int, int, dict[tuple[int, int], list[str]]]:
     """Build the (curator_reason × agent_reason) count matrix AND
     a {(i, j): [gene, gene, ...]} index of which specific bench
     genes fell into each off-diagonal cell. Off-diagonal cells are
     the disagreements worth surfacing by name on the figure;
     diagonal cells often have 10+ genes and stay count-only."""
-    curator = _load_curator_reasons()
-    agent = _load_agent_predictions()
+    sub = data[(data["model"] == PROD_MODEL) & (data["prompt_variant"] == PROD_VARIANT)]
+    per_gene = (
+        sub.groupby("gene_symbol")
+        .apply(
+            lambda g: pd.Series({
+                "ground_truth_reason": g["ground_truth_reason"].iloc[0],
+                "predicted_reason": _representative_reason(g),
+            }),
+            include_groups=False,
+        )
+        .dropna()
+    )
     n = len(REASONS_ORDERED)
     m = np.zeros((n, n), dtype=int)
     cell_genes: dict[tuple[int, int], list[str]] = {}
     n_joined = 0
     n_match = 0
     idx_of = {r: i for i, r in enumerate(REASONS_ORDERED)}
-    for gene, c_reason in curator.items():
-        if gene not in agent:
-            continue
-        a_reason = agent[gene]
+    for gene, row in per_gene.iterrows():
+        c_reason, a_reason = row["ground_truth_reason"], row["predicted_reason"]
         if c_reason not in idx_of or a_reason not in idx_of:
             continue
         i, j = idx_of[c_reason], idx_of[a_reason]
@@ -151,6 +191,9 @@ def _build_matrix() -> tuple[np.ndarray, int, int, dict[tuple[int, int], list[st
         n_joined += 1
         if c_reason == a_reason:
             n_match += 1
+    # Sort gene lists alphabetically for deterministic off-diagonal labels
+    # regardless of iteration order (TSV gene order vs benchmark-TSV order).
+    cell_genes = {k: sorted(v) for k, v in cell_genes.items()}
     return m, n_joined, n_match, cell_genes
 
 
@@ -191,32 +234,39 @@ CONFIGS_B = [
 ]
 
 
-def _all_preds() -> dict[tuple[str, str], dict[str, str]]:
+def _all_preds(data: pd.DataFrame) -> dict[tuple[str, str], dict[str, str]]:
+    """One representative predicted_reason per (model, variant, gene) using
+    the majority-verdict collapse rule. Mirrors what mainbench_canonical_v2
+    stored as its ``predicted_reason``."""
+    needed_models = {m for (m, v, _) in CONFIGS_A} | {m for (m, v, _) in CONFIGS_B}
+    needed_variants = {v for (m, v, _) in CONFIGS_A} | {v for (m, v, _) in CONFIGS_B}
     needed = {(m, v) for (m, v, _) in CONFIGS_A} | {(m, v) for (m, v, _) in CONFIGS_B}
+    sub = data[data["model"].isin(needed_models) & data["prompt_variant"].isin(needed_variants)]
     out: dict[tuple[str, str], dict[str, str]] = {k: {} for k in needed}
-    with open(PRED_TSV) as f:
-        for r in csv.DictReader(f, delimiter="\t"):
-            key = (r["model"], r["prompt_variant"])
-            if key in out:
-                out[key][r["gene_symbol"]] = r["predicted_reason"]
+    for (mod, var), grp in sub.groupby(["model", "prompt_variant"]):
+        key = (mod, var)
+        if key not in out:
+            continue
+        for gene, g in grp.groupby("gene_symbol"):
+            out[key][gene] = _representative_reason(g)
     return out
 
 
-def _all_rep_preds() -> dict[tuple[str, str, int], dict[str, str]]:
+def _all_rep_preds(data: pd.DataFrame) -> dict[tuple[str, str, int], dict[str, str]]:
     """Per-replicate predictions: {(model, variant, replicate): {gene:
     predicted_reason}}. Drives the per-bar replicate dots + SEM error
-    bars in panel a. mainbench_replicates_v2.tsv has 3 reps per cell
-    for every (model, variant) in CONFIGS_A; missing-cell guard below
-    just yields fewer dots."""
+    bars in panel a. Missing-cell guard in _draw_grouped yields fewer dots."""
+    needed_models = {m for (m, v, _) in CONFIGS_A}
+    needed_variants = {v for (m, v, _) in CONFIGS_A}
     needed = {(m, v) for (m, v, _) in CONFIGS_A}
+    sub = data[data["model"].isin(needed_models) & data["prompt_variant"].isin(needed_variants)]
     out: dict[tuple[str, str, int], dict[str, str]] = {}
-    with open(REPS_TSV) as f:
-        for r in csv.DictReader(f, delimiter="\t"):
-            key = (r["model"], r["prompt_variant"])
-            if key not in needed:
-                continue
-            rep = int(r["replicate"])
-            out.setdefault((*key, rep), {})[r["gene_symbol"]] = r["predicted_reason"]
+    for _, r in sub.iterrows():
+        key = (r["model"], r["prompt_variant"])
+        if key not in needed:
+            continue
+        rep = int(r["replicate"])
+        out.setdefault((*key, rep), {})[r["gene_symbol"]] = r["predicted_reason"]
     return out
 
 
@@ -279,10 +329,11 @@ def make_plot() -> tuple[plt.Figure, list[plt.Axes]]:
         "font.size": 16, "axes.labelsize": 18, "axes.titlesize": 0,
         "xtick.labelsize": 11, "ytick.labelsize": 11, "legend.fontsize": 12,
     })
-    m, n_joined, n_match, cell_genes = _build_matrix()
+    data = _load_data()
+    m, n_joined, n_match, cell_genes = _build_matrix(data)
     n = m.shape[0]
-    curator = _load_curator_reasons()
-    all_preds = _all_preds()
+    curator = _load_curator_reasons(data)
+    all_preds = _all_preds(data)
 
     # 3-row layout: (a) bucket-strict accuracy, (b) per-reason
     # accuracy, (c) Sonnet/ncbi confusion matrix. Each row is its own
@@ -426,7 +477,7 @@ def make_plot() -> tuple[plt.Figure, list[plt.Axes]]:
 
     # Per-replicate bucket accuracy → drives the dot + SEM overlay
     # in _draw_grouped. {(model, variant): {group_label: [pct1, ...]}}
-    rep_preds = _all_rep_preds()
+    rep_preds = _all_rep_preds(data)
     rep_bucket_acc: dict[tuple[str, str], dict[str, list[float]]] = {}
     for (mod, var, _label) in CONFIGS_A:
         per_rep: dict[str, list[float]] = {}

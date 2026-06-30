@@ -59,6 +59,11 @@ READS_BUNDLED_TSV = [
     # Migrated 2026-06-30: canonical reads the union TSV (in_universe + is_bench
     # flags); bench cohort is the benchmark's ground-truth yes/contextual genes.
     "bench_topology_vs_universe",
+    # Migrated 2026-06-30 (read-the-TSV): canonicals now read their committed
+    # figure TSV instead of recomputing from raw upstream sources.
+    "db_vs_sonnet_whole_proteome",
+    "ensemble_vs_best_db_vs_sonnet",
+    "curator_vs_agent_reason",
 ]
 
 # Figures whose canonical recomputes from real upstream sources by
@@ -66,11 +71,10 @@ READS_BUNDLED_TSV = [
 # per-figure TSV is a downstream export; the canonical recomputing from
 # the upstream truth is correct. Byte-identity on the gist side is
 # covered by tests/test_figure_gist_data_sync.py.
-COMPUTES_FROM_UPSTREAM = {
-    "curator_vs_agent_reason",         # eval bench + mainbench predictions
-    "db_vs_sonnet_whole_proteome",     # whole-proteome catalog + cutoffs
-    "ensemble_vs_best_db_vs_sonnet",   # whole-proteome catalog + cutoffs
-}
+# Empty as of 2026-06-30: every figure with a scripts/<slug>.py ↔ make_<slug>.py
+# pair was migrated to read its committed figure TSV (the single source of truth),
+# so none recomputes from upstream by design. Kept for future recompute figures.
+COMPUTES_FROM_UPSTREAM: set[str] = set()
 
 
 @pytest.mark.parametrize("slug", READS_BUNDLED_TSV)
