@@ -93,8 +93,12 @@ def test_surface_evidence_accepts_excluded():
 
 
 def test_warn_fires_when_grade_rationale_has_no_inline_cite(caplog):
-    """A non-empty rationale without any (aN_evi_NN) emits a warning."""
-    with caplog.at_level(logging.WARNING):
+    """A non-empty rationale without any (aN_evi_NN) is detected and logged.
+
+    Logged at DEBUG (soft citation-discipline signal, demoted from WARNING to
+    keep the operator's stream usable at cohort scale) — not raised.
+    """
+    with caplog.at_level(logging.DEBUG):
         SurfaceEvidence(
             evidence_grade="supportive_but_indirect",
             grade_rationale=(
@@ -111,7 +115,7 @@ def test_warn_fires_when_grade_rationale_has_no_inline_cite(caplog):
 
 
 def test_warn_silent_when_grade_rationale_has_inline_cite(caplog):
-    with caplog.at_level(logging.WARNING):
+    with caplog.at_level(logging.DEBUG):
         SurfaceEvidence(
             evidence_grade="supportive_but_indirect",
             grade_rationale=(
@@ -126,7 +130,7 @@ def test_warn_silent_when_grade_rationale_has_inline_cite(caplog):
 def test_warn_silent_when_grade_rationale_empty(caplog):
     """Empty rationale doesn't warn (the required-field check covers that;
     the cite-warn is gated on non-empty content)."""
-    with caplog.at_level(logging.WARNING):
+    with caplog.at_level(logging.DEBUG):
         SurfaceEvidence(
             evidence_grade="weak",
             grade_rationale="—",
