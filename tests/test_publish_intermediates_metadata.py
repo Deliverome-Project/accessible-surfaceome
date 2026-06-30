@@ -174,6 +174,143 @@ def test_publish_intermediates_failure_mode_none_back_compat(
     assert blob["code_sha"] == "cafebabecafebabecafebabecafebabecafebabe"
 
 
+def _bulky_intermediates(target_bytes: int) -> dict[str, Any]:
+    """A blob whose bulk is audit-only fields the slim path drops.
+
+    Pads ``plan_trim_select.a1.search_log`` (one of the fields
+    ``_slim_intermediates_for_d1`` strips) until the serialized blob
+    clears ``target_bytes`` — so slimming reclaims essentially all of
+    the padding and the D1-resident slim blob is tiny.
+    """
+    base = _synthetic_intermediates()
+    # Each entry ~100 chars; grow the list until the blob clears target.
+    log: list[dict[str, Any]] = []
+    while len(json.dumps({**base, "plan_trim_select": {
+        "a1": {"n_claims": 12, "claims": [], "search_log": log},
+        "a2": {"n_claims": 8, "claims": []},
+    }})) < target_bytes:
+        log.extend({"q": "surface expression " * 5, "hits": list(range(20))}
+                   for _ in range(200))
+    base["plan_trim_select"] = {
+        "a1": {"n_claims": 12, "claims": [], "search_log": log},
+        "a2": {"n_claims": 8, "claims": []},
+    }
+    return base
+
+
+def _patch_r2(uploaded: list[tuple[str, str]]):
+    """Patch the r2_client surface the spill path touches; record uploads."""
+    def _put(key: str, body: str) -> bool:
+        uploaded.append((key, body))
+        return True
+
+    return (
+        patch(
+            "accessible_surfaceome.cloud.r2_client.put_object",
+            side_effect=_put,
+        ),
+        patch(
+            "accessible_surfaceome.cloud.r2_client.intermediates_object_key",
+            return_value="agent_run_intermediates/FAKEGENE/2.99.0/pc/ts.json",
+        ),
+        patch(
+            "accessible_surfaceome.cloud.r2_client.R2Config.from_env",
+            return_value=MagicMock(bucket="deliverome-d1-backups"),
+        ),
+    )
+
+
+def _d1_mock() -> MagicMock:
+    m = MagicMock()
+    m.__enter__ = MagicMock(return_value=m)
+    m.__exit__ = MagicMock(return_value=False)
+    return m
+
+
+def test_bulky_blob_spills_full_to_r2_and_keeps_slim_in_d1(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """The spill fix: a blob over the 256 KB trigger moves the FULL audit
+    blob to R2 and writes only the slim resume blob to D1, with the R2
+    key stitched in as a pointer.
+
+    Regression guard for the cohort-scale D1 bloat fix — the bulky
+    audit fields (search_log / triage_actions / pretrim_audits) must
+    not land in D1, or 5k genes blow past the D1 size cap.
+    """
+    monkeypatch.setenv("CODE_SHA", "a" * 40)
+    monkeypatch.setenv("CLOUDFLARE_ACCOUNT_ID", "fake-account")
+    monkeypatch.setenv("CLOUDFLARE_D1_SURFACEOME_AGENTS_ID", "fake-database")
+    monkeypatch.setenv("CLOUDFLARE_API_TOKEN", "fake-token")
+
+    big = _bulky_intermediates(400 * 1024)
+    full_len = len(json.dumps(big))
+    assert full_len > 256 * 1024  # precondition: over the spill trigger
+
+    uploaded: list[tuple[str, str]] = []
+    p_put, p_key, p_cfg = _patch_r2(uploaded)
+    mock_client = _d1_mock()
+    with patch(
+        "accessible_surfaceome.cloud.intermediates.D1Client",
+        return_value=mock_client,
+    ), p_put, p_key, p_cfg:
+        result = publish_intermediates(
+            gene_symbol="FAKEGENE",
+            intermediates=big,
+            schema_version="2.99.0-test",
+            record_valid=True,
+        )
+
+    assert result.pushed is True
+    # Full blob went to R2 exactly once.
+    assert len(uploaded) == 1
+    assert "search_log" in uploaded[0][1]  # full audit preserved in R2
+
+    # D1 got the slim blob: no search_log, but the R2 pointer present.
+    _sql, params = mock_client.query.call_args[0]
+    d1_blob = json.loads(params[6])
+    assert "search_log" not in json.dumps(d1_blob["plan_trim_select"])
+    assert d1_blob["_r2_full_audit_key"].startswith("agent_run_intermediates/")
+    assert d1_blob["_r2_full_audit_bucket"] == "deliverome-d1-backups"
+    # The slim blob is dramatically smaller than the full blob.
+    assert len(params[6]) < full_len // 2
+    # Resume-critical fields survived the slim.
+    assert d1_blob["bundle"]["uniprot_acc"] == "P00000"
+
+
+def test_small_blob_stays_whole_in_d1_no_r2_roundtrip(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """A blob under the 256 KB trigger is written to D1 as-is — no slim,
+    no R2 upload, no pointer. Keeps the common small-blob path cheap."""
+    monkeypatch.setenv("CODE_SHA", "b" * 40)
+    monkeypatch.setenv("CLOUDFLARE_ACCOUNT_ID", "fake-account")
+    monkeypatch.setenv("CLOUDFLARE_D1_SURFACEOME_AGENTS_ID", "fake-database")
+    monkeypatch.setenv("CLOUDFLARE_API_TOKEN", "fake-token")
+
+    small = _synthetic_intermediates()
+    assert len(json.dumps(small)) < 256 * 1024  # precondition
+
+    uploaded: list[tuple[str, str]] = []
+    p_put, p_key, p_cfg = _patch_r2(uploaded)
+    mock_client = _d1_mock()
+    with patch(
+        "accessible_surfaceome.cloud.intermediates.D1Client",
+        return_value=mock_client,
+    ), p_put, p_key, p_cfg:
+        publish_intermediates(
+            gene_symbol="FAKEGENE",
+            intermediates=small,
+            schema_version="2.99.0-test",
+            record_valid=True,
+        )
+
+    assert uploaded == []  # no R2 round-trip for a small blob
+    _sql, params = mock_client.query.call_args[0]
+    d1_blob = json.loads(params[6])
+    assert "_r2_full_audit_key" not in d1_blob
+
+
 def test_publish_intermediates_does_not_mutate_caller_dict(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
