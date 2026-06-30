@@ -417,16 +417,20 @@ export const DD_ENUM_FIELDS: readonly DdEnumSpec[] = [
     // catalog handler recomputes them each build from the deep-dive
     // subset's distribution.
     //
-    // `llm` provenance per the DdProvenance contract: the underlying
-    // count (n_papers_selected) is derived from the agent's evidence
-    // list, which is an LLM judgement about which papers to select
-    // for full-text reading. Mechanical post-hoc bucketing doesn't
-    // change the provenance bucket — same call as evidence_density.
+    // `deterministic` provenance: although the underlying paper set
+    // was chosen by the agent, the value this filter exposes is a
+    // pure mechanical count (unique papers behind the evidence list)
+    // then a percentile band — no LLM judgement is read at filter
+    // time, and the band is reproducible from the record alone. It
+    // groups with the tool-derived attributes, not the LLM-graded
+    // verdict/reason filters. (Distinct from evidence_density, which
+    // stays `llm` because its buckets track the agent's evidence-row
+    // selection more directly.)
     key: "n_papers_selected_band",
     label: "Papers selected",
     values: ["low", "moderate", "high"],
     tooltipKey: "catalog_n_papers_selected",
-    provenance: "llm",
+    provenance: "deterministic",
   },
   {
     key: "ecd_accessibility_class",

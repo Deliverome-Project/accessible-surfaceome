@@ -27,9 +27,20 @@ rich selection → multi-method verdict), while weak-evidence calls
 cluster in the lower-left.
 
 **MOCK** — counts are synthesized from the production-pipeline
-distributional shape pending the full v2 deep-dive sweep. Replace
-``_synthesize_mock_data()`` with a public-D1 SELECT once
-``deep_dive_run.evidence_grade`` is populated genome-wide:
+distributional shape pending the full v2 deep-dive sweep. The single
+source of the mock data is ``scripts/build_figure_tsvs.py``
+(``build_evidence_corpus_vs_selected``, seed=42), which writes the
+bundled per-figure TSV at
+``data/processed/figures/evidence_corpus_vs_selected.tsv`` (columns:
+``gene_symbol, papers_found_mock, papers_selected_mock,
+evidence_grade``). This canonical generator reads that TSV so it
+renders the **same** dataset as the gist mirror
+(``data/analysis/figures/make_evidence_corpus_vs_selected.py``) — no
+in-memory re-synthesis. The synthesis recipe lives solely in
+``build_figure_tsvs.py`` so the figure and the gist cannot drift.
+
+Once ``deep_dive_run.evidence_grade`` is populated genome-wide, swap
+``build_figure_tsvs.py``'s synthesis recipe for a public-D1 SELECT:
 
     SELECT gene_symbol,
            json_extract(annotation_json, '$.evidence_count')         AS papers_found,
@@ -47,6 +58,7 @@ from pathlib import Path
 
 import matplotlib.pyplot as plt
 import numpy as np
+import pandas as pd
 import seaborn as sns
 
 from accessible_surfaceome.audit._plotting_config import (
@@ -58,6 +70,12 @@ from accessible_surfaceome.audit._plotting_config import (
 ROOT = Path(__file__).resolve().parents[1]
 OUT_DIR = ROOT / "data/analysis/figures"
 SLUG = "evidence_corpus_vs_selected"
+
+# Bundled per-figure MOCK TSV — the single source of the synthesized
+# data (one row per gene), produced by ``scripts/build_figure_tsvs.py``
+# (``build_evidence_corpus_vs_selected``, seed=42). Reading it here keeps
+# canonical == gist mirror == bundled TSV; see module docstring.
+DATA_TSV = ROOT / "data/processed/figures/evidence_corpus_vs_selected.tsv"
 
 # Verdict ordering = best → worst evidence quality (used for legend
 # + plot z-order so weak dots don't occlude direct_multi dots).
@@ -80,65 +98,22 @@ VERDICT_LABEL = {
     "weak":                    "weak / sparse",
 }
 
-# Mock target ~ deep-dive cohort scale; reproducible via fixed seed
-# so the placeholder figure doesn't drift between renders.
-_N_MOCK_GENES = 220
-_RANDOM_SEED = 42
+def _load_data() -> tuple[np.ndarray, np.ndarray, np.ndarray]:
+    """Read the bundled MOCK per-figure TSV and return three same-length
+    arrays ``(papers_found, papers_selected, verdicts)``.
 
-
-def _synthesize_mock_data() -> tuple[np.ndarray, np.ndarray, np.ndarray]:
-    """Generate per-gene (papers_found, papers_selected, verdict) tuples
-    with a plausible joint shape:
-
-      • papers_found ~ Lognormal(μ=ln 234, σ=0.6), clipped to [25, 550]
-        — anchored on the 234.5 median + ~50–400 range from the
-        methods-text 100-gene audit.
-      • selection rate decreases with log(found) — agents extract fewer
-        papers per gene as the corpus grows (more noise to filter).
-      • verdict assigned probabilistically as a function of
-        log(selected) so higher-evidence genes tilt toward
-        direct_multi_method; lower-evidence genes tilt toward weak.
-
-    Returns three same-length arrays."""
-    rng = np.random.default_rng(_RANDOM_SEED)
-    n = _N_MOCK_GENES
-
-    # Papers found: lognormal centred at 234 (audit median)
-    papers_found = np.clip(
-        rng.lognormal(mean=np.log(234), sigma=0.6, size=n),
-        25, 550,
-    )
-
-    # Selection rate: shrinks with corpus size; baseline 12% scaled by
-    # ln(75)/ln(found) so a 75-paper gene keeps ~12%, a 400-paper gene
-    # selects ~6%. Add gaussian noise on top.
-    base_rate = 0.12 * np.log(75) / np.log(papers_found)
-    noise = rng.normal(0.0, 0.025, size=n)
-    selection_rate = np.clip(base_rate + noise, 0.01, 0.30)
-    papers_selected = np.clip(np.round(papers_found * selection_rate), 2, 50).astype(int)
-    papers_found = np.round(papers_found).astype(int)
-
-    # Verdict: cumulative thresholds on a latent quality score that
-    # is mostly papers_selected with a small contribution from
-    # selection rate (so high-selection-rate small-corpus genes can
-    # also reach a high verdict).
-    quality = np.log1p(papers_selected) + 1.5 * selection_rate
-    # Empirical thresholds chosen so each bucket gets a reasonable
-    # share of the 220 mock genes (~45% direct_multi/single, ~35%
-    # supportive, ~20% weak) — mirrors the v1 sample shape.
-    verdicts = np.empty(n, dtype=object)
-    q_noise = rng.normal(0.0, 0.22, size=n)
-    q = quality + q_noise
-    # Thresholds chosen to land target shares ~ 30/25/25/20 across
-    # direct_multi / direct_single / supportive / weak. The previous
-    # cutoffs (3.2/2.6/2.0) pushed too many genes into the top two
-    # buckets and left weak nearly empty.
-    verdicts[q >= 3.45] = "direct_multi_method"
-    verdicts[(q >= 3.10) & (q < 3.45)] = "direct_single_method"
-    verdicts[(q >= 2.75) & (q < 3.10)] = "supportive_but_indirect"
-    verdicts[q < 2.75] = "weak"
-
-    return papers_found, papers_selected, verdicts
+    The TSV is the single source of mock data, generated by
+    ``scripts/build_figure_tsvs.py`` (``build_evidence_corpus_vs_selected``,
+    seed=42), so this canonical generator and the gist mirror render the
+    identical dataset rather than two independent re-synthesises. The
+    synthesis recipe lives ONLY in that builder — nothing here
+    re-synthesizes, so the figure can't drift from the gist.
+    Enforced by tests/test_canonical_mock_reads_bundled_tsv.py."""
+    data = pd.read_csv(DATA_TSV, sep="\t")
+    found = data["papers_found_mock"].to_numpy()
+    selected = data["papers_selected_mock"].to_numpy()
+    verdicts = data["evidence_grade"].to_numpy()
+    return found, selected, verdicts
 
 
 def make_plot() -> tuple[plt.Figure, plt.Axes]:
@@ -147,7 +122,7 @@ def make_plot() -> tuple[plt.Figure, plt.Axes]:
         "font.size": 18, "axes.labelsize": 20, "axes.titlesize": 0,
         "xtick.labelsize": 16, "ytick.labelsize": 16, "legend.fontsize": 14,
     })
-    found, selected, verdicts = _synthesize_mock_data()
+    found, selected, verdicts = _load_data()
 
     fig, ax = plt.subplots(figsize=(12, 8))
 
@@ -202,7 +177,7 @@ def make_plot() -> tuple[plt.Figure, plt.Axes]:
         0.5, -0.04,
         f"MOCK — synthesized from the 100-gene audit shape "
         f"(median {int(np.median(found))} papers/gene, "
-        f"median {int(np.median(selected))} selected); n={_N_MOCK_GENES} genes",
+        f"median {int(np.median(selected))} selected); n={len(found)} genes",
         ha="center", va="top", fontsize=12, style="italic", color=COLORS["neutral"],
     )
 

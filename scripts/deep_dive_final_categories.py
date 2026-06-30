@@ -51,22 +51,14 @@ OUT_DIR = ROOT / "data/analysis/figures"
 SLUG = "deep_dive_final_categories"
 GIST_URL = "https://gist.github.com/beccajcarlson/c2441f8d0314c5524463bc85a3e86612"
 
-# ── MOCK placeholder counts (sum ≈ 5,000) ────────────────────────────────
-# Proportions are eyeballed from the 14 committed deep-dive records under
-# viewer/public/data/surfaceome/ + typical surfaceome literature. SWAP for
-# real D1 counts when the v2 sweep completes.
-_PLACEHOLDER_CANONICAL = 2_900       # _YES_REASONS bucket
-_PLACEHOLDER_LIKELY = 700            # _CONTEXTUAL_REASONS (soft YES) bucket
-_PLACEHOLDER_CELL_STATE_BY_TRIGGER = {
-    "oncogenic":      230,
-    "immune":         140,
-    "stress_hypoxia":  80,
-    "cell_death":      60,
-    "infection":       30,
-    "other":           10,
-}
-_PLACEHOLDER_CELL_TYPE_RESTRICTED = 450
-_PLACEHOLDER_NO = 400   # _NO_REASONS bucket
+# ── MOCK placeholder counts ──────────────────────────────────────────────
+# Single source of truth is the bundled per-figure TSV at
+# ``data/processed/figures/deep_dive_final_categories.tsv`` (produced by
+# scripts/build_figure_tsvs.py). The canonical generator and the gist
+# mirror both read it, so they can't drift — enforced by
+# tests/test_canonical_mock_reads_bundled_tsv.py. SWAP the builder for
+# real D1 counts when the v2 sweep completes; nothing here hardcodes data.
+DATA_TSV = ROOT / "data/processed/figures/deep_dive_final_categories.tsv"
 
 # Brand palette — follow the existing convention from
 # scripts/zero_db_rescues_by_triage.py:
@@ -107,13 +99,22 @@ _CATEGORY_LABELS = {
 
 
 def _make_counts() -> dict[str, int | dict[str, int]]:
-    return {
-        "canonical":            _PLACEHOLDER_CANONICAL,
-        "likely":               _PLACEHOLDER_LIKELY,
-        "cell_state":           dict(_PLACEHOLDER_CELL_STATE_BY_TRIGGER),
-        "cell_type_restricted": _PLACEHOLDER_CELL_TYPE_RESTRICTED,
-        "no":      _PLACEHOLDER_NO,
-    }
+    """Read the bundled per-figure TSV (the single source of truth the
+    gist mirror also reads). Rows are (category, subcategory, n_genes);
+    the cell_state category fans out by subcategory (induction trigger),
+    every other category uses the ``all`` subcategory row."""
+    import csv
+    counts: dict[str, int | dict[str, int]] = {}
+    cell_state: dict[str, int] = {}
+    with open(DATA_TSV) as f:
+        for row in csv.DictReader(f, delimiter="\t"):
+            cat, sub, n = row["category"], row["subcategory"], int(row["n_genes"])
+            if cat == "cell_state":
+                cell_state[sub] = n
+            else:
+                counts[cat] = n
+    counts["cell_state"] = cell_state
+    return counts
 
 
 def _bar_total(counts: dict, key: str) -> int:

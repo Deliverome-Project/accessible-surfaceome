@@ -145,18 +145,24 @@ def test_deterministic_filters_are_tool_derived_from_sequence() -> None:
     """Hard pin on which fields can carry `provenance: "deterministic"`.
 
     Per the DdProvenance contract in deep-dive-fields.ts, a field is
-    deterministic ONLY when its value is derived purely from tool
-    output on the protein sequence — DeepTMHMM topology, AlphaFold
-    pLDDT, Compara %-identity, SURFACE-Bind MaSIF patch scoring. A
-    field that buckets an LLM-pulled input (e.g. `evidence_density`,
-    which buckets `len(evidence_rows)` selected by the synthesizer)
-    is `llm`, not `deterministic`, even when the final transform is a
-    one-liner.
+    deterministic when its value is mechanically reproducible from the
+    record with NO LLM judgement read at filter time. That covers two
+    sub-cases:
 
-    This pin makes the bucketing call explicit so a future addition
-    can't silently expand "deterministic" to mean "the last transform
-    looks deterministic". Extend `_ALLOWED_DETERMINISTIC` only when a
-    new field is genuinely sequence-tool-derived.
+      1. Sequence-tool readouts — DeepTMHMM topology, AlphaFold pLDDT,
+         Compara %-identity, SURFACE-Bind MaSIF patches, Schweke AF2
+         homomer state. The large majority.
+      2. Mechanical record counts — a count over the record's own
+         structure, then a fixed/percentile band. Reproducible from
+         the persisted record alone; no model call.
+
+    The contrast remains `evidence_density`, which stays `llm`: its
+    buckets track `len(evidence_rows)` — the synthesizer's row-level
+    inclusion judgement — closely enough that it reads as an LLM
+    rollup. The distinction is "is the value a model judgement or a
+    mechanical readout", NOT "does the last transform look
+    deterministic". Extend `_ALLOWED_DETERMINISTIC` only when a new
+    field genuinely fits one of the two sub-cases above.
     """
     _ALLOWED_DETERMINISTIC = {
         # Topology — DeepTMHMM on the sequence.
@@ -173,6 +179,13 @@ def test_deterministic_filters_are_tool_derived_from_sequence() -> None:
         "surface_bind_main_class",
         # Schweke 2024 AF2 homomer prior — also on the AF2 structure.
         "is_homo_oligomer",
+        # Mechanical record count (sub-case 2): unique papers behind the
+        # evidence list, then a cohort-percentile band. The papers were
+        # agent-selected, but the band the filter exposes is a pure
+        # function of a count — no LLM judgement is read at filter time
+        # and it is reproducible from the record alone. (Distinct from
+        # evidence_density, which stays `llm`.)
+        "n_papers_selected_band",
     }
     # Re-parse the registry to harvest (key, provenance) pairs from
     # both ENUM and BOOL blocks.

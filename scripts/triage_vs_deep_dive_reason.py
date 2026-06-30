@@ -1,7 +1,7 @@
-"""Triage reason × deep-dive reason confusion matrix (MOCK supplementary).
+"""Triage reason × deep-dive reason confusion matrix (Supplementary).
 
-For each gene in the deep-dive cohort, we have two reason calls drawn from the
-SAME closed enum ``TriageReason`` (in
+For each gene that has BOTH a triage record and a deep-dive record, we have
+two reason calls drawn from the SAME closed enum ``TriageReason`` (in
 ``src/accessible_surfaceome/tools/_shared/models.py``): one emitted by the
 triage agent (``triage_run.reason`` in D1) and one emitted by the deep-dive
 agent (``filters.surface_call_reason`` in the per-gene record). This figure
@@ -18,12 +18,13 @@ The 19 reasons collapse into 3 triage buckets in ``models.py``:
                           stable_surface_attachment
   • _NO_REASONS         — cytoplasmic, nuclear, mitochondrial_internal,
                           endomembrane_resident, nuclear_envelope,
-                          secreted_only, pmhc_only_intracellular
+                          secreted_only, inner_leaflet_anchored,
+                          pmhc_only_intracellular, other
 
 Visualisation:
 
   • rows  = triage reason (top → bottom: yes-bucket, contextual-bucket,
-            no-bucket; ordered within bucket by display frequency)
+            no-bucket; ordered within bucket to match the enum)
   • cols  = deep-dive reason (same ordering left → right)
   • cell  = number of genes with that (triage, deep-dive) pair, annotated
             inline; greyscale-sequential intensity by count
@@ -33,22 +34,14 @@ Visualisation:
   • diagonal (perfect reason-level agreement) outlined in maroon
   • thick bucket-boundary lines between yes/contextual/no on each axis
 
-**MOCK — counts are placeholder estimates** pending the v2 deep-dive sweep
-joining onto the ``triage_run`` table. Heavy diagonal + small off-diagonal
-spread is the expected shape (deep-dive mostly confirms the triage reason;
-within-bucket reassignments outnumber cross-bucket flips). Swap
-``_MOCK_COUNTS`` for a public-D1 SELECT:
-
-    SELECT t.reason AS triage_reason,
-           json_extract(a.annotation_json, '$.filters.surface_call_reason')
-             AS dd_reason,
-           COUNT(*) AS n
-    FROM triage_run_public t
-    JOIN surface_annotation a ON a.gene_symbol = t.gene_symbol
-    WHERE t.run_id = 'genome_full_sonnet_ncbi_v1'
-    GROUP BY 1, 2;
-
-Supplementary figure — canonical generator only, no gist mirror.
+**Real data, small n.** The matrix is built from the per-figure TSV
+``data/processed/figures/triage_vs_deep_dive_reason.tsv`` — one row per gene
+that currently has both a triage and a deep-dive record (n=20 as of this
+draft). 10/20 land on the diagonal (exact reason agreement); the remaining
+10 split into same-bucket relabels and cross-bucket flips. This is the same
+data the gist mirror (``data/analysis/figures/make_triage_vs_deep_dive_reason.py``)
+renders — keep them in sync. The matrix will widen as the v2 deep-dive sweep
+covers more of the candidate cohort; re-run this script to refresh.
 
 Run:
     uv run python scripts/triage_vs_deep_dive_reason.py
@@ -60,6 +53,7 @@ from pathlib import Path
 import matplotlib.patches as mpatches
 import matplotlib.pyplot as plt
 import numpy as np
+import pandas as pd
 import seaborn as sns
 
 from accessible_surfaceome.audit._plotting_config import (
@@ -70,40 +64,43 @@ from accessible_surfaceome.audit._plotting_config import (
 
 ROOT = Path(__file__).resolve().parents[1]
 OUT_DIR = ROOT / "data/analysis/figures"
+# Single per-figure TSV: one row per gene with a deep-dive record AND a
+# triage hit. Columns: gene_symbol, uniprot_acc, triage_reason,
+# deep_dive_reason. Same file the gist mirror bundles.
+DATA_TSV = ROOT / "data/processed/figures/triage_vs_deep_dive_reason.tsv"
 SLUG = "triage_vs_deep_dive_reason"
 
-# Top-10 reasons by display frequency in the existing deep-dive cohort.
-# Ordering = bucket-by-bucket, then by within-bucket frequency. Full
-# 19-value matrix would be 3.6x larger and mostly empty cells (e.g.
-# pmhc_only_intracellular, nuclear_envelope are rare); the top-10
-# subset captures > 95% of the cohort.
+# Full 19-value TriageReason vocabulary, ordered bucket-by-bucket
+# (yes → contextual → no) to match the enum in models.py. Both axes use
+# this exact ordering so the diagonal is exact reason-level agreement and
+# the thick separators fall on the yes/contextual/no boundaries.
 REASONS_ORDERED = [
     # YES bucket
     "classical_surface_receptor",
     "multipass_with_exposed_loops",
     "gpi_anchored",
+    "extracellular_face_protein",
     "stable_complex_partner",
     # CONTEXTUAL bucket
     "stable_surface_attachment",
     "cell_state_induced",
     "tissue_restricted_surface",
+    "lysosomal_exocytosis",
     "dual_localization",
     # NO bucket
     "cytoplasmic",
+    "nuclear",
+    "mitochondrial_internal",
     "endomembrane_resident",
+    "nuclear_envelope",
+    "secreted_only",
+    "inner_leaflet_anchored",
+    "pmhc_only_intracellular",
+    "other",
 ]
-BUCKET = {
-    "classical_surface_receptor":   "yes",
-    "multipass_with_exposed_loops": "yes",
-    "gpi_anchored":                 "yes",
-    "stable_complex_partner":       "yes",
-    "stable_surface_attachment":    "contextual",
-    "cell_state_induced":           "contextual",
-    "tissue_restricted_surface":    "contextual",
-    "dual_localization":            "contextual",
-    "cytoplasmic":                  "no",
-    "endomembrane_resident":        "no",
-}
+BUCKET = {r: "yes" for r in REASONS_ORDERED[:5]}
+BUCKET.update({r: "contextual" for r in REASONS_ORDERED[5:10]})
+BUCKET.update({r: "no" for r in REASONS_ORDERED[10:]})
 BUCKET_COLOR = {
     "yes":        "#2E7A55",
     "contextual": "#C07830",
@@ -117,111 +114,41 @@ LABEL_SHORT = {
     "classical_surface_receptor":   "classical\nsurf rcptr",
     "multipass_with_exposed_loops": "multipass\nexp loops",
     "gpi_anchored":                 "GPI\nanchored",
+    "extracellular_face_protein":   "ECF\nprotein",
     "stable_complex_partner":       "stable cplx\npartner",
     "stable_surface_attachment":    "stable surf\nattachment",
     "cell_state_induced":           "cell-state\ninduced",
     "tissue_restricted_surface":    "tissue\nrestricted",
+    "lysosomal_exocytosis":         "lysosomal\nexocytosis",
     "dual_localization":            "dual\nlocalization",
     "cytoplasmic":                  "cytoplasmic",
+    "nuclear":                      "nuclear",
+    "mitochondrial_internal":       "mito\ninternal",
     "endomembrane_resident":        "endomem\nresident",
-}
-
-# ── MOCK 10×10 confusion-matrix counts ──────────────────────────────────
-# Rows = triage reason; cols = deep-dive reason. Hand-tuned so the
-# diagonal sums roughly match the placeholder bucket totals in
-# ``deep_dive_final_categories.py`` (~2,900 canonical, ~700 likely,
-# ~550 cell-state, ~450 cell-type-restricted, ~400 below-threshold).
-# Off-diagonal cells encode realistic-shape disagreement:
-#   • within-bucket reassignments (deep-dive switches between two
-#     yes-reasons or between two no-reasons) are MODERATE
-#   • cross-bucket flips (triage yes → deep-dive no, or vice versa)
-#     are RARE — the interesting cells to highlight in the paper
-_MOCK_COUNTS: dict[str, dict[str, int]] = {
-    # ───── triage = YES bucket ─────
-    "classical_surface_receptor": {
-        "classical_surface_receptor": 1380, "multipass_with_exposed_loops": 60,
-        "gpi_anchored":               18,   "stable_complex_partner":       42,
-        "stable_surface_attachment":  35,   "cell_state_induced":           28,
-        "tissue_restricted_surface":  55,   "dual_localization":            22,
-        "cytoplasmic":                14,   "endomembrane_resident":         8,
-    },
-    "multipass_with_exposed_loops": {
-        "classical_surface_receptor": 45,   "multipass_with_exposed_loops": 685,
-        "gpi_anchored":               5,    "stable_complex_partner":       18,
-        "stable_surface_attachment":  12,   "cell_state_induced":           15,
-        "tissue_restricted_surface":  22,   "dual_localization":             8,
-        "cytoplasmic":                 6,   "endomembrane_resident":         4,
-    },
-    "gpi_anchored": {
-        "classical_surface_receptor": 8,    "multipass_with_exposed_loops":  2,
-        "gpi_anchored":               265,  "stable_complex_partner":        4,
-        "stable_surface_attachment":  18,   "cell_state_induced":            3,
-        "tissue_restricted_surface":  10,   "dual_localization":             5,
-        "cytoplasmic":                 1,   "endomembrane_resident":         2,
-    },
-    "stable_complex_partner": {
-        "classical_surface_receptor": 28,   "multipass_with_exposed_loops":  6,
-        "gpi_anchored":               2,    "stable_complex_partner":       155,
-        "stable_surface_attachment":  20,   "cell_state_induced":            5,
-        "tissue_restricted_surface":  8,    "dual_localization":            10,
-        "cytoplasmic":                 4,   "endomembrane_resident":         3,
-    },
-    # ───── triage = CONTEXTUAL bucket ─────
-    "stable_surface_attachment": {
-        "classical_surface_receptor": 12,   "multipass_with_exposed_loops":  4,
-        "gpi_anchored":               6,    "stable_complex_partner":       18,
-        "stable_surface_attachment":  295,  "cell_state_induced":           14,
-        "tissue_restricted_surface":  22,   "dual_localization":            25,
-        "cytoplasmic":                 5,   "endomembrane_resident":         8,
-    },
-    "cell_state_induced": {
-        "classical_surface_receptor": 8,    "multipass_with_exposed_loops":  3,
-        "gpi_anchored":               2,    "stable_complex_partner":        4,
-        "stable_surface_attachment":  18,   "cell_state_induced":           475,
-        "tissue_restricted_surface":  25,   "dual_localization":            32,
-        "cytoplasmic":                10,   "endomembrane_resident":         6,
-    },
-    "tissue_restricted_surface": {
-        "classical_surface_receptor": 25,   "multipass_with_exposed_loops":  8,
-        "gpi_anchored":               6,    "stable_complex_partner":        7,
-        "stable_surface_attachment":  20,   "cell_state_induced":           30,
-        "tissue_restricted_surface":  385,  "dual_localization":            15,
-        "cytoplasmic":                 5,   "endomembrane_resident":         4,
-    },
-    "dual_localization": {
-        "classical_surface_receptor": 10,   "multipass_with_exposed_loops":  3,
-        "gpi_anchored":               2,    "stable_complex_partner":        5,
-        "stable_surface_attachment":  18,   "cell_state_induced":           22,
-        "tissue_restricted_surface":  12,   "dual_localization":           175,
-        "cytoplasmic":                 8,   "endomembrane_resident":        10,
-    },
-    # ───── triage = NO bucket ─────
-    "cytoplasmic": {
-        "classical_surface_receptor":  5,   "multipass_with_exposed_loops":  2,
-        "gpi_anchored":                1,   "stable_complex_partner":        2,
-        "stable_surface_attachment":   8,   "cell_state_induced":           10,
-        "tissue_restricted_surface":   4,   "dual_localization":             6,
-        "cytoplasmic":               195,   "endomembrane_resident":        22,
-    },
-    "endomembrane_resident": {
-        "classical_surface_receptor":  3,   "multipass_with_exposed_loops":  1,
-        "gpi_anchored":                1,   "stable_complex_partner":        1,
-        "stable_surface_attachment":  15,   "cell_state_induced":            8,
-        "tissue_restricted_surface":   3,   "dual_localization":             5,
-        "cytoplasmic":                18,   "endomembrane_resident":       145,
-    },
+    "nuclear_envelope":             "nuclear\nenvelope",
+    "secreted_only":                "secreted\nonly",
+    "inner_leaflet_anchored":       "inner leaflet\nanchored",
+    "pmhc_only_intracellular":      "pMHC\nonly",
+    "other":                        "other",
 }
 
 
-def _build_matrix() -> np.ndarray:
-    """Materialise _MOCK_COUNTS into an n×n integer ndarray, ordered per
-    REASONS_ORDERED on both axes."""
+def _load_pairs() -> pd.DataFrame:
+    """Read the per-figure TSV of (triage_reason, deep_dive_reason) pairs."""
+    return pd.read_csv(DATA_TSV, sep="\t")
+
+
+def _build_matrix(df: pd.DataFrame) -> np.ndarray:
+    """Materialise the (triage, deep-dive) reason pairs into an n×n integer
+    ndarray, ordered per REASONS_ORDERED on both axes."""
     n = len(REASONS_ORDERED)
     m = np.zeros((n, n), dtype=int)
-    for i, tr in enumerate(REASONS_ORDERED):
-        row = _MOCK_COUNTS.get(tr, {})
-        for j, dd in enumerate(REASONS_ORDERED):
-            m[i, j] = row.get(dd, 0)
+    idx_of = {r: i for i, r in enumerate(REASONS_ORDERED)}
+    for _, row in df.iterrows():
+        t = row.get("triage_reason")
+        d = row.get("deep_dive_reason")
+        if t in idx_of and d in idx_of:
+            m[idx_of[t], idx_of[d]] += 1
     return m
 
 
@@ -243,7 +170,8 @@ def make_plot() -> tuple[plt.Figure, plt.Axes]:
         "font.size": 18, "axes.labelsize": 22, "axes.titlesize": 0,
         "xtick.labelsize": 14, "ytick.labelsize": 14, "legend.fontsize": 16,
     })
-    m = _build_matrix()
+    df = _load_pairs()
+    m = _build_matrix(df)
     n = m.shape[0]
 
     fig, ax = plt.subplots(figsize=(15, 13))
@@ -309,10 +237,12 @@ def make_plot() -> tuple[plt.Figure, plt.Axes]:
     )
 
     cohort_n = int(m.sum())
+    on_diag = int(np.trace(m))
     fig.text(
         0.5, -0.02,
-        f"MOCK — placeholder counts; rebuild once the v2 deep-dive sweep "
-        f"lands and joins onto triage_run (cohort n = {cohort_n:,})",
+        f"n = {cohort_n} genes with both a triage and a deep-dive record "
+        f"({on_diag}/{cohort_n} on the diagonal). Matrix widens as the v2 "
+        f"deep-dive sweep covers more of the candidate cohort.",
         ha="center", va="top", fontsize=12, style="italic", color=COLORS["neutral"],
     )
 

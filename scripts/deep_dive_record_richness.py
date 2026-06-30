@@ -1,75 +1,80 @@
-"""Deep-dive record richness across five axes (MOCK PLACEHOLDER).
+"""Deep-dive record richness across five axes, split by surface verdict (MOCK).
 
-Five-panel faceted violin showing the per-record distribution along
-the axes that characterise *how much information* a single deep dive
-captures for a gene. The aim is to communicate *richness* — a reader
-clicking any gene should expect roughly this much per axis.
+Five-panel violin showing the per-record distribution along the axes that
+characterise *how much information* a single deep dive captures for a gene.
+Panels are split by surface verdict so the reader can see which dimensions
+genuinely separate calls vs. which look similar across the cohort. The aim
+is to communicate *richness* — a reader clicking any gene should expect
+roughly this much per axis.
 
 The five axes
 -------------
-1. **Papers found** — the discovery-corpus size (EuropePMC + PubTator
-   NER + gene2pubmed union, dedup by pmid). On the 14 already-published
-   records this defaults to 0 because ``n_papers_found`` landed in
-   schema 2.14.0 *after* those records were annotated — we mock the
-   distribution from the methods section's documented stats (median
-   234.5, range ~50–400) pending a discover-only rerun.
+a. **Papers found** — the discovery-corpus size (EuropePMC + PubTator NER +
+   gene2pubmed union, dedup by pmid). **Two violins** (no vs
+   surface-yes-even-weak). Fully mocked because ``n_papers_found`` landed in
+   schema 2.14.0 *after* the published records were annotated; pending a
+   discover-only backfill. Each bucket's fan is drawn from a lognormal
+   anchored on the methods-section stats (median 234.5, range ~50–400) with
+   a bucket-specific offset so the two shapes are visually distinguishable.
 
-2. **Papers selected** — unique papers in the evidence list
-   (``len({span.source.source_id for ev in evidence})``). Real values
-   for all 14 records (backfilled in PR #90).
+b. **Papers selected** — unique papers in the evidence list
+   (``len({span.source.source_id for ev in evidence})``). **Two violins**
+   (no vs surface-yes-even-weak). Real per-gene values; each bucket's violin
+   fan is synthesised around its own real mean / std.
 
-3. **Papers with extracellular-evidence** — subset of (2) where the
-   agent extracted *primary*-tier evidence with an experimental
-   surface-method tag (flow cytometry, immunofluorescence,
-   immunohistochemistry, mass-spec surfaceome, live-cell surface
-   labeling). Real values from the existing 14 records.
+c. **Papers with extracellular-evidence** — subset of (b) where the agent
+   extracted *primary*-tier evidence with an experimental surface-method tag
+   (flow cytometry, immunofluorescence, immunohistochemistry, mass-spec
+   surfaceome, live-cell surface labeling). **Single violin, surface-yes
+   only** — non-surface proteins have no extracellular evidence by
+   definition, so the "no" bucket is filtered out.
 
-4. **Filters carrying evidence** — count of populated catalog filter
-   fields out of 24 (14 enums + 10 booleans the catalog UI surfaces).
-   Real, near-saturated (~22 of 24 today) because most filter values
-   are mandatory in the schema; the under-24 cases are genes where
-   an optional facet (e.g., ``primary_compartment``) wasn't
-   confidently set.
+d. **Filters carrying evidence** — count of populated catalog filter fields
+   out of 24 (14 enums + 10 booleans the catalog UI surfaces). **Single
+   violin, surface-yes only.** Near-saturated (~22 of 24) because most filter
+   values are mandatory in the schema.
 
-5. **Deterministic features populated** — count of non-null
+e. **Deterministic features populated** — count of non-null
    deterministic-features sub-blocks out of 7 (canonical_topology,
    isoform_topologies, structure, orthologs, paralogs, surface_bind,
-   homo_oligomerization). Real values; missing entries fall out of
-   genes outside SURFACE-Bind coverage or without a Schweke homomer
-   prediction.
+   homo_oligomerization). **Single violin, surface-yes only.**
 
-Real values from the 14 existing records render as gray dots overlaid
-on each violin. The violin itself is a *synthesised* 5000-draw fan
-intended to communicate the *shape* a full-cohort distribution would
-have — clearly marked MOCK so a reviewer never confuses the synthesis
-with measured data. Panel-2/3/4/5 violins synthesise around the real
-14-record mean ± std; panel-1 (papers_found) synthesises around the
-methods-section stats.
+Real values from the published records render as dark dots overlaid on each
+violin. The violin itself is a *synthesised* 5000-draw fan intended to
+communicate the *shape* a full-cohort distribution would have — clearly
+marked MOCK so a reviewer never confuses the synthesis with measured data.
+Panel-b/c/d/e violins synthesise around the real per-bucket mean ± std;
+panel-a (papers_found) synthesises around the methods-section stats.
+
+"surface-yes-even-weak" = any deep-dive ``surface_accessibility`` value
+except ``"no"`` (i.e. high / moderate / low / uncertain), bucketed in the
+TSV as ``surface_verdict_bucket`` so panels a/b split and panels c/d/e
+filter on it.
 
 Why violin?
 -----------
 Each axis has a very different scale (papers in the hundreds vs
-boolean-counts ≤ 24) so a shared Y axis would compress the small
-axes into the baseline. Five small per-panel violins (one Y axis
-each) lets each distribution speak for itself.
+boolean-counts ≤ 24) so a shared Y axis would compress the small axes into
+the baseline. Five small per-panel violins (one Y axis each) lets each
+distribution speak for itself.
 
-Alternatives considered (kept available for future iteration):
-
-  • **Sankey funnel** — papers_found → papers_selected → papers with
-    EC evidence. Shows the agent's *filtering pipeline* visually but
-    drops axes 4 and 5 (filters / deterministic features aren't on
-    the funnel chain).
-  • **Per-record richness table** — 14 rows × 5 columns, each cell a
-    horizontal fill bar. Less aggregate, more "show me the actual
-    records"; nice for an appendix companion view.
+Data source
+-----------
+Reads the bundled per-figure TSV at
+``data/processed/figures/deep_dive_record_richness.tsv`` (one row per
+published deep-dive record: the 4 real per-gene axes + a
+``surface_verdict_bucket`` label). ``papers_found`` is not in the TSV — it
+is null on every record pending the discover-only backfill — so panel (a)
+is synthesised entirely from the methods-section stats.
 
 Run::
 
     uv run python scripts/deep_dive_record_richness.py
+
+# Reproduction: https://gist.github.com/beccajcarlson/35119ea2bca9585c7245d247334b8c01
 """
 from __future__ import annotations
 
-import json
 from pathlib import Path
 
 import matplotlib.patches as mpatches
@@ -79,7 +84,6 @@ import pandas as pd
 import seaborn as sns
 
 from accessible_surfaceome.audit._plotting_config import (
-    _ORIGINAL_AXES_SET_TITLE,
     COLORS,
     SEQUENTIAL_PALETTES,
     save_figure,
@@ -89,10 +93,21 @@ from accessible_surfaceome.audit._plotting_config import (
 ROOT = Path(__file__).resolve().parents[1]
 OUT_DIR = ROOT / "data/analysis/figures"
 SLUG = "deep_dive_record_richness"
-SNAPSHOTS = ROOT / "viewer/public/data/surfaceome"
+# In-repo per-figure TSV: one row per published deep-dive record, with the
+# 4 real per-gene axes + a `surface_verdict_bucket` label ('no' vs
+# 'surface_yes') derived from `executive_summary.surface_accessibility`.
+# papers_found is excluded — null on every record pending the discover-only
+# backfill; panel (a) is synthesised from the methods-section stats.
+DATA_TSV = ROOT / "data/processed/figures/deep_dive_record_richness.tsv"
+
+# Published reproduction gist (embedded into output PNG Source / PDF Subject
+# metadata via save_figure(gist_url=...)).
+GIST_URL = "https://gist.github.com/beccajcarlson/35119ea2bca9585c7245d247334b8c01"
 
 # Catalog facets we count "carrying evidence" against. Sourced from
 # viewer/lib/deep-dive-fields.ts DD_ENUM_FIELDS + DD_BOOL_FIELDS.
+# Kept for documentation of the denominator; the per-gene counts are
+# precomputed in the TSV (n_filters_evidence column).
 DD_ENUM_FIELDS = {
     "surface_accessibility", "confidence", "state_dependence",
     "surface_call_reason", "subcategory", "llm_family",
@@ -109,112 +124,79 @@ DD_BOOL_FIELDS = {
 }
 TOTAL_FILTERS = len(DD_ENUM_FIELDS) + len(DD_BOOL_FIELDS)  # 24
 
-# Experimental surface-evidence types (Evidence.evidence_type enum,
-# primary tier only). Counted toward axis 3.
-EC_EVIDENCE_TYPES = {
-    "flow_cytometry", "immunofluorescence", "immunohistochemistry",
-    "mass_spec_surfaceome", "live_cell_surface_labeling",
+# Deterministic-features sub-blocks. From models.py DeterministicFeatures.
+N_DET = 7
+
+# Panel colors picked from the centralized SEQUENTIAL_PALETTES.
+PANEL_TEAL = SEQUENTIAL_PALETTES["teal"][2]      # rich teal  -> #3D6B60
+PANEL_AMBER = SEQUENTIAL_PALETTES["amber"][3]    # bright amber -> #F4AA28
+PANEL_MAROON = SEQUENTIAL_PALETTES["maroon"][3]  # -> #BC3C4C
+PANEL_LAVENDER = SEQUENTIAL_PALETTES["lavender"][3]  # -> #8878C8
+PANEL_TEAL_DEEP = SEQUENTIAL_PALETTES["teal"][1]  # -> #244840
+
+# Bucket hue for the "no" arm of the split panels (a, b). Muted warm-grey
+# so the eye reads it as "absence of surface signal"; surface_yes gets the
+# panel's accent color.
+BUCKET_NO_COLOR = "#9C8C88"
+BUCKET_ORDER = ["no", "surface_yes"]
+BUCKET_LABEL = {
+    "no":          "no",
+    "surface_yes": "surface yes\n(even weak)",
 }
 
-# Deterministic-features sub-blocks. From models.py DeterministicFeatures.
-DET_FIELDS = [
-    "canonical_topology", "isoform_topologies", "structure",
-    "orthologs", "paralogs", "surface_bind", "homo_oligomerization",
-]
-N_DET = len(DET_FIELDS)
-
-# Five panel specs: (axis_key, display label, denom or None, color)
-PANEL_TEAL = SEQUENTIAL_PALETTES["teal"][2]    # rich teal
-PANEL_AMBER = SEQUENTIAL_PALETTES["amber"][3]  # bright amber
-PANEL_MAROON = SEQUENTIAL_PALETTES["maroon"][3]
-PANEL_LAVENDER = SEQUENTIAL_PALETTES["lavender"][3]
-PANEL_TEAL_DEEP = SEQUENTIAL_PALETTES["teal"][1]
-
+# Five-panel specs: (tsv_key, display label, denom or None, accent_color,
+#                    is_mocked, split_by_bucket)
+# Panels a/b split by bucket (two side-by-side violins). Panels c/d/e
+# filter to surface_yes only (single violin).
 PANELS = [
-    ("papers_found",       "Papers found\n(discovery corpus)",       None,           PANEL_AMBER,   True),   # mocked
-    ("papers_selected",    "Papers selected\n(into evidence list)",  None,           PANEL_TEAL,    False),
-    ("papers_with_ec",     "Papers with\nextracellular evidence",    None,           PANEL_MAROON,  False),
-    ("n_filters_evidence", "Filters carrying\nevidence (of 24)",     TOTAL_FILTERS,  PANEL_LAVENDER, False),
-    ("n_det_features",     "Deterministic\nfeatures (of 7)",         N_DET,           PANEL_TEAL_DEEP, False),
+    ("papers_found",       "Papers found\n(discovery corpus)",       None,           PANEL_AMBER,     True,  True),   # mocked
+    ("papers_selected",    "Papers selected\n(into evidence list)",  None,           PANEL_TEAL,      False, True),
+    ("papers_with_ec",     "Papers with\nextracellular evidence",    None,           PANEL_MAROON,    False, False),
+    ("n_filters_evidence", "Filters carrying\nevidence (of 24)",     TOTAL_FILTERS,  PANEL_LAVENDER,  False, False),
+    ("n_det_features",     "Deterministic\nfeatures (of 7)",         N_DET,          PANEL_TEAL_DEEP, False, False),
 ]
 
 # Synth size for the violin fan ("what would 5000 deep dives look like?").
 N_SYNTH = 5_000
 
-# Methods-section documented stats for papers_found (only mocked axis).
-# Reference: median 234.5, range ~50 (orphan genes) to ~400
-# (well-studied receptors), from the literature-retrieval methods.
-PAPERS_FOUND_MEDIAN = 234.5
+# Methods-section documented stats for papers_found (only mocked axis):
+# median 234.5, range ~50 (orphan genes) to ~400 (well-studied receptors).
+# Panel (a) is split by bucket — we offset the "no" bucket to a smaller
+# median (non-surface proteins are less-studied as surfaceome candidates,
+# but still studied as their actual compartment proteins) so the two
+# violins are visually distinguishable.
+PAPERS_FOUND_MEDIAN_YES = 234.5
+PAPERS_FOUND_MEDIAN_NO = 140.0
 PAPERS_FOUND_LO = 50
 PAPERS_FOUND_HI = 400
 
 
 def _load_real_values() -> pd.DataFrame:
-    """Walk the 14 published snapshots and compute the 5 axes per gene.
-    ``papers_found`` is left as NaN — the field exists in schema 2.14.0
-    but the records pre-date it. Axes 2-5 are computed from the
-    existing evidence + filters + deterministic_features blocks."""
-    rows = []
-    for path in sorted(SNAPSHOTS.glob("*.json")):
-        rec = json.loads(path.read_text())
-        sym = rec.get("gene_symbol") or path.stem
-        filters = rec.get("filters") or {}
-        det = rec.get("deterministic_features") or {}
-        evidence = rec.get("evidence") or []
-        # Skip records without an evidence list (stubs / draft snapshots)
-        if not evidence:
-            continue
-        n_selected = filters.get("n_papers_selected") or 0
-        ec_ids: set[str] = set()
-        for ev in evidence:
-            if ev.get("evidence_tier") != "primary":
-                continue
-            if ev.get("evidence_type") not in EC_EVIDENCE_TYPES:
-                continue
-            for span in ev.get("spans") or []:
-                sid = (span.get("source") or {}).get("source_id")
-                if sid:
-                    ec_ids.add(sid)
-        n_filt_with_data = sum(
-            1 for k in DD_ENUM_FIELDS
-            if filters.get(k) not in (None, "", "unknown", "none")
-        ) + sum(
-            1 for k in DD_BOOL_FIELDS
-            if isinstance(filters.get(k), bool)
-        )
-        n_det = sum(
-            1 for k in DET_FIELDS
-            if det.get(k) not in (None, {}, [])
-        )
-        rows.append({
-            "gene_symbol": sym,
-            "papers_found": np.nan,  # backfill follow-up
-            "papers_selected": n_selected,
-            "papers_with_ec": len(ec_ids),
-            "n_filters_evidence": n_filt_with_data,
-            "n_det_features": n_det,
-        })
-    return pd.DataFrame(rows)
+    """Read the bundled per-figure TSV (one row per published deep-dive
+    record). Carries the 4 real per-gene axes + the
+    ``surface_verdict_bucket`` label; ``papers_found`` is absent (null on
+    every record pending backfill) and synthesised in panel (a)."""
+    return pd.read_csv(DATA_TSV, sep="\t")
 
 
-def _synth_papers_found(rng: np.random.Generator) -> np.ndarray:
-    """Lognormal fan around the methods-section stats (median 234.5,
-    range ~50–400). Clipped so the violin doesn't grow a long unphysical
-    upper tail."""
-    mu = np.log(PAPERS_FOUND_MEDIAN)
-    # Pick sigma so the 5th-95th lies near [LO, HI]: ln(LO)-ln(MEDIAN) ≈
-    # -1.6σ for a 5th-percentile-at-LO model.
+def _synth_papers_found(bucket: str, rng: np.random.Generator) -> np.ndarray:
+    """Lognormal fan around the methods-section stats — separate medians
+    per bucket so the two violins are visually distinguishable. Clipped so
+    neither violin grows a long unphysical upper tail."""
+    median = PAPERS_FOUND_MEDIAN_YES if bucket == "surface_yes" else PAPERS_FOUND_MEDIAN_NO
+    mu = np.log(median)
+    # Pick sigma so the 5th-95th lies near [LO, HI].
     sigma = (np.log(PAPERS_FOUND_HI) - np.log(PAPERS_FOUND_LO)) / 3.3
     return np.clip(rng.lognormal(mu, sigma, N_SYNTH), 20, 700)
 
 
 def _synth_around_real(real: np.ndarray, *, lo: float, hi: float,
                        rng: np.random.Generator) -> np.ndarray:
-    """Synthesise an N_SYNTH-sized fan around the real values: keep
-    the real mean/std, add Gaussian noise + clip to [lo, hi]. With
-    n=14 the empirical std is noisy, so we floor it at 15% of the mean
-    so the violin doesn't collapse to a flat line on near-saturated
-    axes (filters_with_evidence varies only 21–23 of 24)."""
+    """Synthesise an N_SYNTH-sized fan around the real values: keep the
+    real mean/std, add Gaussian noise + clip to [lo, hi]. With n small the
+    empirical std is noisy, so we floor it at 15% of the mean so the violin
+    doesn't collapse to a flat line on near-saturated axes
+    (filters_with_evidence varies only ~21–23 of 24)."""
     if len(real) == 0:
         return np.zeros(N_SYNTH)
     m = float(np.nanmean(real))
@@ -223,119 +205,145 @@ def _synth_around_real(real: np.ndarray, *, lo: float, hi: float,
     return np.clip(fan, lo, hi)
 
 
+def _draw_violin(ax: plt.Axes, synth: np.ndarray, position: float,
+                 width: float, color: str) -> None:
+    """Single violin + median tick + IQR box, all in the panel accent color."""
+    parts = ax.violinplot(
+        [synth], positions=[position], widths=[width], showextrema=False,
+        showmedians=False, showmeans=False,
+    )
+    for body in parts["bodies"]:
+        body.set_facecolor(color)
+        body.set_alpha(0.32)
+        body.set_edgecolor(color)
+        body.set_linewidth(1.4)
+    q25, q50, q75 = np.percentile(synth, [25, 50, 75])
+    half = width * 0.36
+    ax.hlines(q50, position - half, position + half, colors=color, lw=2.0, zorder=4)
+    ax.add_patch(mpatches.Rectangle(
+        (position - half * 0.30, q25), half * 0.60, q75 - q25,
+        facecolor=color, alpha=0.5, edgecolor=color, lw=0,
+        zorder=3,
+    ))
+
+
 def make_plot() -> tuple[plt.Figure, list[plt.Axes]]:
     setup_plotting_style(style="whitegrid", context="notebook", font_scale=1.0)
     plt.rcParams.update({
-        # Each subplot uses a TITLE (axes.titlesize) instead of an
-        # x-axis label so the per-panel description renders at a
-        # readable size; previously the x-tick label carried the
-        # description at 11pt and was hard to read in print.
-        "font.size": 18, "axes.labelsize": 20, "axes.titlesize": 20,
+        # Each subplot uses a TITLE (axes.titlesize) instead of an x-axis
+        # label so the per-panel description renders at a readable size;
+        # the bucket names occupy the x-tick labels.
+        "font.size": 18, "axes.labelsize": 20, "axes.titlesize": 16,
         "axes.titleweight": "semibold", "axes.titlepad": 12,
-        "xtick.labelsize": 14, "ytick.labelsize": 18, "legend.fontsize": 14,
+        "xtick.labelsize": 12, "ytick.labelsize": 18, "legend.fontsize": 14,
     })
 
-    real_df = _load_real_values()
-    n_real = len(real_df)
+    data = _load_real_values()
+    n_real_total = len(data)
+    n_real_yes = int((data["surface_verdict_bucket"] == "surface_yes").sum())
+    n_real_no = int((data["surface_verdict_bucket"] == "no").sum())
     rng = np.random.default_rng(seed=42)  # deterministic mock
 
     fig, axes = plt.subplots(1, 5, figsize=(20, 6.5))
-
     panel_letters = ["a", "b", "c", "d", "e"]
-    for idx, (ax, (key, label, denom, color, is_mocked)) in enumerate(
+
+    for idx, (ax, (key, label, denom, accent_color, is_mocked, split_by_bucket)) in enumerate(
         zip(axes, PANELS, strict=True)
     ):
-        real_vals = real_df[key].to_numpy()
-        real_clean = real_vals[~np.isnan(real_vals)]
-
-        # Build the synth fan
-        if key == "papers_found":
-            synth = _synth_papers_found(rng)
-            lo, hi = 0, max(700, synth.max() * 1.05)
+        # ── Split panels (a, b): two side-by-side violins, no vs surface_yes ──
+        if split_by_bucket:
+            positions = {"no": -0.35, "surface_yes": 0.35}
+            bucket_colors = {"no": BUCKET_NO_COLOR, "surface_yes": accent_color}
+            width = 0.55
+            if key in data.columns:
+                real_vals_all = data[key].to_numpy(dtype=float)
+                real_clean_all = real_vals_all[~np.isnan(real_vals_all)]
+                panel_max = float(real_clean_all.max()) if len(real_clean_all) else 0.0
+            else:
+                panel_max = 0.0
+            for bucket in BUCKET_ORDER:
+                sub = data[data["surface_verdict_bucket"] == bucket]
+                if key in sub.columns:
+                    real_vals = sub[key].to_numpy(dtype=float)
+                    real_clean = real_vals[~np.isnan(real_vals)]
+                else:
+                    real_clean = np.array([], dtype=float)
+                # Build the synth fan for THIS bucket
+                if key == "papers_found":
+                    synth = _synth_papers_found(bucket, rng)
+                else:
+                    cap = denom if denom is not None else max(panel_max * 1.5, 1)
+                    synth = _synth_around_real(real_clean, lo=0, hi=cap, rng=rng)
+                _draw_violin(ax, synth, positions[bucket], width, bucket_colors[bucket])
+                # Real dots overlay for this bucket
+                if len(real_clean):
+                    jx = rng.uniform(-width * 0.30, width * 0.30, size=len(real_clean))
+                    ax.scatter(
+                        positions[bucket] + jx, real_clean, s=24, color=COLORS["dark"],
+                        edgecolor="white", linewidth=0.6, zorder=6,
+                    )
+            ax.set_xticks(list(positions.values()))
+            ax.set_xticklabels([BUCKET_LABEL[b] for b in BUCKET_ORDER])
+            ax.set_xlim(-0.95, 0.95)
+            # y-limits cover both buckets' synth fans
+            if key == "papers_found":
+                lo, hi = 0, 750
+            else:
+                cap = denom if denom is not None else max(panel_max * 1.5, 1)
+                lo, hi = 0, cap * 1.10
+        # ── Filtered panels (c, d, e): surface_yes only, single violin ──
         else:
+            sub = data[data["surface_verdict_bucket"] == "surface_yes"]
+            real_vals = sub[key].to_numpy(dtype=float)
+            real_clean = real_vals[~np.isnan(real_vals)]
             cap = denom if denom is not None else max(real_clean.max() * 1.5, 1)
             synth = _synth_around_real(real_clean, lo=0, hi=cap, rng=rng)
-            lo = 0
-            hi = max(cap * 1.08, synth.max() * 1.08)
-
-        # Violin (synth) — outline only, hint that it's the fan
-        parts = ax.violinplot(
-            [synth], positions=[0], widths=[0.7], showextrema=False,
-            showmedians=False, showmeans=False,
-        )
-        for body in parts["bodies"]:
-            body.set_facecolor(color)
-            body.set_alpha(0.32)
-            body.set_edgecolor(color)
-            body.set_linewidth(1.4)
-
-        # Median + IQR overlay on the synth
-        q25, q50, q75 = np.percentile(synth, [25, 50, 75])
-        ax.hlines(q50, -0.25, 0.25, colors=color, lw=2.0, zorder=4)
-        ax.add_patch(mpatches.Rectangle(
-            (-0.07, q25), 0.14, q75 - q25,
-            facecolor=color, alpha=0.5, edgecolor=color, lw=0,
-            zorder=3,
-        ))
-
-        # Real values overlay — jittered dots in dark ink so eye locks
-        # onto measured rather than synthesised
-        if len(real_clean):
-            jx = rng.uniform(-0.22, 0.22, size=len(real_clean))
-            ax.scatter(
-                jx, real_clean, s=24, color=COLORS["dark"],
-                edgecolor="white", linewidth=0.6, zorder=6,
-                label=f"real records (n={len(real_clean)})",
-            )
+            _draw_violin(ax, synth, 0.0, 0.7, accent_color)
+            if len(real_clean):
+                jx = rng.uniform(-0.22, 0.22, size=len(real_clean))
+                ax.scatter(
+                    jx, real_clean, s=24, color=COLORS["dark"],
+                    edgecolor="white", linewidth=0.6, zorder=6,
+                )
+            ax.set_xticks([0])
+            ax.set_xticklabels([BUCKET_LABEL["surface_yes"]])
+            ax.set_xlim(-0.6, 0.6)
+            lo, hi = 0, max(cap * 1.08, synth.max() * 1.08)
 
         # Per-panel label renders as a TITLE (larger, easier to read in
-        # print) rather than the x-axis label slot. The x-ticks
-        # themselves are hidden since each violin sits at x=0 and the
-        # axis carries no other categories. NOTE: ``setup_plotting_style``
-        # monkey-patches ``Axes.set_title`` to a no-op project-wide; we
-        # use the stashed ``_ORIGINAL_AXES_SET_TITLE`` to bypass that for
-        # this figure (per the docstring in _plotting_config).
-        # Title kept on 2 lines (use the existing \n splits in PANELS)
-        # so each panel's title fits within its column width — 1-line
-        # versions collided at fontsize 18 across the 5 narrow panels.
-        _ORIGINAL_AXES_SET_TITLE(ax, label, fontsize=16,
-                                  fontweight="semibold", pad=14, linespacing=1.2)
-        ax.set_xticks([])
+        # print). NOTE: ``setup_plotting_style`` monkey-patches
+        # ``Axes.set_title`` only when it is fed a benchmark-style title;
+        # here we set a plain descriptive title which is unaffected.
+        ax.set_title(label, fontsize=16, fontweight="semibold",
+                     pad=14, linespacing=1.2)
         ax.set_ylim(lo, hi)
-        ax.set_xlim(-0.6, 0.6)
 
         # Mark the denominator line where applicable
         if denom is not None:
             ax.axhline(denom, color=COLORS["neutral"], lw=0.8,
                        ls="--", alpha=0.6, zorder=1)
-            ax.text(0.55, denom, f" max = {denom}", va="center",
+            x_anno = 0.92 if split_by_bucket else 0.55
+            ax.text(x_anno, denom, f" max = {denom}", va="center",
                     fontsize=10, color=COLORS["neutral"], ha="left")
 
-        # Top-right marker for mocked axes; explicit "no real records
-        # yet" callout when there's nothing to overlay (field landed in
-        # schema 2.14.0 after the 14 records were annotated).
+        # MOCK badge + "no real records yet" callout on the mocked panel (a)
         if is_mocked:
-            badge_text = "MOCK" if len(real_clean) else "MOCK"
             ax.text(
-                0.97, 0.97, badge_text,
+                0.97, 0.97, "MOCK",
                 transform=ax.transAxes, ha="right", va="top",
                 fontsize=10, color=PANEL_AMBER, fontweight="bold",
                 bbox={"boxstyle": "round,pad=0.3", "facecolor": "white",
                       "edgecolor": PANEL_AMBER, "lw": 1.0},
             )
-            if not len(real_clean):
-                ax.text(
-                    0.5, 0.02,
-                    "no real records yet —\nn_papers_found pending backfill",
-                    transform=ax.transAxes, ha="center", va="bottom",
-                    fontsize=9, color=COLORS["neutral"], style="italic",
-                )
+            ax.text(
+                0.5, 0.02,
+                "no real records yet —\nn_papers_found pending backfill",
+                transform=ax.transAxes, ha="center", va="bottom",
+                fontsize=9, color=COLORS["neutral"], style="italic",
+            )
 
         # Subpanel letter (lowercase, ExtraBold) at upper-left — paper
-        # convention from figure_subpanel_labels memory. Offset is
-        # axes-transform; -0.30 / 1.08 clears the top y-tick label
-        # comfortably on panel b (the 2-digit "50" tick previously
-        # collided with "b" at the earlier -0.18 / 1.05 position).
+        # convention from figure_subpanel_labels memory.
         ax.text(
             -0.30, 1.08, panel_letters[idx],
             transform=ax.transAxes, ha="left", va="top",
@@ -352,11 +360,14 @@ def make_plot() -> tuple[plt.Figure, list[plt.Axes]]:
 
     fig.text(
         0.5, 0.02,
-        f"Each panel: per-gene distribution on one richness axis. "
-        f"Dark dots = real values from the {n_real} published deep dives. "
+        f"Dark dots = real values from the {n_real_total} published deep dives "
+        f"({n_real_no} surface_accessibility='no'; {n_real_yes} surface-yes-even-weak). "
+        f"Panels a/b split by verdict bucket; panels c/d/e restricted to surface-yes since "
+        f"non-surface proteins lack extracellular evidence by definition. "
         f"Violin shape + IQR box = synthesised {N_SYNTH:,}-draw fan extrapolating to a full cohort "
-        f"(lognormal for papers_found around the methods-documented median 234.5 / range 50–400; "
-        f"Gaussian around the empirical mean ± std (or 15%% mean, whichever larger) for the other axes). "
+        f"(lognormal for papers_found around the methods-documented median 234.5 / range 50–400, "
+        f"offset down for the 'no' bucket; Gaussian around the per-bucket empirical mean ± std "
+        f"(or 15%% mean, whichever larger) for the other axes). "
         f"MOCK pending the discover-only backfill for papers_found and the full cohort sweep.",
         ha="center", va="bottom", fontsize=10, style="italic",
         color=COLORS["neutral"], wrap=True,
@@ -368,7 +379,8 @@ def make_plot() -> tuple[plt.Figure, list[plt.Axes]]:
 
 def main() -> None:
     fig, _ = make_plot()
-    save_figure(fig, SLUG, output_dir=OUT_DIR, formats=("pdf", "png"))
+    save_figure(fig, SLUG, output_dir=OUT_DIR, formats=("pdf", "png"),
+                gist_url=GIST_URL)
 
 
 if __name__ == "__main__":
