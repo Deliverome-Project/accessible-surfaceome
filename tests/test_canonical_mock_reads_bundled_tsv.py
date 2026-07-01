@@ -64,6 +64,15 @@ READS_BUNDLED_TSV = [
     "db_vs_sonnet_whole_proteome",
     "ensemble_vs_best_db_vs_sonnet",
     "curator_vs_agent_reason",
+    # Extracted 2026-06-30 out of the scripts/triage_bench_db_barplot.py monolith:
+    # each now reads its committed figure TSV so the model list comes from the DATA
+    # (kills the opus-4-7 hardcode that shipped empty bars once data moved to
+    # opus-4-8). db_cutoff_tradeoff was also extracted but reads a
+    # data/processed/triage_bench/ TSV (not a figures/ one), so it's guarded by
+    # mirror-sync only and intentionally absent from this list.
+    "db_overlap_venn",
+    "db_correctness_by_class",
+    "benchmark_cost_vs_accuracy",
 ]
 
 # Figures whose canonical recomputes from real upstream sources by

@@ -89,8 +89,13 @@ LLM_CELLS: list[tuple[str, str, str]] = [
     ("_llm_sonnet_ncbi",        "sonnet-4-6", "ncbi"),
     ("_llm_sonnet_pubmed_ncbi", "sonnet-4-6", "pubmed_ncbi"),
     ("_llm_sonnet_web_ncbi",    "sonnet-4-6", "web_ncbi"),
-    ("_llm_opus_naive",         "opus-4-7",   "naive"),
-    ("_llm_opus_ncbi",          "opus-4-7",   "ncbi"),
+    # Opus cells retired (2026-06-30): the published figures this module used to
+    # render (db_correctness_by_class, db_correctness_overall,
+    # benchmark_cost_vs_accuracy) are now standalone canonicals that read the
+    # figure TSV, so their model list comes from the DATA — including Opus 4.8.
+    # The hardcoded opus-4-7 rows here shipped EMPTY bars once predictions moved
+    # to opus-4-8; the only artifacts still rendered from this module are the
+    # non-published native-cutoff / db-variant comparisons, which don't need Opus.
 ]
 LLM_LABEL = {
     "_llm_haiku_naive":        "Haiku (naive)",
@@ -101,8 +106,6 @@ LLM_LABEL = {
     "_llm_sonnet_ncbi":        "Sonnet (+ IDs)",
     "_llm_sonnet_pubmed_ncbi": "Sonnet (+ IDs + PubMed)",
     "_llm_sonnet_web_ncbi":    "Sonnet (+ IDs + web)",
-    "_llm_opus_naive":         "Opus (naive)",
-    "_llm_opus_ncbi":          "Opus (+ IDs)",
     "_llm_combined":           "Combined (Haiku→Sonnet)",
 }
 
@@ -1956,23 +1959,30 @@ def main() -> None:
     global _USE_OPTIMIZED_CUTOFFS
     _USE_OPTIMIZED_CUTOFFS = True
     try:
-        # Side-effect: dump the optimized accession sets so the figures/ gist
-        # for db_correctness_by_class can apply the same cutoffs without
-        # re-loading the raw UniProt + CSPA dumps.
+        # Side-effect: dump the optimized accession sets so the figure-TSV
+        # builders (scripts/build_figure_tsvs.py) can apply the same cutoffs
+        # without re-loading the raw UniProt + CSPA dumps.
         _dump_optimized_db_accs()
-        make_by_class_plot(out_dir)  # db_correctness_by_class — OPTIMIZED (published)
     finally:
         _USE_OPTIMIZED_CUTOFFS = False
-    make_by_class_plot(out_dir, filename="db_correctness_by_class_native_cutoffs")
 
-    # db_correctness_overall (Supp Fig 1) is now its own canonical generator,
-    # scripts/db_correctness_overall.py — it reads the figure TSV so its model
-    # list comes from the DATA, not a hardcode. The old make_overall_plot path
-    # here shipped empty bars when the data moved from opus-4-7 to opus-4-8;
-    # that figure is no longer rendered from this monolith.
-    make_cost_vs_accuracy_plot(out_dir)
+    # The published figures this module used to render are each now their own
+    # canonical generator that reads the committed figure TSV — so the model
+    # list comes from the DATA, not the opus-4-7 hardcode that shipped empty
+    # bars once predictions moved to opus-4-8:
+    #   db_correctness_by_class     -> scripts/db_correctness_by_class.py
+    #   db_correctness_overall      -> scripts/db_correctness_overall.py
+    #   benchmark_cost_vs_accuracy  -> scripts/benchmark_cost_vs_accuracy.py
+    #   db_cutoff_tradeoff          -> scripts/db_cutoff_tradeoff.py
+    # Rendering them here too would let a monolith re-run overwrite the
+    # TSV-faithful figure with a recomputed one, so those calls are gone. This
+    # module now only dumps the optimized-cutoff accession sets (above) and
+    # renders the non-published internal comparison artifacts below (native
+    # pre-recalibration by-class + the per-DB cutoff-variant panel). NOTE:
+    # make_overall_plot / make_cost_vs_accuracy_plot / make_db_tradeoff_plot are
+    # now unreferenced and slated for deletion in a dedicated monolith-teardown.
+    make_by_class_plot(out_dir, filename="db_correctness_by_class_native_cutoffs")
     make_db_variants_plot(out_dir)
-    make_db_tradeoff_plot(out_dir)
 
 
 if __name__ == "__main__":
