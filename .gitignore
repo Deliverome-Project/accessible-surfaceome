@@ -32,6 +32,10 @@ __pycache__/
 # cloudflare/workers/surfaceome_api/README.md.
 cloudflare/workers/surfaceome_api/wrangler.toml
 
+# `wrangler dev` / `wrangler deploy` local cache dir — build artifacts,
+# a local state SQLite, session files. Never committed.
+cloudflare/workers/surfaceome_api/.wrangler/
+
 # Managed Agents run logs and tool cache (gitignored — contain timestamps,
 # session IDs, and possibly upstream API responses)
 .runs/

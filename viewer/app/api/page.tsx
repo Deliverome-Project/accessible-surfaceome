@@ -151,14 +151,14 @@ const ENDPOINT_GROUPS: EndpointGroup[] = [
   {
     label: "Genome-wide",
     blurb:
-      "All ~19,300 protein-coding human genes with their 5-DB surface-vote vector and the latest Sonnet/NCBI triage verdict.",
+      "All ~19,300 protein-coding human genes with their 5-DB surface-vote vector plus the per-model triage matrix (Sonnet across the full genome; Haiku + Opus on the 147 SurfaceBench genes).",
     endpoints: [
       {
         method: "GET",
         path: "/v1/catalog",
         sizeKey: "/v1/catalog",
         summary:
-          "Per-gene-per-source surface-vote matrix (5 gating DBs: UniProt / GO / SURFY / CSPA / HPA) plus the latest triage verdict, short reason code, and deep-dive flag. One row per protein-coding gene (~19k). Free-text reasoning per run is on GET /v1/triage/{SYMBOL}; the full deep-dive SurfaceomeRecord is on GET /v1/genes/{SYMBOL}. Deep-dive rows carry an optional `ddf` projection with the catalog-filterable subset of Filters (n_papers_selected_band, evidence_density, surface_call_reason, ...); top-level n_papers_selected_cutoffs reports the cohort percentile thresholds (p10, p90) used to compute n_papers_selected_band on each row.",
+          "Per-gene-per-source surface-vote matrix (5 gating DBs: UniProt / GO / SURFY / CSPA / HPA) plus a per-model triage matrix (Haiku / Sonnet / Opus × verdict + short reason code; Sonnet applies a pubmed_ncbi rescue when its ncbi call is a false-negative), a deep_dive flag, and — for deep-dived rows — an optional `ddf` projection with the catalog-filterable subset of Filters (surface_accessibility, confidence, evidence_grade, n_papers_selected_band, surface_call_reason, ...). One row per protein-coding gene (~19k). Free-text reasoning per run is on GET /v1/triage/{SYMBOL}; the full deep-dive SurfaceomeRecord is on GET /v1/genes/{SYMBOL}. Top-level `n_papers_selected_cutoffs` reports the cohort percentile thresholds (p10, p90) used to compute `ddf.n_papers_selected_band` on each row. Server-side `json_extract` slims the deep-dive read (~4 KB/row on the wire out of ~120 KB per record).",
         curl:
           "curl -s https://api.deliverome.org/surfaceome/v1/catalog | jq '.universe_version, .n_rows, .n_with_triage, .n_papers_selected_cutoffs'",
       },

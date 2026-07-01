@@ -949,15 +949,44 @@ const ECD_BAND_SOURCES = [
   ["max_paralog_ecd", "max_paralog_ecd_pct_identity", 70, 40],
 ];
 
-function projectDeepDiveFilters(annotationJson) {
-  if (!annotationJson) return null;
-  let rec;
+// Try JSON.parse and return the result, or null on failure / falsy input.
+// Also passes through pre-parsed objects — SQLite `json_extract` on an
+// object path returns a JSON string, but D1's client-side handling can
+// vary, so accepting either shape keeps the caller compact.
+function safeJsonParse(s) {
+  if (s == null) return null;
+  if (typeof s === "object") return s;
   try {
-    rec = JSON.parse(annotationJson);
+    return JSON.parse(s);
   } catch {
     return null;
   }
-  const f = rec?.filters;
+}
+
+// Read-time DDF projection from a set of pre-extracted sub-blocks
+// rather than the full ~120 KB record JSON.
+//
+// Historical shape: this function took the entire `annotation_json`
+// string, JSON.parsed it, and walked half a dozen sub-paths. At scale
+// (~1.2k deep-dive records × ~120 KB each) that meant handleCatalog
+// pulled ~145 MB of JSON through one D1 query and blew D1's per-query
+// isolate-memory cap (see runbook + wrangler tail on 2026-07-01 —
+// "D1_ERROR: D1 DB's isolate exceeded its memory limit and was reset").
+//
+// New shape: the two catalog queries `json_extract` just the 6
+// sub-paths this projection reads — `$.filters`,
+// `$....primary_compartment`, `$....restricted_subdomain`,
+// `$....secreted_form`, `$....surface_bind`,
+// `$....homo_oligomerization` — total ~4 KB per row instead of ~120 KB.
+// Same public output; ~30× headroom under D1's cap.
+//
+// `parts` fields (all null-safe):
+//   * `filters`             — parsed `$.filters` object (or null)
+//   * `primary_compartment` — scalar string (or null)
+//   * `restricted_subdomain`, `secreted_form`,
+//     `surface_bind`, `homo_oligomerization` — parsed objects (or null)
+function projectDeepDiveFiltersFromParts(parts) {
+  const f = parts.filters;
   if (!f || typeof f !== "object") return null;
   const out = {};
   let any = false;
@@ -979,10 +1008,8 @@ function projectDeepDiveFilters(annotationJson) {
   // top-level `filters` block. Keep in sync with viewer/lib/deep-dive-fields.ts
   // `pickDeepDiveFilters`. Powers the "Primary localization" facet on the
   // catalog filter panel + compare tool.
-  const pc =
-    rec?.biological_context?.subcellular_localization?.primary_compartment;
-  if (typeof pc === "string") {
-    out.primary_compartment = pc;
+  if (typeof parts.primary_compartment === "string") {
+    out.primary_compartment = parts.primary_compartment;
     any = true;
   }
   // Restricted subdomain kind — sourced from accessibility_risks, but
@@ -991,14 +1018,14 @@ function projectDeepDiveFilters(annotationJson) {
   // unconditionally would pile every non-restricted gene into the
   // "unknown" bucket and drown the signal. Keep in sync with the
   // viewer's `pickDeepDiveFilters`.
-  const rs = rec?.accessibility_risks?.restricted_subdomain;
+  const rs = parts.restricted_subdomain;
   if (rs && rs.present === true && typeof rs.domain === "string") {
     out.restricted_subdomain_kind = rs.domain;
     any = true;
   }
   // Same project-when-present contract for secreted_form.source — only
   // surface the source when a secreted form actually exists.
-  const sf = rec?.accessibility_risks?.secreted_form;
+  const sf = parts.secreted_form;
   if (sf && sf.present === true && typeof sf.source === "string") {
     out.secreted_form_source = sf.source;
     any = true;
@@ -1007,7 +1034,7 @@ function projectDeepDiveFilters(annotationJson) {
   // deterministic_features.surface_bind. Keep in sync with the
   // viewer's pickDeepDiveFilters. The 4-way bucket mirrors the
   // existing catalog quick-filter (any / ≥1 / ≥3 / not_in).
-  const sb = rec?.deterministic_features?.surface_bind;
+  const sb = parts.surface_bind;
   if (sb) {
     const hasData = sb.has_data === true;
     const nSites = typeof sb.n_sites === "number" ? sb.n_sites : 0;
@@ -1021,22 +1048,36 @@ function projectDeepDiveFilters(annotationJson) {
     any = true;
     if (hasData && typeof sb.main_class === "string") {
       out.surface_bind_main_class = sb.main_class;
-      // `any` already set above.
     }
   }
   // Schweke 2024 (PMID 38325366) — sourced from
   // deterministic_features.homo_oligomerization.is_homo_oligomer.
   // Schweke is positives-only; an absent/empty block (pre-Schweke
-  // annotation) means "not in the predicted homomer refset". This
-  // function runs AFTER handleGene's LEFT-JOIN enrichment from
-  // schweke_homomer_public, so by the time we read it here the block
-  // is already populated for records that match the positive set.
-  // Coerce to `false` for absent/false so the catalog has a
-  // consistent value to filter on.
-  const ho = rec?.deterministic_features?.homo_oligomerization;
+  // annotation) means "not in the predicted homomer refset". Coerce to
+  // `false` for absent/false so the catalog has a consistent value to
+  // filter on.
+  const ho = parts.homo_oligomerization;
   out.is_homo_oligomer = ho?.is_homo_oligomer === true;
   any = true;
   return any ? out : null;
+}
+
+// Build a DDF-parts bag from the `sa_ddf_*` (or `ddf_*`) columns
+// emitted by handleCatalog's json_extract queries. `filters` is the
+// only value guaranteed to be present when the row has a deep dive;
+// the others are null when the annotator didn't populate that block.
+function ddfPartsFromRow(row, prefix) {
+  return {
+    filters: safeJsonParse(row[`${prefix}filters`]),
+    primary_compartment:
+      typeof row[`${prefix}primary_compartment`] === "string"
+        ? row[`${prefix}primary_compartment`]
+        : null,
+    restricted_subdomain: safeJsonParse(row[`${prefix}restricted_subdomain`]),
+    secreted_form: safeJsonParse(row[`${prefix}secreted_form`]),
+    surface_bind: safeJsonParse(row[`${prefix}surface_bind`]),
+    homo_oligomerization: safeJsonParse(row[`${prefix}homo_oligomerization`]),
+  };
 }
 
 // CPU budget on this handler is tight — the catalog response is ~4.5MB
@@ -1126,6 +1167,15 @@ async function handleCatalog(env, request) {
   // which candidate_universe leaves NULL by design. The SURFACE-Bind join
   // below deliberately stays on u.uniprot_acc — that's the key SURFACE-Bind
   // was scored against.
+  // Deep-dive projection strategy: rather than pulling the full
+  // ~120 KB `annotation_json` per row and JSON.parsing it in JS to
+  // pluck 6 sub-blocks, ask SQLite to `json_extract` just those
+  // sub-blocks server-side. Total per-row payload drops from ~120 KB
+  // to ~4 KB — 30× headroom under D1's per-query isolate memory cap.
+  // See `projectDeepDiveFiltersFromParts` for the read-side contract.
+  //
+  // Path list must stay in sync with `projectDeepDiveFiltersFromParts`
+  // — that function reads exactly these 6 sub-paths and nothing else.
   const enrichedRows = await env.DB.prepare(
     `SELECT u.gene_symbol,
             COALESCE(gi.uniprot_acc, u.uniprot_acc) AS uniprot_acc,
@@ -1133,7 +1183,12 @@ async function handleCatalog(env, request) {
             u.uniprot_surface_flag, u.go_surface_flag, u.surfy_surface_flag,
             u.cspa_surface_flag, u.hpa_surface_flag,
             sb.n_sites AS sb_n_sites,
-            sa.annotation_json AS sa_annotation_json,
+            sa.ddf_filters AS sa_ddf_filters,
+            sa.ddf_primary_compartment AS sa_ddf_primary_compartment,
+            sa.ddf_restricted_subdomain AS sa_ddf_restricted_subdomain,
+            sa.ddf_secreted_form AS sa_ddf_secreted_form,
+            sa.ddf_surface_bind AS sa_ddf_surface_bind,
+            sa.ddf_homo_oligomerization AS sa_ddf_homo_oligomerization,
             CASE WHEN sa.gene_symbol IS NOT NULL THEN 1 ELSE 0 END AS has_deep_dive
        FROM candidate_universe_public u
        LEFT JOIN gene_identifier_public gi ON gi.hgnc_symbol = u.gene_symbol
@@ -1144,7 +1199,13 @@ async function handleCatalog(env, request) {
          -- PK is still (gene_symbol, schema_version) until the
          -- migration runbook is applied); prompt_corpus is a secondary
          -- tie-break that only matters when two rows share schema_version.
-         SELECT gene_symbol, annotation_json
+         SELECT gene_symbol,
+                json_extract(annotation_json, '$.filters') AS ddf_filters,
+                json_extract(annotation_json, '$.biological_context.subcellular_localization.primary_compartment') AS ddf_primary_compartment,
+                json_extract(annotation_json, '$.accessibility_risks.restricted_subdomain') AS ddf_restricted_subdomain,
+                json_extract(annotation_json, '$.accessibility_risks.secreted_form') AS ddf_secreted_form,
+                json_extract(annotation_json, '$.deterministic_features.surface_bind') AS ddf_surface_bind,
+                json_extract(annotation_json, '$.deterministic_features.homo_oligomerization') AS ddf_homo_oligomerization
            FROM surface_annotation sa1
           WHERE schema_version = (
             SELECT MAX(schema_version) FROM surface_annotation sa2
@@ -1347,19 +1408,25 @@ async function handleCatalog(env, request) {
     // (moved to the Biology card). Parsing failures fall through silently
     // — a malformed record still gets the deep_dive=true marker, just
     // without the filterable rollups.
-    if (u.has_deep_dive && u.sa_annotation_json) {
-      const ddf = projectDeepDiveFilters(u.sa_annotation_json);
+    if (u.has_deep_dive) {
+      const ddf = projectDeepDiveFiltersFromParts(ddfPartsFromRow(u, "sa_ddf_"));
       if (ddf) row.ddf = ddf;
     }
     return row;
   });
 
   // Append deep-dive-only genes (annotated but not in the universe — rare;
-  // e.g. HSPA1A's conditional-surface story). Cheap extra SELECT on the
-  // small surface_annotation table. Pulls the latest-schema annotation_json
-  // for each so the deep_dive_filters projection below applies uniformly.
+  // e.g. HSPA1A's conditional-surface story). Same json_extract slim
+  // projection as the main join above — never pull the full
+  // annotation_json (~120 KB × 1.2k rows blows D1's per-query isolate cap).
   const orphanDeep = await env.DB.prepare(
-    `SELECT sa1.gene_symbol, sa1.annotation_json,
+    `SELECT sa1.gene_symbol,
+            json_extract(sa1.annotation_json, '$.filters') AS ddf_filters,
+            json_extract(sa1.annotation_json, '$.biological_context.subcellular_localization.primary_compartment') AS ddf_primary_compartment,
+            json_extract(sa1.annotation_json, '$.accessibility_risks.restricted_subdomain') AS ddf_restricted_subdomain,
+            json_extract(sa1.annotation_json, '$.accessibility_risks.secreted_form') AS ddf_secreted_form,
+            json_extract(sa1.annotation_json, '$.deterministic_features.surface_bind') AS ddf_surface_bind,
+            json_extract(sa1.annotation_json, '$.deterministic_features.homo_oligomerization') AS ddf_homo_oligomerization,
             gi.uniprot_acc AS uniprot_acc
        FROM surface_annotation sa1
        LEFT JOIN gene_identifier_public gi ON gi.hgnc_symbol = sa1.gene_symbol
@@ -1382,7 +1449,7 @@ async function handleCatalog(env, request) {
     if (r.uniprot_acc) row.uniprot = r.uniprot_acc;
     const t = packTriage(sym);
     if (t) row.tr = t;
-    const dd = projectDeepDiveFilters(r.annotation_json);
+    const dd = projectDeepDiveFiltersFromParts(ddfPartsFromRow(r, "ddf_"));
     if (dd) row.ddf = dd;
     rows.push(row);
   }
@@ -1453,7 +1520,7 @@ async function handleCatalog(env, request) {
       //        added — present only when has_deep_dive=true and the
       //        record_json parsed. Carries the catalog-filterable
       //        subset of SurfaceomeRecord.filters; see
-      //        projectDeepDiveFilters() above.
+      //        projectDeepDiveFiltersFromParts() above.
       //   v6 = adds `ddf.n_papers_selected`, `ddf.n_papers_found`
       //        (raw counts), `ddf.n_papers_selected_band` (the
       //        cohort-percentile-banded value the filter UI keys off,
