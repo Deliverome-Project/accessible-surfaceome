@@ -93,6 +93,11 @@ def _join_truth_into_reps(reps: pd.DataFrame, bench: pd.DataFrame) -> pd.DataFra
     if "ground_truth_verdict" not in out.columns:
         truth = bench.set_index("gene_symbol")["ground_truth_verdict"]
         out["ground_truth_verdict"] = out["gene_symbol"].map(truth)
+    # has_deep_dive rides in from mainbench_replicates_v2 but is not a
+    # reanalysis dimension for any benchmark accuracy/cost figure (those are
+    # about triage calls, not deep-dive coverage), and no figure script reads
+    # it — drop it so the four bench figure TSVs stay lean.
+    out = out.drop(columns=["has_deep_dive"], errors="ignore")
     return out
 
 
