@@ -196,12 +196,13 @@ FEATURES: list[tuple[str, str]] = [
 # (src_sonnet == 1 AND n_sources_optimized == 0) — i.e. no DB flags the
 # protein once the bench-optimized UniProt/CSPA cutoffs are applied.
 # Sits right after sonnet so the rescue subset reads as a visible delta
-# off the full Sonnet bar. Uses success-green to signal "rescue"
-# (matches the zero_db_rescues_by_triage figure's YES-bucket palette).
+# off the full Sonnet bar. Uses a darker orange (zero-DB rescue subset)
+# to keep it in the Sonnet family while staying distinct from the main
+# Sonnet bar.
 SOURCE_ORDER = ["sonnet", "sonnet_only", "uniprot", "surfy", "cspa", "go", "hpa"]
 SOURCE_COLORS = {
     "sonnet":      BRAND_CLAUDE_ORANGE,
-    "sonnet_only": "#2E7A55",  # success green — zero-DB rescue subset
+    "sonnet_only": "#a8481a",  # darker orange (zero-DB rescue subset)
     "uniprot": BRAND_PALETTE[0],  # maroon-light
     "surfy":   BRAND_PALETTE[3],  # lavender-bright
     "cspa":    BRAND_PALETTE[4],  # maroon-dark

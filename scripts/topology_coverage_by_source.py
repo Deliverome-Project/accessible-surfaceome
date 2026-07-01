@@ -86,12 +86,13 @@ FEATURES: list[tuple[str, str]] = [
 # make_db_correctness_by_class.py for cross-figure visual consistency.
 # ``sonnet_only`` = the zero-DB rescue subset (Sonnet-positive,
 # n_sources_optimized == 0). Sits right after sonnet so the rescue
-# subset reads as a visible delta off the full Sonnet bar; success-green
-# signals "rescue" (matches the zero_db_rescues_by_triage figure).
+# subset reads as a visible delta off the full Sonnet bar; a darker
+# orange (zero-DB rescue subset) keeps it in the Sonnet family while
+# staying distinct from the main Sonnet bar.
 SOURCE_ORDER = ["sonnet", "sonnet_only", "uniprot", "surfy", "cspa", "go", "hpa"]
 SOURCE_COLORS = {
     "sonnet":      "#d87851",  # Claude-orange
-    "sonnet_only": "#2E7A55",  # success green — zero-DB rescue subset
+    "sonnet_only": "#a8481a",  # darker orange (zero-DB rescue subset)
     "uniprot": "#BC3C4C",  # maroon-light
     "surfy":   "#8878C8",  # lavender-bright
     "cspa":    "#6E1428",  # maroon-dark
