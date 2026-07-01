@@ -339,7 +339,6 @@ def make_plot() -> tuple[plt.Figure, list[plt.Axes]]:
     # accuracy, (c) Sonnet/ncbi confusion matrix. Each row is its own
     # full-width axes so the per-bucket and per-reason bar groups have
     # room to breathe.
-    import matplotlib.gridspec as gridspec
     fig = plt.figure(figsize=(18, 28))
     # Nested gridspec: outer separates the (a+b) cluster from c so we
     # can give a↔b a tighter hspace than b↔c. Eliminates the wasted
