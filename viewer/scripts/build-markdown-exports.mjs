@@ -31,6 +31,19 @@ const STRUCTURE_DIR = path.join(VIEWER_ROOT, "public", "structure-viewer");
 
 const SITE_BASE = "https://surfaceome.deliverome.org";
 
+// Where records come from. Default "snapshots" = the in-tree
+// viewer/public/data/surfaceome/*.json (offline-safe; CI + local dev). Set
+// SURFACEOME_MD_SOURCE=api to source EVERY published record from the public
+// Worker instead — the D1-served model: the deep-dive sweep publishes to D1,
+// and the Pages build fetches the full published set from api.deliverome.org,
+// materializing {SYMBOL}.json + {SYMBOL}.md at build time (build artifacts,
+// not committed to git). Commit only a small curated snapshot set as the
+// offline / Worker-down fallback. SURFACEOME_MD_LIMIT caps the count (testing
+// / incremental builds); SURFACEOME_API_BASE overrides the Worker base.
+const MD_SOURCE = (process.env.SURFACEOME_MD_SOURCE || "snapshots").toLowerCase();
+const API_BASE =
+  process.env.SURFACEOME_API_BASE || "https://api.deliverome.org/surfaceome/v1";
+
 // --------------------------------------------------------------
 // Pretty-print helpers — kept simple so the script has no deps.
 // --------------------------------------------------------------
@@ -1256,19 +1269,74 @@ function md(rec, structureData, sequences, afdbEntry) {
 // Driver
 // --------------------------------------------------------------
 
+// --------------------------------------------------------------
+// Record sources. Both yield [{ name, rec }] with name = "{SYMBOL}.json";
+// the render loop below is source-agnostic.
+// --------------------------------------------------------------
+
+async function fetchJson(url) {
+  const resp = await fetch(url, {
+    headers: {
+      "User-Agent":
+        "accessible-surfaceome-viewer/1.0 (build-markdown-exports.mjs)",
+    },
+  });
+  if (!resp.ok) throw new Error(`HTTP ${resp.status} for ${url}`);
+  return resp.json();
+}
+
+function loadRecordsFromSnapshots() {
+  const jsonFiles = readdirSync(DATA_DIR).filter((n) => n.endsWith(".json"));
+  return jsonFiles.map((name) => ({
+    name,
+    rec: JSON.parse(readFileSync(path.join(DATA_DIR, name), "utf-8")),
+  }));
+}
+
+// Fetch EVERY published record from the public Worker (the D1-served
+// model). Returns them in memory; main() materializes each {SYMBOL}.json
+// next to its {SYMBOL}.md so the static build + fs-fallback resolve.
+async function loadRecordsFromApi() {
+  const listUrl = `${API_BASE}/genes`;
+  const list = await fetchJson(listUrl);
+  let genes = list?.genes ?? [];
+  const limit = parseInt(process.env.SURFACEOME_MD_LIMIT || "0", 10);
+  if (limit > 0) genes = genes.slice(0, limit);
+  console.log(
+    `  api: ${genes.length} published genes from ${listUrl}` +
+      (limit > 0 ? ` (limited to ${limit})` : ""),
+  );
+  const out = [];
+  for (const g of genes) {
+    const sym = g.gene_symbol;
+    if (!sym) continue;
+    try {
+      const rec = await fetchJson(
+        `${API_BASE}/genes/${encodeURIComponent(sym)}`,
+      );
+      if (rec) out.push({ name: `${rec.gene?.hgnc_symbol ?? sym}.json`, rec });
+    } catch (err) {
+      console.warn(`  ! ${sym}: record fetch failed — ${err.message}`);
+    }
+  }
+  return out;
+}
+
 async function main() {
   if (!existsSync(DATA_DIR)) {
     console.error(`No data dir at ${DATA_DIR}`);
     process.exit(1);
   }
-  const jsonFiles = readdirSync(DATA_DIR).filter((n) => n.endsWith(".json"));
-  if (jsonFiles.length === 0) {
-    console.warn("No JSON records found under", DATA_DIR);
+  const records =
+    MD_SOURCE === "api"
+      ? await loadRecordsFromApi()
+      : loadRecordsFromSnapshots();
+  if (records.length === 0) {
+    console.warn(`No records to export (source=${MD_SOURCE}).`);
     return;
   }
-  for (const name of jsonFiles) {
-    const recordPath = path.join(DATA_DIR, name);
-    const rec = JSON.parse(readFileSync(recordPath, "utf-8"));
+  console.log(`Exporting ${records.length} records (source=${MD_SOURCE}).`);
+  for (const { name, rec } of records) {
     // Accept schema v1.x and v2.x. Pinning this to an exact "1.0.0"
     // silently skipped every record once the schema bumped to 1.1.0 —
     // which is what blanked the .md downloads (no file written → 404).
@@ -1280,6 +1348,16 @@ async function main() {
         `  ! ${name}: schema_version=${rec.schema_version}, skipping (only schema v1.x/v2.x supported)`,
       );
       continue;
+    }
+    // api mode: materialize the JSON snapshot next to the .md so
+    // /data/surfaceome/{SYMBOL}.json resolves in the static build and the
+    // viewer fs-fallback works. In snapshots mode it is already on disk.
+    if (MD_SOURCE === "api") {
+      writeFileSync(
+        path.join(DATA_DIR, name),
+        JSON.stringify(rec, null, 2) + "\n",
+        "utf-8",
+      );
     }
     const uniprot = rec.gene?.uniprot_acc;
     const structurePath = uniprot

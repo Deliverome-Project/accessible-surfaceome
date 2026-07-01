@@ -639,6 +639,35 @@ Per-gene records must validate against the `SurfaceomeRecord` Pydantic
 schema in `src/accessible_surfaceome/tools/_shared/models.py`. See
 `viewer/README.md` for local dev + Cloudflare Pages deploy.
 
+### Per-gene markdown exports — D1-sourced at build time
+
+The downloadable `{SYMBOL}.md` briefs are rendered by
+`viewer/scripts/build-markdown-exports.mjs` (wired into `npm run build` via
+`build:exports`). It has two record sources, selected by `SURFACEOME_MD_SOURCE`:
+
+- **`snapshots`** (default) — renders `.md` next to each committed
+  `viewer/public/data/surfaceome/*.json`. Offline-safe; used by CI, local
+  dev, and the small curated fallback set.
+- **`api`** — the D1-served model for the full cohort. Fetches the entire
+  published set from the public Worker (`/v1/genes` list → `/v1/genes/{sym}`
+  per record) and **materializes `{SYMBOL}.json` + `{SYMBOL}.md` at build
+  time as build artifacts — NOT committed to git.** `SURFACEOME_MD_LIMIT`
+  caps the count (testing / incremental builds); `SURFACEOME_API_BASE`
+  overrides the Worker base.
+
+**Set `SURFACEOME_MD_SOURCE=api` on the Cloudflare Pages `build:exports`
+step** so a large deep-dive sweep that publishes only to D1 still ships a
+`.md` (+ a materialized fs fallback) for every gene, without committing
+thousands of snapshots. Commit only a small curated snapshot set as the
+Worker-down offline fallback.
+
+Consequently the old "every D1-published gene needs a committed in-tree
+snapshot" rule is **retired** — a published gene with no committed snapshot
+is expected, not drift. `tests/test_d1_records_schema_drift.py` now guards
+the exporter's api-source *wiring* (static
+`test_markdown_exporter_supports_d1_source`) instead of requiring a
+per-gene snapshot.
+
 ## Cloudflare D1 + R2 backups for agent runs
 
 The `surfaceome_agents` D1 database stores every `surface_triage`

@@ -279,75 +279,32 @@ def test_every_in_tree_record_has_markdown_export() -> None:
         pytest.fail("\n".join(problems))
 
 
-def test_every_published_record_has_in_tree_snapshot() -> None:
-    """Every D1-published gene should have a matching in-tree JSON
-    snapshot at ``viewer/public/data/surfaceome/{symbol}.json`` so the
-    markdown exporter can render its .md, AND so the viewer has an
-    offline fallback when the Worker is unreachable.
+def test_markdown_exporter_supports_d1_source() -> None:
+    """The D1-served model RETIRES the old "every published gene needs a
+    committed in-tree snapshot" requirement.
 
-    Skips when the public-D1 secrets aren't available (CI's current
-    state — only CLOUDFLARE_API_TOKEN + ACCOUNT_ID are wired, not the
-    DB UUID). Until the missing secret is added, this test runs only
-    locally / on machines with a full ``.env``.
-    """
-    if not _public_d1_creds_available():
-        pytest.skip(
-            "Public-D1 creds absent (need CLOUDFLARE_API_TOKEN + "
-            "_ACCOUNT_ID + _D1_SURFACEOME_PUBLIC_ID). Add the missing "
-            "DB-UUID secret to the repo to enable this test in CI."
-        )
+    ``viewer/scripts/build-markdown-exports.mjs`` now supports
+    ``SURFACEOME_MD_SOURCE=api``: at Pages-build time it fetches the full
+    published set from the public Worker (``/v1/genes`` + ``/v1/genes/{sym}``)
+    and materializes ``{SYMBOL}.json`` + ``{SYMBOL}.md`` as build artifacts
+    (NOT committed to git). Only a small curated snapshot set is committed,
+    as the offline / Worker-down fallback — so a published gene with no
+    in-tree snapshot is now expected, not drift.
 
-    from accessible_surfaceome.cloud.d1_client import D1Client, D1Config
-
-    with D1Client(D1Config.from_env_public()) as pub:
-        rows = pub.query(
-            "SELECT gene_symbol, schema_version FROM surface_annotation "
-            "ORDER BY gene_symbol;"
+    This guards that the api-source wiring stays in the exporter (a refactor
+    can't silently drop it and re-introduce the commit-every-snapshot rule).
+    Static — reads the exporter source, no network, no creds."""
+    exporter = (
+        Path(__file__).resolve().parents[1]
+        / "viewer" / "scripts" / "build-markdown-exports.mjs"
+    ).read_text()
+    for needle in (
+        "SURFACEOME_MD_SOURCE",   # the source switch (snapshots | api)
+        "loadRecordsFromApi",     # the Worker-fetch path
+        "/genes",                 # the published-gene list endpoint
+    ):
+        assert needle in exporter, (
+            f"build-markdown-exports.mjs no longer references '{needle}' — the "
+            f"D1-sourced (api-mode) markdown export path may have regressed. "
+            f"Restore it so the Pages build can still materialize .md from D1."
         )
-    assert rows, "No published records in public-D1 surface_annotation."
-
-    actually_missing: list[tuple[str, str]] = []
-    no_longer_missing: list[str] = []
-    for r in rows:
-        sym = r["gene_symbol"]
-        sv = r["schema_version"]
-        snapshot = _VIEWER_DATA_DIR / f"{sym}.json"
-        md = _VIEWER_DATA_DIR / f"{sym}.md"
-        present = (
-            snapshot.is_file() and snapshot.stat().st_size > 0
-            and md.is_file() and md.stat().st_size > 0
-        )
-        in_allowlist = sym in KNOWN_NO_MARKDOWN_EXPORT
-        if not present and not in_allowlist:
-            actually_missing.append((sym, sv))
-        elif present and in_allowlist:
-            no_longer_missing.append(sym)
-
-    problems: list[str] = []
-    if actually_missing:
-        problems.append(
-            "Published-to-D1 genes WITHOUT both an in-tree JSON snapshot "
-            "and rendered .md (so the viewer has no offline fallback + no "
-            "downloadable brief for them):"
-        )
-        for sym, sv in actually_missing:
-            problems.append(f"  • {sym}  (D1 schema_version={sv})")
-        problems.append("")
-        problems.append(
-            "Snapshot the live Worker record (`curl /v1/genes/{sym}` → "
-            "viewer/public/data/surfaceome/{sym}.json`), then run "
-            "`cd viewer && npm run build:exports` to generate the .md. "
-            "OR add the symbol to KNOWN_NO_MARKDOWN_EXPORT with a "
-            "tracking note (e.g. exporter doesn't yet handle that schema)."
-        )
-    if no_longer_missing:
-        if problems:
-            problems.append("")
-        problems.append(
-            "Allowlist has stale entries (snapshot+md exist now, remove "
-            "from KNOWN_NO_MARKDOWN_EXPORT):"
-        )
-        for sym in no_longer_missing:
-            problems.append(f"  • {sym}")
-    if problems:
-        pytest.fail("\n".join(problems))
