@@ -47,7 +47,11 @@ export const metadata: Metadata = {
     locale: "en_US",
   },
   twitter: {
-    card: "summary_large_image",
+    // `summary` (not summary_large_image): we ship no OG image, and a
+    // large-image card with no image unfurls as a blank/broken box. The
+    // compact card shows title + description cleanly. Switch back to
+    // summary_large_image only if a 1200×630 og:image is added to openGraph.
+    card: "summary",
     title: SITE_TITLE,
     description: SITE_DESCRIPTION,
   },
