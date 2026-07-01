@@ -46,6 +46,7 @@ REPS_TSV        = ROOT / "data/processed/triage_bench/mainbench_replicates_v2.ts
 OPT_CUTOFFS_TSV = ROOT / "data/processed/triage_bench/db_optimized_cutoffs.tsv"
 CATALOG_TSV     = ROOT / "data/processed/catalog/whole_proteome_catalog.tsv"
 FEATURES_TSV    = ROOT / "data/analysis/db_vs_sonnet_inclusion/per_protein_features.tsv"
+POS_LONG_TSV    = ROOT / "data/processed/positive_controls/positive_control_long.tsv"
 
 
 def _load_sources() -> dict[str, pd.DataFrame]:
@@ -340,6 +341,101 @@ def build_db_overlap_venn(src: dict[str, pd.DataFrame]) -> pd.DataFrame:
     return out
 
 
+def build_positive_control_db_coverage_bars(src: dict[str, pd.DataFrame]) -> pd.DataFrame:
+    """Long-form positive-control coverage. Pass-through copy of the
+    canonical ``positive_control_long.tsv`` — one row per (category × gene)
+    with the per-DB flags + sonnet_full_flag + adc_source already
+    denormalized. The figure groups by (category, source) and sums the
+    flags from this single TSV without any joins."""
+    return pd.read_csv(POS_LONG_TSV, sep="\t")
+
+
+def build_surfaceome_deterministic_features_placeholder(
+    src: dict[str, pd.DataFrame],
+) -> pd.DataFrame:
+    """MOCK-grouped per-gene deterministic features for Supp Fig 13.
+
+    Pre-joins per_protein_features (Sonnet-positive subset) with DeepTMHMM
+    canonical topology, an alt-isoform-topology-change flag, Schweke
+    homo-oligomer state, and Ensembl-Compara mouse/cyno ortholog flags;
+    assigns each gene to one of the three placeholder buckets the figure
+    facets on. Mirrors ``scripts/surfaceome_deterministic_features_placeholder.py``
+    ``load_data()`` exactly so the figure renders identically off the
+    bundled single TSV.
+
+    The three buckets are MOCKED from Sonnet verdicts for now (deep-dive
+    hues are placeholders until the deep-dive runs over the surfaceome):
+      • triage_yes               = Sonnet 'yes' (non-high confidence)
+      • deep_dive_high_conf      = Sonnet 'yes' + high confidence
+      • deep_dive_likely_surface = Sonnet 'contextual'
+    """
+    feats = pd.read_csv(
+        ROOT / "data/analysis/db_vs_sonnet_inclusion/per_protein_features.tsv",
+        sep="\t",
+    )
+    feats = feats[feats["sonnet_verdict"].isin(["yes", "contextual"])].copy()
+
+    dt = pd.read_csv(
+        ROOT / "data/processed/deeptmhmm/deeptmhmm_human_canonical.tsv", sep="\t",
+    )
+    dt_keep = ["uniprot_accession", "protein_length", "tm_helix_count",
+               "has_signal_peptide", "signal_peptide_length",
+               "n_term_extracellular", "c_term_extracellular"]
+    feats = feats.merge(dt[dt_keep], on="uniprot_accession", how="left")
+
+    iso = pd.read_csv(
+        ROOT / "data/processed/deeptmhmm/deeptmhmm_human_isoforms.tsv", sep="\t",
+    )
+    iso["canonical_acc"] = iso["uniprot_accession"].str.split("-").str[0]
+    iso_by_canon = iso.groupby("canonical_acc").agg(
+        iso_n=("uniprot_accession", "count"),
+        iso_tm_counts=("tm_helix_count", lambda x: set(x.dropna().astype(int))),
+    ).reset_index().rename(columns={"canonical_acc": "uniprot_accession"})
+    feats = feats.merge(iso_by_canon, on="uniprot_accession", how="left")
+
+    def _alt_iso_diff_topology(row):
+        if pd.isna(row.get("iso_n")) or row.get("iso_n", 0) == 0:
+            return None
+        canon_tm = row.get("tm_helix_count")
+        if pd.isna(canon_tm):
+            return None
+        iso_tms = row.get("iso_tm_counts")
+        if iso_tms is None or not isinstance(iso_tms, set):
+            return 0
+        return int(any(t != int(canon_tm) for t in iso_tms if not pd.isna(t)))
+
+    feats["alt_iso_diff_topo"] = feats.apply(_alt_iso_diff_topology, axis=1)
+
+    cmp = pd.read_csv(
+        ROOT / "data/external/ensembl_compara_surfaceome_expressed"
+             / "compara_mouse_cyno_one2one_highconf_by_gene.csv"
+    )
+    cmp_keep = cmp[["resolver_resolved_gene_symbol",
+                    "mouse_has_one2one_high_confidence",
+                    "cyno_has_one2one_high_confidence"]].rename(
+        columns={"resolver_resolved_gene_symbol": "gene_symbol"})
+    feats = feats.merge(cmp_keep, on="gene_symbol", how="left")
+
+    def _group_of(row):
+        if row["sonnet_verdict"] == "yes":
+            if str(row.get("sonnet_confidence", "")).lower() == "high":
+                return "deep_dive_high_conf"
+            return "triage_yes"
+        if row["sonnet_verdict"] == "contextual":
+            return "deep_dive_likely_surface"
+        return None
+
+    feats["group"] = feats.apply(_group_of, axis=1)
+    feats = feats.dropna(subset=["group"])
+
+    # Emit only the columns the figure consumes — one tidy row per gene.
+    cols = ["gene_symbol", "group", "tm_helix_count", "protein_length",
+            "has_signal_peptide", "n_term_extracellular", "c_term_extracellular",
+            "mouse_has_one2one_high_confidence", "cyno_has_one2one_high_confidence",
+            "schweke_homomer", "alt_iso_diff_topo"]
+    return feats[[c for c in cols if c in feats.columns]].reset_index(drop=True)
+
+
 BUILDERS: dict[str, callable] = {
     "db_overlap_venn":               build_db_overlap_venn,
     "benchmark_cost_vs_accuracy":    build_cost_vs_accuracy,
@@ -352,6 +448,9 @@ BUILDERS: dict[str, callable] = {
     "zero_db_rescues_by_triage":     build_zero_db_rescues,
     "topology_coverage_by_source":   build_topology_coverage_by_source,
     "bench_topology_vs_universe":    build_bench_topology_vs_universe,
+    "positive_control_db_coverage_bars":  build_positive_control_db_coverage_bars,
+    "surfaceome_deterministic_features_placeholder":
+        build_surfaceome_deterministic_features_placeholder,
 }
 
 

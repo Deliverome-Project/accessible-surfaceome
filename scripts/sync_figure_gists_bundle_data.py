@@ -92,6 +92,17 @@ TSV_BUNDLE: dict[str, list[str]] = {
     "paywall_bot_block_compare": [
         "data/processed/paywall_bot_block/paywall_bot_block_compare.tsv",
     ],
+    "positive_control_db_coverage_bars": [
+        # Single per-figure consolidated TSV — pass-through copy of the
+        # canonical positive_control_long.tsv into data/processed/figures/
+        # so the slug matches the bundled basename per the invariant.
+        "data/processed/figures/positive_control_db_coverage_bars.tsv",
+    ],
+    "surfaceome_deterministic_features_placeholder": [
+        # MOCK-grouped per-gene deterministic features (Supp Fig 13).
+        # Single pre-joined TSV built by build_figure_tsvs.py.
+        "data/processed/figures/surfaceome_deterministic_features_placeholder.tsv",
+    ],
     "topology_coverage_by_source": [
         "data/processed/figures/topology_coverage_by_source.tsv",
     ],

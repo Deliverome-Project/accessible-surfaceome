@@ -123,3 +123,42 @@ data/processed/paywall_bot_block/paywall_bot_block_compare.tsv -filter -diff -me
 # practical cap.
 data/analysis/db_vs_sonnet_inclusion/per_protein_features.tsv -filter -diff -merge text
 data/analysis/db_vs_sonnet_inclusion/inclusion_enrichment.tsv  -filter -diff -merge text
+
+# Positive-control augmented indicator TSVs (ADC / TCE / ViralZone) — three
+# small files (~5-10 KB each) raw-fetched by the figures-folder gist for the
+# positive-control DB-coverage bars. Each row carries hgnc_id + denormalized
+# stable IDs + 5-DB flags + Sonnet (NCBI dual-pass) flag.
+data/processed/positive_controls/positive_control_ADC.tsv -filter -diff -merge text
+data/processed/positive_controls/positive_control_TCE.tsv -filter -diff -merge text
+data/processed/positive_controls/positive_control_VZ.tsv  -filter -diff -merge text
+# Long-form combined TSV (one row per category × gene) + per-(category, source)
+# coverage summary. Both are small (~10 KB), grep-friendly, and the summary is
+# exactly the table the figure renders — checked in so a reviewer can verify
+# counts without re-running the build.
+data/processed/positive_controls/positive_control_long.tsv -filter -diff -merge text
+data/processed/positive_controls/positive_control_db_coverage_summary.tsv -filter -diff -merge text
+
+# ViralZone source CSV — mirrored from deliverome-internal:data/raw/ so the
+# public reproduction does not depend on private-repo auth. Plain text;
+# small (~33 KB).
+data/external/viralzone/viralzone_human_entry_receptors.csv -filter -diff -merge text
+
+# ADCdb antigen list — parsed from the IDRBlab ADCdb search pages
+# (333 unique antigens, 302 with inline HGNC symbol). ~14 KB; read by
+# build_positive_control_lists.py to fold ADCdb into the ADC union.
+data/external/adcdb/adcdb_antigens.tsv -filter -diff -merge text
+# ADCdb per-antigen Function-text scrape — curator-written descriptions from
+# the per-antigen detail pages. ~50 KB. Read by build_positive_control_lists.py
+# to apply a Function-text noise filter that targets canonical secreted /
+# intracellular function phrases (chemokine ligands, RNA polymerase
+# components, SNAREs, etc.) — all ADCdb-internal text, no external DBs.
+data/external/adcdb/adcdb_antigen_functions.tsv -filter -diff -merge text
+
+# Per-figure consolidated TSVs for the two positive-control / deterministic-
+# features figures, built by `scripts/build_figure_tsvs.py` — each is bundled
+# into its slug's gist as the single source the mirror reads (single-TSV-per-
+# gist invariant). Exempted from LFS so the bundled copy + the
+# raw.githubusercontent.com fallback both resolve to plain text. Small (~5 KB
+# mock placeholder / ~30 KB long-form), well under the 5 MB practical cap.
+data/processed/figures/positive_control_db_coverage_bars.tsv  -filter -diff -merge text
+data/processed/figures/surfaceome_deterministic_features_placeholder.tsv -filter -diff -merge text

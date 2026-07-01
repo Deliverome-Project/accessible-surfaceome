@@ -73,6 +73,13 @@ READS_BUNDLED_TSV = [
     "db_overlap_venn",
     "db_correctness_by_class",
     "benchmark_cost_vs_accuracy",
+    # Supp S13 — deterministic-features 3×3 (MOCK: buckets are Sonnet verdicts
+    # standing in for deep-dive confidence tiers). The bundled TSV is the sole
+    # source of truth. Supp S7 — positive-control DB coverage: its upstream is
+    # a D1-built long TSV (Sonnet dual-pass verdicts), not offline-reproducible,
+    # so its canonical also reads the bundled figure TSV rather than recomputing.
+    "positive_control_db_coverage_bars",
+    "surfaceome_deterministic_features_placeholder",
 ]
 
 # Figures whose canonical recomputes from real upstream sources by
