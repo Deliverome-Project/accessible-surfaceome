@@ -341,11 +341,11 @@ def make_plot() -> tuple[plt.Figure, list[plt.Axes]]:
     # room to breathe.
     fig = plt.figure(figsize=(18, 28))
     # Nested gridspec: outer separates the (a+b) cluster from c so we
-    # can give a↔b a tighter hspace than b↔c. Eliminates the wasted
-    # whitespace between panel a and panel b without crowding the
-    # confusion matrix below.
+    # can tune the a↔b and b↔c gaps independently. b↔c (outer hspace)
+    # is kept tight so panel c sits close under panel b rather than
+    # floating with a wide band of whitespace above it.
     outer = fig.add_gridspec(
-        nrows=2, ncols=1, height_ratios=[1.7, 2.1], hspace=0.55,
+        nrows=2, ncols=1, height_ratios=[1.7, 2.1], hspace=0.30,
     )
     top = outer[0].subgridspec(
         nrows=2, ncols=1, height_ratios=[0.7, 1.0], hspace=0.20,
