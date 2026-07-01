@@ -30,7 +30,7 @@ FIG_TSV_DIR = REPO / "data/processed/figures"
 
 # build_figure_tsvs lives in scripts/, not an installed package.
 sys.path.insert(0, str(REPO / "scripts"))
-import build_figure_tsvs as bft  # noqa: E402
+import build_figure_tsvs as bft  # noqa: E402  # ty: ignore[unresolved-import]
 
 
 def _is_lfs_pointer(path: Path) -> bool:
