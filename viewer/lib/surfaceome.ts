@@ -1309,21 +1309,43 @@ export async function withDeepDiveFilters(
 ): Promise<CatalogRow[]> {
   const ddSymbols = rows.filter((r) => r.deep_dive).map((r) => r.symbol);
   if (ddSymbols.length === 0) return rows;
-  const records = await Promise.all(
-    ddSymbols.map((s) => loadSurfaceomeRecord(s)),
-  );
+  const base = (process.env.SURFACEOME_API_BASE ?? DEFAULT_API_BASE).trim();
+  if (base === "local" || !base) return rows; // stub build — keep Worker ddf
   const ddfBySymbol = new Map<string, DeepDiveFilters>();
-  ddSymbols.forEach((sym, i) => {
-    const ddf = pickDeepDiveFilters(
-      records[i]?.filters as Record<string, unknown> | undefined,
-      records[i]?.biological_context as Record<string, unknown> | undefined,
-      records[i]?.accessibility_risks as Record<string, unknown> | undefined,
-      records[i]?.deterministic_features as Record<string, unknown> | undefined,
+  // Derive ddf in bounded chunks. A single Promise.all over EVERY
+  // deep-dive record (~120 KB parsed each) peaks well past 1 GB of heap at
+  // the ~5k-gene cohort — enough to OOM the Pages builder. Chunking caps
+  // the live-record set to CHUNK at a time; only the small derived ddf
+  // objects survive each iteration. Read the record straight from the
+  // build snapshot (or a plain live fetch when unsnapshot) rather than via
+  // loadSurfaceomeRecord: ddf needs only the filter/context blocks, and
+  // loadSurfaceomeRecord's per-gene triage-meta backfill would fire ~5k
+  // extra, rate-limit-prone /v1/triage calls this path never uses.
+  const CHUNK = 300;
+  for (let i = 0; i < ddSymbols.length; i += CHUNK) {
+    const batch = ddSymbols.slice(i, i + CHUNK);
+    const records = await Promise.all(
+      batch.map(
+        (s) =>
+          readBuildCache<SurfaceomeRecord>(`records/${s}.json`) ??
+          _fetchRecordFromWorker(s, base),
+      ),
     );
-    // Partial DeepDiveFilters (older records omit newer fields); every
-    // reader accesses fields optionally, so route the cast through unknown.
-    if (ddf) ddfBySymbol.set(sym, ddf as unknown as DeepDiveFilters);
-  });
+    batch.forEach((sym, j) => {
+      const rec = records[j];
+      const ddf = pickDeepDiveFilters(
+        rec?.filters as Record<string, unknown> | undefined,
+        rec?.biological_context as Record<string, unknown> | undefined,
+        rec?.accessibility_risks as Record<string, unknown> | undefined,
+        rec?.deterministic_features as Record<string, unknown> | undefined,
+      );
+      // Partial DeepDiveFilters (older records omit newer fields); every
+      // reader accesses fields optionally, so route the cast via unknown.
+      if (ddf) ddfBySymbol.set(sym, ddf as unknown as DeepDiveFilters);
+    });
+    // `records` leaves scope each iteration → the batch's full record
+    // objects are GC-eligible before the next chunk loads.
+  }
   if (ddfBySymbol.size === 0) return rows;
   return rows.map((r) =>
     r.deep_dive && ddfBySymbol.has(r.symbol)
