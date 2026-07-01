@@ -326,8 +326,8 @@ def make_plot() -> tuple[plt.Figure, list[plt.Axes]]:
     """
     setup_plotting_style(style="whitegrid", context="notebook", font_scale=1.0)
     plt.rcParams.update({
-        "font.size": 16, "axes.labelsize": 18, "axes.titlesize": 0,
-        "xtick.labelsize": 11, "ytick.labelsize": 11, "legend.fontsize": 12,
+        "font.size": 20, "axes.labelsize": 24, "axes.titlesize": 0,
+        "xtick.labelsize": 16, "ytick.labelsize": 16, "legend.fontsize": 16,
     })
     data = _load_data()
     m, n_joined, n_match, cell_genes = _build_matrix(data)
@@ -427,7 +427,7 @@ def make_plot() -> tuple[plt.Figure, list[plt.Axes]]:
                             alpha=0.9,
                         )
         ax.set_xticks(x)
-        ax.set_xticklabels(x_groups, fontsize=10)
+        ax.set_xticklabels(x_groups, fontsize=14)
         ax.set_ylim(0, 109)
         ax.set_ylabel(label)
         # Dotted separator between the Overall group and the per-
@@ -440,7 +440,7 @@ def make_plot() -> tuple[plt.Figure, list[plt.Axes]]:
         sns.despine(ax=ax, top=True, right=True)
         if show_legend:
             ax.legend(loc="lower center", bbox_to_anchor=(0.5, -0.35),
-                      ncols=min(5, n_cfg), frameon=False, fontsize=9)
+                      ncols=min(5, n_cfg), frameon=False, fontsize=13)
 
     # ─────── (a) per-bucket strict accuracy ───────
     BUCKETS_PA = ["yes", "ctx", "no"]
@@ -497,7 +497,7 @@ def make_plot() -> tuple[plt.Figure, list[plt.Axes]]:
                    show_legend=True,
                    rep_acc=rep_bucket_acc)
     ax_bucket.text(0.0, 1.05, "a", transform=ax_bucket.transAxes,
-                   fontsize=22, fontweight="bold", va="bottom")
+                   fontsize=26, fontweight="bold", va="bottom")
 
     # ─────── (b) per-reason exact-match accuracy ───────
     # Compute reason frequencies + per-config per-reason accuracy
@@ -560,7 +560,7 @@ def make_plot() -> tuple[plt.Figure, list[plt.Axes]]:
         x_pos = (i - (len(CONFIGS_B) - 1) / 2) * 0.16
         ax_perreason.text(
             x_pos, pct + 1.4, f"{pct:.0f}%",
-            ha="center", va="bottom", fontsize=10,
+            ha="center", va="bottom", fontsize=14,
             color=COLORS["dark"], fontweight="semibold",
         )
     # Re-rotate x-labels (per-reason labels are too long horizontally)
@@ -591,10 +591,10 @@ def make_plot() -> tuple[plt.Figure, list[plt.Axes]]:
         f"Showing {n_present} of {n_enum} TriageReason enum values "
         f"(present on bench, n ≥ 1). Absent from bench: {absent_str}.",
         transform=ax_perreason.transAxes, ha="center", va="top",
-        fontsize=10, style="italic", color=COLORS["neutral"],
+        fontsize=13, style="italic", color=COLORS["neutral"],
     )
     ax_perreason.text(0.0, 1.05, "b", transform=ax_perreason.transAxes,
-                      fontsize=22, fontweight="bold", va="bottom")
+                      fontsize=26, fontweight="bold", va="bottom")
 
     # ─────── (c) confusion matrix (Sonnet/ncbi) ───────
     ax = ax_matrix
@@ -659,13 +659,13 @@ def make_plot() -> tuple[plt.Figure, list[plt.Axes]]:
             name_str = name_str.replace(", ", ",\n", 1) if len(genes) >= 2 else name_str
         ax.text(j + 0.5, i + 0.78, name_str,
                 ha="center", va="top",
-                fontsize=6.5, color="#3a2122",
+                fontsize=9, color="#3a2122",
                 fontstyle="italic", zorder=11)
 
     ax.set_xlabel("Agent predicted_reason  (Sonnet 4.6 + NCBI)", labelpad=12)
     ax.set_ylabel("Curator\nground_truth_reason", labelpad=12)
     ax.text(-0.04, 1.02, "c", transform=ax.transAxes,
-            fontsize=22, fontweight="bold", va="bottom")
+            fontsize=26, fontweight="bold", va="bottom")
 
     handles = [
         mpatches.Patch(facecolor=BUCKET_COLOR[b], edgecolor="none",
@@ -684,7 +684,7 @@ def make_plot() -> tuple[plt.Figure, list[plt.Axes]]:
     ax.legend(
         handles=handles,
         loc="upper center", bbox_to_anchor=(0.5, -0.26),
-        ncols=4, frameon=False, fontsize=14,
+        ncols=4, frameon=False, fontsize=18,
     )
 
     # Agreement-stat subtitle dropped per user — the matrix + the

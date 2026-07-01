@@ -119,16 +119,16 @@ def _apply_brand_style() -> None:
         # Match the canonical generator's rcParams so the layout
         # fingerprint (font.size / axes.labelsize / tick sizes / legend)
         # stays in sync with scripts/curator_vs_agent_reason.py.
-        "font.size": 16, "axes.labelsize": 18, "axes.titlesize": 0,
+        "font.size": 20, "axes.labelsize": 24, "axes.titlesize": 0,
         "axes.spines.top": False, "axes.spines.right": False,
         "axes.edgecolor": BRAND_GRID, "axes.labelcolor": BRAND_INK,
         "axes.facecolor": "none",
         "text.color": BRAND_INK,
         "grid.alpha": 0.35, "grid.linestyle": "-", "grid.linewidth": 0.7,
         "grid.color": BRAND_GRID,
-        "xtick.labelsize": 11, "ytick.labelsize": 11,
+        "xtick.labelsize": 16, "ytick.labelsize": 16,
         "xtick.color": BRAND_INK, "ytick.color": BRAND_INK,
-        "legend.frameon": False, "legend.fontsize": 12,
+        "legend.frameon": False, "legend.fontsize": 16,
         "patch.edgecolor": "none", "patch.linewidth": 0.0,
     })
 
@@ -427,7 +427,7 @@ def _draw_grouped(ax, configs, x_groups, group_acc, *, bar_w=None,
                         alpha=0.9,
                     )
     ax.set_xticks(x)
-    ax.set_xticklabels(x_groups, fontsize=10)
+    ax.set_xticklabels(x_groups, fontsize=14)
     ax.set_ylim(0, 109)
     ax.set_ylabel(label)
     if 0 <= overall_idx < len(x_groups):
@@ -437,7 +437,7 @@ def _draw_grouped(ax, configs, x_groups, group_acc, *, bar_w=None,
     sns.despine(ax=ax, top=True, right=True)
     if show_legend:
         ax.legend(loc="lower center", bbox_to_anchor=(0.5, -0.35),
-                  ncols=min(5, n_cfg), frameon=False, fontsize=9)
+                  ncols=min(5, n_cfg), frameon=False, fontsize=13)
 
 
 def make_plot(data: pd.DataFrame) -> plt.Figure:
@@ -515,7 +515,7 @@ def make_plot(data: pd.DataFrame) -> plt.Figure:
                    show_legend=True,
                    rep_acc=rep_bucket_acc)
     ax_bucket.text(0.0, 1.05, "a", transform=ax_bucket.transAxes,
-                   fontsize=22, fontweight="bold", va="bottom")
+                   fontsize=26, fontweight="bold", va="bottom")
 
     # ─────── (b) per-reason exact-match accuracy ───────
     reason_n: dict[str, int] = {}
@@ -566,7 +566,7 @@ def make_plot(data: pd.DataFrame) -> plt.Figure:
         x_pos = (i - (len(CONFIGS_B) - 1) / 2) * 0.16
         ax_perreason.text(
             x_pos, pct + 1.4, f"{pct:.0f}%",
-            ha="center", va="bottom", fontsize=10,
+            ha="center", va="bottom", fontsize=14,
             color=BRAND_INK, fontweight="semibold",
         )
     # Re-rotate + bucket-color the per-reason x-tick labels.
@@ -591,10 +591,10 @@ def make_plot(data: pd.DataFrame) -> plt.Figure:
         f"Showing {n_present} of {n_enum} TriageReason enum values "
         f"(present on bench, n ≥ 1). Absent from bench: {absent_str}.",
         transform=ax_perreason.transAxes, ha="center", va="top",
-        fontsize=10, style="italic", color=BRAND_NEUTRAL,
+        fontsize=13, style="italic", color=BRAND_NEUTRAL,
     )
     ax_perreason.text(0.0, 1.05, "b", transform=ax_perreason.transAxes,
-                      fontsize=22, fontweight="bold", va="bottom")
+                      fontsize=26, fontweight="bold", va="bottom")
 
     # ─────── (c) confusion matrix (Sonnet/ncbi) ───────
     ax = ax_matrix
@@ -645,13 +645,13 @@ def make_plot(data: pd.DataFrame) -> plt.Figure:
             name_str = name_str.replace(", ", ",\n", 1) if len(genes) >= 2 else name_str
         ax.text(j + 0.5, i + 0.78, name_str,
                 ha="center", va="top",
-                fontsize=6.5, color="#3a2122",
+                fontsize=9, color="#3a2122",
                 fontstyle="italic", zorder=11)
 
     ax.set_xlabel("Agent predicted_reason  (Sonnet 4.6 + NCBI)", labelpad=12)
     ax.set_ylabel("Curator\nground_truth_reason", labelpad=12)
     ax.text(-0.04, 1.02, "c", transform=ax.transAxes,
-            fontsize=22, fontweight="bold", va="bottom")
+            fontsize=26, fontweight="bold", va="bottom")
 
     handles = [
         mpatches.Patch(facecolor=BUCKET_COLOR[b], edgecolor="none",
@@ -665,7 +665,7 @@ def make_plot(data: pd.DataFrame) -> plt.Figure:
     ax.legend(
         handles=handles,
         loc="upper center", bbox_to_anchor=(0.5, -0.26),
-        ncols=4, frameon=False, fontsize=14,
+        ncols=4, frameon=False, fontsize=18,
     )
 
     sns.despine(ax=ax, top=False, right=False, left=False, bottom=False)
