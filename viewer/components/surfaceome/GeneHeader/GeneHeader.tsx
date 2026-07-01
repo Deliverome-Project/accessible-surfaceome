@@ -2,7 +2,6 @@ import type { ReactNode } from "react";
 import type { CatalogRow } from "../../../lib/surfaceome";
 import type {
   AccessibilityModulationObservation,
-  BenchmarkRow,
   SurfaceomeRecord,
   TriageSignal,
 } from "../../../lib/surfaceome-types";
@@ -10,13 +9,12 @@ import type { SchwekeHomomerLoaderRow } from "../../../lib/structure-viewer";
 import type { StructureViewerData } from "../../../lib/structure-viewer-types";
 import { prettyEnum } from "../../../lib/surfaceome";
 import { tooltips } from "../../../lib/tooltips";
+import { triageVsDeepDive } from "../../../lib/triage-comparison";
 import { ReasoningDrawer } from "../ReasoningDrawer/ReasoningDrawer";
 import { DatabasePresenceStrip } from "../DatabasePresenceCard/DatabasePresenceStrip";
 import { linkifyEvidenceRefs } from "../EvidenceChip/EvidenceChip";
 import { FeedbackButton } from "../../FeedbackButton/FeedbackButton";
 import { InfoTip } from "../../InfoTip/InfoTip";
-import { ChipLabelValue } from "../ChipLabelValue/ChipLabelValue";
-import { StatusPill } from "../StatusPill/StatusPill";
 import { StructureViewer } from "../StructureViewerCard/StructureViewer";
 import styles from "./GeneHeader.module.css";
 
@@ -93,12 +91,6 @@ interface GeneHeaderProps {
    *  strip is omitted in that case (same fall-back as the old
    *  section-card placement). */
   catalogRow?: CatalogRow | null;
-  /** Curated SurfaceBench ground-truth row — present only for the ~147
-   *  benchmark genes. When set, a "Benchmark" row renders ABOVE the
-   *  triage row showing the hand-curated truth verdict (the strongest
-   *  reference point on the page). ``null`` for the ~19k non-benchmark
-   *  genes, where the row is omitted. */
-  benchmarkRow?: BenchmarkRow | null;
   /** Most-positive triage call across all model × variant runs for
    *  this gene (from /v1/triage/{symbol}, picked by the same
    *  positivity ordering the catalog drawer uses). Falls back to the
@@ -153,153 +145,6 @@ function gradeTone(value: string) {
   // negative — yellow (caution / mixed), not red.
   if (value === "conflicting") return "amber" as const; // yellow
   return "neutral" as const; // gray
-}
-
-/** Convert the derived `TriageSignal` enum back to the original
- *  triage verdict the agent actually emitted. The signal is a 1:1
- *  rename of `TriageVerdict` (yes | contextual | no), so the
- *  inversion is mechanical. Rendering the verdict instead of the
- *  signal matches what the synthesizer's prose quotes (e.g. SRC's
- *  confidence_reasoning: "Triage called verdict='no', …"). */
-function triageVerdictLabel(signal: string): string {
-  if (signal === "likely_accessible") return "Yes";
-  if (signal === "possibly_accessible") return "Contextual";
-  if (signal === "unlikely") return "No";
-  return "Unknown";
-}
-
-/** Display label for a SurfaceBench ground-truth verdict. The matrix
- *  stores the raw curated verdict ("yes" | "contextual" | "no"); render
- *  it title-cased to match the triage row's verdict labels. */
-function benchmarkVerdictLabel(verdict: string): string {
-  if (verdict === "yes") return "Yes";
-  if (verdict === "contextual") return "Contextual";
-  if (verdict === "no") return "No";
-  return prettyEnum(verdict);
-}
-
-/** Tone for the benchmark verdict value — green = surface (yes), amber =
- *  contextual / state-dependent, red = not surface (no), gray otherwise.
- *  Same traffic-light scale as the rest of the header. */
-function benchmarkVerdictTone(
-  verdict: string,
-): "success" | "amber" | "danger" | "neutral" {
-  if (verdict === "yes") return "success";
-  if (verdict === "contextual") return "amber";
-  if (verdict === "no") return "danger";
-  return "neutral";
-}
-
-/** Closed-enum buckets for ``executive_summary.surface_call_reason``, mirrored
- * from ``src/accessible_surfaceome/tools/_shared/models.py`` (``_YES_REASONS``
- * / ``_CONTEXTUAL_REASONS`` / ``_NO_REASONS``). The reason field is what
- * actually determines the deep-dive's yes/contextual/no bucket — looking at
- * ``surface_accessibility`` alone misclassifies the entire CONTEXTUAL bucket
- * (which renders as ``surface_accessibility = "low"`` plus a CONTEXTUAL
- * reason like ``cell_state_induced``). ``other`` appears in every bucket in
- * the schema, so we deliberately leave it out here and let the fallback by
- * accessibility magnitude decide. */
-const DEEP_DIVE_YES_REASONS: ReadonlySet<string> = new Set([
-  "classical_surface_receptor",
-  "gpi_anchored",
-  "multipass_with_exposed_loops",
-  "extracellular_face_protein",
-  "stable_complex_partner",
-]);
-const DEEP_DIVE_CONTEXTUAL_REASONS: ReadonlySet<string> = new Set([
-  "cell_state_induced",
-  "tissue_restricted_surface",
-  "lysosomal_exocytosis",
-  "dual_localization",
-  "stable_surface_attachment",
-]);
-const DEEP_DIVE_NO_REASONS: ReadonlySet<string> = new Set([
-  "cytoplasmic",
-  "nuclear",
-  "mitochondrial_internal",
-  "endomembrane_resident",
-  "nuclear_envelope",
-  "inner_leaflet_anchored",
-  "secreted_only",
-  "pmhc_only_intracellular",
-]);
-
-/** Collapse the deep-dive's ``(surface_accessibility, surface_call_reason)``
- * to a yes / contextual / no bucket matching the bench-truth taxonomy. The
- * call_reason is the primary signal (it directly names the bucket); we only
- * fall back to accessibility magnitude when the reason is absent or out-of-
- * vocabulary (``"other"`` or a future schema addition). */
-function collapseDeepDive(
-  accessibility: string,
-  callReason: string | null | undefined,
-): "yes" | "contextual" | "no" | "unclear" {
-  if (callReason) {
-    if (DEEP_DIVE_CONTEXTUAL_REASONS.has(callReason)) return "contextual";
-    if (DEEP_DIVE_YES_REASONS.has(callReason)) return "yes";
-    if (DEEP_DIVE_NO_REASONS.has(callReason)) return "no";
-  }
-  if (accessibility === "high" || accessibility === "moderate") return "yes";
-  if (accessibility === "low" || accessibility === "no") return "no";
-  return "unclear";
-}
-
-/** Compare a positive-side signal (Sonnet triage prior or curated bench
- * truth, both expressed in triage-signal vocabulary) against the deep-dive
- * verdict.
- *
- * Returns one of:
- * - `"agree"` — both sides land in the same yes / contextual / no bucket.
- *   ``possibly_accessible`` (≈ contextual) is also a soft agree with
- *   ``yes`` (a surface that's reachable across more states than the triage
- *   estimated isn't a conflict — just a stronger result).
- * - `"conflict"` — strong disagreement: positive vs no, or negative vs yes.
- *   Tighter than the old naive-binary check: a deep-dive verdict of
- *   ``low + cell_state_induced`` no longer trips ``conflict`` against a
- *   ``possibly_accessible`` triage / ``contextual`` bench truth.
- * - `"unclear"` — one or both sides emit ``unknown`` / ``uncertain``, or the
- *   axes are too far apart to call (e.g. ``unlikely`` triage vs deep-dive
- *   ``contextual``: the triage missed a state-induced surface, which is
- *   informative but not a hard "the deep dive said the opposite" pill).
- *
- * The deep dive wins on conflict (it has the per-method evidence); the
- * triage row just flags the disagreement for transparency. */
-function triageVsDeepDive(
-  triage: string,
-  accessibility: string,
-  callReason: string | null | undefined,
-): "agree" | "conflict" | "unclear" {
-  const triageStrongPositive = triage === "likely_accessible";
-  const triageSoftPositive = triage === "possibly_accessible";
-  const triageNegative = triage === "unlikely";
-  const deepVerdict = collapseDeepDive(accessibility, callReason);
-
-  if (triageStrongPositive) {
-    if (deepVerdict === "yes") return "agree";
-    if (deepVerdict === "no") return "conflict";
-    return "unclear"; // contextual under "yes"-leaning triage — softer than expected, not a hard conflict
-  }
-  if (triageSoftPositive) {
-    if (deepVerdict === "yes" || deepVerdict === "contextual") return "agree";
-    if (deepVerdict === "no") return "conflict";
-    return "unclear";
-  }
-  if (triageNegative) {
-    if (deepVerdict === "no") return "agree";
-    if (deepVerdict === "yes") return "conflict";
-    // contextual under "unlikely" triage IS a disagreement — the triage
-    // missed a state-induced or trafficking-cycling surface that the
-    // deep dive found (e.g. TGN46/TGOLN2: triage said `no` /
-    // `endomembrane_resident`, the deep dive found CONTEXTUAL surface
-    // via dual_localization with documented PM trafficking). Render as
-    // `conflict` so the row shows a non-empty pill — "unclear" hides
-    // the case entirely and the reader can't tell whether to trust the
-    // triage chip or the deep-dive call. The deep dive wins on
-    // conflict (it has the per-method evidence), and surfacing the
-    // disagreement is the whole point of the pill.
-    if (deepVerdict === "contextual") return "conflict";
-    return "unclear";
-  }
-  return "unclear";
 }
 
 function stateDependenceTone(value: string) {
@@ -395,7 +240,6 @@ export function GeneHeader({
   structureData,
   schwekeHomomer,
   catalogRow,
-  benchmarkRow,
   triageHeadline,
 }: GeneHeaderProps) {
   const g = rec.gene;
@@ -502,151 +346,64 @@ export function GeneHeader({
               outliers, where we just omit the strip. */}
           {catalogRow ? <DatabasePresenceStrip row={catalogRow} /> : null}
 
-          {/* Benchmark row — only for the ~147 SurfaceBench genes. The
-              hand-curated ground-truth verdict is the strongest reference
-              point on the page, so it sits ABOVE the model's first-pass
-              triage. Reuses the triage-row layout for visual consistency;
-              the value is toned on the same traffic-light scale. */}
-          {benchmarkRow
-            ? (() => {
-                // Same agree/conflict comparison the triage row makes, but
-                // against the curated ground-truth verdict instead of the
-                // model's triage prior. Map the benchmark verdict onto the
-                // triage-signal scheme so triageVsDeepDive can be reused
-                // (yes→likely, contextual→possibly, no→unlikely).
-                const benchSignal =
-                  benchmarkRow.truth_verdict === "yes"
-                    ? "likely_accessible"
-                    : benchmarkRow.truth_verdict === "contextual"
-                      ? "possibly_accessible"
-                      : benchmarkRow.truth_verdict === "no"
-                        ? "unlikely"
-                        : "unknown";
-                const benchVerdict = triageVsDeepDive(
-                  benchSignal,
-                  exec.surface_accessibility,
-                  exec.surface_call_reason,
-                );
-                return (
-                  <p className={styles.triageRow}>
-                    <span className={`label-mono ${styles.triageLabel}`}>
-                      Benchmark
-                      <InfoTip>{tooltips.benchmark_truth}</InfoTip>
-                    </span>
-                    <StatusPill
-                      tone={benchmarkVerdictTone(benchmarkRow.truth_verdict)}
-                      size="sm"
-                    >
-                      {benchmarkVerdictLabel(benchmarkRow.truth_verdict)}
-                    </StatusPill>
-                    {benchVerdict === "conflict" ? (
-                      <span className={styles.triageConflict}>
-                        conflicts with deep dive
-                      </span>
-                    ) : benchVerdict === "agree" ? (
-                      <span className={styles.triageAgree}>
-                        agrees with deep dive
-                      </span>
-                    ) : null}
-                  </p>
-                );
-              })()
-            : null}
+          {/* Benchmark row (SurfaceBench ground truth) + Triage row
+              (Sonnet first-pass verdict) were moved out of the header —
+              see components/surfaceome/BenchmarkRow and TriageRow. They
+              render as compact strips just above the DataSourcesFooter
+              so the header stays anchored on the deep-dive verdict
+              (Surface likelihood hero below) and the reference-point
+              strips sit with the other provenance-flavored content at
+              the bottom of the page. */}
 
-          {/* Triage row — Sonnet first-pass surface verdict, sitting
-              under the DB-presence strip for transparency. Tagged with
-              "initial pass · no web search" so the reader knows this
-              isn't the deep-dive call. When the triage disagrees with
-              the deep-dive `surface_accessibility`, the row carries a
-              warn pill that links the eye to the conflict (e.g. for
-              SRC: triage=Unlikely vs deep-dive=High — the eSrc
-              cancer-specific surface that the initial triage missed). */}
+          {/* Surface likelihood — the deep-dive verdict as the header's
+              primary readout. Was previously a cell inside the 2×2
+              vitals grid ("Surface verdict"); promoted to a hero row
+              above the executive summary so the reader sees the call
+              first, with the Architecture + Family badges beside it as
+              the two neutral-metadata pins that qualify what KIND of
+              surface it is. Renamed "Surface verdict" → "Surface
+              likelihood" so the label reads as an axis rather than a
+              deep-dive-specific term (the value still tokens as
+              high/moderate/low/no). */}
           {(() => {
-            // Prefer the latest most-positive triage verdict across all
-            // model × variant runs (from /v1/triage/{symbol}) over the
-            // record's bundled `triage_signal` — the bundled value is
-            // the triage call that *triggered* this deep-dive (a single
-            // model × variant × point-in-time snapshot) and can lag
-            // behind a later re-triage that flipped the verdict.
-            // KLK2 is the smoking gun: bundled signal='unlikely' (the
-            // 2026-06-01 sonnet-ncbi call) but the latest+most-positive
-            // call (2026-06-23 sonnet-pubmed_ncbi) is 'contextual'.
-            const headlineSignal =
-              triageHeadline?.signal ?? rec.triage_signal;
-            const headlineReason =
-              triageHeadline?.reason ?? rec.triage_reason ?? null;
-            const headlineReasoning =
-              triageHeadline?.reasoning ?? rec.triage_reasoning ?? "";
-            const headlineConfidence =
-              triageHeadline?.confidence ?? rec.triage_confidence ?? null;
-            const verdict = triageVsDeepDive(
-              headlineSignal,
-              exec.surface_accessibility,
-              exec.surface_call_reason,
-            );
+            const accessTone = accessibilityTone(exec.surface_accessibility);
             return (
-              <p className={styles.triageRow}>
-                <span className={`label-mono ${styles.triageLabel}`}>
-                  Triage
-                  <InfoTip wide>{tooltips.triage_signal}</InfoTip>
-                </span>
-                <span className={styles.triageValue}>
-                  {triageVerdictLabel(headlineSignal)}
-                </span>
-                <span className={styles.triageQualifier}>
-                  <ChipLabelValue label="initial pass" value="no web search" />
-                </span>
-                {verdict === "conflict" ? (
-                  <span className={styles.triageConflict}>
-                    conflicts with deep dive
-                  </span>
-                ) : verdict === "agree" ? (
-                  <span className={styles.triageAgree}>
-                    agrees with deep dive
-                  </span>
-                ) : null}
-                {/* The triage agent's own verdict justification, surfaced
-                 *  in a slide-in drawer. Self-hides when the record
-                 *  carries no triage_reasoning (older records / genes with
-                 *  no persisted triage). Distinct from the deep-dive
-                 *  confidence reasoning below — this is the first-pass,
-                 *  no-web-search rationale. */}
-                <ReasoningDrawer
-                  eyebrow={`Triage · ${triageVerdictLabel(headlineSignal)}`}
-                  title="Why this triage call?"
-                  ariaLabel="Why the initial triage pass called it this way"
-                  triggerClassName={styles.triageReasoningTrigger}
-                  reasoning={headlineReasoning}
-                  reasonCode={headlineReason}
-                  meta={(() => {
-                    // Same provenance the catalog drawer shows inline
-                    // (Variant + Date), plus Confidence — pass through
-                    // the existing meta slot so the deep-dive's triage
-                    // drawer carries the same info at a glance.
-                    const out: Array<{ label: string; value: string }> = [];
-                    if (triageHeadline?.promptVariant) {
-                      out.push({
-                        label: "Variant",
-                        value: triageHeadline.promptVariant.replace(/_/g, " "),
-                      });
-                    }
-                    if (triageHeadline?.createdAt) {
-                      out.push({
-                        label: "Date",
-                        value: new Date(triageHeadline.createdAt).toLocaleDateString(
-                          "en-US",
-                          { year: "numeric", month: "short", day: "numeric" },
-                        ),
-                      });
-                    }
-                    if (headlineConfidence) {
-                      out.push({ label: "Confidence", value: headlineConfidence });
-                    }
-                    return out.length > 0 ? out : undefined;
-                  })()}
-                  secondary={triageHeadline?.secondary}
-                />
-              </p>
+              <div className={styles.likelihoodHero}>
+                <p className={`label-mono ${styles.vitalK}`}>
+                  Surface likelihood
+                  <InfoTip>{tooltips.surface_accessibility}</InfoTip>
+                </p>
+                <div className={styles.likelihoodBody}>
+                  <p className={`h-vital-display ${vitalToneClass(accessTone)}`}>
+                    {prettyEnum(exec.surface_accessibility)}
+                  </p>
+                  {/* Architecture + Family — two pill chips beside the
+                   *  likelihood value. Sentence-cased, brown
+                   *  ``--ink-soft`` color (NOT the accessibility tone —
+                   *  these are neutral metadata about the protein, not
+                   *  signals about its accessibility). The deep-dive
+                   *  agent picks the values; ``InfoTip`` per chip carries
+                   *  the provenance + enum-value glossary. */}
+                  <div className={styles.likelihoodBadges}>
+                    <span className={styles.archFamilyChip}>
+                      <span className={styles.archFamilyChipKey}>
+                        Architecture
+                      </span>
+                      <span className={styles.archFamilyChipValue}>
+                        {prettyEnum(exec.subcategory)}
+                      </span>
+                      <InfoTip>{tooltips.architecture_chip}</InfoTip>
+                    </span>
+                    <span className={styles.archFamilyChip}>
+                      <span className={styles.archFamilyChipKey}>Family</span>
+                      <span className={styles.archFamilyChipValue}>
+                        {prettyEnum(exec.llm_family)}
+                      </span>
+                      <InfoTip>{tooltips.family_chip}</InfoTip>
+                    </span>
+                  </div>
+                </div>
+              </div>
             );
           })()}
 
@@ -662,71 +419,21 @@ export function GeneHeader({
             {linkifyEvidenceRefs(exec.one_paragraph)}
           </p>
 
-          {/* At-a-glance 2×2 vitals grid. Each value is the deep-dive
-              agent's synthesis (Accessibility / Experimental surface
-              evidence / Confidence / State dependence). Architecture +
-              Family sit inside the Accessibility cell as pill chips
-              (each with its own InfoTip); Confidence, Surface evidence,
-              and State dependence each carry a "Reasoning" drawer chip.
-              The LLM-vs-Deterministic split now lives in §01 Summary
-              metrics; deterministic tool data (topology, pLDDT,
-              SURFACE-Bind, conservation) is no longer duplicated
-              here. */}
+          {/* At-a-glance 3-up vitals row. Surface likelihood (formerly
+              "Surface verdict") + its Architecture/Family badges were
+              promoted to the hero row above the executive summary; the
+              remaining three signals — Experimental surface evidence /
+              Confidence / State dependence — sit here in a single row.
+              Each cell carries a "Reasoning" drawer chip. The
+              LLM-vs-Deterministic split lives in §01 Summary metrics;
+              deterministic tool data is not duplicated here. */}
           <dl className={styles.vitals}>
             {(() => {
-              const accessTone = accessibilityTone(exec.surface_accessibility);
               const gradeT = gradeTone(exec.evidence_grade_summary);
               const confT = confidenceTone(exec.confidence);
               const stateT = stateDependenceTone(exec.state_dependence);
               return (
                 <>
-                  <div className={styles.vital}>
-                    <dt className={`label-mono ${styles.vitalK}`}>
-                      Surface verdict
-                      <InfoTip>{tooltips.surface_accessibility}</InfoTip>
-                    </dt>
-                    <dd className={styles.vitalV}>
-                      <p className={`h-vital-display ${vitalToneClass(accessTone)}`}>
-                        {prettyEnum(exec.surface_accessibility)}
-                      </p>
-                      {/* Architecture + Family — two pill chips beneath
-                       *  the accessibility value. Sentence-cased,
-                       *  brown ``--ink-soft`` color (NOT the
-                       *  accessibility tone — these are neutral
-                       *  metadata about the protein, not signals about
-                       *  its accessibility). The deep-dive agent picks
-                       *  the values; ``InfoTip`` per chip carries the
-                       *  provenance + enum-value glossary. */}
-                      <div className={styles.archFamilyInline}>
-                        <span className={styles.archFamilyChip}>
-                          <span className={styles.archFamilyChipKey}>
-                            Architecture
-                          </span>
-                          <span className={styles.archFamilyChipValue}>
-                            {prettyEnum(exec.subcategory)}
-                          </span>
-                          <InfoTip>{tooltips.architecture_chip}</InfoTip>
-                        </span>
-                        <span className={styles.archFamilyChip}>
-                          <span className={styles.archFamilyChipKey}>
-                            Family
-                          </span>
-                          <span className={styles.archFamilyChipValue}>
-                            {prettyEnum(exec.llm_family)}
-                          </span>
-                          <InfoTip>{tooltips.family_chip}</InfoTip>
-                        </span>
-                        {/* Deterministic registry families (HGNC gene
-                         *  group + UniProt SIMILARITY family) moved to
-                         *  the §01 Summary-metrics "Deterministic"
-                         *  block — see FiltersCard. They're registry
-                         *  ground truth, not model output, so they read
-                         *  better beside the other deterministic-tool
-                         *  readouts than next to the LLM Family chip. */}
-                      </div>
-                    </dd>
-                  </div>
-
                   <div className={styles.vital}>
                     <dt className={`label-mono ${styles.vitalK}`}>
                       Experimental surface evidence
