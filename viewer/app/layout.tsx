@@ -18,7 +18,7 @@ const playfair = Playfair_Display({
 const SITE_URL = "https://surfaceome.deliverome.org";
 const SITE_TITLE = "Surfaceome — Deliverome";
 const SITE_DESCRIPTION =
-  "A working atlas of cell-surface proteins — open accession, evidence-cited, agent-readable.";
+  "The accessible surfaceome — a genome-wide catalog of human cell-surface proteins. Open, cited, and configurable.";
 
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),
