@@ -48,9 +48,24 @@ def _is_lfs_pointer(path: Path) -> bool:
 @pytest.fixture(scope="module")
 def sources():
     try:
-        return bft._load_sources()
+        loaded = bft._load_sources()
     except FileNotFoundError as exc:
         pytest.skip(f"canonical figure sources unavailable in this checkout: {exc}")
+    # Most build_figure_tsvs sources are LFS-exempt text, but not all (the
+    # deterministic-features / per-protein-features source is LFS-tracked). On a
+    # checkout without `git lfs pull` (CI's bare actions/checkout) an LFS source
+    # smudges to a 3-line pointer, which pandas reads as a 1-column frame whose
+    # column name is the pointer's first line. A builder consuming it KeyErrors on
+    # the missing columns — a false failure, not real drift. Skip the whole module
+    # then (same intent as the committed-TSV pointer skip below).
+    for name, df in loaded.items():
+        cols = list(df.columns)
+        if len(cols) == 1 and str(cols[0]).startswith("version https://git-lfs"):
+            pytest.skip(
+                f"source '{name}' is an unsmudged LFS pointer — run `git lfs pull` "
+                f"(or check out with lfs:true) to enable this reproducibility guard"
+            )
+    return loaded
 
 
 @pytest.mark.parametrize("slug", sorted(bft.BUILDERS))
