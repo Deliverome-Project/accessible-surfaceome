@@ -277,10 +277,16 @@ def main() -> None:
     for i, (u, b, (_lo, hi), p) in enumerate(zip(univ, bench, ci, pvals, strict=True)):
         delta = b - u
         sign = "+" if delta >= 0 else "−"
-        color = BRAND_INK if abs(delta) < 5 else COLOR_BENCH
-        weight = "normal" if abs(delta) < 5 else "bold"
         y_text = max(u, b + hi) + 1.6
         star = _star(p)
+        # Color/weight encode SIGNIFICANCE, not magnitude: a class that
+        # clears the Bonferroni gate (star != "ns") is maroon + bold;
+        # a non-significant class is neutral gray + normal weight, so a
+        # large-but-ns delta (e.g. a +11.8 pp shift at p=0.125) doesn't
+        # read as "significant" the way a red bold label would.
+        significant = star != "ns"
+        color = COLOR_BENCH if significant else BRAND_NEUTRAL
+        weight = "bold" if significant else "normal"
         label = f"{sign}{abs(delta):.1f} pp"
         if star != "ns":
             label += f"  {star}"
@@ -296,8 +302,11 @@ def main() -> None:
     ax.set_ylim(0, max(max(univ), max(bench)) + 12)
     ax.set_xlabel("")
 
+    # Upper-LEFT: the left side of the plot is empty (GPI / 7TM bars are
+    # short there), whereas the tall Glyc.-site bar + its "+20.5 pp ***"
+    # label collides with an upper-right legend.
     ax.legend(
-        loc="upper right", bbox_to_anchor=(0.99, 0.99),
+        loc="upper left", bbox_to_anchor=(0.01, 0.99),
         frameon=False, fontsize=14,
     )
 
