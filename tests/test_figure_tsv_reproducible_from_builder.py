@@ -65,6 +65,17 @@ def sources():
                 f"source '{name}' is an unsmudged LFS pointer — run `git lfs pull` "
                 f"(or check out with lfs:true) to enable this reproducibility guard"
             )
+    # Some builders read LFS-tracked sources DIRECTLY (bypassing _load_sources) —
+    # e.g. build_surfaceome_deterministic_features_placeholder reads
+    # data/processed/deeptmhmm/*. Those aren't in `loaded` above, so probe a
+    # representative one: in a no-`git lfs pull` checkout it's a pointer and the
+    # builder KeyErrors on missing columns. The guard is a local-only drift check.
+    lfs_probe = REPO / "data/processed/deeptmhmm/deeptmhmm_human_canonical.tsv"
+    if lfs_probe.is_file() and _is_lfs_pointer(lfs_probe):
+        pytest.skip(
+            "LFS-tracked source data not smudged (no `git lfs pull`) — the figure "
+            "reproducibility guard runs locally only"
+        )
     return loaded
 
 
