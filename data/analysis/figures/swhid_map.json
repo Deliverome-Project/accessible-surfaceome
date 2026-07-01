@@ -1,7 +1,7 @@
 {
   "bench_topology_vs_universe": "swh:1:rev:53dde26c2bcf3fb7d8c5db78945480e29b1d4db1",
   "benchmark_cost_vs_accuracy": "swh:1:rev:b9aac8563957aca7ce698e1864e9614a12bed6da",
-  "curator_vs_agent_reason": "swh:1:rev:8acda80e52ff339f74cf5a7b4da8840a37dc1627",
+  "curator_vs_agent_reason": "swh:1:rev:6e9c984e7ffadf5b2d66e35120c5a29a7cf2c700",
   "db_correctness_by_class": "swh:1:rev:69086dfbbe9a22f73e36ba0b1e7926213f90b22b",
   "db_correctness_overall": "swh:1:rev:aafbbb9fd8957ddb88a4b803380994ddb2d4c945",
   "db_cutoff_tradeoff": "swh:1:rev:7dd8393e7f71d941ef3e3077106883442db27fc2",
