@@ -1,0 +1,31 @@
+/* Benchmark row — same compact register as TriageRow. Sits just above
+ * TriageRow at the bottom of the gene detail page. Curated
+ * ground-truth verdict (SurfaceBench) — the strongest reference point
+ * on the page — so it renders ABOVE the model's first-pass triage. */
+.benchmarkRow {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 0.6rem;
+  margin: 0;
+  font-size: 0.78rem;
+  color: var(--ink);
+}
+
+.benchmarkLabel {
+  display: inline-flex;
+  align-items: baseline;
+  color: var(--muted);
+}
+
+.benchmarkAgree {
+  color: var(--success);
+  font-size: 0.74rem;
+  letter-spacing: 0.04em;
+}
+
+.benchmarkConflict {
+  color: var(--warning);
+  font-size: 0.74rem;
+  letter-spacing: 0.04em;
+}

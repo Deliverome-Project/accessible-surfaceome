@@ -312,23 +312,25 @@
   color: var(--ink-soft);
 }
 
-/* Vitals 2×2 grid — sits inside the text column directly below
-   the executive summary paragraph. Was previously a 4-up row that
-   spanned the full header width below the structure aside; tightened
-   to 2×2 so the vitals stay attached to the lede paragraph and the
-   reader can scan all four signals without scrolling past the 3D
-   viewer column. Border-top + spacing now lives on the .rowEyebrow
-   above this dl — keeps each row's "LLM-DRIVEN" / "DETERMINISTIC"
-   provenance label visually attached to its separator. */
+/* Vitals 3-up row — sits inside the text column directly below
+   the executive summary paragraph. Surface likelihood (the deep-dive
+   verdict) was promoted OUT of this grid into the .likelihoodHero
+   above the exec summary; the remaining three signals — Experimental
+   surface evidence / Confidence / State dependence — sit here in a
+   single row so the whole header reads top-to-bottom as
+   likelihood → prose → three supporting axes without a stacked
+   grid. */
 .vitals {
   margin: 0;
   padding: 0;
   display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
+  grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: var(--space-3) var(--space-5);
 }
 
-@media (max-width: 480px) {
+/* Narrow viewports fold to a single column — three-across is too
+   cramped once the text column drops below ~640px. */
+@media (max-width: 720px) {
   .vitals {
     grid-template-columns: 1fr;
   }
@@ -372,28 +374,34 @@
   line-height: 1.4;
 }
 
-/* Architecture + Family — pill-shaped chips inside the Accessibility
-   vital cell, beneath the accessibility value.
-   Was uppercase/letter-spaced inline text that inherited the
-   accessibility tone color (so on accessibility=no it rendered in
-   the danger/red palette, which the user found visually noisy and
-   semantically wrong — Architecture/Family aren't tone-bearing).
-   New shape: two compact pill chips, ``Architecture · Value`` and
-   ``Family · Value``, sentence-cased (prettyEnum already does that)
-   in the soft-brown ``--ink-soft`` color so they sit as neutral
-   metadata under the accessibility headline. */
-.archFamilyInline {
-  margin: var(--space-2) 0 0;
+/* Surface likelihood hero — the deep-dive verdict promoted out of
+   the vitals grid to a header-primary readout above the executive
+   summary. Layout:
+     [SURFACE LIKELIHOOD ⓘ]
+     [High         [Architecture · X]   [Family · Y]]
+   The label sits as an eyebrow; the display value + badges sit on
+   one baseline-aligned row underneath. On narrow viewports the badge
+   row wraps below the value. */
+.likelihoodHero {
   display: flex;
-  /* Stack the Architecture + Family chips vertically — Family sits
-     directly beneath Architecture rather than beside it. ``flex-start``
-     keeps each chip at its natural content width (column flex would
-     otherwise stretch them to fill the cell). */
   flex-direction: column;
-  align-items: flex-start;
   gap: 0.35rem;
-  /* No font-family / text-transform / letter-spacing here — the
-     chip rule below owns those so we don't paint mixed registers. */
+  margin: 0;
+  min-width: 0;
+}
+
+.likelihoodBody {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: var(--space-3) var(--space-4);
+}
+
+.likelihoodBadges {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 0.4rem;
 }
 
 .archFamilyChip {

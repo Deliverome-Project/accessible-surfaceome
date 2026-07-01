@@ -6,6 +6,7 @@ import { FeedbackModal } from "../../components/FeedbackModal/FeedbackModal";
 import { Reveal } from "../../components/Reveal/Reveal";
 import { Shell } from "../../components/Shell/Shell";
 import { AccessibilityRisksCard } from "../../components/surfaceome/AccessibilityRisksCard/AccessibilityRisksCard";
+import { BenchmarkRow } from "../../components/surfaceome/BenchmarkRow/BenchmarkRow";
 import { BiologicalContextCard } from "../../components/surfaceome/BiologicalContextCard/BiologicalContextCard";
 import { CommunityNotesCard } from "../../components/surfaceome/CommunityNotesCard/CommunityNotesCard";
 import { DataSourcesFooter } from "../../components/surfaceome/DataSourcesFooter/DataSourcesFooter";
@@ -23,6 +24,7 @@ import { GeneJump } from "../../components/surfaceome/GeneJump/GeneJump";
 import { IsoformsCard } from "../../components/surfaceome/IsoformsCard/IsoformsCard";
 import { SurfaceBindCard } from "../../components/surfaceome/SurfaceBindCard/SurfaceBindCard";
 import { SurfaceEvidenceCard } from "../../components/surfaceome/SurfaceEvidenceCard/SurfaceEvidenceCard";
+import { TriageRow } from "../../components/surfaceome/TriageRow/TriageRow";
 import {
   listSurfaceomeGeneEntries,
   listSurfaceomeGenes,
@@ -325,7 +327,6 @@ export default async function GenePage({ params }: PageProps) {
             structureData={structureData}
             schwekeHomomer={schwekeHomomerRow}
             catalogRow={catalogRow}
-            benchmarkRow={benchmarkRow}
             triageHeadline={triageHeadline}
           />
         </Reveal>
@@ -363,6 +364,18 @@ export default async function GenePage({ params }: PageProps) {
             </section>
           ))}
         </SectionTabs>
+
+        {/* Reference-point strips — moved out of the GeneHeader so the
+            top of the page stays anchored on the deep-dive Surface
+            likelihood hero. Order: Benchmark (curated ground truth,
+            when available for the ~147 benchmark genes) above Triage
+            (Sonnet first-pass). Both sit with the other
+            provenance-flavored strip content just above the
+            DataSourcesFooter. */}
+        {benchmarkRow ? (
+          <BenchmarkRow rec={rec} benchmarkRow={benchmarkRow} />
+        ) : null}
+        <TriageRow rec={rec} triageHeadline={triageHeadline} />
 
         <DataSourcesFooter rec={rec} />
       </article>
