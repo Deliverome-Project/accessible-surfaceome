@@ -6,6 +6,7 @@ import { FeedbackModal } from "../../components/FeedbackModal/FeedbackModal";
 import { Reveal } from "../../components/Reveal/Reveal";
 import { Shell } from "../../components/Shell/Shell";
 import { AccessibilityRisksCard } from "../../components/surfaceome/AccessibilityRisksCard/AccessibilityRisksCard";
+import { BenchmarkRow } from "../../components/surfaceome/BenchmarkRow/BenchmarkRow";
 import { BiologicalContextCard } from "../../components/surfaceome/BiologicalContextCard/BiologicalContextCard";
 import { CommunityNotesCard } from "../../components/surfaceome/CommunityNotesCard/CommunityNotesCard";
 import { DataSourcesFooter } from "../../components/surfaceome/DataSourcesFooter/DataSourcesFooter";
@@ -23,6 +24,7 @@ import { GeneJump } from "../../components/surfaceome/GeneJump/GeneJump";
 import { IsoformsCard } from "../../components/surfaceome/IsoformsCard/IsoformsCard";
 import { SurfaceBindCard } from "../../components/surfaceome/SurfaceBindCard/SurfaceBindCard";
 import { SurfaceEvidenceCard } from "../../components/surfaceome/SurfaceEvidenceCard/SurfaceEvidenceCard";
+import { TriageRow } from "../../components/surfaceome/TriageRow/TriageRow";
 import {
   listSurfaceomeGeneEntries,
   listSurfaceomeGenes,
@@ -139,16 +141,19 @@ export default async function GenePage({ params }: PageProps) {
   // error — GeneHeader then falls back to rec.triage_signal.
   const triageHeadline = await loadTriageHeadline(rec.gene.hgnc_symbol);
 
-  // Deep-dive genes (symbol + freshness flag) for the toolbar's <GeneJump>
-  // typeahead — the SAME set generateStaticParams emits, so every
-  // suggestion resolves to a real statically-generated page (a non-deep-dive
-  // symbol would 404 under output: export). Each entry's `stale` flag is
-  // computed from the Worker's per-gene `schema_version` (D1) vs the
-  // current `CURRENT_RECORD_SCHEMA_VERSION` target — green = current,
-  // amber = out of date. Memoized — shares the single /v1/genes fetch
-  // with listSurfaceomeGenes — so this is one Worker call per build,
-  // not per page.
-  const deepDiveGenes = await listSurfaceomeGeneEntries();
+  // Deep-dive genes for the toolbar's <GeneJump> typeahead — a subset of
+  // the set generateStaticParams emits, so every suggestion resolves to a
+  // real statically-generated page (a non-deep-dive symbol would 404 under
+  // output: export). We restrict to records that are CURRENT with the
+  // schema (`stale === false`): the typeahead surfaces only fresh deep
+  // dives, with no freshness indicator (the green/amber dot was retired).
+  // Stale-record symbols still have their own static pages — they're just
+  // not offered as jump targets until re-run. Memoized — shares the single
+  // /v1/genes fetch with listSurfaceomeGenes — so this is one Worker call
+  // per build, not per page.
+  const deepDiveGenes = (await listSurfaceomeGeneEntries()).filter(
+    (g) => !g.stale,
+  );
 
   // v1.0.0 section order mirrors the EGFR mockup in
   // docs/plans/2026-05-13-deep-dive-redesign-surface-accessibility.md.
@@ -292,11 +297,7 @@ export default async function GenePage({ params }: PageProps) {
           </Link>
           {/* Jump to another gene's deep dive without going back to the
               catalog table. Suggestions are the deep-dive set only. */}
-          <GeneJump
-            genes={deepDiveGenes}
-            current={rec.gene.hgnc_symbol}
-            showSchemaDots
-          />
+          <GeneJump genes={deepDiveGenes} current={rec.gene.hgnc_symbol} />
           <span className={styles.crumbActions}>
             <a
               className={styles.crumbAction}
@@ -326,7 +327,6 @@ export default async function GenePage({ params }: PageProps) {
             structureData={structureData}
             schwekeHomomer={schwekeHomomerRow}
             catalogRow={catalogRow}
-            benchmarkRow={benchmarkRow}
             triageHeadline={triageHeadline}
           />
         </Reveal>
@@ -364,6 +364,18 @@ export default async function GenePage({ params }: PageProps) {
             </section>
           ))}
         </SectionTabs>
+
+        {/* Reference-point strips — moved out of the GeneHeader so the
+            top of the page stays anchored on the deep-dive Surface
+            likelihood hero. Order: Benchmark (curated ground truth,
+            when available for the ~147 benchmark genes) above Triage
+            (Sonnet first-pass). Both sit with the other
+            provenance-flavored strip content just above the
+            DataSourcesFooter. */}
+        {benchmarkRow ? (
+          <BenchmarkRow rec={rec} benchmarkRow={benchmarkRow} />
+        ) : null}
+        <TriageRow rec={rec} triageHeadline={triageHeadline} />
 
         <DataSourcesFooter rec={rec} />
       </article>

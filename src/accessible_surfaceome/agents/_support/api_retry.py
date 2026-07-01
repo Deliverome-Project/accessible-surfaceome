@@ -168,6 +168,9 @@ def messages_create_with_backoff(
     # ``_support`` package and pure-stdlib, but the lazy form keeps this
     # module importable even in a stripped-down test harness that mocks
     # the helpers.
+    from accessible_surfaceome.agents._support.model_config import (
+        model_rejects_sampling_params,
+    )
     from accessible_surfaceome.agents._support.run_metadata import (
         api_response_metadata,
         cohort_temperature,
@@ -179,7 +182,16 @@ def messages_create_with_backoff(
     # ``COHORT_TEMPERATURE`` env at call time (not module load) so a
     # one-off ``COHORT_TEMPERATURE=1.0 uv run ...`` works without an SDK
     # restart.
-    if "temperature" not in kwargs:
+    #
+    # The Claude 5 family rejects sampling params (``temperature`` /
+    # ``top_p`` / ``top_k`` → HTTP 400 "deprecated for this model"), so
+    # skip the injection for those models — passing it would 400 every
+    # call. A caller that explicitly passed ``temperature=`` for a
+    # 5-family model still gets the 400 (their bug to fix), but the
+    # default-injection path must never be the cause.
+    if "temperature" not in kwargs and not model_rejects_sampling_params(
+        kwargs.get("model")
+    ):
         kwargs["temperature"] = cohort_temperature()
 
     # The wrapped callable is built per-call (not module-level) so each

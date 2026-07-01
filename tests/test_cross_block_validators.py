@@ -337,3 +337,68 @@ class TestHeadlineRisksMatchPresentRisks:
         """Forward-compat: an unknown HeadlineRisk value falls through to
         True so a future enum addition doesn't break old records."""
         assert _is_headline_risk_backed("some_future_value", _risks()) is True
+
+
+def test_demote_multimethod_mirrors_cardinality_validator() -> None:
+    """The orchestrator's in-process demotion must catch exactly the cases the
+    SurfaceEvidence cardinality validator rejects. Otherwise the ValidationError
+    bubbles out of the Modal worker and forces a full-gene retry (~$1.5 re-spend)
+    — or a hard failure if the model keeps over-grading.
+    """
+    from accessible_surfaceome.agents.surfaceome_v2.orchestrator import (
+        _demote_multimethod_if_unsupported as demote,
+    )
+
+    # 1 direct method → demote (multi needs ≥2 rows). [GPR75 case]
+    assert (
+        demote("direct_multi_method", [_method(cited_evidence_ids=["a1_evi_01"])])
+        == "direct_single_method"
+    )
+
+    # 2 direct methods citing the SAME source → demote (multi needs ≥2 distinct
+    # sources). This is the exact case that hard-failed a canary gene.
+    two_same = [
+        _method(cited_evidence_ids=["a1_evi_13"]),
+        _method(cited_evidence_ids=["a1_evi_13"]),
+    ]
+    assert demote("direct_multi_method", two_same) == "direct_single_method"
+
+    # 2 direct methods, 2 distinct sources → valid multi, left unchanged.
+    two_diff = [
+        _method(cited_evidence_ids=["a1_evi_01"]),
+        _method(cited_evidence_ids=["a1_evi_02"]),
+    ]
+    assert demote("direct_multi_method", two_diff) == "direct_multi_method"
+
+    # No direct rows at all → NOT demoted (single requires ≥1; the n_direct==0
+    # case is handled by the re-LLM retry in _annotate, not by demotion).
+    assert demote("direct_multi_method", []) == "direct_multi_method"
+
+    # Any other grade passes through untouched.
+    assert demote("direct_single_method", two_same) == "direct_single_method"
+    assert demote("supportive_but_indirect", two_diff) == "supportive_but_indirect"
+
+
+def test_prose_overshoot_log_level(caplog: pytest.LogCaptureFixture) -> None:
+    """Soft-target overshoots log at DEBUG (kept off the operator's WARNING
+    stream at cohort scale); only an egregious ≥2× overshoot escalates to
+    WARNING."""
+    from pydantic import BaseModel
+
+    from accessible_surfaceome.tools._shared.models import _warn_prose_overshoot
+
+    class _Tiny(BaseModel):
+        f: str
+
+    # 30% over target → DEBUG, never WARNING.
+    with caplog.at_level("DEBUG"):
+        _warn_prose_overshoot(_Tiny(f="x" * 130), {"f": 100})
+    rows = [r for r in caplog.records if "soft-target overshoot" in r.getMessage()]
+    assert rows and all(r.levelname == "DEBUG" for r in rows)
+
+    caplog.clear()
+    # 150% over target (2.5× len) → WARNING.
+    with caplog.at_level("DEBUG"):
+        _warn_prose_overshoot(_Tiny(f="x" * 250), {"f": 100})
+    rows = [r for r in caplog.records if "soft-target overshoot" in r.getMessage()]
+    assert any(r.levelname == "WARNING" for r in rows)

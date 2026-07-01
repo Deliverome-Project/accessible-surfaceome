@@ -32,6 +32,10 @@ from dataclasses import dataclass
 from pathlib import Path
 
 from accessible_surfaceome.agents.surfaceome_v2 import annotate
+from accessible_surfaceome.agents.surfaceome_v2.orchestrator import (
+    load_resumable_dual,
+    set_pts_checkpoint_publisher,
+)
 from accessible_surfaceome.cloud.deep_dive_upload import D1DeepDiveSink
 from accessible_surfaceome.cloud.intermediates import publish_intermediates
 from accessible_surfaceome.cloud.surface_annotation import publish_record
@@ -132,6 +136,29 @@ class GeneResult:
     cost_capped: bool = False
 
 
+def _make_pts_checkpoint_publisher(cohort_id: str):
+    """Build the durable mid-run PTS checkpoint publisher for this cohort.
+
+    Installed into the orchestrator (gap-1) so a hard crash after plan-trim-
+    select still leaves the dual in D1. Gene-agnostic: takes ``(gene, blob)``
+    and writes a non-terminal ``pts_checkpoint`` intermediates row.
+    ``publish_intermediates`` is itself best-effort (never raises).
+    """
+    schema_version = SurfaceomeRecord.model_fields["schema_version"].default
+
+    def _publish(gene_symbol: str, blob: dict) -> None:
+        publish_intermediates(
+            gene_symbol=gene_symbol,
+            intermediates=blob,
+            schema_version=schema_version,
+            record_valid=False,
+            cohort_run_id=cohort_id,
+            failure_mode="pts_checkpoint",
+        )
+
+    return _publish
+
+
 def annotate_one(
     row: GeneRow,
     *,
@@ -169,6 +196,15 @@ def annotate_one(
     http = open_default_client()
     t0 = time.monotonic()
     cohort_id = cohort_run_id or run_id
+    # Install the durable mid-run PTS checkpoint publisher (gap-1) so a hard
+    # crash after plan-trim-select still leaves the dual in D1 for a cheap
+    # resume. Gene-agnostic + idempotent; cleared when intermediates publishing
+    # is disabled (offline smoke runs) so no stray D1 writes happen.
+    set_pts_checkpoint_publisher(
+        _make_pts_checkpoint_publisher(cohort_id)
+        if publish_intermediates_enabled
+        else None
+    )
     try:
         try:
             bundle = resolve_by_hgnc_id(row.hgnc_id, http=http)
@@ -179,7 +215,14 @@ def annotate_one(
                 blocks_used={}, error=f"resolve failed: {exc}", record_valid=False,
             )
 
-        result = annotate(bundle.hgnc_symbol, http=http, persist=False)
+        # Resume (gap-2): reuse a prior attempt's plan-trim-select dual from
+        # durable D1 intermediates when one exists for this gene at the current
+        # schema + prompt-corpus version (graceful failure / mid-run checkpoint,
+        # never an over-cap quarantine). Skips re-paying ~$1.35 of PTS spend.
+        cached_dual = load_resumable_dual(bundle.hgnc_symbol)
+        result = annotate(
+            bundle.hgnc_symbol, http=http, persist=False, cached_dual=cached_dual
+        )
         cost = float(result.total_cost_usd)
         latency = time.monotonic() - t0
 
@@ -454,7 +497,18 @@ def main(argv: list[str] | None = None) -> int:
     p.add_argument("--no-d1", action="store_true",
                    help="Skip the D1 sink (JSON only); useful for offline smoke tests")
     p.add_argument("--limit", type=int, default=None,
-                   help="Truncate the gene list to N rows after resume filtering (debug only)")
+                   help="Process at most N rows after resume filtering — the "
+                        "batch-size knob for an incremental rollout (re-run to continue)")
+    p.add_argument(
+        "--force",
+        action="store_true",
+        help=(
+            "Bypass the schema-aware global dedup: re-run genes even if they "
+            "already have a completed record at the current schema_version "
+            "(re-spends). Off by default — successful current-schema genes are "
+            "skipped across ALL run_ids so an incremental rollout never repeats."
+        ),
+    )
     p.add_argument(
         "--cohort-run-id",
         default=None,
@@ -477,6 +531,16 @@ def main(argv: list[str] | None = None) -> int:
             "isn't reachable."
         ),
     )
+    p.add_argument(
+        "--include-quarantined",
+        action="store_true",
+        help=(
+            "Re-run genes quarantined on a prior attempt for exceeding the "
+            "per-gene cost cap. Off by default — over-cap genes are skipped and "
+            "surfaced for manual review. Pass this only after deliberately "
+            "deciding to retry them (e.g. with a raised ceiling)."
+        ),
+    )
     args = p.parse_args(argv)
 
     if args.canary and args.confirm_full_sweep:
@@ -495,14 +559,62 @@ def main(argv: list[str] | None = None) -> int:
 
     sink: D1DeepDiveSink | None = None
     if not args.no_d1:
+        if getattr(args, "force", False):
+            print(
+                "--force: skipping schema-aware dedup — already-complete genes "
+                "WILL be re-run (and re-spend).",
+                flush=True,
+            )
+        else:
+            # Global, schema-aware resume: skip genes already complete at the
+            # current schema in ANY run_id (a schema bump re-opens stale genes).
+            from accessible_surfaceome.cloud.d1_client import D1Client
+            from accessible_surfaceome.cloud.deep_dive_upload import (
+                genes_done_at_schema,
+            )
+            from accessible_surfaceome.tools._shared.models import SurfaceomeRecord
+
+            schema = SurfaceomeRecord.model_fields["schema_version"].default
+            before = len(all_rows)
+            with D1Client() as d1:
+                done = genes_done_at_schema(d1, schema)
+            all_rows = [r for r in all_rows if r.hgnc_symbol not in done]
+            print(
+                f"resume: {before - len(all_rows)} gene(s) already complete at "
+                f"schema {schema} (any run_id) — skipping; {len(all_rows)} remaining",
+                flush=True,
+            )
+        if not args.include_quarantined:
+            from accessible_surfaceome.cloud.d1_client import D1Client
+            from accessible_surfaceome.cloud.intermediates import (
+                fetch_quarantined_genes,
+            )
+            cohort = args.cohort_run_id or args.run_id
+            try:
+                with D1Client() as d1:
+                    quarantined = fetch_quarantined_genes(d1, cohort_run_id=cohort)
+            except Exception as exc:  # noqa: BLE001 — never block the sweep
+                print(
+                    f"warning: quarantine lookup failed ({exc}); proceeding "
+                    "without quarantine filter",
+                    flush=True,
+                )
+                quarantined = set()
+            if quarantined:
+                before_q = len(all_rows)
+                all_rows = [r for r in all_rows if r.hgnc_symbol not in quarantined]
+                preview = ", ".join(sorted(quarantined)[:20])
+                more = " …" if len(quarantined) > 20 else ""
+                print(
+                    f"quarantine: skipping {before_q - len(all_rows)} over-cap "
+                    f"gene(s) flagged for MANUAL REVIEW: {preview}{more}",
+                    flush=True,
+                )
+        # Construct the sink LAST — after dedup + quarantine filtering — so a
+        # fail-closed dedup query (genes_done_at_schema raising on a D1 outage)
+        # aborts dispatch WITHOUT leaking the sink's D1Client. The sink is only
+        # needed for the insert path below.
         sink = D1DeepDiveSink(run_id=args.run_id)
-        before = len(all_rows)
-        all_rows = [r for r in all_rows if not sink.already_done(r.hgnc_symbol)]
-        print(
-            f"resume: {before - len(all_rows)} genes already in D1 under "
-            f"run_id={args.run_id}; {len(all_rows)} remaining",
-            flush=True,
-        )
 
     if args.canary:
         canary_rows = select_canary(all_rows, args.canary)

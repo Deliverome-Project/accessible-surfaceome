@@ -9,11 +9,13 @@ from __future__ import annotations
 from pathlib import Path
 from typing import Any
 
+from accessible_surfaceome.agents._support.model_config import deep_dive_model
+
 PROMPTS_DIR = Path(__file__).parent / "prompts"
 SYSTEM_PROMPT_PATH = PROMPTS_DIR / "system.md"
 
 AGENT_NAME = "Surfaceome Synthesizer (B)"
-AGENT_MODEL = "claude-sonnet-4-6"
+AGENT_MODEL = deep_dive_model()  # SURFACEOME_DEEP_DIVE_MODEL override
 
 
 def read_system_prompt() -> str:

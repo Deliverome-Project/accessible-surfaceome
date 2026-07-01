@@ -188,28 +188,19 @@ def test_every_published_record_carries_renderer_required_fields() -> None:
 #
 # This test makes both halves loud: every committed snapshot must render,
 # and every D1-published row should eventually have a committed snapshot.
-# `KNOWN_NO_MARKDOWN_EXPORT` carries only the D1 rows still missing from
-# the tree. Shrink it as those snapshots land.
-
 # Repo root is two levels up from tests/ — same heuristic as
 # scripts/check_viewer_types_sync.py.
 _REPO_ROOT = Path(__file__).resolve().parent.parent
 _VIEWER_DATA_DIR = _REPO_ROOT / "viewer" / "public" / "data" / "surfaceome"
 
-# Published genes that we temporarily accept as lacking both an in-tree
-# snapshot and markdown export. The markdown exporter handles schema v1.x
-# and v2.x records; remaining entries need snapshots from /v1/genes/{sym}
-# plus `cd viewer && npm run build:exports`.
-KNOWN_NO_MARKDOWN_EXPORT: frozenset[str] = frozenset({
-    # D1-published records with no in-tree snapshot yet.
-    "TACSTD2",
-    "TGOLN2",
-    "CD81",
-    "SLC7A5",
-    "CLDN18",
-    "HSPA5",
-    "KIR2DL1",
-})
+# Exemption list for ``test_every_in_tree_record_has_markdown_export``: committed
+# in-tree snapshots whose ``.md`` the exporter can't yet render (e.g. an
+# unsupported schema). Empty today — every committed snapshot has its brief.
+# (It previously also exempted D1-published genes that lacked a snapshot, but
+# the deep-dive rollout publishes thousands of genes to public D1 and no longer
+# requires a committed snapshot per D1 gene — see
+# ``test_committed_snapshots_have_live_d1_records``.)
+KNOWN_NO_MARKDOWN_EXPORT: frozenset[str] = frozenset()
 
 
 def test_every_in_tree_record_has_markdown_export() -> None:
@@ -308,3 +299,49 @@ def test_markdown_exporter_supports_d1_source() -> None:
             f"D1-sourced (api-mode) markdown export path may have regressed. "
             f"Restore it so the Pages build can still materialize .md from D1."
         )
+
+
+def test_committed_snapshots_have_live_d1_records() -> None:
+    """Every committed in-tree snapshot must correspond to a published record in
+    public D1 — catches a stale / orphan snapshot (committed but never published,
+    or left behind after its D1 row was removed or replaced).
+
+    The reverse — every D1-published gene having a committed snapshot — is
+    deliberately NOT enforced. The deep-dive rollout publishes thousands of genes
+    to public D1, which the viewer serves directly from D1 (its primary path);
+    committing a snapshot + ``.md`` for each would bloat the repo and doesn't
+    scale. Committed snapshots are a curated subset (showcase + validation genes)
+    kept for the viewer's offline fallback + downloadable briefs. The
+    snapshot → ``.md`` half is covered by
+    ``test_every_in_tree_record_has_markdown_export``.
+
+    Skips when the public-D1 secrets aren't available (need CLOUDFLARE_API_TOKEN
+    + _ACCOUNT_ID + _D1_SURFACEOME_PUBLIC_ID).
+    """
+    if not _public_d1_creds_available():
+        pytest.skip("Public-D1 creds absent.")
+    if not _VIEWER_DATA_DIR.is_dir():
+        pytest.skip(f"viewer snapshot dir not present at {_VIEWER_DATA_DIR}")
+
+    snapshots = sorted(
+        p.stem for p in _VIEWER_DATA_DIR.glob("*.json") if p.stat().st_size > 0
+    )
+    if not snapshots:
+        pytest.skip("No committed snapshots to check.")
+
+    from accessible_surfaceome.cloud.d1_client import D1Client, D1Config
+
+    with D1Client(D1Config.from_env_public()) as pub:
+        d1_genes = {
+            r["gene_symbol"]
+            for r in pub.query("SELECT gene_symbol FROM surface_annotation;")
+        }
+    assert d1_genes, "No published records in public-D1 surface_annotation."
+
+    orphan = [s for s in snapshots if s not in d1_genes]
+    assert not orphan, (
+        "Committed in-tree snapshots with NO public-D1 record (stale / orphan). "
+        "Either publish them — `uv run python "
+        "scripts/upload_viewer_snapshots_to_d1.py --execute` — or remove the "
+        f"snapshot + .md: {orphan}"
+    )

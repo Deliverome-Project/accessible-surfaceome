@@ -23,6 +23,7 @@ back with ``modal volume get`` to commit them to the repo.
 from __future__ import annotations
 
 import json
+import os
 import threading
 import time
 from pathlib import Path
@@ -52,6 +53,18 @@ MAX_CONTAINERS, MAX_INPUTS = resolve_gene_concurrency()
 # ---------------------------------------------------------------------------
 # image + volume + secret
 # ---------------------------------------------------------------------------
+
+# Container env. Propagate a deep-dive model override (e.g.
+# claude-sonnet-5) from the launching shell into the container at build
+# time, so `SURFACEOME_DEEP_DIVE_MODEL=claude-sonnet-5 modal run …` flips
+# the model with no code edit. Unset → the in-code default
+# (claude-sonnet-4-6) and the key is omitted entirely, so the image hash
+# and behavior are identical to before for the main campaign. Changing the
+# value re-bakes the image layer (Modal hashes the env dict).
+_IMAGE_ENV = {"ACCESSIBLE_SURFACEOME_REPO_ROOT": "/repo"}
+_DEEP_DIVE_MODEL_OVERRIDE = os.environ.get("SURFACEOME_DEEP_DIVE_MODEL", "").strip()
+if _DEEP_DIVE_MODEL_OVERRIDE:
+    _IMAGE_ENV["SURFACEOME_DEEP_DIVE_MODEL"] = _DEEP_DIVE_MODEL_OVERRIDE
 
 # Build the image from the repo source. uv sync installs everything in
 # pyproject.toml's main dependency block (we don't need the modal extra
@@ -111,7 +124,7 @@ image = (
         "else sys.exit(f'HGNC gazetteer looks like LFS pointer (size={size}, "
         "head={head!r}). Hydrate LFS in the source worktree before building.')\""
     )
-    .env({"ACCESSIBLE_SURFACEOME_REPO_ROOT": "/repo"})
+    .env(_IMAGE_ENV)
 )
 
 app = modal.App("surfaceome-deep-dive")
@@ -208,6 +221,89 @@ def rate_limit_worker_smoke(n: int = 3, interval_s: float = 0.2) -> dict:
     for _ in range(n):
         limiter.wait("https://example.org/resource")
     return {"n": n, "interval_s": interval_s, "elapsed_s": time.monotonic() - t0}
+
+
+# Keys the full annotate + publish path reads. Missing ANTHROPIC_API_KEY is a
+# hard fail; missing public-D1 UUID / ZONE_ID silently skips the public publish
+# + cache purge (viewer goes stale); missing NCBI keys throttles discovery.
+_REQUIRED_SECRET_KEYS = (
+    "ANTHROPIC_API_KEY",
+    "CLOUDFLARE_ACCOUNT_ID",
+    "CLOUDFLARE_API_TOKEN",
+    "CLOUDFLARE_ZONE_ID",
+    "CLOUDFLARE_D1_SURFACEOME_AGENTS_ID",
+    "CLOUDFLARE_D1_SURFACEOME_PUBLIC_ID",
+    "NCBI_API_KEYS",
+)
+
+
+@app.function(
+    image=image,
+    cpu=0.25,
+    memory=256,
+    timeout=60,
+    secrets=[secret],
+)
+def secret_presence_check() -> dict:
+    """Report PRESENCE (never values) of the required keys inside a worker that
+    has the ``surfaceome-env`` secret mounted — validates the actual secret, not
+    the driver's local ``.env``. Returns a {key: bool} map plus the NCBI pool
+    size, so a $0 run can confirm the secret before a paid canary spends."""
+    import os
+    import sys
+
+    sys.path.insert(0, "/repo/src")
+    from accessible_surfaceome.env import load_env
+
+    load_env()  # the secret is injected as env vars; load_env is a harmless no-op here
+    present = {k: bool((os.environ.get(k) or "").strip()) for k in _REQUIRED_SECRET_KEYS}
+    pool = (os.environ.get("NCBI_API_KEYS") or "").replace(";", ",").replace(" ", ",")
+
+    # Actually exercise R2 WRITE access — not just key presence. The token can
+    # carry CLOUDFLARE_API_TOKEN yet lack the "Workers R2 Storage: Edit" scope,
+    # which only surfaces as a 403 mid-run that silently drops heavy genes' full
+    # audit blob (the slim D1 record still publishes). A fixed probe key,
+    # overwritten each run, needs no cleanup.
+    try:
+        from accessible_surfaceome.cloud import r2_client
+
+        r2_write_ok = r2_client.put_object(
+            key="_preflight/check_secret_probe.txt",
+            body=b"ok",
+            content_type="text/plain",
+        )
+    except Exception:  # noqa: BLE001 — a preflight probe must never raise
+        r2_write_ok = False
+
+    return {
+        "present": present,
+        "ncbi_pool_size": len([x for x in pool.split(",") if x.strip()]),
+        "r2_write_ok": bool(r2_write_ok),
+    }
+
+
+@app.local_entrypoint()
+def check_secret():
+    """$0 preflight: confirm the surfaceome-env secret carries every key the
+    annotate+publish path needs, before launching a paid canary."""
+    result = secret_presence_check.remote()
+    print(json.dumps(result, indent=2))
+    missing = [k for k, ok in result["present"].items() if not ok]
+    if missing:
+        print(f"\n!! MISSING from the surfaceome-env secret: {', '.join(missing)}")
+        raise RuntimeError(f"secret incomplete — missing {missing}")
+    print("\n✓ all required keys present in the surfaceome-env secret")
+    if result.get("r2_write_ok"):
+        print("✓ R2 write OK (heavy-gene audit-blob spillover will land)")
+    else:
+        # Non-fatal: genes still succeed, but oversized intermediates can't spill
+        # to R2 → the full audit blob is lost for heavy genes.
+        print(
+            "!! R2 write FAILED — CLOUDFLARE_API_TOKEN likely lacks the "
+            "'Workers R2 Storage: Edit' scope (or the bucket is missing). "
+            "Non-blocking, but fix before a long run or heavy genes silently "
+            "drop their full audit blob."
+        )
 
 
 # ---------------------------------------------------------------------------
@@ -313,21 +409,70 @@ def _log_concurrency_plan() -> None:
 
 
 def _load_and_filter(
-    gene_list: str, run_id: str, no_d1: bool
+    gene_list: str,
+    run_id: str,
+    no_d1: bool,
+    include_quarantined: bool = False,
+    force: bool = False,
 ) -> tuple[list[dict], int]:
-    """Driver-side helper: load the TSV, filter out genes already in D1
-    under this run_id. Returns (remaining_rows_as_payloads, total_loaded).
+    """Driver-side helper: load the TSV, then (unless ``force``) drop genes
+    already completed **at the current schema_version in any run_id** plus genes
+    quarantined for manual review (over-cap aborts).
+
+    The schema-aware *global* dedup is what makes the incremental rollout safe:
+    re-launching with any batch tag never re-spends on a successful current-
+    schema gene, and a schema bump re-opens stale genes. ``force`` bypasses the
+    dedup. Returns (remaining_rows_as_payloads, total_loaded).
     """
     from scripts.deep_dive_sweep import load_gene_list
     rows = load_gene_list(Path(gene_list))
     total = len(rows)
     if not no_d1:
-        from accessible_surfaceome.cloud.deep_dive_upload import D1DeepDiveSink
-        sink = D1DeepDiveSink(run_id=run_id)
-        try:
-            rows = [r for r in rows if not sink.already_done(r.hgnc_symbol)]
-        finally:
-            sink.close()
+        from accessible_surfaceome.cloud.d1_client import D1Client
+        from accessible_surfaceome.cloud.deep_dive_upload import genes_done_at_schema
+        from accessible_surfaceome.cloud.intermediates import fetch_quarantined_genes
+        from accessible_surfaceome.tools._shared.models import SurfaceomeRecord
+
+        schema = SurfaceomeRecord.model_fields["schema_version"].default
+        with D1Client() as d1:
+            if force:
+                print(
+                    "--force: skipping schema-aware dedup — already-complete "
+                    "genes WILL be re-run (and re-spend).",
+                    flush=True,
+                )
+            else:
+                done = genes_done_at_schema(d1, schema)
+                before = len(rows)
+                rows = [r for r in rows if r.hgnc_symbol not in done]
+                print(
+                    f"resume: {before - len(rows)} gene(s) already complete at "
+                    f"schema {schema} (any run_id) — skipping; {len(rows)} remain",
+                    flush=True,
+                )
+            if not include_quarantined:
+                # Over-cap genes already burned their budget; never auto-resume.
+                # Surfaced for manual review (raise the ceiling deliberately,
+                # then re-run with --include-quarantined).
+                try:
+                    quarantined = fetch_quarantined_genes(d1, cohort_run_id=run_id)
+                except Exception as exc:  # noqa: BLE001 — never block dispatch
+                    print(
+                        f"warning: quarantine lookup failed ({exc}); proceeding "
+                        "without quarantine filter",
+                        flush=True,
+                    )
+                    quarantined = set()
+                if quarantined:
+                    before = len(rows)
+                    rows = [r for r in rows if r.hgnc_symbol not in quarantined]
+                    preview = ", ".join(sorted(quarantined)[:20])
+                    more = " …" if len(quarantined) > 20 else ""
+                    print(
+                        f"quarantine: skipping {before - len(rows)} over-cap "
+                        f"gene(s) flagged for MANUAL REVIEW: {preview}{more}",
+                        flush=True,
+                    )
     payloads = [
         {
             "hgnc_id": r.hgnc_id,
@@ -346,8 +491,13 @@ def canary(
     run_id: str,
     n: int = 50,
     max_cost_per_gene_usd: float = 10.0,
+    force: bool = False,
 ):
-    """Run a stratified canary and print the projected full-sweep cost."""
+    """Run a stratified canary and print the projected full-sweep cost.
+
+    ``force`` bypasses the schema-aware global dedup (re-runs already-complete
+    genes — re-spends).
+    """
     from accessible_surfaceome.env import load_env
     load_env()  # driver-side: needed for D1 resume query
     _log_concurrency_plan()
@@ -359,7 +509,7 @@ def canary(
         GeneRow,
     )
 
-    payloads, total = _load_and_filter(gene_list, run_id, no_d1=False)
+    payloads, total = _load_and_filter(gene_list, run_id, no_d1=False, force=force)
     rows = [
         GeneRow(hgnc_id=p["hgnc_id"], hgnc_symbol=p["hgnc_symbol"],
                 sonnet_verdict=p.get("sonnet_verdict", ""))
@@ -417,8 +567,11 @@ def full_sweep(
     max_cost_per_gene_usd: float = 10.0,
     max_total_cost_usd: float = 18000.0,
     chunk_size: int = 200,
+    include_quarantined: bool = False,
+    limit: int = 0,
+    force: bool = False,
 ):
-    """Launch the full sweep over genes not yet in D1 under run_id.
+    """Launch the sweep over genes not yet complete at the current schema.
 
     Genes are dispatched in chunks of ``chunk_size`` (default 200, which
     comfortably covers the in-flight concurrency of
@@ -431,14 +584,34 @@ def full_sweep(
     eagerly, and breaking out of the iterator wouldn't cancel
     in-flight containers; the chunked path makes the cap actually stop
     new work from being launched.
+
+    ``--limit N`` processes at most N of the remaining genes this launch —
+    the batch-size knob for an incremental rollout (``--limit 25`` today,
+    ``--limit 100`` tonight, ``--limit 1000`` tomorrow, then no limit). The
+    schema-aware global dedup means each launch automatically picks up where
+    the last left off, so you just bump ``--limit`` and keep the same run_id.
+    ``--force`` bypasses the dedup (re-runs already-complete genes).
     """
     from accessible_surfaceome.env import load_env
     load_env()
     _log_concurrency_plan()
 
-    payloads, total = _load_and_filter(gene_list, run_id, no_d1=False)
+    payloads, total = _load_and_filter(
+        gene_list,
+        run_id,
+        no_d1=False,
+        include_quarantined=include_quarantined,
+        force=force,
+    )
+    if limit and limit > 0 and len(payloads) > limit:
+        print(
+            f"--limit {limit}: dispatching the first {limit} of {len(payloads)} "
+            "remaining genes this launch (re-run to continue the rollout).",
+            flush=True,
+        )
+        payloads = payloads[:limit]
     print(
-        f"full sweep: {len(payloads)}/{total} genes remaining "
+        f"full sweep: {len(payloads)}/{total} genes this launch "
         f"(resumed from D1 run_id={run_id}); chunk_size={chunk_size}",
         flush=True,
     )

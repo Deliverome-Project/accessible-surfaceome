@@ -48,6 +48,18 @@ PRICING: dict[str, ModelPricing] = {
         cache_creation_input_tokens=3.75,
         cache_read_input_tokens=0.30,
     ),
+    # Sonnet 5 intro pricing (through 2026-08-31): $2 in / $10 out — a
+    # 33% per-token cut vs 4.6. After Aug 31 it reverts to $3/$15
+    # (identical to 4.6) — bump this entry then. NOTE: the Claude 5 family
+    # uses a new tokenizer (~30% more tokens for the same content), so the
+    # per-token cut does NOT translate to a 33% bill cut — measure real
+    # token deltas before trusting any cost projection.
+    "claude-sonnet-5": ModelPricing(
+        input_tokens=2.0,
+        output_tokens=10.0,
+        cache_creation_input_tokens=2.50,
+        cache_read_input_tokens=0.20,
+    ),
     "claude-opus-4-7": ModelPricing(
         input_tokens=5.0,
         output_tokens=25.0,

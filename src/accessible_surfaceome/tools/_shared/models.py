@@ -45,14 +45,23 @@ def _warn_prose_overshoot(instance: BaseModel, targets: dict[str, int]) -> None:
             continue
         n = len(value)
         if n > target:
-            logger.warning(
+            over_pct = 100.0 * (n - target) / target
+            # Soft target: a 20-30% overshoot on a content-rich gene is expected
+            # and tolerated (we never discard the submission). Log at DEBUG so
+            # the operator's WARNING stream stays usable at cohort scale — these
+            # fire for nearly every prose field on every gene (~100k+ lines
+            # across a full sweep, which buries real signals). Reserve WARNING
+            # for an egregious ≥2× overshoot, where the model ignored the length
+            # constraint entirely and the prose is worth a look.
+            log = logger.warning if over_pct >= 100.0 else logger.debug
+            log(
                 "soft-target overshoot on %s.%s: len=%d, target=%d (over by %d chars, %.0f%%)",
                 type(instance).__name__,
                 field,
                 n,
                 target,
                 n - target,
-                100.0 * (n - target) / target,
+                over_pct,
             )
 
 
@@ -2248,7 +2257,11 @@ class SurfaceEvidence(BaseModel):
         if len(stripped) < 20:
             return self
         if not _has_inline_evi_cite(self.grade_rationale):
-            logger.warning(
+            # DEBUG, not WARNING: this is a soft citation-discipline signal that
+            # fires on every (re)validation and legitimately on no-evidence genes
+            # (the rationale is "No evidence claims were available to grade").
+            # The hard guard below is what actually refuses uncited claim-prose.
+            logger.debug(
                 "SurfaceEvidence.grade_rationale lacks an inline "
                 "(a1_evi_NN)/(a2_evi_NN) cite: %r",
                 self.grade_rationale[:200],
@@ -4225,7 +4238,11 @@ class SynthesizerLLMFilters(BaseModel):
     @classmethod
     def _warn_rationale_missing_cite(cls, v: str) -> str:
         if v and not _has_inline_evi_cite(v):
-            logger.warning(
+            # DEBUG, not WARNING: soft citation-discipline signal that fires on
+            # every (re)validation and legitimately on orphan genes with no
+            # ligand/expression evidence to cite. Kept for audit, off the
+            # operator's WARNING stream at cohort scale.
+            logger.debug(
                 "SynthesizerLLMFilters rationale lacks an inline (a1_evi_NN)/"
                 "(a2_evi_NN) cite: %r",
                 v,

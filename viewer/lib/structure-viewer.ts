@@ -30,11 +30,20 @@ import {
 } from "./structure-viewer-types";
 
 const DATA_DIR = path.join(process.cwd(), "public", "structure-viewer");
-// Schweke PDB assets still live under ``viewer/public/data/structures/schweke/``;
-// the viewer constructs ``/data/structures/schweke/{filename}`` URLs from the
-// D1-served filename and lets the client fetch them as static assets. No
-// filesystem read needed here anymore — the old manifest.json was retired
-// when the data became D1-driven.
+
+// Schweke coordinate PDBs are served from the PUBLIC R2 bucket
+// ``surfaceome-structures`` (keys ``schweke/{filename}``), NOT from the repo:
+// ~1,478 multi-MB files are too much for git, and D1 caps any row at 2 MB
+// (the c13 complexes exceed it). The bucket's r2.dev domain serves them
+// publicly with CORS (GET/HEAD, any origin) + HTTP range support, which the
+// 3Dmol client needs. Override the base via ``NEXT_PUBLIC_STRUCTURES_BASE``
+// (e.g. a custom domain like ``structures.deliverome.org``) without touching
+// code; the client fetch is 404-tolerant, so a not-yet-ingested PDB just
+// shows the tab's graceful "unavailable" state.
+const STRUCTURES_BASE = (
+  process.env.NEXT_PUBLIC_STRUCTURES_BASE ||
+  "https://pub-94415fd52d394bc18219b3957a97b823.r2.dev"
+).replace(/\/+$/, "");
 
 /** A subset of {@link StructureVariantSchwekeHomomer} (defined in the
  *  client component) — repeated here so this server-side loader doesn't
@@ -74,11 +83,10 @@ export interface SchwekeHomomerLoaderRow {
  *  that slips through both paths.
  *
  *  No filesystem reads — the manifest.json this used to consult was
- *  removed when Schweke became D1-driven. The PDB files in
- *  ``viewer/public/data/structures/schweke/`` are still consulted by
- *  the client when it fetches ``pdb_url``; that's a 404-tolerant fetch,
- *  so a record pointing at a not-yet-ingested PDB just shows the tab
- *  with a fetch-failed state. */
+ *  removed when Schweke became D1-driven. ``pdb_url`` points at the public
+ *  R2 bucket (see ``STRUCTURES_BASE``); the client fetch is 404-tolerant,
+ *  so a record pointing at a not-yet-ingested PDB just shows the tab with a
+ *  fetch-failed state. */
 export function loadSchwekeHomomer(
   uniprotAcc: string | null | undefined,
   homo_oligomerization?:
@@ -110,18 +118,28 @@ export function loadSchwekeHomomer(
   // truth + future-proof against naming-convention drift); fall back
   // to the convention only when the served record predates the
   // filename fields.
-  const filename =
+  const rawFilename =
     stoichiometry > 2
       ? homo_oligomerization.complex_pdb_filename
       : homo_oligomerization.dimer_pdb_filename;
+  // The full_complexes_bigbang export ships higher-order PDBs as
+  // ``{ACC}_V1_{N}_c{K}_model_0_rank_1.pdb``, but the R2 objects (and both
+  // Python fallbacks) use the documented short convention
+  // ``{ACC}_V1_{N}_c{K}.pdb``. Older D1 rows / baked records carry the long
+  // export name verbatim, so strip the trailing ``_model_<n>_rank_<n>``
+  // before building the URL — otherwise the fetch 404s for every gene whose
+  // record predates the build-script normalization.
+  const filename =
+    rawFilename?.replace(/_model_\d+_rank_\d+(?=\.pdb$)/i, "") ?? rawFilename;
   if (!filename && homo_oligomerization.af_model_num == null) {
     return null;
   }
+  const base = `${STRUCTURES_BASE}/schweke`;
   const pdb_url = filename
-    ? `/data/structures/schweke/${filename}`
+    ? `${base}/${filename}`
     : stoichiometry > 2
-      ? `/data/structures/schweke/${acc}_V1_${homo_oligomerization.af_model_num}_c${stoichiometry}.pdb`
-      : `/data/structures/schweke/${acc}_V1_${homo_oligomerization.af_model_num}.pdb`;
+      ? `${base}/${acc}_V1_${homo_oligomerization.af_model_num}_c${stoichiometry}.pdb`
+      : `${base}/${acc}_V1_${homo_oligomerization.af_model_num}.pdb`;
   return {
     uniprot_acc: acc,
     pdb_url,

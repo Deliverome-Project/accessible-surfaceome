@@ -118,6 +118,47 @@ def test_unexpected_when_on_surface_but_not_in_cohort() -> None:
     assert statuses["B"] == "unexpected"
 
 
+def test_quarantined_gene_classified_and_not_drift() -> None:
+    rows = build_census(
+        cohort_symbols=["A"],
+        volume={}, private={}, orphan_symbols=set(), public={},
+        quarantined={"A"},
+    )
+    r = next(x for x in rows if x.gene_symbol == "A")
+    assert r.status == "quarantined"
+    assert not r.is_drift  # manual review, not drift
+
+
+def test_quarantine_overrides_missing() -> None:
+    # Absent from all surfaces would normally read as "missing"; quarantine wins.
+    rows = build_census(
+        cohort_symbols=["A"],
+        volume={}, private={}, orphan_symbols=set(), public={},
+        quarantined={"A"},
+    )
+    assert rows[0].status == "quarantined"
+
+
+def test_completed_gene_not_quarantined_even_if_flagged() -> None:
+    # A stale quarantine flag must not override a gene that actually completed.
+    rows = build_census(
+        cohort_symbols=["A"],
+        volume={"A": "v0.4.0"}, private={"A": "v0.4.0"},
+        orphan_symbols=set(), public={"A": "v0.4.0"},
+        quarantined={"A"},
+    )
+    assert rows[0].status == "ok"
+
+
+def test_exit_code_two_for_quarantine_only() -> None:
+    rows = build_census(
+        cohort_symbols=["A"],
+        volume={}, private={}, orphan_symbols=set(), public={},
+        quarantined={"A"},
+    )
+    assert exit_code(rows) == 2  # attention, not drift
+
+
 def test_exit_code_prioritizes_drift_over_missing() -> None:
     rows = build_census(
         cohort_symbols=["A", "B"],

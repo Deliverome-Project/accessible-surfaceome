@@ -24,14 +24,16 @@ export const tooltips: Record<string, ReactNode> = {
 
   surface_accessibility: (
     <>
-      The deep-dive&apos;s <strong>surface verdict</strong> — does this
+      The deep-dive&apos;s <strong>surface likelihood</strong> — does this
       protein reach the cell surface in at least one cell state? The
       levels are <strong>evidence strength for the surfaces-at-all
       call</strong>, not a steady-state magnitude. (Wire/storage name
       is still <code>surface_accessibility</code> for API consumers; the
-      UI label was tightened from &ldquo;Accessibility&rdquo; to
-      &ldquo;Surface verdict&rdquo; because the old label read as a
-      magnitude axis.)
+      UI label evolved from &ldquo;Accessibility&rdquo; → &ldquo;Surface
+      verdict&rdquo; → &ldquo;Surface likelihood&rdquo; because
+      &ldquo;Accessibility&rdquo; read as a magnitude axis and
+      &ldquo;Verdict&rdquo; overstated a call that&apos;s really a
+      likelihood distribution over yes / contextual / no.)
       <ul style={{ margin: "0.4rem 0 0", paddingLeft: "1.1rem" }}>
         <li>
           <em>high</em> — direct evidence (live-cell flow, surface

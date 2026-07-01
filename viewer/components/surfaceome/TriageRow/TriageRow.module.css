@@ -1,0 +1,65 @@
+/* Triage row — small horizontal strip. Same compact register as the
+ * SOURCES line so the two read as a pair (database surface call + agent
+ * surface call). The "Conflicts with deep dive" pill is the only place
+ * the conflict surfaces visually; the deep-dive verdict wins.
+ *
+ * Sits just above the DataSourcesFooter at the bottom of the gene
+ * detail page, so it inherits the footer's ambient spacing — no extra
+ * top margin here (the page's flex/grid gap owns that). */
+.triageRow {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 0.6rem;
+  margin: 0;
+  font-size: 0.78rem;
+  color: var(--ink);
+}
+
+.triageLabel {
+  display: inline-flex;
+  align-items: baseline;
+  color: var(--muted);
+}
+
+.triageValue {
+  font-weight: 500;
+  color: var(--ink);
+}
+
+.triageQualifier {
+  color: var(--muted);
+  font-style: italic;
+  /* Keep "initial pass · no web search" on one line — the · separator
+     was a wrap opportunity, so a tight row broke the phrase between
+     "pass" and "no". The qualifier is short; if the whole triage row
+     needs to wrap, it wraps as a unit (the row is flex-wrap), not
+     mid-phrase. */
+  white-space: nowrap;
+}
+
+.triageAgree {
+  color: var(--success);
+  font-size: 0.74rem;
+  letter-spacing: 0.04em;
+}
+
+/* Same compact text register as `triageAgree` but in amber to signal
+ * the triage prior disagreed with the deep dive. Plain text (no pill
+ * chrome) per user preference — the row already carries enough
+ * structure that a second visual chip is overkill. */
+.triageConflict {
+  color: var(--warning);
+  font-size: 0.74rem;
+  letter-spacing: 0.04em;
+}
+
+/* Triage-row reasoning trigger. The shared ReasoningDrawer trigger
+ * carries a `margin: var(--space-2) 0 0` so it sits below a vital
+ * value; here it's an inline sibling on a baseline-aligned flex row,
+ * so the top margin would push it out of the baseline. Zero it. The
+ * base `.trigger` rule still owns color (--ink-soft) + the "›" carat;
+ * this only adjusts the contextual layout. */
+.triageReasoningTrigger {
+  margin-top: 0;
+}

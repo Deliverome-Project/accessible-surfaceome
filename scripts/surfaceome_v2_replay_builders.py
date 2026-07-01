@@ -8,7 +8,7 @@ EXCEPT plan-trim-select: methods + grade + expression + modulation +
 subloc + anatomical + contradictions + risks + biological_context_grade
 builders, then synth, then orchestrator post-passes, then assembly.
 
-Cost: ~\$0.65/iteration vs ~\$2 for a full annotate. Useful when the
+Cost: ~$0.65/iteration vs ~$2 for a full annotate. Useful when the
 prompt change is in a builder OR the synthesizer (or both) and you
 don't want to re-pay for retrieval (~70% of per-gene cost).
 
