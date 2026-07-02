@@ -210,23 +210,28 @@ def main() -> None:
     ):
         _draw_panel(ax, data, key, tiers)
 
-        # Per-panel subtitle renders as a TITLE (larger, easier to read in print).
-        ax.set_title(subtitle, fontsize=16, fontweight="semibold",
-                     pad=14, linespacing=1.2)
-
-        # Subpanel letter (lowercase, ExtraBold) at upper-left
+        # setup_plotting_style monkey-patches set_title/suptitle to NO-OPS, so
+        # render the per-panel subtitle as centered text above each panel.
         ax.text(
-            -0.18, 1.08, panel_letters[idx],
-            transform=ax.transAxes, ha="left", va="top",
+            0.5, 1.03, subtitle, transform=ax.transAxes,
+            ha="center", va="bottom", fontsize=15, fontweight="semibold",
+            color=BRAND_INK,
+        )
+
+        # Subpanel letter (lowercase, ExtraBold) at upper-left, baseline-aligned
+        ax.text(
+            -0.14, 1.03, panel_letters[idx],
+            transform=ax.transAxes, ha="left", va="bottom",
             fontsize=22, fontweight=800, color=BRAND_INK,
         )
 
         sns.despine(ax=ax, top=True, right=True)
 
-    fig.suptitle(
-        "Deep-dive record richness scales with confidence tier",
-        fontsize=18, fontweight="semibold",
-        y=0.99, x=0.5, ha="center",
+    # suptitle is monkey-patched to a no-op; use fig.text for the figure title.
+    fig.text(
+        0.5, 0.995, "Deep-dive record richness scales with confidence tier",
+        ha="center", va="top", fontsize=18, fontweight="semibold",
+        color=BRAND_INK,
     )
 
     fig.text(

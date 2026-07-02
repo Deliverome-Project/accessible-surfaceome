@@ -132,7 +132,7 @@ DB_FLAG_COL = {
 }
 
 CATEGORIES = [
-    ("ADC", "ADC clinical/preclinical targets\n(TheraSAbDab ∪ Open Targets ∪ ADCdb)"),
+    ("ADC", "ADC clinical/preclinical targets\n(TheraSAbDab + Open Targets + ADCdb)"),
     ("TCE", "CD3-bispecific T-cell engager\ntargets (TheraSAbDab)"),
     ("VZ",  "ViralZone human viral\nentry receptors"),
 ]
@@ -302,8 +302,11 @@ def render(df_tidy: pd.DataFrame, out_dir: Path) -> Path:
         sns.despine(ax=ax, top=True, right=True)
         ax.set_xticks([])
 
-    # Panel titles + subpanel letters via fig.text — set_title was being
-    # clipped by save_figure's bbox-tight cropping.
+    # Finalize the layout BEFORE reading axes positions — subplots_adjust moves
+    # the axes, so doing it after label placement left the titles + a/b/c letters
+    # off-center. Panel titles + letters via fig.text (set_title was clipped by
+    # save_figure's bbox-tight cropping).
+    plt.subplots_adjust(top=0.78, bottom=0.08, left=0.06, right=0.98, wspace=0.28)
     fig.canvas.draw()
     for ax, letter in zip(axes, "abc"):
         bbox = ax.get_position()
@@ -330,8 +333,6 @@ def render(df_tidy: pd.DataFrame, out_dir: Path) -> Path:
         fontsize=10, title="ADC source", title_fontsize=10,
     )
 
-    # Explicit margins instead of tight_layout — reserves headroom for titles.
-    plt.subplots_adjust(top=0.78, bottom=0.08, left=0.06, right=0.98, wspace=0.28)
     out_dir.mkdir(parents=True, exist_ok=True)
     pdf = out_dir / "positive_control_db_coverage_bars.pdf"
     png = out_dir / "positive_control_db_coverage_bars.png"

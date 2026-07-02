@@ -74,7 +74,7 @@ DB_FLAG_COL = {
 }
 
 CATEGORIES = [
-    ("ADC", "ADC clinical/preclinical targets\n(TheraSAbDab ∪ Open Targets ∪ ADCdb)"),
+    ("ADC", "ADC clinical/preclinical targets\n(TheraSAbDab + Open Targets + ADCdb)"),
     ("TCE", "CD3-bispecific T-cell engager\ntargets (TheraSAbDab)"),
     ("VZ",  "ViralZone human viral\nentry receptors"),
 ]
@@ -233,10 +233,15 @@ def render(df_tidy: pd.DataFrame) -> None:
         # X-ticks now redundant with the spelled-out titles — hide them.
         ax.set_xticks([])
 
-    # Panel titles + subpanel labels rendered via fig.text in the reserved
-    # top margin (top=0.78). Using fig.text rather than ax.set_title because
-    # save_figure's bbox-tight cropping was clipping ax.set_title output.
-    fig.canvas.draw()  # resolve axes positions before reading them
+    # Finalize the layout BEFORE reading axes positions for the fig.text titles
+    # + letters. subplots_adjust moves/resizes the axes, so doing it AFTER the
+    # label placement left the titles + a/b/c letters off-center (the bug this
+    # fixes). Explicit margins (not tight_layout) because tight_layout clipped
+    # the panel titles when bar text filled the top ~18% of a panel.
+    plt.subplots_adjust(top=0.78, bottom=0.08, left=0.06, right=0.98, wspace=0.28)
+    # Panel titles + subpanel labels via fig.text in the reserved top margin,
+    # rather than ax.set_title (which save_figure's bbox-tight cropping clipped).
+    fig.canvas.draw()  # resolve the FINAL axes positions before reading them
     for ax, letter in zip(axes, "abc"):
         bbox = ax.get_position()
         # Panel title — centered above the axes, bold
@@ -264,11 +269,6 @@ def render(df_tidy: pd.DataFrame) -> None:
         fontsize=10, title="ADC source", title_fontsize=10,
     )
 
-    # Explicit margins instead of tight_layout — tight_layout was clipping
-    # the panel titles whenever the bar text annotations occupied the top
-    # 18% of the axes (panel a was the worst offender). Reserving 18% at
-    # the top guarantees the panel title fits.
-    plt.subplots_adjust(top=0.78, bottom=0.08, left=0.06, right=0.98, wspace=0.28)
     save_figure(
         fig, "positive_control_db_coverage_bars", OUT_DIR,
         formats=("pdf", "png"), gist_url=GIST_URL,
