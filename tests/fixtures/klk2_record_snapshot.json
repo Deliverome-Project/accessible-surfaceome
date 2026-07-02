@@ -1,0 +1,3098 @@
+{
+  "schema_version": "1.1.0",
+  "gene": {
+    "hgnc_symbol": "KLK2",
+    "hgnc_id": "HGNC:6363",
+    "uniprot_acc": "P20151",
+    "ncbi_gene_id": 3817,
+    "ensembl_gene": "ENSG00000167751"
+  },
+  "triage_signal": "unlikely",
+  "triage_reasoning": "KLK2 encodes human kallikrein-2 (hK2), a secreted serine protease. It is synthesized as a preproenzyme, signal peptide is cleaved cotranslationally, and the mature/pro form is secreted into extracellular fluid (seminal plasma, blood). There is no transmembrane domain, no GPI anchor signal, and no documented stable association with a surface-anchored complex. Surface biotinylation and flow cytometry studies have not identified a cell-surface pool on intact non-permeabilized cells. Checking all contextual buckets: (1) cell-state-induced surface display — not documented; (2) tissue-restricted surface — no evidence of membrane anchoring in any lineage; (3) lysosomal exocytosis — not reported; (4) dual localization / TM precursor — no TM isoform exists; (5) stable surface attachment to TM partner — not documented. Therapeutic programs (e.g., anti-hK2 antibody-drug conjugates such as PSMA/hK2 bispecifics) target the secreted/shed protein or use hK2 as a prodrug activator in the extracellular milieu, not the protein body on the cell surface per se. KLK2 is therefore secreted-only.",
+  "executive_summary": {
+    "one_paragraph": "KLK2 (human kallikrein-2) is a canonical secreted serine protease with no transmembrane domain, but a 2025 preclinical study (PMC12580770) demonstrates surface accessibility on intact prostate cancer cells by live-cell FACS on VCaP and fresh mCRPC patient tumor cells, confocal IF, and functional engagement via three distinct therapeutic modalities. Surface expression is strictly prostate-lineage- and AR-state-restricted, absent in neuroendocrine/double-negative mCRPC variants. The primary risk is a large competing secreted pool (KLK2 is constitutively secreted into conditioned medium and seminal plasma), and the surface-docking mechanism remains uncharacterized.",
+    "surface_accessibility": "moderate",
+    "evidence_grade_summary": "direct_multi_method",
+    "confidence": "moderate",
+    "state_dependence": "high",
+    "subcategory": "other",
+    "llm_family": "enzyme",
+    "hgnc_gene_groups": [
+      "Kallikreins"
+    ],
+    "uniprot_family": "peptidase S1 family. Kallikrein subfamily",
+    "surface_call_reason": "tissue_restricted_surface",
+    "accessibility_context_summary": "Surface-accessible specifically on AR-positive prostate cancer cells (localized PCa through mCRPC); absent in neuroendocrine/double-negative variants and non-prostate tissues.",
+    "headline_risks": [
+      "secreted_form"
+    ],
+    "cited_evidence_ids": [
+      "a1_evi_01",
+      "a1_evi_02",
+      "a1_evi_04",
+      "a1_evi_07",
+      "a1_evi_10",
+      "a1_evi_12",
+      "a1_evi_14",
+      "a1_evi_15",
+      "a1_evi_16",
+      "a2_evi_02",
+      "a2_evi_03",
+      "a2_evi_05",
+      "a2_evi_09",
+      "a2_evi_13",
+      "a2_evi_14"
+    ]
+  },
+  "filters": {
+    "surface_accessibility": "moderate",
+    "confidence": "moderate",
+    "subcategory": "other",
+    "state_dependence": "high",
+    "surface_call_reason": "tissue_restricted_surface",
+    "llm_family": "enzyme",
+    "evidence_grade": "direct_multi_method",
+    "ecd_accessibility_class": "large",
+    "evidence_density": "high",
+    "expression_level": "high",
+    "expression_breadth": "rare",
+    "surface_specificity": "mixed",
+    "has_shed_form": false,
+    "has_secreted_form": true,
+    "requires_coreceptor_for_expression": false,
+    "co_receptor_dependency": "unknown",
+    "max_paralog_ecd_pct_identity": null,
+    "has_epitope_masking": false,
+    "has_restricted_subdomain": false,
+    "mouse_ortholog_ecd_pct_identity": null,
+    "cyno_ortholog_ecd_pct_identity": null,
+    "n_term_extracellular": true,
+    "c_term_extracellular": true,
+    "low_endogenous_expression": false,
+    "has_known_ligand": true,
+    "n_supporting_claims_high_weight": 3,
+    "n_contradicting_claims_high_weight": 0,
+    "overexpression_surface_localization_observed": false,
+    "expression_level_rationale": "High expression across localized PCa and mHSPC by IHC and RNA-seq; robustly and homogeneously expressed in AR+ prostate cancer (a2_evi_04, a2_evi_02). Expression becomes heterogeneous in visceral mCRPC lesions.",
+    "expression_breadth_rationale": "Essentially prostate-restricted: RNA-seq panel shows little-to-no expression outside prostate/prostate adenocarcinoma (a2_evi_02, a2_evi_03). Among the most prostate-specific antigens surveyed, narrower than PSMA/PSCA/STEAP1.",
+    "surface_specificity_rationale": "Live-cell FACS confirms surface pool on VCaP and patient mCRPC cells (a1_evi_02, a2_evi_14), but conditioned-medium WB documents a dominant secreted pool in LNCaP cells (a1_evi_14, a2_evi_11). Both pools coexist; surface fraction fraction unknown.",
+    "has_known_ligand_rationale": "KLK2 is a serine protease (trypsin-like) with documented substrates including semenogelins and pro-PSA (KLK3 precursor); substrate/inhibitor interactions are well characterized. Protease inhibitor MDPK67b targets KLK2 active site (a1_evi_17).",
+    "low_endogenous_expression_rationale": "Derived from expression_level='high' (not low/absent → not flagged). High expression across localized PCa and mHSPC by IHC and RNA-seq; robustly and homogeneously expressed in AR+ prostate cancer (a2_evi_04, a2_evi_02). Expression becomes heterogeneous in visceral mCRPC lesions.",
+    "overexpression_surface_localization_observed_rationale": "No method observation pairs an overexpression/mixed expression system with a direct or supportive surface-accessibility readout.",
+    "tumor_associated": false,
+    "induction_trigger": "none",
+    "has_live_cell_surface_evidence": true,
+    "n_papers_selected": 10,
+    "n_papers_found": null
+  },
+  "surface_evidence": {
+    "evidence_grade": "direct_multi_method",
+    "grade_rationale": "KLK2 surface accessibility is supported by multiple direct methods from a single primary source (PMC12580770). High-weight support: (1) live/non-permeabilized FACS on VCaP cells AND fresh mCRPC patient tumor cells (a1_evi_02, a1_evi_04); (2) functional surface engagement via three mechanistically distinct therapeutic modalities — bispecific T-cell redirector, alpha-radioligand, CAR-T cells — all requiring surface-accessible KLK2 (a1_evi_07). Moderate support: confocal IF surface imaging (a1_evi_03), live-cell antibody kinetics (a1_evi_10), and independent surface proteome MS (a1_evi_12, different source). The canonical secreted-protein topology (a1_evi_15, a1_evi_16) and secretion evidence (a1_evi_13, a1_evi_14) are tangential — they describe baseline biology and do not mechanistically preclude surface retention in prostate cancer. Two distinct direct method families (flow cytometry + immunofluorescence) are present, qualifying for `direct_multi_method`.",
+    "claim_stances": [
+      {
+        "claim_id": "a1_evi_02",
+        "stance": "supports_surface",
+        "weight": "high",
+        "note": "Live/non-permeabilized FACS on VCaP cell line AND primary mCRPC patient tumor cells; two independent sample types in one study"
+      },
+      {
+        "claim_id": "a1_evi_03",
+        "stance": "supports_surface",
+        "weight": "moderate",
+        "note": "Confocal IF surface imaging on VCaP; permeabilization not explicitly stated but framed as surface expression"
+      },
+      {
+        "claim_id": "a1_evi_04",
+        "stance": "supports_surface",
+        "weight": "high",
+        "note": "Methods explicitly state non-permeabilized live flow cytometry on fresh mCRPC patient tumor samples"
+      },
+      {
+        "claim_id": "a1_evi_07",
+        "stance": "supports_surface",
+        "weight": "high",
+        "note": "Functional engagement at cell surface via bispecific T-cell redirector, alpha-radioligand, and CAR-T — three independent surface-targeting modalities"
+      },
+      {
+        "claim_id": "a1_evi_10",
+        "stance": "supports_surface",
+        "weight": "moderate",
+        "note": "Live-cell antibody kinetics showing plasma membrane binding at 60 min before internalization; direct surface accessibility evidence"
+      },
+      {
+        "claim_id": "a1_evi_12",
+        "stance": "supports_surface",
+        "weight": "moderate",
+        "note": "Surface proteome MS detection of KLK2 peptides; decreased abundance ambiguous but confirms surface-fraction presence"
+      },
+      {
+        "claim_id": "a1_evi_01",
+        "stance": "supports_surface",
+        "weight": "moderate",
+        "note": "Abstract-level summary from primary study; load-bearing conclusion statement but secondary tier"
+      },
+      {
+        "claim_id": "a1_evi_08",
+        "stance": "supports_surface",
+        "weight": "low",
+        "note": "Independent source review assertion co-citing KLK2 as a cell surface target; no primary methodology"
+      },
+      {
+        "claim_id": "a1_evi_11",
+        "stance": "tangential",
+        "weight": "low",
+        "note": "Acknowledges prior 'limited evidence' for surface expression — contextualizes novelty but does not refute the new data"
+      },
+      {
+        "claim_id": "a1_evi_13",
+        "stance": "tangential",
+        "weight": "low",
+        "note": "KLK2 described as secreted AR target; canonical biology context, not mechanistically incompatible with surface form in cancer state"
+      },
+      {
+        "claim_id": "a1_evi_14",
+        "stance": "tangential",
+        "weight": "low",
+        "note": "Conditioned medium WB showing secreted KLK2; documents secreted pool, does not refute surface-retained fraction"
+      },
+      {
+        "claim_id": "a1_evi_15",
+        "stance": "tangential",
+        "weight": "low",
+        "note": "KLKs described as canonical secreted proteases; baseline biology context, not a contradiction of surface retention in cancer cells"
+      },
+      {
+        "claim_id": "a1_evi_16",
+        "stance": "tangential",
+        "weight": "moderate",
+        "note": "No TM domain, signal peptide only — explains canonical secretion but not mechanistically incompatible with surface association/retention"
+      },
+      {
+        "claim_id": "a1_evi_17",
+        "stance": "tangential",
+        "weight": "low",
+        "note": "Protease inhibitor targeting secreted/surface-exposed KLK2 domain; indirect therapeutic relevance, no direct surface localization assay"
+      }
+    ],
+    "methods": [
+      {
+        "method_family": "flow_cytometry",
+        "method_subclass": "live_cell_flow",
+        "permeabilization": "live_cell",
+        "expression_system": "endogenous",
+        "antibodies": [
+          {
+            "name": "anti-KLK2",
+            "clone": "OT15D6",
+            "vendor": "OriGene",
+            "catalog": null,
+            "rrid": "AB_2626200",
+            "monoclonal_or_polyclonal": "monoclonal",
+            "antibody_epitope_region": "extracellular",
+            "validation_strategy": "none",
+            "validation_strength": "none",
+            "cross_reactivity_notes": "KLK2 shares 80% amino acid homology with KLK3 (PSA); cross-reactivity with KLK3 not explicitly ruled out in the paper."
+          }
+        ],
+        "accessibility_relevance": "direct_surface_accessibility",
+        "surface_claim_type": "surface_accessible",
+        "expression_observations": [
+          {
+            "context": "VCaP prostate cancer cell line, live intact cells, FACS",
+            "sample_type": "established_cell_line",
+            "level": "moderate",
+            "species": "human",
+            "species_inferred": true,
+            "cited_evidence_ids": [
+              "a1_evi_02"
+            ]
+          },
+          {
+            "context": "Dissociated fresh mCRPC patient tumor cells, live intact cells, FACS",
+            "sample_type": "patient_sample",
+            "level": "moderate",
+            "species": "human",
+            "species_inferred": false,
+            "cited_evidence_ids": [
+              "a1_evi_02",
+              "a1_evi_04"
+            ]
+          }
+        ],
+        "overexpression": null,
+        "cited_evidence_ids": [
+          "a1_evi_01",
+          "a1_evi_02",
+          "a1_evi_04",
+          "a1_evi_09"
+        ]
+      },
+      {
+        "method_family": "immunofluorescence",
+        "method_subclass": "nonpermeabilized_IF",
+        "permeabilization": "live_cell",
+        "expression_system": "endogenous",
+        "antibodies": [
+          {
+            "name": "anti-KLK2",
+            "clone": "OT15D6",
+            "vendor": "OriGene",
+            "catalog": null,
+            "rrid": "AB_2626200",
+            "monoclonal_or_polyclonal": "monoclonal",
+            "antibody_epitope_region": "extracellular",
+            "validation_strategy": "none",
+            "validation_strength": "none",
+            "cross_reactivity_notes": "KLK2 shares 80% amino acid homology with KLK3 (PSA); cross-reactivity with KLK3 not explicitly ruled out in the paper."
+          }
+        ],
+        "accessibility_relevance": "supports_surface_localization",
+        "surface_claim_type": "plasma_membrane_localized",
+        "expression_observations": [
+          {
+            "context": "VCaP prostate cancer cells, confocal imaging of KLK2 surface expression; antibody surface binding detected at 60 min before intracellular accumulation",
+            "sample_type": "established_cell_line",
+            "level": "moderate",
+            "species": "human",
+            "species_inferred": true,
+            "cited_evidence_ids": [
+              "a1_evi_03",
+              "a1_evi_10"
+            ]
+          }
+        ],
+        "overexpression": null,
+        "cited_evidence_ids": [
+          "a1_evi_03",
+          "a1_evi_10"
+        ]
+      },
+      {
+        "method_family": "immunohistochemistry",
+        "method_subclass": "IHC_membranous",
+        "permeabilization": "fixed_unknown",
+        "expression_system": "endogenous",
+        "antibodies": [
+          {
+            "name": "anti-KLK2",
+            "clone": "OT15D6",
+            "vendor": "OriGene",
+            "catalog": null,
+            "rrid": "AB_2626200",
+            "monoclonal_or_polyclonal": "monoclonal",
+            "antibody_epitope_region": "extracellular",
+            "validation_strategy": "none",
+            "validation_strength": "none",
+            "cross_reactivity_notes": "KLK2 shares 80% amino acid homology with KLK3 (PSA); cross-reactivity with KLK3 not explicitly ruled out in the paper."
+          }
+        ],
+        "accessibility_relevance": "supports_surface_localization",
+        "surface_claim_type": "plasma_membrane_localized",
+        "expression_observations": [
+          {
+            "context": "Prostate cancer tissue across disease stages (localized PCa, mHSPC, mCRPC) by IHC; KLK2 robustly and homogeneously expressed in localized PCa and mHSPC, some heterogeneity in visceral mCRPC lesions",
+            "sample_type": "primary_human_tissue",
+            "level": "high",
+            "species": "human",
+            "species_inferred": false,
+            "cited_evidence_ids": [
+              "a1_evi_05",
+              "a1_evi_06"
+            ]
+          }
+        ],
+        "overexpression": null,
+        "cited_evidence_ids": [
+          "a1_evi_05",
+          "a1_evi_06"
+        ]
+      },
+      {
+        "method_family": "immunofluorescence",
+        "method_subclass": "permeabilized_IF",
+        "permeabilization": "fixed_unknown",
+        "expression_system": "endogenous",
+        "antibodies": [
+          {
+            "name": "anti-KLK2",
+            "clone": "OT15D6",
+            "vendor": "OriGene",
+            "catalog": null,
+            "rrid": "AB_2626200",
+            "monoclonal_or_polyclonal": "monoclonal",
+            "antibody_epitope_region": "extracellular",
+            "validation_strategy": "none",
+            "validation_strength": "none",
+            "cross_reactivity_notes": "KLK2 shares 80% amino acid homology with KLK3 (PSA); cross-reactivity with KLK3 not explicitly ruled out in the paper."
+          }
+        ],
+        "accessibility_relevance": "expression_only",
+        "surface_claim_type": "plasma_membrane_localized",
+        "expression_observations": [
+          {
+            "context": "Prostate cancer tissue, multiplex immunofluorescent staining confirming KLK2 expression and cell surface localization across prostate cancer stages",
+            "sample_type": "primary_human_tissue",
+            "level": "high",
+            "species": "human",
+            "species_inferred": false,
+            "cited_evidence_ids": [
+              "a1_evi_06"
+            ]
+          }
+        ],
+        "overexpression": null,
+        "cited_evidence_ids": [
+          "a1_evi_06"
+        ]
+      },
+      {
+        "method_family": "functional_surface_assay",
+        "method_subclass": "unknown",
+        "permeabilization": "live_cell",
+        "expression_system": "endogenous",
+        "antibodies": [],
+        "accessibility_relevance": "direct_surface_accessibility",
+        "surface_claim_type": "surface_accessible",
+        "expression_observations": [
+          {
+            "context": "VCaP and mCRPC tumor cells; bispecific T-cell redirector (KLK2×CD3), targeted α-radioligand (225Ac-KLK2), and autologous CAR-T cells all engaging KLK2 at the cell surface; potent in vitro activity and robust in vivo tumor control in xenograft models",
+            "sample_type": "established_cell_line",
+            "level": "high",
+            "species": "human",
+            "species_inferred": false,
+            "cited_evidence_ids": [
+              "a1_evi_07"
+            ]
+          }
+        ],
+        "overexpression": null,
+        "cited_evidence_ids": [
+          "a1_evi_07"
+        ]
+      },
+      {
+        "method_family": "mass_spec",
+        "method_subclass": "cell_surface_capture",
+        "permeabilization": "nonpermeabilized",
+        "expression_system": "endogenous",
+        "antibodies": [],
+        "accessibility_relevance": "supports_membrane_association",
+        "surface_claim_type": "membrane_fraction_enriched",
+        "expression_observations": [
+          {
+            "context": "Unspecified cell type/line; KLK2 detected in surface proteome (surfaceome MS) with decreased abundance; grouped with coagulation/angiogenesis proteases (CTSB, MMP2)",
+            "sample_type": "unknown",
+            "level": "low",
+            "species": "human",
+            "species_inferred": true,
+            "cited_evidence_ids": [
+              "a1_evi_12"
+            ]
+          }
+        ],
+        "overexpression": null,
+        "cited_evidence_ids": [
+          "a1_evi_12"
+        ]
+      },
+      {
+        "method_family": "other",
+        "method_subclass": "whole_cell_proteomics",
+        "permeabilization": "unknown",
+        "expression_system": "endogenous",
+        "antibodies": [],
+        "accessibility_relevance": "weak_or_ambiguous",
+        "surface_claim_type": "secreted_or_shed",
+        "expression_observations": [
+          {
+            "context": "LNCaP prostate adenocarcinoma cells; KLK2 detected in conditioned medium (CM) by SDS-PAGE/western blot following androgen stimulation; secreted/shed pool",
+            "sample_type": "established_cell_line",
+            "level": "moderate",
+            "species": "human",
+            "species_inferred": true,
+            "cited_evidence_ids": [
+              "a1_evi_14"
+            ]
+          }
+        ],
+        "overexpression": null,
+        "cited_evidence_ids": [
+          "a1_evi_14"
+        ]
+      },
+      {
+        "method_family": "functional_surface_assay",
+        "method_subclass": "unknown",
+        "permeabilization": "live_cell",
+        "expression_system": "endogenous",
+        "antibodies": [],
+        "accessibility_relevance": "weak_or_ambiguous",
+        "surface_claim_type": "surface_accessible",
+        "expression_observations": [
+          {
+            "context": "Prostate cancer cell lines (unspecified), treated with recombinant protease inhibitor MDPK67b (ACT6.7 variant) targeting KLK2 and trypsin-like KLKs (KLK4, KLK14) in vitro; antitumor response assessed in charcoal-stripped media",
+            "sample_type": "established_cell_line",
+            "level": "moderate",
+            "species": "human",
+            "species_inferred": false,
+            "cited_evidence_ids": [
+              "a1_evi_17"
+            ]
+          }
+        ],
+        "overexpression": null,
+        "cited_evidence_ids": [
+          "a1_evi_17"
+        ]
+      }
+    ],
+    "non_surface_expression": [
+      {
+        "context": "KLK2 described as androgen-driven AR target gene encoding a secreted protein; prostate cancer screening/prognosis marker",
+        "sample_type": "unknown",
+        "measurement_type": "bulk_protein",
+        "level": "moderate",
+        "cited_evidence_ids": [
+          "a1_evi_13"
+        ]
+      },
+      {
+        "context": "LNCaP androgen-responsive prostate adenocarcinoma cells; KLK2 detected in conditioned medium by SDS-PAGE following androgen stimulation",
+        "sample_type": "established_cell_line",
+        "measurement_type": "bulk_protein",
+        "level": "moderate",
+        "cited_evidence_ids": [
+          "a1_evi_14"
+        ]
+      }
+    ],
+    "contradicting_evidence": [
+      {
+        "claim": "KLK2 is a canonical secreted serine protease with a signal peptide (aa 1-24) and no transmembrane domain, yielding a mature ~237 aa secreted protein with no intracellular domain. The entire KLK family is described as 'homologous secreted serine proteases' without membrane anchors. This structural topology argues against constitutive surface display and is consistent with a primarily secreted, extracellular-fluid-localized protein rather than a plasma-membrane-resident one.",
+        "contradiction_type": "secreted_only",
+        "severity_for_surface_accessibility": "high",
+        "likely_explanation": "KLK2 may associate with the cell surface non-covalently through binding partners (e.g., via GPI-anchored proteins, integrins, or other receptors) rather than being a transmembrane protein. Recent studies have begun to document such surface retention in prostate cancer cells, reconciling the secreted topology with observed surface accessibility. The absence of a TM domain does not preclude membrane association but does mean surface localization requires a docking partner.",
+        "cited_evidence_ids": [
+          "a1_evi_15",
+          "a1_evi_16"
+        ]
+      },
+      {
+        "claim": "Authors of a therapeutic-targeting study explicitly acknowledged that KLK2 was historically not recognized as a therapeutic target due to 'limited evidence of its cell surface expression', confirming that prior to recent work the prevailing view was that KLK2 lacked meaningful surface accessibility.",
+        "contradiction_type": "secreted_only",
+        "severity_for_surface_accessibility": "moderate",
+        "likely_explanation": "This is a meta-level historical acknowledgment rather than a direct experimental refutation; it reflects the field's prior consensus that KLK2 is primarily a secreted enzyme. The same paper then presents new evidence for surface expression, suggesting the contradiction is being actively resolved rather than standing as a definitive refutation.",
+        "cited_evidence_ids": [
+          "a1_evi_11"
+        ]
+      }
+    ]
+  },
+  "biological_context": {
+    "tissues": [],
+    "cell_types": [
+      {
+        "cell_type": "prostate adenocarcinoma cells",
+        "ontology_id": null,
+        "present_in_tissues": [
+          "prostate"
+        ],
+        "species": "human",
+        "species_inferred": false,
+        "cited_evidence_ids": [
+          "a2_evi_02",
+          "a2_evi_11"
+        ]
+      },
+      {
+        "cell_type": "AR-positive prostate tumor cells",
+        "ontology_id": null,
+        "present_in_tissues": [
+          "prostate"
+        ],
+        "species": "human",
+        "species_inferred": false,
+        "cited_evidence_ids": [
+          "a2_evi_05",
+          "a2_evi_06"
+        ]
+      },
+      {
+        "cell_type": "neuroendocrine prostate cancer cells",
+        "ontology_id": null,
+        "present_in_tissues": [
+          "prostate"
+        ],
+        "species": "human",
+        "species_inferred": false,
+        "cited_evidence_ids": [
+          "a2_evi_05",
+          "a2_evi_10"
+        ]
+      },
+      {
+        "cell_type": "double-negative prostate cancer cells",
+        "ontology_id": null,
+        "present_in_tissues": [
+          "prostate"
+        ],
+        "species": "human",
+        "species_inferred": false,
+        "cited_evidence_ids": [
+          "a2_evi_05",
+          "a2_evi_10"
+        ]
+      },
+      {
+        "cell_type": "mCRPC tumor cells",
+        "ontology_id": null,
+        "present_in_tissues": [
+          "prostate",
+          "prostate metastatic sites"
+        ],
+        "species": "human",
+        "species_inferred": false,
+        "cited_evidence_ids": [
+          "a2_evi_07",
+          "a2_evi_13",
+          "a2_evi_14",
+          "a2_evi_15"
+        ]
+      },
+      {
+        "cell_type": "bone marrow-derived macrophages",
+        "ontology_id": null,
+        "present_in_tissues": [],
+        "species": "mouse",
+        "species_inferred": false,
+        "cited_evidence_ids": [
+          "a2_evi_16"
+        ]
+      }
+    ],
+    "cell_states": [
+      {
+        "state": "AR-active",
+        "descriptor": "KLK2 expression is strictly AR-dependent; androgen stimulation drives KLK2 secretion in LNCaP cells, and AR genomic alterations / AR/FOXA1/HOXB13 enhancer activation correlate positively with KLK2 levels in prostate tumors.",
+        "cited_evidence_ids": [
+          "a2_evi_05",
+          "a2_evi_06",
+          "a2_evi_08",
+          "a2_evi_09",
+          "a2_evi_11"
+        ]
+      },
+      {
+        "state": "neuroendocrine / AR-negative",
+        "descriptor": "KLK2 expression is largely absent in neuroendocrine and double-negative prostate cancer phenotypes, which lack AR signaling, indicating loss of expression upon AR-negative cell-state transition.",
+        "cited_evidence_ids": [
+          "a2_evi_05",
+          "a2_evi_08",
+          "a2_evi_09",
+          "a2_evi_10"
+        ]
+      },
+      {
+        "state": "castration-resistant (mCRPC)",
+        "descriptor": "KLK2 expression becomes heterogeneous in visceral mCRPC lesions compared to robust homogeneous expression in hormone-sensitive disease; intra- and inter-tumoral variability is observed by IHC and scRNA-seq in this disease state.",
+        "cited_evidence_ids": [
+          "a2_evi_04",
+          "a2_evi_07",
+          "a2_evi_13",
+          "a2_evi_14",
+          "a2_evi_15"
+        ]
+      }
+    ],
+    "subcellular_localization": {
+      "primary_compartment": "plasma_membrane",
+      "dual_localization": [
+        {
+          "compartment": "secreted",
+          "fraction_estimate": null,
+          "condition": "androgen-stimulated prostate cancer cells",
+          "cited_evidence_ids": [
+            "a2_evi_11",
+            "a2_evi_13"
+          ]
+        }
+      ],
+      "membrane_subdomains": []
+    },
+    "anatomical_accessibility": [],
+    "accessibility_modulation": [
+      {
+        "category": "tissue_restricted_surface",
+        "category_other_label": null,
+        "cell_state_trigger": null,
+        "restricted_lineage": "epithelial",
+        "dual_loc_partner_compartment": null,
+        "baseline_context": "non-prostate tissues (multi-tissue panel)",
+        "modulating_state": "prostate epithelial cancer cells (LPC, mHSPC, mCRPC)",
+        "change": "KLK2 surface expression is absent or minimal in non-prostate tissues but is confirmed on the plasma membrane of prostate cancer cells by live-cell FACS on VCaP cells and dissociated patient-derived mCRPC tumor cells.",
+        "accessibility_implication": "KLK2 surface accessibility is highly restricted to prostate-lineage tumor cells, making it a selective target for extracellular binders with low expected off-tumor engagement in non-prostate tissues.",
+        "species": "human",
+        "species_inferred": false,
+        "cited_evidence_ids": [
+          "a2_evi_02",
+          "a2_evi_03",
+          "a2_evi_13",
+          "a2_evi_14",
+          "a2_evi_15"
+        ]
+      },
+      {
+        "category": "disease_state_induced",
+        "category_other_label": null,
+        "cell_state_trigger": null,
+        "restricted_lineage": null,
+        "dual_loc_partner_compartment": null,
+        "baseline_context": "AR-negative / neuroendocrine or double-negative mCRPC tumor cells",
+        "modulating_state": "AR-positive mCRPC tumor cells",
+        "change": "KLK2 surface expression is high and homogeneous in AR+ prostate cancer cells but largely absent in neuroendocrine and double-negative mCRPC subtypes, driven by strict AR/FOXA1/HOXB13-dependent transcriptional and epigenomic activation.",
+        "accessibility_implication": "Surface-accessible KLK2 is contingent on AR pathway activity; AR-low or lineage-switched tumor variants will lack surface KLK2, limiting binder efficacy in those disease states.",
+        "species": "human",
+        "species_inferred": false,
+        "cited_evidence_ids": [
+          "a2_evi_04",
+          "a2_evi_05",
+          "a2_evi_08",
+          "a2_evi_09",
+          "a2_evi_13",
+          "a2_evi_14"
+        ]
+      }
+    ]
+  },
+  "deterministic_features": {
+    "canonical_topology": {
+      "isoform_id": "P20151",
+      "uniprot_acc": "P20151",
+      "tm_helix_count": 0,
+      "n_terminal_orientation": "extracellular",
+      "c_terminal_orientation": "extracellular",
+      "signal_peptide_length": 17,
+      "ecd_length_residues": 244,
+      "icd_length_residues": 0,
+      "per_residue_topology": "SSSSSSSSSSSSSSSSSOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOO",
+      "tool_version": "deeptmhmm-1.0.24",
+      "retrieved_at": "2026-05-17T00:56:01Z",
+      "full_length_pct_identity_to_canonical": null,
+      "ecd_pct_identity_to_canonical": null,
+      "ecd_pct_similarity_to_canonical": null
+    },
+    "isoform_topologies": [],
+    "orthologs": {
+      "mouse": [],
+      "cynomolgus": []
+    },
+    "paralogs": [],
+    "structure": {
+      "afdb_id": "AF-P20151-F1",
+      "afdb_version": "v6",
+      "ecd_mean_plddt": 95.47352459016402,
+      "ecd_disordered_fraction": 0.03278688524590164,
+      "source": "AlphaFold DB (ECD-restricted pLDDT, n=244)",
+      "license": "CC BY 4.0",
+      "attribution": "© DeepMind / EMBL-EBI",
+      "citations": [
+        "10.1038/s41586-021-03819-2",
+        "10.1093/nar/gkad1011"
+      ]
+    },
+    "surface_bind": {
+      "has_data": false,
+      "n_sites": 0,
+      "n_seeds_alpha": 0,
+      "n_seeds_beta": 0,
+      "n_seeds_total": 0,
+      "chain": null,
+      "sites": [],
+      "main_class": null,
+      "sub_class": null,
+      "protein_name": null,
+      "pdbs": [],
+      "source": "SURFACE-Bind v1 (Balbi et al. 2026 PNAS)",
+      "attribution": "© Balbi et al., Correia lab — EPFL / Inria / Novo Nordisk",
+      "citation": "10.1073/pnas.2506269123"
+    }
+  },
+  "accessibility_risks": {
+    "co_receptor_requirements": {
+      "surface_expression_dependency": "unknown",
+      "partners": [],
+      "evidence_basis": "co_expression_only",
+      "rationale": "KLK2 has no transmembrane domain and lacks a GPI signal, so surface retention must depend on a docking partner (e.g., GPI-anchored protein, integrin, or other receptor). The identity of this partner is undocumented in the ledger; surface expression is confirmed but the molecular anchor mechanism is uncharacterized.",
+      "cited_evidence_ids": [
+        "a1_evi_15",
+        "a1_evi_16"
+      ]
+    },
+    "shed_form": {
+      "present": false,
+      "severity": "low",
+      "evidence_strength": "weak",
+      "mechanism": null,
+      "sheddase_if_known": null,
+      "cited_evidence_ids": []
+    },
+    "secreted_form": {
+      "present": true,
+      "severity": "high",
+      "evidence_strength": "strong",
+      "ratio_to_membrane": null,
+      "source": "unknown",
+      "cited_evidence_ids": [
+        "a1_evi_14",
+        "a1_evi_15",
+        "a1_evi_16",
+        "a2_evi_11"
+      ]
+    },
+    "restricted_subdomain": {
+      "present": false,
+      "domain": "unknown",
+      "severity": "low",
+      "evidence_strength": "moderate",
+      "rationale": "Live-cell FACS on VCaP and fresh mCRPC patient tumor cells shows broad plasma membrane signal without fractionation to a specific subdomain. No apical, junctional, or ciliary restriction is documented. The pan-membrane staining pattern in confocal IF (a1_evi_03) and the efficacy of three surface-targeting modalities (a1_evi_07) are consistent with broad membrane distribution.",
+      "cited_evidence_ids": [
+        "a1_evi_02",
+        "a1_evi_03",
+        "a1_evi_07",
+        "a2_evi_14"
+      ]
+    },
+    "ecd_size_assessment": {
+      "ecd_accessibility_class": "large",
+      "rationale": "KLK2 is a secreted protease of ~237 residues (signal peptide-cleaved mature protein; a1_evi_16). The entire mature protein constitutes the extracellular-facing domain when surface-retained. At ≥200 aa this qualifies as 'large', accommodating numerous non-overlapping antibody footprints.",
+      "cited_evidence_ids": [
+        "a1_evi_16"
+      ]
+    },
+    "epitope_masking": {
+      "mechanism": [
+        "conformational"
+      ],
+      "severity": "low",
+      "evidence_strength": "inferred",
+      "rationale": "KLK2 is a serine protease with a well-defined catalytic domain; the active-site cleft may restrict access to some epitopes. Glycosylation of KLKs is documented in the literature but specific masking data for KLK2 surface form are not present in the ledger. No binding-blocking or masking study is reported. The therapeutic antibody OT15D6 binds surface KLK2 successfully (a1_evi_02), suggesting accessible epitopes exist.",
+      "cited_evidence_ids": [
+        "a1_evi_02"
+      ]
+    }
+  },
+  "evidence": [
+    {
+      "evidence_id": "a1_evi_01",
+      "claim": "Although KLK2 is traditionally described as a secreted protease, the authors demonstrate cell surface expression in both prostate cancer cell lines (VCaP) and patient-derived tumors, directly contradicting the secreted-only prior. This is the paper's primary conclusion and is the load-bearing surface-expression claim.",
+      "claim_type": "surface_expression",
+      "direction": "supports",
+      "evidence_type": "review_assertion",
+      "evidence_tier": "secondary",
+      "confidence": "moderate",
+      "assay_context": {
+        "species": "human",
+        "cell_type_or_line": "VCaP; mCRPC patient-derived tumor cells",
+        "permeabilized": false,
+        "fixation": "unspecified",
+        "isoform": null,
+        "cell_context": {
+          "material_kind": "cell_line",
+          "material_kind_other_label": null,
+          "cell_type": "prostate cancer",
+          "cell_line_name": "VCaP",
+          "cellosaurus_id": null,
+          "tissue": null,
+          "disease_state": "metastatic castration-resistant prostate cancer",
+          "activation_state": null
+        }
+      },
+      "spans": [
+        {
+          "source": {
+            "source_type": "pmc",
+            "source_id": "PMC:PMC12580770",
+            "pmc_id": "PMC12580770",
+            "url": "https://www.ncbi.nlm.nih.gov/pmc/articles/PMC12580770/",
+            "title": "PMC:PMC12580770",
+            "retrieved_at": "2026-05-31T15:33:39.915994Z",
+            "content_sha256": "f15887e206936c6bfe5b4d4ef17a6ac488338fcae9c439ed1b82807a6e6257bd",
+            "publication_type": "other",
+            "is_retracted": false,
+            "retraction_checked_at": "2026-05-31T15:33:39.915994Z",
+            "license": "unknown"
+          },
+          "section": "abstract",
+          "figure_or_table_id": null,
+          "quote": "Although KLK2 is traditionally described as a secreted protease, our results demonstrated its cell surface expression in both prostate cancer cell lines and patient-derived tumors.",
+          "quote_sha256": "d2c4f2ec10fdea2d7d46852f91dc77cc2be39b819a3ebd8c52d974fd35498fa3",
+          "char_offset": 0,
+          "normalized_source_sha256": "33be7175ecb18f7d9aabbc9a70df78fa53087db44febeb6e8eecebf2edf78dd9"
+        }
+      ],
+      "entailment_verified": true,
+      "entailment_audit_passed": null,
+      "validation_warnings": [],
+      "duplicate_of": null
+    },
+    {
+      "evidence_id": "a1_evi_02",
+      "claim": "FACS of intact (non-permeabilized) VCaP cells and dissociated mCRPC tumor cells confirms KLK2 cell surface expression. This is a primary flow cytometry result on live/intact cells in both a prostate cancer cell line and patient-derived tumor samples, providing direct evidence of plasma membrane accessibility.",
+      "claim_type": "surface_expression",
+      "direction": "supports",
+      "evidence_type": "flow_cytometry",
+      "evidence_tier": "primary",
+      "confidence": "strong",
+      "assay_context": {
+        "species": "human",
+        "cell_type_or_line": "VCaP; mCRPC dissociated tumor cells",
+        "permeabilized": false,
+        "fixation": "live",
+        "isoform": null,
+        "cell_context": {
+          "material_kind": "cell_line",
+          "material_kind_other_label": null,
+          "cell_type": "prostate cancer",
+          "cell_line_name": "VCaP",
+          "cellosaurus_id": null,
+          "tissue": null,
+          "disease_state": "metastatic castration-resistant prostate cancer",
+          "activation_state": null
+        }
+      },
+      "spans": [
+        {
+          "source": {
+            "source_type": "pmc",
+            "source_id": "PMC:PMC12580770",
+            "pmc_id": "PMC12580770",
+            "url": "https://www.ncbi.nlm.nih.gov/pmc/articles/PMC12580770/",
+            "title": "PMC:PMC12580770",
+            "retrieved_at": "2026-05-31T15:33:39.915994Z",
+            "content_sha256": "f15887e206936c6bfe5b4d4ef17a6ac488338fcae9c439ed1b82807a6e6257bd",
+            "publication_type": "other",
+            "is_retracted": false,
+            "retraction_checked_at": "2026-05-31T15:33:39.915994Z",
+            "license": "unknown"
+          },
+          "section": "results",
+          "figure_or_table_id": null,
+          "quote": "Cell surface expression of KLK2 was confirmed by FACS of VCaP cells ( Fig. 2A ) and dissociated mCRPC tumor cells ( Fig. 2B ).",
+          "quote_sha256": "19177740b0b2d80b9a3acd5576023fcb47a824a085d45564055c8c9bc91b1351",
+          "char_offset": 181,
+          "normalized_source_sha256": "33be7175ecb18f7d9aabbc9a70df78fa53087db44febeb6e8eecebf2edf78dd9"
+        }
+      ],
+      "entailment_verified": true,
+      "entailment_audit_passed": null,
+      "validation_warnings": [],
+      "duplicate_of": null
+    },
+    {
+      "evidence_id": "a1_evi_03",
+      "claim": "Confocal immunofluorescence imaging of KLK2 surface expression in VCaP cells (PMC12580770). This is a direct surface-localization readout by IF microscopy supporting cell surface accessibility; permeabilization status must be inferred from context (surface-expression framing suggests non-permeabilized or membrane-targeted staining).",
+      "claim_type": "surface_expression",
+      "direction": "supports",
+      "evidence_type": "immunofluorescence",
+      "evidence_tier": "primary",
+      "confidence": "moderate",
+      "assay_context": {
+        "species": "human",
+        "cell_type_or_line": "VCaP",
+        "permeabilized": false,
+        "fixation": "unspecified",
+        "isoform": null,
+        "cell_context": {
+          "material_kind": "cell_line",
+          "material_kind_other_label": null,
+          "cell_type": "prostate adenocarcinoma",
+          "cell_line_name": "VCaP",
+          "cellosaurus_id": null,
+          "tissue": null,
+          "disease_state": "prostate cancer",
+          "activation_state": null
+        }
+      },
+      "spans": [
+        {
+          "source": {
+            "source_type": "pmc",
+            "source_id": "PMC:PMC12580770",
+            "pmc_id": "PMC12580770",
+            "url": "https://www.ncbi.nlm.nih.gov/pmc/articles/PMC12580770/",
+            "title": "PMC:PMC12580770",
+            "retrieved_at": "2026-05-31T15:33:39.915994Z",
+            "content_sha256": "f15887e206936c6bfe5b4d4ef17a6ac488338fcae9c439ed1b82807a6e6257bd",
+            "publication_type": "other",
+            "is_retracted": false,
+            "retraction_checked_at": "2026-05-31T15:33:39.915994Z",
+            "license": "unknown"
+          },
+          "section": "figure_legend",
+          "figure_or_table_id": null,
+          "quote": "C, Confocal imaging of KLK2 surface expression in VCaP cells.",
+          "quote_sha256": "e38b4c21f4d9121ac4264e53779600f86925c25717461d545bbba973c2919ea2",
+          "char_offset": 308,
+          "normalized_source_sha256": "33be7175ecb18f7d9aabbc9a70df78fa53087db44febeb6e8eecebf2edf78dd9"
+        }
+      ],
+      "entailment_verified": true,
+      "entailment_audit_passed": null,
+      "validation_warnings": [],
+      "duplicate_of": null
+    },
+    {
+      "evidence_id": "a1_evi_04",
+      "claim": "Flow cytometry surface-expression assay: KLK2 cell surface expression in fresh mCRPC tumor samples assessed by flow cytometry using an anti-KLK2 antibody on intact (non-permeabilized) cells. Method family: flow cytometry; sample: primary patient tumor (mCRPC); non-permeabilized. Paired with results clip draft_PMC12580770_results_03.",
+      "claim_type": "methodological",
+      "direction": "supports",
+      "evidence_type": "flow_cytometry",
+      "evidence_tier": "primary",
+      "confidence": "strong",
+      "assay_context": {
+        "species": "human",
+        "cell_type_or_line": "fresh mCRPC tumor cells",
+        "permeabilized": false,
+        "fixation": "live",
+        "isoform": null,
+        "cell_context": {
+          "material_kind": "primary_tissue",
+          "material_kind_other_label": null,
+          "cell_type": "prostate cancer tumor cells",
+          "cell_line_name": null,
+          "cellosaurus_id": null,
+          "tissue": null,
+          "disease_state": "metastatic castration-resistant prostate cancer",
+          "activation_state": null
+        }
+      },
+      "spans": [
+        {
+          "source": {
+            "source_type": "pmc",
+            "source_id": "PMC:PMC12580770",
+            "pmc_id": "PMC12580770",
+            "url": "https://www.ncbi.nlm.nih.gov/pmc/articles/PMC12580770/",
+            "title": "PMC:PMC12580770",
+            "retrieved_at": "2026-05-31T15:33:39.915994Z",
+            "content_sha256": "f15887e206936c6bfe5b4d4ef17a6ac488338fcae9c439ed1b82807a6e6257bd",
+            "publication_type": "other",
+            "is_retracted": false,
+            "retraction_checked_at": "2026-05-31T15:33:39.915994Z",
+            "license": "unknown"
+          },
+          "section": "methods",
+          "figure_or_table_id": null,
+          "quote": "KLK2 cell surface expression in fresh tumor samples of patients with mCRPC was assessed by flow cytometry using an anti-KLK2 antibody.",
+          "quote_sha256": "898306802e41a66c08517bb11772c337c23f6898ae9603f7da99680d412b8c39",
+          "char_offset": 370,
+          "normalized_source_sha256": "33be7175ecb18f7d9aabbc9a70df78fa53087db44febeb6e8eecebf2edf78dd9"
+        }
+      ],
+      "entailment_verified": true,
+      "entailment_audit_passed": null,
+      "validation_warnings": [],
+      "duplicate_of": null
+    },
+    {
+      "evidence_id": "a1_evi_05",
+      "claim": "Antibody reagent detail: rabbit monoclonal anti-human KLK2 antibody clone OT15D6 (OriGene; RRID:AB_2626200) used for KLK2 IHC and surface staining experiments in PMC12580770. Paired antibody identifier and RRID for MethodObservation.antibodies[] population.",
+      "claim_type": "methodological",
+      "direction": "supports",
+      "evidence_type": "immunohistochemistry",
+      "evidence_tier": "primary",
+      "confidence": "strong",
+      "assay_context": {
+        "species": "human",
+        "cell_type_or_line": null,
+        "permeabilized": null,
+        "fixation": "fixed",
+        "isoform": null,
+        "cell_context": {
+          "material_kind": "primary_tissue",
+          "material_kind_other_label": null,
+          "cell_type": "prostate cancer",
+          "cell_line_name": null,
+          "cellosaurus_id": null,
+          "tissue": null,
+          "disease_state": "prostate cancer",
+          "activation_state": null
+        }
+      },
+      "spans": [
+        {
+          "source": {
+            "source_type": "pmc",
+            "source_id": "PMC:PMC12580770",
+            "pmc_id": "PMC12580770",
+            "url": "https://www.ncbi.nlm.nih.gov/pmc/articles/PMC12580770/",
+            "title": "PMC:PMC12580770",
+            "retrieved_at": "2026-05-31T15:33:39.915994Z",
+            "content_sha256": "f15887e206936c6bfe5b4d4ef17a6ac488338fcae9c439ed1b82807a6e6257bd",
+            "publication_type": "other",
+            "is_retracted": false,
+            "retraction_checked_at": "2026-05-31T15:33:39.915994Z",
+            "license": "unknown"
+          },
+          "section": "methods",
+          "figure_or_table_id": null,
+          "quote": "Rabbit monoclonal anti-human KLK2 antibody clone OT15D6 (OriGene; RRID:AB_2626200), anti-human CD4 antibody clone EPR6855 (Abcam; RRID:AB_2750883), anti-human CD8 antibody clone SP57 (Ventana; RRID:AB_2335985), and anti-human CK (AE1/AE3, Leica; RRID:AB_564123) were used for KLK2, CD4, and CD8 IHC.",
+          "quote_sha256": "67b449c25e2e80888b6c178c5fb327dafbff33386585b8bd4cc6908109380d80",
+          "char_offset": 505,
+          "normalized_source_sha256": "33be7175ecb18f7d9aabbc9a70df78fa53087db44febeb6e8eecebf2edf78dd9"
+        }
+      ],
+      "entailment_verified": true,
+      "entailment_audit_passed": null,
+      "validation_warnings": [],
+      "duplicate_of": null
+    },
+    {
+      "evidence_id": "a1_evi_06",
+      "claim": "IHC and multiplex immunofluorescent staining were used to confirm KLK2 cell surface expression in prostate cancer. This abstract-level methodological statement establishes that the PMC12580770 study used paired IHC and multiplex IF to characterize KLK2 surface localization across prostate cancer stages.",
+      "claim_type": "methodological",
+      "direction": "supports",
+      "evidence_type": "immunohistochemistry",
+      "evidence_tier": "secondary",
+      "confidence": "moderate",
+      "assay_context": {
+        "species": "human",
+        "cell_type_or_line": null,
+        "permeabilized": null,
+        "fixation": "fixed",
+        "isoform": null,
+        "cell_context": {
+          "material_kind": "primary_tissue",
+          "material_kind_other_label": null,
+          "cell_type": "prostate cancer",
+          "cell_line_name": null,
+          "cellosaurus_id": null,
+          "tissue": null,
+          "disease_state": "prostate cancer",
+          "activation_state": null
+        }
+      },
+      "spans": [
+        {
+          "source": {
+            "source_type": "pmc",
+            "source_id": "PMC:PMC12580770",
+            "pmc_id": "PMC12580770",
+            "url": "https://www.ncbi.nlm.nih.gov/pmc/articles/PMC12580770/",
+            "title": "PMC:PMC12580770",
+            "retrieved_at": "2026-05-31T15:33:39.915994Z",
+            "content_sha256": "f15887e206936c6bfe5b4d4ef17a6ac488338fcae9c439ed1b82807a6e6257bd",
+            "publication_type": "other",
+            "is_retracted": false,
+            "retraction_checked_at": "2026-05-31T15:33:39.915994Z",
+            "license": "unknown"
+          },
+          "section": "abstract",
+          "figure_or_table_id": null,
+          "quote": "In this study, we systematically characterized KLK2 expression in prostate cancer, confirmed its cell surface expression, and demonstrated the preclinical efficacy of three KLK2-targeting therapeutics with distinct MoA.<h4>Experimental design</h4>The KLK2 expression profile in different stages of prostate cancer and its cell surface expression were confirmed by IHC and multiplex immunofluorescent staining.",
+          "quote_sha256": "a689e1df6aba7125264025174f9def1771070bd1d5f791a1ac56ff05b6baa8e8",
+          "char_offset": 805,
+          "normalized_source_sha256": "33be7175ecb18f7d9aabbc9a70df78fa53087db44febeb6e8eecebf2edf78dd9"
+        }
+      ],
+      "entailment_verified": true,
+      "entailment_audit_passed": null,
+      "validation_warnings": [],
+      "duplicate_of": null
+    },
+    {
+      "evidence_id": "a1_evi_07",
+      "claim": "PMC12580770 establishes KLK2 as a prostate-specific cell surface target and demonstrates preclinical efficacy of three KLK2-targeting therapeutics with distinct mechanisms: bispecific T-cell redirector, targeted alpha-radioligand, and autologous CAR-T cells. All three modalities engage KLK2 at the cell surface of prostate cancer cells, providing strong therapeutic-engagement evidence for the surface-accessible form of KLK2.",
+      "claim_type": "surface_expression",
+      "direction": "supports",
+      "evidence_type": "functional_assay",
+      "evidence_tier": "primary",
+      "confidence": "strong",
+      "assay_context": {
+        "species": "human",
+        "cell_type_or_line": "VCaP; mCRPC tumor cells",
+        "permeabilized": false,
+        "fixation": "live",
+        "isoform": null,
+        "cell_context": {
+          "material_kind": "cell_line",
+          "material_kind_other_label": null,
+          "cell_type": "prostate cancer",
+          "cell_line_name": "VCaP",
+          "cellosaurus_id": null,
+          "tissue": null,
+          "disease_state": "metastatic castration-resistant prostate cancer",
+          "activation_state": null
+        }
+      },
+      "spans": [
+        {
+          "source": {
+            "source_type": "pmc",
+            "source_id": "PMC:PMC12580770",
+            "pmc_id": "PMC12580770",
+            "url": "https://www.ncbi.nlm.nih.gov/pmc/articles/PMC12580770/",
+            "title": "PMC:PMC12580770",
+            "retrieved_at": "2026-05-31T15:33:39.915994Z",
+            "content_sha256": "f15887e206936c6bfe5b4d4ef17a6ac488338fcae9c439ed1b82807a6e6257bd",
+            "publication_type": "other",
+            "is_retracted": false,
+            "retraction_checked_at": "2026-05-31T15:33:39.915994Z",
+            "license": "unknown"
+          },
+          "section": "abstract",
+          "figure_or_table_id": null,
+          "quote": "Notably, targeting KLK2 with three different MoAs, including bispecific T-cell redirector, targeted α-radioligand, and autologous chimeric antigen receptor T cells, showed potent in vitro activity and robust in vivo tumor control.<h4>Conclusions</h4>Our study establishes KLK2 as a highly prostate-specific cell surface target.",
+          "quote_sha256": "a0e72d2a921cba12931433ac78dc5f1f083529753860bb3241c8fcc6b87ff1cf",
+          "char_offset": 1215,
+          "normalized_source_sha256": "33be7175ecb18f7d9aabbc9a70df78fa53087db44febeb6e8eecebf2edf78dd9"
+        }
+      ],
+      "entailment_verified": true,
+      "entailment_audit_passed": null,
+      "validation_warnings": [],
+      "duplicate_of": null
+    },
+    {
+      "evidence_id": "a1_evi_08",
+      "claim": "Review/abstract assertion that KLK2 is a cell surface target with relevance for prostate cancer therapy (co-cited alongside STEAP1). Secondary-level corroboration of surface accessibility claim from an independent source.",
+      "claim_type": "surface_expression",
+      "direction": "supports",
+      "evidence_type": "review_assertion",
+      "evidence_tier": "secondary",
+      "confidence": "moderate",
+      "assay_context": {
+        "species": "human",
+        "cell_type_or_line": null,
+        "permeabilized": null,
+        "fixation": null,
+        "isoform": null,
+        "cell_context": {
+          "material_kind": "unspecified",
+          "material_kind_other_label": null,
+          "cell_type": "prostate cancer",
+          "cell_line_name": null,
+          "cellosaurus_id": null,
+          "tissue": null,
+          "disease_state": "prostate cancer",
+          "activation_state": null
+        }
+      },
+      "spans": [
+        {
+          "source": {
+            "source_type": "pubmed",
+            "source_id": "PMID:42189191",
+            "pmc_id": null,
+            "url": "https://pubmed.ncbi.nlm.nih.gov/42189191/",
+            "title": "PMID:42189191",
+            "retrieved_at": "2026-05-31T15:33:39.915994Z",
+            "content_sha256": "9a469549585af0b296f188ea1b0d99793132f252aada56ae1568be34b1f33b3b",
+            "publication_type": "other",
+            "is_retracted": false,
+            "retraction_checked_at": "2026-05-31T15:33:39.915994Z",
+            "license": "unknown"
+          },
+          "section": "abstract",
+          "figure_or_table_id": null,
+          "quote": "KLK2 and STEAP1 are two cell surface targets with relevance for prostate cancer therapy.",
+          "quote_sha256": "c27f19c55fb3652d9c383c1fe8862bd5d56569c3c1f42cd8dd180c43bd915640",
+          "char_offset": 0,
+          "normalized_source_sha256": "2d0b5dcd417b79b20e9cb4dc48bfb28cf9431b2608a66a08fcb78b0f75b61397"
+        }
+      ],
+      "entailment_verified": true,
+      "entailment_audit_passed": null,
+      "validation_warnings": [],
+      "duplicate_of": null
+    },
+    {
+      "evidence_id": "a1_evi_09",
+      "claim": "Figure legend heading 'Cell surface expression of KLK2' from PMC12580770 directly indexes a figure dedicated to KLK2 surface localization data; supports the overall claim that the paper presents primary cell-surface evidence.",
+      "claim_type": "surface_expression",
+      "direction": "supports",
+      "evidence_type": "review_assertion",
+      "evidence_tier": "secondary",
+      "confidence": "moderate",
+      "assay_context": {
+        "species": "human",
+        "cell_type_or_line": "VCaP",
+        "permeabilized": false,
+        "fixation": "unspecified",
+        "isoform": null,
+        "cell_context": {
+          "material_kind": "cell_line",
+          "material_kind_other_label": null,
+          "cell_type": "prostate cancer",
+          "cell_line_name": "VCaP",
+          "cellosaurus_id": null,
+          "tissue": null,
+          "disease_state": "prostate cancer",
+          "activation_state": null
+        }
+      },
+      "spans": [
+        {
+          "source": {
+            "source_type": "pmc",
+            "source_id": "PMC:PMC12580770",
+            "pmc_id": "PMC12580770",
+            "url": "https://www.ncbi.nlm.nih.gov/pmc/articles/PMC12580770/",
+            "title": "PMC:PMC12580770",
+            "retrieved_at": "2026-05-31T15:33:39.915994Z",
+            "content_sha256": "f15887e206936c6bfe5b4d4ef17a6ac488338fcae9c439ed1b82807a6e6257bd",
+            "publication_type": "other",
+            "is_retracted": false,
+            "retraction_checked_at": "2026-05-31T15:33:39.915994Z",
+            "license": "unknown"
+          },
+          "section": "figure_legend",
+          "figure_or_table_id": null,
+          "quote": "Cell surface expression of KLK2.",
+          "quote_sha256": "83c089bf94411f9e13d0ba23b7ec7eed18225fa68819756534a414aafb9b6906",
+          "char_offset": 1547,
+          "normalized_source_sha256": "33be7175ecb18f7d9aabbc9a70df78fa53087db44febeb6e8eecebf2edf78dd9"
+        }
+      ],
+      "entailment_verified": true,
+      "entailment_audit_passed": null,
+      "validation_warnings": [],
+      "duplicate_of": null
+    },
+    {
+      "evidence_id": "a1_evi_10",
+      "claim": "Cell surface binding of the anti-KLK2 antibody detected at 60 minutes in the PMC12580770 kinetics experiment, with intracellular accumulation noted separately. This documents antibody engagement at the plasma membrane (surface-accessible epitope) at early timepoints before internalization, supporting cell surface accessibility.",
+      "claim_type": "surface_expression",
+      "direction": "supports",
+      "evidence_type": "immunofluorescence",
+      "evidence_tier": "primary",
+      "confidence": "moderate",
+      "assay_context": {
+        "species": "human",
+        "cell_type_or_line": "VCaP",
+        "permeabilized": false,
+        "fixation": "live",
+        "isoform": null,
+        "cell_context": {
+          "material_kind": "cell_line",
+          "material_kind_other_label": null,
+          "cell_type": "prostate cancer",
+          "cell_line_name": "VCaP",
+          "cellosaurus_id": null,
+          "tissue": null,
+          "disease_state": "prostate cancer",
+          "activation_state": null
+        }
+      },
+      "spans": [
+        {
+          "source": {
+            "source_type": "pmc",
+            "source_id": "PMC:PMC12580770",
+            "pmc_id": "PMC12580770",
+            "url": "https://www.ncbi.nlm.nih.gov/pmc/articles/PMC12580770/",
+            "title": "PMC:PMC12580770",
+            "retrieved_at": "2026-05-31T15:33:39.915994Z",
+            "content_sha256": "f15887e206936c6bfe5b4d4ef17a6ac488338fcae9c439ed1b82807a6e6257bd",
+            "publication_type": "other",
+            "is_retracted": false,
+            "retraction_checked_at": "2026-05-31T15:33:39.915994Z",
+            "license": "unknown"
+          },
+          "section": "figure_legend",
+          "figure_or_table_id": null,
+          "quote": "Cell surface binding of the anti-KLK2 antibody was detected at 60 minutes with intracellu…",
+          "quote_sha256": "f348f32e6a6aa9484978a80351462e9b4f3e75a51e0de83ea47d55d41b5f2183",
+          "char_offset": 1580,
+          "normalized_source_sha256": "33be7175ecb18f7d9aabbc9a70df78fa53087db44febeb6e8eecebf2edf78dd9"
+        }
+      ],
+      "entailment_verified": true,
+      "entailment_audit_passed": null,
+      "validation_warnings": [],
+      "duplicate_of": null
+    },
+    {
+      "evidence_id": "a1_evi_11",
+      "claim": "The study authors explicitly note that KLK2 was not previously recognized as a therapeutic target due to 'limited evidence of its cell surface expression', establishing the historical context that this paper directly addresses and contradicts. This is a meta-level acknowledgment of the prior contradictory view (secreted-only, no surface evidence).",
+      "claim_type": "contradictory",
+      "direction": "refutes",
+      "evidence_type": "review_assertion",
+      "evidence_tier": "secondary",
+      "confidence": "moderate",
+      "assay_context": {
+        "species": "human",
+        "cell_type_or_line": null,
+        "permeabilized": null,
+        "fixation": null,
+        "isoform": null,
+        "cell_context": {
+          "material_kind": "unspecified",
+          "material_kind_other_label": null,
+          "cell_type": "prostate cancer",
+          "cell_line_name": null,
+          "cellosaurus_id": null,
+          "tissue": null,
+          "disease_state": "prostate cancer",
+          "activation_state": null
+        }
+      },
+      "spans": [
+        {
+          "source": {
+            "source_type": "pmc",
+            "source_id": "PMC:PMC12580770",
+            "pmc_id": "PMC12580770",
+            "url": "https://www.ncbi.nlm.nih.gov/pmc/articles/PMC12580770/",
+            "title": "PMC:PMC12580770",
+            "retrieved_at": "2026-05-31T15:33:39.915994Z",
+            "content_sha256": "f15887e206936c6bfe5b4d4ef17a6ac488338fcae9c439ed1b82807a6e6257bd",
+            "publication_type": "other",
+            "is_retracted": false,
+            "retraction_checked_at": "2026-05-31T15:33:39.915994Z",
+            "license": "unknown"
+          },
+          "section": "abstract",
+          "figure_or_table_id": null,
+          "quote": "However, it was not recognized as a therapeutic target for prostate cancer in the past due to limited evidence of its cell surface expression.",
+          "quote_sha256": "9692662b46ef03c2ff77248fc81eccb2b862b23b1c34926444fd817f8fdd03e0",
+          "char_offset": 1673,
+          "normalized_source_sha256": "33be7175ecb18f7d9aabbc9a70df78fa53087db44febeb6e8eecebf2edf78dd9"
+        }
+      ],
+      "entailment_verified": true,
+      "entailment_audit_passed": null,
+      "validation_warnings": [],
+      "duplicate_of": null
+    },
+    {
+      "evidence_id": "a1_evi_12",
+      "claim": "KLK2 identified in a cell surface mass spectrometry (surfaceome MS/surface proteome) study with decreased abundance in the surface proteome. This provides MS-level evidence that KLK2 peptides were detected in a surface-enriched fraction, though the decreased abundance finding is ambiguous regarding constitutive surface presence.",
+      "claim_type": "surface_expression",
+      "direction": "ambiguous",
+      "evidence_type": "mass_spec_surfaceome",
+      "evidence_tier": "primary",
+      "confidence": "moderate",
+      "assay_context": {
+        "species": "human",
+        "cell_type_or_line": "unspecified",
+        "permeabilized": false,
+        "fixation": "unspecified",
+        "isoform": null,
+        "cell_context": {
+          "material_kind": "unspecified",
+          "material_kind_other_label": null,
+          "cell_type": "unspecified",
+          "cell_line_name": null,
+          "cellosaurus_id": null,
+          "tissue": null,
+          "disease_state": "unspecified",
+          "activation_state": null
+        }
+      },
+      "spans": [
+        {
+          "source": {
+            "source_type": "pmc",
+            "source_id": "PMC:PMC12161487",
+            "pmc_id": "PMC12161487",
+            "url": "https://www.ncbi.nlm.nih.gov/pmc/articles/PMC12161487/",
+            "title": "PMC:PMC12161487",
+            "retrieved_at": "2026-05-31T15:33:39.915994Z",
+            "content_sha256": "9eb45989f07e23b1b9cf916c60cc5c05ab58a627756eaaea73f3466d86c851c4",
+            "publication_type": "other",
+            "is_retracted": false,
+            "retraction_checked_at": "2026-05-31T15:33:39.915994Z",
+            "license": "unknown"
+          },
+          "section": "results",
+          "figure_or_table_id": null,
+          "quote": "We also identified a decreased abundance of proteases that are involved in coagulation and angiogenesis (e.g., KLK2, CTSB, MMP2, Figure a).",
+          "quote_sha256": "9eb45989f07e23b1b9cf916c60cc5c05ab58a627756eaaea73f3466d86c851c4",
+          "char_offset": 0,
+          "normalized_source_sha256": "4280b6bc62b3062b26e0e7d4b15a9a14bae3b7baac7a9d01daa2adcab35ea78c"
+        }
+      ],
+      "entailment_verified": true,
+      "entailment_audit_passed": null,
+      "validation_warnings": [],
+      "duplicate_of": null
+    },
+    {
+      "evidence_id": "a1_evi_13",
+      "claim": "KLK2 described as an androgen-driven AR target gene encoding a secreted protein, used as a marker for prostate cancer screening and prognosis. This is a non-surface expression observation (secretion context) — KLK2 is classified here as a secreted protein, qualifying surface claims as contested. Feeds non_surface_expression bucket.",
+      "claim_type": "tissue_expression",
+      "direction": "ambiguous",
+      "evidence_type": "review_assertion",
+      "evidence_tier": "secondary",
+      "confidence": "moderate",
+      "assay_context": {
+        "species": "human",
+        "cell_type_or_line": null,
+        "permeabilized": null,
+        "fixation": null,
+        "isoform": null,
+        "cell_context": {
+          "material_kind": "unspecified",
+          "material_kind_other_label": null,
+          "cell_type": "prostate cancer",
+          "cell_line_name": null,
+          "cellosaurus_id": null,
+          "tissue": null,
+          "disease_state": "prostate cancer",
+          "activation_state": null
+        }
+      },
+      "spans": [
+        {
+          "source": {
+            "source_type": "pmc",
+            "source_id": "PMC:PMC11259169",
+            "pmc_id": "PMC11259169",
+            "url": "https://www.ncbi.nlm.nih.gov/pmc/articles/PMC11259169/",
+            "title": "PMC:PMC11259169",
+            "retrieved_at": "2026-05-31T15:33:39.915994Z",
+            "content_sha256": "0531ea616e711ed7ed5de57c019199bf704ab44ff514aa25c02b7632f29dd647",
+            "publication_type": "other",
+            "is_retracted": false,
+            "retraction_checked_at": "2026-05-31T15:33:39.915994Z",
+            "license": "unknown"
+          },
+          "section": "results",
+          "figure_or_table_id": null,
+          "quote": "Androgen-driven AR target genes include secreted proteins [kallikrein related peptidase 2 ( KLK2 ) and 3 ( KLK3 ); markers for prostate cancer screening and prognosis ( 30 , 31 )], proto-oncogenes { TMPRSS2 when fused with ERG ( 5 ) and growth factors [insulin-like growth factor 1 receptor ( 32 )]}, modulators of phosphatidylinositol 3-kinase (PI3K)/Akt and Notch signaling [ FKBP5 ( 33 ) and JAG1 ( 34 )], and transcription factors/tumor suppressors [NK3 Homeobox 1 ( NKX3.1 ) ( 35 , 36 ), ZBTB10 ( 37 ), and ZBTB16 ( 38 )].",
+          "quote_sha256": "0531ea616e711ed7ed5de57c019199bf704ab44ff514aa25c02b7632f29dd647",
+          "char_offset": 0,
+          "normalized_source_sha256": "03a45a80b70bd558551a4664c6a0d0edb8358d5282851c4bf963acbce15088d0"
+        }
+      ],
+      "entailment_verified": true,
+      "entailment_audit_passed": null,
+      "validation_warnings": [],
+      "duplicate_of": null
+    },
+    {
+      "evidence_id": "a1_evi_14",
+      "claim": "KLK2 is secreted by androgen-responsive LNCaP prostate adenocarcinoma cells following androgen stimulation, as evidenced by detection in conditioned medium (CM) by SDS-PAGE. This documents the secreted/shed form of KLK2 in the extracellular milieu; the soluble secreted pool is the dominant species detected here, feeding risks.secreted_form. The surface pool is not assessed in this assay.",
+      "claim_type": "surface_expression",
+      "direction": "ambiguous",
+      "evidence_type": "western_blot",
+      "evidence_tier": "secondary",
+      "confidence": "moderate",
+      "assay_context": {
+        "species": "human",
+        "cell_type_or_line": "LNCaP",
+        "permeabilized": null,
+        "fixation": null,
+        "isoform": null,
+        "cell_context": {
+          "material_kind": "cell_line",
+          "material_kind_other_label": null,
+          "cell_type": "prostate adenocarcinoma",
+          "cell_line_name": "LNCaP",
+          "cellosaurus_id": null,
+          "tissue": null,
+          "disease_state": "prostate cancer",
+          "activation_state": null
+        }
+      },
+      "spans": [
+        {
+          "source": {
+            "source_type": "pmc",
+            "source_id": "PMC:PMC9282638",
+            "pmc_id": "PMC9282638",
+            "url": "https://www.ncbi.nlm.nih.gov/pmc/articles/PMC9282638/",
+            "title": "PMC:PMC9282638",
+            "retrieved_at": "2026-05-31T15:33:39.915994Z",
+            "content_sha256": "128324c7c49b2cb82799f405a6b799f432ffbfc7010a80ef9187651442df3ec9",
+            "publication_type": "other",
+            "is_retracted": false,
+            "retraction_checked_at": "2026-05-31T15:33:39.915994Z",
+            "license": "unknown"
+          },
+          "section": "results",
+          "figure_or_table_id": null,
+          "quote": "LNCaP is an androgen-responsive human prostate adenocarcinoma cell line widely used to model key features of clinical disease, including secretion of KLK2 and KLK3 following androgen stimulation. 8 LNCaP CM was treated with different concentrations of 3 for 1 h, and proteins were separated by SDS–PAGE.",
+          "quote_sha256": "128324c7c49b2cb82799f405a6b799f432ffbfc7010a80ef9187651442df3ec9",
+          "char_offset": 0,
+          "normalized_source_sha256": "8cab0761bcde5d0a8bc46907f61c305458f025e4fae9b19c813e24b1886772d6"
+        }
+      ],
+      "entailment_verified": true,
+      "entailment_audit_passed": null,
+      "validation_warnings": [],
+      "duplicate_of": null
+    },
+    {
+      "evidence_id": "a1_evi_15",
+      "claim": "KLK family members described as homologous secreted serine proteases with trypsin- or chymotrypsin-like activities and tissue-specific expression (15 members known). This is a topology/biology statement establishing that KLKs, including KLK2, are canonical secreted proteases without transmembrane domains — relevant context qualifying surface-expression claims.",
+      "claim_type": "topology",
+      "direction": "refutes",
+      "evidence_type": "review_assertion",
+      "evidence_tier": "secondary",
+      "confidence": "moderate",
+      "assay_context": {
+        "species": "human",
+        "cell_type_or_line": null,
+        "permeabilized": null,
+        "fixation": null,
+        "isoform": null,
+        "cell_context": {
+          "material_kind": "unspecified",
+          "material_kind_other_label": null,
+          "cell_type": null,
+          "cell_line_name": null,
+          "cellosaurus_id": null,
+          "tissue": null,
+          "disease_state": null,
+          "activation_state": null
+        }
+      },
+      "spans": [
+        {
+          "source": {
+            "source_type": "pmc",
+            "source_id": "PMC:PMC12791160",
+            "pmc_id": "PMC12791160",
+            "url": "https://www.ncbi.nlm.nih.gov/pmc/articles/PMC12791160/",
+            "title": "PMC:PMC12791160",
+            "retrieved_at": "2026-05-31T15:33:39.915994Z",
+            "content_sha256": "7c27774f110bbd637236f92b91d7ab613c79b647ab7c1a05290a4667bead3d72",
+            "publication_type": "other",
+            "is_retracted": false,
+            "retraction_checked_at": "2026-05-31T15:33:39.915994Z",
+            "license": "unknown"
+          },
+          "section": "introduction",
+          "figure_or_table_id": null,
+          "quote": "To date, 15 KLKs that are homologous secreted serine proteases with trypsin‐ or chymotrypsin‐like activities with tissue‐specific expressions have been discovered [ 6 ].",
+          "quote_sha256": "e876bb38d047319c547dd7698f21f1da1b98d8dce81828529f318e1c28d4a454",
+          "char_offset": 0,
+          "normalized_source_sha256": "5a33b378492c729930ee5b1a6f11d128cadd30fb257a31a4bdd934130644cca7"
+        }
+      ],
+      "entailment_verified": true,
+      "entailment_audit_passed": null,
+      "validation_warnings": [],
+      "duplicate_of": null
+    },
+    {
+      "evidence_id": "a1_evi_16",
+      "claim": "KLK2 (human glandular kallikrein) gene encodes a preproprotein of 261 amino acids; signal peptide cleavage yields a mature ~237 aa protein. This establishes the topology: signal peptide present (aa 1-24 cleaved), no transmembrane domain, consistent with a secreted protein. ECD = 237 aa, ICD = 0, no TM helices.",
+      "claim_type": "topology",
+      "direction": "refutes",
+      "evidence_type": "review_assertion",
+      "evidence_tier": "secondary",
+      "confidence": "strong",
+      "assay_context": {
+        "species": "human",
+        "cell_type_or_line": null,
+        "permeabilized": null,
+        "fixation": null,
+        "isoform": null,
+        "cell_context": {
+          "material_kind": "unspecified",
+          "material_kind_other_label": null,
+          "cell_type": null,
+          "cell_line_name": null,
+          "cellosaurus_id": null,
+          "tissue": null,
+          "disease_state": null,
+          "activation_state": null
+        }
+      },
+      "spans": [
+        {
+          "source": {
+            "source_type": "pubmed",
+            "source_id": "PMID:2824146",
+            "pmc_id": null,
+            "url": "https://pubmed.ncbi.nlm.nih.gov/2824146/",
+            "title": "PMID:2824146",
+            "retrieved_at": "2026-05-31T15:33:39.915994Z",
+            "content_sha256": "653379ed78a8599a7dfa710949d2f99b29f928283e3900cf6c0efbf83340cd40",
+            "publication_type": "other",
+            "is_retracted": false,
+            "retraction_checked_at": "2026-05-31T15:33:39.915994Z",
+            "license": "unknown"
+          },
+          "section": "abstract",
+          "figure_or_table_id": null,
+          "quote": "The gene encoded a unique preproprotein of 261 amino acids.",
+          "quote_sha256": "653379ed78a8599a7dfa710949d2f99b29f928283e3900cf6c0efbf83340cd40",
+          "char_offset": 0,
+          "normalized_source_sha256": "4d5a4d538dc42beb9253586d288c95b181d0dd70f2d91fce26bac0e7a61b916e"
+        }
+      ],
+      "entailment_verified": true,
+      "entailment_audit_passed": null,
+      "validation_warnings": [],
+      "duplicate_of": null
+    },
+    {
+      "evidence_id": "a1_evi_17",
+      "claim": "Therapeutic engagement of KLK2: recombinant protease inhibitor MDPK67b (a variant of ACT6.7) targets KLK2 and other trypsin-like KLKs (KLK4, KLK14) in PCa cell lines in vitro. This is a preclinical inhibitor program targeting the surface-exposed/secreted protease domain of KLK2 for anti-tumor activity. Program stage: preclinical in vitro. Sponsor/developer: academic (inhibitor developed via phage display).",
+      "claim_type": "surface_expression",
+      "direction": "supports",
+      "evidence_type": "functional_assay",
+      "evidence_tier": "secondary",
+      "confidence": "weak",
+      "assay_context": {
+        "species": "human",
+        "cell_type_or_line": "PCa cell lines",
+        "permeabilized": null,
+        "fixation": null,
+        "isoform": null,
+        "cell_context": {
+          "material_kind": "cell_line",
+          "material_kind_other_label": null,
+          "cell_type": "prostate cancer",
+          "cell_line_name": null,
+          "cellosaurus_id": null,
+          "tissue": null,
+          "disease_state": "castration-resistant prostate cancer",
+          "activation_state": null
+        }
+      },
+      "spans": [
+        {
+          "source": {
+            "source_type": "pmc",
+            "source_id": "PMC:PMC12791160",
+            "pmc_id": "PMC12791160",
+            "url": "https://www.ncbi.nlm.nih.gov/pmc/articles/PMC12791160/",
+            "title": "PMC:PMC12791160",
+            "retrieved_at": "2026-05-31T15:33:39.915994Z",
+            "content_sha256": "7c27774f110bbd637236f92b91d7ab613c79b647ab7c1a05290a4667bead3d72",
+            "publication_type": "other",
+            "is_retracted": false,
+            "retraction_checked_at": "2026-05-31T15:33:39.915994Z",
+            "license": "unknown"
+          },
+          "section": "abstract",
+          "figure_or_table_id": null,
+          "quote": "By inhibition with the recombinant protease inhibitor MDPK67b targeting KLK2 and other trypsin-like KLKs including KLK4 and KLK14, we investigated the antitumor response and the influence on AR downstream target genes with MDPK67b in PCa cell lines in vitro.<h4>Methods</h4>Human PCa cells were cultured in a charcoal-stripped media and treated with MDPK67b (0.75 mg/mL).",
+          "quote_sha256": "a8eafa1bdc6bc7440f7ffdb545f90af13bf241a20ef7ba98d564911908823063",
+          "char_offset": 170,
+          "normalized_source_sha256": "5a33b378492c729930ee5b1a6f11d128cadd30fb257a31a4bdd934130644cca7"
+        }
+      ],
+      "entailment_verified": true,
+      "entailment_audit_passed": null,
+      "validation_warnings": [],
+      "duplicate_of": null
+    },
+    {
+      "evidence_id": "a2_evi_01",
+      "claim": "KLK2 is a prostate-specific antigen expressed across the prostate cancer disease continuum, establishing strong tissue-restricted expression in prostate tissue and prostate cancer.",
+      "claim_type": "tissue_expression",
+      "direction": "supports",
+      "evidence_type": "review_assertion",
+      "evidence_tier": "secondary",
+      "confidence": "strong",
+      "assay_context": {
+        "species": "human",
+        "cell_type_or_line": "prostate cancer tissue",
+        "permeabilized": null,
+        "fixation": null,
+        "isoform": null,
+        "cell_context": {
+          "material_kind": "primary_tissue",
+          "material_kind_other_label": null,
+          "cell_type": null,
+          "cell_line_name": null,
+          "cellosaurus_id": null,
+          "tissue": "prostate",
+          "disease_state": "prostate cancer",
+          "activation_state": null
+        }
+      },
+      "spans": [
+        {
+          "source": {
+            "source_type": "pmc",
+            "source_id": "PMC:PMC12580770",
+            "pmc_id": "PMC12580770",
+            "url": "https://www.ncbi.nlm.nih.gov/pmc/articles/PMC12580770/",
+            "title": "PMC:PMC12580770",
+            "retrieved_at": "2026-05-31T15:33:39.915994Z",
+            "content_sha256": "f15887e206936c6bfe5b4d4ef17a6ac488338fcae9c439ed1b82807a6e6257bd",
+            "publication_type": "other",
+            "is_retracted": false,
+            "retraction_checked_at": "2026-05-31T15:33:39.915994Z",
+            "license": "unknown"
+          },
+          "section": "abstract",
+          "figure_or_table_id": null,
+          "quote": "Human kallikrein 2 (KLK2) is a prostate-specific antigen expressed across the prostate cancer disease continuum.",
+          "quote_sha256": "a060143cf8f5a090cd56714c7a258d43dd45ca94f00ea313f6a0693a9eeb0a00",
+          "char_offset": 1816,
+          "normalized_source_sha256": "33be7175ecb18f7d9aabbc9a70df78fa53087db44febeb6e8eecebf2edf78dd9"
+        }
+      ],
+      "entailment_verified": true,
+      "entailment_audit_passed": null,
+      "validation_warnings": [],
+      "duplicate_of": null
+    },
+    {
+      "evidence_id": "a2_evi_02",
+      "claim": "KLK2 expression is restricted to normal prostatic tissues and prostate adenocarcinoma with little-to-no expression in non-prostate tissues, confirming high prostate specificity across a multi-tissue expression panel.",
+      "claim_type": "tissue_expression",
+      "direction": "supports",
+      "evidence_type": "rna_seq",
+      "evidence_tier": "primary",
+      "confidence": "strong",
+      "assay_context": {
+        "species": "human",
+        "cell_type_or_line": "normal prostate and prostate adenocarcinoma",
+        "permeabilized": null,
+        "fixation": null,
+        "isoform": null,
+        "cell_context": {
+          "material_kind": "primary_tissue",
+          "material_kind_other_label": null,
+          "cell_type": null,
+          "cell_line_name": null,
+          "cellosaurus_id": null,
+          "tissue": "prostate",
+          "disease_state": "prostate adenocarcinoma",
+          "activation_state": null
+        }
+      },
+      "spans": [
+        {
+          "source": {
+            "source_type": "pmc",
+            "source_id": "PMC:PMC12580770",
+            "pmc_id": "PMC12580770",
+            "url": "https://www.ncbi.nlm.nih.gov/pmc/articles/PMC12580770/",
+            "title": "PMC:PMC12580770",
+            "retrieved_at": "2026-05-31T15:33:39.915994Z",
+            "content_sha256": "f15887e206936c6bfe5b4d4ef17a6ac488338fcae9c439ed1b82807a6e6257bd",
+            "publication_type": "other",
+            "is_retracted": false,
+            "retraction_checked_at": "2026-05-31T15:33:39.915994Z",
+            "license": "unknown"
+          },
+          "section": "results",
+          "figure_or_table_id": null,
+          "quote": "Consistent with previous reports, KLK2 expression was restricted to normal prostatic tissues and prostate adenocarcinoma with little-to-no expression outside the prostate ( Fig. 1A ).",
+          "quote_sha256": "6f0a1f430c1aaf0ffa093bb58df7fb7d0ed42758b9caa63770a4525e12bc2729",
+          "char_offset": 1929,
+          "normalized_source_sha256": "33be7175ecb18f7d9aabbc9a70df78fa53087db44febeb6e8eecebf2edf78dd9"
+        }
+      ],
+      "entailment_verified": true,
+      "entailment_audit_passed": null,
+      "validation_warnings": [],
+      "duplicate_of": null
+    },
+    {
+      "evidence_id": "a2_evi_03",
+      "claim": "KLK2 expression is highly prostate-specific in contrast to PSMA, PSCA, and STEAP1, which show broader tissue distribution; this specificity makes KLK2 a preferential prostate-restricted target.",
+      "claim_type": "tissue_expression",
+      "direction": "supports",
+      "evidence_type": "rna_seq",
+      "evidence_tier": "primary",
+      "confidence": "strong",
+      "assay_context": {
+        "species": "human",
+        "cell_type_or_line": "prostate cancer tissue vs multiple non-prostate tissues",
+        "permeabilized": null,
+        "fixation": null,
+        "isoform": null,
+        "cell_context": {
+          "material_kind": "primary_tissue",
+          "material_kind_other_label": null,
+          "cell_type": null,
+          "cell_line_name": null,
+          "cellosaurus_id": null,
+          "tissue": "prostate",
+          "disease_state": "prostate cancer",
+          "activation_state": null
+        }
+      },
+      "spans": [
+        {
+          "source": {
+            "source_type": "pmc",
+            "source_id": "PMC:PMC12580770",
+            "pmc_id": "PMC12580770",
+            "url": "https://www.ncbi.nlm.nih.gov/pmc/articles/PMC12580770/",
+            "title": "PMC:PMC12580770",
+            "retrieved_at": "2026-05-31T15:33:39.915994Z",
+            "content_sha256": "f15887e206936c6bfe5b4d4ef17a6ac488338fcae9c439ed1b82807a6e6257bd",
+            "publication_type": "other",
+            "is_retracted": false,
+            "retraction_checked_at": "2026-05-31T15:33:39.915994Z",
+            "license": "unknown"
+          },
+          "section": "results",
+          "figure_or_table_id": null,
+          "quote": "In contrast to the expression of well-established prostate cancer targets (PSMA, PSCA, and STEAP1), KLK2 expression is highly prostate-specific ( 21 , 22 ).",
+          "quote_sha256": "2ee0f47c27eb0c1545d34315642fcf47fa3b54bbf3509d86807a25e675a62d3c",
+          "char_offset": 2113,
+          "normalized_source_sha256": "33be7175ecb18f7d9aabbc9a70df78fa53087db44febeb6e8eecebf2edf78dd9"
+        }
+      ],
+      "entailment_verified": true,
+      "entailment_audit_passed": null,
+      "validation_warnings": [],
+      "duplicate_of": null
+    },
+    {
+      "evidence_id": "a2_evi_04",
+      "claim": "KLK2 is robustly and homogeneously expressed in localized prostate cancer (LPC) and metastatic hormone-sensitive prostate cancer (mHSPC), but shows heterogeneity in visceral lesions of metastatic castration-resistant prostate cancer (mCRPC), establishing disease-state-dependent expression across the prostate cancer continuum.",
+      "claim_type": "tissue_expression",
+      "direction": "supports",
+      "evidence_type": "rna_seq",
+      "evidence_tier": "primary",
+      "confidence": "strong",
+      "assay_context": {
+        "species": "human",
+        "cell_type_or_line": "LPC, mHSPC, mCRPC tumor tissue",
+        "permeabilized": null,
+        "fixation": null,
+        "isoform": null,
+        "cell_context": {
+          "material_kind": "primary_tissue",
+          "material_kind_other_label": null,
+          "cell_type": null,
+          "cell_line_name": null,
+          "cellosaurus_id": null,
+          "tissue": "prostate and metastatic sites",
+          "disease_state": "localized PCa, mHSPC, mCRPC",
+          "activation_state": null
+        }
+      },
+      "spans": [
+        {
+          "source": {
+            "source_type": "pmc",
+            "source_id": "PMC:PMC12580770",
+            "pmc_id": "PMC12580770",
+            "url": "https://www.ncbi.nlm.nih.gov/pmc/articles/PMC12580770/",
+            "title": "PMC:PMC12580770",
+            "retrieved_at": "2026-05-31T15:33:39.915994Z",
+            "content_sha256": "f15887e206936c6bfe5b4d4ef17a6ac488338fcae9c439ed1b82807a6e6257bd",
+            "publication_type": "other",
+            "is_retracted": false,
+            "retraction_checked_at": "2026-05-31T15:33:39.915994Z",
+            "license": "unknown"
+          },
+          "section": "abstract",
+          "figure_or_table_id": null,
+          "quote": "The preclinical efficacy of three KLK2-targeting therapeutics was characterized using in vitro prostate cancer cell lines, patient-derived material, and in vivo xenograft mouse models.<h4>Results</h4>KLK2 was found to be robustly and homogeneously expressed in localized prostate cancer and metastatic hormone-sensitive prostate cancer, whereas some heterogeneity was observed in the visceral lesions of metastatic castration-resistant prostate cancer.",
+          "quote_sha256": "2cfd59a5c3b4c7a8a5c142e725f1edd46367cd83718dc0a6aaeba52d05eec3d3",
+          "char_offset": 2270,
+          "normalized_source_sha256": "33be7175ecb18f7d9aabbc9a70df78fa53087db44febeb6e8eecebf2edf78dd9"
+        }
+      ],
+      "entailment_verified": true,
+      "entailment_audit_passed": null,
+      "validation_warnings": [],
+      "duplicate_of": null
+    },
+    {
+      "evidence_id": "a2_evi_05",
+      "claim": "KLK2 expression is strongly enriched in AR-positive prostate tumors and is largely absent in neuroendocrine and double-negative prostate cancer phenotypes (mCRPC), indicating AR-driven cell-state-dependent expression.",
+      "claim_type": "tissue_expression",
+      "direction": "supports",
+      "evidence_type": "single_cell_rna_seq",
+      "evidence_tier": "primary",
+      "confidence": "strong",
+      "assay_context": {
+        "species": "human",
+        "cell_type_or_line": "AR+ prostate tumor cells, neuroendocrine PCa cells, double-negative PCa cells",
+        "permeabilized": null,
+        "fixation": null,
+        "isoform": null,
+        "cell_context": {
+          "material_kind": "primary_tissue",
+          "material_kind_other_label": null,
+          "cell_type": null,
+          "cell_line_name": null,
+          "cellosaurus_id": null,
+          "tissue": "prostate",
+          "disease_state": "mCRPC subtypes",
+          "activation_state": "AR-positive vs neuroendocrine/double-negative phenotype"
+        }
+      },
+      "spans": [
+        {
+          "source": {
+            "source_type": "pubmed",
+            "source_id": "PMID:42189191",
+            "pmc_id": null,
+            "url": "https://pubmed.ncbi.nlm.nih.gov/42189191/",
+            "title": "PMID:42189191",
+            "retrieved_at": "2026-05-31T15:33:39.915994Z",
+            "content_sha256": "9a469549585af0b296f188ea1b0d99793132f252aada56ae1568be34b1f33b3b",
+            "publication_type": "other",
+            "is_retracted": false,
+            "retraction_checked_at": "2026-05-31T15:33:39.915994Z",
+            "license": "unknown"
+          },
+          "section": "abstract",
+          "figure_or_table_id": null,
+          "quote": "The objective of this study was to characterize the expression landscape of KLK2 and STEAP1 in metastatic castration-resistant prostate cancer (mCRPC) and to define associated transcriptomic, genomic, and epigenomic features.",
+          "quote_sha256": "af30549761a28f993b0843764320a15627945e2f951aeb3c06e177dd13188397",
+          "char_offset": 89,
+          "normalized_source_sha256": "2d0b5dcd417b79b20e9cb4dc48bfb28cf9431b2608a66a08fcb78b0f75b61397"
+        }
+      ],
+      "entailment_verified": true,
+      "entailment_audit_passed": null,
+      "validation_warnings": [],
+      "duplicate_of": null
+    },
+    {
+      "evidence_id": "a2_evi_06",
+      "claim": "Within AR+ prostate tumors, KLK2 shows high co-expression with STEAP1 and PSMA; pairwise co-targeting any two of these antigens increases overall tumor coverage, implying KLK2 surface availability correlates with AR+ cell state.",
+      "claim_type": "tissue_expression",
+      "direction": "supports",
+      "evidence_type": "single_cell_rna_seq",
+      "evidence_tier": "primary",
+      "confidence": "moderate",
+      "assay_context": {
+        "species": "human",
+        "cell_type_or_line": "AR+ prostate tumor cells",
+        "permeabilized": null,
+        "fixation": null,
+        "isoform": null,
+        "cell_context": {
+          "material_kind": "primary_tissue",
+          "material_kind_other_label": null,
+          "cell_type": null,
+          "cell_line_name": null,
+          "cellosaurus_id": null,
+          "tissue": "prostate",
+          "disease_state": "mCRPC AR+ subtype",
+          "activation_state": "AR-positive"
+        }
+      },
+      "spans": [
+        {
+          "source": {
+            "source_type": "pubmed",
+            "source_id": "PMID:42189191",
+            "pmc_id": null,
+            "url": "https://pubmed.ncbi.nlm.nih.gov/42189191/",
+            "title": "PMID:42189191",
+            "retrieved_at": "2026-05-31T15:33:39.915994Z",
+            "content_sha256": "9a469549585af0b296f188ea1b0d99793132f252aada56ae1568be34b1f33b3b",
+            "publication_type": "other",
+            "is_retracted": false,
+            "retraction_checked_at": "2026-05-31T15:33:39.915994Z",
+            "license": "unknown"
+          },
+          "section": "abstract",
+          "figure_or_table_id": null,
+          "quote": "Within AR+ tumors, pairwise comparisons revealed co-expression and high combined positivity rates for STEAP1, KLK2, and PSMA, suggesting that co-targeting any two of these antigens increases overall tumor coverage.",
+          "quote_sha256": "e41a723533c22b9bc63c46eee01e067e76e9e36ab31d6a0771e00ace231d3b33",
+          "char_offset": 315,
+          "normalized_source_sha256": "2d0b5dcd417b79b20e9cb4dc48bfb28cf9431b2608a66a08fcb78b0f75b61397"
+        }
+      ],
+      "entailment_verified": true,
+      "entailment_audit_passed": null,
+      "validation_warnings": [],
+      "duplicate_of": null
+    },
+    {
+      "evidence_id": "a2_evi_07",
+      "claim": "In a rapid autopsy mCRPC cohort, KLK2 shows comparable degrees of intra- and inter-tumoral expression heterogeneity to STEAP1, indicating spatial variability of KLK2 expression within metastatic disease.",
+      "claim_type": "tissue_expression",
+      "direction": "ambiguous",
+      "evidence_type": "immunohistochemistry",
+      "evidence_tier": "primary",
+      "confidence": "moderate",
+      "assay_context": {
+        "species": "human",
+        "cell_type_or_line": "mCRPC rapid autopsy tumor specimens",
+        "permeabilized": null,
+        "fixation": "fixed",
+        "isoform": null,
+        "cell_context": {
+          "material_kind": "primary_tissue",
+          "material_kind_other_label": null,
+          "cell_type": null,
+          "cell_line_name": null,
+          "cellosaurus_id": null,
+          "tissue": "prostate and metastatic sites",
+          "disease_state": "mCRPC",
+          "activation_state": null
+        }
+      },
+      "spans": [
+        {
+          "source": {
+            "source_type": "pubmed",
+            "source_id": "PMID:42189191",
+            "pmc_id": null,
+            "url": "https://pubmed.ncbi.nlm.nih.gov/42189191/",
+            "title": "PMID:42189191",
+            "retrieved_at": "2026-05-31T15:33:39.915994Z",
+            "content_sha256": "9a469549585af0b296f188ea1b0d99793132f252aada56ae1568be34b1f33b3b",
+            "publication_type": "other",
+            "is_retracted": false,
+            "retraction_checked_at": "2026-05-31T15:33:39.915994Z",
+            "license": "unknown"
+          },
+          "section": "abstract",
+          "figure_or_table_id": null,
+          "quote": "Analysis of samples from a rapid autopsy cohort, which enabled assessment of intra- and inter-tumoral diversity, showed comparable degrees of expression heterogeneity for KLK2 and STEAP1.",
+          "quote_sha256": "53c35259015dc5b1bf45f4061710a04275a009dceb2579109b548e0f83ba944a",
+          "char_offset": 530,
+          "normalized_source_sha256": "2d0b5dcd417b79b20e9cb4dc48bfb28cf9431b2608a66a08fcb78b0f75b61397"
+        }
+      ],
+      "entailment_verified": true,
+      "entailment_audit_passed": null,
+      "validation_warnings": [],
+      "duplicate_of": null
+    },
+    {
+      "evidence_id": "a2_evi_08",
+      "claim": "KLK2 antigen expression in prostate cancer correlates positively with AR genomic alterations and serum PSA levels, and negatively with RB1 and PTEN loss, indicating AR pathway activation state modulates KLK2 expression levels.",
+      "claim_type": "tissue_expression",
+      "direction": "supports",
+      "evidence_type": "rna_seq",
+      "evidence_tier": "primary",
+      "confidence": "moderate",
+      "assay_context": {
+        "species": "human",
+        "cell_type_or_line": "prostate cancer tumor tissue",
+        "permeabilized": null,
+        "fixation": null,
+        "isoform": null,
+        "cell_context": {
+          "material_kind": "primary_tissue",
+          "material_kind_other_label": null,
+          "cell_type": null,
+          "cell_line_name": null,
+          "cellosaurus_id": null,
+          "tissue": "prostate",
+          "disease_state": "mCRPC",
+          "activation_state": "AR-altered vs RB1/PTEN-lost"
+        }
+      },
+      "spans": [
+        {
+          "source": {
+            "source_type": "pubmed",
+            "source_id": "PMID:42189191",
+            "pmc_id": null,
+            "url": "https://pubmed.ncbi.nlm.nih.gov/42189191/",
+            "title": "PMID:42189191",
+            "retrieved_at": "2026-05-31T15:33:39.915994Z",
+            "content_sha256": "9a469549585af0b296f188ea1b0d99793132f252aada56ae1568be34b1f33b3b",
+            "publication_type": "other",
+            "is_retracted": false,
+            "retraction_checked_at": "2026-05-31T15:33:39.915994Z",
+            "license": "unknown"
+          },
+          "section": "abstract",
+          "figure_or_table_id": null,
+          "quote": "Antigen expression correlated positively with AR genomic alterations and serum PSA levels, and negatively with RB1 and PTEN loss.",
+          "quote_sha256": "e9e0ea2819443e799ac8e0301a857208fb86ef2973700aeb3de22fff9a221f3c",
+          "char_offset": 718,
+          "normalized_source_sha256": "2d0b5dcd417b79b20e9cb4dc48bfb28cf9431b2608a66a08fcb78b0f75b61397"
+        }
+      ],
+      "entailment_verified": true,
+      "entailment_audit_passed": null,
+      "validation_warnings": [],
+      "duplicate_of": null
+    },
+    {
+      "evidence_id": "a2_evi_09",
+      "claim": "KLK2 expression exhibits strict AR dependence with coordinated AR/FOXA1/HOXB13 binding and enhancer activation, distinguishing it from STEAP1 which is only partially AR-dependent; this mechanistic basis underpins cell-state-driven modulation of KLK2 levels in prostate cancer.",
+      "claim_type": "tissue_expression",
+      "direction": "supports",
+      "evidence_type": "rna_seq",
+      "evidence_tier": "primary",
+      "confidence": "strong",
+      "assay_context": {
+        "species": "human",
+        "cell_type_or_line": "prostate cancer tumor tissue",
+        "permeabilized": null,
+        "fixation": null,
+        "isoform": null,
+        "cell_context": {
+          "material_kind": "primary_tissue",
+          "material_kind_other_label": null,
+          "cell_type": null,
+          "cell_line_name": null,
+          "cellosaurus_id": null,
+          "tissue": "prostate",
+          "disease_state": "prostate cancer",
+          "activation_state": "AR-signaling active"
+        }
+      },
+      "spans": [
+        {
+          "source": {
+            "source_type": "pubmed",
+            "source_id": "PMID:42189191",
+            "pmc_id": null,
+            "url": "https://pubmed.ncbi.nlm.nih.gov/42189191/",
+            "title": "PMID:42189191",
+            "retrieved_at": "2026-05-31T15:33:39.915994Z",
+            "content_sha256": "9a469549585af0b296f188ea1b0d99793132f252aada56ae1568be34b1f33b3b",
+            "publication_type": "other",
+            "is_retracted": false,
+            "retraction_checked_at": "2026-05-31T15:33:39.915994Z",
+            "license": "unknown"
+          },
+          "section": "abstract",
+          "figure_or_table_id": null,
+          "quote": "Transcriptomic and epigenome analyses demonstrated distinct mechanisms governing antigen expression: KLK2 showed a strict AR dependence with coordinated AR/FOXA1/HOXB13 binding and enhancer activation, whereas STEAP1 was only partially AR-dependent and additionally regulated by locus-specific DNA methylation changes.",
+          "quote_sha256": "09d6167a95d6f60ce61d0f7642ef445829dbe2d364b4a78104db17c6b058efee",
+          "char_offset": 848,
+          "normalized_source_sha256": "2d0b5dcd417b79b20e9cb4dc48bfb28cf9431b2608a66a08fcb78b0f75b61397"
+        }
+      ],
+      "entailment_verified": true,
+      "entailment_audit_passed": null,
+      "validation_warnings": [],
+      "duplicate_of": null
+    },
+    {
+      "evidence_id": "a2_evi_10",
+      "claim": "A large single-cell transcriptomics atlas (~1 million cells, 213 patients) integrated with PDX models was used to systematically characterize KLK2 as a surfaceome target across the prostate cancer continuum including hormone-sensitive, castration-resistant, neuroendocrine, and double-negative subtypes.",
+      "claim_type": "tissue_expression",
+      "direction": "supports",
+      "evidence_type": "single_cell_rna_seq",
+      "evidence_tier": "primary",
+      "confidence": "strong",
+      "assay_context": {
+        "species": "human",
+        "cell_type_or_line": "prostate cancer cells across PCa subtypes",
+        "permeabilized": null,
+        "fixation": null,
+        "isoform": null,
+        "cell_context": {
+          "material_kind": "primary_tissue",
+          "material_kind_other_label": null,
+          "cell_type": null,
+          "cell_line_name": null,
+          "cellosaurus_id": null,
+          "tissue": "prostate",
+          "disease_state": "hormone-sensitive PCa, mCRPC, neuroendocrine PCa, DNPC",
+          "activation_state": null
+        }
+      },
+      "spans": [
+        {
+          "source": {
+            "source_type": "pubmed",
+            "source_id": "PMID:42053993",
+            "pmc_id": null,
+            "url": "https://pubmed.ncbi.nlm.nih.gov/42053993/",
+            "title": "PMID:42053993",
+            "retrieved_at": "2026-05-31T15:33:39.915994Z",
+            "content_sha256": "ffcaac54898f59f33f3e3732566d9582f874f19fb36e876095397d3512a0850a",
+            "publication_type": "other",
+            "is_retracted": false,
+            "retraction_checked_at": "2026-05-31T15:33:39.915994Z",
+            "license": "unknown"
+          },
+          "section": "abstract",
+          "figure_or_table_id": null,
+          "quote": "We aimed to identify the most promising clinically relevant PCa targets using RNA and protein expression levels across the PCa continuum-hormone-sensitive, castration-resistant, neuroendocrine, and \"double-negative\" prostate cancer (DNPC).<h4>Experimental design</h4>We performed integration of a large single-cell transcriptomics atlas (JHU-PANORAMA, ~1 million cells and 213 patients) and PDX models for systematic investigation of clinically relevant surfaceome, followed by proteomic validation on patient samples and mechanistic investigations on PCa cell lines and patient",
+          "quote_sha256": "ffcaac54898f59f33f3e3732566d9582f874f19fb36e876095397d3512a0850a",
+          "char_offset": 0,
+          "normalized_source_sha256": "6d1eb35a554452c50f5e57db6a6865d8a2e0d2ae5a9c585f32d51604bbfd80cf"
+        }
+      ],
+      "entailment_verified": true,
+      "entailment_audit_passed": null,
+      "validation_warnings": [],
+      "duplicate_of": null
+    },
+    {
+      "evidence_id": "a2_evi_11",
+      "claim": "LNCaP prostate adenocarcinoma cells secrete KLK2 (and KLK3) following androgen stimulation, confirming androgen-regulated KLK2 expression in an AR-positive prostate cancer cell line model.",
+      "claim_type": "tissue_expression",
+      "direction": "supports",
+      "evidence_type": "western_blot",
+      "evidence_tier": "primary",
+      "confidence": "moderate",
+      "assay_context": {
+        "species": "human",
+        "cell_type_or_line": "LNCaP",
+        "permeabilized": null,
+        "fixation": null,
+        "isoform": null,
+        "cell_context": {
+          "material_kind": "cell_line",
+          "material_kind_other_label": null,
+          "cell_type": "prostate adenocarcinoma",
+          "cell_line_name": "LNCaP",
+          "cellosaurus_id": null,
+          "tissue": null,
+          "disease_state": "prostate adenocarcinoma",
+          "activation_state": "androgen-stimulated"
+        }
+      },
+      "spans": [
+        {
+          "source": {
+            "source_type": "pmc",
+            "source_id": "PMC:PMC9282638",
+            "pmc_id": "PMC9282638",
+            "url": "https://www.ncbi.nlm.nih.gov/pmc/articles/PMC9282638/",
+            "title": "PMC:PMC9282638",
+            "retrieved_at": "2026-05-31T15:33:39.915994Z",
+            "content_sha256": "128324c7c49b2cb82799f405a6b799f432ffbfc7010a80ef9187651442df3ec9",
+            "publication_type": "other",
+            "is_retracted": false,
+            "retraction_checked_at": "2026-05-31T15:33:39.915994Z",
+            "license": "unknown"
+          },
+          "section": "results",
+          "figure_or_table_id": null,
+          "quote": "LNCaP is an androgen-responsive human prostate adenocarcinoma cell line widely used to model key features of clinical disease, including secretion of KLK2 and KLK3 following androgen stimulation. 8 LNCaP CM was treated with different concentrations of 3 for 1 h, and proteins were separated by SDS–PAGE.",
+          "quote_sha256": "128324c7c49b2cb82799f405a6b799f432ffbfc7010a80ef9187651442df3ec9",
+          "char_offset": 0,
+          "normalized_source_sha256": "8cab0761bcde5d0a8bc46907f61c305458f025e4fae9b19c813e24b1886772d6"
+        }
+      ],
+      "entailment_verified": true,
+      "entailment_audit_passed": null,
+      "validation_warnings": [],
+      "duplicate_of": "a1_evi_14"
+    },
+    {
+      "evidence_id": "a2_evi_12",
+      "claim": "KLK2 protein is upregulated in cerebrospinal fluid of patients with leptomeningeal metastasis from leukemia compared to other pathologies, suggesting disease-state-dependent expression in a non-prostate tumor microenvironment context.",
+      "claim_type": "tissue_expression",
+      "direction": "supports",
+      "evidence_type": "mass_spec_surfaceome",
+      "evidence_tier": "primary",
+      "confidence": "weak",
+      "assay_context": {
+        "species": "human",
+        "cell_type_or_line": "cerebrospinal fluid from leptomeningeal metastasis patients",
+        "permeabilized": null,
+        "fixation": null,
+        "isoform": null,
+        "cell_context": {
+          "material_kind": "primary_tissue",
+          "material_kind_other_label": null,
+          "cell_type": null,
+          "cell_line_name": null,
+          "cellosaurus_id": null,
+          "tissue": "cerebrospinal fluid",
+          "disease_state": "leptomeningeal metastasis in leukemia",
+          "activation_state": null
+        }
+      },
+      "spans": [
+        {
+          "source": {
+            "source_type": "pmc",
+            "source_id": "PMC:PMC8773653",
+            "pmc_id": "PMC8773653",
+            "url": "https://www.ncbi.nlm.nih.gov/pmc/articles/PMC8773653/",
+            "title": "PMC:PMC8773653",
+            "retrieved_at": "2026-05-31T15:33:39.915994Z",
+            "content_sha256": "0b7d256903785a30c5669762d418478788741082434e1a1dd4ffad4c865461f6",
+            "publication_type": "other",
+            "is_retracted": false,
+            "retraction_checked_at": "2026-05-31T15:33:39.915994Z",
+            "license": "unknown"
+          },
+          "section": "results",
+          "figure_or_table_id": null,
+          "quote": "This difference is mainly found in proteins functionally related to each pathology, for example: sCD44, HIF1A, ZMYM3 or PTPRC for CSF + LM in lymphoma and S100A9, TRAF3, KLK3, KLK2, PTPRC, among others, in the case of CSF + LM in leukemia ( Table S7 ).",
+          "quote_sha256": "0b7d256903785a30c5669762d418478788741082434e1a1dd4ffad4c865461f6",
+          "char_offset": 0,
+          "normalized_source_sha256": "0c04adc2f0b3ca4740b44f9f4452c60b3869924b02869fd4108c110e3cfc615b"
+        }
+      ],
+      "entailment_verified": true,
+      "entailment_audit_passed": null,
+      "validation_warnings": [],
+      "duplicate_of": null
+    },
+    {
+      "evidence_id": "a2_evi_13",
+      "claim": "Although KLK2 is traditionally described as a secreted protease, the study demonstrates its cell surface expression in both prostate cancer cell lines and patient-derived tumors, representing a key finding that challenges the secreted-only paradigm.",
+      "claim_type": "surface_expression",
+      "direction": "supports",
+      "evidence_type": "flow_cytometry",
+      "evidence_tier": "primary",
+      "confidence": "strong",
+      "assay_context": {
+        "species": "human",
+        "cell_type_or_line": "prostate cancer cell lines and patient-derived mCRPC tumors",
+        "permeabilized": false,
+        "fixation": "live",
+        "isoform": null,
+        "cell_context": {
+          "material_kind": "primary_tissue",
+          "material_kind_other_label": null,
+          "cell_type": null,
+          "cell_line_name": null,
+          "cellosaurus_id": null,
+          "tissue": "prostate",
+          "disease_state": "mCRPC",
+          "activation_state": null
+        }
+      },
+      "spans": [
+        {
+          "source": {
+            "source_type": "pmc",
+            "source_id": "PMC:PMC12580770",
+            "pmc_id": "PMC12580770",
+            "url": "https://www.ncbi.nlm.nih.gov/pmc/articles/PMC12580770/",
+            "title": "PMC:PMC12580770",
+            "retrieved_at": "2026-05-31T15:33:39.915994Z",
+            "content_sha256": "f15887e206936c6bfe5b4d4ef17a6ac488338fcae9c439ed1b82807a6e6257bd",
+            "publication_type": "other",
+            "is_retracted": false,
+            "retraction_checked_at": "2026-05-31T15:33:39.915994Z",
+            "license": "unknown"
+          },
+          "section": "abstract",
+          "figure_or_table_id": null,
+          "quote": "Although KLK2 is traditionally described as a secreted protease, our results demonstrated its cell surface expression in both prostate cancer cell lines and patient-derived tumors.",
+          "quote_sha256": "d2c4f2ec10fdea2d7d46852f91dc77cc2be39b819a3ebd8c52d974fd35498fa3",
+          "char_offset": 0,
+          "normalized_source_sha256": "33be7175ecb18f7d9aabbc9a70df78fa53087db44febeb6e8eecebf2edf78dd9"
+        }
+      ],
+      "entailment_verified": true,
+      "entailment_audit_passed": null,
+      "validation_warnings": [],
+      "duplicate_of": "a1_evi_01"
+    },
+    {
+      "evidence_id": "a2_evi_14",
+      "claim": "Cell surface expression of KLK2 was confirmed by FACS on VCaP prostate cancer cells and on dissociated patient-derived mCRPC tumor cells, demonstrating plasma membrane-accessible KLK2 in both a cell line model and primary human tumor material.",
+      "claim_type": "surface_expression",
+      "direction": "supports",
+      "evidence_type": "flow_cytometry",
+      "evidence_tier": "primary",
+      "confidence": "strong",
+      "assay_context": {
+        "species": "human",
+        "cell_type_or_line": "VCaP and mCRPC dissociated tumor cells",
+        "permeabilized": false,
+        "fixation": "live",
+        "isoform": null,
+        "cell_context": {
+          "material_kind": "primary_tissue",
+          "material_kind_other_label": null,
+          "cell_type": null,
+          "cell_line_name": null,
+          "cellosaurus_id": null,
+          "tissue": "prostate",
+          "disease_state": "mCRPC",
+          "activation_state": "dissociated fresh tumor"
+        }
+      },
+      "spans": [
+        {
+          "source": {
+            "source_type": "pmc",
+            "source_id": "PMC:PMC12580770",
+            "pmc_id": "PMC12580770",
+            "url": "https://www.ncbi.nlm.nih.gov/pmc/articles/PMC12580770/",
+            "title": "PMC:PMC12580770",
+            "retrieved_at": "2026-05-31T15:33:39.915994Z",
+            "content_sha256": "f15887e206936c6bfe5b4d4ef17a6ac488338fcae9c439ed1b82807a6e6257bd",
+            "publication_type": "other",
+            "is_retracted": false,
+            "retraction_checked_at": "2026-05-31T15:33:39.915994Z",
+            "license": "unknown"
+          },
+          "section": "results",
+          "figure_or_table_id": null,
+          "quote": "Cell surface expression of KLK2 was confirmed by FACS of VCaP cells ( Fig. 2A ) and dissociated mCRPC tumor cells ( Fig. 2B ).",
+          "quote_sha256": "19177740b0b2d80b9a3acd5576023fcb47a824a085d45564055c8c9bc91b1351",
+          "char_offset": 181,
+          "normalized_source_sha256": "33be7175ecb18f7d9aabbc9a70df78fa53087db44febeb6e8eecebf2edf78dd9"
+        }
+      ],
+      "entailment_verified": true,
+      "entailment_audit_passed": null,
+      "validation_warnings": [],
+      "duplicate_of": "a1_evi_02"
+    },
+    {
+      "evidence_id": "a2_evi_15",
+      "claim": "KLK2 cell surface expression in fresh mCRPC tumor samples from patients was assessed by flow cytometry, validating surface accessibility of KLK2 protein on intact non-permeabilized tumor cells in primary human patient material.",
+      "claim_type": "surface_expression",
+      "direction": "supports",
+      "evidence_type": "flow_cytometry",
+      "evidence_tier": "primary",
+      "confidence": "moderate",
+      "assay_context": {
+        "species": "human",
+        "cell_type_or_line": "fresh mCRPC tumor samples",
+        "permeabilized": false,
+        "fixation": "live",
+        "isoform": null,
+        "cell_context": {
+          "material_kind": "primary_tissue",
+          "material_kind_other_label": null,
+          "cell_type": null,
+          "cell_line_name": null,
+          "cellosaurus_id": null,
+          "tissue": "prostate metastatic sites",
+          "disease_state": "mCRPC",
+          "activation_state": null
+        }
+      },
+      "spans": [
+        {
+          "source": {
+            "source_type": "pmc",
+            "source_id": "PMC:PMC12580770",
+            "pmc_id": "PMC12580770",
+            "url": "https://www.ncbi.nlm.nih.gov/pmc/articles/PMC12580770/",
+            "title": "PMC:PMC12580770",
+            "retrieved_at": "2026-05-31T15:33:39.915994Z",
+            "content_sha256": "f15887e206936c6bfe5b4d4ef17a6ac488338fcae9c439ed1b82807a6e6257bd",
+            "publication_type": "other",
+            "is_retracted": false,
+            "retraction_checked_at": "2026-05-31T15:33:39.915994Z",
+            "license": "unknown"
+          },
+          "section": "methods",
+          "figure_or_table_id": null,
+          "quote": "KLK2 cell surface expression in fresh tumor samples of patients with mCRPC was assessed by flow cytometry using an anti-KLK2 antibody.",
+          "quote_sha256": "898306802e41a66c08517bb11772c337c23f6898ae9603f7da99680d412b8c39",
+          "char_offset": 370,
+          "normalized_source_sha256": "33be7175ecb18f7d9aabbc9a70df78fa53087db44febeb6e8eecebf2edf78dd9"
+        }
+      ],
+      "entailment_verified": true,
+      "entailment_audit_passed": null,
+      "validation_warnings": [],
+      "duplicate_of": "a1_evi_04"
+    },
+    {
+      "evidence_id": "a2_evi_16",
+      "claim": "KLK2 treatment of bone marrow-derived macrophages (BMDM) caused a significant reduction of IL-10R2 surface levels as detected by FACS, demonstrating that KLK2 as an exogenous protease can modulate surface receptor availability on macrophages in a condition-dependent manner.",
+      "claim_type": "surface_expression",
+      "direction": "supports",
+      "evidence_type": "flow_cytometry",
+      "evidence_tier": "primary",
+      "confidence": "moderate",
+      "assay_context": {
+        "species": "mouse",
+        "cell_type_or_line": "bone marrow-derived macrophages (BMDM)",
+        "permeabilized": false,
+        "fixation": "live",
+        "isoform": null,
+        "cell_context": {
+          "material_kind": "primary_cell",
+          "material_kind_other_label": null,
+          "cell_type": "bone marrow-derived macrophage",
+          "cell_line_name": null,
+          "cellosaurus_id": null,
+          "tissue": null,
+          "disease_state": null,
+          "activation_state": "KLK2-treated"
+        }
+      },
+      "spans": [
+        {
+          "source": {
+            "source_type": "pmc",
+            "source_id": "PMC:PMC11339918",
+            "pmc_id": "PMC11339918",
+            "url": "https://www.ncbi.nlm.nih.gov/pmc/articles/PMC11339918/",
+            "title": "PMC:PMC11339918",
+            "retrieved_at": "2026-05-31T15:33:39.915994Z",
+            "content_sha256": "34496c20b208c9e7f34a43472699d951afe3f1d78fa759d5856b83ae805d5742",
+            "publication_type": "other",
+            "is_retracted": false,
+            "retraction_checked_at": "2026-05-31T15:33:39.915994Z",
+            "license": "unknown"
+          },
+          "section": "results",
+          "figure_or_table_id": null,
+          "quote": "Compared to the control group, BMDM cells treated with KLK2 showed a significant reduction of IL-10R2 on the surface, as detected by flow cytometry (FACS analysis) ( Figure 2 ), indicating that KLK2 acts directly on IL-10R2.",
+          "quote_sha256": "34496c20b208c9e7f34a43472699d951afe3f1d78fa759d5856b83ae805d5742",
+          "char_offset": 0,
+          "normalized_source_sha256": "dc96cf5393f92e07ad88717b842b5e432482e2da459de9b8b4ecbe537a5b41af"
+        }
+      ],
+      "entailment_verified": true,
+      "entailment_audit_passed": null,
+      "validation_warnings": [],
+      "duplicate_of": null
+    }
+  ],
+  "search_log": [
+    {
+      "tool": "gene_literature",
+      "mode": "gene2pubmed",
+      "query": {
+        "agent_focus": "a1",
+        "intent": "Baseline curated PMID list for KLK2 from NCBI gene2pubmed"
+      },
+      "n_results": 25,
+      "sources_seen": [],
+      "retrieved_at": "2026-05-31T15:33:42.416913Z",
+      "contributed_evidence_ids": []
+    },
+    {
+      "tool": "gene_literature",
+      "mode": "recent_corpus",
+      "query": {
+        "agent_focus": "a1",
+        "intent": "Catch any recent vocabulary-shifting papers on KLK2 surface presence, membrane-tethered isoforms, or novel surface-association biology"
+      },
+      "n_results": 20,
+      "sources_seen": [],
+      "retrieved_at": "2026-05-31T15:33:42.416913Z",
+      "contributed_evidence_ids": []
+    },
+    {
+      "tool": "evidence_retrieval",
+      "mode": "ihc",
+      "query": {
+        "agent_focus": "a1",
+        "intent": "IHC evidence for KLK2 localization in tissue sections; check for membrane vs cytoplasmic staining patterns",
+        "category": "ihc",
+        "uniprot_acc": "P20151"
+      },
+      "n_results": 1,
+      "sources_seen": [],
+      "retrieved_at": "2026-05-31T15:33:42.416913Z",
+      "contributed_evidence_ids": []
+    },
+    {
+      "tool": "evidence_retrieval",
+      "mode": "if",
+      "query": {
+        "agent_focus": "a1",
+        "intent": "IF evidence for KLK2; look for non-permeabilized staining or PM marker colocalization that would indicate surface presence",
+        "category": "if",
+        "uniprot_acc": "P20151"
+      },
+      "n_results": 1,
+      "sources_seen": [],
+      "retrieved_at": "2026-05-31T15:33:42.416913Z",
+      "contributed_evidence_ids": []
+    },
+    {
+      "tool": "evidence_retrieval",
+      "mode": "flow_cytometry",
+      "query": {
+        "agent_focus": "a1",
+        "intent": "Flow cytometry on intact cells for KLK2; direct test of whether any cell-surface pool exists",
+        "category": "flow_cytometry",
+        "uniprot_acc": "P20151"
+      },
+      "n_results": 3,
+      "sources_seen": [],
+      "retrieved_at": "2026-05-31T15:33:42.416913Z",
+      "contributed_evidence_ids": []
+    },
+    {
+      "tool": "evidence_retrieval",
+      "mode": "surface_biotinylation",
+      "query": {
+        "agent_focus": "a1",
+        "intent": "Surface biotinylation pulldown evidence for KLK2; would directly confirm or deny surface fraction",
+        "category": "surface_biotinylation",
+        "uniprot_acc": "P20151"
+      },
+      "n_results": 5,
+      "sources_seen": [],
+      "retrieved_at": "2026-05-31T15:33:42.416913Z",
+      "contributed_evidence_ids": []
+    },
+    {
+      "tool": "evidence_retrieval",
+      "mode": "mass_spec_surfaceome",
+      "query": {
+        "agent_focus": "a1",
+        "intent": "Surfaceome / CSC / glyco-enrichment MS datasets that may include or exclude KLK2",
+        "category": "mass_spec_surfaceome",
+        "uniprot_acc": "P20151"
+      },
+      "n_results": 5,
+      "sources_seen": [],
+      "retrieved_at": "2026-05-31T15:33:42.416913Z",
+      "contributed_evidence_ids": []
+    },
+    {
+      "tool": "evidence_retrieval",
+      "mode": "western_blot_paired",
+      "query": {
+        "agent_focus": "a1",
+        "intent": "Paired surface-fraction + total-lysate western blot evidence for KLK2",
+        "category": "western_blot_paired",
+        "uniprot_acc": "P20151"
+      },
+      "n_results": 5,
+      "sources_seen": [],
+      "retrieved_at": "2026-05-31T15:33:42.416913Z",
+      "contributed_evidence_ids": []
+    },
+    {
+      "tool": "evidence_retrieval",
+      "mode": "structure_with_ecd",
+      "query": {
+        "agent_focus": "a1",
+        "intent": "ECD structural data for KLK2 (PDB: 4NFE, 4NFF); assess exposed epitopes and ectodomain architecture",
+        "category": "structure_with_ecd",
+        "uniprot_acc": "P20151"
+      },
+      "n_results": 2,
+      "sources_seen": [],
+      "retrieved_at": "2026-05-31T15:33:42.416913Z",
+      "contributed_evidence_ids": []
+    },
+    {
+      "tool": "evidence_retrieval",
+      "mode": "other",
+      "query": {
+        "agent_focus": "a1",
+        "intent": "Catch any prodrug-activator, shedding, membrane-association, or proximity-labeling evidence for KLK2 surface presence in the extracellular milieu",
+        "category": "other",
+        "uniprot_acc": "P20151"
+      },
+      "n_results": 5,
+      "sources_seen": [],
+      "retrieved_at": "2026-05-31T15:33:42.416913Z",
+      "contributed_evidence_ids": []
+    },
+    {
+      "tool": "gene_literature",
+      "mode": "topic_search",
+      "query": {
+        "agent_focus": "a1",
+        "intent": "Hunt for state-induced or shedding-related surface presentation of KLK2; covers membrane-tethered isoform or GPI-like anchoring hypotheses",
+        "anchors": [
+          "surface_expression",
+          "shedding"
+        ]
+      },
+      "n_results": 25,
+      "sources_seen": [],
+      "retrieved_at": "2026-05-31T15:33:42.416913Z",
+      "contributed_evidence_ids": []
+    },
+    {
+      "tool": "gene_literature",
+      "mode": "topic_search",
+      "query": {
+        "agent_focus": "a1",
+        "intent": "Topology and structural literature for KLK2 to confirm secreted-only architecture and rule out TM isoforms",
+        "anchors": [
+          "topology",
+          "structure"
+        ]
+      },
+      "n_results": 25,
+      "sources_seen": [],
+      "retrieved_at": "2026-05-31T15:33:42.416913Z",
+      "contributed_evidence_ids": []
+    },
+    {
+      "tool": "gene_literature",
+      "mode": "topic_search",
+      "query": {
+        "agent_focus": "a1",
+        "intent": "Method-anchored search for any flow or biotinylation evidence on KLK2 in the primary literature",
+        "anchors": [
+          "flow_cytometry",
+          "surface_biotinylation"
+        ]
+      },
+      "n_results": 25,
+      "sources_seen": [],
+      "retrieved_at": "2026-05-31T15:33:42.416913Z",
+      "contributed_evidence_ids": []
+    },
+    {
+      "tool": "gene_literature",
+      "mode": "topic_search",
+      "query": {
+        "agent_focus": "a1",
+        "intent": "OE host-agnostic surface expression search: KLK2 AND (overexpression OR transfected OR stable cell line) AND (cell surface OR flow cytometry)",
+        "anchors": [
+          "surface_expression"
+        ]
+      },
+      "n_results": 25,
+      "sources_seen": [],
+      "retrieved_at": "2026-05-31T15:33:42.416913Z",
+      "contributed_evidence_ids": []
+    },
+    {
+      "tool": "gene_literature",
+      "mode": "topic_search",
+      "query": {
+        "agent_focus": "a1",
+        "intent": "HEK293 OE surface search: KLK2 AND HEK293 AND (surface expression OR flow cytometry OR cell surface staining)",
+        "anchors": [
+          "surface_expression",
+          "flow_cytometry"
+        ]
+      },
+      "n_results": 25,
+      "sources_seen": [],
+      "retrieved_at": "2026-05-31T15:33:42.416913Z",
+      "contributed_evidence_ids": []
+    },
+    {
+      "tool": "gene_literature",
+      "mode": "topic_search",
+      "query": {
+        "agent_focus": "a1",
+        "intent": "Prostate cancer / LNCaP tissue context IHC for KLK2; assess membrane vs secretory/luminal staining in disease tissue",
+        "anchors": [
+          "ihc"
+        ]
+      },
+      "n_results": 25,
+      "sources_seen": [],
+      "retrieved_at": "2026-05-31T15:33:42.416913Z",
+      "contributed_evidence_ids": []
+    },
+    {
+      "tool": "gene_literature",
+      "mode": "topic_search",
+      "query": {
+        "agent_focus": "a1",
+        "intent": "Search for membrane-tethered isoform or prodrug-activator therapeutic contexts implying KLK2 surface proximity (ADC, bispecific, CAR contexts)",
+        "anchors": [
+          "surface_expression",
+          "shedding"
+        ]
+      },
+      "n_results": 25,
+      "sources_seen": [],
+      "retrieved_at": "2026-05-31T15:33:42.416913Z",
+      "contributed_evidence_ids": []
+    },
+    {
+      "tool": "gene_literature",
+      "mode": "fetch_fulltext",
+      "query": {
+        "agent_focus": "a1",
+        "intent": "Placeholder — will rely on PDB cross-ref 4NFE abstract instead; structural detail of KLK2 ECD for epitope mapping",
+        "pmcid": "PMC4NFE",
+        "error": "ValueError: unrecognized pmcid 'PMC4NFE'; expected 'PMC' + digits"
+      },
+      "n_results": 0,
+      "sources_seen": [],
+      "retrieved_at": "2026-05-31T15:33:42.416913Z",
+      "contributed_evidence_ids": []
+    },
+    {
+      "tool": "gene_literature",
+      "mode": "fetch_abstract",
+      "query": {
+        "agent_focus": "a1",
+        "intent": "Primary structure paper for KLK2; confirm secreted-only architecture with signal peptide cleavage",
+        "pmid": 2824146
+      },
+      "n_results": 1,
+      "sources_seen": [],
+      "retrieved_at": "2026-05-31T15:33:42.416913Z",
+      "contributed_evidence_ids": []
+    },
+    {
+      "tool": "gene_literature",
+      "mode": "fetch_abstract",
+      "query": {
+        "agent_focus": "a1",
+        "intent": "Alternate KLK2 transcripts paper; check for any TM-containing splice isoform",
+        "pmid": 10544017
+      },
+      "n_results": 1,
+      "sources_seen": [],
+      "retrieved_at": "2026-05-31T15:33:42.416913Z",
+      "contributed_evidence_ids": []
+    },
+    {
+      "tool": "gene_literature",
+      "mode": "fetch_abstract",
+      "query": {
+        "agent_focus": "a1",
+        "intent": "Primary paper: Integrative Surface Antigen Profiling of KLK2 and STEAP1 in mCRPC - directly about KLK2 as a cell surface target; load-bearing for surface expression and therapeutic engagement evidence",
+        "pmid": 42189191
+      },
+      "n_results": 1,
+      "sources_seen": [],
+      "retrieved_at": "2026-05-31T15:33:42.416913Z",
+      "contributed_evidence_ids": []
+    },
+    {
+      "tool": "gene_literature",
+      "mode": "fetch_fulltext",
+      "query": {
+        "agent_focus": "a1",
+        "intent": "Full text of KLK2 surface antigen profiling paper in mCRPC - need complete methods for antibody validation, flow cytometry details, and therapeutic context (ADC/bispecific programs targeting KLK2)",
+        "pmcid": "PMC12580770"
+      },
+      "n_results": 1,
+      "sources_seen": [],
+      "retrieved_at": "2026-05-31T15:33:42.416913Z",
+      "contributed_evidence_ids": []
+    },
+    {
+      "tool": "gene_literature",
+      "mode": "fetch_fulltext",
+      "query": {
+        "agent_focus": "a1",
+        "intent": "Inhibition of kallikreins paper (PMID:41531507) - may contain surface expression or cell-based functional evidence for KLK2, plus antibody/assay validation details",
+        "pmcid": "PMC12791160"
+      },
+      "n_results": 1,
+      "sources_seen": [],
+      "retrieved_at": "2026-05-31T15:33:42.416913Z",
+      "contributed_evidence_ids": []
+    },
+    {
+      "tool": "gene_literature",
+      "mode": "gene2pubmed",
+      "query": {
+        "agent_focus": "a2",
+        "intent": "Baseline curated PMID list for KLK2; establishes the canonical publication set for this secreted serine protease."
+      },
+      "n_results": 25,
+      "sources_seen": [],
+      "retrieved_at": "2026-05-31T15:33:42.416913Z",
+      "contributed_evidence_ids": []
+    },
+    {
+      "tool": "gene_literature",
+      "mode": "recent_corpus",
+      "query": {
+        "agent_focus": "a2",
+        "intent": "Recent biology-context papers for KLK2: disease-state secretion, EV-associated forms, prostate cancer microenvironment, shed/circulating forms."
+      },
+      "n_results": 20,
+      "sources_seen": [],
+      "retrieved_at": "2026-05-31T15:33:42.416913Z",
+      "contributed_evidence_ids": []
+    },
+    {
+      "tool": "evidence_retrieval",
+      "mode": "ihc",
+      "query": {
+        "agent_focus": "a2",
+        "intent": "HPA and broader IHC literature for KLK2 tissue distribution; prostate, seminal vesicle, breast, other glandular tissues; normal vs tumor membranous staining.",
+        "category": "ihc",
+        "uniprot_acc": "P20151"
+      },
+      "n_results": 1,
+      "sources_seen": [],
+      "retrieved_at": "2026-05-31T15:33:42.416913Z",
+      "contributed_evidence_ids": []
+    },
+    {
+      "tool": "evidence_retrieval",
+      "mode": "if",
+      "query": {
+        "agent_focus": "a2",
+        "intent": "Immunofluorescence data for KLK2 subcellular localization within secretory cells; ER/Golgi/secretory vesicle pools vs any plasma-membrane association.",
+        "category": "if",
+        "uniprot_acc": "P20151"
+      },
+      "n_results": 1,
+      "sources_seen": [],
+      "retrieved_at": "2026-05-31T15:33:42.416913Z",
+      "contributed_evidence_ids": []
+    },
+    {
+      "tool": "evidence_retrieval",
+      "mode": "flow_cytometry",
+      "query": {
+        "agent_focus": "a2",
+        "intent": "Flow cytometry on intact (non-permeabilized) cells to determine whether any cell-surface pool of KLK2 exists on prostate or other lineage cells.",
+        "category": "flow_cytometry",
+        "uniprot_acc": "P20151"
+      },
+      "n_results": 3,
+      "sources_seen": [],
+      "retrieved_at": "2026-05-31T15:33:42.416913Z",
+      "contributed_evidence_ids": []
+    },
+    {
+      "tool": "evidence_retrieval",
+      "mode": "surface_biotinylation",
+      "query": {
+        "agent_focus": "a2",
+        "intent": "Surface biotinylation studies to detect any cell-surface fraction of KLK2; critical to confirm or refute the secreted-only classification.",
+        "category": "surface_biotinylation",
+        "uniprot_acc": "P20151"
+      },
+      "n_results": 5,
+      "sources_seen": [],
+      "retrieved_at": "2026-05-31T15:33:42.416913Z",
+      "contributed_evidence_ids": []
+    },
+    {
+      "tool": "evidence_retrieval",
+      "mode": "other",
+      "query": {
+        "agent_focus": "a2",
+        "intent": "Shedding, extracellular vesicle association, prodrug-activator role in tumor microenvironment, and any documented stable complex with a surface-anchored partner.",
+        "category": "other",
+        "uniprot_acc": "P20151"
+      },
+      "n_results": 5,
+      "sources_seen": [],
+      "retrieved_at": "2026-05-31T15:33:42.416913Z",
+      "contributed_evidence_ids": []
+    },
+    {
+      "tool": "gene_literature",
+      "mode": "topic_search",
+      "query": {
+        "agent_focus": "a2",
+        "intent": "Search for any documented cell-surface display, secretion mechanism, or shed form of KLK2 including extracellular vesicle packaging and tumor microenvironment release.",
+        "anchors": [
+          "surface_expression",
+          "shedding"
+        ]
+      },
+      "n_results": 25,
+      "sources_seen": [],
+      "retrieved_at": "2026-05-31T15:33:42.416913Z",
+      "contributed_evidence_ids": []
+    },
+    {
+      "tool": "gene_literature",
+      "mode": "topic_search",
+      "query": {
+        "agent_focus": "a2",
+        "intent": "Tissue distribution of KLK2 by IHC across normal organs — prostate, seminal vesicle, breast, kidney, liver, lung, heart, brain — to build TissueContext and tox panel.",
+        "anchors": [
+          "ihc",
+          "surface_expression"
+        ]
+      },
+      "n_results": 25,
+      "sources_seen": [],
+      "retrieved_at": "2026-05-31T15:33:42.416913Z",
+      "contributed_evidence_ids": []
+    },
+    {
+      "tool": "gene_literature",
+      "mode": "topic_search",
+      "query": {
+        "agent_focus": "a2",
+        "intent": "Soluble/circulating KLK2 in serum/plasma; decoy potential of secreted hK2 against therapeutic antibodies or ADC constructs; serum levels and pharmacological competition.",
+        "anchors": [
+          "shedding",
+          "ptm"
+        ]
+      },
+      "n_results": 25,
+      "sources_seen": [],
+      "retrieved_at": "2026-05-31T15:33:42.416913Z",
+      "contributed_evidence_ids": []
+    },
+    {
+      "tool": "gene_literature",
+      "mode": "topic_search",
+      "query": {
+        "agent_focus": "a2",
+        "intent": "Normal tox-panel organ surface expression: liver, lung, kidney, GI tract, heart, brain — does KLK2 appear on cell surfaces or luminal faces of normal tissues?",
+        "anchors": [
+          "surface_expression",
+          "ihc"
+        ]
+      },
+      "n_results": 25,
+      "sources_seen": [],
+      "retrieved_at": "2026-05-31T15:33:42.416913Z",
+      "contributed_evidence_ids": []
+    },
+    {
+      "tool": "gene_literature",
+      "mode": "topic_search",
+      "query": {
+        "agent_focus": "a2",
+        "intent": "Structural biology of KLK2 including zymogen activation, prodomain cleavage, and any reported interaction with membrane-anchored inhibitors or receptors (e.g., PAI-1, ACT, LEKTI).",
+        "anchors": [
+          "topology",
+          "structure"
+        ]
+      },
+      "n_results": 25,
+      "sources_seen": [],
+      "retrieved_at": "2026-05-31T15:33:42.416913Z",
+      "contributed_evidence_ids": []
+    },
+    {
+      "tool": "gene_literature",
+      "mode": "topic_search",
+      "query": {
+        "agent_focus": "a2",
+        "intent": "Soluble KLK2 as circulating decoy: serum/plasma hK2 levels, competition with anti-hK2 therapeutic antibodies (e.g., M75, bispecific PSMA/hK2 constructs), decoy risk for ADC payloads.",
+        "anchors": [
+          "surface_expression",
+          "shedding"
+        ]
+      },
+      "n_results": 25,
+      "sources_seen": [],
+      "retrieved_at": "2026-05-31T15:33:42.416913Z",
+      "contributed_evidence_ids": []
+    },
+    {
+      "tool": "gene_literature",
+      "mode": "fetch_abstract",
+      "query": {
+        "agent_focus": "a2",
+        "intent": "Primary paper on integrative surface antigen profiling of KLK2 and STEAP1 in mCRPC — load-bearing for tissue/cell-type expression and surface accessibility in prostate cancer",
+        "pmid": 42189191
+      },
+      "n_results": 1,
+      "sources_seen": [],
+      "retrieved_at": "2026-05-31T15:33:42.416913Z",
+      "contributed_evidence_ids": []
+    },
+    {
+      "tool": "gene_literature",
+      "mode": "fetch_abstract",
+      "query": {
+        "agent_focus": "a2",
+        "intent": "Prostate cancer surface target paper including KLK2 — may provide RNA and protein expression data across prostate cancer subtypes",
+        "pmid": 42053993
+      },
+      "n_results": 1,
+      "sources_seen": [],
+      "retrieved_at": "2026-05-31T15:33:42.416913Z",
+      "contributed_evidence_ids": []
+    },
+    {
+      "tool": "gene_literature",
+      "mode": "fetch_fulltext",
+      "query": {
+        "agent_focus": "a2",
+        "intent": "Full-text of mCRPC KLK2 surface expression paper — need complete results section for IHC tissue distribution and FACS quantification details",
+        "pmcid": "PMC12580770"
+      },
+      "n_results": 1,
+      "sources_seen": [],
+      "retrieved_at": "2026-05-31T15:33:42.416913Z",
+      "contributed_evidence_ids": []
+    }
+  ],
+  "evidence_count": 33,
+  "primary_evidence_count": 22,
+  "secondary_evidence_count": 11,
+  "confidence": "moderate",
+  "confidence_reasoning": "Confidence is moderate for two reasons. First, the surface-expression evidence originates predominantly from a single 2025 research publication (PMC12580770); while that study used rigorous live-cell FACS on both VCaP cells and fresh patient mCRPC tumor specimens, and the surface activity is corroborated by three therapeutic modalities, independent replication by a second research group is not yet documented. Second, the molecular mechanism by which a signal-peptide-only secreted protease is retained at the plasma membrane remains uncharacterized — the docking partner is unknown — introducing uncertainty about the robustness and prevalence of the surface pool relative to the dominant secreted form. Confidence would increase with an independent group confirming live-cell surface staining in a different prostate cancer model, or with biochemical identification of the surface-retention partner.",
+  "model_path": "claude-sonnet-4-6",
+  "record_generated_at": "2026-05-31T15:33:42.417728Z"
+}
