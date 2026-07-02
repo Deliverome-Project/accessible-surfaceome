@@ -31,18 +31,23 @@ const STRUCTURE_DIR = path.join(VIEWER_ROOT, "public", "structure-viewer");
 
 const SITE_BASE = "https://surfaceome.deliverome.org";
 
-// Where records come from. Default "snapshots" = the in-tree
-// viewer/public/data/surfaceome/*.json (offline-safe; CI + local dev). Set
-// SURFACEOME_MD_SOURCE=api to source EVERY published record from the public
-// Worker instead — the D1-served model: the deep-dive sweep publishes to D1,
-// and the Pages build fetches the full published set from api.deliverome.org,
-// materializing {SYMBOL}.json + {SYMBOL}.md at build time (build artifacts,
-// not committed to git). Commit only a small curated snapshot set as the
-// offline / Worker-down fallback. SURFACEOME_MD_LIMIT caps the count (testing
-// / incremental builds); SURFACEOME_API_BASE overrides the Worker base.
-const MD_SOURCE = (process.env.SURFACEOME_MD_SOURCE || "snapshots").toLowerCase();
-const API_BASE =
-  process.env.SURFACEOME_API_BASE || "https://api.deliverome.org/surfaceome/v1";
+// Where records come from. Default "api" = the D1-served model: the
+// deep-dive sweep publishes to D1 and the build fetches the full published
+// set from the public Worker, materializing {SYMBOL}.json + {SYMBOL}.md at
+// build time (build artifacts, not committed). This is the D1-only path —
+// the committed viewer/public/data/surfaceome/*.json are NOT read. Opt back
+// into the in-tree snapshots with SURFACEOME_MD_SOURCE=snapshots (offline
+// local dev only). SURFACEOME_API_BASE=local (or empty) skips the export
+// entirely (CI offline smoke) rather than falling back to committed JSONs.
+// SURFACEOME_MD_LIMIT caps the count (testing / incremental builds).
+const MD_SOURCE = (process.env.SURFACEOME_MD_SOURCE || "api").toLowerCase();
+// Worker base, normalized to EXCLUDE a trailing /v1 (the loader convention)
+// so /v1 is appended uniformly below. Accepts both ".../surfaceome" (the
+// Pages value) and ".../surfaceome/v1" (legacy) without doubling /v1.
+const RAW_API_BASE = (
+  process.env.SURFACEOME_API_BASE || "https://api.deliverome.org/surfaceome"
+).trim();
+const API_BASE = RAW_API_BASE.replace(/\/+$/, "").replace(/\/v1$/, "");
 
 // --------------------------------------------------------------
 // Pretty-print helpers — kept simple so the script has no deps.
@@ -1297,7 +1302,7 @@ function loadRecordsFromSnapshots() {
 // model). Returns them in memory; main() materializes each {SYMBOL}.json
 // next to its {SYMBOL}.md so the static build + fs-fallback resolve.
 async function loadRecordsFromApi() {
-  const listUrl = `${API_BASE}/genes`;
+  const listUrl = `${API_BASE}/v1/genes`;
   const list = await fetchJson(listUrl);
   let genes = list?.genes ?? [];
   const limit = parseInt(process.env.SURFACEOME_MD_LIMIT || "0", 10);
@@ -1312,7 +1317,7 @@ async function loadRecordsFromApi() {
     if (!sym) continue;
     try {
       const rec = await fetchJson(
-        `${API_BASE}/genes/${encodeURIComponent(sym)}`,
+        `${API_BASE}/v1/genes/${encodeURIComponent(sym)}`,
       );
       if (rec) out.push({ name: `${rec.gene?.hgnc_symbol ?? sym}.json`, rec });
     } catch (err) {
@@ -1326,6 +1331,15 @@ async function main() {
   if (!existsSync(DATA_DIR)) {
     console.error(`No data dir at ${DATA_DIR}`);
     process.exit(1);
+  }
+  // Offline/CI: api mode with no reachable Worker skips entirely — never
+  // falls back to the committed JSONs (this is the D1-only contract).
+  if (MD_SOURCE === "api" && (!API_BASE || API_BASE === "local")) {
+    console.warn(
+      "[md-exports] SURFACEOME_API_BASE=local/empty in api mode — skipping " +
+        "(offline build; no committed-JSON fallback).",
+    );
+    return;
   }
   const records =
     MD_SOURCE === "api"
