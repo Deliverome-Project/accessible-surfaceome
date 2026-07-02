@@ -4,7 +4,7 @@
 
 **Goal:** Make each §01 Summary metrics chip that has "more information" (a rationale row on a tab, or a destination detail block) act as a one-click shortcut: switch to the destination tab and scroll to the matching row with a brief highlight.
 
-**Architecture:** New shared `<ChipJumpButton>` wraps rationale-bearing chips. It sets `location.hash` via `history.replaceState` + dispatches a synthetic `hashchange` event so `<SectionTabs>`'s existing listener swaps the active tab. In the next `requestAnimationFrame` we find the destination element by id, `scrollIntoView`, add a shared `.chipJumpFlash` class for ~1.2 s, and move keyboard focus. Destination ids live in one central map (`viewer/lib/chipJumpTargets.ts`) so producers and consumers can't drift.
+**Architecture:** New shared `<ChipJumpButton>` wraps rationale-bearing chips. It sets `location.hash` via `history.replaceState` + dispatches a synthetic `hashchange` event so `<SectionTabs>`'s existing listener swaps the active tab. In the next `requestAnimationFrame` we find the destination element by id, `scrollIntoView`, add a shared `.chip-jump-flash` class for ~1.2 s, and move keyboard focus. Destination ids live in one central map (`viewer/lib/chipJumpTargets.ts`) so producers and consumers can't drift.
 
 **Tech Stack:** Next.js 16 (viewer), React 19, TypeScript, `node:test` + `react-dom/server`'s `renderToStaticMarkup` for render tests (viewer/tests convention; CSS-modules stubbed via `tests/helpers/register.mjs`).
 
@@ -23,7 +23,7 @@
 - `viewer/tests/filters_card_chip_jump.test.tsx` — render test that FiltersCard wires the composed chips + FeatureChips rationale chips.
 
 **Modify:**
-- `viewer/app/globals.css` — add `.chipJumpFlash` keyframes + utility class.
+- `viewer/app/globals.css` — add `.chip-jump-flash` keyframes + utility class.
 - `viewer/components/surfaceome/FeatureChips/FeatureChips.tsx` — wrap each rationale-bearing chip in `<ChipJumpButton>`; add `id` + `tabIndex={-1}` to each `<FeatureRationales>` row.
 - `viewer/components/surfaceome/FiltersCard/FiltersCard.tsx` — wrap `primary`, `contradiction` (when severity ≠ `none`), and modulation-category chips in `<ChipJumpButton>`.
 - `viewer/components/surfaceome/BiologicalContextCard/BiologicalContextCard.tsx` — add `id` + `tabIndex={-1}` to the "Subcellular localization" subsection block.
@@ -156,7 +156,7 @@ git commit -m "feat(viewer): central destination-id map for chip jumps"
 
 ---
 
-## Task 2: `.chipJumpFlash` shared utility class
+## Task 2: `.chip-jump-flash` shared utility class
 
 **Files:**
 - Modify: `viewer/app/globals.css`
@@ -173,12 +173,12 @@ Open `viewer/app/globals.css`. Append at the end of the file (or under the "util
  * Subcellular-localization block, the Contradicting-evidence block,
  * and the accessibility-modulation table rows. See
  * viewer/components/surfaceome/_shared/ChipJumpButton/. */
-@keyframes chipJumpFlash {
+@keyframes chip-jump-flash {
   0%   { background-color: var(--accent-soft); }
   100% { background-color: transparent; }
 }
-.chipJumpFlash {
-  animation: chipJumpFlash 1200ms ease-out;
+.chip-jump-flash {
+  animation: chip-jump-flash 1200ms ease-out;
 }
 ```
 
@@ -192,7 +192,7 @@ Expected: no output OR a "no config" message — the file must at least parse. I
 
 ```bash
 git add viewer/app/globals.css
-git commit -m "feat(viewer): add .chipJumpFlash post-jump highlight utility"
+git commit -m "feat(viewer): add .chip-jump-flash post-jump highlight utility"
 ```
 
 ---
@@ -336,7 +336,7 @@ interface ChipJumpButtonProps {
  *      ``replaceState`` (not ``pushState``) avoids polluting the back
  *      stack with an entry per chip click.
  *   2. In the next animation frame, look up the destination by id,
- *      scroll it into view, add ``.chipJumpFlash`` for ~1.2 s to draw
+ *      scroll it into view, add ``.chip-jump-flash`` for ~1.2 s to draw
  *      the eye, and move focus so a keyboard user's caret follows the
  *      visual jump.
  *   3. Missing destination is a no-op with a ``console.warn`` in dev.
@@ -372,8 +372,8 @@ export function ChipJumpButton({
         return;
       }
       el.scrollIntoView({ behavior: "smooth", block: "start" });
-      el.classList.add("chipJumpFlash");
-      window.setTimeout(() => el.classList.remove("chipJumpFlash"), 1300);
+      el.classList.add("chip-jump-flash");
+      window.setTimeout(() => el.classList.remove("chip-jump-flash"), 1300);
       // Move keyboard focus so an assistive-tech reader lands at the
       // destination. `preventScroll` lets the smooth scroll above own
       // the visual motion.
@@ -1241,7 +1241,7 @@ Coverage check against the spec:
 - Spec: `contradiction` → contradicting-evidence block → Tasks 1, 7, 9.
 - Spec: Modulation category → first row per category → Tasks 1, 8, 9.
 - Spec: `<ChipJumpButton>` semantics (button, aria, replaceState + hashchange, RAF, scrollIntoView, flash, focus) → Task 3.
-- Spec: `.chipJumpFlash` shared class → Task 2, used by Task 3.
+- Spec: `.chip-jump-flash` shared class → Task 2, used by Task 3.
 - Spec: `viewer/lib/chipJumpTargets.ts` central id map → Task 1.
 - Spec: No back-stack pollution (`replaceState`) → Task 3 step 4.
 - Spec: Accessibility (real button, aria-label, tabIndex=-1 on destinations, focus-move) → Tasks 3, 4, 6, 7, 8.
