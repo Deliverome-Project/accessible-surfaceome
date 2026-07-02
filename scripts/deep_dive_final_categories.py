@@ -1,40 +1,37 @@
-"""Deep-dive final categorization — distribution of the ~5k surface candidates
-across canonical / likely / cell-state-induced / cell-type-restricted /
-no buckets after the v2 deep-dive sweep.
+"""Deep-dive final categorization — two panels.
 
-**MOCK — counts are placeholder estimates** pending the full sweep
-(``scripts/surfaceome_v2_annotate.py`` over the ~5k Sonnet-triage YES
-cohort). Bucket boundaries follow the closed-enum families in
-``src/accessible_surfaceome/tools/_shared/models.py``:
+**a.** The deep-dive cohort placed on a five-tier confidence spectrum —
+``canonical`` (strict gold-standard surface), ``likely`` (broader passes-likely
+surface), then the below-likely genes split by the deep-dive's tentative
+surface call: ``low`` (low/moderate accessibility but weak evidence — maybe
+surface), ``uncertain``, and ``no`` (leaned not-surface).
 
-  • canonical = ``filters.surface_call_reason`` ∈ ``_YES_REASONS``
-    (classical_surface_receptor / multipass_with_exposed_loops / gpi_anchored /
-    extracellular_face_protein / stable_complex_partner)
-  • likely    = soft-contextual ``_CONTEXTUAL_REASONS``
-    (stable_surface_attachment / lysosomal_exocytosis / dual_localization)
-  • cell_state = ``surface_call_reason == 'cell_state_induced'``, BROKEN OUT
-    by ``filters.induction_trigger`` ∈ ``InductionTrigger``
-    (oncogenic / immune / stress_hypoxia / cell_death / infection / other)
-  • cell_type_restricted = ``surface_call_reason == 'tissue_restricted_surface'``
-  • no = ``_NO_REASONS``
-    (cytoplasmic / nuclear / mitochondrial_internal / endomembrane_resident /
-    secreted_only / nuclear_envelope / pmhc_only_intracellular)
+**b.** The composition of the ``likely`` tier: WHY those calls are only likely,
+as a sorted horizontal bar chart over the cell-type + cell-state reasons.
 
-When the sweep lands, swap ``_PLACEHOLDER_COUNTS`` for a public-D1
-``surface_annotation`` SELECT over ``annotation_json`` (or read directly
-from ``viewer/public/data/surfaceome/*.json``).
+Bucket predicates are ported from ``viewer/lib/catalog-presets.ts`` in
+``scripts/build_figure_tsvs.py`` (``_dd_passes_*``); canonical/likely == the
+catalog presets, and the low/uncertain/no split of the negatives is a
+figure-only refinement (the presets don't cover the negatives).
+
+**PRELIMINARY** — ~1,197 of ~5,128 swept, pre-QA-fix. Nearly all below-likely
+genes (low/uncertain/no) carry weak/conflicting evidence — partly the
+pretrim-cap recall bug that deletes foundational literature — so those three
+tiers are tentative leans on thin evidence, and the cell-state ``oncogenic``
+share is inflated by tumour-associated over-flagging; re-render after the full
+sweep + QA fixes.
 
 # Reproduction:
 #   Public gist (reader-side standalone, PyPA inline-script-metadata deps):
 #   https://gist.github.com/beccajcarlson/c2441f8d0314c5524463bc85a3e86612
-#   Reader-side mirror script:
-#   data/analysis/figures/make_deep_dive_final_categories.py.
+#   Reader-side mirror: data/analysis/figures/make_deep_dive_final_categories.py
 
 Run:
     uv run python scripts/deep_dive_final_categories.py
 """
 from __future__ import annotations
 
+import csv
 from pathlib import Path
 
 import matplotlib.pyplot as plt
@@ -51,196 +48,123 @@ OUT_DIR = ROOT / "data/analysis/figures"
 SLUG = "deep_dive_final_categories"
 GIST_URL = "https://gist.github.com/beccajcarlson/c2441f8d0314c5524463bc85a3e86612"
 
-# ── MOCK placeholder counts ──────────────────────────────────────────────
-# Single source of truth is the bundled per-figure TSV at
-# ``data/processed/figures/deep_dive_final_categories.tsv`` (produced by
-# scripts/build_figure_tsvs.py). The canonical generator and the gist
-# mirror both read it, so they can't drift — enforced by
-# tests/test_canonical_mock_reads_bundled_tsv.py. SWAP the builder for
-# real D1 counts when the v2 sweep completes; nothing here hardcodes data.
 DATA_TSV = ROOT / "data/processed/figures/deep_dive_final_categories.tsv"
 
-# Brand palette — follow the existing convention from
-# scripts/zero_db_rescues_by_triage.py:
-#   YES bucket  → green/teal family ("definite surface")
-#   CONTEXTUAL  → amber family       ("state/lineage dependent")
-# Cell-type-restricted gets maroon (the brand primary) so it pops off the
-# cell-state amber stack. Below-threshold is muted neutral.
-_COLOR_CANONICAL = "#2E7A55"   # success green
-_COLOR_LIKELY = "#3D6B60"      # teal-mid
-_COLOR_CELL_TYPE = "#BC3C4C"   # maroon-light
-_COLOR_NO = "#9C8C88"       # lifted neutral (more readable than ink-grey)
-# Amber sequential ramp for the cell-state stack — dark → light = most → least
-# common trigger. Matches the SEQUENTIAL_PALETTES["amber"] family.
-_CELL_STATE_STACK_ORDER = [
-    "oncogenic",
-    "immune",
-    "stress_hypoxia",
-    "cell_death",
-    "infection",
-    "other",
-]
-_CELL_STATE_PALETTE = {
-    "oncogenic":      "#5A2608",
-    "immune":         "#8C4210",
-    "stress_hypoxia": "#C07830",
-    "cell_death":     "#F4AA28",
-    "infection":      "#F4C070",
-    "other":          "#FAECD4",
-}
+# Panel-a tier colours — a confidence spectrum from surface (green) to
+# not-surface (neutral).
+_COLOR_CANONICAL = "#2E7A55"   # brand success green — strict tier
+_COLOR_LIKELY = "#3D6B60"      # teal-mid — broader tier
+_COLOR_LOW = "#C99A5B"         # amber-tan — low/moderate access, weak evidence
+_COLOR_UNCERTAIN = "#C7BDB6"   # light warm grey — ambiguous
+_COLOR_NO = "#9C8C88"          # lifted neutral — leaned not-surface
 
-_CATEGORY_LABELS = {
-    "canonical":            "canonical\nsurface",
-    "likely":               "likely\nsurface",
-    "cell_state":           "cell-state\ninduced",
-    "cell_type_restricted": "cell-type\nrestricted",
-    "no":                   "no",
+# Per-reason colour + label for the Panel-b breakdown of `likely`.
+_LIKELY_COLORS: dict[str, str] = {
+    "cell_type_restricted":      "#BC3C4C",
+    "cell_state_oncogenic":      "#5A2608",
+    "cell_state_immune":         "#8C4210",
+    "cell_state_stress_hypoxia": "#C07830",
+    "cell_state_cell_death":     "#E0952F",
+    "cell_state_infection":      "#EFC178",
+    "cell_state_other":          "#D8A24A",
+    "likely_other":              "#3D6B60",
+}
+_LIKELY_LABELS: dict[str, str] = {
+    "cell_type_restricted":      "cell-type restricted",
+    "cell_state_oncogenic":      "cell-state · oncogenic",
+    "cell_state_immune":         "cell-state · immune",
+    "cell_state_stress_hypoxia": "cell-state · stress/hypoxia",
+    "cell_state_cell_death":     "cell-state · cell death",
+    "cell_state_infection":      "cell-state · infection",
+    "cell_state_other":          "cell-state · other",
+    "likely_other":              "likely (residual)",
 }
 
 
-def _make_counts() -> dict[str, int | dict[str, int]]:
-    """Read the bundled per-figure TSV (the single source of truth the
-    gist mirror also reads). Rows are (category, subcategory, n_genes);
-    the cell_state category fans out by subcategory (induction trigger),
-    every other category uses the ``all`` subcategory row."""
-    import csv
-    counts: dict[str, int | dict[str, int]] = {}
-    cell_state: dict[str, int] = {}
+def _read() -> dict[str, dict[str, int]]:
+    out: dict[str, dict[str, int]] = {}
     with open(DATA_TSV) as f:
         for row in csv.DictReader(f, delimiter="\t"):
-            cat, sub, n = row["category"], row["subcategory"], int(row["n_genes"])
-            if cat == "cell_state":
-                cell_state[sub] = n
-            else:
-                counts[cat] = n
-    counts["cell_state"] = cell_state
-    return counts
+            out.setdefault(row["category"], {})[row["subcategory"]] = int(row["n_genes"])
+    return out
 
 
-def _bar_total(counts: dict, key: str) -> int:
-    v = counts[key]
-    if isinstance(v, dict):
-        return sum(v.values())
-    return int(v)
+def _panel_label(ax, letter: str) -> None:
+    ax.text(-0.02, 1.06, letter, transform=ax.transAxes, fontsize=26,
+            fontweight=800, va="bottom", ha="right", color=COLORS["dark"])
 
 
-def make_plot() -> tuple[plt.Figure, plt.Axes]:
+def make_plot() -> tuple[plt.Figure, tuple[plt.Axes, plt.Axes]]:
     setup_plotting_style(style="whitegrid", context="notebook", font_scale=1.0)
-    # Brand-style-v3 font sizes (mirror parity). The gist mirror at
-    # data/analysis/figures/make_deep_dive_final_categories.py sets these
-    # inline; this canonical script applies them via rcParams so its
-    # render matches the published gist. See CLAUDE.md "Canonical
-    # generator vs gist mirror" + tests/test_figure_canonical_mirror_sync.py.
     plt.rcParams.update({
         "font.size": 20, "axes.labelsize": 20, "axes.titlesize": 0,
         "xtick.labelsize": 20, "ytick.labelsize": 20, "legend.fontsize": 20,
     })
-    counts = _make_counts()
-    categories = list(_CATEGORY_LABELS.keys())
-    totals = [_bar_total(counts, c) for c in categories]
-    cohort_n = sum(totals)
+    data = _read()
+    canon = sum(data.get("canonical", {}).values())
+    likely = data.get("likely", {})
+    likely_total = sum(likely.values())
+    low_total = sum(data.get("low", {}).values())
+    unc_total = sum(data.get("uncertain", {}).values())
+    no_total = sum(data.get("no", {}).values())
+    cohort_n = canon + likely_total + low_total + unc_total + no_total
 
-    fig, ax = plt.subplots(figsize=(13, 8))
-
-    x = list(range(len(categories)))
-    bar_width = 0.72
-
-    # 1) Solid bars for canonical / likely / cell-type-restricted / no
-    solid_color = {
-        "canonical":            _COLOR_CANONICAL,
-        "likely":               _COLOR_LIKELY,
-        "cell_type_restricted": _COLOR_CELL_TYPE,
-        "no":      _COLOR_NO,
-    }
-    for i, key in enumerate(categories):
-        if key == "cell_state":
-            continue
-        ax.bar(
-            i,
-            totals[i],
-            width=bar_width,
-            color=solid_color[key],
-            edgecolor="none",
-        )
-
-    # 2) Stacked bar for cell-state, bottom-to-top in _CELL_STATE_STACK_ORDER
-    i_cs = categories.index("cell_state")
-    bottom = 0.0
-    cs_dict = counts["cell_state"]
-    assert isinstance(cs_dict, dict)
-    legend_handles = []
-    legend_labels = []
-    for trigger in _CELL_STATE_STACK_ORDER:
-        n = cs_dict.get(trigger, 0)
-        if n <= 0:
-            continue
-        color = _CELL_STATE_PALETTE[trigger]
-        rect = ax.bar(
-            i_cs,
-            n,
-            width=bar_width,
-            bottom=bottom,
-            color=color,
-            edgecolor="none",
-        )
-        bottom += n
-        legend_handles.append(rect[0])
-        legend_labels.append(f"{trigger.replace('_', ' ')}  ({n})")
-
-    # 3) Count above each bar
-    y_max = max(totals)
-    label_pad = y_max * 0.025
-    for i, key in enumerate(categories):
-        n = totals[i]
-        ax.text(
-            i,
-            n + label_pad,
-            f"{n:,}",
-            ha="center",
-            va="bottom",
-            fontsize=18,
-            fontweight="bold",
-            color=COLORS["dark"],
-        )
-
-    # 4) X-axis
-    ax.set_xticks(x)
-    ax.set_xticklabels([_CATEGORY_LABELS[c] for c in categories])
-
-    # 5) Y-axis — wrap per figure_ylabel_wrap memory (single-line >22 chars too tight at labelsize 16)
-    ax.set_ylabel("Proteins in\ndeep-dive cohort")
-    ax.set_ylim(0, y_max * 1.16)
-
-    # 6) Cell-state legend, anchored under the cell-state bar
-    ax.legend(
-        legend_handles,
-        legend_labels,
-        title="cell-state trigger",
-        loc="upper center",
-        bbox_to_anchor=(0.52, -0.16),
-        ncols=3,
-        frameon=False,
-        fontsize=12,
-        title_fontsize=13,
+    fig, (axA, axB) = plt.subplots(
+        1, 2, figsize=(18, 7),
+        gridspec_kw={"width_ratios": [1.25, 1.4], "wspace": 0.60},
     )
 
-    # 7) Footer annotation — MOCK callout + cohort n, attached to the figure
-    #    so it sits below the legend without being clipped.
+    # ── Panel a: the five-tier confidence spectrum ──────────────────────────
+    tiers = [
+        ("canonical\n(strict)", canon, _COLOR_CANONICAL),
+        ("likely", likely_total, _COLOR_LIKELY),
+        ("low", low_total, _COLOR_LOW),
+        ("uncertain", unc_total, _COLOR_UNCERTAIN),
+        ("no", no_total, _COLOR_NO),
+    ]
+    tier_max = max(t[1] for t in tiers)
+    for i, (label, n, color) in enumerate(tiers):
+        axA.bar(i, n, width=0.74, color=color, edgecolor="none")
+        axA.text(i, n + tier_max * 0.02, f"{n:,}", ha="center", va="bottom",
+                 fontsize=17, fontweight="bold", color=COLORS["dark"])
+    axA.set_xticks(range(len(tiers)))
+    axA.set_xticklabels([t[0] for t in tiers], fontsize=15)
+    axA.set_ylabel("Proteins in\ndeep-dive cohort")
+    axA.set_ylim(0, tier_max * 1.16)
+    axA.set_xlim(-0.6, len(tiers) - 0.4)
+    sns.despine(ax=axA, top=True, right=True)
+    _panel_label(axA, "a")
+
+    # ── Panel b: composition of `likely`, sorted horizontal ─────────────────
+    items = sorted(likely.items(), key=lambda kv: kv[1])  # ascending → biggest on top
+    ys = list(range(len(items)))
+    b_max = max((n for _, n in items), default=1)
+    for y, (key, n) in zip(ys, items):
+        axB.barh(y, n, color=_LIKELY_COLORS.get(key, "#999999"),
+                 edgecolor="#1F1718", linewidth=0.4)
+        axB.text(n + b_max * 0.012, y, f"{n:,}", va="center", ha="left",
+                 fontsize=15, color=COLORS["dark"])
+    axB.set_yticks(ys)
+    axB.set_yticklabels([_LIKELY_LABELS.get(k, k) for k, _ in items], fontsize=15)
+    axB.set_xlabel("Proteins")
+    axB.set_xlim(0, b_max * 1.14)
+    axB.set_ylim(-0.6, len(items) - 0.4)
+    axB.text(0.0, 1.06, f"composition of the {likely_total:,} 'likely' calls",
+             transform=axB.transAxes, fontsize=15, style="italic",
+             color=COLORS["neutral"], va="bottom", ha="left")
+    sns.despine(ax=axB, top=True, right=True)
+    _panel_label(axB, "b")
+
     fig.text(
-        0.5,
-        -0.05,
-        f"MOCK — placeholder counts pending the v2 deep-dive sweep "
-        f"(cohort n = {cohort_n:,})",
-        ha="center",
-        va="top",
-        fontsize=13,
-        style="italic",
-        color=COLORS["neutral"],
+        0.5, -0.02,
+        f"PRELIMINARY — {cohort_n:,} of ~5,128 swept, pre-QA-fix "
+        f"(low/uncertain/no are weak-evidence tentative leans, inflated by the "
+        f"pretrim-cap bug; cell-state 'oncogenic' by tumour-associated over-flagging).",
+        ha="center", va="top", fontsize=12, style="italic", color=COLORS["neutral"],
     )
 
-    sns.despine(ax=ax, top=True, right=True)
     fig.tight_layout()
-    return fig, ax
+    return fig, (axA, axB)
 
 
 def main() -> None:

@@ -47,10 +47,15 @@ OPT_CUTOFFS_TSV = ROOT / "data/processed/triage_bench/db_optimized_cutoffs.tsv"
 CATALOG_TSV     = ROOT / "data/processed/catalog/whole_proteome_catalog.tsv"
 FEATURES_TSV    = ROOT / "data/analysis/db_vs_sonnet_inclusion/per_protein_features.tsv"
 POS_LONG_TSV    = ROOT / "data/processed/positive_controls/positive_control_long.tsv"
+# Per-gene deep-dive record facets, exported from public D1 by
+# scripts/export_deep_dive_figure_source.py. Re-run that after a sweep batch to
+# refresh the deep-dive figures. Present only once the sweep has published rows;
+# the deep-dive builders below no-op gracefully if it's absent (partial checkout).
+DEEP_DIVE_TSV   = ROOT / "data/processed/deep_dive/deep_dive_records.tsv"
 
 
 def _load_sources() -> dict[str, pd.DataFrame]:
-    return {
+    src = {
         "bench":    pd.read_csv(BENCH_TSV, sep="\t"),
         "preds":    pd.read_csv(PREDS_TSV, sep="\t"),
         "reps":     pd.read_csv(REPS_TSV, sep="\t"),
@@ -58,6 +63,9 @@ def _load_sources() -> dict[str, pd.DataFrame]:
         "catalog":  pd.read_csv(CATALOG_TSV, sep="\t"),
         "features": pd.read_csv(FEATURES_TSV, sep="\t"),
     }
+    if DEEP_DIVE_TSV.is_file():
+        src["deep_dive"] = pd.read_csv(DEEP_DIVE_TSV, sep="\t")
+    return src
 
 
 def _optimized_membership(df: pd.DataFrame, opt: pd.DataFrame, acc_col: str) -> pd.DataFrame:
@@ -252,32 +260,121 @@ def build_ensemble(src: dict[str, pd.DataFrame]) -> pd.DataFrame:
     return build_db_correctness_by_class(src)
 
 
-def build_deep_dive_final_categories(src: dict[str, pd.DataFrame]) -> pd.DataFrame:
-    """MOCK PLACEHOLDER — distribution of surface_call_reason across
-    the deep-dive cohort. Real source will be the deep_dive_run table
-    in public D1 once the full ~5000-gene sweep completes. For now,
-    a hand-authored mock TSV with plausible counts so the gist's
-    mirror script has SOMETHING to read.
+# Deep-dive surface-call bucket predicates — PORTED VERBATIM from
+# viewer/lib/catalog-presets.ts (passesCanonical / passesLikely / passesInduced /
+# passesCellTypeRestricted) so the figure's buckets ARE the catalog presets.
+# The buckets NEST: `likely` (passesLikely) is the umbrella; `canonical`,
+# `cell_state` (induced, by trigger), `cell_type_restricted`, and the
+# `likely_other` residual EXCLUSIVELY partition it; `no` = !passesLikely.
+# KEEP IN SYNC with the .ts — guarded by tests/test_deep_dive_buckets_match_frontend.py.
+_DD_INDUCTION_NON_NONE = {"oncogenic", "immune", "stress_hypoxia", "cell_death", "infection"}
 
-    Category keys match the mirror script's `_CATEGORY_LABELS` keys
-    (``canonical``, ``likely``, ``cell_state``, ``cell_type_restricted``,
-    ``no``) so the script can derive its bar-totals + cell-state-stack
-    splits directly from the (category, subcategory, n_genes) rows.
-    The actual figure is also a mock; see scripts/deep_dive_final_categories.py
-    docstring."""
-    return pd.DataFrame(
-        [
-            {"category": "canonical",            "subcategory": "all",             "n_genes": 2900},
-            {"category": "likely",               "subcategory": "all",             "n_genes":  700},
-            {"category": "cell_state",           "subcategory": "oncogenic",       "n_genes":  230},
-            {"category": "cell_state",           "subcategory": "immune",          "n_genes":  140},
-            {"category": "cell_state",           "subcategory": "stress_hypoxia",  "n_genes":   80},
-            {"category": "cell_state",           "subcategory": "cell_death",      "n_genes":   60},
-            {"category": "cell_state",           "subcategory": "infection",       "n_genes":   30},
-            {"category": "cell_state",           "subcategory": "other",           "n_genes":   10},
-            {"category": "cell_type_restricted", "subcategory": "all",             "n_genes":  450},
-            {"category": "no",                   "subcategory": "all",             "n_genes":  400},
-        ]
+
+def _dd_v(r: "pd.Series", k: str):
+    x = r.get(k)
+    return None if pd.isna(x) else x
+
+
+def _dd_passes_canonical(r: "pd.Series") -> bool:
+    return (
+        _dd_v(r, "evidence_grade") in ("direct_multi_method", "direct_single_method")
+        and _dd_v(r, "confidence") in ("high", "moderate")
+        and _dd_v(r, "surface_specificity") in ("surface_dominant", "mixed")
+        and _dd_v(r, "state_dependence") in ("low", "moderate", "unclear")
+        and _dd_v(r, "surface_accessibility") in ("high", "moderate")
+        and _dd_v(r, "evidence_density") in ("high", "moderate")
+    )
+
+
+def _dd_passes_likely(r: "pd.Series") -> bool:
+    return (
+        _dd_v(r, "evidence_grade")
+        in ("direct_multi_method", "direct_single_method", "supportive_but_indirect")
+        and _dd_v(r, "surface_specificity")
+        in ("surface_dominant", "mixed", "mostly_intracellular")
+        and _dd_v(r, "surface_accessibility") in ("high", "moderate", "low")
+    )
+
+
+def _dd_passes_induced(r: "pd.Series") -> bool:
+    if not _dd_passes_likely(r):
+        return False
+    if _dd_v(r, "state_dependence") not in (None, "moderate", "high", "unclear"):
+        return False
+    if _dd_v(r, "surface_call_reason") in ("cell_state_induced", "lysosomal_exocytosis"):
+        return True
+    return _dd_v(r, "induction_trigger") in _DD_INDUCTION_NON_NONE
+
+
+def _dd_passes_cell_type_restricted(r: "pd.Series") -> bool:
+    if not _dd_passes_likely(r):
+        return False
+    if _dd_v(r, "state_dependence") not in ("moderate", "high"):
+        return False
+    return _dd_v(r, "surface_call_reason") == "tissue_restricted_surface"
+
+
+def _dd_assign_bucket(r: "pd.Series") -> tuple[str, str]:
+    """(category, subcategory). FIVE top-level tiers, a confidence spectrum —
+    `canonical` (strict) > `likely` > `low` > `uncertain` > `no`.
+
+    `canonical`/`likely` are the frontend presets (canonical = passesCanonical;
+    likely = passesLikely & !canonical, fanned out into cell_type_restricted +
+    cell_state-by-trigger + the likely residual for Panel b). Everything that
+    fails passesLikely is split by the deep-dive's tentative `surface_accessibility`
+    call rather than lumped into one "no": `no` (accessibility=no, leaned
+    negative), `uncertain` (accessibility=uncertain), and `low` (accessibility
+    low or moderate but below the evidence bar — "maybe surface, weak evidence").
+    NB nearly all below-likely genes carry weak/conflicting evidence — partly the
+    pretrim-cap recall bug — so low/uncertain/no are tentative leans on thin
+    literature, not settled calls."""
+    if not _dd_passes_likely(r):
+        acc = _dd_v(r, "surface_accessibility")
+        if acc == "uncertain":
+            return ("uncertain", "all")
+        if acc in ("low", "moderate"):
+            return ("low", "all")
+        return ("no", "all")  # accessibility == 'no' (the leaned-negative calls)
+    if _dd_passes_canonical(r):
+        return ("canonical", "all")
+    if _dd_passes_cell_type_restricted(r):
+        return ("likely", "cell_type_restricted")
+    if _dd_passes_induced(r):
+        trig = _dd_v(r, "induction_trigger")
+        return ("likely", f"cell_state_{trig if trig in _DD_INDUCTION_NON_NONE else 'other'}")
+    return ("likely", "likely_other")
+
+
+def build_deep_dive_final_categories(src: dict[str, pd.DataFrame]) -> pd.DataFrame:
+    """Distribution of the deep-dive cohort across the frontend's surface-call
+    buckets, NESTED so `likely` is the umbrella (all passesLikely) and
+    `canonical` / `cell_state` (by trigger) / `cell_type_restricted` /
+    `likely_other` are its exclusive sub-buckets; `no` = !passesLikely. Buckets
+    are the catalog-presets predicates ported above, so the figure == the
+    catalog filters.
+
+    Rows: (category, subcategory, n_genes), category ∈ {likely, no}.
+
+    PRELIMINARY — reflects only the genes swept so far (pre-QA-fix). The `no`
+    bucket is inflated by `evidence_grade='weak'` records, which is partly the
+    pretrim-cap recall bug deleting foundational papers; re-run after the sweep
+    + QA fixes for the final figure."""
+    from collections import Counter
+
+    dd = src.get("deep_dive")
+    if dd is None or dd.empty:
+        # No export in this checkout — emit an empty, correctly-typed frame so
+        # the pipeline stays reproducible without inventing mock counts.
+        return pd.DataFrame(columns=["category", "subcategory", "n_genes"])
+    counts = Counter(_dd_assign_bucket(r) for _, r in dd.iterrows())
+    rows = [
+        {"category": cat, "subcategory": sub, "n_genes": int(n)}
+        for (cat, sub), n in counts.items()
+    ]
+    return (
+        pd.DataFrame(rows)
+        .sort_values(["category", "subcategory"])
+        .reset_index(drop=True)
     )
 
 
