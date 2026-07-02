@@ -925,9 +925,10 @@ export const tooltips: Record<string, ReactNode> = {
       , preprint — no PubMed record). A structured tool readout, not an
       LLM call: the same DeepTMHMM run on the same sequence always gives
       the same answer. TM presence is a cleaner surface-architecture
-      signal than ECD size — but note GPI-anchored proteins are real
-      surface proteins with <em>no</em> TM helix, so read this alongside{" "}
-      <em>GPI-anchored</em>.
+      signal than ECD size &mdash; a large ECD alone doesn&apos;t imply
+      the surface (secreted / lysosomal proteins have large ECDs). Note
+      DeepTMHMM does not detect GPI anchors, so some genuine surface
+      proteins register <em>no</em> TM helix.
     </>
   ),
 
@@ -946,8 +947,8 @@ export const tooltips: Record<string, ReactNode> = {
       <ul style={{ margin: "0.4rem 0 0", paddingLeft: "1.1rem" }}>
         <li>
           <em>none</em> — 0 TM helices (soluble, GPI-anchored, or
-          peripheral — check <em>GPI-anchored</em> to tell surface from
-          non-surface)
+          peripheral; DeepTMHMM doesn&apos;t detect GPI anchors, so a
+          <em> none</em> band can still be a genuine surface protein)
         </li>
         <li>
           <em>single</em> — exactly 1 TM helix (single-pass; type I / II
@@ -963,29 +964,6 @@ export const tooltips: Record<string, ReactNode> = {
       <em>Transmembrane</em> boolean, and useful for spotting
       LLM-vs-topology disagreements (a gene the deep dive called
       multi-pass that DeepTMHMM bins as single-pass is worth a look).
-    </>
-  ),
-
-  catalog_is_gpi_anchored: (
-    <>
-      Is the protein GPI-anchored? Sourced from UniProt&apos;s curated
-      lipidation / GPI-anchor feature (UniProt Consortium,{" "}
-      <a
-        href="https://pubmed.ncbi.nlm.nih.gov/36408920/"
-        target="_blank"
-        rel="noopener noreferrer"
-      >
-        PMID 36408920
-      </a>
-      ) baked into <code>canonical_topology</code>. Deterministic — a
-      structured database pull, not an LLM judgement. GPI-anchored
-      proteins carry <strong>0 TM helices</strong> yet are genuinely
-      cell-surface, so this facet separates{" "}
-      <em>0 TM + GPI = surface</em> from{" "}
-      <em>0 TM + no GPI = likely not surface</em> — the exact distinction
-      the <em>ECD class = large</em> facet gets wrong (secreted and
-      lysosomal proteins have large ECDs but no TM/GPI). Only populated
-      on records whose topology carries the curated GPI field.
     </>
   ),
 };

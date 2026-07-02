@@ -270,15 +270,6 @@ export interface DeepDiveFilters {
    *  `TmCountBand`. Derived from the same `tm_helix_count` scalar as
    *  `has_tm`; the band is the finer axis the filter UI keys off. */
   tm_count_band?: TmCountBand;
-  /** Deterministic — GPI-anchor status from
-   *  `deterministic_features.canonical_topology.is_gpi_anchored`
-   *  (UniProt curated lipidation/GPI feature). GPI-anchored proteins
-   *  carry 0 TM helices yet ARE cell-surface, so this separates
-   *  "0 TM + GPI = surface" from "0 TM + no GPI = likely not surface".
-   *  Optional + only populated on records/topology rows that carry the
-   *  GPI field (older ones omit it — the DeepTMHMM-only topology block
-   *  predates the curated GPI signal). */
-  is_gpi_anchored?: boolean;
 }
 
 export interface CatalogRow {
