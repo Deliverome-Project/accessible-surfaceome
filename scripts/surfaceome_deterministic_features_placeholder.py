@@ -17,7 +17,7 @@ this per-tier comparison — they have no deep-dive tier to compare. (``pending`
 is already absent from the bundled TSV, which holds only deep-dived genes.)
 
 3×3 panel grid of deterministic features compared across the four tiers.
-The two CONTINUOUS features are shown as violins; the seven BOOLEAN features
+The two CONTINUOUS features are shown as violins; the nine BOOLEAN features
 as per-facet fraction bars (% of genes carrying the feature) — a violin of a
 0/1 value is meaningless.
 
@@ -150,7 +150,7 @@ def render(feats: pd.DataFrame) -> Path:
     facet_labels = [GROUP_LABEL[g] for g in GROUPS]
     facet_colors = [GROUP_COLOR[g] for g in GROUPS]
 
-    fig, axes = plt.subplots(3, 3, figsize=(15, 12))
+    fig, axes = plt.subplots(4, 3, figsize=(15, 16))
     axes = axes.flatten()
 
     # --- Panel definitions ---
@@ -166,9 +166,11 @@ def render(feats: pd.DataFrame) -> Path:
         ("cyno_has_one2one",    "frac_bool", "% with cyno 1:1 ortholog"),
         ("schweke_homomer",     "frac_bool", "% homo-oligomer (Schweke 2024)"),
         ("alt_iso_diff_topo",   "frac_bool", "% with alt isoform of different topology"),
+        ("has_surface_bind_site", "frac_bool", "% with 1+ surface-bind site"),
+        ("has_concerning_paralog", "frac_bool", "% concerning paralog\n(ECD 40%+ id)"),
     ]
 
-    letters = "abcdefghi"
+    letters = "abcdefghijk"
     for ax, letter, (col, kind, label) in zip(axes, letters, panels):
         if kind == "violin":
             data = [
@@ -215,6 +217,10 @@ def render(feats: pd.DataFrame) -> Path:
             tl.set_horizontalalignment("center")
         sns.despine(ax=ax, top=True, right=True)
         _panel_label(ax, letter)
+
+    # Hide the unused grid cell (11 panels in a 4×3 / 12-slot grid).
+    for extra in axes[len(panels):]:
+        extra.set_visible(False)
 
     # Single legend at top — the four real deep-dive tiers (pending excluded).
     legend_handles = [

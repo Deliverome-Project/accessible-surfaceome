@@ -25,7 +25,7 @@ bundled TSV, which holds only deep-dived genes).
 
 The 3×3 panel grid compares each feature across the four tiers. The two
 CONTINUOUS features — TM-helix count and protein length — are shown as
-violins; the seven BOOLEAN features (signal peptide, N/C-terminus
+violins; the nine BOOLEAN features (signal peptide, N/C-terminus
 extracellular, mouse + cyno 1:1 ortholog presence, Schweke-2024 homo-oligomer
 state, alt-isoform topology change) as per-facet fraction bars. The features
 are pre-joined into a single bundled TSV by ``scripts/build_figure_tsvs.py``
@@ -224,7 +224,7 @@ def render(feats: pd.DataFrame, out_dir: Path) -> Path:
     facet_labels = [GROUP_LABEL[g] for g in GROUPS]
     facet_colors = [GROUP_COLOR[g] for g in GROUPS]
 
-    fig, axes = plt.subplots(3, 3, figsize=(15, 12))
+    fig, axes = plt.subplots(4, 3, figsize=(15, 16))
     axes = axes.flatten()
 
     # Each panel is (column, kind, label) where kind ∈ {violin, frac_bool}.
@@ -239,9 +239,11 @@ def render(feats: pd.DataFrame, out_dir: Path) -> Path:
         ("cyno_has_one2one",    "frac_bool", "% with cyno 1:1 ortholog"),
         ("schweke_homomer",     "frac_bool", "% homo-oligomer (Schweke 2024)"),
         ("alt_iso_diff_topo",   "frac_bool", "% with alt isoform of different topology"),
+        ("has_surface_bind_site", "frac_bool", "% with 1+ surface-bind site"),
+        ("has_concerning_paralog", "frac_bool", "% concerning paralog\n(ECD 40%+ id)"),
     ]
 
-    letters = "abcdefghi"
+    letters = "abcdefghijk"
     for ax, letter, (col, kind, label) in zip(axes, letters, panels):
         if kind == "violin":
             data = [
@@ -288,6 +290,10 @@ def render(feats: pd.DataFrame, out_dir: Path) -> Path:
             tl.set_horizontalalignment("center")
         sns.despine(ax=ax, top=True, right=True)
         _panel_label(ax, letter)
+
+    # Hide the unused grid cell (11 panels in a 4×3 / 12-slot grid).
+    for extra in axes[len(panels):]:
+        extra.set_visible(False)
 
     # Single legend at top — the four real deep-dive tiers (pending excluded).
     legend_handles = [

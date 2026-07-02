@@ -716,7 +716,8 @@ def build_surfaceome_deterministic_features_placeholder(
     feature_cols = ["tm_helix_count", "protein_length", "has_signal_peptide",
                     "n_term_extracellular", "c_term_extracellular",
                     "mouse_has_one2one", "cyno_has_one2one",
-                    "schweke_homomer", "alt_iso_diff_topo"]
+                    "schweke_homomer", "alt_iso_diff_topo",
+                    "has_surface_bind_site", "has_concerning_paralog"]
     cols = ["gene_symbol", "group", *feature_cols]
     dd = src.get("deep_dive")
     if dd is None or dd.empty:

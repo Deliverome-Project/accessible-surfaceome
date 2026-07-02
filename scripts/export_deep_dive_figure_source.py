@@ -117,6 +117,17 @@ _DET_EXPRS: list[tuple[str, str]] = [
      f"CASE WHEN EXISTS(SELECT 1 FROM json_each(annotation_json,'{_DF}.isoform_topologies') "
      f"WHERE CAST(json_extract(value,'$.tm_helix_count') AS INT) != "
      f"CAST(json_extract(annotation_json,'{_CT}.tm_helix_count') AS INT)) THEN 1 ELSE 0 END"),
+    # Surface-binding structural sites: >=1 predicted surface-accessible binding
+    # site (deterministic_features.surface_bind.n_sites).
+    ("has_surface_bind_site",
+     f"CASE WHEN CAST(json_extract(annotation_json,'{_DF}.surface_bind.n_sites') "
+     "AS INT) >= 1 THEN 1 ELSE 0 END"),
+    # Concerning paralog (binder-specificity risk): a paralog whose extracellular
+    # domain is >=40% identical to this gene's (the viewer's mid band on
+    # max_paralog_ecd_pct_identity) -> potential antibody cross-reactivity.
+    ("has_concerning_paralog",
+     "CASE WHEN CAST(json_extract(annotation_json,'$.filters.max_paralog_ecd_pct_identity') "
+     "AS REAL) >= 40 THEN 1 ELSE 0 END"),
     # Deterministic-annotation depth: how many of the 6 det-feature categories
     # carry data for this gene (topology / AF structure / surface-binding /
     # homo-oligomer / orthologs / alt-isoforms). Powers Fig 6 panel e.
