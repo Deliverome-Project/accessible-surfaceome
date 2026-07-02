@@ -507,24 +507,35 @@ def build_triage_vs_deep_dive_reason(src: dict[str, pd.DataFrame]) -> pd.DataFra
       • Panel b (reason confusion): ``triage_reason`` × ``deep_dive_reason``
         (``surface_call_reason``), both drawn from the shared ``TriageReason``
         enum.
-      • Panel c (DB concordance): the 5 canonical-DB ``*_surface_flag``s
-        (UniProt / GO / SURFY / CSPA / HPA) joined from the catalog, so the
-        figure can show what fraction of deep-dive-surface genes each database —
-        and the Sonnet triage stage — also calls surface.
+      • Panel c (DB concordance): per-DB surface membership (UniProt / GO /
+        SURFY / CSPA / HPA), so the figure shows what fraction of
+        deep-dive-surface genes each database — and the Sonnet triage stage —
+        also calls surface. The two RECALIBRATED DBs (UniProt, CSPA) use their
+        OPTIMIZED positive-list membership (``uniprot_optimized`` /
+        ``cspa_optimized`` from ``db_optimized_cutoffs.tsv``), NOT the native
+        ``*_surface_flag`` — figures outside Figure 1 must score the recalibrated
+        DBs on the tuned cutoff (test_figures_use_optimized_cutoffs). GO / SURFY
+        / HPA were never recalibrated, so their ``*_surface_flag`` is correct.
 
     The triage verdict/reason come from the committed ``triage_verdicts.tsv``
     companion (D1's ``genome_full_sonnet_ncbi_v2`` run), joined by gene_symbol;
-    the DB flags from the catalog (candidate_universe). Columns:
-    ``gene_symbol, uniprot_acc, triage_verdict, triage_reason, deep_dive_reason,
-    deep_dive_tier`` + the 5 ``*_surface_flag`` columns.
+    GO/SURFY/HPA flags from the catalog (candidate_universe), UniProt/CSPA
+    optimized membership from ``opt``. Columns: ``gene_symbol, uniprot_acc,
+    triage_verdict, triage_reason, deep_dive_reason, deep_dive_tier,
+    go_surface_flag, surfy_surface_flag, hpa_surface_flag, uniprot_optimized,
+    cspa_optimized``.
 
     Real data, small n as the sweep progresses; PRELIMINARY, pre-QA-fix.
     """
     cols = ["gene_symbol", "uniprot_acc", "triage_verdict", "triage_reason",
             "deep_dive_reason", "deep_dive_tier"]
-    # 5 canonical-DB surface flags for the panel-c concordance bars.
-    db_flags = ["uniprot_surface_flag", "go_surface_flag", "surfy_surface_flag",
-                "cspa_surface_flag", "hpa_surface_flag"]
+    # Panel-c concordance columns. GO/SURFY/HPA were never recalibrated -> use
+    # their native *_surface_flag. UniProt/CSPA ARE recalibrated -> use the
+    # OPTIMIZED positive-list membership (uniprot_optimized / cspa_optimized);
+    # test_figures_use_optimized_cutoffs forbids the native flags outside Fig 1.
+    native_flags = ["go_surface_flag", "surfy_surface_flag", "hpa_surface_flag"]
+    opt_flags = ["uniprot_optimized", "cspa_optimized"]
+    db_flags = native_flags + opt_flags
     dd = src.get("deep_dive")
     tri = src.get("triage_verdicts")
     if dd is None or dd.empty or tri is None or tri.empty:
@@ -540,23 +551,32 @@ def build_triage_vs_deep_dive_reason(src: dict[str, pd.DataFrame]) -> pd.DataFra
         tri_by_gene["triage_verdict"]).astype("object")
     out["triage_reason"] = out["gene_symbol"].map(
         tri_by_gene["triage_reason"]).astype("object")
-    # Panel c — per-DB surface concordance. Join the 5 canonical-DB
-    # `*_surface_flag`s from the catalog (candidate_universe), keyed by symbol,
-    # so the figure can show what fraction of deep-dive-surface genes each DB
-    # (and the Sonnet triage stage) also flags — the "does the deep-dive agree
-    # more with Sonnet triage or with the databases?" comparison.
+    # Panel c — per-DB surface concordance: what fraction of deep-dive-surface
+    # genes each source also flags (the "agrees more with Sonnet triage or with
+    # the databases?" comparison).
     cat = src.get("catalog")
     cat_by_gene = (
         cat.drop_duplicates("hgnc_symbol").set_index("hgnc_symbol")
         if cat is not None and "hgnc_symbol" in cat.columns else None
     )
-    for c in db_flags:
+    # GO/SURFY/HPA native surface flags, joined from the catalog by symbol.
+    for c in native_flags:
         if cat_by_gene is not None and c in cat_by_gene.columns:
             out[c] = pd.to_numeric(
                 out["gene_symbol"].map(cat_by_gene[c]), errors="coerce"
             ).astype("Int64")
         else:
             out[c] = pd.Series([pd.NA] * len(out), dtype="Int64")
+    # UniProt/CSPA OPTIMIZED membership: canonical accession (catalog's
+    # uniprot_acc, else the record's) in the `opt` positive list -> 1, else 0.
+    opt = src.get("opt")
+    acc = (out["gene_symbol"].map(cat_by_gene["uniprot_acc"])
+           if cat_by_gene is not None and "uniprot_acc" in cat_by_gene.columns
+           else out["uniprot_acc"]).astype(str)
+    for col in opt_flags:
+        accs = (set(opt.loc[opt[col] == 1, "accession"].astype(str))
+                if opt is not None and col in opt.columns else set())
+        out[col] = acc.isin(accs).astype("Int64")
     # Keep only genes we could match a triage call for.
     out = out.dropna(subset=["triage_verdict", "triage_reason"])
     out = out[cols + db_flags]

@@ -70,9 +70,9 @@ ROOT = Path(__file__).resolve().parents[1]
 OUT_DIR = ROOT / "data/analysis/figures"
 # Single per-figure TSV: one row per gene with a deep-dive record AND a
 # triage hit. Columns: gene_symbol, uniprot_acc, triage_verdict,
-# triage_reason, deep_dive_reason, deep_dive_tier, + 5 per-DB surface
-# flags (uniprot/go/surfy/cspa/hpa _surface_flag, 0/1). Same file the
-# gist mirror bundles.
+# triage_reason, deep_dive_reason, deep_dive_tier, + per-DB surface
+# membership (go/surfy/hpa _surface_flag + uniprot/cspa _optimized, 0/1).
+# Same file the gist mirror bundles.
 DATA_TSV = ROOT / "data/processed/figures/triage_vs_deep_dive_reason.tsv"
 SLUG = "triage_vs_deep_dive_reason"
 
@@ -107,12 +107,16 @@ DD_SURFACE_TIERS = ["canonical", "likely", "low"]
 # The 5 catalog databases (canonical palette by identity — see the
 # canonical-db-palette memory) + Sonnet triage as a peer source, given a
 # visually distinct Claude-orange so it doesn't read as a 6th database.
+# UniProt/CSPA are recalibrated -> OPTIMIZED membership (uniprot_optimized /
+# cspa_optimized); GO/SURFY/HPA were never recalibrated -> native *_surface_flag.
+# The native UniProt/CSPA flags are forbidden outside Fig 1
+# (test_figures_use_optimized_cutoffs).
 DB_SOURCES = [
-    ("UniProt", "uniprot_surface_flag", "#BC3C4C"),  # maroon-light
-    ("GO",      "go_surface_flag",      "#3D6B60"),  # teal-mid
-    ("SURFY",   "surfy_surface_flag",   "#8878C8"),  # lavender-bright
-    ("CSPA",    "cspa_surface_flag",    "#6E1428"),  # maroon-dark
-    ("HPA",     "hpa_surface_flag",     "#F4AA28"),  # amber-bright
+    ("UniProt", "uniprot_optimized",  "#BC3C4C"),  # maroon-light
+    ("GO",      "go_surface_flag",    "#3D6B60"),  # teal-mid
+    ("SURFY",   "surfy_surface_flag", "#8878C8"),  # lavender-bright
+    ("CSPA",    "cspa_optimized",     "#6E1428"),  # maroon-dark
+    ("HPA",     "hpa_surface_flag",   "#F4AA28"),  # amber-bright
 ]
 SONNET_LABEL = "Sonnet triage"
 SONNET_COLOR = "#d87851"  # Claude-orange — distinct from the 5 DB bars
