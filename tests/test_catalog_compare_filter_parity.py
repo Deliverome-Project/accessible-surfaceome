@@ -173,6 +173,11 @@ def test_deterministic_filters_are_tool_derived_from_sequence() -> None:
         "surface_bind_main_class",
         # Schweke 2024 AF2 homomer prior — also on the AF2 structure.
         "is_homo_oligomer",
+        # Transmembrane topology — DeepTMHMM v1.0.24 on the sequence
+        # (has_tm / tm_count_band bin tm_helix_count). Structured tool
+        # readouts, no LLM judgement in the chain.
+        "has_tm",
+        "tm_count_band",
     }
     # Re-parse the registry to harvest (key, provenance) pairs from
     # both ENUM and BOOL blocks.

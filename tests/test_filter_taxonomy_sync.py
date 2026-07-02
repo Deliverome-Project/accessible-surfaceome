@@ -53,6 +53,13 @@ _DETERMINISTIC_FEATURE_DERIVED = {
     "surface_bind_targetability",
     "surface_bind_main_class",
     "is_homo_oligomer",
+    # Transmembrane-topology facets — derived from
+    # deterministic_features.canonical_topology (DeepTMHMM). `has_tm` /
+    # `tm_count_band` bin tm_helix_count. Like the other
+    # DeterministicFeature-sourced facets, they're NOT flat Filters
+    # fields, so they don't appear in DDF_KEYS.
+    "has_tm",
+    "tm_count_band",
 }
 
 # Facets computed by the catalog Worker post-projection from a raw

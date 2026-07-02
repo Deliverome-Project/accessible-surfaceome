@@ -166,6 +166,14 @@ export interface PapersSelectedCutoffs {
   n: number;
 }
 
+/** Transmembrane-helix count band, derived deterministically from
+ *  `deterministic_features.canonical_topology.tm_helix_count`
+ *  (DeepTMHMM v1.0.24):
+ *    • `none`   — 0 TM helices
+ *    • `single` — exactly 1 TM helix (single-pass)
+ *    • `multi`  — ≥2 TM helices (multi-pass) */
+export type TmCountBand = "none" | "single" | "multi";
+
 /** Dominant induction-trigger bucket (mirrors models.py InductionTrigger). */
 export type InductionTrigger =
   | "none"
@@ -252,6 +260,16 @@ export interface DeepDiveFilters {
    *  in the predicted homomer refset", NOT "AF2 disagrees". Use as a
    *  lower-bound structural prior on homo-oligomerization risk. */
   is_homo_oligomer?: boolean;
+  /** Deterministic — derived from
+   *  `deterministic_features.canonical_topology.tm_helix_count`
+   *  (DeepTMHMM v1.0.24). `true` when the canonical isoform has ≥1 TM
+   *  helix. Optional so records/catalog payloads that predate the
+   *  facet still type. */
+  has_tm?: boolean;
+  /** Deterministic TM-helix count band (none / single / multi) — see
+   *  `TmCountBand`. Derived from the same `tm_helix_count` scalar as
+   *  `has_tm`; the band is the finer axis the filter UI keys off. */
+  tm_count_band?: TmCountBand;
 }
 
 export interface CatalogRow {
