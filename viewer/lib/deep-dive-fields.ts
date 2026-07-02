@@ -3,7 +3,7 @@
  * (`components/CatalogTable/CatalogTable.tsx`) and the upload-compare
  * tool (`components/CompareTool/CompareTool.tsx`).
  *
- * 13 enum-valued fields + 8 boolean fields. Keys mirror `DeepDiveFilters`
+ * 14 enum-valued fields + 10 boolean fields. Keys mirror `DeepDiveFilters`
  * in `lib/surfaceome.ts` and `DDF_KEYS` in the Worker
  * (`cloudflare/workers/surfaceome_api/src/index.js`); the enum value
  * lists come from the Python Literal definitions in
@@ -44,7 +44,9 @@ export type DdEnumKey =
   | "cyno_ortholog_ecd"
   | "mouse_ortholog_ecd"
   | "max_paralog_ecd"
-  | "induction_trigger";
+  | "induction_trigger"
+  // Deterministic transmembrane-topology band (DeepTMHMM canonical_topology).
+  | "tm_count_band";
 
 export type DdBoolKey =
   | "has_known_ligand"
@@ -58,7 +60,11 @@ export type DdBoolKey =
   | "c_term_extracellular"
   | "tumor_associated"
   | "has_live_cell_surface_evidence"
-  | "is_homo_oligomer";
+  | "is_homo_oligomer"
+  // Deterministic transmembrane-topology booleans (DeepTMHMM + UniProt
+  // canonical_topology).
+  | "has_tm"
+  | "is_gpi_anchored";
 
 /**
  * Provenance bucket used by the catalog filter panel to partition
@@ -533,6 +539,30 @@ export const DD_ENUM_FIELDS: readonly DdEnumSpec[] = [
     tooltipKey: "catalog_induction_trigger",
     provenance: "llm",
   },
+  {
+    // Transmembrane-helix count band, binned from
+    // deterministic_features.canonical_topology.tm_helix_count
+    // (DeepTMHMM v1.0.24 on the canonical isoform):
+    //   • none   — 0 TM helices
+    //   • single — exactly 1 (single-pass)
+    //   • multi  — ≥2 (multi-pass)
+    // Deterministic — the same DeepTMHMM run on the same sequence gives
+    // the same count. More useful than the bare `has_tm` boolean: it
+    // separates single-pass from multi-pass architecture, which drives
+    // very different antibody-design geometry. Pair with `is_gpi_anchored`
+    // to read a `none` band correctly (0 TM + GPI = real surface; 0 TM +
+    // no GPI = likely not surface, the ecd=large false-surface trap).
+    key: "tm_count_band",
+    label: "TM helices",
+    values: ["none", "single", "multi"],
+    valueLabels: {
+      none: "None (0 TM)",
+      single: "Single-pass (1 TM)",
+      multi: "Multi-pass (≥2 TM)",
+    },
+    tooltipKey: "catalog_tm_count_band",
+    provenance: "deterministic",
+  },
 ];
 
 export const DD_BOOL_FIELDS: readonly DdBoolSpec[] = [
@@ -624,6 +654,33 @@ export const DD_BOOL_FIELDS: readonly DdBoolSpec[] = [
     tooltipKey: "catalog_is_homo_oligomer",
     provenance: "deterministic",
     isRisk: true,
+  },
+  {
+    // Transmembrane presence — `tm_helix_count > 0` from
+    // deterministic_features.canonical_topology (DeepTMHMM v1.0.24).
+    // Deterministic: identical DeepTMHMM run on the same sequence gives
+    // the same value. The primary "does this protein span the membrane"
+    // filter; pair with tm_count_band (single vs multi) for architecture
+    // and is_gpi_anchored for the 0-TM-but-surface case.
+    key: "has_tm",
+    label: "Transmembrane",
+    tooltipKey: "catalog_has_tm",
+    provenance: "deterministic",
+  },
+  {
+    // GPI-anchor status from
+    // deterministic_features.canonical_topology.is_gpi_anchored (UniProt
+    // curated lipidation/GPI feature). Deterministic — a structured
+    // database pull, not an LLM judgement. GPI-anchored proteins carry 0
+    // TM helices yet ARE genuinely cell-surface, so this facet distinguishes
+    // "0 TM + GPI = surface" from "0 TM + no GPI = likely not surface" —
+    // directly countering the ecd_accessibility_class=large false-surface
+    // trap (secreted / lysosomal proteins have large ECDs but no TM/GPI).
+    // Only populated on records/topology rows that carry the GPI field.
+    key: "is_gpi_anchored",
+    label: "GPI-anchored",
+    tooltipKey: "catalog_is_gpi_anchored",
+    provenance: "deterministic",
   },
 ];
 
@@ -771,5 +828,25 @@ export function pickDeepDiveFilters(
       | { is_homo_oligomer?: unknown }
       | undefined) ?? undefined;
   out.is_homo_oligomer = ho?.is_homo_oligomer === true;
+  // Transmembrane-topology facets — sourced from
+  // deterministic_features.canonical_topology (DeepTMHMM v1.0.24 + UniProt
+  // curated topology). MUST stay in sync with the Worker's
+  // projectDeepDiveFiltersFromParts (which reads the same scalars via
+  // json_extract). `has_tm` / `tm_count_band` derive from tm_helix_count;
+  // `is_gpi_anchored` passes through when the record carries it (older
+  // DeepTMHMM-only topology blocks omit the curated GPI field — the facet
+  // simply won't populate for those genes).
+  const ct =
+    (deterministicFeatures?.canonical_topology as
+      | { tm_helix_count?: unknown; is_gpi_anchored?: unknown }
+      | undefined) ?? undefined;
+  if (ct && typeof ct.tm_helix_count === "number") {
+    const tmc = ct.tm_helix_count;
+    out.has_tm = tmc > 0;
+    out.tm_count_band = tmc === 0 ? "none" : tmc === 1 ? "single" : "multi";
+  }
+  if (ct && typeof ct.is_gpi_anchored === "boolean") {
+    out.is_gpi_anchored = ct.is_gpi_anchored;
+  }
   return Object.keys(out).length > 0 ? out : undefined;
 }
