@@ -605,6 +605,64 @@ def build_triage_vs_deep_dive_reason(src: dict[str, pd.DataFrame]) -> pd.DataFra
     return out.sort_values("gene_symbol", kind="stable").reset_index(drop=True)
 
 
+def build_deep_dive_vs_sonnet_benchmark(src: dict[str, pd.DataFrame]) -> pd.DataFrame:
+    """New Supp figure — how the DEEP DIVE does on SurfaceBench, for the bench
+    genes deep-dived so far (the intersection), vs the Sonnet+NCBI triage on the
+    SAME genes. Per-gene SOFT-CREDIT correctness (a contextually-surface protein
+    is correct when called surface) for both predictors against the curated
+    ground truth. The figure aggregates: overall accuracy + accuracy per
+    ground-truth bucket (yes / contextual / no).
+
+    ``deep_dive_surface`` = tier in {canonical, likely, low}; ``sonnet_surface``
+    / ``gt_surface`` = verdict in {yes, contextual}. Columns: gene_symbol +
+    stable IDs, ground_truth_verdict, sonnet_verdict, deep_dive_tier, gt_surface,
+    sonnet_surface, deep_dive_surface, sonnet_correct, deep_dive_correct.
+
+    PRELIMINARY — only the bench genes deep-dived so far (27 of 147); the 'no'
+    bucket is tiny. Widens as the sweep covers more bench genes.
+    """
+    cols = ["gene_symbol", "hgnc_id", "uniprot_acc", "ensembl_gene",
+            "ncbi_gene_id", "ground_truth_verdict", "sonnet_verdict",
+            "deep_dive_tier", "gt_surface", "sonnet_surface",
+            "deep_dive_surface", "sonnet_correct", "deep_dive_correct"]
+    bench = src.get("bench")
+    dd = src.get("deep_dive")
+    if bench is None or dd is None or dd.empty:
+        return _empty_deep_dive_frame(cols)
+    yc = {"yes", "contextual"}
+    dd_u = dd.drop_duplicates("gene_symbol").copy()
+    dd_u["gene_symbol"] = dd_u["gene_symbol"].astype(str)
+    dd_by_gene = dd_u.set_index("gene_symbol")
+    dd_genes = set(dd_by_gene.index)
+    rows = []
+    for _, br in bench.iterrows():
+        g = str(br["gene_symbol"])
+        if g not in dd_genes:
+            continue
+        tier = _dd_tier(dd_by_gene.loc[g])
+        gt_s = str(br["ground_truth_verdict"]) in yc
+        son_s = str(br["sonnet_verdict"]) in yc
+        dd_s = tier in ("canonical", "likely", "low")
+        rows.append({
+            "gene_symbol": g,
+            "hgnc_id": br.get("hgnc_id", ""),
+            "uniprot_acc": br.get("uniprot_acc", ""),
+            "ensembl_gene": br.get("ensembl_gene", ""),
+            "ncbi_gene_id": br.get("ncbi_gene_id", ""),
+            "ground_truth_verdict": str(br["ground_truth_verdict"]),
+            "sonnet_verdict": str(br["sonnet_verdict"]),
+            "deep_dive_tier": tier,
+            "gt_surface": int(gt_s),
+            "sonnet_surface": int(son_s),
+            "deep_dive_surface": int(dd_s),
+            "sonnet_correct": int(son_s == gt_s),
+            "deep_dive_correct": int(dd_s == gt_s),
+        })
+    return pd.DataFrame(rows, columns=cols).sort_values(
+        ["ground_truth_verdict", "gene_symbol"], kind="stable"
+    ).reset_index(drop=True)
+
+
 def build_curator_vs_agent_reason(src: dict[str, pd.DataFrame]) -> pd.DataFrame:
     """Per-gene curator-vs-agent reason comparison. The figure is a
     3-panel composite (panel a: bucket-strict accuracy across 10 model
@@ -742,6 +800,7 @@ BUILDERS: dict[str, callable] = {
     "evidence_corpus_vs_selected":   build_evidence_corpus_vs_selected,
     "deep_dive_record_richness":     build_deep_dive_record_richness,
     "triage_vs_deep_dive_reason":    build_triage_vs_deep_dive_reason,
+    "deep_dive_vs_sonnet_benchmark": build_deep_dive_vs_sonnet_benchmark,
     "curator_vs_agent_reason":       build_curator_vs_agent_reason,
     "zero_db_rescues_by_triage":     build_zero_db_rescues,
     "topology_coverage_by_source":   build_topology_coverage_by_source,

@@ -48,6 +48,7 @@ SCRIPTS = REPO_ROOT / "scripts"
 READS_BUNDLED_TSV = [
     "deep_dive_final_categories",
     "deep_dive_record_richness",
+    "deep_dive_vs_sonnet_benchmark",
     "evidence_corpus_vs_selected",
     "triage_vs_deep_dive_reason",
     "zero_db_rescues_by_triage",
