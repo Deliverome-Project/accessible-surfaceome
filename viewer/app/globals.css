@@ -305,3 +305,18 @@ button {
     transition: none !important;
   }
 }
+
+/* Post-jump highlight applied to a destination element for ~1.2s after
+ * the reader clicks a §01 Summary metrics chip. Background-only (no
+ * transform) so the scroll position doesn't shift mid-animation.
+ * Shared by rationale rows on Biology/Expression/Risks tabs, the
+ * Subcellular-localization block, the Contradicting-evidence block,
+ * and the accessibility-modulation table rows. See
+ * viewer/components/surfaceome/_shared/ChipJumpButton/. */
+@keyframes chipJumpFlash {
+  0%   { background-color: var(--accent-soft); }
+  100% { background-color: transparent; }
+}
+.chipJumpFlash {
+  animation: chipJumpFlash 1200ms ease-out;
+}
