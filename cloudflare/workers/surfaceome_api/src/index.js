@@ -109,6 +109,12 @@ const SYMBOL_OK = /^[A-Za-z0-9][A-Za-z0-9._-]{0,29}$/;
 
 function checkSymbol(sym) {
   if (!sym || !SYMBOL_OK.test(sym)) return null;
+  // NOTE: this uppercases, but most per-symbol D1 lookups compare the
+  // stored `gene_symbol` COLLATE NOCASE. That's load-bearing: a minority
+  // of HGNC symbols are stored MIXED-CASE (the `Cxorf` class, e.g.
+  // `C11orf24`, lowercase "orf"), so an uppercased `= ?` match silently
+  // misses them and the record endpoint 404s while `/v1/genes` still
+  // lists them. Keep new per-symbol WHERE clauses `COLLATE NOCASE`.
   return sym.toUpperCase();
 }
 
@@ -218,7 +224,7 @@ async function fetchTriagePrior(env, sym) {
     const row = await env.DB.prepare(
       `SELECT predicted_verdict, predicted_reason, verdict_reasoning
          FROM triage_run_public
-        WHERE gene_symbol = ?
+        WHERE gene_symbol = ? COLLATE NOCASE
           AND run_id = ?
           AND prompt_variant = ?
           AND model LIKE '%sonnet%'
@@ -254,7 +260,7 @@ async function handleGene(env, symbol) {
             COALESCE(prompt_corpus_version, '0.0.0') AS prompt_corpus_version,
             cohort_run_id
        FROM surface_annotation
-      WHERE gene_symbol = ?
+      WHERE gene_symbol = ? COLLATE NOCASE
       ORDER BY schema_version DESC,
                COALESCE(prompt_corpus_version, '0.0.0') DESC
       LIMIT 1`
@@ -828,7 +834,7 @@ async function handleOrthologs(env, symbol) {
             ortholog_ensembl_gene, orthology_type, percent_identity,
             is_high_confidence
        FROM compara_ortholog
-      WHERE release_version = ? AND human_gene_symbol = ?
+      WHERE release_version = ? AND human_gene_symbol = ? COLLATE NOCASE
       ORDER BY species`
   ).bind(release.release_version, sym).all();
   return json({
@@ -865,7 +871,7 @@ async function handleBenchmarkOne(env, symbol) {
     `SELECT bench_version, gene_symbol, uniprot_acc, class,
             truth_verdict, truth_signal, truth_reason, rationale
        FROM benchmark_version
-      WHERE gene_symbol = ?
+      WHERE gene_symbol = ? COLLATE NOCASE
       ORDER BY bench_version DESC
       LIMIT 1`
   ).bind(sym).first();
@@ -2222,7 +2228,7 @@ async function handleTriage(env, symbol) {
             cost_usd, prompt_tokens, completion_tokens,
             cache_creation_tokens, cache_read_tokens
        FROM triage_run_public
-      WHERE gene_symbol = ?
+      WHERE gene_symbol = ? COLLATE NOCASE
       ORDER BY created_at DESC, model, prompt_variant, replicate`
   ).bind(sym).all();
   return json({
@@ -2262,7 +2268,7 @@ async function handleTriageCell(env, symbol, model, variant) {
                 PARTITION BY replicate ORDER BY created_at DESC
               ) AS rn
          FROM triage_run_public
-        WHERE run_id = ? AND gene_symbol = ? AND model = ? AND prompt_variant = ?
+        WHERE run_id = ? AND gene_symbol = ? COLLATE NOCASE AND model = ? AND prompt_variant = ?
      )
      SELECT created_at, replicate, predicted_verdict, predicted_reason,
             predicted_confidence, predicted_key_uncertainty,
@@ -2696,13 +2702,15 @@ async function handleFeedbackModerate(env, url) {
 
 async function handleFeedbackPublic(env, url) {
   const gene = url.searchParams.get("gene");
-  if (!gene || !/^[A-Z0-9-]{1,30}$/.test(gene)) {
+  // Allow lowercase: some HGNC symbols are mixed-case (the Cxorf class,
+  // e.g. C11orf24), and gene_symbol is matched COLLATE NOCASE below.
+  if (!gene || !/^[A-Za-z0-9-]{1,30}$/.test(gene)) {
     return badRequest("invalid_gene");
   }
   const rows = await env.DB.prepare(
     `SELECT id, submitter_name, comment, approved_at
      FROM feedback_public
-     WHERE gene_symbol = ?
+     WHERE gene_symbol = ? COLLATE NOCASE
      ORDER BY approved_at DESC
      LIMIT 50`,
   ).bind(gene).all();
