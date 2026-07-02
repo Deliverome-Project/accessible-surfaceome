@@ -24,7 +24,7 @@ EXCLUDED — they have no tier to compare (and are already absent from the
 bundled TSV, which holds only deep-dived genes).
 
 The 3×3 panel grid compares each feature across the four tiers. The two
-CONTINUOUS features — TM-helix count and protein length — are shown as
+CONTINUOUS features — TM-helix count, protein length, and ECD length — are shown as
 violins; the nine BOOLEAN features (signal peptide, N/C-terminus
 extracellular, mouse + cyno 1:1 ortholog presence, Schweke-2024 homo-oligomer
 state, alt-isoform topology change) as per-facet fraction bars. The features
@@ -232,6 +232,7 @@ def render(feats: pd.DataFrame, out_dir: Path) -> Path:
     panels = [
         ("tm_helix_count",      "violin",    "Number of\nTM helices"),
         ("protein_length",      "violin",    "Protein length\n(residues)"),
+        ("ecd_length_residues", "violin",    "ECD length\n(residues)"),
         ("has_signal_peptide",  "frac_bool", "% with signal peptide"),
         ("n_term_extracellular", "frac_bool", "% N-terminus extracellular"),
         ("c_term_extracellular", "frac_bool", "% C-terminus extracellular"),
@@ -243,7 +244,7 @@ def render(feats: pd.DataFrame, out_dir: Path) -> Path:
         ("has_concerning_paralog", "frac_bool", "% concerning paralog\n(ECD 40%+ id)"),
     ]
 
-    letters = "abcdefghijk"
+    letters = "abcdefghijkl"
     for ax, letter, (col, kind, label) in zip(axes, letters, panels):
         if kind == "violin":
             data = [

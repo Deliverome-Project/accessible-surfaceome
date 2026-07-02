@@ -253,7 +253,8 @@ def _concordance_by_tier(df: pd.DataFrame) -> list[tuple[str, dict[str, float]]]
         d = len(sub)
         by_tier[tier] = 100.0 * int(sub["triage_verdict"].isin(["yes", "contextual"]).sum()) / d if d else 0.0
     out.append((SONNET_LABEL, by_tier))
-    out.sort(key=lambda r: r[1]["canonical"], reverse=True)
+    # Pin Sonnet triage on top, then DBs by canonical-tier concordance desc.
+    out.sort(key=lambda r: (r[0] != SONNET_LABEL, -r[1]["canonical"]))
     return out
 
 
@@ -412,19 +413,20 @@ def main() -> None:
     conc = _concordance_by_tier(df)
 
     fig = plt.figure(figsize=(24, 15))
-    # 2×2 grid: LEFT column stacks panel a (top) over panel c (bottom); the
-    # reason matrix (panel b) spans BOTH rows of the RIGHT column.
+    # 2×2 grid: LEFT column stacks panel a (DB concordance, top) over panel b
+    # (verdict flow, bottom); the reason matrix (panel c) spans BOTH rows of the
+    # RIGHT column.
     gs = fig.add_gridspec(2, 2, width_ratios=[1.0, 1.85],
                           height_ratios=[1.0, 1.0], wspace=0.30, hspace=0.55)
-    ax_a = fig.add_subplot(gs[0, 0])
-    ax_c = fig.add_subplot(gs[1, 0])
-    ax_b = fig.add_subplot(gs[:, 1])
+    ax_a = fig.add_subplot(gs[0, 0])  # top-left    — DB concordance
+    ax_b = fig.add_subplot(gs[1, 0])  # bottom-left — verdict flow
+    ax_c = fig.add_subplot(gs[:, 1])  # right       — reason matrix
 
-    _draw_verdict_flow(ax_a, df)
-    _draw_concordance_by_tier(ax_c, conc)
-    _draw_reason_matrix(ax_b, m)
+    _draw_concordance_by_tier(ax_a, conc)
+    _draw_verdict_flow(ax_b, df)
+    _draw_reason_matrix(ax_c, m)
 
-    for ax, letter in ((ax_a, "a"), (ax_c, "c"), (ax_b, "b")):
+    for ax, letter in ((ax_a, "a"), (ax_b, "b"), (ax_c, "c")):
         ax.text(-0.08, 1.05, letter, transform=ax.transAxes,
                 ha="left", va="top", fontsize=24, fontweight=800,
                 color=BRAND_INK)

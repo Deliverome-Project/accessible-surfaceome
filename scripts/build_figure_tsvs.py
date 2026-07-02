@@ -713,7 +713,8 @@ def build_surfaceome_deterministic_features_placeholder(
 
     PRELIMINARY — pre-QA-fix; counts grow as the sweep progresses.
     """
-    feature_cols = ["tm_helix_count", "protein_length", "has_signal_peptide",
+    feature_cols = ["tm_helix_count", "protein_length", "ecd_length_residues",
+                    "has_signal_peptide",
                     "n_term_extracellular", "c_term_extracellular",
                     "mouse_has_one2one", "cyno_has_one2one",
                     "schweke_homomer", "alt_iso_diff_topo",

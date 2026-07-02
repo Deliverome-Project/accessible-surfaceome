@@ -17,7 +17,7 @@ this per-tier comparison — they have no deep-dive tier to compare. (``pending`
 is already absent from the bundled TSV, which holds only deep-dived genes.)
 
 3×3 panel grid of deterministic features compared across the four tiers.
-The two CONTINUOUS features are shown as violins; the nine BOOLEAN features
+The three CONTINUOUS features are shown as violins; the nine BOOLEAN features
 as per-facet fraction bars (% of genes carrying the feature) — a violin of a
 0/1 value is meaningless.
 
@@ -159,6 +159,7 @@ def render(feats: pd.DataFrame) -> Path:
     panels = [
         ("tm_helix_count",      "violin",    "Number of\nTM helices"),
         ("protein_length",      "violin",    "Protein length\n(residues)"),
+        ("ecd_length_residues", "violin",    "ECD length\n(residues)"),
         ("has_signal_peptide",  "frac_bool", "% with signal peptide"),
         ("n_term_extracellular", "frac_bool", "% N-terminus extracellular"),
         ("c_term_extracellular", "frac_bool", "% C-terminus extracellular"),
@@ -170,7 +171,7 @@ def render(feats: pd.DataFrame) -> Path:
         ("has_concerning_paralog", "frac_bool", "% concerning paralog\n(ECD 40%+ id)"),
     ]
 
-    letters = "abcdefghijk"
+    letters = "abcdefghijkl"
     for ax, letter, (col, kind, label) in zip(axes, letters, panels):
         if kind == "violin":
             data = [

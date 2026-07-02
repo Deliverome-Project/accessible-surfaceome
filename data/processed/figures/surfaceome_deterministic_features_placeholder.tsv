@@ -1,1176 +1,1176 @@
-gene_symbol	group	tm_helix_count	protein_length	has_signal_peptide	n_term_extracellular	c_term_extracellular	mouse_has_one2one	cyno_has_one2one	schweke_homomer	alt_iso_diff_topo	has_surface_bind_site	has_concerning_paralog
-ABCA1	canonical	12	2261	0	0	0	1	1	0	0	1	1
-ABCA7	canonical	12	2146	0	0	0	1	1	0	1	1	1
-ABCB1	canonical	12	1280	0	0	0	0	0	0	0	1	1
-ABCB4	canonical	12	1286	0	0	0	1	1	0	0	1	1
-ABCC1	canonical	17	1531	0	1	0	1	1	0	0	1	1
-ABCC10	canonical	17	1492	0	1	0	1	1	0	1	0	0
-ABCC2	canonical	17	1545	0	1	0	1	1	0	0	1	1
-ABCC4	canonical	12	1325	0	0	0	1	1	0	1	1	0
-ABCC5	canonical	12	1437	0	0	0	1	1	0	1	1	0
-ABCC9	canonical	17	1549	0	1	0	1	1	0	0	1	1
-ABCG2	canonical	6	655	0	0	0	0	0	1	1	0	0
-ACE	canonical	1	1306	1	1	0	1	1	0	1	1	1
-ACE2	canonical	1	805	1	1	0	1	1	1	0	1	1
-ACHE	canonical	0	614	1	1	1	1	1	1	0	1	1
-ACKR1	canonical	7	336	0	1	0	1	1	0	0	0	0
-ACKR4	canonical	7	350	0	1	0	1	1	0	0	0	0
-ACKR5	canonical	7	404	0	1	0	1	1	1	0	1	0
-ACVR1	canonical	1	509	1	1	0	1	1	0	0	1	0
-ACVR1B	canonical	1	505	1	1	0	1	1	0	0	1	0
-ACVR1C	canonical	1	493	1	1	0	1	1	0	0	1	0
-ACVR2A	canonical	1	513	1	1	0	1	1	0	0	1	1
-ACVR2B	canonical	1	512	1	1	0	1	1	0	0	1	1
-ACVRL1	canonical	1	503	1	1	0	1	1	0	0	1	0
-ADAM10	canonical	1	748	1	1	0	1	1	0	0	1	0
-ADAM12	canonical	1	909	1	1	0	1	1	0	1	1	1
-ADAM15	canonical	1	863	1	1	0	1	1	0	1	1	1
-ADAM17	canonical	1	824	1	1	0	1	1	0	0	1	0
-ADAM19	canonical	1	955	1	1	0	0	1	0	0	1	1
-ADAM22	canonical	1	906	1	1	0	1	1	0	0	1	1
-ADAM23	canonical	1	832	1	1	0	1	1	0	1	1	1
-ADAM28	canonical	1	775	1	1	0	1	1	0	1	1	1
-ADAM9	canonical	1	819	1	1	0	1	1	0	1	1	1
-ADCYAP1R1	canonical	7	468	1	1	0	1	1	0	0	0	1
-ADGRA1	canonical	7	560	0	1	0	1	1	0	1	0	1
-ADGRA2	canonical	7	1338	1	1	0	1	1	0	1	0	1
-ADGRA3	canonical	7	1321	1	1	0	1	1	0	1	0	1
-ADGRB1	canonical	7	1584	1	1	0	1	1	0	0	0	1
-ADGRB2	canonical	7	1585	1	1	0	1	1	0	0	0	1
-ADGRB3	canonical	7	1522	1	1	0	1	1	0	1	0	1
-ADGRD1	canonical	7	874	1	1	0	1	1	0	0	0	0
-ADGRE1	canonical	7	886	1	1	0	1	1	0	1	0	0
-ADGRE2	canonical	7	823	1	1	0	0	1	0	0	0	1
-ADGRE3	canonical	7	652	1	1	0	0	0	0	1	0	1
-ADGRE5	canonical	7	835	1	1	0	1	1	0	0	0	1
-ADGRF1	canonical	7	910	1	1	0	1	1	0	1	0	0
-ADGRF5	canonical	7	1346	1	1	0	1	1	0	0	0	1
-ADGRG1	canonical	7	693	1	1	0	1	1	0	0	0	1
-ADGRG3	canonical	7	549	1	1	0	1	1	0	0	0	1
-ADGRG6	canonical	7	1221	1	1	0	1	1	0	0	0	1
-ADGRL2	canonical	7	1459	1	1	0	1	1	0	0	0	1
-ADGRL3	canonical	7	1447	1	1	0	1	1	0	1	0	1
-ADIPOR1	canonical	7	375	0	0	1	1	1	0	0	0	1
-ADIPOR2	canonical	7	386	0	0	1	1	1	0	0	0	1
-ADORA1	canonical	7	326	0	1	0	1	1	0	1	1	0
-ADORA2A	canonical	7	412	0	1	0	1	1	0	0	0	0
-ADORA2B	canonical	7	332	0	1	0	1	1	0	0	1	0
-ADRA1A	canonical	7	466	0	1	0	1	1	0	1	0	1
-ADRA1B	canonical	7	520	0	1	0	1	1	0	0	0	1
-ADRA2A	canonical	7	465	0	1	0	1	0	0	0	1	1
-ADRB1	canonical	7	477	0	1	0	1	0	0	0	0	1
-ADRB2	canonical	7	413	0	1	0	1	1	0	0	0	0
-ADRB3	canonical	7	408	0	1	0	1	1	0	0	0	1
-AGER	canonical	1	404	1	1	0	1	1	0	1	1	0
-AGTR1	canonical	7	359	0	1	0	0	1	0	0	0	0
-AGTR2	canonical	7	363	0	1	0	1	1	0	0	0	0
-ALCAM	canonical	1	583	1	1	0	1	1	1	1	1	0
-ALPL	canonical	0	524	1	1	1	1	1	1	0	0	1
-AMIGO1	canonical	1	493	1	1	0	1	1	1	0	1	1
-AMIGO3	canonical	1	504	1	1	0	1	1	1	0	1	1
-AMN	canonical	1	453	1	1	0	1	1	0	0	1	0
-ANO1	canonical	8	986	0	0	0	1	1	1	1	1	1
-ANO3	canonical	8	981	0	0	0	1	1	1	0	1	1
-ANO4	canonical	8	955	0	0	0	1	1	1	1	0	1
-ANO6	canonical	8	910	0	0	0	1	1	1	0	1	1
-ANPEP	canonical	1	967	0	0	1	1	1	0	0	1	0
-ANTXR1	canonical	1	564	1	1	0	1	1	0	1	1	1
-AOC3	canonical	1	763	0	0	1	1	1	1	1	1	1
-APLNR	canonical	7	380	0	1	0	1	1	0	0	0	0
-APLP2	canonical	1	763	1	1	0	1	1	0	0	1	1
-APP	canonical	1	770	1	1	0	1	1	0	1	1	1
-AQP1	canonical	6	269	0	0	0	1	0	1	1	0	1
-AQP3	canonical	6	292	0	0	0	1	1	1	1	0	1
-AQP4	canonical	6	323	0	0	0	1	1	1	0	0	1
-AQP5	canonical	6	265	0	0	0	1	1	1	0	0	1
-ART1	canonical	0	327	1	1	1	1	1	0	0	1	1
-ART3	canonical	0	389	1	1	1	1	1	0	0	1	1
-ASAH2	canonical	1	780	0	0	1	0	0	0	0	0	1
-ASGR1	canonical	1	291	0	0	1	1	1	1	1	1	1
-ASGR2	canonical	1	311	0	0	1	1	1	0	0	1	1
-ASIC1	canonical	2	528	0	0	0	1	1	1	0	1	1
-ASIC2	canonical	2	512	0	0	0	1	1	1	0	0	1
-ASIC3	canonical	2	531	0	0	0	1	1	1	1	0	1
-ATP10D	canonical	10	1426	0	0	0	1	1	0	0	0	1
-ATP11A	canonical	10	1134	0	0	0	1	1	0	0	0	1
-ATP11C	canonical	10	1132	0	0	0	1	1	0	0	0	1
-ATP1A1	canonical	10	1023	0	0	0	1	1	0	1	1	1
-ATP1A2	canonical	10	1020	0	0	0	1	0	0	0	1	1
-ATP1A3	canonical	10	1013	0	0	0	1	1	0	0	0	1
-ATP1B1	canonical	1	303	0	0	1	1	1	0	0	0	1
-ATP1B2	canonical	1	290	0	0	1	1	1	0	0	0	1
-ATP1B3	canonical	1	279	0	0	1	1	1	0	0	1	1
-ATP2B1	canonical	10	1220	0	0	0	1	1	0	0	0	1
-ATP2B3	canonical	10	1220	0	0	0	1	0	0	0	1	1
-ATP2B4	canonical	10	1241	0	0	0	1	1	0	0	1	1
-ATRN	canonical	2	1429	0	0	0	1	1	0	1	1	1
-AVPR1A	canonical	7	418	0	1	0	1	0	0	0	1	1
-AVPR1B	canonical	7	424	0	1	0	1	1	0	0	0	1
-AVPR2	canonical	7	371	0	1	0	1	1	0	1	1	1
-AXL	canonical	1	894	1	1	0	1	1	0	0	1	0
-B2M	canonical	0	119	1	1	1	1	1	0	0	0	0
-BACE2	canonical	1	518	1	1	0	1	1	0	1	1	1
-BCAM	canonical	1	628	1	1	0	1	1	0	0	1	0
-BDKRB2	canonical	7	391	0	1	0	1	1	0	0	0	0
-BEST3	canonical	4	668	0	0	0	1	1	1	1	0	1
-BEST4	canonical	4	473	0	0	0	0	1	1	0	0	1
-BMPR1A	canonical	1	532	1	1	0	1	1	0	0	1	1
-BMPR1B	canonical	1	502	0	1	0	1	1	0	0	0	1
-BMPR2	canonical	1	1038	1	1	0	1	1	0	0	1	0
-BSG	canonical	1	385	1	1	0	1	0	1	0	1	1
-BST1	canonical	0	318	1	1	1	1	1	1	0	1	0
-BST2	canonical	1	180	0	0	1	0	0	1	0	1	0
-BTLA	canonical	1	289	1	1	0	1	1	0	0	1	0
-BTN2A1	canonical	1	527	1	1	0	0	1	0	0	1	1
-BTN2A2	canonical	1	523	1	1	0	1	0	0	0	1	1
-BTN3A1	canonical	1	513	1	1	0	0	0	1	0	1	1
-BTN3A2	canonical	1	334	1	1	0	0	1	1	0	1	1
-BTN3A3	canonical	1	584	1	1	0	0	1	1	0	1	1
-BTNL3	canonical	1	466	1	1	0	0	0	1	0	1	1
-BTNL8	canonical	1	500	1	1	0	0	1	1	0	0	1
-C3AR1	canonical	7	482	0	1	0	1	1	0	0	1	0
-C5AR1	canonical	7	350	0	1	0	1	1	1	0	0	0
-CA12	canonical	1	354	1	1	0	1	1	0	0	1	1
-CA4	canonical	0	312	1	1	1	1	0	0	0	1	0
-CACNA1A	canonical	24	2506	0	0	0	1	1	0	0	0	1
-CACNA1B	canonical	24	2339	0	0	0	1	0	0	0	0	1
-CACNA1C	canonical	24	2221	0	0	0	1	0	0	1	1	1
-CACNA1D	canonical	24	2161	0	0	0	1	1	0	0	0	1
-CACNA1E	canonical	24	2313	0	0	0	1	1	0	0	0	1
-CACNA1F	canonical	24	1977	0	0	0	1	1	0	0	0	1
-CACNA1G	canonical	24	2377	0	0	0	1	0	0	1	1	1
-CACNA1H	canonical	24	2353	0	0	0	1	0	0	0	0	1
-CACNA1I	canonical	24	2223	0	0	0	1	1	0	0	1	1
-CACNA1S	canonical	24	1873	0	0	0	1	1	0	0	0	1
-CACNA2D1	canonical	1	1103	1	1	0	1	1	0	0	0	1
-CACNA2D3	canonical	0	1091	1	1	1	1	1	0	0	0	1
-CACNA2D4	canonical	0	1137	1	1	1	1	1	0	0	0	1
-CACNG2	canonical	4	323	0	0	0	1	1	0	0	0	1
-CACNG5	canonical	4	275	0	0	0	1	1	0	0	1	1
-CADM1	canonical	1	442	1	1	0	1	1	1	1	1	1
-CADM2	canonical	1	435	1	1	0	1	1	0	0	1	1
-CADM3	canonical	1	398	1	1	0	1	1	1	0	1	1
-CADM4	canonical	1	388	1	1	0	1	1	0	0	1	1
-CALCR	canonical	7	474	1	1	0	1	0	0	1	1	1
-CALCRL	canonical	7	461	1	1	0	1	1	0	0	1	1
-CALHM1	canonical	4	346	0	0	0	1	1	1	0	0	1
-CASR	canonical	7	1078	1	1	0	1	1	0	0	1	0
-CATSPER3	canonical	6	398	0	0	0	1	0	1	0	0	0
-CAV1	canonical	0	178	0	0	0	1	1	1	0	0	0
-CCDC25	canonical	0	208	0	0	0	1	1	0	0	0	0
-CCR1	canonical	7	355	0	1	0	0	1	0	0	1	1
-CCR10	canonical	7	362	0	1	0	1	1	0	0	0	0
-CCR2	canonical	7	374	0	1	0	1	1	0	0	0	1
-CCR3	canonical	7	355	0	1	0	1	1	0	0	1	0
-CCR4	canonical	7	360	0	1	0	1	1	0	0	0	0
-CCR5	canonical	7	352	0	1	0	1	1	0	0	1	1
-CCR6	canonical	7	374	0	1	0	1	1	0	0	0	0
-CCR7	canonical	7	378	1	1	0	1	1	0	0	0	0
-CCRL2	canonical	7	344	0	1	0	0	1	0	0	0	0
-CD101	canonical	1	1021	1	1	0	1	1	0	0	1	0
-CD14	canonical	0	375	1	1	1	1	1	0	0	1	0
-CD151	canonical	4	253	0	0	0	1	1	0	0	1	1
-CD163	canonical	1	1156	1	1	0	1	1	0	0	1	1
-CD164	canonical	1	197	1	1	0	1	1	0	1	1	0
-CD177	canonical	0	437	1	1	1	0	0	0	0	1	0
-CD19	canonical	1	556	1	1	0	1	1	0	0	1	0
-CD1A	canonical	1	327	1	1	0	0	0	0	0	1	1
-CD1B	canonical	1	333	1	1	0	0	0	0	0	0	1
-CD1C	canonical	1	333	1	1	0	0	1	0	0	1	1
-CD1D	canonical	1	335	1	1	0	0	1	0	0	1	1
-CD2	canonical	1	351	1	1	0	1	1	0	0	1	0
-CD200	canonical	1	278	1	1	0	1	1	1	0	1	0
-CD200R1	canonical	1	348	1	1	0	0	1	0	1	1	1
-CD200R1L	canonical	1	271	1	1	0	0	1	0	0	1	1
-CD207	canonical	1	328	0	0	1	1	1	1	0	0	1
-CD209	canonical	1	404	0	0	1	0	1	0	1	0	1
-CD22	canonical	1	847	1	1	0	1	1	0	0	1	0
-CD226	canonical	1	336	1	1	0	1	1	1	0	1	1
-CD24	canonical	0	80	1	1	1	1	0	0	0	1	0
-CD244	canonical	1	370	1	1	0	0	1	0	0	1	0
-CD247	canonical	1	164	1	1	0	1	1	0	0	0	0
-CD27	canonical	1	260	1	1	0	1	0	0	0	0	0
-CD274	canonical	1	290	1	1	0	1	1	1	1	1	1
-CD276	canonical	1	534	1	1	0	1	1	0	1	1	1
-CD28	canonical	1	220	1	1	0	1	1	1	1	1	0
-CD300A	canonical	1	299	1	1	0	0	1	0	1	1	1
-CD300C	canonical	1	224	1	1	0	0	1	0	0	1	1
-CD300E	canonical	1	205	1	1	0	1	1	0	0	1	1
-CD300LB	canonical	1	201	1	1	0	0	1	0	0	0	1
-CD300LD	canonical	1	194	1	1	0	0	1	0	0	0	1
-CD300LF	canonical	1	290	1	1	0	0	1	0	1	1	1
-CD300LG	canonical	1	332	1	1	0	0	1	0	0	1	1
-CD302	canonical	1	232	1	1	0	1	1	0	0	1	1
-CD320	canonical	1	282	1	1	0	1	1	0	0	1	0
-CD33	canonical	1	364	1	1	0	0	0	0	0	1	1
-CD34	canonical	1	385	1	1	0	1	1	0	0	1	0
-CD36	canonical	2	472	0	0	0	1	1	0	1	1	0
-CD37	canonical	4	281	0	0	0	1	0	0	1	1	0
-CD38	canonical	1	300	0	0	1	1	1	0	0	1	0
-CD3D	canonical	1	171	1	1	0	1	1	1	1	1	1
-CD3E	canonical	1	207	1	1	0	1	1	1	0	0	0
-CD3G	canonical	1	182	1	1	0	1	1	1	0	1	1
-CD4	canonical	1	458	1	1	0	1	1	0	0	1	0
-CD40	canonical	1	277	1	1	0	1	1	0	1	1	0
-CD44	canonical	1	742	1	1	0	1	1	0	1	1	0
-CD46	canonical	1	392	1	1	0	0	1	0	0	1	1
-CD47	canonical	5	323	1	1	0	1	1	1	0	0	0
-CD48	canonical	1	243	1	1	0	0	1	0	1	1	0
-CD5	canonical	1	495	1	1	0	1	0	0	0	1	1
-CD52	canonical	0	61	1	1	1	0	1	0	0	0	0
-CD53	canonical	4	219	0	0	0	1	1	0	0	0	0
-CD55	canonical	0	381	1	1	1	0	1	0	0	1	1
-CD58	canonical	1	250	1	1	0	0	1	0	0	1	0
-CD59	canonical	0	128	1	1	1	0	0	0	0	1	0
-CD6	canonical	1	668	1	1	0	1	1	0	0	1	1
-CD7	canonical	1	240	1	1	0	0	1	0	0	1	0
-CD72	canonical	1	359	0	0	1	1	1	1	0	0	0
-CD74	canonical	1	296	0	0	1	1	1	1	0	1	0
-CD79B	canonical	1	229	1	1	0	1	1	0	0	1	0
-CD80	canonical	1	288	1	1	0	0	1	0	1	1	1
-CD81	canonical	4	236	0	0	0	1	1	0	0	0	0
-CD82	canonical	4	267	0	0	0	1	1	0	0	1	1
-CD84	canonical	1	345	1	1	0	1	1	1	1	1	0
-CD86	canonical	1	329	1	1	0	0	1	1	1	1	1
-CD8A	canonical	1	235	1	1	0	0	1	1	1	1	0
-CD8B	canonical	1	210	1	1	0	0	0	1	1	1	1
-CD8B2	canonical	1	210	1	1	0	0	0	1	0	0	1
-CD9	canonical	4	228	0	0	0	1	1	0	0	1	0
-CD93	canonical	1	652	1	1	0	1	1	0	0	1	0
-CD96	canonical	1	585	1	1	0	1	1	1	0	1	0
-CD99	canonical	1	185	1	1	0	0	1	0	0	0	1
-CD99L2	canonical	1	262	1	1	0	1	1	0	1	0	1
-CDC50A	canonical	2	361	0	0	0	1	1	0	1	1	1
-CDCP1	canonical	1	836	1	1	0	1	1	0	1	1	0
-CDH1	canonical	1	882	1	1	0	1	1	0	0	1	1
-CDH10	canonical	1	788	1	1	0	1	1	0	0	1	1
-CDH11	canonical	1	796	1	1	0	1	1	0	0	1	1
-CDH13	canonical	0	713	1	1	1	1	1	0	0	1	1
-CDH17	canonical	1	832	1	1	0	1	1	0	0	1	1
-CDH18	canonical	1	790	1	1	0	1	1	0	1	1	1
-CDH19	canonical	1	772	1	1	0	1	1	0	1	1	1
-CDH2	canonical	1	906	1	1	0	1	1	0	0	1	1
-CDH3	canonical	1	829	1	1	0	1	1	0	0	1	1
-CDH4	canonical	1	916	1	1	0	1	1	0	0	1	1
-CDH5	canonical	1	784	1	1	0	1	1	0	0	1	1
-CDH6	canonical	1	790	1	1	0	1	1	0	0	1	1
-CDHR2	canonical	1	1310	1	1	0	1	1	0	0	1	1
-CDHR3	canonical	1	885	1	1	0	1	0	0	0	1	0
-CDON	canonical	1	1287	1	1	0	1	1	0	0	1	1
-CEACAM1	canonical	1	526	1	1	0	0	0	1	1	1	1
-CEACAM3	canonical	1	252	1	1	0	0	0	1	1	1	1
-CEACAM5	canonical	1	702	1	1	0	0	0	0	0	1	1
-CEACAM6	canonical	1	344	1	1	0	0	0	1	0	1	1
-CEACAM8	canonical	1	349	1	1	0	0	1	1	0	1	1
-CELSR1	canonical	7	3014	1	1	0	1	1	0	1	1	1
-CELSR2	canonical	7	2923	1	1	0	1	0	0	0	1	1
-CELSR3	canonical	7	3312	1	1	0	1	1	0	0	1	1
-CEMIP2	canonical	1	1383	0	0	1	1	1	0	0	0	1
-CFTR	canonical	12	1480	0	0	0	1	1	0	1	0	0
-CHRM2	canonical	7	466	0	1	0	1	1	0	0	0	1
-CHRM4	canonical	7	479	0	1	0	1	1	0	0	0	1
-CHRM5	canonical	7	532	0	1	0	1	1	0	0	0	1
-CHRNA2	canonical	4	529	1	1	1	1	1	1	0	1	1
-CHRNA3	canonical	4	505	1	1	1	1	1	1	1	1	1
-CHRNA4	canonical	4	627	1	1	1	1	1	1	0	1	1
-CHRNA5	canonical	4	468	1	1	1	1	1	1	0	1	1
-CHRNA6	canonical	4	494	1	1	1	1	1	1	0	1	1
-CHRNA7	canonical	4	502	1	1	1	1	0	1	1	1	1
-CHRNA9	canonical	4	479	1	1	1	1	0	1	0	1	1
-CHRNB1	canonical	4	501	1	1	1	1	1	1	0	1	1
-CHRNB2	canonical	4	502	1	1	1	1	1	1	0	0	1
-CHRNB3	canonical	4	458	1	1	1	1	1	1	0	1	1
-CHRNB4	canonical	4	498	1	1	1	1	1	1	1	1	1
-CHRND	canonical	4	517	1	1	1	1	1	1	0	1	1
-CLCA4	canonical	0	919	1	1	1	0	1	0	0	1	1
-CLCN1	canonical	10	988	0	0	0	1	1	1	0	0	0
-CLCN2	canonical	10	898	0	0	0	1	1	1	1	0	1
-CLCNKA	canonical	10	687	0	0	0	0	1	1	1	0	1
-CLCNKB	canonical	10	687	0	0	0	0	0	1	1	1	1
-CLDN11	canonical	4	207	0	0	0	1	1	0	0	1	0
-CLDN12	canonical	4	244	0	0	0	1	0	0	0	1	0
-CLDN15	canonical	4	228	0	0	0	1	1	0	0	1	1
-CLDN17	canonical	4	224	0	0	0	1	0	0	0	0	1
-CLDN3	canonical	4	220	0	0	0	1	1	0	0	1	1
-CLDN4	canonical	4	209	0	0	0	0	1	0	0	1	1
-CLDN5	canonical	4	218	0	0	0	1	0	0	0	0	1
-CLDN8	canonical	4	225	0	0	0	1	1	0	0	0	1
-CLDN9	canonical	4	217	0	0	0	1	0	0	0	1	1
-CLEC10A	canonical	1	316	0	0	1	0	1	1	0	0	1
-CLEC12A	canonical	1	265	0	0	1	0	1	1	1	1	0
-CLEC12B	canonical	1	276	0	0	1	1	1	1	0	1	1
-CLEC14A	canonical	1	490	1	1	0	1	1	0	0	0	0
-CLEC1A	canonical	1	280	0	0	1	1	1	1	0	1	0
-CLEC1B	canonical	1	229	0	0	1	1	1	0	1	1	0
-CLEC2A	canonical	1	174	0	0	1	0	0	1	0	0	1
-CLEC4A	canonical	1	237	0	0	1	1	1	0	1	0	1
-CLEC4C	canonical	1	213	0	0	1	0	1	0	1	0	1
-CLEC4G	canonical	1	293	0	0	1	1	1	1	0	1	0
-CLEC4M	canonical	1	399	0	0	1	0	0	0	1	1	1
-CLEC5A	canonical	1	188	0	0	1	1	1	0	0	1	0
-CLEC6A	canonical	1	209	0	0	1	1	1	1	1	0	1
-CLEC7A	canonical	1	247	0	0	1	0	1	0	1	0	0
-CLEC9A	canonical	1	241	0	0	1	1	1	1	0	1	0
-CLECL1	canonical	0	167	0	1	1	0	0	0	0	0	0
-CLSTN1	canonical	1	981	1	1	0	1	1	0	0	1	1
-CLTRN	canonical	1	222	1	1	0	1	1	1	0	0	0
-CMKLR1	canonical	7	373	0	1	0	1	1	1	0	0	0
-CMKLR2	canonical	7	355	0	1	0	1	1	0	0	0	0
-CMTM6	canonical	4	183	0	0	0	1	1	0	0	0	1
-CMTM7	canonical	4	175	0	0	0	1	1	0	1	0	0
-CNGA3	canonical	4	694	0	0	0	1	1	1	0	0	1
-CNGB1	canonical	6	1251	0	0	0	1	0	0	1	0	1
-CNNM3	canonical	3	707	1	1	0	1	0	1	0	1	0
-CNR1	canonical	7	472	0	1	0	1	1	0	0	0	0
-CNTFR	canonical	0	372	1	1	1	1	1	0	0	1	0
-CNTN1	canonical	0	1018	1	1	1	1	1	0	0	1	1
-CNTNAP1	canonical	1	1384	1	1	0	1	1	0	0	1	1
-CNTNAP2	canonical	1	1331	1	1	0	1	1	0	0	1	1
-CNTNAP4	canonical	1	1308	1	1	0	1	1	0	0	1	1
-COL17A1	canonical	1	1497	0	0	1	1	1	0	0	0	1
-COLEC12	canonical	1	742	0	0	1	1	1	1	0	0	0
-CORIN	canonical	1	1042	0	0	1	1	1	0	0	1	0
-CR1	canonical	1	2039	1	1	0	0	1	0	0	1	1
-CR2	canonical	1	1033	1	1	0	0	1	0	0	1	1
-CRB1	canonical	1	1406	1	1	0	1	1	0	1	1	0
-CRHR1	canonical	7	415	1	1	0	1	1	0	1	0	1
-CRHR2	canonical	7	411	0	1	0	1	1	0	0	1	1
-CRLF2	canonical	1	371	1	1	0	0	0	0	1	1	0
-CSF1R	canonical	1	972	1	1	0	1	1	0	1	1	0
-CSF2RA	canonical	1	400	1	1	0	0	1	0	1	1	0
-CSF2RB	canonical	1	897	1	1	0	0	1	0	0	1	0
-CSF3R	canonical	1	836	1	1	0	1	1	0	1	1	0
-CSMD1	canonical	1	3564	1	1	0	1	0	0	1	1	1
-CUBN	canonical	0	3623	1	1	1	1	1	0	0	0	1
-CX3CR1	canonical	7	355	0	1	0	1	1	0	0	0	0
-CXADR	canonical	1	365	1	1	0	0	1	1	1	1	0
-CXCR1	canonical	7	350	0	1	0	1	1	0	0	1	1
-CXCR2	canonical	7	360	0	1	0	1	1	0	0	1	1
-CXCR3	canonical	7	368	0	1	0	1	1	0	1	0	0
-CXCR4	canonical	7	352	0	1	0	1	1	0	0	0	0
-CXCR5	canonical	7	372	0	1	0	1	1	0	0	1	0
-CYBB	canonical	6	570	0	0	0	1	1	0	0	1	1
-CYBRD1	canonical	6	286	0	0	0	1	1	1	1	0	1
-CYSLTR1	canonical	7	337	0	1	0	1	1	0	0	0	0
-CYSLTR2	canonical	7	346	0	1	0	0	1	1	0	0	0
-DAGLA	canonical	4	1042	0	0	0	1	1	0	0	1	0
-DCBLD2	canonical	1	775	1	1	0	1	1	0	0	1	1
-DCC	canonical	1	1447	1	1	0	1	1	0	0	1	1
-DDR1	canonical	1	913	1	1	0	1	1	0	1	1	1
-DDR2	canonical	1	855	1	1	0	1	1	0	0	1	1
-FLRT1	canonical	1	674	1	1	0	1	1	0	0	1	1
-GABRA1	canonical	4	456	1	1	1	1	1	1	0	1	1
-GABRR1	canonical	4	479	1	1	1	1	0	1	0	1	1
-GRIN1	canonical	3	938	1	1	0	1	1	0	0	1	0
-LILRB3	canonical	1	631	1	1	0	0	0	0	0	1	1
-LRP1	canonical	1	4544	1	1	0	1	1	0	1	1	1
-OPRM1	canonical	7	400	0	1	0	1	1	0	1	0	0
-PRRG4	canonical	1	226	1	1	0	1	1	0	0	0	1
-SLC12A5	canonical	12	1139	0	0	0	1	1	0	0	1	1
-SLC24A2	canonical	11	661	0	0	1	1	1	0	0	1	0
-SLC3A1	canonical	1	685	0	0	1	1	1	1	1	1	0
-SUSD4	canonical	1	490	1	1	0	1	1	0	1	1	1
-TIMD4	canonical	1	378	1	1	0	0	1	0	0	1	0
-AAMP	likely	0	434	0	0	0	1	1	0	0	0	0
-ABCA6	likely	12	1617	0	0	0	1	1	0	1	1	1
-ABCA8	likely	14	1621	0	0	0	1	1	0	1	1	1
-ABCB11	likely	12	1321	0	0	0	1	1	0	0	1	1
-ABCB6	likely	11	842	0	1	0	1	1	1	0	0	0
-ABCC3	likely	17	1527	0	1	0	1	1	0	1	1	1
-ABCC6	likely	17	1503	0	1	0	1	1	0	1	0	0
-ABCC8	likely	17	1581	0	1	0	1	1	0	1	0	1
-ABCG1	likely	6	678	0	0	0	1	1	1	1	0	1
-ABCG4	likely	6	646	0	0	0	1	1	1	0	1	1
-ABCG5	likely	6	651	0	0	0	1	1	1	0	1	0
-ABCG8	likely	6	673	0	0	0	1	1	1	0	0	0
-ABHD2	likely	1	425	0	1	0	1	1	0	0	0	0
-ACKR2	likely	7	384	0	1	0	1	1	0	0	0	0
-ACKR3	likely	7	362	0	1	0	1	1	0	0	0	0
-ACP3	likely	0	386	1	1	1	1	1	1	1	0	1
-ACP4	likely	1	426	1	1	0	1	0	1	1	1	1
-ACRBP	likely	0	543	1	1	1	1	1	1	0	0	0
-ACRV1	likely	0	265	1	1	1	1	1	0	0	0	0
-ADA	likely	0	363	0	0	0	1	0	0	0	0	0
-ADAM2	likely	1	735	1	1	0	1	1	0	0	1	1
-ADAM29	likely	1	820	1	1	0	1	1	0	0	1	1
-ADAM32	likely	1	787	1	1	0	1	1	0	0	1	1
-ADAM7	likely	1	754	1	1	0	1	1	0	1	1	1
-ADAM8	likely	1	824	1	1	0	1	1	0	1	1	1
-ADAMTS16	likely	0	1224	1	1	1	1	1	0	0	0	1
-ADAMTS9	likely	0	1935	1	1	1	1	1	0	0	0	1
-ADCY2	likely	12	1091	0	0	0	1	1	0	1	1	1
-ADCY3	likely	12	1144	0	0	0	1	1	0	1	1	1
-ADCY5	likely	12	1261	0	0	0	1	1	0	1	0	1
-ADCY6	likely	12	1168	0	0	0	1	1	0	0	1	1
-ADCY7	likely	12	1080	0	0	0	1	1	0	0	1	1
-ADCY8	likely	12	1251	0	0	0	1	1	0	0	0	1
-ADCY9	likely	12	1353	0	0	0	1	1	0	0	1	1
-ADGRG2	likely	7	1017	1	1	0	1	1	0	0	0	1
-ADGRG4	likely	7	3080	1	1	0	1	1	0	0	0	1
-ADGRL1	likely	7	1474	1	1	0	1	0	0	0	0	1
-ADGRL4	likely	7	690	1	1	0	1	1	0	0	0	0
-ADGRV1	likely	7	6306	1	1	0	1	1	0	1	0	1
-ADORA3	likely	7	318	0	1	0	1	0	0	0	0	0
-ADRA1D	likely	7	572	0	1	0	1	1	0	0	0	1
-ADRA2B	likely	7	450	0	1	0	1	1	0	0	0	1
-ADRA2C	likely	7	462	0	1	0	1	0	0	0	1	1
-ADTRP	likely	6	230	0	0	0	1	1	0	0	0	1
-AGR2	likely	0	175	1	1	1	1	1	1	0	0	1
-AGRN	likely	0	2068	1	1	1	1	0	0	1	0	1
-AGTRAP	likely	4	159	0	0	0	1	0	1	1	0	0
-AHNAK2	likely	0	5795	0	0	0	0	0	0	0	0	0
-AJAP1	likely	1	411	1	1	0	1	1	0	0	0	0
-ALK	likely	1	1620	1	1	0	1	1	0	0	1	1
-ALPG	likely	0	532	1	1	1	0	0	1	0	1	1
-ALPI	likely	0	528	1	1	1	0	1	1	0	1	1
-ALPP	likely	0	535	1	1	1	0	0	1	0	1	1
-AMFR	likely	8	643	0	0	0	1	1	0	0	0	0
-AMHR2	likely	1	573	1	1	0	1	1	0	0	1	0
-AMIGO2	likely	1	522	1	1	0	1	1	1	0	1	1
-AMOT	likely	0	1084	0	0	0	1	1	0	0	0	0
-ANKH	likely	12	492	0	0	0	1	1	0	1	0	0
-ANO2	likely	8	998	0	0	0	1	1	1	0	1	1
-ANO5	likely	8	913	0	0	0	1	1	1	0	1	1
-ANO7	likely	8	933	0	0	0	1	1	0	1	1	1
-ANXA1	likely	0	346	0	0	0	1	1	0	0	0	0
-ANXA2	likely	0	339	0	0	0	1	1	0	0	0	0
-ANXA2R	likely	0	193	0	0	0	0	0	0	0	0	0
-ANXA5	likely	0	320	0	0	0	1	1	0	0	0	0
-ANXA6	likely	0	673	0	0	0	1	1	0	0	0	0
-ANXA8	likely	0	327	0	0	0	0	0	0	0	0	0
-APLP1	likely	1	650	1	1	0	1	1	0	0	1	1
-APMAP	likely	1	416	0	0	1	1	1	0	0	0	0
-APOE	likely	0	317	1	1	1	1	1	0	0	0	0
-APOH	likely	0	345	1	1	1	1	0	0	0	0	1
-APOL1	likely	0	398	1	1	1	0	0	0	0	0	0
-AQP10	likely	6	301	0	0	0	0	1	1	1	0	1
-AQP11	likely	7	271	0	1	0	1	1	0	0	0	0
-AQP2	likely	6	271	0	0	0	1	1	1	0	0	1
-AQP7	likely	6	342	0	0	0	0	0	1	1	0	1
-AQP8	likely	6	261	0	0	0	1	1	1	0	1	0
-AQP9	likely	6	295	0	0	0	1	1	1	0	0	1
-AREG	likely	1	252	1	1	0	1	1	0	0	1	0
-ARMH4	likely	1	774	1	1	0	1	1	0	1	0	0
-ASIC5	likely	2	505	0	0	0	1	1	1	0	1	0
-ASPH	likely	2	758	0	0	0	1	1	0	1	0	0
-ASTL	likely	0	431	1	1	1	1	1	0	0	0	1
-ASTN1	likely	2	1302	1	1	1	1	1	0	0	1	1
-ATG9A	likely	4	839	0	0	0	1	1	1	0	1	1
-ATP1A4	likely	10	1029	0	0	0	1	1	0	1	1	1
-ATP2B2	likely	10	1243	0	0	0	1	1	0	0	1	1
-ATP2C2	likely	10	946	0	0	0	1	1	0	0	0	1
-ATP4A	likely	10	1035	0	0	0	1	1	0	0	0	1
-ATP4B	likely	1	291	0	0	1	1	1	0	0	0	0
-ATP5F1B	likely	0	529	0	0	0	1	1	1	0	0	0
-ATP6AP2	likely	1	350	1	1	0	1	1	0	0	0	0
-ATP6V0D2	likely	0	350	0	0	0	1	1	0	0	0	0
-ATP6V1B1	likely	0	513	0	0	0	1	1	0	0	0	0
-ATP7A	likely	8	1500	0	0	0	1	1	0	1	0	1
-ATP8B1	likely	10	1251	0	0	0	1	1	0	0	0	0
-ATP8B4	likely	10	1192	0	0	0	1	1	0	0	0	1
-ATRNL1	likely	1	1379	1	1	0	1	1	0	1	1	1
-BACE1	likely	1	501	1	1	0	1	1	0	0	1	1
-BAMBI	likely	1	260	1	1	0	1	1	0	0	0	0
-BCAN	likely	0	911	1	1	1	1	1	0	0	1	1
-BDKRB1	likely	7	353	0	1	0	1	0	0	0	0	0
-BEST2	likely	4	509	0	0	0	1	0	1	0	0	1
-BPIFA1	likely	0	256	1	1	1	1	1	0	0	0	0
-BRS3	likely	7	399	0	1	0	1	1	0	0	1	1
-BSND	likely	2	320	0	0	0	1	0	0	0	0	0
-BSPH1	likely	0	132	1	1	1	1	0	0	0	0	0
-BTC	likely	1	178	1	1	0	1	1	0	0	0	1
-BTNL2	likely	1	482	1	1	0	1	0	0	1	0	1
-C1QBP	likely	0	282	0	0	0	1	0	1	0	0	0
-C1QL3	likely	0	255	1	1	1	1	1	1	0	0	1
-C1QTNF5	likely	0	243	1	1	1	1	1	1	0	0	1
-C3	likely	0	1663	1	1	1	1	0	0	0	0	0
-C3orf18	likely	1	162	0	1	0	1	1	0	1	0	0
-C3orf52	likely	1	217	0	0	1	1	1	0	0	0	0
-C5AR2	likely	7	337	0	1	0	1	1	0	0	0	0
-C8B	likely	0	591	1	1	1	1	1	0	0	0	1
-CA14	likely	1	337	1	1	0	1	1	0	0	1	1
-CA9	likely	1	459	1	1	0	1	1	0	0	0	1
-CABS1	likely	0	395	0	1	1	1	1	0	0	0	0
-CACFD1	likely	4	172	0	0	0	1	0	0	1	0	0
-CACHD1	likely	1	1274	1	1	0	1	1	0	0	1	0
-CACNA2D2	likely	0	1150	1	1	1	1	1	0	0	0	1
-CACNG1	likely	4	222	0	0	0	1	1	1	0	1	1
-CACNG7	likely	4	275	0	0	0	1	1	0	0	0	1
-CACNG8	likely	4	425	0	0	0	1	0	0	0	0	1
-CALHM2	likely	4	323	0	0	0	1	1	0	1	1	1
-CALHM3	likely	4	344	0	0	0	1	1	1	0	0	1
-CALHM4	likely	4	314	0	0	0	1	0	1	1	0	1
-CALHM6	likely	4	315	0	0	0	1	1	1	1	0	1
-CALR	likely	0	417	1	1	1	1	1	0	0	0	1
-CALY	likely	1	217	0	0	1	1	1	0	1	0	0
-CAMKV	likely	0	501	0	0	0	1	1	0	0	0	0
-CANX	likely	1	592	1	1	0	1	1	0	0	0	1
-CAPRIN1	likely	0	709	0	0	0	1	1	1	0	0	0
-CATSPER1	likely	6	780	0	0	0	0	1	0	0	0	0
-CATSPER2	likely	6	530	0	0	0	1	0	1	1	0	0
-CATSPER4	likely	6	472	0	0	0	1	1	0	0	0	0
-CATSPERD	likely	1	798	1	1	0	0	1	0	1	1	0
-CATSPERE	likely	1	951	1	1	0	0	1	0	1	0	0
-CATSPERG	likely	1	1159	1	1	0	0	1	0	0	1	0
-CATSPERH	likely	3	116	1	1	0	1	0	0	0	0	0
-CATSPERQ	likely	2	235	0	0	0	1	1	0	0	0	0
-CATSPERT	likely	0	1820	0	0	0	0	1	0	0	0	0
-CAV2	likely	0	162	0	0	0	1	1	1	0	0	0
-CAV3	likely	0	151	0	0	0	1	1	1	0	0	0
-CAVIN1	likely	0	390	0	0	0	1	0	1	0	0	0
-CCKBR	likely	7	447	0	1	0	1	0	0	0	0	0
-CCR8	likely	7	355	0	1	0	1	1	0	1	0	0
-CCR9	likely	7	369	0	1	0	1	1	0	0	1	0
-CD109	likely	0	1445	1	1	1	1	1	0	0	1	0
-CD160	likely	0	181	1	1	1	1	1	0	0	1	0
-CD163L1	likely	1	1453	1	1	0	0	1	0	1	1	1
-CD180	likely	1	661	1	1	0	1	1	0	0	1	1
-CD248	likely	1	757	1	1	0	1	0	0	0	1	1
-CD300H	likely	1	201	1	1	0	0	1	0	1	0	1
-CD40LG	likely	1	261	0	0	1	1	1	0	0	1	0
-CD5L	likely	0	347	1	1	1	1	1	0	0	0	1
-CD63	likely	4	238	0	0	0	1	1	0	1	1	0
-CD68	likely	1	354	1	1	0	0	1	0	0	0	0
-CD69	likely	1	199	0	0	1	1	1	1	0	1	1
-CD70	likely	1	193	0	0	1	1	1	0	0	1	0
-CD79A	likely	1	226	1	1	0	1	1	0	0	1	0
-CD83	likely	1	205	1	1	0	1	1	0	0	1	0
-CDC50B	likely	2	351	0	0	0	1	0	0	0	0	1
-CDH12	likely	1	794	1	1	0	1	1	0	0	1	1
-CDH15	likely	1	814	1	1	0	1	1	0	0	1	1
-CDH16	likely	1	829	1	1	0	1	1	0	0	1	0
-CDH23	likely	1	3354	1	1	0	1	0	0	1	1	1
-CDH26	likely	1	832	1	1	0	1	1	0	1	1	0
-CDH7	likely	1	785	1	1	0	1	1	0	0	1	1
-CDH8	likely	1	799	1	1	0	1	1	0	0	1	1
-CDH9	likely	1	789	1	1	0	1	1	0	0	1	1
-CDHR1	likely	1	859	1	1	0	1	1	0	1	1	1
-CDHR5	likely	1	845	1	1	0	1	1	1	0	1	1
-CDSN	likely	0	529	1	1	1	1	1	0	0	0	0
-CEACAM20	likely	1	596	1	1	0	1	1	0	0	1	0
-CEACAM4	likely	1	244	1	1	0	0	0	0	0	1	1
-CEACAM7	likely	1	265	1	1	0	0	1	1	0	1	1
-CEMIP	likely	0	1361	1	1	1	1	1	0	0	0	1
-CFAP95	likely	0	229	0	0	0	1	1	0	0	0	0
-CFP	likely	0	469	1	1	1	1	1	0	0	0	0
-CHGB	likely	0	677	1	1	1	1	1	0	0	0	0
-CHRFAM7A	likely	4	412	0	1	1	0	0	1	0	0	1
-CHRM1	likely	7	460	0	1	0	1	0	0	0	0	1
-CHRNA10	likely	4	450	1	1	1	1	0	1	0	1	1
-CHRNE	likely	4	493	1	1	1	1	1	1	0	1	1
-CHRNG	likely	4	517	1	1	1	1	1	1	0	1	1
-CHST15	likely	1	561	0	0	1	1	1	0	0	0	0
-CKAP4	likely	1	602	0	0	1	1	1	0	0	0	0
-CLCA2	likely	1	943	1	1	0	1	0	0	0	1	1
-CLCN3	likely	8	818	0	0	0	1	1	1	0	0	1
-CLCN7	likely	10	805	0	0	0	1	1	1	1	0	0
-CLDN1	likely	4	211	0	0	0	1	1	0	0	0	1
-CLDN10	likely	4	228	0	0	0	1	1	0	0	0	1
-CLDN14	likely	4	239	0	0	0	1	1	0	0	0	1
-CLDN16	likely	4	235	0	0	0	1	1	0	0	1	0
-CLDN18	likely	4	261	0	0	0	1	1	0	0	0	1
-CLDN19	likely	4	224	0	0	0	1	1	1	1	1	1
-CLDN2	likely	4	230	0	0	0	1	1	1	0	0	1
-CLDN20	likely	4	219	0	0	0	1	1	0	0	0	1
-CLDN22	likely	4	220	0	0	0	0	1	0	0	1	1
-CLDN23	likely	4	292	0	0	0	1	1	0	0	0	0
-CLDN24	likely	4	220	0	0	0	0	1	0	0	0	1
-CLDN25	likely	4	229	0	0	0	1	0	0	0	0	1
-CLDN6	likely	4	220	0	0	0	1	0	0	0	1	1
-CLDN7	likely	4	211	0	0	0	1	1	0	1	0	1
-CLDND1	likely	4	253	0	0	0	1	1	0	1	1	0
-CLEC2B	likely	0	149	1	1	1	0	1	0	0	0	1
-CLEC2D	likely	1	191	0	0	1	0	1	1	1	1	1
-CLEC2L	likely	1	214	0	0	1	1	1	1	0	0	0
-CLEC3A	likely	0	197	1	1	1	1	1	0	0	0	1
-CLEC4D	likely	0	215	1	1	1	1	1	0	0	0	1
-CLEC4E	likely	1	219	0	0	1	1	1	0	0	0	1
-CLEC4F	likely	1	589	0	0	1	0	1	1	0	0	1
-CLIC1	likely	0	241	0	0	0	1	0	0	0	0	0
-CLIC2	likely	0	247	0	0	0	0	0	0	0	0	0
-CLIC3	likely	0	236	0	0	0	1	1	0	0	0	0
-CLIC4	likely	0	253	0	0	0	1	1	0	0	0	0
-CLNS1A	likely	0	237	0	0	0	1	1	0	0	0	0
-CLPTM1L	likely	8	538	0	0	0	1	1	0	1	0	0
-CLRN1	likely	4	232	0	0	0	1	1	1	1	0	1
-CLRN3	likely	4	226	0	0	0	1	1	1	1	0	0
-CLSTN3	likely	1	956	1	1	0	1	1	0	0	1	1
-CMTM2	likely	4	248	0	0	0	0	1	1	1	0	0
-CMTM4	likely	4	234	0	0	0	1	1	0	0	0	1
-CMTM5	likely	4	223	0	0	0	1	1	0	1	0	1
-CMTM8	likely	4	173	0	0	0	1	1	0	1	0	0
-CNGA1	likely	4	686	0	0	0	1	1	1	0	0	1
-CNGA2	likely	4	664	0	0	0	1	1	1	0	0	1
-CNGA4	likely	6	575	0	0	0	1	0	1	0	0	1
-CNGB3	likely	6	809	0	0	0	1	1	1	0	0	1
-CNNM1	likely	5	951	1	1	0	1	0	1	0	0	0
-CNNM2	likely	5	875	1	1	0	1	0	1	0	1	0
-CNNM4	likely	3	775	1	1	0	1	1	1	1	1	0
-CNR2	likely	7	360	0	1	0	1	1	0	0	0	0
-CNTN2	likely	0	1040	1	1	1	1	1	0	0	1	1
-CNTN4	likely	0	1026	1	1	1	1	1	0	0	1	1
-CNTN5	likely	0	1100	1	1	1	1	1	0	0	1	1
-CNTN6	likely	0	1028	1	1	1	1	1	0	0	1	1
-CNTNAP3	likely	1	1288	1	1	0	0	0	0	1	1	1
-COL13A1	likely	1	717	0	0	1	1	1	0	0	0	1
-COL23A1	likely	1	540	0	0	1	1	1	0	1	0	1
-COL7A1	likely	0	2944	1	1	1	0	0	0	0	0	1
-CPAMD8	likely	0	1885	1	1	1	0	0	0	0	0	0
-CR1L	likely	0	569	1	1	1	0	0	0	0	0	1
-CRB2	likely	1	1285	1	1	0	1	1	0	1	1	1
-CRB3	likely	1	120	1	1	0	1	1	0	0	0	1
-CRIM1	likely	1	1036	1	1	0	1	1	0	0	1	1
-CRIPTO	likely	0	188	1	1	1	0	0	0	0	1	1
-CRISP2	likely	0	243	1	1	1	1	1	0	0	0	1
-CRISP3	likely	0	245	1	1	1	0	1	0	0	0	1
-CRTAM	likely	1	393	1	1	0	1	1	1	0	1	1
-CSPG4	likely	1	2322	1	1	0	1	1	0	0	1	0
-CSPG5	likely	1	566	1	1	0	1	1	0	0	1	0
-CTHRC1	likely	0	243	1	1	1	1	1	0	0	0	0
-CTLA4	likely	1	223	1	1	0	1	1	0	1	1	0
-CTNS	likely	7	367	1	1	0	1	1	0	0	0	0
-CTSD	likely	0	412	1	1	1	1	1	0	0	0	1
-CTSK	likely	0	329	1	1	1	1	1	1	0	0	1
-CTSZ	likely	0	303	1	1	1	1	1	1	0	0	0
-CX3CL1	likely	1	397	1	1	0	1	1	0	0	0	1
-CXCL12	likely	0	93	1	1	1	1	1	1	0	0	0
-CXCL16	likely	1	254	1	1	0	0	1	0	0	0	0
-CXCR6	likely	7	342	0	1	0	1	1	0	0	0	0
-CYBA	likely	4	195	0	0	0	1	0	0	0	0	0
-DAG1	likely	1	895	1	1	0	1	1	0	0	1	0
-DCBLD1	likely	1	715	1	1	0	1	1	0	0	1	0
-DCHS1	likely	1	3298	1	1	0	1	1	0	0	1	1
-DCHS2	likely	1	3371	1	1	0	1	0	0	1	1	1
-DCST1	likely	6	706	0	0	0	1	1	0	1	0	0
-DCST2	likely	6	773	0	0	0	1	1	0	0	0	0
-DCSTAMP	likely	6	470	0	0	0	1	1	1	1	1	0
-DEFB103B	likely	0	67	1	1	1	0	1	0	0	0	1
-DEFB118	likely	0	123	1	1	1	0	1	0	0	0	1
-DEFB126	likely	0	111	1	1	1	0	1	0	0	0	0
-DEFB132	likely	0	95	1	1	1	0	1	0	0	0	0
-DHH	likely	0	396	1	1	1	1	1	0	0	0	1
-FGL2	likely	0	439	1	1	1	1	1	0	0	0	1
-FNDC4	likely	1	234	1	1	0	1	1	1	0	1	1
-FXYD5	likely	1	178	1	1	0	0	1	0	0	0	1
-FXYD7	likely	1	80	0	1	0	1	0	0	0	0	1
-GABRR2	likely	4	465	1	1	1	1	1	1	0	1	1
-GDPD5	likely	6	605	0	0	0	1	1	0	1	1	1
-LGMN	likely	0	433	1	1	1	1	1	1	0	0	0
-LNPEP	likely	1	1025	0	0	1	1	1	0	0	1	1
-SERINC1	likely	10	453	0	0	0	1	1	0	0	0	1
-SLC2A10	likely	12	541	0	0	0	1	1	0	0	0	0
-TCAF2	likely	0	919	0	1	1	0	0	0	0	0	1
-TMEM87A	likely	7	555	1	1	0	1	0	0	1	1	0
-A2ML1	low	0	1454	1	1	1	0	1	0	0	0	1
-AADACL3	low	1	407	0	1	0	0	0	0	0	0	0
-ABCA10	low	13	1543	0	1	0	0	1	0	1	0	1
-ABCA13	low	12	5058	0	0	0	1	1	0	1	1	0
-ABCA4	low	12	2273	0	0	0	1	1	0	0	1	1
-ABCB5	low	12	1257	0	0	0	1	1	0	1	1	1
-ABCC11	low	12	1382	0	0	0	0	1	0	0	0	0
-ABHD6	low	0	337	0	0	0	1	1	0	0	0	0
-ACP2	low	1	423	1	1	0	1	1	1	1	0	1
-ACR	low	0	421	1	1	1	1	1	0	0	0	0
-ADAM11	low	1	769	1	1	0	1	1	0	1	1	1
-ADAM18	low	1	739	1	1	0	1	1	0	1	1	1
-ADAM20	low	1	726	1	1	0	0	1	0	0	1	1
-ADAM21	low	1	722	1	1	0	1	0	0	0	1	1
-ADAM30	low	1	790	1	1	0	1	1	0	0	1	1
-ADAM33	low	1	813	1	1	0	1	1	0	0	1	1
-ADAMTS10	low	0	1103	1	1	1	1	1	0	0	0	1
-ADAMTS12	low	0	1594	1	1	1	1	1	0	0	0	1
-ADAMTS17	low	0	1095	1	1	1	1	1	0	0	0	1
-ADAMTS5	low	0	930	1	1	1	1	1	0	0	0	1
-ADAMTS8	low	0	889	1	1	1	1	1	0	0	0	1
-ADCY1	low	12	1119	0	0	0	1	0	0	0	0	1
-ADCY4	low	12	1077	0	0	0	1	1	0	1	0	1
-ADGRD2	low	7	963	0	1	0	0	0	0	0	0	1
-ADGRF3	low	7	1079	1	1	0	1	1	0	0	0	1
-ADGRF4	low	7	695	1	1	0	1	1	0	0	0	0
-ADGRG5	low	7	528	1	1	0	1	1	0	0	0	0
-ADGRG7	low	8	797	0	0	0	1	1	0	0	0	0
-AGPAT1	low	3	283	0	1	0	1	1	0	0	0	0
-AHNAK	low	0	5890	0	0	0	1	0	0	0	0	0
-AIMP1	low	0	312	0	0	0	1	1	0	0	0	0
-AKAP4	low	0	854	0	0	0	1	1	0	0	0	0
-ANG	low	0	147	1	1	1	0	0	0	0	0	1
-ANGPTL2	low	0	493	1	1	1	1	1	0	0	0	1
-ANGPTL4	low	0	406	1	1	1	1	1	0	0	0	1
-ANKEF1	low	0	776	0	0	0	1	1	0	0	0	0
-ANKRD24	low	0	1146	0	0	0	1	1	0	0	0	0
-ANO10	low	8	660	0	0	0	1	1	1	1	0	0
-ANO8	low	10	1232	0	0	0	1	0	0	0	0	0
-ANO9	low	8	782	0	0	0	1	0	1	1	1	1
-ANOS1	low	0	680	1	1	1	0	1	0	0	0	0
-ANTXR2	low	1	489	1	1	0	1	1	0	1	1	1
-ANTXRL	low	1	631	1	1	0	0	0	0	0	0	1
-ANXA13	low	0	316	0	0	0	1	0	0	0	0	0
-ANXA3	low	0	323	0	0	0	1	1	0	0	0	0
-ANXA9	low	0	345	0	0	0	1	0	0	0	0	0
-AOC1	low	0	751	1	1	1	0	1	1	0	0	1
-AOC2	low	1	756	0	0	1	1	1	1	0	0	1
-AOPEP	low	0	819	0	0	0	1	1	0	0	0	0
-APCDD1	low	0	514	1	1	1	1	1	1	0	1	1
-APCDD1L	low	0	501	1	1	1	0	0	1	0	0	1
-APCS	low	0	223	1	1	1	1	1	0	0	0	1
-APH1A	low	7	265	0	1	0	1	1	1	1	0	1
-APOBR	low	0	1097	0	0	0	0	0	0	0	0	0
-APOLD1	low	0	279	0	0	0	1	1	0	0	0	0
-AQP12B	low	6	295	0	0	0	0	0	0	1	0	1
-AQP6	low	6	282	0	0	0	1	1	1	0	0	1
-AQP7B	low	6	346	0	0	0	0	0	1	0	0	1
-ARHGEF18	low	0	1361	0	0	0	1	0	0	0	0	0
-ARMH1	low	0	440	0	0	0	1	1	0	0	0	0
-ARMH2	low	0	230	0	0	0	1	1	0	0	0	0
-ARSA	low	0	507	1	1	1	1	1	0	0	0	0
-ARSF	low	2	590	1	1	1	0	1	0	0	0	1
-ARSH	low	2	562	0	1	1	0	0	0	0	0	1
-ART4	low	0	314	1	1	1	1	1	0	0	1	0
-ASAH2B	low	0	165	1	1	1	0	0	0	0	0	1
-ASIC4	low	2	539	0	0	0	1	1	1	1	1	1
-ASTN2	low	2	1339	1	1	1	1	0	0	1	1	1
-ATP11B	low	10	1177	0	0	0	1	1	0	0	0	1
-ATP12A	low	10	1039	0	0	0	1	1	0	0	0	1
-ATP5IF1	low	0	106	0	0	0	1	1	1	0	0	0
-ATP5PF	low	0	108	0	0	0	1	1	0	0	0	0
-ATP6AP1	low	1	470	1	1	0	1	1	0	0	0	0
-ATP6V0A2	low	8	856	0	0	0	1	1	0	0	1	1
-ATP6V0A4	low	8	840	0	0	0	1	1	0	0	0	1
-ATP6V0E2	low	2	81	0	1	1	0	0	0	0	0	1
-ATRAID	low	1	229	1	1	0	1	1	0	0	1	0
-AZU1	low	0	251	1	1	1	0	1	0	0	0	0
-B4GALT1	low	1	398	0	0	1	1	1	0	0	0	1
-BEST1	low	4	585	0	0	0	1	1	1	1	0	1
-BGN	low	0	368	1	1	1	1	1	0	0	0	1
-BMP1	low	0	986	1	1	1	1	1	0	0	0	1
-BOC	low	1	1114	1	1	0	1	1	0	0	1	1
-BRI3	low	0	125	0	0	0	1	1	0	0	0	0
-BRICD5	low	1	260	0	0	1	1	1	0	0	0	0
-BTBD17	low	1	478	1	1	0	1	0	0	0	0	0
-BTN1A1	low	1	526	1	1	0	1	1	0	0	1	1
-BTNL9	low	1	535	1	1	0	1	0	1	0	1	1
-C14orf180	low	1	160	0	0	1	0	0	0	0	0	0
-C16orf54	low	1	224	0	1	0	1	0	0	0	0	0
-C17orf58	low	0	339	1	1	1	1	0	0	0	0	0
-C19orf38	low	1	230	1	1	0	1	1	0	0	1	0
-C1QB	low	0	253	1	1	1	1	0	1	0	0	1
-C1QL2	low	0	287	1	1	1	1	1	0	0	0	1
-C1QTNF1	low	0	281	1	1	1	1	1	1	0	0	1
-C1QTNF4	low	0	329	1	1	1	1	0	1	0	0	0
-C1orf210	low	1	113	0	1	0	1	1	0	0	0	0
-C2orf92	low	1	265	1	1	0	0	1	0	0	0	0
-C4B_2	low	0	1744	1	1	1	0	0	0	0	0	1
-C5orf15	low	1	265	1	1	0	1	0	0	0	1	0
-C6orf58	low	0	330	1	1	1	1	1	0	0	0	0
-C8G	low	0	202	1	1	1	1	0	0	0	0	0
-C9	low	0	559	1	1	1	1	1	0	0	0	1
-CA10	low	0	328	1	1	1	1	1	1	0	0	1
-CA11	low	0	328	1	1	1	1	1	1	0	0	1
-CACNG3	low	4	315	0	0	0	1	1	0	0	1	1
-CACNG4	low	4	327	0	0	0	1	1	0	0	0	1
-CACNG6	low	4	260	0	0	0	1	0	1	0	0	1
-CALHM5	low	4	309	0	0	0	1	1	1	0	0	1
-CAMP	low	0	170	1	1	1	1	1	0	0	0	0
-CANT1	low	1	401	0	0	1	1	1	1	1	0	0
-CATSPERB	low	1	1116	1	1	0	0	1	0	0	0	0
-CBARP	low	1	705	0	1	0	1	1	0	0	0	0
-CBLN1	low	0	193	1	1	1	1	1	1	0	0	1
-CBLN2	low	0	224	1	1	1	1	1	1	0	0	1
-CCDC126	low	1	140	0	0	1	1	1	0	0	0	1
-CCDC198	low	0	296	0	0	0	1	1	0	0	0	0
-CCDC70	low	0	222	0	0	0	1	1	0	0	0	0
-CCDC78	low	0	438	0	0	0	1	1	1	0	0	0
-CCDC80	low	0	950	1	1	1	1	1	0	0	0	0
-CCKAR	low	7	428	0	1	0	1	1	0	0	0	0
-CCL25	low	0	150	1	1	1	0	1	0	0	0	0
-CCN1	low	0	381	1	1	1	1	1	0	0	0	1
-CCN2	low	0	349	1	1	1	1	1	0	0	0	1
-CCN3	low	0	357	1	1	1	1	1	0	0	0	1
-CD164L2	low	1	174	1	1	0	1	1	0	0	0	0
-CD1E	low	1	388	1	1	0	0	1	0	1	1	1
-CDCP2	low	1	540	1	1	0	1	1	0	1	0	1
-CDH20	low	1	801	1	1	0	1	1	0	0	1	1
-CDH22	low	1	828	1	1	0	1	1	0	0	1	1
-CDH24	low	1	819	1	1	0	1	1	0	0	1	1
-CDHR4	low	1	788	1	1	0	1	0	0	1	1	0
-CDNF	low	0	187	1	1	1	1	0	0	0	0	1
-CEACAM18	low	0	384	1	1	1	1	1	0	0	0	0
-CEACAM19	low	1	300	1	1	0	1	1	0	1	1	0
-CEACAM21	low	1	293	1	1	0	0	0	0	1	1	1
-CERCAM	low	0	595	1	1	1	1	1	0	0	0	1
-CFC1	low	0	223	1	1	1	0	0	1	0	1	1
-CFC1B	low	0	223	1	1	1	0	0	0	0	0	1
-CFHR2	low	0	270	1	1	1	0	0	0	0	0	1
-CHL1	low	1	1208	1	1	0	1	1	0	0	1	1
-CHRM3	low	7	590	0	1	0	1	1	0	0	0	1
-CHRNA1	low	4	457	1	1	1	1	1	1	0	1	1
-CIROP	low	1	788	1	1	0	1	1	0	0	0	0
-CIROZ	low	0	823	1	1	1	1	1	0	0	0	0
-CIST1	low	1	234	1	1	0	0	1	0	0	0	0
-CKLF	low	4	152	0	0	0	1	1	0	1	0	0
-CLCA1	low	0	914	1	1	1	1	0	0	0	0	1
-CLCC1	low	3	551	1	1	0	1	1	0	1	0	0
-CLDN34	low	4	214	0	0	0	0	1	0	0	0	0
-CLEC17A	low	1	378	0	0	1	0	1	0	0	1	1
-CLIC5	low	0	410	0	0	0	0	1	0	0	0	0
-CLIC6	low	0	704	0	0	0	1	0	0	0	0	0
-CLMP	low	1	373	1	1	0	1	1	1	0	1	0
-CLN3	low	11	438	0	0	1	1	1	0	1	0	0
-CLN5	low	0	358	1	1	1	1	1	0	0	0	0
-CLRN2	low	4	232	0	0	0	1	1	1	0	0	1
-CLSTN2	low	1	955	1	1	0	1	1	0	0	1	1
-CLUL1	low	0	466	1	1	1	0	1	0	0	0	0
-CMTM1	low	4	169	0	0	0	0	1	0	1	0	0
-CNIH2	low	3	160	0	0	1	1	1	0	0	0	1
-CNIH3	low	3	160	0	0	1	1	1	0	0	0	1
-CNMD	low	1	334	0	0	1	1	1	0	0	0	0
-CNTN3	low	0	1028	1	1	1	1	1	0	0	1	1
-CNTNAP3B	low	1	1288	1	1	0	0	0	0	1	1	1
-CNTNAP5	low	1	1306	1	1	0	0	1	0	0	1	1
-COL25A1	low	1	654	0	0	1	1	1	0	0	0	1
-COL6A2	low	0	1019	1	1	1	1	0	0	0	0	1
-COL6A3	low	0	3177	1	1	1	1	1	0	0	0	1
-COLQ	low	0	455	1	1	1	1	1	0	0	0	1
-CPA6	low	0	437	1	1	1	1	1	0	0	0	1
-CPD	low	1	1380	1	1	0	1	1	0	0	1	1
-CPE	low	0	476	1	1	1	1	1	0	0	0	1
-CPM	low	0	443	1	1	1	1	1	0	0	1	1
-CPO	low	0	374	1	1	1	0	1	0	0	0	1
-CPZ	low	0	652	1	1	1	1	1	0	0	0	1
-CREG1	low	0	220	1	1	1	1	1	1	0	0	0
-CRIPTO3	low	0	188	1	1	1	0	0	0	0	0	1
-CRISP1	low	0	249	1	1	1	1	1	0	0	0	1
-CRISPLD1	low	0	500	1	1	1	1	1	0	0	0	1
-CRISPLD2	low	0	497	1	1	1	1	1	0	0	0	1
-CRYAB	low	0	175	0	0	0	1	1	0	0	0	0
-CSF1	low	1	554	1	1	0	1	1	1	0	1	0
-CSMD2	low	1	3487	0	1	0	1	1	0	1	1	1
-CSMD3	low	1	3707	1	1	0	1	1	0	1	0	1
-CST7	low	0	145	1	1	1	1	1	0	0	0	0
-CT47A11	low	0	288	0	0	0	0	0	0	0	0	0
-CT47A3	low	0	288	0	0	0	0	0	0	0	0	0
-CTSA	low	0	480	1	1	1	1	1	1	0	0	0
-CTSB	low	0	339	1	1	1	1	1	0	0	0	0
-CTSE	low	0	396	1	1	1	1	1	0	0	0	1
-CTSG	low	0	255	1	1	1	1	1	0	0	0	1
-CTSH	low	0	335	1	1	1	1	1	0	0	0	1
-CTSL	low	0	333	1	1	1	0	1	0	0	0	1
-CTSS	low	0	331	1	1	1	1	1	1	0	0	1
-CTXN1	low	1	82	0	1	0	1	0	0	0	0	0
-CTXN3	low	1	81	0	1	0	1	0	0	0	0	0
-CTXND1	low	1	59	0	1	0	1	0	0	0	0	0
-CTXND2	low	1	55	0	1	0	1	0	0	0	0	0
-CUZD1	low	1	607	1	1	0	1	1	0	0	1	1
-CXorf66	low	1	361	1	1	0	0	1	0	0	0	0
-CYB561	low	6	251	0	0	0	1	1	1	1	0	1
-CYP4Z1	low	1	505	1	1	0	0	0	0	0	0	0
-CYSTM1	low	0	97	0	0	0	1	1	0	0	0	0
-CYTL1	low	0	136	1	1	1	1	0	0	0	0	0
-DCT	low	1	519	1	1	0	1	1	0	0	1	1
-DCXR	low	0	244	0	0	0	1	1	1	0	0	0
-DEFB106B	low	0	65	1	1	1	0	0	0	0	0	1
-DEFB112	low	0	113	1	1	1	0	0	0	0	0	0
-DEFB113	low	0	82	1	1	1	1	1	0	0	0	0
-DEFB115	low	0	88	1	1	1	0	1	0	0	0	1
-DGCR2	low	1	550	1	1	0	1	0	0	1	1	0
-GPR148	low	7	347	0	1	0	0	1	0	0	0	0
-GPR162	low	7	588	0	1	0	1	1	0	1	0	1
-OR10A4	low	7	315	0	1	0	1	1	0	0	0	1
-OR4F15	low	7	312	0	1	0	1	1	1	0	0	1
-OR4F21	low	7	312	0	1	0	0	0	0	0	0	1
-OR8U1	low	7	309	0	1	0	1	1	0	0	0	1
-OR8U9	low	7	309	0	1	0	0	0	0	0	0	0
-SLIT3	low	0	1523	1	1	1	1	1	0	0	0	1
-TMEM198	low	7	360	0	1	0	0	0	0	0	0	0
-AADACL4	no	1	407	0	1	0	0	0	0	0	0	0
-AATK	no	1	1374	0	1	0	0	0	0	1	0	1
-ABCA12	no	12	2595	0	0	0	1	1	0	1	1	0
-ABCA2	no	12	2435	0	0	0	1	0	0	0	1	0
-ABCA3	no	12	1704	0	0	0	1	1	0	1	1	0
-ABCA5	no	14	1642	0	0	0	1	1	0	1	1	0
-ABCA9	no	12	1624	0	0	0	1	1	0	1	1	1
-ABCB9	no	10	766	0	0	0	1	1	1	1	1	0
-ABCC12	no	12	1359	0	0	0	1	1	0	1	0	0
-ABHD12	no	1	398	0	0	1	1	1	0	0	0	1
-ABHD3	no	0	409	0	0	0	1	1	0	1	0	0
-ABI3BP	no	0	1068	1	1	1	1	1	0	0	0	0
-ABRA	no	0	381	0	0	0	1	1	0	0	0	0
-ACTN1	no	0	892	0	0	0	1	1	0	0	0	0
-ACTRT1	no	0	376	0	0	0	1	1	0	0	0	0
-ACY3	no	0	319	0	0	0	1	1	1	0	0	0
-ADA2	no	0	511	1	1	1	0	1	1	0	0	0
-ADAMTS1	no	0	967	1	1	1	1	1	0	0	0	1
-ADAMTS14	no	0	1223	1	1	1	1	1	0	0	0	1
-ADAMTS15	no	0	950	1	1	1	1	1	0	0	0	1
-ADAMTS18	no	0	1221	1	1	1	1	1	0	0	0	1
-ADAMTS19	no	0	1213	1	1	1	1	1	0	0	0	1
-ADAMTS3	no	0	1205	1	1	1	1	1	0	0	0	1
-ADAMTS6	no	0	1117	1	1	1	1	1	0	0	0	1
-ADAMTS7	no	0	1686	1	1	1	1	1	0	0	0	1
-ADAMTSL3	no	0	1691	1	1	1	1	1	0	0	0	1
-ADAMTSL4	no	0	1074	1	1	1	1	1	0	0	0	1
-ADAP2	no	0	381	0	0	0	1	0	0	0	0	0
-ADD2	no	0	726	0	0	0	1	1	1	0	0	0
-ADISSP	no	0	174	0	0	0	1	1	0	0	0	0
-ADM5	no	0	153	1	1	1	0	0	0	0	0	0
-AEBP1	no	0	1158	1	1	1	1	1	0	0	0	1
-AFAP1L2	no	0	818	0	0	0	1	0	0	0	0	0
-AGMO	no	9	445	0	1	0	1	1	0	0	0	0
-AGR3	no	0	166	1	1	1	1	1	0	0	0	1
-AHCYL1	no	0	530	0	0	0	1	1	1	0	0	0
-AIFM2	no	0	373	0	0	0	1	1	0	0	0	0
-AIG1	no	6	238	0	0	0	1	1	0	1	0	1
-AJM1	no	0	976	0	0	0	1	0	0	0	0	0
-AKAP19	no	0	95	0	0	0	1	1	0	0	0	0
-AKAP7	no	0	104	0	0	0	1	1	0	0	0	0
-AKR1A1	no	0	325	0	0	0	1	1	0	0	0	0
-ALG10B	no	13	473	0	0	1	0	0	0	0	0	1
-ALKAL2	no	0	152	1	1	1	0	0	0	0	0	0
-ALOX5AP	no	4	161	0	1	1	1	1	1	0	0	0
-ALPK2	no	0	2170	0	0	0	1	1	0	0	0	0
-AMBP	no	0	352	1	1	1	1	1	0	0	0	1
-AMOTL2	no	0	779	0	0	0	1	1	1	0	0	0
-AMPH	no	0	695	0	0	0	1	1	1	0	0	0
-AMTN	no	0	209	1	1	1	1	1	0	0	0	0
-ANGPTL7	no	0	346	1	1	1	1	1	0	0	0	1
-ANGPTL8	no	0	198	1	1	1	1	0	1	0	0	0
-ANK2	no	0	3957	0	0	0	1	1	0	0	0	0
-ANK3	no	0	4377	0	0	0	0	0	0	0	0	0
-ANKFN1	no	0	1146	0	0	0	1	1	0	0	0	0
-ANKRD13A	no	0	590	0	0	0	1	1	0	0	0	0
-ANKRD13B	no	0	626	0	0	0	1	1	0	0	0	0
-ANKRD20A1	no	0	823	0	0	0	0	0	0	0	0	0
-ANKRD30BL	no	0	258	0	0	0	0	1	0	0	0	0
-ANKRD35	no	0	1001	0	0	0	1	1	1	0	0	0
-ANXA7	no	0	488	0	0	0	1	1	0	0	0	0
-ANXA8L1	no	0	327	0	0	0	0	0	0	0	0	0
-AP2M1	no	0	435	0	0	0	1	1	0	0	0	0
-APC	no	0	2843	0	0	0	1	1	0	0	0	0
-APOD	no	0	189	1	1	1	1	1	0	0	0	0
-APOM	no	0	188	1	1	1	1	1	0	0	0	0
-AQP12A	no	6	295	0	0	0	0	0	0	0	0	1
-ARAP1	no	0	1450	0	0	0	1	1	0	0	0	0
-ARF5	no	0	180	0	0	0	1	1	0	0	0	0
-ARHGAP18	no	0	663	0	0	0	1	1	0	0	0	0
-ARHGAP45	no	0	1136	0	0	0	1	1	0	0	0	0
-ARK2C	no	0	346	0	0	0	1	1	0	0	0	0
-ARL13A	no	0	290	0	0	0	0	1	0	0	0	0
-ARL15	no	0	204	0	0	0	1	1	0	0	0	0
-ARMCX5	no	0	558	0	0	0	1	1	0	0	0	0
-ARRDC1	no	0	433	0	0	0	1	1	0	0	0	0
-ARRDC4	no	0	418	0	0	0	1	1	0	0	0	0
-ARRDC5	no	0	328	0	0	0	1	1	0	0	0	0
-ARSB	no	0	533	1	1	1	1	1	0	0	0	1
-ARSD	no	2	593	1	1	1	0	1	0	0	0	1
-ARSJ	no	0	599	1	1	1	1	1	0	0	0	1
-ART5	no	0	291	1	1	1	1	1	0	0	0	1
-ASIP	no	0	132	1	1	1	1	0	0	0	0	0
-ASPHD1	no	0	390	0	0	0	1	1	0	0	0	0
-ASPHD2	no	0	369	0	0	0	1	1	0	0	0	0
-ATP13A1	no	12	1204	0	0	0	1	1	0	1	0	0
-ATP13A3	no	12	1226	0	0	0	1	1	0	1	1	0
-ATP13A5	no	12	1218	0	0	0	1	1	0	0	1	0
-ATP1B4	no	1	357	0	0	1	1	1	0	0	0	1
-ATP6V1B2	no	0	511	0	0	0	1	1	0	0	0	0
-ATP6V1E1	no	0	226	0	0	0	1	1	0	0	0	0
-ATP7B	no	8	1465	0	0	0	1	1	0	1	0	1
-ATP8A2	no	10	1188	0	0	0	1	1	0	1	0	1
-AURKA	no	0	403	0	0	0	1	1	0	0	0	0
-AVEN	no	0	362	0	0	0	1	1	0	0	0	0
-AVPI1	no	0	147	0	0	0	1	1	0	0	0	0
-AZGP1	no	0	298	1	1	1	1	1	0	0	0	0
-B4GALNT2	no	1	566	0	0	1	1	1	0	1	0	1
-BAIAP2	no	0	552	0	0	0	1	1	1	0	0	0
-BIN2	no	0	565	0	0	0	1	1	1	0	0	0
-BLTP1	no	1	5005	0	1	0	1	1	0	0	0	0
-BLVRB	no	0	206	0	0	0	1	1	0	0	0	0
-BMP10	no	0	424	1	1	1	1	1	1	0	0	1
-BMP8A	no	0	402	1	1	1	0	0	0	0	0	1
-BMPER	no	0	685	1	1	1	1	1	0	0	0	0
-BMX	no	0	675	0	0	0	1	1	0	0	0	0
-BPI	no	0	487	1	1	1	1	1	0	0	0	1
-BPIFA3	no	0	254	1	1	1	1	1	0	0	0	0
-BPIFB2	no	0	458	1	1	1	1	1	1	0	0	0
-BPIFB6	no	0	453	1	1	1	1	1	0	0	0	0
-BPIFC	no	0	507	1	1	1	1	1	0	0	0	0
-BRI3BP	no	3	251	1	1	0	1	1	0	0	0	0
-BRINP2	no	0	783	1	1	1	1	1	0	0	0	1
-BTD	no	0	523	1	1	1	1	1	0	0	0	1
-C11orf24	no	1	449	1	1	0	0	1	0	0	0	0
-C16orf89	no	0	402	1	1	1	1	1	0	0	0	0
-C17orf99	no	0	265	1	1	1	0	1	0	0	0	0
-C1QL1	no	0	258	1	1	1	1	1	0	0	0	1
-C1QL4	no	0	238	1	1	1	1	1	1	0	0	1
-C1QTNF12	no	0	302	1	1	1	1	0	1	0	0	1
-C1QTNF2	no	0	285	1	1	1	1	0	1	0	0	1
-C1QTNF3	no	0	246	1	1	1	1	1	1	0	0	1
-C1QTNF6	no	0	278	1	1	1	1	1	1	0	0	1
-C1QTNF7	no	0	289	1	1	1	1	1	1	0	0	1
-C1QTNF8	no	0	252	1	1	1	0	0	1	0	0	1
-C1QTNF9	no	0	333	1	1	1	0	0	0	0	0	1
-C1QTNF9B	no	0	333	1	1	1	0	0	1	0	0	1
-C1RL	no	0	487	1	1	1	1	1	0	0	0	1
-C1orf116	no	0	601	0	0	0	1	1	0	0	0	0
-C1orf54	no	0	131	1	1	1	1	1	0	0	0	0
-C2CD2L	no	1	706	0	1	0	1	1	0	0	0	0
-C2CD5	no	0	1000	0	0	0	1	1	0	0	0	0
-C2orf74	no	1	187	0	1	0	1	1	0	0	0	0
-C4A	no	0	1744	1	1	1	0	0	0	0	0	1
-C5orf46	no	0	87	1	1	1	1	1	0	0	0	0
-C6orf120	no	0	191	1	1	1	1	1	0	0	0	0
-C8A	no	0	584	1	1	1	1	1	0	0	0	1
-CABP7	no	1	215	0	0	1	1	0	0	0	0	1
-CASD1	no	15	797	0	0	1	1	1	0	0	1	0
-CATIP	no	0	387	0	0	0	1	1	0	0	0	0
-CATSPERZ	no	0	200	0	0	0	0	1	0	0	0	0
-CAVIN2	no	0	425	0	0	0	1	1	1	0	0	0
-CAVIN3	no	0	261	0	0	0	1	0	1	0	0	0
-CAVIN4	no	0	364	0	0	0	1	1	1	0	0	0
-CBLN3	no	0	205	1	1	1	1	1	1	0	0	1
-CCBE1	no	0	406	1	1	1	1	1	0	0	0	0
-CCDC107	no	1	283	1	1	0	1	1	0	1	0	0
-CCDC124	no	0	223	0	0	0	1	1	0	0	0	0
-CCDC136	no	1	1154	0	0	1	1	1	0	0	0	0
-CCDC144A	no	1	1427	0	0	1	0	0	0	1	0	0
-CCDC154	no	0	667	0	0	0	1	1	0	0	0	0
-CCDC167	no	1	97	0	0	1	1	0	0	0	0	0
-CCDC24	no	0	307	0	0	0	1	1	0	0	0	0
-CCDC3	no	0	270	1	1	1	1	1	1	0	0	0
-CCDC81	no	0	652	0	0	0	1	1	0	0	0	0
-CCDC85C	no	0	419	0	0	0	1	0	1	0	0	0
-CCDC97	no	0	343	0	0	0	1	1	0	0	0	0
-CCL21	no	0	134	1	1	1	0	1	0	0	0	0
-CCL27	no	0	112	1	1	1	0	0	0	0	0	0
-CCL5	no	0	91	1	1	1	1	0	0	0	0	1
-CCN5	no	0	250	1	1	1	1	1	0	0	0	1
-CCN6	no	0	354	1	1	1	1	1	0	0	0	1
-CCNYL1	no	0	359	0	0	0	1	1	0	0	0	0
-CCNYL1B	no	0	285	0	0	0	0	0	0	0	0	0
-CCPG1	no	1	757	0	0	1	1	1	1	0	0	0
-CDC42EP1	no	0	391	0	0	0	1	1	0	0	0	0
-CDK14	no	0	469	0	0	0	1	1	0	0	0	0
-CDK16	no	0	496	0	0	0	1	0	0	0	0	0
-CDRT15	no	0	188	0	0	0	0	0	0	0	0	0
-CDV3	no	0	258	0	0	0	1	1	0	0	0	0
-CELA1	no	0	258	1	1	1	1	1	0	0	0	1
-CFAP126	no	0	177	0	0	0	1	1	0	0	0	0
-CFAP299	no	0	233	0	0	0	1	1	0	0	0	0
-CFB	no	0	764	1	1	1	1	1	0	0	0	1
-CFHR5	no	0	569	1	1	1	0	0	0	0	0	0
-CFLAR	no	0	480	0	0	0	1	1	1	0	0	0
-CGAS	no	0	522	0	0	0	1	1	0	0	0	0
-CGB1	no	0	187	1	1	1	0	0	0	0	0	1
-CGB2	no	0	163	1	1	1	0	0	0	0	0	1
-CGN	no	0	1203	0	0	0	1	0	0	0	0	0
-CHIA	no	0	476	1	1	1	0	1	0	0	0	1
-CHIC2	no	0	165	0	0	0	1	1	0	0	0	0
-CHID1	no	0	393	1	1	1	1	1	0	0	0	0
-CHLSN	no	0	194	0	0	0	1	1	0	0	0	0
-CHODL	no	1	273	1	1	0	1	1	0	1	1	1
-CHP2	no	0	196	0	0	0	1	1	0	0	0	0
-CHRDL1	no	0	456	1	1	1	1	1	0	0	0	1
-CIB1	no	0	191	0	0	0	1	1	0	0	0	0
-CIB3	no	0	187	0	0	0	1	1	0	0	0	0
-CIMIP2C	no	0	201	0	0	0	1	1	0	0	0	0
-CIMIP6	no	0	287	0	0	0	1	1	0	0	0	0
-CIP2A	no	0	905	0	0	0	1	1	1	0	0	0
-CLDND2	no	4	167	0	0	0	1	1	0	0	0	0
-CLEC18B	no	0	455	1	1	1	0	0	0	0	0	1
-CLEC18C	no	0	446	1	1	1	0	0	0	0	0	1
-CLEC19A	no	0	186	1	1	1	0	0	1	0	0	0
-CLEC3B	no	0	202	1	1	1	1	1	0	0	0	1
-CLMB	no	0	76	0	0	0	1	0	0	0	0	0
-CLPSL2	no	0	100	1	1	1	1	0	0	0	0	0
-CLPTM1	no	8	669	0	0	0	1	1	0	1	0	0
-CLU	no	0	449	1	1	1	1	1	0	0	0	0
-CMA1	no	0	247	1	1	1	1	1	0	0	0	1
-CMTM3	no	4	182	0	0	0	1	1	0	1	0	1
-CNFN	no	0	112	0	0	0	1	1	1	0	0	0
-CNKSR1	no	0	720	0	0	0	1	0	0	0	0	0
-CNKSR3	no	0	555	0	0	0	1	1	0	0	0	0
-CNPY4	no	0	248	1	1	1	1	1	0	0	0	1
-CNST	no	1	725	0	0	1	1	1	1	1	0	0
-COBLL1	no	0	1128	0	0	0	1	1	0	0	0	0
-COL18A1	no	0	1754	1	1	1	1	0	0	0	0	1
-COL26A1	no	0	441	1	1	1	1	1	1	0	0	1
-COL5A3	no	0	1745	1	1	1	1	1	0	0	0	1
-COL6A5	no	0	2615	1	1	1	1	1	0	0	0	1
-COLEC10	no	0	277	1	1	1	1	1	0	0	0	1
-CP	no	0	1065	1	1	1	1	1	0	0	0	1
-CPN2	no	0	545	1	1	1	1	1	0	0	0	0
-CPNE7	no	0	633	0	0	0	1	1	0	0	0	0
-CPNE9	no	0	553	0	0	0	1	1	1	0	0	0
-CPPED1	no	0	314	0	0	0	1	1	0	0	0	0
-CPQ	no	0	472	1	1	1	1	1	1	0	0	0
-CPXM1	no	0	734	1	1	1	1	1	0	0	0	1
-CPXM2	no	0	756	1	1	1	1	1	0	0	0	1
-CRACR2A	no	0	731	0	0	0	1	1	1	0	0	0
-CRCP	no	0	148	0	0	0	1	0	0	0	0	0
-CREB3	no	1	371	0	0	1	1	1	0	1	0	0
-CREG2	no	0	290	1	1	1	1	1	1	0	0	0
-CRELD1	no	2	420	1	1	1	1	1	0	1	0	1
-CRELD2	no	0	353	1	1	1	1	1	0	0	0	1
-CRLF1	no	1	422	1	1	0	1	1	0	0	0	0
-CSNK1G2	no	0	415	0	0	0	1	0	0	0	0	0
-CT47A12	no	0	288	0	0	0	0	0	0	0	0	0
-CT47A4	no	0	288	0	0	0	0	0	0	0	0	0
-CT47A7	no	0	288	0	0	0	0	0	0	0	0	0
-CT47A9	no	0	288	0	0	0	0	0	0	0	0	0
-CTNNA1	no	0	906	0	0	0	1	0	0	0	0	0
-CTNNB1	no	0	781	0	0	0	1	1	0	0	0	0
-CTNND1	no	0	968	0	0	0	1	1	0	0	0	0
-CTTN	no	0	550	0	0	0	1	1	0	0	0	0
-CTXN2	no	1	81	0	1	0	1	1	0	0	0	0
-CUTA	no	0	179	0	0	0	1	1	1	0	0	0
-CXCL9	no	0	125	1	1	1	1	1	0	0	0	0
-CYB561D1	no	6	229	0	0	0	1	1	0	1	0	1
-CYB5D2	no	0	264	1	1	1	1	1	0	0	0	0
-CYP19A1	no	1	503	1	1	0	1	1	0	0	0	0
-CYP2D6	no	1	497	0	1	0	0	1	0	0	0	0
-CYP2E1	no	1	493	1	1	0	1	1	0	0	0	1
-CYP46A1	no	1	500	1	1	0	1	1	0	1	0	0
-CYSRT1	no	0	144	0	0	0	1	1	0	0	0	0
-CYTH1	no	0	398	0	0	0	1	1	0	0	0	0
-CYYR1	no	1	154	1	1	0	1	0	0	1	0	0
-DAGLB	no	4	672	0	0	0	1	1	0	1	1	0
-DAO	no	0	347	0	0	0	1	1	0	0	0	0
-DAPP1	no	0	280	0	0	0	1	1	0	0	0	0
-DBH	no	0	617	1	1	1	1	1	1	0	0	0
-DBNL	no	0	430	0	0	0	1	1	0	0	0	0
-DCD	no	0	110	1	1	1	0	0	0	0	0	0
-DDT	no	0	118	0	0	0	0	1	1	0	0	0
-DDTL	no	0	134	0	0	0	0	1	1	0	0	0
-DEFA1	no	0	94	1	1	1	0	0	0	0	0	1
-DEFA1B	no	0	94	1	1	1	0	0	0	0	0	1
-DEFA3	no	0	94	1	1	1	0	0	0	0	0	1
-DEFA6	no	0	100	1	1	1	0	1	0	0	0	1
-DEFB104A	no	0	72	1	1	1	0	0	0	0	0	1
-DEFB105A	no	0	78	1	1	1	0	0	0	0	0	1
-DEFB105B	no	0	78	1	1	1	0	0	0	0	0	1
-DEFB107B	no	0	70	1	1	1	0	0	0	0	0	1
-DEFB108B	no	0	73	1	1	1	0	0	0	0	0	1
-DEFB109B	no	0	87	1	1	1	0	0	0	0	0	1
-DEFB114	no	0	69	1	1	1	0	1	0	0	0	0
-DEFB116	no	0	102	1	1	1	0	1	0	0	0	1
-DEFB119	no	0	84	1	1	1	1	1	0	0	0	0
-DEFB121	no	0	76	1	1	1	0	1	0	0	0	1
-DEFB124	no	0	71	1	1	1	1	0	0	0	0	1
-DEFB130B	no	0	79	1	1	1	0	0	0	0	0	1
-DEFB131B	no	0	70	1	1	1	0	0	0	0	0	1
-DHRS7B	no	1	325	0	1	0	1	1	1	0	0	0
-DISP3	no	13	1392	0	0	1	1	1	0	1	0	0
-FREM3	no	0	2139	1	1	1	0	0	0	0	0	1
-GNB2	no	0	340	0	0	0	1	1	0	0	0	0
-KSR1	no	0	923	0	0	0	0	0	0	0	0	0
-NID2	no	0	1375	1	1	1	1	1	0	0	0	1
-SLC36A3	no	11	470	0	0	1	1	1	0	1	0	1
-VMP1	no	8	406	0	0	0	1	1	0	1	0	0
-AADACL2	uncertain	0	401	0	0	0	0	0	0	0	0	0
-C17orf67	uncertain	0	90	1	1	1	1	1	0	0	0	0
-C17orf78	uncertain	1	275	1	1	0	1	0	0	1	0	0
-C18orf54	uncertain	0	372	0	0	0	1	1	0	0	0	0
-C1orf185	uncertain	1	199	0	1	0	0	1	0	0	0	0
-C3orf80	uncertain	1	247	1	1	0	1	0	0	0	1	0
-CLEC20A	uncertain	0	400	1	1	1	0	0	0	0	0	0
-CT47A6	uncertain	0	288	0	0	0	0	0	0	0	0	0
-SMIM10L2A	uncertain	0	78	0	0	0	0	0	0	0	0	0
+gene_symbol	group	tm_helix_count	protein_length	ecd_length_residues	has_signal_peptide	n_term_extracellular	c_term_extracellular	mouse_has_one2one	cyno_has_one2one	schweke_homomer	alt_iso_diff_topo	has_surface_bind_site	has_concerning_paralog
+ABCA1	canonical	12	2261	1031	0	0	0	1	1	0	0	1	1
+ABCA7	canonical	12	2146	926	0	0	0	1	1	0	1	1	1
+ABCB1	canonical	12	1280	109	0	0	0	0	0	0	0	1	1
+ABCB4	canonical	12	1286	116	0	0	0	1	1	0	0	1	1
+ABCC1	canonical	17	1531	140	0	1	0	1	1	0	0	1	1
+ABCC10	canonical	17	1492	167	0	1	0	1	1	0	1	0	0
+ABCC2	canonical	17	1545	140	0	1	0	1	1	0	0	1	1
+ABCC4	canonical	12	1325	86	0	0	0	1	1	0	1	1	0
+ABCC5	canonical	12	1437	78	0	0	0	1	1	0	1	1	0
+ABCC9	canonical	17	1549	141	0	1	0	1	1	0	0	1	1
+ABCG2	canonical	6	655	91	0	0	0	0	0	1	1	0	0
+ACE	canonical	1	1306	1230	1	1	0	1	1	0	1	1	1
+ACE2	canonical	1	805	726	1	1	0	1	1	1	0	1	1
+ACHE	canonical	0	614	583	1	1	1	1	1	1	0	1	1
+ACKR1	canonical	7	336	113	0	1	0	1	1	0	0	0	0
+ACKR4	canonical	7	350	97	0	1	0	1	1	0	0	0	0
+ACKR5	canonical	7	404	105	0	1	0	1	1	1	0	1	0
+ACVR1	canonical	1	509	103	1	1	0	1	1	0	0	1	0
+ACVR1B	canonical	1	505	95	1	1	0	1	1	0	0	1	0
+ACVR1C	canonical	1	493	93	1	1	0	1	1	0	0	1	0
+ACVR2A	canonical	1	513	115	1	1	0	1	1	0	0	1	1
+ACVR2B	canonical	1	512	115	1	1	0	1	1	0	0	1	1
+ACVRL1	canonical	1	503	99	1	1	0	1	1	0	0	1	0
+ADAM10	canonical	1	748	659	1	1	0	1	1	0	0	1	0
+ADAM12	canonical	1	909	684	1	1	0	1	1	0	1	1	1
+ADAM15	canonical	1	863	680	1	1	0	1	1	0	1	1	1
+ADAM17	canonical	1	824	654	1	1	0	1	1	0	0	1	0
+ADAM19	canonical	1	955	678	1	1	0	0	1	0	0	1	1
+ADAM22	canonical	1	906	711	1	1	0	1	1	0	0	1	1
+ADAM23	canonical	1	832	734	1	1	0	1	1	0	1	1	1
+ADAM28	canonical	1	775	648	1	1	0	1	1	0	1	1	1
+ADAM9	canonical	1	819	669	1	1	0	1	1	0	1	1	1
+ADCYAP1R1	canonical	7	468	167	1	1	0	1	1	0	0	0	1
+ADGRA1	canonical	7	560	56	0	1	0	1	1	0	1	0	1
+ADGRA2	canonical	7	1338	772	1	1	0	1	1	0	1	0	1
+ADGRA3	canonical	7	1321	767	1	1	0	1	1	0	1	0	1
+ADGRB1	canonical	7	1584	955	1	1	0	1	1	0	0	0	1
+ADGRB2	canonical	7	1585	942	1	1	0	1	1	0	0	0	1
+ADGRB3	canonical	7	1522	891	1	1	0	1	1	0	1	0	1
+ADGRD1	canonical	7	874	574	1	1	0	1	1	0	0	0	0
+ADGRE1	canonical	7	886	621	1	1	0	1	1	0	1	0	0
+ADGRE2	canonical	7	823	555	1	1	0	0	1	0	0	0	1
+ADGRE3	canonical	7	652	377	1	1	0	0	0	0	1	0	1
+ADGRE5	canonical	7	835	567	1	1	0	1	1	0	0	0	1
+ADGRF1	canonical	7	910	618	1	1	0	1	1	0	1	0	0
+ADGRF5	canonical	7	1346	1037	1	1	0	1	1	0	0	0	1
+ADGRG1	canonical	7	693	432	1	1	0	1	1	0	0	0	1
+ADGRG3	canonical	7	549	299	1	1	0	1	1	0	0	0	1
+ADGRG6	canonical	7	1221	872	1	1	0	1	1	0	0	0	1
+ADGRL2	canonical	7	1459	858	1	1	0	1	1	0	0	0	1
+ADGRL3	canonical	7	1447	881	1	1	0	1	1	0	1	0	1
+ADIPOR1	canonical	7	375	57	0	0	1	1	1	0	0	0	1
+ADIPOR2	canonical	7	386	57	0	0	1	1	1	0	0	0	1
+ADORA1	canonical	7	326	66	0	1	0	1	1	0	1	1	0
+ADORA2A	canonical	7	412	45	0	1	0	1	1	0	0	0	0
+ADORA2B	canonical	7	332	69	0	1	0	1	1	0	0	1	0
+ADRA1A	canonical	7	466	73	0	1	0	1	1	0	1	0	1
+ADRA1B	canonical	7	520	93	0	1	0	1	1	0	0	0	1
+ADRA2A	canonical	7	465	94	0	1	0	1	0	0	0	1	1
+ADRB1	canonical	7	477	98	0	1	0	1	0	0	0	0	1
+ADRB2	canonical	7	413	82	0	1	0	1	1	0	0	0	0
+ADRB3	canonical	7	408	92	0	1	0	1	1	0	0	0	1
+AGER	canonical	1	404	317	1	1	0	1	1	0	1	1	0
+AGTR1	canonical	7	359	85	0	1	0	0	1	0	0	0	0
+AGTR2	canonical	7	363	110	0	1	0	1	1	0	0	0	0
+ALCAM	canonical	1	583	500	1	1	0	1	1	1	1	1	0
+ALPL	canonical	0	524	507	1	1	1	1	1	1	0	0	1
+AMIGO1	canonical	1	493	345	1	1	0	1	1	1	0	1	1
+AMIGO3	canonical	1	504	364	1	1	0	1	1	1	0	1	1
+AMN	canonical	1	453	341	1	1	0	1	1	0	0	1	0
+ANO1	canonical	8	986	263	0	0	0	1	1	1	1	1	1
+ANO3	canonical	8	981	250	0	0	0	1	1	1	0	1	1
+ANO4	canonical	8	955	267	0	0	0	1	1	1	1	0	1
+ANO6	canonical	8	910	274	0	0	0	1	1	1	0	1	1
+ANPEP	canonical	1	967	935	0	0	1	1	1	0	0	1	0
+ANTXR1	canonical	1	564	294	1	1	0	1	1	0	1	1	1
+AOC3	canonical	1	763	737	0	0	1	1	1	1	1	1	1
+APLNR	canonical	7	380	91	0	1	0	1	1	0	0	0	0
+APLP2	canonical	1	763	662	1	1	0	1	1	0	0	1	1
+APP	canonical	1	770	683	1	1	0	1	1	0	1	1	1
+AQP1	canonical	6	269	60	0	0	0	1	0	1	1	0	1
+AQP3	canonical	6	292	75	0	0	0	1	1	1	1	0	1
+AQP4	canonical	6	323	57	0	0	0	1	1	1	0	0	1
+AQP5	canonical	6	265	57	0	0	0	1	1	1	0	0	1
+ART1	canonical	0	327	305	1	1	1	1	1	0	0	1	1
+ART3	canonical	0	389	363	1	1	1	1	1	0	0	1	1
+ASAH2	canonical	1	780	748	0	0	1	0	0	0	0	0	1
+ASGR1	canonical	1	291	231	0	0	1	1	1	1	1	1	1
+ASGR2	canonical	1	311	237	0	0	1	1	1	0	0	1	1
+ASIC1	canonical	2	528	375	0	0	0	1	1	1	0	1	1
+ASIC2	canonical	2	512	375	0	0	0	1	1	1	0	0	1
+ASIC3	canonical	2	531	377	0	0	0	1	1	1	1	0	1
+ATP10D	canonical	10	1426	70	0	0	0	1	1	0	0	0	1
+ATP11A	canonical	10	1134	83	0	0	0	1	1	0	0	0	1
+ATP11C	canonical	10	1132	83	0	0	0	1	1	0	0	0	1
+ATP1A1	canonical	10	1023	81	0	0	0	1	1	0	1	1	1
+ATP1A2	canonical	10	1020	82	0	0	0	1	0	0	0	1	1
+ATP1A3	canonical	10	1013	109	0	0	0	1	1	0	0	0	1
+ATP1B1	canonical	1	303	247	0	0	1	1	1	0	0	0	1
+ATP1B2	canonical	1	290	229	0	0	1	1	1	0	0	0	1
+ATP1B3	canonical	1	279	219	0	0	1	1	1	0	0	1	1
+ATP2B1	canonical	10	1220	101	0	0	0	1	1	0	0	0	1
+ATP2B3	canonical	10	1220	102	0	0	0	1	0	0	0	1	1
+ATP2B4	canonical	10	1241	102	0	0	0	1	1	0	0	1	1
+ATRN	canonical	2	1429	1200	0	0	0	1	1	0	1	1	1
+AVPR1A	canonical	7	418	108	0	1	0	1	0	0	0	1	1
+AVPR1B	canonical	7	424	90	0	1	0	1	1	0	0	0	1
+AVPR2	canonical	7	371	92	0	1	0	1	1	0	1	1	1
+AXL	canonical	1	894	419	1	1	0	1	1	0	0	1	0
+B2M	canonical	0	119	99	1	1	1	1	1	0	0	0	0
+BACE2	canonical	1	518	447	1	1	0	1	1	0	1	1	1
+BCAM	canonical	1	628	520	1	1	0	1	1	0	0	1	0
+BDKRB2	canonical	7	391	121	0	1	0	1	1	0	0	0	0
+BEST3	canonical	4	668	36	0	0	0	1	1	1	1	0	1
+BEST4	canonical	4	473	48	0	0	0	0	1	1	0	0	1
+BMPR1A	canonical	1	532	130	1	1	0	1	1	0	0	1	1
+BMPR1B	canonical	1	502	126	0	1	0	1	1	0	0	0	1
+BMPR2	canonical	1	1038	124	1	1	0	1	1	0	0	1	0
+BSG	canonical	1	385	303	1	1	0	1	0	1	0	1	1
+BST1	canonical	0	318	286	1	1	1	1	1	1	0	1	0
+BST2	canonical	1	180	137	0	0	1	0	0	1	0	1	0
+BTLA	canonical	1	289	123	1	1	0	1	1	0	0	1	0
+BTN2A1	canonical	1	527	220	1	1	0	0	1	0	0	1	1
+BTN2A2	canonical	1	523	233	1	1	0	1	0	0	0	1	1
+BTN3A1	canonical	1	513	221	1	1	0	0	0	1	0	1	1
+BTN3A2	canonical	1	334	221	1	1	0	0	1	1	0	1	1
+BTN3A3	canonical	1	584	221	1	1	0	0	1	1	0	1	1
+BTNL3	canonical	1	466	221	1	1	0	0	0	1	0	1	1
+BTNL8	canonical	1	500	218	1	1	0	0	1	1	0	0	1
+C3AR1	canonical	7	482	233	0	1	0	1	1	0	0	1	0
+C5AR1	canonical	7	350	80	0	1	0	1	1	1	0	0	0
+CA12	canonical	1	354	279	1	1	0	1	1	0	0	1	1
+CA4	canonical	0	312	293	1	1	1	1	0	0	0	1	0
+CACNA1A	canonical	24	2506	390	0	0	0	1	1	0	0	0	1
+CACNA1B	canonical	24	2339	393	0	0	0	1	0	0	0	0	1
+CACNA1C	canonical	24	2221	418	0	0	0	1	0	0	1	1	1
+CACNA1D	canonical	24	2161	429	0	0	0	1	1	0	0	0	1
+CACNA1E	canonical	24	2313	397	0	0	0	1	1	0	0	0	1
+CACNA1F	canonical	24	1977	412	0	0	0	1	1	0	0	0	1
+CACNA1G	canonical	24	2377	409	0	0	0	1	0	0	1	1	1
+CACNA1H	canonical	24	2353	437	0	0	0	1	0	0	0	0	1
+CACNA1I	canonical	24	2223	456	0	0	0	1	1	0	0	1	1
+CACNA1S	canonical	24	1873	461	0	0	0	1	1	0	0	0	1
+CACNA2D1	canonical	1	1103	1049	1	1	0	1	1	0	0	0	1
+CACNA2D3	canonical	0	1091	1058	1	1	1	1	1	0	0	0	1
+CACNA2D4	canonical	0	1137	1077	1	1	1	1	1	0	0	0	1
+CACNG2	canonical	4	323	95	0	0	0	1	1	0	0	0	1
+CACNG5	canonical	4	275	94	0	0	0	1	1	0	0	1	1
+CADM1	canonical	1	442	331	1	1	0	1	1	1	1	1	1
+CADM2	canonical	1	435	344	1	1	0	1	1	0	0	1	1
+CADM3	canonical	1	398	307	1	1	0	1	1	1	0	1	1
+CADM4	canonical	1	388	299	1	1	0	1	1	0	0	1	1
+CALCR	canonical	7	474	154	1	1	0	1	0	0	1	1	1
+CALCRL	canonical	7	461	154	1	1	0	1	1	0	0	1	1
+CALHM1	canonical	4	346	79	0	0	0	1	1	1	0	0	1
+CASR	canonical	7	1078	644	1	1	0	1	1	0	0	1	0
+CATSPER3	canonical	6	398	69	0	0	0	1	0	1	0	0	0
+CAV1	canonical	0	178	0	0	0	0	1	1	1	0	0	0
+CCDC25	canonical	0	208	0	0	0	0	1	1	0	0	0	0
+CCR1	canonical	7	355	92	0	1	0	0	1	0	0	1	1
+CCR10	canonical	7	362	108	0	1	0	1	1	0	0	0	0
+CCR2	canonical	7	374	102	0	1	0	1	1	0	0	0	1
+CCR3	canonical	7	355	99	0	1	0	1	1	0	0	1	0
+CCR4	canonical	7	360	100	0	1	0	1	1	0	0	0	0
+CCR5	canonical	7	352	95	0	1	0	1	1	0	0	1	1
+CCR6	canonical	7	374	117	0	1	0	1	1	0	0	0	0
+CCR7	canonical	7	378	79	1	1	0	1	1	0	0	0	0
+CCRL2	canonical	7	344	99	0	1	0	0	1	0	0	0	0
+CD101	canonical	1	1021	934	1	1	0	1	1	0	0	1	0
+CD14	canonical	0	375	356	1	1	1	1	1	0	0	1	0
+CD151	canonical	4	253	123	0	0	0	1	1	0	0	1	1
+CD163	canonical	1	1156	1005	1	1	0	1	1	0	0	1	1
+CD164	canonical	1	197	143	1	1	0	1	1	0	1	1	0
+CD177	canonical	0	437	416	1	1	1	0	0	0	0	1	0
+CD19	canonical	1	556	272	1	1	0	1	1	0	0	1	0
+CD1A	canonical	1	327	281	1	1	0	0	0	0	0	1	1
+CD1B	canonical	1	333	285	1	1	0	0	0	0	0	0	1
+CD1C	canonical	1	333	283	1	1	0	0	1	0	0	1	1
+CD1D	canonical	1	335	282	1	1	0	0	1	0	0	1	1
+CD2	canonical	1	351	191	1	1	0	1	1	0	0	1	0
+CD200	canonical	1	278	206	1	1	0	1	1	1	0	1	0
+CD200R1	canonical	1	348	242	1	1	0	0	1	0	1	1	1
+CD200R1L	canonical	1	271	218	1	1	0	0	1	0	0	1	1
+CD207	canonical	1	328	264	0	0	1	1	1	1	0	0	1
+CD209	canonical	1	404	346	0	0	1	0	1	0	1	0	1
+CD22	canonical	1	847	668	1	1	0	1	1	0	0	1	0
+CD226	canonical	1	336	232	1	1	0	1	1	1	0	1	1
+CD24	canonical	0	80	54	1	1	1	1	0	0	0	1	0
+CD244	canonical	1	370	205	1	1	0	0	1	0	0	1	0
+CD247	canonical	1	164	9	1	1	0	1	1	0	0	0	0
+CD27	canonical	1	260	168	1	1	0	1	0	0	0	0	0
+CD274	canonical	1	290	220	1	1	0	1	1	1	1	1	1
+CD276	canonical	1	534	437	1	1	0	1	1	0	1	1	1
+CD28	canonical	1	220	136	1	1	0	1	1	1	1	1	0
+CD300A	canonical	1	299	163	1	1	0	0	1	0	1	1	1
+CD300C	canonical	1	224	162	1	1	0	0	1	0	0	1	1
+CD300E	canonical	1	205	159	1	1	0	1	1	0	0	1	1
+CD300LB	canonical	1	201	137	1	1	0	0	1	0	0	0	1
+CD300LD	canonical	1	194	147	1	1	0	0	1	0	0	0	1
+CD300LF	canonical	1	290	139	1	1	0	0	1	0	1	1	1
+CD300LG	canonical	1	332	229	1	1	0	0	1	0	0	1	1
+CD302	canonical	1	232	148	1	1	0	1	1	0	0	1	1
+CD320	canonical	1	282	195	1	1	0	1	1	0	0	1	0
+CD33	canonical	1	364	243	1	1	0	0	0	0	0	1	1
+CD34	canonical	1	385	259	1	1	0	1	1	0	0	1	0
+CD36	canonical	2	472	409	0	0	0	1	1	0	1	1	0
+CD37	canonical	4	281	149	0	0	0	1	0	0	1	1	0
+CD38	canonical	1	300	256	0	0	1	1	1	0	0	1	0
+CD3D	canonical	1	171	85	1	1	0	1	1	1	1	1	1
+CD3E	canonical	1	207	111	1	1	0	1	1	1	0	0	0
+CD3G	canonical	1	182	95	1	1	0	1	1	1	0	1	1
+CD4	canonical	1	458	371	1	1	0	1	1	0	0	1	0
+CD40	canonical	1	277	174	1	1	0	1	1	0	1	1	0
+CD44	canonical	1	742	629	1	1	0	1	1	0	1	1	0
+CD46	canonical	1	392	311	1	1	0	0	1	0	0	1	1
+CD47	canonical	5	323	139	1	1	0	1	1	1	0	0	0
+CD48	canonical	1	243	196	1	1	0	0	1	0	1	1	0
+CD5	canonical	1	495	358	1	1	0	1	0	0	0	1	1
+CD52	canonical	0	61	37	1	1	1	0	1	0	0	0	0
+CD53	canonical	4	219	97	0	0	0	1	1	0	0	0	0
+CD55	canonical	0	381	347	1	1	1	0	1	0	0	1	1
+CD58	canonical	1	250	187	1	1	0	0	1	0	0	1	0
+CD59	canonical	0	128	103	1	1	1	0	0	0	0	1	0
+CD6	canonical	1	668	385	1	1	0	1	1	0	0	1	1
+CD7	canonical	1	240	155	1	1	0	0	1	0	0	1	0
+CD72	canonical	1	359	243	0	0	1	1	1	1	0	0	0
+CD74	canonical	1	296	224	0	0	1	1	1	1	0	1	0
+CD79B	canonical	1	229	131	1	1	0	1	1	0	0	1	0
+CD80	canonical	1	288	212	1	1	0	0	1	0	1	1	1
+CD81	canonical	4	236	111	0	0	0	1	1	0	0	0	0
+CD82	canonical	4	267	137	0	0	0	1	1	0	0	1	1
+CD84	canonical	1	345	204	1	1	0	1	1	1	1	1	0
+CD86	canonical	1	329	222	1	1	0	0	1	1	1	1	1
+CD8A	canonical	1	235	161	1	1	0	0	1	1	1	1	0
+CD8B	canonical	1	210	152	1	1	0	0	0	1	1	1	1
+CD8B2	canonical	1	210	152	1	1	0	0	0	1	0	0	1
+CD9	canonical	4	228	104	0	0	0	1	1	0	0	1	0
+CD93	canonical	1	652	558	1	1	0	1	1	0	0	1	0
+CD96	canonical	1	585	499	1	1	0	1	1	1	0	1	0
+CD99	canonical	1	185	105	1	1	0	0	1	0	0	0	1
+CD99L2	canonical	1	262	160	1	1	0	1	1	0	1	0	1
+CDC50A	canonical	2	361	254	0	0	0	1	1	0	1	1	1
+CDCP1	canonical	1	836	638	1	1	0	1	1	0	1	1	0
+CDH1	canonical	1	882	687	1	1	0	1	1	0	0	1	1
+CDH10	canonical	1	788	591	1	1	0	1	1	0	0	1	1
+CDH11	canonical	1	796	597	1	1	0	1	1	0	0	1	1
+CDH13	canonical	0	713	691	1	1	1	1	1	0	0	1	1
+CDH17	canonical	1	832	764	1	1	0	1	1	0	0	1	1
+CDH18	canonical	1	790	591	1	1	0	1	1	0	1	1	1
+CDH19	canonical	1	772	575	1	1	0	1	1	0	1	1	1
+CDH2	canonical	1	906	698	1	1	0	1	1	0	0	1	1
+CDH3	canonical	1	829	632	1	1	0	1	1	0	0	1	1
+CDH4	canonical	1	916	714	1	1	0	1	1	0	0	1	1
+CDH5	canonical	1	784	573	1	1	0	1	1	0	0	1	1
+CDH6	canonical	1	790	592	1	1	0	1	1	0	0	1	1
+CDHR2	canonical	1	1310	1134	1	1	0	1	1	0	0	1	1
+CDHR3	canonical	1	885	691	1	1	0	1	0	0	0	1	0
+CDON	canonical	1	1287	939	1	1	0	1	1	0	0	1	1
+CEACAM1	canonical	1	526	394	1	1	0	0	0	1	1	1	1
+CEACAM3	canonical	1	252	118	1	1	0	0	0	1	1	1	1
+CEACAM5	canonical	1	702	656	1	1	0	0	0	0	0	1	1
+CEACAM6	canonical	1	344	298	1	1	0	0	0	1	0	1	1
+CEACAM8	canonical	1	349	299	1	1	0	0	1	1	0	1	1
+CELSR1	canonical	7	3014	2486	1	1	0	1	1	0	1	1	1
+CELSR2	canonical	7	2923	2381	1	1	0	1	0	0	0	1	1
+CELSR3	canonical	7	3312	2545	1	1	0	1	1	0	0	1	1
+CEMIP2	canonical	1	1383	1280	0	0	1	1	1	0	0	0	1
+CFTR	canonical	12	1480	102	0	0	0	1	1	0	1	0	0
+CHRM2	canonical	7	466	74	0	1	0	1	1	0	0	0	1
+CHRM4	canonical	7	479	83	0	1	0	1	1	0	0	0	1
+CHRM5	canonical	7	532	82	0	1	0	1	1	0	0	0	1
+CHRNA2	canonical	4	529	259	1	1	1	1	1	1	0	1	1
+CHRNA3	canonical	4	505	231	1	1	1	1	1	1	1	1	1
+CHRNA4	canonical	4	627	233	1	1	1	1	1	1	0	1	1
+CHRNA5	canonical	4	468	256	1	1	1	1	1	1	0	1	1
+CHRNA6	canonical	4	494	230	1	1	1	1	1	1	0	1	1
+CHRNA7	canonical	4	502	235	1	1	1	1	0	1	1	1	1
+CHRNA9	canonical	4	479	233	1	1	1	1	0	1	0	1	1
+CHRNB1	canonical	4	501	241	1	1	1	1	1	1	0	1	1
+CHRNB2	canonical	4	502	242	1	1	1	1	1	1	0	0	1
+CHRNB3	canonical	4	458	240	1	1	1	1	1	1	0	1	1
+CHRNB4	canonical	4	498	243	1	1	1	1	1	1	1	1	1
+CHRND	canonical	4	517	256	1	1	1	1	1	1	0	1	1
+CLCA4	canonical	0	919	898	1	1	1	0	1	0	0	1	1
+CLCN1	canonical	10	988	139	0	0	0	1	1	1	0	0	0
+CLCN2	canonical	10	898	89	0	0	0	1	1	1	1	0	1
+CLCNKA	canonical	10	687	99	0	0	0	0	1	1	1	0	1
+CLCNKB	canonical	10	687	96	0	0	0	0	0	1	1	1	1
+CLDN11	canonical	4	207	67	0	0	0	1	1	0	0	1	0
+CLDN12	canonical	4	244	78	0	0	0	1	0	0	0	1	0
+CLDN15	canonical	4	228	71	0	0	0	1	1	0	0	1	1
+CLDN17	canonical	4	224	76	0	0	0	1	0	0	0	0	1
+CLDN3	canonical	4	220	74	0	0	0	1	1	0	0	1	1
+CLDN4	canonical	4	209	74	0	0	0	0	1	0	0	1	1
+CLDN5	canonical	4	218	76	0	0	0	1	0	0	0	0	1
+CLDN8	canonical	4	225	79	0	0	0	1	1	0	0	0	1
+CLDN9	canonical	4	217	74	0	0	0	1	0	0	0	1	1
+CLEC10A	canonical	1	316	259	0	0	1	0	1	1	0	0	1
+CLEC12A	canonical	1	265	203	0	0	1	0	1	1	1	1	0
+CLEC12B	canonical	1	276	214	0	0	1	1	1	1	0	1	1
+CLEC14A	canonical	1	490	376	1	1	0	1	1	0	0	0	0
+CLEC1A	canonical	1	280	210	0	0	1	1	1	1	0	1	0
+CLEC1B	canonical	1	229	176	0	0	1	1	1	0	1	1	0
+CLEC2A	canonical	1	174	128	0	0	1	0	0	1	0	0	1
+CLEC4A	canonical	1	237	170	0	0	1	1	1	0	1	0	1
+CLEC4C	canonical	1	213	174	0	0	1	0	1	0	1	0	1
+CLEC4G	canonical	1	293	240	0	0	1	1	1	1	0	1	0
+CLEC4M	canonical	1	399	329	0	0	1	0	0	0	1	1	1
+CLEC5A	canonical	1	188	162	0	0	1	1	1	0	0	1	0
+CLEC6A	canonical	1	209	168	0	0	1	1	1	1	1	0	1
+CLEC7A	canonical	1	247	182	0	0	1	0	1	0	1	0	0
+CLEC9A	canonical	1	241	185	0	0	1	1	1	1	0	1	0
+CLECL1	canonical	0	167	167	0	1	1	0	0	0	0	0	0
+CLSTN1	canonical	1	981	833	1	1	0	1	1	0	0	1	1
+CLTRN	canonical	1	222	127	1	1	0	1	1	1	0	0	0
+CMKLR1	canonical	7	373	120	0	1	0	1	1	1	0	0	0
+CMKLR2	canonical	7	355	102	0	1	0	1	1	0	0	0	0
+CMTM6	canonical	4	183	17	0	0	0	1	1	0	0	0	1
+CMTM7	canonical	4	175	18	0	0	0	1	1	0	1	0	0
+CNGA3	canonical	4	694	65	0	0	0	1	1	1	0	0	1
+CNGB1	canonical	6	1251	60	0	0	0	1	0	0	1	0	1
+CNNM3	canonical	3	707	121	1	1	0	1	0	1	0	1	0
+CNR1	canonical	7	472	158	0	1	0	1	1	0	0	0	0
+CNTFR	canonical	0	372	350	1	1	1	1	1	0	0	1	0
+CNTN1	canonical	0	1018	998	1	1	1	1	1	0	0	1	1
+CNTNAP1	canonical	1	1384	1262	1	1	0	1	1	0	0	1	1
+CNTNAP2	canonical	1	1331	1235	1	1	0	1	1	0	0	1	1
+CNTNAP4	canonical	1	1308	1216	1	1	0	1	1	0	0	1	1
+COL17A1	canonical	1	1497	1010	0	0	1	1	1	0	0	0	1
+COLEC12	canonical	1	742	684	0	0	1	1	1	1	0	0	0
+CORIN	canonical	1	1042	976	0	0	1	1	1	0	0	1	0
+CR1	canonical	1	2039	1931	1	1	0	0	1	0	0	1	1
+CR2	canonical	1	1033	955	1	1	0	0	1	0	0	1	1
+CRB1	canonical	1	1406	1320	1	1	0	1	1	0	1	1	0
+CRHR1	canonical	7	415	132	1	1	0	1	1	0	1	0	1
+CRHR2	canonical	7	411	150	0	1	0	1	1	0	0	1	1
+CRLF2	canonical	1	371	209	1	1	0	0	0	0	1	1	0
+CSF1R	canonical	1	972	500	1	1	0	1	1	0	1	1	0
+CSF2RA	canonical	1	400	305	1	1	0	0	1	0	1	1	0
+CSF2RB	canonical	1	897	422	1	1	0	0	1	0	0	1	0
+CSF3R	canonical	1	836	603	1	1	0	1	1	0	1	1	0
+CSMD1	canonical	1	3564	3461	1	1	0	1	0	0	1	1	1
+CUBN	canonical	0	3623	3600	1	1	1	1	1	0	0	0	1
+CX3CR1	canonical	7	355	87	0	1	0	1	1	0	0	0	0
+CXADR	canonical	1	365	218	1	1	0	0	1	1	1	1	0
+CXCR1	canonical	7	350	101	0	1	0	1	1	0	0	1	1
+CXCR2	canonical	7	360	110	0	1	0	1	1	0	0	1	1
+CXCR3	canonical	7	368	112	0	1	0	1	1	0	1	0	0
+CXCR4	canonical	7	352	94	0	1	0	1	1	0	0	0	0
+CXCR5	canonical	7	372	113	0	1	0	1	1	0	0	1	0
+CYBB	canonical	6	570	115	0	0	0	1	1	0	0	1	1
+CYBRD1	canonical	6	286	46	0	0	0	1	1	1	1	0	1
+CYSLTR1	canonical	7	337	82	0	1	0	1	1	0	0	0	0
+CYSLTR2	canonical	7	346	122	0	1	0	0	1	1	0	0	0
+DAGLA	canonical	4	1042	30	0	0	0	1	1	0	0	1	0
+DCBLD2	canonical	1	775	471	1	1	0	1	1	0	0	1	1
+DCC	canonical	1	1447	1068	1	1	0	1	1	0	0	1	1
+DDR1	canonical	1	913	397	1	1	0	1	1	0	1	1	1
+DDR2	canonical	1	855	376	1	1	0	1	1	0	0	1	1
+FLRT1	canonical	1	674	503	1	1	0	1	1	0	0	1	1
+GABRA1	canonical	4	456	248	1	1	1	1	1	1	0	1	1
+GABRR1	canonical	4	479	273	1	1	1	1	0	1	0	1	1
+GRIN1	canonical	3	938	701	1	1	0	1	1	0	0	1	0
+LILRB3	canonical	1	631	422	1	1	0	0	0	0	0	1	1
+LRP1	canonical	1	4544	4404	1	1	0	1	1	0	1	1	1
+OPRM1	canonical	7	400	121	0	1	0	1	1	0	1	0	0
+PRRG4	canonical	1	226	99	1	1	0	1	1	0	0	0	1
+SLC12A5	canonical	12	1139	172	0	0	0	1	1	0	0	1	1
+SLC24A2	canonical	11	661	139	0	0	1	1	1	0	0	1	0
+SLC3A1	canonical	1	685	575	0	0	1	1	1	1	1	1	0
+SUSD4	canonical	1	490	274	1	1	0	1	1	0	1	1	1
+TIMD4	canonical	1	378	290	1	1	0	0	1	0	0	1	0
+AAMP	likely	0	434	0	0	0	0	1	1	0	0	0	0
+ABCA6	likely	12	1617	424	0	0	0	1	1	0	1	1	1
+ABCA8	likely	14	1621	398	0	0	0	1	1	0	1	1	1
+ABCB11	likely	12	1321	130	0	0	0	1	1	0	0	1	1
+ABCB6	likely	11	842	73	0	1	0	1	1	1	0	0	0
+ABCC3	likely	17	1527	128	0	1	0	1	1	0	1	1	1
+ABCC6	likely	17	1503	129	0	1	0	1	1	0	1	0	0
+ABCC8	likely	17	1581	161	0	1	0	1	1	0	1	0	1
+ABCG1	likely	6	678	82	0	0	0	1	1	1	1	0	1
+ABCG4	likely	6	646	81	0	0	0	1	1	1	0	1	1
+ABCG5	likely	6	651	102	0	0	0	1	1	1	0	1	0
+ABCG8	likely	6	673	87	0	0	0	1	1	1	0	0	0
+ABHD2	likely	1	425	12	0	1	0	1	1	0	0	0	0
+ACKR2	likely	7	384	98	0	1	0	1	1	0	0	0	0
+ACKR3	likely	7	362	112	0	1	0	1	1	0	0	0	0
+ACP3	likely	0	386	354	1	1	1	1	1	1	1	0	1
+ACP4	likely	1	426	369	1	1	0	1	0	1	1	1	1
+ACRBP	likely	0	543	518	1	1	1	1	1	1	0	0	0
+ACRV1	likely	0	265	247	1	1	1	1	1	0	0	0	0
+ADA	likely	0	363	0	0	0	0	1	0	0	0	0	0
+ADAM2	likely	1	735	672	1	1	0	1	1	0	0	1	1
+ADAM29	likely	1	820	657	1	1	0	1	1	0	0	1	1
+ADAM32	likely	1	787	666	1	1	0	1	1	0	0	1	1
+ADAM7	likely	1	754	652	1	1	0	1	1	0	1	1	1
+ADAM8	likely	1	824	636	1	1	0	1	1	0	1	1	1
+ADAMTS16	likely	0	1224	1197	1	1	1	1	1	0	0	0	1
+ADAMTS9	likely	0	1935	1915	1	1	1	1	1	0	0	0	1
+ADCY2	likely	12	1091	85	0	0	0	1	1	0	1	1	1
+ADCY3	likely	12	1144	104	0	0	0	1	1	0	1	1	1
+ADCY5	likely	12	1261	116	0	0	0	1	1	0	1	0	1
+ADCY6	likely	12	1168	109	0	0	0	1	1	0	0	1	1
+ADCY7	likely	12	1080	96	0	0	0	1	1	0	0	1	1
+ADCY8	likely	12	1251	78	0	0	0	1	1	0	0	0	1
+ADCY9	likely	12	1353	102	0	0	0	1	1	0	0	1	1
+ADGRG2	likely	7	1017	636	1	1	0	1	1	0	0	0	1
+ADGRG4	likely	7	3080	2757	1	1	0	1	1	0	0	0	1
+ADGRL1	likely	7	1474	876	1	1	0	1	0	0	0	0	1
+ADGRL4	likely	7	690	444	1	1	0	1	1	0	0	0	0
+ADGRV1	likely	7	6306	5921	1	1	0	1	1	0	1	0	1
+ADORA3	likely	7	318	62	0	1	0	1	0	0	0	0	0
+ADRA1D	likely	7	572	147	0	1	0	1	1	0	0	0	1
+ADRA2B	likely	7	450	59	0	1	0	1	1	0	0	0	1
+ADRA2C	likely	7	462	89	0	1	0	1	0	0	0	1	1
+ADTRP	likely	6	230	52	0	0	0	1	1	0	0	0	1
+AGR2	likely	0	175	155	1	1	1	1	1	1	0	0	1
+AGRN	likely	0	2068	2040	1	1	1	1	0	0	1	0	1
+AGTRAP	likely	4	159	13	0	0	0	1	0	1	1	0	0
+AHNAK2	likely	0	5795	0	0	0	0	0	0	0	0	0	0
+AJAP1	likely	1	411	239	1	1	0	1	1	0	0	0	0
+ALK	likely	1	1620	1016	1	1	0	1	1	0	0	1	1
+ALPG	likely	0	532	513	1	1	1	0	0	1	0	1	1
+ALPI	likely	0	528	509	1	1	1	0	1	1	0	1	1
+ALPP	likely	0	535	513	1	1	1	0	0	1	0	1	1
+AMFR	likely	8	643	60	0	0	0	1	1	0	0	0	0
+AMHR2	likely	1	573	131	1	1	0	1	1	0	0	1	0
+AMIGO2	likely	1	522	359	1	1	0	1	1	1	0	1	1
+AMOT	likely	0	1084	0	0	0	0	1	1	0	0	0	0
+ANKH	likely	12	492	90	0	0	0	1	1	0	1	0	0
+ANO2	likely	8	998	260	0	0	0	1	1	1	0	1	1
+ANO5	likely	8	913	261	0	0	0	1	1	1	0	1	1
+ANO7	likely	8	933	231	0	0	0	1	1	0	1	1	1
+ANXA1	likely	0	346	0	0	0	0	1	1	0	0	0	0
+ANXA2	likely	0	339	0	0	0	0	1	1	0	0	0	0
+ANXA2R	likely	0	193	0	0	0	0	0	0	0	0	0	0
+ANXA5	likely	0	320	0	0	0	0	1	1	0	0	0	0
+ANXA6	likely	0	673	0	0	0	0	1	1	0	0	0	0
+ANXA8	likely	0	327	0	0	0	0	0	0	0	0	0	0
+APLP1	likely	1	650	545	1	1	0	1	1	0	0	1	1
+APMAP	likely	1	416	355	0	0	1	1	1	0	0	0	0
+APOE	likely	0	317	299	1	1	1	1	1	0	0	0	0
+APOH	likely	0	345	326	1	1	1	1	0	0	0	0	1
+APOL1	likely	0	398	371	1	1	1	0	0	0	0	0	0
+AQP10	likely	6	301	77	0	0	0	0	1	1	1	0	1
+AQP11	likely	7	271	70	0	1	0	1	1	0	0	0	0
+AQP2	likely	6	271	54	0	0	0	1	1	1	0	0	1
+AQP7	likely	6	342	74	0	0	0	0	0	1	1	0	1
+AQP8	likely	6	261	58	0	0	0	1	1	1	0	1	0
+AQP9	likely	6	295	73	0	0	0	1	1	1	0	0	1
+AREG	likely	1	252	172	1	1	0	1	1	0	0	1	0
+ARMH4	likely	1	774	687	1	1	0	1	1	0	1	0	0
+ASIC5	likely	2	505	365	0	0	0	1	1	1	0	1	0
+ASPH	likely	2	758	284	0	0	0	1	1	0	1	0	0
+ASTL	likely	0	431	408	1	1	1	1	1	0	0	0	1
+ASTN1	likely	2	1302	1037	1	1	1	1	1	0	0	1	1
+ATG9A	likely	4	839	53	0	0	0	1	1	1	0	1	1
+ATP1A4	likely	10	1029	82	0	0	0	1	1	0	1	1	1
+ATP2B2	likely	10	1243	102	0	0	0	1	1	0	0	1	1
+ATP2C2	likely	10	946	66	0	0	0	1	1	0	0	0	1
+ATP4A	likely	10	1035	112	0	0	0	1	1	0	0	0	1
+ATP4B	likely	1	291	229	0	0	1	1	1	0	0	0	0
+ATP5F1B	likely	0	529	0	0	0	0	1	1	1	0	0	0
+ATP6AP2	likely	1	350	295	1	1	0	1	1	0	0	0	0
+ATP6V0D2	likely	0	350	0	0	0	0	1	1	0	0	0	0
+ATP6V1B1	likely	0	513	0	0	0	0	1	1	0	0	0	0
+ATP7A	likely	8	1500	97	0	0	0	1	1	0	1	0	1
+ATP8B1	likely	10	1251	91	0	0	0	1	1	0	0	0	0
+ATP8B4	likely	10	1192	83	0	0	0	1	1	0	0	0	1
+ATRNL1	likely	1	1379	1169	1	1	0	1	1	0	1	1	1
+BACE1	likely	1	501	435	1	1	0	1	1	0	0	1	1
+BAMBI	likely	1	260	126	1	1	0	1	1	0	0	0	0
+BCAN	likely	0	911	889	1	1	1	1	1	0	0	1	1
+BDKRB1	likely	7	353	91	0	1	0	1	0	0	0	0	0
+BEST2	likely	4	509	38	0	0	0	1	0	1	0	0	1
+BPIFA1	likely	0	256	237	1	1	1	1	1	0	0	0	0
+BRS3	likely	7	399	105	0	1	0	1	1	0	0	1	1
+BSND	likely	2	320	6	0	0	0	1	0	0	0	0	0
+BSPH1	likely	0	132	122	1	1	1	1	0	0	0	0	0
+BTC	likely	1	178	87	1	1	0	1	1	0	0	0	1
+BTNL2	likely	1	482	431	1	1	0	1	0	0	1	0	1
+C1QBP	likely	0	282	0	0	0	0	1	0	1	0	0	0
+C1QL3	likely	0	255	240	1	1	1	1	1	1	0	0	1
+C1QTNF5	likely	0	243	228	1	1	1	1	1	1	0	0	1
+C3	likely	0	1663	1641	1	1	1	1	0	0	0	0	0
+C3orf18	likely	1	162	58	0	1	0	1	1	0	1	0	0
+C3orf52	likely	1	217	130	0	0	1	1	1	0	0	0	0
+C5AR2	likely	7	337	95	0	1	0	1	1	0	0	0	0
+C8B	likely	0	591	559	1	1	1	1	1	0	0	0	1
+CA14	likely	1	337	278	1	1	0	1	1	0	0	1	1
+CA9	likely	1	459	377	1	1	0	1	1	0	0	0	1
+CABS1	likely	0	395	395	0	1	1	1	1	0	0	0	0
+CACFD1	likely	4	172	9	0	0	0	1	0	0	1	0	0
+CACHD1	likely	1	1274	1064	1	1	0	1	1	0	0	1	0
+CACNA2D2	likely	0	1150	1090	1	1	1	1	1	0	0	0	1
+CACNG1	likely	4	222	103	0	0	0	1	1	1	0	1	1
+CACNG7	likely	4	275	93	0	0	0	1	1	0	0	0	1
+CACNG8	likely	4	425	109	0	0	0	1	0	0	0	0	1
+CALHM2	likely	4	323	82	0	0	0	1	1	0	1	1	1
+CALHM3	likely	4	344	76	0	0	0	1	1	1	0	0	1
+CALHM4	likely	4	314	80	0	0	0	1	0	1	1	0	1
+CALHM6	likely	4	315	74	0	0	0	1	1	1	1	0	1
+CALR	likely	0	417	400	1	1	1	1	1	0	0	0	1
+CALY	likely	1	217	111	0	0	1	1	1	0	1	0	0
+CAMKV	likely	0	501	0	0	0	0	1	1	0	0	0	0
+CANX	likely	1	592	461	1	1	0	1	1	0	0	0	1
+CAPRIN1	likely	0	709	0	0	0	0	1	1	1	0	0	0
+CATSPER1	likely	6	780	67	0	0	0	0	1	0	0	0	0
+CATSPER2	likely	6	530	75	0	0	0	1	0	1	1	0	0
+CATSPER4	likely	6	472	64	0	0	0	1	1	0	0	0	0
+CATSPERD	likely	1	798	698	1	1	0	0	1	0	1	1	0
+CATSPERE	likely	1	951	884	1	1	0	0	1	0	1	0	0
+CATSPERG	likely	1	1159	1030	1	1	0	0	1	0	0	1	0
+CATSPERH	likely	3	116	12	1	1	0	1	0	0	0	0	0
+CATSPERQ	likely	2	235	10	0	0	0	1	1	0	0	0	0
+CATSPERT	likely	0	1820	0	0	0	0	0	1	0	0	0	0
+CAV2	likely	0	162	0	0	0	0	1	1	1	0	0	0
+CAV3	likely	0	151	0	0	0	0	1	1	1	0	0	0
+CAVIN1	likely	0	390	0	0	0	0	1	0	1	0	0	0
+CCKBR	likely	7	447	108	0	1	0	1	0	0	0	0	0
+CCR8	likely	7	355	87	0	1	0	1	1	0	1	0	0
+CCR9	likely	7	369	98	0	1	0	1	1	0	0	1	0
+CD109	likely	0	1445	1424	1	1	1	1	1	0	0	1	0
+CD160	likely	0	181	158	1	1	1	1	1	0	0	1	0
+CD163L1	likely	1	1453	1319	1	1	0	0	1	0	1	1	1
+CD180	likely	1	661	606	1	1	0	1	1	0	0	1	1
+CD248	likely	1	757	670	1	1	0	1	0	0	0	1	1
+CD300H	likely	1	201	146	1	1	0	0	1	0	1	0	1
+CD40LG	likely	1	261	217	0	0	1	1	1	0	0	1	0
+CD5L	likely	0	347	329	1	1	1	1	1	0	0	0	1
+CD63	likely	4	238	114	0	0	0	1	1	0	1	1	0
+CD68	likely	1	354	306	1	1	0	0	1	0	0	0	0
+CD69	likely	1	199	138	0	0	1	1	1	1	0	1	1
+CD70	likely	1	193	155	0	0	1	1	1	0	0	1	0
+CD79A	likely	1	226	111	1	1	0	1	1	0	0	1	0
+CD83	likely	1	205	125	1	1	0	1	1	0	0	1	0
+CDC50B	likely	2	351	260	0	0	0	1	0	0	0	0	1
+CDH12	likely	1	794	591	1	1	0	1	1	0	0	1	1
+CDH15	likely	1	814	584	1	1	0	1	1	0	0	1	1
+CDH16	likely	1	829	766	1	1	0	1	1	0	0	1	0
+CDH23	likely	1	3354	3043	1	1	0	1	0	0	1	1	1
+CDH26	likely	1	832	587	1	1	0	1	1	0	1	1	0
+CDH7	likely	1	785	582	1	1	0	1	1	0	0	1	1
+CDH8	likely	1	799	593	1	1	0	1	1	0	0	1	1
+CDH9	likely	1	789	594	1	1	0	1	1	0	0	1	1
+CDHR1	likely	1	859	682	1	1	0	1	1	0	1	1	1
+CDHR5	likely	1	845	643	1	1	0	1	1	1	0	1	1
+CDSN	likely	0	529	497	1	1	1	1	1	0	0	0	0
+CEACAM20	likely	1	596	416	1	1	0	1	1	0	0	1	0
+CEACAM4	likely	1	244	121	1	1	0	0	0	0	0	1	1
+CEACAM7	likely	1	265	216	1	1	0	0	1	1	0	1	1
+CEMIP	likely	0	1361	1331	1	1	1	1	1	0	0	0	1
+CFAP95	likely	0	229	0	0	0	0	1	1	0	0	0	0
+CFP	likely	0	469	443	1	1	1	1	1	0	0	0	0
+CHGB	likely	0	677	657	1	1	1	1	1	0	0	0	0
+CHRFAM7A	likely	4	412	167	0	1	1	0	0	1	0	0	1
+CHRM1	likely	7	460	77	0	1	0	1	0	0	0	0	1
+CHRNA10	likely	4	450	228	1	1	1	1	0	1	0	1	1
+CHRNE	likely	4	493	242	1	1	1	1	1	1	0	1	1
+CHRNG	likely	4	517	256	1	1	1	1	1	1	0	1	1
+CHST15	likely	1	561	463	0	0	1	1	1	0	0	0	0
+CKAP4	likely	1	602	475	0	0	1	1	1	0	0	0	0
+CLCA2	likely	1	943	869	1	1	0	1	0	0	0	1	1
+CLCN3	likely	8	818	187	0	0	0	1	1	1	0	0	1
+CLCN7	likely	10	805	155	0	0	0	1	1	1	1	0	0
+CLDN1	likely	4	211	76	0	0	0	1	1	0	0	0	1
+CLDN10	likely	4	228	74	0	0	0	1	1	0	0	0	1
+CLDN14	likely	4	239	77	0	0	0	1	1	0	0	0	1
+CLDN16	likely	4	235	76	0	0	0	1	1	0	0	1	0
+CLDN18	likely	4	261	85	0	0	0	1	1	0	0	0	1
+CLDN19	likely	4	224	76	0	0	0	1	1	1	1	1	1
+CLDN2	likely	4	230	77	0	0	0	1	1	1	0	0	1
+CLDN20	likely	4	219	76	0	0	0	1	1	0	0	0	1
+CLDN22	likely	4	220	76	0	0	0	0	1	0	0	1	1
+CLDN23	likely	4	292	82	0	0	0	1	1	0	0	0	0
+CLDN24	likely	4	220	76	0	0	0	0	1	0	0	0	1
+CLDN25	likely	4	229	75	0	0	0	1	0	0	0	0	1
+CLDN6	likely	4	220	74	0	0	0	1	0	0	0	1	1
+CLDN7	likely	4	211	77	0	0	0	1	1	0	1	0	1
+CLDND1	likely	4	253	129	0	0	0	1	1	0	1	1	0
+CLEC2B	likely	0	149	120	1	1	1	0	1	0	0	0	1
+CLEC2D	likely	1	191	136	0	0	1	0	1	1	1	1	1
+CLEC2L	likely	1	214	125	0	0	1	1	1	1	0	0	0
+CLEC3A	likely	0	197	175	1	1	1	1	1	0	0	0	1
+CLEC4D	likely	0	215	173	1	1	1	1	1	0	0	0	1
+CLEC4E	likely	1	219	179	0	0	1	1	1	0	0	0	1
+CLEC4F	likely	1	589	529	0	0	1	0	1	1	0	0	1
+CLIC1	likely	0	241	0	0	0	0	1	0	0	0	0	0
+CLIC2	likely	0	247	0	0	0	0	0	0	0	0	0	0
+CLIC3	likely	0	236	0	0	0	0	1	1	0	0	0	0
+CLIC4	likely	0	253	0	0	0	0	1	1	0	0	0	0
+CLNS1A	likely	0	237	0	0	0	0	1	1	0	0	0	0
+CLPTM1L	likely	8	538	276	0	0	0	1	1	0	1	0	0
+CLRN1	likely	4	232	102	0	0	0	1	1	1	1	0	1
+CLRN3	likely	4	226	97	0	0	0	1	1	1	1	0	0
+CLSTN3	likely	1	956	828	1	1	0	1	1	0	0	1	1
+CMTM2	likely	4	248	20	0	0	0	0	1	1	1	0	0
+CMTM4	likely	4	234	17	0	0	0	1	1	0	0	0	1
+CMTM5	likely	4	223	9	0	0	0	1	1	0	1	0	1
+CMTM8	likely	4	173	24	0	0	0	1	1	0	1	0	0
+CNGA1	likely	4	686	66	0	0	0	1	1	1	0	0	1
+CNGA2	likely	4	664	65	0	0	0	1	1	1	0	0	1
+CNGA4	likely	6	575	71	0	0	0	1	0	1	0	0	1
+CNGB3	likely	6	809	60	0	0	0	1	1	1	0	0	1
+CNNM1	likely	5	951	211	1	1	0	1	0	1	0	0	0
+CNNM2	likely	5	875	207	1	1	0	1	0	1	0	1	0
+CNNM4	likely	3	775	155	1	1	0	1	1	1	1	1	0
+CNR2	likely	7	360	76	0	1	0	1	1	0	0	0	0
+CNTN2	likely	0	1040	1014	1	1	1	1	1	0	0	1	1
+CNTN4	likely	0	1026	1008	1	1	1	1	1	0	0	1	1
+CNTN5	likely	0	1100	1077	1	1	1	1	1	0	0	1	1
+CNTN6	likely	0	1028	1009	1	1	1	1	1	0	0	1	1
+CNTNAP3	likely	1	1288	1220	1	1	0	0	0	0	1	1	1
+COL13A1	likely	1	717	656	0	0	1	1	1	0	0	0	1
+COL23A1	likely	1	540	484	0	0	1	1	1	0	1	0	1
+COL7A1	likely	0	2944	2921	1	1	1	0	0	0	0	0	1
+CPAMD8	likely	0	1885	1860	1	1	1	0	0	0	0	0	0
+CR1L	likely	0	569	535	1	1	1	0	0	0	0	0	1
+CRB2	likely	1	1285	1196	1	1	0	1	1	0	1	1	1
+CRB3	likely	1	120	33	1	1	0	1	1	0	0	0	1
+CRIM1	likely	1	1036	905	1	1	0	1	1	0	0	1	1
+CRIPTO	likely	0	188	158	1	1	1	0	0	0	0	1	1
+CRISP2	likely	0	243	222	1	1	1	1	1	0	0	0	1
+CRISP3	likely	0	245	226	1	1	1	0	1	0	0	0	1
+CRTAM	likely	1	393	272	1	1	0	1	1	1	0	1	1
+CSPG4	likely	1	2322	2195	1	1	0	1	1	0	0	1	0
+CSPG5	likely	1	566	393	1	1	0	1	1	0	0	1	0
+CTHRC1	likely	0	243	213	1	1	1	1	1	0	0	0	0
+CTLA4	likely	1	223	128	1	1	0	1	1	0	1	1	0
+CTNS	likely	7	367	142	1	1	0	1	1	0	0	0	0
+CTSD	likely	0	412	392	1	1	1	1	1	0	0	0	1
+CTSK	likely	0	329	314	1	1	1	1	1	1	0	0	1
+CTSZ	likely	0	303	280	1	1	1	1	1	1	0	0	0
+CX3CL1	likely	1	397	317	1	1	0	1	1	0	0	0	1
+CXCL12	likely	0	93	72	1	1	1	1	1	1	0	0	0
+CXCL16	likely	1	254	176	1	1	0	0	1	0	0	0	0
+CXCR6	likely	7	342	75	0	1	0	1	1	0	0	0	0
+CYBA	likely	4	195	9	0	0	0	1	0	0	0	0	0
+DAG1	likely	1	895	725	1	1	0	1	1	0	0	1	0
+DCBLD1	likely	1	715	424	1	1	0	1	1	0	0	1	0
+DCHS1	likely	1	3298	2895	1	1	0	1	1	0	0	1	1
+DCHS2	likely	1	3371	2935	1	1	0	1	0	0	1	1	1
+DCST1	likely	6	706	326	0	0	0	1	1	0	1	0	0
+DCST2	likely	6	773	285	0	0	0	1	1	0	0	0	0
+DCSTAMP	likely	6	470	162	0	0	0	1	1	1	1	1	0
+DEFB103B	likely	0	67	45	1	1	1	0	1	0	0	0	1
+DEFB118	likely	0	123	104	1	1	1	0	1	0	0	0	1
+DEFB126	likely	0	111	91	1	1	1	0	1	0	0	0	0
+DEFB132	likely	0	95	73	1	1	1	0	1	0	0	0	0
+DHH	likely	0	396	374	1	1	1	1	1	0	0	0	1
+FGL2	likely	0	439	416	1	1	1	1	1	0	0	0	1
+FNDC4	likely	1	234	125	1	1	0	1	1	1	0	1	1
+FXYD5	likely	1	178	124	1	1	0	0	1	0	0	0	1
+FXYD7	likely	1	80	26	0	1	0	1	0	0	0	0	1
+GABRR2	likely	4	465	254	1	1	1	1	1	1	0	1	1
+GDPD5	likely	6	605	322	0	0	0	1	1	0	1	1	1
+LGMN	likely	0	433	416	1	1	1	1	1	1	0	0	0
+LNPEP	likely	1	1025	894	0	0	1	1	1	0	0	1	1
+SERINC1	likely	10	453	90	0	0	0	1	1	0	0	0	1
+SLC2A10	likely	12	541	139	0	0	0	1	1	0	0	0	0
+TCAF2	likely	0	919	919	0	1	1	0	0	0	0	0	1
+TMEM87A	likely	7	555	261	1	1	0	1	0	0	1	1	0
+A2ML1	low	0	1454	1437	1	1	1	0	1	0	0	0	1
+AADACL3	low	1	407	3	0	1	0	0	0	0	0	0	0
+ABCA10	low	13	1543	364	0	1	0	0	1	0	1	0	1
+ABCA13	low	12	5058	3876	0	0	0	1	1	0	1	1	0
+ABCA4	low	12	2273	1032	0	0	0	1	1	0	0	1	1
+ABCB5	low	12	1257	107	0	0	0	1	1	0	1	1	1
+ABCC11	low	12	1382	83	0	0	0	0	1	0	0	0	0
+ABHD6	low	0	337	0	0	0	0	1	1	0	0	0	0
+ACP2	low	1	423	351	1	1	0	1	1	1	1	0	1
+ACR	low	0	421	402	1	1	1	1	1	0	0	0	0
+ADAM11	low	1	769	711	1	1	0	1	1	0	1	1	1
+ADAM18	low	1	739	671	1	1	0	1	1	0	1	1	1
+ADAM20	low	1	726	663	1	1	0	0	1	0	0	1	1
+ADAM21	low	1	722	654	1	1	0	1	0	0	0	1	1
+ADAM30	low	1	790	658	1	1	0	1	1	0	0	1	1
+ADAM33	low	1	813	674	1	1	0	1	1	0	0	1	1
+ADAMTS10	low	0	1103	1078	1	1	1	1	1	0	0	0	1
+ADAMTS12	low	0	1594	1567	1	1	1	1	1	0	0	0	1
+ADAMTS17	low	0	1095	1074	1	1	1	1	1	0	0	0	1
+ADAMTS5	low	0	930	912	1	1	1	1	1	0	0	0	1
+ADAMTS8	low	0	889	863	1	1	1	1	1	0	0	0	1
+ADCY1	low	12	1119	92	0	0	0	1	0	0	0	0	1
+ADCY4	low	12	1077	105	0	0	0	1	1	0	1	0	1
+ADGRD2	low	7	963	699	0	1	0	0	0	0	0	0	1
+ADGRF3	low	7	1079	793	1	1	0	1	1	0	0	0	1
+ADGRF4	low	7	695	428	1	1	0	1	1	0	0	0	0
+ADGRG5	low	7	528	278	1	1	0	1	1	0	0	0	0
+ADGRG7	low	8	797	483	0	0	0	1	1	0	0	0	0
+AGPAT1	low	3	283	7	0	1	0	1	1	0	0	0	0
+AHNAK	low	0	5890	0	0	0	0	1	0	0	0	0	0
+AIMP1	low	0	312	0	0	0	0	1	1	0	0	0	0
+AKAP4	low	0	854	0	0	0	0	1	1	0	0	0	0
+ANG	low	0	147	123	1	1	1	0	0	0	0	0	1
+ANGPTL2	low	0	493	471	1	1	1	1	1	0	0	0	1
+ANGPTL4	low	0	406	381	1	1	1	1	1	0	0	0	1
+ANKEF1	low	0	776	0	0	0	0	1	1	0	0	0	0
+ANKRD24	low	0	1146	0	0	0	0	1	1	0	0	0	0
+ANO10	low	8	660	122	0	0	0	1	1	1	1	0	0
+ANO8	low	10	1232	61	0	0	0	1	0	0	0	0	0
+ANO9	low	8	782	249	0	0	0	1	0	1	1	1	1
+ANOS1	low	0	680	656	1	1	1	0	1	0	0	0	0
+ANTXR2	low	1	489	285	1	1	0	1	1	0	1	1	1
+ANTXRL	low	1	631	326	1	1	0	0	0	0	0	0	1
+ANXA13	low	0	316	0	0	0	0	1	0	0	0	0	0
+ANXA3	low	0	323	0	0	0	0	1	1	0	0	0	0
+ANXA9	low	0	345	0	0	0	0	1	0	0	0	0	0
+AOC1	low	0	751	732	1	1	1	0	1	1	0	0	1
+AOC2	low	1	756	731	0	0	1	1	1	1	0	0	1
+AOPEP	low	0	819	0	0	0	0	1	1	0	0	0	0
+APCDD1	low	0	514	488	1	1	1	1	1	1	0	1	1
+APCDD1L	low	0	501	479	1	1	1	0	0	1	0	0	1
+APCS	low	0	223	204	1	1	1	1	1	0	0	0	1
+APH1A	low	7	265	33	0	1	0	1	1	1	1	0	1
+APOBR	low	0	1097	0	0	0	0	0	0	0	0	0	0
+APOLD1	low	0	279	0	0	0	0	1	1	0	0	0	0
+AQP12B	low	6	295	80	0	0	0	0	0	0	1	0	1
+AQP6	low	6	282	54	0	0	0	1	1	1	0	0	1
+AQP7B	low	6	346	73	0	0	0	0	0	1	0	0	1
+ARHGEF18	low	0	1361	0	0	0	0	1	0	0	0	0	0
+ARMH1	low	0	440	0	0	0	0	1	1	0	0	0	0
+ARMH2	low	0	230	0	0	0	0	1	1	0	0	0	0
+ARSA	low	0	507	489	1	1	1	1	1	0	0	0	0
+ARSF	low	2	590	523	1	1	1	0	1	0	0	0	1
+ARSH	low	2	562	513	0	1	1	0	0	0	0	0	1
+ART4	low	0	314	268	1	1	1	1	1	0	0	1	0
+ASAH2B	low	0	165	131	1	1	1	0	0	0	0	0	1
+ASIC4	low	2	539	356	0	0	0	1	1	1	1	1	1
+ASTN2	low	2	1339	1050	1	1	1	1	0	0	1	1	1
+ATP11B	low	10	1177	79	0	0	0	1	1	0	0	0	1
+ATP12A	low	10	1039	104	0	0	0	1	1	0	0	0	1
+ATP5IF1	low	0	106	0	0	0	0	1	1	1	0	0	0
+ATP5PF	low	0	108	0	0	0	0	1	1	0	0	0	0
+ATP6AP1	low	1	470	392	1	1	0	1	1	0	0	0	0
+ATP6V0A2	low	8	856	135	0	0	0	1	1	0	0	1	1
+ATP6V0A4	low	8	840	131	0	0	0	1	1	0	0	0	1
+ATP6V0E2	low	2	81	32	0	1	1	0	0	0	0	0	1
+ATRAID	low	1	229	169	1	1	0	1	1	0	0	1	0
+AZU1	low	0	251	232	1	1	1	0	1	0	0	0	0
+B4GALT1	low	1	398	355	0	0	1	1	1	0	0	0	1
+BEST1	low	4	585	36	0	0	0	1	1	1	1	0	1
+BGN	low	0	368	352	1	1	1	1	1	0	0	0	1
+BMP1	low	0	986	964	1	1	1	1	1	0	0	0	1
+BOC	low	1	1114	825	1	1	0	1	1	0	0	1	1
+BRI3	low	0	125	0	0	0	0	1	1	0	0	0	0
+BRICD5	low	1	260	211	0	0	1	1	1	0	0	0	0
+BTBD17	low	1	478	54	1	1	0	1	0	0	0	0	0
+BTN1A1	low	1	526	220	1	1	0	1	1	0	0	1	1
+BTNL9	low	1	535	223	1	1	0	1	0	1	0	1	1
+C14orf180	low	1	160	39	0	0	1	0	0	0	0	0	0
+C16orf54	low	1	224	31	0	1	0	1	0	0	0	0	0
+C17orf58	low	0	339	322	1	1	1	1	0	0	0	0	0
+C19orf38	low	1	230	103	1	1	0	1	1	0	0	1	0
+C1QB	low	0	253	226	1	1	1	1	0	1	0	0	1
+C1QL2	low	0	287	266	1	1	1	1	1	0	0	0	1
+C1QTNF1	low	0	281	256	1	1	1	1	1	1	0	0	1
+C1QTNF4	low	0	329	313	1	1	1	1	0	1	0	0	0
+C1orf210	low	1	113	32	0	1	0	1	1	0	0	0	0
+C2orf92	low	1	265	167	1	1	0	0	1	0	0	0	0
+C4B_2	low	0	1744	1725	1	1	1	0	0	0	0	0	1
+C5orf15	low	1	265	153	1	1	0	1	0	0	0	1	0
+C6orf58	low	0	330	310	1	1	1	1	1	0	0	0	0
+C8G	low	0	202	182	1	1	1	1	0	0	0	0	0
+C9	low	0	559	538	1	1	1	1	1	0	0	0	1
+CA10	low	0	328	307	1	1	1	1	1	1	0	0	1
+CA11	low	0	328	303	1	1	1	1	1	1	0	0	1
+CACNG3	low	4	315	93	0	0	0	1	1	0	0	1	1
+CACNG4	low	4	327	99	0	0	0	1	1	0	0	0	1
+CACNG6	low	4	260	110	0	0	0	1	0	1	0	0	1
+CALHM5	low	4	309	78	0	0	0	1	1	1	0	0	1
+CAMP	low	0	170	140	1	1	1	1	1	0	0	0	0
+CANT1	low	1	401	341	0	0	1	1	1	1	1	0	0
+CATSPERB	low	1	1116	1036	1	1	0	0	1	0	0	0	0
+CBARP	low	1	705	46	0	1	0	1	1	0	0	0	0
+CBLN1	low	0	193	172	1	1	1	1	1	1	0	0	1
+CBLN2	low	0	224	173	1	1	1	1	1	1	0	0	1
+CCDC126	low	1	140	110	0	0	1	1	1	0	0	0	1
+CCDC198	low	0	296	0	0	0	0	1	1	0	0	0	0
+CCDC70	low	0	222	0	0	0	0	1	1	0	0	0	0
+CCDC78	low	0	438	0	0	0	0	1	1	1	0	0	0
+CCDC80	low	0	950	927	1	1	1	1	1	0	0	0	0
+CCKAR	low	7	428	99	0	1	0	1	1	0	0	0	0
+CCL25	low	0	150	127	1	1	1	0	1	0	0	0	0
+CCN1	low	0	381	357	1	1	1	1	1	0	0	0	1
+CCN2	low	0	349	323	1	1	1	1	1	0	0	0	1
+CCN3	low	0	357	326	1	1	1	1	1	0	0	0	1
+CD164L2	low	1	174	112	1	1	0	1	1	0	0	0	0
+CD1E	low	1	388	288	1	1	0	0	1	0	1	1	1
+CDCP2	low	1	540	495	1	1	0	1	1	0	1	0	1
+CDH20	low	1	801	587	1	1	0	1	1	0	0	1	1
+CDH22	low	1	828	588	1	1	0	1	1	0	0	1	1
+CDH24	low	1	819	614	1	1	0	1	1	0	0	1	1
+CDHR4	low	1	788	671	1	1	0	1	0	0	1	1	0
+CDNF	low	0	187	161	1	1	1	1	0	0	0	0	1
+CEACAM18	low	0	384	354	1	1	1	1	1	0	0	0	0
+CEACAM19	low	1	300	127	1	1	0	1	1	0	1	1	0
+CEACAM21	low	1	293	204	1	1	0	0	0	0	1	1	1
+CERCAM	low	0	595	573	1	1	1	1	1	0	0	0	1
+CFC1	low	0	223	198	1	1	1	0	0	1	0	1	1
+CFC1B	low	0	223	198	1	1	1	0	0	0	0	0	1
+CFHR2	low	0	270	252	1	1	1	0	0	0	0	0	1
+CHL1	low	1	1208	1058	1	1	0	1	1	0	0	1	1
+CHRM3	low	7	590	120	0	1	0	1	1	0	0	0	1
+CHRNA1	low	4	457	232	1	1	1	1	1	1	0	1	1
+CIROP	low	1	788	717	1	1	0	1	1	0	0	0	0
+CIROZ	low	0	823	801	1	1	1	1	1	0	0	0	0
+CIST1	low	1	234	156	1	1	0	0	1	0	0	0	0
+CKLF	low	4	152	15	0	0	0	1	1	0	1	0	0
+CLCA1	low	0	914	893	1	1	1	1	0	0	0	0	1
+CLCC1	low	3	551	268	1	1	0	1	1	0	1	0	0
+CLDN34	low	4	214	88	0	0	0	0	1	0	0	0	0
+CLEC17A	low	1	378	185	0	0	1	0	1	0	0	1	1
+CLIC5	low	0	410	0	0	0	0	0	1	0	0	0	0
+CLIC6	low	0	704	0	0	0	0	1	0	0	0	0	0
+CLMP	low	1	373	215	1	1	0	1	1	1	0	1	0
+CLN3	low	11	438	97	0	0	1	1	1	0	1	0	0
+CLN5	low	0	358	316	1	1	1	1	1	0	0	0	0
+CLRN2	low	4	232	97	0	0	0	1	1	1	0	0	1
+CLSTN2	low	1	955	814	1	1	0	1	1	0	0	1	1
+CLUL1	low	0	466	446	1	1	1	0	1	0	0	0	0
+CMTM1	low	4	169	15	0	0	0	0	1	0	1	0	0
+CNIH2	low	3	160	43	0	0	1	1	1	0	0	0	1
+CNIH3	low	3	160	42	0	0	1	1	1	0	0	0	1
+CNMD	low	1	334	270	0	0	1	1	1	0	0	0	0
+CNTN3	low	0	1028	1009	1	1	1	1	1	0	0	1	1
+CNTNAP3B	low	1	1288	1222	1	1	0	0	0	0	1	1	1
+CNTNAP5	low	1	1306	1217	1	1	0	0	1	0	0	1	1
+COL25A1	low	1	654	600	0	0	1	1	1	0	0	0	1
+COL6A2	low	0	1019	999	1	1	1	1	0	0	0	0	1
+COL6A3	low	0	3177	3152	1	1	1	1	1	0	0	0	1
+COLQ	low	0	455	433	1	1	1	1	1	0	0	0	1
+CPA6	low	0	437	407	1	1	1	1	1	0	0	0	1
+CPD	low	1	1380	1268	1	1	0	1	1	0	0	1	1
+CPE	low	0	476	449	1	1	1	1	1	0	0	0	1
+CPM	low	0	443	426	1	1	1	1	1	0	0	1	1
+CPO	low	0	374	354	1	1	1	0	1	0	0	0	1
+CPZ	low	0	652	634	1	1	1	1	1	0	0	0	1
+CREG1	low	0	220	189	1	1	1	1	1	1	0	0	0
+CRIPTO3	low	0	188	158	1	1	1	0	0	0	0	0	1
+CRISP1	low	0	249	228	1	1	1	1	1	0	0	0	1
+CRISPLD1	low	0	500	477	1	1	1	1	1	0	0	0	1
+CRISPLD2	low	0	497	475	1	1	1	1	1	0	0	0	1
+CRYAB	low	0	175	0	0	0	0	1	1	0	0	0	0
+CSF1	low	1	554	464	1	1	0	1	1	1	0	1	0
+CSMD2	low	1	3487	3410	0	1	0	1	1	0	1	1	1
+CSMD3	low	1	3707	3570	1	1	0	1	1	0	1	0	1
+CST7	low	0	145	126	1	1	1	1	1	0	0	0	0
+CT47A11	low	0	288	0	0	0	0	0	0	0	0	0	0
+CT47A3	low	0	288	0	0	0	0	0	0	0	0	0	0
+CTSA	low	0	480	452	1	1	1	1	1	1	0	0	0
+CTSB	low	0	339	322	1	1	1	1	1	0	0	0	0
+CTSE	low	0	396	377	1	1	1	1	1	0	0	0	1
+CTSG	low	0	255	237	1	1	1	1	1	0	0	0	1
+CTSH	low	0	335	313	1	1	1	1	1	0	0	0	1
+CTSL	low	0	333	316	1	1	1	0	1	0	0	0	1
+CTSS	low	0	331	315	1	1	1	1	1	1	0	0	1
+CTXN1	low	1	82	29	0	1	0	1	0	0	0	0	0
+CTXN3	low	1	81	28	0	1	0	1	0	0	0	0	0
+CTXND1	low	1	59	16	0	1	0	1	0	0	0	0	0
+CTXND2	low	1	55	15	0	1	0	1	0	0	0	0	0
+CUZD1	low	1	607	544	1	1	0	1	1	0	0	1	1
+CXorf66	low	1	361	29	1	1	0	0	1	0	0	0	0
+CYB561	low	6	251	50	0	0	0	1	1	1	1	0	1
+CYP4Z1	low	1	505	2	1	1	0	0	0	0	0	0	0
+CYSTM1	low	0	97	0	0	0	0	1	1	0	0	0	0
+CYTL1	low	0	136	114	1	1	1	1	0	0	0	0	0
+DCT	low	1	519	449	1	1	0	1	1	0	0	1	1
+DCXR	low	0	244	0	0	0	0	1	1	1	0	0	0
+DEFB106B	low	0	65	45	1	1	1	0	0	0	0	0	1
+DEFB112	low	0	113	99	1	1	1	0	0	0	0	0	0
+DEFB113	low	0	82	66	1	1	1	1	1	0	0	0	0
+DEFB115	low	0	88	59	1	1	1	0	1	0	0	0	1
+DGCR2	low	1	550	326	1	1	0	1	0	0	1	1	0
+GPR148	low	7	347	101	0	1	0	0	1	0	0	0	0
+GPR162	low	7	588	70	0	1	0	1	1	0	1	0	1
+OR10A4	low	7	315	82	0	1	0	1	1	0	0	0	1
+OR4F15	low	7	312	85	0	1	0	1	1	1	0	0	1
+OR4F21	low	7	312	86	0	1	0	0	0	0	0	0	1
+OR8U1	low	7	309	85	0	1	0	1	1	0	0	0	1
+OR8U9	low	7	309	87	0	1	0	0	0	0	0	0	0
+SLIT3	low	0	1523	1490	1	1	1	1	1	0	0	0	1
+TMEM198	low	7	360	80	0	1	0	0	0	0	0	0	0
+AADACL4	no	1	407	4	0	1	0	0	0	0	0	0	0
+AATK	no	1	1374	31	0	1	0	0	0	0	1	0	1
+ABCA12	no	12	2595	1380	0	0	0	1	1	0	1	1	0
+ABCA2	no	12	2435	1109	0	0	0	1	0	0	0	1	0
+ABCA3	no	12	1704	519	0	0	0	1	1	0	1	1	0
+ABCA5	no	14	1642	398	0	0	0	1	1	0	1	1	0
+ABCA9	no	12	1624	423	0	0	0	1	1	0	1	1	1
+ABCB9	no	10	766	84	0	0	0	1	1	1	1	1	0
+ABCC12	no	12	1359	88	0	0	0	1	1	0	1	0	0
+ABHD12	no	1	398	306	0	0	1	1	1	0	0	0	1
+ABHD3	no	0	409	0	0	0	0	1	1	0	1	0	0
+ABI3BP	no	0	1068	1047	1	1	1	1	1	0	0	0	0
+ABRA	no	0	381	0	0	0	0	1	1	0	0	0	0
+ACTN1	no	0	892	0	0	0	0	1	1	0	0	0	0
+ACTRT1	no	0	376	0	0	0	0	1	1	0	0	0	0
+ACY3	no	0	319	0	0	0	0	1	1	1	0	0	0
+ADA2	no	0	511	484	1	1	1	0	1	1	0	0	0
+ADAMTS1	no	0	967	918	1	1	1	1	1	0	0	0	1
+ADAMTS14	no	0	1223	1202	1	1	1	1	1	0	0	0	1
+ADAMTS15	no	0	950	933	1	1	1	1	1	0	0	0	1
+ADAMTS18	no	0	1221	1176	1	1	1	1	1	0	0	0	1
+ADAMTS19	no	0	1213	1188	1	1	1	1	1	0	0	0	1
+ADAMTS3	no	0	1205	1187	1	1	1	1	1	0	0	0	1
+ADAMTS6	no	0	1117	1098	1	1	1	1	1	0	0	0	1
+ADAMTS7	no	0	1686	1661	1	1	1	1	1	0	0	0	1
+ADAMTSL3	no	0	1691	1665	1	1	1	1	1	0	0	0	1
+ADAMTSL4	no	0	1074	1050	1	1	1	1	1	0	0	0	1
+ADAP2	no	0	381	0	0	0	0	1	0	0	0	0	0
+ADD2	no	0	726	0	0	0	0	1	1	1	0	0	0
+ADISSP	no	0	174	0	0	0	0	1	1	0	0	0	0
+ADM5	no	0	153	135	1	1	1	0	0	0	0	0	0
+AEBP1	no	0	1158	1133	1	1	1	1	1	0	0	0	1
+AFAP1L2	no	0	818	0	0	0	0	1	0	0	0	0	0
+AGMO	no	9	445	76	0	1	0	1	1	0	0	0	0
+AGR3	no	0	166	143	1	1	1	1	1	0	0	0	1
+AHCYL1	no	0	530	0	0	0	0	1	1	1	0	0	0
+AIFM2	no	0	373	0	0	0	0	1	1	0	0	0	0
+AIG1	no	6	238	54	0	0	0	1	1	0	1	0	1
+AJM1	no	0	976	0	0	0	0	1	0	0	0	0	0
+AKAP19	no	0	95	0	0	0	0	1	1	0	0	0	0
+AKAP7	no	0	104	0	0	0	0	1	1	0	0	0	0
+AKR1A1	no	0	325	0	0	0	0	1	1	0	0	0	0
+ALG10B	no	13	473	137	0	0	1	0	0	0	0	0	1
+ALKAL2	no	0	152	130	1	1	1	0	0	0	0	0	0
+ALOX5AP	no	4	161	51	0	1	1	1	1	1	0	0	0
+ALPK2	no	0	2170	0	0	0	0	1	1	0	0	0	0
+AMBP	no	0	352	333	1	1	1	1	1	0	0	0	1
+AMOTL2	no	0	779	0	0	0	0	1	1	1	0	0	0
+AMPH	no	0	695	0	0	0	0	1	1	1	0	0	0
+AMTN	no	0	209	193	1	1	1	1	1	0	0	0	0
+ANGPTL7	no	0	346	320	1	1	1	1	1	0	0	0	1
+ANGPTL8	no	0	198	177	1	1	1	1	0	1	0	0	0
+ANK2	no	0	3957	0	0	0	0	1	1	0	0	0	0
+ANK3	no	0	4377	0	0	0	0	0	0	0	0	0	0
+ANKFN1	no	0	1146	0	0	0	0	1	1	0	0	0	0
+ANKRD13A	no	0	590	0	0	0	0	1	1	0	0	0	0
+ANKRD13B	no	0	626	0	0	0	0	1	1	0	0	0	0
+ANKRD20A1	no	0	823	0	0	0	0	0	0	0	0	0	0
+ANKRD30BL	no	0	258	0	0	0	0	0	1	0	0	0	0
+ANKRD35	no	0	1001	0	0	0	0	1	1	1	0	0	0
+ANXA7	no	0	488	0	0	0	0	1	1	0	0	0	0
+ANXA8L1	no	0	327	0	0	0	0	0	0	0	0	0	0
+AP2M1	no	0	435	0	0	0	0	1	1	0	0	0	0
+APC	no	0	2843	0	0	0	0	1	1	0	0	0	0
+APOD	no	0	189	169	1	1	1	1	1	0	0	0	0
+APOM	no	0	188	166	1	1	1	1	1	0	0	0	0
+AQP12A	no	6	295	80	0	0	0	0	0	0	0	0	1
+ARAP1	no	0	1450	0	0	0	0	1	1	0	0	0	0
+ARF5	no	0	180	0	0	0	0	1	1	0	0	0	0
+ARHGAP18	no	0	663	0	0	0	0	1	1	0	0	0	0
+ARHGAP45	no	0	1136	0	0	0	0	1	1	0	0	0	0
+ARK2C	no	0	346	0	0	0	0	1	1	0	0	0	0
+ARL13A	no	0	290	0	0	0	0	0	1	0	0	0	0
+ARL15	no	0	204	0	0	0	0	1	1	0	0	0	0
+ARMCX5	no	0	558	0	0	0	0	1	1	0	0	0	0
+ARRDC1	no	0	433	0	0	0	0	1	1	0	0	0	0
+ARRDC4	no	0	418	0	0	0	0	1	1	0	0	0	0
+ARRDC5	no	0	328	0	0	0	0	1	1	0	0	0	0
+ARSB	no	0	533	495	1	1	1	1	1	0	0	0	1
+ARSD	no	2	593	515	1	1	1	0	1	0	0	0	1
+ARSJ	no	0	599	552	1	1	1	1	1	0	0	0	1
+ART5	no	0	291	269	1	1	1	1	1	0	0	0	1
+ASIP	no	0	132	110	1	1	1	1	0	0	0	0	0
+ASPHD1	no	0	390	0	0	0	0	1	1	0	0	0	0
+ASPHD2	no	0	369	0	0	0	0	1	1	0	0	0	0
+ATP13A1	no	12	1204	80	0	0	0	1	1	0	1	0	0
+ATP13A3	no	12	1226	105	0	0	0	1	1	0	1	1	0
+ATP13A5	no	12	1218	83	0	0	0	1	1	0	0	1	0
+ATP1B4	no	1	357	223	0	0	1	1	1	0	0	0	1
+ATP6V1B2	no	0	511	0	0	0	0	1	1	0	0	0	0
+ATP6V1E1	no	0	226	0	0	0	0	1	1	0	0	0	0
+ATP7B	no	8	1465	73	0	0	0	1	1	0	1	0	1
+ATP8A2	no	10	1188	84	0	0	0	1	1	0	1	0	1
+AURKA	no	0	403	0	0	0	0	1	1	0	0	0	0
+AVEN	no	0	362	0	0	0	0	1	1	0	0	0	0
+AVPI1	no	0	147	0	0	0	0	1	1	0	0	0	0
+AZGP1	no	0	298	278	1	1	1	1	1	0	0	0	0
+B4GALNT2	no	1	566	474	0	0	1	1	1	0	1	0	1
+BAIAP2	no	0	552	0	0	0	0	1	1	1	0	0	0
+BIN2	no	0	565	0	0	0	0	1	1	1	0	0	0
+BLTP1	no	1	5005	26	0	1	0	1	1	0	0	0	0
+BLVRB	no	0	206	0	0	0	0	1	1	0	0	0	0
+BMP10	no	0	424	403	1	1	1	1	1	1	0	0	1
+BMP8A	no	0	402	383	1	1	1	0	0	0	0	0	1
+BMPER	no	0	685	646	1	1	1	1	1	0	0	0	0
+BMX	no	0	675	0	0	0	0	1	1	0	0	0	0
+BPI	no	0	487	457	1	1	1	1	1	0	0	0	1
+BPIFA3	no	0	254	233	1	1	1	1	1	0	0	0	0
+BPIFB2	no	0	458	438	1	1	1	1	1	1	0	0	0
+BPIFB6	no	0	453	435	1	1	1	1	1	0	0	0	0
+BPIFC	no	0	507	484	1	1	1	1	1	0	0	0	0
+BRI3BP	no	3	251	99	1	1	0	1	1	0	0	0	0
+BRINP2	no	0	783	750	1	1	1	1	1	0	0	0	1
+BTD	no	0	523	502	1	1	1	1	1	0	0	0	1
+C11orf24	no	1	449	381	1	1	0	0	1	0	0	0	0
+C16orf89	no	0	402	382	1	1	1	1	1	0	0	0	0
+C17orf99	no	0	265	245	1	1	1	0	1	0	0	0	0
+C1QL1	no	0	258	243	1	1	1	1	1	0	0	0	1
+C1QL4	no	0	238	223	1	1	1	1	1	1	0	0	1
+C1QTNF12	no	0	302	277	1	1	1	1	0	1	0	0	1
+C1QTNF2	no	0	285	270	1	1	1	1	0	1	0	0	1
+C1QTNF3	no	0	246	224	1	1	1	1	1	1	0	0	1
+C1QTNF6	no	0	278	232	1	1	1	1	1	1	0	0	1
+C1QTNF7	no	0	289	273	1	1	1	1	1	1	0	0	1
+C1QTNF8	no	0	252	235	1	1	1	0	0	1	0	0	1
+C1QTNF9	no	0	333	314	1	1	1	0	0	0	0	0	1
+C1QTNF9B	no	0	333	314	1	1	1	0	0	1	0	0	1
+C1RL	no	0	487	447	1	1	1	1	1	0	0	0	1
+C1orf116	no	0	601	0	0	0	0	1	1	0	0	0	0
+C1orf54	no	0	131	115	1	1	1	1	1	0	0	0	0
+C2CD2L	no	1	706	9	0	1	0	1	1	0	0	0	0
+C2CD5	no	0	1000	0	0	0	0	1	1	0	0	0	0
+C2orf74	no	1	187	9	0	1	0	1	1	0	0	0	0
+C4A	no	0	1744	1725	1	1	1	0	0	0	0	0	1
+C5orf46	no	0	87	64	1	1	1	1	1	0	0	0	0
+C6orf120	no	0	191	162	1	1	1	1	1	0	0	0	0
+C8A	no	0	584	564	1	1	1	1	1	0	0	0	1
+CABP7	no	1	215	9	0	0	1	1	0	0	0	0	1
+CASD1	no	15	797	377	0	0	1	1	1	0	0	1	0
+CATIP	no	0	387	0	0	0	0	1	1	0	0	0	0
+CATSPERZ	no	0	200	0	0	0	0	0	1	0	0	0	0
+CAVIN2	no	0	425	0	0	0	0	1	1	1	0	0	0
+CAVIN3	no	0	261	0	0	0	0	1	0	1	0	0	0
+CAVIN4	no	0	364	0	0	0	0	1	1	1	0	0	0
+CBLN3	no	0	205	173	1	1	1	1	1	1	0	0	1
+CCBE1	no	0	406	372	1	1	1	1	1	0	0	0	0
+CCDC107	no	1	283	40	1	1	0	1	1	0	1	0	0
+CCDC124	no	0	223	0	0	0	0	1	1	0	0	0	0
+CCDC136	no	1	1154	4	0	0	1	1	1	0	0	0	0
+CCDC144A	no	1	1427	7	0	0	1	0	0	0	1	0	0
+CCDC154	no	0	667	0	0	0	0	1	1	0	0	0	0
+CCDC167	no	1	97	1	0	0	1	1	0	0	0	0	0
+CCDC24	no	0	307	0	0	0	0	1	1	0	0	0	0
+CCDC3	no	0	270	249	1	1	1	1	1	1	0	0	0
+CCDC81	no	0	652	0	0	0	0	1	1	0	0	0	0
+CCDC85C	no	0	419	0	0	0	0	1	0	1	0	0	0
+CCDC97	no	0	343	0	0	0	0	1	1	0	0	0	0
+CCL21	no	0	134	111	1	1	1	0	1	0	0	0	0
+CCL27	no	0	112	88	1	1	1	0	0	0	0	0	0
+CCL5	no	0	91	68	1	1	1	1	0	0	0	0	1
+CCN5	no	0	250	227	1	1	1	1	1	0	0	0	1
+CCN6	no	0	354	331	1	1	1	1	1	0	0	0	1
+CCNYL1	no	0	359	0	0	0	0	1	1	0	0	0	0
+CCNYL1B	no	0	285	0	0	0	0	0	0	0	0	0	0
+CCPG1	no	1	757	522	0	0	1	1	1	1	0	0	0
+CDC42EP1	no	0	391	0	0	0	0	1	1	0	0	0	0
+CDK14	no	0	469	0	0	0	0	1	1	0	0	0	0
+CDK16	no	0	496	0	0	0	0	1	0	0	0	0	0
+CDRT15	no	0	188	0	0	0	0	0	0	0	0	0	0
+CDV3	no	0	258	0	0	0	0	1	1	0	0	0	0
+CELA1	no	0	258	246	1	1	1	1	1	0	0	0	1
+CFAP126	no	0	177	0	0	0	0	1	1	0	0	0	0
+CFAP299	no	0	233	0	0	0	0	1	1	0	0	0	0
+CFB	no	0	764	739	1	1	1	1	1	0	0	0	1
+CFHR5	no	0	569	551	1	1	1	0	0	0	0	0	0
+CFLAR	no	0	480	0	0	0	0	1	1	1	0	0	0
+CGAS	no	0	522	0	0	0	0	1	1	0	0	0	0
+CGB1	no	0	187	137	1	1	1	0	0	0	0	0	1
+CGB2	no	0	163	145	1	1	1	0	0	0	0	0	1
+CGN	no	0	1203	0	0	0	0	1	0	0	0	0	0
+CHIA	no	0	476	455	1	1	1	0	1	0	0	0	1
+CHIC2	no	0	165	0	0	0	0	1	1	0	0	0	0
+CHID1	no	0	393	374	1	1	1	1	1	0	0	0	0
+CHLSN	no	0	194	0	0	0	0	1	1	0	0	0	0
+CHODL	no	1	273	198	1	1	0	1	1	0	1	1	1
+CHP2	no	0	196	0	0	0	0	1	1	0	0	0	0
+CHRDL1	no	0	456	429	1	1	1	1	1	0	0	0	1
+CIB1	no	0	191	0	0	0	0	1	1	0	0	0	0
+CIB3	no	0	187	0	0	0	0	1	1	0	0	0	0
+CIMIP2C	no	0	201	0	0	0	0	1	1	0	0	0	0
+CIMIP6	no	0	287	0	0	0	0	1	1	0	0	0	0
+CIP2A	no	0	905	0	0	0	0	1	1	1	0	0	0
+CLDND2	no	4	167	43	0	0	0	1	1	0	0	0	0
+CLEC18B	no	0	455	429	1	1	1	0	0	0	0	0	1
+CLEC18C	no	0	446	420	1	1	1	0	0	0	0	0	1
+CLEC19A	no	0	186	167	1	1	1	0	0	1	0	0	0
+CLEC3B	no	0	202	181	1	1	1	1	1	0	0	0	1
+CLMB	no	0	76	0	0	0	0	1	0	0	0	0	0
+CLPSL2	no	0	100	78	1	1	1	1	0	0	0	0	0
+CLPTM1	no	8	669	300	0	0	0	1	1	0	1	0	0
+CLU	no	0	449	427	1	1	1	1	1	0	0	0	0
+CMA1	no	0	247	228	1	1	1	1	1	0	0	0	1
+CMTM3	no	4	182	14	0	0	0	1	1	0	1	0	1
+CNFN	no	0	112	0	0	0	0	1	1	1	0	0	0
+CNKSR1	no	0	720	0	0	0	0	1	0	0	0	0	0
+CNKSR3	no	0	555	0	0	0	0	1	1	0	0	0	0
+CNPY4	no	0	248	227	1	1	1	1	1	0	0	0	1
+CNST	no	1	725	40	0	0	1	1	1	1	1	0	0
+COBLL1	no	0	1128	0	0	0	0	1	1	0	0	0	0
+COL18A1	no	0	1754	1731	1	1	1	1	0	0	0	0	1
+COL26A1	no	0	441	421	1	1	1	1	1	1	0	0	1
+COL5A3	no	0	1745	1716	1	1	1	1	1	0	0	0	1
+COL6A5	no	0	2615	2597	1	1	1	1	1	0	0	0	1
+COLEC10	no	0	277	250	1	1	1	1	1	0	0	0	1
+CP	no	0	1065	1046	1	1	1	1	1	0	0	0	1
+CPN2	no	0	545	524	1	1	1	1	1	0	0	0	0
+CPNE7	no	0	633	0	0	0	0	1	1	0	0	0	0
+CPNE9	no	0	553	0	0	0	0	1	1	1	0	0	0
+CPPED1	no	0	314	0	0	0	0	1	1	0	0	0	0
+CPQ	no	0	472	452	1	1	1	1	1	1	0	0	0
+CPXM1	no	0	734	714	1	1	1	1	1	0	0	0	1
+CPXM2	no	0	756	731	1	1	1	1	1	0	0	0	1
+CRACR2A	no	0	731	0	0	0	0	1	1	1	0	0	0
+CRCP	no	0	148	0	0	0	0	1	0	0	0	0	0
+CREB3	no	1	371	125	0	0	1	1	1	0	1	0	0
+CREG2	no	0	290	259	1	1	1	1	1	1	0	0	0
+CRELD1	no	2	420	348	1	1	1	1	1	0	1	0	1
+CRELD2	no	0	353	329	1	1	1	1	1	0	0	0	1
+CRLF1	no	1	422	326	1	1	0	1	1	0	0	0	0
+CSNK1G2	no	0	415	0	0	0	0	1	0	0	0	0	0
+CT47A12	no	0	288	0	0	0	0	0	0	0	0	0	0
+CT47A4	no	0	288	0	0	0	0	0	0	0	0	0	0
+CT47A7	no	0	288	0	0	0	0	0	0	0	0	0	0
+CT47A9	no	0	288	0	0	0	0	0	0	0	0	0	0
+CTNNA1	no	0	906	0	0	0	0	1	0	0	0	0	0
+CTNNB1	no	0	781	0	0	0	0	1	1	0	0	0	0
+CTNND1	no	0	968	0	0	0	0	1	1	0	0	0	0
+CTTN	no	0	550	0	0	0	0	1	1	0	0	0	0
+CTXN2	no	1	81	28	0	1	0	1	1	0	0	0	0
+CUTA	no	0	179	0	0	0	0	1	1	1	0	0	0
+CXCL9	no	0	125	103	1	1	1	1	1	0	0	0	0
+CYB561D1	no	6	229	36	0	0	0	1	1	0	1	0	1
+CYB5D2	no	0	264	236	1	1	1	1	1	0	0	0	0
+CYP19A1	no	1	503	1	1	1	0	1	1	0	0	0	0
+CYP2D6	no	1	497	5	0	1	0	0	1	0	0	0	0
+CYP2E1	no	1	493	1	1	1	0	1	1	0	0	0	1
+CYP46A1	no	1	500	1	1	1	0	1	1	0	1	0	0
+CYSRT1	no	0	144	0	0	0	0	1	1	0	0	0	0
+CYTH1	no	0	398	0	0	0	0	1	1	0	0	0	0
+CYYR1	no	1	154	34	1	1	0	1	0	0	1	0	0
+DAGLB	no	4	672	28	0	0	0	1	1	0	1	1	0
+DAO	no	0	347	0	0	0	0	1	1	0	0	0	0
+DAPP1	no	0	280	0	0	0	0	1	1	0	0	0	0
+DBH	no	0	617	578	1	1	1	1	1	1	0	0	0
+DBNL	no	0	430	0	0	0	0	1	1	0	0	0	0
+DCD	no	0	110	91	1	1	1	0	0	0	0	0	0
+DDT	no	0	118	0	0	0	0	0	1	1	0	0	0
+DDTL	no	0	134	0	0	0	0	0	1	1	0	0	0
+DEFA1	no	0	94	75	1	1	1	0	0	0	0	0	1
+DEFA1B	no	0	94	75	1	1	1	0	0	0	0	0	1
+DEFA3	no	0	94	75	1	1	1	0	0	0	0	0	1
+DEFA6	no	0	100	81	1	1	1	0	1	0	0	0	1
+DEFB104A	no	0	72	50	1	1	1	0	0	0	0	0	1
+DEFB105A	no	0	78	51	1	1	1	0	0	0	0	0	1
+DEFB105B	no	0	78	51	1	1	1	0	0	0	0	0	1
+DEFB107B	no	0	70	46	1	1	1	0	0	0	0	0	1
+DEFB108B	no	0	73	51	1	1	1	0	0	0	0	0	1
+DEFB109B	no	0	87	65	1	1	1	0	0	0	0	0	1
+DEFB114	no	0	69	43	1	1	1	0	1	0	0	0	0
+DEFB116	no	0	102	79	1	1	1	0	1	0	0	0	1
+DEFB119	no	0	84	63	1	1	1	1	1	0	0	0	0
+DEFB121	no	0	76	57	1	1	1	0	1	0	0	0	1
+DEFB124	no	0	71	49	1	1	1	1	0	0	0	0	1
+DEFB130B	no	0	79	57	1	1	1	0	0	0	0	0	1
+DEFB131B	no	0	70	48	1	1	1	0	0	0	0	0	1
+DHRS7B	no	1	325	22	0	1	0	1	1	1	0	0	0
+DISP3	no	13	1392	860	0	0	1	1	1	0	1	0	0
+FREM3	no	0	2139	2108	1	1	1	0	0	0	0	0	1
+GNB2	no	0	340	0	0	0	0	1	1	0	0	0	0
+KSR1	no	0	923	0	0	0	0	0	0	0	0	0	0
+NID2	no	0	1375	1345	1	1	1	1	1	0	0	0	1
+SLC36A3	no	11	470	94	0	0	1	1	1	0	1	0	1
+VMP1	no	8	406	82	0	0	0	1	1	0	1	0	0
+AADACL2	uncertain	0	401	0	0	0	0	0	0	0	0	0	0
+C17orf67	uncertain	0	90	70	1	1	1	1	1	0	0	0	0
+C17orf78	uncertain	1	275	166	1	1	0	1	0	0	1	0	0
+C18orf54	uncertain	0	372	0	0	0	0	1	1	0	0	0	0
+C1orf185	uncertain	1	199	12	0	1	0	0	1	0	0	0	0
+C3orf80	uncertain	1	247	40	1	1	0	1	0	0	0	1	0
+CLEC20A	uncertain	0	400	380	1	1	1	0	0	0	0	0	0
+CT47A6	uncertain	0	288	0	0	0	0	0	0	0	0	0	0
+SMIM10L2A	uncertain	0	78	0	0	0	0	0	0	0	0	0	0
