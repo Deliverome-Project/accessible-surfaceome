@@ -304,6 +304,10 @@ button {
     transform: none !important;
     transition: none !important;
   }
+
+  .chip-jump-flash {
+    animation: none !important;
+  }
 }
 
 /* Post-jump highlight applied to a destination element for ~1.2s after
@@ -313,10 +317,10 @@ button {
  * Subcellular-localization block, the Contradicting-evidence block,
  * and the accessibility-modulation table rows. See
  * viewer/components/surfaceome/_shared/ChipJumpButton/. */
-@keyframes chipJumpFlash {
+@keyframes chip-jump-flash {
   0%   { background-color: var(--accent-soft); }
   100% { background-color: transparent; }
 }
-.chipJumpFlash {
-  animation: chipJumpFlash 1200ms ease-out;
+.chip-jump-flash {
+  animation: chip-jump-flash 1200ms ease-out;
 }
