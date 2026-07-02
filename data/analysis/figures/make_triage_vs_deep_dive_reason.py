@@ -406,7 +406,7 @@ def main() -> None:
     # titlesize 16 / xtick 12 / ytick 14 / legend 13).
     plt.rcParams.update({
         "font.size": 18, "axes.labelsize": 20, "axes.titlesize": 16,
-        "xtick.labelsize": 12, "ytick.labelsize": 14, "legend.fontsize": 13,
+        "xtick.labelsize": 13, "ytick.labelsize": 14, "legend.fontsize": 13,
     })
     df = _fetch_tsv(DATA_TSV)
     m = _build_matrix(df)
@@ -416,8 +416,8 @@ def main() -> None:
     # 2×2 grid: LEFT column stacks panel a (DB concordance, top) over panel b
     # (verdict flow, bottom); the reason matrix (panel c) spans BOTH rows of the
     # RIGHT column.
-    gs = fig.add_gridspec(2, 2, width_ratios=[1.0, 1.85],
-                          height_ratios=[1.0, 1.0], wspace=0.30, hspace=0.55)
+    gs = fig.add_gridspec(2, 2, width_ratios=[1.0, 2.05],
+                          height_ratios=[1.0, 1.0], wspace=0.42, hspace=0.42)
     ax_a = fig.add_subplot(gs[0, 0])  # top-left    — DB concordance
     ax_b = fig.add_subplot(gs[1, 0])  # bottom-left — verdict flow
     ax_c = fig.add_subplot(gs[:, 1])  # right       — reason matrix

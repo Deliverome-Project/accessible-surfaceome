@@ -66,8 +66,8 @@ FEATURES: list[tuple[str, str]] = [
     ("deeptm_TM_NO_SP",              "TM w/o\nSP"),
 ]
 
-COLOR_UNIVERSE = "#3D6B60"   # teal-mid — neutral reference
-COLOR_BENCH = "#F4AA28"      # amber-bright — highlighted subset
+COLOR_UNIVERSE = "#9C8C88"   # warm-grey — neutral reference
+COLOR_BENCH = "#3D6B60"      # teal-mid — highlighted subset
 
 
 def _wilson_95_ci(n_pos: int, n: int) -> tuple[float, float]:

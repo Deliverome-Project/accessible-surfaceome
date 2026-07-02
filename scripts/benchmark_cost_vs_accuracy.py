@@ -141,12 +141,12 @@ def main() -> None:
         "axes.spines.right": False,
         "axes.edgecolor": BRAND_GRID,
         "axes.labelcolor": BRAND_INK,
-        "xtick.labelsize": 12,
-        "ytick.labelsize": 12,
+        "xtick.labelsize": 13,
+        "ytick.labelsize": 13,
         "xtick.color": BRAND_INK,
         "ytick.color": BRAND_INK,
         "legend.frameon": False,
-        "legend.fontsize": 12,
+        "legend.fontsize": 13,
     })
 
     reps_df = pd.read_csv(DATA_TSV, sep="\t")

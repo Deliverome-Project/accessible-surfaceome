@@ -73,8 +73,8 @@ BRAND_PALETTE = [
 ]
 BRAND_NEUTRAL = "#6F5D5A"
 BRAND_GRID = "#E6DAD4"
-COLOR_UNIVERSE = "#3D6B60"   # teal-mid — neutral reference
-COLOR_BENCH = "#F4AA28"      # amber-bright — highlighted subset
+COLOR_UNIVERSE = "#9C8C88"   # warm-grey — neutral reference
+COLOR_BENCH = "#3D6B60"      # teal-mid — highlighted subset
 
 
 def _register_brand_fonts() -> None:
