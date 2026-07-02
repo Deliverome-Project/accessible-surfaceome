@@ -26,7 +26,14 @@ import {
 } from "../components/surfaceome/_shared/useTableSort";
 import { AnatomicalAccessibilityTable } from "../components/surfaceome/BiologicalContextCard/AnatomicalAccessibilityTable";
 import { AccessibilityModulationTable } from "../components/surfaceome/BiologicalContextCard/AccessibilityModulationTable";
+import { BiologicalContextCard } from "../components/surfaceome/BiologicalContextCard/BiologicalContextCard";
 import { ExpressionTable } from "../components/surfaceome/ExpressionCard/ExpressionTable";
+import type { SurfaceomeRecord } from "../lib/surfaceome-types";
+import { baseRecord } from "./helpers/fixtures";
+
+function render(rec: SurfaceomeRecord): string {
+  return renderToStaticMarkup(React.createElement(BiologicalContextCard, { rec, n: 1 }));
+}
 
 // ----- minimal hook harness ------------------------------------------------
 
@@ -297,5 +304,72 @@ test("sortRows: string comparator — asc is alphabetical on the displayed value
   assert.deepEqual(
     sorted.map((r) => r.tissue),
     ["Apricot", "Mango", "Zebrafish"],
+  );
+});
+
+test("first row per modulation category gets chip-jump id; duplicates do not", () => {
+  const rec = baseRecord();
+  // Use two valid ModulationCategory enum values — the plan calls for
+  // `cell_state_induced` (twice) and a distinct second category to pin
+  // the "first-only" behavior. `hypoxia_induced` is not in the enum, so
+  // fall back to `stress_induced` (hypoxia is a listed CellStateTrigger
+  // whose umbrella category is stress-induced).
+  rec.biological_context.accessibility_modulation = [
+    {
+      category: "cell_state_induced",
+      category_other_label: null,
+      cell_state_trigger: null,
+      restricted_lineage: null,
+      dual_loc_partner_compartment: null,
+      direction: "increases",
+      baseline_context: "resting T cell",
+      modulating_state: "activated",
+      change: "5-fold increase",
+      accessibility_implication: "reachable on activation",
+      cited_evidence_ids: ["a1_evi_01"],
+    },
+    {
+      category: "cell_state_induced",
+      category_other_label: null,
+      cell_state_trigger: null,
+      restricted_lineage: null,
+      dual_loc_partner_compartment: null,
+      direction: "increases",
+      baseline_context: "naive B cell",
+      modulating_state: "GC B cell",
+      change: "3-fold increase",
+      accessibility_implication: "reachable in germinal center",
+      cited_evidence_ids: ["a1_evi_02"],
+    },
+    {
+      category: "stress_induced",
+      category_other_label: null,
+      cell_state_trigger: "hypoxia",
+      restricted_lineage: null,
+      dual_loc_partner_compartment: null,
+      direction: "increases",
+      baseline_context: "normoxia",
+      modulating_state: "hypoxia",
+      change: "shifted to surface",
+      accessibility_implication: "hypoxic-niche accessible",
+      cited_evidence_ids: ["a1_evi_03"],
+    },
+  ];
+  const html = render(rec);
+  const cellStateMatches = html.match(/id="chip-jump-modulation-cell_state_induced"/g) ?? [];
+  assert.equal(
+    cellStateMatches.length,
+    1,
+    "only the first cell_state_induced row should carry the id",
+  );
+  assert.match(
+    html,
+    /id="chip-jump-modulation-stress_induced"/,
+    "distinct category gets its own id",
+  );
+  assert.match(
+    html,
+    /id="chip-jump-modulation-cell_state_induced"[^>]*tabindex="-1"/,
+    "id-bearing modulation row must be tabIndex=-1",
   );
 });

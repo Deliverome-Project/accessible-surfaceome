@@ -16,6 +16,9 @@ tests=(
   biological_context_card_rationale.test.tsx
   accessibility_risks_card_rationale.test.tsx
   biological_context_card_sort.test.tsx
+  chip_jump_button.test.tsx
+  filters_card_chip_jump.test.tsx
+  surface_evidence_card_chip_jump.test.tsx
 )
 
 fails=0

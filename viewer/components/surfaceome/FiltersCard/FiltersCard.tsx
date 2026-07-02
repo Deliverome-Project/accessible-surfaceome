@@ -1,17 +1,21 @@
+import { Fragment, type ReactNode } from "react";
 import {
   CITATIONS,
   pubmedUrl,
   TYPICAL_ANTIBODY_INTERFACE_A2,
 } from "../../../lib/citations";
+import { chipJumpTargets } from "../../../lib/chipJumpTargets";
 import { ecSites } from "../../../lib/surface-bind";
 import { ChipLabelValue } from "../ChipLabelValue/ChipLabelValue";
 import type { OrthologEntry, SurfaceomeRecord } from "../../../lib/surfaceome-types";
 import { prettyEnum } from "../../../lib/surfaceome";
 import { tooltips } from "../../../lib/tooltips";
 import { InfoTip } from "../../InfoTip/InfoTip";
+import { ChipJumpButton } from "../_shared/ChipJumpButton/ChipJumpButton";
 import {
   buildFeatureChips,
   FEATURE_TAB_LABEL,
+  renderChipWithJump,
 } from "../FeatureChips/FeatureChips";
 import { SectionCard } from "../SectionCard/SectionCard";
 import { StatusPill } from "../StatusPill/StatusPill";
@@ -330,7 +334,32 @@ export function FiltersCard({ rec, n }: Props) {
               : best,
           _contradictions[0].severity_for_surface_accessibility as string,
         );
-  const uniprotFamilyPills: React.ReactNode[] = es.uniprot_family
+  const primaryCompartmentLabel = prettyEnum(
+    rec.biological_context.subcellular_localization.primary_compartment,
+  );
+  const contradictionPill = (
+    <StatusPill
+      tone={contradictionTone(maxContradictionSeverity)}
+      size="sm"
+      title={
+        "Highest severity of contradicting evidence against the surface " +
+        "call (from §02 Surface evidence → Contradicting evidence). " +
+        "none = no contradictions in the ledger; low / moderate / high = " +
+        "the strongest contradiction's impact on the surface-accessibility " +
+        "call; unclear = logged but impact not gradable."
+      }
+    >
+      <ChipLabelValue
+        label="contradiction"
+        value={
+          maxContradictionSeverity === "none"
+            ? "none"
+            : prettyEnum(maxContradictionSeverity)
+        }
+      />
+    </StatusPill>
+  );
+  const uniprotFamilyPills: ReactNode[] = es.uniprot_family
     ? parseUniprotFamily(es.uniprot_family).map((seg, i) => (
         <StatusPill
           key={`uf-${i}`}
@@ -352,7 +381,7 @@ export function FiltersCard({ rec, n }: Props) {
   // future schema move into `deterministic_features`. Without the guard a
   // missing field turns into a whole-page 500 (`.map` of undefined); with
   // it the section just drops the HGNC pills and the page still renders.
-  const hgncFamilyPills: React.ReactNode[] = (es.hgnc_gene_groups ?? []).map(
+  const hgncFamilyPills: ReactNode[] = (es.hgnc_gene_groups ?? []).map(
     (group, i) => (
       <StatusPill key={`hg-${i}`} tone="neutral" size="sm" title={TT_HGNC_GROUP}>
         {/* HGNC gene groups carry no rank word, so the whole label is the
@@ -368,7 +397,7 @@ export function FiltersCard({ rec, n }: Props) {
   // (now removed, since surfacing it twice was redundant). The
   // ordering inside each provenance section follows the original
   // group order so readers' eye doesn't have to re-learn the layout.
-  const groups: { label: string; provenance: "llm" | "deterministic"; pills: React.ReactNode[]; linkTo?: string }[] = [
+  const groups: { label: string; provenance: "llm" | "deterministic"; pills: ReactNode[]; linkTo?: string }[] = [
     // The "Accessibility" umbrella group was retired — the headline
     // accessibility / confidence / state_dependence chips already
     // render in the executive-summary chip strip up top, so showing
@@ -408,7 +437,9 @@ export function FiltersCard({ rec, n }: Props) {
             value={prettyEnum(es.surface_call_reason)}
           />
         </StatusPill>,
-        ...buildFeatureChips("biology", rec).map((m) => m.pill),
+        ...buildFeatureChips("biology", rec).map((m) =>
+          renderChipWithJump(m, "biology"),
+        ),
       ],
     },
     {
@@ -417,45 +448,49 @@ export function FiltersCard({ rec, n }: Props) {
       linkTo: "#section-biology",
       pills: [
         // state_dependence omitted — already a GeneHeader vital up top.
-        <StatusPill key="primary" tone="teal" size="sm">
-          <ChipLabelValue
-            label="primary"
-            value={prettyEnum(
-              rec.biological_context.subcellular_localization
-                .primary_compartment,
-            )}
-          />
-        </StatusPill>,
+        <ChipJumpButton
+          key="primary"
+          targetId={chipJumpTargets.primaryCompartment}
+          tabId="biology"
+          ariaLabel={`Jump to Subcellular localization (primary: ${primaryCompartmentLabel})`}
+        >
+          <StatusPill tone="teal" size="sm">
+            <ChipLabelValue
+              label="primary"
+              value={primaryCompartmentLabel}
+            />
+          </StatusPill>
+        </ChipJumpButton>,
         // Highest-severity contradicting evidence against the surface call
         // (echoed from §02). "none" = no contradictions logged.
-        <StatusPill
-          key="contradiction"
-          tone={contradictionTone(maxContradictionSeverity)}
-          size="sm"
-          title={
-            "Highest severity of contradicting evidence against the surface " +
-            "call (from §02 Surface evidence → Contradicting evidence). " +
-            "none = no contradictions in the ledger; low / moderate / high = " +
-            "the strongest contradiction's impact on the surface-accessibility " +
-            "call; unclear = logged but impact not gradable."
-          }
-        >
-          <ChipLabelValue
-            label="contradiction"
-            value={
-              maxContradictionSeverity === "none"
-                ? "none"
-                : prettyEnum(maxContradictionSeverity)
-            }
-          />
-        </StatusPill>,
+        maxContradictionSeverity === "none" ? (
+          <Fragment key="contradiction">{contradictionPill}</Fragment>
+        ) : (
+          <ChipJumpButton
+            key="contradiction"
+            targetId={chipJumpTargets.contradictingEvidence}
+            tabId="evidence"
+            ariaLabel={`Jump to Contradicting evidence (${prettyEnum(
+              maxContradictionSeverity,
+            )})`}
+          >
+            {contradictionPill}
+          </ChipJumpButton>
+        ),
         // Distinct modulation categories (the §03 purple "Context" pills),
         // lavender like the biology tab so the reader knows which kinds of
         // surface modulation are evidenced.
         ...modCategories.map((c) => (
-          <StatusPill key={`mod-${c}`} tone="lavender" size="sm">
-            {prettyEnum(c)}
-          </StatusPill>
+          <ChipJumpButton
+            key={`mod-${c}`}
+            targetId={chipJumpTargets.modulationCategory(c)}
+            tabId="biology"
+            ariaLabel={`Jump to Accessibility modulation: ${prettyEnum(c)}`}
+          >
+            <StatusPill tone="lavender" size="sm">
+              {prettyEnum(c)}
+            </StatusPill>
+          </ChipJumpButton>
         )),
       ],
     },
@@ -463,7 +498,7 @@ export function FiltersCard({ rec, n }: Props) {
       label: FEATURE_TAB_LABEL[cat],
       provenance: "llm" as const,
       linkTo: `#section-${cat}`,
-      pills: buildFeatureChips(cat, rec).map((m) => m.pill),
+      pills: buildFeatureChips(cat, rec).map((m) => renderChipWithJump(m, cat)),
     })),
     //
     // Registry families lead the deterministic block — protein
@@ -577,7 +612,7 @@ export function FiltersCard({ rec, n }: Props) {
           const v = p.ecd_pct_identity ?? p.full_length_pct_identity;
           return v != null && v >= 60 && v <= 80;
         }).length;
-        const out: React.ReactNode[] = [];
+        const out: ReactNode[] = [];
         if (f.max_paralog_ecd_pct_identity != null) {
           out.push(
             <StatusPill
@@ -784,7 +819,7 @@ export function FiltersCard({ rec, n }: Props) {
   // ------------------------------------------------------------
   const GROUP_META: Record<
     string,
-    { title: React.ReactNode; links?: { href: string; label: string }[] }
+    { title: ReactNode; links?: { href: string; label: string }[] }
   > = {
     // One-sentence accessibility-context rationale on the group InfoTip —
     // only when the synthesizer authored it (older records render the

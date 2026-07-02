@@ -1,0 +1,25 @@
+/* Wrapper button for a §01 Summary metrics chip that jumps to a
+ * matching detail row / block on a Biology / Expression / Risks /
+ * Evidence tab. Presents as a transparent, tightly-hugging shell so
+ * the wrapped <StatusPill> remains the visual chip — the button
+ * exists for semantics, keyboard focus, and a subtle affordance. */
+.jumpTrigger {
+  appearance: none;
+  background: transparent;
+  border: 0;
+  padding: 0;
+  margin: 0;
+  cursor: pointer;
+  display: inline-flex;
+  line-height: 0; /* let the pill dictate vertical rhythm */
+  border-radius: 999px;
+  transition: transform 120ms ease-out, box-shadow 120ms ease-out;
+}
+.jumpTrigger:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
+}
+.jumpTrigger:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
