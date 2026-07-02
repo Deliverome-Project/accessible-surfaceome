@@ -26,7 +26,7 @@ test("renders a real <button> wrapping its children", () => {
   assert.ok(html.includes("chip-content"), "children must render inside the button");
 });
 
-test("carries aria-label and aria-describedby-style hints", () => {
+test("carries aria-label", () => {
   const html = renderToStaticMarkup(
     React.createElement(
       ChipJumpButton,

@@ -1,7 +1,7 @@
 "use client";
 
 import type { ReactNode } from "react";
-import { chipJumpTargets, type ChipJumpTab } from "../../../../lib/chipJumpTargets";
+import type { ChipJumpTab } from "../../../../lib/chipJumpTargets";
 import styles from "./ChipJumpButton.module.css";
 
 interface ChipJumpButtonProps {
@@ -35,9 +35,6 @@ interface ChipJumpButtonProps {
  *      ``prefers-reduced-motion: reduce`` (see globals.css).
  *   3. Missing destination is a no-op with a ``console.warn`` in dev.
  *
- * `chipJumpTargets` is imported for the type-narrowing side-effect only —
- * it is not called here; the caller passes the pre-resolved ``targetId``.
- *
  * See docs/superpowers/specs/2026-07-01-clickable-summary-chip-jump-design.md.
  */
 export function ChipJumpButton({
@@ -46,18 +43,13 @@ export function ChipJumpButton({
   ariaLabel,
   children,
 }: ChipJumpButtonProps) {
-  // Reference `chipJumpTargets` at runtime so the value import isn't
-  // tree-shaken away — its presence anchors the ChipJumpTab type to
-  // the same module a caller resolves ids from.
-  void chipJumpTargets;
-
   const onActivate = () => {
     if (typeof window === "undefined") return;
     const desiredHash = `#section-${tabId}`;
     const needsTabSwitch = window.location.hash !== desiredHash;
     if (needsTabSwitch) {
       window.history.replaceState({}, "", desiredHash);
-      window.dispatchEvent(new HashChangeEvent("hashchange"));
+      window.dispatchEvent(new Event("hashchange"));
     }
     // Wait one frame for SectionTabs to toggle data-active so the
     // destination element is measurable when we scroll to it.
@@ -73,9 +65,24 @@ export function ChipJumpButton({
         }
         return;
       }
+      // Restart the flash cleanly on rapid re-clicks: clear any pending
+      // remove-class timer for THIS element before starting a new one.
+      // Otherwise a second click's flash gets cut short when the first
+      // click's timeout fires mid-animation.
+      const prev = (el.dataset.chipJumpFlashTimer ?? "").trim();
+      if (prev) {
+        window.clearTimeout(Number(prev));
+      }
       el.scrollIntoView({ behavior: "smooth", block: "start" });
+      el.classList.remove("chip-jump-flash");
+      // Force a reflow so re-adding restarts the CSS animation from 0.
+      void el.offsetWidth;
       el.classList.add("chip-jump-flash");
-      window.setTimeout(() => el.classList.remove("chip-jump-flash"), 1300);
+      const timer = window.setTimeout(() => {
+        el.classList.remove("chip-jump-flash");
+        delete el.dataset.chipJumpFlashTimer;
+      }, 1300);
+      el.dataset.chipJumpFlashTimer = String(timer);
       // Move keyboard focus so an assistive-tech reader lands at the
       // destination. `preventScroll` lets the smooth scroll above own
       // the visual motion.
