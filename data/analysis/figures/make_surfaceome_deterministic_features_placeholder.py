@@ -240,7 +240,7 @@ def render(feats: pd.DataFrame, out_dir: Path) -> Path:
         ("cyno_has_one2one",    "frac_bool", "% with cyno 1:1 ortholog"),
         ("schweke_homomer",     "frac_bool", "% homo-oligomer (Schweke 2024)"),
         ("alt_iso_diff_topo",   "frac_bool", "% with alt isoform of different topology"),
-        ("has_surface_bind_site", "frac_bool", "% with 1+ surface-bind site"),
+        ("has_ec_surface_bind_site", "frac_bool", "% with 1+ extracellular\nsurface-bind site"),
         ("has_concerning_paralog", "frac_bool", "% concerning paralog\n(ECD 40%+ id)"),
     ]
 

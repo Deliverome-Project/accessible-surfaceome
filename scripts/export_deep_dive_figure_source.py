@@ -117,11 +117,15 @@ _DET_EXPRS: list[tuple[str, str]] = [
      f"CASE WHEN EXISTS(SELECT 1 FROM json_each(annotation_json,'{_DF}.isoform_topologies') "
      f"WHERE CAST(json_extract(value,'$.tm_helix_count') AS INT) != "
      f"CAST(json_extract(annotation_json,'{_CT}.tm_helix_count') AS INT)) THEN 1 ELSE 0 END"),
-    # Surface-binding structural sites: >=1 predicted surface-accessible binding
-    # site (deterministic_features.surface_bind.n_sites).
-    ("has_surface_bind_site",
-     f"CASE WHEN CAST(json_extract(annotation_json,'{_DF}.surface_bind.n_sites') "
-     "AS INT) >= 1 THEN 1 ELSE 0 END"),
+    # >=1 EXTRACELLULAR surface-binding site: a predicted surface_bind site whose
+    # anchor residue sits in an 'O' (outside/extracellular) region of the
+    # DeepTMHMM per-residue topology — excludes the intracellular / membrane
+    # sites that a bare surface_bind.n_sites >= 1 would also count.
+    ("has_ec_surface_bind_site",
+     "CASE WHEN EXISTS(SELECT 1 FROM json_each(annotation_json,"
+     f"'{_DF}.surface_bind.sites') WHERE substr(json_extract(annotation_json,"
+     f"'{_CT}.per_residue_topology'), CAST(json_extract(value,'$.anchor_residue') "
+     "AS INT), 1) = 'O') THEN 1 ELSE 0 END"),
     # Concerning paralog (binder-specificity risk): a paralog whose extracellular
     # domain is >=40% identical to this gene's (the viewer's mid band on
     # max_paralog_ecd_pct_identity) -> potential antibody cross-reactivity.
