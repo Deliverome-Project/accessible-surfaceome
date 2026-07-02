@@ -1,6 +1,7 @@
 import type { SurfaceomeRecord } from "../../../lib/surfaceome-types";
 import { prettyEnum } from "../../../lib/surfaceome";
 import { chipJumpTargets } from "../../../lib/chipJumpTargets";
+import { ChipJumpButton } from "../_shared/ChipJumpButton/ChipJumpButton";
 import { ChipLabelValue } from "../ChipLabelValue/ChipLabelValue";
 import { StatusPill } from "../StatusPill/StatusPill";
 import { EvidenceChipList, linkifyEvidenceRefs } from "../EvidenceChip/EvidenceChip";
@@ -421,9 +422,23 @@ export function FeatureChips({ category, rec }: FeatureChipsProps) {
       data-feature-chips={category}
       aria-label={`${FEATURE_TAB_LABEL[category]} summary chips`}
     >
-      {models.map((m) => (
-        <li key={m.key}>{m.pill}</li>
-      ))}
+      {models.map((m) => {
+        const hasRationale = nz(m.rationale) !== null;
+        if (!hasRationale) {
+          return <li key={m.key}>{m.pill}</li>;
+        }
+        return (
+          <li key={m.key}>
+            <ChipJumpButton
+              targetId={chipJumpTargets.featureRationale(category, m.key)}
+              tabId={category}
+              ariaLabel={`Jump to rationale: ${m.label}`}
+            >
+              {m.pill}
+            </ChipJumpButton>
+          </li>
+        );
+      })}
     </ul>
   );
 }
