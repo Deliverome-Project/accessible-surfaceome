@@ -368,34 +368,56 @@ def _dd_tier(r: "pd.Series") -> str:
 
 
 def build_deep_dive_final_categories(src: dict[str, pd.DataFrame]) -> pd.DataFrame:
-    """Distribution of the deep-dive cohort across the frontend's surface-call
-    buckets, NESTED so `likely` is the umbrella (all passesLikely) and
-    `canonical` / `cell_state` (by trigger) / `cell_type_restricted` /
-    `likely_other` are its exclusive sub-buckets; `no` = !passesLikely. Buckets
-    are the catalog-presets predicates ported above, so the figure == the
-    catalog filters.
+    """PER-GENE table behind the final-categories figure — one row per
+    deep-dived gene with its tier (``category``) + sub-bucket (``subcategory``),
+    so readers can look through WHICH gene lands where, not just the bar totals.
+    The figure aggregates these rows into the per-(category, subcategory) counts
+    it plots (Panel a = per-category totals, Panel b = the ``likely``
+    sub-buckets).
 
-    Rows: (category, subcategory, n_genes), category ∈ {likely, no}.
+    ``_dd_assign_bucket`` gives (category, subcategory): the five tiers
+    (``canonical`` / ``likely`` / ``low`` / ``uncertain`` / ``no``) with
+    ``likely`` fanned out into its ``cell_type_restricted`` /
+    ``cell_state_<trigger>`` / ``likely_other`` sub-buckets. Carries stable IDs
+    (hgnc_id / ensembl_gene / ncbi_gene_id from the catalog, uniprot_acc from the
+    record) per the figure-input-TSV conventions, plus the
+    ``surface_call_reason`` + ``induction_trigger`` context that drove the call.
 
-    PRELIMINARY — reflects only the genes swept so far (pre-QA-fix). The `no`
-    bucket is inflated by `evidence_grade='weak'` records, which is partly the
+    Columns: gene_symbol, hgnc_id, uniprot_acc, ensembl_gene, ncbi_gene_id,
+    category, subcategory, surface_call_reason, induction_trigger.
+
+    PRELIMINARY — only the genes swept so far (pre-QA-fix). The below-likely
+    tiers are inflated by ``evidence_grade='weak'`` records, partly the
     pretrim-cap recall bug deleting foundational papers; re-run after the sweep
     + QA fixes for the final figure."""
-    from collections import Counter
-
+    cols = ["gene_symbol", "hgnc_id", "uniprot_acc", "ensembl_gene",
+            "ncbi_gene_id", "category", "subcategory", "surface_call_reason",
+            "induction_trigger"]
     dd = src.get("deep_dive")
     if dd is None or dd.empty:
-        # No export in this checkout — emit an empty, correctly-typed frame so
-        # the pipeline stays reproducible without inventing mock counts.
-        return pd.DataFrame(columns=["category", "subcategory", "n_genes"])
-    counts = Counter(_dd_assign_bucket(r) for _, r in dd.iterrows())
-    rows = [
-        {"category": cat, "subcategory": sub, "n_genes": int(n)}
-        for (cat, sub), n in counts.items()
-    ]
+        return _empty_deep_dive_frame(cols)
+    buckets = [_dd_assign_bucket(r) for _, r in dd.iterrows()]
+    out = pd.DataFrame({
+        "gene_symbol": dd["gene_symbol"].astype(str),
+        "uniprot_acc": dd["uniprot_acc"].astype(str),
+        "category": [b[0] for b in buckets],
+        "subcategory": [b[1] for b in buckets],
+        "surface_call_reason": dd["surface_call_reason"].astype(str),
+        "induction_trigger": dd["induction_trigger"].astype(str),
+    })
+    # Stable IDs from the catalog (candidate_universe), keyed by symbol.
+    cat = src.get("catalog")
+    cat_by_gene = (
+        cat.drop_duplicates("hgnc_symbol").set_index("hgnc_symbol")
+        if cat is not None and "hgnc_symbol" in cat.columns else None
+    )
+    for idc in ["hgnc_id", "ensembl_gene", "ncbi_gene_id"]:
+        out[idc] = (out["gene_symbol"].map(cat_by_gene[idc]).astype("string")
+                    if cat_by_gene is not None and idc in cat_by_gene.columns
+                    else pd.Series([pd.NA] * len(out), dtype="string"))
     return (
-        pd.DataFrame(rows)
-        .sort_values(["category", "subcategory"])
+        out[cols]
+        .sort_values(["category", "subcategory", "gene_symbol"], kind="stable")
         .reset_index(drop=True)
     )
 

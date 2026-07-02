@@ -82,10 +82,13 @@ _LIKELY_LABELS: dict[str, str] = {
 
 
 def _read() -> dict[str, dict[str, int]]:
+    """Aggregate the PER-GENE table (one row per deep-dived gene, browsable)
+    into ``{category: {subcategory: n_genes}}`` — the figure counts rows."""
     out: dict[str, dict[str, int]] = {}
     with open(DATA_TSV) as f:
         for row in csv.DictReader(f, delimiter="\t"):
-            out.setdefault(row["category"], {})[row["subcategory"]] = int(row["n_genes"])
+            sub = out.setdefault(row["category"], {})
+            sub[row["subcategory"]] = sub.get(row["subcategory"], 0) + 1
     return out
 
 

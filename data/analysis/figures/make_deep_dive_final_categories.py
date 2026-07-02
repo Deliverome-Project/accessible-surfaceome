@@ -177,9 +177,13 @@ _LIKELY_LABELS: dict[str, str] = {
 
 
 def _read(data: pd.DataFrame) -> dict[str, dict[str, int]]:
+    """Aggregate the PER-GENE table (one row per deep-dived gene, browsable)
+    into {category: {subcategory: n_genes}} — count rows."""
     out: dict[str, dict[str, int]] = {}
     for _, row in data.iterrows():
-        out.setdefault(str(row["category"]), {})[str(row["subcategory"])] = int(row["n_genes"])
+        sub = out.setdefault(str(row["category"]), {})
+        key = str(row["subcategory"])
+        sub[key] = sub.get(key, 0) + 1
     return out
 
 
