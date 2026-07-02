@@ -1,15 +1,5 @@
-import * as React from "react";
 import type { ReactNode } from "react";
 import { CITATIONS, pubmedUrl } from "./citations";
-// The `React` import above is load-bearing under render-tests: this
-// file lives at `lib/*.tsx`, which the tsconfig `include` glob covers
-// with `lib/**/*.ts` (NOT `*.tsx`), so tsx falls back to the classic
-// JSX transform when tooltips.tsx is imported outside Next's build.
-// Under classic-transform, the module-top JSX fragments below compile
-// to `React.createElement(React.Fragment, ...)` and need `React` in
-// scope. Next.js's SWC-based build with `jsx: react-jsx` (automatic
-// transform) doesn't need it — this import is a no-op there.
-void React;
 
 /**
  * Field-provenance tooltip text — one place to edit, shared across
