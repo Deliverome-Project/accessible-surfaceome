@@ -187,3 +187,18 @@ test("FeatureRationales row carries chip-jump id + tabIndex for scroll target", 
     "destination row must be programmatically focusable via tabIndex=-1",
   );
 });
+
+test("Subcellular localization subsection carries chip-jump id + tabIndex", () => {
+  const rec = baseRecord();
+  const html = render(rec);
+  assert.match(
+    html,
+    /id="chip-jump-primary-compartment"/,
+    "subcellular-localization block must expose primaryCompartment id",
+  );
+  assert.match(
+    html,
+    /id="chip-jump-primary-compartment"[^>]*tabindex="-1"/,
+    "destination block must be programmatically focusable",
+  );
+});
