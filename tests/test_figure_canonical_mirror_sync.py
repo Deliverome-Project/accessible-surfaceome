@@ -126,13 +126,6 @@ _INTENTIONAL_DIVERGENCE: dict[str, set[str]] = {
     "deep_dive_record_richness": {
         "axes.titlesize", "xtick.labelsize",
     },
-    # Canonical fills a 15×13 panel with larger fonts; mirror keeps
-    # the same figsize but uses standard 11/14/18 sizes for tick /
-    # font / labelsize to match other matrix mirrors.
-    "triage_vs_deep_dive_reason": {
-        "font.size", "axes.labelsize",
-        "xtick.labelsize", "ytick.labelsize", "legend.fontsize",
-    },
 }
 
 

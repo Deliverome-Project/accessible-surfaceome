@@ -9,25 +9,28 @@
 # ///
 """Reproduce ``surfaceome_deterministic_features_placeholder.{pdf,png}``.
 
-**MOCK supplementary figure (Supp Fig 13).** Distribution of seven
-deterministic per-gene features across the Sonnet-positive surfaceome,
-faceted into three buckets. The deep-dive hues are MOCKED from Sonnet
-verdicts for now — they'll be replaced once the deep-dive runs over the
-full surfaceome:
+**Supplementary Fig 13.** Distribution of nine deterministic per-gene features
+across the deep-dived surfaceome, faceted by the REAL deep-dive
+surface-accessibility tier collapsed into three comparison groups:
 
-  * triage_yes               = Sonnet verdict 'yes' (non-high confidence)
-  * deep_dive_high_conf      = Sonnet 'yes' + high confidence (placeholder
-                               for the deep-dive high-confidence surface
-                               bucket)
-  * deep_dive_likely_surface = Sonnet verdict 'contextual'
+  * canonical    — group == 'canonical' (high-confidence surface);
+  * likely       — group == 'likely';
+  * below-likely — group ∈ {low, uncertain, no} (weak-to-negative).
 
-The 3×3 panel grid compares each feature across the three buckets:
-TM-helix count, protein length, signal peptide, N/C-terminus
-extracellular, mouse + cyno 1:1 high-confidence ortholog presence,
-Schweke-2024 homo-oligomer state, and alt-isoform topology change. The
-features are pre-joined into a single bundled TSV by
-``scripts/build_figure_tsvs.py`` so the gist is a one-TSV reproduction
-unit.
+The 5-tier deep-dive verdict comes from ``_dd_assign_bucket`` where the gene
+has a published record. Genes not yet deep-dived (``group == 'pending'``) are
+EXCLUDED — they have no tier to compare.
+
+The 3×3 panel grid compares each feature across the three tiers: TM-helix
+count, protein length, signal peptide, N/C-terminus extracellular, mouse +
+cyno 1:1 high-confidence ortholog presence, Schweke-2024 homo-oligomer state,
+and alt-isoform topology change. The features are pre-joined into a single
+bundled TSV by ``scripts/build_figure_tsvs.py`` so the gist is a one-TSV
+reproduction unit.
+
+PRELIMINARY — ~1,197 of ~5,128 candidate genes deep-dived so far, and the
+below-likely tier is weak-evidence-inflated by the pretrim bug; treat the
+per-tier rates as provisional until the sweep completes and the QA fix lands.
 
 Visual styling matches the in-repo `_plotting_config` (Deliverome
 categorical palette + Manrope-when-available). Inlined so the gist runs
@@ -127,20 +130,42 @@ def _apply_brand_style() -> None:
     })
 
 
-# === Group definitions (placeholders — replace with deep-dive when ready) ===
-GROUPS = ["triage_yes", "deep_dive_high_conf", "deep_dive_likely_surface"]
+# === Facet definitions: three real deep-dive tiers ===
+# The 5-tier deep-dive spectrum collapsed to three comparison facets. Tier
+# colors follow the canonical deep-dive spectrum shared across every deep-dive
+# figure: green (canonical) → teal (likely) → neutral (below-likely). Genes
+# still in the `pending` tier (not yet deep-dived) are excluded before this
+# map is applied.
+GROUPS = ["canonical", "likely", "below_likely"]
 GROUP_LABEL = {
-    "triage_yes":               "Triage yes",
-    "deep_dive_high_conf":      "Deep dive — high-conf surface",
-    "deep_dive_likely_surface": "Deep dive — likely surface",
+    "canonical":    "canonical",
+    "likely":       "likely",
+    "below_likely": "below-likely\n(low / uncertain / no)",
 }
-# Sequential teal: darker = more confident (same convention as the
-# ADC-source stacking in positive_control_db_coverage_bars).
 GROUP_COLOR = {
-    "triage_yes":               "#7AAB9F",  # teal-light
-    "deep_dive_high_conf":      "#244840",  # teal-darkest
-    "deep_dive_likely_surface": "#4D8A80",  # teal-medium
+    "canonical":    "#2E7A55",  # success green — high-confidence surface
+    "likely":       "#3D6B60",  # teal-mid — likely surface
+    "below_likely": "#9C8C88",  # lifted neutral — weak-to-negative tiers
 }
+
+# Raw deep-dive tiers that collapse into the `below_likely` facet.
+BELOW_LIKELY_TIERS = ("low", "uncertain", "no")
+
+
+def assign_facet(group: str) -> str | None:
+    """Map a raw deep-dive tier to one of the three comparison facets.
+
+    Returns ``None`` for ``pending`` (not yet deep-dived) or any tier
+    outside the known spectrum, so those rows are dropped from the
+    per-tier comparison.
+    """
+    if group == "canonical":
+        return "canonical"
+    if group == "likely":
+        return "likely"
+    if group in BELOW_LIKELY_TIERS:
+        return "below_likely"
+    return None
 
 
 def _fetch_tsv(url: str) -> pd.DataFrame:
@@ -198,7 +223,7 @@ def render(feats: pd.DataFrame, out_dir: Path) -> Path:
         if kind == "boxplot":
             data = []
             for g in GROUPS:
-                vals = feats.loc[feats["group"] == g, col].dropna().tolist()
+                vals = feats.loc[feats["facet"] == g, col].dropna().tolist()
                 data.append(vals)
             bp = ax.boxplot(
                 data, tick_labels=[GROUP_LABEL[g] for g in GROUPS], patch_artist=True,
@@ -213,7 +238,7 @@ def render(feats: pd.DataFrame, out_dir: Path) -> Path:
             ys = []
             ns = []
             for g in GROUPS:
-                sub = feats[feats["group"] == g][col]
+                sub = feats[feats["facet"] == g][col]
                 sub_clean = pd.to_numeric(sub, errors="coerce").dropna()
                 n = len(sub_clean)
                 positive = (sub_clean.astype(int) == 1).sum()
@@ -226,25 +251,27 @@ def render(feats: pd.DataFrame, out_dir: Path) -> Path:
                         fontsize=9, color=colors[i], weight="semibold")
             ax.set_ylim(0, 110)
             ax.set_xticks(range(len(GROUPS)))
-            ax.set_xticklabels([GROUP_LABEL[g].replace(" — ", "\n") for g in GROUPS],
-                               rotation=0, fontsize=9, ha="center")
+            ax.set_xticklabels([GROUP_LABEL[g] for g in GROUPS],
+                               rotation=30, fontsize=8, ha="right")
             ax.set_ylabel(label, fontsize=10)
 
         sns.despine(ax=ax, top=True, right=True)
         if kind == "boxplot":
-            ax.tick_params(axis="x", rotation=15)
+            ax.tick_params(axis="x", rotation=30)
             for tl in ax.get_xticklabels():
-                tl.set_fontsize(9)
+                tl.set_fontsize(8)
                 tl.set_horizontalalignment("right")
 
+    # Single legend at top — the three real deep-dive tiers (pending excluded).
     legend_handles = [
-        plt.Rectangle((0, 0), 1, 1, color=GROUP_COLOR[g], label=GROUP_LABEL[g])
+        plt.Rectangle((0, 0), 1, 1, color=GROUP_COLOR[g],
+                      label=GROUP_LABEL[g].replace("\n", " "))
         for g in GROUPS
     ]
     fig.legend(
         handles=legend_handles, loc="upper center", ncol=3, frameon=False,
-        bbox_to_anchor=(0.5, 1.02), fontsize=11,
-        title="Surfaceome bucket (deep-dive hues MOCKED from Sonnet for now)",
+        bbox_to_anchor=(0.5, 1.02), fontsize=10,
+        title="Deep-dive surface-accessibility tier (pending genes excluded)",
         title_fontsize=11,
     )
 
@@ -261,8 +288,14 @@ def render(feats: pd.DataFrame, out_dir: Path) -> Path:
 
 def main() -> None:
     feats = _fetch_tsv(DATA_TSV)
-    print(f"Sonnet-positive surfaceome: {len(feats)}")
+    print(f"Deep-dive tier universe (all groups): {len(feats)}")
     print(feats["group"].value_counts().to_string())
+    # Collapse the raw per-gene tier to the 3-facet comparison; `pending`
+    # (not yet deep-dived) maps to NaN and is dropped.
+    feats["facet"] = feats["group"].map(assign_facet)
+    feats = feats[feats["facet"].notna()].copy()
+    print(f"\nDeep-dived genes compared (pending excluded): {len(feats)}")
+    print(feats["facet"].value_counts().reindex(GROUPS).to_string())
     out = render(feats, Path(__file__).parent)
     print(f"\nWrote {out}")
 

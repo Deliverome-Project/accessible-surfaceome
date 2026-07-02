@@ -1,52 +1,43 @@
-"""Papers found vs papers selected as evidence per gene, colored by
-agent ``evidence_grade`` verdict (MOCK supplementary).
+"""Papers found vs papers selected as evidence per gene, colored by the
+agent's ``evidence_grade`` verdict (Supplementary S11).
 
-For each gene in the deep-dive cohort, the literature pipeline returns:
+For each gene in the deep-dive cohort, the literature pipeline records two
+corpus sizes:
 
   * **Papers found** — the size of the per-gene candidate corpus from
-    discovery (EuropePMC + PubTator NER + gene2pubmed; median 234.5
-    papers per gene on the 100-gene audit, range ~50 for orphan genes
-    to ~400 for well-studied receptors).
+    discovery (EuropePMC + PubTator NER + gene2pubmed union), i.e.
+    ``n_papers_found`` (methods-section median 234.5, range ~50–400).
   * **Papers selected as evidence** — the subset the deep-dive's
-    `plan_trim_select` step ranks high-enough to feed into the block
-    builders for full-text claim extraction. The selection ratio
-    decreases with corpus size — more candidate papers means more
+    ``plan_trim_select`` step ranks high enough to read full-text and feed
+    into the block builders (``n_papers_selected``). The selection count
+    grows sub-linearly with corpus size — more candidate papers means more
     noise, not proportionally more relevant evidence.
 
-The agent then assigns each gene's evidence base an ``evidence_grade``
-verdict from the closed enum:
+Each gene's evidence base is graded ``evidence_grade`` from the closed enum:
 
   * ``direct_multi_method``     — multiple independent assay types
   * ``direct_single_method``    — direct surface evidence from one assay
   * ``supportive_but_indirect`` — circumstantial / topology-based
   * ``weak``                    — sparse or low-quality evidence
+  * ``conflicting``             — evidence points both ways
 
-This figure shows how the verdict tracks the two corpus axes — well-
-evidenced surface targets pile up in the upper-right (rich corpus +
-rich selection → multi-method verdict), while weak-evidence calls
-cluster in the lower-left.
+The verdict tracks the two corpus axes — well-evidenced surface targets pile
+up toward the upper-right (rich corpus + rich selection → multi-method
+verdict), while weak / conflicting calls cluster low.
 
-**MOCK** — counts are synthesized from the production-pipeline
-distributional shape pending the full v2 deep-dive sweep. The single
-source of the mock data is ``scripts/build_figure_tsvs.py``
-(``build_evidence_corpus_vs_selected``, seed=42), which writes the
-bundled per-figure TSV at
+**Real data.** Every point is a published deep-dive record with real gene
+symbols and real counts, read from the bundled per-figure TSV at
 ``data/processed/figures/evidence_corpus_vs_selected.tsv`` (columns:
-``gene_symbol, papers_found_mock, papers_selected_mock,
-evidence_grade``). This canonical generator reads that TSV so it
-renders the **same** dataset as the gist mirror
-(``data/analysis/figures/make_evidence_corpus_vs_selected.py``) — no
-in-memory re-synthesis. The synthesis recipe lives solely in
-``build_figure_tsvs.py`` so the figure and the gist cannot drift.
+``gene_symbol, uniprot_acc, papers_found, papers_selected, evidence_grade,
+tier``). The single source of that TSV is ``scripts/build_figure_tsvs.py``
+(``build_evidence_corpus_vs_selected``), which reads the deep-dive export;
+this canonical generator reads the TSV so it renders the **same** dataset as
+the gist mirror (``data/analysis/figures/make_evidence_corpus_vs_selected.py``).
 
-Once ``deep_dive_run.evidence_grade`` is populated genome-wide, swap
-``build_figure_tsvs.py``'s synthesis recipe for a public-D1 SELECT:
-
-    SELECT gene_symbol,
-           json_extract(annotation_json, '$.evidence_count')         AS papers_found,
-           json_extract(annotation_json, '$.primary_evidence_count') AS papers_selected,
-           json_extract(annotation_json, '$.filters.evidence_grade') AS verdict
-    FROM surface_annotation;
+PRELIMINARY — ~1,197 of ~5,128 swept, pre-QA-fix; ``papers_found`` is null on
+a handful of legacy records so those genes are absent (both axes must be
+present to plot). The ``weak`` pile is partly the pretrim-cap recall bug
+deleting foundational literature; re-render after the full sweep + QA fixes.
 
 Run:
     uv run python scripts/evidence_corpus_vs_selected.py
@@ -71,10 +62,9 @@ ROOT = Path(__file__).resolve().parents[1]
 OUT_DIR = ROOT / "data/analysis/figures"
 SLUG = "evidence_corpus_vs_selected"
 
-# Bundled per-figure MOCK TSV — the single source of the synthesized
-# data (one row per gene), produced by ``scripts/build_figure_tsvs.py``
-# (``build_evidence_corpus_vs_selected``, seed=42). Reading it here keeps
-# canonical == gist mirror == bundled TSV; see module docstring.
+# Bundled per-figure TSV — one row per published deep-dive record, produced by
+# ``scripts/build_figure_tsvs.py`` (``build_evidence_corpus_vs_selected``).
+# Reading it here keeps canonical == gist mirror == bundled TSV.
 DATA_TSV = ROOT / "data/processed/figures/evidence_corpus_vs_selected.tsv"
 
 # Verdict ordering = best → worst evidence quality (used for legend
@@ -83,35 +73,36 @@ VERDICT_ORDER = [
     "direct_multi_method",
     "direct_single_method",
     "supportive_but_indirect",
+    "conflicting",
     "weak",
 ]
 VERDICT_COLOR = {
     "direct_multi_method":     "#2E7A55",  # success green
     "direct_single_method":    "#3D6B60",  # teal-mid
     "supportive_but_indirect": "#C07830",  # amber-dark
+    "conflicting":             "#8878C8",  # lavender — points both ways
     "weak":                    "#9C8C88",  # neutral grey
 }
 VERDICT_LABEL = {
     "direct_multi_method":     "direct, multi-method",
     "direct_single_method":    "direct, single method",
     "supportive_but_indirect": "supportive but indirect",
+    "conflicting":             "conflicting",
     "weak":                    "weak / sparse",
 }
 
-def _load_data() -> tuple[np.ndarray, np.ndarray, np.ndarray]:
-    """Read the bundled MOCK per-figure TSV and return three same-length
-    arrays ``(papers_found, papers_selected, verdicts)``.
 
-    The TSV is the single source of mock data, generated by
-    ``scripts/build_figure_tsvs.py`` (``build_evidence_corpus_vs_selected``,
-    seed=42), so this canonical generator and the gist mirror render the
-    identical dataset rather than two independent re-synthesises. The
-    synthesis recipe lives ONLY in that builder — nothing here
-    re-synthesizes, so the figure can't drift from the gist.
-    Enforced by tests/test_canonical_mock_reads_bundled_tsv.py."""
+def _load_data() -> tuple[np.ndarray, np.ndarray, np.ndarray]:
+    """Read the bundled per-figure TSV and return three same-length arrays
+    ``(papers_found, papers_selected, verdicts)``.
+
+    The TSV is the single source of the data, produced by
+    ``scripts/build_figure_tsvs.py`` (``build_evidence_corpus_vs_selected``),
+    so this canonical generator and the gist mirror render the identical
+    dataset. Enforced by tests/test_canonical_mock_reads_bundled_tsv.py."""
     data = pd.read_csv(DATA_TSV, sep="\t")
-    found = data["papers_found_mock"].to_numpy()
-    selected = data["papers_selected_mock"].to_numpy()
+    found = data["papers_found"].to_numpy()
+    selected = data["papers_selected"].to_numpy()
     verdicts = data["evidence_grade"].to_numpy()
     return found, selected, verdicts
 
@@ -175,9 +166,9 @@ def make_plot() -> tuple[plt.Figure, plt.Axes]:
 
     fig.text(
         0.5, -0.04,
-        f"MOCK — synthesized from the 100-gene audit shape "
-        f"(median {int(np.median(found))} papers/gene, "
-        f"median {int(np.median(selected))} selected); n={len(found)} genes",
+        f"Real deep-dive records (median {int(np.median(found))} papers found/gene, "
+        f"median {int(np.median(selected))} selected); n={len(found)} genes. "
+        f"PRELIMINARY — ~1,197 of ~5,128 swept, pre-QA-fix.",
         ha="center", va="top", fontsize=12, style="italic", color=COLORS["neutral"],
     )
 

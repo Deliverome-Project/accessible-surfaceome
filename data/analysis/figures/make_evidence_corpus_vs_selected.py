@@ -11,23 +11,23 @@
 found (discovery corpus) vs papers selected as evidence, colored by the
 agent's ``evidence_grade`` verdict.
 
-**MOCK figure** — counts are synthesized from the production-pipeline
-distributional shape pending the full v2 deep-dive sweep. Each "gene"
-is a synthetic draw from:
+**Real data.** Every point is a published deep-dive record with a real gene
+symbol and real counts:
 
-  * ``papers_found_mock`` ~ Lognormal(μ=ln 234, σ=0.6), clipped to
-    [25, 550] — anchored on the 234.5 median + ~50–400 range from the
-    methods-text 100-gene audit of EuropePMC + PubTator + gene2pubmed.
-  * ``papers_selected_mock`` ~ ``papers_found_mock`` × selection_rate,
-    where selection_rate shrinks with ln(found) so a 75-paper gene
-    keeps ~12% and a 400-paper gene selects ~6%.
-  * ``evidence_grade`` ∈ {direct_multi_method, direct_single_method,
-    supportive_but_indirect, weak} — assigned probabilistically as a
-    function of ln(selected) so the verdict tracks evidence depth.
+  * ``papers_found``     — discovery-corpus size (EuropePMC + PubTator +
+    gene2pubmed union; ``n_papers_found``, median ~240).
+  * ``papers_selected``  — papers the agent read full-text and kept as
+    evidence (``n_papers_selected``); grows sub-linearly with corpus size.
+  * ``evidence_grade``   ∈ {direct_multi_method, direct_single_method,
+    supportive_but_indirect, conflicting, weak} — the agent's grade of the
+    retained evidence base; tracks selection depth.
 
-Once ``deep_dive_run.evidence_grade`` is populated genome-wide the
-TSV will be regenerated from a public-D1 SELECT — see the canonical
-generator's docstring for the query.
+The bundled sibling TSV is produced by ``scripts/build_figure_tsvs.py``
+(``build_evidence_corpus_vs_selected``) from the deep-dive export, so this
+mirror renders the same dataset as the in-repo canonical.
+
+PRELIMINARY — ~1,197 of ~5,128 swept, pre-QA-fix; the ``weak`` pile is partly
+the pretrim-cap recall bug deleting foundational literature.
 
 Standalone — ``uv run make_evidence_corpus_vs_selected.py``.
 """
@@ -45,11 +45,11 @@ import seaborn as sns
 REPO = "Deliverome-Project/accessible-surfaceome"
 BRANCH = "main"  # pin to a commit SHA at publication for immutable citation
 BASE = f"https://raw.githubusercontent.com/{REPO}/{BRANCH}"
-# Single per-figure TSV: one row per synthesized gene with
-# (gene_symbol, papers_found_mock, papers_selected_mock, evidence_grade).
-# Hand-synthesized MOCK pending the v2 deep-dive sweep. Produced by
-# ``scripts/build_figure_tsvs.py``. Gist bundles this TSV next to
-# the script; the figure reads ONLY from the sibling — no other URLs.
+# Single per-figure TSV: one row per published deep-dive record with
+# (gene_symbol, uniprot_acc, papers_found, papers_selected, evidence_grade,
+# tier). Real counts, produced by ``scripts/build_figure_tsvs.py``. Gist
+# bundles this TSV next to the script; the figure reads ONLY from the
+# sibling — no other URLs.
 DATA_TSV = f"{BASE}/data/processed/figures/evidence_corpus_vs_selected.tsv"
 
 # Published reproduction gist (embedded into output PNG Source / PDF
@@ -79,18 +79,21 @@ VERDICT_ORDER = [
     "direct_multi_method",
     "direct_single_method",
     "supportive_but_indirect",
+    "conflicting",
     "weak",
 ]
 VERDICT_COLOR = {
     "direct_multi_method":     "#2E7A55",  # success green
     "direct_single_method":    "#3D6B60",  # teal-mid
     "supportive_but_indirect": "#C07830",  # amber-dark
+    "conflicting":             "#8878C8",  # lavender — points both ways
     "weak":                    "#9C8C88",  # neutral grey
 }
 VERDICT_LABEL = {
     "direct_multi_method":     "direct, multi-method",
     "direct_single_method":    "direct, single method",
     "supportive_but_indirect": "supportive but indirect",
+    "conflicting":             "conflicting",
     "weak":                    "weak / sparse",
 }
 
@@ -173,8 +176,8 @@ def main() -> None:
     _apply_brand_style()
 
     data = _fetch_tsv(DATA_TSV)
-    found = data["papers_found_mock"].to_numpy()
-    selected = data["papers_selected_mock"].to_numpy()
+    found = data["papers_found"].to_numpy()
+    selected = data["papers_selected"].to_numpy()
     verdicts = data["evidence_grade"].to_numpy()
 
     fig, ax = plt.subplots(figsize=(12, 8))
@@ -228,9 +231,9 @@ def main() -> None:
 
     fig.text(
         0.5, -0.04,
-        f"MOCK — synthesized from the 100-gene audit shape "
-        f"(median {int(np.median(found))} papers/gene, "
-        f"median {int(np.median(selected))} selected); n={len(data)} genes",
+        f"Real deep-dive records (median {int(np.median(found))} papers found/gene, "
+        f"median {int(np.median(selected))} selected); n={len(data)} genes. "
+        f"PRELIMINARY — ~1,197 of ~5,128 swept, pre-QA-fix.",
         ha="center", va="top", fontsize=12, style="italic", color=BRAND_NEUTRAL,
     )
 

@@ -7,20 +7,25 @@
 #   "seaborn>=0.13",
 # ]
 # ///
-"""Reproduce ``triage_vs_deep_dive_reason.{pdf,png}`` — the 19×19
-confusion matrix of the triage agent's first-pass
-``surface_call_reason`` (rows) against the deep-dive synthesizer's
-re-derived ``surface_call_reason`` (columns) on the 20-gene cohort
-of currently-published deep-dive records.
+"""Reproduce ``triage_vs_deep_dive_reason.{pdf,png}`` — the two-panel
+triage → deep-dive comparison on the currently-published deep-dive cohort.
 
-Both axes draw from the same closed ``TriageReason`` enum, so the
-diagonal (highlighted in maroon) is exact reason-level agreement
-and off-diagonal cells split into within-bucket reassignments
-(same Yes/Contextual/No bucket, different reason) and cross-bucket
-flips (the cells that matter most for verdict-level drift).
+**Panel a — verdict flow.** A 100%-stacked bar, one bar per triage verdict
+(yes / contextual / no), each split by the deep-dive's 5-tier call (canonical
+/ likely / low / uncertain / no). Shows how triage calls are confirmed or
+downgraded once the deep dive reads full text.
 
-The deep-dive cohort is small (n=20 as of this draft); MOCK
-caption: rebuild once the v2 deep-dive sweep covers the cohort.
+**Panel b — reason confusion matrix.** The triage reason (rows) against the
+deep-dive ``surface_call_reason`` (columns), both drawn from the same closed
+``TriageReason`` enum. The diagonal (highlighted in maroon) is exact
+reason-level agreement; thick separators mark the yes/contextual/no bucket
+boundaries and tick labels are colored by bucket so a cross-bucket flip is
+visible at a glance.
+
+Real data (n≈1,197 genes with both a triage and a deep-dive record). About
+half the genes land on the reason diagonal; the rest split into within-bucket
+reassignments and cross-bucket flips. PRELIMINARY — ~1,197 of ~5,128 swept,
+pre-QA-fix; the matrix widens as the sweep grows.
 
 Standalone — ``uv run make_triage_vs_deep_dive_reason.py``.
 """
@@ -39,8 +44,9 @@ REPO = "Deliverome-Project/accessible-surfaceome"
 BRANCH = "main"  # pin to a commit SHA at publication
 BASE = f"https://raw.githubusercontent.com/{REPO}/{BRANCH}"
 # Single per-figure TSV: one row per gene with a deep-dive record AND
-# a triage hit. Columns: gene_symbol, uniprot_acc, triage_reason,
-# deep_dive_reason. Built by scripts/build_figure_tsvs.py.
+# a triage hit. Columns: gene_symbol, uniprot_acc, triage_verdict,
+# triage_reason, deep_dive_reason, deep_dive_tier. Built by
+# scripts/build_figure_tsvs.py.
 DATA_TSV = f"{BASE}/data/processed/figures/triage_vs_deep_dive_reason.tsv"
 
 # Filled at gist-creation time; the placeholder is harmless until then.
@@ -60,6 +66,31 @@ BRAND_NEUTRAL = "#6F5D5A"
 BRAND_GRID = "#E6DAD4"
 BUCKET_COLOR = {"yes": "#2E7A55", "contextual": "#C07830", "no": "#6F5D5A"}
 DIAGONAL_HIGHLIGHT = "#BC3C4C"
+
+# ── Panel a: triage verdicts (bars) × deep-dive tiers (stack segments) ──
+TRIAGE_VERDICT_ORDER = ["yes", "contextual", "no"]
+TRIAGE_VERDICT_LABEL = {
+    "yes":        "triage: yes",
+    "contextual": "triage: contextual",
+    "no":         "triage: no",
+}
+# 5-tier deep-dive spectrum (best → worst) with the canonical tier colors
+# shared across every deep-dive figure.
+DD_TIER_ORDER = ["canonical", "likely", "low", "uncertain", "no"]
+DD_TIER_COLOR = {
+    "canonical": "#2E7A55",
+    "likely":    "#3D6B60",
+    "low":       "#C99A5B",
+    "uncertain": "#C7BDB6",
+    "no":        "#9C8C88",
+}
+DD_TIER_LABEL = {
+    "canonical": "canonical",
+    "likely":    "likely",
+    "low":       "low",
+    "uncertain": "uncertain",
+    "no":        "no",
+}
 
 REASONS_ORDERED = [
     # YES
@@ -125,7 +156,7 @@ def _apply_brand_style() -> None:
         "font.sans-serif": ["Manrope", "Outfit", "DejaVu Sans", "Liberation Sans", "Arial"],
         "font.weight": "medium", "font.size": 14,
         "axes.labelsize": 18, "axes.labelweight": "medium",
-        "axes.titlesize": 0, "axes.titlepad": 0,
+        "axes.titlesize": 16, "axes.titlepad": 12,
         "axes.spines.top": False, "axes.spines.right": False,
         "axes.grid": True, "axes.axisbelow": True,
         "axes.edgecolor": BRAND_GRID, "axes.labelcolor": BRAND_INK,
@@ -134,7 +165,7 @@ def _apply_brand_style() -> None:
         "grid.linewidth": 0.7, "grid.color": BRAND_GRID,
         "xtick.labelsize": 11, "ytick.labelsize": 11,
         "xtick.color": BRAND_INK, "ytick.color": BRAND_INK,
-        "legend.frameon": False, "legend.fontsize": 13,
+        "legend.frameon": False, "legend.fontsize": 12,
         "patch.edgecolor": "none", "patch.linewidth": 0.0,
         "savefig.dpi": 600, "savefig.bbox": "tight",
     })
@@ -178,22 +209,60 @@ def _bucket_boundaries() -> list[int]:
     return bounds
 
 
-def main() -> None:
-    _apply_brand_style()
-    df = _fetch_tsv(DATA_TSV)
-    m = _build_matrix(df)
-    n = m.shape[0]
+def _draw_verdict_flow(ax: plt.Axes, df: pd.DataFrame) -> None:
+    """Panel a — 100%-stacked horizontal bars: one bar per triage verdict,
+    each split by the deep-dive tier composition."""
+    ct = pd.crosstab(df["triage_verdict"], df["deep_dive_tier"])
+    ct = ct.reindex(index=TRIAGE_VERDICT_ORDER, columns=DD_TIER_ORDER, fill_value=0)
+    totals = ct.sum(axis=1)
+    frac = ct.div(totals.replace(0, np.nan), axis=0).fillna(0.0)
 
-    fig, ax = plt.subplots(figsize=(15, 13))
+    y_pos = np.arange(len(TRIAGE_VERDICT_ORDER))[::-1]  # yes on top
+    for yi, verdict in zip(y_pos, TRIAGE_VERDICT_ORDER):
+        left = 0.0
+        for tier in DD_TIER_ORDER:
+            w = float(frac.loc[verdict, tier])
+            if w <= 0:
+                continue
+            ax.barh(yi, w, left=left, height=0.62,
+                    color=DD_TIER_COLOR[tier], edgecolor="white", linewidth=0.8)
+            n = int(ct.loc[verdict, tier])
+            if w >= 0.05:
+                txt_color = "white" if tier in ("canonical", "likely") else BRAND_INK
+                ax.text(left + w / 2, yi, f"{w * 100:.0f}%\n({n})",
+                        ha="center", va="center", fontsize=11,
+                        color=txt_color, fontweight="semibold")
+            left += w
+
+    ax.set_yticks(y_pos)
+    ax.set_yticklabels([f"{TRIAGE_VERDICT_LABEL[v]}\n(n={int(totals[v])})"
+                        for v in TRIAGE_VERDICT_ORDER])
+    ax.set_xlim(0, 1)
+    ax.set_xticks([0, 0.25, 0.5, 0.75, 1.0])
+    ax.set_xticklabels(["0", "25", "50", "75", "100%"])
+    ax.set_xlabel("Deep-dive tier composition (per triage verdict)")
+    ax.set_title("Verdict flow: triage call → deep-dive tier",
+                 fontsize=16, fontweight="semibold", pad=12)
+
+    handles = [mpatches.Patch(facecolor=DD_TIER_COLOR[t], edgecolor="none",
+                              label=DD_TIER_LABEL[t]) for t in DD_TIER_ORDER]
+    ax.legend(handles=handles, title="deep-dive tier", loc="upper center",
+              bbox_to_anchor=(0.5, -0.14), ncols=5, frameon=False,
+              fontsize=12, title_fontsize=13)
+    sns.despine(ax=ax, top=True, right=True)
+
+
+def _draw_reason_matrix(ax: plt.Axes, m: np.ndarray) -> None:
+    """Panel b — the 19×19 triage × deep-dive reason confusion matrix."""
+    n = m.shape[0]
     cmap = sns.light_palette("#3D6B60", as_cmap=True)
     sns.heatmap(
         m, ax=ax, cmap=cmap, square=True, linewidths=0.5, linecolor="#FFFFFF",
-        annot=True, fmt="d", annot_kws={"fontsize": 12, "color": BRAND_INK},
-        cbar_kws={"label": "genes", "shrink": 0.55, "pad": 0.02, "aspect": 25},
+        annot=True, fmt="d", annot_kws={"fontsize": 10, "color": BRAND_INK},
+        cbar_kws={"label": "genes", "shrink": 0.45, "pad": 0.02, "aspect": 25},
         xticklabels=[LABEL_SHORT[r] for r in REASONS_ORDERED],
         yticklabels=[LABEL_SHORT[r] for r in REASONS_ORDERED],
     )
-
     for tick, reason in zip(ax.get_xticklabels(), REASONS_ORDERED, strict=True):
         tick.set_color(BUCKET_COLOR[BUCKET[reason]])
         tick.set_fontweight("semibold")
@@ -206,15 +275,15 @@ def main() -> None:
     for b in _bucket_boundaries():
         ax.axhline(b, color=BRAND_INK, lw=2.0, alpha=0.85)
         ax.axvline(b, color=BRAND_INK, lw=2.0, alpha=0.85)
-
     for i in range(n):
         ax.add_patch(mpatches.Rectangle(
             (i, i), 1, 1, fill=False, edgecolor=DIAGONAL_HIGHLIGHT,
             lw=2.5, zorder=10,
         ))
-
-    ax.set_xlabel("Deep-dive surface_call_reason", labelpad=12)
-    ax.set_ylabel("Triage\nsurface_call_reason", labelpad=12)
+    ax.set_xlabel("Deep-dive surface_call_reason", labelpad=10)
+    ax.set_ylabel("Triage\nsurface_call_reason", labelpad=10)
+    ax.set_title("Reason confusion: triage reason × deep-dive reason",
+                 fontsize=16, fontweight="semibold", pad=12)
 
     handles = [
         mpatches.Patch(facecolor=BUCKET_COLOR[b], edgecolor="none",
@@ -225,27 +294,52 @@ def main() -> None:
         mpatches.Patch(facecolor="none", edgecolor=DIAGONAL_HIGHLIGHT,
                        lw=2.5, label="diagonal (reason agrees)")
     )
-    ax.legend(
-        handles=handles, loc="upper center",
-        bbox_to_anchor=(0.5, -0.18), ncols=4, frameon=False, fontsize=13,
-    )
+    ax.legend(handles=handles, loc="upper center", bbox_to_anchor=(0.5, -0.12),
+              ncols=4, frameon=False, fontsize=12)
+
+
+def main() -> None:
+    _apply_brand_style()
+    # Two-panel canvas needs bigger type than the base single-panel style —
+    # match the canonical generator's fingerprint (font 18 / labelsize 20 /
+    # titlesize 16 / xtick 12 / ytick 14 / legend 13).
+    plt.rcParams.update({
+        "font.size": 18, "axes.labelsize": 20, "axes.titlesize": 16,
+        "xtick.labelsize": 12, "ytick.labelsize": 14, "legend.fontsize": 13,
+    })
+    df = _fetch_tsv(DATA_TSV)
+    m = _build_matrix(df)
+
+    fig = plt.figure(figsize=(24, 13))
+    gs = fig.add_gridspec(1, 2, width_ratios=[1.0, 1.85], wspace=0.32)
+    ax_a = fig.add_subplot(gs[0, 0])
+    ax_b = fig.add_subplot(gs[0, 1])
+
+    _draw_verdict_flow(ax_a, df)
+    _draw_reason_matrix(ax_b, m)
+
+    for ax, letter in ((ax_a, "a"), (ax_b, "b")):
+        ax.text(-0.08, 1.05, letter, transform=ax.transAxes,
+                ha="left", va="top", fontsize=24, fontweight=800,
+                color=BRAND_INK)
 
     cohort_n = int(m.sum())
+    on_diag = int(np.trace(m))
     fig.text(
-        0.5, -0.02,
-        f"MOCK — n = {cohort_n} deep-dive records; rebuild once the "
-        f"v2 sweep covers the candidate cohort genome-wide.",
-        ha="center", va="top", fontsize=12, style="italic", color=BRAND_NEUTRAL,
+        0.5, 0.02,
+        f"n = {cohort_n} genes with both a triage and a deep-dive record "
+        f"({on_diag}/{cohort_n} on the reason diagonal, {100 * on_diag / cohort_n:.0f}%). "
+        f"PRELIMINARY - ~1,197 of ~5,128 swept, pre-QA-fix; widens as the sweep grows.",
+        ha="center", va="bottom", fontsize=12, style="italic", color=BRAND_NEUTRAL,
     )
 
-    sns.despine(ax=ax, top=False, right=False, left=False, bottom=False)
-    fig.tight_layout()
+    fig.tight_layout(rect=(0, 0.04, 1, 0.98))
 
     out_pdf = Path("triage_vs_deep_dive_reason.pdf")
     out_png = Path("triage_vs_deep_dive_reason.png")
     fig.savefig(out_pdf, bbox_inches="tight", metadata={"Subject": GIST_URL})
     fig.savefig(out_png, bbox_inches="tight", dpi=600, metadata={"Source": GIST_URL})
-    print(f"Wrote {out_pdf} + {out_png} (cohort n={cohort_n})")
+    print(f"Wrote {out_pdf} + {out_png} (cohort n={cohort_n}, diagonal={on_diag})")
 
 
 if __name__ == "__main__":
