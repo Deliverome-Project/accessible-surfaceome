@@ -112,6 +112,8 @@ REPO_ROOT = Path(__file__).resolve().parents[1]
 CSS_PATH = REPO_ROOT / "paper" / "deliverome-print.css"
 REFS_DOIS_FILTER = REPO_ROOT / "paper" / "filters" / "refs_dois.lua"
 FIGURES_FILTER = REPO_ROOT / "paper" / "filters" / "figures.lua"
+FIGURE_MANIFEST = REPO_ROOT / "paper" / "figure_manifest.json"
+CANONICAL_FIGURES_DIR = REPO_ROOT / "data" / "analysis" / "figures"
 
 
 def _stem_for(src: Path) -> str:
@@ -125,8 +127,18 @@ def _stem_for(src: Path) -> str:
     return src.stem.replace(" ", "_")
 
 
-def build(src: Path) -> dict[str, Path]:
-    """Run pandoc → HTML → WeasyPrint PDF + pandoc JATS XML.
+def build(src: Path, strict_figures: bool = False) -> dict[str, Path]:
+    """Run pandoc → HTML → figure swap → WeasyPrint PDF + pandoc JATS XML.
+
+    Between pandoc and WeasyPrint, ``figure_swap.swap_figures`` rewrites
+    each ``<img src>`` to point at the canonical asset in
+    ``data/analysis/figures/`` per ``paper/figure_manifest.json``. This
+    guarantees the published PDF carries the current HEAD render of each
+    figure rather than whatever bitmap the .docx had pasted in. Set
+    ``strict_figures=True`` to fail the build on any missing-asset / DPI /
+    format issue; otherwise issues are reported and the build continues
+    with whatever the manifest pointed at (or the original .docx bitmap
+    if the manifest entry was missing).
 
     Returns the three output paths so callers can wire them straight
     into a publish/upload step.
@@ -182,7 +194,33 @@ def build(src: Path) -> dict[str, Path]:
         ],
     )
 
-    # 2. WeasyPrint → PDF. The `base_url` anchors relative paths (the
+    # 2. Figure swap — rewrite each in-doc <img> to point at the
+    #    canonical asset under data/analysis/figures/, and verify
+    #    resolution / format. See paper/figure_swap.py for the
+    #    full contract; manifest at paper/figure_manifest.json.
+    #    Sibling import: when this file runs as ``python paper/build.py``
+    #    the paper/ directory is what's on sys.path, not its parent.
+    #    Static checkers (ty) walk from the repo root and can't see
+    #    the sibling — silence the unresolved-import diagnostic.
+    from figure_swap import (  # ty: ignore[unresolved-import]
+        format_report,
+        load_manifest,
+        swap_figures,
+    )
+    manifest = load_manifest(FIGURE_MANIFEST)
+    if manifest:
+        print(f"→ figure-swap   ({len(manifest)} manifest entries)")
+        report = swap_figures(html_path, manifest, CANONICAL_FIGURES_DIR)
+        formatted = format_report(report)
+        if formatted:
+            print(formatted)
+        if strict_figures and report.has_issues:
+            raise RuntimeError(
+                f"--strict figure-swap: {len(report.issues)} unresolved issue(s); "
+                f"fix or relax the manifest, then re-run."
+            )
+
+    # 3. WeasyPrint → PDF. The `base_url` anchors relative paths (the
     #    CSS @import of `../viewer/app/design-tokens.css` and the
     #    extracted-media images) to the HTML file's directory.
     #    WeasyPrint fetches Manrope + Playfair Display from Google
@@ -193,7 +231,7 @@ def build(src: Path) -> dict[str, Path]:
         stylesheets=[CSS(filename=str(CSS_PATH))],
     )
 
-    # 3. pandoc → JATS XML. Same source, different writer; machine-
+    # 4. pandoc → JATS XML. Same source, different writer; machine-
     #    readable references + figure metadata for the Zenodo deposit.
     print(f"→ pandoc {src.name} → {xml_path.name}")
     pypandoc.convert_file(
@@ -219,10 +257,20 @@ def main() -> int:
         type=Path,
         help="Path to the .docx manuscript",
     )
+    parser.add_argument(
+        "--strict-figures",
+        action="store_true",
+        help=(
+            "Fail the build if any figure-swap resolution / format check "
+            "fails (missing canonical asset, PNG DPI below the manifest "
+            "minimum, SVG that wraps a raster, etc.). Default: warn and "
+            "continue."
+        ),
+    )
     args = parser.parse_args()
 
     try:
-        outputs = build(args.source.resolve())
+        outputs = build(args.source.resolve(), strict_figures=args.strict_figures)
     except FileNotFoundError as exc:
         print(f"error: {exc}", file=sys.stderr)
         return 66

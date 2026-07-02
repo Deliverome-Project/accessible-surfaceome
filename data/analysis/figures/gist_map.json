@@ -1,3 +1,22 @@
-version https://git-lfs.github.com/spec/v1
-oid sha256:c109f481f73d1a73ce9c5aefbb0366fcc3c288f18f9cd6cd8b4cbe9953c5e407
-size 591
+{
+  "bench_topology_vs_universe": "f724dd328f48566a354f0294109a7337",
+  "benchmark_cost_vs_accuracy": "d7f764d2de288ae31cf44173bc396d41",
+  "curator_vs_agent_reason": "c98fe6646ba8b967767d072657da31b7",
+  "db_correctness_by_class": "2bb4f7aac629535982c142bc2032e04d",
+  "db_correctness_overall": "9c765ed9673d7bd845c3ac091ad2204d",
+  "db_cutoff_tradeoff": "f9319af882e372194bd30640c0cbf2ed",
+  "db_overlap_venn": "d655abfc9c7deeaff1cfbe584de96ffa",
+  "db_vs_sonnet_whole_proteome": "1265c867a3bbb08efd81262789e1f013",
+  "deep_dive_final_categories": "c2441f8d0314c5524463bc85a3e86612",
+  "deep_dive_flow": "eb7ce1015ff21ec0329472e33a9ea713",
+  "deep_dive_record_richness": "35119ea2bca9585c7245d247334b8c01",
+  "ensemble_vs_best_db_vs_sonnet": "0104308c239fe49d91d82a1007632b27",
+  "evidence_corpus_vs_selected": "cb550702344d7626ee80804bc7f6c549",
+  "paywall_bot_block_compare": "cbc950dad1c3a6595fd5018cdb6b030d",
+  "positive_control_db_coverage_bars": "3ab5df749b576912959c75fe7013d78c",
+  "surfaceome_deterministic_features_placeholder": "57cf3cc3db903ab39bc0ba315ce5e4d5",
+  "topology_coverage_by_source": "95b0f4cdcaf6a6b91f57539cd1515a25",
+  "triage_vs_deep_dive_reason": "152a4d8b4a1d156e2afaa73d205294b6",
+  "web_preview": "f8de3e35072ad91d76eb2ea5fb49cca6",
+  "zero_db_rescues_by_triage": "a4526c9e6de5e958826bf1d764744c1b"
+}

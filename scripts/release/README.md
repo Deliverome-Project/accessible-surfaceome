@@ -3,24 +3,47 @@
 One-shot rituals for promoting `accessible-surfaceome` to durable
 storage. Run manually, only when you're ready.
 
-## Architecture: two Zenodo record series
+## Architecture: three Zenodo record series + per-figure SWHIDs
 
-The deliverome project uses two parallel Zenodo record series:
+Long-term citable storage for the project splits across four channels:
 
-1. **Code releases** — handled automatically by the GitHub-Zenodo
-   integration (one DOI per tagged GitHub Release; the auto-archive
-   captures the repo tarball but **NOT** LFS bytes or content that
-   isn't in the repo). Enable at <https://zenodo.org/account/settings/github/>.
-   You do nothing per release once this is on.
+1. **Code releases** (Zenodo record series, **auto**) — handled by the
+   GitHub-Zenodo integration. One DOI per tagged GitHub Release; the
+   auto-archive captures the repo tarball but **NOT** LFS bytes or
+   content that isn't in the repo. Enable at
+   <https://zenodo.org/account/settings/github/>. You do nothing per
+   release once this is on.
 
-2. **Heavy data outputs** — handled by this script. Things like full
-   triage runs with reasoning, benchmark runs with reasoning, deep-dive
-   analyses — files too large for the repo or not committed at all.
-   Manual deposit each time you want to mint a fresh DOI for new data.
+2. **Heavy data outputs** (Zenodo record series, **this script**) —
+   triage-runs with reasoning, benchmark runs with reasoning, the
+   eventual deep-dive bundle. Files too large for the repo or not
+   committed at all. Manual deposit each time you want to mint a fresh
+   DOI for new data. Lives at the reserved DOI
+   `10.5281/zenodo.20805384`.
 
-The two series link to each other via `related_identifiers` metadata
-(this record `isSupplementTo` the code record). CrossRef/DataCite
-indexes the relationship and Zenodo's UI shows it.
+3. **Manuscript** (Zenodo record series, **separate from data**,
+   uses bioRxiv DOI as external) — a one-record-per-preprint series
+   that hosts the paper PDF + JATS XML at a Zenodo URL but registers
+   the record under the bioRxiv DOI rather than minting a new Zenodo
+   DOI. Done via the "I already have a DOI" path in the Zenodo upload
+   form. Unpaywall harvests Zenodo over OAI-PMH and adds the Zenodo
+   PDF as an `oa_location` under the bioRxiv DOI within ~2–4 weeks —
+   gives a bot-accessible full-text URL for a DOI bioRxiv itself
+   blocks bots from fetching. See the **"Manuscript deposit"** section
+   below for the procedure.
+
+4. **Per-figure reproduction units** (gists, cited via **SWHID**,
+   not DOI) — each figure's gist bundles `01_<slug>.md` + bundled
+   TSV(s) + `make_<slug>.py` and is cited as `swh:1:rev:<sha>` of the
+   gist's HEAD commit. See `data/analysis/figures/swhid_map.json`.
+
+The data record (2) and the code record (1) link to each other via
+`related_identifiers` metadata (data `isSupplementTo` code). The
+manuscript record (3) links to the data record via Related Identifier
+`isSupplementedBy` → data DOI, and the data record links back with
+`isSupplementTo` → bioRxiv DOI. CrossRef/DataCite indexes all
+relationships; Zenodo's UI surfaces them on every record's landing
+page.
 
 ## What `publish-archive.py` does
 
@@ -219,22 +242,25 @@ After step 6, the figures know about both their gist SWHID (for the
 reproduction artifact) and the bundle DOI (for the publication
 citation), and the Zenodo records know about each other.
 
-## Auto-archive vs this script — they're complementary
+## Auto-archive vs this script vs manuscript record — three series
 
-If you already have GitHub-Zenodo auto-archive enabled (recommended
-for code), you have **two parallel Zenodo record series** in flight:
+If you have GitHub-Zenodo auto-archive enabled (recommended for code),
+you have **three parallel Zenodo record series** at play:
 
-| | Code series (auto) | Data series (this script) |
-|---|---|---|
-| Created by | GitHub release event | manual run of this script |
-| What's in it | Repo tarball at tag | Heavy data files outside the repo |
-| Cadence | Per release | Per data milestone |
-| Versioning | New version per GitHub release | New version per script run (manual) |
-| Concept DOI | One per series | One per series |
+| | Code series (auto) | Data series (this script) | Manuscript record (manual UI) |
+|---|---|---|---|
+| Created by | GitHub release event | manual run of this script | manual upload to zenodo.org/uploads/new |
+| What's in it | Repo tarball at tag | Heavy data files outside the repo | manuscript.pdf + JATS XML |
+| DOI shape | Zenodo-minted per release | Zenodo-minted per data milestone | **bioRxiv DOI (external)** |
+| Cadence | Per release | Per data milestone | Per preprint version |
+| Versioning | New version per GitHub release | New version per script run | New version per preprint revision |
+| Concept DOI | One per series | One per series | One per series |
 
-The two are linked via `related_identifiers` metadata in the data
-record's spec. Citing the code DOI, citing the data DOI, or citing
-both gives readers the full picture.
+The series link to each other via `related_identifiers` metadata.
+Citing the code DOI, the data DOI, the bioRxiv DOI, or any
+combination gives readers the full picture. The bioRxiv DOI is the
+"canonical" citation for the paper itself; the Zenodo records on
+each side are durable archival copies.
 
 ### When NOT to use this script
 
@@ -252,73 +278,96 @@ both gives readers the full picture.
   LFS-tracked (LFS bytes don't get included in auto-archive).
 - You want a citeable DOI for those data files, separate from any
   paper they appear in.
-- You're ready to deposit the paper itself alongside the data — see
-  the manuscript-bundle section below.
 
-## Depositing the paper alongside the data (manuscript bundle)
+For the manuscript itself, do NOT use this script — see the
+"Manuscript deposit" section above. The manuscript lives in a
+**separate Zenodo record** registered under the bioRxiv DOI, not
+bundled into this data deposit.
 
-The script can co-deposit the paper's PDF + a JATS XML version of
-the manuscript with the data. Off by default — uncomment the
-`{"manuscript": True, ...}` entry at the bottom of `EXTRA_FILES`.
+## Manuscript deposit — separate record, bioRxiv DOI as external
 
-Why both formats:
+**The manuscript is NOT bundled into the data deposit.** It gets its
+own Zenodo record, registered under the bioRxiv preprint's DOI rather
+than a Zenodo-minted DOI. The rationale is bot-reach: bioRxiv blocks
+automated PDF retrieval (your User-Agent gets 403), so an Unpaywall
+query against the bioRxiv DOI returns no fetchable OA location. By
+hosting the same PDF on Zenodo under the same DOI, Unpaywall's
+OAI-PMH harvest picks up the Zenodo URL and adds it to the bioRxiv
+DOI's `oa_locations` — your paper becomes bot-fetchable everywhere
+without a second DOI to cite.
 
-- **PDF** is what reviewers / readers actually open. The script
-  copies your pre-built PDF verbatim — whatever LaTeX engine /
-  Word / Typst you've used upstream is what reviewers will cite.
+### Why a separate record (not a file in the data deposit)
+
+The "I already have a DOI" option in Zenodo's upload form applies to
+the **whole record's primary DOI**. If you used it on the data deposit
+(20805384), the deposit's identity would become "this is the bioRxiv
+preprint" — semantically wrong since the deposit also contains
+genome-wide triage TSVs, the deep-dive bundle, and the README. The
+clean split:
+
+| Record | DOI | Contents |
+|---|---|---|
+| `zenodo.20805384` (this script's data record) | Zenodo-minted `10.5281/zenodo.20805384` | triage TSVs + deep-dive bundle (when ready) + README |
+| **New manuscript record** | bioRxiv DOI (external) | `manuscript.pdf` + `manuscript.xml` (JATS) + optionally `manuscript.txt` |
+
+### The procedure (post-bioRxiv-acceptance)
+
+1. **Post the preprint to bioRxiv.** You get a DOI like
+   `10.1101/2026.06.27.123456`.
+2. **Build the manuscript outputs** via `paper/build.py`:
+   ```bash
+   uv run python paper/build.py paper/manuscript.docx
+   # produces paper/build/manuscript.{pdf,xml,html}
+   ```
+3. **Create a new Zenodo deposit** at <https://zenodo.org/uploads/new>.
+4. On the **DOI** field, select **"Yes, I already have a DOI"** and
+   paste the bioRxiv DOI. Zenodo will NOT mint a new DOI for this
+   record. **Critical:** answering "No" here would mint a Zenodo
+   DOI and break the Unpaywall route described below.
+5. **Upload the files:**
+   - `manuscript.pdf` — primary citable
+   - `manuscript.xml` — pandoc-generated JATS (PMC-compatible)
+   - `manuscript.txt` (optional) — plain-text extracted version
+     (some text-miners prefer it; harmless to add)
+6. **Set license** = CC-BY 4.0 (matches the rest of the project).
+7. **Add Related Identifiers** in the metadata form:
+   - `isSupplementedBy` → `10.5281/zenodo.20805384` (the data record)
+   - (data record's metadata, separately) `isSupplementTo` →
+     the bioRxiv DOI
+8. **Publish.** Zenodo registers the record under the bioRxiv DOI;
+   the OAI-PMH endpoint (`https://zenodo.org/oai2d`) now exposes
+   the record with `dc:identifier=doi:<bioRxiv DOI>` and file URLs.
+9. **Wait ~2–4 weeks** for Unpaywall's harvester to pick it up.
+   Verify with:
+   ```bash
+   curl -s "https://api.unpaywall.org/v2/<bioRxiv-DOI>?email=becca@deliverome.org" \
+     | jq '.oa_locations[] | {host: .host_type, url, license, version}'
+   ```
+   Should show both bioRxiv and Zenodo entries.
+10. **If still not indexed after ~6 weeks**, submit at
+    <https://unpaywall.org/data-feedback> with the bioRxiv DOI + the
+    Zenodo URL — usually picks up within a week.
+
+### Why both PDF and JATS
+
+- **PDF** is what reviewers / readers actually open. Verbatim copy
+  of whatever your build chain produced.
 - **JATS XML** is what PMC, reference managers, and downstream
   text-miners ingest. Most journals derive the JATS at publication
   time; pre-depositing it makes the record machine-readable from day
   one and gives readers a stable structured representation regardless
-  of which journal accepts the paper.
+  of which journal eventually accepts the paper.
 
-Requires `pandoc` on `PATH`:
+The `paper/build.py` chain ([paper/README.md](../../paper/README.md))
+produces both formats in one command via pandoc + WeasyPrint.
 
-```bash
-# macOS
-brew install pandoc
+### Versioning the manuscript record
 
-# Linux
-apt install pandoc   # or download from pandoc.org
-```
-
-The manuscript-bundle entry shape:
-
-```python
-{
-    "manuscript": True,
-    "source": "paper/manuscript.md",       # markdown / latex / docx
-    "pdf_path": "paper/build/manuscript.pdf",  # the PDF you've already built
-    "jats_filename": "manuscript.xml",     # name the JATS lands as
-    "extra_pandoc_args": [                  # optional — pass to pandoc
-        "--citeproc",
-        "--bibliography=paper/refs.bib",
-    ],
-}
-```
-
-At deposit time the script runs:
-
-```bash
-pandoc <source> --standalone --to jats -o <jats_filename> <extra_args>
-```
-
-`--standalone` is required for pandoc's JATS writer (without it it
-emits a fragment rather than a full `<article>`).
-
-**The script never re-renders the PDF.** A real paper needs a LaTeX
-engine + class files + bibliography styles + (often) journal-specific
-templates; pandoc can produce PDFs, but the output rarely matches
-what reviewers actually see. The deposit gets your pre-built PDF
-byte-for-byte. JATS conversion is plain XML — no engine needed —
-so it's safe to derive at deposit time.
-
-**JATS validation note.** Pandoc's `--standalone` output is well-
-formed but doesn't necessarily satisfy the tighter PMC DTD
-constraints (e.g. `article-meta` structure). Run it through the
-JATS4R validator (<https://www.jats4r.org/>) or `xmllint --dtdvalid`
-if you need PMC-grade validation; for deposit-alongside-data
-purposes the standalone XML is usually sufficient.
+If the manuscript is revised post-bioRxiv (e.g. a v2 preprint), use
+Zenodo's "New version" button on the existing manuscript record. The
+bioRxiv DOI stays the same (or you also have a new bioRxiv version
+DOI — that's a separate Zenodo record). One Zenodo concept-DOI covers
+all versions of the manuscript on Zenodo's side.
 
 ## Safety reminders
 

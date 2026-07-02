@@ -1,10 +1,17 @@
 """Zero-DB rescues: how many proteins did the triage agent rescue from the 0-DB universe?
 
-Fetches the public catalog at
-``https://api.deliverome.org/surfaceome/v1/catalog`` (19,324 protein-coding
-human genes with per-gene `db` vote count + canonical Sonnet+NCBI triage
-`verdict` and `reason`), then tallies the slice where `db == 0` (no
-classical surface DB flagged the gene) and Sonnet voted yes or contextual.
+Reads the dedicated per-figure TSV at
+``data/processed/figures/zero_db_rescues_by_triage.tsv`` (19,324
+protein-coding human genes with per-gene surface-DB flags — both the
+INITIAL ``n_sources_surface`` and the bench-OPTIMIZED
+``n_sources_optimized`` vote counts — plus the canonical Sonnet+NCBI
+triage `verdict` and `reason`), then tallies the slice where
+``n_sources_optimized == 0`` (no classical surface DB flags the gene
+under the bench-optimized cutoffs) and Sonnet voted yes or contextual.
+
+Using ``n_sources_optimized`` (not the initial ``n_sources_surface``)
+keeps the zero-DB definition consistent with the accuracy figures,
+which all score the databases at their bench-optimized thresholds.
 
 Output: two grouped bar panels (yes + contextual), each showing per-reason
 counts on a shared y-axis, plus translational / surface-recognizable
@@ -90,64 +97,63 @@ CONTEXTUAL_PALETTE = {
 YES_HEADER_COLOR = "#2E7A55"
 CONTEXTUAL_HEADER_COLOR = "#8C4210"
 
-# Callouts: db=0 rescues. The triage agent reports its own confidence
-# per call (low/medium/high). YES callouts are all HIGH-confidence;
-# CONTEXTUAL callouts mix HIGH (gasdermin pore-formers) with reputable
-# MEDIUM picks where the agent's MEDIUM rating reflects mechanism-detail
-# nuance (anchoring partner, state-dependence) rather than skepticism
-# about whether surface display occurs — each MEDIUM pick has direct
-# surface flow-cytometry / biotinylation evidence in the published
-# literature. Each `reason` is verified at runtime against
-# `triage.reason` in the catalog — the script raises RuntimeError if
-# any callout symbol is missing from the expected (verdict, reason) slot.
-# Ordered to match the per-reason bar order in the panel above
-# (YES_REASONS / CONTEXTUAL_REASONS), so callouts read top-to-bottom in
-# the same sequence as the bars left-to-right.
+# Callouts: db=0 rescues, one exemplar per reason — plus a SECOND for the
+# two clinically-rich contextual reasons (stable-attachment: MMP9 + LRG1;
+# cell-state: GSDME + HSPA1A), each a clinical/clinical-stage target. The
+# triage agent reports its own confidence per call (low/medium/high); the
+# named picks below have direct surface flow-cytometry / biotinylation
+# evidence in the published literature regardless of the agent's rating.
+# Each `reason` is verified at runtime against `triage.reason` in the
+# catalog — the script raises RuntimeError if any callout symbol is
+# missing from the expected (verdict, reason) slot. Ordered to match the
+# per-reason bar order in the panel above (YES_REASONS /
+# CONTEXTUAL_REASONS), so callouts read top-to-bottom in the same
+# sequence as the bars left-to-right. The "other" bucket is a catch-all
+# and gets no named exemplar.
 YES_CALLOUTS = [
-    ("PVRIG",   "NK/T checkpoint; COM701 = anti-PVRIG mAb", "classical_surface_receptor"),
-    ("ECEL1",   "Type-II TM; neprilysin/M13 family",   "classical_surface_receptor"),
-    ("STEAP1",  "Prostate ADC + BiTE target",          "multipass_with_exposed_loops"),
-    ("ORAI2",   "Store-operated Ca2+ channel",         "multipass_with_exposed_loops"),
-    ("CRIPTO",  "GPI-anchored oncofetal antigen",      "gpi_anchored"),
+    ("LVRN",    "Laeverin/APQ — trophoblast surface peptidase", "classical_surface_receptor"),
+    ("STEAP3",  "Six-TM metalloreductase; STEAP family", "multipass_with_exposed_loops"),
+    ("NYX",     "GPI-anchored nyctalopin (retinal SLRP)", "gpi_anchored"),
     ("LY96",    "MD-2 — TLR4 co-receptor",             "stable_complex_partner"),
 ]
 CONTEXTUAL_CALLOUTS = [
-    ("IL15",    "Surface trans-presentation via IL-15Rα", "dual_localization"),
-    ("KLK2",    "Prostate kallikrein; ADC-relevant rescue", "tissue_restricted_surface"),
-    ("TIMP2",   "MT1-MMP ternary complex",             "stable_surface_attachment"),
-    ("GSDMD",   "Gasdermin D/E/C — pyroptosis pores",  "cell_state_induced"),
+    ("IL15",    "Secreted + surface trans-presentation via IL-15Rα", "dual_localization"),
+    ("KLK2",    "hK2; prostate-restricted kallikrein", "tissue_restricted_surface"),
+    ("MMP9",    "Gelatinase B; cell-surface zymogen",  "stable_surface_attachment"),
+    ("LRG1",    "Leucine-rich α2-glycoprotein; cell-surface/ECM-tethered", "stable_surface_attachment"),
+    ("GSDME",   "Gasdermin E — pyroptosis pores",      "cell_state_induced"),
     ("HSPA1A",  "Surface Hsp70; cmHsp70.1 mAb",        "cell_state_induced"),
-    ("HSP90B1", "Surface GRP94 in tumor cells",        "cell_state_induced"),
-    ("HPSE",    "Surface heparanase on activated platelets / tumor cells",
+    ("HPSE",    "Heparanase; surface on activated platelets / tumor cells",
                                                        "lysosomal_exocytosis"),
 ]
 
 
 def _load_catalog_rows() -> list[dict]:
-    """Return rows of the whole-proteome catalog. As of 2026-06, the
-    canonical source is the static TSV at
-    ``data/processed/catalog/whole_proteome_catalog.tsv`` (~2 MB, ~19k
-    rows, un-LFS so raw.githubusercontent.com serves plain text). The
-    TSV is regenerated by
-    ``scripts/export_whole_proteome_catalog_to_tsv.py`` from D1 — the
-    Worker's ``/v1/catalog`` is no longer queried at figure-render
-    time so the gist is self-contained.
+    """Return rows of the dedicated zero-DB-rescue figure TSV at
+    ``data/processed/figures/zero_db_rescues_by_triage.tsv`` (~19k rows,
+    un-LFS so raw.githubusercontent.com serves plain text). The TSV is
+    regenerated by ``scripts/build_figure_tsvs.py`` from D1 — the
+    Worker's ``/v1/catalog`` is not queried at figure-render time so the
+    gist is self-contained.
 
-    Each row has the v1-style expanded columns: ``hgnc_symbol``,
-    ``uniprot_acc``, the five ``*_surface_flag`` fields,
-    ``n_sources_surface``, ``sonnet_verdict``, ``sonnet_reason``,
-    ``hgnc_id``, ``ensembl_gene``, ``ncbi_gene_id``,
-    ``universe_version``.
+    Each row carries the per-gene surface-DB flags in BOTH the INITIAL
+    form (the five ``*_surface_flag`` fields + ``n_sources_surface``)
+    and the bench-OPTIMIZED form (``uniprot_optimized``,
+    ``cspa_optimized``, … + ``n_sources_optimized``), plus
+    ``sonnet_verdict`` / ``sonnet_reason`` and stable IDs
+    (``hgnc_id``, ``hgnc_symbol``, ``uniprot_acc``, ``ensembl_gene``,
+    ``ncbi_gene_id``). This figure selects on ``n_sources_optimized``.
     """
     import csv
 
-    tsv_path = ROOT / "data/processed/catalog/whole_proteome_catalog.tsv"
+    tsv_path = ROOT / "data/processed/figures/zero_db_rescues_by_triage.tsv"
     print(f"Reading {tsv_path} ...")
     with tsv_path.open() as fh:
         rows = list(csv.DictReader(fh, delimiter="\t"))
-    # Normalize types: counts are integer in v1-style logic below.
+    # Normalize types: vote counts are integer in the selection logic below.
     for r in rows:
         r["n_sources_surface"] = int(r.get("n_sources_surface", 0) or 0)
+        r["n_sources_optimized"] = int(r.get("n_sources_optimized", 0) or 0)
     return rows
 
 
@@ -246,11 +252,12 @@ def _draw_callouts(ax, callouts: list[tuple[str, str, str]], palette: dict, titl
 
 def main() -> None:
     rows = _load_catalog_rows()
-    print(f"  loaded {len(rows):,} rows from whole_proteome_catalog.tsv")
+    print(f"  loaded {len(rows):,} rows from zero_db_rescues_by_triage.tsv")
 
-    # Zero-DB slice: no surface DB voted "yes" for this gene.
-    zero_db = [r for r in rows if r["n_sources_surface"] == 0]
-    print(f"\nZero-DB universe: {len(zero_db):,} / {len(rows):,} "
+    # Zero-DB slice: no surface DB flags this gene under the
+    # bench-OPTIMIZED cutoffs (consistent with the accuracy figures).
+    zero_db = [r for r in rows if r["n_sources_optimized"] == 0]
+    print(f"\nZero-DB universe (optimized cutoffs): {len(zero_db):,} / {len(rows):,} "
           f"({100*len(zero_db)/len(rows):.1f}%); sonnet model = claude-sonnet-4-6")
 
     def verdict_reason(row: dict) -> tuple[str, str]:
