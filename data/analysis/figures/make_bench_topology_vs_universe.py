@@ -74,7 +74,7 @@ BRAND_PALETTE = [
 BRAND_NEUTRAL = "#6F5D5A"
 BRAND_GRID = "#E6DAD4"
 COLOR_UNIVERSE = "#3D6B60"   # teal-mid — neutral reference
-COLOR_BENCH = "#BC3C4C"      # maroon-light — highlighted subset
+COLOR_BENCH = "#F4AA28"      # amber-bright — highlighted subset
 
 
 def _register_brand_fonts() -> None:
@@ -280,12 +280,13 @@ def main() -> None:
         y_text = max(u, b + hi) + 1.6
         star = _star(p)
         # Color/weight encode SIGNIFICANCE, not magnitude: a class that
-        # clears the Bonferroni gate (star != "ns") is maroon + bold;
+        # clears the Bonferroni gate (star != "ns") is dark ink + bold;
         # a non-significant class is neutral gray + normal weight, so a
         # large-but-ns delta (e.g. a +11.8 pp shift at p=0.125) doesn't
-        # read as "significant" the way a red bold label would.
+        # read as "significant" the way a bold label would. Dark neutral
+        # (not the bench color) so the annotations carry no red/highlight.
         significant = star != "ns"
-        color = COLOR_BENCH if significant else BRAND_NEUTRAL
+        color = BRAND_INK if significant else BRAND_NEUTRAL
         weight = "bold" if significant else "normal"
         label = f"{sign}{abs(delta):.1f} pp"
         if star != "ns":

@@ -102,6 +102,10 @@ DD_TIER_LABEL = {
 }
 # Deep-dive tiers that count as a positive "surface call" for panel c.
 DD_SURFACE_TIERS = ["canonical", "likely", "low"]
+# Panel c groups concordance by these three deep-dive tiers; distinct
+# colors so the reader can see whether DB agreement climbs with the
+# deep dive's own confidence (canonical > likely > low).
+TIER_C_COLOR = {"canonical": "#2E7A55", "likely": "#3D6B60", "low": "#C99A5B"}
 
 # ── Panel c: DB concordance sources ──
 # The 5 catalog databases (canonical palette by identity — see the
@@ -201,22 +205,28 @@ def _build_matrix(df: pd.DataFrame) -> np.ndarray:
     return m
 
 
-def _concordance(df: pd.DataFrame) -> list[tuple[str, float, int, str]]:
-    """Panel c — among deep-dive surface calls (tier in DD_SURFACE_TIERS),
-    the % also flagged surface by each source. Returns
-    ``(label, pct, n_hits, color)`` tuples sorted descending by pct."""
-    surf = df[df["deep_dive_tier"].isin(DD_SURFACE_TIERS)]
-    denom = len(surf)
-    rows: list[tuple[str, float, int, str]] = []
-    for label, col, color in DB_SOURCES:
-        hits = int((surf[col] == 1).sum())
-        pct = 100.0 * hits / denom if denom else 0.0
-        rows.append((label, pct, hits, color))
-    son_hits = int(surf["triage_verdict"].isin(["yes", "contextual"]).sum())
-    son_pct = 100.0 * son_hits / denom if denom else 0.0
-    rows.append((SONNET_LABEL, son_pct, son_hits, SONNET_COLOR))
-    rows.sort(key=lambda r: r[1], reverse=True)
-    return rows
+def _concordance_by_tier(df: pd.DataFrame) -> list[tuple[str, dict[str, float]]]:
+    """Panel c — per source, the % of EACH deep-dive tier's genes the
+    source also flags surface. Breaking concordance down by tier shows
+    whether DB agreement is higher on the deep dive's higher-confidence
+    tiers (canonical) than its weakest (low). Returns
+    ``(label, {tier: pct})`` sorted descending by the canonical-tier pct."""
+    out: list[tuple[str, dict[str, float]]] = []
+    for label, col, _color in DB_SOURCES:
+        by_tier = {}
+        for tier in DD_SURFACE_TIERS:
+            sub = df[df["deep_dive_tier"] == tier]
+            d = len(sub)
+            by_tier[tier] = 100.0 * int((sub[col] == 1).sum()) / d if d else 0.0
+        out.append((label, by_tier))
+    by_tier = {}
+    for tier in DD_SURFACE_TIERS:
+        sub = df[df["deep_dive_tier"] == tier]
+        d = len(sub)
+        by_tier[tier] = 100.0 * int(sub["triage_verdict"].isin(["yes", "contextual"]).sum()) / d if d else 0.0
+    out.append((SONNET_LABEL, by_tier))
+    out.sort(key=lambda r: r[1]["canonical"], reverse=True)
+    return out
 
 
 def _bucket_boundaries() -> list[int]:
@@ -241,7 +251,7 @@ def _draw_verdict_flow(ax: plt.Axes, df: pd.DataFrame) -> None:
     totals = ct.sum(axis=1)
     frac = ct.div(totals.replace(0, np.nan), axis=0).fillna(0.0)
 
-    bar_h = 0.34  # slim bars — plenty of whitespace between the three
+    bar_h = 0.46  # slim bars — plenty of whitespace between the three
     y_pos = np.arange(len(TRIAGE_VERDICT_ORDER))[::-1]  # yes on top
     for yi, verdict in zip(y_pos, TRIAGE_VERDICT_ORDER):
         left = 0.0
@@ -278,37 +288,40 @@ def _draw_verdict_flow(ax: plt.Axes, df: pd.DataFrame) -> None:
     sns.despine(ax=ax, top=True, right=True)
 
 
-def _draw_concordance(ax: plt.Axes, rows: list[tuple[str, float, int, str]],
-                      denom: int) -> None:
-    """Panel c — DB concordance: 6 horizontal bars (5 DBs + Sonnet triage),
-    sorted descending by the % of deep-dive surface calls that source also
-    flags. Sonnet triage gets a distinct Claude-orange."""
-    labels = [r[0] for r in rows]
-    pcts = [r[1] for r in rows]
-    colors = [r[3] for r in rows]
-
-    y_pos = np.arange(len(rows))[::-1]  # tallest on top
-    ax.barh(y_pos, pcts, height=0.66, color=colors, edgecolor="white",
-            linewidth=0.8)
-    for yi, (_, pct, hits, _c) in zip(y_pos, rows):
-        ax.text(pct + 1.5, yi, f"{pct:.0f}%",
-                ha="left", va="center", fontsize=12,
-                color=COLORS["dark"], fontweight="semibold")
-
-    ax.set_yticks(y_pos)
-    ax.set_yticklabels(labels)
+def _draw_concordance_by_tier(
+    ax: plt.Axes, rows: list[tuple[str, dict[str, float]]]
+) -> None:
+    """Panel c — DB concordance broken down by deep-dive tier: one group
+    per source, 3 tier-colored bars (canonical / likely / low), showing
+    the % of each tier's genes that source also flags. If DB agreement
+    tracks the deep dive's confidence, the canonical bar sits above low
+    within each source group."""
+    n = len(rows)
+    y_base = np.arange(n)[::-1]
+    bar_h = 0.26
+    offsets = {"canonical": +bar_h, "likely": 0.0, "low": -bar_h}
+    for yb, (label, by_tier) in zip(y_base, rows):
+        for tier in DD_SURFACE_TIERS:
+            pct = by_tier[tier]
+            ax.barh(yb + offsets[tier], pct, height=bar_h * 0.92,
+                    color=TIER_C_COLOR[tier], edgecolor="white", linewidth=0.5)
+            ax.text(pct + 1.2, yb + offsets[tier], f"{pct:.0f}", va="center",
+                    ha="left", fontsize=9, color=COLORS["dark"])
+    ax.set_yticks(y_base)
+    ax.set_yticklabels([r[0] for r in rows])
+    ax.set_ylim(-0.6, n - 0.4)
     ax.set_xlim(0, 108)
     ax.set_xticks([0, 25, 50, 75, 100])
     ax.set_xticklabels(["0", "25", "50", "75", "100%"])
-    ax.set_xlabel(f"Of deep-dive surface calls (n={denom}), % source also flags")
+    ax.set_xlabel("% of each deep-dive tier's genes the source also flags")
     ax.set_title("Database concordance: does the deep dive agree with "
                  "Sonnet or the DBs?",
                  fontsize=16, fontweight="semibold", pad=12)
-
-    top_label, top_pct, _th, _tc = rows[0]
-    ax.annotate(f"deep-dive concords most with {top_label} ({top_pct:.0f}%)",
-                xy=(0.5, -0.30), xycoords="axes fraction", ha="center",
-                va="top", fontsize=12, style="italic", color=COLORS["neutral"])
+    handles = [mpatches.Patch(facecolor=TIER_C_COLOR[t], edgecolor="none", label=t)
+               for t in DD_SURFACE_TIERS]
+    ax.legend(handles=handles, title="deep-dive tier", loc="upper center",
+              bbox_to_anchor=(0.5, -0.22), ncols=3, frameon=False,
+              fontsize=12, title_fontsize=13)
     sns.despine(ax=ax, top=True, right=True)
 
 
@@ -329,7 +342,8 @@ def _draw_reason_matrix(ax: plt.Axes, m: np.ndarray) -> None:
     for tick, reason in zip(ax.get_yticklabels(), REASONS_ORDERED, strict=True):
         tick.set_color(BUCKET_COLOR[BUCKET[reason]])
         tick.set_fontweight("semibold")
-    ax.tick_params(axis="x", rotation=0, pad=4)
+    ax.tick_params(axis="x", rotation=45, pad=4)
+    plt.setp(ax.get_xticklabels(), ha="right", rotation_mode="anchor")
     ax.tick_params(axis="y", rotation=0, pad=4)
 
     for b in _bucket_boundaries():
@@ -366,8 +380,7 @@ def make_plot() -> tuple[plt.Figure, list[plt.Axes]]:
     })
     df = _load_pairs()
     m = _build_matrix(df)
-    conc = _concordance(df)
-    denom_surface = int(df["deep_dive_tier"].isin(DD_SURFACE_TIERS).sum())
+    conc = _concordance_by_tier(df)
 
     fig = plt.figure(figsize=(24, 15))
     # 2×2 grid: LEFT column stacks panel a (top) over panel c (bottom); the
@@ -381,7 +394,7 @@ def make_plot() -> tuple[plt.Figure, list[plt.Axes]]:
     ax_b = fig.add_subplot(gs[:, 1])
 
     _draw_verdict_flow(ax_a, df)
-    _draw_concordance(ax_c, conc, denom_surface)
+    _draw_concordance_by_tier(ax_c, conc)
     _draw_reason_matrix(ax_b, m)
 
     # Subpanel letters (lowercase, ExtraBold) at upper-left of each panel.
