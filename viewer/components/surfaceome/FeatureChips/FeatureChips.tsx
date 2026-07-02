@@ -1,5 +1,6 @@
 import type { SurfaceomeRecord } from "../../../lib/surfaceome-types";
 import { prettyEnum } from "../../../lib/surfaceome";
+import { chipJumpTargets } from "../../../lib/chipJumpTargets";
 import { ChipLabelValue } from "../ChipLabelValue/ChipLabelValue";
 import { StatusPill } from "../StatusPill/StatusPill";
 import { EvidenceChipList, linkifyEvidenceRefs } from "../EvidenceChip/EvidenceChip";
@@ -447,7 +448,12 @@ export function FeatureRationales({ category, rec }: FeatureRationalesProps) {
       aria-label={`${FEATURE_TAB_LABEL[category]} signal rationales`}
     >
       {models.map((m) => (
-        <div key={m.key} className={styles.rationaleRow}>
+        <div
+          key={m.key}
+          id={chipJumpTargets.featureRationale(category, m.key)}
+          tabIndex={-1}
+          className={styles.rationaleRow}
+        >
           <dt className={styles.rationaleTerm}>{m.pill}</dt>
           <dd className={styles.rationaleDef}>
             {m.rationale ? (
