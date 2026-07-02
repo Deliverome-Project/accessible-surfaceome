@@ -108,8 +108,8 @@ def _apply_brand_style() -> None:
         "font.family": "sans-serif",
         "font.sans-serif": ["Manrope", "Outfit", "DejaVu Sans", "Liberation Sans", "Arial"],
         "font.weight": "medium",
-        "font.size": 12,
-        "axes.labelsize": 12,
+        "font.size": 13,
+        "axes.labelsize": 13,
         "axes.labelweight": "medium",
         "axes.titlesize": 0,
         "axes.titlepad": 0,
@@ -125,12 +125,12 @@ def _apply_brand_style() -> None:
         "grid.linestyle": "-",
         "grid.linewidth": 0.7,
         "grid.color": BRAND_GRID,
-        "xtick.labelsize": 11,
-        "ytick.labelsize": 11,
+        "xtick.labelsize": 13,
+        "ytick.labelsize": 13,
         "xtick.color": BRAND_INK,
         "ytick.color": BRAND_INK,
         "legend.frameon": False,
-        "legend.fontsize": 11,
+        "legend.fontsize": 13,
         "patch.edgecolor": "none",
         "patch.linewidth": 0.0,
     })
@@ -224,7 +224,7 @@ def render(feats: pd.DataFrame, out_dir: Path) -> Path:
     facet_labels = [GROUP_LABEL[g] for g in GROUPS]
     facet_colors = [GROUP_COLOR[g] for g in GROUPS]
 
-    fig, axes = plt.subplots(4, 3, figsize=(15, 16))
+    fig, axes = plt.subplots(4, 3, figsize=(18, 18))
     axes = axes.flatten()
 
     # Each panel is (column, kind, label) where kind ∈ {violin, frac_bool}.

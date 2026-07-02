@@ -138,19 +138,19 @@ def _panel_label(ax: plt.Axes, letter: str) -> None:
 def render(feats: pd.DataFrame) -> Path:
     setup_plotting_style(font_scale=1.0)
     plt.rcParams.update({
-        "font.size":       12,
-        "axes.labelsize":  12,
+        "font.size":       13,
+        "axes.labelsize":  13,
         "axes.titlesize":  0,
-        "xtick.labelsize": 11,
-        "ytick.labelsize": 11,
-        "legend.fontsize": 11,
+        "xtick.labelsize": 13,
+        "ytick.labelsize": 13,
+        "legend.fontsize": 13,
     })
 
     n_total = len(feats)
     facet_labels = [GROUP_LABEL[g] for g in GROUPS]
     facet_colors = [GROUP_COLOR[g] for g in GROUPS]
 
-    fig, axes = plt.subplots(4, 3, figsize=(15, 16))
+    fig, axes = plt.subplots(4, 3, figsize=(18, 18))
     axes = axes.flatten()
 
     # --- Panel definitions ---

@@ -132,9 +132,18 @@ _DET_EXPRS: list[tuple[str, str]] = [
     ("has_concerning_paralog",
      "CASE WHEN CAST(json_extract(annotation_json,'$.filters.max_paralog_ecd_pct_identity') "
      "AS REAL) >= 40 THEN 1 ELSE 0 END"),
-    # Deterministic-annotation depth: how many of the 6 det-feature categories
+    # Unique papers with EXTRACELLULAR/primary evidence: distinct source papers
+    # among the primary-tier (surface-method-tagged) evidence records — a PAPER
+    # count (<= n_papers_selected), NOT the primary_evidence_count RECORD count
+    # that previously mislabelled Fig 6 panel c "papers with EC". Powers panel c.
+    ("n_papers_with_ec",
+     "(SELECT COUNT(DISTINCT json_extract(sp.value,'$.source.source_id')) "
+     "FROM json_each(annotation_json,'$.evidence') AS ev, "
+     "json_each(ev.value,'$.spans') AS sp "
+     "WHERE json_extract(ev.value,'$.evidence_tier')='primary')"),
+    # Deterministic-annotation depth: how many of the 7 det-feature categories
     # carry data for this gene (topology / AF structure / surface-binding /
-    # homo-oligomer / orthologs / alt-isoforms). Powers Fig 6 panel e.
+    # homo-oligomer / orthologs / paralogs / alt-isoforms). Powers Fig 6 panel e.
     ("n_det_features",
      "("
      f"(CASE WHEN json_extract(annotation_json,'{_CT}.tm_helix_count') IS NOT NULL THEN 1 ELSE 0 END)"
@@ -142,6 +151,7 @@ _DET_EXPRS: list[tuple[str, str]] = [
      f" + (CASE WHEN json_extract(annotation_json,'{_DF}.surface_bind.has_data') IN (1,'true') THEN 1 ELSE 0 END)"
      f" + (CASE WHEN json_extract(annotation_json,'{_DF}.homo_oligomerization.is_homo_oligomer') IN (1,'true') THEN 1 ELSE 0 END)"
      f" + (CASE WHEN EXISTS(SELECT 1 FROM json_each(annotation_json,'{_DF}.orthologs.mouse')) THEN 1 ELSE 0 END)"
+     f" + (CASE WHEN EXISTS(SELECT 1 FROM json_each(annotation_json,'{_DF}.paralogs')) THEN 1 ELSE 0 END)"
      f" + (CASE WHEN EXISTS(SELECT 1 FROM json_each(annotation_json,'{_DF}.isoform_topologies')) THEN 1 ELSE 0 END)"
      ")"),
 ]

@@ -95,7 +95,7 @@ PANELS = [
     ("papers_selected",    "Papers selected (into evidence list)",     _FOUR),
     ("papers_with_ec",     "Papers with extracellular evidence",       _THREE),
     ("n_filters_evidence", "Evidence records extracted",               _THREE),
-    ("n_det_features",     "Deterministic features populated (0-6)",   _THREE),
+    ("n_det_features",     "Deterministic features populated (0-7)",   _THREE),
 ]
 
 FIGSIZE = (25, 6.5)

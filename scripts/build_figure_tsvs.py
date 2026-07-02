@@ -507,7 +507,9 @@ def build_deep_dive_record_richness(src: dict[str, pd.DataFrame]) -> pd.DataFram
         "surface_verdict_bucket": bucket,
         "papers_found": pd.to_numeric(dd["n_papers_found"], errors="coerce"),
         "papers_selected": pd.to_numeric(dd["n_papers_selected"], errors="coerce"),
-        "papers_with_ec": pd.to_numeric(dd["primary_evidence_count"], errors="coerce"),
+        "papers_with_ec": pd.to_numeric(dd["n_papers_with_ec"], errors="coerce")
+        if "n_papers_with_ec" in dd.columns
+        else pd.to_numeric(dd["primary_evidence_count"], errors="coerce"),
         "n_filters_evidence": pd.to_numeric(dd["evidence_count"], errors="coerce"),
         "n_det_features": pd.to_numeric(
             dd.get("n_det_features"), errors="coerce").astype("Int64")
