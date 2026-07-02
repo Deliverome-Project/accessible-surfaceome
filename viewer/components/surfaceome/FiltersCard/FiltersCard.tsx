@@ -15,6 +15,7 @@ import { ChipJumpButton } from "../_shared/ChipJumpButton/ChipJumpButton";
 import {
   buildFeatureChips,
   FEATURE_TAB_LABEL,
+  renderChipWithJump,
 } from "../FeatureChips/FeatureChips";
 import { SectionCard } from "../SectionCard/SectionCard";
 import { StatusPill } from "../StatusPill/StatusPill";
@@ -436,7 +437,9 @@ export function FiltersCard({ rec, n }: Props) {
             value={prettyEnum(es.surface_call_reason)}
           />
         </StatusPill>,
-        ...buildFeatureChips("biology", rec).map((m) => m.pill),
+        ...buildFeatureChips("biology", rec).map((m) =>
+          renderChipWithJump(m, "biology"),
+        ),
       ],
     },
     {
@@ -495,7 +498,7 @@ export function FiltersCard({ rec, n }: Props) {
       label: FEATURE_TAB_LABEL[cat],
       provenance: "llm" as const,
       linkTo: `#section-${cat}`,
-      pills: buildFeatureChips(cat, rec).map((m) => m.pill),
+      pills: buildFeatureChips(cat, rec).map((m) => renderChipWithJump(m, cat)),
     })),
     //
     // Registry families lead the deterministic block — protein

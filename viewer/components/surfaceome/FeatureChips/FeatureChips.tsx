@@ -1,3 +1,4 @@
+import { Fragment } from "react";
 import type { SurfaceomeRecord } from "../../../lib/surfaceome-types";
 import { prettyEnum } from "../../../lib/surfaceome";
 import { chipJumpTargets } from "../../../lib/chipJumpTargets";
@@ -401,6 +402,39 @@ export function buildFeatureChips(
   return BUILDERS[category](rec);
 }
 
+/**
+ * Render a single §01 chip model with the "jump to rationale" wrapper
+ * applied when the chip has a rationale to jump to. Consumed by
+ * `<FeatureChips>` (for the at-a-glance chip row) AND by `<FiltersCard>`
+ * (which inlines the pill mapping directly rather than embedding
+ * `<FeatureChips>`). Extracting the wrap decision keeps the two call sites
+ * from drifting on which chips become clickable.
+ *
+ * When `nz(m.rationale) === null` the chip is emitted as a plain pill
+ * wrapped in a keyed Fragment (so it can sit in the same list as its
+ * clickable siblings without a React key warning). Otherwise the pill is
+ * wrapped in a `<ChipJumpButton>` targeting the matching row on the
+ * category's rationale tab.
+ */
+export function renderChipWithJump(
+  m: FeatureChipModel,
+  category: FeatureCategory,
+): React.ReactNode {
+  if (nz(m.rationale) === null) {
+    return <Fragment key={m.key}>{m.pill}</Fragment>;
+  }
+  return (
+    <ChipJumpButton
+      key={m.key}
+      targetId={chipJumpTargets.featureRationale(category, m.key)}
+      tabId={category}
+      ariaLabel={`Jump to rationale: ${m.label}`}
+    >
+      {m.pill}
+    </ChipJumpButton>
+  );
+}
+
 interface FeatureChipsProps {
   category: FeatureCategory;
   rec: SurfaceomeRecord;
@@ -422,23 +456,9 @@ export function FeatureChips({ category, rec }: FeatureChipsProps) {
       data-feature-chips={category}
       aria-label={`${FEATURE_TAB_LABEL[category]} summary chips`}
     >
-      {models.map((m) => {
-        const hasRationale = nz(m.rationale) !== null;
-        if (!hasRationale) {
-          return <li key={m.key}>{m.pill}</li>;
-        }
-        return (
-          <li key={m.key}>
-            <ChipJumpButton
-              targetId={chipJumpTargets.featureRationale(category, m.key)}
-              tabId={category}
-              ariaLabel={`Jump to rationale: ${m.label}`}
-            >
-              {m.pill}
-            </ChipJumpButton>
-          </li>
-        );
-      })}
+      {models.map((m) => (
+        <li key={m.key}>{renderChipWithJump(m, category)}</li>
+      ))}
     </ul>
   );
 }
