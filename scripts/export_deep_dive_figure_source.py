@@ -72,15 +72,77 @@ _FIELDS: list[tuple[str, str]] = [
     ("model_path", "$.model_path"),
 ]
 
+# Deterministic-feature columns derived server-side from each record's
+# `deterministic_features` block. Sourced from the RECORD — NOT the standalone
+# `deeptmhmm_human_canonical.tsv`, which only covers the M1 candidate universe
+# (2,359 surface candidates) and so left the low/uncertain/no tiers of Supp
+# Fig 13 with tier-correlated missing topology (canonical 83% covered → 'no'
+# 6%). Every deep-dived gene carries its own DeepTMHMM run in the record, so
+# reading from here gives full coverage. json_extract for scalars; json_each
+# for the ortholog / isoform lists (D1 ships the SQLite JSON1 ext). Only
+# scalars cross the wire — no full-blob pull, so no isolate memory-cap risk
+# (the 145 MB crash of PR #104 was from returning full annotation_json).
+_DF = "$.deterministic_features"
+_CT = f"{_DF}.canonical_topology"
+_DET_EXPRS: list[tuple[str, str]] = [
+    ("tm_helix_count",
+     f"CAST(json_extract(annotation_json,'{_CT}.tm_helix_count') AS INT)"),
+    ("protein_length",
+     f"length(json_extract(annotation_json,'{_CT}.sequence'))"),
+    ("ecd_length_residues",
+     f"CAST(json_extract(annotation_json,'{_CT}.ecd_length_residues') AS INT)"),
+    ("has_signal_peptide",
+     f"CASE WHEN CAST(json_extract(annotation_json,'{_CT}.signal_peptide_length') "
+     "AS INT) > 0 THEN 1 ELSE 0 END"),
+    ("n_term_extracellular",
+     f"CASE WHEN json_extract(annotation_json,'{_CT}.n_terminal_orientation')"
+     "='extracellular' THEN 1 ELSE 0 END"),
+    ("c_term_extracellular",
+     f"CASE WHEN json_extract(annotation_json,'{_CT}.c_terminal_orientation')"
+     "='extracellular' THEN 1 ELSE 0 END"),
+    # "has a one-to-one ortholog" — the record stores Ensembl-Compara orthology
+    # `type` but not Compara's separate high-confidence flag, so this is the
+    # one2one-type test (looser than the old *_high_confidence column; renamed
+    # to match the actual semantics).
+    ("mouse_has_one2one",
+     f"CASE WHEN EXISTS(SELECT 1 FROM json_each(annotation_json,'{_DF}.orthologs.mouse') "
+     "WHERE json_extract(value,'$.type')='one2one') THEN 1 ELSE 0 END"),
+    ("cyno_has_one2one",
+     f"CASE WHEN EXISTS(SELECT 1 FROM json_each(annotation_json,'{_DF}.orthologs.cynomolgus') "
+     "WHERE json_extract(value,'$.type')='one2one') THEN 1 ELSE 0 END"),
+    ("schweke_homomer",
+     f"CASE WHEN json_extract(annotation_json,'{_DF}.homo_oligomerization.is_homo_oligomer') "
+     "IN (1,'true') THEN 1 ELSE 0 END"),
+    ("alt_iso_diff_topo",
+     f"CASE WHEN EXISTS(SELECT 1 FROM json_each(annotation_json,'{_DF}.isoform_topologies') "
+     f"WHERE CAST(json_extract(value,'$.tm_helix_count') AS INT) != "
+     f"CAST(json_extract(annotation_json,'{_CT}.tm_helix_count') AS INT)) THEN 1 ELSE 0 END"),
+    # Deterministic-annotation depth: how many of the 6 det-feature categories
+    # carry data for this gene (topology / AF structure / surface-binding /
+    # homo-oligomer / orthologs / alt-isoforms). Powers Fig 6 panel e.
+    ("n_det_features",
+     "("
+     f"(CASE WHEN json_extract(annotation_json,'{_CT}.tm_helix_count') IS NOT NULL THEN 1 ELSE 0 END)"
+     f" + (CASE WHEN json_extract(annotation_json,'{_DF}.structure.afdb_id') IS NOT NULL THEN 1 ELSE 0 END)"
+     f" + (CASE WHEN json_extract(annotation_json,'{_DF}.surface_bind.has_data') IN (1,'true') THEN 1 ELSE 0 END)"
+     f" + (CASE WHEN json_extract(annotation_json,'{_DF}.homo_oligomerization.is_homo_oligomer') IN (1,'true') THEN 1 ELSE 0 END)"
+     f" + (CASE WHEN EXISTS(SELECT 1 FROM json_each(annotation_json,'{_DF}.orthologs.mouse')) THEN 1 ELSE 0 END)"
+     f" + (CASE WHEN EXISTS(SELECT 1 FROM json_each(annotation_json,'{_DF}.isoform_topologies')) THEN 1 ELSE 0 END)"
+     ")"),
+]
+
 
 def _select_sql() -> str:
     cols = ",\n  ".join(
         f"json_extract(annotation_json, '{path}') AS {name}"
         for name, path in _FIELDS
     )
+    det_cols = ",\n  ".join(f"{expr} AS {name}" for name, expr in _DET_EXPRS)
     return (
         "SELECT gene_symbol, uniprot_acc, schema_version,\n  "
         + cols
+        + ",\n  "
+        + det_cols
         + "\nFROM surface_annotation ORDER BY gene_symbol;"
     )
 

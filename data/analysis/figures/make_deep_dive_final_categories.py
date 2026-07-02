@@ -20,7 +20,7 @@ not-surface).
 likely, as a sorted horizontal bar chart over the cell-type + cell-state
 reasons.
 
-**PRELIMINARY** — ~1,197 of ~5,128 swept, pre-QA-fix. Nearly all
+**PRELIMINARY** — ~1,175 of ~5,128 swept, pre-QA-fix. Nearly all
 below-likely genes (low/uncertain/no) carry weak/conflicting evidence —
 partly the pretrim-cap recall bug that deletes foundational literature — so
 those three tiers are tentative leans on thin evidence, and the cell-state
@@ -172,7 +172,7 @@ _LIKELY_LABELS: dict[str, str] = {
     "cell_state_cell_death":     "cell-state · cell death",
     "cell_state_infection":      "cell-state · infection",
     "cell_state_other":          "cell-state · other",
-    "likely_other":              "likely (residual)",
+    "likely_other":              "other",
 }
 
 
@@ -213,8 +213,8 @@ def main() -> None:
         ("canonical\n(strict)", canon, _COLOR_CANONICAL),
         ("likely", likely_total, _COLOR_LIKELY),
         ("low", low_total, _COLOR_LOW),
-        ("uncertain", unc_total, _COLOR_UNCERTAIN),
         ("no", no_total, _COLOR_NO),
+        ("uncertain", unc_total, _COLOR_UNCERTAIN),
     ]
     tier_max = max(t[1] for t in tiers)
     for i, (label, n, color) in enumerate(tiers):
@@ -243,7 +243,9 @@ def main() -> None:
     axB.set_xlabel("Proteins")
     axB.set_xlim(0, b_max * 1.14)
     axB.set_ylim(-0.6, len(items) - 0.4)
-    axB.text(0.0, 1.06, f"composition of the {likely_total:,} 'likely' calls",
+    axB.text(0.0, 1.06,
+             f"Composition of the {likely_total:,} 'likely' calls — "
+             f"by cell-type / cell-state reason",
              transform=axB.transAxes, fontsize=15, style="italic",
              color=BRAND_NEUTRAL, va="bottom", ha="left")
     sns.despine(ax=axB, top=True, right=True)

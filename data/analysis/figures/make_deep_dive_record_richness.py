@@ -7,35 +7,30 @@
 #   "seaborn>=0.13",
 # ]
 # ///
-"""Reproduce ``deep_dive_record_richness.{pdf,png}`` — a 4-panel violin of
-per-record richness across the deep-dive cohort, split by surface verdict.
+"""Reproduce ``deep_dive_record_richness.{pdf,png}`` — a 5-panel violin of
+per-record richness across the deep-dive cohort, faceted by deep-dive tier.
 
-**Real data.** Each panel renders the per-gene distribution along one
-"richness" axis a reader would care about after opening a gene page. Panels
-a/b are split by surface verdict; panels c/d show the surface-yes subset:
+**Real data.** Each panel renders the real per-gene distribution along one
+"richness" axis a reader would care about after opening a gene page. Every panel
+is faceted by the deep-dive **tier** (canonical / likely / low / no):
 
-  a. Papers found        — discovery-corpus size (``n_papers_found``, median
-                           ~240), **two violins** (no vs surface-yes-even-weak).
-                           Real per-gene value; each bucket's fan is synthesised
-                           around its own real mean / std.
-  b. Papers selected     — unique papers read full-text (``n_papers_selected``),
-                           **two violins**. Real per-gene values.
-  c. Papers with EC      — primary-tier, surface-method-tagged evidence
-                           (``primary_evidence_count``). **Single violin,
-                           surface-yes only.**
-  d. Evidence records    — total extracted evidence records (``evidence_count``).
-                           **Single violin, surface-yes only.**
+  a. Papers found        — discovery-corpus size. Tiers: canonical, likely,
+                           low, no.
+  b. Papers selected     — unique papers read full-text into the evidence list.
+                           Tiers: canonical, likely, low, no.
+  c. Papers with EC      — selected papers carrying an extracellular /
+                           surface-method tag. Tiers: canonical, likely, low.
+  d. Evidence records    — number of evidence records populated. Tiers:
+                           canonical, likely, low.
+  e. Deterministic feats — how many of the six deterministic features are
+                           populated (0–6). Tiers: canonical, likely, low.
 
-Real values render as dots overlaid on each violin (panels a–d). The violin
-itself is a synthesised 5000-draw fan that communicates the *shape* a
-full-cohort distribution would have.
+Each violin is the real distribution of that tier's genes (median line inside;
+faint real-value point strip overlaid). Panels c–e drop the "no" tier since
+non-surface proteins carry little extracellular evidence by definition; the
+``uncertain`` tier (n=9) is dropped everywhere as too small to plot.
 
-"surface-yes-even-weak" = any deep-dive ``surface_accessibility`` value except
-``"no"`` (i.e. high / moderate / low / uncertain), bucketed in the TSV as
-``surface_verdict_bucket`` so the mirror can split panels a/b and filter panels
-c/d on it.
-
-PRELIMINARY — ~1,197 of ~5,128 swept, pre-QA-fix.
+PRELIMINARY — 1,175 of ~5,128 swept, pre-QA-fix.
 
 Standalone — ``uv run make_deep_dive_record_richness.py``.
 """
@@ -44,20 +39,17 @@ from __future__ import annotations
 from pathlib import Path
 
 import matplotlib.font_manager as fm
-import matplotlib.patches as mpatches
 import matplotlib.pyplot as plt
-import numpy as np
 import pandas as pd
 import seaborn as sns
 
 REPO = "Deliverome-Project/accessible-surfaceome"
 BRANCH = "main"  # pin to a commit SHA at publication for immutable citation
 BASE = f"https://raw.githubusercontent.com/{REPO}/{BRANCH}"
-# Single per-figure TSV: one row per published deep-dive record, with
-# the 4 real per-gene axes + a `surface_verdict_bucket` label
-# ('no' vs 'surface_yes') derived from `surface_accessibility` + the finer
-# `tier`. Produced by ``scripts/build_figure_tsvs.py``. Gist bundles this TSV
-# next to the script; the figure reads ONLY from the sibling — no other URLs.
+# Single per-figure TSV: one row per deep-dived gene, carrying the five real
+# per-gene axes + the deep-dive `tier`. Produced by
+# ``scripts/build_figure_tsvs.py``. Gist bundles this TSV next to the script;
+# the figure reads ONLY from the sibling — no other URLs.
 DATA_TSV = f"{BASE}/data/processed/figures/deep_dive_record_richness.tsv"
 
 # Published reproduction gist (embedded into output PNG Source / PDF
@@ -80,21 +72,13 @@ BRAND_PALETTE = [
 BRAND_NEUTRAL = "#6F5D5A"
 BRAND_GRID = "#E6DAD4"
 
-# Panel colors mirror SEQUENTIAL_PALETTES picks from the canonical
-# generator: teal[2], amber[3], maroon[3], lavender[3].
-PANEL_TEAL = "#3D6B60"        # teal[2]
-PANEL_AMBER = "#F4AA28"       # amber[3]
-PANEL_MAROON = "#BC3C4C"      # maroon[3]
-PANEL_LAVENDER = "#8878C8"    # lavender[3]
-
-# Bucket hues for the split panels (a, b). "no" gets the muted neutral
-# so the eye reads it as "absence of surface signal"; surface_yes gets
-# the panel's accent color (assigned per panel below).
-BUCKET_NO_COLOR = "#9C8C88"   # muted warm-grey
-BUCKET_ORDER = ["no", "surface_yes"]
-BUCKET_LABEL = {
-    "no":          "no",
-    "surface_yes": "surface yes\n(even weak)",
+# Tier colors — MUST match Fig 5. canonical=green, likely=teal, low=amber,
+# no=muted warm-grey. `uncertain` is dropped everywhere (n=9, too small).
+TIER_COLORS = {
+    "canonical": "#2E7A55",
+    "likely":    "#3D6B60",
+    "low":       "#C99A5B",
+    "no":        "#9C8C88",
 }
 
 
@@ -136,26 +120,27 @@ def _apply_brand_style() -> None:
         "text.color": BRAND_INK,
         "grid.alpha": 0.35, "grid.linestyle": "-", "grid.linewidth": 0.7,
         "grid.color": BRAND_GRID,
-        "xtick.labelsize": 12, "ytick.labelsize": 18, "legend.fontsize": 14,
+        "xtick.labelsize": 14, "ytick.labelsize": 18, "legend.fontsize": 14,
         "xtick.color": BRAND_INK, "ytick.color": BRAND_INK,
         "legend.frameon": False,
         "patch.edgecolor": "none", "patch.linewidth": 0.0,
     })
 
 
-# Four-panel specs: (tsv_key, display label, denom or None, accent_color,
-#                    split_by_bucket)
-# Panels a/b split by bucket (two side-by-side violins). Panels c/d
-# filter to surface_yes only (single violin). Every panel is real.
+# Five-panel specs: (tsv_key, subtitle, tiers-to-show).
+# Panels a/b keep the "no" tier; c/d/e drop it (non-surface genes carry
+# little extracellular evidence by definition).
+_FOUR = ["canonical", "likely", "low", "no"]
+_THREE = ["canonical", "likely", "low"]
 PANELS = [
-    ("papers_found",       "Papers found\n(discovery corpus)",       None,   PANEL_AMBER,     True),
-    ("papers_selected",    "Papers selected\n(into evidence list)",  None,   PANEL_TEAL,      True),
-    ("papers_with_ec",     "Papers with\nextracellular evidence",    None,   PANEL_MAROON,    False),
-    ("n_filters_evidence", "Evidence records\nextracted",            None,   PANEL_LAVENDER,  False),
+    ("papers_found",       "Papers found (discovery corpus)",          _FOUR),
+    ("papers_selected",    "Papers selected (into evidence list)",     _FOUR),
+    ("papers_with_ec",     "Papers with extracellular evidence",       _THREE),
+    ("n_filters_evidence", "Evidence records extracted",               _THREE),
+    ("n_det_features",     "Deterministic features populated (0-6)",   _THREE),
 ]
 
-# Synth size for the violin fan ("what would 5000 deep dives look like?").
-N_SYNTH = 5_000
+FIGSIZE = (25, 6.5)
 
 
 def _fetch_tsv(url: str) -> pd.DataFrame:
@@ -176,124 +161,62 @@ def _fetch_tsv(url: str) -> pd.DataFrame:
     )
 
 
-def _synth_around_real(real: np.ndarray, *, lo: float, hi: float,
-                        rng: np.random.Generator) -> np.ndarray:
-    """Synthesise an N_SYNTH-sized fan around the real values: keep
-    the real mean/std, add Gaussian noise + clip to [lo, hi]. With
-    n small the empirical std is noisy, so we floor it at 15% of the
-    mean so the violin doesn't collapse to a flat line."""
-    if len(real) == 0:
-        return np.zeros(N_SYNTH)
-    m = float(np.nanmean(real))
-    s = max(float(np.nanstd(real, ddof=1)), m * 0.15)
-    fan = rng.normal(m, s, N_SYNTH)
-    return np.clip(fan, lo, hi)
+def _draw_panel(ax: plt.Axes, data: pd.DataFrame, key: str,
+                tiers: list[str]) -> None:
+    """Real violins, one per tier, in tier colors. Median line inside each
+    violin + a faint real-value point strip so the reader sees the actual n."""
+    sub = data[data["tier"].isin(tiers)].copy()
+    sub = sub[["tier", key]].dropna()
+    sub[key] = sub[key].astype(float)
 
-
-def _draw_violin(ax: plt.Axes, synth: np.ndarray, position: float, width: float,
-                  color: str) -> None:
-    """Single violin + median tick + IQR box, all in the panel accent color."""
-    parts = ax.violinplot(
-        [synth], positions=[position], widths=[width], showextrema=False,
-        showmedians=False, showmeans=False,
+    palette = {t: TIER_COLORS[t] for t in tiers}
+    sns.violinplot(
+        data=sub, x="tier", y=key, order=tiers, hue="tier",
+        hue_order=tiers, palette=palette, legend=False,
+        inner="quartile", cut=0, density_norm="width",
+        linewidth=1.2, saturation=1.0, ax=ax,
     )
-    for body in parts["bodies"]:
-        body.set_facecolor(color)
-        body.set_alpha(0.32)
-        body.set_edgecolor(color)
-        body.set_linewidth(1.4)
-    q25, q50, q75 = np.percentile(synth, [25, 50, 75])
-    half = width * 0.36
-    ax.hlines(q50, position - half, position + half, colors=color, lw=2.0, zorder=4)
-    ax.add_patch(mpatches.Rectangle(
-        (position - half * 0.30, q25), half * 0.60, q75 - q25,
-        facecolor=color, alpha=0.5, edgecolor=color, lw=0,
-        zorder=3,
-    ))
+    # Soften the violin bodies + recolor the inner quartile lines so the
+    # median (middle line) reads as a solid tick and the quartiles as faint.
+    for coll in ax.collections:
+        coll.set_alpha(0.35)
+    for line in ax.lines:
+        line.set_color(BRAND_INK)
+        line.set_alpha(0.9)
+        line.set_linewidth(1.4)
 
+    # Faint real-value point strip on top so the actual per-tier n is visible.
+    sns.stripplot(
+        data=sub, x="tier", y=key, order=tiers, hue="tier",
+        hue_order=tiers, palette=palette, legend=False,
+        size=2.2, alpha=0.28, jitter=0.18, ax=ax,
+    )
 
-# Real values render as dots; with ~1,000 genes per panel we use small,
-# semi-transparent points so the violin stays legible underneath.
-_DOT_KW = dict(s=6, alpha=0.35, color=BRAND_INK, edgecolor="none", zorder=6)
+    ax.set_xlabel("")
+    ax.set_ylabel("")
+    ax.margins(y=0.04)
 
 
 def main() -> None:
     _apply_brand_style()
     data = _fetch_tsv(DATA_TSV)
     n_real_total = len(data)
-    n_real_yes = int((data["surface_verdict_bucket"] == "surface_yes").sum())
-    n_real_no = int((data["surface_verdict_bucket"] == "no").sum())
-    rng = np.random.default_rng(seed=42)  # deterministic synth
 
-    fig, axes = plt.subplots(1, 4, figsize=(20, 6.5))
-    panel_letters = ["a", "b", "c", "d"]
+    fig, axes = plt.subplots(1, 5, figsize=FIGSIZE)
+    panel_letters = ["a", "b", "c", "d", "e"]
 
-    for idx, (ax, (key, label, denom, accent_color, split_by_bucket)) in enumerate(
+    for idx, (ax, (key, subtitle, tiers)) in enumerate(
         zip(axes, PANELS, strict=True)
     ):
-        # ── Split panels (a, b): two side-by-side violins, no vs surface_yes ──
-        if split_by_bucket:
-            positions = {"no": -0.35, "surface_yes": 0.35}
-            bucket_colors = {"no": BUCKET_NO_COLOR, "surface_yes": accent_color}
-            width = 0.55
-            if key in data.columns:
-                real_vals_all = data[key].to_numpy(dtype=float)
-                real_clean_all = real_vals_all[~np.isnan(real_vals_all)]
-                panel_max = float(real_clean_all.max()) if len(real_clean_all) else 0.0
-            else:
-                panel_max = 0.0
-            for bucket in BUCKET_ORDER:
-                sub = data[data["surface_verdict_bucket"] == bucket]
-                if key in sub.columns:
-                    real_vals = sub[key].to_numpy(dtype=float)
-                    real_clean = real_vals[~np.isnan(real_vals)]
-                else:
-                    real_clean = np.array([], dtype=float)
-                cap = denom if denom is not None else max(panel_max * 1.5, 1)
-                synth = _synth_around_real(real_clean, lo=0, hi=cap, rng=rng)
-                _draw_violin(ax, synth, positions[bucket], width, bucket_colors[bucket])
-                # Real dots overlay for this bucket
-                if len(real_clean):
-                    jx = rng.uniform(-width * 0.30, width * 0.30, size=len(real_clean))
-                    ax.scatter(positions[bucket] + jx, real_clean, **_DOT_KW)
-            ax.set_xticks(list(positions.values()))
-            ax.set_xticklabels([BUCKET_LABEL[b] for b in BUCKET_ORDER])
-            ax.set_xlim(-0.95, 0.95)
-            # y-limits cover both buckets' synth fans
-            cap = denom if denom is not None else max(panel_max * 1.5, 1)
-            lo, hi = 0, cap * 1.10
-        # ── Filtered panels (c, d): surface_yes only, single violin ──
-        else:
-            sub = data[data["surface_verdict_bucket"] == "surface_yes"]
-            real_vals = sub[key].to_numpy(dtype=float) if key in sub.columns else np.array([])
-            real_clean = real_vals[~np.isnan(real_vals)]
-            cap = denom if denom is not None else max(real_clean.max() * 1.5, 1) if len(real_clean) else 1
-            synth = _synth_around_real(real_clean, lo=0, hi=cap, rng=rng)
-            _draw_violin(ax, synth, 0.0, 0.7, accent_color)
-            if len(real_clean):
-                jx = rng.uniform(-0.22, 0.22, size=len(real_clean))
-                ax.scatter(jx, real_clean, **_DOT_KW)
-            ax.set_xticks([0])
-            ax.set_xticklabels([BUCKET_LABEL["surface_yes"]])
-            ax.set_xlim(-0.6, 0.6)
-            lo, hi = 0, max(cap * 1.08, synth.max() * 1.08)
+        _draw_panel(ax, data, key, tiers)
 
-        # Per-panel label renders as a TITLE (larger, easier to read in print).
-        ax.set_title(label, fontsize=16, fontweight="semibold",
-                      pad=14, linespacing=1.2)
-        ax.set_ylim(lo, hi)
-
-        # Mark the denominator line where applicable
-        if denom is not None:
-            ax.axhline(denom, color=BRAND_NEUTRAL, lw=0.8,
-                        ls="--", alpha=0.6, zorder=1)
-            x_anno = 0.92 if split_by_bucket else 0.55
-            ax.text(x_anno, denom, f" max = {denom}", va="center",
-                     fontsize=10, color=BRAND_NEUTRAL, ha="left")
+        # Per-panel subtitle renders as a TITLE (larger, easier to read in print).
+        ax.set_title(subtitle, fontsize=16, fontweight="semibold",
+                     pad=14, linespacing=1.2)
 
         # Subpanel letter (lowercase, ExtraBold) at upper-left
         ax.text(
-            -0.30, 1.08, panel_letters[idx],
+            -0.18, 1.08, panel_letters[idx],
             transform=ax.transAxes, ha="left", va="top",
             fontsize=22, fontweight=800, color=BRAND_INK,
         )
@@ -301,20 +224,19 @@ def main() -> None:
         sns.despine(ax=ax, top=True, right=True)
 
     fig.suptitle(
-        "Deep-dive records are dense across every axis",
+        "Deep-dive record richness scales with confidence tier",
         fontsize=18, fontweight="semibold",
         y=0.99, x=0.5, ha="center",
     )
 
     fig.text(
         0.5, 0.02,
-        f"Dots = real values from the {n_real_total} published deep dives "
-        f"({n_real_no} surface_accessibility='no'; {n_real_yes} surface-yes-even-weak). "
-        f"Panels a/b split by verdict bucket; panels c/d restricted to surface-yes since "
+        f"Real per-gene distributions from the {n_real_total} deep dives, faceted "
+        f"by deep-dive tier (median line inside each violin; faint dots = the real "
+        f"per-tier values). Panels a/b keep the 'no' tier; panels c-e drop it since "
         f"non-surface proteins carry little extracellular evidence by definition. "
-        f"Violin shape + IQR box = synthesised {N_SYNTH:,}-draw fan (Gaussian around the "
-        f"per-bucket empirical mean +/- std, or 15% mean, whichever larger) extrapolating to a "
-        f"full cohort. PRELIMINARY - ~1,197 of ~5,128 swept, pre-QA-fix.",
+        f"The 'uncertain' tier (n=9) is dropped everywhere as too small to plot. "
+        f"PRELIMINARY - {n_real_total} of ~5,128 swept, pre-QA-fix.",
         ha="center", va="bottom", fontsize=10, style="italic",
         color=BRAND_NEUTRAL, wrap=True,
     )
@@ -325,8 +247,7 @@ def main() -> None:
     out_png = Path("deep_dive_record_richness.png")
     fig.savefig(out_pdf, bbox_inches="tight", metadata={"Subject": GIST_URL})
     fig.savefig(out_png, bbox_inches="tight", dpi=600, metadata={"Source": GIST_URL})
-    print(f"Wrote {out_pdf} + {out_png}  "
-          f"(n_real total = {n_real_total}; no = {n_real_no}; surface_yes = {n_real_yes})")
+    print(f"Wrote {out_pdf} + {out_png}  (n_real total = {n_real_total})")
 
 
 if __name__ == "__main__":

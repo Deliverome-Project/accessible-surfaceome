@@ -121,11 +121,6 @@ _INTENTIONAL_DIVERGENCE: dict[str, set[str]] = {
     "curator_vs_agent_reason": {
         "figsize", "font.size", "axes.labelsize",
     },
-    # Mirror tracks the canonical's tighter font set for a single-panel
-    # context — small intentional reduction.
-    "deep_dive_record_richness": {
-        "axes.titlesize", "xtick.labelsize",
-    },
 }
 
 

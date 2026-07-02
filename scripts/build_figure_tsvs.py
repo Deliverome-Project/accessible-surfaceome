@@ -458,13 +458,16 @@ def build_deep_dive_record_richness(src: dict[str, pd.DataFrame]) -> pd.DataFram
       • ``papers_with_ec``     — ``primary_evidence_count`` (the primary-tier,
         surface-method-tagged evidence — the "extracellular evidence" subset).
       • ``n_filters_evidence`` — ``evidence_count`` (populated evidence records).
-      • ``n_det_features``     — held null: the export doesn't carry the
-        deterministic-features sub-block count, so panel (e) has no real dots.
+      • ``n_det_features``     — how many of the 6 deterministic-feature
+        categories carry data (topology / AF structure / surface-binding /
+        homo-oligomer / orthologs / alt-isoforms), 0–6; real per-gene value
+        derived in the export from each record's ``deterministic_features``.
 
-    ``surface_verdict_bucket`` (``no`` vs ``surface_yes``) is kept for the
-    figure's panel-split; ``tier`` is the finer 5-tier call.
+    ``surface_verdict_bucket`` (``no`` vs ``surface_yes``) is kept for
+    back-compat; ``tier`` (the finer 5-tier call) is what the figure now facets
+    every panel by (a/b: canonical/likely/low/no; c/d/e: canonical/likely/low).
 
-    PRELIMINARY — ~1,197 of ~5,128 swept, pre-QA-fix.
+    PRELIMINARY — pre-QA-fix; counts grow as the sweep progresses.
     """
     cols = ["gene_symbol", "tier", "surface_verdict_bucket", "papers_found",
             "papers_selected", "papers_with_ec", "n_filters_evidence",
@@ -484,7 +487,10 @@ def build_deep_dive_record_richness(src: dict[str, pd.DataFrame]) -> pd.DataFram
         "papers_selected": pd.to_numeric(dd["n_papers_selected"], errors="coerce"),
         "papers_with_ec": pd.to_numeric(dd["primary_evidence_count"], errors="coerce"),
         "n_filters_evidence": pd.to_numeric(dd["evidence_count"], errors="coerce"),
-        "n_det_features": pd.Series([pd.NA] * len(dd), dtype="Int64"),
+        "n_det_features": pd.to_numeric(
+            dd.get("n_det_features"), errors="coerce").astype("Int64")
+        if "n_det_features" in dd.columns
+        else pd.Series([pd.NA] * len(dd), dtype="Int64"),
         "evidence_grade": dd["evidence_grade"].astype(str),
     })
     return out.sort_values(["surface_verdict_bucket", "gene_symbol"],
@@ -501,21 +507,28 @@ def build_triage_vs_deep_dive_reason(src: dict[str, pd.DataFrame]) -> pd.DataFra
       • Panel b (reason confusion): ``triage_reason`` × ``deep_dive_reason``
         (``surface_call_reason``), both drawn from the shared ``TriageReason``
         enum.
+      • Panel c (DB concordance): the 5 canonical-DB ``*_surface_flag``s
+        (UniProt / GO / SURFY / CSPA / HPA) joined from the catalog, so the
+        figure can show what fraction of deep-dive-surface genes each database —
+        and the Sonnet triage stage — also calls surface.
 
     The triage verdict/reason come from the committed ``triage_verdicts.tsv``
-    companion (D1's ``genome_full_sonnet_ncbi_v2`` run), joined by gene_symbol.
-    Columns: ``gene_symbol, uniprot_acc, triage_verdict, triage_reason,
-    deep_dive_reason, deep_dive_tier``.
+    companion (D1's ``genome_full_sonnet_ncbi_v2`` run), joined by gene_symbol;
+    the DB flags from the catalog (candidate_universe). Columns:
+    ``gene_symbol, uniprot_acc, triage_verdict, triage_reason, deep_dive_reason,
+    deep_dive_tier`` + the 5 ``*_surface_flag`` columns.
 
-    Real data, small n — ~1,197 genes as the sweep progresses; PRELIMINARY,
-    pre-QA-fix.
+    Real data, small n as the sweep progresses; PRELIMINARY, pre-QA-fix.
     """
     cols = ["gene_symbol", "uniprot_acc", "triage_verdict", "triage_reason",
             "deep_dive_reason", "deep_dive_tier"]
+    # 5 canonical-DB surface flags for the panel-c concordance bars.
+    db_flags = ["uniprot_surface_flag", "go_surface_flag", "surfy_surface_flag",
+                "cspa_surface_flag", "hpa_surface_flag"]
     dd = src.get("deep_dive")
     tri = src.get("triage_verdicts")
     if dd is None or dd.empty or tri is None or tri.empty:
-        return _empty_deep_dive_frame(cols)
+        return _empty_deep_dive_frame(cols + db_flags)
     tri_by_gene = tri.drop_duplicates("gene_symbol").set_index("gene_symbol")
     out = pd.DataFrame({
         "gene_symbol": dd["gene_symbol"].astype(str),
@@ -527,9 +540,26 @@ def build_triage_vs_deep_dive_reason(src: dict[str, pd.DataFrame]) -> pd.DataFra
         tri_by_gene["triage_verdict"]).astype("object")
     out["triage_reason"] = out["gene_symbol"].map(
         tri_by_gene["triage_reason"]).astype("object")
-    # Keep only genes we could match a triage call for (all 1,197 in practice).
+    # Panel c — per-DB surface concordance. Join the 5 canonical-DB
+    # `*_surface_flag`s from the catalog (candidate_universe), keyed by symbol,
+    # so the figure can show what fraction of deep-dive-surface genes each DB
+    # (and the Sonnet triage stage) also flags — the "does the deep-dive agree
+    # more with Sonnet triage or with the databases?" comparison.
+    cat = src.get("catalog")
+    cat_by_gene = (
+        cat.drop_duplicates("hgnc_symbol").set_index("hgnc_symbol")
+        if cat is not None and "hgnc_symbol" in cat.columns else None
+    )
+    for c in db_flags:
+        if cat_by_gene is not None and c in cat_by_gene.columns:
+            out[c] = pd.to_numeric(
+                out["gene_symbol"].map(cat_by_gene[c]), errors="coerce"
+            ).astype("Int64")
+        else:
+            out[c] = pd.Series([pd.NA] * len(out), dtype="Int64")
+    # Keep only genes we could match a triage call for.
     out = out.dropna(subset=["triage_verdict", "triage_reason"])
-    out = out[cols]
+    out = out[cols + db_flags]
     return out.sort_values("gene_symbol", kind="stable").reset_index(drop=True)
 
 
@@ -611,98 +641,50 @@ def build_surfaceome_deterministic_features_placeholder(
     src: dict[str, pd.DataFrame],
 ) -> pd.DataFrame:
     """Per-gene deterministic features for Supp Fig 13, faceted by the REAL
-    deep-dive tier (+ a ``pending`` facet for genes not yet deep-dived).
+    deep-dive tier — sourced from the deep-dive RECORDS so every deep-dived
+    gene has full coverage.
 
-    Pre-joins per_protein_features with DeepTMHMM canonical topology, an
-    alt-isoform-topology-change flag, Schweke homo-oligomer state, and
-    Ensembl-Compara mouse/cyno ortholog flags; assigns each gene a ``group``:
+    This used to join the standalone ``deeptmhmm_human_canonical.tsv``, which
+    only covers the M1 candidate universe (~2,359 surface candidates). That left
+    topology tier-correlated MISSING (canonical ~83% covered → 'no' ~6%),
+    biasing every per-feature fraction on exactly the low/uncertain/no tiers we
+    want to break out. Each deep-dived gene carries its OWN DeepTMHMM run in its
+    record, so the export (``deep_dive_records.tsv``) now derives the
+    deterministic-feature columns from ``deterministic_features`` — full
+    coverage, no bias.
 
-      • the 5-tier ``_dd_assign_bucket`` call (``canonical`` / ``likely`` /
-        ``low`` / ``uncertain`` / ``no``) when the gene has a deep-dive record;
-      • ``pending`` otherwise (Sonnet-positive but not yet deep-dived).
+    ``group`` is the 5-tier ``_dd_tier`` call (canonical / likely / low /
+    uncertain / no); the figure combines uncertain+no onto a single facet.
+    ``pending`` (not-yet-deep-dived) genes are excluded by construction — the
+    export holds only published records.
 
-    Universe = Sonnet-positive genes ∪ deep-dived genes, so no deep-dive record
-    is dropped (a few hundred deep-dived genes are Sonnet-'no'). The
-    deterministic-feature joins are unchanged and key on per_protein_features
-    regardless of the Sonnet verdict, so this re-renders correctly as the sweep
-    grows (``pending`` shrinks, the tier facets fill in).
+    Feature columns (all real per-gene, from the record): ``tm_helix_count``,
+    ``protein_length``, ``has_signal_peptide``, ``n_term_extracellular``,
+    ``c_term_extracellular``, ``mouse_has_one2one`` / ``cyno_has_one2one`` (has a
+    one-to-one ortholog — the record stores Compara orthology ``type`` but not
+    its separate high-confidence flag, so this is looser than the old
+    ``*_high_confidence`` column and renamed to match), ``schweke_homomer``,
+    ``alt_iso_diff_topo``.
 
     Mirrors ``scripts/surfaceome_deterministic_features_placeholder.py``
-    ``load_data()`` exactly so the figure renders identically off the bundled
-    single TSV.
+    ``load_data()`` — it reads this bundled single TSV.
 
-    PRELIMINARY — ~1,197 of ~5,128 swept, pre-QA-fix; the ``pending`` facet is
-    the bulk of the Sonnet-positive surfaceome until the sweep completes.
+    PRELIMINARY — pre-QA-fix; counts grow as the sweep progresses.
     """
-    feats = pd.read_csv(
-        ROOT / "data/analysis/db_vs_sonnet_inclusion/per_protein_features.tsv",
-        sep="\t",
-    )
-    # Real deep-dive tier per gene, keyed by gene_symbol.
+    feature_cols = ["tm_helix_count", "protein_length", "has_signal_peptide",
+                    "n_term_extracellular", "c_term_extracellular",
+                    "mouse_has_one2one", "cyno_has_one2one",
+                    "schweke_homomer", "alt_iso_diff_topo"]
+    cols = ["gene_symbol", "group", *feature_cols]
     dd = src.get("deep_dive")
-    tier_by_gene: dict[str, str] = {}
-    if dd is not None and not dd.empty:
-        for _, r in dd.iterrows():
-            tier_by_gene[str(r["gene_symbol"])] = _dd_tier(r)
-    dd_genes = set(tier_by_gene)
-    # Universe: Sonnet-positive genes ∪ every deep-dived gene (so a deep-dive
-    # record on a Sonnet-'no' gene still lands in its tier facet).
-    is_sonnet_pos = feats["sonnet_verdict"].isin(["yes", "contextual"])
-    in_universe = is_sonnet_pos | feats["gene_symbol"].astype(str).isin(dd_genes)
-    feats = feats[in_universe].copy()
-
-    dt = pd.read_csv(
-        ROOT / "data/processed/deeptmhmm/deeptmhmm_human_canonical.tsv", sep="\t",
-    )
-    dt_keep = ["uniprot_accession", "protein_length", "tm_helix_count",
-               "has_signal_peptide", "signal_peptide_length",
-               "n_term_extracellular", "c_term_extracellular"]
-    feats = feats.merge(dt[dt_keep], on="uniprot_accession", how="left")
-
-    iso = pd.read_csv(
-        ROOT / "data/processed/deeptmhmm/deeptmhmm_human_isoforms.tsv", sep="\t",
-    )
-    iso["canonical_acc"] = iso["uniprot_accession"].str.split("-").str[0]
-    iso_by_canon = iso.groupby("canonical_acc").agg(
-        iso_n=("uniprot_accession", "count"),
-        iso_tm_counts=("tm_helix_count", lambda x: set(x.dropna().astype(int))),
-    ).reset_index().rename(columns={"canonical_acc": "uniprot_accession"})
-    feats = feats.merge(iso_by_canon, on="uniprot_accession", how="left")
-
-    def _alt_iso_diff_topology(row):
-        if pd.isna(row.get("iso_n")) or row.get("iso_n", 0) == 0:
-            return None
-        canon_tm = row.get("tm_helix_count")
-        if pd.isna(canon_tm):
-            return None
-        iso_tms = row.get("iso_tm_counts")
-        if iso_tms is None or not isinstance(iso_tms, set):
-            return 0
-        return int(any(t != int(canon_tm) for t in iso_tms if not pd.isna(t)))
-
-    feats["alt_iso_diff_topo"] = feats.apply(_alt_iso_diff_topology, axis=1)
-
-    cmp = pd.read_csv(
-        ROOT / "data/external/ensembl_compara_surfaceome_expressed"
-             / "compara_mouse_cyno_one2one_highconf_by_gene.csv"
-    )
-    cmp_keep = cmp[["resolver_resolved_gene_symbol",
-                    "mouse_has_one2one_high_confidence",
-                    "cyno_has_one2one_high_confidence"]].rename(
-        columns={"resolver_resolved_gene_symbol": "gene_symbol"})
-    feats = feats.merge(cmp_keep, on="gene_symbol", how="left")
-
-    # Real deep-dive tier where a record exists, else 'pending'.
-    feats["group"] = feats["gene_symbol"].astype(str).map(
-        lambda g: tier_by_gene.get(g, "pending")
-    )
-
-    # Emit only the columns the figure consumes — one tidy row per gene.
-    cols = ["gene_symbol", "group", "tm_helix_count", "protein_length",
-            "has_signal_peptide", "n_term_extracellular", "c_term_extracellular",
-            "mouse_has_one2one_high_confidence", "cyno_has_one2one_high_confidence",
-            "schweke_homomer", "alt_iso_diff_topo"]
-    return feats[[c for c in cols if c in feats.columns]].reset_index(drop=True)
+    if dd is None or dd.empty:
+        return _empty_deep_dive_frame(cols)
+    out = pd.DataFrame({"gene_symbol": dd["gene_symbol"].astype(str)})
+    out["group"] = [_dd_tier(r) for _, r in dd.iterrows()]
+    for c in feature_cols:
+        out[c] = pd.to_numeric(dd[c], errors="coerce") if c in dd.columns else pd.NA
+    return out[cols].sort_values(
+        ["group", "gene_symbol"], kind="stable").reset_index(drop=True)
 
 
 BUILDERS: dict[str, callable] = {
