@@ -1,14 +1,17 @@
+import * as React from "react";
 import {
   CITATIONS,
   pubmedUrl,
   TYPICAL_ANTIBODY_INTERFACE_A2,
 } from "../../../lib/citations";
+import { chipJumpTargets } from "../../../lib/chipJumpTargets";
 import { ecSites } from "../../../lib/surface-bind";
 import { ChipLabelValue } from "../ChipLabelValue/ChipLabelValue";
 import type { OrthologEntry, SurfaceomeRecord } from "../../../lib/surfaceome-types";
 import { prettyEnum } from "../../../lib/surfaceome";
 import { tooltips } from "../../../lib/tooltips";
 import { InfoTip } from "../../InfoTip/InfoTip";
+import { ChipJumpButton } from "../_shared/ChipJumpButton/ChipJumpButton";
 import {
   buildFeatureChips,
   FEATURE_TAB_LABEL,
@@ -417,45 +420,79 @@ export function FiltersCard({ rec, n }: Props) {
       linkTo: "#section-biology",
       pills: [
         // state_dependence omitted — already a GeneHeader vital up top.
-        <StatusPill key="primary" tone="teal" size="sm">
-          <ChipLabelValue
-            label="primary"
-            value={prettyEnum(
-              rec.biological_context.subcellular_localization
-                .primary_compartment,
-            )}
-          />
-        </StatusPill>,
+        <ChipJumpButton
+          key="primary"
+          targetId={chipJumpTargets.primaryCompartment}
+          tabId="biology"
+          ariaLabel={`Jump to Subcellular localization (primary: ${prettyEnum(
+            rec.biological_context.subcellular_localization.primary_compartment,
+          )})`}
+        >
+          <StatusPill tone="teal" size="sm">
+            <ChipLabelValue
+              label="primary"
+              value={prettyEnum(
+                rec.biological_context.subcellular_localization
+                  .primary_compartment,
+              )}
+            />
+          </StatusPill>
+        </ChipJumpButton>,
         // Highest-severity contradicting evidence against the surface call
         // (echoed from §02). "none" = no contradictions logged.
-        <StatusPill
-          key="contradiction"
-          tone={contradictionTone(maxContradictionSeverity)}
-          size="sm"
-          title={
-            "Highest severity of contradicting evidence against the surface " +
-            "call (from §02 Surface evidence → Contradicting evidence). " +
-            "none = no contradictions in the ledger; low / moderate / high = " +
-            "the strongest contradiction's impact on the surface-accessibility " +
-            "call; unclear = logged but impact not gradable."
+        (() => {
+          const pill = (
+            <StatusPill
+              tone={contradictionTone(maxContradictionSeverity)}
+              size="sm"
+              title={
+                "Highest severity of contradicting evidence against the surface " +
+                "call (from §02 Surface evidence → Contradicting evidence). " +
+                "none = no contradictions in the ledger; low / moderate / high = " +
+                "the strongest contradiction's impact on the surface-accessibility " +
+                "call; unclear = logged but impact not gradable."
+              }
+            >
+              <ChipLabelValue
+                label="contradiction"
+                value={
+                  maxContradictionSeverity === "none"
+                    ? "none"
+                    : prettyEnum(maxContradictionSeverity)
+                }
+              />
+            </StatusPill>
+          );
+          if (maxContradictionSeverity === "none") {
+            return <React.Fragment key="contradiction">{pill}</React.Fragment>;
           }
-        >
-          <ChipLabelValue
-            label="contradiction"
-            value={
-              maxContradictionSeverity === "none"
-                ? "none"
-                : prettyEnum(maxContradictionSeverity)
-            }
-          />
-        </StatusPill>,
+          return (
+            <ChipJumpButton
+              key="contradiction"
+              targetId={chipJumpTargets.contradictingEvidence}
+              tabId="evidence"
+              ariaLabel={`Jump to Contradicting evidence (${prettyEnum(
+                maxContradictionSeverity,
+              )})`}
+            >
+              {pill}
+            </ChipJumpButton>
+          );
+        })(),
         // Distinct modulation categories (the §03 purple "Context" pills),
         // lavender like the biology tab so the reader knows which kinds of
         // surface modulation are evidenced.
         ...modCategories.map((c) => (
-          <StatusPill key={`mod-${c}`} tone="lavender" size="sm">
-            {prettyEnum(c)}
-          </StatusPill>
+          <ChipJumpButton
+            key={`mod-${c}`}
+            targetId={chipJumpTargets.modulationCategory(c)}
+            tabId="biology"
+            ariaLabel={`Jump to Accessibility modulation: ${prettyEnum(c)}`}
+          >
+            <StatusPill tone="lavender" size="sm">
+              {prettyEnum(c)}
+            </StatusPill>
+          </ChipJumpButton>
         )),
       ],
     },
