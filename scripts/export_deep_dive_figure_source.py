@@ -45,6 +45,15 @@ TRIAGE_OUT = ROOT / "data/processed/deep_dive/triage_verdicts.tsv"
 # reasons are directly comparable in the S12 confusion matrix.
 _TRIAGE_RUN_ID = "genome_full_sonnet_ncbi_v2"
 
+# Per-replicate benchmark Sonnet+NCBI triage (the mainbench run, 3 replicates
+# per gene) for the deep_dive_vs_sonnet_benchmark figure — its Sonnet accuracy
+# bar shows one dot per replicate + SEM across them, matching the other accuracy
+# figures. One row per (bench gene x replicate).
+BENCH_SONNET_OUT = ROOT / "data/processed/deep_dive/benchmark_sonnet_replicates.tsv"
+_MAINBENCH_RUN = "mainbench_canonical_v2"
+_MAINBENCH_MODEL = "claude-sonnet-4-6"
+_MAINBENCH_VARIANT = "ncbi"
+
 # (output column, JSON path in annotation_json). Kept small + explicit so the
 # query ships only what the figures need.
 _FIELDS: list[tuple[str, str]] = [
@@ -183,11 +192,27 @@ def _triage_sql() -> str:
     )
 
 
+def _bench_sonnet_sql() -> str:
+    """One row per (bench gene x replicate) from the mainbench Sonnet+NCBI run —
+    the per-replicate triage predictions the benchmark figure aggregates into an
+    accuracy dot per replicate + SEM across replicates."""
+    return (
+        "SELECT gene_symbol, replicate, predicted_verdict "
+        "FROM triage_run_public "
+        "WHERE run_id = ? AND model = ? AND prompt_variant = ? "
+        "ORDER BY gene_symbol, replicate;"
+    )
+
+
 def main() -> int:
     load_env()
     with D1Client(D1Config.from_env_public()) as d1:
         rows = d1.query(_select_sql(), [])
         triage_rows = d1.query(_triage_sql(), [_TRIAGE_RUN_ID])
+        bench_sonnet_rows = d1.query(
+            _bench_sonnet_sql(),
+            [_MAINBENCH_RUN, _MAINBENCH_MODEL, _MAINBENCH_VARIANT],
+        )
     df = pd.DataFrame(rows)
     OUT.parent.mkdir(parents=True, exist_ok=True)
     df.to_csv(OUT, sep="\t", index=False)
@@ -197,6 +222,11 @@ def main() -> int:
     triage.to_csv(TRIAGE_OUT, sep="\t", index=False)
     print(f"wrote {TRIAGE_OUT.relative_to(ROOT)}: {len(triage)} triage verdicts "
           f"(run_id={_TRIAGE_RUN_ID})")
+
+    bench_sonnet = pd.DataFrame(bench_sonnet_rows)
+    bench_sonnet.to_csv(BENCH_SONNET_OUT, sep="\t", index=False)
+    print(f"wrote {BENCH_SONNET_OUT.relative_to(ROOT)}: {len(bench_sonnet)} bench "
+          f"Sonnet replicate cells ({_MAINBENCH_RUN}/{_MAINBENCH_MODEL}/{_MAINBENCH_VARIANT})")
     return 0
 
 

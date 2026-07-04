@@ -90,18 +90,32 @@ def _panel_label(ax, letter: str) -> None:
             fontweight=800, va="bottom", ha="right", color=COLORS["dark"])
 
 
+def _sonnet_replicate_accs(rows: list[dict]) -> list[float]:
+    """Per-replicate soft-credit accuracy (%) over the given genes — one value
+    per replicate with data (the mainbench Sonnet+NCBI triage ran 3 replicates)."""
+    accs = []
+    for col in ("sonnet_correct_r1", "sonnet_correct_r2", "sonnet_correct_r3"):
+        vals = [int(row[col]) for row in rows if str(row.get(col, "")) != ""]
+        if vals:
+            accs.append(100.0 * sum(vals) / len(vals))
+    return accs
+
+
 def _draw_sonnet(ax, rows: list[dict], x: float, width: float) -> None:
-    """Sonnet+NCBI accuracy bar + binomial-SEM error bar + jittered per-gene
-    correctness dots."""
-    son, son_sem, son_pts = _stats(rows, "sonnet_correct")
-    ax.bar(x, son, width=width, color=_SONNET_COLOR, zorder=2)
-    ax.errorbar(x, son, yerr=son_sem, fmt="none", ecolor=COLORS["dark"],
+    """Sonnet+NCBI bar = MEAN of the per-replicate accuracies; one dot per
+    replicate + SEM ACROSS replicates (not a 0/1 dot per gene)."""
+    accs = _sonnet_replicate_accs(rows)
+    if not accs:
+        return
+    mean = sum(accs) / len(accs)
+    sem = float(np.std(accs, ddof=1)) / (len(accs) ** 0.5) if len(accs) > 1 else 0.0
+    ax.bar(x, mean, width=width, color=_SONNET_COLOR, zorder=2)
+    ax.errorbar(x, mean, yerr=sem, fmt="none", ecolor=COLORS["dark"],
                 elinewidth=1.4, capsize=5, zorder=4)
-    if son_pts:
-        jx = _RNG.uniform(-width * 0.26, width * 0.26, size=len(son_pts))
-        ax.scatter(x + jx, son_pts, s=16, color=COLORS["dark"], alpha=0.4,
-                   edgecolor="none", zorder=5)
-    ax.text(x, son + son_sem + 2, f"{son:.0f}", ha="center", va="bottom",
+    jx = _RNG.uniform(-width * 0.20, width * 0.20, size=len(accs))
+    ax.scatter(x + jx, accs, s=26, color=COLORS["dark"], alpha=0.75,
+               edgecolor="white", linewidth=0.5, zorder=5)
+    ax.text(x, mean + sem + 2, f"{mean:.0f}", ha="center", va="bottom",
             fontsize=14, color=_SONNET_COLOR, fontweight="bold")
 
 
@@ -132,7 +146,6 @@ def make_plot() -> tuple[plt.Figure, tuple[plt.Axes, plt.Axes]]:
         "xtick.labelsize": 15, "ytick.labelsize": 15, "legend.fontsize": 15,
     })
     rows = _load()
-    n = len(rows)
 
     fig, (axA, axB) = plt.subplots(
         1, 2, figsize=(13, 6),
@@ -171,22 +184,14 @@ def make_plot() -> tuple[plt.Figure, tuple[plt.Axes, plt.Axes]]:
     handles = [mpatches.Patch(color=_TIER_COLOR[t], label=_TIER_LABEL[t])
                for t in _TIER_ORDER]
     handles.append(mpatches.Patch(color=_SONNET_COLOR, label="Sonnet+NCBI"))
-    axB.legend(handles=handles, loc="upper right", frameon=False, fontsize=11,
-               title="deep-dive tier / Sonnet", title_fontsize=11,
-               labelspacing=0.35, handlelength=1.2)
+    # Just outside the top-right so it clears the tall bars + Sonnet dots.
+    axB.legend(handles=handles, loc="upper left", bbox_to_anchor=(1.01, 1.0),
+               frameon=False, fontsize=11, title="deep-dive tier / Sonnet",
+               title_fontsize=11, labelspacing=0.35, handlelength=1.2)
     sns.despine(ax=axB, top=True, right=True)
     _panel_label(axB, "b")
 
-    fig.text(
-        0.5, -0.02,
-        f"Deep dive vs Sonnet+NCBI triage on the {n} SurfaceBench genes "
-        f"deep-dived so far (of 147). Soft-credit: a contextually-surface protein "
-        f"counts correct when called surface. PRELIMINARY — small n, especially "
-        f"the 'no' bucket (n=2); widens as the sweep covers more bench genes.",
-        ha="center", va="top", fontsize=11, style="italic",
-        color=COLORS["neutral"], wrap=True,
-    )
-    fig.tight_layout()
+    fig.tight_layout(rect=(0, 0, 0.84, 1))
     return fig, (axA, axB)
 
 

@@ -626,7 +626,8 @@ def build_deep_dive_vs_sonnet_benchmark(src: dict[str, pd.DataFrame]) -> pd.Data
     cols = ["gene_symbol", "hgnc_id", "uniprot_acc", "ensembl_gene",
             "ncbi_gene_id", "ground_truth_verdict", "sonnet_verdict",
             "deep_dive_tier", "gt_surface", "sonnet_surface",
-            "deep_dive_surface", "sonnet_correct", "deep_dive_correct"]
+            "deep_dive_surface", "sonnet_correct", "deep_dive_correct",
+            "sonnet_correct_r1", "sonnet_correct_r2", "sonnet_correct_r3"]
     bench = src.get("bench")
     dd = src.get("deep_dive")
     if bench is None or dd is None or dd.empty:
@@ -636,6 +637,16 @@ def build_deep_dive_vs_sonnet_benchmark(src: dict[str, pd.DataFrame]) -> pd.Data
     dd_u["gene_symbol"] = dd_u["gene_symbol"].astype(str)
     dd_by_gene = dd_u.set_index("gene_symbol")
     dd_genes = set(dd_by_gene.index)
+    # Per-replicate Sonnet+NCBI predictions (mainbench, 3 reps/gene) so the
+    # figure shows one accuracy dot per replicate + SEM across them, not a
+    # meaningless 0/1 dot per gene.
+    rep_by_gene: dict[str, dict[int, str]] = {}
+    rep_path = ROOT / "data/processed/deep_dive/benchmark_sonnet_replicates.tsv"
+    if rep_path.is_file():
+        reps = pd.read_csv(rep_path, sep="\t")
+        for _, rr in reps.iterrows():
+            rep_by_gene.setdefault(str(rr["gene_symbol"]), {})[
+                int(rr["replicate"])] = str(rr["predicted_verdict"])
     rows = []
     for _, br in bench.iterrows():
         g = str(br["gene_symbol"])
@@ -645,6 +656,9 @@ def build_deep_dive_vs_sonnet_benchmark(src: dict[str, pd.DataFrame]) -> pd.Data
         gt_s = str(br["ground_truth_verdict"]) in yc
         son_s = str(br["sonnet_verdict"]) in yc
         dd_s = tier in ("canonical", "likely", "low")
+        reps_g = rep_by_gene.get(g, {})
+        rep_correct = {r: (int((reps_g[r] in yc) == gt_s) if r in reps_g else "")
+                       for r in (1, 2, 3)}
         rows.append({
             "gene_symbol": g,
             "hgnc_id": br.get("hgnc_id", ""),
@@ -659,6 +673,9 @@ def build_deep_dive_vs_sonnet_benchmark(src: dict[str, pd.DataFrame]) -> pd.Data
             "deep_dive_surface": int(dd_s),
             "sonnet_correct": int(son_s == gt_s),
             "deep_dive_correct": int(dd_s == gt_s),
+            "sonnet_correct_r1": rep_correct[1],
+            "sonnet_correct_r2": rep_correct[2],
+            "sonnet_correct_r3": rep_correct[3],
         })
     return pd.DataFrame(rows, columns=cols).sort_values(
         ["ground_truth_verdict", "gene_symbol"], kind="stable"
