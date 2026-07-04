@@ -214,13 +214,15 @@ def _print_plan(location: str, plan: RecordPlan, *, execute: bool) -> None:
 # --------------------------------------------------------------------------- #
 # Disk snapshots
 # --------------------------------------------------------------------------- #
-def backfill_disk(*, execute: bool) -> Counts:
+def backfill_disk(*, execute: bool, genes: set[str] | None = None) -> Counts:
     counts = Counts()
     for d in DISK_DIRS:
         if not d.exists():
             print(f"  (skip, missing) {d.relative_to(REPO_ROOT)}")
             continue
         for path in sorted(d.glob("*.json")):
+            if genes is not None and path.stem.upper() not in genes:
+                continue
             try:
                 rec = json.loads(path.read_text())
             except (OSError, json.JSONDecodeError) as exc:
@@ -243,18 +245,24 @@ def backfill_disk(*, execute: bool) -> Counts:
 # --------------------------------------------------------------------------- #
 # Public D1 (surface_annotation.annotation_json) — the live site
 # --------------------------------------------------------------------------- #
-def backfill_public_d1(*, execute: bool) -> Counts:
+def backfill_public_d1(*, execute: bool, genes: set[str] | None = None) -> Counts:
     counts = Counts()
     cfg = _public_config_from_env()
     if cfg is None:
         print("  (skip) public D1 creds not set (CLOUDFLARE_*)")
         return counts
+    # When restricted to a gene set, filter server-side so we don't pull the
+    # whole (wide annotation_json) table over the wire / trip D1's memory cap.
+    where, params = "", []
+    if genes:
+        where = f" WHERE gene_symbol IN ({','.join('?' * len(genes))})"
+        params = sorted(genes)
     with httpx.Client(timeout=60) as client:
         rows = _post(
             cfg,
             "SELECT gene_symbol, schema_version, annotation_json "
-            "FROM surface_annotation",
-            [],
+            f"FROM surface_annotation{where}",
+            params,
             client=client,
         )["result"][0]["results"]
         for r in rows:
@@ -298,7 +306,7 @@ def backfill_public_d1(*, execute: bool) -> Counts:
 # --------------------------------------------------------------------------- #
 # Private D1 (deep_dive_run.record_json) — agent-run history, opt-in
 # --------------------------------------------------------------------------- #
-def backfill_deep_dive_run(*, execute: bool) -> Counts:
+def backfill_deep_dive_run(*, execute: bool, genes: set[str] | None = None) -> Counts:
     counts = Counts()
     # Local import so the public-only path doesn't require the private DB env.
     from accessible_surfaceome.cloud.d1_client import D1Client, D1Config, D1Error
@@ -308,9 +316,13 @@ def backfill_deep_dive_run(*, execute: bool) -> Counts:
     except D1Error as exc:
         print(f"  (skip) private D1 creds not set: {exc}")
         return counts
+    where, params = "", []
+    if genes:
+        where = f" WHERE gene_symbol IN ({','.join('?' * len(genes))})"
+        params = sorted(genes)
     with D1Client(config=cfg) as d1:
         rows = d1.query(
-            "SELECT id, gene_symbol, record_json FROM deep_dive_run", []
+            f"SELECT id, gene_symbol, record_json FROM deep_dive_run{where}", params
         )
         for r in rows:
             try:
@@ -348,6 +360,16 @@ def main() -> int:
         action="store_true",
         help="Write changes (default: dry-run). NOTE: mutates production D1.",
     )
+    ap.add_argument(
+        "--gene",
+        action="append",
+        metavar="SYMBOL",
+        help=(
+            "Limit the backfill to one or more gene symbols (repeatable, "
+            "case-insensitive). Targets a single-gene patch/preview before the "
+            "full run, e.g. --gene CD63."
+        ),
+    )
     ap.add_argument("--skip-disk", action="store_true", help="Skip on-disk snapshots.")
     ap.add_argument(
         "--skip-d1", action="store_true", help="Skip public D1 surface_annotation."
@@ -363,8 +385,12 @@ def main() -> int:
     args = ap.parse_args()
     load_env()
 
+    genes = {g.upper() for g in args.gene} if args.gene else None
+
     mode = "EXECUTE" if args.execute else "DRY-RUN"
     print(f"=== canonical-frame topology backfill [{mode}] ===")
+    if genes:
+        print(f"  (restricted to {len(genes)} gene(s): {', '.join(sorted(genes))})")
 
     total = Counts()
 
@@ -372,17 +398,17 @@ def main() -> int:
     if args.skip_disk:
         print("  (skipped)")
     else:
-        total.merge(backfill_disk(execute=args.execute))
+        total.merge(backfill_disk(execute=args.execute, genes=genes))
 
     print("public D1 surface_annotation:")
     if args.skip_d1:
         print("  (skipped)")
     else:
-        total.merge(backfill_public_d1(execute=args.execute))
+        total.merge(backfill_public_d1(execute=args.execute, genes=genes))
 
     if args.include_deep_dive_run:
         print("private D1 deep_dive_run:")
-        total.merge(backfill_deep_dive_run(execute=args.execute))
+        total.merge(backfill_deep_dive_run(execute=args.execute, genes=genes))
 
     verb = "patched" if args.execute else "would patch"
     print()
