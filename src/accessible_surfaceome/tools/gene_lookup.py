@@ -664,6 +664,22 @@ def _uniprot_entry(acc: str, *, http: CachedHTTP) -> dict[str, Any]:
     return http.get_json(url, source="uniprot", ttl_days=_TTL["uniprot"])
 
 
+# Explicit dual-xref pins: HGNC entries listing ≥2 reviewed UniProt
+# accessions where the generic firstPublicDate tiebreak in
+# ``_pick_canonical_uniprot`` picks the wrong member. Keyed HGNC ID →
+# the surfaceome-correct accession. The pin must still appear in HGNC's
+# ``uniprot_ids`` xref to take effect, so a stale pin can't silently
+# override a later-corrected HGNC record (we fall through to the tiebreak).
+_HGNC_UNIPROT_PIN: dict[str, str] = {
+    # MYO18A: HGNC:31104 lists [O95411 (TIAF1 — a merged-in *previous*
+    # symbol), Q92614 (the actual unconventional myosin-XVIIIa)]. The
+    # tiebreak prefers the older O95411, but Q92614 is the surfaceome
+    # protein: it carries the Ensembl canonical-protein mapping for
+    # ENSG00000196535 and the DB surface evidence; O95411 maps to none.
+    "HGNC:31104": "Q92614",
+}
+
+
 def resolve_by_hgnc_id(hgnc_id: str, *, http: CachedHTTP) -> IdentifierBundle:
     """Resolve directly from a stable HGNC ID — preferred over the
     symbol-keyed ``resolve()`` whenever the cohort row carries one.
@@ -704,7 +720,13 @@ def resolve_by_hgnc_id(hgnc_id: str, *, http: CachedHTTP) -> IdentifierBundle:
     uniprot_ids = list(hgnc.get("uniprot_ids") or [])
     uniprot_acc: str | None = None
 
-    if uniprot_ids:
+    pin = _HGNC_UNIPROT_PIN.get(raw)
+    if pin is not None and pin in uniprot_ids:
+        # Path A′ — explicit dual-xref pin. HGNC lists ≥2 reviewed
+        # accessions and the generic tiebreak picks the wrong member;
+        # use the curated accession directly.
+        uniprot_acc = pin
+    elif uniprot_ids:
         # Path A — HGNC has the xref. Pick canonical with the
         # primary-name + age tiebreak.
         uniprot_acc = _pick_canonical_uniprot(

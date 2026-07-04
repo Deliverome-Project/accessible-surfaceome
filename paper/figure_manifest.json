@@ -1,0 +1,26 @@
+{
+  "_doc": "Map: figure number (or 'appendix-N') → canonical asset under data/analysis/figures/. After pandoc renders the .docx, paper/build.py rewrites each <img src> to point at the canonical asset so the final PDF ships the in-repo figure (current at HEAD) instead of whatever bitmap is embedded in the .docx. Add new entries as the manuscript grows. format=svg or pdf → vector (no DPI check); format=png → min_dpi enforced via Pillow. Set 'optional': true on entries that may not yet have a canonical asset (build warns rather than errors). 'description' is for the author's reference only — not used by the build.",
+
+  "figures": {
+    "1": {
+      "slug": "deep_dive_flow",
+      "format": "svg",
+      "description": "Flow diagram of the v2 deep-dive pipeline (Illustrator-exported)"
+    },
+    "2": {
+      "slug": "deep_dive_final_categories",
+      "format": "png",
+      "min_dpi": 600,
+      "description": "Distribution of final deep-dive categories across the ~5k cohort (MOCK)"
+    }
+  },
+
+  "appendix_figures": {
+    "1": {
+      "slug": "triage_vs_deep_dive_reason",
+      "format": "png",
+      "min_dpi": 600,
+      "description": "Triage reason × deep-dive reason confusion matrix, colored by yes/contextual/no bucket (MOCK)"
+    }
+  }
+}

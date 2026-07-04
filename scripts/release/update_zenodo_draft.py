@@ -340,10 +340,7 @@ def main() -> int:
 
         # 4. Update description.
         metadata = dep["metadata"]
-        metadata["title"] = (
-            "accessible-surfaceome — benchmark, triage, and deep-dive "
-            "data outputs"
-        )
+        metadata["title"] = "The accessible human surfaceome"
         metadata["description"] = _DESCRIPTION_HTML
         mr = client.put(
             f"{ZENODO_BASE}/deposit/depositions/{DEPOSIT_ID}",

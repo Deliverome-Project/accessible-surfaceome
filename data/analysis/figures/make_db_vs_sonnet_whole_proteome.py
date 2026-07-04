@@ -4,7 +4,6 @@
 #   "matplotlib>=3.9",
 #   "pandas>=2.2",
 #   "seaborn>=0.13",
-#   "httpx>=0.27",
 # ]
 # ///
 """Reproduce ``db_vs_sonnet_whole_proteome.{pdf,png}`` from the public repo.
@@ -33,20 +32,17 @@ Visual styling matches the in-repo ``_plotting_config`` (Deliverome
 categorical palette + Manrope-when-available). Inlined so the gist
 runs standalone.
 
-Data: catalog fetched live from
-``https://api.deliverome.org/surfaceome/v1/catalog`` (~19,324 genes
-with per-gene Sonnet+NCBI verdict); per-DB votes from
-candidate_universe.tsv + db_optimized_cutoffs.tsv via
-raw.githubusercontent.com.
+Data: catalog + per-DB votes from bundled TSVs (gist case) or the
+in-repo data/processed/catalog/ + data/processed/triage_bench/
+paths (dev case). The gist's HEAD commit SHA is the SWHID for the
+whole reproduction unit (script + data + README).
 
 Standalone — ``uv run make_db_vs_sonnet_whole_proteome.py``.
 """
 from __future__ import annotations
 
-import io
 from pathlib import Path
 
-import httpx
 import matplotlib.font_manager as fm
 import matplotlib.pyplot as plt
 import pandas as pd
@@ -56,8 +52,12 @@ REPO = "Deliverome-Project/accessible-surfaceome"
 BRANCH = "main"
 BASE = f"https://raw.githubusercontent.com/{REPO}/{BRANCH}"
 
-CATALOG_TSV = f"{BASE}/data/processed/catalog/whole_proteome_catalog.tsv"
-OPT_CUTOFFS_TSV = f"{BASE}/data/processed/triage_bench/db_optimized_cutoffs.tsv"
+# Single per-figure TSV: full proteome catalog (~19k rows) with
+# uniprot_optimized + cspa_optimized recalibrated flags denormalized
+# in alongside the 5 per-DB flags + sonnet_verdict. Produced by
+# scripts/build_figure_tsvs.py. Gist bundles this TSV next to the
+# script; the figure reads only from the sibling — no other URLs.
+DATA_TSV = f"{BASE}/data/processed/figures/db_vs_sonnet_whole_proteome.tsv"
 
 # Published reproduction gist (embedded into output PNG Source / PDF
 # Subject metadata — mirrors save_figure in _plotting_config.py).
@@ -110,7 +110,7 @@ def _apply_brand_style() -> None:
     sns.set_style("whitegrid")
     sns.set_context("notebook", font_scale=1.0)
     plt.rcParams.update({
-        "savefig.dpi": 300,
+        "savefig.dpi": 600,
         "savefig.bbox": "tight",
         "figure.facecolor": "none",
         "savefig.facecolor": "none",
@@ -167,12 +167,21 @@ BUCKET_LABEL = {
 
 
 def _fetch_tsv(url: str) -> pd.DataFrame:
+    """Bundled-only: the gist HEAD commit SHA is the SWHID for the
+    whole reproduction unit (script + data + README), so we must
+    never read a *different* TSV than what's bundled. Sibling-first
+    (gist case); fall back to the in-repo TSV path (dev case). No
+    network fetch — a missing sibling in a gist is a hard error."""
+    sibling = Path(__file__).parent / Path(url).name
+    if sibling.is_file():
+        return pd.read_csv(sibling, sep="\t")
     local = Path(__file__).resolve().parents[3] / url[len(BASE) + 1:]
     if local.is_file():
         return pd.read_csv(local, sep="\t")
-    r = httpx.get(url, timeout=30)
-    r.raise_for_status()
-    return pd.read_csv(io.StringIO(r.text), sep="\t")
+    raise FileNotFoundError(
+        f"TSV not found at sibling ({sibling.name}) or local ({local}). "
+        f"In a gist, the bundled TSV must sit next to this script."
+    )
 
 
 def _vote_match(db_vote: str, sonnet: str) -> bool:
@@ -192,12 +201,15 @@ def main() -> None:
     # carries the v1-style ``*_surface_flag`` columns AND the
     # canonical Sonnet+NCBI verdict, so this single TSV replaces the
     # CATALOG_URL + CAND_TSV pair the figure used previously.
-    catalog = _fetch_tsv(CATALOG_TSV)
+    # Single bundled TSV: catalog rows with uniprot_optimized +
+    # cspa_optimized denormalized in. Both flag sets reduce to row-level
+    # boolean columns, so the set-construction below derives the same
+    # uniprot_opt / cspa_opt accession sets from the bundled rows.
+    catalog = _fetch_tsv(DATA_TSV)
     print(f"  loaded {len(catalog):,} catalog rows; sonnet = claude-sonnet-4-6")
 
-    opt = _fetch_tsv(OPT_CUTOFFS_TSV)
-    uniprot_opt = set(opt.loc[opt["uniprot_optimized"] == 1, "accession"].astype(str))
-    cspa_opt = set(opt.loc[opt["cspa_optimized"] == 1, "accession"].astype(str))
+    uniprot_opt = set(catalog.loc[catalog["uniprot_optimized"] == 1, "uniprot_acc"].astype(str))
+    cspa_opt    = set(catalog.loc[catalog["cspa_optimized"]    == 1, "uniprot_acc"].astype(str))
 
     records = []
     for row in catalog.itertuples(index=False):
@@ -359,7 +371,7 @@ def main() -> None:
     out_pdf = Path("db_vs_sonnet_whole_proteome.pdf")
     out_png = Path("db_vs_sonnet_whole_proteome.png")
     fig.savefig(out_pdf, bbox_inches="tight", metadata={"Subject": GIST_URL})
-    fig.savefig(out_png, bbox_inches="tight", dpi=300, metadata={"Source": GIST_URL})
+    fig.savefig(out_png, bbox_inches="tight", dpi=600, metadata={"Source": GIST_URL})
     print(f"Wrote {out_pdf} + {out_png}")
 
 

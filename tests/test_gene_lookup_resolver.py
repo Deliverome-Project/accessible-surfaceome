@@ -63,6 +63,33 @@ def test_multi_xref_picks_canonical_not_fragment(http, hgnc_id, expected_acc, de
 
 
 # ---------------------------------------------------------------------------
+# Class A' — explicit dual-xref pins. A few HGNC entries list two reviewed
+# UniProt accessions because a *previous* gene symbol was merged into the
+# locus; the generic firstPublicDate tiebreak picks the older (wrong) member,
+# so these are pinned to the surfaceome-correct accession in
+# gene_lookup._HGNC_UNIPROT_PIN. Distinct from the Class-A fragment cases,
+# which the tiebreak gets right on its own.
+# ---------------------------------------------------------------------------
+
+
+@pytest.mark.parametrize(
+    ("hgnc_id", "expected_acc", "wrong_acc", "description"),
+    [
+        ("HGNC:31104", "Q92614", "O95411",
+         "MYO18A — HGNC dual-xref also lists O95411 (TIAF1, a merged-in previous "
+         "symbol); the firstPublicDate tiebreak picks the older TIAF1, but Q92614 "
+         "is the actual myosin (it carries the Ensembl canonical-protein mapping "
+         "for ENSG00000196535 and the DB surface evidence)."),
+    ],
+)
+def test_dual_xref_pinned_to_canonical_member(http, hgnc_id, expected_acc, wrong_acc, description):
+    """A pinned override wins over the generic canonical-pick tiebreak."""
+    bundle = resolve_by_hgnc_id(hgnc_id, http=http)
+    assert bundle.uniprot_acc == expected_acc, description
+    assert bundle.uniprot_acc != wrong_acc
+
+
+# ---------------------------------------------------------------------------
 # Class B — HGNC curates the gene but uniprot_ids xref is empty. Resolver
 # must fall back to UniProt symbol search using HGNC's *primary* symbol,
 # then HGNC's previous symbols if the primary misses.

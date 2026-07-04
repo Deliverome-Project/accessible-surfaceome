@@ -3,7 +3,6 @@
 # dependencies = [
 #   "matplotlib>=3.9",
 #   "seaborn>=0.13",
-#   "httpx>=0.27",
 # ]
 # ///
 """Reproduce paywall_bot_block_compare.{pdf,png} from the public repo.
@@ -42,7 +41,6 @@ import json
 from collections import Counter
 from pathlib import Path
 
-import httpx
 import matplotlib.font_manager as fm
 import matplotlib.pyplot as plt
 import seaborn as sns
@@ -86,7 +84,7 @@ def _apply_brand_style() -> None:
     sns.set_style("whitegrid")
     sns.set_context("notebook", font_scale=1.0)
     plt.rcParams.update({
-        "savefig.dpi": 300, "savefig.bbox": "tight",
+        "savefig.dpi": 600, "savefig.bbox": "tight",
         "figure.facecolor": "none", "savefig.facecolor": "none",
         "font.family": "sans-serif",
         "font.sans-serif": ["Manrope", "Outfit", "DejaVu Sans", "Liberation Sans", "Arial"],
@@ -145,17 +143,25 @@ SOURCE_LABEL = {
 
 
 def fetch_tsv() -> list[dict]:
-    """Read the TSV — from the public repo over HTTP, or from a local checkout."""
-    local = (
-        Path(__file__).resolve().parents[3]
-        / "data/processed/paywall_bot_block/paywall_bot_block_compare.tsv"
-    )
-    if local.is_file():
-        text = local.read_text()
+    """Sibling-first → repo dev-mode → URL fetch. Sibling case wins
+    when this script runs from a published gist with the TSV bundled
+    next to it (SWHID-of-the-gist then captures data + script
+    atomically)."""
+    sibling = Path(__file__).parent / Path(TSV_URL).name
+    if sibling.is_file():
+        text = sibling.read_text()
     else:
-        r = httpx.get(TSV_URL, timeout=30)
-        r.raise_for_status()
-        text = r.text
+        local = (
+            Path(__file__).resolve().parents[3]
+            / "data/processed/paywall_bot_block/paywall_bot_block_compare.tsv"
+        )
+        if local.is_file():
+            text = local.read_text()
+        else:
+            raise FileNotFoundError(
+                f"TSV not found at sibling ({sibling.name}) or local ({local}). "
+                f"In a gist, the bundled TSV must sit next to this script."
+            )
     return list(csv.DictReader(io.StringIO(text), delimiter="\t"))
 
 
@@ -218,8 +224,8 @@ def main() -> None:
     fig.tight_layout()
     out_pdf = Path.cwd() / "paywall_bot_block_compare.pdf"
     out_png = Path.cwd() / "paywall_bot_block_compare.png"
-    fig.savefig(out_pdf, format="pdf", dpi=300, bbox_inches="tight", metadata={"Subject": GIST_URL})
-    fig.savefig(out_png, format="png", dpi=300, bbox_inches="tight", metadata={"Source": GIST_URL})
+    fig.savefig(out_pdf, format="pdf", dpi=600, bbox_inches="tight", metadata={"Subject": GIST_URL})
+    fig.savefig(out_png, format="png", dpi=600, bbox_inches="tight", metadata={"Source": GIST_URL})
     plt.close(fig)
     print(f"wrote {out_pdf}, {out_png}")
 

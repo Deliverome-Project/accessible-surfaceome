@@ -392,20 +392,22 @@ export const DD_ENUM_FIELDS: readonly DdEnumSpec[] = [
     provenance: "llm",
   },
   {
-    // Provenance is `llm`, NOT `deterministic`: the buckets (≥30 / ≥10
-    // / else) are mechanical, but the INPUT count is the number of
-    // evidence rows the synthesizer chose to include from the merged
-    // A1+A2 ledger. That inclusion judgement is an LLM rollup, so the
-    // final value depends on the LLM. The `deterministic` bucket is
-    // reserved for fields derived purely from tool output on the
-    // protein sequence — DeepTMHMM topology, AlphaFold pLDDT, Compara
-    // identity — where rerunning the same tool on the same sequence
-    // gives the same value regardless of the agent.
+    // `deterministic` provenance (sub-case 2: mechanical record count):
+    // the filter exposes a bucketed count of evidence rows (≥30 / ≥10 /
+    // else) — a pure function of the persisted record, with no LLM
+    // judgement read at filter time. The underlying rows were
+    // agent-selected, but so were the papers behind n_papers_selected,
+    // and both filters are classified the same way: a count-then-band
+    // is a mechanical readout, not an LLM rollup. (The LLM-graded
+    // counterpart for "how strong is the evidence" is evidence_grade,
+    // which stays `llm`.) Keeping evidence_density and
+    // n_papers_selected_band both deterministic holds the LLM-graded
+    // filter count at the 24 the manuscript reports.
     key: "evidence_density",
     label: "Evidence density",
     values: ["low", "moderate", "high"],
     tooltipKey: "catalog_evidence_density",
-    provenance: "llm",
+    provenance: "deterministic",
   },
   {
     // Cohort-percentile-banded unique-paper count behind the evidence
@@ -417,16 +419,20 @@ export const DD_ENUM_FIELDS: readonly DdEnumSpec[] = [
     // catalog handler recomputes them each build from the deep-dive
     // subset's distribution.
     //
-    // `llm` provenance per the DdProvenance contract: the underlying
-    // count (n_papers_selected) is derived from the agent's evidence
-    // list, which is an LLM judgement about which papers to select
-    // for full-text reading. Mechanical post-hoc bucketing doesn't
-    // change the provenance bucket — same call as evidence_density.
+    // `deterministic` provenance: although the underlying paper set
+    // was chosen by the agent, the value this filter exposes is a
+    // pure mechanical count (unique papers behind the evidence list)
+    // then a percentile band — no LLM judgement is read at filter
+    // time, and the band is reproducible from the record alone. It
+    // groups with the tool-derived attributes, not the LLM-graded
+    // verdict/reason filters. (Distinct from evidence_density, which
+    // stays `llm` because its buckets track the agent's evidence-row
+    // selection more directly.)
     key: "n_papers_selected_band",
     label: "Papers selected",
     values: ["low", "moderate", "high"],
     tooltipKey: "catalog_n_papers_selected",
-    provenance: "llm",
+    provenance: "deterministic",
   },
   {
     key: "ecd_accessibility_class",

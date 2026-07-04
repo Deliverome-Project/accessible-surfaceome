@@ -35,10 +35,7 @@ from accessible_surfaceome.audit._plotting_config import (
 )
 
 ROOT = Path(__file__).resolve().parents[1]
-BENCH_TSV = ROOT / "data/eval/triage_benchmark_v1.tsv"
-CAND_TSV = ROOT / "data/processed/catalog/whole_proteome_catalog.tsv"
-PREDS_TSV = ROOT / "data/processed/triage_bench/mainbench_canonical_v2.tsv"
-OPT_CUTOFFS_TSV = ROOT / "data/processed/triage_bench/db_optimized_cutoffs.tsv"
+DATA_TSV = ROOT / "data/processed/figures/ensemble_vs_best_db_vs_sonnet.tsv"
 OUT_DIR = ROOT / "data/analysis/figures"  # promoted to canonical figures dir
 
 DB_LABELS = ["UniProt", "GO CC", "HPA", "SURFY", "CSPA"]
@@ -61,42 +58,40 @@ def _vote_correct(vote: str, truth: str) -> bool:
 
 
 def main() -> None:
-    bench = pd.read_csv(BENCH_TSV, sep="\t")
-    cand = pd.read_csv(CAND_TSV, sep="\t").set_index("uniprot_acc")
-    preds = pd.read_csv(PREDS_TSV, sep="\t")
-    opt = pd.read_csv(OPT_CUTOFFS_TSV, sep="\t")
-    uniprot_opt = set(opt.loc[opt["uniprot_optimized"] == 1, "accession"].astype(str))
-    cspa_opt = set(opt.loc[opt["cspa_optimized"] == 1, "accession"].astype(str))
+    # Single per-figure TSV — all inputs denormalized by build_figure_tsvs.py.
+    data = pd.read_csv(DATA_TSV, sep="\t")
 
-    truth_by_gene = dict(zip(bench["gene_symbol"], bench["ground_truth_verdict"], strict=True))
-    acc_by_gene = dict(zip(bench["gene_symbol"], bench["uniprot_acc"], strict=True))
+    # Per-gene tables — per-DB flags + truth + acc are constant across rows
+    # for the same gene (independent of model/variant/replicate).
+    gene_first = data.groupby("gene_symbol", sort=False).first()
+    truth_by_gene = gene_first["ground_truth_verdict"].to_dict()
 
-    def db_votes_for(acc: str) -> dict[str, bool]:
+    def db_votes_for(gene: str) -> dict[str, bool]:
         out = {label: False for label in DB_LABELS}
-        if not acc:
+        if gene not in gene_first.index:
             return out
-        out["UniProt"] = acc in uniprot_opt
-        out["CSPA"] = acc in cspa_opt
-        if acc in cand.index:
-            row = cand.loc[acc]
-            out["GO CC"] = row["go_surface_flag"] == 1
-            out["HPA"] = row["hpa_surface_flag"] == 1
-            out["SURFY"] = row["surfy_surface_flag"] == 1
+        row = gene_first.loc[gene]
+        out["UniProt"] = row["uniprot_optimized"] == 1
+        out["CSPA"]    = row["cspa_optimized"]    == 1
+        out["GO CC"]   = row["go_surface_flag"]   == 1
+        out["HPA"]     = row["hpa_surface_flag"]  == 1
+        out["SURFY"]   = row["surfy_surface_flag"] == 1
         return out
 
-    sonnet_ncbi = preds[
-        (preds["model"] == "claude-sonnet-4-6") & (preds["prompt_variant"] == "ncbi")
-    ].set_index("gene_symbol")["predicted_verdict"].to_dict()
+    sonnet_ncbi = (
+        data[(data["model"] == "claude-sonnet-4-6") & (data["prompt_variant"] == "ncbi")]
+        .groupby("gene_symbol", sort=False)["predicted_verdict"].first().to_dict()
+    )
 
     callers: list[tuple[str, callable, str]] = [
         ("Sonnet (+ NCBI)",      lambda g: sonnet_ncbi.get(g) or "no",                              CLAUDE_ORANGE),
-        ("UniProt\n(TM+signal)", lambda g: "yes" if db_votes_for(acc_by_gene.get(g, "")).get("UniProt") else "no",
+        ("UniProt\n(TM+signal)", lambda g: "yes" if db_votes_for(g).get("UniProt") else "no",
                                                                                                     CATEGORICAL_PALETTE[0]),
     ]
     for k in (2, 3, 4, 5):
         callers.append((
             f"≥{k} DB",
-            (lambda g, k=k: "yes" if sum(db_votes_for(acc_by_gene.get(g, "")).values()) >= k else "no"),
+            (lambda g, k=k: "yes" if sum(db_votes_for(g).values()) >= k else "no"),
             ENSEMBLE_PALETTE[k],
         ))
 

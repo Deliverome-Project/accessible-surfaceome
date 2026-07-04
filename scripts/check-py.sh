@@ -9,7 +9,9 @@ if ! command -v uv >/dev/null 2>&1; then
   exit 1
 fi
 
-uv run --frozen ruff check src tests
+# Match the pre-commit ruff scope (everything but data/) so the local gate
+# can't pass while CI's pre-commit hook fails on a scripts/ lint error.
+uv run --frozen ruff check src tests scripts
 uv run --frozen ty check
 uv run --frozen python -m compileall -q src
 uv run --frozen pytest -q

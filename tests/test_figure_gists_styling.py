@@ -18,7 +18,7 @@ The contract enforced here:
 * Each declares ``BRAND_PALETTE`` with the six anchor colors from
   ``src/accessible_surfaceome/audit/_plotting_config.py``.
 * Each pulls Manrope into the ``font.sans-serif`` rcParam.
-* Each saves PNG at ``dpi=300`` (not 200).
+* Each saves PNG at ``dpi=600`` (bumped from 300 on 2026-06-24).
 * Each calls ``sns.despine`` (belt-and-suspenders with the rcParam
   spines-off, matches the canonical generator's habit).
 * No gist contains any of the legacy off-brand hex codes that ``ty``-passed
@@ -130,14 +130,17 @@ def test_gist_lists_manrope_in_font_sans_serif(gist: Path):
 
 
 @pytest.mark.parametrize("gist", _gist_files(), ids=lambda p: p.name)
-def test_gist_saves_at_300_dpi(gist: Path):
+def test_gist_saves_at_600_dpi(gist: Path):
     text = gist.read_text()
-    # Allow `dpi=300` as a kwarg OR `"savefig.dpi": 300` in the rcParam
-    # update; either yields a 300 DPI PNG.
-    has_dpi_300 = "dpi=300" in text or '"savefig.dpi": 300' in text
-    assert has_dpi_300, (
-        f"{gist.name}: figures must be saved at 300 DPI, not 200. "
-        f"Set `dpi=300` on the `fig.savefig(...)` PNG call (PDF is vector so DPI is moot there)."
+    # Allow `dpi=600` as a kwarg OR `"savefig.dpi": 600` in the rcParam
+    # update; either yields a 600 DPI PNG. Bumped from 300 → 600 on
+    # 2026-06-24 so figures stay sharp at print scale + retina zoom in
+    # the published PDF (PNGs rasterize at this DPI; PDF stays vector
+    # so DPI is moot there).
+    has_dpi_600 = "dpi=600" in text or '"savefig.dpi": 600' in text
+    assert has_dpi_600, (
+        f"{gist.name}: figures must be saved at 600 DPI. "
+        f"Set `dpi=600` on the `fig.savefig(...)` PNG call (PDF is vector so DPI is moot there)."
     )
 
 
