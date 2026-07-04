@@ -1,0 +1,35 @@
+/* Wrapper button for a §01 Summary metrics chip that jumps to a
+ * matching detail row / block on a Biology / Expression / Risks /
+ * Evidence tab. Presents as a transparent, tightly-hugging shell so
+ * the wrapped <StatusPill> remains the visual chip — the button
+ * exists for semantics, keyboard focus, and a subtle affordance. */
+.jumpTrigger {
+  appearance: none;
+  background: transparent;
+  border: 0;
+  padding: 0;
+  margin: 0;
+  cursor: pointer;
+  display: inline-flex;
+  /* Align the pill's vertical rhythm. Do NOT use `line-height: 0` — it
+   * propagates down into the InfoTip popover the pill hosts inside its
+   * `.wrap`, collapsing the tooltip prose to zero-height lines (looks
+   * transparent). `align-items: center` keeps the pill's own line-height
+   * intact and centered inside the button box. */
+  align-items: center;
+  border-radius: 999px;
+  transition: box-shadow 120ms ease-out;
+}
+.jumpTrigger:hover {
+  /* NO transform on hover. A `translateY(-1px)` shift moves the trigger
+   * up by 1px, which briefly moves the pointer off the hover target,
+   * dropping `.wrap:hover` on the pill's InfoTip popover. The popover's
+   * opacity starts fading back to 0, then the mouse re-enters, and the
+   * cycle repeats — the reader sees a translucent, flickering tooltip.
+   * Rely on the box-shadow alone to signal the affordance. */
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
+}
+.jumpTrigger:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}

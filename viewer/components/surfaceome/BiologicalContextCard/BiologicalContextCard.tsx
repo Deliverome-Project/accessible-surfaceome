@@ -1,5 +1,6 @@
 import type { SurfaceomeRecord } from "../../../lib/surfaceome-types";
 import { prettyEnum } from "../../../lib/surfaceome";
+import { chipJumpTargets } from "../../../lib/chipJumpTargets";
 import { ChipLabelValue } from "../ChipLabelValue/ChipLabelValue";
 import { EvidenceChipList, linkifyEvidenceRefs } from "../EvidenceChip/EvidenceChip";
 import { FeatureRationales } from "../FeatureChips/FeatureChips";
@@ -87,7 +88,11 @@ export function BiologicalContextCard({ rec, n }: Props) {
           (subcellular + anatomical + co-receptor) is in the reader's head.
           The headline modulation signal (oncogenic / immune / stress trigger)
           is already shown in the at-a-glance chip in the section header. */}
-      <div className={styles.subsection}>
+      <div
+        id={chipJumpTargets.primaryCompartment}
+        tabIndex={-1}
+        className={styles.subsection}
+      >
         <p className={`label-mono ${styles.subhead}`}>Subcellular localization</p>
         {/* Primary compartment + two labeled secondary axes in one
             consistent stack (was: subdomains as badges but dual_localization
