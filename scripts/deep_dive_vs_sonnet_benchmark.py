@@ -24,6 +24,7 @@ from __future__ import annotations
 import csv
 from pathlib import Path
 
+import matplotlib.patches as mpatches
 import matplotlib.pyplot as plt
 import numpy as np
 import seaborn as sns
@@ -45,6 +46,23 @@ _SONNET_COLOR = "#d87851"   # Sonnet — Claude-orange
 _BUCKET_ORDER = ["yes", "contextual", "no"]
 _BUCKET_LABEL = {"yes": "yes\n(surface)", "contextual": "contextual",
                  "no": "no\n(not surface)"}
+
+# The deep-dive accuracy bar is stacked by the tier it assigned to the correctly
+# classified genes, so the canonical/likely/low confidence breakdown shows; the
+# not-surface tiers (uncertain, no) collapse to one grey segment.
+_TIER_ORDER = ["canonical", "likely", "low", "uncertain_no"]
+_TIER_COLOR = {
+    "canonical":    "#2E7A55",  # dark green
+    "likely":       "#4E9E74",  # mid green
+    "low":          "#8FC5A8",  # light green
+    "uncertain_no": "#C7BDB6",  # light warm-grey
+}
+_TIER_LABEL = {"canonical": "canonical", "likely": "likely", "low": "low",
+               "uncertain_no": "uncertain / no"}
+
+
+def _tier_group(t: str) -> str:
+    return "uncertain_no" if t in ("uncertain", "no") else t
 
 
 def _load() -> list[dict]:
@@ -72,26 +90,39 @@ def _panel_label(ax, letter: str) -> None:
             fontweight=800, va="bottom", ha="right", color=COLORS["dark"])
 
 
-def _bars(ax, rows: list[dict], x: float, width: float, label: bool) -> None:
-    """Deep-dive + Sonnet+NCBI accuracy bars at x. Sonnet also carries an SEM
-    error bar + the individual per-gene correctness dots (jittered), so its
-    uncertainty — and how it overlaps the deep-dive bar — is visible."""
-    dd, _, _ = _stats(rows, "deep_dive_correct")
+def _draw_sonnet(ax, rows: list[dict], x: float, width: float) -> None:
+    """Sonnet+NCBI accuracy bar + binomial-SEM error bar + jittered per-gene
+    correctness dots."""
     son, son_sem, son_pts = _stats(rows, "sonnet_correct")
-    ax.bar(x - width / 2, dd, width=width, color=_DD_COLOR,
-           label="deep dive" if label else None, zorder=2)
-    ax.bar(x + width / 2, son, width=width, color=_SONNET_COLOR,
-           label="Sonnet+NCBI" if label else None, zorder=2)
-    ax.errorbar(x + width / 2, son, yerr=son_sem, fmt="none",
-                ecolor=COLORS["dark"], elinewidth=1.4, capsize=5, zorder=4)
+    ax.bar(x, son, width=width, color=_SONNET_COLOR, zorder=2)
+    ax.errorbar(x, son, yerr=son_sem, fmt="none", ecolor=COLORS["dark"],
+                elinewidth=1.4, capsize=5, zorder=4)
     if son_pts:
         jx = _RNG.uniform(-width * 0.26, width * 0.26, size=len(son_pts))
-        ax.scatter(x + width / 2 + jx, son_pts, s=16, color=COLORS["dark"],
-                   alpha=0.4, edgecolor="none", zorder=5)
-    ax.text(x - width / 2, dd + 2, f"{dd:.0f}", ha="center", va="bottom",
-            fontsize=14, color=_DD_COLOR, fontweight="bold")
-    ax.text(x + width / 2, son + son_sem + 2, f"{son:.0f}", ha="center",
-            va="bottom", fontsize=14, color=_SONNET_COLOR, fontweight="bold")
+        ax.scatter(x + jx, son_pts, s=16, color=COLORS["dark"], alpha=0.4,
+                   edgecolor="none", zorder=5)
+    ax.text(x, son + son_sem + 2, f"{son:.0f}", ha="center", va="bottom",
+            fontsize=14, color=_SONNET_COLOR, fontweight="bold")
+
+
+def _draw_deep_dive(ax, rows: list[dict], x: float, width: float) -> None:
+    """Deep-dive accuracy bar, STACKED by the tier of the correctly-classified
+    genes (canonical/likely/low green shades + grey for uncertain/no), so the
+    confidence breakdown of the calls is visible. Stack height == accuracy."""
+    from collections import Counter
+    n = len(rows)
+    dd, _, _ = _stats(rows, "deep_dive_correct")
+    counts = Counter(_tier_group(r["deep_dive_tier"]) for r in rows
+                     if int(r["deep_dive_correct"]) == 1)
+    bottom = 0.0
+    for t in _TIER_ORDER:
+        h = 100.0 * counts.get(t, 0) / n if n else 0.0
+        if h <= 0:
+            continue
+        ax.bar(x, h, bottom=bottom, width=width, color=_TIER_COLOR[t], zorder=2)
+        bottom += h
+    ax.text(x, dd + 2, f"{dd:.0f}", ha="center", va="bottom", fontsize=14,
+            color=COLORS["dark"], fontweight="bold")
 
 
 def make_plot() -> tuple[plt.Figure, tuple[plt.Axes, plt.Axes]]:
@@ -110,7 +141,8 @@ def make_plot() -> tuple[plt.Figure, tuple[plt.Axes, plt.Axes]]:
 
     # ── Panel a: overall ────────────────────────────────────────────────────
     width = 0.6
-    _bars(axA, rows, 0.0, width, label=False)
+    _draw_deep_dive(axA, rows, -width / 2, width)
+    _draw_sonnet(axA, rows, width / 2, width)
     axA.set_xticks([-width / 2, width / 2])
     axA.set_xticklabels(["deep\ndive", "Sonnet\n+NCBI"])
     axA.set_ylabel("Soft-credit accuracy (%)")
@@ -125,14 +157,23 @@ def make_plot() -> tuple[plt.Figure, tuple[plt.Axes, plt.Axes]]:
                 for bk in _BUCKET_ORDER}
     for bi, bk in enumerate(_BUCKET_ORDER):
         sub = [r for r in rows if r["ground_truth_verdict"] == bk]
-        _bars(axB, sub, float(bi), bwidth, label=(bi == 0))
+        _draw_deep_dive(axB, sub, bi - bwidth / 2, bwidth)
+        _draw_sonnet(axB, sub, bi + bwidth / 2, bwidth)
     axB.set_xticks(range(len(_BUCKET_ORDER)))
     axB.set_xticklabels([f"{_BUCKET_LABEL[b]}\nn={bucket_n[b]}"
                          for b in _BUCKET_ORDER])
     axB.set_ylabel("Soft-credit accuracy (%)")
     axB.set_ylim(0, 112)
     axB.set_xlim(-0.6, len(_BUCKET_ORDER) - 0.4)
-    axB.legend(loc="upper right", frameon=False, fontsize=14)
+    # Legend: deep-dive tier stack (canonical/likely/low/uncertain-no) + Sonnet.
+    # Short labels under a "deep-dive tier" header so it fits the empty
+    # upper-right (over the low 'no' bucket) without clipping the taller bars.
+    handles = [mpatches.Patch(color=_TIER_COLOR[t], label=_TIER_LABEL[t])
+               for t in _TIER_ORDER]
+    handles.append(mpatches.Patch(color=_SONNET_COLOR, label="Sonnet+NCBI"))
+    axB.legend(handles=handles, loc="upper right", frameon=False, fontsize=11,
+               title="deep-dive tier / Sonnet", title_fontsize=11,
+               labelspacing=0.35, handlelength=1.2)
     sns.despine(ax=axB, top=True, right=True)
     _panel_label(axB, "b")
 
