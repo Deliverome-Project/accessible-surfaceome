@@ -220,7 +220,6 @@ def _panel_label(ax: plt.Axes, letter: str) -> None:
 def render(feats: pd.DataFrame, out_dir: Path) -> Path:
     _apply_brand_style()
 
-    n_total = len(feats)
     facet_labels = [GROUP_LABEL[g] for g in GROUPS]
     facet_colors = [GROUP_COLOR[g] for g in GROUPS]
 
@@ -240,8 +239,8 @@ def render(feats: pd.DataFrame, out_dir: Path) -> Path:
         ("cyno_has_one2one",    "frac_bool", "% with cyno 1:1 ortholog"),
         ("schweke_homomer",     "frac_bool", "% homo-oligomer (Schweke 2024)"),
         ("alt_iso_diff_topo",   "frac_bool", "% with alt isoform of different topology"),
-        ("has_ec_surface_bind_site", "frac_bool", "% with 1+ extracellular\nsurface-bind site"),
         ("has_concerning_paralog", "frac_bool", "% concerning paralog\n(ECD 40%+ id)"),
+        ("has_ec_surface_bind_site", "frac_bool", "% with 1+ extracellular\nsurface-bind site"),
     ]
 
     letters = "abcdefghijkl"
@@ -307,15 +306,6 @@ def render(feats: pd.DataFrame, out_dir: Path) -> Path:
         bbox_to_anchor=(0.5, 1.02), fontsize=10,
         title="Deep-dive surface-accessibility tier (pending genes excluded)",
         title_fontsize=11,
-    )
-
-    fig.text(
-        0.5, -0.01,
-        f"PRELIMINARY — record-sourced deterministic features across "
-        f"{n_total:,} deep-dived genes (partial sweep of ~5,128 candidates; "
-        f"pending genes excluded). Violins: continuous features; bars: "
-        f"% of genes with the boolean feature.",
-        ha="center", va="top", fontsize=10, style="italic", color=BRAND_NEUTRAL,
     )
 
     plt.tight_layout(rect=(0, 0, 1, 0.96))

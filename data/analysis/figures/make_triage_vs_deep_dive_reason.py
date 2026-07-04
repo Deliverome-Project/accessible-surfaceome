@@ -340,7 +340,7 @@ def _draw_concordance_by_tier(
     ax.set_xlim(0, 108)
     ax.set_xticks([0, 25, 50, 75, 100])
     ax.set_xticklabels(["0", "25", "50", "75", "100%"])
-    ax.set_xlabel("% of each deep-dive tier's genes the source also flags")
+    ax.set_xlabel("% of each deep-dive tier's genes\nthe source also flags")
     ax.set_title("Database concordance: does the deep dive agree with "
                  "Sonnet or the DBs?",
                  fontsize=16, fontweight="semibold", pad=12)
@@ -395,7 +395,7 @@ def _draw_reason_matrix(ax: plt.Axes, m: np.ndarray) -> None:
         mpatches.Patch(facecolor="none", edgecolor=DIAGONAL_HIGHLIGHT,
                        lw=2.5, label="diagonal (reason agrees)")
     )
-    ax.legend(handles=handles, loc="upper center", bbox_to_anchor=(0.5, -0.10),
+    ax.legend(handles=handles, loc="upper center", bbox_to_anchor=(0.5, -0.19),
               ncols=4, frameon=False, fontsize=12)
 
 
@@ -433,14 +433,6 @@ def main() -> None:
 
     cohort_n = int(m.sum())
     on_diag = int(np.trace(m))
-    fig.text(
-        0.5, 0.02,
-        f"n = {cohort_n} genes with both a triage and a deep-dive record "
-        f"({on_diag}/{cohort_n} on the reason diagonal, {100 * on_diag / cohort_n:.0f}%). "
-        f"PRELIMINARY - ~1,175 of ~5,128 swept, pre-QA-fix; widens as the sweep grows.",
-        ha="center", va="bottom", fontsize=12, style="italic", color=BRAND_NEUTRAL,
-    )
-
     fig.tight_layout(rect=(0, 0.04, 1, 0.98))
 
     out_pdf = Path("triage_vs_deep_dive_reason.pdf")

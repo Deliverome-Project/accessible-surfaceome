@@ -41,7 +41,7 @@ SLUG = "deep_dive_vs_sonnet_benchmark"
 DATA_TSV = ROOT / "data/processed/figures/deep_dive_vs_sonnet_benchmark.tsv"
 GIST_URL = ""  # filled at figure promotion
 
-_SONNET_COLOR = "#C85A2E"   # Sonnet — deeper orange
+_SONNET_COLOR = "#E5946A"   # Sonnet — lighter orange
 _BUCKET_ORDER = ["yes", "contextual", "no"]
 _BUCKET_LABEL = {"yes": "yes\n(surface)", "contextual": "contextual",
                  "no": "no\n(not surface)"}
