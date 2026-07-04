@@ -25,6 +25,7 @@ import csv
 from pathlib import Path
 
 import matplotlib.pyplot as plt
+import numpy as np
 import seaborn as sns
 
 from accessible_surfaceome.audit._plotting_config import (
@@ -51,8 +52,19 @@ def _load() -> list[dict]:
         return list(csv.DictReader(f, delimiter="\t"))
 
 
-def _acc(rows: list[dict], key: str) -> float:
-    return 100.0 * sum(int(r[key]) for r in rows) / len(rows) if rows else 0.0
+_RNG = np.random.default_rng(0)  # deterministic jitter
+
+
+def _stats(rows: list[dict], key: str) -> tuple[float, float, list[float]]:
+    """Soft-credit accuracy (%), its binomial SEM (%), and the per-gene 0/100
+    correctness values (for the jittered dots)."""
+    vals = [int(r[key]) for r in rows]
+    n = len(vals)
+    if n == 0:
+        return 0.0, 0.0, []
+    p = sum(vals) / n
+    sem = 100.0 * ((p * (1 - p)) ** 0.5) / (n ** 0.5)
+    return 100.0 * p, sem, [100.0 * v for v in vals]
 
 
 def _panel_label(ax, letter: str) -> None:
@@ -60,16 +72,26 @@ def _panel_label(ax, letter: str) -> None:
             fontweight=800, va="bottom", ha="right", color=COLORS["dark"])
 
 
-def _bars(ax, dd: float, son: float, x: float, width: float,
-          label: bool) -> None:
+def _bars(ax, rows: list[dict], x: float, width: float, label: bool) -> None:
+    """Deep-dive + Sonnet+NCBI accuracy bars at x. Sonnet also carries an SEM
+    error bar + the individual per-gene correctness dots (jittered), so its
+    uncertainty — and how it overlaps the deep-dive bar — is visible."""
+    dd, _, _ = _stats(rows, "deep_dive_correct")
+    son, son_sem, son_pts = _stats(rows, "sonnet_correct")
     ax.bar(x - width / 2, dd, width=width, color=_DD_COLOR,
-           label="deep dive" if label else None)
+           label="deep dive" if label else None, zorder=2)
     ax.bar(x + width / 2, son, width=width, color=_SONNET_COLOR,
-           label="Sonnet+NCBI" if label else None)
-    ax.text(x - width / 2, dd + 1.5, f"{dd:.0f}", ha="center", va="bottom",
+           label="Sonnet+NCBI" if label else None, zorder=2)
+    ax.errorbar(x + width / 2, son, yerr=son_sem, fmt="none",
+                ecolor=COLORS["dark"], elinewidth=1.4, capsize=5, zorder=4)
+    if son_pts:
+        jx = _RNG.uniform(-width * 0.26, width * 0.26, size=len(son_pts))
+        ax.scatter(x + width / 2 + jx, son_pts, s=16, color=COLORS["dark"],
+                   alpha=0.4, edgecolor="none", zorder=5)
+    ax.text(x - width / 2, dd + 2, f"{dd:.0f}", ha="center", va="bottom",
             fontsize=14, color=_DD_COLOR, fontweight="bold")
-    ax.text(x + width / 2, son + 1.5, f"{son:.0f}", ha="center", va="bottom",
-            fontsize=14, color=_SONNET_COLOR, fontweight="bold")
+    ax.text(x + width / 2, son + son_sem + 2, f"{son:.0f}", ha="center",
+            va="bottom", fontsize=14, color=_SONNET_COLOR, fontweight="bold")
 
 
 def make_plot() -> tuple[plt.Figure, tuple[plt.Axes, plt.Axes]]:
@@ -88,16 +110,12 @@ def make_plot() -> tuple[plt.Figure, tuple[plt.Axes, plt.Axes]]:
 
     # ── Panel a: overall ────────────────────────────────────────────────────
     width = 0.6
-    _bars(axA, _acc(rows, "deep_dive_correct"), _acc(rows, "sonnet_correct"),
-          0.0, width, label=False)
+    _bars(axA, rows, 0.0, width, label=False)
     axA.set_xticks([-width / 2, width / 2])
     axA.set_xticklabels(["deep\ndive", "Sonnet\n+NCBI"])
     axA.set_ylabel("Soft-credit accuracy (%)")
     axA.set_ylim(0, 112)
     axA.set_xlim(-0.7, 0.7)
-    axA.text(0.5, 1.02, f"Overall (n={n})", transform=axA.transAxes,
-             ha="center", va="bottom", fontsize=15, style="italic",
-             color=COLORS["neutral"])
     sns.despine(ax=axA, top=True, right=True)
     _panel_label(axA, "a")
 
@@ -107,18 +125,14 @@ def make_plot() -> tuple[plt.Figure, tuple[plt.Axes, plt.Axes]]:
                 for bk in _BUCKET_ORDER}
     for bi, bk in enumerate(_BUCKET_ORDER):
         sub = [r for r in rows if r["ground_truth_verdict"] == bk]
-        _bars(axB, _acc(sub, "deep_dive_correct"), _acc(sub, "sonnet_correct"),
-              float(bi), bwidth, label=(bi == 0))
+        _bars(axB, sub, float(bi), bwidth, label=(bi == 0))
     axB.set_xticks(range(len(_BUCKET_ORDER)))
     axB.set_xticklabels([f"{_BUCKET_LABEL[b]}\nn={bucket_n[b]}"
                          for b in _BUCKET_ORDER])
     axB.set_ylabel("Soft-credit accuracy (%)")
     axB.set_ylim(0, 112)
     axB.set_xlim(-0.6, len(_BUCKET_ORDER) - 0.4)
-    axB.text(0.5, 1.02, "By ground-truth bucket", transform=axB.transAxes,
-             ha="center", va="bottom", fontsize=15, style="italic",
-             color=COLORS["neutral"])
-    axB.legend(loc="lower left", frameon=False, fontsize=14)
+    axB.legend(loc="upper right", frameon=False, fontsize=14)
     sns.despine(ax=axB, top=True, right=True)
     _panel_label(axB, "b")
 

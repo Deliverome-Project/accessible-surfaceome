@@ -73,7 +73,7 @@ BRAND_PALETTE = [
 ]
 BRAND_NEUTRAL = "#6F5D5A"
 BRAND_GRID = "#E6DAD4"
-COLOR_UNIVERSE = "#9C8C88"   # warm-grey — neutral reference
+COLOR_UNIVERSE = "#C7BDB6"   # light warm-grey — neutral reference
 COLOR_BENCH = "#3D6B60"      # teal-mid — highlighted subset
 
 

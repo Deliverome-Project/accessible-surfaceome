@@ -66,7 +66,7 @@ FEATURES: list[tuple[str, str]] = [
     ("deeptm_TM_NO_SP",              "TM w/o\nSP"),
 ]
 
-COLOR_UNIVERSE = "#9C8C88"   # warm-grey — neutral reference
+COLOR_UNIVERSE = "#C7BDB6"   # light warm-grey — neutral reference
 COLOR_BENCH = "#3D6B60"      # teal-mid — highlighted subset
 
 
