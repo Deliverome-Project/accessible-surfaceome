@@ -18,10 +18,15 @@
    * intact and centered inside the button box. */
   align-items: center;
   border-radius: 999px;
-  transition: transform 120ms ease-out, box-shadow 120ms ease-out;
+  transition: box-shadow 120ms ease-out;
 }
 .jumpTrigger:hover {
-  transform: translateY(-1px);
+  /* NO transform on hover. A `translateY(-1px)` shift moves the trigger
+   * up by 1px, which briefly moves the pointer off the hover target,
+   * dropping `.wrap:hover` on the pill's InfoTip popover. The popover's
+   * opacity starts fading back to 0, then the mouse re-enters, and the
+   * cycle repeats — the reader sees a translucent, flickering tooltip.
+   * Rely on the box-shadow alone to signal the affordance. */
   box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
 }
 .jumpTrigger:focus-visible {

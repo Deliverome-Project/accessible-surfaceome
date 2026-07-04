@@ -1,12 +1,12 @@
 .footer {
   /* Tight top gap — the `.page` flex `gap: var(--space-3)` already
-   * separates this from the Triage row above. Was `var(--space-12)`
-   * + `var(--space-6)` (72px total dead band above the "Data sources"
-   * label); trimmed to `var(--space-4)` (1rem) + `var(--space-4)` so
-   * the footer sits close to the reference-point strips it belongs
-   * with instead of floating far below them. */
-  margin-top: var(--space-4);
-  padding-top: var(--space-4);
+   * separates this from the Triage row above; the BenchmarkRow's own
+   * `margin-top` pushes the Bench+Triage pair down toward this footer
+   * so the trio reads as one grouped block. Zero margin-top on the
+   * footer + a small `padding-top` inside the border keeps the divider
+   * close to the Triage row above. */
+  margin-top: 0;
+  padding-top: var(--space-3);
   border-top: 1px solid var(--line-soft);
   display: flex;
   flex-direction: column;

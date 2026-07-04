@@ -337,17 +337,22 @@ export function FiltersCard({ rec, n }: Props) {
   const primaryCompartmentLabel = prettyEnum(
     rec.biological_context.subcellular_localization.primary_compartment,
   );
+  // Contradiction chip's provenance tooltip lives on a sibling ⓘ
+  // (rendered next to the wrapped pill below) so the pill stays a
+  // single-purpose click-to-jump target.
+  const contradictionInfoTip = (
+    <InfoTip label="About the contradiction chip">
+      {"Highest severity of contradicting evidence against the surface " +
+        "call (from §02 Surface evidence → Contradicting evidence). " +
+        "none = no contradictions in the ledger; low / moderate / high = " +
+        "the strongest contradiction's impact on the surface-accessibility " +
+        "call; unclear = logged but impact not gradable."}
+    </InfoTip>
+  );
   const contradictionPill = (
     <StatusPill
       tone={contradictionTone(maxContradictionSeverity)}
       size="sm"
-      title={
-        "Highest severity of contradicting evidence against the surface " +
-        "call (from §02 Surface evidence → Contradicting evidence). " +
-        "none = no contradictions in the ledger; low / moderate / high = " +
-        "the strongest contradiction's impact on the surface-accessibility " +
-        "call; unclear = logged but impact not gradable."
-      }
     >
       <ChipLabelValue
         label="contradiction"
@@ -462,20 +467,28 @@ export function FiltersCard({ rec, n }: Props) {
           </StatusPill>
         </ChipJumpButton>,
         // Highest-severity contradicting evidence against the surface call
-        // (echoed from §02). "none" = no contradictions logged.
+        // (echoed from §02). "none" = no contradictions logged. The ⓘ
+        // InfoTip carries the axis/legend glossary as a sibling so it
+        // stays hover-only and doesn't compete with the pill's
+        // click-to-jump surface.
         maxContradictionSeverity === "none" ? (
-          <Fragment key="contradiction">{contradictionPill}</Fragment>
-        ) : (
-          <ChipJumpButton
-            key="contradiction"
-            targetId={chipJumpTargets.contradictingEvidence}
-            tabId="evidence"
-            ariaLabel={`Jump to Contradicting evidence (${prettyEnum(
-              maxContradictionSeverity,
-            )})`}
-          >
+          <Fragment key="contradiction">
             {contradictionPill}
-          </ChipJumpButton>
+            {contradictionInfoTip}
+          </Fragment>
+        ) : (
+          <Fragment key="contradiction">
+            <ChipJumpButton
+              targetId={chipJumpTargets.contradictingEvidence}
+              tabId="evidence"
+              ariaLabel={`Jump to Contradicting evidence (${prettyEnum(
+                maxContradictionSeverity,
+              )})`}
+            >
+              {contradictionPill}
+            </ChipJumpButton>
+            {contradictionInfoTip}
+          </Fragment>
         ),
         // Distinct modulation categories (the §03 purple "Context" pills),
         // lavender like the biology tab so the reader knows which kinds of

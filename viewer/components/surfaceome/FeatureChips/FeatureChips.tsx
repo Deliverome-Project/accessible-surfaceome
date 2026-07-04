@@ -2,6 +2,7 @@ import { Fragment } from "react";
 import type { SurfaceomeRecord } from "../../../lib/surfaceome-types";
 import { prettyEnum } from "../../../lib/surfaceome";
 import { chipJumpTargets } from "../../../lib/chipJumpTargets";
+import { InfoTip } from "../../InfoTip/InfoTip";
 import { ChipJumpButton } from "../_shared/ChipJumpButton/ChipJumpButton";
 import { ChipLabelValue } from "../ChipLabelValue/ChipLabelValue";
 import { StatusPill } from "../StatusPill/StatusPill";
@@ -58,6 +59,14 @@ export interface FeatureChipModel {
    *  level+breadth) and the orchestrator-derived booleans carry no
    *  structured cites, so this is left unset for them. */
   citedEvidenceIds?: string[];
+  /** Provenance / glossary tooltip content. Rendered next to the chip as a
+   *  small ⓘ InfoTip so the whole pill remains the click-to-jump target
+   *  (the `<ChipJumpButton>` wrapping the pill would otherwise swallow
+   *  hover-only tooltips, and mixing hover + click on the same surface is
+   *  confusing). Builders that populated this used to pass a `title=` prop
+   *  on the `StatusPill` directly; the field split lets us keep the
+   *  affordance while separating the two interactions. */
+  hoverTooltip?: React.ReactNode;
 }
 
 type Tone =
@@ -185,15 +194,14 @@ function buildBiologyChips(rec: SurfaceomeRecord): FeatureChipModel[] {
       key: "spec",
       label: "Surface specificity",
       rationale: nz(f.surface_specificity_rationale),
+      hoverTooltip:
+        "Surface-vs-intracellular split. surface_dominant = surface " +
+        "is the primary localization; mixed = ~equal partitioning; " +
+        "mostly_intracellular = surface is the minority pool.",
       pill: (
         <StatusPill
           tone={surfaceSpecificityTone(f.surface_specificity)}
           size="sm"
-          title={
-            "Surface-vs-intracellular split. surface_dominant = surface " +
-            "is the primary localization; mixed = ~equal partitioning; " +
-            "mostly_intracellular = surface is the minority pool."
-          }
         >
           {/* Sentence-case description + bold UPPERCASE verdict at the
            *  same font size — shared `ChipLabelValue` so every
@@ -210,11 +218,11 @@ function buildBiologyChips(rec: SurfaceomeRecord): FeatureChipModel[] {
       label: "Restricted membrane subdomain",
       rationale: nz(ar.restricted_subdomain.rationale),
       citedEvidenceIds: ar.restricted_subdomain.cited_evidence_ids,
+      hoverTooltip: TT_RESTRICTED_SUBDOMAIN,
       pill: (
         <StatusPill
           tone={f.has_restricted_subdomain ? "danger" : "success"}
           size="sm"
-          title={TT_RESTRICTED_SUBDOMAIN}
         >
           <ChipLabelValue
             label="restricted membrane subdomain"
@@ -236,13 +244,13 @@ function buildBiologyChips(rec: SurfaceomeRecord): FeatureChipModel[] {
       // absent on records emitted before that mirror field was added —
       // e.g. the 2026-05-16 demo records — which rendered the chip value
       // as a bare em-dash). The deep-block field is always present.
+      hoverTooltip: TT_CORECEPTOR,
       pill: (
         <StatusPill
           tone={coReceptorDependencyTone(
             ar.co_receptor_requirements.surface_expression_dependency,
           )}
           size="sm"
-          title={TT_CORECEPTOR}
         >
           <ChipLabelValue
             label="partner for expression"
@@ -263,11 +271,11 @@ function buildExpressionChips(rec: SurfaceomeRecord): FeatureChipModel[] {
       key: "level",
       label: "Expression level",
       rationale: nz(f.expression_level_rationale),
+      hoverTooltip: TT_EXPRESSION_LEVEL,
       pill: (
         <StatusPill
           tone={expressionLevelTone(f.expression_level)}
           size="sm"
-          title={TT_EXPRESSION_LEVEL}
         >
           <ChipLabelValue label="level" value={prettyEnum(f.expression_level)} />
         </StatusPill>
@@ -277,14 +285,13 @@ function buildExpressionChips(rec: SurfaceomeRecord): FeatureChipModel[] {
       key: "breadth",
       label: "Expression breadth",
       rationale: nz(f.expression_breadth_rationale),
+      hoverTooltip:
+        "Synthesizer's rollup of cross-tissue expression: pan_tissue (most " +
+        "tissues), broad (>half), restricted (a few), rare (one or two).",
       pill: (
         <StatusPill
           tone={expressionBreadthTone(f.expression_breadth)}
           size="sm"
-          title={
-            "Synthesizer's rollup of cross-tissue expression: pan_tissue (most " +
-            "tissues), broad (>half), restricted (a few), rare (one or two)."
-          }
         >
           <ChipLabelValue label="breadth" value={prettyEnum(f.expression_breadth)} />
         </StatusPill>
@@ -294,6 +301,7 @@ function buildExpressionChips(rec: SurfaceomeRecord): FeatureChipModel[] {
       key: "oe_observed",
       label: "Overexpression precedent",
       rationale: nz(f.overexpression_surface_localization_observed_rationale),
+      hoverTooltip: TT_OE_OBSERVED,
       pill: (
         <StatusPill
           tone={
@@ -302,7 +310,6 @@ function buildExpressionChips(rec: SurfaceomeRecord): FeatureChipModel[] {
               : "neutral"
           }
           size="sm"
-          title={TT_OE_OBSERVED}
         >
           <ChipLabelValue
             label="overexpression precedent"
@@ -360,11 +367,11 @@ function buildRiskChips(rec: SurfaceomeRecord): FeatureChipModel[] {
       key: "lowendog",
       label: "Low endogenous expression",
       rationale: nz(f.low_endogenous_expression_rationale),
+      hoverTooltip: TT_LOW_ENDOG,
       pill: (
         <StatusPill
           tone={f.low_endogenous_expression ? "danger" : "success"}
           size="sm"
-          title={TT_LOW_ENDOG}
         >
           <ChipLabelValue
             label="low endogenous expression"
@@ -410,28 +417,42 @@ export function buildFeatureChips(
  * `<FeatureChips>`). Extracting the wrap decision keeps the two call sites
  * from drifting on which chips become clickable.
  *
- * When `nz(m.rationale) === null` the chip is emitted as a plain pill
- * wrapped in a keyed Fragment (so it can sit in the same list as its
- * clickable siblings without a React key warning). Otherwise the pill is
- * wrapped in a `<ChipJumpButton>` targeting the matching row on the
- * category's rationale tab.
+ * Two orthogonal decorations:
+ * - When `nz(m.rationale)` is non-null, the pill is wrapped in a
+ *   `<ChipJumpButton>` so the whole chip surface acts as a jump target.
+ * - When `m.hoverTooltip` is set, a small `<InfoTip>` (ⓘ glyph) is
+ *   rendered next to the pill so hover / focus reveals the provenance
+ *   / glossary tooltip WITHOUT competing with the click-to-jump.
+ *
+ * Both decorations render as siblings inside a keyed Fragment. The
+ * InfoTip sits OUTSIDE the `<ChipJumpButton>` so clicking the ⓘ
+ * doesn't trigger a jump, and so its own real `<button>` trigger
+ * doesn't nest inside the click surface's `<span role="button">`.
  */
 export function renderChipWithJump(
   m: FeatureChipModel,
   category: FeatureCategory,
 ): React.ReactNode {
-  if (nz(m.rationale) === null) {
-    return <Fragment key={m.key}>{m.pill}</Fragment>;
-  }
-  return (
+  const clickable = nz(m.rationale) !== null;
+  const infoTip = m.hoverTooltip ? (
+    <InfoTip label={`About ${m.label}`}>{m.hoverTooltip}</InfoTip>
+  ) : null;
+  const chip = clickable ? (
     <ChipJumpButton
-      key={m.key}
       targetId={chipJumpTargets.featureRationale(category, m.key)}
       tabId={category}
       ariaLabel={`Jump to rationale: ${m.label}`}
     >
       {m.pill}
     </ChipJumpButton>
+  ) : (
+    m.pill
+  );
+  return (
+    <Fragment key={m.key}>
+      {chip}
+      {infoTip}
+    </Fragment>
   );
 }
 
