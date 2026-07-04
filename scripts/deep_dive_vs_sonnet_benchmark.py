@@ -17,7 +17,7 @@ Run::
 
     uv run python scripts/deep_dive_vs_sonnet_benchmark.py
 
-# Reproduction: (gist created at figure promotion)
+# Reproduction: https://gist.github.com/beccajcarlson/d88f7c7a135bf222ccc5883b9c1a2eb4
 """
 from __future__ import annotations
 
@@ -39,7 +39,7 @@ ROOT = Path(__file__).resolve().parents[1]
 OUT_DIR = ROOT / "data/analysis/figures"
 SLUG = "deep_dive_vs_sonnet_benchmark"
 DATA_TSV = ROOT / "data/processed/figures/deep_dive_vs_sonnet_benchmark.tsv"
-GIST_URL = ""  # filled at figure promotion
+GIST_URL = "https://gist.github.com/beccajcarlson/d88f7c7a135bf222ccc5883b9c1a2eb4"
 
 _SONNET_COLOR = "#E5946A"   # Sonnet — lighter orange
 _BUCKET_ORDER = ["yes", "contextual", "no"]

@@ -83,6 +83,12 @@ TSV_BUNDLE: dict[str, list[str]] = {
     "deep_dive_record_richness": [
         "data/processed/figures/deep_dive_record_richness.tsv",
     ],
+    "deep_dive_vs_sonnet_benchmark": [
+        # Supp Fig S12 — one row per deep-dived SurfaceBench gene with
+        # both predictors' soft-credit correctness + the deep-dive tier +
+        # the three Sonnet replicate flags. Built by build_figure_tsvs.py.
+        "data/processed/figures/deep_dive_vs_sonnet_benchmark.tsv",
+    ],
     "ensemble_vs_best_db_vs_sonnet": [
         "data/processed/figures/ensemble_vs_best_db_vs_sonnet.tsv",
     ],
