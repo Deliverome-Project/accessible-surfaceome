@@ -297,6 +297,7 @@ function orthologRow(e: OrthologEntry, key: string, species: string, maxResidues
             topology={e.per_residue_topology}
             ariaLabel={`${e.ortholog_symbol} ortholog topology`}
             maxResidues={maxResidues}
+            canonicalFrame={e.per_residue_topology_canonical_frame}
           />
         ) : (
           <span className={styles.muted}>no topology</span>
@@ -365,6 +366,7 @@ function paralogRow(p: ParalogEntry, key: string, maxResidues: number) {
             topology={p.per_residue_topology}
             ariaLabel={`${p.paralog_symbol} paralog topology`}
             maxResidues={maxResidues}
+            canonicalFrame={p.per_residue_topology_canonical_frame}
           />
         ) : (
           <span className={styles.muted}>no topology</span>
@@ -435,9 +437,25 @@ export function IsoformsCard({ rec, n }: Props) {
     ...closeParalogs.map((p) => p.per_residue_topology),
   ].filter((t): t is string => !!t);
   // Longest topology across every rendered row — the common scale every
-  // TopologyBar uses, so bars are length-proportional + left-aligned to the
-  // canonical frame instead of all stretching to the full column width.
+  // TopologyBar uses in the FALLBACK (length-scaling) path, so bars are
+  // length-proportional + left-aligned to the canonical frame instead of all
+  // stretching to the full column width.
   const maxResidues = allTopologies.reduce((m, t) => Math.max(m, t.length), 0);
+
+  // Canonical-frame mode: the deterministic backfill re-projects every
+  // variant's topology onto the canonical coordinate axis
+  // (per_residue_topology_canonical_frame). When ANY rendered row carries it,
+  // the record has been backfilled, so we switch the whole table to the shared
+  // canonical axis (every bar full-width, homologous features aligned column-
+  // for-column) — including the canonical row, whose own per_residue_topology
+  // IS that axis. Pre-backfill records have it nowhere → the table keeps the
+  // legacy length-scaling behavior. (Per-row, a variant still falls back to
+  // length-scaling if it individually lacks the projection.)
+  const canonicalFrame =
+    df.isoform_topologies.some((iso) => !!iso.per_residue_topology_canonical_frame) ||
+    orthologs.mouse.some((e) => !!e.per_residue_topology_canonical_frame) ||
+    orthologs.cynomolgus.some((e) => !!e.per_residue_topology_canonical_frame) ||
+    closeParalogs.some((p) => !!p.per_residue_topology_canonical_frame);
 
   // Compara version label comes from the first entry that has one (the
   // builder fills the same value across all rows in a release).
@@ -555,6 +573,9 @@ export function IsoformsCard({ rec, n }: Props) {
                     topology={ct.per_residue_topology}
                     ariaLabel={`${rec.gene.hgnc_symbol} canonical isoform topology`}
                     maxResidues={maxResidues}
+                    // The canonical IS the shared frame — its own per-residue
+                    // topology defines the axis every other row projects onto.
+                    canonicalFrame={canonicalFrame ? ct.per_residue_topology : undefined}
                   />
                 </td>
               </tr>
@@ -613,6 +634,7 @@ export function IsoformsCard({ rec, n }: Props) {
                         topology={iso.per_residue_topology}
                         ariaLabel={`${rec.gene.hgnc_symbol} ${iso.isoform_id} topology`}
                         maxResidues={maxResidues}
+                        canonicalFrame={iso.per_residue_topology_canonical_frame}
                       />
                     </td>
                   </tr>

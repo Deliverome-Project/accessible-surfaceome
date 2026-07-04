@@ -34,6 +34,9 @@ from typing import Any
 
 import httpx
 
+from accessible_surfaceome.merge.canonical_frame_topology import (
+    project_topology_onto_canonical_frame,
+)
 from accessible_surfaceome.merge.ortholog_topology_projection import (
     project_human_topology_onto_ortholog,
 )
@@ -54,6 +57,30 @@ logger = logging.getLogger(__name__)
 # and the rendered record would explode. Matches the per-gene cap in
 # scripts/upload_paralogs_to_d1.py.
 PARALOG_TOP_N = 50
+
+
+def _project_canonical_frame(
+    *,
+    canonical_sequence: str,
+    variant_sequence: str | None,
+    variant_topology: str | None,
+) -> str | None:
+    """Thin wrapper: project a variant's topology onto the canonical axis.
+
+    Shared by the isoform / ortholog / close-paralog fetchers so every variant
+    that carries BOTH a sequence and a per-residue topology is born aligned to
+    the canonical coordinate frame (the viewer's shared topology-bar axis).
+    Returns ``None`` — leaving the field unset so the viewer falls back to raw
+    length-scaling — whenever the canonical sequence, the variant sequence, or
+    the variant topology is missing, or the projection isn't well-defined.
+    """
+    if not canonical_sequence or not variant_sequence or not variant_topology:
+        return None
+    return project_topology_onto_canonical_frame(
+        canonical_sequence=canonical_sequence,
+        variant_sequence=variant_sequence,
+        variant_topology=variant_topology,
+    )
 
 
 def _query_public(sql: str, params: list[Any]) -> list[dict[str, Any]]:
@@ -285,6 +312,16 @@ def _fetch_isoform_topologies(
             full_pct = ident.full_length_pct_identity
             ecd_pct = ident.ecd_pct_identity
             ecd_sim = ident.ecd_pct_similarity
+        # Canonical-frame projection: re-index this isoform's per-residue
+        # topology onto the canonical coordinate axis so the viewer's shared
+        # topology bar lines homologous features up (deterministic, reuses the
+        # identity aligner). None when either the canonical or isoform lacks a
+        # sequence / topology — the viewer falls back to raw length-scaling.
+        canon_frame = _project_canonical_frame(
+            canonical_sequence=canonical_sequence,
+            variant_sequence=iso_seq,
+            variant_topology=iso_topo,
+        )
         out.append(
             IsoformTopology(
                 isoform_id=r.get("isoform_id") or r["uniprot_acc_full"],
@@ -302,6 +339,7 @@ def _fetch_isoform_topologies(
                 ecd_pct_identity_to_canonical=ecd_pct,
                 ecd_pct_similarity_to_canonical=ecd_sim,
                 sequence=iso_seq or None,
+                per_residue_topology_canonical_frame=canon_frame,
             )
         )
     return out
@@ -319,6 +357,7 @@ def _fetch_paralogs(
     paralog_version: str,
     *,
     topology_version: str = "",
+    canonical_sequence: str = "",
 ) -> list[ParalogEntry]:
     """Top-N paralogs by ECD identity. NULLs sort last via
     ``rank_by_ecd_identity`` so the head is the most-similar pairs.
@@ -365,12 +404,22 @@ def _fetch_paralogs(
             # Topology + sequence are surfaced only for close paralogs
             # (the ones that get a full topology row).
             topo = tmc = ecdl = seq = None
+            canon_frame: str | None = None
             if is_close:
                 topo = r.get("per_residue_topology") or None
                 if topo:
                     seq = r.get("sequence") or None
                     tmc = int(r["tm_helix_count"]) if r.get("tm_helix_count") is not None else None
                     ecdl = int(r["ecd_length_residues"]) if r.get("ecd_length_residues") is not None else None
+                    # Canonical-frame projection so this close paralog's bar
+                    # aligns on the shared viewer axis. Needs the human
+                    # canonical sequence + the paralog's own sequence/topology;
+                    # None (→ length-scaling) when any is missing.
+                    canon_frame = _project_canonical_frame(
+                        canonical_sequence=canonical_sequence,
+                        variant_sequence=seq,
+                        variant_topology=topo,
+                    )
             out.append(
                 ParalogEntry(
                     paralog_symbol=r["paralog_gene_symbol"],
@@ -383,6 +432,7 @@ def _fetch_paralogs(
                     tm_helix_count=tmc,
                     ecd_length_residues=ecdl,
                     sequence=seq,
+                    per_residue_topology_canonical_frame=canon_frame,
                 )
             )
         except (TypeError, ValueError) as exc:
@@ -478,6 +528,18 @@ def _fetch_orthologs(uniprot_acc: str, *, topology_version: str,
                     tm_absent = projected.tm_absent_from_model
                     n_absent = projected.n_tm_regions_absent
                     proj_source = projected.source
+            # Canonical-frame projection for the shared viewer axis. Note this
+            # is the INVERSE of the ortholog-repair projection above: that one
+            # maps the human topology ONTO the ortholog's residues (topo now
+            # indexes ortholog_seq 1:1); this one re-indexes that ortholog
+            # topology back onto the HUMAN canonical axis so the bar lines up
+            # with the isoform / paralog rows. None when either side lacks a
+            # sequence/topology; viewer then length-scales.
+            canon_frame = _project_canonical_frame(
+                canonical_sequence=human_sequence,
+                variant_sequence=str(ortholog_seq) if ortholog_seq else None,
+                variant_topology=topo,
+            )
             entry = OrthologEntry(
                 is_canonical=True,
                 isoform_id=r.get("ortholog_uniprot_acc") or "",
@@ -499,6 +561,7 @@ def _fetch_orthologs(uniprot_acc: str, *, topology_version: str,
                 tm_absent_from_model=tm_absent,
                 n_tm_regions_absent=n_absent,
                 sequence=str(ortholog_seq) if ortholog_seq else None,
+                per_residue_topology_canonical_frame=canon_frame,
             )
         except (TypeError, ValueError) as exc:
             logger.warning(
@@ -671,7 +734,10 @@ def fetch_deterministic_features(uniprot_acc: str) -> DeterministicFeatures:
     )
     paralogs = (
         _fetch_paralogs(
-            uniprot_acc, paralog_version, topology_version=canonical_topo_version
+            uniprot_acc,
+            paralog_version,
+            topology_version=canonical_topo_version,
+            canonical_sequence=canonical_sequence,
         )
         if paralog_version else []
     )

@@ -2869,6 +2869,20 @@ class IsoformTopology(BaseModel):
     # DeepTMHMM input). ``None`` on records built before this field existed,
     # or when the sweep didn't retain the input FASTA.
     sequence: str | None = Field(default=None)
+    # ``per_residue_topology`` re-indexed onto the CANONICAL coordinate axis
+    # (length == len(canonical_sequence)), so the viewer can render every
+    # variant's topology bar on one shared axis and have homologous features
+    # (e.g. TM helices) line up column-for-column instead of drifting when an
+    # isoform has an alternate N-terminus / internal splice. Each character is
+    # the isoform's topology label at the aligned canonical residue, or ``'-'``
+    # where the isoform has a gap at that canonical position (a deletion);
+    # canonical-gap columns (isoform insertions) are dropped. Computed by
+    # ``merge.canonical_frame_topology.project_topology_onto_canonical_frame``
+    # (deterministic, no LLM/network — reuses the isoform-identity aligner).
+    # ``None`` when either ``sequence`` or ``per_residue_topology`` is absent,
+    # or on records built before this field / the backfill; the viewer falls
+    # back to raw length-scaling for those rows.
+    per_residue_topology_canonical_frame: str | None = Field(default=None)
 
 
 class OrthologEntry(BaseModel):
@@ -2919,6 +2933,21 @@ class OrthologEntry(BaseModel):
     # Amino-acid sequence the per_residue_topology indexes 1:1 (A1.8). Nullable
     # for records emitted before sequences were populated.
     sequence: str | None = None
+    # ``per_residue_topology`` re-indexed onto the HUMAN CANONICAL coordinate
+    # axis (length == len(human_canonical_sequence)), so the ortholog's bar
+    # shares the canonical axis with the isoform / paralog rows and homologous
+    # TM helices line up. Each character is the ortholog's topology label at
+    # the aligned canonical residue, or ``'-'`` where the ortholog has a gap at
+    # that canonical position (truncation/deletion); ortholog-insertion columns
+    # are dropped. Computed by
+    # ``merge.canonical_frame_topology.project_topology_onto_canonical_frame``
+    # from the ortholog's ``sequence`` + ``per_residue_topology`` (which — when
+    # ``topology_projection_source`` is set — are already the human topology
+    # projected ONTO the ortholog; re-projecting onto the canonical axis is
+    # still well-defined and is what the shared display frame needs). ``None``
+    # when either input is absent or on pre-backfill records; the viewer then
+    # falls back to raw length-scaling for that row.
+    per_residue_topology_canonical_frame: str | None = Field(default=None)
 
 
 class Orthologs(BaseModel):
@@ -2981,6 +3010,15 @@ class ParalogEntry(BaseModel):
     tm_helix_count: int | None = None
     ecd_length_residues: int | None = None
     sequence: str | None = None
+    # ``per_residue_topology`` re-indexed onto the human canonical coordinate
+    # axis (length == len(canonical_sequence)) so this close paralog's bar
+    # aligns with the canonical / isoform / ortholog rows on one shared axis.
+    # Only populated for close paralogs that carry both ``sequence`` and
+    # ``per_residue_topology`` (the ones promoted to a full topology row);
+    # ``None`` for far / ECD-less / chip-strip paralogs and pre-backfill
+    # records. Same projection helper + gap semantics as the isoform/ortholog
+    # fields above; the viewer falls back to raw length-scaling when ``None``.
+    per_residue_topology_canonical_frame: str | None = None
 
 
 class StructureFeatures(BaseModel):
@@ -3780,8 +3818,8 @@ class SurfaceomeRecord(BaseModel):
     schema_version: Literal[
         "1.0.0", "1.1.0", "2.0.0", "2.1.0", "2.2.0", "2.3.0", "2.4.0", "2.4.1",
         "2.5.0", "2.6.0", "2.7.0", "2.8.0", "2.9.0", "2.10.0", "2.11.0", "2.12.0",
-        "2.13.0", "2.14.0", "2.14.1",
-    ] = "2.14.1"
+        "2.13.0", "2.14.0", "2.14.1", "2.14.2",
+    ] = "2.14.2"
     # The prompt corpus version active when this record was synthesized.
     # Default ``""`` for backward-compat with legacy records loaded from D1
     # / on-disk snapshots that pre-date this field; new annotator runs stamp
@@ -3981,8 +4019,8 @@ class SurfaceomeRecordDraft(BaseModel):
     schema_version: Literal[
         "1.0.0", "1.1.0", "2.0.0", "2.1.0", "2.2.0", "2.3.0", "2.4.0", "2.4.1",
         "2.5.0", "2.6.0", "2.7.0", "2.8.0", "2.9.0", "2.10.0", "2.11.0", "2.12.0",
-        "2.13.0", "2.14.0", "2.14.1",
-    ] = "2.14.1"
+        "2.13.0", "2.14.0", "2.14.1", "2.14.2",
+    ] = "2.14.2"
     # The prompt corpus version active when this record was synthesized.
     # Default ``""`` for backward-compat with legacy records loaded from D1
     # / on-disk snapshots that pre-date this field; new annotator runs stamp
