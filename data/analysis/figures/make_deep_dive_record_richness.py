@@ -20,10 +20,11 @@ is faceted by the deep-dive **tier** (canonical / likely / low / no):
                            Tiers: canonical, likely, low, no.
   c. Papers with EC      — selected papers carrying an extracellular /
                            surface-method tag. Tiers: canonical, likely, low.
-  d. Evidence records    — number of evidence records populated. Tiers:
-                           canonical, likely, low.
-  e. Deterministic feats — how many of the six deterministic features are
-                           populated (0–6). Tiers: canonical, likely, low.
+  d. LLM filters w/ evid — how many of the ~20 LLM filter facets carry a
+                           positive/non-default (evidence-backed) call; the LLM
+                           analogue of e. Tiers: canonical, likely, low.
+  e. Deterministic feats — how many of the seven deterministic features are
+                           populated (0–7). Tiers: canonical, likely, low.
 
 Each violin is the real distribution of that tier's genes (median line inside;
 faint real-value point strip overlaid). Panels c–e drop the "no" tier since
@@ -136,7 +137,7 @@ PANELS = [
     ("papers_found",       "Papers found (discovery corpus)",          _FOUR),
     ("papers_selected",    "Papers selected (into evidence list)",     _FOUR),
     ("papers_with_ec",     "Papers with extracellular evidence",       _THREE),
-    ("n_filters_evidence", "Evidence records extracted",               _THREE),
+    ("n_filters_evidence", "LLM filters with evidence",                _THREE),
     ("n_det_features",     "Deterministic features populated (0-7)",   _THREE),
 ]
 

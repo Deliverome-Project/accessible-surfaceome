@@ -158,6 +158,8 @@ def make_plot() -> tuple[plt.Figure, tuple[plt.Axes, plt.Axes]]:
     axA.set_ylabel("Soft-credit accuracy (%)")
     axA.set_ylim(0, 112)
     axA.set_xlim(-0.7, 0.7)
+    axA.text(0.5, 1.02, f"n = {len(rows)} genes", transform=axA.transAxes,
+             ha="center", va="bottom", fontsize=13, color=COLORS["neutral"])
     sns.despine(ax=axA, top=True, right=True)
     _panel_label(axA, "a")
 

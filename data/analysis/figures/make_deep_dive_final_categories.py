@@ -209,7 +209,7 @@ def main() -> None:
 
     fig, (axA, axB) = plt.subplots(
         1, 2, figsize=(18, 7),
-        gridspec_kw={"width_ratios": [1.25, 1.4], "wspace": 0.60},
+        gridspec_kw={"width_ratios": [1.5, 1.2], "wspace": 0.60},
     )
 
     # ── Panel a: the five-tier confidence spectrum ──────────────────────────

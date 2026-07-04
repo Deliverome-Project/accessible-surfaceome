@@ -479,7 +479,8 @@ def build_deep_dive_record_richness(src: dict[str, pd.DataFrame]) -> pd.DataFram
       • ``papers_selected``    — unique papers read full-text (``n_papers_selected``).
       • ``papers_with_ec``     — ``primary_evidence_count`` (the primary-tier,
         surface-method-tagged evidence — the "extracellular evidence" subset).
-      • ``n_filters_evidence`` — ``evidence_count`` (populated evidence records).
+      • ``n_filters_evidence`` — ``n_llm_evidence`` (# of the 20 LLM filters with
+        a positive/non-default, evidence-backed determination; LLM analogue of e).
       • ``n_det_features``     — how many of the 6 deterministic-feature
         categories carry data (topology / AF structure / surface-binding /
         homo-oligomer / orthologs / alt-isoforms), 0–6; real per-gene value
@@ -510,7 +511,9 @@ def build_deep_dive_record_richness(src: dict[str, pd.DataFrame]) -> pd.DataFram
         "papers_with_ec": pd.to_numeric(dd["n_papers_with_ec"], errors="coerce")
         if "n_papers_with_ec" in dd.columns
         else pd.to_numeric(dd["primary_evidence_count"], errors="coerce"),
-        "n_filters_evidence": pd.to_numeric(dd["evidence_count"], errors="coerce"),
+        "n_filters_evidence": pd.to_numeric(dd["n_llm_evidence"], errors="coerce")
+        if "n_llm_evidence" in dd.columns
+        else pd.to_numeric(dd["evidence_count"], errors="coerce"),
         "n_det_features": pd.to_numeric(
             dd.get("n_det_features"), errors="coerce").astype("Int64")
         if "n_det_features" in dd.columns

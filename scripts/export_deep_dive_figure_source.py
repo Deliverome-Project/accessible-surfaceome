@@ -93,6 +93,30 @@ _FIELDS: list[tuple[str, str]] = [
 # (the 145 MB crash of PR #104 was from returning full annotation_json).
 _DF = "$.deterministic_features"
 _CT = f"{_DF}.canonical_topology"
+
+# LLM-provenance filter facets present in $.filters (the viewer's LLM filters,
+# deep-dive-fields.ts). `n_llm_evidence` counts how many carry a POSITIVE /
+# non-default determination for a gene (the agent found evidence FOR something);
+# null / "unknown" / "none" / "no" / "false" don't count. Varies ~7-19 per gene
+# — the LLM-side analogue of n_det_features. NB this is a per-gene EVIDENCE-backed
+# count; the manuscript's "~24 filters" is the fixed count of filter TYPES.
+_LLM_FACETS = [
+    "surface_accessibility", "confidence", "state_dependence", "subcategory",
+    "llm_family", "evidence_grade", "expression_level", "expression_breadth",
+    "surface_specificity", "co_receptor_dependency", "induction_trigger",
+    "has_known_ligand", "low_endogenous_expression",
+    "overexpression_surface_localization_observed", "has_shed_form",
+    "has_secreted_form", "has_epitope_masking", "has_restricted_subdomain",
+    "tumor_associated", "has_live_cell_surface_evidence",
+]
+_LLM_NULLISH = ("('unknown','none','unclear','not_applicable',"
+                "'not_determined','no','false','0','')")
+_N_LLM_EVIDENCE_SQL = "(" + " + ".join(
+    f"(CASE WHEN json_extract(annotation_json,'$.filters.{k}') IS NOT NULL AND "
+    f"CAST(json_extract(annotation_json,'$.filters.{k}') AS TEXT) NOT IN {_LLM_NULLISH} "
+    "THEN 1 ELSE 0 END)" for k in _LLM_FACETS
+) + ")"
+
 _DET_EXPRS: list[tuple[str, str]] = [
     ("tm_helix_count",
      f"CAST(json_extract(annotation_json,'{_CT}.tm_helix_count') AS INT)"),
@@ -163,6 +187,9 @@ _DET_EXPRS: list[tuple[str, str]] = [
      f" + (CASE WHEN EXISTS(SELECT 1 FROM json_each(annotation_json,'{_DF}.paralogs')) THEN 1 ELSE 0 END)"
      f" + (CASE WHEN EXISTS(SELECT 1 FROM json_each(annotation_json,'{_DF}.isoform_topologies')) THEN 1 ELSE 0 END)"
      ")"),
+    # LLM filters with a positive/non-default (evidence-backed) determination —
+    # the LLM-side analogue of n_det_features. Powers Fig 6 panel d.
+    ("n_llm_evidence", _N_LLM_EVIDENCE_SQL),
 ]
 
 

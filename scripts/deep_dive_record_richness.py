@@ -20,10 +20,11 @@ c. **Papers with extracellular evidence** — selected papers carrying an
    low (the "no" tier is dropped — non-surface proteins carry little
    extracellular evidence by definition).
 
-d. **Evidence records extracted** — the number of evidence records populated on
-   the deep-dive. Tiers: canonical, likely, low.
+d. **LLM filters with evidence** — how many of the ~20 LLM filter facets carry a
+   positive/non-default (evidence-backed) determination; the LLM analogue of e.
+   Tiers: canonical, likely, low.
 
-e. **Deterministic features populated (0–6)** — how many of the six
+e. **Deterministic features populated (0–7)** — how many of the seven
    deterministic structural/topology features are present. Tiers: canonical,
    likely, low.
 
@@ -94,7 +95,7 @@ PANELS = [
     ("papers_found",       "Papers found (discovery corpus)",          _FOUR),
     ("papers_selected",    "Papers selected (into evidence list)",     _FOUR),
     ("papers_with_ec",     "Papers with extracellular evidence",       _THREE),
-    ("n_filters_evidence", "Evidence records extracted",               _THREE),
+    ("n_filters_evidence", "LLM filters with evidence",                _THREE),
     ("n_det_features",     "Deterministic features populated (0-7)",   _THREE),
 ]
 
