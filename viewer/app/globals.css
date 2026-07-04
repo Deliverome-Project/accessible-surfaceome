@@ -324,3 +324,14 @@ button {
 .chip-jump-flash {
   animation: chip-jump-flash 1200ms ease-out;
 }
+
+/* Every chip-jump destination gets a scroll-margin so `scrollIntoView`
+ * lands the row BELOW the sticky Shell topbar (66px) + AnchorNav strip
+ * (52px), not underneath them. Targets both the FeatureRationales rows
+ * (chip-jump-{biology,expression,risks}-*) and the detail blocks
+ * (chip-jump-primary-compartment / -contradicting-evidence /
+ * -modulation-*). The prefix selector means new destination ids added
+ * later inherit the offset automatically. */
+[id^="chip-jump-"] {
+  scroll-margin-top: calc(var(--shell-header-h, 66px) + 52px + 12px);
+}

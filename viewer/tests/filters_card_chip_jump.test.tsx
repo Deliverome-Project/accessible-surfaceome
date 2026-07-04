@@ -19,7 +19,7 @@ test("biology ligand chip is wrapped in a ChipJumpButton when rationale exists",
   const html = renderFiltersCard(rec);
   assert.match(
     html,
-    /<button[^>]*data-chip-jump-target="chip-jump-biology-ligand"/,
+    /<span[^>]*data-chip-jump-target="chip-jump-biology-ligand"/,
     "ligand chip must be wrapped in a ChipJumpButton on the live FiltersCard render",
   );
   assert.match(
@@ -137,7 +137,7 @@ test("primary chip is wrapped in a ChipJumpButton to the compartment block", () 
   const html = renderFiltersCard(rec);
   assert.match(
     html,
-    /<button[^>]*data-chip-jump-target="chip-jump-primary-compartment"[^>]*data-chip-jump-tab="biology"/,
+    /<span[^>]*data-chip-jump-target="chip-jump-primary-compartment"[^>]*data-chip-jump-tab="biology"/,
     "primary chip must jump to the Biology tab compartment block",
   );
 });
@@ -167,7 +167,7 @@ test("contradiction chip is wrapped when severity is present", () => {
   const html = renderFiltersCard(rec);
   assert.match(
     html,
-    /<button[^>]*data-chip-jump-target="chip-jump-contradicting-evidence"[^>]*data-chip-jump-tab="evidence"/,
+    /<span[^>]*data-chip-jump-target="chip-jump-contradicting-evidence"[^>]*data-chip-jump-tab="evidence"/,
     "contradiction chip must jump to the Evidence tab block",
   );
 });
@@ -192,7 +192,7 @@ test("modulation category chip is wrapped and targets its row", () => {
   const html = renderFiltersCard(rec);
   assert.match(
     html,
-    /<button[^>]*data-chip-jump-target="chip-jump-modulation-cell_state_induced"[^>]*data-chip-jump-tab="biology"/,
+    /<span[^>]*data-chip-jump-target="chip-jump-modulation-cell_state_induced"[^>]*data-chip-jump-tab="biology"/,
     "modulation category chip must jump to its row on the Biology tab",
   );
 });

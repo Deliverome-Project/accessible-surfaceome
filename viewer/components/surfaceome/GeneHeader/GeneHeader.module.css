@@ -402,6 +402,13 @@
   flex-wrap: wrap;
   align-items: baseline;
   gap: 0.4rem;
+  /* Push the Architecture + Family chips to the right of the
+   * Surface likelihood value instead of hugging it. Visually
+   * separates the deterministic-metadata pins from the accessibility
+   * verdict — even when the value wraps them to a new line, they
+   * still sit at the right edge of that line, not left-flush under
+   * "High". */
+  margin-left: auto;
 }
 
 .archFamilyChip {

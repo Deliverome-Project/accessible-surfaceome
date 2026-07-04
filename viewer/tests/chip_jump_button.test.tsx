@@ -1,9 +1,12 @@
 /*
  * Server-render tests for <ChipJumpButton>. Interaction (scroll, focus,
  * hashchange) requires jsdom and is verified by manual QA per the plan;
- * these tests pin the rendered markup — real <button>, aria attrs, and
- * the wrapped chip content — because those are the pieces a screen
- * reader and keyboard user rely on.
+ * these tests pin the rendered markup — <span role="button" tabindex="0">,
+ * aria attrs, and the wrapped chip content — because those are the pieces
+ * a screen reader and keyboard user rely on. We use a span (not a real
+ * <button>) so the wrapped StatusPill can host an InfoTip-style popover
+ * with rich content (<p>, <ul>) without invalid button-content-model or
+ * nested-button DOM recovery.
  *
  *   npx --yes tsx --import ./tests/helpers/register.mjs \
  *       --test tests/chip_jump_button.test.tsx
@@ -14,7 +17,7 @@ import * as React from "react";
 import { renderToStaticMarkup } from "react-dom/server";
 import { ChipJumpButton } from "../components/surfaceome/_shared/ChipJumpButton/ChipJumpButton";
 
-test("renders a real <button> wrapping its children", () => {
+test('renders as <span role="button" tabindex="0"> wrapping its children', () => {
   const html = renderToStaticMarkup(
     React.createElement(
       ChipJumpButton,
@@ -22,8 +25,9 @@ test("renders a real <button> wrapping its children", () => {
       React.createElement("span", null, "chip-content"),
     ),
   );
-  assert.match(html, /<button[^>]*type="button"/);
-  assert.ok(html.includes("chip-content"), "children must render inside the button");
+  assert.match(html, /<span[^>]*role="button"/);
+  assert.match(html, /<span[^>]*tabIndex="0"|tabindex="0"/);
+  assert.ok(html.includes("chip-content"), "children must render inside the trigger span");
 });
 
 test("carries aria-label", () => {

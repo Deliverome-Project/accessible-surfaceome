@@ -24,10 +24,13 @@ interface ChipJumpButtonProps {
  * block on one of the top-level tabs. Behavior on click / Enter / Space:
  *
  *   1. If the destination tab isn't active, update the URL hash via
- *      ``history.replaceState`` and dispatch a synthetic ``hashchange``
+ *      ``history.pushState`` and dispatch a synthetic ``hashchange``
  *      event so ``<SectionTabs>``'s existing listener swaps sections.
- *      ``replaceState`` (not ``pushState``) avoids polluting the back
- *      stack with an entry per chip click.
+ *      ``pushState`` (not ``replaceState``) is a deliberate call: the
+ *      reader who clicks a chip to jump away should be able to press
+ *      the browser back button to return to the §01 Summary metrics
+ *      view they were reading. Same pattern as clicking a tab in
+ *      ``<SectionTabs>`` (each tab click is back-navigable).
  *   2. In the next animation frame, look up the destination by id,
  *      scroll it into view, add ``.chip-jump-flash`` for ~1.2 s to draw
  *      the eye, and move focus so a keyboard user's caret follows the
@@ -48,7 +51,7 @@ export function ChipJumpButton({
     const desiredHash = `#section-${tabId}`;
     const needsTabSwitch = window.location.hash !== desiredHash;
     if (needsTabSwitch) {
-      window.history.replaceState({}, "", desiredHash);
+      window.history.pushState({}, "", desiredHash);
       window.dispatchEvent(new Event("hashchange"));
     }
     // Wait one frame for SectionTabs to toggle data-active so the
@@ -92,16 +95,33 @@ export function ChipJumpButton({
     });
   };
 
+  // Use a `<span role="button">` (not `<button>`) so the wrapped
+  // `<StatusPill>` can host an InfoTip-styled popover (`<span
+  // role="tooltip">`) or a hover title-popover with rich content
+  // (`<p>`, `<ul>`, etc.) without triggering nested-button / invalid
+  // button-content-model DOM recovery. A real `<button>` may only
+  // contain phrasing content and no other button — the popover span
+  // sometimes contains `<p>` / `<ul>` and the InfoTip trigger itself
+  // is a `<button>`, so wrapping in a `<button>` risks the browser
+  // auto-closing our button and reparenting the tooltip.
+  const onKeyDown = (e: React.KeyboardEvent<HTMLSpanElement>) => {
+    if (e.key === "Enter" || e.key === " ") {
+      e.preventDefault();
+      onActivate();
+    }
+  };
   return (
-    <button
-      type="button"
+    <span
+      role="button"
+      tabIndex={0}
       className={styles.jumpTrigger}
       aria-label={ariaLabel}
       data-chip-jump-target={targetId}
       data-chip-jump-tab={tabId}
       onClick={onActivate}
+      onKeyDown={onKeyDown}
     >
       {children}
-    </button>
+    </span>
   );
 }
