@@ -41,28 +41,25 @@ SLUG = "deep_dive_vs_sonnet_benchmark"
 DATA_TSV = ROOT / "data/processed/figures/deep_dive_vs_sonnet_benchmark.tsv"
 GIST_URL = ""  # filled at figure promotion
 
-_DD_COLOR = "#2E7A55"       # deep dive — success green
-_SONNET_COLOR = "#d87851"   # Sonnet — Claude-orange
+_SONNET_COLOR = "#C85A2E"   # Sonnet — deeper orange
 _BUCKET_ORDER = ["yes", "contextual", "no"]
 _BUCKET_LABEL = {"yes": "yes\n(surface)", "contextual": "contextual",
                  "no": "no\n(not surface)"}
 
 # The deep-dive accuracy bar is stacked by the tier it assigned to the correctly
-# classified genes, so the canonical/likely/low confidence breakdown shows; the
-# not-surface tiers (uncertain, no) collapse to one grey segment.
-_TIER_ORDER = ["canonical", "likely", "low", "uncertain_no"]
+# classified genes, so the confidence breakdown shows. Tier colours are EXACTLY
+# Figure 5a's (deep_dive_final_categories) five-tier spectrum, so the two figures
+# read as one palette.
+_TIER_ORDER = ["canonical", "likely", "low", "uncertain", "no"]
 _TIER_COLOR = {
-    "canonical":    "#2E7A55",  # dark green
-    "likely":       "#4E9E74",  # mid green
-    "low":          "#8FC5A8",  # light green
-    "uncertain_no": "#C7BDB6",  # light warm-grey
+    "canonical": "#2E7A55",  # success green — strict tier
+    "likely":    "#3D6B60",  # teal-mid — broader tier
+    "low":       "#C99A5B",  # amber-tan — low/moderate, weak evidence
+    "uncertain": "#C7BDB6",  # light warm-grey — ambiguous
+    "no":        "#9C8C88",  # lifted neutral — leaned not-surface
 }
 _TIER_LABEL = {"canonical": "canonical", "likely": "likely", "low": "low",
-               "uncertain_no": "uncertain / no"}
-
-
-def _tier_group(t: str) -> str:
-    return "uncertain_no" if t in ("uncertain", "no") else t
+               "uncertain": "uncertain", "no": "no"}
 
 
 def _load() -> list[dict]:
@@ -126,7 +123,7 @@ def _draw_deep_dive(ax, rows: list[dict], x: float, width: float) -> None:
     from collections import Counter
     n = len(rows)
     dd, _, _ = _stats(rows, "deep_dive_correct")
-    counts = Counter(_tier_group(r["deep_dive_tier"]) for r in rows
+    counts = Counter(r["deep_dive_tier"] for r in rows
                      if int(r["deep_dive_correct"]) == 1)
     bottom = 0.0
     for t in _TIER_ORDER:
