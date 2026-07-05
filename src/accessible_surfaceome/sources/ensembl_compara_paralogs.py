@@ -76,11 +76,14 @@ DEFAULT_MANIFEST = DEFAULT_OUTPUT_DIR / "download_traceability.json"
 # we keep only the top-N most-identical paralogs to bound table growth.
 DEFAULT_TOP_N_PER_GENE = 50
 
-# Default Compara release tag. Carried verbatim into the output rows so
-# downstream consumers know which Compara version their paralog set came
-# from; this is informational only — the BioMart endpoint always serves
-# the current release.
-DEFAULT_COMPARA_VERSION = "Compara r112"
+# Compara release tag is now a REQUIRED CLI argument — no default. The
+# BioMart endpoint (www.ensembl.org/biomart/martservice) is not versioned
+# and always serves the current release, so a hard-coded default silently
+# rots as Ensembl bumps releases (this file previously defaulted to
+# "Compara r112" from April 2024 while pulls in 2026 actually got r115+
+# data). The operator must supply the label explicitly, either as a dated
+# snapshot tag (e.g. "ensembl_compara_2026_06_01" — matches the ortholog
+# side's convention) or as the release number known-current at pull time.
 
 RETRYABLE_HTTP_CODES = {408, 409, 425, 429, 500, 502, 503, 504}
 
@@ -366,7 +369,17 @@ def _download_parse_args(argv: list[str] | None) -> argparse.Namespace:
     p.add_argument("--retry-max-attempts", type=int, default=4)
     p.add_argument("--min-request-interval-ms", type=int, default=200)
     p.add_argument("--top-n-per-gene", type=int, default=DEFAULT_TOP_N_PER_GENE)
-    p.add_argument("--compara-version", type=str, default=DEFAULT_COMPARA_VERSION)
+    p.add_argument(
+        "--compara-version",
+        type=str,
+        required=True,
+        help="Label carried into every output row; used as an FK to D1's "
+        "compara_release table. Must be supplied explicitly — the BioMart "
+        "endpoint is not versioned, so a hard-coded default would silently "
+        "misrepresent which release actually got pulled. Preferred shape: "
+        "a dated snapshot tag matching the ortholog side "
+        "(e.g. 'ensembl_compara_2026_06_01').",
+    )
     p.add_argument(
         "--override-genes",
         type=str,

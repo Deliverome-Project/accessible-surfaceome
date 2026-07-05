@@ -11,8 +11,13 @@ Usage::
 
     uv run python scripts/upload_paralogs_to_d1.py \\
         --paralog-version paralog_2026_05_16 \\
-        --compara-release "Compara r112" \\
+        --compara-release "ensembl_compara_2026_06_01" \\
         --jsonl data/processed/topology_run_topo_2026_05_16/paralog_records.jsonl
+
+Note: legacy D1 rows carry the historical label ``"Compara r112"`` — that
+string was a hard-coded default that never got bumped as Ensembl bumped
+releases (real biology on those rows is r115-era). New uploads should use
+the dated-snapshot convention matching the ortholog side.
 """
 
 from __future__ import annotations
@@ -117,7 +122,10 @@ def _row_to_params(rec: dict[str, Any]) -> list[Any]:
         rec.get("rank_by_ecd_identity"),
         rec.get("paralogy_type"),
         int(rec.get("is_high_confidence", 0)),
-        rec.get("compara_version", "Compara r112"),
+        # Required — no silent fallback to "Compara r112" (that string was a
+        # hard-coded default that never got bumped as Ensembl bumped releases;
+        # legacy rows carry it but new uploads must not perpetuate the lie).
+        rec["compara_version"],
     ]
 
 
@@ -205,7 +213,15 @@ def main() -> int:
 
     ap = argparse.ArgumentParser(description=__doc__)
     ap.add_argument("--paralog-version", required=True)
-    ap.add_argument("--compara-release", required=True, help="e.g. 'Compara r112'")
+    ap.add_argument(
+        "--compara-release",
+        required=True,
+        help="Compara release label — used as an FK into D1's compara_release "
+        "table. Preferred shape: dated snapshot tag (e.g. "
+        "'ensembl_compara_2026_06_01'), matching the ortholog side's "
+        "convention. Legacy rows carry the historical 'Compara r112' "
+        "string; do not reuse it for new uploads.",
+    )
     ap.add_argument("--jsonl", type=Path, action="append", required=True)
     ap.add_argument("--source-url", default="https://www.ensembl.org/biomart/martservice")
     ap.add_argument(

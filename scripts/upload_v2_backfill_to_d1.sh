@@ -70,12 +70,12 @@ uv run python scripts/upload_topology_to_d1.py --topology-version $ISO_V \
 
 echo "== upload ortholog ECD @ $OECD_V =="
 uv run python scripts/upload_ortholog_ecd_to_d1.py --ortholog-ecd-version $OECD_V \
-  --compara-release "Compara r112" \
+  --compara-release "ensembl_compara_2026_06_01" \
   --jsonl $O/ortholog_ecd_records.jsonl.norm $DRY $PUB
 
 echo "== upload paralogs @ $PARA_V =="
 uv run python scripts/upload_paralogs_to_d1.py --paralog-version $PARA_V \
-  --compara-release "Compara r112" \
+  --compara-release "ensembl_compara_2026_06_01" \
   --jsonl $P/paralog_records.jsonl.norm $DRY $PUB
 
 if [ "$DRYRUN" = "0" ]; then
