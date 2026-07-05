@@ -40,7 +40,6 @@ function expressionSourceTone(s: ExpressionSource) {
 type SortKey =
   | "tissue"
   | "cell_type"
-  | "disease"
   | "level"
   | "source"
   | "cell_states";
@@ -69,7 +68,6 @@ export function ExpressionTable({ rows }: Props) {
   const comparators: Record<SortKey, (r: ExpressionRowWithSource) => SortValue> = {
     tissue: (r) => r.tissue ?? "",
     cell_type: (r) => r.cell_type ?? "",
-    disease: (r) => prettyEnum(r.disease_context),
     // Sort by explicit Level rank (high → moderate → low → absent →
     // unknown), NOT lexicographic. Documented in ``levelRank``.
     level: (r) => levelRank(r.present),
@@ -107,16 +105,12 @@ export function ExpressionTable({ rows }: Props) {
                 Cell type
               </SortableHeader>
             </th>
-            <th scope="col" aria-sort={ariaSort("disease")}>
-              <SortableHeader
-                k="disease"
-                active={sortKey === "disease"}
-                direction={sortDir}
-                onSort={onSort}
-              >
-                Disease context
-              </SortableHeader>
-            </th>
+            {/* Disease context is NOT sortable: the table's default order is
+                already the DISEASE_CONTEXT_RANK grouping (normal → tumor_adjacent
+                → tumor → …) applied by the parent ExpressionCard, so a
+                click-to-sort header here would only let the reader scramble that
+                intentional grouping. Kept as a plain header like Cites. */}
+            <th scope="col">Disease context</th>
             <th scope="col" aria-sort={ariaSort("level")}>
               <SortableHeader
                 k="level"
