@@ -8,98 +8,54 @@
 # ///
 """Reproduce ``topology_coverage_by_source.{pdf,png}`` from the public repo.
 
-For every protein in the cohort-tightened v3 candidate-surfaceome
-universe (6,585 proteins = candidate_universe_v3 + v3_dropped on the
-bench-optimized cutoffs, the post-Sonnet-no-trim union intersected with
-the HGNC-anchored protein-coding cohort), 9 binary topology features are scored per
-inclusion source. Each panel shows what fraction of the universe is
-captured by `(source ∩ feature)` — DBs render as bars colored by the
-project's M1-DB palette plus Claude-orange for Sonnet.
+Supp Fig 9 — a single **bubble matrix** of surface inclusion sources (rows) ×
+topology features (columns). For every gene in the FULL any-yes-vote universe
+(Sonnet yes/contextual incl. the PubMed rescue OR any optimized-DB vote; 960
+zero-DB Sonnet rescues), 9 binary topology features are scored per source. Each
+cell's dot encodes BOTH metrics at once:
 
-Panels (3×3):
-  Row 1: GPI-anchored | 7TM GPCR | Multi-pass TM (non-GPCR)
-  Row 2: Single-pass TM | Likely secreted (SP + no TM + no anchor) |
-         Inner-leaflet lipidated (prenyl/myr, no TM/SP)
-  Row 3: No TM, no signal | Glycosylation site | TM without signal
-         peptide (DeepTMHMM class)
+  • dot AREA  ∝ within-source enrichment — % of that source's OWN calls carrying
+    the feature  (``|source ∩ feature| / |source|``)
+  • dot COLOR = coverage — % of the whole surface universe those represent
+    (``|source ∩ feature| / |universe|``)
 
-Feature-coverage denominators are the v3 universe (= proteins with
-≥1 yes vote across the 6 sources). Bar height for source S on
-feature F:
-    100 × |S-included ∩ F-positive| / 6,585
+CSPA × glycosylation is a large, pale dot (~75% of its own calls, but a small
+slice of the universe — its N-glycocapture chemistry); SURFY/UniProt show the
+same glyco enrichment at larger scale (dark); the zero-DB Sonnet rescues are
+dominated by likely-secreted + glycosylated contextual-surface proteins the
+classical-topology DBs miss (and carry no GPCR / GPI).
 
-The 9 features are a deliberate mix:
-  • 7 hand-picked architecture classes (GPI / 7TM-GPCR / multi-pass
-    TM / single-pass TM / signal-only-secreted / inner-leaflet
-    lipidated / no-TM-no-signal) — keyword-derived from UniProt's
-    `Lipidation`, `Signal`, `Topological domain`, `G-protein
-    coupled receptor`, etc. annotations.
-  • 1 sequence-level discriminator (`up_has_glyc`, the
-    presence-or-not of any UniProt-annotated glycosylation site)
-    that's the strongest non-architecture differentiator across
-    sources.
-  • 1 ML-prediction class (`deeptm_TM_NO_SP`, the DeepTMHMM
-    "TM-only" classification — most-pass TM + Type II/III single-
-    pass with internal signal-anchor instead of cleaved SP).
+Reads the dedicated per-figure TSV (built by scripts/build_figure_tsvs.py from
+scripts/export_s9_full_universe_features.py): src_* source flags, optimized
+cutoffs, n_sources_optimized, and the 9 topology features on full coverage.
 
-Inner-leaflet lipidated = (Prenylation OR Myristate UniProt
-keyword) AND tm_count == 0 AND signal_count == 0 — captures Ras-
-family GTPases, Src-family kinases, RhoA-class proteins whose
-cytoplasmic-facing anchor makes them inaccessible from the
-extracellular side. The panel exists to show which sources mis-
-attribute them as "surface" (GO + HPA carry small positives;
-SURFY / CSPA / Sonnet correctly under-include).
-
-Visual styling matches the in-repo `_plotting_config` (Deliverome
-categorical palette + Manrope-when-available + whitegrid + despine
-+ transparent facecolor at 300 DPI). The styling block is inlined
-so the gist stays self-contained.
-
-Standalone — ``uv run make_topology_coverage_by_source.py``.
+Visual styling matches the in-repo `_plotting_config`, inlined so the gist runs
+standalone — ``uv run make_topology_coverage_by_source.py``.
 """
 from __future__ import annotations
 
 from pathlib import Path
 
 import matplotlib.font_manager as fm
+import matplotlib.lines as mlines
 import matplotlib.pyplot as plt
 import pandas as pd
 import seaborn as sns
+from matplotlib.colors import LinearSegmentedColormap, Normalize
 
 REPO = "Deliverome-Project/accessible-surfaceome"
 BRANCH = "main"
 BASE = f"https://raw.githubusercontent.com/{REPO}/{BRANCH}"
 
-# Published reproduction gist (embedded into the output PNG's Source
-# tEXt chunk + PDF's Subject info field; pattern matches every other
-# figure gist). Read back with `exiftool figure.png | grep Source`,
-# or in Python: `from PIL import Image; Image.open(p).info["Source"]`.
-# Set to "TBD" until `gh gist create` populates it; the canonical
-# generator's `# Reproduction:` line stays the source of truth for
-# the published URL.
 GIST_URL = "https://gist.github.com/beccajcarlson/95b0f4cdcaf6a6b91f57539cd1515a25"
 
-# Dedicated per-figure TSV (built by scripts/build_figure_tsvs.py). One
-# row per universe protein with the src_* source-inclusion flags, the
-# bench-optimized cutoff columns (uniprot_optimized / cspa_optimized /
-# n_sources_optimized), and the 9 topology binary features used by this
-# figure. ~3 MB plain TSV (non-LFS so raw.githubusercontent.com serves
-# text, not a pointer).
 FEATURES_TSV = (
     f"{BASE}/data/processed/figures/topology_coverage_by_source.tsv"
 )
 
 # ──── Inline brand styling — sentinel: brand-style-v3 ────
-# Mirrors src/accessible_surfaceome/audit/_plotting_config.py so the gist
-# stays self-contained (no in-repo imports — Substack readers run it
-# standalone). Kept in sync via tests/test_figure_gists_styling.py.
 BRAND_PALETTE = [
-    "#BC3C4C",  # maroon-light
-    "#3D6B60",  # teal-mid
-    "#F4AA28",  # amber-bright
-    "#8878C8",  # lavender-bright
-    "#6E1428",  # maroon-dark
-    "#7AAB9F",  # teal-light
+    "#BC3C4C", "#3D6B60", "#F4AA28", "#8878C8", "#6E1428", "#7AAB9F",
 ]
 BRAND_SEQUENTIAL = {
     "maroon":   ["#3E0A18", "#6E1428", "#922038", "#BC3C4C", "#F0A098", "#FDE8E6"],
@@ -107,20 +63,15 @@ BRAND_SEQUENTIAL = {
     "amber":    ["#5A2608", "#8C4210", "#C07830", "#F4AA28", "#F4C070", "#FAECD4"],
     "lavender": ["#1E1450", "#3A2888", "#5848A8", "#8878C8", "#A090D4", "#E4E0F8"],
 }
-BRAND_CLAUDE_ORANGE = "#d87851"
 BRAND_INK = "#1F1718"
 BRAND_NEUTRAL = "#6F5D5A"
 BRAND_GRID = "#E6DAD4"
 
 
 def _register_brand_fonts() -> None:
-    """Register Manrope from the repo's ``assets/fonts/`` when running
-    inside a checkout. External readers without the repo fall back
-    to the next entry in ``font.sans-serif`` — typically DejaVu Sans
-    — without erroring."""
     candidates = [
-        Path(__file__).resolve().parents[3] / "assets" / "fonts",  # repo checkout
-        Path.cwd() / "assets" / "fonts",                            # cwd run
+        Path(__file__).resolve().parents[3] / "assets" / "fonts",
+        Path.cwd() / "assets" / "fonts",
     ]
     for fonts_dir in candidates:
         if fonts_dir.is_dir():
@@ -133,9 +84,7 @@ def _register_brand_fonts() -> None:
 
 
 def _apply_brand_style() -> None:
-    """Inline equivalent of `setup_plotting_style` — kept self-contained
-    so the gist runs without the in-repo plotting module. Sentinel:
-    brand-style-v3."""
+    """Inline equivalent of `setup_plotting_style`. Sentinel: brand-style-v3."""
     _register_brand_fonts()
     sns.set_style("whitegrid")
     sns.set_context("notebook", font_scale=1.0)
@@ -147,15 +96,11 @@ def _apply_brand_style() -> None:
         "font.family": "sans-serif",
         "font.sans-serif": ["Manrope", "Outfit", "DejaVu Sans", "Liberation Sans", "Arial"],
         "font.weight": "medium",
-        "font.size": 20,
-        "axes.labelsize": 20,
-        "axes.labelweight": "medium",
+        "font.size": 18,
+        "axes.labelsize": 18,
         "axes.titlesize": 0,
-        "axes.titlepad": 0,
         "axes.spines.top": False,
         "axes.spines.right": False,
-        "axes.grid": True,
-        "axes.axisbelow": True,
         "axes.edgecolor": BRAND_GRID,
         "axes.labelcolor": BRAND_INK,
         "axes.facecolor": "none",
@@ -164,54 +109,41 @@ def _apply_brand_style() -> None:
         "grid.linestyle": "-",
         "grid.linewidth": 0.7,
         "grid.color": BRAND_GRID,
-        "xtick.labelsize": 20,
-        "ytick.labelsize": 20,
+        "xtick.labelsize": 16,
+        "ytick.labelsize": 17,
         "xtick.color": BRAND_INK,
         "ytick.color": BRAND_INK,
         "legend.frameon": False,
-        "legend.fontsize": 20,
+        "legend.fontsize": 14,
         "patch.edgecolor": "none",
         "patch.linewidth": 0.0,
     })
 
 
-# Panel order + display labels. Layout is 3×3 — 9 features = clean grid.
-# Hand-picked architectures + glyc + DeepTMHMM TM-only class.
+# Columns (features) — the 9 topology classes.
 FEATURES: list[tuple[str, str]] = [
-    ("topo_gpi_anchored",            "GPI-anchored\n(outer leaflet)"),
+    ("topo_gpi_anchored",            "GPI-anchored"),
     ("topo_gpcr_7tm",                "7TM GPCR"),
-    ("topo_multi_pass_tm",           "Multi-pass TM\n(non-GPCR)"),
-    ("topo_single_pass_tm",          "Single-pass TM\n(Type I/II/III)"),
-    ("topo_signal_only_secreted",    "Likely secreted\n(SP + no TM + no anchor)"),
-    ("topo_inner_leaflet_lipidated", "Inner-leaflet lipidated\n(prenyl/myristoyl + no TM/SP)"),
-    ("topo_no_tm_no_signal",         "No TM, no signal\n(peripheral / cytosolic)"),
-    ("up_has_glyc",                  "Glycosylation site\n(UniProt feature)"),
-    ("deeptm_TM_NO_SP",              "TM without signal peptide\n(DeepTMHMM class)"),
+    ("topo_multi_pass_tm",           "Multi-pass TM"),
+    ("topo_single_pass_tm",          "Single-pass TM"),
+    ("topo_signal_only_secreted",    "Likely secreted"),
+    ("topo_inner_leaflet_lipidated", "Inner-leaflet\nlipidated"),
+    ("topo_no_tm_no_signal",         "No TM,\nno signal"),
+    ("up_has_glyc",                  "Glycosylation"),
+    ("deeptm_TM_NO_SP",              "TM without\nsignal peptide"),
 ]
 
-# Panel x-axis order: Sonnet first (implicit reference), then DBs
-# in the order matching make_db_correctness_by_class.py for cross-
-# figure visual consistency.
-# ``sonnet_only`` = the zero-DB rescue subset; computed inline as
-# (src_sonnet == 1 AND n_sources_optimized == 0) — i.e. no DB flags the
-# protein once the bench-optimized UniProt/CSPA cutoffs are applied.
-# Sits right after sonnet so the rescue subset reads as a visible delta
-# off the full Sonnet bar. Uses a darker orange (zero-DB rescue subset)
-# to keep it in the Sonnet family while staying distinct from the main
-# Sonnet bar.
+# Rows (sources), top-to-bottom.
 SOURCE_ORDER = ["sonnet", "sonnet_only", "uniprot", "surfy", "cspa", "go", "hpa"]
-SOURCE_COLORS = {
-    "sonnet":      BRAND_CLAUDE_ORANGE,
-    "sonnet_only": "#a8481a",  # darker orange (zero-DB rescue subset)
-    "uniprot": BRAND_PALETTE[0],  # maroon-light
-    "surfy":   BRAND_PALETTE[3],  # lavender-bright
-    "cspa":    BRAND_PALETTE[4],  # maroon-dark
-    "go":      BRAND_PALETTE[1],  # teal-mid
-    "hpa":     BRAND_PALETTE[2],  # amber-bright
+SOURCE_LABEL = {
+    "sonnet":      "Sonnet",
+    "sonnet_only": "Sonnet-only\n(zero-DB)",
+    "uniprot":     "UniProt",
+    "surfy":       "SURFY",
+    "cspa":        "CSPA",
+    "go":          "GO CC",
+    "hpa":         "HPA",
 }
-# Per-source column mapping. UniProt + CSPA use the bench-OPTIMIZED
-# cutoffs (consistent with the accuracy figures); the other DBs and
-# Sonnet use their initial src_* flags unchanged.
 SOURCE_COL = {
     "sonnet":  "src_sonnet",
     "uniprot": "uniprot_optimized",
@@ -221,13 +153,14 @@ SOURCE_COL = {
     "hpa":     "src_hpa",
 }
 
+_S_SCALE = 26.0
+_S_FLOOR = 18.0
+_SIZE_LEGEND = [10, 40, 80]
+
 
 def _fetch_tsv(url: str) -> pd.DataFrame:
-    """Bundled-only: the gist HEAD commit SHA is the SWHID for the
-    whole reproduction unit (script + data + README), so we must
-    never read a *different* TSV than what's bundled. Sibling-first
-    (gist case); fall back to the in-repo TSV path (dev case). No
-    network fetch — a missing sibling in a gist is a hard error."""
+    """Bundled-only: sibling-first (gist case); fall back to the in-repo TSV
+    path (dev case). No network fetch."""
     sibling = Path(__file__).parent / Path(url).name
     if sibling.is_file():
         return pd.read_csv(sibling, sep="\t")
@@ -244,56 +177,69 @@ def _fetch_tsv(url: str) -> pd.DataFrame:
 def main() -> None:
     _apply_brand_style()
     df = _fetch_tsv(FEATURES_TSV)
-    universe_size = int(len(df))
-
-    n_feat = len(FEATURES)
-    ncols = 3
-    nrows = (n_feat + ncols - 1) // ncols
-    fig, axes = plt.subplots(nrows, ncols, figsize=(16, 3.6 * nrows))
-    axes = axes.reshape(-1)
-
-    # Pre-compute the sonnet_only mask once (per-panel iteration would
-    # recompute it 9× for no benefit). Zero-DB rescue under the OPTIMIZED
-    # cutoffs: Sonnet positive AND no DB voted yes once the
-    # bench-optimized UniProt/CSPA thresholds are applied.
+    universe = int(len(df))
     sonnet_only_mask = (df[SOURCE_COL["sonnet"]] == 1) & (df["n_sources_optimized"] == 0)
 
-    for ax, (feat_col, label) in zip(axes, FEATURES):
-        rates_pct = []
-        for src_name in SOURCE_ORDER:
-            if src_name == "sonnet_only":
-                mask = sonnet_only_mask
-            else:
-                mask = df[SOURCE_COL[src_name]] == 1
-            feat = pd.to_numeric(df.loc[mask, feat_col], errors="coerce")
-            n_pos = int((feat == 1).sum())
-            rates_pct.append(100.0 * n_pos / universe_size)
-        colors = [SOURCE_COLORS[s] for s in SOURCE_ORDER]
-        ax.bar(range(len(SOURCE_ORDER)), rates_pct, color=colors, edgecolor="white")
-        ax.set_xticks(range(len(SOURCE_ORDER)))
-        ax.set_xticklabels(SOURCE_ORDER, rotation=35, ha="right")
-        ax.set_ylabel("% of any-yes-vote\nuniverse")
-        ax.set_xlabel("")
-        ax.text(
-            0.0, 1.04, label,
-            transform=ax.transAxes,
-            ha="left", va="bottom",
-            fontsize=14, weight="bold",
-        )
-        sns.despine(ax=ax, top=True, right=True)
-    for ax in axes[n_feat:]:
-        ax.axis("off")
+    def _mask(src: str) -> pd.Series:
+        return sonnet_only_mask if src == "sonnet_only" else (df[SOURCE_COL[src]] == 1)
+
+    nrows, ncols = len(SOURCE_ORDER), len(FEATURES)
+    xs, ys, sizes, covs = [], [], [], []
+    for i, src in enumerate(SOURCE_ORDER):
+        m = _mask(src)
+        n_src = int(m.sum())
+        y = nrows - 1 - i
+        for j, (feat_col, _) in enumerate(FEATURES):
+            n = int((pd.to_numeric(df.loc[m, feat_col], errors="coerce") == 1).sum())
+            if n == 0 or n_src == 0:
+                continue
+            enrichment = 100.0 * n / n_src
+            xs.append(j)
+            ys.append(y)
+            sizes.append(max(enrichment * _S_SCALE, _S_FLOOR))
+            covs.append(100.0 * n / universe)
+
+    fig, ax = plt.subplots(figsize=(17, 8.5))
+    cmap = LinearSegmentedColormap.from_list("coverage", BRAND_SEQUENTIAL["teal"][::-1])
+    norm = Normalize(vmin=0.0, vmax=max(covs))
+    sc = ax.scatter(xs, ys, s=sizes, c=covs, cmap=cmap, norm=norm,
+                    edgecolor=BRAND_INK, linewidth=0.6, alpha=0.95, zorder=3)
+
+    ax.set_xticks(range(ncols))
+    ax.set_xticklabels([lab for _, lab in FEATURES], rotation=35, ha="right")
+    ax.set_yticks(range(nrows))
+    ax.set_yticklabels([SOURCE_LABEL[s] for s in reversed(SOURCE_ORDER)])
+    ax.set_xlim(-0.6, ncols - 0.4)
+    ax.set_ylim(-0.6, nrows - 0.4)
+    ax.set_axisbelow(True)
+    ax.grid(True, which="major", color=BRAND_GRID, linewidth=0.7, alpha=0.6, zorder=0)
+    sns.despine(ax=ax, top=True, right=True, left=True, bottom=True)
+    ax.tick_params(length=0)
+
+    cbar = fig.colorbar(sc, ax=ax, shrink=0.5, pad=0.015,
+                        anchor=(0.0, 1.0), panchor=(0.0, 1.0))
+    cbar.set_label("Coverage\n(% of surface universe)", fontsize=14)
+    cbar.ax.tick_params(labelsize=12)
+    cbar.outline.set_visible(False)  # ty: ignore  # Colorbar.outline is a Spine
+
+    handles = [
+        mlines.Line2D([], [], marker="o", linestyle="none",
+                      markersize=2.0 * (ref * _S_SCALE / 3.14159) ** 0.5,
+                      markerfacecolor="#B9C9C4", markeredgecolor=BRAND_INK,
+                      markeredgewidth=0.6, label=f"{ref}%")
+        for ref in _SIZE_LEGEND
+    ]
+    leg = ax.legend(handles=handles, title="Enrichment\n(% of source's own calls)",
+                    loc="upper left", bbox_to_anchor=(1.015, 0.44),
+                    labelspacing=3.4, borderpad=1.0, handletextpad=1.8,
+                    frameon=False, fontsize=13, title_fontsize=13)
+    leg._legend_box.align = "left"  # ty: ignore[unresolved-attribute]
+
     fig.tight_layout()
 
     out_dir = Path.cwd()
     pdf_path = out_dir / "topology_coverage_by_source.pdf"
     png_path = out_dir / "topology_coverage_by_source.png"
-    # PNG gets Source tEXt chunk; PDF gets Subject info field. Two
-    # explicit savefig calls (rather than a single loop with a ternary)
-    # so tests/test_figure_gists_styling.py can string-match
-    # `metadata={"Source": GIST_URL}` and `metadata={"Subject": GIST_URL}`
-    # verbatim — that's its drift-guard against gist files losing the
-    # metadata embed.
     fig.savefig(png_path, format="png", dpi=600, bbox_inches="tight",
                 metadata={"Source": GIST_URL})
     print(f"  saved {png_path}")

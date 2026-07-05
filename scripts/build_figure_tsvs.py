@@ -46,6 +46,12 @@ REPS_TSV        = ROOT / "data/processed/triage_bench/mainbench_replicates_v2.ts
 OPT_CUTOFFS_TSV = ROOT / "data/processed/triage_bench/db_optimized_cutoffs.tsv"
 CATALOG_TSV     = ROOT / "data/processed/catalog/whole_proteome_catalog.tsv"
 FEATURES_TSV    = ROOT / "data/analysis/db_vs_sonnet_inclusion/per_protein_features.tsv"
+# S9's FULL any-yes-vote universe (960 sonnet_only) with genome-wide topology,
+# built by scripts/export_s9_full_universe_features.py (UniProt + D1 pulls). The
+# S9 builder reads THIS offline so the figure TSV stays reproducible-from-builder
+# while the network pulls live in the export. Supersedes the M1-limited FEATURES_TSV
+# for S9 (which under-covered the zero-DB Sonnet rescues 794 vs 960 + lacked their topology).
+FEATURES_FULL_TSV = ROOT / "data/processed/db_vs_sonnet_inclusion/per_protein_features_topology_full.tsv"
 POS_LONG_TSV    = ROOT / "data/processed/positive_controls/positive_control_long.tsv"
 # Per-gene deep-dive record facets, exported from public D1 by
 # scripts/export_deep_dive_figure_source.py. Re-run that after a sweep batch to
@@ -88,6 +94,8 @@ def _load_sources() -> dict[str, pd.DataFrame]:
         src["sonnet_det"] = pd.read_csv(SONNET_DET_TSV, sep="\t")
     if DET_DETAIL_TSV.is_file():
         src["det_detail"] = pd.read_csv(DET_DETAIL_TSV, sep="\t")
+    if FEATURES_FULL_TSV.is_file():
+        src["features_full"] = pd.read_csv(FEATURES_FULL_TSV, sep="\t")
     return src
 
 
@@ -216,6 +224,15 @@ def build_topology_coverage_by_source(src: dict[str, pd.DataFrame]) -> pd.DataFr
     recalibrated cutoffs (GO/HPA/SURFY/Sonnet unchanged). Also carries
     ``n_sources_optimized`` so the Sonnet-only (zero-DB) subset is
     defined against the optimized DB vote, matching Figure 3."""
+    # Prefer the FULL any-yes-vote universe (960 sonnet_only, genome-wide
+    # topology) from scripts/export_s9_full_universe_features.py — it already
+    # carries the src_* flags, optimized cutoffs, n_sources_optimized, and the
+    # 9 topology features on full coverage (fixing the M1-limited undercount
+    # 794 vs 960 + the topology-missing empty Sonnet-only row). Fall back to the
+    # legacy per_protein_features path only if the full export isn't present.
+    full = src.get("features_full")
+    if full is not None and not full.empty:
+        return full
     feat = _optimized_membership(src["features"], src["opt"], "uniprot_accession")
     # GO/HPA/SURFY keep their initial src flags (not recalibrated).
     feat["n_sources_optimized"] = (
