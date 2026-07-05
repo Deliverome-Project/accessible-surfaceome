@@ -479,12 +479,13 @@ def build_deep_dive_record_richness(src: dict[str, pd.DataFrame]) -> pd.DataFram
       • ``papers_selected``    — unique papers read full-text (``n_papers_selected``).
       • ``papers_with_ec``     — ``primary_evidence_count`` (the primary-tier,
         surface-method-tagged evidence — the "extracellular evidence" subset).
-      • ``n_filters_evidence`` — ``n_llm_evidence`` (# of the 20 LLM filters with
-        a positive/non-default, evidence-backed determination; LLM analogue of e).
-      • ``n_det_features``     — how many of the 6 deterministic-feature
+      • ``n_filters_evidence`` — ``n_llm_evidence`` (# of the 24 LLM filters with
+        a positive/substantive finding — definitive negatives + "unknown" don't
+        count, so this reads richness not schema completeness; LLM analogue of e).
+      • ``n_det_features``     — how many of the 7 deterministic-feature
         categories carry data (topology / AF structure / surface-binding /
-        homo-oligomer / orthologs / alt-isoforms), 0–6; real per-gene value
-        derived in the export from each record's ``deterministic_features``.
+        homo-oligomer / orthologs / paralogs / alt-isoforms), 0–7; real per-gene
+        value derived in the export from each record's ``deterministic_features``.
 
     ``surface_verdict_bucket`` (``no`` vs ``surface_yes``) is kept for
     back-compat; ``tier`` (the finer 5-tier call) is what the figure now facets
