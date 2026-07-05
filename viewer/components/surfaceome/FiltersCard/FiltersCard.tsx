@@ -149,7 +149,7 @@ function orthologIdentityTone(pct: number | null): Tone {
  * Paralog max-ECD-identity tone — higher identity is WORSE (more
  * potential antibody cross-reactivity). Inverse polarity from the
  * ortholog scale. Bands mirror the §07 "Paralog (specificity)" tier
- * (HPA antigen-design practice, PMID 33170010): >80% multitarget likely
+ * (HPA antigen-design practice, PMID 30297845): >80% multitarget likely
  * (red), 60-80% caution (amber), <60% lower risk (green).
  */
 function paralogIdentityTone(pct: number | null): Tone {
@@ -616,7 +616,7 @@ export function FiltersCard({ rec, n }: Props) {
         // when the protein has no ECD — ECD-less kinases / soluble
         // proteins still get a homology-based tier). Same §07 "Paralog
         // (specificity)" bands (HPA antigen-design practice, PMID
-        // 33170010): >80% multitarget likely, 60-80% caution.
+        // 30297845): >80% multitarget likely, 60-80% caution.
         const nMultitarget = paralogs.filter((p) => {
           const v = p.ecd_pct_identity ?? p.full_length_pct_identity;
           return v != null && v > 80;
@@ -932,7 +932,7 @@ export function FiltersCard({ rec, n }: Props) {
       ],
     },
     // Shared with the §07 "Paralog (specificity)" InfoTip via
-    // `lib/tooltips` (HPA PMID 33170010 link is inline in that node);
+    // `lib/tooltips` (HPA PMID 30297845 link is inline in that node);
     // Compara is the data source.
     Paralogs: {
       title: tooltips.paralog_specificity,
