@@ -89,23 +89,25 @@ LLM_CELLS: list[tuple[str, str, str]] = [
     ("_llm_sonnet_ncbi",        "sonnet-4-6", "ncbi"),
     ("_llm_sonnet_pubmed_ncbi", "sonnet-4-6", "pubmed_ncbi"),
     ("_llm_sonnet_web_ncbi",    "sonnet-4-6", "web_ncbi"),
-    # Opus cells retired (2026-06-30): the published figures this module used to
-    # render (db_correctness_by_class, db_correctness_overall,
-    # benchmark_cost_vs_accuracy) are now standalone canonicals that read the
-    # figure TSV, so their model list comes from the DATA — including Opus 4.8.
-    # The hardcoded opus-4-7 rows here shipped EMPTY bars once predictions moved
-    # to opus-4-8; the only artifacts still rendered from this module are the
-    # non-published native-cutoff / db-variant comparisons, which don't need Opus.
+    # Sonnet 5 added 2026-06-30 — ncbi only (head-to-head model compare
+    # with Sonnet 4.6's canonical ncbi cell). No naive/pubmed/web variants
+    # sampled yet.
+    ("_llm_sonnet5_ncbi",       "sonnet-5",   "ncbi"),
+    ("_llm_opus_naive",         "opus-4-8",   "naive"),
+    ("_llm_opus_ncbi",          "opus-4-8",   "ncbi"),
 ]
 LLM_LABEL = {
     "_llm_haiku_naive":        "Haiku (naive)",
     "_llm_haiku_ncbi":         "Haiku (+ IDs)",
     "_llm_haiku_pubmed_ncbi":  "Haiku (+ IDs + PubMed)",
     "_llm_haiku_web_ncbi":     "Haiku (+ IDs + web)",
-    "_llm_sonnet_naive":       "Sonnet (naive)",
-    "_llm_sonnet_ncbi":        "Sonnet (+ IDs)",
-    "_llm_sonnet_pubmed_ncbi": "Sonnet (+ IDs + PubMed)",
-    "_llm_sonnet_web_ncbi":    "Sonnet (+ IDs + web)",
+    "_llm_sonnet_naive":       "Sonnet 4.6 (naive)",
+    "_llm_sonnet_ncbi":        "Sonnet 4.6 (+ IDs)",
+    "_llm_sonnet_pubmed_ncbi": "Sonnet 4.6 (+ IDs + PubMed)",
+    "_llm_sonnet_web_ncbi":    "Sonnet 4.6 (+ IDs + web)",
+    "_llm_sonnet5_ncbi":       "Sonnet 5 (+ IDs)",
+    "_llm_opus_naive":         "Opus (naive)",
+    "_llm_opus_ncbi":          "Opus (+ IDs)",
     "_llm_combined":           "Combined (Haiku→Sonnet)",
 }
 
@@ -115,6 +117,7 @@ LLM_LABEL = {
 COMBINED_KEY = "_llm_combined"
 COMBINED_PRIMARY = ("_llm_haiku_ncbi", "_llm_sonnet_ncbi")  # (cheap, escalation)
 
+LLM_KEYS = [k for k, _, _ in LLM_CELLS] + [COMBINED_KEY]
 
 # Palette — DBs use the brand categorical palette (5 distinct colors).
 # LLM cells get a sequential Claude-orange walk: lighter = less context /
@@ -130,6 +133,9 @@ LLM_PALETTE = {
     "_llm_sonnet_ncbi":        "#d87851",   # base Claude
     "_llm_sonnet_pubmed_ncbi": "#cb6f4a",   # base+, sits between ncbi and web
     "_llm_sonnet_web_ncbi":    "#c46139",   # shade 12%
+    "_llm_sonnet5_ncbi":       "#b35238",   # Sonnet 5 — between sonnet_web_ncbi and opus_naive
+    "_llm_opus_naive":         "#b66547",   # shade 18% — sits before opus_ncbi
+    "_llm_opus_ncbi":          "#a85b3f",   # shade 25%
     "_llm_combined":           "#7a3b25",   # shade 50%
 }
 
@@ -185,13 +191,51 @@ def _optimized_cspa_accs() -> set[str]:
     return accs
 
 
+def _dump_db_optimized_cutoffs() -> None:
+    """Dump the optimized-cutoff accession sets to a small TSV.
+
+    Lets the figures-folder gist ``make_db_correctness_by_class.py``
+    reproduce the optimized-cutoff version of the by-class plot
+    without re-loading the raw UniProt + CSPA dumps. Same pattern as
+    ``_dump_db_cutoff_tradeoff_points``.
+
+    Output: ``data/processed/triage_bench/db_optimized_cutoffs.tsv``
+    (LFS-exempted in .gitattributes). Columns:
+      accession, uniprot_optimized, cspa_optimized
+    where the flag is 1 if the accession is admitted by the optimized
+    rule for that source (TM+signal for UniProt, HC-only for CSPA),
+    else 0. Rows include the union of both optimized sets so the gist
+    can rebuild both flag columns from one file.
+    """
+    up = _optimized_uniprot_accs()
+    cspa = _optimized_cspa_accs()
+    out = ROOT / "data/processed/triage_bench/db_optimized_cutoffs.tsv"
+    out.parent.mkdir(parents=True, exist_ok=True)
+    with out.open("w", newline="") as fh:
+        w = csv.DictWriter(
+            fh, fieldnames=["accession", "uniprot_optimized", "cspa_optimized"],
+            delimiter="\t",
+        )
+        w.writeheader()
+        for acc in sorted(up | cspa):
+            w.writerow({
+                "accession": acc,
+                "uniprot_optimized": int(acc in up),
+                "cspa_optimized":    int(acc in cspa),
+            })
+
+
 def _load_all_mainbench_records() -> list[dict]:
     """Pull every per-cell main-bench record from D1 in a single round-trip.
 
-    Lazy-cached via ``functools.cache`` so repeated calls within one
-    script run share one D1 query (we hit it from ``_load_llm_predictions``
-    once per LLM cell + ``_cell_cost_per_call`` once per cell, ~21 calls
-    total without the cache).
+    Returns ALL replicates (3 per cell). Callers that want a single-rep
+    view filter on ``replicate`` themselves (e.g. ``_load_llm_predictions``
+    keeps rep=1 for the legacy point-estimate accuracy path).
+    ``_per_rep_accuracy_by_cell`` sees the full set so the bar plot can
+    render mean ± SEM with all 3 dots.
+
+    Lazy-cached via ``_MAINBENCH_CACHE`` so repeated calls within one
+    script run share one D1 query.
     """
     from accessible_surfaceome.cloud.d1_client import D1Client
     from accessible_surfaceome.env import load_env
@@ -205,7 +249,7 @@ def _load_all_mainbench_records() -> list[dict]:
             "       prompt_tokens, completion_tokens, "
             "       cache_creation_tokens, cache_read_tokens, "
             "       n_web_searches, cost_usd, latency_s "
-            "FROM triage_run WHERE run_id = ? AND replicate = 1;",
+            "FROM triage_run WHERE run_id = ?;",
             [MAINBENCH_D1_RUN_ID],
         )
 
@@ -234,7 +278,9 @@ def _load_llm_predictions(model: str, variant: str) -> dict[str, dict]:
     return {
         r["gene_symbol"]: r
         for r in _mainbench_records()
-        if r["model"] == model_full and r["prompt_variant"] == variant
+        if r["model"] == model_full
+        and r["prompt_variant"] == variant
+        and r["replicate"] == 1
     }
 
 
@@ -343,6 +389,17 @@ def _all_callers() -> list[tuple[str, str]]:
     return out
 
 
+def _display_order(overall: dict[str, float]) -> list[tuple[str, str]]:
+    """Return the (vote_key, label) caller list in display order:
+    LLM cells in canonical light-to-dark order, then DBs sorted by
+    overall accuracy on this benchmark (descending)."""
+    callers = _all_callers()
+    n_llm = len(LLM_CELLS)
+    llm_part = callers[:n_llm]
+    db_part = sorted(callers[n_llm:], key=lambda kv: -overall[kv[1]])
+    return llm_part + db_part
+
+
 def _caller_color(label: str, label_to_key: dict[str, str]) -> str:
     """Look up the brand color for a caller. LLM cells use LLM_PALETTE
     (keyed by vote_key); DBs use DB_PALETTE (keyed by display label)."""
@@ -406,6 +463,61 @@ def overall_accuracy() -> dict[str, float]:
                     by_caller_correct[label] += 1
     n = len(bench)
     return {label: by_caller_correct[label] / n for _, label in callers}
+
+
+def _long_dataframe() -> tuple[pd.DataFrame, dict[str, object]]:
+    fractions, totals, correct_counts, meta = compute_correctness()
+    rows = []
+    for verdict in VERDICT_ORDER:
+        for _, caller_label in _all_callers():
+            rows.append({
+                "verdict": verdict,
+                "verdict_label": VERDICT_LABEL[verdict],
+                "caller": caller_label,
+                "fraction": fractions[verdict][caller_label],
+                "n_correct": correct_counts[verdict][caller_label],
+                "n_total": totals[verdict],
+            })
+    return pd.DataFrame(rows), meta
+
+
+def _annotate_bars(ax, df: pd.DataFrame, caller_order: list[str]) -> None:
+    """Walk bar patches in seaborn's (hue-major, x-major) order and
+    label each with n_correct/n_total."""
+    n_v = len(VERDICT_ORDER)
+    for i, caller_label in enumerate(caller_order):
+        for j, verdict in enumerate(VERDICT_ORDER):
+            bar = ax.patches[i * n_v + j]
+            row = df[(df.caller == caller_label) & (df.verdict == verdict)].iloc[0]
+            ax.text(
+                bar.get_x() + bar.get_width() / 2,
+                bar.get_height() + 0.02,
+                f"{row.n_correct}/{row.n_total}",
+                ha="center", va="bottom",
+                fontsize=7.5, color=COLORS["dark"],
+            )
+
+
+def _draw_group_separators(
+    ax,
+    caller_order: list[str],
+    bar_width: float,
+    gap: float,
+    n_callers_left: int,
+) -> None:
+    """Draw a faint vertical separator between the LLM and DB clusters
+    for each verdict group. Patch layout is hue-major then x-major."""
+    n_v = len(VERDICT_ORDER)
+    for verdict_idx in range(n_v):
+        # Right edge of last LLM bar in this verdict group:
+        last_llm_patch = ax.patches[(n_callers_left - 1) * n_v + verdict_idx]
+        sep_x = last_llm_patch.get_x() + bar_width + (gap / 2)
+        ax.axvline(
+            sep_x,
+            ymin=0.02, ymax=0.92,
+            color=COLORS["neutral"],
+            linestyle=":", linewidth=0.8, alpha=0.5,
+        )
 
 
 def make_by_class_plot(out_dir: Path, *, filename: str = "db_correctness_by_class") -> None:
@@ -536,6 +648,398 @@ def make_by_class_plot(out_dir: Path, *, filename: str = "db_correctness_by_clas
     out_dir.mkdir(parents=True, exist_ok=True)
     save_figure(
         fig, filename=filename,
+        output_dir=str(out_dir), formats=["pdf", "png"],
+    )
+    plt.close(fig)
+
+
+def _per_rep_accuracy_by_cell() -> dict[tuple[str, str], list[float]]:
+    """Soft-credit accuracy per replicate for every D1 (model_full, variant) cell.
+
+    Returns ``{(claude-<model>, variant): [acc_rep1, acc_rep2, ...]}``. Used by
+    ``make_overall_plot`` so each bar's height is the mean-across-reps with
+    a SEM error bar and individual rep dots — the canonical generator's
+    previous pooled ``overall_accuracy()`` collapsed this information.
+
+    Soft-credit rule (matches ``_is_soft_match`` in
+    ``scripts/augment_figure_tsvs_with_stable_ids.py``): predicted yes ↔
+    contextual interchangeable; everything else exact-match.
+    """
+    bench, _ = load_benchmark_with_votes()
+    # load_benchmark_with_votes yields records keyed on "gene" (the bench
+    # TSV's column name) — not "gene_symbol". Track that down here so the
+    # join below actually finds a truth label for every cell.
+    truth_by_gene = {p["gene"]: p["verdict"] for p in bench}
+
+    correct_total: dict[tuple[str, str, int], list[int]] = defaultdict(lambda: [0, 0])
+    for r in _mainbench_records():
+        truth = truth_by_gene.get(r["gene_symbol"])
+        if truth is None:
+            continue
+        pv = (r.get("predicted_verdict") or "").strip()
+        is_match = 0
+        if pv and truth:
+            if pv == truth or (pv in ("yes", "contextual") and truth in ("yes", "contextual")):
+                is_match = 1
+        key = (r["model"], r["prompt_variant"], r["replicate"])
+        correct_total[key][0] += is_match
+        correct_total[key][1] += 1
+
+    out: dict[tuple[str, str], list[float]] = defaultdict(list)
+    for (model_full, variant, _rep), (n_correct, n_total) in sorted(correct_total.items()):
+        if n_total > 0:
+            out[(model_full, variant)].append(n_correct / n_total)
+    return dict(out)
+
+
+def make_overall_plot(out_dir: Path, *, filename: str = "db_correctness_overall") -> None:
+    """LLM-only overall accuracy on the 147-gene bench.
+
+    Bar height = mean of per-replicate soft-credit accuracies. SEM error
+    bars + individual per-rep scatter points overlaid so the run-to-run
+    variability is visible (3 reps per cell). Color encodes the model;
+    hatch pattern encodes the prompt variant.
+    """
+
+    setup_plotting_style(style="whitegrid", context="notebook", font_scale=1.0)
+    rep_acc = _per_rep_accuracy_by_cell()
+
+    # Group LLM cells by model. Variant order = light-to-dark context
+    # walk so the hatch pattern reads as "amount of resolver / web /
+    # literature scaffolding".
+    VARIANT_ORDER = ["naive", "ncbi", "web_ncbi", "pubmed_ncbi"]
+    VARIANT_LABEL = {
+        "naive":        "naive",
+        "ncbi":         "+ IDs",
+        "web_ncbi":     "+ IDs + web",
+        "pubmed_ncbi":  "+ IDs + PubMed",
+    }
+    # Hatch by variant — solid for naive, denser diagonal / cross /
+    # dots as more context is layered on.
+    VARIANT_HATCH = {
+        "naive":        "",
+        "ncbi":         "///",
+        "web_ncbi":     "xxx",
+        "pubmed_ncbi":  "...",
+    }
+    # One base color per model, sequential Claude orange light → dark.
+    MODEL_ORDER = ["haiku-4-5", "sonnet-4-6", "sonnet-5", "opus-4-8"]
+    MODEL_LABEL = {
+        "haiku-4-5":  "Haiku 4.5",
+        "sonnet-4-6": "Sonnet 4.6",
+        "sonnet-5":   "Sonnet 5",
+        "opus-4-8":   "Opus 4.8",
+    }
+    MODEL_COLOR = {
+        "haiku-4-5":  "#f1c4ab",
+        "sonnet-4-6": "#d87851",
+        "sonnet-5":   "#b35238",
+        "opus-4-8":   "#a85b3f",
+    }
+    # Bucket: model → list of (variant, vote_key) actually run for that
+    # model in this benchmark.
+    cells_by_model: dict[str, list[tuple[str, str]]] = {m: [] for m in MODEL_ORDER}
+    for vote_key, model_slug, variant in LLM_CELLS:
+        if model_slug in cells_by_model:
+            cells_by_model[model_slug].append((variant, vote_key))
+
+    fig, ax = plt.subplots(figsize=(11, 5.2))
+
+    # Manual bar placement so we can hatch + color each cell precisely.
+    bar_width = 0.6
+    inter_variant_gap = 0.05      # within-model spacing
+    inter_model_gap = 0.9         # between-model spacing
+    tick_positions: list[float] = []
+    tick_labels: list[str] = []
+    x = 0.0
+    legend_seen_variants: set[str] = set()
+    legend_handles: list = []
+    legend_labels: list[str] = []
+
+    for model_slug in MODEL_ORDER:
+        cells = cells_by_model.get(model_slug, [])
+        if not cells:
+            continue
+        # Order cells by VARIANT_ORDER so hatches read consistently.
+        cells_sorted = sorted(
+            cells,
+            key=lambda vk: VARIANT_ORDER.index(vk[0]) if vk[0] in VARIANT_ORDER else 99,
+        )
+        model_block_start = x
+        model_full = f"claude-{model_slug}"
+        n_drawn = 0
+        for variant, vote_key in cells_sorted:
+            reps = rep_acc.get((model_full, variant), [])
+            if not reps:
+                # No D1 rows for this cell — skip rather than draw an
+                # empty / 0-height bar. Was the failure mode that drew
+                # phantom 33.3% bars for `opus-4-7` when D1 only had
+                # `claude-opus-4-8`.
+                continue
+            mean_acc = sum(reps) / len(reps)
+            color = MODEL_COLOR[model_slug]
+            hatch = VARIANT_HATCH.get(variant, "")
+            ax.bar(
+                x, mean_acc, width=bar_width,
+                color=color,
+                edgecolor=COLORS["dark"],
+                linewidth=0.6,
+                hatch=hatch,
+                zorder=3,
+            )
+            # SEM error bar — needs ≥ 2 reps.
+            if len(reps) >= 2:
+                sd = (sum((v - mean_acc) ** 2 for v in reps) / (len(reps) - 1)) ** 0.5
+                sem = sd / (len(reps) ** 0.5)
+                ax.errorbar(
+                    x, mean_acc, yerr=sem, fmt="none",
+                    ecolor=COLORS["dark"], elinewidth=1.0, capsize=3, capthick=1.0,
+                    zorder=4,
+                )
+            # Individual per-rep dots, jittered within the bar so coincident
+            # values don't fully overlap.
+            for j, rv in enumerate(reps):
+                jitter = (j - (len(reps) - 1) / 2) * (bar_width * 0.18)
+                ax.scatter(
+                    x + jitter, rv, s=18, color=COLORS["dark"],
+                    edgecolor="white", linewidth=0.5, zorder=5, alpha=0.85,
+                )
+            ax.text(
+                x, mean_acc + 0.018,
+                f"{mean_acc:.1%}",
+                ha="center", va="bottom",
+                fontsize=10, color=COLORS["dark"],
+            )
+            if variant not in legend_seen_variants:
+                legend_seen_variants.add(variant)
+                legend_handles.append(
+                    plt.Rectangle(
+                        (0, 0), 1, 1,
+                        facecolor="white",
+                        edgecolor=COLORS["dark"],
+                        hatch=hatch,
+                        linewidth=0.6,
+                    )
+                )
+                legend_labels.append(VARIANT_LABEL[variant])
+            x += bar_width + inter_variant_gap
+            n_drawn += 1
+        # Center the model label under the block of variant bars that
+        # we actually drew — using cells_sorted's count would mis-center
+        # when a cell is skipped for missing data.
+        if n_drawn > 0:
+            block_end = x - inter_variant_gap - bar_width
+            block_center = (model_block_start + block_end) / 2 + bar_width / 2
+            tick_positions.append(block_center)
+            tick_labels.append(MODEL_LABEL[model_slug])
+        x += inter_model_gap
+
+    ax.set_xticks(tick_positions)
+    ax.set_xticklabels(tick_labels)
+    ax.set_xlabel("")
+    # Two-line ylabel so the bbox_inches="tight" save leaves enough margin
+    # for it; the single-line "Overall accuracy on 147-gene benchmark" was
+    # being clipped on the left edge.
+    ax.set_ylabel("Overall accuracy on\n147-gene benchmark")
+    ax.set_ylim(0, 1.05)
+    ax.yaxis.set_major_locator(plt.MaxNLocator(6))
+
+    # Variant legend (hatch-only) to the right of the plot.
+    ax.legend(
+        legend_handles, legend_labels,
+        title="Variant (hatch)",
+        loc="upper left",
+        bbox_to_anchor=(1.02, 1.0),
+        frameon=False,
+        borderaxespad=0.0,
+    )
+
+    sns.despine(ax=ax, top=True, right=True)
+
+    save_figure(
+        fig, filename=filename,
+        output_dir=str(out_dir), formats=["pdf", "png"],
+    )
+    plt.close(fig)
+
+
+WHOLE_GENOME_N = 19_464  # NCBI protein-coding ∩ has HGNC xref
+
+
+# Anthropic per-1M-token pricing. cache_write = 1.25× input (5-min TTL),
+# cache_read = 0.10× input. https://docs.anthropic.com/.../prompt-caching
+_PRICE: dict[str, dict[str, float]] = {
+    "claude-haiku-4-5":  {"in":  1.0, "cw":  1.25, "cr": 0.10, "out":  5.0},
+    "claude-sonnet-4-6": {"in":  3.0, "cw":  3.75, "cr": 0.30, "out": 15.0},
+    "claude-sonnet-5":   {"in":  3.0, "cw":  3.75, "cr": 0.30, "out": 15.0},
+    "claude-opus-4-7":   {"in": 15.0, "cw": 18.75, "cr": 1.50, "out": 75.0},
+    "claude-opus-4-8":   {"in": 15.0, "cw": 18.75, "cr": 1.50, "out": 75.0},
+}
+_WEB_SEARCH_USD_PER_QUERY = 0.01
+
+# Empirical system-prompt size (cached tokens observed when caching
+# was actually engaged in a sister run). Used as the inferred
+# split-point for legacy records that lack cache_read/cache_creation
+# fields. Sonnet's system.md cached at ≈5670 tokens.
+_INFERRED_SYS_PROMPT_DEFAULT = 5700
+
+
+def _llm_cost_per_call() -> dict[str, float]:
+    """Cache-normalized mean cost per gene for each LLM cell.
+
+    The goal is a fair production-grade $/call comparison even though
+    historic runs in the repo were captured under different caching
+    states. The rule:
+
+    * If the per-call record carries non-zero ``cache_read_tokens``
+      or ``cache_creation_tokens``, trust them: the run had real
+      caching, so we compute cost = sys-amortized + uncached + output.
+    * Otherwise the record is legacy/uncached. We infer the system
+      prompt size from a sister variant that did cache (or fall back
+      to a small constant), then split ``prompt_tokens`` into
+      sys_prompt + user_message and amortize the sys portion as if
+      caching had been active across the session.
+
+    This makes "Sonnet (+ IDs)" comparable to "Sonnet (+ IDs + PubMed)"
+    on the same x-axis without one being unfairly boosted because its
+    capture happened to disable caching.
+    """
+    out: dict[str, float] = {}
+    for vote_key, model, variant in LLM_CELLS:
+        out[vote_key] = _cell_cost_per_call(model, variant)
+    return out
+
+
+def _cell_cost_per_call(model: str, variant: str) -> float:
+    # Read the cell's per-record telemetry from D1 (uploaded under
+    # MAINBENCH_D1_RUN_ID) — same fields the legacy JSON tree carried.
+    cell_records = _load_llm_predictions(model, variant)
+    records = list(cell_records.values())
+    if not records:
+        return 0.0
+    pt_total = cr_total = cw_total = ot_total = ws_total = 0
+    for d in records:
+        pt_total += int(d.get("prompt_tokens") or 0)
+        cr_total += int(d.get("cache_read_tokens") or 0)
+        cw_total += int(d.get("cache_creation_tokens") or 0)
+        ot_total += int(d.get("completion_tokens") or 0)
+        ws_total += int(d.get("n_web_searches") or 0)
+    n = len(records)
+    pt = pt_total / n
+    cr = cr_total / n
+    cw = cw_total / n
+    ot = ot_total / n
+    ws = ws_total / n
+
+    pricing = _PRICE.get(f"claude-{model}")
+    if pricing is None:
+        return 0.0
+
+    if cr > 0 or cw > 0:
+        # Caching observed — pt is the uncached portion (user message),
+        # cr/cw is the cached system prompt. Honor what the runner saw.
+        sys_size = max(cr, cw)
+        user_size = pt
+    else:
+        # Legacy uncached. Split pt into sys-prompt + user_message
+        # using the inferred system-prompt size.
+        sys_size = min(_INFERRED_SYS_PROMPT_DEFAULT, pt)
+        user_size = max(0.0, pt - sys_size)
+
+    sys_amortized_per_cell = (
+        sys_size * pricing["cw"] + (n - 1) * sys_size * pricing["cr"]
+    ) / (n * 1_000_000)
+    user_per_cell = user_size * pricing["in"] / 1_000_000
+    out_per_cell = ot * pricing["out"] / 1_000_000
+    web_per_cell = ws * _WEB_SEARCH_USD_PER_QUERY
+    return sys_amortized_per_cell + user_per_cell + out_per_cell + web_per_cell
+
+
+def make_cost_vs_accuracy_plot(out_dir: Path) -> None:
+    """Scatter LLM cells in ($/whole-genome, accuracy) space. M1 DB
+    accuracies are shown as horizontal reference lines since they have
+    no per-call cost (one-time download)."""
+    setup_plotting_style(style="whitegrid", context="notebook", font_scale=1.0)
+
+    # Mean-of-replicates accuracy (matches the bar heights in
+    # db_correctness_overall — single-rep was the old shape and made
+    # the y-axis inconsistent between the two supp figs).
+    rep_acc = _per_rep_accuracy_by_cell()
+    cost_per_call = _llm_cost_per_call()
+
+    fig, ax = plt.subplots(figsize=(10.5, 5.5))
+
+    # Per-cell label offsets (pixels) to deconflict dense clusters
+    # (Sonnet naive/ncbi/PubMed all sit around 92-95% / $200-265 and
+    # would stack with a single fixed offset). Calibrated to the
+    # post-2026-05 final-canonical layout — re-tune if cells move.
+    # When abs(dy) >= 16 we draw a short leader line so the
+    # label → point mapping stays unambiguous.
+    label_offsets: dict[str, tuple[int, int]] = {
+        "_llm_haiku_naive":        (  7,   6),
+        "_llm_haiku_ncbi":         (  7,  10),
+        "_llm_haiku_pubmed_ncbi":  (  7, -18),
+        "_llm_haiku_web_ncbi":     (  7,   6),
+        "_llm_sonnet_naive":       (  7, -18),
+        "_llm_sonnet_ncbi":        (  7,  10),
+        "_llm_sonnet_pubmed_ncbi": (  7, -20),
+        "_llm_sonnet_web_ncbi":    (  7,   6),
+        # Sonnet 5 (+ IDs) sits ~2pp below Sonnet 4.6 (+ IDs + PubMed)
+        # at a very similar cost. Default (7, 10) would stack them; push
+        # Sonnet 5 well below its point with a leader so the labels
+        # don't overlap.
+        "_llm_sonnet5_ncbi":       (  7, -36),
+        "_llm_opus_naive":         (  7, -18),
+        "_llm_opus_ncbi":          (  7,  10),
+    }
+
+    # LLM cells as scatter — x is $/whole-genome at 1 rep, y is mean-of-rep accuracy.
+    for vote_key, model_slug, variant in LLM_CELLS:
+        label = LLM_LABEL[vote_key]
+        reps = rep_acc.get((f"claude-{model_slug}", variant), [])
+        if not reps:
+            continue
+        x = cost_per_call[vote_key] * WHOLE_GENOME_N
+        y = (sum(reps) / len(reps)) * 100
+        color = LLM_PALETTE[vote_key]
+        ax.scatter(x, y, s=180, c=color, edgecolor=COLORS["dark"],
+                   linewidth=0.8, zorder=5)
+        dx, dy = label_offsets.get(vote_key, (7, 6))
+        arrowprops = (
+            dict(arrowstyle="-", color=COLORS["neutral"],
+                 linewidth=0.6, alpha=0.7, shrinkA=0, shrinkB=4)
+            if abs(dy) >= 16 else None
+        )
+        ax.annotate(
+            label, (x, y),
+            xytext=(dx, dy), textcoords="offset points",
+            fontsize=10, color=COLORS["dark"],
+            arrowprops=arrowprops,
+        )
+
+    # NOTE: M1 DB baselines used to be drawn here as horizontal reference
+    # lines. Dropped 2026-05-12 — they compress the LLM-cell range against
+    # the bottom 40-50% of the chart, making cost/accuracy differences
+    # between Claude variants hard to read. The DB→LLM comparison lives
+    # in db_correctness_overall and db_correctness_by_class instead.
+
+    ax.set_xscale("log")
+    ax.set_xlabel(f"Cost per whole-genome pass at 1 rep  ($, log scale; ×{WHOLE_GENOME_N:,} genes)")
+    ax.set_ylabel("Overall accuracy on 147-gene benchmark (%)")
+    # Zoom in on the LLM range — DB baselines (40-82%) are gone so we
+    # no longer need to keep them in frame. Floor at min(LLM) - 2 to
+    # leave a little headroom under the lowest cell.
+    # Floor at min(LLM mean-of-rep accuracy) - 2pp.
+    llm_means = [
+        sum(reps) / len(reps) * 100
+        for (_, _), reps in rep_acc.items() if reps
+    ]
+    ymin = min(llm_means) if llm_means else 80.0
+    ax.set_ylim(max(78, ymin - 2), 100)
+
+    sns.despine(ax=ax, top=True, right=True)
+    save_figure(
+        fig, filename="benchmark_cost_vs_accuracy",
         output_dir=str(out_dir), formats=["pdf", "png"],
     )
     plt.close(fig)
@@ -1049,6 +1553,229 @@ def make_db_variants_plot(out_dir: Path) -> None:
     plt.close(fig)
 
 
+SURFY_TSV = ROOT / "data/processed/surfy/surfy_human_snapshot.tsv"
+CSPA_TSV = ROOT / "data/processed/cspa/cspa_human_snapshot.tsv"
+
+
+def _universe_size_per_variant() -> dict[str, int]:
+    """For each DB_VARIANTS entry, compute how many human proteins
+    the filter would admit if used as a universe gate. The size is the
+    decision cost — more proteins admitted = more downstream agent
+    triage work and more potential false positives in the universe.
+    """
+    sizes: dict[str, int] = {}
+
+    # UniProt — strict / canonical / TM+signal / permissive ladder.
+    n_strict_only = n_canonical = n_perm = n_tm = 0
+    with UNIPROT_RAW_TSV.open() as fh:
+        for r in csv.DictReader(fh, delimiter="\t"):
+            locs = r.get("subcellular_locations") or ""
+            parts = set(locs.split("|")) if locs else set()
+            strict = _uniprot_has_strict_term(locs)
+            topo = _uniprot_feat_int(r, "feature_topo_extracellular_count") > 0
+            canonical = strict or topo
+            perm = canonical or "Cell membrane" in parts
+            tm = (_uniprot_feat_int(r, "feature_transmembrane_count") > 0
+                  or _uniprot_feat_int(r, "feature_signal_count") > 0
+                  or strict)
+            if strict:
+                n_strict_only += 1
+            if canonical:
+                n_canonical += 1
+            if perm:
+                n_perm += 1
+            if tm:
+                n_tm += 1
+    sizes["UniProt strict-only\n(4 subcell terms)"] = n_strict_only
+    sizes["UniProt baseline"] = n_canonical
+    sizes["UniProt TM-or-signal-or-surface\n(topology proxy)"] = n_tm
+    sizes["UniProt permissive\n(incl. plain Cell membrane)"] = n_perm
+
+    # GO — exp+curated / canonical (+sequence) / permissive (+IEA).
+    n_go_strict = n_go_base = n_go_perm = 0
+    with GO_RAW_TSV.open() as fh:
+        for r in csv.DictReader(fh, delimiter="\t"):
+            exp_only = int(r.get("has_experimental") or 0) + int(r.get("has_curated") or 0)
+            seq = int(r.get("has_sequence") or 0)
+            ele = int(r.get("has_electronic") or 0)
+            if exp_only > 0:
+                n_go_strict += 1
+            if exp_only + seq > 0:
+                n_go_base += 1
+            if exp_only + seq + ele > 0:
+                n_go_perm += 1
+    sizes["GO experimental+curated"] = n_go_strict
+    sizes["GO baseline"] = n_go_base
+    sizes["GO permissive\n(incl. IEA-only)"] = n_go_perm
+
+    # HPA — Enhanced / canonical (E+S+A) / + Uncertain.
+    n_hpa_enh = n_hpa = n_hpa_unc = 0
+    with HPA_RAW_TSV.open() as fh:
+        for r in csv.DictReader(fh, delimiter="\t"):
+            in_enh = _hpa_pm_in_tier(r, "Enhanced")
+            in_canon = _hpa_pm_flag(r)
+            in_unc = in_canon or _hpa_pm_in_tier(r, "Uncertain")
+            if in_enh:
+                n_hpa_enh += 1
+            if in_canon:
+                n_hpa += 1
+            if in_unc:
+                n_hpa_unc += 1
+    sizes["HPA Enhanced-only\n(strictest tier)"] = n_hpa_enh
+    sizes["HPA baseline"] = n_hpa
+    sizes["HPA + Uncertain tier"] = n_hpa_unc
+
+    # SURFY — score>0.9 / >0.7 / >0.5 / canonical.
+    n_s = n_s05 = n_s07 = n_s09 = 0
+    with SURFY_TSV.open() as fh:
+        for r in csv.DictReader(fh, delimiter="\t"):
+            if (r.get("surfy_label") or "").strip() == "surface":
+                n_s += 1
+                try:
+                    score = float(r.get("surfy_ml_score") or 0)
+                except ValueError:
+                    score = 0.0
+                if score > 0.5:
+                    n_s05 += 1
+                if score > 0.7:
+                    n_s07 += 1
+                if score > 0.9:
+                    n_s09 += 1
+    sizes["SURFY score>0.9"] = n_s09
+    sizes["SURFY score>0.7"] = n_s07
+    sizes["SURFY score>0.5"] = n_s05
+    sizes["SURFY baseline"] = n_s
+
+    # CSPA — HC-only / canonical / + unspecific.
+    n_c_hc = n_c = n_c_uns = 0
+    with CSPA_TSV.open() as fh:
+        for r in csv.DictReader(fh, delimiter="\t"):
+            hc = (r.get("cspa_is_high_confidence") or "").strip() == "1"
+            pu = (r.get("cspa_is_putative") or "").strip() == "1"
+            un = (r.get("cspa_is_unspecific") or "").strip() == "1"
+            if hc:
+                n_c_hc += 1
+            if hc or pu:
+                n_c += 1
+            if hc or pu or un:
+                n_c_uns += 1
+    sizes["CSPA high-conf only"] = n_c_hc
+    sizes["CSPA baseline"] = n_c
+    sizes["CSPA + unspecific"] = n_c_uns
+
+    # Consensus — ≥1 / ≥2 / ≥3 over candidate_universe.
+    n_c1 = n_c2 = n_c3 = 0
+    with CAND_TSV_PATH.open() as fh:
+        for r in csv.DictReader(fh, delimiter="\t"):
+            try:
+                n = int(r.get("n_sources_surface") or 0)
+            except (TypeError, ValueError):
+                continue
+            if n >= 1:
+                n_c1 += 1
+            if n >= 2:
+                n_c2 += 1
+            if n >= 3:
+                n_c3 += 1
+    sizes["Consensus\n≥1 source (= universe)"] = n_c1
+    sizes["Consensus\n≥2 sources"] = n_c2
+    sizes["Consensus\n≥3 sources"] = n_c3
+
+    return sizes
+
+
+# Canonical baselines should reproduce candidate_universe.tsv flag counts
+# within a small tolerance. The merge step drops some raw-source positives
+# (split-mapping ambiguous, unmappable to UniProt anchor) so a perfect
+# match isn't expected — but a >15% drift means the recomputed rule has
+# diverged from the loader (the UniProt 415-vs-3175 bug class).
+_CANONICAL_FLAG_COL = {
+    "UniProt baseline": "uniprot_surface_flag",
+    "GO baseline":      "go_surface_flag",
+    "HPA baseline":     "hpa_surface_flag",
+    "SURFY baseline":   "surfy_surface_flag",
+    "CSPA baseline":    "cspa_surface_flag",
+}
+
+
+def _assert_canonical_sizes_match_universe(sizes: dict[str, int],
+                                            tol: float = 0.15) -> None:
+    """Fail loud if a canonical recompute drifts from the universe flag
+    count by more than ``tol`` (default 15%). Catches the class of bug
+    where the analysis re-implements a loader rule incorrectly."""
+    univ_counts: dict[str, int] = dict.fromkeys(_CANONICAL_FLAG_COL.values(), 0)
+    with CAND_TSV_PATH.open() as fh:
+        for r in csv.DictReader(fh, delimiter="\t"):
+            for col in univ_counts:
+                if r.get(col) == "1":
+                    univ_counts[col] += 1
+
+    drifts: list[str] = []
+    for variant_name, flag_col in _CANONICAL_FLAG_COL.items():
+        recomputed = sizes.get(variant_name, 0)
+        universe = univ_counts[flag_col]
+        if universe == 0:
+            continue
+        drift = abs(recomputed - universe) / universe
+        marker = "OK" if drift <= tol else "DRIFT"
+        print(f"  [{marker}] {variant_name:<18s}  recompute={recomputed:5d}  "
+              f"universe={universe:5d}  drift={drift*100:.1f}%")
+        if drift > tol:
+            drifts.append(
+                f"{variant_name}: recompute={recomputed}, universe={universe} "
+                f"(drift={drift*100:.1f}% > tol={tol*100:.0f}%)"
+            )
+    if drifts:
+        raise AssertionError(
+            "Canonical filter sizes diverge from candidate_universe.tsv — "
+            "the analysis rule has drifted from the loader. Fix:\n  - "
+            + "\n  - ".join(drifts)
+        )
+
+
+# Variant labels (long → short) for the cutoff trade-off scatter.
+_VARIANT_SHORT_LABEL = {
+    "UniProt strict-only\n(4 subcell terms)":              "strict-4",
+    "UniProt baseline":                                    "canonical",
+    "UniProt TM-or-signal-or-surface\n(topology proxy)":   "TM+signal",
+    "UniProt permissive\n(incl. plain Cell membrane)":     "permissive",
+    "GO experimental+curated":                             "exp+curated",
+    "GO baseline":                                         "canonical",
+    "GO permissive\n(incl. IEA-only)":                     "+ IEA",
+    "HPA Enhanced-only\n(strictest tier)":                 "Enhanced",
+    "HPA baseline":                                        "canonical",
+    "HPA + Uncertain tier":                                "+ Uncertain",
+    "SURFY score>0.9":                                     ">0.9",
+    "SURFY score>0.7":                                     ">0.7",
+    "SURFY score>0.5":                                     ">0.5",
+    "SURFY baseline":                                      "canonical",
+    "CSPA high-conf only":                                 "HC-only",
+    "CSPA baseline":                                       "canonical",
+    "CSPA + unspecific":                                   "+ unspecific",
+}
+
+# Which variant in each group counts as "canonical" — gets the diamond
+# marker. Mirrors the rules audited against candidate_universe.tsv.
+_CANONICAL_VARIANT = {
+    "UniProt": "UniProt baseline",
+    "GO":      "GO baseline",
+    "HPA":     "HPA baseline",
+    "SURFY":   "SURFY baseline",
+    "CSPA":    "CSPA baseline",
+}
+
+# Recommended-after-trade-off variant per source (star marker). Only
+# set when the trade-off analysis prefers a non-canonical cutoff —
+# leave None when canonical is the right call.
+_RECOMMENDED_VARIANT = {
+    "UniProt": "UniProt TM-or-signal-or-surface\n(topology proxy)",
+    "GO":      None,
+    "HPA":     None,
+    "SURFY":   None,
+    "CSPA":    "CSPA high-conf only",
+}
+
+
 def _dump_optimized_db_accs() -> None:
     """Dump the optimized-cutoff accession sets to two small TSVs so the
     figures-folder gist for db_correctness_by_class can apply the same
@@ -1072,6 +1799,245 @@ def _dump_optimized_db_accs() -> None:
     )
 
 
+def _dump_db_cutoff_tradeoff_points(
+    points_by_group: dict[str, list[dict]],
+) -> None:
+    """Write the cutoff-trade-off precomputed points to a flat TSV.
+
+    Path: ``data/processed/triage_bench/db_cutoff_tradeoff_points.tsv``.
+    The figures-folder gist script reads this so a reader can
+    reproduce the plot without re-loading the raw DB sources.
+    """
+    out_tsv = (
+        ROOT / "data/processed/triage_bench/db_cutoff_tradeoff_points.tsv"
+    )
+    out_tsv.parent.mkdir(parents=True, exist_ok=True)
+    rows: list[dict] = []
+    for group, pts in points_by_group.items():
+        for p in pts:
+            rows.append({
+                "group":     group,
+                "label":     p["label"],
+                "size":      p["size"],
+                "acc":       p["acc"],
+                "pos":       p["pos"],
+                "neg":       p["neg"],
+                "canonical": int(p["label"] == _CANONICAL_VARIANT.get(group)),
+                "recommended": int(p["label"] == _RECOMMENDED_VARIANT.get(group)),
+            })
+    with out_tsv.open("w", newline="") as fh:
+        w = csv.DictWriter(
+            fh,
+            fieldnames=["group", "label", "size", "acc", "pos", "neg",
+                        "canonical", "recommended"],
+            delimiter="\t",
+        )
+        w.writeheader()
+        w.writerows(rows)
+
+
+def make_db_tradeoff_plot(out_dir: Path) -> None:
+    """Cutoff-strictness trade-off as five per-source subplots.
+
+    One subplot per surface DB (consensus skipped — it isn't a per-source
+    cutoff knob). X-axis is the universe size that filter would admit
+    (log scale, cost of looser cutoffs); Y-axis is benchmark accuracy.
+
+    Markers encode the decision status:
+      * Circle ('o') — alternative cutoff option, not currently used.
+      * Diamond ('D') — the canonical baseline as currently configured
+        in the merge loaders. Cross-checked against
+        ``candidate_universe.tsv`` flag counts.
+      * Star ('*') — recommended cutoff after the trade-off audit, IF
+        different from canonical. Annotated on UniProt and CSPA only.
+    """
+    setup_plotting_style(style="whitegrid", context="notebook", font_scale=1.0)
+    # Score on ALL 147 benchmark proteins (include the 6 that aren't
+    # in candidate_universe) so the denominator matches the by-class
+    # final plot. Stub rows default to flag="0"; raw-source injection
+    # can still rescue them via _uniprot_tm_or_signal_or_surface,
+    # _hpa_pm_raw, etc.
+    rows, bench_symbols = _benchmark_with_universe_join(include_outside_universe=True)
+    _inject_raw_source_flags(rows, bench_symbols)
+
+    sizes = _universe_size_per_variant()
+    print("Canonical baseline sanity check (raw recompute vs universe flags):")
+    _assert_canonical_sizes_match_universe(sizes)
+
+    # Compute accuracy per variant.
+    points_by_group: dict[str, list[dict]] = defaultdict(list)
+    for name, fn, group in DB_VARIANTS:
+        if group == "consensus":
+            continue   # consensus isn't a per-source cutoff knob
+        cov = GROUP_COVERAGE_FN.get(group, lambda r: True)
+        n_correct = n_pos_correct = n_pos_total = n_neg_correct = n_neg_total = 0
+        n_scored = 0
+        for r in rows:
+            if not cov(r):
+                continue
+            n_scored += 1
+            vote = bool(fn(r))
+            is_pos = r["ground_truth_verdict"] in {"yes", "contextual"}
+            if is_pos:
+                n_pos_total += 1
+                if vote:
+                    n_pos_correct += 1
+                    n_correct += 1
+            else:
+                n_neg_total += 1
+                if not vote:
+                    n_neg_correct += 1
+                    n_correct += 1
+        points_by_group[group].append({
+            "label": name,
+            "size": sizes.get(name, 0),
+            "acc": n_correct / max(n_scored, 1),
+            "pos": n_pos_correct / max(n_pos_total, 1),
+            "neg": n_neg_correct / max(n_neg_total, 1),
+        })
+
+    # NOTE: db_cutoff_tradeoff_points.tsv is a COMMITTED canonical artifact (the
+    # gist + the published figure read it). Rendering must NOT rewrite it — the
+    # in-render recompute can differ from the committed points and would silently
+    # overwrite them (same trap class as db_optimized_cutoffs.tsv). The plot below
+    # renders from points_by_group in memory; regenerate the committed TSV
+    # deliberately via _dump_db_cutoff_tradeoff_points, never as a render side effect.
+
+    group_order = ["UniProt", "GO", "HPA", "SURFY", "CSPA"]
+    fig, axes = plt.subplots(2, 3, figsize=(14, 8.5), sharey=True)
+    axes = axes.flatten()
+
+    # Within-subplot label-side preferences: index in size-sorted order
+    # → (ha, dx_pts, dy_pts). Tweaked per source so labels of nearby
+    # points fan out instead of stacking.
+    LABEL_LAYOUT = {
+        "UniProt": [
+            ("left",  10, 0),    # strict-4 (far left, label right)
+            ("right", -10, -28), # canonical (cluster; label below-left)
+            ("left",  12, 18),   # TM+signal (cluster; label above-right)
+            ("left",  12, -22),  # permissive (cluster; label below-right)
+        ],
+        "GO": [
+            ("right", -10, 18),  # exp+curated → label up-left
+            ("center", 0, -28),  # canonical → label below-center
+            ("left",  10, 18),   # + IEA → label up-right
+        ],
+        "HPA": [
+            ("left",  10, 0),    # Enhanced (far left)
+            ("right", -10, 18),  # canonical
+            ("left",  10, -22),  # + Uncertain
+        ],
+        "SURFY": [
+            ("left",  10, 0),    # >0.9 (far left)
+            ("center", 0, -28),  # >0.7
+            ("right", -10, 22),  # >0.5 (near canonical)
+            ("left",  12, -22),  # canonical
+        ],
+        "CSPA": [
+            ("center", 0, 22),   # HC-only
+            ("center", 0, -28),  # canonical
+            ("left",  12, 0),    # + unspecific
+        ],
+    }
+
+    for gi, group in enumerate(group_order):
+        ax = axes[gi]
+        pts = sorted(points_by_group[group], key=lambda p: p["size"])
+        palette = _VARIANT_GROUP_PALETTE.get(group, ["#666666"])
+
+        # Strictness-ladder line.
+        ax.plot([p["size"] for p in pts], [p["acc"] * 100 for p in pts],
+                color=palette[0], linewidth=1.6, alpha=0.5, zorder=2)
+
+        canonical_name = _CANONICAL_VARIANT.get(group)
+        recommended_name = _RECOMMENDED_VARIANT.get(group)
+        layout = LABEL_LAYOUT.get(group, [("center", 0, 18)] * len(pts))
+
+        for idx, p in enumerate(pts):
+            color = palette[min(idx, len(palette) - 1)]
+            is_canonical = (p["label"] == canonical_name)
+            is_recommended = (p["label"] == recommended_name)
+            if is_recommended:
+                marker, msize, edge = "*", 420, "#1c4d2e"
+            elif is_canonical:
+                marker, msize, edge = "D", 180, "#222222"
+            else:
+                marker, msize, edge = "o", 110, "white"
+            ax.scatter(p["size"], p["acc"] * 100,
+                       marker=marker, s=msize, color=color,
+                       edgecolor=edge, linewidth=1.6, zorder=4)
+
+            short = _VARIANT_SHORT_LABEL.get(p["label"], p["label"])
+            ha, dx, dy = layout[min(idx, len(layout) - 1)]
+            ax.annotate(
+                f"{short}\nn={p['size']:,} • +{p['pos']*100:.0f}/-{p['neg']*100:.0f}",
+                xy=(p["size"], p["acc"] * 100),
+                xytext=(dx, dy), textcoords="offset points",
+                ha=ha, va="center",
+                fontsize=8, color=COLORS["dark"],
+                bbox={"boxstyle": "round,pad=0.3", "fc": "white",
+                      "ec": color, "lw": 0.7, "alpha": 0.94},
+            )
+
+        ax.set_xscale("log")
+        # ax.set_title is suppressed by the project no-titles policy
+        # (see audit/_plotting_config.setup_plotting_style); use an
+        # in-axes text annotation instead.
+        ax.text(
+            0.02, 0.97, group,
+            transform=ax.transAxes, ha="left", va="top",
+            fontsize=14, fontweight="bold", color=palette[0],
+        )
+        ax.set_ylim(25, 102)
+        # Per-source X span: extend slightly past data range so labels
+        # don't fall off the panel edges.
+        xs = [p["size"] for p in pts]
+        x_lo = max(40, min(xs) / 1.8)
+        x_hi = max(xs) * 1.8
+        ax.set_xlim(x_lo, x_hi)
+        ax.grid(True, which="major", alpha=0.25)
+        sns.despine(ax=ax, top=True, right=True)
+
+    # Shared axis labels via the sixth (empty) cell — also hosts a
+    # marker-legend so the diamond/star meanings are obvious.
+    legend_ax = axes[5]
+    legend_ax.axis("off")
+    legend_handles = [
+        plt.Line2D([], [], marker="o", linestyle="", color="#8a8a8a",
+                   markersize=10, markeredgecolor="white", markeredgewidth=1.4,
+                   label="Alternative cutoff (not used)"),
+        plt.Line2D([], [], marker="D", linestyle="", color="#8a8a8a",
+                   markersize=11, markeredgecolor="#222222", markeredgewidth=1.4,
+                   label="Canonical (current merge rule)"),
+        plt.Line2D([], [], marker="*", linestyle="", color="#8a8a8a",
+                   markersize=18, markeredgecolor="#1c4d2e", markeredgewidth=1.4,
+                   label="Recommended after trade-off audit"),
+    ]
+    legend_ax.legend(handles=legend_handles, loc="center", fontsize=11,
+                     frameon=True, framealpha=0.95, title="Marker shape",
+                     title_fontsize=12)
+    legend_ax.text(
+        0.5, 0.05,
+        "Annotation per point: variant • universe size • +pos%/-neg% recall.\n"
+        "Per-source missing rule: UniProt/GO/SURFY/CSPA absence → predict 'no'; "
+        "HPA absence → abstain.",
+        transform=legend_ax.transAxes, ha="center", va="bottom",
+        fontsize=9, color=COLORS["neutral"],
+    )
+
+    # Shared axis labels — use the figure-level supxlabel/supylabel.
+    fig.supxlabel("Universe size — proteins this filter would admit "
+                  "(log scale; lower = stricter)", fontsize=11, y=0.02)
+    fig.supylabel("Accuracy on 147-gene benchmark (%)", fontsize=11, x=0.005)
+    # No fig-level title (per project no-titles plotting policy).
+    plt.tight_layout(rect=[0.015, 0.03, 1, 0.985])
+    save_figure(
+        fig, filename="db_cutoff_tradeoff",
+        output_dir=str(out_dir), formats=["pdf", "png"],
+    )
+    plt.close(fig)
+
+
 def main() -> None:
     # Output dir overridable via DB_BARPLOT_OUT_DIR env var so the same
     # script can render into staging vs the "final" rendering folder
@@ -1090,30 +2056,23 @@ def main() -> None:
     global _USE_OPTIMIZED_CUTOFFS
     _USE_OPTIMIZED_CUTOFFS = True
     try:
-        # Side-effect: dump the optimized accession sets so the figure-TSV
-        # builders (scripts/build_figure_tsvs.py) can apply the same cutoffs
-        # without re-loading the raw UniProt + CSPA dumps.
+        # Side-effect: dump the optimized accession sets so the figures/ gist
+        # for db_correctness_by_class can apply the same cutoffs without
+        # re-loading the raw UniProt + CSPA dumps.
         _dump_optimized_db_accs()
+        make_by_class_plot(out_dir)  # db_correctness_by_class — OPTIMIZED (published)
     finally:
         _USE_OPTIMIZED_CUTOFFS = False
-
-    # The published figures this module used to render are each now their own
-    # canonical generator that reads the committed figure TSV — so the model
-    # list comes from the DATA, not the opus-4-7 hardcode that shipped empty
-    # bars once predictions moved to opus-4-8:
-    #   db_correctness_by_class     -> scripts/db_correctness_by_class.py
-    #   db_correctness_overall      -> scripts/db_correctness_overall.py
-    #   benchmark_cost_vs_accuracy  -> scripts/benchmark_cost_vs_accuracy.py
-    #   db_cutoff_tradeoff          -> scripts/db_cutoff_tradeoff.py
-    # Rendering them here too would let a monolith re-run overwrite the
-    # TSV-faithful figure with a recomputed one, so those calls are gone. This
-    # module now only dumps the optimized-cutoff accession sets (above) and
-    # renders the non-published internal comparison artifacts below (native
-    # pre-recalibration by-class + the per-DB cutoff-variant panel). NOTE:
-    # make_overall_plot / make_cost_vs_accuracy_plot / make_db_tradeoff_plot are
-    # now unreferenced and slated for deletion in a dedicated monolith-teardown.
     make_by_class_plot(out_dir, filename="db_correctness_by_class_native_cutoffs")
+
+    # db_correctness_overall (Supp Fig 1) is now its own canonical generator,
+    # scripts/db_correctness_overall.py — it reads the figure TSV so its model
+    # list comes from the DATA, not a hardcode. The old make_overall_plot path
+    # here shipped empty bars when the data moved from opus-4-7 to opus-4-8;
+    # that figure is no longer rendered from this monolith.
+    make_cost_vs_accuracy_plot(out_dir)
     make_db_variants_plot(out_dir)
+    make_db_tradeoff_plot(out_dir)
 
 
 if __name__ == "__main__":

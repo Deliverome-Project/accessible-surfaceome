@@ -65,6 +65,27 @@ from accessible_surfaceome.env import load_env
 
 logger = logging.getLogger(__name__)
 
+# Pinned canonical bench_version. Only this version is pushed to public
+# D1's ``benchmark_version``. Private D1 retains the full historical
+# archive of every registered bench across time. The pin replaces the
+# previous "push everything, let the Worker / augment script pick the
+# latest" pattern, which had a brittle ``ORDER BY bench_version DESC``
+# heuristic that silently picked stale labels (lex-sort beat recency).
+#
+# Bumping this pin is a load-bearing edit — when the bench labels are
+# revised (e.g. a curator flips a borderline gene from ``contextual`` →
+# ``no``), the new bench_version SHA goes here, ``sync_public_d1.py``
+# pushes ONLY that SHA, the augment script + figure pipeline re-render,
+# and the drift-guard tests
+# (``tests/test_mainbench_truth_drift.py``,
+# ``tests/test_canonical_bench_version_only.py``) lock the invariant.
+# History: ``21731d746b50`` is the 2026-06-29 snapshot carrying the
+# HMGB1 ``no`` → ``contextual`` and FN1 ``no`` → ``contextual``
+# corrections the deep-dive tests rely on; prior versions
+# (``fc7ddee89155``, ``4b8cc9c24400``, ``43effa010c82``, …) had the
+# pre-correction labels.
+CANONICAL_BENCH_VERSION = "21731d746b50"
+
 # Batch size: Cloudflare D1 caps SQL parameters per statement around ~100,
 # so chunk multi-row INSERTs accordingly. compara_ortholog has 11 cols → 8 rows;
 # triage_run_public has 25 cols → 3 rows; benchmark has 8 cols → 12 rows.
@@ -228,8 +249,21 @@ def sync_gene_identifier(*, priv: D1, pub: D1, dry_run: bool, client: httpx.Clie
 
 
 def sync_benchmark(*, priv: D1, pub: D1, dry_run: bool, client: httpx.Client) -> None:
-    logger.info("benchmark_version")
-    rows = _query(priv, "SELECT * FROM benchmark_version", client=client)
+    logger.info("benchmark_version (canonical=%s only)", CANONICAL_BENCH_VERSION)
+    # Only push the canonical bench_version to public D1. Private retains
+    # the full historical archive of every registered bench. Pushing all
+    # versions to public reintroduces the broken
+    # ``ORDER BY bench_version DESC LIMIT 1`` heuristic used by the Worker
+    # + the augment script — both were silently picking stale labels
+    # (`fc7ddee89155` lex-beats the newer `21731d746b50` correction set).
+    # Bumping the pin requires a code-reviewed edit in the same change
+    # that re-syncs and re-renders figures.
+    rows = _query(
+        priv,
+        "SELECT * FROM benchmark_version WHERE bench_version = ?",
+        params=[CANONICAL_BENCH_VERSION],
+        client=client,
+    )
     cols = [
         "bench_version", "gene_symbol", "uniprot_acc", "class",
         "truth_verdict", "truth_signal", "truth_reason", "rationale", "created_at",
