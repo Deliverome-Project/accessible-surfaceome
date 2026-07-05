@@ -9,34 +9,41 @@
 # ///
 """Reproduce ``surfaceome_deterministic_features_placeholder.{pdf,png}``.
 
-**Supplementary Fig 13.** Distribution of nine deterministic per-gene features
-across the deep-dived surfaceome, faceted by the REAL deep-dive
-surface-accessibility tier collapsed into four comparison groups:
+**Supplementary Fig 13.** Distribution of twelve deterministic per-gene
+features across the surfaceome, faceted by the REAL deep-dive
+surface-accessibility tier collapsed into four comparison groups, plus a fifth
+facet — the full Sonnet dual-triage surface pool:
 
-  * canonical     — group == 'canonical' (high-confidence surface);
-  * likely        — group == 'likely';
-  * low           — group == 'low' (low/moderate accessibility, weak evidence);
-  * uncertain / no — group ∈ {uncertain, no} (ambiguous-to-negative).
+  * canonical      — group == 'canonical' (high-confidence surface);
+  * likely         — group == 'likely';
+  * low            — group == 'low' (low/moderate accessibility, weak evidence);
+  * uncertain / no — group ∈ {uncertain, no} (ambiguous-to-negative);
+  * Sonnet dual triage — every gene the genome-wide Sonnet triage called
+    yes/contextual (~4,236 with topology). A DIFFERENT category: broader, and
+    its det features come from the genome-wide D1 tables (topology_public,
+    compara_*, schweke_homomer_public, surface_bind_*) rather than the
+    deep-dive records, since most of these genes are not deep-dived. Same
+    DeepTMHMM / Compara / Schweke computation, ~100% topology coverage.
 
 The 5-tier deep-dive verdict comes from ``_dd_assign_bucket`` where the gene
 has a published record. Genes not yet deep-dived (``group == 'pending'``) are
-EXCLUDED — they have no tier to compare (and are already absent from the
-bundled TSV, which holds only deep-dived genes).
+EXCLUDED from the deep-dive tiers (and are already absent from the bundled TSV).
 
-The 3×3 panel grid compares each feature across the four tiers. The two
-CONTINUOUS features — TM-helix count, protein length, and ECD length — are shown as
-violins; the nine BOOLEAN features (signal peptide, N/C-terminus
-extracellular, mouse + cyno 1:1 ortholog presence, Schweke-2024 homo-oligomer
-state, alt-isoform topology change) as per-facet fraction bars. The features
-are pre-joined into a single bundled TSV by ``scripts/build_figure_tsvs.py``
-so the gist is a one-TSV reproduction unit.
+The 4×3 panel grid compares each feature across the five facets. The three
+CONTINUOUS features — TM-helix count, protein length, ECD length — are shown as
+violins; the nine BOOLEAN features (signal peptide, N/C-terminus extracellular,
+mouse + cyno 1:1 ortholog presence, Schweke-2024 homo-oligomer state,
+alt-isoform topology change, concerning paralog, extracellular surface-bind
+site) as per-facet fraction bars. The features are pre-joined into a single
+bundled TSV by ``scripts/build_figure_tsvs.py`` so the gist is a one-TSV
+reproduction unit.
 
-Topology + every deterministic feature is sourced from the deep-dive RECORDS
-(full coverage per deep-dived gene), fixing the prior DeepTMHMM-M1-only
-coverage bias where the low / uncertain / no tiers were 70-94% missing.
+The deep-dive-tier features are sourced from the deep-dive RECORDS (full
+coverage per deep-dived gene, fixing the prior DeepTMHMM-M1-only coverage bias);
+the Sonnet pool's features come from the genome-wide D1 tables (topology 100%).
 
-PRELIMINARY — a partial sweep of the ~5,128 candidate genes; treat the
-per-tier rates as provisional until the sweep completes.
+PRELIMINARY — the deep-dive tiers are a partial sweep of the ~5,128 candidate
+genes; treat those per-tier rates as provisional until the sweep completes.
 
 Visual styling matches the in-repo `_plotting_config` (Deliverome
 categorical palette + Manrope-when-available). Inlined so the gist runs
@@ -136,25 +143,27 @@ def _apply_brand_style() -> None:
     })
 
 
-# === Facet definitions: four real deep-dive tiers ===
-# The 5-tier deep-dive spectrum collapsed to four comparison facets by
-# pooling only the two weakest tiers (uncertain + no). Tier colours follow
-# the canonical deep-dive confidence spectrum shared across every deep-dive
-# figure: green (canonical) → teal (likely) → amber-tan (low) → neutral
-# (uncertain/no). Genes still in the `pending` tier (not yet deep-dived) are
-# excluded before this map is applied.
-GROUPS = ["canonical", "likely", "low", "uncertain_no"]
+# === Facet definitions: four deep-dive tiers + the Sonnet dual-triage pool ===
+# The 5-tier deep-dive spectrum collapsed to four comparison facets by pooling
+# only the two weakest tiers (uncertain + no), plus a FIFTH facet — the full
+# Sonnet dual-triage surface pool (terracotta). Tier colours follow the
+# canonical deep-dive confidence spectrum: green (canonical) → teal (likely) →
+# amber-tan (low) → neutral (uncertain/no). Genes still in the `pending` tier
+# (not yet deep-dived) are excluded before this map is applied.
+GROUPS = ["canonical", "likely", "low", "uncertain_no", "sonnet_dual_triage"]
 GROUP_LABEL = {
     "canonical":    "canonical",
     "likely":       "likely",
     "low":          "low",
     "uncertain_no": "uncertain /\nno",
+    "sonnet_dual_triage": "Sonnet dual\ntriage",
 }
 GROUP_COLOR = {
     "canonical":    "#2E7A55",  # success green — high-confidence surface
     "likely":       "#3D6B60",  # teal-mid — likely surface
     "low":          "#C99A5B",  # amber-tan — low/moderate access, weak evidence
     "uncertain_no": "#9C8C88",  # lifted neutral — ambiguous-to-negative tiers
+    "sonnet_dual_triage": "#d87851",  # Sonnet terracotta — the full triage pool
 }
 
 # Raw deep-dive tiers that collapse into the `uncertain_no` facet.
@@ -162,11 +171,14 @@ UNCERTAIN_NO_TIERS = ("uncertain", "no")
 
 
 def assign_facet(group: str) -> str | None:
-    """Map a raw deep-dive tier to one of the four comparison facets.
+    """Map a raw ``group`` value to one of the five comparison facets.
 
-    Returns ``None`` for ``pending`` (not yet deep-dived) or any tier
-    outside the known spectrum, so those rows are dropped from the
-    per-tier comparison.
+    The four leftmost facets are deep-dive tiers (from the records); the fifth,
+    ``sonnet_dual_triage``, is the FULL Sonnet dual-triage surface pool (det
+    features from the genome-wide D1 tables), placed rightmost.
+
+    Returns ``None`` for ``pending`` (not yet deep-dived) or any value outside
+    the known spectrum, so those rows are dropped from the comparison.
     """
     if group == "canonical":
         return "canonical"
@@ -176,6 +188,8 @@ def assign_facet(group: str) -> str | None:
         return "low"
     if group in UNCERTAIN_NO_TIERS:
         return "uncertain_no"
+    if group == "sonnet_dual_triage":
+        return "sonnet_dual_triage"
     return None
 
 
@@ -295,16 +309,17 @@ def render(feats: pd.DataFrame, out_dir: Path) -> Path:
     for extra in axes[len(panels):]:
         extra.set_visible(False)
 
-    # Single legend at top — the four real deep-dive tiers (pending excluded).
+    # Single legend at top — four deep-dive tiers + the Sonnet dual-triage pool.
     legend_handles = [
         plt.Rectangle((0, 0), 1, 1, color=GROUP_COLOR[g],
                       label=GROUP_LABEL[g].replace("\n", " "))
         for g in GROUPS
     ]
     fig.legend(
-        handles=legend_handles, loc="upper center", ncol=4, frameon=False,
+        handles=legend_handles, loc="upper center", ncol=5, frameon=False,
         bbox_to_anchor=(0.5, 1.02), fontsize=10,
-        title="Deep-dive surface-accessibility tier (pending genes excluded)",
+        title="Deep-dive tiers (from records; pending excluded)  ·  Sonnet dual-triage pool "
+              "(all yes/contextual, det features from genome-wide D1 tables)",
         title_fontsize=11,
     )
 

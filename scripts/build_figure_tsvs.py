@@ -58,6 +58,11 @@ DEEP_DIVE_TSV   = ROOT / "data/processed/deep_dive/deep_dive_records.tsv"
 # the deep-dive export; kept separate so the deep-dive export stays purely
 # deep-dive-side.
 TRIAGE_VERDICTS_TSV = ROOT / "data/processed/deep_dive/triage_verdicts.tsv"
+# Sonnet dual-triage surface universe det-features (one row per Sonnet-flagged
+# gene, det features from the genome-wide D1 tables), exported by
+# scripts/export_sonnet_universe_det_features.py. S14 unions it in as its fifth
+# facet — the full triage-surface pool alongside the deep-dive tiers.
+SONNET_DET_TSV = ROOT / "data/processed/deep_dive/sonnet_universe_det_features.tsv"
 
 
 def _load_sources() -> dict[str, pd.DataFrame]:
@@ -73,6 +78,8 @@ def _load_sources() -> dict[str, pd.DataFrame]:
         src["deep_dive"] = pd.read_csv(DEEP_DIVE_TSV, sep="\t")
     if TRIAGE_VERDICTS_TSV.is_file():
         src["triage_verdicts"] = pd.read_csv(TRIAGE_VERDICTS_TSV, sep="\t")
+    if SONNET_DET_TSV.is_file():
+        src["sonnet_det"] = pd.read_csv(SONNET_DET_TSV, sep="\t")
     return src
 
 
@@ -808,7 +815,24 @@ def build_surfaceome_deterministic_features_placeholder(
     out["group"] = [_dd_tier(r) for _, r in dd.iterrows()]
     for c in feature_cols:
         out[c] = pd.to_numeric(dd[c], errors="coerce") if c in dd.columns else pd.NA
-    return out[cols].sort_values(
+    frames = [out[cols]]
+
+    # Fifth facet: the FULL Sonnet dual-triage surface pool (every gene the
+    # genome-wide Sonnet triage called yes/contextual, ~4,236 with topology).
+    # Its det features come from the genome-wide D1 tables, not the records
+    # (those genes are mostly not deep-dived) — same DeepTMHMM/Compara/Schweke
+    # computation, ~100% topology coverage. group='sonnet_dual_triage'.
+    son = src.get("sonnet_det")
+    if son is not None and not son.empty:
+        son_out = pd.DataFrame({"gene_symbol": son["gene_symbol"].astype(str)})
+        son_out["group"] = (son["group"].astype(str) if "group" in son.columns
+                            else "sonnet_dual_triage")
+        for c in feature_cols:
+            son_out[c] = (pd.to_numeric(son[c], errors="coerce")
+                         if c in son.columns else pd.NA)
+        frames.append(son_out[cols])
+
+    return pd.concat(frames, ignore_index=True).sort_values(
         ["group", "gene_symbol"], kind="stable").reset_index(drop=True)
 
 

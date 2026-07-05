@@ -5,18 +5,28 @@ faceted by the REAL deep-dive surface-accessibility tier.
 Each deep-dived gene carries a ``group`` from the deep-dive verdict logic
 (``_dd_assign_bucket``): ``canonical`` / ``likely`` / ``low`` / ``uncertain``
 / ``no``. This figure keeps the top two tiers as-is and collapses the two
-weakest tiers into a single facet, giving FOUR comparison facets:
+weakest into a single facet, then adds a FIFTH facet — the full Sonnet
+dual-triage surface pool — giving FIVE comparison facets:
 
-  - ``canonical``     — group == 'canonical' (high-confidence surface)
-  - ``likely``        — group == 'likely'
-  - ``low``           — group == 'low' (low/moderate accessibility, weak evidence)
+  - ``canonical``      — group == 'canonical' (high-confidence surface)
+  - ``likely``         — group == 'likely'
+  - ``low``            — group == 'low' (low/moderate accessibility, weak evidence)
   - ``uncertain / no`` — group ∈ {uncertain, no} (ambiguous-to-negative)
+  - ``Sonnet dual triage`` — every gene the genome-wide Sonnet triage
+    (``genome_full_sonnet_ncbi_v2``) called yes/contextual (~4,236 with
+    topology). A DIFFERENT category from the tiers: broader, and its det
+    features come from the genome-wide D1 tables (``topology_public``,
+    ``compara_*``, ``schweke_homomer_public``, ``surface_bind_*``) rather than
+    the deep-dive records, since most of these genes are not deep-dived. Same
+    DeepTMHMM / Compara / Schweke computation, ~100% topology coverage so the
+    three continuous axes stay unbiased. Lets the reader compare the curated
+    deep-dive tiers against everything the triage flags surface.
 
-Genes not yet deep-dived carry ``group == 'pending'`` and are EXCLUDED from
-this per-tier comparison — they have no deep-dive tier to compare. (``pending``
-is already absent from the bundled TSV, which holds only deep-dived genes.)
+Genes not yet deep-dived carry ``group == 'pending'`` and are EXCLUDED from the
+deep-dive tiers — they have no tier to compare. (``pending`` is already absent
+from the bundled TSV.)
 
-3×3 panel grid of deterministic features compared across the four tiers.
+4×3 panel grid of deterministic features compared across the five facets.
 The three CONTINUOUS features are shown as violins; the nine BOOLEAN features
 as per-facet fraction bars (% of genes carrying the feature) — a violin of a
 0/1 value is meaningless.
@@ -61,18 +71,20 @@ from accessible_surfaceome.audit._plotting_config import (  # noqa: E402
 # figure (see deep_dive_final_categories): green (canonical) → teal (likely)
 # → amber-tan (low) → neutral (uncertain/no). Genes still in the `pending`
 # tier (not yet deep-dived) are excluded before this map is applied.
-GROUPS = ["canonical", "likely", "low", "uncertain_no"]
+GROUPS = ["canonical", "likely", "low", "uncertain_no", "sonnet_dual_triage"]
 GROUP_LABEL = {
     "canonical":    "canonical",
     "likely":       "likely",
     "low":          "low",
     "uncertain_no": "uncertain /\nno",
+    "sonnet_dual_triage": "Sonnet dual\ntriage",
 }
 GROUP_COLOR = {
     "canonical":    "#2E7A55",  # success green — high-confidence surface
     "likely":       "#3D6B60",  # teal-mid — likely surface
     "low":          "#C99A5B",  # amber-tan — low/moderate access, weak evidence
     "uncertain_no": "#9C8C88",  # lifted neutral — ambiguous-to-negative tiers
+    "sonnet_dual_triage": "#d87851",  # Sonnet terracotta — the full triage pool
 }
 
 # Raw deep-dive tiers that collapse into the `uncertain_no` facet.
@@ -80,11 +92,16 @@ UNCERTAIN_NO_TIERS = ("uncertain", "no")
 
 
 def assign_facet(group: str) -> str | None:
-    """Map a raw deep-dive tier to one of the four comparison facets.
+    """Map a raw ``group`` value to one of the five comparison facets.
 
-    Returns ``None`` for ``pending`` (not yet deep-dived) or any tier
-    outside the known spectrum, so those rows are dropped from the
-    per-tier comparison.
+    The four leftmost facets are deep-dive tiers (from the records). The fifth,
+    ``sonnet_dual_triage``, is the FULL Sonnet dual-triage surface pool — a
+    different category (broader; det features from the genome-wide D1 tables,
+    not the records), placed rightmost so the reader compares the curated
+    deep-dive tiers against everything the triage flags surface.
+
+    Returns ``None`` for ``pending`` (not yet deep-dived) or any value outside
+    the known spectrum, so those rows are dropped from the comparison.
     """
     if group == "canonical":
         return "canonical"
@@ -94,6 +111,8 @@ def assign_facet(group: str) -> str | None:
         return "low"
     if group in UNCERTAIN_NO_TIERS:
         return "uncertain_no"
+    if group == "sonnet_dual_triage":
+        return "sonnet_dual_triage"
     return None
 
 
@@ -229,9 +248,10 @@ def render(feats: pd.DataFrame) -> Path:
         for g in GROUPS
     ]
     fig.legend(
-        handles=legend_handles, loc="upper center", ncol=4, frameon=False,
+        handles=legend_handles, loc="upper center", ncol=5, frameon=False,
         bbox_to_anchor=(0.5, 1.02), fontsize=10,
-        title="Deep-dive surface-accessibility tier (pending genes excluded)",
+        title="Deep-dive tiers (from records; pending excluded)  ·  Sonnet dual-triage pool "
+              "(all yes/contextual, det features from genome-wide D1 tables)",
         title_fontsize=11,
     )
 
