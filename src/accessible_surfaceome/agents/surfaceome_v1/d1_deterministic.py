@@ -172,12 +172,39 @@ def _latest_paralog_version() -> str:
 
 
 def _latest_ortholog_ecd_version() -> str:
-    rows = _query_public(
-        "SELECT ortholog_ecd_version FROM compara_ortholog_ecd_release "
-        "ORDER BY computed_at DESC LIMIT 1",
+    """Ortholog-ECD version with the WIDEST actual coverage, not merely the
+    newest.
+
+    A patch delta can land in ``compara_ortholog_ecd_release`` with a newer
+    ``computed_at`` but far fewer genes (e.g. a small ``_idfix`` correction),
+    and its release-row metadata can be stale relative to the data actually
+    present. Keying on ``computed_at DESC`` alone would then silently collapse
+    ortholog coverage on the next run. Instead, count the distinct human genes
+    actually present per version in ``compara_ortholog_ecd`` and take the
+    widest, tie-breaking on the newest ``computed_at`` so a same-size
+    re-materialization still wins.
+    """
+    counts = _query_public(
+        "SELECT ortholog_ecd_version AS v, "
+        "COUNT(DISTINCT human_ensembl_gene) AS n "
+        "FROM compara_ortholog_ecd GROUP BY ortholog_ecd_version",
         [],
     )
-    return rows[0]["ortholog_ecd_version"] if rows else ""
+    if not counts:
+        return ""
+    computed_at = {
+        r["ortholog_ecd_version"]: (r.get("computed_at") or "")
+        for r in _query_public(
+            "SELECT ortholog_ecd_version, computed_at "
+            "FROM compara_ortholog_ecd_release",
+            [],
+        )
+    }
+    counts.sort(
+        key=lambda r: (int(r["n"] or 0), computed_at.get(r["v"], "")),
+        reverse=True,
+    )
+    return counts[0]["v"]
 
 
 def _fetch_canonical_topology(uniprot_acc: str, topology_version: str) -> IsoformTopology | None:

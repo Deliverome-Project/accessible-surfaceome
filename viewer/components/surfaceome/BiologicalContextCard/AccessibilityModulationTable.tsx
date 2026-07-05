@@ -4,6 +4,7 @@ import type {
   AccessibilityModulationObservation,
   ModulationDirection,
 } from "../../../lib/surfaceome-types";
+import { chipJumpTargets } from "../../../lib/chipJumpTargets";
 import { prettyEnum } from "../../../lib/enums";
 import { EvidenceChipList } from "../EvidenceChip/EvidenceChip";
 import { StatusPill } from "../StatusPill/StatusPill";
@@ -170,30 +171,50 @@ export function AccessibilityModulationTable({ rows }: Props) {
           </tr>
         </thead>
         <tbody>
-          {sorted.map((m, i) => (
-            <tr key={i}>
-              <td>
-                <StatusPill tone="lavender" size="sm">
-                  {prettyEnum(m.category)}
-                </StatusPill>
-              </td>
-              {/* Structured direction of the surface pool under the
-                  modulating state — its own column, "?" when unclear. */}
-              <td>{directionCell(m.direction)}</td>
-              <td>{m.baseline_context}</td>
-              <td>{m.modulating_state}</td>
-              <td>{m.accessibility_implication}</td>
-              <td>
-                {/* The change/effect narrative (the "evidence string")
-                 *  lives in the Cites column with its citations rather
-                 *  than widening the Shift column. */}
-                {m.change ? (
-                  <p className={styles.modChangeCite}>{m.change}</p>
-                ) : null}
-                <EvidenceChipList ids={m.cited_evidence_ids} label="References" />
-              </td>
-            </tr>
-          ))}
+          {(() => {
+            const firstIdxForCategory = new Map<string, number>();
+            sorted.forEach((m, i) => {
+              if (m.category && !firstIdxForCategory.has(m.category)) {
+                firstIdxForCategory.set(m.category, i);
+              }
+            });
+            return sorted.map((m, i) => {
+              const isFirstForCategory =
+                m.category != null && firstIdxForCategory.get(m.category) === i;
+              return (
+                <tr
+                  key={i}
+                  id={
+                    isFirstForCategory
+                      ? chipJumpTargets.modulationCategory(m.category as string)
+                      : undefined
+                  }
+                  tabIndex={isFirstForCategory ? -1 : undefined}
+                >
+                  <td>
+                    <StatusPill tone="lavender" size="sm">
+                      {prettyEnum(m.category)}
+                    </StatusPill>
+                  </td>
+                  {/* Structured direction of the surface pool under the
+                      modulating state — its own column, "?" when unclear. */}
+                  <td>{directionCell(m.direction)}</td>
+                  <td>{m.baseline_context}</td>
+                  <td>{m.modulating_state}</td>
+                  <td>{m.accessibility_implication}</td>
+                  <td>
+                    {/* The change/effect narrative (the "evidence string")
+                     *  lives in the Cites column with its citations rather
+                     *  than widening the Shift column. */}
+                    {m.change ? (
+                      <p className={styles.modChangeCite}>{m.change}</p>
+                    ) : null}
+                    <EvidenceChipList ids={m.cited_evidence_ids} label="References" />
+                  </td>
+                </tr>
+              );
+            });
+          })()}
         </tbody>
       </table>
     </div>

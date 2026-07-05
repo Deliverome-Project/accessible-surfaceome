@@ -9,6 +9,7 @@ import type {
 import { prettyEnum } from "../../../lib/surfaceome";
 import { tooltips } from "../../../lib/tooltips";
 import { antibodyLink } from "../../../lib/antibody-links";
+import { chipJumpTargets } from "../../../lib/chipJumpTargets";
 import { EvidenceChipList, linkifyEvidenceRefs } from "../EvidenceChip/EvidenceChip";
 import { InfoTip } from "../../InfoTip/InfoTip";
 import { SectionCard } from "../SectionCard/SectionCard";
@@ -346,7 +347,11 @@ export function SurfaceEvidenceCard({ rec, n }: Props) {
       ) : null}
 
       {se.contradicting_evidence.length > 0 ? (
-        <div className={styles.subsection}>
+        <div
+          id={chipJumpTargets.contradictingEvidence}
+          tabIndex={-1}
+          className={styles.subsection}
+        >
           <p className={`label-mono ${styles.subhead}`}>Contradicting evidence</p>
           <ul className={styles.contradictions}>
             {se.contradicting_evidence.map((c, i) => (

@@ -4,7 +4,6 @@
 #   "matplotlib>=3.9",
 #   "seaborn>=0.13",
 #   "venn>=0.1.3",
-#   "httpx>=0.27",
 # ]
 # ///
 """Reproduce ``db_overlap_venn.{pdf,png}`` from the public repo.
@@ -25,7 +24,6 @@ import csv
 import io
 from pathlib import Path
 
-import httpx
 import matplotlib.font_manager as fm
 import matplotlib.pyplot as plt
 import seaborn as sns
@@ -33,9 +31,14 @@ from venn import venn
 
 REPO = "Deliverome-Project/accessible-surfaceome"
 BRANCH = "main"
+# Dedicated per-figure TSV: the five databases' INITIAL (pre-recalibration)
+# surface flags, union members only, with stable IDs — NOT the
+# whole-proteome catalog. Figure 1 is a databases-overlap figure, so it
+# ships its own minimal input (built by scripts/build_figure_tsvs.py),
+# free of the catalog's triage/optimized/universe_version columns.
 CAND_URL = (
     f"https://raw.githubusercontent.com/{REPO}/{BRANCH}"
-    f"/data/processed/catalog/whole_proteome_catalog.tsv"
+    f"/data/processed/figures/db_overlap_venn.tsv"
 )
 
 # Published reproduction gist (embedded into output PNG Source / PDF
@@ -90,7 +93,7 @@ def _apply_brand_style() -> None:
     sns.set_style("whitegrid")
     sns.set_context("notebook", font_scale=1.0)
     plt.rcParams.update({
-        "savefig.dpi": 300,
+        "savefig.dpi": 600,
         "savefig.bbox": "tight",
         "figure.facecolor": "none",
         "savefig.facecolor": "none",
@@ -137,12 +140,21 @@ PALETTE_BY_LABEL = {label: BRAND_PALETTE[i] for i, (_, label) in enumerate(DB_FL
 
 
 def _fetch_csv_text(url: str) -> str:
+    """Bundled-only: the gist HEAD commit SHA is the SWHID for the
+    whole reproduction unit (script + data + README), so we must
+    never read a *different* TSV than what's bundled. Sibling-first
+    (gist case); fall back to the in-repo TSV path (dev case). No
+    network fetch — a missing sibling in a gist is a hard error."""
+    sibling = Path(__file__).parent / Path(url).name
+    if sibling.is_file():
+        return sibling.read_text()
     local = Path(__file__).resolve().parents[3] / url[len(f"https://raw.githubusercontent.com/{REPO}/{BRANCH}/"):]
     if local.is_file():
         return local.read_text()
-    r = httpx.get(url, timeout=30)
-    r.raise_for_status()
-    return r.text
+    raise FileNotFoundError(
+        f"TSV not found at sibling ({sibling.name}) or local ({local}). "
+        f"In a gist, the bundled TSV must sit next to this script."
+    )
 
 
 def main() -> None:
@@ -199,7 +211,7 @@ def main() -> None:
     out_pdf = Path("db_overlap_venn.pdf")
     out_png = Path("db_overlap_venn.png")
     fig.savefig(out_pdf, bbox_inches="tight", metadata={"Subject": GIST_URL})
-    fig.savefig(out_png, bbox_inches="tight", dpi=300, metadata={"Source": GIST_URL})
+    fig.savefig(out_png, bbox_inches="tight", dpi=600, metadata={"Source": GIST_URL})
     print(f"Wrote {out_pdf} + {out_png}  ({sum(len(s) for s in sets.values()):,} "
           f"per-DB votes across {len(set().union(*sets.values())):,} unique proteins)")
 

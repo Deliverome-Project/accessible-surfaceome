@@ -4,15 +4,14 @@
 #   "matplotlib>=3.9",
 #   "pandas>=2.2",
 #   "seaborn>=0.13",
-#   "httpx>=0.27",
 # ]
 # ///
 """Reproduce ``topology_coverage_by_source.{pdf,png}`` from the public repo.
 
 For every protein in the cohort-tightened v3 candidate-surfaceome
-universe (6,588 proteins = candidate_universe_v3 + v3_dropped, the
-post-Sonnet-no-trim union intersected with the HGNC-anchored
-protein-coding cohort), 9 binary topology features are scored per
+universe (6,585 proteins = candidate_universe_v3 + v3_dropped on the
+bench-optimized cutoffs, the post-Sonnet-no-trim union intersected with
+the HGNC-anchored protein-coding cohort), 9 binary topology features are scored per
 inclusion source. Each panel shows what fraction of the universe is
 captured by `(source ∩ feature)` — DBs render as bars colored by the
 project's M1-DB palette plus Claude-orange for Sonnet.
@@ -27,7 +26,7 @@ Panels (3×3):
 Feature-coverage denominators are the v3 universe (= proteins with
 ≥1 yes vote across the 6 sources). Bar height for source S on
 feature F:
-    100 × |S-included ∩ F-positive| / 6,588
+    100 × |S-included ∩ F-positive| / 6,585
 
 The 9 features are a deliberate mix:
   • 7 hand-picked architecture classes (GPI / 7TM-GPCR / multi-pass
@@ -60,10 +59,8 @@ Standalone — ``uv run make_topology_coverage_by_source.py``.
 """
 from __future__ import annotations
 
-import io
 from pathlib import Path
 
-import httpx
 import matplotlib.font_manager as fm
 import matplotlib.pyplot as plt
 import pandas as pd
@@ -82,12 +79,14 @@ BASE = f"https://raw.githubusercontent.com/{REPO}/{BRANCH}"
 # the published URL.
 GIST_URL = "https://gist.github.com/beccajcarlson/95b0f4cdcaf6a6b91f57539cd1515a25"
 
-# Per-protein feature table built by the canonical audit script. One
-# row per universe protein with the 6 source-inclusion flags and the
-# 9 topology binary features used by this figure. ~2.8 MB plain TSV
-# (non-LFS so raw.githubusercontent.com serves text, not a pointer).
+# Dedicated per-figure TSV (built by scripts/build_figure_tsvs.py). One
+# row per universe protein with the src_* source-inclusion flags, the
+# bench-optimized cutoff columns (uniprot_optimized / cspa_optimized /
+# n_sources_optimized), and the 9 topology binary features used by this
+# figure. ~3 MB plain TSV (non-LFS so raw.githubusercontent.com serves
+# text, not a pointer).
 FEATURES_TSV = (
-    f"{BASE}/data/analysis/db_vs_sonnet_inclusion/per_protein_features.tsv"
+    f"{BASE}/data/processed/figures/topology_coverage_by_source.tsv"
 )
 
 # ──── Inline brand styling — sentinel: brand-style-v3 ────
@@ -141,7 +140,7 @@ def _apply_brand_style() -> None:
     sns.set_style("whitegrid")
     sns.set_context("notebook", font_scale=1.0)
     plt.rcParams.update({
-        "savefig.dpi": 300,
+        "savefig.dpi": 600,
         "savefig.bbox": "tight",
         "figure.facecolor": "none",
         "savefig.facecolor": "none",
@@ -193,32 +192,53 @@ FEATURES: list[tuple[str, str]] = [
 # Panel x-axis order: Sonnet first (implicit reference), then DBs
 # in the order matching make_db_correctness_by_class.py for cross-
 # figure visual consistency.
-SOURCE_ORDER = ["sonnet", "uniprot", "surfy", "cspa", "go", "hpa"]
+# ``sonnet_only`` = the zero-DB rescue subset; computed inline as
+# (src_sonnet == 1 AND n_sources_optimized == 0) — i.e. no DB flags the
+# protein once the bench-optimized UniProt/CSPA cutoffs are applied.
+# Sits right after sonnet so the rescue subset reads as a visible delta
+# off the full Sonnet bar. Uses a darker orange (zero-DB rescue subset)
+# to keep it in the Sonnet family while staying distinct from the main
+# Sonnet bar.
+SOURCE_ORDER = ["sonnet", "sonnet_only", "uniprot", "surfy", "cspa", "go", "hpa"]
 SOURCE_COLORS = {
-    "sonnet":  BRAND_CLAUDE_ORANGE,
+    "sonnet":      BRAND_CLAUDE_ORANGE,
+    "sonnet_only": "#a8481a",  # darker orange (zero-DB rescue subset)
     "uniprot": BRAND_PALETTE[0],  # maroon-light
     "surfy":   BRAND_PALETTE[3],  # lavender-bright
     "cspa":    BRAND_PALETTE[4],  # maroon-dark
     "go":      BRAND_PALETTE[1],  # teal-mid
     "hpa":     BRAND_PALETTE[2],  # amber-bright
 }
+# Per-source column mapping. UniProt + CSPA use the bench-OPTIMIZED
+# cutoffs (consistent with the accuracy figures); the other DBs and
+# Sonnet use their initial src_* flags unchanged.
 SOURCE_COL = {
     "sonnet":  "src_sonnet",
-    "uniprot": "src_uniprot",
+    "uniprot": "uniprot_optimized",
     "surfy":   "src_surfy",
-    "cspa":    "src_cspa",
+    "cspa":    "cspa_optimized",
     "go":      "src_go",
     "hpa":     "src_hpa",
 }
 
 
 def _fetch_tsv(url: str) -> pd.DataFrame:
-    print(f"  fetching {url} …")
-    r = httpx.get(url, timeout=60.0, follow_redirects=True)
-    r.raise_for_status()
-    df = pd.read_csv(io.StringIO(r.text), sep="\t")
-    print(f"    {len(df):,} rows × {len(df.columns)} cols")
-    return df
+    """Bundled-only: the gist HEAD commit SHA is the SWHID for the
+    whole reproduction unit (script + data + README), so we must
+    never read a *different* TSV than what's bundled. Sibling-first
+    (gist case); fall back to the in-repo TSV path (dev case). No
+    network fetch — a missing sibling in a gist is a hard error."""
+    sibling = Path(__file__).parent / Path(url).name
+    if sibling.is_file():
+        return pd.read_csv(sibling, sep="\t")
+    if url.startswith(BASE + "/"):
+        local = Path(__file__).resolve().parents[3] / url[len(BASE) + 1:]
+        if local.is_file():
+            return pd.read_csv(local, sep="\t")
+    raise FileNotFoundError(
+        f"TSV not found at sibling ({sibling.name}) or in-repo path. "
+        f"In a gist, the bundled TSV must sit next to this script."
+    )
 
 
 def main() -> None:
@@ -232,11 +252,19 @@ def main() -> None:
     fig, axes = plt.subplots(nrows, ncols, figsize=(16, 3.6 * nrows))
     axes = axes.reshape(-1)
 
+    # Pre-compute the sonnet_only mask once (per-panel iteration would
+    # recompute it 9× for no benefit). Zero-DB rescue under the OPTIMIZED
+    # cutoffs: Sonnet positive AND no DB voted yes once the
+    # bench-optimized UniProt/CSPA thresholds are applied.
+    sonnet_only_mask = (df[SOURCE_COL["sonnet"]] == 1) & (df["n_sources_optimized"] == 0)
+
     for ax, (feat_col, label) in zip(axes, FEATURES):
         rates_pct = []
         for src_name in SOURCE_ORDER:
-            src_col = SOURCE_COL[src_name]
-            mask = df[src_col] == 1
+            if src_name == "sonnet_only":
+                mask = sonnet_only_mask
+            else:
+                mask = df[SOURCE_COL[src_name]] == 1
             feat = pd.to_numeric(df.loc[mask, feat_col], errors="coerce")
             n_pos = int((feat == 1).sum())
             rates_pct.append(100.0 * n_pos / universe_size)
@@ -266,10 +294,10 @@ def main() -> None:
     # `metadata={"Source": GIST_URL}` and `metadata={"Subject": GIST_URL}`
     # verbatim — that's its drift-guard against gist files losing the
     # metadata embed.
-    fig.savefig(png_path, format="png", dpi=300, bbox_inches="tight",
+    fig.savefig(png_path, format="png", dpi=600, bbox_inches="tight",
                 metadata={"Source": GIST_URL})
     print(f"  saved {png_path}")
-    fig.savefig(pdf_path, format="pdf", dpi=300, bbox_inches="tight",
+    fig.savefig(pdf_path, format="pdf", dpi=600, bbox_inches="tight",
                 metadata={"Subject": GIST_URL})
     print(f"  saved {pdf_path}")
 

@@ -78,6 +78,58 @@ print layout:
 - **Bold key terms**: render as semibold in print, which keeps the
   page light.
 
+## Figures — automatic swap to the canonical render
+
+Between pandoc HTML and WeasyPrint PDF, the build runs a **figure-swap
+step** that replaces each in-document `<img>` with the canonical
+render under `data/analysis/figures/<slug>.<ext>` per
+`paper/figure_manifest.json`. This means: **whatever bitmap is pasted
+into the `.docx` is ignored** — the published PDF always carries the
+HEAD-of-main render of each figure (same artifact the viewer, the
+gist, and the Zenodo deposit point at). The swap matches on the
+anchor id pandoc emits for each figure caption — `figure-N` for main
+figures, `appendix-figure-N` for appendix figures.
+
+To add a new figure to the manifest:
+
+```json
+{
+  "figures": {
+    "3": {
+      "slug": "my_new_figure",
+      "format": "png",
+      "min_dpi": 600,
+      "description": "Author-facing only"
+    }
+  }
+}
+```
+
+The build validates every swapped asset:
+
+- **PNG** → file must exist and Pillow-reported DPI ≥ `min_dpi`
+  (default 600). Matplotlib writes 599.9988 for 600 — the validator
+  rounds, so this passes cleanly.
+- **SVG** → root element must be `<svg>`. Soft-warns if the SVG
+  wraps a base64 raster (the embedded bitmap then keeps its own
+  resolution; the SVG wrapper isn't "vector at any zoom").
+- **PDF** → file header must begin with `%PDF-`.
+
+Default mode warns and keeps the build moving. Pass `--strict-figures`
+to escalate any unresolved issue (missing canonical asset, PNG below
+DPI threshold, etc.) into a build error:
+
+```bash
+uv run python paper/build.py --strict-figures my_manuscript.docx
+```
+
+You can also run the validator standalone, without a `.docx`:
+
+```bash
+uv run python paper/figure_swap.py            # report issues
+uv run python paper/figure_swap.py --strict   # exit 1 on any issue
+```
+
 ## Citations
 
 If you're using **Zotero in Word**, leave citations alone — Zotero

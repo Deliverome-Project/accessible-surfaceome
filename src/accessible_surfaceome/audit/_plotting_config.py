@@ -119,7 +119,7 @@ def setup_plotting_style(style="default", context="notebook", font_scale=2.0):
         # Figure
         'figure.figsize': (5, 4),
         'figure.dpi': 100,
-        'savefig.dpi': 300,
+        'savefig.dpi': 600,
         'savefig.bbox': 'tight',
         'savefig.pad_inches': 0.1,
         'figure.facecolor': 'none',
@@ -272,7 +272,7 @@ def save_figure(
 
     for fmt in formats:
         filepath = output_path / f"{filename}.{fmt}"
-        save_kwargs = {"format": fmt, "dpi": 300, "bbox_inches": "tight"}
+        save_kwargs = {"format": fmt, "dpi": 600, "bbox_inches": "tight"}
         if gist_url:
             if fmt == "png":
                 save_kwargs["metadata"] = {"Source": gist_url}

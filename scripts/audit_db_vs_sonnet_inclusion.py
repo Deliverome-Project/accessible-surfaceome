@@ -1,7 +1,7 @@
 """Per-source inclusion-bias audit for the v2 candidate universe.
 
-Answers: for the 6,588 proteins in the v3 cohort-cleaned candidate
-universe (v3-kept + v3-dropped), what features
+Answers: for the 6,650 proteins in the v3 cohort-cleaned candidate
+universe (v3-kept + v3-dropped, bench-optimized cutoffs), what features
 distinguish inclusion in each of the 5 M1 source DBs (UniProt, GO, HPA,
 SURFY, CSPA) vs. inclusion via Sonnet (the LLM triage layer)?
 
@@ -24,7 +24,7 @@ For each inclusion source, computes the enrichment of every feature in
     Cliff's-delta equivalent (p_in - p_out).
 
 Outputs to data/analysis/db_vs_sonnet_inclusion/:
-  - per_protein_features.tsv  -- the joined feature table (6,521 rows)
+  - per_protein_features.tsv  -- the joined feature table (6,650 rows)
   - inclusion_enrichment.tsv  -- one row per (source, feature)
   - inclusion_heatmap.{pdf,png}  -- signed effect heatmap
   - inclusion_summary.json    -- universe sizes + per-source inclusion counts
@@ -237,10 +237,10 @@ FEATURE_PROVENANCE: dict[str, str] = {
 
 
 def _load_v3() -> pd.DataFrame:
-    """Load v3-kept (5,105) + v3-dropped (1,483) = 6,588-row cohort-
-    cleaned candidate universe.
+    """Load v3-kept (5,150) + v3-dropped (1,500) = 6,650-row cohort-
+    cleaned candidate universe (bench-optimized DB cutoffs).
 
-    Why 6,588 and not 5,105: the dropped rows are still legitimate
+    Why 6,650 and not 5,150: the dropped rows are still legitimate
     candidate-universe members — they just didn't survive the
     Sonnet=no/high-conf/1-DB rule. For the source-inclusion analysis
     we WANT them in the universe so the per-DB inclusion sets reflect
@@ -248,11 +248,13 @@ def _load_v3() -> pd.DataFrame:
     them by construction (their sonnet_verdict is 'no'), which is the
     correct semantic.
 
-    v2 (6,711) → v3-input (6,588): v3 builder also tightens the
-    cohort via gene_identifier_public, pruning 117-ish pseudogene /
-    ERV / Ig-V-segment / isoform-collision rows that v2 had absorbed
-    without intersecting the 19,464-row protein-coding cohort. The
-    6,588 is exactly v2 ∩ Homo_sapiens.protein_coding.with_hgnc.
+    Base size depends on the DB cutoffs. Under the bench-optimized
+    cutoffs (UniProt expanded to TM/signal, CSPA tightened to
+    high-confidence) the gate (≥1-of-5-DB OR Sonnet-yc) ∩ the
+    19,464-row protein-coding cohort admits 6,650 — vs 6,588 under the
+    initial cutoffs. The optimized UniProt cutoff is what nets the +63
+    (it admits TM/signal proteins the initial union missed), so the
+    base is no longer exactly v2's union ∩ cohort.
 
     v3 schema changes vs v2 the loader projects across:
       * `uniprot_acc`        <-  `uniprot_accession`
@@ -982,7 +984,7 @@ def make_clustered_heatmap(enrichment: pd.DataFrame, out_dir: Path) -> None:
         path = out_dir / f"inclusion_heatmap_clustered.{ext}"
         g.fig.savefig(
             path,
-            dpi=300,
+            dpi=600,
             bbox_inches="tight",
             bbox_extra_artists=[prov_legend, src_legend],
         )
@@ -1210,14 +1212,25 @@ def make_surfy_topology_coverage(df: pd.DataFrame, out_dir: Path) -> None:
     # make_db_correctness_by_class.py`. Colors come from the
     # BRAND_PALETTE used there so a reader scanning back and forth
     # between the two figures gets the SAME color for the SAME source.
-    source_order = ["sonnet", "uniprot", "surfy", "cspa", "go", "hpa"]
+    # ``sonnet_only`` = the n=1,042 zero-DB rescue subset — genes
+    # Sonnet flagged yes/contextual where NO classical surface DB
+    # agreed. Computed inline as (src_sonnet == 1 AND all DB src_*
+    # == 0), separate from the regular INCLUSION_SOURCES mapping
+    # because its mask is a conjunction across all sources rather
+    # than a single column lookup. Sits right after ``sonnet`` so
+    # the rescue subset reads as a visible delta off the full Sonnet
+    # bar; uses success-green to signal "rescue surfacing the DBs
+    # missed" (same hue family as the zero_db_rescues_by_triage
+    # figure's YES-bucket palette).
+    source_order = ["sonnet", "sonnet_only", "uniprot", "surfy", "cspa", "go", "hpa"]
     source_colors = {
         # Sonnet = Claude-orange (BRAND_CLAUDE_ORANGE = "#d87851") —
         # same color used for Sonnet in
         # data/analysis/figures/make_db_correctness_by_class.py so
         # a reader gets the SAME color for Sonnet across both
         # figures. Earlier teal-dark choice was wrong.
-        "sonnet":  "#d87851",
+        "sonnet":      "#d87851",
+        "sonnet_only": "#2E7A55",  # success green — zero-DB rescue subset
         # 5 DB colors, indexed identically to BRAND_PALETTE[0..4] in
         # make_db_correctness_by_class.py (UniProt, GO CC, HPA,
         # SURFY, CSPA — by ORIGINAL palette assignment, not panel
@@ -1243,7 +1256,7 @@ def make_surfy_topology_coverage(df: pd.DataFrame, out_dir: Path) -> None:
         # vote across uniprot, go, hpa, surfy, cspa, OR sonnet).
         # The bar height for source S on feature F reads:
         #   (# proteins where S-included AND F-positive)
-        #   / |universe|  (= 6,588)
+        #   / |universe|  (= 6,650)
         #
         # The v3 universe was BUILT from "any DB yes OR Sonnet
         # yes/contextual", so every member already has at least one
@@ -1258,10 +1271,21 @@ def make_surfy_topology_coverage(df: pd.DataFrame, out_dir: Path) -> None:
         # and silently mis-paired bars with colors when the two
         # orders diverged.
         src_col_by_name = dict(INCLUSION_SOURCES)
+        # Special mask for ``sonnet_only``: Sonnet positive AND no DB
+        # voted yes. Computed once per panel since the mask doesn't
+        # depend on the feature column.
+        db_src_cols = [
+            src_col_by_name[s] for s in ("uniprot", "surfy", "cspa", "go", "hpa")
+        ]
+        sonnet_only_mask = (df[src_col_by_name["sonnet"]] == 1) & (
+            df[db_src_cols].sum(axis=1) == 0
+        )
         rates_pct = []
         for src_name in source_order:
-            src_col = src_col_by_name[src_name]
-            mask = df[src_col] == 1
+            if src_name == "sonnet_only":
+                mask = sonnet_only_mask
+            else:
+                mask = df[src_col_by_name[src_name]] == 1
             feat = pd.to_numeric(df.loc[mask, feat_col], errors="coerce")
             n_pos = int((feat == 1).sum())
             rates_pct.append(100.0 * n_pos / any_yes_size)
@@ -1275,7 +1299,7 @@ def make_surfy_topology_coverage(df: pd.DataFrame, out_dir: Path) -> None:
         ax.set_xticks(range(len(source_order)))
         ax.set_xticklabels(source_order, rotation=35, ha="right")
         # Y-axis label = denominator. The full v3-input universe
-        # (6,588 proteins) is the reference — every universe member
+        # (6,650 proteins) is the reference — every universe member
         # has ≥1 yes vote across the 6 sources by construction, so
         # "% of any yes vote" reads cleanly as "% of universe."
         ax.set_ylabel("% of any-yes-vote\nuniverse")
