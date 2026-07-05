@@ -16,7 +16,7 @@
   "paywall_bot_block_compare": "swh:1:rev:8ab41cc6ef790b01df229633fd35a6ef2a19e958",
   "positive_control_db_coverage_bars": "swh:1:rev:f7b6b3911b420731d9f565039f7f70571b4d09d7",
   "surfaceome_deterministic_features_placeholder": "swh:1:rev:c04decf54507dcf74e4f67c88e1b6efb12bc711b",
-  "topology_coverage_by_source": "swh:1:rev:f70aa429980f233c883090a24c8709bf7b4a5748",
+  "topology_coverage_by_source": "swh:1:rev:2b550d7df12f9cad0892f48d3a457971e1a1f9bf",
   "triage_vs_deep_dive_reason": "swh:1:rev:63180540e9cdd254a9491da4dbcfce5b0b046b0a",
   "web_preview": "swh:1:rev:3b0062e20f36c6dce22177c89d32803b2d553b81",
   "zero_db_rescues_by_triage": "swh:1:rev:c55ff203e2a32c5b49fc2f2cf9a65d2a72ddc874"

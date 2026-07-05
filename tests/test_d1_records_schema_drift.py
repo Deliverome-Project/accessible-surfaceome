@@ -132,9 +132,21 @@ def test_every_published_record_carries_renderer_required_fields() -> None:
 
     from accessible_surfaceome.cloud.d1_client import D1Client, D1Config
 
+    # Check the required renderer paths SERVER-SIDE via json_extract rather than
+    # pulling every record's full annotation_json. The whole-table blob fetch is
+    # ~144 MB — right at D1's ~145 MB isolate memory cap (see CLAUDE.md) — so it
+    # ReadTimeouts under any real D1 load. This returns one tiny boolean per
+    # (record, required path): 1 iff json_extract is NULL, which is exactly the
+    # renderer-crash condition — json_extract yields NULL when the path is absent
+    # OR its leaf is JSON null, the two cases `_missing_required_paths` flagged.
+    # (Every REQUIRED_PATHS key is a plain identifier, so `$.a.b` is safe.)
+    checks = ",\n  ".join(
+        f"(json_extract(annotation_json, '$.{'.'.join(p)}') IS NULL) AS m{i}"
+        for i, p in enumerate(REQUIRED_PATHS)
+    )
     with D1Client(D1Config.from_env_public()) as pub:
         rows = pub.query(
-            "SELECT gene_symbol, schema_version, annotation_json "
+            f"SELECT gene_symbol, schema_version,\n  {checks}\n"
             "FROM surface_annotation ORDER BY gene_symbol;"
         )
 
@@ -145,16 +157,13 @@ def test_every_published_record_carries_renderer_required_fields() -> None:
 
     failures: list[tuple[str, str, list[str]]] = []
     for r in rows:
-        sym = r["gene_symbol"]
-        sv = r["schema_version"]
-        try:
-            rec = json.loads(r["annotation_json"])
-        except Exception as e:  # noqa: BLE001
-            failures.append((sym, sv, [f"annotation_json is not valid JSON: {e}"]))
-            continue
-        missing = _missing_required_paths(rec)
+        missing = [
+            f"missing or null: {'.'.join(p)}"
+            for i, p in enumerate(REQUIRED_PATHS)
+            if int(r[f"m{i}"] or 0) == 1
+        ]
         if missing:
-            failures.append((sym, sv, missing))
+            failures.append((r["gene_symbol"], r["schema_version"], missing))
 
     if failures:
         lines = [

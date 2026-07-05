@@ -1,19 +1,19 @@
 # `topology_coverage_by_source` — reproduction
 
-What each of the 6 surface-call sources (5 M1 databases + Sonnet 4.6 triage)
-preferentially captures by protein topology, across the 6,585-protein
-cohort-tightened candidate-surfaceome universe (bench-optimized cutoffs).
+A single **bubble matrix** of the 7 surface-call sources (rows) × 9 topology
+features (columns), across the FULL any-yes-vote candidate-surfaceome universe
+(6,586 genes — Sonnet yes/contextual incl. the PubMed rescue, OR any
+optimized-DB vote). Each cell's dot encodes both metrics that differ only by
+denominator:
 
-For every (source × topology class) pair, the bar height is the share
-of the universe that the source includes AND that has the topology
-feature — so the y-axis is `% of any-yes-vote universe`, denominator
-6,585. Sonnet sits leftmost as the implicit reference; the 5 DBs
-follow in the same color order as `make_db_correctness_by_class.py`.
+- **dot area ∝ within-source enrichment** — % of that source's OWN calls carrying the feature (`|source ∩ feature| / |source|`)
+- **dot color = coverage** — % of the whole surface universe those proteins represent (`|source ∩ feature| / |universe|`)
 
-The 9 panels are 7 hand-picked architecture classes (GPI, 7TM GPCR,
-multi-pass TM, single-pass TM, likely-secreted, inner-leaflet
-lipidated, no-TM-no-signal) plus glycosylation and the
-`deeptm_TM_NO_SP` (DeepTMHMM TM-without-signal-peptide) class.
+CSPA × glycosylation is a large, pale dot (~75% of its own calls but ~11% of the
+universe — its N-glycocapture chemistry); SURFY/UniProt show the same glyco
+enrichment at larger scale (dark, high-coverage); the **zero-DB Sonnet rescues
+(960 genes) are dominated by likely-secreted (~51%) + glycosylated (~40%)
+contextual-surface proteins** the classical-topology DBs miss — no GPCR / GPI.
 
 ## Run
 
@@ -28,56 +28,44 @@ uv run make_topology_coverage_by_source.py
 ```
 
 `uv` reads the [PyPA inline script metadata](https://packaging.python.org/en/latest/specifications/inline-script-metadata/)
-header (`# /// script ... # ///`), installs matplotlib / pandas /
-seaborn / httpx in a one-shot env, and emits
+header, installs matplotlib / pandas / seaborn in a one-shot env, and emits
 `topology_coverage_by_source.{pdf,png}` in the current directory.
 
 ## Data + canonical generator
 
-- **Bundled figure TSV** (~3 MB, plain TSV — ships *in this gist*):
-  `topology_coverage_by_source.tsv`. One row per universe protein with
-  the `src_*` source-inclusion flags, the bench-optimized cutoff columns
-  (`uniprot_optimized` / `cspa_optimized` / `n_sources_optimized`), and
-  the 9 `topo_*` topology binary features this figure uses. The script
-  reads this bundled sibling — so the whole reproduction unit (script +
-  data + this README) is captured by the gist's single HEAD commit SHA.
-  Built by
+- **Bundled figure TSV** (`topology_coverage_by_source.tsv`): one row per
+  universe GENE with the `src_*` source-inclusion flags, the optimized cutoff
+  columns (`uniprot_optimized` / `cspa_optimized` / `n_sources_optimized`), and
+  the 9 topology binary features on FULL genome-wide coverage. Built offline by
   [`scripts/build_figure_tsvs.py`](https://github.com/Deliverome-Project/accessible-surfaceome/blob/main/scripts/build_figure_tsvs.py)
-  from the upstream per-protein feature table
-  [`data/analysis/db_vs_sonnet_inclusion/per_protein_features.tsv`](https://github.com/Deliverome-Project/accessible-surfaceome/blob/main/data/analysis/db_vs_sonnet_inclusion/per_protein_features.tsv).
-- **Canonical generator** (uses the in-repo `_plotting_config` and reads
-  the in-repo figure TSV):
+  from the full-universe source `per_protein_features_topology_full.tsv`, which
+  is produced by
+  [`scripts/export_s9_full_universe_features.py`](https://github.com/Deliverome-Project/accessible-surfaceome/blob/main/scripts/export_s9_full_universe_features.py)
+  — that export carries the UniProt REST + D1 (`topology_public`) pulls that give
+  every gene, including the ~900 zero-DB Sonnet rescues the M1 feature table
+  never scored, its real topology. (The earlier M1-limited source under-counted
+  the zero-DB rescues, 794 vs 960, and left their topology unscored — so the
+  Sonnet-only row read as misleadingly empty.)
+- **Canonical generator** (uses the in-repo `_plotting_config`):
   [`scripts/topology_coverage_by_source.py`](https://github.com/Deliverome-Project/accessible-surfaceome/blob/main/scripts/topology_coverage_by_source.py).
-  The standalone script in this gist is a brand-styled mirror that reads
-  the bundled TSV and renders the figure without depending on the
-  project's plotting module.
+  The standalone script in this gist is a brand-styled mirror that reads the
+  bundled TSV and renders without the project's plotting module.
 
 ## Method (brief)
 
-For each (source, topology feature) pair, the script counts proteins
-satisfying `(source-included) AND (feature-positive == 1)` and
-divides by the size of the universe (6,585 — every member of the
-universe has ≥1 yes vote across the 6 sources by construction, so the
-denominator equals the any-yes-vote count).
+The universe is the any-yes-vote union; `sonnet_only` = Sonnet-positive AND
+`n_sources_optimized == 0` (960 genes). For each (source, feature): enrichment =
+`|source ∩ feature| / |source|` (dot area), coverage = `|source ∩ feature| /
+|universe|` (dot color). Topology features are derived from UniProt keywords +
+features (and DeepTMHMM for the last), following
+`scripts/audit_db_vs_sonnet_inclusion.py`:
 
-Topology features are derived from UniProt keywords + features as
-follows:
 - `topo_gpi_anchored`: UniProt keyword `GPI-anchor`.
-- `topo_gpcr_7tm`: UniProt keyword `G-protein coupled receptor`
-  AND `feature_transmembrane_count ≥ 5`.
+- `topo_gpcr_7tm`: keyword `G-protein coupled receptor` AND `tm_count ≥ 5`.
 - `topo_multi_pass_tm`: `tm_count ≥ 2` (after the GPCR bucket claims).
 - `topo_single_pass_tm`: `tm_count == 1`.
-- `topo_signal_only_secreted`: `signal_count ≥ 1 AND tm_count == 0
-  AND (Secreted keyword OR no lipidation)`.
-- `topo_inner_leaflet_lipidated`: `(Prenylation OR Myristate keyword)
-  AND tm_count == 0 AND signal_count == 0` — captures Ras-family
-  GTPases (KRAS, RhoA), Src-family kinases (SRC, LCK).
-- `topo_no_tm_no_signal`: everything else with `tm_count == 0 AND
-  signal_count == 0`.
+- `topo_signal_only_secreted`: `signal_count ≥ 1 AND tm_count == 0 AND (Secreted keyword OR no lipidation)`.
+- `topo_inner_leaflet_lipidated`: `(Prenylation OR Myristate keyword) AND tm_count == 0 AND signal_count == 0` (Ras/Src-family — cytoplasmic-facing).
+- `topo_no_tm_no_signal`: keyword present, `tm_count == 0 AND signal_count == 0`.
 - `up_has_glyc`: UniProt `feature_glycosylation_count ≥ 1`.
-- `deeptm_TM_NO_SP`: DeepTMHMM predicted-topology class `TM` (TM
-  helix present, signal peptide absent).
-
-See `scripts/audit_db_vs_sonnet_inclusion.py` for the full topology-
-class derivation rules and the upstream feature-build pipeline that
-feeds `scripts/build_figure_tsvs.py`.
+- `deeptm_TM_NO_SP`: DeepTMHMM class `TM` (TM helix, no signal peptide) — from `topology_public`, genome-wide.
