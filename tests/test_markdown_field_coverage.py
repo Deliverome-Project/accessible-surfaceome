@@ -112,6 +112,8 @@ OMITTED: dict[str, str] = {
     # --- ECD % similarity (secondary to the % identity that IS shown) ---
     "ecd_pct_similarity_to_canonical": "secondary to ECD %identity (shown)",
     "ecd_pct_similarity_to_human_canonical": "secondary to ECD %identity (shown)",
+    # --- canonical-frame topology projection (viewer topology-bar layout only) ---
+    "per_residue_topology_canonical_frame": "viewer-only: the per_residue_topology re-indexed onto the canonical axis so the IsoformsCard topology bars align homologous features; the raw per_residue_topology it derives from IS rendered in the markdown brief, so the projected layout string adds nothing to a text export",
     # --- Schweke 2024 homo-oligomer prior (piped into synthesizer; no viewer card yet) ---
     "homo_oligomerization": "Schweke 2024 prior — fed to synthesizer for epitope-masking prior, not rendered standalone",
     "is_homo_oligomer": "Schweke 2024 prior — boolean fed to synthesizer",

@@ -394,6 +394,13 @@ export interface IsoformTopology {
   full_length_pct_identity_to_canonical?: number | null;
   ecd_pct_identity_to_canonical?: number | null;
   ecd_pct_similarity_to_canonical?: number | null;
+  /** ``per_residue_topology`` re-indexed onto the canonical coordinate axis
+   *  (length == canonical sequence length), so the topology bar can render on
+   *  a shared axis and line homologous features up. A ``'-'`` marks a canonical
+   *  position this isoform doesn't cover (a deletion → blank segment); isoform
+   *  insertions are dropped. Optional — absent on pre-backfill records, where
+   *  TopologyBar falls back to raw length-scaling. */
+  per_residue_topology_canonical_frame?: string | null;
 }
 
 export interface OrthologEntry {
@@ -437,6 +444,13 @@ export interface OrthologEntry {
   n_tm_regions_absent?: number;
   /** AA sequence the per_residue_topology indexes 1:1 (A1.8). */
   sequence?: string | null;
+  /** ``per_residue_topology`` re-indexed onto the HUMAN canonical coordinate
+   *  axis (length == canonical sequence length), so this ortholog's bar shares
+   *  the canonical axis with the isoform / paralog rows. ``'-'`` = a canonical
+   *  position the ortholog doesn't cover (truncation/deletion → blank segment).
+   *  Optional — absent on pre-backfill records, where TopologyBar falls back to
+   *  raw length-scaling. */
+  per_residue_topology_canonical_frame?: string | null;
 }
 
 export interface OrthologSet {
@@ -474,6 +488,12 @@ export interface ParalogEntry {
   tm_helix_count?: number | null;
   ecd_length_residues?: number | null;
   sequence?: string | null;
+  /** ``per_residue_topology`` re-indexed onto the canonical coordinate axis
+   *  (length == canonical sequence length) so this close paralog's bar shares
+   *  the canonical axis. ``'-'`` = an uncovered canonical position. Populated
+   *  only for close paralogs that carry topology + sequence; absent otherwise
+   *  and on pre-backfill records, where TopologyBar length-scales. */
+  per_residue_topology_canonical_frame?: string | null;
 }
 
 /**

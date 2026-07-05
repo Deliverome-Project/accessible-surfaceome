@@ -2,7 +2,9 @@ import { MEMBRANE_COLOR, TOPOLOGY_COLORS } from "../../../lib/structure-viewer-t
 import styles from "./TopologyBar.module.css";
 
 interface Props {
-  /** Per-residue DeepTMHMM topology string (1 char per residue). */
+  /** Per-residue DeepTMHMM topology string (1 char per residue), on the
+   *  variant's OWN residue coordinates. Used for the raw length-scaling
+   *  fallback when ``canonicalFrame`` is absent. */
   topology: string;
   /** A11y label — e.g. "GPR75 canonical isoform topology". */
   ariaLabel?: string;
@@ -11,8 +13,19 @@ interface Props {
    *  maxResidues`` and left-aligned, so a shorter variant (truncated isoform,
    *  fragment ortholog) renders as a proportionally shorter bar that lines up
    *  with the canonical's N-terminus — rather than every bar stretching to the
-   *  full column width. Omit for a standalone full-width bar (legacy callers). */
+   *  full column width. Omit for a standalone full-width bar (legacy callers).
+   *  Ignored when ``canonicalFrame`` is present (that renders full-width on the
+   *  shared axis, so no length scaling is needed). */
   maxResidues?: number;
+  /** ``per_residue_topology`` re-projected onto the CANONICAL coordinate axis
+   *  (same length for every row in the table == the canonical sequence length).
+   *  When present, the bar renders FULL-WIDTH on that shared axis, with each
+   *  ``'-'`` (a canonical position this variant doesn't cover) drawn as a blank
+   *  transparent segment — so homologous features (TM helices) line up
+   *  column-for-column across the canonical, isoforms, orthologs, and close
+   *  paralogs. When absent, the bar falls back to raw ``topology`` length
+   *  scaling (``maxResidues``), so pre-backfill records still render. */
+  canonicalFrame?: string | null;
 }
 
 interface Run {
@@ -59,15 +72,28 @@ const STATE_LABELS: Record<string, string> = {
  * shared `TOPOLOGY_COLORS` palette so the strip and the 3D card
  * agree on what M / O / I / S look like.
  */
-export function TopologyBar({ topology, ariaLabel, maxResidues }: Props) {
-  const segments = runs(topology);
+/** The character the canonical-frame projection uses for a canonical position
+ *  the variant doesn't cover (a gap). Must match ``GAP_CHAR`` in
+ *  ``merge/canonical_frame_topology.py``. Rendered as a blank/transparent
+ *  segment so the covered residues still land at their canonical x-position. */
+const CANONICAL_FRAME_GAP = "-";
+
+export function TopologyBar({ topology, ariaLabel, maxResidues, canonicalFrame }: Props) {
+  // Prefer the canonical-frame projection when the record carries it: every
+  // row's canonical-frame string is the SAME length (the canonical sequence
+  // length), so rendering each full-width on a shared axis lines homologous
+  // features up column-for-column. Fall back to the variant's own topology +
+  // length scaling for pre-backfill records that don't have the projection.
+  const aligned = !!canonicalFrame;
+  const source = canonicalFrame ?? topology;
+  const segments = runs(source);
   if (segments.length === 0) return null;
-  // Scale this bar's width to its length relative to the longest topology in
-  // the table so variant bars are length-proportional + left-aligned to the
-  // canonical frame. Clamped to 100% defensively (a variant longer than the
-  // supplied max gets full width rather than overflowing the cell).
+  // Aligned mode: always full-width (the shared canonical axis). Fallback mode:
+  // scale width to length relative to the longest topology in the table so
+  // variant bars are length-proportional + left-aligned to the canonical
+  // N-terminus. Clamped to 100% defensively.
   const widthPct =
-    maxResidues && maxResidues > 0
+    !aligned && maxResidues && maxResidues > 0
       ? `${Math.min(100, (topology.length / maxResidues) * 100)}%`
       : "100%";
   return (
@@ -77,17 +103,29 @@ export function TopologyBar({ topology, ariaLabel, maxResidues }: Props) {
       aria-label={ariaLabel ?? "Per-residue topology bar"}
       style={{ width: widthPct }}
     >
-      {segments.map((seg, i) => (
-        <div
-          key={i}
-          className={styles.seg}
-          style={{
-            flexGrow: seg.length,
-            background: TOPOLOGY_COLORS[seg.state] ?? "transparent",
-          }}
-          title={`${STATE_LABELS[seg.state] ?? seg.state} · residues ${seg.start}–${seg.end} (${seg.length} aa)`}
-        />
-      ))}
+      {segments.map((seg, i) => {
+        // A gap run in the canonical frame → a blank, transparent spacer that
+        // still consumes its canonical-coordinate width, so the covered
+        // residues on either side keep their shared-axis x-position.
+        const isGap = aligned && seg.state === CANONICAL_FRAME_GAP;
+        return (
+          <div
+            key={i}
+            className={styles.seg}
+            style={{
+              flexGrow: seg.length,
+              background: isGap
+                ? "transparent"
+                : (TOPOLOGY_COLORS[seg.state] ?? "transparent"),
+            }}
+            title={
+              isGap
+                ? `Not covered by this variant · canonical residues ${seg.start}–${seg.end} (${seg.length} aa)`
+                : `${STATE_LABELS[seg.state] ?? seg.state} · ${aligned ? "canonical " : ""}residues ${seg.start}–${seg.end} (${seg.length} aa)`
+            }
+          />
+        );
+      })}
     </div>
   );
 }
