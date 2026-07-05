@@ -105,10 +105,13 @@ def _write_json(d1: D1Client, table: str, set_assign: str, key_where: str,
     params at 100/query, which an ``UPDATE...FROM(VALUES)`` blows past at ~19 rows).
     ``set_assign``/``key_where`` reference each row via ``json_extract(j.value,'$.k')``.
     """
-    for i in range(0, len(objs), chunk):
+    total = len(objs)
+    for i in range(0, total, chunk):
         batch = objs[i:i + chunk]
         sql = f"UPDATE {table} SET {set_assign} FROM json_each(?) AS j WHERE {key_where}"
         _q(d1, sql, [json.dumps(batch), *const_params])
+        if (i // chunk) % 25 == 0:
+            logger.info("      ...wrote %d/%d", min(i + chunk, total), total)
 
 
 def recompute_ortholog(d1: D1Client, topo: dict[str, dict[str, tuple[str, str]]], *,
