@@ -267,3 +267,34 @@ def test_every_in_tree_record_has_markdown_export() -> None:
             problems.append(f"  • {sym}")
     if problems:
         pytest.fail("\n".join(problems))
+
+
+def test_markdown_exporter_supports_d1_source() -> None:
+    """The D1-served model RETIRES the old "every published gene needs a
+    committed in-tree snapshot" requirement.
+
+    ``viewer/scripts/build-markdown-exports.mjs`` now supports
+    ``SURFACEOME_MD_SOURCE=api``: at Pages-build time it fetches the full
+    published set from the public Worker (``/v1/genes`` + ``/v1/genes/{sym}``)
+    and materializes ``{SYMBOL}.json`` + ``{SYMBOL}.md`` as build artifacts
+    (NOT committed to git). Only a small curated snapshot set is committed,
+    as the offline / Worker-down fallback — so a published gene with no
+    in-tree snapshot is now expected, not drift.
+
+    This guards that the api-source wiring stays in the exporter (a refactor
+    can't silently drop it and re-introduce the commit-every-snapshot rule).
+    Static — reads the exporter source, no network, no creds."""
+    exporter = (
+        Path(__file__).resolve().parents[1]
+        / "viewer" / "scripts" / "build-markdown-exports.mjs"
+    ).read_text()
+    for needle in (
+        "SURFACEOME_MD_SOURCE",   # the source switch (snapshots | api)
+        "loadRecordsFromApi",     # the Worker-fetch path
+        "/genes",                 # the published-gene list endpoint
+    ):
+        assert needle in exporter, (
+            f"build-markdown-exports.mjs no longer references '{needle}' — the "
+            f"D1-sourced (api-mode) markdown export path may have regressed. "
+            f"Restore it so the Pages build can still materialize .md from D1."
+        )

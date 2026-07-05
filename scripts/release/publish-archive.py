@@ -226,16 +226,15 @@ EXTRA_FILES: list[str | dict[str, Any]] = [
     #     "gene_url_template": "https://api.deliverome.org/surfaceome/v1/genes/{symbol}",
     # },
     #
-    # 2. Manuscript bundle — pre-built PDF + pandoc-generated JATS XML.
-    #    Held back until manuscript is ready; see publish-archive.py's
-    #    inline docs above EXTRA_FILES for the full pandoc recipe.
-    # {
-    #     "manuscript": True,
-    #     "source": "paper/manuscript.docx",  # or .tex / .md
-    #     "pdf_path": "paper/build/manuscript.pdf",
-    #     "jats_filename": "manuscript.xml",
-    #     "extra_pandoc_args": [],
-    # },
+    # 2. Manuscript bundle — DO NOT add here. The manuscript lives in a
+    #    SEPARATE Zenodo record (registered under the bioRxiv DOI as an
+    #    external DOI) so Unpaywall's OAI-PMH harvest indexes the Zenodo
+    #    PDF as an oa_location under the bioRxiv DOI. Bundling the
+    #    manuscript here would mix the data record's identity with the
+    #    paper's. Procedure: see "Manuscript deposit" in
+    #    scripts/release/README.md. The bundled-pattern code below
+    #    (manuscript_pdf_jats_pair builder) is preserved for backwards
+    #    compatibility but should NOT be activated for new deposits.
     {
         # In-deposit README — documents every column of every file
         # above and the live-API endpoint that produces them.
@@ -245,8 +244,21 @@ EXTRA_FILES: list[str | dict[str, Any]] = [
         "filename": "README.md",
     },
     # ── Manuscript bundle ─────────────────────────────────────────────
-    # OFF BY DEFAULT. Uncomment + edit when you're ready to deposit the
-    # paper alongside the data. Produces TWO files in the deposit:
+    # **DEPRECATED FOR THIS DEPOSIT** — the manuscript is a separate
+    # Zenodo record per the "Manuscript deposit" section in
+    # scripts/release/README.md. Reason: hosting the manuscript at a
+    # Zenodo URL but having the DOI resolve to bioRxiv lets Unpaywall's
+    # OAI-PMH harvest add the Zenodo PDF as a bot-accessible
+    # `oa_location` under the bioRxiv DOI. Bundling the manuscript into
+    # the data deposit would mint a Zenodo DOI for the deposit-as-a-
+    # whole, breaking that route.
+    #
+    # The builder below + the docs that follow are kept for backwards
+    # compatibility (and in case a use case for bundled-pattern reappears
+    # — e.g. a non-bioRxiv-mirrored supplementary technical report). New
+    # publications should use the separate-record flow in the README.
+    #
+    # When the builder IS activated, it produces TWO files in the deposit:
     #   (a) the pre-built PDF you point at via `pdf_path` (verbatim copy)
     #   (b) JATS XML derived from `source` via pandoc — for PMC indexing,
     #       reference managers, and downstream text-mining

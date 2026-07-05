@@ -397,11 +397,26 @@
   gap: var(--space-3) var(--space-4);
 }
 
+/* The Surface likelihood display value (`.h-vital-display`) reserves at
+ * least as much horizontal room as the "SURFACE LIKELIHOOD ⓘ" eyebrow
+ * label above it, so the Architecture + Family chips that follow always
+ * start just past where the ⓘ ends — not tight against a short value
+ * like "High" and not pushed to the far right edge either. `13ch` is the
+ * approximate rendered width of the eyebrow at label-mono type + the
+ * ⓘ trigger. */
+.likelihoodBody > :global(.h-vital-display) {
+  min-width: 6ch;
+}
+
 .likelihoodBadges {
   display: flex;
   flex-wrap: wrap;
   align-items: baseline;
   gap: 0.4rem;
+  /* No `margin-left: auto` — the value `<p>`'s `min-width` (above) is
+   * what puts the badges just past the eyebrow ⓘ position. Auto would
+   * push them to the container's far right edge, which read as too
+   * detached from the value. */
 }
 
 .archFamilyChip {

@@ -1,13 +1,13 @@
 # `topology_coverage_by_source` — reproduction
 
 What each of the 6 surface-call sources (5 M1 databases + Sonnet 4.6 triage)
-preferentially captures by protein topology, across the 6,588-protein
-cohort-tightened candidate-surfaceome universe.
+preferentially captures by protein topology, across the 6,585-protein
+cohort-tightened candidate-surfaceome universe (bench-optimized cutoffs).
 
 For every (source × topology class) pair, the bar height is the share
 of the universe that the source includes AND that has the topology
 feature — so the y-axis is `% of any-yes-vote universe`, denominator
-6,588. Sonnet sits leftmost as the implicit reference; the 5 DBs
+6,585. Sonnet sits leftmost as the implicit reference; the 5 DBs
 follow in the same color order as `make_db_correctness_by_class.py`.
 
 The 9 panels are 7 hand-picked architecture classes (GPI, 7TM GPCR,
@@ -34,23 +34,29 @@ seaborn / httpx in a one-shot env, and emits
 
 ## Data + canonical generator
 
-- **Per-protein feature table** (~2.8 MB, plain TSV):
+- **Bundled figure TSV** (~3 MB, plain TSV — ships *in this gist*):
+  `topology_coverage_by_source.tsv`. One row per universe protein with
+  the `src_*` source-inclusion flags, the bench-optimized cutoff columns
+  (`uniprot_optimized` / `cspa_optimized` / `n_sources_optimized`), and
+  the 9 `topo_*` topology binary features this figure uses. The script
+  reads this bundled sibling — so the whole reproduction unit (script +
+  data + this README) is captured by the gist's single HEAD commit SHA.
+  Built by
+  [`scripts/build_figure_tsvs.py`](https://github.com/Deliverome-Project/accessible-surfaceome/blob/main/scripts/build_figure_tsvs.py)
+  from the upstream per-protein feature table
   [`data/analysis/db_vs_sonnet_inclusion/per_protein_features.tsv`](https://github.com/Deliverome-Project/accessible-surfaceome/blob/main/data/analysis/db_vs_sonnet_inclusion/per_protein_features.tsv).
-  One row per universe protein with the 6 source-inclusion flags,
-  topology-class one-hots, UniProt feature counts, DeepTMHMM
-  classification, and HGNC family flags.
-- **Canonical generator** (uses the in-repo `_plotting_config` and
-  builds the feature table from D1 + bundled raw sources):
-  [`scripts/audit_db_vs_sonnet_inclusion.py`](https://github.com/Deliverome-Project/accessible-surfaceome/blob/main/scripts/audit_db_vs_sonnet_inclusion.py).
-  The standalone script in this gist is a thin reproduction that
-  fetches the pre-computed feature table and renders the figure
-  without depending on the project's plotting module.
+- **Canonical generator** (uses the in-repo `_plotting_config` and reads
+  the in-repo figure TSV):
+  [`scripts/topology_coverage_by_source.py`](https://github.com/Deliverome-Project/accessible-surfaceome/blob/main/scripts/topology_coverage_by_source.py).
+  The standalone script in this gist is a brand-styled mirror that reads
+  the bundled TSV and renders the figure without depending on the
+  project's plotting module.
 
 ## Method (brief)
 
 For each (source, topology feature) pair, the script counts proteins
 satisfying `(source-included) AND (feature-positive == 1)` and
-divides by the size of the universe (6,588 — every member of the
+divides by the size of the universe (6,585 — every member of the
 universe has ≥1 yes vote across the 6 sources by construction, so the
 denominator equals the any-yes-vote count).
 
@@ -73,4 +79,5 @@ follows:
   helix present, signal peptide absent).
 
 See `scripts/audit_db_vs_sonnet_inclusion.py` for the full topology-
-class derivation rules and the feature-build pipeline.
+class derivation rules and the upstream feature-build pipeline that
+feeds `scripts/build_figure_tsvs.py`.

@@ -90,17 +90,18 @@ def test_non_opposing_pair_does_not_require_reasoning(triage: str, accessibility
 # --------------------------------------------------------------------------
 
 _SNAPSHOT = (
-    Path(__file__).resolve().parents[1]
-    / "viewer"
-    / "public"
-    / "data"
-    / "surfaceome"
-    / "KLK2.json"
+    # A dedicated committed fixture — the pre-removal KLK2 deep-dive record.
+    # Kept HERE, not under viewer/public/data/surfaceome/, so it isn't subject
+    # to test_committed_snapshots_have_live_d1_records (KLK2 has no live D1 row;
+    # its viewer snapshot was removed as a stale orphan). Its field combination
+    # (surface_call_reason='tissue_restricted_surface', state_dependence='high')
+    # is what makes every triage×accessibility case below validate cleanly.
+    Path(__file__).resolve().parent / "fixtures" / "klk2_record_snapshot.json"
 )
 
 
 def _base_record_dict() -> dict:
-    """A committed snapshot that validates, used as a record fixture.
+    """The committed KLK2 fixture record, which validates, used as a base.
 
     Set ``confidence='high'`` so the orthogonal ``_check_confidence_reasoning``
     rule (which requires reasoning when confidence is moderate/low) doesn't
@@ -117,7 +118,7 @@ def _validate(d: dict) -> SurfaceomeRecord:
         return SurfaceomeRecord.model_validate(d)
 
 
-# The KLK2 snapshot's ``surface_call_reason`` is not in the NO-bucket, so
+# The KLK2 fixture's ``surface_call_reason`` is not in the NO-bucket, so
 # integration cases avoid ``surface_accessibility='no'`` (which trips an
 # orthogonal NO-bucket-reason validator). The standalone helper tests above
 # cover the ``no`` / ``low`` opposing pairs exhaustively.

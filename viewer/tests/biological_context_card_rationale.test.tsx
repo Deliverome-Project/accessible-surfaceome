@@ -167,3 +167,38 @@ test("biological_context.grade_rationale empty → no Biology evidence label, no
     "no empty contextRationale <p> when grade_rationale is missing",
   );
 });
+
+test("FeatureRationales row carries chip-jump id + tabIndex for scroll target", () => {
+  const rec = baseRecord();
+  // The biology category's `spec` chip: value is derived from
+  // filters.surface_specificity + rationale; we only need the row
+  // to render so its id is emitted.
+  rec.filters.surface_specificity = "surface_dominant";
+  rec.filters.surface_specificity_rationale = "Membrane-anchored per a1_evi_02.";
+  const html = render(rec);
+  assert.match(
+    html,
+    /id="chip-jump-biology-spec"/,
+    "biology `spec` rationale row must expose the chipJumpTargets.featureRationale id",
+  );
+  assert.match(
+    html,
+    /id="chip-jump-biology-spec"[^>]*tabindex="-1"/,
+    "destination row must be programmatically focusable via tabIndex=-1",
+  );
+});
+
+test("Subcellular localization subsection carries chip-jump id + tabIndex", () => {
+  const rec = baseRecord();
+  const html = render(rec);
+  assert.match(
+    html,
+    /id="chip-jump-primary-compartment"/,
+    "subcellular-localization block must expose primaryCompartment id",
+  );
+  assert.match(
+    html,
+    /id="chip-jump-primary-compartment"[^>]*tabindex="-1"/,
+    "destination block must be programmatically focusable",
+  );
+});

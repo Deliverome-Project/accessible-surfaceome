@@ -43,10 +43,9 @@ from accessible_surfaceome.audit._plotting_config import (
     setup_plotting_style,
 )
 
-ROOT = Path(__file__).resolve().parents[1]
-WHOLE_PROTEOME_TSV = ROOT / "data/processed/catalog/whole_proteome_catalog.tsv"
-OPT_CUTOFFS_TSV = ROOT / "data/processed/triage_bench/db_optimized_cutoffs.tsv"
-OUT_DIR = ROOT / "data/analysis/figures"  # promoted to canonical figures dir
+REPO = Path(__file__).resolve().parents[1]
+DATA_TSV = REPO / "data/processed/figures/db_vs_sonnet_whole_proteome.tsv"
+OUT_DIR = REPO / "data/analysis/figures"  # promoted to canonical figures dir
 
 DB_LABELS = ["UniProt", "GO CC", "HPA", "SURFY", "CSPA"]
 ENSEMBLE_KS = [1, 2, 3, 4, 5]
@@ -79,28 +78,23 @@ def _vote_match(db_vote: str, sonnet: str) -> bool:
 
 
 def main() -> None:
-    # As of 2026-06 the canonical source for the whole-proteome catalog
-    # is a static TSV regenerated from D1 by
-    # scripts/export_whole_proteome_catalog_to_tsv.py. Each row carries
-    # the expanded v1-style ``*_surface_flag`` columns AND the
-    # canonical Sonnet+NCBI verdict, so we no longer need the Worker
-    # ``/v1/catalog`` round-trip nor the v1 candidate_universe TSV
-    # join — everything lives in this one file.
-    print(f"Reading {WHOLE_PROTEOME_TSV} ...")
-    catalog = pd.read_csv(WHOLE_PROTEOME_TSV, sep="\t")
+    # Single committed TSV (built by scripts/build_figure_tsvs.py) is the
+    # source of truth — the same file the gist mirror reads via raw GitHub.
+    # It carries the per-DB flag columns AND the bench-optimized
+    # uniprot_optimized / cspa_optimized flags denormalized per row, so no
+    # separate db_optimized_cutoffs.tsv or whole_proteome_catalog.tsv read
+    # is needed.  The TSV is proven reproducible by
+    # tests/test_figure_tsv_reproducible_from_builder.py.
+    print(f"Reading {DATA_TSV} ...")
+    catalog = pd.read_csv(DATA_TSV, sep="\t")
     print(f"  loaded {len(catalog):,} rows; sonnet variant = claude-sonnet-4-6")
 
-    opt = pd.read_csv(OPT_CUTOFFS_TSV, sep="\t")
-    uniprot_opt = set(opt.loc[opt["uniprot_optimized"] == 1, "accession"].astype(str))
-    cspa_opt = set(opt.loc[opt["cspa_optimized"] == 1, "accession"].astype(str))
-
     # Build per-gene table: symbol, acc, Sonnet verdict, per-DB vote
-    # bools. UniProt + CSPA use the bench-optimized accession sets from
-    # ``db_optimized_cutoffs.tsv``; GO CC / HPA / SURFY come from the
-    # whole-proteome catalog row's flag columns. Iterate rows directly —
-    # no indexing on uniprot_acc because non-surface protein-coding
-    # genes can share the same blank acc and pandas .loc would return a
-    # DataFrame in that case.
+    # bools.  UniProt + CSPA flags are already per-row in the TSV
+    # (uniprot_optimized / cspa_optimized); GO CC / HPA / SURFY come from
+    # the *_surface_flag columns.  Iterate rows directly — no indexing on
+    # uniprot_acc because non-surface protein-coding genes can share the
+    # same blank acc and pandas .loc would return a DataFrame in that case.
     records = []
     for row in catalog.itertuples(index=False):
         v = (str(getattr(row, "sonnet_verdict", "") or "")).strip()
@@ -111,11 +105,11 @@ def main() -> None:
             "symbol": str(getattr(row, "hgnc_symbol", "") or ""),
             "acc": acc,
             "sonnet": v,
-            "UniProt": acc in uniprot_opt,
-            "CSPA": acc in cspa_opt,
-            "GO CC": int(getattr(row, "go_surface_flag", 0) or 0) == 1,
-            "HPA": int(getattr(row, "hpa_surface_flag", 0) or 0) == 1,
-            "SURFY": int(getattr(row, "surfy_surface_flag", 0) or 0) == 1,
+            "UniProt": int(getattr(row, "uniprot_optimized", 0) or 0) == 1,
+            "CSPA":    int(getattr(row, "cspa_optimized",    0) or 0) == 1,
+            "GO CC":   int(getattr(row, "go_surface_flag",   0) or 0) == 1,
+            "HPA":     int(getattr(row, "hpa_surface_flag",  0) or 0) == 1,
+            "SURFY":   int(getattr(row, "surfy_surface_flag",0) or 0) == 1,
         }
         records.append(rec)
 
