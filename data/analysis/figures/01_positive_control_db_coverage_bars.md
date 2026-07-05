@@ -22,6 +22,22 @@ Sonnet bar = positive in the combined Sonnet triage (runs
 verdict `yes` OR `contextual`) — the same inclusion rule the candidate
 universe uses.
 
+**Per-target detail (for reader analysis).** Beyond the yes/no DB + Sonnet
+flags, each row in the bundled TSV carries the context needed to evaluate
+*what* the control is, not just whether a DB flagged it:
+
+| Column | Meaning | Source |
+|---|---|---|
+| `therapeutic` | ADC/TCE drug or antibody name(s) targeting this gene | TheraSAbDab + Open Targets |
+| `adc_antigen` | ADCdb antigen name | ADCdb |
+| `target_function` | ADCdb curator-written function description | ADCdb |
+| `viral_agent` | Virus/viruses that use this receptor for entry | ViralZone |
+| `viral_protein` | Viral protein engaging the receptor | ViralZone |
+| `viral_entry_mode` | Entry mechanism (clathrin/caveolin-mediated endocytosis, membrane fusion, …) | ViralZone |
+
+Columns are category-specific — empty where not applicable (`viral_*` only for
+the ViralZone panel, `adc_antigen` only for ADC).
+
 Run:
 
 ```

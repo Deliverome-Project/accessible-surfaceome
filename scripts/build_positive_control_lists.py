@@ -13,11 +13,16 @@ For each list every target is resolved to a stable HGNC ID and joined against
 candidate_universe_v3 to recover the per-DB surface flags + Sonnet verdicts.
 Output: three augmented TSVs at ``data/processed/positive_controls/``, each
 keyed on hgnc_id with hgnc_symbol/uniprot_acc/ensembl_gene/ncbi_gene_id +
-5-DB flags + Sonnet (NCBI dual-pass) flag.
+5-DB flags + Sonnet (NCBI dual-pass) flag + per-target DETAIL columns so a
+reader can evaluate WHAT each control is rather than only the yes/no flags:
+ADC/TCE ``therapeutic`` (drug/antibody names), ADC ``adc_antigen`` +
+``target_function`` (ADCdb), and viral ``viral_agent`` / ``viral_protein`` /
+``viral_entry_mode`` (ViralZone).
 
-Run:
+Run (needs ``pyarrow`` to read the Open Targets parquets; not a project dep, so
+pass it transiently):
 
-    uv run python scripts/build_positive_control_lists.py
+    uv run --with pyarrow python scripts/build_positive_control_lists.py
 """
 
 from __future__ import annotations
@@ -461,6 +466,131 @@ def collect_viralzone_hgncs(vz: pd.DataFrame, cu: pd.DataFrame) -> set[str]:
 
 
 # ----------------------------------------------------------------------
+# Per-target DETAIL enrichment
+# ----------------------------------------------------------------------
+# The collect_* functions above return only the HGNC sets; the raw sources they
+# read also carry the "what is this target" context (which drug / antigen /
+# virus) that a reader needs to EVALUATE the positive-control list, not just see
+# a yes/no DB flag. These helpers re-map the same raw rows to hgnc_id -> detail
+# so ``main`` can attach the columns. Keyed on hgnc_id; a gene absent from a map
+# just gets an empty cell. Values are de-duplicated + capped so cells stay sane.
+
+_UNIPROT_RE = re.compile(
+    r"([OPQ][0-9][A-Z0-9]{3}[0-9]|[A-NR-Z][0-9](?:[A-Z][A-Z0-9]{2}[0-9]){1,2})")
+
+
+def _uniq_join(values, *, limit: int = 6) -> str:
+    """Join unique non-empty stripped values with '; ' (capped)."""
+    seen: list[str] = []
+    for v in values:
+        if v is None or (isinstance(v, float) and pd.isna(v)):
+            continue
+        s = str(v).strip()
+        if s and s.lower() != "nan" and s not in seen:
+            seen.append(s)
+    if len(seen) > limit:
+        seen = seen[:limit] + [f"(+{len(seen) - limit} more)"]
+    return "; ".join(seen)
+
+
+def viralzone_detail(vz: pd.DataFrame, cu: pd.DataFrame) -> dict[str, dict]:
+    """hgnc_id -> {viral_agent, viral_protein, viral_entry_mode} from ViralZone."""
+    uni_to_hgnc = dict(zip(cu["uniprot_acc"].dropna(), cu["hgnc_id"]))
+    acc: dict[str, dict[str, list]] = {}
+    for _, r in vz.iterrows():
+        for a in _UNIPROT_RE.findall(str(r.get("Receptor", ""))):
+            h = uni_to_hgnc.get(a)
+            if not h:
+                continue
+            d = acc.setdefault(h, {"viral_agent": [], "viral_protein": [],
+                                   "viral_entry_mode": []})
+            d["viral_agent"].append(r.get("Virus"))
+            # "VP1, P03089" -> keep the protein name, drop the accession suffix.
+            d["viral_protein"].append(str(r.get("Viral protein", "")).split(",")[0])
+            d["viral_entry_mode"].append(r.get("entry mode"))
+    return {h: {k: _uniq_join(v) for k, v in d.items()} for h, d in acc.items()}
+
+
+def therasabdab_detail(df: pd.DataFrame, mask: pd.Series,
+                       sym_to_hgnc: dict) -> dict[str, list]:
+    """hgnc_id -> [therapeutic name(s)] for the rows passing ``mask``. The
+    drug/antibody name is in the 'Therapeutic' column; fall back if renamed."""
+    name_col = next((c for c in ("Therapeutic", "Therapeutic Name", "Name")
+                     if c in df.columns), None)
+    acc: dict[str, list] = {}
+    for _, r in df.loc[mask].iterrows():
+        thera = r.get(name_col) if name_col else None
+        for cluster in _target_clusters(r.get("Target")):
+            if cluster.split("/")[0].strip().upper() in HALF_LIFE_BINDERS:
+                continue
+            h = _cluster_to_hgnc(cluster, sym_to_hgnc)
+            if h:
+                acc.setdefault(h, []).append(thera)
+    return acc
+
+
+def adcdb_detail(sym_to_hgnc: dict) -> dict[str, dict]:
+    """hgnc_id -> {adc_antigen, target_function} from ADCdb (antigen name +
+    curator function text). Same first-parenthesized-symbol routing as
+    ``collect_adcdb_hgncs`` so multi-target antigens map to the primary gene."""
+    if not ADCDB_TSV.is_file():
+        return {}
+    df = pd.read_csv(ADCDB_TSV, sep="\t")
+    multi_re = re.compile(r";\s")
+    first_sym_re = re.compile(r"\(([A-Z0-9][A-Z0-9-]{1,12})\)")
+
+    def first_sym(s):
+        if not isinstance(s, str) or not multi_re.search(s):
+            return None
+        m = first_sym_re.search(multi_re.split(s, maxsplit=1)[0])
+        return m.group(1) if m else None
+
+    multi_mask = df["antigen_name"].fillna("").apply(lambda s: bool(multi_re.search(s)))
+    df.loc[multi_mask, "gene_symbol_inline"] = (
+        df.loc[multi_mask, "antigen_name"].apply(first_sym))
+    fn: dict = {}
+    if ADCDB_FUNCTIONS_TSV.is_file():
+        ff = pd.read_csv(ADCDB_FUNCTIONS_TSV, sep="\t")
+        fn = dict(zip(ff["adcdb_tar_id"], ff["function_text"]))
+    out: dict[str, dict] = {}
+    for _, r in df.iterrows():
+        sym = r.get("gene_symbol_inline")
+        if pd.isna(sym):
+            continue
+        h = _resolve_symbol(str(sym).strip(), sym_to_hgnc)
+        if not h:
+            continue
+        d = out.setdefault(h, {"adc_antigen": [], "target_function": []})
+        d["adc_antigen"].append(r.get("antigen_name"))
+        d["target_function"].append(fn.get(r.get("adcdb_tar_id")))
+    return {h: {k: _uniq_join(v, limit=2) for k, v in d.items()}
+            for h, d in out.items()}
+
+
+def open_targets_drug_detail(mol: pd.DataFrame, moa: pd.DataFrame,
+                             ensg_to_hgnc: dict) -> dict[str, list]:
+    """hgnc_id -> [ADC drug name(s)] from Open Targets drug_molecule × MoA."""
+    id_to_name = dict(zip(mol["id"], mol.get("name", pd.Series(dtype=str))))
+    adcs = set(mol[mol["drugType"] == "Antibody drug conjugate"]["id"])
+    moa_ab = moa[~moa["targetName"].isin(OT_PAYLOAD_NAMES)]
+    acc: dict[str, list] = {}
+    for _, row in moa_ab.iterrows():
+        cids = row["chemblIds"]
+        if cids is None or len(cids) == 0:
+            continue
+        adc_cids = [c for c in cids if c in adcs]
+        if not adc_cids:
+            continue
+        for t in (row["targets"] if row["targets"] is not None else []):
+            h = ensg_to_hgnc.get(t)
+            if not h:
+                continue
+            for cid in adc_cids:
+                acc.setdefault(h, []).append(id_to_name.get(cid))
+    return acc
+
+
+# ----------------------------------------------------------------------
 # Sonnet dual-pass via D1
 # ----------------------------------------------------------------------
 
@@ -594,12 +724,37 @@ def main() -> None:
         vz_set = set()
     print(f"  ViralZone HGNCs: {len(vz_set)}")
 
+    print("=== Per-target detail (therapeutic / antigen / viral context) ===")
+    vz_det = viralzone_detail(vz, cu) if vz_set else {}
+    adcdb_det = adcdb_detail(sym_to_hgnc)
+    ot_det = open_targets_drug_detail(mol, moa, ensg_to_hgnc)
+    adc_thera = therasabdab_detail(df_t, adc_mask, sym_to_hgnc)
+    tce_thera = therasabdab_detail(df_t, tce_mask, sym_to_hgnc)
+    print(f"  detail maps — ADC therapeutic:{len(adc_thera)} ADCdb:{len(adcdb_det)} "
+          f"OT:{len(ot_det)} TCE therapeutic:{len(tce_thera)} VZ:{len(vz_det)}")
+
     per_set = {}
     for label, hgnc_set in [("ADC", adc_union), ("TCE", tce), ("VZ", vz_set)]:
         out = OUT_DIR / f"positive_control_{label}.tsv"
         df_out = build_indicator_df(hgnc_set, cu, cohort, sonnet_pos_hgnc)
         if label == "ADC":
             df_out["adc_source"] = df_out["hgnc_id"].map(adc_source)
+            df_out["therapeutic"] = df_out["hgnc_id"].map(
+                lambda h: _uniq_join(adc_thera.get(h, []) + ot_det.get(h, [])))
+            df_out["adc_antigen"] = df_out["hgnc_id"].map(
+                lambda h: adcdb_det.get(h, {}).get("adc_antigen", ""))
+            df_out["target_function"] = df_out["hgnc_id"].map(
+                lambda h: adcdb_det.get(h, {}).get("target_function", ""))
+        elif label == "TCE":
+            df_out["therapeutic"] = df_out["hgnc_id"].map(
+                lambda h: _uniq_join(tce_thera.get(h, [])))
+        elif label == "VZ":
+            df_out["viral_agent"] = df_out["hgnc_id"].map(
+                lambda h: vz_det.get(h, {}).get("viral_agent", ""))
+            df_out["viral_protein"] = df_out["hgnc_id"].map(
+                lambda h: vz_det.get(h, {}).get("viral_protein", ""))
+            df_out["viral_entry_mode"] = df_out["hgnc_id"].map(
+                lambda h: vz_det.get(h, {}).get("viral_entry_mode", ""))
         df_out.to_csv(out, sep="\t", index=False)
         per_set[label] = df_out
         print(f"  Wrote {out} ({len(df_out)} rows)")
@@ -614,7 +769,12 @@ def main() -> None:
     col_order = (
         ["category", "hgnc_id", "hgnc_symbol", "uniprot_acc", "ensembl_gene", "ncbi_gene_id"]
         + ["uniprot_flag", "go_flag", "hpa_flag", "surfy_flag", "cspa_flag", "n_db_votes",
-           "sonnet_full_flag", "adc_source"]
+           "sonnet_full_flag", "adc_source",
+           # per-target detail so a reader can evaluate WHAT each control is,
+           # not just the yes/no flags (ADC/TCE drug + antigen/function; viral
+           # agent + entry mode). Category-specific: empty where not applicable.
+           "therapeutic", "adc_antigen", "target_function",
+           "viral_agent", "viral_protein", "viral_entry_mode"]
     )
     combined = combined[[c for c in col_order if c in combined.columns]]
     combined_path = OUT_DIR / "positive_control_long.tsv"
