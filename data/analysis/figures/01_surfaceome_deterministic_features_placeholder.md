@@ -50,6 +50,21 @@ directory.
   from the deep-dive export (`deep_dive_records.tsv`, for the tiers) unioned
   with the Sonnet-universe export (`sonnet_universe_det_features.tsv`, for the
   Sonnet pool).
+- **Magnitude behind the boolean flags** (for reader analysis; not plotted).
+  The boolean feature columns say *whether* a gene has a feature; six extra
+  columns — joined from
+  [`scripts/export_det_feature_detail.py`](https://github.com/Deliverome-Project/accessible-surfaceome/blob/main/scripts/export_det_feature_detail.py)
+  (the same genome-wide D1 tables, uniform across both facets) — give the
+  magnitude, so you can filter/sort on it rather than just the yes/no:
+
+  | Column | Magnitude behind the flag |
+  |---|---|
+  | `mouse_ortholog_pct_id` / `cyno_ortholog_pct_id` | `mouse/cyno_has_one2one` — the 1:1 ortholog % identity |
+  | `homomer_stoichiometry` | `schweke_homomer` — Schweke stoichiometry (2 / 3 / 4 …) |
+  | `top_paralog_symbol` / `top_paralog_ecd_pct` | `has_concerning_paralog` — the closest paralog + its ECD % identity |
+  | `n_ec_surface_bind_sites` | `has_ec_surface_bind_site` — # extracellular surface-bind sites |
+
+  Empty where the feature is absent (no paralog, not a homomer, …).
 - **Canonical generator** (uses the in-repo `_plotting_config`):
   [`scripts/surfaceome_deterministic_features_placeholder.py`](https://github.com/Deliverome-Project/accessible-surfaceome/blob/main/scripts/surfaceome_deterministic_features_placeholder.py).
   The standalone script in this gist reads the bundled TSV and renders without
