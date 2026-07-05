@@ -1,15 +1,23 @@
-"""Drift guard: each gist's bundled TSV ↔ canonical repo TSV.
+"""Drift guard: each gist's bundled TSV **and mirror script** ↔ canonical repo copies.
 
 Why: SWHID-of-the-gist is only a stable reproduction identifier if the
-bundled TSV matches what the script was tested against in the repo.
-If the canonical TSV is regenerated but the gist's bundled copy isn't
-re-pushed, the gist publishes a stale data + script pair — anyone
-running `uv run make_<slug>.py` from the gist would get different
-output than the figure committed in this repo.
+bundled TSV *and* the ``make_<slug>.py`` script match what the figure
+was rendered from in the repo. If either is regenerated but the gist's
+bundled copy isn't re-pushed, the gist publishes a stale data + script
+pair — anyone running `uv run make_<slug>.py` from the gist gets a
+different figure than the one committed here.
 
-This test fetches the bundled TSV from each gist via the public raw
-URL (no auth) and SHA256-compares against the canonical TSV in the
-repo. Fails CI on any mismatch.
+Two checks, both network-gated:
+
+* ``test_gist_bundled_tsv_matches_canonical`` — the bundled **TSV**
+  (catches data drift).
+* ``test_gist_mirror_matches_canonical`` — the bundled **mirror
+  script** ``make_<slug>.py`` (catches layout/style drift the TSV-only
+  check is blind to — e.g. the 300→600 DPI bump that landed in the repo
+  mirrors but was never re-pushed, leaving 3 live gists on dpi=300).
+
+Both fetch each gist file via the public raw URL (no auth) and
+SHA256-compare against the repo canonical copy. Fails CI on any mismatch.
 
 When this test fails: run
 ``uv run python scripts/sync_figure_gists_bundle_data.py`` to re-push
@@ -155,4 +163,59 @@ def test_gist_bundled_tsv_matches_canonical(
         f"  url:       {url}\n"
         f"Fix: re-run `uv run python scripts/sync_figure_gists_bundle_data.py` "
         f"to push the canonical TSV into the gist."
+    )
+
+
+def _mirror_pairs() -> list[tuple[str, str]]:
+    """Yield ``(slug, gist_id)`` for every gist whose repo mirror exists.
+
+    Reads the registry directly (not TSV_BUNDLE) so it covers every
+    published figure, including any that might not bundle a TSV. Skips
+    SVG-mockup slugs (``deep_dive_flow`` / ``web_preview``) which have no
+    ``make_<slug>.py``."""
+    if not MAP_PATH.is_file():
+        return []
+    gmap = json.loads(MAP_PATH.read_text())
+    figures_dir = REPO_ROOT / "data/analysis/figures"
+    out: list[tuple[str, str]] = []
+    for slug, gist_id in gmap.items():
+        if (figures_dir / f"make_{slug}.py").is_file():
+            out.append((slug, gist_id))
+    return sorted(out)
+
+
+@pytest.mark.network
+@pytest.mark.parametrize("slug,gist_id", _mirror_pairs())
+def test_gist_mirror_matches_canonical(slug: str, gist_id: str) -> None:
+    """Each gist's bundled ``make_<slug>.py`` must sha256-match the repo
+    mirror. Closes the gap the TSV-only check misses: a mirror-script
+    change (layout, fontsize, the 300→600 DPI bump) that lands in the
+    repo but is never re-pushed leaves the gist serving a stale
+    reproduction script — readers running ``uv run make_<slug>.py`` from
+    the gist then render the OLD figure. If this fails, re-run
+    ``scripts/sync_figure_gists_bundle_data.py``."""
+    mirror = REPO_ROOT / "data/analysis/figures" / f"make_{slug}.py"
+    canonical_hash = _sha256_file(mirror)
+
+    filename = f"make_{slug}.py"
+    url = _gist_raw_url(gist_id, filename)
+    try:
+        with urllib.request.urlopen(url, timeout=30) as resp:  # noqa: S310
+            bundled = resp.read()
+    except urllib.error.HTTPError as exc:
+        if exc.code == 404:
+            pytest.fail(
+                f"{slug}: mirror {filename} missing from gist {gist_id} "
+                f"(404 at {url}). Run scripts/sync_figure_gists_bundle_data.py."
+            )
+        raise
+    bundled_hash = _sha256_bytes(bundled)
+
+    assert bundled_hash == canonical_hash, (
+        f"{slug}: live gist mirror drifted from the repo canonical.\n"
+        f"  canonical (repo): {canonical_hash}\n"
+        f"  in gist:          {bundled_hash}\n"
+        f"  url:              {url}\n"
+        f"Fix: re-run `uv run python scripts/sync_figure_gists_bundle_data.py` "
+        f"to push the current make_{slug}.py into the gist."
     )

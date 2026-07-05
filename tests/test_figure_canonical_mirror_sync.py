@@ -161,3 +161,47 @@ def test_figure_canonical_mirror_layout_in_sync(slug: str) -> None:
         "multi-panel canonical), add the knob name to "
         "_INTENTIONAL_DIVERGENCE in this test file."
     )
+
+
+# ── Model-list content drift — a SEPARATE axis from the layout fingerprint ──
+# The fingerprint above catches figsize/font drift; it does NOT catch a figure
+# that plots a different SET of models in the canonical vs the mirror. That gap
+# shipped a figure whose mirror had Sonnet 5 in MODEL_ORDER but whose canonical
+# didn't — so the published figure silently dropped the Sonnet 5 bar. This
+# guard compares the ``claude-<model>`` IDs referenced by each file.
+_MODEL_RE = re.compile(r"claude-[a-z]+-[0-9]+(?:-[0-9]+)?")
+
+# Per-slug models that legitimately appear in only one file (rare — e.g. a
+# model named in a canonical-only helper comment). Keep tight.
+_MODEL_DRIFT_ALLOW: dict[str, set[str]] = {}
+
+
+def _model_ids(path: Path) -> set[str]:
+    return set(_MODEL_RE.findall(path.read_text()))
+
+
+@pytest.mark.parametrize("slug", _list_pairs() or ["<no-pairs>"])
+def test_figure_canonical_mirror_models_in_sync(slug: str) -> None:
+    """Canonical and mirror must reference the SAME set of ``claude-<model>``
+    IDs. Catches MODEL_ORDER / model-list content drift the layout fingerprint
+    is blind to (the Sonnet-5-missing-from-canonical class of bug)."""
+    if slug == "<no-pairs>":
+        pytest.skip("no canonical ↔ mirror pairs found")
+    canonical = SCRIPTS_DIR / f"{slug}.py"
+    mirror = MIRROR_DIR / f"make_{slug}.py"
+    cm = _model_ids(canonical)
+    mm = _model_ids(mirror)
+    if not cm and not mm:
+        pytest.skip(f"{slug}: neither file references claude models")
+    allowed = _MODEL_DRIFT_ALLOW.get(slug, set())
+    only_canonical = (cm - mm) - allowed
+    only_mirror = (mm - cm) - allowed
+    assert not only_canonical and not only_mirror, (
+        f"Model-list drift between canonical and mirror for slug={slug!r}:\n"
+        f"  only in scripts/{slug}.py:  {sorted(only_canonical)}\n"
+        f"  only in make_{slug}.py:     {sorted(only_mirror)}\n"
+        f"This is the drift class that shipped a figure missing its Sonnet 5 "
+        f"bar. Sync the MODEL_ORDER / model dicts in BOTH files, then "
+        f"regenerate. If a model legitimately appears in only one file, add "
+        f"it to _MODEL_DRIFT_ALLOW in this test."
+    )
