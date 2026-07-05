@@ -55,7 +55,7 @@
     "has_secreted_form": false,
     "requires_coreceptor_for_expression": false,
     "co_receptor_dependency": "modulatory",
-    "max_paralog_ecd_pct_identity": 31.818181818181817,
+    "max_paralog_ecd_pct_identity": 36.904761904761905,
     "has_epitope_masking": true,
     "has_restricted_subdomain": true,
     "mouse_ortholog_ecd_pct_identity": 96.42857142857143,
@@ -860,8 +860,8 @@
         "tool_version": "deeptmhmm-1.0.24",
         "retrieved_at": "2026-05-27T02:01:01Z",
         "full_length_pct_identity_to_canonical": 94.38642297650131,
-        "ecd_pct_identity_to_canonical": 93.0672268907563,
-        "ecd_pct_similarity_to_canonical": 93.0672268907563
+        "ecd_pct_identity_to_canonical": 80.95238095238095,
+        "ecd_pct_similarity_to_canonical": 80.95238095238095
       },
       {
         "isoform_id": "Q9NP78-3",
@@ -877,8 +877,8 @@
         "tool_version": "deeptmhmm-1.0.24",
         "retrieved_at": "2026-05-27T02:01:01Z",
         "full_length_pct_identity_to_canonical": 76.76240208877284,
-        "ecd_pct_identity_to_canonical": 98.87048192771084,
-        "ecd_pct_similarity_to_canonical": 98.87048192771084
+        "ecd_pct_identity_to_canonical": 100.0,
+        "ecd_pct_similarity_to_canonical": 100.0
       },
       {
         "isoform_id": "Q9NP78-5",
@@ -894,8 +894,8 @@
         "tool_version": "deeptmhmm-1.0.24",
         "retrieved_at": "2026-05-27T02:01:01Z",
         "full_length_pct_identity_to_canonical": 89.03394255874673,
-        "ecd_pct_identity_to_canonical": 98.87048192771084,
-        "ecd_pct_similarity_to_canonical": 98.87048192771084
+        "ecd_pct_identity_to_canonical": 100.0,
+        "ecd_pct_similarity_to_canonical": 100.0
       },
       {
         "isoform_id": "Q9NP78-6",
@@ -911,8 +911,8 @@
         "tool_version": "deeptmhmm-1.0.24",
         "retrieved_at": "2026-05-27T02:01:01Z",
         "full_length_pct_identity_to_canonical": 88.90339425587467,
-        "ecd_pct_identity_to_canonical": 98.87048192771084,
-        "ecd_pct_similarity_to_canonical": 98.87048192771084
+        "ecd_pct_identity_to_canonical": 100.0,
+        "ecd_pct_similarity_to_canonical": 100.0
       },
       {
         "isoform_id": "Q9NP78-7",
@@ -942,7 +942,7 @@
           "ortholog_symbol": "Abcb9",
           "type": "one2one",
           "ecd_pct_identity_to_human_canonical": 96.42857142857143,
-          "ecd_pct_similarity_to_human_canonical": 96.42857142857143,
+          "ecd_pct_similarity_to_human_canonical": 98.80952380952381,
           "full_length_pct_identity_to_human_canonical": 93.7337,
           "ecd_length_residues": 84,
           "tm_helix_count": 10,
@@ -985,7 +985,7 @@
       {
         "paralog_symbol": "TAP1",
         "paralog_uniprot_acc": "Q03518",
-        "ecd_pct_identity": 31.818181818181817,
+        "ecd_pct_identity": 36.904761904761905,
         "full_length_pct_identity": 34.5953,
         "family_id": "Opisthokonta",
         "compara_version": "Compara r112",
@@ -997,7 +997,7 @@
       {
         "paralog_symbol": "ABCB11",
         "paralog_uniprot_acc": "O95342",
-        "ecd_pct_identity": 28.57142857142857,
+        "ecd_pct_identity": 20,
         "full_length_pct_identity": 30.0261,
         "family_id": "Opisthokonta",
         "compara_version": "Compara r112",
@@ -1009,7 +1009,7 @@
       {
         "paralog_symbol": "ABCB7",
         "paralog_uniprot_acc": "O75027",
-        "ecd_pct_identity": 24.390243902439025,
+        "ecd_pct_identity": 20.238095238095237,
         "full_length_pct_identity": 21.9321,
         "family_id": "Opisthokonta",
         "compara_version": "Compara r112",
@@ -1021,7 +1021,7 @@
       {
         "paralog_symbol": "ABCB4",
         "paralog_uniprot_acc": "P21439",
-        "ecd_pct_identity": 24.193548387096776,
+        "ecd_pct_identity": 21.551724137931032,
         "full_length_pct_identity": 30.0261,
         "family_id": "Opisthokonta",
         "compara_version": "Compara r112",
@@ -1033,7 +1033,7 @@
       {
         "paralog_symbol": "ABCB5",
         "paralog_uniprot_acc": "Q2M3G0",
-        "ecd_pct_identity": 24.137931034482758,
+        "ecd_pct_identity": 28.037383177570092,
         "full_length_pct_identity": 28.1984,
         "family_id": "Opisthokonta",
         "compara_version": "Compara r112",
@@ -1045,7 +1045,7 @@
       {
         "paralog_symbol": "TAP2",
         "paralog_uniprot_acc": "Q03519",
-        "ecd_pct_identity": 24.050632911392405,
+        "ecd_pct_identity": 24.752475247524753,
         "full_length_pct_identity": 36.2924,
         "family_id": "Opisthokonta",
         "compara_version": "Compara r112",
@@ -1057,7 +1057,7 @@
       {
         "paralog_symbol": "ABCB10",
         "paralog_uniprot_acc": "Q9NRK6",
-        "ecd_pct_identity": 20,
+        "ecd_pct_identity": 32.142857142857146,
         "full_length_pct_identity": 30.8094,
         "family_id": "Opisthokonta",
         "compara_version": "Compara r112",
@@ -1069,7 +1069,7 @@
       {
         "paralog_symbol": "ABCB1",
         "paralog_uniprot_acc": "P08183",
-        "ecd_pct_identity": 18.867924528301888,
+        "ecd_pct_identity": 22.93577981651376,
         "full_length_pct_identity": 31.4621,
         "family_id": "Opisthokonta",
         "compara_version": "Compara r112",
@@ -1081,7 +1081,7 @@
       {
         "paralog_symbol": "ABCB8",
         "paralog_uniprot_acc": "Q9NUT2",
-        "ecd_pct_identity": 17.77777777777778,
+        "ecd_pct_identity": 29.761904761904763,
         "full_length_pct_identity": 29.5039,
         "family_id": "Opisthokonta",
         "compara_version": "Compara r112",
@@ -1093,7 +1093,7 @@
       {
         "paralog_symbol": "ABCB6",
         "paralog_uniprot_acc": "Q9NP58",
-        "ecd_pct_identity": 10.16949152542373,
+        "ecd_pct_identity": 25,
         "full_length_pct_identity": 22.5849,
         "family_id": "Opisthokonta",
         "compara_version": "Compara r112",

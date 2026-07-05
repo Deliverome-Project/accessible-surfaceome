@@ -58,10 +58,10 @@
     "has_secreted_form": false,
     "requires_coreceptor_for_expression": false,
     "co_receptor_dependency": "none",
-    "max_paralog_ecd_pct_identity": 34.21052631578947,
+    "max_paralog_ecd_pct_identity": 32.45614035087719,
     "has_epitope_masking": true,
     "has_restricted_subdomain": false,
-    "mouse_ortholog_ecd_pct_identity": 63.716814159292035,
+    "mouse_ortholog_ecd_pct_identity": 63.1578947368421,
     "cyno_ortholog_ecd_pct_identity": 100,
     "n_term_extracellular": false,
     "c_term_extracellular": false,
@@ -1505,8 +1505,8 @@
         "tool_version": "deeptmhmm-1.0.24",
         "retrieved_at": "2026-05-27T02:01:01Z",
         "full_length_pct_identity_to_canonical": 90.33613445378151,
-        "ecd_pct_identity_to_canonical": 96.88888888888889,
-        "ecd_pct_similarity_to_canonical": 96.88888888888889
+        "ecd_pct_identity_to_canonical": 89.47368421052632,
+        "ecd_pct_similarity_to_canonical": 89.47368421052632
       },
       {
         "isoform_id": "P08962-3",
@@ -1522,8 +1522,8 @@
         "tool_version": "deeptmhmm-1.0.24",
         "retrieved_at": "2026-05-27T02:01:01Z",
         "full_length_pct_identity_to_canonical": 65.54621848739495,
-        "ecd_pct_identity_to_canonical": 4.166666666666666,
-        "ecd_pct_similarity_to_canonical": 9.375
+        "ecd_pct_identity_to_canonical": 84.21052631578947,
+        "ecd_pct_similarity_to_canonical": 84.21052631578947
       }
     ],
     "orthologs": {
@@ -1535,8 +1535,8 @@
           "ortholog_uniprot_acc": "P41731",
           "ortholog_symbol": "Cd63",
           "type": "one2one",
-          "ecd_pct_identity_to_human_canonical": 63.716814159292035,
-          "ecd_pct_similarity_to_human_canonical": 63.716814159292035,
+          "ecd_pct_identity_to_human_canonical": 63.1578947368421,
+          "ecd_pct_similarity_to_human_canonical": 77.19298245614034,
           "full_length_pct_identity_to_human_canonical": 78.5714,
           "ecd_length_residues": 114,
           "tm_helix_count": 4,
@@ -1579,7 +1579,7 @@
       {
         "paralog_symbol": "TSPAN17",
         "paralog_uniprot_acc": "Q96FV3",
-        "ecd_pct_identity": 34.21052631578947,
+        "ecd_pct_identity": 26.811594202898554,
         "full_length_pct_identity": 27.7311,
         "family_id": "Bilateria",
         "compara_version": "Compara r112",
@@ -1591,7 +1591,7 @@
       {
         "paralog_symbol": "TSPAN15",
         "paralog_uniprot_acc": "O95858",
-        "ecd_pct_identity": 33.33333333333333,
+        "ecd_pct_identity": 29.00763358778626,
         "full_length_pct_identity": 22.2689,
         "family_id": "Bilateria",
         "compara_version": "Compara r112",
@@ -1603,7 +1603,7 @@
       {
         "paralog_symbol": "TSPAN19",
         "paralog_uniprot_acc": "P0C672",
-        "ecd_pct_identity": 32.45614035087719,
+        "ecd_pct_identity": 30.64516129032258,
         "full_length_pct_identity": 22.2689,
         "family_id": "Bilateria",
         "compara_version": "Compara r112",
@@ -1615,7 +1615,7 @@
       {
         "paralog_symbol": "CD151",
         "paralog_uniprot_acc": "P48509",
-        "ecd_pct_identity": 32.432432432432435,
+        "ecd_pct_identity": 30.081300813008134,
         "full_length_pct_identity": 27.3109,
         "family_id": "Bilateria",
         "compara_version": "Compara r112",
@@ -1627,7 +1627,7 @@
       {
         "paralog_symbol": "TSPAN11",
         "paralog_uniprot_acc": "A1L157",
-        "ecd_pct_identity": 31.858407079646017,
+        "ecd_pct_identity": 28.455284552845526,
         "full_length_pct_identity": 25.6303,
         "family_id": "Bilateria",
         "compara_version": "Compara r112",
@@ -1639,7 +1639,7 @@
       {
         "paralog_symbol": "TSPAN5",
         "paralog_uniprot_acc": "P62079",
-        "ecd_pct_identity": 31.57894736842105,
+        "ecd_pct_identity": 27.536231884057973,
         "full_length_pct_identity": 26.4706,
         "family_id": "Bilateria",
         "compara_version": "Compara r112",
@@ -1651,7 +1651,7 @@
       {
         "paralog_symbol": "TSPAN33",
         "paralog_uniprot_acc": "Q86UF1",
-        "ecd_pct_identity": 30.909090909090907,
+        "ecd_pct_identity": 28.24427480916031,
         "full_length_pct_identity": 28.5714,
         "family_id": "Bilateria",
         "compara_version": "Compara r112",
@@ -1663,7 +1663,7 @@
       {
         "paralog_symbol": "TSPAN13",
         "paralog_uniprot_acc": "O95857",
-        "ecd_pct_identity": 30.263157894736842,
+        "ecd_pct_identity": 20.175438596491226,
         "full_length_pct_identity": 21.8487,
         "family_id": "Bilateria",
         "compara_version": "Compara r112",
@@ -1675,7 +1675,7 @@
       {
         "paralog_symbol": "TSPAN9",
         "paralog_uniprot_acc": "O75954",
-        "ecd_pct_identity": 30.08849557522124,
+        "ecd_pct_identity": 31.57894736842105,
         "full_length_pct_identity": 28.5714,
         "family_id": "Bilateria",
         "compara_version": "Compara r112",
@@ -1687,7 +1687,7 @@
       {
         "paralog_symbol": "TSPAN14",
         "paralog_uniprot_acc": "Q8NG11",
-        "ecd_pct_identity": 29.82456140350877,
+        "ecd_pct_identity": 27.205882352941174,
         "full_length_pct_identity": 27.7311,
         "family_id": "Bilateria",
         "compara_version": "Compara r112",
@@ -1699,7 +1699,7 @@
       {
         "paralog_symbol": "TSPAN8",
         "paralog_uniprot_acc": "P19075",
-        "ecd_pct_identity": 29.82456140350877,
+        "ecd_pct_identity": 28.333333333333332,
         "full_length_pct_identity": 26.0504,
         "family_id": "Bilateria",
         "compara_version": "Compara r112",
@@ -1711,7 +1711,7 @@
       {
         "paralog_symbol": "TSPAN31",
         "paralog_uniprot_acc": "Q12999",
-        "ecd_pct_identity": 29.761904761904763,
+        "ecd_pct_identity": 25.438596491228072,
         "full_length_pct_identity": 21.8487,
         "family_id": "Bilateria",
         "compara_version": "Compara r112",
@@ -1723,7 +1723,7 @@
       {
         "paralog_symbol": "TSPAN4",
         "paralog_uniprot_acc": "O14817",
-        "ecd_pct_identity": 29.20353982300885,
+        "ecd_pct_identity": 32.45614035087719,
         "full_length_pct_identity": 29.8319,
         "family_id": "Bilateria",
         "compara_version": "Compara r112",
@@ -1735,7 +1735,7 @@
       {
         "paralog_symbol": "TSPAN3",
         "paralog_uniprot_acc": "O60637",
-        "ecd_pct_identity": 28.947368421052634,
+        "ecd_pct_identity": 25.806451612903224,
         "full_length_pct_identity": 29.4118,
         "family_id": "Bilateria",
         "compara_version": "Compara r112",
@@ -1747,7 +1747,7 @@
       {
         "paralog_symbol": "TSPAN1",
         "paralog_uniprot_acc": "O60635",
-        "ecd_pct_identity": 28.07017543859649,
+        "ecd_pct_identity": 26.82926829268293,
         "full_length_pct_identity": 23.9496,
         "family_id": "Bilateria",
         "compara_version": "Compara r112",
@@ -1759,7 +1759,7 @@
       {
         "paralog_symbol": "TSPAN10",
         "paralog_uniprot_acc": "Q9H1Z9",
-        "ecd_pct_identity": 28.07017543859649,
+        "ecd_pct_identity": 23.88059701492537,
         "full_length_pct_identity": 21.4286,
         "family_id": "Bilateria",
         "compara_version": "Compara r112",
@@ -1771,7 +1771,7 @@
       {
         "paralog_symbol": "TSPAN12",
         "paralog_uniprot_acc": "O95859",
-        "ecd_pct_identity": 27.192982456140353,
+        "ecd_pct_identity": 23.308270676691727,
         "full_length_pct_identity": 21.8487,
         "family_id": "Bilateria",
         "compara_version": "Compara r112",
@@ -1783,7 +1783,7 @@
       {
         "paralog_symbol": "TSPAN16",
         "paralog_uniprot_acc": "Q9UKR8",
-        "ecd_pct_identity": 27.192982456140353,
+        "ecd_pct_identity": 22.04724409448819,
         "full_length_pct_identity": 18.9076,
         "family_id": "Bilateria",
         "compara_version": "Compara r112",
@@ -1795,7 +1795,7 @@
       {
         "paralog_symbol": "CD37",
         "paralog_uniprot_acc": "P11049",
-        "ecd_pct_identity": 26.548672566371685,
+        "ecd_pct_identity": 20.13422818791946,
         "full_length_pct_identity": 21.4286,
         "family_id": "Bilateria",
         "compara_version": "Compara r112",
@@ -1807,7 +1807,7 @@
       {
         "paralog_symbol": "TSPAN7",
         "paralog_uniprot_acc": "P41732",
-        "ecd_pct_identity": 26.31578947368421,
+        "ecd_pct_identity": 26.05042016806723,
         "full_length_pct_identity": 31.0924,
         "family_id": "Bilateria",
         "compara_version": "Compara r112",
@@ -1819,7 +1819,7 @@
       {
         "paralog_symbol": "PRPH2",
         "paralog_uniprot_acc": "P23942",
-        "ecd_pct_identity": 26.31578947368421,
+        "ecd_pct_identity": 19.49685534591195,
         "full_length_pct_identity": 18.9076,
         "family_id": "Bilateria",
         "compara_version": "Compara r112",
@@ -1831,7 +1831,7 @@
       {
         "paralog_symbol": "UPK1B",
         "paralog_uniprot_acc": "O75841",
-        "ecd_pct_identity": 25.438596491228072,
+        "ecd_pct_identity": 19.565217391304348,
         "full_length_pct_identity": 22.2689,
         "family_id": "Bilateria",
         "compara_version": "Compara r112",
@@ -1843,7 +1843,7 @@
       {
         "paralog_symbol": "ROM1",
         "paralog_uniprot_acc": "Q03395",
-        "ecd_pct_identity": 25,
+        "ecd_pct_identity": 19.480519480519483,
         "full_length_pct_identity": 13.8655,
         "family_id": "Bilateria",
         "compara_version": "Compara r112",
@@ -1855,7 +1855,7 @@
       {
         "paralog_symbol": "TSPAN32",
         "paralog_uniprot_acc": "Q96QS1",
-        "ecd_pct_identity": 24.752475247524753,
+        "ecd_pct_identity": 22.807017543859647,
         "full_length_pct_identity": 18.9076,
         "family_id": "Bilateria",
         "compara_version": "Compara r112",
@@ -1867,7 +1867,7 @@
       {
         "paralog_symbol": "CD53",
         "paralog_uniprot_acc": "P19397",
-        "ecd_pct_identity": 24.742268041237114,
+        "ecd_pct_identity": 21.929824561403507,
         "full_length_pct_identity": 25.2101,
         "family_id": "Bilateria",
         "compara_version": "Compara r112",
@@ -1879,7 +1879,7 @@
       {
         "paralog_symbol": "CD82",
         "paralog_uniprot_acc": "P27701",
-        "ecd_pct_identity": 24.561403508771928,
+        "ecd_pct_identity": 23.357664233576642,
         "full_length_pct_identity": 26.0504,
         "family_id": "Bilateria",
         "compara_version": "Compara r112",
@@ -1891,7 +1891,7 @@
       {
         "paralog_symbol": "UPK1A",
         "paralog_uniprot_acc": "O00322",
-        "ecd_pct_identity": 24.561403508771928,
+        "ecd_pct_identity": 20.588235294117645,
         "full_length_pct_identity": 19.3277,
         "family_id": "Bilateria",
         "compara_version": "Compara r112",
@@ -1903,7 +1903,7 @@
       {
         "paralog_symbol": "TSPAN6",
         "paralog_uniprot_acc": "O43657",
-        "ecd_pct_identity": 23.893805309734514,
+        "ecd_pct_identity": 21.929824561403507,
         "full_length_pct_identity": 28.1513,
         "family_id": "Bilateria",
         "compara_version": "Compara r112",
@@ -1915,7 +1915,7 @@
       {
         "paralog_symbol": "TSPAN18",
         "paralog_uniprot_acc": "Q96SJ8",
-        "ecd_pct_identity": 22.93577981651376,
+        "ecd_pct_identity": 20.32520325203252,
         "full_length_pct_identity": 25.2101,
         "family_id": "Bilateria",
         "compara_version": "Compara r112",
@@ -1927,7 +1927,7 @@
       {
         "paralog_symbol": "CD81",
         "paralog_uniprot_acc": "P60033",
-        "ecd_pct_identity": 22.641509433962266,
+        "ecd_pct_identity": 21.052631578947366,
         "full_length_pct_identity": 21.4286,
         "family_id": "Bilateria",
         "compara_version": "Compara r112",
@@ -1939,7 +1939,7 @@
       {
         "paralog_symbol": "TSPAN2",
         "paralog_uniprot_acc": "O60636",
-        "ecd_pct_identity": 17.20430107526882,
+        "ecd_pct_identity": 16.666666666666664,
         "full_length_pct_identity": 19.3277,
         "family_id": "Bilateria",
         "compara_version": "Compara r112",
@@ -1951,7 +1951,7 @@
       {
         "paralog_symbol": "CD9",
         "paralog_uniprot_acc": "P21926",
-        "ecd_pct_identity": 16.831683168316832,
+        "ecd_pct_identity": 17.543859649122805,
         "full_length_pct_identity": 23.9496,
         "family_id": "Bilateria",
         "compara_version": "Compara r112",
