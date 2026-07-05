@@ -1586,9 +1586,7 @@
         "per_residue_topology": null,
         "tm_helix_count": null,
         "ecd_length_residues": null,
-        "sequence": null,
-        "ecd_pct_similarity": null,
-        "n_ecd_loops_compared": 2
+        "sequence": null
       },
       {
         "paralog_symbol": "TSPAN15",
@@ -1600,9 +1598,7 @@
         "per_residue_topology": null,
         "tm_helix_count": null,
         "ecd_length_residues": null,
-        "sequence": null,
-        "ecd_pct_similarity": null,
-        "n_ecd_loops_compared": 2
+        "sequence": null
       },
       {
         "paralog_symbol": "TSPAN19",
@@ -1614,9 +1610,7 @@
         "per_residue_topology": null,
         "tm_helix_count": null,
         "ecd_length_residues": null,
-        "sequence": null,
-        "ecd_pct_similarity": null,
-        "n_ecd_loops_compared": 2
+        "sequence": null
       },
       {
         "paralog_symbol": "CD151",
@@ -1628,9 +1622,7 @@
         "per_residue_topology": null,
         "tm_helix_count": null,
         "ecd_length_residues": null,
-        "sequence": null,
-        "ecd_pct_similarity": null,
-        "n_ecd_loops_compared": 2
+        "sequence": null
       },
       {
         "paralog_symbol": "TSPAN11",
@@ -1642,9 +1634,7 @@
         "per_residue_topology": null,
         "tm_helix_count": null,
         "ecd_length_residues": null,
-        "sequence": null,
-        "ecd_pct_similarity": null,
-        "n_ecd_loops_compared": 2
+        "sequence": null
       },
       {
         "paralog_symbol": "TSPAN5",
@@ -1656,9 +1646,7 @@
         "per_residue_topology": null,
         "tm_helix_count": null,
         "ecd_length_residues": null,
-        "sequence": null,
-        "ecd_pct_similarity": null,
-        "n_ecd_loops_compared": 2
+        "sequence": null
       },
       {
         "paralog_symbol": "TSPAN33",
@@ -1670,9 +1658,7 @@
         "per_residue_topology": null,
         "tm_helix_count": null,
         "ecd_length_residues": null,
-        "sequence": null,
-        "ecd_pct_similarity": null,
-        "n_ecd_loops_compared": 2
+        "sequence": null
       },
       {
         "paralog_symbol": "TSPAN13",
@@ -1684,9 +1670,7 @@
         "per_residue_topology": null,
         "tm_helix_count": null,
         "ecd_length_residues": null,
-        "sequence": null,
-        "ecd_pct_similarity": null,
-        "n_ecd_loops_compared": 2
+        "sequence": null
       },
       {
         "paralog_symbol": "TSPAN9",
@@ -1698,9 +1682,7 @@
         "per_residue_topology": null,
         "tm_helix_count": null,
         "ecd_length_residues": null,
-        "sequence": null,
-        "ecd_pct_similarity": null,
-        "n_ecd_loops_compared": 2
+        "sequence": null
       },
       {
         "paralog_symbol": "TSPAN14",
@@ -1712,9 +1694,7 @@
         "per_residue_topology": null,
         "tm_helix_count": null,
         "ecd_length_residues": null,
-        "sequence": null,
-        "ecd_pct_similarity": null,
-        "n_ecd_loops_compared": 2
+        "sequence": null
       },
       {
         "paralog_symbol": "TSPAN8",
@@ -1726,9 +1706,7 @@
         "per_residue_topology": null,
         "tm_helix_count": null,
         "ecd_length_residues": null,
-        "sequence": null,
-        "ecd_pct_similarity": null,
-        "n_ecd_loops_compared": 2
+        "sequence": null
       },
       {
         "paralog_symbol": "TSPAN31",
@@ -1740,9 +1718,7 @@
         "per_residue_topology": null,
         "tm_helix_count": null,
         "ecd_length_residues": null,
-        "sequence": null,
-        "ecd_pct_similarity": null,
-        "n_ecd_loops_compared": 2
+        "sequence": null
       },
       {
         "paralog_symbol": "TSPAN4",
@@ -1754,9 +1730,7 @@
         "per_residue_topology": null,
         "tm_helix_count": null,
         "ecd_length_residues": null,
-        "sequence": null,
-        "ecd_pct_similarity": null,
-        "n_ecd_loops_compared": 2
+        "sequence": null
       },
       {
         "paralog_symbol": "TSPAN3",
@@ -1768,9 +1742,7 @@
         "per_residue_topology": null,
         "tm_helix_count": null,
         "ecd_length_residues": null,
-        "sequence": null,
-        "ecd_pct_similarity": null,
-        "n_ecd_loops_compared": 2
+        "sequence": null
       },
       {
         "paralog_symbol": "TSPAN1",
@@ -1782,9 +1754,7 @@
         "per_residue_topology": null,
         "tm_helix_count": null,
         "ecd_length_residues": null,
-        "sequence": null,
-        "ecd_pct_similarity": null,
-        "n_ecd_loops_compared": 2
+        "sequence": null
       },
       {
         "paralog_symbol": "TSPAN10",
@@ -1796,9 +1766,7 @@
         "per_residue_topology": null,
         "tm_helix_count": null,
         "ecd_length_residues": null,
-        "sequence": null,
-        "ecd_pct_similarity": null,
-        "n_ecd_loops_compared": 2
+        "sequence": null
       },
       {
         "paralog_symbol": "TSPAN12",
@@ -1810,9 +1778,7 @@
         "per_residue_topology": null,
         "tm_helix_count": null,
         "ecd_length_residues": null,
-        "sequence": null,
-        "ecd_pct_similarity": null,
-        "n_ecd_loops_compared": 2
+        "sequence": null
       },
       {
         "paralog_symbol": "TSPAN16",
@@ -1824,9 +1790,7 @@
         "per_residue_topology": null,
         "tm_helix_count": null,
         "ecd_length_residues": null,
-        "sequence": null,
-        "ecd_pct_similarity": null,
-        "n_ecd_loops_compared": 2
+        "sequence": null
       },
       {
         "paralog_symbol": "CD37",
@@ -1838,9 +1802,7 @@
         "per_residue_topology": null,
         "tm_helix_count": null,
         "ecd_length_residues": null,
-        "sequence": null,
-        "ecd_pct_similarity": null,
-        "n_ecd_loops_compared": 2
+        "sequence": null
       },
       {
         "paralog_symbol": "TSPAN7",
@@ -1852,9 +1814,7 @@
         "per_residue_topology": null,
         "tm_helix_count": null,
         "ecd_length_residues": null,
-        "sequence": null,
-        "ecd_pct_similarity": null,
-        "n_ecd_loops_compared": 2
+        "sequence": null
       },
       {
         "paralog_symbol": "PRPH2",
@@ -1866,9 +1826,7 @@
         "per_residue_topology": null,
         "tm_helix_count": null,
         "ecd_length_residues": null,
-        "sequence": null,
-        "ecd_pct_similarity": null,
-        "n_ecd_loops_compared": 2
+        "sequence": null
       },
       {
         "paralog_symbol": "UPK1B",
@@ -1880,9 +1838,7 @@
         "per_residue_topology": null,
         "tm_helix_count": null,
         "ecd_length_residues": null,
-        "sequence": null,
-        "ecd_pct_similarity": null,
-        "n_ecd_loops_compared": 2
+        "sequence": null
       },
       {
         "paralog_symbol": "ROM1",
@@ -1894,9 +1850,7 @@
         "per_residue_topology": null,
         "tm_helix_count": null,
         "ecd_length_residues": null,
-        "sequence": null,
-        "ecd_pct_similarity": null,
-        "n_ecd_loops_compared": 2
+        "sequence": null
       },
       {
         "paralog_symbol": "TSPAN32",
@@ -1908,9 +1862,7 @@
         "per_residue_topology": null,
         "tm_helix_count": null,
         "ecd_length_residues": null,
-        "sequence": null,
-        "ecd_pct_similarity": null,
-        "n_ecd_loops_compared": 2
+        "sequence": null
       },
       {
         "paralog_symbol": "CD53",
@@ -1922,9 +1874,7 @@
         "per_residue_topology": null,
         "tm_helix_count": null,
         "ecd_length_residues": null,
-        "sequence": null,
-        "ecd_pct_similarity": null,
-        "n_ecd_loops_compared": 2
+        "sequence": null
       },
       {
         "paralog_symbol": "CD82",
@@ -1936,9 +1886,7 @@
         "per_residue_topology": null,
         "tm_helix_count": null,
         "ecd_length_residues": null,
-        "sequence": null,
-        "ecd_pct_similarity": null,
-        "n_ecd_loops_compared": 2
+        "sequence": null
       },
       {
         "paralog_symbol": "UPK1A",
@@ -1950,9 +1898,7 @@
         "per_residue_topology": null,
         "tm_helix_count": null,
         "ecd_length_residues": null,
-        "sequence": null,
-        "ecd_pct_similarity": null,
-        "n_ecd_loops_compared": 2
+        "sequence": null
       },
       {
         "paralog_symbol": "TSPAN6",
@@ -1964,9 +1910,7 @@
         "per_residue_topology": null,
         "tm_helix_count": null,
         "ecd_length_residues": null,
-        "sequence": null,
-        "ecd_pct_similarity": null,
-        "n_ecd_loops_compared": 2
+        "sequence": null
       },
       {
         "paralog_symbol": "TSPAN18",
@@ -1978,9 +1922,7 @@
         "per_residue_topology": null,
         "tm_helix_count": null,
         "ecd_length_residues": null,
-        "sequence": null,
-        "ecd_pct_similarity": null,
-        "n_ecd_loops_compared": 2
+        "sequence": null
       },
       {
         "paralog_symbol": "CD81",
@@ -1992,9 +1934,7 @@
         "per_residue_topology": null,
         "tm_helix_count": null,
         "ecd_length_residues": null,
-        "sequence": null,
-        "ecd_pct_similarity": null,
-        "n_ecd_loops_compared": 2
+        "sequence": null
       },
       {
         "paralog_symbol": "TSPAN2",
@@ -2006,9 +1946,7 @@
         "per_residue_topology": null,
         "tm_helix_count": null,
         "ecd_length_residues": null,
-        "sequence": null,
-        "ecd_pct_similarity": null,
-        "n_ecd_loops_compared": 2
+        "sequence": null
       },
       {
         "paralog_symbol": "CD9",
@@ -2020,9 +1958,7 @@
         "per_residue_topology": null,
         "tm_helix_count": null,
         "ecd_length_residues": null,
-        "sequence": null,
-        "ecd_pct_similarity": null,
-        "n_ecd_loops_compared": 2
+        "sequence": null
       }
     ],
     "paralogs_checked": true,

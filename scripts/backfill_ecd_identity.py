@@ -60,7 +60,9 @@ DISK_DIRS = [
 # (identity_field, similarity_field) per variant kind.
 ISO_FIELDS = ("ecd_pct_identity_to_canonical", "ecd_pct_similarity_to_canonical")
 ORTH_FIELDS = ("ecd_pct_identity_to_human_canonical", "ecd_pct_similarity_to_human_canonical")
-PARA_FIELDS = ("ecd_pct_identity", "ecd_pct_similarity")
+# ParalogEntry has NO ecd_pct_similarity field (extra="forbid") — paralogs carry
+# only ecd_pct_identity, so the similarity slot is None (never written).
+PARA_FIELDS = ("ecd_pct_identity", None)
 _EPS = 1e-6
 
 
@@ -131,23 +133,25 @@ def _differs(old, new) -> bool:
     return abs(float(old) - float(new)) > _EPS
 
 
-def _apply_one(variant: dict, cseq: str, ctopo: str, ident_f: str, sim_f: str) -> bool:
+def _apply_one(variant: dict, cseq: str, ctopo: str, ident_f: str, sim_f: str | None) -> bool:
     """Recompute + patch one variant in place. Returns True if it changed.
 
-    Always mutates on change (no dry-run gate) so the caller's facet
-    re-derivation reads corrected values; the caller decides whether to
-    persist the mutated record. Returns False when the value isn't
-    recomputable here (no in-record sequence+topology — it came from a D1
-    ``compara_*`` table and is corrected by the cohort-table recompute).
+    ``sim_f`` is None for paralogs (``ParalogEntry`` has no similarity field);
+    only the identity slot is written in that case. Always mutates on change (no
+    dry-run gate) so the caller's facet re-derivation reads corrected values.
+    Returns False when the value isn't recomputable here (no in-record
+    sequence+topology — corrected by the cohort-table recompute instead).
     """
     rc = _recompute(variant, cseq, ctopo)
     if rc is None:
         return False
     new_id, new_sim = rc
-    if not _differs(variant.get(ident_f), new_id) and not _differs(variant.get(sim_f), new_sim):
+    sim_changed = sim_f is not None and _differs(variant.get(sim_f), new_sim)
+    if not _differs(variant.get(ident_f), new_id) and not sim_changed:
         return False
     variant[ident_f] = new_id
-    variant[sim_f] = new_sim
+    if sim_f is not None:
+        variant[sim_f] = new_sim
     return True
 
 

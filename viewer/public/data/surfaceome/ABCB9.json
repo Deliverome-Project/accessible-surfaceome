@@ -992,9 +992,7 @@
         "per_residue_topology": null,
         "tm_helix_count": null,
         "ecd_length_residues": null,
-        "sequence": null,
-        "ecd_pct_similarity": null,
-        "n_ecd_loops_compared": 5
+        "sequence": null
       },
       {
         "paralog_symbol": "ABCB11",
@@ -1006,9 +1004,7 @@
         "per_residue_topology": null,
         "tm_helix_count": null,
         "ecd_length_residues": null,
-        "sequence": null,
-        "ecd_pct_similarity": null,
-        "n_ecd_loops_compared": 5
+        "sequence": null
       },
       {
         "paralog_symbol": "ABCB7",
@@ -1020,9 +1016,7 @@
         "per_residue_topology": null,
         "tm_helix_count": null,
         "ecd_length_residues": null,
-        "sequence": null,
-        "ecd_pct_similarity": null,
-        "n_ecd_loops_compared": 3
+        "sequence": null
       },
       {
         "paralog_symbol": "ABCB4",
@@ -1034,9 +1028,7 @@
         "per_residue_topology": null,
         "tm_helix_count": null,
         "ecd_length_residues": null,
-        "sequence": null,
-        "ecd_pct_similarity": null,
-        "n_ecd_loops_compared": 5
+        "sequence": null
       },
       {
         "paralog_symbol": "ABCB5",
@@ -1048,9 +1040,7 @@
         "per_residue_topology": null,
         "tm_helix_count": null,
         "ecd_length_residues": null,
-        "sequence": null,
-        "ecd_pct_similarity": null,
-        "n_ecd_loops_compared": 5
+        "sequence": null
       },
       {
         "paralog_symbol": "TAP2",
@@ -1062,9 +1052,7 @@
         "per_residue_topology": null,
         "tm_helix_count": null,
         "ecd_length_residues": null,
-        "sequence": null,
-        "ecd_pct_similarity": null,
-        "n_ecd_loops_compared": 5
+        "sequence": null
       },
       {
         "paralog_symbol": "ABCB10",
@@ -1076,9 +1064,7 @@
         "per_residue_topology": null,
         "tm_helix_count": null,
         "ecd_length_residues": null,
-        "sequence": null,
-        "ecd_pct_similarity": null,
-        "n_ecd_loops_compared": 3
+        "sequence": null
       },
       {
         "paralog_symbol": "ABCB1",
@@ -1090,9 +1076,7 @@
         "per_residue_topology": null,
         "tm_helix_count": null,
         "ecd_length_residues": null,
-        "sequence": null,
-        "ecd_pct_similarity": null,
-        "n_ecd_loops_compared": 5
+        "sequence": null
       },
       {
         "paralog_symbol": "ABCB8",
@@ -1104,9 +1088,7 @@
         "per_residue_topology": null,
         "tm_helix_count": null,
         "ecd_length_residues": null,
-        "sequence": null,
-        "ecd_pct_similarity": null,
-        "n_ecd_loops_compared": 3
+        "sequence": null
       },
       {
         "paralog_symbol": "ABCB6",
@@ -1118,9 +1100,7 @@
         "per_residue_topology": null,
         "tm_helix_count": null,
         "ecd_length_residues": null,
-        "sequence": null,
-        "ecd_pct_similarity": null,
-        "n_ecd_loops_compared": 5
+        "sequence": null
       }
     ],
     "paralogs_checked": true,

@@ -179,12 +179,11 @@ def plan_and_apply(rec, ortho, para) -> Plan:
         hit = para.get((h, p.get("paralog_uniprot_acc")))
         if hit is None:
             continue
-        ecd, sim, nl = hit
-        if _differs(p.get("ecd_pct_identity"), ecd) or _differs(p.get("ecd_pct_similarity"), sim):
+        ecd, _sim, _nl = hit
+        # ParalogEntry carries ONLY ecd_pct_identity (extra="forbid"); never
+        # write ecd_pct_similarity / n_ecd_loops_compared onto a paralog.
+        if _differs(p.get("ecd_pct_identity"), ecd):
             p["ecd_pct_identity"] = ecd
-            p["ecd_pct_similarity"] = sim
-            if nl is not None:
-                p["n_ecd_loops_compared"] = nl
             plan.paralog += 1
             plan.changed = True
     facets = _rederive_facets(rec)

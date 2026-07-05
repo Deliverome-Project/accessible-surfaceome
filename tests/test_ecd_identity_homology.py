@@ -46,6 +46,8 @@ def test_identical_variant_is_100_percent() -> None:
         paralog_topology=_CANON_TOPO,
         paralog_sequence=_CANON_SEQ,
     )
+    assert res.ecd_pct_identity is not None
+    assert res.ecd_pct_similarity is not None
     assert round(res.ecd_pct_identity, 1) == 100.0
     assert round(res.ecd_pct_similarity, 1) == 100.0
 

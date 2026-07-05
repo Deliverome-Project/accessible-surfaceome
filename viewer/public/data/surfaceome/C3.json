@@ -1776,9 +1776,7 @@
         "per_residue_topology": null,
         "tm_helix_count": null,
         "ecd_length_residues": null,
-        "sequence": null,
-        "ecd_pct_similarity": null,
-        "n_ecd_loops_compared": 1
+        "sequence": null
       },
       {
         "paralog_symbol": "C4A",
@@ -1790,9 +1788,7 @@
         "per_residue_topology": null,
         "tm_helix_count": null,
         "ecd_length_residues": null,
-        "sequence": null,
-        "ecd_pct_similarity": null,
-        "n_ecd_loops_compared": 1
+        "sequence": null
       },
       {
         "paralog_symbol": "C5",
@@ -1804,9 +1800,7 @@
         "per_residue_topology": null,
         "tm_helix_count": null,
         "ecd_length_residues": null,
-        "sequence": null,
-        "ecd_pct_similarity": null,
-        "n_ecd_loops_compared": 1
+        "sequence": null
       },
       {
         "paralog_symbol": "A2M",
@@ -1818,9 +1812,7 @@
         "per_residue_topology": null,
         "tm_helix_count": null,
         "ecd_length_residues": null,
-        "sequence": null,
-        "ecd_pct_similarity": null,
-        "n_ecd_loops_compared": 1
+        "sequence": null
       },
       {
         "paralog_symbol": "CPAMD8",
@@ -1832,9 +1824,7 @@
         "per_residue_topology": null,
         "tm_helix_count": null,
         "ecd_length_residues": null,
-        "sequence": null,
-        "ecd_pct_similarity": null,
-        "n_ecd_loops_compared": 1
+        "sequence": null
       },
       {
         "paralog_symbol": "A2ML1",
@@ -1846,9 +1836,7 @@
         "per_residue_topology": null,
         "tm_helix_count": null,
         "ecd_length_residues": null,
-        "sequence": null,
-        "ecd_pct_similarity": null,
-        "n_ecd_loops_compared": 1
+        "sequence": null
       },
       {
         "paralog_symbol": "CD109",
@@ -1860,9 +1848,7 @@
         "per_residue_topology": null,
         "tm_helix_count": null,
         "ecd_length_residues": null,
-        "sequence": null,
-        "ecd_pct_similarity": null,
-        "n_ecd_loops_compared": 1
+        "sequence": null
       },
       {
         "paralog_symbol": "PZP",
@@ -1874,9 +1860,7 @@
         "per_residue_topology": null,
         "tm_helix_count": null,
         "ecd_length_residues": null,
-        "sequence": null,
-        "ecd_pct_similarity": null,
-        "n_ecd_loops_compared": 1
+        "sequence": null
       }
     ],
     "paralogs_checked": true,
