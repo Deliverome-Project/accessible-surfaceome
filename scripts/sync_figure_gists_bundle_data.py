@@ -36,6 +36,7 @@ import argparse
 import json
 import subprocess
 import sys
+import time
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -121,38 +122,71 @@ TSV_BUNDLE: dict[str, list[str]] = {
 }
 
 
-def _run(cmd: list[str], dry: bool, *, tolerate_409: bool = False) -> str:
+def _run(cmd: list[str], dry: bool, *, tolerate_409: bool = False,
+         retries: int = 3) -> str:
     """Run a shell command, print it. Returns stdout on success.
 
-    ``tolerate_409``: gh returns HTTP 409 "Gist cannot be updated"
-    when the file content matches what's already published (no diff
-    to commit). For the per-file mirror push that's not an error —
-    just means the previous push already had this content.
+    ``tolerate_409``: gh returns HTTP 409 "Gist cannot be updated" in TWO
+    situations that look identical from the error text — (1) a genuine no-diff
+    (the file already matches what's published), and (2) a TRANSIENT lock when
+    successive ``gh gist edit`` calls race GitHub's per-gist write
+    serialisation. Case (2) was previously swallowed silently, so a README that
+    DID need updating never landed (and the recorded SWHID then pointed at a
+    gist missing it). Since we can't distinguish the two, RETRY with backoff: a
+    transient lock clears and the push lands; a genuine no-diff keeps 409ing and
+    is finally treated as a no-op.
     """
     print("  $ " + " ".join(cmd))
     if dry:
         return ""
-    res = subprocess.run(cmd, capture_output=True, text=True)
-    if res.returncode != 0:
+    for attempt in range(retries + 1):
+        res = subprocess.run(cmd, capture_output=True, text=True)
+        if res.returncode == 0:
+            return res.stdout
         err = (res.stderr or "") + (res.stdout or "")
         if tolerate_409 and "HTTP 409" in err:
-            print("    (HTTP 409 — no diff to push, treating as no-op)")
+            if attempt < retries:
+                print(f"    (HTTP 409 — gist busy; retry {attempt + 1}/{retries})")
+                time.sleep(1.5 * (attempt + 1))
+                continue
+            print("    (HTTP 409 persisted after retries — genuine no-diff, no-op)")
             return ""
         sys.stderr.write(err)
         raise RuntimeError(f"command failed: {' '.join(cmd)}")
-    return res.stdout
+    return ""
 
 
-def _gist_head_sha(gist_id: str) -> str:
-    """Latest commit SHA of the gist, via the GitHub API. This SHA is
-    the ``sha1_git`` Software Heritage uses for its rev SWHIDs."""
-    out = subprocess.run(
-        ["gh", "api", f"gists/{gist_id}", "--jq", ".history[0].version"],
-        capture_output=True, text=True,
-    )
-    if out.returncode != 0:
-        raise RuntimeError(f"gh api failed for gist {gist_id}: {out.stderr}")
-    return out.stdout.strip()
+def _gist_head_sha(gist_id: str, *, settle: bool = False) -> str:
+    """Latest commit SHA of the gist, via the GitHub API. This SHA is the
+    ``sha1_git`` Software Heritage uses for its rev SWHIDs.
+
+    ``settle``: GitHub's gist API is eventually consistent — a read taken
+    immediately after ``gh gist edit`` returns can lag the last push by one
+    commit (observed: the final README push's commit missing from the recorded
+    SWHID). When True, poll until two consecutive reads agree so the recorded
+    HEAD reflects every push that just landed.
+    """
+    def _one() -> str:
+        out = subprocess.run(
+            ["gh", "api", f"gists/{gist_id}", "--jq", ".history[0].version"],
+            capture_output=True, text=True,
+        )
+        if out.returncode != 0:
+            raise RuntimeError(f"gh api failed for gist {gist_id}: {out.stderr}")
+        return out.stdout.strip()
+
+    if not settle:
+        return _one()
+    prev = _one()
+    for _ in range(8):
+        time.sleep(1.5)
+        cur = _one()
+        if cur == prev:
+            return cur
+        prev = cur
+    print(f"    (warning: gist {gist_id} HEAD unsettled after polling; "
+          f"recording last-read {prev})")
+    return prev
 
 
 def main() -> int:
@@ -209,7 +243,7 @@ def main() -> int:
                  args.dry_run, tolerate_409=True)
 
         if not args.dry_run:
-            sha = _gist_head_sha(gist_id)
+            sha = _gist_head_sha(gist_id, settle=True)
             swhid = f"swh:1:rev:{sha}"
             swhid_map[slug] = swhid
             print(f"  HEAD: {sha}  →  {swhid}")
