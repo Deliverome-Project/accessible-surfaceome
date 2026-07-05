@@ -134,7 +134,7 @@ def _apply_brand_style() -> None:
 _PRICE = {
     "claude-haiku-4-5":  {"in": 1.00, "out": 5.00,  "cr": 0.10, "cw": 1.25},
     "claude-sonnet-4-6": {"in": 3.00, "out": 15.00, "cr": 0.30, "cw": 3.75},
-    "claude-sonnet-5":   {"in": 3.00, "out": 15.00, "cr": 0.30, "cw": 3.75},  # placeholder — confirm Anthropic list price
+    "claude-sonnet-5":   {"in": 3.00, "out": 15.00, "cr": 0.30, "cw": 3.75},
     "claude-opus-4-8":   {"in": 15.0, "out": 75.0,  "cr": 1.50, "cw": 18.75},
 }
 WEB_SEARCH_USD_PER_QUERY = 0.01
@@ -178,13 +178,20 @@ CELL_LABEL_OFFSET = {
     ("claude-haiku-4-5",  "ncbi"):        (7,  10),
     ("claude-haiku-4-5",  "pubmed_ncbi"): (7, -18),
     ("claude-haiku-4-5",  "web_ncbi"):    (7,   6),
-    ("claude-sonnet-4-6", "naive"):       (7, -18),
-    ("claude-sonnet-4-6", "ncbi"):        (7,  10),
-    ("claude-sonnet-4-6", "pubmed_ncbi"): (7, -20),
+    # Sonnet 4.6 (naive) sits just above Sonnet 5 (+ IDs) at a near-identical
+    # cost — send its label LEFT (into the empty gap toward Haiku) so it
+    # doesn't collide with the Sonnet 5 point/label below it.
+    ("claude-sonnet-4-6", "naive"):       (-128,  2),
+    ("claude-sonnet-4-6", "ncbi"):        (7,   12),
+    # + IDs + web and + IDs + PubMed nearly overlap (same cost, 0.5pp apart):
+    # push PubMed's label HIGH (clear above the +IDs row) with a leader, and
+    # keep web's label just up-right on its point — so neither lands on the
+    # other's point or on Opus (naive) to their right.
+    ("claude-sonnet-4-6", "pubmed_ncbi"): (7,  34),
     ("claude-sonnet-4-6", "web_ncbi"):    (7,   6),
-    # Sonnet 5 (+ IDs) sits ~2pp below Sonnet 4.6 (+ IDs + PubMed) at a
-    # very similar cost; default (7, 10) would stack them, so push down.
-    ("claude-sonnet-5",   "ncbi"):        (7, -36),
+    # Sonnet 5 (+ IDs) sits ~1pp below Sonnet 4.6 (naive) at a very similar
+    # cost; push its label well down with a leader line.
+    ("claude-sonnet-5",   "ncbi"):        (16, -44),
     ("claude-opus-4-8",   "naive"):       (7, -18),
     ("claude-opus-4-8",   "ncbi"):        (7,  10),
 }

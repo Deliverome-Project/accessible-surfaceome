@@ -871,7 +871,7 @@ WHOLE_GENOME_N = 19_464  # NCBI protein-coding ∩ has HGNC xref
 _PRICE: dict[str, dict[str, float]] = {
     "claude-haiku-4-5":  {"in":  1.0, "cw":  1.25, "cr": 0.10, "out":  5.0},
     "claude-sonnet-4-6": {"in":  3.0, "cw":  3.75, "cr": 0.30, "out": 15.0},
-    "claude-sonnet-5":   {"in":  3.0, "cw":  3.75, "cr": 0.30, "out": 15.0},   # placeholder — confirm Anthropic list price
+    "claude-sonnet-5":   {"in":  3.0, "cw":  3.75, "cr": 0.30, "out": 15.0},
     "claude-opus-4-7":   {"in": 15.0, "cw": 18.75, "cr": 1.50, "out": 75.0},
     "claude-opus-4-8":   {"in": 15.0, "cw": 18.75, "cr": 1.50, "out": 75.0},
 }
