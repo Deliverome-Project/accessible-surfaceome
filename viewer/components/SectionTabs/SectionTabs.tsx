@@ -87,7 +87,15 @@ export function SectionTabs({ sections, children }: SectionTabsProps) {
     if (typeof window === "undefined") return;
     const fromHash = () => {
       const hash = window.location.hash.replace(/^#section-/, "");
-      if (hash && sections.some((s) => s.id === hash)) setActive(hash);
+      if (hash && sections.some((s) => s.id === hash)) {
+        setActive(hash);
+      } else {
+        // Empty or unknown hash — e.g. the reader pressed Back from a
+        // chip-jump / tab entry to the hashless landing entry. Restore the
+        // default (first / §01 Summary) tab so Back visibly returns to the
+        // main view instead of stranding them on the jumped-to section.
+        setActive(sections[0]?.id ?? "");
+      }
     };
     fromHash();
     window.addEventListener("hashchange", fromHash);

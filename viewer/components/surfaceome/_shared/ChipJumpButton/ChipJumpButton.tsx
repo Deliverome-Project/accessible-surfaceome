@@ -50,8 +50,18 @@ export function ChipJumpButton({
     if (typeof window === "undefined") return;
     const desiredHash = `#section-${tabId}`;
     const needsTabSwitch = window.location.hash !== desiredHash;
+    // ALWAYS push a history entry — even for a jump whose target is on the
+    // already-active tab. The browser Back button should return to THIS
+    // pre-jump view (the §01 Summary / whatever section the reader was on),
+    // never skip past the gene page to the previously-viewed gene. The old
+    // code only pushed on a tab switch, so a same-tab jump (e.g. a Summary
+    // metric chip pointing at another Summary block) left no back-entry and
+    // Back navigated away from the gene entirely. `pushState` adds an entry
+    // even when the hash is unchanged.
+    window.history.pushState({}, "", desiredHash);
+    // Only fire hashchange when the destination tab actually differs, so
+    // SectionTabs doesn't churn on a same-tab jump.
     if (needsTabSwitch) {
-      window.history.pushState({}, "", desiredHash);
       window.dispatchEvent(new Event("hashchange"));
     }
     // Wait one frame for SectionTabs to toggle data-active so the

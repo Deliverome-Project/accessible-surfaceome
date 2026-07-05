@@ -46,6 +46,14 @@ jobs:
       - name: typecheck
         run: npm run check
 
+      - name: render tests
+        # Runs viewer/tests/*.test.tsx via react-dom/server (no jsdom) — the
+        # component-render assertions (sortable-column counts, chip-jump ids,
+        # rationale rendering) that neither tsc nor `next build` exercise.
+        # These were NOT gated in CI before, which let an ExpressionTable
+        # sortable-column regression (a7c2163e7) merge silently. Now gated.
+        run: bash tests/run_render_tests.sh
+
       - name: build (offline stub mode)
         # GitHub-Actions IPs get a Cloudflare WAF 403 against
         # `api.deliverome.org/surfaceome/v1/catalog`, so CI runs the
