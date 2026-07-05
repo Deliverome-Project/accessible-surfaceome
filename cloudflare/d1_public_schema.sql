@@ -425,7 +425,7 @@ CREATE TABLE IF NOT EXISTS compara_paralog (
     rank_by_ecd_identity     INTEGER,                 -- 1=closest paralog; NULLs sort last
     paralogy_type            TEXT,                    -- within_species_paralog | other_paralog | gene_split
     is_high_confidence       INTEGER NOT NULL,
-    compara_version          TEXT NOT NULL,           -- e.g. 'Compara r112'
+    compara_version          TEXT NOT NULL,           -- e.g. 'ensembl_compara_2026_06_01'; legacy rows carry the historical 'Compara r112' string
     synced_at                TEXT NOT NULL DEFAULT (datetime('now')),
     PRIMARY KEY (paralog_version, human_ensembl_gene, paralog_ensembl_gene)
 );
@@ -446,7 +446,7 @@ CREATE INDEX IF NOT EXISTS idx_compara_paralog_version_human
 
 CREATE TABLE IF NOT EXISTS compara_paralog_release (
     paralog_version    TEXT PRIMARY KEY,
-    compara_release    TEXT NOT NULL,                  -- e.g. 'Compara r112'
+    compara_release    TEXT NOT NULL,                  -- e.g. 'ensembl_compara_2026_06_01'; legacy rows carry the historical 'Compara r112' string
     n_pairs            INTEGER NOT NULL,
     n_human_genes      INTEGER NOT NULL,
     fetched_at         TEXT NOT NULL DEFAULT (datetime('now')),

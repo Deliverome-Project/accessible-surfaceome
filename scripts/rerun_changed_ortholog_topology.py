@@ -172,7 +172,12 @@ def main(argv: list[str] | None = None) -> int:
     # so they're cosmetic here — but keep them meaningful for provenance.
     ap.add_argument("--topology-version", default="topo_ortholog_rerun")
     ap.add_argument("--ortholog-ecd-version", default="orthologecd_ortholog_rerun")
-    ap.add_argument("--compara-release", default=rts.DEFAULT_COMPARA_VERSION)
+    ap.add_argument(
+        "--compara-release",
+        required=True,
+        help="Compara release label — required; see run_topology_sweep.py "
+        "module-level comment for rationale.",
+    )
     args = ap.parse_args(argv)
 
     logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(message)s")

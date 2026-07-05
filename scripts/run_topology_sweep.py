@@ -84,7 +84,12 @@ SPECIES_BY_COHORT = {
 }
 
 DEFAULT_BATCH_SIZE = 50
-DEFAULT_COMPARA_VERSION = "Compara r112"
+# --compara-version is now REQUIRED — no default. See the Compara-release-tag
+# comment in src/accessible_surfaceome/sources/ensembl_compara_paralogs.py for
+# the full rationale: the BioMart endpoint is unversioned, so a hard-coded
+# default rots silently as Ensembl bumps releases. Downstream consumers
+# (rerun_changed_ortholog_topology.py) that used to inherit this default now
+# require the same explicit --compara-release argument.
 
 # Where the existing Compara ortholog CSV lives — produced by
 # ensembl_compara.py download. The orchestrator reads it for mouse/cyno
@@ -1695,7 +1700,13 @@ def main() -> int:
         default=None,
         help="paralog_version stamp; defaults to paralog_<topology_version>",
     )
-    ap.add_argument("--compara-version", default=DEFAULT_COMPARA_VERSION)
+    ap.add_argument(
+        "--compara-version",
+        required=True,
+        help="Compara release label — must be supplied explicitly; see the "
+        "module-level comment for rationale. Preferred shape: dated "
+        "snapshot tag (e.g. 'ensembl_compara_2026_06_01').",
+    )
     ap.add_argument(
         "--cleanup-after-upload",
         action="store_true",
