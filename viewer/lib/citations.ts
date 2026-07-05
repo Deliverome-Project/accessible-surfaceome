@@ -26,7 +26,22 @@ export const CITATIONS = {
    *  four proteomes, 8,195 predicted homomers including ~3,946 human.
    *  Cited by the StructureViewer's "Homo-oligomer" tab. */
   schwekeHomomer: { authorYear: "Schweke et al. 2024", pmid: "38325366" },
+  /** DeepTMHMM — deep-learning transmembrane-topology predictor (the
+   *  source of `canonical_topology.tm_helix_count`). Preprint-only, so
+   *  it has NO PubMed record; cite the durable bioRxiv DOI as the
+   *  identifier (this is the tooltip-citation rule's DOI-secondary
+   *  escape hatch for a paper with no PMID). Tool version pinned at
+   *  `deeptmhmm-1.0.24` in the topology records. */
+  deepTMHMM: {
+    authorYear: "Hallgren et al. 2022",
+    doi: "10.1101/2022.04.08.487609",
+  },
 } as const;
+
+/** Canonical resolvable URL for a DOI. Used for preprint citations that
+ *  have no PMID (DeepTMHMM); the tooltip-citation rule leads with PMID
+ *  when one exists and falls back to DOI otherwise. */
+export const doiUrl = (doi: string): string => `https://doi.org/${doi}`;
 
 /**
  * Typical antibody–antigen buried interface area in Å² (Ramaraj et al.

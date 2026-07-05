@@ -1,5 +1,5 @@
 import type { ReactNode } from "react";
-import { CITATIONS, pubmedUrl } from "./citations";
+import { CITATIONS, doiUrl, pubmedUrl } from "./citations";
 
 /**
  * Field-provenance tooltip text — one place to edit, shared across
@@ -906,6 +906,64 @@ export const tooltips: Record<string, ReactNode> = {
       Does the canonical isoform&apos;s C-terminus face the extracellular
       space? Useful when designing C-terminal tag constructs or when
       the antibody campaign targets the C-terminal region.
+    </>
+  ),
+
+  catalog_has_tm: (
+    <>
+      Does the canonical isoform cross the membrane at least once?
+      Derived deterministically from{" "}
+      <code>tm_helix_count &gt; 0</code> in the DeepTMHMM{" "}
+      <code>v1.0.24</code> topology (Hallgren et al. 2022,{" "}
+      <a
+        href={doiUrl(CITATIONS.deepTMHMM.doi)}
+        target="_blank"
+        rel="noopener noreferrer"
+      >
+        doi:{CITATIONS.deepTMHMM.doi}
+      </a>
+      , preprint — no PubMed record). A structured tool readout, not an
+      LLM call: the same DeepTMHMM run on the same sequence always gives
+      the same answer. TM presence is a cleaner surface-architecture
+      signal than ECD size &mdash; a large ECD alone doesn&apos;t imply
+      the surface (secreted / lysosomal proteins have large ECDs). Note
+      DeepTMHMM does not detect GPI anchors, so some genuine surface
+      proteins register <em>no</em> TM helix.
+    </>
+  ),
+
+  catalog_tm_count_band: (
+    <>
+      Transmembrane-pass architecture, binned from the DeepTMHMM{" "}
+      <code>v1.0.24</code> per-residue topology (Hallgren et al. 2022,{" "}
+      <a
+        href={doiUrl(CITATIONS.deepTMHMM.doi)}
+        target="_blank"
+        rel="noopener noreferrer"
+      >
+        doi:{CITATIONS.deepTMHMM.doi}
+      </a>
+      , preprint — no PubMed record):
+      <ul style={{ margin: "0.4rem 0 0", paddingLeft: "1.1rem" }}>
+        <li>
+          <em>none</em> — 0 TM helices (soluble, GPI-anchored, or
+          peripheral; DeepTMHMM doesn&apos;t detect GPI anchors, so a
+          <em> none</em> band can still be a genuine surface protein)
+        </li>
+        <li>
+          <em>single</em> — exactly 1 TM helix (single-pass; type I / II
+          receptors)
+        </li>
+        <li>
+          <em>multi</em> — ≥2 TM helices (multi-pass; GPCRs,
+          transporters, tetraspanins)
+        </li>
+      </ul>
+      Pure structural readout — identical DeepTMHMM run on the same
+      sequence gives the same band. Finer than the bare{" "}
+      <em>Transmembrane</em> boolean, and useful for spotting
+      LLM-vs-topology disagreements (a gene the deep dive called
+      multi-pass that DeepTMHMM bins as single-pass is worth a look).
     </>
   ),
 };

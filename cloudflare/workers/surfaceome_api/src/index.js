@@ -1065,6 +1065,18 @@ function projectDeepDiveFiltersFromParts(parts) {
   const ho = parts.homo_oligomerization;
   out.is_homo_oligomer = ho?.is_homo_oligomer === true;
   any = true;
+  // Transmembrane-topology facets — sourced from
+  // deterministic_features.canonical_topology (DeepTMHMM v1.0.24).
+  // SCALAR fields only (json_extracted in handleCatalog); the full
+  // per_residue_topology string is never pulled at catalog scale. Keep
+  // in sync with the viewer's pickDeepDiveFilters. `has_tm` /
+  // `tm_count_band` derive from the TM-helix count.
+  const tmc = parts.topo_tm_helix_count;
+  if (typeof tmc === "number") {
+    out.has_tm = tmc > 0;
+    out.tm_count_band = tmc === 0 ? "none" : tmc === 1 ? "single" : "multi";
+    any = true;
+  }
   return any ? out : null;
 }
 
@@ -1083,6 +1095,19 @@ function ddfPartsFromRow(row, prefix) {
     secreted_form: safeJsonParse(row[`${prefix}secreted_form`]),
     surface_bind: safeJsonParse(row[`${prefix}surface_bind`]),
     homo_oligomerization: safeJsonParse(row[`${prefix}homo_oligomerization`]),
+    // Canonical-topology scalars only. The catalog query json_extracts the
+    // SCALAR paths — NEVER the whole canonical_topology object, which
+    // carries per_residue_topology (a ~protein-length string) that would
+    // blow D1's per-query isolate memory across ~1.2k catalog rows. See the
+    // json_extract paths in handleCatalog.
+    topo_tm_helix_count:
+      typeof row[`${prefix}topo_tm_helix_count`] === "number"
+        ? row[`${prefix}topo_tm_helix_count`]
+        : null,
+    topo_signal_peptide_length:
+      typeof row[`${prefix}topo_signal_peptide_length`] === "number"
+        ? row[`${prefix}topo_signal_peptide_length`]
+        : null,
   };
 }
 
@@ -1195,6 +1220,8 @@ async function handleCatalog(env, request) {
             sa.ddf_secreted_form AS sa_ddf_secreted_form,
             sa.ddf_surface_bind AS sa_ddf_surface_bind,
             sa.ddf_homo_oligomerization AS sa_ddf_homo_oligomerization,
+            sa.ddf_topo_tm_helix_count AS sa_ddf_topo_tm_helix_count,
+            sa.ddf_topo_signal_peptide_length AS sa_ddf_topo_signal_peptide_length,
             CASE WHEN sa.gene_symbol IS NOT NULL THEN 1 ELSE 0 END AS has_deep_dive
        FROM candidate_universe_public u
        LEFT JOIN gene_identifier_public gi ON gi.hgnc_symbol = u.gene_symbol
@@ -1211,7 +1238,13 @@ async function handleCatalog(env, request) {
                 json_extract(annotation_json, '$.accessibility_risks.restricted_subdomain') AS ddf_restricted_subdomain,
                 json_extract(annotation_json, '$.accessibility_risks.secreted_form') AS ddf_secreted_form,
                 json_extract(annotation_json, '$.deterministic_features.surface_bind') AS ddf_surface_bind,
-                json_extract(annotation_json, '$.deterministic_features.homo_oligomerization') AS ddf_homo_oligomerization
+                json_extract(annotation_json, '$.deterministic_features.homo_oligomerization') AS ddf_homo_oligomerization,
+                -- Canonical-topology SCALARS only — never the full
+                -- canonical_topology object (it carries per_residue_topology,
+                -- a ~protein-length string that would blow D1's per-query
+                -- isolate memory across ~1.2k catalog rows).
+                json_extract(annotation_json, '$.deterministic_features.canonical_topology.tm_helix_count') AS ddf_topo_tm_helix_count,
+                json_extract(annotation_json, '$.deterministic_features.canonical_topology.signal_peptide_length') AS ddf_topo_signal_peptide_length
            FROM surface_annotation sa1
           WHERE schema_version = (
             SELECT MAX(schema_version) FROM surface_annotation sa2
@@ -1433,6 +1466,9 @@ async function handleCatalog(env, request) {
             json_extract(sa1.annotation_json, '$.accessibility_risks.secreted_form') AS ddf_secreted_form,
             json_extract(sa1.annotation_json, '$.deterministic_features.surface_bind') AS ddf_surface_bind,
             json_extract(sa1.annotation_json, '$.deterministic_features.homo_oligomerization') AS ddf_homo_oligomerization,
+            -- Canonical-topology SCALARS only (see main catalog query).
+            json_extract(sa1.annotation_json, '$.deterministic_features.canonical_topology.tm_helix_count') AS ddf_topo_tm_helix_count,
+            json_extract(sa1.annotation_json, '$.deterministic_features.canonical_topology.signal_peptide_length') AS ddf_topo_signal_peptide_length,
             gi.uniprot_acc AS uniprot_acc
        FROM surface_annotation sa1
        LEFT JOIN gene_identifier_public gi ON gi.hgnc_symbol = sa1.gene_symbol
@@ -1534,7 +1570,10 @@ async function handleCatalog(env, request) {
       //        produced the bands travel as the top-level
       //        `n_papers_selected_cutoffs` field so the viewer can
       //        display them in the filter tooltip.
-      row_schema: 6,
+      //   v7 = adds deterministic transmembrane-topology facets derived
+      //        from deterministic_features.canonical_topology (DeepTMHMM):
+      //        `ddf.has_tm` and `ddf.tm_count_band` (none/single/multi).
+      row_schema: 7,
       n_papers_selected_cutoffs: psCutoffs,
       // Names for the bits in each row's `db` 5-bit field (LSB → MSB).
       // Self-describing for external reanalysts: decode with
