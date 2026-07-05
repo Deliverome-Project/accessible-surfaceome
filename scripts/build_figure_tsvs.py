@@ -58,6 +58,17 @@ DEEP_DIVE_TSV   = ROOT / "data/processed/deep_dive/deep_dive_records.tsv"
 # the deep-dive export; kept separate so the deep-dive export stays purely
 # deep-dive-side.
 TRIAGE_VERDICTS_TSV = ROOT / "data/processed/deep_dive/triage_verdicts.tsv"
+# Sonnet dual-triage surface universe det-features (one row per Sonnet-flagged
+# gene, det features from the genome-wide D1 tables), exported by
+# scripts/export_sonnet_universe_det_features.py. S14 unions it in as its fifth
+# facet — the full triage-surface pool alongside the deep-dive tiers.
+SONNET_DET_TSV = ROOT / "data/processed/deep_dive/sonnet_universe_det_features.tsv"
+# Quantitative magnitude behind the S14 boolean det-feature flags (ortholog %
+# identity, homomer stoichiometry, top paralog + ECD % id, EC surface-bind site
+# count), from the genome-wide D1 tables. Exported by
+# scripts/export_det_feature_detail.py; LEFT-joined into both S14 facets by
+# gene_symbol so a reader can see the magnitude, not just the yes/no flag.
+DET_DETAIL_TSV = ROOT / "data/processed/deep_dive/det_feature_detail.tsv"
 
 
 def _load_sources() -> dict[str, pd.DataFrame]:
@@ -73,6 +84,10 @@ def _load_sources() -> dict[str, pd.DataFrame]:
         src["deep_dive"] = pd.read_csv(DEEP_DIVE_TSV, sep="\t")
     if TRIAGE_VERDICTS_TSV.is_file():
         src["triage_verdicts"] = pd.read_csv(TRIAGE_VERDICTS_TSV, sep="\t")
+    if SONNET_DET_TSV.is_file():
+        src["sonnet_det"] = pd.read_csv(SONNET_DET_TSV, sep="\t")
+    if DET_DETAIL_TSV.is_file():
+        src["det_detail"] = pd.read_csv(DET_DETAIL_TSV, sep="\t")
     return src
 
 
@@ -479,12 +494,13 @@ def build_deep_dive_record_richness(src: dict[str, pd.DataFrame]) -> pd.DataFram
       • ``papers_selected``    — unique papers read full-text (``n_papers_selected``).
       • ``papers_with_ec``     — ``primary_evidence_count`` (the primary-tier,
         surface-method-tagged evidence — the "extracellular evidence" subset).
-      • ``n_filters_evidence`` — ``n_llm_evidence`` (# of the 20 LLM filters with
-        a positive/non-default, evidence-backed determination; LLM analogue of e).
-      • ``n_det_features``     — how many of the 6 deterministic-feature
+      • ``n_filters_evidence`` — ``n_llm_evidence`` (# of the 24 LLM filters with
+        a positive/substantive finding — definitive negatives + "unknown" don't
+        count, so this reads richness not schema completeness; LLM analogue of e).
+      • ``n_det_features``     — how many of the 7 deterministic-feature
         categories carry data (topology / AF structure / surface-binding /
-        homo-oligomer / orthologs / alt-isoforms), 0–6; real per-gene value
-        derived in the export from each record's ``deterministic_features``.
+        homo-oligomer / orthologs / paralogs / alt-isoforms), 0–7; real per-gene
+        value derived in the export from each record's ``deterministic_features``.
 
     ``surface_verdict_bucket`` (``no`` vs ``surface_yes``) is kept for
     back-compat; ``tier`` (the finer 5-tier call) is what the figure now facets
@@ -807,7 +823,35 @@ def build_surfaceome_deterministic_features_placeholder(
     out["group"] = [_dd_tier(r) for _, r in dd.iterrows()]
     for c in feature_cols:
         out[c] = pd.to_numeric(dd[c], errors="coerce") if c in dd.columns else pd.NA
-    return out[cols].sort_values(
+    frames = [out[cols]]
+
+    # Fifth facet: the FULL Sonnet dual-triage surface pool (every gene the
+    # genome-wide Sonnet triage called yes/contextual, ~4,236 with topology).
+    # Its det features come from the genome-wide D1 tables, not the records
+    # (those genes are mostly not deep-dived) — same DeepTMHMM/Compara/Schweke
+    # computation, ~100% topology coverage. group='sonnet_dual_triage'.
+    son = src.get("sonnet_det")
+    if son is not None and not son.empty:
+        son_out = pd.DataFrame({"gene_symbol": son["gene_symbol"].astype(str)})
+        son_out["group"] = (son["group"].astype(str) if "group" in son.columns
+                            else "sonnet_dual_triage")
+        for c in feature_cols:
+            son_out[c] = (pd.to_numeric(son[c], errors="coerce")
+                         if c in son.columns else pd.NA)
+        frames.append(son_out[cols])
+
+    result = pd.concat(frames, ignore_index=True)
+
+    # Quantitative magnitude behind the boolean flags (ortholog % id, homomer
+    # stoichiometry, top paralog + ECD % id, EC surface-bind site count) —
+    # left-joined by gene_symbol into BOTH facets from the same D1-sourced
+    # det_feature_detail export, so the columns are uniform across tiers +
+    # Sonnet. Not plotted; carried for reader analysis of the flags' magnitude.
+    detail = src.get("det_detail")
+    if detail is not None and not detail.empty:
+        result = result.merge(detail, on="gene_symbol", how="left")
+
+    return result.sort_values(
         ["group", "gene_symbol"], kind="stable").reset_index(drop=True)
 
 

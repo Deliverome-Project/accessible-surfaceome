@@ -20,11 +20,13 @@ is faceted by the deep-dive **tier** (canonical / likely / low / no):
                            Tiers: canonical, likely, low, no.
   c. Papers with EC      — selected papers carrying an extracellular /
                            surface-method tag. Tiers: canonical, likely, low.
-  d. LLM filters w/ evid — how many of the ~20 LLM filter facets carry a
-                           positive/non-default (evidence-backed) call; the LLM
-                           analogue of e. Tiers: canonical, likely, low.
-  e. Deterministic feats — how many of the seven deterministic features are
-                           populated (0–7). Tiers: canonical, likely, low.
+  d. LLM filters w/ pos  — how many of the 24 LLM filter facets carry a
+                           positive/substantive finding (definitive negatives +
+                           "unknown" don't count) — record richness, not schema
+                           completeness; the LLM analogue of e. Tiers: canonical,
+                           likely, low.
+  e. Deterministic feats — how many of the seven derived deterministic features
+                           are present (0–7). Tiers: canonical, likely, low.
 
 Each violin is the real distribution of that tier's genes (median line inside;
 faint real-value point strip overlaid). Panels c–e drop the "no" tier since
@@ -137,8 +139,8 @@ PANELS = [
     ("papers_found",       "Papers found (discovery corpus)",          _FOUR),
     ("papers_selected",    "Papers selected (into evidence list)",     _FOUR),
     ("papers_with_ec",     "Papers with extracellular evidence",       _THREE),
-    ("n_filters_evidence", "LLM filters with evidence",                _THREE),
-    ("n_det_features",     "Deterministic features populated (0-7)",   _THREE),
+    ("n_filters_evidence", "LLM filters with a positive finding",      _THREE),
+    ("n_det_features",     "Deterministic features (derived, 0-7)",    _THREE),
 ]
 
 FIGSIZE = (25, 6.5)
@@ -235,19 +237,7 @@ def main() -> None:
         color=BRAND_INK,
     )
 
-    fig.text(
-        0.5, 0.02,
-        f"Real per-gene distributions from the {n_real_total} deep dives, faceted "
-        f"by deep-dive tier (median line inside each violin; faint dots = the real "
-        f"per-tier values). Panels a/b keep the 'no' tier; panels c-e drop it since "
-        f"non-surface proteins carry little extracellular evidence by definition. "
-        f"The 'uncertain' tier (n=9) is dropped everywhere as too small to plot. "
-        f"PRELIMINARY - {n_real_total} of ~5,128 swept, pre-QA-fix.",
-        ha="center", va="bottom", fontsize=10, style="italic",
-        color=BRAND_NEUTRAL, wrap=True,
-    )
-
-    fig.tight_layout(rect=(0, 0.05, 1, 0.96))
+    fig.tight_layout(rect=(0, 0, 1, 0.96))
 
     out_pdf = Path("deep_dive_record_richness.pdf")
     out_png = Path("deep_dive_record_richness.png")

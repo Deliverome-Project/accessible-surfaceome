@@ -20,11 +20,13 @@ c. **Papers with extracellular evidence** — selected papers carrying an
    low (the "no" tier is dropped — non-surface proteins carry little
    extracellular evidence by definition).
 
-d. **LLM filters with evidence** — how many of the ~20 LLM filter facets carry a
-   positive/non-default (evidence-backed) determination; the LLM analogue of e.
-   Tiers: canonical, likely, low.
+d. **LLM filters with a positive finding** — how many of the 24 LLM filter
+   facets carry a positive/substantive determination; definitive negatives and
+   "unknown" don't count, so this reads record *richness* (what the agent found)
+   rather than schema completeness. The LLM analogue of e. Tiers: canonical,
+   likely, low.
 
-e. **Deterministic features populated (0–7)** — how many of the seven
+e. **Deterministic features (derived, 0–7)** — how many of the seven derived
    deterministic structural/topology features are present. Tiers: canonical,
    likely, low.
 
@@ -95,8 +97,8 @@ PANELS = [
     ("papers_found",       "Papers found (discovery corpus)",          _FOUR),
     ("papers_selected",    "Papers selected (into evidence list)",     _FOUR),
     ("papers_with_ec",     "Papers with extracellular evidence",       _THREE),
-    ("n_filters_evidence", "LLM filters with evidence",                _THREE),
-    ("n_det_features",     "Deterministic features populated (0-7)",   _THREE),
+    ("n_filters_evidence", "LLM filters with a positive finding",      _THREE),
+    ("n_det_features",     "Deterministic features (derived, 0-7)",    _THREE),
 ]
 
 FIGSIZE = (25, 6.5)
@@ -155,7 +157,6 @@ def make_plot() -> tuple[plt.Figure, list[plt.Axes]]:
     })
 
     data = _load_real_values()
-    n_real_total = len(data)
 
     fig, axes = plt.subplots(1, 5, figsize=FIGSIZE)
     panel_letters = ["a", "b", "c", "d", "e"]
@@ -192,19 +193,7 @@ def make_plot() -> tuple[plt.Figure, list[plt.Axes]]:
         color=COLORS["dark"],
     )
 
-    fig.text(
-        0.5, 0.02,
-        f"Real per-gene distributions from the {n_real_total} deep dives, faceted "
-        f"by deep-dive tier (median line inside each violin; faint dots = the real "
-        f"per-tier values). Panels a/b keep the 'no' tier; panels c-e drop it since "
-        f"non-surface proteins carry little extracellular evidence by definition. "
-        f"The 'uncertain' tier (n=9) is dropped everywhere as too small to plot. "
-        f"PRELIMINARY - {n_real_total} of ~5,128 swept, pre-QA-fix.",
-        ha="center", va="bottom", fontsize=10, style="italic",
-        color=COLORS["neutral"], wrap=True,
-    )
-
-    fig.tight_layout(rect=(0, 0.05, 1, 0.96))
+    fig.tight_layout(rect=(0, 0, 1, 0.96))
     return fig, list(axes)
 
 

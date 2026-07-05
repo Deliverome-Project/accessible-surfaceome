@@ -94,27 +94,55 @@ _FIELDS: list[tuple[str, str]] = [
 _DF = "$.deterministic_features"
 _CT = f"{_DF}.canonical_topology"
 
-# LLM-provenance filter facets present in $.filters (the viewer's LLM filters,
-# deep-dive-fields.ts). `n_llm_evidence` counts how many carry a POSITIVE /
-# non-default determination for a gene (the agent found evidence FOR something);
-# null / "unknown" / "none" / "no" / "false" don't count. Varies ~7-19 per gene
-# — the LLM-side analogue of n_det_features. NB this is a per-gene EVIDENCE-backed
-# count; the manuscript's "~24 filters" is the fixed count of filter TYPES.
-_LLM_FACETS = [
-    "surface_accessibility", "confidence", "state_dependence", "subcategory",
-    "llm_family", "evidence_grade", "expression_level", "expression_breadth",
-    "surface_specificity", "co_receptor_dependency", "induction_trigger",
-    "has_known_ligand", "low_endogenous_expression",
-    "overexpression_surface_localization_observed", "has_shed_form",
-    "has_secreted_form", "has_epitope_masking", "has_restricted_subdomain",
-    "tumor_associated", "has_live_cell_surface_evidence",
+# The viewer's 24 provenance:"llm" filter facets (deep-dive-fields.ts).
+# `n_llm_evidence` counts, per gene, how many carry a POSITIVE / substantive
+# finding — the agent affirmatively determined something. Definitive negatives
+# and non-determinations do NOT count (null / "unknown" / "none" / "no" /
+# "false" / "not_determined"): a confident "no shed form" is a valid call but
+# not record *richness*, and counting it would flatten the metric to ~24 for
+# every gene (the agent almost always makes SOME call — e.g. overexpression
+# reads "not observed" for most genes). This positive-finding count is the
+# LLM-side analogue of n_det_features and is what Fig 6 panel d plots as
+# "LLM filters with a positive finding"; the fixed 24 is the manuscript's count
+# of filter TYPES (the denominator). 21 facets live under $.filters; three read
+# from their canonical nested homes — primary_compartment under
+# biological_context, and the conditional restricted_subdomain.domain /
+# secreted_form.source sub-fields of the accessibility-risk blocks (which fire
+# only for genes that actually carry that risk — itself a richness signal).
+_LLM_FACETS: list[tuple[str, str]] = [
+    ("surface_accessibility", "$.filters.surface_accessibility"),
+    ("confidence", "$.filters.confidence"),
+    ("state_dependence", "$.filters.state_dependence"),
+    ("subcategory", "$.filters.subcategory"),
+    ("surface_call_reason", "$.filters.surface_call_reason"),
+    ("llm_family", "$.filters.llm_family"),
+    ("evidence_grade", "$.filters.evidence_grade"),
+    ("expression_level", "$.filters.expression_level"),
+    ("expression_breadth", "$.filters.expression_breadth"),
+    ("surface_specificity", "$.filters.surface_specificity"),
+    ("co_receptor_dependency", "$.filters.co_receptor_dependency"),
+    ("induction_trigger", "$.filters.induction_trigger"),
+    ("has_known_ligand", "$.filters.has_known_ligand"),
+    ("low_endogenous_expression", "$.filters.low_endogenous_expression"),
+    ("overexpression_surface_localization_observed",
+     "$.filters.overexpression_surface_localization_observed"),
+    ("has_shed_form", "$.filters.has_shed_form"),
+    ("has_secreted_form", "$.filters.has_secreted_form"),
+    ("has_epitope_masking", "$.filters.has_epitope_masking"),
+    ("has_restricted_subdomain", "$.filters.has_restricted_subdomain"),
+    ("tumor_associated", "$.filters.tumor_associated"),
+    ("has_live_cell_surface_evidence", "$.filters.has_live_cell_surface_evidence"),
+    ("primary_compartment",
+     "$.biological_context.subcellular_localization.primary_compartment"),
+    ("restricted_subdomain_kind", "$.accessibility_risks.restricted_subdomain.domain"),
+    ("secreted_form_source", "$.accessibility_risks.secreted_form.source"),
 ]
 _LLM_NULLISH = ("('unknown','none','unclear','not_applicable',"
                 "'not_determined','no','false','0','')")
 _N_LLM_EVIDENCE_SQL = "(" + " + ".join(
-    f"(CASE WHEN json_extract(annotation_json,'$.filters.{k}') IS NOT NULL AND "
-    f"CAST(json_extract(annotation_json,'$.filters.{k}') AS TEXT) NOT IN {_LLM_NULLISH} "
-    "THEN 1 ELSE 0 END)" for k in _LLM_FACETS
+    f"(CASE WHEN json_extract(annotation_json,'{path}') IS NOT NULL AND "
+    f"CAST(json_extract(annotation_json,'{path}') AS TEXT) NOT IN {_LLM_NULLISH} "
+    "THEN 1 ELSE 0 END)" for _name, path in _LLM_FACETS
 ) + ")"
 
 _DET_EXPRS: list[tuple[str, str]] = [
