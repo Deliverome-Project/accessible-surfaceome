@@ -29,8 +29,8 @@ import pytest
 
 REPO = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(REPO / "scripts"))
-import augment_figure_tsvs_with_stable_ids as augment  # noqa: E402
-import sync_public_d1 as sync  # noqa: E402
+import augment_figure_tsvs_with_stable_ids as augment  # noqa: E402  # ty: ignore[unresolved-import]
+import sync_public_d1 as sync  # noqa: E402  # ty: ignore[unresolved-import]
 
 _REQUIRED_ENV = (
     "CLOUDFLARE_API_TOKEN",
