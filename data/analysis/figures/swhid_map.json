@@ -15,7 +15,7 @@
   "evidence_corpus_vs_selected": "swh:1:rev:d5bf02cdf13023ed4c7f4f06fe4749b365e0161e",
   "paywall_bot_block_compare": "swh:1:rev:8ab41cc6ef790b01df229633fd35a6ef2a19e958",
   "positive_control_db_coverage_bars": "swh:1:rev:230bab6dfbc8826974816721be4637ff2ab13a59",
-  "surfaceome_deterministic_features_placeholder": "swh:1:rev:d45a58ba2b179398a6a5f329f9ac7ae16dd3828b",
+  "surfaceome_deterministic_features_placeholder": "swh:1:rev:7da91fa68c777f33550a87a0d208fc4c023f8ad3",
   "topology_coverage_by_source": "swh:1:rev:f70aa429980f233c883090a24c8709bf7b4a5748",
   "triage_vs_deep_dive_reason": "swh:1:rev:63180540e9cdd254a9491da4dbcfce5b0b046b0a",
   "web_preview": "swh:1:rev:3b0062e20f36c6dce22177c89d32803b2d553b81",
