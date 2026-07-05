@@ -860,8 +860,8 @@
         "tool_version": "deeptmhmm-1.0.24",
         "retrieved_at": "2026-05-27T02:01:01Z",
         "full_length_pct_identity_to_canonical": 94.38642297650131,
-        "ecd_pct_identity_to_canonical": 93.0672268907563,
-        "ecd_pct_similarity_to_canonical": 93.0672268907563
+        "ecd_pct_identity_to_canonical": 80.95238095238095,
+        "ecd_pct_similarity_to_canonical": 80.95238095238095
       },
       {
         "isoform_id": "Q9NP78-3",
@@ -877,8 +877,8 @@
         "tool_version": "deeptmhmm-1.0.24",
         "retrieved_at": "2026-05-27T02:01:01Z",
         "full_length_pct_identity_to_canonical": 76.76240208877284,
-        "ecd_pct_identity_to_canonical": 98.87048192771084,
-        "ecd_pct_similarity_to_canonical": 98.87048192771084
+        "ecd_pct_identity_to_canonical": 100.0,
+        "ecd_pct_similarity_to_canonical": 100.0
       },
       {
         "isoform_id": "Q9NP78-5",
@@ -894,8 +894,8 @@
         "tool_version": "deeptmhmm-1.0.24",
         "retrieved_at": "2026-05-27T02:01:01Z",
         "full_length_pct_identity_to_canonical": 89.03394255874673,
-        "ecd_pct_identity_to_canonical": 98.87048192771084,
-        "ecd_pct_similarity_to_canonical": 98.87048192771084
+        "ecd_pct_identity_to_canonical": 100.0,
+        "ecd_pct_similarity_to_canonical": 100.0
       },
       {
         "isoform_id": "Q9NP78-6",
@@ -911,8 +911,8 @@
         "tool_version": "deeptmhmm-1.0.24",
         "retrieved_at": "2026-05-27T02:01:01Z",
         "full_length_pct_identity_to_canonical": 88.90339425587467,
-        "ecd_pct_identity_to_canonical": 98.87048192771084,
-        "ecd_pct_similarity_to_canonical": 98.87048192771084
+        "ecd_pct_identity_to_canonical": 100.0,
+        "ecd_pct_similarity_to_canonical": 100.0
       },
       {
         "isoform_id": "Q9NP78-7",
@@ -942,7 +942,7 @@
           "ortholog_symbol": "Abcb9",
           "type": "one2one",
           "ecd_pct_identity_to_human_canonical": 96.42857142857143,
-          "ecd_pct_similarity_to_human_canonical": 96.42857142857143,
+          "ecd_pct_similarity_to_human_canonical": 98.80952380952381,
           "full_length_pct_identity_to_human_canonical": 93.7337,
           "ecd_length_residues": 84,
           "tm_helix_count": 10,

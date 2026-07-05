@@ -19,6 +19,15 @@ A variant is only touched when it has BOTH a ``sequence`` and a
 otherwise its stored value came from a D1 source table (``compara_*``) and is
 corrected by the companion cohort-table recompute, not here.
 
+After the per-variant patch, the three derived ``filters`` rollups the catalog
++ viewer read — ``max_paralog_ecd_pct_identity`` and
+``{mouse,cyno}_ortholog_ecd_pct_identity`` — are re-derived from the patched
+variants (mirroring the annotator: ``max`` over paralog identities;
+``is_canonical`` ortholog's identity). Without this the per-variant fix would
+leave the catalog filter reading a stale rollup — the exact JSON↔D1 drift the
+repo guards against. Re-derivation only corrects or fills a facet, never nulls
+a real one.
+
 Idempotent: a variant whose stored value already equals the freshly-computed
 value (to 6 dp) is skipped. Additive in-place ``UPDATE`` of ``annotation_json``
 — identity (gene_symbol, schema_version, record_generated_at) unchanged — so it
@@ -33,6 +42,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import time
 from dataclasses import dataclass, field
 from typing import Any
 
@@ -60,6 +70,7 @@ class Counts:
     isoform: int = 0
     ortholog: int = 0
     paralog: int = 0
+    facets: int = 0
 
     def variants(self) -> int:
         return self.isoform + self.ortholog + self.paralog
@@ -69,6 +80,7 @@ class Counts:
         self.isoform += o.isoform
         self.ortholog += o.ortholog
         self.paralog += o.paralog
+        self.facets += o.facets
 
 
 @dataclass
@@ -77,7 +89,22 @@ class RecordPlan:
     isoform: int = 0
     ortholog: int = 0
     paralog: int = 0
+    facets: list[str] = field(default_factory=list)
     detail: list[str] = field(default_factory=list)
+
+
+def _post_retry(cfg, sql: str, params: list, *, client: httpx.Client, attempts: int = 6):
+    """``_post`` with backoff on transient transport errors (a ~900-write bulk
+    job shouldn't abort on one flaky TLS connection). Re-raises after the last
+    attempt. Idempotent UPDATE means a retried write is harmless."""
+    last: Exception | None = None
+    for i in range(attempts):
+        try:
+            return _post(cfg, sql, params, client=client)
+        except (httpx.TransportError, httpx.HTTPStatusError) as exc:
+            last = exc
+            time.sleep(0.75 * (i + 1))
+    raise last  # type: ignore[misc]
 
 
 def _canon(rec: dict[str, Any]) -> tuple[str, str]:
@@ -104,21 +131,72 @@ def _differs(old, new) -> bool:
     return abs(float(old) - float(new)) > _EPS
 
 
-def _apply_one(variant: dict, cseq: str, ctopo: str, ident_f: str, sim_f: str,
-               *, write: bool) -> bool:
+def _apply_one(variant: dict, cseq: str, ctopo: str, ident_f: str, sim_f: str) -> bool:
+    """Recompute + patch one variant in place. Returns True if it changed.
+
+    Always mutates on change (no dry-run gate) so the caller's facet
+    re-derivation reads corrected values; the caller decides whether to
+    persist the mutated record. Returns False when the value isn't
+    recomputable here (no in-record sequence+topology — it came from a D1
+    ``compara_*`` table and is corrected by the cohort-table recompute).
+    """
     rc = _recompute(variant, cseq, ctopo)
     if rc is None:
-        return False  # value comes from a D1 table, not recomputable here
+        return False
     new_id, new_sim = rc
     if not _differs(variant.get(ident_f), new_id) and not _differs(variant.get(sim_f), new_sim):
         return False
-    if write:
-        variant[ident_f] = new_id
-        variant[sim_f] = new_sim
+    variant[ident_f] = new_id
+    variant[sim_f] = new_sim
     return True
 
 
-def plan_and_apply(rec: dict[str, Any], *, write: bool) -> RecordPlan:
+def _rederive_facets(rec: dict[str, Any]) -> list[str]:
+    """Re-derive the 3 catalog/viewer ECD rollup facets in ``filters`` from
+    the (already-patched) ``deterministic_features``, mirroring the annotator
+    (orchestrator ``max_paralog`` + ``_canonical_species_identity``):
+
+      * ``max_paralog_ecd_pct_identity`` = max over paralog ``ecd_pct_identity``
+      * ``{mouse,cyno}_ortholog_ecd_pct_identity`` = the ``is_canonical``
+        ortholog's ``ecd_pct_identity_to_human_canonical``
+
+    Returns the list of facet keys whose value changed (and applies them).
+    Without this the per-variant fix leaves the catalog filter + viewer chips
+    reading the stale rollup (the exact JSON↔D1 drift the repo guards against).
+    """
+    det = rec.get("deterministic_features")
+    filters = rec.get("filters")
+    if not isinstance(det, dict) or not isinstance(filters, dict):
+        return []
+    changed: list[str] = []
+
+    pvals = [p.get("ecd_pct_identity") for p in (det.get("paralogs") or [])
+             if isinstance(p, dict) and p.get("ecd_pct_identity") is not None]
+    new_max = max(pvals) if pvals else None
+    if _differs(filters.get("max_paralog_ecd_pct_identity"), new_max):
+        filters["max_paralog_ecd_pct_identity"] = new_max
+        changed.append("max_paralog")
+
+    orth = det.get("orthologs") or {}
+    for sp, key in (("mouse", "mouse_ortholog_ecd_pct_identity"),
+                    ("cynomolgus", "cyno_ortholog_ecd_pct_identity")):
+        new_val = None
+        for e in orth.get(sp) or []:
+            if isinstance(e, dict) and e.get("is_canonical"):
+                new_val = e.get("ecd_pct_identity_to_human_canonical")
+                break
+        if _differs(filters.get(key), new_val):
+            filters[key] = new_val
+            changed.append(key)
+    return changed
+
+
+def plan_and_apply(rec: dict[str, Any]) -> RecordPlan:
+    """Patch every recomputable variant + re-derive the rollup facets in place.
+
+    Always mutates ``rec`` on change; the caller persists only when executing
+    (a dry-run mutates the in-memory copy it then discards).
+    """
     plan = RecordPlan()
     det = rec.get("deterministic_features")
     if not isinstance(det, dict):
@@ -126,19 +204,24 @@ def plan_and_apply(rec: dict[str, Any], *, write: bool) -> RecordPlan:
     cseq, ctopo = _canon(rec)
 
     for iso in det.get("isoform_topologies") or []:
-        if isinstance(iso, dict) and _apply_one(iso, cseq, ctopo, *ISO_FIELDS, write=write):
+        if isinstance(iso, dict) and _apply_one(iso, cseq, ctopo, *ISO_FIELDS):
             plan.isoform += 1
             plan.changed = True
     orth = det.get("orthologs") or {}
     for sp in ("mouse", "cynomolgus"):
         for e in orth.get(sp) or []:
-            if isinstance(e, dict) and _apply_one(e, cseq, ctopo, *ORTH_FIELDS, write=write):
+            if isinstance(e, dict) and _apply_one(e, cseq, ctopo, *ORTH_FIELDS):
                 plan.ortholog += 1
                 plan.changed = True
     for p in det.get("paralogs") or []:
-        if isinstance(p, dict) and _apply_one(p, cseq, ctopo, *PARA_FIELDS, write=write):
+        if isinstance(p, dict) and _apply_one(p, cseq, ctopo, *PARA_FIELDS):
             plan.paralog += 1
             plan.changed = True
+
+    facets = _rederive_facets(rec)
+    if facets:
+        plan.facets = facets
+        plan.changed = True
     return plan
 
 
@@ -152,16 +235,17 @@ def backfill_disk(*, execute: bool) -> Counts:
                 rec = json.loads(path.read_text())
             except (OSError, json.JSONDecodeError):
                 continue
-            # Plan on a copy first so a dry-run doesn't mutate.
-            plan = plan_and_apply(rec, write=execute)
+            plan = plan_and_apply(rec)
             if not plan.changed:
                 continue
             counts.records_touched += 1
             counts.isoform += plan.isoform
             counts.ortholog += plan.ortholog
             counts.paralog += plan.paralog
+            counts.facets += len(plan.facets)
+            facet_note = f", facets[{'+'.join(plan.facets)}]" if plan.facets else ""
             print(f"  {'patched' if execute else 'would patch'} {path.name}: "
-                  f"{plan.isoform} iso, {plan.ortholog} ortholog, {plan.paralog} paralog")
+                  f"{plan.isoform} iso, {plan.ortholog} ortholog, {plan.paralog} paralog{facet_note}")
             if execute:
                 path.write_text(json.dumps(rec, indent=2, ensure_ascii=False) + "\n")
     return counts
@@ -174,7 +258,7 @@ def backfill_public_d1(*, execute: bool) -> Counts:
         print("  (skip) public D1 creds not set")
         return counts
     with httpx.Client(timeout=60) as client:
-        rows = _post(cfg,
+        rows = _post_retry(cfg,
             "SELECT gene_symbol, schema_version, annotation_json FROM surface_annotation",
             [], client=client)["result"][0]["results"]
         for r in rows:
@@ -182,17 +266,19 @@ def backfill_public_d1(*, execute: bool) -> Counts:
                 rec = json.loads(r["annotation_json"])
             except (json.JSONDecodeError, KeyError, TypeError):
                 continue
-            plan = plan_and_apply(rec, write=execute)
+            plan = plan_and_apply(rec)
             if not plan.changed:
                 continue
             counts.records_touched += 1
             counts.isoform += plan.isoform
             counts.ortholog += plan.ortholog
             counts.paralog += plan.paralog
+            counts.facets += len(plan.facets)
+            facet_note = f", facets[{'+'.join(plan.facets)}]" if plan.facets else ""
             print(f"  {'patched' if execute else 'would patch'} D1 {r['gene_symbol']}: "
-                  f"{plan.isoform} iso, {plan.ortholog} ortholog, {plan.paralog} paralog")
+                  f"{plan.isoform} iso, {plan.ortholog} ortholog, {plan.paralog} paralog{facet_note}")
             if execute:
-                _post(cfg,
+                _post_retry(cfg,
                     "UPDATE surface_annotation SET annotation_json=? "
                     "WHERE gene_symbol=? AND schema_version=?",
                     [json.dumps(rec, separators=(",", ":")), r["gene_symbol"], r["schema_version"]],
@@ -218,7 +304,8 @@ def main() -> int:
         total.merge(backfill_public_d1(execute=args.execute))
     print(f"\n{'patched' if args.execute else 'would patch'}: {total.records_touched} record(s), "
           f"{total.variants()} variant(s) "
-          f"({total.isoform} isoform, {total.ortholog} ortholog, {total.paralog} paralog)")
+          f"({total.isoform} isoform, {total.ortholog} ortholog, {total.paralog} paralog) "
+          f"+ {total.facets} rollup facet(s)")
     if not args.execute:
         print("(dry-run — re-run with --execute; --execute mutates production D1)")
     return 0

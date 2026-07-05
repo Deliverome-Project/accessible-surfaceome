@@ -61,7 +61,7 @@
     "max_paralog_ecd_pct_identity": 34.21052631578947,
     "has_epitope_masking": true,
     "has_restricted_subdomain": false,
-    "mouse_ortholog_ecd_pct_identity": 63.716814159292035,
+    "mouse_ortholog_ecd_pct_identity": 63.1578947368421,
     "cyno_ortholog_ecd_pct_identity": 100,
     "n_term_extracellular": false,
     "c_term_extracellular": false,
@@ -1505,8 +1505,8 @@
         "tool_version": "deeptmhmm-1.0.24",
         "retrieved_at": "2026-05-27T02:01:01Z",
         "full_length_pct_identity_to_canonical": 90.33613445378151,
-        "ecd_pct_identity_to_canonical": 96.88888888888889,
-        "ecd_pct_similarity_to_canonical": 96.88888888888889
+        "ecd_pct_identity_to_canonical": 89.47368421052632,
+        "ecd_pct_similarity_to_canonical": 89.47368421052632
       },
       {
         "isoform_id": "P08962-3",
@@ -1522,8 +1522,8 @@
         "tool_version": "deeptmhmm-1.0.24",
         "retrieved_at": "2026-05-27T02:01:01Z",
         "full_length_pct_identity_to_canonical": 65.54621848739495,
-        "ecd_pct_identity_to_canonical": 4.166666666666666,
-        "ecd_pct_similarity_to_canonical": 9.375
+        "ecd_pct_identity_to_canonical": 84.21052631578947,
+        "ecd_pct_similarity_to_canonical": 84.21052631578947
       }
     ],
     "orthologs": {
@@ -1535,8 +1535,8 @@
           "ortholog_uniprot_acc": "P41731",
           "ortholog_symbol": "Cd63",
           "type": "one2one",
-          "ecd_pct_identity_to_human_canonical": 63.716814159292035,
-          "ecd_pct_similarity_to_human_canonical": 63.716814159292035,
+          "ecd_pct_identity_to_human_canonical": 63.1578947368421,
+          "ecd_pct_similarity_to_human_canonical": 77.19298245614034,
           "full_length_pct_identity_to_human_canonical": 78.5714,
           "ecd_length_residues": 114,
           "tm_helix_count": 4,
