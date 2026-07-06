@@ -20,8 +20,13 @@ export const CITATIONS = {
   surfaceBind: { authorYear: "Balbi et al. 2026", pmid: "41604262" },
   /** Typical antibody–antigen interface geometry. */
   antibodyInterface: { authorYear: "Ramaraj et al. 2012", pmid: "22246133" },
-  /** HPA antigen-design single-target vs multitarget identity bands. */
-  hpaAntigenDesign: { authorYear: "Edfors / Uhlén 2020", pmid: "33170010" },
+  /** HPA antigen-design single-target vs multitarget identity bands.
+   *  Was previously miscited as Sivertsson et al. 2020 (PMID 33170010,
+   *  J. Proteome Res. — "Enhanced Validation of Antibodies Enables the
+   *  Discovery of Missing Proteins"). Both are HPA/Uhlén-group antibody-
+   *  validation papers with nearly identical titles; Edfors 2018 is the
+   *  one that establishes the identity-band framework we're citing. */
+  hpaAntigenDesign: { authorYear: "Edfors et al. 2018", pmid: "30297845" },
   /** Schweke et al. — AF2-based atlas of homo-oligomeric assemblies,
    *  four proteomes, 8,195 predicted homomers including ~3,946 human.
    *  Cited by the StructureViewer's "Homo-oligomer" tab. */

@@ -127,7 +127,7 @@ function deriveOrthologDetail(topology: string): {
 
 /**
  * Paralog specificity-risk tier from a percent identity. Bands follow
- * HPA antigen-design practice (Edfors / Uhlén, PMID 33170010): single-
+ * HPA antigen-design practice (Edfors et al. 2018, PMID 30297845): single-
  * target antibodies are achievable at ≤60% identity (usually <40%),
  * whereas >80% defines a multitargeting antibody expected to bind the
  * whole family.
@@ -419,7 +419,7 @@ export function IsoformsCard({ rec, n }: Props) {
   // Close paralogs (>80% on the colored identity — ECD when present, else
   // full-length) that carry real DeepTMHMM topology get promoted to full
   // rows in the variants table — the "multitarget likely" set (HPA antigen
-  // design, PMID 33170010). Paralogs at or below 80% stay in the chip strip
+  // design, PMID 30297845). Paralogs at or below 80% stay in the chip strip
   // below (50–60% green, 60–80% orange).
   const closeParalogs = paralogs.filter((p) => {
     const v = paralogRiskValue(p);

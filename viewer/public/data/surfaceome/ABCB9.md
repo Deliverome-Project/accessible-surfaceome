@@ -51,7 +51,7 @@ ABCB9 (TAPL) has low surface accessibility as a canonical lysosomal multi-pass A
 - *Low endogenous expression*: High expression in monocyte-derived DCs, macrophages, and testicular Sertoli cells (a2_evi_01, a2_evi_02); moderate in TME Tregs and tumor cells (a2_evi_06); low in brain microvessels (a2_evi_05). Overall: moderate across relevant cell types.
 - *Overexpression surface localization*: 1 method observation(s) pair an overexpression/mixed expression system with a surface-localization readout (cites a1_evi_16).
 
-**Cutoffs.** ECD size: large ≥200 aa · moderate 60–199 · small 30–59 · minimal <30 (one antibody footprint ≈ 12 ± 3 residues / 1103 ± 244 Å², [PMID 22246133](https://pubmed.ncbi.nlm.nih.gov/22246133/)). Evidence density: high ≥30 supporting rows · moderate ≥10 · low <10. Ortholog ECD identity: ≥85% high · 60–85% intermediate · <60% higher-risk. Paralog ECD identity: >80% multitarget-likely · 60–80% caution · <60% lower-risk ([PMID 33170010](https://pubmed.ncbi.nlm.nih.gov/33170010/)).
+**Cutoffs.** ECD size: large ≥200 aa · moderate 60–199 · small 30–59 · minimal <30 (one antibody footprint ≈ 12 ± 3 residues / 1103 ± 244 Å², [PMID 22246133](https://pubmed.ncbi.nlm.nih.gov/22246133/)). Evidence density: high ≥30 supporting rows · moderate ≥10 · low <10. Ortholog ECD identity: ≥85% high · 60–85% intermediate · <60% higher-risk. Paralog ECD identity: >80% multitarget-likely · 60–80% caution · <60% lower-risk ([PMID 30297845](https://pubmed.ncbi.nlm.nih.gov/30297845/)).
 
 ## 3. Surface evidence
 
@@ -281,7 +281,7 @@ All four A2 axes are well-populated: expression mapped across ≥5 tissues/cell 
 | Paralog | ABCB8 | [Q9NUT2](https://www.uniprot.org/uniprotkb/Q9NUT2) | 29.5% | 17.8% | — | — | — | — | — | low-risk |
 | Paralog | ABCB6 | [Q9NP58](https://www.uniprot.org/uniprotkb/Q9NP58) | 22.6% | 10.2% | — | — | — | — | — | low-risk |
 
-**Tier cutoffs.** *Ortholog conservation* (higher = better — cross-species evidence can stand in for human): ≥85% high · 60–85% moderate · <60% low. *Paralog cross-reactivity* (higher = worse — a binder may also engage the paralog): >80% high-risk · 60–80% caution · <60% low-risk ([PMID 33170010](https://pubmed.ncbi.nlm.nih.gov/33170010/)).
+**Tier cutoffs.** *Ortholog conservation* (higher = better — cross-species evidence can stand in for human): ≥85% high · 60–85% moderate · <60% low. *Paralog cross-reactivity* (higher = worse — a binder may also engage the paralog): >80% high-risk · 60–80% caution · <60% low-risk ([PMID 30297845](https://pubmed.ncbi.nlm.nih.gov/30297845/)).
 
 ## 6. Accessibility risks
 
