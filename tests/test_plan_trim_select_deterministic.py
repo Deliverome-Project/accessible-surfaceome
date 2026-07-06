@@ -22,6 +22,8 @@ import json
 from datetime import UTC, datetime
 from unittest.mock import MagicMock, patch
 
+import pytest
+
 from accessible_surfaceome.agents.plan_trim_select.runner import (
     GeneContext,
     _summarize_deterministic_for_planner,
@@ -314,6 +316,150 @@ def test_summary_picks_canonical_ortholog_when_multiple():
     )
     out = json.loads(_summarize_deterministic_for_planner(feats))
     assert out["mouse_ortholog_ecd_pct_identity"] == 74.2
+
+
+def _json_dumpable() -> MagicMock:
+    """A stand-in for the uniprot_summary / db_panel return objects, which
+    ``_build_gene_context`` serializes via ``.model_dump_json(indent=2)``."""
+    m = MagicMock()
+    m.model_dump_json.return_value = "{}"
+    return m
+
+
+def test_build_gene_context_accession_shaped_symbol_routes_via_hgnc_id():
+    """Regression: a real gene symbol that matches the UniProt-accession
+    regex (P2RY10-14) must resolve through the D1 HGNC-ID path, NOT through
+    ``resolve()``-as-accession.
+
+    The shape-first dispatch previously sent ``P2RY11`` to
+    ``resolve(symbol_or_acc="P2RY11")``, which queried UniProt as if it were
+    an accession, 404'd, and raised an uncaught ``LookupError`` that crashed
+    the Modal sweep (2026-07 run died at gene ~736). The fix prefers the
+    ``gene_identifier`` symbol lookup even for accession-shaped symbols.
+    """
+    from accessible_surfaceome.agents.plan_trim_select import runner
+
+    bundle = IdentifierBundle(
+        hgnc_id="HGNC:8540",
+        hgnc_symbol="P2RY11",
+        uniprot_acc="Q96G91",
+        previous_symbols=[],
+        aliases=[],
+    )
+    with (
+        patch.object(runner, "_hgnc_id_for_symbol", return_value="HGNC:8540") as m_sym,
+        patch.object(runner, "resolve_by_hgnc_id", return_value=bundle) as m_hgnc,
+        patch.object(runner, "resolve") as m_acc,
+        patch.object(runner, "uniprot_summary", return_value=_json_dumpable()),
+        patch.object(runner, "db_panel", return_value=_json_dumpable()),
+        patch(
+            "accessible_surfaceome.agents.surfaceome_v1.d1_deterministic."
+            "fetch_deterministic_features",
+            side_effect=Exception("no d1 in test"),
+        ),
+    ):
+        ctx = runner._build_gene_context(
+            "P2RY11", http=MagicMock(), retraction_index=MagicMock()
+        )
+
+    m_sym.assert_called_once_with("P2RY11")
+    m_hgnc.assert_called_once()
+    assert m_hgnc.call_args.args[0] == "HGNC:8540"
+    m_acc.assert_not_called()  # the accession path must NOT be taken
+    assert ctx.bundle.uniprot_acc == "Q96G91"
+
+
+def test_build_gene_context_real_accession_still_uses_resolve():
+    """A genuine accession input (not a known symbol) still routes through
+    ``resolve()`` — the fix must not break free-text accession lookups."""
+    from accessible_surfaceome.agents.plan_trim_select import runner
+
+    bundle = IdentifierBundle(
+        hgnc_id="HGNC:9999",
+        hgnc_symbol="SOMEGENE",
+        uniprot_acc="P08183",
+        previous_symbols=[],
+        aliases=[],
+    )
+    with (
+        patch.object(runner, "_hgnc_id_for_symbol", return_value=None) as m_sym,
+        patch.object(runner, "resolve", return_value=bundle) as m_acc,
+        patch.object(runner, "resolve_by_hgnc_id") as m_hgnc,
+        patch.object(runner, "uniprot_summary", return_value=_json_dumpable()),
+        patch.object(runner, "db_panel", return_value=_json_dumpable()),
+        patch(
+            "accessible_surfaceome.agents.surfaceome_v1.d1_deterministic."
+            "fetch_deterministic_features",
+            side_effect=Exception("no d1 in test"),
+        ),
+    ):
+        ctx = runner._build_gene_context(
+            "P08183", http=MagicMock(), retraction_index=MagicMock()
+        )
+
+    m_sym.assert_called_once_with("P08183")  # symbol lookup tried first
+    m_acc.assert_called_once()  # then falls through to accession resolution
+    m_hgnc.assert_not_called()
+    assert ctx.bundle.uniprot_acc == "P08183"
+
+
+def test_build_gene_context_d1_outage_accession_falls_through():
+    """If the D1 symbol lookup raises at query time (transient ``D1Error``,
+    not just missing-creds ``LookupError``), an accession-shaped input
+    still falls through to ``resolve()`` — a genuine accession resolves
+    without D1. Guards the P1a robustness gap."""
+    from accessible_surfaceome.agents.plan_trim_select import runner
+    from accessible_surfaceome.cloud.d1_client import D1Error
+
+    bundle = IdentifierBundle(
+        hgnc_id="HGNC:9999",
+        hgnc_symbol="SOMEGENE",
+        uniprot_acc="P08183",
+        previous_symbols=[],
+        aliases=[],
+    )
+    with (
+        patch.object(
+            runner, "_hgnc_id_for_symbol", side_effect=D1Error("d1 down")
+        ),
+        patch.object(runner, "resolve", return_value=bundle) as m_acc,
+        patch.object(runner, "resolve_by_hgnc_id") as m_hgnc,
+        patch.object(runner, "uniprot_summary", return_value=_json_dumpable()),
+        patch.object(runner, "db_panel", return_value=_json_dumpable()),
+        patch(
+            "accessible_surfaceome.agents.surfaceome_v1.d1_deterministic."
+            "fetch_deterministic_features",
+            side_effect=Exception("no d1 in test"),
+        ),
+    ):
+        ctx = runner._build_gene_context(
+            "P08183", http=MagicMock(), retraction_index=MagicMock()
+        )
+
+    m_acc.assert_called_once()
+    m_hgnc.assert_not_called()
+    assert ctx.bundle.uniprot_acc == "P08183"
+
+
+def test_build_gene_context_d1_outage_symbol_reraises():
+    """A non-accession-shaped symbol during a D1 outage re-raises (no silent
+    misroute) — the per-gene worker's backstop then fails just this gene."""
+    from accessible_surfaceome.agents.plan_trim_select import runner
+    from accessible_surfaceome.cloud.d1_client import D1Error
+
+    with (
+        patch.object(
+            runner, "_hgnc_id_for_symbol", side_effect=D1Error("d1 down")
+        ),
+        patch.object(runner, "resolve") as m_acc,
+        patch.object(runner, "resolve_by_hgnc_id") as m_hgnc,
+    ):
+        with pytest.raises(D1Error):
+            runner._build_gene_context(
+                "GPR75", http=MagicMock(), retraction_index=MagicMock()
+            )
+    m_acc.assert_not_called()
+    m_hgnc.assert_not_called()
 
 
 def test_gene_context_has_deterministic_field():

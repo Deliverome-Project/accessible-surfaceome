@@ -90,6 +90,41 @@ def test_cost_cap_retains_record(tmp_path: Path) -> None:
     assert (tmp_path / "run_test" / "CAPGENE.json").exists()
 
 
+def test_annotate_crash_is_isolated_not_propagated(tmp_path: Path) -> None:
+    """Per-gene isolation backstop: if ``annotate`` raises (any exception),
+    ``annotate_one`` must return a failed ``GeneResult`` — NOT propagate.
+
+    Regression for the 2026-07 crash: a symbol shaped like a UniProt
+    accession (P2RY11) raised an uncaught ``LookupError`` in resolution
+    inside ``annotate``, which escaped the worker, propagated through
+    Modal's ``.map()``, and killed the whole 1000-gene sweep at gene ~736.
+    The catch-all must convert it to one failed gene so the batch survives.
+    """
+    with (
+        patch("deep_dive_sweep.open_default_client") as m_http,
+        patch("deep_dive_sweep.resolve_by_hgnc_id",
+              return_value=_fake_bundle("P2RY11")),
+        patch("deep_dive_sweep.load_resumable_dual", return_value=None),
+        patch("deep_dive_sweep.annotate",
+              side_effect=LookupError("'P2RY11' 404'd at UniProt")),
+    ):
+        m_http.return_value = MagicMock()
+        result = annotate_one(
+            GeneRow(hgnc_id="HGNC:8540", hgnc_symbol="P2RY11", sonnet_verdict="yes"),
+            run_id="run_test",
+            sink=None,
+            annotations_dir=tmp_path,
+            max_cost_per_gene_usd=10.0,
+            publish_intermediates_enabled=False,
+        )
+
+    # Failed gracefully — no exception escaped, batch would continue.
+    assert result.record_valid is False
+    assert result.hgnc_symbol == "P2RY11"
+    assert "crashed" in (result.error or "")
+    assert result.cost_usd == 0.0
+
+
 def test_cost_under_cap_not_flagged(tmp_path: Path) -> None:
     annotate_result = _fake_annotate_result(cost=0.50, record=_fake_record("OKGENE"))
     with (
