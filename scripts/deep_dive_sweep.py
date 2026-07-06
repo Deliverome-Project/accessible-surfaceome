@@ -318,6 +318,30 @@ def annotate_one(
             search_log_count=len(result.record.search_log),
             cost_capped=cost_capped,
         )
+    except Exception as exc:  # noqa: BLE001
+        # Per-gene isolation backstop. ANY unexpected exception from the
+        # gene body (resolution edge case, an upstream API shape change,
+        # a malformed record, ...) must fail THIS gene only — never
+        # propagate out of the worker, through Modal's ``.map()``, and
+        # kill the entire sweep. A 2026-07 1000-batch died at gene ~736
+        # when a symbol that looks like a UniProt accession (P2RY11) 404'd
+        # in resolution and the LookupError escaped this function. The
+        # inner resolve-by-hgnc-id guard above only covered the first
+        # resolution; the planner's internal re-resolution (+ every other
+        # call) was unguarded. This catch-all makes gene failures
+        # non-fatal: the driver counts it in ``failed`` and the gene
+        # re-runs on the next launch via schema-aware dedup.
+        logger.exception(
+            "annotate_one crashed for %s (%s); failing this gene only, "
+            "sweep continues",
+            row.hgnc_symbol, row.hgnc_id,
+        )
+        return GeneResult(
+            hgnc_id=row.hgnc_id, hgnc_symbol=row.hgnc_symbol,
+            cost_usd=0.0, latency_s=time.monotonic() - t0,
+            blocks_used={}, error=f"annotate_one crashed: {exc}",
+            record_valid=False,
+        )
     finally:
         http.close()
 

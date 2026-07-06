@@ -680,13 +680,41 @@ def _build_gene_context(
     """
 
     raw = gene.strip()
-    if looks_like_uniprot_acc(raw):
-        bundle = resolve(symbol_or_acc=raw, http=http)
-    elif raw.upper().startswith("HGNC:"):
+    if raw.upper().startswith("HGNC:"):
         bundle = resolve_by_hgnc_id(raw, http=http)
     else:
-        hgnc_id = _hgnc_id_for_symbol(raw)
-        if hgnc_id is None:
+        # Symbol → HGNC-ID first, EVEN when the symbol LOOKS like a UniProt
+        # accession. Several real HGNC symbols match the accession regex
+        # (P2RY10-14, ...): routing them through ``resolve()``-as-accession
+        # 404s at UniProt and — because the LookupError is uncaught in the
+        # planner — crashed the whole Modal sweep (2026-07 run at gene ~736).
+        # Preferring the D1 ``gene_identifier`` lookup keeps the COX1/WAS-
+        # class safety of the HGNC-ID path and never misroutes a symbol.
+        # Fall through to accession resolution ONLY when the input is not a
+        # known symbol AND is accession-shaped (a genuine accession input,
+        # e.g. a free-text agent-tool call) — including the D1-down case,
+        # where the symbol lookup raises but an accession still resolves
+        # offline.
+        # ``_hgnc_id_for_symbol`` raises ``LookupError`` on missing D1
+        # credentials and ``D1Error`` on a query-time D1 outage. In both
+        # cases: if the input is accession-shaped, fall through to
+        # accession resolution (a genuine accession still resolves without
+        # D1); otherwise re-raise so the per-gene worker's isolation
+        # backstop fails just this gene (it re-runs when D1 recovers)
+        # rather than misrouting a symbol.
+        from accessible_surfaceome.cloud.d1_client import D1Error
+
+        try:
+            hgnc_id = _hgnc_id_for_symbol(raw)
+        except (LookupError, D1Error):
+            if not looks_like_uniprot_acc(raw):
+                raise
+            hgnc_id = None
+        if hgnc_id is not None:
+            bundle = resolve_by_hgnc_id(hgnc_id, http=http)
+        elif looks_like_uniprot_acc(raw):
+            bundle = resolve(symbol_or_acc=raw, http=http)
+        else:
             raise LookupError(
                 f"unknown gene symbol {raw!r}: not found in D1 "
                 "gene_identifier.hgnc_symbol or cohort_symbol. If this is "
@@ -695,7 +723,6 @@ def _build_gene_context(
                 "cache; if it's a typo or non-human gene, pass a UniProt "
                 "accession or HGNC ID directly."
             )
-        bundle = resolve_by_hgnc_id(hgnc_id, http=http)
     if not bundle.uniprot_acc:
         raise LookupError(f"could not resolve {gene} to a UniProt accession")
 
