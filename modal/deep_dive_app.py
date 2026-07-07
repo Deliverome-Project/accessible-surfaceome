@@ -40,8 +40,9 @@ from accessible_surfaceome.tools._shared.ratelimit import reserve_slot
 # Cap any single courtesy wait the gate hands back. Under extreme contention on
 # a slow (~1 qps) host — many queued reservations plus phantom slots from
 # crashed/retried workers — an uncapped reservation queue could push a worker's
-# wait past the 20-minute gene timeout. Capping degrades to a brief over-rate
-# instead. 120s is far above any healthy steady-state wait.
+# wait past the per-gene container timeout (``GENE_TIMEOUT_S``). Capping
+# degrades to a brief over-rate instead. 120s is far above any healthy
+# steady-state wait.
 GATE_MAX_WAIT_S = 120.0
 
 # Resolved on the driver at import time (env-tunable) and baked into the
@@ -49,6 +50,18 @@ GATE_MAX_WAIT_S = 120.0
 # genes = MAX_CONTAINERS × MAX_INPUTS; the default is sized to keep expected
 # Anthropic OTPM under the 2M/min ceiling — see the concurrency module.
 MAX_CONTAINERS, MAX_INPUTS = resolve_gene_concurrency()
+
+# Per-gene Modal container timeout. Evidence-heavy genes legitimately run
+# ~18-20 min end-to-end (multi-iteration search + full-text PDF triage + 9
+# builders + synthesizer). The old 20-min ceiling killed the tail mid-run
+# (observed p99 1178s / max 1195s against a 1200s limit), and Modal raises
+# ``FunctionTimeoutError`` on the DRIVER side (in ``.map()``) — the worker's
+# own per-gene try/except can't catch an externally-killed container. Bumped
+# to 45 min for headroom so those genes complete instead of being killed +
+# retried + discarded. Belt-and-suspenders: ``full_sweep`` maps with
+# ``return_exceptions=True`` so a gene that STILL exceeds this fails as one
+# result rather than crashing the whole batch. Env-tunable.
+GENE_TIMEOUT_S = int(os.environ.get("SURFACEOME_GENE_TIMEOUT_S", 45 * 60))
 
 # ---------------------------------------------------------------------------
 # image + volume + secret
@@ -315,7 +328,7 @@ def check_secret():
     image=image,
     cpu=0.5,
     memory=2048,
-    timeout=20 * 60,
+    timeout=GENE_TIMEOUT_S,
     retries=modal.Retries(max_retries=2, backoff_coefficient=2.0),
     volumes={ANNOTATIONS_MOUNT: volume},
     secrets=[secret],
@@ -524,7 +537,19 @@ def canary(
         for r in canary_rows
     ]
     t0 = time.monotonic()
-    results = list(annotate_one.map(canary_payloads))
+    # return_exceptions=True: a container-level failure (timeout/OOM/preempt)
+    # on one gene must not abort the canary — drop it with a warning, same
+    # driver-side isolation as full_sweep.
+    results = []
+    for r in annotate_one.map(canary_payloads, return_exceptions=True):
+        if isinstance(r, Exception):
+            print(
+                f"!! canary gene container failed ({type(r).__name__}: "
+                f"{str(r)[:140]}); skipped",
+                flush=True,
+            )
+            continue
+        results.append(r)
     elapsed = time.monotonic() - t0
     # Reuse local summarizer (operates on GeneResult-shaped dicts here).
     from scripts.deep_dive_sweep import GeneResult
@@ -627,8 +652,26 @@ def full_sweep(
     t0 = time.monotonic()
     for chunk_start in range(0, len(payloads), chunk_size):
         chunk = payloads[chunk_start : chunk_start + chunk_size]
-        for result in annotate_one.map(chunk):
+        # ``return_exceptions=True`` is the DRIVER-side isolation backstop.
+        # ``annotate_one`` catches its own exceptions and always returns a
+        # dict, but a Modal-level failure — a container that hits its
+        # ``timeout`` (FunctionTimeoutError), OOMs, or is preempted after
+        # retries — is raised HERE in ``.map()``, outside the worker's
+        # try/except. Without this flag one such gene aborts the whole
+        # sweep (2026-07: a >1200s gene crashed a 1000-batch at ~755). With
+        # it, the failed input yields the exception object, which we count
+        # as one failed gene and skip; the gene re-runs next launch via
+        # schema-aware dedup.
+        for result in annotate_one.map(chunk, return_exceptions=True):
             completed += 1
+            if isinstance(result, Exception):
+                failed += 1
+                print(
+                    f"!! gene container failed ({type(result).__name__}: "
+                    f"{str(result)[:140]}); counted as failed, sweep continues",
+                    flush=True,
+                )
+                continue
             running_cost += float(result.get("cost_usd") or 0.0)
             if not result.get("record_valid"):
                 failed += 1
