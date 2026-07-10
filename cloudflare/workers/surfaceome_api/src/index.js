@@ -152,6 +152,48 @@ async function checkRate(env, request, path) {
 }
 
 
+// Wrap a cacheable handler so 2xx / 404 responses are stored in
+// caches.default and served on the next hit without re-running the
+// handler. The response's own Cache-Control governs the TTL — the
+// helper doesn't override it. This is the same pattern handleCatalog
+// uses inline; extending it to every cacheable GET is what turns the
+// "correct headers, zero hits" state into actual edge caching.
+//
+// Rationale: a zone-level Cache Rule alone is not enough to cache
+// Worker responses on Cloudflare — the edge only auto-caches responses
+// with a URL-shaped origin, and a Worker route has no separate origin.
+// Storing via `caches.default.put()` opts the response into the same
+// per-POP cache the Cache Rule would otherwise populate; on a repeat
+// request the isolate serves the stored Response without entering
+// D1/handler code at all.
+//
+// Cache-key strategy: URL path only by default (matches the zone Cache
+// Rule that already strips query strings). Pass `includeQuery: true` for
+// endpoints where the query genuinely parameterizes the response
+// (e.g. /v1/triage/export.tsv?run_id=X — different run_id, different
+// content). The cache-key uses a synthetic host so it can't collide with
+// any real request URL, and forces GET so no method-mismatch surprises.
+//
+// Only 200 and 404 are cached — both have positive TTLs from `json()`
+// / `notFound()`. 400/405 responses set ttl=0 and are safe to skip
+// entirely.
+async function withEdgeCache(request, handler, { includeQuery = false } = {}) {
+  const cache = caches.default;
+  const url = new URL(request.url);
+  const keyPath = includeQuery ? url.pathname + url.search : url.pathname;
+  const cacheKey = new Request(new URL(keyPath, "https://cache.internal").href, {
+    method: "GET",
+  });
+  const hit = await cache.match(cacheKey);
+  if (hit) return hit;
+  const response = await handler();
+  if (response.status === 200 || response.status === 404) {
+    await cache.put(cacheKey, response.clone());
+  }
+  return response;
+}
+
+
 // --- handlers --------------------------------------------------------------
 
 async function handleHealth(env) {
@@ -2803,28 +2845,37 @@ export default {
     }
 
     if (path === "/v1" || path === "") return handleV1Index(env);
-    if (path === "/v1/health") return handleHealth(env);
-    if (path === "/v1/genes") return handleGeneList(env);
+    // Cacheable static / list endpoints — wrapped in withEdgeCache so the
+    // second-and-subsequent hits per POP serve from caches.default rather
+    // than re-running the D1 query. handleCatalog stays untouched because
+    // it already has its own caches.default logic inline (with a bespoke
+    // cache key on universe_version).
+    if (path === "/v1/health") return withEdgeCache(request, () => handleHealth(env));
+    if (path === "/v1/genes") return withEdgeCache(request, () => handleGeneList(env));
     if (path === "/v1/catalog") return handleCatalog(env, request);
-    if (path === "/v1/benchmark") return handleBenchmarkList(env);
-    if (path === "/v1/benchmark/matrix") return handleBenchmarkMatrix(env);
-    if (path === "/v1/benchmark/export.tsv") return handleBenchmarkExport(env);
-    if (path === "/v1/triage/export.tsv") return handleTriageExport(env, url);
-    if (path === "/v1/meta/sizes") return handleMetaSizes(env);
+    if (path === "/v1/benchmark") return withEdgeCache(request, () => handleBenchmarkList(env));
+    if (path === "/v1/benchmark/matrix") return withEdgeCache(request, () => handleBenchmarkMatrix(env));
+    if (path === "/v1/benchmark/export.tsv") return withEdgeCache(request, () => handleBenchmarkExport(env));
+    // ?run_id=X actually parameterizes the response, so the query has to
+    // be in the cache key here (unlike the other endpoints whose query
+    // params are cache-busting noise the zone Cache Rule already strips).
+    if (path === "/v1/triage/export.tsv") return withEdgeCache(request, () => handleTriageExport(env, url), { includeQuery: true });
+    if (path === "/v1/meta/sizes") return withEdgeCache(request, () => handleMetaSizes(env));
+    // Feedback endpoints are user-specific / write-adjacent — never cache.
     if (path === "/v1/feedback/moderate") return handleFeedbackModerate(env, url);
     if (path === "/v1/feedback/public") return handleFeedbackPublic(env, url);
 
     let m;
-    if ((m = path.match(/^\/v1\/genes\/([^/]+)$/))) return handleGene(env, m[1]);
-    if ((m = path.match(/^\/v1\/orthologs\/([^/]+)$/))) return handleOrthologs(env, m[1]);
-    if ((m = path.match(/^\/v1\/benchmark\/([^/]+)$/))) return handleBenchmarkOne(env, m[1]);
+    if ((m = path.match(/^\/v1\/genes\/([^/]+)$/))) return withEdgeCache(request, () => handleGene(env, m[1]));
+    if ((m = path.match(/^\/v1\/orthologs\/([^/]+)$/))) return withEdgeCache(request, () => handleOrthologs(env, m[1]));
+    if ((m = path.match(/^\/v1\/benchmark\/([^/]+)$/))) return withEdgeCache(request, () => handleBenchmarkOne(env, m[1]));
     // Per-cell replicate detail (more specific — match before the bare
     // /v1/triage/:symbol route). model = claude-<name>-<n>-<n>; variant
     // = naive|ncbi|web_ncbi|pubmed_ncbi.
     if ((m = path.match(/^\/v1\/triage\/([^/]+)\/([A-Za-z0-9._-]+)\/([a-z_]+)$/))) {
-      return handleTriageCell(env, m[1], m[2], m[3]);
+      return withEdgeCache(request, () => handleTriageCell(env, m[1], m[2], m[3]));
     }
-    if ((m = path.match(/^\/v1\/triage\/([^/]+)$/))) return handleTriage(env, m[1]);
+    if ((m = path.match(/^\/v1\/triage\/([^/]+)$/))) return withEdgeCache(request, () => handleTriage(env, m[1]));
 
     return notFound("route_not_found");
   },
