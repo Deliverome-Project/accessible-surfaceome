@@ -1225,10 +1225,32 @@ export function StructureViewer({
             const r = await fetch(alphafoldPredictionApiUrl(acc), {
               cache: "force-cache",
             });
-            return [acc, r.ok];
+            // 404 (or any non-2xx) ⟹ AFDB has no model for this acc.
+            if (!r.ok) return [acc, false];
+            // A 200 is NOT sufficient: AFDB returns HTTP 200 for a
+            // UniProt whose ONLY model is an alternative isoform. LRP1
+            // (Q07954, 4544 aa) is the trigger — /api/prediction/Q07954
+            // returns a single entry ``AF-Q07954-2-F1`` (isoform 2,
+            // residues 1–292), NO canonical model. Rendering that under
+            // the "Canonical" tab silently swaps in a different, much
+            // shorter sequence — exactly the "AlphaFold structure appears
+            // to be showing a truncation" Josh Tycko flagged on LRP1.
+            // Treat the canonical as UNAVAILABLE unless an entry's
+            // ``uniprotAccession`` matches the exact acc we asked for
+            // (bare, no isoform suffix). Multi-fragment canonical models
+            // — AF-{acc}-F1/F2/… for very long proteins — still match on
+            // the bare acc, so they stay available.
+            const j = (await r.json()) as Array<{
+              uniprotAccession?: string;
+            }>;
+            const hasCanonicalModel =
+              Array.isArray(j) &&
+              j.some((e) => e.uniprotAccession === acc);
+            return [acc, hasCanonicalModel];
           } catch {
-            // Network hiccup — don't gray it out; the per-tab render
-            // will still surface a genuine failure if one occurs.
+            // Network hiccup / parse error — don't gray it out; the
+            // per-tab render will still surface a genuine failure if
+            // one occurs.
             return [acc, true];
           }
         }),
@@ -1534,6 +1556,22 @@ export function StructureViewer({
           }
         }
       } else {
+        // Guard: if AFDB has NO model for the canonical accession (the
+        // mount probe found only alternative-isoform entries, or none),
+        // do NOT fall through to fetch + render that isoform under the
+        // Canonical tab. Doing so silently substitutes a different,
+        // shorter sequence (LRP1: isoform 2's 292 aa in place of the
+        // 4544-aa canonical) and reads as a truncated canonical model.
+        // Surface the honest "no model" state instead; the auto-default
+        // effect has already switched to an experimental structure when
+        // one exists, so this only shows when the reader manually clicks
+        // the grayed Canonical tab (or the gene has no experimental PDB).
+        if (isCanonicalActive && canonAfdbUnavail) {
+          if (renderSeq !== renderSeqRef.current) return;
+          setErrorMsg("");
+          setStatus("nomodel");
+          return;
+        }
         // URL resolution strategy:
         //   - Canonical view with a baked `data.pdb_url` → use it
         //     directly (the build script wrote a version-correct URL
@@ -2094,9 +2132,19 @@ export function StructureViewer({
     // payload — when it changes the protein has changed. ``viewMode``
     // toggles between topology / sites-focused rendering.
     // ``variantIdx`` switches which AFDB model (canonical / isoform /
-    // ortholog) gets fetched + rendered.
+    // ortholog) gets fetched + rendered. ``canonAfdbUnavail`` flips from
+    // false→true when the mount probe resolves; the canonical branch's
+    // no-isoform-substitution guard must re-run when it does, so a
+    // canonical view that raced ahead of the probe doesn't keep showing
+    // the isoform model.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [data, JSON.stringify(surfaceBindAnchors), viewMode, variantIdx]);
+  }, [
+    data,
+    JSON.stringify(surfaceBindAnchors),
+    viewMode,
+    variantIdx,
+    canonAfdbUnavail,
+  ]);
 
   useEffect(() => {
     void renderViewer();
@@ -2145,7 +2193,7 @@ export function StructureViewer({
             }}
             title={
               canonAfdbUnavail
-                ? `No AlphaFold model for canonical ${geneSymbol} (${data.uniprot_acc}) — AlphaFold DB doesn't model this protein.`
+                ? `AlphaFold DB has no model for the canonical sequence of ${geneSymbol} (${data.uniprot_acc}) — showing an experimental structure where one exists.`
                 : `AlphaFold model for the canonical ${geneSymbol} (UniProt ${data.uniprot_acc}).`
             }
             aria-selected={isCanonicalActive}
@@ -2171,10 +2219,12 @@ export function StructureViewer({
                 }}
                 title={
                   vUnavail
-                    ? `No AlphaFold model for ${v.label}${v.sublabel ? ` (${v.sublabel})` : ""} — AlphaFold DB doesn't model this protein.`
+                    ? `AlphaFold DB has no model for ${v.label}${v.sublabel ? ` (${v.sublabel})` : ""}.`
                     : v.source === "schweke-homomer"
                       ? `Schweke 2024 AF2 homo-oligomer prediction for ${geneSymbol} — predicted dimer of UniProt ${data.uniprot_acc}.`
-                      : `AlphaFold model for ${v.label}${v.sublabel ? ` (${v.sublabel})` : ""}.`
+                      : v.source === "experimental"
+                        ? `Experimental structure ${(v as StructureVariantExperimental).pdb_id.toUpperCase()} (chain ${(v as StructureVariantExperimental).chain_id}) from the PDB.`
+                        : `AlphaFold model for ${v.label}${v.sublabel ? ` (${v.sublabel})` : ""}.`
                 }
                 aria-selected={isActive}
               >
