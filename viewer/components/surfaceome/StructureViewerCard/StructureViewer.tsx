@@ -1369,10 +1369,20 @@ export function StructureViewer({
   // Canonical-AFDB availability — drives graying its tab.
   const canonAfdbUnavail = afdbAvail[data.uniprot_acc] === false;
 
-  // Default to the Experimental tab when AFDB has no model for the
-  // canonical protein but an experimental structure exists, so the viewer
-  // opens on a real structure (e.g. megalin's cryo-EM 9CWM) instead of a
-  // blank "no model" canonical view. Fires once; a manual tab pick opts out.
+  // When AFDB has no model for the CANONICAL sequence (only an alternative
+  // isoform is modelled — LRP1-class — or nothing at all), gray the
+  // Canonical tab and open on the best available REAL structure instead of
+  // a blank "no model" canonical view. Fires once; a manual tab pick opts
+  // out. Priority:
+  //   1. an experimental PDB — ground truth for the residues it covers,
+  //      preferred even over the isoform model (e.g. PIEZO2's full-length
+  //      9vee should win over a partial isoform prediction), then
+  //   2. the isoform AFDB model as the fallback (LRP1 → Isoform 2): the
+  //      first AFDB variant AFDB actually models. Orthologs of these giant
+  //      proteins are themselves usually unmodelled, so they fail the
+  //      availability check and an isoform wins naturally.
+  // If neither exists, stay on the (grayed) Canonical tab → the honest
+  // "No AlphaFold model available" state.
   useEffect(() => {
     if (userPickedRef.current) return;
     if (afdbAvail[data.uniprot_acc] !== false) return;
@@ -1382,8 +1392,26 @@ export function StructureViewer({
     if (expIdx >= 0) {
       userPickedRef.current = true;
       setVariantIdx(expIdx + 1);
+      return;
     }
-  }, [afdbAvail, effectiveVariants, data.uniprot_acc]);
+    // No experimental variant present. The AFDB availability probe usually
+    // resolves BEFORE the PDBe best-structures probe, so an experimental
+    // structure may still be in flight — committing to the isoform now
+    // would pre-empt it and lock it in (userPickedRef). Wait until the
+    // PDBe probe settles; the effect re-runs when `pdbeCandidate` changes.
+    // Only once we know no experimental is coming (pdbeCandidate === null)
+    // do we fall back to the isoform AFDB model.
+    if (pdbeCandidate === "loading") return;
+    const isoIdx = effectiveVariants.findIndex(
+      (v) =>
+        v.source === "afdb" &&
+        afdbAvail[(v as StructureVariantAfdb).uniprot_acc] !== false,
+    );
+    if (isoIdx >= 0) {
+      userPickedRef.current = true;
+      setVariantIdx(isoIdx + 1);
+    }
+  }, [afdbAvail, effectiveVariants, data.uniprot_acc, pdbeCandidate]);
 
   // Lazy-fetch AFDB metadata when the user clicks a non-canonical
   // AFDB variant (isoform / ortholog). One fetch per isoform-suffixed
