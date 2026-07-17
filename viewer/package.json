@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "next dev --webpack",
-    "build": "npm run build:exports && npm run build:snapshot && next build --webpack",
+    "build": "npm run build:snapshot && npm run build:exports && next build --webpack",
     "build:exports": "node scripts/build-markdown-exports.mjs",
     "build:snapshot": "node scripts/build-data-snapshot.mjs",
     "start": "next start",

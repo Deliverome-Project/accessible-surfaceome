@@ -1298,9 +1298,83 @@ function loadRecordsFromSnapshots() {
   }));
 }
 
+// Read every record `build:snapshot` already pre-fetched to disk. When
+// `build:snapshot` runs first (per package.json), the whole 5k-record
+// dataset is already on the builder's local disk under
+// `viewer/build-cache/records/{SYMBOL}.json` — reading from there is
+// zero-latency and skips the second full pass over the Worker/D1
+// (which was the Pages build-timeout culprit at 5k records + slow D1).
+// Returns [] when the cache dir is missing or empty so main() can fall
+// back to `loadRecordsFromApi`.
+const BUILD_CACHE_RECORDS_DIR = path.join(VIEWER_ROOT, "build-cache", "records");
+
+function loadRecordsFromBuildCache() {
+  if (!existsSync(BUILD_CACHE_RECORDS_DIR)) return [];
+  const jsonFiles = readdirSync(BUILD_CACHE_RECORDS_DIR).filter((n) =>
+    n.endsWith(".json"),
+  );
+  if (jsonFiles.length === 0) return [];
+  const out = [];
+  for (const name of jsonFiles) {
+    try {
+      const rec = JSON.parse(
+        readFileSync(path.join(BUILD_CACHE_RECORDS_DIR, name), "utf-8"),
+      );
+      out.push({ name: `${rec.gene?.hgnc_symbol ?? name.replace(/\.json$/, "")}.json`, rec });
+    } catch (err) {
+      console.warn(`  ! build-cache ${name}: parse failed — ${err.message}`);
+    }
+  }
+  return out;
+}
+
+// Concurrent fetch pool for the API fallback path. Matches
+// build-data-snapshot.mjs's RECORD_CONCURRENCY=8 — sized to sit under
+// the Worker's per-IP rate limiter with retry headroom, and fits the
+// Pages build's ~35-min wall clock even under D1 latency spikes (5,130
+// records ÷ 8 in-flight ≈ 640 batches × ~300-800ms per fetch → 3-9 min
+// vs the serial 25-135 min the previous for-loop cost, which was the
+// timeout culprit).
+const RECORD_FETCH_CONCURRENCY = 8;
+const RECORD_FETCH_ATTEMPTS = 4;
+const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
+function backoffMs(attempt) {
+  return [500, 1500, 3000, 6000][attempt] ?? 6000;
+}
+
+async function fetchRecordWithRetry(url) {
+  for (let attempt = 0; attempt < RECORD_FETCH_ATTEMPTS; attempt += 1) {
+    let res = null;
+    try {
+      res = await fetch(url, {
+        headers: {
+          "User-Agent":
+            "accessible-surfaceome-viewer/1.0 (build-markdown-exports.mjs)",
+        },
+      });
+    } catch {
+      res = null;
+    }
+    if (res) {
+      if (res.ok) return await res.json();
+      if (res.status === 404 || (res.status !== 429 && res.status < 500)) {
+        return null; // hard 4xx — deterministic miss, don't retry
+      }
+    }
+    if (attempt < RECORD_FETCH_ATTEMPTS - 1) await sleep(backoffMs(attempt));
+  }
+  throw new Error(`retries exhausted for ${url}`);
+}
+
 // Fetch EVERY published record from the public Worker (the D1-served
 // model). Returns them in memory; main() materializes each {SYMBOL}.json
 // next to its {SYMBOL}.md so the static build + fs-fallback resolve.
+//
+// Fallback path only — under the normal package.json build order,
+// `build:snapshot` runs first and `loadRecordsFromBuildCache` picks up
+// the pre-fetched records from disk without hitting the Worker. This
+// path fires when the build-cache is missing / empty (e.g. dev running
+// `build:exports` in isolation) or when we need a live re-fetch.
 async function loadRecordsFromApi() {
   const listUrl = `${API_BASE}/v1/genes`;
   const list = await fetchJson(listUrl);
@@ -1309,21 +1383,34 @@ async function loadRecordsFromApi() {
   if (limit > 0) genes = genes.slice(0, limit);
   console.log(
     `  api: ${genes.length} published genes from ${listUrl}` +
-      (limit > 0 ? ` (limited to ${limit})` : ""),
+      (limit > 0 ? ` (limited to ${limit})` : "") +
+      ` (concurrency ${RECORD_FETCH_CONCURRENCY})`,
   );
+  const symbols = genes.map((g) => g.gene_symbol).filter(Boolean);
   const out = [];
-  for (const g of genes) {
-    const sym = g.gene_symbol;
-    if (!sym) continue;
-    try {
-      const rec = await fetchJson(
-        `${API_BASE}/v1/genes/${encodeURIComponent(sym)}`,
-      );
-      if (rec) out.push({ name: `${rec.gene?.hgnc_symbol ?? sym}.json`, rec });
-    } catch (err) {
-      console.warn(`  ! ${sym}: record fetch failed — ${err.message}`);
+  let cursor = 0;
+  let done = 0;
+  async function worker() {
+    while (cursor < symbols.length) {
+      const sym = symbols[cursor++];
+      try {
+        const rec = await fetchRecordWithRetry(
+          `${API_BASE}/v1/genes/${encodeURIComponent(sym)}`,
+        );
+        if (rec) out.push({ name: `${rec.gene?.hgnc_symbol ?? sym}.json`, rec });
+      } catch (err) {
+        console.warn(`  ! ${sym}: record fetch failed — ${err.message}`);
+      }
+      done += 1;
+      if (done % 500 === 0) console.log(`  … ${done}/${symbols.length}`);
     }
   }
+  await Promise.all(
+    Array.from(
+      { length: Math.min(RECORD_FETCH_CONCURRENCY, symbols.length) },
+      worker,
+    ),
+  );
   return out;
 }
 
@@ -1341,10 +1428,31 @@ async function main() {
     );
     return;
   }
-  const records =
-    MD_SOURCE === "api"
-      ? await loadRecordsFromApi()
-      : loadRecordsFromSnapshots();
+  // api mode: prefer records already pre-fetched to disk by
+  // `build:snapshot` (viewer/build-cache/records/*.json). That's the
+  // path that runs on Cloudflare Pages under the current package.json
+  // build order — reading from disk instead of re-fetching every gene
+  // from the Worker cuts the exports step from a full second D1 pass
+  // (25-135 min at 5k records + slow D1 → build timeout) to a fs walk.
+  // Falls through to the API when the cache is absent (dev running
+  // build:exports in isolation, or a schedule where build:snapshot was
+  // skipped).
+  let records = [];
+  if (MD_SOURCE === "api") {
+    records = loadRecordsFromBuildCache();
+    if (records.length > 0) {
+      console.log(
+        `  build-cache: ${records.length} records from ${BUILD_CACHE_RECORDS_DIR}`,
+      );
+    } else {
+      console.log(
+        `  build-cache empty at ${BUILD_CACHE_RECORDS_DIR} — falling back to Worker fetch`,
+      );
+      records = await loadRecordsFromApi();
+    }
+  } else {
+    records = loadRecordsFromSnapshots();
+  }
   if (records.length === 0) {
     console.warn(`No records to export (source=${MD_SOURCE}).`);
     return;
