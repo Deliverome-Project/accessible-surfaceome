@@ -103,6 +103,34 @@ function genesToEntries(j: unknown): GeneEntry[] {
   return out;
 }
 
+/** Adapt the slim `/v1/catalog/{symbol}` row into the CatalogRow shape
+ *  <DatabasePresenceStrip> reads — it only looks at `db.{uniprot,go,surfy,
+ *  cspa,hpa} === 1`. The endpoint 404s for genes outside the candidate
+ *  universe (→ null → strip omitted). `triage_by_model` is unused by the
+ *  strip, so it's left empty. */
+function adaptCatalogRow(j: unknown): CatalogRow | null {
+  const r = j as Record<string, unknown> | null;
+  if (!r || typeof r.db !== "object" || r.db === null) return null;
+  const db = r.db as Record<string, unknown>;
+  const bit = (v: unknown): number => (v === 1 ? 1 : 0);
+  return {
+    symbol: typeof r.symbol === "string" ? r.symbol : "",
+    uniprot: typeof r.uniprot === "string" ? r.uniprot : "",
+    n_sources: typeof r.n_sources === "number" ? r.n_sources : 0,
+    db: {
+      uniprot: bit(db.uniprot),
+      go: bit(db.go),
+      surfy: bit(db.surfy),
+      cspa: bit(db.cspa),
+      hpa: bit(db.hpa),
+    },
+    triage_by_model: [],
+    deep_dive: Boolean(r.deep_dive),
+    surface_bind_sites:
+      typeof r.surface_bind_sites === "number" ? r.surface_bind_sites : undefined,
+  };
+}
+
 interface ReadyData {
   rec: SurfaceomeRecord;
   geneName: { name: string; synonyms: string[] } | null;
@@ -161,10 +189,11 @@ export default function GeneShellPage() {
 
       // Secondary enrichments — fetched in parallel, each null-tolerant so
       // a miss degrades gracefully rather than failing the page.
-      const [triageJson, benchJson, genesJson] = await Promise.all([
+      const [triageJson, benchJson, genesJson, catalogJson] = await Promise.all([
         fetchJson(`${API_BASE}/v1/triage/${symbol}`),
         fetchJson(`${API_BASE}/v1/benchmark/${symbol}`),
         fetchJson(`${API_BASE}/v1/genes`),
+        fetchJson(`${API_BASE}/v1/catalog/${symbol}`),
       ]);
       if (cancelled) return;
 
@@ -191,11 +220,10 @@ export default function GeneShellPage() {
             rec.gene.uniprot_acc,
             rec.deterministic_features.homo_oligomerization,
           ),
-          // The 5-DB vote vector only lives in the ~5.7 MB genome-wide
-          // /v1/catalog; too heavy to refetch per gene view, so the inline
-          // DB-presence strip is omitted (same null path as a
-          // resolver-failure outlier).
-          catalogRow: null,
+          // Slim per-gene DB-vote row from /v1/catalog/{sym} — the 5-DB
+          // presence strip. Null-tolerant: 404 for genes outside the
+          // candidate universe → strip omitted.
+          catalogRow: adaptCatalogRow(catalogJson),
           benchmarkRow: adaptBenchmarkRow(benchJson),
           triageHeadline: triageJson
             ? parseTriageHeadline(triageJson as TriageRunsPayload)
