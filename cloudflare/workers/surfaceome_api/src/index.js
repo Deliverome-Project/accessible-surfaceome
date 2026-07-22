@@ -10,6 +10,7 @@
 //   GET /v1/health
 //   GET /v1/genes               — list of annotated genes
 //   GET /v1/genes/:symbol       — full SurfaceomeRecord
+//   GET /v1/genes/:symbol.md    — rich Markdown export (served from R2)
 //   GET /v1/catalog             — genome-wide candidate-universe table
 //   GET /v1/catalog/:symbol     — one gene's 5-DB surface-vote row (slim)
 //                                  (DB votes + latest triage + deep-dive flag)
@@ -1920,6 +1921,7 @@ const V1_ENDPOINTS = [
   { group: "Deep dive", method: "GET", path: "/v1/health", summary: "Liveness + n_annotations" },
   { group: "Deep dive", method: "GET", path: "/v1/genes", summary: "Index of genes with a deep-dive SurfaceomeRecord" },
   { group: "Deep dive", method: "GET", path: "/v1/genes/{symbol}", summary: "Full SurfaceomeRecord JSON" },
+  { group: "Deep dive", method: "GET", path: "/v1/genes/{symbol}.md", summary: "Rich Markdown export (sequences, DeepTMHMM topology, AlphaFold links) — served from R2" },
   { group: "Deep dive", method: "GET", path: "/v1/orthologs/{symbol}", summary: "Mouse + cyno orthologs from the latest Ensembl Compara release" },
   { group: "Utility", method: "GET", path: "/v1/meta/sizes", summary: "Approximate per-endpoint response sizes, computed live from D1" },
   { group: "Utility", method: "GET", path: "/v1", summary: "This index" },
@@ -2853,6 +2855,34 @@ async function handleCatalogOne(env, symbol) {
   });
 }
 
+// Serve the pre-generated rich Markdown export for a gene from R2.
+// Unlike the JSON record (assembled live from D1), the .md bundles
+// reanalysis extras NOT in D1 — canonical/isoform/ortholog sequences,
+// per-residue DeepTMHMM topology, AlphaFold links — so it's generated
+// offline by viewer/scripts/build-markdown-exports.mjs and uploaded to the
+// R2 bucket bound as `GENE_MD` (key: `{HGNC_SYMBOL}.md`).
+async function handleGeneMarkdown(env, symbol) {
+  if (!SYMBOL_OK.test(symbol)) return notFound("gene_not_found");
+  // The binding is optional (absent in a local `wrangler dev` without R2 or
+  // an older config) — degrade to 404 rather than throwing on `.get`.
+  if (!env.GENE_MD) return notFound("markdown_unavailable");
+  // R2 keys are case-sensitive and the generator writes the exact stored
+  // HGNC symbol (a minority are mixed-case, e.g. C11orf24). The viewer links
+  // with the canonical `hgnc_symbol`, so an exact-case key is correct for the
+  // real caller; a hand-typed wrong-case URL 404s (acceptable for a download).
+  const obj = await env.GENE_MD.get(`${symbol}.md`);
+  if (!obj) return notFound("markdown_not_found");
+  return new Response(obj.body, {
+    status: 200,
+    headers: {
+      "Content-Type": "text/markdown; charset=utf-8",
+      "Content-Disposition": `inline; filename="${symbol}.md"`,
+      "Cache-Control": cacheControl(CACHE_TTL_SHORT),
+      ...CORS_HEADERS,
+    },
+  });
+}
+
 export default {
   async fetch(request, env) {
     if (request.method === "OPTIONS") {
@@ -2919,6 +2949,9 @@ export default {
     if (path === "/v1/feedback/public") return handleFeedbackPublic(env, url);
 
     let m;
+    // `.md` must be tested before the bare record route: `([^/]+)` would
+    // otherwise swallow the `.md` suffix and route to handleGene.
+    if ((m = path.match(/^\/v1\/genes\/([^/]+)\.md$/))) return withEdgeCache(request, () => handleGeneMarkdown(env, m[1]));
     if ((m = path.match(/^\/v1\/genes\/([^/]+)$/))) return withEdgeCache(request, () => handleGene(env, m[1]));
     // Single-gene catalog row (DB-vote strip on the gene page). `/v1/catalog`
     // (exact) is matched above; this is the per-symbol variant.

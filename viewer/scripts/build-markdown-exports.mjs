@@ -49,6 +49,45 @@ const RAW_API_BASE = (
 ).trim();
 const API_BASE = RAW_API_BASE.replace(/\/+$/, "").replace(/\/v1$/, "");
 
+// Output target. Default "public" = write {SYM}.json + {SYM}.md under
+// viewer/public/ (legacy; only used for local/offline inspection now that
+// build:exports is OUT of the Pages build). "r2" = the standalone ops job:
+// upload ONLY the rich {SYM}.md to the R2 bucket the Worker serves at
+// GET /v1/genes/{sym}.md, and write nothing to public/ (that per-gene
+// materialization is exactly what blew the Pages 20k-file cap). Run it when
+// the gene set changes, NOT in the Pages build:
+//   MD_TARGET=r2 CLOUDFLARE_ACCOUNT_ID=… CLOUDFLARE_API_TOKEN=… \
+//     node scripts/build-markdown-exports.mjs
+// Uses the Cloudflare R2 REST object API with the account API token (the
+// same credential wrangler uses; needs R2 edit scope) — no S3 keys, no deps.
+// NOTE: no local test harness for the upload path — smoke-test it live once
+// (a handful of genes via SURFACEOME_MD_LIMIT) before a full run.
+const MD_TARGET = (process.env.MD_TARGET || "public").toLowerCase();
+const R2_BUCKET = process.env.MD_R2_BUCKET || "surfaceome-gene-md";
+const CF_ACCOUNT_ID = process.env.CLOUDFLARE_ACCOUNT_ID || "";
+const CF_API_TOKEN = process.env.CLOUDFLARE_API_TOKEN || "";
+
+// PUT one Markdown object to R2 via the REST object API. Throws on non-2xx
+// so the caller surfaces a partial-upload rather than silently dropping a
+// gene's download.
+async function uploadMarkdownToR2(key, body) {
+  const url =
+    `https://api.cloudflare.com/client/v4/accounts/${CF_ACCOUNT_ID}` +
+    `/r2/buckets/${R2_BUCKET}/objects/${encodeURIComponent(key)}`;
+  const res = await fetch(url, {
+    method: "PUT",
+    headers: {
+      Authorization: `Bearer ${CF_API_TOKEN}`,
+      "Content-Type": "text/markdown",
+    },
+    body,
+  });
+  if (!res.ok) {
+    const detail = await res.text().catch(() => "");
+    throw new Error(`R2 PUT ${key} → ${res.status} ${detail.slice(0, 300)}`);
+  }
+}
+
 // --------------------------------------------------------------
 // Pretty-print helpers — kept simple so the script has no deps.
 // --------------------------------------------------------------
@@ -1419,6 +1458,13 @@ async function main() {
     console.error(`No data dir at ${DATA_DIR}`);
     process.exit(1);
   }
+  if (MD_TARGET === "r2" && (!CF_ACCOUNT_ID || !CF_API_TOKEN)) {
+    console.error(
+      "[md-exports] MD_TARGET=r2 requires CLOUDFLARE_ACCOUNT_ID + " +
+        "CLOUDFLARE_API_TOKEN (with R2 edit scope) in the environment.",
+    );
+    process.exit(1);
+  }
   // Offline/CI: api mode with no reachable Worker skips entirely — never
   // falls back to the committed JSONs (this is the D1-only contract).
   if (MD_SOURCE === "api" && (!API_BASE || API_BASE === "local")) {
@@ -1474,7 +1520,9 @@ async function main() {
     // api mode: materialize the JSON snapshot next to the .md so
     // /data/surfaceome/{SYMBOL}.json resolves in the static build and the
     // viewer fs-fallback works. In snapshots mode it is already on disk.
-    if (MD_SOURCE === "api") {
+    // r2 mode uploads only the .md — never materialize per-gene public/
+    // .json (that per-gene file explosion is the cap problem we're undoing).
+    if (MD_SOURCE === "api" && MD_TARGET !== "r2") {
       writeFileSync(
         path.join(DATA_DIR, name),
         JSON.stringify(rec, null, 2) + "\n",
@@ -1532,13 +1580,16 @@ async function main() {
       canonSeq ? `canonical ${canonSeq.length} aa\n` : "(no canonical seq)\n",
     );
     const afdbEntry = uniprot ? await fetchAfdbEntry(uniprot) : null;
-    const outPath = path.join(DATA_DIR, name.replace(/\.json$/, ".md"));
-    writeFileSync(
-      outPath,
-      md(rec, structureData, sequences, afdbEntry),
-      "utf-8",
-    );
-    console.log(`  wrote ${path.relative(VIEWER_ROOT, outPath)}`);
+    const mdBody = md(rec, structureData, sequences, afdbEntry);
+    const key = name.replace(/\.json$/, ".md");
+    if (MD_TARGET === "r2") {
+      await uploadMarkdownToR2(key, mdBody);
+      console.log(`  put r2://${R2_BUCKET}/${key}`);
+    } else {
+      const outPath = path.join(DATA_DIR, key);
+      writeFileSync(outPath, mdBody, "utf-8");
+      console.log(`  wrote ${path.relative(VIEWER_ROOT, outPath)}`);
+    }
   }
 }
 

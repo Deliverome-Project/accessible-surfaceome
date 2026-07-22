@@ -225,13 +225,15 @@ export function GeneDetail({
             >
               JSON ↗
             </a>
-            {/* The rich Markdown export (sequences + DeepTMHMM topology +
-                AlphaFold links, extras not in the JSON) was a static
-                per-gene file under public/, which is exactly what blew the
-                Pages 20k-file cap. It's temporarily removed here and will
-                return served from R2 via a Worker `/v1/genes/{sym}.md`
-                route — see the follow-up PR. The JSON above is the
-                canonical machine-readable record in the meantime. */}
+            <a
+              className={styles.crumbAction}
+              data-hint="Full Markdown export — the complete record plus reanalysis extras not in the JSON: canonical, isoform & cross-species ortholog sequences, per-residue membrane topology (DeepTMHMM), and AlphaFold model download links. Served from R2 via the Worker."
+              href={`https://api.deliverome.org/surfaceome/v1/genes/${rec.gene.hgnc_symbol}.md`}
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              Markdown (full) ↗
+            </a>
           </span>
         </nav>
 
