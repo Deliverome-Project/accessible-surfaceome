@@ -56,6 +56,7 @@ function readBuildCache<T>(file: string): T | null {
 }
 import { pickDeepDiveFilters } from "./deep-dive-fields";
 import { renumberEvidenceIds } from "./evidenceRenumber";
+import { parseTriageHeadline } from "./triage-headline";
 import type {
   BenchmarkMatrix,
   BenchmarkRow,
@@ -76,7 +77,6 @@ import type {
   SurfaceomeRecord,
   SurfaceSpecificity,
   TriageReason,
-  TriageSignal,
 } from "./surfaceome-types";
 
 // Gene-name lookup is sourced directly from the NCBI triageable TSV
@@ -1066,64 +1066,25 @@ interface TriageMeta {
  * three fields stay consistent. Returns ``{null, null, null}`` on any
  * miss so the caller can do a single shallow merge.
  */
-/** Most-positive triage call (yes > contextual > unclear > no) from
- *  /v1/triage/{symbol}, with latest `created_at` as the tiebreak.
- *  Matches the picker the catalog drawer uses — see
- *  CatalogRationaleDrawer.pickSonnetHeadlineAndSecondary. The
- *  bundled `rec.triage_signal` on a SurfaceomeRecord is a SPECIFIC
- *  triage call (the one that triggered the deep-dive); this helper
- *  surfaces the latest positive consensus, which the catalog row
- *  also shows. KLK2 is the smoking gun: bundled signal='unlikely'
- *  (2026-06-01 sonnet-ncbi), headline='possibly_accessible'
- *  (2026-06-23 sonnet-pubmed_ncbi). */
-export interface TriageHeadlinePayload {
-  signal: TriageSignal;
-  reason: string | null;
-  reasoning: string;
-  confidence: string | null;
-  /** ISO timestamp of the picked run (newest with the most-positive
-   *  verdict). Surfaced on the gene page so a reader can spot a
-   *  stale 3-week-old "no" being overridden by a fresh "contextual". */
-  createdAt: string | null;
-  /** prompt_variant of the picked run (e.g. "pubmed_ncbi"). Surfaced
-   *  alongside the verdict so the reader knows which triage variant
-   *  the headline call came from. */
-  promptVariant: string | null;
-  /** Other variants' latest runs that disagree with the headline,
-   *  sorted positive→negative, capped at 3. Same shape the catalog
-   *  drawer surfaces under "Other triage variants disagree". Empty
-   *  when all variants agree. */
-  secondary: ReadonlyArray<TriageHeadlineSecondaryEntry>;
-}
+// The triage-headline types + the pure picker (`parseTriageHeadline`) live
+// in the browser-safe `./triage-headline` leaf so the client gene shell can
+// reuse the exact same picking logic (yes > contextual > unclear > no,
+// latest as tiebreak) without dragging this file's `node:fs` import into the
+// browser bundle. Re-exported here for existing server-side type importers
+// (GeneHeader / TriageRow reference `TriageHeadlinePayload` from this module).
+export type {
+  TriageHeadlinePayload,
+  TriageHeadlineSecondaryEntry,
+} from "./triage-headline";
 
-export interface TriageHeadlineSecondaryEntry {
-  signal: TriageSignal;
-  /** Raw verdict ("yes" | "contextual" | "no" | …) for the
-   *  verdict-tone class lookup; mirrors what the catalog drawer
-   *  renders so the two surfaces tone the same chip. */
-  verdict: string;
-  reason: string | null;
-  createdAt: string;
-  promptVariant: string | null;
-}
-
-const _VERDICT_RANK: Record<string, number> = {
-  yes: 3,
-  contextual: 2,
-  unclear: 1,
-  no: 0,
-};
-
-function _verdictToSignal(v: string | null | undefined): TriageSignal {
-  if (v === "yes") return "likely_accessible";
-  if (v === "contextual") return "possibly_accessible";
-  if (v === "no") return "unlikely";
-  return "unknown";
-}
-
-export async function loadTriageHeadline(
-  symbol: string,
-): Promise<TriageHeadlinePayload | null> {
+/** Server-side wrapper: fetch `/v1/triage/{symbol}` (with the SSG cache
+ *  mode) and hand the payload to the shared `parseTriageHeadline`. The
+ *  bundled `rec.triage_signal` on a SurfaceomeRecord is a SPECIFIC triage
+ *  call (the one that triggered the deep-dive); this surfaces the latest
+ *  positive consensus. KLK2 is the smoking gun: bundled signal='unlikely'
+ *  (2026-06-01 sonnet-ncbi), headline='possibly_accessible' (2026-06-23
+ *  sonnet-pubmed_ncbi). */
+export async function loadTriageHeadline(symbol: string) {
   const base = (process.env.SURFACEOME_API_BASE ?? DEFAULT_API_BASE).trim();
   if (!base || base === "local") return null;
   const controller = new AbortController();
@@ -1134,59 +1095,7 @@ export async function loadTriageHeadline(
       signal: controller.signal,
     });
     if (!res.ok) return null;
-    const data = (await res.json()) as {
-      runs?: Array<{
-        created_at: string;
-        model: string;
-        prompt_variant: string | null;
-        predicted_verdict: string;
-        predicted_reason: string | null;
-        predicted_confidence: string | null;
-        verdict_reasoning: string | null;
-      }>;
-    };
-    // Collapse to one row per (model × variant), keeping the latest.
-    // Scoped to Sonnet 4.6 to match the drawer (the catalog's
-    // canonical headline model); cross-model runs are useful in the
-    // benchmark page but would noise the deep-dive's triage row.
-    const latestByVariant = new Map<string, NonNullable<typeof data.runs>[number]>();
-    for (const r of data.runs ?? []) {
-      if (r.model !== "claude-sonnet-4-6") continue;
-      const key = r.prompt_variant ?? "";
-      const prev = latestByVariant.get(key);
-      if (!prev || prev.created_at < r.created_at) {
-        latestByVariant.set(key, r);
-      }
-    }
-    const ranked = [...latestByVariant.values()].sort((a, b) => {
-      const dr =
-        (_VERDICT_RANK[b.predicted_verdict] ?? -1) -
-        (_VERDICT_RANK[a.predicted_verdict] ?? -1);
-      if (dr !== 0) return dr;
-      return a.created_at < b.created_at ? 1 : -1;
-    });
-    if (ranked.length === 0) return null;
-    const headline = ranked[0];
-    const secondary: TriageHeadlineSecondaryEntry[] = ranked
-      .slice(1)
-      .filter((r) => r.predicted_verdict !== headline.predicted_verdict)
-      .slice(0, 3)
-      .map((r) => ({
-        signal: _verdictToSignal(r.predicted_verdict),
-        verdict: r.predicted_verdict,
-        reason: r.predicted_reason?.trim() || null,
-        createdAt: r.created_at,
-        promptVariant: r.prompt_variant ?? null,
-      }));
-    return {
-      signal: _verdictToSignal(headline.predicted_verdict),
-      reason: headline.predicted_reason?.trim() || null,
-      reasoning: headline.verdict_reasoning?.trim() ?? "",
-      confidence: headline.predicted_confidence?.trim() || null,
-      createdAt: headline.created_at,
-      promptVariant: headline.prompt_variant ?? null,
-      secondary,
-    };
+    return parseTriageHeadline(await res.json());
   } catch {
     return null;
   } finally {

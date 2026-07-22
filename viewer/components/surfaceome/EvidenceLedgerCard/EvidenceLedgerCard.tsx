@@ -1,9 +1,11 @@
+"use client";
+
 import type {
   Evidence,
   EvidenceTier,
   SurfaceomeRecord,
 } from "../../../lib/surfaceome-types";
-import { prettyEnum } from "../../../lib/surfaceome";
+import { prettyEnum } from "../../../lib/enums";
 import {
   scrubAgentJargon,
   scrubEvidenceTokens,

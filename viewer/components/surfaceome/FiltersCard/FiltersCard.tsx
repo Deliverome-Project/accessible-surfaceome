@@ -1,3 +1,5 @@
+"use client";
+
 import { Fragment, type ReactNode } from "react";
 import {
   CITATIONS,
@@ -8,7 +10,7 @@ import { chipJumpTargets } from "../../../lib/chipJumpTargets";
 import { ecSites } from "../../../lib/surface-bind";
 import { ChipLabelValue } from "../ChipLabelValue/ChipLabelValue";
 import type { OrthologEntry, SurfaceomeRecord } from "../../../lib/surfaceome-types";
-import { prettyEnum } from "../../../lib/surfaceome";
+import { prettyEnum } from "../../../lib/enums";
 import { tooltips } from "../../../lib/tooltips";
 import { InfoTip } from "../../InfoTip/InfoTip";
 import { ChipJumpButton } from "../_shared/ChipJumpButton/ChipJumpButton";

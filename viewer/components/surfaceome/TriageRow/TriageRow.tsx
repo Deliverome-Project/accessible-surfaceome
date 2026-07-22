@@ -1,3 +1,5 @@
+"use client";
+
 import type { SurfaceomeRecord } from "../../../lib/surfaceome-types";
 import { tooltips } from "../../../lib/tooltips";
 import {

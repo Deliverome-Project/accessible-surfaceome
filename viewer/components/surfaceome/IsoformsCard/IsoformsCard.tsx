@@ -1,3 +1,5 @@
+"use client";
+
 import type {
   IsoformTopology,
   Orientation,
@@ -5,7 +7,7 @@ import type {
   ParalogEntry,
   SurfaceomeRecord,
 } from "../../../lib/surfaceome-types";
-import { prettyEnum } from "../../../lib/surfaceome";
+import { prettyEnum } from "../../../lib/enums";
 import { tooltips } from "../../../lib/tooltips";
 import { InfoTip } from "../../InfoTip/InfoTip";
 import { SectionCard } from "../SectionCard/SectionCard";

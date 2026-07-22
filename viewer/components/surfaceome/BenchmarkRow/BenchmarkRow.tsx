@@ -1,3 +1,5 @@
+"use client";
+
 import type {
   BenchmarkRow as BenchmarkRowPayload,
   SurfaceomeRecord,

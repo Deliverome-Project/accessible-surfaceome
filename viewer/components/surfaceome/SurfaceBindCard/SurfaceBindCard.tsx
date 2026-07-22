@@ -1,3 +1,5 @@
+"use client";
+
 import { CITATIONS } from "../../../lib/citations";
 import type { SurfaceomeRecord } from "../../../lib/surfaceome-types";
 import { SectionCard } from "../SectionCard/SectionCard";
