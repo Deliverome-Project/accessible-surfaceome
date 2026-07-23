@@ -64,9 +64,37 @@ with the deliverome.org site.
 `wrangler.toml` records the same target so `npm run deploy` works
 locally via Wrangler.
 
+### Gene deep-dive routing (`functions/[[path]].js`)
+
+Per-gene pages (`/TFRC/`, `/A2ML1/`, …) are **one** client-rendered shell
+(`app/gene/` → `out/gene/index.html`) — a single static file for all ~5k
+genes, so the deployment stays under the Pages 20,000-file cap. A catch-all
+Pages Function routes gene URLs to that shell **asset-first**: it serves the
+real static asset when one exists (home, `/benchmark/`, `/_next/*` chunks,
+`/data/*`), and only falls back to the shell for a genuine gene URL (a single
+extension-less path segment requested as a document). Missing assets and
+multi-segment dead links keep their real 404 — so a partial deploy fails
+visibly instead of white-screening behind the shell.
+
+> Do **not** reintroduce a `_redirects` `/*  /gene/  200` splat for this. A
+> working splat matches every directory-style route (home, `/benchmark/`) and
+> masks missing `/_next/*` chunks as 200-HTML → the whole site renders the
+> stuck shell. That regression is why this is a Function, not a redirect.
+
+### Build gotcha: `build:snapshot` load-sensitivity
+
+`npm run build` runs `scripts/build-data-snapshot.mjs` first, which
+pre-fetches all ~5k per-gene records from the live Worker and **fails the
+build if >2% (`RECORD_MAX_FAIL_FRAC`) hit rate-limit/transient errors**. A
+clean run sits near ~1% — so avoid deploying while another job is hammering
+the same Worker/D1 (e.g. an R2 `.md` populate), which can push failures over
+the guard and fail the Pages build. If a deploy fails there, just retry it
+once the Worker is idle.
+
 ## Layout
 
-- `app/` — Next.js App Router (catalogue `/` + gene detail `/[symbol]/`)
+- `app/` — Next.js App Router (catalogue `/` + client gene shell `app/gene/`,
+  served for `/{SYMBOL}/` via `functions/[[path]].js`)
 - `app/design-tokens.css` — Rosy Maroon palette mirror
 - `app/globals.css` — resets + type primitives
 - `components/Shell/` — site shell (header + footer specific to the
