@@ -93,6 +93,23 @@ type = "ratelimit"
 namespace_id = "1002"
 simple = { limit = 60, period = 60 }    # 60 req / 60s / IP on catalog + *.tsv
 
+# --- Rich per-gene Markdown export (R2) ---
+#
+# Serves GET /v1/genes/{symbol}.md — the human-readable record bundle with
+# reanalysis extras not in the JSON/D1 (canonical/isoform/ortholog
+# sequences, DeepTMHMM topology, AlphaFold links). The .md files are
+# generated offline and uploaded to this bucket by
+# `viewer/scripts/build-markdown-exports.mjs` (R2 mode); the Worker only
+# streams them back. Keyed `{HGNC_SYMBOL}.md`.
+#
+# Unlike D1, R2 bindings take a plain bucket_name (no secret UUID), so this
+# is committed with real values. One-time provisioning before first deploy:
+#   npx wrangler r2 bucket create surfaceome-gene-md
+# then populate it (see the generator's R2 mode).
+[[r2_buckets]]
+binding = "GENE_MD"
+bucket_name = "surfaceome-gene-md"
+
 # --- Feedback flow bindings (per docs/superpowers/specs/2026-05-25-feedback-button-design.md) ---
 
 # Write binding for unmoderated submissions (PII + audit). Same database
