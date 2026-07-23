@@ -46,17 +46,44 @@ const INDUCTION_NON_NONE = new Set([
  * Claudin-18.2). State-dependence accepts `unclear` because the
  * synthesizer's contract is "unclear ≠ excluded"; the value lands
  * when the deep-dive can't confidently call low vs high.
+ *
+ * Evidence bar is the synthesizer's overall `confidence` ruling, NOT the
+ * deterministic A1-only `evidence_grade` — that grade scores an empty A1
+ * (direct-method) ledger as `weak` even when the surface call rests on
+ * rich A2 (biological-context) evidence (ICAM1: A1=0 / A2=36, grade
+ * `weak` yet `confidence='moderate'`). We keep only a fail-closed guard
+ * on `evidence_grade` (never admit `conflicting`); `confidence` in
+ * {high, moderate} is the real bar. Fixing evidence_grade at source is
+ * tracked in issue #131.
+ *
+ * State-dependence is NOT a hard exclusion: a `state_dependence='high'`
+ * gene still qualifies if it has a constitutive baseline
+ * (`low_endogenous_expression === false`). This keeps constitutively-
+ * expressed-but-further-inducible surface proteins in canonical
+ * (ICAM1-class — present at low/moderate levels in normal tissue,
+ * strongly upregulated by inflammation/oncogenesis), while proteins
+ * that surface only when induced off a low/absent baseline
+ * (`low_endogenous_expression === true` — CTLA4, 4-1BB) stay in the
+ * "Cell-state induced" tier. Canonical certifies *is* it surface (the
+ * five evidence/verdict gates); *when* is the state_dependence facet.
+ * The disjunct is additive — it only admits high-state-dependence
+ * genes, never drops a low/moderate one lacking a constitutive baseline.
  */
 export function passesCanonical(f: DeepDiveFilters): boolean {
   return (
+    // Fail-closed guard only — anything but self-contradictory evidence.
+    // The confidence gate below is the real evidence bar (see docstring).
     (f.evidence_grade === "direct_multi_method" ||
-      f.evidence_grade === "direct_single_method") &&
+      f.evidence_grade === "direct_single_method" ||
+      f.evidence_grade === "supportive_but_indirect" ||
+      f.evidence_grade === "weak") &&
     (f.confidence === "high" || f.confidence === "moderate") &&
     (f.surface_specificity === "surface_dominant" ||
       f.surface_specificity === "mixed") &&
-    (f.state_dependence === "low" ||
+    ((f.state_dependence === "low" ||
       f.state_dependence === "moderate" ||
-      f.state_dependence === "unclear") &&
+      f.state_dependence === "unclear") ||
+      f.low_endogenous_expression === false) &&
     (f.surface_accessibility === "high" ||
       f.surface_accessibility === "moderate") &&
     (f.evidence_density === "high" || f.evidence_density === "moderate")
