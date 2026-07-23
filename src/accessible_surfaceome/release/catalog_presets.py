@@ -33,12 +33,49 @@ def passes_canonical(f: dict[str, Any]) -> bool:
     Drops the ECD filter (ECD-size is a design refinement, not a
     surface-membership signal — Claudin-18.2 has small loops and a
     landed therapeutic). Accepts ``state_dependence='unclear'`` so a
-    deep-dive that can't call low vs high doesn't drop out."""
+    deep-dive that can't call low vs high doesn't drop out.
+
+    Evidence bar is the synthesizer's OVERALL ``confidence`` ruling, NOT
+    the deterministic A1-only ``evidence_grade``. That grade scores an
+    empty A1 (direct-method) ledger as ``weak`` even when the surface
+    call rests on rich A2 (biological-context) evidence — ICAM1 has
+    A1=0 / A2=36 (23 strong), grade ``weak`` yet ``confidence='moderate'``
+    and ``evidence_grade_summary='supportive_but_indirect'``. Gating on
+    the grade excluded ~480 confidently-surface genes. We keep only a
+    fail-closed guard on ``evidence_grade`` (never admit
+    ``conflicting``); ``confidence in {high, moderate}`` is the real
+    bar. Fixing ``evidence_grade`` at source is tracked in issue #131.
+
+    State-dependence is NOT a hard exclusion. A gene with
+    ``state_dependence='high'`` still qualifies if it carries a
+    constitutive baseline (``low_endogenous_expression is False``). This
+    keeps constitutively-expressed-but-further-inducible surface
+    proteins in canonical — ICAM1-class: present at low/moderate levels
+    in normal tissue (endothelium, epithelium) and strongly upregulated
+    by inflammation/oncogenesis — while proteins that reach the surface
+    only when induced off a low/absent baseline
+    (``low_endogenous_expression is True`` — CTLA4, TNFRSF9/4-1BB) stay
+    in the 'Cell-state induced' tier. Rationale: canonical certifies
+    *is* it a surface protein (the five evidence/verdict gates), and
+    *when* it is surface is carried as the ``state_dependence`` facet
+    rather than used to gate membership. The disjunct is additive — it
+    only admits high-state-dependence genes, never drops a low/moderate
+    one that lacks a constitutive baseline."""
     return (
-        f.get("evidence_grade") in ("direct_multi_method", "direct_single_method")
+        # Fail-closed guard only — anything but self-contradictory evidence.
+        # The confidence gate below is the real evidence bar (see docstring).
+        f.get("evidence_grade") in (
+            "direct_multi_method",
+            "direct_single_method",
+            "supportive_but_indirect",
+            "weak",
+        )
         and f.get("confidence") in ("high", "moderate")
         and f.get("surface_specificity") in ("surface_dominant", "mixed")
-        and f.get("state_dependence") in ("low", "moderate", "unclear")
+        and (
+            f.get("state_dependence") in ("low", "moderate", "unclear")
+            or f.get("low_endogenous_expression") is False
+        )
         and f.get("surface_accessibility") in ("high", "moderate")
         and f.get("evidence_density") in ("high", "moderate")
     )
