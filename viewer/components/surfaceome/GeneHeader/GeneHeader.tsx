@@ -1,3 +1,5 @@
+"use client";
+
 import type { ReactNode } from "react";
 import type { CatalogRow } from "../../../lib/surfaceome";
 import type {
@@ -7,7 +9,7 @@ import type {
 } from "../../../lib/surfaceome-types";
 import type { SchwekeHomomerLoaderRow } from "../../../lib/structure-viewer";
 import type { StructureViewerData } from "../../../lib/structure-viewer-types";
-import { prettyEnum } from "../../../lib/surfaceome";
+import { prettyEnum } from "../../../lib/enums";
 import { tooltips } from "../../../lib/tooltips";
 import { triageVsDeepDive } from "../../../lib/triage-comparison";
 import { ReasoningDrawer } from "../ReasoningDrawer/ReasoningDrawer";

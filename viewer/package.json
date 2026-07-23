@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "next dev --webpack",
-    "build": "npm run build:snapshot && npm run build:exports && next build --webpack && node scripts/prune-export.mjs",
+    "build": "npm run build:snapshot && next build --webpack && node scripts/prune-export.mjs",
     "build:exports": "node scripts/build-markdown-exports.mjs",
     "build:snapshot": "node scripts/build-data-snapshot.mjs",
     "start": "next start",
@@ -23,7 +23,8 @@
     "remark-gfm": "^4.0.1"
   },
   "overrides": {
-    "postcss": "^8.5.10"
+    "postcss": "^8.5.10",
+    "sharp": ">=0.35.0"
   },
   "engines": {
     "node": "^24"

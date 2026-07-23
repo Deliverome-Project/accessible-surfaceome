@@ -1,6 +1,6 @@
 import { Fragment } from "react";
 import type { SurfaceomeRecord } from "../../../lib/surfaceome-types";
-import { prettyEnum } from "../../../lib/surfaceome";
+import { prettyEnum } from "../../../lib/enums";
 import { chipJumpTargets } from "../../../lib/chipJumpTargets";
 import { InfoTip } from "../../InfoTip/InfoTip";
 import { ChipJumpButton } from "../_shared/ChipJumpButton/ChipJumpButton";

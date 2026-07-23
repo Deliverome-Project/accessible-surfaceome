@@ -1,3 +1,5 @@
+"use client";
+
 import type {
   AccessibilityRelevance,
   ExpressionLevel,
@@ -6,7 +8,7 @@ import type {
   Severity,
   SurfaceomeRecord,
 } from "../../../lib/surfaceome-types";
-import { prettyEnum } from "../../../lib/surfaceome";
+import { prettyEnum } from "../../../lib/enums";
 import { tooltips } from "../../../lib/tooltips";
 import { antibodyLink } from "../../../lib/antibody-links";
 import { chipJumpTargets } from "../../../lib/chipJumpTargets";

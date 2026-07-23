@@ -1,5 +1,7 @@
+"use client";
+
 import type { SurfaceomeRecord } from "../../../lib/surfaceome-types";
-import { prettyEnum } from "../../../lib/surfaceome";
+import { prettyEnum } from "../../../lib/enums";
 import { chipJumpTargets } from "../../../lib/chipJumpTargets";
 import { ChipLabelValue } from "../ChipLabelValue/ChipLabelValue";
 import { EvidenceChipList, linkifyEvidenceRefs } from "../EvidenceChip/EvidenceChip";

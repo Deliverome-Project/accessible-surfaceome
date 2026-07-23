@@ -1,0 +1,75 @@
+/* Client gene-shell states (loading / not-found / error). The success
+   state renders <GeneDetail>, which brings its own layout + Shell. */
+
+.state {
+  padding: 3.5rem 0 4rem;
+  max-width: 42rem;
+}
+
+.stateEyebrow {
+  color: var(--accent);
+  letter-spacing: 0.22em;
+}
+
+.stateActions {
+  margin-top: 1.75rem;
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+}
+
+.retry {
+  font-family: var(--font-mono);
+  font-size: 0.85rem;
+  color: var(--bg);
+  background: var(--ink);
+  border: none;
+  border-radius: var(--radius-sm);
+  padding: 0.5rem 0.9rem;
+  cursor: pointer;
+  transition: background var(--dur-fast) var(--ease-out);
+}
+
+.retry:hover,
+.retry:focus-visible {
+  background: var(--maroon);
+}
+
+/* Lightweight loading skeleton for the brief record-fetch window.
+   Mirrors the gene page's shape (toolbar → header block → section body)
+   so the layout doesn't jump when the real content lands. */
+.skeleton {
+  padding: var(--space-3) 0 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+.skelRow {
+  display: flex;
+  gap: var(--space-3);
+  flex-wrap: wrap;
+}
+
+.skelBar {
+  border-radius: var(--radius-sm);
+  background: var(--bg-warm);
+  border: 1px solid var(--line-soft);
+  animation: skelPulse 1.4s ease-in-out infinite;
+}
+
+@keyframes skelPulse {
+  0%,
+  100% {
+    opacity: 0.55;
+  }
+  50% {
+    opacity: 1;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .skelBar {
+    animation: none;
+  }
+}

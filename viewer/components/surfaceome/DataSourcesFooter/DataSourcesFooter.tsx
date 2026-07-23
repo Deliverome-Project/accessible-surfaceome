@@ -1,3 +1,5 @@
+"use client";
+
 import type { SurfaceomeRecord } from "../../../lib/surfaceome-types";
 import { CITATIONS, pubmedUrl } from "../../../lib/citations";
 import styles from "./DataSourcesFooter.module.css";
