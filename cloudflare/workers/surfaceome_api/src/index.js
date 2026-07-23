@@ -11,6 +11,7 @@
 //   GET /v1/genes               — list of annotated genes
 //   GET /v1/genes/:symbol       — full SurfaceomeRecord
 //   GET /v1/catalog             — genome-wide candidate-universe table
+//   GET /v1/catalog/:symbol     — one gene's 5-DB surface-vote row (slim)
 //                                  (DB votes + latest triage + deep-dive flag)
 //   GET /v1/orthologs/:symbol   — ortholog table for a gene
 //   GET /v1/benchmark           — full benchmark truth labels (latest version)
@@ -1904,6 +1905,7 @@ const V1_ENDPOINTS = [
   { group: "SurfaceBench", method: "GET", path: "/v1/benchmark/matrix", summary: "Full bench matrix: truth + 5 per-DB flags + verdicts[model][variant]" },
   { group: "SurfaceBench", method: "GET", path: "/v1/benchmark/export.tsv", summary: "Long-format TSV of the bench multi-model sweep" },
   { group: "Genome-wide", method: "GET", path: "/v1/catalog", summary: "Per-gene 5-DB surface-vote matrix + latest triage verdict + deep-dive flag (~19k genes)" },
+  { group: "Genome-wide", method: "GET", path: "/v1/catalog/{symbol}", summary: "One gene's 5-DB surface-vote row (slim; for the per-gene page's DB-presence strip)" },
   { group: "Genome-wide", method: "GET", path: "/v1/triage/{symbol}", summary: "Every triage run for one gene, with the agent's verdict_reasoning" },
   { group: "Genome-wide", method: "GET", path: "/v1/triage/{symbol}/{model}/{variant}", summary: "Per-cell replicate detail + computed majority" },
   {
@@ -2800,6 +2802,57 @@ async function handleFeedbackPublic(env, url) {
 
 // --- entry ----------------------------------------------------------------
 
+// Slim single-gene catalog row — the 5 source-DB surface flags (+ n_sources,
+// deep-dive flag, SURFACE-Bind site count) for ONE gene, so the per-gene page
+// can render the DB-presence strip without pulling the ~5 MB genome-wide
+// /v1/catalog. Mirrors handleCatalog's per-row projection, filtered to the
+// latest universe_version and one gene. `deep_dive` is just presence in
+// surface_annotation (the strip only reads `db`, but the row is returned in
+// the same CatalogRow shape the catalog table uses).
+async function handleCatalogOne(env, symbol) {
+  const sym = checkSymbol(symbol);
+  if (!sym) return notFound("gene_not_found");
+  const release = await env.DB.prepare(
+    `SELECT universe_version FROM candidate_universe_release
+      ORDER BY loaded_at DESC LIMIT 1`
+  ).first();
+  if (!release?.universe_version) return notFound("no_universe");
+  const r = await env.DB.prepare(
+    `SELECT u.gene_symbol,
+            COALESCE(gi.uniprot_acc, u.uniprot_acc) AS uniprot_acc,
+            u.n_sources_surface,
+            u.uniprot_surface_flag, u.go_surface_flag, u.surfy_surface_flag,
+            u.cspa_surface_flag, u.hpa_surface_flag,
+            sb.n_sites AS sb_n_sites,
+            CASE WHEN sa.gene_symbol IS NOT NULL THEN 1 ELSE 0 END AS has_deep_dive
+       FROM candidate_universe_public u
+       LEFT JOIN gene_identifier_public gi ON gi.hgnc_symbol = u.gene_symbol
+       LEFT JOIN surface_bind_protein sb ON sb.uniprot_acc = u.uniprot_acc
+       LEFT JOIN (SELECT DISTINCT gene_symbol FROM surface_annotation) sa
+              ON sa.gene_symbol = u.gene_symbol
+      WHERE u.gene_symbol = ? COLLATE NOCASE
+        AND u.universe_version = ?
+      LIMIT 1`
+  ).bind(sym, release.universe_version).first();
+  if (!r) return notFound("gene_not_in_universe");
+  const flag = (v) => (v ? 1 : 0);
+  return json({
+    symbol: r.gene_symbol,
+    uniprot: r.uniprot_acc ?? "",
+    n_sources: r.n_sources_surface ?? 0,
+    db: {
+      uniprot: flag(r.uniprot_surface_flag),
+      go: flag(r.go_surface_flag),
+      surfy: flag(r.surfy_surface_flag),
+      cspa: flag(r.cspa_surface_flag),
+      hpa: flag(r.hpa_surface_flag),
+    },
+    deep_dive: r.has_deep_dive === 1,
+    surface_bind_sites:
+      typeof r.sb_n_sites === "number" ? r.sb_n_sites : undefined,
+  });
+}
+
 export default {
   async fetch(request, env) {
     if (request.method === "OPTIONS") {
@@ -2867,6 +2920,9 @@ export default {
 
     let m;
     if ((m = path.match(/^\/v1\/genes\/([^/]+)$/))) return withEdgeCache(request, () => handleGene(env, m[1]));
+    // Single-gene catalog row (DB-vote strip on the gene page). `/v1/catalog`
+    // (exact) is matched above; this is the per-symbol variant.
+    if ((m = path.match(/^\/v1\/catalog\/([^/]+)$/))) return withEdgeCache(request, () => handleCatalogOne(env, m[1]));
     if ((m = path.match(/^\/v1\/orthologs\/([^/]+)$/))) return withEdgeCache(request, () => handleOrthologs(env, m[1]));
     if ((m = path.match(/^\/v1\/benchmark\/([^/]+)$/))) return withEdgeCache(request, () => handleBenchmarkOne(env, m[1]));
     // Per-cell replicate detail (more specific — match before the bare
