@@ -361,18 +361,18 @@ const tsDir = path.join(pub, "tag-sites");
 const inDir = path.join(pub, "internalization");
 mkdirSync(tsDir, { recursive: true });
 mkdirSync(inDir, { recursive: true });
-writeFileSync(path.join(tsDir, "__TESTGENE.json"), JSON.stringify({ has_data: true, gene_symbol: "__TESTGENE", uniprot_acc: "P00000", sites: [] }));
-writeFileSync(path.join(inDir, "__TESTGENE.json"), JSON.stringify({ has_data: false, gene_symbol: "__TESTGENE", uniprot_acc: "P00000", measurements: [], qualitative_statements: [] }));
+writeFileSync(path.join(tsDir, "ZZTESTGENE.json"), JSON.stringify({ has_data: true, gene_symbol: "ZZTESTGENE", uniprot_acc: "P00000", sites: [] }));
+writeFileSync(path.join(inDir, "ZZTESTGENE.json"), JSON.stringify({ has_data: false, gene_symbol: "ZZTESTGENE", uniprot_acc: "P00000", measurements: [], qualitative_statements: [] }));
 
 try {
-  expect("loads tag-sites file", loadTaggedSites("__TESTGENE")?.gene_symbol, "__TESTGENE");
-  expect("loads internalization file", loadInternalization("__TESTGENE")?.has_data, false);
-  expect("missing gene → null", loadTaggedSites("__NOPE"), null);
+  expect("loads tag-sites file", loadTaggedSites("ZZTESTGENE")?.gene_symbol, "ZZTESTGENE");
+  expect("loads internalization file", loadInternalization("ZZTESTGENE")?.has_data, false);
+  expect("missing gene → null", loadTaggedSites("ZZNOPE"), null);
   expect("path-traversal key → null", loadTaggedSites("../secret"), null);
   expect("null key → null", loadTaggedSites(null), null);
 } finally {
-  rmSync(path.join(tsDir, "__TESTGENE.json"), { force: true });
-  rmSync(path.join(inDir, "__TESTGENE.json"), { force: true });
+  rmSync(path.join(tsDir, "ZZTESTGENE.json"), { force: true });
+  rmSync(path.join(inDir, "ZZTESTGENE.json"), { force: true });
 }
 
 if (failures > 0) { console.error(`\n${failures} assertion(s) failed`); process.exit(1); }
