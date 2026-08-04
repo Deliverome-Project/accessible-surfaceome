@@ -58,6 +58,31 @@
       "plddt": 96.0,
       "conservation_rank": 7,
       "median_conservation": 0.28
+    },
+    {
+      "site_id": "TFRC-cterm-760-lit",
+      "gene_symbol": "TFRC",
+      "uniprot_acc": "P02786",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "terminal_c",
+      "insert_after_residue": 760,
+      "residue_before": "F",
+      "residue_after": null,
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "short epitope",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "asserted experimentally supported; citation pending",
+      "functional_impact_measured": "NOT MEASURED vs untagged (control A24)",
+      "confidence": "low",
+      "rationale": "TFRC is a type-II protein; the C-terminus (F760) is the ectodomain end and extracellular. Control A24 — asserted, citation not yet in hand.",
+      "sources": [{ "citation": "TFRC C-terminal tag (control A24) — citation pending" }],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null
     }
   ]
 }

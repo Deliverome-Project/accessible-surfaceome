@@ -21,6 +21,7 @@ expect(
   ["deterministic_computed", "literature_retrieved"],
 );
 expect("has a surface_loop deterministic site", (ts?.sites ?? []).some((s) => s.det_path === "surface_loop"), true);
+expect("has a C-terminal (terminal_c) site", (ts?.sites ?? []).some((s) => s.site_kind === "terminal_c"), true);
 
 const intl = loadInternalization("TFRC");
 expect("TFRC internalization loads", intl?.has_data, true);
