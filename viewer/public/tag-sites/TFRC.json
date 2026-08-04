@@ -1,0 +1,63 @@
+{
+  "has_data": true,
+  "gene_symbol": "TFRC",
+  "uniprot_acc": "P02786",
+  "sites": [
+    {
+      "site_id": "TFRC-internal-290-lit",
+      "gene_symbol": "TFRC",
+      "uniprot_acc": "P02786",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "internal",
+      "insert_after_residue": 290,
+      "residue_before": "I",
+      "residue_after": "V",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "ALFA",
+      "tag_length_aa": 15,
+      "linker": "GS both sides",
+      "evidence_type": "published tag insertion at this exact site",
+      "functional_impact_measured": "Transferrin uptake retained, ligand-independent, n=4 (EndoNB)",
+      "confidence": "high",
+      "rationale": "Surface loop in the apical domain, ~35-45 A from the Tf/HFE interface.",
+      "sources": [
+        {
+          "citation": "Lenaerts et al., EndoNB, bioRxiv 2025",
+          "doi": "10.1101/2025.06.08.658482",
+          "url": "https://doi.org/10.1101/2025.06.08.658482"
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null
+    },
+    {
+      "site_id": "TFRC-internal-290-det",
+      "gene_symbol": "TFRC",
+      "uniprot_acc": "P02786",
+      "provenance": "deterministic_computed",
+      "det_path": "surface_loop",
+      "site_kind": "internal",
+      "insert_after_residue": 290,
+      "residue_before": "I",
+      "residue_after": "V",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "ALFA",
+      "tag_length_aa": 15,
+      "linker": "GS both sides",
+      "evidence_type": "structural inference (surface_loop path)",
+      "functional_impact_measured": "NOT MEASURED",
+      "confidence": "medium",
+      "rationale": "pLDDT ~96 ordered surface loop; high flank RSA; DSSP strand-loop-helix connector.",
+      "sources": [{ "citation": "deterministic surface_loop path (AF-P02786-F1)" }],
+      "plddt": 96.0,
+      "conservation_rank": 7,
+      "median_conservation": 0.28
+    }
+  ]
+}
