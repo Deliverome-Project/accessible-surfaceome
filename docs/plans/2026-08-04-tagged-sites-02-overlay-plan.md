@@ -403,18 +403,18 @@ export interface TagSiteSphere {
 
 Add `tagSites?: TagSiteSphere[];` to `StructureViewerProps` (beside `surfaceBindAnchors?` at ~387) and destructure with a default `tagSites = []` (beside `surfaceBindAnchors = []` at ~1047-1055).
 
-- [ ] **Step 2: Gate + draw**
+- [ ] **Step 2: Gate + draw (separate "tags" view mode)**
 
-Import `PROVENANCE_HEX` from `../../../lib/tag-sites-types` at the top. Add a `hasTagSites` gate beside `hasAnchors` (~1367):
+Extend the view-mode union to a **third mode**: change `type ViewMode = "topology" | "sites";` (~408) to `type ViewMode = "topology" | "sites" | "tags";`. Import `PROVENANCE_HEX` from `../../../lib/tag-sites-types` at the top. Add a `hasTagSites` gate beside `hasAnchors` (~1367):
 
 ```tsx
 const hasTagSites = tagSites.length > 0 && isCanonicalActive;
 ```
 
-Immediately after the `surfaceBindAnchors` sphere loop (ends ~2019), add a parallel loop that draws in the SAME `viewMode === "sites"` mode:
+Immediately after the `surfaceBindAnchors` sphere loop (ends ~2019), add a parallel loop that draws only in the new `tags` mode (so tag sites are their own layer, independent of SURFACE-Bind patches):
 
 ```tsx
-const shouldRenderTagSites = viewMode === "sites" && hasTagSites && !schwekeVariant;
+const shouldRenderTagSites = viewMode === "tags" && hasTagSites && !schwekeVariant;
 for (let i = 0; shouldRenderTagSites && i < tagSites.length; i += 1) {
   const { siteId, residue, provenance, tagType } = tagSites[i];
   const color = PROVENANCE_HEX[provenance];
@@ -434,11 +434,25 @@ for (let i = 0; shouldRenderTagSites && i < tagSites.length; i += 1) {
 }
 ```
 
-Update the render effect's dependency array (~2171-2172) to include `JSON.stringify(tagSites)` (mirroring the `surfaceBindAnchors` stringify) and `hasTagSites`.
+Update the render effect's dependency array (~2171-2172) to include `JSON.stringify(tagSites)` (mirroring the `surfaceBindAnchors` stringify) and `hasTagSites`. Also give `tags` mode the same cartoon-wash treatment as `sites` mode — extend the `viewMode === "sites"` wash gate (~1880-1886) to `viewMode === "sites" || viewMode === "tags"`.
 
-- [ ] **Step 3: Make the toggle appear when only tag sites exist**
+- [ ] **Step 3: Add a distinct "Tag sites" toggle button**
 
-The "Topology / sites" toggle currently renders only when `hasAnchors` (2360). Change the gate for showing the toggle to `hasAnchors || hasTagSites` so tag-only proteins still get the sites view. Relabel the "SURFACE-Bind sites" button to "Sites" when tag sites are present but anchors aren't (leave existing label logic intact when `hasAnchors`). Keep changes minimal and localized to the toggle JSX (2360-2391).
+The toggle group currently renders when `hasAnchors` (2360) with two buttons (Topology / SURFACE-Bind sites). Change the group's render gate to `hasAnchors || hasTagSites`. Add a **third** button, rendered only when `hasTagSites`, mirroring the existing button markup:
+
+```tsx
+{hasTagSites && (
+  <button
+    type="button"
+    data-active={viewMode === "tags"}
+    onClick={() => setViewMode("tags")}
+  >
+    Tag sites
+  </button>
+)}
+```
+
+Keep the existing "SURFACE-Bind sites" button gated on `hasAnchors` (unchanged label/behavior). The three buttons (Topology always; SURFACE-Bind sites when `hasAnchors`; Tag sites when `hasTagSites`) coexist. Add a `tags`-mode legend beside the sites-mode legend (~2414-2453): map the present provenances to swatches colored `PROVENANCE_HEX[provenance]` with labels "Literature" / "Deterministic".
 
 - [ ] **Step 4: Typecheck**
 
