@@ -103,6 +103,7 @@ Shipped as static per-protein JSON (see §6). Keyed to the viewer's gene-symbol 
   "gene_symbol": "AXL",
   "uniprot_acc": "P30530",
   "provenance": "literature_retrieved",        // | "deterministic_computed"
+  "det_path": null,                              // "disorder" | "surface_loop" (deterministic only)
   "site_kind": "internal",                       // "terminal_n" | "terminal_c" | "internal"
   "insert_after_residue": 184,                   // junction: tag sits between N and N+1
   "residue_before": "P",                         // verified against canonical sequence
@@ -224,10 +225,32 @@ is a **screen-then-rank**, not a score-everything:
    *filter*; conservation is the *ranker* — deliberately, since ranking on low pLDDT alone is
    a known failure mode.
 
-- **Recommended port:** map the precomputed
+This method has **two candidate-generation paths**, both extracellular-gated, feature-vetoed,
+and conservation-ranked, both emitting `provenance: "deterministic_computed"` (distinguished
+by a `det_path` sub-field: `"disorder"` | `"surface_loop"`):
+
+**Path 2a — disorder sites (port).** Map the precomputed
   `deliverome-internal/cloudflare/surfaceome_structure_site_viewer/deploy_static/insertion_sequence_library.csv`
-  (+ `viewer_dataset.json`) rows onto `TaggedSite` with `provenance:
-  "deterministic_computed"`. Faithful "as we did in deliverome-internal"; no AF/KIBBY recompute.
+  (+ `viewer_dataset.json`) rows onto `TaggedSite`. Faithful "as we did in deliverome-internal";
+  no AF/KIBBY recompute. **Yields low-pLDDT sites only** — by construction it cannot contain
+  ordered-surface-loop sites (see 2b).
+
+**Path 2b — ordered surface-loop sites (new computation, catches the TFRC I290 class).**
+  Verified against the EndoNB TFRC site: I290/V291 sits at **pLDDT ~94–98** (confidently
+  folded), RSA up to ~88% on the flanks, in a strand→loop→helix connector ~35–45 Å from the
+  Tf/HFE interface and clear of features — so the low-pLDDT screen (2a) **structurally misses
+  it**, and EndoNB itself picked it by eye as a "surface loop," not by disorder. Path 2b makes
+  that judgment computable. Here **pLDDT flips role**: from a disorder *gate* to a *reliability
+  gate* that makes the surface metrics trustworthy. Candidate =
+  `extracellular ('O')` **AND** `pLDDT ≥ 70` **AND** `DSSP = loop/turn` (up-weight
+  strand↔helix connectors) **AND** `window-high RSA` **AND** `MSA indel-tolerant`
+  (high per-column gap frequency) **AND** `≥10–15 Å (3D) from disulfides / N-glyc sequons /
+  active-binding / interface atoms`; rank by low KIBBY conservation + high RSA + high column
+  gap-frequency. Inputs are all already available (AF PDB, UniProt features, the conservation
+  MSA); tools: `freesasa` (assembly-aware — compute on the biological assembly so dimer
+  interfaces aren't mistaken for surface), `pydssp`/`mkdssp`, `biopython`. Optional later
+  signals: ENM/NMA flexibility (ProDy) and PAE-based domain/linker parsing — noted as
+  complementary, but neither is decisive for the I290 case (flat pLDDT, intra-domain).
 - **Two things to confirm at port time** (do not assume):
   - **KIBBY identity + rank direction** — the per-span `rank` is produced by an *upstream*
     step not in `build_structure_site_viewer.py`; confirm the exact KIBBY tool/citation and
@@ -240,12 +263,6 @@ is a **screen-then-rank**, not a score-everything:
   (a short ECL tripled by a ~49-aa cassette is not flagged); (3) tag-agnostic — β-strand tags
   (SpyTag) behave differently from α-helical epitopes (ALFA) in loops; (4) veto quality is
   bounded by UniProt annotation completeness.
-- **Surface-exposure enhancement (investigation open):** the low-pLDDT screen will *miss*
-  insertion-tolerant **surface loops inside well-folded (high-pLDDT) domains** — e.g. the
-  EndoNB TFRC ALFA site after I290. A complementary deterministic signal (relative solvent
-  accessibility / DSSP loop-or-turn / inter-domain linker detection on the AF model) is under
-  investigation to catch these; see §13. If it lands, it becomes a second candidate-generation
-  path alongside the low-pLDDT screen, both ranked by conservation.
 - **Later option:** re-run the full scoring in the public repo. Deferred: the public record
   carries topology + sequence but **not** per-residue pLDDT/conservation, so recompute needs
   those inputs sourced first.
@@ -294,8 +311,11 @@ longer the clean symbol-only benchmark condition. Keep both as **run-modes of on
   import the 23 controls into the validation fixture.
 - **P1** — Tag-site overlay (3D + topology bar) rendering from static JSON, colored by
   provenance, EC emphasis + non-EC toggle. Ship against a seed dataset.
-- **P2** — Deterministic tier: port `insertion_sequence_library.csv` → `TaggedSite`
-  (`deterministic_computed`).
+- **P2a** — Deterministic disorder path: port `insertion_sequence_library.csv` → `TaggedSite`
+  (`deterministic_computed`, `det_path: "disorder"`).
+- **P2b** — Deterministic surface-loop path: compute RSA + DSSP + MSA indel-tolerance +
+  3D-distance veto on AF models (`det_path: "surface_loop"`); validate it recovers the ordered
+  surface-loop controls (TFRC I290, ITGB1 G101, ITGB5 A102) that Path 2a cannot see.
 - **P3** — Literature tag-site agent (production mode, sequence/topology-grounded);
   validate recall vs the 23 controls; emit `literature_retrieved`.
 - **P4** — §08 Internalization tab + internalization-evidence agent.
@@ -305,9 +325,14 @@ longer the clean symbol-only benchmark condition. Keep both as **run-modes of on
 ## 13. Open questions / risks
 - **Public exposure**: RESOLVED — approved for the public viewer (all data traces to
   published papers).
-- **Surface-exposure signal (TFRC I290/V291)**: the deterministic screen likely misses
-  surface loops in ordered domains. Investigation open (see §7.2) into an RSA/DSSP-based
-  candidate-generation path; findings feed the deterministic method and the plan.
+- **Surface-exposure signal (TFRC I290/V291)**: RESOLVED into design — deterministic Path 2b
+  (§7.2). Confirmed the low-pLDDT screen misses the ordered surface loop (pLDDT ~96 at I290).
+  Remaining care items for implementation: compute SASA on the **biological assembly** (TFR is
+  a homodimer) so dimer-interface loops aren't scored as surface; validate the composite gate
+  recovers I290 and the other ordered-loop controls (ITGB1 G101, ITGB5 A102).
+- **Control-data accuracy**: EndoNB's methods describe a GS flexible linker generally, which
+  conflicts with the controls' "TFRC: no linkers" note — reconcile the specific TFR construct
+  against the figure legend before treating linker fields as ground truth in scoring.
 - **Overlay legibility**: many candidate sites per protein could clutter the 3D/topology
   views; may need a per-provenance visibility toggle and/or a confidence floor.
 - **Deterministic input parity**: ported rows must map onto the *public* record's canonical
