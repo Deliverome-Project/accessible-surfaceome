@@ -163,11 +163,92 @@ def load_gazetteer(path: str | None = None) -> frozenset[str]:
     return frozenset(symbols)
 
 
+@lru_cache(maxsize=1)
+def _gene_token_map(path: str | None = None) -> dict[str, frozenset[str]]:
+    """Map every Approved HGNC symbol to its full normalized token set
+    (symbol + aliases + previous symbols). Cached (large, static); empty
+    when the TSV is not hydrated. Backs :func:`homonym_competitor_tokens`."""
+    tsv = Path(path) if path else _DEFAULT_HGNC_TSV
+    if not tsv.exists():
+        return {}
+    out: dict[str, frozenset[str]] = {}
+    with tsv.open() as fh:
+        for row in csv.DictReader(fh, delimiter="\t"):
+            if (row.get("status") or "").strip() != "Approved":
+                continue
+            sym = normalize_symbol(row.get("symbol") or "")
+            if not sym:
+                continue
+            toks: set[str] = set()
+            for col in ("symbol", "alias_symbol", "prev_symbol"):
+                raw = (row.get(col) or "").replace('"', "")
+                for piece in raw.split("|"):
+                    norm = normalize_symbol(piece)
+                    # No length floor here: this map is used for EXACT
+                    # symbol-collision detection against HGNC (e.g. does F3
+                    # list "TF"?), where 2-char symbols must survive. The
+                    # length/ambiguity floor is re-applied to the
+                    # sentence-matchable ``distinguishing`` output below.
+                    if norm:
+                        toks.add(norm)
+            out[sym] = frozenset(toks)
+    return out
+
+
+def homonym_competitor_tokens(
+    target_symbol: str,
+    target_names: frozenset[str],
+    *,
+    path: str | None = None,
+) -> tuple[frozenset[str], frozenset[str]]:
+    """Deterministically find genes that COLLIDE with ``target_symbol`` (homonyms).
+
+    A homonym competitor is an Approved HGNC gene (other than the target)
+    whose own symbol/alias/prev set contains the target's symbol — e.g.
+    F3 (tissue factor) carries ``TF`` in its ``alias_symbol`` (``CD142|TF``),
+    so an F3 sentence written "…tissue factor (TF)…" contains the shared
+    ``TF`` token and defeats the plain :func:`sentence_subject` target check.
+
+    Returns ``(distinguishing, shared)``:
+
+    * ``distinguishing`` — the competitor's tokens that are NOT also target
+      names (``F3``, ``CD142``): a sentence carrying one of these is about
+      the *other* gene even if it also carries the shared symbol.
+    * ``shared`` — the ambiguous token(s) common to both (``TF``): unreliable
+      as a target signal, so callers strip it from the target's core set.
+
+    Both empty when HGNC isn't hydrated or the symbol has no collision — the
+    homonym guard then no-ops (backwards compatible).
+    """
+    tgt = normalize_symbol(target_symbol)
+    if not tgt:
+        return frozenset(), frozenset()
+    competitor_tokens: set[str] = set()
+    for sym, toks in _gene_token_map(path).items():
+        if sym != tgt and tgt in toks:
+            competitor_tokens |= toks
+    if not competitor_tokens:
+        return frozenset(), frozenset()
+    # `shared` = the ambiguous token(s) common to both entities (e.g. TF).
+    shared = frozenset(competitor_tokens & (target_names | {tgt}))
+    # `distinguishing` = competitor-only tokens, re-floored for safe matching
+    # in free text (drops 2-char/ambiguous tokens like the bare "F3", keeps
+    # "CD142"). These are what sentence_subject scans a sentence for.
+    distinguishing = frozenset(
+        t
+        for t in (competitor_tokens - target_names - shared)
+        if len(t) >= _MIN_SYMBOL_LEN and t not in _AMBIGUOUS_TOKENS
+    )
+    return distinguishing, shared
+
+
 def sentence_subject(
     sentence: str,
     *,
     target_names: frozenset[str],
     gazetteer: frozenset[str],
+    competitors: frozenset[str] = frozenset(),
+    target_core: frozenset[str] | None = None,
 ) -> str:
     """Classify a sentence as ``"target"``, ``"competing"``, or ``"neither"``.
 
@@ -180,17 +261,30 @@ def sentence_subject(
       may refer to the protein anaphorically); the caller keeps it at
       base score.
 
-    With both sets empty the result is always ``"neither"`` — i.e. the
-    filter is a no-op, which is the backwards-compatible default.
+    **Homonym guard** (``competitors`` non-empty, from
+    :func:`homonym_competitor_tokens`): when the target's symbol collides
+    with another gene, a sentence carrying the competitor's *distinguishing*
+    token (``F3``/``CD142``) and **no** target-only token is reclassified
+    ``"competing"`` — even though it also carries the shared symbol (``TF``)
+    that would otherwise satisfy the plain target short-circuit. This is what
+    keeps tissue-factor (F3) surface evidence out of the serotransferrin (TF)
+    ledger. ``target_core`` is ``target_names`` minus the shared token; it
+    defaults to ``target_names`` when no homonym info is supplied.
+
+    With ``target_names`` and ``gazetteer`` both empty the result is always
+    ``"neither"`` — i.e. the filter is a no-op, the backwards-compatible
+    default.
     """
     if not target_names and not gazetteer:
         return "neither"
-    tokens = extract_symbol_tokens(sentence)
-    if any(tok in target_names for tok in tokens):
+    tokens = set(extract_symbol_tokens(sentence))
+    if competitors and (tokens & competitors):
+        core = target_core if target_core is not None else target_names
+        if not (tokens & core):
+            return "competing"
+    if tokens & target_names:
         return "target"
-    if gazetteer and any(
-        tok in gazetteer and tok not in target_names for tok in tokens
-    ):
+    if gazetteer and (tokens & gazetteer) - target_names:
         return "competing"
     return "neither"
 
@@ -198,6 +292,7 @@ def sentence_subject(
 __all__ = [
     "build_target_names",
     "extract_symbol_tokens",
+    "homonym_competitor_tokens",
     "load_gazetteer",
     "normalize_symbol",
     "sentence_subject",
