@@ -42,8 +42,7 @@ The deep-dive-tier features are sourced from the deep-dive RECORDS (full
 coverage per deep-dived gene, fixing the prior DeepTMHMM-M1-only coverage bias);
 the Sonnet pool's features come from the genome-wide D1 tables (topology 100%).
 
-PRELIMINARY — the deep-dive tiers are a partial sweep of the ~5,128 candidate
-genes; treat those per-tier rates as provisional until the sweep completes.
+Full deep-dive cohort (5,130 genes); the `canonical` tier uses the PR #130 gate.
 
 Visual styling matches the in-repo `_plotting_config` (Deliverome
 categorical palette + Manrope-when-available). Inlined so the gist runs

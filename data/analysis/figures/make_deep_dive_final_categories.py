@@ -20,12 +20,12 @@ not-surface).
 likely, as a sorted horizontal bar chart over the cell-type + cell-state
 reasons.
 
-**PRELIMINARY** — ~1,175 of ~5,128 swept, pre-QA-fix. Nearly all
-below-likely genes (low/uncertain/no) carry weak/conflicting evidence —
-partly the pretrim-cap recall bug that deletes foundational literature — so
-those three tiers are tentative leans on thin evidence, and the cell-state
-``oncogenic`` share is inflated by tumour-associated over-flagging;
-re-render after the full sweep + QA fixes.
+Full deep-dive cohort (5,130 genes); `canonical` uses the PR #130 gate
+(overall confidence, not the A1-only evidence grade), giving 2,243
+canonical / 625 likely / 1,134 low / 1,073 no / 55 uncertain. The
+low/uncertain/no tiers are weak-evidence tentative leans, and the
+cell-state ``oncogenic`` share (249) partly reflects tumour-associated
+flagging.
 
 Visual styling matches the in-repo `_plotting_config` (Deliverome
 categorical palette + Manrope-when-available). Inlined so the gist runs
@@ -257,9 +257,9 @@ def main() -> None:
 
     fig.text(
         0.5, -0.02,
-        f"PRELIMINARY — {cohort_n:,} of ~5,128 swept, pre-QA-fix "
-        f"(low/uncertain/no are weak-evidence tentative leans, inflated by the "
-        f"pretrim-cap bug; cell-state 'oncogenic' by tumour-associated over-flagging).",
+        f"Full deep-dive cohort (n={cohort_n:,}). low / uncertain / no are "
+        f"weak-evidence tentative leans; cell-state 'oncogenic' reflects "
+        f"tumour-associated flagging. Canonical uses the PR #130 gate.",
         ha="center", va="top", fontsize=12, style="italic", color=BRAND_NEUTRAL,
     )
 

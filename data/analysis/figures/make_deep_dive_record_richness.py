@@ -31,9 +31,10 @@ is faceted by the deep-dive **tier** (canonical / likely / low / no):
 Each violin is the real distribution of that tier's genes (median line inside;
 faint real-value point strip overlaid). Panels c–e drop the "no" tier since
 non-surface proteins carry little extracellular evidence by definition; the
-``uncertain`` tier (n=9) is dropped everywhere as too small to plot.
+``uncertain`` tier (n=55) is dropped everywhere as too small relative to
+the other tiers to plot a stable distribution.
 
-PRELIMINARY — 1,175 of ~5,128 swept, pre-QA-fix.
+Full deep-dive cohort (5,130 genes); the `canonical` tier uses the PR #130 gate.
 
 Standalone — ``uv run make_deep_dive_record_richness.py``.
 """
