@@ -162,8 +162,10 @@ Mirrors the existing SURFACE-Bind feature (the near-exact template).
   already accepts `surfaceBindAnchors` and draws labeled α-carbon spheres with a view-mode
   toggle. Add a parallel `tagSites` prop (or a third view mode) that draws one sphere per
   rendered `TaggedSite`, **colored by `provenance`** (L vs D), labeled with tag type +
-  residue. Assembly mirrors `GeneHeader.tsx` (~L858–940), deriving compartment from the
-  topology string.
+  residue. Assembly mirrors the `surfaceBindAnchors` block in `GeneHeader.tsx` (~L636–658)
+  and the sphere loop in `StructureViewer.tsx` (~L1960–2019); reuse `deriveCompartment` from
+  `lib/tag-sites-derive.ts`. NOTE: 3Dmol/WebGL needs concrete hex, not CSS vars — keep a small
+  JS provenance→hex map in sync with the `--tag-site-*` tokens (mirrors `COMPARTMENT_COLOR`).
 - **Linear topology bar** — `viewer/components/surfaceome/IsoformsCard/TopologyBar.tsx`.
   Add absolutely-positioned pins at `insert_after_residue / topology.length`, colored by
   provenance. Terminal sites pin at the corresponding terminus.
@@ -177,9 +179,9 @@ Mirrors the existing SURFACE-Bind feature (the near-exact template).
   sortable client table + `StatusPill` chips). Columns: cell type · assay · ±ligand · rate ·
   n · source link. A secondary panel lists `qualitative_statements`.
 - Registered as one conditional entry (present when the protein has measurements) in the
-  `sections[]` array in `viewer/app/[symbol]/page.tsx`, taking the **§08** slot after
-  Isoforms (§07). Section numbering/labels follow the existing numbered-section pattern
-  (`GeneDetail.tsx` / `GeneHeader.tsx`).
+  `sections[]` array in `viewer/components/surfaceome/GeneDetail/GeneDetail.tsx` (mirroring the
+  SURFACE-Bind entry), taking the **§08** slot after Isoforms. Section number = 1-based array
+  index passed to `render(n)`; there is no visually-rendered §NN, but ordering places it last.
 
 ## 6. Data path
 
@@ -192,6 +194,17 @@ precedent and the existing `viewer/public/data/surfaceome/{SYMBOL}.json` exports
 Loaders in `viewer/lib/` (`loadTaggedSites(symbol)`, `loadInternalization(symbol)`) mirror
 `loadStructureViewerData`. Keyed by symbol to match the route param directly; `uniprot_acc`
 carried inside each record. No D1/Worker/Pydantic changes in this effort.
+
+**Architecture correction (verified against the code).** The per-gene route is **not** a
+static-generated server page — it is a **client shell** at `viewer/app/gene/page.tsx`
+(`"use client"`) that fetches the `SurfaceomeRecord` from the Worker at runtime and renders
+`GeneDetail.tsx`. Consequence: the `node:fs` `readFileSync` loaders above are **server-only**
+(usable from build-time exports and tests, not the live client shell). For the live overlay,
+the static `viewer/public/tag-sites/{SYMBOL}.json` is **client-fetched** as a static asset —
+added to the existing `Promise.all` in `app/gene/page.tsx` (alongside the record/triage/
+benchmark fetches) and threaded `GeneDetail → GeneHeader → StructureViewer`. Same file on
+disk; the loader and the client fetch are two readers of it. (A later option is to embed
+tagged sites in the Worker's record response, removing the extra fetch.)
 
 ## 7. Sourcing pipelines
 
