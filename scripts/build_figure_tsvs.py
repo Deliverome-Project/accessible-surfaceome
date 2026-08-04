@@ -428,15 +428,19 @@ def build_deep_dive_final_categories(src: dict[str, pd.DataFrame]) -> pd.DataFra
     ``surface_call_reason`` + ``induction_trigger`` context that drove the call.
 
     Columns: gene_symbol, hgnc_id, uniprot_acc, ensembl_gene, ncbi_gene_id,
-    category, subcategory, surface_call_reason, induction_trigger.
+    category, subcategory, surface_call_reason, induction_trigger,
+    low_endogenous_expression, state_dependence.
 
-    PRELIMINARY — only the genes swept so far (pre-QA-fix). The below-likely
-    tiers are inflated by ``evidence_grade='weak'`` records, partly the
-    pretrim-cap recall bug deleting foundational papers; re-run after the sweep
-    + QA fixes for the final figure."""
+    ``low_endogenous_expression`` + ``state_dependence`` drive Panel b's
+    cross-cutting cell-state view: state-dependence is a FACET (the "when is it
+    surface"), not a tier, so it recurs across canonical / likely / low. Panel b
+    splits each surface tier into state-gated (surface only when induced off a
+    low/absent baseline, ``low_endogenous_expression`` True) vs constitutive
+    baseline (False — the ICAM1 class that is surface at rest and further
+    cell-state-modulated)."""
     cols = ["gene_symbol", "hgnc_id", "uniprot_acc", "ensembl_gene",
             "ncbi_gene_id", "category", "subcategory", "surface_call_reason",
-            "induction_trigger"]
+            "induction_trigger", "low_endogenous_expression", "state_dependence"]
     dd = src.get("deep_dive")
     if dd is None or dd.empty:
         return _empty_deep_dive_frame(cols)
@@ -448,6 +452,9 @@ def build_deep_dive_final_categories(src: dict[str, pd.DataFrame]) -> pd.DataFra
         "subcategory": [b[1] for b in buckets],
         "surface_call_reason": dd["surface_call_reason"].astype(str),
         "induction_trigger": dd["induction_trigger"].astype(str),
+        "low_endogenous_expression": pd.to_numeric(
+            dd["low_endogenous_expression"], errors="coerce").astype("Int64"),
+        "state_dependence": dd["state_dependence"].astype(str),
     })
     # Stable IDs from the catalog (candidate_universe), keyed by symbol.
     cat = src.get("catalog")

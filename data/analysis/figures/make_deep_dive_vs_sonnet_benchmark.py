@@ -10,8 +10,8 @@
 
 **Supplementary Fig 12.** Deep-dive vs Sonnet+NCBI accuracy on the
 SurfaceBench genes deep-dived so far (the intersection of 113 with the
-147-gene benchmark, minus 2 — RPN1, TF — whose holistic evidence grade
-is `conflicting`, so both predictors are scored on the same 111-gene set).
+147-gene benchmark, minus RPN1 — whose holistic evidence grade is
+`conflicting`, so both predictors are scored on the same 112-gene set).
 Each protein's evidence-anchored deep-dive surface call and the
 Sonnet+NCBI triage call are scored against the curated ground-truth
 verdict under the soft-credit rule — a contextually-surface protein
