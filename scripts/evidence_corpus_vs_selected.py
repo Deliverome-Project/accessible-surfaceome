@@ -167,8 +167,8 @@ def make_plot() -> tuple[plt.Figure, plt.Axes]:
     fig.text(
         0.5, -0.04,
         f"Real deep-dive records (median {int(np.median(found))} papers found/gene, "
-        f"median {int(np.median(selected))} selected); n={len(found)} genes. "
-        f"PRELIMINARY — ~1,197 of ~5,128 swept, pre-QA-fix.",
+        f"median {int(np.median(selected))} selected); n={len(found)} genes "
+        f"(full deep-dive cohort).",
         ha="center", va="top", fontsize=12, style="italic", color=COLORS["neutral"],
     )
 

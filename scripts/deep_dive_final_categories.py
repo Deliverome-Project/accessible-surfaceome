@@ -162,9 +162,9 @@ def make_plot() -> tuple[plt.Figure, tuple[plt.Axes, plt.Axes]]:
 
     fig.text(
         0.5, -0.02,
-        f"PRELIMINARY — {cohort_n:,} of ~5,128 swept, pre-QA-fix "
-        f"(low/uncertain/no are weak-evidence tentative leans, inflated by the "
-        f"pretrim-cap bug; cell-state 'oncogenic' by tumour-associated over-flagging).",
+        f"Full deep-dive cohort (n={cohort_n:,}). low / uncertain / no are "
+        f"weak-evidence tentative leans; cell-state 'oncogenic' reflects "
+        f"tumour-associated flagging. Canonical uses the PR #130 gate.",
         ha="center", va="top", fontsize=12, style="italic", color=COLORS["neutral"],
     )
 
