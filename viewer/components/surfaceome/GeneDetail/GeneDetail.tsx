@@ -42,6 +42,7 @@ import type {
   StructureViewerData,
 } from "../../../lib/structure-viewer-types";
 import type { TriageHeadlinePayload } from "../../../lib/triage-headline";
+import type { TaggedSitesFile } from "../../../lib/tag-sites-types";
 import styles from "./GeneDetail.module.css";
 
 interface GeneDetailProps {
@@ -58,6 +59,10 @@ interface GeneDetailProps {
    *  from the record (`structureViewerDataFromRecord`). Null when the
    *  record carries no accession. */
   structureData: StructureViewerData | null;
+  /** Tag-insertion-site records for this gene, client-fetched from the static
+   *  `/tag-sites/{SYMBOL}.json` asset by the shell. Null when no asset exists;
+   *  forwarded to `<GeneHeader>` for the 3D + linear-bar overlay. */
+  taggedSites: TaggedSitesFile | null;
   /** Schweke et al. 2024 AF2 homo-oligomer entry, derived from the record's
    *  `deterministic_features.homo_oligomerization`. Null when the protein
    *  isn't a Schweke positive. */
@@ -97,6 +102,7 @@ export function GeneDetail({
   rec,
   geneName,
   structureData,
+  taggedSites,
   schwekeHomomer,
   catalogRow,
   benchmarkRow,
@@ -365,6 +371,7 @@ export function GeneDetail({
             rec={rec}
             geneName={geneName}
             structureData={structureData}
+            taggedSites={taggedSites}
             schwekeHomomer={schwekeHomomer}
             catalogRow={catalogRow}
             triageHeadline={triageHeadline}

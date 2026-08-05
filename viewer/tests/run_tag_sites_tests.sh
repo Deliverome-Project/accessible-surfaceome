@@ -18,6 +18,7 @@ tests=(
   tag_sites_fixture.test.ts
   tag_sites_colors.test.ts
   tag_sites_overlay.test.ts
+  tag_sites_client.test.ts
 )
 
 fails=0

@@ -17,6 +17,8 @@ import {
   type TriageHeadlinePayload,
   type TriageRunsPayload,
 } from "../../lib/triage-headline";
+import { fetchTaggedSites } from "../../lib/tag-sites-client";
+import type { TaggedSitesFile } from "../../lib/tag-sites-types";
 import type { CatalogRow, GeneEntry } from "../../lib/surfaceome";
 import {
   buildGeneJumpEntries,
@@ -135,6 +137,7 @@ interface ReadyData {
   rec: SurfaceomeRecord;
   geneName: { name: string; synonyms: string[] } | null;
   structureData: StructureViewerData | null;
+  taggedSites: TaggedSitesFile | null;
   schwekeHomomer: SchwekeHomomerLoaderRow | null;
   catalogRow: CatalogRow | null;
   benchmarkRow: BenchmarkRowPayload | null;
@@ -203,6 +206,7 @@ export default function GeneShellPage() {
         catalogJson,
         synonymsJson,
         fgLibraryJson,
+        taggedSitesResult,
       ] = await Promise.all([
         fetchJson(`${API_BASE}/v1/triage/${symbol}`),
         fetchJson(`${API_BASE}/v1/benchmark/${symbol}`),
@@ -217,6 +221,8 @@ export default function GeneShellPage() {
         // library nav, and the isoform/ortholog in-library pills. A miss →
         // null → no badge / nav / pills (graceful).
         fetchJson("/data/fg-library.json"),
+        // Static tag-sites asset (Worker-first fetch happens client-side; static fallback + pins).
+        fetchTaggedSites(symbol),
       ]);
       if (cancelled) return;
 
@@ -241,6 +247,10 @@ export default function GeneShellPage() {
             rec.gene.uniprot_acc,
             rec.deterministic_features.canonical_topology,
           ),
+          // Static tag-sites asset (public/tag-sites/{SYMBOL}.json), fetched
+          // client-side alongside the other enrichments. Null-tolerant: a
+          // missing asset simply means no overlay.
+          taggedSites: taggedSitesResult,
           schwekeHomomer: loadSchwekeHomomer(
             rec.gene.uniprot_acc,
             rec.deterministic_features.homo_oligomerization,
