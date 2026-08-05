@@ -1,4 +1,5 @@
 from datetime import UTC, datetime
+from typing import Any
 
 import pytest
 from pydantic import ValidationError
@@ -13,7 +14,7 @@ from accessible_surfaceome.agents.internalization.models import (
 
 
 def _isoform_prior(**over):
-    base = dict(
+    base: dict[str, Any] = dict(
         isoform_id="P00533-1",
         is_canonical=True,
         length_aa=1210,

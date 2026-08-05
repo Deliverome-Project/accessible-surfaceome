@@ -1,5 +1,6 @@
 import json
 from types import SimpleNamespace
+from typing import Any, cast
 
 from accessible_surfaceome.agents.internalization import runner as mod
 from accessible_surfaceome.agents.internalization.models import (
@@ -53,7 +54,7 @@ def test_annotate_assembles_record_and_persists(tmp_path, monkeypatch):
     rec = mod.annotate_model_prior(
         "TFRC",
         client=object(),
-        http=object(),
+        http=cast(Any, object()),
         models=("claude-opus-4-8", "claude-sonnet-4-6"),
         annotations_dir=tmp_path,
     )
@@ -89,6 +90,10 @@ def test_annotate_can_skip_persist(tmp_path, monkeypatch):
     )
 
     mod.annotate_model_prior(
-        "TFRC", client=object(), http=object(), persist=False, annotations_dir=tmp_path
+        "TFRC",
+        client=object(),
+        http=cast(Any, object()),
+        persist=False,
+        annotations_dir=tmp_path,
     )
     assert list(tmp_path.iterdir()) == []
