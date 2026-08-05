@@ -80,7 +80,7 @@ READS_BUNDLED_TSV = [
     # a D1-built long TSV (Sonnet dual-pass verdicts), not offline-reproducible,
     # so its canonical also reads the bundled figure TSV rather than recomputing.
     "positive_control_db_coverage_bars",
-    "surfaceome_deterministic_features_placeholder",
+    "surfaceome_deterministic_features",
 ]
 
 # Figures whose canonical recomputes from real upstream sources by

@@ -7,7 +7,7 @@
 #   "seaborn>=0.13",
 # ]
 # ///
-"""Reproduce ``surfaceome_deterministic_features_placeholder.{pdf,png}``.
+"""Reproduce ``surfaceome_deterministic_features.{pdf,png}``.
 
 **Supplementary Fig 13.** Distribution of twelve deterministic per-gene
 features across the surfaceome, faceted by the REAL deep-dive
@@ -46,7 +46,7 @@ Full deep-dive cohort (5,130 genes); the `canonical` tier uses the PR #130 gate.
 
 Visual styling matches the in-repo `_plotting_config` (Deliverome
 categorical palette + Manrope-when-available). Inlined so the gist runs
-standalone — ``uv run make_surfaceome_deterministic_features_placeholder.py``.
+standalone — ``uv run make_surfaceome_deterministic_features.py``.
 """
 from __future__ import annotations
 
@@ -67,7 +67,7 @@ GIST_URL = "https://gist.github.com/beccajcarlson/57cf3cc3db903ab39bc0ba315ce5e4
 
 # Single bundled per-figure TSV — one tidy row per gene with the bucket
 # assignment + the nine deterministic feature columns the panels read.
-DATA_TSV = f"{BASE}/data/processed/figures/surfaceome_deterministic_features_placeholder.tsv"
+DATA_TSV = f"{BASE}/data/processed/figures/surfaceome_deterministic_features.tsv"
 
 # ──── Inline brand styling — sentinel: brand-style-v3 ────
 # Mirrors src/accessible_surfaceome/audit/_plotting_config.py so the gist
@@ -241,23 +241,27 @@ def render(feats: pd.DataFrame, out_dir: Path) -> Path:
 
     # Each panel is (column, kind, label) where kind ∈ {violin, frac_bool}.
     # Continuous features → violins; boolean 0/1 features → fraction bars.
+    # Fourth element is the fixed y-axis range so the panels read on a common,
+    # honest scale: continuous violins get feature-appropriate caps (a: TM-helix
+    # 0–30, b: protein length 0–7k, c: ECD length 0–5k) and every boolean
+    # fraction panel (d–l) is pinned to a true 0–100%.
     panels = [
-        ("tm_helix_count",      "violin",    "Number of\nTM helices"),
-        ("protein_length",      "violin",    "Protein length\n(residues)"),
-        ("ecd_length_residues", "violin",    "ECD length\n(residues)"),
-        ("has_signal_peptide",  "frac_bool", "% with signal peptide"),
-        ("n_term_extracellular", "frac_bool", "% N-terminus extracellular"),
-        ("c_term_extracellular", "frac_bool", "% C-terminus extracellular"),
-        ("mouse_has_one2one",   "frac_bool", "% with mouse 1:1 ortholog"),
-        ("cyno_has_one2one",    "frac_bool", "% with cyno 1:1 ortholog"),
-        ("schweke_homomer",     "frac_bool", "% homo-oligomer (Schweke 2024)"),
-        ("alt_iso_diff_topo",   "frac_bool", "% with alt isoform of different topology"),
-        ("has_concerning_paralog", "frac_bool", "% concerning paralog\n(ECD 40%+ id)"),
-        ("has_ec_surface_bind_site", "frac_bool", "% with 1+ extracellular\nsurface-bind site"),
+        ("tm_helix_count",      "violin",    "Number of\nTM helices", (0, 30)),
+        ("protein_length",      "violin",    "Protein length\n(residues)", (0, 7000)),
+        ("ecd_length_residues", "violin",    "ECD length\n(residues)", (0, 5000)),
+        ("has_signal_peptide",  "frac_bool", "% with signal peptide", (0, 100)),
+        ("n_term_extracellular", "frac_bool", "% N-terminus extracellular", (0, 100)),
+        ("c_term_extracellular", "frac_bool", "% C-terminus extracellular", (0, 100)),
+        ("mouse_has_one2one",   "frac_bool", "% with mouse 1:1 ortholog", (0, 100)),
+        ("cyno_has_one2one",    "frac_bool", "% with cyno 1:1 ortholog", (0, 100)),
+        ("schweke_homomer",     "frac_bool", "% homo-oligomer (Schweke 2024)", (0, 100)),
+        ("alt_iso_diff_topo",   "frac_bool", "% with alt isoform of different topology", (0, 100)),
+        ("has_concerning_paralog", "frac_bool", "% concerning paralog\n(ECD 40%+ id)", (0, 100)),
+        ("has_ec_surface_bind_site", "frac_bool", "% with 1+ extracellular\nsurface-bind site", (0, 100)),
     ]
 
     letters = "abcdefghijkl"
-    for ax, letter, (col, kind, label) in zip(axes, letters, panels):
+    for ax, letter, (col, kind, label, ylim) in zip(axes, letters, panels):
         if kind == "violin":
             data = [
                 feats.loc[feats["facet"] == g, col].astype(float).dropna().tolist()
@@ -279,6 +283,7 @@ def render(feats: pd.DataFrame, out_dir: Path) -> Path:
             ax.set_xticklabels(facet_labels)
             ax.set_ylabel(label, fontsize=11)
             ax.set_xlim(-0.6, len(GROUPS) - 0.4)
+            ax.set_ylim(*ylim)
         elif kind == "frac_bool":
             ys = []
             ns = []
@@ -290,10 +295,16 @@ def render(feats: pd.DataFrame, out_dir: Path) -> Path:
                 ys.append(100 * positive / n if n else 0)
                 ns.append(n)
             ax.bar(range(len(GROUPS)), ys, color=facet_colors, edgecolor="none")
+            # True 0–100 axis: keep the value+n label inside — above short bars,
+            # tucked inside the top (white) for tall ones so nothing clips.
             for i, (y, n_) in enumerate(zip(ys, ns)):
-                ax.text(i, y + 1.5, f"{y:.0f}%\nn={n_}", ha="center", va="bottom",
-                        fontsize=9, color=facet_colors[i], weight="semibold")
-            ax.set_ylim(0, 118)
+                if y > 84:
+                    ax.text(i, y - 2, f"{y:.0f}%\nn={n_}", ha="center", va="top",
+                            fontsize=9, color="white", weight="semibold")
+                else:
+                    ax.text(i, y + 1.5, f"{y:.0f}%\nn={n_}", ha="center", va="bottom",
+                            fontsize=9, color=facet_colors[i], weight="semibold")
+            ax.set_ylim(*ylim)
             ax.set_xticks(range(len(GROUPS)))
             ax.set_xticklabels(facet_labels)
             ax.set_ylabel(label, fontsize=10)
@@ -324,8 +335,8 @@ def render(feats: pd.DataFrame, out_dir: Path) -> Path:
 
     plt.tight_layout(rect=(0, 0, 1, 0.96))
     out_dir.mkdir(parents=True, exist_ok=True)
-    pdf = out_dir / "surfaceome_deterministic_features_placeholder.pdf"
-    png = out_dir / "surfaceome_deterministic_features_placeholder.png"
+    pdf = out_dir / "surfaceome_deterministic_features.pdf"
+    png = out_dir / "surfaceome_deterministic_features.png"
     fig.savefig(pdf, metadata={"Subject": GIST_URL})
     fig.savefig(png, metadata={"Source": GIST_URL})
     _embed_source_in_metadata(png, GIST_URL)

@@ -823,7 +823,7 @@ def build_positive_control_db_coverage_bars(src: dict[str, pd.DataFrame]) -> pd.
     return pd.read_csv(POS_LONG_TSV, sep="\t")
 
 
-def build_surfaceome_deterministic_features_placeholder(
+def build_surfaceome_deterministic_features(
     src: dict[str, pd.DataFrame],
 ) -> pd.DataFrame:
     """Per-gene deterministic features for Supp Fig 13, faceted by the REAL
@@ -852,7 +852,7 @@ def build_surfaceome_deterministic_features_placeholder(
     ``*_high_confidence`` column and renamed to match), ``schweke_homomer``,
     ``alt_iso_diff_topo``.
 
-    Mirrors ``scripts/surfaceome_deterministic_features_placeholder.py``
+    Mirrors ``scripts/surfaceome_deterministic_features.py``
     ``load_data()`` — it reads this bundled single TSV.
 
     PRELIMINARY — pre-QA-fix; counts grow as the sweep progresses.
@@ -920,8 +920,8 @@ BUILDERS: dict[str, callable] = {
     "topology_coverage_by_source":   build_topology_coverage_by_source,
     "bench_topology_vs_universe":    build_bench_topology_vs_universe,
     "positive_control_db_coverage_bars":  build_positive_control_db_coverage_bars,
-    "surfaceome_deterministic_features_placeholder":
-        build_surfaceome_deterministic_features_placeholder,
+    "surfaceome_deterministic_features":
+        build_surfaceome_deterministic_features,
 }
 
 
