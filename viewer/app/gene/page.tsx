@@ -18,6 +18,10 @@ import {
   type TriageRunsPayload,
 } from "../../lib/triage-headline";
 import type { CatalogRow, GeneEntry } from "../../lib/surfaceome";
+import {
+  buildGeneJumpEntries,
+  type SynonymOverlay,
+} from "../../lib/gene-jump-entries";
 import type {
   BenchmarkRow as BenchmarkRowPayload,
   SurfaceomeRecord,
@@ -87,20 +91,6 @@ function adaptBenchmarkRow(j: unknown): BenchmarkRowPayload | null {
     n_db_surface: 0,
     verdicts: {},
   };
-}
-
-/** Map the `/v1/genes` index to the GeneJump typeahead set. Every deep-dive
- *  gene now loads through this shell, so the whole set is offered (the old
- *  page filtered to non-stale entries only because a non-generated symbol
- *  would 404 under `output: export` — no longer a constraint). `stale` isn't
- *  computed client-side; the freshness dot is off on the gene page anyway. */
-function genesToEntries(j: unknown): GeneEntry[] {
-  const data = j as { genes?: Array<{ gene_symbol?: string }> } | null;
-  const out: GeneEntry[] = [];
-  for (const g of data?.genes ?? []) {
-    if (g.gene_symbol) out.push({ symbol: g.gene_symbol, stale: false });
-  }
-  return out;
 }
 
 /** Adapt the slim `/v1/catalog/{symbol}` row into the CatalogRow shape
@@ -189,12 +179,17 @@ export default function GeneShellPage() {
 
       // Secondary enrichments — fetched in parallel, each null-tolerant so
       // a miss degrades gracefully rather than failing the page.
-      const [triageJson, benchJson, genesJson, catalogJson] = await Promise.all([
-        fetchJson(`${API_BASE}/v1/triage/${symbol}`),
-        fetchJson(`${API_BASE}/v1/benchmark/${symbol}`),
-        fetchJson(`${API_BASE}/v1/genes`),
-        fetchJson(`${API_BASE}/v1/catalog/${symbol}`),
-      ]);
+      const [triageJson, benchJson, genesJson, catalogJson, synonymsJson] =
+        await Promise.all([
+          fetchJson(`${API_BASE}/v1/triage/${symbol}`),
+          fetchJson(`${API_BASE}/v1/benchmark/${symbol}`),
+          fetchJson(`${API_BASE}/v1/genes`),
+          fetchJson(`${API_BASE}/v1/catalog/${symbol}`),
+          // Build-baked synonym overlay (site origin, not the Worker) so the
+          // GeneJump dropdown matches alias queries like "Nav1.7" → SCN9A,
+          // the same way the homepage catalog search does.
+          fetchJson("/data/gene-synonyms.json"),
+        ]);
       if (cancelled) return;
 
       // Renumber the merged evidence ledger's ids client-side, exactly as
@@ -228,7 +223,10 @@ export default function GeneShellPage() {
           triageHeadline: triageJson
             ? parseTriageHeadline(triageJson as TriageRunsPayload)
             : null,
-          deepDiveGenes: genesToEntries(genesJson),
+          deepDiveGenes: buildGeneJumpEntries(
+            genesJson,
+            synonymsJson as SynonymOverlay | null,
+          ),
         },
       });
     })();
