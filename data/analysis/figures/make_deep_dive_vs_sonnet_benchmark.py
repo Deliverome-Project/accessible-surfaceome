@@ -76,8 +76,8 @@ _BUCKET_LABEL = {"yes": "yes\n(surface)", "contextual": "contextual",
 # read as one palette.
 _TIER_ORDER = ["canonical", "likely", "low", "uncertain", "no"]
 _TIER_COLOR = {
-    "canonical": "#2E7A55",  # success green — strict tier
-    "likely":    "#3D6B60",  # teal-mid — broader tier
+    "canonical": "#3D6B60",  # deep teal — strict tier (swapped w/ likely for contrast)
+    "likely":    "#2E7A55",  # brighter green — broader tier
     "low":       "#C99A5B",  # amber-tan — low/moderate, weak evidence
     "uncertain": "#C7BDB6",  # light warm-grey — ambiguous
     "no":        "#9C8C88",  # lifted neutral — leaned not-surface
@@ -215,7 +215,7 @@ def _draw_sonnet(ax: plt.Axes, rows: list[dict], x: float, width: float) -> None
     jx = _RNG.uniform(-width * 0.20, width * 0.20, size=len(accs))
     ax.scatter(x + jx, accs, s=26, color=BRAND_INK, alpha=0.75,
                edgecolor="white", linewidth=0.5, zorder=5)
-    ax.text(x, mean + sem + 2, f"{mean:.0f}", ha="center", va="bottom",
+    ax.text(x, mean + sem + 2, f"{mean:.1f}", ha="center", va="bottom",
             fontsize=14, color=_SONNET_COLOR, fontweight="bold")
 
 
@@ -233,7 +233,7 @@ def _draw_deep_dive(ax: plt.Axes, rows: list[dict], x: float, width: float) -> N
             continue
         ax.bar(x, h, bottom=bottom, width=width, color=_TIER_COLOR[t], zorder=2)
         bottom += h
-    ax.text(x, dd + 2, f"{dd:.0f}", ha="center", va="bottom", fontsize=14,
+    ax.text(x, dd + 2, f"{dd:.1f}", ha="center", va="bottom", fontsize=14,
             color=BRAND_INK, fontweight="bold")
 
 

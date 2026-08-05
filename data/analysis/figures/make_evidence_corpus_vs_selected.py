@@ -189,7 +189,7 @@ def main() -> None:
         mask = verdicts == verdict
         ax.scatter(
             found[mask], selected[mask],
-            s=70, alpha=0.75, edgecolor="white", linewidth=0.6,
+            s=70, alpha=0.9, edgecolor="white", linewidth=0.6,
             color=VERDICT_COLOR[verdict],
             label=f"{VERDICT_LABEL[verdict]}  (n={counts.get(verdict, 0)})",
             zorder=3 + VERDICT_ORDER.index(verdict),
