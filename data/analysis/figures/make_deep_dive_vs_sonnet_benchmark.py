@@ -8,10 +8,10 @@
 # ///
 """Reproduce ``deep_dive_vs_sonnet_benchmark.{pdf,png}``.
 
-**Supplementary Fig 12.** Deep-dive vs Sonnet+NCBI accuracy on the
-SurfaceBench genes deep-dived so far (the intersection of 113 with the
-147-gene benchmark, minus RPN1 — whose holistic evidence grade is
-`conflicting`, so both predictors are scored on the same 112-gene set).
+**Supplementary Fig 12.** Deep-dive vs Sonnet+NCBI accuracy on all 113
+SurfaceBench genes deep-dived so far (the intersection with the 147-gene
+benchmark; no records excluded — the one holistic-`conflicting` gene,
+RPN1, is scored too, so both predictors see the full common set).
 Each protein's evidence-anchored deep-dive surface call and the
 Sonnet+NCBI triage call are scored against the curated ground-truth
 verdict under the soft-credit rule — a contextually-surface protein
@@ -26,10 +26,11 @@ and uncertain / no (grey), the same five-tier palette as Figure 5a — so
 its confidence composition is visible. Sonnet+NCBI accuracy is the mean
 of three mainbench replicates (one dot per replicate; the error bar is
 the SEM across replicates); the deep dive runs once per gene, so its bar
-carries no replicate spread. Deep dive edges Sonnet overall
-(98% vs 97%); the deep dive is perfect on the 68 ground-truth-yes genes
-and its only errors are one FN in the contextual bucket (PMEL) and one
-FP in the 'no' bucket (ATG9A). The deep-dive verdict counts as surface
+carries no replicate spread. Deep dive and Sonnet are near-identical
+overall (97% vs 97%, Sonnet as the replicate mean); the deep dive is
+perfect on the 68 ground-truth-yes genes and makes three errors — one FN
+in the contextual bucket (PMEL) and two FPs in the 'no' bucket (ATG9A,
+RPN1). The deep-dive verdict counts as surface
 when its tier is canonical / likely / low (the PR #130 canonical gate).
 
 The single bundled TSV (one row per deep-dived bench gene with both

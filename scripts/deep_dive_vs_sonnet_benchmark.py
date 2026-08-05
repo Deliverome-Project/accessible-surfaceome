@@ -1,17 +1,17 @@
 """Deep-dive vs Sonnet+NCBI accuracy on SurfaceBench (deep-dived genes).
 
-New Supp figure: for the SurfaceBench genes deep-dived so far (the intersection,
-n=27 of 147), how the evidence-anchored deep dive scores against the curated
+New Supp figure: for all SurfaceBench genes deep-dived so far (the intersection,
+n=113 of 147), how the evidence-anchored deep dive scores against the curated
 ground truth, next to the Sonnet+NCBI triage on the SAME genes. Soft-credit
 accuracy — a contextually-surface protein counts correct when called surface.
+No records are excluded (holistic-`conflicting` genes are scored too).
 
 **a.** Overall accuracy — deep dive vs Sonnet+NCBI on the deep-dived bench genes.
 **b.** Accuracy per ground-truth bucket (yes / contextual / no).
 
 Reads the bundled per-figure TSV (one row per deep-dived bench gene with both
-predictors' soft-credit correctness); the figure aggregates.
-
-PRELIMINARY — 27 of 147 bench genes deep-dived; the 'no' bucket is n=2.
+predictors' soft-credit correctness); the figure aggregates. Deep dive 97% vs
+Sonnet 97% (near-identical; single collapsed-verdict basis: 97.3% vs 95.6%).
 
 Run::
 

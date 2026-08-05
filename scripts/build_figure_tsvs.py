@@ -676,14 +676,15 @@ def build_deep_dive_vs_sonnet_benchmark(src: dict[str, pd.DataFrame]) -> pd.Data
     evidence_grade_summary, gt_surface, sonnet_surface, deep_dive_surface,
     sonnet_correct, deep_dive_correct.
 
-    Deep-dive records whose holistic ``evidence_grade_summary == 'conflicting'``
-    are EXCLUDED from the benchmark: these are genes where the A1 experimental
-    ledger and the A2 biological-context picture genuinely contradict each other
-    (RPN1, TF), so a single surface/not-surface score misrepresents the record.
-    Both predictors are scored on the SAME filtered gene set so the comparison
-    stays fair. (The exclusion drops the whole gene, so Sonnet is judged on it
-    too.) The Sonnet+NCBI triage has no such holistic-conflict field, so this
-    gate keys off the deep-dive record only.
+    ALL deep-dived bench genes are scored — the benchmark does NOT exclude
+    holistic-``conflicting`` records. (An earlier revision dropped
+    ``evidence_grade_summary == 'conflicting'`` genes — RPN1, TF — on the
+    grounds that a single surface/not-surface score misrepresents a genuine
+    A1/A2 contradiction; we relaxed that so every figure scores the full cohort
+    uniformly. ``evidence_grade_summary`` is still carried as a column so a
+    reader can filter conflicting records themselves.) On the current cohort the
+    only remaining conflicting bench gene is RPN1 (a GT=no false positive), so
+    including it costs the deep dive ~1 pp — it still leads Sonnet.
     """
     cols = ["gene_symbol", "hgnc_id", "uniprot_acc", "ensembl_gene",
             "ncbi_gene_id", "ground_truth_verdict", "sonnet_verdict",
@@ -717,8 +718,6 @@ def build_deep_dive_vs_sonnet_benchmark(src: dict[str, pd.DataFrame]) -> pd.Data
             continue
         dd_row = dd_by_gene.loc[g]
         eg_sum = _dd_v(dd_row, "evidence_grade_summary")
-        if eg_sum == "conflicting":
-            continue  # A1/A2 genuinely contradict — exclude from the benchmark
         tier = _dd_tier(dd_row)
         gt_s = str(br["ground_truth_verdict"]) in yc
         son_s = str(br["sonnet_verdict"]) in yc
