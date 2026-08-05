@@ -96,3 +96,14 @@ export const PROVENANCE_TOKEN: Record<
   literature_retrieved: "--tag-site-literature",
   deterministic_computed: "--tag-site-deterministic",
 };
+
+/** Concrete hex per rendered provenance for WebGL (3Dmol) spheres, which
+ *  cannot consume CSS vars. MUST stay in sync with the --tag-site-* tokens:
+ *  literature = --lavender-bright (#8878c8), deterministic = --teal-mid (#3d6b60). */
+export const PROVENANCE_HEX: Record<
+  "literature_retrieved" | "deterministic_computed",
+  string
+> = {
+  literature_retrieved: "#8878c8",
+  deterministic_computed: "#3d6b60",
+};

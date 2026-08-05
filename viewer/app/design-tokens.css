@@ -109,6 +109,9 @@
   --danger: var(--maroon-dark);
   --info: var(--lavender-mid);
 
+  --tag-site-literature: var(--lavender-bright);   /* literature_retrieved overlay */
+  --tag-site-deterministic: var(--teal-mid);       /* deterministic_computed overlay */
+
   /* ============================================================
    * Typography
    * ============================================================ */
