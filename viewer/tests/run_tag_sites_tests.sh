@@ -16,6 +16,8 @@ tests=(
   tag_sites_derive.test.ts
   tag_sites_loader.test.ts
   tag_sites_fixture.test.ts
+  tag_sites_colors.test.ts
+  tag_sites_overlay.test.ts
 )
 
 fails=0
