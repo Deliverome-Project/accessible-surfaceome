@@ -61,13 +61,17 @@ _PAGE_TSX = _REPO_ROOT / "viewer" / "app" / "prompts" / "page.tsx"
 # add its repo-rooted path here with a tracking note explaining why.
 ALLOWED_NO_VIEWER_DISPLAY: frozenset[str] = frozenset(
     {
-        # The internalization pass is a separate, standalone track (schema
-        # 0.1.0) from the deep-dive, with its own record + viewer surface
-        # planned for a later plan (see
-        # docs/superpowers/plans/2026-08-04-internalization-model-prior-track.md,
-        # "Follow-on plans" — Plan 4 wires the viewer). Its prompts are
-        # intentionally not on the deep-dive /prompts page yet.
+        # The internalization pass is a separate, standalone track from the
+        # deep-dive, with its own record + viewer surface planned for a later
+        # plan (see docs/superpowers/plans/2026-08-04-internalization-model-prior-track.md
+        # + 2026-08-07-internalization-literature-track.md, "Follow-on plans" —
+        # Plan 4 wires the viewer). Its prompts (model-prior + literature
+        # triage/select/grade) are intentionally not on the deep-dive /prompts
+        # page yet.
         "src/accessible_surfaceome/agents/internalization/prompts/model_prior_system.md",
+        "src/accessible_surfaceome/agents/internalization/prompts/literature_triage_system.md",
+        "src/accessible_surfaceome/agents/internalization/prompts/literature_select_system.md",
+        "src/accessible_surfaceome/agents/internalization/prompts/literature_grade_system.md",
     }
 )
 
