@@ -5,9 +5,11 @@ from __future__ import annotations
 
 import json
 import re
-from typing import Any
+from typing import Any, TypeVar
 
-from pydantic import ValidationError
+from pydantic import BaseModel, ValidationError
+
+T = TypeVar("T", bound=BaseModel)
 
 from accessible_surfaceome.agents._support.api_retry import messages_create_with_backoff
 from accessible_surfaceome.agents._support.payload import cached_system
@@ -80,11 +82,11 @@ def call_model_structured(
     model: str,
     system_prompt: str,
     user_prompt: str,
-    schema: type[ModelPriorLLMOut],
+    schema: type[T],
     usage_sink: list[Any] | None = None,
     max_tokens: int = MAX_TOKENS,
     max_repairs: int = MAX_REPAIRS,
-) -> ModelPriorLLMOut:
+) -> T:
     messages: list[dict[str, Any]] = [{"role": "user", "content": user_prompt}]
     last_err = ""
     for _ in range(max_repairs + 1):
