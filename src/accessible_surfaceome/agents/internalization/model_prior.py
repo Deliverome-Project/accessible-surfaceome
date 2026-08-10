@@ -9,8 +9,6 @@ from typing import Any, TypeVar
 
 from pydantic import BaseModel, ValidationError
 
-T = TypeVar("T", bound=BaseModel)
-
 from accessible_surfaceome.agents._support.api_retry import messages_create_with_backoff
 from accessible_surfaceome.agents._support.payload import cached_system
 from accessible_surfaceome.agents.internalization.models import (
@@ -18,6 +16,8 @@ from accessible_surfaceome.agents.internalization.models import (
     ModelPriorTrack,
 )
 from accessible_surfaceome.agents.internalization.uniprot_isoforms import IsoformContext
+
+T = TypeVar("T", bound=BaseModel)
 
 OPUS_MODEL = "claude-opus-4-8"
 SONNET_MODEL = "claude-sonnet-4-6"
