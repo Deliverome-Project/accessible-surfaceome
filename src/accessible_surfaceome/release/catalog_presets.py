@@ -26,6 +26,14 @@ INDUCTION_NON_NONE: frozenset[str] = frozenset({
     "infection",
 })
 
+# Discovery-corpus size below which the deep dive rarely reaches a confident
+# (canonical) surface call — so a non-surface verdict here may be an evidence
+# gap rather than biology. Empirical (PR #130 analysis over the 5,130 cohort):
+# canonical rate is ~1-5% below 75 papers and 18% in 75-100, vs 47% at 150-200
+# and ~60% above 200 — a clear inflection at ~100. ~bottom 20% of the discovery
+# distribution (median ≈ 220 papers found).
+LOW_LIT_PAPERS_MAX = 100
+
 
 def passes_canonical(f: dict[str, Any]) -> bool:
     """Strictest tier — antibody/ADC gold-standard.
@@ -79,6 +87,30 @@ def passes_canonical(f: dict[str, Any]) -> bool:
         and f.get("surface_accessibility") in ("high", "moderate")
         and f.get("evidence_density") in ("high", "moderate")
     )
+
+
+def is_low_literature_surfy(f: dict[str, Any], surfy_positive: bool) -> bool:
+    """Badge — NOT a tier preset. Flags a NON-canonical gene whose non-surface
+    (or below-canonical) verdict is plausibly evidence-limited rather than
+    biological: a thin discovery corpus (``n_papers_found < LOW_LIT_PAPERS_MAX``)
+    AND SURFY predicts it surface. These are under-studied structural-surface
+    candidates worth a targeted re-dive.
+
+    Unlike the tier predicates this takes an EXTRA argument, ``surfy_positive``:
+    the SURFY call is a candidate-universe DB flag that is NOT carried in the
+    deep-dive ``filters`` dict, so callers must supply it (the viewer has it in
+    the 5-DB vote strip). That is why this is a standalone badge and not a
+    member of the ``(filters) -> bool`` preset family.
+
+    Scoped to NON-canonical genes: a gene that already cleared ``passes_canonical``
+    doesn't need an evidence-gap caveat, so canonical genes never carry the badge.
+    ``n_papers_found`` missing → not flagged (can't establish 'low')."""
+    if passes_canonical(f):
+        return False
+    n = f.get("n_papers_found")
+    if n is None:
+        return False
+    return bool(surfy_positive) and n < LOW_LIT_PAPERS_MAX
 
 
 def passes_likely(f: dict[str, Any]) -> bool:

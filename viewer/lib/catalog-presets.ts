@@ -91,6 +91,38 @@ export function passesCanonical(f: DeepDiveFilters): boolean {
 }
 
 /**
+ * Discovery-corpus size below which the deep dive rarely reaches a confident
+ * (canonical) call — so a below-canonical verdict may be an evidence gap, not
+ * biology. Empirical (PR #130, 5,130 cohort): canonical rate ~1-5% below 75
+ * papers, 18% in 75-100, vs 47% at 150-200 and ~60% above 200 — inflection at
+ * ~100 (≈ bottom 20% of the discovery distribution; median ≈ 220).
+ */
+export const LOW_LIT_PAPERS_MAX = 100;
+
+/**
+ * Badge — NOT a tier preset (kept out of PRESETS). Flags a NON-canonical gene
+ * whose below-canonical verdict is plausibly evidence-limited: thin discovery
+ * corpus (`n_papers_found < LOW_LIT_PAPERS_MAX`) AND SURFY predicts surface —
+ * an under-studied structural-surface candidate worth a re-dive.
+ *
+ * Takes an EXTRA `surfyPositive` argument because the SURFY call is a
+ * candidate-universe DB flag (in the 5-DB vote strip), NOT part of the
+ * deep-dive `filters` — which is why it can't be a `(filters) => bool` preset.
+ * Scoped to non-canonical genes: canonical calls never carry the caveat.
+ * Missing `n_papers_found` → not flagged. Mirror of
+ * accessible_surfaceome.release.catalog_presets.is_low_literature_surfy.
+ */
+export function isLowLiteratureSurfy(
+  f: DeepDiveFilters,
+  surfyPositive: boolean,
+): boolean {
+  if (passesCanonical(f)) return false;
+  const n = f.n_papers_found;
+  if (n == null) return false;
+  return surfyPositive && n < LOW_LIT_PAPERS_MAX;
+}
+
+/**
  * Likely = broader shortlist. Adds `supportive_but_indirect` evidence,
  * `mostly_intracellular` specificity (proteins like SRC that surface
  * via lysosomal-exocytosis or HMGB1 via DAMP-release), and
