@@ -1,7 +1,8 @@
 "use client";
 
 import type { ReactNode } from "react";
-import type { CatalogRow } from "../../../lib/surfaceome";
+import type { CatalogRow, DeepDiveFilters } from "../../../lib/surfaceome";
+import { isLowLiteratureSurfy, LOW_LIT_PAPERS_MAX } from "../../../lib/catalog-presets";
 import type {
   AccessibilityModulationObservation,
   SurfaceomeRecord,
@@ -247,6 +248,16 @@ export function GeneHeader({
   const g = rec.gene;
   const exec = rec.executive_summary;
   const counts = tierCounts(rec);
+  // Low-literature + SURFY badge: a non-canonical gene whose below-canonical
+  // call may be evidence-limited (thin discovery corpus) rather than biological,
+  // and SURFY predicts surface. Needs the SURFY DB flag from the 5-DB strip
+  // (catalogRow.db.surfy) — absent → no badge (same graceful path as the strip).
+  const lowLitSurfy =
+    !!catalogRow &&
+    isLowLiteratureSurfy(
+      rec.filters as unknown as DeepDiveFilters,
+      catalogRow.db.surfy === 1,
+    );
   const struct = rec.deterministic_features.structure;
   // The fetcher signals what kind of pLDDT the number is via the
   // ``source`` string (see :func:`tools.afdb_plddt.fetch_afdb_plddt`).
@@ -347,6 +358,32 @@ export function GeneHeader({
               per user feedback. ``null`` for resolver-failure
               outliers, where we just omit the strip. */}
           {catalogRow ? <DatabasePresenceStrip row={catalogRow} /> : null}
+
+          {/* Low-literature + SURFY flag — surfaced when the deep dive's
+           *  non-canonical call rests on a thin discovery corpus AND SURFY
+           *  predicts surface, i.e. an under-studied structural-surface
+           *  candidate whose call may be evidence-limited, not biological. */}
+          {lowLitSurfy ? (
+            <p className={styles.lowLitFlag}>
+              <span className={styles.lowLitFlagTag}>Low literature · SURFY yes</span>
+              <span className={styles.lowLitFlagText}>
+                Under-studied surface candidate — only{" "}
+                {rec.filters.n_papers_found} papers found (&lt; {LOW_LIT_PAPERS_MAX})
+                and not canonical, but SURFY predicts surface. The
+                below-canonical call may reflect thin literature rather than
+                non-surface biology.
+              </span>
+              <InfoTip label="About the low-literature + SURFY flag">
+                <p>
+                  Shown on non-canonical deep-dive genes with fewer than{" "}
+                  {LOW_LIT_PAPERS_MAX} papers found in discovery that SURFY
+                  nonetheless predicts are cell-surface. Below ~100 papers the
+                  deep dive rarely reaches a confident (canonical) call, so
+                  these are good re-dive targets rather than settled negatives.
+                </p>
+              </InfoTip>
+            </p>
+          ) : null}
 
           {/* Benchmark row (SurfaceBench ground truth) + Triage row
               (Sonnet first-pass verdict) were moved out of the header —
