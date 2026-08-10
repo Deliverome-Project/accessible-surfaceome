@@ -18,21 +18,17 @@ replays the builders + synthesizer (~$0.7/gene) so the ``methods_builder``
 re-reads the verbatim quotes *as A1 methods* and the grade recomputes from
 a genuinely populated A1 ledger.
 
-The permeabilization rule is method-dependent, matching the biology:
-
-* ``flow_cytometry`` / ``immunofluorescence`` prove *surface* accessibility
-  only when performed on **intact (non-permeabilized)** cells — a
-  permeabilized assay reaches intracellular epitopes, so it measures total
-  protein, not surface. Credited only at ``permeabilized is False``.
-* ``surface_biotinylation`` / ``mass_spec_surfaceome`` / ``proximity_labeling``
-  are surface-restricted **by method** (you cannot biotinylate an
-  intracellular lysine on an intact cell; cell-surface capture proteomics
-  labels only the exposed surfaceome), so the ``permeabilized`` flag is not
-  load-bearing — credited at ``permeabilized in {False, None}``.
-
-This rule is intentionally *stricter* than the LLM grader (which also
-credits ``permeabilized=None`` IF/IHC), so it is a high-precision lower
-bound: it only ever moves clips that are unambiguously surface assays.
+A claim counts as direct-surface evidence when it is a **surface-localization
+assay** (flow cytometry, immunofluorescence, surface biotinylation, cell-
+surface MS, proximity labeling), ``direction='supports'``, ``evidence_tier=
+'primary'``, and **not explicitly permeabilized**. Only ``permeabilized=True``
+is excluded — a permeabilized assay reaches intracellular epitopes and measures
+total protein, not surface; ``permeabilized`` of ``None`` or ``False`` is
+credited. This matches the deep-dive **grader's own breadth** (it credits
+``permeabilized=None`` observations), rather than imposing a stricter
+``permeabilized=False`` floor — the pre-filter only decides which clips to
+*move*; the final grade is decided by the ``methods_builder`` +
+``evidence_grade`` builder during the replay.
 """
 from __future__ import annotations
 
@@ -49,11 +45,18 @@ from accessible_surfaceome.agents.plan_trim_select.runner import (
 from accessible_surfaceome.cloud.d1_client import D1Client, D1Config
 from accessible_surfaceome.tools.gene_lookup import IdentifierBundle
 
-# Assays that prove surface accessibility only on intact cells.
-_PERM_SENSITIVE_METHODS = frozenset({"flow_cytometry", "immunofluorescence"})
-# Assays that are surface-restricted by method (permeabilization moot).
-_SURFACE_BY_METHOD = frozenset(
-    {"surface_biotinylation", "mass_spec_surfaceome", "proximity_labeling"}
+# Surface-localization assays the deep-dive grader credits as direct surface
+# evidence. Kept to the assays that measure PM localization/accessibility;
+# permeabilization is handled in ``claim_is_direct_surface`` (only an explicit
+# ``permeabilized=True`` is excluded).
+_SURFACE_LOCALIZATION_ASSAYS = frozenset(
+    {
+        "flow_cytometry",
+        "immunofluorescence",
+        "surface_biotinylation",
+        "mass_spec_surfaceome",
+        "proximity_labeling",
+    }
 )
 
 
@@ -92,22 +95,22 @@ def ensure_d1_env() -> None:
 
 
 def claim_is_direct_surface(claim: dict[str, Any]) -> bool:
-    """True iff a cached PTS claim is an unambiguous direct-surface assay.
+    """True iff a cached PTS claim is a direct surface-localization assay.
 
-    Applies the method-dependent permeabilization rule documented in the
-    module docstring. Operates on the raw claim dict (as persisted in the
+    Applies the grader-matching rule documented in the module docstring
+    (surface-localization assay + supports + primary + not explicitly
+    permeabilized). Operates on the raw claim dict (as persisted in the
     intermediates blob), so it is usable both for the D1 scan and for the
     re-tag on a loaded blob.
     """
     if claim.get("direction") != "supports" or claim.get("evidence_tier") != "primary":
         return False
-    et = claim.get("evidence_type")
+    if claim.get("evidence_type") not in _SURFACE_LOCALIZATION_ASSAYS:
+        return False
+    # Exclude only an explicit permeabilized=True (total protein, not surface);
+    # None/False are credited (bool True or the SQLite/int 1 both count as True).
     perm = (claim.get("assay_context") or {}).get("permeabilized")
-    if et in _PERM_SENSITIVE_METHODS:
-        return perm is False
-    if et in _SURFACE_BY_METHOD:
-        return perm in (False, None)
-    return False
+    return perm not in (True, 1)
 
 
 def retag_a2_direct_into_a1(blob: dict[str, Any]) -> dict[str, Any]:

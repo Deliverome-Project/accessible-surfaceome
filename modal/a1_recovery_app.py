@@ -104,20 +104,19 @@ def check():
 
 
 @app.local_entrypoint()
-def run(manifest: str, publish: bool = False, limit: int = 0, include_direct: bool = False):
+def run(manifest: str, publish: bool = False, limit: int = 0):
     """Map the recovery over the manifest's genes.
 
-    Defaults to the SAFE set — genes whose current grade is weak/supportive
-    (re-grade can only improve). ``--include-direct`` widens to genes already
-    graded direct_* (NOT recommended: the strict perm rule can downgrade them).
-    ``--publish`` persists corrected records to D1; omit for a compute-only run.
+    Targets the SAFE set — class1 restricted to weak/supportive (empty A1, a
+    re-grade can only improve) + class2 direct_single genes with a fresh A2
+    direct paper (single -> multi upgrade). Already-`direct_multi` and
+    `conflicting` empty-A1 genes are excluded. ``--publish`` persists corrected
+    records to D1; omit for a compute-only run.
     """
     m = json.loads(Path(manifest).read_text())
     targets = [
-        e["gene"]
-        for e in m["class1"]
-        if include_direct or e["cur_grade"] in _RECOVERABLE_GRADES
-    ]
+        e["gene"] for e in m["class1"] if e["cur_grade"] in _RECOVERABLE_GRADES
+    ] + [e["gene"] for e in m.get("class2", [])]
     if limit:
         targets = targets[:limit]
     payloads = [{"gene": g, "publish": publish} for g in targets]

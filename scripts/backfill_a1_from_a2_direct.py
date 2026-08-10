@@ -53,9 +53,9 @@ _METHOD_LITERAL = (
 )
 
 
-def _catalog_genes() -> dict[str, str]:
+def _catalog_genes() -> dict[str, str | None]:
     """{gene_symbol: evidence_grade} for every deep-dive gene, from the public
-    catalog Worker (no creds needed)."""
+    catalog Worker (no creds needed). Grade is None on malformed records."""
     import httpx
 
     with httpx.Client(timeout=60) as c:
@@ -120,6 +120,8 @@ def scan(out_path: Path) -> dict:
         _scan_side("a1", "$.plan_trim_select.a1.claims")
         _scan_side("a2", "$.plan_trim_select.a2.claims")
 
+    # Class 1 — empty A1-direct ledger + >=1 A2 direct-surface method. Emitted
+    # for ALL grades (transparency); only weak/supportive are a safe target.
     class1 = [
         {
             "gene": g,
@@ -132,18 +134,42 @@ def scan(out_path: Path) -> dict:
         if len(a1pap[g]) == 0 and len(a2pap[g]) >= 1
     ]
     class1.sort(key=lambda x: (-x["n_a2_direct_papers"], x["gene"]))
-    manifest = {"generated_by": "backfill_a1_from_a2_direct.py --scan", "class1": class1}
+    # Class 2 — direct_single genes whose A2 carries a direct-surface paper NOT
+    # already in A1: re-tagging it can lift the grade single -> multi.
+    class2 = [
+        {
+            "gene": g,
+            "cur_grade": grades[g],
+            "a1_papers": len(a1pap[g]),
+            "a2_new_papers": len(a2pap[g] - a1pap[g]),
+        }
+        for g in genes
+        if grades[g] == "direct_single_method"
+        and len(a1pap[g]) >= 1
+        and (a2pap[g] - a1pap[g])
+        and len(a1pap[g] | a2pap[g]) >= 2
+    ]
+    class2.sort(key=lambda x: (-x["a2_new_papers"], x["gene"]))
+    manifest = {
+        "generated_by": "backfill_a1_from_a2_direct.py --scan",
+        "class1": class1,
+        "class2": class2,
+    }
     out_path.parent.mkdir(parents=True, exist_ok=True)
     out_path.write_text(json.dumps(manifest, indent=1))
     return manifest
 
 
-def _targets(manifest: dict, include_direct: bool) -> list[str]:
-    return [
-        e["gene"]
-        for e in manifest["class1"]
-        if include_direct or e["cur_grade"] in _RECOVERABLE_GRADES
-    ]
+def _targets(manifest: dict) -> list[str]:
+    """Safe target set: class1 restricted to weak/supportive (re-grade can only
+    improve) + all class2 direct_single upgrade candidates. Already-`direct_multi`
+    and `conflicting` empty-A1 genes stay in the manifest for transparency but
+    are never processed."""
+    c1 = [e["gene"] for e in manifest["class1"] if e["cur_grade"] in _RECOVERABLE_GRADES]
+    c2 = [e["gene"] for e in manifest.get("class2", [])]
+    # dedup preserving order (a gene can't be in both, but be defensive)
+    seen: set[str] = set()
+    return [g for g in c1 + c2 if not (g in seen or seen.add(g))]
 
 
 def main() -> int:
@@ -156,21 +182,20 @@ def main() -> int:
     ap.add_argument("--publish", action="store_true", help="Persist corrected records to D1")
     ap.add_argument("--limit", type=int)
     ap.add_argument("--workers", type=int, default=4)
-    ap.add_argument(
-        "--include-direct",
-        action="store_true",
-        help="DANGER: also process genes already graded direct_* (risks downgrade)",
-    )
     args = ap.parse_args()
     load_env()
 
     if args.scan:
         m = scan(args.out)
-        safe = [e for e in m["class1"] if e["cur_grade"] in _RECOVERABLE_GRADES]
+        safe1 = [e for e in m["class1"] if e["cur_grade"] in _RECOVERABLE_GRADES]
+        n_targets = len(safe1) + len(m["class2"])
         print(f"manifest -> {args.out}")
-        print(f"  class1 total: {len(m['class1'])}  |  safe (weak/supportive): {len(safe)}")
+        print(f"  class1 empty-A1 (all grades): {len(m['class1'])}  "
+              f"| weak/supportive (recover): {len(safe1)}")
+        print(f"  class2 direct_single -> multi upgrade: {len(m['class2'])}")
         print(f"  by grade: {Counter(e['cur_grade'] for e in m['class1'])}")
-        print(f"  est. cost (safe set @ $0.74/gene): ${len(safe) * 0.74:.0f}")
+        print(f"  total safe target set: {n_targets}  "
+              f"(est. ${n_targets * 0.74:.0f} @ $0.74/gene)")
         return 0
 
     if args.gene:
@@ -183,12 +208,13 @@ def main() -> int:
     if not args.manifest:
         ap.error("provide --scan, --gene, or --manifest")
     manifest = json.loads(args.manifest.read_text())
-    targets = _targets(manifest, args.include_direct)
+    targets = _targets(manifest)
     if args.limit:
         targets = targets[: args.limit]
 
     if not args.execute:
-        print(f"[dry-run] {len(targets)} target genes (weak/supportive; add --include-direct to widen)")
+        print(f"[dry-run] {len(targets)} target genes "
+              f"(weak/supportive empty-A1 + direct_single upgrades)")
         print(f"  est. cost @ $0.74/gene: ${len(targets) * 0.74:.0f}")
         print(f"  publish={args.publish}  workers={args.workers}")
         print(f"  sample: {', '.join(targets[:25])}")

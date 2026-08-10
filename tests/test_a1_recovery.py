@@ -36,9 +36,10 @@ def test_permeabilized_flow_is_not_direct():
     assert not claim_is_direct_surface(_claim(evidence_type="flow_cytometry", permeabilized=True))
 
 
-def test_unknown_perm_flow_is_not_direct():
-    # perm-sensitive method with unknown permeabilization → not credited (strict)
-    assert not claim_is_direct_surface(_claim(evidence_type="immunofluorescence", permeabilized=None))
+def test_unknown_perm_if_is_credited():
+    # grader-matching: perm=None IF/flow IS credited (only explicit True is excluded)
+    assert claim_is_direct_surface(_claim(evidence_type="immunofluorescence", permeabilized=None))
+    assert claim_is_direct_surface(_claim(evidence_type="flow_cytometry", permeabilized=None))
 
 
 def test_surface_biotinylation_is_direct_regardless_of_perm_flag():
@@ -57,9 +58,11 @@ def test_refutes_and_secondary_excluded():
     assert not claim_is_direct_surface(_claim(evidence_tier="secondary", permeabilized=False))
 
 
-def test_non_method_evidence_excluded():
+def test_non_surface_assays_excluded():
+    # review / RNA / IHC are not surface-localization assays in the credited set
     assert not claim_is_direct_surface(_claim(evidence_type="review_assertion", permeabilized=False))
     assert not claim_is_direct_surface(_claim(evidence_type="single_cell_rna_seq", permeabilized=False))
+    assert not claim_is_direct_surface(_claim(evidence_type="immunohistochemistry", permeabilized=False))
 
 
 def test_retag_moves_only_qualifying_and_renumbers():
