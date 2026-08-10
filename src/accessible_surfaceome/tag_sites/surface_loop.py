@@ -14,14 +14,22 @@ from typing import Any
 from .model import tagged_site
 
 PLDDT_MIN = 70.0         # reliability gate (NOT a disorder gate)
-RSA_MIN = 0.30           # solvent-exposed flank
-GAP_MIN = 0.05           # some natural indel tolerance in the MSA column
+RSA_MIN = 0.30           # solvent-exposed junction (window max)
 FEATURE_DIST_MIN = 12.0  # Angstrom, 3D clearance from functional atoms
 LOOP_SS = {"C", "T", "S", "G"}  # DSSP coil/turn/bend/3-10 — never mid-helix/strand
 
 
 def _extracellular(topology_ch: str) -> bool:
     return topology_ch == "O"
+
+
+def _window_max(values: dict[int, float], res: int, lo: int = -1, hi: int = 2) -> float:
+    """Max over the junction window {res-1 .. res+2}. The tag inserts *between*
+    ``res`` and ``res+1``, so exposure of the junction — not the anchor
+    side-chain alone — is what matters. TFRC I290 is the motivating case: its
+    own side-chain RSA is 0.02 (buried), but the junction is flanked by
+    P289 (0.48) and V291 (0.88), so the site is surface-exposed."""
+    return max((values.get(res + d, 0.0) for d in range(lo, hi + 1)), default=0.0)
 
 
 def surface_loop_candidates(
@@ -46,12 +54,13 @@ def surface_loop_candidates(
             continue  # reliability gate
         if signals["ss"].get(res, "?") not in LOOP_SS:
             continue  # loop/turn only
-        if signals["rsa"].get(res, 0.0) < RSA_MIN:
-            continue  # surface-exposed
-        if signals["gap_freq"].get(res, 0.0) < GAP_MIN:
-            continue  # indel-tolerant
+        if _window_max(signals["rsa"], res) < RSA_MIN:
+            continue  # surface-exposed (junction window, not just the anchor side-chain)
         if signals["feature_dist"].get(res, 0.0) < FEATURE_DIST_MIN:
             continue  # 3D clearance veto
+        # NOTE: indel-tolerance (gap_freq) is a RANKING signal, not a hard gate —
+        # a good site (e.g. TFRC I290) need not sit at a natural indel, and with a
+        # shallow ortholog set gap_freq is 0 at most positions.
         rb = seq[res - 1] if 1 <= res <= len(seq) else None
         ra = seq[res] if 1 <= res < len(seq) else None
         picks.append(
@@ -78,8 +87,8 @@ def surface_loop_candidates(
     picks.sort(
         key=lambda p: (
             p["median_conservation"] if p["median_conservation"] is not None else 1.0,
-            -signals["rsa"].get(p["insert_after_residue"], 0.0),
-            -signals["gap_freq"].get(p["insert_after_residue"], 0.0),
+            -_window_max(signals["rsa"], p["insert_after_residue"]),
+            -signals.get("gap_freq", {}).get(p["insert_after_residue"], 0.0),
         )
     )
     return picks

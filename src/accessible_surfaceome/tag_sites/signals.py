@@ -79,3 +79,62 @@ def merge_signals(*parts: dict[str, Any]) -> dict[str, Any]:
     for p in parts:
         out.update(p)
     return out
+
+
+# --- Structural signals from the AlphaFold model (network/fixture-backed) ------
+# Tien et al. 2013 theoretical max ASA (Å²) per residue, for RSA normalization.
+_MAX_ASA = {
+    "ALA": 129.0, "ARG": 274.0, "ASN": 195.0, "ASP": 193.0, "CYS": 167.0,
+    "GLU": 223.0, "GLN": 225.0, "GLY": 104.0, "HIS": 224.0, "ILE": 197.0,
+    "LEU": 201.0, "LYS": 236.0, "MET": 224.0, "PHE": 240.0, "PRO": 159.0,
+    "SER": 155.0, "THR": 172.0, "TRP": 285.0, "TYR": 263.0, "VAL": 174.0,
+}
+
+
+def per_residue_plddt(pdb_path: str) -> dict[int, float]:
+    """Per-residue pLDDT = the CA B-factor in an AlphaFold model."""
+    from Bio.PDB import PDBParser
+
+    struct = PDBParser(QUIET=True).get_structure("m", str(pdb_path))
+    out: dict[int, float] = {}
+    for res in struct.get_residues():
+        if "CA" in res:
+            out[res.id[1]] = float(res["CA"].get_bfactor())
+    return out
+
+
+def per_residue_rsa(pdb_path: str) -> dict[int, float]:
+    """Per-residue relative solvent accessibility (0..~1), Tien-2013 normalized."""
+    import freesasa
+
+    st = freesasa.Structure(str(pdb_path))
+    areas = freesasa.calc(st).residueAreas()
+    out: dict[int, float] = {}
+    for chain in areas:
+        for resnum, ra in areas[chain].items():
+            try:
+                r = int(resnum)
+            except ValueError:
+                continue
+            mx = _MAX_ASA.get(getattr(ra, "residueType", ""), None)
+            out[r] = (ra.total / mx) if mx else 0.0
+    return out
+
+
+def per_residue_ss(pdb_path: str) -> dict[int, str]:
+    """Per-residue secondary structure as DSSP-style chars via pydssp 3-state
+    (H = helix, E = strand, C = loop/coil). Loop = 'C' (in LOOP_SS)."""
+    import numpy as np
+    import pydssp
+    from Bio.PDB import PDBParser
+
+    struct = PDBParser(QUIET=True).get_structure("m", str(pdb_path))
+    coords: list[list] = []
+    resnums: list[int] = []
+    for res in struct.get_residues():
+        if all(a in res for a in ("N", "CA", "C", "O")):
+            coords.append([res["N"].coord, res["CA"].coord, res["C"].coord, res["O"].coord])
+            resnums.append(res.id[1])
+    arr = np.array(coords, dtype=float)  # [L, 4, 3]
+    ss = pydssp.assign(arr, out_type="c3")  # array of '-'/'H'/'E'
+    return {rn: ("C" if s in ("-", "L", "C") else str(s)) for rn, s in zip(resnums, ss)}
