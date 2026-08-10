@@ -4,6 +4,7 @@ scrubs any cited_source_ids the model invented that aren't in the ledger."""
 
 from __future__ import annotations
 
+import json
 from pathlib import Path
 from typing import Any
 
@@ -24,8 +25,10 @@ def load_grade_prompt() -> str:
 def _render_evidence(evidence: list[Any]) -> str:
     lines: list[str] = []
     for e in evidence:
-        quote = e.spans[0].quote if getattr(e, "spans", None) else ""
-        lines.append(f"[{e.evidence_id}] ({e.source_id}) {e.claim} | quote: {quote}")
+        span = e.spans[0] if getattr(e, "spans", None) else None
+        source_id = span.source.source_id if span else "?"
+        quote = span.quote if span else ""
+        lines.append(f"[{e.evidence_id}] ({source_id}) {e.claim} | quote: {quote}")
     return "\n".join(lines)
 
 
@@ -64,10 +67,12 @@ def grade_from_evidence(
     if not evidence:
         return LiteratureLLMOut()  # nothing to grade → all modes 'unknown'
     system_prompt = system_prompt or load_grade_prompt()
+    schema_str = json.dumps(LiteratureLLMOut.model_json_schema(), indent=2)
     user = (
         f"Gene: {gene}\n\nSpan-verified evidence ledger (cite ONLY these "
         f"evidence_ids):\n\n{_render_evidence(evidence)}\n\n"
-        f"Return one ```json LiteratureLLMOut object."
+        f"Emit one ```json block matching this LiteratureLLMOut schema exactly:\n\n"
+        f"```json\n{schema_str}\n```"
     )
     out = call_model_structured(
         client,

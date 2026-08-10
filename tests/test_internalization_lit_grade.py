@@ -33,8 +33,14 @@ class _FakeClient:
 
 def _ev(eid, sid="PMID:1"):
     return SimpleNamespace(
-        evidence_id=eid, claim="internalizes", source_id=sid,
-        spans=[SimpleNamespace(quote="the receptor internalized")],
+        evidence_id=eid,
+        claim="internalizes",
+        spans=[
+            SimpleNamespace(
+                quote="the receptor internalized",
+                source=SimpleNamespace(source_id=sid),
+            )
+        ],
     )
 
 

@@ -79,7 +79,11 @@ def annotate_literature(
     )
 
     selection = select_clips(client, pool=pool, gene=bundle.hgnc_symbol)
-    evidence = promote(selection, pool=pool, store=store)
+    # Only span-verified claims (real char offset into the fetched body) inform
+    # the grade and ship as cited sources — drop store/substring misses.
+    evidence = [
+        e for e in promote(selection, pool=pool, store=store) if e.entailment_verified
+    ]
     llm = grade_from_evidence(client, gene=bundle.hgnc_symbol, evidence=evidence)
 
     track = LiteratureTrack(

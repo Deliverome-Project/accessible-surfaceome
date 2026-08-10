@@ -8,6 +8,7 @@ selected claims to span-verified ``Evidence`` against the REAL source store.
 
 from __future__ import annotations
 
+import json
 import re
 from collections import defaultdict
 from pathlib import Path
@@ -100,10 +101,14 @@ def select_clips(
     system_prompt = system_prompt or load_select_prompt()
     if not pool:
         return SelectionResponse(selections=[], notes="empty pool")
+    schema_str = json.dumps(SelectionResponse.model_json_schema(), indent=2)
     user = (
         f"Gene: {gene}\n\nClip menu (pick the internalization-relevant clips by "
         f"clip_id; do NOT paraphrase — the quote is auto-filled from the clip):\n\n"
-        f"{render_clip_menu(pool)}\n\nReturn one ```json SelectionResponse object."
+        f"{render_clip_menu(pool)}\n\n"
+        f"Emit one ```json block matching this SelectionResponse schema exactly "
+        f"(note: `confidence` is strong|moderate|weak; `assay_context` is an "
+        f"object with a required `species`):\n\n```json\n{schema_str}\n```"
     )
     return call_model_structured(
         client,
