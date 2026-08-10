@@ -206,26 +206,39 @@ def load_latest_intermediates(gene: str, at: str | None = None) -> dict[str, Any
     return json.loads(rows[0]["intermediates_json"])
 
 
-def recover_one(gene: str, *, publish: bool = False, at: str | None = None) -> dict[str, Any]:
+def recover_one(
+    gene: str,
+    *,
+    publish: bool = False,
+    at: str | None = None,
+    cohort_run_id: str | None = "a1_recovery",
+) -> dict[str, Any]:
     """Re-tag + builders/synth replay for one gene.
 
     Loads the cached dual, moves qualifying A2 direct-surface claims into A1,
     and replays the builders + synthesizer. When ``publish`` is True the
-    corrected record is pushed to public D1 via the orchestrator's normal
-    ``publish_record`` path; otherwise it is computed and discarded (the
-    return value carries the before/after grade for review).
+    corrected record is pushed to **public D1** via
+    :func:`cloud.surface_annotation.publish_record` (the same path
+    ``surfaceome_v2_annotate.py --publish`` uses — D1 write + edge-cache purge),
+    NOT ``annotate``'s ``persist`` (which only writes an ephemeral local disk
+    artifact). Otherwise the record is computed and discarded (the return value
+    carries the before/after grade for review).
 
     Import of the heavy orchestrator is deferred so the pure-logic helpers
     above (used by the D1 scan / tests) don't drag it in.
     """
     from accessible_surfaceome.agents.surfaceome_v2.orchestrator import annotate
+    from accessible_surfaceome.cloud.surface_annotation import publish_record
 
     blob = load_latest_intermediates(gene, at)
     retag = retag_a2_direct_into_a1(blob)
     if retag["n_moved"] == 0:
         return {"gene": gene, "status": "skip", "reason": "no A2 direct-surface claims"}
     dual = reconstruct_dual_from_blob(blob)
-    result = annotate(gene, cached_dual=dual, persist=publish)
+    # persist=False: annotate's own persist writes only a local disk artifact
+    # (lost when a Modal container exits). The real public-D1 publish is the
+    # publish_record call below.
+    result = annotate(gene, cached_dual=dual, persist=False)
     if result.record is None:
         return {
             "gene": gene,
@@ -234,7 +247,7 @@ def recover_one(gene: str, *, publish: bool = False, at: str | None = None) -> d
             "n_moved": retag["n_moved"],
         }
     rec = result.record
-    return {
+    out: dict[str, Any] = {
         "gene": gene,
         "status": "ok",
         "n_moved": retag["n_moved"],
@@ -245,5 +258,11 @@ def recover_one(gene: str, *, publish: bool = False, at: str | None = None) -> d
         "confidence": rec.confidence,
         "n_methods": len(rec.surface_evidence.methods),
         "cost_usd": round(result.total_cost_usd, 4),
-        "published": publish,
+        "published": False,
     }
+    if publish:
+        pub = publish_record(rec, push_to_d1=True, cohort_run_id=cohort_run_id)
+        out["published"] = bool(pub.d1_written)
+        out["publish_skipped_reason"] = pub.skipped_reason
+        out["cache_purged"] = pub.cache_purged
+    return out
