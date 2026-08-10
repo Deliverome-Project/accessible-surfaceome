@@ -15,7 +15,10 @@ from typing import Any
 from accessible_surfaceome.agents._support.api_retry import messages_create_with_backoff
 from accessible_surfaceome.agents._support.payload import cached_system
 from accessible_surfaceome.agents.internalization.model_prior import extract_json_object
-from accessible_surfaceome.agents.plan_trim_select.abstract_triage import TriageOutcome
+from accessible_surfaceome.agents.plan_trim_select.abstract_triage import (
+    TriageOutcome,
+    paper_source_id,
+)
 from accessible_surfaceome.agents.plan_trim_select.schemas import AbstractTriageResponse
 
 HAIKU_MODEL = "claude-haiku-4-5-20251001"
@@ -25,10 +28,6 @@ _PROMPT_PATH = Path(__file__).resolve().parent / "prompts" / "literature_triage_
 
 def load_triage_prompt() -> str:
     return _PROMPT_PATH.read_text()
-
-
-def _make_paper_source_id(paper: Any) -> str:
-    return f"PMID:{paper.pmid}"
 
 
 def _text_of(resp: Any) -> str:
@@ -49,7 +48,7 @@ def triage_internalization_abstracts(
     system_prompt = system_prompt or load_triage_prompt()
     outcomes: list[TriageOutcome] = []
     for paper in papers:
-        pid = _make_paper_source_id(paper)
+        pid = paper_source_id(paper)  # PMC:<id> > PMID:<id> > DOI:<doi>
         user = (
             f"Gene: {gene}\nPMID: {paper.pmid}\nTitle: {paper.title}\n\n"
             f"Abstract:\n{paper.abstract or '(no abstract)'}\n\n"

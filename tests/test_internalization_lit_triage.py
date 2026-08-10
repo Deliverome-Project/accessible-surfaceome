@@ -1,7 +1,6 @@
 import json
 from types import SimpleNamespace
 
-from accessible_surfaceome.agents.internalization import literature_triage as mod
 from accessible_surfaceome.agents.internalization.literature_triage import (
     triage_internalization_abstracts,
 )
@@ -26,12 +25,32 @@ class _FakeClient:
         self.messages = _FakeMessages(texts)
 
 
-def _paper(pmid, abstract="cells internalized the antibody"):
-    return SimpleNamespace(pmid=pmid, title="t", abstract=abstract)
+def _paper(pmid, *, pmc_id=None, doi=None, abstract="cells internalized the antibody"):
+    return SimpleNamespace(
+        pmid=pmid, pmc_id=pmc_id, doi=doi, title="t", abstract=abstract
+    )
 
 
-def test_make_paper_source_id():
-    assert mod._make_paper_source_id(_paper(1)) == "PMID:1"
+def test_paper_id_uses_canonical_source_id():
+    # No PMC -> PMID key; with PMC -> PMC key (paper_source_id preference).
+    client = _FakeClient(
+        [
+            "```json\n"
+            + json.dumps({"decision": "worth_fetching", "reason": "r"})
+            + "\n```",
+            "```json\n"
+            + json.dumps({"decision": "discard", "reason": "r"})
+            + "\n```",
+        ]
+    )
+    out = triage_internalization_abstracts(
+        client,
+        papers=[_paper(1), _paper(2, pmc_id="PMC9")],
+        gene="TFRC",
+        system_prompt="SYS",
+    )
+    assert out[0].paper_id == "PMID:1"
+    assert out[1].paper_id == "PMC:PMC9"
 
 
 def test_triage_maps_decisions_per_paper():
