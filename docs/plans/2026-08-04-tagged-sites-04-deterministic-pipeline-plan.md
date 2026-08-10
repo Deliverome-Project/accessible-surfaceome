@@ -8,19 +8,19 @@
 
 **Tech Stack:** Python 3, pytest, pandas, biopython, freesasa, a DSSP provider (`pydssp` or `mkdssp`). Reuse the project's existing tooling where it already exists: `tools/afdb_plddt.py` (per-residue AlphaFold pLDDT + cached PDB) and `tools/gene_lookup.py` (gene→UniProt acc + canonical sequence) — Path 2b needs **no new AlphaFold plumbing and no MCP**. The `TaggedSite` field set matches `viewer/lib/tag-sites-types.ts` exactly.
 
-**Unblocked now:** Path 2b (surface-loop compute) and the pure gate/model helpers need only Python + the AF model (via `tools/afdb_plddt.py`) — **no LFS file, no LLM, no MCP**. Only Path 2a (Task 2, the CSV port) is gated on the 77 MB LFS file (Task 0).
+**Fully in-repo — nothing ported.** Per spec §7.2, **both** paths are re-derived here from source: per-residue pLDDT via `tools/afdb_plddt.py` (parsed from the cached AlphaFold model), `per_residue_topology` from the record, UniProt features for the veto, and ortholog-MSA conservation from the repo's `merge/` machinery (replacing the external KIBBY predictor). **No LFS file, no LLM, no MCP.** The private `insertion_sequence_library.csv` is used **only as an optional validation cross-reference** (agreement check), never as a data source.
 
 **Parent spec:** `docs/plans/2026-08-04-tagged-sites-viewer-design.md` §7.2 · **Depends on:** Plan 1 (schema shape). Independent of Plans 2–3.
 
-**⚠ Prerequisites (resolve in Task 0 before 2a):**
-- The port CSV `deliverome-internal/cloudflare/surfaceome_structure_site_viewer/deploy_static/insertion_sequence_library.csv` is a **77 MB git-LFS file** and did not materialize via `git lfs pull` in the analysis environment. Task 0 confirms a materialized copy (LFS fetch w/ credentials, or regeneration) before 2a can run on real data. 2a's adapter is developed/tested against a small committed CSV fixture regardless.
-- Python deps `freesasa`, `biopython`, and a DSSP provider must be added to `pyproject.toml` (Task 0).
+**Prerequisites (Task 0):**
+- Python deps `freesasa`, `pydssp`, `biopython` — **installed**; add them to `pyproject.toml`.
+- No LFS prerequisite: nothing is ported. (The private CSV *can* be pulled via the LFS batch API + a `gh` token for the optional agreement cross-check, but it is not required to ship.)
 
 ---
 
 ### Task 0: Prerequisites
 
-- [ ] **Step 1: Confirm port-CSV availability.** Run `git lfs pull --include="cloudflare/surfaceome_structure_site_viewer/deploy_static/insertion_sequence_library.csv"` in the deliverome-internal checkout and verify `head -1` shows CSV headers, not a `version https://git-lfs...` pointer. If LFS is unavailable, note it and proceed with fixtures only (2a real-data run is blocked until the file is materialized) — do **not** fabricate rows.
+- [ ] **Step 1 (optional cross-ref only): Materialize the incumbent CSV** for the agreement check. `git lfs pull` and `gh api` return only the pointer (no LFS auth); the working route is the **LFS batch API + `gh auth token`**: POST `{repo}.git/info/lfs/objects/batch` with the oid/size to get a signed URL, then `curl` it (verify sha256). Not required to ship — the pipeline re-derives everything from source.
 - [ ] **Step 2: Add deps.** Add `freesasa`, `biopython`, `pydssp` (pure-python DSSP; avoids the `mkdssp` binary) to `pyproject.toml` `[project.dependencies]`; `uv sync` (or `pip install -e .`). Verify: `uv run python -c "import freesasa, Bio, pydssp; print('ok')"`.
 - [ ] **Step 3: Commit** — `chore(deps): add freesasa/biopython/pydssp for deterministic tag-site compute`
 
@@ -119,34 +119,56 @@ def tagged_site(
 
 ---
 
-### Task 2: Path 2a — CSV port adapter
+### Task 2: Path 2a — disorder-path rederivation (in-repo, from source)
+
+Re-derive the low-pLDDT disorder sites here — do **not** port the CSV. The pure gate is
+unit-tested on synthetic per-residue signals (mirroring Task 4); the structural inputs come
+from `signals.py` (Task 3).
 
 **Files:**
-- Create: `scripts/build/tag_sites/port_deterministic.py`
-- Create: `tests/fixtures/insertion_sequence_library_sample.csv` (small, hand-authored, mirroring the real columns)
-- Test: `tests/test_tag_sites_port.py`
+- Create: `src/accessible_surfaceome/tag_sites/disorder.py`
+- Test: `tests/test_tag_sites_disorder.py`
 
-- [ ] **Step 1: Inspect real columns** (once Task 0 materialized the CSV): `head -1 <csv>` — expect columns incl. accession/gene, insertion span start/end, `median_conservation`, `conservation_rank`, `plddt`/`average_plddt`, topology. Record the exact names in a comment. Build the fixture CSV with those headers + 2 rows (one internal disorder site for a known gene).
-
-- [ ] **Step 2: Failing test**
+- [ ] **Step 1: Failing test** (synthetic signals — no network): a contiguous run of
+  per-residue `plddt < 70`, length ≥ 4, all extracellular (`O`), clear of features, becomes one
+  `det_path="disorder"` site anchored at the run (e.g. its midpoint); a 3-residue run is too
+  short; an intracellular run is dropped; a run overlapping a UniProt feature is vetoed.
 
 ```python
-# tests/test_tag_sites_port.py
-from pathlib import Path
-from scripts.build.tag_sites.port_deterministic import port_csv_to_sites
+# tests/test_tag_sites_disorder.py
+from accessible_surfaceome.tag_sites.disorder import disorder_candidates
 
-def test_port_maps_disorder_rows(tmp_path):
-    csv = Path("tests/fixtures/insertion_sequence_library_sample.csv")
-    sites = port_csv_to_sites(csv, sequence_by_acc={"P02786": "M" + "A" * 759})
-    assert all(s["provenance"] == "deterministic_computed" for s in sites)
-    assert all(s["det_path"] == "disorder" for s in sites)
-    # residues verified against sequence: any row whose residue_before mismatches is dropped
-    assert all(s["insert_after_residue"] is not None for s in sites)
+def _sig(plddt, topo, feat_dist, seq):
+    return {"plddt": plddt, "topology": topo, "feature_dist": feat_dist,
+            "conservation": {r: 0.2 for r in plddt}, "sequence": seq}
+
+def test_low_plddt_extracellular_run_becomes_a_site():
+    rng = range(50, 56)  # 6-residue run
+    sig = _sig({r: 55.0 for r in rng}, {r: "O" for r in rng},
+               {r: 25.0 for r in rng}, "A" * 300)
+    picks = disorder_candidates(sig, gene_symbol="X", uniprot_acc="Q0")
+    assert len(picks) == 1 and picks[0]["det_path"] == "disorder"
+    assert 50 <= picks[0]["insert_after_residue"] <= 55
+
+def test_short_run_and_intracellular_run_rejected():
+    short = _sig({r: 55.0 for r in range(50, 53)}, {r: "O" for r in range(50, 53)},
+                 {r: 25.0 for r in range(50, 53)}, "A" * 300)
+    assert disorder_candidates(short, gene_symbol="X", uniprot_acc="Q0") == []
+    ic = _sig({r: 55.0 for r in range(50, 56)}, {r: "I" for r in range(50, 56)},
+              {r: 25.0 for r in range(50, 56)}, "A" * 300)
+    assert disorder_candidates(ic, gene_symbol="X", uniprot_acc="Q0") == []
 ```
 
-- [ ] **Step 3: Implement** `port_csv_to_sites(csv_path, sequence_by_acc)` — read with pandas; for each internal-site row map span→`insert_after_residue` (choose the span midpoint or start per the real column semantics recorded in Step 1), set `residue_before/after` from the provided sequence, verify against sequence (drop mismatches, log count), attach `plddt`/`conservation_rank`/`median_conservation`, and build via `tagged_site(det_path="disorder", ...)`. Return the list.
+- [ ] **Step 2: Run → FAIL.**
+- [ ] **Step 3: Implement** `disorder_candidates(signals, *, gene_symbol, uniprot_acc)`: scan for
+  maximal contiguous runs where `plddt[r] < 70`, `len >= 4`, `topology[r] == "O"`, and
+  `feature_dist[r] >= FEATURE_DIST_MIN`; anchor each run at its midpoint residue; set
+  `residue_before/after` from `sequence`; rank by low `conservation`; build via
+  `tagged_site(det_path="disorder", ...)`. Shares `FEATURE_DIST_MIN` + `_extracellular` with
+  `surface_loop.py` (factor the shared bits into a small `_gate.py`).
+- [ ] **Step 4: Run → PASS.** — [ ] **Step 5: Commit** — `feat(tag-sites): re-derive disorder-path sites in-repo (path 2a)`
 
-- [ ] **Step 4: Run → PASS.** — [ ] **Step 5: Commit** — `feat(tag-sites): port incumbent low-pLDDT/KIBBY sites (path 2a)`
+> The pulled CSV is used only in Task 6's optional agreement cross-check, never as input.
 
 ---
 

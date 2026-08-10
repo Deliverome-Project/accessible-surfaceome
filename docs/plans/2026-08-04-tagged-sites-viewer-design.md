@@ -242,11 +242,19 @@ This method has **two candidate-generation paths**, both extracellular-gated, fe
 and conservation-ranked, both emitting `provenance: "deterministic_computed"` (distinguished
 by a `det_path` sub-field: `"disorder"` | `"surface_loop"`):
 
-**Path 2a — disorder sites (port).** Map the precomputed
-  `deliverome-internal/cloudflare/surfaceome_structure_site_viewer/deploy_static/insertion_sequence_library.csv`
-  (+ `viewer_dataset.json`) rows onto `TaggedSite`. Faithful "as we did in deliverome-internal";
-  no AF/KIBBY recompute. **Yields low-pLDDT sites only** — by construction it cannot contain
-  ordered-surface-loop sites (see 2b).
+**Path 2a — disorder sites (re-derived in-repo, NOT ported).** The public repo re-derives
+  these from source rather than importing the private `insertion_sequence_library.csv`, so the
+  whole deterministic method is transparent, reproducible, and versioned here — and consistent
+  with Path 2b, which is also computed fresh. Inputs, all available in-repo: per-residue pLDDT
+  from `tools/afdb_plddt.py` (parsed from the cached AlphaFold model), `per_residue_topology`
+  from the record, UniProt features for the veto, and **ortholog-MSA conservation** (built from
+  the repo's `merge/` ortholog machinery — this replaces the external KIBBY predictor with an
+  in-repo, auditable signal). Candidate spans = contiguous **per-residue pLDDT < 70, ≥ 4 aa,
+  non-terminal** runs; topology-gated to extracellular; UniProt-vetoed; ranked by
+  ortholog conservation. The private CSV + `viewer_dataset.json` are kept **only as a validation
+  cross-reference** (agreement check against the incumbent output), never as a data source.
+  **Yields low-pLDDT sites only** — by construction it cannot contain ordered-surface-loop
+  sites (see 2b).
 
 **Path 2b — ordered surface-loop sites (new computation, catches the TFRC I290 class).**
   Verified against the EndoNB TFRC site: I290/V291 sits at **pLDDT ~94–98** (confidently
@@ -258,27 +266,24 @@ by a `det_path` sub-field: `"disorder"` | `"surface_loop"`):
   `extracellular ('O')` **AND** `pLDDT ≥ 70` **AND** `DSSP = loop/turn` (up-weight
   strand↔helix connectors) **AND** `window-high RSA` **AND** `MSA indel-tolerant`
   (high per-column gap frequency) **AND** `≥10–15 Å (3D) from disulfides / N-glyc sequons /
-  active-binding / interface atoms`; rank by low KIBBY conservation + high RSA + high column
-  gap-frequency. Inputs are all already available (AF PDB, UniProt features, the conservation
-  MSA); tools: `freesasa` (assembly-aware — compute on the biological assembly so dimer
-  interfaces aren't mistaken for surface), `pydssp`/`mkdssp`, `biopython`. Optional later
+  active-binding / interface atoms`; rank by low ortholog conservation + high RSA + high column
+  gap-frequency. Inputs are all available in-repo (AF model via `afdb_plddt`, UniProt features,
+  the ortholog MSA); tools: `freesasa` (assembly-aware — compute on the biological assembly so
+  dimer interfaces aren't mistaken for surface), `pydssp`/`mkdssp`, `biopython`. Optional later
   signals: ENM/NMA flexibility (ProDy) and PAE-based domain/linker parsing — noted as
   complementary, but neither is decisive for the I290 case (flat pLDDT, intra-domain).
-- **Two things to confirm at port time** (do not assume):
-  - **KIBBY identity + rank direction** — the per-span `rank` is produced by an *upstream*
-    step not in `build_structure_site_viewer.py`; confirm the exact KIBBY tool/citation and
-    that rank 1 = least-conserved/safest before trusting the ordering.
-  - **Per-site pLDDT field** — the span is `<70` by construction; `average_plddt` in the data
-    is *per-protein*. `TaggedSite.plddt` should carry the per-span metric (`plddt_rank`/span
-    value), not the protein average.
+- **Both paths share one in-repo signal set** (`afdb_plddt` per-residue pLDDT, record topology,
+  UniProt features, ortholog-MSA conservation) — so `det_path: "disorder"` and
+  `"surface_loop"` differ only in their gate, not their provenance. Nothing is ported.
 - **Known blind spots** (feed §13 and motivate the surface-exposure enhancement below):
   (1) low pLDDT can mean low model confidence, not true disorder; (2) no loop-capacity check
   (a short ECL tripled by a ~49-aa cassette is not flagged); (3) tag-agnostic — β-strand tags
   (SpyTag) behave differently from α-helical epitopes (ALFA) in loops; (4) veto quality is
   bounded by UniProt annotation completeness.
-- **Later option:** re-run the full scoring in the public repo. Deferred: the public record
-  carries topology + sequence but **not** per-residue pLDDT/conservation, so recompute needs
-  those inputs sourced first.
+- **Validation cross-reference (optional):** the incumbent `insertion_sequence_library.csv` /
+  `viewer_dataset.json` can be pulled to *compare* against this repo's re-derived disorder-path
+  sites (agreement metric), but they are never a data source — the shipped sites are computed
+  here from the AlphaFold model + topology + UniProt features + ortholog conservation.
 
 ### 7.3 Internalization-evidence retrieval
 - Port `agentic_internalization_benchmark/prompt.md` into a runnable agent. One row per
