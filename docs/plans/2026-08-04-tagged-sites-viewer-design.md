@@ -218,7 +218,7 @@ framework). Each writes the static JSON in §6.
   exact `insert_after_residue` junctions and (b) have `residue_before/after` verified
   against the real sequence. (The benchmark stays symbol+name-only; this is a second
   run-mode of the same code — see §9.)
-- Retrieval substrate: bio-research MCP tools (PubMed, bioRxiv, Consensus) + web search.
+- Retrieval substrate: **the project's own stack, not MCP** — `src/accessible_surfaceome/tools/evidence_retrieval.py` (`evidence_retrieval(uniprot_acc, category)`: EuropePMC + PubTator discovery, PMC-OA full-text snippet extraction, cached/rate-limited) and `tools/gene_literature.py` (NCBI elink), with the LLM step driven through `agents/surfaceome_v2/builders/_common.py:call_builder` (Anthropic SDK, `SONNET_MODEL`, optional Anthropic server-side `web_search`). This is exactly how the existing surfaceome-v2 builders retrieve evidence.
 - Classifies each site extracellular vs not from the DeepTMHMM string (`O/I/M/S`), ranks
   extracellular first.
 - Emits `TaggedSite[]` with `provenance: "literature_retrieved"`.

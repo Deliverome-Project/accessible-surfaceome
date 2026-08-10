@@ -4,9 +4,9 @@
 
 **Goal:** A runnable pipeline that, given a gene, retrieves published internalization evidence and emits `InternalizationFile` JSON into `viewer/public/internalization/{SYMBOL}.json` — one row per measurement, `ligand_status` first-class, quantitative rows and qualitative statements kept as separate evidence classes — powering the §08 tab (Plan 3).
 
-**Architecture:** Same shape as Plan 5, under `src/accessible_surfaceome/agents/internalization/`. Ports the internalization-benchmark prompt (`deliverome-internal/data/analysis/agentic_internalization_benchmark/prompt.md`). Testable surrounds: output schema, normalization (nulls preserved, qualitative kept separate and never promoted to a quantitative row), and the emit-writer. LLM/MCP retrieval is the one non-unit-testable step.
+**Architecture:** Same shape as Plan 5, under `src/accessible_surfaceome/agents/internalization/`. Ports the internalization-benchmark prompt (`deliverome-internal/data/analysis/agentic_internalization_benchmark/prompt.md`). Retrieval + LLM reuse the **project stack** — `tools/evidence_retrieval.py` (an internalization-tuned `EvidenceCategory`) + `agents/surfaceome_v2/builders/_common.py:call_builder` — **not MCP**. Testable surrounds: output schema, normalization (nulls preserved, qualitative kept separate and never promoted to a quantitative row), and the emit-writer. The retrieval + `call_builder` step is the one non-unit-testable part.
 
-**Tech Stack:** Python 3, pytest, repo agent framework, bio-research MCP, jsonschema.
+**Tech Stack:** Python 3, pytest, repo agent framework, the project retrieval stack (`tools/evidence_retrieval.py`) + `call_builder` (Anthropic SDK), jsonschema. **No MCP.**
 
 **Parent spec:** §5.2, §7.3 · **Depends on:** Plan 1 (`InternalizationFile` shape), Plan 3 (consumer). Reuses Plan 5's agent-invocation harness pattern.
 
@@ -68,7 +68,7 @@
 
 **Spec coverage:** §7.3 internalization retrieval (one row per measurement, ±ligand first-class, nulls preserved, qualitative separate) → Tasks 1–3; §5.2 data source for the §08 tab → Task 4; output matches `InternalizationFile` (consumed by Plan 3) → Task 3. ✓
 
-**Placeholder scan:** LLM/MCP invocation (Task 4) described not coded (same boundary as Plan 5); all deterministic surrounds are full TDD.
+**Placeholder scan:** retrieval + `call_builder` LLM invocation (Task 4) described not coded (same boundary as Plan 5); all deterministic surrounds are full TDD.
 
 **Type consistency:** `build_prompt`, `validate_agent_output`, `normalize_output`, `emit_internalization_json` consistent; records match `viewer/lib/tag-sites-types.ts` `InternalizationMeasurement`/`InternalizationFile` and Plan 3's `parseInternalizationFile` guard.
 

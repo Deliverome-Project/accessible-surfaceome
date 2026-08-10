@@ -6,7 +6,9 @@
 
 **Architecture:** Pure Python transforms under `scripts/build/tag_sites/`, each with one responsibility, unit-tested with pytest (repo convention). 2a is a CSV→`TaggedSite` adapter. 2b computes per-residue structural signals on the AlphaFold model (RSA via `freesasa`, secondary structure via DSSP, indel-tolerance from the conservation MSA, 3D distance-from-features via biopython) and applies the composite gate from spec §7.2. An emit step merges both paths and writes the viewer JSON. Validated against the 23 curated controls.
 
-**Tech Stack:** Python 3, pytest, pandas, biopython, freesasa, a DSSP provider (`pydssp` or `mkdssp`). The `TaggedSite` field set matches `viewer/lib/tag-sites-types.ts` exactly.
+**Tech Stack:** Python 3, pytest, pandas, biopython, freesasa, a DSSP provider (`pydssp` or `mkdssp`). Reuse the project's existing tooling where it already exists: `tools/afdb_plddt.py` (per-residue AlphaFold pLDDT + cached PDB) and `tools/gene_lookup.py` (gene→UniProt acc + canonical sequence) — Path 2b needs **no new AlphaFold plumbing and no MCP**. The `TaggedSite` field set matches `viewer/lib/tag-sites-types.ts` exactly.
+
+**Unblocked now:** Path 2b (surface-loop compute) and the pure gate/model helpers need only Python + the AF model (via `tools/afdb_plddt.py`) — **no LFS file, no LLM, no MCP**. Only Path 2a (Task 2, the CSV port) is gated on the 77 MB LFS file (Task 0).
 
 **Parent spec:** `docs/plans/2026-08-04-tagged-sites-viewer-design.md` §7.2 · **Depends on:** Plan 1 (schema shape). Independent of Plans 2–3.
 
