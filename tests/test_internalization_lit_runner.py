@@ -1,5 +1,6 @@
 import json
 from types import SimpleNamespace
+from typing import Any, cast
 
 from accessible_surfaceome.agents.internalization import literature_runner as mod
 from accessible_surfaceome.agents.internalization.models import (
@@ -55,7 +56,7 @@ def test_annotate_literature_assembles_record(tmp_path, monkeypatch):
     _wire(monkeypatch, discovered=discovered, llm=llm)
 
     rec = mod.annotate_literature(
-        "TFRC", client=object(), http=object(), annotations_dir=tmp_path,
+        "TFRC", client=object(), http=cast(Any, object()), annotations_dir=tmp_path,
         model_priors=[
             ModelPriorTrack(
                 model="claude-opus-4-8", overall_grade="high",
@@ -80,6 +81,6 @@ def test_annotate_literature_assembles_record(tmp_path, monkeypatch):
 def test_annotate_literature_can_skip_persist(tmp_path, monkeypatch):
     _wire(monkeypatch, discovered={}, llm=LiteratureLLMOut())
     mod.annotate_literature(
-        "TFRC", client=object(), http=object(), persist=False, annotations_dir=tmp_path
+        "TFRC", client=object(), http=cast(Any, object()), persist=False, annotations_dir=tmp_path
     )
     assert list(tmp_path.iterdir()) == []

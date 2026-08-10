@@ -64,7 +64,8 @@ def test_triage_maps_decisions_per_paper():
     out = triage_internalization_abstracts(
         client, papers=[_paper(1), _paper(2)], gene="TFRC", system_prompt="SYS"
     )
-    assert [o.response.decision for o in out] == ["worth_fetching", "discard"]
+    assert all(o.response is not None for o in out)
+    assert [o.response.decision for o in out if o.response] == ["worth_fetching", "discard"]
     assert out[0].paper_id == "PMID:1"
     assert out[0].error is None
 
@@ -78,4 +79,5 @@ def test_triage_captures_error_without_aborting_batch():
         client, papers=[_paper(1), _paper(2)], gene="TFRC", system_prompt="SYS"
     )
     assert out[0].response is None and out[0].error is not None
+    assert out[1].response is not None
     assert out[1].response.decision == "keep_abstract"

@@ -49,7 +49,7 @@ def test_discovery_unions_and_dedupes_by_pmid(monkeypatch):
 
     bundle = SimpleNamespace(hgnc_symbol="TFRC", aliases=["CD71"], previous_symbols=[])
     out = discover_internalization_papers(
-        bundle, http=cast(Any, object()), retraction_index=cast(Any, object())
+        cast(Any, bundle), http=cast(Any, object()), retraction_index=cast(Any, object())
     )
     assert set(out) == {1, 2, 3}  # deduped: 2 came from both sources
 
@@ -85,6 +85,6 @@ def test_discovery_skips_records_with_non_integer_pmid(monkeypatch):
 
     bundle = SimpleNamespace(hgnc_symbol="TFRC", aliases=[], previous_symbols=[])
     out = discover_internalization_papers(
-        bundle, http=cast(Any, object()), retraction_index=cast(Any, object())
+        cast(Any, bundle), http=cast(Any, object()), retraction_index=cast(Any, object())
     )
     assert set(out) == {5}  # preprint record skipped, integer-PMID record kept

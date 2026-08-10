@@ -44,8 +44,8 @@ def test_source_store_registers_real_body_for_fetched(monkeypatch):
         ),
     )
     store = build_source_store(
-        pool,
-        papers_by_source_id={"PMID:1": (paper, True)},
+        cast(Any, pool),
+        papers_by_source_id=cast(Any, {"PMID:1": (paper, True)}),
         http=cast(Any, object()),
         retraction_index=cast(Any, object()),
     )
@@ -69,8 +69,8 @@ def test_source_store_uses_abstract_when_not_fetched(monkeypatch):
 
     monkeypatch.setattr(mod, "fetch_fulltext", _no_fetch)
     store = build_source_store(
-        pool,
-        papers_by_source_id={"PMID:2": (paper, False)},
+        cast(Any, pool),
+        papers_by_source_id=cast(Any, {"PMID:2": (paper, False)}),
         http=cast(Any, object()),
         retraction_index=cast(Any, object()),
     )
