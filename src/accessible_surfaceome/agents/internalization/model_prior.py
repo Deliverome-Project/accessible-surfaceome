@@ -51,9 +51,11 @@ def _build_user_prompt(gene_symbol: str, isoforms: list[IsoformContext]) -> str:
         "",
         "Grade this protein's INTRINSIC / BASAL endocytic (internalization) "
         "propensity per isoform, using your knowledge of this protein plus the "
-        "sequences and canonical topology below. Topology is annotated on the "
-        "canonical isoform and shared across rows; reason about isoform-specific "
-        "sequence differences yourself.",
+        "sequences and topology below. Topology gives the extracellular vs "
+        "cytoplasmic (inside/outside) sidedness — endocytic sorting motifs only "
+        "function in CYTOPLASMIC regions, so weigh motifs against it. Source is "
+        "DeepTMHMM (per-residue inside/outside prediction) where available, else "
+        "UniProt topology features (annotated on the canonical isoform).",
         "",
     ]
     for i, iso in enumerate(isoforms, 1):
@@ -61,7 +63,7 @@ def _build_user_prompt(gene_symbol: str, isoforms: list[IsoformContext]) -> str:
             f"### Isoform {i}: {iso.isoform_id}"
             + (" (canonical)" if iso.is_canonical else ""),
             f"Length: {iso.length_aa} aa",
-            f"Canonical topology: {iso.topology_summary}",
+            f"Topology ({iso.topology_source}): {iso.topology_summary}",
             "Sequence:",
             iso.sequence,
             "",

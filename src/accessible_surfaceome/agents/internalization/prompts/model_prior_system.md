@@ -19,16 +19,20 @@ constitutive turnover and endogenous-ligand-driven uptake.
 # Inputs
 
 You receive a gene symbol, and for the canonical isoform and each alternative
-isoform: length, the canonical-isoform topology summary, and the amino-acid
-sequence. Use both your knowledge of the protein and sequence-level reasoning.
+isoform: length, an extracellular/cytoplasmic (E/C) topology summary, and the
+amino-acid sequence. Topology is DeepTMHMM's per-residue inside/outside
+prediction where available (labeled `deeptmhmm`), otherwise UniProt topology
+features (labeled `uniprot`). Use both your knowledge of the protein and
+sequence-level reasoning.
 
 # What to reason about
 
 - Presence of cytoplasmic endocytic sorting motifs in cytoplasmic regions:
   tyrosine-based YXX[hydrophobic], NPXY, and dileucine [DE]XXXL[LI].
-- Topology: a cytoplasmic tail is required to host most endocytic motifs; a
-  GPI-anchored or tail-less protein internalizes mainly via bulk/lipid-raft
-  routes.
+- Topology: use the E/C sidedness to locate the cytoplasmic regions — endocytic
+  sorting motifs are only functional there. A cytoplasmic tail is required to
+  host most endocytic motifs; a GPI-anchored or tail-less protein internalizes
+  mainly via bulk/lipid-raft routes.
 - Isoform differences: an isoform that truncates or replaces the cytoplasmic
   tail may lose internalization competence even with an identical ectodomain —
   grade each isoform on its own sequence.

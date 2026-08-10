@@ -196,14 +196,20 @@ ModelPriorTrack
    Where literature is `unknown`, the prior still gives a defensible estimate;
    literature-vs-prior and Opus-vs-Sonnet agreement are themselves signals.
 
-**Input sourcing.** Isoform *sequences* and topology are **not** in the
-surfaceome record (`IsoformRecord` carries only id/name/canonical/length).
-Fetch them from UniProt via the resolved `uniprot_acc` — the
-`gene_lookup(mode="uniprot_summary")` path already returns
-`topology_features` + `isoforms`; extend/adjacent-fetch to obtain per-isoform
-FASTA. Confirm the exact fetch path during implementation; sequence is
-required, topology attached when available (else `topology_summary` notes it
-is absent and the model reasons from sequence alone).
+**Input sourcing (resolved).** Isoform *sequences* and topology are **not** in
+the surfaceome record (`IsoformRecord` carries only id/name/canonical/length).
+Topology is sourced **DeepTMHMM-first**: the repo's precomputed per-residue
+inside/outside predictions (`data/external/deeptmhmm_surfaceome_predictions/*/predicted_topologies.3line`,
+parsed by `sources.deeptmhmm.parse_3line`) give the extracellular/cytoplasmic
+(E/C) sidedness the grade actually needs — endocytic motifs only function in
+cytoplasmic regions. Canonical predictions are keyed by base accession, alt-isoform
+predictions by the isoform-suffixed accession, so isoforms get their **own** E/C
+topology where predicted (e.g. EGFR's soluble isoforms correctly read "cytoplasmic
+0 aa"). When a DeepTMHMM record exists we use its own residue-aligned sequence; when
+it doesn't, we fall back to the UniProt FASTA sequence (`sources.deeptmhmm.fetch_uniprot_fasta`
+per isoform accession) + UniProt `topology_features` (`gene_lookup(mode="uniprot_summary")`).
+Each `IsoformContext` records `topology_source ∈ {deeptmhmm, uniprot}` and the prompt
+surfaces it.
 
 ## 5. The pass (`src/accessible_surfaceome/agents/internalization/`)
 
@@ -318,7 +324,10 @@ hydration) into `data/eval/internalization_controls.tsv` with stable IDs.
 
 ## 10. Open items to resolve during implementation
 
-- Exact UniProt per-isoform FASTA + topology fetch path for Track 2.
+- ~~Exact UniProt per-isoform FASTA + topology fetch path for Track 2.~~
+  **Resolved:** DeepTMHMM E/C topology (`.3line` via `parse_3line`), DeepTMHMM's
+  own sequence when predicted, else UniProt FASTA + UniProt features. See
+  "Input sourcing (resolved)" above.
 - Module home for the new Pydantic models (dedicated module vs. shared
   `models.py`).
 - Whether `gen_prompt_review` / the leak-test scanners already glob the new
