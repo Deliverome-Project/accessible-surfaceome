@@ -2,7 +2,7 @@
 
 import type { ReactNode } from "react";
 import type { CatalogRow, DeepDiveFilters } from "../../../lib/surfaceome";
-import { isLowLiteratureSurfy, LOW_LIT_PAPERS_MAX } from "../../../lib/catalog-presets";
+import { isLowLiteratureSurface, LOW_LIT_PAPERS_MAX } from "../../../lib/catalog-presets";
 import type {
   AccessibilityModulationObservation,
   SurfaceomeRecord,
@@ -248,15 +248,17 @@ export function GeneHeader({
   const g = rec.gene;
   const exec = rec.executive_summary;
   const counts = tierCounts(rec);
-  // Low-literature + SURFY badge: a non-canonical gene whose below-canonical
+  // Low-literature + UniProt badge: a non-canonical gene whose below-canonical
   // call may be evidence-limited (thin discovery corpus) rather than biological,
-  // and SURFY predicts surface. Needs the SURFY DB flag from the 5-DB strip
-  // (catalogRow.db.surfy) — absent → no badge (same graceful path as the strip).
-  const lowLitSurfy =
+  // and UniProt annotates it cell-surface. Needs the UniProt DB flag from the
+  // 5-DB strip (catalogRow.db.uniprot) — absent → no badge (graceful, like the
+  // strip). UniProt (not SURFY) because it captures the understudied
+  // olfactory/taste GPCR class SURFY structurally misses.
+  const lowLitSurface =
     !!catalogRow &&
-    isLowLiteratureSurfy(
+    isLowLiteratureSurface(
       rec.filters as unknown as DeepDiveFilters,
-      catalogRow.db.surfy === 1,
+      catalogRow.db.uniprot === 1,
     );
   const struct = rec.deterministic_features.structure;
   // The fetcher signals what kind of pLDDT the number is via the
@@ -363,21 +365,21 @@ export function GeneHeader({
            *  non-canonical call rests on a thin discovery corpus AND SURFY
            *  predicts surface, i.e. an under-studied structural-surface
            *  candidate whose call may be evidence-limited, not biological. */}
-          {lowLitSurfy ? (
+          {lowLitSurface ? (
             <p className={styles.lowLitFlag}>
-              <span className={styles.lowLitFlagTag}>Low literature · SURFY yes</span>
+              <span className={styles.lowLitFlagTag}>Low literature · UniProt yes</span>
               <span className={styles.lowLitFlagText}>
                 Under-studied surface candidate — only{" "}
                 {rec.filters.n_papers_found} papers found (&lt; {LOW_LIT_PAPERS_MAX})
-                and not canonical, but SURFY predicts surface. The
+                and not canonical, but UniProt annotates it cell-surface. The
                 below-canonical call may reflect thin literature rather than
                 non-surface biology.
               </span>
-              <InfoTip label="About the low-literature + SURFY flag">
+              <InfoTip label="About the low-literature + UniProt flag">
                 <p>
                   Shown on non-canonical deep-dive genes with fewer than{" "}
-                  {LOW_LIT_PAPERS_MAX} papers found in discovery that SURFY
-                  nonetheless predicts are cell-surface. Below ~100 papers the
+                  {LOW_LIT_PAPERS_MAX} papers found in discovery that UniProt
+                  nonetheless annotates as cell-surface. Below ~100 papers the
                   deep dive rarely reaches a confident (canonical) call, so
                   these are good re-dive targets rather than settled negatives.
                 </p>

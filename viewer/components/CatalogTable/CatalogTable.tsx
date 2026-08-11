@@ -25,7 +25,7 @@ import {
   INDUCTION_SUBS,
   PRESET_IMPLIED_FILTERS,
   DEEP_DIVE_ONLY_NOTE,
-  isLowLiteratureSurfy,
+  isLowLiteratureSurface,
   LOW_LIT_PAPERS_MAX,
   type PresetKey,
   type InductionSubKey,
@@ -362,9 +362,9 @@ export function CatalogTable({
   // rows are auto-excluded when a non-"all" preset is active because
   // they have no `deep_dive_filters` to evaluate.
   const [presetKey, setPresetKey] = useState<PresetKey>("all");
-  // Standalone "low-literature + SURFY" curated list — NOT a PRESETS entry
-  // because its predicate needs the SURFY DB flag (r.db.surfy), which isn't in
-  // the deep-dive `deep_dive_filters`. Mutually exclusive with the preset chips.
+  // Standalone "low-literature + UniProt" curated list — NOT a PRESETS entry
+  // because its predicate needs the UniProt DB flag (r.db.uniprot), which isn't
+  // in the deep-dive `deep_dive_filters`. Mutually exclusive with the preset chips.
   const [lowLitSurfy, setLowLitSurfy] = useState(false);
   // When Induced is active, optional sub-axis filter on
   // `induction_trigger`. MULTI-select (a single gene's trigger is
@@ -854,12 +854,12 @@ export function CatalogTable({
           if (!matchAny) return false;
         }
       }
-      // Low-literature + SURFY curated list — needs the SURFY DB flag, so it's
+      // Low-literature + UniProt curated list — needs the UniProt DB flag, so it's
       // handled here (not via a PRESETS predicate). Under-studied
       // structural-surface candidates the deep dive couldn't confidently call.
       if (lowLitSurfy) {
         const ddf = r.deep_dive_filters;
-        if (!ddf || !isLowLiteratureSurfy(ddf, r.db.surfy === 1)) return false;
+        if (!ddf || !isLowLiteratureSurface(ddf, r.db.uniprot === 1)) return false;
       }
       // Deep-dive filter group. Any active filter here implies
       // deep_dive=true — rows without a deep_dive_filters payload
@@ -1080,15 +1080,15 @@ export function CatalogTable({
             </span>
           );
         })}
-        {/* Low-lit + SURFY — standalone curated list (not a PRESETS entry;
-         *  its predicate needs the SURFY DB flag). Under-studied
-         *  structural-surface candidates the deep dive couldn't confidently
-         *  call. Mutually exclusive with the preset chips above. */}
+        {/* Low-lit + UniProt — standalone curated list (not a PRESETS entry;
+         *  its predicate needs the UniProt DB flag, r.db.uniprot). Under-studied
+         *  surface candidates the deep dive couldn't confidently call. Mutually
+         *  exclusive with the preset chips above. */}
         {(() => {
           const count = rows.reduce(
             (n, r) =>
               r.deep_dive_filters &&
-              isLowLiteratureSurfy(r.deep_dive_filters, r.db.surfy === 1)
+              isLowLiteratureSurface(r.deep_dive_filters, r.db.uniprot === 1)
                 ? n + 1
                 : n,
             0,
@@ -1109,17 +1109,19 @@ export function CatalogTable({
                   }
                 }}
               >
-                Low-lit + SURFY
+                Low-lit + UniProt
                 <span className={styles.presetCount}>{count.toLocaleString()}</span>
               </button>
-              <InfoTip label="About the Low-lit + SURFY list" wide>
+              <InfoTip label="About the Low-lit + UniProt list" wide>
                 <p>
                   Non-canonical genes with a thin discovery corpus (&lt;{" "}
-                  {LOW_LIT_PAPERS_MAX} papers found) that SURFY nonetheless
-                  predicts are surface. These are under-studied
-                  structural-surface candidates — the deep dive likely couldn&apos;t
-                  reach a confident call for lack of literature, not because the
-                  protein is intracellular. Good re-dive targets.
+                  {LOW_LIT_PAPERS_MAX} papers found) that UniProt nonetheless
+                  annotates as cell-surface. These are under-studied surface
+                  candidates — the deep dive likely couldn&apos;t reach a
+                  confident call for lack of literature, not because the protein
+                  is intracellular. Good re-dive targets. (UniProt is used here
+                  rather than SURFY because it captures the understudied
+                  olfactory/taste-receptor GPCRs that SURFY structurally misses.)
                 </p>
                 <p>
                   <em>{DEEP_DIVE_ONLY_NOTE}</em>

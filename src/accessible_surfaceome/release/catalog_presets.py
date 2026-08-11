@@ -89,18 +89,24 @@ def passes_canonical(f: dict[str, Any]) -> bool:
     )
 
 
-def is_low_literature_surfy(f: dict[str, Any], surfy_positive: bool) -> bool:
+def is_low_literature_surface(f: dict[str, Any], db_surface_positive: bool) -> bool:
     """Badge — NOT a tier preset. Flags a NON-canonical gene whose non-surface
     (or below-canonical) verdict is plausibly evidence-limited rather than
     biological: a thin discovery corpus (``n_papers_found < LOW_LIT_PAPERS_MAX``)
-    AND SURFY predicts it surface. These are under-studied structural-surface
-    candidates worth a targeted re-dive.
+    AND an external surface-DB call predicts it surface. Under-studied
+    surface candidates worth a targeted re-dive.
 
-    Unlike the tier predicates this takes an EXTRA argument, ``surfy_positive``:
-    the SURFY call is a candidate-universe DB flag that is NOT carried in the
-    deep-dive ``filters`` dict, so callers must supply it (the viewer has it in
-    the 5-DB vote strip). That is why this is a standalone badge and not a
-    member of the ``(filters) -> bool`` preset family.
+    The DB flag is passed via ``db_surface_positive``. The viewer wires this to
+    **UniProt** (``catalogRow.db.uniprot``): among the low-lit population UniProt
+    is the better predictor — it catches the understudied olfactory/taste-GPCR
+    class that SURFY structurally blind-spots, and its unique low-lit additions
+    read more surface-leaning by the deep dive's own accessibility/specificity
+    (SURFY's skew intracellular). UniProt's localization is itself a hybrid of
+    curated evidence + similarity + sequence-feature prediction (signal peptide /
+    TM topology), so it is not purely knowledge-based. Taking the flag as an
+    argument (rather than reading ``filters``) is why this is a standalone badge
+    and not a member of the ``(filters) -> bool`` preset family — the DB call is
+    a candidate-universe flag, not part of the deep-dive record.
 
     Scoped to NON-canonical genes: a gene that already cleared ``passes_canonical``
     doesn't need an evidence-gap caveat, so canonical genes never carry the badge.
@@ -110,7 +116,7 @@ def is_low_literature_surfy(f: dict[str, Any], surfy_positive: bool) -> bool:
     n = f.get("n_papers_found")
     if n is None:
         return False
-    return bool(surfy_positive) and n < LOW_LIT_PAPERS_MAX
+    return bool(db_surface_positive) and n < LOW_LIT_PAPERS_MAX
 
 
 def passes_likely(f: dict[str, Any]) -> bool:
@@ -142,12 +148,22 @@ def passes_likely(f: dict[str, Any]) -> bool:
 
 
 def passes_induced(f: dict[str, Any]) -> bool:
-    """Cell-state induced — surface presentation depends on cell state.
+    """Cell-state induced — surface presentation is *gained on a cell state*.
 
-    Matches via EITHER ``surface_call_reason`` in {cell_state_induced,
-    lysosomal_exocytosis, dual_localization} OR ``induction_trigger``
-    in INDUCTION_NON_NONE. The latter is the field that schema-1.1.0
-    records (HSPA5) actually populate when surface_call_reason is null.
+    PRIMARY criterion: ``surface_call_reason`` in {cell_state_induced,
+    lysosomal_exocytosis} — the reason codes that mean the protein reaches the
+    surface because of a state change (induction, degranulation), not
+    constitutively. This is the definitional gate.
+
+    An earlier version ALSO admitted any gene with ``induction_trigger`` in
+    INDUCTION_NON_NONE. That massively over-counted (2,127): ``induction_trigger
+    = 'oncogenic'`` is assigned to essentially every tumour-associated gene
+    (99% overlap with ``tumor_associated``), so constitutively-surface receptors
+    (classical_surface_receptor / multipass / tissue_restricted) that merely
+    correlate with cancer were swept in. Dropping the trigger disjunct restricts
+    this to the ~407 genes whose surface presentation is genuinely state-gained.
+    The ``induction_trigger`` axis is still exposed as the cancer / disease /
+    stress / immune SUB-chips within this set.
 
     Accepts state_dep ∈ {moderate, high, unclear, null} — moderate
     state-dependence still indicates state-modulation (TROP2-class
@@ -158,13 +174,9 @@ def passes_induced(f: dict[str, Any]) -> bool:
     sd = f.get("state_dependence")
     if sd is not None and sd not in ("moderate", "high", "unclear"):
         return False
-    if f.get("surface_call_reason") in (
+    return f.get("surface_call_reason") in (
         "cell_state_induced", "lysosomal_exocytosis"
-    ):
-        return True
-    if f.get("induction_trigger") in INDUCTION_NON_NONE:
-        return True
-    return False
+    )
 
 
 def passes_cell_type_restricted(f: dict[str, Any]) -> bool:

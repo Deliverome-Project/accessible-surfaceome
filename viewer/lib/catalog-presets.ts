@@ -102,24 +102,28 @@ export const LOW_LIT_PAPERS_MAX = 100;
 /**
  * Badge — NOT a tier preset (kept out of PRESETS). Flags a NON-canonical gene
  * whose below-canonical verdict is plausibly evidence-limited: thin discovery
- * corpus (`n_papers_found < LOW_LIT_PAPERS_MAX`) AND SURFY predicts surface —
- * an under-studied structural-surface candidate worth a re-dive.
+ * corpus (`n_papers_found < LOW_LIT_PAPERS_MAX`) AND an external surface-DB call
+ * predicts it surface — an under-studied surface candidate worth a re-dive.
  *
- * Takes an EXTRA `surfyPositive` argument because the SURFY call is a
- * candidate-universe DB flag (in the 5-DB vote strip), NOT part of the
- * deep-dive `filters` — which is why it can't be a `(filters) => bool` preset.
- * Scoped to non-canonical genes: canonical calls never carry the caveat.
- * Missing `n_papers_found` → not flagged. Mirror of
- * accessible_surfaceome.release.catalog_presets.is_low_literature_surfy.
+ * `dbSurfacePositive` is wired to **UniProt** (`catalogRow.db.uniprot`): for the
+ * low-lit population UniProt beats SURFY — it catches the understudied
+ * olfactory/taste-GPCR class SURFY blind-spots, and its unique low-lit adds read
+ * more surface-leaning by the deep dive's own accessibility/specificity.
+ * (UniProt localization is itself a hybrid: curated evidence + similarity +
+ * sequence-feature prediction, so not purely knowledge-based.) Passed as an
+ * argument because the DB call is a candidate-universe flag in the 5-DB strip,
+ * NOT part of the deep-dive `filters` — which is why it isn't a `(filters) =>
+ * bool` preset. Scoped to non-canonical genes. Missing `n_papers_found` → not
+ * flagged. Mirror of catalog_presets.is_low_literature_surface.
  */
-export function isLowLiteratureSurfy(
+export function isLowLiteratureSurface(
   f: DeepDiveFilters,
-  surfyPositive: boolean,
+  dbSurfacePositive: boolean,
 ): boolean {
   if (passesCanonical(f)) return false;
   const n = f.n_papers_found;
   if (n == null) return false;
-  return surfyPositive && n < LOW_LIT_PAPERS_MAX;
+  return dbSurfacePositive && n < LOW_LIT_PAPERS_MAX;
 }
 
 /**
@@ -213,16 +217,16 @@ export function passesInduced(f: DeepDiveFilters): boolean {
   ) {
     return false;
   }
-  if (
+  // PRIMARY (and only) gate: the surface_call_reason must itself say the
+  // surface pool is state-gained. The old `induction_trigger` disjunct
+  // over-counted 5x (2,127) because 'oncogenic' ≈ tumor_associated (99%
+  // overlap), sweeping in constitutively-surface receptors that merely
+  // correlate with cancer. Restricting to the reason code drops it to ~407
+  // genuinely state-induced genes. The trigger axis remains as the sub-chips.
+  return (
     f.surface_call_reason === "cell_state_induced" ||
     f.surface_call_reason === "lysosomal_exocytosis"
-  ) {
-    return true;
-  }
-  if (f.induction_trigger && INDUCTION_NON_NONE.has(f.induction_trigger)) {
-    return true;
-  }
-  return false;
+  );
 }
 
 /**
@@ -400,9 +404,16 @@ export const PRESETS: ReadonlyArray<{
     key: "induced",
     label: "Cell-state induced",
     description:
-      "Subset of Likely where surface presentation is induced by cell " +
-      "state (oncogenic transformation, stress, infection, immune " +
-      "activation). HSPA5, SRC, CD63, HMGB1, C3 land here.",
+      "Subset of Likely where the surface pool is GAINED on a cell state. " +
+      "Membership is set by the deep-dive surface_call_reason itself — " +
+      "cell_state_induced or lysosomal_exocytosis — the reason codes that " +
+      "mean the protein reaches the surface because of a state change, not " +
+      "constitutively (SRC, CD63, HMGB1, C3 land here). This is deliberately " +
+      "NOT keyed off induction_trigger: 'oncogenic' is assigned to nearly " +
+      "every tumour-associated gene (~99% overlap), which would sweep in " +
+      "constitutively-surface receptors that merely correlate with cancer. " +
+      "The oncogenic / immune / stress / infection trigger is instead exposed " +
+      "as the sub-chips within this set.",
     predicate: passesInduced,
   },
   {
