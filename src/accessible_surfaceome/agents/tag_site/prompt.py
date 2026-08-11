@@ -45,6 +45,17 @@ inference only'):
 - "published tag insertion in the same loop or domain"
 - "published tolerance of a different insertion (transposon, FP fusion)"
 
+POSITION HONESTY (required). For EVERY site set `position_evidence`:
+- "validated" — a tag was published AT this exact residue/junction (or +/-1). Only then may
+  evidence_type be "published tag insertion at this exact site". Set `cited_tag_residue` =
+  insert_after_residue.
+- "inferred" — the loop/domain has tagging precedent ELSEWHERE and you chose this specific
+  position by structural reasoning. Set `cited_tag_residue` to the residue that actually
+  carries the published tag (e.g. cite a tag at 89 but propose 120 -> cited_tag_residue=89,
+  position_evidence="inferred"). Do NOT dress an inferred position as an exact-site validation.
+Do not move a validated position to a "nicer" nearby residue and call it validated — if you
+relocate it, it is inferred.
+
 If you cannot find a validated tagging example, return FEWER sites — or an EMPTY sites list
 with a rationale. A well-argued empty result is CORRECT and beats a structural-inference guess.
 

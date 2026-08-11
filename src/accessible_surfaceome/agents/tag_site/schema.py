@@ -24,6 +24,22 @@ class TagSiteProposal(BaseModel):
     topology_state: str = Field(description='"extracellular" | "intracellular" | "membrane" | "signal"')
     tag_type: str = Field(description="e.g. 'short epitope, ALFA 15 aa, GS linkers'")
     evidence_type: str = Field(description="One of the EVIDENCE_TYPES ladder values.")
+    position_evidence: str = Field(
+        description=(
+            '"validated" — a tag was published AT this exact residue/junction (or immediately '
+            'adjacent, +/-1). "inferred" — the loop/domain has tagging precedent ELSEWHERE, but '
+            "THIS specific position is your own structural choice. If the cited tag is not at "
+            "insert_after_residue, this MUST be 'inferred'."
+        )
+    )
+    cited_tag_residue: int | None = Field(
+        default=None,
+        description=(
+            "The residue where the CITED tag was actually placed (UniProt numbering). Equals "
+            "insert_after_residue when position_evidence='validated'; the real precedent position "
+            "(e.g. 89) when you inferred a different site (e.g. 120). Null if not a point tag."
+        ),
+    )
     evidence_detail: str = Field(description="What was measured/observed, in what system.")
     functional_or_expression_impact_measured: str = Field(
         description="What was MEASURED (assay + result), or 'NOT MEASURED'. Never inferred."
