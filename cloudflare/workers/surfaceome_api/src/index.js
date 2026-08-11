@@ -173,8 +173,16 @@ async function checkRate(env, request, path) {
 // Rule that already strips query strings). Pass `includeQuery: true` for
 // endpoints where the query genuinely parameterizes the response
 // (e.g. /v1/triage/export.tsv?run_id=X — different run_id, different
-// content). The cache-key uses a synthetic host so it can't collide with
-// any real request URL, and forces GET so no method-mismatch surprises.
+// content). The cache-key uses the REAL request origin + pathname — NOT a
+// synthetic host. A synthetic host (`https://cache.internal/...`) silently
+// broke purge-on-publish: `surface_annotation.publish_record` purges the
+// public URL (`https://api.deliverome.org/surfaceome/v1/genes/{SYM}`), but a
+// single-file purge can only evict an entry stored under that same URL — it
+// can never match a fake host, so a republished record served stale until the
+// TTL (up to a day). Keying on `url.origin + pathname` makes the stored key
+// equal the purged URL, so the purge now actually evicts it. Query string is
+// dropped (unless includeQuery) so `?_=cache-buster` variants share one
+// purgeable key. Forces GET so no method-mismatch surprises.
 //
 // Only 200 and 404 are cached — both have positive TTLs from `json()`
 // / `notFound()`. 400/405 responses set ttl=0 and are safe to skip
@@ -183,7 +191,7 @@ async function withEdgeCache(request, handler, { includeQuery = false } = {}) {
   const cache = caches.default;
   const url = new URL(request.url);
   const keyPath = includeQuery ? url.pathname + url.search : url.pathname;
-  const cacheKey = new Request(new URL(keyPath, "https://cache.internal").href, {
+  const cacheKey = new Request(new URL(keyPath, url.origin).href, {
     method: "GET",
   });
   const hit = await cache.match(cacheKey);
