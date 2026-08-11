@@ -188,6 +188,29 @@ def passes_cell_type_restricted(f: dict[str, Any]) -> bool:
     return f.get("surface_call_reason") == "tissue_restricted_surface"
 
 
+def deep_dive_tier(f: dict[str, Any]) -> tuple[str, str | None]:
+    """(tier, facet) — the single five-tier deep-dive classification + optional
+    sub-facet, mirroring the TS ``deepDiveTier`` and the precedence in
+    build_figure_tsvs ``_dd_assign_bucket``. tier ∈ {canonical, likely, low,
+    uncertain, no}; facet ∈ {induced, cell_type_restricted, None}. The facet is
+    surfaced whenever its predicate holds (including on canonical genes)."""
+    facet: str | None = (
+        "cell_type_restricted" if passes_cell_type_restricted(f)
+        else "induced" if passes_induced(f)
+        else None
+    )
+    if passes_canonical(f):
+        return ("canonical", facet)
+    if passes_likely(f):
+        return ("likely", facet)
+    acc = f.get("surface_accessibility")
+    if acc == "uncertain":
+        return ("uncertain", None)
+    if acc in ("low", "moderate"):
+        return ("low", None)
+    return ("no", None)
+
+
 # Induction sub-axes — only meaningful when the induced predicate is
 # already true; surfaced as standalone bools in the deposit TSV so a
 # reanalyst can re-bucket without recomputing. Cancer is split out

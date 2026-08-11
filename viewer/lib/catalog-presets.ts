@@ -243,6 +243,39 @@ export function passesCellTypeRestricted(f: DeepDiveFilters): boolean {
   return f.surface_call_reason === "tissue_restricted_surface";
 }
 
+export type DeepDiveTier = "canonical" | "likely" | "low" | "uncertain" | "no";
+export type DeepDiveFacet = "induced" | "cell_type_restricted" | null;
+
+/**
+ * Resolve a record's single deep-dive tier + optional sub-facet — the same
+ * five-tier spectrum the catalog and Figure 5 use, so the gene page reads the
+ * same classification. Mirrors the precedence in build_figure_tsvs
+ * `_dd_assign_bucket`: canonical (strictest) first; then the below-likely lean
+ * split by the tentative surface_accessibility call; then likely with its
+ * cell-type / cell-state sub-facet.
+ *
+ * The facet (Cell-state induced / Cell-type restricted) is surfaced whenever
+ * its predicate holds — including on canonical genes (the figures bucket
+ * canonical separately, but on the detail page it's useful to show that a
+ * canonical target is also state-induced, e.g. TMEM123).
+ */
+export function deepDiveTier(f: DeepDiveFilters): {
+  tier: DeepDiveTier;
+  facet: DeepDiveFacet;
+} {
+  const facet: DeepDiveFacet = passesCellTypeRestricted(f)
+    ? "cell_type_restricted"
+    : passesInduced(f)
+      ? "induced"
+      : null;
+  if (passesCanonical(f)) return { tier: "canonical", facet };
+  if (passesLikely(f)) return { tier: "likely", facet };
+  const acc = f.surface_accessibility;
+  if (acc === "uncertain") return { tier: "uncertain", facet: null };
+  if (acc === "low" || acc === "moderate") return { tier: "low", facet: null };
+  return { tier: "no", facet: null };
+}
+
 /** Induction sub-axes — only meaningful when Induced is active.
  *  Cancer is its own bucket (induction_trigger=oncogenic) so it
  *  doesn't drown the Disease bucket; Disease is non-oncogenic
