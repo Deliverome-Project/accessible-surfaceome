@@ -27,7 +27,7 @@ def _emit_run(
     rb = seq[mid - 1] if 1 <= mid <= len(seq) else None
     ra = seq[mid] if 1 <= mid < len(seq) else None
     return tagged_site(
-        site_id=f"{gene_symbol}-internal-{mid}-det",
+        site_id=f"{gene_symbol}-disorder-{mid}",
         gene_symbol=gene_symbol,
         uniprot_acc=uniprot_acc,
         det_path="disorder",

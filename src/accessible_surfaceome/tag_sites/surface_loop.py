@@ -65,7 +65,7 @@ def surface_loop_candidates(
         ra = seq[res] if 1 <= res < len(seq) else None
         picks.append(
             tagged_site(
-                site_id=f"{gene_symbol}-internal-{res}-det",
+                site_id=f"{gene_symbol}-surface_loop-{res}",
                 gene_symbol=gene_symbol,
                 uniprot_acc=uniprot_acc,
                 det_path="surface_loop",
