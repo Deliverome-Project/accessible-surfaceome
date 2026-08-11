@@ -42,3 +42,16 @@ def test_residues_carried_from_sequence():
     site = next(p for p in picks if p["insert_after_residue"] == 100)
     assert site["residue_before"] == "K"
     assert site["residue_after"] == "P"
+
+
+def test_loop_length_and_tag_fit():
+    from accessible_surfaceome.tag_sites.surface_loop import loop_length, tag_fit
+    # a 15-aa coil run bounded by helix/strand
+    ss = {r: "C" for r in range(50, 65)}
+    ss[45] = "H"
+    ss[65] = "E"
+    assert loop_length(ss, 57) == 15
+    assert loop_length({100: "H"}, 100) == 0     # a helix residue is not a loop
+    assert "SpyTag003" in tag_fit(15)            # extended loop -> SpyTag003 permissive
+    assert "SpyTag003" not in tag_fit(5)         # short loop -> DogTag only
+    assert "ALFA" in tag_fit(5) and "DogTag" in tag_fit(5)

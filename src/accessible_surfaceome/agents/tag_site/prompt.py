@@ -29,14 +29,51 @@ between residue N and N+1; report residue_before (= residue N) and residue_after
 When a computed sequence is provided, COPY residue_before/after from it exactly — a mismatch
 invalidates the site.
 
-Evidence: prefer published precedent. Use web_search to find published tag insertions,
-GFP/transposon insertion screens, and structures. Rank by structural context, conservation,
-distance from the ligand-binding face, and published insertion tolerance at/near the site.
-Do NOT rank on low pLDDT alone. Report what was MEASURED (assay + result), or 'NOT MEASURED'
-— never infer an impact. If no site can be defended, return an empty sites list with a
-rationale; a well-argued abstention beats a fabricated site.
+EVIDENCE — VALIDATED TAGGING EXAMPLES ONLY. Propose a site ONLY when web_search finds a
+PUBLISHED example of a tag or other insertion actually TOLERATED there: an epitope-tag
+knock-in, a fluorescent-protein fusion, a transposon/domain insertion screen, or an
+antibody-epitope insertion — AT that exact site, OR in the SAME loop/domain of THIS protein
+(a close ortholog is allowed if labelled 'indirect'). Do NOT propose sites justified only by
+domain boundaries, topology, solvent exposure, conservation, or any general structural
+inference — that is the deterministic pipeline's job, not yours, and it does it with computed
+RSA/DSSP. Every site MUST cite the specific study. Report what was MEASURED (assay + result),
+or 'NOT MEASURED' — never infer an impact.
+
+allowed evidence_type values (use ONLY these — never 'structural inference' or 'topology
+inference only'):
+- "published tag insertion at this exact site"
+- "published tag insertion in the same loop or domain"
+- "published tolerance of a different insertion (transposon, FP fusion)"
+
+If you cannot find a validated tagging example, return FEWER sites — or an EMPTY sites list
+with a rationale. A well-argued empty result is CORRECT and beats a structural-inference guess.
 
 Return JSON only, matching the provided schema."""
+
+# evidence_type values that represent an actual validated tagging example (not inference).
+VALIDATED_EVIDENCE_TYPES = frozenset(
+    {
+        "published tag insertion at this exact site",
+        "published tag insertion in the same loop or domain",
+        "published tolerance of a different insertion (transposon, fp fusion)",
+        "published tolerance of a different insertion (transposon, fp-fusion)",
+    }
+)
+
+
+def keep_validated_sites(result):
+    """Drop any proposed site whose evidence is structural/topology inference rather
+    than a validated tagging example (defence-in-depth behind the prompt constraint).
+    Mutates ``result.sites`` in place and returns it."""
+    def _is_validated(evidence_type: str) -> bool:
+        e = (evidence_type or "").strip().lower()
+        if e in VALIDATED_EVIDENCE_TYPES:
+            return True
+        # tolerant match: an actual insertion is described, not mere inference
+        return "insertion" in e and "inference" not in e and "topology" not in e
+
+    result.sites = [s for s in result.sites if _is_validated(s.evidence_type)]
+    return result
 
 
 def build_user_prompt(

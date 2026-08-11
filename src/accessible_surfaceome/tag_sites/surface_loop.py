@@ -32,6 +32,37 @@ def _window_max(values: dict[int, float], res: int, lo: int = -1, hi: int = 2) -
     return max((values.get(res + d, 0.0) for d in range(lo, hi + 1)), default=0.0)
 
 
+SPYTAG_MIN_LOOP = 10  # a both-ends-tethered β-strand (SpyTag003) needs an extended loop
+
+
+def loop_length(ss: dict[int, str], res: int) -> int:
+    """Length of the contiguous coil/turn run (DSSP loop chars) containing ``res``.
+    The primary computable proxy for tag permissiveness: a long exposed loop gives
+    a both-ends-tethered β-strand room; a short loop does not."""
+    if ss.get(res, "?") not in LOOP_SS:
+        return 0
+    lo = res
+    while ss.get(lo - 1, "?") in LOOP_SS:
+        lo -= 1
+    hi = res
+    while ss.get(hi + 1, "?") in LOOP_SS:
+        hi += 1
+    return hi - lo + 1
+
+
+def tag_fit(loop_len: int) -> str:
+    """Recommend compatible tag chemistries from loop geometry.
+
+    ALFA (α-helix, folds independently) tolerates any exposed loop. SpyTag003
+    (β-strand completing SpyCatcher's sheet) needs an EXTENDED loop
+    (>= SPYTAG_MIN_LOOP); DogTag (engineered loop-adapted β-hairpin) covers the
+    short loops SpyTag003 cannot. See the SpyTag-in-loops evidence in
+    ``positive_controls.md`` (Keeble 2022)."""
+    if loop_len >= SPYTAG_MIN_LOOP:
+        return "ALFA, SpyTag003, DogTag"
+    return "ALFA, DogTag"  # short loop: SpyTag003 conjugates poorly tethered both ends
+
+
 def _exposed_anchor(rsa: dict[int, float], res: int, lo: int = -1, hi: int = 2) -> int:
     """The residue in the junction window with the highest OWN solvent
     accessibility. A window admitted because a *neighbor* is exposed (e.g. TFRC
@@ -99,6 +130,7 @@ def surface_loop_candidates(
 
         rb = seq[anchor - 1] if 1 <= anchor <= len(seq) else None
         ra = seq[anchor] if 1 <= anchor < len(seq) else None
+        ll = loop_length(signals["ss"], anchor)
         picks.append(
             tagged_site(
                 site_id=f"{gene_symbol}-surface_loop-{anchor}",
@@ -112,11 +144,12 @@ def surface_loop_candidates(
                 topology_state=signals["topology"].get(anchor, topo),
                 extracellular=True,
                 compartment="extracellular",
+                tag_type=tag_fit(ll),
                 plddt=round(signals["plddt"].get(anchor, signals["plddt"][res]), 1),
                 median_conservation=signals["conservation"].get(anchor),
                 rationale=(
-                    "ordered surface loop: pLDDT>=70, DSSP loop/turn, exposed junction "
-                    "residue (max RSA), indel-tolerant, 3D-clear of features"
+                    f"ordered surface loop ({ll} aa): pLDDT>=70, DSSP loop/turn, exposed "
+                    "junction residue (max RSA), indel-tolerant, 3D-clear of features"
                 ),
             )
         )
