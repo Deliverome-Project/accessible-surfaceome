@@ -563,33 +563,20 @@
   line-height: 1.4;
 }
 
-/* Low-literature + SURFY flag — a soft amber callout matching the `low`
- * tier's amber accent (same #c99a5b family as the catalog's chip). */
-.lowLitFlag {
-  display: flex;
-  align-items: baseline;
-  flex-wrap: wrap;
-  gap: var(--space-2);
-  margin: var(--space-3) 0 0;
-  padding: var(--space-2) var(--space-3);
-  background: color-mix(in srgb, #c99a5b 14%, transparent);
-  border: 1px solid color-mix(in srgb, #c99a5b 42%, transparent);
-  border-radius: var(--radius-2, 8px);
-  font-size: 0.82rem;
-  line-height: 1.4;
-}
-.lowLitFlagTag {
-  font-family: var(--font-mono, ui-monospace, monospace);
-  font-size: 0.68rem;
-  letter-spacing: 0.04em;
-  text-transform: uppercase;
+/* Low-literature + UniProt flag — a compact chip on the tier-callout row
+ * (amber outline, #c99a5b family; detail lives in its InfoTip). */
+.lowLitChip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  padding: 0.16rem 0.55rem;
+  border-radius: 999px;
+  font-size: 0.76rem;
   font-weight: var(--fw-medium, 600);
-  color: color-mix(in srgb, #c99a5b 72%, var(--fg, #1f1718));
+  color: color-mix(in srgb, #c99a5b 74%, var(--fg, #1f1718));
+  background: color-mix(in srgb, #c99a5b 13%, transparent);
+  border: 1px solid color-mix(in srgb, #c99a5b 42%, transparent);
   white-space: nowrap;
-}
-.lowLitFlagText {
-  color: var(--muted);
-  flex: 1 1 240px;
 }
 
 /* Deep-dive tier callout — solid pill in the five-tier palette (canonical

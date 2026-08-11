@@ -386,14 +386,13 @@ export function GeneHeader({
               outliers, where we just omit the strip. */}
           {/* Deep-dive tier callout — which shortlist this gene lands in
            *  (same five-tier classification as the catalog + Figure 5), plus
-           *  its cell-state / cell-type sub-facet. */}
+           *  its cell-state / cell-type sub-facet and, for under-studied
+           *  non-canonical genes, the low-literature + UniProt flag — all as
+           *  compact chips on one row above the DB strip. */}
           <div className={styles.tierCallout}>
             <span className={`${styles.tierChip} ${TIER_META[tier].tone}`}>
               {TIER_META[tier].label}
             </span>
-            {facet ? (
-              <span className={styles.tierFacetChip}>{FACET_LABEL[facet]}</span>
-            ) : null}
             <InfoTip label="About the deep-dive tier">
               <p>
                 The five-tier deep-dive classification used across the catalog:
@@ -403,35 +402,27 @@ export function GeneHeader({
                 Cell-type-restricted surface presentation.
               </p>
             </InfoTip>
+            {facet ? (
+              <span className={styles.tierFacetChip}>{FACET_LABEL[facet]}</span>
+            ) : null}
+            {lowLitSurface ? (
+              <span className={styles.lowLitChip}>
+                Low literature · UniProt
+                <InfoTip label="About the low-literature + UniProt flag">
+                  <p>
+                    Only {rec.filters.n_papers_found} papers found (&lt;{" "}
+                    {LOW_LIT_PAPERS_MAX}) and not canonical, but UniProt annotates
+                    it cell-surface. Below ~100 papers the deep dive rarely reaches
+                    a confident (canonical) call, so this is an under-studied
+                    surface candidate — a good re-dive target, not a settled
+                    negative.
+                  </p>
+                </InfoTip>
+              </span>
+            ) : null}
           </div>
 
           {catalogRow ? <DatabasePresenceStrip row={catalogRow} /> : null}
-
-          {/* Low-literature + SURFY flag — surfaced when the deep dive's
-           *  non-canonical call rests on a thin discovery corpus AND SURFY
-           *  predicts surface, i.e. an under-studied structural-surface
-           *  candidate whose call may be evidence-limited, not biological. */}
-          {lowLitSurface ? (
-            <p className={styles.lowLitFlag}>
-              <span className={styles.lowLitFlagTag}>Low literature · UniProt yes</span>
-              <span className={styles.lowLitFlagText}>
-                Under-studied surface candidate — only{" "}
-                {rec.filters.n_papers_found} papers found (&lt; {LOW_LIT_PAPERS_MAX})
-                and not canonical, but UniProt annotates it cell-surface. The
-                below-canonical call may reflect thin literature rather than
-                non-surface biology.
-              </span>
-              <InfoTip label="About the low-literature + UniProt flag">
-                <p>
-                  Shown on non-canonical deep-dive genes with fewer than{" "}
-                  {LOW_LIT_PAPERS_MAX} papers found in discovery that UniProt
-                  nonetheless annotates as cell-surface. Below ~100 papers the
-                  deep dive rarely reaches a confident (canonical) call, so
-                  these are good re-dive targets rather than settled negatives.
-                </p>
-              </InfoTip>
-            </p>
-          ) : null}
 
           {/* Benchmark row (SurfaceBench ground truth) + Triage row
               (Sonnet first-pass verdict) were moved out of the header —
