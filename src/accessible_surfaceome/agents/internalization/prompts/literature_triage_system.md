@@ -26,17 +26,26 @@ A gene symbol, a PMID, a title, and an abstract.
   signaling-only, the gene is mentioned incidentally (marker, list member, PCR
   target), or the work is non-endocytic. **Localization to endosomes/lysosomes
   alone is NOT internalization evidence** — discard unless uptake/endocytosis is
-  actually measured.
+  actually measured. Also discard when the protein is used only as a **delivery
+  handle / scaffold** to carry some cargo, or its internalization is named as
+  background, and the protein's OWN uptake/endocytosis is not characterized.
 
 # Guidance
 
+- **Rank relevance by whether THIS protein's own membrane internalization is the
+  measured phenomenon** — not whether the abstract merely contains the word
+  "endocytosis." A competition-controlled receptor-mediated uptake, viral/ligand
+  entry via the receptor, or an antibody-uptake assay counts; a delivery-scaffold
+  or background mention does not.
+- **Quantitative measurements are the highest-value signal.** Favor
+  `worth_fetching` for abstracts implying a rate constant (k_e), half-time,
+  %-internalized time course, or fold-change — those carry the numbers the
+  downstream grade needs.
 - Prefer human data, but keep informative non-human uptake assays (note the
   species is resolved downstream).
 - When uncertain between `keep_abstract` and `worth_fetching`, prefer
   `worth_fetching` if the abstract hints at quantitative or condition-stratified
   uptake; prefer `keep_abstract` if the single result is already fully stated.
-- Do not reward mere co-occurrence of the gene name with "endocytosis" in an
-  unrelated context.
 
 # Output
 

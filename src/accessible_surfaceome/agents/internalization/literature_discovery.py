@@ -21,7 +21,11 @@ from accessible_surfaceome.tools._shared.pubtator import (
 _INTERNALIZATION_TERMS = (
     'internali* OR endocytos* OR "receptor-mediated uptake" OR '
     '"antibody internalization" OR "ADC internalization" OR '
-    '"receptor recycling" OR "clathrin-mediated"'
+    '"receptor recycling" OR "clathrin-mediated" OR '
+    # measurement-weighted terms so relevance ranking favors papers that
+    # actually quantify internalization over qualitative / delivery mentions.
+    '"internalization rate" OR "endocytic rate" OR "uptake kinetics" OR '
+    '"surface half-life" OR "acid strip" OR "receptor downregulation"'
 )
 _MAX_PER_SOURCE = 40
 
@@ -57,10 +61,16 @@ def discover_internalization_papers(
             discovered.setdefault(paper.pmid, paper)
 
     # PubTator entity search, hydrated to full Paper objects via EuropePMC.
+    # Sort by relevance (score), NOT recency — date-sorting floods the corpus
+    # with recent delivery-vehicle / viral-receptor papers over the core
+    # internalization-measurement literature. The free-text is measurement-
+    # weighted so the relevance score favors papers that quantify uptake.
     hits = pubtator_search(
         http=http,
-        query=build_gene_entity_query(bundle.hgnc_symbol, "internalization endocytosis"),
-        sort="date desc",
+        query=build_gene_entity_query(
+            bundle.hgnc_symbol, "internalization rate endocytosis uptake kinetics"
+        ),
+        sort="score desc",
     ).hits
     pmids = [h.pmid for h in hits if h.pmid and h.pmid not in discovered][
         :_MAX_PER_SOURCE
