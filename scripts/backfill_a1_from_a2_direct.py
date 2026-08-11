@@ -95,7 +95,8 @@ def scan(out_path: Path) -> dict:
                     "json_extract(je.value,'$.assay_context.permeabilized') perm, "
                     "json_extract(je.value,'$.direction') dr, "
                     "json_extract(je.value,'$.evidence_tier') tier, "
-                    "json_extract(je.value,'$.source_id') src "
+                    "json_extract(je.value,'$.source_id') src, "
+                    "json_extract(je.value,'$.assay_context.species') sp "
                     "FROM agent_run_intermediates i, "
                     f"json_each(COALESCE(json_extract(i.intermediates_json,'{path}'),'[]')) je "
                     f"WHERE i.gene_symbol IN {ph} "
@@ -109,7 +110,8 @@ def scan(out_path: Path) -> dict:
                         "direction": r["dr"],
                         "evidence_tier": r["tier"],
                         "assay_context": {
-                            "permeabilized": {1: True, 0: False}.get(r["perm"], r["perm"])
+                            "permeabilized": {1: True, 0: False}.get(r["perm"], r["perm"]),
+                            "species": r["sp"],
                         },
                     }
                     if claim_is_direct_surface(claim):

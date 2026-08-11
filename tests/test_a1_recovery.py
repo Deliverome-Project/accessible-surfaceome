@@ -19,7 +19,10 @@ def _claim(**kw):
         "direction": kw.pop("direction", "supports"),
         "evidence_type": kw.pop("evidence_type", "flow_cytometry"),
         "evidence_tier": kw.pop("evidence_tier", "primary"),
-        "assay_context": {"permeabilized": kw.pop("permeabilized", False)},
+        "assay_context": {
+            "permeabilized": kw.pop("permeabilized", False),
+            "species": kw.pop("species", None),
+        },
         "source_id": kw.pop("source_id", "PMID:1"),
         "quote": "q",
     }
@@ -56,6 +59,18 @@ def test_permeabilized_biotinylation_still_credited():
 def test_refutes_and_secondary_excluded():
     assert not claim_is_direct_surface(_claim(direction="refutes", permeabilized=False))
     assert not claim_is_direct_surface(_claim(evidence_tier="secondary", permeabilized=False))
+
+
+def test_nonhuman_species_excluded():
+    # CD79A-class: a non-human assay can't anchor a human direct_* grade
+    assert not claim_is_direct_surface(_claim(evidence_type="flow_cytometry", permeabilized=False, species="other"))
+    assert not claim_is_direct_surface(_claim(evidence_type="flow_cytometry", permeabilized=False, species="mouse"))
+
+
+def test_human_and_unspecified_species_credited():
+    assert claim_is_direct_surface(_claim(evidence_type="flow_cytometry", permeabilized=False, species="human"))
+    assert claim_is_direct_surface(_claim(evidence_type="flow_cytometry", permeabilized=False, species=None))
+    assert claim_is_direct_surface(_claim(evidence_type="flow_cytometry", permeabilized=False, species="unspecified"))
 
 
 def test_non_surface_assays_excluded():

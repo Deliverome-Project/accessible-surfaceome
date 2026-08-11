@@ -29,6 +29,16 @@ credited. This matches the deep-dive **grader's own breadth** (it credits
 ``permeabilized=False`` floor — the pre-filter only decides which clips to
 *move*; the final grade is decided by the ``methods_builder`` +
 ``evidence_grade`` builder during the replay.
+
+It also mirrors the grader's **species rule**: an assay whose only species is
+non-human cannot anchor a human ``direct_*`` grade (the ``evidence_grade``
+builder caps such genes at ``supportive_but_indirect``), so a non-human claim
+does not count as recoverable direct-surface evidence. This matters for the
+CD79A-class — genes whose one A1 direct method is non-human (e.g. an avian
+flow read) while human surface-flow evidence sits misfiled in A2; without the
+species check the scan would see A1 as "populated" and skip a recoverable gene.
+``species`` of ``None`` / ``unspecified`` is treated as human (a human-gene
+deep-dive defaults to human); only an explicit non-human species is excluded.
 """
 from __future__ import annotations
 
@@ -58,6 +68,22 @@ _SURFACE_LOCALIZATION_ASSAYS = frozenset(
         "proximity_labeling",
     }
 )
+
+# Species values that anchor a human ``direct_*`` grade. Mirrors the
+# evidence_grade builder's rule: an assay whose only species is non-human
+# (mouse/chicken/rat/…) cannot anchor a direct call for the human protein, so
+# it does not count as recoverable direct-surface evidence. Unspecified/None
+# gets the benefit of the doubt (a human-gene deep-dive defaults to human).
+_HUMAN_ANCHORED_SPECIES = frozenset(
+    {"human", "homo sapiens", "homo_sapiens", "hsapiens", "unspecified", ""}
+)
+
+
+def _is_human_anchored(species: Any) -> bool:
+    """True unless the claim carries an *explicit* non-human species."""
+    if not species:
+        return True
+    return str(species).strip().lower() in _HUMAN_ANCHORED_SPECIES
 
 
 def ensure_d1_env() -> None:
@@ -99,18 +125,23 @@ def claim_is_direct_surface(claim: dict[str, Any]) -> bool:
 
     Applies the grader-matching rule documented in the module docstring
     (surface-localization assay + supports + primary + not explicitly
-    permeabilized). Operates on the raw claim dict (as persisted in the
-    intermediates blob), so it is usable both for the D1 scan and for the
-    re-tag on a loaded blob.
+    permeabilized + human-anchored species). Operates on the raw claim dict
+    (as persisted in the intermediates blob), so it is usable both for the D1
+    scan and for the re-tag on a loaded blob.
     """
     if claim.get("direction") != "supports" or claim.get("evidence_tier") != "primary":
         return False
     if claim.get("evidence_type") not in _SURFACE_LOCALIZATION_ASSAYS:
         return False
+    ac = claim.get("assay_context") or {}
     # Exclude only an explicit permeabilized=True (total protein, not surface);
     # None/False are credited (bool True or the SQLite/int 1 both count as True).
-    perm = (claim.get("assay_context") or {}).get("permeabilized")
-    return perm not in (True, 1)
+    if ac.get("permeabilized") in (True, 1):
+        return False
+    # Species rule: a non-human-anchored assay can't lift the human grade
+    # (CD79A-class — its only A1 direct method is a chicken flow), so it isn't
+    # recoverable direct-surface evidence.
+    return _is_human_anchored(ac.get("species"))
 
 
 def retag_a2_direct_into_a1(blob: dict[str, Any]) -> dict[str, Any]:
