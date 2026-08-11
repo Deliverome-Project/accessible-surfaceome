@@ -75,14 +75,21 @@ def build_pool(
 def _body_text(
     paper: Paper, *, fetched: bool, http: CachedHTTP, retraction_index: Any
 ) -> str:
-    """Full-text body for a fetched paper (re-fetch, cache-hit), else abstract."""
+    """Store body for span verification. ALWAYS include the abstract (a paper
+    can contribute abstract-derived clips even after it was fetched — e.g. a
+    worth_fetching body-fetch that fell back to the abstract), PLUS the
+    full-text body when fetched. Concatenating both makes every clip — abstract
+    OR body — substring-matchable; the previous full-text-only body silently
+    dropped abstract clips at promotion."""
+    parts: list[str] = []
+    abstract = getattr(paper, "abstract", None)
+    if abstract:
+        parts.append(abstract)
     if fetched and paper.pmc_id:
         full = fetch_fulltext(http=http, pmcid=paper.pmc_id, retraction_index=retraction_index)
         secs = getattr(full, "sections", None) or []
-        joined = "\n\n".join(s.text for s in secs if getattr(s, "text", None))
-        if joined:
-            return joined
-    return paper.abstract or ""
+        parts.extend(s.text for s in secs if getattr(s, "text", None))
+    return "\n\n".join(parts)
 
 
 def build_source_store(

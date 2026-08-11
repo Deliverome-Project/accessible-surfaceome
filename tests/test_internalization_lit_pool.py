@@ -76,3 +76,34 @@ def test_source_store_uses_abstract_when_not_fetched(monkeypatch):
     )
     st = store.get("PMID:2")
     assert st is not None and st.raw_text == "abstract body text"
+
+
+def test_fetched_store_body_still_contains_the_abstract(monkeypatch):
+    # Regression: a fetched paper can contribute ABSTRACT-derived clips (e.g. a
+    # worth_fetching body-fetch that fell back to abstract). The store body must
+    # include the abstract, or those clips fail span verification and get
+    # silently dropped at promotion.
+    pool = {"c1": SimpleNamespace(source_id="PMID:3")}
+    paper = SimpleNamespace(
+        pmid=3, pmc_id="PMC9", title="t",
+        abstract="ABSTRACT_SENTENCE_ONLY_IN_ABSTRACT",
+        publication_type="primary_research", is_retracted=False,
+        year=2021, journal="J", authors=[],
+    )
+    monkeypatch.setattr(
+        mod,
+        "fetch_fulltext",
+        lambda *, http, pmcid, retraction_index, topic_tagger=None: SimpleNamespace(
+            sections=[SimpleNamespace(name="results", text="BODY_SENTENCE_ONLY_IN_BODY")]
+        ),
+    )
+    store = build_source_store(
+        cast(Any, pool),
+        papers_by_source_id=cast(Any, {"PMID:3": (paper, True)}),
+        http=cast(Any, object()),
+        retraction_index=cast(Any, object()),
+    )
+    st = store.get("PMID:3")
+    assert st is not None
+    assert "ABSTRACT_SENTENCE_ONLY_IN_ABSTRACT" in st.raw_text  # abstract kept
+    assert "BODY_SENTENCE_ONLY_IN_BODY" in st.raw_text  # full text kept too
