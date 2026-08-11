@@ -12,8 +12,25 @@ from accessible_surfaceome.agents.internalization.models import (
 )
 
 
-def test_schema_version_bumped_to_0_2_0():
-    assert SCHEMA_VERSION == "0.2.0"
+def test_schema_version_is_0_2_1():
+    assert SCHEMA_VERSION == "0.2.1"
+
+
+def test_moderate_is_a_valid_grade():
+    # `moderate` was added to the shared Grade enum so genuine middle cases
+    # aren't forced to high/low, in both tracks.
+    assert ModeGrade(grade="moderate").grade == "moderate"
+    from accessible_surfaceome.agents.internalization.models import IsoformPrior
+
+    iso = IsoformPrior(
+        isoform_id="P0-1",
+        is_canonical=True,
+        topology_summary="t",
+        grade="moderate",
+        confidence="moderate",
+        rationale="partial/slow uptake",
+    )
+    assert iso.grade == "moderate"
 
 
 def test_observation_requires_other_label_when_other():

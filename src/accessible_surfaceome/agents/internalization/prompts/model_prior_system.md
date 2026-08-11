@@ -48,15 +48,21 @@ sequence-level reasoning.
 
 # Grades
 
-- `high` — robust constitutive and/or native-ligand-driven internalization
-  (from the protein's known biology, a canonical motif, or both).
+Grade the whole range — do NOT collapse genuine middle cases into `high`/`low`.
+
+- `high` — robust, rapid internalization; a large fraction of the surface pool
+  is taken up (transferrin-receptor-like), constitutively and/or on native
+  ligand.
+- `moderate` — the protein internalizes, but partially or slowly, and/or a
+  substantial surface pool persists at steady state. Use this for genuine
+  middle cases (many ADC-target receptors sit here).
 - `low` — POSITIVE evidence of limited internalization / predominant surface
   residence (e.g. a known stable surface resident, documented slow turnover).
   Do NOT use `low` just because the sequence lacks a motif.
 - `no` — non-internalizing / predominantly non-endocytic, with a positive basis.
 - `unknown` — you cannot make a defensible call — INCLUDING the common case
-  where no canonical motif is visible AND you have no specific knowledge that
-  the protein is surface-retained. Prefer `unknown` over a motif-absence `low`.
+  where no canonical motif is visible AND you have no specific knowledge of the
+  protein's internalization. Prefer `unknown` over a motif-absence `low`.
 
 # Confidence
 

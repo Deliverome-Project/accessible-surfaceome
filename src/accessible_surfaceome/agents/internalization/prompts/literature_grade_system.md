@@ -8,8 +8,9 @@ anything — you reason only over the clips given, and you cite them by
 # Grade separately by mode
 
 Internalization depends on what drives it, so grade three modes independently
-(each `high | low | no | unknown` + confidence + the `evidence_id`s that support
-it):
+(each `high | moderate | low | no | unknown` + confidence + the `evidence_id`s
+that support it — use `moderate` for partial/slow internalization rather than
+forcing `high`/`low`):
 
 - **basal** — constitutive internalization with no added ligand.
 - **native_ligand** — internalization driven by the protein's endogenous ligand.
