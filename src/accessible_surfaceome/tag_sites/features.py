@@ -79,7 +79,11 @@ def fetch_uniprot_features(acc: str, http: Any | None = None) -> list[dict[str, 
         http = open_default_client()
         close = True
     try:
-        data = http.get_json(f"https://rest.uniprot.org/uniprotkb/{acc}.json")
+        data = http.get_json(
+            f"https://rest.uniprot.org/uniprotkb/{acc}.json",
+            source="uniprot",
+            ttl_days=30,
+        )
     finally:
         if close:
             http.__exit__(None, None, None)

@@ -23,3 +23,14 @@ def test_combines_both_paths_disjoint_by_plddt():
     assert any(50 <= r <= 55 for r in residues)  # the disorder nomination
     # every site_id is unique (paths are namespaced)
     assert len({s["site_id"] for s in sites}) == len(sites)
+
+
+def test_select_representatives_suppresses_adjacent_and_caps():
+    from accessible_surfaceome.tag_sites.run import select_representatives
+    # rank-ordered (best first): a dense run 100..109 plus a far site at 200
+    ranked = [{"insert_after_residue": r} for r in range(100, 110)] + [{"insert_after_residue": 200}]
+    kept = select_representatives(ranked, min_gap=8, max_sites=20)
+    res = [s["insert_after_residue"] for s in kept]
+    assert res == [100, 108, 200]        # NMS keeps best-ranked, ≥8 apart
+    # cap respected
+    assert len(select_representatives(ranked, min_gap=1, max_sites=3)) == 3

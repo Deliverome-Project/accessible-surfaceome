@@ -65,6 +65,23 @@ def derive_deterministic_sites(
     return sorted(by_res.values(), key=lambda s: s["insert_after_residue"])
 
 
+def select_representatives(
+    ranked_sites: list[dict[str, Any]], *, min_gap: int = 8, max_sites: int = 20
+) -> list[dict[str, Any]]:
+    """Greedy non-maximum suppression by residue over a *rank-ordered* site list
+    (best first): keep a site only if it is ≥ ``min_gap`` residues from every
+    already-kept site, so one representative survives per exposed loop rather than
+    a dense run; then cap to ``max_sites``. Keeps the ranking intact."""
+    kept: list[dict[str, Any]] = []
+    for s in ranked_sites:
+        r = s["insert_after_residue"]
+        if all(abs(r - k["insert_after_residue"]) >= min_gap for k in kept):
+            kept.append(s)
+        if len(kept) >= max_sites:
+            break
+    return kept
+
+
 def run_gene(
     gene_symbol: str,
     uniprot_acc: str,
@@ -76,7 +93,9 @@ def run_gene(
     hazard_res: set[int],
     out_dir: str | Path,
 ) -> dict[str, Any]:
-    """End-to-end for one gene: compute signals → both gates → emit merged JSON."""
+    """End-to-end for one gene: compute signals → both gates → representative
+    selection (so a dense ectodomain doesn't emit hundreds of adjacent sites) →
+    emit merged JSON."""
     signals = compute_signals(
         pdb_path,
         topology=topology,
@@ -84,5 +103,14 @@ def run_gene(
         ortholog_seqs=ortholog_seqs,
         hazard_res=hazard_res,
     )
-    sites = derive_deterministic_sites(gene_symbol, uniprot_acc, signals=signals)
+    surf = select_representatives(
+        surface_loop_candidates(signals, gene_symbol=gene_symbol, uniprot_acc=uniprot_acc)
+    )
+    diso = select_representatives(
+        disorder_candidates(signals, gene_symbol=gene_symbol, uniprot_acc=uniprot_acc)
+    )
+    by_res: dict[int, dict[str, Any]] = {}
+    for s in surf + diso:  # surface_loop first → preferred on residue collision
+        by_res.setdefault(s["insert_after_residue"], s)
+    sites = sorted(by_res.values(), key=lambda s: s["insert_after_residue"])
     return emit_tag_sites_json(gene_symbol, uniprot_acc, sites, out_dir=out_dir)
