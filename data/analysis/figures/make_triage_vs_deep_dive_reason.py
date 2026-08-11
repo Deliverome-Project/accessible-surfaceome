@@ -32,10 +32,10 @@ triage (verdict yes / contextual). Bars sorted descending. Sonnet triage is the
 tallest bar by a wide margin — the evidence-anchored deep dive concords far more
 with the upstream Sonnet call than with any single database.
 
-Real data (n≈1,175 genes with both a triage and a deep-dive record). About half
-the genes land on the reason diagonal; the rest split into within-bucket
-reassignments and cross-bucket flips. PRELIMINARY — ~1,175 of ~5,128 swept,
-pre-QA-fix; the matrix widens as the sweep grows.
+Real data (full deep-dive cohort, 5,130 genes with both a triage and a
+deep-dive record). About half the genes land on the reason diagonal; the
+rest split into within-bucket reassignments and cross-bucket flips. The
+`canonical` tier uses the PR #130 gate.
 
 Standalone — ``uv run make_triage_vs_deep_dive_reason.py``.
 """

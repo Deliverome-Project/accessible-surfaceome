@@ -44,6 +44,9 @@ from pydantic import ValidationError
 # module load so the orchestrator snapshot a stable value at worker spawn
 # (Modal-friendly: workers can't see version bumps mid-cohort).
 from accessible_surfaceome._version_guard import PROMPT_CORPUS_VERSION
+from accessible_surfaceome.agents._support.claim_grounding import (
+    drop_competing_claims_for_bundle,
+)
 from accessible_surfaceome.agents._support.client import get_client
 from accessible_surfaceome.agents._support.evidence_promotion import promote_claim
 from accessible_surfaceome.agents._support.model_config import deep_dive_model
@@ -1207,6 +1210,27 @@ def _annotate(
 
     a1_claims: list[EvidenceClaim] = list(dual.a1.claims)
     a2_claims: list[EvidenceClaim] = list(dual.a2.claims)
+
+    # Deterministic gene-grounding of the assembled ledger: drop claims whose
+    # text names a COMPETING gene and not the target — homonym/wrong-gene
+    # contamination that snippet-retrieval grounding can't catch once a claim is
+    # selected from full text (e.g. tissue-factor F3/CD142 claims leaking into
+    # serotransferrin TF, which force surface_accessibility=low instead of no).
+    # Legit paralog mentions that name the target ("DSC1 … unlike DSC2 …") ground
+    # as "target" and are kept. Same base grounding as evidence retrieval;
+    # no-op when the HGNC gazetteer isn't hydrated.
+    a1_claims, a2_claims, _a1_dropped, _a2_dropped = drop_competing_claims_for_bundle(
+        a1_claims, a2_claims, dual.bundle
+    )
+    if _a1_dropped or _a2_dropped:
+        logger.info(
+            "v2 orchestrator: gene-grounding dropped %d A1 + %d A2 competing-gene "
+            "claims for %s (ids: %s)",
+            len(_a1_dropped),
+            len(_a2_dropped),
+            dual.bundle.hgnc_symbol,
+            [getattr(c, "evidence_id", None) for c in (_a1_dropped + _a2_dropped)][:20],
+        )
     logger.info(
         "v2 orchestrator: dual done — A1=%d claims A2=%d claims, $%.4f",
         len(a1_claims),

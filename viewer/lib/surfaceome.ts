@@ -1276,7 +1276,18 @@ export async function withDeepDiveFilters(
   if (ddfBySymbol.size === 0) return rows;
   return rows.map((r) =>
     r.deep_dive && ddfBySymbol.has(r.symbol)
-      ? { ...r, deep_dive_filters: ddfBySymbol.get(r.symbol) }
+      ? {
+          ...r,
+          deep_dive_filters: {
+            ...(ddfBySymbol.get(r.symbol) as DeepDiveFilters),
+            // The slim pickDeepDiveFilters projection keeps only
+            // n_papers_selected_band and drops the raw n_papers_found —
+            // but the low-literature + SURFY badge gates on n_papers_found.
+            // The Worker's catalog ddf already carries it, so carry it
+            // across the re-derivation rather than losing it.
+            n_papers_found: r.deep_dive_filters?.n_papers_found ?? null,
+          },
+        }
       : r,
   );
 }

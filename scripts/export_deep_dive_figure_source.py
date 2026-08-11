@@ -67,6 +67,11 @@ _FIELDS: list[tuple[str, str]] = [
     ("tumor_associated", "$.filters.tumor_associated"),
     ("llm_family", "$.filters.llm_family"),
     ("evidence_grade", "$.filters.evidence_grade"),
+    # PR #130's canonical rule reads low_endogenous_expression (the
+    # constitutive-baseline disjunct); evidence_grade_summary is the
+    # holistic A1+A2 roll-up the S12 benchmark filters on (conflicting).
+    ("low_endogenous_expression", "$.filters.low_endogenous_expression"),
+    ("evidence_grade_summary", "$.executive_summary.evidence_grade_summary"),
     ("evidence_density", "$.filters.evidence_density"),
     ("n_papers_selected", "$.filters.n_papers_selected"),
     ("n_papers_found", "$.filters.n_papers_found"),

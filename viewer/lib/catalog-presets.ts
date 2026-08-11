@@ -46,21 +46,84 @@ const INDUCTION_NON_NONE = new Set([
  * Claudin-18.2). State-dependence accepts `unclear` because the
  * synthesizer's contract is "unclear ≠ excluded"; the value lands
  * when the deep-dive can't confidently call low vs high.
+ *
+ * Evidence bar is the synthesizer's overall `confidence` ruling, NOT the
+ * deterministic A1-only `evidence_grade` — that grade scores an empty A1
+ * (direct-method) ledger as `weak` even when the surface call rests on
+ * rich A2 (biological-context) evidence (ICAM1: A1=0 / A2=36, grade
+ * `weak` yet `confidence='moderate'`). We keep only a fail-closed guard
+ * on `evidence_grade` (never admit `conflicting`); `confidence` in
+ * {high, moderate} is the real bar. Fixing evidence_grade at source is
+ * tracked in issue #131.
+ *
+ * State-dependence is NOT a hard exclusion: a `state_dependence='high'`
+ * gene still qualifies if it has a constitutive baseline
+ * (`low_endogenous_expression === false`). This keeps constitutively-
+ * expressed-but-further-inducible surface proteins in canonical
+ * (ICAM1-class — present at low/moderate levels in normal tissue,
+ * strongly upregulated by inflammation/oncogenesis), while proteins
+ * that surface only when induced off a low/absent baseline
+ * (`low_endogenous_expression === true` — CTLA4, 4-1BB) stay in the
+ * "Cell-state induced" tier. Canonical certifies *is* it surface (the
+ * five evidence/verdict gates); *when* is the state_dependence facet.
+ * The disjunct is additive — it only admits high-state-dependence
+ * genes, never drops a low/moderate one lacking a constitutive baseline.
  */
 export function passesCanonical(f: DeepDiveFilters): boolean {
   return (
+    // Fail-closed guard only — anything but self-contradictory evidence.
+    // The confidence gate below is the real evidence bar (see docstring).
     (f.evidence_grade === "direct_multi_method" ||
-      f.evidence_grade === "direct_single_method") &&
+      f.evidence_grade === "direct_single_method" ||
+      f.evidence_grade === "supportive_but_indirect" ||
+      f.evidence_grade === "weak") &&
     (f.confidence === "high" || f.confidence === "moderate") &&
     (f.surface_specificity === "surface_dominant" ||
       f.surface_specificity === "mixed") &&
-    (f.state_dependence === "low" ||
+    ((f.state_dependence === "low" ||
       f.state_dependence === "moderate" ||
-      f.state_dependence === "unclear") &&
+      f.state_dependence === "unclear") ||
+      f.low_endogenous_expression === false) &&
     (f.surface_accessibility === "high" ||
       f.surface_accessibility === "moderate") &&
     (f.evidence_density === "high" || f.evidence_density === "moderate")
   );
+}
+
+/**
+ * Discovery-corpus size below which the deep dive rarely reaches a confident
+ * (canonical) call — so a below-canonical verdict may be an evidence gap, not
+ * biology. Empirical (PR #130, 5,130 cohort): canonical rate ~1-5% below 75
+ * papers, 18% in 75-100, vs 47% at 150-200 and ~60% above 200 — inflection at
+ * ~100 (≈ bottom 20% of the discovery distribution; median ≈ 220).
+ */
+export const LOW_LIT_PAPERS_MAX = 100;
+
+/**
+ * Badge — NOT a tier preset (kept out of PRESETS). Flags a NON-canonical gene
+ * whose below-canonical verdict is plausibly evidence-limited: thin discovery
+ * corpus (`n_papers_found < LOW_LIT_PAPERS_MAX`) AND an external surface-DB call
+ * predicts it surface — an under-studied surface candidate worth a re-dive.
+ *
+ * `dbSurfacePositive` is wired to **UniProt** (`catalogRow.db.uniprot`): for the
+ * low-lit population UniProt beats SURFY — it catches the understudied
+ * olfactory/taste-GPCR class SURFY blind-spots, and its unique low-lit adds read
+ * more surface-leaning by the deep dive's own accessibility/specificity.
+ * (UniProt localization is itself a hybrid: curated evidence + similarity +
+ * sequence-feature prediction, so not purely knowledge-based.) Passed as an
+ * argument because the DB call is a candidate-universe flag in the 5-DB strip,
+ * NOT part of the deep-dive `filters` — which is why it isn't a `(filters) =>
+ * bool` preset. Scoped to non-canonical genes. Missing `n_papers_found` → not
+ * flagged. Mirror of catalog_presets.is_low_literature_surface.
+ */
+export function isLowLiteratureSurface(
+  f: DeepDiveFilters,
+  dbSurfacePositive: boolean,
+): boolean {
+  if (passesCanonical(f)) return false;
+  const n = f.n_papers_found;
+  if (n == null) return false;
+  return dbSurfacePositive && n < LOW_LIT_PAPERS_MAX;
 }
 
 /**
@@ -154,16 +217,16 @@ export function passesInduced(f: DeepDiveFilters): boolean {
   ) {
     return false;
   }
-  if (
+  // PRIMARY (and only) gate: the surface_call_reason must itself say the
+  // surface pool is state-gained. The old `induction_trigger` disjunct
+  // over-counted 5x (2,127) because 'oncogenic' ≈ tumor_associated (99%
+  // overlap), sweeping in constitutively-surface receptors that merely
+  // correlate with cancer. Restricting to the reason code drops it to ~407
+  // genuinely state-induced genes. The trigger axis remains as the sub-chips.
+  return (
     f.surface_call_reason === "cell_state_induced" ||
     f.surface_call_reason === "lysosomal_exocytosis"
-  ) {
-    return true;
-  }
-  if (f.induction_trigger && INDUCTION_NON_NONE.has(f.induction_trigger)) {
-    return true;
-  }
-  return false;
+  );
 }
 
 /**
@@ -178,6 +241,39 @@ export function passesCellTypeRestricted(f: DeepDiveFilters): boolean {
     return false;
   }
   return f.surface_call_reason === "tissue_restricted_surface";
+}
+
+export type DeepDiveTier = "canonical" | "likely" | "low" | "uncertain" | "no";
+export type DeepDiveFacet = "induced" | "cell_type_restricted" | null;
+
+/**
+ * Resolve a record's single deep-dive tier + optional sub-facet — the same
+ * five-tier spectrum the catalog and Figure 5 use, so the gene page reads the
+ * same classification. Mirrors the precedence in build_figure_tsvs
+ * `_dd_assign_bucket`: canonical (strictest) first; then the below-likely lean
+ * split by the tentative surface_accessibility call; then likely with its
+ * cell-type / cell-state sub-facet.
+ *
+ * The facet (Cell-state induced / Cell-type restricted) is surfaced whenever
+ * its predicate holds — including on canonical genes (the figures bucket
+ * canonical separately, but on the detail page it's useful to show that a
+ * canonical target is also state-induced, e.g. TMEM123).
+ */
+export function deepDiveTier(f: DeepDiveFilters): {
+  tier: DeepDiveTier;
+  facet: DeepDiveFacet;
+} {
+  const facet: DeepDiveFacet = passesCellTypeRestricted(f)
+    ? "cell_type_restricted"
+    : passesInduced(f)
+      ? "induced"
+      : null;
+  if (passesCanonical(f)) return { tier: "canonical", facet };
+  if (passesLikely(f)) return { tier: "likely", facet };
+  const acc = f.surface_accessibility;
+  if (acc === "uncertain") return { tier: "uncertain", facet: null };
+  if (acc === "low" || acc === "moderate") return { tier: "low", facet: null };
+  return { tier: "no", facet: null };
 }
 
 /** Induction sub-axes — only meaningful when Induced is active.
@@ -341,9 +437,16 @@ export const PRESETS: ReadonlyArray<{
     key: "induced",
     label: "Cell-state induced",
     description:
-      "Subset of Likely where surface presentation is induced by cell " +
-      "state (oncogenic transformation, stress, infection, immune " +
-      "activation). HSPA5, SRC, CD63, HMGB1, C3 land here.",
+      "Subset of Likely where the surface pool is GAINED on a cell state. " +
+      "Membership is set by the deep-dive surface_call_reason itself — " +
+      "cell_state_induced or lysosomal_exocytosis — the reason codes that " +
+      "mean the protein reaches the surface because of a state change, not " +
+      "constitutively (SRC, CD63, HMGB1, C3 land here). This is deliberately " +
+      "NOT keyed off induction_trigger: 'oncogenic' is assigned to nearly " +
+      "every tumour-associated gene (~99% overlap), which would sweep in " +
+      "constitutively-surface receptors that merely correlate with cancer. " +
+      "The oncogenic / immune / stress / infection trigger is instead exposed " +
+      "as the sub-chips within this set.",
     predicate: passesInduced,
   },
   {

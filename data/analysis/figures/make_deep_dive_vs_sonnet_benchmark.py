@@ -8,8 +8,10 @@
 # ///
 """Reproduce ``deep_dive_vs_sonnet_benchmark.{pdf,png}``.
 
-**Supplementary Fig 12.** Deep-dive vs Sonnet+NCBI accuracy on the
-SurfaceBench genes deep-dived so far (the intersection, n = 27 of 147).
+**Supplementary Fig 12.** Deep-dive vs Sonnet+NCBI accuracy on all 113
+SurfaceBench genes deep-dived so far (the intersection with the 147-gene
+benchmark; no records excluded — the one holistic-`conflicting` gene,
+RPN1, is scored too, so both predictors see the full common set).
 Each protein's evidence-anchored deep-dive surface call and the
 Sonnet+NCBI triage call are scored against the curated ground-truth
 verdict under the soft-credit rule — a contextually-surface protein
@@ -25,11 +27,11 @@ its confidence composition is visible. Sonnet+NCBI accuracy is the mean
 of three mainbench replicates (one dot per replicate; the error bar is
 the SEM across replicates); the deep dive runs once per gene, so its bar
 carries no replicate spread. Deep dive and Sonnet are near-identical
-overall (96% vs 96%).
-
-PRELIMINARY — n = 27 is small (the 'no' bucket is only 2 genes); read
-these as an early signal that firms up as the sweep covers more
-benchmark genes.
+overall (97% vs 97%, Sonnet as the replicate mean); the deep dive is
+perfect on the 68 ground-truth-yes genes and makes three errors — one FN
+in the contextual bucket (PMEL) and two FPs in the 'no' bucket (ATG9A,
+RPN1). The deep-dive verdict counts as surface
+when its tier is canonical / likely / low (the PR #130 canonical gate).
 
 The single bundled TSV (one row per deep-dived bench gene with both
 predictors' soft-credit correctness, the deep-dive tier, and the three
@@ -74,8 +76,8 @@ _BUCKET_LABEL = {"yes": "yes\n(surface)", "contextual": "contextual",
 # read as one palette.
 _TIER_ORDER = ["canonical", "likely", "low", "uncertain", "no"]
 _TIER_COLOR = {
-    "canonical": "#2E7A55",  # success green — strict tier
-    "likely":    "#3D6B60",  # teal-mid — broader tier
+    "canonical": "#3D6B60",  # deep teal — strict tier (swapped w/ likely for contrast)
+    "likely":    "#2E7A55",  # brighter green — broader tier
     "low":       "#C99A5B",  # amber-tan — low/moderate, weak evidence
     "uncertain": "#C7BDB6",  # light warm-grey — ambiguous
     "no":        "#9C8C88",  # lifted neutral — leaned not-surface
@@ -213,7 +215,7 @@ def _draw_sonnet(ax: plt.Axes, rows: list[dict], x: float, width: float) -> None
     jx = _RNG.uniform(-width * 0.20, width * 0.20, size=len(accs))
     ax.scatter(x + jx, accs, s=26, color=BRAND_INK, alpha=0.75,
                edgecolor="white", linewidth=0.5, zorder=5)
-    ax.text(x, mean + sem + 2, f"{mean:.0f}", ha="center", va="bottom",
+    ax.text(x, mean + sem + 2, f"{mean:.1f}", ha="center", va="bottom",
             fontsize=14, color=_SONNET_COLOR, fontweight="bold")
 
 
@@ -231,7 +233,7 @@ def _draw_deep_dive(ax: plt.Axes, rows: list[dict], x: float, width: float) -> N
             continue
         ax.bar(x, h, bottom=bottom, width=width, color=_TIER_COLOR[t], zorder=2)
         bottom += h
-    ax.text(x, dd + 2, f"{dd:.0f}", ha="center", va="bottom", fontsize=14,
+    ax.text(x, dd + 2, f"{dd:.1f}", ha="center", va="bottom", fontsize=14,
             color=BRAND_INK, fontweight="bold")
 
 

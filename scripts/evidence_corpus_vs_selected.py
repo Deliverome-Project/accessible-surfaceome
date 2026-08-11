@@ -124,7 +124,7 @@ def make_plot() -> tuple[plt.Figure, plt.Axes]:
         mask = verdicts == verdict
         ax.scatter(
             found[mask], selected[mask],
-            s=70, alpha=0.75, edgecolor="white", linewidth=0.6,
+            s=70, alpha=0.5, edgecolor="white", linewidth=0.6,
             color=VERDICT_COLOR[verdict],
             label=f"{VERDICT_LABEL[verdict]}  (n={counts.get(verdict, 0)})",
             zorder=3 + VERDICT_ORDER.index(verdict),
@@ -167,8 +167,8 @@ def make_plot() -> tuple[plt.Figure, plt.Axes]:
     fig.text(
         0.5, -0.04,
         f"Real deep-dive records (median {int(np.median(found))} papers found/gene, "
-        f"median {int(np.median(selected))} selected); n={len(found)} genes. "
-        f"PRELIMINARY — ~1,197 of ~5,128 swept, pre-QA-fix.",
+        f"median {int(np.median(selected))} selected); n={len(found)} genes "
+        f"(full deep-dive cohort).",
         ha="center", va="top", fontsize=12, style="italic", color=COLORS["neutral"],
     )
 

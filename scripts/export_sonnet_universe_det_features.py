@@ -1,6 +1,6 @@
 """Export deterministic features for the Sonnet dual-triage surface universe.
 
-The S14 figure (``surfaceome_deterministic_features_placeholder``) compares the
+The S14 figure (``surfaceome_deterministic_features``) compares the
 structural / deterministic features of the deep-dive tiers (sourced from the
 deep-dive RECORDS) against the FULL Sonnet dual-triage surface pool — every gene
 the genome-wide Sonnet triage (``genome_full_sonnet_ncbi_v2``) called ``yes`` or

@@ -1,4 +1,4 @@
-# `surfaceome_deterministic_features_placeholder` — reproduction (Supp Fig 13)
+# `surfaceome_deterministic_features` — reproduction (Supp Fig 13)
 
 Distribution of **twelve deterministic per-gene features** across the
 surfaceome, faceted by the real deep-dive surface-accessibility tier (collapsed
@@ -33,17 +33,17 @@ complete triage-flagged set.
 ## Run
 
 ```sh
-uv run make_surfaceome_deterministic_features_placeholder.py
+uv run make_surfaceome_deterministic_features.py
 ```
 
 `uv` reads the [PyPA inline script metadata](https://packaging.python.org/en/latest/specifications/inline-script-metadata/)
 header, installs matplotlib / numpy / pandas / seaborn in a one-shot env, and
-emits `surfaceome_deterministic_features_placeholder.{pdf,png}` in the current
+emits `surfaceome_deterministic_features.{pdf,png}` in the current
 directory.
 
 ## Data + canonical generator
 
-- **Bundled single TSV** (`surfaceome_deterministic_features_placeholder.tsv`):
+- **Bundled single TSV** (`surfaceome_deterministic_features.tsv`):
   one row per gene with its `group` (a deep-dive tier or `sonnet_dual_triage`)
   + the twelve deterministic feature columns. Pre-joined by
   [`scripts/build_figure_tsvs.py`](https://github.com/Deliverome-Project/accessible-surfaceome/blob/main/scripts/build_figure_tsvs.py)
@@ -66,7 +66,7 @@ directory.
 
   Empty where the feature is absent (no paralog, not a homomer, …).
 - **Canonical generator** (uses the in-repo `_plotting_config`):
-  [`scripts/surfaceome_deterministic_features_placeholder.py`](https://github.com/Deliverome-Project/accessible-surfaceome/blob/main/scripts/surfaceome_deterministic_features_placeholder.py).
+  [`scripts/surfaceome_deterministic_features.py`](https://github.com/Deliverome-Project/accessible-surfaceome/blob/main/scripts/surfaceome_deterministic_features.py).
   The standalone script in this gist reads the bundled TSV and renders without
   depending on the project's plotting module.
 - **Sonnet det-feature export** (genome-wide D1 tables →

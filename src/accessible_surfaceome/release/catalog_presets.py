@@ -26,6 +26,14 @@ INDUCTION_NON_NONE: frozenset[str] = frozenset({
     "infection",
 })
 
+# Discovery-corpus size below which the deep dive rarely reaches a confident
+# (canonical) surface call — so a non-surface verdict here may be an evidence
+# gap rather than biology. Empirical (PR #130 analysis over the 5,130 cohort):
+# canonical rate is ~1-5% below 75 papers and 18% in 75-100, vs 47% at 150-200
+# and ~60% above 200 — a clear inflection at ~100. ~bottom 20% of the discovery
+# distribution (median ≈ 220 papers found).
+LOW_LIT_PAPERS_MAX = 100
+
 
 def passes_canonical(f: dict[str, Any]) -> bool:
     """Strictest tier — antibody/ADC gold-standard.
@@ -33,15 +41,82 @@ def passes_canonical(f: dict[str, Any]) -> bool:
     Drops the ECD filter (ECD-size is a design refinement, not a
     surface-membership signal — Claudin-18.2 has small loops and a
     landed therapeutic). Accepts ``state_dependence='unclear'`` so a
-    deep-dive that can't call low vs high doesn't drop out."""
+    deep-dive that can't call low vs high doesn't drop out.
+
+    Evidence bar is the synthesizer's OVERALL ``confidence`` ruling, NOT
+    the deterministic A1-only ``evidence_grade``. That grade scores an
+    empty A1 (direct-method) ledger as ``weak`` even when the surface
+    call rests on rich A2 (biological-context) evidence — ICAM1 has
+    A1=0 / A2=36 (23 strong), grade ``weak`` yet ``confidence='moderate'``
+    and ``evidence_grade_summary='supportive_but_indirect'``. Gating on
+    the grade excluded ~480 confidently-surface genes. We keep only a
+    fail-closed guard on ``evidence_grade`` (never admit
+    ``conflicting``); ``confidence in {high, moderate}`` is the real
+    bar. Fixing ``evidence_grade`` at source is tracked in issue #131.
+
+    State-dependence is NOT a hard exclusion. A gene with
+    ``state_dependence='high'`` still qualifies if it carries a
+    constitutive baseline (``low_endogenous_expression is False``). This
+    keeps constitutively-expressed-but-further-inducible surface
+    proteins in canonical — ICAM1-class: present at low/moderate levels
+    in normal tissue (endothelium, epithelium) and strongly upregulated
+    by inflammation/oncogenesis — while proteins that reach the surface
+    only when induced off a low/absent baseline
+    (``low_endogenous_expression is True`` — CTLA4, TNFRSF9/4-1BB) stay
+    in the 'Cell-state induced' tier. Rationale: canonical certifies
+    *is* it a surface protein (the five evidence/verdict gates), and
+    *when* it is surface is carried as the ``state_dependence`` facet
+    rather than used to gate membership. The disjunct is additive — it
+    only admits high-state-dependence genes, never drops a low/moderate
+    one that lacks a constitutive baseline."""
     return (
-        f.get("evidence_grade") in ("direct_multi_method", "direct_single_method")
+        # Fail-closed guard only — anything but self-contradictory evidence.
+        # The confidence gate below is the real evidence bar (see docstring).
+        f.get("evidence_grade") in (
+            "direct_multi_method",
+            "direct_single_method",
+            "supportive_but_indirect",
+            "weak",
+        )
         and f.get("confidence") in ("high", "moderate")
         and f.get("surface_specificity") in ("surface_dominant", "mixed")
-        and f.get("state_dependence") in ("low", "moderate", "unclear")
+        and (
+            f.get("state_dependence") in ("low", "moderate", "unclear")
+            or f.get("low_endogenous_expression") is False
+        )
         and f.get("surface_accessibility") in ("high", "moderate")
         and f.get("evidence_density") in ("high", "moderate")
     )
+
+
+def is_low_literature_surface(f: dict[str, Any], db_surface_positive: bool) -> bool:
+    """Badge — NOT a tier preset. Flags a NON-canonical gene whose non-surface
+    (or below-canonical) verdict is plausibly evidence-limited rather than
+    biological: a thin discovery corpus (``n_papers_found < LOW_LIT_PAPERS_MAX``)
+    AND an external surface-DB call predicts it surface. Under-studied
+    surface candidates worth a targeted re-dive.
+
+    The DB flag is passed via ``db_surface_positive``. The viewer wires this to
+    **UniProt** (``catalogRow.db.uniprot``): among the low-lit population UniProt
+    is the better predictor — it catches the understudied olfactory/taste-GPCR
+    class that SURFY structurally blind-spots, and its unique low-lit additions
+    read more surface-leaning by the deep dive's own accessibility/specificity
+    (SURFY's skew intracellular). UniProt's localization is itself a hybrid of
+    curated evidence + similarity + sequence-feature prediction (signal peptide /
+    TM topology), so it is not purely knowledge-based. Taking the flag as an
+    argument (rather than reading ``filters``) is why this is a standalone badge
+    and not a member of the ``(filters) -> bool`` preset family — the DB call is
+    a candidate-universe flag, not part of the deep-dive record.
+
+    Scoped to NON-canonical genes: a gene that already cleared ``passes_canonical``
+    doesn't need an evidence-gap caveat, so canonical genes never carry the badge.
+    ``n_papers_found`` missing → not flagged (can't establish 'low')."""
+    if passes_canonical(f):
+        return False
+    n = f.get("n_papers_found")
+    if n is None:
+        return False
+    return bool(db_surface_positive) and n < LOW_LIT_PAPERS_MAX
 
 
 def passes_likely(f: dict[str, Any]) -> bool:
@@ -73,12 +148,22 @@ def passes_likely(f: dict[str, Any]) -> bool:
 
 
 def passes_induced(f: dict[str, Any]) -> bool:
-    """Cell-state induced — surface presentation depends on cell state.
+    """Cell-state induced — surface presentation is *gained on a cell state*.
 
-    Matches via EITHER ``surface_call_reason`` in {cell_state_induced,
-    lysosomal_exocytosis, dual_localization} OR ``induction_trigger``
-    in INDUCTION_NON_NONE. The latter is the field that schema-1.1.0
-    records (HSPA5) actually populate when surface_call_reason is null.
+    PRIMARY criterion: ``surface_call_reason`` in {cell_state_induced,
+    lysosomal_exocytosis} — the reason codes that mean the protein reaches the
+    surface because of a state change (induction, degranulation), not
+    constitutively. This is the definitional gate.
+
+    An earlier version ALSO admitted any gene with ``induction_trigger`` in
+    INDUCTION_NON_NONE. That massively over-counted (2,127): ``induction_trigger
+    = 'oncogenic'`` is assigned to essentially every tumour-associated gene
+    (99% overlap with ``tumor_associated``), so constitutively-surface receptors
+    (classical_surface_receptor / multipass / tissue_restricted) that merely
+    correlate with cancer were swept in. Dropping the trigger disjunct restricts
+    this to the ~407 genes whose surface presentation is genuinely state-gained.
+    The ``induction_trigger`` axis is still exposed as the cancer / disease /
+    stress / immune SUB-chips within this set.
 
     Accepts state_dep ∈ {moderate, high, unclear, null} — moderate
     state-dependence still indicates state-modulation (TROP2-class
@@ -89,13 +174,9 @@ def passes_induced(f: dict[str, Any]) -> bool:
     sd = f.get("state_dependence")
     if sd is not None and sd not in ("moderate", "high", "unclear"):
         return False
-    if f.get("surface_call_reason") in (
+    return f.get("surface_call_reason") in (
         "cell_state_induced", "lysosomal_exocytosis"
-    ):
-        return True
-    if f.get("induction_trigger") in INDUCTION_NON_NONE:
-        return True
-    return False
+    )
 
 
 def passes_cell_type_restricted(f: dict[str, Any]) -> bool:
@@ -105,6 +186,29 @@ def passes_cell_type_restricted(f: dict[str, Any]) -> bool:
     if f.get("state_dependence") not in ("moderate", "high"):
         return False
     return f.get("surface_call_reason") == "tissue_restricted_surface"
+
+
+def deep_dive_tier(f: dict[str, Any]) -> tuple[str, str | None]:
+    """(tier, facet) — the single five-tier deep-dive classification + optional
+    sub-facet, mirroring the TS ``deepDiveTier`` and the precedence in
+    build_figure_tsvs ``_dd_assign_bucket``. tier ∈ {canonical, likely, low,
+    uncertain, no}; facet ∈ {induced, cell_type_restricted, None}. The facet is
+    surfaced whenever its predicate holds (including on canonical genes)."""
+    facet: str | None = (
+        "cell_type_restricted" if passes_cell_type_restricted(f)
+        else "induced" if passes_induced(f)
+        else None
+    )
+    if passes_canonical(f):
+        return ("canonical", facet)
+    if passes_likely(f):
+        return ("likely", facet)
+    acc = f.get("surface_accessibility")
+    if acc == "uncertain":
+        return ("uncertain", None)
+    if acc in ("low", "moderate"):
+        return ("low", None)
+    return ("no", None)
 
 
 # Induction sub-axes — only meaningful when the induced predicate is
