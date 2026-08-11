@@ -48,14 +48,13 @@ inference only'):
 SEARCH THOROUGHLY FOR INTERNAL SITES. If the protein has ANY extracellular loop (an `O`
 stretch between TM helices, or a large ectodomain), you MUST make a real attempt to find at
 least one INTERNAL insertion with published precedent — do not settle for terminal sites
-alone. Search EACH extracellular loop specifically (by its position / "S1-S2 loop", "turret",
-"ECL2", etc.). And search the FULL range of surface-tagging modalities by NAME, not just the
-word "tag" — many surface-labeling constructs are never called "tags" in the abstract:
+alone. Run a GENERIC search (e.g. "<gene> tag", "<gene> epitope tag insertion") AND, because
+many surface-labeling constructs are never called "tags" in the abstract, separate searches
+for specific tagging modalities by NAME:
   FLAG / HA / Myc / ALFA / V5 epitope insertion; GFP / fluorescent-protein fusion insertion;
   HaloTag / SNAP-tag / CLIP-tag; **bungarotoxin-binding site (BBS)**; biotin-acceptor / AviTag;
   tetracysteine (FlAsH); transposon / domain-insertion screens.
-Run separate searches for the niche modalities (e.g. "<gene> bungarotoxin binding site",
-"<gene> SNAP-tag surface") — a generic "<gene> epitope tag" query misses them. Do not stop at
+The generic query alone often misses the niche modalities, so run those too. Do not stop at
 the first hit; a terminal site does not excuse skipping the internal search.
 
 POSITION HONESTY (required). For EVERY site set `position_evidence`:
