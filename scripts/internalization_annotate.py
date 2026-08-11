@@ -48,6 +48,11 @@ def main(argv: list[str] | None = None) -> int:
         default=list(DEFAULT_MODELS),
         help=f"Model-prior model ids (default: {' '.join(DEFAULT_MODELS)})",
     )
+    parser.add_argument(
+        "--all-isoforms",
+        action="store_true",
+        help="Grade every isoform (default: canonical only, to cut input cost).",
+    )
     args = parser.parse_args(argv)
 
     priors = None
@@ -59,6 +64,7 @@ def main(argv: list[str] | None = None) -> int:
             args.gene,
             models=tuple(args.models),
             persist=(args.track == "model_prior" and args.persist),
+            canonical_only=not args.all_isoforms,
         )
         priors = mp.model_priors
         record = mp

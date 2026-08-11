@@ -66,6 +66,28 @@ def test_fetch_prefers_deeptmhmm_sequence_and_topology(monkeypatch):
     assert out[0].length_aa == 1210  # from IsoformRecord.length_aa
 
 
+def test_canonical_only_returns_just_the_canonical_isoform(monkeypatch):
+    summary = SimpleNamespace(
+        topology_features=[],
+        isoforms=[
+            IsoformRecord(isoform_id="P00533-1", is_canonical=True, length_aa=1210),
+            IsoformRecord(isoform_id="P00533-2", is_canonical=False, length_aa=405),
+        ],
+    )
+    monkeypatch.setattr(mod, "uniprot_summary", lambda acc, *, http: summary)
+    monkeypatch.setattr(mod, "summarize_topology", lambda feats: "UNIPROT_TOPO")
+    _no_deeptmhmm(monkeypatch)
+    monkeypatch.setattr(
+        mod,
+        "fetch_uniprot_fasta",
+        lambda acc, **kw: SimpleNamespace(header=">x", sequence="MSEQ" * 5),
+    )
+
+    out = fetch_isoform_context("P00533", http=cast(Any, object()), canonical_only=True)
+    assert [c.isoform_id for c in out] == ["P00533-1"]  # only the canonical
+    assert out[0].is_canonical is True
+
+
 def test_fetch_falls_back_to_acc_when_no_isoforms(monkeypatch):
     summary = SimpleNamespace(topology_features=[], isoforms=[])
     monkeypatch.setattr(mod, "uniprot_summary", lambda acc, *, http: summary)

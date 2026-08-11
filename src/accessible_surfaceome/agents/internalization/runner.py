@@ -40,13 +40,16 @@ def annotate_model_prior(
     http: CachedHTTP | None = None,
     persist: bool = True,
     annotations_dir: Path | None = None,
+    canonical_only: bool = True,
 ) -> InternalizationRecord:
     client = client or get_client()
     http = http or open_default_client()
 
     hgnc_id = resolve_hgnc_id(gene)
     bundle = resolve_by_hgnc_id(hgnc_id, http=http)
-    isoforms = fetch_isoform_context(bundle.uniprot_acc, http=http)
+    isoforms = fetch_isoform_context(
+        bundle.uniprot_acc, http=http, canonical_only=canonical_only
+    )
     system_prompt = load_prompt()
 
     priors = [

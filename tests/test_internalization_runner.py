@@ -32,7 +32,7 @@ def test_annotate_assembles_record_and_persists(tmp_path, monkeypatch):
     monkeypatch.setattr(
         mod,
         "fetch_isoform_context",
-        lambda acc, *, http: [
+        lambda acc, *, http, canonical_only=True: [
             IsoformContext(
                 isoform_id="P02786-1",
                 is_canonical=True,
@@ -82,7 +82,7 @@ def test_annotate_can_skip_persist(tmp_path, monkeypatch):
         ),
     )
     monkeypatch.setattr(
-        mod, "fetch_isoform_context", lambda acc, *, http: []
+        mod, "fetch_isoform_context", lambda acc, *, http, canonical_only=True: []
     )
     monkeypatch.setattr(mod, "load_prompt", lambda: "SYS")
     monkeypatch.setattr(

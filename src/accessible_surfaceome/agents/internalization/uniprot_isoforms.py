@@ -41,13 +41,19 @@ class IsoformContext(BaseModel):
     topology_source: str = "uniprot"
 
 
-def fetch_isoform_context(uniprot_acc: str, *, http: CachedHTTP) -> list[IsoformContext]:
+def fetch_isoform_context(
+    uniprot_acc: str, *, http: CachedHTTP, canonical_only: bool = False
+) -> list[IsoformContext]:
     summary = uniprot_summary(uniprot_acc, http=http)
     uniprot_topo = summarize_topology(summary.topology_features)
 
     records: list[IsoformRecord] = list(summary.isoforms) or [
         IsoformRecord(isoform_id=uniprot_acc, is_canonical=True, length_aa=None)
     ]
+    if canonical_only:
+        # Grade only the canonical isoform (keeps the input prompt small for a
+        # cohort-scale sweep); fetch nothing for the alternatives.
+        records = [r for r in records if r.is_canonical] or records[:1]
 
     out: list[IsoformContext] = []
     for iso in records:
