@@ -153,10 +153,16 @@ def surface_loop_candidates(
                 ),
             )
         )
+    # Rank for DISPLAY of a surface-exposed dual tag: most solvent-exposed junction
+    # first (the tag protrudes best where the loop is most exposed), then
+    # least-conserved (functional safety), then most indel-tolerant. Exposure leads
+    # deliberately — a shallow (single-ortholog) conservation signal is a coarse 0/1
+    # and must not override *where the loop actually presents*. TFRC: this surfaces
+    # V291 (own RSA 0.88) over 294 (0.48, non-conserved) in the same extended loop.
     picks.sort(
         key=lambda p: (
+            -signals["rsa"].get(p["insert_after_residue"], 0.0),
             p["median_conservation"] if p["median_conservation"] is not None else 1.0,
-            -_window_max(signals["rsa"], p["insert_after_residue"]),
             -signals.get("gap_freq", {}).get(p["insert_after_residue"], 0.0),
         )
     )
