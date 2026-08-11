@@ -27,23 +27,36 @@ sequence-level reasoning.
 
 # What to reason about
 
-- Presence of cytoplasmic endocytic sorting motifs in cytoplasmic regions:
-  tyrosine-based YXX[hydrophobic], NPXY, and dileucine [DE]XXXL[LI].
-- Topology: use the E/C sidedness to locate the cytoplasmic regions — endocytic
-  sorting motifs are only functional there. A cytoplasmic tail is required to
-  host most endocytic motifs; a GPI-anchored or tail-less protein internalizes
-  mainly via bulk/lipid-raft routes.
+- Canonical sorting motifs are ONE route, not the only one. When present in a
+  cytoplasmic region, tyrosine-based YXX[hydrophobic], NPXY, and dileucine
+  [DE]XXXL[LI] motifs are positive evidence FOR internalization.
+- **Absence of a recognizable motif is NOT evidence of low internalization.**
+  Many surface proteins internalize robustly with no canonical motif — via
+  constitutive bulk-membrane flow, clathrin-independent / lipid-raft uptake,
+  ubiquitin- or partner/adaptor-dependent routes, or non-canonical signals.
+  A short cytoplasmic tail can still drive strong, transferrin-receptor-like
+  uptake. Do NOT downgrade to `low` merely because no motif is visible.
+- Topology: use the E/C sidedness to locate cytoplasmic regions (where motifs,
+  if any, must act). GPI-anchored / tail-less proteins lack classical
+  motif-driven uptake but can still internalize via bulk/raft routes.
 - Isoform differences: an isoform that truncates or replaces the cytoplasmic
-  tail may lose internalization competence even with an identical ectodomain —
-  grade each isoform on its own sequence.
-- The known trafficking behavior of the protein family, when you recognize it.
+  tail may lose motif-driven internalization — but weigh that against the
+  non-canonical routes above rather than assuming a total loss; grade each
+  isoform on its own sequence.
+- The known trafficking behavior of the specific protein and its family, when
+  you recognize it — this should usually outweigh raw motif-spotting.
 
 # Grades
 
-- `high` — robust constitutive and/or native-ligand-driven internalization.
-- `low` — slow / limited internalization; predominantly surface-resident.
-- `no` — non-internalizing / predominantly non-endocytic.
-- `unknown` — you cannot make a defensible call.
+- `high` — robust constitutive and/or native-ligand-driven internalization
+  (from the protein's known biology, a canonical motif, or both).
+- `low` — POSITIVE evidence of limited internalization / predominant surface
+  residence (e.g. a known stable surface resident, documented slow turnover).
+  Do NOT use `low` just because the sequence lacks a motif.
+- `no` — non-internalizing / predominantly non-endocytic, with a positive basis.
+- `unknown` — you cannot make a defensible call — INCLUDING the common case
+  where no canonical motif is visible AND you have no specific knowledge that
+  the protein is surface-retained. Prefer `unknown` over a motif-absence `low`.
 
 # Confidence
 
