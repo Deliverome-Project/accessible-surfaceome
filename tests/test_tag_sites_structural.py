@@ -55,4 +55,9 @@ def test_surface_loop_gate_recovers_tfrc_i290(tmp_path):
     )
     picks = surface_loop_candidates(sig, gene_symbol="TFRC", uniprot_acc="P02786")
     residues = {s["insert_after_residue"] for s in picks}
-    assert 290 in residues  # the site the low-pLDDT screen misses
+    # The gate snaps the insertion to the solvent-EXPOSED residue of the loop
+    # (V291, RSA 0.88), +1 from the EndoNB "after I290" control (I290's own side
+    # chain is buried, RSA 0.02) — the same exposed loop tip, within the
+    # residue-exactness tolerance. The low-pLDDT disorder screen misses it entirely.
+    assert 291 in residues                       # the exposed V291 junction
+    assert any(289 <= r <= 291 for r in residues)  # recovers the I290/V291 loop

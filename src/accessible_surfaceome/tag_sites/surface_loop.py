@@ -32,6 +32,21 @@ def _window_max(values: dict[int, float], res: int, lo: int = -1, hi: int = 2) -
     return max((values.get(res + d, 0.0) for d in range(lo, hi + 1)), default=0.0)
 
 
+def _exposed_anchor(rsa: dict[int, float], res: int, lo: int = -1, hi: int = 2) -> int:
+    """The residue in the junction window with the highest OWN solvent
+    accessibility. A window admitted because a *neighbor* is exposed (e.g. TFRC
+    I290, RSA 0.02, admitted via V291 at 0.88) reports its insertion AT the
+    exposed residue (291), not the buried anchor — the tag should protrude where
+    the loop actually protrudes. Ties keep the lower residue number."""
+    best_r, best_v = res, rsa.get(res, 0.0)
+    for d in range(lo, hi + 1):
+        r = res + d
+        v = rsa.get(r, 0.0)
+        if v > best_v:
+            best_r, best_v = r, v
+    return best_r
+
+
 def surface_loop_candidates(
     signals: dict[str, Any], *, gene_symbol: str, uniprot_acc: str
 ) -> list[dict[str, Any]]:
@@ -46,6 +61,7 @@ def surface_loop_candidates(
     """
     seq = signals["sequence"]
     picks: list[dict[str, Any]] = []
+    seen_anchors: set[int] = set()
     for res in sorted(signals["plddt"]):
         topo = signals["topology"].get(res, "?")
         if not _extracellular(topo):
@@ -61,26 +77,46 @@ def surface_loop_candidates(
         # NOTE: indel-tolerance (gap_freq) is a RANKING signal, not a hard gate —
         # a good site (e.g. TFRC I290) need not sit at a natural indel, and with a
         # shallow ortholog set gap_freq is 0 at most positions.
-        rb = seq[res - 1] if 1 <= res <= len(seq) else None
-        ra = seq[res] if 1 <= res < len(seq) else None
+
+        # Report the insertion AT the solvent-exposed residue of the window, not
+        # the (possibly buried) residue that admitted it — the tag protrudes
+        # where the loop protrudes. Fall back to ``res`` if the exposed peak is
+        # not itself extracellular + feature-clear.
+        anchor = _exposed_anchor(signals["rsa"], res)
+        # The exposed peak must itself be a valid surface-loop residue — the same
+        # reliability + loop + extracellular + clearance premise, not just high
+        # RSA — otherwise the snap could report a low-pLDDT or non-loop position.
+        if (
+            signals["topology"].get(anchor, "?") != "O"
+            or signals["plddt"].get(anchor, 0.0) < PLDDT_MIN
+            or signals["ss"].get(anchor, "?") not in LOOP_SS
+            or signals["feature_dist"].get(anchor, 0.0) < FEATURE_DIST_MIN
+        ):
+            anchor = res
+        if anchor in seen_anchors:
+            continue
+        seen_anchors.add(anchor)
+
+        rb = seq[anchor - 1] if 1 <= anchor <= len(seq) else None
+        ra = seq[anchor] if 1 <= anchor < len(seq) else None
         picks.append(
             tagged_site(
-                site_id=f"{gene_symbol}-surface_loop-{res}",
+                site_id=f"{gene_symbol}-surface_loop-{anchor}",
                 gene_symbol=gene_symbol,
                 uniprot_acc=uniprot_acc,
                 det_path="surface_loop",
                 site_kind="internal",
-                insert_after_residue=res,
+                insert_after_residue=anchor,
                 residue_before=rb,
                 residue_after=ra,
-                topology_state=topo,
+                topology_state=signals["topology"].get(anchor, topo),
                 extracellular=True,
                 compartment="extracellular",
-                plddt=round(signals["plddt"][res], 1),
-                median_conservation=signals["conservation"].get(res),
+                plddt=round(signals["plddt"].get(anchor, signals["plddt"][res]), 1),
+                median_conservation=signals["conservation"].get(anchor),
                 rationale=(
-                    "ordered surface loop: pLDDT>=70, DSSP loop/turn, high RSA, "
-                    "indel-tolerant, 3D-clear of features"
+                    "ordered surface loop: pLDDT>=70, DSSP loop/turn, exposed junction "
+                    "residue (max RSA), indel-tolerant, 3D-clear of features"
                 ),
             )
         )
