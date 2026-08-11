@@ -8,17 +8,30 @@ classify, you never retype the quote.
 
 # What to select
 
-Pick a clip when it reports an internalization observation you'd want in a
-structured record: an uptake/endocytosis/recycling measurement (antibody,
-ligand, or ADC uptake; acid-strip flow; pH-dye; live imaging; rate constant /
-half-time / % internalized), the assay + cell line, the ligand condition
+Pick a clip ONLY when it reports **this protein's own internalization event** —
+uptake / endocytosis from the plasma membrane — as a measurement or a
+characterized result: an uptake/endocytosis/recycling assay (antibody, ligand,
+or ADC uptake; acid-strip flow; pH-dye; live imaging), a rate constant /
+half-time / %-internalized number, the assay + cell line, the ligand condition
 (constitutive vs. ligand- or antibody-induced), or an endocytosis-route result
-(clathrin / caveolin / macropinocytosis; inhibitor or knockdown).
+that changes the protein's uptake (clathrin / caveolin / macropinocytosis;
+inhibitor or knockdown). **Prefer clips carrying a quantitative measurement or a
+specific assay + condition** over general statements.
 
-Do NOT select: expression- or localization-only statements, signaling-only
-results, background/intro sentences that merely mention endocytosis, or clips
-where the protein is incidental. Endosomal/lysosomal localization alone is not
-internalization evidence.
+Do NOT select:
+- background / introduction / motivation sentences, even if they mention
+  endocytosis, "delivery", or "iron uptake";
+- delivery-vehicle / delivery-platform statements (the protein used to carry a
+  cargo), or clips about the **cargo** rather than the protein's own endocytosis;
+- **downstream consequences** of internalization — endosomal cargo release, iron
+  metabolism / DMT1 export, post-uptake signaling or degradation — these are not
+  the internalization event;
+- expression-, localization-, or signaling-only statements (endosomal/lysosomal
+  localization alone is NOT internalization evidence);
+- clips where the protein is incidental (marker, list member).
+
+If a fetched paper has no clip that actually measures or characterizes this
+protein's uptake, select NOTHING from it.
 
 # Classify each selection
 
