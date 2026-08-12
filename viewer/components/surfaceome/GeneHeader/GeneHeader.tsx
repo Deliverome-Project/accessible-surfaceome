@@ -395,26 +395,26 @@ export function GeneHeader({
             </span>
             <InfoTip label="About the deep-dive tier">
               <p>
-                Where this protein sits on the deep dive&apos;s cell-surface
-                confidence spectrum, from the agent&apos;s reading of the primary
-                literature:
+                This gene&apos;s tier in the catalog&apos;s five-tier surface
+                classification. <strong>Canonical</strong> — the strictest
+                shortlist: the deep dive&apos;s <em>overall</em> ruling is
+                confident (high/moderate confidence, surface-dominant or mixed
+                localization, accessible, dense evidence) — not merely that
+                direct assays exist. <strong>Likely</strong> — surface on
+                broader / more indirect evidence. <strong>Low&nbsp;confidence /
+                Uncertain / Not&nbsp;surface</strong> — below-shortlist leans,
+                usually on thin or conflicting evidence. A sub-facet marks
+                cell-state-induced or cell-type-restricted presentation.
               </p>
               <p>
-                <strong>Canonical</strong> — high-confidence, antibody/ADC-grade
-                cell-surface: direct experimental evidence (or strong biological
-                context), surface-dominant localization, and an accessible
-                extracellular domain. <strong>Likely</strong> — surface, but on
-                broader or more indirect evidence. <strong>Low confidence /
-                Uncertain / Not&nbsp;surface</strong> — the call leaned negative
-                or could not be resolved, usually on thin or conflicting
-                evidence.
-              </p>
-              <p>
-                A sub-facet, when present, flags surface presentation that is{" "}
-                <strong>cell-state-induced</strong> (reaches the surface on
-                activation, stress, or oncogenic transformation) or{" "}
-                <strong>cell-type-restricted</strong> (only in certain lineages).
-                Same classification as the catalog filters and Figure&nbsp;5.
+                Full predicate definitions:{" "}
+                <a
+                  href="/api/#presets"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  Catalog presets ↗
+                </a>
               </p>
             </InfoTip>
             {facet ? (
@@ -440,9 +440,9 @@ export function GeneHeader({
                     So the below-Canonical verdict here may reflect{" "}
                     <em>missing literature</em> rather than genuinely non-surface
                     biology — an under-studied surface candidate worth
-                    revisiting, not a settled negative. (UniProt is used rather
-                    than the SURFY predictor because it also captures
-                    under-studied GPCRs such as olfactory and taste receptors.)
+                    revisiting, not a settled negative. (UniProt is the surface
+                    database used here because it outperformed the others on our
+                    gold-standard positive controls.)
                   </p>
                 </InfoTip>
               </span>
