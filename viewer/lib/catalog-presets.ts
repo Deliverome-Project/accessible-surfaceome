@@ -57,17 +57,26 @@ const INDUCTION_NON_NONE = new Set([
  * tracked in issue #131.
  *
  * State-dependence is NOT a hard exclusion: a `state_dependence='high'`
- * gene still qualifies if it has a constitutive baseline
- * (`low_endogenous_expression === false`). This keeps constitutively-
- * expressed-but-further-inducible surface proteins in canonical
- * (ICAM1-class — present at low/moderate levels in normal tissue,
- * strongly upregulated by inflammation/oncogenesis), while proteins
- * that surface only when induced off a low/absent baseline
- * (`low_endogenous_expression === true` — CTLA4, 4-1BB) stay in the
- * "Cell-state induced" tier. Canonical certifies *is* it surface (the
- * five evidence/verdict gates); *when* is the state_dependence facet.
- * The disjunct is additive — it only admits high-state-dependence
- * genes, never drops a low/moderate one lacking a constitutive baseline.
+ * gene still qualifies as long as it is at least moderately expressed
+ * (`expression_level ∈ {moderate, high}`). This gates on the expression
+ * LEVEL directly rather than the derived `low_endogenous_expression`
+ * boolean the earlier rule used — that boolean folds in expression
+ * BREADTH (it flags a `moderate`-but-tissue-restricted gene as
+ * low-endogenous), which then demoted validated targets that surface on
+ * a specific lineage. Breadth is a therapeutic-window property (low
+ * off-target burden is *good*), not a surface-membership signal: a
+ * restricted, moderately-expressed target (CTLA4, 4-1BB — moderate on a
+ * specific T-cell lineage, both validated antibody targets) is exactly
+ * the kind of confidently-surface protein Canonical should certify.
+ * Tissue restriction is surfaced by the `cell_type_restricted` facet and
+ * induction by the `induced` facet, so a Canonical gene can still carry
+ * an induced/restricted chip (CTLA4 → tier `canonical`, facet `induced`).
+ * Only genuinely low/absent-baseline genes (`expression_level ∈ {low,
+ * absent}`) that surface only when induced are held out of Canonical.
+ * Canonical certifies *is* it surface (the five evidence/verdict gates);
+ * *when* and *where* are the state_dependence + breadth facets. The
+ * disjunct is additive — it only admits high-state-dependence genes,
+ * never drops a low/moderate one.
  */
 export function passesCanonical(f: DeepDiveFilters): boolean {
   return (
@@ -83,7 +92,8 @@ export function passesCanonical(f: DeepDiveFilters): boolean {
     ((f.state_dependence === "low" ||
       f.state_dependence === "moderate" ||
       f.state_dependence === "unclear") ||
-      f.low_endogenous_expression === false) &&
+      f.expression_level === "moderate" ||
+      f.expression_level === "high") &&
     (f.surface_accessibility === "high" ||
       f.surface_accessibility === "moderate") &&
     (f.evidence_density === "high" || f.evidence_density === "moderate")
@@ -417,10 +427,10 @@ export const PRESETS: ReadonlyArray<{
     label: "Canonical",
     description:
       "Strictest tier — direct evidence (single or multi-method), " +
-      "high/moderate confidence, surface-dominant or mixed, low / " +
-      "moderate / unclear state-dependence, high/moderate surface " +
-      "accessibility, high/moderate evidence density. The high-" +
-      "confidence surface shortlist.",
+      "high/moderate confidence, surface-dominant or mixed, state-" +
+      "dependence low/moderate/unclear (or, if high, at least moderate " +
+      "expression), high/moderate surface accessibility, high/moderate " +
+      "evidence density. The high-confidence surface shortlist.",
     predicate: passesCanonical,
   },
   {
