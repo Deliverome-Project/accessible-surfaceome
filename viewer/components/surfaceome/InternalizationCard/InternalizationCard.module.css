@@ -1,0 +1,84 @@
+.root {
+  --teal: #0d7d74;
+  --amber: #b8791f;
+  --maroon: #8a2f45;
+  --lav: #6b5ca8;
+  --slate: #6b7280;
+  --rust: #a3442f;
+  --muted: #8b857c;
+  --hair: #e7e2da;
+  --surface2: #f4f0ea;
+  font-size: 0.9rem;
+  line-height: 1.55;
+}
+@media (prefers-color-scheme: dark) {
+  .root {
+    --teal: #2fb3a6; --amber: #d69a3c; --maroon: #c76a83; --lav: #9a8ce0;
+    --slate: #9aa2ad; --rust: #d9755c; --muted: #9a9284; --hair: #332c23; --surface2: #26211b;
+  }
+}
+:global([data-theme="light"]) .root {
+  --teal: #0d7d74; --amber: #b8791f; --maroon: #8a2f45; --lav: #6b5ca8;
+  --slate: #6b7280; --rust: #a3442f; --muted: #8b857c; --hair: #e7e2da; --surface2: #f4f0ea;
+}
+:global([data-theme="dark"]) .root {
+  --teal: #2fb3a6; --amber: #d69a3c; --maroon: #c76a83; --lav: #9a8ce0;
+  --slate: #9aa2ad; --rust: #d9755c; --muted: #9a9284; --hair: #332c23; --surface2: #26211b;
+}
+
+.muted { color: var(--muted); }
+.empty { color: var(--muted); opacity: 0.55; }
+.mono { font-family: ui-monospace, "SF Mono", Menlo, monospace; font-variant-numeric: tabular-nums; }
+
+.body { display: flex; flex-direction: column; gap: 1.4rem; }
+.sub { }
+.subHead { display: flex; align-items: baseline; gap: 0.6rem; flex-wrap: wrap; margin-bottom: 0.5rem; }
+.trackLabelMp { font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.06em; font-weight: 700; color: var(--lav); }
+.trackLabelLit { font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.06em; font-weight: 700; color: var(--teal); }
+.badge {
+  font-size: 0.68rem; color: var(--muted); border: 1px dashed var(--hair);
+  border-radius: 6px; padding: 0.05rem 0.4rem;
+}
+
+.pill {
+  display: inline-block; padding: 0.06rem 0.5rem; border-radius: 999px;
+  font-size: 0.75rem; font-weight: 600; line-height: 1.5; border: 1px solid transparent; white-space: nowrap;
+}
+.g_high { background: color-mix(in srgb, var(--teal) 16%, transparent); color: var(--teal); border-color: color-mix(in srgb, var(--teal) 40%, transparent); }
+.g_moderate { background: color-mix(in srgb, var(--amber) 16%, transparent); color: var(--amber); border-color: color-mix(in srgb, var(--amber) 40%, transparent); }
+.g_low { background: color-mix(in srgb, var(--slate) 16%, transparent); color: var(--slate); border-color: color-mix(in srgb, var(--slate) 40%, transparent); }
+.g_no { background: color-mix(in srgb, var(--rust) 16%, transparent); color: var(--rust); border-color: color-mix(in srgb, var(--rust) 40%, transparent); }
+.g_unknown { background: var(--surface2); color: var(--muted); border: 1px dashed var(--hair); }
+
+.mp { border-left: 3px solid var(--lav); padding-left: 0.8rem; margin: 0.5rem 0; }
+.mpHead { font-family: ui-monospace, monospace; font-size: 0.82rem; }
+.mpHead code { font-size: 0.82rem; }
+.iso { background: var(--surface2); border: 1px solid var(--hair); border-radius: 8px; padding: 0.5rem 0.7rem; margin: 0.4rem 0; }
+.iso .mono { font-size: 0.78rem; color: var(--muted); margin: 0.2rem 0; }
+.iso p { margin: 0.3rem 0 0; font-size: 0.85rem; }
+
+.overall { font-size: 0.9rem; margin-bottom: 0.3rem; }
+.modes { display: grid; grid-template-columns: 1fr; gap: 0.4rem; margin: 0.6rem 0; }
+@media (min-width: 720px) { .modes { grid-template-columns: repeat(3, 1fr); } }
+.mode { background: var(--surface2); border: 1px solid var(--hair); border-radius: 8px; padding: 0.5rem 0.7rem; }
+.modeName { font-weight: 600; font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.03em; }
+.modeRat { font-size: 0.8rem; margin: 0.3rem 0 0; }
+
+.h4 { font-size: 0.9rem; text-transform: uppercase; letter-spacing: 0.05em; color: var(--maroon); margin: 1.2rem 0 0.5rem; }
+.tablewrap { overflow-x: auto; border: 1px solid var(--hair); border-radius: 10px; }
+.table { border-collapse: collapse; width: 100%; font-size: 0.8rem; }
+.table th {
+  text-align: left; background: var(--surface2); color: var(--muted); font-weight: 600;
+  text-transform: uppercase; letter-spacing: 0.03em; font-size: 0.7rem; padding: 0.5rem 0.6rem; white-space: nowrap;
+}
+.table td { padding: 0.45rem 0.6rem; border-top: 1px solid var(--hair); vertical-align: top; }
+
+.sources { list-style: none; padding: 0; margin: 0.3rem 0; display: flex; flex-direction: column; gap: 0.5rem; }
+.source { background: var(--surface2); border: 1px solid var(--hair); border-radius: 8px; padding: 0.55rem 0.7rem; font-size: 0.82rem; }
+.eid { color: var(--maroon); font-weight: 600; }
+.ok { font-size: 0.72rem; font-weight: 600; color: var(--teal); }
+.bad { font-size: 0.72rem; font-weight: 600; color: var(--rust); }
+.source blockquote {
+  margin: 0.4rem 0 0; padding-left: 0.7rem; border-left: 2px solid var(--hair);
+  font-size: 0.83rem; font-style: italic;
+}

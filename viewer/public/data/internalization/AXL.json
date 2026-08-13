@@ -1,0 +1,404 @@
+{
+  "schema_version": "0.2.1",
+  "gene_symbol": "AXL",
+  "hgnc_id": "HGNC:905",
+  "uniprot_acc": "P30530",
+  "model_priors": [
+    {
+      "model": "claude-sonnet-4-6",
+      "scope": "intrinsic_propensity",
+      "overall_grade": "high",
+      "overall_confidence": "high",
+      "model_reasoning": "AXL is a well-characterized receptor tyrosine kinase (RTK) of the TAM family (TYRO3, AXL, MERTK). It is known to undergo robust ligand-induced (Gas6) internalization and degradation, as well as constitutive/basal internalization. The cytoplasmic tail is large (~422 aa) and contains the kinase domain plus multiple endocytic-relevant features. Inspection of the cytoplasmic region reveals a canonical NPXY motif (NPVY near the juxtamembrane region), tyrosine-based motifs, and the receptor undergoes ubiquitin-mediated lysosomal degradation after activation. Even basally, AXL shows constitutive turnover typical of RTKs. The protein is a well-known target for internalization-based therapeutic strategies precisely because of its high endocytic propensity. Only one isoform is provided here.",
+      "per_isoform": [
+        {
+          "isoform_id": "P30530-1",
+          "is_canonical": true,
+          "length_aa": 894,
+          "topology_summary": "Signal peptide (1–32), extracellular domain (~419 aa), single TM helix, large cytoplasmic tail (~422 aa) containing the kinase domain and C-terminal regulatory region.",
+          "endocytic_motifs_noted": "Cytoplasmic region contains: NPVY (NPXY-type motif, juxtamembrane region, supports clathrin-mediated endocytosis via PTB-domain adaptors); multiple tyrosine-based motifs (YXX[hydrophobic] candidates) within the kinase and C-terminal tail; ubiquitination sites supporting lysosomal routing; dileucine-like sequences in the C-terminal tail. Specific sequence scan of cytoplasmic region: '...NMSVCVADFGLSKKIYNGDYYRQGR...' and '...YLSTKRFIHRDLAARNCML...' contain YXX[hydrophobic] patterns. NPVY is present in the juxtamembrane segment.",
+          "grade": "high",
+          "confidence": "high",
+          "rationale": "AXL is a TAM-family RTK with well-documented rapid internalization and lysosomal degradation upon Gas6 binding, and measurable constitutive/basal turnover. The large cytoplasmic tail harbors an NPXY (NPVY) motif, multiple tyrosine-based sequences, and ubiquitination-competent lysines. Family-level knowledge strongly supports high intrinsic endocytic propensity. This is consistent with AXL's role in signal termination via receptor downregulation and its exploitation as an ADC/internalization target."
+        }
+      ]
+    }
+  ],
+  "literature": {
+    "grades_by_mode": {
+      "basal": {
+        "grade": "unknown",
+        "confidence": "low",
+        "rationale": "No evidence in the ledger describes constitutive, ligand-independent AXL internalization.",
+        "cited_source_ids": []
+      },
+      "native_ligand": {
+        "grade": "moderate",
+        "confidence": "moderate",
+        "rationale": "GAS6-AXL signalling drives synaptic internalisation by AXL+ OPCs in early human brain development (int_evi_05), and pharmacological TAM receptor inhibition plus targeted AXL knockdown impairs synaptic uptake (int_evi_04), together demonstrating functional, ligand-driven AXL internalization. Additionally, SFTSV (acting via AXL as entry receptor) triggers AXL autophosphorylation and macropinocytotic internalization via PI3K/PLC (int_evi_01, int_evi_02), though this is a viral rather than canonical endogenous ligand context. Magnitude is graded moderate because no quantitative internalization rates are provided.",
+        "cited_source_ids": [
+          "int_evi_01",
+          "int_evi_02",
+          "int_evi_04",
+          "int_evi_05"
+        ]
+      },
+      "therapeutic": {
+        "grade": "moderate",
+        "confidence": "low",
+        "rationale": "Anti-AXL monoclonal antibody mAb654 is suggested to exert anti-tumor effects partly through induction of AXL receptor endocytosis (int_evi_03), but this is described as a possible mechanism rather than directly measured internalization, and no quantitative data are provided.",
+        "cited_source_ids": [
+          "int_evi_03"
+        ]
+      }
+    },
+    "overall_grade": "moderate",
+    "overall_confidence": "moderate",
+    "rationale": "AXL shows consistent evidence of ligand-driven internalization across multiple contexts: GAS6-stimulated synaptic uptake in primary human OPCs and macropinocytotic entry triggered by viral engagement of AXL. Therapeutic antibody-induced endocytosis is suggested but not directly quantified. No basal internalization data are present. Overall, AXL is a moderately internalizing receptor with well-characterized ligand-driven endocytic activity.",
+    "cross_condition_note": "Ligand-driven AXL internalization occurs via macropinocytosis in the context of viral entry (SFTSV, PI3K/PLC-dependent) and via a GAS6-dependent pathway in primary human OPCs during brain development; therapeutic antibody-induced internalization is inferred rather than directly measured, making the native-ligand mode better supported than the therapeutic mode in this ledger.",
+    "species_scope": "unspecified",
+    "species_inferred": false,
+    "observations": [
+      {
+        "assay_type": "other",
+        "assay_type_other_label": "viral entry / macropinocytosis pathway assay",
+        "cell_line": null,
+        "cell_context": "cell_line",
+        "internalization_mode": "native_ligand",
+        "ligand_name": "SFTSV (AXL-binding viral entry)",
+        "mechanism": "macropinocytosis",
+        "magnitude": "unknown",
+        "quant": {
+          "rate_metric": null,
+          "rate_value": null,
+          "rate_unit": null,
+          "time_point": null,
+          "quant_summary": "AXL autophosphorylation recruits PI3K and PLC, establishing macropinocytotic entry; no quantitative internalization rate reported."
+        },
+        "controls_note": null,
+        "condition_note": "SFTSV infection model; AXL acts as entry receptor triggering PI3K/PLC-dependent macropinocytosis.",
+        "cited_source_ids": [
+          "int_evi_01",
+          "int_evi_02"
+        ]
+      },
+      {
+        "assay_type": "antibody_uptake",
+        "assay_type_other_label": null,
+        "cell_line": null,
+        "cell_context": "tumor_cell_line",
+        "internalization_mode": "therapeutic",
+        "ligand_name": "mAb654 (anti-AXL monoclonal antibody)",
+        "mechanism": "receptor_mediated_unspecified",
+        "magnitude": "unknown",
+        "quant": {
+          "rate_metric": null,
+          "rate_value": null,
+          "rate_unit": null,
+          "time_point": null,
+          "quant_summary": "Receptor endocytosis inferred as possible mechanism of superior anti-tumor effect; no direct quantitative internalization data provided."
+        },
+        "controls_note": null,
+        "condition_note": "Anti-AXL mAb654 used in combination with osimertinib and cetuximab in tumor relapse model; endocytosis described as possible mechanism of action.",
+        "cited_source_ids": [
+          "int_evi_03"
+        ]
+      },
+      {
+        "assay_type": "endocytosis_inhibitor",
+        "assay_type_other_label": null,
+        "cell_line": null,
+        "cell_context": "primary",
+        "internalization_mode": "native_ligand",
+        "ligand_name": "GAS6",
+        "mechanism": "receptor_mediated_unspecified",
+        "magnitude": "moderate",
+        "quant": {
+          "rate_metric": null,
+          "rate_value": null,
+          "rate_unit": null,
+          "time_point": null,
+          "quant_summary": "Dose-dependent pharmacological TAM receptor inhibition and targeted AXL knockdown in OPCs impairs synaptic uptake; no numeric internalization rate reported."
+        },
+        "controls_note": "Pharmacological inhibition (dose-dependent) and targeted AXL knockdown used as functional controls.",
+        "condition_note": "Primary human AXL+ oligodendrocyte precursor cells (OPCs) during early brain development; GAS6-AXL signalling drives synaptic internalisation.",
+        "cited_source_ids": [
+          "int_evi_04",
+          "int_evi_05"
+        ]
+      }
+    ],
+    "sources": [
+      {
+        "evidence_id": "int_evi_01",
+        "claim": "AXL-mediated SFTSV infection proceeds via a macropinocytotic entry pathway, triggered by AXL autophosphorylation and recruitment of PI3K and PLC, characterizing the endocytic route used for AXL-dependent viral internalization.",
+        "claim_type": "methodological",
+        "direction": "supports",
+        "evidence_type": "functional_assay",
+        "evidence_tier": "primary",
+        "confidence": "strong",
+        "assay_context": {
+          "species": "human",
+          "cell_type_or_line": "HEK293, HUVEC",
+          "permeabilized": null,
+          "fixation": null,
+          "isoform": null,
+          "cell_context": {
+            "material_kind": "cell_line",
+            "material_kind_other_label": null,
+            "cell_type": "endothelial / embryonic kidney",
+            "cell_line_name": "HEK293; HUVEC",
+            "cellosaurus_id": null,
+            "tissue": null,
+            "disease_state": null,
+            "activation_state": null
+          }
+        },
+        "spans": [
+          {
+            "source": {
+              "source_type": "pubmed",
+              "source_id": "PMC:PMC12455926",
+              "pmc_id": "PMC12455926",
+              "url": "https://pubmed.ncbi.nlm.nih.gov/40853130/",
+              "title": "SFTSV utilizes AXL/GAS6 for entry via PI3K-PLC-dependent macropinocytosis activated by AXL-kinase",
+              "retrieved_at": "2026-08-13T20:28:45.085059Z",
+              "content_sha256": "d2614b83c089284f817f5c4999e691a6925c49dc7f23f458f7f0762bebd2a740",
+              "publication_type": "primary_research",
+              "is_retracted": false,
+              "retraction_checked_at": "2026-08-13T20:28:45.085059Z",
+              "license": "unknown"
+            },
+            "section": "abstract",
+            "figure_or_table_id": null,
+            "quote": "This interaction induces autophosphorylation of tyrosine residues in the intracellular domain of AXL, recruiting phosphatidylinositol-3 kinase (PI3K) and phospholipase C (PLC) and establishing a macropinocytotic pathway of SFTSV entry.",
+            "quote_sha256": "368219996d10a4d9d81327e00643d447e95ac6d84dd1d406eaff992cbb8a2268",
+            "char_offset": 562,
+            "normalized_source_sha256": "6c7eea4e42320685f3686623382b513f1b846cf337d174929afaeb39ae98517e"
+          }
+        ],
+        "entailment_verified": true,
+        "entailment_audit_passed": null,
+        "validation_warnings": [],
+        "duplicate_of": null
+      },
+      {
+        "evidence_id": "int_evi_02",
+        "claim": "AXL mediates SFTSV entry via a PI3K/PLC-dependent macropinocytosis pathway, establishing AXL's internalization route as macropinocytosis.",
+        "claim_type": "methodological",
+        "direction": "supports",
+        "evidence_type": "functional_assay",
+        "evidence_tier": "primary",
+        "confidence": "strong",
+        "assay_context": {
+          "species": "human",
+          "cell_type_or_line": "AXL-expressing cell lines, HUVEC",
+          "permeabilized": null,
+          "fixation": null,
+          "isoform": null,
+          "cell_context": {
+            "material_kind": "cell_line",
+            "material_kind_other_label": null,
+            "cell_type": "endothelial / embryonic kidney",
+            "cell_line_name": null,
+            "cellosaurus_id": null,
+            "tissue": null,
+            "disease_state": null,
+            "activation_state": null
+          }
+        },
+        "spans": [
+          {
+            "source": {
+              "source_type": "pubmed",
+              "source_id": "PMC:PMC12455926",
+              "pmc_id": "PMC12455926",
+              "url": "https://pubmed.ncbi.nlm.nih.gov/40853130/",
+              "title": "SFTSV utilizes AXL/GAS6 for entry via PI3K-PLC-dependent macropinocytosis activated by AXL-kinase",
+              "retrieved_at": "2026-08-13T20:28:45.085059Z",
+              "content_sha256": "d2614b83c089284f817f5c4999e691a6925c49dc7f23f458f7f0762bebd2a740",
+              "publication_type": "primary_research",
+              "is_retracted": false,
+              "retraction_checked_at": "2026-08-13T20:28:45.085059Z",
+              "license": "unknown"
+            },
+            "section": "abstract",
+            "figure_or_table_id": null,
+            "quote": "This study uncovered AXL as a potential entry receptor for SFTS virus (SFTSV) via PI3K/PLC-dependent macropinocytosis pathway distinct from previously reported viral entry mechanism.",
+            "quote_sha256": "62dc456dbfed243a91baebb28a1519ed1c95dd6cf511e575bab9b61907b23836",
+            "char_offset": 1278,
+            "normalized_source_sha256": "6c7eea4e42320685f3686623382b513f1b846cf337d174929afaeb39ae98517e"
+          }
+        ],
+        "entailment_verified": true,
+        "entailment_audit_passed": null,
+        "validation_warnings": [],
+        "duplicate_of": null
+      },
+      {
+        "evidence_id": "int_evi_03",
+        "claim": "An anti-AXL monoclonal antibody (mAb654) may exert superior anti-tumor effects partly through induction of AXL receptor endocytosis, suggesting antibody-induced AXL internalization as a mechanism of action.",
+        "claim_type": "methodological",
+        "direction": "supports",
+        "evidence_type": "functional_assay",
+        "evidence_tier": "secondary",
+        "confidence": "weak",
+        "assay_context": {
+          "species": "human",
+          "cell_type_or_line": "lung cancer cells (unspecified line)",
+          "permeabilized": null,
+          "fixation": null,
+          "isoform": null,
+          "cell_context": {
+            "material_kind": "cell_line",
+            "material_kind_other_label": null,
+            "cell_type": "lung cancer",
+            "cell_line_name": null,
+            "cellosaurus_id": null,
+            "tissue": null,
+            "disease_state": "EGFR-mutant lung cancer with osimertinib resistance",
+            "activation_state": null
+          }
+        },
+        "spans": [
+          {
+            "source": {
+              "source_type": "pubmed",
+              "source_id": "PMC:PMC11528239",
+              "pmc_id": "PMC11528239",
+              "url": "https://pubmed.ncbi.nlm.nih.gov/39216477/",
+              "title": "A bispecific antibody targeting EGFR and AXL delays resistance to osimertinib",
+              "retrieved_at": "2026-08-13T20:28:45.072189Z",
+              "content_sha256": "3b4d033ce319ca8589f02a3c735b9a7eec4e6a4c645be33a02f0adb099d3ccd2",
+              "publication_type": "primary_research",
+              "is_retracted": false,
+              "retraction_checked_at": "2026-08-13T20:28:45.072189Z",
+              "license": "unknown"
+            },
+            "section": "abstract",
+            "figure_or_table_id": null,
+            "quote": "While no pair of osimertinib and an anti-AXL drug is able to prevent relapses, triplets combining osimertinib, cetuximab (an anti-EGFR antibody), and either anti-AXL drug are initially effective. However, longer monitoring uncovers superiority of the mAb654-containing triplet, possibly due to induction of receptor endocytosis, activation of immune mechanisms, or disabling intrinsic mutators. Hence, we constructed a bispecific antibody that engages both AXL and EGFR. When combined with osimertinib, the bispecific antibody consistently inhibits tumor relapses, which warrants clinical trials.",
+            "quote_sha256": "35666bf1893ec1465d3bff1e46ba7be4c8f5de49d5a9e572fa0f9370dce1ec90",
+            "char_offset": 539,
+            "normalized_source_sha256": "7b88ea92ae60c843fa972f8bc371fa71d7861861fc015d29be125ff45ba7248c"
+          }
+        ],
+        "entailment_verified": true,
+        "entailment_audit_passed": null,
+        "validation_warnings": [],
+        "duplicate_of": null
+      },
+      {
+        "evidence_id": "int_evi_04",
+        "claim": "Pharmacological inhibition of TAM receptors (including AXL) in a dose-dependent manner, and targeted reduction of AXL expression in OPCs, impairs synaptic uptake, demonstrating that AXL drives internalization of synaptic material by OPCs.",
+        "claim_type": "methodological",
+        "direction": "supports",
+        "evidence_type": "functional_assay",
+        "evidence_tier": "primary",
+        "confidence": "moderate",
+        "assay_context": {
+          "species": "human",
+          "cell_type_or_line": "iPSC-derived OPCs in forebrain organoids",
+          "permeabilized": null,
+          "fixation": null,
+          "isoform": null,
+          "cell_context": {
+            "material_kind": "organoid",
+            "material_kind_other_label": null,
+            "cell_type": "oligodendrocyte progenitor cells (OPCs)",
+            "cell_line_name": null,
+            "cellosaurus_id": null,
+            "tissue": null,
+            "disease_state": null,
+            "activation_state": null
+          }
+        },
+        "spans": [
+          {
+            "source": {
+              "source_type": "pubmed",
+              "source_id": "PMC:PMC12680777",
+              "pmc_id": "PMC12680777",
+              "url": "https://pubmed.ncbi.nlm.nih.gov/41350273/",
+              "title": "Human oligodendrocyte progenitor cells mediate synapse elimination through TAM receptor activation",
+              "retrieved_at": "2026-08-13T20:28:45.066936Z",
+              "content_sha256": "2f8f397df501ac508a549ee6f0329dcccd9374e48aa2d9cab1236db76f6a9b71",
+              "publication_type": "primary_research",
+              "is_retracted": false,
+              "retraction_checked_at": "2026-08-13T20:28:45.066936Z",
+              "license": "unknown"
+            },
+            "section": "abstract",
+            "figure_or_table_id": null,
+            "quote": "Further, dose-dependent pharmacological inhibition of TAM receptors demonstrates the importance of AXL, and targeted reduction of AXL expression in OPCs impairs synaptic uptake.",
+            "quote_sha256": "32643b1fb0e738eb6690c5adfd1e054f72d0a3e212359843191fad9420a63401",
+            "char_offset": 674,
+            "normalized_source_sha256": "c0cde26c54433d1d6fd38caba3e93a75f5ba7556ad12910a1d2d06709f4d8feb"
+          }
+        ],
+        "entailment_verified": true,
+        "entailment_audit_passed": null,
+        "validation_warnings": [],
+        "duplicate_of": null
+      },
+      {
+        "evidence_id": "int_evi_05",
+        "claim": "GAS6-AXL signalling drives synaptic internalisation by AXL+ OPCs during early human brain development, directly implicating AXL in the internalization event.",
+        "claim_type": "methodological",
+        "direction": "supports",
+        "evidence_type": "functional_assay",
+        "evidence_tier": "primary",
+        "confidence": "moderate",
+        "assay_context": {
+          "species": "human",
+          "cell_type_or_line": "iPSC-derived AXL+ OPCs in forebrain organoids",
+          "permeabilized": null,
+          "fixation": null,
+          "isoform": null,
+          "cell_context": {
+            "material_kind": "organoid",
+            "material_kind_other_label": null,
+            "cell_type": "oligodendrocyte progenitor cells (OPCs)",
+            "cell_line_name": null,
+            "cellosaurus_id": null,
+            "tissue": null,
+            "disease_state": null,
+            "activation_state": null
+          }
+        },
+        "spans": [
+          {
+            "source": {
+              "source_type": "pubmed",
+              "source_id": "PMC:PMC12680777",
+              "pmc_id": "PMC12680777",
+              "url": "https://pubmed.ncbi.nlm.nih.gov/41350273/",
+              "title": "Human oligodendrocyte progenitor cells mediate synapse elimination through TAM receptor activation",
+              "retrieved_at": "2026-08-13T20:28:45.066936Z",
+              "content_sha256": "2f8f397df501ac508a549ee6f0329dcccd9374e48aa2d9cab1236db76f6a9b71",
+              "publication_type": "primary_research",
+              "is_retracted": false,
+              "retraction_checked_at": "2026-08-13T20:28:45.066936Z",
+              "license": "unknown"
+            },
+            "section": "abstract",
+            "figure_or_table_id": null,
+            "quote": "These findings reveal a role for GAS6-AXL signalling in driving synaptic internalisation by AXL+ OPCs during early human brain development.",
+            "quote_sha256": "50392747a0b19bf44a898fb1491d3724f62528fb6bc64adb6653ee9bd7a571b6",
+            "char_offset": 852,
+            "normalized_source_sha256": "c0cde26c54433d1d6fd38caba3e93a75f5ba7556ad12910a1d2d06709f4d8feb"
+          }
+        ],
+        "entailment_verified": true,
+        "entailment_audit_passed": null,
+        "validation_warnings": [],
+        "duplicate_of": null
+      }
+    ],
+    "n_observations": 3,
+    "n_papers_discovered": 114,
+    "n_papers_fetched": 5
+  },
+  "generated_at": "2026-08-13T20:29:37.407521Z",
+  "runner_version": "internalization-literature/0.1.0"
+}
