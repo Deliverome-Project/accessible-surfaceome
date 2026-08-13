@@ -1157,9 +1157,9 @@ export function CatalogTable({
                   annotates as cell-surface. These are under-studied surface
                   candidates — the deep dive likely couldn&apos;t reach a
                   confident call for lack of literature, not because the protein
-                  is intracellular. Good re-dive targets. (UniProt is used here
-                  rather than SURFY because it captures the understudied
-                  olfactory/taste-receptor GPCRs that SURFY structurally misses.)
+                  is intracellular. Good re-dive targets. (UniProt is the surface
+                  database used here because it outperformed the others on our
+                  gold-standard positive controls.)
                 </p>
                 <p>
                   <em>{DEEP_DIVE_ONLY_NOTE}</em>
