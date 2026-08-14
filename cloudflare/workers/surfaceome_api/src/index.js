@@ -1066,6 +1066,14 @@ function projectDeepDiveFiltersFromParts(parts) {
   // top-level `filters` block. Keep in sync with viewer/lib/deep-dive-fields.ts
   // `pickDeepDiveFilters`. Powers the "Primary localization" facet on the
   // catalog filter panel + compare tool.
+  // Synthesizer's holistic grade (executive_summary.evidence_grade_summary),
+  // sourced outside the top-level `filters` block. The catalog tiers gate on
+  // this (viewer effectiveEvidenceGrade) so the deterministic A1-only
+  // evidence_grade can't under-call genes with rich A2 context.
+  if (typeof parts.evidence_grade_summary === "string") {
+    out.evidence_grade_summary = parts.evidence_grade_summary;
+    any = true;
+  }
   if (typeof parts.primary_compartment === "string") {
     out.primary_compartment = parts.primary_compartment;
     any = true;
@@ -1139,6 +1147,10 @@ function projectDeepDiveFiltersFromParts(parts) {
 function ddfPartsFromRow(row, prefix) {
   return {
     filters: safeJsonParse(row[`${prefix}filters`]),
+    evidence_grade_summary:
+      typeof row[`${prefix}evidence_grade_summary`] === "string"
+        ? row[`${prefix}evidence_grade_summary`]
+        : null,
     primary_compartment:
       typeof row[`${prefix}primary_compartment`] === "string"
         ? row[`${prefix}primary_compartment`]
@@ -1267,6 +1279,7 @@ async function handleCatalog(env, request) {
             u.cspa_surface_flag, u.hpa_surface_flag,
             sb.n_sites AS sb_n_sites,
             sa.ddf_filters AS sa_ddf_filters,
+            sa.ddf_evidence_grade_summary AS sa_ddf_evidence_grade_summary,
             sa.ddf_primary_compartment AS sa_ddf_primary_compartment,
             sa.ddf_restricted_subdomain AS sa_ddf_restricted_subdomain,
             sa.ddf_secreted_form AS sa_ddf_secreted_form,
@@ -1286,6 +1299,7 @@ async function handleCatalog(env, request) {
          -- tie-break that only matters when two rows share schema_version.
          SELECT gene_symbol,
                 json_extract(annotation_json, '$.filters') AS ddf_filters,
+                json_extract(annotation_json, '$.executive_summary.evidence_grade_summary') AS ddf_evidence_grade_summary,
                 json_extract(annotation_json, '$.biological_context.subcellular_localization.primary_compartment') AS ddf_primary_compartment,
                 json_extract(annotation_json, '$.accessibility_risks.restricted_subdomain') AS ddf_restricted_subdomain,
                 json_extract(annotation_json, '$.accessibility_risks.secreted_form') AS ddf_secreted_form,
@@ -1513,6 +1527,7 @@ async function handleCatalog(env, request) {
   const orphanDeep = await env.DB.prepare(
     `SELECT sa1.gene_symbol,
             json_extract(sa1.annotation_json, '$.filters') AS ddf_filters,
+            json_extract(sa1.annotation_json, '$.executive_summary.evidence_grade_summary') AS ddf_evidence_grade_summary,
             json_extract(sa1.annotation_json, '$.biological_context.subcellular_localization.primary_compartment') AS ddf_primary_compartment,
             json_extract(sa1.annotation_json, '$.accessibility_risks.restricted_subdomain') AS ddf_restricted_subdomain,
             json_extract(sa1.annotation_json, '$.accessibility_risks.secreted_form') AS ddf_secreted_form,
