@@ -47,14 +47,19 @@ const INDUCTION_NON_NONE = new Set([
  * synthesizer's contract is "unclear ≠ excluded"; the value lands
  * when the deep-dive can't confidently call low vs high.
  *
- * Evidence bar is the synthesizer's overall `confidence` ruling, NOT the
- * deterministic A1-only `evidence_grade` — that grade scores an empty A1
- * (direct-method) ledger as `weak` even when the surface call rests on
- * rich A2 (biological-context) evidence (ICAM1: A1=0 / A2=36, grade
- * `weak` yet `confidence='moderate'`). We keep only a fail-closed guard
- * on `evidence_grade` (never admit `conflicting`); `confidence` in
- * {high, moderate} is the real bar. Fixing evidence_grade at source is
- * tracked in issue #131.
+ * Evidence gate is two-part. (1) A grade FLOOR: `evidence_grade` must be
+ * at least `supportive_but_indirect`; `weak` and `conflicting` are held
+ * out of Canonical. A `weak`-graded gene is either genuinely non-surface
+ * or has under-covered / mis-credited evidence — neither belongs on the
+ * high-confidence shortlist, and when a `weak` gene is truly surface the
+ * remedy is to fix its evidence (re-annotate / methods-builder), which
+ * lifts it to `supportive`+ and re-admits it. (2) Above that floor the
+ * real quality bar is the synthesizer's overall `confidence` ruling
+ * (`high` / `moderate`), NOT the deterministic A1-only `evidence_grade` —
+ * that grade scores an empty A1 (direct-method) ledger low even when the
+ * surface call rests on rich A2 (biological-context) evidence, so
+ * `confidence` is what certifies the call above the floor. Fixing
+ * evidence_grade at source is tracked in issue #131.
  *
  * State-dependence is NOT a hard exclusion: a `state_dependence='high'`
  * gene still qualifies as long as it is at least moderately expressed
@@ -80,12 +85,12 @@ const INDUCTION_NON_NONE = new Set([
  */
 export function passesCanonical(f: DeepDiveFilters): boolean {
   return (
-    // Fail-closed guard only — anything but self-contradictory evidence.
-    // The confidence gate below is the real evidence bar (see docstring).
+    // Evidence FLOOR: at least `supportive_but_indirect` — `weak` and
+    // `conflicting` are held out of Canonical (see docstring). The
+    // confidence gate below is the real quality bar above that floor.
     (f.evidence_grade === "direct_multi_method" ||
       f.evidence_grade === "direct_single_method" ||
-      f.evidence_grade === "supportive_but_indirect" ||
-      f.evidence_grade === "weak") &&
+      f.evidence_grade === "supportive_but_indirect") &&
     (f.confidence === "high" || f.confidence === "moderate") &&
     (f.surface_specificity === "surface_dominant" ||
       f.surface_specificity === "mixed") &&
@@ -426,21 +431,22 @@ export const PRESETS: ReadonlyArray<{
     key: "canonical",
     label: "Canonical",
     description:
-      "Strictest tier — direct evidence (single or multi-method), " +
-      "high/moderate confidence, surface-dominant or mixed, state-" +
-      "dependence low/moderate/unclear (or, if high, at least moderate " +
-      "expression), high/moderate surface accessibility, high/moderate " +
-      "evidence density. The high-confidence surface shortlist.",
+      "Strictest tier — at least supportive-but-indirect evidence " +
+      "(weak and conflicting excluded), high/moderate confidence, " +
+      "surface-dominant or mixed localization, state-dependence low/" +
+      "moderate/unclear (or, if high, at least moderate expression), " +
+      "high/moderate surface accessibility, high/moderate evidence " +
+      "density. The high-confidence surface shortlist.",
     predicate: passesCanonical,
   },
   {
     key: "likely",
     label: "Likely",
     description:
-      "Broader shortlist — adds supportive-but-indirect evidence, " +
-      "mostly-intracellular surface fractions (e.g. SRC via lysosomal " +
-      "exocytosis, HMGB1 via DAMP release), and high / unclear / null " +
-      "state-dependence.",
+      "Broader shortlist — same supportive-or-stronger evidence floor, " +
+      "but also admits mostly-intracellular surface fractions (e.g. SRC " +
+      "via lysosomal exocytosis, HMGB1 via DAMP release) and high / " +
+      "unclear / null state-dependence.",
     predicate: passesLikely,
   },
   {
