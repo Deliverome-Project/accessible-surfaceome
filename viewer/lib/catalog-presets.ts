@@ -195,10 +195,14 @@ export function passesLikely(f: DeepDiveFilters): boolean {
   ) {
     return false;
   }
+  // Accessibility FLOOR: moderate+ (same as Canonical). A `low`
+  // surface-accessibility call — the "Surface likelihood: Low" pill on the
+  // gene page — means the deep dive judged the accessible epitope hard to
+  // reach; those genes drop to the below-Likely `low` tier rather than the
+  // Likely shortlist. `uncertain` / `no` are likewise excluded.
   if (
     f.surface_accessibility !== "high" &&
-    f.surface_accessibility !== "moderate" &&
-    f.surface_accessibility !== "low"
+    f.surface_accessibility !== "moderate"
   ) {
     return false;
   }
@@ -409,7 +413,7 @@ export const PRESET_IMPLIED_FILTERS: Record<
       "mostly_intracellular",
     ]),
     state_dependence: new Set(["low", "moderate", "high", "unclear"]),
-    surface_accessibility: new Set(["high", "moderate", "low"]),
+    surface_accessibility: new Set(["high", "moderate"]),
   },
   induced: {
     evidence_grade: new Set([
@@ -423,7 +427,7 @@ export const PRESET_IMPLIED_FILTERS: Record<
       "mostly_intracellular",
     ]),
     state_dependence: new Set(["moderate", "high", "unclear"]),
-    surface_accessibility: new Set(["high", "moderate", "low"]),
+    surface_accessibility: new Set(["high", "moderate"]),
     // surface_call_reason values implied by the predicate's OR clause.
     // Not strictly required (the predicate also matches on
     // induction_trigger), but worth highlighting in More filters so
@@ -447,7 +451,7 @@ export const PRESET_IMPLIED_FILTERS: Record<
       "mostly_intracellular",
     ]),
     state_dependence: new Set(["moderate", "high"]),
-    surface_accessibility: new Set(["high", "moderate", "low"]),
+    surface_accessibility: new Set(["high", "moderate"]),
     surface_call_reason: new Set(["tissue_restricted_surface"]),
   },
 };
@@ -483,11 +487,13 @@ export const PRESETS: ReadonlyArray<{
     label: "Likely",
     description:
       "Likely-ONLY band — clears the same supportive-or-stronger evidence " +
-      "floor as Canonical but falls short of it: admits mostly-intracellular " +
+      "floor AND the same moderate+ surface-accessibility floor as Canonical, " +
+      "but falls short of Canonical elsewhere: admits mostly-intracellular " +
       "surface fractions (e.g. SRC via lysosomal exocytosis, HMGB1 via DAMP " +
-      "release), high / unclear / null state-dependence, and low surface " +
-      "accessibility. Canonical genes are EXCLUDED here — select the Canonical " +
-      "chip alongside this one to see the full Likely tier (Canonical ⊂ Likely).",
+      "release) and high / unclear / null state-dependence. Genes the deep " +
+      "dive rates low surface-accessibility drop to the below-Likely `low` " +
+      "tier. Canonical genes are EXCLUDED here — select the Canonical chip " +
+      "alongside this one to see the full Likely tier (Canonical ⊂ Likely).",
     predicate: passesLikelyOnly,
   },
   {
