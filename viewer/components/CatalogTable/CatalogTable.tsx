@@ -1104,6 +1104,15 @@ export function CatalogTable({
                   <p>
                     <em>{DEEP_DIVE_ONLY_NOTE}</em>
                   </p>
+                  <p>
+                    See the{" "}
+                    <a
+                      href={`/api#presets`}
+                      className={styles.tooltipLink}
+                    >
+                      exact {p.label} gate definition on the API page →
+                    </a>
+                  </p>
                 </InfoTip>
               ) : null}
             </span>
