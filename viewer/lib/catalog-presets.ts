@@ -85,6 +85,11 @@ const INDUCTION_NON_NONE = new Set([
  */
 export function passesCanonical(f: DeepDiveFilters): boolean {
   return (
+    // Canonical = classical BROAD surface proteins. Tissue-restricted
+    // calls are routed to Likely + the Cell-type-restricted facet, never
+    // the broad Canonical shortlist (state/induced facets still overlay
+    // Canonical; only tissue-restriction is a hard exclusion here).
+    f.surface_call_reason !== "tissue_restricted_surface" &&
     // Evidence FLOOR: at least `supportive_but_indirect` — `weak` and
     // `conflicting` are held out of Canonical (see docstring). The
     // confidence gate below is the real quality bar above that floor.
