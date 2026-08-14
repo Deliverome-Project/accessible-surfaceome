@@ -11,23 +11,29 @@ import styles from "./page.module.css";
  *  (the JSX iteration over PRESETS would render `undefined` for a
  *  missing key — visible in the rendered page). */
 const PRESET_PSEUDOCODE: Record<string, string> = {
-  canonical: `evidence_grade ∈ {direct_multi_method, direct_single_method}
+  // grade = evidence_grade_summary ?? evidence_grade  (synthesizer's holistic
+  // grade preferred over the deterministic A1-only grade; see effectiveEvidenceGrade)
+  canonical: `surface_call_reason ∉ {tissue_restricted_surface, lysosomal_exocytosis}
+AND grade ∈ {direct_multi_method, direct_single_method, supportive_but_indirect}
 AND confidence ∈ {high, moderate}
 AND surface_specificity ∈ {surface_dominant, mixed}
-AND state_dependence ∈ {low, moderate, unclear}
+AND (state_dependence ∈ {low, moderate, unclear}
+     OR expression_level ∈ {moderate, high})
 AND surface_accessibility ∈ {high, moderate}
 AND evidence_density ∈ {high, moderate}`,
-  likely: `evidence_grade ∈ {direct_multi_method, direct_single_method, supportive_but_indirect}
-AND surface_specificity ∈ {surface_dominant, mixed, mostly_intracellular}
-AND surface_accessibility ∈ {high, moderate, low}
-AND state_dependence ∈ {low, moderate, high, unclear, null}`,
+  likely: `passesLikely(f) AND NOT passesCanonical(f)   // chip = the likely-ONLY band
+
+passesLikely(f) :=
+  ( grade ∈ {direct_multi_method, direct_single_method, supportive_but_indirect}
+    OR ( grade == weak                              // structural-surface carve-out
+         AND surface_call_reason ∈ {classical_surface_receptor,
+             multipass_with_exposed_loops, gpi_anchored, tissue_restricted_surface} ) )
+  AND surface_specificity ∈ {surface_dominant, mixed, mostly_intracellular}
+  AND surface_accessibility ∈ {high, moderate}      // low → below-Likely 'low' tier
+  AND state_dependence ∈ {low, moderate, high, unclear, null}`,
   induced: `passesLikely(f)
 AND state_dependence ∈ {moderate, high, unclear, null}
-AND (
-  surface_call_reason ∈ {cell_state_induced, lysosomal_exocytosis}
-  OR induction_trigger ∈ {oncogenic, immune, stress_hypoxia,
-                          cell_death, infection}
-)`,
+AND surface_call_reason ∈ {cell_state_induced, lysosomal_exocytosis}`,
   cell_type_restricted: `passesLikely(f)
 AND state_dependence ∈ {moderate, high}
 AND surface_call_reason == tissue_restricted_surface`,

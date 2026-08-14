@@ -33,6 +33,27 @@ const INDUCTION_NON_NONE = new Set([
 ]);
 
 /**
+ * Structural-surface reason codes that carry a strong enough surface prior to
+ * admit a `weak`-graded gene into Likely (the `weakStructuralGradeOk` carve-out
+ * in passesLikely). These are the reasons where surface membership is
+ * structurally unambiguous — a classical single-/multi-pass receptor, a GPI
+ * anchor, or a constitutively-surface tissue-restricted protein — so a `weak`
+ * LITERATURE grade reflects thin coverage, not genuine doubt about whether the
+ * protein reaches the surface. Confirmed against the protocadherin / SLAM /
+ * butyrophilin / platelet-GPV false-negative cohort (all `weak` + moderate
+ * accessibility + one of these reasons). Deliberately EXCLUDES the ambiguous
+ * reasons (dual_localization, cell_state_induced, endomembrane_resident,
+ * inner_leaflet_anchored, cytoplasmic, secreted_only, …) where a weak grade
+ * genuinely could mean the surface pool is unproven.
+ */
+const STRUCTURAL_SURFACE_REASONS = new Set([
+  "classical_surface_receptor",
+  "multipass_with_exposed_loops",
+  "gpi_anchored",
+  "tissue_restricted_surface",
+]);
+
+/**
  * Canonical = strictest tier. Direct evidence, high or moderate
  * confidence, surface-dominant or mixed (not mostly intracellular),
  * low / moderate / unclear state-dependence. The reader's "default
@@ -47,47 +68,84 @@ const INDUCTION_NON_NONE = new Set([
  * synthesizer's contract is "unclear ≠ excluded"; the value lands
  * when the deep-dive can't confidently call low vs high.
  *
- * Evidence bar is the synthesizer's overall `confidence` ruling, NOT the
- * deterministic A1-only `evidence_grade` — that grade scores an empty A1
- * (direct-method) ledger as `weak` even when the surface call rests on
- * rich A2 (biological-context) evidence (ICAM1: A1=0 / A2=36, grade
- * `weak` yet `confidence='moderate'`). We keep only a fail-closed guard
- * on `evidence_grade` (never admit `conflicting`); `confidence` in
- * {high, moderate} is the real bar. Fixing evidence_grade at source is
- * tracked in issue #131.
+ * Evidence gate is two-part. (1) A grade FLOOR: `evidence_grade` must be
+ * at least `supportive_but_indirect`; `weak` and `conflicting` are held
+ * out of Canonical. A `weak`-graded gene is either genuinely non-surface
+ * or has under-covered / mis-credited evidence — neither belongs on the
+ * high-confidence shortlist, and when a `weak` gene is truly surface the
+ * remedy is to fix its evidence (re-annotate / methods-builder), which
+ * lifts it to `supportive`+ and re-admits it. (2) Above that floor the
+ * real quality bar is the synthesizer's overall `confidence` ruling
+ * (`high` / `moderate`), NOT the deterministic A1-only `evidence_grade` —
+ * that grade scores an empty A1 (direct-method) ledger low even when the
+ * surface call rests on rich A2 (biological-context) evidence, so
+ * `confidence` is what certifies the call above the floor. Fixing
+ * evidence_grade at source is tracked in issue #131.
  *
  * State-dependence is NOT a hard exclusion: a `state_dependence='high'`
- * gene still qualifies if it has a constitutive baseline
- * (`low_endogenous_expression === false`). This keeps constitutively-
- * expressed-but-further-inducible surface proteins in canonical
- * (ICAM1-class — present at low/moderate levels in normal tissue,
- * strongly upregulated by inflammation/oncogenesis), while proteins
- * that surface only when induced off a low/absent baseline
- * (`low_endogenous_expression === true` — CTLA4, 4-1BB) stay in the
- * "Cell-state induced" tier. Canonical certifies *is* it surface (the
- * five evidence/verdict gates); *when* is the state_dependence facet.
- * The disjunct is additive — it only admits high-state-dependence
- * genes, never drops a low/moderate one lacking a constitutive baseline.
+ * gene still qualifies as long as it is at least moderately expressed
+ * (`expression_level ∈ {moderate, high}`). This gates on the expression
+ * LEVEL directly rather than the derived `low_endogenous_expression`
+ * boolean the earlier rule used — that boolean folds in expression
+ * BREADTH (it flags a `moderate`-but-tissue-restricted gene as
+ * low-endogenous), which then demoted validated targets that surface on
+ * a specific lineage. Breadth is a therapeutic-window property (low
+ * off-target burden is *good*), not a surface-membership signal: a
+ * restricted, moderately-expressed target (CTLA4, 4-1BB — moderate on a
+ * specific T-cell lineage, both validated antibody targets) is exactly
+ * the kind of confidently-surface protein Canonical should certify.
+ * Tissue restriction is surfaced by the `cell_type_restricted` facet and
+ * induction by the `induced` facet, so a Canonical gene can still carry
+ * an induced/restricted chip (CTLA4 → tier `canonical`, facet `induced`).
+ * Only genuinely low/absent-baseline genes (`expression_level ∈ {low,
+ * absent}`) that surface only when induced are held out of Canonical.
+ * Canonical certifies *is* it surface (the five evidence/verdict gates);
+ * *when* and *where* are the state_dependence + breadth facets. The
+ * disjunct is additive — it only admits high-state-dependence genes,
+ * never drops a low/moderate one.
  */
 export function passesCanonical(f: DeepDiveFilters): boolean {
   return (
-    // Fail-closed guard only — anything but self-contradictory evidence.
-    // The confidence gate below is the real evidence bar (see docstring).
-    (f.evidence_grade === "direct_multi_method" ||
-      f.evidence_grade === "direct_single_method" ||
-      f.evidence_grade === "supportive_but_indirect" ||
-      f.evidence_grade === "weak") &&
+    // Canonical = classical BROAD surface proteins. Tissue-restricted AND
+    // lysosomal-exocytosis are non-classical surfacing → routed to Likely +
+    // their facet, never the broad Canonical shortlist. (State/induced
+    // facets still overlay Canonical; only these two reasons are hard
+    // exclusions here.)
+    f.surface_call_reason !== "tissue_restricted_surface" &&
+    f.surface_call_reason !== "lysosomal_exocytosis" &&
+    // Evidence FLOOR: at least `supportive_but_indirect` — `weak` and
+    // `conflicting` are held out (see docstring). Gates on the SYNTHESIZER's
+    // holistic grade (`effectiveEvidenceGrade`), not the deterministic
+    // A1-only `evidence_grade` which under-calls genes whose surface call
+    // rests on rich A2 context.
+    (effectiveEvidenceGrade(f) === "direct_multi_method" ||
+      effectiveEvidenceGrade(f) === "direct_single_method" ||
+      effectiveEvidenceGrade(f) === "supportive_but_indirect") &&
     (f.confidence === "high" || f.confidence === "moderate") &&
     (f.surface_specificity === "surface_dominant" ||
       f.surface_specificity === "mixed") &&
     ((f.state_dependence === "low" ||
       f.state_dependence === "moderate" ||
       f.state_dependence === "unclear") ||
-      f.low_endogenous_expression === false) &&
+      f.expression_level === "moderate" ||
+      f.expression_level === "high") &&
     (f.surface_accessibility === "high" ||
       f.surface_accessibility === "moderate") &&
     (f.evidence_density === "high" || f.evidence_density === "moderate")
   );
+}
+
+/**
+ * The evidence grade the tiers gate on: the synthesizer's holistic
+ * `evidence_grade_summary` (what the gene page displays), falling back to the
+ * deterministic A1-only `evidence_grade` when the summary is absent (older
+ * records / before the Worker ships the ddf field). The deterministic grade
+ * under-calls genes whose surface call rests on rich A2 context (MC2R, EFNA5:
+ * deterministic `weak` but summary `supportive`), so gating on the summary
+ * keeps the tiers consistent with what the gene page shows.
+ */
+export function effectiveEvidenceGrade(f: DeepDiveFilters) {
+  return f.evidence_grade_summary ?? f.evidence_grade;
 }
 
 /**
@@ -143,11 +201,24 @@ export function isLowLiteratureSurface(
  * leak SRC-class-but-actually-intracellular calls.
  */
 export function passesLikely(f: DeepDiveFilters): boolean {
-  if (
-    f.evidence_grade !== "direct_multi_method" &&
-    f.evidence_grade !== "direct_single_method" &&
-    f.evidence_grade !== "supportive_but_indirect"
-  ) {
+  const g = effectiveEvidenceGrade(f);
+  const gradeFloorOk =
+    g === "direct_multi_method" ||
+    g === "direct_single_method" ||
+    g === "supportive_but_indirect";
+  // Structural-surface carve-out: a `weak`-graded gene still qualifies when
+  // the deep dive assigned it a structurally-unambiguous surface reason
+  // (classical receptor / multipass-with-exposed-loops / GPI / tissue-
+  // restricted surface). For these the weak grade is a literature-coverage
+  // artifact, not doubt about surface membership — this is what rescues the
+  // protocadherin / SLAM / butyrophilin / platelet-GPV false-negatives. The
+  // remaining gates (specificity, moderate+ accessibility, state) still apply,
+  // so a structurally-tagged gene the deep dive judged low-accessibility or
+  // intracellular is NOT admitted. Canonical is unaffected — it gates on the
+  // grade floor directly, so `weak` genes never reach Canonical.
+  const weakStructuralOk =
+    g === "weak" && STRUCTURAL_SURFACE_REASONS.has(f.surface_call_reason);
+  if (!gradeFloorOk && !weakStructuralOk) {
     return false;
   }
   if (
@@ -157,10 +228,14 @@ export function passesLikely(f: DeepDiveFilters): boolean {
   ) {
     return false;
   }
+  // Accessibility FLOOR: moderate+ (same as Canonical). A `low`
+  // surface-accessibility call — the "Surface likelihood: Low" pill on the
+  // gene page — means the deep dive judged the accessible epitope hard to
+  // reach; those genes drop to the below-Likely `low` tier rather than the
+  // Likely shortlist. `uncertain` / `no` are likewise excluded.
   if (
     f.surface_accessibility !== "high" &&
-    f.surface_accessibility !== "moderate" &&
-    f.surface_accessibility !== "low"
+    f.surface_accessibility !== "moderate"
   ) {
     return false;
   }
@@ -178,6 +253,22 @@ export function passesLikely(f: DeepDiveFilters): boolean {
     return false;
   }
   return true;
+}
+
+/**
+ * Likely-ONLY = the Likely tier MINUS Canonical. This is what the "Likely"
+ * catalog preset chip filters to, so that under multi-select the Canonical and
+ * Likely chips are DISJOINT selectable bands whose union is the full Likely
+ * tier (Canonical ⊂ Likely by construction — every canonical gene also passes
+ * passesLikely). Select both chips to reconstitute the whole tier.
+ *
+ * Deliberately NOT the same as `passesLikely`: the tier-assignment helper
+ * `deepDiveTier` and the Figure-5 buckets still use the full `passesLikely`
+ * (they assign canonical genes tier=canonical by precedence, so no double
+ * count). Only the preset chip narrows to the exclusive band.
+ */
+export function passesLikelyOnly(f: DeepDiveFilters): boolean {
+  return passesLikely(f) && !passesCanonical(f);
 }
 
 /**
@@ -355,7 +446,7 @@ export const PRESET_IMPLIED_FILTERS: Record<
       "mostly_intracellular",
     ]),
     state_dependence: new Set(["low", "moderate", "high", "unclear"]),
-    surface_accessibility: new Set(["high", "moderate", "low"]),
+    surface_accessibility: new Set(["high", "moderate"]),
   },
   induced: {
     evidence_grade: new Set([
@@ -369,7 +460,7 @@ export const PRESET_IMPLIED_FILTERS: Record<
       "mostly_intracellular",
     ]),
     state_dependence: new Set(["moderate", "high", "unclear"]),
-    surface_accessibility: new Set(["high", "moderate", "low"]),
+    surface_accessibility: new Set(["high", "moderate"]),
     // surface_call_reason values implied by the predicate's OR clause.
     // Not strictly required (the predicate also matches on
     // induction_trigger), but worth highlighting in More filters so
@@ -393,7 +484,7 @@ export const PRESET_IMPLIED_FILTERS: Record<
       "mostly_intracellular",
     ]),
     state_dependence: new Set(["moderate", "high"]),
-    surface_accessibility: new Set(["high", "moderate", "low"]),
+    surface_accessibility: new Set(["high", "moderate"]),
     surface_call_reason: new Set(["tissue_restricted_surface"]),
   },
 };
@@ -416,22 +507,32 @@ export const PRESETS: ReadonlyArray<{
     key: "canonical",
     label: "Canonical",
     description:
-      "Strictest tier — direct evidence (single or multi-method), " +
-      "high/moderate confidence, surface-dominant or mixed, low / " +
-      "moderate / unclear state-dependence, high/moderate surface " +
-      "accessibility, high/moderate evidence density. The high-" +
-      "confidence surface shortlist.",
+      "Strictest tier — at least supportive-but-indirect evidence " +
+      "(weak and conflicting excluded), high/moderate confidence, " +
+      "surface-dominant or mixed localization, state-dependence low/" +
+      "moderate/unclear (or, if high, at least moderate expression), " +
+      "high/moderate surface accessibility, high/moderate evidence " +
+      "density. The high-confidence surface shortlist.",
     predicate: passesCanonical,
   },
   {
     key: "likely",
     label: "Likely",
     description:
-      "Broader shortlist — adds supportive-but-indirect evidence, " +
+      "Likely-ONLY band — clears the same moderate+ surface-accessibility " +
+      "floor as Canonical but falls short of Canonical elsewhere: admits " +
       "mostly-intracellular surface fractions (e.g. SRC via lysosomal " +
-      "exocytosis, HMGB1 via DAMP release), and high / unclear / null " +
-      "state-dependence.",
-    predicate: passesLikely,
+      "exocytosis, HMGB1 via DAMP release) and high / unclear / null " +
+      "state-dependence. Evidence floor is supportive-or-stronger, with a " +
+      "carve-out: a `weak`-graded gene still qualifies if the deep dive gave " +
+      "it a structurally-unambiguous surface reason (classical receptor / " +
+      "multipass with exposed loops / GPI / tissue-restricted surface) plus " +
+      "moderate+ accessibility — for those the weak grade is thin literature, " +
+      "not doubt about surface membership. Genes rated low surface-" +
+      "accessibility drop to the below-Likely `low` tier. Canonical genes are " +
+      "EXCLUDED here — select the Canonical chip alongside this one to see the " +
+      "full Likely tier (Canonical ⊂ Likely).",
+    predicate: passesLikelyOnly,
   },
   {
     key: "induced",

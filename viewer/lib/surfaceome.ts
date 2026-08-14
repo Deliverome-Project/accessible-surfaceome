@@ -192,6 +192,11 @@ export interface DeepDiveFilters {
   subcategory: Subcategory;
   llm_family: ProteinFamily;
   evidence_grade: EvidenceGrade;
+  /** Synthesizer's holistic grade (`executive_summary.evidence_grade_summary`).
+   *  Optional/nullable — absent on older ddf projections until the Worker
+   *  ships it; the tiers gate on this via `effectiveEvidenceGrade`, falling
+   *  back to the deterministic `evidence_grade`. */
+  evidence_grade_summary?: EvidenceGrade | null;
   evidence_density: EvidenceDensity;
   /** Raw unique-paper count behind the evidence list (schema 2.14.0).
    *  Optional because records annotated before 2.14.0 lack the field. */
