@@ -79,6 +79,16 @@ _CATALOG_DERIVED_BANDS = {"n_papers_selected_band"}
 # filter axis (see _CATALOG_DERIVED_BANDS).
 _NUMERIC_DISPLAY_ONLY = {"n_papers_selected", "n_papers_found"}
 
+# Non-facet Filters fields on the DeepDiveFilters INTERFACE (and the ddf
+# projection) that ship for DISPLAY + tier-GATING but are not filter pills:
+# the synthesizer's holistic `evidence_grade_summary`. Its deterministic
+# sibling `evidence_grade` IS the filter facet; the summary rides alongside
+# so the catalog vitals + tier gate can prefer it (effectiveEvidenceGrade in
+# the viewer). Unlike _NUMERIC_DISPLAY_ONLY it is NOT in the Worker's flat
+# DDF_KEYS — it's projected separately (the primary_compartment pattern) — so
+# it's subtracted only from the interface-derived assertion below.
+_INTERFACE_DISPLAY_ONLY = {"evidence_grade_summary"}
+
 
 def _dd_facet_keys() -> set[str]:
     """Every catalog facet key — the `key: "..."` literals in the field
@@ -131,7 +141,10 @@ def test_registry_matches_interface() -> None:
     cohort-banded ``n_papers_selected_band`` instead. Allowing
     interface ⊃ registry by exactly this set keeps drift detection
     intact while modeling the band pattern honestly."""
-    assert _dd_facet_keys() == _ddf_interface_fields() - _NUMERIC_DISPLAY_ONLY
+    assert (
+        _dd_facet_keys()
+        == _ddf_interface_fields() - _NUMERIC_DISPLAY_ONLY - _INTERFACE_DISPLAY_ONLY
+    )
 
 
 def test_facets_equal_worker_keys_plus_bands() -> None:
