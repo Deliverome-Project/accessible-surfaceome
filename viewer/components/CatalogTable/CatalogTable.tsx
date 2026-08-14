@@ -27,6 +27,7 @@ import {
   DEEP_DIVE_ONLY_NOTE,
   isLowLiteratureSurface,
   LOW_LIT_PAPERS_MAX,
+  effectiveEvidenceGrade,
   type PresetKey,
   type InductionSubKey,
 } from "../../lib/catalog-presets";
@@ -2010,7 +2011,10 @@ function sortValue(r: CatalogRow, k: SortKey): string | number {
     return v === "high" ? 3 : v === "moderate" ? 2 : v === "low" ? 1 : 0;
   }
   if (k === "dd_evidence") {
-    const v = r.deep_dive_filters?.evidence_grade;
+    // Sort on the EFFECTIVE grade (synth summary ?? deterministic), so the
+    // column orders the same value it displays and the gene page shows.
+    const f = r.deep_dive_filters;
+    const v = f ? effectiveEvidenceGrade(f) : undefined;
     return v === "direct_multi_method"
       ? 5
       : v === "direct_single_method"
@@ -2282,12 +2286,20 @@ function CatalogRowView({
               ddf?.confidence ?? "—",
               `Deep-dive confidence: ${ddf?.confidence ?? "n/a"}`,
             )}
-            {vital(
-              ddf?.evidence_grade,
-              gradeTone(ddf?.evidence_grade),
-              ddShort(ddf?.evidence_grade),
-              `Deep-dive evidence grade: ${(ddf?.evidence_grade ?? "n/a").replace(/_/g, " ")}`,
-            )}
+            {(() => {
+              // Show the EFFECTIVE grade (synth summary ?? deterministic) so
+              // the catalog vital matches the gene page + the tier gate. The
+              // deterministic evidence_grade under-calls ~144 genes as `weak`
+              // that the synthesizer holistically grades `supportive` (the
+              // SCN7A-class table-vs-page mismatch).
+              const g = ddf ? effectiveEvidenceGrade(ddf) : undefined;
+              return vital(
+                g,
+                gradeTone(g),
+                ddShort(g),
+                `Deep-dive evidence grade: ${(g ?? "n/a").replace(/_/g, " ")}`,
+              );
+            })()}
             {vital(
               ddf?.state_dependence,
               stateDependenceTone(ddf?.state_dependence),
