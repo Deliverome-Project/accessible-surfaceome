@@ -85,17 +85,21 @@ const INDUCTION_NON_NONE = new Set([
  */
 export function passesCanonical(f: DeepDiveFilters): boolean {
   return (
-    // Canonical = classical BROAD surface proteins. Tissue-restricted
-    // calls are routed to Likely + the Cell-type-restricted facet, never
-    // the broad Canonical shortlist (state/induced facets still overlay
-    // Canonical; only tissue-restriction is a hard exclusion here).
+    // Canonical = classical BROAD surface proteins. Tissue-restricted AND
+    // lysosomal-exocytosis are non-classical surfacing → routed to Likely +
+    // their facet, never the broad Canonical shortlist. (State/induced
+    // facets still overlay Canonical; only these two reasons are hard
+    // exclusions here.)
     f.surface_call_reason !== "tissue_restricted_surface" &&
+    f.surface_call_reason !== "lysosomal_exocytosis" &&
     // Evidence FLOOR: at least `supportive_but_indirect` — `weak` and
-    // `conflicting` are held out of Canonical (see docstring). The
-    // confidence gate below is the real quality bar above that floor.
-    (f.evidence_grade === "direct_multi_method" ||
-      f.evidence_grade === "direct_single_method" ||
-      f.evidence_grade === "supportive_but_indirect") &&
+    // `conflicting` are held out (see docstring). Gates on the SYNTHESIZER's
+    // holistic grade (`effectiveEvidenceGrade`), not the deterministic
+    // A1-only `evidence_grade` which under-calls genes whose surface call
+    // rests on rich A2 context.
+    (effectiveEvidenceGrade(f) === "direct_multi_method" ||
+      effectiveEvidenceGrade(f) === "direct_single_method" ||
+      effectiveEvidenceGrade(f) === "supportive_but_indirect") &&
     (f.confidence === "high" || f.confidence === "moderate") &&
     (f.surface_specificity === "surface_dominant" ||
       f.surface_specificity === "mixed") &&
@@ -108,6 +112,19 @@ export function passesCanonical(f: DeepDiveFilters): boolean {
       f.surface_accessibility === "moderate") &&
     (f.evidence_density === "high" || f.evidence_density === "moderate")
   );
+}
+
+/**
+ * The evidence grade the tiers gate on: the synthesizer's holistic
+ * `evidence_grade_summary` (what the gene page displays), falling back to the
+ * deterministic A1-only `evidence_grade` when the summary is absent (older
+ * records / before the Worker ships the ddf field). The deterministic grade
+ * under-calls genes whose surface call rests on rich A2 context (MC2R, EFNA5:
+ * deterministic `weak` but summary `supportive`), so gating on the summary
+ * keeps the tiers consistent with what the gene page shows.
+ */
+export function effectiveEvidenceGrade(f: DeepDiveFilters) {
+  return f.evidence_grade_summary ?? f.evidence_grade;
 }
 
 /**
@@ -163,10 +180,11 @@ export function isLowLiteratureSurface(
  * leak SRC-class-but-actually-intracellular calls.
  */
 export function passesLikely(f: DeepDiveFilters): boolean {
+  const g = effectiveEvidenceGrade(f);
   if (
-    f.evidence_grade !== "direct_multi_method" &&
-    f.evidence_grade !== "direct_single_method" &&
-    f.evidence_grade !== "supportive_but_indirect"
+    g !== "direct_multi_method" &&
+    g !== "direct_single_method" &&
+    g !== "supportive_but_indirect"
   ) {
     return false;
   }
