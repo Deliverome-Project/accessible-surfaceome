@@ -33,6 +33,27 @@ const INDUCTION_NON_NONE = new Set([
 ]);
 
 /**
+ * Structural-surface reason codes that carry a strong enough surface prior to
+ * admit a `weak`-graded gene into Likely (the `weakStructuralGradeOk` carve-out
+ * in passesLikely). These are the reasons where surface membership is
+ * structurally unambiguous — a classical single-/multi-pass receptor, a GPI
+ * anchor, or a constitutively-surface tissue-restricted protein — so a `weak`
+ * LITERATURE grade reflects thin coverage, not genuine doubt about whether the
+ * protein reaches the surface. Confirmed against the protocadherin / SLAM /
+ * butyrophilin / platelet-GPV false-negative cohort (all `weak` + moderate
+ * accessibility + one of these reasons). Deliberately EXCLUDES the ambiguous
+ * reasons (dual_localization, cell_state_induced, endomembrane_resident,
+ * inner_leaflet_anchored, cytoplasmic, secreted_only, …) where a weak grade
+ * genuinely could mean the surface pool is unproven.
+ */
+const STRUCTURAL_SURFACE_REASONS = new Set([
+  "classical_surface_receptor",
+  "multipass_with_exposed_loops",
+  "gpi_anchored",
+  "tissue_restricted_surface",
+]);
+
+/**
  * Canonical = strictest tier. Direct evidence, high or moderate
  * confidence, surface-dominant or mixed (not mostly intracellular),
  * low / moderate / unclear state-dependence. The reader's "default
@@ -181,11 +202,23 @@ export function isLowLiteratureSurface(
  */
 export function passesLikely(f: DeepDiveFilters): boolean {
   const g = effectiveEvidenceGrade(f);
-  if (
-    g !== "direct_multi_method" &&
-    g !== "direct_single_method" &&
-    g !== "supportive_but_indirect"
-  ) {
+  const gradeFloorOk =
+    g === "direct_multi_method" ||
+    g === "direct_single_method" ||
+    g === "supportive_but_indirect";
+  // Structural-surface carve-out: a `weak`-graded gene still qualifies when
+  // the deep dive assigned it a structurally-unambiguous surface reason
+  // (classical receptor / multipass-with-exposed-loops / GPI / tissue-
+  // restricted surface). For these the weak grade is a literature-coverage
+  // artifact, not doubt about surface membership — this is what rescues the
+  // protocadherin / SLAM / butyrophilin / platelet-GPV false-negatives. The
+  // remaining gates (specificity, moderate+ accessibility, state) still apply,
+  // so a structurally-tagged gene the deep dive judged low-accessibility or
+  // intracellular is NOT admitted. Canonical is unaffected — it gates on the
+  // grade floor directly, so `weak` genes never reach Canonical.
+  const weakStructuralOk =
+    g === "weak" && STRUCTURAL_SURFACE_REASONS.has(f.surface_call_reason);
+  if (!gradeFloorOk && !weakStructuralOk) {
     return false;
   }
   if (
@@ -486,14 +519,19 @@ export const PRESETS: ReadonlyArray<{
     key: "likely",
     label: "Likely",
     description:
-      "Likely-ONLY band — clears the same supportive-or-stronger evidence " +
-      "floor AND the same moderate+ surface-accessibility floor as Canonical, " +
-      "but falls short of Canonical elsewhere: admits mostly-intracellular " +
-      "surface fractions (e.g. SRC via lysosomal exocytosis, HMGB1 via DAMP " +
-      "release) and high / unclear / null state-dependence. Genes the deep " +
-      "dive rates low surface-accessibility drop to the below-Likely `low` " +
-      "tier. Canonical genes are EXCLUDED here — select the Canonical chip " +
-      "alongside this one to see the full Likely tier (Canonical ⊂ Likely).",
+      "Likely-ONLY band — clears the same moderate+ surface-accessibility " +
+      "floor as Canonical but falls short of Canonical elsewhere: admits " +
+      "mostly-intracellular surface fractions (e.g. SRC via lysosomal " +
+      "exocytosis, HMGB1 via DAMP release) and high / unclear / null " +
+      "state-dependence. Evidence floor is supportive-or-stronger, with a " +
+      "carve-out: a `weak`-graded gene still qualifies if the deep dive gave " +
+      "it a structurally-unambiguous surface reason (classical receptor / " +
+      "multipass with exposed loops / GPI / tissue-restricted surface) plus " +
+      "moderate+ accessibility — for those the weak grade is thin literature, " +
+      "not doubt about surface membership. Genes rated low surface-" +
+      "accessibility drop to the below-Likely `low` tier. Canonical genes are " +
+      "EXCLUDED here — select the Canonical chip alongside this one to see the " +
+      "full Likely tier (Canonical ⊂ Likely).",
     predicate: passesLikelyOnly,
   },
   {
