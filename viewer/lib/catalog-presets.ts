@@ -219,6 +219,22 @@ export function passesLikely(f: DeepDiveFilters): boolean {
 }
 
 /**
+ * Likely-ONLY = the Likely tier MINUS Canonical. This is what the "Likely"
+ * catalog preset chip filters to, so that under multi-select the Canonical and
+ * Likely chips are DISJOINT selectable bands whose union is the full Likely
+ * tier (Canonical ⊂ Likely by construction — every canonical gene also passes
+ * passesLikely). Select both chips to reconstitute the whole tier.
+ *
+ * Deliberately NOT the same as `passesLikely`: the tier-assignment helper
+ * `deepDiveTier` and the Figure-5 buckets still use the full `passesLikely`
+ * (they assign canonical genes tier=canonical by precedence, so no double
+ * count). Only the preset chip narrows to the exclusive band.
+ */
+export function passesLikelyOnly(f: DeepDiveFilters): boolean {
+  return passesLikely(f) && !passesCanonical(f);
+}
+
+/**
  * Cell-state induced = surface presentation depends on cell state
  * (stress, activation, oncogenic transformation, etc.). Matches via
  * EITHER `surface_call_reason ∈ {cell_state_induced,
@@ -466,11 +482,13 @@ export const PRESETS: ReadonlyArray<{
     key: "likely",
     label: "Likely",
     description:
-      "Broader shortlist — same supportive-or-stronger evidence floor, " +
-      "but also admits mostly-intracellular surface fractions (e.g. SRC " +
-      "via lysosomal exocytosis, HMGB1 via DAMP release) and high / " +
-      "unclear / null state-dependence.",
-    predicate: passesLikely,
+      "Likely-ONLY band — clears the same supportive-or-stronger evidence " +
+      "floor as Canonical but falls short of it: admits mostly-intracellular " +
+      "surface fractions (e.g. SRC via lysosomal exocytosis, HMGB1 via DAMP " +
+      "release), high / unclear / null state-dependence, and low surface " +
+      "accessibility. Canonical genes are EXCLUDED here — select the Canonical " +
+      "chip alongside this one to see the full Likely tier (Canonical ⊂ Likely).",
+    predicate: passesLikelyOnly,
   },
   {
     key: "induced",

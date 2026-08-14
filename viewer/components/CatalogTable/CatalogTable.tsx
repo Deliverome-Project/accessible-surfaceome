@@ -356,12 +356,16 @@ export function CatalogTable({
   const [ddLlmOpen, setDdLlmOpen] = useState(true);
   const [ddRisksOpen, setDdRisksOpen] = useState(true);
   const [ddDetOpen, setDdDetOpen] = useState(true);
-  // Saved-preset selector. "all" = filter off; any other key narrows to
-  // deep-dive rows whose `deep_dive_filters` payload passes the
-  // preset's predicate (see lib/catalog-presets.ts). Non-deep-dive
-  // rows are auto-excluded when a non-"all" preset is active because
+  // Saved-preset selector — MULTI-select. Empty set = filter off ("All").
+  // A non-empty set narrows to deep-dive rows whose `deep_dive_filters`
+  // payload passes ANY selected preset's predicate (OR / union semantics),
+  // so e.g. Canonical + Likely reconstitutes the full Likely tier (the
+  // "Likely" chip is the exclusive likely-only band; Canonical ⊂ Likely).
+  // Non-deep-dive rows are auto-excluded when any preset is active because
   // they have no `deep_dive_filters` to evaluate.
-  const [presetKey, setPresetKey] = useState<PresetKey>("all");
+  const [presetKeys, setPresetKeys] = useState<Set<PresetKey>>(
+    () => new Set(),
+  );
   // Standalone "low-literature + UniProt" curated list — NOT a PRESETS entry
   // because its predicate needs the UniProt DB flag (r.db.uniprot), which isn't
   // in the deep-dive `deep_dive_filters`. Mutually exclusive with the preset chips.
@@ -388,12 +392,12 @@ export function CatalogTable({
   useEffect(() => {
     const wasOpen = prevShowFiltersRef.current;
     prevShowFiltersRef.current = showFilters;
-    if (!wasOpen && showFilters && presetKey !== "all") {
+    if (!wasOpen && showFilters && presetKeys.size > 0) {
       setDeepDiveGroupOpen(true);
       setDdRisksOpen(false);
       setDdDetOpen(false);
     }
-  }, [showFilters, presetKey]);
+  }, [showFilters, presetKeys]);
 
   const [dbFilter, setDbFilter] = useState<Set<DbKey>>(new Set());
   const [verdictFilter, setVerdictFilter] = useState<Set<VerdictKey>>(
@@ -545,11 +549,21 @@ export function CatalogTable({
     // narrowing. resolveImpliedTriggerSet returns the union of the
     // selected sub-axes' trigger values; otherwise we fall back to
     // the static preset map.
-    const staticImplied =
-      PRESET_IMPLIED_FILTERS[presetKey][field.key] ?? null;
+    // Under multi-select, a chip value is "implied" if ANY active preset
+    // implies it — take the union of PRESET_IMPLIED_FILTERS across the
+    // selected keys (matches the OR/union row semantics).
+    let staticImplied: ReadonlySet<string> | null = null;
+    if (presetKeys.size > 0) {
+      const union = new Set<string>();
+      for (const k of presetKeys) {
+        const s = PRESET_IMPLIED_FILTERS[k][field.key];
+        if (s) for (const v of s) union.add(v);
+      }
+      staticImplied = union.size > 0 ? union : null;
+    }
     const implied =
       field.key === "induction_trigger" &&
-      presetKey === "induced" &&
+      presetKeys.has("induced") &&
       inductionSubs.size > 0
         ? resolveImpliedTriggerSet(inductionSubs)
         : staticImplied;
@@ -571,7 +585,7 @@ export function CatalogTable({
             const titleHint = on
               ? `Require ${field.label} = ${label}`
               : isImplied
-              ? `${field.label} = ${label} — already in the active "${PRESETS.find((p) => p.key === presetKey)?.label}" preset; click to narrow further by user choice`
+              ? `${field.label} = ${label} — already implied by the active preset${presetKeys.size > 1 ? "s" : ""}; click to narrow further by user choice`
               : `Require ${field.label} = ${label}`;
             return (
               <button
@@ -838,21 +852,25 @@ export function CatalogTable({
       // payload auto-drop because no preset evaluates true on null.
       // Same contract as the deep-dive filter group below — the
       // payload is only emitted by the Worker for deep-dive rows.
-      if (presetKey !== "all") {
+      if (presetKeys.size > 0) {
         const ddf = r.deep_dive_filters;
         if (!ddf) return false;
-        const preset = PRESETS.find((p) => p.key === presetKey);
-        if (preset && !preset.predicate(ddf)) return false;
-        // Induction sub-axis only applies when "induced" preset is
-        // active (the sub buckets read `induction_trigger`). Multi-
-        // select with OR semantics: a row passes if ANY selected
-        // sub-axis matches. Empty set = no sub-filter.
-        if (presetKey === "induced" && inductionSubs.size > 0) {
-          const matchAny = INDUCTION_SUBS.some(
-            (s) => inductionSubs.has(s.key) && s.predicate(ddf),
-          );
-          if (!matchAny) return false;
-        }
+        // OR / union across selected presets: the row passes if it matches
+        // ANY active preset. The Induced branch additionally requires a
+        // selected trigger sub-axis to match (when any is picked); other
+        // presets are unaffected, so a Canonical-matching row still shows
+        // regardless of the trigger sub-filter.
+        const matchAny = PRESETS.some((p) => {
+          if (!presetKeys.has(p.key)) return false;
+          if (!p.predicate(ddf)) return false;
+          if (p.key === "induced" && inductionSubs.size > 0) {
+            return INDUCTION_SUBS.some(
+              (s) => inductionSubs.has(s.key) && s.predicate(ddf),
+            );
+          }
+          return true;
+        });
+        if (!matchAny) return false;
       }
       // Low-literature + UniProt curated list — needs the UniProt DB flag, so it's
       // handled here (not via a PRESETS predicate). Under-studied
@@ -898,7 +916,7 @@ export function CatalogTable({
     ddActive,
     ddEnumFilters,
     ddBoolFilters,
-    presetKey,
+    presetKeys,
     inductionSubs,
     lowLitSurfy,
   ]);
@@ -1049,21 +1067,31 @@ export function CatalogTable({
                 (n, r) => (r.deep_dive_filters && p.predicate(r.deep_dive_filters) ? n + 1 : n),
                 0,
               );
-          const on = presetKey === p.key;
+          const on = p.key === "all" ? presetKeys.size === 0 : presetKeys.has(p.key);
           return (
             <span key={p.key} className={styles.presetChipWrap}>
               <button
                 type="button"
                 role="tab"
                 aria-selected={on}
+                aria-pressed={p.key === "all" ? undefined : on}
                 className={`${styles.presetChip} ${on ? styles.presetChipOn : ""}`}
                 onClick={() => {
-                  setPresetKey(p.key);
                   setLowLitSurfy(false);
-                  // Reset the induction sub-axis whenever the parent
-                  // preset changes — otherwise stale sub-selections
-                  // would silently narrow the new preset.
-                  if (p.key !== "induced") setInductionSubs(new Set());
+                  // "All" clears the whole selection (and any sub-axis).
+                  if (p.key === "all") {
+                    setPresetKeys(new Set());
+                    setInductionSubs(new Set());
+                    return;
+                  }
+                  // Multi-select: toggle this preset in/out of the set.
+                  const next = new Set(presetKeys);
+                  if (next.has(p.key)) next.delete(p.key);
+                  else next.add(p.key);
+                  setPresetKeys(next);
+                  // Drop the induction sub-axis once Induced is de-selected —
+                  // otherwise stale sub-selections would silently narrow.
+                  if (!next.has("induced")) setInductionSubs(new Set());
                 }}
               >
                 {p.label}
@@ -1104,7 +1132,7 @@ export function CatalogTable({
                   const next = !lowLitSurfy;
                   setLowLitSurfy(next);
                   if (next) {
-                    setPresetKey("all");
+                    setPresetKeys(new Set());
                     setInductionSubs(new Set());
                   }
                 }}
@@ -1134,7 +1162,7 @@ export function CatalogTable({
          *  active. Hidden otherwise to avoid visual clutter.
          *  Multi-select: clicking a chip toggles it in/out of the
          *  active set; a row passes if ANY active sub matches. */}
-        {presetKey === "induced" ? (
+        {presetKeys.has("induced") ? (
           <div className={styles.presetSubBar}>
             <span className={`label-mono ${styles.presetSubLabel}`}>
               by trigger:
