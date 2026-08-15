@@ -29,12 +29,19 @@ Do NOT select:
 - **downstream consequences** of internalization — endosomal cargo release, iron
   metabolism / DMT1 export, post-uptake signaling or degradation — these are not
   the internalization event;
-- **third-party-modulator results** — a clip whose finding is that knockdown,
-  overexpression, or perturbation of a *different* gene changes the target's
-  uptake. That measures the modulator, not the target's own internalization.
-  Select clips about the target's OWN internalization measurement / route /
-  compartment — basal, driven by its native ligand, or by a binder directed AT
-  the target;
+- **third-party-modulator results (HARD RULE — a quantitative number does NOT
+  rescue these).** Before keeping any clip, ask: *what was changed to produce
+  this internalization value?* If the value comes from perturbing a gene/protein
+  OTHER than the target — knockdown, silencing, overexpression, mutation, or any
+  manipulation of a **different** gene, **including a related family member or a
+  heterodimer/co-receptor partner** (e.g. "knockdown of gene X raised gene Y's
+  uptake 1.5-fold", "overexpression of gene X suppressed the ADC's internalization
+  rate 1.4-fold") — the clip measures that modulator's effect, NOT the target's
+  own internalization. **Drop it**, even when the sentence names the target's
+  uptake rate and even when it carries a clean fold-change. A keepable clip's
+  internalization value comes from the target itself (constitutive/basal), its
+  native ligand, or a binder directed AT the target — nothing else was perturbed
+  to produce the number;
 - expression-, localization-, or signaling-only statements (endosomal/lysosomal
   localization alone is NOT internalization evidence);
 - clips where the protein is incidental (marker, list member).

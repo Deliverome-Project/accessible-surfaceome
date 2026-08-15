@@ -83,12 +83,19 @@ ligand-vs-basal difference even when both conditions grade "moderate".
 
 # Relevance — grade the TARGET's own internalization only
 
-Do **not** emit an observation whose finding is really about a THIRD-PARTY
-modulator's effect — e.g. a clip where knockdown or overexpression of a
-*different* gene changes the target's uptake. Those measure the modulator, not
-the target protein's own internalization. Only emit observations about the target
-protein's own internalization / route / fate, driven by nothing (basal), by its
-native ligand, or by a binder directed AT the target.
+**Third-party-modulator HARD RULE (a quantitative number does NOT rescue these).**
+For every candidate observation, ask *what was manipulated to produce this
+internalization value.* If the value comes from perturbing a gene/protein OTHER
+than the target — knockdown, silencing, overexpression, mutation, or any
+manipulation of a **different** gene, INCLUDING a related family member or a
+heterodimer/co-receptor partner (e.g. "knockdown of gene X changed gene Y's
+uptake 1.5-fold", "overexpression of gene X suppressed the ADC's internalization
+rate 1.4-fold") — do **not** emit it as an observation of the target's
+internalization; it measures the modulator, even when the sentence names the
+target's own uptake rate and even when it carries a clean fold-change. Only emit
+observations whose internalization value comes from the target itself (basal),
+its native ligand, or a binder directed AT the target — nothing else was
+perturbed to produce the number.
 
 # Rules
 

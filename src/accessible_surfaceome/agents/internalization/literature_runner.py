@@ -100,6 +100,24 @@ def annotate_literature(
         client, gene=bundle.hgnc_symbol, evidence=evidence, synonyms=synonyms
     )
 
+    # Defense-in-depth against a third-party-modulator / off-target clip that
+    # SELECT let into the ledger but GRADE (correctly) built no observation from:
+    # prune any span-verified source the grader attributed to NOTHING — no
+    # observation and no per-mode grade cites it. Guarded on the grader having
+    # attributed at least one source somewhere: if it emitted no citations at all
+    # we keep the full ledger rather than risk stripping genuine evidence.
+    cited_ids: set[str] = {
+        sid for o in llm.observations for sid in o.cited_source_ids
+    }
+    for mode in (
+        llm.grades_by_mode.basal,
+        llm.grades_by_mode.native_ligand,
+        llm.grades_by_mode.therapeutic,
+    ):
+        cited_ids.update(mode.cited_source_ids)
+    if cited_ids:
+        evidence = [e for e in evidence if e.evidence_id in cited_ids]
+
     # Derived in code (not trusted to the LLM): does any graded observation rest
     # on primary tissue or in-vivo data rather than only cell lines?
     has_primary_or_invivo = any(
