@@ -269,6 +269,7 @@ async function snapshotRecords() {
         `${notFound.slice(0, 20).join(", ")}`,
     );
   }
+  return symbols;
 }
 
 // Bake public/data/gene-synonyms.json — a slim {SYMBOL: synonyms[]} overlay
@@ -282,16 +283,18 @@ async function snapshotRecords() {
 // Degrades gracefully: a missing TSV writes an empty map (the dropdown falls
 // back to symbol-only matching) rather than failing the build — synonyms are
 // a search convenience, not load-bearing for navigation.
-async function snapshotGeneSynonyms() {
-  let symbols;
-  try {
-    const res = await fetch(`${API_BASE}/v1/genes`);
-    if (!res.ok) throw new Error(`HTTP ${res.status}`);
-    const body = await res.json();
-    symbols = new Set((body.genes ?? []).map((g) => g.gene_symbol).filter(Boolean));
-  } catch (e) {
-    console.error(`[snapshot] gene-synonyms → /v1/genes fetch failed: ${e.message}`);
-    process.exit(1);
+async function snapshotGeneSynonyms(symbolsList) {
+  // Reuse the deep-dive gene list snapshotRecords() already fetched rather than
+  // re-hitting /v1/genes. A second call here 429s against the rate-limiter left
+  // hot by the ~5k-record pre-fetch burst, and that 429 was fataling the whole
+  // build (process.exit(1)) despite this overlay being a search-only
+  // convenience. Empty list → empty overlay, never fatal.
+  const symbols = new Set(symbolsList ?? []);
+  if (symbols.size === 0) {
+    console.warn(
+      "[snapshot] gene-synonyms → no gene list available; shipping empty " +
+        "overlay (dropdown falls back to symbol-only).",
+    );
   }
 
   // Mirrors loadGeneNamesMap's Pass-1 parse: NCBI gene_info, pipe-delimited
@@ -349,8 +352,8 @@ async function snapshot() {
 
   await mkdir(CACHE_DIR, { recursive: true });
   await snapshotEndpoints();
-  await snapshotRecords();
-  await snapshotGeneSynonyms();
+  const symbols = await snapshotRecords();
+  await snapshotGeneSynonyms(symbols);
 }
 
 await snapshot();
