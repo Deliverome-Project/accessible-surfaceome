@@ -6,17 +6,30 @@ files / description, the Zenodo API supports edit-in-place on draft
 deposits:
 
   GET  /api/deposit/depositions/{id}              — fetch state + bucket URL
-  GET  /api/deposit/depositions/{id}/files        — list files
+  GET  /api/deposit/depositions/{id}/files        — list files + checksums
   DELETE /api/deposit/depositions/{id}/files/{fid} — delete one file
   PUT  /api/files/{bucket}/{filename}             — upload (S3-style)
   PUT  /api/deposit/depositions/{id}              — patch metadata
 
 This script targets deposit 20805384 (the benchmarking + triage data
-deposit) and replaces:
+deposit) and performs a NON-DESTRUCTIVE, checksum-aware sync of ONLY
+the files it manages (the two consolidated TSVs + README):
 
-  1. Old files (3 separate TSVs + README) → deleted
-  2. New files (2 consolidated TSVs + README) → uploaded
-  3. Description text → refreshed to match the new file structure
+  1. Managed files whose content changed (local MD5 != remote checksum)
+     → overwritten in place via the bucket PUT (which replaces by name,
+     so no delete is needed). Unchanged managed files are SKIPPED — no
+     re-upload, no timestamp churn.
+  2. Files THIS script used to ship but no longer does → deleted ONLY if
+     their exact names are listed in RETIRED_FILENAMES. This is surgical
+     and name-scoped; there is NO blanket "delete every file" step.
+  3. Every other file on the deposit — e.g. ``deep_dives_all.tar.gz``,
+     uploaded by ``publish-archive.py`` / the deep-dive tarball refresh —
+     is left completely untouched and reported as "preserved".
+  4. Description + title → refreshed only if they actually differ.
+
+Historically this script deleted ALL files before re-uploading, which
+silently wiped the 100+ MB deep-dive tarball on every run. The sync
+below never touches a file it does not manage.
 
 Run after ``scripts/release/build_consolidated_deposit_tsvs.py``
 produces the new TSVs at /tmp/zenodo_deposit_consolidated/.
@@ -26,6 +39,7 @@ Environment:
 """
 from __future__ import annotations
 
+import hashlib
 import os
 import subprocess
 import sys
@@ -41,7 +55,37 @@ NEW_FILES = [
 ]
 README_PATH = TMP_DIR / "README.md"
 
+# Filenames THIS script used to ship but no longer does. They are deleted
+# from the deposit only if present — surgical and name-scoped. This is the
+# ONLY path that ever issues a DELETE; it never touches files outside this
+# list. Add a name here when you rename or drop one of this script's own
+# outputs (e.g. the old pre-consolidation per-lane TSVs). Files managed by
+# OTHER scripts — deep_dives_all.tar.gz, manuscript.pdf — must NOT appear
+# here; leaving them off is what keeps them preserved.
+RETIRED_FILENAMES: list[str] = []
+
 ZENODO_BASE = "https://zenodo.org/api"
+
+
+def _md5(path: Path) -> str:
+    """Streaming MD5 of a local file — matches Zenodo's stored checksum."""
+    h = hashlib.md5()
+    with path.open("rb") as fh:
+        for chunk in iter(lambda: fh.read(1 << 20), b""):
+            h.update(chunk)
+    return h.hexdigest()
+
+
+def _remote_checksum(file_rec: dict) -> str | None:
+    """Zenodo file checksum normalized to bare md5 hex.
+
+    The deposit /files listing returns plain hex; the newer records API
+    returns ``md5:<hex>``. Strip the optional algorithm prefix so a direct
+    string compare against :func:`_md5` works either way."""
+    c = file_rec.get("checksum")
+    if not c:
+        return None
+    return c.split(":", 1)[1] if ":" in c else c
 
 
 def _head_sha() -> str:
@@ -309,49 +353,72 @@ def main() -> int:
             return 1
         print(f"→ deposit {DEPOSIT_ID} state=draft bucket={bucket}")
 
-        # 2. List + delete existing files.
+        # 2. Non-destructive, checksum-aware file sync.
         r = client.get(f"{ZENODO_BASE}/deposit/depositions/{DEPOSIT_ID}/files")
         r.raise_for_status()
-        existing = r.json()
-        print(f"→ deleting {len(existing)} existing files")
-        for f in existing:
-            fid = f["id"]
-            fname = f["filename"]
+        existing = {f["filename"]: f for f in r.json()}
+        managed = [*NEW_FILES, README_PATH]
+        managed_names = {p.name for p in managed}
+
+        # 2a. Retire only this script's own obsolete outputs (name-scoped).
+        for name in RETIRED_FILENAMES:
+            f = existing.get(name)
+            if not f:
+                continue
             dr = client.delete(
-                f"{ZENODO_BASE}/deposit/depositions/{DEPOSIT_ID}/files/{fid}"
+                f"{ZENODO_BASE}/deposit/depositions/{DEPOSIT_ID}/files/{f['id']}"
             )
             if dr.status_code not in (204, 200):
-                print(f"  ⚠ delete failed {fname}: {dr.status_code} {dr.text[:200]}",
+                print(f"  ⚠ retire failed {name}: {dr.status_code} {dr.text[:200]}",
                       file=sys.stderr)
                 return 1
-            print(f"  ✓ deleted {fname}")
+            print(f"  ✓ retired {name}")
 
-        # 3. Upload new files via the S3-style bucket API.
-        files_to_upload = [*NEW_FILES, README_PATH]
-        print(f"→ uploading {len(files_to_upload)} files")
-        for p in files_to_upload:
+        # 2b. Overwrite changed / new managed files; skip unchanged by MD5.
+        uploaded = skipped = 0
+        for p in managed:
+            local_md5 = _md5(p)
+            remote = existing.get(p.name)
+            if remote is not None and _remote_checksum(remote) == local_md5:
+                print(f"  = unchanged, skipped {p.name}")
+                skipped += 1
+                continue
             data = p.read_bytes()
             ur = client.put(f"{bucket}/{p.name}", content=data)
             if ur.status_code not in (200, 201):
                 print(f"  ⚠ upload failed {p.name}: {ur.status_code} {ur.text[:200]}",
                       file=sys.stderr)
                 return 1
-            print(f"  ✓ uploaded {p.name} ({len(data) / 1024**2:.2f} MB)")
+            verb = "updated" if remote is not None else "created"
+            print(f"  ✓ {verb} {p.name} ({len(data) / 1024**2:.2f} MB)")
+            uploaded += 1
 
-        # 4. Update description.
+        # 2c. Everything else on the deposit is preserved untouched.
+        preserved = sorted(set(existing) - managed_names - set(RETIRED_FILENAMES))
+        if preserved:
+            print(f"→ preserved {len(preserved)} unmanaged file(s): "
+                  f"{', '.join(preserved)}")
+        print(f"→ file sync: {uploaded} uploaded, {skipped} unchanged, "
+              f"{len(preserved)} preserved")
+
+        # 3. Update description + title only if they actually differ.
         metadata = dep["metadata"]
-        metadata["title"] = "The accessible human surfaceome"
-        metadata["description"] = _DESCRIPTION_HTML
-        mr = client.put(
-            f"{ZENODO_BASE}/deposit/depositions/{DEPOSIT_ID}",
-            json={"metadata": metadata},
-            headers={**auth, "Content-Type": "application/json"},
-        )
-        if mr.status_code not in (200, 201):
-            print(f"  ⚠ metadata update failed: {mr.status_code} {mr.text[:500]}",
-                  file=sys.stderr)
-            return 1
-        print("→ description + title updated")
+        if (metadata.get("title") == "The accessible human surfaceome"
+                and metadata.get("description") == _DESCRIPTION_HTML):
+            print("→ metadata already current — skipped")
+        else:
+            metadata["title"] = "The accessible human surfaceome"
+            metadata["description"] = _DESCRIPTION_HTML
+            mr = client.put(
+                f"{ZENODO_BASE}/deposit/depositions/{DEPOSIT_ID}",
+                json={"metadata": metadata},
+                headers={**auth, "Content-Type": "application/json"},
+            )
+            if mr.status_code not in (200, 201):
+                print(f"  ⚠ metadata update failed: {mr.status_code} {mr.text[:500]}",
+                      file=sys.stderr)
+                return 1
+            print("→ description + title updated")
 
     print(f"\n✓ Draft {DEPOSIT_ID} updated.")
     print(f"  https://zenodo.org/deposit/{DEPOSIT_ID}")
