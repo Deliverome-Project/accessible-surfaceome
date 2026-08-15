@@ -62,14 +62,16 @@ def grade_from_evidence(
     *,
     gene: str,
     evidence: list[Any],
+    synonyms: list[str] | None = None,
     system_prompt: str | None = None,
 ) -> LiteratureLLMOut:
     if not evidence:
         return LiteratureLLMOut()  # nothing to grade → all modes 'unknown'
     system_prompt = system_prompt or load_grade_prompt()
     schema_str = json.dumps(LiteratureLLMOut.model_json_schema(), indent=2)
+    aka = f"Also known as: {', '.join(synonyms)}\n" if synonyms else ""
     user = (
-        f"Gene: {gene}\n\nSpan-verified evidence ledger (cite ONLY these "
+        f"Gene: {gene}\n{aka}\nSpan-verified evidence ledger (cite ONLY these "
         f"evidence_ids):\n\n{_render_evidence(evidence)}\n\n"
         f"Emit one ```json block matching this LiteratureLLMOut schema exactly:\n\n"
         f"```json\n{schema_str}\n```"

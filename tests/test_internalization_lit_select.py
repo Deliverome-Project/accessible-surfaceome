@@ -100,8 +100,10 @@ def test_promote_store_miss_is_unverified():
 class _FakeMessages:
     def __init__(self, texts):
         self._t = list(texts)
+        self.last_user = None
 
     def create(self, **kw):
+        self.last_user = kw["messages"][0]["content"]
         return SimpleNamespace(
             content=[SimpleNamespace(type="text", text=self._t.pop(0))],
             usage=SimpleNamespace(input_tokens=1, output_tokens=1),
@@ -120,6 +122,19 @@ def test_select_clips_parses_response():
     out = select_clips(client, pool={"c1": _draft()}, gene="TFRC", system_prompt="SYS")
     assert len(out.selections) == 1
     assert out.selections[0].clip_id == "c1"
+
+
+def test_select_clips_passes_synonyms_into_user_prompt():
+    resp_json = SelectionResponse(selections=[], notes="").model_dump_json()
+    client = _FakeClient(["```json\n" + resp_json + "\n```"])
+    select_clips(
+        client,
+        pool={"c1": _draft()},
+        gene="TFRC",
+        synonyms=["CD71", "TFR1"],
+        system_prompt="SYS",
+    )
+    assert "Also known as: CD71, TFR1" in client.messages.last_user
 
 
 def test_select_clips_empty_pool_short_circuits():

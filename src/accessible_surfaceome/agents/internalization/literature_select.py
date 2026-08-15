@@ -96,15 +96,18 @@ def select_clips(
     *,
     pool: dict[str, EvidenceClaimDraft],
     gene: str,
+    synonyms: list[str] | None = None,
     system_prompt: str | None = None,
 ) -> SelectionResponse:
     system_prompt = system_prompt or load_select_prompt()
     if not pool:
         return SelectionResponse(selections=[], notes="empty pool")
     schema_str = json.dumps(SelectionResponse.model_json_schema(), indent=2)
+    aka = f"Also known as: {', '.join(synonyms)}\n" if synonyms else ""
     user = (
-        f"Gene: {gene}\n\nClip menu (pick the internalization-relevant clips by "
-        f"clip_id; do NOT paraphrase — the quote is auto-filled from the clip):\n\n"
+        f"Gene: {gene}\n{aka}\nClip menu (pick the internalization-relevant clips "
+        f"by clip_id; do NOT paraphrase — the quote is auto-filled from the "
+        f"clip):\n\n"
         f"{render_clip_menu(pool)}\n\n"
         f"Emit one ```json block matching this SelectionResponse schema exactly "
         f"(note: `confidence` is strong|moderate|weak; `assay_context` is an "

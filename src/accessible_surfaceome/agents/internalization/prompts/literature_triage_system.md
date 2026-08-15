@@ -7,7 +7,10 @@ ahead of full-text extraction — decide, don't summarize.
 
 # Inputs
 
-A gene symbol, a PMID, a title, and an abstract.
+A gene symbol, a PMID, a title, and an abstract. The message may also list the
+protein's alternate names under "Also known as:" — an abstract that refers to
+the protein under any of those synonyms or a deprecated symbol is about the same
+target.
 
 # Decision (choose exactly one)
 

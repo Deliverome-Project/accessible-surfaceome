@@ -40,10 +40,18 @@ def _text_of(resp: Any) -> str:
     ).strip()
 
 
-def _triage_one(client: Any, *, paper: Any, gene: str, system_prompt: str) -> TriageOutcome:
+def _triage_one(
+    client: Any,
+    *,
+    paper: Any,
+    gene: str,
+    system_prompt: str,
+    synonyms: list[str] | None = None,
+) -> TriageOutcome:
     pid = paper_source_id(paper)  # PMC:<id> > PMID:<id> > DOI:<doi>
+    aka = f"Also known as: {', '.join(synonyms)}\n" if synonyms else ""
     user = (
-        f"Gene: {gene}\nPMID: {paper.pmid}\nTitle: {paper.title}\n\n"
+        f"Gene: {gene}\n{aka}PMID: {paper.pmid}\nTitle: {paper.title}\n\n"
         f"Abstract:\n{paper.abstract or '(no abstract)'}\n\n"
         f"Decide: discard | keep_abstract | worth_fetching. "
         f"Use paper_id={pid!r}. Return one ```json object."
@@ -76,6 +84,7 @@ def triage_internalization_abstracts(
     *,
     papers: list[Any],
     gene: str,
+    synonyms: list[str] | None = None,
     system_prompt: str | None = None,
     concurrency: int = TRIAGE_CONCURRENCY,
 ) -> list[TriageOutcome]:
@@ -90,7 +99,11 @@ def triage_internalization_abstracts(
         return list(
             ex.map(
                 lambda p: _triage_one(
-                    client, paper=p, gene=gene, system_prompt=system_prompt
+                    client,
+                    paper=p,
+                    gene=gene,
+                    system_prompt=system_prompt,
+                    synonyms=synonyms,
                 ),
                 papers,
             )

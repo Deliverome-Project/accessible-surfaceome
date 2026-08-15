@@ -13,10 +13,12 @@ class _FakeMessages:
 
     def __init__(self, by_pmid):
         self.by_pmid = by_pmid
+        self.seen_by_pmid = {}
 
     def create(self, **kw):
         content = kw["messages"][0]["content"]
         pmid = int(re.search(r"PMID: (\d+)", content).group(1))
+        self.seen_by_pmid[pmid] = content
         return SimpleNamespace(
             content=[SimpleNamespace(type="text", text=self.by_pmid[pmid])],
             usage=SimpleNamespace(input_tokens=1, output_tokens=1),
@@ -96,6 +98,18 @@ def test_triage_concurrent_preserves_order_and_processes_all():
     assert len(out) == n
     assert [o.paper_id for o in out] == [f"PMID:{i}" for i in range(1, n + 1)]
     assert all(o.response and o.response.decision == "worth_fetching" for o in out)
+
+
+def test_triage_passes_synonyms_into_user_prompt():
+    client = _FakeClient({1: _fenced({"decision": "worth_fetching", "reason": "r"})})
+    triage_internalization_abstracts(
+        client,
+        papers=[_paper(1)],
+        gene="TFRC",
+        synonyms=["CD71", "TFR1"],
+        system_prompt="SYS",
+    )
+    assert "Also known as: CD71, TFR1" in client.messages.seen_by_pmid[1]
 
 
 def test_triage_empty_papers_returns_empty():

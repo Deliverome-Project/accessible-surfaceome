@@ -4,7 +4,9 @@ You select, from a menu of verbatim text clips extracted from full-text papers,
 the ones that are **direct evidence about a cell-surface protein's
 internalization** (endocytosis / uptake from the plasma membrane). Downstream
 code fills each selection's quote verbatim from the clip — you only pick and
-classify, you never retype the quote.
+classify, you never retype the quote. The user message may list the protein's
+alternate names under "Also known as:" — a clip that names the protein under any
+of those synonyms or a deprecated symbol is still about the target.
 
 # What to select
 
@@ -26,6 +28,12 @@ Do NOT select:
 - **downstream consequences** of internalization — endosomal cargo release, iron
   metabolism / DMT1 export, post-uptake signaling or degradation — these are not
   the internalization event;
+- **third-party-modulator results** — a clip whose finding is that knockdown,
+  overexpression, or perturbation of a *different* gene changes the target's
+  uptake. That measures the modulator, not the target's own internalization.
+  Select clips about the target's OWN internalization measurement / route /
+  compartment — basal, driven by its native ligand, or by a binder directed AT
+  the target;
 - expression-, localization-, or signaling-only statements (endosomal/lysosomal
   localization alone is NOT internalization evidence);
 - clips where the protein is incidental (marker, list member).

@@ -56,6 +56,13 @@ def annotate_literature(
     retraction = empty_retraction()
 
     bundle = resolve_by_hgnc_id(resolve_hgnc_id(gene), http=http)
+    # Alternate names so the LLM stages recognize the protein under aliases /
+    # deprecated symbols — deduped, primary symbol excluded.
+    synonyms = [
+        s
+        for s in dict.fromkeys([*bundle.aliases, *bundle.previous_symbols])
+        if s and s != bundle.hgnc_symbol
+    ]
 
     discovered = discover_internalization_papers(
         bundle, http=http, retraction_index=retraction
@@ -63,7 +70,10 @@ def annotate_literature(
     papers_by_id = {paper_source_id(p): p for p in discovered.values()}
 
     outcomes = triage_internalization_abstracts(
-        client, papers=list(discovered.values()), gene=bundle.hgnc_symbol
+        client,
+        papers=list(discovered.values()),
+        gene=bundle.hgnc_symbol,
+        synonyms=synonyms,
     )
     pool, actions = build_pool(
         outcomes, papers_by_id, http=http, retraction_index=retraction
@@ -78,13 +88,23 @@ def annotate_literature(
         pool, papers_by_source_id=papers_by_source_id, http=http, retraction_index=retraction
     )
 
-    selection = select_clips(client, pool=pool, gene=bundle.hgnc_symbol)
+    selection = select_clips(
+        client, pool=pool, gene=bundle.hgnc_symbol, synonyms=synonyms
+    )
     # Only span-verified claims (real char offset into the fetched body) inform
     # the grade and ship as cited sources — drop store/substring misses.
     evidence = [
         e for e in promote(selection, pool=pool, store=store) if e.entailment_verified
     ]
-    llm = grade_from_evidence(client, gene=bundle.hgnc_symbol, evidence=evidence)
+    llm = grade_from_evidence(
+        client, gene=bundle.hgnc_symbol, evidence=evidence, synonyms=synonyms
+    )
+
+    # Derived in code (not trusted to the LLM): does any graded observation rest
+    # on primary tissue or in-vivo data rather than only cell lines?
+    has_primary_or_invivo = any(
+        o.cell_context in ("primary", "in_vivo") for o in llm.observations
+    )
 
     track = LiteratureTrack(
         grades_by_mode=llm.grades_by_mode,
@@ -92,6 +112,8 @@ def annotate_literature(
         overall_confidence=llm.overall_confidence,
         rationale=llm.rationale,
         cross_condition_note=llm.cross_condition_note,
+        trafficking_summary=llm.trafficking_summary,
+        has_primary_or_invivo_evidence=has_primary_or_invivo,
         observations=llm.observations,
         sources=evidence,
         n_observations=len(llm.observations),

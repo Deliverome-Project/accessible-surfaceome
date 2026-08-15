@@ -12,8 +12,8 @@ from accessible_surfaceome.agents.internalization.models import (
 )
 
 
-def test_schema_version_is_0_2_1():
-    assert SCHEMA_VERSION == "0.2.1"
+def test_schema_version_is_0_2_2():
+    assert SCHEMA_VERSION == "0.2.2"
 
 
 def test_moderate_is_a_valid_grade():
@@ -48,6 +48,47 @@ def test_observation_defaults_are_safe():
     assert o.magnitude == "unknown"
     assert o.quant.quant_summary == ""
     assert o.cited_source_ids == []
+    # 0.2.2 additions default safely
+    assert o.trafficking_compartment == "unknown"
+    assert o.ligand_effect == "unknown"
+
+
+def test_observation_accepts_new_022_fields():
+    o = InternalizationObservation(
+        assay_type="ligand_uptake",
+        internalization_mode="native_ligand",
+        ligand_effect="increases",
+        trafficking_compartment="recycling_endosome",
+    )
+    assert o.ligand_effect == "increases"
+    assert o.trafficking_compartment == "recycling_endosome"
+
+
+def test_new_022_literal_values_are_rejected_when_bogus():
+    with pytest.raises(ValidationError):
+        InternalizationObservation(
+            assay_type="ligand_uptake", trafficking_compartment="mitochondria"
+        )
+    with pytest.raises(ValidationError):
+        InternalizationObservation(assay_type="ligand_uptake", ligand_effect="maybe")
+
+
+def test_trafficking_summary_present_on_llm_out_and_track():
+    assert "trafficking_summary" in set(LiteratureLLMOut.model_fields)
+    assert "trafficking_summary" in set(LiteratureTrack.model_fields)
+    assert LiteratureLLMOut().trafficking_summary == ""
+    assert LiteratureTrack().trafficking_summary == ""
+
+
+def test_has_primary_or_invivo_evidence_is_track_only_and_defaults_false():
+    # code-derived flag lives on the track, NOT on the LLM output
+    assert "has_primary_or_invivo_evidence" in set(LiteratureTrack.model_fields)
+    assert "has_primary_or_invivo_evidence" not in set(LiteratureLLMOut.model_fields)
+    assert LiteratureTrack().has_primary_or_invivo_evidence is False
+    assert (
+        LiteratureTrack(has_primary_or_invivo_evidence=True).has_primary_or_invivo_evidence
+        is True
+    )
 
 
 def test_llm_out_excludes_sources_field():

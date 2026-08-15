@@ -15,7 +15,7 @@ from pydantic import BaseModel, ConfigDict, Field, model_validator
 
 from accessible_surfaceome.tools._shared.models import Evidence
 
-SCHEMA_VERSION = "0.2.1"
+SCHEMA_VERSION = "0.2.2"
 RUNNER_VERSION = "internalization-model-prior/0.1.0"
 
 Grade = Literal["high", "moderate", "low", "no", "unknown"]
@@ -102,6 +102,23 @@ Magnitude = Literal["high", "moderate", "low", "none", "unknown"]
 RateMetric = Literal[
     "ke_h_inv", "percent_internalized", "half_life", "fold_change", "other"
 ]
+# Where the receptor traffics after uptake / its intracellular fate.
+TraffickingCompartment = Literal[
+    "early_endosome",
+    "recycling_endosome",
+    "late_endosome",
+    "lysosome",
+    "golgi",
+    "er",
+    "degradation",
+    "recycled_to_surface",
+    "other",
+    "unknown",
+]
+# Does a ligand or therapeutic binder CHANGE internalization relative to basal?
+LigandEffect = Literal[
+    "increases", "decreases", "no_change", "not_applicable", "unknown"
+]
 
 
 class ModeGrade(BaseModel):
@@ -140,7 +157,9 @@ class InternalizationObservation(BaseModel):
     cell_context: CellContext = "unknown"
     internalization_mode: InternalizationMode = "unknown"
     ligand_name: str | None = None
+    ligand_effect: LigandEffect = "unknown"
     mechanism: Mechanism | None = None
+    trafficking_compartment: TraffickingCompartment = "unknown"
     magnitude: Magnitude = "unknown"
     quant: InternalizationQuant = Field(default_factory=InternalizationQuant)
     controls_note: str | None = None
@@ -169,6 +188,7 @@ class LiteratureLLMOut(BaseModel):
     overall_confidence: GradeConfidence = "low"
     rationale: str = ""
     cross_condition_note: str = ""
+    trafficking_summary: str = ""
     observations: list[InternalizationObservation] = Field(default_factory=list)
 
 
@@ -180,8 +200,10 @@ class LiteratureTrack(BaseModel):
     overall_confidence: GradeConfidence = "low"
     rationale: str = ""
     cross_condition_note: str = ""
+    trafficking_summary: str = ""
     species_scope: str = "unspecified"
     species_inferred: bool = False
+    has_primary_or_invivo_evidence: bool = False
     observations: list[InternalizationObservation] = Field(default_factory=list)
     sources: list[Evidence] = Field(default_factory=list)
     n_observations: int = 0
