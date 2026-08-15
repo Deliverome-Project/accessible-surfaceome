@@ -162,3 +162,5 @@ paper/*.xml
 
 # D1 table dumps (surface_internalization backup before lit sweeps) — durable copy lives in R2
 data/backups/
+# AlphaFold model PDBs downloaded by the tag-site benchmark (local cache; AFDB is the source of truth)
+data/cache/afdb_pdb/
