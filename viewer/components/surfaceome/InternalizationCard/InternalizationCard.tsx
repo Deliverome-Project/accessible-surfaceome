@@ -47,6 +47,17 @@ interface Observation {
   controls_note: string | null;
   cited_source_ids: string[];
 }
+interface ModulatorObs {
+  modulator: string;
+  perturbation: string;
+  effect_on_target: string;
+  cell_line: string | null;
+  cell_context: string;
+  magnitude: string;
+  quant: Quant;
+  note: string;
+  cited_source_ids: string[];
+}
 interface Source {
   evidence_id: string;
   evidence_type: string;
@@ -62,6 +73,7 @@ interface Literature {
   species_scope: string;
   grades_by_mode: { basal: ModeGrade; native_ligand: ModeGrade; therapeutic: ModeGrade };
   observations: Observation[];
+  modulator_observations?: ModulatorObs[];
   sources: Source[];
   n_papers_discovered: number;
   n_papers_fetched: number;
@@ -237,6 +249,48 @@ export function InternalizationCard({ symbol, n }: Props) {
                     </tbody>
                   </table>
                 </div>
+
+                {lit.modulator_observations && lit.modulator_observations.length > 0 && (
+                  <>
+                    <h4 className={styles.h4}>
+                      Cross-gene modulators ({lit.modulator_observations.length})
+                    </h4>
+                    <p className={styles.muted}>
+                      Perturbing a <em>different</em> gene changes this protein&apos;s
+                      internalization. Recorded separately — these do <em>not</em> drive the grade.
+                    </p>
+                    <div className={styles.tablewrap}>
+                      <table className={styles.table}>
+                        <thead>
+                          <tr>
+                            <th>modulator</th>
+                            <th>perturbation</th>
+                            <th>effect on target</th>
+                            <th>cell line</th>
+                            <th>value / summary</th>
+                            <th>cites</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {lit.modulator_observations.map((m, i) => (
+                            <tr key={i}>
+                              <td className={styles.mono}>{em(m.modulator)}</td>
+                              <td>{em(m.perturbation)}</td>
+                              <td>{em(m.effect_on_target)}</td>
+                              <td>{em(m.cell_line)}</td>
+                              <td>
+                                {m.quant.rate_value !== null
+                                  ? em(`${m.quant.rate_value} ${m.quant.rate_unit ?? ""}`)
+                                  : em(m.quant.quant_summary || m.note)}
+                              </td>
+                              <td className={styles.mono}>{em(m.cited_source_ids.join(", "))}</td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                  </>
+                )}
 
                 <h4 className={styles.h4}>Cited sources ({lit.sources.length})</h4>
                 <ul className={styles.sources}>
