@@ -215,24 +215,7 @@
     <p>Just added (<code>normalize.py</code>, 4/4 tests). Rejects any proposed site not actually displayed
     <b>extracellularly</b>: internal or C-terminal sites in a non-<code>O</code> compartment, an N-terminal tag on a
     type-II intracellular N-terminus (the TFRC trap), and — critically — a terminal tag that falls
-    <b>inside the signal peptide</b> and would be cleaved off. This is the same signal-peptide-cleavage rule the
-    Willow method enforces (below).</p>
-  </div>
-
-  <h2>Related method — Willow <span class="small">(key item to check)</span></h2>
-  <div class="note">
-    <p style="color:var(--ink)"><b>Willow</b> (bioRxiv 2025.09.19.677468) N-terminally HA-tags GPCRs. For signal-peptide
-    receptors it runs SignalP&nbsp;6.0 (cleavage) + NetSurfP-2.0 (disorder), inserts HA <i>between the predicted
-    cleavage site and the structured N-terminus</i>, then <b>re-predicts cleavage + disorder for each design</b> and
-    keeps the one that preserves cleavage without adding disorder.</p>
-    <ul class="tight">
-      <li><b>Same as us:</b> disorder/structure-driven placement + signal-peptide-cleavage awareness (our new SP gate).</li>
-      <li><b>Gap 1 — terminal design.</b> Willow <i>designs</i> N-terminal tags; we only produce internal loops and
-      <i>reject</i> bad terminals. <span class="small">→ add SP-cleavage-aware N-terminal design.</span></li>
-      <li><b>Gap 2 — insertion re-verification.</b> Willow re-runs its predictors on each candidate; we don't yet
-      check whether inserting the cassette shifts cleavage or adds local disorder. <span class="small">→ add an insertion-effect loop.</span></li>
-    </ul>
-    <p class="small">Recorded in the design spec §14 as a key item to check.</p>
+    <b>inside the signal peptide</b> and would be cleaved off.</p>
   </div>
 
   <div class="foot">
