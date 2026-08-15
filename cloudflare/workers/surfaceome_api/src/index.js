@@ -41,6 +41,34 @@
 //
 // Schema: cloudflare/d1_public_schema.sql.
 
+// Shared preset predicates — the SAME module the viewer ships
+// (viewer/lib/catalog-presets.ts). Importing it here (rather than
+// re-implementing the rule) is what keeps the catalog rows, the per-gene
+// records, and the Zenodo deposit tarball on ONE authoritative deep-dive
+// classification — the drift between the Python mirror and the TS rule is
+// exactly what put the figures (2274) out of sync with the viewer (1757).
+// esbuild (wrangler's bundler) compiles the .ts and erases its type-only
+// `import type { DeepDiveFilters }`, so nothing else is pulled in. Verify the
+// bundle resolves this cross-dir path BEFORE deploying:
+//   cd cloudflare/workers/surfaceome_api && npx wrangler deploy --dry-run --outdir /tmp/wbundle
+import { deepDiveTier, isLowLiteratureSurface } from "../../../../viewer/lib/catalog-presets";
+
+// Attach the shared classification to a response object from its projected
+// ddf: deep_dive_tier ∈ {canonical,likely,low,uncertain,no}, deep_dive_facet
+// ∈ {induced,cell_type_restricted,null}, and — when the UniProt surface vote
+// is known (catalog rows) — the low_lit_uniprot badge. One helper for the
+// catalog rows and the per-gene record so they cannot diverge.
+function attachDeepDiveClassification(target, ddf, uniprotSurfacePositive) {
+  if (!ddf) return target;
+  const { tier, facet } = deepDiveTier(ddf);
+  target.deep_dive_tier = tier;
+  target.deep_dive_facet = facet;
+  if (uniprotSurfacePositive !== undefined) {
+    target.low_lit_uniprot = isLowLiteratureSurface(ddf, !!uniprotSurfacePositive);
+  }
+  return target;
+}
+
 const CACHE_TTL_SHORT = 60;        // 1 min for list endpoints
 const CACHE_TTL_LONG  = 86400;     // 1 day for per-gene records
 const CACHE_SWR       = 86400;     // serve-stale window (revalidate / on-error)
@@ -870,6 +898,18 @@ async function handleGene(env, symbol) {
   } catch (e) {
     // Best-effort — never break the endpoint over a triage miss.
   }
+  // Store the shared deep-dive classification on the record so the gene page
+  // AND the Zenodo deposit tarball (raw /v1/genes responses) carry the same
+  // tier the catalog computes — one authoritative label, no client re-derive.
+  // evidence_grade_summary lives in executive_summary, not filters; merge it
+  // in so the shared effectiveEvidenceGrade sees the holistic grade.
+  if (record?.filters) {
+    attachDeepDiveClassification(record, {
+      ...record.filters,
+      evidence_grade_summary:
+        record?.executive_summary?.evidence_grade_summary ?? null,
+    });
+  }
   return json(record, { ttl: CACHE_TTL_LONG });
 }
 
@@ -1515,7 +1555,10 @@ async function handleCatalog(env, request) {
     // without the filterable rollups.
     if (u.has_deep_dive) {
       const ddf = projectDeepDiveFiltersFromParts(ddfPartsFromRow(u, "sa_ddf_"));
-      if (ddf) row.ddf = ddf;
+      if (ddf) {
+        row.ddf = ddf;
+        attachDeepDiveClassification(row, ddf, !!u.uniprot_surface_flag);
+      }
     }
     return row;
   });
@@ -1559,7 +1602,12 @@ async function handleCatalog(env, request) {
     const t = packTriage(sym);
     if (t) row.tr = t;
     const dd = projectDeepDiveFiltersFromParts(ddfPartsFromRow(r, "ddf_"));
-    if (dd) row.ddf = dd;
+    if (dd) {
+      row.ddf = dd;
+      // Orphan deep-dive genes aren't in the candidate universe → no UniProt
+      // surface vote, so the low-lit badge is false by construction.
+      attachDeepDiveClassification(row, dd, false);
+    }
     rows.push(row);
   }
 

@@ -36,6 +36,7 @@ from accessible_surfaceome.release import catalog_presets as cp
 REPO_ROOT = Path(__file__).resolve().parents[1]
 TS_SRC = REPO_ROOT / "viewer" / "lib" / "catalog-presets.ts"
 PY_SRC = REPO_ROOT / "src" / "accessible_surfaceome" / "release" / "catalog_presets.py"
+WORKER_SRC = REPO_ROOT / "cloudflare" / "workers" / "surfaceome_api" / "src" / "index.js"
 
 
 def _base(**over):
@@ -147,6 +148,23 @@ def test_rule_token_present_in_both_sources(sources, desc, token):
     ts, py = sources
     assert token in ts, f"TS source lost invariant: {desc} ({token!r})"
     assert token in py, f"Python source lost invariant: {desc} ({token!r})"
+
+
+def test_worker_imports_shared_predicates_not_a_clone():
+    """The Cloudflare Worker must IMPORT the shared TS predicates, never
+    reimplement them — that's what keeps the served deep_dive_tier /
+    low_lit_uniprot (and the Zenodo deposit records built from /v1/genes) on
+    the SAME rule as the viewer. A re-implemented copy would be a fourth
+    un-enforced clone."""
+    assert WORKER_SRC.exists(), f"Worker source missing: {WORKER_SRC}"
+    src = WORKER_SRC.read_text()
+    assert 'from "../../../../viewer/lib/catalog-presets"' in src, (
+        "Worker must import predicates from the shared catalog-presets module"
+    )
+    assert "deepDiveTier" in src and "isLowLiteratureSurface" in src
+    # Guard against a re-implemented clone sneaking in.
+    assert "function deepDiveTier" not in src, "Worker must not define its own deepDiveTier"
+    assert "function passesCanonical" not in src, "Worker must not define its own passesCanonical"
 
 
 def test_python_no_longer_uses_low_endogenous_escape():
