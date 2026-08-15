@@ -517,11 +517,12 @@ export const PRESETS: ReadonlyArray<{
     key: "likely",
     label: "Likely",
     description:
-      "Broader surface set than Canonical — same accessibility floor but falls " +
-      "short elsewhere: admits mostly-intracellular surface fractions (e.g. SRC " +
-      "via lysosomal exocytosis, HMGB1 via DAMP release) and high/unclear " +
-      "state-dependence. Canonical genes are excluded from this chip; " +
-      "Canonical ⊂ Likely, so select both to see the full Likely tier.",
+      "Broader surface set than Canonical — meets the same surface-" +
+      "accessibility bar but falls short on other criteria: admits " +
+      "predominantly intracellular proteins with a surface fraction (e.g. SRC " +
+      "via lysosomal exocytosis, HMGB1 via DAMP release) and stronger " +
+      "state-dependence. This chip excludes Canonical genes; every Canonical " +
+      "gene is also Likely, so select both chips to see the full Likely tier.",
     predicate: passesLikelyOnly,
   },
   {
@@ -530,9 +531,10 @@ export const PRESETS: ReadonlyArray<{
     description:
       "Subset of Likely that reaches the surface because of a cell-state " +
       "change — activation, stress, or oncogenic transformation — rather than " +
-      "constitutively (SRC, CD63, HMGB1, C3). Gated on the surface_call_reason, " +
-      "not a tumour-association trigger; the oncogenic / immune / stress / " +
-      "infection trigger is shown as the sub-chips.",
+      "constitutively (SRC, CD63, HMGB1, C3). Defined by the deep dive's " +
+      "surface-mechanism call (genuine state-induced surfacing), not by mere " +
+      "tumour association; the oncogenic / immune / stress / infection trigger " +
+      "is shown as the sub-chips.",
     predicate: passesInduced,
   },
   {
