@@ -9,36 +9,17 @@
       "scope": "intrinsic_propensity",
       "overall_grade": "moderate",
       "overall_confidence": "moderate",
-      "model_reasoning": "This is a type II single-pass membrane protein (N-terminus cytoplasmic, C-terminus extracellular) with a large ~674 aa extracellular domain and a short ~65 aa cytoplasmic N-terminal tail. The cytoplasmic region spans roughly residues 1-65 (before the TM helix around residues ~78-98). Scanning the cytoplasmic tail (MMDQARSAFSNLFGGEPLSYTRFSLARQVDGDNSHVEMKLAVDEEENADNNTKANVTKPKRCSGS): I look for canonical endocytic motifs. There is a candidate tyrosine-based YXX[hydrophobic] context around 'SYTRF' (Y at ~position 20, followed by TRF) — YTRF fits YXXΦ with F as the bulky hydrophobic, which is a plausible functional internalization signal in a cytoplasmic tail. No clear NPXY, and no obvious [DE]XXXL[LI] dileucine motif is apparent. The presence of a plausible YXXΦ motif in the cytoplasmic tail gives positive evidence for clathrin-mediated internalization, but a single motif in a short tail typically supports partial/constitutive uptake rather than very rapid, near-complete surface clearance. The large ectodomain and modest tail argue against extremely rapid turnover. Overall this profile fits a genuine middle case: the protein likely internalizes, at least constitutively, but a substantial surface pool would persist. I avoid 'high' because evidence for rapid recycling-type clearance is not strong, and avoid 'low'/'unknown' because there is a positive cytoplasmic motif lever.",
+      "model_reasoning": "This is a type II single-pass membrane protein: N-terminus cytoplasmic (~65 aa), single TM helix, and a large ~674 aa extracellular C-terminal ectodomain. Endocytic sorting motifs can only function in the ~65-residue cytoplasmic N-terminal segment (approximately residues 1-65: MMDQARSAFSNLFGGEPLSYTRFSLARQVDGDNSHVEMKLAVDEEENADNNTKANVTKPKRCSGS). Scanning this cytoplasmic region: there is a tyrosine at position ~21 (Y in ...SLARQ / ...TRFSLA context) — checking YxxΦ: 'YTRF' at ~Y20-T-R-F gives a Y-x-x-Φ (F is hydrophobic) tyrosine-based motif, which is a canonical internalization signal. There is no clear NPXY or [DE]XXXL[LI] dileucine motif visible in the cytoplasmic stretch (the acidic run DEEENADNN lacks the LL/LI dileucine). The presence of a plausible YxxΦ-type tyrosine motif in the cytoplasmic tail provides positive evidence for clathrin-mediated internalization, but a single motif with a large ectodomain and modest tail argues for partial rather than wholesale surface clearance. I therefore grade this as a genuine middle case (moderate). I am not identifying the protein and reason only from sequence/topology; confidence is moderate given one plausible motif but no corroborating dileucine/NPXY.",
       "per_isoform": [
         {
           "isoform_id": "P02786",
           "is_canonical": true,
           "length_aa": 760,
-          "topology_summary": "Type II single-pass TM (1 TM helix); N-terminus cytoplasmic (~65 aa), C-terminus extracellular (~674 aa).",
-          "endocytic_motifs_noted": "Candidate tyrosine-based YXX[hydrophobic] motif in cytoplasmic N-terminal tail around 'SYTRF' (Y~res20, YTRF). No clear NPXY or [DE]XXXL[LI] dileucine motif.",
+          "topology_summary": "Type II single-pass: cytoplasmic N-terminus (~65 aa), 1 TM helix, large extracellular C-terminal ectodomain (~674 aa).",
+          "endocytic_motifs_noted": "Cytoplasmic N-terminal tail (~res 1-65) contains a plausible tyrosine-based YxxΦ motif (Y-T-R-F, ~res 20-23); no clear NPXY or [DE]XXXL[LI] dileucine motif detected in the cytoplasmic region.",
           "grade": "moderate",
           "confidence": "moderate",
-          "rationale": "The cytoplasmic N-terminal tail (~65 aa) contains a plausible functional YXXΦ tyrosine-based sorting signal (YTRF), providing positive sequence evidence for clathrin-mediated internalization. However, a single such motif in a short tail attached to a very large ectodomain more typically supports partial/constitutive uptake with a persisting surface pool rather than rapid, near-complete clearance. This places the protein in a genuine middle case."
-        }
-      ]
-    },
-    {
-      "model": "claude-sonnet-4-6",
-      "scope": "intrinsic_propensity",
-      "overall_grade": "unknown",
-      "overall_confidence": "low",
-      "model_reasoning": "This is a single-pass type II transmembrane protein (N-terminus cytoplasmic, C-terminus extracellular) with a relatively short cytoplasmic N-terminal region (~65 aa) and a large extracellular C-terminal domain (~674 aa). The cytoplasmic region must be scanned for canonical endocytic motifs. Inspection of the N-terminal cytoplasmic segment (approximately the first 65 residues: MMDQARSAFSNLFGGEPLSYTRFSLARQVDGDNSHVEMKLAVDEEENADNNTKANVTKPKR) reveals: (1) A potential YXX[hydrophobic]-like sequence around position 20 (SYTR — Y at ~20, followed by T, R — the hydrophobic requirement at +3 is not met by R, so this is not a canonical YXXφ motif). (2) No clear NPXY motif. (3) No clear [DE]XXXL[LI] dileucine motif. (4) The sequence contains several acidic residues (EEENAD at ~43-48) which could contribute to acidic-cluster or ubiquitin-dependent sorting, but no canonical dileucine is adjacent. (5) No obvious NPXY. Overall, no strong canonical endocytic motif is confidently identified in the cytoplasmic tail. However, absence of a canonical motif does not preclude internalization via non-canonical routes (ubiquitin-dependent, bulk membrane flow, adaptor-mediated). The cytoplasmic tail is of moderate length (65 aa) and contains some acidic character, which is permissive but not conclusive. Given the lack of a clear canonical motif and no other strong sequence lever to infer a specific endocytic route, the most defensible call is 'unknown' rather than assigning a low grade purely from motif absence.",
-      "per_isoform": [
-        {
-          "isoform_id": "P02786",
-          "is_canonical": true,
-          "length_aa": 760,
-          "topology_summary": "Single-pass type II TM protein; N-terminus cytoplasmic (~65 aa), C-terminus extracellular (~674 aa); 1 TM helix.",
-          "endocytic_motifs_noted": "Cytoplasmic N-terminal region (~aa 1-65): No canonical YXXφ (Y20 followed by T,R — +3 position R is not hydrophobic); no NPXY; no [DE]XXXL[LI] dileucine motif identified. Acidic cluster (EEENAD ~aa 43-48) present but not adjacent to a dileucine. No strong canonical endocytic signal detected in the cytoplasmic domain.",
-          "grade": "unknown",
-          "confidence": "low",
-          "rationale": "The cytoplasmic tail is ~65 aa (N-terminal, type II orientation). Careful scanning finds no canonical YXXφ, NPXY, or [DE]XXXL[LI] motif. An acidic cluster is present but insufficient alone to predict robust internalization. The large extracellular domain contains no functionally relevant endocytic motifs (wrong compartment). Non-canonical routes (ubiquitin, bulk flow, adaptor-mediated) cannot be excluded from sequence alone. Per grading rules, absence of a canonical motif with no other positive sequence lever warrants 'unknown' rather than 'low'."
+          "rationale": "The only cytoplasmically exposed region is the ~65-aa N-terminal tail, the sole place sorting signals can act. It carries a candidate YxxΦ tyrosine motif capable of recruiting clathrin adaptors, providing positive sequence evidence for internalization. However, the motif is singular, the tail is short, and the bulk of the protein is a large ectodomain, so complete/rapid surface clearance is not strongly implied. This is a genuine intermediate case: internalization likely occurs but a substantial surface pool would plausibly persist, warranting a moderate grade with moderate confidence."
         }
       ]
     }
@@ -48,158 +29,119 @@
       "basal": {
         "grade": "high",
         "confidence": "high",
-        "rationale": "Multiple independent sources describe TfR1 as constitutively internalizing transferrin-bound iron via clathrin-mediated endocytosis, recycling back to the surface. This is described as one of the most dynamic and active membrane transport processes, and is well-established across cell types including BBB endothelial cells and astrocytes.",
+        "rationale": "Multiple independent sources confirm constitutive, clathrin-mediated endocytosis of TfR1 in the absence of added exogenous therapeutic binders. Reticulocyte studies show 2.5-fold uptake over surface binding saturating at 20-30 min; BBB endothelial cells show constitutive internalization of transferrin-bound iron; astrocyte studies confirm clathrin-mediated basal endocytosis. The receptor is described as one of the most dynamic and active membrane transport processes.",
         "cited_source_ids": [
-          "int_evi_05",
-          "int_evi_10",
-          "int_evi_19",
-          "int_evi_20",
-          "int_evi_21"
+          "int_evi_01",
+          "int_evi_02",
+          "int_evi_03",
+          "int_evi_04",
+          "int_evi_06",
+          "int_evi_07",
+          "int_evi_18",
+          "int_evi_32"
         ]
       },
       "native_ligand": {
         "grade": "high",
         "confidence": "high",
-        "rationale": "Holo-transferrin (iron-laden Tf) drives robust TfR1-mediated clathrin endocytosis across multiple cell lines (U87MG, HL60, glioma). Quantitative data show 42% nanoparticle-positive cells at 1 h and gMFI 211 vs 73 at 4 h for Tf-functionalized vs non-functionalized particles; uptake blocked by excess free holo-Tf confirms receptor-mediated mechanism. Tf-derived carbon dots also trigger clathrin-coated pit uptake via CD71/TfR1.",
+        "rationale": "Transferrin (holo-Tf) binding to TfR1 drives robust clathrin-mediated endocytosis, described as one of the most dynamic and active membrane transport processes. Uptake at 37°C exceeded surface binding at 4°C by 2.5-fold and saturated after 20-30 min in reticulocytes. Transferrin-derived nanoparticles and Tf-conjugated complexes also confirm efficient TfR1-mediated uptake via clathrin-coated pits in multiple cell lines.",
         "cited_source_ids": [
           "int_evi_01",
           "int_evi_02",
-          "int_evi_05",
-          "int_evi_10",
-          "int_evi_13",
-          "int_evi_19",
+          "int_evi_03",
+          "int_evi_04",
+          "int_evi_06",
+          "int_evi_07",
+          "int_evi_14",
           "int_evi_20",
-          "int_evi_21",
-          "int_evi_26"
+          "int_evi_30",
+          "int_evi_32"
         ]
       },
       "therapeutic": {
         "grade": "high",
         "confidence": "high",
-        "rationale": "Anti-TfR1 antibody T8IgG1 undergoes efficient TfR1-mediated internalization in tumor cells (flow cytometry and immunofluorescence confirmed). A covalent small molecule (KB) engages TFRC at K193 and is internalized via clathrin-mediated endocytosis with lysosomal targeting; siRNA knockdown of TFRC reduces uptake. Tf-functionalized CPNs show significantly enhanced uptake in TfR-high U87MG cells. Anti-TfR1 antibodies also mediate transcytosis across the BBB (Brainshuttle technology). Affinity-dependent transcytosis and receptor degradation are documented for anti-TfR1 antibodies.",
+        "rationale": "Multiple therapeutic binders directed at TfR1 show efficient internalization: anti-TfR1 antibody T8IgG1 undergoes efficient TfR1-mediated internalization on tumor cells; ch128.1Av IgG3-avidin fusion delivers biotinylated agents via receptor-mediated endocytosis; KB-tag engages TFRC at lysine 193 for clathrin-mediated uptake; CD71-targeted micelles and ASO-antibody conjugates exploit TfR1 for CNS delivery via transcytosis. Anti-TfR1 antibodies also drive transcytosis across the BBB.",
         "cited_source_ids": [
-          "int_evi_08",
-          "int_evi_09",
-          "int_evi_01",
-          "int_evi_14",
-          "int_evi_15",
-          "int_evi_16",
-          "int_evi_17",
-          "int_evi_20",
-          "int_evi_25"
+          "int_evi_05",
+          "int_evi_10",
+          "int_evi_11",
+          "int_evi_12",
+          "int_evi_13",
+          "int_evi_26",
+          "int_evi_27",
+          "int_evi_28",
+          "int_evi_29",
+          "int_evi_31",
+          "int_evi_33",
+          "int_evi_34",
+          "int_evi_36"
         ]
       }
     },
     "overall_grade": "high",
     "overall_confidence": "high",
-    "rationale": "TFRC/TfR1/CD71 is one of the most extensively documented internalizing receptors. All three modes (basal, native ligand, therapeutic) are graded high with high confidence. Constitutive clathrin-mediated endocytosis is a defining physiological feature of TfR1, enabling continuous iron uptake and receptor recycling. Native transferrin drives robust, quantifiable uptake. Multiple therapeutic modalities—antibodies, ADCs, nanoparticles, covalent small molecules—exploit TfR1 for efficient internalization and lysosomal/endosomal delivery. The receptor is highly expressed in tumor cells and at the BBB, making it a premier delivery target.",
-    "cross_condition_note": "Therapeutic binders (anti-TfR1 antibodies, Tf-functionalized nanoparticles, covalent KB molecules) achieve efficient internalization comparable to or exceeding native transferrin-driven uptake; affinity of anti-TfR1 antibodies modulates the balance between transcytosis and receptor degradation, with higher-affinity binders trending toward more receptor degradation and lower-affinity toward more transcytosis. Internalization magnitude is consistent across tumor cell lines (U87MG, HL60) and primary-like contexts (BBB endothelial cells, astrocytes).",
-    "trafficking_summary": "After clathrin-mediated endocytosis, TfR1 traffics to Rab5-positive early endosomes where iron is released at low pH; the receptor-apotransferrin complex is then directed to recycling endosomes and returned to the cell surface for further rounds of transport. In some contexts (Gd-IgA1 uptake in mesangial cells, covalent KB molecule), TfR1 routes cargo to lysosomes.",
+    "rationale": "TFRC/TfR1/CD71 is one of the best-characterized endocytic receptors in cell biology. All three modes (basal, native ligand, therapeutic) show high internalization supported by extensive, convergent evidence across multiple cell types, assay formats, and species. The receptor constitutively cycles via clathrin-mediated endocytosis, is dramatically upregulated on tumor cells, and is exploited by numerous therapeutic platforms including antibodies, ADCs, nanoparticles, and ASO conjugates for targeted delivery.",
+    "cross_condition_note": "Basal and native-ligand (transferrin) internalization are both high and mechanistically identical (clathrin-mediated), with the receptor recycling rapidly to the surface. Therapeutic binders (antibodies, engineered ligands) also achieve high internalization, but affinity and valency modulate the balance between recycling/transcytosis and lysosomal degradation—high-affinity bivalent antibodies can shift fate toward degradation, while lower-affinity or monovalent formats favor transcytosis across the BBB.",
+    "trafficking_summary": "After clathrin-mediated endocytosis, TfR1 traffics through early endosomes (Rab5-positive) to recycling endosomes and is predominantly recycled back to the plasma membrane; iron is released in acidic endosomes. Therapeutic antibodies with high affinity can redirect TfR1 toward lysosomal degradation rather than recycling. In mesangial cells, TfR1 can also route cargo to lysosomes.",
     "species_scope": "unspecified",
     "species_inferred": false,
     "has_primary_or_invivo_evidence": true,
     "observations": [
       {
-        "assay_type": "nanoparticle_uptake",
+        "assay_type": "ligand_uptake",
         "assay_type_other_label": null,
-        "cell_line": "U87MG",
-        "cell_context": "tumor_cell_line",
+        "cell_line": "reticulocytes",
+        "cell_context": "primary",
         "internalization_mode": "native_ligand",
-        "ligand_name": "holo-transferrin (Tf-functionalized CPNs)",
+        "ligand_name": "transferrin",
         "ligand_effect": "increases",
-        "mechanism": "receptor_mediated_unspecified",
-        "trafficking_compartment": "unknown",
+        "mechanism": "clathrin",
+        "trafficking_compartment": "recycled_to_surface",
         "magnitude": "high",
         "quant": {
-          "rate_metric": "percent_internalized",
-          "rate_value": 42.0,
-          "rate_unit": "%",
-          "time_point": "1 h",
-          "quant_summary": "42% nanoparticle-positive cells at 1 h (vs 18% non-functionalized); gMFI 211 vs 73 at 4 h"
+          "rate_metric": "fold_change",
+          "rate_value": 2.5,
+          "rate_unit": null,
+          "time_point": "20-30 min",
+          "quant_summary": "Uptake at 37°C exceeded binding at 4°C by 2.5-fold, saturated after 20-30 min"
         },
-        "controls_note": "Uptake reduced by excess free holo-Tf; non-functionalized CPNs as control (18% at 1 h)",
-        "condition_note": "TfR-high U87MG GBM cells; holo-Tf-functionalized CPNs vs non-functionalized CPNs",
+        "controls_note": "4°C binding used as surface-only control; trypsin resistance confirmed internalization",
+        "condition_note": "37°C vs 4°C comparison; trypsinization confirmed internalized transferrin was trypsin-resistant",
         "cited_source_ids": [
           "int_evi_01"
         ]
       },
       {
-        "assay_type": "ligand_uptake",
-        "assay_type_other_label": null,
-        "cell_line": "HL-60",
-        "cell_context": "tumor_cell_line",
-        "internalization_mode": "native_ligand",
-        "ligand_name": "transferrin / HPX (hemopexin co-traffics with Tf/TfR1)",
-        "ligand_effect": "not_applicable",
-        "mechanism": "clathrin",
-        "trafficking_compartment": "early_endosome",
-        "magnitude": "high",
-        "quant": {
-          "rate_metric": null,
-          "rate_value": null,
-          "rate_unit": null,
-          "time_point": null,
-          "quant_summary": ""
-        },
-        "controls_note": "Immunocytochemistry; Rab5-positive early endosome co-localization",
-        "condition_note": "HPX traffics with transferrin and TfR1 in Rab5+ early endosomes; clathrin-mediated pathway",
-        "cited_source_ids": [
-          "int_evi_02"
-        ]
-      },
-      {
         "assay_type": "other",
-        "assay_type_other_label": "literature/mechanistic review",
-        "cell_line": null,
-        "cell_context": "unknown",
-        "internalization_mode": "basal",
-        "ligand_name": "holo-transferrin",
-        "ligand_effect": "not_applicable",
+        "assay_type_other_label": "electron microscopy / colloidal gold tracking",
+        "cell_line": "reticulocytes",
+        "cell_context": "primary",
+        "internalization_mode": "native_ligand",
+        "ligand_name": "colloidal gold-transferrin (AuTf)",
+        "ligand_effect": "increases",
         "mechanism": "clathrin",
         "trafficking_compartment": "recycled_to_surface",
         "magnitude": "high",
         "quant": {
-          "rate_metric": null,
-          "rate_value": null,
-          "rate_unit": null,
+          "rate_metric": "other",
+          "rate_value": 98.0,
+          "rate_unit": "%",
           "time_point": null,
-          "quant_summary": ""
+          "quant_summary": "98% of intracellular AuTf in acid phosphatase-negative (non-lysosomal) compartments"
         },
-        "controls_note": null,
-        "condition_note": "Physiological TfR1 cycle: binds holo-Tf, clathrin-mediated endocytosis, iron released in acidic endosome, receptor-apotransferrin complex recycled to surface",
+        "controls_note": "Acid phosphatase staining confirmed non-lysosomal compartments; freeze-fracture confirmed clathrin-coated patches",
+        "condition_note": "Small vesicles/tubules at 5-10 min; multivesicular endosomes at 20-35 min; exocytosis of contents observed",
         "cited_source_ids": [
-          "int_evi_05"
-        ]
-      },
-      {
-        "assay_type": "other",
-        "assay_type_other_label": "palmitoylation/endocytosis assay in astrocytes (mouse, in vivo model)",
-        "cell_line": null,
-        "cell_context": "in_vivo",
-        "internalization_mode": "basal",
-        "ligand_name": null,
-        "ligand_effect": "not_applicable",
-        "mechanism": "clathrin",
-        "trafficking_compartment": "unknown",
-        "magnitude": "high",
-        "quant": {
-          "rate_metric": null,
-          "rate_value": null,
-          "rate_unit": null,
-          "time_point": null,
-          "quant_summary": ""
-        },
-        "controls_note": "Astrocyte-specific Tfrc knockdown reduced iron overload; conditional Cpt1a knockout model",
-        "condition_note": "Increased TfR1 palmitoylation drives clathrin-mediated endocytosis in astrocytes following ischemia/reperfusion; mouse model",
-        "cited_source_ids": [
-          "int_evi_06",
-          "int_evi_07"
+          "int_evi_02",
+          "int_evi_03",
+          "int_evi_04"
         ]
       },
       {
         "assay_type": "antibody_uptake",
         "assay_type_other_label": null,
-        "cell_line": null,
+        "cell_line": "tumor cells (unspecified NHL/cancer)",
         "cell_context": "tumor_cell_line",
         "internalization_mode": "therapeutic",
         "ligand_name": "T8IgG1 anti-TfR1 antibody",
@@ -212,25 +154,25 @@
           "rate_value": null,
           "rate_unit": null,
           "time_point": null,
-          "quant_summary": "Efficient TfR1-mediated internalization described"
+          "quant_summary": "Efficient TfR1-mediated internalization by flow cytometry and immunofluorescence"
         },
-        "controls_note": "Flow cytometry and immunofluorescence microscopy; Octet BLI binding kinetics",
-        "condition_note": "Anti-TfR1 antibody T8IgG1 specifically recognized TfR1 on tumor cell surface and underwent efficient internalization",
+        "controls_note": null,
+        "condition_note": "Assessed by flow cytometry and immunofluorescence microscopy",
         "cited_source_ids": [
-          "int_evi_08",
-          "int_evi_09"
+          "int_evi_05",
+          "int_evi_31"
         ]
       },
       {
-        "assay_type": "other",
-        "assay_type_other_label": "mechanistic review / literature",
+        "assay_type": "ligand_uptake",
+        "assay_type_other_label": null,
         "cell_line": null,
         "cell_context": "unknown",
         "internalization_mode": "native_ligand",
         "ligand_name": "holo-transferrin",
-        "ligand_effect": "not_applicable",
+        "ligand_effect": "increases",
         "mechanism": "clathrin",
-        "trafficking_compartment": "unknown",
+        "trafficking_compartment": "recycled_to_surface",
         "magnitude": "high",
         "quant": {
           "rate_metric": null,
@@ -240,16 +182,93 @@
           "quant_summary": "Described as one of the most dynamic and active membrane transport processes"
         },
         "controls_note": null,
-        "condition_note": "holo-Tf/TfR1 complex undergoes clathrin-mediated endocytosis",
+        "condition_note": "Review/mechanistic description of holo-Tf/TfR1 clathrin-mediated endocytosis",
         "cited_source_ids": [
-          "int_evi_10"
+          "int_evi_06"
         ]
       },
       {
         "assay_type": "ligand_uptake",
         "assay_type_other_label": null,
+        "cell_line": "brain capillary endothelial cells (BBB)",
+        "cell_context": "primary",
+        "internalization_mode": "basal",
+        "ligand_name": "transferrin",
+        "ligand_effect": "not_applicable",
+        "mechanism": "clathrin",
+        "trafficking_compartment": "recycling_endosome",
+        "magnitude": "high",
+        "quant": {
+          "rate_metric": null,
+          "rate_value": null,
+          "rate_unit": null,
+          "time_point": null,
+          "quant_summary": "Constitutive internalization of transferrin-bound iron described"
+        },
+        "controls_note": null,
+        "condition_note": "TfR1 highly expressed at BBB; constitutive internalization regulates CNS iron metabolism; directed from early to recycling endosomes then back to basolateral membrane",
+        "cited_source_ids": [
+          "int_evi_07",
+          "int_evi_18",
+          "int_evi_19"
+        ]
+      },
+      {
+        "assay_type": "other",
+        "assay_type_other_label": "chemoproteomic / siRNA knockdown uptake assay",
+        "cell_line": null,
+        "cell_context": "unknown",
+        "internalization_mode": "therapeutic",
+        "ligand_name": "KB-tag (lysine-reactive covalent modifier)",
+        "ligand_effect": "increases",
+        "mechanism": "clathrin",
+        "trafficking_compartment": "lysosome",
+        "magnitude": "high",
+        "quant": {
+          "rate_metric": null,
+          "rate_value": null,
+          "rate_unit": null,
+          "time_point": null,
+          "quant_summary": "Efficient uptake and lysosomal targeting; substantially reduced by siRNA knockdown of TFRC"
+        },
+        "controls_note": "siRNA knockdown of TFRC confirmed TFRC-dependent uptake",
+        "condition_note": "KB-tag engages TFRC at lysine 193; clathrin-dependent mechanism confirmed",
+        "cited_source_ids": [
+          "int_evi_10",
+          "int_evi_11",
+          "int_evi_12",
+          "int_evi_13"
+        ]
+      },
+      {
+        "assay_type": "nanoparticle_uptake",
+        "assay_type_other_label": null,
+        "cell_line": "HL60",
+        "cell_context": "tumor_cell_line",
+        "internalization_mode": "therapeutic",
+        "ligand_name": "transferrin-derived carbon dot nanoparticles (Tf-CDs)",
+        "ligand_effect": "increases",
+        "mechanism": "clathrin",
+        "trafficking_compartment": "unknown",
+        "magnitude": "high",
+        "quant": {
+          "rate_metric": null,
+          "rate_value": null,
+          "rate_unit": null,
+          "time_point": null,
+          "quant_summary": "Selective targeting of CD71 and specific triggering of transferrin-mediated endocytosis via clathrin-coated pits"
+        },
+        "controls_note": null,
+        "condition_note": "Human leukemia cell line HL60; CD71 targeted by Tf-derived carbon dots",
+        "cited_source_ids": [
+          "int_evi_14"
+        ]
+      },
+      {
+        "assay_type": "other",
+        "assay_type_other_label": "receptor overexpression/knockdown internalization assay",
         "cell_line": "mesangial cells",
-        "cell_context": "cell_line",
+        "cell_context": "primary",
         "internalization_mode": "native_ligand",
         "ligand_name": "Gd-IgA1",
         "ligand_effect": "increases",
@@ -263,119 +282,68 @@
           "time_point": null,
           "quant_summary": "TfR1 overexpression enhanced lysosomal accumulation; knockdown reduced it"
         },
-        "controls_note": "TfR1 overexpression vs knockdown; renal biopsies from IgAN patients show IgA1/TfR1 co-localization in lysosomes",
-        "condition_note": "TfR1 mediates Gd-IgA1 uptake into mesangial cell lysosomes; IgA nephropathy context",
+        "controls_note": "TfR1 overexpression vs knockdown compared",
+        "condition_note": "TfR1 mediates Gd-IgA1 uptake into mesangial cell lysosomes; relevant to IgA nephropathy",
         "cited_source_ids": [
-          "int_evi_11"
+          "int_evi_15"
         ]
       },
       {
-        "assay_type": "viral_entry",
+        "assay_type": "ligand_uptake",
         "assay_type_other_label": null,
-        "cell_line": "MEF (mouse embryonic fibroblasts)",
-        "cell_context": "cell_line",
-        "internalization_mode": "native_ligand",
-        "ligand_name": "canine parvovirus (uses TfR as single receptor)",
-        "ligand_effect": "not_applicable",
-        "mechanism": "clathrin_independent",
-        "trafficking_compartment": "unknown",
-        "magnitude": "high",
-        "quant": {
-          "rate_metric": null,
-          "rate_value": null,
-          "rate_unit": null,
-          "time_point": null,
-          "quant_summary": "Strictly dynamin-dependent entry"
-        },
-        "controls_note": "Dynamin-KO MEFs; comparison with other viruses using multiple receptors",
-        "condition_note": "Canine parvovirus uses TfR as single receptor; entry strictly dynamin-dependent (dynamin-dependent but not explicitly clathrin-confirmed here)",
-        "cited_source_ids": [
-          "int_evi_12"
-        ]
-      },
-      {
-        "assay_type": "nanoparticle_uptake",
-        "assay_type_other_label": null,
-        "cell_line": "HL60",
+        "cell_line": "HL-60",
         "cell_context": "tumor_cell_line",
-        "internalization_mode": "therapeutic",
-        "ligand_name": "transferrin-derived carbon dots (CDs)",
+        "internalization_mode": "native_ligand",
+        "ligand_name": "transferrin / hemopexin (HPX)",
         "ligand_effect": "increases",
         "mechanism": "clathrin",
-        "trafficking_compartment": "unknown",
+        "trafficking_compartment": "early_endosome",
         "magnitude": "high",
         "quant": {
           "rate_metric": null,
           "rate_value": null,
           "rate_unit": null,
           "time_point": null,
-          "quant_summary": "Selective targeting of CD71 and triggering of transferrin-mediated endocytosis via clathrin-coated pits"
+          "quant_summary": "HPX trafficked with transferrin and TfR1 in Rab5-positive early endosomes"
         },
         "controls_note": null,
-        "condition_note": "Tf-derived carbon dot nanoparticles selectively target CD71/TfR1 on HL60 cells via clathrin-coated pits",
+        "condition_note": "Immunocytochemistry; HL-60 cells lack LRP1; clathrin-mediated endocytotic pathway confirmed",
         "cited_source_ids": [
-          "int_evi_13"
-        ]
-      },
-      {
-        "assay_type": "other",
-        "assay_type_other_label": "chemoproteomic / covalent small molecule uptake",
-        "cell_line": null,
-        "cell_context": "cell_line",
-        "internalization_mode": "therapeutic",
-        "ligand_name": "KB (covalent small molecule, engages TFRC K193)",
-        "ligand_effect": "increases",
-        "mechanism": "clathrin",
-        "trafficking_compartment": "lysosome",
-        "magnitude": "high",
-        "quant": {
-          "rate_metric": null,
-          "rate_value": null,
-          "rate_unit": null,
-          "time_point": null,
-          "quant_summary": "Uptake substantially reduced by KB competitors and siRNA knockdown of TFRC"
-        },
-        "controls_note": "siRNA knockdown of TFRC; KB competitor blocking; chemoproteomic profiling",
-        "condition_note": "Reversible modification of TFRC K193 by KB enables efficient uptake and lysosomal targeting via clathrin-dependent and -independent mechanisms",
-        "cited_source_ids": [
-          "int_evi_14",
-          "int_evi_15",
-          "int_evi_16",
-          "int_evi_17"
-        ]
-      },
-      {
-        "assay_type": "receptor_recycling",
-        "assay_type_other_label": null,
-        "cell_line": null,
-        "cell_context": "unknown",
-        "internalization_mode": "basal",
-        "ligand_name": null,
-        "ligand_effect": "not_applicable",
-        "mechanism": "clathrin",
-        "trafficking_compartment": "recycling_endosome",
-        "magnitude": "high",
-        "quant": {
-          "rate_metric": null,
-          "rate_value": null,
-          "rate_unit": null,
-          "time_point": null,
-          "quant_summary": ""
-        },
-        "controls_note": null,
-        "condition_note": "TfR1 constitutively internalizes transferrin-bound iron at BBB; directed from early to recycling endosomes and back to basolateral membrane; Brainshuttle exploits this via clathrin-mediated transcytosis",
-        "cited_source_ids": [
-          "int_evi_19",
           "int_evi_20"
         ]
       },
       {
         "assay_type": "antibody_uptake",
         "assay_type_other_label": null,
-        "cell_line": null,
-        "cell_context": "in_vivo",
+        "cell_line": "cancer cells (NHL/multiple myeloma)",
+        "cell_context": "tumor_cell_line",
         "internalization_mode": "therapeutic",
-        "ligand_name": "anti-TfR1 antibodies (Brainshuttle / affinity panel)",
+        "ligand_name": "ch128.1Av (anti-TfR1 IgG3-avidin fusion)",
+        "ligand_effect": "increases",
+        "mechanism": "receptor_mediated_unspecified",
+        "trafficking_compartment": "unknown",
+        "magnitude": "high",
+        "quant": {
+          "rate_metric": null,
+          "rate_value": null,
+          "rate_unit": null,
+          "time_point": null,
+          "quant_summary": "Designed to deliver biotinylated therapeutic agents via receptor-mediated endocytosis"
+        },
+        "controls_note": null,
+        "condition_note": "TfR1/CD71 overexpressed on NHL cancer cells; ch128.1Av exploits receptor-mediated endocytosis for drug delivery",
+        "cited_source_ids": [
+          "int_evi_26",
+          "int_evi_36"
+        ]
+      },
+      {
+        "assay_type": "antibody_uptake",
+        "assay_type_other_label": null,
+        "cell_line": "brain endothelial cells (BBB model)",
+        "cell_context": "cell_line",
+        "internalization_mode": "therapeutic",
+        "ligand_name": "anti-TfR1 antibodies (various affinities/valencies)",
         "ligand_effect": "increases",
         "mechanism": "clathrin",
         "trafficking_compartment": "recycled_to_surface",
@@ -385,47 +353,24 @@
           "rate_value": null,
           "rate_unit": null,
           "time_point": null,
-          "quant_summary": "Transcytosis and receptor degradation trend with antibody affinity"
-        },
-        "controls_note": "In vitro transcytosis and receptor degradation connected to in vivo brain uptake and reticulocyte depletion",
-        "condition_note": "Anti-TfR1 antibody affinity modulates balance between transcytosis and receptor degradation; higher affinity → more degradation, lower affinity → more transcytosis",
-        "cited_source_ids": [
-          "int_evi_25"
-        ]
-      },
-      {
-        "assay_type": "other",
-        "assay_type_other_label": "mechanistic review",
-        "cell_line": null,
-        "cell_context": "unknown",
-        "internalization_mode": "basal",
-        "ligand_name": "transferrin",
-        "ligand_effect": "not_applicable",
-        "mechanism": "clathrin",
-        "trafficking_compartment": "recycled_to_surface",
-        "magnitude": "high",
-        "quant": {
-          "rate_metric": null,
-          "rate_value": null,
-          "rate_unit": null,
-          "time_point": null,
-          "quant_summary": ""
+          "quant_summary": "Transcytosis and receptor degradation trend with antibody affinity; bivalent antibodies can match monovalent for brain uptake"
         },
         "controls_note": null,
-        "condition_note": "TFR1 binds Tf, enters via clathrin-mediated endocytosis, delivers Fe3+, returns to membrane via recycling pathway",
+        "condition_note": "Affinity and valency modulate transcytosis vs degradation; high-affinity bivalent antibodies may cause reticulocyte depletion",
         "cited_source_ids": [
-          "int_evi_21"
+          "int_evi_27",
+          "int_evi_28"
         ]
       },
       {
-        "assay_type": "viral_entry",
+        "assay_type": "oligonucleotide_uptake",
         "assay_type_other_label": null,
-        "cell_line": null,
+        "cell_line": "brain endothelial cells (BBB model)",
         "cell_context": "cell_line",
-        "internalization_mode": "native_ligand",
-        "ligand_name": "influenza A virus (neuraminidase binds TfR1 extracellular domain)",
-        "ligand_effect": "not_applicable",
-        "mechanism": "receptor_mediated_unspecified",
+        "internalization_mode": "therapeutic",
+        "ligand_name": "ASO-conjugated TfR1 shuttle antibodies",
+        "ligand_effect": "increases",
+        "mechanism": "clathrin",
         "trafficking_compartment": "unknown",
         "magnitude": "moderate",
         "quant": {
@@ -433,43 +378,43 @@
           "rate_value": null,
           "rate_unit": null,
           "time_point": null,
-          "quant_summary": ""
+          "quant_summary": "Transcytosis of high-to-moderate affinity binders significantly delayed upon ASO conjugation"
         },
         "controls_note": null,
-        "condition_note": "TfR1 functions as initial receptor for influenza A virus via interaction with viral neuraminidase, initiating viral endocytosis",
+        "condition_note": "ASO conjugation paradoxically reduced binding of high-affinity shuttles; low-affinity shuttles benefited from avidity; transcytosis delayed",
         "cited_source_ids": [
-          "int_evi_22"
+          "int_evi_33",
+          "int_evi_34"
         ]
       },
       {
-        "assay_type": "viral_entry",
+        "assay_type": "nanoparticle_uptake",
         "assay_type_other_label": null,
-        "cell_line": "FHM (fathead minnow)",
-        "cell_context": "cell_line",
-        "internalization_mode": "native_ligand",
-        "ligand_name": "SDDV (mandarin fish TfR1 as receptor)",
+        "cell_line": "AML cell lines",
+        "cell_context": "tumor_cell_line",
+        "internalization_mode": "therapeutic",
+        "ligand_name": "TDTP/HHT ROS-responsive micelles (DT7 D-peptide targeting CD71)",
         "ligand_effect": "increases",
         "mechanism": "receptor_mediated_unspecified",
         "trafficking_compartment": "unknown",
-        "magnitude": "high",
+        "magnitude": "unknown",
         "quant": {
           "rate_metric": null,
           "rate_value": null,
           "rate_unit": null,
           "time_point": null,
-          "quant_summary": "Overexpression of mfTfR1 significantly enhanced SDDV replication; antibody blocking and ferristatin II suppressed entry"
+          "quant_summary": "Cellular uptake evaluated in AML cell lines with distinct FLT3 statuses"
         },
-        "controls_note": "Antibody-blocking experiments; ferristatin II TfR1 inhibitor; low-permissive FHM cells as baseline",
-        "condition_note": "Non-human (mandarin fish) TfR1; overexpression in FHM cells enhanced viral entry; TfR1-dependent internalization confirmed",
+        "controls_note": null,
+        "condition_note": "CD71-targeted ROS-responsive micelles using D-peptide ligand DT7 for CD71 targeting in AML",
         "cited_source_ids": [
-          "int_evi_23",
-          "int_evi_24"
+          "int_evi_29"
         ]
       },
       {
-        "assay_type": "live_imaging",
+        "assay_type": "ligand_uptake",
         "assay_type_other_label": null,
-        "cell_line": "U87",
+        "cell_line": "U87 glioma",
         "cell_context": "tumor_cell_line",
         "internalization_mode": "therapeutic",
         "ligand_name": "Tf-WRAP5 complexes",
@@ -481,13 +426,134 @@
           "rate_metric": null,
           "rate_value": null,
           "rate_unit": null,
-          "time_point": "T8 (time point with highest TfR expression)",
-          "quant_summary": "Highest intracellular uptake at T8, the time point with highest transferrin receptor expression"
+          "time_point": "T8",
+          "quant_summary": "Highest intracellular uptake at T8 (time point with highest TfR expression)"
         },
         "controls_note": null,
-        "condition_note": "Confocal microscopy; uptake of Tf-WRAP5 complexes correlated with TfR expression level in U87 glioma cells",
+        "condition_note": "Confocal microscopy; uptake correlated with TfR expression level at T8",
         "cited_source_ids": [
-          "int_evi_26"
+          "int_evi_30"
+        ]
+      },
+      {
+        "assay_type": "ligand_uptake",
+        "assay_type_other_label": null,
+        "cell_line": null,
+        "cell_context": "unknown",
+        "internalization_mode": "basal",
+        "ligand_name": null,
+        "ligand_effect": "not_applicable",
+        "mechanism": "clathrin",
+        "trafficking_compartment": "recycled_to_surface",
+        "magnitude": "high",
+        "quant": {
+          "rate_metric": null,
+          "rate_value": null,
+          "rate_unit": null,
+          "time_point": null,
+          "quant_summary": "TFR1 enters cell through clathrin-mediated endocytosis and returns to cytoplasmic membrane via recycling pathway"
+        },
+        "controls_note": null,
+        "condition_note": "Review/mechanistic description; cancer context emphasized",
+        "cited_source_ids": [
+          "int_evi_32"
+        ]
+      },
+      {
+        "assay_type": "viral_entry",
+        "assay_type_other_label": null,
+        "cell_line": "MEFs (mouse embryonic fibroblasts)",
+        "cell_context": "primary",
+        "internalization_mode": "native_ligand",
+        "ligand_name": "canine parvovirus (CPV)",
+        "ligand_effect": "increases",
+        "mechanism": "clathrin",
+        "trafficking_compartment": "unknown",
+        "magnitude": "high",
+        "quant": {
+          "rate_metric": null,
+          "rate_value": null,
+          "rate_unit": null,
+          "time_point": null,
+          "quant_summary": "Strictly depended on dynamin for cell entry via TfR"
+        },
+        "controls_note": "Dynamin-KO MEFs used; virus failed to infect without dynamin",
+        "condition_note": "Non-human (mouse/canine) data; CPV uses TfR as single receptor; dynamin-dependent endocytosis essential",
+        "cited_source_ids": [
+          "int_evi_24"
+        ]
+      },
+      {
+        "assay_type": "viral_entry",
+        "assay_type_other_label": null,
+        "cell_line": null,
+        "cell_context": "unknown",
+        "internalization_mode": "native_ligand",
+        "ligand_name": "influenza A virus (IAV) neuraminidase",
+        "ligand_effect": "increases",
+        "mechanism": "receptor_mediated_unspecified",
+        "trafficking_compartment": "unknown",
+        "magnitude": "unknown",
+        "quant": {
+          "rate_metric": null,
+          "rate_value": null,
+          "rate_unit": null,
+          "time_point": null,
+          "quant_summary": "TfR1 functions as receptor for IAV, initiating viral endocytosis via interaction with neuraminidase"
+        },
+        "controls_note": null,
+        "condition_note": "TfR1 extracellular apical domain interacts with viral neuraminidase to initiate endocytosis",
+        "cited_source_ids": [
+          "int_evi_25"
+        ]
+      },
+      {
+        "assay_type": "other",
+        "assay_type_other_label": "antibody-blocking / inhibitor suppression of viral entry",
+        "cell_line": "mandarin fish cells",
+        "cell_context": "cell_line",
+        "internalization_mode": "therapeutic",
+        "ligand_name": "anti-mfTfR1 antibody / ferristatin II",
+        "ligand_effect": "decreases",
+        "mechanism": "receptor_mediated_unspecified",
+        "trafficking_compartment": "unknown",
+        "magnitude": "unknown",
+        "quant": {
+          "rate_metric": null,
+          "rate_value": null,
+          "rate_unit": null,
+          "time_point": null,
+          "quant_summary": "Antibody-blocking and ferristatin II significantly suppressed SDDV entry"
+        },
+        "controls_note": null,
+        "condition_note": "Non-human (fish) data; TfR1 inhibition suppresses viral internalization, confirming TfR1-dependent entry",
+        "cited_source_ids": [
+          "int_evi_35"
+        ]
+      },
+      {
+        "assay_type": "other",
+        "assay_type_other_label": "palmitoylation-driven endocytosis assay",
+        "cell_line": "astrocytes",
+        "cell_context": "primary",
+        "internalization_mode": "basal",
+        "ligand_name": null,
+        "ligand_effect": "not_applicable",
+        "mechanism": "clathrin",
+        "trafficking_compartment": "unknown",
+        "magnitude": "high",
+        "quant": {
+          "rate_metric": null,
+          "rate_value": null,
+          "rate_unit": null,
+          "time_point": null,
+          "quant_summary": "Increased TfR1 palmitoylation drives clathrin-mediated TfR1 endocytosis in astrocytes following ischemia/reperfusion"
+        },
+        "controls_note": "Astrocyte-specific Tfrc knockdown reduced effect; conditional Cpt1a knockout used",
+        "condition_note": "Mouse model; ischemia/reperfusion context; palmitoylation increase triggers endocytosis leading to iron overload",
+        "cited_source_ids": [
+          "int_evi_08",
+          "int_evi_09"
         ]
       }
     ],
@@ -504,95 +570,58 @@
           "rate_value": null,
           "rate_unit": null,
           "time_point": null,
-          "quant_summary": "MACC1-dependent routing of internalized TfR towards recycling"
+          "quant_summary": "MACC1-dependent routing of internalized TfR towards recycling; MACC1 interacts with clathrin, dynamin, AP-2 complex subunits and TfR"
         },
-        "note": "MACC1 overexpression caused MACC1-dependent routing of internalized transferrin receptor towards recycling; modulates TfR1 recycling rather than initial internalization rate",
+        "note": "MACC1 overexpression modulates TfR internalization and recycling routing; MACC1 identified as interaction partner of TfR, clathrin, dynamin, and AP-2 subunits",
         "cited_source_ids": [
-          "int_evi_18"
+          "int_evi_16",
+          "int_evi_17"
         ]
       },
       {
-        "modulator": "LRP2",
-        "perturbation": "mutation",
-        "effect_on_target": "decreases",
-        "cell_line": null,
-        "cell_context": "in_vivo",
-        "magnitude": "moderate",
-        "quant": {
-          "rate_metric": null,
-          "rate_value": null,
-          "rate_unit": null,
-          "time_point": null,
-          "quant_summary": "Aberrant endocytic recycling with mislocalized TFR1+ compartments"
-        },
-        "note": "CRISPR mouse model of LRP2 p.C1400R mutation impaired receptor-mediated endocytosis with general perturbation of endocytic flux; immunofluorescence showed mislocalized TFR1+ and RAB11+ compartments and enlarged lysosomes",
-        "cited_source_ids": [
-          "int_evi_27"
-        ]
-      },
-      {
-        "modulator": "Tfrc (astrocyte-specific knockdown)",
-        "perturbation": "knockdown",
-        "effect_on_target": "decreases",
-        "cell_line": null,
-        "cell_context": "in_vivo",
-        "magnitude": "moderate",
-        "quant": {
-          "rate_metric": null,
-          "rate_value": null,
-          "rate_unit": null,
-          "time_point": null,
-          "quant_summary": "Astrocyte-specific Tfrc knockdown reduced iron overload driven by TfR1 palmitoylation/endocytosis"
-        },
-        "note": "Astrocyte-specific Tfrc knockdown reduced palmitoylation-driven clathrin-mediated TfR1 endocytosis and iron overload in ischemia/reperfusion mouse model; this is a self-modulator (knockdown of the target itself) included here as it is a genetic perturbation modulating the endocytic phenotype",
-        "cited_source_ids": [
-          "int_evi_06"
-        ]
-      },
-      {
-        "modulator": "Cpt1a (conditional astrocytic partial knockout)",
+        "modulator": "CPT1A (Cpt1a)",
         "perturbation": "knockout",
         "effect_on_target": "increases",
-        "cell_line": null,
-        "cell_context": "in_vivo",
-        "magnitude": "moderate",
+        "cell_line": "astrocytes",
+        "cell_context": "primary",
+        "magnitude": "unknown",
         "quant": {
           "rate_metric": null,
           "rate_value": null,
           "rate_unit": null,
           "time_point": null,
-          "quant_summary": "Conditional Cpt1a knockout induces fatty acid metabolism disorder, increasing TfR1 palmitoylation and clathrin-mediated endocytosis"
+          "quant_summary": "Conditional astrocytic Cpt1a partial knockout induces fatty acid metabolism disorders leading to increased TfR1 palmitoylation and endocytosis"
         },
-        "note": "Conditional astrocytic Cpt1a partial knockout induces fatty acid metabolism disorders, leading to increased TfR1 palmitoylation and clathrin-mediated endocytosis in astrocytes",
+        "note": "Cpt1a knockout induces fatty acid metabolism disorder, increasing TfR1 palmitoylation which drives clathrin-mediated TfR1 endocytosis in astrocytes",
         "cited_source_ids": [
-          "int_evi_06",
-          "int_evi_07"
+          "int_evi_08",
+          "int_evi_09"
         ]
       }
     ],
     "sources": [
       {
         "evidence_id": "int_evi_01",
-        "claim": "Holo-Tf-functionalized CPNs showed significantly enhanced uptake in TfR-high U87MG GBM cells compared with non-functionalized CPNs (42% vs 18% nanoparticle-positive cells at 1 h; gMFI 211 vs 73 at 4 h), and uptake was reduced by excess free holo-Tf, indicating receptor-mediated (TfR1-dependent) internalization.",
+        "claim": "Transferrin receptor-mediated endocytosis on reticulocytes was measured: at 37°C, uptake exceeded surface binding at 4°C by 2.5-fold, saturated after 20-30 min, and internalized transferrin became trypsin-resistant; trypsinization destroyed surface receptors but new receptors rapidly reappeared upon warming.",
         "claim_type": "methodological",
         "direction": "supports",
-        "evidence_type": "flow_cytometry",
+        "evidence_type": "functional_assay",
         "evidence_tier": "primary",
         "confidence": "strong",
         "assay_context": {
-          "species": "human",
-          "cell_type_or_line": "U87MG",
+          "species": "unspecified",
+          "cell_type_or_line": "reticulocytes",
           "permeabilized": false,
-          "fixation": "unspecified",
+          "fixation": "live",
           "isoform": "TfR1",
           "cell_context": {
-            "material_kind": "cell_line",
+            "material_kind": "primary_cell",
             "material_kind_other_label": null,
-            "cell_type": "glioblastoma",
-            "cell_line_name": "U87MG",
+            "cell_type": "reticulocyte",
+            "cell_line_name": null,
             "cellosaurus_id": null,
             "tissue": null,
-            "disease_state": "glioblastoma",
+            "disease_state": null,
             "activation_state": null
           }
         },
@@ -600,23 +629,23 @@
           {
             "source": {
               "source_type": "pubmed",
-              "source_id": "PMC:PMC13200204",
-              "pmc_id": "PMC13200204",
-              "url": "https://pubmed.ncbi.nlm.nih.gov/42199657/",
-              "title": "Transferrin-Functionalized Conjugated Polymer Nanoparticles for Enhanced Photodynamic Therapy of Glioblastoma",
-              "retrieved_at": "2026-08-15T03:18:37.482285Z",
-              "content_sha256": "c1ca253288c6fdfec92d6eac36cc921461f47907e12036760fc875b529e168f6",
+              "source_id": "PMC:PMC2112509",
+              "pmc_id": "PMC2112509",
+              "url": "https://pubmed.ncbi.nlm.nih.gov/6309857/",
+              "title": "Receptor-mediated endocytosis of transferrin and recycling of the transferrin receptor in rat reticulocytes",
+              "retrieved_at": "2026-08-15T15:54:10.434291Z",
+              "content_sha256": "5d30a36f241b1bc5c9152acfd499dcb70b0cb8fd5d4426c5924b9c486e497a91",
               "publication_type": "primary_research",
               "is_retracted": false,
-              "retraction_checked_at": "2026-08-15T03:18:37.482285Z",
+              "retraction_checked_at": "2026-08-15T15:54:10.434291Z",
               "license": "unknown"
             },
             "section": "abstract",
             "figure_or_table_id": null,
-            "quote": "In vitro, holo-Tf CPNs showed significantly enhanced uptake in TfR-high U87MG cells compared with non-functionalized CPNs (42% vs 18% nanoparticle-positive cells at 1 h; gMFI 211 vs 73 at 4 h), which was reduced by excess free holo-Tf, indicating receptor-mediated uptake.",
-            "quote_sha256": "4fec9dac9c7b77c51f2f7c5864efee7471d2946a46d4dee157865e053526abba",
-            "char_offset": 1796,
-            "normalized_source_sha256": "849d19448a004c9e4dcb12cfe53be9984715831ab46f0ca19a6bee49ddaed178"
+            "quote": "At 4 degrees C transferrin bound to receptors on the reticulocyte plasma membrane, and at 37 degrees C receptor-mediated endocytosis of transferrin occurred. Uptake at 37 degrees C exceeded binding at 4 degrees C by 2.5-fold and saturated after 20-30 min. During uptake at 37 degrees C, bound transferrin was internalized into a trypsin-resistant space. Trypsinization at 4 degrees C destroyed surface receptors, but with subsequent incubation at 37 degrees C, surface receptors rapidly appeared (albeit in reduced numbers), and uptake occurred at a decreased level.",
+            "quote_sha256": "fb5a82bd3d8ae36c9dc2e7f5bb9f60980479c22c95f617124aaba1dd9421f232",
+            "char_offset": 0,
+            "normalized_source_sha256": "e7fa2d6f23efbbcc7ea82896db3c6815a78d81a5019ff6abdd2fd9f8aa869020"
           }
         ],
         "entailment_verified": true,
@@ -626,26 +655,26 @@
       },
       {
         "evidence_id": "int_evi_02",
-        "claim": "In HL-60 cells, HPX trafficked with transferrin and transferrin receptor 1 (TfR1) in Rab5-positive early endosomes, supporting a clathrin-mediated endocytotic pathway used by TfR1.",
+        "claim": "After endocytosis, colloidal gold-transferrin (AuTf) clustered in coated pits and appeared in intracellular membrane-bounded compartments (small vesicles/tubules at 5-10 min, multivesicular endosomes at 20-35 min), which fused with the plasma membrane and released contents by exocytosis, demonstrating clathrin-mediated internalization and recycling of TfR.",
         "claim_type": "methodological",
         "direction": "supports",
-        "evidence_type": "immunofluorescence",
+        "evidence_type": "functional_assay",
         "evidence_tier": "primary",
-        "confidence": "moderate",
+        "confidence": "strong",
         "assay_context": {
-          "species": "human",
-          "cell_type_or_line": "HL-60",
-          "permeabilized": null,
-          "fixation": "unspecified",
+          "species": "unspecified",
+          "cell_type_or_line": "reticulocytes",
+          "permeabilized": false,
+          "fixation": "live",
           "isoform": "TfR1",
           "cell_context": {
-            "material_kind": "cell_line",
+            "material_kind": "primary_cell",
             "material_kind_other_label": null,
-            "cell_type": "promyelocytic",
-            "cell_line_name": "HL-60",
+            "cell_type": "reticulocyte",
+            "cell_line_name": null,
             "cellosaurus_id": null,
             "tissue": null,
-            "disease_state": "acute promyelocytic leukemia",
+            "disease_state": null,
             "activation_state": null
           }
         },
@@ -653,23 +682,129 @@
           {
             "source": {
               "source_type": "pubmed",
-              "source_id": "PMC:PMC12690290",
-              "pmc_id": "PMC12690290",
-              "url": "https://pubmed.ncbi.nlm.nih.gov/41384245/",
-              "title": "Tracking hemopexin intracellularly and defining hemopexin protein \"interactomes\" in human immune and liver cell models",
-              "retrieved_at": "2026-08-15T03:18:37.580764Z",
-              "content_sha256": "3224890c7659a4a197d0864ca96580adfaaea21268770da8916ac48449904035",
+              "source_id": "PMC:PMC2112509",
+              "pmc_id": "PMC2112509",
+              "url": "https://pubmed.ncbi.nlm.nih.gov/6309857/",
+              "title": "Receptor-mediated endocytosis of transferrin and recycling of the transferrin receptor in rat reticulocytes",
+              "retrieved_at": "2026-08-15T15:54:10.434291Z",
+              "content_sha256": "5d30a36f241b1bc5c9152acfd499dcb70b0cb8fd5d4426c5924b9c486e497a91",
               "publication_type": "primary_research",
               "is_retracted": false,
-              "retraction_checked_at": "2026-08-15T03:18:37.580764Z",
+              "retraction_checked_at": "2026-08-15T15:54:10.434291Z",
               "license": "unknown"
             },
             "section": "abstract",
             "figure_or_table_id": null,
-            "quote": "Immunoblots revealed that HL-60 cells lack LRP1, and immunocytochemistry established that HPX trafficked with transferrin and transferrin receptor 1 (TfR1) in Rab5-positive early endosomes, supporting a clathrin-mediated endocytotic pathway used by TfR1s.",
-            "quote_sha256": "d1443b49fa7dd4ad805e2e5b8d0ec8b09ad7d974adf059814887de0002c11c86",
-            "char_offset": 873,
-            "normalized_source_sha256": "c47bd89504f013163545936e0f7193fc0f63018050abcb534b4d05e2c3b55c15"
+            "quote": "After endocytosis, transferrin was released, apparently intact, into the extracellular space. At 37 degrees C colloidal gold-transferrin (AuTf) clustered in coated pits and then appeared inside various intracellular membrane-bounded compartments. Small vesicles and tubules were labeled after short (5-10 min) incubations at 37 degrees C. Larger multivesicular endosomes became heavily labeled after longer (20-35 min) incubations. Multivesicular endosomes apparently fused with the plasma membrane and released their contents by exocytosis.",
+            "quote_sha256": "443e5e2cc3051c2751705ee27d617fae145cba8e3d6fbac0d71b93337f9dd183",
+            "char_offset": 567,
+            "normalized_source_sha256": "e7fa2d6f23efbbcc7ea82896db3c6815a78d81a5019ff6abdd2fd9f8aa869020"
+          }
+        ],
+        "entailment_verified": true,
+        "entailment_audit_passed": null,
+        "validation_warnings": [],
+        "duplicate_of": null
+      },
+      {
+        "evidence_id": "int_evi_03",
+        "claim": "98% of intracellular AuTf was localized in acid phosphatase-negative (non-lysosomal) compartments; freeze-fracture confirmed clathrin-coated patches on the inner plasma membrane surface, supporting clathrin-mediated endocytosis of TfR.",
+        "claim_type": "methodological",
+        "direction": "supports",
+        "evidence_type": "functional_assay",
+        "evidence_tier": "primary",
+        "confidence": "strong",
+        "assay_context": {
+          "species": "unspecified",
+          "cell_type_or_line": "reticulocytes",
+          "permeabilized": false,
+          "fixation": "fixed",
+          "isoform": "TfR1",
+          "cell_context": {
+            "material_kind": "primary_cell",
+            "material_kind_other_label": null,
+            "cell_type": "reticulocyte",
+            "cell_line_name": null,
+            "cellosaurus_id": null,
+            "tissue": null,
+            "disease_state": null,
+            "activation_state": null
+          }
+        },
+        "spans": [
+          {
+            "source": {
+              "source_type": "pubmed",
+              "source_id": "PMC:PMC2112509",
+              "pmc_id": "PMC2112509",
+              "url": "https://pubmed.ncbi.nlm.nih.gov/6309857/",
+              "title": "Receptor-mediated endocytosis of transferrin and recycling of the transferrin receptor in rat reticulocytes",
+              "retrieved_at": "2026-08-15T15:54:10.434291Z",
+              "content_sha256": "5d30a36f241b1bc5c9152acfd499dcb70b0cb8fd5d4426c5924b9c486e497a91",
+              "publication_type": "primary_research",
+              "is_retracted": false,
+              "retraction_checked_at": "2026-08-15T15:54:10.434291Z",
+              "license": "unknown"
+            },
+            "section": "abstract",
+            "figure_or_table_id": null,
+            "quote": "None of these organelles appeared to be lysosomal in nature, and 98% of intracellular AuTf was localized in acid phosphatase-negative compartments. AuTf, like transferrin, was released with subsequent incubation at 37 degrees C. Freeze-dried and freeze-fractured reticulocytes confirmed the distribution of AuTf in reticulocytes and revealed the presence of clathrin-coated patches amidst the spectrin coating the inner surface of the plasma membrane.",
+            "quote_sha256": "aad618a2795c8c470e8d7e2bcc0d0cbc35568af78a402d4d3281dd3bb75da159",
+            "char_offset": 1109,
+            "normalized_source_sha256": "e7fa2d6f23efbbcc7ea82896db3c6815a78d81a5019ff6abdd2fd9f8aa869020"
+          }
+        ],
+        "entailment_verified": true,
+        "entailment_audit_passed": null,
+        "validation_warnings": [],
+        "duplicate_of": null
+      },
+      {
+        "evidence_id": "int_evi_04",
+        "claim": "These data demonstrate that transferrin is internalized via coated pits and vesicles and that transferrin and its receptor (TfR) are recycled back to the plasma membrane after endocytosis.",
+        "claim_type": "methodological",
+        "direction": "supports",
+        "evidence_type": "functional_assay",
+        "evidence_tier": "primary",
+        "confidence": "strong",
+        "assay_context": {
+          "species": "unspecified",
+          "cell_type_or_line": "reticulocytes",
+          "permeabilized": false,
+          "fixation": "live",
+          "isoform": "TfR1",
+          "cell_context": {
+            "material_kind": "primary_cell",
+            "material_kind_other_label": null,
+            "cell_type": "reticulocyte",
+            "cell_line_name": null,
+            "cellosaurus_id": null,
+            "tissue": null,
+            "disease_state": null,
+            "activation_state": null
+          }
+        },
+        "spans": [
+          {
+            "source": {
+              "source_type": "pubmed",
+              "source_id": "PMC:PMC2112509",
+              "pmc_id": "PMC2112509",
+              "url": "https://pubmed.ncbi.nlm.nih.gov/6309857/",
+              "title": "Receptor-mediated endocytosis of transferrin and recycling of the transferrin receptor in rat reticulocytes",
+              "retrieved_at": "2026-08-15T15:54:10.434291Z",
+              "content_sha256": "5d30a36f241b1bc5c9152acfd499dcb70b0cb8fd5d4426c5924b9c486e497a91",
+              "publication_type": "primary_research",
+              "is_retracted": false,
+              "retraction_checked_at": "2026-08-15T15:54:10.434291Z",
+              "license": "unknown"
+            },
+            "section": "abstract",
+            "figure_or_table_id": null,
+            "quote": "These data suggest that transferrin is internalized via coated pits and vesicles and demonstrate that transferrin and its receptor are recycled back to the plasma membrane after endocytosis.",
+            "quote_sha256": "ab2528acfb05ad058cefe03ae5368025b030849139f2b4df05873642cbbd53ae",
+            "char_offset": 1561,
+            "normalized_source_sha256": "e7fa2d6f23efbbcc7ea82896db3c6815a78d81a5019ff6abdd2fd9f8aa869020"
           }
         ],
         "entailment_verified": true,
@@ -679,7 +814,104 @@
       },
       {
         "evidence_id": "int_evi_05",
-        "claim": "TfR1 binds iron-laden transferrin and undergoes clathrin-mediated endocytosis; within acidic endosomes iron is released and the receptor-apotransferrin complex recycles to the cell surface for further rounds of transport.",
+        "claim": "The anti-TfR1 antibody T8IgG1 specifically recognized TfR1 on the surface of tumor cells and underwent efficient TfR1-mediated internalization, as assessed by flow cytometry and immunofluorescence microscopy.",
+        "claim_type": "methodological",
+        "direction": "supports",
+        "evidence_type": "functional_assay",
+        "evidence_tier": "primary",
+        "confidence": "strong",
+        "assay_context": {
+          "species": "human",
+          "cell_type_or_line": "tumor cell lines (K562)",
+          "permeabilized": null,
+          "fixation": null,
+          "isoform": "TfR1",
+          "cell_context": {
+            "material_kind": "cell_line",
+            "material_kind_other_label": null,
+            "cell_type": null,
+            "cell_line_name": "K562",
+            "cellosaurus_id": null,
+            "tissue": null,
+            "disease_state": "leukemia",
+            "activation_state": null
+          }
+        },
+        "spans": [
+          {
+            "source": {
+              "source_type": "pubmed",
+              "source_id": "PMC:PMC13114112",
+              "pmc_id": "PMC13114112",
+              "url": "https://pubmed.ncbi.nlm.nih.gov/42041393/",
+              "title": "Development of a Human IgG1 Monoclonal Antibody Targeting Transferrin Receptor 1 for Antitumor Drug Delivery",
+              "retrieved_at": "2026-08-15T15:54:10.513296Z",
+              "content_sha256": "d797858e6b4b255a4ad41b77cdfcec442225c9f20aa75612090e270a019b4826",
+              "publication_type": "primary_research",
+              "is_retracted": false,
+              "retraction_checked_at": "2026-08-15T15:54:10.513296Z",
+              "license": "unknown"
+            },
+            "section": "abstract",
+            "figure_or_table_id": null,
+            "quote": "T8IgG1 specifically recognized TfR1 on the surface of tumor cells and underwent efficient TfR1-mediated internalization.",
+            "quote_sha256": "f41f5eb745038614dd9fb70ef31700117c3823d60af8fb1959f5a500cb1e2368",
+            "char_offset": 1087,
+            "normalized_source_sha256": "53085f3ca35bdd89ed8ff4b6b65ebb2061c68d7fb10272984a334f8f259a0eaa"
+          }
+        ],
+        "entailment_verified": true,
+        "entailment_audit_passed": null,
+        "validation_warnings": [],
+        "duplicate_of": null
+      },
+      {
+        "evidence_id": "int_evi_06",
+        "claim": "The holo-Tf/TfR1 complex undergoes clathrin-mediated endocytosis, described as one of the most dynamic and active membrane transport processes.",
+        "claim_type": "methodological",
+        "direction": "supports",
+        "evidence_type": "review_assertion",
+        "evidence_tier": "secondary",
+        "confidence": "moderate",
+        "assay_context": {
+          "species": "human",
+          "cell_type_or_line": null,
+          "permeabilized": null,
+          "fixation": null,
+          "isoform": "TfR1",
+          "cell_context": null
+        },
+        "spans": [
+          {
+            "source": {
+              "source_type": "pubmed",
+              "source_id": "PMC:PMC13114112",
+              "pmc_id": "PMC13114112",
+              "url": "https://pubmed.ncbi.nlm.nih.gov/42041393/",
+              "title": "Development of a Human IgG1 Monoclonal Antibody Targeting Transferrin Receptor 1 for Antitumor Drug Delivery",
+              "retrieved_at": "2026-08-15T15:54:10.513296Z",
+              "content_sha256": "d797858e6b4b255a4ad41b77cdfcec442225c9f20aa75612090e270a019b4826",
+              "publication_type": "primary_research",
+              "is_retracted": false,
+              "retraction_checked_at": "2026-08-15T15:54:10.513296Z",
+              "license": "unknown"
+            },
+            "section": "introduction",
+            "figure_or_table_id": null,
+            "quote": "The holo-Tf/TfR1 complex undergoes clathrin-mediated endocytosis, one of the most dynamic and active membrane transport processes [ 2 , 3 , 4 ].",
+            "quote_sha256": "bebeb76d0e73010dcf534d2cc70135d161e0931aeb31505484e0d1f62a996803",
+            "char_offset": 2275,
+            "normalized_source_sha256": "53085f3ca35bdd89ed8ff4b6b65ebb2061c68d7fb10272984a334f8f259a0eaa"
+          }
+        ],
+        "entailment_verified": true,
+        "entailment_audit_passed": null,
+        "validation_warnings": [],
+        "duplicate_of": null
+      },
+      {
+        "evidence_id": "int_evi_07",
+        "claim": "TfR1 binds iron-laden transferrin leading to cellular uptake through clathrin-mediated endocytosis; within acidic endosomes iron is released and the receptor-apotransferrin complex recycles to the cell surface for further rounds of transport.",
         "claim_type": "methodological",
         "direction": "supports",
         "evidence_type": "review_assertion",
@@ -710,11 +942,11 @@
               "pmc_id": "PMC12524413",
               "url": "https://pubmed.ncbi.nlm.nih.gov/41097058/",
               "title": "Targeting Transferrin Receptor 1 for Enhancing Drug Delivery Through the Blood-Brain Barrier for Alzheimer's Disease",
-              "retrieved_at": "2026-08-15T03:18:37.531942Z",
+              "retrieved_at": "2026-08-15T15:54:10.486448Z",
               "content_sha256": "7754978e8dc7cf2e9ed5e5d93a9e89f92a4879b7f895d3cdf5b26eff04b45582",
               "publication_type": "review",
               "is_retracted": false,
-              "retraction_checked_at": "2026-08-15T03:18:37.531942Z",
+              "retraction_checked_at": "2026-08-15T15:54:10.486448Z",
               "license": "unknown"
             },
             "section": "abstract",
@@ -731,8 +963,8 @@
         "duplicate_of": null
       },
       {
-        "evidence_id": "int_evi_06",
-        "claim": "Increased TfR1 palmitoylation drives clathrin-mediated endocytosis of TfR1 in astrocytes following ischemia/reperfusion, leading to astrocytic iron overload; astrocyte-specific Tfrc knockdown reduced this effect.",
+        "evidence_id": "int_evi_08",
+        "claim": "Increased TfR1 palmitoylation drives clathrin-mediated TfR1 endocytosis in astrocytes following ischemia/reperfusion, leading to astrocytic iron overload; astrocyte-specific Tfrc knockdown reduced this effect.",
         "claim_type": "methodological",
         "direction": "supports",
         "evidence_type": "functional_assay",
@@ -742,7 +974,7 @@
           "species": "mouse",
           "cell_type_or_line": "astrocytes",
           "permeabilized": null,
-          "fixation": "unspecified",
+          "fixation": null,
           "isoform": "TfR1",
           "cell_context": {
             "material_kind": "primary_cell",
@@ -751,7 +983,7 @@
             "cell_line_name": null,
             "cellosaurus_id": null,
             "tissue": null,
-            "disease_state": "ischemic stroke",
+            "disease_state": "ischemic stroke / ischemia-reperfusion",
             "activation_state": null
           }
         },
@@ -763,11 +995,11 @@
               "pmc_id": "PMC12822406",
               "url": "https://pubmed.ncbi.nlm.nih.gov/41195589/",
               "title": "Iron Overload Mediates the Differential Cell Fate of Astrocytes from Neurons and Its Regulatory Mechanisms in Ischemic Stroke",
-              "retrieved_at": "2026-08-15T03:18:37.470174Z",
+              "retrieved_at": "2026-08-15T15:54:10.468510Z",
               "content_sha256": "127dfd39139b114c63fa340e919e33377ad289ee65e94525229aa0b04147ad6e",
               "publication_type": "primary_research",
               "is_retracted": false,
-              "retraction_checked_at": "2026-08-15T03:18:37.470174Z",
+              "retraction_checked_at": "2026-08-15T15:54:10.468510Z",
               "license": "unknown"
             },
             "section": "abstract",
@@ -784,8 +1016,8 @@
         "duplicate_of": null
       },
       {
-        "evidence_id": "int_evi_07",
-        "claim": "An increase in palmitoylation of TfR1 triggers clathrin-mediated TfR1 endocytosis and uptake of extracellular iron, resulting in intracellular iron overload in astrocytes.",
+        "evidence_id": "int_evi_09",
+        "claim": "An increase in palmitoylation of TfR1 triggers clathrin-mediated TfR1 endocytosis and uptake of extracellular iron, resulting in intracellular iron overload in astrocytes following ischemia/reperfusion.",
         "claim_type": "methodological",
         "direction": "supports",
         "evidence_type": "functional_assay",
@@ -795,7 +1027,7 @@
           "species": "mouse",
           "cell_type_or_line": "astrocytes",
           "permeabilized": null,
-          "fixation": "unspecified",
+          "fixation": null,
           "isoform": "TfR1",
           "cell_context": {
             "material_kind": "primary_cell",
@@ -804,7 +1036,7 @@
             "cell_line_name": null,
             "cellosaurus_id": null,
             "tissue": null,
-            "disease_state": "ischemic stroke",
+            "disease_state": "ischemic stroke / ischemia-reperfusion",
             "activation_state": null
           }
         },
@@ -816,11 +1048,11 @@
               "pmc_id": "PMC12822406",
               "url": "https://pubmed.ncbi.nlm.nih.gov/41195589/",
               "title": "Iron Overload Mediates the Differential Cell Fate of Astrocytes from Neurons and Its Regulatory Mechanisms in Ischemic Stroke",
-              "retrieved_at": "2026-08-15T03:18:37.470174Z",
+              "retrieved_at": "2026-08-15T15:54:10.468510Z",
               "content_sha256": "127dfd39139b114c63fa340e919e33377ad289ee65e94525229aa0b04147ad6e",
               "publication_type": "primary_research",
               "is_retracted": false,
-              "retraction_checked_at": "2026-08-15T03:18:37.470174Z",
+              "retraction_checked_at": "2026-08-15T15:54:10.468510Z",
               "license": "unknown"
             },
             "section": "discussion",
@@ -837,148 +1069,51 @@
         "duplicate_of": null
       },
       {
-        "evidence_id": "int_evi_08",
-        "claim": "T8IgG1 anti-TfR1 antibody specifically recognized TfR1 on the surface of tumor cells and underwent efficient TfR1-mediated internalization.",
+        "evidence_id": "int_evi_10",
+        "claim": "Chemoproteomic target deconvolution revealed that reversible modification of lysine residues on TFRC (transferrin receptor 1) enabled efficient uptake and lysosomal targeting through clathrin-dependent mechanisms.",
         "claim_type": "methodological",
         "direction": "supports",
-        "evidence_type": "immunofluorescence",
+        "evidence_type": "functional_assay",
         "evidence_tier": "primary",
         "confidence": "strong",
         "assay_context": {
           "species": "human",
-          "cell_type_or_line": "K562",
-          "permeabilized": null,
-          "fixation": "unspecified",
-          "isoform": "TfR1",
-          "cell_context": {
-            "material_kind": "cell_line",
-            "material_kind_other_label": null,
-            "cell_type": "leukemia",
-            "cell_line_name": "K562",
-            "cellosaurus_id": null,
-            "tissue": null,
-            "disease_state": "chronic myelogenous leukemia",
-            "activation_state": null
-          }
-        },
-        "spans": [
-          {
-            "source": {
-              "source_type": "pubmed",
-              "source_id": "PMC:PMC13114112",
-              "pmc_id": "PMC13114112",
-              "url": "https://pubmed.ncbi.nlm.nih.gov/42041393/",
-              "title": "Development of a Human IgG1 Monoclonal Antibody Targeting Transferrin Receptor 1 for Antitumor Drug Delivery",
-              "retrieved_at": "2026-08-15T03:18:37.461907Z",
-              "content_sha256": "d797858e6b4b255a4ad41b77cdfcec442225c9f20aa75612090e270a019b4826",
-              "publication_type": "primary_research",
-              "is_retracted": false,
-              "retraction_checked_at": "2026-08-15T03:18:37.461907Z",
-              "license": "unknown"
-            },
-            "section": "abstract",
-            "figure_or_table_id": null,
-            "quote": "T8IgG1 specifically recognized TfR1 on the surface of tumor cells and underwent efficient TfR1-mediated internalization.",
-            "quote_sha256": "f41f5eb745038614dd9fb70ef31700117c3823d60af8fb1959f5a500cb1e2368",
-            "char_offset": 1087,
-            "normalized_source_sha256": "53085f3ca35bdd89ed8ff4b6b65ebb2061c68d7fb10272984a334f8f259a0eaa"
-          }
-        ],
-        "entailment_verified": true,
-        "entailment_audit_passed": null,
-        "validation_warnings": [],
-        "duplicate_of": null
-      },
-      {
-        "evidence_id": "int_evi_09",
-        "claim": "Cellular binding and internalization of anti-TfR1 antibody T8IgG1 were assessed by flow cytometry and immunofluorescence microscopy.",
-        "claim_type": "methodological",
-        "direction": "supports",
-        "evidence_type": "flow_cytometry",
-        "evidence_tier": "primary",
-        "confidence": "moderate",
-        "assay_context": {
-          "species": "human",
-          "cell_type_or_line": "tumor cell lines",
-          "permeabilized": null,
-          "fixation": "unspecified",
-          "isoform": "TfR1",
-          "cell_context": {
-            "material_kind": "cell_line",
-            "material_kind_other_label": null,
-            "cell_type": "tumor",
-            "cell_line_name": null,
-            "cellosaurus_id": null,
-            "tissue": null,
-            "disease_state": null,
-            "activation_state": null
-          }
-        },
-        "spans": [
-          {
-            "source": {
-              "source_type": "pubmed",
-              "source_id": "PMC:PMC13114112",
-              "pmc_id": "PMC13114112",
-              "url": "https://pubmed.ncbi.nlm.nih.gov/42041393/",
-              "title": "Development of a Human IgG1 Monoclonal Antibody Targeting Transferrin Receptor 1 for Antitumor Drug Delivery",
-              "retrieved_at": "2026-08-15T03:18:37.461907Z",
-              "content_sha256": "d797858e6b4b255a4ad41b77cdfcec442225c9f20aa75612090e270a019b4826",
-              "publication_type": "primary_research",
-              "is_retracted": false,
-              "retraction_checked_at": "2026-08-15T03:18:37.461907Z",
-              "license": "unknown"
-            },
-            "section": "abstract",
-            "figure_or_table_id": null,
-            "quote": "Binding kinetics were characterized using Octet biolayer interferometry (BLI), while cellular binding and internalization were assessed by flow cytometry and immunofluorescence microscopy, respectively.",
-            "quote_sha256": "72808e4d3781ee47c47be2e59a73b61ceae378e728335a05bb21fa9f305c3933",
-            "char_offset": 518,
-            "normalized_source_sha256": "53085f3ca35bdd89ed8ff4b6b65ebb2061c68d7fb10272984a334f8f259a0eaa"
-          }
-        ],
-        "entailment_verified": true,
-        "entailment_audit_passed": null,
-        "validation_warnings": [],
-        "duplicate_of": null
-      },
-      {
-        "evidence_id": "int_evi_10",
-        "claim": "The holo-Tf/TfR1 complex undergoes clathrin-mediated endocytosis, one of the most dynamic and active membrane transport processes.",
-        "claim_type": "methodological",
-        "direction": "supports",
-        "evidence_type": "review_assertion",
-        "evidence_tier": "secondary",
-        "confidence": "moderate",
-        "assay_context": {
-          "species": "human",
-          "cell_type_or_line": null,
+          "cell_type_or_line": "cancer cells",
           "permeabilized": null,
           "fixation": null,
           "isoform": "TfR1",
-          "cell_context": null
+          "cell_context": {
+            "material_kind": "cell_line",
+            "material_kind_other_label": null,
+            "cell_type": null,
+            "cell_line_name": null,
+            "cellosaurus_id": null,
+            "tissue": null,
+            "disease_state": "cancer",
+            "activation_state": null
+          }
         },
         "spans": [
           {
             "source": {
               "source_type": "pubmed",
-              "source_id": "PMC:PMC13114112",
-              "pmc_id": "PMC13114112",
-              "url": "https://pubmed.ncbi.nlm.nih.gov/42041393/",
-              "title": "Development of a Human IgG1 Monoclonal Antibody Targeting Transferrin Receptor 1 for Antitumor Drug Delivery",
-              "retrieved_at": "2026-08-15T03:18:37.461907Z",
-              "content_sha256": "d797858e6b4b255a4ad41b77cdfcec442225c9f20aa75612090e270a019b4826",
+              "source_id": "PMC:PMC12746457",
+              "pmc_id": "PMC12746457",
+              "url": "https://pubmed.ncbi.nlm.nih.gov/41194602/",
+              "title": "Ketoboronate as a Minimal Covalent-Reversible Tag for Targeted Lysosomal Degradation of Extracellular and Membrane Proteins",
+              "retrieved_at": "2026-08-15T15:54:10.427227Z",
+              "content_sha256": "6367d7509d4fbca48a4caa392b91dac1a3a6ab7d4a81bbf461a2ee54b26d848b",
               "publication_type": "primary_research",
               "is_retracted": false,
-              "retraction_checked_at": "2026-08-15T03:18:37.461907Z",
+              "retraction_checked_at": "2026-08-15T15:54:10.427227Z",
               "license": "unknown"
             },
-            "section": "introduction",
+            "section": "abstract",
             "figure_or_table_id": null,
-            "quote": "The holo-Tf/TfR1 complex undergoes clathrin-mediated endocytosis, one of the most dynamic and active membrane transport processes [ 2 , 3 , 4 ].",
-            "quote_sha256": "bebeb76d0e73010dcf534d2cc70135d161e0931aeb31505484e0d1f62a996803",
-            "char_offset": 2275,
-            "normalized_source_sha256": "53085f3ca35bdd89ed8ff4b6b65ebb2061c68d7fb10272984a334f8f259a0eaa"
+            "quote": "Chemoproteomic target deconvolution revealed that reversible modification of lysine residues on the transferrin receptor protein 1 (TFRC) and HLA class I histocompatibility antigen A, B and C (HLA-ABC) enabled efficient uptake and lysosomal targeting through both clathrin-dependent and -independent mechanisms.",
+            "quote_sha256": "7afa51b79a476c86a4203fae7c5b6c5f8222d0922dacba121adaaee247d520b9",
+            "char_offset": 865,
+            "normalized_source_sha256": "fb7b547bf88f58fc44eda161730b257b6f7647ebc75d190fbffd3bff892d3896"
           }
         ],
         "entailment_verified": true,
@@ -988,7 +1123,60 @@
       },
       {
         "evidence_id": "int_evi_11",
-        "claim": "TfR1 mediates Gd-IgA1 uptake into mesangial cell lysosomes; TfR1 overexpression enhanced lysosomal accumulation of Gd-IgA1, whereas TfR1 knockdown reduced it, demonstrating TfR1-dependent internalization.",
+        "claim": "Through chemoproteomic profiling, TFRC was identified as a key uptake receptor for KB-tag-mediated endocytosis, with direct KB engagement confirmed at lysine 193 of TFRC.",
+        "claim_type": "methodological",
+        "direction": "supports",
+        "evidence_type": "mass_spec_surfaceome",
+        "evidence_tier": "primary",
+        "confidence": "strong",
+        "assay_context": {
+          "species": "human",
+          "cell_type_or_line": "cancer cells",
+          "permeabilized": null,
+          "fixation": null,
+          "isoform": "TfR1",
+          "cell_context": {
+            "material_kind": "cell_line",
+            "material_kind_other_label": null,
+            "cell_type": null,
+            "cell_line_name": null,
+            "cellosaurus_id": null,
+            "tissue": null,
+            "disease_state": "cancer",
+            "activation_state": null
+          }
+        },
+        "spans": [
+          {
+            "source": {
+              "source_type": "pubmed",
+              "source_id": "PMC:PMC12746457",
+              "pmc_id": "PMC12746457",
+              "url": "https://pubmed.ncbi.nlm.nih.gov/41194602/",
+              "title": "Ketoboronate as a Minimal Covalent-Reversible Tag for Targeted Lysosomal Degradation of Extracellular and Membrane Proteins",
+              "retrieved_at": "2026-08-15T15:54:10.427227Z",
+              "content_sha256": "6367d7509d4fbca48a4caa392b91dac1a3a6ab7d4a81bbf461a2ee54b26d848b",
+              "publication_type": "primary_research",
+              "is_retracted": false,
+              "retraction_checked_at": "2026-08-15T15:54:10.427227Z",
+              "license": "unknown"
+            },
+            "section": "discussion",
+            "figure_or_table_id": null,
+            "quote": "Through chemoproteomic profiling, we identified transferrin receptor (TFRC) and HLA-A/B/C (HLA-ABC) as the key uptake receptors and confirmed direct KB engagement of TFRC at lysine 193.",
+            "quote_sha256": "7d089d130d9b01bee409b30caccdbc55f595bca16f3f5986d2db2acbf49721db",
+            "char_offset": 31622,
+            "normalized_source_sha256": "fb7b547bf88f58fc44eda161730b257b6f7647ebc75d190fbffd3bff892d3896"
+          }
+        ],
+        "entailment_verified": true,
+        "entailment_audit_passed": null,
+        "validation_warnings": [],
+        "duplicate_of": null
+      },
+      {
+        "evidence_id": "int_evi_12",
+        "claim": "Functional studies revealed that KB-tag uptake proceeds through active, receptor-mediated endocytosis, with TFRC operating via clathrin-mediated pathways.",
         "claim_type": "methodological",
         "direction": "supports",
         "evidence_type": "functional_assay",
@@ -996,9 +1184,168 @@
         "confidence": "strong",
         "assay_context": {
           "species": "human",
+          "cell_type_or_line": "cancer cells",
+          "permeabilized": null,
+          "fixation": null,
+          "isoform": "TfR1",
+          "cell_context": {
+            "material_kind": "cell_line",
+            "material_kind_other_label": null,
+            "cell_type": null,
+            "cell_line_name": null,
+            "cellosaurus_id": null,
+            "tissue": null,
+            "disease_state": "cancer",
+            "activation_state": null
+          }
+        },
+        "spans": [
+          {
+            "source": {
+              "source_type": "pubmed",
+              "source_id": "PMC:PMC12746457",
+              "pmc_id": "PMC12746457",
+              "url": "https://pubmed.ncbi.nlm.nih.gov/41194602/",
+              "title": "Ketoboronate as a Minimal Covalent-Reversible Tag for Targeted Lysosomal Degradation of Extracellular and Membrane Proteins",
+              "retrieved_at": "2026-08-15T15:54:10.427227Z",
+              "content_sha256": "6367d7509d4fbca48a4caa392b91dac1a3a6ab7d4a81bbf461a2ee54b26d848b",
+              "publication_type": "primary_research",
+              "is_retracted": false,
+              "retraction_checked_at": "2026-08-15T15:54:10.427227Z",
+              "license": "unknown"
+            },
+            "section": "discussion",
+            "figure_or_table_id": null,
+            "quote": "Functional studies further revealed that KB uptake proceeds through active, receptor-mediated endocytosis, with TFRC operating via clathrin-mediated pathways and HLA-ABC via clathrin-independent routes.",
+            "quote_sha256": "e466efc79cec4a3d0450c698d7d73ce87222ab7a8aa5a3891c942017d86ad852",
+            "char_offset": 31808,
+            "normalized_source_sha256": "fb7b547bf88f58fc44eda161730b257b6f7647ebc75d190fbffd3bff892d3896"
+          }
+        ],
+        "entailment_verified": true,
+        "entailment_audit_passed": null,
+        "validation_warnings": [],
+        "duplicate_of": null
+      },
+      {
+        "evidence_id": "int_evi_13",
+        "claim": "TFRC-mediated uptake was substantially reduced by siRNA knockdown of TFRC, confirming TFRC's role as the endocytic receptor for KB-tag-mediated internalization.",
+        "claim_type": "methodological",
+        "direction": "supports",
+        "evidence_type": "functional_assay",
+        "evidence_tier": "primary",
+        "confidence": "strong",
+        "assay_context": {
+          "species": "human",
+          "cell_type_or_line": "cancer cells",
+          "permeabilized": null,
+          "fixation": null,
+          "isoform": "TfR1",
+          "cell_context": {
+            "material_kind": "cell_line",
+            "material_kind_other_label": null,
+            "cell_type": null,
+            "cell_line_name": null,
+            "cellosaurus_id": null,
+            "tissue": null,
+            "disease_state": "cancer",
+            "activation_state": null
+          }
+        },
+        "spans": [
+          {
+            "source": {
+              "source_type": "pubmed",
+              "source_id": "PMC:PMC12746457",
+              "pmc_id": "PMC12746457",
+              "url": "https://pubmed.ncbi.nlm.nih.gov/41194602/",
+              "title": "Ketoboronate as a Minimal Covalent-Reversible Tag for Targeted Lysosomal Degradation of Extracellular and Membrane Proteins",
+              "retrieved_at": "2026-08-15T15:54:10.427227Z",
+              "content_sha256": "6367d7509d4fbca48a4caa392b91dac1a3a6ab7d4a81bbf461a2ee54b26d848b",
+              "publication_type": "primary_research",
+              "is_retracted": false,
+              "retraction_checked_at": "2026-08-15T15:54:10.427227Z",
+              "license": "unknown"
+            },
+            "section": "discussion",
+            "figure_or_table_id": null,
+            "quote": "The uptake was substantially reduced by KB competitors and siRNA knockdown of TFRC and HLA.",
+            "quote_sha256": "d73f8d5cdf132e2d81b27ed18b5f61e20c083404396fba314d894e4e356db00a",
+            "char_offset": 32152,
+            "normalized_source_sha256": "fb7b547bf88f58fc44eda161730b257b6f7647ebc75d190fbffd3bff892d3896"
+          }
+        ],
+        "entailment_verified": true,
+        "entailment_audit_passed": null,
+        "validation_warnings": [],
+        "duplicate_of": null
+      },
+      {
+        "evidence_id": "int_evi_14",
+        "claim": "Transferrin-derived carbon dot nanoparticles selectively targeted CD71 (TfR1) on HL60 leukemia cells and specifically triggered transferrin-mediated endocytosis via clathrin-coated pits.",
+        "claim_type": "methodological",
+        "direction": "supports",
+        "evidence_type": "functional_assay",
+        "evidence_tier": "primary",
+        "confidence": "strong",
+        "assay_context": {
+          "species": "human",
+          "cell_type_or_line": "HL60",
+          "permeabilized": null,
+          "fixation": null,
+          "isoform": "TfR1/CD71",
+          "cell_context": {
+            "material_kind": "cell_line",
+            "material_kind_other_label": null,
+            "cell_type": null,
+            "cell_line_name": "HL60",
+            "cellosaurus_id": null,
+            "tissue": null,
+            "disease_state": "leukemia",
+            "activation_state": null
+          }
+        },
+        "spans": [
+          {
+            "source": {
+              "source_type": "pubmed",
+              "source_id": "PMC:PMC10795060",
+              "pmc_id": "PMC10795060",
+              "url": "https://pubmed.ncbi.nlm.nih.gov/38250381/",
+              "title": "Cancer Cell Targeting Via Selective Transferrin Receptor Labeling Using Protein-Derived Carbon Dots",
+              "retrieved_at": "2026-08-15T15:54:10.493247Z",
+              "content_sha256": "1768ff6da9b5c1df466ef523229eaf91b7a0c84d8c824328847ecf54433e2711",
+              "publication_type": "primary_research",
+              "is_retracted": false,
+              "retraction_checked_at": "2026-08-15T15:54:10.493247Z",
+              "license": "unknown"
+            },
+            "section": "abstract",
+            "figure_or_table_id": null,
+            "quote": "These transferrin (Tf)-derived CDs have been shown to possess an affinity for CD71, a cancer biomarker that is ubiquitously expressed in nearly every cancer cell line due to its central role mediating the uptake of cellular iron. The CDs were tested using the human leukemia cell line HL60 and demonstrated the selective targeting of CD71 and specific triggering of transferrin-mediated endocytosis via clathrin-coated pits. The particle characterization results reflect a carbon-based nanoparticle with bright violet fluorescence and 7.9% quantum yield in aqueous solution.",
+            "quote_sha256": "bbbe31af499a0b1d846bd937ffc6bf4380a8b30ba4bf849bfe541d9dc384d52f",
+            "char_offset": 992,
+            "normalized_source_sha256": "37527c94c2814331895f21f5c4a2bc7d7173cdaf5942317c8faf658c1c16dbad"
+          }
+        ],
+        "entailment_verified": true,
+        "entailment_audit_passed": null,
+        "validation_warnings": [],
+        "duplicate_of": null
+      },
+      {
+        "evidence_id": "int_evi_15",
+        "claim": "TfR1 mediates Gd-IgA1 uptake into mesangial cell lysosomes; TfR1 overexpression enhanced lysosomal accumulation of Gd-IgA1, whereas TfR1 knockdown reduced it, demonstrating TfR1-dependent internalization.",
+        "claim_type": "methodological",
+        "direction": "supports",
+        "evidence_type": "functional_assay",
+        "evidence_tier": "primary",
+        "confidence": "strong",
+        "assay_context": {
+          "species": "mouse",
           "cell_type_or_line": "mesangial cells",
           "permeabilized": null,
-          "fixation": "unspecified",
+          "fixation": null,
           "isoform": "TfR1",
           "cell_context": {
             "material_kind": "primary_cell",
@@ -1019,11 +1366,11 @@
               "pmc_id": "PMC12219878",
               "url": "https://pubmed.ncbi.nlm.nih.gov/40593574/",
               "title": "Lysosome-mediated aggregation of galactose-deficient IgA1 with transferrin receptor 1 links to IgA nephropathy",
-              "retrieved_at": "2026-08-15T03:18:37.489323Z",
+              "retrieved_at": "2026-08-15T15:54:10.468635Z",
               "content_sha256": "b3e424a56a08a547d9ff95c753c33d86c4b7def8dc02a0d3508ba3aece76f1d5",
               "publication_type": "primary_research",
               "is_retracted": false,
-              "retraction_checked_at": "2026-08-15T03:18:37.489323Z",
+              "retraction_checked_at": "2026-08-15T15:54:10.468635Z",
               "license": "unknown"
             },
             "section": "abstract",
@@ -1040,326 +1387,8 @@
         "duplicate_of": null
       },
       {
-        "evidence_id": "int_evi_12",
-        "claim": "Canine parvovirus, which uses transferrin receptor as its single receptor, strictly depended on dynamin for cell entry, indicating that TfR1-mediated viral uptake requires dynamin-dependent endocytosis.",
-        "claim_type": "methodological",
-        "direction": "supports",
-        "evidence_type": "functional_assay",
-        "evidence_tier": "primary",
-        "confidence": "strong",
-        "assay_context": {
-          "species": "mouse",
-          "cell_type_or_line": "mouse embryonic fibroblasts",
-          "permeabilized": null,
-          "fixation": "unspecified",
-          "isoform": "TfR1",
-          "cell_context": {
-            "material_kind": "primary_cell",
-            "material_kind_other_label": null,
-            "cell_type": "mouse embryonic fibroblast",
-            "cell_line_name": null,
-            "cellosaurus_id": null,
-            "tissue": null,
-            "disease_state": null,
-            "activation_state": null
-          }
-        },
-        "spans": [
-          {
-            "source": {
-              "source_type": "pubmed",
-              "source_id": "PMC:PMC11594517",
-              "pmc_id": "PMC11594517",
-              "url": "https://pubmed.ncbi.nlm.nih.gov/39541404/",
-              "title": "Dynamin independent endocytosis is an alternative cell entry mechanism for multiple animal viruses",
-              "retrieved_at": "2026-08-15T03:18:37.508933Z",
-              "content_sha256": "b9924ddd23b972a99247062c53a3e6fa7175638c79e6f187fafa07994d691b66",
-              "publication_type": "primary_research",
-              "is_retracted": false,
-              "retraction_checked_at": "2026-08-15T03:18:37.508933Z",
-              "license": "unknown"
-            },
-            "section": "abstract",
-            "figure_or_table_id": null,
-            "quote": "The small canine parvovirus known to use a single receptor, transferrin receptor, strictly depended on dynamin. Larger viruses or viruses known to use multiple receptors, including alphaviruses, influenza, vesicular stomatitis, bunya, adeno, vaccinia, severe acute respiratory syndrome coronavirus 2 (SARS-CoV-2) and rhinoviruses infected Dyn-KO-MEFs, albeit at higher dosage than wild-type MEFs.",
-            "quote_sha256": "76be524204fa7a5e5c1309bdda8c073307a7217c08ef40950020bf465fb9b78e",
-            "char_offset": 558,
-            "normalized_source_sha256": "4925c4df6a8596a1b961a7366c4e44a96bdfaf7e8b68dd10164443ccc03281bd"
-          }
-        ],
-        "entailment_verified": true,
-        "entailment_audit_passed": null,
-        "validation_warnings": [],
-        "duplicate_of": null
-      },
-      {
-        "evidence_id": "int_evi_13",
-        "claim": "Transferrin-derived carbon dot nanoparticles selectively target CD71 (TfR1) on HL60 cells and specifically trigger transferrin-mediated endocytosis via clathrin-coated pits.",
-        "claim_type": "methodological",
-        "direction": "supports",
-        "evidence_type": "functional_assay",
-        "evidence_tier": "primary",
-        "confidence": "strong",
-        "assay_context": {
-          "species": "human",
-          "cell_type_or_line": "HL60",
-          "permeabilized": null,
-          "fixation": "unspecified",
-          "isoform": "TfR1",
-          "cell_context": {
-            "material_kind": "cell_line",
-            "material_kind_other_label": null,
-            "cell_type": "leukemia",
-            "cell_line_name": "HL60",
-            "cellosaurus_id": null,
-            "tissue": null,
-            "disease_state": "acute myeloid leukemia",
-            "activation_state": null
-          }
-        },
-        "spans": [
-          {
-            "source": {
-              "source_type": "pubmed",
-              "source_id": "PMC:PMC10795060",
-              "pmc_id": "PMC10795060",
-              "url": "https://pubmed.ncbi.nlm.nih.gov/38250381/",
-              "title": "Cancer Cell Targeting Via Selective Transferrin Receptor Labeling Using Protein-Derived Carbon Dots",
-              "retrieved_at": "2026-08-15T03:18:37.522548Z",
-              "content_sha256": "1768ff6da9b5c1df466ef523229eaf91b7a0c84d8c824328847ecf54433e2711",
-              "publication_type": "primary_research",
-              "is_retracted": false,
-              "retraction_checked_at": "2026-08-15T03:18:37.522548Z",
-              "license": "unknown"
-            },
-            "section": "abstract",
-            "figure_or_table_id": null,
-            "quote": "These transferrin (Tf)-derived CDs have been shown to possess an affinity for CD71, a cancer biomarker that is ubiquitously expressed in nearly every cancer cell line due to its central role mediating the uptake of cellular iron. The CDs were tested using the human leukemia cell line HL60 and demonstrated the selective targeting of CD71 and specific triggering of transferrin-mediated endocytosis via clathrin-coated pits. The particle characterization results reflect a carbon-based nanoparticle with bright violet fluorescence and 7.9% quantum yield in aqueous solution.",
-            "quote_sha256": "bbbe31af499a0b1d846bd937ffc6bf4380a8b30ba4bf849bfe541d9dc384d52f",
-            "char_offset": 992,
-            "normalized_source_sha256": "37527c94c2814331895f21f5c4a2bc7d7173cdaf5942317c8faf658c1c16dbad"
-          }
-        ],
-        "entailment_verified": true,
-        "entailment_audit_passed": null,
-        "validation_warnings": [],
-        "duplicate_of": null
-      },
-      {
-        "evidence_id": "int_evi_14",
-        "claim": "Chemoproteomic target deconvolution revealed that reversible modification of lysine residues on TFRC (transferrin receptor 1) enabled efficient uptake and lysosomal targeting through both clathrin-dependent and -independent mechanisms.",
-        "claim_type": "methodological",
-        "direction": "supports",
-        "evidence_type": "mass_spec_surfaceome",
-        "evidence_tier": "primary",
-        "confidence": "strong",
-        "assay_context": {
-          "species": "human",
-          "cell_type_or_line": "cancer cells",
-          "permeabilized": null,
-          "fixation": "unspecified",
-          "isoform": "TfR1",
-          "cell_context": {
-            "material_kind": "cell_line",
-            "material_kind_other_label": null,
-            "cell_type": "cancer",
-            "cell_line_name": null,
-            "cellosaurus_id": null,
-            "tissue": null,
-            "disease_state": null,
-            "activation_state": null
-          }
-        },
-        "spans": [
-          {
-            "source": {
-              "source_type": "pubmed",
-              "source_id": "PMC:PMC12746457",
-              "pmc_id": "PMC12746457",
-              "url": "https://pubmed.ncbi.nlm.nih.gov/41194602/",
-              "title": "Ketoboronate as a Minimal Covalent-Reversible Tag for Targeted Lysosomal Degradation of Extracellular and Membrane Proteins",
-              "retrieved_at": "2026-08-15T03:18:37.476761Z",
-              "content_sha256": "6367d7509d4fbca48a4caa392b91dac1a3a6ab7d4a81bbf461a2ee54b26d848b",
-              "publication_type": "primary_research",
-              "is_retracted": false,
-              "retraction_checked_at": "2026-08-15T03:18:37.476761Z",
-              "license": "unknown"
-            },
-            "section": "abstract",
-            "figure_or_table_id": null,
-            "quote": "Chemoproteomic target deconvolution revealed that reversible modification of lysine residues on the transferrin receptor protein 1 (TFRC) and HLA class I histocompatibility antigen A, B and C (HLA-ABC) enabled efficient uptake and lysosomal targeting through both clathrin-dependent and -independent mechanisms.",
-            "quote_sha256": "7afa51b79a476c86a4203fae7c5b6c5f8222d0922dacba121adaaee247d520b9",
-            "char_offset": 865,
-            "normalized_source_sha256": "fb7b547bf88f58fc44eda161730b257b6f7647ebc75d190fbffd3bff892d3896"
-          }
-        ],
-        "entailment_verified": true,
-        "entailment_audit_passed": null,
-        "validation_warnings": [],
-        "duplicate_of": null
-      },
-      {
-        "evidence_id": "int_evi_15",
-        "claim": "Through chemoproteomic profiling, TFRC (transferrin receptor 1) was identified as a key uptake receptor, with direct KB engagement at lysine 193 confirmed.",
-        "claim_type": "methodological",
-        "direction": "supports",
-        "evidence_type": "mass_spec_surfaceome",
-        "evidence_tier": "primary",
-        "confidence": "strong",
-        "assay_context": {
-          "species": "human",
-          "cell_type_or_line": "cancer cells",
-          "permeabilized": null,
-          "fixation": "unspecified",
-          "isoform": "TfR1",
-          "cell_context": {
-            "material_kind": "cell_line",
-            "material_kind_other_label": null,
-            "cell_type": "cancer",
-            "cell_line_name": null,
-            "cellosaurus_id": null,
-            "tissue": null,
-            "disease_state": null,
-            "activation_state": null
-          }
-        },
-        "spans": [
-          {
-            "source": {
-              "source_type": "pubmed",
-              "source_id": "PMC:PMC12746457",
-              "pmc_id": "PMC12746457",
-              "url": "https://pubmed.ncbi.nlm.nih.gov/41194602/",
-              "title": "Ketoboronate as a Minimal Covalent-Reversible Tag for Targeted Lysosomal Degradation of Extracellular and Membrane Proteins",
-              "retrieved_at": "2026-08-15T03:18:37.476761Z",
-              "content_sha256": "6367d7509d4fbca48a4caa392b91dac1a3a6ab7d4a81bbf461a2ee54b26d848b",
-              "publication_type": "primary_research",
-              "is_retracted": false,
-              "retraction_checked_at": "2026-08-15T03:18:37.476761Z",
-              "license": "unknown"
-            },
-            "section": "discussion",
-            "figure_or_table_id": null,
-            "quote": "Through chemoproteomic profiling, we identified transferrin receptor (TFRC) and HLA-A/B/C (HLA-ABC) as the key uptake receptors and confirmed direct KB engagement of TFRC at lysine 193.",
-            "quote_sha256": "7d089d130d9b01bee409b30caccdbc55f595bca16f3f5986d2db2acbf49721db",
-            "char_offset": 31622,
-            "normalized_source_sha256": "fb7b547bf88f58fc44eda161730b257b6f7647ebc75d190fbffd3bff892d3896"
-          }
-        ],
-        "entailment_verified": true,
-        "entailment_audit_passed": null,
-        "validation_warnings": [],
-        "duplicate_of": null
-      },
-      {
         "evidence_id": "int_evi_16",
-        "claim": "Functional studies revealed that KB uptake proceeds through active, receptor-mediated endocytosis, with TFRC (TfR1) operating via clathrin-mediated pathways.",
-        "claim_type": "methodological",
-        "direction": "supports",
-        "evidence_type": "functional_assay",
-        "evidence_tier": "primary",
-        "confidence": "strong",
-        "assay_context": {
-          "species": "human",
-          "cell_type_or_line": "cancer cells",
-          "permeabilized": null,
-          "fixation": "unspecified",
-          "isoform": "TfR1",
-          "cell_context": {
-            "material_kind": "cell_line",
-            "material_kind_other_label": null,
-            "cell_type": "cancer",
-            "cell_line_name": null,
-            "cellosaurus_id": null,
-            "tissue": null,
-            "disease_state": null,
-            "activation_state": null
-          }
-        },
-        "spans": [
-          {
-            "source": {
-              "source_type": "pubmed",
-              "source_id": "PMC:PMC12746457",
-              "pmc_id": "PMC12746457",
-              "url": "https://pubmed.ncbi.nlm.nih.gov/41194602/",
-              "title": "Ketoboronate as a Minimal Covalent-Reversible Tag for Targeted Lysosomal Degradation of Extracellular and Membrane Proteins",
-              "retrieved_at": "2026-08-15T03:18:37.476761Z",
-              "content_sha256": "6367d7509d4fbca48a4caa392b91dac1a3a6ab7d4a81bbf461a2ee54b26d848b",
-              "publication_type": "primary_research",
-              "is_retracted": false,
-              "retraction_checked_at": "2026-08-15T03:18:37.476761Z",
-              "license": "unknown"
-            },
-            "section": "discussion",
-            "figure_or_table_id": null,
-            "quote": "Functional studies further revealed that KB uptake proceeds through active, receptor-mediated endocytosis, with TFRC operating via clathrin-mediated pathways and HLA-ABC via clathrin-independent routes.",
-            "quote_sha256": "e466efc79cec4a3d0450c698d7d73ce87222ab7a8aa5a3891c942017d86ad852",
-            "char_offset": 31808,
-            "normalized_source_sha256": "fb7b547bf88f58fc44eda161730b257b6f7647ebc75d190fbffd3bff892d3896"
-          }
-        ],
-        "entailment_verified": true,
-        "entailment_audit_passed": null,
-        "validation_warnings": [],
-        "duplicate_of": null
-      },
-      {
-        "evidence_id": "int_evi_17",
-        "claim": "Uptake via TFRC (TfR1) was substantially reduced by KB competitors and siRNA knockdown of TFRC, confirming TfR1-dependent internalization.",
-        "claim_type": "methodological",
-        "direction": "supports",
-        "evidence_type": "functional_assay",
-        "evidence_tier": "primary",
-        "confidence": "strong",
-        "assay_context": {
-          "species": "human",
-          "cell_type_or_line": "cancer cells",
-          "permeabilized": null,
-          "fixation": "unspecified",
-          "isoform": "TfR1",
-          "cell_context": {
-            "material_kind": "cell_line",
-            "material_kind_other_label": null,
-            "cell_type": "cancer",
-            "cell_line_name": null,
-            "cellosaurus_id": null,
-            "tissue": null,
-            "disease_state": null,
-            "activation_state": null
-          }
-        },
-        "spans": [
-          {
-            "source": {
-              "source_type": "pubmed",
-              "source_id": "PMC:PMC12746457",
-              "pmc_id": "PMC12746457",
-              "url": "https://pubmed.ncbi.nlm.nih.gov/41194602/",
-              "title": "Ketoboronate as a Minimal Covalent-Reversible Tag for Targeted Lysosomal Degradation of Extracellular and Membrane Proteins",
-              "retrieved_at": "2026-08-15T03:18:37.476761Z",
-              "content_sha256": "6367d7509d4fbca48a4caa392b91dac1a3a6ab7d4a81bbf461a2ee54b26d848b",
-              "publication_type": "primary_research",
-              "is_retracted": false,
-              "retraction_checked_at": "2026-08-15T03:18:37.476761Z",
-              "license": "unknown"
-            },
-            "section": "discussion",
-            "figure_or_table_id": null,
-            "quote": "The uptake was substantially reduced by KB competitors and siRNA knockdown of TFRC and HLA.",
-            "quote_sha256": "d73f8d5cdf132e2d81b27ed18b5f61e20c083404396fba314d894e4e356db00a",
-            "char_offset": 32152,
-            "normalized_source_sha256": "fb7b547bf88f58fc44eda161730b257b6f7647ebc75d190fbffd3bff892d3896"
-          }
-        ],
-        "entailment_verified": true,
-        "entailment_audit_passed": null,
-        "validation_warnings": [],
-        "duplicate_of": null
-      },
-      {
-        "evidence_id": "int_evi_18",
-        "claim": "MACC1 overexpression caused a MACC1-dependent routing of internalized transferrin receptor towards recycling, indicating MACC1 modulates TfR1 internalization and recycling.",
+        "claim": "MACC1 expression caused a MACC1-dependent routing of internalized transferrin receptor (TfR) towards recycling, indicating MACC1 modulates TfR internalization and recycling.",
         "claim_type": "methodological",
         "direction": "supports",
         "evidence_type": "functional_assay",
@@ -1369,12 +1398,12 @@
           "species": "human",
           "cell_type_or_line": "SW620, SW480",
           "permeabilized": null,
-          "fixation": "unspecified",
+          "fixation": null,
           "isoform": "TfR1",
           "cell_context": {
             "material_kind": "cell_line",
             "material_kind_other_label": null,
-            "cell_type": "colorectal cancer",
+            "cell_type": null,
             "cell_line_name": "SW620",
             "cellosaurus_id": null,
             "tissue": null,
@@ -1390,11 +1419,11 @@
               "pmc_id": "PMC8038998",
               "url": "https://pubmed.ncbi.nlm.nih.gov/33469705/",
               "title": "MACC1 regulates clathrin-mediated endocytosis and receptor recycling of transferrin receptor and EGFR in colorectal cancer",
-              "retrieved_at": "2026-08-15T03:18:37.543809Z",
+              "retrieved_at": "2026-08-15T15:54:10.509186Z",
               "content_sha256": "ff58368fe9b2a34fa340d59a67a13e14b6d6c043dcb1d60411adf77d8d80eef9",
               "publication_type": "primary_research",
               "is_retracted": false,
-              "retraction_checked_at": "2026-08-15T03:18:37.543809Z",
+              "retraction_checked_at": "2026-08-15T15:54:10.509186Z",
               "license": "unknown"
             },
             "section": "abstract",
@@ -1411,7 +1440,60 @@
         "duplicate_of": null
       },
       {
-        "evidence_id": "int_evi_19",
+        "evidence_id": "int_evi_17",
+        "claim": "MACC1 interactome analysis identified the CME-cargo TfR as an interaction partner of MACC1, along with clathrin, dynamin, and AP-2 complex subunits, linking MACC1 to TfR internalization.",
+        "claim_type": "methodological",
+        "direction": "supports",
+        "evidence_type": "mass_spec_surfaceome",
+        "evidence_tier": "primary",
+        "confidence": "moderate",
+        "assay_context": {
+          "species": "human",
+          "cell_type_or_line": "SW620",
+          "permeabilized": null,
+          "fixation": null,
+          "isoform": "TfR1",
+          "cell_context": {
+            "material_kind": "cell_line",
+            "material_kind_other_label": null,
+            "cell_type": null,
+            "cell_line_name": "SW620",
+            "cellosaurus_id": null,
+            "tissue": null,
+            "disease_state": "colorectal cancer",
+            "activation_state": null
+          }
+        },
+        "spans": [
+          {
+            "source": {
+              "source_type": "pubmed",
+              "source_id": "PMC:PMC8038998",
+              "pmc_id": "PMC8038998",
+              "url": "https://pubmed.ncbi.nlm.nih.gov/33469705/",
+              "title": "MACC1 regulates clathrin-mediated endocytosis and receptor recycling of transferrin receptor and EGFR in colorectal cancer",
+              "retrieved_at": "2026-08-15T15:54:10.509186Z",
+              "content_sha256": "ff58368fe9b2a34fa340d59a67a13e14b6d6c043dcb1d60411adf77d8d80eef9",
+              "publication_type": "primary_research",
+              "is_retracted": false,
+              "retraction_checked_at": "2026-08-15T15:54:10.509186Z",
+              "license": "unknown"
+            },
+            "section": "results",
+            "figure_or_table_id": null,
+            "quote": "We identified MACC1 interactors involved in different stages of vesicle formation and trafficking, e.g., adaptor-protein (AP) complex subunits, light and heavy chains of clathrin and clathrin/AP-associated proteins, dynamin 1/2 (DNM1/2), and the CME-cargo TfR.",
+            "quote_sha256": "14db59fcae89a0918a045f6bb539ee86d9bf6bdc6972602c29cdd5c1abe1635d",
+            "char_offset": 11739,
+            "normalized_source_sha256": "c988c073be4e056f6e0f851cd3e6f0c2cff479168c3001c2e9d5f8da4e1c5adb"
+          }
+        ],
+        "entailment_verified": true,
+        "entailment_audit_passed": null,
+        "validation_warnings": [],
+        "duplicate_of": null
+      },
+      {
+        "evidence_id": "int_evi_18",
         "claim": "TfR1 is highly expressed at the BBB and regulates CNS iron metabolism by constitutive internalization of transferrin-bound iron.",
         "claim_type": "methodological",
         "direction": "supports",
@@ -1443,11 +1525,11 @@
               "pmc_id": "PMC13290098",
               "url": "https://pubmed.ncbi.nlm.nih.gov/42332368/",
               "title": "Impact of ASO conjugation and receptor binding affinity on intracellular transport of mono- and bispecific TfR- and CD98-Brainshuttle&lt;sup&gt;TM&lt;/sup&gt; variants",
-              "retrieved_at": "2026-08-15T03:18:37.489228Z",
+              "retrieved_at": "2026-08-15T15:54:10.412154Z",
               "content_sha256": "88e033efc3cb608bbb4f93b3812028fa84d90791e4007c2f7a3944ab8ab476ea",
               "publication_type": "other",
               "is_retracted": false,
-              "retraction_checked_at": "2026-08-15T03:18:37.489228Z",
+              "retraction_checked_at": "2026-08-15T15:54:10.412154Z",
               "license": "unknown"
             },
             "section": "introduction",
@@ -1464,8 +1546,8 @@
         "duplicate_of": null
       },
       {
-        "evidence_id": "int_evi_20",
-        "claim": "TfR1 is directed from early endosomes to recycling endosomes and then transported back to the basolateral membrane; this physiological process of receptor-mediated transcytosis is exploited by the Brainshuttle technology using clathrin-mediated transcytosis.",
+        "evidence_id": "int_evi_19",
+        "claim": "TfR1 is directed from early endosomes to recycling endosomes and then transported back to the basolateral membrane; this physiological receptor-mediated transcytosis is exploited by the Brainshuttle technology using clathrin-mediated transcytosis.",
         "claim_type": "methodological",
         "direction": "supports",
         "evidence_type": "review_assertion",
@@ -1496,11 +1578,11 @@
               "pmc_id": "PMC13290098",
               "url": "https://pubmed.ncbi.nlm.nih.gov/42332368/",
               "title": "Impact of ASO conjugation and receptor binding affinity on intracellular transport of mono- and bispecific TfR- and CD98-Brainshuttle&lt;sup&gt;TM&lt;/sup&gt; variants",
-              "retrieved_at": "2026-08-15T03:18:37.489228Z",
+              "retrieved_at": "2026-08-15T15:54:10.412154Z",
               "content_sha256": "88e033efc3cb608bbb4f93b3812028fa84d90791e4007c2f7a3944ab8ab476ea",
               "publication_type": "other",
               "is_retracted": false,
-              "retraction_checked_at": "2026-08-15T03:18:37.489228Z",
+              "retraction_checked_at": "2026-08-15T15:54:10.412154Z",
               "license": "unknown"
             },
             "section": "introduction",
@@ -1517,42 +1599,51 @@
         "duplicate_of": null
       },
       {
-        "evidence_id": "int_evi_21",
-        "claim": "TFR1 binds transferrin and enters the cell through clathrin-mediated endocytosis to deliver ferric iron; internalized TFR1 returns to the cytoplasmic membrane via the recycling pathway, sustaining surface receptor levels and enabling continued iron uptake.",
+        "evidence_id": "int_evi_20",
+        "claim": "Immunocytochemistry established that HPX trafficked with transferrin and transferrin receptor 1 (TfR1) in Rab5-positive early endosomes in HL-60 cells, supporting a clathrin-mediated endocytotic pathway used by TfR1.",
         "claim_type": "methodological",
         "direction": "supports",
-        "evidence_type": "review_assertion",
-        "evidence_tier": "secondary",
+        "evidence_type": "immunofluorescence",
+        "evidence_tier": "primary",
         "confidence": "moderate",
         "assay_context": {
           "species": "human",
-          "cell_type_or_line": null,
+          "cell_type_or_line": "HL-60",
           "permeabilized": null,
           "fixation": null,
           "isoform": "TfR1",
-          "cell_context": null
+          "cell_context": {
+            "material_kind": "cell_line",
+            "material_kind_other_label": null,
+            "cell_type": null,
+            "cell_line_name": "HL-60",
+            "cellosaurus_id": null,
+            "tissue": null,
+            "disease_state": "promyelocytic leukemia",
+            "activation_state": null
+          }
         },
         "spans": [
           {
             "source": {
               "source_type": "pubmed",
-              "source_id": "PMID:42286679",
-              "pmc_id": null,
-              "url": "https://pubmed.ncbi.nlm.nih.gov/42286679/",
-              "title": "Transferrin receptor 1: an emerging therapeutic target in cancer beyond iron metabolism",
-              "retrieved_at": "2026-08-15T03:18:37.543954Z",
-              "content_sha256": "5c18fbf3b273e02b0a53622f30b7b4070c629b10e63ba00e2eaeec554d0ffe4b",
-              "publication_type": "review",
+              "source_id": "PMC:PMC12690290",
+              "pmc_id": "PMC12690290",
+              "url": "https://pubmed.ncbi.nlm.nih.gov/41384245/",
+              "title": "Tracking hemopexin intracellularly and defining hemopexin protein \"interactomes\" in human immune and liver cell models",
+              "retrieved_at": "2026-08-15T15:54:10.477969Z",
+              "content_sha256": "3224890c7659a4a197d0864ca96580adfaaea21268770da8916ac48449904035",
+              "publication_type": "primary_research",
               "is_retracted": false,
-              "retraction_checked_at": "2026-08-15T03:18:37.543954Z",
+              "retraction_checked_at": "2026-08-15T15:54:10.477969Z",
               "license": "unknown"
             },
             "section": "abstract",
             "figure_or_table_id": null,
-            "quote": "By upregulating iron uptake and storage pathways, they elevate intracellular iron levels, providing essential cofactors for accelerated DNA synthesis and mitochondrial energy production, thereby meeting the material and energy demands of malignant growth. As an essential regulator of iron acquisition, transferrin receptor 1 (TFR1) binds transferrin (TF) and enters the cell through clathrin-mediated endocytosis to deliver ferric iron (Fe³⁺). Internalized TFR1 returns to the cytoplasmic membrane via the recycling pathway, sustaining surface receptor levels and enabling continued iron uptake.",
-            "quote_sha256": "fac6ee9d099372c9befd70bbced918f1b893ce1223bec25adbaaae94bd55db2a",
-            "char_offset": 481,
-            "normalized_source_sha256": "1b94f79b100d4b592b7310be9072337b959402b93631c335f1d9843e52003f1b"
+            "quote": "Immunoblots revealed that HL-60 cells lack LRP1, and immunocytochemistry established that HPX trafficked with transferrin and transferrin receptor 1 (TfR1) in Rab5-positive early endosomes, supporting a clathrin-mediated endocytotic pathway used by TfR1s.",
+            "quote_sha256": "d1443b49fa7dd4ad805e2e5b8d0ec8b09ad7d974adf059814887de0002c11c86",
+            "char_offset": 873,
+            "normalized_source_sha256": "c47bd89504f013163545936e0f7193fc0f63018050abcb534b4d05e2c3b55c15"
           }
         ],
         "entailment_verified": true,
@@ -1561,8 +1652,61 @@
         "duplicate_of": null
       },
       {
-        "evidence_id": "int_evi_22",
-        "claim": "TfR1 initially functions as a receptor for influenza A virus, interacting with viral neuraminidase through its extracellular apical domain, thereby initiating viral endocytosis.",
+        "evidence_id": "int_evi_24",
+        "claim": "The small canine parvovirus, which uses transferrin receptor as its single receptor, strictly depended on dynamin for cell entry, demonstrating that dynamin-dependent endocytosis is essential for TfR-mediated viral uptake.",
+        "claim_type": "methodological",
+        "direction": "supports",
+        "evidence_type": "functional_assay",
+        "evidence_tier": "primary",
+        "confidence": "strong",
+        "assay_context": {
+          "species": "mouse",
+          "cell_type_or_line": "mouse embryonic fibroblasts (MEFs)",
+          "permeabilized": null,
+          "fixation": null,
+          "isoform": "TfR1",
+          "cell_context": {
+            "material_kind": "primary_cell",
+            "material_kind_other_label": null,
+            "cell_type": "mouse embryonic fibroblast",
+            "cell_line_name": null,
+            "cellosaurus_id": null,
+            "tissue": null,
+            "disease_state": null,
+            "activation_state": null
+          }
+        },
+        "spans": [
+          {
+            "source": {
+              "source_type": "pubmed",
+              "source_id": "PMC:PMC11594517",
+              "pmc_id": "PMC11594517",
+              "url": "https://pubmed.ncbi.nlm.nih.gov/39541404/",
+              "title": "Dynamin independent endocytosis is an alternative cell entry mechanism for multiple animal viruses",
+              "retrieved_at": "2026-08-15T15:54:10.493203Z",
+              "content_sha256": "b9924ddd23b972a99247062c53a3e6fa7175638c79e6f187fafa07994d691b66",
+              "publication_type": "primary_research",
+              "is_retracted": false,
+              "retraction_checked_at": "2026-08-15T15:54:10.493203Z",
+              "license": "unknown"
+            },
+            "section": "abstract",
+            "figure_or_table_id": null,
+            "quote": "The small canine parvovirus known to use a single receptor, transferrin receptor, strictly depended on dynamin. Larger viruses or viruses known to use multiple receptors, including alphaviruses, influenza, vesicular stomatitis, bunya, adeno, vaccinia, severe acute respiratory syndrome coronavirus 2 (SARS-CoV-2) and rhinoviruses infected Dyn-KO-MEFs, albeit at higher dosage than wild-type MEFs.",
+            "quote_sha256": "76be524204fa7a5e5c1309bdda8c073307a7217c08ef40950020bf465fb9b78e",
+            "char_offset": 558,
+            "normalized_source_sha256": "4925c4df6a8596a1b961a7366c4e44a96bdfaf7e8b68dd10164443ccc03281bd"
+          }
+        ],
+        "entailment_verified": true,
+        "entailment_audit_passed": null,
+        "validation_warnings": [],
+        "duplicate_of": null
+      },
+      {
+        "evidence_id": "int_evi_25",
+        "claim": "TfR1 initially functions as a receptor for influenza A virus (IAV), interacting with viral neuraminidase through its extracellular apical domain, thereby initiating viral endocytosis.",
         "claim_type": "methodological",
         "direction": "supports",
         "evidence_type": "functional_assay",
@@ -1572,16 +1716,16 @@
           "species": "human",
           "cell_type_or_line": "A549",
           "permeabilized": null,
-          "fixation": "unspecified",
-          "isoform": "TfR1",
+          "fixation": null,
+          "isoform": "TfR1/CD71",
           "cell_context": {
             "material_kind": "cell_line",
             "material_kind_other_label": null,
-            "cell_type": "lung adenocarcinoma",
+            "cell_type": null,
             "cell_line_name": "A549",
             "cellosaurus_id": null,
             "tissue": null,
-            "disease_state": null,
+            "disease_state": "lung adenocarcinoma",
             "activation_state": null
           }
         },
@@ -1593,11 +1737,11 @@
               "pmc_id": "PMC12533913",
               "url": "https://pubmed.ncbi.nlm.nih.gov/41071818/",
               "title": "TfR1 facilitates influenza virus endocytosis and uncoating by interacting with NA and M1 via extracellular and intracellular domains",
-              "retrieved_at": "2026-08-15T03:18:37.522402Z",
+              "retrieved_at": "2026-08-15T15:54:10.399733Z",
               "content_sha256": "1c86b48162ee3041193f0d6465fbe9a1e79a31718a378b54b22a12ea096e1f2b",
               "publication_type": "primary_research",
               "is_retracted": false,
-              "retraction_checked_at": "2026-08-15T03:18:37.522402Z",
+              "retraction_checked_at": "2026-08-15T15:54:10.399733Z",
               "license": "unknown"
             },
             "section": "abstract",
@@ -1614,27 +1758,27 @@
         "duplicate_of": null
       },
       {
-        "evidence_id": "int_evi_23",
-        "claim": "Overexpression of mandarin fish TfR1 (mfTfR1) in low-permissive FHM cells significantly enhanced SDDV replication, particularly during the early stages of viral binding and entry, indicating TfR1 mediates viral internalization.",
+        "evidence_id": "int_evi_26",
+        "claim": "The anti-TfR1 IgG3-avidin fusion protein ch128.1Av was designed to deliver biotinylated therapeutic agents into cancer cells through TfR1 receptor-mediated endocytosis.",
         "claim_type": "methodological",
         "direction": "supports",
         "evidence_type": "functional_assay",
         "evidence_tier": "primary",
-        "confidence": "strong",
+        "confidence": "moderate",
         "assay_context": {
-          "species": "other",
-          "cell_type_or_line": "FHM cells",
+          "species": "human",
+          "cell_type_or_line": "NHL cancer cells",
           "permeabilized": null,
-          "fixation": "unspecified",
-          "isoform": "TfR1",
+          "fixation": null,
+          "isoform": "TfR1/CD71",
           "cell_context": {
             "material_kind": "cell_line",
             "material_kind_other_label": null,
-            "cell_type": "fathead minnow",
-            "cell_line_name": "FHM",
+            "cell_type": null,
+            "cell_line_name": null,
             "cellosaurus_id": null,
             "tissue": null,
-            "disease_state": null,
+            "disease_state": "non-Hodgkin lymphoma",
             "activation_state": null
           }
         },
@@ -1642,23 +1786,23 @@
           {
             "source": {
               "source_type": "pubmed",
-              "source_id": "PMC:PMC12363161",
-              "pmc_id": "PMC12363161",
-              "url": "https://pubmed.ncbi.nlm.nih.gov/40719463/",
-              "title": "Transferrin receptor 1 (TfR1) functions as an entry receptor for scale drop disease virus to invade the host cell via clathrin-mediated endocytosis",
-              "retrieved_at": "2026-08-15T03:18:37.549943Z",
-              "content_sha256": "8d7e89d99d87022db5cfe951100d22b561c065fdaf827006ec40dc74f22791d5",
+              "source_id": "PMC:PMC13235839",
+              "pmc_id": "PMC13235839",
+              "url": "https://pubmed.ncbi.nlm.nih.gov/41592623/",
+              "title": "A proimmunotoxin nanodrug targeting AIDS-associated non-Hodgkin lymphoma",
+              "retrieved_at": "2026-08-15T15:54:10.531714Z",
+              "content_sha256": "0dab5f9c6c1dc2d4b8b7fd044f3f0786697008805f20cf31c935fe5c35c9f908",
               "publication_type": "primary_research",
               "is_retracted": false,
-              "retraction_checked_at": "2026-08-15T03:18:37.549943Z",
+              "retraction_checked_at": "2026-08-15T15:54:10.531714Z",
               "license": "unknown"
             },
             "section": "abstract",
             "figure_or_table_id": null,
-            "quote": "Overexpression of <i>mf</i>TfR1 in low-permissive fathead minnow (FHM) cells significantly enhanced SDDV replication, particularly during the early stages of viral binding and entry.",
-            "quote_sha256": "249642d95a16dd7c8feb3e86fdc0cc90382cdc20a64dc86f0564f957ffa366aa",
-            "char_offset": 609,
-            "normalized_source_sha256": "18248e860fadf2439be30cfead3f339e030b719892f23279c67a730772db2142"
+            "quote": "Our group developed an anti-TfR1 IgG3-avidin fusion protein, ch128.1Av, designed to deliver biotinylated therapeutic agents into cancer cells through receptor-mediated endocytosis.",
+            "quote_sha256": "ca021ced646aa77f067d2e27ebb3411d50aca3507a8359769ef74c0405bf7aa4",
+            "char_offset": 448,
+            "normalized_source_sha256": "c76e82f74895ff214f4b316455159bbc3f4e86ec20e5f26d97d486a1c0252c14"
           }
         ],
         "entailment_verified": true,
@@ -1667,61 +1811,8 @@
         "duplicate_of": null
       },
       {
-        "evidence_id": "int_evi_24",
-        "claim": "Antibody-blocking experiments and treatment with the TfR1 inhibitor ferristatin II significantly suppressed SDDV entry, confirming TfR1-dependent viral internalization.",
-        "claim_type": "methodological",
-        "direction": "supports",
-        "evidence_type": "functional_assay",
-        "evidence_tier": "primary",
-        "confidence": "strong",
-        "assay_context": {
-          "species": "other",
-          "cell_type_or_line": "MFF-1 cells",
-          "permeabilized": null,
-          "fixation": "unspecified",
-          "isoform": "TfR1",
-          "cell_context": {
-            "material_kind": "cell_line",
-            "material_kind_other_label": null,
-            "cell_type": "mandarin fish fry",
-            "cell_line_name": "MFF-1",
-            "cellosaurus_id": null,
-            "tissue": null,
-            "disease_state": null,
-            "activation_state": null
-          }
-        },
-        "spans": [
-          {
-            "source": {
-              "source_type": "pubmed",
-              "source_id": "PMC:PMC12363161",
-              "pmc_id": "PMC12363161",
-              "url": "https://pubmed.ncbi.nlm.nih.gov/40719463/",
-              "title": "Transferrin receptor 1 (TfR1) functions as an entry receptor for scale drop disease virus to invade the host cell via clathrin-mediated endocytosis",
-              "retrieved_at": "2026-08-15T03:18:37.549943Z",
-              "content_sha256": "8d7e89d99d87022db5cfe951100d22b561c065fdaf827006ec40dc74f22791d5",
-              "publication_type": "primary_research",
-              "is_retracted": false,
-              "retraction_checked_at": "2026-08-15T03:18:37.549943Z",
-              "license": "unknown"
-            },
-            "section": "abstract",
-            "figure_or_table_id": null,
-            "quote": "Conversely, antibody-blocking experiments and treatment with the TfR1 inhibitor ferristatin II significantly suppressed SDDV entry.",
-            "quote_sha256": "7e6a7bc6fe4a7598c03b5f7da6aba373b4bb3d559a7dcc43251ce293c6762ef9",
-            "char_offset": 792,
-            "normalized_source_sha256": "18248e860fadf2439be30cfead3f339e030b719892f23279c67a730772db2142"
-          }
-        ],
-        "entailment_verified": true,
-        "entailment_audit_passed": null,
-        "validation_warnings": [],
-        "duplicate_of": null
-      },
-      {
-        "evidence_id": "int_evi_25",
-        "claim": "Transcytosis and receptor degradation of anti-TfR1 antibodies trend with affinity, and these in-vitro functions connect to in-vivo behaviors in brain uptake and reticulocyte depletion.",
+        "evidence_id": "int_evi_27",
+        "claim": "The study establishes how transcytosis and receptor degradation of TfR1 trend with antibody affinity and connects these in-vitro functions to in-vivo behaviors in brain uptake and reticulocyte depletion.",
         "claim_type": "methodological",
         "direction": "supports",
         "evidence_type": "functional_assay",
@@ -1731,7 +1822,7 @@
           "species": "human",
           "cell_type_or_line": "brain endothelial cells",
           "permeabilized": null,
-          "fixation": "unspecified",
+          "fixation": null,
           "isoform": "TfR1",
           "cell_context": {
             "material_kind": "primary_cell",
@@ -1752,11 +1843,11 @@
               "pmc_id": "PMC12952256",
               "url": "https://pubmed.ncbi.nlm.nih.gov/41287279/",
               "title": "Balancing brain exposure, pharmacokinetics and safety of transferrin receptor antibodies for delivery of neuro-therapeutics",
-              "retrieved_at": "2026-08-15T03:18:37.538556Z",
+              "retrieved_at": "2026-08-15T15:54:10.486329Z",
               "content_sha256": "f91c2e5ca32a81d270a60e8d714079434aee6c13426b6fa928d355eaa7209645",
               "publication_type": "other",
               "is_retracted": false,
-              "retraction_checked_at": "2026-08-15T03:18:37.538556Z",
+              "retraction_checked_at": "2026-08-15T15:54:10.486329Z",
               "license": "unknown"
             },
             "section": "abstract",
@@ -1773,8 +1864,114 @@
         "duplicate_of": null
       },
       {
-        "evidence_id": "int_evi_26",
-        "claim": "Confocal microscopy indicated the highest intracellular uptake of Tf-WRAP5 complexes at T8, the time point with the highest transferrin receptor expression in U87 glioma cells.",
+        "evidence_id": "int_evi_28",
+        "claim": "Bivalent anti-TfR1 antibodies can be equally effective in brain uptake (transcytosis) as monovalent antibodies if engineered to have similar cell-surface TfR1 binding strength, with prolonged brain exposure and less severe adverse effects.",
+        "claim_type": "methodological",
+        "direction": "supports",
+        "evidence_type": "functional_assay",
+        "evidence_tier": "primary",
+        "confidence": "moderate",
+        "assay_context": {
+          "species": "unspecified",
+          "cell_type_or_line": "brain endothelial cells",
+          "permeabilized": null,
+          "fixation": null,
+          "isoform": "TfR1",
+          "cell_context": {
+            "material_kind": "primary_cell",
+            "material_kind_other_label": null,
+            "cell_type": "brain endothelial cell",
+            "cell_line_name": null,
+            "cellosaurus_id": null,
+            "tissue": null,
+            "disease_state": null,
+            "activation_state": null
+          }
+        },
+        "spans": [
+          {
+            "source": {
+              "source_type": "pubmed",
+              "source_id": "PMC:PMC12952256",
+              "pmc_id": "PMC12952256",
+              "url": "https://pubmed.ncbi.nlm.nih.gov/41287279/",
+              "title": "Balancing brain exposure, pharmacokinetics and safety of transferrin receptor antibodies for delivery of neuro-therapeutics",
+              "retrieved_at": "2026-08-15T15:54:10.486329Z",
+              "content_sha256": "f91c2e5ca32a81d270a60e8d714079434aee6c13426b6fa928d355eaa7209645",
+              "publication_type": "other",
+              "is_retracted": false,
+              "retraction_checked_at": "2026-08-15T15:54:10.486329Z",
+              "license": "unknown"
+            },
+            "section": "abstract",
+            "figure_or_table_id": null,
+            "quote": "Our results show that bivalent anti-TfR1 antibodies can be equally effective in brain uptake as monovalent antibodies if engineered to have similar cell-surface TfR1 binding strength, with prolonged brain exposure and less severe adverse effects, but epitope, as well as affinity and valency, factors into selecting a shuttle with maximal performance.",
+            "quote_sha256": "fc942e045464f8b51ae5273b0a9c0a21ad11ca948727f4f92d4c435ec174678f",
+            "char_offset": 1027,
+            "normalized_source_sha256": "8481bcb8f72b11656a88738c92ca4a7982d39ac071a3e9b8694c2aafc37d388b"
+          }
+        ],
+        "entailment_verified": true,
+        "entailment_audit_passed": null,
+        "validation_warnings": [],
+        "duplicate_of": null
+      },
+      {
+        "evidence_id": "int_evi_29",
+        "claim": "Cellular uptake of CD71 (TfR1)-targeted ROS-responsive micelles (TDTP/HHT) was evaluated in AML cell lines using a D-peptide ligand (DT7) for CD71 targeting.",
+        "claim_type": "methodological",
+        "direction": "supports",
+        "evidence_type": "functional_assay",
+        "evidence_tier": "primary",
+        "confidence": "moderate",
+        "assay_context": {
+          "species": "human",
+          "cell_type_or_line": "AML cell lines (MOLM-13, MV4-11)",
+          "permeabilized": null,
+          "fixation": null,
+          "isoform": "TfR1/CD71",
+          "cell_context": {
+            "material_kind": "cell_line",
+            "material_kind_other_label": null,
+            "cell_type": null,
+            "cell_line_name": null,
+            "cellosaurus_id": null,
+            "tissue": null,
+            "disease_state": "acute myeloid leukemia",
+            "activation_state": null
+          }
+        },
+        "spans": [
+          {
+            "source": {
+              "source_type": "pubmed",
+              "source_id": "PMC:PMC13222560",
+              "pmc_id": "PMC13222560",
+              "url": "https://pubmed.ncbi.nlm.nih.gov/42226965/",
+              "title": "CD71-Targeted and ROS-Responsive Micelles for Homoharringtonine Delivery to Enhance Therapeutic Efficiency Against FLT3-ITD Acute Myeloid Leukemia",
+              "retrieved_at": "2026-08-15T15:54:10.518987Z",
+              "content_sha256": "08aa0d2dbcd6258d2f794dffc1836e45aac6ab3dd2d37f884757ebd1e9943c6b",
+              "publication_type": "primary_research",
+              "is_retracted": false,
+              "retraction_checked_at": "2026-08-15T15:54:10.518987Z",
+              "license": "unknown"
+            },
+            "section": "abstract",
+            "figure_or_table_id": null,
+            "quote": "Cellular uptake, cytotoxicity and signaling pathway inhibition were evaluated in vitro across AML cell lines with distinct FLT3 statuses.",
+            "quote_sha256": "1b590211ec2adddd530c78c748ce01b49db009eddc31b204f72574a294fd22b3",
+            "char_offset": 733,
+            "normalized_source_sha256": "7930b0ad3266a51ab9b73ace029783a0fb1ed9328ec6b264821ce3bb786adb5d"
+          }
+        ],
+        "entailment_verified": true,
+        "entailment_audit_passed": null,
+        "validation_warnings": [],
+        "duplicate_of": null
+      },
+      {
+        "evidence_id": "int_evi_30",
+        "claim": "Confocal microscopy indicated the highest intracellular uptake of Tf-WRAP5 complexes at T8, the time point with the highest transferrin receptor expression in U87 glioma cells, linking TfR expression levels to uptake efficiency.",
         "claim_type": "methodological",
         "direction": "supports",
         "evidence_type": "immunofluorescence",
@@ -1782,14 +1979,14 @@
         "confidence": "moderate",
         "assay_context": {
           "species": "human",
-          "cell_type_or_line": "U87",
+          "cell_type_or_line": "U87 glioma cells",
           "permeabilized": null,
-          "fixation": "unspecified",
+          "fixation": null,
           "isoform": "TfR1",
           "cell_context": {
             "material_kind": "cell_line",
             "material_kind_other_label": null,
-            "cell_type": "glioma",
+            "cell_type": null,
             "cell_line_name": "U87",
             "cellosaurus_id": null,
             "tissue": null,
@@ -1805,11 +2002,11 @@
               "pmc_id": "PMC12250532",
               "url": "https://pubmed.ncbi.nlm.nih.gov/40649908/",
               "title": "Circadian-Tuned Peptide Drug/Gene Co-Delivery Nanocomplexes to Enhance Glioblastoma Targeting and Transfection",
-              "retrieved_at": "2026-08-15T03:18:37.514778Z",
+              "retrieved_at": "2026-08-15T15:54:10.525152Z",
               "content_sha256": "e9c862f8c634fd3e94193563dc24291e00abd01d28b9ed053e7f87f4228410f2",
               "publication_type": "primary_research",
               "is_retracted": false,
-              "retraction_checked_at": "2026-08-15T03:18:37.514778Z",
+              "retraction_checked_at": "2026-08-15T15:54:10.525152Z",
               "license": "unknown"
             },
             "section": "abstract",
@@ -1826,27 +2023,27 @@
         "duplicate_of": null
       },
       {
-        "evidence_id": "int_evi_27",
-        "claim": "In a CRISPR mouse model of LRP2 p.C1400R, receptor-mediated endocytosis was impaired with a general perturbation of endocytic flux, and immunofluorescence revealed aberrant endocytic recycling with mislocalized TFR1+ compartments.",
+        "evidence_id": "int_evi_31",
+        "claim": "Cellular binding and internalization of anti-TfR1 antibody T8IgG1 were assessed by flow cytometry and immunofluorescence microscopy.",
         "claim_type": "methodological",
         "direction": "supports",
-        "evidence_type": "immunofluorescence",
+        "evidence_type": "flow_cytometry",
         "evidence_tier": "primary",
         "confidence": "moderate",
         "assay_context": {
-          "species": "mouse",
-          "cell_type_or_line": "proximal tubule cells",
+          "species": "human",
+          "cell_type_or_line": "tumor cell lines",
           "permeabilized": null,
-          "fixation": "unspecified",
+          "fixation": null,
           "isoform": "TfR1",
           "cell_context": {
-            "material_kind": "primary_cell",
+            "material_kind": "cell_line",
             "material_kind_other_label": null,
-            "cell_type": "proximal tubule",
+            "cell_type": null,
             "cell_line_name": null,
             "cellosaurus_id": null,
             "tissue": null,
-            "disease_state": "Donnai-Barrow syndrome",
+            "disease_state": "cancer",
             "activation_state": null
           }
         },
@@ -1854,23 +2051,288 @@
           {
             "source": {
               "source_type": "pubmed",
-              "source_id": "PMID:42024452",
-              "pmc_id": null,
-              "url": "https://pubmed.ncbi.nlm.nih.gov/42024452/",
-              "title": "Failure of endocytic flux in Donnai-Barrow syndrome caused by LRP2 p.C1400R",
-              "retrieved_at": "2026-08-15T03:18:37.489357Z",
-              "content_sha256": "8c0600fc38583725fa78eb159f43df9753a5f0e4dcebdc6b1ff3a7d48ea17612",
-              "publication_type": "other",
+              "source_id": "PMC:PMC13114112",
+              "pmc_id": "PMC13114112",
+              "url": "https://pubmed.ncbi.nlm.nih.gov/42041393/",
+              "title": "Development of a Human IgG1 Monoclonal Antibody Targeting Transferrin Receptor 1 for Antitumor Drug Delivery",
+              "retrieved_at": "2026-08-15T15:54:10.513296Z",
+              "content_sha256": "d797858e6b4b255a4ad41b77cdfcec442225c9f20aa75612090e270a019b4826",
+              "publication_type": "primary_research",
               "is_retracted": false,
-              "retraction_checked_at": "2026-08-15T03:18:37.489357Z",
+              "retraction_checked_at": "2026-08-15T15:54:10.513296Z",
               "license": "unknown"
             },
             "section": "abstract",
             "figure_or_table_id": null,
-            "quote": "The mutant LRP2 was expressed and observed to dimerize and localize to the proximal tubule apical membrane. However, both fluid-phase and receptor-mediated endocytosis was impaired in the context of a general perturbation of endocytic flux. Immunofluorescence revealed aberrant endocytic recycling with mislocalized RAB11+ and TFR1+ compartments and enlarged lysosomes.",
-            "quote_sha256": "4cacb8b3519436362c7d10543c888fd82111fd06b2bf78f6e6d2cd703b619fc0",
-            "char_offset": 591,
-            "normalized_source_sha256": "1e86b84a150c3ba4b008986c65e29b01c77e33d56bce79d8532304f51e823de6"
+            "quote": "Binding kinetics were characterized using Octet biolayer interferometry (BLI), while cellular binding and internalization were assessed by flow cytometry and immunofluorescence microscopy, respectively.",
+            "quote_sha256": "72808e4d3781ee47c47be2e59a73b61ceae378e728335a05bb21fa9f305c3933",
+            "char_offset": 518,
+            "normalized_source_sha256": "53085f3ca35bdd89ed8ff4b6b65ebb2061c68d7fb10272984a334f8f259a0eaa"
+          }
+        ],
+        "entailment_verified": true,
+        "entailment_audit_passed": null,
+        "validation_warnings": [],
+        "duplicate_of": null
+      },
+      {
+        "evidence_id": "int_evi_32",
+        "claim": "TFR1 binds transferrin and enters the cell through clathrin-mediated endocytosis to deliver ferric iron; internalized TFR1 returns to the cytoplasmic membrane via the recycling pathway, sustaining surface receptor levels and enabling continued iron uptake.",
+        "claim_type": "methodological",
+        "direction": "supports",
+        "evidence_type": "review_assertion",
+        "evidence_tier": "secondary",
+        "confidence": "moderate",
+        "assay_context": {
+          "species": "human",
+          "cell_type_or_line": "tumor cells",
+          "permeabilized": null,
+          "fixation": null,
+          "isoform": "TfR1",
+          "cell_context": {
+            "material_kind": "cell_line",
+            "material_kind_other_label": null,
+            "cell_type": null,
+            "cell_line_name": null,
+            "cellosaurus_id": null,
+            "tissue": null,
+            "disease_state": "cancer",
+            "activation_state": null
+          }
+        },
+        "spans": [
+          {
+            "source": {
+              "source_type": "pubmed",
+              "source_id": "PMID:42286679",
+              "pmc_id": null,
+              "url": "https://pubmed.ncbi.nlm.nih.gov/42286679/",
+              "title": "Transferrin receptor 1: an emerging therapeutic target in cancer beyond iron metabolism",
+              "retrieved_at": "2026-08-15T15:54:10.503449Z",
+              "content_sha256": "5c18fbf3b273e02b0a53622f30b7b4070c629b10e63ba00e2eaeec554d0ffe4b",
+              "publication_type": "review",
+              "is_retracted": false,
+              "retraction_checked_at": "2026-08-15T15:54:10.503449Z",
+              "license": "unknown"
+            },
+            "section": "abstract",
+            "figure_or_table_id": null,
+            "quote": "By upregulating iron uptake and storage pathways, they elevate intracellular iron levels, providing essential cofactors for accelerated DNA synthesis and mitochondrial energy production, thereby meeting the material and energy demands of malignant growth. As an essential regulator of iron acquisition, transferrin receptor 1 (TFR1) binds transferrin (TF) and enters the cell through clathrin-mediated endocytosis to deliver ferric iron (Fe³⁺). Internalized TFR1 returns to the cytoplasmic membrane via the recycling pathway, sustaining surface receptor levels and enabling continued iron uptake.",
+            "quote_sha256": "fac6ee9d099372c9befd70bbced918f1b893ce1223bec25adbaaae94bd55db2a",
+            "char_offset": 481,
+            "normalized_source_sha256": "1b94f79b100d4b592b7310be9072337b959402b93631c335f1d9843e52003f1b"
+          }
+        ],
+        "entailment_verified": true,
+        "entailment_audit_passed": null,
+        "validation_warnings": [],
+        "duplicate_of": null
+      },
+      {
+        "evidence_id": "int_evi_33",
+        "claim": "ASO conjugation increased binding to brain endothelial cells (BECs) of low-affinity TfR1 shuttles via avidity effects while paradoxically reducing binding strength of high-affinity shuttles, affecting TfR1-mediated internalization.",
+        "claim_type": "methodological",
+        "direction": "ambiguous",
+        "evidence_type": "functional_assay",
+        "evidence_tier": "primary",
+        "confidence": "moderate",
+        "assay_context": {
+          "species": "human",
+          "cell_type_or_line": "hCMEC/D3 brain endothelial cells",
+          "permeabilized": null,
+          "fixation": null,
+          "isoform": "TfR1",
+          "cell_context": {
+            "material_kind": "cell_line",
+            "material_kind_other_label": null,
+            "cell_type": "brain endothelial cell",
+            "cell_line_name": "hCMEC/D3",
+            "cellosaurus_id": null,
+            "tissue": null,
+            "disease_state": null,
+            "activation_state": null
+          }
+        },
+        "spans": [
+          {
+            "source": {
+              "source_type": "pubmed",
+              "source_id": "PMC:PMC13290098",
+              "pmc_id": "PMC13290098",
+              "url": "https://pubmed.ncbi.nlm.nih.gov/42332368/",
+              "title": "Impact of ASO conjugation and receptor binding affinity on intracellular transport of mono- and bispecific TfR- and CD98-Brainshuttle&lt;sup&gt;TM&lt;/sup&gt; variants",
+              "retrieved_at": "2026-08-15T15:54:10.412154Z",
+              "content_sha256": "88e033efc3cb608bbb4f93b3812028fa84d90791e4007c2f7a3944ab8ab476ea",
+              "publication_type": "other",
+              "is_retracted": false,
+              "retraction_checked_at": "2026-08-15T15:54:10.412154Z",
+              "license": "unknown"
+            },
+            "section": "abstract",
+            "figure_or_table_id": null,
+            "quote": "Specifically, conjugation increased the binding to BECs of low-affinity TfR1 shuttles via avidity effects while paradoxically reducing the binding strength of high-affinity shuttles.",
+            "quote_sha256": "b85eacb59b49be29120205203664c4d8ea3c4fc4b2766abf2a98b527fc34062a",
+            "char_offset": 1154,
+            "normalized_source_sha256": "dda3e73739543ac77cdd9fcd775c701946f4a49507bc890f57e4552d6421f58b"
+          }
+        ],
+        "entailment_verified": true,
+        "entailment_audit_passed": null,
+        "validation_warnings": [],
+        "duplicate_of": null
+      },
+      {
+        "evidence_id": "int_evi_34",
+        "claim": "Transcytosis of high-to-moderate affinity TfR1 binders across the BBB model was significantly delayed upon ASO conjugation, demonstrating that ASO cargo modulates TfR1-mediated transcytosis/internalization.",
+        "claim_type": "methodological",
+        "direction": "supports",
+        "evidence_type": "functional_assay",
+        "evidence_tier": "primary",
+        "confidence": "moderate",
+        "assay_context": {
+          "species": "human",
+          "cell_type_or_line": "hCMEC/D3 brain endothelial cells",
+          "permeabilized": null,
+          "fixation": null,
+          "isoform": "TfR1",
+          "cell_context": {
+            "material_kind": "cell_line",
+            "material_kind_other_label": null,
+            "cell_type": "brain endothelial cell",
+            "cell_line_name": "hCMEC/D3",
+            "cellosaurus_id": null,
+            "tissue": null,
+            "disease_state": null,
+            "activation_state": null
+          }
+        },
+        "spans": [
+          {
+            "source": {
+              "source_type": "pubmed",
+              "source_id": "PMC:PMC13290098",
+              "pmc_id": "PMC13290098",
+              "url": "https://pubmed.ncbi.nlm.nih.gov/42332368/",
+              "title": "Impact of ASO conjugation and receptor binding affinity on intracellular transport of mono- and bispecific TfR- and CD98-Brainshuttle&lt;sup&gt;TM&lt;/sup&gt; variants",
+              "retrieved_at": "2026-08-15T15:54:10.412154Z",
+              "content_sha256": "88e033efc3cb608bbb4f93b3812028fa84d90791e4007c2f7a3944ab8ab476ea",
+              "publication_type": "other",
+              "is_retracted": false,
+              "retraction_checked_at": "2026-08-15T15:54:10.412154Z",
+              "license": "unknown"
+            },
+            "section": "abstract",
+            "figure_or_table_id": null,
+            "quote": "Functional assays confirmed the biological activity of the delivered ASOs; however, transcytosis of high-to-moderate affinity binders across the BBB model was significantly delayed upon ASO conjugation.",
+            "quote_sha256": "c441b7d51b9f1bcd8239d88860c75bbfe2717ce9916b96ba8d4595d01a2a59cd",
+            "char_offset": 1337,
+            "normalized_source_sha256": "dda3e73739543ac77cdd9fcd775c701946f4a49507bc890f57e4552d6421f58b"
+          }
+        ],
+        "entailment_verified": true,
+        "entailment_audit_passed": null,
+        "validation_warnings": [],
+        "duplicate_of": null
+      },
+      {
+        "evidence_id": "int_evi_35",
+        "claim": "Antibody-blocking experiments against mfTfR1 and treatment with the TfR1 inhibitor ferristatin II significantly suppressed SDDV entry into mandarin fish cells, demonstrating TfR1-dependent viral internalization.",
+        "claim_type": "methodological",
+        "direction": "supports",
+        "evidence_type": "functional_assay",
+        "evidence_tier": "primary",
+        "confidence": "strong",
+        "assay_context": {
+          "species": "other",
+          "cell_type_or_line": "MFF-1 (mandarin fish fry cells)",
+          "permeabilized": null,
+          "fixation": null,
+          "isoform": "mfTfR1",
+          "cell_context": {
+            "material_kind": "cell_line",
+            "material_kind_other_label": null,
+            "cell_type": "mandarin fish fry cell",
+            "cell_line_name": "MFF-1",
+            "cellosaurus_id": null,
+            "tissue": null,
+            "disease_state": null,
+            "activation_state": null
+          }
+        },
+        "spans": [
+          {
+            "source": {
+              "source_type": "pubmed",
+              "source_id": "PMC:PMC12363161",
+              "pmc_id": "PMC12363161",
+              "url": "https://pubmed.ncbi.nlm.nih.gov/40719463/",
+              "title": "Transferrin receptor 1 (TfR1) functions as an entry receptor for scale drop disease virus to invade the host cell via clathrin-mediated endocytosis",
+              "retrieved_at": "2026-08-15T15:54:10.493080Z",
+              "content_sha256": "8d7e89d99d87022db5cfe951100d22b561c065fdaf827006ec40dc74f22791d5",
+              "publication_type": "primary_research",
+              "is_retracted": false,
+              "retraction_checked_at": "2026-08-15T15:54:10.493080Z",
+              "license": "unknown"
+            },
+            "section": "abstract",
+            "figure_or_table_id": null,
+            "quote": "Conversely, antibody-blocking experiments and treatment with the TfR1 inhibitor ferristatin II significantly suppressed SDDV entry.",
+            "quote_sha256": "7e6a7bc6fe4a7598c03b5f7da6aba373b4bb3d559a7dcc43251ce293c6762ef9",
+            "char_offset": 792,
+            "normalized_source_sha256": "18248e860fadf2439be30cfead3f339e030b719892f23279c67a730772db2142"
+          }
+        ],
+        "entailment_verified": true,
+        "entailment_audit_passed": null,
+        "validation_warnings": [],
+        "duplicate_of": null
+      },
+      {
+        "evidence_id": "int_evi_36",
+        "claim": "TfR1/CD71 is overexpressed on NHL cancer cells and provides a meaningful therapeutic target for receptor-mediated endocytosis-based drug delivery.",
+        "claim_type": "methodological",
+        "direction": "supports",
+        "evidence_type": "review_assertion",
+        "evidence_tier": "secondary",
+        "confidence": "weak",
+        "assay_context": {
+          "species": "human",
+          "cell_type_or_line": "NHL cancer cells",
+          "permeabilized": null,
+          "fixation": null,
+          "isoform": "TfR1/CD71",
+          "cell_context": {
+            "material_kind": "cell_line",
+            "material_kind_other_label": null,
+            "cell_type": null,
+            "cell_line_name": null,
+            "cellosaurus_id": null,
+            "tissue": null,
+            "disease_state": "non-Hodgkin lymphoma",
+            "activation_state": null
+          }
+        },
+        "spans": [
+          {
+            "source": {
+              "source_type": "pubmed",
+              "source_id": "PMC:PMC13235839",
+              "pmc_id": "PMC13235839",
+              "url": "https://pubmed.ncbi.nlm.nih.gov/41592623/",
+              "title": "A proimmunotoxin nanodrug targeting AIDS-associated non-Hodgkin lymphoma",
+              "retrieved_at": "2026-08-15T15:54:10.531714Z",
+              "content_sha256": "0dab5f9c6c1dc2d4b8b7fd044f3f0786697008805f20cf31c935fe5c35c9f908",
+              "publication_type": "primary_research",
+              "is_retracted": false,
+              "retraction_checked_at": "2026-08-15T15:54:10.531714Z",
+              "license": "unknown"
+            },
+            "section": "abstract",
+            "figure_or_table_id": null,
+            "quote": "The transferrin receptor 1 (TfR1/CD71), a type II transmembrane homodimeric protein, is overexpressed on several cancers, including NHL, providing a meaningful therapeutic target.",
+            "quote_sha256": "4010d520b0daf9ca07bb31423ad41df3b7a861822327527b3c31af8b2b61d2b9",
+            "char_offset": 268,
+            "normalized_source_sha256": "c76e82f74895ff214f4b316455159bbc3f4e86ec20e5f26d97d486a1c0252c14"
           }
         ],
         "entailment_verified": true,
@@ -1879,11 +2341,11 @@
         "duplicate_of": null
       }
     ],
-    "n_observations": 16,
-    "n_modulator_observations": 4,
-    "n_papers_discovered": 87,
+    "n_observations": 19,
+    "n_modulator_observations": 2,
+    "n_papers_discovered": 117,
     "n_papers_fetched": 17
   },
-  "generated_at": "2026-08-15T03:21:46.999438Z",
+  "generated_at": "2026-08-15T15:57:56.522714Z",
   "runner_version": "internalization-literature/0.1.0"
 }

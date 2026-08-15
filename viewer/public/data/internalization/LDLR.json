@@ -9,36 +9,17 @@
       "scope": "intrinsic_propensity",
       "overall_grade": "high",
       "overall_confidence": "moderate",
-      "model_reasoning": "The single-pass type I topology (extracellular N-terminus, single TM helix, ~50 aa cytoplasmic C-terminal tail) places a modest but functional cytoplasmic tail on the inside of the membrane. Scanning the cytoplasmic tail (approx. sequence ...KNWRLKNINSINFDNPVYQKTTEDEVHICHNQDGYSYPSRQMVSLEDDVA) reveals a clear NPXY motif: 'NPVY' (N-P-V-Y). NPXY motifs are canonical clathrin-mediated endocytosis / internalization signals recognized by phosphotyrosine-binding (PTB) adaptor proteins. Its location within the cytoplasmic tail makes it functional. The presence of an NPXY signal in a functional cytoplasmic position is strong positive sequence evidence for robust constitutive internalization. Additionally there are tyrosine residues downstream (SYP, GYSY) that could contribute YXX[hydrophobic]-type signals. The large extracellular ligand-binding-like region (with multiple cysteine-rich/EGF-like repeats) is consistent with a receptor that undergoes ligand-driven and constitutive endocytosis. I set overall confidence to moderate because although the NPXY is a specific, strong signal, exact tail sidedness and turnover kinetics cannot be quantified from sequence alone.",
+      "model_reasoning": "Single-pass type I topology (N-terminus extracellular after 24 aa signal peptide, large 765 aa ectodomain, single TM, and a 50 aa cytoplasmic C-terminal tail). Endocytic sorting motifs can only act in the cytoplasmic tail. Examining the C-terminal cytoplasmic region (approx. last 50 residues: ...NWRLKNINSINFDNPVYQKTTEDEVHICHNQDGYSYPSRQMVSLEDDVA): I find an NPXY motif — 'NPVY' (NxxY / NPxY consensus). NPXY is a canonical clathrin/adaptor endocytic and internalization signal. There is also a YXX[hydrophobic]-like context around the tyrosines (e.g. 'SYPS'). The presence of a well-formed NPVY in a cytoplasmic tail is strong positive sequence evidence for robust, adaptor-driven internalization/recycling. The large cysteine-rich, repeat-containing ectodomain is consistent with a ligand-binding surface receptor whose surface pool is actively internalized. Overall this supports a high intrinsic endocytic propensity. Confidence is moderate because motif identification is clear but quantitative uptake cannot be inferred from sequence alone.",
       "per_isoform": [
         {
           "isoform_id": "P01130-1",
           "is_canonical": true,
           "length_aa": 860,
-          "topology_summary": "Type I single-pass; SP (24 aa), 765 aa extracellular N-terminal region, 1 TM helix, ~50 aa cytoplasmic C-terminal tail.",
-          "endocytic_motifs_noted": "Cytoplasmic NPXY motif (NPVY) in the C-terminal tail; additional downstream tyrosines (potential YXXphi context) present.",
+          "topology_summary": "Type I single-pass: 24 aa signal peptide, extracellular N-terminus, one TM helix, 50 aa cytoplasmic C-terminal tail (765 aa extracellular).",
+          "endocytic_motifs_noted": "Cytoplasmic NPXY motif ('NPVY'); tyrosine-containing cytoplasmic contexts (e.g. SYPS) potentially contributing YXXΦ-type signals.",
           "grade": "high",
           "confidence": "moderate",
-          "rationale": "The cytoplasmic tail contains a canonical NPXY internalization signal (NPVY) in a functional (inside) location, strongly implying clathrin-mediated, PTB-adaptor-driven constitutive and ligand-induced endocytosis. Combined with a large extracellular ligand-binding-type ectodomain, this topology/sequence pattern is typical of a receptor whose surface pool is actively internalized. Confidence is moderate because exact internalization rate and steady-state surface fraction cannot be derived from sequence alone."
-        }
-      ]
-    },
-    {
-      "model": "claude-sonnet-4-6",
-      "scope": "intrinsic_propensity",
-      "overall_grade": "moderate",
-      "overall_confidence": "moderate",
-      "model_reasoning": "This is a single-pass type I transmembrane protein with a large extracellular domain (~765 aa) and a relatively short cytoplasmic tail (~50 aa). The cytoplasmic tail contains several features worth examining. Scanning the C-terminal cytoplasmic region (approximately the last 50 residues after the TM helix): '...WKNWRLKNINSINFDNPVYQKTTEDEVHICHNQDGYSYPSRQMVSLEDDVA'. Within this cytoplasmic tail, there is a clear NPXY motif: 'NPVY' (FDNPVYQ), which is a canonical endocytic sorting signal recognized by PTB-domain adaptors and associated with clathrin-mediated endocytosis. There is also a potential tyrosine-based motif context around the NPVY. Additionally, the sequence 'LEDDVA' at the very C-terminus contains a dileucine-like element (LL/LI not strictly present, but 'DD' preceding hydrophobic residues). The NPXY motif is the strongest positive signal here and is cytoplasmic, making it a genuine endocytic signal. However, the tail is short (~50 aa) and only one strong canonical motif (NPXY) is clearly identifiable. This supports moderate-to-high internalization propensity, but the relatively short tail and single motif, combined with the large extracellular domain that may impose steric constraints, suggest a moderate rather than high grade. The protein likely undergoes constitutive clathrin-mediated endocytosis driven by the NPXY motif, but may not be as rapidly internalized as receptors with multiple redundant motifs and longer cytoplasmic tails.",
-      "per_isoform": [
-        {
-          "isoform_id": "P01130-1",
-          "is_canonical": true,
-          "length_aa": 860,
-          "topology_summary": "Single-pass type I TM protein; signal peptide 24 aa; N-terminus extracellular (~765 aa); 1 TM helix; C-terminus cytoplasmic (~50 aa).",
-          "endocytic_motifs_noted": "NPXY motif: 'NPVY' (sequence context: FDNPVYQ) located in the cytoplasmic tail — canonical PTB-domain-recognized endocytic signal. Possible tyrosine-based context around this motif. C-terminal 'LEDDVA' has acidic residues preceding hydrophobic residues but does not constitute a canonical [DE]XXXL[LI] dileucine motif. No strong dileucine motif identified. NPXY is the primary positive endocytic signal.",
-          "grade": "moderate",
-          "confidence": "moderate",
-          "rationale": "The cytoplasmic tail (~50 aa) contains a clear NPXY motif (NPVY), a well-established endocytic sorting signal that recruits PTB-domain-containing adaptors for clathrin-mediated internalization. This is positive sequence evidence for constitutive endocytosis. However, the tail is short, only one canonical motif is clearly present, and the very large extracellular domain (~765 aa) may impose steric or kinetic constraints on internalization efficiency. Overall, the protein is expected to internalize constitutively via clathrin-mediated endocytosis driven by the NPXY motif, but likely maintains a substantial surface pool at steady state, consistent with a moderate grade."
+          "rationale": "The 50 aa cytoplasmic tail contains a canonical NPXY internalization signal (FDNPVY), a strong positive sequence basis for clathrin/adaptor-mediated endocytosis. Combined with a large ligand-binding-type ectodomain, this implies robust, constitutive/ligand-driven internalization and recycling of the surface pool. Grade high; confidence moderate as absolute uptake rate is not derivable from sequence alone."
         }
       ]
     }
@@ -46,58 +27,56 @@
   "literature": {
     "grades_by_mode": {
       "basal": {
-        "grade": "moderate",
-        "confidence": "moderate",
-        "rationale": "Multiple lines of evidence show constitutive LDLR internalization in the absence of added exogenous ligand: TAGLN-KO HepG2 cells accumulate LDLR on the surface due to decreased basal receptor internalization (int_evi_23, int_evi_24); flow cytometry in CHO cells measures basal LDLR surface expression and LDL internalization capacity (int_evi_16, int_evi_17, int_evi_18); and LDLR is described as a 'fast internalizer' leveraged for lysosomal delivery platforms (int_evi_19). The canonical clathrin-mediated endocytosis pathway is well-established for LDLR.",
+        "grade": "high",
+        "confidence": "high",
+        "rationale": "Multiple lines of evidence confirm constitutive LDLR internalization via clathrin-mediated endocytosis. LDLR is described as a 'fast internalizer' exploited for lysosomal delivery platforms. LDL uptake assays in CHO, HepG2, HuH7, and other cell lines consistently demonstrate robust receptor-mediated endocytosis. TAGLN-KO studies show that disrupting actin-dependent CME accumulates LDLR on the surface, confirming active constitutive internalization.",
         "cited_source_ids": [
-          "int_evi_16",
-          "int_evi_17",
           "int_evi_18",
-          "int_evi_19",
-          "int_evi_23",
-          "int_evi_24"
+          "int_evi_20",
+          "int_evi_21",
+          "int_evi_16",
+          "int_evi_17"
         ]
       },
       "native_ligand": {
         "grade": "high",
         "confidence": "high",
-        "rationale": "LDL internalization via LDLR-mediated clathrin-dependent endocytosis is extensively documented. LDL is internalized mainly through LDLR-mediated endocytosis (int_evi_13); LDLR recycles back to the surface after releasing LDL in acidic endosomes (int_evi_13, int_evi_14, int_evi_15); TAGLN-KO cells show impaired clathrin-mediated LDL endocytosis (int_evi_23, int_evi_24); flow cytometry quantifies LDL internalization across LDLR variants (int_evi_16, int_evi_17, int_evi_18); DiI-LDL uptake assays confirm LDLR-mediated endocytic activity in HLSECs (int_evi_27, int_evi_28); and LDLR-mediated LPS endocytosis in HUVECs is confirmed by Dynasore inhibition (int_evi_20).",
+        "rationale": "LDL (the canonical native ligand) drives robust LDLR-mediated endocytosis via clathrin-coated pits, well-documented across HepG2, CHO, HuH7, MDA-MB-231, and HUVEC cells. LDL internalization assays (DiI-LDL, LDL-FITC, flow cytometry) consistently show efficient uptake. LDLR variants with impaired LDL binding/internalization confirm the receptor's central role. LPS also engages LDLR-mediated endocytosis in HUVECs.",
         "cited_source_ids": [
-          "int_evi_13",
           "int_evi_14",
           "int_evi_15",
           "int_evi_16",
           "int_evi_17",
-          "int_evi_18",
           "int_evi_20",
+          "int_evi_21",
+          "int_evi_22",
           "int_evi_23",
           "int_evi_24",
-          "int_evi_27",
-          "int_evi_28"
+          "int_evi_25",
+          "int_evi_26"
         ]
       },
       "therapeutic": {
         "grade": "high",
         "confidence": "high",
-        "rationale": "Multiple therapeutic platforms exploit LDLR internalization: lipidated NANPs engage LDLR for clathrin-mediated endocytosis in HepG2 cells (int_evi_01); circular bivalent aptamer chimeras (CBACs) trigger LDLR-mediated endocytosis and lysosomal degradation while recycling LDLR (int_evi_02); LDLR-targeted nanoparticles (LDLR-OTNs) show rapid uptake with significant fluorescence by 1 hour and plateau at 24-48 hours in breast cancer cells, confirmed by suramin blocking (int_evi_08, int_evi_09); silica nanoparticles with serum corona internalize via LDLR in HeLa cells via a non-clathrin route (int_evi_10, int_evi_11, int_evi_12); LDL nanoparticles are taken up via LDLR in MDA-MB-231 cells (int_evi_07); and LDLR is explicitly described as a 'fast internalizer' used in degrader-drug conjugates (int_evi_19).",
+        "rationale": "LDLR is actively exploited as a therapeutic internalization target. Lipidated NANPs, LDLR-targeted oligonucleotide nanoparticles (LDLR-OTNs), LDL nanoparticles, silica nanoparticles with serum corona, CBACs (circular bivalent aptamer chimeras), and degrader-drug conjugates (DDCs) all leverage LDLR for efficient cellular uptake. LDLR-OTN uptake was rapid (significant fluorescence by 1 h, plateau at 24-48 h). CBACs trigger receptor-mediated endocytosis and lysosomal degradation while recycling LDLR. LDLR is explicitly described as a 'fast internalizer' for lysosomal delivery.",
         "cited_source_ids": [
           "int_evi_01",
           "int_evi_02",
-          "int_evi_07",
-          "int_evi_08",
           "int_evi_09",
           "int_evi_10",
           "int_evi_11",
           "int_evi_12",
-          "int_evi_19"
+          "int_evi_13",
+          "int_evi_18"
         ]
       }
     },
     "overall_grade": "high",
     "overall_confidence": "high",
-    "rationale": "LDLR is one of the best-characterized endocytic receptors. Its native ligand (LDL) drives high-efficiency clathrin-mediated endocytosis with receptor recycling to the surface. Multiple therapeutic platforms (nanoparticles, aptamer chimeras, lipidated nucleic acids, degrader conjugates) exploit LDLR's robust internalization capacity, including in cancer cell lines. The receptor is explicitly described as a 'fast internalizer' in the therapeutic context. Evidence spans hepatocytes, endothelial cells, breast cancer lines, HeLa, and CHO cells, providing broad support across contexts.",
-    "cross_condition_note": "Therapeutic binders (LDLR-OTNs, CBACs, lipidated NANPs) achieve rapid and high-magnitude internalization comparable to or exceeding native LDL uptake; notably, nanosized objects can enter via non-clathrin routes unlike the canonical clathrin pathway used by LDL, demonstrating route flexibility depending on the cargo/binder.",
-    "trafficking_summary": "After endocytosis, LDLR is released from LDL in acidic endosomes and recycled back to the cell surface via SNX17-dependent sorting; LDL cargo proceeds to lysosomal degradation. PCSK9 binding prevents this conformational change and SNX17 interaction, diverting LDLR to lysosomal degradation instead of recycling.",
+    "rationale": "LDLR is a well-established, constitutively active endocytic receptor that internalizes via clathrin-mediated endocytosis. Evidence across multiple cell types, assay formats, and both native ligands and therapeutic binders consistently demonstrates high internalization. It is explicitly described as a 'fast internalizer' and is widely exploited for drug delivery platforms. The receptor recycles back to the surface after releasing cargo in acidic endosomes, enabling multiple rounds of uptake.",
+    "cross_condition_note": "Therapeutic binders (NANPs, aptamer chimeras, nanoparticles, DDCs) achieve high internalization comparable to native LDL, though the endocytic mechanism can differ: silica nanoparticles with serum corona engage LDLR but enter via clathrin-independent routes rather than canonical CME, while most other therapeutic formats use CME. Internalization efficiency is consistent across hepatocyte lines (HepG2, HuH7), cancer lines (MDA-MB-231), and endothelial cells (HUVECs).",
+    "trafficking_summary": "After internalization, LDLR traffics to acidic endolysosomes where cargo is released; the receptor then recycles back to the cell surface via SNX17-mediated sorting. PCSK9 blocks this recycling, diverting LDLR to lysosomal degradation. Therapeutic payloads (CBACs, DDCs) exploit the lysosomal delivery step while the receptor itself recycles.",
     "species_scope": "unspecified",
     "species_inferred": false,
     "has_primary_or_invivo_evidence": true,
@@ -108,7 +87,7 @@
         "cell_line": "HepG2",
         "cell_context": "cell_line",
         "internalization_mode": "therapeutic",
-        "ligand_name": "lipidated NANPs (nucleic acid nanoparticles)",
+        "ligand_name": "lipidated NANPs",
         "ligand_effect": "increases",
         "mechanism": "clathrin",
         "trafficking_compartment": "unknown",
@@ -118,18 +97,18 @@
           "rate_value": null,
           "rate_unit": null,
           "time_point": null,
-          "quant_summary": "Lipidation enhanced NANP uptake into HepG2 cells by promoting apolipoprotein recruitment, LDLR engagement, and clathrin-mediated endocytosis"
+          "quant_summary": "Enhanced uptake relative to non-lipidated NANPs; no specific rate reported"
         },
         "controls_note": null,
-        "condition_note": "Lipidation of NANPs promoted apolipoprotein recruitment and LDLR engagement",
+        "condition_note": "Lipidation promoted apolipoprotein recruitment and LDLR engagement to drive CME",
         "cited_source_ids": [
           "int_evi_01"
         ]
       },
       {
         "assay_type": "other",
-        "assay_type_other_label": "aptamer chimera (CBAC) degradation platform",
-        "cell_line": null,
+        "assay_type_other_label": "CBAC aptamer chimera internalization",
+        "cell_line": "multiple cancer cell lines",
         "cell_context": "tumor_cell_line",
         "internalization_mode": "therapeutic",
         "ligand_name": "circular bivalent aptamer chimeras (CBACs)",
@@ -142,10 +121,10 @@
           "rate_value": null,
           "rate_unit": null,
           "time_point": null,
-          "quant_summary": "Efficient and selective degradation of c-Met and PTK7 in multiple cancer cells; LDLR recycled after lysosomal delivery"
+          "quant_summary": "Efficient and selective degradation of target membrane proteins; LDLR recycles"
         },
         "controls_note": null,
-        "condition_note": "CBACs simultaneously engage LDLR and target membrane proteins; LDLR recycles while cargo is degraded in lysosome",
+        "condition_note": "CBACs engage LDLR as lysosomal shuttle receptor; LDLR recycles while cargo is degraded",
         "cited_source_ids": [
           "int_evi_02"
         ]
@@ -153,23 +132,23 @@
       {
         "assay_type": "viral_entry",
         "assay_type_other_label": null,
-        "cell_line": null,
+        "cell_line": "hepatocyte-derived cells",
         "cell_context": "cell_line",
         "internalization_mode": "native_ligand",
-        "ligand_name": "nHAV (naked hepatitis A virus)",
+        "ligand_name": "nonenveloped HAV (nHAV)",
         "ligand_effect": "increases",
-        "mechanism": "receptor_mediated_unspecified",
-        "trafficking_compartment": "lysosome",
+        "mechanism": "clathrin",
+        "trafficking_compartment": "late_endosome",
         "magnitude": "high",
         "quant": {
           "rate_metric": null,
           "rate_value": null,
           "rate_unit": null,
           "time_point": null,
-          "quant_summary": "LDLR knockout restricted cellular uptake of nHAV; reconstituting full-length LDLR restored nHAV entry"
+          "quant_summary": "LDLR KO restricted nHAV uptake; reconstitution restored entry"
         },
-        "controls_note": "LDLR knockout vs. reconstituted full-length LDLR; soluble LDLR ectodomain and anti-LDLR antibody blocked entry",
-        "condition_note": "LDLR shuttles nHAV to endolysosomes; LDLR mutants lacking LA repeats 4-7 or EGF-like/propeller domain did not restore entry",
+        "controls_note": "LDLR knockout abolished nHAV uptake; reconstitution with full-length LDLR restored entry; domain mutants did not restore entry",
+        "condition_note": "nHAV binds LDLR LA repeats 4-7 and EGF-like/propeller domain for clathrin-dependent entry into late endolysosomes",
         "cited_source_ids": [
           "int_evi_04",
           "int_evi_05"
@@ -177,26 +156,28 @@
       },
       {
         "assay_type": "other",
-        "assay_type_other_label": "toxin uptake / cytotoxicity assay",
-        "cell_line": null,
+        "assay_type_other_label": "bacterial toxin (HlyA) endocytic uptake",
+        "cell_line": "renal epithelial cells",
         "cell_context": "cell_line",
         "internalization_mode": "native_ligand",
-        "ligand_name": "HlyA (alpha-hemolysin toxin)",
+        "ligand_name": "HlyA (alpha-hemolysin)",
         "ligand_effect": "increases",
-        "mechanism": "receptor_mediated_unspecified",
-        "trafficking_compartment": "unknown",
+        "mechanism": "clathrin",
+        "trafficking_compartment": "lysosome",
         "magnitude": "high",
         "quant": {
           "rate_metric": null,
           "rate_value": null,
           "rate_unit": null,
           "time_point": null,
-          "quant_summary": "Genetic ablation or competitive inhibition of HlyA-LDLR interaction fully abrogated cytotoxicity"
+          "quant_summary": "Genetic ablation of LDLR fully abrogated HlyA cytotoxicity; CME confirmed"
         },
-        "controls_note": "Genetic ablation and competitive inhibition controls",
-        "condition_note": "LDLR is a critical epithelial receptor for HlyA; epithelial toxicity relies on LDLR-mediated endocytic uptake",
+        "controls_note": "LDLR genetic ablation and competitive inhibition fully abrogated HlyA cytotoxicity",
+        "condition_note": "LDLR mediates HlyA endocytic uptake leading to lysosomal permeabilization; toxicity requires CME not plasma membrane poration",
         "cited_source_ids": [
-          "int_evi_06"
+          "int_evi_06",
+          "int_evi_07",
+          "int_evi_08"
         ]
       },
       {
@@ -204,32 +185,32 @@
         "assay_type_other_label": null,
         "cell_line": "MDA-MB-231",
         "cell_context": "tumor_cell_line",
-        "internalization_mode": "native_ligand",
-        "ligand_name": "LDL nanoparticles",
+        "internalization_mode": "therapeutic",
+        "ligand_name": "LDL nanoparticles (LDL-DHA)",
         "ligand_effect": "increases",
         "mechanism": "receptor_mediated_unspecified",
         "trafficking_compartment": "unknown",
-        "magnitude": "moderate",
+        "magnitude": "high",
         "quant": {
           "rate_metric": "percent_internalized",
           "rate_value": 50.0,
           "rate_unit": "%",
           "time_point": null,
-          "quant_summary": "Double knockout of LDLR and SR-B1 significantly impeded LDL nanoparticle uptake (<50%)"
+          "quant_summary": "Double KO of LDLR and SR-B1 impeded LDL nanoparticle uptake by >50%"
         },
-        "controls_note": "LDLR and SR-B1 single and double knockout",
-        "condition_note": "LDLR and SR-B1 operate concurrently and in a compensatory manner for LDL nanoparticle uptake",
+        "controls_note": "Double knockout of LDLR and SR-B1 reduced uptake >50%; single KO data not separately quantified",
+        "condition_note": "LDLR and SR-B1 operate concurrently and compensatorily for LDL nanoparticle uptake in breast cancer cells",
         "cited_source_ids": [
-          "int_evi_07"
+          "int_evi_09"
         ]
       },
       {
-        "assay_type": "nanoparticle_uptake",
+        "assay_type": "oligonucleotide_uptake",
         "assay_type_other_label": null,
-        "cell_line": "BT-474, MDA-MB-453, MCF-7",
-        "cell_context": "tumor_cell_line",
+        "cell_line": "not specified",
+        "cell_context": "unknown",
         "internalization_mode": "therapeutic",
-        "ligand_name": "LDLR-OTNs (LDLR-targeted oligonucleotide nanoparticles)",
+        "ligand_name": "LDLR-targeted oligonucleotide nanoparticles (LDLR-OTNs)",
         "ligand_effect": "increases",
         "mechanism": "receptor_mediated_unspecified",
         "trafficking_compartment": "unknown",
@@ -239,20 +220,19 @@
           "rate_value": 1.0,
           "rate_unit": "h (significant fluorescence by 1 h; plateau at 24-48 h)",
           "time_point": "1 h",
-          "quant_summary": "Significant fluorescence by 1 hour; kinetic plateau at 24-48 hours; data fit to modified exponential model"
+          "quant_summary": "Significant fluorescence by 1 hour; kinetic plateau at 24-48 hours; suramin blocking confirmed LDLR-mediated entry"
         },
-        "controls_note": "Suramin blocking reduced LDLR-OTN uptake confirming receptor-mediated entry; untargeted POPC-ONs had lower initial uptake",
-        "condition_note": "LDLR-OTNs are 33 nm; uptake confirmed receptor-mediated by suramin blocking",
+        "controls_note": "Suramin blocking reduced LDLR-OTN uptake; untargeted POPC-ONs showed lower initial uptake with different kinetic model",
+        "condition_note": "LDLR-OTNs (33 nm) showed rapid uptake fitting modified exponential model; untargeted particles followed logistic model",
         "cited_source_ids": [
-          "int_evi_08",
-          "int_evi_09"
+          "int_evi_10"
         ]
       },
       {
         "assay_type": "nanoparticle_uptake",
         "assay_type_other_label": null,
         "cell_line": "HeLa",
-        "cell_context": "cell_line",
+        "cell_context": "tumor_cell_line",
         "internalization_mode": "therapeutic",
         "ligand_name": "silica nanoparticles with human serum corona",
         "ligand_effect": "increases",
@@ -264,37 +244,13 @@
           "rate_value": null,
           "rate_unit": null,
           "time_point": null,
-          "quant_summary": "Silica nanoparticles internalized via LDLR but not via clathrin-mediated endocytosis"
+          "quant_summary": "Silencing BAR-domain and clathrin-independent pathway proteins strongly reduced uptake"
         },
-        "controls_note": "Clathrin-mediated endocytosis shown to be not involved despite LDLR interaction",
-        "condition_note": "Serum corona promotes LDLR engagement; uptake route differs from canonical LDL endocytosis",
+        "controls_note": "Clathrin-independent mechanism confirmed by silencing experiments; canonical CME not involved despite LDLR engagement",
+        "condition_note": "Serum corona promotes LDLR engagement but uptake proceeds via clathrin-independent, BAR-domain-dependent mechanism rather than canonical CME",
         "cited_source_ids": [
-          "int_evi_10",
           "int_evi_11",
-          "int_evi_12"
-        ]
-      },
-      {
-        "assay_type": "ligand_uptake",
-        "assay_type_other_label": null,
-        "cell_line": null,
-        "cell_context": "cell_line",
-        "internalization_mode": "native_ligand",
-        "ligand_name": "LDL",
-        "ligand_effect": "increases",
-        "mechanism": "clathrin",
-        "trafficking_compartment": "recycled_to_surface",
-        "magnitude": "high",
-        "quant": {
-          "rate_metric": null,
-          "rate_value": null,
-          "rate_unit": null,
-          "time_point": null,
-          "quant_summary": "LDL internalized mainly through LDLR-mediated endocytosis; LDLR released from LDL in acidic endosome and recycled to cell surface; LDL degraded in lysosome"
-        },
-        "controls_note": null,
-        "condition_note": "Canonical LDLR-LDL endocytosis pathway; PCSK9-bound LDLR fails to recycle and is degraded in lysosome",
-        "cited_source_ids": [
+          "int_evi_12",
           "int_evi_13"
         ]
       },
@@ -306,7 +262,7 @@
         "internalization_mode": "native_ligand",
         "ligand_name": "LDL",
         "ligand_effect": "not_applicable",
-        "mechanism": "clathrin",
+        "mechanism": "receptor_mediated_unspecified",
         "trafficking_compartment": "recycled_to_surface",
         "magnitude": "high",
         "quant": {
@@ -314,10 +270,10 @@
           "rate_value": null,
           "rate_unit": null,
           "time_point": null,
-          "quant_summary": "Acidic pH induces conformational change in LDLR promoting SNX17 interaction and recycling; SNX17 knockdown abolishes recycling and causes lysosomal degradation"
+          "quant_summary": "SNX17 knockdown abolishes LDLR recycling and causes accelerated lysosomal degradation"
         },
-        "controls_note": "SNX17 knockdown; Ldlr knockout mice and knockout HuH7 cells; FH sequence variants",
-        "condition_note": "SNX17-mediated recycling is the key sorting step; PCSK9 blocks this by preventing conformational change",
+        "controls_note": "SNX17 knockdown used to demonstrate recycling pathway; PCSK9 blocks SNX17 interaction",
+        "condition_note": "Acidic pH induces conformational change promoting SNX17 interaction for recycling; PCSK9 blocks this to divert LDLR to degradation",
         "cited_source_ids": [
           "int_evi_14",
           "int_evi_15"
@@ -326,33 +282,32 @@
       {
         "assay_type": "ligand_uptake",
         "assay_type_other_label": null,
-        "cell_line": "CHO (LDLR-deficient expressing WT or mutant LDLRs)",
+        "cell_line": "CHO (LDLR-deficient, transiently expressing WT and mutant LDLRs)",
         "cell_context": "cell_line",
         "internalization_mode": "native_ligand",
         "ligand_name": "LDL",
         "ligand_effect": "not_applicable",
         "mechanism": "receptor_mediated_unspecified",
         "trafficking_compartment": "unknown",
-        "magnitude": "moderate",
+        "magnitude": "high",
         "quant": {
           "rate_metric": null,
           "rate_value": null,
           "rate_unit": null,
           "time_point": null,
-          "quant_summary": "Flow cytometry measured relative amount of internalized LDL across 16 LDLR variants; 13/16 variants had detrimental effects on both surface expression and LDL internalization; 1/16 had defect in LDL binding/internalization with normal surface expression"
+          "quant_summary": "WT LDLR internalizes LDL efficiently; 14 of 16 FH variants showed defects in surface expression and/or LDL internalization"
         },
-        "controls_note": "LDLR-deficient CHO cells reconstituted with WT or mutant LDLRs; flow cytometry for surface expression and internalized LDL",
-        "condition_note": "Functional characterization of 16 LDLR variants; 2/16 showed no defect",
+        "controls_note": "Flow cytometry for surface LDLR and internalized LDL; WT vs. mutant comparison",
+        "condition_note": "Functional characterization of 16 FH-associated LDLR variants; WT LDLR serves as positive control for LDL internalization",
         "cited_source_ids": [
           "int_evi_16",
-          "int_evi_17",
-          "int_evi_18"
+          "int_evi_17"
         ]
       },
       {
         "assay_type": "other",
         "assay_type_other_label": "degrader-drug conjugate (DDC) lysosomal delivery",
-        "cell_line": null,
+        "cell_line": "multiple cell lines",
         "cell_context": "cell_line",
         "internalization_mode": "therapeutic",
         "ligand_name": "LDLR-targeting degrader-drug conjugates (DDCs)",
@@ -365,21 +320,21 @@
           "rate_value": null,
           "rate_unit": null,
           "time_point": null,
-          "quant_summary": "LDLR described as a 'fast internalizer' enabling efficient and selective lysosomal delivery and degradation of diverse extracellular membrane proteins"
+          "quant_summary": "LDLR described as 'fast internalizer'; efficient lysosomal delivery of diverse extracellular membrane protein targets"
         },
         "controls_note": null,
-        "condition_note": "LDLR explicitly used as a fast internalizer to enhance lysosomal delivery in eTPD platform",
+        "condition_note": "LDLR explicitly used as fast internalizer to enhance lysosomal delivery; DDCs with cytotoxic payload outperformed conventional ADCs in vitro",
         "cited_source_ids": [
-          "int_evi_19"
+          "int_evi_18"
         ]
       },
       {
-        "assay_type": "endocytosis_inhibitor",
+        "assay_type": "ligand_uptake",
         "assay_type_other_label": null,
-        "cell_line": "HUVEC",
-        "cell_context": "primary",
+        "cell_line": "not specified (cultured cells)",
+        "cell_context": "cell_line",
         "internalization_mode": "native_ligand",
-        "ligand_name": "LPS",
+        "ligand_name": "LDL",
         "ligand_effect": "not_applicable",
         "mechanism": "receptor_mediated_unspecified",
         "trafficking_compartment": "unknown",
@@ -389,43 +344,43 @@
           "rate_value": null,
           "rate_unit": null,
           "time_point": null,
-          "quant_summary": "Dynasore inhibition of endocytosis blocked LPS uptake; blocking antibodies against LDLR dose-dependently decreased LPS uptake"
+          "quant_summary": "SENP1 overexpression increases LDLR levels and enhances LDL uptake; SENP1 loss reduces LDL endocytosis"
         },
-        "controls_note": "Dynasore endocytosis inhibitor; blocking antibodies against LDLR and TLR4 (TLR4 blocking did not alter uptake)",
-        "condition_note": "LDLR mediates endocytic uptake of LPS in vascular endothelial cells",
+        "controls_note": null,
+        "condition_note": "SENP1 modulates LDLR protein levels via IDOL; LDL endocytosis correlates with LDLR surface levels",
         "cited_source_ids": [
-          "int_evi_20"
+          "int_evi_19"
         ]
       },
       {
-        "assay_type": "other",
-        "assay_type_other_label": "confocal microscopy / receptor surface accumulation",
-        "cell_line": "HepG2",
+        "assay_type": "live_imaging",
+        "assay_type_other_label": null,
+        "cell_line": "not specified (TAGLN-KO cells)",
         "cell_context": "cell_line",
         "internalization_mode": "basal",
         "ligand_name": null,
         "ligand_effect": "not_applicable",
         "mechanism": "clathrin",
         "trafficking_compartment": "unknown",
-        "magnitude": "moderate",
+        "magnitude": "high",
         "quant": {
           "rate_metric": null,
           "rate_value": null,
           "rate_unit": null,
           "time_point": null,
-          "quant_summary": "TAGLN-KO cells showed accumulation of LDLR on surface due to decreased receptor internalization; TAGLN deficiency also disrupted uptake of VLDL and transferrin (other CME cargoes)"
+          "quant_summary": "TAGLN-KO caused accumulation of LDLR on cell surface due to decreased receptor internalization"
         },
-        "controls_note": "TAGLN-KO vs. WT HepG2 cells; confocal microscopy",
-        "condition_note": "TAGLN is a novel factor in actin-dependent phase of clathrin-mediated endocytosis of LDL via LDLR",
+        "controls_note": "Confocal microscopy; TAGLN-KO vs. WT comparison; transferrin and VLDL receptor uptake also disrupted",
+        "condition_note": "TAGLN is required for actin-dependent phase of CME of LDL via LDLR; KO reduces constitutive internalization",
         "cited_source_ids": [
-          "int_evi_23",
-          "int_evi_24"
+          "int_evi_20",
+          "int_evi_21"
         ]
       },
       {
         "assay_type": "other",
-        "assay_type_other_label": "flow cytometry / LDL-FITC uptake assay",
-        "cell_line": "patient-derived cells",
+        "assay_type_other_label": "LDL-FITC uptake / flow cytometry / confocal",
+        "cell_line": "patient-derived cells (FH exon13_15dup)",
         "cell_context": "primary",
         "internalization_mode": "native_ligand",
         "ligand_name": "LDL",
@@ -438,13 +393,38 @@
           "rate_value": null,
           "rate_unit": null,
           "time_point": null,
-          "quant_summary": "LDLR exon13_15dup variant: increased cell-surface LDLR expression, enhanced ER localization, reduced capacity for LDL uptake"
+          "quant_summary": "Reduced LDL uptake capacity in patient cells with exon13_15dup; increased ER localization of LDLR"
         },
-        "controls_note": "Flow cytometry for surface expression; confocal microscopy for subcellular localization; LDL-FITC uptake assay",
-        "condition_note": "Pathogenic LDLR variant (exon13_15dup) causes ER retention and impaired LDL internalization",
+        "controls_note": "Flow cytometry for surface LDLR; LDL-FITC uptake assay; confocal for subcellular localization; PCA vs. WT",
+        "condition_note": "Mutant LDLR (exon13_15dup) accumulates in ER and on surface but cannot effectively internalize LDL; dysfunctional transport",
         "cited_source_ids": [
-          "int_evi_25",
-          "int_evi_26"
+          "int_evi_22",
+          "int_evi_23"
+        ]
+      },
+      {
+        "assay_type": "endocytosis_inhibitor",
+        "assay_type_other_label": null,
+        "cell_line": "HUVECs",
+        "cell_context": "primary",
+        "internalization_mode": "native_ligand",
+        "ligand_name": "LPS",
+        "ligand_effect": "not_applicable",
+        "mechanism": "receptor_mediated_unspecified",
+        "trafficking_compartment": "unknown",
+        "magnitude": "moderate",
+        "quant": {
+          "rate_metric": null,
+          "rate_value": null,
+          "rate_unit": null,
+          "time_point": null,
+          "quant_summary": "Dynasore (endocytosis inhibitor) blocked LPS uptake; anti-LDLR antibody dose-dependently decreased LPS uptake"
+        },
+        "controls_note": "Dynasore endocytosis inhibitor; anti-LDLR blocking antibody; anti-TLR4 antibody did not alter LPS uptake (negative control); PCSK9 treatment decreased LDLR-mediated LPS uptake",
+        "condition_note": "LDLR mediates endocytic uptake of LPS in vascular endothelial cells; PCSK9 reduces this by downregulating LDLR",
+        "cited_source_ids": [
+          "int_evi_24",
+          "int_evi_25"
         ]
       },
       {
@@ -463,75 +443,33 @@
           "rate_value": null,
           "rate_unit": null,
           "time_point": null,
-          "quant_summary": "DiI-LDL uptake used to evaluate LDLR-mediated endocytic activity; high glucose impairs DiI-LDL endocytic activity"
+          "quant_summary": "High glucose impairs DiI-LDL endocytic activity in HLSECs"
         },
         "controls_note": null,
-        "condition_note": "High glucose condition impairs DiI-LDL endocytic activity in HLSECs via TUG1/CAV-1/PLVAP pathway",
+        "condition_note": "High glucose condition downregulates TUG1 lncRNA, inducing endocytic clearance dysfunction with impaired DiI-LDL uptake",
         "cited_source_ids": [
-          "int_evi_27",
-          "int_evi_28"
+          "int_evi_26"
         ]
       }
     ],
     "modulator_observations": [
       {
-        "modulator": "LDLRAP1 (ARH)",
+        "modulator": "LDLRAP1",
         "perturbation": "mutation",
         "effect_on_target": "decreases",
         "cell_line": null,
         "cell_context": "unknown",
-        "magnitude": "high",
+        "magnitude": "unknown",
         "quant": {
           "rate_metric": null,
           "rate_value": null,
           "rate_unit": null,
           "time_point": null,
-          "quant_summary": "p.Gly54Asp substitution destabilises PTB domain of LDLRAP1, likely impairing LDLR internalisation"
+          "quant_summary": "p.Gly54Asp substitution in LDLRAP1 PTB domain predicted to impair LDLR internalisation (in silico)"
         },
-        "note": "In silico prediction; LDLRAP1 is the adaptor protein that links LDLR to clathrin-coated pits. Pathogenic variant classified as likely pathogenic by ACMG guidelines.",
+        "note": "LDLRAP1 (ARH adaptor protein) p.Gly54Asp destabilises PTB domain, disrupting hydrogen bonds and hydrophobic interactions required for LDLR internalisation; in silico prediction only",
         "cited_source_ids": [
           "int_evi_03"
-        ]
-      },
-      {
-        "modulator": "PCSK9",
-        "perturbation": "other",
-        "effect_on_target": "decreases",
-        "cell_line": null,
-        "cell_context": "cell_line",
-        "magnitude": "high",
-        "quant": {
-          "rate_metric": null,
-          "rate_value": null,
-          "rate_unit": null,
-          "time_point": null,
-          "quant_summary": "PCSK9 prevents acidic pH-induced conformational change in LDLR, blocks SNX17 interaction, abolishes recycling, and causes lysosomal degradation of LDLR"
-        },
-        "note": "PCSK9 does not block initial internalization but prevents recycling, diverting LDLR to lysosomal degradation. SNX17 knockdown phenocopies PCSK9 effect on recycling.",
-        "cited_source_ids": [
-          "int_evi_13",
-          "int_evi_14",
-          "int_evi_15"
-        ]
-      },
-      {
-        "modulator": "PCSK9",
-        "perturbation": "other",
-        "effect_on_target": "decreases",
-        "cell_line": "HUVEC",
-        "cell_context": "primary",
-        "magnitude": "moderate",
-        "quant": {
-          "rate_metric": null,
-          "rate_value": null,
-          "rate_unit": null,
-          "time_point": null,
-          "quant_summary": "PCSK9 dose-dependently decreased vascular endothelial cell uptake of LPS via LDLR; siPCSK9 or triciribine increased LDLR and LPS uptake"
-        },
-        "note": "PCSK9 reduces LDLR surface levels in HUVECs, thereby reducing LDLR-mediated LPS endocytosis. Confirmed in Pcsk9-/- mouse aortic tissue.",
-        "cited_source_ids": [
-          "int_evi_20",
-          "int_evi_21"
         ]
       },
       {
@@ -548,17 +486,39 @@
           "time_point": null,
           "quant_summary": "SNX17 knockdown abolishes LDLR recycling and causes accelerated lysosomal degradation"
         },
-        "note": "SNX17 knockdown also abolishes PCSK9-mediated LDLR degradation, suggesting SNX17 is required for PCSK9 to divert LDLR to lysosomes.",
+        "note": "SNX17 knockdown abolishes LDLR recycling (not initial internalization per se) and causes accelerated LDLR degradation in lysosomes; also abolishes PCSK9-mediated LDLR degradation",
         "cited_source_ids": [
           "int_evi_14",
           "int_evi_15"
         ]
       },
       {
-        "modulator": "SENP1",
-        "perturbation": "overexpression",
-        "effect_on_target": "increases",
-        "cell_line": null,
+        "modulator": "PCSK9",
+        "perturbation": "other",
+        "effect_on_target": "decreases",
+        "cell_line": "HuH7 / HUVECs",
+        "cell_context": "cell_line",
+        "magnitude": "high",
+        "quant": {
+          "rate_metric": null,
+          "rate_value": null,
+          "rate_unit": null,
+          "time_point": null,
+          "quant_summary": "PCSK9 prevents SNX17-mediated LDLR recycling, diverting LDLR to lysosomal degradation; PCSK9 dose-dependently decreased LPS uptake via LDLR in HUVECs"
+        },
+        "note": "PCSK9 blocks acidic pH-induced conformational change in LDLR extracellular domain, preventing SNX17 interaction and recycling, thereby promoting LDLR degradation. In HUVECs, PCSK9 reduces LDLR surface levels and LPS uptake.",
+        "cited_source_ids": [
+          "int_evi_14",
+          "int_evi_15",
+          "int_evi_24",
+          "int_evi_25"
+        ]
+      },
+      {
+        "modulator": "TAGLN (transgelin)",
+        "perturbation": "knockout",
+        "effect_on_target": "decreases",
+        "cell_line": "not specified",
         "cell_context": "cell_line",
         "magnitude": "moderate",
         "quant": {
@@ -566,18 +526,38 @@
           "rate_value": null,
           "rate_unit": null,
           "time_point": null,
-          "quant_summary": "SENP1 overexpression increases LDLR protein levels and enhances LDL uptake; SENP1 loss lowers LDLR levels in IDOL-dependent manner and reduces LDL endocytosis"
+          "quant_summary": "TAGLN-KO caused accumulation of LDLR on cell surface due to decreased receptor internalization"
         },
-        "note": "SENP1 acts via modulation of IDOL (E3 ubiquitin ligase that degrades LDLR); SUMOylation increases IDOL, which degrades LDLR.",
+        "note": "TAGLN is required for actin-dependent phase of clathrin-mediated endocytosis of LDL via LDLR; KO disrupts actin filaments and reduces LDLR internalization",
         "cited_source_ids": [
-          "int_evi_22"
+          "int_evi_20",
+          "int_evi_21"
+        ]
+      },
+      {
+        "modulator": "SENP1",
+        "perturbation": "overexpression",
+        "effect_on_target": "increases",
+        "cell_line": "not specified (cultured cells)",
+        "cell_context": "cell_line",
+        "magnitude": "moderate",
+        "quant": {
+          "rate_metric": null,
+          "rate_value": null,
+          "rate_unit": null,
+          "time_point": null,
+          "quant_summary": "SENP1 overexpression increases LDLR protein levels and enhances LDL uptake"
+        },
+        "note": "SENP1 modulates LDLR levels via IDOL (E3 ubiquitin ligase); overexpression increases LDLR and LDL uptake; loss of SENP1 reduces LDLR and LDL endocytosis in IDOL-dependent manner",
+        "cited_source_ids": [
+          "int_evi_19"
         ]
       },
       {
         "modulator": "SENP1",
         "perturbation": "knockdown",
         "effect_on_target": "decreases",
-        "cell_line": null,
+        "cell_line": "not specified (cultured cells)",
         "cell_context": "cell_line",
         "magnitude": "moderate",
         "quant": {
@@ -587,33 +567,13 @@
           "time_point": null,
           "quant_summary": "Loss of SENP1 lowers LDLR levels in IDOL-dependent manner and reduces LDL endocytosis"
         },
-        "note": "SENP1 loss increases IDOL via SUMOylation, leading to LDLR degradation and reduced LDL endocytosis.",
+        "note": "SENP1 loss increases IDOL-mediated LDLR degradation, reducing surface LDLR and LDL endocytosis",
         "cited_source_ids": [
-          "int_evi_22"
+          "int_evi_19"
         ]
       },
       {
-        "modulator": "TAGLN (transgelin)",
-        "perturbation": "knockout",
-        "effect_on_target": "decreases",
-        "cell_line": "HepG2",
-        "cell_context": "cell_line",
-        "magnitude": "moderate",
-        "quant": {
-          "rate_metric": null,
-          "rate_value": null,
-          "rate_unit": null,
-          "time_point": null,
-          "quant_summary": "TAGLN-KO cells showed accumulation of LDLR on surface due to decreased receptor internalization; disrupted actin filaments"
-        },
-        "note": "TAGLN is involved in the actin-dependent phase of clathrin-mediated endocytosis; its loss impairs LDLR internalization and also disrupts VLDL and transferrin uptake.",
-        "cited_source_ids": [
-          "int_evi_23",
-          "int_evi_24"
-        ]
-      },
-      {
-        "modulator": "lncRNA TUG1",
+        "modulator": "TUG1 (lncRNA)",
         "perturbation": "other",
         "effect_on_target": "decreases",
         "cell_line": "HLSECs",
@@ -624,12 +584,11 @@
           "rate_value": null,
           "rate_unit": null,
           "time_point": null,
-          "quant_summary": "High glucose downregulates TUG1, inducing endocytic clearance dysfunction with impaired DiI-LDL endocytic activity"
+          "quant_summary": "High glucose downregulates TUG1, impairing DiI-LDL endocytic activity in HLSECs"
         },
-        "note": "High glucose downregulates TUG1, elevates CAV-1, reduces PLVAP, and impairs DiI-LDL endocytic activity in HLSECs.",
+        "note": "High glucose reduces TUG1 lncRNA expression, inducing endocytic clearance dysfunction with impaired DiI-LDL uptake; mechanism involves elevated CAV-1 and reduced PLVAP",
         "cited_source_ids": [
-          "int_evi_27",
-          "int_evi_28"
+          "int_evi_26"
         ]
       },
       {
@@ -638,17 +597,17 @@
         "effect_on_target": "decreases",
         "cell_line": "MDA-MB-231",
         "cell_context": "tumor_cell_line",
-        "magnitude": "moderate",
+        "magnitude": "high",
         "quant": {
           "rate_metric": "percent_internalized",
           "rate_value": 50.0,
           "rate_unit": "%",
           "time_point": null,
-          "quant_summary": "Double knockout of LDLR and SR-B1 impeded LDL nanoparticle uptake by >50%; single knockouts showed compensatory uptake"
+          "quant_summary": "Double KO of LDLR and SR-B1 impeded LDL nanoparticle uptake by >50%"
         },
-        "note": "SR-B1 and LDLR operate concurrently and compensatorily for LDL nanoparticle uptake; double KO needed for >50% reduction.",
+        "note": "SR-B1 and LDLR operate concurrently and compensatorily; double KO needed to significantly impede LDL nanoparticle uptake (>50% reduction), indicating SR-B1 compensates for LDLR loss",
         "cited_source_ids": [
-          "int_evi_07"
+          "int_evi_09"
         ]
       }
     ],
@@ -664,13 +623,13 @@
         "assay_context": {
           "species": "human",
           "cell_type_or_line": "HepG2",
-          "permeabilized": false,
+          "permeabilized": null,
           "fixation": null,
           "isoform": null,
           "cell_context": {
             "material_kind": "cell_line",
             "material_kind_other_label": null,
-            "cell_type": "hepatocyte model",
+            "cell_type": "hepatocyte",
             "cell_line_name": "HepG2",
             "cellosaurus_id": null,
             "tissue": "liver",
@@ -686,11 +645,11 @@
               "pmc_id": "PMC13067242",
               "url": "https://pubmed.ncbi.nlm.nih.gov/41881029/",
               "title": "Programmable Lipid Functionalization of Nucleic Acid Nanoparticles Modulates Liver Cell-Type Targeting",
-              "retrieved_at": "2026-08-15T04:18:48.423799Z",
+              "retrieved_at": "2026-08-15T15:59:18.833814Z",
               "content_sha256": "e573f714bcc1b5b32e0f08d4df27b54d9a403039de9b1650f5e5583abe9bf88c",
               "publication_type": "primary_research",
               "is_retracted": false,
-              "retraction_checked_at": "2026-08-15T04:18:48.423799Z",
+              "retraction_checked_at": "2026-08-15T15:59:18.833814Z",
               "license": "unknown"
             },
             "section": "abstract",
@@ -708,12 +667,12 @@
       },
       {
         "evidence_id": "int_evi_02",
-        "claim": "Circular bivalent aptamer chimeras (CBACs) engage LDLR to trigger receptor-mediated endocytosis and lysosomal degradation, leveraging the natural LDLR recycling pathway.",
+        "claim": "Circular bivalent aptamer chimeras (CBACs) engage LDLR to trigger receptor-mediated endocytosis and lysosomal degradation while recycling LDLR, demonstrating LDLR's natural recycling/endocytic pathway.",
         "claim_type": "methodological",
         "direction": "supports",
         "evidence_type": "functional_assay",
         "evidence_tier": "primary",
-        "confidence": "strong",
+        "confidence": "moderate",
         "assay_context": {
           "species": "human",
           "cell_type_or_line": "multiple cancer cell lines",
@@ -739,11 +698,11 @@
               "pmc_id": null,
               "url": "https://pubmed.ncbi.nlm.nih.gov/42449215/",
               "title": "Circular Bivalent Aptamer Chimeras Leveraging LDLR-Mediated Lysosomal Shuttling for Targeted Protein Degradation",
-              "retrieved_at": "2026-08-15T04:18:48.435530Z",
+              "retrieved_at": "2026-08-15T15:59:18.732434Z",
               "content_sha256": "22349504e332476186ca005a0a90bc65fe7844989b031c56f8bb434709169955",
               "publication_type": "other",
               "is_retracted": false,
-              "retraction_checked_at": "2026-08-15T04:18:48.435530Z",
+              "retraction_checked_at": "2026-08-15T15:59:18.732434Z",
               "license": "unknown"
             },
             "section": "abstract",
@@ -761,7 +720,7 @@
       },
       {
         "evidence_id": "int_evi_03",
-        "claim": "In silico analysis predicts that the LDLRAP1 p.Gly54Asp substitution destabilises the PTB domain, likely impairing LDLR internalisation.",
+        "claim": "In silico analyses predict that the LDLRAP1 p.Gly54Asp substitution destabilises the PTB domain, likely impairing LDLR internalisation.",
         "claim_type": "methodological",
         "direction": "supports",
         "evidence_type": "computational_prediction",
@@ -783,11 +742,11 @@
               "pmc_id": "PMC12771596",
               "url": "https://pubmed.ncbi.nlm.nih.gov/41492187/",
               "title": "First LDLRAP1 and Recurrent LDLR Mutations in Tunisian Families With Familial Hypercholesterolemia",
-              "retrieved_at": "2026-08-15T04:18:48.435588Z",
+              "retrieved_at": "2026-08-15T15:59:18.732328Z",
               "content_sha256": "af0342f65da73f624674997a574b4efc43a855249263d936f127394eea23a549",
               "publication_type": "primary_research",
               "is_retracted": false,
-              "retraction_checked_at": "2026-08-15T04:18:48.435588Z",
+              "retraction_checked_at": "2026-08-15T15:59:18.732328Z",
               "license": "unknown"
             },
             "section": "abstract",
@@ -805,7 +764,7 @@
       },
       {
         "evidence_id": "int_evi_04",
-        "claim": "LDLR knockout restricted cellular uptake of nHAV (but not eHAV), and reconstituting full-length LDLR restored nHAV entry, demonstrating LDLR mediates endocytic uptake of nHAV.",
+        "claim": "LDLR is identified as a protein receptor for nonenveloped HAV (nHAV), facilitating its cellular uptake via clathrin-dependent endocytic pathways.",
         "claim_type": "methodological",
         "direction": "supports",
         "evidence_type": "functional_assay",
@@ -820,7 +779,7 @@
           "cell_context": {
             "material_kind": "unspecified",
             "material_kind_other_label": null,
-            "cell_type": "hepatocyte-like or permissive cells",
+            "cell_type": null,
             "cell_line_name": null,
             "cellosaurus_id": null,
             "tissue": null,
@@ -836,11 +795,64 @@
               "pmc_id": null,
               "url": "https://pubmed.ncbi.nlm.nih.gov/41894341/",
               "title": "The low-density lipoprotein receptor LDLR mediates cellular entry of nonenveloped hepatitis A virus",
-              "retrieved_at": "2026-08-15T04:18:48.424147Z",
+              "retrieved_at": "2026-08-15T15:59:18.732558Z",
               "content_sha256": "06c83165992d490a5167df20f7a9a362f8d16818fe582805ca557421e0e97191",
               "publication_type": "other",
               "is_retracted": false,
-              "retraction_checked_at": "2026-08-15T04:18:48.424147Z",
+              "retraction_checked_at": "2026-08-15T15:59:18.732558Z",
+              "license": "unknown"
+            },
+            "section": "abstract",
+            "figure_or_table_id": null,
+            "quote": "Hepatitis A virus (HAV) is an unusual picornavirus with two types of extracellular virions: nonenveloped particles (nHAV) shed in feces and quasi-enveloped particles (eHAV) circulating in blood. Both enter cells by clathrin-dependent endocytic pathways merging in late endolysosomes with capsid binding to ganglioside receptors. Phosphatidylserine receptors facilitate eHAV endocytosis, but no protein receptor has been identified for nHAV. Here, we show low-density lipoprotein receptor (LDLR) is such a receptor.",
+            "quote_sha256": "bbb2a77bacaf05090ddc077830202ebc878b9e9e08d0c69802a26dc2d71a18ca",
+            "char_offset": 0,
+            "normalized_source_sha256": "e6c8d4db9ca90d4041e122f85e4636f4e45e7d31fe857140fc4677b60806486b"
+          }
+        ],
+        "entailment_verified": true,
+        "entailment_audit_passed": null,
+        "validation_warnings": [],
+        "duplicate_of": null
+      },
+      {
+        "evidence_id": "int_evi_05",
+        "claim": "LDLR knockout restricted cellular uptake of nHAV (but not eHAV); soluble LDLR ectodomain and anti-LDLR antibody blocked nHAV entry; reconstituting full-length LDLR restored nHAV entry, while LDLR mutants lacking specific domains did not.",
+        "claim_type": "methodological",
+        "direction": "supports",
+        "evidence_type": "functional_assay",
+        "evidence_tier": "primary",
+        "confidence": "strong",
+        "assay_context": {
+          "species": "human",
+          "cell_type_or_line": null,
+          "permeabilized": null,
+          "fixation": null,
+          "isoform": null,
+          "cell_context": {
+            "material_kind": "unspecified",
+            "material_kind_other_label": null,
+            "cell_type": null,
+            "cell_line_name": null,
+            "cellosaurus_id": null,
+            "tissue": null,
+            "disease_state": null,
+            "activation_state": null
+          }
+        },
+        "spans": [
+          {
+            "source": {
+              "source_type": "pubmed",
+              "source_id": "PMID:41894341",
+              "pmc_id": null,
+              "url": "https://pubmed.ncbi.nlm.nih.gov/41894341/",
+              "title": "The low-density lipoprotein receptor LDLR mediates cellular entry of nonenveloped hepatitis A virus",
+              "retrieved_at": "2026-08-15T15:59:18.732558Z",
+              "content_sha256": "06c83165992d490a5167df20f7a9a362f8d16818fe582805ca557421e0e97191",
+              "publication_type": "other",
+              "is_retracted": false,
+              "retraction_checked_at": "2026-08-15T15:59:18.732558Z",
               "license": "unknown"
             },
             "section": "abstract",
@@ -857,61 +869,8 @@
         "duplicate_of": null
       },
       {
-        "evidence_id": "int_evi_05",
-        "claim": "LDLR functions as an entry factor that shuttles nHAV from the extracellular environment to endolysosomes via receptor-mediated endocytosis.",
-        "claim_type": "methodological",
-        "direction": "supports",
-        "evidence_type": "functional_assay",
-        "evidence_tier": "primary",
-        "confidence": "strong",
-        "assay_context": {
-          "species": "human",
-          "cell_type_or_line": null,
-          "permeabilized": null,
-          "fixation": null,
-          "isoform": null,
-          "cell_context": {
-            "material_kind": "unspecified",
-            "material_kind_other_label": null,
-            "cell_type": null,
-            "cell_line_name": null,
-            "cellosaurus_id": null,
-            "tissue": null,
-            "disease_state": null,
-            "activation_state": null
-          }
-        },
-        "spans": [
-          {
-            "source": {
-              "source_type": "pubmed",
-              "source_id": "PMID:41894341",
-              "pmc_id": null,
-              "url": "https://pubmed.ncbi.nlm.nih.gov/41894341/",
-              "title": "The low-density lipoprotein receptor LDLR mediates cellular entry of nonenveloped hepatitis A virus",
-              "retrieved_at": "2026-08-15T04:18:48.424147Z",
-              "content_sha256": "06c83165992d490a5167df20f7a9a362f8d16818fe582805ca557421e0e97191",
-              "publication_type": "other",
-              "is_retracted": false,
-              "retraction_checked_at": "2026-08-15T04:18:48.424147Z",
-              "license": "unknown"
-            },
-            "section": "abstract",
-            "figure_or_table_id": null,
-            "quote": "Collectively, these data reveal the LDLR to be an important entry factor, shuttling nHAV from the extracellular environment to endolysosomes where it is likely released at low pH to bind gangliosides.",
-            "quote_sha256": "f5a3039a6d17b503ba3f46f5b6d353d420f44e17393a392dcfff17298209221b",
-            "char_offset": 1606,
-            "normalized_source_sha256": "e6c8d4db9ca90d4041e122f85e4636f4e45e7d31fe857140fc4677b60806486b"
-          }
-        ],
-        "entailment_verified": true,
-        "entailment_audit_passed": null,
-        "validation_warnings": [],
-        "duplicate_of": null
-      },
-      {
         "evidence_id": "int_evi_06",
-        "claim": "LDLR is identified as a critical epithelial receptor for HlyA toxin; genetic ablation or competitive inhibition of the HlyA-LDLR interaction abrogated cytotoxicity, indicating LDLR-mediated endocytic uptake of HlyA.",
+        "claim": "LDLR is identified as a critical epithelial receptor for HlyA; genetic ablation or competitive inhibition of the HlyA-LDLR interaction fully abrogated cytotoxicity, indicating LDLR mediates HlyA endocytic uptake.",
         "claim_type": "methodological",
         "direction": "supports",
         "evidence_type": "functional_assay",
@@ -926,7 +885,7 @@
           "cell_context": {
             "material_kind": "cell_line",
             "material_kind_other_label": null,
-            "cell_type": "renal collecting duct epithelial cells",
+            "cell_type": "renal tubular epithelial cells",
             "cell_line_name": null,
             "cellosaurus_id": null,
             "tissue": "kidney",
@@ -942,19 +901,19 @@
               "pmc_id": "PMC12184420",
               "url": "https://pubmed.ncbi.nlm.nih.gov/40504153/",
               "title": "LDL receptor-mediated endocytosis of &lt;i&gt;Escherichia coli&lt;/i&gt; α-hemolysin mediates renal epithelial toxicity",
-              "retrieved_at": "2026-08-15T04:18:48.435383Z",
-              "content_sha256": "fbfa292126f2a7318da850d12f082ed5fcc60b057235e007e875aa563850747b",
+              "retrieved_at": "2026-08-15T15:59:18.721684Z",
+              "content_sha256": "f9eaf9f89a6182e5868d89927ca795d857747d299bfd14d578e700a4a13a1abc",
               "publication_type": "primary_research",
               "is_retracted": false,
-              "retraction_checked_at": "2026-08-15T04:18:48.435383Z",
+              "retraction_checked_at": "2026-08-15T15:59:18.721684Z",
               "license": "unknown"
             },
             "section": "abstract",
             "figure_or_table_id": null,
-            "quote": "Moreover, we identify the low-density lipoprotein receptor (LDLR) as a critical epithelial receptor for HlyA; genetic ablation or competitive inhibition of the HlyA-LDLR interaction fully abrogated cytotoxicity. Our findings detail a paradigm for HlyA function in which epithelial toxicity relies on LDLR-mediated endocytic uptake rather than plasma membrane poration. These mechanistic insights illuminate potential therapeutic strategies to attenuate HlyA-mediated tissue damage during UPEC infections.",
-            "quote_sha256": "80bce92ba638b49473e02537cfdf4f400e243d4bbd610ff42f3b45e78f853a36",
+            "quote": "Moreover, we identify the low-density lipoprotein receptor (LDLR) as a critical epithelial receptor for HlyA; genetic ablation or competitive inhibition of the HlyA-LDLR interaction fully abrogated cytotoxicity.",
+            "quote_sha256": "1eeb97c4d4690aed1c8ee002aad465c601f695bde179bbf5bbb7c99173e19a82",
             "char_offset": 927,
-            "normalized_source_sha256": "5d1204c94b8742bc1787389ba06536c30572b1c861b89c7239405323bb90e8dd"
+            "normalized_source_sha256": "9dda641db84493fbd38bf29a41f78c0e3328546a3d9ea1c3e623f083742c6225"
           }
         ],
         "entailment_verified": true,
@@ -964,7 +923,113 @@
       },
       {
         "evidence_id": "int_evi_07",
-        "claim": "Receptor knockout studies in MDA-MB-231 cells showed that LDL nanoparticle uptake is mediated by both LDLR and SR-B1, with double knockout significantly impeding uptake by >50%.",
+        "claim": "Epithelial toxicity of HlyA relies on LDLR-mediated endocytic uptake rather than plasma membrane poration, establishing LDLR as the endocytic entry route.",
+        "claim_type": "methodological",
+        "direction": "supports",
+        "evidence_type": "functional_assay",
+        "evidence_tier": "primary",
+        "confidence": "strong",
+        "assay_context": {
+          "species": "human",
+          "cell_type_or_line": "renal collecting duct cells",
+          "permeabilized": null,
+          "fixation": null,
+          "isoform": null,
+          "cell_context": {
+            "material_kind": "cell_line",
+            "material_kind_other_label": null,
+            "cell_type": "renal tubular epithelial cells",
+            "cell_line_name": null,
+            "cellosaurus_id": null,
+            "tissue": "kidney",
+            "disease_state": null,
+            "activation_state": null
+          }
+        },
+        "spans": [
+          {
+            "source": {
+              "source_type": "pubmed",
+              "source_id": "PMC:PMC12184420",
+              "pmc_id": "PMC12184420",
+              "url": "https://pubmed.ncbi.nlm.nih.gov/40504153/",
+              "title": "LDL receptor-mediated endocytosis of &lt;i&gt;Escherichia coli&lt;/i&gt; α-hemolysin mediates renal epithelial toxicity",
+              "retrieved_at": "2026-08-15T15:59:18.721684Z",
+              "content_sha256": "f9eaf9f89a6182e5868d89927ca795d857747d299bfd14d578e700a4a13a1abc",
+              "publication_type": "primary_research",
+              "is_retracted": false,
+              "retraction_checked_at": "2026-08-15T15:59:18.721684Z",
+              "license": "unknown"
+            },
+            "section": "abstract",
+            "figure_or_table_id": null,
+            "quote": "Our findings detail a paradigm for HlyA function in which epithelial toxicity relies on LDLR-mediated endocytic uptake rather than plasma membrane poration.",
+            "quote_sha256": "8d9012c5fd0b370b549871f9a5ddb37f5ec0f057b10713a6677803975aca8269",
+            "char_offset": 1139,
+            "normalized_source_sha256": "9dda641db84493fbd38bf29a41f78c0e3328546a3d9ea1c3e623f083742c6225"
+          }
+        ],
+        "entailment_verified": true,
+        "entailment_audit_passed": null,
+        "validation_warnings": [],
+        "duplicate_of": null
+      },
+      {
+        "evidence_id": "int_evi_08",
+        "claim": "HlyA action on renal epithelium relies on clathrin-mediated endocytosis and LDLR expression, confirming LDLR-dependent endocytic uptake.",
+        "claim_type": "methodological",
+        "direction": "supports",
+        "evidence_type": "functional_assay",
+        "evidence_tier": "primary",
+        "confidence": "strong",
+        "assay_context": {
+          "species": "human",
+          "cell_type_or_line": "renal collecting duct cells",
+          "permeabilized": null,
+          "fixation": null,
+          "isoform": null,
+          "cell_context": {
+            "material_kind": "cell_line",
+            "material_kind_other_label": null,
+            "cell_type": "renal tubular epithelial cells",
+            "cell_line_name": null,
+            "cellosaurus_id": null,
+            "tissue": "kidney",
+            "disease_state": null,
+            "activation_state": null
+          }
+        },
+        "spans": [
+          {
+            "source": {
+              "source_type": "pubmed",
+              "source_id": "PMC:PMC12184420",
+              "pmc_id": "PMC12184420",
+              "url": "https://pubmed.ncbi.nlm.nih.gov/40504153/",
+              "title": "LDL receptor-mediated endocytosis of &lt;i&gt;Escherichia coli&lt;/i&gt; α-hemolysin mediates renal epithelial toxicity",
+              "retrieved_at": "2026-08-15T15:59:18.721684Z",
+              "content_sha256": "f9eaf9f89a6182e5868d89927ca795d857747d299bfd14d578e700a4a13a1abc",
+              "publication_type": "primary_research",
+              "is_retracted": false,
+              "retraction_checked_at": "2026-08-15T15:59:18.721684Z",
+              "license": "unknown"
+            },
+            "section": "discussion",
+            "figure_or_table_id": null,
+            "quote": "In this study, we demonstrate that HlyA action on renal epithelium relies on clathrin-mediated endocytosis and LDLR expression, and that rapid cell death ensues from lysosomal permeabilization, cytoplasmic acidification, and resulting mitochondrial injury.",
+            "quote_sha256": "d19bd4f1e12b1a5709d4c780c6b888746e6a29aeb2fee8e1256f255a3d3556c5",
+            "char_offset": 28825,
+            "normalized_source_sha256": "9dda641db84493fbd38bf29a41f78c0e3328546a3d9ea1c3e623f083742c6225"
+          }
+        ],
+        "entailment_verified": true,
+        "entailment_audit_passed": null,
+        "validation_warnings": [],
+        "duplicate_of": null
+      },
+      {
+        "evidence_id": "int_evi_09",
+        "claim": "Receptor knockout studies in MDA-MB-231 cells revealed that LDL nanoparticle uptake is mediated by both LDLR and SR-B1; double knockout of LDLR and SR-B1 significantly impeded LDL nanoparticle uptake (<50%).",
         "claim_type": "methodological",
         "direction": "supports",
         "evidence_type": "functional_assay",
@@ -973,17 +1038,17 @@
         "assay_context": {
           "species": "human",
           "cell_type_or_line": "MDA-MB-231",
-          "permeabilized": false,
+          "permeabilized": null,
           "fixation": null,
           "isoform": null,
           "cell_context": {
             "material_kind": "cell_line",
             "material_kind_other_label": null,
-            "cell_type": "triple negative breast cancer",
+            "cell_type": "breast cancer",
             "cell_line_name": "MDA-MB-231",
             "cellosaurus_id": null,
-            "tissue": "breast",
-            "disease_state": "breast cancer",
+            "tissue": null,
+            "disease_state": "triple negative breast cancer",
             "activation_state": null
           }
         },
@@ -995,11 +1060,11 @@
               "pmc_id": "PMC12691613",
               "url": "https://pubmed.ncbi.nlm.nih.gov/41383561/",
               "title": "Dual Receptor Targeting Ensures Uptake and Anticancer Efficacy of Low-Density Lipoprotein-Docosahexaenoic Acid Nanoparticles Across Breast Cancer Cell Subtypes",
-              "retrieved_at": "2026-08-15T04:18:48.431580Z",
+              "retrieved_at": "2026-08-15T15:59:18.835189Z",
               "content_sha256": "18219f2ac2467878e082d9de2ce2ff8c737e83e6723e34267e8dad26f1ea9188",
               "publication_type": "primary_research",
               "is_retracted": false,
-              "retraction_checked_at": "2026-08-15T04:18:48.431580Z",
+              "retraction_checked_at": "2026-08-15T15:59:18.835189Z",
               "license": "unknown"
             },
             "section": "abstract",
@@ -1016,8 +1081,8 @@
         "duplicate_of": null
       },
       {
-        "evidence_id": "int_evi_08",
-        "claim": "LDLR-targeted nanoparticles (LDLR-OTNs) showed rapid cellular uptake with significant fluorescence by 1 hour and a kinetic plateau at 24-48 hours in breast cancer cell lines.",
+        "evidence_id": "int_evi_10",
+        "claim": "Cellular uptake of LDLR-targeted nanoparticles (LDLR-OTNs) was rapid with significant fluorescence by 1 hour and a kinetic plateau at 24-48 hours; suramin blocking reduced LDLR-OTN uptake, confirming receptor-mediated entry via LDLR.",
         "claim_type": "methodological",
         "direction": "supports",
         "evidence_type": "functional_assay",
@@ -1026,8 +1091,8 @@
         "assay_context": {
           "species": "human",
           "cell_type_or_line": "BT-474, MDA MB 453, MCF-7",
-          "permeabilized": false,
-          "fixation": "live",
+          "permeabilized": null,
+          "fixation": null,
           "isoform": null,
           "cell_context": {
             "material_kind": "cell_line",
@@ -1035,7 +1100,7 @@
             "cell_type": "breast cancer",
             "cell_line_name": null,
             "cellosaurus_id": null,
-            "tissue": "breast",
+            "tissue": null,
             "disease_state": "breast cancer",
             "activation_state": null
           }
@@ -1048,11 +1113,11 @@
               "pmc_id": null,
               "url": "https://pubmed.ncbi.nlm.nih.gov/40239877/",
               "title": "LDLR-targeted orlistat therapeutic nanoparticles: Peptide selection, assembly, characterization, and cell-uptake in breast cancer cell lines",
-              "retrieved_at": "2026-08-15T04:18:48.424025Z",
+              "retrieved_at": "2026-08-15T15:59:18.721870Z",
               "content_sha256": "dd61d7eaa82a3b52df802864f1f3da16553cbdf167a009d2b866492780313145",
               "publication_type": "other",
               "is_retracted": false,
-              "retraction_checked_at": "2026-08-15T04:18:48.424025Z",
+              "retraction_checked_at": "2026-08-15T15:59:18.721870Z",
               "license": "unknown"
             },
             "section": "abstract",
@@ -1069,60 +1134,7 @@
         "duplicate_of": null
       },
       {
-        "evidence_id": "int_evi_09",
-        "claim": "Suramin blocking reduced LDLR-OTN uptake in breast cancer cells, confirming receptor-mediated endocytic entry via LDLR.",
-        "claim_type": "methodological",
-        "direction": "supports",
-        "evidence_type": "functional_assay",
-        "evidence_tier": "primary",
-        "confidence": "strong",
-        "assay_context": {
-          "species": "human",
-          "cell_type_or_line": "BT-474, MDA MB 453, MCF-7",
-          "permeabilized": false,
-          "fixation": null,
-          "isoform": null,
-          "cell_context": {
-            "material_kind": "cell_line",
-            "material_kind_other_label": null,
-            "cell_type": "breast cancer",
-            "cell_line_name": null,
-            "cellosaurus_id": null,
-            "tissue": "breast",
-            "disease_state": "breast cancer",
-            "activation_state": null
-          }
-        },
-        "spans": [
-          {
-            "source": {
-              "source_type": "pubmed",
-              "source_id": "PMID:40239877",
-              "pmc_id": null,
-              "url": "https://pubmed.ncbi.nlm.nih.gov/40239877/",
-              "title": "LDLR-targeted orlistat therapeutic nanoparticles: Peptide selection, assembly, characterization, and cell-uptake in breast cancer cell lines",
-              "retrieved_at": "2026-08-15T04:18:48.424025Z",
-              "content_sha256": "dd61d7eaa82a3b52df802864f1f3da16553cbdf167a009d2b866492780313145",
-              "publication_type": "other",
-              "is_retracted": false,
-              "retraction_checked_at": "2026-08-15T04:18:48.424025Z",
-              "license": "unknown"
-            },
-            "section": "abstract",
-            "figure_or_table_id": null,
-            "quote": "Suramin blocking reduced LDLR-OTN uptake, confirming receptor-mediated entry. Cytotoxicity assays yielded IC<sub>50</sub> values of 23.8 µM (BT-474), 25.8 µM (MDA MB 453), and 8.2 µM (MCF-7), with maximal inhibition at 48 h.<h4>Conclusions</h4>LDLR-OTNs demonstrated receptor-mediated uptake and potent cytotoxicity in LDLR- and FAS- overexpressing breast cancer cells. These findings support LDLR-targeted nanoparticles as a promising approach for delivering FAS inhibitors to LDLR-rich tumours, meriting further investigation in targeted cancer therapy development.",
-            "quote_sha256": "622ea7b8d259978344064a703884df40985e0f6e3609c7ead5454a7c5c35fc86",
-            "char_offset": 1907,
-            "normalized_source_sha256": "94f48811da99299224e2f473f74c2de98f4179e53e9e3a60c03c034964e3b83b"
-          }
-        ],
-        "entailment_verified": true,
-        "entailment_audit_passed": null,
-        "validation_warnings": [],
-        "duplicate_of": null
-      },
-      {
-        "evidence_id": "int_evi_10",
+        "evidence_id": "int_evi_11",
         "claim": "Silica nanoparticles with a human serum corona are internalized via the LDL receptor (LDLR) in HeLa cells.",
         "claim_type": "methodological",
         "direction": "supports",
@@ -1132,7 +1144,7 @@
         "assay_context": {
           "species": "human",
           "cell_type_or_line": "HeLa",
-          "permeabilized": false,
+          "permeabilized": null,
           "fixation": null,
           "isoform": null,
           "cell_context": {
@@ -1154,11 +1166,11 @@
               "pmc_id": "PMC9011393",
               "url": "https://pubmed.ncbi.nlm.nih.gov/35377663/",
               "title": "Mechanisms of Uptake and Membrane Curvature Generation for the Internalization of Silica Nanoparticles by Cells",
-              "retrieved_at": "2026-08-15T04:18:48.435275Z",
+              "retrieved_at": "2026-08-15T15:59:18.852649Z",
               "content_sha256": "6219ae0226cd26822450205282f561a8203271ec9bd6e8b12fba94051a87641c",
               "publication_type": "other",
               "is_retracted": false,
-              "retraction_checked_at": "2026-08-15T04:18:48.435275Z",
+              "retraction_checked_at": "2026-08-15T15:59:18.852649Z",
               "license": "unknown"
             },
             "section": "abstract",
@@ -1175,8 +1187,8 @@
         "duplicate_of": null
       },
       {
-        "evidence_id": "int_evi_11",
-        "claim": "Despite interaction with LDLR, silica nanoparticle uptake in HeLa cells is not clathrin-mediated, unlike the canonical pathway for this receptor's endogenous ligands.",
+        "evidence_id": "int_evi_12",
+        "claim": "Despite interaction with LDLR, silica nanoparticle uptake is not clathrin-mediated (unlike the canonical LDLR endocytic pathway), demonstrating that nanosized objects targeted to LDLR can enter via different mechanisms than endogenous ligands.",
         "claim_type": "methodological",
         "direction": "supports",
         "evidence_type": "functional_assay",
@@ -1185,7 +1197,7 @@
         "assay_context": {
           "species": "human",
           "cell_type_or_line": "HeLa",
-          "permeabilized": false,
+          "permeabilized": null,
           "fixation": null,
           "isoform": null,
           "cell_context": {
@@ -1207,11 +1219,11 @@
               "pmc_id": "PMC9011393",
               "url": "https://pubmed.ncbi.nlm.nih.gov/35377663/",
               "title": "Mechanisms of Uptake and Membrane Curvature Generation for the Internalization of Silica Nanoparticles by Cells",
-              "retrieved_at": "2026-08-15T04:18:48.435275Z",
+              "retrieved_at": "2026-08-15T15:59:18.852649Z",
               "content_sha256": "6219ae0226cd26822450205282f561a8203271ec9bd6e8b12fba94051a87641c",
               "publication_type": "other",
               "is_retracted": false,
-              "retraction_checked_at": "2026-08-15T04:18:48.435275Z",
+              "retraction_checked_at": "2026-08-15T15:59:18.852649Z",
               "license": "unknown"
             },
             "section": "abstract",
@@ -1228,17 +1240,17 @@
         "duplicate_of": null
       },
       {
-        "evidence_id": "int_evi_12",
-        "claim": "Nanosized objects targeted to LDLR can enter cells via different mechanisms than their endogenous ligands, demonstrating route flexibility for LDLR-mediated endocytosis.",
+        "evidence_id": "int_evi_13",
+        "claim": "Silencing of proteins involved in clathrin-independent mechanisms and BAR-domain proteins strongly reduces LDLR-mediated nanoparticle uptake in HeLa cells.",
         "claim_type": "methodological",
         "direction": "supports",
         "evidence_type": "functional_assay",
         "evidence_tier": "primary",
-        "confidence": "moderate",
+        "confidence": "strong",
         "assay_context": {
           "species": "human",
           "cell_type_or_line": "HeLa",
-          "permeabilized": false,
+          "permeabilized": null,
           "fixation": null,
           "isoform": null,
           "cell_context": {
@@ -1260,18 +1272,18 @@
               "pmc_id": "PMC9011393",
               "url": "https://pubmed.ncbi.nlm.nih.gov/35377663/",
               "title": "Mechanisms of Uptake and Membrane Curvature Generation for the Internalization of Silica Nanoparticles by Cells",
-              "retrieved_at": "2026-08-15T04:18:48.435275Z",
+              "retrieved_at": "2026-08-15T15:59:18.852649Z",
               "content_sha256": "6219ae0226cd26822450205282f561a8203271ec9bd6e8b12fba94051a87641c",
               "publication_type": "other",
               "is_retracted": false,
-              "retraction_checked_at": "2026-08-15T04:18:48.435275Z",
+              "retraction_checked_at": "2026-08-15T15:59:18.852649Z",
               "license": "unknown"
             },
             "section": "abstract",
             "figure_or_table_id": null,
-            "quote": "Thus, nanosized objects targeted to specific receptors, such as here LDLR, can enter cells via different mechanisms than their endogenous ligands.",
-            "quote_sha256": "ffff6394e44778592116246396e00492cab7e757adb9b04792b138d1cead12ff",
-            "char_offset": 858,
+            "quote": "Additionally, silencing the expression of different proteins involved in clathrin-independent mechanisms and several BAR-domain proteins known to generate membrane curvature strongly reduces nanoparticle uptake.",
+            "quote_sha256": "d8a95c6846e3741c7b5d64e7d1a8171c3acbc5fdbdf7a6376e384c76cf23a512",
+            "char_offset": 646,
             "normalized_source_sha256": "655ac1d7dda539031863b4c2a0071b30dad29e07034fc475647217808e80840b"
           }
         ],
@@ -1281,61 +1293,8 @@
         "duplicate_of": null
       },
       {
-        "evidence_id": "int_evi_13",
-        "claim": "LDL is internalized into cells mainly through LDLR-mediated endocytosis; in acidic endosomes LDLR is released from LDL and recycles back to the cell surface, while PCSK9-bound LDLR fails to recycle and is degraded in the lysosome.",
-        "claim_type": "methodological",
-        "direction": "supports",
-        "evidence_type": "functional_assay",
-        "evidence_tier": "secondary",
-        "confidence": "strong",
-        "assay_context": {
-          "species": "human",
-          "cell_type_or_line": null,
-          "permeabilized": null,
-          "fixation": null,
-          "isoform": null,
-          "cell_context": {
-            "material_kind": "unspecified",
-            "material_kind_other_label": null,
-            "cell_type": null,
-            "cell_line_name": null,
-            "cellosaurus_id": null,
-            "tissue": null,
-            "disease_state": null,
-            "activation_state": null
-          }
-        },
-        "spans": [
-          {
-            "source": {
-              "source_type": "pubmed",
-              "source_id": "PMID:40071387",
-              "pmc_id": null,
-              "url": "https://pubmed.ncbi.nlm.nih.gov/40071387/",
-              "title": "PCSK9 Promotes LDLR Degradation by Preventing SNX17-Mediated LDLR Recycling",
-              "retrieved_at": "2026-08-15T04:18:48.435437Z",
-              "content_sha256": "73034633fb240c43157e6a13938d93ee96d2221999a0d4d4ef0545048fb98b7a",
-              "publication_type": "other",
-              "is_retracted": false,
-              "retraction_checked_at": "2026-08-15T04:18:48.435437Z",
-              "license": "unknown"
-            },
-            "section": "abstract",
-            "figure_or_table_id": null,
-            "quote": "<h4>Background</h4>Low-density lipoprotein (LDL) is internalized into cells mainly through LDLR (LDL receptor)-mediated endocytosis. In an acidic endosome, LDLR is released from LDL and recycles back to the cell surface, whereas LDL is left in the endosome and degraded in the lysosome. Circulating PCSK9 (proprotein convertase subtilisin/kexin 9) binds with LDLR and is internalized into the endosome, similar to LDL. In an acidic endosome, LDLR fails to disassociate from PCSK9, and both proteins are degraded in the lysosome. PCSK9 inhibitors are widely used for treating hypercholesterolemia.",
-            "quote_sha256": "cfad4c6d22c27e69bcddabe906304a1a49e113da613eae1fa32b6410a88d0ee5",
-            "char_offset": 0,
-            "normalized_source_sha256": "4b2488e91bcca6f3396ebf26cf19c9e2d41129dec6caa8cadff05ca81a8b9726"
-          }
-        ],
-        "entailment_verified": true,
-        "entailment_audit_passed": null,
-        "validation_warnings": [],
-        "duplicate_of": null
-      },
-      {
         "evidence_id": "int_evi_14",
-        "claim": "Knocking down SNX17 abolishes LDLR recycling and causes accelerated lysosomal degradation; PCSK9 prevents the acidic pH-induced conformational change in LDLR and blocks its interaction with SNX17, thereby diverting LDLR from recycling.",
+        "claim": "Knocking down SNX17 abolishes LDLR recycling and causes accelerated degradation in the lysosome; PCSK9 prevents the acidic pH-induced conformational change in LDLR and blocks its interaction with SNX17, thereby preventing recycling.",
         "claim_type": "methodological",
         "direction": "supports",
         "evidence_type": "functional_assay",
@@ -1366,11 +1325,11 @@
               "pmc_id": null,
               "url": "https://pubmed.ncbi.nlm.nih.gov/40071387/",
               "title": "PCSK9 Promotes LDLR Degradation by Preventing SNX17-Mediated LDLR Recycling",
-              "retrieved_at": "2026-08-15T04:18:48.435437Z",
+              "retrieved_at": "2026-08-15T15:59:18.834033Z",
               "content_sha256": "73034633fb240c43157e6a13938d93ee96d2221999a0d4d4ef0545048fb98b7a",
               "publication_type": "other",
               "is_retracted": false,
-              "retraction_checked_at": "2026-08-15T04:18:48.435437Z",
+              "retraction_checked_at": "2026-08-15T15:59:18.834033Z",
               "license": "unknown"
             },
             "section": "abstract",
@@ -1388,15 +1347,15 @@
       },
       {
         "evidence_id": "int_evi_15",
-        "claim": "FH sequence variations that disrupt LDLR recycling are unresponsive to PCSK9 or PCSK9 inhibitors even though they can still internalize LDL, demonstrating that internalization and recycling are separable functions.",
+        "claim": "FH sequence variations that disrupt LDLR recycling are unresponsive to PCSK9 or PCSK9 inhibitors, even though they can internalize LDL; knocking down SNX17 abolishes PCSK9-mediated LDLR degradation.",
         "claim_type": "methodological",
         "direction": "supports",
         "evidence_type": "functional_assay",
         "evidence_tier": "primary",
         "confidence": "strong",
         "assay_context": {
-          "species": "mouse",
-          "cell_type_or_line": "Ldlr knockout mice / HuH7 knockout cells",
+          "species": "human",
+          "cell_type_or_line": "HuH7",
           "permeabilized": null,
           "fixation": null,
           "isoform": null,
@@ -1419,11 +1378,11 @@
               "pmc_id": null,
               "url": "https://pubmed.ncbi.nlm.nih.gov/40071387/",
               "title": "PCSK9 Promotes LDLR Degradation by Preventing SNX17-Mediated LDLR Recycling",
-              "retrieved_at": "2026-08-15T04:18:48.435437Z",
+              "retrieved_at": "2026-08-15T15:59:18.834033Z",
               "content_sha256": "73034633fb240c43157e6a13938d93ee96d2221999a0d4d4ef0545048fb98b7a",
               "publication_type": "other",
               "is_retracted": false,
-              "retraction_checked_at": "2026-08-15T04:18:48.435437Z",
+              "retraction_checked_at": "2026-08-15T15:59:18.834033Z",
               "license": "unknown"
             },
             "section": "abstract",
@@ -1441,7 +1400,7 @@
       },
       {
         "evidence_id": "int_evi_16",
-        "claim": "Flow cytometry was used to analyze the relative amount of LDLRs expressed on the cell surface and the relative amount of internalized LDL in LDLR-deficient CHO cells expressing WT or mutant LDLRs.",
+        "claim": "Flow cytometry was used to analyze the relative amount of LDLRs expressed on the cell surface and the relative amount of internalized LDL in LDLR-deficient CHO cells transiently expressing WT and mutant LDLRs.",
         "claim_type": "methodological",
         "direction": "supports",
         "evidence_type": "flow_cytometry",
@@ -1451,7 +1410,7 @@
           "species": "other",
           "cell_type_or_line": "CHO (LDLR-deficient)",
           "permeabilized": false,
-          "fixation": null,
+          "fixation": "live",
           "isoform": null,
           "cell_context": {
             "material_kind": "cell_line",
@@ -1472,11 +1431,11 @@
               "pmc_id": "PMC12454892",
               "url": "https://pubmed.ncbi.nlm.nih.gov/40769381/",
               "title": "Functional characterization of 16 variants found in the LDL receptor gene",
-              "retrieved_at": "2026-08-15T04:18:48.431351Z",
+              "retrieved_at": "2026-08-15T15:59:18.755356Z",
               "content_sha256": "cc3be15c5a32a8d41f066def1c41822d532402c13fa5c85f5e4171ffae13803b",
               "publication_type": "primary_research",
               "is_retracted": false,
-              "retraction_checked_at": "2026-08-15T04:18:48.431351Z",
+              "retraction_checked_at": "2026-08-15T15:59:18.755356Z",
               "license": "unknown"
             },
             "section": "abstract",
@@ -1494,7 +1453,7 @@
       },
       {
         "evidence_id": "int_evi_17",
-        "claim": "Of 16 LDLR variants studied, one (p.Ala540Thr) showed a defect in LDL binding and/or internalization despite normal LDLR cell surface expression, and 13 variants had detrimental effects on both LDLR surface expression and LDL internalization.",
+        "claim": "Of 16 LDLR variants studied, one exhibited a defect in LDL binding and/or internalization despite normal LDLR cell surface expression, and 13 variants had a detrimental effect on both LDLR cell surface expression and LDL internalization.",
         "claim_type": "methodological",
         "direction": "supports",
         "evidence_type": "flow_cytometry",
@@ -1504,7 +1463,7 @@
           "species": "other",
           "cell_type_or_line": "CHO (LDLR-deficient)",
           "permeabilized": false,
-          "fixation": null,
+          "fixation": "live",
           "isoform": null,
           "cell_context": {
             "material_kind": "cell_line",
@@ -1525,11 +1484,11 @@
               "pmc_id": "PMC12454892",
               "url": "https://pubmed.ncbi.nlm.nih.gov/40769381/",
               "title": "Functional characterization of 16 variants found in the LDL receptor gene",
-              "retrieved_at": "2026-08-15T04:18:48.431351Z",
+              "retrieved_at": "2026-08-15T15:59:18.755356Z",
               "content_sha256": "cc3be15c5a32a8d41f066def1c41822d532402c13fa5c85f5e4171ffae13803b",
               "publication_type": "primary_research",
               "is_retracted": false,
-              "retraction_checked_at": "2026-08-15T04:18:48.431351Z",
+              "retraction_checked_at": "2026-08-15T15:59:18.755356Z",
               "license": "unknown"
             },
             "section": "abstract",
@@ -1547,65 +1506,12 @@
       },
       {
         "evidence_id": "int_evi_18",
-        "claim": "Flow cytometry analysis results for LDLR cell surface expression and LDL internalization were measured across 16 LDLR variants and controls in CHO cells.",
-        "claim_type": "methodological",
-        "direction": "supports",
-        "evidence_type": "flow_cytometry",
-        "evidence_tier": "primary",
-        "confidence": "strong",
-        "assay_context": {
-          "species": "other",
-          "cell_type_or_line": "CHO (LDLR-deficient)",
-          "permeabilized": false,
-          "fixation": null,
-          "isoform": null,
-          "cell_context": {
-            "material_kind": "cell_line",
-            "material_kind_other_label": null,
-            "cell_type": "Chinese hamster ovary",
-            "cell_line_name": "CHO",
-            "cellosaurus_id": null,
-            "tissue": null,
-            "disease_state": "LDLR-deficient",
-            "activation_state": null
-          }
-        },
-        "spans": [
-          {
-            "source": {
-              "source_type": "pubmed",
-              "source_id": "PMC:PMC12454892",
-              "pmc_id": "PMC12454892",
-              "url": "https://pubmed.ncbi.nlm.nih.gov/40769381/",
-              "title": "Functional characterization of 16 variants found in the LDL receptor gene",
-              "retrieved_at": "2026-08-15T04:18:48.431351Z",
-              "content_sha256": "cc3be15c5a32a8d41f066def1c41822d532402c13fa5c85f5e4171ffae13803b",
-              "publication_type": "primary_research",
-              "is_retracted": false,
-              "retraction_checked_at": "2026-08-15T04:18:48.431351Z",
-              "license": "unknown"
-            },
-            "section": "results",
-            "figure_or_table_id": null,
-            "quote": "Fig. 1 Results of the flow cytometry analysis of LDLR cell surface expression (A), LDL internalization (B), and the Western blot analysis of LDLR maturation (C).",
-            "quote_sha256": "9ed6e8f6e96eb227e85f1ca5f0e960d29c1ba1432f44dd5ac6d07a27c759fa86",
-            "char_offset": 13175,
-            "normalized_source_sha256": "55fa272e7a3fa9fee5c89681748f627b5000d876913800044b0ad8daf5a65d13"
-          }
-        ],
-        "entailment_verified": true,
-        "entailment_audit_passed": null,
-        "validation_warnings": [],
-        "duplicate_of": null
-      },
-      {
-        "evidence_id": "int_evi_19",
-        "claim": "LDLR was utilized as a fast internalizer to enhance lysosomal delivery in degrader-drug conjugates (DDCs), enabling efficient and selective degradation of diverse extracellular membrane proteins.",
+        "claim": "LDLR was utilized as a fast internalizer to enhance lysosomal delivery in degrader-drug conjugates (DDCs), with LDLR-based degraders enabling efficient degradation of diverse extracellular membrane proteins.",
         "claim_type": "methodological",
         "direction": "supports",
         "evidence_type": "functional_assay",
         "evidence_tier": "primary",
-        "confidence": "strong",
+        "confidence": "moderate",
         "assay_context": {
           "species": "human",
           "cell_type_or_line": null,
@@ -1631,11 +1537,11 @@
               "pmc_id": "PMC12576823",
               "url": "https://pubmed.ncbi.nlm.nih.gov/41091621/",
               "title": "Hijacking Extracellular Targeted Protein Degrader-Drug Conjugates for Enhanced Drug Delivery",
-              "retrieved_at": "2026-08-15T04:18:48.404506Z",
+              "retrieved_at": "2026-08-15T15:59:18.711308Z",
               "content_sha256": "33cd66d98da403ee903febde214ec9febf1493243dd9cd436b4e87212f6152e4",
               "publication_type": "primary_research",
               "is_retracted": false,
-              "retraction_checked_at": "2026-08-15T04:18:48.404506Z",
+              "retraction_checked_at": "2026-08-15T15:59:18.711308Z",
               "license": "unknown"
             },
             "section": "abstract",
@@ -1652,114 +1558,8 @@
         "duplicate_of": null
       },
       {
-        "evidence_id": "int_evi_20",
-        "claim": "PCSK9 and blocking antibodies against LDLR dose-dependently decreased vascular endothelial cell uptake of LPS, and inhibition of endocytosis using Dynasore blocked LPS uptake, demonstrating LDLR-mediated endocytosis in HUVECs.",
-        "claim_type": "methodological",
-        "direction": "supports",
-        "evidence_type": "functional_assay",
-        "evidence_tier": "primary",
-        "confidence": "strong",
-        "assay_context": {
-          "species": "human",
-          "cell_type_or_line": "HUVECs",
-          "permeabilized": false,
-          "fixation": null,
-          "isoform": null,
-          "cell_context": {
-            "material_kind": "primary_cell",
-            "material_kind_other_label": null,
-            "cell_type": "vascular endothelial cells",
-            "cell_line_name": null,
-            "cellosaurus_id": null,
-            "tissue": "umbilical vein",
-            "disease_state": null,
-            "activation_state": null
-          }
-        },
-        "spans": [
-          {
-            "source": {
-              "source_type": "pubmed",
-              "source_id": "PMID:36207148",
-              "pmc_id": null,
-              "url": "https://pubmed.ncbi.nlm.nih.gov/36207148/",
-              "title": "Modulation of vascular endothelial inflammatory response by proprotein convertase subtilisin-kexin type 9",
-              "retrieved_at": "2026-08-15T04:18:48.431498Z",
-              "content_sha256": "9c327d81d700da103cb59558654d27f778d9efaa159281a54e2688ec6002228b",
-              "publication_type": "other",
-              "is_retracted": false,
-              "retraction_checked_at": "2026-08-15T04:18:48.431498Z",
-              "license": "unknown"
-            },
-            "section": "abstract",
-            "figure_or_table_id": null,
-            "quote": "PCSK9 and, separately, blocking antibodies against LDLR, dose-dependently decreased the vascular endothelial cell uptake of LPS and, furthermore, inhibition of endocytosis using Dynasore blocked LPS uptake. In contrast, blocking antibodies against TLR4 did not alter LPS uptake. PCSK9 decreased the LPS-induced proinflammatory response (IL-6 and IL-8 gene expression and protein secretion, and VCAM-1/ICAM-1 expression) in vascular endothelial cells.",
-            "quote_sha256": "a7f1835c7c7bfe79d0348f0fa58da99eeb0090cbb98a4c6a464aa64c0b880f1b",
-            "char_offset": 795,
-            "normalized_source_sha256": "d85214198510bec2631f419098e502670c8e559348e6e4c94d708d4e0f3df60e"
-          }
-        ],
-        "entailment_verified": true,
-        "entailment_audit_passed": null,
-        "validation_warnings": [],
-        "duplicate_of": null
-      },
-      {
-        "evidence_id": "int_evi_21",
-        "claim": "Decrease in PCSK9 and increase in LDLR (via triciribine or siPCSK9) increased LPS uptake in vascular endothelial cells, and similar results were found in aortic tissue from Pcsk9-/- mice, confirming PCSK9 modulates LDLR-mediated endocytosis.",
-        "claim_type": "methodological",
-        "direction": "supports",
-        "evidence_type": "functional_assay",
-        "evidence_tier": "primary",
-        "confidence": "strong",
-        "assay_context": {
-          "species": "mouse",
-          "cell_type_or_line": "HUVECs / aortic vascular tissue",
-          "permeabilized": null,
-          "fixation": null,
-          "isoform": null,
-          "cell_context": {
-            "material_kind": "primary_cell",
-            "material_kind_other_label": null,
-            "cell_type": "vascular endothelial cells",
-            "cell_line_name": null,
-            "cellosaurus_id": null,
-            "tissue": "aorta",
-            "disease_state": null,
-            "activation_state": null
-          }
-        },
-        "spans": [
-          {
-            "source": {
-              "source_type": "pubmed",
-              "source_id": "PMID:36207148",
-              "pmc_id": null,
-              "url": "https://pubmed.ncbi.nlm.nih.gov/36207148/",
-              "title": "Modulation of vascular endothelial inflammatory response by proprotein convertase subtilisin-kexin type 9",
-              "retrieved_at": "2026-08-15T04:18:48.431498Z",
-              "content_sha256": "9c327d81d700da103cb59558654d27f778d9efaa159281a54e2688ec6002228b",
-              "publication_type": "other",
-              "is_retracted": false,
-              "retraction_checked_at": "2026-08-15T04:18:48.431498Z",
-              "license": "unknown"
-            },
-            "section": "abstract",
-            "figure_or_table_id": null,
-            "quote": "In addition, a decrease in PCSK9 and increase in LDLR, mediated by triciribine or siPCSK9, increased LPS uptake and the LPS-induced proinflammatory response. Similar results were also found in aortic vascular tissue from Pcsk9<sup>-/-</sup> mice after LPS injection.<h4>Conclusions</h4>Our data suggest that, similar to PCSK9 treatment in hepatocytes, PCSK9 reduces vascular endothelial cell uptake of LPS via LDLR-mediated endocytosis. Consequently, PCSK9 decreases the LPS-induced proinflammatory response in vascular endothelial cells.",
-            "quote_sha256": "2baa4807f18dffab1c6cc570fa5525d38d29ecf66e655ef53ec86a0d8fc2a7e9",
-            "char_offset": 1246,
-            "normalized_source_sha256": "d85214198510bec2631f419098e502670c8e559348e6e4c94d708d4e0f3df60e"
-          }
-        ],
-        "entailment_verified": true,
-        "entailment_audit_passed": null,
-        "validation_warnings": [],
-        "duplicate_of": null
-      },
-      {
-        "evidence_id": "int_evi_22",
-        "claim": "Overexpression of SENP1 increases LDLR protein levels and enhances LDL uptake in cultured cells, while loss of SENP1 lowers LDLR levels in an IDOL-dependent manner and reduces LDL endocytosis.",
+        "evidence_id": "int_evi_19",
+        "claim": "Overexpression of SENP1 increases LDLR protein levels and enhances LDL uptake in cultured cells; loss of SENP1 lowers LDLR levels in an IDOL-dependent manner and reduces LDL endocytosis.",
         "claim_type": "methodological",
         "direction": "supports",
         "evidence_type": "functional_assay",
@@ -1772,9 +1572,9 @@
           "fixation": null,
           "isoform": null,
           "cell_context": {
-            "material_kind": "cell_line",
+            "material_kind": "unspecified",
             "material_kind_other_label": null,
-            "cell_type": "cultured cells",
+            "cell_type": null,
             "cell_line_name": null,
             "cellosaurus_id": null,
             "tissue": null,
@@ -1790,11 +1590,11 @@
               "pmc_id": "PMC7948399",
               "url": "https://pubmed.ncbi.nlm.nih.gov/33154164/",
               "title": "SUMOylation of the ubiquitin ligase IDOL decreases LDL receptor levels and is reversed by SENP1",
-              "retrieved_at": "2026-08-15T04:18:48.431619Z",
+              "retrieved_at": "2026-08-15T15:59:18.711343Z",
               "content_sha256": "31742fb5c00a3cabbfef1bc09b9368e0e4713d34e2fc5fcbb951a4e27013b8a3",
               "publication_type": "primary_research",
               "is_retracted": false,
-              "retraction_checked_at": "2026-08-15T04:18:48.431619Z",
+              "retraction_checked_at": "2026-08-15T15:59:18.711343Z",
               "license": "unknown"
             },
             "section": "abstract",
@@ -1811,8 +1611,8 @@
         "duplicate_of": null
       },
       {
-        "evidence_id": "int_evi_23",
-        "claim": "TAGLN-KO HepG2 cells showed accumulation of LDL receptor on their surface due to decreased receptor internalization, as observed by confocal microscopy.",
+        "evidence_id": "int_evi_20",
+        "claim": "TAGLN-KO cells showed accumulation of LDL receptor on their surface due to decreased receptor internalization, as observed by confocal microscopy imaging.",
         "claim_type": "methodological",
         "direction": "supports",
         "evidence_type": "immunofluorescence",
@@ -1843,11 +1643,11 @@
               "pmc_id": "PMC8953622",
               "url": "https://pubmed.ncbi.nlm.nih.gov/34902367/",
               "title": "Transgelin: a new gene involved in LDL endocytosis identified by a genome-wide CRISPR-Cas9 screen",
-              "retrieved_at": "2026-08-15T04:18:48.404721Z",
+              "retrieved_at": "2026-08-15T15:59:18.732659Z",
               "content_sha256": "3218f3dd2b74ed04791404efff14e33a61be759c6b6392cd1ec7aa931afaa4c1",
               "publication_type": "primary_research",
               "is_retracted": false,
-              "retraction_checked_at": "2026-08-15T04:18:48.404721Z",
+              "retraction_checked_at": "2026-08-15T15:59:18.732659Z",
               "license": "unknown"
             },
             "section": "abstract",
@@ -1864,7 +1664,7 @@
         "duplicate_of": null
       },
       {
-        "evidence_id": "int_evi_24",
+        "evidence_id": "int_evi_21",
         "claim": "TAGLN is a novel factor involved in the actin-dependent phase of clathrin-mediated endocytosis of LDL via LDLR.",
         "claim_type": "methodological",
         "direction": "supports",
@@ -1896,11 +1696,11 @@
               "pmc_id": "PMC8953622",
               "url": "https://pubmed.ncbi.nlm.nih.gov/34902367/",
               "title": "Transgelin: a new gene involved in LDL endocytosis identified by a genome-wide CRISPR-Cas9 screen",
-              "retrieved_at": "2026-08-15T04:18:48.404721Z",
+              "retrieved_at": "2026-08-15T15:59:18.732659Z",
               "content_sha256": "3218f3dd2b74ed04791404efff14e33a61be759c6b6392cd1ec7aa931afaa4c1",
               "publication_type": "primary_research",
               "is_retracted": false,
-              "retraction_checked_at": "2026-08-15T04:18:48.404721Z",
+              "retraction_checked_at": "2026-08-15T15:59:18.732659Z",
               "license": "unknown"
             },
             "section": "abstract",
@@ -1917,17 +1717,17 @@
         "duplicate_of": null
       },
       {
-        "evidence_id": "int_evi_25",
-        "claim": "The LDLR exon13_15dup variant leads to significantly increased cell-surface LDLR expression and enhanced ER localization, evaluated by flow cytometry and confocal microscopy.",
-        "claim_type": "surface_expression",
+        "evidence_id": "int_evi_22",
+        "claim": "The LDLR exon13_15dup variant leads to significantly increased cell-surface LDLR expression and enhanced localization in the endoplasmic reticulum, resulting in reduced capacity for LDL uptake in patient cells.",
+        "claim_type": "methodological",
         "direction": "supports",
         "evidence_type": "flow_cytometry",
         "evidence_tier": "primary",
         "confidence": "strong",
         "assay_context": {
           "species": "human",
-          "cell_type_or_line": "macrophages (from PBMCs)",
-          "permeabilized": false,
+          "cell_type_or_line": "macrophages (from patient PBMCs)",
+          "permeabilized": null,
           "fixation": null,
           "isoform": null,
           "cell_context": {
@@ -1949,11 +1749,11 @@
               "pmc_id": "PMC13002427",
               "url": "https://pubmed.ncbi.nlm.nih.gov/41869034/",
               "title": "Functional analysis from ex-vivo characterization of LDLR exon 13-15 duplication associated to familial hypercholesterolemia",
-              "retrieved_at": "2026-08-15T04:18:48.435335Z",
+              "retrieved_at": "2026-08-15T15:59:18.835090Z",
               "content_sha256": "df586108787b7405d3853b3b01e149a86c41832ef2a0b673090f6ab3fde1cf0f",
               "publication_type": "primary_research",
               "is_retracted": false,
-              "retraction_checked_at": "2026-08-15T04:18:48.435335Z",
+              "retraction_checked_at": "2026-08-15T15:59:18.835090Z",
               "license": "unknown"
             },
             "section": "abstract",
@@ -1970,8 +1770,8 @@
         "duplicate_of": null
       },
       {
-        "evidence_id": "int_evi_26",
-        "claim": "The LDLR exon13_15dup variant results in reduced capacity for LDL uptake in patient cells, with the mutation affecting proper transport and function of LDLR such that it cannot effectively internalize LDL.",
+        "evidence_id": "int_evi_23",
+        "claim": "Functional analysis showed that the LDLR exon13_15dup mutation affects proper transport and function of LDLR, resulting in a dysfunctional protein that cannot effectively internalize LDL.",
         "claim_type": "methodological",
         "direction": "supports",
         "evidence_type": "functional_assay",
@@ -1979,8 +1779,8 @@
         "confidence": "strong",
         "assay_context": {
           "species": "human",
-          "cell_type_or_line": "macrophages (from PBMCs)",
-          "permeabilized": false,
+          "cell_type_or_line": "macrophages (from patient PBMCs)",
+          "permeabilized": null,
           "fixation": null,
           "isoform": null,
           "cell_context": {
@@ -2002,11 +1802,11 @@
               "pmc_id": "PMC13002427",
               "url": "https://pubmed.ncbi.nlm.nih.gov/41869034/",
               "title": "Functional analysis from ex-vivo characterization of LDLR exon 13-15 duplication associated to familial hypercholesterolemia",
-              "retrieved_at": "2026-08-15T04:18:48.435335Z",
+              "retrieved_at": "2026-08-15T15:59:18.835090Z",
               "content_sha256": "df586108787b7405d3853b3b01e149a86c41832ef2a0b673090f6ab3fde1cf0f",
               "publication_type": "primary_research",
               "is_retracted": false,
-              "retraction_checked_at": "2026-08-15T04:18:48.435335Z",
+              "retraction_checked_at": "2026-08-15T15:59:18.835090Z",
               "license": "unknown"
             },
             "section": "abstract",
@@ -2023,8 +1823,114 @@
         "duplicate_of": null
       },
       {
-        "evidence_id": "int_evi_27",
-        "claim": "DiI-labeled LDL and fluorescence microscopy were used to evaluate cellular LDL uptake in HLSECs as a measure of LDLR-mediated endocytic activity.",
+        "evidence_id": "int_evi_24",
+        "claim": "PCSK9 and blocking antibodies against LDLR dose-dependently decreased vascular endothelial cell uptake of LPS; inhibition of endocytosis using Dynasore blocked LPS uptake, confirming LDLR-mediated endocytosis of LPS in HUVECs.",
+        "claim_type": "methodological",
+        "direction": "supports",
+        "evidence_type": "functional_assay",
+        "evidence_tier": "primary",
+        "confidence": "strong",
+        "assay_context": {
+          "species": "human",
+          "cell_type_or_line": "HUVECs",
+          "permeabilized": null,
+          "fixation": null,
+          "isoform": null,
+          "cell_context": {
+            "material_kind": "primary_cell",
+            "material_kind_other_label": null,
+            "cell_type": "vascular endothelial cells",
+            "cell_line_name": null,
+            "cellosaurus_id": null,
+            "tissue": "umbilical vein",
+            "disease_state": null,
+            "activation_state": null
+          }
+        },
+        "spans": [
+          {
+            "source": {
+              "source_type": "pubmed",
+              "source_id": "PMID:36207148",
+              "pmc_id": null,
+              "url": "https://pubmed.ncbi.nlm.nih.gov/36207148/",
+              "title": "Modulation of vascular endothelial inflammatory response by proprotein convertase subtilisin-kexin type 9",
+              "retrieved_at": "2026-08-15T15:59:18.833982Z",
+              "content_sha256": "9c327d81d700da103cb59558654d27f778d9efaa159281a54e2688ec6002228b",
+              "publication_type": "other",
+              "is_retracted": false,
+              "retraction_checked_at": "2026-08-15T15:59:18.833982Z",
+              "license": "unknown"
+            },
+            "section": "abstract",
+            "figure_or_table_id": null,
+            "quote": "PCSK9 and, separately, blocking antibodies against LDLR, dose-dependently decreased the vascular endothelial cell uptake of LPS and, furthermore, inhibition of endocytosis using Dynasore blocked LPS uptake. In contrast, blocking antibodies against TLR4 did not alter LPS uptake. PCSK9 decreased the LPS-induced proinflammatory response (IL-6 and IL-8 gene expression and protein secretion, and VCAM-1/ICAM-1 expression) in vascular endothelial cells.",
+            "quote_sha256": "a7f1835c7c7bfe79d0348f0fa58da99eeb0090cbb98a4c6a464aa64c0b880f1b",
+            "char_offset": 795,
+            "normalized_source_sha256": "d85214198510bec2631f419098e502670c8e559348e6e4c94d708d4e0f3df60e"
+          }
+        ],
+        "entailment_verified": true,
+        "entailment_audit_passed": null,
+        "validation_warnings": [],
+        "duplicate_of": null
+      },
+      {
+        "evidence_id": "int_evi_25",
+        "claim": "A decrease in PCSK9 and increase in LDLR (mediated by triciribine or siPCSK9) increased LPS uptake in HUVECs; similar results were found in aortic vascular tissue from Pcsk9-/- mice after LPS injection.",
+        "claim_type": "methodological",
+        "direction": "supports",
+        "evidence_type": "functional_assay",
+        "evidence_tier": "primary",
+        "confidence": "strong",
+        "assay_context": {
+          "species": "human",
+          "cell_type_or_line": "HUVECs",
+          "permeabilized": null,
+          "fixation": null,
+          "isoform": null,
+          "cell_context": {
+            "material_kind": "primary_cell",
+            "material_kind_other_label": null,
+            "cell_type": "vascular endothelial cells",
+            "cell_line_name": null,
+            "cellosaurus_id": null,
+            "tissue": "umbilical vein",
+            "disease_state": null,
+            "activation_state": null
+          }
+        },
+        "spans": [
+          {
+            "source": {
+              "source_type": "pubmed",
+              "source_id": "PMID:36207148",
+              "pmc_id": null,
+              "url": "https://pubmed.ncbi.nlm.nih.gov/36207148/",
+              "title": "Modulation of vascular endothelial inflammatory response by proprotein convertase subtilisin-kexin type 9",
+              "retrieved_at": "2026-08-15T15:59:18.833982Z",
+              "content_sha256": "9c327d81d700da103cb59558654d27f778d9efaa159281a54e2688ec6002228b",
+              "publication_type": "other",
+              "is_retracted": false,
+              "retraction_checked_at": "2026-08-15T15:59:18.833982Z",
+              "license": "unknown"
+            },
+            "section": "abstract",
+            "figure_or_table_id": null,
+            "quote": "In addition, a decrease in PCSK9 and increase in LDLR, mediated by triciribine or siPCSK9, increased LPS uptake and the LPS-induced proinflammatory response. Similar results were also found in aortic vascular tissue from Pcsk9<sup>-/-</sup> mice after LPS injection.<h4>Conclusions</h4>Our data suggest that, similar to PCSK9 treatment in hepatocytes, PCSK9 reduces vascular endothelial cell uptake of LPS via LDLR-mediated endocytosis. Consequently, PCSK9 decreases the LPS-induced proinflammatory response in vascular endothelial cells.",
+            "quote_sha256": "2baa4807f18dffab1c6cc570fa5525d38d29ecf66e655ef53ec86a0d8fc2a7e9",
+            "char_offset": 1246,
+            "normalized_source_sha256": "d85214198510bec2631f419098e502670c8e559348e6e4c94d708d4e0f3df60e"
+          }
+        ],
+        "entailment_verified": true,
+        "entailment_audit_passed": null,
+        "validation_warnings": [],
+        "duplicate_of": null
+      },
+      {
+        "evidence_id": "int_evi_26",
+        "claim": "High glucose downregulates lncRNA TUG1 expression in HLSECs, inducing endocytic clearance dysfunction characterized by impaired DiI-LDL endocytic activity.",
         "claim_type": "methodological",
         "direction": "supports",
         "evidence_type": "functional_assay",
@@ -2033,7 +1939,7 @@
         "assay_context": {
           "species": "human",
           "cell_type_or_line": "HLSECs",
-          "permeabilized": false,
+          "permeabilized": null,
           "fixation": null,
           "isoform": null,
           "cell_context": {
@@ -2055,64 +1961,11 @@
               "pmc_id": "PMC12849560",
               "url": "https://pubmed.ncbi.nlm.nih.gov/41454418/",
               "title": "Overexpression of the lncRNA TUG1 regulates high-glucose-induced endocytic clearance dysfunction in HLSECs via the Wnt/β-catenin signaling pathway",
-              "retrieved_at": "2026-08-15T04:18:48.441096Z",
+              "retrieved_at": "2026-08-15T15:59:18.731103Z",
               "content_sha256": "4144ffd6f8730c6e795bfd7afa39ed4ce479f68a6235447715b39f19e39d66a1",
               "publication_type": "primary_research",
               "is_retracted": false,
-              "retraction_checked_at": "2026-08-15T04:18:48.441096Z",
-              "license": "unknown"
-            },
-            "section": "abstract",
-            "figure_or_table_id": null,
-            "quote": "Dil-labeled low-density lipoprotein (Dil-LDL) and fluorescence microscopy evaluated cellular LDL uptake.",
-            "quote_sha256": "a4753252720af5a3cda6a9d195b975e86185215c9267a37de40eece7998f3d59",
-            "char_offset": 1109,
-            "normalized_source_sha256": "af77542bc6c8a49d48958bb2ff4ee570acba448ae21900a8e1dee4ef3d6ae4b6"
-          }
-        ],
-        "entailment_verified": true,
-        "entailment_audit_passed": null,
-        "validation_warnings": [],
-        "duplicate_of": null
-      },
-      {
-        "evidence_id": "int_evi_28",
-        "claim": "High glucose downregulates lncRNA TUG1 expression in HLSECs, inducing endocytic clearance dysfunction characterized by impaired DiI-LDL endocytic activity.",
-        "claim_type": "methodological",
-        "direction": "supports",
-        "evidence_type": "functional_assay",
-        "evidence_tier": "primary",
-        "confidence": "moderate",
-        "assay_context": {
-          "species": "human",
-          "cell_type_or_line": "HLSECs",
-          "permeabilized": false,
-          "fixation": null,
-          "isoform": null,
-          "cell_context": {
-            "material_kind": "primary_cell",
-            "material_kind_other_label": null,
-            "cell_type": "liver sinusoidal endothelial cells",
-            "cell_line_name": null,
-            "cellosaurus_id": null,
-            "tissue": "liver",
-            "disease_state": "high glucose / T2DM model",
-            "activation_state": null
-          }
-        },
-        "spans": [
-          {
-            "source": {
-              "source_type": "pubmed",
-              "source_id": "PMC:PMC12849560",
-              "pmc_id": "PMC12849560",
-              "url": "https://pubmed.ncbi.nlm.nih.gov/41454418/",
-              "title": "Overexpression of the lncRNA TUG1 regulates high-glucose-induced endocytic clearance dysfunction in HLSECs via the Wnt/β-catenin signaling pathway",
-              "retrieved_at": "2026-08-15T04:18:48.441096Z",
-              "content_sha256": "4144ffd6f8730c6e795bfd7afa39ed4ce479f68a6235447715b39f19e39d66a1",
-              "publication_type": "primary_research",
-              "is_retracted": false,
-              "retraction_checked_at": "2026-08-15T04:18:48.441096Z",
+              "retraction_checked_at": "2026-08-15T15:59:18.731103Z",
               "license": "unknown"
             },
             "section": "abstract",
@@ -2130,10 +1983,10 @@
       }
     ],
     "n_observations": 15,
-    "n_modulator_observations": 9,
-    "n_papers_discovered": 110,
-    "n_papers_fetched": 5
+    "n_modulator_observations": 8,
+    "n_papers_discovered": 140,
+    "n_papers_fetched": 6
   },
-  "generated_at": "2026-08-15T04:22:16.236392Z",
+  "generated_at": "2026-08-15T16:02:34.779487Z",
   "runner_version": "internalization-literature/0.1.0"
 }
