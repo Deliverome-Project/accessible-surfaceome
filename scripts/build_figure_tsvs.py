@@ -320,7 +320,8 @@ def _dd_v(r: "pd.Series", k: str):
 
 
 _DD_FILTER_FIELDS = (
-    "evidence_grade", "confidence", "surface_specificity", "state_dependence",
+    "evidence_grade", "evidence_grade_summary", "confidence",
+    "surface_specificity", "state_dependence", "expression_level",
     "low_endogenous_expression", "surface_accessibility", "evidence_density",
     "surface_call_reason", "induction_trigger",
 )
