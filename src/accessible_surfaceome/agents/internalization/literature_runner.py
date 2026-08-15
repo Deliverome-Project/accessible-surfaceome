@@ -4,6 +4,7 @@ span-verified Evidence -> grade by mode -> assemble + validate + persist."""
 
 from __future__ import annotations
 
+import re
 from datetime import UTC, datetime
 from pathlib import Path
 
@@ -100,18 +101,39 @@ def annotate_literature(
         client, gene=bundle.hgnc_symbol, evidence=evidence, synonyms=synonyms
     )
 
+    # Deterministic backstop for the modulator DIRECTION rule (modulator -> the
+    # target): drop any modulator_observation whose `modulator` field NAMES THE
+    # TARGET itself. Both reversals the grader occasionally emits put the target's
+    # own name in the modulator slot — a target-self perturbation, or a "target
+    # modulates ANOTHER gene" clip — so this one check catches both. A genuine
+    # third-party modulator is never named by the target's own symbol / name.
+    _target_syms = {bundle.hgnc_symbol.upper()} | {
+        a.upper()
+        for a in (*bundle.aliases, *bundle.previous_symbols)
+        if len(a) >= 4  # skip ultra-short ambiguous aliases (TR / T9 / p90)
+    }
+    _target_name = (bundle.approved_name or "").upper()
+
+    def _names_target(modulator: str) -> bool:
+        up = modulator.upper()
+        if _target_name and _target_name in up:
+            return True
+        return bool(set(re.findall(r"[A-Z0-9]+", up)) & _target_syms)
+
+    modulators = [
+        m for m in llm.modulator_observations if not _names_target(m.modulator)
+    ]
+
     # Defense-in-depth against an off-target clip that SELECT let into the ledger
     # but GRADE attributed to NOTHING: prune any span-verified source cited by no
-    # target observation, no per-mode grade, AND no modulator observation (the
-    # separate cross-gene table — its clips are kept, not dropped). Guarded on the
-    # grader having attributed at least one source somewhere: if it emitted no
+    # target observation, no per-mode grade, AND no (kept) modulator observation
+    # (the separate cross-gene table — its clips are kept, not dropped). Guarded on
+    # the grader having attributed at least one source somewhere: if it emitted no
     # citations at all we keep the full ledger rather than strip genuine evidence.
     cited_ids: set[str] = {
         sid for o in llm.observations for sid in o.cited_source_ids
     }
-    cited_ids.update(
-        sid for m in llm.modulator_observations for sid in m.cited_source_ids
-    )
+    cited_ids.update(sid for m in modulators for sid in m.cited_source_ids)
     for mode in (
         llm.grades_by_mode.basal,
         llm.grades_by_mode.native_ligand,
@@ -136,10 +158,10 @@ def annotate_literature(
         trafficking_summary=llm.trafficking_summary,
         has_primary_or_invivo_evidence=has_primary_or_invivo,
         observations=llm.observations,
-        modulator_observations=llm.modulator_observations,
+        modulator_observations=modulators,
         sources=evidence,
         n_observations=len(llm.observations),
-        n_modulator_observations=len(llm.modulator_observations),
+        n_modulator_observations=len(modulators),
         n_papers_discovered=len(discovered),
         n_papers_fetched=sum(1 for v in fetched_by_id.values() if v),
     )

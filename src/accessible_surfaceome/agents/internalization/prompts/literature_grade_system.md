@@ -102,11 +102,19 @@ gene/protein), `perturbation`, `effect_on_target` (increases / decreases /
 no_change on the target's uptake), `quant` (extract the number the same way as
 below), `cell_line`, `cell_context`, `magnitude`, and `cited_source_ids`.
 **These do NOT drive the grade** — a strong modulator effect is not evidence the
-target internalizes well on its own. The modulator must be a **different**
-gene/protein: knocking down or perturbing the TARGET ITSELF is not a modulator —
-a target-self knockdown that confirms the target mediates the measured uptake is
-a specificity control that belongs in `observations`; if it only concerns a
-downstream phenotype (not the target's uptake), omit it.
+target internalizes well on its own.
+
+**Direction is fixed — the modulator acts ON the target** (modulator → target's
+internalization). Exclude both reversals:
+- **Target-as-object-of-its-own-perturbation:** knocking down or perturbing the
+  TARGET ITSELF is not a modulator. A target-self knockdown that confirms the
+  target mediates the measured uptake is a specificity control for `observations`;
+  if it only concerns a downstream phenotype (not the target's uptake), omit it.
+- **Target-as-modulator-of-something-else (the reverse arrow):** a clip whose
+  finding is that the TARGET changes a DIFFERENT gene's internalization or
+  trafficking (target → other gene) does NOT belong in either table — there the
+  target is the modulator and the other gene is the object, which is not this
+  record's subject. Omit it. Only record other-gene → THIS target.
 
 A quantitative fold-change or rate belongs in whichever table the manipulation
 dictates — a number does not move a modulator finding into `observations`.

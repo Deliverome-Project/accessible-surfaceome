@@ -65,7 +65,7 @@ def _wire(monkeypatch, *, discovered, llm, evidence=None):
         "resolve_by_hgnc_id",
         lambda hid, *, http: SimpleNamespace(
             hgnc_symbol="TFRC", hgnc_id=hid, uniprot_acc="P02786",
-            aliases=[], previous_symbols=[],
+            approved_name="transferrin receptor", aliases=[], previous_symbols=[],
         ),
     )
     monkeypatch.setattr(
@@ -223,6 +223,38 @@ def test_annotate_literature_keeps_modulator_cited_source(tmp_path, monkeypatch)
     assert kept == {"int_evi_01", "int_evi_02"}
     assert rec.literature.n_modulator_observations == 1
     assert rec.literature.modulator_observations[0].modulator == "GENEX"
+
+
+def test_annotate_literature_drops_target_self_modulators(tmp_path, monkeypatch):
+    # The modulator table is directional (modulator -> target). Any modulator
+    # entry that NAMES THE TARGET itself — a target-self perturbation, or the
+    # reverse "target modulates another gene" — must be dropped by the code
+    # backstop even if the grader emits it. Third-party modulators are kept.
+    discovered = {1: SimpleNamespace(pmid=1)}
+    llm = LiteratureLLMOut(
+        overall_grade="moderate",
+        overall_confidence="moderate",
+        modulator_observations=[
+            ModulatorObservation(modulator="EGFR", effect_on_target="increases"),
+            ModulatorObservation(  # target-self knockdown → must drop
+                modulator="TFRC (knockdown in some disease context)",
+                perturbation="knockdown",
+                effect_on_target="decreases",
+            ),
+            ModulatorObservation(  # reverse arrow: target named as modulator → drop
+                modulator="transferrin receptor effect on another gene",
+                effect_on_target="increases",
+            ),
+        ],
+    )
+    _wire(monkeypatch, discovered=discovered, llm=llm)
+    rec = mod.annotate_literature(
+        "TFRC", client=object(), http=cast(Any, object()), annotations_dir=tmp_path
+    )
+    assert rec.literature is not None
+    mods = [m.modulator for m in rec.literature.modulator_observations]
+    assert mods == ["EGFR"]  # both target-naming entries dropped
+    assert rec.literature.n_modulator_observations == 1
 
 
 def test_annotate_literature_keeps_all_sources_when_grader_cites_nothing(
