@@ -1,5 +1,5 @@
 {
-  "schema_version": "0.2.3",
+  "schema_version": "0.2.4",
   "gene_symbol": "ERBB2",
   "hgnc_id": "HGNC:3430",
   "uniprot_acc": "P04626",
@@ -9,17 +9,17 @@
       "scope": "intrinsic_propensity",
       "overall_grade": "moderate",
       "overall_confidence": "moderate",
-      "model_reasoning": "Single-pass type I membrane protein (signal peptide, one TM helix, extracellular N-terminus of ~632 aa, cytoplasmic C-terminus of ~581 aa). The large cytoplasmic tail is the region where sorting motifs would function. Scanning the cytoplasmic tail: it contains a kinase-like domain and a long C-terminal region rich in tyrosines. Several YXX[hydrophobic]-type patterns appear (e.g. sequences around 'YVAPLTC', 'PEYLTPQ', 'PEYLGLDVP', 'YMIMVKCW'), which are candidate tyrosine-based endocytic signals when in a cytoplasmic context, but many sit within a structured kinase fold or in phosphorylation/signaling contexts (PEY... motifs) rather than in classic short exposed juxtamembrane sorting positions. No clear canonical NPXY was identified in the tail; possible dileucine-type [DE]XXXL[LI] contexts are not strongly evident. The large cytoplasmic tail affords capacity for adaptor- and ubiquitin-dependent uptake and the protein could internalize constitutively or on ligand, but such receptors with large signaling tails frequently maintain a substantial surface pool at steady state. Overall this points to genuine but partial/intermediate internalization rather than rapid, near-complete surface clearance. Grading from sequence/topology alone with residual uncertainty about which tyrosines act as functional sorting signals.",
+      "model_reasoning": "Single-pass type I membrane protein: cleaved signal peptide (21 aa), large extracellular N-terminal region (~632 aa), one TM helix, and a very large cytoplasmic C-terminal region (~581 aa). The large cytoplasmic region is the only place endocytic sorting motifs can function. Scanning the cytoplasmic tail: there are several YXX[hydrophobic] candidates (e.g. tyrosine-based motifs within the C-terminal PEY/EYL-rich stretches such as ...PEYLTPQ..., ...PEYLGLDVPV, and YVAP, YMIM), which are potential tyrosine-based internalization/sorting signals when cytoplasmic. However, the tail is dominated by an intracellular catalytic-like domain plus regulatory sequence, and the many tyrosines appear largely in contexts consistent with phosphorylation/signaling rather than as strong, canonical AP-2 endocytic motifs (no clear NPXY, no strong dileucine [DE]XXXL[LI] readily apparent in a classic internalization context). Such receptors typically reside substantially at the surface at steady state and internalize partially/slowly (constitutive plus ligand-modulated), rather than being rapidly and near-completely cleared. The large cytoplasmic tail plus presence of tyrosine-based candidate motifs supports genuine internalization capacity, but the balance of evidence points to a middle case rather than robust, high-fraction uptake. Grading moderate with moderate confidence.",
       "per_isoform": [
         {
           "isoform_id": "P04626-1",
           "is_canonical": true,
           "length_aa": 1255,
-          "topology_summary": "Type I single-pass membrane protein; 21 aa signal peptide, 1 TM helix; extracellular N-terminal region ~632 aa, cytoplasmic C-terminal region ~581 aa.",
-          "endocytic_motifs_noted": "Large cytoplasmic tail with several candidate tyrosine-based YXX[hydrophobic]/PxY-context tyrosines (e.g. near PEYLTPQ, PEYLGLDVP, YVAPLTC, YMIMVKCW); no clear canonical NPXY; no strong dileucine motif clearly identified. Candidate signals lie partly within a kinase-like/signaling region.",
+          "topology_summary": "Type I single-pass: SP 21 aa, extracellular N-term (~632 aa), 1 TM helix, large cytoplasmic C-term (~581 aa).",
+          "endocytic_motifs_noted": "Cytoplasmic tail contains several YXX[hydrophobic] candidate tyrosine-based motifs (e.g. YVAP, YMIM, and C-terminal PEY/EYL-context tyrosines); no clear canonical NPXY; no obvious classic dileucine [DE]XXXL[LI] endocytic signal identified. Many tyrosines appear signaling/phospho-oriented.",
           "grade": "moderate",
           "confidence": "moderate",
-          "rationale": "The long cytoplasmic tail (~581 aa) provides ample capacity to carry sorting signals and supports adaptor/ubiquitin-dependent internalization, and native-ligand-driven uptake is plausible for a large single-pass receptor. However, the tail is dominated by a kinase-like fold and signaling motifs rather than obvious short juxtamembrane YXXΦ/NPXY/dileucine sorting signals, and such receptors commonly retain a substantial surface pool at steady state. This intermediate picture — real but partial/slower internalization — fits a moderate grade rather than high or low."
+          "rationale": "Large cytoplasmic region can carry sorting signals and contains tyrosine-based YXXh candidates that provide a plausible basis for clathrin-mediated uptake, but the absence of a strong canonical NPXY/dileucine endocytic determinant and the signaling-dominated character of the tail suggest partial/slow internalization with a persistent surface pool. This is a genuine middle case: internalizes but not necessarily rapidly or near-completely."
         }
       ]
     },
@@ -28,17 +28,17 @@
       "scope": "intrinsic_propensity",
       "overall_grade": "high",
       "overall_confidence": "high",
-      "model_reasoning": "This single-isoform protein has a large cytoplasmic tail (~581 aa) following a single-pass transmembrane helix. The cytoplasmic region is rich in canonical and non-canonical endocytic sorting signals. Multiple tyrosine-based motifs (YXXΦ) are identifiable in the cytoplasmic tail, including sequences consistent with YXX[hydrophobic] patterns. A clear NPXY-like motif is present. Dileucine-type motifs ([DE]XXXL[LI]) are also present. Beyond canonical motifs, the large cytoplasmic tail contains multiple potential ubiquitination sites (lysine residues), PEST-like sequences, and proline-rich regions that could engage SH3/WW-domain adaptors. The combination of a substantial cytoplasmic tail, multiple canonical endocytic motifs, and numerous accessory signals strongly supports robust, constitutive internalization. This topology (single-pass, large cytoplasmic tail) is characteristic of receptor-type proteins that undergo active clathrin-mediated endocytosis.",
+      "model_reasoning": "This single-pass type I transmembrane protein has a very large cytoplasmic tail (~581 aa) following the single TM helix. Scanning the cytoplasmic region reveals multiple canonical endocytic sorting motifs: multiple YXXΦ (tyrosine-based) motifs with hydrophobic residues at the +3 position (e.g., YLYIS, YLVI, YVAP, YLGLD, YWDQD), dileucine-type LL/LI pairs, and NPXY-like sequences near the membrane-proximal region. The combination of a long cytoplasmic tail, multiple overlapping canonical motifs, and the general architecture of a single-pass receptor strongly supports robust, constitutive and ligand-stimulated internalization via clathrin-mediated endocytosis. Confidence is high because the sequence evidence is clear and the topology unambiguously places the relevant motifs in the cytoplasmic compartment.",
       "per_isoform": [
         {
           "isoform_id": "P04626-1",
           "is_canonical": true,
           "length_aa": 1255,
-          "topology_summary": "Single-pass type I transmembrane protein; signal peptide (21 aa); N-terminus extracellular (~632 aa); 1 TM helix; C-terminus cytoplasmic (~581 aa).",
-          "endocytic_motifs_noted": "Cytoplasmic tail (~aa 653–1255, ~581 aa): Multiple YXXΦ motifs identified, e.g. YLVPQ (Y~1008), YVAP (Y~1127), YYWDQ (Y~1214), YLGLD (Y~1248); NPXY-like: NPEY (N~1163, P~1164, E~1165, Y~1166); Dileucine-type: GVVKDVFAFGG region contains hydrophobic clusters; multiple Lys residues for potential ubiquitination; proline-rich stretches (PPPPA, PPSP) for adaptor engagement; PEST-like sequences in distal tail.",
+          "topology_summary": "Single-pass type I TM protein; signal peptide (21 aa); extracellular N-terminus (~632 aa); 1 TM helix; large cytoplasmic C-terminal tail (~581 aa).",
+          "endocytic_motifs_noted": "Multiple YXXΦ motifs in cytoplasmic tail (e.g., YLYIS, YLVI, YVAP, YLGLD, YWDQD — hydrophobic at +3 position); dileucine-type LL/LI pairs (e.g., LLDI, GVLL); NPXY-like sequence near membrane-proximal cytoplasmic region; overall high density of tyrosine-based sorting signals throughout the ~581 aa cytoplasmic domain.",
           "grade": "high",
           "confidence": "high",
-          "rationale": "The ~581 aa cytoplasmic tail is exceptionally large and contains multiple canonical endocytic sorting motifs in the cytoplasmic compartment where they are functional: at least four YXXΦ-type sequences (tyrosine followed by any two residues then a bulky hydrophobic), an NPXY-like motif, and hydrophobic dileucine-adjacent sequences. Additionally, numerous lysine residues provide ubiquitination capacity, and proline-rich regions can recruit clathrin-adaptor proteins. The combination of a long cytoplasmic tail, multiple canonical motifs, and accessory signals strongly predicts robust, constitutive clathrin-mediated internalization with a high rate of surface-pool clearance. Confidence is high because the motifs are unambiguously cytoplasmic per the topology and are numerous and diverse."
+          "rationale": "The protein is a single-pass type I receptor with a very long cytoplasmic tail (~581 aa). The cytoplasmic region contains multiple canonical endocytic sorting signals: several YXXΦ motifs with hydrophobic residues at the +3 position, dileucine-type sequences, and potential NPXY-like sequences near the membrane-proximal region. The sheer number and density of tyrosine-based motifs in a long cytoplasmic tail strongly predicts robust clathrin-mediated endocytosis. Even without ligand, constitutive internalization via AP-2 recognition of these motifs is expected. The architecture (single-pass, large ectodomain, large cytoplasmic tail with multiple sorting signals) is characteristic of rapidly internalizing surface receptors."
         }
       ]
     }
@@ -48,61 +48,89 @@
       "basal": {
         "grade": "low",
         "confidence": "moderate",
-        "rationale": "Multiple sources note that HER2 is largely immobile on the cell surface, resistant to endocytosis by forming a stable complex with Hsp90, and that internalized HER2 rapidly recycles back to the plasma membrane. This constitutive internalization is described as low/inefficient, which is a key limitation for ADC delivery.",
+        "rationale": "Multiple sources describe HER2 as an internalization-resistant receptor that is mainly immobile on the cell surface, forming stable complexes with Hsp90 or rapidly recycling back to the plasma membrane. Basal internalization is constitutively low without ligand or therapeutic binder.",
         "cited_source_ids": [
-          "int_evi_07",
-          "int_evi_09",
-          "int_evi_11",
-          "int_evi_21"
+          "int_evi_16",
+          "int_evi_32",
+          "int_evi_36",
+          "int_evi_11"
         ]
       },
       "native_ligand": {
         "grade": "unknown",
         "confidence": "low",
-        "rationale": "HER2 is an orphan receptor with no known direct native ligand; no evidence in the ledger addresses native-ligand-driven internalization.",
+        "rationale": "HER2 is an orphan receptor with no known direct native ligand; no ledger clip provides evidence for native-ligand-driven internalization.",
         "cited_source_ids": []
       },
       "therapeutic": {
         "grade": "moderate",
         "confidence": "high",
-        "rationale": "Multiple therapeutic binders (trastuzumab, T-DM1, T-DXd, pertuzumab, novel antibodies, affibody-based ligands, biparatopic nanobodies) drive HER2 internalization. Quantitative data show ~40-50% internalization within 8-12 hours for trastuzumab/T-DM1. Rapid internalization is noted in ERBB2-mutant NSCLC and DSRCT. Novel multivalent affibody ligands and biparatopic nanobodies can enhance internalization beyond standard antibodies. However, efficacy is described as limited by inefficient internalization overall, and the route varies (CME for trastuzumab-based ADCs; caveolin/lipid-raft for T-DM1 in some cell lines; clathrin-independent for novel affibody ligands).",
+        "rationale": "Multiple therapeutic binders (trastuzumab, T-DXd, T-DM1, mAb104, biparatopic nanobodies, KB-TACs, affibody conjugates) drive HER2 internalization across diverse HER2-positive cell lines and in vivo models. Internalization reaches 40-50% within 8-12 h for trastuzumab/T-DM1, and rapid internalization is documented for T-DXd in DSRCT and NSCLC. However, the receptor is inherently internalization-resistant and ADC efficacy is described as limited at least partially by inefficient internalization, justifying 'moderate' rather than 'high'. Multivalent/biparatopic binders can overcome this resistance more effectively.",
         "cited_source_ids": [
           "int_evi_01",
           "int_evi_02",
-          "int_evi_03",
-          "int_evi_06",
-          "int_evi_08",
+          "int_evi_04",
+          "int_evi_05",
           "int_evi_10",
-          "int_evi_11",
           "int_evi_12",
-          "int_evi_13",
-          "int_evi_14",
           "int_evi_15",
-          "int_evi_16",
+          "int_evi_17",
           "int_evi_18",
           "int_evi_19",
-          "int_evi_20",
-          "int_evi_22",
-          "int_evi_23"
+          "int_evi_23",
+          "int_evi_24",
+          "int_evi_25",
+          "int_evi_26",
+          "int_evi_27",
+          "int_evi_28",
+          "int_evi_29",
+          "int_evi_33",
+          "int_evi_35",
+          "int_evi_37",
+          "int_evi_38"
         ]
       }
     },
     "overall_grade": "moderate",
     "overall_confidence": "high",
-    "rationale": "HER2 has low basal internalization due to its stability at the plasma membrane and rapid recycling. However, therapeutic binders (antibodies, ADCs, affibodies, nanobodies) drive moderate internalization, reaching ~40-50% within 8-12 hours in HER2-positive cancer cell lines. The internalization rate is sufficient for ADC payload delivery but is a recognized limiting factor for efficacy. Novel multivalent or biparatopic binders can enhance internalization beyond standard trastuzumab-based approaches.",
-    "cross_condition_note": "Basal HER2 internalization is low across cell types due to membrane stability and recycling. Therapeutic binders substantially increase internalization, with biparatopic nanobodies and multivalent affibody ligands inducing greater internalization than standard trastuzumab or pertuzumab alone; internalization rate also varies by HER2 expression level and tumor type (e.g., rapid in ERBB2-mutant NSCLC and DSRCT).",
-    "trafficking_summary": "After therapeutic binder-driven internalization, HER2 is routed to lysosomes for degradation (demonstrated for T-DM1/T-DXd via lipid raft/caveolin pathway); a fraction recycles back to the plasma membrane under basal conditions via Hsp90-stabilized complexes.",
+    "rationale": "HER2 is constitutively internalization-resistant (basal: low), with no native ligand. Therapeutic binders consistently drive moderate internalization across many HER2-positive tumor cell lines and in vivo models, with quantitative evidence of 40-50% internalization at 8-12 h for trastuzumab/T-DM1, rapid internalization for T-DXd in select tumor types, and enhanced internalization with biparatopic or multivalent binders. The overall grade is moderate, reflecting that therapeutic internalization is real and exploitable but inherently limited by HER2's surface stability.",
+    "cross_condition_note": "Internalization is substantially higher with therapeutic binders than at baseline; biparatopic/multivalent binders (e.g., AH nanobody, GFPp-Affibody) trigger greater internalization than bivalent trastuzumab-based ADCs. In EGFR-overexpressing tumors, T-DXd internalization is suppressed relative to EGFR-low lines, highlighting cell-line-dependent variation.",
+    "trafficking_summary": "After therapeutic binder-driven internalization, HER2 is trafficked to acidic endosomal compartments and ultimately lysosomes for degradation; without binder, internalized HER2 tends to recycle rapidly back to the plasma membrane.",
     "species_scope": "unspecified",
     "species_inferred": false,
-    "has_primary_or_invivo_evidence": false,
+    "has_primary_or_invivo_evidence": true,
     "observations": [
+      {
+        "assay_type": "nanoparticle_uptake",
+        "assay_type_other_label": null,
+        "cell_line": "SK-BR-3",
+        "cell_context": "tumor_cell_line",
+        "internalization_mode": "therapeutic",
+        "ligand_name": "trastuzumab (Herceptin)-conjugated nanoparticles",
+        "ligand_effect": "increases",
+        "mechanism": "clathrin_independent",
+        "trafficking_compartment": "unknown",
+        "magnitude": "high",
+        "quant": {
+          "rate_metric": null,
+          "rate_value": null,
+          "rate_unit": null,
+          "time_point": null,
+          "quant_summary": "Significantly increased cellular uptake in clathrin-deficient SK-BR-3 cells"
+        },
+        "controls_note": "Clathrin-deficient cells used; trastuzumab conjugation compared to unconjugated nanoparticles",
+        "condition_note": "HER2-mediated internalization partially clathrin-independent in clathrin-deficient SK-BR-3 cells",
+        "cited_source_ids": [
+          "int_evi_01"
+        ]
+      },
       {
         "assay_type": "adc_internalization",
         "assay_type_other_label": null,
-        "cell_line": "isogenic HER2-expressing models",
+        "cell_line": "isogenic HER2-variable models",
         "cell_context": "tumor_cell_line",
         "internalization_mode": "therapeutic",
-        "ligand_name": "T-DXd (trastuzumab deruxtecan)",
+        "ligand_name": "T-DXd",
         "ligand_effect": "increases",
         "mechanism": "receptor_mediated_unspecified",
         "trafficking_compartment": "unknown",
@@ -114,20 +142,20 @@
           "time_point": null,
           "quant_summary": "Decreases in HER2 expression corresponded to reductions in T-DXd internalization"
         },
-        "controls_note": "Isogenic model systems used to vary HER2 expression level",
-        "condition_note": "HER2 surface level directly governs ADC uptake; lower expression = lower internalization",
+        "controls_note": "Isogenic models with varying HER2 expression levels",
+        "condition_note": "HER2 expression level directly governs T-DXd ADC uptake",
         "cited_source_ids": [
-          "int_evi_01"
+          "int_evi_02"
         ]
       },
       {
         "assay_type": "adc_internalization",
         "assay_type_other_label": null,
-        "cell_line": null,
+        "cell_line": "unspecified HER2-positive",
         "cell_context": "tumor_cell_line",
         "internalization_mode": "therapeutic",
         "ligand_name": "T-DXd",
-        "ligand_effect": "increases",
+        "ligand_effect": "decreases",
         "mechanism": "receptor_mediated_unspecified",
         "trafficking_compartment": "unknown",
         "magnitude": "low",
@@ -136,34 +164,10 @@
           "rate_value": null,
           "rate_unit": null,
           "time_point": null,
-          "quant_summary": "ERBB2 mutations at trastuzumab binding interface (V597M, P593R) impaired T-DXd binding and internalization"
+          "quant_summary": "ERBB2 mutations V597M and P593R at trastuzumab binding interface impaired T-DXd binding and internalization"
         },
         "controls_note": null,
-        "condition_note": "Resistance mutations at HER2 trastuzumab-binding interface impair T-DXd internalization",
-        "cited_source_ids": [
-          "int_evi_02"
-        ]
-      },
-      {
-        "assay_type": "antibody_uptake",
-        "assay_type_other_label": null,
-        "cell_line": "normal human corneal epithelial cell lines",
-        "cell_context": "cell_line",
-        "internalization_mode": "therapeutic",
-        "ligand_name": "trastuzumab; T-DXd",
-        "ligand_effect": "increases",
-        "mechanism": "receptor_mediated_unspecified",
-        "trafficking_compartment": "unknown",
-        "magnitude": "unknown",
-        "quant": {
-          "rate_metric": null,
-          "rate_value": null,
-          "rate_unit": null,
-          "time_point": null,
-          "quant_summary": "Receptor-mediated endocytosis of HER2-targeted therapies demonstrated in ocular epithelial cells"
-        },
-        "controls_note": null,
-        "condition_note": "Ocular epithelial (non-tumor) cells; relevant to ocular toxicity of HER2-targeted ADCs",
+        "condition_note": "Resistance mutations at trastuzumab binding interface impair T-DXd internalization",
         "cited_source_ids": [
           "int_evi_03"
         ]
@@ -184,17 +188,42 @@
           "rate_value": null,
           "rate_unit": null,
           "time_point": null,
-          "quant_summary": "Rapid HER2 internalization noted as a factor dictating T-DXd sensitivity in ERBB2-mutant NSCLC"
+          "quant_summary": "Rapid HER2 internalization in ERBB2-mutant NSCLC; activity observed even without HER2 overexpression"
         },
         "controls_note": null,
-        "condition_note": "ERBB2-mutant NSCLC tumors lacking HER2 overexpression but with proclivity to rapid HER2 internalization",
+        "condition_note": "HER2 kinase-activating mutations associated with enhanced internalization and T-DXd response; rapid internalization in ERBB2-mutant NSCLC",
         "cited_source_ids": [
-          "int_evi_06"
+          "int_evi_04",
+          "int_evi_10"
         ]
       },
       {
-        "assay_type": "receptor_recycling",
+        "assay_type": "antibody_uptake",
         "assay_type_other_label": null,
+        "cell_line": "normal human corneal epithelial cell lines",
+        "cell_context": "cell_line",
+        "internalization_mode": "therapeutic",
+        "ligand_name": "trastuzumab; T-DXd",
+        "ligand_effect": "increases",
+        "mechanism": "receptor_mediated_unspecified",
+        "trafficking_compartment": "unknown",
+        "magnitude": "unknown",
+        "quant": {
+          "rate_metric": null,
+          "rate_value": null,
+          "rate_unit": null,
+          "time_point": null,
+          "quant_summary": "Receptor-mediated endocytosis of HER2-targeted therapies demonstrated in corneal epithelial cells"
+        },
+        "controls_note": null,
+        "condition_note": "Normal (non-tumor) corneal epithelial cells; relevant to ocular toxicity of HER2-targeted ADCs",
+        "cited_source_ids": [
+          "int_evi_05"
+        ]
+      },
+      {
+        "assay_type": "other",
+        "assay_type_other_label": "receptor surface dynamics review",
         "cell_line": null,
         "cell_context": "unknown",
         "internalization_mode": "basal",
@@ -208,12 +237,36 @@
           "rate_value": null,
           "rate_unit": null,
           "time_point": null,
-          "quant_summary": "HER2 exists in dynamic equilibrium between endocytosis and recycling; rate determined by expression level, antibody binding, and dimerization partners"
+          "quant_summary": "HER2 in dynamic equilibrium between endocytosis and recycling; rate determined by expression level, antibody binding, and dimerization partners"
         },
         "controls_note": null,
-        "condition_note": "Review/mechanistic description of HER2 surface dynamics",
+        "condition_note": "Conceptual/review statement on HER2 surface dynamics",
         "cited_source_ids": [
-          "int_evi_07"
+          "int_evi_11"
+        ]
+      },
+      {
+        "assay_type": "ph_sensitive_dye",
+        "assay_type_other_label": null,
+        "cell_line": "CRC cell lines",
+        "cell_context": "tumor_cell_line",
+        "internalization_mode": "therapeutic",
+        "ligand_name": "T-DXd",
+        "ligand_effect": "increases",
+        "mechanism": "receptor_mediated_unspecified",
+        "trafficking_compartment": "early_endosome",
+        "magnitude": "moderate",
+        "quant": {
+          "rate_metric": null,
+          "rate_value": null,
+          "rate_unit": null,
+          "time_point": null,
+          "quant_summary": "Internalization of conjugated antibodies tracked to acidic endosomal compartments by pH-sensitive dye"
+        },
+        "controls_note": "pH-sensitive dye assay tracks trafficking to acidic compartments",
+        "condition_note": "CRC cell lines; T-DXd tracked to acidic endosomes",
+        "cited_source_ids": [
+          "int_evi_12"
         ]
       },
       {
@@ -222,7 +275,7 @@
         "cell_line": "HER2-positive tumor cells",
         "cell_context": "tumor_cell_line",
         "internalization_mode": "therapeutic",
-        "ligand_name": "mAb104 (novel anti-HER2 antibody, domain II)",
+        "ligand_name": "mAb104 (anti-HER2 antibody)",
         "ligand_effect": "increases",
         "mechanism": "receptor_mediated_unspecified",
         "trafficking_compartment": "unknown",
@@ -234,43 +287,43 @@
           "time_point": null,
           "quant_summary": "Confocal microscopy clearly demonstrated internalization of mAb104 into HER2-positive tumor cells"
         },
-        "controls_note": "Confocal microscopy; in vivo biodistribution also shown",
-        "condition_note": "Novel anti-HER2 antibody targeting domain II; tumor-specific binding confirmed",
+        "controls_note": null,
+        "condition_note": "Tumor-specific mAb104; in vivo biodistribution also demonstrated specific tumor targeting",
         "cited_source_ids": [
-          "int_evi_08"
+          "int_evi_15"
         ]
       },
       {
-        "assay_type": "receptor_recycling",
-        "assay_type_other_label": null,
+        "assay_type": "other",
+        "assay_type_other_label": "receptor biology review",
         "cell_line": null,
         "cell_context": "unknown",
         "internalization_mode": "basal",
         "ligand_name": null,
         "ligand_effect": "not_applicable",
         "mechanism": "unknown",
-        "trafficking_compartment": "recycled_to_surface",
+        "trafficking_compartment": "unknown",
         "magnitude": "low",
         "quant": {
           "rate_metric": null,
           "rate_value": null,
           "rate_unit": null,
           "time_point": null,
-          "quant_summary": "HER2 has low internalization; largely immobile on cell surface; main obstacle for HER2-specific cytotoxic conjugates"
+          "quant_summary": "HER2 has low internalization because it is mainly immobile on the cell surface"
         },
         "controls_note": null,
-        "condition_note": "Review statement on basal HER2 surface stability",
+        "condition_note": "Review statement; HER2 surface immobility limits cytotoxic conjugate effectiveness",
         "cited_source_ids": [
-          "int_evi_09"
+          "int_evi_16"
         ]
       },
       {
-        "assay_type": "endocytosis_inhibitor",
-        "assay_type_other_label": null,
+        "assay_type": "other",
+        "assay_type_other_label": "multivalent ligand endocytosis assay",
         "cell_line": null,
         "cell_context": "tumor_cell_line",
         "internalization_mode": "therapeutic",
-        "ligand_name": "GFPp-Affibody HER2:342 (multivalent HER2 ligand)",
+        "ligand_name": "GFPp-Affibody HER2:342 (multivalent)",
         "ligand_effect": "increases",
         "mechanism": "clathrin_independent",
         "trafficking_compartment": "unknown",
@@ -280,12 +333,12 @@
           "rate_value": null,
           "rate_unit": null,
           "time_point": null,
-          "quant_summary": "Novel multivalent HER2 ligands trigger clathrin-independent aggregation-dependent endocytosis, largely overcoming innate HER2 plasma membrane stability"
+          "quant_summary": "Multivalent HER2 ligands largely overcome innate stability of HER2 in plasma membrane by triggering clathrin-independent aggregation-dependent endocytosis"
         },
         "controls_note": null,
-        "condition_note": "Novel multivalent affibody-based ligands designed to overcome low basal HER2 internalization",
+        "condition_note": "Multivalent affibody-based ligand triggers clathrin-independent aggregation-dependent endocytosis, overcoming HER2 surface stability",
         "cited_source_ids": [
-          "int_evi_10"
+          "int_evi_17"
         ]
       },
       {
@@ -297,20 +350,20 @@
         "ligand_name": "T-DM1; T-DXd",
         "ligand_effect": "increases",
         "mechanism": "clathrin",
-        "trafficking_compartment": "unknown",
-        "magnitude": "low",
+        "trafficking_compartment": "lysosome",
+        "magnitude": "moderate",
         "quant": {
           "rate_metric": null,
           "rate_value": null,
           "rate_unit": null,
           "time_point": null,
-          "quant_summary": "T-DM1 and T-DXd have limited efficacy partially due to inefficient HER2-dependent internalization; internalized via CME"
+          "quant_summary": "T-DM1 and T-DXd internalized mostly via CME; efficacy limited at least partially by inefficient HER2-dependent internalization"
         },
         "controls_note": null,
-        "condition_note": "Trastuzumab-based ADCs internalized via CME; cancer cells can downregulate CME as resistance mechanism",
+        "condition_note": "Review statement; CME susceptible to downregulation in cancer cells as resistance mechanism",
         "cited_source_ids": [
-          "int_evi_11",
-          "int_evi_12"
+          "int_evi_18",
+          "int_evi_19"
         ]
       },
       {
@@ -319,7 +372,7 @@
         "cell_line": "NCI-N87; OE19",
         "cell_context": "tumor_cell_line",
         "internalization_mode": "therapeutic",
-        "ligand_name": "T-DXd + pertuzumab (combination)",
+        "ligand_name": "T-DXd + pertuzumab",
         "ligand_effect": "increases",
         "mechanism": "receptor_mediated_unspecified",
         "trafficking_compartment": "unknown",
@@ -329,12 +382,13 @@
           "rate_value": null,
           "rate_unit": null,
           "time_point": null,
-          "quant_summary": "T-DXd + pertuzumab combination enhanced membrane HER2 internalization more effectively in NCI-N87 (HER2-HER3 heterodimer-enriched) than OE19 gastric cancer cells"
+          "quant_summary": "Combination of T-DXd and pertuzumab enhanced membrane HER2 internalization more effectively in NCI-N87 than OE19"
         },
         "controls_note": null,
-        "condition_note": "HER2-positive gastric cancer; dual HER2/HER3 targeting; NCI-N87 enriched for HER2-HER3 heterodimers",
+        "condition_note": "Gastric cancer cell lines; combination therapy enhanced internalization vs monotherapy; in vivo tumor growth suppression correlated",
         "cited_source_ids": [
-          "int_evi_13"
+          "int_evi_22",
+          "int_evi_23"
         ]
       },
       {
@@ -353,13 +407,13 @@
           "rate_value": null,
           "rate_unit": null,
           "time_point": null,
-          "quant_summary": "Rapid HER2 ADC complex internalization demonstrated by live microscopy in DSRCT cells"
+          "quant_summary": "Rapid HER2 ADC complex internalization demonstrated by live microscopy in DSRCT"
         },
-        "controls_note": "Live microscopy",
-        "condition_note": "Desmoplastic small round cell tumor (DSRCT) expressing ERBB2/HER2; rapid internalization mediates cytotoxicity and p53-mediated apoptosis",
+        "controls_note": null,
+        "condition_note": "Desmoplastic small round cell tumor (DSRCT); rapid internalization mediating cytotoxicity and p53-mediated apoptosis",
         "cited_source_ids": [
-          "int_evi_14",
-          "int_evi_15"
+          "int_evi_24",
+          "int_evi_25"
         ]
       },
       {
@@ -368,7 +422,7 @@
         "cell_line": "HER2-expressing tumor cells",
         "cell_context": "tumor_cell_line",
         "internalization_mode": "therapeutic",
-        "ligand_name": "AH (biparatopic nanobody-based binder)",
+        "ligand_name": "AH biparatopic nanobody-based binder",
         "ligand_effect": "increases",
         "mechanism": "receptor_mediated_unspecified",
         "trafficking_compartment": "degradation",
@@ -378,12 +432,110 @@
           "rate_value": null,
           "rate_unit": null,
           "time_point": null,
-          "quant_summary": "AH induced greater HER2 receptor internalization and degradation than combination of trastuzumab and pertuzumab"
+          "quant_summary": "AH induced greater receptor saturation, internalization, and degradation than combination of trastuzumab and pertuzumab"
         },
         "controls_note": "Compared to trastuzumab + pertuzumab combination",
-        "condition_note": "Biparatopic nanobody-based binder; greater receptor saturation, internalization, and degradation vs. standard antibodies",
+        "condition_note": "Biparatopic nanobody superior to bivalent antibody combination for internalization and degradation",
         "cited_source_ids": [
-          "int_evi_16"
+          "int_evi_26"
+        ]
+      },
+      {
+        "assay_type": "antibody_uptake",
+        "assay_type_other_label": null,
+        "cell_line": "BT-474 (in vivo xenograft)",
+        "cell_context": "in_vivo",
+        "internalization_mode": "therapeutic",
+        "ligand_name": "KB-TTZ (KB-antibody conjugate)",
+        "ligand_effect": "increases",
+        "mechanism": "receptor_mediated_unspecified",
+        "trafficking_compartment": "lysosome",
+        "magnitude": "high",
+        "quant": {
+          "rate_metric": null,
+          "rate_value": null,
+          "rate_unit": null,
+          "time_point": null,
+          "quant_summary": "KB-TTZ degrades HER2 in vivo in BT-474 xenografts with significant tumor volume reduction vs trastuzumab and vehicle"
+        },
+        "controls_note": "Compared to trastuzumab and vehicle controls in vivo",
+        "condition_note": "In vivo HER2 internalization and lysosomal degradation demonstrated by KB-TAC approach",
+        "cited_source_ids": [
+          "int_evi_27",
+          "int_evi_28"
+        ]
+      },
+      {
+        "assay_type": "other",
+        "assay_type_other_label": "N-glycosylation inhibition uptake assay",
+        "cell_line": "SKBR3",
+        "cell_context": "tumor_cell_line",
+        "internalization_mode": "therapeutic",
+        "ligand_name": "Affibody-HER2-vcMMAE conjugate",
+        "ligand_effect": "increases",
+        "mechanism": "receptor_mediated_unspecified",
+        "trafficking_compartment": "unknown",
+        "magnitude": "moderate",
+        "quant": {
+          "rate_metric": null,
+          "rate_value": null,
+          "rate_unit": null,
+          "time_point": null,
+          "quant_summary": "Inhibition of N-glycosylation reduced cellular uptake of HER2-targeting conjugate; galectin network plays a role"
+        },
+        "controls_note": "N-glycosylation inhibition used as mechanistic control",
+        "condition_note": "Cell surface N-glycosylation and galectin network contribute to HER2-targeting conjugate internalization in SKBR3",
+        "cited_source_ids": [
+          "int_evi_29",
+          "int_evi_30"
+        ]
+      },
+      {
+        "assay_type": "other",
+        "assay_type_other_label": "ADC target internalization review",
+        "cell_line": null,
+        "cell_context": "unknown",
+        "internalization_mode": "therapeutic",
+        "ligand_name": null,
+        "ligand_effect": "unknown",
+        "mechanism": "unknown",
+        "trafficking_compartment": "lysosome",
+        "magnitude": "unknown",
+        "quant": {
+          "rate_metric": null,
+          "rate_value": null,
+          "rate_unit": null,
+          "time_point": null,
+          "quant_summary": "Information on HER2 endocytosis as ADC target is scarce; trafficking to lysosomes required for linker cleavage and payload release"
+        },
+        "controls_note": null,
+        "condition_note": "Review noting scarcity of data on HER2 endocytosis efficiency and intracellular sorting as ADC target",
+        "cited_source_ids": [
+          "int_evi_31"
+        ]
+      },
+      {
+        "assay_type": "adc_internalization",
+        "assay_type_other_label": null,
+        "cell_line": null,
+        "cell_context": "tumor_cell_line",
+        "internalization_mode": "therapeutic",
+        "ligand_name": "T-DM1",
+        "ligand_effect": "increases",
+        "mechanism": "unknown",
+        "trafficking_compartment": "unknown",
+        "magnitude": "low",
+        "quant": {
+          "rate_metric": null,
+          "rate_value": null,
+          "rate_unit": null,
+          "time_point": null,
+          "quant_summary": "HER2 regarded as internalization-resistant receptor, hindering T-DM1 endocytosis and effectiveness"
+        },
+        "controls_note": null,
+        "condition_note": "Review/conceptual statement on HER2 internalization resistance limiting T-DM1",
+        "cited_source_ids": [
+          "int_evi_32"
         ]
       },
       {
@@ -395,27 +547,28 @@
         "ligand_name": "T-DM1; trastuzumab",
         "ligand_effect": "increases",
         "mechanism": "caveolin",
-        "trafficking_compartment": "lysosome",
+        "trafficking_compartment": "degradation",
         "magnitude": "moderate",
         "quant": {
           "rate_metric": "percent_internalized",
           "rate_value": 50.0,
           "rate_unit": "%",
           "time_point": "12 h",
-          "quant_summary": "Intracellular T-DM1 increased to 50% within 12 h; endocytosis rates of trastuzumab and T-DM1 reached steady state of 40-50% between 8-12 h"
+          "quant_summary": "Intracellular T-DM1 increased to 50% within 12 h; endocytosis rates of trastuzumab and T-DM1 reached steady state of 40-50% between 8 and 12 h"
         },
-        "controls_note": "Flow cytometry; confocal microscopy; colocalization with cholera toxin B (lipid raft marker) at 2 h",
-        "condition_note": "HER2-positive breast cancer cells; T-DM1 internalizes via lipid raft/caveolin-1-dependent endocytosis (not CME); degraded in lysosomes",
+        "controls_note": "Confocal microscopy and flow cytometry; CAV-1 overexpression and caveolae/lipid-raft disruptors (nystatin, lovastatin) used as mechanistic controls",
+        "condition_note": "T-DM1 internalizes via lipid raft/caveolin-1-dependent endocytosis rather than CME in HER2-positive breast cancer cells; CAV-1 upregulation facilitates internalization",
         "cited_source_ids": [
-          "int_evi_18",
-          "int_evi_19",
-          "int_evi_20",
-          "int_evi_22"
+          "int_evi_33",
+          "int_evi_34",
+          "int_evi_35",
+          "int_evi_37",
+          "int_evi_38"
         ]
       },
       {
-        "assay_type": "receptor_recycling",
-        "assay_type_other_label": null,
+        "assay_type": "other",
+        "assay_type_other_label": "receptor biology review",
         "cell_line": null,
         "cell_context": "unknown",
         "internalization_mode": "basal",
@@ -429,51 +582,162 @@
           "rate_value": null,
           "rate_unit": null,
           "time_point": null,
-          "quant_summary": "HER2 resistant to endocytosis via Hsp90 complex; internalized HER2 rapidly recycles to plasma membrane; concentrated on membrane protrusions with GM1 (lipid raft marker)"
+          "quant_summary": "HER2 resistant to endocytosis via Hsp90 complex or rapidly recycles to plasma membrane; concentrated on membrane protrusions colocalizing with GM1 lipid raft marker"
         },
         "controls_note": null,
-        "condition_note": "Mechanistic description of basal HER2 surface behavior; orphan receptor with no known ligand",
+        "condition_note": "Basal HER2 surface stability: Hsp90 complex formation and rapid recycling both contribute to low net internalization",
         "cited_source_ids": [
-          "int_evi_21"
+          "int_evi_36"
+        ]
+      }
+    ],
+    "modulator_observations": [
+      {
+        "modulator": "EGFR",
+        "perturbation": "overexpression",
+        "effect_on_target": "decreases",
+        "cell_line": "NCI-H508; HCA46",
+        "cell_context": "tumor_cell_line",
+        "magnitude": "low",
+        "quant": {
+          "rate_metric": "fold_change",
+          "rate_value": 1.35,
+          "rate_unit": "fold suppression",
+          "time_point": null,
+          "quant_summary": "EGFR overexpression suppressed T-DXd internalization rate 1.4-fold (NCI-H508) or 1.3-fold (HCA46) vs empty vector"
+        },
+        "note": "EGFR overexpression promotes EGFR/HER2 heterodimer formation and suppresses T-DXd (HER2 ADC) internalization; EGFR-low CRC cell lines used",
+        "cited_source_ids": [
+          "int_evi_07",
+          "int_evi_08",
+          "int_evi_14"
         ]
       },
       {
-        "assay_type": "peptide_uptake",
-        "assay_type_other_label": null,
-        "cell_line": null,
+        "modulator": "EGFR",
+        "perturbation": "knockdown",
+        "effect_on_target": "increases",
+        "cell_line": "DiFi",
         "cell_context": "tumor_cell_line",
-        "internalization_mode": "therapeutic",
-        "ligand_name": "Affibody_HER2-vcMMAE",
-        "ligand_effect": "increases",
-        "mechanism": "receptor_mediated_unspecified",
-        "trafficking_compartment": "unknown",
+        "magnitude": "low",
+        "quant": {
+          "rate_metric": "fold_change",
+          "rate_value": 1.5,
+          "rate_unit": "fold",
+          "time_point": null,
+          "quant_summary": "EGFR knockdown increased T-DXd internalization rate 1.5-fold vs non-targeting control in DiFi (HER2-positive, EGFR-amplified CRC)"
+        },
+        "note": "EGFR knockdown restores T-DXd (HER2 ADC) internalization in EGFR-amplified HER2-positive CRC",
+        "cited_source_ids": [
+          "int_evi_09",
+          "int_evi_13"
+        ]
+      },
+      {
+        "modulator": "EGFR",
+        "perturbation": "antibody_or_ligand_block",
+        "effect_on_target": "increases",
+        "cell_line": null,
+        "cell_context": "in_vivo",
         "magnitude": "moderate",
         "quant": {
           "rate_metric": null,
           "rate_value": null,
           "rate_unit": null,
           "time_point": null,
-          "quant_summary": "Inhibition of N-glycosylation reduced cellular uptake of Affibody_HER2-vcMMAE, demonstrating N-glycosylation contributes to HER2-mediated internalization"
+          "quant_summary": "Pharmacologic stimulation of EGFR endocytosis with EGFR monoclonal antibodies restores T-DXd trafficking and antitumor activity in EGFR-overexpressing cancers in vivo"
         },
-        "controls_note": "N-glycosylation inhibition used as mechanistic probe",
-        "condition_note": "N-glycosylation of HER2 contributes to internalization of cytotoxic conjugates targeting HER2",
+        "note": "EGFR mAb-mediated stimulation of EGFR endocytosis restores HER2 ADC (T-DXd) trafficking in vivo",
         "cited_source_ids": [
-          "int_evi_23"
+          "int_evi_09"
+        ]
+      },
+      {
+        "modulator": "CAV1",
+        "perturbation": "overexpression",
+        "effect_on_target": "increases",
+        "cell_line": "MDA-MB-453; BT474",
+        "cell_context": "tumor_cell_line",
+        "magnitude": "moderate",
+        "quant": {
+          "rate_metric": null,
+          "rate_value": null,
+          "rate_unit": null,
+          "time_point": null,
+          "quant_summary": "Temporal CAV-1 upregulation significantly facilitated T-DM1 endocytosis and degradation"
+        },
+        "note": "CAV-1 overexpression facilitates T-DM1 (HER2 ADC) internalization via caveolae/lipid-raft pathway; caveolae disruptors (nystatin, lovastatin) inhibit T-DM1 degradation",
+        "cited_source_ids": [
+          "int_evi_34",
+          "int_evi_35"
         ]
       }
     ],
     "sources": [
       {
         "evidence_id": "int_evi_01",
-        "claim": "Decreases in HER2 expression in isogenic model systems corresponded to reductions in T-DXd internalization, demonstrating that HER2 surface level directly governs ADC uptake.",
-        "claim_type": "surface_expression",
+        "claim": "Conjugation of nanoparticles with trastuzumab (Herceptin) significantly increased cellular uptake in clathrin-deficient SK-BR-3 cells that overexpress ERBB2, indicating HER2-mediated internalization that is partially clathrin-independent.",
+        "claim_type": "methodological",
+        "direction": "supports",
+        "evidence_type": "functional_assay",
+        "evidence_tier": "primary",
+        "confidence": "moderate",
+        "assay_context": {
+          "species": "human",
+          "cell_type_or_line": "SK-BR-3",
+          "permeabilized": false,
+          "fixation": null,
+          "isoform": null,
+          "cell_context": {
+            "material_kind": "cell_line",
+            "material_kind_other_label": null,
+            "cell_type": "breast adenocarcinoma",
+            "cell_line_name": "SK-BR-3",
+            "cellosaurus_id": null,
+            "tissue": null,
+            "disease_state": "HER2-overexpressing breast cancer",
+            "activation_state": null
+          }
+        },
+        "spans": [
+          {
+            "source": {
+              "source_type": "pubmed",
+              "source_id": "PMC:PMC13136908",
+              "pmc_id": "PMC13136908",
+              "url": "https://pubmed.ncbi.nlm.nih.gov/42088395/",
+              "title": "&lt;i&gt;BIRC5&lt;/i&gt; Promoter-Driven Nanodrugs Suppress BIRC5-Positive Cancers Independent of ABCB1 Status and IDO1 Expression",
+              "retrieved_at": "2026-08-15T04:32:28.980201Z",
+              "content_sha256": "063c6e093cd150abf566031bb66e71b312f3c0facc3284c26386171a69a2d779",
+              "publication_type": "primary_research",
+              "is_retracted": false,
+              "retraction_checked_at": "2026-08-15T04:32:28.980201Z",
+              "license": "unknown"
+            },
+            "section": "abstract",
+            "figure_or_table_id": null,
+            "quote": "Conjugation of nanoparticles with Herceptin<sup>®</sup> (trastuzumab) significantly increased cellular uptake and anticancer activity, especially in clathrin-deficient SK-BR-3 cells that overexpress ERBB2.<h4>Conclusion</h4>These findings establish that the easily synthesized PL-MNP-p<i>BIRC5</i>/As-<i>BIRC5</i> and PL-MNP-p<i>BIRC5</i>/dN-BIRC5 nanodrugs have strong potential to overcome BIRC5- and ABCB1-related drug resistance, representing a broadly applicable strategy against various malignancies.",
+            "quote_sha256": "c1c24087dfc31ef654ca9cdc4baba54098b9229396daeceefee1eae5eb8b785a",
+            "char_offset": 1788,
+            "normalized_source_sha256": "9a21d1b4f21946c554a8ea978cbf2964279bbb862f1e385bb2089f27ba09a5a5"
+          }
+        ],
+        "entailment_verified": true,
+        "entailment_audit_passed": null,
+        "validation_warnings": [],
+        "duplicate_of": null
+      },
+      {
+        "evidence_id": "int_evi_02",
+        "claim": "Decreases in HER2 expression in isogenic models corresponded to reductions in T-DXd internalization, demonstrating that HER2 expression level directly governs ADC uptake.",
+        "claim_type": "methodological",
         "direction": "supports",
         "evidence_type": "functional_assay",
         "evidence_tier": "primary",
         "confidence": "strong",
         "assay_context": {
           "species": "human",
-          "cell_type_or_line": "isogenic breast cancer model systems",
+          "cell_type_or_line": "isogenic breast cancer models",
           "permeabilized": null,
           "fixation": null,
           "isoform": null,
@@ -496,11 +760,11 @@
               "pmc_id": "PMC12631751",
               "url": "https://pubmed.ncbi.nlm.nih.gov/41212147/",
               "title": "Trastuzumab Deruxtecan Resistance via Loss of HER2 Expression and Binding",
-              "retrieved_at": "2026-08-15T02:55:47.015089Z",
+              "retrieved_at": "2026-08-15T04:32:28.950871Z",
               "content_sha256": "e4d002587a35a8f178fae2358b01a0518e71ee43229ca57ea14ccdc20df2674b",
               "publication_type": "other",
               "is_retracted": false,
-              "retraction_checked_at": "2026-08-15T02:55:47.015089Z",
+              "retraction_checked_at": "2026-08-15T04:32:28.950871Z",
               "license": "unknown"
             },
             "section": "abstract",
@@ -517,16 +781,16 @@
         "duplicate_of": null
       },
       {
-        "evidence_id": "int_evi_02",
-        "claim": "ERBB2 mutations at the trastuzumab binding interface (V597M and P593R) impaired T-DXd binding and internalization, and low-dose combinations with TROP2-directed ADCs were tested as a strategy to overcome this impaired internalization.",
-        "claim_type": "surface_expression",
+        "evidence_id": "int_evi_03",
+        "claim": "ERBB2 mutations at the trastuzumab binding interface (V597M and P593R) impaired T-DXd binding and internalization, and combining T-DXd with TROP2-directed ADCs could overcome this resistance.",
+        "claim_type": "methodological",
         "direction": "supports",
         "evidence_type": "functional_assay",
         "evidence_tier": "primary",
-        "confidence": "moderate",
+        "confidence": "strong",
         "assay_context": {
           "species": "human",
-          "cell_type_or_line": null,
+          "cell_type_or_line": "isogenic breast cancer models",
           "permeabilized": null,
           "fixation": null,
           "isoform": null,
@@ -549,11 +813,11 @@
               "pmc_id": "PMC12631751",
               "url": "https://pubmed.ncbi.nlm.nih.gov/41212147/",
               "title": "Trastuzumab Deruxtecan Resistance via Loss of HER2 Expression and Binding",
-              "retrieved_at": "2026-08-15T02:55:47.015089Z",
+              "retrieved_at": "2026-08-15T04:32:28.950871Z",
               "content_sha256": "e4d002587a35a8f178fae2358b01a0518e71ee43229ca57ea14ccdc20df2674b",
               "publication_type": "other",
               "is_retracted": false,
-              "retraction_checked_at": "2026-08-15T02:55:47.015089Z",
+              "retraction_checked_at": "2026-08-15T04:32:28.950871Z",
               "license": "unknown"
             },
             "section": "abstract",
@@ -570,16 +834,60 @@
         "duplicate_of": null
       },
       {
-        "evidence_id": "int_evi_03",
-        "claim": "Incubation of normal human corneal epithelial cell lines with trastuzumab or T-DXd demonstrated receptor-mediated endocytosis of HER2-targeted therapies in ocular epithelial cells.",
-        "claim_type": "surface_expression",
+        "evidence_id": "int_evi_04",
+        "claim": "Somatic mutations that activate HER2 kinase activity have been associated with enhanced internalization and response to T-DXd, while mutations preventing T-DXd binding have not been examined.",
+        "claim_type": "methodological",
+        "direction": "supports",
+        "evidence_type": "review_assertion",
+        "evidence_tier": "secondary",
+        "confidence": "moderate",
+        "assay_context": {
+          "species": "human",
+          "cell_type_or_line": null,
+          "permeabilized": null,
+          "fixation": null,
+          "isoform": null,
+          "cell_context": null
+        },
+        "spans": [
+          {
+            "source": {
+              "source_type": "pubmed",
+              "source_id": "PMC:PMC12631751",
+              "pmc_id": "PMC12631751",
+              "url": "https://pubmed.ncbi.nlm.nih.gov/41212147/",
+              "title": "Trastuzumab Deruxtecan Resistance via Loss of HER2 Expression and Binding",
+              "retrieved_at": "2026-08-15T04:32:28.950871Z",
+              "content_sha256": "e4d002587a35a8f178fae2358b01a0518e71ee43229ca57ea14ccdc20df2674b",
+              "publication_type": "other",
+              "is_retracted": false,
+              "retraction_checked_at": "2026-08-15T04:32:28.950871Z",
+              "license": "unknown"
+            },
+            "section": "results",
+            "figure_or_table_id": null,
+            "quote": "Whereas somatic mutations that activate HER2 kinase activity have been associated with enhanced internalization and response to T-DXd ( 23 , 24 ), mutations that might prevent T-DXd binding have not been examined.",
+            "quote_sha256": "37c7d167b3b124c5f2fae124a64b47b84beb02f9bfe324c1e5cfe1381ba59582",
+            "char_offset": 16404,
+            "normalized_source_sha256": "571913e704bf9fdfac4ce9d4300e1298c005411809a82b96f17cfe479cbc305e"
+          }
+        ],
+        "entailment_verified": true,
+        "entailment_audit_passed": null,
+        "validation_warnings": [],
+        "duplicate_of": null
+      },
+      {
+        "evidence_id": "int_evi_05",
+        "claim": "Incubation of normal human corneal epithelial cell lines with trastuzumab or T-DXd demonstrated receptor-mediated endocytosis of HER2-targeted therapies by corneal epithelial cells.",
+        "claim_type": "methodological",
         "direction": "supports",
         "evidence_type": "functional_assay",
         "evidence_tier": "primary",
         "confidence": "strong",
         "assay_context": {
           "species": "human",
-          "cell_type_or_line": "normal human corneal epithelial cell lines (HCE-2, 2.040 pRSV-T)",
+          "cell_type_or_line": "HCE-2 and 2.040 pRSV-T corneal epithelial cells",
           "permeabilized": null,
           "fixation": null,
           "isoform": null,
@@ -602,11 +910,11 @@
               "pmc_id": null,
               "url": "https://pubmed.ncbi.nlm.nih.gov/42098228/",
               "title": "Expression of HER2 in the eye and the potential for on-target side effects with antibody-drug conjugates",
-              "retrieved_at": "2026-08-15T02:55:47.033602Z",
+              "retrieved_at": "2026-08-15T04:32:28.991813Z",
               "content_sha256": "bbe848a96030c0052843994139ee47eba344fa8f73a776c06200bee1fd283b2f",
               "publication_type": "other",
               "is_retracted": false,
-              "retraction_checked_at": "2026-08-15T02:55:47.033602Z",
+              "retraction_checked_at": "2026-08-15T04:32:28.991813Z",
               "license": "unknown"
             },
             "section": "abstract",
@@ -623,27 +931,27 @@
         "duplicate_of": null
       },
       {
-        "evidence_id": "int_evi_06",
-        "claim": "Activity of T-DXd has been observed in ERBB2-mutant non-small cell lung cancers that have a proclivity to rapid HER2 internalization, indicating that rapid HER2 internalization is a factor dictating T-DXd sensitivity.",
-        "claim_type": "surface_expression",
+        "evidence_id": "int_evi_07",
+        "claim": "Elevated EGFR expression promotes EGFR/HER2 heterodimer formation and suppresses T-DXd internalization and efficacy, identifying EGFR overexpression as a modulator of HER2 ADC uptake.",
+        "claim_type": "methodological",
         "direction": "supports",
-        "evidence_type": "review_assertion",
-        "evidence_tier": "secondary",
-        "confidence": "moderate",
+        "evidence_type": "functional_assay",
+        "evidence_tier": "primary",
+        "confidence": "strong",
         "assay_context": {
           "species": "human",
-          "cell_type_or_line": null,
+          "cell_type_or_line": "CRC cell lines (DiFi, NCI-H508, HCA46)",
           "permeabilized": null,
-          "fixation": null,
+          "fixation": "live",
           "isoform": null,
           "cell_context": {
-            "material_kind": "primary_tissue",
+            "material_kind": "cell_line",
             "material_kind_other_label": null,
-            "cell_type": "non-small cell lung cancer",
+            "cell_type": "colorectal cancer",
             "cell_line_name": null,
             "cellosaurus_id": null,
             "tissue": null,
-            "disease_state": "ERBB2-mutant NSCLC",
+            "disease_state": "HER2-expressing colorectal cancer",
             "activation_state": null
           }
         },
@@ -655,18 +963,18 @@
               "pmc_id": "PMC11604483",
               "url": "https://pubmed.ncbi.nlm.nih.gov/39437778/",
               "title": "EGFR-directed antibodies promote HER2 ADC internalization and efficacy",
-              "retrieved_at": "2026-08-15T02:55:47.048765Z",
+              "retrieved_at": "2026-08-15T04:32:28.991708Z",
               "content_sha256": "0499fea4df04aa88947e56a21292eb5cc0bf7eabc4319910f53c0d860fa69216",
               "publication_type": "primary_research",
               "is_retracted": false,
-              "retraction_checked_at": "2026-08-15T02:55:47.048765Z",
+              "retraction_checked_at": "2026-08-15T04:32:28.991708Z",
               "license": "unknown"
             },
-            "section": "introduction",
+            "section": "abstract",
             "figure_or_table_id": null,
-            "quote": "Moreover, activity has been observed in tumors lacking HER2 overexpression but having some proclivity to rapid HER2 internalization such as in ERBB2 -mutant non-small cell lung cancers. 10 These and other studies 11 , 12 , 13 point to high levels of HER2 cell surface expression being only one of several factors that dictate T-DXd sensitivity.",
-            "quote_sha256": "4b44b67f56b86654b27fd9083d9091597f25558dc7d205ad15c93f423f5e4084",
-            "char_offset": 1942,
+            "quote": "We hypothesize that epidermal growth factor receptor (EGFR), a dimerization partner of HER2, can modulate HER2 trafficking through endocytic pathways and affect T-DXd uptake.",
+            "quote_sha256": "68d6cb3a3e222c9acb3bdc7ef2ccb72e8470b2d84bffbaedfa87f313fcf7eb96",
+            "char_offset": 444,
             "normalized_source_sha256": "8a074c852f02644437f5d0ef433dc7cf2e6dd1ab6a86b4a371322e98a2e56fa1"
           }
         ],
@@ -676,9 +984,115 @@
         "duplicate_of": null
       },
       {
-        "evidence_id": "int_evi_07",
-        "claim": "HER2 exists in a state of dynamic equilibrium between endocytosis and recycling on the cell surface, and its rate of internalization is determined by expression level, antibody binding, and interaction with its dimerization partners.",
-        "claim_type": "surface_expression",
+        "evidence_id": "int_evi_08",
+        "claim": "Elevated EGFR expression suppresses T-DXd (HER2 ADC) internalization, demonstrating EGFR as a negative modulator of HER2 endocytosis.",
+        "claim_type": "methodological",
+        "direction": "supports",
+        "evidence_type": "functional_assay",
+        "evidence_tier": "primary",
+        "confidence": "strong",
+        "assay_context": {
+          "species": "human",
+          "cell_type_or_line": "DiFi, NCI-H508, HCA46",
+          "permeabilized": null,
+          "fixation": "live",
+          "isoform": null,
+          "cell_context": {
+            "material_kind": "cell_line",
+            "material_kind_other_label": null,
+            "cell_type": "colorectal cancer",
+            "cell_line_name": null,
+            "cellosaurus_id": null,
+            "tissue": null,
+            "disease_state": "HER2-expressing, EGFR-overexpressing colorectal cancer",
+            "activation_state": null
+          }
+        },
+        "spans": [
+          {
+            "source": {
+              "source_type": "pubmed",
+              "source_id": "PMC:PMC11604483",
+              "pmc_id": "PMC11604483",
+              "url": "https://pubmed.ncbi.nlm.nih.gov/39437778/",
+              "title": "EGFR-directed antibodies promote HER2 ADC internalization and efficacy",
+              "retrieved_at": "2026-08-15T04:32:28.991708Z",
+              "content_sha256": "0499fea4df04aa88947e56a21292eb5cc0bf7eabc4319910f53c0d860fa69216",
+              "publication_type": "primary_research",
+              "is_retracted": false,
+              "retraction_checked_at": "2026-08-15T04:32:28.991708Z",
+              "license": "unknown"
+            },
+            "section": "abstract",
+            "figure_or_table_id": null,
+            "quote": "We demonstrate that elevated EGFR expression levels can promote EGFR/HER2 heterodimer formation and suppress T-DXd internalization and efficacy.",
+            "quote_sha256": "76c356916fb41b419a7890802ee2153fbae8dbe0eedfeff6f3e6a8c6d2b62cc7",
+            "char_offset": 619,
+            "normalized_source_sha256": "8a074c852f02644437f5d0ef433dc7cf2e6dd1ab6a86b4a371322e98a2e56fa1"
+          }
+        ],
+        "entailment_verified": true,
+        "entailment_audit_passed": null,
+        "validation_warnings": [],
+        "duplicate_of": null
+      },
+      {
+        "evidence_id": "int_evi_09",
+        "claim": "Knockdown of EGFR expression or pharmacologic stimulation of EGFR endocytosis with EGFR monoclonal antibodies restores T-DXd (HER2 ADC) trafficking and antitumor activity in EGFR-overexpressing cancers in vivo.",
+        "claim_type": "methodological",
+        "direction": "supports",
+        "evidence_type": "functional_assay",
+        "evidence_tier": "primary",
+        "confidence": "strong",
+        "assay_context": {
+          "species": "human",
+          "cell_type_or_line": "DiFi, NCI-H508, HCA46",
+          "permeabilized": null,
+          "fixation": null,
+          "isoform": null,
+          "cell_context": {
+            "material_kind": "cell_line",
+            "material_kind_other_label": null,
+            "cell_type": "colorectal cancer",
+            "cell_line_name": null,
+            "cellosaurus_id": null,
+            "tissue": null,
+            "disease_state": "EGFR-overexpressing colorectal cancer",
+            "activation_state": null
+          }
+        },
+        "spans": [
+          {
+            "source": {
+              "source_type": "pubmed",
+              "source_id": "PMC:PMC11604483",
+              "pmc_id": "PMC11604483",
+              "url": "https://pubmed.ncbi.nlm.nih.gov/39437778/",
+              "title": "EGFR-directed antibodies promote HER2 ADC internalization and efficacy",
+              "retrieved_at": "2026-08-15T04:32:28.991708Z",
+              "content_sha256": "0499fea4df04aa88947e56a21292eb5cc0bf7eabc4319910f53c0d860fa69216",
+              "publication_type": "primary_research",
+              "is_retracted": false,
+              "retraction_checked_at": "2026-08-15T04:32:28.991708Z",
+              "license": "unknown"
+            },
+            "section": "abstract",
+            "figure_or_table_id": null,
+            "quote": "Knockdown of EGFR expression or pharmacologic stimulation of EGFR endocytosis with EGFR monoclonal antibodies restores T-DXd trafficking and antitumor activity in EGFR-overexpressing cancers in vivo.",
+            "quote_sha256": "1a014c5fe9e0a375d79141920a502e7efce7a759c2a9e1ee69bd2df08a208136",
+            "char_offset": 764,
+            "normalized_source_sha256": "8a074c852f02644437f5d0ef433dc7cf2e6dd1ab6a86b4a371322e98a2e56fa1"
+          }
+        ],
+        "entailment_verified": true,
+        "entailment_audit_passed": null,
+        "validation_warnings": [],
+        "duplicate_of": null
+      },
+      {
+        "evidence_id": "int_evi_10",
+        "claim": "Activity of T-DXd has been observed in tumors lacking HER2 overexpression but having proclivity to rapid HER2 internalization, such as ERBB2-mutant non-small cell lung cancers, indicating that HER2 internalization rate is a key determinant of T-DXd sensitivity.",
+        "claim_type": "methodological",
         "direction": "supports",
         "evidence_type": "review_assertion",
         "evidence_tier": "secondary",
@@ -699,11 +1113,55 @@
               "pmc_id": "PMC11604483",
               "url": "https://pubmed.ncbi.nlm.nih.gov/39437778/",
               "title": "EGFR-directed antibodies promote HER2 ADC internalization and efficacy",
-              "retrieved_at": "2026-08-15T02:55:47.048765Z",
+              "retrieved_at": "2026-08-15T04:32:28.991708Z",
               "content_sha256": "0499fea4df04aa88947e56a21292eb5cc0bf7eabc4319910f53c0d860fa69216",
               "publication_type": "primary_research",
               "is_retracted": false,
-              "retraction_checked_at": "2026-08-15T02:55:47.048765Z",
+              "retraction_checked_at": "2026-08-15T04:32:28.991708Z",
+              "license": "unknown"
+            },
+            "section": "introduction",
+            "figure_or_table_id": null,
+            "quote": "Moreover, activity has been observed in tumors lacking HER2 overexpression but having some proclivity to rapid HER2 internalization such as in ERBB2 -mutant non-small cell lung cancers. 10 These and other studies 11 , 12 , 13 point to high levels of HER2 cell surface expression being only one of several factors that dictate T-DXd sensitivity.",
+            "quote_sha256": "4b44b67f56b86654b27fd9083d9091597f25558dc7d205ad15c93f423f5e4084",
+            "char_offset": 1942,
+            "normalized_source_sha256": "8a074c852f02644437f5d0ef433dc7cf2e6dd1ab6a86b4a371322e98a2e56fa1"
+          }
+        ],
+        "entailment_verified": true,
+        "entailment_audit_passed": null,
+        "validation_warnings": [],
+        "duplicate_of": null
+      },
+      {
+        "evidence_id": "int_evi_11",
+        "claim": "HER2 exists in a state of dynamic equilibrium between endocytosis and recycling on the cell surface, and its rate of internalization is determined by expression level, antibody binding, and interaction with its dimerization partners.",
+        "claim_type": "methodological",
+        "direction": "supports",
+        "evidence_type": "review_assertion",
+        "evidence_tier": "secondary",
+        "confidence": "moderate",
+        "assay_context": {
+          "species": "human",
+          "cell_type_or_line": null,
+          "permeabilized": null,
+          "fixation": null,
+          "isoform": null,
+          "cell_context": null
+        },
+        "spans": [
+          {
+            "source": {
+              "source_type": "pubmed",
+              "source_id": "PMC:PMC11604483",
+              "pmc_id": "PMC11604483",
+              "url": "https://pubmed.ncbi.nlm.nih.gov/39437778/",
+              "title": "EGFR-directed antibodies promote HER2 ADC internalization and efficacy",
+              "retrieved_at": "2026-08-15T04:32:28.991708Z",
+              "content_sha256": "0499fea4df04aa88947e56a21292eb5cc0bf7eabc4319910f53c0d860fa69216",
+              "publication_type": "primary_research",
+              "is_retracted": false,
+              "retraction_checked_at": "2026-08-15T04:32:28.991708Z",
               "license": "unknown"
             },
             "section": "introduction",
@@ -720,9 +1178,168 @@
         "duplicate_of": null
       },
       {
-        "evidence_id": "int_evi_08",
-        "claim": "Confocal microscopy clearly demonstrated the internalization of mAb104 (a novel anti-HER2 antibody targeting domain II) into HER2-positive tumor cells, consistent with mAb104:HER2 trafficking.",
-        "claim_type": "surface_expression",
+        "evidence_id": "int_evi_12",
+        "claim": "A pH-sensitive dye assay was used to track internalization of conjugated antibodies (T-DXd) to acidic endosomal compartments in CRC cell lines.",
+        "claim_type": "methodological",
+        "direction": "supports",
+        "evidence_type": "functional_assay",
+        "evidence_tier": "primary",
+        "confidence": "strong",
+        "assay_context": {
+          "species": "human",
+          "cell_type_or_line": "DiFi",
+          "permeabilized": false,
+          "fixation": "live",
+          "isoform": null,
+          "cell_context": {
+            "material_kind": "cell_line",
+            "material_kind_other_label": null,
+            "cell_type": "colorectal cancer",
+            "cell_line_name": null,
+            "cellosaurus_id": null,
+            "tissue": null,
+            "disease_state": "HER2-positive, EGFR-amplified colorectal cancer",
+            "activation_state": null
+          }
+        },
+        "spans": [
+          {
+            "source": {
+              "source_type": "pubmed",
+              "source_id": "PMC:PMC11604483",
+              "pmc_id": "PMC11604483",
+              "url": "https://pubmed.ncbi.nlm.nih.gov/39437778/",
+              "title": "EGFR-directed antibodies promote HER2 ADC internalization and efficacy",
+              "retrieved_at": "2026-08-15T04:32:28.991708Z",
+              "content_sha256": "0499fea4df04aa88947e56a21292eb5cc0bf7eabc4319910f53c0d860fa69216",
+              "publication_type": "primary_research",
+              "is_retracted": false,
+              "retraction_checked_at": "2026-08-15T04:32:28.991708Z",
+              "license": "unknown"
+            },
+            "section": "results",
+            "figure_or_table_id": null,
+            "quote": "Using a pH-sensitive dye, we tracked the internalization of conjugated antibodies to the acidic endosomal compartments 26 ( Figure 1 B).",
+            "quote_sha256": "5e6c4617f62b6c132bcb43ab57f4e0775e831bb070564ec203cf616f44f491d7",
+            "char_offset": 15767,
+            "normalized_source_sha256": "8a074c852f02644437f5d0ef433dc7cf2e6dd1ab6a86b4a371322e98a2e56fa1"
+          }
+        ],
+        "entailment_verified": true,
+        "entailment_audit_passed": null,
+        "validation_warnings": [],
+        "duplicate_of": null
+      },
+      {
+        "evidence_id": "int_evi_13",
+        "claim": "Knockdown of EGFR in HER2-positive EGFR-amplified CRC cell line DiFi increased the rate of T-DXd (HER2 ADC) internalization 1.5-fold compared to non-targeting control.",
+        "claim_type": "methodological",
+        "direction": "supports",
+        "evidence_type": "functional_assay",
+        "evidence_tier": "primary",
+        "confidence": "strong",
+        "assay_context": {
+          "species": "human",
+          "cell_type_or_line": "DiFi",
+          "permeabilized": false,
+          "fixation": "live",
+          "isoform": null,
+          "cell_context": {
+            "material_kind": "cell_line",
+            "material_kind_other_label": null,
+            "cell_type": "colorectal cancer",
+            "cell_line_name": "DiFi",
+            "cellosaurus_id": null,
+            "tissue": null,
+            "disease_state": "HER2-positive, EGFR-amplified colorectal cancer",
+            "activation_state": null
+          }
+        },
+        "spans": [
+          {
+            "source": {
+              "source_type": "pubmed",
+              "source_id": "PMC:PMC11604483",
+              "pmc_id": "PMC11604483",
+              "url": "https://pubmed.ncbi.nlm.nih.gov/39437778/",
+              "title": "EGFR-directed antibodies promote HER2 ADC internalization and efficacy",
+              "retrieved_at": "2026-08-15T04:32:28.991708Z",
+              "content_sha256": "0499fea4df04aa88947e56a21292eb5cc0bf7eabc4319910f53c0d860fa69216",
+              "publication_type": "primary_research",
+              "is_retracted": false,
+              "retraction_checked_at": "2026-08-15T04:32:28.991708Z",
+              "license": "unknown"
+            },
+            "section": "results",
+            "figure_or_table_id": null,
+            "quote": "In a HER2-positive EGFR -amplified CRC cell line DiFi, knockdown of EGFR increased the rate of T-DXd internalization 1.5-fold compared to the non-targeting control ( Figure 1 C and Video S1 ).",
+            "quote_sha256": "33fafffd0d540d8365656434dbd26f51b0b93c73b6e25dce9460a2138afe240f",
+            "char_offset": 15904,
+            "normalized_source_sha256": "8a074c852f02644437f5d0ef433dc7cf2e6dd1ab6a86b4a371322e98a2e56fa1"
+          }
+        ],
+        "entailment_verified": true,
+        "entailment_audit_passed": null,
+        "validation_warnings": [],
+        "duplicate_of": null
+      },
+      {
+        "evidence_id": "int_evi_14",
+        "claim": "Overexpression of EGFR in EGFR-low CRC cell lines NCI-H508 or HCA46 suppressed T-DXd (HER2 ADC) internalization rate 1.4-fold or 1.3-fold, respectively, compared to empty vector control.",
+        "claim_type": "methodological",
+        "direction": "supports",
+        "evidence_type": "functional_assay",
+        "evidence_tier": "primary",
+        "confidence": "strong",
+        "assay_context": {
+          "species": "human",
+          "cell_type_or_line": "NCI-H508, HCA46",
+          "permeabilized": false,
+          "fixation": "live",
+          "isoform": null,
+          "cell_context": {
+            "material_kind": "cell_line",
+            "material_kind_other_label": null,
+            "cell_type": "colorectal cancer",
+            "cell_line_name": null,
+            "cellosaurus_id": null,
+            "tissue": null,
+            "disease_state": "HER2-expressing, EGFR-low colorectal cancer",
+            "activation_state": null
+          }
+        },
+        "spans": [
+          {
+            "source": {
+              "source_type": "pubmed",
+              "source_id": "PMC:PMC11604483",
+              "pmc_id": "PMC11604483",
+              "url": "https://pubmed.ncbi.nlm.nih.gov/39437778/",
+              "title": "EGFR-directed antibodies promote HER2 ADC internalization and efficacy",
+              "retrieved_at": "2026-08-15T04:32:28.991708Z",
+              "content_sha256": "0499fea4df04aa88947e56a21292eb5cc0bf7eabc4319910f53c0d860fa69216",
+              "publication_type": "primary_research",
+              "is_retracted": false,
+              "retraction_checked_at": "2026-08-15T04:32:28.991708Z",
+              "license": "unknown"
+            },
+            "section": "results",
+            "figure_or_table_id": null,
+            "quote": "Moreover, overexpression of EGFR in EGFR-low CRC cell lines NCI-H508 or HCA46 suppressed T-DXd internalization rate 1.4-fold or 1.3-fold, respectively, compared to the empty vector (EV) control ( Figure 1 F and Video S2 and Figure S1 A).",
+            "quote_sha256": "6618e87b1aa8a88270175ae811db00d05a3ec89f7b0f6e5d5e39bec5aec2c959",
+            "char_offset": 16097,
+            "normalized_source_sha256": "8a074c852f02644437f5d0ef433dc7cf2e6dd1ab6a86b4a371322e98a2e56fa1"
+          }
+        ],
+        "entailment_verified": true,
+        "entailment_audit_passed": null,
+        "validation_warnings": [],
+        "duplicate_of": null
+      },
+      {
+        "evidence_id": "int_evi_15",
+        "claim": "Confocal microscopy clearly demonstrated the internalization of mAb104 (anti-HER2 antibody) into HER2-positive tumor cells, consistent with mAb104:HER2 trafficking.",
+        "claim_type": "methodological",
         "direction": "supports",
         "evidence_type": "immunofluorescence",
         "evidence_tier": "primary",
@@ -736,7 +1353,7 @@
           "cell_context": {
             "material_kind": "cell_line",
             "material_kind_other_label": null,
-            "cell_type": "HER2-positive tumor",
+            "cell_type": "tumor",
             "cell_line_name": null,
             "cellosaurus_id": null,
             "tissue": null,
@@ -752,11 +1369,11 @@
               "pmc_id": "PMC12402785",
               "url": "https://pubmed.ncbi.nlm.nih.gov/40358499/",
               "title": "Characterization of mAb104, a mAb Targeting a Conformationally Exposed, Tumor-Specific Epitope of HER2",
-              "retrieved_at": "2026-08-15T02:55:47.009133Z",
+              "retrieved_at": "2026-08-15T04:32:28.972696Z",
               "content_sha256": "f129dd3a18e15aa6b9de1db7deac2375e4bc56e66ad881f19b1f2e5e6917d6fb",
               "publication_type": "primary_research",
               "is_retracted": false,
-              "retraction_checked_at": "2026-08-15T02:55:47.009133Z",
+              "retraction_checked_at": "2026-08-15T04:32:28.972696Z",
               "license": "unknown"
             },
             "section": "abstract",
@@ -773,9 +1390,9 @@
         "duplicate_of": null
       },
       {
-        "evidence_id": "int_evi_09",
-        "claim": "HER2 has low internalization because it is largely immobile on the cell surface, which limits the effectiveness of HER2-specific cytotoxic conjugates.",
-        "claim_type": "surface_expression",
+        "evidence_id": "int_evi_16",
+        "claim": "HER2 has low internalization because it is mainly immobile on the cell surface, which limits the effectiveness of HER2-specific cytotoxic conjugates.",
+        "claim_type": "methodological",
         "direction": "supports",
         "evidence_type": "review_assertion",
         "evidence_tier": "secondary",
@@ -796,11 +1413,11 @@
               "pmc_id": "PMC12257533",
               "url": "https://pubmed.ncbi.nlm.nih.gov/40581863/",
               "title": "Innately Fluorescent Tetravalent Cytotoxic Conjugate TetraF<sub>HER2</sub>-vcMMAE Engages Aggregation-Dependent Endocytosis of HER2 for Enhanced Intracellular Drug Delivery",
-              "retrieved_at": "2026-08-15T02:55:47.009026Z",
+              "retrieved_at": "2026-08-15T04:32:28.985376Z",
               "content_sha256": "56aeeeb81691e4ec652d52416d06977f9e6f2f4d9d4d49f920fc89a285b4229e",
               "publication_type": "primary_research",
               "is_retracted": false,
-              "retraction_checked_at": "2026-08-15T02:55:47.009026Z",
+              "retraction_checked_at": "2026-08-15T04:32:28.985376Z",
               "license": "unknown"
             },
             "section": "abstract",
@@ -817,9 +1434,9 @@
         "duplicate_of": null
       },
       {
-        "evidence_id": "int_evi_10",
-        "claim": "Novel multivalent HER2 ligands (GFPp-Affibody HER2:342 fusions) largely overcome the innate stability of HER2 in the plasma membrane by triggering clathrin-independent aggregation-dependent endocytosis of the receptor.",
-        "claim_type": "surface_expression",
+        "evidence_id": "int_evi_17",
+        "claim": "Multivalent HER2 ligands (GFPp-Affibody HER2:342) largely overcome the innate stability of HER2 in the plasma membrane by triggering clathrin-independent aggregation-dependent endocytosis of the receptor.",
+        "claim_type": "methodological",
         "direction": "supports",
         "evidence_type": "functional_assay",
         "evidence_tier": "primary",
@@ -849,11 +1466,11 @@
               "pmc_id": "PMC12257533",
               "url": "https://pubmed.ncbi.nlm.nih.gov/40581863/",
               "title": "Innately Fluorescent Tetravalent Cytotoxic Conjugate TetraF<sub>HER2</sub>-vcMMAE Engages Aggregation-Dependent Endocytosis of HER2 for Enhanced Intracellular Drug Delivery",
-              "retrieved_at": "2026-08-15T02:55:47.009026Z",
+              "retrieved_at": "2026-08-15T04:32:28.985376Z",
               "content_sha256": "56aeeeb81691e4ec652d52416d06977f9e6f2f4d9d4d49f920fc89a285b4229e",
               "publication_type": "primary_research",
               "is_retracted": false,
-              "retraction_checked_at": "2026-08-15T02:55:47.009026Z",
+              "retraction_checked_at": "2026-08-15T04:32:28.985376Z",
               "license": "unknown"
             },
             "section": "abstract",
@@ -870,9 +1487,9 @@
         "duplicate_of": null
       },
       {
-        "evidence_id": "int_evi_11",
+        "evidence_id": "int_evi_18",
         "claim": "T-DM1 and T-DXd have limited efficacy at least partially due to inefficient HER2-dependent internalization, and cancer cells can alter endocytic pathways as a defense mechanism.",
-        "claim_type": "surface_expression",
+        "claim_type": "methodological",
         "direction": "supports",
         "evidence_type": "review_assertion",
         "evidence_tier": "secondary",
@@ -893,11 +1510,11 @@
               "pmc_id": "PMC12257533",
               "url": "https://pubmed.ncbi.nlm.nih.gov/40581863/",
               "title": "Innately Fluorescent Tetravalent Cytotoxic Conjugate TetraF<sub>HER2</sub>-vcMMAE Engages Aggregation-Dependent Endocytosis of HER2 for Enhanced Intracellular Drug Delivery",
-              "retrieved_at": "2026-08-15T02:55:47.009026Z",
+              "retrieved_at": "2026-08-15T04:32:28.985376Z",
               "content_sha256": "56aeeeb81691e4ec652d52416d06977f9e6f2f4d9d4d49f920fc89a285b4229e",
               "publication_type": "primary_research",
               "is_retracted": false,
-              "retraction_checked_at": "2026-08-15T02:55:47.009026Z",
+              "retraction_checked_at": "2026-08-15T04:32:28.985376Z",
               "license": "unknown"
             },
             "section": "discussion",
@@ -914,9 +1531,9 @@
         "duplicate_of": null
       },
       {
-        "evidence_id": "int_evi_12",
+        "evidence_id": "int_evi_19",
         "claim": "T-DM1 and T-DXd are composed of the bivalent antibody trastuzumab and are mostly internalized via clathrin-mediated endocytosis (CME), making them susceptible to alterations in CME which can be downregulated in cancer cells.",
-        "claim_type": "surface_expression",
+        "claim_type": "methodological",
         "direction": "supports",
         "evidence_type": "review_assertion",
         "evidence_tier": "secondary",
@@ -937,11 +1554,11 @@
               "pmc_id": "PMC12257533",
               "url": "https://pubmed.ncbi.nlm.nih.gov/40581863/",
               "title": "Innately Fluorescent Tetravalent Cytotoxic Conjugate TetraF<sub>HER2</sub>-vcMMAE Engages Aggregation-Dependent Endocytosis of HER2 for Enhanced Intracellular Drug Delivery",
-              "retrieved_at": "2026-08-15T02:55:47.009026Z",
+              "retrieved_at": "2026-08-15T04:32:28.985376Z",
               "content_sha256": "56aeeeb81691e4ec652d52416d06977f9e6f2f4d9d4d49f920fc89a285b4229e",
               "publication_type": "primary_research",
               "is_retracted": false,
-              "retraction_checked_at": "2026-08-15T02:55:47.009026Z",
+              "retraction_checked_at": "2026-08-15T04:32:28.985376Z",
               "license": "unknown"
             },
             "section": "discussion",
@@ -958,9 +1575,62 @@
         "duplicate_of": null
       },
       {
-        "evidence_id": "int_evi_13",
-        "claim": "The combination of T-DXd and pertuzumab enhanced membrane HER2 internalization more effectively in NCI-N87 (HER2-HER3 heterodimer-enriched) than in OE19 gastric cancer cells.",
-        "claim_type": "surface_expression",
+        "evidence_id": "int_evi_22",
+        "claim": "In vitro, T-DXd efficacy correlated with high levels of membrane HER2 expression, indicating that surface HER2 levels govern ADC internalization and activity.",
+        "claim_type": "methodological",
+        "direction": "supports",
+        "evidence_type": "functional_assay",
+        "evidence_tier": "primary",
+        "confidence": "moderate",
+        "assay_context": {
+          "species": "human",
+          "cell_type_or_line": "NCI-N87, OE19 and other gastric cancer cell lines",
+          "permeabilized": null,
+          "fixation": null,
+          "isoform": null,
+          "cell_context": {
+            "material_kind": "cell_line",
+            "material_kind_other_label": null,
+            "cell_type": "gastric cancer",
+            "cell_line_name": null,
+            "cellosaurus_id": null,
+            "tissue": null,
+            "disease_state": "HER2-positive gastric cancer",
+            "activation_state": null
+          }
+        },
+        "spans": [
+          {
+            "source": {
+              "source_type": "pubmed",
+              "source_id": "PMC:PMC13136884",
+              "pmc_id": "PMC13136884",
+              "url": "https://pubmed.ncbi.nlm.nih.gov/41229221/",
+              "title": "Pertuzumab Enhances the Antitumor Activity of T-DXd in HER2-Positive Gastric Cancer Cells",
+              "retrieved_at": "2026-08-15T04:32:28.991855Z",
+              "content_sha256": "408fb9aec6469fb19abe25a917b2f948b60b2fe4a189f58aa044dad97d66fda4",
+              "publication_type": "primary_research",
+              "is_retracted": false,
+              "retraction_checked_at": "2026-08-15T04:32:28.991855Z",
+              "license": "unknown"
+            },
+            "section": "abstract",
+            "figure_or_table_id": null,
+            "quote": "For HER2-positive advanced gastric cancer, a recent major therapeutic advancement is the development of trastuzumab deruxtecan (T-DXd), a HER2-directed antibody-drug conjugate. In this disease, simultaneously targeting HER2 and HER3 pathways has the potential to be a promising therapeutic strategy. However, the therapeutic approach of combining T-DXd with pertuzumab, which disrupts HER2-HER3 heterodimerization, has not yet been explored in gastric cancer, making this study a pioneering effort. In vitro, T-DXd efficacy correlated with high levels of membrane HER2 expression.",
+            "quote_sha256": "354d25cff5d7e06f3ac9345deb10d9bf609328c725a8d93c2d39b96037384e52",
+            "char_offset": 0,
+            "normalized_source_sha256": "3dae096c626eca12ad73ce9c0760be59b99afa01d8a4f30c14189859a520715a"
+          }
+        ],
+        "entailment_verified": true,
+        "entailment_audit_passed": null,
+        "validation_warnings": [],
+        "duplicate_of": null
+      },
+      {
+        "evidence_id": "int_evi_23",
+        "claim": "The combination of T-DXd and pertuzumab enhanced membrane HER2 internalization more effectively in NCI-N87 than in OE19 gastric cancer cells, and this was associated with greater tumor growth suppression in vivo.",
+        "claim_type": "methodological",
         "direction": "supports",
         "evidence_type": "functional_assay",
         "evidence_tier": "primary",
@@ -990,11 +1660,11 @@
               "pmc_id": "PMC13136884",
               "url": "https://pubmed.ncbi.nlm.nih.gov/41229221/",
               "title": "Pertuzumab Enhances the Antitumor Activity of T-DXd in HER2-Positive Gastric Cancer Cells",
-              "retrieved_at": "2026-08-15T02:55:47.019997Z",
+              "retrieved_at": "2026-08-15T04:32:28.991855Z",
               "content_sha256": "408fb9aec6469fb19abe25a917b2f948b60b2fe4a189f58aa044dad97d66fda4",
               "publication_type": "primary_research",
               "is_retracted": false,
-              "retraction_checked_at": "2026-08-15T02:55:47.019997Z",
+              "retraction_checked_at": "2026-08-15T04:32:28.991855Z",
               "license": "unknown"
             },
             "section": "abstract",
@@ -1011,8 +1681,8 @@
         "duplicate_of": null
       },
       {
-        "evidence_id": "int_evi_14",
-        "claim": "Drug internalization of HER2 ADC complex in DSRCT cells was demonstrated by live microscopy.",
+        "evidence_id": "int_evi_24",
+        "claim": "Drug internalization of HER2 ADC complex in DSRCT was demonstrated by live microscopy.",
         "claim_type": "methodological",
         "direction": "supports",
         "evidence_type": "immunofluorescence",
@@ -1031,7 +1701,7 @@
             "cell_line_name": null,
             "cellosaurus_id": null,
             "tissue": null,
-            "disease_state": "DSRCT",
+            "disease_state": "ERBB2/HER2-expressing DSRCT",
             "activation_state": null
           }
         },
@@ -1043,11 +1713,11 @@
               "pmc_id": "PMC11479846",
               "url": "https://pubmed.ncbi.nlm.nih.gov/39120576/",
               "title": "HER2 Antibody-Drug Conjugates Are Active against Desmoplastic Small Round Cell Tumor",
-              "retrieved_at": "2026-08-15T02:55:47.019884Z",
+              "retrieved_at": "2026-08-15T04:32:28.944737Z",
               "content_sha256": "52f2874a1f8f934dfddc5a6f71fae12d23a207bdb03234cd42ad2f27b08f1d2f",
               "publication_type": "primary_research",
               "is_retracted": false,
-              "retraction_checked_at": "2026-08-15T02:55:47.019884Z",
+              "retraction_checked_at": "2026-08-15T04:32:28.944737Z",
               "license": "unknown"
             },
             "section": "abstract",
@@ -1064,9 +1734,9 @@
         "duplicate_of": null
       },
       {
-        "evidence_id": "int_evi_15",
-        "claim": "Therapeutic response to T-DXd in ERBB2/HER2-expressing DSRCT was mediated by rapid HER2 ADC complex internalization and cytotoxicity, triggering p53-mediated apoptosis and growth arrest.",
-        "claim_type": "surface_expression",
+        "evidence_id": "int_evi_25",
+        "claim": "Therapeutic response to T-DXd in DSRCT was mediated by rapid HER2 ADC complex internalization and cytotoxicity, triggering p53-mediated apoptosis and growth arrest.",
+        "claim_type": "methodological",
         "direction": "supports",
         "evidence_type": "functional_assay",
         "evidence_tier": "primary",
@@ -1075,7 +1745,7 @@
           "species": "human",
           "cell_type_or_line": "DSRCT PDX, cell line, and organoid models",
           "permeabilized": null,
-          "fixation": null,
+          "fixation": "live",
           "isoform": null,
           "cell_context": {
             "material_kind": "cell_line",
@@ -1084,7 +1754,7 @@
             "cell_line_name": null,
             "cellosaurus_id": null,
             "tissue": null,
-            "disease_state": "DSRCT",
+            "disease_state": "ERBB2/HER2-expressing DSRCT",
             "activation_state": null
           }
         },
@@ -1096,11 +1766,11 @@
               "pmc_id": "PMC11479846",
               "url": "https://pubmed.ncbi.nlm.nih.gov/39120576/",
               "title": "HER2 Antibody-Drug Conjugates Are Active against Desmoplastic Small Round Cell Tumor",
-              "retrieved_at": "2026-08-15T02:55:47.019884Z",
+              "retrieved_at": "2026-08-15T04:32:28.944737Z",
               "content_sha256": "52f2874a1f8f934dfddc5a6f71fae12d23a207bdb03234cd42ad2f27b08f1d2f",
               "publication_type": "primary_research",
               "is_retracted": false,
-              "retraction_checked_at": "2026-08-15T02:55:47.019884Z",
+              "retraction_checked_at": "2026-08-15T04:32:28.944737Z",
               "license": "unknown"
             },
             "section": "abstract",
@@ -1117,9 +1787,9 @@
         "duplicate_of": null
       },
       {
-        "evidence_id": "int_evi_16",
-        "claim": "The biparatopic nanobody-based binder AH induced greater HER2 receptor internalization in HER2-expressing tumor cells than the combination of trastuzumab and pertuzumab.",
-        "claim_type": "surface_expression",
+        "evidence_id": "int_evi_26",
+        "claim": "The biparatopic nanobody-based binder AH induced greater HER2 receptor internalization than the combination of trastuzumab and pertuzumab in HER2-expressing tumor cells.",
+        "claim_type": "methodological",
         "direction": "supports",
         "evidence_type": "functional_assay",
         "evidence_tier": "primary",
@@ -1133,7 +1803,7 @@
           "cell_context": {
             "material_kind": "cell_line",
             "material_kind_other_label": null,
-            "cell_type": "HER2-expressing tumor cells",
+            "cell_type": "breast/gastric cancer",
             "cell_line_name": null,
             "cellosaurus_id": null,
             "tissue": null,
@@ -1149,11 +1819,11 @@
               "pmc_id": "PMC12597947",
               "url": "https://pubmed.ncbi.nlm.nih.gov/41221272/",
               "title": "Biparatopic HER2-targeted nanobody binder synergizes with trastuzumab in resistant tumor cells",
-              "retrieved_at": "2026-08-15T02:55:47.025621Z",
+              "retrieved_at": "2026-08-15T04:32:28.966321Z",
               "content_sha256": "bb6d0c7d2e51c9194ead0357b918d0705f2bfa58316062420f330288551f4f1c",
               "publication_type": "primary_research",
               "is_retracted": false,
-              "retraction_checked_at": "2026-08-15T02:55:47.025621Z",
+              "retraction_checked_at": "2026-08-15T04:32:28.966321Z",
               "license": "unknown"
             },
             "section": "abstract",
@@ -1170,16 +1840,16 @@
         "duplicate_of": null
       },
       {
-        "evidence_id": "int_evi_18",
-        "claim": "Intracellular T-DM1 (bound to HER2) increased to 50% within 12 hours in HER2-positive cancer cells, as measured by flow cytometry.",
-        "claim_type": "surface_expression",
+        "evidence_id": "int_evi_27",
+        "claim": "KB-antibody conjugates (KB-TACs) efficiently degrade HER2 in cancer cells, demonstrating receptor-mediated endocytosis and lysosomal targeting of HER2.",
+        "claim_type": "methodological",
         "direction": "supports",
-        "evidence_type": "flow_cytometry",
+        "evidence_type": "functional_assay",
         "evidence_tier": "primary",
-        "confidence": "strong",
+        "confidence": "moderate",
         "assay_context": {
           "species": "human",
-          "cell_type_or_line": "MDA-MB 453, BT474",
+          "cell_type_or_line": "BT-474",
           "permeabilized": null,
           "fixation": null,
           "isoform": null,
@@ -1198,23 +1868,23 @@
           {
             "source": {
               "source_type": "pubmed",
-              "source_id": "PMC:PMC8713712",
-              "pmc_id": "PMC8713712",
-              "url": "https://pubmed.ncbi.nlm.nih.gov/34992350/",
-              "title": "Dynamics of Endocytosis and Degradation of Antibody-Drug Conjugate T-DM1 in HER2 Positive Cancer Cells",
-              "retrieved_at": "2026-08-15T02:55:47.037699Z",
-              "content_sha256": "281270537c881c9ca595fea162eb612b7750019a7ba51e0bcab2d78da10ff64f",
+              "source_id": "PMC:PMC12746457",
+              "pmc_id": "PMC12746457",
+              "url": "https://pubmed.ncbi.nlm.nih.gov/41194602/",
+              "title": "Ketoboronate as a Minimal Covalent-Reversible Tag for Targeted Lysosomal Degradation of Extracellular and Membrane Proteins",
+              "retrieved_at": "2026-08-15T04:32:28.957637Z",
+              "content_sha256": "6367d7509d4fbca48a4caa392b91dac1a3a6ab7d4a81bbf461a2ee54b26d848b",
               "publication_type": "primary_research",
               "is_retracted": false,
-              "retraction_checked_at": "2026-08-15T02:55:47.037699Z",
+              "retraction_checked_at": "2026-08-15T04:32:28.957637Z",
               "license": "unknown"
             },
             "section": "abstract",
             "figure_or_table_id": null,
-            "quote": "The present study is to explore the T-DM1 endocytosis pathway, which may provide insights into the internalization mechanism of ADCs and help to improve efficacy.<h4>Methods</h4>Confocal microscopy and flow cytometry were used to analyse T-DM1 intracellular trafficking and endocytosis efficiency, while Western blot assay was performed to detect T-DM1 degradation.<h4>Results</h4>We found that intracellular T-DM1 was increased to 50% within 12 h.",
-            "quote_sha256": "427e024f7379f51e421c8d7d9a2ae6e1126e826caa8f2487e380a9eafdf7d51c",
-            "char_offset": 550,
-            "normalized_source_sha256": "0246522e9f7384cc5700742d7cc094ba1c3f6f187dd0754522d535dd73f4144a"
+            "quote": "KB-antibody conjugates (KB-TACs) efficiently degrade the epidermal growth factor receptor (EGFR), vascular endothelial growth factor A (VEGFA) and epidermal growth factor receptor 2 (HER2) in cancer cells.",
+            "quote_sha256": "4c6379fb7947d3a6232513d694975d7bd86207efef9b557efab4439cc1c7d7b0",
+            "char_offset": 1177,
+            "normalized_source_sha256": "fb7b547bf88f58fc44eda161730b257b6f7647ebc75d190fbffd3bff892d3896"
           }
         ],
         "entailment_verified": true,
@@ -1223,80 +1893,27 @@
         "duplicate_of": null
       },
       {
-        "evidence_id": "int_evi_19",
-        "claim": "T-DM1 was colocalized with cholera toxin B (a lipid raft marker) within 2 hours of internalization and then degraded in lysosomes in HER2-positive cancer cells.",
-        "claim_type": "surface_expression",
-        "direction": "supports",
-        "evidence_type": "immunofluorescence",
-        "evidence_tier": "primary",
-        "confidence": "strong",
-        "assay_context": {
-          "species": "human",
-          "cell_type_or_line": "MDA-MB 453, BT474",
-          "permeabilized": null,
-          "fixation": null,
-          "isoform": null,
-          "cell_context": {
-            "material_kind": "cell_line",
-            "material_kind_other_label": null,
-            "cell_type": "breast cancer",
-            "cell_line_name": null,
-            "cellosaurus_id": null,
-            "tissue": null,
-            "disease_state": "HER2-positive breast cancer",
-            "activation_state": null
-          }
-        },
-        "spans": [
-          {
-            "source": {
-              "source_type": "pubmed",
-              "source_id": "PMC:PMC8713712",
-              "pmc_id": "PMC8713712",
-              "url": "https://pubmed.ncbi.nlm.nih.gov/34992350/",
-              "title": "Dynamics of Endocytosis and Degradation of Antibody-Drug Conjugate T-DM1 in HER2 Positive Cancer Cells",
-              "retrieved_at": "2026-08-15T02:55:47.037699Z",
-              "content_sha256": "281270537c881c9ca595fea162eb612b7750019a7ba51e0bcab2d78da10ff64f",
-              "publication_type": "primary_research",
-              "is_retracted": false,
-              "retraction_checked_at": "2026-08-15T02:55:47.037699Z",
-              "license": "unknown"
-            },
-            "section": "abstract",
-            "figure_or_table_id": null,
-            "quote": "T-DM1 was colocalized with cholera toxin B (CTxB), a lipid raft marker, within 2 h and then degraded in lysosome.",
-            "quote_sha256": "40d7f25d60b98b80d6d56be31b1ed57483151bf1b744ce81461fda73cb3c13f9",
-            "char_offset": 999,
-            "normalized_source_sha256": "0246522e9f7384cc5700742d7cc094ba1c3f6f187dd0754522d535dd73f4144a"
-          }
-        ],
-        "entailment_verified": true,
-        "entailment_audit_passed": null,
-        "validation_warnings": [],
-        "duplicate_of": null
-      },
-      {
-        "evidence_id": "int_evi_20",
-        "claim": "T-DM1 internalizes through lipid raft-mediated endocytosis in a CAV-1 dependent manner, rather than through clathrin-mediated endocytosis, in HER2-positive cancer cells.",
-        "claim_type": "surface_expression",
+        "evidence_id": "int_evi_28",
+        "claim": "KB-TTZ degrades HER2 in vivo in BT-474 tumor xenografts, with significant reduction in tumor volumes compared to trastuzumab and vehicle treatments, demonstrating in vivo HER2 internalization and degradation.",
+        "claim_type": "methodological",
         "direction": "supports",
         "evidence_type": "functional_assay",
         "evidence_tier": "primary",
         "confidence": "strong",
         "assay_context": {
           "species": "human",
-          "cell_type_or_line": "NCI-N87, BT474, MDA-MB 453",
+          "cell_type_or_line": "BT-474 xenograft",
           "permeabilized": null,
           "fixation": null,
           "isoform": null,
           "cell_context": {
-            "material_kind": "cell_line",
+            "material_kind": "xenograft",
             "material_kind_other_label": null,
-            "cell_type": "breast cancer / gastric cancer",
-            "cell_line_name": null,
+            "cell_type": "breast cancer",
+            "cell_line_name": "BT-474",
             "cellosaurus_id": null,
             "tissue": null,
-            "disease_state": "HER2-positive cancer",
+            "disease_state": "HER2-positive breast cancer",
             "activation_state": null
           }
         },
@@ -1304,23 +1921,23 @@
           {
             "source": {
               "source_type": "pubmed",
-              "source_id": "PMC:PMC8713712",
-              "pmc_id": "PMC8713712",
-              "url": "https://pubmed.ncbi.nlm.nih.gov/34992350/",
-              "title": "Dynamics of Endocytosis and Degradation of Antibody-Drug Conjugate T-DM1 in HER2 Positive Cancer Cells",
-              "retrieved_at": "2026-08-15T02:55:47.037699Z",
-              "content_sha256": "281270537c881c9ca595fea162eb612b7750019a7ba51e0bcab2d78da10ff64f",
+              "source_id": "PMC:PMC12746457",
+              "pmc_id": "PMC12746457",
+              "url": "https://pubmed.ncbi.nlm.nih.gov/41194602/",
+              "title": "Ketoboronate as a Minimal Covalent-Reversible Tag for Targeted Lysosomal Degradation of Extracellular and Membrane Proteins",
+              "retrieved_at": "2026-08-15T04:32:28.957637Z",
+              "content_sha256": "6367d7509d4fbca48a4caa392b91dac1a3a6ab7d4a81bbf461a2ee54b26d848b",
               "publication_type": "primary_research",
               "is_retracted": false,
-              "retraction_checked_at": "2026-08-15T02:55:47.037699Z",
+              "retraction_checked_at": "2026-08-15T04:32:28.957637Z",
               "license": "unknown"
             },
             "section": "abstract",
             "figure_or_table_id": null,
-            "quote": "We demonstrate that T-DM1 internalizes through the lipid raft-mediated endocytosis in a CAV-1 dependent manner, rather than through the clathrin-mediated endocytosis in HER2-positive cancer cells.<h4>Conclusion</h4>Our findings suggest that modulation of the caveolae/lipid-raft mediated endocytosis may be a possible option for improving the clinical therapeutic effect of T-DM1 because it plays a key role in regulating T-DM1 internalization.",
-            "quote_sha256": "636d95cc7598514dface10f0ec021f0e7ba7fe47b056ce600a25bf3bea07a187",
-            "char_offset": 1414,
-            "normalized_source_sha256": "0246522e9f7384cc5700742d7cc094ba1c3f6f187dd0754522d535dd73f4144a"
+            "quote": "Furthermore, we showed KB-TTZ degrades HER2 in vivo in BT-474 tumor xenografts, with a significant reduction in tumor volumes compared to TTZ and vehicle treatments.",
+            "quote_sha256": "72c8a51851360b7fd3eb1528f5eaaef0cfbbbb4674906a17fef5faac1873532d",
+            "char_offset": 1383,
+            "normalized_source_sha256": "fb7b547bf88f58fc44eda161730b257b6f7647ebc75d190fbffd3bff892d3896"
           }
         ],
         "entailment_verified": true,
@@ -1329,9 +1946,159 @@
         "duplicate_of": null
       },
       {
-        "evidence_id": "int_evi_21",
-        "claim": "HER2 is resistant to endocytosis by forming a stable complex with Hsp90, or internalized HER2 rapidly recycles to the plasma membrane; HER2 has also been found concentrated on membrane protrusions and colocalizing with GM1, a lipid raft marker.",
-        "claim_type": "surface_expression",
+        "evidence_id": "int_evi_29",
+        "claim": "Inhibition of N-glycosylation reduced the cellular uptake of Affibody-HER2-vcMMAE conjugate (targeting HER2), and the galectin network plays a role in conjugate internalization.",
+        "claim_type": "methodological",
+        "direction": "supports",
+        "evidence_type": "functional_assay",
+        "evidence_tier": "primary",
+        "confidence": "strong",
+        "assay_context": {
+          "species": "human",
+          "cell_type_or_line": "SKBR3",
+          "permeabilized": null,
+          "fixation": null,
+          "isoform": null,
+          "cell_context": {
+            "material_kind": "cell_line",
+            "material_kind_other_label": null,
+            "cell_type": "breast cancer",
+            "cell_line_name": "SKBR3",
+            "cellosaurus_id": null,
+            "tissue": null,
+            "disease_state": "HER2-positive breast cancer",
+            "activation_state": null
+          }
+        },
+        "spans": [
+          {
+            "source": {
+              "source_type": "pubmed",
+              "source_id": "PMC:PMC9368766",
+              "pmc_id": "PMC9368766",
+              "url": "https://pubmed.ncbi.nlm.nih.gov/35955648/",
+              "title": "The Significance of Cell Surface N-Glycosylation for Internalization and Potency of Cytotoxic Conjugates Targeting Receptor Tyrosine Kinases",
+              "retrieved_at": "2026-08-15T04:32:28.960848Z",
+              "content_sha256": "450da6509112b49ce4f3381714ebd37e0e58f141240b917d7fac137ead91c060",
+              "publication_type": "primary_research",
+              "is_retracted": false,
+              "retraction_checked_at": "2026-08-15T04:32:28.960848Z",
+              "license": "unknown"
+            },
+            "section": "abstract",
+            "figure_or_table_id": null,
+            "quote": "We demonstrated that inhibition of N-glycosylation reduced the cellular uptake of all conjugates tested and provided evidence for a role of the galectin network in conjugate internalization.",
+            "quote_sha256": "ff67f9807d53c71923cac5ef677eb43a48415b67d0798dbb012dd4a4fd632207",
+            "char_offset": 1322,
+            "normalized_source_sha256": "b4d3368da42f3787d81ea139708404148c45c76c7d34a5418f4ac0530e3de03c"
+          }
+        ],
+        "entailment_verified": true,
+        "entailment_audit_passed": null,
+        "validation_warnings": [],
+        "duplicate_of": null
+      },
+      {
+        "evidence_id": "int_evi_30",
+        "claim": "SKBR3 (HER2+) cells were used to study the significance of cell surface N-glycosylation for the internalization of HER2-targeting cytotoxic conjugates.",
+        "claim_type": "methodological",
+        "direction": "supports",
+        "evidence_type": "functional_assay",
+        "evidence_tier": "primary",
+        "confidence": "moderate",
+        "assay_context": {
+          "species": "human",
+          "cell_type_or_line": "SKBR3",
+          "permeabilized": null,
+          "fixation": null,
+          "isoform": null,
+          "cell_context": {
+            "material_kind": "cell_line",
+            "material_kind_other_label": null,
+            "cell_type": "breast cancer",
+            "cell_line_name": "SKBR3",
+            "cellosaurus_id": null,
+            "tissue": null,
+            "disease_state": "HER2-positive breast cancer",
+            "activation_state": null
+          }
+        },
+        "spans": [
+          {
+            "source": {
+              "source_type": "pubmed",
+              "source_id": "PMC:PMC9368766",
+              "pmc_id": "PMC9368766",
+              "url": "https://pubmed.ncbi.nlm.nih.gov/35955648/",
+              "title": "The Significance of Cell Surface N-Glycosylation for Internalization and Potency of Cytotoxic Conjugates Targeting Receptor Tyrosine Kinases",
+              "retrieved_at": "2026-08-15T04:32:28.960848Z",
+              "content_sha256": "450da6509112b49ce4f3381714ebd37e0e58f141240b917d7fac137ead91c060",
+              "publication_type": "primary_research",
+              "is_retracted": false,
+              "retraction_checked_at": "2026-08-15T04:32:28.960848Z",
+              "license": "unknown"
+            },
+            "section": "results",
+            "figure_or_table_id": null,
+            "quote": "To study the significance of cell surface N-glycosylation for the internalization of CCs, we used two model cell lines: SKBR3 (HER2+, FGFR1-) and USOSR1 (HER2-, FGFR1+) ( Figure 1 C).",
+            "quote_sha256": "fbf5c32d5582f8fe5eb3cd50a703cad3db87ea22ec0fc738e567023f60d22ac2",
+            "char_offset": 9129,
+            "normalized_source_sha256": "b4d3368da42f3787d81ea139708404148c45c76c7d34a5418f4ac0530e3de03c"
+          }
+        ],
+        "entailment_verified": true,
+        "entailment_audit_passed": null,
+        "validation_warnings": [],
+        "duplicate_of": null
+      },
+      {
+        "evidence_id": "int_evi_31",
+        "claim": "A review describes what is known about internalization efficiency and intracellular sorting of HER2 (as an ADC target antigen) under normal processes and when complexed to an ADC, noting that information on endocytosis is scarce.",
+        "claim_type": "methodological",
+        "direction": "ambiguous",
+        "evidence_type": "review_assertion",
+        "evidence_tier": "secondary",
+        "confidence": "weak",
+        "assay_context": {
+          "species": "human",
+          "cell_type_or_line": null,
+          "permeabilized": null,
+          "fixation": null,
+          "isoform": null,
+          "cell_context": null
+        },
+        "spans": [
+          {
+            "source": {
+              "source_type": "pubmed",
+              "source_id": "PMC:PMC8308841",
+              "pmc_id": "PMC8308841",
+              "url": "https://pubmed.ncbi.nlm.nih.gov/34358100/",
+              "title": "Impact of Endocytosis Mechanisms for the Receptors Targeted by the Currently Approved Antibody-Drug Conjugates (ADCs)-A Necessity for Future ADC Research and Development",
+              "retrieved_at": "2026-08-15T04:32:29.001202Z",
+              "content_sha256": "8343d241ed2d33e7b09787776a6b20f868e3fad039edadc202a7552f9e366af9",
+              "publication_type": "review",
+              "is_retracted": false,
+              "retraction_checked_at": "2026-08-15T04:32:29.001202Z",
+              "license": "unknown"
+            },
+            "section": "abstract",
+            "figure_or_table_id": null,
+            "quote": "Although the links between aberrant endocytic machinery and cancer are emerging, the impact of dysregulated internalization processes of ADC targets and response rates or resistance have not been well studied. This is despite the reliance on ADC uptake and trafficking to lysosomes for linker cleavage and payload release. In this review, we describe what is known about all the target antigens for the currently approved ADCs. Specifically, internalization efficiency and relevant intracellular sorting activities are described for each receptor under normal processes, and when complexed to an ADC.",
+            "quote_sha256": "972103af3ca4cdab776401c762a2e72eaecb77c096cb7ee2ba9ec45a9f846a0e",
+            "char_offset": 581,
+            "normalized_source_sha256": "6b4f0f0faa93ceed6c95dd590314ce0667712b559aba4d7e7f8d9352633bd77c"
+          }
+        ],
+        "entailment_verified": true,
+        "entailment_audit_passed": null,
+        "validation_warnings": [],
+        "duplicate_of": null
+      },
+      {
+        "evidence_id": "int_evi_32",
+        "claim": "HER2 is regarded as an internalization-resistant receptor, which hinders the endocytosis and effectiveness of T-DM1.",
+        "claim_type": "methodological",
         "direction": "supports",
         "evidence_type": "review_assertion",
         "evidence_tier": "secondary",
@@ -1352,18 +2119,18 @@
               "pmc_id": "PMC8713712",
               "url": "https://pubmed.ncbi.nlm.nih.gov/34992350/",
               "title": "Dynamics of Endocytosis and Degradation of Antibody-Drug Conjugate T-DM1 in HER2 Positive Cancer Cells",
-              "retrieved_at": "2026-08-15T02:55:47.037699Z",
+              "retrieved_at": "2026-08-15T04:32:29.001097Z",
               "content_sha256": "281270537c881c9ca595fea162eb612b7750019a7ba51e0bcab2d78da10ff64f",
               "publication_type": "primary_research",
               "is_retracted": false,
-              "retraction_checked_at": "2026-08-15T02:55:47.037699Z",
+              "retraction_checked_at": "2026-08-15T04:32:29.001097Z",
               "license": "unknown"
             },
-            "section": "introduction",
+            "section": "abstract",
             "figure_or_table_id": null,
-            "quote": "As a special member of ErbB-family, HER2 is known as an orphan receptor and is prevalently expressed on the cell surface. 3 It has also been reported that HER2 is resistant to endocytosis by forming a stable complex with heat shock protein 90 (Hsp90) 4 , 5 or internalized HER2 rapidly recycles to the plasma membrane. 6–8 HER2 has previously been found to be concentrated on the membrane protrusions and to colocalize with monosialoteterahexosyl ganglioside (GM1), a lipid raft marker.",
-            "quote_sha256": "61ad236ba6cb7ce0c2a86193c47d6ec480aca277b5c9b7a20332fc4f743cc13e",
-            "char_offset": 2848,
+            "quote": "Meanwhile, HER2 is regarded as an internalization-resistant receptor, which hinders the endocytosis and effectiveness of T-DM1.",
+            "quote_sha256": "cd435288439c57d57a8a075f01c776a3aa15c90604b88937a3be15122d664c15",
+            "char_offset": 422,
             "normalized_source_sha256": "0246522e9f7384cc5700742d7cc094ba1c3f6f187dd0754522d535dd73f4144a"
           }
         ],
@@ -1373,9 +2140,9 @@
         "duplicate_of": null
       },
       {
-        "evidence_id": "int_evi_22",
-        "claim": "Endocytosis rates of both trastuzumab and T-DM1 in HER2-positive breast cancer cells (MDA-MB 453 and BT474) reached a relatively steady state of 40–50% between 8 and 12 hours, as measured by flow cytometry.",
-        "claim_type": "surface_expression",
+        "evidence_id": "int_evi_33",
+        "claim": "Intracellular T-DM1 (HER2 ADC) was increased to 50% within 12 h in HER2-positive cancer cells, as measured by confocal microscopy and flow cytometry.",
+        "claim_type": "methodological",
         "direction": "supports",
         "evidence_type": "flow_cytometry",
         "evidence_tier": "primary",
@@ -1405,18 +2172,18 @@
               "pmc_id": "PMC8713712",
               "url": "https://pubmed.ncbi.nlm.nih.gov/34992350/",
               "title": "Dynamics of Endocytosis and Degradation of Antibody-Drug Conjugate T-DM1 in HER2 Positive Cancer Cells",
-              "retrieved_at": "2026-08-15T02:55:47.037699Z",
+              "retrieved_at": "2026-08-15T04:32:29.001097Z",
               "content_sha256": "281270537c881c9ca595fea162eb612b7750019a7ba51e0bcab2d78da10ff64f",
               "publication_type": "primary_research",
               "is_retracted": false,
-              "retraction_checked_at": "2026-08-15T02:55:47.037699Z",
+              "retraction_checked_at": "2026-08-15T04:32:29.001097Z",
               "license": "unknown"
             },
-            "section": "results",
+            "section": "abstract",
             "figure_or_table_id": null,
-            "quote": "Endocytosis rates of both trastuzumab and T-DM1 reached a relatively steady state of 40–50% between 8 and 12 h ( Figure 1A and B ).",
-            "quote_sha256": "131aedd61d484167ad6f34f62e15cdcdd65edb7870a8fe958d04a9f63f08e1e0",
-            "char_offset": 12876,
+            "quote": "The present study is to explore the T-DM1 endocytosis pathway, which may provide insights into the internalization mechanism of ADCs and help to improve efficacy.<h4>Methods</h4>Confocal microscopy and flow cytometry were used to analyse T-DM1 intracellular trafficking and endocytosis efficiency, while Western blot assay was performed to detect T-DM1 degradation.<h4>Results</h4>We found that intracellular T-DM1 was increased to 50% within 12 h.",
+            "quote_sha256": "427e024f7379f51e421c8d7d9a2ae6e1126e826caa8f2487e380a9eafdf7d51c",
+            "char_offset": 550,
             "normalized_source_sha256": "0246522e9f7384cc5700742d7cc094ba1c3f6f187dd0754522d535dd73f4144a"
           }
         ],
@@ -1426,16 +2193,166 @@
         "duplicate_of": null
       },
       {
-        "evidence_id": "int_evi_23",
-        "claim": "Inhibition of N-glycosylation reduced the cellular uptake of Affibody_HER2-vcMMAE (targeting HER2), demonstrating that N-glycosylation contributes to HER2-mediated internalization of cytotoxic conjugates.",
-        "claim_type": "surface_expression",
+        "evidence_id": "int_evi_34",
+        "claim": "Temporal CAV-1 upregulation significantly facilitated T-DM1 (HER2 ADC) endocytosis and degradation, whereas nystatin and lovastatin (caveolae/lipid-raft disruptors) inhibited T-DM1 degradation, demonstrating that caveolin-1 modulates HER2 ADC internalization.",
+        "claim_type": "methodological",
         "direction": "supports",
         "evidence_type": "functional_assay",
         "evidence_tier": "primary",
+        "confidence": "strong",
+        "assay_context": {
+          "species": "human",
+          "cell_type_or_line": "MDA-MB 453, BT474, NCI-N87",
+          "permeabilized": null,
+          "fixation": null,
+          "isoform": null,
+          "cell_context": {
+            "material_kind": "cell_line",
+            "material_kind_other_label": null,
+            "cell_type": "breast/gastric cancer",
+            "cell_line_name": null,
+            "cellosaurus_id": null,
+            "tissue": null,
+            "disease_state": "HER2-positive cancer",
+            "activation_state": null
+          }
+        },
+        "spans": [
+          {
+            "source": {
+              "source_type": "pubmed",
+              "source_id": "PMC:PMC8713712",
+              "pmc_id": "PMC8713712",
+              "url": "https://pubmed.ncbi.nlm.nih.gov/34992350/",
+              "title": "Dynamics of Endocytosis and Degradation of Antibody-Drug Conjugate T-DM1 in HER2 Positive Cancer Cells",
+              "retrieved_at": "2026-08-15T04:32:29.001097Z",
+              "content_sha256": "281270537c881c9ca595fea162eb612b7750019a7ba51e0bcab2d78da10ff64f",
+              "publication_type": "primary_research",
+              "is_retracted": false,
+              "retraction_checked_at": "2026-08-15T04:32:29.001097Z",
+              "license": "unknown"
+            },
+            "section": "abstract",
+            "figure_or_table_id": null,
+            "quote": "Upon overexpression of caveolin-1 (CAV-1) and utilization of caveolae/lipid-raft disruptors, we found that temporal CAV-1 upregulation significantly facilitated T-DM1 endocytosis and degradation, whereas nystatin and lovastatin disrupted caveolae/lipid-raft structure and inhibited T-DM1 degradation.",
+            "quote_sha256": "32c61e56250013d35ffaff25f8ee935a21d453c24f18c21a6dc9d29138974ff4",
+            "char_offset": 1113,
+            "normalized_source_sha256": "0246522e9f7384cc5700742d7cc094ba1c3f6f187dd0754522d535dd73f4144a"
+          }
+        ],
+        "entailment_verified": true,
+        "entailment_audit_passed": null,
+        "validation_warnings": [],
+        "duplicate_of": null
+      },
+      {
+        "evidence_id": "int_evi_35",
+        "claim": "T-DM1 internalizes through lipid raft-mediated endocytosis in a CAV-1 dependent manner, rather than through clathrin-mediated endocytosis, in HER2-positive cancer cells.",
+        "claim_type": "methodological",
+        "direction": "supports",
+        "evidence_type": "functional_assay",
+        "evidence_tier": "primary",
+        "confidence": "strong",
+        "assay_context": {
+          "species": "human",
+          "cell_type_or_line": "MDA-MB 453, BT474, NCI-N87",
+          "permeabilized": null,
+          "fixation": null,
+          "isoform": null,
+          "cell_context": {
+            "material_kind": "cell_line",
+            "material_kind_other_label": null,
+            "cell_type": "breast/gastric cancer",
+            "cell_line_name": null,
+            "cellosaurus_id": null,
+            "tissue": null,
+            "disease_state": "HER2-positive cancer",
+            "activation_state": null
+          }
+        },
+        "spans": [
+          {
+            "source": {
+              "source_type": "pubmed",
+              "source_id": "PMC:PMC8713712",
+              "pmc_id": "PMC8713712",
+              "url": "https://pubmed.ncbi.nlm.nih.gov/34992350/",
+              "title": "Dynamics of Endocytosis and Degradation of Antibody-Drug Conjugate T-DM1 in HER2 Positive Cancer Cells",
+              "retrieved_at": "2026-08-15T04:32:29.001097Z",
+              "content_sha256": "281270537c881c9ca595fea162eb612b7750019a7ba51e0bcab2d78da10ff64f",
+              "publication_type": "primary_research",
+              "is_retracted": false,
+              "retraction_checked_at": "2026-08-15T04:32:29.001097Z",
+              "license": "unknown"
+            },
+            "section": "abstract",
+            "figure_or_table_id": null,
+            "quote": "We demonstrate that T-DM1 internalizes through the lipid raft-mediated endocytosis in a CAV-1 dependent manner, rather than through the clathrin-mediated endocytosis in HER2-positive cancer cells.<h4>Conclusion</h4>Our findings suggest that modulation of the caveolae/lipid-raft mediated endocytosis may be a possible option for improving the clinical therapeutic effect of T-DM1 because it plays a key role in regulating T-DM1 internalization.",
+            "quote_sha256": "636d95cc7598514dface10f0ec021f0e7ba7fe47b056ce600a25bf3bea07a187",
+            "char_offset": 1414,
+            "normalized_source_sha256": "0246522e9f7384cc5700742d7cc094ba1c3f6f187dd0754522d535dd73f4144a"
+          }
+        ],
+        "entailment_verified": true,
+        "entailment_audit_passed": null,
+        "validation_warnings": [],
+        "duplicate_of": null
+      },
+      {
+        "evidence_id": "int_evi_36",
+        "claim": "HER2 is resistant to endocytosis by forming a stable complex with Hsp90, or internalized HER2 rapidly recycles to the plasma membrane; HER2 is concentrated on membrane protrusions and colocalizes with GM1, a lipid raft marker.",
+        "claim_type": "methodological",
+        "direction": "supports",
+        "evidence_type": "review_assertion",
+        "evidence_tier": "secondary",
         "confidence": "moderate",
         "assay_context": {
           "species": "human",
-          "cell_type_or_line": "SKBR3",
+          "cell_type_or_line": null,
+          "permeabilized": null,
+          "fixation": null,
+          "isoform": null,
+          "cell_context": null
+        },
+        "spans": [
+          {
+            "source": {
+              "source_type": "pubmed",
+              "source_id": "PMC:PMC8713712",
+              "pmc_id": "PMC8713712",
+              "url": "https://pubmed.ncbi.nlm.nih.gov/34992350/",
+              "title": "Dynamics of Endocytosis and Degradation of Antibody-Drug Conjugate T-DM1 in HER2 Positive Cancer Cells",
+              "retrieved_at": "2026-08-15T04:32:29.001097Z",
+              "content_sha256": "281270537c881c9ca595fea162eb612b7750019a7ba51e0bcab2d78da10ff64f",
+              "publication_type": "primary_research",
+              "is_retracted": false,
+              "retraction_checked_at": "2026-08-15T04:32:29.001097Z",
+              "license": "unknown"
+            },
+            "section": "introduction",
+            "figure_or_table_id": null,
+            "quote": "As a special member of ErbB-family, HER2 is known as an orphan receptor and is prevalently expressed on the cell surface. 3 It has also been reported that HER2 is resistant to endocytosis by forming a stable complex with heat shock protein 90 (Hsp90) 4 , 5 or internalized HER2 rapidly recycles to the plasma membrane. 6–8 HER2 has previously been found to be concentrated on the membrane protrusions and to colocalize with monosialoteterahexosyl ganglioside (GM1), a lipid raft marker.",
+            "quote_sha256": "61ad236ba6cb7ce0c2a86193c47d6ec480aca277b5c9b7a20332fc4f743cc13e",
+            "char_offset": 2848,
+            "normalized_source_sha256": "0246522e9f7384cc5700742d7cc094ba1c3f6f187dd0754522d535dd73f4144a"
+          }
+        ],
+        "entailment_verified": true,
+        "entailment_audit_passed": null,
+        "validation_warnings": [],
+        "duplicate_of": null
+      },
+      {
+        "evidence_id": "int_evi_37",
+        "claim": "The dynamic process of trastuzumab or T-DM1 internalization and degradation was investigated in HER2-positive breast cancer cells using confocal microscopy and flow cytometry.",
+        "claim_type": "methodological",
+        "direction": "supports",
+        "evidence_type": "flow_cytometry",
+        "evidence_tier": "primary",
+        "confidence": "strong",
+        "assay_context": {
+          "species": "human",
+          "cell_type_or_line": "MDA-MB 453, BT474",
           "permeabilized": null,
           "fixation": null,
           "isoform": null,
@@ -1454,23 +2371,76 @@
           {
             "source": {
               "source_type": "pubmed",
-              "source_id": "PMC:PMC9368766",
-              "pmc_id": "PMC9368766",
-              "url": "https://pubmed.ncbi.nlm.nih.gov/35955648/",
-              "title": "The Significance of Cell Surface N-Glycosylation for Internalization and Potency of Cytotoxic Conjugates Targeting Receptor Tyrosine Kinases",
-              "retrieved_at": "2026-08-15T02:55:47.003510Z",
-              "content_sha256": "450da6509112b49ce4f3381714ebd37e0e58f141240b917d7fac137ead91c060",
+              "source_id": "PMC:PMC8713712",
+              "pmc_id": "PMC8713712",
+              "url": "https://pubmed.ncbi.nlm.nih.gov/34992350/",
+              "title": "Dynamics of Endocytosis and Degradation of Antibody-Drug Conjugate T-DM1 in HER2 Positive Cancer Cells",
+              "retrieved_at": "2026-08-15T04:32:29.001097Z",
+              "content_sha256": "281270537c881c9ca595fea162eb612b7750019a7ba51e0bcab2d78da10ff64f",
               "publication_type": "primary_research",
               "is_retracted": false,
-              "retraction_checked_at": "2026-08-15T02:55:47.003510Z",
+              "retraction_checked_at": "2026-08-15T04:32:29.001097Z",
               "license": "unknown"
             },
-            "section": "abstract",
+            "section": "results",
             "figure_or_table_id": null,
-            "quote": "Here, we evaluated the significance of N-glycosylation for the internalization and toxicity of conjugates targeting two model receptor tyrosine kinases strongly implicated in cancer: HER2 and FGFR1.",
-            "quote_sha256": "a517385ad11c3deb34c449815bc91fe8ebcdfd215eba413af68ffb1a8444103b",
-            "char_offset": 912,
-            "normalized_source_sha256": "b4d3368da42f3787d81ea139708404148c45c76c7d34a5418f4ac0530e3de03c"
+            "quote": "We first investigated the dynamic process of trastuzumab or T-DM1 internalization and degradation in breast cancer cells.",
+            "quote_sha256": "236c103b2710f59717ce800ba90348ca9dc4f9f92471c0a100f163442453e1ff",
+            "char_offset": 12260,
+            "normalized_source_sha256": "0246522e9f7384cc5700742d7cc094ba1c3f6f187dd0754522d535dd73f4144a"
+          }
+        ],
+        "entailment_verified": true,
+        "entailment_audit_passed": null,
+        "validation_warnings": [],
+        "duplicate_of": null
+      },
+      {
+        "evidence_id": "int_evi_38",
+        "claim": "Endocytosis rates of both trastuzumab and T-DM1 reached a relatively steady state of 40-50% between 8 and 12 h in HER2-positive breast cancer cells (MDA-MB 453 and BT474).",
+        "claim_type": "methodological",
+        "direction": "supports",
+        "evidence_type": "flow_cytometry",
+        "evidence_tier": "primary",
+        "confidence": "strong",
+        "assay_context": {
+          "species": "human",
+          "cell_type_or_line": "MDA-MB 453, BT474",
+          "permeabilized": false,
+          "fixation": null,
+          "isoform": null,
+          "cell_context": {
+            "material_kind": "cell_line",
+            "material_kind_other_label": null,
+            "cell_type": "breast cancer",
+            "cell_line_name": null,
+            "cellosaurus_id": null,
+            "tissue": null,
+            "disease_state": "HER2-positive breast cancer",
+            "activation_state": null
+          }
+        },
+        "spans": [
+          {
+            "source": {
+              "source_type": "pubmed",
+              "source_id": "PMC:PMC8713712",
+              "pmc_id": "PMC8713712",
+              "url": "https://pubmed.ncbi.nlm.nih.gov/34992350/",
+              "title": "Dynamics of Endocytosis and Degradation of Antibody-Drug Conjugate T-DM1 in HER2 Positive Cancer Cells",
+              "retrieved_at": "2026-08-15T04:32:29.001097Z",
+              "content_sha256": "281270537c881c9ca595fea162eb612b7750019a7ba51e0bcab2d78da10ff64f",
+              "publication_type": "primary_research",
+              "is_retracted": false,
+              "retraction_checked_at": "2026-08-15T04:32:29.001097Z",
+              "license": "unknown"
+            },
+            "section": "results",
+            "figure_or_table_id": null,
+            "quote": "Endocytosis rates of both trastuzumab and T-DM1 reached a relatively steady state of 40–50% between 8 and 12 h ( Figure 1A and B ).",
+            "quote_sha256": "131aedd61d484167ad6f34f62e15cdcdd65edb7870a8fe958d04a9f63f08e1e0",
+            "char_offset": 12876,
+            "normalized_source_sha256": "0246522e9f7384cc5700742d7cc094ba1c3f6f187dd0754522d535dd73f4144a"
           }
         ],
         "entailment_verified": true,
@@ -1479,10 +2449,11 @@
         "duplicate_of": null
       }
     ],
-    "n_observations": 15,
+    "n_observations": 20,
+    "n_modulator_observations": 4,
     "n_papers_discovered": 97,
     "n_papers_fetched": 13
   },
-  "generated_at": "2026-08-15T02:59:39.460471Z",
+  "generated_at": "2026-08-15T04:37:54.669490Z",
   "runner_version": "internalization-literature/0.1.0"
 }
