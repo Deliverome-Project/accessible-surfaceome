@@ -28,7 +28,12 @@ from accessible_surfaceome.tools._shared.models import (
 from accessible_surfaceome.tools._shared.source_text import SourceTextStore
 
 _PROMPT_PATH = Path(__file__).resolve().parent / "prompts" / "literature_select_system.md"
-_MAX_TOKENS_SELECT = 8_000
+# Matches the grade stage (16k). A clip-dense gene (many fetched papers) emits a
+# large SelectionResponse; at 8k the JSON truncated mid-object and no repair pass
+# could fix a cut-off output, crashing that gene's annotation. 16k gives headroom
+# (Sonnet supports far more output) at negligible cost — you only pay for tokens
+# actually generated, and most selections stay well under the cap.
+_MAX_TOKENS_SELECT = 16_000
 
 
 def load_select_prompt() -> str:
