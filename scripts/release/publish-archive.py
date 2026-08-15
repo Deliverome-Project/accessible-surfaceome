@@ -550,7 +550,18 @@ def _http_get_with_retry(
             r.raise_for_status()
             return r
         except httpx.HTTPStatusError as e:
-            if e.response.status_code < 500 or i == attempts - 1:
+            code = e.response.status_code
+            if code == 429 and i < attempts - 1:
+                # Per-IP rate limit (the public Worker's limiter is 600/60s).
+                # Respect Retry-After when the Worker sends it, else wait out a
+                # conservative window — a 429 is transient, not a hard failure.
+                ra = e.response.headers.get("retry-after")
+                wait = int(ra) if (ra and str(ra).isdigit()) else 30
+                warn(f"  429 rate-limited on {url}; waiting {wait}s")
+                time.sleep(wait)
+                last_err = e
+                continue
+            if code < 500 or i == attempts - 1:
                 raise
             last_err = e
         except (httpx.TimeoutException, httpx.NetworkError) as e:
@@ -775,6 +786,11 @@ def _build_deep_dives_bundle(
             (stage / f"{sym}.json").write_bytes(r.content)
             if i % 100 == 0 or i == len(symbols):
                 ok(f"  fetched {i}/{len(symbols)} deep-dive records")
+            # Throttle to stay under the Worker's 600-req/60s per-IP limit. A
+            # cache-warm sweep is served at the edge (cache HITs don't invoke
+            # the Worker or count), but a post-cache-purge sweep is all misses
+            # and otherwise trips a 429 mid-build. ~0.12s → <9 req/s.
+            time.sleep(0.12)
 
         # 3. tar.gz the staging dir contents (flat layout — no parent dir).
         with tarfile.open(out_path, "w:gz") as tar:
