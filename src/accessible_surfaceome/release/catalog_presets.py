@@ -36,7 +36,7 @@ LOW_LIT_PAPERS_MAX = 100
 
 
 def passes_canonical(f: dict[str, Any]) -> bool:
-    """Strictest tier — antibody/ADC gold-standard.
+    """Strictest tier — the high-confidence surface shortlist.
 
     Drops the ECD filter (ECD-size is a design refinement, not a
     surface-membership signal — Claudin-18.2 has small loops and a

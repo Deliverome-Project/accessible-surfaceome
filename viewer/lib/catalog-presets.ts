@@ -8,7 +8,7 @@
  *
  * The predicates mirror the Python audit logic at the same names
  * (v6 contract documented in the conversation thread):
- *   - canonical:        strictest tier, antibody/ADC gold-standard
+ *   - canonical:        strictest tier, high-confidence surface shortlist
  *   - likely:           same shape, broader on evidence + topology
  *   - induced:          sub-bucket of likely — state-induced surface
  *                       (HSPA5-class)
@@ -507,7 +507,7 @@ export const PRESETS: ReadonlyArray<{
     key: "canonical",
     label: "Canonical",
     description:
-      "The high-confidence surface shortlist (antibody/ADC-grade): a confident " +
+      "The high-confidence surface shortlist: a confident " +
       "overall call — surface-dominant or mixed, accessible, dense evidence " +
       "(at least supportive-but-indirect; weak and conflicting excluded). Full " +
       "gate on the API page.",

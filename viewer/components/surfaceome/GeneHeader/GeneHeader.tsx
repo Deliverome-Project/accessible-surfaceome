@@ -396,9 +396,9 @@ export function GeneHeader({
             <InfoTip label="About the deep-dive tier">
               <p>
                 Which shortlist this gene lands in.{" "}
-                <strong>Canonical</strong> — the high-confidence,
-                antibody/ADC-grade surface tier (confident overall call,
-                surface-dominant / mixed, accessible, at least
+                <strong>Canonical</strong> — the high-confidence surface tier
+                (confident overall call, surface-dominant / mixed, accessible,
+                at least
                 supportive-but-indirect evidence). <strong>Likely</strong> —
                 surface on broader evidence. <strong>Low&nbsp;/ Uncertain /
                 Not&nbsp;surface</strong> — below-shortlist leans on thin or
