@@ -36,7 +36,7 @@ LOW_LIT_PAPERS_MAX = 100
 
 
 def passes_canonical(f: dict[str, Any]) -> bool:
-    """Strictest tier — antibody/ADC gold-standard.
+    """Strictest tier — the high-confidence surface shortlist.
 
     Drops the ECD filter (ECD-size is a design refinement, not a
     surface-membership signal — Claudin-18.2 has small loops and a
@@ -90,29 +90,21 @@ def passes_canonical(f: dict[str, Any]) -> bool:
 
 
 def is_low_literature_surface(f: dict[str, Any], db_surface_positive: bool) -> bool:
-    """Badge — NOT a tier preset. Flags a NON-canonical gene whose non-surface
-    (or below-canonical) verdict is plausibly evidence-limited rather than
-    biological: a thin discovery corpus (``n_papers_found < LOW_LIT_PAPERS_MAX``)
-    AND an external surface-DB call predicts it surface. Under-studied
-    surface candidates worth a targeted re-dive.
+    """Badge — NOT a tier preset. Flags a gene with thin surface evidence: a
+    small discovery corpus (``n_papers_found < LOW_LIT_PAPERS_MAX``) AND an
+    external surface-DB call predicts it surface. Under-studied surface
+    candidates worth a targeted re-dive.
 
-    The DB flag is passed via ``db_surface_positive``. The viewer wires this to
-    **UniProt** (``catalogRow.db.uniprot``): among the low-lit population UniProt
-    is the better predictor — it catches the understudied olfactory/taste-GPCR
-    class that SURFY structurally blind-spots, and its unique low-lit additions
-    read more surface-leaning by the deep dive's own accessibility/specificity
-    (SURFY's skew intracellular). UniProt's localization is itself a hybrid of
-    curated evidence + similarity + sequence-feature prediction (signal peptide /
-    TM topology), so it is not purely knowledge-based. Taking the flag as an
-    argument (rather than reading ``filters``) is why this is a standalone badge
-    and not a member of the ``(filters) -> bool`` preset family — the DB call is
-    a candidate-universe flag, not part of the deep-dive record.
+    INDEPENDENT of the tier presets — NOT scoped to non-canonical genes, so it
+    can co-occur with any tier under the catalog's multi-select toggle (a
+    well-studied gene simply won't carry it). That orthogonality is why it's a
+    standalone badge, not a member of the ``(filters) -> bool`` preset family.
 
-    Scoped to NON-canonical genes: a gene that already cleared ``passes_canonical``
-    doesn't need an evidence-gap caveat, so canonical genes never carry the badge.
-    ``n_papers_found`` missing → not flagged (can't establish 'low')."""
-    if passes_canonical(f):
-        return False
+    The DB flag is passed via ``db_surface_positive``; the viewer wires it to
+    **UniProt** (``catalogRow.db.uniprot``), which outperformed the other
+    surface databases on our gold-standard positive controls. It's a
+    candidate-universe flag, not part of the deep-dive ``filters``, hence the
+    extra argument. ``n_papers_found`` missing → not flagged."""
     n = f.get("n_papers_found")
     if n is None:
         return False

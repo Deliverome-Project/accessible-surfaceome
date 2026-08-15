@@ -8,7 +8,7 @@
  *
  * The predicates mirror the Python audit logic at the same names
  * (v6 contract documented in the conversation thread):
- *   - canonical:        strictest tier, antibody/ADC gold-standard
+ *   - canonical:        strictest tier, high-confidence surface shortlist
  *   - likely:           same shape, broader on evidence + topology
  *   - induced:          sub-bucket of likely — state-induced surface
  *                       (HSPA5-class)
@@ -158,27 +158,27 @@ export function effectiveEvidenceGrade(f: DeepDiveFilters) {
 export const LOW_LIT_PAPERS_MAX = 100;
 
 /**
- * Badge — NOT a tier preset (kept out of PRESETS). Flags a NON-canonical gene
- * whose below-canonical verdict is plausibly evidence-limited: thin discovery
- * corpus (`n_papers_found < LOW_LIT_PAPERS_MAX`) AND an external surface-DB call
- * predicts it surface — an under-studied surface candidate worth a re-dive.
+ * Badge — NOT a tier preset (kept out of PRESETS). Flags a gene whose surface
+ * evidence is thin: a small discovery corpus (`n_papers_found <
+ * LOW_LIT_PAPERS_MAX`) AND an external surface-DB call predicts it surface — an
+ * under-studied surface candidate worth a re-dive.
  *
- * `dbSurfacePositive` is wired to **UniProt** (`catalogRow.db.uniprot`): for the
- * low-lit population UniProt beats SURFY — it catches the understudied
- * olfactory/taste-GPCR class SURFY blind-spots, and its unique low-lit adds read
- * more surface-leaning by the deep dive's own accessibility/specificity.
- * (UniProt localization is itself a hybrid: curated evidence + similarity +
- * sequence-feature prediction, so not purely knowledge-based.) Passed as an
- * argument because the DB call is a candidate-universe flag in the 5-DB strip,
- * NOT part of the deep-dive `filters` — which is why it isn't a `(filters) =>
- * bool` preset. Scoped to non-canonical genes. Missing `n_papers_found` → not
- * flagged. Mirror of catalog_presets.is_low_literature_surface.
+ * INDEPENDENT of the tier presets: it is NOT scoped to non-canonical genes, so
+ * it can co-occur with Canonical / Likely / etc. under the multi-select toggle
+ * (a well-studied gene simply won't carry it). This orthogonality is why it
+ * lives outside PRESETS.
+ *
+ * `dbSurfacePositive` is wired to **UniProt** (`catalogRow.db.uniprot`) —
+ * UniProt outperformed the other surface databases on our gold-standard
+ * positive controls. Passed as an argument because the DB call is a
+ * candidate-universe flag in the 5-DB strip, NOT part of the deep-dive
+ * `filters`. Missing `n_papers_found` → not flagged. Mirror of
+ * catalog_presets.is_low_literature_surface.
  */
 export function isLowLiteratureSurface(
   f: DeepDiveFilters,
   dbSurfacePositive: boolean,
 ): boolean {
-  if (passesCanonical(f)) return false;
   const n = f.n_papers_found;
   if (n == null) return false;
   return dbSurfacePositive && n < LOW_LIT_PAPERS_MAX;
@@ -507,47 +507,34 @@ export const PRESETS: ReadonlyArray<{
     key: "canonical",
     label: "Canonical",
     description:
-      "Strictest tier — at least supportive-but-indirect evidence " +
-      "(weak and conflicting excluded), high/moderate confidence, " +
-      "surface-dominant or mixed localization, state-dependence low/" +
-      "moderate/unclear (or, if high, at least moderate expression), " +
-      "high/moderate surface accessibility, high/moderate evidence " +
-      "density. The high-confidence surface shortlist.",
+      "The high-confidence surface shortlist: a confident " +
+      "overall call — surface-dominant or mixed, accessible, dense evidence " +
+      "(at least supportive-but-indirect; weak and conflicting excluded). Full " +
+      "gate on the API page.",
     predicate: passesCanonical,
   },
   {
     key: "likely",
     label: "Likely",
     description:
-      "Likely-ONLY band — clears the same moderate+ surface-accessibility " +
-      "floor as Canonical but falls short of Canonical elsewhere: admits " +
-      "mostly-intracellular surface fractions (e.g. SRC via lysosomal " +
-      "exocytosis, HMGB1 via DAMP release) and high / unclear / null " +
-      "state-dependence. Evidence floor is supportive-or-stronger, with a " +
-      "carve-out: a `weak`-graded gene still qualifies if the deep dive gave " +
-      "it a structurally-unambiguous surface reason (classical receptor / " +
-      "multipass with exposed loops / GPI / tissue-restricted surface) plus " +
-      "moderate+ accessibility — for those the weak grade is thin literature, " +
-      "not doubt about surface membership. Genes rated low surface-" +
-      "accessibility drop to the below-Likely `low` tier. Canonical genes are " +
-      "EXCLUDED here — select the Canonical chip alongside this one to see the " +
-      "full Likely tier (Canonical ⊂ Likely).",
+      "Broader surface set than Canonical — meets the same surface-" +
+      "accessibility bar but falls short on other criteria: admits " +
+      "predominantly intracellular proteins with a surface fraction (e.g. SRC " +
+      "via lysosomal exocytosis, HMGB1 via DAMP release) and stronger " +
+      "state-dependence. This chip excludes Canonical genes; every Canonical " +
+      "gene is also Likely, so select both chips to see the full Likely tier.",
     predicate: passesLikelyOnly,
   },
   {
     key: "induced",
     label: "Cell-state induced",
     description:
-      "Subset of Likely where the surface pool is GAINED on a cell state. " +
-      "Membership is set by the deep-dive surface_call_reason itself — " +
-      "cell_state_induced or lysosomal_exocytosis — the reason codes that " +
-      "mean the protein reaches the surface because of a state change, not " +
-      "constitutively (SRC, CD63, HMGB1, C3 land here). This is deliberately " +
-      "NOT keyed off induction_trigger: 'oncogenic' is assigned to nearly " +
-      "every tumour-associated gene (~99% overlap), which would sweep in " +
-      "constitutively-surface receptors that merely correlate with cancer. " +
-      "The oncogenic / immune / stress / infection trigger is instead exposed " +
-      "as the sub-chips within this set.",
+      "Subset of Likely that reaches the surface because of a cell-state " +
+      "change — activation, stress, or oncogenic transformation — rather than " +
+      "constitutively (SRC, CD63, HMGB1, C3). Defined by the deep dive's " +
+      "surface-mechanism call (genuine state-induced surfacing), not by mere " +
+      "tumour association; the oncogenic / immune / stress / infection trigger " +
+      "is shown as the sub-chips.",
     predicate: passesInduced,
   },
   {

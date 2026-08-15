@@ -395,11 +395,25 @@ export function GeneHeader({
             </span>
             <InfoTip label="About the deep-dive tier">
               <p>
-                The five-tier deep-dive classification used across the catalog:
-                Canonical (strict antibody/ADC-grade surface), Likely (broader
-                surface set), then the below-likely leans — Low confidence,
-                Uncertain, Not surface. The sub-facet marks Cell-state-induced or
-                Cell-type-restricted surface presentation.
+                Which shortlist this gene lands in.{" "}
+                <strong>Canonical</strong> — the high-confidence surface tier
+                (confident overall call, surface-dominant / mixed, accessible,
+                at least
+                supportive-but-indirect evidence). <strong>Likely</strong> —
+                surface on broader evidence. <strong>Low&nbsp;/ Uncertain /
+                Not&nbsp;surface</strong> — below-shortlist leans on thin or
+                conflicting evidence. A sub-facet marks cell-state-induced or
+                cell-type-restricted presentation.
+              </p>
+              <p>
+                Exact gate definitions:{" "}
+                <a
+                  href="/api/#presets"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  Catalog presets ↗
+                </a>
               </p>
             </InfoTip>
             {facet ? (
@@ -407,15 +421,22 @@ export function GeneHeader({
             ) : null}
             {lowLitSurface ? (
               <span className={styles.lowLitChip}>
-                Low literature · UniProt
-                <InfoTip label="About the low-literature + UniProt flag">
+                Low lit · UniProt-positive
+                <InfoTip label="About the low-literature + UniProt-positive flag">
                   <p>
-                    Only {rec.filters.n_papers_found} papers found (&lt;{" "}
-                    {LOW_LIT_PAPERS_MAX}) and not canonical, but UniProt annotates
-                    it cell-surface. Below ~100 papers the deep dive rarely reaches
-                    a confident (canonical) call, so this is an under-studied
-                    surface candidate — a good re-dive target, not a settled
-                    negative.
+                    <strong>Thin literature base</strong> — only{" "}
+                    {rec.filters.n_papers_found} papers found in discovery, below
+                    the ~{LOW_LIT_PAPERS_MAX}-paper point where the deep dive can
+                    usually reach a confident call — yet{" "}
+                    <strong>UniProt annotates it cell-surface</strong>.
+                  </p>
+                  <p>
+                    A flag that the surface call may be limited by{" "}
+                    <em>missing literature</em> rather than settled biology — an
+                    under-studied surface candidate worth a closer look.
+                    Independent of the tier above (it can co-occur with any
+                    tier). UniProt is used because it outperformed the other
+                    surface databases on our gold-standard positive controls.
                   </p>
                 </InfoTip>
               </span>

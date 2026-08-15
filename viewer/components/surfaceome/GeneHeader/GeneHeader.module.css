@@ -563,8 +563,9 @@
   line-height: 1.4;
 }
 
-/* Low-literature + UniProt flag — a compact chip on the tier-callout row
- * (amber outline, #c99a5b family; detail lives in its InfoTip). */
+/* Low-literature + UniProt flag — a compact chip on the tier-callout row.
+ * Green outline (#2e7a55, the surface/canonical family) to signal the
+ * UniProt-positive (surface) call; detail lives in its InfoTip. */
 .lowLitChip {
   display: inline-flex;
   align-items: center;
@@ -573,9 +574,9 @@
   border-radius: 999px;
   font-size: 0.76rem;
   font-weight: var(--fw-medium, 600);
-  color: color-mix(in srgb, #c99a5b 74%, var(--fg, #1f1718));
-  background: color-mix(in srgb, #c99a5b 13%, transparent);
-  border: 1px solid color-mix(in srgb, #c99a5b 42%, transparent);
+  color: color-mix(in srgb, #2e7a55 78%, var(--fg, #1f1718));
+  background: color-mix(in srgb, #2e7a55 14%, transparent);
+  border: 1px solid color-mix(in srgb, #2e7a55 46%, transparent);
   white-space: nowrap;
 }
 
@@ -586,7 +587,7 @@
   align-items: center;
   flex-wrap: wrap;
   gap: var(--space-2);
-  margin: var(--space-3) 0 0;
+  margin: var(--space-1) 0 0;
 }
 .tierChip {
   display: inline-flex;

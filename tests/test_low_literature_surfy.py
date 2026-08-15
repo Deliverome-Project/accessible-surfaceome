@@ -60,9 +60,10 @@ def test_flagged_just_below_cutoff():
     assert is_low_literature_surface(f, db_surface_positive=True) is True
 
 
-def test_canonical_never_flagged_even_if_thin_and_surfy():
-    # Scope decision: canonical calls don't get the evidence-gap caveat.
-    assert is_low_literature_surface(CANON, db_surface_positive=True) is False
+def test_canonical_is_flagged_when_thin_and_surfy():
+    # Independent of tier (multi-select toggle): a canonical gene that is also
+    # thin-literature + DB-surface-positive DOES carry the badge.
+    assert is_low_literature_surface(CANON, db_surface_positive=True) is True
 
 
 def test_missing_paper_count_not_flagged():
