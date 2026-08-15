@@ -55,7 +55,7 @@
       "sources": [],
       "plddt": 36.7,
       "conservation_rank": null,
-      "median_conservation": 1.0
+      "median_conservation": 0.0
     },
     {
       "site_id": "TFRC-disorder-757",
@@ -80,7 +80,7 @@
       "sources": [],
       "plddt": 60.5,
       "conservation_rank": null,
-      "median_conservation": 1.0
+      "median_conservation": 0.0
     },
     {
       "site_id": "TFRC-internal-290-lit",
@@ -126,7 +126,7 @@
       "topology_state": "O",
       "extracellular": true,
       "compartment": "extracellular",
-      "tag_type": "ALFA, SpyTag003, DogTag",
+      "tag_type": "ALFA, DogTag",
       "tag_length_aa": 15,
       "linker": "GS both sides",
       "evidence_type": "structural inference (surface_loop path)",
@@ -136,7 +136,7 @@
       "sources": [],
       "plddt": 79.0,
       "conservation_rank": null,
-      "median_conservation": 1.0
+      "median_conservation": 0.0
     },
     {
       "site_id": "TFRC-surface_loop-137",
@@ -161,7 +161,7 @@
       "sources": [],
       "plddt": 95.1,
       "conservation_rank": null,
-      "median_conservation": 1.0
+      "median_conservation": 0.0
     },
     {
       "site_id": "TFRC-surface_loop-150",
@@ -186,7 +186,7 @@
       "sources": [],
       "plddt": 94.8,
       "conservation_rank": null,
-      "median_conservation": 1.0
+      "median_conservation": 0.0
     },
     {
       "site_id": "TFRC-surface_loop-177",
@@ -211,7 +211,7 @@
       "sources": [],
       "plddt": 97.9,
       "conservation_rank": null,
-      "median_conservation": 1.0
+      "median_conservation": 0.0
     },
     {
       "site_id": "TFRC-surface_loop-195",
@@ -236,7 +236,7 @@
       "sources": [],
       "plddt": 90.8,
       "conservation_rank": null,
-      "median_conservation": 1.0
+      "median_conservation": 0.0
     },
     {
       "site_id": "TFRC-surface_loop-208",
@@ -326,7 +326,7 @@
       "topology_state": "O",
       "extracellular": true,
       "compartment": "extracellular",
-      "tag_type": "ALFA, SpyTag003, DogTag",
+      "tag_type": "ALFA, DogTag",
       "tag_length_aa": 15,
       "linker": "GS both sides",
       "evidence_type": "structural inference (surface_loop path)",
@@ -336,7 +336,7 @@
       "sources": [],
       "plddt": 95.9,
       "conservation_rank": null,
-      "median_conservation": 1.0
+      "median_conservation": 0.0
     },
     {
       "site_id": "TFRC-surface_loop-327",
@@ -361,7 +361,7 @@
       "sources": [],
       "plddt": 80.8,
       "conservation_rank": null,
-      "median_conservation": 1.0
+      "median_conservation": 0.0
     },
     {
       "site_id": "TFRC-surface_loop-369",
@@ -461,7 +461,7 @@
       "sources": [],
       "plddt": 86.3,
       "conservation_rank": null,
-      "median_conservation": 1.0
+      "median_conservation": 0.0
     },
     {
       "site_id": "TFRC-surface_loop-534",
@@ -486,7 +486,7 @@
       "sources": [],
       "plddt": 92.8,
       "conservation_rank": null,
-      "median_conservation": 1.0
+      "median_conservation": 0.0
     },
     {
       "site_id": "TFRC-surface_loop-581",
@@ -511,7 +511,7 @@
       "sources": [],
       "plddt": 96.7,
       "conservation_rank": null,
-      "median_conservation": 1.0
+      "median_conservation": 0.0
     },
     {
       "site_id": "TFRC-surface_loop-627",
@@ -536,7 +536,7 @@
       "sources": [],
       "plddt": 94.8,
       "conservation_rank": null,
-      "median_conservation": 1.0
+      "median_conservation": 0.0
     },
     {
       "site_id": "TFRC-surface_loop-636",
@@ -561,7 +561,7 @@
       "sources": [],
       "plddt": 94.6,
       "conservation_rank": null,
-      "median_conservation": 1.0
+      "median_conservation": 0.0
     },
     {
       "site_id": "TFRC-surface_loop-666",
@@ -586,7 +586,7 @@
       "sources": [],
       "plddt": 90.9,
       "conservation_rank": null,
-      "median_conservation": 1.0
+      "median_conservation": 0.0
     },
     {
       "site_id": "TFRC-surface_loop-688",
@@ -601,7 +601,7 @@
       "topology_state": "O",
       "extracellular": true,
       "compartment": "extracellular",
-      "tag_type": "ALFA, SpyTag003, DogTag",
+      "tag_type": "ALFA, DogTag",
       "tag_length_aa": 15,
       "linker": "GS both sides",
       "evidence_type": "structural inference (surface_loop path)",
@@ -611,7 +611,7 @@
       "sources": [],
       "plddt": 95.4,
       "conservation_rank": null,
-      "median_conservation": 1.0
+      "median_conservation": 0.0
     }
   ]
 }

@@ -52,6 +52,10 @@ def test_loop_length_and_tag_fit():
     ss[65] = "E"
     assert loop_length(ss, 57) == 15
     assert loop_length({100: "H"}, 100) == 0     # a helix residue is not a loop
-    assert "SpyTag003" in tag_fit(15)            # extended loop -> SpyTag003 permissive
-    assert "SpyTag003" not in tag_fit(5)         # short loop -> DogTag only
-    assert "ALFA" in tag_fit(5) and "DogTag" in tag_fit(5)
+    # Internal loops: ALFA (detection) + DogTag (loop-friendly covalent). SpyTag003
+    # is a TERMINAL tag — a β-strand that can't complete SpyCatcher's sheet while
+    # tethered both ends (Keeble 2022) — so it must NOT be recommended for a loop,
+    # at ANY length. Length does not change the recommendation.
+    assert tag_fit(15) == "ALFA, DogTag"
+    assert tag_fit(5) == "ALFA, DogTag"
+    assert "SpyTag003" not in tag_fit(15) and "SpyTag003" not in tag_fit(5)

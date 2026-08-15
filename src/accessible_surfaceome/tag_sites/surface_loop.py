@@ -32,9 +32,6 @@ def _window_max(values: dict[int, float], res: int, lo: int = -1, hi: int = 2) -
     return max((values.get(res + d, 0.0) for d in range(lo, hi + 1)), default=0.0)
 
 
-SPYTAG_MIN_LOOP = 10  # a both-ends-tethered β-strand (SpyTag003) needs an extended loop
-
-
 def loop_length(ss: dict[int, str], res: int) -> int:
     """Length of the contiguous coil/turn run (DSSP loop chars) containing ``res``.
     The primary computable proxy for tag permissiveness: a long exposed loop gives
@@ -51,16 +48,20 @@ def loop_length(ss: dict[int, str], res: int) -> int:
 
 
 def tag_fit(loop_len: int) -> str:
-    """Recommend compatible tag chemistries from loop geometry.
+    """Recommend detection + covalent tags for an INTERNAL exposed loop.
 
-    ALFA (α-helix, folds independently) tolerates any exposed loop. SpyTag003
-    (β-strand completing SpyCatcher's sheet) needs an EXTENDED loop
-    (>= SPYTAG_MIN_LOOP); DogTag (engineered loop-adapted β-hairpin) covers the
-    short loops SpyTag003 cannot. See the SpyTag-in-loops evidence in
-    ``positive_controls.md`` (Keeble 2022)."""
-    if loop_len >= SPYTAG_MIN_LOOP:
-        return "ALFA, SpyTag003, DogTag"
-    return "ALFA, DogTag"  # short loop: SpyTag003 conjugates poorly tethered both ends
+    ALFA (a 15-aa α-helical nanobody epitope) folds independently and is the arm
+    EndoNB validated *inside* loops. DogTag is the loop-optimized covalent arm:
+    per Keeble 2022 (Cell Chem Biol, DOI 10.1016/j.chembiol.2021.07.005, PMID
+    34324879), a tag inserted in a loop reacts far faster as DogTag than as
+    SpyTag003 — SpyTag003 is a β-strand that must complete SpyCatcher's sheet and
+    conjugates poorly while tethered at both ends, so it belongs at a free
+    TERMINUS, not a loop. Loop length does NOT gate the choice (both recommended
+    tags are loop-compatible; ``loop_len`` is carried for downstream
+    functional-safety ranking only, and a bigger loop is not automatically safer
+    — Keeble's TRPC5 chose the 22-aa loop over the 68-aa turret). See the
+    SpyTag-in-loops evidence table in ``data/tag_sites/positive_controls.md``."""
+    return "ALFA, DogTag"
 
 
 def _exposed_anchor(rsa: dict[int, float], res: int, lo: int = -1, hi: int = 2) -> int:
