@@ -45,16 +45,41 @@ _MEASUREMENT_TERMS = (
     '"cell-penetrating peptide" OR "peptide uptake"'
 )
 _MAX_PER_SOURCE = 60
+# A quantitative-kinetics query run under CITATION sort (not the default
+# recency/relevance sort). The default EuropePMC sort floods the top-60 with
+# 2024-26 delivery papers and never surfaces the classic rate-constant
+# literature — for a well-studied receptor the hard k_e / t½ values live in
+# heavily-cited pre-2010 papers whose FULL TEXT is often unretrievable (PMC
+# 404) but whose ABSTRACTS state the numbers. Citation-ranking pulls those in
+# so the abstract-triage path can extract the quant. Kept tight (rate/kinetics
+# terms only) so citation-sort doesn't drag in highly-cited off-topic papers.
+_KINETICS_TERMS = (
+    '"rate constant" OR "internalization rate" OR "endocytic rate" OR '
+    '"half-time" OR "t1/2" OR "percent internalized" OR "% internalized"'
+)
+_MAX_KINETICS = 30
+
+
+def _alias_or(aliases: list[str]) -> str:
+    """OR-join aliases, PHRASE-quoting any multi-word alias. Unquoted, a
+    multi-word alias like ``transferrin receptor`` is parsed as
+    ``transferrin AND receptor`` across all fields — inflating the match set
+    ~50x and drowning the citation-sorted kinetics pass in off-topic
+    high-impact papers. Quoting keeps the gene scope tight."""
+    parts = [f'"{a}"' if " " in a else a for a in sorted({a for a in aliases if a})]
+    return " OR ".join(parts)
 
 
 def build_internalization_query(aliases: list[str]) -> str:
-    alias_or = " OR ".join(sorted({a for a in aliases if a}))
-    return f"({alias_or}) AND ({_INTERNALIZATION_TERMS})"
+    return f"({_alias_or(aliases)}) AND ({_INTERNALIZATION_TERMS})"
 
 
 def build_measurement_query(aliases: list[str]) -> str:
-    alias_or = " OR ".join(sorted({a for a in aliases if a}))
-    return f"({alias_or}) AND ({_MEASUREMENT_TERMS})"
+    return f"({_alias_or(aliases)}) AND ({_MEASUREMENT_TERMS})"
+
+
+def build_kinetics_query(aliases: list[str]) -> str:
+    return f"({_alias_or(aliases)}) AND ({_KINETICS_TERMS})"
 
 
 def discover_internalization_papers(
@@ -64,6 +89,17 @@ def discover_internalization_papers(
     retraction_index: Any,
 ) -> dict[int, Paper]:
     aliases = [bundle.hgnc_symbol, *bundle.aliases, *bundle.previous_symbols]
+    # Name-based aliases for the citation-sorted kinetics pass: the FULL protein
+    # name ("transferrin receptor") is what the classic rate-constant papers use,
+    # and it is NOT in the HGNC symbol list. Just as important, we DROP the noisy
+    # short symbols (e.g. TR / T9 / p90 — bundle.alias_collision_risk == "high")
+    # here: under CITATION sort they match thousands of off-topic high-impact
+    # papers and drown the classics. Names only → precise gene scope.
+    kinetics_aliases = [
+        a
+        for a in (bundle.hgnc_symbol, bundle.approved_name, *(bundle.alias_names or []))
+        if a
+    ]
     discovered: dict[int, Paper] = {}
 
     # EuropePMC free-text: the broad internalization query PLUS a tighter
@@ -84,6 +120,22 @@ def discover_internalization_papers(
                 continue
             if paper.pmid:
                 discovered.setdefault(paper.pmid, paper)
+
+    # Citation-sorted kinetics pass: surfaces the heavily-cited classic
+    # rate-constant literature the recency-default queries above never reach.
+    payload = europepmc_search(
+        http=http,
+        query=build_kinetics_query(kinetics_aliases),
+        page_size=_MAX_KINETICS,
+        sort="CITED desc",
+    )
+    for rec in payload.get("resultList", {}).get("result", []):
+        try:
+            paper = paper_from_europepmc(rec, retraction_index=retraction_index)
+        except LookupError:
+            continue
+        if paper.pmid:
+            discovered.setdefault(paper.pmid, paper)
 
     # PubTator entity search, hydrated to full Paper objects via EuropePMC.
     # Sort by relevance (score), NOT recency — date-sorting floods the corpus

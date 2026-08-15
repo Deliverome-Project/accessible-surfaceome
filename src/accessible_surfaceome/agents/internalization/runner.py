@@ -23,7 +23,11 @@ from accessible_surfaceome.env import REPO_ROOT
 from accessible_surfaceome.tools._shared.http import CachedHTTP, open_default_client
 from accessible_surfaceome.tools.gene_lookup import resolve_by_hgnc_id
 
-DEFAULT_MODELS: tuple[str, ...] = ("claude-opus-4-8", "claude-sonnet-4-6")
+# Opus only: on the blind sequence+topology task it recovers the real endocytic
+# motif and grades classic internalizers more accurately than Sonnet (e.g. TFRC
+# YTRF → moderate vs Sonnet unknown; LDLR NPVY → high vs Sonnet moderate). Pass
+# --models to override (e.g. to compare against Sonnet).
+DEFAULT_MODELS: tuple[str, ...] = ("claude-opus-4-8",)
 _PROMPT_PATH = Path(__file__).resolve().parent / "prompts" / "model_prior_system.md"
 _DEFAULT_ANNOTATIONS_DIR = REPO_ROOT / "data" / "annotations" / "internalization"
 
