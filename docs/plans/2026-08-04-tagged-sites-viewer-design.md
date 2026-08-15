@@ -357,3 +357,17 @@ longer the clean symbol-only benchmark condition. Keep both as **run-modes of on
   numbering; verify accession/isoform alignment during the port.
 - **Agent cost/latency**: three retrieval pipelines over a protein set — batch offline,
   cache to JSON, never at viewer build/request time.
+
+## 14. Related method — Willow (KEY ITEM TO CHECK)
+
+**Willow** (bioRxiv [2025.09.19.677468](https://www.biorxiv.org/content/10.1101/2025.09.19.677468v1.full)) tagged GPCRs with HA for universal immunodetection, using a **signal-peptide- and disorder-aware N-terminal** design:
+
+- **Class A / olfactory** (no extended N-terminal domain): HA inserted **after the 2nd codon** (N-terminal).
+- **Classes B / C / F** (signal-peptide-containing): **TOPCONS** to find the SP → **SignalP 6.0** to predict the cleavage site → **NetSurfP-2.0** to locate the structured N-terminal residues → design HA variants inserting the tag **between the predicted cleavage site and the start of the structured N-terminus** → **re-predict cleavage + disorder for each design** → pick the design most strongly predicted to **preserve the correct cleavage site without altering disorder**.
+
+**Similar to ours:** disorder/structure prediction drives placement (they use NetSurfP-2.0; we use AlphaFold pLDDT + DSSP), signal-peptide-cleavage awareness (their whole point; our new `normalize.py` topology gate now rejects tags inside the SP / a `terminal_n` on an intracellular N-terminus), and the goal of a non-disruptive, surface-displayed tag.
+
+**Different from ours — and the key gaps to close:**
+1. **Terminal design.** Willow designs **N-terminal** tags (the SP-cleavage-preserving placement between cleavage site and structured N-term). Our deterministic pipeline currently produces **internal loop** sites only and has **no terminal handler** — the SP gate only *rejects* bad terminals, it doesn't *design* good ones. **KEY ITEM: add SP-cleavage-aware N-terminal tag design** (place between SP cleavage and the first structured residue), mirroring Willow.
+2. **Insertion-effect re-verification (design→predict→select loop).** Willow **re-runs SignalP + NetSurfP on each candidate** and selects the design that preserves cleavage and doesn't add disorder — a closed design-verify loop. We generate candidates but do **not** re-predict the *effect of the insertion* on cleavage or local disorder. **KEY ITEM: add an insertion-effect check** (does inserting the cassette shift the predicted SP cleavage or alter local disorder/structure at the site?).
+3. **Tools.** Willow: TOPCONS + SignalP 6.0 + NetSurfP-2.0. Ours: AlphaFold + DeepTMHMM + UniProt features + ortholog-MSA conservation. Worth cross-checking SP cleavage against SignalP where UniProt's SP annotation is absent.
