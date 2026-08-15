@@ -15,11 +15,43 @@ from pydantic import BaseModel, ConfigDict, Field, model_validator
 
 from accessible_surfaceome.tools._shared.models import Evidence
 
-SCHEMA_VERSION = "0.2.4"
+SCHEMA_VERSION = "0.3.0"
 RUNNER_VERSION = "internalization-model-prior/0.1.0"
 
 Grade = Literal["high", "moderate", "low", "no", "unknown"]
 GradeConfidence = Literal["high", "moderate", "low"]
+
+# Sequence-track-only ordinal grade — finer than the shared literature ``Grade``
+# so the model can register genuine spread. 5 ordered levels + ``unknown`` (can't
+# tell from sequence). ``very_low`` subsumes the old non-internalizing ``no``.
+# Kept SEPARATE from ``Grade`` so the literature per-mode grades are unchanged.
+SeqGrade = Literal["very_high", "high", "moderate", "low", "very_low", "unknown"]
+
+# Structured endocytic-motif hit (complements the free-text summary). A motif is
+# only functional in a CYTOPLASMIC region, so ``region`` + ``functional_context``
+# carry the topology judgement, not just the match.
+MotifType = Literal[
+    "yxxphi",          # tyrosine-based YXX[hydrophobic]
+    "npxy",            # NPXY / FxNPxY (PTB-recognized)
+    "dileucine",       # [DE]XXXL[LI]
+    "acidic_cluster",  # acidic / CK2-phospho cluster (often paired with dileucine)
+    "other",
+]
+
+
+class MotifHit(BaseModel):
+    """One endocytic sorting-motif match the model found in the sequence."""
+
+    model_config = ConfigDict(extra="forbid")
+
+    motif_type: MotifType
+    sequence: str = Field(..., description="The matched residues, e.g. 'YTRF'.")
+    region: Literal["cytoplasmic", "extracellular", "transmembrane", "unknown"] = (
+        "unknown"
+    )
+    approx_position: str | None = None  # e.g. "~res20" or "aa 20-23"
+    functional_context: bool = False  # True iff in a cytoplasmic region (can act)
+    note: str = ""
 
 
 class IsoformPrior(BaseModel):
@@ -31,8 +63,9 @@ class IsoformPrior(BaseModel):
     is_canonical: bool
     length_aa: int | None = None
     topology_summary: str
-    endocytic_motifs_noted: str | None = None
-    grade: Grade
+    endocytic_motifs_noted: str | None = None  # free-text human summary
+    motifs: list[MotifHit] = Field(default_factory=list)  # structured hits
+    grade: SeqGrade
     confidence: GradeConfidence
     rationale: str = Field(..., description="Why this isoform got this grade.")
 
@@ -42,7 +75,7 @@ class ModelPriorLLMOut(BaseModel):
 
     model_config = ConfigDict(extra="forbid")
 
-    overall_grade: Grade
+    overall_grade: SeqGrade
     overall_confidence: GradeConfidence
     model_reasoning: str
     per_isoform: list[IsoformPrior]
@@ -57,7 +90,7 @@ class ModelPriorTrack(BaseModel):
 
     model: str
     scope: Literal["intrinsic_propensity"] = "intrinsic_propensity"
-    overall_grade: Grade
+    overall_grade: SeqGrade
     overall_confidence: GradeConfidence
     model_reasoning: str
     per_isoform: list[IsoformPrior]

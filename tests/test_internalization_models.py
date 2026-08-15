@@ -30,7 +30,39 @@ def _isoform_prior(**over):
 
 def test_isoform_prior_rejects_bad_grade():
     with pytest.raises(ValidationError):
-        _isoform_prior(grade="very_high")
+        _isoform_prior(grade="excellent")  # not on the SeqGrade scale
+
+
+def test_isoform_prior_accepts_5point_seqgrade():
+    # SeqGrade adds the two extremes to the sequence track (literature Grade
+    # unchanged). very_high / very_low must validate.
+    assert _isoform_prior(grade="very_high").grade == "very_high"
+    assert _isoform_prior(grade="very_low").grade == "very_low"
+    # the old non-internalizing "no" is retired from the sequence scale
+    with pytest.raises(ValidationError):
+        _isoform_prior(grade="no")
+
+
+def test_isoform_prior_structured_motifs():
+    from accessible_surfaceome.agents.internalization.models import MotifHit
+
+    iso = _isoform_prior(
+        motifs=[
+            MotifHit(
+                motif_type="yxxphi",
+                sequence="YTRF",
+                region="cytoplasmic",
+                approx_position="~res20",
+                functional_context=True,
+            )
+        ]
+    )
+    assert iso.motifs[0].motif_type == "yxxphi"
+    assert iso.motifs[0].functional_context is True
+    # defaults: no motifs, and an extracellular hit is non-functional by default
+    assert _isoform_prior().motifs == []
+    with pytest.raises(ValidationError):
+        MotifHit(motif_type="bogus", sequence="X")
 
 
 def test_model_prior_track_defaults_scope_and_keeps_model():

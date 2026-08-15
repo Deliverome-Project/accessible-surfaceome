@@ -55,25 +55,29 @@ Everything you reason from must come from these sequence/topology inputs.
 
 # Grades
 
-Grade the whole range — do NOT collapse genuine middle cases into `high`/`low`.
+Use the full **5-level** ordinal scale — do NOT collapse genuine middle cases,
+and use `very_high` / `very_low` for the genuine extremes rather than flattening
+everything to `high` / `low`:
 
-- `high` — the sequence/topology strongly imply robust, rapid internalization;
-  a large fraction of the surface pool would be taken up (e.g. a
-  constitutively-recycling receptor whose surface pool is rapidly cleared),
-  constitutively and/or on native ligand.
-- `moderate` — the protein internalizes, but partially or slowly, and/or a
-  substantial surface pool would persist at steady state. Use this for genuine
-  middle cases.
-- `low` — POSITIVE sequence/topology basis for limited internalization /
-  predominant surface residence (e.g. a topology and tail that lack any
-  plausible endocytic signal AND no basis for a non-canonical route). Do NOT
-  use `low` just because the sequence lacks a canonical motif.
-- `no` — non-internalizing / predominantly non-endocytic, with a positive
-  sequence/topology basis.
-- `unknown` — you cannot make a defensible call from sequence + topology alone
-  — INCLUDING the common case where no canonical motif is visible AND the
-  sequence/topology give no other lever to infer the endocytic route. Prefer
-  `unknown` over a motif-absence `low`.
+- `very_high` — the sequence/topology imply exceptionally strong, rapid,
+  near-complete internalization: a constitutively- and rapidly-recycling
+  receptor whose surface pool turns over fast (e.g. multiple strong cytoplasmic
+  sorting motifs, or a classic short-tail rapid-recycling profile).
+- `high` — robust, rapid internalization; a large fraction of the surface pool
+  is taken up, constitutively and/or on native ligand.
+- `moderate` — internalizes partially or slowly; a substantial surface pool
+  persists at steady state. Use for genuine middle cases.
+- `low` — POSITIVE sequence/topology basis for LIMITED internalization /
+  predominant surface residence (a topology and tail lacking any plausible
+  endocytic signal AND no basis for a non-canonical route). Do NOT use `low`
+  merely because the sequence lacks a canonical motif.
+- `very_low` — essentially non-internalizing / predominantly non-endocytic, with
+  a positive sequence/topology basis (e.g. no cytoplasmic tail able to carry a
+  signal and no plausible bulk/raft route).
+- `unknown` — you cannot make a defensible call from sequence + topology alone —
+  INCLUDING the common case where no canonical motif is visible AND the
+  sequence/topology give no other lever. Prefer `unknown` over a motif-absence
+  `low` / `very_low`.
 
 # Confidence
 
@@ -81,12 +85,31 @@ Grade the whole range — do NOT collapse genuine middle cases into `high`/`low`
 - `moderate` — reasonable sequence/topology basis, some uncertainty.
 - `low` — sparse or conflicting sequence/topology basis.
 
+# Structured motifs
+
+For each isoform, populate `motifs` — a list of the endocytic sorting motifs you
+identify in the sequence. One entry per hit, with:
+
+- `motif_type`: `yxxphi` (tyrosine-based YXX[hydrophobic]), `npxy`,
+  `dileucine` ([DE]XXXL[LI]), `acidic_cluster`, or `other`.
+- `sequence`: the exact matched residues, e.g. `"YTRF"`.
+- `region`: `cytoplasmic`, `extracellular`, `transmembrane`, or `unknown` — from
+  the E/C topology.
+- `approx_position`: an approximate location, e.g. `"~res20"` or `"aa 20-23"`.
+- `functional_context`: `true` only if the motif sits in a **cytoplasmic**
+  region (where it can act); `false` for an extracellular/TM match.
+- `note`: optional one-clause caveat.
+
+Emit `[]` when no recognizable motif is present — and remember that an empty
+`motifs` list is NOT itself grounds for a low grade (non-canonical routes exist).
+Keep the free-text `endocytic_motifs_noted` as a one-line human summary.
+
 # Output
 
 Return exactly one ```json fenced object with keys:
 `overall_grade`, `overall_confidence`, `model_reasoning`, and `per_isoform`
 (a list; each item has `isoform_id`, `is_canonical`, `length_aa`,
-`topology_summary`, `endocytic_motifs_noted` (or null), `grade`, `confidence`,
-`rationale`). You may echo the generic isoform label as `isoform_id` — that is
-fine; the calling code overwrites it with the real identifier by position. No
-prose outside the fenced block.
+`topology_summary`, `endocytic_motifs_noted` (or null), `motifs` (list),
+`grade`, `confidence`, `rationale`). You may echo the generic isoform label as
+`isoform_id` — the calling code overwrites it with the real identifier by
+position. No prose outside the fenced block.
