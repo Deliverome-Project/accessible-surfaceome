@@ -1,0 +1,247 @@
+<title>Tag-Site Benchmark — Deterministic × Literature</title>
+<style>
+  :root{
+    --bg:#f7f7f5; --panel:#ffffff; --ink:#1f2320; --muted:#5f6b64; --line:#e3e3dd;
+    --det:#3d6b60; --detbg:#eaf2ef; --lit:#8878c8; --litbg:#f0edf9;
+    --hit:#2f7d4f; --miss:#b23b3b; --hitbg:#e8f4ec; --missbg:#fbeceb;
+    --warn:#9a6a1a; --warnbg:#fbf3e2; --chip:#eef0ee;
+  }
+  @media (prefers-color-scheme:dark){
+    :root{
+      --bg:#16181a; --panel:#1e2124; --ink:#e8eae7; --muted:#a2aaa4; --line:#2f3438;
+      --det:#7fc3b3; --detbg:#1c2b28; --lit:#b3a6ee; --litbg:#262238;
+      --hit:#6fd39a; --miss:#f08a86; --hitbg:#18271e; --missbg:#2b1a19;
+      --warn:#e0b467; --warnbg:#2a2314; --chip:#262a2d;
+    }
+  }
+  :root[data-theme="dark"]{
+    --bg:#16181a; --panel:#1e2124; --ink:#e8eae7; --muted:#a2aaa4; --line:#2f3438;
+    --det:#7fc3b3; --detbg:#1c2b28; --lit:#b3a6ee; --litbg:#262238;
+    --hit:#6fd39a; --miss:#f08a86; --hitbg:#18271e; --missbg:#2b1a19;
+    --warn:#e0b467; --warnbg:#2a2314; --chip:#262a2d;
+  }
+  :root[data-theme="light"]{
+    --bg:#f7f7f5; --panel:#ffffff; --ink:#1f2320; --muted:#5f6b64; --line:#e3e3dd;
+    --det:#3d6b60; --detbg:#eaf2ef; --lit:#8878c8; --litbg:#f0edf9;
+    --hit:#2f7d4f; --miss:#b23b3b; --hitbg:#e8f4ec; --missbg:#fbeceb;
+    --warn:#9a6a1a; --warnbg:#fbf3e2; --chip:#eef0ee;
+  }
+  *{box-sizing:border-box}
+  body{background:var(--bg);color:var(--ink);
+    font:15px/1.55 -apple-system,BlinkMacSystemFont,"Segoe UI",Helvetica,Arial,sans-serif;
+    margin:0;padding:0}
+  .wrap{max-width:1040px;margin:0 auto;padding:34px 22px 80px}
+  h1{font-size:25px;margin:0 0 4px;letter-spacing:-.01em}
+  h2{font-size:18px;margin:38px 0 12px;letter-spacing:-.01em}
+  h3{font-size:15px;margin:0 0 6px}
+  .sub{color:var(--muted);font-size:13.5px;margin:0 0 8px}
+  .lede{color:var(--muted);max-width:74ch;margin:10px 0 0}
+  code{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:.9em;
+    background:var(--chip);padding:1px 5px;border-radius:4px}
+  .legend{display:flex;gap:14px;flex-wrap:wrap;margin:16px 0 0;font-size:13px}
+  .key{display:inline-flex;align-items:center;gap:7px;color:var(--muted)}
+  .sw{width:12px;height:12px;border-radius:3px;display:inline-block}
+  .cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:12px;margin:14px 0 0}
+  .stat{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:14px 16px}
+  .stat .n{font-size:26px;font-weight:650;letter-spacing:-.02em}
+  .stat .l{color:var(--muted);font-size:13px;margin-top:2px}
+  .scroll{overflow-x:auto;border:1px solid var(--line);border-radius:12px;margin:12px 0 0;background:var(--panel)}
+  table{border-collapse:collapse;width:100%;font-size:13.5px;min-width:720px}
+  th,td{text-align:left;padding:9px 12px;border-bottom:1px solid var(--line);vertical-align:top}
+  thead th{background:var(--chip);font-weight:600;color:var(--muted);font-size:12px;
+    text-transform:uppercase;letter-spacing:.03em;white-space:nowrap}
+  tbody tr:last-child td{border-bottom:none}
+  .gene{font-weight:650}
+  .pill{display:inline-block;font-size:11.5px;font-weight:600;padding:1.5px 8px;border-radius:20px;white-space:nowrap}
+  .p-det{background:var(--detbg);color:var(--det)}
+  .p-lit{background:var(--litbg);color:var(--lit)}
+  .p-hit{background:var(--hitbg);color:var(--hit)}
+  .p-miss{background:var(--missbg);color:var(--miss)}
+  .p-val{background:var(--hitbg);color:var(--hit)}
+  .p-inf{background:var(--warnbg);color:var(--warn)}
+  .tick{color:var(--hit);font-weight:700}
+  .cross{color:var(--miss);font-weight:700}
+  .note{background:var(--panel);border:1px solid var(--line);border-left:3px solid var(--lit);
+    border-radius:10px;padding:13px 16px;margin:12px 0 0}
+  .note.det{border-left-color:var(--det)}
+  .note.warn{border-left-color:var(--warn)}
+  .note h3{margin-bottom:4px}
+  .note p{margin:5px 0 0;color:var(--muted);font-size:13.5px}
+  ul.tight{margin:8px 0 0;padding-left:20px;color:var(--muted);font-size:13.5px}
+  ul.tight li{margin:4px 0}
+  .foot{margin-top:44px;padding-top:16px;border-top:1px solid var(--line);color:var(--muted);font-size:12.5px}
+  .mono{font-family:ui-monospace,SFMono-Regular,Menlo,monospace}
+  .small{font-size:12.5px;color:var(--muted)}
+</style>
+
+<div class="wrap">
+  <h1>Tag-Site Benchmark — Deterministic × Literature</h1>
+  <p class="sub">accessible-surfaceome · branch <code>claude/tagged-sites</code> → PR&nbsp;#132 (dev) · 2026-08-14</p>
+  <p class="lede">Two independent methods propose where a dual epitope tag (ALFA + SpyTag/DogTag)
+  can be inserted so it displays on the cell surface. The <b style="color:var(--det)">deterministic</b>
+  pipeline computes sites from AlphaFold structure + topology + ortholog conservation; the
+  <b style="color:var(--lit)">literature</b> agent retrieves <i>validated</i> tagging precedents from the
+  web. Below: how each did against known-good controls, where they disagree, and what to trust.</p>
+
+  <div class="legend">
+    <span class="key"><span class="sw" style="background:var(--det)"></span> deterministic (structure)</span>
+    <span class="key"><span class="sw" style="background:var(--lit)"></span> literature (retrieved)</span>
+    <span class="key"><span class="tick">✓</span> recovers control</span>
+    <span class="key"><span class="cross">✗</span> misses control</span>
+  </div>
+
+  <div class="cards">
+    <div class="stat"><div class="n">7 / 7</div><div class="l">controls recovered by the <b>union</b> of both methods</div></div>
+    <div class="stat"><div class="n" style="color:var(--det)">4 / 7</div><div class="l">recovered by deterministic alone</div></div>
+    <div class="stat"><div class="n" style="color:var(--lit)">3 / 6</div><div class="l">recovered by literature alone (TMEM123 not run)</div></div>
+    <div class="stat"><div class="n">0</div><div class="l">controls both methods missed — they are <b>complementary</b>, not redundant</div></div>
+  </div>
+
+  <h2>Control-by-control</h2>
+  <div class="scroll">
+    <table>
+      <thead><tr>
+        <th>Protein</th><th>Topology</th><th>Known control</th>
+        <th>Deterministic</th><th>Literature</th><th>Union</th>
+      </tr></thead>
+      <tbody>
+        <tr>
+          <td><span class="gene">TFRC</span><br><span class="small mono">P02786</span></td>
+          <td>Type II<br><span class="small">ecto 89–760</span></td>
+          <td>I290/V291 · ALFA<br><span class="small">EndoNB, Almeida-Souza</span></td>
+          <td><span class="pill p-hit">✓ hit</span><br><span class="small"><code>surface_loop</code> → V291, pLDDT&nbsp;96, RSA&nbsp;0.88, tag_fit ALFA/Spy/Dog</span></td>
+          <td><span class="pill p-miss">✗ miss</span><br><span class="small">returned F760 (C-term), R120, S296 — not the loop</span></td>
+          <td><span class="pill p-det">deterministic</span></td>
+        </tr>
+        <tr>
+          <td><span class="gene">ITGB1</span><br><span class="small mono">P05556</span></td>
+          <td>Type I + SP<br><span class="small">ecto 21–728</span></td>
+          <td>G101 · ALFA/eGFP/HaloTag<br><span class="small">Huet-Calderwood 2017</span></td>
+          <td><span class="pill p-miss">✗ miss</span><br><span class="small">nearest picks 90 / 128 — G101 sits in a tighter loop below RSA gate</span></td>
+          <td><span class="pill p-hit">✓ hit</span><br><span class="small">G101, <span class="pill p-val">validated</span> cited residue</span></td>
+          <td><span class="pill p-lit">literature</span></td>
+        </tr>
+        <tr>
+          <td><span class="gene">AXL</span><br><span class="small mono">P30530</span></td>
+          <td>Type I + SP<br><span class="small">ecto 26–451</span></td>
+          <td>P184 · ALFA<br><span class="small">internal Ig-domain linker</span></td>
+          <td><span class="pill p-hit">✓ hit</span><br><span class="small"><code>disorder</code> → exact 184, low-pLDDT inter-domain linker</span></td>
+          <td><span class="pill p-inf">partial</span><br><span class="small">returned N-term MYC @M25 (inferred) — different site, SP-adjacent</span></td>
+          <td><span class="pill p-det">deterministic</span></td>
+        </tr>
+        <tr>
+          <td><span class="gene">TMEM123</span><br><span class="small mono">Q8N131</span></td>
+          <td>Type I<br><span class="small">ecto 30–?</span></td>
+          <td>A33 · ALFA<br><span class="small">juxta-N-term</span></td>
+          <td><span class="pill p-hit">✓ hit</span><br><span class="small"><code>disorder</code> → 35 (±2 of control), disordered ectodomain stretch</span></td>
+          <td><span class="small">— not run —</span></td>
+          <td><span class="pill p-det">deterministic</span></td>
+        </tr>
+        <tr>
+          <td><span class="gene">TRPC5</span><br><span class="small mono">Q9UL62</span></td>
+          <td>Multi-pass<br><span class="small">S1–S2 ecto loop</span></td>
+          <td>Y460 · DogTag<br><span class="small">Keeble/Howarth</span></td>
+          <td><span class="pill p-miss">✗ miss</span><br><span class="small">RSA 0.22 at Y460 (below 0.30 gate) — but tag_fit correctly = <b>DogTag</b> for the short loop</span></td>
+          <td><span class="pill p-hit">✓ hit</span><br><span class="small">Y460, <span class="pill p-val">validated</span>, DogTag</span></td>
+          <td><span class="pill p-lit">literature</span></td>
+        </tr>
+        <tr>
+          <td><span class="gene">KCNH2</span> (hERG)<br><span class="small mono">Q12809</span></td>
+          <td>Multi-pass<br><span class="small">S1–S2 ecto loop</span></td>
+          <td>T436 · BBS/HA<br><span class="small">Garg 2020</span></td>
+          <td><span class="pill p-miss">✗ miss</span><br><span class="small">AF assigns helix / pLDDT ~50 at the loop — structure unreliable here</span></td>
+          <td><span class="pill p-hit">✓ hit</span><br><span class="small">HA @T443 (Garg 2020), same S1–S2 loop, <span class="pill p-val">validated</span></span></td>
+          <td><span class="pill p-lit">literature</span></td>
+        </tr>
+        <tr>
+          <td><span class="gene">ITGB5</span><br><span class="small mono">P18084</span></td>
+          <td>Type I + SP<br><span class="small">ecto 24–?</span></td>
+          <td>A102 · ALFA<br><span class="small">PSI-domain loop</span></td>
+          <td><span class="pill p-hit">✓ hit</span><br><span class="small"><code>disorder</code> → 101 / 105; 11-aa loop → tag_fit ALFA/Spy/Dog (SpyTag-permissive)</span></td>
+          <td><span class="pill p-inf">partial</span><br><span class="small">returned D388 / E425 (inferred) — plausible but not the A102 control</span></td>
+          <td><span class="pill p-det">deterministic</span></td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+  <p class="small" style="margin-top:8px">Union column = which method recovered the published control. Every control is
+  caught by at least one method; the two disagree on <i>which</i> proteins they nail, which is the point of running both.</p>
+
+  <h2>Where each method wins</h2>
+  <div class="note det">
+    <h3 style="color:var(--det)">Deterministic catches what has no paper</h3>
+    <p>Wins on <b>TFRC, AXL, TMEM123, ITGB5</b> — ordered surface loops (Path&nbsp;2b) and disordered
+    ectodomain stretches (Path&nbsp;2a) that no one has published a tag for. TFRC I290/V291 is the flagship:
+    a confidently-folded loop (pLDDT&nbsp;96) the old low-pLDDT screen structurally misses, recovered because
+    pLDDT here is a <i>reliability</i> gate, not a disorder gate. Insertion is snapped to the exposed junction
+    residue (V291, RSA&nbsp;0.88).</p>
+  </div>
+  <div class="note">
+    <h3 style="color:var(--lit)">Literature catches what structure can't see</h3>
+    <p>Wins on <b>ITGB1, TRPC5, hERG</b> — the multi-pass channel loops where AlphaFold is unreliable
+    (hERG S1–S2 scored as helix at pLDDT&nbsp;50) or the loop is real but too tight for the RSA gate
+    (TRPC5 Y460 at 0.22). A published, <span class="pill p-val">validated</span> tag beats a structural
+    guess every time — <i>when one exists</i>.</p>
+  </div>
+
+  <h2>tag_fit — the chemistry recommendation is sound</h2>
+  <p class="lede" style="margin-bottom:6px">Each site carries a computed tag recommendation from loop geometry:
+  ALFA (α-helix, folds alone → any exposed loop), SpyTag003 (β-strand → needs an <i>extended</i> ≥10-aa loop),
+  DogTag (loop-adapted → short loops SpyTag can't do).</p>
+  <div class="scroll">
+    <table>
+      <thead><tr><th>Site</th><th>Loop length</th><th>tag_fit output</th><th>Real-world tag used</th><th></th></tr></thead>
+      <tbody>
+        <tr><td>TRPC5 Y460</td><td>short</td><td><code>ALFA, DogTag</code></td><td>DogTag (Keeble)</td><td><span class="tick">✓ matches</span></td></tr>
+        <tr><td>ITGB5 A102</td><td>11 aa (extended)</td><td><code>ALFA, SpyTag003, DogTag</code></td><td>ALFA</td><td><span class="tick">✓ permits</span></td></tr>
+        <tr><td>TFRC V291</td><td>extended</td><td><code>ALFA, SpyTag003, DogTag</code></td><td>ALFA</td><td><span class="tick">✓ permits</span></td></tr>
+      </tbody>
+    </table>
+  </div>
+  <p class="small" style="margin-top:8px">tag_fit independently arrives at <b>DogTag</b> for the exact short loop (TRPC5) where the
+  field chose DogTag, and stays permissive (never over-recommends SpyTag003 on a short loop).</p>
+
+  <h2>Trust &amp; honesty gates</h2>
+  <div class="note warn">
+    <h3 style="color:var(--warn)">position_evidence: <span class="pill p-val">validated</span> vs <span class="pill p-inf">inferred</span></h3>
+    <p>Every literature site records whether the exact residue was <b>stated in a paper</b> (validated) or
+    <b>inferred from a domain-level claim</b> (inferred), plus the <code>cited_tag_residue</code> it read.
+    This exposes "domain → position" laundering — e.g. AXL M25 and ITGB5 D388/E425 are flagged
+    <span class="pill p-inf">inferred</span>, not sold as facts. <b>Caveat still open:</b> the label swings run-to-run
+    (one TFRC batch over-claimed everything "validated"). Needs an adversarial citation-check pass before scaling.</p>
+  </div>
+  <div class="note det">
+    <h3 style="color:var(--det)">New: topology / signal-peptide normalization gate</h3>
+    <p>Just added (<code>normalize.py</code>, 4/4 tests). Rejects any proposed site not actually displayed
+    <b>extracellularly</b>: internal or C-terminal sites in a non-<code>O</code> compartment, an N-terminal tag on a
+    type-II intracellular N-terminus (the TFRC trap), and — critically — a terminal tag that falls
+    <b>inside the signal peptide</b> and would be cleaved off. This is the same signal-peptide-cleavage rule the
+    Willow method enforces (below).</p>
+  </div>
+
+  <h2>Related method — Willow <span class="small">(key item to check)</span></h2>
+  <div class="note">
+    <p style="color:var(--ink)"><b>Willow</b> (bioRxiv 2025.09.19.677468) N-terminally HA-tags GPCRs. For signal-peptide
+    receptors it runs SignalP&nbsp;6.0 (cleavage) + NetSurfP-2.0 (disorder), inserts HA <i>between the predicted
+    cleavage site and the structured N-terminus</i>, then <b>re-predicts cleavage + disorder for each design</b> and
+    keeps the one that preserves cleavage without adding disorder.</p>
+    <ul class="tight">
+      <li><b>Same as us:</b> disorder/structure-driven placement + signal-peptide-cleavage awareness (our new SP gate).</li>
+      <li><b>Gap 1 — terminal design.</b> Willow <i>designs</i> N-terminal tags; we only produce internal loops and
+      <i>reject</i> bad terminals. <span class="small">→ add SP-cleavage-aware N-terminal design.</span></li>
+      <li><b>Gap 2 — insertion re-verification.</b> Willow re-runs its predictors on each candidate; we don't yet
+      check whether inserting the cassette shifts cleavage or adds local disorder. <span class="small">→ add an insertion-effect loop.</span></li>
+    </ul>
+    <p class="small">Recorded in the design spec §14 as a key item to check.</p>
+  </div>
+
+  <div class="foot">
+    Deterministic: AlphaFold pLDDT (reliability gate ≥70) · freesasa RSA (Tien-2013, exposed ≥0.30) ·
+    pydssp 3-state loop · UniProt-feature 3D clearance ≥12&nbsp;Å · ortholog-MSA conservation ·
+    NMS min-gap 8, ≤20 sites/gene. &nbsp;·&nbsp;
+    Literature: Anthropic SDK + server-side web_search, Pydantic-forced output, validated-only retrieval,
+    position_evidence + cited_tag_residue honesty fields. &nbsp;·&nbsp;
+    Overlay colors: <span class="mono" style="color:var(--det)">#3d6b60</span> deterministic,
+    <span class="mono" style="color:var(--lit)">#8878c8</span> literature.
+  </div>
+</div>
