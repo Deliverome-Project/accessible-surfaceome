@@ -1,10 +1,14 @@
 """Sequence (model-prior) sweep over the internalization cohort → public D1.
 
-Cohort = the UNION of:
-  * ``passes_likely`` genes (deep-dive shortlist; ``passes_canonical`` ⊆ this), and
-  * the low-lit UniProt-positive set: UniProt surface-vote genes whose true
-    discovery corpus is under a paper threshold (``n_papers_found < --lowlit-max``,
-    or has no deep-dive paper count at all → understudied by default).
+Cohort = the UNION of the catalog's authoritative baked ``deep_dive_tier`` tags:
+  * ``deep_dive_tier`` in {canonical, likely} (the deep-dive tier taxonomy — these
+    are DISJOINT tiers, not the nested passes_canonical ⊆ passes_likely predicate),
+    and
+  * the ``low_lit_uniprot`` set (understudied UniProt-positive genes).
+
+These are the same tags the viewer shows, so the sweep cohort matches the site.
+(The older path re-derived membership from catalog_presets over the ``ddf``
+projection, which gave a different, stricter canonical count.)
 
 Runs the BLIND Opus model-prior on the CANONICAL isoform only (sequence + E/C
 topology, no gene identity) and UPSERTs each ``InternalizationRecord`` into
@@ -32,43 +36,39 @@ from accessible_surfaceome.agents.internalization.models import SCHEMA_VERSION
 from accessible_surfaceome.agents.internalization.runner import annotate_model_prior
 from accessible_surfaceome.cloud.internalization import ensure_table, publish_seq_record
 from accessible_surfaceome.env import load_env
-from accessible_surfaceome.release.catalog_presets import passes_likely
 
 logger = logging.getLogger("internalization_seq_sweep")
 
 CATALOG_URL = "https://api.deliverome.org/surfaceome/v1/catalog"
 OPUS_MODEL = "claude-opus-4-8"
 PER_GENE_USD = 0.037  # measured: Opus, canonical isoform only (see cost estimate)
+# Baked catalog tags (row_schema 7+) that define the cohort.
+COHORT_TIERS = ("canonical", "likely")
 
 
-def load_cohort(
-    *, catalog_url: str = CATALOG_URL, lowlit_max_papers: int = 100
-) -> list[str]:
-    """Return the sorted union cohort of gene symbols from the public catalog."""
+def load_cohort(*, catalog_url: str = CATALOG_URL, include_low_lit: bool = True) -> list[str]:
+    """Return the sorted union cohort from the catalog's baked ``deep_dive_tier``
+    tags: genes tiered ``canonical`` or ``likely``, plus (optionally) the
+    ``low_lit_uniprot`` set. Reads the authoritative server-side tags — the same
+    the viewer shows — rather than re-deriving from the (stricter) ``ddf``."""
     payload = httpx.get(catalog_url, timeout=120).json()
     rows = payload["rows"]
-    db_keys = payload.get("db_keys") or ["uniprot", "go", "surfy", "cspa", "hpa"]
-    uni_bit = db_keys.index("uniprot")
-
-    def uniprot_pos(row: dict) -> bool:
-        db = row.get("db")
-        return isinstance(db, int) and bool(db & (1 << uni_bit))
-
-    likely: set[str] = set()
+    tier: set[str] = set()
     lowlit: set[str] = set()
     for r in rows:
         sym = r.get("symbol")
         if not sym:
             continue
-        ddf = r.get("ddf")
-        if ddf and passes_likely(ddf):
-            likely.add(sym)
-        if uniprot_pos(r):
-            npf = (ddf or {}).get("n_papers_found")
-            # low-lit: under the paper threshold, or no deep-dive count at all
-            if npf is None or npf < lowlit_max_papers:
-                lowlit.add(sym)
-    return sorted(likely | lowlit)
+        if r.get("deep_dive_tier") in COHORT_TIERS:
+            tier.add(sym)
+        if include_low_lit and r.get("low_lit_uniprot"):
+            lowlit.add(sym)
+    logger.info(
+        "cohort tags: tier(canonical|likely)=%d low_lit_uniprot=%d "
+        "(low_lit net-new=%d)",
+        len(tier), len(lowlit), len(lowlit - tier),
+    )
+    return sorted(tier | lowlit)
 
 
 def main(argv: list[str] | None = None) -> int:
@@ -78,18 +78,18 @@ def main(argv: list[str] | None = None) -> int:
     p.add_argument("--execute", action="store_true", help="Run + publish (default: dry run).")
     p.add_argument("--limit", type=int, default=None, help="Cap the number of genes.")
     p.add_argument("--models", nargs="+", default=[OPUS_MODEL], help="Model-prior model ids.")
-    p.add_argument("--lowlit-max-papers", type=int, default=100,
-                   help="Low-lit threshold: UniProt-pos genes with n_papers_found < N.")
+    p.add_argument("--no-low-lit", action="store_true",
+                   help="Exclude the low_lit_uniprot set (tiers canonical|likely only).")
     p.add_argument("--catalog-url", default=CATALOG_URL)
     p.add_argument("--force", action="store_true",
                    help="Re-run genes already present in D1 at the current schema.")
     args = p.parse_args(argv)
 
     cohort = load_cohort(
-        catalog_url=args.catalog_url, lowlit_max_papers=args.lowlit_max_papers
+        catalog_url=args.catalog_url, include_low_lit=not args.no_low_lit
     )
-    logger.info("cohort (likely ∪ uniprot-pos-<%dpapers): %d genes",
-                args.lowlit_max_papers, len(cohort))
+    logger.info("cohort (deep_dive_tier canonical|likely%s): %d genes",
+                "" if args.no_low_lit else " ∪ low_lit_uniprot", len(cohort))
 
     if not args.execute:
         est = len(cohort) * PER_GENE_USD * len(args.models)
