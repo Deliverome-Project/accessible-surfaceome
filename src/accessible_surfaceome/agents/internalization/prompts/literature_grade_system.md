@@ -81,21 +81,35 @@ ligand/binder vs. basal; `not_applicable` for a purely constitutive (basal)
 measurement with no ligand; `unknown` when unstated. This captures a
 ligand-vs-basal difference even when both conditions grade "moderate".
 
-# Relevance — grade the TARGET's own internalization only
+# Two separate tables: the target's OWN internalization vs. third-party modulators
 
-**Third-party-modulator HARD RULE (a quantitative number does NOT rescue these).**
-For every candidate observation, ask *what was manipulated to produce this
-internalization value.* If the value comes from perturbing a gene/protein OTHER
-than the target — knockdown, silencing, overexpression, mutation, or any
-manipulation of a **different** gene, INCLUDING a related family member or a
-heterodimer/co-receptor partner (e.g. "knockdown of gene X changed gene Y's
-uptake 1.5-fold", "overexpression of gene X suppressed the ADC's internalization
-rate 1.4-fold") — do **not** emit it as an observation of the target's
-internalization; it measures the modulator, even when the sentence names the
-target's own uptake rate and even when it carries a clean fold-change. Only emit
-observations whose internalization value comes from the target itself (basal),
-its native ligand, or a binder directed AT the target — nothing else was
-perturbed to produce the number.
+Sort every ledger clip into one of two tables by asking *what was manipulated to
+produce this internalization value.*
+
+**`observations` — the TARGET's OWN internalization.** The value comes from the
+target itself (basal), its native ligand, or a binder directed AT the target
+(antibody / ADC / engineered ligand). These are the ONLY findings that drive
+`grades_by_mode` and `overall_grade`.
+
+**`modulator_observations` — a DIFFERENT gene/protein changes the target's
+uptake.** When a clip's finding is that perturbing another gene/protein —
+knockdown, knockout, overexpression, mutation, an inhibitor/drug, or blocking a
+family member / heterodimer / co-receptor partner — changes the target's
+internalization (e.g. "knockdown of gene X raised gene Y's uptake 1.5-fold"),
+record it HERE, not in `observations`. This is genuinely different data: it
+captures what modulates the target's uptake. Set `modulator` (the perturbed
+gene/protein), `perturbation`, `effect_on_target` (increases / decreases /
+no_change on the target's uptake), `quant` (extract the number the same way as
+below), `cell_line`, `cell_context`, `magnitude`, and `cited_source_ids`.
+**These do NOT drive the grade** — a strong modulator effect is not evidence the
+target internalizes well on its own. The modulator must be a **different**
+gene/protein: knocking down or perturbing the TARGET ITSELF is not a modulator —
+a target-self knockdown that confirms the target mediates the measured uptake is
+a specificity control that belongs in `observations`; if it only concerns a
+downstream phenotype (not the target's uptake), omit it.
+
+A quantitative fold-change or rate belongs in whichever table the manipulation
+dictates — a number does not move a modulator finding into `observations`.
 
 # Rules
 
@@ -113,5 +127,5 @@ perturbed to produce the number.
 
 Return exactly one ```json fenced object matching the LiteratureLLMOut schema
 (`grades_by_mode`, `overall_grade`, `overall_confidence`, `rationale`,
-`cross_condition_note`, `trafficking_summary`, `observations`). No prose outside
-the block.
+`cross_condition_note`, `trafficking_summary`, `observations`,
+`modulator_observations`). No prose outside the block.

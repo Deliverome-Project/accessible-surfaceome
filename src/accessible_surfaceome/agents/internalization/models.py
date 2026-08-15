@@ -15,7 +15,7 @@ from pydantic import BaseModel, ConfigDict, Field, model_validator
 
 from accessible_surfaceome.tools._shared.models import Evidence
 
-SCHEMA_VERSION = "0.2.3"
+SCHEMA_VERSION = "0.2.4"
 RUNNER_VERSION = "internalization-model-prior/0.1.0"
 
 Grade = Literal["high", "moderate", "low", "no", "unknown"]
@@ -123,6 +123,19 @@ TraffickingCompartment = Literal[
 LigandEffect = Literal[
     "increases", "decreases", "no_change", "not_applicable", "unknown"
 ]
+# How perturbing a DIFFERENT gene/protein changes the TARGET's internalization.
+ModulatorEffect = Literal["increases", "decreases", "no_change", "unknown"]
+# How the third-party modulator was perturbed in the experiment.
+PerturbationType = Literal[
+    "knockdown",
+    "knockout",
+    "overexpression",
+    "inhibitor_or_drug",
+    "mutation",
+    "antibody_or_ligand_block",
+    "other",
+    "unknown",
+]
 
 
 class ModeGrade(BaseModel):
@@ -181,6 +194,30 @@ class InternalizationObservation(BaseModel):
         return self
 
 
+class ModulatorObservation(BaseModel):
+    """A finding where perturbing a DIFFERENT gene/protein changes the TARGET's
+    internalization — recorded SEPARATELY from the target's own internalization
+    (``observations``). This is genuinely different data: it measures what
+    modulates the target's uptake (a family member, heterodimer partner,
+    adaptor, or pathway gene), not the target's intrinsic / native-ligand /
+    therapeutic internalization. It does NOT drive ``grades_by_mode`` /
+    ``overall_grade``."""
+
+    model_config = ConfigDict(extra="forbid")
+
+    modulator: str = Field(
+        ..., description="The DIFFERENT gene/protein that was perturbed."
+    )
+    perturbation: PerturbationType = "unknown"
+    effect_on_target: ModulatorEffect = "unknown"
+    cell_line: str | None = None
+    cell_context: CellContext = "unknown"
+    magnitude: Magnitude = "unknown"
+    quant: InternalizationQuant = Field(default_factory=InternalizationQuant)
+    note: str = ""
+    cited_source_ids: list[str] = Field(default_factory=list)
+
+
 class LiteratureLLMOut(BaseModel):
     """Exact shape the grader model emits — no ``sources`` (code attaches the
     promoted, span-verified evidence ledger)."""
@@ -194,6 +231,7 @@ class LiteratureLLMOut(BaseModel):
     cross_condition_note: str = ""
     trafficking_summary: str = ""
     observations: list[InternalizationObservation] = Field(default_factory=list)
+    modulator_observations: list[ModulatorObservation] = Field(default_factory=list)
 
 
 class LiteratureTrack(BaseModel):
@@ -209,8 +247,10 @@ class LiteratureTrack(BaseModel):
     species_inferred: bool = False
     has_primary_or_invivo_evidence: bool = False
     observations: list[InternalizationObservation] = Field(default_factory=list)
+    modulator_observations: list[ModulatorObservation] = Field(default_factory=list)
     sources: list[Evidence] = Field(default_factory=list)
     n_observations: int = 0
+    n_modulator_observations: int = 0
     n_papers_discovered: int = 0
     n_papers_fetched: int = 0
 

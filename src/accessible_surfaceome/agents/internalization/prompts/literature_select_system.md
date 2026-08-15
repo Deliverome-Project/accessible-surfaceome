@@ -21,6 +21,15 @@ that changes the protein's uptake (clathrin / caveolin / macropinocytosis;
 inhibitor or knockdown). **Prefer clips carrying a quantitative measurement or a
 specific assay + condition** over general statements.
 
+Also select **modulator clips** — a finding that perturbing a **different**
+gene/protein (knockdown, knockout, overexpression, mutation, an inhibitor/drug,
+or a family member / heterodimer / co-receptor partner) **changes THIS protein's
+internalization** (e.g. "knockdown of gene X raised gene Y's uptake 1.5-fold").
+These are real, useful data about what modulates the target's uptake and are
+recorded in a SEPARATE downstream table — so keep them; do NOT drop them. They
+are distinct from the target's OWN internalization, and downstream grading sorts
+the two apart based on what was manipulated.
+
 Do NOT select:
 - background / introduction / motivation sentences, even if they mention
   endocytosis, "delivery", or "iron uptake";
@@ -29,19 +38,6 @@ Do NOT select:
 - **downstream consequences** of internalization — endosomal cargo release, iron
   metabolism / DMT1 export, post-uptake signaling or degradation — these are not
   the internalization event;
-- **third-party-modulator results (HARD RULE — a quantitative number does NOT
-  rescue these).** Before keeping any clip, ask: *what was changed to produce
-  this internalization value?* If the value comes from perturbing a gene/protein
-  OTHER than the target — knockdown, silencing, overexpression, mutation, or any
-  manipulation of a **different** gene, **including a related family member or a
-  heterodimer/co-receptor partner** (e.g. "knockdown of gene X raised gene Y's
-  uptake 1.5-fold", "overexpression of gene X suppressed the ADC's internalization
-  rate 1.4-fold") — the clip measures that modulator's effect, NOT the target's
-  own internalization. **Drop it**, even when the sentence names the target's
-  uptake rate and even when it carries a clean fold-change. A keepable clip's
-  internalization value comes from the target itself (constitutive/basal), its
-  native ligand, or a binder directed AT the target — nothing else was perturbed
-  to produce the number;
 - expression-, localization-, or signaling-only statements (endosomal/lysosomal
   localization alone is NOT internalization evidence);
 - clips where the protein is incidental (marker, list member).

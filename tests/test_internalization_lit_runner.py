@@ -10,6 +10,7 @@ from accessible_surfaceome.agents.internalization.models import (
     LiteratureLLMOut,
     ModeGrade,
     ModelPriorTrack,
+    ModulatorObservation,
 )
 
 
@@ -117,7 +118,7 @@ def test_annotate_literature_assembles_record(tmp_path, monkeypatch):
         ],
     )
     assert isinstance(rec, InternalizationRecord)
-    assert rec.schema_version == "0.2.3"
+    assert rec.schema_version == "0.2.4"
     assert rec.literature is not None
     assert rec.literature.overall_grade == "high"
     assert rec.literature.grades_by_mode.therapeutic.grade == "high"
@@ -184,6 +185,44 @@ def test_annotate_literature_prunes_orphan_sources(tmp_path, monkeypatch):
     kept = {e.evidence_id for e in rec.literature.sources}
     # int_evi_03 is attributed nowhere → pruned; 01 (observation) + 02 (mode) kept
     assert kept == {"int_evi_01", "int_evi_02"}
+
+
+def test_annotate_literature_keeps_modulator_cited_source(tmp_path, monkeypatch):
+    # A source cited only by a modulator_observation (the separate cross-gene
+    # table) must survive the prune — modulator clips are kept, not dropped.
+    discovered = {1: SimpleNamespace(pmid=1)}
+    llm = LiteratureLLMOut(
+        overall_grade="moderate",
+        overall_confidence="moderate",
+        observations=[
+            InternalizationObservation(
+                assay_type="antibody_uptake", cited_source_ids=["int_evi_01"]
+            )
+        ],
+        modulator_observations=[
+            ModulatorObservation(
+                modulator="GENEX",
+                perturbation="knockdown",
+                effect_on_target="increases",
+                cited_source_ids=["int_evi_02"],
+            )
+        ],
+    )
+    _wire(
+        monkeypatch,
+        discovered=discovered,
+        llm=llm,
+        evidence=[_evidence("int_evi_01"), _evidence("int_evi_02"), _evidence("int_evi_03")],
+    )
+    rec = mod.annotate_literature(
+        "TFRC", client=object(), http=cast(Any, object()), annotations_dir=tmp_path
+    )
+    assert rec.literature is not None
+    kept = {e.evidence_id for e in rec.literature.sources}
+    # int_evi_02 kept via the modulator table; int_evi_03 (cited nowhere) pruned
+    assert kept == {"int_evi_01", "int_evi_02"}
+    assert rec.literature.n_modulator_observations == 1
+    assert rec.literature.modulator_observations[0].modulator == "GENEX"
 
 
 def test_annotate_literature_keeps_all_sources_when_grader_cites_nothing(

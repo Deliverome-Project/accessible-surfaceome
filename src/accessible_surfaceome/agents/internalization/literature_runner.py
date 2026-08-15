@@ -100,15 +100,18 @@ def annotate_literature(
         client, gene=bundle.hgnc_symbol, evidence=evidence, synonyms=synonyms
     )
 
-    # Defense-in-depth against a third-party-modulator / off-target clip that
-    # SELECT let into the ledger but GRADE (correctly) built no observation from:
-    # prune any span-verified source the grader attributed to NOTHING — no
-    # observation and no per-mode grade cites it. Guarded on the grader having
-    # attributed at least one source somewhere: if it emitted no citations at all
-    # we keep the full ledger rather than risk stripping genuine evidence.
+    # Defense-in-depth against an off-target clip that SELECT let into the ledger
+    # but GRADE attributed to NOTHING: prune any span-verified source cited by no
+    # target observation, no per-mode grade, AND no modulator observation (the
+    # separate cross-gene table — its clips are kept, not dropped). Guarded on the
+    # grader having attributed at least one source somewhere: if it emitted no
+    # citations at all we keep the full ledger rather than strip genuine evidence.
     cited_ids: set[str] = {
         sid for o in llm.observations for sid in o.cited_source_ids
     }
+    cited_ids.update(
+        sid for m in llm.modulator_observations for sid in m.cited_source_ids
+    )
     for mode in (
         llm.grades_by_mode.basal,
         llm.grades_by_mode.native_ligand,
@@ -133,8 +136,10 @@ def annotate_literature(
         trafficking_summary=llm.trafficking_summary,
         has_primary_or_invivo_evidence=has_primary_or_invivo,
         observations=llm.observations,
+        modulator_observations=llm.modulator_observations,
         sources=evidence,
         n_observations=len(llm.observations),
+        n_modulator_observations=len(llm.modulator_observations),
         n_papers_discovered=len(discovered),
         n_papers_fetched=sum(1 for v in fetched_by_id.values() if v),
     )

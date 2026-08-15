@@ -9,11 +9,12 @@ from accessible_surfaceome.agents.internalization.models import (
     LiteratureLLMOut,
     LiteratureTrack,
     ModeGrade,
+    ModulatorObservation,
 )
 
 
-def test_schema_version_is_0_2_3():
-    assert SCHEMA_VERSION == "0.2.3"
+def test_schema_version_is_0_2_4():
+    assert SCHEMA_VERSION == "0.2.4"
 
 
 def test_moderate_is_a_valid_grade():
@@ -71,6 +72,37 @@ def test_new_022_literal_values_are_rejected_when_bogus():
         )
     with pytest.raises(ValidationError):
         InternalizationObservation(assay_type="ligand_uptake", ligand_effect="maybe")
+
+
+def test_modulator_observation_defaults_and_enums():
+    # A cross-gene modulator finding is recorded separately from the target's own
+    # internalization (0.2.4). Only `modulator` is required.
+    m = ModulatorObservation(modulator="GENEX")
+    assert m.perturbation == "unknown"
+    assert m.effect_on_target == "unknown"
+    assert m.magnitude == "unknown"
+    assert m.quant.quant_summary == ""
+    assert m.cited_source_ids == []
+    ok = ModulatorObservation(
+        modulator="GENEX", perturbation="knockdown", effect_on_target="increases"
+    )
+    assert ok.effect_on_target == "increases"
+    with pytest.raises(ValidationError):
+        ModulatorObservation(modulator="GENEX", effect_on_target="maybe")
+    with pytest.raises(ValidationError):
+        ModulatorObservation(modulator="GENEX", perturbation="bogus")
+    with pytest.raises(ValidationError):
+        ModulatorObservation()  # modulator is required
+
+
+def test_modulator_observations_on_llm_out_and_track():
+    assert "modulator_observations" in set(LiteratureLLMOut.model_fields)
+    assert "modulator_observations" in set(LiteratureTrack.model_fields)
+    assert LiteratureLLMOut().modulator_observations == []
+    assert LiteratureTrack().modulator_observations == []
+    assert LiteratureTrack().n_modulator_observations == 0
+    # modulator table is NOT part of the grader-facing observation ledger
+    assert "modulator_observations" not in set(InternalizationObservation.model_fields)
 
 
 def test_trafficking_summary_present_on_llm_out_and_track():
