@@ -50,8 +50,17 @@ protein's uptake, select NOTHING from it.
 For every clip you keep, set: `claim` (your one-sentence interpretation — NOT the
 quote), `claim_type`, `evidence_type`, `evidence_tier` (primary vs secondary),
 `direction` (supports / refutes / ambiguous), `confidence`, and `assay_context`.
-Prefer precision over recall — a few high-quality, clearly-internalization clips
-beat many marginal ones.
+
+**Favor recall for genuine internalization clips.** Keep EVERY clip that actually
+measures or characterizes THIS protein's own internalization — do not drop one
+for being redundant with another, from a minor paper, or because the protein is
+understudied and only a few exist. Downstream span-verification is the precision
+gate (a clip whose quote doesn't match its source is discarded automatically), so
+you needn't self-censor real internalization clips to stay precise. Precision
+still governs the BOUNDARY: never select the "Do NOT select" categories above —
+background, off-target, cargo-only, a DIFFERENT protein's uptake (a sibling /
+family receptor is not this target), third-party-modulator, or
+expression/localization-only — those stay out however quantitative they look.
 
 # Output
 
