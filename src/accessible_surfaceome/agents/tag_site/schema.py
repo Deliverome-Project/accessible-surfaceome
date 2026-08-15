@@ -12,6 +12,23 @@ EVIDENCE_TYPES = (
     "topology inference only",
 )
 
+# Validation strength of the cited tagging construct, best -> worst. The headline
+# ranking signal: prioritize sites where the tag was shown to DISPLAY on the surface
+# AND preserve function/expression vs untagged (the positive-control gold standard,
+# e.g. EndoNB knock-ins, Huet ecto-tagged integrins). Mirrors the "Impact measured
+# vs untagged" column of data/tag_sites/positive_controls.md.
+VALIDATION_LEVELS = (
+    "surface_and_function",  # non-permeabilized surface display AND function/expression retained
+    "surface_only",          # surface display shown; function not compared
+    "function_only",         # function/expression retained; surface display not directly shown
+    "detected_only",         # construct expressed/detected, but no surface OR function comparison
+    "not_measured",          # tag reported without validation
+)
+VALIDATION_RANK = {v: i for i, v in enumerate(VALIDATION_LEVELS)}
+
+# Source tier of the supporting reference, best -> worst (see literature_discovery).
+SOURCE_TIERS = ("paper", "patent", "other", "vendor")
+
 
 class TagSiteProposal(BaseModel):
     rank: int
@@ -43,6 +60,26 @@ class TagSiteProposal(BaseModel):
     evidence_detail: str = Field(description="What was measured/observed, in what system.")
     functional_or_expression_impact_measured: str = Field(
         description="What was MEASURED (assay + result), or 'NOT MEASURED'. Never inferred."
+    )
+    validation_level: str = Field(
+        default="not_measured",
+        description=(
+            "One of VALIDATION_LEVELS. The priority ranking signal: was the tag shown to "
+            "DISPLAY on the cell surface (non-permeabilized) and/or preserve function/expression "
+            "vs untagged? Use 'surface_and_function' only when BOTH were demonstrated; "
+            "'not_measured' if the paper reports the tag without such validation. Derive it from "
+            "what was actually measured — never infer beyond the evidence."
+        ),
+    )
+    source_tier: str = Field(
+        default="paper",
+        description=(
+            "Reference tier: 'paper' (peer-reviewed/preprint) > 'patent' > 'other' > 'vendor' "
+            "(catalog/reagent page). Papers are preferred; vendor pages are kept but rank lowest."
+        ),
+    )
+    supporting_pmid: int | None = Field(
+        default=None, description="PMID of the supporting paper when one exists (grounds the citation)."
     )
     rationale: str
     confidence: str = Field(description='"high" | "medium" | "low"')

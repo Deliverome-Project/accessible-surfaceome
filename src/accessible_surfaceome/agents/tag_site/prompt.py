@@ -29,7 +29,7 @@ between residue N and N+1; report residue_before (= residue N) and residue_after
 When a computed sequence is provided, COPY residue_before/after from it exactly — a mismatch
 invalidates the site.
 
-EVIDENCE — VALIDATED TAGGING EXAMPLES ONLY. Propose a site ONLY when web_search finds a
+EVIDENCE — VALIDATED TAGGING EXAMPLES ONLY. Propose a site ONLY when the LITERATURE shows a
 PUBLISHED example of a tag or other insertion actually TOLERATED there: an epitope-tag
 knock-in, a fluorescent-protein fusion, a transposon/domain insertion screen, or an
 antibody-epitope insertion — AT that exact site, OR in the SAME loop/domain of THIS protein
@@ -38,6 +38,23 @@ domain boundaries, topology, solvent exposure, conservation, or any general stru
 inference — that is the deterministic pipeline's job, not yours, and it does it with computed
 RSA/DSSP. Every site MUST cite the specific study. Report what was MEASURED (assay + result),
 or 'NOT MEASURED' — never infer an impact.
+
+TWO LITERATURE SOURCES — use BOTH.
+1. CANDIDATE PAPERS: you are given a list of pre-retrieved papers (title + abstract + PMID)
+   from a curated EuropePMC + PubTator search on this gene. These are PMID-grounded; read
+   them first and set `supporting_pmid` when a site comes from one.
+2. web_search: run it to fill gaps the abstract index misses — preprints and constructs whose
+   abstracts never say "tag" (e.g. bungarotoxin-binding-site, HiBiT, snorkel). When web_search
+   is your source, set `source_tier` by where the claim is grounded: 'paper' (journal/PMC/
+   preprint) > 'patent' > 'vendor' (catalog/reagent page). Papers are STRONGLY preferred;
+   a vendor page is acceptable as lowest-tier support but never outranks a paper for the same site.
+
+RANK BY VALIDATION STRENGTH (`validation_level`). The best sites are those where the tag was
+shown to DISPLAY on the surface (non-permeabilized staining/labeling) AND preserve
+function/expression vs untagged — set 'surface_and_function' and rank these first. Then
+'surface_only', 'function_only', 'detected_only', and last 'not_measured'. Order the `sites`
+list so higher-validation, paper-grounded sites come first (lower `rank` = better). Never
+upgrade a validation_level beyond what the paper actually measured.
 
 allowed evidence_type values (use ONLY these — never 'structural inference' or 'topology
 inference only'):
