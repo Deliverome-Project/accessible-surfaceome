@@ -317,26 +317,91 @@ _DESCRIPTION_HTML = (
 )
 
 
-def main() -> int:
+# Deep-dive tarball entry for publish-archive's bundle builder. Fetching the
+# raw /v1/genes responses means the tarball records now carry deep_dive_tier
+# (the Worker attaches it at serve time), so the deposit stores the tier with
+# every record — no extra step.
+_DEEP_DIVES_ENTRY = {
+    "deep_dives_bundle": True,
+    "filename": "deep_dives_all.tar.gz",
+    "index_url": "https://api.deliverome.org/surfaceome/v1/genes",
+    "gene_url_template": "https://api.deliverome.org/surfaceome/v1/genes/{symbol}",
+}
+
+
+def _build_deep_dive_tarball() -> Path:
+    """Build deep_dives_all.tar.gz (one <SYMBOL>.json per published record) by
+    reusing publish-archive's ``_build_deep_dives_bundle`` — one bundle
+    implementation, no second copy. SLOW: fetches every /v1/genes record."""
+    import importlib.util
+
+    repo_root = Path(__file__).resolve().parents[2]
+    spec = importlib.util.spec_from_file_location(
+        "publish_archive",
+        str(repo_root / "scripts" / "release" / "publish-archive.py"),
+    )
+    pa = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(pa)
+    return pa._build_deep_dives_bundle(_DEEP_DIVES_ENTRY, dry_run=False)
+
+
+def main(argv: list[str] | None = None) -> int:
+    import argparse
+
+    ap = argparse.ArgumentParser(
+        description=(
+            f"Non-destructively sync files on Zenodo draft {DEPOSIT_ID}. "
+            "Default: the 2 triage TSVs + README + metadata. This is the single "
+            "safe entrypoint — it only touches the files it manages and never "
+            "deletes anything else (e.g. the deep-dive tarball is preserved "
+            "unless you pass --with-deep-dives to refresh it)."
+        )
+    )
+    ap.add_argument("--with-deep-dives", action="store_true",
+                    help="ALSO build + sync deep_dives_all.tar.gz (slow: fetches "
+                         "every /v1/genes record; the tarball then carries the "
+                         "Worker-attached deep_dive_tier)")
+    ap.add_argument("--deep-dives-only", action="store_true",
+                    help="sync ONLY the deep-dive tarball; leave TSVs / README / "
+                         "metadata untouched")
+    ap.add_argument("--dry-run", action="store_true",
+                    help="print the sync plan; issue no PUT / DELETE / metadata "
+                         "write (skips the ~110 MB tarball build)")
+    args = ap.parse_args(argv)
+
     token = os.environ.get("ZENODO_TOKEN")
     if not token:
         print("ZENODO_TOKEN env var required", file=sys.stderr)
         return 1
     auth = {"Authorization": f"Bearer {token}"}
 
-    # Verify both new TSVs exist.
-    for p in NEW_FILES:
-        if not p.exists():
-            print(f"missing: {p}", file=sys.stderr)
-            print("Run scripts/release/build_consolidated_deposit_tsvs.py first.",
-                  file=sys.stderr)
-            return 1
+    include_tsvs = not args.deep_dives_only
+    include_deep_dives = args.with_deep_dives or args.deep_dives_only
 
-    # Materialize the README at the standard path.
-    README_PATH.write_text(_build_readme())
-    print(f"→ wrote {README_PATH}")
+    managed: list[Path] = []
+    if include_tsvs:
+        # Verify both new TSVs exist + materialize the README.
+        for p in NEW_FILES:
+            if not p.exists():
+                print(f"missing: {p}", file=sys.stderr)
+                print("Run scripts/release/build_consolidated_deposit_tsvs.py first.",
+                      file=sys.stderr)
+                return 1
+        README_PATH.write_text(_build_readme())
+        print(f"→ wrote {README_PATH}")
+        managed.extend([*NEW_FILES, README_PATH])
 
-    with httpx.Client(timeout=300.0, headers=auth) as client:
+    if include_deep_dives and not args.dry_run:
+        print("→ building deep_dives_all.tar.gz (fetching every /v1/genes "
+              "record — slow) …")
+        tarball = _build_deep_dive_tarball()
+        print(f"  built {tarball} ({tarball.stat().st_size / 1024**2:.1f} MB)")
+        managed.append(tarball)
+    elif include_deep_dives and args.dry_run:
+        print("→ [dry-run] would build + sync deep_dives_all.tar.gz "
+              "(skipped the ~110 MB build)")
+
+    with httpx.Client(timeout=900.0, headers=auth) as client:
         # 1. Fetch deposit state + bucket URL.
         r = client.get(f"{ZENODO_BASE}/deposit/depositions/{DEPOSIT_ID}")
         r.raise_for_status()
@@ -351,28 +416,35 @@ def main() -> int:
             print("⚠ no bucket URL on deposit — older deposit API form?",
                   file=sys.stderr)
             return 1
-        print(f"→ deposit {DEPOSIT_ID} state=draft bucket={bucket}")
+        print(f"→ deposit {DEPOSIT_ID} state=draft bucket={bucket}"
+              + ("  [DRY RUN]" if args.dry_run else ""))
 
         # 2. Non-destructive, checksum-aware file sync.
         r = client.get(f"{ZENODO_BASE}/deposit/depositions/{DEPOSIT_ID}/files")
         r.raise_for_status()
         existing = {f["filename"]: f for f in r.json()}
-        managed = [*NEW_FILES, README_PATH]
         managed_names = {p.name for p in managed}
+        if include_deep_dives and args.dry_run:
+            managed_names.add(_DEEP_DIVES_ENTRY["filename"])
 
-        # 2a. Retire only this script's own obsolete outputs (name-scoped).
-        for name in RETIRED_FILENAMES:
-            f = existing.get(name)
-            if not f:
-                continue
-            dr = client.delete(
-                f"{ZENODO_BASE}/deposit/depositions/{DEPOSIT_ID}/files/{f['id']}"
-            )
-            if dr.status_code not in (204, 200):
-                print(f"  ⚠ retire failed {name}: {dr.status_code} {dr.text[:200]}",
-                      file=sys.stderr)
-                return 1
-            print(f"  ✓ retired {name}")
+        # 2a. Retire only this script's own obsolete TSV outputs (name-scoped),
+        # and only when syncing the TSVs.
+        if include_tsvs:
+            for name in RETIRED_FILENAMES:
+                f = existing.get(name)
+                if not f:
+                    continue
+                if args.dry_run:
+                    print(f"  [dry-run] would retire {name}")
+                    continue
+                dr = client.delete(
+                    f"{ZENODO_BASE}/deposit/depositions/{DEPOSIT_ID}/files/{f['id']}"
+                )
+                if dr.status_code not in (204, 200):
+                    print(f"  ⚠ retire failed {name}: {dr.status_code} {dr.text[:200]}",
+                          file=sys.stderr)
+                    return 1
+                print(f"  ✓ retired {name}")
 
         # 2b. Overwrite changed / new managed files; skip unchanged by MD5.
         uploaded = skipped = 0
@@ -382,6 +454,9 @@ def main() -> int:
             if remote is not None and _remote_checksum(remote) == local_md5:
                 print(f"  = unchanged, skipped {p.name}")
                 skipped += 1
+                continue
+            if args.dry_run:
+                print(f"  [dry-run] would {'update' if remote else 'create'} {p.name}")
                 continue
             data = p.read_bytes()
             ur = client.put(f"{bucket}/{p.name}", content=data)
@@ -401,26 +476,28 @@ def main() -> int:
         print(f"→ file sync: {uploaded} uploaded, {skipped} unchanged, "
               f"{len(preserved)} preserved")
 
-        # 3. Update description + title only if they actually differ.
-        metadata = dep["metadata"]
-        if (metadata.get("title") == "The accessible human surfaceome"
-                and metadata.get("description") == _DESCRIPTION_HTML):
-            print("→ metadata already current — skipped")
-        else:
-            metadata["title"] = "The accessible human surfaceome"
-            metadata["description"] = _DESCRIPTION_HTML
-            mr = client.put(
-                f"{ZENODO_BASE}/deposit/depositions/{DEPOSIT_ID}",
-                json={"metadata": metadata},
-                headers={**auth, "Content-Type": "application/json"},
-            )
-            if mr.status_code not in (200, 201):
-                print(f"  ⚠ metadata update failed: {mr.status_code} {mr.text[:500]}",
-                      file=sys.stderr)
-                return 1
-            print("→ description + title updated")
+        # 3. Update description + title — only when syncing the TSVs (the
+        # description documents them) and only if they actually differ.
+        if include_tsvs and not args.dry_run:
+            metadata = dep["metadata"]
+            if (metadata.get("title") == "The accessible human surfaceome"
+                    and metadata.get("description") == _DESCRIPTION_HTML):
+                print("→ metadata already current — skipped")
+            else:
+                metadata["title"] = "The accessible human surfaceome"
+                metadata["description"] = _DESCRIPTION_HTML
+                mr = client.put(
+                    f"{ZENODO_BASE}/deposit/depositions/{DEPOSIT_ID}",
+                    json={"metadata": metadata},
+                    headers={**auth, "Content-Type": "application/json"},
+                )
+                if mr.status_code not in (200, 201):
+                    print(f"  ⚠ metadata update failed: {mr.status_code} {mr.text[:500]}",
+                          file=sys.stderr)
+                    return 1
+                print("→ description + title updated")
 
-    print(f"\n✓ Draft {DEPOSIT_ID} updated.")
+    print(f"\n✓ Draft {DEPOSIT_ID} {'plan (dry-run)' if args.dry_run else 'updated'}.")
     print(f"  https://zenodo.org/deposit/{DEPOSIT_ID}")
     return 0
 
