@@ -1055,7 +1055,7 @@ export function CatalogTable({
             </p>
             <p>
               See the{" "}
-              <a href="/api#presets" className={styles.tooltipLink}>
+              <a href="/api/#presets" className={styles.tooltipLink}>
                 full filter definitions on the API page →
               </a>
             </p>
@@ -1078,8 +1078,9 @@ export function CatalogTable({
                 aria-pressed={p.key === "all" ? undefined : on}
                 className={`${styles.presetChip} ${on ? styles.presetChipOn : ""}`}
                 onClick={() => {
-                  setLowLitSurfy(false);
-                  // "All" clears the whole selection (and any sub-axis).
+                  // "All" clears the whole selection (and any sub-axis). Note:
+                  // it does NOT clear the low-lit toggle — that's an independent
+                  // facet (see its chip) and composes with the tier presets.
                   if (p.key === "all") {
                     setPresetKeys(new Set());
                     setInductionSubs(new Set());
@@ -1107,7 +1108,7 @@ export function CatalogTable({
                   <p>
                     See the{" "}
                     <a
-                      href={`/api#presets`}
+                      href={`/api/#presets`}
                       className={styles.tooltipLink}
                     >
                       exact {p.label} gate definition on the API page →
@@ -1118,10 +1119,10 @@ export function CatalogTable({
             </span>
           );
         })}
-        {/* Low-lit + UniProt — standalone curated list (not a PRESETS entry;
-         *  its predicate needs the UniProt DB flag, r.db.uniprot). Under-studied
-         *  surface candidates the deep dive couldn't confidently call. Mutually
-         *  exclusive with the preset chips above. */}
+        {/* Low-lit + UniProt — standalone facet (not a PRESETS entry; its
+         *  predicate needs the UniProt DB flag, r.db.uniprot). Under-studied
+         *  surface candidates. INDEPENDENT of the tier presets — it composes
+         *  with them under multi-select (AND), it does not clear them. */}
         {(() => {
           const count = rows.reduce(
             (n, r) =>
@@ -1139,12 +1140,9 @@ export function CatalogTable({
                 aria-selected={lowLitSurfy}
                 className={`${styles.presetChip} ${lowLitSurfy ? styles.presetChipOn : ""}`}
                 onClick={() => {
-                  const next = !lowLitSurfy;
-                  setLowLitSurfy(next);
-                  if (next) {
-                    setPresetKeys(new Set());
-                    setInductionSubs(new Set());
-                  }
+                  // Independent facet — toggles on its own, composing with any
+                  // active tier presets (AND); does not clear them.
+                  setLowLitSurfy(!lowLitSurfy);
                 }}
               >
                 Low-lit + UniProt

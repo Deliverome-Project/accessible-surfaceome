@@ -395,19 +395,18 @@ export function GeneHeader({
             </span>
             <InfoTip label="About the deep-dive tier">
               <p>
-                This gene&apos;s tier in the catalog&apos;s five-tier surface
-                classification. <strong>Canonical</strong> — the strictest
-                shortlist: the deep dive&apos;s <em>overall</em> ruling is
-                confident (high/moderate confidence, surface-dominant or mixed
-                localization, accessible, dense evidence) — not merely that
-                direct assays exist. <strong>Likely</strong> — surface on
-                broader / more indirect evidence. <strong>Low&nbsp;confidence /
-                Uncertain / Not&nbsp;surface</strong> — below-shortlist leans,
-                usually on thin or conflicting evidence. A sub-facet marks
-                cell-state-induced or cell-type-restricted presentation.
+                Which shortlist this gene lands in.{" "}
+                <strong>Canonical</strong> — the high-confidence,
+                antibody/ADC-grade surface tier (confident overall call,
+                surface-dominant / mixed, accessible, at least
+                supportive-but-indirect evidence). <strong>Likely</strong> —
+                surface on broader evidence. <strong>Low&nbsp;/ Uncertain /
+                Not&nbsp;surface</strong> — below-shortlist leans on thin or
+                conflicting evidence. A sub-facet marks cell-state-induced or
+                cell-type-restricted presentation.
               </p>
               <p>
-                Full predicate definitions:{" "}
+                Exact gate definitions:{" "}
                 <a
                   href="/api/#presets"
                   target="_blank"
@@ -425,24 +424,19 @@ export function GeneHeader({
                 Low lit · UniProt-positive
                 <InfoTip label="About the low-literature + UniProt-positive flag">
                   <p>
-                    This protein has a <strong>thin literature base</strong> —
-                    only {rec.filters.n_papers_found} papers were found in the
-                    discovery search, below the ~{LOW_LIT_PAPERS_MAX}-paper point
-                    where the deep dive can usually reach a confident (Canonical)
-                    call. It did not clear the Canonical bar, but{" "}
-                    <strong>
-                      UniProt&apos;s curated annotation places it at the cell
-                      surface
-                    </strong>
-                    .
+                    <strong>Thin literature base</strong> — only{" "}
+                    {rec.filters.n_papers_found} papers found in discovery, below
+                    the ~{LOW_LIT_PAPERS_MAX}-paper point where the deep dive can
+                    usually reach a confident call — yet{" "}
+                    <strong>UniProt annotates it cell-surface</strong>.
                   </p>
                   <p>
-                    So the below-Canonical verdict here may reflect{" "}
-                    <em>missing literature</em> rather than genuinely non-surface
-                    biology — an under-studied surface candidate worth
-                    revisiting, not a settled negative. (UniProt is the surface
-                    database used here because it outperformed the others on our
-                    gold-standard positive controls.)
+                    A flag that the surface call may be limited by{" "}
+                    <em>missing literature</em> rather than settled biology — an
+                    under-studied surface candidate worth a closer look.
+                    Independent of the tier above (it can co-occur with any
+                    tier). UniProt is used because it outperformed the other
+                    surface databases on our gold-standard positive controls.
                   </p>
                 </InfoTip>
               </span>
