@@ -15,8 +15,10 @@ target.
 # Decision (choose exactly one)
 
 - `worth_fetching` — the abstract signals a **primary internalization
-  measurement** whose details live in the full text: antibody/ligand/ADC uptake,
-  acid-strip flow cytometry, pH-sensitive-dye (e.g. pHrodo) uptake, live-cell
+  measurement** whose details live in the full text — for ANY delivery modality,
+  not just antibodies/ADCs: antibody, ligand, ADC, oligonucleotide/siRNA (incl.
+  GalNAc), lipid-nanoparticle, AAV/viral, or peptide uptake;
+  surface-stripping flow cytometry, pH-sensitive-dye (e.g. pHrodo) uptake, live-cell
   time-course imaging, quantified endocytosis/recycling kinetics (rate constant,
   half-time, % internalized), or endocytosis-route dissection (inhibitor /
   knockdown). Fetch when the body likely carries the assay, cell line, ligand

@@ -71,7 +71,7 @@ def test_annotate_literature_assembles_record(tmp_path, monkeypatch):
         ],
     )
     assert isinstance(rec, InternalizationRecord)
-    assert rec.schema_version == "0.2.2"
+    assert rec.schema_version == "0.2.3"
     assert rec.literature is not None
     assert rec.literature.overall_grade == "high"
     assert rec.literature.grades_by_mode.therapeutic.grade == "high"

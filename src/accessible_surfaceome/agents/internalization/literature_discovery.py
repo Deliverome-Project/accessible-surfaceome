@@ -18,23 +18,31 @@ from accessible_surfaceome.tools._shared.pubtator import (
     pubtator_search,
 )
 
+# Broad, modality-agnostic internalization terms. Deliberately NOT antibody/ADC-
+# centric — internalization matters for every delivery modality — and dropping
+# "acid strip" (niche) and "receptor downregulation" (mostly matches expression
+# downregulation, not endocytosis).
 _INTERNALIZATION_TERMS = (
-    'internali* OR endocytos* OR "receptor-mediated uptake" OR '
-    '"antibody internalization" OR "ADC internalization" OR '
-    '"receptor recycling" OR "clathrin-mediated" OR '
-    # measurement-weighted terms so relevance ranking favors papers that
-    # actually quantify internalization over qualitative / delivery mentions.
-    '"internalization rate" OR "endocytic rate" OR "uptake kinetics" OR '
-    '"surface half-life" OR "acid strip" OR "receptor downregulation"'
+    'internali* OR endocytos* OR "receptor-mediated endocytosis" OR '
+    '"receptor-mediated uptake" OR "receptor internalization" OR '
+    '"receptor recycling" OR "internalization rate" OR "endocytic rate" OR '
+    '"uptake kinetics" OR "surface half-life" OR "clathrin-mediated" OR '
+    '"caveolin-mediated" OR macropinocytosis'
 )
-# A tighter, measurement/ADC-focused query so that genes whose literature is
-# dominated by other themes (AXL=signaling/EMT, BCMA=CAR-T/expression) still
-# surface their internalization-measurement papers, which the broad query buries.
+# A tighter, measurement-focused query spanning DELIVERY MODALITIES (not just
+# ADCs) — antibody/ADC, siRNA / oligonucleotide (incl. GalNAc), lipid
+# nanoparticle, AAV / viral entry, and peptide receptor-mediated uptake — so
+# genes whose literature is dominated by other themes (AXL=signaling/EMT,
+# BCMA=CAR-T) still surface their internalization-measurement papers.
 _MEASUREMENT_TERMS = (
-    '"antibody internalization" OR "ADC internalization" OR '
-    '"antibody-drug conjugate" OR "receptor internalization" OR '
+    '"receptor-mediated endocytosis" OR "receptor internalization" OR '
     '"internalization assay" OR "internalization kinetics" OR '
-    '"internalization rate" OR "receptor endocytosis" OR "receptor downregulation"'
+    '"internalization rate" OR "receptor endocytosis" OR '
+    '"antibody internalization" OR "ADC internalization" OR '
+    '"oligonucleotide uptake" OR "siRNA uptake" OR "antisense oligonucleotide" OR '
+    'GalNAc OR "lipid nanoparticle" OR "nanoparticle uptake" OR '
+    '"adeno-associated virus" OR "viral entry" OR "entry receptor" OR '
+    '"cell-penetrating peptide" OR "peptide uptake"'
 )
 _MAX_PER_SOURCE = 60
 
@@ -85,7 +93,7 @@ def discover_internalization_papers(
     hits = pubtator_search(
         http=http,
         query=build_gene_entity_query(
-            bundle.hgnc_symbol, "internalization rate endocytosis uptake kinetics"
+            bundle.hgnc_symbol, "internalization endocytosis receptor-mediated uptake"
         ),
         sort="score desc",
     ).hits

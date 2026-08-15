@@ -1,6 +1,6 @@
 """Pydantic models for the internalization record.
 
-Schema 0.2.1 carries two tracks: ``model_priors`` (Plan 1 — per-isoform grade
+Schema 0.2.3 carries two tracks: ``model_priors`` (Plan 1 — per-isoform grade
 from sequence + topology) and an optional ``literature`` track (Plan 2 —
 PMID-anchored, span-verified). This record is a separate artifact from
 ``SurfaceomeRecord`` with its own schema version.
@@ -15,7 +15,7 @@ from pydantic import BaseModel, ConfigDict, Field, model_validator
 
 from accessible_surfaceome.tools._shared.models import Evidence
 
-SCHEMA_VERSION = "0.2.2"
+SCHEMA_VERSION = "0.2.3"
 RUNNER_VERSION = "internalization-model-prior/0.1.0"
 
 Grade = Literal["high", "moderate", "low", "no", "unknown"]
@@ -70,6 +70,10 @@ AssayType = Literal[
     "antibody_uptake",
     "ligand_uptake",
     "adc_internalization",
+    "nanoparticle_uptake",
+    "oligonucleotide_uptake",
+    "peptide_uptake",
+    "viral_entry",
     "radioligand_immunopet",
     "ph_sensitive_dye",
     "acid_strip_flow",

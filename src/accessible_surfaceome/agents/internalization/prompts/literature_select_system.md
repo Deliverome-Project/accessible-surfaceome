@@ -12,8 +12,9 @@ of those synonyms or a deprecated symbol is still about the target.
 
 Pick a clip ONLY when it reports **this protein's own internalization event** —
 uptake / endocytosis from the plasma membrane — as a measurement or a
-characterized result: an uptake/endocytosis/recycling assay (antibody, ligand,
-or ADC uptake; acid-strip flow; pH-dye; live imaging), a rate constant /
+characterized result: an uptake/endocytosis/recycling assay for ANY modality
+(antibody, ligand, ADC, oligonucleotide/siRNA, nanoparticle, AAV/viral, or
+peptide uptake; surface-stripping flow; pH-dye; live imaging), a rate constant /
 half-time / %-internalized number, the assay + cell line, the ligand condition
 (constitutive vs. ligand- or antibody-induced), or an endocytosis-route result
 that changes the protein's uptake (clathrin / caveolin / macropinocytosis;

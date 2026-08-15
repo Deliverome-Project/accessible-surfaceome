@@ -16,8 +16,9 @@ forcing `high`/`low`):
 
 - **basal** — constitutive internalization with no added ligand.
 - **native_ligand** — internalization driven by the protein's endogenous ligand.
-- **therapeutic** — internalization driven by an exogenous binder (antibody,
-  ADC, or engineered ligand). This is the delivery-relevant mode and often
+- **therapeutic** — internalization driven by an exogenous binder or delivery
+  agent (antibody, ADC, siRNA/oligonucleotide, lipid nanoparticle, AAV, peptide,
+  or engineered ligand). This is the delivery-relevant mode and often
   differs from basal.
 
 Leave a mode `unknown` when the ledger has no evidence for it. Set `overall_grade`

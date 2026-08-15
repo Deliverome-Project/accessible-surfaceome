@@ -12,8 +12,8 @@ from accessible_surfaceome.agents.internalization.models import (
 )
 
 
-def test_schema_version_is_0_2_2():
-    assert SCHEMA_VERSION == "0.2.2"
+def test_schema_version_is_0_2_3():
+    assert SCHEMA_VERSION == "0.2.3"
 
 
 def test_moderate_is_a_valid_grade():
