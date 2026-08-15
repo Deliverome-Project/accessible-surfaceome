@@ -4,6 +4,7 @@ from types import SimpleNamespace
 import pytest
 
 from accessible_surfaceome.agents.internalization.model_prior import (
+    _build_user_prompt,
     extract_json_object,
     grade_isoforms_with_model,
 )
@@ -112,3 +113,123 @@ def test_grade_raises_after_exhausting_repairs():
             gene_symbol="TFRC",
             isoforms=_isoforms(),
         )
+
+
+def test_build_user_prompt_is_blind_to_identity():
+    """The prompt must not leak the gene symbol or the raw isoform accession —
+    isoforms are labeled generically so the grade is identity-blind."""
+    isoforms = [
+        IsoformContext(
+            isoform_id="Q99999-1",
+            is_canonical=True,
+            length_aa=500,
+            sequence="MSEQ" * 10,
+            topology_summary="TOPO-A",
+        ),
+        IsoformContext(
+            isoform_id="Q99999-2",
+            is_canonical=False,
+            length_aa=420,
+            sequence="MSEQ" * 8,
+            topology_summary="TOPO-B",
+        ),
+    ]
+    prompt = _build_user_prompt("SECRETGENE", isoforms)
+    assert "SECRETGENE" not in prompt
+    assert "Q99999-1" not in prompt
+    assert "Q99999-2" not in prompt
+    assert "Isoform 1 (canonical)" in prompt
+    assert "Isoform 2" in prompt
+    # Non-identifying context is still present.
+    assert "TOPO-A" in prompt
+    assert "TOPO-B" in prompt
+
+
+def test_grade_remaps_isoform_id_from_input_by_index():
+    """The model sees generic labels, so its per_isoform ids are placeholders;
+    grade_isoforms_with_model must overwrite isoform_id / is_canonical /
+    length_aa from the INPUT isoforms by position."""
+    payload = {
+        "overall_grade": "moderate",
+        "overall_confidence": "low",
+        "model_reasoning": "Reasoned from sequence + topology only.",
+        "per_isoform": [
+            {
+                "isoform_id": "Isoform 1",  # placeholder generic label
+                "is_canonical": False,  # wrong on purpose — code must override
+                "length_aa": 1,  # wrong on purpose — code must override
+                "topology_summary": "TOPO-A",
+                "endocytic_motifs_noted": "YXXphi",
+                "grade": "high",
+                "confidence": "moderate",
+                "rationale": "Cytoplasmic motif present.",
+            },
+            {
+                "isoform_id": "Isoform 2",  # placeholder generic label
+                "is_canonical": True,  # wrong on purpose
+                "length_aa": 9,  # wrong on purpose
+                "topology_summary": "TOPO-B",
+                "endocytic_motifs_noted": None,
+                "grade": "unknown",
+                "confidence": "low",
+                "rationale": "No decisive sequence signal.",
+            },
+        ],
+    }
+    isoforms = [
+        IsoformContext(
+            isoform_id="Q99999-1",
+            is_canonical=True,
+            length_aa=500,
+            sequence="MSEQ" * 10,
+            topology_summary="TOPO-A",
+        ),
+        IsoformContext(
+            isoform_id="Q99999-2",
+            is_canonical=False,
+            length_aa=420,
+            sequence="MSEQ" * 8,
+            topology_summary="TOPO-B",
+        ),
+    ]
+    client = _FakeClient(["```json\n" + json.dumps(payload) + "\n```"])
+    track = grade_isoforms_with_model(
+        client,
+        model="claude-opus-4-8",
+        system_prompt="SYS",
+        gene_symbol="SECRETGENE",
+        isoforms=isoforms,
+    )
+    assert [p.isoform_id for p in track.per_isoform] == ["Q99999-1", "Q99999-2"]
+    assert [p.is_canonical for p in track.per_isoform] == [True, False]
+    assert [p.length_aa for p in track.per_isoform] == [500, 420]
+    # The grade payload (the model's actual judgement) is preserved.
+    assert [p.grade for p in track.per_isoform] == ["high", "unknown"]
+
+
+def test_grade_drops_extra_isoforms_on_count_mismatch():
+    """If the model returns more graded isoforms than were given, the extras are
+    dropped (zip-by-index) rather than crashing."""
+    payload = _llm_payload()
+    payload["per_isoform"].append(
+        {
+            "isoform_id": "Isoform 2",
+            "is_canonical": False,
+            "length_aa": 999,
+            "topology_summary": "EXTRA",
+            "endocytic_motifs_noted": None,
+            "grade": "unknown",
+            "confidence": "low",
+            "rationale": "Hallucinated extra isoform.",
+        }
+    )
+    client = _FakeClient(["```json\n" + json.dumps(payload) + "\n```"])
+    track = grade_isoforms_with_model(
+        client,
+        model="claude-opus-4-8",
+        system_prompt="SYS",
+        gene_symbol="TFRC",
+        isoforms=_isoforms(),  # exactly one input isoform
+    )
+    assert len(track.per_isoform) == 1
+    assert track.per_isoform[0].isoform_id == "P02786-1"

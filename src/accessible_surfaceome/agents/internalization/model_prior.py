@@ -48,22 +48,29 @@ def _text_of(resp: Any) -> str:
 
 
 def _build_user_prompt(gene_symbol: str, isoforms: list[IsoformContext]) -> str:
+    # gene_symbol is intentionally NOT written into the prompt, and isoform
+    # accessions are replaced with generic labels: the model must grade
+    # endocytic propensity from sequence + topology ALONE, blind to which
+    # protein this is. Grades are re-attached to the real isoform IDs by INPUT
+    # position in ``grade_isoforms_with_model`` (the parameter is kept for
+    # caller compatibility).
     lines = [
-        f"Gene symbol: {gene_symbol}",
-        "",
         "Grade this protein's INTRINSIC / BASAL endocytic (internalization) "
-        "propensity per isoform, using your knowledge of this protein plus the "
-        "sequences and topology below. Topology gives the extracellular vs "
-        "cytoplasmic (inside/outside) sidedness — endocytic sorting motifs only "
-        "function in CYTOPLASMIC regions, so weigh motifs against it. Source is "
-        "DeepTMHMM (per-residue inside/outside prediction) where available, else "
-        "UniProt topology features (annotated on the canonical isoform).",
+        "propensity per isoform, using ONLY the amino-acid sequences and the "
+        "extracellular/cytoplasmic (E/C) topology below. You are NOT told which "
+        "protein this is; do not try to identify it or recall any specific "
+        "protein's known biology — reason only from sequence and topology. "
+        "Topology gives the extracellular vs cytoplasmic (inside/outside) "
+        "sidedness — endocytic sorting motifs only function in CYTOPLASMIC "
+        "regions, so weigh motifs against it. Source is DeepTMHMM (per-residue "
+        "inside/outside prediction) where available, else UniProt topology "
+        "features (annotated on the canonical isoform).",
         "",
     ]
     for i, iso in enumerate(isoforms, 1):
+        label = f"Isoform {i}" + (" (canonical)" if iso.is_canonical else "")
         lines += [
-            f"### Isoform {i}: {iso.isoform_id}"
-            + (" (canonical)" if iso.is_canonical else ""),
+            f"### {label}",
             f"Length: {iso.length_aa} aa",
             f"Topology ({iso.topology_source}): {iso.topology_summary}",
             "Sequence:",
@@ -134,10 +141,26 @@ def grade_isoforms_with_model(
         schema=ModelPriorLLMOut,
         usage_sink=usage_sink,
     )
+    # The model graded anonymized isoforms (generic labels, no real accession),
+    # so each returned ``isoform_id`` is a placeholder. Re-attach real identity
+    # by INPUT position — index i -> isoforms[i] — overwriting isoform_id,
+    # is_canonical, and length_aa with the trusted input values. ``zip`` is a
+    # best-effort pair by index: extra graded isoforms are dropped and missing
+    # ones are simply not emitted (never crash on a count mismatch).
+    per_isoform = [
+        graded.model_copy(
+            update={
+                "isoform_id": ctx.isoform_id,
+                "is_canonical": ctx.is_canonical,
+                "length_aa": ctx.length_aa,
+            }
+        )
+        for graded, ctx in zip(out.per_isoform, isoforms)
+    ]
     return ModelPriorTrack(
         model=model,
         overall_grade=out.overall_grade,
         overall_confidence=out.overall_confidence,
         model_reasoning=out.model_reasoning,
-        per_isoform=out.per_isoform,
+        per_isoform=per_isoform,
     )
