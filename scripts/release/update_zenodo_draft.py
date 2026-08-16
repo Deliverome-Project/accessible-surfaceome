@@ -101,8 +101,8 @@ def _build_readme() -> str:
 
 This deposit contains the data outputs for the
 [accessible-surfaceome](https://github.com/Deliverome-Project/accessible-surfaceome)
-project. The repository code itself is archived separately (GitHub-
-Zenodo auto-archive + Software Heritage continuous crawl).
+project. The repository code itself is archived separately via the
+GitHub-Zenodo auto-archive (one DOI per tagged release).
 
 **Reserved DOI:** `10.5281/zenodo.20805384` — preserved across draft
 updates; activates on publish.
@@ -126,13 +126,6 @@ pipeline expects to ship alongside the data — placeholders are wired
 in the source script but the artifacts themselves are still in
 iteration. Marked as checkboxes for tracking:
 
-- [ ] **`deep_dives_all.tar.gz`** — gzipped tarball, one `<SYMBOL>.json`
-  per published `SurfaceomeRecord` (full evidence chain + per-claim
-  verbatim quotes). Held back until the deep-dive prompt + schema
-  iteration converges; corresponds to the commented-out
-  `{{"deep_dives_bundle": True, ...}}` entry in
-  [`publish-archive.py`](https://github.com/Deliverome-Project/accessible-surfaceome/blob/{sha}/scripts/release/publish-archive.py)'s
-  `EXTRA_FILES`.
 - [ ] **`manuscript.pdf`** + **`manuscript.xml`** — the publication
   PDF (built upstream from `.docx` / `.tex` / `.md`) and a
   pandoc-generated JATS XML representation for PMC indexing +
@@ -149,20 +142,17 @@ Already shipping in this draft:
 
 - [x] `triage-runs-genome-with-reasoning.tsv` (consolidated ncbi + pubmed)
 - [x] `triage-benchmark-with-reasoning.tsv` (multi-replicate, truth-joined)
-- [x] `deep-dive-preset-membership.tsv` — per-gene boolean membership
-  in each of the four catalog presets (Canonical / Likely / Cell-
-  state induced / Cell-type restricted) plus the three induction sub-
-  axes (Disease / Stress / Immune). Predicates mirror the viewer
-  toolbar at [`viewer/lib/catalog-presets.ts`](https://github.com/Deliverome-Project/accessible-surfaceome/blob/{sha}/viewer/lib/catalog-presets.ts);
-  the Python mirror at [`src/accessible_surfaceome/release/catalog_presets.py`](https://github.com/Deliverome-Project/accessible-surfaceome/blob/{sha}/src/accessible_surfaceome/release/catalog_presets.py)
-  is the deposit's source of truth. Drift between the two surfaces
-  is caught by a test (`tests/test_catalog_presets_mirror.py`).
-  Audit columns (`induction_trigger`, `surface_call_reason`,
-  `state_dependence`, `evidence_grade`, `surface_specificity`,
-  `ecd_accessibility_class`, `confidence`, `evidence_density`,
-  `surface_accessibility`) carry the raw input fields the predicates
-  read so a reader can re-derive any preset locally without re-
-  fetching the full `annotation_json`.
+- [x] `deep_dives_all.tar.gz` — gzipped tarball, one `<SYMBOL>.json`
+  per published `SurfaceomeRecord` (**5,130 records**), each carrying
+  its full evidence chain, per-claim verbatim quotes, and the deep-dive
+  classification: `deep_dive_tier` (Canonical / Likely / Low /
+  Uncertain / No) plus `deep_dive_facet` (Cell-state induced /
+  Cell-type restricted). The tier is computed by the same predicate the
+  viewer ships ([`viewer/lib/catalog-presets.ts`](https://github.com/Deliverome-Project/accessible-surfaceome/blob/{sha}/viewer/lib/catalog-presets.ts),
+  Python mirror [`src/accessible_surfaceome/release/catalog_presets.py`](https://github.com/Deliverome-Project/accessible-surfaceome/blob/{sha}/src/accessible_surfaceome/release/catalog_presets.py),
+  drift caught by `tests/test_catalog_presets_mirror.py`) and attached
+  server-side on `/v1/genes/{{symbol}}`, so the deposited records carry
+  it verbatim — no separate membership file needed.
 - [x] In-deposit `README.md` (this file)
 - [x] Reserved DOI wired into [`scripts/embed_figure_gist_metadata.py`](https://github.com/Deliverome-Project/accessible-surfaceome/blob/{sha}/scripts/embed_figure_gist_metadata.py)'s
   `ZENODO_DATA_DOI` so figure PDF/PNG metadata can pre-bake the citation.
@@ -180,9 +170,9 @@ ambiguous-reason zero-DB Sonnet-no slice that we re-ran with PubMed
 evidence). A `run_id` column at position 1 tags every row so a reader
 can split or filter by lane.
 
-For the 2,624 genes in the rescue slice this means **2 rows per gene**
-(one NCBI, one PubMed); for the remaining ~16,700 genes it's a single
-NCBI row.
+For the ~2,621 genes in the PubMed re-run subset this means **2 rows
+per gene** (one NCBI, one PubMed); for the remaining ~16,700 genes it's
+a single NCBI row.
 
 | Column | Meaning |
 |---|---|
@@ -219,7 +209,7 @@ curl 'https://api.deliverome.org/surfaceome/v1/triage/export.tsv?run_id=genome_f
 
 ### 2. `triage-benchmark-with-reasoning.tsv`
 
-Long-format **multi-replicate** TSV, **4,410 rows**, covering the
+Long-format **multi-replicate** TSV, **4,851 rows**, covering the
 147-gene curated benchmark across all 3 production models (Haiku 4.5,
 Sonnet 4.6, Opus 4.8) and 4 prompt variants (`naive`, `ncbi`,
 `web_ncbi`, `pubmed_ncbi`). Each `(gene × model × variant)` cell
@@ -265,8 +255,6 @@ def reconciled_verdict(ncbi: str, pubmed: str | None) -> str:
 - **Code release archive:** the GitHub-Zenodo auto-archive mints one
   DOI per tagged release; the latest is linked from this record's
   *Related identifiers*.
-- **Continuous source archive:** Software Heritage. The repo's SWHID
-  is in this record's *Related identifiers* (relation `isSupplementTo`).
 
 ## License
 
@@ -279,41 +267,37 @@ respective terms; see the upstream papers.
 
 _DESCRIPTION_HTML = (
     "Benchmark, triage, and deep-dive data outputs for the "
-    "accessible-surfaceome project. The current draft snapshot ships "
-    "two consolidated data files (triage + benchmark) plus an "
-    "in-deposit README documenting every column and the source-join "
-    "recipe. <b>Deep-dive `SurfaceomeRecord` JSONs and the manuscript "
-    "bundle (PDF + JATS XML) are placeholder slots</b> — they'll be "
-    "added in subsequent draft updates as that work finishes, against "
-    "the same reserved DOI (10.5281/zenodo.20805384). See the in-"
-    "deposit README's \"Coming in subsequent draft updates\" section "
-    "for the full list and provenance of items pending.<br><br>"
+    "accessible-surfaceome project. This draft ships three data files "
+    "plus an in-deposit README documenting every column and the "
+    "source-join recipe.<br><br>"
     "<b>triage-runs-genome-with-reasoning.tsv</b> — 21,950-row "
-    "long-format TSV consolidating the canonical NCBI-context sweep "
-    "(19,324 genes × 1 rep, ~19k-gene M1 candidate universe) AND the "
-    "PubMed-augmented rescue lane (2,626 genes × 1 rep, the "
-    "ambiguous-reason zero-DB Sonnet-no slice). A `run_id` column "
-    "tags every row so the lanes can be split or merged at read time. "
-    "For the 2,624 rescued-slice genes this means two rows per gene "
-    "(one NCBI, one PubMed); for the other ~16,700 it's a single NCBI "
-    "row. The read-side reconciliation rule (prefer PubMed when it is "
-    "more inclusive than NCBI) is documented in the README and is "
-    "applied server-side by the live /v1/catalog endpoint.<br><br>"
-    "<b>triage-benchmark-with-reasoning.tsv</b> — 4,410-row "
-    "long-format multi-replicate TSV covering the 147-gene curated "
-    "benchmark across Haiku 4.5, Sonnet 4.6, and Opus 4.8 under 4 "
-    "prompt variants each. Each (gene × model × variant) cell appears "
-    "as 3 replicate rows so a reader can see per-rep variability "
-    "directly. Curated truth verdict / signal / reason / class are "
-    "joined in per gene.<br><br>"
-    "All files are reproducible end-to-end from the public read-only "
-    "API at https://api.deliverome.org/surfaceome/v1/ ; the included "
-    "README.md documents the exact endpoint joins. The repository "
-    "code itself is archived separately via the GitHub-Zenodo "
-    "auto-archive (one DOI per tagged release) and via Software "
-    "Heritage (continuous crawl, content-addressed SWHIDs). This "
-    "record is the supplementary data layer; the related-identifiers "
-    "field links the two."
+    "long-format TSV consolidating the genome-wide Sonnet+NCBI sweep "
+    "(19,324 genes × 1 rep, the ~19k-gene M1 candidate universe) AND a "
+    "targeted PubMed-context re-run of a 2,626-row subset (the "
+    "ambiguous-reason zero-DB Sonnet-no slice). A `run_id` column tags "
+    "every row so the lanes can be split or merged at read time; for the "
+    "~2,621 re-run genes that's two rows (one NCBI, one PubMed). The "
+    "read-side reconciliation rule (prefer PubMed when it is more "
+    "inclusive than NCBI) is documented in the README and applied "
+    "server-side by the live /v1/catalog endpoint.<br><br>"
+    "<b>triage-benchmark-with-reasoning.tsv</b> — 4,851-row long-format "
+    "multi-replicate TSV covering the 147-gene curated benchmark across "
+    "Haiku 4.5, Sonnet 4.6, and Opus 4.8 under 4 prompt variants each, "
+    "with per-replicate rows and curated truth verdict / signal / reason "
+    "/ class joined in per gene.<br><br>"
+    "<b>deep_dives_all.tar.gz</b> — one JSON per published "
+    "SurfaceomeRecord (5,130 records), each carrying its full evidence "
+    "chain, per-claim verbatim quotes, and the deep-dive classification "
+    "(`deep_dive_tier` + `deep_dive_facet`) computed by the same "
+    "predicate the viewer ships and attached server-side on "
+    "/v1/genes/{symbol}.<br><br>"
+    "The manuscript bundle (PDF + JATS XML) will be added in a "
+    "subsequent draft update against the same reserved DOI "
+    "(10.5281/zenodo.20805384). All data files are reproducible from the "
+    "public read-only API at https://api.deliverome.org/surfaceome/v1/ ; "
+    "the repository code is archived separately via the GitHub-Zenodo "
+    "auto-archive (one DOI per tagged release), linked from the "
+    "related-identifiers field."
 )
 
 
