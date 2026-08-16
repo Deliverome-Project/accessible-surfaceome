@@ -219,7 +219,14 @@ async function withEdgeCache(request, handler, { includeQuery = false } = {}) {
   const cache = caches.default;
   const url = new URL(request.url);
   const keyPath = includeQuery ? url.pathname + url.search : url.pathname;
-  const cacheKey = new Request(new URL(keyPath, url.origin).href, {
+  // Key the cache on a SYNTHETIC host, not the real api.deliverome.org origin.
+  // The zone runs a cache rule (http.host eq "api.deliverome.org") whose
+  // custom cache key EXCLUDES ALL query strings — so with includeQuery it would
+  // strip run_id and collide /v1/triage/export.tsv?run_id=X with ?run_id=Y
+  // (the bug that duplicated a genome run in the Zenodo deposit). An internal
+  // host the zone rule can't match preserves the full keyPath. Mirrors the
+  // catalog handler's `https://catalog.cache` cache key.
+  const cacheKey = new Request(new URL(keyPath, "https://surfaceome-api.cache").href, {
     method: "GET",
   });
   const hit = await cache.match(cacheKey);
