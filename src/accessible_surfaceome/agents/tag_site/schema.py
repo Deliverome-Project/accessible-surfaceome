@@ -1,7 +1,7 @@
 """Structured output schema for the literature tag-site agent."""
 from __future__ import annotations
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, computed_field
 
 # Evidence-strength ladder (verbatim from the agentic tag-site benchmark prompt).
 EVIDENCE_TYPES = (
@@ -83,6 +83,18 @@ class TagSiteProposal(BaseModel):
     )
     rationale: str
     confidence: str = Field(description='"high" | "medium" | "low"')
+
+    @computed_field  # type: ignore[prop-decorator]
+    @property
+    def residue_label(self) -> str:
+        """Canonical single-token residue for downstream analysis, e.g. ``G101``.
+
+        Convention (matches ``data/tag_sites/positive_controls.md`` "after N" and
+        the EndoNB majority): the residue immediately N-terminal to the junction —
+        the tag is inserted AFTER this residue, between it and residue+1. Derived
+        from ``residue_before`` + ``insert_after_residue`` so it is always
+        consistent regardless of how the model phrased the site."""
+        return f"{self.residue_before}{self.insert_after_residue}"
 
 
 class TagSiteResult(BaseModel):

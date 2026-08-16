@@ -83,3 +83,14 @@ def test_to_viewer_sites_shape():
     assert s["topology_state"] == "O" and s["extracellular"] is True
     assert "validation: surface_and_function" in s["rationale"]
     assert s["sources"] == [{"pmid": 123, "citation": "PMID 123"}]
+    assert s["residue_label"] == "A100"   # residue_before 'A' + insert_after 100
+
+
+def test_residue_label_after_convention():
+    # 'after N': residue immediately N-terminal to the junction (tag inserted AFTER it)
+    p = _site(1, res=101)
+    p.residue_before = "G"
+    assert p.residue_label == "G101"
+    from accessible_surfaceome.tag_sites.model import residue_label
+    assert residue_label("G", 101) == "G101"
+    assert residue_label(None, 101) is None   # before-residue-1 N-terminal tag

@@ -35,6 +35,11 @@ export interface TaggedSite {
   insert_after_residue: number | null;
   residue_before: string | null;
   residue_after: string | null;
+  /** Canonical single-token residue for analysis, e.g. "G101": the residue
+   *  immediately N-terminal to the junction (tag inserted AFTER it). Matches the
+   *  "after N" convention in data/tag_sites/positive_controls.md. Null when there
+   *  is no before-residue (e.g. a before-residue-1 N-terminal tag). */
+  residue_label?: string | null;
   /** DeepTMHMM per-residue char at the junction (O/I/M/S), or null. */
   topology_state: string | null;
   extracellular: boolean;

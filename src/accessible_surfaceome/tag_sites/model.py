@@ -9,11 +9,23 @@ from typing import Any, Literal, Optional
 
 TAGGED_SITE_KEYS = {
     "site_id", "gene_symbol", "uniprot_acc", "provenance", "det_path", "site_kind",
-    "insert_after_residue", "residue_before", "residue_after", "topology_state",
-    "extracellular", "compartment", "tag_type", "tag_length_aa", "linker",
-    "evidence_type", "functional_impact_measured", "confidence", "rationale",
+    "insert_after_residue", "residue_before", "residue_after", "residue_label",
+    "topology_state", "extracellular", "compartment", "tag_type", "tag_length_aa",
+    "linker", "evidence_type", "functional_impact_measured", "confidence", "rationale",
     "sources", "plddt", "conservation_rank", "median_conservation",
 }
+
+
+def residue_label(
+    residue_before: Optional[str], insert_after_residue: Optional[int]
+) -> Optional[str]:
+    """Canonical single-token residue for downstream analysis, e.g. ``G101``:
+    the residue immediately N-terminal to the junction (tag inserted AFTER it).
+    Matches the "after N" convention in ``data/tag_sites/positive_controls.md``.
+    Returns ``None`` when either input is missing (e.g. a before-residue-1 tag)."""
+    if residue_before is None or insert_after_residue is None:
+        return None
+    return f"{residue_before}{insert_after_residue}"
 
 _EVIDENCE = {
     "disorder": "structural inference (disorder path)",
@@ -64,6 +76,7 @@ def tagged_site(
         "insert_after_residue": insert_after_residue,
         "residue_before": residue_before,
         "residue_after": residue_after,
+        "residue_label": residue_label(residue_before, insert_after_residue),
         "topology_state": topology_state,
         "extracellular": extracellular,
         "compartment": compartment,

@@ -144,6 +144,7 @@ def to_viewer_sites(result: TagSiteResult, *, uniprot_acc: str) -> list[dict[str
                 "insert_after_residue": s.insert_after_residue,
                 "residue_before": s.residue_before,
                 "residue_after": s.residue_after,
+                "residue_label": s.residue_label,
                 "topology_state": _TOPO_CHAR.get(s.topology_state, "O"),
                 "extracellular": s.topology_state == "extracellular",
                 "compartment": s.topology_state,
