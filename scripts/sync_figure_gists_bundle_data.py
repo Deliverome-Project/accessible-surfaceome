@@ -20,6 +20,11 @@ more canonical TSV URLs (``BASE/data/...``). For each:
   3. ``gh api gists/<id>`` to pull the new HEAD commit SHA
   4. Record ``swh:1:rev:<sha>`` in
      ``data/analysis/figures/swhid_map.json`` (slug → SWHID)
+  5. Submit the gist to Software Heritage (Save Code Now) so that
+     ``swh:1:rev:<sha>`` actually RESOLVES — recording the hash alone
+     mints the identifier but SWH won't have ingested the origin until
+     it's saved. Best-effort: SWH throttles anonymous saves, so a 429 is
+     logged (re-run to finish), not fatal.
 
 ``deep_dive_final_categories`` is skipped — it's a MOCK figure with
 hardcoded counts and no TSV to bundle.
@@ -43,6 +48,36 @@ ROOT = Path(__file__).resolve().parents[1]
 FIGURES_DIR = ROOT / "data/analysis/figures"
 MAP_PATH = FIGURES_DIR / "gist_map.json"
 SWHID_MAP_PATH = FIGURES_DIR / "swhid_map.json"
+
+
+def _swh_archive(gist_id: str) -> None:
+    """Submit a gist to Software Heritage Save Code Now so its
+    ``swh:1:rev:<sha>`` resolves (SWH crawls the origin asynchronously).
+    Best-effort + idempotent: SWH throttles anonymous saves, so a 429 or any
+    error is logged, never fatal — re-running the sync re-submits. Uses stdlib
+    urllib to avoid adding a dependency to this thin sync script."""
+    import json as _json
+    import urllib.error
+    import urllib.request
+
+    url = (
+        "https://archive.softwareheritage.org/api/1/origin/save/"
+        f"git/url/https://gist.github.com/{gist_id}.git/"
+    )
+    req = urllib.request.Request(
+        url, method="POST", headers={"Accept": "application/json"}
+    )
+    try:
+        with urllib.request.urlopen(req, timeout=45) as resp:
+            d = _json.loads(resp.read())
+        print(f"  SWH save: {d.get('save_request_status')}/{d.get('save_task_status')}")
+    except urllib.error.HTTPError as e:
+        if e.code == 429:
+            print("  SWH save: rate-limited (429) — re-run later to finish archiving")
+        else:
+            print(f"  SWH save: HTTP {e.code} (non-fatal)")
+    except Exception as e:  # network hiccup, timeout — never break the sync
+        print(f"  SWH save: {type(e).__name__} (non-fatal)")
 
 # Per-gist TSV bundle. Hand-curated to be robust against multi-line
 # URL constants my AST-less extractor couldn't catch. Keep in sync
@@ -247,6 +282,8 @@ def main() -> int:
             swhid = f"swh:1:rev:{sha}"
             swhid_map[slug] = swhid
             print(f"  HEAD: {sha}  →  {swhid}")
+            # Actually archive the origin at SWH so the SWHID resolves.
+            _swh_archive(gist_id)
 
     if not args.dry_run:
         SWHID_MAP_PATH.write_text(
