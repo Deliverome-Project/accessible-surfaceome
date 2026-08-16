@@ -97,175 +97,144 @@ def _head_sha() -> str:
 
 def _build_readme() -> str:
     sha = _head_sha()
-    return f"""# accessible-surfaceome — Zenodo deposit (benchmark, triage + deep-dive data outputs)
+    return f"""# The accessible human surfaceome — data deposit
 
-This deposit contains the data outputs for the
-[accessible-surfaceome](https://github.com/Deliverome-Project/accessible-surfaceome)
-project. The repository code itself is archived separately via the
-GitHub-Zenodo auto-archive (one DOI per tagged release).
+Data outputs from the **accessible-surfaceome** project, which reconciles which
+human proteins are reachable on the outside of the cell — the "surfaceome" that
+most antibody, ADC, and cell-therapy drugs act on. The main public surface
+databases disagree often, so the project scores every protein-coding gene with
+an LLM agent pipeline: a fast genome-wide **triage** pass, a **benchmark**
+against curated ground truth, and an evidence-cited **deep dive** on the strong
+candidates. This deposit holds the data those three stages produced.
 
-**Reserved DOI:** `10.5281/zenodo.20805384` — preserved across draft
-updates; activates on publish.
+**Reserved DOI:** `10.5281/zenodo.20805384` — stable across draft updates,
+activates on publish.
 
-**Scope of this record snapshot:** the **triage** (genome-wide Sonnet
-sweep + PubMed-augmented rescue lane) and **benchmark** (147-gene
-multi-replicate) data files below. Additional content listed in the
-"Coming in subsequent draft updates" section will be added in
-place — the reserved DOI does not change.
+Three data files + this README. Each is a flat TSV or a gzipped folder of
+per-gene JSON, readable with any TSV reader (pandas, R) or `tar xzf` — no
+project code needed. Each is also reproducible from the project's public
+read-only API (recipes at the end).
 
-All data files were assembled at deposit time by
-[`scripts/release/build_consolidated_deposit_tsvs.py`](https://github.com/Deliverome-Project/accessible-surfaceome/blob/{sha}/scripts/release/build_consolidated_deposit_tsvs.py)
-in the repo at commit `{sha[:12]}`. Anyone can regenerate them from the
-public read-only API documented below.
+---
 
-## Coming in subsequent draft updates (before publish)
+## 1. `triage-runs-genome-with-reasoning.tsv` — genome-wide first-pass triage
 
-These are the publication-workflow items that the
-[`scripts/release/`](https://github.com/Deliverome-Project/accessible-surfaceome/tree/{sha}/scripts/release/)
-pipeline expects to ship alongside the data — placeholders are wired
-in the source script but the artifacts themselves are still in
-iteration. Marked as checkboxes for tracking:
+**21,950 rows**, one per (gene × run). The triage agent is a single LLM call per
+gene that reads a context block and returns a surface-accessibility verdict
+(`yes` / `contextual` / `no`), a controlled-vocabulary reason, and a confidence,
+with per-call token / cost / latency accounting.
 
-- [ ] **`manuscript.pdf`** + **`manuscript.xml`** — the publication
-  PDF (built upstream from `.docx` / `.tex` / `.md`) and a
-  pandoc-generated JATS XML representation for PMC indexing +
-  downstream text-mining. Held back until the manuscript is ready;
-  corresponds to the commented-out `{{"manuscript": True, ...}}`
-  entry in `EXTRA_FILES`.
-- [ ] **`related_identifiers`** linking this record to the
-  **code-record concept DOI** (auto-archived from the next tagged
-  GitHub Release). The link will be added by editing
-  `publish-archive.py`'s `SEED_METADATA.related_identifiers` once the
-  first code release ships.
+Two runs, tagged by the `run_id` column:
 
-Already shipping in this draft:
-
-- [x] `triage-runs-genome-with-reasoning.tsv` (consolidated ncbi + pubmed)
-- [x] `triage-benchmark-with-reasoning.tsv` (multi-replicate, truth-joined)
-- [x] `deep_dives_all.tar.gz` — gzipped tarball, one `<SYMBOL>.json`
-  per published `SurfaceomeRecord` (**5,130 records**), each carrying
-  its full evidence chain, per-claim verbatim quotes, and the deep-dive
-  classification: `deep_dive_tier` (Canonical / Likely / Low /
-  Uncertain / No) plus `deep_dive_facet` (Cell-state induced /
-  Cell-type restricted). The tier is computed by the same predicate the
-  viewer ships ([`viewer/lib/catalog-presets.ts`](https://github.com/Deliverome-Project/accessible-surfaceome/blob/{sha}/viewer/lib/catalog-presets.ts),
-  Python mirror [`src/accessible_surfaceome/release/catalog_presets.py`](https://github.com/Deliverome-Project/accessible-surfaceome/blob/{sha}/src/accessible_surfaceome/release/catalog_presets.py),
-  drift caught by `tests/test_catalog_presets_mirror.py`) and attached
-  server-side on `/v1/genes/{{symbol}}`, so the deposited records carry
-  it verbatim — no separate membership file needed.
-- [x] In-deposit `README.md` (this file)
-- [x] Reserved DOI wired into [`scripts/embed_figure_gist_metadata.py`](https://github.com/Deliverome-Project/accessible-surfaceome/blob/{sha}/scripts/embed_figure_gist_metadata.py)'s
-  `ZENODO_DATA_DOI` so figure PDF/PNG metadata can pre-bake the citation.
-
-## Files
-
-### 1. `triage-runs-genome-with-reasoning.tsv`
-
-Long-format TSV, **21,950 rows** total, covering every genome-wide
-Sonnet 4.6 inference call: the canonical NCBI-context sweep
-(`genome_full_sonnet_ncbi_v2`, 19,324 rows = 1 rep per gene across the
-M1 candidate universe) PLUS the PubMed-augmented rescue lane
-(`genome_full_sonnet_pubmed_ncbi_v1`, 2,626 rows = the
-ambiguous-reason zero-DB Sonnet-no slice that we re-ran with PubMed
-evidence). A `run_id` column at position 1 tags every row so a reader
-can split or filter by lane.
-
-For the ~2,621 genes in the PubMed re-run subset this means **2 rows
-per gene** (one NCBI, one PubMed); for the remaining ~16,700 genes it's
-a single NCBI row.
+- **`genome_full_sonnet_ncbi_v2`** — the primary sweep with NCBI gene-summary
+  context: **19,324 genes**, one row each.
+- **`genome_full_sonnet_pubmed_ncbi_v1`** — a **targeted PubMed-context re-run**
+  of a **2,626-row subset** (the ambiguous, low-database-evidence `no` calls
+  worth a second look with literature context). Those genes carry two rows (one
+  per run); the rest carry one.
 
 | Column | Meaning |
 |---|---|
-| `run_id` | `genome_full_sonnet_ncbi_v2` (canonical) or `genome_full_sonnet_pubmed_ncbi_v1` (PubMed rescue) |
+| `run_id` | which run the row is from (see above) |
 | `gene_symbol` | HGNC gene symbol |
-| `uniprot_acc` | UniProt accession (canonical isoform) |
-| `hgnc_id`, `ensembl_gene` | additional stable IDs |
-| `db_uniprot`, `db_go`, `db_surfy`, `db_cspa`, `db_hpa` | 0/1 — does each surface-DB source vote "surface" for this gene? |
-| `n_db_surface` | sum of the 5 DB votes (0–5) |
-| `model` | Anthropic model identifier (`claude-sonnet-4-6` only in this file) |
-| `prompt_variant` | `ncbi` or `pubmed_ncbi` |
-| `replicate` | replicate index within the sweep (always `1` for both run_ids) |
-| `predicted_verdict` | model verdict: `yes` / `contextual` / `no` |
-| `predicted_reason` | short controlled-vocab reason tag |
+| `uniprot_acc`, `hgnc_id`, `ensembl_gene` | stable identifiers |
+| `db_uniprot`, `db_go`, `db_surfy`, `db_cspa`, `db_hpa` | 0/1 — does each of the five surface databases (UniProt, GO, SURFY, CSPA, HPA) call this gene surface? |
+| `n_db_surface` | how many of the five agree (0–5) |
+| `model`, `prompt_variant`, `replicate` | which model / context variant / replicate produced the row |
+| `predicted_verdict` | `yes` / `contextual` / `no` |
+| `predicted_reason` | short controlled-vocabulary reason tag |
 | `predicted_confidence` | `low` / `medium` / `high` |
-| `prompt_tokens`, `completion_tokens`, `cache_creation_tokens`, `cache_read_tokens` | per-call token counts |
-| `n_web_searches` | number of web tool calls in this run |
-| `cost_usd`, `latency_s` | computed dollar cost + wall-clock seconds |
+| token / cost / latency columns | `prompt_tokens`, `completion_tokens`, `cache_creation_tokens`, `cache_read_tokens`, `n_web_searches`, `cost_usd`, `latency_s` |
 
-**Read-side reconciliation rule.** When the same gene has both an
-NCBI and a PubMed row, downstream analyses prefer the PubMed verdict
-when it is MORE INCLUSIVE than NCBI's (i.e. PubMed says
-`yes`/`contextual` while NCBI says `no`). PubMed `no` never overrides
-an NCBI `yes`/`contextual` — `no` from PubMed doesn't constitute
-evidence of absence. The live `/v1/catalog` endpoint applies this rule
-server-side.
-
-**Reproducible from two endpoints + a concat:**
-
-```bash
-curl 'https://api.deliverome.org/surfaceome/v1/triage/export.tsv?run_id=genome_full_sonnet_ncbi_v2'        | sed '1!{{/^run_id\\t/d;}}' | awk -F'\\t' 'BEGIN{{OFS="\\t"}} NR==1{{print "run_id",$0}} NR>1{{print "genome_full_sonnet_ncbi_v2",$0}}'        > genome.tsv
-curl 'https://api.deliverome.org/surfaceome/v1/triage/export.tsv?run_id=genome_full_sonnet_pubmed_ncbi_v1' | tail -n +2 | awk -F'\\t' 'BEGIN{{OFS="\\t"}}{{print "genome_full_sonnet_pubmed_ncbi_v1",$0}}'       >> genome.tsv
-```
-
-### 2. `triage-benchmark-with-reasoning.tsv`
-
-Long-format **multi-replicate** TSV, **4,851 rows**, covering the
-147-gene curated benchmark across **4 models** with uneven prompt-variant
-coverage: Haiku 4.5 and Sonnet 4.6 ran all four variants (`naive`,
-`ncbi`, `web_ncbi`, `pubmed_ncbi`); Opus 4.8 ran `naive` + `ncbi`;
-Sonnet 5 ran `ncbi` only — **11 `(model × variant)` cells** in all. Each
-cell appears as **3 rows** — one per replicate — so a reader can see
-per-rep variability instead of a pre-aggregated majority view
-(147 genes × 11 cells × 3 reps = 4,851). Curated truth
-(`truth_verdict` / `truth_signal` / `truth_reason` / `truth_class`) is
-joined onto every row.
-
-Same columns as the previous version's bench file PLUS the curated
-truth label triple AND a `truth_class` column carrying the bench's
-disagreement bucket (e.g. `disagreement_rich_positive`,
-`wrong_side_borderline`, `induced_borderline`).
-
-| Extra columns (vs. genome file) | Meaning |
-|---|---|
-| `truth_verdict` | curated truth: `yes` / `contextual` / `no` |
-| `truth_signal` | curated signal: `likely_accessible` / `possibly_accessible` / `unlikely` / etc. |
-| `truth_reason` | curated reason tag (controlled vocab) |
-| `truth_class` | disagreement-bucket label for the bench gene |
-
-**Reproducible from two endpoints + a client-side join:**
-
-```bash
-curl 'https://api.deliverome.org/surfaceome/v1/triage/export.tsv?run_id=mainbench_canonical_v2' \\
-    > bench_predictions.tsv      # multi-rep predictions
-curl 'https://api.deliverome.org/surfaceome/v1/benchmark' \\
-    > bench_truth.json           # curated truth + class per gene
-# then join on gene_symbol; see build_consolidated_deposit_tsvs.py
-```
-
-## Reconciliation rule, in code
+**Reconciling the two runs.** When a gene has both an NCBI and a PubMed row,
+prefer the PubMed verdict only when it is *more* inclusive (PubMed
+`yes`/`contextual` over NCBI `no`); a PubMed `no` never overrides an NCBI
+`yes`/`contextual`, since absence of literature is not evidence of absence:
 
 ```python
-def reconciled_verdict(ncbi: str, pubmed: str | None) -> str:
-    # If pubmed is more inclusive than ncbi, prefer pubmed.
-    if pubmed in ('yes', 'contextual') and ncbi == 'no':
+def reconciled_verdict(ncbi, pubmed):
+    if pubmed in ("yes", "contextual") and ncbi == "no":
         return pubmed
     return ncbi
 ```
 
-## Repository, code archive, related identifiers
+---
 
-- **Source code:** <https://github.com/Deliverome-Project/accessible-surfaceome>
-- **Pinned to commit:** `{sha}`
-- **Code release archive:** the GitHub-Zenodo auto-archive mints one
-  DOI per tagged release; the latest is linked from this record's
-  *Related identifiers*.
+## 2. `triage-benchmark-with-reasoning.tsv` — the 147-gene accuracy benchmark
+
+**4,851 rows.** The same triage call run over a 147-gene curated panel with
+ground-truth labels, so per-model / per-variant accuracy can be measured
+directly.
+
+Coverage of the model × prompt-variant grid is **intentionally uneven** — not
+every model is run under every variant:
+
+- **Haiku 4.5** and **Sonnet 4.6** — all four variants (`naive`, `ncbi`,
+  `web_ncbi`, `pubmed_ncbi`)
+- **Opus 4.8** — `naive` + `ncbi`
+- **Sonnet 5** — `ncbi`
+
+That is **11 (model × variant) cells × 3 replicates × 147 genes = 4,851 rows**.
+Every replicate is kept (not a pre-aggregated majority) so per-replicate
+variability is visible. The curated truth label is joined onto every row:
+
+| Column | Meaning |
+|---|---|
+| `truth_verdict` | curated truth: `yes` / `contextual` / `no` |
+| `truth_signal` | curated accessibility signal (`likely_accessible`, `possibly_accessible`, `unlikely`, …) |
+| `truth_reason` | curated reason (controlled vocabulary) |
+| `truth_class` | the benchmark's disagreement bucket for the gene |
+
+plus every column from file 1.
+
+---
+
+## 3. `deep_dives_all.tar.gz` — evidence-cited per-gene records
+
+**5,130 JSON records**, one per gene (`<SYMBOL>.json`; `tar tzf` lists them).
+Each is a deep-dive agent output: the full evidence chain with verbatim source
+quotes, the structured surface call, and a classification —
+
+- **`deep_dive_tier`** — `canonical` (high-confidence surface) / `likely` /
+  `low` / `uncertain` / `no`
+- **`deep_dive_facet`** — `cell_state_induced` or `cell_type_restricted`, where
+  it applies
+
+The tier uses the same rule the project's public catalog applies and is attached
+to each record as served, so the classification here matches that catalog.
+
+---
+
+## Reproducing from the public API
+
+Every file is rebuildable from the read-only API at
+`https://api.deliverome.org/surfaceome/v1/` (no credentials):
+
+```
+# File 1 — the two genome runs (tag each with its run_id, then concatenate)
+curl 'https://api.deliverome.org/surfaceome/v1/triage/export.tsv?run_id=genome_full_sonnet_ncbi_v2'
+curl 'https://api.deliverome.org/surfaceome/v1/triage/export.tsv?run_id=genome_full_sonnet_pubmed_ncbi_v1'
+
+# File 2 — benchmark predictions + curated truth (join on gene_symbol)
+curl 'https://api.deliverome.org/surfaceome/v1/triage/export.tsv?run_id=mainbench_canonical_v2'
+curl 'https://api.deliverome.org/surfaceome/v1/benchmark'
+
+# File 3 — the deep-dive records
+curl 'https://api.deliverome.org/surfaceome/v1/genes'          # gene index
+curl 'https://api.deliverome.org/surfaceome/v1/genes/EGFR'     # one record
+```
 
 ## License
 
-CC-BY-4.0 for the data in this deposit. Same as the upstream
-constituent sources (UniProt, GO, HPA — all CC-BY; HPA is CC-BY-SA).
-SURFY and CSPA are published academic resources used under their
-respective terms; see the upstream papers.
+CC-BY-4.0. Upstream sources keep their own terms (UniProt, GO, HPA — CC-BY /
+CC-BY-SA; SURFY and CSPA are published academic resources).
+
+## Source
+
+Produced by the accessible-surfaceome project
+(<https://github.com/Deliverome-Project/accessible-surfaceome>, commit
+`{sha[:12]}`). The manuscript will be added to this record in a later draft
+update.
 """
 
 
@@ -296,13 +265,10 @@ _DESCRIPTION_HTML = (
     "(`deep_dive_tier` + `deep_dive_facet`) computed by the same "
     "predicate the viewer ships and attached server-side on "
     "/v1/genes/{symbol}.<br><br>"
-    "The manuscript bundle (PDF + JATS XML) will be added in a "
-    "subsequent draft update against the same reserved DOI "
-    "(10.5281/zenodo.20805384). All data files are reproducible from the "
-    "public read-only API at https://api.deliverome.org/surfaceome/v1/ ; "
-    "the repository code is archived separately via the GitHub-Zenodo "
-    "auto-archive (one DOI per tagged release), linked from the "
-    "related-identifiers field."
+    "The manuscript will be added to this record in a later draft update "
+    "against the same reserved DOI (10.5281/zenodo.20805384). All data "
+    "files are reproducible from the public read-only API at "
+    "https://api.deliverome.org/surfaceome/v1/ (no credentials)."
 )
 
 
