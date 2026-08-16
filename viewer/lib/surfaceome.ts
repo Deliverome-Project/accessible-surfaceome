@@ -1291,6 +1291,16 @@ export async function withDeepDiveFilters(
             // The Worker's catalog ddf already carries it, so carry it
             // across the re-derivation rather than losing it.
             n_papers_found: r.deep_dive_filters?.n_papers_found ?? null,
+            // Same carry-across for evidence_grade_summary: pickDeepDiveFilters
+            // reads record.filters, but the holistic summary lives in
+            // executive_summary, so the re-derivation drops it and
+            // effectiveEvidenceGrade silently falls back to the A1-only
+            // evidence_grade. That under-called 25 confidently-surface genes
+            // (PCSK9, BAFF, EFNA5, …: A1 `weak` but summary `supportive`+) out
+            // of Canonical — inconsistent with what their gene page displays.
+            // The Worker's catalog ddf carries the summary, so preserve it.
+            evidence_grade_summary:
+              r.deep_dive_filters?.evidence_grade_summary ?? null,
           },
         }
       : r,

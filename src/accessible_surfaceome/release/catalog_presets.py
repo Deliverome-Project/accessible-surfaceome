@@ -34,55 +34,78 @@ INDUCTION_NON_NONE: frozenset[str] = frozenset({
 # distribution (median ≈ 220 papers found).
 LOW_LIT_PAPERS_MAX = 100
 
+# Structural-surface reason codes strong enough to admit a ``weak``-graded gene
+# into Likely (the weakStructuralOk carve-out in passes_likely). Surface
+# membership is structurally unambiguous for these — classical single-/multi-
+# pass receptor, GPI anchor, or constitutively-surface tissue-restricted
+# protein — so a weak LITERATURE grade reflects thin coverage, not doubt about
+# reaching the surface. EXCLUDES ambiguous reasons (dual_localization,
+# cell_state_induced, endomembrane_resident, inner_leaflet_anchored,
+# cytoplasmic, secreted_only, …) where a weak grade genuinely could mean the
+# surface pool is unproven. Mirror of the TS STRUCTURAL_SURFACE_REASONS.
+STRUCTURAL_SURFACE_REASONS: frozenset[str] = frozenset({
+    "classical_surface_receptor",
+    "multipass_with_exposed_loops",
+    "gpi_anchored",
+    "tissue_restricted_surface",
+})
+
+
+def effective_evidence_grade(f: dict[str, Any]) -> Any:
+    """The grade the tiers gate on: the synthesizer's holistic
+    ``evidence_grade_summary`` (what the gene page displays), falling back to
+    the deterministic A1-only ``evidence_grade`` when the summary is absent
+    (older records / before the Worker ships the ddf field). Mirror of the TS
+    ``effectiveEvidenceGrade``. The deterministic grade under-calls genes whose
+    surface call rests on rich A2 context (MC2R, EFNA5: deterministic ``weak``
+    but summary ``supportive``), so gating on the summary keeps the tiers
+    consistent with what the gene page shows."""
+    summary = f.get("evidence_grade_summary")
+    return summary if summary is not None else f.get("evidence_grade")
+
 
 def passes_canonical(f: dict[str, Any]) -> bool:
-    """Strictest tier — the high-confidence surface shortlist.
+    """Strictest tier — the high-confidence BROAD surface shortlist.
 
-    Drops the ECD filter (ECD-size is a design refinement, not a
-    surface-membership signal — Claudin-18.2 has small loops and a
-    landed therapeutic). Accepts ``state_dependence='unclear'`` so a
-    deep-dive that can't call low vs high doesn't drop out.
+    Byte-for-byte mirror of the TS ``passesCanonical``. Gates, in order:
 
-    Evidence bar is the synthesizer's OVERALL ``confidence`` ruling, NOT
-    the deterministic A1-only ``evidence_grade``. That grade scores an
-    empty A1 (direct-method) ledger as ``weak`` even when the surface
-    call rests on rich A2 (biological-context) evidence — ICAM1 has
-    A1=0 / A2=36 (23 strong), grade ``weak`` yet ``confidence='moderate'``
-    and ``evidence_grade_summary='supportive_but_indirect'``. Gating on
-    the grade excluded ~480 confidently-surface genes. We keep only a
-    fail-closed guard on ``evidence_grade`` (never admit
-    ``conflicting``); ``confidence in {high, moderate}`` is the real
-    bar. Fixing ``evidence_grade`` at source is tracked in issue #131.
+    1. ``surface_call_reason`` is NEITHER ``tissue_restricted_surface`` NOR
+       ``lysosomal_exocytosis`` — those are non-classical surfacing routed to
+       Likely + their facet, never the broad Canonical shortlist. (State /
+       induced facets still overlay Canonical; only these two reasons are hard
+       exclusions here.)
+    2. Evidence FLOOR: ``effective_evidence_grade`` (the holistic
+       ``evidence_grade_summary``, falling back to A1 ``evidence_grade``) is at
+       least ``supportive_but_indirect`` — ``weak`` and ``conflicting`` are
+       held out.
+    3. ``confidence in {high, moderate}`` — the real quality bar above the
+       floor (the A1-only grade under-calls A2-context-driven calls).
+    4. ``surface_specificity in {surface_dominant, mixed}``.
+    5. State-dependence escape: ``state_dependence in {low, moderate, unclear}``
+       OR ``expression_level in {moderate, high}``. Gates on expression LEVEL
+       directly, not the derived ``low_endogenous_expression`` boolean (which
+       folds in breadth and demoted validated lineage-restricted targets like
+       CTLA4 / 4-1BB). Additive — only admits high-state-dependence genes.
+    6. ``surface_accessibility in {high, moderate}``.
+    7. ``evidence_density in {high, moderate}``.
 
-    State-dependence is NOT a hard exclusion. A gene with
-    ``state_dependence='high'`` still qualifies if it carries a
-    constitutive baseline (``low_endogenous_expression is False``). This
-    keeps constitutively-expressed-but-further-inducible surface
-    proteins in canonical — ICAM1-class: present at low/moderate levels
-    in normal tissue (endothelium, epithelium) and strongly upregulated
-    by inflammation/oncogenesis — while proteins that reach the surface
-    only when induced off a low/absent baseline
-    (``low_endogenous_expression is True`` — CTLA4, TNFRSF9/4-1BB) stay
-    in the 'Cell-state induced' tier. Rationale: canonical certifies
-    *is* it a surface protein (the five evidence/verdict gates), and
-    *when* it is surface is carried as the ``state_dependence`` facet
-    rather than used to gate membership. The disjunct is additive — it
-    only admits high-state-dependence genes, never drops a low/moderate
-    one that lacks a constitutive baseline."""
+    Drops the ECD filter (ECD-size is an antibody-design refinement, not a
+    surface-membership signal — CLDN18.2 has small loops and a landed
+    therapeutic). Canonical certifies *is* it surface; *when* / *where* are the
+    state_dependence + breadth facets."""
+    g = effective_evidence_grade(f)
     return (
-        # Fail-closed guard only — anything but self-contradictory evidence.
-        # The confidence gate below is the real evidence bar (see docstring).
-        f.get("evidence_grade") in (
-            "direct_multi_method",
-            "direct_single_method",
-            "supportive_but_indirect",
-            "weak",
+        f.get("surface_call_reason") not in (
+            "tissue_restricted_surface", "lysosomal_exocytosis"
+        )
+        and g in (
+            "direct_multi_method", "direct_single_method", "supportive_but_indirect"
         )
         and f.get("confidence") in ("high", "moderate")
         and f.get("surface_specificity") in ("surface_dominant", "mixed")
         and (
             f.get("state_dependence") in ("low", "moderate", "unclear")
-            or f.get("low_endogenous_expression") is False
+            or f.get("expression_level") in ("moderate", "high")
         )
         and f.get("surface_accessibility") in ("high", "moderate")
         and f.get("evidence_density") in ("high", "moderate")
@@ -114,29 +137,50 @@ def is_low_literature_surface(f: dict[str, Any], db_surface_positive: bool) -> b
 def passes_likely(f: dict[str, Any]) -> bool:
     """Broader shortlist — adds supportive_but_indirect evidence,
     mostly_intracellular specificity (SRC-class lysosomal-exocytosis
-    surface, HMGB1-class DAMP release), and high/unclear/null
-    state-dep.
+    surface, HMGB1-class DAMP release), and high/unclear/null state-dep.
 
-    Drops the ECD filter for the same reason Canonical did. Inner-
-    leaflet false positives (LYN, BAX) are still excluded here
-    because they fail on ``evidence_grade=weak`` AND
-    ``surface_accessibility=no``; IZUMO4 (secreted-only) fails the
-    same way. The ECD gate was load-bearing only for biology, never
-    for defending against the inner-leaflet bucket."""
-    if f.get("evidence_grade") not in (
+    Byte-for-byte mirror of the TS ``passesLikely``. Evidence gate is a FLOOR
+    on ``effective_evidence_grade`` (>= supportive_but_indirect) OR the
+    ``weakStructuralOk`` carve-out: a ``weak``-graded gene still qualifies when
+    its ``surface_call_reason`` is structurally-unambiguous
+    (STRUCTURAL_SURFACE_REASONS) — the weak grade is a literature-coverage
+    artifact, not doubt about surface membership (rescues the protocadherin /
+    SLAM / butyrophilin / platelet-GPV false-negatives). The remaining gates
+    (specificity, moderate+ accessibility, state) still apply.
+
+    Accessibility FLOOR is moderate+ (matches Canonical); a ``low`` call drops
+    to the below-Likely ``low`` tier. Inner-leaflet false positives (LYN, BAX)
+    and secreted-only (IZUMO4) are excluded because they fail on weak grade AND
+    ``surface_accessibility=no``."""
+    g = effective_evidence_grade(f)
+    grade_floor_ok = g in (
         "direct_multi_method", "direct_single_method", "supportive_but_indirect"
-    ):
+    )
+    weak_structural_ok = (
+        g == "weak" and f.get("surface_call_reason") in STRUCTURAL_SURFACE_REASONS
+    )
+    if not grade_floor_ok and not weak_structural_ok:
         return False
     if f.get("surface_specificity") not in (
         "surface_dominant", "mixed", "mostly_intracellular"
     ):
         return False
-    if f.get("surface_accessibility") not in ("high", "moderate", "low"):
+    if f.get("surface_accessibility") not in ("high", "moderate"):
         return False
     sd = f.get("state_dependence")
     if sd is not None and sd not in ("low", "moderate", "high", "unclear"):
         return False
     return True
+
+
+def passes_likely_only(f: dict[str, Any]) -> bool:
+    """Likely tier MINUS Canonical — the exclusive band the ``Likely`` catalog
+    chip filters to, so Canonical and Likely chips are DISJOINT selectable
+    bands whose union is the full Likely tier (Canonical ⊂ Likely). Mirror of
+    the TS ``passesLikelyOnly``. Tier assignment (``deep_dive_tier``, the
+    Figure-5 buckets) still uses full ``passes_likely`` with canonical-first
+    precedence, so no double count."""
+    return passes_likely(f) and not passes_canonical(f)
 
 
 def passes_induced(f: dict[str, Any]) -> bool:
