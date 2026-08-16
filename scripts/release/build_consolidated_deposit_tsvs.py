@@ -38,17 +38,15 @@ from accessible_surfaceome.release.catalog_presets import (
 
 OUT_DIR = Path("/tmp/zenodo_deposit_consolidated")
 API_BASE = "https://api.deliverome.org/surfaceome/v1"
-# /v1/triage/export.tsv is parameterized by ?run_id=, but the deliverome.org
-# zone runs a Cache Rule that STRIPS query strings from the edge cache key. So
-# ANY two export.tsv fetches in one build COLLIDE — whichever lands in cache
-# first is served for the rest, silently substituting one run for another (this
-# corrupted an earlier deposit: the pubmed run came back as a copy of the
-# 19,324-row ncbi run, and the bench run came back as the 2,626-row genome
-# pubmed run). Fetch EVERY triage export from the workers.dev origin instead: a
-# different zone with no query-stripping rule, so the Worker's own includeQuery
-# cache differentiates by run_id correctly. (Proper fix for the branded domain:
-# a query-aware cache rule / no-cache on /v1/triage/export.tsv.)
-EXPORT_BASE = "https://surfaceome-api.beccajcarlson.workers.dev/v1"
+# /v1/triage/export.tsv is parameterized by ?run_id=. There WAS a cache-key
+# collision here: the deliverome.org zone excludes all query strings from the
+# edge cache key, and withEdgeCache used to key on that origin, so two run_ids
+# fetched in one build collided (the pubmed run came back as a copy of the
+# 19,324-row ncbi run). Fixed at the Worker (index.js keys the cache on the
+# internal host https://surfaceome-api.cache, which the zone rule can't match),
+# so the branded domain now differentiates run_ids correctly. The collision
+# guard in build_genome_consolidated stays as defense-in-depth.
+EXPORT_BASE = API_BASE
 
 GENOME_NCBI_RUN_ID = "genome_full_sonnet_ncbi_v2"
 GENOME_PUBMED_RUN_ID = "genome_full_sonnet_pubmed_ncbi_v1"
