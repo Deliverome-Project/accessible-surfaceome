@@ -6,18 +6,18 @@ export const metadata: Metadata = {
   title: "Data and code availability — Surfaceome",
   description:
     "Code, data, and figure-reproduction handles for the accessible " +
-    "surfaceome project. Repository under MIT; Zenodo deposits under " +
-    "CC BY 4.0; per-figure gists archived to Software Heritage.",
+    "surfaceome project. Repository under MIT; the Zenodo data deposit " +
+    "(DOI 10.5281/zenodo.20805384) under CC BY 4.0; per-figure " +
+    "reproduction gists on GitHub.",
 };
 
 /**
  * /reproducibility/ — methods-style "Data and code availability"
- * page. Three handles: the live GitHub repository (MIT, includes
- * this viewer), the Zenodo deposit of the full repository at each
- * tagged release (CC BY 4.0 data + code), and per-figure
- * reproduction gists archived to Software Heritage. Actual DOIs and
- * SWHIDs are assigned at publication; the page renders placeholders
- * until then.
+ * page. Three handles: the live GitHub repository (MIT, includes this
+ * viewer), the published Zenodo data deposit (CC BY 4.0; concept DOI
+ * 10.5281/zenodo.20805383, version DOI 10.5281/zenodo.20805384), and a
+ * per-figure reproduction gist per figure on GitHub. The code-release
+ * archive DOI is minted at the first tagged GitHub release.
  */
 export default function ReproducibilityPage() {
   return (
@@ -29,10 +29,10 @@ export default function ReproducibilityPage() {
           </h1>
           <p className={styles.lede}>
             All code, data, and figures are distributed under open
-            licenses with persistent, content-addressed citation
-            handles. Code is MIT; Zenodo deposits are CC BY 4.0;
-            per-figure gists are archived to Software Heritage so
-            citations resolve indefinitely.
+            licenses with persistent citation handles. Code is MIT; the
+            Zenodo data deposit is CC BY 4.0 with a DOI that resolves
+            indefinitely; each figure ships a standalone reproduction
+            gist on GitHub.
           </p>
         </header>
 
@@ -105,13 +105,24 @@ export default function ReproducibilityPage() {
               reason, and per-call metadata.
             </li>
             <li>
-              <strong>Deep-dive records</strong> — per-gene JSON and
-              Markdown for every gene that received a full evidence
-              assembly.
+              <strong>Deep-dive records</strong> — a per-gene JSON for
+              every gene that received a full evidence assembly, each
+              carrying its evidence chain and its deep-dive tier.
             </li>
           </ul>
           <dl className={styles.handleCard}>
-            <dt className={styles.handleLabel}>Concept DOI</dt>
+            <dt className={styles.handleLabel}>Concept DOI (all versions)</dt>
+            <dd className={styles.handleValue}>
+              <a
+                href="https://doi.org/10.5281/zenodo.20805383"
+                target="_blank"
+                rel="noopener noreferrer"
+                className={styles.extLink}
+              >
+                10.5281/zenodo.20805383
+              </a>
+            </dd>
+            <dt className={styles.handleLabel}>Version DOI (this release)</dt>
             <dd className={styles.handleValue}>
               <a
                 href="https://doi.org/10.5281/zenodo.20805384"
@@ -120,45 +131,39 @@ export default function ReproducibilityPage() {
                 className={styles.extLink}
               >
                 10.5281/zenodo.20805384
-              </a>{" "}
-              <span className={styles.handlePending}>
-                (reserved draft; populates at publication)
-              </span>
-            </dd>
-            <dt className={styles.handleLabel}>Version DOI (v1)</dt>
-            <dd className={styles.handleValue}>
-              <span className={styles.handlePending}>
-                minted from the concept DOI at publication
-              </span>
+              </a>
             </dd>
             <dt className={styles.handleLabel}>License</dt>
             <dd className={styles.handleValue}>CC BY 4.0</dd>
           </dl>
           <p className={styles.body}>
-            The reserved Zenodo concept DOI is wired into the figure
-            generator (<code>scripts/embed_figure_gist_metadata.py</code>)
-            so every figure PDF/PNG carries the dataset citation in its
-            metadata as soon as it&apos;s rendered. Currently in the
-            draft deposit:
+            The Zenodo DOI is wired into the figure generator
+            (<code>scripts/embed_figure_gist_metadata.py</code>) so every
+            figure PDF/PNG carries the dataset citation in its metadata as
+            soon as it&apos;s rendered. The published deposit contains:
           </p>
           <ul className={styles.list}>
             <li>
               <code>triage-runs-genome-with-reasoning.tsv</code> — every
-              triage agent call across the protein-coding genome
-              (verdict, reason, confidence, free-text reasoning).
+              triage agent call across the protein-coding genome (21,950
+              rows: the NCBI-context sweep plus a targeted PubMed-context
+              re-run), with verdict, reason, confidence, and free-text
+              reasoning.
             </li>
             <li>
               <code>triage-benchmark-with-reasoning.tsv</code> — the
-              147-protein SurfaceBench with truth labels joined to every
-              per-model triage call.
+              147-protein SurfaceBench (4,851 rows) with truth labels
+              joined to every per-model, per-variant triage call.
+            </li>
+            <li>
+              <code>deep_dives_all.tar.gz</code> — the 5,130 per-gene
+              deep-dive JSON records, each with its full evidence chain
+              and deep-dive classification.
             </li>
           </ul>
           <p className={styles.body}>
-            Coming in subsequent draft updates ahead of publication:
-            per-gene deep-dive JSON + Markdown bundle, the consolidated
-            evidence ledger, and a pinned code-release version DOI that
-            resolves to the exact commit a given figure was rendered
-            against.
+            A later version of the deposit will add the manuscript,
+            against the same concept DOI.
           </p>
         </section>
 
@@ -184,20 +189,11 @@ export default function ReproducibilityPage() {
             environment setup, no <code>pip install</code> step.
           </p>
           <p className={styles.body}>
-            Each gist is permanently archived via Software Heritage as
-            a{" "}
-            <a
-              href="https://www.softwareheritage.org/"
-              target="_blank"
-              rel="noopener noreferrer"
-              className={styles.extLink}
-            >
-              SWHID
-            </a>{" "}
-            of the form <code>swh:1:dir:&lt;sha1&gt;</code> — a
-            content-addressed handle that resolves indefinitely from
-            the Software Heritage archive and survives gist deletion,
-            GitHub outages, or repository renames.
+            Each gist is pinned to a specific commit revision (recorded
+            in the repository&apos;s <code>swhid_map.json</code>), so a
+            figure reproduces from the exact script and data snapshot it
+            was rendered against. The durable, citable handle for the
+            underlying data is the Zenodo DOI above.
           </p>
           <p className={styles.body}>
             For convenience, every figure file also carries citation
