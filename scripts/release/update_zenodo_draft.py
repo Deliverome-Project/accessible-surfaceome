@@ -210,11 +210,15 @@ curl 'https://api.deliverome.org/surfaceome/v1/triage/export.tsv?run_id=genome_f
 ### 2. `triage-benchmark-with-reasoning.tsv`
 
 Long-format **multi-replicate** TSV, **4,851 rows**, covering the
-147-gene curated benchmark across all 3 production models (Haiku 4.5,
-Sonnet 4.6, Opus 4.8) and 4 prompt variants (`naive`, `ncbi`,
-`web_ncbi`, `pubmed_ncbi`). Each `(gene × model × variant)` cell
-appears as **3 rows** — one per replicate — so a reader can see
-per-rep variability instead of a pre-aggregated majority view.
+147-gene curated benchmark across **4 models** with uneven prompt-variant
+coverage: Haiku 4.5 and Sonnet 4.6 ran all four variants (`naive`,
+`ncbi`, `web_ncbi`, `pubmed_ncbi`); Opus 4.8 ran `naive` + `ncbi`;
+Sonnet 5 ran `ncbi` only — **11 `(model × variant)` cells** in all. Each
+cell appears as **3 rows** — one per replicate — so a reader can see
+per-rep variability instead of a pre-aggregated majority view
+(147 genes × 11 cells × 3 reps = 4,851). Curated truth
+(`truth_verdict` / `truth_signal` / `truth_reason` / `truth_class`) is
+joined onto every row.
 
 Same columns as the previous version's bench file PLUS the curated
 truth label triple AND a `truth_class` column carrying the bench's
@@ -281,10 +285,11 @@ _DESCRIPTION_HTML = (
     "inclusive than NCBI) is documented in the README and applied "
     "server-side by the live /v1/catalog endpoint.<br><br>"
     "<b>triage-benchmark-with-reasoning.tsv</b> — 4,851-row long-format "
-    "multi-replicate TSV covering the 147-gene curated benchmark across "
-    "Haiku 4.5, Sonnet 4.6, and Opus 4.8 under 4 prompt variants each, "
-    "with per-replicate rows and curated truth verdict / signal / reason "
-    "/ class joined in per gene.<br><br>"
+    "multi-replicate TSV covering the 147-gene curated benchmark across 4 "
+    "models with uneven prompt-variant coverage (Haiku 4.5 + Sonnet 4.6: "
+    "all 4 variants; Opus 4.8: naive + ncbi; Sonnet 5: ncbi) — 11 "
+    "(model × variant) cells × 3 replicates × 147 genes — with curated "
+    "truth verdict / signal / reason / class joined onto every row.<br><br>"
     "<b>deep_dives_all.tar.gz</b> — one JSON per published "
     "SurfaceomeRecord (5,130 records), each carrying its full evidence "
     "chain, per-claim verbatim quotes, and the deep-dive classification "
