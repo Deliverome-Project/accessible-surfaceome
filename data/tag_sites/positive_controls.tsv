@@ -23,3 +23,16 @@ A20	EDNRB	P24530	internal	57	G	58-65	FLAG	8	sano2023	not_measured	extracellular 
 A21	KCNH2	Q12809	internal	436	T		BBS	13	kanner2018	not_measured	S1-S2 extracellular loop
 A22	SLC26A1	Q9H2B4	internal	155	P		HA	9		not_measured	extracellular loop
 A23	SLC9A6	Q92581	internal	53	M		3xFLAG	32		not_measured	first exofacial loop
+B1	SLC5A6	Q9Y289	internal	483		484-516	ALFA	15	smvt_natcommun2026	yes_function_reduced	EL3 replaced by ALFA; NbALFA binding + cryo-EM; biotin transport retained, Vmax ~3x lower (batch2)
+B2	AQP1	P29972	internal	120	T		Myc	10	aqp1_pmc2157255	not_perturbed_reported	EL2 (2nd extracellular loop); Qdot live-cell labeling; 120=T verified (batch2)
+B3	SLC19A1	P41440	internal	297	P		HA	9	rfc_pubmed10347183	minor_effects	ECL near P297; MTX binding/uptake minor effects; 297=P verified (batch2)
+B4	PMP22	Q01453	internal	125	H		Myc	10	pmp22_pmc13382790	not_perturbed_reported	ECL2 very short loop 125-126; 125=H verified (batch2)
+B5	VANGL1	Q8TAA9	internal	139	R		HA	9	vangl1_pubmed21291170	surface_confirmed	ECL1 short; intact-cell HA; 139=R verified (batch2)
+B6	VANGL1	Q8TAA9	internal	213	D		HA	9	vangl1_pubmed21291170	surface_confirmed	2nd extracellular loop; HA213 extracellular; 213=D verified (batch2)
+B7	SLC4A1	P02730	internal	557	V		HA/Myc	9	slc4a1_pmc3468346	surface_anchor	3rd ECL; ANCHOR, numbering varies across papers; 557=V canonical (batch2)
+B8	KCNQ1	P51787	internal	146	E		Myc	10	kcnq1_pmc5842040	not_perturbed_functional	extracellular Myc E146|Q147; functional channels; 146=E verified (batch2)
+B9	KCNQ1	P51787	internal	146	E		HA	9	kcnq1_pmc10642763	not_perturbed	same site, HA - site portability across ordinary epitopes; 146=E verified (batch2)
+B10	ASIC1	P78348	internal	147	F		HA/FLAG	9		function_not_neutral	F147|K148; CITATION PENDING; electrophysiology not fully neutral; 147=F verified (batch2)
+B11	ASIC1	P78348	internal	298	D		HA	9		function_perturbed	D298|L299; CITATION PENDING; good surface staining, current reduced; 298=D verified (batch2)
+B12	CFTR	P13569	internal	901	N		3xHA	27	cftr_pmc3266683	surface_ELISA	4th extracellular loop reporter; quantitative surface ELISA; 901=N verified (batch2)
+B13	ANO1	Q5XXA6	internal	396	H		3xHA	27	ano1_pmc7291285	surface_nonpermeabilized	UNVERIFIED: Q5XXA6 396=A/397=T not H/N - TMEM16A isoform numbering; reconcile before use (batch2)

@@ -1,7 +1,8 @@
 # Extracellular tag-site positive controls
 
 Ground truth for the tag-site benchmark. Machine-readable source is
-`positive_controls.tsv` (23 published-success rows + A24 asserted). Verify residue
+`positive_controls.tsv` (23 published-success rows + A24 asserted; plus batch-2
+rows B1–B13, see "Extended set — batch 2" below). Verify residue
 positions against UniProt with:
 
 ```bash
@@ -229,3 +230,55 @@ prediction, not measured in-house.
 - **No human RTK, cadherin, GPI-anchored, or immune-checkpoint case** cleared the bar. An
   EGFR HiBiT knock-in at residues 24/25 exists but only as vendor documentation with no
   DOI or PMCID, so it was not entered.
+
+---
+
+## Extended set — batch 2 (10 proteins, 13 rows: B1–B13)
+
+Added 2026-08-15 from a second curated batch (multi-pass channels/transporters +
+short-loop cases). Machine-readable rows are in `positive_controls.tsv` (ids `B*`).
+**Every stated residue was checked against the UniProt canonical sequence** with
+`scripts/verify_tag_site_positive_controls.py`-style verification — results below.
+
+| # | Protein | Accession | Site | Tag | Residue check | Source |
+|---|---|---|---|---|---|---|
+| B1 | SLC5A6 / SMVT | Q9Y289 | replace **484–516** (EL3) | ALFA | span present (len 635) | Nat Commun 2026 |
+| B2 | AQP1 | P29972 | after **T120** | Myc | ✅ 120=T, 121=G | PMC2157255 |
+| B3 | SLC19A1 / RFC | P41440 | after **P297** | HA | ✅ 297=P | PubMed 10347183 |
+| B4 | PMP22 | Q01453 | after **H125** | Myc | ✅ 125=H, 126=L | PMC13382790 |
+| B5 | VANGL1 | Q8TAA9 | after **R139** | HA | ✅ 139=R (no letter stated) | PubMed 21291170 |
+| B6 | VANGL1 | Q8TAA9 | after **D213** | HA | ✅ 213=D (no letter stated) | PubMed 21291170 |
+| B7 | SLC4A1 / kAE1 | P02730 | after **V557** (anchor) | HA/Myc | ✅ 557=V; numbering varies across papers | PMC3468346 |
+| B8 | KCNQ1 | P51787 | after **E146** | Myc | ✅ 146=E, 147=Q | PMC5842040 |
+| B9 | KCNQ1 | P51787 | after **E146** | HA | ✅ same site, HA (portability) | PMC10642763 |
+| B10 | ASIC1a | P78348 | after **F147** | HA/FLAG | ✅ 147=F, 148=K | *citation pending* |
+| B11 | ASIC1a | P78348 | after **D298** | HA | ✅ 298=D, 299=L | *citation pending* |
+| B12 | CFTR | P13569 | after **N901** | 3×HA | ✅ 901=N | PMC3266683 |
+| B13 | **ANO1** / TMEM16A | Q5XXA6 | after **H396** | 3×HA | ❌ **MISMATCH** — Q5XXA6 396=**A**, 397=**T** | PMC7291285 |
+
+**Batch-2 verification caveats:**
+- **B13 (ANO1) is UNVERIFIED against the canonical sequence.** The cited site H396/N397
+  does not match Q5XXA6 (which has Ala396/Thr397) — almost certainly TMEM16A **isoform
+  numbering** (the a/b/c/d N-terminal splice variants shift the register). Reconcile against
+  the exact isoform the source used before treating this as ground truth; the row is kept but
+  flagged `UNVERIFIED` in the TSV, the same way A24 (TFRC C-term) is kept-but-asserted.
+- **B10/B11 (ASIC1a)** have no citation in hand yet (`source_key` blank) — residues verify
+  against P78348, but attach the source before use. B10 electrophysiology is not fully neutral;
+  B11 function is reduced (`function_perturbed`).
+- **B1 (SLC5A6)** is a **replacement** (EL3 484–516 → ALFA), not a pure insertion; surface
+  display + cryo-EM structures obtained, biotin transport retained but Vmax ~3× lower.
+
+### Batch-2 sources
+
+| Key | Citation |
+|---|---|
+| `smvt_natcommun2026` | Structural basis for multivitamin recognition and transport by human SMVT. *Nat Commun* 2026. |
+| `aqp1_pmc2157255` | Long-range non-anomalous diffusion of Qdot-labeled Aquaporin-1 water channels. PMC2157255. |
+| `rfc_pubmed10347183` | Topological and functional analysis of the human reduced folate carrier by HA epitope insertion. PubMed 10347183. |
+| `pmp22_pmc13382790` | Stable and tunable expression of human PMP22 in rat Schwann cells. PMC13382790. |
+| `vangl1_pubmed21291170` | Transmembrane topology of mammalian planar cell polarity protein Vangl1. PubMed 21291170. |
+| `slc4a1_pmc3468346` | AP-1 complexes regulate intracellular trafficking of kidney anion exchanger 1. PMC3468346. |
+| `kcnq1_pmc5842040` | Mechanisms of KCNQ1 dysfunction in long-QT (extracellular Myc-KCNQ1 surface flow). PMC5842040. |
+| `kcnq1_pmc10642763` | Arrhythmia-associated calmodulin variants interact with KCNQ1 (HA-KCNQ1). PMC10642763. |
+| `cftr_pmc3266683` | CFTR Folding Consortium: methods for CFTR folding/correction (3×HA surface reporter). PMC3266683. |
+| `ano1_pmc7291285` | Regulation of TMEM16A by CK2 (extracellular 3×HA, non-permeabilized). PMC7291285. *Numbering unreconciled — see B13.* |
