@@ -38,6 +38,17 @@ from accessible_surfaceome.release.catalog_presets import (
 
 OUT_DIR = Path("/tmp/zenodo_deposit_consolidated")
 API_BASE = "https://api.deliverome.org/surfaceome/v1"
+# /v1/triage/export.tsv is parameterized by ?run_id=, but the deliverome.org
+# zone runs a Cache Rule that STRIPS query strings from the edge cache key. So
+# ANY two export.tsv fetches in one build COLLIDE — whichever lands in cache
+# first is served for the rest, silently substituting one run for another (this
+# corrupted an earlier deposit: the pubmed run came back as a copy of the
+# 19,324-row ncbi run, and the bench run came back as the 2,626-row genome
+# pubmed run). Fetch EVERY triage export from the workers.dev origin instead: a
+# different zone with no query-stripping rule, so the Worker's own includeQuery
+# cache differentiates by run_id correctly. (Proper fix for the branded domain:
+# a query-aware cache rule / no-cache on /v1/triage/export.tsv.)
+EXPORT_BASE = "https://surfaceome-api.beccajcarlson.workers.dev/v1"
 
 GENOME_NCBI_RUN_ID = "genome_full_sonnet_ncbi_v2"
 GENOME_PUBMED_RUN_ID = "genome_full_sonnet_pubmed_ncbi_v1"
@@ -58,14 +69,30 @@ def _fetch_tsv(url: str) -> tuple[list[str], list[list[str]]]:
 def build_genome_consolidated() -> Path:
     print("→ Building consolidated genome-wide TSV")
     ncbi_header, ncbi_rows = _fetch_tsv(
-        f"{API_BASE}/triage/export.tsv?run_id={GENOME_NCBI_RUN_ID}"
+        f"{EXPORT_BASE}/triage/export.tsv?run_id={GENOME_NCBI_RUN_ID}"
     )
     pubmed_header, pubmed_rows = _fetch_tsv(
-        f"{API_BASE}/triage/export.tsv?run_id={GENOME_PUBMED_RUN_ID}"
+        f"{EXPORT_BASE}/triage/export.tsv?run_id={GENOME_PUBMED_RUN_ID}"
     )
     if ncbi_header != pubmed_header:
         raise SystemExit("genome NCBI vs PubMed TSV headers differ — "
                          "endpoint shape changed; re-check before deposit")
+    # Collision guard: if the run_id query-string cache ever collides again,
+    # the two fetches return the SAME run. Fail loudly rather than deposit a
+    # silent duplicate. The pubmed run is a targeted subset re-run and MUST
+    # carry pubmed_ncbi rows; the two runs must not have identical size.
+    variant_idx = ncbi_header.index("prompt_variant")
+    pubmed_variants = {r[variant_idx] for r in pubmed_rows}
+    if "pubmed_ncbi" not in pubmed_variants:
+        raise SystemExit(
+            f"pubmed run carries no pubmed_ncbi rows (variants={pubmed_variants}) — "
+            "run_id cache collision? source the export from a query-aware origin"
+        )
+    if len(pubmed_rows) == len(ncbi_rows):
+        raise SystemExit(
+            f"ncbi and pubmed runs have identical row counts ({len(ncbi_rows)}) — "
+            "almost certainly a cache collision; aborting to avoid a duplicate deposit"
+        )
 
     out_header = ["run_id", *ncbi_header]
     for r in ncbi_rows:
@@ -92,7 +119,7 @@ def build_genome_consolidated() -> Path:
 def build_bench_multirep() -> Path:
     print("→ Building multi-rep benchmark TSV")
     triage_header, triage_rows = _fetch_tsv(
-        f"{API_BASE}/triage/export.tsv?run_id={BENCH_RUN_ID}"
+        f"{EXPORT_BASE}/triage/export.tsv?run_id={BENCH_RUN_ID}"
     )
     # The triage export carries per-rep predictions; join curated truth
     # per gene from /v1/benchmark (one row per gene with truth_verdict/
