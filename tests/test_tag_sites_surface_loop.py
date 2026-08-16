@@ -44,6 +44,20 @@ def test_residues_carried_from_sequence():
     assert site["residue_after"] == "P"
 
 
+def test_residue_range_helper_and_loop_span():
+    from accessible_surfaceome.tag_sites.model import residue_range
+    from accessible_surfaceome.tag_sites.surface_loop import loop_span
+    seq = "M" + "K" * 99 + "P" + "G" * 199   # 1=M, 2..100=K, 101=P, 102..=G
+    assert residue_range(seq, 98, 105) == "K98-G105"
+    assert residue_range(seq, 101, 101) is None   # single residue -> not a range
+    assert residue_range(seq, None, 105) is None
+    ss = {r: "C" for r in range(50, 65)}
+    ss[49] = "H"
+    ss[65] = "E"
+    assert loop_span(ss, 57) == (50, 64)
+    assert loop_span({100: "H"}, 100) is None
+
+
 def test_loop_length_and_tag_fit():
     from accessible_surfaceome.tag_sites.surface_loop import loop_length, tag_fit
     # a 15-aa coil run bounded by helix/strand

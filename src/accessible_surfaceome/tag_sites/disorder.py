@@ -14,7 +14,7 @@ from __future__ import annotations
 
 from typing import Any
 
-from .model import tagged_site
+from .model import residue_range, tagged_site
 from .surface_loop import FEATURE_DIST_MIN, _extracellular
 
 PLDDT_DISORDER_MAX = 70.0  # a run below this is the disorder/flexibility proxy
@@ -48,11 +48,14 @@ def _low_plddt_runs(plddt: dict[int, float], topo: dict[int, str]) -> list[list[
 
 
 def _site(
-    res: int, signals: dict[str, Any], *, gene_symbol: str, uniprot_acc: str
+    res: int, run: list[int], signals: dict[str, Any], *, gene_symbol: str, uniprot_acc: str
 ) -> dict[str, Any]:
     seq = signals["sequence"]
     rb = seq[res - 1] if 1 <= res <= len(seq) else None
     ra = seq[res] if 1 <= res < len(seq) else None
+    # The tolerant FEATURE is the whole low-pLDDT run; report its span so callers
+    # know the insertion-tolerant region, not just the representative point.
+    rng = residue_range(seq, run[0], run[-1]) if run else None
     return tagged_site(
         site_id=f"{gene_symbol}-disorder-{res}",
         gene_symbol=gene_symbol,
@@ -62,6 +65,7 @@ def _site(
         insert_after_residue=res,
         residue_before=rb,
         residue_after=ra,
+        residue_range_token=rng,
         topology_state="O",
         extracellular=True,
         compartment="extracellular",
@@ -91,7 +95,7 @@ def disorder_candidates(
         for res in run:
             if feat.get(res, 0.0) < FEATURE_DIST_MIN:
                 continue  # the insertion point itself must clear functional atoms
-            picks.append(_site(res, signals, gene_symbol=gene_symbol, uniprot_acc=uniprot_acc))
+            picks.append(_site(res, run, signals, gene_symbol=gene_symbol, uniprot_acc=uniprot_acc))
     picks.sort(
         key=lambda p: (
             -rsa.get(p["insert_after_residue"], 0.0),

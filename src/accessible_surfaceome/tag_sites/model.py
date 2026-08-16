@@ -10,7 +10,7 @@ from typing import Any, Literal, Optional
 TAGGED_SITE_KEYS = {
     "site_id", "gene_symbol", "uniprot_acc", "provenance", "det_path", "site_kind",
     "insert_after_residue", "residue_before", "residue_after", "residue_label",
-    "topology_state", "extracellular", "compartment", "tag_type", "tag_length_aa",
+    "residue_range", "topology_state", "extracellular", "compartment", "tag_type", "tag_length_aa",
     "linker", "evidence_type", "functional_impact_measured", "confidence", "rationale",
     "sources", "plddt", "conservation_rank", "median_conservation",
 }
@@ -26,6 +26,24 @@ def residue_label(
     if residue_before is None or insert_after_residue is None:
         return None
     return f"{residue_before}{insert_after_residue}"
+
+
+def residue_range(
+    sequence: Optional[str], start: Optional[int], end: Optional[int]
+) -> Optional[str]:
+    """Span token for the deterministic site's tolerant FEATURE, e.g. ``S98-K105``:
+    the low-pLDDT disorder run (disorder path) or the contiguous exposed loop
+    (surface_loop path) the representative point sits in. Endpoints carry their
+    1-letter residue, same style as :func:`residue_label`. Returns ``None`` when
+    the feature is a single residue (``start == end``) or bounds are missing —
+    a point, not a range."""
+    if start is None or end is None or start >= end:
+        return None
+
+    def _aa(pos: int) -> str:
+        return sequence[pos - 1] if sequence and 1 <= pos <= len(sequence) else "?"
+
+    return f"{_aa(start)}{start}-{_aa(end)}{end}"
 
 _EVIDENCE = {
     "disorder": "structural inference (disorder path)",
@@ -46,6 +64,7 @@ def tagged_site(
     topology_state: Optional[str],
     extracellular: bool,
     compartment: str,
+    residue_range_token: Optional[str] = None,
     tag_type: str = "ALFA",
     tag_length_aa: Optional[int] = 15,
     linker: Optional[str] = "GS both sides",
@@ -77,6 +96,7 @@ def tagged_site(
         "residue_before": residue_before,
         "residue_after": residue_after,
         "residue_label": residue_label(residue_before, insert_after_residue),
+        "residue_range": residue_range_token,
         "topology_state": topology_state,
         "extracellular": extracellular,
         "compartment": compartment,

@@ -22,6 +22,8 @@ def test_emits_exposed_sites_across_a_run_ranked_by_exposure():
     assert all(p["provenance"] == "deterministic_computed" for p in picks)
     # exposure-ranked so NMS keeps the exposed peak: most-exposed residue (55) leads
     assert residues[0] == 55
+    # every disorder site reports the tolerant FEATURE span (the low-pLDDT run 50-56)
+    assert all(p["residue_range"] == "A50-A56" for p in picks)  # seq is all 'A'
 
 
 def test_short_run_and_intracellular_run_rejected():

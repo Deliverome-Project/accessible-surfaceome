@@ -40,6 +40,11 @@ export interface TaggedSite {
    *  "after N" convention in data/tag_sites/positive_controls.md. Null when there
    *  is no before-residue (e.g. a before-residue-1 N-terminal tag). */
   residue_label?: string | null;
+  /** Deterministic-only span of the insertion-tolerant FEATURE the site sits in,
+   *  e.g. "S98-K105": the low-pLDDT disorder run (disorder path) or the contiguous
+   *  exposed loop (surface_loop path). Null for literature sites and single-residue
+   *  features. */
+  residue_range?: string | null;
   /** DeepTMHMM per-residue char at the junction (O/I/M/S), or null. */
   topology_state: string | null;
   extracellular: boolean;

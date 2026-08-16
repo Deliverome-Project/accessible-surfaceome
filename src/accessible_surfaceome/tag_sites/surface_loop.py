@@ -11,7 +11,7 @@ from __future__ import annotations
 
 from typing import Any
 
-from .model import tagged_site
+from .model import residue_range, tagged_site
 
 PLDDT_MIN = 70.0         # reliability gate (NOT a disorder gate)
 RSA_MIN = 0.30           # solvent-exposed junction (window max)
@@ -32,19 +32,27 @@ def _window_max(values: dict[int, float], res: int, lo: int = -1, hi: int = 2) -
     return max((values.get(res + d, 0.0) for d in range(lo, hi + 1)), default=0.0)
 
 
-def loop_length(ss: dict[int, str], res: int) -> int:
-    """Length of the contiguous coil/turn run (DSSP loop chars) containing ``res``.
-    The primary computable proxy for tag permissiveness: a long exposed loop gives
-    a both-ends-tethered β-strand room; a short loop does not."""
+def loop_span(ss: dict[int, str], res: int) -> tuple[int, int] | None:
+    """Inclusive ``(lo, hi)`` bounds of the contiguous coil/turn run (DSSP loop
+    chars) containing ``res``, or ``None`` when ``res`` is not a loop residue.
+    This span is the insertion-tolerant FEATURE the site sits in."""
     if ss.get(res, "?") not in LOOP_SS:
-        return 0
+        return None
     lo = res
     while ss.get(lo - 1, "?") in LOOP_SS:
         lo -= 1
     hi = res
     while ss.get(hi + 1, "?") in LOOP_SS:
         hi += 1
-    return hi - lo + 1
+    return (lo, hi)
+
+
+def loop_length(ss: dict[int, str], res: int) -> int:
+    """Length of the contiguous coil/turn run containing ``res`` (0 if not a loop).
+    The primary computable proxy for tag permissiveness: a long exposed loop gives
+    a both-ends-tethered β-strand room; a short loop does not."""
+    span = loop_span(ss, res)
+    return span[1] - span[0] + 1 if span else 0
 
 
 def tag_fit(loop_len: int) -> str:
@@ -131,7 +139,9 @@ def surface_loop_candidates(
 
         rb = seq[anchor - 1] if 1 <= anchor <= len(seq) else None
         ra = seq[anchor] if 1 <= anchor < len(seq) else None
-        ll = loop_length(signals["ss"], anchor)
+        span = loop_span(signals["ss"], anchor)
+        ll = (span[1] - span[0] + 1) if span else 0
+        rng = residue_range(seq, span[0], span[1]) if span else None
         picks.append(
             tagged_site(
                 site_id=f"{gene_symbol}-surface_loop-{anchor}",
@@ -142,6 +152,7 @@ def surface_loop_candidates(
                 insert_after_residue=anchor,
                 residue_before=rb,
                 residue_after=ra,
+                residue_range_token=rng,
                 topology_state=signals["topology"].get(anchor, topo),
                 extracellular=True,
                 compartment="extracellular",
