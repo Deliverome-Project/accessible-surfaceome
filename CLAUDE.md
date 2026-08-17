@@ -657,6 +657,44 @@ Per-gene records must validate against the `SurfaceomeRecord` Pydantic
 schema in `src/accessible_surfaceome/tools/_shared/models.py`. See
 `viewer/README.md` for local dev + Cloudflare Pages deploy.
 
+### The public Worker is SHARED — additive `row_schema` bumps only; deploy is manual
+
+There is **one** public Worker (`cloudflare/workers/surfaceome_api/`, deployed
+as `surfaceome-api` on the route `api.deliverome.org/surfaceome/*`) and it serves
+**both** the production viewer (`surfaceome.deliverome.org`, built from `main`)
+**and** the `dev`-branch preview viewer. A Worker deploy therefore ships to both
+at once — and it is **decoupled from the viewer PR/Pages deploy**: the Worker
+serves new data the moment it's deployed, regardless of which viewer branch has
+merged.
+
+Two rules follow:
+
+1. **Worker `/v1/catalog` (and every endpoint) changes MUST be additive /
+   backward-compatible.** Bump `row_schema` and add **optional** top-level
+   fields; never remove or rename what the *current production* viewer reads.
+   The viewer's `inflateCatalogRow` is a field-by-field pick that **ignores
+   unknown fields and does not gate on `row_schema`**, so an older viewer safely
+   ignores a new field while a newer viewer consumes it. This is what lets you
+   deploy the Worker *before* the viewer PR merges without breaking prod.
+2. **The Worker deploy is a manual `wrangler deploy`** from
+   `cloudflare/workers/surfaceome_api/` (no CI/CD for the Worker). It needs
+   `CLOUDFLARE_API_TOKEN` with account **Workers Scripts → Edit** *plus* zone
+   **Workers Routes → Edit** on `deliverome.org` for the route binding (the
+   deploy soft-warns "does not have 'All Zones' permissions" and preserves the
+   existing route when the zone scope is absent — the script still uploads).
+   Run `npx --yes wrangler deploy --dry-run` first. Deploying the Worker is what
+   makes a new `/v1/catalog` field *visible*; the viewer PR merging to `dev` (→
+   Pages rebuild) is the separate half that renders it.
+
+**Worked example (`row_schema 8`).** The internalization sequence-prior grade is
+a top-level `intern` field on each `/v1/catalog` row (LEFT JOIN
+`surface_internalization`, scalar `seq_canonical_grade` only — never
+`record_json`, per the D1 isolate-memory rule), surfaced as the viewer's
+**separate** "Internalization" catalog column + filter group (decoupled from the
+deep-dive / DB-vote facets; grade type + list live in the client-safe
+`viewer/lib/internalization.ts`, NOT value-imported from `surfaceome.ts` which
+pulls `node:fs`).
+
 ### Per-gene markdown exports — D1-sourced at build time
 
 The downloadable `{SYMBOL}.md` briefs are rendered by
