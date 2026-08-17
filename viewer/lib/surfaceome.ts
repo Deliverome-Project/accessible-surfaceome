@@ -31,6 +31,9 @@
 
 import { readFileSync } from "node:fs";
 import path from "node:path";
+// Type-only import (erased at compile) so `CatalogRow.internalization` can be
+// typed here; the runtime list is re-exported below from the client-safe module.
+import type { InternalizationGrade } from "./internalization";
 
 // Build-time snapshot cache for the two over-2MB Worker endpoints
 // (/v1/catalog ≈ 5.7 MB, /v1/benchmark/matrix ≈ 3 MB). Pre-written by
@@ -277,25 +280,12 @@ export interface DeepDiveFilters {
   tm_count_band?: TmCountBand;
 }
 
-/** Internalization sequence-prior grade — the opus-5 model prior's read of a
- *  protein's intrinsic / basal endocytic propensity from amino-acid sequence +
- *  E/C topology alone (5-point SeqGrade + `unknown`). Ordered high→low. */
-export type InternalizationGrade =
-  | "very_high"
-  | "high"
-  | "moderate"
-  | "low"
-  | "very_low"
-  | "unknown";
-
-export const INTERNALIZATION_GRADES: readonly InternalizationGrade[] = [
-  "very_high",
-  "high",
-  "moderate",
-  "low",
-  "very_low",
-  "unknown",
-] as const;
+// Internalization grade type + ordered list live in the client-safe
+// `./internalization` module (this file imports `node:fs` for the build-cache
+// snapshot, so client components must not value-import from here). Re-exported
+// for back-compat with existing `from "./surfaceome"` type imports.
+export type { InternalizationGrade };
+export { INTERNALIZATION_GRADES } from "./internalization";
 
 export interface CatalogRow {
   symbol: string;

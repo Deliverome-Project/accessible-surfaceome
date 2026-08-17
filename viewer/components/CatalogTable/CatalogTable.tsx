@@ -7,10 +7,14 @@ import { useVirtualizer } from "@tanstack/react-virtual";
 import type {
   CatalogRow,
   DeepDiveFilters,
-  InternalizationGrade,
   TriageCell,
 } from "../../lib/surfaceome";
-import { INTERNALIZATION_GRADES } from "../../lib/surfaceome";
+// Client-safe module (no node:fs) — value-importing the grade list from
+// surfaceome.ts would drag its build-cache snapshot code into the browser bundle.
+import {
+  INTERNALIZATION_GRADES,
+  type InternalizationGrade,
+} from "../../lib/internalization";
 import { prettyEnum } from "../../lib/enums";
 import {
   DD_BOOL_FIELDS,
