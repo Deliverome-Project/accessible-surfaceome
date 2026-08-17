@@ -67,6 +67,14 @@ _FIELDS: list[tuple[str, str]] = [
     ("tumor_associated", "$.filters.tumor_associated"),
     ("llm_family", "$.filters.llm_family"),
     ("evidence_grade", "$.filters.evidence_grade"),
+    # The canonical rule (mirror of viewer/lib/catalog-presets.ts) gates on the
+    # HOLISTIC evidence_grade_summary (effective_evidence_grade), and its
+    # state-dependence escape reads expression_level (NOT low_endogenous_expression
+    # — that was the pre-#137 rule). Both must ship or the figure pipeline falls
+    # back to the A1 grade / loses the escape and under-counts canonical.
+    ("expression_level", "$.filters.expression_level"),
+    ("low_endogenous_expression", "$.filters.low_endogenous_expression"),
+    ("evidence_grade_summary", "$.executive_summary.evidence_grade_summary"),
     ("evidence_density", "$.filters.evidence_density"),
     ("n_papers_selected", "$.filters.n_papers_selected"),
     ("n_papers_found", "$.filters.n_papers_found"),

@@ -33,6 +33,7 @@ from dataclasses import dataclass
 from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any
+from urllib.parse import urlparse
 
 import httpx
 
@@ -135,30 +136,50 @@ def _post(
     return body
 
 
+# The public Worker stores every cacheable response in ``caches.default``
+# under a SYNTHETIC cache-key host, NOT the request host — so a purge of
+# the public ``api.deliverome.org`` URL never matches the cached object.
+# (Cloudflare accepts the purge and returns ``success=true``, but evicts
+# nothing; the record then serves stale until its Cache-Control TTL — up
+# to 24h for per-gene records.) We must mirror the Worker's cache-key
+# schemes byte-for-byte. MUST stay in sync with
+# ``cloudflare/workers/surfaceome_api/src/index.js``:
+#   * ``withEdgeCache`` (per-gene record + gene-list index): the key is
+#     ``https://cache.internal`` + the UNSTRIPPED ``url.pathname``, which
+#     in production carries the ``PUBLIC_API_BASE`` path prefix
+#     (``/surfaceome``). Derived from ``PUBLIC_API_BASE`` here so the two
+#     stay pinned to the same route.
+#   * ``handleCatalog`` (genome-wide ``/v1/catalog``): its own synthetic
+#     host ``https://catalog.cache`` + a HARDCODED ``/v1/catalog`` path
+#     (no route prefix).
+_CACHE_INTERNAL_BASE = f"https://cache.internal{urlparse(PUBLIC_API_BASE).path.rstrip('/')}"
+_CATALOG_CACHE_URL = "https://catalog.cache/v1/catalog"
+
+
 def _purge_urls_for(sym: str) -> list[str]:
-    """The exact public Worker URLs a republish of ``sym`` invalidates.
+    """The exact ``caches.default`` keys a republish of ``sym`` invalidates.
 
     A ``surface_annotation`` write changes three cached surfaces:
 
-    * the per-gene record (``/v1/genes/{SYMBOL}``),
+    * the per-gene record (``/v1/genes/{SYMBOL}`` — ``cache.internal``),
     * the genome-wide catalog (``/v1/catalog`` — carries a slimmed
-      ``ddf`` projection of every deep-dived gene's filters), and
-    * the gene-list index (``/v1/genes``).
+      ``ddf`` projection of every deep-dived gene's filters —
+      ``catalog.cache``), and
+    * the gene-list index (``/v1/genes`` — ``cache.internal``).
 
     Orthologs, triage, and benchmark endpoints are NOT touched by a
     record publish, so they're deliberately excluded — a tighter purge
     set means we never disturb the rest of the shared ``deliverome.org``
     zone cache.
 
-    The catalog cache key is query-string-insensitive (the Cloudflare
-    cache rule applied by ``scripts/apply_cf_edge_rules.py``), so purging
-    the bare URL is sufficient — there are no ``?x=`` variants to chase.
+    Each cache key is query-string-insensitive (``withEdgeCache`` keys on
+    the path only; the catalog key is a hardcoded path), so the bare URL
+    is the canonical key — there are no ``?x=`` variants to chase.
     """
-    base = PUBLIC_API_BASE
     return [
-        f"{base}/v1/genes/{sym}",
-        f"{base}/v1/catalog",
-        f"{base}/v1/genes",
+        f"{_CACHE_INTERNAL_BASE}/v1/genes/{sym}",
+        _CATALOG_CACHE_URL,
+        f"{_CACHE_INTERNAL_BASE}/v1/genes",
     ]
 
 

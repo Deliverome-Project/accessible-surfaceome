@@ -562,3 +562,58 @@
   color: var(--muted);
   line-height: 1.4;
 }
+
+/* Low-literature + UniProt flag — a compact chip on the tier-callout row.
+ * Green outline (#2e7a55, the surface/canonical family) to signal the
+ * UniProt-positive (surface) call; detail lives in its InfoTip. */
+.lowLitChip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  padding: 0.16rem 0.55rem;
+  border-radius: 999px;
+  font-size: 0.76rem;
+  font-weight: var(--fw-medium, 600);
+  color: color-mix(in srgb, #2e7a55 78%, var(--fg, #1f1718));
+  background: color-mix(in srgb, #2e7a55 14%, transparent);
+  border: 1px solid color-mix(in srgb, #2e7a55 46%, transparent);
+  white-space: nowrap;
+}
+
+/* Deep-dive tier callout — solid pill in the five-tier palette (canonical
+ * green → not-surface neutral), with a subtle outlined sub-facet chip. */
+.tierCallout {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  margin: var(--space-1) 0 0;
+}
+.tierChip {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.18rem 0.6rem;
+  border-radius: 999px;
+  font-size: 0.8rem;
+  font-weight: var(--fw-medium, 600);
+  letter-spacing: 0.01em;
+  color: #fff;
+  white-space: nowrap;
+}
+.tierCanonical { background: #2e7a55; }
+.tierLikely { background: #3d6b60; }
+.tierLow { background: #c99a5b; }
+.tierUncertain { background: #9a8f88; }
+.tierNo { background: #8a7b77; }
+.tierFacetChip {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.16rem 0.55rem;
+  border-radius: 999px;
+  font-size: 0.76rem;
+  font-weight: var(--fw-medium, 600);
+  color: color-mix(in srgb, #c07830 78%, var(--fg, #1f1718));
+  background: color-mix(in srgb, #c07830 12%, transparent);
+  border: 1px solid color-mix(in srgb, #c07830 38%, transparent);
+  white-space: nowrap;
+}

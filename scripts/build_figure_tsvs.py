@@ -37,6 +37,8 @@ from pathlib import Path
 
 import pandas as pd
 
+from accessible_surfaceome.release import catalog_presets
+
 ROOT = Path(__file__).resolve().parents[1]
 DEFAULT_OUT = ROOT / "data/processed/figures"
 
@@ -300,13 +302,15 @@ def build_ensemble(src: dict[str, pd.DataFrame]) -> pd.DataFrame:
     return build_db_correctness_by_class(src)
 
 
-# Deep-dive surface-call bucket predicates — PORTED VERBATIM from
-# viewer/lib/catalog-presets.ts (passesCanonical / passesLikely / passesInduced /
-# passesCellTypeRestricted) so the figure's buckets ARE the catalog presets.
-# The buckets NEST: `likely` (passesLikely) is the umbrella; `canonical`,
-# `cell_state` (induced, by trigger), `cell_type_restricted`, and the
-# `likely_other` residual EXCLUSIVELY partition it; `no` = !passesLikely.
-# KEEP IN SYNC with the .ts — guarded by tests/test_deep_dive_buckets_match_frontend.py.
+# Deep-dive surface-call bucket predicates — these DELEGATE to
+# accessible_surfaceome.release.catalog_presets (the single source of truth,
+# itself byte-mirrored to viewer/lib/catalog-presets.ts), so the figure's
+# buckets ARE the catalog presets. They used to be a hand-maintained fourth
+# copy; PR #130 changed the canonical rule in catalog_presets only and this
+# clone silently kept the old rule, so it now imports instead of duplicating.
+# Since PR #130, canonical is NOT a subset of likely (canonical admits
+# evidence_grade='weak', likely does not), so _dd_assign_bucket tests
+# canonical FIRST — see its docstring.
 _DD_INDUCTION_NON_NONE = {"oncogenic", "immune", "stress_hypoxia", "cell_death", "infection"}
 
 
@@ -315,43 +319,46 @@ def _dd_v(r: "pd.Series", k: str):
     return None if pd.isna(x) else x
 
 
+_DD_FILTER_FIELDS = (
+    "evidence_grade", "evidence_grade_summary", "confidence",
+    "surface_specificity", "state_dependence", "expression_level",
+    "low_endogenous_expression", "surface_accessibility", "evidence_density",
+    "surface_call_reason", "induction_trigger",
+)
+
+
+def _dd_filters(r: "pd.Series") -> dict:
+    """The ``annotation_json['filters']`` subset the catalog presets read,
+    lifted off a deep-dive-records row (NaN → None). Delegating to
+    ``catalog_presets`` keeps this builder byte-identical to the viewer +
+    Zenodo membership — the three copies drifted before (PR #130 changed
+    the canonical rule in ``catalog_presets`` only), so the tier figures
+    must call the SAME predicate, not a fourth hand-maintained clone."""
+    f = {k: _dd_v(r, k) for k in _DD_FILTER_FIELDS}
+    # low_endogenous_expression is a JSON boolean, but D1 json_extract emits
+    # it as 0/1 and the TSV round-trip reads it back as int. passes_canonical
+    # tests it with `is False` (the constitutive-baseline disjunct), so a bare
+    # 0 would silently never match — coerce to a real bool (None stays None).
+    le = f["low_endogenous_expression"]
+    if le is not None:
+        f["low_endogenous_expression"] = bool(int(le)) if str(le) in ("0", "1") else None
+    return f
+
+
 def _dd_passes_canonical(r: "pd.Series") -> bool:
-    return (
-        _dd_v(r, "evidence_grade") in ("direct_multi_method", "direct_single_method")
-        and _dd_v(r, "confidence") in ("high", "moderate")
-        and _dd_v(r, "surface_specificity") in ("surface_dominant", "mixed")
-        and _dd_v(r, "state_dependence") in ("low", "moderate", "unclear")
-        and _dd_v(r, "surface_accessibility") in ("high", "moderate")
-        and _dd_v(r, "evidence_density") in ("high", "moderate")
-    )
+    return catalog_presets.passes_canonical(_dd_filters(r))
 
 
 def _dd_passes_likely(r: "pd.Series") -> bool:
-    return (
-        _dd_v(r, "evidence_grade")
-        in ("direct_multi_method", "direct_single_method", "supportive_but_indirect")
-        and _dd_v(r, "surface_specificity")
-        in ("surface_dominant", "mixed", "mostly_intracellular")
-        and _dd_v(r, "surface_accessibility") in ("high", "moderate", "low")
-    )
+    return catalog_presets.passes_likely(_dd_filters(r))
 
 
 def _dd_passes_induced(r: "pd.Series") -> bool:
-    if not _dd_passes_likely(r):
-        return False
-    if _dd_v(r, "state_dependence") not in (None, "moderate", "high", "unclear"):
-        return False
-    if _dd_v(r, "surface_call_reason") in ("cell_state_induced", "lysosomal_exocytosis"):
-        return True
-    return _dd_v(r, "induction_trigger") in _DD_INDUCTION_NON_NONE
+    return catalog_presets.passes_induced(_dd_filters(r))
 
 
 def _dd_passes_cell_type_restricted(r: "pd.Series") -> bool:
-    if not _dd_passes_likely(r):
-        return False
-    if _dd_v(r, "state_dependence") not in ("moderate", "high"):
-        return False
-    return _dd_v(r, "surface_call_reason") == "tissue_restricted_surface"
+    return catalog_presets.passes_cell_type_restricted(_dd_filters(r))
 
 
 def _dd_assign_bucket(r: "pd.Series") -> tuple[str, str]:
@@ -361,13 +368,21 @@ def _dd_assign_bucket(r: "pd.Series") -> tuple[str, str]:
     `canonical`/`likely` are the frontend presets (canonical = passesCanonical;
     likely = passesLikely & !canonical, fanned out into cell_type_restricted +
     cell_state-by-trigger + the likely residual for Panel b). Everything that
-    fails passesLikely is split by the deep-dive's tentative `surface_accessibility`
-    call rather than lumped into one "no": `no` (accessibility=no, leaned
-    negative), `uncertain` (accessibility=uncertain), and `low` (accessibility
-    low or moderate but below the evidence bar — "maybe surface, weak evidence").
-    NB nearly all below-likely genes carry weak/conflicting evidence — partly the
-    pretrim-cap recall bug — so low/uncertain/no are tentative leans on thin
-    literature, not settled calls."""
+    fails BOTH presets is split by the deep-dive's tentative
+    `surface_accessibility` call rather than lumped into one "no": `no`
+    (accessibility=no, leaned negative), `uncertain` (accessibility=uncertain),
+    and `low` (accessibility low or moderate but below the evidence bar —
+    "maybe surface, weak evidence").
+
+    Canonical is tested FIRST, before likely. Since PR #130 canonical admits
+    ``evidence_grade='weak'`` (the ICAM1 class — rich A2 context, empty A1
+    ledger), but ``passes_likely`` still requires direct/supportive grade, so
+    canonical is no longer a subset of likely. The canonical preset is what
+    the paper + Zenodo deposit ship, so a gene that passes it belongs in the
+    canonical tier regardless of likely — testing likely first would misfile
+    those ~82 weak-but-canonical genes into `low`/`no`."""
+    if _dd_passes_canonical(r):
+        return ("canonical", "all")
     if not _dd_passes_likely(r):
         acc = _dd_v(r, "surface_accessibility")
         if acc == "uncertain":
@@ -375,8 +390,6 @@ def _dd_assign_bucket(r: "pd.Series") -> tuple[str, str]:
         if acc in ("low", "moderate"):
             return ("low", "all")
         return ("no", "all")  # accessibility == 'no' (the leaned-negative calls)
-    if _dd_passes_canonical(r):
-        return ("canonical", "all")
     if _dd_passes_cell_type_restricted(r):
         return ("likely", "cell_type_restricted")
     if _dd_passes_induced(r):
@@ -416,15 +429,19 @@ def build_deep_dive_final_categories(src: dict[str, pd.DataFrame]) -> pd.DataFra
     ``surface_call_reason`` + ``induction_trigger`` context that drove the call.
 
     Columns: gene_symbol, hgnc_id, uniprot_acc, ensembl_gene, ncbi_gene_id,
-    category, subcategory, surface_call_reason, induction_trigger.
+    category, subcategory, surface_call_reason, induction_trigger,
+    low_endogenous_expression, state_dependence.
 
-    PRELIMINARY — only the genes swept so far (pre-QA-fix). The below-likely
-    tiers are inflated by ``evidence_grade='weak'`` records, partly the
-    pretrim-cap recall bug deleting foundational papers; re-run after the sweep
-    + QA fixes for the final figure."""
+    ``low_endogenous_expression`` + ``state_dependence`` drive Panel b's
+    cross-cutting cell-state view: state-dependence is a FACET (the "when is it
+    surface"), not a tier, so it recurs across canonical / likely / low. Panel b
+    splits each surface tier into state-gated (surface only when induced off a
+    low/absent baseline, ``low_endogenous_expression`` True) vs constitutive
+    baseline (False — the ICAM1 class that is surface at rest and further
+    cell-state-modulated)."""
     cols = ["gene_symbol", "hgnc_id", "uniprot_acc", "ensembl_gene",
             "ncbi_gene_id", "category", "subcategory", "surface_call_reason",
-            "induction_trigger"]
+            "induction_trigger", "low_endogenous_expression", "state_dependence"]
     dd = src.get("deep_dive")
     if dd is None or dd.empty:
         return _empty_deep_dive_frame(cols)
@@ -436,6 +453,9 @@ def build_deep_dive_final_categories(src: dict[str, pd.DataFrame]) -> pd.DataFra
         "subcategory": [b[1] for b in buckets],
         "surface_call_reason": dd["surface_call_reason"].astype(str),
         "induction_trigger": dd["induction_trigger"].astype(str),
+        "low_endogenous_expression": pd.to_numeric(
+            dd["low_endogenous_expression"], errors="coerce").astype("Int64"),
+        "state_dependence": dd["state_dependence"].astype(str),
     })
     # Stable IDs from the catalog (candidate_universe), keyed by symbol.
     cat = src.get("catalog")
@@ -653,16 +673,25 @@ def build_deep_dive_vs_sonnet_benchmark(src: dict[str, pd.DataFrame]) -> pd.Data
 
     ``deep_dive_surface`` = tier in {canonical, likely, low}; ``sonnet_surface``
     / ``gt_surface`` = verdict in {yes, contextual}. Columns: gene_symbol +
-    stable IDs, ground_truth_verdict, sonnet_verdict, deep_dive_tier, gt_surface,
-    sonnet_surface, deep_dive_surface, sonnet_correct, deep_dive_correct.
+    stable IDs, ground_truth_verdict, sonnet_verdict, deep_dive_tier,
+    evidence_grade_summary, gt_surface, sonnet_surface, deep_dive_surface,
+    sonnet_correct, deep_dive_correct.
 
-    PRELIMINARY — only the bench genes deep-dived so far (27 of 147); the 'no'
-    bucket is tiny. Widens as the sweep covers more bench genes.
+    ALL deep-dived bench genes are scored — the benchmark does NOT exclude
+    holistic-``conflicting`` records. (An earlier revision dropped
+    ``evidence_grade_summary == 'conflicting'`` genes — RPN1, TF — on the
+    grounds that a single surface/not-surface score misrepresents a genuine
+    A1/A2 contradiction; we relaxed that so every figure scores the full cohort
+    uniformly. ``evidence_grade_summary`` is still carried as a column so a
+    reader can filter conflicting records themselves.) On the current cohort the
+    only remaining conflicting bench gene is RPN1 (a GT=no false positive), so
+    including it costs the deep dive ~1 pp — it still leads Sonnet.
     """
     cols = ["gene_symbol", "hgnc_id", "uniprot_acc", "ensembl_gene",
             "ncbi_gene_id", "ground_truth_verdict", "sonnet_verdict",
-            "deep_dive_tier", "gt_surface", "sonnet_surface",
-            "deep_dive_surface", "sonnet_correct", "deep_dive_correct",
+            "deep_dive_tier", "evidence_grade_summary", "gt_surface",
+            "sonnet_surface", "deep_dive_surface", "sonnet_correct",
+            "deep_dive_correct",
             "sonnet_correct_r1", "sonnet_correct_r2", "sonnet_correct_r3"]
     bench = src.get("bench")
     dd = src.get("deep_dive")
@@ -688,7 +717,9 @@ def build_deep_dive_vs_sonnet_benchmark(src: dict[str, pd.DataFrame]) -> pd.Data
         g = str(br["gene_symbol"])
         if g not in dd_genes:
             continue
-        tier = _dd_tier(dd_by_gene.loc[g])
+        dd_row = dd_by_gene.loc[g]
+        eg_sum = _dd_v(dd_row, "evidence_grade_summary")
+        tier = _dd_tier(dd_row)
         gt_s = str(br["ground_truth_verdict"]) in yc
         son_s = str(br["sonnet_verdict"]) in yc
         dd_s = tier in ("canonical", "likely", "low")
@@ -704,6 +735,7 @@ def build_deep_dive_vs_sonnet_benchmark(src: dict[str, pd.DataFrame]) -> pd.Data
             "ground_truth_verdict": str(br["ground_truth_verdict"]),
             "sonnet_verdict": str(br["sonnet_verdict"]),
             "deep_dive_tier": tier,
+            "evidence_grade_summary": eg_sum,
             "gt_surface": int(gt_s),
             "sonnet_surface": int(son_s),
             "deep_dive_surface": int(dd_s),
@@ -792,7 +824,7 @@ def build_positive_control_db_coverage_bars(src: dict[str, pd.DataFrame]) -> pd.
     return pd.read_csv(POS_LONG_TSV, sep="\t")
 
 
-def build_surfaceome_deterministic_features_placeholder(
+def build_surfaceome_deterministic_features(
     src: dict[str, pd.DataFrame],
 ) -> pd.DataFrame:
     """Per-gene deterministic features for Supp Fig 13, faceted by the REAL
@@ -821,7 +853,7 @@ def build_surfaceome_deterministic_features_placeholder(
     ``*_high_confidence`` column and renamed to match), ``schweke_homomer``,
     ``alt_iso_diff_topo``.
 
-    Mirrors ``scripts/surfaceome_deterministic_features_placeholder.py``
+    Mirrors ``scripts/surfaceome_deterministic_features.py``
     ``load_data()`` — it reads this bundled single TSV.
 
     PRELIMINARY — pre-QA-fix; counts grow as the sweep progresses.
@@ -889,8 +921,8 @@ BUILDERS: dict[str, callable] = {
     "topology_coverage_by_source":   build_topology_coverage_by_source,
     "bench_topology_vs_universe":    build_bench_topology_vs_universe,
     "positive_control_db_coverage_bars":  build_positive_control_db_coverage_bars,
-    "surfaceome_deterministic_features_placeholder":
-        build_surfaceome_deterministic_features_placeholder,
+    "surfaceome_deterministic_features":
+        build_surfaceome_deterministic_features,
 }
 
 

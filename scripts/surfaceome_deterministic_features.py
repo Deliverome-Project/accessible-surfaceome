@@ -119,7 +119,7 @@ def assign_facet(group: str) -> str | None:
 OUT_DIR = REPO_ROOT / "data/analysis/figures"
 
 
-DATA_TSV = REPO_ROOT / "data/processed/figures/surfaceome_deterministic_features_placeholder.tsv"
+DATA_TSV = REPO_ROOT / "data/processed/figures/surfaceome_deterministic_features.tsv"
 
 
 def load_data() -> pd.DataFrame:
@@ -129,8 +129,8 @@ def load_data() -> pd.DataFrame:
     signal peptide, N/C-term extracellular, alt-isoform topology] × Schweke
     homo-oligomer × Ensembl-Compara mouse/cyno 1:1 ortholog flags) is
     materialised once by
-    ``scripts/build_figure_tsvs.py::build_surfaceome_deterministic_features_placeholder``
-    into ``data/processed/figures/surfaceome_deterministic_features_placeholder.tsv``.
+    ``scripts/build_figure_tsvs.py::build_surfaceome_deterministic_features``
+    into ``data/processed/figures/surfaceome_deterministic_features.tsv``.
     This keeps the gist a single-TSV reproduction unit per the
     single-TSV-per-gist invariant (tests/test_gist_single_tsv.py).
 
@@ -174,23 +174,27 @@ def render(feats: pd.DataFrame) -> Path:
     # --- Panel definitions ---
     # Each is (column, kind, label) where kind ∈ {violin, frac_bool}.
     # Continuous features → violins; boolean 0/1 features → fraction bars.
+    # Fourth element is the fixed y-axis range so the panels read on a common,
+    # honest scale: the three continuous violins get feature-appropriate caps
+    # (a: TM-helix count 0–30, b: protein length 0–7k, c: ECD length 0–5k) and
+    # every boolean fraction panel (d–l) is pinned to a true 0–100%.
     panels = [
-        ("tm_helix_count",      "violin",    "Number of\nTM helices"),
-        ("protein_length",      "violin",    "Protein length\n(residues)"),
-        ("ecd_length_residues", "violin",    "ECD length\n(residues)"),
-        ("has_signal_peptide",  "frac_bool", "% with signal peptide"),
-        ("n_term_extracellular", "frac_bool", "% N-terminus extracellular"),
-        ("c_term_extracellular", "frac_bool", "% C-terminus extracellular"),
-        ("mouse_has_one2one",   "frac_bool", "% with mouse 1:1 ortholog"),
-        ("cyno_has_one2one",    "frac_bool", "% with cyno 1:1 ortholog"),
-        ("schweke_homomer",     "frac_bool", "% homo-oligomer (Schweke 2024)"),
-        ("alt_iso_diff_topo",   "frac_bool", "% with alt isoform of different topology"),
-        ("has_concerning_paralog", "frac_bool", "% concerning paralog\n(ECD 40%+ id)"),
-        ("has_ec_surface_bind_site", "frac_bool", "% with 1+ extracellular\nsurface-bind site"),
+        ("tm_helix_count",      "violin",    "Number of\nTM helices", (0, 30)),
+        ("protein_length",      "violin",    "Protein length\n(residues)", (0, 7000)),
+        ("ecd_length_residues", "violin",    "ECD length\n(residues)", (0, 5000)),
+        ("has_signal_peptide",  "frac_bool", "% with signal peptide", (0, 100)),
+        ("n_term_extracellular", "frac_bool", "% N-terminus extracellular", (0, 100)),
+        ("c_term_extracellular", "frac_bool", "% C-terminus extracellular", (0, 100)),
+        ("mouse_has_one2one",   "frac_bool", "% with mouse 1:1 ortholog", (0, 100)),
+        ("cyno_has_one2one",    "frac_bool", "% with cyno 1:1 ortholog", (0, 100)),
+        ("schweke_homomer",     "frac_bool", "% homo-oligomer (Schweke 2024)", (0, 100)),
+        ("alt_iso_diff_topo",   "frac_bool", "% with alt isoform of different topology", (0, 100)),
+        ("has_concerning_paralog", "frac_bool", "% concerning paralog\n(ECD 40%+ id)", (0, 100)),
+        ("has_ec_surface_bind_site", "frac_bool", "% with 1+ extracellular\nsurface-bind site", (0, 100)),
     ]
 
     letters = "abcdefghijkl"
-    for ax, letter, (col, kind, label) in zip(axes, letters, panels):
+    for ax, letter, (col, kind, label, ylim) in zip(axes, letters, panels):
         if kind == "violin":
             data = [
                 feats.loc[feats["facet"] == g, col].astype(float).dropna().tolist()
@@ -212,6 +216,7 @@ def render(feats: pd.DataFrame) -> Path:
             ax.set_xticklabels(facet_labels)
             ax.set_ylabel(label, fontsize=11)
             ax.set_xlim(-0.6, len(GROUPS) - 0.4)
+            ax.set_ylim(*ylim)
         elif kind == "frac_bool":
             ys = []
             ns = []
@@ -223,10 +228,17 @@ def render(feats: pd.DataFrame) -> Path:
                 ys.append(100 * positive / n if n else 0)
                 ns.append(n)
             ax.bar(range(len(GROUPS)), ys, color=facet_colors, edgecolor="none")
+            # True 0–100 axis: keep the value+n label inside the plot — above the
+            # bar for short bars, tucked inside the top (white) for tall ones so
+            # nothing clips against the hard 100 ceiling.
             for i, (y, n_) in enumerate(zip(ys, ns)):
-                ax.text(i, y + 1.5, f"{y:.0f}%\nn={n_}", ha="center", va="bottom",
-                        fontsize=9, color=facet_colors[i], weight="semibold")
-            ax.set_ylim(0, 118)
+                if y > 84:
+                    ax.text(i, y - 2, f"{y:.0f}%\nn={n_}", ha="center", va="top",
+                            fontsize=9, color="white", weight="semibold")
+                else:
+                    ax.text(i, y + 1.5, f"{y:.0f}%\nn={n_}", ha="center", va="bottom",
+                            fontsize=9, color=facet_colors[i], weight="semibold")
+            ax.set_ylim(*ylim)
             ax.set_xticks(range(len(GROUPS)))
             ax.set_xticklabels(facet_labels)
             ax.set_ylabel(label, fontsize=10)
@@ -256,10 +268,10 @@ def render(feats: pd.DataFrame) -> Path:
     )
 
     plt.tight_layout(rect=(0, 0, 1, 0.96))
-    save_figure(fig, "surfaceome_deterministic_features_placeholder", OUT_DIR,
+    save_figure(fig, "surfaceome_deterministic_features", OUT_DIR,
                 formats=("pdf", "png"), gist_url="https://gist.github.com/beccajcarlson/57cf3cc3db903ab39bc0ba315ce5e4d5")
     plt.close(fig)
-    return OUT_DIR / "surfaceome_deterministic_features_placeholder.pdf"
+    return OUT_DIR / "surfaceome_deterministic_features.pdf"
 
 
 def main() -> None:

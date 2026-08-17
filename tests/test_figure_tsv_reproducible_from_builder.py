@@ -66,7 +66,7 @@ def sources():
                 f"(or check out with lfs:true) to enable this reproducibility guard"
             )
     # Some builders read LFS-tracked sources DIRECTLY (bypassing _load_sources) —
-    # e.g. build_surfaceome_deterministic_features_placeholder reads
+    # e.g. build_surfaceome_deterministic_features reads
     # data/processed/deeptmhmm/*. Those aren't in `loaded` above, so probe a
     # representative one: in a no-`git lfs pull` checkout it's a pointer and the
     # builder KeyErrors on missing columns. The guard is a local-only drift check.

@@ -16,16 +16,16 @@ deep-dive's tentative surface call: ``low`` (low/moderate accessibility but
 weak evidence — maybe surface), ``uncertain``, and ``no`` (leaned
 not-surface).
 
-**b.** The composition of the ``likely`` tier: WHY those calls are only
-likely, as a sorted horizontal bar chart over the cell-type + cell-state
-reasons.
+**b.** Cell-state modulation across the three surface tiers (canonical /
+likely / low) as a 100%-stacked bar — state-gated (surface only when
+induced, ``low_endogenous_expression`` true) vs constitutive baseline
+(surface at rest and further modulated, the ICAM1 class). State-dependence
+is a FACET, not a tier, so it recurs across tiers; the split is monotonic
+with confidence (canonical skews constitutive, low skews state-gated).
 
-**PRELIMINARY** — ~1,175 of ~5,128 swept, pre-QA-fix. Nearly all
-below-likely genes (low/uncertain/no) carry weak/conflicting evidence —
-partly the pretrim-cap recall bug that deletes foundational literature — so
-those three tiers are tentative leans on thin evidence, and the cell-state
-``oncogenic`` share is inflated by tumour-associated over-flagging;
-re-render after the full sweep + QA fixes.
+Full deep-dive cohort (5,130 genes); `canonical` uses the PR #130 gate
+(overall confidence, not the A1-only evidence grade), giving 2,243
+canonical / 624 likely / 1,134 low / 1,074 no / 55 uncertain.
 
 Visual styling matches the in-repo `_plotting_config` (Deliverome
 categorical palette + Manrope-when-available). Inlined so the gist runs
@@ -36,6 +36,7 @@ from __future__ import annotations
 from pathlib import Path
 
 import matplotlib.font_manager as fm
+import matplotlib.patches as mpatches
 import matplotlib.pyplot as plt
 import pandas as pd
 import seaborn as sns
@@ -153,26 +154,19 @@ _COLOR_LOW = "#C99A5B"         # amber-tan — low/moderate access, weak evidenc
 _COLOR_UNCERTAIN = "#C7BDB6"   # light warm grey — ambiguous
 _COLOR_NO = "#9C8C88"          # lifted neutral — leaned not-surface
 
-# Per-reason colour + label for the Panel-b breakdown of `likely`.
-_LIKELY_COLORS: dict[str, str] = {
-    "cell_type_restricted":      "#BC3C4C",
-    "cell_state_oncogenic":      "#5A2608",
-    "cell_state_immune":         "#8C4210",
-    "cell_state_stress_hypoxia": "#C07830",
-    "cell_state_cell_death":     "#E0952F",
-    "cell_state_infection":      "#EFC178",
-    "cell_state_other":          "#D8A24A",
-    "likely_other":              "#3D6B60",
+# Panel-b cell-state split. state-dependence is a FACET, not a tier, so it
+# recurs across every surface tier: Panel b asks, within each of canonical /
+# likely / low, how many proteins are surface only when induced (state-gated,
+# low_endogenous_expression True) vs constitutive at rest and merely further
+# modulated (the ICAM1 class, low_endogenous_expression False).
+_CS_TIERS = ["canonical", "likely", "low"]
+_CS_COLORS: dict[str, str] = {
+    "constitutive": "#2E7A55",  # green — constitutive baseline (further-inducible)
+    "state_gated":  "#C07830",  # amber — surface only when induced
 }
-_LIKELY_LABELS: dict[str, str] = {
-    "cell_type_restricted":      "cell-type restricted",
-    "cell_state_oncogenic":      "cell-state · oncogenic",
-    "cell_state_immune":         "cell-state · immune",
-    "cell_state_stress_hypoxia": "cell-state · stress/hypoxia",
-    "cell_state_cell_death":     "cell-state · cell death",
-    "cell_state_infection":      "cell-state · infection",
-    "cell_state_other":          "cell-state · other",
-    "likely_other":              "other",
+_CS_LABELS: dict[str, str] = {
+    "constitutive": "constitutive baseline (further-inducible)",
+    "state_gated":  "state-gated (surface only when induced)",
 }
 
 
@@ -187,6 +181,22 @@ def _read(data: pd.DataFrame) -> dict[str, dict[str, int]]:
     return out
 
 
+def _read_cellstate(data: pd.DataFrame) -> dict[str, dict[str, int]]:
+    """Per surface tier, split genes into state-gated vs constitutive-baseline
+    on ``low_endogenous_expression`` (1 → surface only when induced off a
+    low/absent baseline; 0 → constitutive at rest). Returns
+    ``{tier: {"constitutive": n, "state_gated": n}}`` for canonical/likely/low."""
+    agg = {t: {"constitutive": 0, "state_gated": 0} for t in _CS_TIERS}
+    for _, row in data.iterrows():
+        tier = str(row["category"])
+        if tier not in agg:
+            continue
+        cls = "state_gated" if str(row["low_endogenous_expression"]) == "1" \
+            else "constitutive"
+        agg[tier][cls] += 1
+    return agg
+
+
 def _panel_label(ax, letter: str) -> None:
     ax.text(-0.02, 1.06, letter, transform=ax.transAxes, fontsize=26,
             fontweight=800, va="bottom", ha="right", color=BRAND_INK)
@@ -198,7 +208,8 @@ def main() -> None:
     # Single bundled TSV with (category, subcategory, n_genes) rows.
     # Panel a reads the per-tier totals; Panel b reads the `likely`
     # sub-buckets (one row per cell-type / cell-state reason).
-    data = _read(_fetch_tsv(DATA_TSV))
+    _df = _fetch_tsv(DATA_TSV)
+    data = _read(_df)
     canon = sum(data.get("canonical", {}).values())
     likely = data.get("likely", {})
     likely_total = sum(likely.values())
@@ -233,33 +244,54 @@ def main() -> None:
     sns.despine(ax=axA, top=True, right=True)
     _panel_label(axA, "a")
 
-    # ── Panel b: composition of `likely`, sorted horizontal ─────────────────
-    items = sorted(likely.items(), key=lambda kv: kv[1])  # ascending → biggest on top
-    ys = list(range(len(items)))
-    b_max = max((n for _, n in items), default=1)
-    for y, (key, n) in zip(ys, items):
-        axB.barh(y, n, color=_LIKELY_COLORS.get(key, "#999999"),
-                 edgecolor="#1F1718", linewidth=0.4)
-        axB.text(n + b_max * 0.012, y, f"{n:,}", va="center", ha="left",
-                 fontsize=15, color=BRAND_INK)
+    # ── Panel b: cell-state modulation across the surface tiers ─────────────
+    # 100%-stacked bar per tier — state-gated vs constitutive-baseline — so the
+    # cross-tier gradient is visible: cell-state variation is not confined to
+    # `likely` (canonical carries a large state-gated share too), but higher-
+    # confidence tiers skew constitutive while lower tiers skew state-gated.
+    cs = _read_cellstate(_df)
+    order = [t for t in _CS_TIERS if sum(cs[t].values()) > 0]
+    ys = list(range(len(order)))[::-1]  # canonical on top
+    for y, tier in zip(ys, order):
+        d = cs[tier]
+        total = d["constitutive"] + d["state_gated"]
+        left = 0.0
+        for cls in ("constitutive", "state_gated"):
+            frac = d[cls] / total
+            axB.barh(y, frac, left=left, height=0.66, color=_CS_COLORS[cls],
+                     edgecolor="white", linewidth=1.2)
+            if frac > 0.07:
+                axB.text(left + frac / 2, y, f"{d[cls]:,}\n{frac * 100:.0f}%",
+                         va="center", ha="center", fontsize=13,
+                         fontweight="bold", color="white")
+            left += frac
     axB.set_yticks(ys)
-    axB.set_yticklabels([_LIKELY_LABELS.get(k, k) for k, _ in items], fontsize=15)
-    axB.set_xlabel("Proteins")
-    axB.set_xlim(0, b_max * 1.14)
-    axB.set_ylim(-0.6, len(items) - 0.4)
-    axB.text(0.0, 1.06,
-             f"Composition of the {likely_total:,} 'likely' calls — "
-             f"by cell-type / cell-state reason",
+    axB.set_yticklabels(order, fontsize=16)
+    axB.set_xlim(0, 1)
+    axB.set_ylim(-0.6, len(order) - 0.4)
+    axB.set_xlabel("Share of tier")
+    axB.set_xticks([0, 0.25, 0.5, 0.75, 1.0])
+    axB.set_xticklabels(["0", "25", "50", "75", "100%"])
+    axB.text(0.0, 1.15,
+             "Cell-state modulation spans every tier — "
+             "surface only when induced vs constitutive baseline",
              transform=axB.transAxes, fontsize=15, style="italic",
              color=BRAND_NEUTRAL, va="bottom", ha="left")
-    sns.despine(ax=axB, top=True, right=True)
+    handles = [mpatches.Patch(color=_CS_COLORS[c], label=_CS_LABELS[c])
+               for c in ("constitutive", "state_gated")]
+    axB.legend(handles=handles, loc="lower center", bbox_to_anchor=(0.5, 1.005),
+               ncol=1, frameon=False, fontsize=12, handlelength=1.2,
+               handletextpad=0.5, labelspacing=0.3)
+    sns.despine(ax=axB, top=True, right=True, left=True)
     _panel_label(axB, "b")
 
     fig.text(
         0.5, -0.02,
-        f"PRELIMINARY — {cohort_n:,} of ~5,128 swept, pre-QA-fix "
-        f"(low/uncertain/no are weak-evidence tentative leans, inflated by the "
-        f"pretrim-cap bug; cell-state 'oncogenic' by tumour-associated over-flagging).",
+        f"Full deep-dive cohort (n={cohort_n:,}); canonical uses the PR #130 gate. "
+        f"(b) State-dependence is a facet, not a tier: cell-state variation spans "
+        f"canonical / likely / low — higher-confidence tiers skew constitutive-"
+        f"baseline (ICAM1-class), lower tiers state-gated. low / uncertain / no "
+        f"(panel a) remain weak-evidence tentative leans.",
         ha="center", va="top", fontsize=12, style="italic", color=BRAND_NEUTRAL,
     )
 

@@ -25,6 +25,9 @@ import {
   INDUCTION_SUBS,
   PRESET_IMPLIED_FILTERS,
   DEEP_DIVE_ONLY_NOTE,
+  isLowLiteratureSurface,
+  LOW_LIT_PAPERS_MAX,
+  effectiveEvidenceGrade,
   type PresetKey,
   type InductionSubKey,
 } from "../../lib/catalog-presets";
@@ -354,12 +357,20 @@ export function CatalogTable({
   const [ddLlmOpen, setDdLlmOpen] = useState(true);
   const [ddRisksOpen, setDdRisksOpen] = useState(true);
   const [ddDetOpen, setDdDetOpen] = useState(true);
-  // Saved-preset selector. "all" = filter off; any other key narrows to
-  // deep-dive rows whose `deep_dive_filters` payload passes the
-  // preset's predicate (see lib/catalog-presets.ts). Non-deep-dive
-  // rows are auto-excluded when a non-"all" preset is active because
+  // Saved-preset selector — MULTI-select. Empty set = filter off ("All").
+  // A non-empty set narrows to deep-dive rows whose `deep_dive_filters`
+  // payload passes ANY selected preset's predicate (OR / union semantics),
+  // so e.g. Canonical + Likely reconstitutes the full Likely tier (the
+  // "Likely" chip is the exclusive likely-only band; Canonical ⊂ Likely).
+  // Non-deep-dive rows are auto-excluded when any preset is active because
   // they have no `deep_dive_filters` to evaluate.
-  const [presetKey, setPresetKey] = useState<PresetKey>("all");
+  const [presetKeys, setPresetKeys] = useState<Set<PresetKey>>(
+    () => new Set(),
+  );
+  // Standalone "low-literature + UniProt" curated list — NOT a PRESETS entry
+  // because its predicate needs the UniProt DB flag (r.db.uniprot), which isn't
+  // in the deep-dive `deep_dive_filters`. Mutually exclusive with the preset chips.
+  const [lowLitSurfy, setLowLitSurfy] = useState(false);
   // When Induced is active, optional sub-axis filter on
   // `induction_trigger`. MULTI-select (a single gene's trigger is
   // one value, but a reader scanning "what's induced by Cancer OR
@@ -382,12 +393,12 @@ export function CatalogTable({
   useEffect(() => {
     const wasOpen = prevShowFiltersRef.current;
     prevShowFiltersRef.current = showFilters;
-    if (!wasOpen && showFilters && presetKey !== "all") {
+    if (!wasOpen && showFilters && presetKeys.size > 0) {
       setDeepDiveGroupOpen(true);
       setDdRisksOpen(false);
       setDdDetOpen(false);
     }
-  }, [showFilters, presetKey]);
+  }, [showFilters, presetKeys]);
 
   const [dbFilter, setDbFilter] = useState<Set<DbKey>>(new Set());
   const [verdictFilter, setVerdictFilter] = useState<Set<VerdictKey>>(
@@ -539,11 +550,21 @@ export function CatalogTable({
     // narrowing. resolveImpliedTriggerSet returns the union of the
     // selected sub-axes' trigger values; otherwise we fall back to
     // the static preset map.
-    const staticImplied =
-      PRESET_IMPLIED_FILTERS[presetKey][field.key] ?? null;
+    // Under multi-select, a chip value is "implied" if ANY active preset
+    // implies it — take the union of PRESET_IMPLIED_FILTERS across the
+    // selected keys (matches the OR/union row semantics).
+    let staticImplied: ReadonlySet<string> | null = null;
+    if (presetKeys.size > 0) {
+      const union = new Set<string>();
+      for (const k of presetKeys) {
+        const s = PRESET_IMPLIED_FILTERS[k][field.key];
+        if (s) for (const v of s) union.add(v);
+      }
+      staticImplied = union.size > 0 ? union : null;
+    }
     const implied =
       field.key === "induction_trigger" &&
-      presetKey === "induced" &&
+      presetKeys.has("induced") &&
       inductionSubs.size > 0
         ? resolveImpliedTriggerSet(inductionSubs)
         : staticImplied;
@@ -565,7 +586,7 @@ export function CatalogTable({
             const titleHint = on
               ? `Require ${field.label} = ${label}`
               : isImplied
-              ? `${field.label} = ${label} — already in the active "${PRESETS.find((p) => p.key === presetKey)?.label}" preset; click to narrow further by user choice`
+              ? `${field.label} = ${label} — already implied by the active preset${presetKeys.size > 1 ? "s" : ""}; click to narrow further by user choice`
               : `Require ${field.label} = ${label}`;
             return (
               <button
@@ -832,21 +853,32 @@ export function CatalogTable({
       // payload auto-drop because no preset evaluates true on null.
       // Same contract as the deep-dive filter group below — the
       // payload is only emitted by the Worker for deep-dive rows.
-      if (presetKey !== "all") {
+      if (presetKeys.size > 0) {
         const ddf = r.deep_dive_filters;
         if (!ddf) return false;
-        const preset = PRESETS.find((p) => p.key === presetKey);
-        if (preset && !preset.predicate(ddf)) return false;
-        // Induction sub-axis only applies when "induced" preset is
-        // active (the sub buckets read `induction_trigger`). Multi-
-        // select with OR semantics: a row passes if ANY selected
-        // sub-axis matches. Empty set = no sub-filter.
-        if (presetKey === "induced" && inductionSubs.size > 0) {
-          const matchAny = INDUCTION_SUBS.some(
-            (s) => inductionSubs.has(s.key) && s.predicate(ddf),
-          );
-          if (!matchAny) return false;
-        }
+        // OR / union across selected presets: the row passes if it matches
+        // ANY active preset. The Induced branch additionally requires a
+        // selected trigger sub-axis to match (when any is picked); other
+        // presets are unaffected, so a Canonical-matching row still shows
+        // regardless of the trigger sub-filter.
+        const matchAny = PRESETS.some((p) => {
+          if (!presetKeys.has(p.key)) return false;
+          if (!p.predicate(ddf)) return false;
+          if (p.key === "induced" && inductionSubs.size > 0) {
+            return INDUCTION_SUBS.some(
+              (s) => inductionSubs.has(s.key) && s.predicate(ddf),
+            );
+          }
+          return true;
+        });
+        if (!matchAny) return false;
+      }
+      // Low-literature + UniProt curated list — needs the UniProt DB flag, so it's
+      // handled here (not via a PRESETS predicate). Under-studied
+      // structural-surface candidates the deep dive couldn't confidently call.
+      if (lowLitSurfy) {
+        const ddf = r.deep_dive_filters;
+        if (!ddf || !isLowLiteratureSurface(ddf, r.db.uniprot === 1)) return false;
       }
       // Deep-dive filter group. Any active filter here implies
       // deep_dive=true — rows without a deep_dive_filters payload
@@ -885,8 +917,9 @@ export function CatalogTable({
     ddActive,
     ddEnumFilters,
     ddBoolFilters,
-    presetKey,
+    presetKeys,
     inductionSubs,
+    lowLitSurfy,
   ]);
 
   const sorted = useMemo(() => {
@@ -1022,7 +1055,7 @@ export function CatalogTable({
             </p>
             <p>
               See the{" "}
-              <a href="/api#presets" className={styles.tooltipLink}>
+              <a href="/api/#presets" className={styles.tooltipLink}>
                 full filter definitions on the API page →
               </a>
             </p>
@@ -1035,20 +1068,32 @@ export function CatalogTable({
                 (n, r) => (r.deep_dive_filters && p.predicate(r.deep_dive_filters) ? n + 1 : n),
                 0,
               );
-          const on = presetKey === p.key;
+          const on = p.key === "all" ? presetKeys.size === 0 : presetKeys.has(p.key);
           return (
             <span key={p.key} className={styles.presetChipWrap}>
               <button
                 type="button"
                 role="tab"
                 aria-selected={on}
+                aria-pressed={p.key === "all" ? undefined : on}
                 className={`${styles.presetChip} ${on ? styles.presetChipOn : ""}`}
                 onClick={() => {
-                  setPresetKey(p.key);
-                  // Reset the induction sub-axis whenever the parent
-                  // preset changes — otherwise stale sub-selections
-                  // would silently narrow the new preset.
-                  if (p.key !== "induced") setInductionSubs(new Set());
+                  // "All" clears the whole selection (and any sub-axis). Note:
+                  // it does NOT clear the low-lit toggle — that's an independent
+                  // facet (see its chip) and composes with the tier presets.
+                  if (p.key === "all") {
+                    setPresetKeys(new Set());
+                    setInductionSubs(new Set());
+                    return;
+                  }
+                  // Multi-select: toggle this preset in/out of the set.
+                  const next = new Set(presetKeys);
+                  if (next.has(p.key)) next.delete(p.key);
+                  else next.add(p.key);
+                  setPresetKeys(next);
+                  // Drop the induction sub-axis once Induced is de-selected —
+                  // otherwise stale sub-selections would silently narrow.
+                  if (!next.has("induced")) setInductionSubs(new Set());
                 }}
               >
                 {p.label}
@@ -1060,16 +1105,72 @@ export function CatalogTable({
                   <p>
                     <em>{DEEP_DIVE_ONLY_NOTE}</em>
                   </p>
+                  <p>
+                    See the{" "}
+                    <a
+                      href={`/api/#presets`}
+                      className={styles.tooltipLink}
+                    >
+                      exact {p.label} gate definition on the API page →
+                    </a>
+                  </p>
                 </InfoTip>
               ) : null}
             </span>
           );
         })}
+        {/* Low-lit + UniProt — standalone facet (not a PRESETS entry; its
+         *  predicate needs the UniProt DB flag, r.db.uniprot). Under-studied
+         *  surface candidates. INDEPENDENT of the tier presets — it composes
+         *  with them under multi-select (AND), it does not clear them. */}
+        {(() => {
+          const count = rows.reduce(
+            (n, r) =>
+              r.deep_dive_filters &&
+              isLowLiteratureSurface(r.deep_dive_filters, r.db.uniprot === 1)
+                ? n + 1
+                : n,
+            0,
+          );
+          return (
+            <span className={styles.presetChipWrap}>
+              <button
+                type="button"
+                role="tab"
+                aria-selected={lowLitSurfy}
+                className={`${styles.presetChip} ${lowLitSurfy ? styles.presetChipOn : ""}`}
+                onClick={() => {
+                  // Independent facet — toggles on its own, composing with any
+                  // active tier presets (AND); does not clear them.
+                  setLowLitSurfy(!lowLitSurfy);
+                }}
+              >
+                Low-lit + UniProt
+                <span className={styles.presetCount}>{count.toLocaleString()}</span>
+              </button>
+              <InfoTip label="About the Low-lit + UniProt list" wide>
+                <p>
+                  Non-canonical genes with a thin discovery corpus (&lt;{" "}
+                  {LOW_LIT_PAPERS_MAX} papers found) that UniProt nonetheless
+                  annotates as cell-surface. These are under-studied surface
+                  candidates — the deep dive likely couldn&apos;t reach a
+                  confident call for lack of literature, not because the protein
+                  is intracellular. Good re-dive targets. (UniProt is the surface
+                  database used here because it outperformed the others on our
+                  gold-standard positive controls.)
+                </p>
+                <p>
+                  <em>{DEEP_DIVE_ONLY_NOTE}</em>
+                </p>
+              </InfoTip>
+            </span>
+          );
+        })()}
         {/* Induction sub-chips — only meaningful when Induced is
          *  active. Hidden otherwise to avoid visual clutter.
          *  Multi-select: clicking a chip toggles it in/out of the
          *  active set; a row passes if ANY active sub matches. */}
-        {presetKey === "induced" ? (
+        {presetKeys.has("induced") ? (
           <div className={styles.presetSubBar}>
             <span className={`label-mono ${styles.presetSubLabel}`}>
               by trigger:
@@ -1917,7 +2018,10 @@ function sortValue(r: CatalogRow, k: SortKey): string | number {
     return v === "high" ? 3 : v === "moderate" ? 2 : v === "low" ? 1 : 0;
   }
   if (k === "dd_evidence") {
-    const v = r.deep_dive_filters?.evidence_grade;
+    // Sort on the EFFECTIVE grade (synth summary ?? deterministic), so the
+    // column orders the same value it displays and the gene page shows.
+    const f = r.deep_dive_filters;
+    const v = f ? effectiveEvidenceGrade(f) : undefined;
     return v === "direct_multi_method"
       ? 5
       : v === "direct_single_method"
@@ -2189,12 +2293,20 @@ function CatalogRowView({
               ddf?.confidence ?? "—",
               `Deep-dive confidence: ${ddf?.confidence ?? "n/a"}`,
             )}
-            {vital(
-              ddf?.evidence_grade,
-              gradeTone(ddf?.evidence_grade),
-              ddShort(ddf?.evidence_grade),
-              `Deep-dive evidence grade: ${(ddf?.evidence_grade ?? "n/a").replace(/_/g, " ")}`,
-            )}
+            {(() => {
+              // Show the EFFECTIVE grade (synth summary ?? deterministic) so
+              // the catalog vital matches the gene page + the tier gate. The
+              // deterministic evidence_grade under-calls ~144 genes as `weak`
+              // that the synthesizer holistically grades `supportive` (the
+              // SCN7A-class table-vs-page mismatch).
+              const g = ddf ? effectiveEvidenceGrade(ddf) : undefined;
+              return vital(
+                g,
+                gradeTone(g),
+                ddShort(g),
+                `Deep-dive evidence grade: ${(g ?? "n/a").replace(/_/g, " ")}`,
+              );
+            })()}
             {vital(
               ddf?.state_dependence,
               stateDependenceTone(ddf?.state_dependence),

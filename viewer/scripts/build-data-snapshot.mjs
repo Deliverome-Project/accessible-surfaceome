@@ -55,7 +55,7 @@
  *
  *   "build": "npm run build:exports && npm run build:snapshot && next build --webpack"
  */
-import { mkdir, writeFile } from "node:fs/promises";
+import { mkdir, readFile, writeFile } from "node:fs/promises";
 import path from "node:path";
 
 const API_BASE = process.env.SURFACEOME_API_BASE
@@ -63,6 +63,17 @@ const API_BASE = process.env.SURFACEOME_API_BASE
 
 const CACHE_DIR = path.resolve("build-cache");
 const RECORDS_DIR = path.join(CACHE_DIR, "records");
+
+// Shipped static assets (served at /data/… on the site origin, not the
+// Worker). The gene-page dropdown fetches gene-synonyms.json from here.
+const PUBLIC_DATA_DIR = path.resolve("public", "data");
+// Same NCBI gene_info TSV `lib/surfaceome.ts::loadGeneNamesMap` reads for
+// the homepage catalog search. The gene page is a client shell and can't
+// read it directly, so we bake a slim symbol→synonyms overlay from it.
+const GENE_INFO_TSV = path.resolve(
+  "..", "data", "external", "ncbi_gene_info",
+  "Homo_sapiens.protein_coding.with_hgnc.triageable.tsv",
+);
 
 const ENDPOINTS = [
   { endpoint: "/v1/catalog", file: "catalog.json" },
@@ -258,6 +269,76 @@ async function snapshotRecords() {
         `${notFound.slice(0, 20).join(", ")}`,
     );
   }
+  return symbols;
+}
+
+// Bake public/data/gene-synonyms.json — a slim {SYMBOL: synonyms[]} overlay
+// for the deep-dive gene set, so the client gene-page dropdown can match
+// alias queries ("Nav1.7" → SCN9A) exactly like the homepage catalog search.
+// The synonyms come from the same NCBI gene_info TSV that
+// lib/surfaceome.ts::loadGeneNamesMap reads for the homepage; the gene page
+// is a client shell and can't read that TSV itself. Restricted to deep-dive
+// symbols (from /v1/genes) so the shipped asset stays small.
+//
+// Degrades gracefully: a missing TSV writes an empty map (the dropdown falls
+// back to symbol-only matching) rather than failing the build — synonyms are
+// a search convenience, not load-bearing for navigation.
+async function snapshotGeneSynonyms(symbolsList) {
+  // Reuse the deep-dive gene list snapshotRecords() already fetched rather than
+  // re-hitting /v1/genes. A second call here 429s against the rate-limiter left
+  // hot by the ~5k-record pre-fetch burst, and that 429 was fataling the whole
+  // build (process.exit(1)) despite this overlay being a search-only
+  // convenience. Empty list → empty overlay, never fatal.
+  const symbols = new Set(symbolsList ?? []);
+  if (symbols.size === 0) {
+    console.warn(
+      "[snapshot] gene-synonyms → no gene list available; shipping empty " +
+        "overlay (dropdown falls back to symbol-only).",
+    );
+  }
+
+  // Mirrors loadGeneNamesMap's Pass-1 parse: NCBI gene_info, pipe-delimited
+  // `synonyms` column, "-" and empties dropped.
+  const overlay = {};
+  try {
+    const tsv = await readFile(GENE_INFO_TSV, "utf-8");
+    const lines = tsv.split(/\r?\n/);
+    const header = (lines[0] ?? "").split("\t");
+    const symIdx = header.indexOf("gene_symbol");
+    const synIdx = header.indexOf("synonyms");
+    if (symIdx >= 0 && synIdx >= 0) {
+      for (let i = 1; i < lines.length; i += 1) {
+        if (!lines[i]) continue;
+        const cols = lines[i].split("\t");
+        const sym = cols[symIdx]?.trim();
+        if (!sym || !symbols.has(sym)) continue;
+        const raw = cols[synIdx]?.trim() ?? "";
+        const syn = raw && raw !== "-"
+          ? raw.split("|").filter((s) => s && s !== "-")
+          : [];
+        if (syn.length > 0) overlay[sym] = syn;
+      }
+    } else {
+      console.warn(
+        "[snapshot] gene-synonyms → TSV missing gene_symbol/synonyms columns; " +
+          "shipping empty overlay (dropdown falls back to symbol-only).",
+      );
+    }
+  } catch (e) {
+    console.warn(
+      `[snapshot] gene-synonyms → cannot read ${GENE_INFO_TSV} (${e.message}); ` +
+        "shipping empty overlay (dropdown falls back to symbol-only).",
+    );
+  }
+
+  await mkdir(PUBLIC_DATA_DIR, { recursive: true });
+  const out = path.join(PUBLIC_DATA_DIR, "gene-synonyms.json");
+  const body = JSON.stringify(overlay);
+  await writeFile(out, body);
+  console.log(
+    `  wrote ${out} (${Object.keys(overlay).length}/${symbols.size} deep-dive ` +
+      `genes with synonyms, ${fmtMB(body.length)})`,
+  );
 }
 
 async function snapshot() {
@@ -271,7 +352,8 @@ async function snapshot() {
 
   await mkdir(CACHE_DIR, { recursive: true });
   await snapshotEndpoints();
-  await snapshotRecords();
+  const symbols = await snapshotRecords();
+  await snapshotGeneSynonyms(symbols);
 }
 
 await snapshot();

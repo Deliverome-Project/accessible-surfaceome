@@ -1,7 +1,14 @@
 "use client";
 
 import type { ReactNode } from "react";
-import type { CatalogRow } from "../../../lib/surfaceome";
+import type { CatalogRow, DeepDiveFilters } from "../../../lib/surfaceome";
+import {
+  isLowLiteratureSurface,
+  LOW_LIT_PAPERS_MAX,
+  deepDiveTier,
+  type DeepDiveTier,
+  type DeepDiveFacet,
+} from "../../../lib/catalog-presets";
 import type {
   AccessibilityModulationObservation,
   SurfaceomeRecord,
@@ -230,6 +237,20 @@ function vitalToneClass(
   return `tone-${tone}`;
 }
 
+// Deep-dive tier callout — label + CSS-modifier tone per tier, matching the
+// catalog / Figure 5 five-tier palette (canonical green → not-surface neutral).
+const TIER_META: Record<DeepDiveTier, { label: string; tone: string }> = {
+  canonical: { label: "Canonical", tone: styles.tierCanonical },
+  likely: { label: "Likely", tone: styles.tierLikely },
+  low: { label: "Low confidence", tone: styles.tierLow },
+  uncertain: { label: "Uncertain", tone: styles.tierUncertain },
+  no: { label: "Not surface", tone: styles.tierNo },
+};
+const FACET_LABEL: Record<Exclude<DeepDiveFacet, null>, string> = {
+  induced: "Cell-state induced",
+  cell_type_restricted: "Cell-type restricted",
+};
+
 /**
  * GeneHeader — display-scale gene symbol, executive lede, identifier
  * links, and four vitals. Driven entirely by `executive_summary` +
@@ -247,6 +268,23 @@ export function GeneHeader({
   const g = rec.gene;
   const exec = rec.executive_summary;
   const counts = tierCounts(rec);
+  // Low-literature + UniProt badge: a non-canonical gene whose below-canonical
+  // call may be evidence-limited (thin discovery corpus) rather than biological,
+  // and UniProt annotates it cell-surface. Needs the UniProt DB flag from the
+  // 5-DB strip (catalogRow.db.uniprot) — absent → no badge (graceful, like the
+  // strip). UniProt (not SURFY) because it captures the understudied
+  // olfactory/taste GPCR class SURFY structurally misses.
+  const lowLitSurface =
+    !!catalogRow &&
+    isLowLiteratureSurface(
+      rec.filters as unknown as DeepDiveFilters,
+      catalogRow.db.uniprot === 1,
+    );
+  // Deep-dive tier callout — the same five-tier classification the catalog +
+  // Figure 5 use, so the reader sees which shortlist this gene lands in
+  // (Canonical / Likely / …) plus its Cell-state-induced / Cell-type-restricted
+  // sub-facet, right in the header.
+  const { tier, facet } = deepDiveTier(rec.filters as unknown as DeepDiveFilters);
   const struct = rec.deterministic_features.structure;
   // The fetcher signals what kind of pLDDT the number is via the
   // ``source`` string (see :func:`tools.afdb_plddt.fetch_afdb_plddt`).
@@ -346,6 +384,65 @@ export function GeneHeader({
               to an inline strip immediately above the exec summary
               per user feedback. ``null`` for resolver-failure
               outliers, where we just omit the strip. */}
+          {/* Deep-dive tier callout — which shortlist this gene lands in
+           *  (same five-tier classification as the catalog + Figure 5), plus
+           *  its cell-state / cell-type sub-facet and, for under-studied
+           *  non-canonical genes, the low-literature + UniProt flag — all as
+           *  compact chips on one row above the DB strip. */}
+          <div className={styles.tierCallout}>
+            <span className={`${styles.tierChip} ${TIER_META[tier].tone}`}>
+              {TIER_META[tier].label}
+            </span>
+            <InfoTip label="About the deep-dive tier">
+              <p>
+                Which shortlist this gene lands in.{" "}
+                <strong>Canonical</strong> — the high-confidence surface tier
+                (confident overall call, surface-dominant / mixed, accessible,
+                at least
+                supportive-but-indirect evidence). <strong>Likely</strong> —
+                surface on broader evidence. <strong>Low&nbsp;/ Uncertain /
+                Not&nbsp;surface</strong> — below-shortlist leans on thin or
+                conflicting evidence. A sub-facet marks cell-state-induced or
+                cell-type-restricted presentation.
+              </p>
+              <p>
+                Exact gate definitions:{" "}
+                <a
+                  href="/api/#presets"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  Catalog presets ↗
+                </a>
+              </p>
+            </InfoTip>
+            {facet ? (
+              <span className={styles.tierFacetChip}>{FACET_LABEL[facet]}</span>
+            ) : null}
+            {lowLitSurface ? (
+              <span className={styles.lowLitChip}>
+                Low lit · UniProt-positive
+                <InfoTip label="About the low-literature + UniProt-positive flag">
+                  <p>
+                    <strong>Thin literature base</strong> — only{" "}
+                    {rec.filters.n_papers_found} papers found in discovery, below
+                    the ~{LOW_LIT_PAPERS_MAX}-paper point where the deep dive can
+                    usually reach a confident call — yet{" "}
+                    <strong>UniProt annotates it cell-surface</strong>.
+                  </p>
+                  <p>
+                    A flag that the surface call may be limited by{" "}
+                    <em>missing literature</em> rather than settled biology — an
+                    under-studied surface candidate worth a closer look.
+                    Independent of the tier above (it can co-occur with any
+                    tier). UniProt is used because it outperformed the other
+                    surface databases on our gold-standard positive controls.
+                  </p>
+                </InfoTip>
+              </span>
+            ) : null}
+          </div>
+
           {catalogRow ? <DatabasePresenceStrip row={catalogRow} /> : null}
 
           {/* Benchmark row (SurfaceBench ground truth) + Triage row

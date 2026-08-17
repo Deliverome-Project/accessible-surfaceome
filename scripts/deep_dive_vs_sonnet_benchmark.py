@@ -1,17 +1,17 @@
 """Deep-dive vs Sonnet+NCBI accuracy on SurfaceBench (deep-dived genes).
 
-New Supp figure: for the SurfaceBench genes deep-dived so far (the intersection,
-n=27 of 147), how the evidence-anchored deep dive scores against the curated
+New Supp figure: for all SurfaceBench genes deep-dived so far (the intersection,
+n=113 of 147), how the evidence-anchored deep dive scores against the curated
 ground truth, next to the Sonnet+NCBI triage on the SAME genes. Soft-credit
 accuracy — a contextually-surface protein counts correct when called surface.
+No records are excluded (holistic-`conflicting` genes are scored too).
 
 **a.** Overall accuracy — deep dive vs Sonnet+NCBI on the deep-dived bench genes.
 **b.** Accuracy per ground-truth bucket (yes / contextual / no).
 
 Reads the bundled per-figure TSV (one row per deep-dived bench gene with both
-predictors' soft-credit correctness); the figure aggregates.
-
-PRELIMINARY — 27 of 147 bench genes deep-dived; the 'no' bucket is n=2.
+predictors' soft-credit correctness); the figure aggregates. Deep dive 97% vs
+Sonnet 97% (near-identical; single collapsed-verdict basis: 97.3% vs 95.6%).
 
 Run::
 
@@ -52,8 +52,8 @@ _BUCKET_LABEL = {"yes": "yes\n(surface)", "contextual": "contextual",
 # read as one palette.
 _TIER_ORDER = ["canonical", "likely", "low", "uncertain", "no"]
 _TIER_COLOR = {
-    "canonical": "#2E7A55",  # success green — strict tier
-    "likely":    "#3D6B60",  # teal-mid — broader tier
+    "canonical": "#3D6B60",  # deep teal — strict tier (swapped w/ likely for contrast)
+    "likely":    "#2E7A55",  # brighter green — broader tier
     "low":       "#C99A5B",  # amber-tan — low/moderate, weak evidence
     "uncertain": "#C7BDB6",  # light warm-grey — ambiguous
     "no":        "#9C8C88",  # lifted neutral — leaned not-surface
@@ -112,7 +112,7 @@ def _draw_sonnet(ax, rows: list[dict], x: float, width: float) -> None:
     jx = _RNG.uniform(-width * 0.20, width * 0.20, size=len(accs))
     ax.scatter(x + jx, accs, s=26, color=COLORS["dark"], alpha=0.75,
                edgecolor="white", linewidth=0.5, zorder=5)
-    ax.text(x, mean + sem + 2, f"{mean:.0f}", ha="center", va="bottom",
+    ax.text(x, mean + sem + 2, f"{mean:.1f}", ha="center", va="bottom",
             fontsize=14, color=_SONNET_COLOR, fontweight="bold")
 
 
@@ -132,7 +132,7 @@ def _draw_deep_dive(ax, rows: list[dict], x: float, width: float) -> None:
             continue
         ax.bar(x, h, bottom=bottom, width=width, color=_TIER_COLOR[t], zorder=2)
         bottom += h
-    ax.text(x, dd + 2, f"{dd:.0f}", ha="center", va="bottom", fontsize=14,
+    ax.text(x, dd + 2, f"{dd:.1f}", ha="center", va="bottom", fontsize=14,
             color=COLORS["dark"], fontweight="bold")
 
 

@@ -163,6 +163,74 @@ def load_gazetteer(path: str | None = None) -> frozenset[str]:
     return frozenset(symbols)
 
 
+@lru_cache(maxsize=1)
+def _gene_token_map(path: str | None = None) -> dict[str, frozenset[str]]:
+    """Map every Approved HGNC symbol to its full normalized token set
+    (symbol + aliases + previous symbols). Cached (large, static); empty
+    when the TSV is not hydrated. No length floor — the 2-char symbols
+    (``TF``, ``F3``) must survive for exact collision detection; the floor
+    is re-applied to the sentence-matchable output of
+    :func:`homonym_competitor_tokens`."""
+    tsv = Path(path) if path else _DEFAULT_HGNC_TSV
+    if not tsv.exists():
+        return {}
+    out: dict[str, frozenset[str]] = {}
+    with tsv.open() as fh:
+        for row in csv.DictReader(fh, delimiter="\t"):
+            if (row.get("status") or "").strip() != "Approved":
+                continue
+            sym = normalize_symbol(row.get("symbol") or "")
+            if not sym:
+                continue
+            toks: set[str] = set()
+            for col in ("symbol", "alias_symbol", "prev_symbol"):
+                raw = (row.get(col) or "").replace('"', "")
+                for piece in raw.split("|"):
+                    norm = normalize_symbol(piece)
+                    if norm:
+                        toks.add(norm)
+            out[sym] = frozenset(toks)
+    return out
+
+
+def homonym_competitor_tokens(
+    target_symbol: str,
+    target_names: frozenset[str],
+    *,
+    path: str | None = None,
+) -> tuple[frozenset[str], frozenset[str]]:
+    """Deterministically find genes that COLLIDE with ``target_symbol`` (homonyms).
+
+    A homonym competitor is an Approved HGNC gene (other than the target)
+    whose own symbol/alias/prev set contains the target's symbol — e.g.
+    F3 (tissue factor) carries ``TF`` in its ``alias_symbol`` (``CD142|TF``).
+    A claim naming the competitor's DISTINGUISHING token (``CD142``) and NOT
+    the target is about the *other* gene — the homonym contamination this
+    surfaces (F3's live-cell-flow claims leaking into serotransferrin TF).
+
+    Returns ``(distinguishing, shared)``: ``distinguishing`` = competitor-only
+    tokens re-floored for safe free-text matching (``CD142``, not the 2-char
+    ``F3``); ``shared`` = the ambiguous token common to both (``TF``). Both
+    empty when HGNC isn't hydrated or the symbol has no collision.
+    """
+    tgt = normalize_symbol(target_symbol)
+    if not tgt:
+        return frozenset(), frozenset()
+    competitor_tokens: set[str] = set()
+    for sym, toks in _gene_token_map(path).items():
+        if sym != tgt and tgt in toks:
+            competitor_tokens |= toks
+    if not competitor_tokens:
+        return frozenset(), frozenset()
+    shared = frozenset(competitor_tokens & (target_names | {tgt}))
+    distinguishing = frozenset(
+        t
+        for t in (competitor_tokens - target_names - shared)
+        if len(t) >= _MIN_SYMBOL_LEN and t not in _AMBIGUOUS_TOKENS
+    )
+    return distinguishing, shared
+
+
 def sentence_subject(
     sentence: str,
     *,
@@ -197,6 +265,7 @@ def sentence_subject(
 
 __all__ = [
     "build_target_names",
+    "homonym_competitor_tokens",
     "extract_symbol_tokens",
     "load_gazetteer",
     "normalize_symbol",

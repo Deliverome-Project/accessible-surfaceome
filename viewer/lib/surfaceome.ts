@@ -192,6 +192,11 @@ export interface DeepDiveFilters {
   subcategory: Subcategory;
   llm_family: ProteinFamily;
   evidence_grade: EvidenceGrade;
+  /** Synthesizer's holistic grade (`executive_summary.evidence_grade_summary`).
+   *  Optional/nullable — absent on older ddf projections until the Worker
+   *  ships it; the tiers gate on this via `effectiveEvidenceGrade`, falling
+   *  back to the deterministic `evidence_grade`. */
+  evidence_grade_summary?: EvidenceGrade | null;
   evidence_density: EvidenceDensity;
   /** Raw unique-paper count behind the evidence list (schema 2.14.0).
    *  Optional because records annotated before 2.14.0 lack the field. */
@@ -1276,7 +1281,28 @@ export async function withDeepDiveFilters(
   if (ddfBySymbol.size === 0) return rows;
   return rows.map((r) =>
     r.deep_dive && ddfBySymbol.has(r.symbol)
-      ? { ...r, deep_dive_filters: ddfBySymbol.get(r.symbol) }
+      ? {
+          ...r,
+          deep_dive_filters: {
+            ...(ddfBySymbol.get(r.symbol) as DeepDiveFilters),
+            // The slim pickDeepDiveFilters projection keeps only
+            // n_papers_selected_band and drops the raw n_papers_found —
+            // but the low-literature + SURFY badge gates on n_papers_found.
+            // The Worker's catalog ddf already carries it, so carry it
+            // across the re-derivation rather than losing it.
+            n_papers_found: r.deep_dive_filters?.n_papers_found ?? null,
+            // Same carry-across for evidence_grade_summary: pickDeepDiveFilters
+            // reads record.filters, but the holistic summary lives in
+            // executive_summary, so the re-derivation drops it and
+            // effectiveEvidenceGrade silently falls back to the A1-only
+            // evidence_grade. That under-called 25 confidently-surface genes
+            // (PCSK9, BAFF, EFNA5, …: A1 `weak` but summary `supportive`+) out
+            // of Canonical — inconsistent with what their gene page displays.
+            // The Worker's catalog ddf carries the summary, so preserve it.
+            evidence_grade_summary:
+              r.deep_dive_filters?.evidence_grade_summary ?? null,
+          },
+        }
       : r,
   );
 }

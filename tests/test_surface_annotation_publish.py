@@ -181,11 +181,17 @@ def test_purge_urls_for_targets_record_catalog_and_list() -> None:
     # projection), and the gene-list index. Nothing else (orthologs /
     # triage / benchmark) — a tighter set avoids disturbing the rest of the
     # shared deliverome.org zone cache.
+    #
+    # The Worker caches in caches.default under SYNTHETIC hosts, not the
+    # public request host — purging the api.deliverome.org URL is a silent
+    # no-op. These keys mirror index.js exactly: withEdgeCache uses
+    # https://cache.internal + the unstripped pathname (carries the
+    # /surfaceome route prefix); handleCatalog uses https://catalog.cache.
     urls = _purge_urls_for("EGFR")
     assert urls == [
-        "https://api.deliverome.org/surfaceome/v1/genes/EGFR",
-        "https://api.deliverome.org/surfaceome/v1/catalog",
-        "https://api.deliverome.org/surfaceome/v1/genes",
+        "https://cache.internal/surfaceome/v1/genes/EGFR",
+        "https://catalog.cache/v1/catalog",
+        "https://cache.internal/surfaceome/v1/genes",
     ]
 
 
