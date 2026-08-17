@@ -56,6 +56,7 @@ Grouped by scope, in the order you'll usually reach for them: the labeled **benc
 | `GET` | `/v1/genes` | List of genes with a deep-dive record (summary fields) | 60s |
 | `GET` | `/v1/genes/{SYMBOL}` | Full SurfaceomeRecord JSON (see schema below) | 1d |
 | `GET` | `/v1/orthologs/{SYMBOL}` | Mouse + cyno orthologs for any gene from the latest Ensembl Compara release (genome-wide raw Compara — see note) | 1d |
+| `GET` | `/v1/internalization/{SYMBOL}` | Full `InternalizationRecord` — sequence-prior `SeqGrade` (`very_high`…`very_low` \| `unknown`) with per-isoform topology, endocytic motifs, and reasoning (intrinsic / basal endocytic propensity, **not** antibody/ADC-induced uptake); `null` if not in the cohort. The one-word grade per gene is also on each `/v1/catalog` row as `intern`. | 1d |
 | `GET` | `/v1/meta/sizes` | Approximate per-endpoint response sizes, computed live from D1 row counts + `LENGTH(...)` sums. Utility endpoint backing the size badges on the /api docs page. | 60s |
 
 `/v1/orthologs/{SYMBOL}` is the **broad** ortholog view — latest Ensembl Compara for any of ~5k genes with a mouse/cyno ortholog (~90% of the surfaceome), carrying full-length % identity + orthology type + high-confidence flag. The deep-dive record's `deterministic_features.orthologs` is the **deep** view — mouse/cyno canonical only, ECD % identity + projected topology + sequence, but only for genes that have been deep-dived. Use the endpoint for breadth, the record for depth.

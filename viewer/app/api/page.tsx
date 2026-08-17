@@ -164,7 +164,7 @@ const ENDPOINT_GROUPS: EndpointGroup[] = [
         path: "/v1/catalog",
         sizeKey: "/v1/catalog",
         summary:
-          "Per-gene-per-source surface-vote matrix (5 gating DBs: UniProt / GO / SURFY / CSPA / HPA) plus a per-model triage matrix (Haiku / Sonnet / Opus × verdict + short reason code; Sonnet applies a pubmed_ncbi rescue when its ncbi call is a false-negative), a deep_dive flag, and — for deep-dived rows — an optional `ddf` projection with the catalog-filterable subset of Filters (surface_accessibility, confidence, evidence_grade, n_papers_selected_band, surface_call_reason, ...). One row per protein-coding gene (~19k). Free-text reasoning per run is on GET /v1/triage/{SYMBOL}; the full deep-dive SurfaceomeRecord is on GET /v1/genes/{SYMBOL}. Top-level `n_papers_selected_cutoffs` reports the cohort percentile thresholds (p10, p90) used to compute `ddf.n_papers_selected_band` on each row. Server-side `json_extract` slims the deep-dive read (~4 KB/row on the wire out of ~120 KB per record).",
+          "Per-gene-per-source surface-vote matrix (5 gating DBs: UniProt / GO / SURFY / CSPA / HPA) plus a per-model triage matrix (Haiku / Sonnet / Opus × verdict + short reason code; Sonnet applies a pubmed_ncbi rescue when its ncbi call is a false-negative), a deep_dive flag, an optional `intern` internalization grade (the sequence-prior SeqGrade — see the Internalization section; full record on GET /v1/internalization/{SYMBOL}), and — for deep-dived rows — an optional `ddf` projection with the catalog-filterable subset of Filters (surface_accessibility, confidence, evidence_grade, n_papers_selected_band, surface_call_reason, ...). One row per protein-coding gene (~19k). Free-text reasoning per run is on GET /v1/triage/{SYMBOL}; the full deep-dive SurfaceomeRecord is on GET /v1/genes/{SYMBOL}. Top-level `n_papers_selected_cutoffs` reports the cohort percentile thresholds (p10, p90) used to compute `ddf.n_papers_selected_band` on each row. Server-side `json_extract` slims the deep-dive read (~4 KB/row on the wire out of ~120 KB per record).",
         curl:
           "curl -s https://api.deliverome.org/surfaceome/v1/catalog | jq '.universe_version, .n_rows, .n_with_triage, .n_papers_selected_cutoffs'",
       },
@@ -247,6 +247,22 @@ const ENDPOINT_GROUPS: EndpointGroup[] = [
           "Mouse and cynomolgus orthologs for any human gene from the latest Ensembl Compara release (broad genome-wide raw Compara — full-length % identity + orthology type, ~5k genes). The per-gene record's deterministic_features.orthologs is the deeper view: mouse/cyno canonical, ECD % identity + projected topology + sequence, for deep-dived genes only.",
         curl:
           "curl -s https://api.deliverome.org/surfaceome/v1/orthologs/ERBB2 | jq '.release_version, (.orthologs | length)'",
+      },
+    ],
+  },
+  {
+    label: "Internalization",
+    blurb:
+      "A standalone pass (separate from the deep dive): how readily a protein is taken from the cell surface into the cell, graded blind by a frontier model from amino-acid sequence + extracellular/cytoplasmic topology alone. The one-word grade per gene rides on each /v1/catalog row as `intern`; this endpoint returns the full record.",
+    endpoints: [
+      {
+        method: "GET",
+        path: "/v1/internalization/{SYMBOL}",
+        anchor: "internalization",
+        summary:
+          "Full InternalizationRecord for one gene from the opus-5 sequence-prior sweep: the model-prior track's overall 5-point SeqGrade (very_high / high / moderate / low / very_low / unknown) with per-isoform grade, DeepTMHMM E/C topology, endocytic sorting motifs, and the model's reasoning — scoped to intrinsic / basal endocytic propensity (not antibody- or ADC-induced uptake). Returns null for a gene not in the internalization cohort.",
+        curl:
+          "curl -s https://api.deliverome.org/surfaceome/v1/internalization/LRP1 | jq '.model_priors[0].overall_grade, .model_priors[0].per_isoform[0].grade'",
       },
     ],
   },
