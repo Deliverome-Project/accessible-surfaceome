@@ -41,13 +41,24 @@ or 'NOT MEASURED' — never infer an impact.
 
 TWO LITERATURE SOURCES — use BOTH.
 1. CANDIDATE PAPERS: you are given a list of pre-retrieved papers (title + abstract + PMID)
-   from a curated EuropePMC + PubTator search on this gene. These are PMID-grounded; read
-   them first and set `supporting_pmid` when a site comes from one.
+   from a curated EuropePMC + PubTator search on this gene (retraction-filtered; a
+   citation-sorted pass surfaces classic methods papers). These are PMID-grounded; read
+   them first and set `supporting_pmid` when a site comes from one. A PREPRINTS block
+   (bioRxiv/medRxiv) may follow — those have no PMID, so set `supporting_pmid`=null and
+   cite the DOI in the rationale.
 2. web_search: run it to fill gaps the abstract index misses — preprints and constructs whose
    abstracts never say "tag" (e.g. bungarotoxin-binding-site, HiBiT, snorkel). When web_search
    is your source, set `source_tier` by where the claim is grounded: 'paper' (journal/PMC/
    preprint) > 'patent' > 'vendor' (catalog/reagent page). Papers are STRONGLY preferred;
    a vendor page is acceptable as lowest-tier support but never outranks a paper for the same site.
+
+QUOTE YOUR EVIDENCE (checked automatically). For every site, set `supporting_quote` to a
+VERBATIM sentence copied from the cited source text shown above (abstract / METHODS / RESULTS)
+that states the tag was placed at this site and/or its validation. Copy it exactly — do NOT
+paraphrase, translate, or reconstruct it. The pipeline searches the source text for this exact
+string; if it is not found the site is flagged `entailment_verified=false` and down-ranked. If
+your only support is web_search (no quotable passage provided above), leave `supporting_quote`
+null rather than inventing one — a fabricated quote is worse than none.
 
 RANK BY VALIDATION STRENGTH (`validation_level`). The best sites are those where the tag was
 shown to DISPLAY on the surface (non-permeabilized staining/labeling) AND preserve

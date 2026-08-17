@@ -85,6 +85,18 @@ class TagSiteProposal(BaseModel):
     supporting_pmid: int | None = Field(
         default=None, description="PMID of the supporting paper when one exists (grounds the citation)."
     )
+    supporting_quote: str | None = Field(
+        default=None,
+        description=(
+            "A VERBATIM sentence copied from the cited paper (abstract/methods/results, provided "
+            "to you above) that states the tag was inserted at this site and/or its validation. "
+            "This exact string is checked against the source text — do NOT paraphrase or invent it."
+        ),
+    )
+    entailment_verified: bool = Field(
+        default=False,
+        description="Set by the pipeline (not the model): True iff supporting_quote is found in the cited source text.",
+    )
     rationale: str
     confidence: str = Field(description='"high" | "medium" | "low"')
 

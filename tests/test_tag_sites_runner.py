@@ -55,6 +55,7 @@ def test_format_candidate_papers():
 
 def test_run_tag_site_agent_composes_discovery_and_builder(monkeypatch):
     monkeypatch.setattr(R, "discover_tag_site_papers", lambda **k: {})
+    monkeypatch.setattr(R, "discover_tag_site_preprints", lambda **k: [])
     captured = {}
 
     def fake_call_builder(client, **k):
@@ -78,6 +79,7 @@ def test_run_tag_site_agent_composes_discovery_and_builder(monkeypatch):
 
 def test_run_returns_empty_on_builder_failure(monkeypatch):
     monkeypatch.setattr(R, "discover_tag_site_papers", lambda **k: {})
+    monkeypatch.setattr(R, "discover_tag_site_preprints", lambda **k: [])
     monkeypatch.setattr(R, "call_builder", lambda client, **k: None)
     out = R.run_tag_site_agent(
         gene_symbol="X", protein_name="X", uniprot_accession="Q0", aliases=[],
@@ -120,3 +122,49 @@ def test_format_candidate_papers_includes_fulltext():
     assert "METHODS: HA between D298 and L299." in block
     assert "RESULTS: acid-evoked current was reduced vs WT." in block
     assert "REDUCED/CONFOUNDED" in block  # the extraction instruction is present
+
+
+def test_quote_supported_entailment():
+    from accessible_surfaceome.agents.tag_site.literature_discovery import quote_supported
+    src = "Methods: we inserted an ALFA tag after residue G101 in the extracellular loop."
+    assert quote_supported("We inserted an ALFA tag after residue G101", src) is True
+    assert quote_supported("a fabricated sentence that is nowhere in the source", src) is False
+    assert quote_supported(None, src) is False
+    assert quote_supported("too short", src) is False   # < 12 normalized chars
+
+
+def test_verify_entailment_flags_hallucinated_quotes():
+    class P:
+        title = "ASIC1a surface HA"
+        abstract = "We inserted an HA epitope after residue D298 in the ectodomain."
+        year = 2021
+    good = _site(1, val="surface_only", res=298)
+    good.supporting_pmid = 11
+    good.supporting_quote = "We inserted an HA epitope after residue D298"
+    bad = _site(2, val="surface_and_function", res=147)
+    bad.supporting_pmid = 11
+    bad.supporting_quote = "This exact sentence never appears in any fetched source text"
+    res = _result([good, bad])
+    R.verify_entailment(res, papers={11: P()}, fulltext={}, preprints=None)
+    by_res = {s.insert_after_residue: s.entailment_verified for s in res.sites}
+    assert by_res[298] is True and by_res[147] is False
+
+
+def test_verify_entailment_tiebreak_in_ranking():
+    # same validation+tier: the source-verified site ranks ahead of the unverified one.
+    a = _site(1, val="surface_only", res=10); a.entailment_verified = False
+    b = _site(2, val="surface_only", res=20); b.entailment_verified = True
+    out = R.rank_sites(_result([a, b]))
+    assert [s.insert_after_residue for s in out.sites] == [20, 10]
+
+
+def test_format_candidate_papers_includes_preprints():
+    block = R.format_candidate_papers(
+        {},
+        preprints=[{"id": "PPR777", "title": "EndoNB ALFA knock-in",
+                    "abstract": "ALFA inserted after N100.", "doi": "10.1101/2023.01.01",
+                    "year": 2023}],
+    )
+    assert "PREPRINTS" in block
+    assert "DOI 10.1101/2023.01.01" in block
+    assert "EndoNB ALFA knock-in" in block

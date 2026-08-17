@@ -23,6 +23,7 @@ co-tested control (union 11/11 vs web 10/11 vs lit 9/11).
 """
 from __future__ import annotations
 
+from typing import Any
 from urllib.parse import urlparse
 
 from accessible_surfaceome.tools._shared.europepmc import (
@@ -33,6 +34,10 @@ from accessible_surfaceome.tools._shared.europepmc import (
 )
 from accessible_surfaceome.tools._shared.http import CachedHTTP
 from accessible_surfaceome.tools._shared.models import Paper
+from accessible_surfaceome.tools._shared.normalize import (
+    find_quote_in_normalized,
+    normalize_for_quote_matching,
+)
 from accessible_surfaceome.tools._shared.pubtator import (
     build_gene_entity_query,
     pubtator_search,
@@ -79,30 +84,31 @@ def discover_tag_site_papers(
     should include the protein name(s) — methods papers rarely use the symbol."""
     ri = retraction_index or _empty_retraction_index()
     discovered: dict[int, Paper] = {}
+    query = build_tag_site_query([gene_symbol, *aliases])
 
-    # EuropePMC keyword: alias-expanded + tagging-methods vocabulary.
-    payload = europepmc_search(
-        http=http,
-        query=build_tag_site_query([gene_symbol, *aliases]),
-        page_size=_MAX_PER_SOURCE,
-    )
-    for rec in payload.get("resultList", {}).get("result", []):
-        try:
-            paper = paper_from_europepmc(rec, retraction_index=ri)
-        except LookupError:
-            # Non-integer PMID (e.g. a preprint id "PPR...") — can't PMID-anchor.
-            continue
-        if paper.pmid:
-            discovered.setdefault(paper.pmid, paper)
+    # Two EuropePMC passes over the same alias+methods query: the default
+    # (relevance/recency) sort PLUS a CITATION-sorted pass that surfaces the
+    # classic, heavily-cited methods papers the default sort buries. Retracted
+    # papers are dropped (paper_from_europepmc flags is_retracted from the
+    # Retraction Watch index).
+    for sort in (None, "CITED desc"):
+        payload = europepmc_search(http=http, query=query, page_size=_MAX_PER_SOURCE, sort=sort)
+        for rec in payload.get("resultList", {}).get("result", []):
+            try:
+                paper = paper_from_europepmc(rec, retraction_index=ri)
+            except (LookupError, ValueError):
+                continue  # preprint / non-int PMID -> discover_tag_site_preprints()
+            if paper.pmid and not paper.is_retracted:
+                discovered.setdefault(paper.pmid, paper)
 
     # PubTator entity search — MINIMAL free text (overloading it tanks recall),
-    # hydrated to Paper objects via EuropePMC.
+    # hydrated to Paper objects via EuropePMC. Retracted papers dropped.
     hits = pubtator_search(
         http=http, query=build_gene_entity_query(gene_symbol, "epitope tag")
     ).hits
     pmids = [h.pmid for h in hits if h.pmid and h.pmid not in discovered][:_MAX_PER_SOURCE]
     for paper in europepmc_bulk_by_pmid(http=http, pmids=pmids, retraction_index=ri):
-        if paper.pmid:
+        if paper.pmid and not paper.is_retracted:
             discovered.setdefault(paper.pmid, paper)
 
     return discovered
@@ -172,3 +178,51 @@ def fetch_fulltext_sections(
         if secs:
             out[pmid] = secs
     return out
+
+
+_MAX_PREPRINTS = 6
+
+
+def discover_tag_site_preprints(
+    *, http: CachedHTTP, gene_symbol: str, aliases: list[str], max_preprints: int = _MAX_PREPRINTS
+) -> list[dict[str, Any]]:
+    """EuropePMC PREPRINT (PPR) records for this gene's tagging-methods query — the
+    ones ``paper_from_europepmc`` can't PMID-anchor and ``discover_tag_site_papers``
+    therefore skips. Returned as lightweight dicts (id/title/abstract/doi/year) so
+    bioRxiv/medRxiv methods papers (e.g. EndoNB) reach the agent instead of being
+    silently dropped. Cite these by DOI (they have no PMID)."""
+    query = build_tag_site_query([gene_symbol, *aliases])
+    out: list[dict[str, Any]] = []
+    seen: set[str] = set()
+    for sort in (None, "CITED desc"):
+        payload = europepmc_search(http=http, query=query, page_size=_MAX_PER_SOURCE, sort=sort)
+        for rec in payload.get("resultList", {}).get("result", []):
+            rid = str(rec.get("id") or "")
+            if not (rec.get("source") == "PPR" or rid.startswith("PPR")) or rid in seen:
+                continue
+            seen.add(rid)
+            out.append({
+                "id": rid,
+                "title": rec.get("title", ""),
+                "abstract": rec.get("abstractText", ""),
+                "doi": rec.get("doi"),
+                "year": rec.get("pubYear"),
+            })
+            if len(out) >= max_preprints:
+                return out
+    return out
+
+
+def quote_supported(quote: str | None, source_text: str) -> bool:
+    """True iff ``quote`` (a model-provided verbatim sentence) is found in
+    ``source_text`` after the same normalization ``promote_claim`` uses (NFKC +
+    Greek + HTML + whitespace + lowercase). The entailment check behind
+    ``entailment_verified``: a citation is only trusted if its supporting quote
+    actually appears in the fetched source. Quotes under 12 normalized chars are
+    too short to anchor and never verify."""
+    if not quote or not source_text:
+        return False
+    nq = normalize_for_quote_matching(quote)
+    if len(nq) < 12:
+        return False
+    return find_quote_in_normalized(nq, normalize_for_quote_matching(source_text)) is not None

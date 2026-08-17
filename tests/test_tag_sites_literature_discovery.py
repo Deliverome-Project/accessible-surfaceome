@@ -34,6 +34,7 @@ def test_validation_levels_rank_surface_and_function_first():
 class _FakePaper:
     def __init__(self, pmid):
         self.pmid = pmid
+        self.is_retracted = False
 
 
 def test_discover_unions_europepmc_and_pubtator_and_dedupes(monkeypatch):

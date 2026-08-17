@@ -1,16 +1,18 @@
 """End-to-end runner for the literature tag-site agent.
 
 Composes the hybrid literature track:
-  1. repo lit-search discovery (``literature_discovery.discover_tag_site_papers``)
-     -> PMID-grounded candidate papers;
-  2. Sonnet with the tag-site system prompt + those papers + server-side
-     ``web_search`` (for the preprints / vocabulary-mismatch papers the abstract
-     index misses), via the shared ``call_builder`` repair loop;
-  3. post-process: drop non-validated sites, then rank by validation strength
-     (surface+function first) then source tier (paper > patent > vendor).
+  1. repo lit-search discovery (``literature_discovery``) — EuropePMC (alias +
+     methods vocabulary, default + citation-sorted passes) + PubTator, RETRACTION
+     filtered, PLUS preprints (bioRxiv/medRxiv PPR records the PMID path skips);
+  2. relevance triage -> fetch METHODS/RESULTS full text for the top papers;
+  3. Sonnet with the tag-site prompt + those papers/preprints (+ full text) +
+     server-side ``web_search``, via the shared ``call_builder`` repair loop;
+  4. post-process: verify each site's supporting_quote against the source text
+     (entailment), drop non-validated sites, rank by validation strength then
+     source tier then entailment.
 
-Mirrors ``agents/surfaceome_v2/builders/_common.call_builder`` — same repair
-loop, usage sink, and web_search tool wiring the other agents use.
+Mirrors ``agents/surfaceome_v2/builders/_common.call_builder`` — same repair loop,
+usage sink, and web_search tool wiring the other agents use.
 """
 from __future__ import annotations
 
@@ -22,11 +24,14 @@ from accessible_surfaceome.agents._support.client import get_client
 from accessible_surfaceome.agents.surfaceome_v2.builders._common import call_builder
 from accessible_surfaceome.tools._shared.http import CachedHTTP, open_default_client
 from accessible_surfaceome.tools._shared.models import Paper
+from accessible_surfaceome.tools._shared.retraction_watch import from_http as _retraction_from_http
 
 from .literature_discovery import (
     SOURCE_TIERS,
     discover_tag_site_papers,
+    discover_tag_site_preprints,
     fetch_fulltext_sections,
+    quote_supported,
 )
 from .prompt import SYSTEM_PROMPT, build_user_prompt, keep_validated_sites
 from .schema import VALIDATION_LEVELS, VALIDATION_RANK, TagSiteProposal, TagSiteResult
@@ -45,24 +50,41 @@ _WEB_SEARCH_TOOL: list[dict[str, Any]] = [
 _MAX_PROMPT_PAPERS = 25
 _MAX_ABSTRACT_CHARS = 700
 _MAX_FULLTEXT_CHARS = 1400
+_MAX_FULLTEXT_PAPERS = 8
+# Lightweight relevance triage: score a paper by how many tagging-methods terms it
+# hits in title+abstract, so the full-text budget goes to the most on-topic papers.
+_RELEVANCE_TERMS = (
+    "epitope", "tag", "ha ", "flag", "myc", "alfa", "insert", "extracellular",
+    "surface", "knock-in", "ectodomain", "loop", "fusion", "non-permeabilized",
+)
 _TOPO_CHAR = {"extracellular": "O", "intracellular": "I", "membrane": "M", "signal": "S"}
 
 
+def _tag_relevance(paper: Paper) -> int:
+    """Count of tagging-methods terms in title+abstract — the triage score."""
+    text = f"{paper.title or ''} {paper.abstract or ''}".lower()
+    return sum(term in text for term in _RELEVANCE_TERMS)
+
+
 def format_candidate_papers(
-    papers: dict[int, Paper], fulltext: dict[int, dict[str, str]] | None = None
+    papers: dict[int, Paper],
+    fulltext: dict[int, dict[str, str]] | None = None,
+    preprints: list[dict[str, Any]] | None = None,
 ) -> str:
-    """Render the discovered papers as a prompt block the agent reads first. When
-    ``fulltext`` carries METHODS/RESULTS sections for a paper, include them so the
-    agent can pin the EXACT residue and judge whether function was PRESERVED vs
-    REDUCED/CONFOUNDED (-> validation_level)."""
-    if not papers:
-        return "CANDIDATE PAPERS: none retrieved by the lit-search; rely on web_search."
+    """Render discovered papers (+ preprints) as a prompt block the agent reads
+    first. Where METHODS/RESULTS full text is given, include it so the agent can
+    pin the EXACT residue, judge function PRESERVED vs REDUCED/CONFOUNDED, AND copy
+    a verbatim supporting_quote (which the pipeline then verifies)."""
     fulltext = fulltext or {}
+    preprints = preprints or []
+    if not papers and not preprints:
+        return "CANDIDATE PAPERS: none retrieved by the lit-search; rely on web_search."
     lines = [
         "CANDIDATE PAPERS (pre-retrieved via EuropePMC + PubTator; PMID-grounded — read "
-        "these FIRST and set supporting_pmid when a site comes from one. Where METHODS/"
-        "RESULTS full text is given, use it to pin the EXACT residue AND to judge whether "
-        "function was PRESERVED vs REDUCED/CONFOUNDED -> validation_level):"
+        "these FIRST, set supporting_pmid, and COPY a verbatim supporting_quote from the "
+        "text below. Where METHODS/RESULTS full text is given, use it to pin the EXACT "
+        "residue AND to judge whether function was PRESERVED vs REDUCED/CONFOUNDED -> "
+        "validation_level):"
     ]
     for pmid, p in list(papers.items())[:_MAX_PROMPT_PAPERS]:
         abstract = " ".join((p.abstract or "").split())[:_MAX_ABSTRACT_CHARS]
@@ -71,25 +93,73 @@ def format_candidate_papers(
             body = (fulltext.get(pmid) or {}).get(name)
             if body:
                 lines.append(f"  {name.upper()}: {' '.join(body.split())[:_MAX_FULLTEXT_CHARS]}")
+    if preprints:
+        lines.append(
+            "PREPRINTS (bioRxiv/medRxiv — no PMID; set supporting_pmid=null and cite the DOI):"
+        )
+        for pp in preprints:
+            abstract = " ".join((pp.get("abstract") or "").split())[:_MAX_ABSTRACT_CHARS]
+            lines.append(f"- DOI {pp.get('doi') or pp.get('id')} ({pp.get('year') or '?'}) "
+                         f"{pp.get('title')}\n  ABSTRACT: {abstract}")
     return "\n".join(lines)
 
 
-def _sort_key(s: TagSiteProposal) -> tuple[int, int, int]:
+def _sort_key(s: TagSiteProposal) -> tuple[int, int, int, int]:
     """Validation strength first (surface+function best), then source tier
-    (paper > patent > vendor), then the model's own rank."""
+    (paper > patent > vendor), then source-verified citations ahead of unverified,
+    then the model's own rank."""
     return (
         VALIDATION_RANK.get(s.validation_level, len(VALIDATION_LEVELS)),
         SOURCE_TIERS.index(s.source_tier) if s.source_tier in SOURCE_TIERS else len(SOURCE_TIERS),
+        0 if s.entailment_verified else 1,
         s.rank,
     )
 
 
 def rank_sites(result: TagSiteResult) -> TagSiteResult:
-    """Drop non-validated sites, sort by validation+tier, renumber ``rank``."""
+    """Drop non-validated sites, sort by validation+tier+entailment, renumber ``rank``."""
     keep_validated_sites(result)
     result.sites.sort(key=_sort_key)
     for i, s in enumerate(result.sites, start=1):
         s.rank = i
+    return result
+
+
+def _source_text_for(
+    pmid: int | None, papers: dict[int, Paper], fulltext: dict[int, dict[str, str]]
+) -> str:
+    """Abstract + methods + results text for one cited PMID (the entailment source)."""
+    if not pmid:
+        return ""
+    parts: list[str] = []
+    p = papers.get(pmid)
+    if p and p.abstract:
+        parts.append(p.abstract)
+    ft = fulltext.get(pmid) or {}
+    parts += [ft.get("methods", ""), ft.get("results", "")]
+    return "\n".join(x for x in parts if x)
+
+
+def verify_entailment(
+    result: TagSiteResult,
+    *,
+    papers: dict[int, Paper],
+    fulltext: dict[int, dict[str, str]],
+    preprints: list[dict[str, Any]] | None = None,
+) -> TagSiteResult:
+    """Set ``entailment_verified`` on each site: True iff its supporting_quote is
+    found in the cited paper's source text (abstract + full text), falling back to
+    the union of all fetched sources (incl. preprint abstracts) — so a hallucinated
+    quote that appears in NO source is flagged."""
+    all_text = "\n".join(
+        [_source_text_for(pid, papers, fulltext) for pid in papers]
+        + [(pp.get("abstract") or "") for pp in (preprints or [])]
+    )
+    for s in result.sites:
+        src = _source_text_for(s.supporting_pmid, papers, fulltext)
+        s.entailment_verified = quote_supported(s.supporting_quote, src) or quote_supported(
+            s.supporting_quote, all_text
+        )
     return result
 
 
@@ -106,19 +176,32 @@ def run_tag_site_agent(
     mode: str = "production",
     usage_sink: list[Any] | None = None,
 ) -> TagSiteResult:
-    """Discover papers, run the agent (papers + web_search), return a validated,
-    validation-ranked :class:`TagSiteResult`. ``aliases`` should include the
-    protein name(s) — methods papers rarely use the gene symbol."""
+    """Discover papers (+ preprints, retraction-filtered) + full text, run the agent
+    (papers + web_search), verify entailment, return a validated, ranked
+    :class:`TagSiteResult`. ``aliases`` should include the protein name(s)."""
     client = client or get_client()
     http = http or open_default_client()
     usage_sink = usage_sink if usage_sink is not None else []
 
-    papers = discover_tag_site_papers(http=http, gene_symbol=gene_symbol, aliases=aliases)
-    fulltext = fetch_fulltext_sections(http=http, papers=papers)
+    try:
+        ri = _retraction_from_http(http)  # best-effort Retraction Watch index
+    except Exception:  # noqa: BLE001 - never block on the retraction fetch
+        ri = None
+
+    papers = discover_tag_site_papers(
+        http=http, gene_symbol=gene_symbol, aliases=aliases, retraction_index=ri
+    )
+    preprints = discover_tag_site_preprints(http=http, gene_symbol=gene_symbol, aliases=aliases)
+    # Relevance triage: fetch full text for the most on-topic papers first.
+    ranked = dict(sorted(papers.items(), key=lambda kv: -_tag_relevance(kv[1])))
+    fulltext = fetch_fulltext_sections(
+        http=http, papers=ranked, max_papers=_MAX_FULLTEXT_PAPERS, retraction_index=ri
+    )
+
     user_prompt = build_user_prompt(
         gene_symbol, protein_name, mode=mode, sequence=sequence, topology=topology
     )
-    user_prompt = f"{user_prompt}\n\n{format_candidate_papers(papers, fulltext)}"
+    user_prompt = f"{user_prompt}\n\n{format_candidate_papers(ranked, fulltext, preprints)}"
 
     result = call_builder(
         client,
@@ -135,15 +218,16 @@ def run_tag_site_agent(
             uniprot_accession=uniprot_accession,
             sequence_length=len(sequence or ""),
         )
-    assert isinstance(result, TagSiteResult)  # expect_array=False → single instance
+    assert isinstance(result, TagSiteResult)  # expect_array=False -> single instance
+    verify_entailment(result, papers=papers, fulltext=fulltext, preprints=preprints)
     return rank_sites(result)
 
 
 def to_viewer_sites(result: TagSiteResult, *, uniprot_acc: str) -> list[dict[str, Any]]:
     """Convert to the viewer's ``literature_retrieved`` TaggedSite shape
     (viewer/lib/tag-sites-types.ts). Agent-only fields (validation_level,
-    position_evidence, source_tier) fold into ``rationale``/``sources`` so the
-    viewer contract is unchanged."""
+    position_evidence, source_tier, entailment) fold into ``rationale``/``sources``
+    so the viewer contract is unchanged."""
     out: list[dict[str, Any]] = []
     for s in result.sites:
         sources: list[dict[str, Any]] = []
@@ -174,7 +258,8 @@ def to_viewer_sites(result: TagSiteResult, *, uniprot_acc: str) -> list[dict[str
                 "confidence": s.confidence,
                 "rationale": (
                     f"{s.rationale} [validation: {s.validation_level}; "
-                    f"position: {s.position_evidence}; source: {s.source_tier}]"
+                    f"position: {s.position_evidence}; source: {s.source_tier}; "
+                    f"entailment_verified: {s.entailment_verified}]"
                 ),
                 "sources": sources,
                 "plddt": None,
