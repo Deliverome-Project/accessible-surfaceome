@@ -28,6 +28,7 @@ from urllib.parse import urlparse
 from accessible_surfaceome.tools._shared.europepmc import (
     europepmc_bulk_by_pmid,
     europepmc_search,
+    fetch_fulltext,
     paper_from_europepmc,
 )
 from accessible_surfaceome.tools._shared.http import CachedHTTP
@@ -140,3 +141,34 @@ def source_tier(url: str) -> str:
     if any(h in host for h in _VENDOR_HOSTS):
         return "vendor"
     return "other"
+
+
+_MAX_FULLTEXT_PAPERS = 8
+
+
+def fetch_fulltext_sections(
+    *,
+    http: CachedHTTP,
+    papers: dict[int, Paper],
+    max_papers: int = _MAX_FULLTEXT_PAPERS,
+    retraction_index: RetractionIndex | None = None,
+) -> dict[int, dict[str, str]]:
+    """Fetch full text for the top ``max_papers`` discovered papers that have a
+    PMCID, via the repo's ``fetch_fulltext`` (NCBI/PMC, same path evidence_retrieval
+    uses), and return ``{pmid: {section: text}}`` for the METHODS + RESULTS sections
+    — where the tag construct (exact residue) AND the surface/function measurements
+    live. Best-effort: a paper with no PMC-OA full text or a fetch error is skipped,
+    so the agent still has the abstract for it."""
+    ri = retraction_index or _empty_retraction_index()
+    out: dict[int, dict[str, str]] = {}
+    for pmid, paper in list(papers.items())[:max_papers]:
+        if not paper.pmc_id:
+            continue
+        try:
+            full = fetch_fulltext(http=http, pmcid=paper.pmc_id, retraction_index=ri)
+        except Exception:  # noqa: BLE001 - full text is best-effort
+            continue
+        secs = {s.name: s.text for s in full.sections if s.name in ("methods", "results")}
+        if secs:
+            out[pmid] = secs
+    return out

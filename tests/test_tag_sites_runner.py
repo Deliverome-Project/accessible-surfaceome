@@ -105,3 +105,18 @@ def test_residue_label_after_convention():
     from accessible_surfaceome.tag_sites.model import residue_label
     assert residue_label("G", 101) == "G101"
     assert residue_label(None, 101) is None   # before-residue-1 N-terminal tag
+
+
+def test_format_candidate_papers_includes_fulltext():
+    class P:
+        title = "ASIC1a surface HA"
+        abstract = "We inserted HA into the ectodomain."
+        year = 2020
+    block = R.format_candidate_papers(
+        {32996060: P()},
+        fulltext={32996060: {"methods": "HA between D298 and L299.",
+                             "results": "acid-evoked current was reduced vs WT."}},
+    )
+    assert "METHODS: HA between D298 and L299." in block
+    assert "RESULTS: acid-evoked current was reduced vs WT." in block
+    assert "REDUCED/CONFOUNDED" in block  # the extraction instruction is present

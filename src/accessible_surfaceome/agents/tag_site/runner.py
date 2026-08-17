@@ -23,7 +23,11 @@ from accessible_surfaceome.agents.surfaceome_v2.builders._common import call_bui
 from accessible_surfaceome.tools._shared.http import CachedHTTP, open_default_client
 from accessible_surfaceome.tools._shared.models import Paper
 
-from .literature_discovery import SOURCE_TIERS, discover_tag_site_papers
+from .literature_discovery import (
+    SOURCE_TIERS,
+    discover_tag_site_papers,
+    fetch_fulltext_sections,
+)
 from .prompt import SYSTEM_PROMPT, build_user_prompt, keep_validated_sites
 from .schema import VALIDATION_LEVELS, VALIDATION_RANK, TagSiteProposal, TagSiteResult
 
@@ -40,20 +44,33 @@ _WEB_SEARCH_TOOL: list[dict[str, Any]] = [
 ]
 _MAX_PROMPT_PAPERS = 25
 _MAX_ABSTRACT_CHARS = 700
+_MAX_FULLTEXT_CHARS = 1400
 _TOPO_CHAR = {"extracellular": "O", "intracellular": "I", "membrane": "M", "signal": "S"}
 
 
-def format_candidate_papers(papers: dict[int, Paper]) -> str:
-    """Render the discovered papers as a prompt block the agent reads first."""
+def format_candidate_papers(
+    papers: dict[int, Paper], fulltext: dict[int, dict[str, str]] | None = None
+) -> str:
+    """Render the discovered papers as a prompt block the agent reads first. When
+    ``fulltext`` carries METHODS/RESULTS sections for a paper, include them so the
+    agent can pin the EXACT residue and judge whether function was PRESERVED vs
+    REDUCED/CONFOUNDED (-> validation_level)."""
     if not papers:
         return "CANDIDATE PAPERS: none retrieved by the lit-search; rely on web_search."
+    fulltext = fulltext or {}
     lines = [
-        "CANDIDATE PAPERS (pre-retrieved via EuropePMC + PubTator; PMID-grounded — "
-        "read these FIRST and set supporting_pmid when a site comes from one):"
+        "CANDIDATE PAPERS (pre-retrieved via EuropePMC + PubTator; PMID-grounded — read "
+        "these FIRST and set supporting_pmid when a site comes from one. Where METHODS/"
+        "RESULTS full text is given, use it to pin the EXACT residue AND to judge whether "
+        "function was PRESERVED vs REDUCED/CONFOUNDED -> validation_level):"
     ]
     for pmid, p in list(papers.items())[:_MAX_PROMPT_PAPERS]:
         abstract = " ".join((p.abstract or "").split())[:_MAX_ABSTRACT_CHARS]
-        lines.append(f"- PMID {pmid} ({p.year or '?'}) {p.title}\n  {abstract}")
+        lines.append(f"- PMID {pmid} ({p.year or '?'}) {p.title}\n  ABSTRACT: {abstract}")
+        for name in ("methods", "results"):
+            body = (fulltext.get(pmid) or {}).get(name)
+            if body:
+                lines.append(f"  {name.upper()}: {' '.join(body.split())[:_MAX_FULLTEXT_CHARS]}")
     return "\n".join(lines)
 
 
@@ -97,10 +114,11 @@ def run_tag_site_agent(
     usage_sink = usage_sink if usage_sink is not None else []
 
     papers = discover_tag_site_papers(http=http, gene_symbol=gene_symbol, aliases=aliases)
+    fulltext = fetch_fulltext_sections(http=http, papers=papers)
     user_prompt = build_user_prompt(
         gene_symbol, protein_name, mode=mode, sequence=sequence, topology=topology
     )
-    user_prompt = f"{user_prompt}\n\n{format_candidate_papers(papers)}"
+    user_prompt = f"{user_prompt}\n\n{format_candidate_papers(papers, fulltext)}"
 
     result = call_builder(
         client,
