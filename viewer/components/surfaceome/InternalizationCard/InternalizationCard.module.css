@@ -44,9 +44,11 @@
   display: inline-block; padding: 0.06rem 0.5rem; border-radius: 999px;
   font-size: 0.75rem; font-weight: 600; line-height: 1.5; border: 1px solid transparent; white-space: nowrap;
 }
+.g_very_high { background: color-mix(in srgb, var(--teal) 28%, transparent); color: var(--teal); border-color: color-mix(in srgb, var(--teal) 60%, transparent); font-weight: 700; }
 .g_high { background: color-mix(in srgb, var(--teal) 16%, transparent); color: var(--teal); border-color: color-mix(in srgb, var(--teal) 40%, transparent); }
 .g_moderate { background: color-mix(in srgb, var(--amber) 16%, transparent); color: var(--amber); border-color: color-mix(in srgb, var(--amber) 40%, transparent); }
 .g_low { background: color-mix(in srgb, var(--slate) 16%, transparent); color: var(--slate); border-color: color-mix(in srgb, var(--slate) 40%, transparent); }
+.g_very_low { background: color-mix(in srgb, var(--rust) 26%, transparent); color: var(--rust); border-color: color-mix(in srgb, var(--rust) 60%, transparent); font-weight: 700; }
 .g_no { background: color-mix(in srgb, var(--rust) 16%, transparent); color: var(--rust); border-color: color-mix(in srgb, var(--rust) 40%, transparent); }
 .g_unknown { background: var(--surface2); color: var(--muted); border: 1px dashed var(--hair); }
 

@@ -2436,6 +2436,34 @@ async function handleTriage(env, symbol) {
   }, { ttl: CACHE_TTL_SHORT });
 }
 
+// Per-gene internalization record — the standalone internalization pass
+// (surface_internalization). Serves the full InternalizationRecord JSON so the
+// gene page's InternalizationCard renders the sequence-prior (+ literature,
+// once present) tracks for ANY swept gene, not just the handful of committed
+// static snapshots the card used to fall back to. One row per gene (publish
+// drops stale schema_versions); the MAX(schema_version) guard is
+// belt-and-suspenders. Returns `null` on a miss (short TTL so a later sweep
+// surfaces without a day-long stale "no record" cache); the card treats null
+// as "no record for {symbol} yet".
+async function handleInternalization(env, symbol) {
+  const sym = checkSymbol(symbol);
+  if (!sym) return badRequest("invalid_symbol");
+  const rows = await env.DB.prepare(
+    `SELECT record_json FROM surface_internalization
+      WHERE gene_symbol = ? COLLATE NOCASE
+      ORDER BY schema_version DESC LIMIT 1`
+  ).bind(sym).all();
+  const row = rows.results[0];
+  if (!row) return json(null, { ttl: CACHE_TTL_SHORT });
+  let record;
+  try {
+    record = JSON.parse(row.record_json);
+  } catch {
+    return json(null, { ttl: CACHE_TTL_SHORT });
+  }
+  return json(record, { ttl: CACHE_TTL_LONG });
+}
+
 // Per-(gene, model, variant) replicate detail — backs the benchmark
 // RationaleDrawer's "majority reason first, then all reps on scroll" view.
 // Returns every replicate for the cell (so the drawer can show the
@@ -3069,6 +3097,7 @@ export default {
     // Single-gene catalog row (DB-vote strip on the gene page). `/v1/catalog`
     // (exact) is matched above; this is the per-symbol variant.
     if ((m = path.match(/^\/v1\/catalog\/([^/]+)$/))) return withEdgeCache(request, () => handleCatalogOne(env, m[1]));
+    if ((m = path.match(/^\/v1\/internalization\/([^/]+)$/))) return withEdgeCache(request, () => handleInternalization(env, m[1]));
     if ((m = path.match(/^\/v1\/orthologs\/([^/]+)$/))) return withEdgeCache(request, () => handleOrthologs(env, m[1]));
     if ((m = path.match(/^\/v1\/benchmark\/([^/]+)$/))) return withEdgeCache(request, () => handleBenchmarkOne(env, m[1]));
     // Per-cell replicate detail (more specific — match before the bare
