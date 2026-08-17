@@ -6,12 +6,14 @@ surface), then the below-likely genes split by the deep-dive's tentative
 surface call: ``low`` (low/moderate accessibility but weak evidence — maybe
 surface), ``uncertain``, and ``no`` (leaned not-surface).
 
-**b.** Cell-state modulation across the three surface tiers (canonical /
-likely / low) as a 100%-stacked bar — state-gated (surface only when induced,
-``low_endogenous_expression`` true) vs constitutive baseline (surface at rest
-and further modulated, the ICAM1 class). State-dependence is a FACET, not a
-tier, so it recurs across tiers; the split is monotonic with confidence
-(canonical skews constitutive, low skews state-gated).
+**b.** The two cross-cutting surface facets — cell-type restricted and
+cell-state induced (split oncogenic vs. other) — counted by surface-call
+REASON and broken out across the three populated tiers (canonical / likely /
+low). Counting by reason rather than the evidence-gated facet keeps
+weak-evidence genes that still carry a surface call: the ``low`` tier
+contributes 463 cell-type-restricted and 156 induced genes that the gated
+facet drops. Totals across the three tiers: cell-type restricted 1,314;
+induced 600 (416 oncogenic, 184 other).
 
 Bucket predicates delegate to ``accessible_surfaceome.release.catalog_presets``
 via ``scripts/build_figure_tsvs.py`` (``_dd_passes_*``); canonical/likely == the
@@ -58,20 +60,31 @@ _COLOR_LOW = "#C99A5B"         # amber-tan — low/moderate access, weak evidenc
 _COLOR_UNCERTAIN = "#C7BDB6"   # light warm grey — ambiguous
 _COLOR_NO = "#9C8C88"          # lifted neutral — leaned not-surface
 
-# Panel-b cell-state split. state-dependence is a FACET, not a tier, so it
-# recurs across every surface tier: Panel b asks, within each of canonical /
-# likely / low, how many proteins are surface only when induced (state-gated,
-# low_endogenous_expression True) vs constitutive at rest and merely further
-# modulated (the ICAM1 class, low_endogenous_expression False).
-_CS_TIERS = ["canonical", "likely", "low"]
-_CS_COLORS: dict[str, str] = {
-    "constitutive": "#2E7A55",  # green — constitutive baseline (further-inducible)
-    "state_gated":  "#C07830",  # amber — surface only when induced
-}
-_CS_LABELS: dict[str, str] = {
-    "constitutive": "constitutive baseline (further-inducible)",
-    "state_gated":  "state-gated (surface only when induced)",
-}
+# Panel-b: the cross-cutting surface facets counted by surface-call REASON
+# (option B), broken out across the three populated tiers. Three stacked
+# categories per tier: cell-type restricted (tissue_restricted_surface),
+# induced-oncogenic (cell_state_induced / lysosomal_exocytosis with an
+# oncogenic trigger) and induced-other (any other induction trigger). Counting
+# by reason keeps weak-evidence surface calls that land in the `low` tier,
+# which the evidence-gated facet would drop.
+_PANELB_TIERS = ["canonical", "likely", "low"]
+_INDUCED_REASONS = {"cell_state_induced", "lysosomal_exocytosis"}
+_PANELB_CATS: list[tuple[str, str]] = [
+    ("Cell-type restricted", "#3D6B60"),  # teal
+    ("Induced — oncogenic", "#B5522E"),   # rust
+    ("Induced — other", "#D08A3E"),       # amber
+]
+
+
+def _panelb_category(reason: str, trigger: str) -> str | None:
+    """Map a (surface_call_reason, induction_trigger) pair to one of the three
+    Panel-b categories, or ``None`` if the reason carries no cross-cutting
+    facet."""
+    if reason == "tissue_restricted_surface":
+        return "Cell-type restricted"
+    if reason in _INDUCED_REASONS:
+        return "Induced — oncogenic" if trigger == "oncogenic" else "Induced — other"
+    return None
 
 
 def _read() -> dict[str, dict[str, int]]:
@@ -85,21 +98,23 @@ def _read() -> dict[str, dict[str, int]]:
     return out
 
 
-def _read_cellstate() -> dict[str, dict[str, int]]:
-    """Per surface tier, split genes into state-gated vs constitutive-baseline
-    on ``low_endogenous_expression`` (1 → surface only when induced off a
-    low/absent baseline; 0 → constitutive at rest). Returns
-    ``{tier: {"constitutive": n, "state_gated": n}}`` for canonical/likely/low."""
-    agg = {t: {"constitutive": 0, "state_gated": 0} for t in _CS_TIERS}
+def _read_tier_categories() -> dict[str, dict[str, int]]:
+    """Panel b: the tier × surface-facet-by-reason cross-tab.
+
+    Returns ``{tier: {category_label: n_genes}}`` for the three populated tiers,
+    counting by ``surface_call_reason`` (option B) so the low-tier weak-evidence
+    surface calls are retained (they carry a reason but fail the evidence gate
+    the ``facet`` column requires)."""
+    out = {t: {c: 0 for c, _ in _PANELB_CATS} for t in _PANELB_TIERS}
     with open(DATA_TSV) as f:
         for row in csv.DictReader(f, delimiter="\t"):
-            tier = row["category"]
-            if tier not in agg:
+            if row["category"] not in out:
                 continue
-            cls = "state_gated" if row.get("low_endogenous_expression") == "1" \
-                else "constitutive"
-            agg[tier][cls] += 1
-    return agg
+            cat = _panelb_category(row["surface_call_reason"],
+                                   row["induction_trigger"])
+            if cat:
+                out[row["category"]][cat] += 1
+    return out
 
 
 def _panel_label(ax, letter: str) -> None:
@@ -120,11 +135,10 @@ def make_plot() -> tuple[plt.Figure, tuple[plt.Axes, plt.Axes]]:
     low_total = sum(data.get("low", {}).values())
     unc_total = sum(data.get("uncertain", {}).values())
     no_total = sum(data.get("no", {}).values())
-    cohort_n = canon + likely_total + low_total + unc_total + no_total
 
     fig, (axA, axB) = plt.subplots(
         1, 2, figsize=(18, 7),
-        gridspec_kw={"width_ratios": [1.5, 1.2], "wspace": 0.60},
+        gridspec_kw={"width_ratios": [1.5, 1.3], "wspace": 0.18},
     )
 
     # ── Panel a: the five-tier confidence spectrum ──────────────────────────
@@ -148,56 +162,44 @@ def make_plot() -> tuple[plt.Figure, tuple[plt.Axes, plt.Axes]]:
     sns.despine(ax=axA, top=True, right=True)
     _panel_label(axA, "a")
 
-    # ── Panel b: cell-state modulation across the surface tiers ─────────────
-    # 100%-stacked bar per tier — state-gated vs constitutive-baseline — so the
-    # cross-tier gradient is visible: cell-state variation is not confined to
-    # `likely` (canonical carries a large state-gated share too), but higher-
-    # confidence tiers skew constitutive while lower tiers skew state-gated.
-    cs = _read_cellstate()
-    order = [t for t in _CS_TIERS if sum(cs[t].values()) > 0]
-    ys = list(range(len(order)))[::-1]  # canonical on top
-    for y, tier in zip(ys, order):
-        d = cs[tier]
-        total = d["constitutive"] + d["state_gated"]
+    # ── Panel b: surface facets by REASON, across the three populated tiers ──
+    # Cell-type restricted and cell-state induced (split oncogenic vs. other)
+    # counted by surface-call reason (option B), so weak-evidence surface calls
+    # in the `low` tier are retained. One horizontal stacked bar per tier
+    # (canonical / likely / low), matching panel a's confidence spectrum.
+    tier_cats = _read_tier_categories()
+    y_pos = list(range(len(_PANELB_TIERS)))[::-1]  # canonical at top
+    row_totals = [sum(tier_cats[t].values()) for t in _PANELB_TIERS]
+    bar_max = max(row_totals)
+    for t, y in zip(_PANELB_TIERS, y_pos):
         left = 0.0
-        for cls in ("constitutive", "state_gated"):
-            frac = d[cls] / total
-            axB.barh(y, frac, left=left, height=0.66, color=_CS_COLORS[cls],
-                     edgecolor="white", linewidth=1.2)
-            if frac > 0.07:
-                axB.text(left + frac / 2, y, f"{d[cls]:,}\n{frac * 100:.0f}%",
-                         va="center", ha="center", fontsize=13,
-                         fontweight="bold", color="white")
-            left += frac
-    axB.set_yticks(ys)
-    axB.set_yticklabels(order, fontsize=16)
-    axB.set_xlim(0, 1)
-    axB.set_ylim(-0.6, len(order) - 0.4)
-    axB.set_xlabel("Share of tier")
-    axB.set_xticks([0, 0.25, 0.5, 0.75, 1.0])
-    axB.set_xticklabels(["0", "25", "50", "75", "100%"])
-    axB.text(0.0, 1.15,
-             "Cell-state modulation spans every tier — "
-             "surface only when induced vs constitutive baseline",
-             transform=axB.transAxes, fontsize=15, style="italic",
-             color=COLORS["neutral"], va="bottom", ha="left")
-    handles = [mpatches.Patch(color=_CS_COLORS[c], label=_CS_LABELS[c])
-               for c in ("constitutive", "state_gated")]
-    axB.legend(handles=handles, loc="lower center", bbox_to_anchor=(0.5, 1.005),
-               ncol=1, frameon=False, fontsize=12, handlelength=1.2,
-               handletextpad=0.5, labelspacing=0.3)
-    sns.despine(ax=axB, top=True, right=True, left=True)
-    _panel_label(axB, "b")
+        for label, color in _PANELB_CATS:
+            n = tier_cats[t][label]
+            if n <= 0:
+                continue
+            axB.barh(y, n, left=left, height=0.62, color=color,
+                     edgecolor="white", linewidth=1.0)
+            if n >= bar_max * 0.06:
+                axB.text(left + n / 2, y, f"{n:,}", va="center", ha="center",
+                         fontsize=13, fontweight="bold", color="white")
+            left += n
+        axB.text(left + bar_max * 0.012, y, f"{left:,.0f}", va="center",
+                 ha="left", fontsize=15, fontweight="bold", color=COLORS["dark"])
 
-    fig.text(
-        0.5, -0.02,
-        f"Full deep-dive cohort (n={cohort_n:,}); canonical uses the PR #130 gate. "
-        f"(b) State-dependence is a facet, not a tier: cell-state variation spans "
-        f"canonical / likely / low — higher-confidence tiers skew constitutive-"
-        f"baseline (ICAM1-class), lower tiers state-gated. low / uncertain / no "
-        f"(panel a) remain weak-evidence tentative leans.",
-        ha="center", va="top", fontsize=12, style="italic", color=COLORS["neutral"],
-    )
+    axB.set_yticks(y_pos)
+    axB.set_yticklabels(_PANELB_TIERS, fontsize=16)
+    axB.set_xlabel("Proteins (by surface-call reason)")
+    axB.set_xlim(0, bar_max * 1.15)
+    axB.set_ylim(-0.7, len(_PANELB_TIERS) - 0.3)
+    sns.despine(ax=axB, top=True, right=True)
+
+    handles = [mpatches.Patch(color=color, label=label)
+               for label, color in _PANELB_CATS]
+    axB.legend(handles=handles, title="Surface facet (by reason)",
+               loc="upper right", bbox_to_anchor=(1.0, 1.0), frameon=False,
+               fontsize=12, title_fontsize=13, handlelength=1.1,
+               handletextpad=0.5, labelspacing=0.35)
+    _panel_label(axB, "b")
 
     fig.tight_layout()
     return fig, (axA, axB)

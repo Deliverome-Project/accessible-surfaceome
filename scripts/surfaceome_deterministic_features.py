@@ -241,9 +241,9 @@ def render(feats: pd.DataFrame) -> Path:
             ax.set_ylim(*ylim)
             ax.set_xticks(range(len(GROUPS)))
             ax.set_xticklabels(facet_labels)
-            ax.set_ylabel(label, fontsize=10)
+            ax.set_ylabel(label, fontsize=12)
 
-        ax.tick_params(axis="x", labelsize=9)
+        ax.tick_params(axis="x", labelsize=12)
         for tl in ax.get_xticklabels():
             tl.set_horizontalalignment("center")
         sns.despine(ax=ax, top=True, right=True)
@@ -253,7 +253,7 @@ def render(feats: pd.DataFrame) -> Path:
     for extra in axes[len(panels):]:
         extra.set_visible(False)
 
-    # Single legend at top — the four real deep-dive tiers (pending excluded).
+    # Single legend at top — the five deep-dive tiers + the Sonnet dual-triage pool.
     legend_handles = [
         plt.Rectangle((0, 0), 1, 1, color=GROUP_COLOR[g],
                       label=GROUP_LABEL[g].replace("\n", " "))
@@ -262,7 +262,7 @@ def render(feats: pd.DataFrame) -> Path:
     fig.legend(
         handles=legend_handles, loc="upper center", ncol=5, frameon=False,
         bbox_to_anchor=(0.5, 1.02), fontsize=10,
-        title="Deep-dive tiers (from records; pending excluded)  ·  Sonnet dual-triage pool "
+        title="Deep-dive tiers (from records)  ·  Sonnet dual-triage pool "
               "(all yes/contextual, det features from genome-wide D1 tables)",
         title_fontsize=11,
     )

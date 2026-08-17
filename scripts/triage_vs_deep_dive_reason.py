@@ -1,16 +1,25 @@
-"""Triage → deep-dive comparison, three panels (Supplementary S12).
+"""Triage → deep-dive comparison, three panels (Supplementary S13).
 
 For each gene that has BOTH a triage record and a deep-dive record, we have the
 triage-stage call (from the genome-wide Sonnet triage run) and the deep-dive's
-evidence-anchored call. This figure shows how the two relate and — panel c —
+evidence-anchored call. This figure shows how the two relate and — panel a —
 whether the deep dive agrees more with Sonnet triage or with the surface
 databases.
 
-**Layout.** Left column stacks panel a (top) over panel c (bottom); the reason
-confusion matrix (panel b) sits in the right column and spans the full height,
-so the big matrix is the visual anchor and a / c are compact beside it.
+**Layout.** Left column stacks panel a (top) over panel b (bottom); the reason
+confusion matrix (panel c) sits in the right column and spans the full height,
+so the big matrix is the visual anchor and a / b are compact beside it.
 
-**Panel a — verdict flow.** Slim 100%-stacked horizontal bars, one per triage
+**Panel a — database concordance.** Among the genes the *deep dive* calls
+surface (tier ``canonical`` / ``likely`` / ``low``), the fraction ALSO flagged
+surface by each source: the 5 catalog databases (UniProt, GO, SURFY, CSPA, HPA)
+plus Sonnet triage (verdict ``yes`` / ``contextual``), broken down by
+deep-dive tier. Every source flags a larger share of canonical genes than
+likely, and more likely than low — Sonnet triage stays the most concordant
+partner throughout, i.e. the evidence-anchored deep dive concords far more with
+the upstream Sonnet call than with any single database.
+
+**Panel b — verdict flow.** Slim 100%-stacked horizontal bars, one per triage
 verdict (``yes`` / ``contextual`` / ``no``), each split by the deep-dive's
 5-tier call (``canonical`` / ``likely`` / ``low`` / ``uncertain`` / ``no``,
 from ``_dd_assign_bucket``). Reads as: given triage said X, where did the
@@ -19,7 +28,7 @@ as canonical/likely surface; triage-``no`` genes mostly stay ``no`` but a
 minority get rescued up to likely/low; triage-``contextual`` spreads across the
 middle tiers.
 
-**Panel b — reason confusion matrix.** The triage reason (rows) against the
+**Panel c — reason confusion matrix.** The triage reason (rows) against the
 deep-dive ``surface_call_reason`` (columns), both drawn from the same closed
 ``TriageReason`` enum (in ``src/accessible_surfaceome/tools/_shared/models.py``).
 The 19 reasons collapse into 3 verdict buckets in ``models.py`` (yes /
@@ -27,25 +36,15 @@ contextual / no); the diagonal (highlighted in maroon) is exact reason-level
 agreement, thick separators mark the bucket boundaries, and tick labels are
 colored by bucket so a cross-bucket flip is visible at a glance.
 
-**Panel c — database concordance.** Among the genes the *deep dive* calls
-surface (tier ``canonical`` / ``likely`` / ``low``), the fraction ALSO flagged
-surface by each source: the 5 catalog databases (UniProt, GO, SURFY, CSPA, HPA)
-plus Sonnet triage (verdict ``yes`` / ``contextual``). Bars sorted descending.
-Answers "does the deep dive agree more with Sonnet triage or with the
-databases?" — Sonnet triage is the tallest bar by a wide margin, i.e. the
-evidence-anchored deep dive concords far more with the upstream Sonnet call than
-with any single database.
-
 **Real data.** Built from the per-figure TSV
 ``data/processed/figures/triage_vs_deep_dive_reason.tsv`` — one row per gene
-with both a triage and a deep-dive record (n≈1,175), carrying the triage
+with both a triage and a deep-dive record (n=5,130), carrying the triage
 verdict/reason, the deep-dive reason/tier, and the 5 per-DB surface flags. The
 same TSV backs the gist mirror
 (``data/analysis/figures/make_triage_vs_deep_dive_reason.py``).
 
-PRELIMINARY — ~1,175 of ~5,128 swept, pre-QA-fix. ~50% of genes land on the
-reason diagonal; the rest split into same-bucket relabels and cross-bucket
-flips.
+Full deep-dive cohort (5,130 genes); about 53% of genes land on the reason
+diagonal, the rest split into same-bucket relabels and cross-bucket flips.
 
 Run:
     uv run python scripts/triage_vs_deep_dive_reason.py
