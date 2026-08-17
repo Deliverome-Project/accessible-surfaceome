@@ -440,17 +440,25 @@ def build_deep_dive_final_categories(src: dict[str, pd.DataFrame]) -> pd.DataFra
     baseline (False — the ICAM1 class that is surface at rest and further
     cell-state-modulated)."""
     cols = ["gene_symbol", "hgnc_id", "uniprot_acc", "ensembl_gene",
-            "ncbi_gene_id", "category", "subcategory", "surface_call_reason",
-            "induction_trigger", "low_endogenous_expression", "state_dependence"]
+            "ncbi_gene_id", "category", "subcategory", "facet",
+            "surface_call_reason", "induction_trigger",
+            "low_endogenous_expression", "state_dependence"]
     dd = src.get("deep_dive")
     if dd is None or dd.empty:
         return _empty_deep_dive_frame(cols)
     buckets = [_dd_assign_bucket(r) for _, r in dd.iterrows()]
+    # Cross-cutting facet (tier-independent): cell_type_restricted / induced /
+    # none, from deep_dive_tier — Panel b of Figure 5 counts these directly
+    # (851 cell-type-restricted, 444 cell-state-induced) rather than the
+    # likely-tier-only subcategory fan-out.
+    facets = [(catalog_presets.deep_dive_tier(_dd_filters(r))[1] or "none")
+              for _, r in dd.iterrows()]
     out = pd.DataFrame({
         "gene_symbol": dd["gene_symbol"].astype(str),
         "uniprot_acc": dd["uniprot_acc"].astype(str),
         "category": [b[0] for b in buckets],
         "subcategory": [b[1] for b in buckets],
+        "facet": facets,
         "surface_call_reason": dd["surface_call_reason"].astype(str),
         "induction_trigger": dd["induction_trigger"].astype(str),
         "low_endogenous_expression": pd.to_numeric(

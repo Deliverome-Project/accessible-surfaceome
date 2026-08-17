@@ -8,7 +8,7 @@ export const metadata: Metadata = {
     "Code, data, and figure-reproduction handles for the accessible " +
     "surfaceome project. Repository under MIT; the Zenodo data deposit " +
     "(DOI 10.5281/zenodo.20805384) under CC BY 4.0; per-figure " +
-    "reproduction gists on GitHub.",
+    "reproduction gists archived to Software Heritage.",
 };
 
 /**
@@ -16,7 +16,8 @@ export const metadata: Metadata = {
  * page. Three handles: the live GitHub repository (MIT, includes this
  * viewer), the published Zenodo data deposit (CC BY 4.0; concept DOI
  * 10.5281/zenodo.20805383, version DOI 10.5281/zenodo.20805384), and a
- * per-figure reproduction gist per figure on GitHub. The code-release
+ * per-figure reproduction gist archived to Software Heritage
+ * (swh:1:rev:<sha>, recorded in swhid_map.json). The code-release
  * archive DOI is minted at the first tagged GitHub release.
  */
 export default function ReproducibilityPage() {
@@ -32,7 +33,8 @@ export default function ReproducibilityPage() {
             licenses with persistent citation handles. Code is MIT; the
             Zenodo data deposit is CC BY 4.0 with a DOI that resolves
             indefinitely; each figure ships a standalone reproduction
-            gist on GitHub.
+            gist archived to Software Heritage as a content-addressed
+            SWHID.
           </p>
         </header>
 
@@ -189,11 +191,23 @@ export default function ReproducibilityPage() {
             environment setup, no <code>pip install</code> step.
           </p>
           <p className={styles.body}>
-            Each gist is pinned to a specific commit revision (recorded
-            in the repository&apos;s <code>swhid_map.json</code>), so a
-            figure reproduces from the exact script and data snapshot it
-            was rendered against. The durable, citable handle for the
-            underlying data is the Zenodo DOI above.
+            Each gist is archived to{" "}
+            <a
+              href="https://www.softwareheritage.org/"
+              target="_blank"
+              rel="noopener noreferrer"
+              className={styles.extLink}
+            >
+              Software Heritage
+            </a>{" "}
+            (via Save Code Now) and cited as a content-addressed{" "}
+            <code>swh:1:rev:&lt;sha&gt;</code> of the gist&apos;s HEAD
+            commit — recorded per figure in the repository&apos;s{" "}
+            <code>swhid_map.json</code>. The revision pins the exact
+            script + data snapshot a figure was rendered against and
+            resolves from the SWH archive even if the gist is later
+            deleted. The underlying dataset&apos;s durable handle is the
+            Zenodo DOI above.
           </p>
           <p className={styles.body}>
             For convenience, every figure file also carries citation
