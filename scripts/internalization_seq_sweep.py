@@ -29,6 +29,7 @@ from __future__ import annotations
 import argparse
 import logging
 import sys
+from concurrent.futures import ThreadPoolExecutor, as_completed
 
 import httpx
 
@@ -53,6 +54,11 @@ CATALOG_URL = "https://api.deliverome.org/surfaceome/v1/catalog"
 # over-calls `high`. ~3× the output tokens, hence ~3× the cost, but the scale
 # spread is the whole point of the grade. (opus-4.8 stays available via --models.)
 OPUS_MODEL = "claude-opus-5"
+# Concurrent gene annotations. The per-gene opus-5 call (~1 min, ~3.1k output
+# tok) dominates; at this fan-out the binding Anthropic limit (OTPM) has ample
+# headroom and the NCBI/UniProt resolver throttle is global + thread-safe. Bump
+# via --concurrency after watching the first batch for 429/backoff.
+DEFAULT_CONCURRENCY = 8
 # measured: opus-5 on the schema-0.3.0 prompt, canonical isoform only, cohort
 # mean length ~690 aa. ~1.86k input + ~2.4k cached-system read + ~3.1k output
 # tok/gene at $5/$25/$0.50 per MTok. Output-dominated; ranges ~$0.08–0.10/gene
@@ -99,6 +105,11 @@ def main(argv: list[str] | None = None) -> int:
     p.add_argument("--catalog-url", default=CATALOG_URL)
     p.add_argument("--force", action="store_true",
                    help="Re-run genes already present in D1 at the current schema.")
+    p.add_argument("--concurrency", type=int, default=DEFAULT_CONCURRENCY,
+                   help=f"Concurrent gene annotations (default {DEFAULT_CONCURRENCY}). "
+                        "The model call (~1 min/gene) dominates; the shared "
+                        "Anthropic + HTTP clients are thread-safe and D1 writes "
+                        "serialize on the main thread. Bump after watching for 429s.")
     args = p.parse_args(argv)
 
     cohort = load_cohort(
@@ -115,6 +126,9 @@ def main(argv: list[str] | None = None) -> int:
         print(f"  target: public D1 surface_internalization @ schema {SCHEMA_VERSION}")
         print(f"  prompt: version {MODEL_PRIOR_PROMPT_VERSION}, "
               f"sha {prompt_sha(load_prompt())[:12]}")
+        conc = max(1, args.concurrency)
+        eta_min = len(cohort) / conc  # ~1 min/gene wall-clock, conc in parallel
+        print(f"  concurrency: {conc}  (~{eta_min:,.0f} min ≈ {eta_min/60:,.1f} h @ ~1 min/gene)")
         print(f"  first 15: {', '.join(cohort[:15])}")
         print("\n  → re-run with --execute to run + publish. Nothing was written.")
         return 0
@@ -148,22 +162,46 @@ def main(argv: list[str] | None = None) -> int:
         todo = [g for g in cohort if g not in done]
         if args.limit:
             todo = todo[: args.limit]
-        logger.info("running %d genes", len(todo))
+        conc = max(1, args.concurrency)
+        logger.info("running %d genes @ concurrency %d", len(todo), conc)
+
+        # Shared, thread-safe clients: the Anthropic SDK client is safe to fan
+        # out (mirrors triage_abstracts), and CachedHTTP + the resolver rate
+        # limiter are Lock-guarded (the resolver already fans out to 4 upstreams
+        # from a pool). Pre-warm the DeepTMHMM index so N threads don't each
+        # build it. D1 writes happen only on THIS thread (as futures complete),
+        # so the D1 client is never touched concurrently.
+        from accessible_surfaceome.agents._support.client import get_client
+        from accessible_surfaceome.agents.internalization.deeptmhmm_topology import (
+            load_index,
+        )
+        from accessible_surfaceome.tools._shared.http import open_default_client
+
+        load_index()
+        shared_client = get_client()
+        shared_http = open_default_client()
+
+        def _annotate(sym: str):
+            return sym, annotate_model_prior(
+                sym, models=tuple(args.models), client=shared_client,
+                http=shared_http, persist=False, canonical_only=True,
+            )
 
         ok = fail = 0
-        for i, sym in enumerate(todo, 1):
-            try:
-                rec = annotate_model_prior(
-                    sym, models=tuple(args.models), persist=False, canonical_only=True
-                )
-                publish_seq_record(rec, client=d1)
-                ok += 1
-                logger.info("[%d/%d] %s -> %s (%s)", i, len(todo), sym,
-                            rec.model_priors[0].overall_grade if rec.model_priors else "?",
-                            rec.uniprot_acc)
-            except Exception as exc:  # noqa: BLE001 — one gene must not abort the sweep
-                fail += 1
-                logger.error("[%d/%d] %s FAILED: %s", i, len(todo), sym, str(exc)[:200])
+        with ThreadPoolExecutor(max_workers=conc) as pool:
+            futures = {pool.submit(_annotate, sym): sym for sym in todo}
+            for i, fut in enumerate(as_completed(futures), 1):
+                sym = futures[fut]
+                try:
+                    _, rec = fut.result()
+                    publish_seq_record(rec, client=d1)  # main-thread-only D1 write
+                    ok += 1
+                    logger.info("[%d/%d] %s -> %s (%s)", i, len(todo), sym,
+                                rec.model_priors[0].overall_grade if rec.model_priors else "?",
+                                rec.uniprot_acc)
+                except Exception as exc:  # noqa: BLE001 — one gene must not abort the sweep
+                    fail += 1
+                    logger.error("[%d/%d] %s FAILED: %s", i, len(todo), sym, str(exc)[:200])
         logger.info("done: %d published, %d failed", ok, fail)
     return 0
 
