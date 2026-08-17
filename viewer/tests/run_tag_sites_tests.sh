@@ -19,7 +19,6 @@ tests=(
   tag_sites_colors.test.ts
   tag_sites_overlay.test.ts
   tag_sites_client.test.ts
-  internalization_client.test.ts
 )
 
 fails=0

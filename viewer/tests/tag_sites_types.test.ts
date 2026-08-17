@@ -7,7 +7,6 @@
 import {
   PROVENANCE_TOKEN,
   type TaggedSite,
-  type InternalizationMeasurement,
 } from "../lib/tag-sites-types";
 
 let failures = 0;
@@ -34,14 +33,6 @@ const site: TaggedSite = {
   rationale: null, sources: [], plddt: 96, conservation_rank: 7, median_conservation: 0.28,
 };
 expect("site round-trips gene", site.gene_symbol, "TFRC");
-
-const m: InternalizationMeasurement = {
-  gene_symbol: "TFRC", uniprot_acc: "P02786", cell_type: "HeLa",
-  assay: "flow", ligand_status: "constitutive", ligand: null,
-  rate: "t1/2 ~ 8 min", rate_class: "quantified", n_replicates: 4,
-  source: { citation: "x" },
-};
-expect("measurement ligand_status", m.ligand_status, "constitutive");
 
 if (failures > 0) { console.error(`\n${failures} assertion(s) failed`); process.exit(1); }
 console.log("\nall assertions passed");

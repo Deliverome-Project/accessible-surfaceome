@@ -3,7 +3,7 @@
  * deterministic site, and the shipped provenances are only the rendered ones.
  *   npx --yes tsx tests/tag_sites_fixture.test.ts
  */
-import { loadTaggedSites, loadInternalization } from "../lib/tag-sites";
+import { loadTaggedSites } from "../lib/tag-sites";
 
 let failures = 0;
 function expect(label: string, got: unknown, want: unknown): void {
@@ -22,10 +22,6 @@ expect(
 );
 expect("has a surface_loop deterministic site", (ts?.sites ?? []).some((s) => s.det_path === "surface_loop"), true);
 expect("has a C-terminal (terminal_c) site", (ts?.sites ?? []).some((s) => s.site_kind === "terminal_c"), true);
-
-const intl = loadInternalization("TFRC");
-expect("TFRC internalization loads", intl?.has_data, true);
-expect("has ≥1 measurement", (intl?.measurements.length ?? 0) > 0, true);
 
 if (failures > 0) { console.error(`\n${failures} assertion(s) failed`); process.exit(1); }
 console.log("\nall assertions passed");

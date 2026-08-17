@@ -1,5 +1,6 @@
 /*
- * Tagged-sites + internalization data contracts (browser-safe leaf).
+ * Tagged-sites data contracts (browser-safe leaf). Internalization data is
+ * owned by agents/internalization (PR #134) and its own viewer card.
  * Mirrors the structure-viewer-types.ts split: interfaces + token-name
  * constants only, no node:fs — safe to import across a "use client" boundary.
  */
@@ -68,32 +69,6 @@ export interface TaggedSitesFile {
   gene_symbol: string;
   uniprot_acc: string;
   sites: TaggedSite[];
-}
-
-export interface InternalizationMeasurement {
-  gene_symbol: string;
-  uniprot_acc: string;
-  cell_type: string | null;
-  assay: string | null;
-  ligand_status: "constitutive" | "ligand-driven" | "not stated";
-  ligand: string | null;
-  rate: string | null;
-  rate_class: "quantified" | "not quantified";
-  n_replicates: number | null;
-  source: EvidenceSource;
-}
-
-export interface QualitativeStatement {
-  statement: string;
-  source: EvidenceSource;
-}
-
-export interface InternalizationFile {
-  has_data: boolean;
-  gene_symbol: string;
-  uniprot_acc: string;
-  measurements: InternalizationMeasurement[];
-  qualitative_statements: QualitativeStatement[];
 }
 
 /** Overlay design-token NAMES per rendered provenance. Actual color values
