@@ -2997,6 +2997,65 @@ async function handleCatalogOne(env, symbol) {
   });
 }
 
+// Tag-insertion sites for one gene (deterministic + literature), from
+// tag_site_public. Returns a TaggedSitesFile (viewer/lib/tag-sites-types.ts) so
+// the viewer's fetchTaggedSites -> parseTaggedSitesFile consumes it unchanged.
+// Empty-but-200 on no rows: absence is not an error (same contract the static
+// asset had).
+async function handleTagSites(env, symbol) {
+  const sym = checkSymbol(symbol);
+  if (!sym) return notFound("gene_not_found");
+  // Resilient to deploy order: if tag_site_public isn't provisioned yet (Worker
+  // shipped before the sync), or any transient DB error, return an empty
+  // TaggedSitesFile rather than a 500 — the viewer then falls back to the static
+  // asset. Backwards-compatible: no existing route or table is touched.
+  let rows = [];
+  try {
+    const res = await env.DB.prepare(
+      `SELECT * FROM tag_site_public WHERE gene_symbol = ? COLLATE NOCASE
+        ORDER BY provenance, insert_after_residue`
+    )
+      .bind(sym)
+      .all();
+    rows = res?.results ?? [];
+  } catch {
+    rows = [];
+  }
+  const sites = rows.map((r) => ({
+    site_id: r.site_id,
+    gene_symbol: r.gene_symbol,
+    uniprot_acc: r.uniprot_acc,
+    provenance: r.provenance,
+    det_path: r.det_path ?? null,
+    site_kind: r.site_kind,
+    insert_after_residue: r.insert_after_residue ?? null,
+    residue_before: r.residue_before ?? null,
+    residue_after: r.residue_after ?? null,
+    residue_label: r.residue_label ?? null,
+    residue_range: r.residue_range ?? null,
+    topology_state: r.topology_state ?? null,
+    extracellular: r.extracellular === 1,
+    compartment: r.compartment ?? null,
+    tag_type: r.tag_type ?? null,
+    tag_length_aa: r.tag_length_aa ?? null,
+    linker: r.linker ?? null,
+    evidence_type: r.evidence_type ?? null,
+    functional_impact_measured: r.functional_impact_measured ?? null,
+    confidence: r.confidence ?? null,
+    rationale: r.rationale ?? null,
+    sources: JSON.parse(r.sources_json || "[]"),
+    plddt: r.plddt ?? null,
+    conservation_rank: r.conservation_rank ?? null,
+    median_conservation: r.median_conservation ?? null,
+  }));
+  return json({
+    has_data: sites.length > 0,
+    gene_symbol: rows[0]?.gene_symbol ?? sym,
+    uniprot_acc: rows[0]?.uniprot_acc ?? "",
+    sites,
+  });
+}
+
 // Serve the pre-generated rich Markdown export for a gene from R2.
 // Unlike the JSON record (assembled live from D1), the .md bundles
 // reanalysis extras NOT in D1 — canonical/isoform/ortholog sequences,
