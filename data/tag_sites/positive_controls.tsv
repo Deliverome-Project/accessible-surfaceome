@@ -1,13 +1,11 @@
 id	gene_symbol	accession	site_kind	junction_after_residue	expected_residue	replaces_span	tag	tag_length	source_key	impact_measured	structural_context
 A1	SELE	P16581	terminal	21	A		HiBiT	11	ogrodzinski2023	yes	native SP retained; tag downstream
 A2	ADRB2	P07550	terminal	0	M		HiBiT	11	boursier2020	yes_no_difference	N-terminus; +/- IL6 leader
-A3	CALCR	P30988	terminal	24	P		FLAG	8	liang2017	no_change	native SP 2-24 replaced by HA SP
 A4	GIPR	P48546	terminal	21	Q		FLAG	8	alsabah2020	yes	HA SP replaces native
 A5	GLP1R	P43220	terminal	23	P		VSV-G	11	thompson2014	yes	native SP retained; tag downstream
 A6	CD46	P15529	terminal	34	A		HiBiT	11	madsen2019	not_measured	native SP retained; tag downstream
-A7	NPY1R	P25929	terminal	1	M		FLAG	8	park2022	not_measured	no SP; M1 deleted
 A8	ADORA1	P30542	terminal	0	M		HiBiT	11	soave2020	partial	N-terminus; Met1->Leu
-A24	TFRC	P02786	terminal	760			short_epitope		pending	asserted	type II; C-terminus = ectodomain end
+A24	TFRC	P02786	terminal	760			short_epitope		pi_asserted	accepted_pi	type II C-terminus (ectodomain end, extracellular); ACCEPTED as a valid control per direct instruction (Becca 2026-08-15)
 A9	ITGB1	P05556	internal	101	G		ALFA	15	endonb	yes	hybrid domain, exposed betaX-betaA loop 92-114
 A10	ITGB1	P05556	internal	101	G		eGFP	239	huet2017	yes	same loop
 A11	ITGB1	P05556	internal	101	G		pHluorin	238	huet2017	yes	same loop
@@ -19,7 +17,6 @@ A16	TMEM123	Q8N131	internal	33	A		ALFA	15	endonb	yes	unstructured ectodomain, 7 
 A17	TRPC5	Q9UL62	internal	460	Y		DogTag	23	keeble2022	yes	S3-S4 loop, distal from pore
 A18	SLC6A4	P31645	internal	211	N	212-215	HA+SL	11	rahbek2014	yes	EL2, between glycans N208/N217
 A19	SLC6A3	Q01959	internal	192	A	193-203	HA+SL	11	sorkina2006	no_change	EL2, between glycans N188/N205; isometric
-A20	EDNRB	P24530	internal	57	G	58-65	FLAG	8	sano2023	not_measured	extracellular domain; isometric
 A21	KCNH2	Q12809	internal	436	T		BBS	13	kanner2018	not_measured	S1-S2 extracellular loop; BBS after T436/E437. NB separate T443/E444 HA construct = Kozek 2020 (verified)
 A22	SLC26A1	Q9H2B4	internal	155	P		HA	9	pfau2023	surface_and_function	extracellular loop
 A23	SLC9A6	Q92581	internal	53	M		3xFLAG	32	ilie2016	surface_and_function	first exofacial loop

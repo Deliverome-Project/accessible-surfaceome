@@ -324,3 +324,27 @@ Every control (A1–A24, B1–B13) was re-verified: residue vs UniProt canonical
 | `sharma2004` | Sharma M, et al. CFTR-3HA misfolding/surface. J Cell Biol 2004;164:923. PMID 15007060. |
 | `pinto2020` | Pinto MC, et al. TMEM16A CK2 (3xHA in ECL1, H374/N375 canonical). Cells 2020;9:1138. PMID 32380794. |
 | `kozek2020` | Kozek KA, et al. hERG HA (T443/E444) trafficking DMS. Heart Rhythm 2020. PMID 32522694. |
+
+---
+
+## Set revision — 2026-08-15 (PI review)
+
+**Removed (3) — the tag was only a purification aid, not a validated surface tag:**
+- **A3 CALCR**, **A7 NPY1R**, **A20 EDNRB** — all cryo-EM structural constructs where the
+  FLAG epitope is an affinity/3C-cleavage purification tag (A3's is literally cleaved off
+  before the structure), with no tagged-vs-untagged surface or function comparison. Dropped
+  from the benchmark set (37 → 34 rows).
+
+**Accepted (1) by direct instruction:**
+- **A24 TFRC C-terminus** — no published construct was located, but accepted as a valid
+  control per Becca (2026-08-15). `source_key=pi_asserted`, `impact_measured=accepted_pi`.
+
+**Deterministic misses — root cause (both are the 3D-feature veto, by design):**
+- **SLC6A4 N211** — folded (pLDDT 88), buried (RSA-window 0.23), and **6.7 Å from the two
+  glycosylation sites N208/N217** it is threaded between (+ disulfide 200). All gates reject.
+- **ANO1 H374** — an exposed loop (RSA 0.79) but pLDDT 70.6 (just above the disorder cutoff)
+  and **8.8 Å from the ECL1 disulfide cluster (370/379/382)**.
+- Both are the pipeline being conservative near glycosites/disulfides — correct in general,
+  but these published constructs deliberately thread the tag between/beside those features
+  while preserving them. A future refinement: veto the glycosite/disulfide *residue* but
+  allow an exposed insertion point a few residues away.
