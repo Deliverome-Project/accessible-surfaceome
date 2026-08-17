@@ -282,3 +282,45 @@ short-loop cases). Machine-readable rows are in `positive_controls.tsv` (ids `B*
 | `kcnq1_pmc10642763` | Arrhythmia-associated calmodulin variants interact with KCNQ1 (HA-KCNQ1). PMC10642763. |
 | `cftr_pmc3266683` | CFTR Folding Consortium: methods for CFTR folding/correction (3×HA surface reporter). PMC3266683. |
 | `ano1_pmc7291285` | Regulation of TMEM16A by CK2 (extracellular 3×HA, non-permeabilized). PMC7291285. *Numbering unreconciled — see B13.* |
+
+---
+
+## Verification pass — 2026-08-15 (5 literature agents + UniProt residue re-check)
+
+Every control (A1–A24, B1–B13) was re-verified: residue vs UniProt canonical FASTA, and the primary citation vs PubMed/PMC full text. **All stated residues match UniProt** (after the fixes below). Outcomes:
+
+**Citation corrections (were wrong/vague):**
+- **A6 CD46** — "Kim 2023" does not exist → **Madsen & Semple 2019**, Wellcome Open Res (PMID 31363496). HiBiT on the CD46 ectodomain, iPSC knock-in. `surface_only`.
+- **A8 ADORA1** — "Various" → **Soave et al. 2020**, SLAS Discov (PMID 31583945). N-terminal HiBiT; pharmacology intact. `surface_and_function`.
+- **B2 AQP1** — primary is **Crane & Verkman 2007**, Biophys J (PMID 17890385), not the Qdot-diffusion PMC. `surface_only`.
+
+**Sources found (were blank/pending):**
+- **A22 SLC26A1** P155 → **Pfau et al. 2023**, JCI (PMID 36719378). `surface_and_function`.
+- **A23 SLC9A6** M53 → **Ilie et al. 2016**, Mol Neurodegener (PMID 27590723). `surface_and_function`.
+- **B10 ASIC1a** F147 → **Zeng et al. 2013**, J Neurosci (PMID 23595764). `surface_and_function` (decreased proton affinity — the "not neutral" caveat, confirmed).
+- **B11 ASIC1a** D298 → **Song et al. 2020**, Neurosci Bull (PMID 32996060). `surface_and_function` (current reduced; best surface/total ratio).
+
+**Reconciliations:**
+- **B13 ANO1** — paper's H396/N397 is the human **"abcd" isoform**; **canonical Q5XXA6 = H374/N375** (+22 aa from an alt-spliced N-terminal segment; His confirms human, not mouse). **TSV junction updated 396 → 374.** Citation **Pinto/Kunzelmann 2020**, Cells (PMID 32380794). `surface_and_function`.
+- **A21 KCNH2** — **T436 is correct** (BBS between T436/E437, Kanner 2018, PMID 29725305, `surface_only`). The **T443/E444 HA** construct is a *separate, also-real* construct (**Kozek et al. 2020**, Heart Rhythm, PMID 32522694). The earlier "Garg 2020" attribution is **unverified/likely a mislabel** — the site is real, the name was wrong.
+
+**Primary-provenance flags (cited paper reuses an earlier construct):** B4 PMP22 → Liu 2004 / Tobler 1999; B7 SLC4A1 → Cordat 2003/2006 (+ kAE1 numbering drops 65); B12 CFTR primary = Sharma 2004 (PMID 15007060); A19 hDAT possibly Sorkina 2005.
+
+**Weak controls (structural — FLAG is a purification tag, no tagged-vs-untagged):** **A3 CALCR** (3C-cleaved off), **A7 NPY1R**, **A20 EDNRB**. Marked `not_measured`. If the set is meant to be "tag preserves surface + function," these three are the weakest positives.
+
+**Still unresolved:** **A24 TFRC C-terminus** — no published C-terminal extracellular tag on TFRC was found; remains **asserted, not sourced**.
+
+### New/corrected sources (this pass)
+
+| Key | Citation |
+|---|---|
+| `madsen2019` | Madsen RR, Semple RK. HiBiT CD46 surface reporter. Wellcome Open Res 2019;4:37. PMID 31363496. |
+| `soave2020` | Soave M, et al. HiBiT A1 adenosine receptor. SLAS Discov 2020;25:186. PMID 31583945. |
+| `crane2007` | Crane JM, Verkman AS. Qdot-labeled AQP1-myc diffusion. Biophys J 2007;94:702. PMID 17890385. |
+| `pfau2023` | Pfau A, et al. SLC26A1 sulfate homeostasis (HA after P155). J Clin Invest 2023;133:e161849. PMID 36719378. |
+| `ilie2016` | Ilie A, et al. Christianson-syndrome NHE6 (3xFLAG-HA after M53). Mol Neurodegener 2016;11:63. PMID 27590723. |
+| `zeng2013` | Zeng W-Z, et al. Constitutive endocytosis of ASIC1a (HA 147/148). J Neurosci 2013;33:7066. PMID 23595764. |
+| `song2020` | Song N, et al. Surface-localized hASIC1a (HA 298/299). Neurosci Bull 2020;37:145. PMID 32996060. |
+| `sharma2004` | Sharma M, et al. CFTR-3HA misfolding/surface. J Cell Biol 2004;164:923. PMID 15007060. |
+| `pinto2020` | Pinto MC, et al. TMEM16A CK2 (3xHA in ECL1, H374/N375 canonical). Cells 2020;9:1138. PMID 32380794. |
+| `kozek2020` | Kozek KA, et al. hERG HA (T443/E444) trafficking DMS. Heart Rhythm 2020. PMID 32522694. |

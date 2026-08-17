@@ -4,9 +4,9 @@ A2	ADRB2	P07550	terminal	0	M		HiBiT	11	boursier2020	yes_no_difference	N-terminus
 A3	CALCR	P30988	terminal	24	P		FLAG	8	liang2017	no_change	native SP 2-24 replaced by HA SP
 A4	GIPR	P48546	terminal	21	Q		FLAG	8	alsabah2020	yes	HA SP replaces native
 A5	GLP1R	P43220	terminal	23	P		VSV-G	11	thompson2014	yes	native SP retained; tag downstream
-A6	CD46	P15529	terminal	34	A		HiBiT	11	kim2023	not_measured	native SP retained; tag downstream
+A6	CD46	P15529	terminal	34	A		HiBiT	11	madsen2019	not_measured	native SP retained; tag downstream
 A7	NPY1R	P25929	terminal	1	M		FLAG	8	park2022	not_measured	no SP; M1 deleted
-A8	ADORA1	P30542	terminal	0	M		HiBiT	11	various	partial	N-terminus; Met1->Leu
+A8	ADORA1	P30542	terminal	0	M		HiBiT	11	soave2020	partial	N-terminus; Met1->Leu
 A24	TFRC	P02786	terminal	760			short_epitope		pending	asserted	type II; C-terminus = ectodomain end
 A9	ITGB1	P05556	internal	101	G		ALFA	15	endonb	yes	hybrid domain, exposed betaX-betaA loop 92-114
 A10	ITGB1	P05556	internal	101	G		eGFP	239	huet2017	yes	same loop
@@ -20,19 +20,19 @@ A17	TRPC5	Q9UL62	internal	460	Y		DogTag	23	keeble2022	yes	S3-S4 loop, distal fro
 A18	SLC6A4	P31645	internal	211	N	212-215	HA+SL	11	rahbek2014	yes	EL2, between glycans N208/N217
 A19	SLC6A3	Q01959	internal	192	A	193-203	HA+SL	11	sorkina2006	no_change	EL2, between glycans N188/N205; isometric
 A20	EDNRB	P24530	internal	57	G	58-65	FLAG	8	sano2023	not_measured	extracellular domain; isometric
-A21	KCNH2	Q12809	internal	436	T		BBS	13	kanner2018	not_measured	S1-S2 extracellular loop
-A22	SLC26A1	Q9H2B4	internal	155	P		HA	9		not_measured	extracellular loop
-A23	SLC9A6	Q92581	internal	53	M		3xFLAG	32		not_measured	first exofacial loop
+A21	KCNH2	Q12809	internal	436	T		BBS	13	kanner2018	not_measured	S1-S2 extracellular loop; BBS after T436/E437. NB separate T443/E444 HA construct = Kozek 2020 (verified)
+A22	SLC26A1	Q9H2B4	internal	155	P		HA	9	pfau2023	surface_and_function	extracellular loop
+A23	SLC9A6	Q92581	internal	53	M		3xFLAG	32	ilie2016	surface_and_function	first exofacial loop
 B1	SLC5A6	Q9Y289	internal	483		484-516	ALFA	15	smvt_natcommun2026	yes_function_reduced	EL3 replaced by ALFA; NbALFA binding + cryo-EM; biotin transport retained, Vmax ~3x lower (batch2)
-B2	AQP1	P29972	internal	120	T		Myc	10	aqp1_pmc2157255	not_perturbed_reported	EL2 (2nd extracellular loop); Qdot live-cell labeling; 120=T verified (batch2)
+B2	AQP1	P29972	internal	120	T		Myc	10	crane2007	surface_only	EL2 (2nd extracellular loop); Qdot live-cell labeling; 120=T verified (batch2)
 B3	SLC19A1	P41440	internal	297	P		HA	9	rfc_pubmed10347183	minor_effects	ECL near P297; MTX binding/uptake minor effects; 297=P verified (batch2)
-B4	PMP22	Q01453	internal	125	H		Myc	10	pmp22_pmc13382790	not_perturbed_reported	ECL2 very short loop 125-126; 125=H verified (batch2)
+B4	PMP22	Q01453	internal	125	H		Myc	10	pmp22_pmc13382790	surface_only	ECL2 very short loop 125-126; 125=H verified (batch2)
 B5	VANGL1	Q8TAA9	internal	139	R		HA	9	vangl1_pubmed21291170	surface_confirmed	ECL1 short; intact-cell HA; 139=R verified (batch2)
 B6	VANGL1	Q8TAA9	internal	213	D		HA	9	vangl1_pubmed21291170	surface_confirmed	2nd extracellular loop; HA213 extracellular; 213=D verified (batch2)
 B7	SLC4A1	P02730	internal	557	V		HA/Myc	9	slc4a1_pmc3468346	surface_anchor	3rd ECL; ANCHOR, numbering varies across papers; 557=V canonical (batch2)
 B8	KCNQ1	P51787	internal	146	E		Myc	10	kcnq1_pmc5842040	not_perturbed_functional	extracellular Myc E146|Q147; functional channels; 146=E verified (batch2)
 B9	KCNQ1	P51787	internal	146	E		HA	9	kcnq1_pmc10642763	not_perturbed	same site, HA - site portability across ordinary epitopes; 146=E verified (batch2)
-B10	ASIC1	P78348	internal	147	F		HA/FLAG	9		function_not_neutral	F147|K148; CITATION PENDING; electrophysiology not fully neutral; 147=F verified (batch2)
-B11	ASIC1	P78348	internal	298	D		HA	9		function_perturbed	D298|L299; CITATION PENDING; good surface staining, current reduced; 298=D verified (batch2)
-B12	CFTR	P13569	internal	901	N		3xHA	27	cftr_pmc3266683	surface_ELISA	4th extracellular loop reporter; quantitative surface ELISA; 901=N verified (batch2)
-B13	ANO1	Q5XXA6	internal	396	H		3xHA	27	ano1_pmc7291285	surface_nonpermeabilized	UNVERIFIED: Q5XXA6 396=A/397=T not H/N - TMEM16A isoform numbering; reconcile before use (batch2)
+B10	ASIC1	P78348	internal	147	F		HA/FLAG	9	zeng2013	surface_and_function	F147|K148; CITATION PENDING; electrophysiology not fully neutral; 147=F verified (batch2)
+B11	ASIC1	P78348	internal	298	D		HA	9	song2020	surface_and_function	D298|L299; CITATION PENDING; good surface staining, current reduced; 298=D verified (batch2)
+B12	CFTR	P13569	internal	901	N		3xHA	27	sharma2004	surface_only	4th extracellular loop reporter; quantitative surface ELISA; 901=N verified (batch2)
+B13	ANO1	Q5XXA6	internal	374	H		3xHA	27	pinto2020	surface_and_function	first extracellular loop; paper H396|N397 = human abcd isoform; canonical Q5XXA6 = H374|N375 (+22 offset); RECONCILED
