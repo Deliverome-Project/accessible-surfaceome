@@ -367,3 +367,13 @@ that the literature agent must NOT score as `surface_and_function`:
 Both belong in the new `function_perturbed` tier (below `surface_only`), not the validated
 `surface_and_function` tier. Encoded in `agents/tag_site/schema.py::VALIDATION_LEVELS` +
 `prompt.py` (verbatim examples), so the agent learns "function *measured* ≠ function *validated*."
+
+## Set revision 3 — 2026-08-15 (PI review, part 3)
+
+- **Removed A6 CD46** — the paper never pins the residue (tag is on "the extracellular portion",
+  A34 not literally stated) and function was never assessed. 32 → 31 rows.
+- **ASIC1a B10/B11 kept but reclassified `function_perturbed`** (negative control for function
+  validation): both display on the surface but perturb the channel (B10 decreased proton
+  affinity; B11 reduced current). Like SLC6A4/ANO1, these are what the literature agent must
+  NOT score as `surface_and_function` — good negative examples that the pipeline handles a real
+  perturbing site.
