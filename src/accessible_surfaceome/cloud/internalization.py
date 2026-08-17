@@ -25,6 +25,8 @@ DDL: tuple[str, ...] = (
       uniprot_acc                  TEXT,
       runner_version               TEXT,
       seq_model                    TEXT,
+      seq_prompt_sha               TEXT,
+      seq_prompt_version           TEXT,
       seq_scope                    TEXT,
       seq_overall_grade            TEXT,
       seq_overall_confidence       TEXT,
@@ -52,7 +54,8 @@ DDL: tuple[str, ...] = (
 
 _COLS: tuple[str, ...] = (
     "gene_symbol", "schema_version", "hgnc_id", "uniprot_acc", "runner_version",
-    "seq_model", "seq_scope", "seq_overall_grade", "seq_overall_confidence",
+    "seq_model", "seq_prompt_sha", "seq_prompt_version", "seq_scope",
+    "seq_overall_grade", "seq_overall_confidence",
     "seq_canonical_grade", "seq_canonical_confidence", "n_seq_motifs",
     "n_seq_functional_motifs", "has_literature", "lit_overall_grade",
     "lit_n_observations", "lit_n_modulator_observations", "record_json",
@@ -85,6 +88,8 @@ def flat_row(record: InternalizationRecord) -> dict[str, object]:
         "uniprot_acc": record.uniprot_acc,
         "runner_version": record.runner_version,
         "seq_model": seq.model if seq else None,
+        "seq_prompt_sha": seq.prompt_sha if seq else None,
+        "seq_prompt_version": seq.prompt_version if seq else None,
         "seq_scope": seq.scope if seq else None,
         "seq_overall_grade": seq.overall_grade if seq else None,
         "seq_overall_confidence": seq.overall_confidence if seq else None,

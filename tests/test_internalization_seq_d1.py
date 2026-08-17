@@ -43,6 +43,8 @@ def _record() -> InternalizationRecord:
                 overall_confidence="moderate",
                 model_reasoning="r",
                 per_isoform=[iso],
+                prompt_sha="a" * 64,
+                prompt_version="0.2.0",
             )
         ],
         generated_at=datetime(2026, 1, 1, tzinfo=UTC),
@@ -57,6 +59,9 @@ def test_flat_row_projects_seq_track():
     assert row["gene_symbol"] == "TFRC"
     assert row["schema_version"] == SCHEMA_VERSION
     assert row["seq_model"] == "claude-opus-4-8"
+    # prompt provenance projected so a stale record is detectable in D1
+    assert row["seq_prompt_sha"] == "a" * 64
+    assert row["seq_prompt_version"] == "0.2.0"
     assert row["seq_scope"] == "intrinsic_propensity"
     assert row["seq_overall_grade"] == "moderate"
     assert row["seq_canonical_grade"] == "moderate"

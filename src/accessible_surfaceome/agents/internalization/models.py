@@ -17,6 +17,13 @@ from accessible_surfaceome.tools._shared.models import Evidence
 
 SCHEMA_VERSION = "0.3.0"
 RUNNER_VERSION = "internalization-model-prior/0.1.0"
+# Human-bumpable label for the model-prior *system prompt*. Bump whenever
+# model_prior_system.md changes so a re-run is detectable as non-stale even when
+# schema_version is unchanged. (Internalization prompts are deliberately outside
+# the deep-dive prompt-corpus fingerprint, so this pass carries its own version.)
+# 0.2.0: per-residue DeepTMHMM topology handed to the model + cytoplasmic-only
+# motif gate + succinct-but-comprehensive directive.
+MODEL_PRIOR_PROMPT_VERSION = "0.2.0"
 
 Grade = Literal["high", "moderate", "low", "no", "unknown"]
 GradeConfidence = Literal["high", "moderate", "low"]
@@ -63,6 +70,13 @@ class IsoformPrior(BaseModel):
     is_canonical: bool
     length_aa: int | None = None
     topology_summary: str
+    # Raw DeepTMHMM per-residue topology over {S,I,O,M,B} (S=signal peptide,
+    # I=cytoplasmic/inside, O=extracellular/outside, M=TM helix, B=β-barrel TM),
+    # residue-aligned to the graded sequence. None when topology fell back to
+    # UniProt features (no per-residue call). NOT emitted by the model — code
+    # re-stamps it from the trusted input context, so the model never has to
+    # echo the long string back.
+    topology_per_residue: str | None = None
     endocytic_motifs_noted: str | None = None  # free-text human summary
     motifs: list[MotifHit] = Field(default_factory=list)  # structured hits
     grade: SeqGrade
@@ -94,6 +108,12 @@ class ModelPriorTrack(BaseModel):
     overall_confidence: GradeConfidence
     model_reasoning: str
     per_isoform: list[IsoformPrior]
+    # Prompt provenance so a stale record is detectable: prompt_sha is the
+    # content fingerprint of the exact system prompt this track ran under
+    # (auto-catches any edit); prompt_version is the human-bumpable label.
+    # Code sets both — the model never emits them.
+    prompt_sha: str | None = None
+    prompt_version: str | None = None
 
 
 # --- Literature track (Plan 2): PMID-anchored, span-verified ---

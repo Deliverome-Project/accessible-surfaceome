@@ -23,11 +23,13 @@ from accessible_surfaceome.env import REPO_ROOT
 from accessible_surfaceome.tools._shared.http import CachedHTTP, open_default_client
 from accessible_surfaceome.tools.gene_lookup import resolve_by_hgnc_id
 
-# Opus only: on the blind sequence+topology task it recovers the real endocytic
-# motif and grades classic internalizers more accurately than Sonnet (e.g. TFRC
-# YTRF → moderate vs Sonnet unknown; LDLR NPVY → high vs Sonnet moderate). Pass
-# --models to override (e.g. to compare against Sonnet).
-DEFAULT_MODELS: tuple[str, ...] = ("claude-opus-4-8",)
+# opus-5 for the production sweep: on the blind sequence+topology task it uses
+# the full 5-point scale, where opus-4.8 clusters at `high` (it gave `high` to
+# five distinct RTC/RTK internalizers of very different real propensity). opus-5
+# discriminates — e.g. it separates a strong-constitutive-code receptor (`high`)
+# from a phospho-gated, recycling-resistant sibling (`moderate`). ~3× the output
+# tokens vs 4.8; pass --models to override (e.g. opus-4.8 for a cheap screen).
+DEFAULT_MODELS: tuple[str, ...] = ("claude-opus-5",)
 _PROMPT_PATH = Path(__file__).resolve().parent / "prompts" / "model_prior_system.md"
 _DEFAULT_ANNOTATIONS_DIR = REPO_ROOT / "data" / "annotations" / "internalization"
 

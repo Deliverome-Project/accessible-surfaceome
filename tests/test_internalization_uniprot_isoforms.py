@@ -38,6 +38,8 @@ def test_fetch_falls_back_to_uniprot_when_no_deeptmhmm(monkeypatch):
     assert out[0].sequence == seqs["P00533-1"]
     assert out[0].topology_summary == "UNIPROT_TOPO"
     assert out[0].topology_source == "uniprot"
+    # No per-residue call on the UniProt-feature fallback path.
+    assert all(c.topology_per_residue is None for c in out)
     assert all(isinstance(c, IsoformContext) for c in out)
 
 
@@ -50,7 +52,12 @@ def test_fetch_prefers_deeptmhmm_sequence_and_topology(monkeypatch):
     )
     monkeypatch.setattr(mod, "uniprot_summary", lambda acc, *, http: summary)
     monkeypatch.setattr(mod, "summarize_topology", lambda feats: "UNIPROT_TOPO")
-    monkeypatch.setattr(mod, "deeptmhmm_record", lambda iso, *, is_canonical: {"sequence": "DEEPSEQ" * 5})
+    per_res = "I" * 15 + "M" * 20 + "O" * (35 - 0)  # residue-aligned S/I/O/M/B string
+    monkeypatch.setattr(
+        mod,
+        "deeptmhmm_record",
+        lambda iso, *, is_canonical: {"sequence": "DEEPSEQ" * 5, "per_residue_topology": per_res},
+    )
     monkeypatch.setattr(mod, "summarize_deeptmhmm_topology", lambda rec: "DT_TOPO")
 
     def _boom(*a, **k):
@@ -63,6 +70,7 @@ def test_fetch_prefers_deeptmhmm_sequence_and_topology(monkeypatch):
     assert out[0].sequence == "DEEPSEQ" * 5
     assert out[0].topology_summary == "DT_TOPO"
     assert out[0].topology_source == "deeptmhmm"
+    assert out[0].topology_per_residue == per_res  # carried from the DeepTMHMM record
     assert out[0].length_aa == 1210  # from IsoformRecord.length_aa
 
 

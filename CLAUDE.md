@@ -95,6 +95,24 @@ The Worker's `/v1/catalog` endpoint (`row_schema 6+`) bakes `ddf.n_papers_select
 
 **Edge-cache purge-on-publish.** After the D1 write, `publish_record` purges the Worker's edge cache for the affected URLs (`/v1/genes/{SYMBOL}` + `/v1/catalog` + `/v1/genes`) so a republished record goes live **immediately** rather than after the Worker's `Cache-Control` TTL (up to 1 day for per-gene records). The purge is targeted by-URL — never `purge_everything`, since the Worker shares the `deliverome.org` zone with the main site. It needs `CLOUDFLARE_ZONE_ID` plus a **Zone → Cache Purge** scope on `CLOUDFLARE_API_TOKEN`; missing either soft-skips with a warning (records then go live on TTL). This is the freshness half of the "never let D1 drift" rule — long TTLs stay safe *because* publish purges. The zone's **cache rule** (ignore query strings — kills `?_=random` cache-busting amplification) is applied by [`scripts/apply_cf_edge_rules.py`](scripts/apply_cf_edge_rules.py) (dry-run by default, `--execute`; Cache Rules are on every plan). **Per-IP rate limiting lives in the Worker** via the native Workers Rate Limiting binding (`env.RATE_LIMITER` / `RATE_LIMITER_HEAVY` in `cloudflare/workers/surfaceome_api/wrangler.toml` — in-colo, free, not KV; tighter on `/v1/catalog` + `*.tsv`), because Cloudflare's zone-level WAF Rate Limiting Rules need Pro+ (`apply_cf_edge_rules.py --only ratelimit` applies those if the zone has the feature).
 
+## Prompt provenance is mandatory for every agentic pipeline
+
+**Any pipeline that runs an LLM prompt to produce a persisted record MUST stamp, per record, the exact prompt that produced it.** Three fields, always:
+
+1. **Model string** — the concrete model id used (`claude-opus-5`, not "opus").
+2. **`prompt_sha`** — `hashlib.sha256(system_prompt.encode()).hexdigest()` of the *exact* prompt text that generated the record. This is the content fingerprint; any edit changes it.
+3. **`prompt_version`** — a human-bumpable module constant (e.g. `MODEL_PRIOR_PROMPT_VERSION = "0.2.0"`), bumped in the same commit as any prompt edit.
+
+And the **resume / skip logic MUST treat a changed `prompt_sha` as stale** — a gene already in the store but written under a *different* prompt_sha is re-run, never silently skipped. Skipping on `schema_version` alone lets a prompt edit ship without re-running the affected rows, which is exactly the "stale record that believes it's current" bug the version-guard exists to prevent.
+
+This is not optional and not per-pipeline discretion. Persist all three (plus a `schema_version` and `generated_at`) on the record and project `prompt_sha` + `prompt_version` into the D1 flat columns so a stale row is queryable without unpacking `record_json`.
+
+**Reference implementations:**
+- `triage_run` — stores `prompt_sha`, `prompt_filename`, `prompt_variant`, `schema_version` per cell (the canonical precedent).
+- **Internalization sequence pass** — `ModelPriorTrack.{prompt_sha,prompt_version}` set in [`grade_isoforms_with_model`](src/accessible_surfaceome/agents/internalization/model_prior.py), constant `MODEL_PRIOR_PROMPT_VERSION` in [models.py](src/accessible_surfaceome/agents/internalization/models.py), D1 columns `seq_prompt_sha`/`seq_prompt_version`, and the **sha-aware skip** in [`scripts/internalization_seq_sweep.py`](scripts/internalization_seq_sweep.py) (`done = {rows where seq_prompt_sha == current_sha}`).
+
+The deep-dive in-process pipeline (`surfaceome_v2`) additionally carries a global `prompt_corpus` fingerprint via [`_version_guard.py`](src/accessible_surfaceome/_version_guard.py) pinned to `PROMPT_CORPUS_VERSION`; a standalone pass with its own versioning (like internalization) is deliberately excluded from that corpus and carries its own per-record `prompt_sha`/`prompt_version` instead — but it still MUST carry them.
+
 ## Triage body-fetch: Unpaywall + PDF fallback
 
 The abstract-triage stage of `plan_trim_select` ([abstract_triage.py](src/accessible_surfaceome/agents/plan_trim_select/abstract_triage.py)) fetches a `worth_fetching` paper's body through a 3-step chain, each falling through on miss/empty:

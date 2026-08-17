@@ -15,6 +15,8 @@ CREATE TABLE IF NOT EXISTS surface_internalization (
   runner_version               TEXT,
   -- sequence (model-prior) track projections
   seq_model                    TEXT,   -- e.g. claude-opus-4-8
+  seq_prompt_sha               TEXT,   -- sha256 of the model_prior system prompt (staleness fingerprint)
+  seq_prompt_version           TEXT,   -- human-bumpable prompt label (MODEL_PRIOR_PROMPT_VERSION)
   seq_scope                    TEXT,   -- always intrinsic_propensity
   seq_overall_grade            TEXT,   -- SeqGrade: very_high|high|moderate|low|very_low|unknown
   seq_overall_confidence       TEXT,

@@ -39,6 +39,10 @@ class IsoformContext(BaseModel):
     sequence: str
     topology_summary: str
     topology_source: str = "uniprot"
+    # Raw DeepTMHMM per-residue topology over {S,I,O,M,B}, residue-aligned to
+    # ``sequence``. Only populated on the DeepTMHMM path (the UniProt-feature
+    # fallback has no per-residue call).
+    topology_per_residue: str | None = None
 
 
 def fetch_isoform_context(
@@ -68,6 +72,7 @@ def fetch_isoform_context(
                     sequence=dt["sequence"],
                     topology_summary=summarize_deeptmhmm_topology(dt),
                     topology_source="deeptmhmm",
+                    topology_per_residue=dt.get("per_residue_topology"),
                 )
             )
         else:
