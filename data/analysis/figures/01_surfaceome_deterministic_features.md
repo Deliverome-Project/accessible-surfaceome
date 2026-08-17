@@ -1,4 +1,4 @@
-# `surfaceome_deterministic_features` — reproduction (Supp Fig 13)
+# `surfaceome_deterministic_features` — reproduction (Supp Fig S14)
 
 Distribution of **twelve deterministic per-gene features** across the
 surfaceome, faceted by the real deep-dive surface-accessibility tier (collapsed
@@ -26,9 +26,8 @@ is a real negative (no 1:1 ortholog / not a homomer / no concerning paralog / no
 extracellular surface-bind site), matching how the records encode it. `pending`
 (not-yet-deep-dived) genes are excluded from the deep-dive tiers.
 
-**PRELIMINARY** — the deep-dive tiers are a partial sweep of the ~5,128
-candidate genes, so those per-tier rates are provisional; the Sonnet pool is the
-complete triage-flagged set.
+The deep-dive tiers cover the full deep-dive cohort (5,130 genes); the Sonnet
+pool is the complete triage-flagged set (~4,236 with topology).
 
 ## Run
 
