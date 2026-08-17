@@ -52,9 +52,20 @@ TWO LITERATURE SOURCES — use BOTH.
 RANK BY VALIDATION STRENGTH (`validation_level`). The best sites are those where the tag was
 shown to DISPLAY on the surface (non-permeabilized staining/labeling) AND preserve
 function/expression vs untagged — set 'surface_and_function' and rank these first. Then
-'surface_only', 'function_only', 'detected_only', and last 'not_measured'. Order the `sites`
-list so higher-validation, paper-grounded sites come first (lower `rank` = better). Never
-upgrade a validation_level beyond what the paper actually measured.
+'surface_only', 'function_only', 'detected_only', 'function_perturbed', and last 'not_measured'.
+Order the `sites` list so higher-validation, paper-grounded sites come first (lower `rank` =
+better). Never upgrade a validation_level beyond what the paper actually measured.
+
+'surface_and_function' MEANS FUNCTION PRESERVED, NOT MERELY FUNCTION MEASURED. If a paper
+measures function but it comes out REDUCED, or the measurement is CONFOUNDED (not cleanly
+isolated from the endogenous protein), do NOT claim 'surface_and_function' — use
+'function_perturbed' and state the reduction/confound in evidence_detail. Two real examples of
+what does NOT qualify as validated function:
+  - SLC6A4 (hSERT), HA in EL2: the tagged transporter's Vmax is only ~55% of WT — function is
+    measurably PERTURBED. -> 'function_perturbed', NOT 'surface_and_function'.
+  - ANO1 (TMEM16A), 3xHA in ECL1: surface display is clean, but the Cl- current was recorded
+    with endogenous TMEM16A co-expressed, so the tagged channel's function is inferred, not
+    isolated — CONFOUNDED. -> 'function_perturbed' (or 'surface_only'), NOT 'surface_and_function'.
 
 allowed evidence_type values (use ONLY these — never 'structural inference' or 'topology
 inference only'):

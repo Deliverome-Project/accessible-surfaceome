@@ -355,3 +355,15 @@ Removed **A18 SLC6A4 (hSERT)** — the HA-in-EL2 tag halves transport (Vmax 55% 
 so it perturbs — and **B13 ANO1 (TMEM16A)** — surface display is solid but the functional
 current was recorded with endogenous TMEM16A co-expressed, so it is confounded, not isolated.
 34 → 32 controls. (These were also the two deterministic feature-veto misses.)
+
+## Negative examples for the literature pipeline (function measured ≠ function validated)
+
+A18 SLC6A4 and B13 ANO1 are removed from the POSITIVE set but retained as **counter-examples**
+that the literature agent must NOT score as `surface_and_function`:
+- **SLC6A4 (hSERT), HA in EL2** — function measured but **PERTURBED** (Vmax ~55% of WT).
+- **ANO1 (TMEM16A), 3×HA in ECL1** — function measured but **CONFOUNDED** (Cl⁻ current recorded
+  with endogenous TMEM16A co-expressed, not isolated).
+
+Both belong in the new `function_perturbed` tier (below `surface_only`), not the validated
+`surface_and_function` tier. Encoded in `agents/tag_site/schema.py::VALIDATION_LEVELS` +
+`prompt.py` (verbatim examples), so the agent learns "function *measured* ≠ function *validated*."

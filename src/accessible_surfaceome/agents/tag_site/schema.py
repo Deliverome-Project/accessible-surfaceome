@@ -18,10 +18,11 @@ EVIDENCE_TYPES = (
 # e.g. EndoNB knock-ins, Huet ecto-tagged integrins). Mirrors the "Impact measured
 # vs untagged" column of data/tag_sites/positive_controls.md.
 VALIDATION_LEVELS = (
-    "surface_and_function",  # non-permeabilized surface display AND function/expression retained
+    "surface_and_function",  # non-permeabilized surface display AND function/expression RETAINED (cleanly isolated)
     "surface_only",          # surface display shown; function not compared
     "function_only",         # function/expression retained; surface display not directly shown
     "detected_only",         # construct expressed/detected, but no surface OR function comparison
+    "function_perturbed",    # function WAS measured but REDUCED, or CONFOUNDED/not-isolated — NOT a clean validation
     "not_measured",          # tag reported without validation
 )
 VALIDATION_RANK = {v: i for i, v in enumerate(VALIDATION_LEVELS)}
@@ -66,9 +67,12 @@ class TagSiteProposal(BaseModel):
         description=(
             "One of VALIDATION_LEVELS. The priority ranking signal: was the tag shown to "
             "DISPLAY on the cell surface (non-permeabilized) and/or preserve function/expression "
-            "vs untagged? Use 'surface_and_function' only when BOTH were demonstrated; "
-            "'not_measured' if the paper reports the tag without such validation. Derive it from "
-            "what was actually measured — never infer beyond the evidence."
+            "vs untagged? Use 'surface_and_function' ONLY when surface display is shown AND "
+            "function is RETAINED (~unchanged vs untagged) in a clean, isolated measurement. If "
+            "function was measured but came out REDUCED (e.g. Vmax cut to ~half) or CONFOUNDED "
+            "(e.g. recorded with the endogenous protein co-expressed, so not isolated), that is "
+            "'function_perturbed' — NOT surface_and_function. 'not_measured' if no validation is "
+            "reported. Derive it from what was actually measured — never infer beyond the evidence."
         ),
     )
     source_tier: str = Field(

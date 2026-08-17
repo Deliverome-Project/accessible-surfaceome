@@ -19,6 +19,17 @@ def _result(sites):
     return TagSiteResult(gene_symbol="X", uniprot_accession="Q0", sequence_length=300, sites=sites)
 
 
+def test_function_perturbed_ranks_below_surface_only():
+    # a perturbed/confounded function (SLC6A4-style Vmax cut, ANO1-style confound) must
+    # NOT outrank a clean surface_only display.
+    from accessible_surfaceome.agents.tag_site.schema import VALIDATION_RANK
+    assert VALIDATION_RANK["function_perturbed"] > VALIDATION_RANK["surface_only"]
+    assert VALIDATION_RANK["function_perturbed"] < VALIDATION_RANK["not_measured"]
+    out = R.rank_sites(_result([_site(1, val="function_perturbed", res=10),
+                                _site(2, val="surface_only", res=20)]))
+    assert [s.insert_after_residue for s in out.sites] == [20, 10]  # surface_only first
+
+
 def test_rank_sites_drops_unvalidated_and_orders_by_validation_then_tier():
     a = _site(1, val="not_measured", tier="paper", res=10)
     b = _site(2, val="surface_and_function", tier="vendor", res=20)
