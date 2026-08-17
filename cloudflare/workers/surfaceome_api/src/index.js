@@ -1334,10 +1334,28 @@ async function handleCatalog(env, request) {
             sa.ddf_homo_oligomerization AS sa_ddf_homo_oligomerization,
             sa.ddf_topo_tm_helix_count AS sa_ddf_topo_tm_helix_count,
             sa.ddf_topo_signal_peptide_length AS sa_ddf_topo_signal_peptide_length,
+            si.intern_grade AS intern_grade,
+            si.intern_has_lit AS intern_has_lit,
             CASE WHEN sa.gene_symbol IS NOT NULL THEN 1 ELSE 0 END AS has_deep_dive
        FROM candidate_universe_public u
        LEFT JOIN gene_identifier_public gi ON gi.hgnc_symbol = u.gene_symbol
        LEFT JOIN surface_bind_protein sb ON sb.uniprot_acc = u.uniprot_acc
+       -- Internalization sequence-prior grade (separate standalone pass;
+       -- scalar grade columns only — never record_json, which carries the
+       -- per-residue topology string that would blow D1's isolate memory
+       -- cap at catalog scale, same rationale as the canonical_topology
+       -- scalars above). One row per gene (publish drops stale schema
+       -- versions); the MAX(schema_version) guard is belt-and-suspenders.
+       LEFT JOIN (
+         SELECT gene_symbol,
+                seq_canonical_grade AS intern_grade,
+                has_literature AS intern_has_lit
+           FROM surface_internalization sii1
+          WHERE schema_version = (
+            SELECT MAX(schema_version) FROM surface_internalization sii2
+             WHERE sii2.gene_symbol = sii1.gene_symbol
+          )
+       ) si ON si.gene_symbol = u.gene_symbol
        LEFT JOIN (
          -- One row per gene: the latest (schema_version, prompt_corpus_version)
          -- combo. The schema_version match is load-bearing today (the
@@ -1554,6 +1572,12 @@ async function handleCatalog(env, request) {
     if (t) row.tr = t;
     if (u.has_deep_dive) row.deep_dive = true;
     if (u.sb_n_sites != null) row.sb = u.sb_n_sites;
+    // Internalization sequence-prior grade (SeqGrade: very_high|high|moderate|
+    // low|very_low|unknown). Separate standalone pass — a top-level field, NOT
+    // inside `ddf`, because it exists for the full internalization cohort
+    // independent of deep-dive coverage (viewer filters it as its own category).
+    if (u.intern_grade) row.intern = u.intern_grade;
+    if (u.intern_has_lit) row.intern_lit = 1;
     // Slim deep-dive filter projection — only the 21 fields the catalog
     // UI actually filters on. Skips continuous fields (max_paralog_ecd_
     // pct_identity, ortholog identities) and `has_restricted_subdomain`
@@ -1586,9 +1610,12 @@ async function handleCatalog(env, request) {
             -- Canonical-topology SCALARS only (see main catalog query).
             json_extract(sa1.annotation_json, '$.deterministic_features.canonical_topology.tm_helix_count') AS ddf_topo_tm_helix_count,
             json_extract(sa1.annotation_json, '$.deterministic_features.canonical_topology.signal_peptide_length') AS ddf_topo_signal_peptide_length,
-            gi.uniprot_acc AS uniprot_acc
+            gi.uniprot_acc AS uniprot_acc,
+            si.seq_canonical_grade AS intern_grade,
+            si.has_literature AS intern_has_lit
        FROM surface_annotation sa1
        LEFT JOIN gene_identifier_public gi ON gi.hgnc_symbol = sa1.gene_symbol
+       LEFT JOIN surface_internalization si ON si.gene_symbol = sa1.gene_symbol
       WHERE sa1.schema_version = (
         SELECT MAX(schema_version) FROM surface_annotation sa2
          WHERE sa2.gene_symbol = sa1.gene_symbol
@@ -1606,6 +1633,8 @@ async function handleCatalog(env, request) {
     deepSet.add(sym);
     const row = { symbol: sym, n_sources: 0, db: 0, deep_dive: true };
     if (r.uniprot_acc) row.uniprot = r.uniprot_acc;
+    if (r.intern_grade) row.intern = r.intern_grade;
+    if (r.intern_has_lit) row.intern_lit = 1;
     const t = packTriage(sym);
     if (t) row.tr = t;
     const dd = projectDeepDiveFiltersFromParts(ddfPartsFromRow(r, "ddf_"));
@@ -1695,7 +1724,13 @@ async function handleCatalog(env, request) {
       //   v7 = adds deterministic transmembrane-topology facets derived
       //        from deterministic_features.canonical_topology (DeepTMHMM):
       //        `ddf.has_tm` and `ddf.tm_count_band` (none/single/multi).
-      row_schema: 7,
+      //   v8 = adds top-level `intern` (internalization sequence-prior
+      //        SeqGrade: very_high|high|moderate|low|very_low|unknown) from
+      //        surface_internalization, present only for the internalization
+      //        cohort; plus optional `intern_lit`=1 when a literature grade
+      //        also exists. A SEPARATE catalog facet, independent of `ddf` /
+      //        deep-dive coverage. Older viewers ignore unknown fields.
+      row_schema: 8,
       n_papers_selected_cutoffs: psCutoffs,
       // Names for the bits in each row's `db` 5-bit field (LSB → MSB).
       // Self-describing for external reanalysts: decode with
