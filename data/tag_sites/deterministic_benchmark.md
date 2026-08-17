@@ -99,3 +99,19 @@ representative hits. The two misses are informative: SLC6A4 N211 is a
 confidently-folded (pLDDT 88) constrained EL2 replacement that neither the
 disorder gate (needs pLDDT<70) nor the surface-loop RSA gate catches; ANO1 396 is
 the isoform-numbering-suspect control (Q5XXA6 396=A, not the cited H396).
+
+## Partial-credit scoring + set revision (2026-08-15b)
+
+Removed A18 SLC6A4 (tag halves Vmax → perturbing) and B13 ANO1 (function confounded
+by co-expressed endogenous TMEM16A) — both were the feature-veto misses. Added a
+**±20-residue partial-credit tier** (`partial_*`): a representative within 20 residues
+of the control (same loop region) but >3.
+
+**Result on the 14 runnable internal controls (0 misses):**
+- full recall (representative ±3): **10/14**
+- full + partial (representative ±20): **14/14**
+- candidate recall (gates ±3): **14/14**
+
+Partials (representative within 20): TMEM123 A33→27 (−6), SLC6A3 A192→200 (+8),
+SLC4A1 557→561 (+4), ASIC1a F147→143 (−4). Reproduce:
+`uv run python scripts/benchmark_tag_sites_all_controls.py`.

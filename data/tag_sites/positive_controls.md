@@ -348,3 +348,10 @@ Every control (A1–A24, B1–B13) was re-verified: residue vs UniProt canonical
   but these published constructs deliberately thread the tag between/beside those features
   while preserving them. A future refinement: veto the glycosite/disulfide *residue* but
   allow an exposed insertion point a few residues away.
+
+## Set revision 2 — 2026-08-15 (PI review, part 2)
+
+Removed **A18 SLC6A4 (hSERT)** — the HA-in-EL2 tag halves transport (Vmax 55% of WT),
+so it perturbs — and **B13 ANO1 (TMEM16A)** — surface display is solid but the functional
+current was recorded with endogenous TMEM16A co-expressed, so it is confounded, not isolated.
+34 → 32 controls. (These were also the two deterministic feature-veto misses.)

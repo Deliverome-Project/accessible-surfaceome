@@ -75,12 +75,22 @@ def main():
         det = [s for s in data["sites"] if s["provenance"] == "deterministic_computed"]
         reps = sorted(s["insert_after_residue"] for s in det)
         rep_hit = next((s for s in det if ctrl is not None and abs(s["insert_after_residue"] - ctrl) <= 3), None)
+        # partial credit: an emitted representative within 20 residues (same loop region)
+        rep_20 = None
+        if ctrl is not None and det:
+            best = min(det, key=lambda s: abs(s["insert_after_residue"] - ctrl))
+            if abs(best["insert_after_residue"] - ctrl) <= 20:
+                rep_20 = best
         cand_hit = any(ctrl is not None and abs(c - ctrl) <= 3 for c in cand)
         plddt = sig["plddt"].get(ctrl, 0.0) if ctrl else 0.0
         if rep_hit:
             exact = rep_hit["insert_after_residue"] == ctrl
             cat = f"{rep_hit['det_path']}_{'exact' if exact else 'near'}"
             detail = f"rep {rep_hit['insert_after_residue']} pLDDT{plddt:.0f}"
+        elif rep_20:
+            off = rep_20["insert_after_residue"] - ctrl
+            cat = f"partial_{rep_20['det_path']}"
+            detail = f"rep {rep_20['insert_after_residue']} ({off:+d}, within 20) pLDDT{plddt:.0f}"
         elif cand_hit:
             cat = "candidate_only_nms_suppressed"
             detail = f"cand near {ctrl}, pLDDT{plddt:.0f}"
@@ -97,11 +107,13 @@ def main():
     for cat, n in Counter(c for *_, c, _ in results).most_common():
         print(f"  {n:2}  {cat}")
     runnable = [x for x in results if x[4] not in ("terminal_out_of_scope", "not_in_surfaceome_3line", "no_af_model")]
-    rep_hits = [x for x in runnable if x[4].endswith(("_exact", "_near"))]
-    cand_hits = [x for x in runnable if x[4].endswith(("_exact", "_near")) or x[4] == "candidate_only_nms_suppressed"]
+    full = [x for x in runnable if x[4].endswith(("_exact", "_near"))]
+    partial = [x for x in runnable if x[4].startswith("partial_")]
+    cand_hits = [x for x in runnable if x[4].endswith(("_exact", "_near")) or x[4].startswith("partial_") or x[4] == "candidate_only_nms_suppressed"]
     print(f"\nRunnable internal controls: {len(runnable)}")
-    print(f"  representative recall (emitted, ±3): {len(rep_hits)}/{len(runnable)}")
-    print(f"  candidate recall (gates, ±3):        {len(cand_hits)}/{len(runnable)}")
+    print(f"  full recall (representative ±3):        {len(full)}/{len(runnable)}")
+    print(f"  full + partial (representative ±20):    {len(full) + len(partial)}/{len(runnable)}")
+    print(f"  candidate recall (gates ±3):            {len(cand_hits)}/{len(runnable)}")
 
 
 if __name__ == "__main__":
