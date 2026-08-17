@@ -75,3 +75,27 @@ is the repo-native AFDB result.
 An earlier HTML "benchmark" in this branch was removed because its per-control verdicts and
 structural numbers were **not** produced by runs. This table replaces it and is regenerable
 end-to-end from the script above.
+
+## All controls (2026-08-15) — breakdown by deterministic result type
+
+Ran the deterministic pipeline on every control in `positive_controls.tsv`
+(reproduce: `uv run python scripts/benchmark_tag_sites_all_controls.py`). Internal
+controls only get a run — the pipeline designs internal loop + disordered sites,
+not terminals.
+
+| Result type | n | examples |
+|---|---:|---|
+| `disorder_exact` | 3 | AXL P184, SLC9A6 M53, SLC5A6 483 |
+| `disorder_near` (±3) | 4 | ITGB1 G101→103, ITGB5 A102→103, SLC26A1 P155→153, ASIC1 D298→295 |
+| `surface_loop_near` (±3) | 3 | TFRC I290→291, AQP1 T120→121, SLC19A1 P297→299 |
+| `candidate_only` (gates find it; NMS-suppressed) | 5 | TMEM123 A33, SLC6A3 A192, EDNRB G57, SLC4A1 557, ASIC1 F147 |
+| `miss` | 2 | SLC6A4 N211 (folded EL2 replacement, pLDDT 88), ANO1 396 (isoform-suspect) |
+| `terminal_out_of_scope` | 9 | A1–A8 GPCRs + TFRC A24 C-terminus |
+| `not_in_surfaceome_3line` | 7 | TRPC5, KCNH2, PMP22, VANGL1×2, KCNQ1, CFTR |
+
+**Recall on the 17 runnable internal controls:** candidate (gates, ±3) **15/17**;
+representative (emitted, post-NMS, ±3) **10/17**. The disorder path carries 7/10
+representative hits. The two misses are informative: SLC6A4 N211 is a
+confidently-folded (pLDDT 88) constrained EL2 replacement that neither the
+disorder gate (needs pLDDT<70) nor the surface-loop RSA gate catches; ANO1 396 is
+the isoform-numbering-suspect control (Q5XXA6 396=A, not the cited H396).
