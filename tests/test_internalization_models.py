@@ -62,7 +62,7 @@ def test_isoform_prior_structured_motifs():
     # defaults: no motifs, and an extracellular hit is non-functional by default
     assert _isoform_prior().motifs == []
     with pytest.raises(ValidationError):
-        MotifHit(motif_type="bogus", sequence="X")
+        MotifHit(motif_type="bogus", sequence="X")  # ty:ignore[invalid-argument-type]
 
 
 def test_model_prior_track_defaults_scope_and_keeps_model():

@@ -17,7 +17,9 @@ class _FakeMessages:
 
     def create(self, **kw):
         content = kw["messages"][0]["content"]
-        pmid = int(re.search(r"PMID: (\d+)", content).group(1))
+        _m = re.search(r"PMID: (\d+)", content)
+        assert _m is not None  # test fixtures always embed a PMID
+        pmid = int(_m.group(1))
         self.seen_by_pmid[pmid] = content
         return SimpleNamespace(
             content=[SimpleNamespace(type="text", text=self.by_pmid[pmid])],

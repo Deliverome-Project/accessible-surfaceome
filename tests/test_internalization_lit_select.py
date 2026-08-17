@@ -100,7 +100,7 @@ def test_promote_store_miss_is_unverified():
 class _FakeMessages:
     def __init__(self, texts):
         self._t = list(texts)
-        self.last_user = None
+        self.last_user: str = ""
 
     def create(self, **kw):
         self.last_user = kw["messages"][0]["content"]

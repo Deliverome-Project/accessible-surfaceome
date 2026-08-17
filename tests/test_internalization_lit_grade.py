@@ -16,7 +16,7 @@ class _FakeMessages:
     def __init__(self, texts):
         self._t = list(texts)
         self.calls = 0
-        self.last_user = None
+        self.last_user: str = ""
 
     def create(self, **kw):
         self.calls += 1

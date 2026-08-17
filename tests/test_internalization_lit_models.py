@@ -68,10 +68,14 @@ def test_observation_accepts_new_022_fields():
 def test_new_022_literal_values_are_rejected_when_bogus():
     with pytest.raises(ValidationError):
         InternalizationObservation(
-            assay_type="ligand_uptake", trafficking_compartment="mitochondria"
+            assay_type="ligand_uptake",
+            trafficking_compartment="mitochondria",  # ty:ignore[invalid-argument-type]
         )
     with pytest.raises(ValidationError):
-        InternalizationObservation(assay_type="ligand_uptake", ligand_effect="maybe")
+        InternalizationObservation(
+            assay_type="ligand_uptake",
+            ligand_effect="maybe",  # ty:ignore[invalid-argument-type]
+        )
 
 
 def test_modulator_observation_defaults_and_enums():
@@ -88,9 +92,15 @@ def test_modulator_observation_defaults_and_enums():
     )
     assert ok.effect_on_target == "increases"
     with pytest.raises(ValidationError):
-        ModulatorObservation(modulator="GENEX", effect_on_target="maybe")
+        ModulatorObservation(
+            modulator="GENEX",
+            effect_on_target="maybe",  # ty:ignore[invalid-argument-type]
+        )
     with pytest.raises(ValidationError):
-        ModulatorObservation(modulator="GENEX", perturbation="bogus")
+        ModulatorObservation(
+            modulator="GENEX",
+            perturbation="bogus",  # ty:ignore[invalid-argument-type]
+        )
     with pytest.raises(ValidationError):
         ModulatorObservation()  # modulator is required
 

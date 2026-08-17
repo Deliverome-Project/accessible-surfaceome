@@ -28,7 +28,7 @@ def _evidence(eid: str):
     src = SourceRef(
         source_type="pubmed",
         source_id=f"PMID:{eid}",
-        url="https://pubmed.ncbi.nlm.nih.gov/1/",
+        url="https://pubmed.ncbi.nlm.nih.gov/1/",  # ty:ignore[invalid-argument-type]
         title="t",
         retrieved_at=now,
         content_sha256="a" * 64,
