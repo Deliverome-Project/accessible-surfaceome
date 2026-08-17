@@ -25,6 +25,7 @@ genes (the COX1 / WAS class).
 - [Per-gene Markdown mirror](https://surfaceome.deliverome.org/data/surfaceome/ERBB2.md): the same record as human-readable Markdown with sequences + per-residue topology embedded — the most agent-friendly single-gene artifact.
 - [Genome-wide catalog](https://api.deliverome.org/surfaceome/v1/catalog): per-gene 5-DB surface-vote matrix (UniProt / GO / SURFY / CSPA / HPA) + latest triage verdict + deep-dive flag for all ~19k genes.
 - [Per-gene triage](https://api.deliverome.org/surfaceome/v1/triage/ERBB2): every triage run on file — model × prompt-variant × replicate — with the agent's free-text `verdict_reasoning`.
+- [Per-gene internalization](https://api.deliverome.org/surfaceome/v1/internalization/LRP1): full `InternalizationRecord` — the blind sequence-prior endocytic-propensity grade (`very_high`…`very_low`) with per-isoform topology, sorting motifs, and reasoning. The one-word grade per gene also rides on each `/v1/catalog` row as `intern`.
 - [Genome-wide triage export, with reasoning (TSV)](https://api.deliverome.org/surfaceome/v1/triage/export.tsv?run_id=genome_full_sonnet_ncbi_v1&replicate=1&with_reasoning=1): the full ~19k-gene Sonnet/NCBI sweep with the agent's reasoning appended. Drop `with_reasoning=1` for the prose-free figure-input export.
 - [SurfaceBench matrix](https://api.deliverome.org/surfaceome/v1/benchmark/matrix): the 147-gene eval — ground truth + 5 per-DB flags + per-(model × variant) LLM verdicts with reasoning. Models: Opus, Sonnet, Haiku.
 

@@ -2036,6 +2036,7 @@ const V1_ENDPOINTS = [
   { group: "Deep dive", method: "GET", path: "/v1/genes/{symbol}", summary: "Full SurfaceomeRecord JSON" },
   { group: "Deep dive", method: "GET", path: "/v1/genes/{symbol}.md", summary: "Rich Markdown export (sequences, DeepTMHMM topology, AlphaFold links) — served from R2" },
   { group: "Deep dive", method: "GET", path: "/v1/orthologs/{symbol}", summary: "Mouse + cyno orthologs from the latest Ensembl Compara release" },
+  { group: "Internalization", method: "GET", path: "/v1/internalization/{symbol}", summary: "Full InternalizationRecord: sequence-prior SeqGrade (very_high…very_low) + per-isoform topology/motifs/reasoning; null if not in the cohort. Per-gene grade also on each /v1/catalog row as `intern`" },
   { group: "Utility", method: "GET", path: "/v1/meta/sizes", summary: "Approximate per-endpoint response sizes, computed live from D1" },
   { group: "Utility", method: "GET", path: "/v1", summary: "This index" },
 ];
