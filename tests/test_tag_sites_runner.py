@@ -168,3 +168,29 @@ def test_format_candidate_papers_includes_preprints():
     assert "PREPRINTS" in block
     assert "DOI 10.1101/2023.01.01" in block
     assert "EndoNB ALFA knock-in" in block
+
+
+def test_verify_entailment_hydrates_web_cited_pmid(monkeypatch):
+    # A site cites a PMID the candidate set never contained (agent found it via
+    # web_search). With http given, verify_entailment hydrates that PMID on demand
+    # and confirms the quote, instead of flagging a real citation unverified.
+    class HydratedPaper:
+        pmid = 999
+        abstract = "We introduced an HA tag in extracellular loop 2 of the serotonin transporter."
+
+    monkeypatch.setattr(R, "europepmc_bulk_by_pmid", lambda **k: [HydratedPaper()])
+    monkeypatch.setattr(R, "fetch_fulltext_sections", lambda **k: {})
+
+    site = _site(1, val="function_perturbed", res=243)
+    site.supporting_pmid = 999
+    site.supporting_quote = "We introduced an HA tag in extracellular loop 2"
+    res = _result([site])
+    R.verify_entailment(res, papers={}, fulltext={}, http=object())
+    assert res.sites[0].entailment_verified is True
+
+    # Without http, the same web-cited PMID cannot be fetched -> stays unverified.
+    site2 = _site(1, res=243); site2.supporting_pmid = 999
+    site2.supporting_quote = "We introduced an HA tag in extracellular loop 2"
+    res2 = _result([site2])
+    R.verify_entailment(res2, papers={}, fulltext={})
+    assert res2.sites[0].entailment_verified is False

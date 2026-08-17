@@ -23,7 +23,9 @@ from anthropic import Anthropic
 from accessible_surfaceome.agents._support.client import get_client
 from accessible_surfaceome.agents.surfaceome_v2.builders._common import call_builder
 from accessible_surfaceome.tools._shared.http import CachedHTTP, open_default_client
+from accessible_surfaceome.tools._shared.europepmc import europepmc_bulk_by_pmid
 from accessible_surfaceome.tools._shared.models import Paper
+from accessible_surfaceome.tools._shared.retraction_watch import empty as _empty_retraction
 from accessible_surfaceome.tools._shared.retraction_watch import from_http as _retraction_from_http
 
 from .literature_discovery import (
@@ -146,17 +148,44 @@ def verify_entailment(
     papers: dict[int, Paper],
     fulltext: dict[int, dict[str, str]],
     preprints: list[dict[str, Any]] | None = None,
+    http: CachedHTTP | None = None,
 ) -> TagSiteResult:
     """Set ``entailment_verified`` on each site: True iff its supporting_quote is
     found in the cited paper's source text (abstract + full text), falling back to
     the union of all fetched sources (incl. preprint abstracts) — so a hallucinated
-    quote that appears in NO source is flagged."""
+    quote that appears in NO source is flagged. When ``http`` is given, a cited PMID
+    that was NOT in the candidate set (e.g. the agent found it via web_search) is
+    hydrated on demand and cached, so a real web-discovered citation can still be
+    verified instead of being flagged unverified for lack of fetched text."""
     all_text = "\n".join(
         [_source_text_for(pid, papers, fulltext) for pid in papers]
         + [(pp.get("abstract") or "") for pp in (preprints or [])]
     )
+    hydrated: dict[int, str] = {}
+
+    def _resolve(pmid: int | None) -> str:
+        if not pmid:
+            return ""
+        text = _source_text_for(pmid, papers, fulltext)
+        if text or http is None:
+            return text
+        if pmid not in hydrated:
+            try:
+                hp = {
+                    p.pmid: p
+                    for p in europepmc_bulk_by_pmid(
+                        http=http, pmids=[pmid], retraction_index=_empty_retraction()
+                    )
+                    if p.pmid
+                }
+                hft = fetch_fulltext_sections(http=http, papers=hp, max_papers=1) if hp else {}
+                hydrated[pmid] = _source_text_for(pmid, hp, hft)
+            except Exception:  # noqa: BLE001 - verification is best-effort
+                hydrated[pmid] = ""
+        return hydrated[pmid]
+
     for s in result.sites:
-        src = _source_text_for(s.supporting_pmid, papers, fulltext)
+        src = _resolve(s.supporting_pmid)
         s.entailment_verified = quote_supported(s.supporting_quote, src) or quote_supported(
             s.supporting_quote, all_text
         )
@@ -219,7 +248,7 @@ def run_tag_site_agent(
             sequence_length=len(sequence or ""),
         )
     assert isinstance(result, TagSiteResult)  # expect_array=False -> single instance
-    verify_entailment(result, papers=papers, fulltext=fulltext, preprints=preprints)
+    verify_entailment(result, papers=papers, fulltext=fulltext, preprints=preprints, http=http)
     return rank_sites(result)
 
 
