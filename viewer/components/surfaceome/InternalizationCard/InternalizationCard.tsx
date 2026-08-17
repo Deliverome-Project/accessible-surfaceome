@@ -4,7 +4,24 @@ import { useEffect, useState } from "react";
 import { SectionCard } from "../SectionCard/SectionCard";
 import styles from "./InternalizationCard.module.css";
 
-type Grade = "high" | "moderate" | "low" | "no" | "unknown";
+// The sequence (model-prior) track uses the 5-point SeqGrade; the literature
+// track's per-mode Grade retains `no` (and legacy records may carry it). Keep
+// both unions here so a record from either track renders.
+type Grade =
+  | "very_high"
+  | "high"
+  | "moderate"
+  | "low"
+  | "very_low"
+  | "no"
+  | "unknown";
+
+// Shared public Worker (D1-backed) — same base the catalog table uses. Falls
+// back to the production deployment when the build-time public env isn't set
+// (the Worker serves both prod + dev viewers).
+const API_BASE =
+  process.env.NEXT_PUBLIC_SURFACEOME_API_BASE ??
+  "https://api.deliverome.org/surfaceome";
 
 interface IsoformPrior {
   isoform_id: string;
@@ -126,16 +143,32 @@ export function InternalizationCard({ symbol, n }: Props) {
 
   useEffect(() => {
     let live = true;
-    fetch(`/data/internalization/${symbol}.json`)
-      .then((r) => (r.ok ? r.json() : null))
-      .then((j) => {
-        if (!live) return;
-        if (j) {
-          setRec(j as Record);
-          setState("ok");
-        } else setState("none");
-      })
-      .catch(() => live && setState("none"));
+    setState("loading");
+    // D1-backed Worker first (the full 3,357-gene sweep), then the committed
+    // static snapshot (curated / offline / Worker-down fallback). The Worker
+    // returns `null` (200) for a gene not in the sweep — fall through to the
+    // snapshot rather than declaring "none" prematurely.
+    (async () => {
+      for (const url of [
+        `${API_BASE}/v1/internalization/${symbol}`,
+        `/data/internalization/${symbol}.json`,
+      ]) {
+        try {
+          const r = await fetch(url);
+          if (!r.ok) continue;
+          const j = await r.json();
+          if (!live) return;
+          if (j) {
+            setRec(j as Record);
+            setState("ok");
+            return;
+          }
+        } catch {
+          /* try the next source */
+        }
+      }
+      if (live) setState("none");
+    })();
     return () => {
       live = false;
     };
