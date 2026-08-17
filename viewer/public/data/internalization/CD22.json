@@ -1,0 +1,537 @@
+{
+  "schema_version": "0.2.1",
+  "gene_symbol": "CD22",
+  "hgnc_id": "HGNC:1643",
+  "uniprot_acc": "P20273",
+  "model_priors": [
+    {
+      "model": "claude-sonnet-4-6",
+      "scope": "intrinsic_propensity",
+      "overall_grade": "high",
+      "overall_confidence": "high",
+      "model_reasoning": "CD22 (Siglec-2) is a well-characterized B-cell surface receptor with a long cytoplasmic tail (~139 aa) containing multiple ITIMs (immunoreceptor tyrosine-based inhibitory motifs) and, critically, multiple tyrosine-based endocytic sorting signals. CD22 is one of the best-documented constitutively internalizing receptors on B cells — it undergoes rapid, clathrin-mediated endocytosis with a half-life on the surface of minutes, comparable to the transferrin receptor. This is exploited clinically (e.g., inotuzumab ozogamicin, moxetumomab pasudotox) precisely because of its high intrinsic internalization rate. The cytoplasmic tail contains canonical YXX[hydrophobic] motifs and NPXY-like sequences embedded in the ITIM regions. Only one isoform is provided here (the canonical 847 aa form), which retains the full cytoplasmic tail. The internalization propensity is unambiguously high based on both well-established biology and sequence-level evidence.",
+      "per_isoform": [
+        {
+          "isoform_id": "P20273-1",
+          "is_canonical": true,
+          "length_aa": 847,
+          "topology_summary": "Signal peptide (1-19 aa), large extracellular domain (~668 aa), single TM helix, cytoplasmic tail (~139 aa, C-terminal). N-terminus extracellular, C-terminus cytoplasmic.",
+          "endocytic_motifs_noted": "Cytoplasmic tail (residues ~709-847) contains multiple tyrosine-based motifs including ITIM sequences (YxxL/I) that overlap with YXX[hydrophobic] endocytic signals. Scanning the cytoplasmic region: YENVIPDFPEDEGIHYSELIQFGVGERPQAQENVDYVILKH contains multiple tyrosines in cytoplasmic context. Specific motifs include YSALHK (YxxL-like), YVILKH (YxxL), and YSELIQ (YxxL) — all in the cytoplasmic tail. Additionally, the tail contains dileucine-adjacent sequences. These are consistent with known clathrin-mediated endocytic signals.",
+          "grade": "high",
+          "confidence": "high",
+          "rationale": "CD22 is one of the most thoroughly characterized constitutively internalizing B-cell surface receptors. It undergoes rapid, clathrin-mediated endocytosis with a surface half-life of minutes under basal conditions. The 139 aa cytoplasmic tail contains multiple ITIM tyrosines that also serve as YXX[hydrophobic] endocytic sorting signals recognized by AP-2/clathrin machinery. This high internalization rate is well-documented in the literature and is the mechanistic basis for its clinical use as an ADC/immunotoxin target. The canonical isoform retains the full cytoplasmic tail with all relevant motifs, supporting a high-confidence 'high' grade."
+        }
+      ]
+    }
+  ],
+  "literature": {
+    "grades_by_mode": {
+      "basal": {
+        "grade": "high",
+        "confidence": "moderate",
+        "rationale": "Multiple sources characterize CD22 as having 'rapid internalization capacity' and 'rapid internalization kinetics' as an intrinsic property of the receptor on B cells and B-ALL blasts, independent of any specific ligand. This constitutive rapid internalization is cited as a key reason CD22 is an ideal ADC target.",
+        "cited_source_ids": [
+          "int_evi_01",
+          "int_evi_02",
+          "int_evi_04"
+        ]
+      },
+      "native_ligand": {
+        "grade": "unknown",
+        "confidence": "low",
+        "rationale": "No evidence in the ledger directly measures CD22 internalization driven by its endogenous ligand (e.g., sialic acid-bearing ligands or BCR co-engagement).",
+        "cited_source_ids": []
+      },
+      "therapeutic": {
+        "grade": "high",
+        "confidence": "high",
+        "rationale": "Multiple ADCs targeting CD22 (ADCT-602, inotuzumab ozogamicin) are explicitly shown to be internalized upon binding to CD22-positive tumor cells, with subsequent lysosomal trafficking and payload release. Nanoparticle platforms targeting CD22 also demonstrate uptake and lysosomal trafficking. This is well-documented across multiple independent sources.",
+        "cited_source_ids": [
+          "int_evi_02",
+          "int_evi_03",
+          "int_evi_04",
+          "int_evi_05",
+          "int_evi_06",
+          "int_evi_07"
+        ]
+      }
+    },
+    "overall_grade": "high",
+    "overall_confidence": "high",
+    "rationale": "CD22 demonstrates high internalization across both basal and therapeutic modes. The therapeutic mode is best supported, with multiple ADCs (ADCT-602, inotuzumab ozogamicin) confirmed to internalize via CD22 into lysosomes in CD22-positive tumor cells. Basal rapid internalization is consistently described as an intrinsic property of CD22 on B cells and B-ALL blasts. No evidence for native ligand-driven internalization is present in the ledger.",
+    "cross_condition_note": "CD22 internalization is documented in both B-ALL blasts (primary tumor context) and CD22-positive lymphoma/leukemia cell lines, with consistent rapid kinetics across contexts. Nanoparticle studies further show that the choice of antibody-derived targeting ligand affects lysosomal trafficking efficiency, suggesting ligand identity modulates the rate and efficiency of internalization even when the target is the same.",
+    "species_scope": "unspecified",
+    "species_inferred": false,
+    "observations": [
+      {
+        "assay_type": "other",
+        "assay_type_other_label": "Characterization review / general property statement",
+        "cell_line": null,
+        "cell_context": "unknown",
+        "internalization_mode": "basal",
+        "ligand_name": null,
+        "mechanism": "receptor_mediated_unspecified",
+        "magnitude": "high",
+        "quant": {
+          "rate_metric": null,
+          "rate_value": null,
+          "rate_unit": null,
+          "time_point": null,
+          "quant_summary": "Described qualitatively as 'rapid internalization capacity'; no numeric rate provided."
+        },
+        "controls_note": null,
+        "condition_note": "General characterization of CD22 as having rapid constitutive internalization on B cells; cited as rationale for therapeutic targeting.",
+        "cited_source_ids": [
+          "int_evi_01"
+        ]
+      },
+      {
+        "assay_type": "adc_internalization",
+        "assay_type_other_label": null,
+        "cell_line": null,
+        "cell_context": "tumor_cell_line",
+        "internalization_mode": "therapeutic",
+        "ligand_name": "ADCT-602",
+        "mechanism": "receptor_mediated_unspecified",
+        "magnitude": "high",
+        "quant": {
+          "rate_metric": null,
+          "rate_value": null,
+          "rate_unit": null,
+          "time_point": null,
+          "quant_summary": "Described as 'rapid internalization kinetics'; ADCT-602 specifically bound, internalized, and trafficked to lysosomes in CD22-positive tumor cells."
+        },
+        "controls_note": "CD22-negative tumor cells used as specificity control (bystander killing assay context).",
+        "condition_note": "R/R B-ALL and lymphoma preclinical models; ADCT-602 is a PBD dimer-based ADC targeting CD22.",
+        "cited_source_ids": [
+          "int_evi_02",
+          "int_evi_03"
+        ]
+      },
+      {
+        "assay_type": "adc_internalization",
+        "assay_type_other_label": null,
+        "cell_line": null,
+        "cell_context": "primary",
+        "internalization_mode": "therapeutic",
+        "ligand_name": "inotuzumab ozogamicin",
+        "mechanism": "receptor_mediated_unspecified",
+        "magnitude": "high",
+        "quant": {
+          "rate_metric": null,
+          "rate_value": null,
+          "rate_unit": null,
+          "time_point": null,
+          "quant_summary": "Rapid internalization described as key property of CD22 on B-ALL blasts enabling ADC efficacy; lysosomal cleavage of calicheamicin payload confirmed."
+        },
+        "controls_note": null,
+        "condition_note": "B-ALL blasts; inotuzumab ozogamicin (InO) is an anti-CD22 ADC with calicheamicin payload; internalization leads to lysosomal payload release and DNA double-strand breaks.",
+        "cited_source_ids": [
+          "int_evi_04",
+          "int_evi_05"
+        ]
+      },
+      {
+        "assay_type": "other",
+        "assay_type_other_label": "Nanoparticle uptake and lysosome trafficking kinetic assay",
+        "cell_line": null,
+        "cell_context": "unknown",
+        "internalization_mode": "therapeutic",
+        "ligand_name": "antibody-derived targeting ligands (anti-CD22)",
+        "mechanism": "receptor_mediated_unspecified",
+        "magnitude": "moderate",
+        "quant": {
+          "rate_metric": null,
+          "rate_value": null,
+          "rate_unit": null,
+          "time_point": null,
+          "quant_summary": "Kinetic analysis of uptake and lysosome trafficking showed differences between ligand types; highest lysosome trafficking efficiency correlated with effective DNA delivery."
+        },
+        "controls_note": null,
+        "condition_note": "Platform validated for selection of optimal antibody-derived targeting ligands for CD22-targeted nanoparticle delivery; ligand identity affects internalization efficiency.",
+        "cited_source_ids": [
+          "int_evi_06",
+          "int_evi_07"
+        ]
+      }
+    ],
+    "sources": [
+      {
+        "evidence_id": "int_evi_01",
+        "claim": "CD22 is characterized as having rapid internalization capacity, making it an ideal therapeutic target.",
+        "claim_type": "surface_expression",
+        "direction": "supports",
+        "evidence_type": "review_assertion",
+        "evidence_tier": "secondary",
+        "confidence": "moderate",
+        "assay_context": {
+          "species": "human",
+          "cell_type_or_line": "B cells",
+          "permeabilized": false,
+          "fixation": null,
+          "isoform": null,
+          "cell_context": {
+            "material_kind": "unspecified",
+            "material_kind_other_label": null,
+            "cell_type": "B cells",
+            "cell_line_name": null,
+            "cellosaurus_id": null,
+            "tissue": null,
+            "disease_state": null,
+            "activation_state": null
+          }
+        },
+        "spans": [
+          {
+            "source": {
+              "source_type": "pubmed",
+              "source_id": "PMID:42353124",
+              "pmc_id": null,
+              "url": "https://pubmed.ncbi.nlm.nih.gov/42353124/",
+              "title": "CD22 as a Target for Hematological Malignancies and Autoimmune Diseases",
+              "retrieved_at": "2026-08-13T20:27:05.303920Z",
+              "content_sha256": "35cede242e186e1bf3979670b6e894e0855ec4d608dc0afa289f10c7a1fdd91c",
+              "publication_type": "review",
+              "is_retracted": false,
+              "retraction_checked_at": "2026-08-13T20:27:05.303920Z",
+              "license": "unknown"
+            },
+            "section": "abstract",
+            "figure_or_table_id": null,
+            "quote": "CD22 is a critical inhibitory coreceptor predominantly expressed on the surface of B cells, playing a pivotal role in modulating B cell receptor (BCR) signaling and maintaining immune homeostasis. Its high B cell lineage specificity, rapid internalization capacity, and signal attenuation mediated by immunoreceptor tyrosine-based inhibitory motifs (ITIMs) render it an ideal therapeutic target for B cell-related pathologies.",
+            "quote_sha256": "79a2cb4a035aa0964ff4f2e112037a2f5eb5667ea330aa63c1063ea6bab42b15",
+            "char_offset": 0,
+            "normalized_source_sha256": "dc7f4bdbe608eeacf2a7e52a8219c914882bd32753775a5f72c229016cb59d89"
+          }
+        ],
+        "entailment_verified": true,
+        "entailment_audit_passed": null,
+        "validation_warnings": [],
+        "duplicate_of": null
+      },
+      {
+        "evidence_id": "int_evi_02",
+        "claim": "CD22 is described as having rapid internalization kinetics in R/R B-ALL, making it an attractive ADC target; ADCT-602 was specifically bound, internalized, and trafficked to lysosomes in CD22-positive tumor cells.",
+        "claim_type": "surface_expression",
+        "direction": "supports",
+        "evidence_type": "functional_assay",
+        "evidence_tier": "primary",
+        "confidence": "strong",
+        "assay_context": {
+          "species": "human",
+          "cell_type_or_line": "CD22-positive lymphoma/leukemia cell lines",
+          "permeabilized": false,
+          "fixation": "live",
+          "isoform": null,
+          "cell_context": {
+            "material_kind": "cell_line",
+            "material_kind_other_label": null,
+            "cell_type": "B-cell lymphoma/leukemia",
+            "cell_line_name": null,
+            "cellosaurus_id": null,
+            "tissue": null,
+            "disease_state": "relapsed/refractory B-ALL and lymphoma",
+            "activation_state": null
+          }
+        },
+        "spans": [
+          {
+            "source": {
+              "source_type": "pubmed",
+              "source_id": "PMC:PMC10985467",
+              "pmc_id": "PMC10985467",
+              "url": "https://pubmed.ncbi.nlm.nih.gov/38324336/",
+              "title": "ADCT-602, a Novel PBD Dimer-containing Antibody-Drug Conjugate for Treating CD22-positive Hematologic Malignancies",
+              "retrieved_at": "2026-08-13T20:27:05.304116Z",
+              "content_sha256": "55682110e22c8b7fe47bbc26de227622b959ed1b8c048528d2d17287ea336706",
+              "publication_type": "primary_research",
+              "is_retracted": false,
+              "retraction_checked_at": "2026-08-13T20:27:05.304116Z",
+              "license": "unknown"
+            },
+            "section": "abstract",
+            "figure_or_table_id": null,
+            "quote": "Relapsed or refractory B-cell acute lymphoblastic leukemia (R/R B-ALL) and lymphomas have poor patient outcomes; novel therapies are needed. CD22 is an attractive target for antibody-drug conjugates (ADCs), being highly expressed in R/R B-ALL with rapid internalization kinetics. ADCT-602 is a novel CD22-targeting ADC, consisting of humanized mAb hLL2-C220, site specifically conjugated to the pyrrolobenzodiazepine dimer-based payload tesirine. In preclinical studies, ADCT-602 demonstrated potent, specific cytotoxicity in CD22-positive lymphomas and leukemias.",
+            "quote_sha256": "13855c2811075e18195e68e824cd9b2cf0799bdc0d0c65473f6304d4ba36b85a",
+            "char_offset": 0,
+            "normalized_source_sha256": "9ca9c637b7702087eb411c290c420724bfa0698136bc1cb4fce33f0f40e1ab09"
+          }
+        ],
+        "entailment_verified": true,
+        "entailment_audit_passed": null,
+        "validation_warnings": [],
+        "duplicate_of": null
+      },
+      {
+        "evidence_id": "int_evi_03",
+        "claim": "ADCT-602 (anti-CD22 ADC) was specifically bound, internalized, and trafficked to lysosomes in CD22-positive tumor cells, confirming CD22 internalization upon antibody binding.",
+        "claim_type": "surface_expression",
+        "direction": "supports",
+        "evidence_type": "functional_assay",
+        "evidence_tier": "primary",
+        "confidence": "strong",
+        "assay_context": {
+          "species": "human",
+          "cell_type_or_line": "CD22-positive tumor cells",
+          "permeabilized": false,
+          "fixation": "live",
+          "isoform": null,
+          "cell_context": {
+            "material_kind": "cell_line",
+            "material_kind_other_label": null,
+            "cell_type": "B-cell lymphoma/leukemia",
+            "cell_line_name": null,
+            "cellosaurus_id": null,
+            "tissue": null,
+            "disease_state": "relapsed/refractory B-ALL and lymphoma",
+            "activation_state": null
+          }
+        },
+        "spans": [
+          {
+            "source": {
+              "source_type": "pubmed",
+              "source_id": "PMC:PMC10985467",
+              "pmc_id": "PMC10985467",
+              "url": "https://pubmed.ncbi.nlm.nih.gov/38324336/",
+              "title": "ADCT-602, a Novel PBD Dimer-containing Antibody-Drug Conjugate for Treating CD22-positive Hematologic Malignancies",
+              "retrieved_at": "2026-08-13T20:27:05.304116Z",
+              "content_sha256": "55682110e22c8b7fe47bbc26de227622b959ed1b8c048528d2d17287ea336706",
+              "publication_type": "primary_research",
+              "is_retracted": false,
+              "retraction_checked_at": "2026-08-13T20:27:05.304116Z",
+              "license": "unknown"
+            },
+            "section": "abstract",
+            "figure_or_table_id": null,
+            "quote": "ADCT-602 was specifically bound, internalized, and trafficked to lysosomes in CD22-positive tumor cells; after cytotoxin release, DNA interstrand crosslink formation persisted for 48 hours. In the presence of CD22-positive tumor cells, ADCT-602 caused bystander killing of CD22-negative tumor cells. A single ADCT-602 dose led to potent, dose-dependent, in vivo antitumor activity in subcutaneous and disseminated human lymphoma/leukemia models. Pharmacokinetic analyses (rat and cynomolgus monkey) showed excellent stability and tolerability of ADCT-602.",
+            "quote_sha256": "3ab6b9d60ca7d680ba5a87133ece951c57c3cc755ec794b96fcf0e57b4e1cf0b",
+            "char_offset": 565,
+            "normalized_source_sha256": "9ca9c637b7702087eb411c290c420724bfa0698136bc1cb4fce33f0f40e1ab09"
+          }
+        ],
+        "entailment_verified": true,
+        "entailment_audit_passed": null,
+        "validation_warnings": [],
+        "duplicate_of": null
+      },
+      {
+        "evidence_id": "int_evi_04",
+        "claim": "CD22 undergoes rapid internalization on B-ALL blasts, which is a key property rendering it an ideal ADC target.",
+        "claim_type": "surface_expression",
+        "direction": "supports",
+        "evidence_type": "review_assertion",
+        "evidence_tier": "secondary",
+        "confidence": "moderate",
+        "assay_context": {
+          "species": "human",
+          "cell_type_or_line": "B-ALL blasts",
+          "permeabilized": false,
+          "fixation": null,
+          "isoform": null,
+          "cell_context": {
+            "material_kind": "primary_cell",
+            "material_kind_other_label": null,
+            "cell_type": "B-ALL blasts",
+            "cell_line_name": null,
+            "cellosaurus_id": null,
+            "tissue": null,
+            "disease_state": "B-cell acute lymphoblastic leukemia",
+            "activation_state": null
+          }
+        },
+        "spans": [
+          {
+            "source": {
+              "source_type": "pubmed",
+              "source_id": "PMC:PMC8396964",
+              "pmc_id": "PMC8396964",
+              "url": "https://pubmed.ncbi.nlm.nih.gov/34441852/",
+              "title": "Antibody-Drug Conjugates for the Treatment of Acute Pediatric Leukemia",
+              "retrieved_at": "2026-08-13T20:27:05.303976Z",
+              "content_sha256": "003b473dc2dd38292534f1a2e444756a25fc2fa7452bd63bbe80830860f0ceb8",
+              "publication_type": "review",
+              "is_retracted": false,
+              "retraction_checked_at": "2026-08-13T20:27:05.303976Z",
+              "license": "unknown"
+            },
+            "section": "abstract",
+            "figure_or_table_id": null,
+            "quote": "Near universal expression on B-cell acute lymphoblastic leukemia (ALL) blasts and the ability of rapid internalization has rendered CD22 an ideal target for ADC in B-ALL. Inotuzumab ozogamicin, the anti-CD22 antibody linked to calicheamicin led to complete remission rates of 60-80% in patients with relapsed/refractory B-ALL. In acute myeloid leukemia (AML), the CD33 targeting gemtuzumab ozogamicin has demonstrated modest improvements in survival and is the only ADC currently licensed in the United States for pediatric patients with de novo AML.",
+            "quote_sha256": "9d72c3109320c4af9e2cbd85ad0aba9861fd0b1af64ae194e1ec0b5300f7938e",
+            "char_offset": 438,
+            "normalized_source_sha256": "58a19a889f52b9ff74700fa8afc949d174058dca3fcc09200aa1341e23612a7c"
+          }
+        ],
+        "entailment_verified": true,
+        "entailment_audit_passed": null,
+        "validation_warnings": [],
+        "duplicate_of": null
+      },
+      {
+        "evidence_id": "int_evi_05",
+        "claim": "CD22-bound inotuzumab ozogamicin (InO) is internalized by the cell, with enzymatic cleavage occurring in the lysosome, demonstrating CD22-mediated internalization of the ADC.",
+        "claim_type": "surface_expression",
+        "direction": "supports",
+        "evidence_type": "functional_assay",
+        "evidence_tier": "secondary",
+        "confidence": "moderate",
+        "assay_context": {
+          "species": "human",
+          "cell_type_or_line": "leukemic blasts",
+          "permeabilized": false,
+          "fixation": null,
+          "isoform": null,
+          "cell_context": {
+            "material_kind": "primary_cell",
+            "material_kind_other_label": null,
+            "cell_type": "leukemic blasts",
+            "cell_line_name": null,
+            "cellosaurus_id": null,
+            "tissue": null,
+            "disease_state": "B-cell ALL",
+            "activation_state": null
+          }
+        },
+        "spans": [
+          {
+            "source": {
+              "source_type": "pubmed",
+              "source_id": "PMC:PMC12929224",
+              "pmc_id": "PMC12929224",
+              "url": "https://pubmed.ncbi.nlm.nih.gov/41731287/",
+              "title": "Inotuzumab Ozogamicin in Clinical Practice: an Overview of Efficacy, Safety, and Real-World Applications",
+              "retrieved_at": "2026-08-13T20:27:05.304052Z",
+              "content_sha256": "580e558cb667d142e1ab160cfd903573a9f90a846820aac4272d0555f6cda55b",
+              "publication_type": "review",
+              "is_retracted": false,
+              "retraction_checked_at": "2026-08-13T20:27:05.304052Z",
+              "license": "unknown"
+            },
+            "section": "abstract",
+            "figure_or_table_id": null,
+            "quote": "The cell internalizes InO, prompting enzymatic cleavage in the lysosome that releases calicheamicin, inducing double-strand DNA breaks and causing apoptosis. However, off-target effects can lead to severe adverse events such as hepatotoxicity, including veno-occlusive disease, and myelosuppression. Prior studies have supported its use in the relapsed or refractory treatment setting; however, newer studies incorporating InO in the frontline have shown promising results.",
+            "quote_sha256": "8b7afe73f51b08a313aa28570b70e52eea99ffe8a0ce257e08befee55f504e7b",
+            "char_offset": 923,
+            "normalized_source_sha256": "b6f7e520c6456bdab31faa59aaf99120831f206af23bf9c5d921b8f5bfced168"
+          }
+        ],
+        "entailment_verified": true,
+        "entailment_audit_passed": null,
+        "validation_warnings": [],
+        "duplicate_of": null
+      },
+      {
+        "evidence_id": "int_evi_06",
+        "claim": "A nanoparticle platform was validated for selection of optimal antibody-derived targeting ligands directed towards CD22, with kinetic analysis of uptake and lysosome trafficking showing differences between ligand types.",
+        "claim_type": "methodological",
+        "direction": "supports",
+        "evidence_type": "functional_assay",
+        "evidence_tier": "primary",
+        "confidence": "moderate",
+        "assay_context": {
+          "species": "human",
+          "cell_type_or_line": "B cells",
+          "permeabilized": false,
+          "fixation": "live",
+          "isoform": null,
+          "cell_context": {
+            "material_kind": "unspecified",
+            "material_kind_other_label": null,
+            "cell_type": "B cells",
+            "cell_line_name": null,
+            "cellosaurus_id": null,
+            "tissue": null,
+            "disease_state": null,
+            "activation_state": null
+          }
+        },
+        "spans": [
+          {
+            "source": {
+              "source_type": "pubmed",
+              "source_id": "PMC:PMC11138227",
+              "pmc_id": "PMC11138227",
+              "url": "https://pubmed.ncbi.nlm.nih.gov/38817250/",
+              "title": "A high-throughput lysosome trafficking assay guides ligand selection and elucidates differences in CD22-targeted nanodelivery",
+              "retrieved_at": "2026-08-13T20:27:05.312132Z",
+              "content_sha256": "d2fa5cc5d853cb8e63f54c799ba91f0f0296f8c95c5e569cd2911c02e164838f",
+              "publication_type": "primary_research",
+              "is_retracted": false,
+              "retraction_checked_at": "2026-08-13T20:27:05.312132Z",
+              "license": "unknown"
+            },
+            "section": "abstract",
+            "figure_or_table_id": null,
+            "quote": "The platform and assay was validated for selection of optimal antibody-derived targeting ligands directed towards CD22 for nanoparticle delivery.",
+            "quote_sha256": "51b22af507a2e151c97269aac73bd2fdd189fbb20a22e3bdf7c3998ed8634666",
+            "char_offset": 1103,
+            "normalized_source_sha256": "bb849ca288fffeda8d285da67619415e7979d6d8ad9d7ceb77a55b77b7370f5c"
+          }
+        ],
+        "entailment_verified": true,
+        "entailment_audit_passed": null,
+        "validation_warnings": [],
+        "duplicate_of": null
+      },
+      {
+        "evidence_id": "int_evi_07",
+        "claim": "Kinetic analysis of CD22-targeted nanoparticle uptake and lysosome trafficking revealed differences between ligand types, with the highest lysosome trafficking efficiency translating into effective DNA delivery.",
+        "claim_type": "surface_expression",
+        "direction": "supports",
+        "evidence_type": "functional_assay",
+        "evidence_tier": "primary",
+        "confidence": "moderate",
+        "assay_context": {
+          "species": "human",
+          "cell_type_or_line": "B cells",
+          "permeabilized": false,
+          "fixation": "live",
+          "isoform": null,
+          "cell_context": {
+            "material_kind": "unspecified",
+            "material_kind_other_label": null,
+            "cell_type": "B cells",
+            "cell_line_name": null,
+            "cellosaurus_id": null,
+            "tissue": null,
+            "disease_state": null,
+            "activation_state": null
+          }
+        },
+        "spans": [
+          {
+            "source": {
+              "source_type": "pubmed",
+              "source_id": "PMC:PMC11138227",
+              "pmc_id": "PMC11138227",
+              "url": "https://pubmed.ncbi.nlm.nih.gov/38817250/",
+              "title": "A high-throughput lysosome trafficking assay guides ligand selection and elucidates differences in CD22-targeted nanodelivery",
+              "retrieved_at": "2026-08-13T20:27:05.312132Z",
+              "content_sha256": "d2fa5cc5d853cb8e63f54c799ba91f0f0296f8c95c5e569cd2911c02e164838f",
+              "publication_type": "primary_research",
+              "is_retracted": false,
+              "retraction_checked_at": "2026-08-13T20:27:05.312132Z",
+              "license": "unknown"
+            },
+            "section": "abstract",
+            "figure_or_table_id": null,
+            "quote": "Kinetic analysis of uptake and lysosome trafficking indicated differences between ligand types and the ligand with the highest lysosome trafficking efficiency translated into effective DNA delivery with nanoparticles bearing the optimal ligand.",
+            "quote_sha256": "ff799401b6509b7c2340d21439d7d6d6d9c904db0409e9d6975ae8a357674cda",
+            "char_offset": 1249,
+            "normalized_source_sha256": "bb849ca288fffeda8d285da67619415e7979d6d8ad9d7ceb77a55b77b7370f5c"
+          }
+        ],
+        "entailment_verified": true,
+        "entailment_audit_passed": null,
+        "validation_warnings": [],
+        "duplicate_of": null
+      }
+    ],
+    "n_observations": 4,
+    "n_papers_discovered": 102,
+    "n_papers_fetched": 2
+  },
+  "generated_at": "2026-08-13T20:28:04.242356Z",
+  "runner_version": "internalization-literature/0.1.0"
+}

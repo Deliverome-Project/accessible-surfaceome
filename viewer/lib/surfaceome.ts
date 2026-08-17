@@ -31,6 +31,9 @@
 
 import { readFileSync } from "node:fs";
 import path from "node:path";
+// Type-only import (erased at compile) so `CatalogRow.internalization` can be
+// typed here; the runtime list is re-exported below from the client-safe module.
+import type { InternalizationGrade } from "./internalization";
 
 // Build-time snapshot cache for the two over-2MB Worker endpoints
 // (/v1/catalog ≈ 5.7 MB, /v1/benchmark/matrix ≈ 3 MB). Pre-written by
@@ -277,6 +280,13 @@ export interface DeepDiveFilters {
   tm_count_band?: TmCountBand;
 }
 
+// Internalization grade type + ordered list live in the client-safe
+// `./internalization` module (this file imports `node:fs` for the build-cache
+// snapshot, so client components must not value-import from here). Re-exported
+// for back-compat with existing `from "./surfaceome"` type imports.
+export type { InternalizationGrade };
+export { INTERNALIZATION_GRADES } from "./internalization";
+
 export interface CatalogRow {
   symbol: string;
   uniprot: string;
@@ -306,6 +316,14 @@ export interface CatalogRow {
    *  ``undefined`` here also covers the pre-Worker-deploy interim
    *  where the field hasn't shipped yet. */
   surface_bind_sites?: number;
+  /** Internalization sequence-prior grade (Worker `intern`, row_schema 8+).
+   *  A SEPARATE catalog facet — populated for the internalization cohort
+   *  independently of deep-dive coverage, so it lives at the top level (not
+   *  inside `deep_dive_filters`). ``undefined`` = gene not yet in the cohort. */
+  internalization?: InternalizationGrade;
+  /** True when a literature-track internalization grade also exists for the
+   *  gene (Worker `intern_lit`). Undefined/absent = sequence prior only. */
+  internalization_has_lit?: boolean;
   /** Slimmed deep-dive `filters` projection — present only when
    *  `deep_dive=true` AND the annotation_json parsed. See the
    *  DeepDiveFilters docstring for the field set; the catalog
@@ -542,6 +560,13 @@ function inflateCatalogRow(raw: unknown): CatalogRow {
   // either. Type-cast pass-through; the field is fully optional and
   // the catalog filter pass guards `r.deep_dive_filters` before reading.
   const ddf = (r.ddf ?? r.deep_dive_filters) as DeepDiveFilters | undefined;
+  // Worker row_schema v8+ ships an optional top-level ``intern`` field — the
+  // internalization sequence-prior SeqGrade. Present only for the
+  // internalization cohort; a SEPARATE facet (not inside ``ddf``). Snapshot
+  // fallbacks may carry the inflated `internalization` key instead.
+  const intern = (r.intern ?? r.internalization) as
+    | InternalizationGrade
+    | undefined;
   return {
     symbol: r.symbol as string,
     uniprot: (r.uniprot as string | undefined) ?? "",
@@ -552,6 +577,9 @@ function inflateCatalogRow(raw: unknown): CatalogRow {
     triage_by_model,
     deep_dive: Boolean(r.deep_dive),
     surface_bind_sites: typeof sb === "number" ? sb : undefined,
+    internalization: intern,
+    internalization_has_lit:
+      Boolean(r.intern_lit ?? r.internalization_has_lit) || undefined,
     deep_dive_filters: ddf,
   };
 }

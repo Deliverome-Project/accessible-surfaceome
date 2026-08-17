@@ -87,20 +87,45 @@ const ENDPOINTS = [
 // load. `MAX_FAIL_FRAC` is the guardrail: a high miss rate means the
 // Worker/WAF is blocking the build, and we must fail LOUD instead of
 // shipping a site full of not-found gene pages.
-// Concurrency 8 keeps request rate comfortably under the Worker's per-IP
-// limiter with margin for the Pages build environment (a local run at 12
-// saw ~27 transient 429s that the retry recovered; 8 drives that toward
-// zero). Build cost is ~60-90s once per deploy — cheap insurance against
-// a flaky build. ATTEMPTS×backoff still recovers the occasional blip.
+// Concurrency bounds how many fetches are in flight (for latency overlap); the
+// STEADY-STATE request rate is bounded separately by `ratePace()` below —
+// because concurrency alone does NOT bound req/min when per-request latency
+// varies. At concurrency 8 with no pacer the build reached ~640 req/min
+// (measured: 5130 records / 480 s) — just OVER the Worker's 600/60 s per-IP
+// general limiter — so ~2-3% of records 429'd past the retry budget and
+// tripped the fail-rate guard (a real dev/prod build failure, not a flake).
+// `ratePace()` now caps request STARTS at ~480/min (20% under the limiter),
+// which eliminates the rate-limit misses; concurrency 8 keeps latency overlap
+// so the paced record pre-fetch is still ~11 min, once per deploy.
 const RECORD_CONCURRENCY = 8;
 const RECORD_ATTEMPTS = 4;
 const RECORD_MAX_FAIL_FRAC = 0.02;
+// Minimum spacing between per-gene request STARTS across all workers. 125 ms ⇒
+// ~8 req/s ⇒ ~480 req/min, ~20% under the Worker's 600/60 s per-IP general
+// limiter. Latency-independent (unlike concurrency), so it stays under the cap
+// as the cohort grows or D1 latency shifts.
+const RECORD_MIN_INTERVAL_MS = 125;
 
 function fmtMB(bytes) {
   return `${(bytes / 1_000_000).toFixed(2)} MB`;
 }
 
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
+
+// Global request-rate pacer shared by all record-fetch workers. Hands out
+// monotonic "slots" spaced RECORD_MIN_INTERVAL_MS apart so the aggregate
+// request-START rate is bounded regardless of concurrency or per-request
+// latency — the concurrency cap alone can't do that (throughput = concurrency
+// ÷ latency, which drifts over the Worker's fixed 600/60 s per-IP limit as
+// latency varies). A worker awaits its slot before each initial fetch.
+let _nextSlotMs = 0;
+async function ratePace() {
+  const now = Date.now();
+  const slot = Math.max(now, _nextSlotMs);
+  _nextSlotMs = slot + RECORD_MIN_INTERVAL_MS;
+  const wait = slot - now;
+  if (wait > 0) await sleep(wait);
+}
 
 // Backoff schedule for transient retries. attempt 0→0.5s, 1→1.5s, 2→3s,
 // then capped at 6s.
@@ -210,13 +235,15 @@ async function snapshotRecords() {
   const notFound = []; // deterministic 404 — Worker can't serve; tolerated
   let written = 0;
   let done = 0;
-  // Fixed-size worker pool over a shared cursor — keeps at most
-  // RECORD_CONCURRENCY fetches in flight so the burst never trips the
-  // Worker's per-IP rate limiter (unlike Next's unbounded SSG fan-out).
+  // Fixed-size worker pool over a shared cursor keeps at most
+  // RECORD_CONCURRENCY fetches in flight; `ratePace()` additionally bounds the
+  // aggregate request-START rate under the Worker's per-IP limiter (unlike
+  // Next's unbounded SSG fan-out, and unlike concurrency alone).
   let cursor = 0;
   async function worker() {
     while (cursor < symbols.length) {
       const sym = symbols[cursor++];
+      await ratePace(); // stay under the Worker's 600/60s per-IP general limiter
       const r = await fetchRecordBody(`${API_BASE}/v1/genes/${sym}`);
       if (r.body) {
         await writeFile(path.join(RECORDS_DIR, `${sym}.json`), r.body);

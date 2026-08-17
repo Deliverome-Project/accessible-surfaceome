@@ -62,12 +62,20 @@ NCBI_PUBMED_EFETCH = "https://eutils.ncbi.nlm.nih.gov/entrez/eutils/efetch.fcgi"
 
 
 def europepmc_search(
-    *, http: CachedHTTP, query: str, page_size: int = DEFAULT_PAGE_SIZE
+    *,
+    http: CachedHTTP,
+    query: str,
+    page_size: int = DEFAULT_PAGE_SIZE,
+    sort: str | None = None,
 ) -> dict[str, Any]:
     """Issue one search request against Europe PMC's REST API.
 
     Returns the raw JSON payload (the caller decodes ``resultList.result``
     into Papers via :func:`paper_from_europepmc`).
+
+    ``sort`` maps to Europe PMC's ``sort`` param (e.g. ``"CITED desc"`` to rank
+    by citation count, ``"P_PDATE_D desc"`` by date). Omit for the default
+    relevance ranking.
     """
     params = {
         "query": query,
@@ -75,6 +83,8 @@ def europepmc_search(
         "pageSize": str(page_size),
         "resultType": "core",
     }
+    if sort:
+        params["sort"] = sort
     return http.get_json(
         EUROPEPMC_SEARCH, source="europepmc", ttl_days=EUROPEPMC_TTL, params=params
     )

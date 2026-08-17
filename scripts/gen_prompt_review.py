@@ -826,9 +826,11 @@ def git(*a: str) -> str:
     return subprocess.run(["git", *a], cwd=REPO, capture_output=True, text=True).stdout
 
 
-# Wholesale-removed deprecated v1 Managed-Agent prompts — excluded so the
-# review stays focused on the live v2 deep-dive prompts the colleague works on.
-EXCLUDE = ("biology_compiler/", "surface_evidence_compiler/")
+# Excluded so the review stays focused on the live v2 deep-dive prompts the
+# colleague works on: the wholesale-removed deprecated v1 Managed-Agent prompts,
+# and the `internalization/` pass — a separate, independently-versioned agent
+# (excluded from the deep-dive `_version_guard` too) that has its own review path.
+EXCLUDE = ("biology_compiler/", "surface_evidence_compiler/", "internalization/")
 
 
 def changed():

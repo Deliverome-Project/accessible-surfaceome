@@ -796,3 +796,44 @@ CREATE INDEX IF NOT EXISTS idx_czi_cellxgene_enrichment_hgnc    ON czi_cellxgene
 -- family / tissue" lookups without scanning the full enrichment_json.
 CREATE INDEX IF NOT EXISTS idx_czi_cellxgene_cell_family_class  ON czi_cellxgene_enrichment (cell_family_class);
 CREATE INDEX IF NOT EXISTS idx_czi_cellxgene_tissue_organ_class ON czi_cellxgene_enrichment (tissue_organ_class);
+
+-- ---------------------------------------------------------------------------
+-- surface_internalization — the standalone internalization pass (separate from
+-- the deep-dive surface_annotation). One row per (gene_symbol, schema_version):
+-- flat, queryable projections of the sequence (model-prior) track plus the full
+-- InternalizationRecord JSON. Canonical DDL lives in
+-- cloudflare/d1_internalization_schema.sql + cloud/internalization.py::DDL;
+-- mirrored here so the public-schema drift guard (tests/test_d1_schema_in_sync)
+-- stays green and re-provisioning reproduces the live query plans. The Worker's
+-- /v1/catalog LEFT-JOINs seq_canonical_grade into the top-level `intern` field
+-- (row_schema 8).
+-- ---------------------------------------------------------------------------
+CREATE TABLE IF NOT EXISTS surface_internalization (
+  gene_symbol                  TEXT NOT NULL,
+  schema_version               TEXT NOT NULL,
+  hgnc_id                      TEXT,
+  uniprot_acc                  TEXT,
+  runner_version               TEXT,
+  seq_model                    TEXT,
+  seq_prompt_sha               TEXT,
+  seq_prompt_version           TEXT,
+  seq_scope                    TEXT,
+  seq_overall_grade            TEXT,
+  seq_overall_confidence       TEXT,
+  seq_canonical_grade          TEXT,
+  seq_canonical_confidence     TEXT,
+  n_seq_motifs                 INTEGER,
+  n_seq_functional_motifs      INTEGER,
+  has_literature               INTEGER NOT NULL DEFAULT 0,
+  lit_overall_grade            TEXT,
+  lit_n_observations           INTEGER,
+  lit_n_modulator_observations INTEGER,
+  record_json                  TEXT NOT NULL,
+  generated_at                 TEXT,
+  updated_at                   TEXT,
+  PRIMARY KEY (gene_symbol, schema_version)
+);
+
+CREATE INDEX IF NOT EXISTS idx_surface_internalization_symbol    ON surface_internalization (gene_symbol);
+CREATE INDEX IF NOT EXISTS idx_surface_internalization_seq_grade ON surface_internalization (seq_overall_grade);
+CREATE INDEX IF NOT EXISTS idx_surface_internalization_has_lit   ON surface_internalization (has_literature);

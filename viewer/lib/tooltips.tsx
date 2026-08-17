@@ -508,6 +508,35 @@ export const tooltips: Record<string, ReactNode> = {
     </>
   ),
 
+  catalog_internalization: (
+    <>
+      <strong>Internalization</strong> — how readily this protein is taken
+      from the cell surface into the cell, graded <em>blind</em> from its
+      amino-acid sequence + extracellular/cytoplasmic (E/C) topology alone by
+      the opus-5 sequence prior (no protein identity, no literature). Five-point
+      scale: very&nbsp;high → high → moderate → low → very&nbsp;low, plus{" "}
+      <em>unknown</em>. It reads intrinsic / basal endocytic propensity
+      (constitutive ± native-ligand) — <strong>not</strong> antibody- or
+      ADC-induced uptake — and is a separate signal from the deep-dive surface
+      verdict. Populated for the internalization cohort; a dash means not yet
+      scored.
+    </>
+  ),
+
+  catalog_internalization_group: (
+    <>
+      <strong>Internalization sequence prior</strong> — a standalone pass,
+      separate from the triage / DB-vote and deep-dive filters. A frontier
+      model grades each protein&apos;s intrinsic endocytic propensity from
+      sequence + E/C topology alone, blind to identity: it locates the
+      cytoplasmic regions and weighs canonical sorting motifs (YXX&Phi;, NPXY,
+      dileucine) against the topology, while allowing for non-motif routes
+      (bulk-membrane flow, raft / clathrin-independent uptake). Filter by grade
+      (very&nbsp;high … very&nbsp;low, or unknown); selecting several grades
+      matches any of them.
+    </>
+  ),
+
   // --------------------------------------------------------------
   // Catalog deep-dive filter chips — reused FiltersCard tooltips
   // where one exists, plus a few new ones for fields the gene-page

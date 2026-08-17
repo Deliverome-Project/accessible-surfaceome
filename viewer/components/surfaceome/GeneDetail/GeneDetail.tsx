@@ -7,6 +7,7 @@ import { FeedbackModal } from "../../FeedbackModal/FeedbackModal";
 import { Reveal } from "../../Reveal/Reveal";
 import { Shell } from "../../Shell/Shell";
 import { AccessibilityRisksCard } from "../AccessibilityRisksCard/AccessibilityRisksCard";
+import { InternalizationCard } from "../InternalizationCard/InternalizationCard";
 import { BenchmarkRow } from "../BenchmarkRow/BenchmarkRow";
 import { BiologicalContextCard } from "../BiologicalContextCard/BiologicalContextCard";
 import { CommunityNotesCard } from "../CommunityNotesCard/CommunityNotesCard";
@@ -144,6 +145,11 @@ export function GeneDetail({
       kind: "risks",
       label: FEATURE_TAB_LABEL.risks,
       render: (n) => <AccessibilityRisksCard rec={rec} n={n} />,
+    },
+    {
+      kind: "internalization",
+      label: "Internalization",
+      render: (n) => <InternalizationCard symbol={rec.gene.hgnc_symbol} n={n} />,
     },
     // SURFACE-Bind section only when the protein has at least one
     // scored patch. Two empty cases are filtered out so the AnchorNav
