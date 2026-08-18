@@ -11,18 +11,6 @@ def test_query_expands_aliases_and_phrase_quotes():
     assert " AND " in q2  # (aliases) AND (methods)
 
 
-def test_source_tier_ranks_papers_over_patents_over_vendor():
-    assert ld.source_tier("https://www.ncbi.nlm.nih.gov/pmc/articles/PMC5603536/") == "paper"
-    assert ld.source_tier("https://www.nature.com/articles/s41467-017-00646-w") == "paper"
-    assert ld.source_tier("https://www.biorxiv.org/content/10.1101/2025.06.08.658482v1") == "paper"
-    assert ld.source_tier("https://image-ppubs.uspto.gov/print/downloadPdf/9981047") == "patent"
-    assert ld.source_tier("https://www.origene.com/catalog/cdna-clones/rc204499") == "vendor"
-    assert ld.source_tier("https://www.alomone.com/p/anti-kv11-1-herg/APC-109") == "vendor"
-    assert ld.source_tier("https://some-random-lab.edu/protocol") == "other"
-    # rank order: paper best, vendor worst
-    ranks = [ld.SOURCE_TIER_RANK[t] for t in ("paper", "patent", "other", "vendor")]
-    assert ranks == sorted(ranks) and ranks[0] < ranks[-1]
-
 
 def test_validation_levels_rank_surface_and_function_first():
     assert VALIDATION_LEVELS[0] == "surface_and_function"

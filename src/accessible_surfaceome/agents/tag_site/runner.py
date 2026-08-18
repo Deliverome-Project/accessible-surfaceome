@@ -21,6 +21,7 @@ from typing import Any
 from anthropic import Anthropic
 
 from accessible_surfaceome.agents._support.client import get_client
+from accessible_surfaceome.agents._support.web_literature import web_discover_papers
 from accessible_surfaceome.agents.surfaceome_v2.builders._common import call_builder
 from accessible_surfaceome.tools._shared.http import CachedHTTP, open_default_client
 from accessible_surfaceome.tools._shared.europepmc import europepmc_bulk_by_pmid
@@ -37,17 +38,15 @@ from .literature_discovery import (
 from .prompt import SYSTEM_PROMPT, build_user_prompt, keep_validated_sites
 from .schema import VALIDATION_LEVELS, VALIDATION_RANK, TagSiteProposal, TagSiteResult
 
-# Same server-side web_search recipe the methods builder uses (see
-# surfaceome_v2/builders/methods.py). call_builder degrades to a cite-only call
-# if web_search is not enabled on the account.
-_WEB_SEARCH_TOOL: list[dict[str, Any]] = [
-    {
-        "type": "web_search_20250305",
-        "name": "web_search",
-        "max_uses": 8,
-        "cache_control": {"type": "ephemeral"},
-    }
-]
+# web_search discovery is delegated to the shared ``web_literature`` module
+# (agents/_support), so the tag-site and internalization tracks share ONE
+# implementation. This is the tag-site topic phrase passed to it.
+_TAG_SITE_INTENT = (
+    "epitope / peptide tag insertion for surface display — ecto-tagging and "
+    "knock-in constructs that place a tag (HA, FLAG, Myc, ALFA, HiBiT, SpyTag, "
+    "bungarotoxin-binding site, snorkel) in an extracellular loop or terminus, "
+    "and their surface-display / functional validation"
+)
 _MAX_PROMPT_PAPERS = 25
 _MAX_ABSTRACT_CHARS = 700
 _MAX_FULLTEXT_CHARS = 1400
@@ -211,11 +210,25 @@ def run_tag_site_agent(
     try:
         ri = _retraction_from_http(http)  # best-effort Retraction Watch index
     except Exception:  # noqa: BLE001 - never block on the retraction fetch
-        ri = None
+        ri = _empty_retraction()
 
     papers = discover_tag_site_papers(
         http=http, gene_symbol=gene_symbol, aliases=aliases, retraction_index=ri
     )
+    # web_search discovery complement (shared module, same as internalization): one
+    # web_search pass whose cited PMIDs/DOIs are HYDRATED into real Papers and unioned
+    # into the corpus (deterministic pool wins on collision). Web hits thus flow through
+    # the SAME triage -> full-text -> entailment path, so the structured call needs NO
+    # inline web_search tool and every citation stays id-anchored + verifiable.
+    for wp in web_discover_papers(
+        client,
+        intent=_TAG_SITE_INTENT,
+        gene_names=[protein_name, *aliases],
+        http=http,
+        retraction_index=ri,
+        usage_sink=usage_sink,
+    ):
+        papers.setdefault(paper_source_id(wp), wp)
     # Relevance triage: fetch full text for the most on-topic papers first.
     ranked = dict(sorted(papers.items(), key=lambda kv: -_tag_relevance(kv[1])))
     fulltext = fetch_fulltext_sections(
@@ -234,7 +247,6 @@ def run_tag_site_agent(
         schema=TagSiteResult,
         usage_sink=usage_sink,
         label=f"tag_site:{gene_symbol}",
-        tools=_WEB_SEARCH_TOOL,
     )
     if result is None:
         return TagSiteResult(

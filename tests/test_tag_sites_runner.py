@@ -61,11 +61,18 @@ def test_format_candidate_papers():
 
 def test_run_tag_site_agent_composes_discovery_and_builder(monkeypatch):
     monkeypatch.setattr(R, "discover_tag_site_papers", lambda **k: {})
+    # web_search discovery is delegated to the shared module; a web-discovered paper
+    # unions into the corpus and reaches the prompt as a CANDIDATE PAPER.
+    monkeypatch.setattr(
+        R, "web_discover_papers",
+        lambda *a, **k: [_paper(pmid=55501, title="Web-found ALFA knock-in",
+                                abstract="ALFA inserted in the ectodomain.", year=2024)],
+    )
     captured = {}
 
     def fake_call_builder(client, **k):
         captured["label"] = k["label"]
-        captured["has_web_tool"] = any(t.get("name") == "web_search" for t in k["tools"])
+        captured["tools"] = k.get("tools")  # no inline web_search tool now
         captured["prompt"] = k["user_prompt"]
         return _result([_site(2, val="surface_only"), _site(1, val="not_measured", res=200)])
 
@@ -76,14 +83,16 @@ def test_run_tag_site_agent_composes_discovery_and_builder(monkeypatch):
         client=object(), http=object(),
     )
     assert captured["label"] == "tag_site:X"
-    assert captured["has_web_tool"] is True
+    assert captured["tools"] is None  # discovery moved upfront -> no inline web tool
     assert "CANDIDATE PAPERS" in captured["prompt"]
+    assert "PMID 55501" in captured["prompt"]  # the web-discovered paper is a candidate
     # surface_only ranks above not_measured
     assert out.sites[0].validation_level == "surface_only"
 
 
 def test_run_returns_empty_on_builder_failure(monkeypatch):
     monkeypatch.setattr(R, "discover_tag_site_papers", lambda **k: {})
+    monkeypatch.setattr(R, "web_discover_papers", lambda *a, **k: [])
     monkeypatch.setattr(R, "call_builder", lambda client, **k: None)
     out = R.run_tag_site_agent(
         gene_symbol="X", protein_name="X", uniprot_accession="Q0", aliases=[],

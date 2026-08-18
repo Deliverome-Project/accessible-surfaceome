@@ -23,7 +23,6 @@ co-tested control (union 11/11 vs web 10/11 vs lit 9/11).
 """
 from __future__ import annotations
 
-from urllib.parse import urlparse
 
 from accessible_surfaceome.tools._shared.europepmc import (
     europepmc_bulk_by_pmid,
@@ -120,39 +119,11 @@ def discover_tag_site_papers(
     return discovered
 
 
-# --- source tiering for the web_search complement ---------------------------
-# We RANK web results, we do NOT filter them: vendor pages are kept as the lowest
-# tier (they still confirm a construct exists), patents are mid, papers/preprints
-# lead. This is per the user's rule: prioritize papers, keep patents/vendor.
-_PAPER_HOSTS = (
-    "pubmed", "ncbi.nlm.nih.gov", "biorxiv.org", "medrxiv.org", "nature.com",
-    "science.org", "cell.com", "elifesciences.org", "sciencedirect.com", "wiley.com",
-    "springer.com", "embopress.org", "jbc.org", "plos.org", "frontiersin.org",
-    "rupress.org", "pnas.org", "oup.com", "tandfonline.com", "mdpi.com",
-    "biochemj.org", "portlandpress.com", "doi.org", "researchgate.net", "researchsquare.com",
-)
-_PATENT_HOSTS = ("uspto.gov", "patents.google.com", "patentscope", "espacenet", "freepatentsonline")
-_VENDOR_HOSTS = (
-    "origene.com", "dnasu.org", "sigmaaldrich.com", "thermofisher.com", "alomone.com",
-    "abcam.com", "genecards.org", "multispaninc.com", "synthelis.com",
-    "atlasgeneticsoncology.org", "labome.com", "7tmantibodies.com", "rcsb.org",
-)
-
+# Source-tier vocabulary for a site's cited evidence (the model sets ``source_tier``
+# on each proposal; ``runner._sort_key`` ranks by it). URL-based web tiering now
+# lives in the shared ``web_literature.source_tier`` — web hits are hydrated to real
+# id-anchored Papers there, so this module no longer classifies raw URLs.
 SOURCE_TIERS = ("paper", "patent", "other", "vendor")
-SOURCE_TIER_RANK = {t: i for i, t in enumerate(SOURCE_TIERS)}
-
-
-def source_tier(url: str) -> str:
-    """Classify a web_search result URL: 'paper' > 'patent' > 'other' > 'vendor'.
-    Used to RANK the web_search complement (papers first), never to drop results."""
-    host = (urlparse(url).hostname or url).lower()
-    if any(h in host for h in _PAPER_HOSTS):
-        return "paper"
-    if any(h in host for h in _PATENT_HOSTS):
-        return "patent"
-    if any(h in host for h in _VENDOR_HOSTS):
-        return "vendor"
-    return "other"
 
 
 _MAX_FULLTEXT_PAPERS = 8
