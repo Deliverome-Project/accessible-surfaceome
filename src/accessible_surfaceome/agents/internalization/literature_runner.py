@@ -7,8 +7,12 @@ from __future__ import annotations
 import re
 from datetime import UTC, datetime
 from pathlib import Path
+from typing import cast
+
+from anthropic import Anthropic
 
 from accessible_surfaceome.agents._support.client import get_client
+from accessible_surfaceome.agents._support.web_literature import web_discover_papers
 from accessible_surfaceome.agents.internalization.ids import resolve_hgnc_id
 from accessible_surfaceome.agents.internalization.literature_discovery import (
     discover_internalization_papers,
@@ -40,6 +44,12 @@ from accessible_surfaceome.tools._shared.retraction_watch import empty as empty_
 from accessible_surfaceome.tools.gene_lookup import resolve_by_hgnc_id
 
 LIT_RUNNER_VERSION = "internalization-literature/0.1.0"
+# Topic phrase for the shared web_search discovery complement (kept gene-agnostic
+# — the gene's own names are passed separately).
+_WEB_INTENT = (
+    "internalization / endocytosis / receptor-mediated uptake of this cell-surface "
+    "protein — rate, kinetics, mechanism, or trafficking measurements"
+)
 _DEFAULT_ANNOTATIONS_DIR = REPO_ROOT / "data" / "annotations" / "internalization"
 
 
@@ -51,6 +61,7 @@ def annotate_literature(
     persist: bool = True,
     annotations_dir: Path | None = None,
     model_priors: list[ModelPriorTrack] | None = None,
+    use_web_search: bool = False,
 ) -> InternalizationRecord:
     client = client or get_client()
     http = http or open_default_client()
@@ -68,6 +79,31 @@ def annotate_literature(
     discovered = discover_internalization_papers(
         bundle, http=http, retraction_index=retraction
     )
+    if use_web_search:
+        # Shared web_search complement — surfaces recent preprints + vocabulary-
+        # mismatch papers the abstract index misses (e.g. a methods preprint that
+        # studies this protein as one example cargo). Hydrated to real Papers, so
+        # they flow through the SAME triage / full-text-fetch / span-verify path;
+        # a no-op if web_search isn't enabled on the account.
+        web_names = [
+            n
+            for n in (
+                bundle.hgnc_symbol,
+                bundle.approved_name,  # str | None
+                *bundle.aliases,
+                *bundle.alias_names,
+                *bundle.previous_symbols,
+            )
+            if n
+        ]
+        for paper in web_discover_papers(
+            cast(Anthropic, client),
+            intent=_WEB_INTENT,
+            gene_names=web_names,
+            http=http,
+            retraction_index=retraction,
+        ):
+            discovered.setdefault(paper_source_id(paper), paper)
     papers_by_id = {paper_source_id(p): p for p in discovered.values()}
 
     outcomes = triage_internalization_abstracts(

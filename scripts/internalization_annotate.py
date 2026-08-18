@@ -53,6 +53,15 @@ def main(argv: list[str] | None = None) -> int:
         action="store_true",
         help="Grade every isoform (default: canonical only, to cut input cost).",
     )
+    parser.add_argument(
+        "--no-web-search",
+        dest="web_search",
+        action="store_false",
+        help="Disable the web_search discovery complement for the literature "
+        "track (on by default — surfaces recent preprints / vocabulary-mismatch "
+        "papers the EuropePMC+PubTator index misses; degrades to a no-op if "
+        "web_search isn't enabled on the account).",
+    )
     args = parser.parse_args(argv)
 
     priors = None
@@ -70,7 +79,12 @@ def main(argv: list[str] | None = None) -> int:
         record = mp
 
     if args.track in ("literature", "both"):
-        record = annotate_literature(args.gene, persist=args.persist, model_priors=priors)
+        record = annotate_literature(
+            args.gene,
+            persist=args.persist,
+            model_priors=priors,
+            use_web_search=args.web_search,
+        )
 
     assert record is not None
     print(f"\n{record.gene_symbol}  ({record.uniprot_acc}, {record.hgnc_id})")
