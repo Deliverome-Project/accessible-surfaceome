@@ -77,6 +77,7 @@ from ._shared.models import (
     Paper,
     PaperSection,
     PaperSection_,
+    paper_source_id,
 )
 from ._shared.pubtator import build_gene_entity_query, pubtator_search
 from ._shared.retraction_watch import RetractionIndex, empty as _empty_retraction_index
@@ -943,13 +944,16 @@ def _union_by_pmid(*paper_lists: list[Paper]) -> list[Paper]:
     Order is preserved: papers from earlier lists win, so callers pass
     the higher-precision source (PubTator) first.
     """
-    seen: set[int] = set()
+    # Dedup on the canonical source id (PMC > PMID > DOI), not the raw PMID, so
+    # a DOI-only preprint dedups on its DOI instead of colliding on a None key.
+    seen: set[str] = set()
     out: list[Paper] = []
     for papers in paper_lists:
         for paper in papers:
-            if paper.pmid in seen:
+            sid = paper_source_id(paper)
+            if sid in seen:
                 continue
-            seen.add(paper.pmid)
+            seen.add(sid)
             out.append(paper)
     return out
 

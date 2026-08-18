@@ -17,8 +17,9 @@ class _FakeMessages:
 
     def create(self, **kw):
         content = kw["messages"][0]["content"]
-        _m = re.search(r"PMID: (\d+)", content)
-        assert _m is not None  # test fixtures always embed a PMID
+        # The prompt embeds the canonical source id, e.g. "Source: PMID:1".
+        _m = re.search(r"PMID:(\d+)", content)
+        assert _m is not None  # test fixtures always embed an integer-PMID source
         pmid = int(_m.group(1))
         self.seen_by_pmid[pmid] = content
         return SimpleNamespace(

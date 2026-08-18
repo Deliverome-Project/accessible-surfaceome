@@ -121,7 +121,8 @@ def europepmc_bulk_by_pmid(
             paper = paper_from_europepmc(
                 record, retraction_index=retraction_index, topic_tagger=topic_tagger
             )
-            papers_by_pmid[paper.pmid] = paper
+            if paper.pmid is not None:
+                papers_by_pmid[paper.pmid] = paper
     except Exception as exc:  # noqa: BLE001
         logger.warning(
             "Europe PMC PMID batch lookup failed for %d PMIDs; falling back to NCBI: %s",
@@ -137,7 +138,8 @@ def europepmc_bulk_by_pmid(
             retraction_index=retraction_index,
             topic_tagger=topic_tagger,
         ):
-            papers_by_pmid.setdefault(paper.pmid, paper)
+            if paper.pmid is not None:
+                papers_by_pmid.setdefault(paper.pmid, paper)
 
     return [papers_by_pmid[p] for p in ordered_pmids if p in papers_by_pmid]
 
@@ -464,7 +466,7 @@ def _ncbi_pubmed_fetch_by_pmids(
             )
         except LookupError as exc:
             logger.info("Skipping malformed NCBI PubMed article record: %s", exc)
-    by_pmid = {p.pmid: p for p in papers}
+    by_pmid = {p.pmid: p for p in papers if p.pmid is not None}
     return [by_pmid[p] for p in clean_pmids if p in by_pmid]
 
 
@@ -499,17 +501,32 @@ def paper_from_europepmc(
     *,
     retraction_index: RetractionIndex,
     topic_tagger: "TopicTagger | None" = None,
+    include_preprints: bool = False,
 ) -> Paper:
+    # A preprint (Europe PMC ``source == "PPR"``) has no numeric PMID — its id
+    # is a preprint key like ``PPR1220047``. By default we still skip those (the
+    # historical PMID-keyed behavior; the deep-dive stays PMID-only until a
+    # canary validates preprints). ``include_preprints=True`` keeps them,
+    # anchored on their DOI (the DataCite/OA fetch chain resolves the full text,
+    # so span-verification is unchanged) — only when a DOI is present to anchor.
     pmid_raw = record.get("pmid") or record.get("id")
-    if pmid_raw is None:
-        raise LookupError("Europe PMC record missing pmid/id")
-    try:
-        pmid = int(pmid_raw)
-    except (TypeError, ValueError) as exc:
-        raise LookupError(f"non-integer PMID in Europe PMC record: {pmid_raw!r}") from exc
+    doi = record.get("doi") or None
+    is_preprint = record.get("source") == "PPR"
+    pmid: int | None = None
+    if pmid_raw is not None:
+        try:
+            pmid = int(pmid_raw)
+        except (TypeError, ValueError):
+            pmid = None  # non-integer id (preprint key) — fall through to the gate
+    if pmid is None:
+        if not (include_preprints and doi):
+            raise LookupError(
+                f"Europe PMC record has no numeric PMID (id={pmid_raw!r}, "
+                f"doi={doi!r}, preprint={is_preprint})"
+            )
+        # Kept as a DOI-anchored preprint.
 
     pmcid = record.get("pmcid") or None
-    doi = record.get("doi") or None
     year = _safe_int(record.get("pubYear"))
     title = (record.get("title") or "").rstrip(".")
     abstract = record.get("abstractText") or None
@@ -534,6 +551,7 @@ def paper_from_europepmc(
         pmid=pmid,
         pmc_id=pmcid,
         doi=doi,
+        is_preprint=is_preprint,
         year=year,
         journal=journal,
         title=title,
@@ -554,13 +572,15 @@ def papers_from_europepmc_records(
     retraction_index: RetractionIndex,
     topic_tagger: "TopicTagger | None" = None,
     context: str,
+    include_preprints: bool = False,
 ) -> list[Paper]:
-    """Convert a Europe PMC result page, skipping records without PMIDs.
+    """Convert a Europe PMC result page.
 
-    Discovery searches intentionally include ``SRC:PPR`` for recall, but PPR
-    records use Europe PMC preprint IDs such as ``PPR123`` rather than numeric
-    PMIDs. The current downstream ``Paper`` contract is PMID-keyed, so one PPR
-    hit must not poison the whole result page and force NCBI fallback.
+    Discovery searches intentionally include ``SRC:PPR`` for recall. By default
+    (``include_preprints=False``) PPR records — Europe PMC preprint IDs like
+    ``PPR123`` with no numeric PMID — are skipped so one preprint hit can't
+    poison the page. Pass ``include_preprints=True`` to keep DOI-anchored
+    preprints (the caller opts in; the deep-dive stays PMID-only for now).
     """
     papers: list[Paper] = []
     skipped = 0
@@ -571,6 +591,7 @@ def papers_from_europepmc_records(
                     record,
                     retraction_index=retraction_index,
                     topic_tagger=topic_tagger,
+                    include_preprints=include_preprints,
                 )
             )
         except LookupError as exc:

@@ -104,7 +104,13 @@ def test_kinetics_pass_uses_protein_name_not_noisy_short_symbols(monkeypatch):
 
 
 def _paper(pmid):
-    return SimpleNamespace(pmid=pmid)
+    # pmc_id/doi present (None) so paper_source_id() can read them.
+    return SimpleNamespace(pmid=pmid, pmc_id=None, doi=None, is_preprint=False)
+
+
+def _preprint(doi):
+    # A DOI-only preprint: no PMID, anchored on its DOI.
+    return SimpleNamespace(pmid=None, pmc_id=None, doi=doi, is_preprint=True)
 
 
 def test_discovery_unions_and_dedupes_by_pmid(monkeypatch):
@@ -118,7 +124,7 @@ def test_discovery_unions_and_dedupes_by_pmid(monkeypatch):
     monkeypatch.setattr(
         mod,
         "paper_from_europepmc",
-        lambda rec, *, retraction_index, topic_tagger=None: _paper(int(rec["pmid"])),
+        lambda rec, **kw: _paper(int(rec["pmid"])),
     )
     monkeypatch.setattr(
         mod,
@@ -140,25 +146,39 @@ def test_discovery_unions_and_dedupes_by_pmid(monkeypatch):
     out = discover_internalization_papers(
         cast(Any, bundle), http=cast(Any, object()), retraction_index=cast(Any, object())
     )
-    assert set(out) == {1, 2, 3}  # deduped: 2 came from both sources
+    # Keyed on paper_source_id (PMC>PMID>DOI); 2 came from both sources → deduped.
+    assert set(out) == {"PMID:1", "PMID:2", "PMID:3"}
 
 
-def test_discovery_skips_records_with_non_integer_pmid(monkeypatch):
-    # EuropePMC returns preprint records whose PMID is non-integer (e.g.
-    # "PPR1220047"); paper_from_europepmc raises LookupError on those. One bad
-    # record must be skipped, not abort the whole discovery.
+def test_discovery_keeps_doi_anchored_preprints(monkeypatch):
+    # EuropePMC returns preprint (SRC:PPR) records with a non-integer id and a
+    # DOI. The internalization discovery opts into preprints
+    # (include_preprints=True), so a DOI-anchored preprint is KEPT (keyed on its
+    # DOI), alongside the integer-PMID record. A no-DOI record still raises
+    # LookupError and is skipped without aborting the batch.
     monkeypatch.setattr(
         mod,
         "europepmc_search",
         lambda *, http, query, page_size=25, sort=None: {
-            "resultList": {"result": [{"pmid": "PPR1220047"}, {"pmid": "5"}]}
+            "resultList": {
+                "result": [
+                    {"pmid": "PPR1220047", "doi": "10.1101/2025.06.08.658482"},
+                    {"pmid": None},  # no id, no doi → skipped
+                    {"pmid": "5"},
+                ]
+            }
         },
     )
 
-    def _coerce(rec, *, retraction_index, topic_tagger=None):
-        if not rec["pmid"].isdigit():
-            raise LookupError(f"non-integer PMID: {rec['pmid']!r}")
-        return _paper(int(rec["pmid"]))
+    def _coerce(rec, *, retraction_index, include_preprints=False, topic_tagger=None):
+        raw = rec.get("pmid")
+        if raw is not None and str(raw).isdigit():
+            return _paper(int(raw))
+        # non-integer / missing id: keep only as a DOI-anchored preprint when
+        # the caller opted in (mirrors the real paper_from_europepmc gate).
+        if include_preprints and rec.get("doi"):
+            return _preprint(rec["doi"])
+        raise LookupError(f"no numeric PMID: {raw!r}")
 
     monkeypatch.setattr(mod, "paper_from_europepmc", _coerce)
     monkeypatch.setattr(
@@ -177,4 +197,5 @@ def test_discovery_skips_records_with_non_integer_pmid(monkeypatch):
     out = discover_internalization_papers(
         cast(Any, bundle), http=cast(Any, object()), retraction_index=cast(Any, object())
     )
-    assert set(out) == {5}  # preprint record skipped, integer-PMID record kept
+    # Preprint kept (DOI key), integer-PMID kept, no-DOI record skipped.
+    assert set(out) == {"DOI:10.1101/2025.06.08.658482", "PMID:5"}

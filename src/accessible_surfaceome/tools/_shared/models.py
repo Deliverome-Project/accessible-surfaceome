@@ -408,9 +408,17 @@ class Paper(BaseModel):
 
     model_config = ConfigDict(extra="forbid")
 
-    pmid: int
+    # ``pmid`` is optional so a DOI-only preprint (bioRxiv/medRxiv, no numeric
+    # PMID) can be represented and anchored on its DOI. Callers must NOT assume
+    # it is present — key papers on ``paper_source_id`` (PMC > PMID > DOI), and
+    # build citation source ids the same way, never ``f"PMID:{paper.pmid}"``.
+    pmid: int | None = None
     pmc_id: str | None = None
     doi: str | None = None
+    # True for a preprint (Europe PMC ``source == "PPR"``). Lets the grader
+    # down-weight un-peer-reviewed evidence and the UI label it; also the gate
+    # for whether a pipeline ingests preprints at all (deep-dive opt-in).
+    is_preprint: bool = False
     year: int | None = None
     journal: str | None = None
     title: str
@@ -455,6 +463,28 @@ LiteratureMode = Literal[
     "fetch_fulltext",
     "recent_corpus",
 ]
+
+
+def paper_source_id(paper: "Paper") -> str:
+    """Canonical pool/source key for a paper: ``PMC:<id>`` > ``PMID:<id>`` >
+    ``DOI:<doi>`` > ``UNKNOWN``.
+
+    THE shared keying helper. The clip pool's ``source_id``, the triage
+    outcome's ``paper_id``, ``harvested_paper``, and every discovery dedup agree
+    on it, so a paper joins cleanly across discovery → triage → body pool →
+    evidence regardless of which identifier it carries. DOI is the third tier so
+    a DOI-only preprint (no PMID/PMC) still gets a stable, distinct key instead
+    of colliding on ``UNKNOWN``. Lives here (next to ``Paper``, the lowest
+    layer) so the shared ``europepmc`` converter can key on it too — the reason
+    it moved out of ``plan_trim_select.abstract_triage`` (which imports upward
+    from this module, so it could not be the home without a cycle)."""
+    if paper.pmc_id:
+        return f"PMC:{paper.pmc_id}"
+    if paper.pmid:
+        return f"PMID:{paper.pmid}"
+    if paper.doi:
+        return f"DOI:{paper.doi}"
+    return "UNKNOWN"
 
 
 class LiteraturePack(BaseModel):
