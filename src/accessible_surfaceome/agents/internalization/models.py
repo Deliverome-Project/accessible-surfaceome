@@ -31,7 +31,10 @@ MODEL_PRIOR_PROMPT_VERSION = "0.2.0"
 # 0.1.0: initial provenance stamp (triage + select + grade + web_search discovery).
 # 0.1.1: web_discover envelope-tolerance fix (extra="ignore") — folds the web
 #        system prompt into lit_prompt_sha so buggy-pass records re-run.
-LIT_PROMPT_VERSION = "0.1.1"
+# 0.1.2: web-discovery recall (multi-search prompt) + bioRxiv-DOI hydration
+#        fallback so EuropePMC-unindexed preprints (e.g. a methods/screen paper
+#        that studies the protein without naming it) are caught, not dropped.
+LIT_PROMPT_VERSION = "0.1.2"
 
 Grade = Literal["high", "moderate", "low", "no", "unknown"]
 GradeConfidence = Literal["high", "moderate", "low"]

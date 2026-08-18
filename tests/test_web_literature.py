@@ -39,7 +39,11 @@ def test_discovery_result_tolerates_model_envelope():
                 "reason": "measures uptake",
                 "note": "rate paper",
             },
-            {"pmid": None, "doi": "10.1101/2026.01.01.123456", "note": "recent preprint"},
+            {
+                "pmid": None,
+                "doi": "10.1101/2026.01.01.123456",
+                "note": "recent preprint",
+            },
         ],
     }
     res = wl.WebDiscoveryResult.model_validate(payload)
@@ -69,13 +73,19 @@ def test_web_discover_hydrates_pmid_and_doi_and_dedups(monkeypatch):
     monkeypatch.setattr(
         wl,
         "europepmc_search",
-        lambda **k: {"resultList": {"result": [{"id": "PPR1", "doi": "10.1101/2025.06.08.658482"}]}},
+        lambda **k: {
+            "resultList": {
+                "result": [{"id": "PPR1", "doi": "10.1101/2025.06.08.658482"}]
+            }
+        },
     )
     # ...which paper_from_europepmc (include_preprints=True) turns into a DOI-anchored preprint Paper.
     monkeypatch.setattr(
         wl,
         "paper_from_europepmc",
-        lambda rec, **k: _paper(pmid=None, doi=rec["doi"], title="preprint", is_preprint=True),
+        lambda rec, **k: _paper(
+            pmid=None, doi=rec["doi"], title="preprint", is_preprint=True
+        ),
     )
 
     out = wl.web_discover_papers(
@@ -90,6 +100,37 @@ def test_web_discover_hydrates_pmid_and_doi_and_dedups(monkeypatch):
     ids = {p.pmid for p in out}
     assert 111 in ids and None in ids  # the PMID paper + the DOI-only preprint
     assert any(p.is_preprint and p.doi for p in out)
+
+
+def test_hydrate_falls_back_to_biorxiv_when_europepmc_misses(monkeypatch):
+    # A DOI-only preprint EuropePMC hasn't indexed: the DOI search returns nothing,
+    # and the bioRxiv-DOI hydration fallback recovers it (the EndoNB/TMEM123 case).
+    monkeypatch.setattr(
+        wl,
+        "call_builder",
+        lambda *a, **k: wl.WebDiscoveryResult(
+            citations=[wl.WebCitation(doi="10.1101/2025.06.08.658482")]
+        ),
+    )
+    monkeypatch.setattr(  # EuropePMC has no record for this DOI
+        wl, "europepmc_search", lambda **k: {"resultList": {"result": []}}
+    )
+    monkeypatch.setattr(  # the shared preprint fallback resolves it
+        wl,
+        "paper_from_preprint_doi",
+        lambda doi, **k: _paper(
+            pmid=None, doi=doi, title="EndoNB preprint", is_preprint=True
+        ),
+    )
+    out = wl.web_discover_papers(
+        cast(Any, object()),
+        intent="internalization",
+        gene_names=["TMEM123"],
+        http=cast(Any, object()),
+        retraction_index=cast(Any, object()),
+    )
+    assert len(out) == 1
+    assert out[0].is_preprint and out[0].doi == "10.1101/2025.06.08.658482"
 
 
 def test_web_discover_returns_empty_when_tool_unavailable(monkeypatch):

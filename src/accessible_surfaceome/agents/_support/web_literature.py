@@ -34,6 +34,7 @@ from accessible_surfaceome.tools._shared.europepmc import (
 )
 from accessible_surfaceome.tools._shared.http import CachedHTTP
 from accessible_surfaceome.tools._shared.models import Paper, paper_source_id
+from accessible_surfaceome.tools._shared.preprint import paper_from_preprint_doi
 from accessible_surfaceome.tools._shared.retraction_watch import RetractionIndex
 
 logger = logging.getLogger(__name__)
@@ -46,7 +47,9 @@ WEB_SEARCH_TOOL: list[dict[str, Any]] = [
     {
         "type": "web_search_20250305",
         "name": "web_search",
-        "max_uses": 8,
+        # Headroom for the multi-query recall strategy (name + preprint + screen
+        # angles) the system prompt asks for; web_search is ~$0.01/call.
+        "max_uses": 12,
         "cache_control": {"type": "ephemeral"},
     }
 ]
@@ -115,19 +118,28 @@ class WebDiscoveryResult(BaseModel):
 
 
 _SYSTEM = (
-    "You are a biomedical literature scout. Use the web_search tool to find "
-    "RECENT PRIMARY research papers and preprints (including bioRxiv / medRxiv) "
-    "relevant to the requested topic for the given protein. Prioritise (a) "
-    "preprints and recent papers the abstract databases may not index yet, and "
-    "(b) methods/measurement papers that study the protein but may not name it "
-    "in the title/abstract. EXCLUDE reviews, news, blog posts, and vendor "
-    "catalog pages. For every source you keep, return its PubMed PMID (integer) "
-    "AND/OR its DOI — at least one of the two is REQUIRED; a source with neither "
-    "is useless downstream, so omit it. Return a JSON object with EXACTLY one "
-    'top-level key, "citations", whose value is a list of objects each with '
-    '"pmid" (integer or null), "doi" (string or null), and "note" (short string). '
-    "Do NOT wrap the list in any other top-level keys. Do not fabricate PMIDs or "
-    "DOIs — copy them from the web_search results verbatim."
+    "You are a biomedical literature scout with a web_search tool. Find RECENT "
+    "PRIMARY research papers AND bioRxiv / medRxiv preprints on the requested "
+    "topic for the given protein.\n"
+    "CRITICAL — run MULTIPLE distinct web searches with different query "
+    "formulations before you conclude; do not stop after one. At minimum try: "
+    "(1) '<protein> <topic-keyword>' (e.g. endocytosis / internalization), "
+    "(2) '<protein> bioRxiv' and '<protein> preprint', and (3) the method/screen "
+    "angle ('<topic> screen', 'surface protein turnover', 'proteome-wide "
+    "internalization'). Some of the MOST important papers study the protein as "
+    "ONE EXAMPLE among many (a methods paper, an endocytosis or proteomic screen) "
+    "and DO NOT name it in the title or abstract — only in the results/figures. "
+    "For promising bioRxiv/medRxiv hits, open the page and check whether the "
+    "protein appears in the RESULTS even when absent from the abstract; keep it "
+    "if so.\n"
+    "EXCLUDE reviews, news, blog posts, and vendor catalog pages. For every "
+    "source you keep, return its PubMed PMID (integer) AND/OR its DOI — at least "
+    "one of the two is REQUIRED; a source with neither is useless downstream, so "
+    "omit it. Return a JSON object with EXACTLY one top-level key, \"citations\", "
+    'whose value is a list of objects each with "pmid" (integer or null), "doi" '
+    '(string or null), and "note" (short string). Do NOT wrap the list in any '
+    "other top-level keys. Do not fabricate PMIDs or DOIs — copy them from the "
+    "web_search results verbatim."
 )
 
 
@@ -171,6 +183,18 @@ def _hydrate_one(
                     )
                 except LookupError:
                     continue
+            # EuropePMC didn't index this DOI — typically a recent bioRxiv/medRxiv
+            # preprint it hasn't harvested (the exact recall gap this pass exists
+            # to close). Hydrate it directly from the bioRxiv details API so a
+            # web-surfaced preprint isn't dropped just because the abstract index
+            # lags. Downstream body-fetch (DataCite/Unpaywall PDF) + span-verify
+            # are unchanged.
+            if include_preprints:
+                preprint = paper_from_preprint_doi(
+                    doi, http=http, retraction_index=retraction_index
+                )
+                if preprint is not None:
+                    return preprint
     return None
 
 
