@@ -79,3 +79,32 @@ def test_truncated_cterm_is_unique_terminal():
     assert pins[0]["canonical_residue"] == 40
     assert pins[0]["classification"] == "unique"
     assert pins[0]["left_pct"] == 100.0
+
+
+def test_run_isoform_pins_orchestration(monkeypatch):
+    # Injected fetch_pdb + stubbed gate internals: verifies the loop runs the
+    # gates per isoform, classifies vs canonical, and skips isoforms AFDB 404s.
+    from accessible_surfaceome.tag_sites import run as R
+
+    monkeypatch.setattr(R, "compute_signals", lambda *a, **k: {"sequence": k["sequence"]})
+    # isoform "X-2" nominates a site at residue 100 (matches a canonical site -> shared)
+    monkeypatch.setattr(
+        R, "derive_deterministic_sites",
+        lambda gene, acc, *, signals: [_det("X-surface_loop-100", 100)],
+    )
+
+    def fetch_pdb(acc):
+        if acc == "X-3":
+            raise RuntimeError("AFDB 404 — no isoform model")  # -> skipped
+        return f"/fake/{acc}.pdb"
+
+    canon = "A" * 200
+    pins = R.run_isoform_pins(
+        "X", "P0",
+        canonical_sequence=canon,
+        canonical_sites=[_det("X-surface_loop-100", 100)],
+        isoforms=[("X-2", "A" * 200, "O" * 200), ("X-3", "A" * 150, "O" * 150)],
+        fetch_pdb=fetch_pdb,
+    )
+    assert {p["isoform_id"] for p in pins} == {"X-2"}       # X-3 skipped (404)
+    assert pins[0]["classification"] == "shared"
