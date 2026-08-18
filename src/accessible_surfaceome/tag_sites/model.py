@@ -48,6 +48,11 @@ def residue_range(
 _EVIDENCE = {
     "disorder": "structural inference (disorder path)",
     "surface_loop": "structural inference (surface_loop path)",
+    # Terminal lanes are pure-topology calls (no structure): an extracellular
+    # N-/C-terminus takes a tag directly; an intracellular C-terminus takes a
+    # snorkel that presents the tag on the surface via a TM-snorkeling linker.
+    "terminal": "topology inference (extracellular terminus)",
+    "snorkel": "topology inference (C-terminal snorkel — no accessible terminus)",
 }
 
 
@@ -56,7 +61,7 @@ def tagged_site(
     site_id: str,
     gene_symbol: str,
     uniprot_acc: str,
-    det_path: Literal["disorder", "surface_loop"],
+    det_path: Literal["disorder", "surface_loop", "terminal", "snorkel"],
     site_kind: Literal["terminal_n", "terminal_c", "internal"],
     insert_after_residue: Optional[int],
     residue_before: Optional[str],

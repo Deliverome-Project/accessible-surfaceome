@@ -21,6 +21,7 @@ from .signals import (
     per_residue_ss,
 )
 from .surface_loop import surface_loop_candidates
+from .terminal import terminal_candidates
 
 
 def compute_signals(
@@ -49,6 +50,18 @@ def compute_signals(
     )
 
 
+def _with_terminals(
+    internal: list[dict[str, Any]], signals: dict[str, Any], *, gene_symbol: str, uniprot_acc: str
+) -> list[dict[str, Any]]:
+    """Prepend the extracellular N-terminal site and append the C-terminal /
+    snorkel site around the residue-ordered internal sites. Terminals are single
+    named sites (own ``site_id``s) and bypass ``select_representatives`` NMS."""
+    terms = terminal_candidates(signals, gene_symbol=gene_symbol, uniprot_acc=uniprot_acc)
+    n_terms = [s for s in terms if s["site_kind"] == "terminal_n"]
+    c_terms = [s for s in terms if s["site_kind"] == "terminal_c"]
+    return n_terms + internal + c_terms
+
+
 def derive_deterministic_sites(
     gene_symbol: str, uniprot_acc: str, *, signals: dict[str, Any]
 ) -> list[dict[str, Any]]:
@@ -62,7 +75,8 @@ def derive_deterministic_sites(
         by_res.setdefault(s["insert_after_residue"], s)
     for s in diso:
         by_res.setdefault(s["insert_after_residue"], s)
-    return sorted(by_res.values(), key=lambda s: s["insert_after_residue"])
+    internal = sorted(by_res.values(), key=lambda s: s["insert_after_residue"])
+    return _with_terminals(internal, signals, gene_symbol=gene_symbol, uniprot_acc=uniprot_acc)
 
 
 def select_representatives(
@@ -112,5 +126,6 @@ def run_gene(
     by_res: dict[int, dict[str, Any]] = {}
     for s in surf + diso:  # surface_loop first → preferred on residue collision
         by_res.setdefault(s["insert_after_residue"], s)
-    sites = sorted(by_res.values(), key=lambda s: s["insert_after_residue"])
+    internal = sorted(by_res.values(), key=lambda s: s["insert_after_residue"])
+    sites = _with_terminals(internal, signals, gene_symbol=gene_symbol, uniprot_acc=uniprot_acc)
     return emit_tag_sites_json(gene_symbol, uniprot_acc, sites, out_dir=out_dir)
