@@ -110,6 +110,11 @@ interface GeneHeaderProps {
    *  model × variant × point-in-time snapshot — and can lag behind a
    *  later re-triage that flipped the verdict. */
   triageHeadline?: TriageHeadline | null;
+  /** Whether this gene is a member of the Deliverome FG surface-protein
+   *  library. When true, an "In library" chip renders in the tier callout
+   *  row. Sourced from the fetched `/data/fg-library.json` overlay (see
+   *  `app/gene/page.tsx`); defaults to false. */
+  inFgLibrary?: boolean;
 }
 
 /** Re-export of the loader's TriageHeadlinePayload — see
@@ -264,6 +269,7 @@ export function GeneHeader({
   schwekeHomomer,
   catalogRow,
   triageHeadline,
+  inFgLibrary = false,
 }: GeneHeaderProps) {
   const g = rec.gene;
   const exec = rec.executive_summary;
@@ -418,6 +424,12 @@ export function GeneHeader({
             </InfoTip>
             {facet ? (
               <span className={styles.tierFacetChip}>{FACET_LABEL[facet]}</span>
+            ) : null}
+            {/* FG surface-protein library membership — a positive marker that
+                this gene is in the Deliverome library. Same chip style as the
+                sub-facet chip; gated on the fetched membership overlay. */}
+            {inFgLibrary ? (
+              <span className={styles.tierFacetChip}>In library</span>
             ) : null}
             {lowLitSurface ? (
               <span className={styles.lowLitChip}>

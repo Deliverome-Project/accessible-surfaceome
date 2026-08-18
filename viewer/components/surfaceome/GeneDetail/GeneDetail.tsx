@@ -1,7 +1,8 @@
 "use client";
 
 import Link from "next/link";
-import type { ReactNode } from "react";
+import { useRouter } from "next/navigation";
+import { useEffect, useMemo, type ReactNode } from "react";
 import { SectionTabs } from "../../SectionTabs/SectionTabs";
 import { FeedbackModal } from "../../FeedbackModal/FeedbackModal";
 import { Reveal } from "../../Reveal/Reveal";
@@ -28,6 +29,10 @@ import { SurfaceBindCard } from "../SurfaceBindCard/SurfaceBindCard";
 import { SurfaceEvidenceCard } from "../SurfaceEvidenceCard/SurfaceEvidenceCard";
 import { TriageRow } from "../TriageRow/TriageRow";
 import type { CatalogRow, GeneEntry } from "../../../lib/surfaceome";
+import {
+  fgLibrarySymbolSet,
+  type FgLibraryData,
+} from "../../../lib/fg-library";
 import type {
   BenchmarkRow as BenchmarkRowPayload,
   SurfaceomeRecord,
@@ -71,6 +76,13 @@ interface GeneDetailProps {
   triageHeadline: TriageHeadlinePayload | null;
   /** Deep-dive genes for the toolbar's GeneJump typeahead. */
   deepDiveGenes: readonly GeneEntry[];
+  /** Parsed FG-library membership overlay (fetched client-side), or null on a
+   *  miss. Drives the prev/next library navigation and is forwarded to
+   *  <IsoformsCard> for the per-variant in-library pills. */
+  fgLibrary: FgLibraryData | null;
+  /** Whether this gene is in the FG library — forwarded to <GeneHeader> for
+   *  the "In library" badge. */
+  inFgLibrary: boolean;
 }
 
 /**
@@ -90,7 +102,64 @@ export function GeneDetail({
   benchmarkRow,
   triageHeadline,
   deepDiveGenes,
+  fgLibrary,
+  inFgLibrary,
 }: GeneDetailProps) {
+  const router = useRouter();
+
+  // Prev/next navigation across the FG library, alphabetically. The FG-only
+  // ordered list is the deep-dive genes (each has a `/[symbol]` page) that are
+  // ALSO library members, sorted by symbol so "adjacent" means alphabetically
+  // adjacent. Only meaningful when the current gene is itself in the library;
+  // otherwise it has no position in the list and the controls are hidden.
+  const { prevGene, nextGene } = useMemo(() => {
+    const fgSet = fgLibrarySymbolSet(fgLibrary);
+    if (fgSet.size === 0 || !fgSet.has(rec.gene.hgnc_symbol)) {
+      return { prevGene: null, nextGene: null };
+    }
+    const ordered = deepDiveGenes
+      .filter((g) => fgSet.has(g.symbol))
+      .map((g) => g.symbol)
+      .sort((a, b) => a.localeCompare(b));
+    const idx = ordered.indexOf(rec.gene.hgnc_symbol);
+    if (idx === -1) return { prevGene: null, nextGene: null };
+    return {
+      prevGene: idx > 0 ? ordered[idx - 1] : null,
+      nextGene: idx < ordered.length - 1 ? ordered[idx + 1] : null,
+    };
+  }, [fgLibrary, deepDiveGenes, rec.gene.hgnc_symbol]);
+
+  // Arrow-key shortcuts for the prev/next library nav. Mirrors the ESC-to-close
+  // keydown effect in CatalogTable — a window-level listener, guarded so it
+  // never hijacks arrow keys while the reader is typing in the GeneJump input
+  // (or any other input/textarea/contenteditable/select).
+  useEffect(() => {
+    if (!prevGene && !nextGene) return;
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key !== "ArrowLeft" && e.key !== "ArrowRight") return;
+      if (e.metaKey || e.ctrlKey || e.altKey) return;
+      const el = document.activeElement as HTMLElement | null;
+      const tag = el?.tagName;
+      if (
+        tag === "INPUT" ||
+        tag === "TEXTAREA" ||
+        tag === "SELECT" ||
+        el?.isContentEditable
+      ) {
+        return;
+      }
+      if (e.key === "ArrowLeft" && prevGene) {
+        e.preventDefault();
+        router.push(`/${prevGene}`);
+      } else if (e.key === "ArrowRight" && nextGene) {
+        e.preventDefault();
+        router.push(`/${nextGene}`);
+      }
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [prevGene, nextGene, router]);
+
   // v1.0.0 section order mirrors the EGFR mockup in
   // docs/plans/2026-05-13-deep-dive-redesign-surface-accessibility.md.
   // The 3D structure viewer + AFDB pLDDT / disordered-fraction stats
@@ -174,7 +243,7 @@ export function GeneDetail({
     {
       kind: "isoforms",
       label: "Isoforms & homologs",
-      render: (n) => <IsoformsCard rec={rec} n={n} />,
+      render: (n) => <IsoformsCard rec={rec} n={n} fgLibrary={fgLibrary} />,
     },
     {
       kind: "ledger",
@@ -221,6 +290,54 @@ export function GeneDetail({
           {/* Jump to another gene's deep dive without going back to the
               catalog table. Suggestions are the deep-dive set only. */}
           <GeneJump genes={deepDiveGenes} current={rec.gene.hgnc_symbol} />
+          {/* Prev/next across the FG library (alphabetical). Only rendered when
+              this gene is itself in the library — otherwise it has no position
+              in the ordered list. Arrow keys drive the same navigation (see the
+              keydown effect above). Ends clamp: the arrow is a disabled span at
+              the first/last library gene. */}
+          {prevGene || nextGene ? (
+            <span
+              className={styles.libNav}
+              role="group"
+              aria-label="Previous / next FG library gene"
+            >
+              {prevGene ? (
+                <Link
+                  href={`/${prevGene}`}
+                  className={styles.libNavLink}
+                  title={`Previous library gene: ${prevGene}`}
+                  aria-label={`Previous library gene: ${prevGene}`}
+                >
+                  ←
+                </Link>
+              ) : (
+                <span
+                  className={`${styles.libNavLink} ${styles.libNavDisabled}`}
+                  aria-disabled="true"
+                >
+                  ←
+                </span>
+              )}
+              <span className={`label-mono ${styles.libNavLabel}`}>Library</span>
+              {nextGene ? (
+                <Link
+                  href={`/${nextGene}`}
+                  className={styles.libNavLink}
+                  title={`Next library gene: ${nextGene}`}
+                  aria-label={`Next library gene: ${nextGene}`}
+                >
+                  →
+                </Link>
+              ) : (
+                <span
+                  className={`${styles.libNavLink} ${styles.libNavDisabled}`}
+                  aria-disabled="true"
+                >
+                  →
+                </span>
+              )}
+            </span>
+          ) : null}
           <span className={styles.crumbActions}>
             <a
               className={styles.crumbAction}
@@ -251,6 +368,7 @@ export function GeneDetail({
             schwekeHomomer={schwekeHomomer}
             catalogRow={catalogRow}
             triageHeadline={triageHeadline}
+            inFgLibrary={inFgLibrary}
           />
         </Reveal>
 
