@@ -78,6 +78,42 @@ def test_source_store_uses_abstract_when_not_fetched(monkeypatch):
     assert st is not None and st.raw_text == "abstract body text"
 
 
+def test_source_store_uses_draft_body_for_non_pmc_fetched(monkeypatch):
+    # Regression (TMEM123/EndoNB): a FETCHED bioRxiv/medRxiv preprint has no PMC
+    # id, so the PMC re-fetch yields nothing. The body-derived clip drafts must
+    # supply the span-verify body text — otherwise every body clip from a preprint
+    # fails verification against an abstract-only store and gets silently dropped.
+    pool = {
+        "c1": _real_draft(
+            "c1",
+            "TMEM123 internalized like the transferrin receptor",
+            sid="DOI:10.1101/x",
+        )
+    }
+    paper = SimpleNamespace(
+        pmid=None, pmc_id=None, doi="10.1101/x", title="EndoNB",
+        abstract="a general strategy for surface protein turnover",  # never names the protein
+        publication_type="preprint", is_retracted=False,
+        year=2025, journal="bioRxiv (preprint)", authors=[],
+    )
+
+    def _no_fetch(**kw):
+        raise AssertionError("PMC fetch_fulltext must not run for a non-PMC preprint")
+
+    monkeypatch.setattr(mod, "fetch_fulltext", _no_fetch)
+    store = build_source_store(
+        cast(Any, pool),
+        papers_by_source_id=cast(Any, {"DOI:10.1101/x": (paper, True)}),
+        http=cast(Any, object()),
+        retraction_index=cast(Any, object()),
+    )
+    st = store.get("DOI:10.1101/x")
+    assert st is not None
+    assert "a general strategy" in st.raw_text  # abstract kept
+    # the body clip (absent from the abstract) is now verifiable:
+    assert "TMEM123 internalized like the transferrin receptor" in st.raw_text
+
+
 def test_fetched_store_body_still_contains_the_abstract(monkeypatch):
     # Regression: a fetched paper can contribute ABSTRACT-derived clips (e.g. a
     # worth_fetching body-fetch that fell back to abstract). The store body must

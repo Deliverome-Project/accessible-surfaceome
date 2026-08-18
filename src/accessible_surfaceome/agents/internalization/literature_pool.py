@@ -73,14 +73,31 @@ def build_pool(
 
 
 def _body_text(
-    paper: Paper, *, fetched: bool, http: CachedHTTP, retraction_index: Any
+    paper: Paper,
+    *,
+    fetched: bool,
+    http: CachedHTTP,
+    retraction_index: Any,
+    drafts: list[EvidenceClaimDraft],
 ) -> str:
     """Store body for span verification. ALWAYS include the abstract (a paper
     can contribute abstract-derived clips even after it was fetched — e.g. a
     worth_fetching body-fetch that fell back to the abstract), PLUS the
-    full-text body when fetched. Concatenating both makes every clip — abstract
-    OR body — substring-matchable; the previous full-text-only body silently
-    dropped abstract clips at promotion."""
+    full-text body when fetched.
+
+    Two full-text sources, by paper kind:
+
+    * **PMC papers** — re-fetch the real JATS body (``fetch_fulltext``), so clip
+      offsets point at the real source text.
+    * **Non-PMC fetched papers** (bioRxiv/medRxiv preprints, Unpaywall/DataCite
+      OA-PDF-only papers) — PMC has nothing for them, so the previous code left
+      the store abstract-only and EVERY body-derived clip failed span
+      verification (they came from the fetched PDF, not the abstract). That
+      silently dropped all full-text evidence from non-PMC sources — fatal for a
+      gene whose only internalization evidence is a preprint (the TMEM123/EndoNB
+      case). The body-derived clip ``drafts`` in the pool ARE verbatim excerpts
+      of that fetched body — exactly what ``select`` picks from — so folding them
+      into the source text makes those clips verifiable again, no re-fetch."""
     parts: list[str] = []
     abstract = getattr(paper, "abstract", None)
     if abstract:
@@ -89,6 +106,10 @@ def _body_text(
         full = fetch_fulltext(http=http, pmcid=paper.pmc_id, retraction_index=retraction_index)
         secs = getattr(full, "sections", None) or []
         parts.extend(s.text for s in secs if getattr(s, "text", None))
+    elif fetched:
+        # Non-PMC fetched body: reconstruct from the pool's body-derived drafts
+        # (verbatim excerpts of the fetched PDF/landing body).
+        parts.extend(d.quote for d in drafts if getattr(d, "quote", None))
     return "\n\n".join(parts)
 
 
@@ -102,12 +123,21 @@ def build_source_store(
     """Register a real ``SourceText`` for every source_id present in the pool
     (full body when the paper was fetched, else its abstract)."""
     store = SourceTextStore()
-    for source_id in {d.source_id for d in pool.values()}:
+    drafts_by_source: dict[str, list[EvidenceClaimDraft]] = defaultdict(list)
+    for draft in pool.values():
+        drafts_by_source[draft.source_id].append(draft)
+    for source_id in drafts_by_source:
         entry = papers_by_source_id.get(source_id)
         if entry is None:
             continue
         paper, fetched = entry
-        raw = _body_text(paper, fetched=fetched, http=http, retraction_index=retraction_index)
+        raw = _body_text(
+            paper,
+            fetched=fetched,
+            http=http,
+            retraction_index=retraction_index,
+            drafts=drafts_by_source[source_id],
+        )
         if not raw:
             continue
         norm = normalize_for_quote_matching(raw)
