@@ -77,7 +77,6 @@ from ._shared.models import (
     Paper,
     PaperSection,
     PaperSection_,
-    paper_source_id,
 )
 from ._shared.pubtator import build_gene_entity_query, pubtator_search
 from ._shared.retraction_watch import RetractionIndex, empty as _empty_retraction_index
@@ -944,16 +943,20 @@ def _union_by_pmid(*paper_lists: list[Paper]) -> list[Paper]:
     Order is preserved: papers from earlier lists win, so callers pass
     the higher-precision source (PubTator) first.
     """
-    # Dedup on the canonical source id (PMC > PMID > DOI), not the raw PMID, so
-    # a DOI-only preprint dedups on its DOI instead of colliding on a None key.
-    seen: set[str] = set()
+    # Kept PMID-keyed (byte-identical to the pre-preprint behavior) — this is
+    # the DEEP-DIVE retrieval path and it is PMID-only (never opts into
+    # preprints), so its papers always carry a PMID. The `is not None` guard is
+    # only for the type checker now that `Paper.pmid` is `int | None`; it never
+    # fires here, so deep-dive dedup output is unchanged (no re-run needed).
+    seen: set[int] = set()
     out: list[Paper] = []
     for papers in paper_lists:
         for paper in papers:
-            sid = paper_source_id(paper)
-            if sid in seen:
-                continue
-            seen.add(sid)
+            pmid = paper.pmid
+            if pmid is not None:
+                if pmid in seen:
+                    continue
+                seen.add(pmid)
             out.append(paper)
     return out
 
