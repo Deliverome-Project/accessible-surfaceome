@@ -6,9 +6,12 @@ papers were invisible to the discovery layer until they got published-to-
 journal + PubMed-mirrored (a 6-12 month lag). The expansion to
 ``AND SRC:(MED OR PPR)`` widens the search to Europe PMC-partnered
 preprint servers (bioRxiv, medRxiv, ChemRxiv, ResearchSquare,
-Preprints.org, SSRN-Health, arXiv-q-bio). Until the downstream ``Paper``
-contract supports DOI/preprint IDs end-to-end, PPR records are skipped
-at conversion time so one ``PPR...`` hit does not poison the whole page.
+Preprints.org, SSRN-Health, arXiv-q-bio). The downstream ``Paper``
+contract now supports DOI-anchored preprints (``pmid: int | None`` +
+``is_preprint``), so ``paper_from_europepmc(include_preprints=True)`` KEEPS
+a PPR record with a DOI (the internalization track opts in); by default
+(``include_preprints=False``) PPR records are still skipped at conversion
+time so one ``PPR...`` hit does not poison a PMID-only (deep-dive) page.
 
 PMID-keyed Europe PMC lookups elsewhere intentionally stay ``SRC:MED``
 because PPR records don't have numeric PMIDs — adding PPR there would
@@ -195,3 +198,60 @@ def test_topic_search_skips_ppr_without_fallback(
         retraction_index=empty_retractions(),
     )
     assert [p.pmid for p in pack.papers] == [41818370]
+
+
+# --- DOI-anchored preprint contract (paper_from_europepmc include_preprints gate) ---
+
+from accessible_surfaceome.tools._shared.models import Paper, paper_source_id  # noqa: E402
+
+
+def _ppr_record(doi: str | None) -> dict[str, Any]:
+    """A minimal Europe PMC PPR (preprint) record: no numeric PMID, id is a
+    ``PPR...`` key, optional DOI."""
+    return {
+        "source": "PPR",
+        "id": "PPR1220047",
+        "doi": doi,
+        "title": "EndoNB: internalization of cell surface proteins",
+        "pubYear": "2025",
+        "pubTypeList": {"pubType": ["Preprint"]},
+    }
+
+
+def test_paper_from_europepmc_skips_preprint_by_default():
+    # Default (deep-dive) behavior: a PPR record with no numeric PMID is skipped.
+    with pytest.raises(LookupError):
+        epmc.paper_from_europepmc(
+            _ppr_record("10.1101/2025.06.08.658482"),
+            retraction_index=empty_retractions(),
+        )
+
+
+def test_paper_from_europepmc_keeps_doi_anchored_preprint_when_opted_in():
+    paper = epmc.paper_from_europepmc(
+        _ppr_record("10.1101/2025.06.08.658482"),
+        retraction_index=empty_retractions(),
+        include_preprints=True,
+    )
+    assert paper.pmid is None
+    assert paper.is_preprint is True
+    assert paper.doi == "10.1101/2025.06.08.658482"
+    # Anchored on its DOI by the shared source-id helper.
+    assert paper_source_id(paper) == "DOI:10.1101/2025.06.08.658482"
+
+
+def test_paper_from_europepmc_preprint_without_doi_still_skipped():
+    # No DOI to anchor + verify against → skipped even when opted in.
+    with pytest.raises(LookupError):
+        epmc.paper_from_europepmc(
+            _ppr_record(None),
+            retraction_index=empty_retractions(),
+            include_preprints=True,
+        )
+
+
+def test_paper_source_id_prefers_pmc_then_pmid_then_doi():
+    assert paper_source_id(Paper(pmid=7, title="t")) == "PMID:7"
+    assert paper_source_id(Paper(pmid=7, pmc_id="PMC9", title="t")) == "PMC:PMC9"
+    assert paper_source_id(Paper(pmid=None, doi="10.1/x", title="t")) == "DOI:10.1/x"
+    assert paper_source_id(Paper(pmid=None, title="t")) == "UNKNOWN"

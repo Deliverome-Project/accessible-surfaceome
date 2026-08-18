@@ -12,7 +12,11 @@ from accessible_surfaceome.tools._shared.europepmc import (
     paper_from_europepmc,
 )
 from accessible_surfaceome.tools._shared.http import CachedHTTP
-from accessible_surfaceome.tools._shared.models import IdentifierBundle, Paper
+from accessible_surfaceome.tools._shared.models import (
+    IdentifierBundle,
+    Paper,
+    paper_source_id,
+)
 from accessible_surfaceome.tools._shared.pubtator import (
     build_gene_entity_query,
     pubtator_search,
@@ -87,7 +91,7 @@ def discover_internalization_papers(
     *,
     http: CachedHTTP,
     retraction_index: Any,
-) -> dict[int, Paper]:
+) -> dict[str, Paper]:
     aliases = [bundle.hgnc_symbol, *bundle.aliases, *bundle.previous_symbols]
     # Name-based aliases for the citation-sorted kinetics pass: the FULL protein
     # name ("transferrin receptor") is what the classic rate-constant papers use,
@@ -100,7 +104,7 @@ def discover_internalization_papers(
         for a in (bundle.hgnc_symbol, bundle.approved_name, *(bundle.alias_names or []))
         if a
     ]
-    discovered: dict[int, Paper] = {}
+    discovered: dict[str, Paper] = {}  # keyed on paper_source_id (PMC>PMID>DOI)
 
     # EuropePMC free-text: the broad internalization query PLUS a tighter
     # measurement/ADC-internalization query. The second rescues genes whose
@@ -113,13 +117,17 @@ def discover_internalization_papers(
         payload = europepmc_search(http=http, query=query, page_size=_MAX_PER_SOURCE)
         for rec in payload.get("resultList", {}).get("result", []):
             try:
-                paper = paper_from_europepmc(rec, retraction_index=retraction_index)
+                # include_preprints=True: keep DOI-anchored bioRxiv/medRxiv
+                # preprints (their OA full text resolves + span-verifies via the
+                # shared DataCite/Unpaywall fetch chain). The internalization
+                # track opts in to catch recent findings the peer-reviewed
+                # corpus hasn't indexed yet; the deep-dive stays PMID-only.
+                paper = paper_from_europepmc(
+                    rec, retraction_index=retraction_index, include_preprints=True
+                )
             except LookupError:
-                # Non-integer PMID (e.g. a preprint id like "PPR1220047") — we
-                # can't PMID-anchor a citation to it, so skip.
                 continue
-            if paper.pmid:
-                discovered.setdefault(paper.pmid, paper)
+            discovered.setdefault(paper_source_id(paper), paper)
 
     # Citation-sorted kinetics pass: surfaces the heavily-cited classic
     # rate-constant literature the recency-default queries above never reach.
@@ -131,11 +139,12 @@ def discover_internalization_papers(
     )
     for rec in payload.get("resultList", {}).get("result", []):
         try:
-            paper = paper_from_europepmc(rec, retraction_index=retraction_index)
+            paper = paper_from_europepmc(
+                rec, retraction_index=retraction_index, include_preprints=True
+            )
         except LookupError:
             continue
-        if paper.pmid:
-            discovered.setdefault(paper.pmid, paper)
+        discovered.setdefault(paper_source_id(paper), paper)
 
     # PubTator entity search, hydrated to full Paper objects via EuropePMC.
     # Sort by relevance (score), NOT recency — date-sorting floods the corpus
@@ -149,13 +158,16 @@ def discover_internalization_papers(
         ),
         sort="score desc",
     ).hits
-    pmids = [h.pmid for h in hits if h.pmid and h.pmid not in discovered][
-        :_MAX_PER_SOURCE
-    ]
+    # PubTator hits are PMID-indexed (no preprints); skip PMIDs already found
+    # (discovered is keyed on source_id, so check the PMID: form).
+    pmids = [
+        h.pmid
+        for h in hits
+        if h.pmid and f"PMID:{h.pmid}" not in discovered
+    ][:_MAX_PER_SOURCE]
     for paper in europepmc_bulk_by_pmid(
         http=http, pmids=pmids, retraction_index=retraction_index
     ):
-        if paper.pmid:
-            discovered.setdefault(paper.pmid, paper)
+        discovered.setdefault(paper_source_id(paper), paper)
 
     return discovered

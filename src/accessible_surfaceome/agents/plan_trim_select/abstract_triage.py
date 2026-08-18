@@ -57,6 +57,7 @@ from accessible_surfaceome.tools._shared.models import (
     IdentifierBundle,
     Paper,
     PaperSection,
+    paper_source_id,
 )
 from accessible_surfaceome.tools._shared.ncbi import add_ncbi_api_key_param
 from accessible_surfaceome.tools._shared.retraction_watch import RetractionIndex
@@ -330,28 +331,10 @@ def _format_synonyms(bundle: IdentifierBundle | None) -> str:
     return ", ".join(parts)
 
 
-def paper_source_id(paper: Paper) -> str:
-    """Canonical pool/source key for a paper: ``PMC:<id>`` > ``PMID:<id>``
-    > ``DOI:<doi>``.
-
-    This is the key both the clip pool's ``source_id`` and the triage
-    outcome's ``paper_id`` agree on, so the runner can join triage
-    outcomes back to discovered papers and to the body pool. DOI is the
-    third-tier fallback so DataCite-routed preprints (no PMID / PMC ID)
-    still get a stable distinct key — otherwise they all collide on
-    ``UNKNOWN`` and downstream resolvers that guard on
-    ``source_id != "UNKNOWN"`` short-circuit.
-    """
-    if paper.pmc_id:
-        return f"PMC:{paper.pmc_id}"
-    if paper.pmid:
-        return f"PMID:{paper.pmid}"
-    if paper.doi:
-        return f"DOI:{paper.doi}"
-    return "UNKNOWN"
-
-
-# Internal alias retained for the existing call sites in this module.
+# ``paper_source_id`` now lives in tools/_shared/models.py (the shared layer,
+# next to ``Paper``) so the shared europepmc converter + harvested_paper key on
+# the same helper. Imported at the top; still exported from this module for
+# back-compat with existing importers. Internal alias kept for local call sites.
 _paper_source_id = paper_source_id
 
 
@@ -1248,7 +1231,9 @@ def apply_triage_outcomes(
                     p,
                     http=http,
                     retraction_index=retraction_index,
-                    pmcid_override=pmcid_by_pmid.get(p.pmid),
+                    pmcid_override=(
+                        pmcid_by_pmid.get(p.pmid) if p.pmid is not None else None
+                    ),
                     pmcid_lookup_done=bool(p.pmid and not p.pmc_id),
                 ): o.paper_id
                 for o, p in to_fetch

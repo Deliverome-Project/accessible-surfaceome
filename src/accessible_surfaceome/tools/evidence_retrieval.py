@@ -943,13 +943,20 @@ def _union_by_pmid(*paper_lists: list[Paper]) -> list[Paper]:
     Order is preserved: papers from earlier lists win, so callers pass
     the higher-precision source (PubTator) first.
     """
+    # Kept PMID-keyed (byte-identical to the pre-preprint behavior) — this is
+    # the DEEP-DIVE retrieval path and it is PMID-only (never opts into
+    # preprints), so its papers always carry a PMID. The `is not None` guard is
+    # only for the type checker now that `Paper.pmid` is `int | None`; it never
+    # fires here, so deep-dive dedup output is unchanged (no re-run needed).
     seen: set[int] = set()
     out: list[Paper] = []
     for papers in paper_lists:
         for paper in papers:
-            if paper.pmid in seen:
-                continue
-            seen.add(paper.pmid)
+            pmid = paper.pmid
+            if pmid is not None:
+                if pmid in seen:
+                    continue
+                seen.add(pmid)
             out.append(paper)
     return out
 

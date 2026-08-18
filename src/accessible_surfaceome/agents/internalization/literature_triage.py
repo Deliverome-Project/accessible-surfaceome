@@ -51,7 +51,7 @@ def _triage_one(
     pid = paper_source_id(paper)  # PMC:<id> > PMID:<id> > DOI:<doi>
     aka = f"Also known as: {', '.join(synonyms)}\n" if synonyms else ""
     user = (
-        f"Gene: {gene}\n{aka}PMID: {paper.pmid}\nTitle: {paper.title}\n\n"
+        f"Gene: {gene}\n{aka}Source: {pid}\nTitle: {paper.title}\n\n"
         f"Abstract:\n{paper.abstract or '(no abstract)'}\n\n"
         f"Decide: discard | keep_abstract | worth_fetching. "
         f"Use paper_id={pid!r}. Return one ```json object."
