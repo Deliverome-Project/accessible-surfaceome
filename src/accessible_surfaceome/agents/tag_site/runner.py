@@ -24,14 +24,13 @@ from accessible_surfaceome.agents._support.client import get_client
 from accessible_surfaceome.agents.surfaceome_v2.builders._common import call_builder
 from accessible_surfaceome.tools._shared.http import CachedHTTP, open_default_client
 from accessible_surfaceome.tools._shared.europepmc import europepmc_bulk_by_pmid
-from accessible_surfaceome.tools._shared.models import Paper
+from accessible_surfaceome.tools._shared.models import Paper, paper_source_id
 from accessible_surfaceome.tools._shared.retraction_watch import empty as _empty_retraction
 from accessible_surfaceome.tools._shared.retraction_watch import from_http as _retraction_from_http
 
 from .literature_discovery import (
     SOURCE_TIERS,
     discover_tag_site_papers,
-    discover_tag_site_preprints,
     fetch_fulltext_sections,
     quote_supported,
 )
@@ -69,40 +68,35 @@ def _tag_relevance(paper: Paper) -> int:
 
 
 def format_candidate_papers(
-    papers: dict[int, Paper],
-    fulltext: dict[int, dict[str, str]] | None = None,
-    preprints: list[dict[str, Any]] | None = None,
+    papers: dict[str, Paper],
+    fulltext: dict[str, dict[str, str]] | None = None,
 ) -> str:
-    """Render discovered papers (+ preprints) as a prompt block the agent reads
-    first. Where METHODS/RESULTS full text is given, include it so the agent can
-    pin the EXACT residue, judge function PRESERVED vs REDUCED/CONFOUNDED, AND copy
-    a verbatim supporting_quote (which the pipeline then verifies)."""
+    """Render discovered papers as a prompt block the agent reads first. Papers are
+    keyed by ``paper_source_id`` and now INCLUDE DOI-anchored preprints (the shared
+    #143 contract), so there is no separate preprint list. Where METHODS/RESULTS
+    full text is given, include it so the agent can pin the EXACT residue, judge
+    function PRESERVED vs REDUCED/CONFOUNDED, AND copy a verbatim supporting_quote
+    (which the pipeline then verifies)."""
     fulltext = fulltext or {}
-    preprints = preprints or []
-    if not papers and not preprints:
+    if not papers:
         return "CANDIDATE PAPERS: none retrieved by the lit-search; rely on web_search."
     lines = [
-        "CANDIDATE PAPERS (pre-retrieved via EuropePMC + PubTator; PMID-grounded — read "
-        "these FIRST, set supporting_pmid, and COPY a verbatim supporting_quote from the "
-        "text below. Where METHODS/RESULTS full text is given, use it to pin the EXACT "
-        "residue AND to judge whether function was PRESERVED vs REDUCED/CONFOUNDED -> "
-        "validation_level):"
+        "CANDIDATE PAPERS (pre-retrieved via EuropePMC + PubTator — read these FIRST and "
+        "COPY a verbatim supporting_quote from the text below. For a PMID paper set "
+        "supporting_pmid; for a PREPRINT (marked [preprint], no PMID) set "
+        "supporting_pmid=null and cite the DOI. Where METHODS/RESULTS full text is given, "
+        "use it to pin the EXACT residue AND to judge whether function was PRESERVED vs "
+        "REDUCED/CONFOUNDED -> validation_level):"
     ]
-    for pmid, p in list(papers.items())[:_MAX_PROMPT_PAPERS]:
+    for sid, p in list(papers.items())[:_MAX_PROMPT_PAPERS]:
+        ref = f"PMID {p.pmid}" if p.pmid else (f"DOI {p.doi}" if p.doi else sid)
+        tag = " [preprint]" if p.is_preprint else ""
         abstract = " ".join((p.abstract or "").split())[:_MAX_ABSTRACT_CHARS]
-        lines.append(f"- PMID {pmid} ({p.year or '?'}) {p.title}\n  ABSTRACT: {abstract}")
+        lines.append(f"- {ref}{tag} ({p.year or '?'}) {p.title}\n  ABSTRACT: {abstract}")
         for name in ("methods", "results"):
-            body = (fulltext.get(pmid) or {}).get(name)
+            body = (fulltext.get(sid) or {}).get(name)
             if body:
                 lines.append(f"  {name.upper()}: {' '.join(body.split())[:_MAX_FULLTEXT_CHARS]}")
-    if preprints:
-        lines.append(
-            "PREPRINTS (bioRxiv/medRxiv — no PMID; set supporting_pmid=null and cite the DOI):"
-        )
-        for pp in preprints:
-            abstract = " ".join((pp.get("abstract") or "").split())[:_MAX_ABSTRACT_CHARS]
-            lines.append(f"- DOI {pp.get('doi') or pp.get('id')} ({pp.get('year') or '?'}) "
-                         f"{pp.get('title')}\n  ABSTRACT: {abstract}")
     return "\n".join(lines)
 
 
@@ -128,16 +122,17 @@ def rank_sites(result: TagSiteResult) -> TagSiteResult:
 
 
 def _source_text_for(
-    pmid: int | None, papers: dict[int, Paper], fulltext: dict[int, dict[str, str]]
+    sid: str | None, papers: dict[str, Paper], fulltext: dict[str, dict[str, str]]
 ) -> str:
-    """Abstract + methods + results text for one cited PMID (the entailment source)."""
-    if not pmid:
+    """Abstract + methods + results text for one paper (by ``paper_source_id``) —
+    the entailment source."""
+    if not sid:
         return ""
     parts: list[str] = []
-    p = papers.get(pmid)
+    p = papers.get(sid)
     if p and p.abstract:
         parts.append(p.abstract)
-    ft = fulltext.get(pmid) or {}
+    ft = fulltext.get(sid) or {}
     parts += [ft.get("methods", ""), ft.get("results", "")]
     return "\n".join(x for x in parts if x)
 
@@ -145,41 +140,42 @@ def _source_text_for(
 def verify_entailment(
     result: TagSiteResult,
     *,
-    papers: dict[int, Paper],
-    fulltext: dict[int, dict[str, str]],
-    preprints: list[dict[str, Any]] | None = None,
+    papers: dict[str, Paper],
+    fulltext: dict[str, dict[str, str]],
     http: CachedHTTP | None = None,
 ) -> TagSiteResult:
     """Set ``entailment_verified`` on each site: True iff its supporting_quote is
     found in the cited paper's source text (abstract + full text), falling back to
-    the union of all fetched sources (incl. preprint abstracts) — so a hallucinated
-    quote that appears in NO source is flagged. When ``http`` is given, a cited PMID
-    that was NOT in the candidate set (e.g. the agent found it via web_search) is
-    hydrated on demand and cached, so a real web-discovered citation can still be
-    verified instead of being flagged unverified for lack of fetched text."""
-    all_text = "\n".join(
-        [_source_text_for(pid, papers, fulltext) for pid in papers]
-        + [(pp.get("abstract") or "") for pp in (preprints or [])]
-    )
+    the union of all fetched sources (preprints included — they are in ``papers``
+    now) — so a hallucinated quote that appears in NO source is flagged. When
+    ``http`` is given, a cited PMID that was NOT in the candidate set (e.g. the
+    agent found it via web_search) is hydrated on demand and cached, so a real
+    web-discovered citation can still be verified. Sites cite by ``supporting_pmid``;
+    papers are keyed by ``paper_source_id``, so we map pmid -> source_id first."""
+    all_text = "\n".join(_source_text_for(sid, papers, fulltext) for sid in papers)
+    by_pmid = {p.pmid: sid for sid, p in papers.items() if p.pmid}
     hydrated: dict[int, str] = {}
 
     def _resolve(pmid: int | None) -> str:
         if not pmid:
             return ""
-        text = _source_text_for(pmid, papers, fulltext)
-        if text or http is None:
-            return text
+        sid = by_pmid.get(pmid)
+        if sid is not None:
+            return _source_text_for(sid, papers, fulltext)
+        if http is None:
+            return ""
         if pmid not in hydrated:
             try:
                 hp = {
-                    p.pmid: p
+                    paper_source_id(p): p
                     for p in europepmc_bulk_by_pmid(
                         http=http, pmids=[pmid], retraction_index=_empty_retraction()
                     )
                     if p.pmid
                 }
                 hft = fetch_fulltext_sections(http=http, papers=hp, max_papers=1) if hp else {}
-                hydrated[pmid] = _source_text_for(pmid, hp, hft)
+                hsid = next((s for s, pp in hp.items() if pp.pmid == pmid), None)
+                hydrated[pmid] = _source_text_for(hsid, hp, hft)
             except Exception:  # noqa: BLE001 - verification is best-effort
                 hydrated[pmid] = ""
         return hydrated[pmid]
@@ -220,7 +216,6 @@ def run_tag_site_agent(
     papers = discover_tag_site_papers(
         http=http, gene_symbol=gene_symbol, aliases=aliases, retraction_index=ri
     )
-    preprints = discover_tag_site_preprints(http=http, gene_symbol=gene_symbol, aliases=aliases)
     # Relevance triage: fetch full text for the most on-topic papers first.
     ranked = dict(sorted(papers.items(), key=lambda kv: -_tag_relevance(kv[1])))
     fulltext = fetch_fulltext_sections(
@@ -230,7 +225,7 @@ def run_tag_site_agent(
     user_prompt = build_user_prompt(
         gene_symbol, protein_name, mode=mode, sequence=sequence, topology=topology
     )
-    user_prompt = f"{user_prompt}\n\n{format_candidate_papers(ranked, fulltext, preprints)}"
+    user_prompt = f"{user_prompt}\n\n{format_candidate_papers(ranked, fulltext)}"
 
     result = call_builder(
         client,
@@ -248,7 +243,7 @@ def run_tag_site_agent(
             sequence_length=len(sequence or ""),
         )
     assert isinstance(result, TagSiteResult)  # expect_array=False -> single instance
-    verify_entailment(result, papers=papers, fulltext=fulltext, preprints=preprints, http=http)
+    verify_entailment(result, papers=papers, fulltext=fulltext, http=http)
     return rank_sites(result)
 
 

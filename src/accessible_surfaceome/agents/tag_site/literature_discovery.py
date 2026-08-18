@@ -23,17 +23,16 @@ co-tested control (union 11/11 vs web 10/11 vs lit 9/11).
 """
 from __future__ import annotations
 
-from typing import Any
 from urllib.parse import urlparse
 
 from accessible_surfaceome.tools._shared.europepmc import (
     europepmc_bulk_by_pmid,
     europepmc_search,
     fetch_fulltext,
-    paper_from_europepmc,
+    papers_from_europepmc_records,
 )
 from accessible_surfaceome.tools._shared.http import CachedHTTP
-from accessible_surfaceome.tools._shared.models import Paper
+from accessible_surfaceome.tools._shared.models import Paper, paper_source_id
 from accessible_surfaceome.tools._shared.normalize import (
     find_quote_in_normalized,
     normalize_for_quote_matching,
@@ -77,39 +76,46 @@ def discover_tag_site_papers(
     gene_symbol: str,
     aliases: list[str],
     retraction_index: RetractionIndex | None = None,
-) -> dict[int, Paper]:
-    """Return ``{pmid: Paper}`` for tagging-methods papers on this gene, via the
-    repo lit-search: EuropePMC (alias + methods vocabulary) UNION PubTator entity
-    search (minimal query), hydrated to full :class:`Paper` objects. ``aliases``
+) -> dict[str, Paper]:
+    """Return ``{paper_source_id: Paper}`` for tagging-methods papers on this gene,
+    via the repo lit-search: EuropePMC (alias + methods vocabulary) UNION PubTator
+    entity search (minimal query), hydrated to full :class:`Paper` objects.
+
+    Keyed on the shared :func:`paper_source_id` (``PMC:`` > ``PMID:`` > ``DOI:``),
+    NOT the integer PMID, so DOI-anchored bioRxiv/medRxiv preprints join the same
+    corpus — ``papers_from_europepmc_records(..., include_preprints=True)`` keeps
+    them (the shared contract from #143) instead of the old PPR skip. ``aliases``
     should include the protein name(s) — methods papers rarely use the symbol."""
     ri = retraction_index or _empty_retraction_index()
-    discovered: dict[int, Paper] = {}
+    discovered: dict[str, Paper] = {}
     query = build_tag_site_query([gene_symbol, *aliases])
 
     # Two EuropePMC passes over the same alias+methods query: the default
     # (relevance/recency) sort PLUS a CITATION-sorted pass that surfaces the
-    # classic, heavily-cited methods papers the default sort buries. Retracted
-    # papers are dropped (paper_from_europepmc flags is_retracted from the
-    # Retraction Watch index).
+    # classic, heavily-cited methods papers the default sort buries. Preprints are
+    # kept (DOI-anchored) and retracted papers dropped.
     for sort in (None, "CITED desc"):
         payload = europepmc_search(http=http, query=query, page_size=_MAX_PER_SOURCE, sort=sort)
-        for rec in payload.get("resultList", {}).get("result", []):
-            try:
-                paper = paper_from_europepmc(rec, retraction_index=ri)
-            except (LookupError, ValueError):
-                continue  # preprint / non-int PMID -> discover_tag_site_preprints()
-            if paper.pmid and not paper.is_retracted:
-                discovered.setdefault(paper.pmid, paper)
+        records = payload.get("resultList", {}).get("result", [])
+        for paper in papers_from_europepmc_records(
+            records,
+            retraction_index=ri,
+            context=f"tag_site:{gene_symbol}",
+            include_preprints=True,
+        ):
+            if not paper.is_retracted:
+                discovered.setdefault(paper_source_id(paper), paper)
 
     # PubTator entity search — MINIMAL free text (overloading it tanks recall),
     # hydrated to Paper objects via EuropePMC. Retracted papers dropped.
     hits = pubtator_search(
         http=http, query=build_gene_entity_query(gene_symbol, "epitope tag")
     ).hits
-    pmids = [h.pmid for h in hits if h.pmid and h.pmid not in discovered][:_MAX_PER_SOURCE]
+    known_pmids = {p.pmid for p in discovered.values() if p.pmid}
+    pmids = [h.pmid for h in hits if h.pmid and h.pmid not in known_pmids][:_MAX_PER_SOURCE]
     for paper in europepmc_bulk_by_pmid(http=http, pmids=pmids, retraction_index=ri):
-        if paper.pmid and not paper.is_retracted:
-            discovered.setdefault(paper.pmid, paper)
+        if not paper.is_retracted:
+            discovered.setdefault(paper_source_id(paper), paper)
 
     return discovered
 
@@ -155,19 +161,21 @@ _MAX_FULLTEXT_PAPERS = 8
 def fetch_fulltext_sections(
     *,
     http: CachedHTTP,
-    papers: dict[int, Paper],
+    papers: dict[str, Paper],
     max_papers: int = _MAX_FULLTEXT_PAPERS,
     retraction_index: RetractionIndex | None = None,
-) -> dict[int, dict[str, str]]:
+) -> dict[str, dict[str, str]]:
     """Fetch full text for the top ``max_papers`` discovered papers that have a
     PMCID, via the repo's ``fetch_fulltext`` (NCBI/PMC, same path evidence_retrieval
-    uses), and return ``{pmid: {section: text}}`` for the METHODS + RESULTS sections
-    — where the tag construct (exact residue) AND the surface/function measurements
-    live. Best-effort: a paper with no PMC-OA full text or a fetch error is skipped,
-    so the agent still has the abstract for it."""
+    uses), and return ``{paper_source_id: {section: text}}`` for the METHODS +
+    RESULTS sections — where the tag construct (exact residue) AND the
+    surface/function measurements live. Best-effort: a paper with no PMC-OA full
+    text or a fetch error is skipped (preprints have no PMCID -> abstract only), so
+    the agent still has the abstract for it. Keyed on ``paper_source_id`` to match
+    the ``discover_tag_site_papers`` corpus."""
     ri = retraction_index or _empty_retraction_index()
-    out: dict[int, dict[str, str]] = {}
-    for pmid, paper in list(papers.items())[:max_papers]:
+    out: dict[str, dict[str, str]] = {}
+    for sid, paper in list(papers.items())[:max_papers]:
         if not paper.pmc_id:
             continue
         try:
@@ -176,40 +184,7 @@ def fetch_fulltext_sections(
             continue
         secs = {s.name: s.text for s in full.sections if s.name in ("methods", "results")}
         if secs:
-            out[pmid] = secs
-    return out
-
-
-_MAX_PREPRINTS = 6
-
-
-def discover_tag_site_preprints(
-    *, http: CachedHTTP, gene_symbol: str, aliases: list[str], max_preprints: int = _MAX_PREPRINTS
-) -> list[dict[str, Any]]:
-    """EuropePMC PREPRINT (PPR) records for this gene's tagging-methods query — the
-    ones ``paper_from_europepmc`` can't PMID-anchor and ``discover_tag_site_papers``
-    therefore skips. Returned as lightweight dicts (id/title/abstract/doi/year) so
-    bioRxiv/medRxiv methods papers (e.g. EndoNB) reach the agent instead of being
-    silently dropped. Cite these by DOI (they have no PMID)."""
-    query = build_tag_site_query([gene_symbol, *aliases])
-    out: list[dict[str, Any]] = []
-    seen: set[str] = set()
-    for sort in (None, "CITED desc"):
-        payload = europepmc_search(http=http, query=query, page_size=_MAX_PER_SOURCE, sort=sort)
-        for rec in payload.get("resultList", {}).get("result", []):
-            rid = str(rec.get("id") or "")
-            if not (rec.get("source") == "PPR" or rid.startswith("PPR")) or rid in seen:
-                continue
-            seen.add(rid)
-            out.append({
-                "id": rid,
-                "title": rec.get("title", ""),
-                "abstract": rec.get("abstractText", ""),
-                "doi": rec.get("doi"),
-                "year": rec.get("pubYear"),
-            })
-            if len(out) >= max_preprints:
-                return out
+            out[sid] = secs
     return out
 
 
