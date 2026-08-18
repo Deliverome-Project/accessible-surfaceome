@@ -43,6 +43,19 @@ expect("terminal_c -> 100%", out[1].leftPct, 100);
 expect("null internal junction -> residue 1", out[2].residue, 1);
 expect("provenance carried", out[1].provenance, "deterministic_computed");
 
+// category derivation (the fine-grained color axis): lane / terminus / snorkel / literature
+const cats = renderableTagSites([
+  site({ site_id: "lit", provenance: "literature_retrieved" }),
+  site({ site_id: "diso", provenance: "deterministic_computed", det_path: "disorder" }),
+  site({ site_id: "loop", provenance: "deterministic_computed", det_path: "surface_loop" }),
+  site({ site_id: "tn", provenance: "deterministic_computed", det_path: "terminal", site_kind: "terminal_n", insert_after_residue: null }),
+  site({ site_id: "tc", provenance: "deterministic_computed", det_path: "terminal", site_kind: "terminal_c", insert_after_residue: null }),
+  site({ site_id: "snork", provenance: "deterministic_computed", det_path: "snorkel", site_kind: "terminal_c", insert_after_residue: null }),
+], L);
+expect("categories derived per lane/terminus/snorkel/literature",
+  cats.map((s) => s.category),
+  ["literature", "disorder", "surface_loop", "terminal_n", "terminal_c", "snorkel"]);
+
 // out-of-range residue is dropped, not clamped silently into a wrong position
 const oob = renderableTagSites([site({ site_id: "oob", insert_after_residue: 9999 })], L);
 expect("out-of-range residue dropped", oob.length, 0);

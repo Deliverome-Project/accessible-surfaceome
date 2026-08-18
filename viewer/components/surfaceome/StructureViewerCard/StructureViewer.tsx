@@ -14,7 +14,8 @@ import type {
   AlphafoldPredictionEntry,
   StructureViewerData,
 } from "../../../lib/structure-viewer-types";
-import { PROVENANCE_HEX } from "../../../lib/tag-sites-types";
+import { CATEGORY_HEX, CATEGORY_LABEL } from "../../../lib/tag-sites-types";
+import type { TagSiteCategory } from "../../../lib/tag-sites-types";
 import { InfoTip } from "../../InfoTip/InfoTip";
 import { TopologyLegend } from "../IsoformsCard/TopologyBar";
 import { StatusPill } from "../StatusPill/StatusPill";
@@ -39,13 +40,16 @@ export interface SurfaceBindAnchor {
 }
 
 /** A tag-insertion-site overlay sphere. Draws a colored sphere + label at the
- *  α-carbon of ``residue``, colored by ``provenance`` via ``PROVENANCE_HEX``.
+ *  α-carbon of ``residue``, colored by ``category`` via ``CATEGORY_HEX``.
  *  Rendered only in the dedicated ``tags`` view mode (its own layer, separate
  *  from the SURFACE-Bind ``sites`` anchors). */
 export interface TagSiteSphere {
   siteId: string;
   residue: number;
   provenance: "literature_retrieved" | "deterministic_computed";
+  /** Fine-grained overlay category (lane / terminus / snorkel / literature) —
+   *  the color axis for ``tags`` mode via ``CATEGORY_HEX``. */
+  category: TagSiteCategory;
   tagType: string;
 }
 
@@ -2039,13 +2043,14 @@ export function StructureViewer({
 
       // Tag-insertion-site overlay — its OWN layer, drawn only in the
       // dedicated ``tags`` view mode (independent of the SURFACE-Bind
-      // ``sites`` anchors above). Provenance-colored spheres at the α-carbon
-      // of each rendered tag site, using the WebGL-safe PROVENANCE_HEX map.
+      // ``sites`` anchors above). Category-colored spheres at the α-carbon
+      // of each rendered tag site, using the WebGL-safe CATEGORY_HEX map
+      // (disorder / surface_loop / ecto N- / ecto C-term / snorkel / literature).
       const shouldRenderTagSites =
         viewMode === "tags" && hasTagSites && !schwekeVariant;
       for (let i = 0; shouldRenderTagSites && i < tagSites.length; i += 1) {
-        const { residue, provenance, tagType } = tagSites[i];
-        const color = PROVENANCE_HEX[provenance];
+        const { residue, category, tagType } = tagSites[i];
+        const color = CATEGORY_HEX[category];
         const sel = { resi: residue, atom: "CA" };
         if (typeof viewerExt.addStyle === "function") {
           viewerExt.addStyle(sel, {
@@ -2515,20 +2520,18 @@ export function StructureViewer({
       ) : viewMode === "tags" && hasTagSites ? (
         <ul
           className={styles.sitesLegend}
-          aria-label="Tag-site provenance legend"
+          aria-label="Tag-site category legend"
         >
-          {Array.from(new Set(tagSites.map((t) => t.provenance))).map(
-            (provenance) => (
-              <li key={provenance} className={styles.sitesLegendItem}>
+          {Array.from(new Set(tagSites.map((t) => t.category))).map(
+            (category) => (
+              <li key={category} className={styles.sitesLegendItem}>
                 <span
                   className={styles.sitesLegendSwatch}
-                  style={{ background: PROVENANCE_HEX[provenance] }}
+                  style={{ background: CATEGORY_HEX[category] }}
                   aria-hidden="true"
                 />
                 <span className={styles.sitesLegendLabel}>
-                  {provenance === "literature_retrieved"
-                    ? "Literature"
-                    : "Deterministic"}
+                  {CATEGORY_LABEL[category]}
                 </span>
               </li>
             ),

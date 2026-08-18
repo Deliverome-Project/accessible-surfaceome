@@ -791,6 +791,7 @@ export function GeneHeader({
                 siteId: r.siteId,
                 residue: r.residue,
                 provenance: r.provenance,
+                category: r.category,
                 tagType: r.tagType,
               }))}
               // Variant tabs above the 3D canvas: alt isoforms

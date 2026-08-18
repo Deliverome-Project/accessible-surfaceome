@@ -11,7 +11,7 @@ export type TaggedSiteProvenance =
   | "deterministic_computed"
   | "validated_literature"; // validation-only; never rendered
 
-export type DeterministicPath = "disorder" | "surface_loop";
+export type DeterministicPath = "disorder" | "surface_loop" | "terminal" | "snorkel";
 export type TaggedSiteKind = "terminal_n" | "terminal_c" | "internal";
 export type Confidence = "high" | "medium" | "low";
 
@@ -91,4 +91,66 @@ export const PROVENANCE_HEX: Record<
 > = {
   literature_retrieved: "#8878c8",
   deterministic_computed: "#3d6b60",
+};
+
+/**
+ * Fine-grained overlay CATEGORY — the color axis for the structure-viewer
+ * "Tag sites" mode. Splits the coarse provenance into the deterministic lanes
+ * (disorder / surface_loop internal loops, ecto N-/C-terminus, C-terminal
+ * snorkel) plus literature. Derive it with `tagSiteCategory`; color it with
+ * `CATEGORY_HEX` (WebGL) / `CATEGORY_TOKEN` (CSS); label with `CATEGORY_LABEL`.
+ */
+export type TagSiteCategory =
+  | "literature"
+  | "surface_loop"
+  | "disorder"
+  | "terminal_n"
+  | "terminal_c"
+  | "snorkel";
+
+/** Resolve a site to its overlay category from provenance + det_path + kind. */
+export function tagSiteCategory(
+  site: Pick<TaggedSite, "provenance" | "det_path" | "site_kind">,
+): TagSiteCategory {
+  if (site.provenance !== "deterministic_computed") return "literature";
+  switch (site.det_path) {
+    case "disorder":
+      return "disorder";
+    case "snorkel":
+      return "snorkel";
+    case "terminal":
+      return site.site_kind === "terminal_n" ? "terminal_n" : "terminal_c";
+    case "surface_loop":
+    default:
+      return "surface_loop"; // legacy deterministic rows without a det_path
+  }
+}
+
+/** WebGL-safe hex per category (3Dmol can't resolve CSS vars). MUST stay in
+ *  sync with the --tag-site-* tokens in app/design-tokens.css. */
+export const CATEGORY_HEX: Record<TagSiteCategory, string> = {
+  literature: "#8878c8", // --lavender-bright
+  surface_loop: "#3d6b60", // --teal-mid
+  disorder: "#6aa398", // lighter teal — distinct internal lane
+  terminal_n: "#f4aa28", // --amber-bright
+  terminal_c: "#c07830", // --amber-mid
+  snorkel: "#922038", // --maroon-mid — fallback / lower-confidence
+};
+
+export const CATEGORY_TOKEN: Record<TagSiteCategory, string> = {
+  literature: "--tag-site-literature",
+  surface_loop: "--tag-site-surface-loop",
+  disorder: "--tag-site-disorder",
+  terminal_n: "--tag-site-terminal-n",
+  terminal_c: "--tag-site-terminal-c",
+  snorkel: "--tag-site-snorkel",
+};
+
+export const CATEGORY_LABEL: Record<TagSiteCategory, string> = {
+  literature: "Literature-validated",
+  surface_loop: "Surface loop (computed)",
+  disorder: "Disordered loop (computed)",
+  terminal_n: "Extracellular N-terminus",
+  terminal_c: "Extracellular C-terminus",
+  snorkel: "C-terminal snorkel",
 };

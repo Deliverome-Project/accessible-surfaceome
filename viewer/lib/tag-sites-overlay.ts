@@ -5,7 +5,8 @@
  * validated_literature provenance; resolves each site to a residue and a
  * left-percent along a topology of the given length.
  */
-import type { TaggedSite, TaggedSiteProvenance } from "./tag-sites-types";
+import type { TagSiteCategory, TaggedSite, TaggedSiteProvenance } from "./tag-sites-types";
+import { tagSiteCategory } from "./tag-sites-types";
 
 export type RenderedProvenance = "literature_retrieved" | "deterministic_computed";
 
@@ -14,6 +15,7 @@ export interface RenderableTagSite {
   residue: number;               // 1-indexed, within [1, topologyLength]
   leftPct: number;               // 0..100 along the linear bar
   provenance: RenderedProvenance;
+  category: TagSiteCategory;     // fine-grained color axis (lane / terminus / snorkel / literature)
   tagType: string;
   siteKind: TaggedSite["site_kind"];
 }
@@ -44,6 +46,7 @@ export function renderableTagSites(
       residue,
       leftPct: (residue / topologyLength) * 100,
       provenance: site.provenance as RenderedProvenance,
+      category: tagSiteCategory(site),
       tagType: site.tag_type,
       siteKind: site.site_kind,
     });
