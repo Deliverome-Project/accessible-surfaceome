@@ -114,6 +114,36 @@ def test_source_store_uses_draft_body_for_non_pmc_fetched(monkeypatch):
     assert "TMEM123 internalized like the transferrin receptor" in st.raw_text
 
 
+def test_source_store_folds_drafts_for_pmc_paper_with_empty_jats(monkeypatch):
+    # Robustness: a paper WITH a PMC id whose JATS comes back EMPTY (the
+    # PMC-PDF-only case abstract_triage falls through to Unpaywall for) still has
+    # body-derived drafts. The store must fold them in — the if/elif version only
+    # folded drafts when pmc_id was absent, so these body clips were dropped.
+    pool = {"c1": _real_draft("c1", "the receptor internalized via clathrin", sid="PMC:42")}
+    paper = SimpleNamespace(
+        pmid=42, pmc_id="PMC42", doi=None, title="t", abstract="abstract only text",
+        publication_type="primary_research", is_retracted=False,
+        year=2022, journal="J", authors=[],
+    )
+    # JATS returns NO sections (PMC-PDF-only) — the real body came via Unpaywall.
+    monkeypatch.setattr(
+        mod,
+        "fetch_fulltext",
+        lambda *, http, pmcid, retraction_index, topic_tagger=None: SimpleNamespace(sections=[]),
+    )
+    store = build_source_store(
+        cast(Any, pool),
+        papers_by_source_id=cast(Any, {"PMC:42": (paper, True)}),
+        http=cast(Any, object()),
+        retraction_index=cast(Any, object()),
+    )
+    st = store.get("PMC:42")
+    assert st is not None
+    assert "abstract only text" in st.raw_text
+    # the body clip is verifiable even though JATS was empty and pmc_id is set:
+    assert "the receptor internalized via clathrin" in st.raw_text
+
+
 def test_fetched_store_body_still_contains_the_abstract(monkeypatch):
     # Regression: a fetched paper can contribute ABSTRACT-derived clips (e.g. a
     # worth_fetching body-fetch that fell back to abstract). The store body must

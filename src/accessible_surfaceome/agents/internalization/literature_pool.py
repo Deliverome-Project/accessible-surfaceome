@@ -83,21 +83,23 @@ def _body_text(
     """Store body for span verification. ALWAYS include the abstract (a paper
     can contribute abstract-derived clips even after it was fetched — e.g. a
     worth_fetching body-fetch that fell back to the abstract), PLUS the
-    full-text body when fetched.
+    full-text body when fetched, from two complementary sources:
 
-    Two full-text sources, by paper kind:
-
-    * **PMC papers** — re-fetch the real JATS body (``fetch_fulltext``), so clip
-      offsets point at the real source text.
-    * **Non-PMC fetched papers** (bioRxiv/medRxiv preprints, Unpaywall/DataCite
-      OA-PDF-only papers) — PMC has nothing for them, so the previous code left
-      the store abstract-only and EVERY body-derived clip failed span
-      verification (they came from the fetched PDF, not the abstract). That
-      silently dropped all full-text evidence from non-PMC sources — fatal for a
-      gene whose only internalization evidence is a preprint (the TMEM123/EndoNB
-      case). The body-derived clip ``drafts`` in the pool ARE verbatim excerpts
-      of that fetched body — exactly what ``select`` picks from — so folding them
-      into the source text makes those clips verifiable again, no re-fetch."""
+    * **Real JATS body** (``fetch_fulltext``) when the paper has a PMC id AND PMC
+      returns sections — so clips keep offsets into the real source text.
+    * **Body-derived clip drafts** — folded in for EVERY fetched paper as the
+      span-verify safety net. The drafts in the pool ARE verbatim excerpts of the
+      body ``abstract_triage`` actually fetched (whatever the path), and are
+      exactly what ``select`` picks from. This covers the cases the JATS re-fetch
+      misses: (a) non-PMC papers — bioRxiv/medRxiv preprints, Unpaywall/DataCite
+      OA-PDF-only papers (PMC has nothing) — the TMEM123/EndoNB gap; AND (b) a
+      paper WITH a PMC id whose JATS came back empty, so ``abstract_triage``
+      fetched the body via Unpaywall/DataCite instead (the PMC-PDF-only case) —
+      the ``if``/``elif`` version silently dropped those body clips too. Without
+      this, body-derived clips fail verification against an abstract-only store
+      and get silently dropped. For a normal PMC paper the real JATS body is
+      added first, so its clips keep real offsets and the redundant draft copies
+      are harmless (first-occurrence match wins)."""
     parts: list[str] = []
     abstract = getattr(paper, "abstract", None)
     if abstract:
@@ -106,9 +108,10 @@ def _body_text(
         full = fetch_fulltext(http=http, pmcid=paper.pmc_id, retraction_index=retraction_index)
         secs = getattr(full, "sections", None) or []
         parts.extend(s.text for s in secs if getattr(s, "text", None))
-    elif fetched:
-        # Non-PMC fetched body: reconstruct from the pool's body-derived drafts
-        # (verbatim excerpts of the fetched PDF/landing body).
+    if fetched:
+        # Safety net — ALWAYS fold in the body-derived drafts (verbatim excerpts
+        # of the fetched body), not just when pmc_id is absent, so a PMC paper
+        # with empty JATS (body via Unpaywall/DataCite) doesn't lose its clips.
         parts.extend(d.quote for d in drafts if getattr(d, "quote", None))
     return "\n\n".join(parts)
 
