@@ -213,7 +213,7 @@ def main(argv: list[str] | None = None) -> int:
                     ok += 1
                     lit = rec.literature
                     logger.info(
-                        "[%d/%d] %s -> lit %s (%d obs, %d papers, %d web?)",
+                        "[%d/%d] %s -> lit %s (%d obs, %d discovered, %d fetched)",
                         i,
                         len(todo),
                         sym,

@@ -19,6 +19,7 @@ safe to call unconditionally.
 
 from __future__ import annotations
 
+import logging
 from typing import Any
 from urllib.parse import urlparse
 
@@ -34,6 +35,8 @@ from accessible_surfaceome.tools._shared.europepmc import (
 from accessible_surfaceome.tools._shared.http import CachedHTTP
 from accessible_surfaceome.tools._shared.models import Paper, paper_source_id
 from accessible_surfaceome.tools._shared.retraction_watch import RetractionIndex
+
+logger = logging.getLogger(__name__)
 
 # Server-side web_search tool recipe. Centralized so the tag-site + internalization
 # tracks (and the deep-dive methods builder, on a later consolidation) share ONE
@@ -79,19 +82,34 @@ def source_tier(url: str) -> str:
 
 
 class WebCitation(BaseModel):
-    """One primary source the model surfaced via web_search."""
+    """One primary source the model surfaced via web_search.
 
-    model_config = ConfigDict(extra="forbid")
+    ``extra="ignore"`` (NOT forbid): the web_search model naturally decorates each
+    citation with ``title`` / ``url`` / ``year`` / ``reason`` fields — forbidding
+    them fails the WHOLE structured output and silently drops every hit. We keep
+    the two we can use (``title``, ``url``) and ignore the rest.
+    """
+
+    model_config = ConfigDict(extra="ignore")
 
     pmid: int | None = None
     doi: str | None = None
+    title: str | None = None
+    url: str | None = None
     note: str = ""  # one clause: why it's relevant (kept out of the Paper)
 
 
 class WebDiscoveryResult(BaseModel):
-    """Exact shape the model emits — a list of id-anchored primary sources."""
+    """Exact shape the model emits — a list of id-anchored primary sources.
 
-    model_config = ConfigDict(extra="forbid")
+    ``extra="ignore"`` (NOT forbid): the model tends to wrap the list in a
+    ``{"protein": ..., "topic": ..., "citations": [...]}`` envelope. Forbidding the
+    envelope keys fails validation after every repair attempt and returns nothing
+    (the TMEM123 silent-zero bug). Ignoring them keeps the ``citations`` we asked
+    for and discards the envelope.
+    """
+
+    model_config = ConfigDict(extra="ignore")
 
     citations: list[WebCitation] = Field(default_factory=list)
 
@@ -105,8 +123,11 @@ _SYSTEM = (
     "in the title/abstract. EXCLUDE reviews, news, blog posts, and vendor "
     "catalog pages. For every source you keep, return its PubMed PMID (integer) "
     "AND/OR its DOI — at least one of the two is REQUIRED; a source with neither "
-    "is useless downstream, so omit it. Return only the JSON object; do not "
-    "fabricate PMIDs or DOIs — copy them from the web_search results verbatim."
+    "is useless downstream, so omit it. Return a JSON object with EXACTLY one "
+    'top-level key, "citations", whose value is a list of objects each with '
+    '"pmid" (integer or null), "doi" (string or null), and "note" (short string). '
+    "Do NOT wrap the list in any other top-level keys. Do not fabricate PMIDs or "
+    "DOIs — copy them from the web_search results verbatim."
 )
 
 
@@ -190,6 +211,7 @@ def web_discover_papers(
         tools=WEB_SEARCH_TOOL,
     )
     if not isinstance(result, WebDiscoveryResult):
+        logger.info("web_discover(%s): call returned no parseable result", names)
         return []
     out: dict[str, Paper] = {}
     for cit in result.citations[:max_hits]:
@@ -201,4 +223,10 @@ def web_discover_papers(
         )
         if paper is not None:
             out.setdefault(paper_source_id(paper), paper)
+    logger.info(
+        "web_discover(%s): %d citations -> %d hydrated papers",
+        names,
+        len(result.citations),
+        len(out),
+    )
     return list(out.values())

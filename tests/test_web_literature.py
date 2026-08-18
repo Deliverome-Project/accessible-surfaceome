@@ -21,6 +21,33 @@ def test_source_tier_ranks_by_host():
     assert wl.source_tier("https://some.random.blog/x") == "other"
 
 
+def test_discovery_result_tolerates_model_envelope():
+    """Regression: the web_search model wraps the list in a
+    ``{"protein": ..., "topic": ..., "citations": [...]}`` envelope and decorates
+    each citation with ``title`` / ``url`` / ``reason``. Under ``extra="forbid"``
+    this failed validation after every repair and returned nothing (the TMEM123
+    silent-zero bug). ``extra="ignore"`` must recover the citations."""
+    payload = {
+        "protein": {"gene_symbol": "EGFR", "aliases": ["ERBB1"]},
+        "topic": "internalization / endocytosis measurements",
+        "citations": [
+            {
+                "pmid": 12456789,
+                "doi": "10.1/x",
+                "title": "EGFR endocytosis kinetics",
+                "url": "https://www.nature.com/x",
+                "reason": "measures uptake",
+                "note": "rate paper",
+            },
+            {"pmid": None, "doi": "10.1101/2026.01.01.123456", "note": "recent preprint"},
+        ],
+    }
+    res = wl.WebDiscoveryResult.model_validate(payload)
+    assert len(res.citations) == 2  # envelope keys ignored, list recovered
+    assert res.citations[0].title == "EGFR endocytosis kinetics"
+    assert res.citations[0].url == "https://www.nature.com/x"  # usable extras kept
+
+
 def test_web_discover_hydrates_pmid_and_doi_and_dedups(monkeypatch):
     # Model surfaces one PMID hit, one DOI-only preprint, and a dup of the PMID.
     monkeypatch.setattr(
