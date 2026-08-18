@@ -436,6 +436,14 @@ export function CatalogTable({
   const [deepDiveFilter, setDeepDiveFilter] = useState<"yes" | "no" | null>(
     null,
   );
+  // FG surface-protein library membership — a binary radio on the top-level
+  // `row.in_fg_library` flag (same shape as deepDiveFilter). ``null`` = off.
+  // Surfaced as a chip in the presetBar (composes with the tier presets under
+  // AND), but reset by "clear advanced filters" and counted in the advanced
+  // active-filter tally.
+  const [fgLibraryFilter, setFgLibraryFilter] = useState<"yes" | "no" | null>(
+    null,
+  );
   // SURFACE-Bind filter — 4-way exclusive: any / scored ≥1 / scored
   // ≥3 / not in dataset. ``null`` = filter off (all rows pass).
   //  - "any" → ``surface_bind_sites != null`` (in dataset, scored)
@@ -527,6 +535,12 @@ export function CatalogTable({
     // other chip switches to it. yes/no are mutually exclusive.
     setDeepDiveFilter((prev) => (prev === key ? null : key));
   }
+  function toggleFgLibraryFilter(key: "yes" | "no") {
+    // Radio, same contract as toggleDeepDiveFilter. The presetBar chip only
+    // exposes "yes" (toggles in-library ↔ off); the "no" arm exists for
+    // symmetry with the tri-state predicate.
+    setFgLibraryFilter((prev) => (prev === key ? null : key));
+  }
   function toggleSurfaceBindFilter(key: NonNullable<SurfaceBindFilter>) {
     // 4-way radio — clicking the active chip clears, otherwise switches.
     setSurfaceBindFilter((prev) => (prev === key ? null : key));
@@ -561,6 +575,7 @@ export function CatalogTable({
     setVerdictFilter(new Set());
     setReasonFilter(new Set());
     setDeepDiveFilter(null);
+    setFgLibraryFilter(null);
     setSurfaceBindFilter(null);
     setInternalizationFilter(new Set());
     setDdEnumFilters(() => {
@@ -725,6 +740,7 @@ export function CatalogTable({
     verdictFilter.size +
     reasonFilter.size +
     (deepDiveFilter !== null ? 1 : 0) +
+    (fgLibraryFilter !== null ? 1 : 0) +
     // Internalization is its own top-level category — counted here, but kept
     // OUT of ddActive so it never forces the deep-dive presence gate.
     internalizationFilter.size +
@@ -877,6 +893,12 @@ export function CatalogTable({
         const k = r.deep_dive ? "yes" : "no";
         if (k !== deepDiveFilter) return false;
       }
+      // FG-library membership — binary facet on the top-level `in_fg_library`
+      // flag (baked at build time). Composes with everything else under AND.
+      if (fgLibraryFilter !== null) {
+        const k = r.in_fg_library ? "yes" : "no";
+        if (k !== fgLibraryFilter) return false;
+      }
       if (surfaceBindFilter !== null) {
         const sb = r.surface_bind_sites;
         switch (surfaceBindFilter) {
@@ -968,6 +990,7 @@ export function CatalogTable({
     verdictFilter,
     reasonFilter,
     deepDiveFilter,
+    fgLibraryFilter,
     surfaceBindFilter,
     internalizationFilter,
     ddActive,
@@ -1217,6 +1240,42 @@ export function CatalogTable({
                 </p>
                 <p>
                   <em>{DEEP_DIVE_ONLY_NOTE}</em>
+                </p>
+              </InfoTip>
+            </span>
+          );
+        })()}
+        {/* In FG library — standalone facet on the top-level `in_fg_library`
+         *  flag (baked from the committed membership snapshot). INDEPENDENT of
+         *  the tier presets — composes with them under AND (does not clear
+         *  them), same pattern as the Low-lit + UniProt facet above. */}
+        {(() => {
+          const count = rows.reduce((n, r) => (r.in_fg_library ? n + 1 : n), 0);
+          const on = fgLibraryFilter === "yes";
+          return (
+            <span className={styles.presetChipWrap}>
+              <button
+                type="button"
+                role="tab"
+                aria-selected={on}
+                className={`${styles.presetChip} ${on ? styles.presetChipOn : ""}`}
+                onClick={() => {
+                  // Independent facet — toggles on its own (in-library ↔ off),
+                  // composing with any active tier presets (AND).
+                  toggleFgLibraryFilter("yes");
+                }}
+              >
+                In FG library
+                <span className={styles.presetCount}>
+                  {count.toLocaleString()}
+                </span>
+              </button>
+              <InfoTip label="About the In FG library facet" wide>
+                <p>
+                  Genes in the Deliverome FG surface-protein library — the
+                  curated set carried in the delivery library. Narrows the
+                  catalog to library members; composes with the tier presets
+                  (AND) rather than replacing them.
                 </p>
               </InfoTip>
             </span>

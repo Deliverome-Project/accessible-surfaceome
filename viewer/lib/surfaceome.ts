@@ -58,6 +58,10 @@ function readBuildCache<T>(file: string): T | null {
   }
 }
 import { pickDeepDiveFilters } from "./deep-dive-fields";
+// Client-safe FG-library overlay (no node:fs). The build reads the committed
+// snapshot via fs below and hands the parsed object to these helpers; the
+// same module is value-imported client-side by the gene page.
+import { parseFgLibrary, fgLibrarySymbolSet } from "./fg-library";
 import { renumberEvidenceIds } from "./evidenceRenumber";
 import { parseTriageHeadline } from "./triage-headline";
 import type {
@@ -113,6 +117,19 @@ const HGNC_TSV = path.join(
   "external",
   "hgnc",
   "hgnc_complete_set.tsv",
+);
+
+// Committed FG-library membership snapshot (2,346 genes), shipped as a
+// static asset AND read here at build time so the catalog row's
+// `in_fg_library` flag bakes into the static export. Lives under
+// `public/data/` (not `../data/external/`) because it's a viewer-owned
+// overlay generated from the deliverome-analysis library, and the gene
+// page fetches the same file at runtime.
+const FG_LIBRARY_JSON = path.join(
+  process.cwd(),
+  "public",
+  "data",
+  "fg-library.json",
 );
 
 /**
@@ -329,6 +346,13 @@ export interface CatalogRow {
    *  DeepDiveFilters docstring for the field set; the catalog
    *  filter panel reads this for the "Deep Dive" filter group. */
   deep_dive_filters?: DeepDiveFilters;
+  /** True when this gene's symbol is a member of the Deliverome FG
+   *  surface-protein library (`public/data/fg-library.json`). Baked at
+   *  build time by an overlay step (`enrichRowsWithFgLibrary`) modeled on
+   *  `enrichRowsWithNames`; a TOP-LEVEL catalog facet, independent of
+   *  deep-dive coverage. Always present (defaults to `false`). The public
+   *  Worker does NOT serve this flag — it's a viewer-side overlay. */
+  in_fg_library: boolean;
 }
 
 export interface Catalog {
@@ -517,6 +541,42 @@ function enrichRowsWithNames(
   });
 }
 
+// Module-level memo — the committed snapshot is small (~550 KB / 2,346
+// genes) but `_loadCatalogImpl` is memoized and only runs once per build,
+// so this mostly guards against redundant fs reads if the loader is
+// re-entered. Empty set on a read/parse miss → the flag stays false for
+// every row (graceful, like the gene-names overlay).
+let _fgLibrarySymbolsCache: Set<string> | null = null;
+
+function loadFgLibrarySymbols(): Set<string> {
+  if (_fgLibrarySymbolsCache) return _fgLibrarySymbolsCache;
+  let symbols = new Set<string>();
+  try {
+    const raw = readFileSync(FG_LIBRARY_JSON, "utf-8");
+    symbols = fgLibrarySymbolSet(parseFgLibrary(JSON.parse(raw)));
+  } catch {
+    // Missing/malformed snapshot — leave the flag false everywhere.
+    // Deliberately swallowed: the overlay is an enrichment, not a gate.
+  }
+  _fgLibrarySymbolsCache = symbols;
+  return symbols;
+}
+
+/** Set the top-level `in_fg_library` flag on every row from the committed
+ *  membership snapshot. Modeled on `enrichRowsWithNames` — a build-time
+ *  overlay step keyed by symbol. Every row already carries `in_fg_library`
+ *  from `inflateCatalogRow` (default false); this flips it to true for
+ *  library members. */
+function enrichRowsWithFgLibrary(
+  rows: CatalogRow[],
+  symbols: Set<string>,
+): CatalogRow[] {
+  if (symbols.size === 0) return rows;
+  return rows.map((r) =>
+    symbols.has(r.symbol) ? { ...r, in_fg_library: true } : r,
+  );
+}
+
 /**
  * The Worker (`row_schema: 3`) packs each row's per-model NCBI
  * verdicts into a 3-slot tuple at `r.tr` — `[haiku?, sonnet?, opus?]`
@@ -581,6 +641,10 @@ function inflateCatalogRow(raw: unknown): CatalogRow {
     internalization_has_lit:
       Boolean(r.intern_lit ?? r.internalization_has_lit) || undefined,
     deep_dive_filters: ddf,
+    // Default false — the build-time `enrichRowsWithFgLibrary` overlay flips
+    // it true for library members (the Worker doesn't ship this facet). A
+    // snapshot fallback carrying `in_fg_library` is honored if present.
+    in_fg_library: Boolean(r.in_fg_library),
   };
 }
 
@@ -731,7 +795,10 @@ async function _loadCatalogImpl(): Promise<Catalog> {
       ? r
       : { ...r, deep_dive: deepDiveGenes.has(r.symbol) },
   );
-  const rows = enrichRowsWithNames(reconciled, names);
+  // Two build-time overlays keyed by symbol: HGNC names/uniprot, then the
+  // FG-library membership flag from the committed snapshot.
+  const named = enrichRowsWithNames(reconciled, names);
+  const rows = enrichRowsWithFgLibrary(named, loadFgLibrarySymbols());
   const n_with_deep_dive = rows.reduce(
     (n, r) => n + (r.deep_dive ? 1 : 0),
     0,

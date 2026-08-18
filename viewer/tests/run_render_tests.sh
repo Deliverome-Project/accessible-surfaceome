@@ -20,6 +20,7 @@ tests=(
   filters_card_chip_jump.test.tsx
   surface_evidence_card_chip_jump.test.tsx
   catalog_table_internalization.test.tsx
+  catalog_table_fg_library.test.tsx
 )
 
 fails=0

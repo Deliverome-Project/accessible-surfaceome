@@ -28,6 +28,7 @@ function row(overrides: Partial<CatalogRow>): CatalogRow {
     db: { uniprot: 1, go: 1, surfy: 1, cspa: 0, hpa: 0 },
     triage_by_model: [null, { verdict: "yes", reason: "cell surface" }, null],
     deep_dive: false,
+    in_fg_library: false,
     ...overrides,
   };
 }

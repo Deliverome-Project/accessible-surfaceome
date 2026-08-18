@@ -22,6 +22,11 @@ import {
   buildGeneJumpEntries,
   type SynonymOverlay,
 } from "../../lib/gene-jump-entries";
+import {
+  parseFgLibrary,
+  inFgLibrary as symbolInFgLibrary,
+  type FgLibraryData,
+} from "../../lib/fg-library";
 import type {
   BenchmarkRow as BenchmarkRowPayload,
   SurfaceomeRecord,
@@ -118,6 +123,11 @@ function adaptCatalogRow(j: unknown): CatalogRow | null {
     deep_dive: Boolean(r.deep_dive),
     surface_bind_sites:
       typeof r.surface_bind_sites === "number" ? r.surface_bind_sites : undefined,
+    // The /v1/catalog/{sym} endpoint doesn't carry the viewer-side FG-library
+    // overlay; the badge/nav/pills read the fetched snapshot separately. Kept
+    // false here so this row satisfies the (required) CatalogRow field — the
+    // DB-presence strip this row feeds never reads it.
+    in_fg_library: false,
   };
 }
 
@@ -130,6 +140,13 @@ interface ReadyData {
   benchmarkRow: BenchmarkRowPayload | null;
   triageHeadline: TriageHeadlinePayload | null;
   deepDiveGenes: GeneEntry[];
+  /** Parsed FG-library membership overlay (fetched from `/data/fg-library.json`),
+   *  or null on a fetch/parse miss. Drives the header "In library" badge, the
+   *  prev/next library navigation, and the isoform/ortholog in-library pills. */
+  fgLibrary: FgLibraryData | null;
+  /** Whether THIS gene's symbol is in the FG library (derived from `fgLibrary`).
+   *  Threaded to <GeneHeader> for the badge. */
+  inFgLibrary: boolean;
 }
 
 type State =
@@ -179,18 +196,31 @@ export default function GeneShellPage() {
 
       // Secondary enrichments — fetched in parallel, each null-tolerant so
       // a miss degrades gracefully rather than failing the page.
-      const [triageJson, benchJson, genesJson, catalogJson, synonymsJson] =
-        await Promise.all([
-          fetchJson(`${API_BASE}/v1/triage/${symbol}`),
-          fetchJson(`${API_BASE}/v1/benchmark/${symbol}`),
-          fetchJson(`${API_BASE}/v1/genes`),
-          fetchJson(`${API_BASE}/v1/catalog/${symbol}`),
-          // Build-baked synonym overlay (site origin, not the Worker) so the
-          // GeneJump dropdown matches alias queries like "Nav1.7" → SCN9A,
-          // the same way the homepage catalog search does.
-          fetchJson("/data/gene-synonyms.json"),
-        ]);
+      const [
+        triageJson,
+        benchJson,
+        genesJson,
+        catalogJson,
+        synonymsJson,
+        fgLibraryJson,
+      ] = await Promise.all([
+        fetchJson(`${API_BASE}/v1/triage/${symbol}`),
+        fetchJson(`${API_BASE}/v1/benchmark/${symbol}`),
+        fetchJson(`${API_BASE}/v1/genes`),
+        fetchJson(`${API_BASE}/v1/catalog/${symbol}`),
+        // Build-baked synonym overlay (site origin, not the Worker) so the
+        // GeneJump dropdown matches alias queries like "Nav1.7" → SCN9A,
+        // the same way the homepage catalog search does.
+        fetchJson("/data/gene-synonyms.json"),
+        // Committed FG-library membership overlay (same site-origin pattern as
+        // the synonym overlay). Drives the "In library" badge, the prev/next
+        // library nav, and the isoform/ortholog in-library pills. A miss →
+        // null → no badge / nav / pills (graceful).
+        fetchJson("/data/fg-library.json"),
+      ]);
       if (cancelled) return;
+
+      const fgLibrary = fgLibraryJson ? parseFgLibrary(fgLibraryJson) : null;
 
       // Renumber the merged evidence ledger's ids client-side, exactly as
       // the old server loader (`loadSurfaceomeRecord`) did — chip ids
@@ -227,6 +257,8 @@ export default function GeneShellPage() {
             genesJson,
             synonymsJson as SynonymOverlay | null,
           ),
+          fgLibrary,
+          inFgLibrary: symbolInFgLibrary(fgLibrary, symbol),
         },
       });
     })();
