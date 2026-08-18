@@ -34,7 +34,11 @@ MODEL_PRIOR_PROMPT_VERSION = "0.2.0"
 # 0.1.2: web-discovery recall (multi-search prompt) + bioRxiv-DOI hydration
 #        fallback so EuropePMC-unindexed preprints (e.g. a methods/screen paper
 #        that studies the protein without naming it) are caught, not dropped.
-LIT_PROMPT_VERSION = "0.1.2"
+# 0.1.3: generalized the shared web-scout prompt to be topic-driven — removed
+#        internalization-specific topic examples that had leaked into the
+#        tag_site-shared module (no behavior change for internalization; avoids
+#        over-fitting the shared scout to one caller's topic).
+LIT_PROMPT_VERSION = "0.1.3"
 
 Grade = Literal["high", "moderate", "low", "no", "unknown"]
 GradeConfidence = Literal["high", "moderate", "low"]
