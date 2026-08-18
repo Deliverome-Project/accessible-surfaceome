@@ -25,10 +25,13 @@ RUNNER_VERSION = "internalization-model-prior/0.1.0"
 # motif gate + succinct-but-comprehensive directive.
 MODEL_PRIOR_PROMPT_VERSION = "0.2.0"
 # Human-bumpable label for the LITERATURE prompt corpus (triage + select + grade
-# system prompts, hashed together). Bump whenever any of the three changes so a
-# lit re-run is detectable as non-stale even when schema_version is unchanged.
+# + the shared web-discovery system prompt, hashed together in lit_prompt_sha).
+# Bump whenever any of those changes so a lit re-run is detectable as non-stale
+# even when schema_version is unchanged.
 # 0.1.0: initial provenance stamp (triage + select + grade + web_search discovery).
-LIT_PROMPT_VERSION = "0.1.0"
+# 0.1.1: web_discover envelope-tolerance fix (extra="ignore") — folds the web
+#        system prompt into lit_prompt_sha so buggy-pass records re-run.
+LIT_PROMPT_VERSION = "0.1.1"
 
 Grade = Literal["high", "moderate", "low", "no", "unknown"]
 GradeConfidence = Literal["high", "moderate", "low"]

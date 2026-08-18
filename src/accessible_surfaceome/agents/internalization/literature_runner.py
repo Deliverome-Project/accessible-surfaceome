@@ -49,8 +49,13 @@ LIT_RUNNER_VERSION = "internalization-literature/0.1.0"
 
 
 def lit_prompt_sha() -> str:
-    """sha256 of the literature prompt corpus (triage + select + grade), so a
-    stale lit record is detectable and the sweep re-runs on any prompt edit."""
+    """sha256 of the literature prompt corpus, so a stale lit record is detectable
+    and the sweep re-runs on any prompt edit. Covers the three judgment prompts
+    (triage + select + grade) AND the shared web-discovery system prompt — the web
+    prompt materially shapes WHICH papers enter the record, so a change to it (e.g.
+    the envelope-tolerance fix) must invalidate prior records the same way a grading
+    change does."""
+    from accessible_surfaceome.agents._support.web_literature import _SYSTEM as web_system
     from accessible_surfaceome.agents.internalization.literature_grade import (
         load_grade_prompt,
     )
@@ -62,7 +67,7 @@ def lit_prompt_sha() -> str:
     )
 
     corpus = "\0".join(
-        (load_triage_prompt(), load_select_prompt(), load_grade_prompt())
+        (load_triage_prompt(), load_select_prompt(), load_grade_prompt(), web_system)
     )
     return hashlib.sha256(corpus.encode("utf-8")).hexdigest()
 # Topic phrase for the shared web_search discovery complement (kept gene-agnostic
