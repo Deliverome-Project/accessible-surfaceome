@@ -44,7 +44,7 @@
       "residue_before": "V",
       "residue_after": "R",
       "residue_label": "V108",
-      "residue_range": "C89-R120",
+      "residue_range": "Y88-R120",
       "topology_state": "O",
       "extracellular": true,
       "compartment": "extracellular",
@@ -71,7 +71,7 @@
       "residue_before": "R",
       "residue_after": "R",
       "residue_label": "R120",
-      "residue_range": "C89-R120",
+      "residue_range": "Y88-R120",
       "topology_state": "O",
       "extracellular": true,
       "compartment": "extracellular",
@@ -685,6 +685,34 @@
       "plddt": 95.4,
       "conservation_rank": null,
       "median_conservation": 0.0
+    },
+    {
+      "site_id": "TFRC-terminal-c",
+      "gene_symbol": "TFRC",
+      "uniprot_acc": "P02786",
+      "provenance": "deterministic_computed",
+      "det_path": "terminal",
+      "site_kind": "terminal_c",
+      "insert_after_residue": 760,
+      "residue_before": "F",
+      "residue_after": null,
+      "residue_label": "F760",
+      "residue_range": null,
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "ALFA",
+      "tag_length_aa": 15,
+      "linker": "GS both sides",
+      "evidence_type": "topology inference (extracellular terminus)",
+      "functional_impact_measured": "NOT MEASURED",
+      "confidence": "high",
+      "rationale": "extracellular C-terminus (topology 'O' at residue L) \u2014 direct C-terminal tag",
+      "sources": [],
+      "plddt": 55.1,
+      "conservation_rank": null,
+      "median_conservation": null
     }
-  ]
+  ],
+  "isoform_pins": []
 }
