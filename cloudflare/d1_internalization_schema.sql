@@ -29,6 +29,8 @@ CREATE TABLE IF NOT EXISTS surface_internalization (
   lit_overall_grade            TEXT,
   lit_n_observations           INTEGER,
   lit_n_modulator_observations INTEGER,
+  lit_prompt_sha               TEXT,   -- sha256 of the lit prompt corpus (triage+select+grade)
+  lit_prompt_version           TEXT,   -- human-bumpable lit-prompt label (LIT_PROMPT_VERSION)
   -- full record + provenance
   record_json                  TEXT NOT NULL,
   generated_at                 TEXT,

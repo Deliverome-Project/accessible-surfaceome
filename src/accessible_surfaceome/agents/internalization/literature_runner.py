@@ -4,6 +4,7 @@ span-verified Evidence -> grade by mode -> assemble + validate + persist."""
 
 from __future__ import annotations
 
+import hashlib
 import re
 from datetime import UTC, datetime
 from pathlib import Path
@@ -32,6 +33,7 @@ from accessible_surfaceome.agents.internalization.literature_triage import (
     triage_internalization_abstracts,
 )
 from accessible_surfaceome.agents.internalization.models import (
+    LIT_PROMPT_VERSION,
     SCHEMA_VERSION,
     InternalizationRecord,
     LiteratureTrack,
@@ -44,6 +46,25 @@ from accessible_surfaceome.tools._shared.retraction_watch import empty as empty_
 from accessible_surfaceome.tools.gene_lookup import resolve_by_hgnc_id
 
 LIT_RUNNER_VERSION = "internalization-literature/0.1.0"
+
+
+def lit_prompt_sha() -> str:
+    """sha256 of the literature prompt corpus (triage + select + grade), so a
+    stale lit record is detectable and the sweep re-runs on any prompt edit."""
+    from accessible_surfaceome.agents.internalization.literature_grade import (
+        load_grade_prompt,
+    )
+    from accessible_surfaceome.agents.internalization.literature_select import (
+        load_select_prompt,
+    )
+    from accessible_surfaceome.agents.internalization.literature_triage import (
+        load_triage_prompt,
+    )
+
+    corpus = "\0".join(
+        (load_triage_prompt(), load_select_prompt(), load_grade_prompt())
+    )
+    return hashlib.sha256(corpus.encode("utf-8")).hexdigest()
 # Topic phrase for the shared web_search discovery complement (kept gene-agnostic
 # — the gene's own names are passed separately).
 _WEB_INTENT = (
@@ -200,6 +221,8 @@ def annotate_literature(
         n_modulator_observations=len(modulators),
         n_papers_discovered=len(discovered),
         n_papers_fetched=sum(1 for v in fetched_by_id.values() if v),
+        prompt_sha=lit_prompt_sha(),
+        prompt_version=LIT_PROMPT_VERSION,
     )
 
     record = InternalizationRecord(

@@ -38,6 +38,8 @@ DDL: tuple[str, ...] = (
       lit_overall_grade            TEXT,
       lit_n_observations           INTEGER,
       lit_n_modulator_observations INTEGER,
+      lit_prompt_sha               TEXT,
+      lit_prompt_version           TEXT,
       record_json                  TEXT NOT NULL,
       generated_at                 TEXT,
       updated_at                   TEXT,
@@ -58,15 +60,33 @@ _COLS: tuple[str, ...] = (
     "seq_overall_grade", "seq_overall_confidence",
     "seq_canonical_grade", "seq_canonical_confidence", "n_seq_motifs",
     "n_seq_functional_motifs", "has_literature", "lit_overall_grade",
-    "lit_n_observations", "lit_n_modulator_observations", "record_json",
+    "lit_n_observations", "lit_n_modulator_observations",
+    "lit_prompt_sha", "lit_prompt_version", "record_json",
     "generated_at", "updated_at",
 )
 
 
+# Columns added AFTER the table first shipped live (the seq sweep created it
+# without them). SQLite/D1 has no ``ADD COLUMN IF NOT EXISTS``, so ensure_table
+# runs these and tolerates the duplicate-column error on an already-migrated DB.
+# Keep in sync with the CREATE TABLE above.
+_MIGRATIONS: tuple[str, ...] = (
+    "ALTER TABLE surface_internalization ADD COLUMN lit_prompt_sha TEXT;",
+    "ALTER TABLE surface_internalization ADD COLUMN lit_prompt_version TEXT;",
+)
+
+
 def ensure_table(client: D1Client) -> None:
-    """Idempotently create the table + indexes (one statement per call)."""
+    """Idempotently create the table + indexes, then bring an existing table up
+    to the current column set via tolerated ALTERs (one statement per call)."""
     for stmt in DDL:
         client.query(stmt, [])
+    for stmt in _MIGRATIONS:
+        try:
+            client.query(stmt, [])
+        except Exception as exc:  # noqa: BLE001 — duplicate column on a migrated DB is fine
+            if "duplicate column" not in str(exc).lower():
+                raise
 
 
 def flat_row(record: InternalizationRecord) -> dict[str, object]:
@@ -103,6 +123,8 @@ def flat_row(record: InternalizationRecord) -> dict[str, object]:
         "lit_n_modulator_observations": (
             lit.n_modulator_observations if lit else None
         ),
+        "lit_prompt_sha": lit.prompt_sha if lit else None,
+        "lit_prompt_version": lit.prompt_version if lit else None,
         "record_json": record.model_dump_json(),
         "generated_at": record.generated_at.isoformat(),
         "updated_at": datetime.now(UTC).isoformat(),

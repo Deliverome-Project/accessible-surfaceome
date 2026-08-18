@@ -24,6 +24,11 @@ RUNNER_VERSION = "internalization-model-prior/0.1.0"
 # 0.2.0: per-residue DeepTMHMM topology handed to the model + cytoplasmic-only
 # motif gate + succinct-but-comprehensive directive.
 MODEL_PRIOR_PROMPT_VERSION = "0.2.0"
+# Human-bumpable label for the LITERATURE prompt corpus (triage + select + grade
+# system prompts, hashed together). Bump whenever any of the three changes so a
+# lit re-run is detectable as non-stale even when schema_version is unchanged.
+# 0.1.0: initial provenance stamp (triage + select + grade + web_search discovery).
+LIT_PROMPT_VERSION = "0.1.0"
 
 Grade = Literal["high", "moderate", "low", "no", "unknown"]
 GradeConfidence = Literal["high", "moderate", "low"]
@@ -306,6 +311,12 @@ class LiteratureTrack(BaseModel):
     n_modulator_observations: int = 0
     n_papers_discovered: int = 0
     n_papers_fetched: int = 0
+    # Prompt provenance (the mandate): content-sha of the triage+select+grade
+    # prompt corpus this track ran under (auto-catches any edit), plus the
+    # human-bumpable label. Code sets both; the sweep's resume treats a changed
+    # prompt_sha as stale.
+    prompt_sha: str | None = None
+    prompt_version: str | None = None
 
 
 class InternalizationRecord(BaseModel):
