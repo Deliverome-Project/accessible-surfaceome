@@ -18,6 +18,21 @@
   flex-shrink: 1;
 }
 
+.barWrap {
+  position: relative;
+}
+
+.pin {
+  position: absolute;
+  top: -3px;
+  width: 3px;
+  height: 20px;
+  border-radius: 2px;
+  transform: translateX(-50%);
+  box-shadow: 0 0 0 1px var(--bg, #fff);
+  pointer-events: auto;
+}
+
 .legend {
   list-style: none;
   margin: var(--space-3) 0 0;

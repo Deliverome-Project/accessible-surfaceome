@@ -1,8 +1,10 @@
 // viewer/lib/tag-sites-client.ts
 /*
- * Client-safe access to tag-sites for a gene (no node:fs). The gene route is a
- * client shell, so it fetches from the D1-backed Worker (or the static
- * /tag-sites/{SYMBOL}.json asset) rather than the server-only lib/tag-sites.ts.
+ * Client-safe access to tag-sites (no node:fs). The gene route is a client
+ * shell, so it prefers the D1-backed Worker (/v1/tag-sites/{SYMBOL}) and falls
+ * back to the static /tag-sites/{SYMBOL}.json asset — robust across the D1
+ * rollout (static works today; the Worker takes over once tag_site_public is
+ * synced) and in local dev where no apiBase is passed.
  */
 import type { TaggedSitesFile } from "./tag-sites-types";
 
@@ -18,8 +20,6 @@ export function parseTaggedSitesFile(raw: unknown): TaggedSitesFile | null {
   return o as unknown as TaggedSitesFile;
 }
 
-/** Fetch + parse one tag-sites URL (Worker or static asset). Returns null on any
- *  failure (missing file, network, bad JSON) so the shell degrades gracefully. */
 async function tryFetch(url: string): Promise<TaggedSitesFile | null> {
   try {
     const res = await fetch(url, { cache: "force-cache" });

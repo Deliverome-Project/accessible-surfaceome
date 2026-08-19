@@ -26,6 +26,20 @@ interface Props {
    *  paralogs. When absent, the bar falls back to raw ``topology`` length
    *  scaling (``maxResidues``), so pre-backfill records still render. */
   canonicalFrame?: string | null;
+  /** Optional tag-insertion-site markers drawn as absolutely-positioned pins
+   *  above the bar, keyed by ``siteId`` and positioned by ``leftPct`` (0..100)
+   *  along the linear axis, colored by ``provenance``. Omit for a plain bar. */
+  pins?: TopologyPin[];
+}
+
+export interface TopologyPin {
+  siteId: string;
+  leftPct: number; // 0..100
+  provenance: "literature_retrieved" | "deterministic_computed";
+  tagType: string;
+  /** When set (isoform pins), colors the pin by shared-vs-unique classification
+   *  (--tag-site-isoform-*) instead of by provenance. */
+  classification?: "shared" | "unique";
 }
 
 interface Run {
@@ -78,7 +92,7 @@ const STATE_LABELS: Record<string, string> = {
  *  segment so the covered residues still land at their canonical x-position. */
 const CANONICAL_FRAME_GAP = "-";
 
-export function TopologyBar({ topology, ariaLabel, maxResidues, canonicalFrame }: Props) {
+export function TopologyBar({ topology, ariaLabel, maxResidues, canonicalFrame, pins }: Props) {
   // Prefer the canonical-frame projection when the record carries it: every
   // row's canonical-frame string is the SAME length (the canonical sequence
   // length), so rendering each full-width on a shared axis lines homologous
@@ -97,35 +111,55 @@ export function TopologyBar({ topology, ariaLabel, maxResidues, canonicalFrame }
       ? `${Math.min(100, (topology.length / maxResidues) * 100)}%`
       : "100%";
   return (
-    <div
-      className={styles.bar}
-      role="img"
-      aria-label={ariaLabel ?? "Per-residue topology bar"}
-      style={{ width: widthPct }}
-    >
-      {segments.map((seg, i) => {
-        // A gap run in the canonical frame → a blank, transparent spacer that
-        // still consumes its canonical-coordinate width, so the covered
-        // residues on either side keep their shared-axis x-position.
-        const isGap = aligned && seg.state === CANONICAL_FRAME_GAP;
-        return (
-          <div
-            key={i}
-            className={styles.seg}
-            style={{
-              flexGrow: seg.length,
-              background: isGap
-                ? "transparent"
-                : (TOPOLOGY_COLORS[seg.state] ?? "transparent"),
-            }}
-            title={
-              isGap
-                ? `Not covered by this variant · canonical residues ${seg.start}–${seg.end} (${seg.length} aa)`
-                : `${STATE_LABELS[seg.state] ?? seg.state} · ${aligned ? "canonical " : ""}residues ${seg.start}–${seg.end} (${seg.length} aa)`
-            }
-          />
-        );
-      })}
+    <div className={styles.barWrap} style={{ width: widthPct }}>
+      <div
+        className={styles.bar}
+        role="img"
+        aria-label={ariaLabel ?? "Per-residue topology bar"}
+      >
+        {segments.map((seg, i) => {
+          // A gap run in the canonical frame → a blank, transparent spacer that
+          // still consumes its canonical-coordinate width, so the covered
+          // residues on either side keep their shared-axis x-position.
+          const isGap = aligned && seg.state === CANONICAL_FRAME_GAP;
+          return (
+            <div
+              key={i}
+              className={styles.seg}
+              style={{
+                flexGrow: seg.length,
+                background: isGap
+                  ? "transparent"
+                  : (TOPOLOGY_COLORS[seg.state] ?? "transparent"),
+              }}
+              title={
+                isGap
+                  ? `Not covered by this variant · canonical residues ${seg.start}–${seg.end} (${seg.length} aa)`
+                  : `${STATE_LABELS[seg.state] ?? seg.state} · ${aligned ? "canonical " : ""}residues ${seg.start}–${seg.end} (${seg.length} aa)`
+              }
+            />
+          );
+        })}
+      </div>
+      {(pins ?? []).map((pin) => (
+        <span
+          key={pin.siteId}
+          className={styles.pin}
+          data-provenance={pin.provenance}
+          data-classification={pin.classification}
+          style={{
+            left: `${pin.leftPct}%`,
+            background: pin.classification
+              ? `var(--tag-site-isoform-${pin.classification})`
+              : `var(--tag-site-${pin.provenance === "literature_retrieved" ? "literature" : "deterministic"})`,
+          }}
+          title={
+            pin.classification
+              ? `${pin.tagType} (${pin.classification})`
+              : `${pin.tagType} (${pin.provenance === "literature_retrieved" ? "literature" : "deterministic"})`
+          }
+        />
+      ))}
     </div>
   );
 }

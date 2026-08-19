@@ -69,6 +69,11 @@ export interface TaggedSitesFile {
   gene_symbol: string;
   uniprot_acc: string;
   sites: TaggedSite[];
+  /** Per-isoform deterministic tag pins (computed on each isoform's OWN AFDB
+   *  model), classified vs the canonical prediction. Optional — absent until the
+   *  pipeline regeneration populates it. Consumed by the IsoformsCard topology
+   *  bars (shared = transfers from canonical; unique = isoform-specific). */
+  isoform_pins?: IsoformTagPin[];
 }
 
 /** Overlay design-token NAMES per rendered provenance. Actual color values
@@ -154,3 +159,18 @@ export const CATEGORY_LABEL: Record<TagSiteCategory, string> = {
   terminal_c: "Extracellular C-terminus",
   snorkel: "C-terminal snorkel",
 };
+
+
+/** One per-isoform deterministic tag pin (see tag_sites/isoform.py). Placed on
+ *  the isoform's OWN residue axis (`left_pct`). */
+export interface IsoformTagPin {
+  site_id: string;
+  isoform_id: string;
+  classification: "shared" | "unique";
+  det_path: DeterministicPath | null;
+  site_kind: TaggedSiteKind;
+  tag_type: string | null;
+  isoform_residue: number;
+  canonical_residue: number | null;
+  left_pct: number; // 0..100 along the isoform's own topology axis
+}

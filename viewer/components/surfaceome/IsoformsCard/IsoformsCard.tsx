@@ -19,6 +19,8 @@ import { InfoTip } from "../../InfoTip/InfoTip";
 import { SectionCard } from "../SectionCard/SectionCard";
 import { StatusPill } from "../StatusPill/StatusPill";
 import { TopologyBar, TopologyLegend } from "./TopologyBar";
+import type { TopologyPin } from "./TopologyBar";
+import type { TaggedSitesFile } from "../../../lib/tag-sites-types";
 import styles from "./IsoformsCard.module.css";
 
 /** The "In library" marker rendered inside a variant cell when a specific
@@ -416,6 +418,9 @@ interface Props {
    *  orthologs get an "In library" pill in the variants table. Paralogs never
    *  do — they're different genes, not part of the parent's library entry. */
   fgLibrary?: FgLibraryData | null;
+  /** Per-gene tag sites; its `isoform_pins` drive the per-isoform topology-bar
+   *  pins (shared vs unique). Optional — absent when the gene has no tag data. */
+  taggedSites?: TaggedSitesFile | null;
 }
 
 /**
@@ -448,7 +453,19 @@ interface Props {
  *   ECD %id is the load-bearing signal for antibody-cross-reactivity
  *   risk.
  */
-export function IsoformsCard({ rec, n, fgLibrary }: Props) {
+export function IsoformsCard({ rec, n, fgLibrary, taggedSites }: Props) {
+  // Per-isoform tag pins (deterministic, classified shared/unique) keyed by
+  // isoform_id -> TopologyBar pins on the isoform's OWN residue axis.
+  const pinsFor = (isoformId: string): TopologyPin[] =>
+    (taggedSites?.isoform_pins ?? [])
+      .filter((pin) => pin.isoform_id === isoformId)
+      .map((pin) => ({
+        siteId: pin.site_id,
+        leftPct: pin.left_pct,
+        provenance: "deterministic_computed" as const,
+        tagType: pin.tag_type ?? "tag",
+        classification: pin.classification,
+      }));
   const df = rec.deterministic_features;
   const ct = df.canonical_topology;
   const orthologs = df.orthologs;
@@ -647,6 +664,7 @@ export function IsoformsCard({ rec, n, fgLibrary }: Props) {
                 .map((iso, i) => {
                 const fullId = iso.full_length_pct_identity_to_canonical;
                 const ecdId = iso.ecd_pct_identity_to_canonical;
+                const isoPins = pinsFor(iso.isoform_id);
                 return (
                   <tr key={`iso-${i}`}>
                     <td>
@@ -683,7 +701,17 @@ export function IsoformsCard({ rec, n, fgLibrary }: Props) {
                         topology={iso.per_residue_topology}
                         ariaLabel={`${rec.gene.hgnc_symbol} ${iso.isoform_id} topology`}
                         maxResidues={maxResidues}
-                        canonicalFrame={iso.per_residue_topology_canonical_frame}
+                        // Pins are on the isoform's OWN residue axis, so when this
+                        // isoform has pins render the bar on that axis (skip the
+                        // canonical frame) — otherwise a unique pin (no canonical
+                        // coordinate) couldn't be placed. Unpinned rows keep the
+                        // shared canonical frame for cross-row alignment.
+                        canonicalFrame={
+                          isoPins.length > 0
+                            ? undefined
+                            : iso.per_residue_topology_canonical_frame
+                        }
+                        pins={isoPins.length > 0 ? isoPins : undefined}
                       />
                     </td>
                   </tr>

@@ -9,6 +9,7 @@ import { Reveal } from "../../Reveal/Reveal";
 import { Shell } from "../../Shell/Shell";
 import { AccessibilityRisksCard } from "../AccessibilityRisksCard/AccessibilityRisksCard";
 import { InternalizationCard } from "../InternalizationCard/InternalizationCard";
+import { TaggedSitesCard } from "../TaggedSitesCard/TaggedSitesCard";
 import { BenchmarkRow } from "../BenchmarkRow/BenchmarkRow";
 import { BiologicalContextCard } from "../BiologicalContextCard/BiologicalContextCard";
 import { CommunityNotesCard } from "../CommunityNotesCard/CommunityNotesCard";
@@ -226,6 +227,24 @@ export function GeneDetail({
       label: "Internalization",
       render: (n) => <InternalizationCard symbol={rec.gene.hgnc_symbol} n={n} />,
     },
+    // Tag sites — its OWN tab (distinct from Internalization). Shown only
+    // when the gene has at least one RENDERED tag site (literature_retrieved
+    // or deterministic_computed); validated_literature is validation-only and
+    // never rendered, matching `renderableTagSites`.
+    ...(taggedSites?.has_data &&
+    taggedSites.sites.some(
+      (s) =>
+        s.provenance === "literature_retrieved" ||
+        s.provenance === "deterministic_computed",
+    )
+      ? [
+          {
+            kind: "tag-sites",
+            label: "Tag sites",
+            render: (n: number) => <TaggedSitesCard taggedSites={taggedSites} n={n} />,
+          },
+        ]
+      : []),
     // SURFACE-Bind section only when the protein has at least one
     // scored patch. Two empty cases are filtered out so the AnchorNav
     // strip never offers a tab that opens a sites-less section:
@@ -249,7 +268,7 @@ export function GeneDetail({
     {
       kind: "isoforms",
       label: "Isoforms & homologs",
-      render: (n) => <IsoformsCard rec={rec} n={n} fgLibrary={fgLibrary} />,
+      render: (n) => <IsoformsCard rec={rec} n={n} fgLibrary={fgLibrary} taggedSites={taggedSites} />,
     },
     {
       kind: "ledger",

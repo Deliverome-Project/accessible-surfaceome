@@ -34,3 +34,21 @@ def test_merges_by_site_id_new_wins(tmp_path):
 def test_empty_sites_marks_has_data_false(tmp_path):
     out = emit_tag_sites_json("EMPTY", "P00000", [], out_dir=tmp_path)
     assert out["has_data"] is False
+
+
+def test_isoform_pins_round_trip_and_merge(tmp_path):
+    pin_a = {"site_id": "X-surface_loop-100::iso::X-2", "isoform_id": "X-2",
+             "classification": "shared", "left_pct": 50.0}
+    emit_tag_sites_json("TFRC", "P02786", [_site("a")], out_dir=tmp_path, isoform_pins=[pin_a])
+    on_disk = json.loads((tmp_path / "TFRC.json").read_text())
+    assert on_disk["isoform_pins"] == [pin_a]
+    # a second run merges pins by site_id (new wins), preserving existing sites
+    pin_a2 = {**pin_a, "classification": "unique"}
+    pin_b = {"site_id": "X-surface_loop-100::iso::X-3", "isoform_id": "X-3",
+             "classification": "unique", "left_pct": 20.0}
+    emit_tag_sites_json("TFRC", "P02786", [], out_dir=tmp_path, isoform_pins=[pin_a2, pin_b])
+    on_disk = json.loads((tmp_path / "TFRC.json").read_text())
+    by_id = {p["site_id"]: p for p in on_disk["isoform_pins"]}
+    assert set(by_id) == {pin_a["site_id"], pin_b["site_id"]}
+    assert by_id[pin_a["site_id"]]["classification"] == "unique"  # new wins
+    assert len(on_disk["sites"]) == 1  # existing site preserved
