@@ -105,7 +105,7 @@ def per_residue_plddt(pdb_path: str) -> dict[int, float]:
 
 def per_residue_rsa(pdb_path: str) -> dict[int, float]:
     """Per-residue relative solvent accessibility (0..~1), Tien-2013 normalized."""
-    import freesasa
+    import freesasa  # ty: ignore[unresolved-import]
 
     st = freesasa.Structure(str(pdb_path))
     areas = freesasa.calc(st).residueAreas()
