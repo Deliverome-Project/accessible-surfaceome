@@ -9,6 +9,7 @@ selected claims to span-verified ``Evidence`` against the REAL source store.
 from __future__ import annotations
 
 import json
+import logging
 import re
 from collections import defaultdict
 from pathlib import Path
@@ -27,13 +28,21 @@ from accessible_surfaceome.tools._shared.models import (
 )
 from accessible_surfaceome.tools._shared.source_text import SourceTextStore
 
+logger = logging.getLogger(__name__)
+
 _PROMPT_PATH = Path(__file__).resolve().parent / "prompts" / "literature_select_system.md"
-# Matches the grade stage (16k). A clip-dense gene (many fetched papers) emits a
-# large SelectionResponse; at 8k the JSON truncated mid-object and no repair pass
-# could fix a cut-off output, crashing that gene's annotation. 16k gives headroom
-# (Sonnet supports far more output) at negligible cost — you only pay for tokens
-# actually generated, and most selections stay well under the cap.
-_MAX_TOKENS_SELECT = 16_000
+# A clip-dense gene (a heavily-studied ADC target like a folate/PSMA receptor)
+# emits a huge SelectionResponse. At 16k the JSON still truncated mid-object and
+# the repair loop can't fix a cut-off output (it re-truncates and appends the
+# broken text), crashing that gene. 32k gives ample headroom paired with the
+# clip-menu cap below; you only pay for tokens actually generated.
+_MAX_TOKENS_SELECT = 32_000
+# Cap the menu SHOWN to the selector at the top-N clips by score — this bounds how
+# many clips it can select, which bounds the output size (the truncation root
+# cause). The full pool is still used for promotion; only the pick-from menu is
+# capped. A salvage retry uses a much smaller menu if the capped one still fails.
+_MAX_CLIP_MENU = 100
+_RETRY_CLIP_MENU = 40
 
 
 def load_select_prompt() -> str:
@@ -89,11 +98,40 @@ def _promote_selections(
     return claims, warnings
 
 
-def render_clip_menu(pool: dict[str, EvidenceClaimDraft]) -> str:
-    lines: list[str] = []
-    for clip_id, d in pool.items():
-        lines.append(f"[{clip_id}] ({d.source_id}, {d.section}): {d.quote}")
-    return "\n".join(lines)
+def render_clip_menu(
+    pool: dict[str, EvidenceClaimDraft], *, limit: int | None = None
+) -> str:
+    """Render the clip menu. When ``limit`` is set and the pool is larger, keep
+    only the top-``limit`` clips by draft score (most relevant) — bounding the
+    selector's output. Equal scores keep insertion order (stable sort)."""
+    items = list(pool.items())
+    if limit is not None and len(items) > limit:
+        items = sorted(
+            items, key=lambda kv: getattr(kv[1], "score", 0.0) or 0.0, reverse=True
+        )[:limit]
+    return "\n".join(
+        f"[{clip_id}] ({d.source_id}, {d.section}): {d.quote}" for clip_id, d in items
+    )
+
+
+def _build_select_prompt(
+    pool: dict[str, EvidenceClaimDraft],
+    *,
+    gene: str,
+    synonyms: list[str] | None,
+    menu_limit: int | None,
+) -> str:
+    schema_str = json.dumps(SelectionResponse.model_json_schema(), indent=2)
+    aka = f"Also known as: {', '.join(synonyms)}\n" if synonyms else ""
+    return (
+        f"Gene: {gene}\n{aka}\nClip menu (pick the internalization-relevant clips "
+        f"by clip_id; do NOT paraphrase — the quote is auto-filled from the "
+        f"clip):\n\n"
+        f"{render_clip_menu(pool, limit=menu_limit)}\n\n"
+        f"Emit one ```json block matching this SelectionResponse schema exactly "
+        f"(note: `confidence` is strong|moderate|weak; `assay_context` is an "
+        f"object with a required `species`):\n\n```json\n{schema_str}\n```"
+    )
 
 
 def select_clips(
@@ -104,28 +142,41 @@ def select_clips(
     synonyms: list[str] | None = None,
     system_prompt: str | None = None,
 ) -> SelectionResponse:
+    """Ask the selector to pick internalization-relevant clips, resiliently.
+
+    A clip-dense gene can make the selector emit a ``SelectionResponse`` that
+    overruns ``max_tokens`` and truncates mid-JSON — which the repair loop cannot
+    fix (it crashed FOLH1 in the pilot). Defense-in-depth so ONE dense gene never
+    crashes: (1) cap the menu at the top clips by score (bounds the selection
+    count), (2) on failure retry once with a much smaller menu, (3) last resort
+    return an empty selection — the gene then grades on whatever else it has
+    (``unknown`` if nothing) instead of aborting the whole annotation."""
     system_prompt = system_prompt or load_select_prompt()
     if not pool:
         return SelectionResponse(selections=[], notes="empty pool")
-    schema_str = json.dumps(SelectionResponse.model_json_schema(), indent=2)
-    aka = f"Also known as: {', '.join(synonyms)}\n" if synonyms else ""
-    user = (
-        f"Gene: {gene}\n{aka}\nClip menu (pick the internalization-relevant clips "
-        f"by clip_id; do NOT paraphrase — the quote is auto-filled from the "
-        f"clip):\n\n"
-        f"{render_clip_menu(pool)}\n\n"
-        f"Emit one ```json block matching this SelectionResponse schema exactly "
-        f"(note: `confidence` is strong|moderate|weak; `assay_context` is an "
-        f"object with a required `species`):\n\n```json\n{schema_str}\n```"
-    )
-    return call_model_structured(
-        client,
-        model=SONNET_MODEL,
-        system_prompt=system_prompt,
-        user_prompt=user,
-        schema=SelectionResponse,
-        max_tokens=_MAX_TOKENS_SELECT,
-    )
+    for menu_limit, label in ((_MAX_CLIP_MENU, "capped"), (_RETRY_CLIP_MENU, "salvage")):
+        if len(pool) > menu_limit:
+            logger.info(
+                "select %s: clip menu %d -> top %d by score (%s)",
+                gene, len(pool), menu_limit, label,
+            )
+        try:
+            return call_model_structured(
+                client,
+                model=SONNET_MODEL,
+                system_prompt=system_prompt,
+                user_prompt=_build_select_prompt(
+                    pool, gene=gene, synonyms=synonyms, menu_limit=menu_limit
+                ),
+                schema=SelectionResponse,
+                max_tokens=_MAX_TOKENS_SELECT,
+            )
+        except ValueError as err:
+            logger.warning(
+                "select failed for %s (menu<=%d): %s", gene, menu_limit, str(err)[:140]
+            )
+    logger.error("select giving up for %s after menu-cap retries — empty selection", gene)
+    return SelectionResponse(selections=[], notes="select failed after menu-cap retries")
 
 
 def promote(
