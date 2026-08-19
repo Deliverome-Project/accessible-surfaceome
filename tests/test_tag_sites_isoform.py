@@ -89,8 +89,8 @@ def test_run_isoform_pins_orchestration(monkeypatch):
     monkeypatch.setattr(R, "compute_signals", lambda *a, **k: {"sequence": k["sequence"]})
     # isoform "X-2" nominates a site at residue 100 (matches a canonical site -> shared)
     monkeypatch.setattr(
-        R, "derive_deterministic_sites",
-        lambda gene, acc, *, signals: [_det("X-surface_loop-100", 100)],
+        R, "select_deterministic_representatives",
+        lambda signals, *, gene_symbol, uniprot_acc: [_det("X-surface_loop-100", 100)],
     )
 
     def fetch_pdb(acc):

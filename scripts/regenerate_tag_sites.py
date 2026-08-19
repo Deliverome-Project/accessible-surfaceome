@@ -47,6 +47,14 @@ PDB_CACHE = ROOT / "data/cache/afdb_pdb"
 log = logging.getLogger("regenerate_tag_sites")
 
 
+def _json_default(o):
+    """Coerce numpy scalars (int64/float64 from the gates + isoform alignment)
+    to native Python so json.dumps can serialize the isoform_pins/sites."""
+    if hasattr(o, "item"):
+        return o.item()
+    raise TypeError(f"Object of type {type(o).__name__} is not JSON serializable")
+
+
 def parse_3line(path: Path) -> dict[str, tuple[str, str]]:
     """DeepTMHMM 3line -> {accession: (sequence, topology_string)}. Header is
     ``>sp|ACC|NAME | LABEL`` (ACC carries the isoform ``-N`` suffix for isoforms)."""
@@ -165,7 +173,7 @@ def regenerate_gene(
         log.info("[dry-run] %s %s -> %s", symbol, acc, summary)
     else:
         out_dir.mkdir(parents=True, exist_ok=True)
-        out_path.write_text(json.dumps(result, indent=2) + "\n")
+        out_path.write_text(json.dumps(result, indent=2, default=_json_default) + "\n")
         log.info("wrote %s -> %s", out_path.relative_to(ROOT), summary)
     return summary
 

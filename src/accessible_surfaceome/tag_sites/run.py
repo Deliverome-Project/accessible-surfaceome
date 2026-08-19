@@ -97,6 +97,26 @@ def select_representatives(
     return kept
 
 
+def select_deterministic_representatives(
+    signals: dict[str, Any], *, gene_symbol: str, uniprot_acc: str
+) -> list[dict[str, Any]]:
+    """NMS-selected representative insertion sites (surface_loop + disorder,
+    deduped by residue, surface_loop preferred on collision) — the ~representative
+    set the canonical structure overlay shows. Shared by ``run_gene`` (canonical)
+    and ``run_isoform_pins`` (per isoform) so a dense ectodomain yields
+    representatives, never hundreds of adjacent candidates."""
+    surf = select_representatives(
+        surface_loop_candidates(signals, gene_symbol=gene_symbol, uniprot_acc=uniprot_acc)
+    )
+    diso = select_representatives(
+        disorder_candidates(signals, gene_symbol=gene_symbol, uniprot_acc=uniprot_acc)
+    )
+    by_res: dict[int, dict[str, Any]] = {}
+    for s in surf + diso:  # surface_loop first -> preferred on residue collision
+        by_res.setdefault(s["insert_after_residue"], s)
+    return sorted(by_res.values(), key=lambda s: s["insert_after_residue"])
+
+
 def run_gene(
     gene_symbol: str,
     uniprot_acc: str,
@@ -163,7 +183,9 @@ def run_isoform_pins(
         signals = compute_signals(
             pdb, topology=topo, sequence=iso_seq, ortholog_seqs=[], hazard_res=hazard
         )
-        iso_sites = derive_deterministic_sites(gene_symbol, iso_id, signals=signals)
+        iso_sites = select_deterministic_representatives(
+            signals, gene_symbol=gene_symbol, uniprot_acc=iso_id
+        )
         pins.extend(
             classify_isoform_sites(
                 isoform_id=iso_id,
