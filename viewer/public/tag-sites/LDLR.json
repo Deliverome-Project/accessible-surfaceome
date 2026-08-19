@@ -704,6 +704,37 @@
       "plddt": 86.7,
       "conservation_rank": null,
       "median_conservation": 0.0
+    },
+    {
+      "site_id": "LDLR-terminal_n-21-lit",
+      "gene_symbol": "LDLR",
+      "uniprot_acc": "P01130",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "terminal_n",
+      "insert_after_residue": 21,
+      "residue_before": "T",
+      "residue_after": "A",
+      "residue_label": "T21",
+      "topology_state": "O",
+      "extracellular": false,
+      "compartment": "O",
+      "tag_type": "ALFA",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion in the same loop or domain",
+      "functional_impact_measured": "Cell-surface biotinylation and western blot confirmed CD320-FLAG on the cell surface of HEK293 and HepG2 cells. Vitamin B12 uptake function of the tagged construct was not measured in isolation.",
+      "confidence": "medium",
+      "rationale": "CD320 shares the LDLR-like repeat architecture with LDLR. An N-terminal FLAG tag after the signal peptide was confirmed on the cell surface by biotinylation, providing indirect support for the same approach in LDLR. A GS linker between the tag and A22 is recommended to avoid steric clash with the first disulfide-bonded LDL-binding repeat beginning at C27. [validation: surface_only; position: inferred; source: paper; entailment_verified: False]",
+      "sources": [
+        {
+          "pmid": 39551142,
+          "citation": "PMID 39551142"
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null
     }
   ],
   "isoform_pins": [

@@ -31,6 +31,68 @@
       "median_conservation": 0.0
     },
     {
+      "site_id": "EGFR-internal-420-lit",
+      "gene_symbol": "EGFR",
+      "uniprot_acc": "P00533",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "internal",
+      "insert_after_residue": 420,
+      "residue_before": "F",
+      "residue_after": "E",
+      "residue_label": "F420",
+      "topology_state": "O",
+      "extracellular": false,
+      "compartment": "O",
+      "tag_type": "epitope_tag",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion in the same loop or domain",
+      "functional_impact_measured": "no",
+      "confidence": "medium",
+      "rationale": "The REMAP study inserted the RIEDL peptide at multiple positions within EGFR domain III (dN313 construct, residues 313-482) and expressed constructs on the cell surface for antibody-binding assays. The EMab-51 epitope was localized to residues 375-380; insertions outside this epitope were tolerated for surface expression. Position 420 is inferred to lie in a tolerated loop region away from the epitope and EGF-binding surface. EGF signaling function was NOT MEASURED. [validation: detected_only; position: inferred; source: paper; entailment_verified: True]",
+      "sources": [
+        {
+          "pmid": 34424763,
+          "citation": "PMID 34424763"
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null
+    },
+    {
+      "site_id": "EGFR-internal-481-lit",
+      "gene_symbol": "EGFR",
+      "uniprot_acc": "P00533",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "internal",
+      "insert_after_residue": 481,
+      "residue_before": "F",
+      "residue_after": "G",
+      "residue_label": "F481",
+      "topology_state": "O",
+      "extracellular": false,
+      "compartment": "O",
+      "tag_type": "epitope_tag",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion in the same loop or domain",
+      "functional_impact_measured": "no",
+      "confidence": "medium",
+      "rationale": "The REMAP study used EGFR/dN482 as a deletion mutant boundary, indicating the region around residue 482 (domain III/IV linker) is accessible and the protein is expressed on the cell surface. RIEDL insertions were made throughout the dN313 construct spanning this region. Position 481 (F481/G482) is inferred as a tolerated insertion site at the domain III/IV boundary. EGF signaling function was NOT MEASURED. [validation: detected_only; position: inferred; source: paper; entailment_verified: True]",
+      "sources": [
+        {
+          "pmid": 34424763,
+          "citation": "PMID 34424763"
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null
+    },
+    {
       "site_id": "EGFR-snorkel-c",
       "gene_symbol": "EGFR",
       "uniprot_acc": "P00533",
@@ -380,6 +442,37 @@
       "plddt": 96.6,
       "conservation_rank": null,
       "median_conservation": 0.0
+    },
+    {
+      "site_id": "EGFR-terminal_n-24-lit",
+      "gene_symbol": "EGFR",
+      "uniprot_acc": "P00533",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "terminal_n",
+      "insert_after_residue": 24,
+      "residue_before": "A",
+      "residue_after": "L",
+      "residue_label": "A24",
+      "topology_state": "O",
+      "extracellular": false,
+      "compartment": "O",
+      "tag_type": "fluorescent_protein_fusion",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion at this exact site",
+      "functional_impact_measured": "yes",
+      "confidence": "high",
+      "rationale": "FAP (~130 aa) was fused to the N-terminus of the EGFR ectodomain after SP cleavage at residue 24 by CRISPR/Cas9 knock-in at the endogenous locus, yielding near-endogenous expression levels. Surface display confirmed by MG-Bis-SA dye labeling of live non-permeabilized cells. EGF-induced endocytosis and pH-dependent trafficking validated. A shorter epitope tag (13-23 aa) inserted here is expected to be equally or better tolerated. [validation: surface_and_function; position: validated; source: paper; entailment_verified: True]",
+      "sources": [
+        {
+          "pmid": 33654955,
+          "citation": "PMID 33654955"
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null
     }
   ],
   "isoform_pins": [

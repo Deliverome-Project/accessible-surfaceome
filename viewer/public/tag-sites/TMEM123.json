@@ -274,6 +274,37 @@
       "median_conservation": 0.0
     },
     {
+      "site_id": "TMEM123-internal-155-lit",
+      "gene_symbol": "TMEM123",
+      "uniprot_acc": "Q8N131",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "internal",
+      "insert_after_residue": 155,
+      "residue_before": "K",
+      "residue_after": "G",
+      "residue_label": "K155",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "HA",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion in the same loop or domain",
+      "functional_impact_measured": "yes",
+      "confidence": "low",
+      "rationale": "Residue K155 lies within the extracellular mucin-like domain (topology O, residues 19-170), 15 residues upstream of the TM boundary (TM starts at 171), well within the >=3-residue safety margin. The sequence context around position 155 (HSEAKK|GSKFDT) represents a transition from the mucin repeat region into a less-glycosylated linker segment (GSKFDTGSFV) connecting to the TM helix, making it more accommodating for an insertion than the dense Ser/Thr O-glycosylation repeats upstream. The SHREK study (PMID 34064525) demonstrated that an HA-tagged TMEM123 (pTMEM123-HA) retains antiviral function, implying the ectodomain tolerates a tag. The mucin-like ectodomain of the related SHREK-family member Vsg (PMID 36171290) also tolerates extracellular insertions in its O-glycosylated mucin-like domain. Position chosen to be >=3 residues from TM and outside the densest glycosylation repeat region. [validation: function_only; position: inferred; source: paper; entailment_verified: True]",
+      "sources": [
+        {
+          "pmid": 34064525,
+          "citation": "PMID 34064525"
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null
+    },
+    {
       "site_id": "TMEM123-snorkel-c",
       "gene_symbol": "TMEM123",
       "uniprot_acc": "Q8N131",
@@ -326,6 +357,68 @@
       "plddt": 71.6,
       "conservation_rank": null,
       "median_conservation": 0.0
+    },
+    {
+      "site_id": "TMEM123-terminal_c-208-lit",
+      "gene_symbol": "TMEM123",
+      "uniprot_acc": "Q8N131",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "terminal_c",
+      "insert_after_residue": 208,
+      "residue_before": "I",
+      "residue_after": "",
+      "residue_label": "I208",
+      "topology_state": "I",
+      "extracellular": false,
+      "compartment": "intracellular",
+      "tag_type": "other",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tolerance of a different insertion (transposon, FP fusion)",
+      "functional_impact_measured": "no",
+      "confidence": "low",
+      "rationale": "TMEM123 has a short intracellular C-terminus (residues 193-208, topology I). The snorkel tagging system (PMID 24023844) was specifically designed for membrane proteins with cytoplasmic C-termini: a heterologous TM domain followed by an extracellular epitope tag is appended to the cytoplasmic C-terminus, threading the tag to the extracellular face without inserting into the native ectodomain. TMEM123's topology (intracellular C-terminus after a single TM helix) is directly compatible with the snorkel design. This approach avoids any disruption to the mucin-like ectodomain critical for TMEM123's antiviral and immune functions. The snorkel system was validated for CD20 and ion channels with surface display confirmed by non-permeabilized antibody staining. [validation: not_measured; position: inferred; source: paper; entailment_verified: False]",
+      "sources": [
+        {
+          "pmid": 24023844,
+          "citation": "PMID 24023844"
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null
+    },
+    {
+      "site_id": "TMEM123-terminal_n-18-lit",
+      "gene_symbol": "TMEM123",
+      "uniprot_acc": "Q8N131",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "terminal_n",
+      "insert_after_residue": 18,
+      "residue_before": "Q",
+      "residue_after": "V",
+      "residue_label": "Q18",
+      "topology_state": "O",
+      "extracellular": true,
+      "compartment": "extracellular",
+      "tag_type": "HA",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion at this exact site",
+      "functional_impact_measured": "yes",
+      "confidence": "medium",
+      "rationale": "Signal peptide spans residues 1-18 (18 consecutive S residues in computed topology); the mature extracellular N-terminus begins at V19. Inserting a short epitope tag after residue 18 (between Q18 and V19) places it immediately at the mature N-terminus on the extracellular face, more than 150 residues from the TM domain (residues 171-192). The SHREK study (PMID 34064525) purchased and used pTMEM123-HA from Sinobiological and demonstrated that TMEM123 retains antiviral activity (HIV-1 infectivity reduction), confirming the HA-tagged protein is functional. For a type I single-pass protein with an extracellular N-terminus, an N-terminal HA tag placed after SP cleavage is the standard Sinobiological configuration for surface-accessible tagging. This site avoids all TM residues, the cytoplasmic tail, and is far from the TM boundary. [validation: function_only; position: inferred; source: paper; entailment_verified: True]",
+      "sources": [
+        {
+          "pmid": 34064525,
+          "citation": "PMID 34064525"
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null
     }
   ],
   "isoform_pins": [

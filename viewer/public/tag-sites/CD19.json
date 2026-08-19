@@ -434,6 +434,37 @@
       "plddt": 83.3,
       "conservation_rank": null,
       "median_conservation": 0.0
+    },
+    {
+      "site_id": "CD19-terminal_n-19-lit",
+      "gene_symbol": "CD19",
+      "uniprot_acc": "P15391",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "terminal_n",
+      "insert_after_residue": 19,
+      "residue_before": "R",
+      "residue_after": "P",
+      "residue_label": "R19",
+      "topology_state": "O",
+      "extracellular": false,
+      "compartment": "O",
+      "tag_type": "VSVg",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion at this exact site",
+      "functional_impact_measured": "yes",
+      "confidence": "high",
+      "rationale": "VSVg tag at the same post-SP cleavage junction (after residue 19) is independently validated in PMID 30104252 alongside HA. Both tags showed robust surface detection by live-cell flow cytometry and preserved FMC63 binding. This site is listed separately to document the VSVg tag precedent, which is a different epitope sequence and may be useful when HA detection is confounded by endogenous cross-reactivity. [validation: surface_and_function; position: validated; source: paper; entailment_verified: True]",
+      "sources": [
+        {
+          "pmid": 30104252,
+          "citation": "PMID 30104252"
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null
     }
   ],
   "isoform_pins": [

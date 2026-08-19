@@ -515,6 +515,68 @@
       "plddt": 88.9,
       "conservation_rank": null,
       "median_conservation": 0.0
+    },
+    {
+      "site_id": "ERBB2-terminal_c-643-lit",
+      "gene_symbol": "ERBB2",
+      "uniprot_acc": "P04626",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "terminal_c",
+      "insert_after_residue": 643,
+      "residue_before": "V",
+      "residue_after": "V",
+      "residue_label": "V643",
+      "topology_state": "O",
+      "extracellular": false,
+      "compartment": "O",
+      "tag_type": "ALFA",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tag insertion in the same loop or domain",
+      "functional_impact_measured": "no",
+      "confidence": "low",
+      "rationale": "The juxtamembrane extracellular region of HER2 (near residue 643) is the last extracellular segment before the TM helix. PMID 35108526 shows HER2 ECD deletions are tolerated for signaling. A tag here would be extracellular and at the boundary of the \u22653 residues from TM requirement. However, this region is close to the TM boundary and may affect receptor dimerization or membrane proximal interactions. Ranked low due to weak evidence and proximity to TM. [validation: not_measured; position: inferred; source: paper; entailment_verified: True]",
+      "sources": [
+        {
+          "pmid": 35108526,
+          "citation": "PMID 35108526"
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null
+    },
+    {
+      "site_id": "ERBB2-terminal_n-22-lit",
+      "gene_symbol": "ERBB2",
+      "uniprot_acc": "P04626",
+      "provenance": "literature_retrieved",
+      "det_path": null,
+      "site_kind": "terminal_n",
+      "insert_after_residue": 22,
+      "residue_before": "S",
+      "residue_after": "T",
+      "residue_label": "S22",
+      "topology_state": "O",
+      "extracellular": false,
+      "compartment": "O",
+      "tag_type": "ALFA",
+      "tag_length_aa": null,
+      "linker": null,
+      "evidence_type": "published tolerance of a different insertion (transposon, FP fusion)",
+      "functional_impact_measured": "no",
+      "confidence": "low",
+      "rationale": "The native HER2 signal peptide (residues 1-22) directs surface expression as demonstrated by the HER2t truncation construct (PMID 34244298). Inserting a short epitope tag (e.g. ALFA, ~15 aa) after residue 22 places it at the extracellular N-terminus of the mature protein, more than 600 residues from the TM helix. This is a standard approach for type I single-pass receptors with large ectodomains. Avoid glycosylation sites and trastuzumab/pertuzumab epitopes (domains II and IV) by keeping the tag at the far N-terminus. [validation: surface_only; position: inferred; source: paper; entailment_verified: True]",
+      "sources": [
+        {
+          "pmid": 34244298,
+          "citation": "PMID 34244298"
+        }
+      ],
+      "plddt": null,
+      "conservation_rank": null,
+      "median_conservation": null
     }
   ],
   "isoform_pins": [
