@@ -14,6 +14,8 @@ import type {
   AlphafoldPredictionEntry,
   StructureViewerData,
 } from "../../../lib/structure-viewer-types";
+import { CATEGORY_HEX, CATEGORY_LABEL } from "../../../lib/tag-sites-types";
+import type { TagSiteCategory } from "../../../lib/tag-sites-types";
 import { InfoTip } from "../../InfoTip/InfoTip";
 import { TopologyLegend } from "../IsoformsCard/TopologyBar";
 import { StatusPill } from "../StatusPill/StatusPill";
@@ -35,6 +37,20 @@ export interface SurfaceBindAnchor {
   siteId: number;
   residue: number;
   compartment: AnchorCompartment;
+}
+
+/** A tag-insertion-site overlay sphere. Draws a colored sphere + label at the
+ *  α-carbon of ``residue``, colored by ``category`` via ``CATEGORY_HEX``.
+ *  Rendered only in the dedicated ``tags`` view mode (its own layer, separate
+ *  from the SURFACE-Bind ``sites`` anchors). */
+export interface TagSiteSphere {
+  siteId: string;
+  residue: number;
+  provenance: "literature_retrieved" | "deterministic_computed";
+  /** Fine-grained overlay category (lane / terminus / snorkel / literature) —
+   *  the color axis for ``tags`` mode via ``CATEGORY_HEX``. */
+  category: TagSiteCategory;
+  tagType: string;
 }
 
 /** A variant the user can switch to via the tab strip above the
@@ -385,6 +401,11 @@ interface StructureViewerProps {
    *  the patch anchor; nearby contact residues would need binder-PDB
    *  parsing to recover (separate task). */
   surfaceBindAnchors?: SurfaceBindAnchor[];
+  /** Tag-insertion-site overlay. Each entry draws a provenance-colored sphere
+   *  at the α-carbon of ``residue`` in the dedicated ``tags`` view mode. Pass
+   *  the array derived from ``renderableTagSites(...)``. Empty array = no
+   *  overlay (and no "Tag sites" toggle button). */
+  tagSites?: TagSiteSphere[];
   /** Optional alternate variants (alt isoforms, mouse / cyno
    *  orthologs). When non-empty, a tab strip renders above the
    *  canvas; clicking a tab swaps the rendered structure to that
@@ -405,7 +426,7 @@ interface StructureViewerProps {
  *  beefs up the spheres so a reader scanning specifically for
  *  SURFACE-Bind sites can see them at a glance against the membrane
  *  + EC/IC labels. */
-type ViewMode = "topology" | "sites";
+type ViewMode = "topology" | "sites" | "tags";
 
 /** Single sphere radius across both modes. Previously sites mode
  *  doubled the radius for emphasis, but the user wanted consistent
@@ -1050,6 +1071,7 @@ export function StructureViewer({
   canonicalStruct,
   proteinName,
   surfaceBindAnchors = [],
+  tagSites = [],
   variants = [],
   schwekeHomomer = null,
 }: StructureViewerProps) {
@@ -1133,7 +1155,7 @@ export function StructureViewer({
   // with no spheres. Revert to topology mode automatically so the
   // variant view is informative.
   useEffect(() => {
-    if (variantIdx !== 0 && viewMode === "sites") {
+    if (variantIdx !== 0 && (viewMode === "sites" || viewMode === "tags")) {
       setViewMode("topology");
     }
   }, [variantIdx, viewMode]);
@@ -1365,6 +1387,7 @@ export function StructureViewer({
   // the chain is restricted + residues may be missing from the
   // crystal, so anchor spheres would mis-render.
   const hasAnchors = surfaceBindAnchors.length > 0 && isCanonicalActive;
+  const hasTagSites = tagSites.length > 0 && isCanonicalActive;
 
   // Canonical-AFDB availability — drives graying its tab.
   const canonAfdbUnavail = afdbAvail[data.uniprot_acc] === false;
@@ -1877,7 +1900,7 @@ export function StructureViewer({
             });
           });
         });
-      } else if (viewMode === "sites") {
+      } else if (viewMode === "sites" || viewMode === "tags") {
         const baseSel = expVariant && effectiveChainId
           ? { chain: effectiveChainId }
           : {};
@@ -2015,6 +2038,40 @@ export function StructureViewer({
               screenOffset: { x: 16, y: -16 },
             },
           );
+        }
+      }
+
+      // Tag-insertion-site overlay — its OWN layer, drawn only in the
+      // dedicated ``tags`` view mode (independent of the SURFACE-Bind
+      // ``sites`` anchors above). Category-colored spheres at the α-carbon
+      // of each rendered tag site, using the WebGL-safe CATEGORY_HEX map
+      // (disorder / surface_loop / ecto N- / ecto C-term / snorkel / literature).
+      const shouldRenderTagSites =
+        viewMode === "tags" && hasTagSites && !schwekeVariant;
+      for (let i = 0; shouldRenderTagSites && i < tagSites.length; i += 1) {
+        const { residue, category, tagType } = tagSites[i];
+        const color = CATEGORY_HEX[category];
+        const sel = { resi: residue, atom: "CA" };
+        if (typeof viewerExt.addStyle === "function") {
+          viewerExt.addStyle(sel, {
+            sphere: { color, radius: SPHERE_RADIUS, opacity: 0.94 },
+          });
+        } else {
+          viewer.setStyle(sel, {
+            sphere: { color, radius: SPHERE_RADIUS, opacity: 0.94 },
+          });
+        }
+        if (typeof viewerExt.addLabel === "function") {
+          viewerExt.addLabel(`${tagType}`, {
+            position: { resi: residue, atom: "CA" },
+            backgroundColor: color,
+            backgroundOpacity: 0.94,
+            fontColor: "white",
+            fontSize: 12,
+            borderThickness: 0,
+            inFront: true,
+            screenOffset: { x: 16, y: 16 },
+          });
         }
       }
 
@@ -2169,6 +2226,8 @@ export function StructureViewer({
   }, [
     data,
     JSON.stringify(surfaceBindAnchors),
+    JSON.stringify(tagSites),
+    hasTagSites,
     viewMode,
     variantIdx,
     canonAfdbUnavail,
@@ -2357,7 +2416,7 @@ export function StructureViewer({
           SURFACE-Bind anchors; the link-out is suppressed too so we
           don't promise the reader a SURFACE-Bind entry that has
           nothing to show. */}
-      {hasAnchors ? (
+      {hasAnchors || hasTagSites ? (
         <div className={styles.controls}>
           <div
             className={styles.modeToggle}
@@ -2373,15 +2432,28 @@ export function StructureViewer({
             >
               Topology
             </button>
-            <button
-              type="button"
-              className={styles.modeButton}
-              data-active={viewMode === "sites"}
-              onClick={() => setViewMode("sites")}
-              title="Overlay SURFACE-Bind anchor spheres on the topology-colored cartoon: purple = extracellular (antibody-accessible), green = intracellular (NOT accessible from outside the cell), red = signal peptide, gray = TM / unknown. Cartoon + membrane render identically to Topology mode; this view just adds the sphere overlay."
-            >
-              SURFACE-Bind sites
-            </button>
+            {hasAnchors ? (
+              <button
+                type="button"
+                className={styles.modeButton}
+                data-active={viewMode === "sites"}
+                onClick={() => setViewMode("sites")}
+                title="Overlay SURFACE-Bind anchor spheres on the topology-colored cartoon: purple = extracellular (antibody-accessible), green = intracellular (NOT accessible from outside the cell), red = signal peptide, gray = TM / unknown. Cartoon + membrane render identically to Topology mode; this view just adds the sphere overlay."
+              >
+                SURFACE-Bind sites
+              </button>
+            ) : null}
+            {hasTagSites ? (
+              <button
+                type="button"
+                className={styles.modeButton}
+                data-active={viewMode === "tags"}
+                onClick={() => setViewMode("tags")}
+                title="Overlay tag-insertion-site spheres on a washed-out cartoon, colored by sourcing method: lavender = literature-retrieved, teal = deterministic-computed."
+              >
+                Tag sites
+              </button>
+            ) : null}
           </div>
           {/* The previous ↗ deep-link to SURFACE-Bind was removed —
               the §SURFACE-Bind card below already carries the
@@ -2445,6 +2517,26 @@ export function StructureViewer({
             </a>
           </p>
         </>
+      ) : viewMode === "tags" && hasTagSites ? (
+        <ul
+          className={styles.sitesLegend}
+          aria-label="Tag-site category legend"
+        >
+          {Array.from(new Set(tagSites.map((t) => t.category))).map(
+            (category) => (
+              <li key={category} className={styles.sitesLegendItem}>
+                <span
+                  className={styles.sitesLegendSwatch}
+                  style={{ background: CATEGORY_HEX[category] }}
+                  aria-hidden="true"
+                />
+                <span className={styles.sitesLegendLabel}>
+                  {CATEGORY_LABEL[category]}
+                </span>
+              </li>
+            ),
+          )}
+        </ul>
       ) : (
         <TopologyLegend
           presentStates={legendPresentStates}

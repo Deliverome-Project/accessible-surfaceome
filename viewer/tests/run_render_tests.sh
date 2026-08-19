@@ -21,6 +21,8 @@ tests=(
   surface_evidence_card_chip_jump.test.tsx
   catalog_table_internalization.test.tsx
   catalog_table_fg_library.test.tsx
+  topology_bar_pins.test.tsx
+  tagged_sites_card.test.tsx
 )
 
 fails=0

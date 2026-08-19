@@ -16,6 +16,8 @@ import type {
 } from "../../../lib/surfaceome-types";
 import type { SchwekeHomomerLoaderRow } from "../../../lib/structure-viewer";
 import type { StructureViewerData } from "../../../lib/structure-viewer-types";
+import type { TaggedSitesFile } from "../../../lib/tag-sites-types";
+import { renderableTagSites } from "../../../lib/tag-sites-overlay";
 import { prettyEnum } from "../../../lib/enums";
 import { tooltips } from "../../../lib/tooltips";
 import { triageVsDeepDive } from "../../../lib/triage-comparison";
@@ -25,6 +27,7 @@ import { linkifyEvidenceRefs } from "../EvidenceChip/EvidenceChip";
 import { FeedbackButton } from "../../FeedbackButton/FeedbackButton";
 import { InfoTip } from "../../InfoTip/InfoTip";
 import { StructureViewer } from "../StructureViewerCard/StructureViewer";
+import { TopologyBar } from "../IsoformsCard/TopologyBar";
 import styles from "./GeneHeader.module.css";
 
 /** Convert an isoform UniProt id like "P00533-2" into a reader-friendly
@@ -86,6 +89,12 @@ interface GeneHeaderProps {
    *  intracellular and the caption is adjusted to describe the
    *  membrane-anchoring rather than a transmembrane orientation. */
   structureData?: StructureViewerData | null;
+  /** Tag-insertion-site records for this gene, client-fetched from the static
+   *  ``/tag-sites/{SYMBOL}.json`` asset. When present (and ``has_data``), the
+   *  rendered sites are drawn as provenance-colored spheres on the 3D viewer
+   *  ("Tag sites" mode) and pins on the linear topology bar. ``null`` when no
+   *  asset exists for the gene — overlay is simply absent. */
+  taggedSites?: TaggedSitesFile | null;
   /** Schweke et al. 2024 (PMID 38325366) AF2 homo-oligomer entry, when
    *  this gene is in the manifest. Forwarded as the ``schwekeHomomer``
    *  prop on <StructureViewer>, where it surfaces as a "Homo-oligomer"
@@ -266,6 +275,7 @@ export function GeneHeader({
   rec,
   geneName,
   structureData,
+  taggedSites,
   schwekeHomomer,
   catalogRow,
   triageHeadline,
@@ -292,6 +302,14 @@ export function GeneHeader({
   // sub-facet, right in the header.
   const { tier, facet } = deepDiveTier(rec.filters as unknown as DeepDiveFilters);
   const struct = rec.deterministic_features.structure;
+  // Rendered tag-insertion sites (drops validated_literature, resolves each to
+  // a residue + left-percent along the canonical topology). Shared by the 3D
+  // spheres and the linear-bar pins so both overlays agree exactly. Empty when
+  // no asset / no data / no structure to place them on.
+  const tagSiteRows =
+    taggedSites?.has_data && structureData
+      ? renderableTagSites(taggedSites.sites, structureData.topology.length)
+      : [];
   // The fetcher signals what kind of pLDDT the number is via the
   // ``source`` string (see :func:`tools.afdb_plddt.fetch_afdb_plddt`).
   //   * "placeholder" — fetcher hasn't run, the 0.0 isn't a measurement.
@@ -765,6 +783,17 @@ export function GeneHeader({
                   };
                 },
               )}
+              // Tag-insertion-site overlay spheres (own "Tag sites" mode),
+              // colored by sourcing provenance. Derived once via
+              // renderableTagSites so the 3D spheres and the linear-bar pins
+              // below stay in lockstep.
+              tagSites={tagSiteRows.map((r) => ({
+                siteId: r.siteId,
+                residue: r.residue,
+                provenance: r.provenance,
+                category: r.category,
+                tagType: r.tagType,
+              }))}
               // Variant tabs above the 3D canvas: alt isoforms
               // (sourced from `rec.deterministic_features.isoform_topologies`)
               // and 1:1 orthologs (mouse + cynomolgus). Each variant
@@ -851,6 +880,24 @@ export function GeneHeader({
                 ),
               ]}
             />
+            {/* Linear tag-site overlay — the canonical topology bar with a
+                pin per rendered tag site, colored by provenance to match the
+                3D "Tag sites" spheres. GeneHeader renders no canonical
+                TopologyBar of its own, so this labelled full-width bar is
+                added beneath the viewer (fallback per the overlay plan). Only
+                shown when the gene actually has rendered tag sites. */}
+            {tagSiteRows.length > 0 ? (
+              <TopologyBar
+                topology={structureData.topology}
+                ariaLabel={`${g.hgnc_symbol} canonical topology with tag-insertion sites`}
+                pins={tagSiteRows.map((r) => ({
+                  siteId: r.siteId,
+                  leftPct: r.leftPct,
+                  provenance: r.provenance,
+                  tagType: r.tagType,
+                }))}
+              />
+            ) : null}
             {/* Legend moved INSIDE <StructureViewer> so it can
                 switch between the M/O/I/S/B topology key and the
                 EC/IC/TM sites key based on the viewer's internal

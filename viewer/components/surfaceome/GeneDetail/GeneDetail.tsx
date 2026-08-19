@@ -9,6 +9,7 @@ import { Reveal } from "../../Reveal/Reveal";
 import { Shell } from "../../Shell/Shell";
 import { AccessibilityRisksCard } from "../AccessibilityRisksCard/AccessibilityRisksCard";
 import { InternalizationCard } from "../InternalizationCard/InternalizationCard";
+import { TaggedSitesCard } from "../TaggedSitesCard/TaggedSitesCard";
 import { BenchmarkRow } from "../BenchmarkRow/BenchmarkRow";
 import { BiologicalContextCard } from "../BiologicalContextCard/BiologicalContextCard";
 import { CommunityNotesCard } from "../CommunityNotesCard/CommunityNotesCard";
@@ -42,6 +43,7 @@ import type {
   StructureViewerData,
 } from "../../../lib/structure-viewer-types";
 import type { TriageHeadlinePayload } from "../../../lib/triage-headline";
+import type { TaggedSitesFile } from "../../../lib/tag-sites-types";
 import styles from "./GeneDetail.module.css";
 
 interface GeneDetailProps {
@@ -58,6 +60,10 @@ interface GeneDetailProps {
    *  from the record (`structureViewerDataFromRecord`). Null when the
    *  record carries no accession. */
   structureData: StructureViewerData | null;
+  /** Tag-insertion-site records for this gene, client-fetched from the static
+   *  `/tag-sites/{SYMBOL}.json` asset by the shell. Null when no asset exists;
+   *  forwarded to `<GeneHeader>` for the 3D + linear-bar overlay. */
+  taggedSites: TaggedSitesFile | null;
   /** Schweke et al. 2024 AF2 homo-oligomer entry, derived from the record's
    *  `deterministic_features.homo_oligomerization`. Null when the protein
    *  isn't a Schweke positive. */
@@ -97,6 +103,7 @@ export function GeneDetail({
   rec,
   geneName,
   structureData,
+  taggedSites,
   schwekeHomomer,
   catalogRow,
   benchmarkRow,
@@ -220,6 +227,24 @@ export function GeneDetail({
       label: "Internalization",
       render: (n) => <InternalizationCard symbol={rec.gene.hgnc_symbol} n={n} />,
     },
+    // Tag sites — its OWN tab (distinct from Internalization). Shown only
+    // when the gene has at least one RENDERED tag site (literature_retrieved
+    // or deterministic_computed); validated_literature is validation-only and
+    // never rendered, matching `renderableTagSites`.
+    ...(taggedSites?.has_data &&
+    taggedSites.sites.some(
+      (s) =>
+        s.provenance === "literature_retrieved" ||
+        s.provenance === "deterministic_computed",
+    )
+      ? [
+          {
+            kind: "tag-sites",
+            label: "Tag sites",
+            render: (n: number) => <TaggedSitesCard taggedSites={taggedSites} n={n} />,
+          },
+        ]
+      : []),
     // SURFACE-Bind section only when the protein has at least one
     // scored patch. Two empty cases are filtered out so the AnchorNav
     // strip never offers a tab that opens a sites-less section:
@@ -243,7 +268,7 @@ export function GeneDetail({
     {
       kind: "isoforms",
       label: "Isoforms & homologs",
-      render: (n) => <IsoformsCard rec={rec} n={n} fgLibrary={fgLibrary} />,
+      render: (n) => <IsoformsCard rec={rec} n={n} fgLibrary={fgLibrary} taggedSites={taggedSites} />,
     },
     {
       kind: "ledger",
@@ -365,6 +390,7 @@ export function GeneDetail({
             rec={rec}
             geneName={geneName}
             structureData={structureData}
+            taggedSites={taggedSites}
             schwekeHomomer={schwekeHomomer}
             catalogRow={catalogRow}
             triageHeadline={triageHeadline}

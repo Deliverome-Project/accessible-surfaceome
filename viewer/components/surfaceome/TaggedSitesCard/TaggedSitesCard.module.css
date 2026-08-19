@@ -1,0 +1,113 @@
+/*
+ * TaggedSitesCard — dedicated §Tag sites section (its own tab).
+ * Two provenance groups (literature-validated + computed candidate),
+ * colour-keyed to the structure-viewer overlay legend.
+ */
+
+.empty,
+.legend {
+  font-size: 0.92rem;
+  line-height: 1.55;
+  color: var(--ink-soft);
+  margin: 0 0 var(--space-4);
+}
+
+.empty {
+  color: var(--muted);
+}
+
+.legend {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  flex-wrap: wrap;
+}
+
+.legendItem {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  margin-right: var(--space-3);
+}
+
+.dot {
+  display: inline-block;
+  width: 0.7rem;
+  height: 0.7rem;
+  border-radius: 50%;
+  flex: none;
+}
+
+.subhead {
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: var(--ink);
+  margin: var(--space-4) 0 var(--space-2);
+}
+
+.tableWrap {
+  overflow-x: auto;
+  margin: 0 0 var(--space-4);
+}
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.9rem;
+}
+
+.head {
+  text-align: left;
+  color: var(--muted);
+  padding: var(--space-2) var(--space-3) var(--space-2) 0;
+  border-bottom: 1px solid var(--line-soft);
+  white-space: nowrap;
+  font-size: 0.8rem;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+
+.table td {
+  padding: var(--space-2) var(--space-3) var(--space-2) 0;
+  border-bottom: 1px solid var(--line-soft);
+  vertical-align: top;
+}
+
+.residue {
+  font-family: var(--font-mono, ui-monospace, monospace);
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.muted {
+  color: var(--muted);
+}
+
+.evidence {
+  min-width: 14rem;
+}
+
+/* Secondary detail line under the evidence cell — e.g. the measured
+   functional/expression impact. */
+.detail {
+  display: block;
+  margin-top: 0.15rem;
+  font-size: 0.82rem;
+  color: var(--muted);
+  line-height: 1.4;
+}
+
+.sources {
+  display: inline-flex;
+  flex-direction: column;
+  gap: 0.15rem;
+}
+
+.sources a {
+  color: var(--accent, #c32f62);
+  text-decoration: none;
+  white-space: nowrap;
+}
+.sources a:hover {
+  text-decoration: underline;
+}
