@@ -73,14 +73,33 @@ def build_pool(
 
 
 def _body_text(
-    paper: Paper, *, fetched: bool, http: CachedHTTP, retraction_index: Any
+    paper: Paper,
+    *,
+    fetched: bool,
+    http: CachedHTTP,
+    retraction_index: Any,
+    drafts: list[EvidenceClaimDraft],
 ) -> str:
     """Store body for span verification. ALWAYS include the abstract (a paper
     can contribute abstract-derived clips even after it was fetched — e.g. a
     worth_fetching body-fetch that fell back to the abstract), PLUS the
-    full-text body when fetched. Concatenating both makes every clip — abstract
-    OR body — substring-matchable; the previous full-text-only body silently
-    dropped abstract clips at promotion."""
+    full-text body when fetched, from two complementary sources:
+
+    * **Real JATS body** (``fetch_fulltext``) when the paper has a PMC id AND PMC
+      returns sections — so clips keep offsets into the real source text.
+    * **Body-derived clip drafts** — folded in for EVERY fetched paper as the
+      span-verify safety net. The drafts in the pool ARE verbatim excerpts of the
+      body ``abstract_triage`` actually fetched (whatever the path), and are
+      exactly what ``select`` picks from. This covers the cases the JATS re-fetch
+      misses: (a) non-PMC papers — bioRxiv/medRxiv preprints, Unpaywall/DataCite
+      OA-PDF-only papers (PMC has nothing) — the TMEM123/EndoNB gap; AND (b) a
+      paper WITH a PMC id whose JATS came back empty, so ``abstract_triage``
+      fetched the body via Unpaywall/DataCite instead (the PMC-PDF-only case) —
+      the ``if``/``elif`` version silently dropped those body clips too. Without
+      this, body-derived clips fail verification against an abstract-only store
+      and get silently dropped. For a normal PMC paper the real JATS body is
+      added first, so its clips keep real offsets and the redundant draft copies
+      are harmless (first-occurrence match wins)."""
     parts: list[str] = []
     abstract = getattr(paper, "abstract", None)
     if abstract:
@@ -89,6 +108,11 @@ def _body_text(
         full = fetch_fulltext(http=http, pmcid=paper.pmc_id, retraction_index=retraction_index)
         secs = getattr(full, "sections", None) or []
         parts.extend(s.text for s in secs if getattr(s, "text", None))
+    if fetched:
+        # Safety net — ALWAYS fold in the body-derived drafts (verbatim excerpts
+        # of the fetched body), not just when pmc_id is absent, so a PMC paper
+        # with empty JATS (body via Unpaywall/DataCite) doesn't lose its clips.
+        parts.extend(d.quote for d in drafts if getattr(d, "quote", None))
     return "\n\n".join(parts)
 
 
@@ -102,12 +126,21 @@ def build_source_store(
     """Register a real ``SourceText`` for every source_id present in the pool
     (full body when the paper was fetched, else its abstract)."""
     store = SourceTextStore()
-    for source_id in {d.source_id for d in pool.values()}:
+    drafts_by_source: dict[str, list[EvidenceClaimDraft]] = defaultdict(list)
+    for draft in pool.values():
+        drafts_by_source[draft.source_id].append(draft)
+    for source_id in drafts_by_source:
         entry = papers_by_source_id.get(source_id)
         if entry is None:
             continue
         paper, fetched = entry
-        raw = _body_text(paper, fetched=fetched, http=http, retraction_index=retraction_index)
+        raw = _body_text(
+            paper,
+            fetched=fetched,
+            http=http,
+            retraction_index=retraction_index,
+            drafts=drafts_by_source[source_id],
+        )
         if not raw:
             continue
         norm = normalize_for_quote_matching(raw)

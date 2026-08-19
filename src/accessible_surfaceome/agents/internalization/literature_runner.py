@@ -4,11 +4,16 @@ span-verified Evidence -> grade by mode -> assemble + validate + persist."""
 
 from __future__ import annotations
 
+import hashlib
 import re
 from datetime import UTC, datetime
 from pathlib import Path
+from typing import cast
+
+from anthropic import Anthropic
 
 from accessible_surfaceome.agents._support.client import get_client
+from accessible_surfaceome.agents._support.web_literature import web_discover_papers
 from accessible_surfaceome.agents.internalization.ids import resolve_hgnc_id
 from accessible_surfaceome.agents.internalization.literature_discovery import (
     discover_internalization_papers,
@@ -28,6 +33,7 @@ from accessible_surfaceome.agents.internalization.literature_triage import (
     triage_internalization_abstracts,
 )
 from accessible_surfaceome.agents.internalization.models import (
+    LIT_PROMPT_VERSION,
     SCHEMA_VERSION,
     InternalizationRecord,
     LiteratureTrack,
@@ -40,6 +46,36 @@ from accessible_surfaceome.tools._shared.retraction_watch import empty as empty_
 from accessible_surfaceome.tools.gene_lookup import resolve_by_hgnc_id
 
 LIT_RUNNER_VERSION = "internalization-literature/0.1.0"
+
+
+def lit_prompt_sha() -> str:
+    """sha256 of the literature prompt corpus, so a stale lit record is detectable
+    and the sweep re-runs on any prompt edit. Covers the three judgment prompts
+    (triage + select + grade) AND the shared web-discovery system prompt — the web
+    prompt materially shapes WHICH papers enter the record, so a change to it (e.g.
+    the envelope-tolerance fix) must invalidate prior records the same way a grading
+    change does."""
+    from accessible_surfaceome.agents._support.web_literature import _SYSTEM as web_system
+    from accessible_surfaceome.agents.internalization.literature_grade import (
+        load_grade_prompt,
+    )
+    from accessible_surfaceome.agents.internalization.literature_select import (
+        load_select_prompt,
+    )
+    from accessible_surfaceome.agents.internalization.literature_triage import (
+        load_triage_prompt,
+    )
+
+    corpus = "\0".join(
+        (load_triage_prompt(), load_select_prompt(), load_grade_prompt(), web_system)
+    )
+    return hashlib.sha256(corpus.encode("utf-8")).hexdigest()
+# Topic phrase for the shared web_search discovery complement (kept gene-agnostic
+# — the gene's own names are passed separately).
+_WEB_INTENT = (
+    "internalization / endocytosis / receptor-mediated uptake of this cell-surface "
+    "protein — rate, kinetics, mechanism, or trafficking measurements"
+)
 _DEFAULT_ANNOTATIONS_DIR = REPO_ROOT / "data" / "annotations" / "internalization"
 
 
@@ -51,6 +87,7 @@ def annotate_literature(
     persist: bool = True,
     annotations_dir: Path | None = None,
     model_priors: list[ModelPriorTrack] | None = None,
+    use_web_search: bool = False,
 ) -> InternalizationRecord:
     client = client or get_client()
     http = http or open_default_client()
@@ -68,6 +105,31 @@ def annotate_literature(
     discovered = discover_internalization_papers(
         bundle, http=http, retraction_index=retraction
     )
+    if use_web_search:
+        # Shared web_search complement — surfaces recent preprints + vocabulary-
+        # mismatch papers the abstract index misses (e.g. a methods preprint that
+        # studies this protein as one example cargo). Hydrated to real Papers, so
+        # they flow through the SAME triage / full-text-fetch / span-verify path;
+        # a no-op if web_search isn't enabled on the account.
+        web_names = [
+            n
+            for n in (
+                bundle.hgnc_symbol,
+                bundle.approved_name,  # str | None
+                *bundle.aliases,
+                *bundle.alias_names,
+                *bundle.previous_symbols,
+            )
+            if n
+        ]
+        for paper in web_discover_papers(
+            cast(Anthropic, client),
+            intent=_WEB_INTENT,
+            gene_names=web_names,
+            http=http,
+            retraction_index=retraction,
+        ):
+            discovered.setdefault(paper_source_id(paper), paper)
     papers_by_id = {paper_source_id(p): p for p in discovered.values()}
 
     outcomes = triage_internalization_abstracts(
@@ -164,6 +226,8 @@ def annotate_literature(
         n_modulator_observations=len(modulators),
         n_papers_discovered=len(discovered),
         n_papers_fetched=sum(1 for v in fetched_by_id.values() if v),
+        prompt_sha=lit_prompt_sha(),
+        prompt_version=LIT_PROMPT_VERSION,
     )
 
     record = InternalizationRecord(

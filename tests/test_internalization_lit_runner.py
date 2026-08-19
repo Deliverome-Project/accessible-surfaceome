@@ -133,6 +133,57 @@ def test_annotate_literature_assembles_record(tmp_path, monkeypatch):
     assert written["literature"]["overall_grade"] == "high"
 
 
+def test_annotate_literature_keeps_seq_prior_out_of_lit_stages(tmp_path, monkeypatch):
+    """Contamination guard: the literature track is graded BLIND to the sequence
+    prior. ``model_priors`` is stitched into the OUTPUT record only — it must
+    NEVER reach any LLM stage (triage / select / grade). Lock the invariant: a
+    sentinel carried on the seq track appears in the stored record but in NO
+    lit-stage input (so the read-back-merge can't contaminate lit grading)."""
+    SENTINEL = "SEQ_SENTINEL_MUST_NOT_LEAK"
+    llm = LiteratureLLMOut(
+        grades_by_mode=GradesByMode(
+            therapeutic=ModeGrade(grade="unknown", confidence="low")
+        ),
+        overall_grade="unknown",
+        overall_confidence="low",
+        observations=[],
+    )
+    _wire(monkeypatch, discovered={1: SimpleNamespace(pmid=1)}, llm=llm)
+
+    seen: list[str] = []  # every arg every LLM stage receives, stringified
+
+    def cap_triage(c, *, papers, gene, synonyms):
+        seen.append(repr((papers, gene, synonyms)))
+        return []
+
+    def cap_select(c, *, pool, gene, synonyms):
+        seen.append(repr((pool, gene, synonyms)))
+        return SimpleNamespace()
+
+    def cap_grade(c, *, gene, evidence, synonyms):
+        seen.append(repr((gene, evidence, synonyms)))
+        return llm
+
+    monkeypatch.setattr(mod, "triage_internalization_abstracts", cap_triage)
+    monkeypatch.setattr(mod, "select_clips", cap_select)
+    monkeypatch.setattr(mod, "grade_from_evidence", cap_grade)
+
+    rec = mod.annotate_literature(
+        "TFRC", client=object(), http=cast(Any, object()), annotations_dir=tmp_path,
+        model_priors=[
+            ModelPriorTrack(
+                model="claude-opus-5", overall_grade="very_high",
+                overall_confidence="high", model_reasoning=SENTINEL, per_isoform=[],
+            )
+        ],
+    )
+    # Carried into the stored record's seq track (the merge) ...
+    assert rec.model_priors[0].model_reasoning == SENTINEL
+    # ... but never handed to any literature LLM stage.
+    assert seen, "lit stages should have been invoked"
+    assert all(SENTINEL not in s for s in seen), f"seq prior leaked into a lit stage: {seen}"
+
+
 def test_annotate_literature_derives_primary_or_invivo_flag(tmp_path, monkeypatch):
     discovered = {1: SimpleNamespace(pmid=1)}
     llm = LiteratureLLMOut(

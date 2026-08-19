@@ -159,3 +159,6 @@ paper/*.docx
 paper/*.pdf
 paper/*.html
 paper/*.xml
+
+# D1 table dumps (surface_internalization backup before lit sweeps) — durable copy lives in R2
+data/backups/

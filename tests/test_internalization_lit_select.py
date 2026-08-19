@@ -140,3 +140,42 @@ def test_select_clips_passes_synonyms_into_user_prompt():
 def test_select_clips_empty_pool_short_circuits():
     out = select_clips(object(), pool={}, gene="TFRC", system_prompt="SYS")
     assert out.selections == []
+
+
+def test_render_clip_menu_caps_to_top_n_by_score():
+    from accessible_surfaceome.agents.internalization.literature_select import (
+        render_clip_menu,
+    )
+
+    pool = {
+        "c1": _draft("c1", "low score clip", "PMID:1").model_copy(update={"score": 0.1}),
+        "c2": _draft("c2", "high score clip", "PMID:2").model_copy(update={"score": 0.9}),
+        "c3": _draft("c3", "mid score clip", "PMID:3").model_copy(update={"score": 0.5}),
+    }
+    menu = render_clip_menu(pool, limit=2)
+    assert "high score clip" in menu and "mid score clip" in menu
+    assert "low score clip" not in menu  # lowest score dropped by the cap
+    assert menu.count("\n") == 1  # exactly two menu lines
+    # No limit → all clips rendered.
+    assert render_clip_menu(pool).count("\n") == 2
+
+
+def test_select_clips_degrades_to_empty_when_selector_always_fails(monkeypatch):
+    # A clip-dense gene whose SelectionResponse keeps truncating must NOT crash the
+    # whole annotation (FOLH1 in the pilot). After the capped + salvage retries,
+    # select_clips returns an empty selection so the gene grades on what's left.
+    from accessible_surfaceome.agents.internalization import literature_select as ls
+
+    calls = {"n": 0}
+
+    def _boom(*a, **k):
+        calls["n"] += 1
+        raise ValueError("model claude-sonnet-4-6 failed schema validation after repairs: truncated")
+
+    monkeypatch.setattr(ls, "call_model_structured", _boom)
+    pool = {f"c{i}": _draft(f"c{i}", f"quote {i}", f"PMID:{i}") for i in range(5)}
+    out = ls.select_clips(object(), pool=pool, gene="FOLH1", system_prompt="SYS")
+    assert isinstance(out, SelectionResponse)
+    assert out.selections == []  # degraded, did not raise
+    assert calls["n"] == 2  # capped attempt + one salvage retry, then fallback
+    assert "failed" in (out.notes or "")
