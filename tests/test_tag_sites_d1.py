@@ -5,6 +5,8 @@ import sqlite3
 
 from accessible_surfaceome.cloud import tag_sites as TS
 from accessible_surfaceome.paths import REPO_ROOT
+from typing import cast
+from accessible_surfaceome.cloud.d1_client import D1Client
 
 TFRC = REPO_ROOT / "viewer" / "public" / "tag-sites" / "TFRC.json"
 
@@ -32,7 +34,7 @@ class _SqliteD1:
 def test_publish_round_trips_tfrc():
     data = json.loads(TFRC.read_text())
     db = _SqliteD1()
-    n = TS.publish_tag_sites(data, tag_sites_version="test-1", client=db)
+    n = TS.publish_tag_sites(data, tag_sites_version="test-1", client=cast(D1Client, db))
     assert n == len(data["sites"])
 
     rows = db.query("SELECT * FROM tag_site_public WHERE gene_symbol = 'TFRC';")
@@ -56,9 +58,9 @@ def test_publish_round_trips_tfrc():
 def test_replace_all_per_gene_drops_stale_sites():
     data = json.loads(TFRC.read_text())
     db = _SqliteD1()
-    TS.publish_tag_sites(data, tag_sites_version="v1", client=db)
+    TS.publish_tag_sites(data, tag_sites_version="v1", client=cast(D1Client, db))
     fewer = {**data, "sites": data["sites"][:3]}
-    TS.publish_tag_sites(fewer, tag_sites_version="v2", client=db)
+    TS.publish_tag_sites(fewer, tag_sites_version="v2", client=cast(D1Client, db))
 
     rows = db.query("SELECT site_id, tag_sites_version FROM tag_site_public;")
     assert len(rows) == 3  # stale sites removed, not just upserted

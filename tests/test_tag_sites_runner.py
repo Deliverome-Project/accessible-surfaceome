@@ -2,6 +2,9 @@ from accessible_surfaceome.agents.tag_site import runner as R
 import types
 
 from accessible_surfaceome.agents.tag_site.schema import TagSiteProposal, TagSiteResult
+from typing import cast
+from anthropic import Anthropic
+from accessible_surfaceome.tools._shared.http import CachedHTTP
 
 
 def _paper(*, pmid=None, doi=None, pmc_id=None, title="", abstract="", year=None, is_preprint=False):
@@ -80,7 +83,7 @@ def test_run_tag_site_agent_composes_discovery_and_builder(monkeypatch):
     out = R.run_tag_site_agent(
         gene_symbol="X", protein_name="X protein", uniprot_accession="Q0",
         aliases=["x protein"], sequence="A" * 300, topology="O" * 300,
-        client=object(), http=object(),
+        client=cast(Anthropic, object()), http=cast(CachedHTTP, object()),
     )
     assert captured["label"] == "tag_site:X"
     assert captured["tools"] is None  # discovery moved upfront -> no inline web tool
@@ -96,7 +99,7 @@ def test_run_returns_empty_on_builder_failure(monkeypatch):
     monkeypatch.setattr(R, "call_builder", lambda client, **k: None)
     out = R.run_tag_site_agent(
         gene_symbol="X", protein_name="X", uniprot_accession="Q0", aliases=[],
-        sequence="AAA", topology="OOO", client=object(), http=object(),
+        sequence="AAA", topology="OOO", client=cast(Anthropic, object()), http=cast(CachedHTTP, object()),
     )
     assert out.sites == [] and out.sequence_length == 3
 
@@ -160,8 +163,10 @@ def test_verify_entailment_flags_hallucinated_quotes():
 
 def test_verify_entailment_tiebreak_in_ranking():
     # same validation+tier: the source-verified site ranks ahead of the unverified one.
-    a = _site(1, val="surface_only", res=10); a.entailment_verified = False
-    b = _site(2, val="surface_only", res=20); b.entailment_verified = True
+    a = _site(1, val="surface_only", res=10)
+    a.entailment_verified = False
+    b = _site(2, val="surface_only", res=20)
+    b.entailment_verified = True
     out = R.rank_sites(_result([a, b]))
     assert [s.insert_after_residue for s in out.sites] == [20, 10]
 
@@ -191,11 +196,12 @@ def test_verify_entailment_hydrates_web_cited_pmid(monkeypatch):
     site.supporting_pmid = 999
     site.supporting_quote = "We introduced an HA tag in extracellular loop 2"
     res = _result([site])
-    R.verify_entailment(res, papers={}, fulltext={}, http=object())
+    R.verify_entailment(res, papers={}, fulltext={}, http=cast(CachedHTTP, object()))
     assert res.sites[0].entailment_verified is True
 
     # Without http, the same web-cited PMID cannot be fetched -> stays unverified.
-    site2 = _site(1, res=243); site2.supporting_pmid = 999
+    site2 = _site(1, res=243)
+    site2.supporting_pmid = 999
     site2.supporting_quote = "We introduced an HA tag in extracellular loop 2"
     res2 = _result([site2])
     R.verify_entailment(res2, papers={}, fulltext={})

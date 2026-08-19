@@ -1,5 +1,7 @@
 from accessible_surfaceome.agents.tag_site import literature_discovery as ld
 from accessible_surfaceome.agents.tag_site.schema import VALIDATION_LEVELS, VALIDATION_RANK
+from typing import cast
+from accessible_surfaceome.tools._shared.http import CachedHTTP
 
 
 def test_query_expands_aliases_and_phrase_quotes():
@@ -59,6 +61,6 @@ def test_discover_keys_on_source_id_keeps_preprints_and_dedupes(monkeypatch):
         lambda **k: [_FakePaper(pmid=p) for p in k["pmids"]],  # only pmid 3 (2 already seen)
     )
 
-    out = ld.discover_tag_site_papers(http=object(), gene_symbol="X", aliases=["x protein"])
+    out = ld.discover_tag_site_papers(http=cast(CachedHTTP, object()), gene_symbol="X", aliases=["x protein"])
     assert set(out) == {"PMID:1", "PMID:2", "PMID:3", "DOI:10.1101/preprint9"}
     assert any(p.is_preprint for p in out.values())  # the preprint was KEPT, not skipped
