@@ -247,6 +247,7 @@ def run_tag_site_agent(
         schema=TagSiteResult,
         usage_sink=usage_sink,
         label=f"tag_site:{gene_symbol}",
+        max_tokens=32_000,  # 16k default truncated multi-site outputs (e.g. SLC6A4)
     )
     if result is None:
         return TagSiteResult(
