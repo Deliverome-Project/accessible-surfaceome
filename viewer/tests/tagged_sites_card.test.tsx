@@ -60,7 +60,7 @@ test("renders both provenance groups with counts, residues, and a source link", 
           site_id: "lit1",
           residue_label: "F760",
           site_kind: "terminal_c",
-          sources: [{ citation: "PMID 24973209", pmid: "24973209" }],
+          sources: [{ citation: "PMID 24973209", pmid: "24973209", claim: "We inserted an HA tag after F760." }],
         }),
         site({
           site_id: "det1",
@@ -87,6 +87,8 @@ test("renders both provenance groups with counts, residues, and a source link", 
   assert.match(html, /37\.5/);
   // source renders as an external PubMed link
   assert.match(html, /pubmed\.ncbi\.nlm\.nih\.gov\/24973209/);
+  // literature row exposes an expandable evidence drawer (exact quote inside)
+  assert.match(html, /Quote/);
   // validated_literature site is dropped
   assert.doesNotMatch(html, /Z999/);
 });

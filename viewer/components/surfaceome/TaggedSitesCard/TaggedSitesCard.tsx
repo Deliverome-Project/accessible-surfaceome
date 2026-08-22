@@ -1,5 +1,6 @@
 "use client";
 
+import { ReasoningDrawer } from "../ReasoningDrawer/ReasoningDrawer";
 import { SectionCard } from "../SectionCard/SectionCard";
 import type {
   EvidenceSource,
@@ -59,6 +60,35 @@ function Sources({ sources }: { sources: EvidenceSource[] }) {
   );
 }
 
+/** Expandable evidence drawer for one literature site — mirrors the main
+ *  sections' ReasoningDrawer. Shows the exact entailment-checked quote(s)
+ *  (from sources[].claim), the agent rationale, and the linked sources. */
+function SiteEvidenceDrawer({ site }: { site: TaggedSite }) {
+  const quotes = site.sources
+    .map((src) => src.claim)
+    .filter((c): c is string => Boolean(c && c.trim()));
+  if (!quotes.length && !site.rationale) return <span className={styles.muted}>—</span>;
+  return (
+    <ReasoningDrawer
+      eyebrow={`Tag site · ${residueDisplay(site)}`}
+      title="Supporting evidence"
+      ariaLabel={`Supporting evidence for ${residueDisplay(site)}`}
+      triggerLabel="Quote ↗"
+    >
+      {quotes.map((q, i) => (
+        <blockquote key={i} className={styles.quote}>
+          &ldquo;{q}&rdquo;
+        </blockquote>
+      ))}
+      {site.rationale ? <p className={styles.drawerRationale}>{site.rationale}</p> : null}
+      <div className={styles.drawerSources}>
+        <Sources sources={site.sources} />
+      </div>
+    </ReasoningDrawer>
+  );
+}
+
+
 /** Literature-validated tag sites: residue + placement + tag + evidence +
  *  linked sources, with a muted detail line (rationale carries the folded
  *  validation_level / position / source_tier / entailment tags). */
@@ -75,6 +105,7 @@ function LiteratureTable({ sites }: { sites: TaggedSite[] }) {
             <th className={styles.head}>Evidence</th>
             <th className={styles.head}>Conf.</th>
             <th className={styles.head}>Sources</th>
+            <th className={styles.head}>Details</th>
           </tr>
         </thead>
         <tbody>
@@ -93,6 +124,9 @@ function LiteratureTable({ sites }: { sites: TaggedSite[] }) {
               <td>{s.confidence ?? "—"}</td>
               <td>
                 <Sources sources={s.sources} />
+              </td>
+              <td>
+                <SiteEvidenceDrawer site={s} />
               </td>
             </tr>
           ))}

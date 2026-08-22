@@ -111,7 +111,12 @@ def test_to_viewer_sites_shape():
     assert s["site_id"].endswith("-lit") and s["det_path"] is None
     assert s["topology_state"] == "O" and s["extracellular"] is True
     assert "validation: surface_and_function" in s["rationale"]
-    assert s["sources"] == [{"pmid": 123, "citation": "PMID 123"}]
+    assert s["sources"] == [{"pmid": 123, "citation": "PMID 123", "claim": None}]
+    # supporting_quote rides in the source's claim (drives the drawer quote)
+    q = _site(1, val="surface_and_function")
+    q.supporting_quote = "We inserted an ALFA tag after G100"
+    qs = R.to_viewer_sites(_result([q]), uniprot_acc="Q0")[0]
+    assert qs["sources"][0]["claim"] == "We inserted an ALFA tag after G100"
     assert s["residue_label"] == "A100"   # residue_before 'A' + insert_after 100
 
 

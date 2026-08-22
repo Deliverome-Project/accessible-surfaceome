@@ -269,9 +269,18 @@ def to_viewer_sites(result: TagSiteResult, *, uniprot_acc: str) -> list[dict[str
     for s in result.sites:
         sources: list[dict[str, Any]] = []
         if s.supporting_pmid:
+            # ``claim`` carries the verbatim supporting_quote (entailment-checked)
+            # so the viewer's expandable drawer can show the exact sentence.
             sources.append(
-                {"pmid": s.supporting_pmid, "citation": f"PMID {s.supporting_pmid}"}
+                {
+                    "pmid": s.supporting_pmid,
+                    "citation": f"PMID {s.supporting_pmid}",
+                    "claim": s.supporting_quote or None,
+                }
             )
+        elif s.supporting_quote:
+            # Preprint / DOI-only citation with a quote but no PMID.
+            sources.append({"citation": "preprint", "claim": s.supporting_quote})
         out.append(
             {
                 "site_id": f"{result.gene_symbol}-{s.site_type}-{s.insert_after_residue}-lit",
