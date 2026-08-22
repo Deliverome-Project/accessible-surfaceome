@@ -155,7 +155,9 @@ export interface TaggedSitesCardProps {
  */
 export function TaggedSitesCard({ taggedSites, n }: TaggedSitesCardProps) {
   const sites = taggedSites?.sites ?? [];
-  const lit = sites.filter((s) => s.provenance === "literature_retrieved");
+  // Only surface-accessible literature sites — an intracellular published tag
+  // isn't a usable surface-tagging site, so we don't list it (matches the 3D overlay).
+  const lit = sites.filter((s) => s.provenance === "literature_retrieved" && s.extracellular);
   const det = sites.filter((s) => s.provenance === "deterministic_computed");
   const legendCategories = Array.from(
     new Set([...lit, ...det].map((s) => tagSiteCategory(s))),

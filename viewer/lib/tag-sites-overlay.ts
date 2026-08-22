@@ -39,6 +39,10 @@ export function renderableTagSites(
   const out: RenderableTagSite[] = [];
   for (const site of sites) {
     if (!RENDERED.includes(site.provenance)) continue; // drop validated_literature
+    // Literature sites are only useful for surface tagging when extracellular;
+    // an intracellular published tag (e.g. a cytoplasmic C-terminal fusion) is
+    // not a surface-accessible site, so we don't render it.
+    if (site.provenance === "literature_retrieved" && !site.extracellular) continue;
     const residue = residueOf(site, topologyLength);
     if (residue === null || residue < 1 || residue > topologyLength) continue;
     out.push({
