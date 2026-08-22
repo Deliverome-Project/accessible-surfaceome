@@ -793,6 +793,8 @@ export function GeneHeader({
                 provenance: r.provenance,
                 category: r.category,
                 tagType: r.tagType,
+                spanStart: r.spanStart,
+                spanEnd: r.spanEnd,
               }))}
               // Variant tabs above the 3D canvas: alt isoforms
               // (sourced from `rec.deterministic_features.isoform_topologies`)

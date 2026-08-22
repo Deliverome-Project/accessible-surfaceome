@@ -50,6 +50,10 @@ export interface TagSiteSphere {
   /** Fine-grained overlay category (lane / terminus / snorkel / literature) —
    *  the color axis for ``tags`` mode via ``CATEGORY_HEX``. */
   category: TagSiteCategory;
+  /** Inclusive residue span to tint on the cartoon (from residue_range); the
+   *  ball marks the anchor residue, the span shows the whole exposed loop. */
+  spanStart?: number | null;
+  spanEnd?: number | null;
   tagType: string;
 }
 
@@ -2049,8 +2053,22 @@ export function StructureViewer({
       const shouldRenderTagSites =
         viewMode === "tags" && hasTagSites && !schwekeVariant;
       for (let i = 0; shouldRenderTagSites && i < tagSites.length; i += 1) {
-        const { residue, category, tagType } = tagSites[i];
+        const { residue, category, tagType, spanStart, spanEnd } = tagSites[i];
         const color = CATEGORY_HEX[category];
+        // Tint the whole exposed-loop span on the cartoon (the ball below marks
+        // the anchor residue; the span shows the full loop that tolerates the
+        // insertion, e.g. H27-K159). AFDB models are UniProt-numbered (offset 0),
+        // so the span residues select directly.
+        if (spanStart != null && spanEnd != null && spanEnd >= spanStart) {
+          const spanSel = {
+            resi: Array.from({ length: spanEnd - spanStart + 1 }, (_, k) => spanStart + k),
+          };
+          if (typeof viewerExt.addStyle === "function") {
+            viewerExt.addStyle(spanSel, { cartoon: { color } });
+          } else {
+            viewer.setStyle(spanSel, { cartoon: { color } });
+          }
+        }
         const sel = { resi: residue, atom: "CA" };
         if (typeof viewerExt.addStyle === "function") {
           viewerExt.addStyle(sel, {
