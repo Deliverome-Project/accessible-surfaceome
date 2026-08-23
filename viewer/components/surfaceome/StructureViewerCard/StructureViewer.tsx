@@ -15,7 +15,7 @@ import type {
   StructureViewerData,
 } from "../../../lib/structure-viewer-types";
 import { CATEGORY_HEX, CATEGORY_LABEL } from "../../../lib/tag-sites-types";
-import type { TagSiteCategory } from "../../../lib/tag-sites-types";
+import type { IsoformTagPin, TagSiteCategory } from "../../../lib/tag-sites-types";
 import { InfoTip } from "../../InfoTip/InfoTip";
 import { TopologyLegend } from "../IsoformsCard/TopologyBar";
 import { StatusPill } from "../StatusPill/StatusPill";
@@ -410,6 +410,10 @@ interface StructureViewerProps {
    *  the array derived from ``renderableTagSites(...)``. Empty array = no
    *  overlay (and no "Tag sites" toggle button). */
   tagSites?: TagSiteSphere[];
+  /** Per-isoform deterministic pins. When an isoform variant tab is active,
+   *  its pins render on the (canonical-fold) structure at each pin's
+   *  canonical_residue, colored shared-vs-unique. */
+  isoformPins?: IsoformTagPin[];
   /** Optional alternate variants (alt isoforms, mouse / cyno
    *  orthologs). When non-empty, a tab strip renders above the
    *  canvas; clicking a tab swaps the rendered structure to that
@@ -438,6 +442,13 @@ type ViewMode = "topology" | "sites" | "tags";
  *  switching modes. 3.2 Å is the compromise — big enough to read
  *  against the cartoon, small enough not to occlude neighbors. */
 const SPHERE_RADIUS = 3.2;
+
+/** Isoform-pin colors — a distinct shared-vs-unique axis (separate from the
+ *  canonical CATEGORY_HEX). Unique = isoform-specific site (highlight). */
+const ISOFORM_PIN_HEX: Record<"shared" | "unique", string> = {
+  shared: "#3d6b60", // teal — also predicted on the canonical
+  unique: "#ee7733", // orange — isoform-specific
+};
 
 /** Collapse a per-residue topology string into per-state [start, end]
  *  ranges (1-indexed, inclusive). Used for variants (isoforms /
@@ -1076,6 +1087,7 @@ export function StructureViewer({
   proteinName,
   surfaceBindAnchors = [],
   tagSites = [],
+  isoformPins = [],
   variants = [],
   schwekeHomomer = null,
 }: StructureViewerProps) {
@@ -1158,11 +1170,6 @@ export function StructureViewer({
   // while in sites mode, the canvas would just show a gray cartoon
   // with no spheres. Revert to topology mode automatically so the
   // variant view is informative.
-  useEffect(() => {
-    if (variantIdx !== 0 && (viewMode === "sites" || viewMode === "tags")) {
-      setViewMode("topology");
-    }
-  }, [variantIdx, viewMode]);
 
   useEffect(() => {
     let cancelled = false;
@@ -1348,6 +1355,31 @@ export function StructureViewer({
     : effectiveVariants[variantIdx - 1] ?? null;
   const isExperimentalActive = activeVariant?.source === "experimental";
   const isSchwekeActive = activeVariant?.source === "schweke-homomer";
+  // Isoform variant active: its deterministic tag pins, placed on the
+  // (canonical-fold) structure at each pin's canonical_residue. Pins in an
+  // isoform-only inserted region (no canonical_residue) can't map to the
+  // canonical geometry and are omitted. Rendered shared-vs-unique so the reader
+  // sees which sites are isoform-specific.
+  const activeIsoformId =
+    activeVariant?.source === "afdb"
+      ? ((activeVariant as StructureVariantAfdb).uniprot_acc_full ?? null)
+      : null;
+  const activeIsoformPins = activeIsoformId
+    ? isoformPins.filter(
+        (pin) => pin.isoform_id === activeIsoformId && pin.canonical_residue != null,
+      )
+    : [];
+  // Revert to topology when switching to a non-canonical tab in sites mode (the
+  // canonical-keyed SURFACE-Bind anchors don't translate). Tags mode is KEPT for
+  // an isoform tab that has its own pins (they map to the canonical fold).
+  useEffect(() => {
+    if (variantIdx === 0) return;
+    if (viewMode === "sites") {
+      setViewMode("topology");
+    } else if (viewMode === "tags" && activeIsoformPins.length === 0) {
+      setViewMode("topology");
+    }
+  }, [variantIdx, viewMode, activeIsoformPins.length]);
   // The uniprot_acc / topology / type used by the render pipeline.
   // For experimental view, ``activeUniprot`` is unused (we fetch
   // RCSB by pdb_id instead) — keep canonical for the aria-label.
@@ -1391,7 +1423,8 @@ export function StructureViewer({
   // the chain is restricted + residues may be missing from the
   // crystal, so anchor spheres would mis-render.
   const hasAnchors = surfaceBindAnchors.length > 0 && isCanonicalActive;
-  const hasTagSites = tagSites.length > 0 && isCanonicalActive;
+  const hasTagSites =
+    (tagSites.length > 0 && isCanonicalActive) || activeIsoformPins.length > 0;
 
   // Canonical-AFDB availability — drives graying its tab.
   const canonAfdbUnavail = afdbAvail[data.uniprot_acc] === false;
@@ -2051,7 +2084,7 @@ export function StructureViewer({
       // of each rendered tag site, using the WebGL-safe CATEGORY_HEX map
       // (disorder / surface_loop / ecto N- / ecto C-term / snorkel / literature).
       const shouldRenderTagSites =
-        viewMode === "tags" && hasTagSites && !schwekeVariant;
+        viewMode === "tags" && hasTagSites && !schwekeVariant && isCanonicalActive;
       for (let i = 0; shouldRenderTagSites && i < tagSites.length; i += 1) {
         const { residue, category, tagType, spanStart, spanEnd } = tagSites[i];
         const color = CATEGORY_HEX[category];
@@ -2081,6 +2114,44 @@ export function StructureViewer({
         }
         if (typeof viewerExt.addLabel === "function") {
           viewerExt.addLabel(`${tagType}`, {
+            position: { resi: residue, atom: "CA" },
+            backgroundColor: color,
+            backgroundOpacity: 0.94,
+            fontColor: "white",
+            fontSize: 12,
+            borderThickness: 0,
+            inFront: true,
+            screenOffset: { x: 16, y: 16 },
+          });
+        }
+      }
+
+      // Isoform-variant tag pins — rendered when an isoform tab is active in tags
+      // mode. Placed on the canonical fold at each pin's canonical_residue (the
+      // isoform renders on canonical geometry), colored shared (also predicted on
+      // canonical) vs unique (isoform-specific) so the reader sees what differs.
+      const shouldRenderIsoformPins =
+        viewMode === "tags" &&
+        !schwekeVariant &&
+        !isCanonicalActive &&
+        activeIsoformPins.length > 0;
+      for (let i = 0; shouldRenderIsoformPins && i < activeIsoformPins.length; i += 1) {
+        const pin = activeIsoformPins[i];
+        const residue = pin.canonical_residue;
+        if (residue == null) continue;
+        const color = ISOFORM_PIN_HEX[pin.classification];
+        const sel = { resi: residue, atom: "CA" };
+        if (typeof viewerExt.addStyle === "function") {
+          viewerExt.addStyle(sel, {
+            sphere: { color, radius: SPHERE_RADIUS, opacity: 0.94 },
+          });
+        } else {
+          viewer.setStyle(sel, {
+            sphere: { color, radius: SPHERE_RADIUS, opacity: 0.94 },
+          });
+        }
+        if (typeof viewerExt.addLabel === "function") {
+          viewerExt.addLabel(`${pin.tag_type ?? "tag"} · ${pin.classification}`, {
             position: { resi: residue, atom: "CA" },
             backgroundColor: color,
             backgroundOpacity: 0.94,
@@ -2535,6 +2606,26 @@ export function StructureViewer({
             </a>
           </p>
         </>
+      ) : viewMode === "tags" && !isCanonicalActive && activeIsoformPins.length > 0 ? (
+        <ul
+          className={styles.sitesLegend}
+          aria-label="Isoform tag-site legend (shared vs isoform-specific)"
+        >
+          {Array.from(new Set(activeIsoformPins.map((pin) => pin.classification))).map(
+            (cls) => (
+              <li key={cls} className={styles.sitesLegendItem}>
+                <span
+                  className={styles.sitesLegendSwatch}
+                  style={{ background: ISOFORM_PIN_HEX[cls] }}
+                  aria-hidden="true"
+                />
+                <span className={styles.sitesLegendLabel}>
+                  {cls === "unique" ? "Isoform-specific" : "Shared with canonical"}
+                </span>
+              </li>
+            ),
+          )}
+        </ul>
       ) : viewMode === "tags" && hasTagSites ? (
         <ul
           className={styles.sitesLegend}
