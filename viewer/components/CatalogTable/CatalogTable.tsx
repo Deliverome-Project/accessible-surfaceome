@@ -13,7 +13,9 @@ import type {
 // surfaceome.ts would drag its build-cache snapshot code into the browser bundle.
 import {
   INTERNALIZATION_GRADES,
+  INTERNALIZATION_LIT_GRADES,
   type InternalizationGrade,
+  type InternalizationLitGrade,
 } from "../../lib/internalization";
 import { prettyEnum } from "../../lib/enums";
 import {
@@ -135,7 +137,8 @@ type SortKey =
   | "dd_conf"
   | "dd_evidence"
   | "dd_state"
-  | "intern";
+  | "intern"
+  | "intern_lit";
 type SortDir = "asc" | "desc";
 // The "All" Quick chip was kept after the others were dropped because
 // it's the explicit "clear filters" affordance — clicking it restores
@@ -271,6 +274,19 @@ const INTERN_META: Record<
   moderate: { label: "mod", full: "moderate", tone: "amber", rank: 4 },
   low: { label: "low", full: "low", tone: "danger", rank: 3 },
   very_low: { label: "v.low", full: "very low", tone: "danger", rank: 2 },
+  unknown: { label: "?", full: "unknown", tone: "neutral", rank: 1 },
+};
+// Internalization LITERATURE-track grade → compact catalog display. Different
+// enum from the seq prior (adds `no` = observed non-internalizing, drops the
+// `very_*` bands). Same traffic-light tones; `rank` orders the sort high→low.
+const INTERN_LIT_META: Record<
+  InternalizationLitGrade,
+  { label: string; full: string; tone: VitalTone; rank: number }
+> = {
+  high: { label: "high", full: "high", tone: "success", rank: 5 },
+  moderate: { label: "mod", full: "moderate", tone: "amber", rank: 4 },
+  low: { label: "low", full: "low", tone: "danger", rank: 3 },
+  no: { label: "no", full: "no internalization observed", tone: "danger", rank: 2 },
   unknown: { label: "?", full: "unknown", tone: "neutral", rank: 1 },
 };
 function accessibilityTone(v: string | null | undefined): VitalTone {
@@ -2027,15 +2043,26 @@ export function CatalogTable({
             info="How much the surface verdict depends on cell state or context (e.g. activation, stress) — low, moderate, or high."
           />
           <SortableHeader
-            label="Internalize"
+            label="Intern · seq"
             k="intern"
             sortKey={sortKey}
             sortDir={sortDir}
             onClick={setSort}
             align="center"
-            title="Internalization sequence-prior grade (sort)"
+            title="Internalization SEQUENCE-prior grade — model estimate from sequence + topology (sort)"
             extraClass={styles.ddHeaderCell}
             info={tooltips.catalog_internalization}
+          />
+          <SortableHeader
+            label="Intern · lit"
+            k="intern_lit"
+            sortKey={sortKey}
+            sortDir={sortDir}
+            onClick={setSort}
+            align="center"
+            title="Internalization LITERATURE-track grade — PMID/DOI-anchored observed evidence (sort)"
+            extraClass={styles.ddHeaderCell}
+            info={tooltips.catalog_internalization_lit}
           />
         </div>
 
@@ -2159,6 +2186,7 @@ function buildCatalogTsv(rows: CatalogRow[]): string {
     "opus_ncbi_verdict",   "opus_ncbi_reason",
     "has_deep_dive",
     "internalization_grade",
+    "internalization_lit_grade",
   ];
   const body: TsvCell[][] = rows.map((r) => [
     r.symbol,
@@ -2176,6 +2204,7 @@ function buildCatalogTsv(rows: CatalogRow[]): string {
     r.triage_by_model[2]?.verdict ?? "", r.triage_by_model[2]?.reason ?? "",
     r.deep_dive ? 1 : 0,
     r.internalization ?? "",
+    r.internalization_lit ?? "",
   ]);
   return buildTsv(headers, body);
 }
@@ -2234,6 +2263,12 @@ function sortValue(r: CatalogRow, k: SortKey): string | number {
     // very_low 2, unknown 1). No record sorts to 0 (bottom on DESC).
     const g = r.internalization;
     return g ? INTERN_META[g].rank : 0;
+  }
+  if (k === "intern_lit") {
+    // Internalization literature grade → its ordinal rank (high 5 … no 2,
+    // unknown 1). No literature record sorts to 0 (bottom on DESC).
+    const g = r.internalization_lit;
+    return g ? INTERN_LIT_META[g].rank : 0;
   }
   return 0;
 }
@@ -2529,9 +2564,31 @@ function CatalogRowView({
                 <div className={`${styles.cell} ${styles.ddCell}`} role="cell">
                   <span
                     className={`${styles.ddVital} ${DD_TONE_CLASS[m.tone]}`}
-                    title={`Internalization sequence prior: ${m.full}${
-                      row.internalization_has_lit ? " (+ literature evidence)" : ""
-                    }`}
+                    title={`Internalization sequence prior: ${m.full}`}
+                  >
+                    {m.label}
+                  </span>
+                </div>
+              );
+            })()}
+            {(() => {
+              // Internalization LITERATURE-track grade — the observed-evidence
+              // facet, its own column next to the seq prior above. Different
+              // enum (INTERN_LIT_META); shown only for genes with a lit run.
+              const g = row.internalization_lit;
+              if (!g) {
+                return (
+                  <div className={`${styles.cell} ${styles.ddCell}`} role="cell">
+                    <span className={styles.dim}>—</span>
+                  </div>
+                );
+              }
+              const m = INTERN_LIT_META[g];
+              return (
+                <div className={`${styles.cell} ${styles.ddCell}`} role="cell">
+                  <span
+                    className={`${styles.ddVital} ${DD_TONE_CLASS[m.tone]}`}
+                    title={`Internalization literature grade: ${m.full}`}
                   >
                     {m.label}
                   </span>
