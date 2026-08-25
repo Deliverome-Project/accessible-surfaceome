@@ -89,6 +89,8 @@ test("renders both provenance groups with counts, residues, and a source link", 
   assert.match(html, /pubmed\.ncbi\.nlm\.nih\.gov\/24973209/);
   // literature row exposes an expandable evidence drawer (exact quote inside)
   assert.match(html, /Quote/);
+  // columns are sortable (idle sort affordance rendered on headers)
+  assert.match(html, /\u2195/);
   // validated_literature site is dropped
   assert.doesNotMatch(html, /Z999/);
 });

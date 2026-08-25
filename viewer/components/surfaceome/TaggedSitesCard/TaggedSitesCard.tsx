@@ -1,5 +1,6 @@
 "use client";
 
+import { type ReactNode, useMemo, useState } from "react";
 import { ReasoningDrawer } from "../ReasoningDrawer/ReasoningDrawer";
 import { SectionCard } from "../SectionCard/SectionCard";
 import type {
@@ -20,6 +21,8 @@ const KIND_LABEL: Record<TaggedSite["site_kind"], string> = {
   internal: "Internal loop",
 };
 
+const CONF_RANK: Record<string, number> = { high: 3, medium: 2, low: 1 };
+
 /** Display token for the junction: prefer the canonical residue_label
  *  ("G101"), else derive a readable fallback from site_kind. */
 function residueDisplay(s: TaggedSite): string {
@@ -29,6 +32,63 @@ function residueDisplay(s: TaggedSite): string {
   if (s.insert_after_residue != null) return `after ${s.insert_after_residue}`;
   return "—";
 }
+
+/** Numeric position for sorting the Residue column: junction residue, or the
+ *  end for a C-terminal tag (sorts last), 0 for a bare N-terminal tag. */
+function residueSortVal(s: TaggedSite): number {
+  if (s.insert_after_residue != null) return s.insert_after_residue;
+  if (s.site_kind === "terminal_c") return Number.MAX_SAFE_INTEGER;
+  return 0;
+}
+
+// --- chips ------------------------------------------------------------------
+
+function CompartmentChip({ value }: { value: string | null }) {
+  const v = value ?? "—";
+  const tone =
+    v === "extracellular"
+      ? styles.chipEc
+      : v === "intracellular"
+        ? styles.chipIc
+        : v === "signal"
+          ? styles.chipSig
+          : v === "membrane"
+            ? styles.chipTm
+            : "";
+  return <span className={`${styles.chip} ${tone}`}>{v}</span>;
+}
+
+function ConfidenceChip({ value }: { value: string | null }) {
+  if (!value) return <span className={styles.muted}>—</span>;
+  const tone =
+    value === "high"
+      ? styles.chipHigh
+      : value === "medium"
+        ? styles.chipMed
+        : styles.chipLow;
+  return <span className={`${styles.chip} ${tone}`}>{value}</span>;
+}
+
+/** Tag types as chips — a multi-tag string ("ALFA, DogTag") splits into one
+ *  chip per tag. */
+function TagChips({ value }: { value: string | null }) {
+  const tags = (value ?? "")
+    .split(",")
+    .map((t) => t.trim())
+    .filter(Boolean);
+  if (!tags.length) return <span className={styles.muted}>—</span>;
+  return (
+    <span className={styles.chipRow}>
+      {tags.map((t, i) => (
+        <span key={i} className={`${styles.chip} ${styles.chipTag}`}>
+          {t}
+        </span>
+      ))}
+    </span>
+  );
+}
+
+// --- sources + evidence drawer ---------------------------------------------
 
 /** Resolve an evidence source to an external href: explicit url, else a
  *  PubMed link from the PMID, else a doi.org link. Null if unlinkable. */
@@ -67,7 +127,8 @@ function SiteEvidenceDrawer({ site }: { site: TaggedSite }) {
   const quotes = site.sources
     .map((src) => src.claim)
     .filter((c): c is string => Boolean(c && c.trim()));
-  if (!quotes.length && !site.rationale) return <span className={styles.muted}>—</span>;
+  if (!quotes.length && !site.rationale)
+    return <span className={styles.muted}>—</span>;
   return (
     <ReasoningDrawer
       eyebrow={`Tag site · ${residueDisplay(site)}`}
@@ -80,7 +141,9 @@ function SiteEvidenceDrawer({ site }: { site: TaggedSite }) {
           &ldquo;{q}&rdquo;
         </blockquote>
       ))}
-      {site.rationale ? <p className={styles.drawerRationale}>{site.rationale}</p> : null}
+      {site.rationale ? (
+        <p className={styles.drawerRationale}>{site.rationale}</p>
+      ) : null}
       <div className={styles.drawerSources}>
         <Sources sources={site.sources} />
       </div>
@@ -88,46 +151,95 @@ function SiteEvidenceDrawer({ site }: { site: TaggedSite }) {
   );
 }
 
+// --- generic sortable table -------------------------------------------------
 
-/** Literature-validated tag sites: residue + placement + tag + evidence +
- *  linked sources, with a muted detail line (rationale carries the folded
- *  validation_level / position / source_tier / entailment tags). */
-function LiteratureTable({ sites }: { sites: TaggedSite[] }) {
+type SortDir = "asc" | "desc";
+
+interface Column {
+  key: string;
+  label: string;
+  /** Sort accessor; omit to make the column non-sortable (plain header). */
+  sortVal?: (s: TaggedSite) => string | number;
+  render: (s: TaggedSite) => ReactNode;
+  cellClass?: string;
+}
+
+function SortableTable({
+  sites,
+  columns,
+}: {
+  sites: TaggedSite[];
+  columns: Column[];
+}) {
+  const [sortKey, setSortKey] = useState<string | null>(null);
+  const [sortDir, setSortDir] = useState<SortDir>("asc");
+
+  const sorted = useMemo(() => {
+    const col = columns.find((c) => c.key === sortKey && c.sortVal);
+    if (!col || !col.sortVal) return sites;
+    const sv = col.sortVal;
+    const dir = sortDir === "asc" ? 1 : -1;
+    return [...sites].sort((a, b) => {
+      const av = sv(a);
+      const bv = sv(b);
+      if (typeof av === "number" && typeof bv === "number") return (av - bv) * dir;
+      return String(av).localeCompare(String(bv)) * dir;
+    });
+  }, [sites, columns, sortKey, sortDir]);
+
+  function onSort(c: Column) {
+    if (!c.sortVal) return;
+    if (sortKey === c.key) {
+      setSortDir((d) => (d === "asc" ? "desc" : "asc"));
+    } else {
+      setSortKey(c.key);
+      setSortDir("asc");
+    }
+  }
+
   return (
     <div className={styles.tableWrap}>
       <table className={styles.table}>
         <thead>
           <tr>
-            <th className={styles.head}>Residue</th>
-            <th className={styles.head}>Placement</th>
-            <th className={styles.head}>Compartment</th>
-            <th className={styles.head}>Tag</th>
-            <th className={styles.head}>Evidence</th>
-            <th className={styles.head}>Conf.</th>
-            <th className={styles.head}>Sources</th>
-            <th className={styles.head}>Details</th>
+            {columns.map((c) => (
+              <th
+                key={c.key}
+                className={styles.head}
+                aria-sort={
+                  sortKey === c.key
+                    ? sortDir === "asc"
+                      ? "ascending"
+                      : "descending"
+                    : undefined
+                }
+              >
+                {c.sortVal ? (
+                  <button
+                    type="button"
+                    className={styles.sortBtn}
+                    onClick={() => onSort(c)}
+                  >
+                    {c.label}
+                    <span aria-hidden="true" className={styles.sortArrow}>
+                      {sortKey === c.key ? (sortDir === "asc" ? "▲" : "▼") : "↕"}
+                    </span>
+                  </button>
+                ) : (
+                  c.label
+                )}
+              </th>
+            ))}
           </tr>
         </thead>
         <tbody>
-          {sites.map((s) => (
+          {sorted.map((s) => (
             <tr key={s.site_id}>
-              <td className={styles.residue}>{residueDisplay(s)}</td>
-              <td>{KIND_LABEL[s.site_kind]}</td>
-              <td>{s.compartment ?? s.topology_state ?? "—"}</td>
-              <td>{s.tag_type || "—"}</td>
-              <td className={styles.evidence}>
-                {s.evidence_type || "—"}
-                {s.functional_impact_measured ? (
-                  <span className={styles.detail}>{s.functional_impact_measured}</span>
-                ) : null}
-              </td>
-              <td>{s.confidence ?? "—"}</td>
-              <td>
-                <Sources sources={s.sources} />
-              </td>
-              <td>
-                <SiteEvidenceDrawer site={s} />
-              </td>
+              {columns.map((c) => (
+                <td key={c.key} className={c.cellClass}>
+                  {c.render(s)}
+                </td>
+              ))}
             </tr>
           ))}
         </tbody>
@@ -136,40 +248,41 @@ function LiteratureTable({ sites }: { sites: TaggedSite[] }) {
   );
 }
 
-/** Deterministic candidate sites: computed insertion points with the
- *  path (disorder / surface_loop), residue range, and structural scores. */
-function DeterministicTable({ sites }: { sites: TaggedSite[] }) {
-  return (
-    <div className={styles.tableWrap}>
-      <table className={styles.table}>
-        <thead>
-          <tr>
-            <th className={styles.head}>Residue</th>
-            <th className={styles.head}>Range</th>
-            <th className={styles.head}>Placement</th>
-            <th className={styles.head}>Compartment</th>
-            <th className={styles.head}>Path</th>
-            <th className={styles.head}>pLDDT</th>
-            <th className={styles.head}>Conf.</th>
-          </tr>
-        </thead>
-        <tbody>
-          {sites.map((s) => (
-            <tr key={s.site_id}>
-              <td className={styles.residue}>{residueDisplay(s)}</td>
-              <td className={styles.muted}>{s.residue_range ?? "—"}</td>
-              <td>{KIND_LABEL[s.site_kind]}</td>
-              <td>{s.compartment ?? s.topology_state ?? "—"}</td>
-              <td>{s.det_path ?? "—"}</td>
-              <td>{s.plddt != null ? s.plddt.toFixed(1) : "—"}</td>
-              <td>{s.confidence ?? "—"}</td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
-    </div>
-  );
-}
+// --- column definitions -----------------------------------------------------
+
+const LIT_COLUMNS: Column[] = [
+  { key: "residue", label: "Residue", sortVal: residueSortVal, render: residueDisplay, cellClass: styles.residue },
+  { key: "placement", label: "Placement", sortVal: (s) => KIND_LABEL[s.site_kind], render: (s) => KIND_LABEL[s.site_kind] },
+  { key: "compartment", label: "Compartment", sortVal: (s) => s.compartment ?? s.topology_state ?? "", render: (s) => <CompartmentChip value={s.compartment ?? s.topology_state} /> },
+  { key: "tag", label: "Tag", sortVal: (s) => s.tag_type ?? "", render: (s) => <TagChips value={s.tag_type} /> },
+  {
+    key: "evidence",
+    label: "Evidence",
+    sortVal: (s) => s.evidence_type ?? "",
+    render: (s) => (
+      <>
+        {s.evidence_type || "—"}
+        {s.functional_impact_measured ? (
+          <span className={styles.detail}>{s.functional_impact_measured}</span>
+        ) : null}
+      </>
+    ),
+    cellClass: styles.evidence,
+  },
+  { key: "conf", label: "Conf.", sortVal: (s) => CONF_RANK[s.confidence ?? ""] ?? 0, render: (s) => <ConfidenceChip value={s.confidence} /> },
+  { key: "sources", label: "Sources", sortVal: (s) => s.sources.length, render: (s) => <Sources sources={s.sources} /> },
+  { key: "details", label: "Details", render: (s) => <SiteEvidenceDrawer site={s} /> },
+];
+
+const DET_COLUMNS: Column[] = [
+  { key: "residue", label: "Residue", sortVal: residueSortVal, render: residueDisplay, cellClass: styles.residue },
+  { key: "range", label: "Range", sortVal: (s) => s.residue_range ?? "", render: (s) => <span className={styles.muted}>{s.residue_range ?? "—"}</span> },
+  { key: "placement", label: "Placement", sortVal: (s) => KIND_LABEL[s.site_kind], render: (s) => KIND_LABEL[s.site_kind] },
+  { key: "compartment", label: "Compartment", sortVal: (s) => s.compartment ?? s.topology_state ?? "", render: (s) => <CompartmentChip value={s.compartment ?? s.topology_state} /> },
+  { key: "path", label: "Path", sortVal: (s) => s.det_path ?? "", render: (s) => (s.det_path ? <span className={`${styles.chip} ${styles.chipPath}`}>{s.det_path}</span> : <span className={styles.muted}>—</span>) },
+  { key: "plddt", label: "pLDDT", sortVal: (s) => s.plddt ?? -1, render: (s) => (s.plddt != null ? s.plddt.toFixed(1) : "—") },
+  { key: "conf", label: "Conf.", sortVal: (s) => CONF_RANK[s.confidence ?? ""] ?? 0, render: (s) => <ConfidenceChip value={s.confidence} /> },
+];
 
 export interface TaggedSitesCardProps {
   taggedSites: TaggedSitesFile | null;
@@ -184,13 +297,11 @@ export interface TaggedSitesCardProps {
  *     (hybrid lit-search + web_search agent), with linked sources;
  *   • deterministic_computed — computed candidate insertion points from the
  *     disorder / surface-loop pipeline (pLDDT + RSA/DSSP, feature-veto).
- * `validated_literature` provenance is validation-only and never rendered
- * (mirrors `renderableTagSites`).
+ * All columns are sortable; tag/compartment/confidence render as chips.
+ * `validated_literature` provenance is validation-only and never rendered.
  */
 export function TaggedSitesCard({ taggedSites, n }: TaggedSitesCardProps) {
   const sites = taggedSites?.sites ?? [];
-  // Only surface-accessible literature sites — an intracellular published tag
-  // isn't a usable surface-tagging site, so we don't list it (matches the 3D overlay).
   // Surface-accessible literature sites only (N-terminal tags are extracellular
   // by construction — placed after signal-peptide cleavage — even if the residue
   // topology reads "signal").
@@ -216,7 +327,7 @@ export function TaggedSitesCard({ taggedSites, n }: TaggedSitesCardProps) {
     <SectionCard
       n={n}
       title="Tag sites"
-      lede="Engineered epitope/tag insertion points — literature-validated tags and computed candidate positions. Highlighted on the structure viewer above."
+      lede="Engineered epitope/tag insertion points — literature-validated tags and computed candidate positions. Highlighted on the structure viewer above. Click any column header to sort."
     >
       <p className={styles.legend}>
         {legendCategories.map((c) => (
@@ -234,14 +345,14 @@ export function TaggedSitesCard({ taggedSites, n }: TaggedSitesCardProps) {
       {lit.length > 0 ? (
         <>
           <h3 className={styles.subhead}>Literature-validated ({lit.length})</h3>
-          <LiteratureTable sites={lit} />
+          <SortableTable sites={lit} columns={LIT_COLUMNS} />
         </>
       ) : null}
 
       {det.length > 0 ? (
         <>
           <h3 className={styles.subhead}>Computed candidates ({det.length})</h3>
-          <DeterministicTable sites={det} />
+          <SortableTable sites={det} columns={DET_COLUMNS} />
         </>
       ) : null}
     </SectionCard>
