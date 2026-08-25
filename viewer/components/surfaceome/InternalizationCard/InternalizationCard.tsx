@@ -129,6 +129,33 @@ function em(v: unknown) {
   return <>{String(v)}</>;
 }
 
+// Structured rate value + its human context. A bare "2.5 fold" or "45 %" is
+// ambiguous without the comparator ("...higher than the unconjugated antibody",
+// "...of surface pool internalized at 1 h") — which the grader records in
+// quant_summary. Always show the summary next to the number so the reader knows
+// what the value is relative to; fall back to the summary alone when there is no
+// structured value.
+function QuantValue({
+  value,
+  unit,
+  summary,
+}: {
+  value: number | null | undefined;
+  unit: string | null | undefined;
+  summary?: string | null;
+}) {
+  if (value === null || value === undefined) return em(summary);
+  return (
+    <>
+      <strong>
+        {value}
+        {unit ? ` ${unit}` : ""}
+      </strong>
+      {summary ? <span className={styles.muted}> — {summary}</span> : null}
+    </>
+  );
+}
+
 function Pill({ grade, label }: { grade: Grade | string; label?: string }) {
   const g = (grade || "unknown") as string;
   return <span className={`${styles.pill} ${styles["g_" + g] ?? styles.g_unknown}`}>{label ?? g}</span>;
@@ -289,9 +316,11 @@ export function InternalizationCard({ symbol, n }: Props) {
                           </td>
                           <td>{em(o.quant.rate_metric)}</td>
                           <td>
-                            {o.quant.rate_value !== null
-                              ? em(`${o.quant.rate_value} ${o.quant.rate_unit ?? ""}`)
-                              : em(o.quant.quant_summary)}
+                            <QuantValue
+                              value={o.quant.rate_value}
+                              unit={o.quant.rate_unit}
+                              summary={o.quant.quant_summary}
+                            />
                           </td>
                           <td><CiteChips ids={o.cited_source_ids} /></td>
                         </tr>
@@ -329,9 +358,11 @@ export function InternalizationCard({ symbol, n }: Props) {
                               <td>{em(m.effect_on_target)}</td>
                               <td>{em(m.cell_line)}</td>
                               <td>
-                                {m.quant.rate_value !== null
-                                  ? em(`${m.quant.rate_value} ${m.quant.rate_unit ?? ""}`)
-                                  : em(m.quant.quant_summary || m.note)}
+                                <QuantValue
+                                  value={m.quant.rate_value}
+                                  unit={m.quant.rate_unit}
+                                  summary={m.quant.quant_summary || m.note}
+                                />
                               </td>
                               <td><CiteChips ids={m.cited_source_ids} /></td>
                             </tr>
