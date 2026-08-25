@@ -191,7 +191,14 @@ export function TaggedSitesCard({ taggedSites, n }: TaggedSitesCardProps) {
   const sites = taggedSites?.sites ?? [];
   // Only surface-accessible literature sites — an intracellular published tag
   // isn't a usable surface-tagging site, so we don't list it (matches the 3D overlay).
-  const lit = sites.filter((s) => s.provenance === "literature_retrieved" && s.extracellular);
+  // Surface-accessible literature sites only (N-terminal tags are extracellular
+  // by construction — placed after signal-peptide cleavage — even if the residue
+  // topology reads "signal").
+  const lit = sites.filter(
+    (s) =>
+      s.provenance === "literature_retrieved" &&
+      (s.extracellular || s.site_kind === "terminal_n"),
+  );
   const det = sites.filter((s) => s.provenance === "deterministic_computed");
   const legendCategories = Array.from(
     new Set([...lit, ...det].map((s) => tagSiteCategory(s))),

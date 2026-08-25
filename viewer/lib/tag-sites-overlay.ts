@@ -57,7 +57,15 @@ export function renderableTagSites(
     // Literature sites are only useful for surface tagging when extracellular;
     // an intracellular published tag (e.g. a cytoplasmic C-terminal fusion) is
     // not a surface-accessible site, so we don't render it.
-    if (site.provenance === "literature_retrieved" && !site.extracellular) continue;
+    // Drop intracellular literature sites, EXCEPT an N-terminal tag: it is placed
+    // after signal-peptide cleavage (mature extracellular N-term), so its residue
+    // topology may read "signal"/non-extracellular while the tag is surface-displayed.
+    if (
+      site.provenance === "literature_retrieved" &&
+      !site.extracellular &&
+      site.site_kind !== "terminal_n"
+    )
+      continue;
     const residue = residueOf(site, topologyLength);
     if (residue === null || residue < 1 || residue > topologyLength) continue;
     const span = parseSpan(site.residue_range);
