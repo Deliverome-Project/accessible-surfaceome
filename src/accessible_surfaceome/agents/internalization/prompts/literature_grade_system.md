@@ -15,7 +15,14 @@ that support it — use `moderate` for partial/slow internalization rather than
 forcing `high`/`low`):
 
 - **basal** — constitutive internalization with no added ligand.
-- **native_ligand** — internalization driven by the protein's endogenous ligand.
+- **native_ligand** — internalization driven by the protein's OWN endogenous
+  soluble ligand. If the protein is an orphan receptor with no known soluble
+  endogenous ligand (for example, it signals only by heterodimerizing with a
+  co-receptor), grade this mode `unknown` — it is not applicable to this
+  protein. Do NOT substitute a chimeric-receptor construct (a fusion carrying a
+  DIFFERENT receptor's ligand-binding domain) or a heterodimer / co-receptor
+  partner's ligand as native-ligand evidence: that is not the protein's own
+  native ligand, so it does not support a `native_ligand` grade here.
 - **therapeutic** — internalization driven by an exogenous binder or delivery
   agent (antibody, ADC, siRNA/oligonucleotide, lipid nanoparticle, AAV, peptide,
   or engineered ligand). This is the delivery-relevant mode and often

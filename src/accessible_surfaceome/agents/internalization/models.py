@@ -38,7 +38,10 @@ MODEL_PRIOR_PROMPT_VERSION = "0.2.0"
 #        internalization-specific topic examples that had leaked into the
 #        tag_site-shared module (no behavior change for internalization; avoids
 #        over-fitting the shared scout to one caller's topic).
-LIT_PROMPT_VERSION = "0.1.3"
+# 0.1.4: grade prompt — native_ligand mode is `unknown`/NA for orphan receptors
+#        with no soluble endogenous ligand; chimeric-receptor + heterodimer-
+#        partner-ligand studies no longer count as native-ligand evidence.
+LIT_PROMPT_VERSION = "0.1.4"
 
 Grade = Literal["high", "moderate", "low", "no", "unknown"]
 GradeConfidence = Literal["high", "moderate", "low"]
