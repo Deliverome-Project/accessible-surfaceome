@@ -43,8 +43,24 @@ function residueSortVal(s: TaggedSite): number {
 
 // --- chips ------------------------------------------------------------------
 
+/** Normalize a compartment to a human label. Accepts both the human words
+ *  ("extracellular") and raw DeepTMHMM topology chars (O/I/M/S) so a site whose
+ *  `compartment` is missing (older data falls back to `topology_state`, a char)
+ *  still reads "extracellular", never a bare "O". */
+const TOPO_CHAR_LABEL: Record<string, string> = {
+  O: "extracellular",
+  I: "intracellular",
+  M: "membrane",
+  S: "signal",
+};
+
+function compartmentLabel(value: string | null): string {
+  if (!value) return "—";
+  return TOPO_CHAR_LABEL[value] ?? value;
+}
+
 function CompartmentChip({ value }: { value: string | null }) {
-  const v = value ?? "—";
+  const v = compartmentLabel(value);
   const tone =
     v === "extracellular"
       ? styles.chipEc
@@ -253,7 +269,7 @@ function SortableTable({
 const LIT_COLUMNS: Column[] = [
   { key: "residue", label: "Residue", sortVal: residueSortVal, render: residueDisplay, cellClass: styles.residue },
   { key: "placement", label: "Placement", sortVal: (s) => KIND_LABEL[s.site_kind], render: (s) => KIND_LABEL[s.site_kind] },
-  { key: "compartment", label: "Compartment", sortVal: (s) => s.compartment ?? s.topology_state ?? "", render: (s) => <CompartmentChip value={s.compartment ?? s.topology_state} /> },
+  { key: "compartment", label: "Compartment", sortVal: (s) => compartmentLabel(s.compartment ?? s.topology_state), render: (s) => <CompartmentChip value={s.compartment ?? s.topology_state} /> },
   { key: "tag", label: "Tag", sortVal: (s) => s.tag_type ?? "", render: (s) => <TagChips value={s.tag_type} /> },
   {
     key: "evidence",
@@ -278,7 +294,7 @@ const DET_COLUMNS: Column[] = [
   { key: "residue", label: "Residue", sortVal: residueSortVal, render: residueDisplay, cellClass: styles.residue },
   { key: "range", label: "Range", sortVal: (s) => s.residue_range ?? "", render: (s) => <span className={styles.muted}>{s.residue_range ?? "—"}</span> },
   { key: "placement", label: "Placement", sortVal: (s) => KIND_LABEL[s.site_kind], render: (s) => KIND_LABEL[s.site_kind] },
-  { key: "compartment", label: "Compartment", sortVal: (s) => s.compartment ?? s.topology_state ?? "", render: (s) => <CompartmentChip value={s.compartment ?? s.topology_state} /> },
+  { key: "compartment", label: "Compartment", sortVal: (s) => compartmentLabel(s.compartment ?? s.topology_state), render: (s) => <CompartmentChip value={s.compartment ?? s.topology_state} /> },
   { key: "path", label: "Path", sortVal: (s) => s.det_path ?? "", render: (s) => (s.det_path ? <span className={`${styles.chip} ${styles.chipPath}`}>{s.det_path}</span> : <span className={styles.muted}>—</span>) },
   { key: "plddt", label: "pLDDT", sortVal: (s) => s.plddt ?? -1, render: (s) => (s.plddt != null ? s.plddt.toFixed(1) : "—") },
   { key: "conf", label: "Conf.", sortVal: (s) => CONF_RANK[s.confidence ?? ""] ?? 0, render: (s) => <ConfidenceChip value={s.confidence} /> },

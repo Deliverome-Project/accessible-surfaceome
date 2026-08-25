@@ -7,18 +7,34 @@ def _sig(seq, topo, plddt=None):
     return {"sequence": seq, "topology": topo, "plddt": plddt or {}}
 
 
-def test_ecto_n_and_intracellular_c_gives_nterm_and_snorkel():
+def test_ecto_n_and_intracellular_c_gives_nterm_only_no_snorkel():
+    # N-terminus IS extracellular -> the C-terminal snorkel is NOT emitted: a real
+    # accessible terminus is always preferred over a snorkel fallback.
     out = terminal_candidates(_sig("A" * 10, {1: "O", 10: "I"}), gene_symbol="X", uniprot_acc="Q0")
-    by = {s["site_kind"]: s for s in out}
-    assert set(by) == {"terminal_n", "terminal_c"}
-    assert by["terminal_n"]["det_path"] == "terminal"
-    assert by["terminal_n"]["insert_after_residue"] is None  # junction before residue 1
-    assert by["terminal_n"]["extracellular"] is True
-    # the intracellular C-terminus becomes a C-terminal SNORKEL
-    assert by["terminal_c"]["det_path"] == "snorkel"
-    assert by["terminal_c"]["insert_after_residue"] == 10
-    assert by["terminal_c"]["extracellular"] is False
-    assert by["terminal_c"]["residue_label"] == "A10"
+    assert [s["site_kind"] for s in out] == ["terminal_n"]
+    assert out[0]["det_path"] == "terminal"
+    assert out[0]["insert_after_residue"] is None  # junction before residue 1
+    assert out[0]["extracellular"] is True
+    assert not any(s["det_path"] == "snorkel" for s in out)
+
+
+def test_signal_peptide_gives_mature_nterm_no_snorkel():
+    # EGFR-like: leading signal-peptide run ('S'), then extracellular ('O'), with an
+    # intracellular C-terminus. The MATURE N-terminus (after cleavage) is the tag
+    # site; because it is extracellular, no snorkel is emitted.
+    topo = {i: "S" for i in range(1, 25)}          # signal peptide 1-24
+    topo.update({i: "O" for i in range(25, 100)})  # extracellular ectodomain
+    topo[100] = "I"                                # intracellular C-terminus
+    seq = "".join("ACDEFGHIKLMNPQRSTVWY"[i % 20] for i in range(100))
+    out = terminal_candidates(_sig(seq, topo), gene_symbol="X", uniprot_acc="Q0")
+    assert [s["site_kind"] for s in out] == ["terminal_n"]
+    n = out[0]
+    assert n["det_path"] == "terminal"
+    assert n["insert_after_residue"] == 24          # tag AFTER the cleavage site
+    assert n["residue_before"] == seq[23]           # last signal residue
+    assert n["residue_after"] == seq[24]            # first mature residue
+    assert n["extracellular"] is True
+    assert not any(s["det_path"] == "snorkel" for s in out)
 
 
 def test_ecto_c_gives_direct_cterm_no_snorkel():
@@ -26,6 +42,17 @@ def test_ecto_c_gives_direct_cterm_no_snorkel():
     assert [s["site_kind"] for s in out] == ["terminal_c"]
     assert out[0]["det_path"] == "terminal"  # direct, not snorkel
     assert out[0]["extracellular"] is True
+
+
+def test_both_termini_intracellular_gives_snorkel_fallback():
+    # Neither terminus extracellular (and no signal peptide) -> the C-terminal
+    # snorkel is the genuine last-resort fallback.
+    out = terminal_candidates(_sig("A" * 10, {1: "I", 10: "I"}), gene_symbol="X", uniprot_acc="Q0")
+    assert [s["site_kind"] for s in out] == ["terminal_c"]
+    assert out[0]["det_path"] == "snorkel"
+    assert out[0]["insert_after_residue"] == 10
+    assert out[0]["extracellular"] is False
+    assert out[0]["residue_label"] == "A10"
 
 
 def test_both_termini_extracellular_no_snorkel():
@@ -41,8 +68,9 @@ def test_unknown_cterm_topology_emits_no_snorkel():
     assert [s["site_kind"] for s in out] == ["terminal_n"]
 
 
-def test_run_orders_terminals_around_internal():
+def test_run_orders_nterm_before_internal_no_snorkel_when_nterm_ec():
     # ecto N-term, an internal surface-loop site at 100, intracellular C-term.
+    # N-term is EC, so no snorkel; terminal_n leads, internal preserved.
     seq = "A" * 200
     topo = {r: "O" for r in [1, 99, 100, 101, 102]}
     topo[200] = "I"
@@ -52,6 +80,23 @@ def test_run_orders_terminals_around_internal():
         "gap_freq": {}, "conservation": {}, "sequence": seq,
     }
     sites = derive_deterministic_sites("X", "Q0", signals=sig)
-    assert sites[0]["site_kind"] == "terminal_n"          # N-term first
-    assert sites[-1]["det_path"] == "snorkel"             # C-term snorkel last
+    assert sites[0]["site_kind"] == "terminal_n"                 # N-term first
     assert any(s["det_path"] == "surface_loop" for s in sites)  # internal preserved
+    assert not any(s["det_path"] == "snorkel" for s in sites)   # N-term EC -> no snorkel
+
+
+def test_run_orders_snorkel_last_when_no_ecto_terminus():
+    # Both termini intracellular -> snorkel is the terminal fallback, ordered last.
+    seq = "A" * 200
+    topo = {r: "O" for r in [99, 100, 101, 102]}
+    topo[1] = "I"
+    topo[200] = "I"
+    sig = {
+        "plddt": {100: 95.0}, "topology": topo, "rsa": {100: 0.55}, "ss": {100: "C"},
+        "feature_dist": {r: 25.0 for r in [99, 100, 101, 102]},
+        "gap_freq": {}, "conservation": {}, "sequence": seq,
+    }
+    sites = derive_deterministic_sites("X", "Q0", signals=sig)
+    assert sites[-1]["det_path"] == "snorkel"                    # snorkel last
+    assert any(s["det_path"] == "surface_loop" for s in sites)  # internal preserved
+    assert not any(s["site_kind"] == "terminal_n" for s in sites)  # no ecto N-term
