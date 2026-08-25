@@ -84,3 +84,12 @@
   margin: 0.4rem 0 0; padding-left: 0.7rem; border-left: 2px solid var(--hair);
   font-size: 0.83rem; font-style: italic;
 }
+
+/* Chip strip inside a table "cites" cell — clickable EvidenceChips that open
+   the drawer, wrapping neatly instead of a raw comma-joined id list. */
+.citeChips {
+  display: inline-flex;
+  flex-wrap: wrap;
+  gap: 3px;
+  align-items: center;
+}

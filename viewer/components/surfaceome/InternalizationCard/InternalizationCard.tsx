@@ -2,7 +2,24 @@
 
 import { useEffect, useState } from "react";
 import { SectionCard } from "../SectionCard/SectionCard";
+import { EvidenceChip } from "../EvidenceChip/EvidenceChip";
+import { EvidenceDrawer } from "../EvidenceDrawer/EvidenceDrawer";
+import type { Evidence } from "../../../lib/surfaceome-types";
 import styles from "./InternalizationCard.module.css";
+
+/** Strip of clickable evidence chips for a table "cites" cell — each opens the
+ *  card's EvidenceDrawer (same UX as the deep-dive), replacing the raw
+ *  ``int_evi_NN`` ids. Falls back to a dash when a row cites nothing. */
+function CiteChips({ ids }: { ids: readonly string[] }) {
+  if (!ids.length) return <span className={styles.muted}>—</span>;
+  return (
+    <span className={styles.citeChips}>
+      {ids.map((id) => (
+        <EvidenceChip key={id} evidenceId={id} />
+      ))}
+    </span>
+  );
+}
 
 // The sequence (model-prior) track uses the 5-point SeqGrade; the literature
 // track's per-mode Grade retains `no` (and legacy records may carry it). Keep
@@ -276,7 +293,7 @@ export function InternalizationCard({ symbol, n }: Props) {
                               ? em(`${o.quant.rate_value} ${o.quant.rate_unit ?? ""}`)
                               : em(o.quant.quant_summary)}
                           </td>
-                          <td className={styles.mono}>{em(o.cited_source_ids.join(", "))}</td>
+                          <td><CiteChips ids={o.cited_source_ids} /></td>
                         </tr>
                       ))}
                     </tbody>
@@ -316,7 +333,7 @@ export function InternalizationCard({ symbol, n }: Props) {
                                   ? em(`${m.quant.rate_value} ${m.quant.rate_unit ?? ""}`)
                                   : em(m.quant.quant_summary || m.note)}
                               </td>
-                              <td className={styles.mono}>{em(m.cited_source_ids.join(", "))}</td>
+                              <td><CiteChips ids={m.cited_source_ids} /></td>
                             </tr>
                           ))}
                         </tbody>
@@ -345,6 +362,15 @@ export function InternalizationCard({ symbol, n }: Props) {
                     );
                   })}
                 </ul>
+                {/* One drawer instance fed this card's own sources. The
+                    page-level EvidenceClickDelegator dispatches the open event;
+                    this drawer only opens for ``int_evi_*`` ids (the deep-dive
+                    drawer ignores them — namespaces don't collide), so an
+                    evidence chip in the tables above slides open the same
+                    detail panel the rest of the page uses. */}
+                <EvidenceDrawer
+                  evidence={lit.sources as unknown as Evidence[]}
+                />
               </>
             )}
           </div>

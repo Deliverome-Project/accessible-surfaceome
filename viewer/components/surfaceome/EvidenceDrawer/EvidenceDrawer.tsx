@@ -31,6 +31,8 @@ function prettyEvidenceLabel(evidenceId: string): string {
   if (newForm) return newForm[1];
   const legacyForm = /^a[12]_evi_(\d+)$/.exec(evidenceId);
   if (legacyForm) return legacyForm[1];
+  const internForm = /^int_evi_(\d+)$/.exec(evidenceId);
+  if (internForm) return String(parseInt(internForm[1], 10));
   return evidenceId;
 }
 
