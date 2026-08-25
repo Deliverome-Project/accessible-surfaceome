@@ -12,6 +12,7 @@ from __future__ import annotations
 import sqlite3
 from typing import Any, cast
 
+from accessible_surfaceome._version_guard import PROMPT_CORPUS_VERSION
 from accessible_surfaceome.cloud.d1_client import D1Client
 from accessible_surfaceome.cloud.intermediates import (
     fetch_latest_intermediates_row,
@@ -24,7 +25,10 @@ from accessible_surfaceome.tools._shared.failure_modes import (
 )
 
 SCHEMA = "v0.4.0"
-CORPUS = "2.50.2"
+# Track the live corpus version so a prompt-corpus bump doesn't break the
+# "matching version → resumable" cases (which rely on resumable_pts_blob's
+# default current_prompt_corpus_version == PROMPT_CORPUS_VERSION).
+CORPUS = PROMPT_CORPUS_VERSION
 
 
 def _row(

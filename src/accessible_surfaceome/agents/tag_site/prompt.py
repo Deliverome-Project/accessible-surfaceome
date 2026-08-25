@@ -57,23 +57,22 @@ residues (they are the exact false positives to avoid):
 When in doubt, DROP the site. A gene with no qualifying PUBLISHED insertion must return ZERO
 literature sites — that is the correct, expected answer, never a failure to pad.
 
-CANDIDATE PAPERS — your ONLY source of citations. You are given a list of pre-retrieved
-papers (title + abstract + PMID, or DOI for a preprint) from a curated EuropePMC + PubTator
-search PLUS a web_search discovery pass (retraction-filtered; a citation-sorted pass surfaces
-classic methods papers; web_search adds recent preprints and constructs whose abstracts never
-say "tag" — bungarotoxin-binding-site, HiBiT, snorkel — all hydrated to real, id-anchored
-papers). Read them FIRST; set `supporting_pmid` for a PMID paper, or `supporting_pmid`=null +
-cite the DOI in the rationale for a [preprint]. Do NOT cite a paper that is not in this list.
-Set `source_tier` by where the claim is grounded: 'paper' (journal/PMC/preprint) > 'patent' >
-'vendor'; papers are STRONGLY preferred and a vendor page never outranks a paper for the same site.
+EVIDENCE LEDGER — your ONLY source of citations. You are given a ledger of span-verified
+clips: short passages already retrieved from real papers/preprints (curated EuropePMC +
+PubTator + a web-discovery pass, retraction-filtered) and located VERBATIM in their source
+text upstream. Each ledger line carries a source label ([PMID n], or [PMC ...]/[DOI ...] for a
+preprint) and a QUOTE. Every site you propose MUST be grounded in ONE ledger line. Do NOT cite
+a paper that is not in the ledger, and do NOT invent sites beyond what the ledger supports. Set
+`supporting_pmid` = n for a [PMID n] line, or `supporting_pmid`=null (cite the DOI/PMC in the
+rationale) for a preprint line. Set `source_tier` by where the claim is grounded: 'paper'
+(journal/PMC/preprint) > 'patent' > 'vendor'; papers are STRONGLY preferred and a vendor page
+never outranks a paper for the same site.
 
-QUOTE YOUR EVIDENCE (checked automatically). For every site, set `supporting_quote` to a
-VERBATIM sentence copied from the cited source text shown above (abstract / METHODS / RESULTS)
-that states the tag was placed at this site and/or its validation. Copy it exactly — do NOT
-paraphrase, translate, or reconstruct it. The pipeline searches the source text for this exact
-string; if it is not found the site is flagged `entailment_verified=false` and down-ranked. If
-no quotable passage is provided above for your cited paper, leave `supporting_quote` null
-rather than inventing one — a fabricated quote is worse than none.
+QUOTE YOUR EVIDENCE (checked automatically). For every site, set `supporting_quote` to the
+VERBATIM quote of the ledger line you relied on — copy it exactly, do NOT paraphrase,
+translate, or reconstruct it. The pipeline re-checks this string against the ledger; if it is
+not found the site is flagged `entailment_verified=false` and down-ranked. Never author a quote
+that is not in the ledger — a fabricated quote is worse than none.
 
 RANK BY VALIDATION STRENGTH (`validation_level`). The best sites are those where the tag was
 shown to DISPLAY on the surface (non-permeabilized staining/labeling) AND preserve
@@ -99,17 +98,15 @@ inference only'):
 - "published tag insertion in the same loop or domain"
 - "published tolerance of a different insertion (transposon, FP fusion)"
 
-SEARCH THOROUGHLY FOR INTERNAL SITES. If the protein has ANY extracellular loop (an `O`
-stretch between TM helices, or a large ectodomain), you MUST make a real attempt to find at
-least one INTERNAL insertion with published precedent — do not settle for terminal sites
-alone. Run a GENERIC search (e.g. "<gene> tag", "<gene> epitope tag insertion") AND, because
-many surface-labeling constructs are never called "tags" in the abstract, separate searches
-for specific tagging modalities by NAME:
-  FLAG / HA / Myc / ALFA / V5 epitope insertion; GFP / fluorescent-protein fusion insertion;
-  HaloTag / SNAP-tag / CLIP-tag; **bungarotoxin-binding site (BBS)**; biotin-acceptor / AviTag;
-  tetracysteine (FlAsH); transposon / domain-insertion screens.
-The generic query alone often misses the niche modalities, so run those too. Do not stop at
-the first hit; a terminal site does not excuse skipping the internal search.
+MINE THE LEDGER THOROUGHLY FOR INTERNAL SITES. If the protein has ANY extracellular loop (an
+`O` stretch between TM helices, or a large ectodomain), make a real attempt to ground at least
+one INTERNAL insertion in the ledger — do not settle for terminal sites alone. The ledger
+already spans the tagging modalities that surface-labeling papers use even when the abstract
+never says "tag": FLAG / HA / Myc / ALFA / V5 epitope insertion; GFP / fluorescent-protein
+fusion insertion; HaloTag / SNAP-tag / CLIP-tag; bungarotoxin-binding site (BBS);
+biotin-acceptor / AviTag; tetracysteine (FlAsH); transposon / domain-insertion screens. Read
+EVERY ledger line before concluding no internal site exists; a terminal site does not excuse
+skipping an internal clip that pins a loop insertion.
 
 POSITION HONESTY (required). For EVERY site set `position_evidence`:
 - "validated" — a tag was published AT this exact residue/junction (or +/-1). Only then may
