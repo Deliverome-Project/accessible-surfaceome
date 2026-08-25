@@ -81,5 +81,31 @@ export function renderableTagSites(
       spanEnd: span ? Math.min(topologyLength, span[1]) : null,
     });
   }
+  return collapseBySpan(out);
+}
+
+/** One anchor ball per span: deterministic candidates that share a residue_range
+ *  (e.g. TMEM123's 10 disorder sites across H27-K159) collapse to a single
+ *  representative — the residue closest to the span midpoint — so the 3D/linear
+ *  overlay shows ONE ball plus the whole-span tint, not a row of balls. Sites
+ *  with no span (termini, snorkel, single-residue, literature) pass through. */
+function collapseBySpan(rows: RenderableTagSite[]): RenderableTagSite[] {
+  const groups = new Map<string, RenderableTagSite[]>();
+  const out: RenderableTagSite[] = [];
+  for (const r of rows) {
+    if (r.spanStart == null || r.spanEnd == null) {
+      out.push(r);
+      continue;
+    }
+    const key = `${r.category}:${r.spanStart}-${r.spanEnd}`;
+    const g = groups.get(key);
+    if (g) g.push(r);
+    else groups.set(key, [r]);
+  }
+  for (const g of groups.values()) {
+    const mid = ((g[0].spanStart as number) + (g[0].spanEnd as number)) / 2;
+    g.sort((a, b) => Math.abs(a.residue - mid) - Math.abs(b.residue - mid));
+    out.push(g[0]); // anchor closest to the span midpoint
+  }
   return out;
 }
