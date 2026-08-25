@@ -1336,6 +1336,7 @@ async function handleCatalog(env, request) {
             sa.ddf_topo_signal_peptide_length AS sa_ddf_topo_signal_peptide_length,
             si.intern_grade AS intern_grade,
             si.intern_has_lit AS intern_has_lit,
+            si.intern_lit_grade AS intern_lit_grade,
             CASE WHEN sa.gene_symbol IS NOT NULL THEN 1 ELSE 0 END AS has_deep_dive
        FROM candidate_universe_public u
        LEFT JOIN gene_identifier_public gi ON gi.hgnc_symbol = u.gene_symbol
@@ -1349,7 +1350,8 @@ async function handleCatalog(env, request) {
        LEFT JOIN (
          SELECT gene_symbol,
                 seq_canonical_grade AS intern_grade,
-                has_literature AS intern_has_lit
+                has_literature AS intern_has_lit,
+                lit_overall_grade AS intern_lit_grade
            FROM surface_internalization sii1
           WHERE schema_version = (
             SELECT MAX(schema_version) FROM surface_internalization sii2
@@ -1578,6 +1580,11 @@ async function handleCatalog(env, request) {
     // independent of deep-dive coverage (viewer filters it as its own category).
     if (u.intern_grade) row.intern = u.intern_grade;
     if (u.intern_has_lit) row.intern_lit = 1;
+    // Literature-track overall grade (Grade: high|moderate|low|no|unknown) —
+    // distinct from the seq prior above, so the catalog can render a SEPARATE
+    // "Internalization (literature)" column + filter. Only present once a gene
+    // has had a literature run; older viewers ignore this unknown field.
+    if (u.intern_lit_grade) row.intern_lit_grade = u.intern_lit_grade;
     // Slim deep-dive filter projection — only the 21 fields the catalog
     // UI actually filters on. Skips continuous fields (max_paralog_ecd_
     // pct_identity, ortholog identities) and `has_restricted_subdomain`
@@ -1612,7 +1619,8 @@ async function handleCatalog(env, request) {
             json_extract(sa1.annotation_json, '$.deterministic_features.canonical_topology.signal_peptide_length') AS ddf_topo_signal_peptide_length,
             gi.uniprot_acc AS uniprot_acc,
             si.seq_canonical_grade AS intern_grade,
-            si.has_literature AS intern_has_lit
+            si.has_literature AS intern_has_lit,
+            si.lit_overall_grade AS intern_lit_grade
        FROM surface_annotation sa1
        LEFT JOIN gene_identifier_public gi ON gi.hgnc_symbol = sa1.gene_symbol
        LEFT JOIN surface_internalization si ON si.gene_symbol = sa1.gene_symbol
@@ -1635,6 +1643,7 @@ async function handleCatalog(env, request) {
     if (r.uniprot_acc) row.uniprot = r.uniprot_acc;
     if (r.intern_grade) row.intern = r.intern_grade;
     if (r.intern_has_lit) row.intern_lit = 1;
+    if (r.intern_lit_grade) row.intern_lit_grade = r.intern_lit_grade;
     const t = packTriage(sym);
     if (t) row.tr = t;
     const dd = projectDeepDiveFiltersFromParts(ddfPartsFromRow(r, "ddf_"));
@@ -1730,7 +1739,13 @@ async function handleCatalog(env, request) {
       //        cohort; plus optional `intern_lit`=1 when a literature grade
       //        also exists. A SEPARATE catalog facet, independent of `ddf` /
       //        deep-dive coverage. Older viewers ignore unknown fields.
-      row_schema: 8,
+      //   v9 = adds optional top-level `intern_lit_grade` (literature-track
+      //        overall Grade: high|moderate|low|no|unknown), distinct from the
+      //        seq-prior `intern`, so the catalog can show a SEPARATE
+      //        internalization-literature column + filter. Present only once a
+      //        gene has a literature run; `intern_lit`=1 stays as the has-lit
+      //        flag for back-compat. Older viewers ignore the new field.
+      row_schema: 9,
       n_papers_selected_cutoffs: psCutoffs,
       // Names for the bits in each row's `db` 5-bit field (LSB → MSB).
       // Self-describing for external reanalysts: decode with
