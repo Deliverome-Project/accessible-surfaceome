@@ -1,0 +1,86 @@
+{
+  "AXL": {
+    "nterm_ec": 0,
+    "cterm_ec": 0,
+    "internal": 20,
+    "disorder": 8,
+    "lit_ec": 0
+  },
+  "CD19": {
+    "nterm_ec": 0,
+    "cterm_ec": 0,
+    "internal": 11,
+    "disorder": 4,
+    "lit_ec": 1
+  },
+  "CD22": {
+    "nterm_ec": 0,
+    "cterm_ec": 0,
+    "internal": 20,
+    "disorder": 3,
+    "lit_ec": 0
+  },
+  "EGFR": {
+    "nterm_ec": 0,
+    "cterm_ec": 0,
+    "internal": 12,
+    "disorder": 1,
+    "lit_ec": 1
+  },
+  "ERBB2": {
+    "nterm_ec": 0,
+    "cterm_ec": 0,
+    "internal": 15,
+    "disorder": 3,
+    "lit_ec": 1
+  },
+  "FOLH1": {
+    "nterm_ec": 0,
+    "cterm_ec": 1,
+    "internal": 20,
+    "disorder": 1,
+    "lit_ec": 0
+  },
+  "LDLR": {
+    "nterm_ec": 0,
+    "cterm_ec": 0,
+    "internal": 17,
+    "disorder": 8,
+    "lit_ec": 1
+  },
+  "MET": {
+    "nterm_ec": 0,
+    "cterm_ec": 0,
+    "internal": 20,
+    "disorder": 5,
+    "lit_ec": 0
+  },
+  "NECTIN4": {
+    "nterm_ec": 0,
+    "cterm_ec": 0,
+    "internal": 20,
+    "disorder": 2,
+    "lit_ec": 0
+  },
+  "TFRC": {
+    "nterm_ec": 0,
+    "cterm_ec": 1,
+    "internal": 20,
+    "disorder": 3,
+    "lit_ec": 2
+  },
+  "TMEM123": {
+    "nterm_ec": 0,
+    "cterm_ec": 0,
+    "internal": 1,
+    "disorder": 10,
+    "lit_ec": 2
+  },
+  "TNFRSF17": {
+    "nterm_ec": 1,
+    "cterm_ec": 0,
+    "internal": 0,
+    "disorder": 0,
+    "lit_ec": 0
+  }
+}
