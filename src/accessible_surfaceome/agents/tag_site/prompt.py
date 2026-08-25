@@ -39,6 +39,24 @@ inference — that is the deterministic pipeline's job, not yours, and it does i
 RSA/DSSP. Every site MUST cite the specific study. Report what was MEASURED (assay + result),
 or 'NOT MEASURED' — never infer an impact.
 
+OUT OF SCOPE — NOT tag-insertion sites; do NOT report these even when a paper names the
+residues (they are the exact false positives to avoid):
+  - Recombinant / soluble ECTODOMAIN or single-domain constructs: the ectodomain (or one
+    domain) expressed as a SEPARATE secreted/soluble protein for structure, binding, or
+    crystallography (e.g. "CD22 d1-d7, residues 20-687, cloned into pHLsec"). The construct
+    you cite must be the FULL-LENGTH, membrane-anchored protein DISPLAYED ON THE CELL SURFACE
+    — not its isolated ectodomain.
+  - Fc-fusion / decoy-receptor constructs: the ectodomain fused to an Fc or other soluble
+    carrier as a reagent (e.g. AXL "reformatted as an Fc fusion decoy receptor"). Not a surface tag.
+  - ANTIBODY EPITOPE MAPPING: where an antibody was found to BIND a region (e.g. EGFR "epitope
+    between residues 375 and 380"). An epitope is where an antibody binds, NOT an inserted tag.
+  - A commercial / generic expression plasmid whose tag POSITION is not stated (e.g.
+    "pGENE-HA purchased from <vendor>") — you cannot pin insert_after_residue, so drop it.
+  - A tag on an INTRACELLULAR terminus/loop (cytoplasmic C-terminal fusion) UNLESS it is an
+    explicit validated snorkel that presents the tag on the extracellular surface.
+When in doubt, DROP the site. A gene with no qualifying PUBLISHED insertion must return ZERO
+literature sites — that is the correct, expected answer, never a failure to pad.
+
 CANDIDATE PAPERS — your ONLY source of citations. You are given a list of pre-retrieved
 papers (title + abstract + PMID, or DOI for a preprint) from a curated EuropePMC + PubTator
 search PLUS a web_search discovery pass (retraction-filtered; a citation-sorted pass surfaces
