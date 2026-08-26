@@ -40,12 +40,21 @@ const API_BASE =
   process.env.NEXT_PUBLIC_SURFACEOME_API_BASE ??
   "https://api.deliverome.org/surfaceome";
 
+interface MotifHit {
+  motif_type: string;
+  sequence: string;
+  region: string;
+  approx_position: string | null;
+  functional_context: boolean;
+  note: string;
+}
 interface IsoformPrior {
   isoform_id: string;
   is_canonical: boolean;
   length_aa: number | null;
   topology_summary: string;
   endocytic_motifs_noted: string | null;
+  motifs?: MotifHit[];
   grade: Grade;
   confidence: string;
   rationale: string;
@@ -73,6 +82,7 @@ interface Observation {
   assay_type: string;
   cell_line: string | null;
   cell_context: string;
+  species?: string | null;
   internalization_mode: string;
   ligand_name: string | null;
   mechanism: string | null;
@@ -182,6 +192,16 @@ function Badge({ value }: { value: string | null | undefined }) {
   return <span className={styles.badge}>{prettyLabel(value)}</span>;
 }
 
+// Confidence, explicitly labeled so it's not a mystery "(moderate)" in parens.
+function Conf({ level }: { level: string | null | undefined }) {
+  if (!level) return null;
+  return (
+    <span className={styles.conf}>
+      confidence <strong>{level}</strong>
+    </span>
+  );
+}
+
 // Magnitude ordinal (for the sortable "mag" column). Index signature — the card
 // declares a local `Record` interface that shadows TS's generic Record<K,V>.
 const MAG_RANK: { [k: string]: number } = {
@@ -190,6 +210,15 @@ const MAG_RANK: { [k: string]: number } = {
   low: 2,
   none: 1,
   unknown: 0,
+};
+
+// Reader-facing labels for the structured endocytic-motif types.
+const MOTIF_LABEL: { [k: string]: string } = {
+  yxxphi: "YXXΦ",
+  npxy: "NPXY",
+  dileucine: "dileucine",
+  acidic_cluster: "acidic cluster",
+  other: "motif",
 };
 
 // Turn inline `int_evi_NN` refs in grader prose into clickable EvidenceChips
@@ -218,6 +247,7 @@ function sortObs(
     if (key === "metric") return o.quant.rate_metric ?? "";
     if (key === "assay") return o.assay_type ?? "";
     if (key === "mode") return o.internalization_mode ?? "";
+    if (key === "species") return o.species ?? "";
     if (key === "cell_line") return o.cell_line ?? "";
     return "";
   };
@@ -323,16 +353,38 @@ export function InternalizationCard({ symbol, n }: Props) {
             {rec.model_priors.map((m) => (
               <div key={m.model} className={styles.mp}>
                 <div className={styles.mpHead}>
-                  <code>{m.model}</code> overall <Pill grade={m.overall_grade} /> ({m.overall_confidence})
+                  <code>{m.model}</code> overall <Pill grade={m.overall_grade} /> <Conf level={m.overall_confidence} />
                 </div>
                 {m.per_isoform.map((iso) => (
                   <div key={iso.isoform_id} className={styles.iso}>
                     <div>
                       <Pill grade={iso.grade} /> <code>{iso.isoform_id}</code>
-                      {iso.is_canonical ? " · canonical" : ""} · {iso.confidence} conf
+                      {iso.is_canonical ? " · canonical" : ""} · <Conf level={iso.confidence} />
                     </div>
                     <div className={styles.mono}>{em(iso.topology_summary)}</div>
-                    <div className={styles.muted}>motifs: {em(iso.endocytic_motifs_noted)}</div>
+                    {iso.motifs && iso.motifs.length > 0 ? (
+                      <div className={styles.motifs}>
+                        {iso.motifs.map((mo, mi) => (
+                          <span
+                            key={mi}
+                            className={`${styles.motif} ${mo.functional_context ? styles.motifOn : ""}`}
+                            title={`${mo.region}${mo.approx_position ? ` · ${mo.approx_position}` : ""}${mo.note ? ` — ${mo.note}` : ""}`}
+                          >
+                            <span className={styles.motifType}>
+                              {MOTIF_LABEL[mo.motif_type] ?? mo.motif_type}
+                            </span>{" "}
+                            <code>{mo.sequence}</code>
+                            {mo.functional_context ? (
+                              <span className={styles.motifOk}> ✓ cytoplasmic</span>
+                            ) : (
+                              <span className={styles.muted}> · {mo.region}</span>
+                            )}
+                          </span>
+                        ))}
+                      </div>
+                    ) : iso.endocytic_motifs_noted ? (
+                      <div className={styles.muted}>motifs: {em(iso.endocytic_motifs_noted)}</div>
+                    ) : null}
                     <p>{em(iso.rationale)}</p>
                   </div>
                 ))}
@@ -346,7 +398,8 @@ export function InternalizationCard({ symbol, n }: Props) {
               <span className={styles.trackLabelLit}>Literature</span>
               {lit && (
                 <span className={styles.muted}>
-                  {lit.n_papers_discovered} discovered · {lit.n_papers_fetched} fetched
+                  {lit.n_papers_discovered} papers discovered · {lit.n_papers_fetched} full-text
+                  fetched · {lit.sources.length} evidence sources
                 </span>
               )}
             </div>
@@ -354,7 +407,10 @@ export function InternalizationCard({ symbol, n }: Props) {
             {lit && (
               <>
                 <div className={styles.overall}>
-                  overall <Pill grade={lit.overall_grade} /> ({lit.overall_confidence}) · species {em(lit.species_scope)}
+                  overall <Pill grade={lit.overall_grade} /> <Conf level={lit.overall_confidence} />
+                  {lit.species_scope && lit.species_scope !== "unspecified" ? (
+                    <> · species {lit.species_scope}</>
+                  ) : null}
                 </div>
                 <p>{linkifyIntEvi(lit.rationale)}</p>
                 <div className={styles.modes}>
@@ -375,7 +431,7 @@ export function InternalizationCard({ symbol, n }: Props) {
                     return (
                       <div key={k} className={styles.mode}>
                         <span className={styles.modeName}>{k.replace(/_/g, " ")}</span>{" "}
-                        <Pill grade={mg.grade} /> <span className={styles.muted}>{mg.confidence}</span>
+                        <Pill grade={mg.grade} /> <Conf level={mg.confidence} />
                         <p className={styles.modeRat}>{linkifyIntEvi(mg.rationale)}</p>
                       </div>
                     );
@@ -388,6 +444,7 @@ export function InternalizationCard({ symbol, n }: Props) {
                     <colgroup>
                       <col className={styles.colAssay} />
                       <col className={styles.colMode} />
+                      <col className={styles.colSpecies} />
                       <col className={styles.colCell} />
                       <col className={styles.colMag} />
                       <col className={styles.colMetric} />
@@ -398,6 +455,7 @@ export function InternalizationCard({ symbol, n }: Props) {
                       <tr>
                         <SortTh k="assay" label="assay" sort={obsSort} onSort={toggleObsSort} />
                         <SortTh k="mode" label="mode" sort={obsSort} onSort={toggleObsSort} />
+                        <SortTh k="species" label="species" sort={obsSort} onSort={toggleObsSort} />
                         <SortTh k="cell_line" label="cell line" sort={obsSort} onSort={toggleObsSort} />
                         <SortTh k="mag" label="mag" sort={obsSort} onSort={toggleObsSort} />
                         <SortTh k="metric" label="value type" sort={obsSort} onSort={toggleObsSort} />
@@ -410,6 +468,7 @@ export function InternalizationCard({ symbol, n }: Props) {
                         <tr key={i}>
                           <td><Badge value={o.assay_type} /></td>
                           <td><Badge value={o.internalization_mode} /></td>
+                          <td><Badge value={o.species} /></td>
                           <td>{em(o.cell_line)}</td>
                           <td>
                             <Pill grade={o.magnitude} />

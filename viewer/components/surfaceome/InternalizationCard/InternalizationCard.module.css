@@ -101,7 +101,28 @@
    while the cell-line text wraps into its narrower column. */
 .colAssay { width: 15ch; }
 .colMode { width: 9ch; }
+.colSpecies { width: 7ch; }
 .colCell { width: 8ch; }
+
+/* Confidence label — clearly reads as confidence, not a mystery paren. */
+.conf { font-size: 0.72rem; color: var(--muted); white-space: nowrap; }
+.conf strong { color: inherit; font-weight: 700; }
+
+/* Structured endocytic-motif chips (sequence prior). A functional (cytoplasmic)
+   motif is highlighted; extracellular/TM matches are shown muted. */
+.motifs { display: flex; flex-wrap: wrap; gap: 0.35rem; margin: 0.35rem 0; }
+.motif {
+  display: inline-flex; align-items: baseline; gap: 0.2rem;
+  padding: 0.1rem 0.5rem; border-radius: 6px; font-size: 0.76rem;
+  background: var(--surface2); border: 1px solid var(--hair);
+}
+.motifOn {
+  border-color: color-mix(in srgb, var(--teal) 45%, transparent);
+  background: color-mix(in srgb, var(--teal) 10%, transparent);
+}
+.motifType { font-weight: 700; }
+.motif code { font-size: 0.76rem; }
+.motifOk { font-size: 0.7rem; color: var(--teal); font-weight: 600; }
 .colMag { width: 4.5ch; }
 .colMetric { width: 9ch; }
 .colCites { width: 5ch; }
