@@ -21,7 +21,7 @@ constraints = [{ name = "pypdfium2", specifier = "<5.9.0" }]
 
 [[package]]
 name = "accessible-surfaceome"
-version = "0.1.0"
+version = "1.0.0"
 source = { editable = "." }
 dependencies = [
     { name = "anthropic" },
