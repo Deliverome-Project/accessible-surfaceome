@@ -29,6 +29,7 @@ Cairo system packages, which the WeasyPrint docs cover).
 from __future__ import annotations
 
 import argparse
+import os
 import sys
 from pathlib import Path
 
@@ -113,6 +114,12 @@ CSS_PATH = REPO_ROOT / "paper" / "deliverome-print.css"
 REFS_DOIS_FILTER = REPO_ROOT / "paper" / "filters" / "refs_dois.lua"
 FIGURES_FILTER = REPO_ROOT / "paper" / "filters" / "figures.lua"
 SECTIONS_FILTER = REPO_ROOT / "paper" / "filters" / "sections.lua"
+CITATIONS_FILTER = REPO_ROOT / "paper" / "filters" / "citations.lua"
+# Brand marks (GitHub / Zenodo) set beside the front-matter resource
+# links. Exported to the environment because a Lua filter has no way
+# to learn the repo root, and WeasyPrint resolves <img src> against
+# the build directory rather than paper/.
+PAPER_ASSETS_DIR = REPO_ROOT / "paper" / "assets"
 FIGURE_MANIFEST = REPO_ROOT / "paper" / "figure_manifest.json"
 CANONICAL_FIGURES_DIR = REPO_ROOT / "data" / "analysis" / "figures"
 # Print-ready derived assets (e.g. vector SVGs converted from the
@@ -170,6 +177,7 @@ def build(src: Path, strict_figures: bool = False) -> dict[str, Path]:
     # 1. pandoc → standalone HTML5 with the deliverome stylesheet linked.
     #    --extract-media pulls embedded .docx images out to disk so
     #    WeasyPrint can load them; the link path is relative to the HTML.
+    os.environ["PAPER_ASSETS_DIR"] = str(PAPER_ASSETS_DIR)
     print(f"→ pandoc {src.name} → {html_path.name}")
     pypandoc.convert_file(
         str(src),
@@ -206,6 +214,11 @@ def build(src: Path, strict_figures: bool = False) -> dict[str, Path]:
             # plain text — the supplement is a separate file, so an
             # intra-document anchor would be a dead link.
             f"--lua-filter={SECTIONS_FILTER}",
+            # Re-point Zotero's in-text citations at the matching
+            # References entry and lift the brackets out of the link
+            # text. MUST come after refs_dois.lua, which unwraps the
+            # Zotero link around each reference entry.
+            f"--lua-filter={CITATIONS_FILTER}",
         ],
     )
 
