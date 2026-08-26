@@ -136,7 +136,7 @@ export function tagSiteCategory(
 export const CATEGORY_HEX: Record<TagSiteCategory, string> = {
   literature: "#8878c8", // --lavender-bright
   surface_loop: "#3d6b60", // --teal-mid
-  disorder: "#6aa398", // lighter teal — distinct internal lane
+  disorder: "#3f7fd0", // blue — clearly distinct from the teal surface_loop lane
   terminal_n: "#f4aa28", // --amber-bright
   terminal_c: "#c07830", // --amber-mid
   snorkel: "#922038", // --maroon-mid — fallback / lower-confidence

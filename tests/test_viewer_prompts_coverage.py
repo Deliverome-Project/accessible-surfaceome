@@ -72,6 +72,14 @@ ALLOWED_NO_VIEWER_DISPLAY: frozenset[str] = frozenset(
         "src/accessible_surfaceome/agents/internalization/prompts/literature_triage_system.md",
         "src/accessible_surfaceome/agents/internalization/prompts/literature_select_system.md",
         "src/accessible_surfaceome/agents/internalization/prompts/literature_grade_system.md",
+        # The literature tag-site track is likewise a separate, standalone track
+        # from the deep-dive, with its own viewer surface (the "Tag sites" tab on
+        # the gene page, not the deep-dive /prompts page). Its clip-select prompt
+        # (shared multi-stage clip pipeline, tag-site scoping) is intentionally
+        # not on the deep-dive /prompts page. The tag-site SYSTEM_PROMPT lives in
+        # agents/tag_site/prompt.py (a Python string, not a .md), so only this
+        # select prompt is on disk as a file.
+        "src/accessible_surfaceome/agents/tag_site/prompts/literature_select_system.md",
     }
 )
 

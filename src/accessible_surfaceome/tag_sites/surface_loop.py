@@ -15,7 +15,7 @@ from .model import residue_range, tagged_site
 
 PLDDT_MIN = 70.0         # reliability gate (NOT a disorder gate)
 RSA_MIN = 0.30           # solvent-exposed junction (window max)
-FEATURE_DIST_MIN = 12.0  # Angstrom, 3D clearance from functional atoms
+FEATURE_DIST_MIN = 10.0  # Angstrom, 3D clearance from functional atoms (disorder path imports this)
 LOOP_SS = {"C", "T", "S", "G"}  # DSSP coil/turn/bend/3-10 — never mid-helix/strand
 
 

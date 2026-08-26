@@ -342,6 +342,27 @@ interface CatalogTableProps {
   universe_version?: string;
 }
 
+// Tag-site catalog facets — per-category thresholds over the build-time
+// tag_site_counts overlay (public/data/tag-site-counts.json). Deterministic
+// lanes + termini, plus literature-validated surface sites. opts = selectable
+// minimum-count thresholds (termini are presence-only, >=1).
+const TAG_SITE_FACETS = [
+  { key: "nterm_ec", label: "Ecto N-term", det: true, opts: [1] },
+  { key: "cterm_ec", label: "Ecto C-term", det: true, opts: [1] },
+  { key: "internal", label: "Internal loop", det: true, opts: [1, 3] },
+  { key: "disorder", label: "Disordered loop", det: true, opts: [1, 3] },
+  { key: "lit_ec", label: "Literature surface", det: false, opts: [1, 3] },
+] as const;
+type TagSiteFacetKey = (typeof TAG_SITE_FACETS)[number]["key"];
+type TagSiteFilterState = Record<TagSiteFacetKey, 0 | 1 | 3>;
+const EMPTY_TAG_SITE_FILTER: TagSiteFilterState = {
+  nterm_ec: 0,
+  cterm_ec: 0,
+  internal: 0,
+  disorder: 0,
+  lit_ec: 0,
+};
+
 export function CatalogTable({
   rows,
   generated_at,
@@ -472,6 +493,10 @@ export function CatalogTable({
   type SurfaceBindFilter = "any" | "ge1" | "ge3" | "not_in" | null;
   const [surfaceBindFilter, setSurfaceBindFilter] =
     useState<SurfaceBindFilter>(null);
+  // Tag-site facet filters — per-category min-count thresholds (0=off). AND
+  // across active facets; reads the tag_site_counts overlay on each row.
+  const [tagSiteFilter, setTagSiteFilter] =
+    useState<TagSiteFilterState>(EMPTY_TAG_SITE_FILTER);
   // Internalization sequence-prior grade filter — a SEPARATE catalog category
   // (its own top-level group), NOT part of the deep-dive filter set. Multi-
   // select over the SeqGrade values (OR within the set); empty = off. Reads the
@@ -593,6 +618,7 @@ export function CatalogTable({
     setDeepDiveFilter(null);
     setFgLibraryFilter(null);
     setSurfaceBindFilter(null);
+    setTagSiteFilter(EMPTY_TAG_SITE_FILTER);
     setInternalizationFilter(new Set());
     setDdEnumFilters(() => {
       const out = {} as Record<DdEnumKey, Set<string>>;
@@ -749,7 +775,8 @@ export function CatalogTable({
   const ddActiveCount =
     ddEnumActiveCount +
     ddBoolActiveCount +
-    (surfaceBindFilter !== null ? 1 : 0);
+    (surfaceBindFilter !== null ? 1 : 0) +
+    Object.values(tagSiteFilter).filter((v) => v > 0).length;
 
   const activeFilterCount =
     dbFilter.size +
@@ -933,6 +960,12 @@ export function CatalogTable({
             break;
         }
       }
+      // Tag-site facet filters — per-category thresholds (>=1 / >=3) over the
+      // build-time tag_site_counts overlay; AND across active facets.
+      for (const f of TAG_SITE_FACETS) {
+        const thr = tagSiteFilter[f.key];
+        if (thr > 0 && (r.tag_site_counts?.[f.key] ?? 0) < thr) return false;
+      }
       // Internalization grade filter — standalone facet on the top-level
       // `internalization` field. OR within the selected grades; a gene with no
       // internalization record drops when any grade is selected. Independent of
@@ -1008,6 +1041,7 @@ export function CatalogTable({
     deepDiveFilter,
     fgLibraryFilter,
     surfaceBindFilter,
+    tagSiteFilter,
     internalizationFilter,
     ddActive,
     ddEnumFilters,
@@ -1824,6 +1858,52 @@ export function CatalogTable({
                         {`"any" includes proteins scored with 0 patches; "not in" = filtered at structural QC. Click an active chip to clear.`}
                       </span>
                     </div>
+                    {/* Tag sites — per-category thresholds over the build-time
+                     *  tag_site_counts overlay (deterministic lanes + termini +
+                     *  literature surface sites). Each facet is off / >=1 / >=3
+                     *  (termini presence-only). AND across active facets. */}
+                    <div className={styles.filterRow}>
+                      <span className={styles.filterLabel}>Tag sites</span>
+                      <span className={styles.filterHint}>
+                        Engineered tag-insertion sites — deterministic lanes +
+                        termini, and literature-validated surface sites. Click an
+                        active chip to clear.
+                      </span>
+                    </div>
+                    {TAG_SITE_FACETS.map((f) => (
+                      <div
+                        key={`ts-filter-${f.key}`}
+                        className={styles.filterRow}
+                        role="radiogroup"
+                        aria-label={`Tag sites: ${f.label}`}
+                      >
+                        <span className={styles.filterLabel}>
+                          {f.det ? f.label : `${f.label} (lit)`}
+                        </span>
+                        <div className={styles.filterChips}>
+                          {f.opts.map((thr) => {
+                            const on = tagSiteFilter[f.key] === thr;
+                            return (
+                              <button
+                                key={`ts-filter-${f.key}-${thr}`}
+                                type="button"
+                                role="radio"
+                                aria-checked={on}
+                                className={`${styles.filterVerdictChip} ${on ? styles.verdictYes : ""}`}
+                                onClick={() =>
+                                  setTagSiteFilter((prev) => ({
+                                    ...prev,
+                                    [f.key]: prev[f.key] === thr ? 0 : thr,
+                                  }))
+                                }
+                              >
+                                {`\u2265${thr}`}
+                              </button>
+                            );
+                          })}
+                        </div>
+                      </div>
+                    ))}
                     {DD_ENUM_FIELDS.filter(
                       (f) => f.provenance === "deterministic",
                     ).map(renderDdEnumRow)}

@@ -130,6 +130,8 @@ function adaptCatalogRow(j: unknown): CatalogRow | null {
     // false here so this row satisfies the (required) CatalogRow field — the
     // DB-presence strip this row feeds never reads it.
     in_fg_library: false,
+    // Same rationale — the DB-presence strip never reads tag-site counts.
+    tag_site_counts: null,
   };
 }
 

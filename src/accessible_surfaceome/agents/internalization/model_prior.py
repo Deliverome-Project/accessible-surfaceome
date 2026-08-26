@@ -4,14 +4,17 @@ sequence + topology. Model-parameterized because ``call_builder`` is Sonnet-lock
 from __future__ import annotations
 
 import hashlib
-import json
-import re
 from typing import Any, TypeVar
 
-from pydantic import BaseModel, ValidationError
+from pydantic import BaseModel
 
-from accessible_surfaceome.agents._support.api_retry import messages_create_with_backoff
-from accessible_surfaceome.agents._support.payload import cached_system
+from accessible_surfaceome.agents._support.structured_call import (  # re-exported for callers
+    MAX_REPAIRS as MAX_REPAIRS,
+    MAX_TOKENS as MAX_TOKENS,
+    SONNET_MODEL as SONNET_MODEL,
+    call_model_structured as call_model_structured,
+    extract_json_object as extract_json_object,
+)
 from accessible_surfaceome.agents.internalization.models import (
     MODEL_PRIOR_PROMPT_VERSION,
     ModelPriorLLMOut,
@@ -24,31 +27,11 @@ T = TypeVar("T", bound=BaseModel)
 # Authoritative model-prior default lives in runner.DEFAULT_MODELS; this is a
 # convenience constant kept in sync (opus-5 = production sweep model).
 OPUS_MODEL = "claude-opus-5"
-SONNET_MODEL = "claude-sonnet-4-6"  # literature-track grader/selector (not model-prior)
-MAX_TOKENS = 16_000
-MAX_REPAIRS = 1
-
-_FENCED_JSON_RE = re.compile(r"```(?:json)?\s*(\{.*?\})\s*```", re.DOTALL)
 
 
-def extract_json_object(text: str) -> dict[str, Any]:
-    """Pull a JSON object from a model response: last fenced ```json block, else
-    the outermost bare {...}. Raises ValueError when neither parses."""
-    matches = _FENCED_JSON_RE.findall(text)
-    if matches:
-        return json.loads(matches[-1])
-    start, end = text.find("{"), text.rfind("}")
-    if start != -1 and end > start:
-        return json.loads(text[start : end + 1])
-    raise ValueError("no JSON object found in model response")
 
 
-def _text_of(resp: Any) -> str:
-    return "".join(
-        getattr(b, "text", "")
-        for b in resp.content
-        if getattr(b, "type", None) == "text"
-    ).strip()
+
 
 
 def _build_user_prompt(gene_symbol: str, isoforms: list[IsoformContext]) -> str:
@@ -99,45 +82,6 @@ def _build_user_prompt(gene_symbol: str, isoforms: list[IsoformContext]) -> str:
     return "\n".join(lines)
 
 
-def call_model_structured(
-    client: Any,
-    *,
-    model: str,
-    system_prompt: str,
-    user_prompt: str,
-    schema: type[T],
-    usage_sink: list[Any] | None = None,
-    max_tokens: int = MAX_TOKENS,
-    max_repairs: int = MAX_REPAIRS,
-) -> T:
-    messages: list[dict[str, Any]] = [{"role": "user", "content": user_prompt}]
-    last_err = ""
-    for _ in range(max_repairs + 1):
-        resp = messages_create_with_backoff(
-            client,
-            model=model,
-            max_tokens=max_tokens,
-            system=cached_system(system_prompt),
-            messages=messages,
-        )
-        if usage_sink is not None:
-            usage_sink.append(resp.usage)
-        text = _text_of(resp)
-        try:
-            return schema.model_validate(extract_json_object(text))
-        except (ValueError, ValidationError) as err:
-            last_err = str(err)[:800]
-            messages.append({"role": "assistant", "content": text})
-            messages.append(
-                {
-                    "role": "user",
-                    "content": (
-                        "That was not valid per the schema. Return ONE ```json "
-                        f"fenced object only. Error:\n{last_err}"
-                    ),
-                }
-            )
-    raise ValueError(f"model {model} failed schema validation after repairs: {last_err}")
 
 
 def prompt_sha(system_prompt: str) -> str:

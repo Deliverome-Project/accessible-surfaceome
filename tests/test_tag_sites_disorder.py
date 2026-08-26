@@ -41,7 +41,7 @@ def test_feature_veto_gates_insertion_points_without_fragmenting_run():
     allclose = _sig({r: 55.0 for r in rng}, {r: "O" for r in rng},
                     {r: 5.0 for r in rng}, "A" * 300)
     assert disorder_candidates(allclose, gene_symbol="X", uniprot_acc="Q0") == []
-    # only some residues clear 12 A: the run still qualifies (>=4), and ONLY the
+    # only some residues clear the feature veto: the run still qualifies (>=4), and ONLY the
     # feature-clear residues become candidates — the veto no longer fragments it.
     feat = {50: 5.0, 51: 5.0, 52: 25.0, 53: 5.0, 54: 25.0, 55: 5.0}
     part = _sig({r: 55.0 for r in rng}, {r: "O" for r in rng}, feat, "A" * 300)

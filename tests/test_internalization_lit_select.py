@@ -164,6 +164,7 @@ def test_select_clips_degrades_to_empty_when_selector_always_fails(monkeypatch):
     # A clip-dense gene whose SelectionResponse keeps truncating must NOT crash the
     # whole annotation (FOLH1 in the pilot). After the capped + salvage retries,
     # select_clips returns an empty selection so the gene grades on what's left.
+    from accessible_surfaceome.agents._support import literature_clips as lc
     from accessible_surfaceome.agents.internalization import literature_select as ls
 
     calls = {"n": 0}
@@ -172,7 +173,8 @@ def test_select_clips_degrades_to_empty_when_selector_always_fails(monkeypatch):
         calls["n"] += 1
         raise ValueError("model claude-sonnet-4-6 failed schema validation after repairs: truncated")
 
-    monkeypatch.setattr(ls, "call_model_structured", _boom)
+    # select_clips now lives in the shared module and calls its call_model_structured
+    monkeypatch.setattr(lc, "call_model_structured", _boom)
     pool = {f"c{i}": _draft(f"c{i}", f"quote {i}", f"PMID:{i}") for i in range(5)}
     out = ls.select_clips(object(), pool=pool, gene="FOLH1", system_prompt="SYS")
     assert isinstance(out, SelectionResponse)
