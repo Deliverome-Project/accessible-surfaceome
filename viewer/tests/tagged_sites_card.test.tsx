@@ -95,6 +95,32 @@ test("renders both provenance groups with counts, residues, and a source link", 
   assert.doesNotMatch(html, /Z999/);
 });
 
+test("deterministic table collapses to one representative row per loop", () => {
+  // Three disorder sites in the SAME loop (residue_range) must collapse to ONE
+  // representative row — the anchor closest to the loop midpoint (~93 for
+  // H27-K159) = P91 — matching the 3D overlay's one-ball-per-loop.
+  const range = "H27-K159";
+  const mk = (id: string, res: number, label: string) =>
+    site({
+      site_id: id,
+      provenance: "deterministic_computed",
+      det_path: "disorder",
+      insert_after_residue: res,
+      residue_label: label,
+      residue_range: range,
+      sources: [],
+    });
+  const html = renderToStaticMarkup(
+    <TaggedSitesCard
+      taggedSites={file([mk("d1", 39, "E39"), mk("d2", 91, "P91"), mk("d3", 145, "A145")])}
+    />,
+  );
+  assert.match(html, /Computed candidates \(1\)/);
+  assert.match(html, /P91/);
+  assert.doesNotMatch(html, /E39/);
+  assert.doesNotMatch(html, /A145/);
+});
+
 test("renders an empty state when there are no rendered sites", () => {
   const html = renderToStaticMarkup(
     <TaggedSitesCard taggedSites={{ has_data: false, gene_symbol: "X", uniprot_acc: "Q0", sites: [] }} />,
