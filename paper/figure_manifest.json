@@ -1,26 +1,47 @@
 {
-  "_doc": "Map: figure number (or 'appendix-N') → canonical asset under data/analysis/figures/. After pandoc renders the .docx, paper/build.py rewrites each <img src> to point at the canonical asset so the final PDF ships the in-repo figure (current at HEAD) instead of whatever bitmap is embedded in the .docx. Add new entries as the manuscript grows. format=svg or pdf → vector (no DPI check); format=png → min_dpi enforced via Pillow. Set 'optional': true on entries that may not yet have a canonical asset (build warns rather than errors). 'description' is for the author's reference only — not used by the build.",
+  "_doc": "Map: figure number (or 'appendix-N') → print asset, resolved against the search path paper/figures/ then data/analysis/figures/ (first match wins). After pandoc renders the .docx, paper/build.py rewrites each <img src> to point at the resolved asset so the final PDF ships the in-repo figure (current at HEAD) instead of whatever bitmap the .docx embedded. format=svg → vector, no DPI check; format=png → min_dpi enforced via Pillow. format=pdf is ALWAYS rejected: WeasyPrint has no PDF image decoder and would emit a silently blank figure — convert to SVG with `pdftocairo -svg` into paper/figures/ instead. Set 'optional': true on entries with no canonical asset yet (build warns and keeps the .docx bitmap rather than erroring).",
+
+  "_numbering": "Numbering tracks '2026 Anthropic Surfaceome Technical Draft (4).docx' (7 main figures). Earlier manifest revisions numbered a 2-figure draft; re-check these keys against the caption order whenever the .docx figure set changes, because the swap keys purely off the figure-N anchor that filters/figures.lua derives from the caption.",
 
   "figures": {
     "1": {
-      "slug": "deep_dive_flow",
+      "slug": "db_overlap_venn",
       "format": "svg",
-      "description": "Flow diagram of the v2 deep-dive pipeline (Illustrator-exported)"
+      "description": "Five-way Venn of the source surface-protein databases; 188-protein core. Vector, converted from db_overlap_venn.pdf (the canonical PNG carries no DPI tEXt chunk, so it cannot pass the min_dpi gate)."
     },
     "2": {
+      "slug": "db_correctness_by_class",
+      "format": "svg",
+      "description": "SurfaceBench classification accuracy: triage agent vs the five source databases. Vector, converted from db_correctness_by_class.pdf."
+    },
+    "3": {
+      "slug": "zero_db_rescues_by_triage",
+      "format": "svg",
+      "description": "Zero-DB rescues grouped by agent rationale (yes / contextual panels). Vector, converted from zero_db_rescues_by_triage.pdf."
+    },
+    "4": {
+      "slug": "deep_dive_flow",
+      "format": "svg",
+      "description": "Three-stage deep-dive pipeline schematic (Illustrator-exported, natively vector)."
+    },
+    "5": {
       "slug": "deep_dive_final_categories",
+      "format": "svg",
+      "description": "Five-tier confidence spectrum + positive-call composition. Vector, converted from deep_dive_final_categories.pdf."
+    },
+    "6": {
+      "slug": "deep_dive_record_richness",
       "format": "png",
       "min_dpi": 600,
-      "description": "Distribution of final deep-dive categories across the ~5k cohort (MOCK)"
+      "description": "Five-panel violin of record richness by confidence tier. Deliberately raster, NOT vector: the per-gene dots (n = 5,130 × 5 panels) make the SVG ~20 MB and slow to render, while the 600-DPI PNG is 14,659 px wide — far above print need."
+    },
+    "7": {
+      "slug": "web_preview",
+      "format": "svg",
+      "allow_embedded_raster": true,
+      "description": "Two-panel viewer composite (a: homepage table with the CD81 row, b: SRC detail page). Inherently a screenshot, so the SVG legitimately wraps two base64 rasters (2749x1212 and 2644x1078) — hence allow_embedded_raster. Still a large upgrade on the .docx bitmap, which was a single 780x666 px flatten shown at 6.5in (~120 DPI, visibly soft). Do not be fooled by the aspect-ratio mismatch against the .docx bitmap: the SVG has different whitespace padding around the panels, not different content."
     }
   },
 
-  "appendix_figures": {
-    "1": {
-      "slug": "triage_vs_deep_dive_reason",
-      "format": "png",
-      "min_dpi": 600,
-      "description": "Triage reason × deep-dive reason confusion matrix, colored by yes/contextual/no bucket (MOCK)"
-    }
-  }
+  "appendix_figures": {}
 }
