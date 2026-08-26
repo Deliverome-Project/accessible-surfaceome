@@ -35,8 +35,10 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "paper"))
 
 from figure_swap import (  # noqa: E402  # ty: ignore[unresolved-import]
     FigureSpec,
+    _key_from_span_id,
     format_report,
     load_manifest,
+    resolve_asset,
     swap_figures,
     validate_canonical_asset,
 )
@@ -143,12 +145,20 @@ def test_validate_svg_soft_warns_on_embedded_raster(tmp_path: Path) -> None:
     assert any("base64-embedded raster" in i for i in issues), issues
 
 
-def test_validate_pdf_accepts_real_pdf(tmp_path: Path) -> None:
+def test_validate_pdf_rejects_even_a_real_pdf(tmp_path: Path) -> None:
+    """A well-formed PDF is still not a usable print asset.
+
+    WeasyPrint has no PDF image decoder, so ``<img src="x.pdf">``
+    renders as a silently blank box — the figure vanishes from the
+    manuscript with nothing in the build log. Flag it unconditionally
+    and point the author at the SVG conversion.
+    """
     p = tmp_path / "x.pdf"
     p.write_bytes(b"%PDF-1.7\nfake body\n%%EOF")
     spec = FigureSpec(slug="x", format="pdf")
     issues = validate_canonical_asset(spec, tmp_path)
-    assert issues == []
+    assert any("cannot be rendered by WeasyPrint" in i for i in issues), issues
+    assert any("pdftocairo -svg" in i for i in issues), issues
 
 
 def test_validate_pdf_rejects_non_pdf(tmp_path: Path) -> None:
@@ -266,6 +276,80 @@ def test_swap_skips_when_anchor_has_no_manifest_entry() -> None:
         # (a missing manifest entry isn't a build-failing issue —
         # the author just hasn't manifested that figure yet).
         assert len(report.skipped) == 2
+
+
+# ── Anchor-id → manifest-key extraction ───────────────────────────────
+
+
+@pytest.mark.parametrize(
+    ("span_id", "expected"),
+    [
+        # Shape A: caption written "Figure 2 — …" (no period).
+        ("figure-2-deep-dive-final-categories", "2"),
+        # Shape B: caption written "Figure 1. Five gold-standard …".
+        # The period rides along in pandoc's slug. Splitting on "-"
+        # yields "1." which is not all-digits — the bug that left
+        # every figure in the 7-figure draft un-swapped.
+        ("figure-1.-five-gold-standard-surface-protein-databases", "1"),
+        ("figure-10.-a-later-figure", "10"),
+        ("appendix-figure-1-tdd", "appendix-1"),
+        ("appendix-figure-3.-confusion-matrix", "appendix-3"),
+        # Non-figure anchors must not be claimed.
+        ("section-1", None),
+        ("figure-data-and-script", None),
+    ],
+)
+def test_key_from_span_id(span_id: str, expected: str | None) -> None:
+    assert _key_from_span_id(span_id) == expected
+
+
+# ── Asset search path ─────────────────────────────────────────────────
+
+
+def test_resolve_asset_prefers_earlier_dir(tmp_path: Path) -> None:
+    """First match wins, so paper/figures/ can shadow the library."""
+    first, second = tmp_path / "a", tmp_path / "b"
+    first.mkdir()
+    second.mkdir()
+    (first / "x.svg").write_bytes(b"<svg xmlns='http://www.w3.org/2000/svg'/>")
+    (second / "x.svg").write_bytes(b"<svg xmlns='http://www.w3.org/2000/svg'/>")
+    spec = FigureSpec(slug="x", format="svg")
+    assert resolve_asset(spec, [first, second]) == first / "x.svg"
+
+
+def test_resolve_asset_falls_through_to_later_dir(tmp_path: Path) -> None:
+    first, second = tmp_path / "a", tmp_path / "b"
+    first.mkdir()
+    second.mkdir()
+    (second / "x.svg").write_bytes(b"<svg xmlns='http://www.w3.org/2000/svg'/>")
+    spec = FigureSpec(slug="x", format="svg")
+    assert resolve_asset(spec, [first, second]) == second / "x.svg"
+
+
+def test_resolve_asset_accepts_bare_path(tmp_path: Path) -> None:
+    """Single-directory callers keep working."""
+    (tmp_path / "x.svg").write_bytes(b"<svg xmlns='http://www.w3.org/2000/svg'/>")
+    spec = FigureSpec(slug="x", format="svg")
+    assert resolve_asset(spec, tmp_path) == tmp_path / "x.svg"
+
+
+def test_resolve_asset_returns_none_when_absent(tmp_path: Path) -> None:
+    spec = FigureSpec(slug="nope", format="svg")
+    assert resolve_asset(spec, [tmp_path]) is None
+
+
+def test_missing_asset_keeps_docx_bitmap() -> None:
+    """A manifest entry pointing at a missing file must NOT blank the
+    figure — the .docx bitmap stays so the proof is still readable."""
+    with tempfile.TemporaryDirectory() as td:
+        tmp = Path(td)
+        html = tmp / "doc.html"
+        html.write_text(_PANDOC_SHAPED_HTML)
+        manifest = {"1": FigureSpec(slug="absent", format="svg")}
+        report = swap_figures(html, manifest, [tmp])
+        assert not report.swapped
+        assert any("kept .docx bitmap" in s for s in report.skipped), report.skipped
+        assert "/old/path/word_image_1.png" in html.read_text()
 
 
 def test_format_report_handles_empty_report() -> None:

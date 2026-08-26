@@ -112,8 +112,15 @@ REPO_ROOT = Path(__file__).resolve().parents[1]
 CSS_PATH = REPO_ROOT / "paper" / "deliverome-print.css"
 REFS_DOIS_FILTER = REPO_ROOT / "paper" / "filters" / "refs_dois.lua"
 FIGURES_FILTER = REPO_ROOT / "paper" / "filters" / "figures.lua"
+SECTIONS_FILTER = REPO_ROOT / "paper" / "filters" / "sections.lua"
 FIGURE_MANIFEST = REPO_ROOT / "paper" / "figure_manifest.json"
 CANONICAL_FIGURES_DIR = REPO_ROOT / "data" / "analysis" / "figures"
+# Print-ready derived assets (e.g. vector SVGs converted from the
+# canonical PDFs) take precedence over the curated figure library, so
+# the print build can carry a print-specific rendition of a figure
+# without mutating data/analysis/figures/.
+PAPER_FIGURES_DIR = REPO_ROOT / "paper" / "figures"
+FIGURE_SEARCH_PATH = [PAPER_FIGURES_DIR, CANONICAL_FIGURES_DIR]
 
 
 def _stem_for(src: Path) -> str:
@@ -191,6 +198,14 @@ def build(src: Path, strict_figures: bool = False) -> dict[str, Path]:
             # and linkify "Figure N" / "Appendix Figure N" body-text
             # references so they jump to the matching caption.
             f"--lua-filter={FIGURES_FILTER}",
+            # Linkify body-text section cross-references ("see Methods")
+            # to the matching heading. MUST come after figures.lua:
+            # that filter rewrites heading/figure structure, and this
+            # one indexes the headings that survive it. Supplementary
+            # labels (Figure S3 / Table S1) are deliberately left as
+            # plain text — the supplement is a separate file, so an
+            # intra-document anchor would be a dead link.
+            f"--lua-filter={SECTIONS_FILTER}",
         ],
     )
 
@@ -210,7 +225,7 @@ def build(src: Path, strict_figures: bool = False) -> dict[str, Path]:
     manifest = load_manifest(FIGURE_MANIFEST)
     if manifest:
         print(f"→ figure-swap   ({len(manifest)} manifest entries)")
-        report = swap_figures(html_path, manifest, CANONICAL_FIGURES_DIR)
+        report = swap_figures(html_path, manifest, FIGURE_SEARCH_PATH)
         formatted = format_report(report)
         if formatted:
             print(formatted)
